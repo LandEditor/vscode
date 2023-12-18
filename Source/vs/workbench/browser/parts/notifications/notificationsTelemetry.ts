@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { hash } from "vs/base/common/hash";
 import { Disposable } from "vs/base/common/lifecycle";
 import {
 	INotificationService,
@@ -11,7 +12,6 @@ import {
 } from "vs/platform/notification/common/notification";
 import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import { IWorkbenchContribution } from "vs/workbench/common/contributions";
-import { hash } from "vs/base/common/hash";
 
 export interface NotificationMetrics {
 	readonly id: string;
@@ -42,7 +42,7 @@ export type NotificationMetricsClassification = {
 export function notificationToMetrics(
 	message: NotificationMessage,
 	source: string | undefined,
-	silent: boolean
+	silent: boolean,
 ): NotificationMetrics {
 	return {
 		id: hash(message.toString()).toString(),
@@ -80,10 +80,10 @@ export class NotificationsTelemetry
 					notificationToMetrics(
 						notification.message,
 						source,
-						notification.priority === NotificationPriority.SILENT
-					)
+						notification.priority === NotificationPriority.SILENT,
+					),
 				);
-			})
+			}),
 		);
 
 		this._register(
@@ -101,10 +101,10 @@ export class NotificationsTelemetry
 					notificationToMetrics(
 						notification.message,
 						source,
-						notification.priority === NotificationPriority.SILENT
-					)
+						notification.priority === NotificationPriority.SILENT,
+					),
 				);
-			})
+			}),
 		);
 	}
 }

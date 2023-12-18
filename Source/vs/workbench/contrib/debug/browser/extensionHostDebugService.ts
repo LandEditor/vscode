@@ -31,10 +31,10 @@ import {
 } from "vs/platform/window/common/window";
 import {
 	IWorkspaceContextService,
+	hasWorkspaceFileExtension,
 	isSingleFolderWorkspaceIdentifier,
 	isWorkspaceIdentifier,
 	toWorkspaceIdentifier,
-	hasWorkspaceFileExtension,
 } from "vs/platform/workspace/common/workspace";
 import { IWorkspace, IWorkspaceProvider } from "vs/workbench/browser/web.api";
 import { IBrowserWorkbenchEnvironmentService } from "vs/workbench/services/environment/browser/environmentService";
@@ -61,13 +61,13 @@ class BrowserExtensionHostDebugService
 		@IHostService hostService: IHostService,
 		@IWorkspaceContextService contextService: IWorkspaceContextService,
 		@IStorageService storageService: IStorageService,
-		@IFileService fileService: IFileService
+		@IFileService fileService: IFileService,
 	) {
 		const connection = remoteAgentService.getConnection();
 		let channel: IChannel;
 		if (connection) {
 			channel = connection.getChannel(
-				ExtensionHostDebugBroadcastChannel.ChannelName
+				ExtensionHostDebugBroadcastChannel.ChannelName,
 			);
 		} else {
 			// Extension host debugging not supported in serverless.
@@ -95,7 +95,7 @@ class BrowserExtensionHostDebugService
 				trusted: undefined,
 			};
 			logService.warn(
-				"Extension Host Debugging not available due to missing workspace provider."
+				"Extension Host Debugging not available due to missing workspace provider.",
 			);
 		}
 
@@ -109,7 +109,7 @@ class BrowserExtensionHostDebugService
 				) {
 					hostService.reload();
 				}
-			})
+			}),
 		);
 
 		// Close window on close request
@@ -122,7 +122,7 @@ class BrowserExtensionHostDebugService
 				) {
 					hostService.close();
 				}
-			})
+			}),
 		);
 
 		// Remember workspace as last used for extension development
@@ -132,14 +132,14 @@ class BrowserExtensionHostDebugService
 			!environmentService.extensionTestsLocationURI
 		) {
 			const workspaceId = toWorkspaceIdentifier(
-				contextService.getWorkspace()
+				contextService.getWorkspace(),
 			);
 			if (
 				isSingleFolderWorkspaceIdentifier(workspaceId) ||
 				isWorkspaceIdentifier(workspaceId)
 			) {
 				const serializedWorkspace = isSingleFolderWorkspaceIdentifier(
-					workspaceId
+					workspaceId,
 				)
 					? { folderUri: workspaceId.uri.toJSON() }
 					: { workspaceUri: workspaceId.configPath.toJSON() };
@@ -147,12 +147,12 @@ class BrowserExtensionHostDebugService
 					BrowserExtensionHostDebugService.LAST_EXTENSION_DEVELOPMENT_WORKSPACE_KEY,
 					JSON.stringify(serializedWorkspace),
 					StorageScope.PROFILE,
-					StorageTarget.MACHINE
+					StorageTarget.MACHINE,
 				);
 			} else {
 				storageService.remove(
 					BrowserExtensionHostDebugService.LAST_EXTENSION_DEVELOPMENT_WORKSPACE_KEY,
-					StorageScope.PROFILE
+					StorageScope.PROFILE,
 				);
 			}
 		}
@@ -160,7 +160,7 @@ class BrowserExtensionHostDebugService
 
 	override async openExtensionDevelopmentHostWindow(
 		args: string[],
-		_debugRenderer: boolean
+		_debugRenderer: boolean,
 	): Promise<IOpenExtensionWindowResult> {
 		// Add environment parameters required for debug to work
 		const environment = new Map<string, string>();
@@ -200,12 +200,12 @@ class BrowserExtensionHostDebugService
 
 		const extensionTestsPath = this.findArgument(
 			"extensionTestsPath",
-			args
+			args,
 		);
 		if (!debugWorkspace && !extensionTestsPath) {
 			const lastExtensionDevelopmentWorkspace = this.storageService.get(
 				BrowserExtensionHostDebugService.LAST_EXTENSION_DEVELOPMENT_WORKSPACE_KEY,
-				StorageScope.PROFILE
+				StorageScope.PROFILE,
 			);
 			if (lastExtensionDevelopmentWorkspace) {
 				try {
@@ -216,13 +216,13 @@ class BrowserExtensionHostDebugService
 					if (serializedWorkspace.workspaceUri) {
 						debugWorkspace = {
 							workspaceUri: URI.revive(
-								serializedWorkspace.workspaceUri
+								serializedWorkspace.workspaceUri,
 							),
 						};
 					} else if (serializedWorkspace.folderUri) {
 						debugWorkspace = {
 							folderUri: URI.revive(
-								serializedWorkspace.folderUri
+								serializedWorkspace.folderUri,
 							),
 						};
 					}
@@ -237,11 +237,11 @@ class BrowserExtensionHostDebugService
 			const debugWorkspaceResource = isFolderToOpen(debugWorkspace)
 				? debugWorkspace.folderUri
 				: isWorkspaceToOpen(debugWorkspace)
-					? debugWorkspace.workspaceUri
-					: undefined;
+				  ? debugWorkspace.workspaceUri
+				  : undefined;
 			if (debugWorkspaceResource) {
 				const workspaceExists = await this.fileService.exists(
-					debugWorkspaceResource
+					debugWorkspaceResource,
 				);
 				if (!workspaceExists) {
 					debugWorkspace = undefined;
@@ -273,5 +273,5 @@ class BrowserExtensionHostDebugService
 registerSingleton(
 	IExtensionHostDebugService,
 	BrowserExtensionHostDebugService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

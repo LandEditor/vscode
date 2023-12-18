@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	ExtensionRecommendations,
-	ExtensionRecommendation,
-} from "vs/workbench/contrib/extensions/browser/extensionRecommendations";
-import { IProductService } from "vs/platform/product/common/productService";
-import { ExtensionRecommendationReason } from "vs/workbench/services/extensionRecommendations/common/extensionRecommendations";
 import { PlatformToString, platform } from "vs/base/common/platform";
+import { IProductService } from "vs/platform/product/common/productService";
+import {
+	ExtensionRecommendation,
+	ExtensionRecommendations,
+} from "vs/workbench/contrib/extensions/browser/extensionRecommendations";
+import { ExtensionRecommendationReason } from "vs/workbench/services/extensionRecommendations/common/extensionRecommendations";
 
 export class RemoteRecommendations extends ExtensionRecommendations {
 	private _recommendations: ExtensionRecommendation[] = [];
@@ -33,7 +33,7 @@ export class RemoteRecommendations extends ExtensionRecommendations {
 			.filter(
 				({ supportedPlatforms }) =>
 					!supportedPlatforms ||
-					supportedPlatforms.includes(currentPlatform)
+					supportedPlatforms.includes(currentPlatform),
 			)
 			.map((extension) => ({
 				extensionId: extension.extensionId.toLowerCase(),

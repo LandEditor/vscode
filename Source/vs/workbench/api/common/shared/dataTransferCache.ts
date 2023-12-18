@@ -24,7 +24,7 @@ export class DataTransferFileCache {
 		const requestId = this.requestIdPool++;
 		this.dataTransferFiles.set(
 			requestId,
-			coalesce(Array.from(dataTransfer, ([, item]) => item.asFile()))
+			coalesce(Array.from(dataTransfer, ([, item]) => item.asFile())),
 		);
 		return {
 			id: requestId,
@@ -36,7 +36,7 @@ export class DataTransferFileCache {
 
 	async resolveFileData(
 		requestId: number,
-		dataItemId: string
+		dataItemId: string,
 	): Promise<VSBuffer> {
 		const files = this.dataTransferFiles.get(requestId);
 		if (!files) {

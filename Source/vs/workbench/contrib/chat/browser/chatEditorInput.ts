@@ -26,7 +26,7 @@ import { IChatService } from "vs/workbench/contrib/chat/common/chatService";
 const ChatEditorIcon = registerIcon(
 	"chat-editor-label-icon",
 	Codicon.commentDiscussion,
-	nls.localize("chatEditorLabelIcon", "Icon of the chat editor label.")
+	nls.localize("chatEditorLabelIcon", "Icon of the chat editor label."),
 );
 
 export class ChatEditorInput extends EditorInput {
@@ -121,11 +121,11 @@ export class ChatEditorInput extends EditorInput {
 		} else if (typeof this.providerId === "string") {
 			this.model = this.chatService.startSession(
 				this.providerId,
-				CancellationToken.None
+				CancellationToken.None,
 			);
 		} else if ("data" in this.options.target) {
 			this.model = this.chatService.loadSessionFromContent(
-				this.options.target.data
+				this.options.target.data,
 			);
 		}
 
@@ -136,7 +136,7 @@ export class ChatEditorInput extends EditorInput {
 		this.sessionId = this.model.sessionId;
 		this.providerId = this.model.providerId;
 		this._register(
-			this.model.onDidChange(() => this._onDidChangeLabel.fire())
+			this.model.onDidChange(() => this._onDidChangeLabel.fire()),
 		);
 
 		return this._register(new ChatEditorModel(this.model));
@@ -236,7 +236,7 @@ export class ChatEditorInputSerializer implements IEditorSerializer {
 
 	deserialize(
 		instantiationService: IInstantiationService,
-		serializedEditor: string
+		serializedEditor: string,
 	): EditorInput | undefined {
 		try {
 			const parsed: ISerializedChatEditorInput =
@@ -245,7 +245,7 @@ export class ChatEditorInputSerializer implements IEditorSerializer {
 			return instantiationService.createInstance(
 				ChatEditorInput,
 				resource,
-				{ ...parsed.options, target: { sessionId: parsed.sessionId } }
+				{ ...parsed.options, target: { sessionId: parsed.sessionId } },
 			);
 		} catch (err) {
 			return undefined;

@@ -4,22 +4,22 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Range } from "vs/editor/common/core/range";
+import { IModelContentChange } from "vs/editor/common/textModelEvents";
 import {
 	Length,
+	LengthObj,
 	lengthAdd,
 	lengthDiffNonNegative,
 	lengthLessThanEqual,
-	LengthObj,
 	lengthOfString,
 	lengthToObj,
 	positionToLength,
 	toLength,
 } from "./length";
-import { IModelContentChange } from "vs/editor/common/textModelEvents";
 
 export class TextEditInfo {
 	public static fromModelContentChanges(
-		changes: IModelContentChange[]
+		changes: IModelContentChange[],
 	): TextEditInfo[] {
 		// Must be sorted in ascending order
 		const edits = changes
@@ -28,7 +28,7 @@ export class TextEditInfo {
 				return new TextEditInfo(
 					positionToLength(range.getStartPosition()),
 					positionToLength(range.getEndPosition()),
-					lengthOfString(c.text)
+					lengthOfString(c.text),
 				);
 			})
 			.reverse();
@@ -38,12 +38,12 @@ export class TextEditInfo {
 	constructor(
 		public readonly startOffset: Length,
 		public readonly endOffset: Length,
-		public readonly newLength: Length
+		public readonly newLength: Length,
 	) {}
 
 	toString(): string {
 		return `[${lengthToObj(this.startOffset)}...${lengthToObj(
-			this.endOffset
+			this.endOffset,
 		)}) -> ${lengthToObj(this.newLength)}`;
 	}
 }
@@ -92,12 +92,12 @@ export class BeforeEditPositionMapper {
 		if (oldOffsetObj.lineCount === this.deltaLineIdxInOld) {
 			return toLength(
 				oldOffsetObj.lineCount + this.deltaOldToNewLineCount,
-				oldOffsetObj.columnCount + this.deltaOldToNewColumnCount
+				oldOffsetObj.columnCount + this.deltaOldToNewColumnCount,
 			);
 		} else {
 			return toLength(
 				oldOffsetObj.lineCount + this.deltaOldToNewLineCount,
-				oldOffsetObj.columnCount
+				oldOffsetObj.columnCount,
 			);
 		}
 	}
@@ -110,12 +110,12 @@ export class BeforeEditPositionMapper {
 		) {
 			return toLength(
 				offsetObj.lineCount - this.deltaOldToNewLineCount,
-				offsetObj.columnCount - this.deltaOldToNewColumnCount
+				offsetObj.columnCount - this.deltaOldToNewColumnCount,
 			);
 		} else {
 			return toLength(
 				offsetObj.lineCount - this.deltaOldToNewLineCount,
-				offsetObj.columnCount
+				offsetObj.columnCount,
 			);
 		}
 	}
@@ -126,7 +126,7 @@ export class BeforeEditPositionMapper {
 
 			// After applying the edit, what is its end offset (considering all previous edits)?
 			const nextEditEndOffsetInCur = this.translateOldToCur(
-				nextEdit.endOffsetAfterObj
+				nextEdit.endOffsetAfterObj,
 			);
 
 			if (lengthLessThanEqual(nextEditEndOffsetInCur, offset)) {
@@ -134,12 +134,12 @@ export class BeforeEditPositionMapper {
 				this.nextEditIdx++;
 
 				const nextEditEndOffsetInCurObj = lengthToObj(
-					nextEditEndOffsetInCur
+					nextEditEndOffsetInCur,
 				);
 
 				// Before applying the edit, what is its end offset (considering all previous edits)?
 				const nextEditEndOffsetBeforeInCurObj = lengthToObj(
-					this.translateOldToCur(nextEdit.endOffsetBeforeObj)
+					this.translateOldToCur(nextEdit.endOffsetBeforeObj),
 				);
 
 				const lineDelta =
@@ -171,7 +171,7 @@ class TextEditInfoCache {
 		return new TextEditInfoCache(
 			edit.startOffset,
 			edit.endOffset,
-			edit.newLength
+			edit.newLength,
 		);
 	}
 
@@ -182,7 +182,7 @@ class TextEditInfoCache {
 	constructor(startOffset: Length, endOffset: Length, textLength: Length) {
 		this.endOffsetBeforeObj = lengthToObj(endOffset);
 		this.endOffsetAfterObj = lengthToObj(
-			lengthAdd(startOffset, textLength)
+			lengthAdd(startOffset, textLength),
 		);
 		this.offsetObj = lengthToObj(startOffset);
 	}

@@ -14,11 +14,11 @@ const generatedNote = `//
 
 const TYPESCRIPT_LIB_SOURCE = path.join(
 	__dirname,
-	"../../node_modules/typescript/lib"
+	"../../node_modules/typescript/lib",
 );
 const TYPESCRIPT_LIB_DESTINATION = path.join(__dirname, "../server/build");
 
-(function () {
+(() => {
 	try {
 		fs.statSync(TYPESCRIPT_LIB_DESTINATION);
 	} catch (err) {
@@ -42,7 +42,7 @@ function importLibs(startLib) {
 	var queue = [];
 	var in_queue = {};
 
-	var enqueue = function (name) {
+	var enqueue = (name) => {
 		if (in_queue[name]) {
 			return;
 		}
@@ -59,7 +59,7 @@ function importLibs(startLib) {
 		var lines = contents.split(/\r\n|\r|\n/);
 
 		var output = "";
-		var writeOutput = function (text) {
+		var writeOutput = (text) => {
 			if (output.length === 0) {
 				output = text;
 			} else {
@@ -67,13 +67,13 @@ function importLibs(startLib) {
 			}
 		};
 		var outputLines = [];
-		var flushOutputLines = function () {
+		var flushOutputLines = () => {
 			writeOutput(`"${escapeText(outputLines.join("\n"))}"`);
 			outputLines = [];
 		};
 		var deps = [];
 		for (let i = 0; i < lines.length; i++) {
-			let m = lines[i].match(/\/\/\/\s*<reference\s*lib="([^"]+)"/);
+			const m = lines[i].match(/\/\/\/\s*<reference\s*lib="([^"]+)"/);
 			if (m) {
 				flushOutputLines();
 				writeOutput(getVariableName(m[1]));

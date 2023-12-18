@@ -5,27 +5,32 @@
 
 import { illegalArgument } from "vs/base/common/errors";
 import {
+	DisposableStore,
 	IDisposable,
 	dispose,
-	DisposableStore,
 } from "vs/base/common/lifecycle";
 import { equals as objectEquals } from "vs/base/common/objects";
 import { URI, UriComponents } from "vs/base/common/uri";
+import { ICodeEditor, getCodeEditor } from "vs/editor/browser/editorBrowser";
 import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
+import { ISingleEditOperation } from "vs/editor/common/core/editOperation";
 import { IRange } from "vs/editor/common/core/range";
 import { ISelection } from "vs/editor/common/core/selection";
+import { IChange } from "vs/editor/common/diff/legacyLinesDiffComputer";
 import {
 	IDecorationOptions,
 	IDecorationRenderOptions,
 } from "vs/editor/common/editorCommon";
-import { ISingleEditOperation } from "vs/editor/common/core/editOperation";
 import { CommandsRegistry } from "vs/platform/commands/common/commands";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
-	ITextEditorOptions,
-	IResourceEditorInput,
 	EditorActivation,
 	EditorResolution,
+	IResourceEditorInput,
+	ITextEditorOptions,
 } from "vs/platform/editor/common/editor";
+import { IEnvironmentService } from "vs/platform/environment/common/environment";
+import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
 import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
 import { MainThreadTextEditor } from "vs/workbench/api/browser/mainThreadEditor";
 import {
@@ -39,22 +44,17 @@ import {
 	MainThreadTextEditorsShape,
 	TextEditorRevealType,
 } from "vs/workbench/api/common/extHost.protocol";
-import {
-	editorGroupToColumn,
-	columnToEditorGroup,
-	EditorGroupColumn,
-} from "vs/workbench/services/editor/common/editorGroupColumn";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
-import { IEnvironmentService } from "vs/platform/environment/common/environment";
-import { IWorkingCopyService } from "vs/workbench/services/workingCopy/common/workingCopyService";
-import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
-import { IChange } from "vs/editor/common/diff/legacyLinesDiffComputer";
-import { IExtHostContext } from "vs/workbench/services/extensions/common/extHostCustomers";
 import { IEditorControl } from "vs/workbench/common/editor";
-import { getCodeEditor, ICodeEditor } from "vs/editor/browser/editorBrowser";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { DirtyDiffContribution } from "vs/workbench/contrib/scm/browser/dirtydiffDecorator";
+import {
+	EditorGroupColumn,
+	columnToEditorGroup,
+	editorGroupToColumn,
+} from "vs/workbench/services/editor/common/editorGroupColumn";
+import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { IExtHostContext } from "vs/workbench/services/extensions/common/extHostCustomers";
+import { IWorkingCopyService } from "vs/workbench/services/workingCopy/common/workingCopyService";
 
 export interface IMainThreadEditorLocator {
 	getEditor(id: string): MainThreadTextEditor | undefined;
@@ -63,7 +63,7 @@ export interface IMainThreadEditorLocator {
 }
 
 export class MainThreadTextEditors implements MainThreadTextEditorsShape {
-	private static INSTANCE_COUNT: number = 0;
+	private static INSTANCE_COUNT = 0;
 
 	private readonly _instanceId: string;
 	private readonly _proxy: ExtHostEditorsShape;
@@ -126,7 +126,7 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 		toDispose.push(
 			textEditor.onPropertiesChanged((data) => {
 				this._proxy.$acceptEditorPropertiesChanged(id, data);
-			})
+			}),
 		);
 
 		this._textEditorsListenersMap[id] = toDispose;
@@ -153,7 +153,7 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 			if (id) {
 				result[id] = editorGroupToColumn(
 					this._editorGroupService,
-					editorPane.group
+					editorPane.group,
 				);
 			}
 		}
@@ -164,7 +164,7 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 
 	async $tryShowTextDocument(
 		resource: UriComponents,
-		options: ITextDocumentShowOptions
+		options: ITextDocumentShowOptions,
 	): Promise<string | undefined> {
 		const uri = URI.revive(resource);
 
@@ -190,8 +190,8 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 			columnToEditorGroup(
 				this._editorGroupService,
 				this._configurationService,
-				options.position
-			)
+				options.position,
+			),
 		);
 		if (!editor) {
 			return undefined;
@@ -206,7 +206,7 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 
 	async $tryShowEditor(
 		id: string,
-		position?: EditorGroupColumn
+		position?: EditorGroupColumn,
 	): Promise<void> {
 		const mainThreadEditor = this._editorLocator.getEditor(id);
 		if (mainThreadEditor) {
@@ -219,8 +219,8 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 				columnToEditorGroup(
 					this._editorGroupService,
 					this._configurationService,
-					position
-				)
+					position,
+				),
 			);
 			return;
 		}
@@ -251,7 +251,7 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 	$trySetDecorations(
 		id: string,
 		key: string,
-		ranges: IDecorationOptions[]
+		ranges: IDecorationOptions[],
 	): Promise<void> {
 		key = `${this._instanceId}-${key}`;
 		const editor = this._editorLocator.getEditor(id);
@@ -265,7 +265,7 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 	$trySetDecorationsFast(
 		id: string,
 		key: string,
-		ranges: number[]
+		ranges: number[],
 	): Promise<void> {
 		key = `${this._instanceId}-${key}`;
 		const editor = this._editorLocator.getEditor(id);
@@ -279,7 +279,7 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 	$tryRevealRange(
 		id: string,
 		range: IRange,
-		revealType: TextEditorRevealType
+		revealType: TextEditorRevealType,
 	): Promise<void> {
 		const editor = this._editorLocator.getEditor(id);
 		if (!editor) {
@@ -291,7 +291,7 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 
 	$trySetOptions(
 		id: string,
-		options: ITextEditorConfigurationUpdate
+		options: ITextEditorConfigurationUpdate,
 	): Promise<void> {
 		const editor = this._editorLocator.getEditor(id);
 		if (!editor) {
@@ -305,7 +305,7 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 		id: string,
 		modelVersionId: number,
 		edits: ISingleEditOperation[],
-		opts: IApplyEditsOptions
+		opts: IApplyEditsOptions,
 	): Promise<boolean> {
 		const editor = this._editorLocator.getEditor(id);
 		if (!editor) {
@@ -319,28 +319,28 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 		modelVersionId: number,
 		template: string,
 		ranges: readonly IRange[],
-		opts: IUndoStopOptions
+		opts: IUndoStopOptions,
 	): Promise<boolean> {
 		const editor = this._editorLocator.getEditor(id);
 		if (!editor) {
 			return Promise.reject(illegalArgument(`TextEditor(${id})`));
 		}
 		return Promise.resolve(
-			editor.insertSnippet(modelVersionId, template, ranges, opts)
+			editor.insertSnippet(modelVersionId, template, ranges, opts),
 		);
 	}
 
 	$registerTextEditorDecorationType(
 		extensionId: ExtensionIdentifier,
 		key: string,
-		options: IDecorationRenderOptions
+		options: IDecorationRenderOptions,
 	): void {
 		key = `${this._instanceId}-${key}`;
 		this._registeredDecorationTypes[key] = true;
 		this._codeEditorService.registerDecorationType(
 			`exthost-api-${extensionId}`,
 			key,
-			options
+			options,
 		);
 	}
 
@@ -367,7 +367,7 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 		const [diffEditor] = diffEditors.filter(
 			(d) =>
 				d.getOriginalEditor().getId() === codeEditorId ||
-				d.getModifiedEditor().getId() === codeEditorId
+				d.getModifiedEditor().getId() === codeEditorId,
 		);
 
 		if (diffEditor) {
@@ -375,12 +375,12 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 		}
 
 		const dirtyDiffContribution = codeEditor.getContribution(
-			"editor.contrib.dirtydiff"
+			"editor.contrib.dirtydiff",
 		);
 
 		if (dirtyDiffContribution) {
 			return Promise.resolve(
-				(dirtyDiffContribution as DirtyDiffContribution).getChanges()
+				(dirtyDiffContribution as DirtyDiffContribution).getChanges(),
 			);
 		}
 
@@ -392,11 +392,11 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 
 CommandsRegistry.registerCommand(
 	"_workbench.revertAllDirty",
-	async function (accessor: ServicesAccessor) {
+	async (accessor: ServicesAccessor) => {
 		const environmentService = accessor.get(IEnvironmentService);
 		if (!environmentService.extensionTestsLocationURI) {
 			throw new Error(
-				"Command is only available when running extension tests."
+				"Command is only available when running extension tests.",
 			);
 		}
 
@@ -404,5 +404,5 @@ CommandsRegistry.registerCommand(
 		for (const workingCopy of workingCopyService.dirtyWorkingCopies) {
 			await workingCopy.revert({ soft: true });
 		}
-	}
+	},
 );

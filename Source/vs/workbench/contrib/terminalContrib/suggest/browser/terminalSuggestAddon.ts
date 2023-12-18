@@ -3,16 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import type { ITerminalAddon, Terminal } from "@xterm/xterm";
 import * as dom from "vs/base/browser/dom";
-import { SimpleCompletionItem } from "vs/workbench/services/suggest/browser/simpleCompletionItem";
-import {
-	LineContext,
-	SimpleCompletionModel,
-} from "vs/workbench/services/suggest/browser/simpleCompletionModel";
-import {
-	ISimpleSelectedSuggestion,
-	SimpleSuggestWidget,
-} from "vs/workbench/services/suggest/browser/simpleSuggestWidget";
 import { Codicon } from "vs/base/common/codicons";
 import { Emitter } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
@@ -25,18 +17,26 @@ import {
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
+import { getListStyles } from "vs/platform/theme/browser/defaultStyles";
 import { activeContrastBorder } from "vs/platform/theme/common/colorRegistry";
 import { ISuggestController } from "vs/workbench/contrib/terminal/browser/terminal";
 import { TerminalStorageKeys } from "vs/workbench/contrib/terminal/common/terminalStorageKeys";
-import type { ITerminalAddon, Terminal } from "@xterm/xterm";
-import { getListStyles } from "vs/platform/theme/browser/defaultStyles";
+import { SimpleCompletionItem } from "vs/workbench/services/suggest/browser/simpleCompletionItem";
+import {
+	LineContext,
+	SimpleCompletionModel,
+} from "vs/workbench/services/suggest/browser/simpleCompletionModel";
+import {
+	ISimpleSelectedSuggestion,
+	SimpleSuggestWidget,
+} from "vs/workbench/services/suggest/browser/simpleSuggestWidget";
 
-const enum ShellIntegrationOscPs {
+enum ShellIntegrationOscPs {
 	// TODO: Pull from elsewhere
 	VSCode = 633,
 }
 
-const enum VSCodeOscPt {
+enum VSCodeOscPt {
 	Completions = "Completions",
 	CompletionsBash = "CompletionsBash",
 	CompletionsBashFirstWord = "CompletionsBashFirstWord",
@@ -89,16 +89,16 @@ export class SuggestAddon
 	private _panel?: HTMLElement;
 	private _screen?: HTMLElement;
 	private _suggestWidget?: SimpleSuggestWidget;
-	private _enableWidget: boolean = true;
+	private _enableWidget = true;
 	private _leadingLineContent?: string;
 	private _additionalInput?: string;
-	private _cursorIndexDelta: number = 0;
+	private _cursorIndexDelta = 0;
 	private _inputQueue?: string[];
 
 	private readonly _onBell = this._register(new Emitter<void>());
 	readonly onBell = this._onBell.event;
 	private readonly _onAcceptedCompletion = this._register(
-		new Emitter<string>()
+		new Emitter<string>(),
 	);
 	readonly onAcceptedCompletion = this._onAcceptedCompletion.event;
 
@@ -117,13 +117,13 @@ export class SuggestAddon
 				ShellIntegrationOscPs.VSCode,
 				(data) => {
 					return this._handleVSCodeSequence(data);
-				}
-			)
+				},
+			),
 		);
 		this._register(
 			xterm.onData((e) => {
 				this._handleTerminalInput(e);
-			})
+			}),
 		);
 	}
 
@@ -148,7 +148,7 @@ export class SuggestAddon
 					this._terminal,
 					data,
 					command,
-					args
+					args,
 				);
 				return true;
 			case VSCodeOscPt.CompletionsBash:
@@ -156,7 +156,7 @@ export class SuggestAddon
 					this._terminal,
 					data,
 					command,
-					args
+					args,
 				);
 				return true;
 			case VSCodeOscPt.CompletionsBashFirstWord:
@@ -164,7 +164,7 @@ export class SuggestAddon
 					this._terminal,
 					data,
 					command,
-					args
+					args,
 				);
 		}
 
@@ -176,7 +176,7 @@ export class SuggestAddon
 		terminal: Terminal,
 		data: string,
 		command: string,
-		args: string[]
+		args: string[],
 	): void {
 		// Nothing to handle if the terminal is not attached
 		if (!terminal.element || !this._enableWidget) {
@@ -196,8 +196,8 @@ export class SuggestAddon
 					args[0].length +
 					args[1].length +
 					args[2].length +
-					4 /*semi-colons*/
-			)
+					4 /*semi-colons*/,
+			),
 		);
 		if (!Array.isArray(completionList)) {
 			completionList = [completionList];
@@ -212,14 +212,14 @@ export class SuggestAddon
 
 		this._leadingLineContent = completions[0].completion.label.slice(
 			0,
-			replacementLength
+			replacementLength,
 		);
 		this._cursorIndexDelta = 0;
 		const model = new SimpleCompletionModel(
 			completions,
 			new LineContext(this._leadingLineContent, replacementIndex),
 			replacementIndex,
-			replacementLength
+			replacementLength,
 		);
 		if (completions.length === 1) {
 			const insertText =
@@ -243,7 +243,7 @@ export class SuggestAddon
 		terminal: Terminal,
 		data: string,
 		command: string,
-		args: string[]
+		args: string[],
 	): boolean {
 		const type = args[0];
 		const completionList: string[] = data
@@ -277,7 +277,7 @@ export class SuggestAddon
 					label,
 					icon: Codicon.symbolString,
 					detail: type,
-				})
+				}),
 			);
 		}
 		// Invalidate compound list cache
@@ -289,7 +289,7 @@ export class SuggestAddon
 		terminal: Terminal,
 		data: string,
 		command: string,
-		args: string[]
+		args: string[],
 	): void {
 		// Nothing to handle if the terminal is not attached
 		if (!terminal.element) {
@@ -309,7 +309,7 @@ export class SuggestAddon
 					args[0].length +
 					args[1].length +
 					args[2].length +
-					4 /*semi-colons*/
+					4 /*semi-colons*/,
 			)
 			.split(";");
 		// TODO: Create a trigger suggest command which encapsulates sendSequence and uses cached if available
@@ -356,13 +356,13 @@ export class SuggestAddon
 
 		this._leadingLineContent = completions[0].completion.label.slice(
 			0,
-			replacementLength
+			replacementLength,
 		);
 		const model = new SimpleCompletionModel(
 			completions,
 			new LineContext(this._leadingLineContent, replacementIndex),
 			replacementIndex,
-			replacementLength
+			replacementLength,
 		);
 		if (completions.length === 1) {
 			const insertText =
@@ -434,26 +434,26 @@ export class SuggestAddon
 					SimpleSuggestWidget,
 					this._panel!,
 					this._instantiationService.createInstance(
-						PersistedWidgetSize
+						PersistedWidgetSize,
 					),
-					{}
-				)
+					{},
+				),
 			);
 			this._suggestWidget.list.style(
 				getListStyles({
 					listInactiveFocusBackground:
 						editorSuggestWidgetSelectedBackground,
 					listInactiveFocusOutline: activeContrastBorder,
-				})
+				}),
 			);
 			this._suggestWidget.onDidSelect(async (e) =>
-				this.acceptSelectedSuggestion(e)
+				this.acceptSelectedSuggestion(e),
 			);
 			this._suggestWidget.onDidHide(() =>
-				this._terminalSuggestWidgetVisibleContextKey.set(false)
+				this._terminalSuggestWidgetVisibleContextKey.set(false),
 			);
 			this._suggestWidget.onDidShow(() =>
-				this._terminalSuggestWidgetVisibleContextKey.set(true)
+				this._terminalSuggestWidgetVisibleContextKey.set(true),
 			);
 		}
 		return this._suggestWidget;
@@ -476,7 +476,7 @@ export class SuggestAddon
 	}
 
 	acceptSelectedSuggestion(
-		suggestion?: Pick<ISimpleSelectedSuggestion, "item" | "model">
+		suggestion?: Pick<ISimpleSelectedSuggestion, "item" | "model">,
 	): void {
 		if (!suggestion) {
 			suggestion = this._suggestWidget?.getFocusedItem();
@@ -494,8 +494,8 @@ export class SuggestAddon
 						Math.max(
 							(this._additionalInput?.length ?? 0) -
 								this._cursorIndexDelta,
-							0
-						)
+							0,
+						),
 					),
 					// Backspace to remove additional input
 					"\x7F".repeat(this._additionalInput?.length ?? 0),
@@ -505,7 +505,7 @@ export class SuggestAddon
 					suggestion.item.completion.label,
 					// Enable suggestions
 					"\x1b[24~z",
-				].join("")
+				].join(""),
 			);
 		}
 	}
@@ -550,7 +550,7 @@ export class SuggestAddon
 				this._additionalInput =
 					this._additionalInput.substring(
 						0,
-						this._cursorIndexDelta - 1
+						this._cursorIndexDelta - 1,
 					) + this._additionalInput.substring(this._cursorIndexDelta);
 				this._cursorIndexDelta--;
 				handledCursorDelta--;
@@ -602,8 +602,8 @@ export class SuggestAddon
 					new LineContext(
 						this._leadingLineContent! +
 							(this._additionalInput ?? ""),
-						this._additionalInput?.length ?? 0
-					)
+						this._additionalInput?.length ?? 0,
+					),
 				);
 			}
 
@@ -645,7 +645,7 @@ export class SuggestAddon
 						this._terminal.buffer.active.cursorY *
 							dimensions.height,
 					height: dimensions.height,
-				}
+				},
 			);
 		} else {
 			this._additionalInput = undefined;
@@ -689,7 +689,7 @@ class PersistedWidgetSize {
 			this._key,
 			JSON.stringify(size),
 			StorageScope.PROFILE,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 	}
 

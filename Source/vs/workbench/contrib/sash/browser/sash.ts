@@ -3,16 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { clamp } from "vs/base/common/numbers";
 import {
-	setGlobalSashSize,
 	setGlobalHoverDelay,
+	setGlobalSashSize,
 } from "vs/base/browser/ui/sash/sash";
 import { Event } from "vs/base/common/event";
 import { DisposableStore, IDisposable } from "vs/base/common/lifecycle";
+import { clamp } from "vs/base/common/numbers";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IWorkbenchContribution } from "vs/workbench/common/contributions";
 import { ILayoutService } from "vs/platform/layout/browser/layoutService";
+import { IWorkbenchContribution } from "vs/workbench/common/contributions";
 
 export const minSize = 1;
 export const maxSize = 20; // see also https://ux.stackexchange.com/questions/39023/what-is-the-optimum-button-size-of-touch-screen-applications
@@ -48,18 +48,18 @@ export class SashSettingsController
 
 	private onDidChangeSize(): void {
 		const configuredSize = this.configurationService.getValue<number>(
-			"workbench.sash.size"
+			"workbench.sash.size",
 		);
 		const size = clamp(configuredSize, 4, 20);
 		const hoverSize = clamp(configuredSize, 1, 8);
 
 		this.layoutService.mainContainer.style.setProperty(
 			"--vscode-sash-size",
-			size + "px"
+			size + "px",
 		);
 		this.layoutService.mainContainer.style.setProperty(
 			"--vscode-sash-hover-size",
-			hoverSize + "px"
+			hoverSize + "px",
 		);
 		setGlobalSashSize(size);
 	}
@@ -67,8 +67,8 @@ export class SashSettingsController
 	private onDidChangeHoverDelay(): void {
 		setGlobalHoverDelay(
 			this.configurationService.getValue<number>(
-				"workbench.sash.hoverDelay"
-			)
+				"workbench.sash.hoverDelay",
+			),
 		);
 	}
 

@@ -3,19 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event, Emitter } from "vs/base/common/event";
+import { Emitter, Event } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
 import {
 	IUpdateService,
 	State,
 	UpdateType,
 } from "vs/platform/update/common/update";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
 import { IBrowserWorkbenchEnvironmentService } from "vs/workbench/services/environment/browser/environmentService";
 import { IHostService } from "vs/workbench/services/host/browser/host";
-import { Disposable } from "vs/base/common/lifecycle";
 
 export interface IUpdate {
 	version: string;
@@ -69,7 +69,7 @@ export class BrowserUpdateService extends Disposable implements IUpdateService {
 	}
 
 	private async doCheckForUpdates(
-		explicit: boolean
+		explicit: boolean,
 	): Promise<
 		| IUpdate
 		| null /* no update available */
@@ -123,5 +123,5 @@ export class BrowserUpdateService extends Disposable implements IUpdateService {
 registerSingleton(
 	IUpdateService,
 	BrowserUpdateService,
-	InstantiationType.Eager
+	InstantiationType.Eager,
 );

@@ -20,7 +20,7 @@ import { OperatingSystem } from "vs/base/common/platform";
  *  K = bits 0-7 = key code
  * ```
  */
-const enum BinaryKeybindingsMask {
+enum BinaryKeybindingsMask {
 	CtrlCmd = (1 << 11) >>> 0,
 	Shift = (1 << 10) >>> 0,
 	Alt = (1 << 9) >>> 0,
@@ -30,7 +30,7 @@ const enum BinaryKeybindingsMask {
 
 export function decodeKeybinding(
 	keybinding: number | number[],
-	OS: OperatingSystem
+	OS: OperatingSystem,
 ): Keybinding | null {
 	if (typeof keybinding === "number") {
 		if (keybinding === 0) {
@@ -56,7 +56,7 @@ export function decodeKeybinding(
 
 export function createSimpleKeybinding(
 	keybinding: number,
-	OS: OperatingSystem
+	OS: OperatingSystem,
 ): KeyCodeChord {
 	const ctrlCmd = keybinding & BinaryKeybindingsMask.CtrlCmd ? true : false;
 	const winCtrl = keybinding & BinaryKeybindingsMask.WinCtrl ? true : false;
@@ -87,7 +87,7 @@ export class KeyCodeChord implements Modifiers {
 		public readonly shiftKey: boolean,
 		public readonly altKey: boolean,
 		public readonly metaKey: boolean,
-		public readonly keyCode: KeyCode
+		public readonly keyCode: KeyCode,
 	) {}
 
 	public equals(other: Chord): boolean {
@@ -146,7 +146,7 @@ export class ScanCodeChord implements Modifiers {
 		public readonly shiftKey: boolean,
 		public readonly altKey: boolean,
 		public readonly metaKey: boolean,
-		public readonly scanCode: ScanCode
+		public readonly scanCode: ScanCode,
 	) {}
 
 	public equals(other: Chord): boolean {
@@ -238,7 +238,7 @@ export class ResolvedChord {
 		public readonly altKey: boolean,
 		public readonly metaKey: boolean,
 		public readonly keyLabel: string | null,
-		public readonly keyAriaLabel: string | null
+		public readonly keyAriaLabel: string | null,
 	) {}
 }
 

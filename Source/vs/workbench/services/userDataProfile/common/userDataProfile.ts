@@ -3,25 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { isUndefined } from "vs/base/common/types";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { Codicon } from "vs/base/common/codicons";
 import { Event } from "vs/base/common/event";
+import { IDisposable } from "vs/base/common/lifecycle";
+import { isUndefined } from "vs/base/common/types";
+import { URI } from "vs/base/common/uri";
 import { localize } from "vs/nls";
 import { MenuId } from "vs/platform/actions/common/actions";
+import { RawContextKey } from "vs/platform/contextkey/common/contextkey";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { IProductService } from "vs/platform/product/common/productService";
+import { registerIcon } from "vs/platform/theme/common/iconRegistry";
 import {
 	IUserDataProfile,
 	IUserDataProfileOptions,
 	IUserDataProfileUpdateOptions,
 	ProfileResourceType,
 } from "vs/platform/userDataProfile/common/userDataProfile";
-import { RawContextKey } from "vs/platform/contextkey/common/contextkey";
-import { URI } from "vs/base/common/uri";
-import { registerIcon } from "vs/platform/theme/common/iconRegistry";
-import { Codicon } from "vs/base/common/codicons";
 import { ITreeItem, ITreeItemLabel } from "vs/workbench/common/views";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { IDisposable } from "vs/base/common/lifecycle";
-import { IProductService } from "vs/platform/product/common/productService";
 
 export interface DidChangeUserDataProfileEvent {
 	readonly previous: IUserDataProfile;
@@ -30,7 +30,7 @@ export interface DidChangeUserDataProfileEvent {
 }
 
 export const IUserDataProfileService = createDecorator<IUserDataProfileService>(
-	"IUserDataProfileService"
+	"IUserDataProfileService",
 );
 export interface IUserDataProfileService {
 	readonly _serviceBrand: undefined;
@@ -47,20 +47,20 @@ export interface IProfileTemplateInfo {
 
 export const IUserDataProfileManagementService =
 	createDecorator<IUserDataProfileManagementService>(
-		"IUserDataProfileManagementService"
+		"IUserDataProfileManagementService",
 	);
 export interface IUserDataProfileManagementService {
 	readonly _serviceBrand: undefined;
 
 	createAndEnterProfile(
 		name: string,
-		options?: IUserDataProfileOptions
+		options?: IUserDataProfileOptions,
 	): Promise<IUserDataProfile>;
 	createAndEnterTransientProfile(): Promise<IUserDataProfile>;
 	removeProfile(profile: IUserDataProfile): Promise<void>;
 	updateProfile(
 		profile: IUserDataProfile,
-		updateOptions: IUserDataProfileUpdateOptions
+		updateOptions: IUserDataProfileUpdateOptions,
 	): Promise<void>;
 	switchProfile(profile: IUserDataProfile): Promise<void>;
 	getBuiltinProfileTemplates(): Promise<IProfileTemplateInfo[]>;
@@ -76,7 +76,7 @@ export interface IUserDataProfileTemplate {
 }
 
 export function isUserDataProfileTemplate(
-	thing: unknown
+	thing: unknown,
 ): thing is IUserDataProfileTemplate {
 	const candidate = thing as IUserDataProfileTemplate | undefined;
 
@@ -95,7 +95,7 @@ export function isUserDataProfileTemplate(
 export const PROFILE_URL_AUTHORITY = "profile";
 export function toUserDataProfileUri(
 	path: string,
-	productService: IProductService
+	productService: IProductService,
 ): URI {
 	return URI.from({
 		scheme: productService.urlProtocol,
@@ -112,14 +112,14 @@ export interface IProfileImportOptions extends IUserDataProfileOptions {
 
 export const IUserDataProfileImportExportService =
 	createDecorator<IUserDataProfileImportExportService>(
-		"IUserDataProfileImportExportService"
+		"IUserDataProfileImportExportService",
 	);
 export interface IUserDataProfileImportExportService {
 	readonly _serviceBrand: undefined;
 
 	registerProfileContentHandler(
 		id: string,
-		profileContentHandler: IUserDataProfileContentHandler
+		profileContentHandler: IUserDataProfileContentHandler,
 	): IDisposable;
 	unregisterProfileContentHandler(id: string): void;
 
@@ -165,18 +165,18 @@ export interface IUserDataProfileContentHandler {
 	saveProfile(
 		name: string,
 		content: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ISaveProfileResult | null>;
 	readProfile(
 		idOrUri: string | URI,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<string | null>;
 }
 
 export const defaultUserDataProfileIcon = registerIcon(
 	"defaultProfile-icon",
 	Codicon.settings,
-	localize("defaultProfileIcon", "Icon for Default Profile.")
+	localize("defaultProfileIcon", "Icon for Default Profile."),
 );
 
 export const ProfilesMenu = new MenuId("Profiles");
@@ -192,25 +192,25 @@ export const PROFILE_FILTER = [
 ];
 export const PROFILES_ENABLEMENT_CONTEXT = new RawContextKey<boolean>(
 	"profiles.enabled",
-	true
+	true,
 );
 export const CURRENT_PROFILE_CONTEXT = new RawContextKey<string>(
 	"currentProfile",
-	""
+	"",
 );
 export const IS_CURRENT_PROFILE_TRANSIENT_CONTEXT = new RawContextKey<boolean>(
 	"isCurrentProfileTransient",
-	false
+	false,
 );
 export const HAS_PROFILES_CONTEXT = new RawContextKey<boolean>(
 	"hasProfiles",
-	false
+	false,
 );
 export const IS_PROFILE_EXPORT_IN_PROGRESS_CONTEXT = new RawContextKey<boolean>(
 	"isProfileExportInProgress",
-	false
+	false,
 );
 export const IS_PROFILE_IMPORT_IN_PROGRESS_CONTEXT = new RawContextKey<boolean>(
 	"isProfileImportInProgress",
-	false
+	false,
 );

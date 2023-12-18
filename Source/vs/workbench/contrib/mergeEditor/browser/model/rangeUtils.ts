@@ -9,7 +9,7 @@ import { LengthObj } from "vs/editor/common/model/bracketPairsTextModelPart/brac
 
 export function rangeContainsPosition(
 	range: Range,
-	position: Position
+	position: Position,
 ): boolean {
 	if (
 		position.lineNumber < range.startLineNumber ||
@@ -38,21 +38,21 @@ export function lengthOfRange(range: Range): LengthObj {
 	} else {
 		return new LengthObj(
 			range.endLineNumber - range.startLineNumber,
-			range.endColumn - 1
+			range.endColumn - 1,
 		);
 	}
 }
 
 export function lengthBetweenPositions(
 	position1: Position,
-	position2: Position
+	position2: Position,
 ): LengthObj {
 	if (position1.lineNumber === position2.lineNumber) {
 		return new LengthObj(0, position2.column - position1.column);
 	} else {
 		return new LengthObj(
 			position2.lineNumber - position1.lineNumber,
-			position2.column - 1
+			position2.column - 1,
 		);
 	}
 }
@@ -61,12 +61,12 @@ export function addLength(position: Position, length: LengthObj): Position {
 	if (length.lineCount === 0) {
 		return new Position(
 			position.lineNumber,
-			position.column + length.columnCount
+			position.column + length.columnCount,
 		);
 	} else {
 		return new Position(
 			position.lineNumber + length.lineCount,
-			length.columnCount + 1
+			length.columnCount + 1,
 		);
 	}
 }

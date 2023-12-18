@@ -3,20 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Schemas } from "vs/base/common/network";
 import { Disposable } from "vs/base/common/lifecycle";
-import { URI, UriComponents } from "vs/base/common/uri";
-import { IEditorSerializer } from "vs/workbench/common/editor";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import { ITextEditorService } from "vs/workbench/services/textfile/common/textEditorService";
+import { Schemas } from "vs/base/common/network";
 import { isEqual, toLocalResource } from "vs/base/common/resources";
+import { URI, UriComponents } from "vs/base/common/uri";
 import { PLAINTEXT_LANGUAGE_ID } from "vs/editor/common/languages/modesRegistry";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IWorkbenchContribution } from "vs/workbench/common/contributions";
+import { IEditorSerializer } from "vs/workbench/common/editor";
+import { EditorInput } from "vs/workbench/common/editor/editorInput";
 import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
 import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
 import { IPathService } from "vs/workbench/services/path/common/pathService";
+import { ITextEditorService } from "vs/workbench/services/textfile/common/textEditorService";
 import { UntitledTextEditorInput } from "vs/workbench/services/untitled/common/untitledTextEditorInput";
-import { IWorkbenchContribution } from "vs/workbench/common/contributions";
+import { IUntitledTextEditorService } from "vs/workbench/services/untitled/common/untitledTextEditorService";
 import {
 	IWorkingCopyIdentifier,
 	NO_TYPE_ID,
@@ -25,7 +26,6 @@ import {
 	IWorkingCopyEditorHandler,
 	IWorkingCopyEditorService,
 } from "vs/workbench/services/workingCopy/common/workingCopyEditorService";
-import { IUntitledTextEditorService } from "vs/workbench/services/untitled/common/untitledTextEditorService";
 
 interface ISerializedUntitledTextEditorInput {
 	readonly resourceJSON: UriComponents;
@@ -64,7 +64,7 @@ export class UntitledTextEditorInputSerializer implements IEditorSerializer {
 			resource = toLocalResource(
 				resource,
 				this.environmentService.remoteAuthority,
-				this.pathService.defaultUriScheme
+				this.pathService.defaultUriScheme,
 			); // untitled with associated file path use the local schema
 		}
 
@@ -91,24 +91,22 @@ export class UntitledTextEditorInputSerializer implements IEditorSerializer {
 
 	deserialize(
 		instantiationService: IInstantiationService,
-		serializedEditorInput: string
+		serializedEditorInput: string,
 	): UntitledTextEditorInput {
 		return instantiationService.invokeFunction((accessor) => {
 			const deserialized: ISerializedUntitledTextEditorInput = JSON.parse(
-				serializedEditorInput
+				serializedEditorInput,
 			);
 			const resource = URI.revive(deserialized.resourceJSON);
 			const languageId = deserialized.modeId;
 			const encoding = deserialized.encoding;
 
-			return accessor
-				.get(ITextEditorService)
-				.createTextEditor({
-					resource,
-					languageId,
-					encoding,
-					forceUntitled: true,
-				}) as UntitledTextEditorInput;
+			return accessor.get(ITextEditorService).createTextEditor({
+				resource,
+				languageId,
+				encoding,
+				forceUntitled: true,
+			}) as UntitledTextEditorInput;
 		});
 	}
 }
@@ -158,13 +156,13 @@ export class UntitledTextEditorWorkingCopyEditorHandler
 		// ensure to restore the local resource it had
 		if (
 			this.untitledTextEditorService.isUntitledWithAssociatedResource(
-				workingCopy.resource
+				workingCopy.resource,
 			)
 		) {
 			editorInputResource = toLocalResource(
 				workingCopy.resource,
 				this.environmentService.remoteAuthority,
-				this.pathService.defaultUriScheme
+				this.pathService.defaultUriScheme,
 			);
 		} else {
 			editorInputResource = workingCopy.resource;

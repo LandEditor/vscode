@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 //@ts-check
-"use strict";
 
 // Delete `VSCODE_CWD` very early even before
 // importing bootstrap files. We have seen

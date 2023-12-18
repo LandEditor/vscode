@@ -17,8 +17,8 @@ import { DisposableStore } from "vs/base/common/lifecycle";
 import { ThemeIcon } from "vs/base/common/themables";
 import { localize } from "vs/nls";
 import {
-	MenuId,
 	IMenuService,
+	MenuId,
 	MenuItemAction,
 } from "vs/platform/actions/common/actions";
 import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
@@ -136,7 +136,7 @@ export class WorkbenchButtonBar extends ButtonBar {
 					"labelWithKeybinding",
 					"{0} ({1})",
 					action.label,
-					kb.getLabel()
+					kb.getLabel(),
 				);
 			} else {
 				btn.element.title = action.label;
@@ -158,14 +158,14 @@ export class MenuWorkbenchButtonBar extends WorkbenchButtonBar {
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IKeybindingService keybindingService: IKeybindingService,
-		@ITelemetryService telemetryService: ITelemetryService
+		@ITelemetryService telemetryService: ITelemetryService,
 	) {
 		super(
 			container,
 			options,
 			contextMenuService,
 			keybindingService,
-			telemetryService
+			telemetryService,
 		);
 
 		const menu = menuService.createMenu(menuId, contextKeyService);

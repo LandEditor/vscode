@@ -3,24 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IEnvironmentVariableInfo } from "vs/workbench/contrib/terminal/common/environmentVariable";
-import {
-	ITerminalStatus,
-	ITerminalStatusHoverAction,
-	TerminalCommandId,
-} from "vs/workbench/contrib/terminal/common/terminal";
-import { ITerminalService } from "vs/workbench/contrib/terminal/browser/terminal";
-import { localize } from "vs/nls";
 import { Codicon } from "vs/base/common/codicons";
+import Severity from "vs/base/common/severity";
+import { localize } from "vs/nls";
+import { ICommandService } from "vs/platform/commands/common/commands";
 import {
 	EnvironmentVariableScope,
 	IExtensionOwnedEnvironmentVariableMutator,
 	IMergedEnvironmentVariableCollection,
 	IMergedEnvironmentVariableCollectionDiff,
 } from "vs/platform/terminal/common/environmentVariable";
+import { ITerminalService } from "vs/workbench/contrib/terminal/browser/terminal";
 import { TerminalStatus } from "vs/workbench/contrib/terminal/browser/terminalStatusList";
-import Severity from "vs/base/common/severity";
-import { ICommandService } from "vs/platform/commands/common/commands";
+import { IEnvironmentVariableInfo } from "vs/workbench/contrib/terminal/common/environmentVariable";
+import {
+	ITerminalStatus,
+	ITerminalStatusHoverAction,
+	TerminalCommandId,
+} from "vs/workbench/contrib/terminal/common/terminal";
 import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
 
 export class EnvironmentVariableInfoStale implements IEnvironmentVariableInfo {
@@ -42,13 +42,13 @@ export class EnvironmentVariableInfoStale implements IEnvironmentVariableInfo {
 
 		let message = localize(
 			"extensionEnvironmentContributionInfoStale",
-			"The following extensions want to relaunch the terminal to contribute to its environment:"
+			"The following extensions want to relaunch the terminal to contribute to its environment:",
 		);
 		message += getMergedDescription(
 			this._collection,
 			scope,
 			this._extensionService,
-			extSet
+			extSet,
 		);
 		return message;
 	}
@@ -92,35 +92,35 @@ export class EnvironmentVariableInfoChangesActive
 		const extSet: Set<string> = new Set();
 		addExtensionIdentifiers(
 			extSet,
-			this._collection.getVariableMap(scope).values()
+			this._collection.getVariableMap(scope).values(),
 		);
 
 		let message = localize(
 			"extensionEnvironmentContributionInfoActive",
-			"The following extensions have contributed to this terminal's environment:"
+			"The following extensions have contributed to this terminal's environment:",
 		);
 		message += getMergedDescription(
 			this._collection,
 			scope,
 			this._extensionService,
-			extSet
+			extSet,
 		);
 		return message;
 	}
 
 	private _getActions(
-		scope: EnvironmentVariableScope | undefined
+		scope: EnvironmentVariableScope | undefined,
 	): ITerminalStatusHoverAction[] {
 		return [
 			{
 				label: localize(
 					"showEnvironmentContributions",
-					"Show environment contributions"
+					"Show environment contributions",
 				),
 				run: () =>
 					this._commandService.executeCommand(
 						TerminalCommandId.ShowEnvironmentContributions,
-						scope
+						scope,
 					),
 				commandId: TerminalCommandId.ShowEnvironmentContributions,
 			},
@@ -141,7 +141,7 @@ function getMergedDescription(
 	collection: IMergedEnvironmentVariableCollection,
 	scope: EnvironmentVariableScope | undefined,
 	extensionService: IExtensionService,
-	extSet: Set<string>
+	extSet: Set<string>,
 ): string {
 	const message = ["\n"];
 	const globalDescriptions = collection.getDescriptionMap(undefined);
@@ -158,14 +158,14 @@ function getMergedDescription(
 			const workspaceSuffix = globalDescription
 				? ` (${localize(
 						"ScopedEnvironmentContributionInfo",
-						"workspace"
-					)})`
+						"workspace",
+				  )})`
 				: "";
 			message.push(
 				`\n- \`${getExtensionName(
 					ext,
-					extensionService
-				)}${workspaceSuffix}\``
+					extensionService,
+				)}${workspaceSuffix}\``,
 			);
 			message.push(`: ${workspaceDescription}`);
 		}
@@ -178,7 +178,7 @@ function getMergedDescription(
 
 function addExtensionIdentifiers(
 	extSet: Set<string>,
-	diff: IterableIterator<IExtensionOwnedEnvironmentVariableMutator[]>
+	diff: IterableIterator<IExtensionOwnedEnvironmentVariableMutator[]>,
 ): void {
 	for (const mutators of diff) {
 		for (const mutator of mutators) {
@@ -189,7 +189,7 @@ function addExtensionIdentifiers(
 
 function getExtensionName(
 	id: string,
-	extensionService: IExtensionService
+	extensionService: IExtensionService,
 ): string {
 	return (
 		extensionService.extensions.find((e) => e.id === id)?.displayName || id

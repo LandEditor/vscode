@@ -16,8 +16,8 @@ export const diffMoveBorder = registerColor(
 	},
 	localize(
 		"diffEditor.move.border",
-		"The border color for text that got moved in the diff editor."
-	)
+		"The border color for text that got moved in the diff editor.",
+	),
 );
 
 export const diffMoveBorderActive = registerColor(
@@ -30,8 +30,8 @@ export const diffMoveBorderActive = registerColor(
 	},
 	localize(
 		"diffEditor.moveActive.border",
-		"The active border color for text that got moved in the diff editor."
-	)
+		"The active border color for text that got moved in the diff editor.",
+	),
 );
 
 export const diffEditorUnchangedRegionShadow = registerColor(
@@ -44,6 +44,6 @@ export const diffEditorUnchangedRegionShadow = registerColor(
 	},
 	localize(
 		"diffEditor.unchangedRegionShadow",
-		"The color of the shadow around unchanged region widgets."
-	)
+		"The color of the shadow around unchanged region widgets.",
+	),
 );

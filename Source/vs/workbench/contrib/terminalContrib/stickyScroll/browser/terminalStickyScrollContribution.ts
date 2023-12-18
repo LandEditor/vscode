@@ -36,17 +36,17 @@ export class TerminalStickyScrollContribution
 	static readonly ID = "terminal.stickyScroll";
 
 	static get(
-		instance: ITerminalInstance
+		instance: ITerminalInstance,
 	): TerminalStickyScrollContribution | null {
 		return instance.getContribution<TerminalStickyScrollContribution>(
-			TerminalStickyScrollContribution.ID
+			TerminalStickyScrollContribution.ID,
 		);
 	}
 
 	private _xterm?: IXtermTerminal & { raw: RawXtermTerminal };
 
 	private _overlay = this._register(
-		new MutableDisposable<TerminalStickyScrollOverlay>()
+		new MutableDisposable<TerminalStickyScrollOverlay>(),
 	);
 
 	private _enableListeners = this._register(new MutableDisposable());
@@ -127,7 +127,7 @@ export class TerminalStickyScrollContribution
 		if (this._shouldBeEnabled()) {
 			const xtermCtorEventually = TerminalInstance.getXtermConstructor(
 				this._keybindingService,
-				this._contextKeyService
+				this._contextKeyService,
 			);
 			this._overlay.value = this._instantiationService.createInstance(
 				TerminalStickyScrollOverlay,
@@ -135,12 +135,12 @@ export class TerminalStickyScrollContribution
 				this._xterm!,
 				this._instantiationService.createInstance(
 					TerminalInstanceColorProvider,
-					this._instance
+					this._instance,
 				),
 				this._instance.capabilities.get(
-					TerminalCapability.CommandDetection
+					TerminalCapability.CommandDetection,
 				)!,
-				xtermCtorEventually
+				xtermCtorEventually,
 			);
 		}
 	}
@@ -153,11 +153,11 @@ export class TerminalStickyScrollContribution
 
 	private _shouldBeEnabled(): boolean {
 		const capability = this._instance.capabilities.get(
-			TerminalCapability.CommandDetection
+			TerminalCapability.CommandDetection,
 		);
 		return !!(
 			this._configurationService.getValue(
-				TerminalSettingId.StickyScrollEnabled
+				TerminalSettingId.StickyScrollEnabled,
 			) &&
 			capability &&
 			this._xterm?.raw?.element

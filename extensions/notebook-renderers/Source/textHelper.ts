@@ -72,7 +72,7 @@ function truncatedArrayOfString(
 	id: string,
 	buffer: string[],
 	linesLimit: number,
-	linkOptions: LinkOptions
+	linkOptions: LinkOptions,
 ) {
 	const container = document.createElement("div");
 	const lineCount = buffer.length;
@@ -86,8 +86,8 @@ function truncatedArrayOfString(
 	container.appendChild(
 		handleANSIOutput(
 			buffer.slice(0, linesLimit - 5).join("\n"),
-			linkOptions
-		)
+			linkOptions,
+		),
 	);
 
 	// truncated piece
@@ -96,7 +96,7 @@ function truncatedArrayOfString(
 	container.appendChild(elipses);
 
 	container.appendChild(
-		handleANSIOutput(buffer.slice(lineCount - 5).join("\n"), linkOptions)
+		handleANSIOutput(buffer.slice(lineCount - 5).join("\n"), linkOptions),
 	);
 
 	container.appendChild(generateViewMoreElement(id));
@@ -107,7 +107,7 @@ function truncatedArrayOfString(
 function scrollableArrayOfString(
 	id: string,
 	buffer: string[],
-	linkOptions: LinkOptions
+	linkOptions: LinkOptions,
 ) {
 	const element = document.createElement("div");
 	if (buffer.length > softScrollableLineLimit) {
@@ -117,8 +117,8 @@ function scrollableArrayOfString(
 	element.appendChild(
 		handleANSIOutput(
 			buffer.slice(-1 * softScrollableLineLimit).join("\n"),
-			linkOptions
-		)
+			linkOptions,
+		),
 	);
 
 	return element;
@@ -130,7 +130,7 @@ function appendScrollableOutput(
 	element: HTMLElement,
 	id: string,
 	appended: string,
-	linkOptions: LinkOptions
+	linkOptions: LinkOptions,
 ) {
 	if (!outputLengths[id]) {
 		outputLengths[id] = 0;
@@ -151,7 +151,7 @@ function appendScrollableOutput(
 export function createOutputContent(
 	id: string,
 	outputText: string,
-	options: OutputElementOptions
+	options: OutputElementOptions,
 ): HTMLElement {
 	const { linesLimit, error, scrollable, trustHtml, linkifyFilePaths } =
 		options;
@@ -159,7 +159,7 @@ export function createOutputContent(
 	const buffer = outputText.split(/\r\n|\r|\n/g);
 	outputLengths[id] = outputLengths[id] = Math.min(
 		buffer.length,
-		softScrollableLineLimit
+		softScrollableLineLimit,
 	);
 
 	let outputElement: HTMLElement;
@@ -170,7 +170,7 @@ export function createOutputContent(
 			id,
 			buffer,
 			linesLimit,
-			linkOptions
+			linkOptions,
 		);
 	}
 
@@ -185,7 +185,7 @@ export function createOutputContent(
 export function appendOutput(
 	outputInfo: OutputWithAppend,
 	existingContent: HTMLElement,
-	options: OutputElementOptions
+	options: OutputElementOptions,
 ) {
 	const appendedText = outputInfo.appendedText?.();
 	const linkOptions = {
@@ -199,7 +199,7 @@ export function appendOutput(
 				existingContent,
 				outputInfo.id,
 				appendedText,
-				linkOptions
+				linkOptions,
 			)
 		) {
 			return;
@@ -209,7 +209,7 @@ export function appendOutput(
 	const newContent = createOutputContent(
 		outputInfo.id,
 		outputInfo.text(),
-		options
+		options,
 	);
 	existingContent.replaceWith(newContent);
 	while (newContent.nextSibling) {

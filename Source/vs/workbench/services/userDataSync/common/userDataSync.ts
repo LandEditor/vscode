@@ -3,27 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import {
-	IAuthenticationProvider,
-	SyncStatus,
-	SyncResource,
-	IUserDataSyncResource,
-	IResourcePreview,
-} from "vs/platform/userDataSync/common/userDataSync";
+import { Codicon } from "vs/base/common/codicons";
 import { Event } from "vs/base/common/event";
+import { URI } from "vs/base/common/uri";
+import { localize, localize2 } from "vs/nls";
+import { ILocalizedString } from "vs/platform/action/common/action";
+import { Categories } from "vs/platform/action/common/actionCommonCategories";
+import { IAction2Options } from "vs/platform/actions/common/actions";
 import {
 	ContextKeyExpr,
 	RawContextKey,
 } from "vs/platform/contextkey/common/contextkey";
-import { localize, localize2 } from "vs/nls";
-import { URI } from "vs/base/common/uri";
-import { Codicon } from "vs/base/common/codicons";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import { registerIcon } from "vs/platform/theme/common/iconRegistry";
+import {
+	IAuthenticationProvider,
+	IResourcePreview,
+	IUserDataSyncResource,
+	SyncResource,
+	SyncStatus,
+} from "vs/platform/userDataSync/common/userDataSync";
 import { IView } from "vs/workbench/common/views";
-import { Categories } from "vs/platform/action/common/actionCommonCategories";
-import { IAction2Options } from "vs/platform/actions/common/actions";
-import { ILocalizedString } from "vs/platform/action/common/action";
 
 export interface IUserDataSyncAccount {
 	readonly authenticationProviderId: string;
@@ -33,7 +33,7 @@ export interface IUserDataSyncAccount {
 
 export const IUserDataSyncWorkbenchService =
 	createDecorator<IUserDataSyncWorkbenchService>(
-		"IUserDataSyncWorkbenchService"
+		"IUserDataSyncWorkbenchService",
 	);
 export interface IUserDataSyncWorkbenchService {
 	_serviceBrand: any;
@@ -61,7 +61,7 @@ export interface IUserDataSyncWorkbenchService {
 		resource: IUserDataSyncResource,
 		conflictResource: URI,
 		content: string | null | undefined,
-		apply: boolean
+		apply: boolean,
 	): Promise<void>;
 
 	getAllLogResources(): Promise<URI[]>;
@@ -89,7 +89,7 @@ export function getSyncAreaLabel(source: SyncResource): string {
 	}
 }
 
-export const enum AccountStatus {
+export enum AccountStatus {
 	Unavailable = "unavailable",
 	Available = "available",
 }
@@ -100,39 +100,39 @@ export interface IUserDataSyncConflictsView extends IView {
 
 export const SYNC_TITLE: ILocalizedString = localize2(
 	"sync category",
-	"Settings Sync"
+	"Settings Sync",
 );
 
 export const SYNC_VIEW_ICON = registerIcon(
 	"settings-sync-view-icon",
 	Codicon.sync,
-	localize("syncViewIcon", "View icon of the Settings Sync view.")
+	localize("syncViewIcon", "View icon of the Settings Sync view."),
 );
 
 // Contexts
 export const CONTEXT_SYNC_STATE = new RawContextKey<string>(
 	"syncStatus",
-	SyncStatus.Uninitialized
+	SyncStatus.Uninitialized,
 );
 export const CONTEXT_SYNC_ENABLEMENT = new RawContextKey<boolean>(
 	"syncEnabled",
-	false
+	false,
 );
 export const CONTEXT_ACCOUNT_STATE = new RawContextKey<string>(
 	"userDataSyncAccountStatus",
-	AccountStatus.Unavailable
+	AccountStatus.Unavailable,
 );
 export const CONTEXT_ENABLE_ACTIVITY_VIEWS = new RawContextKey<boolean>(
 	`enableSyncActivityViews`,
-	false
+	false,
 );
 export const CONTEXT_ENABLE_SYNC_CONFLICTS_VIEW = new RawContextKey<boolean>(
 	`enableSyncConflictsView`,
-	false
+	false,
 );
 export const CONTEXT_HAS_CONFLICTS = new RawContextKey<boolean>(
 	"hasConflicts",
-	false
+	false,
 );
 
 // Commands
@@ -151,13 +151,13 @@ export const DOWNLOAD_ACTIVITY_ACTION_DESCRIPTOR: Readonly<IAction2Options> = {
 		original: "Download Settings Sync Activity",
 		value: localize(
 			"download sync activity title",
-			"Download Settings Sync Activity"
+			"Download Settings Sync Activity",
 		),
 	},
 	category: Categories.Developer,
 	f1: true,
 	precondition: ContextKeyExpr.and(
 		CONTEXT_ACCOUNT_STATE.isEqualTo(AccountStatus.Available),
-		CONTEXT_SYNC_STATE.notEqualsTo(SyncStatus.Uninitialized)
+		CONTEXT_SYNC_STATE.notEqualsTo(SyncStatus.Uninitialized),
 	),
 };

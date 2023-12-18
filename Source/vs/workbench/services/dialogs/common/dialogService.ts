@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import Severity from "vs/base/common/severity";
 import { Disposable } from "vs/base/common/lifecycle";
+import Severity from "vs/base/common/severity";
 import {
 	IAsyncPromptResult,
 	IAsyncPromptResultWithCancel,
@@ -19,13 +19,13 @@ import {
 	IPromptWithCustomCancel,
 	IPromptWithDefaultCancel,
 } from "vs/platform/dialogs/common/dialogs";
-import { DialogsModel } from "vs/workbench/common/dialogs";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
 import { ILogService } from "vs/platform/log/common/log";
+import { DialogsModel } from "vs/workbench/common/dialogs";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
 
 export class DialogService extends Disposable implements IDialogService {
 	declare readonly _serviceBrand: undefined;
@@ -58,7 +58,7 @@ export class DialogService extends Disposable implements IDialogService {
 	async confirm(confirmation: IConfirmation): Promise<IConfirmationResult> {
 		if (this.skipDialogs()) {
 			this.logService.trace(
-				"DialogService: refused to show confirmation dialog in tests."
+				"DialogService: refused to show confirmation dialog in tests.",
 			);
 
 			return { confirmed: true };
@@ -70,7 +70,7 @@ export class DialogService extends Disposable implements IDialogService {
 	}
 
 	prompt<T>(
-		prompt: IPromptWithCustomCancel<T>
+		prompt: IPromptWithCustomCancel<T>,
 	): Promise<IPromptResultWithCancel<T>>;
 	prompt<T>(prompt: IPromptWithDefaultCancel<T>): Promise<IPromptResult<T>>;
 	prompt<T>(prompt: IPrompt<T>): Promise<IPromptResult<T>>;
@@ -78,11 +78,11 @@ export class DialogService extends Disposable implements IDialogService {
 		prompt:
 			| IPrompt<T>
 			| IPromptWithCustomCancel<T>
-			| IPromptWithDefaultCancel<T>
+			| IPromptWithDefaultCancel<T>,
 	): Promise<IPromptResult<T> | IPromptResultWithCancel<T>> {
 		if (this.skipDialogs()) {
 			throw new Error(
-				`DialogService: refused to show dialog in tests. Contents: ${prompt.message}`
+				`DialogService: refused to show dialog in tests. Contents: ${prompt.message}`,
 			);
 		}
 
@@ -101,7 +101,7 @@ export class DialogService extends Disposable implements IDialogService {
 	async input(input: IInput): Promise<IInputResult> {
 		if (this.skipDialogs()) {
 			throw new Error(
-				"DialogService: refused to show input dialog in tests."
+				"DialogService: refused to show input dialog in tests.",
 			);
 		}
 
@@ -125,7 +125,7 @@ export class DialogService extends Disposable implements IDialogService {
 	async about(): Promise<void> {
 		if (this.skipDialogs()) {
 			throw new Error(
-				"DialogService: refused to show about dialog in tests."
+				"DialogService: refused to show about dialog in tests.",
 			);
 		}
 

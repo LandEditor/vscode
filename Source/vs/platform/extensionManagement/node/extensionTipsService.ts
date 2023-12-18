@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IExtensionManagementService } from "vs/platform/extensionManagement/common/extensionManagement";
-import { IFileService } from "vs/platform/files/common/files";
-import { IProductService } from "vs/platform/product/common/productService";
 import { INativeEnvironmentService } from "vs/platform/environment/common/environment";
+import { IExtensionManagementService } from "vs/platform/extensionManagement/common/extensionManagement";
+import { AbstractNativeExtensionTipsService } from "vs/platform/extensionManagement/common/extensionTipsService";
 import { IExtensionRecommendationNotificationService } from "vs/platform/extensionRecommendations/common/extensionRecommendations";
+import { IFileService } from "vs/platform/files/common/files";
 import { INativeHostService } from "vs/platform/native/common/native";
+import { IProductService } from "vs/platform/product/common/productService";
 import { IStorageService } from "vs/platform/storage/common/storage";
 import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { AbstractNativeExtensionTipsService } from "vs/platform/extensionManagement/common/extensionTipsService";
 
 export class ExtensionTipsService extends AbstractNativeExtensionTipsService {
 	constructor(
@@ -25,7 +25,7 @@ export class ExtensionTipsService extends AbstractNativeExtensionTipsService {
 		@IExtensionRecommendationNotificationService
 		extensionRecommendationNotificationService: IExtensionRecommendationNotificationService,
 		@IFileService fileService: IFileService,
-		@IProductService productService: IProductService
+		@IProductService productService: IProductService,
 	) {
 		super(
 			environmentService.userHome,
@@ -35,7 +35,7 @@ export class ExtensionTipsService extends AbstractNativeExtensionTipsService {
 			storageService,
 			extensionRecommendationNotificationService,
 			fileService,
-			productService
+			productService,
 		);
 	}
 }

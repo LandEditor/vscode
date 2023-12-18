@@ -10,7 +10,7 @@ import { ILogService } from "vs/platform/log/common/log";
 
 export const ISharedProcessLifecycleService =
 	createDecorator<ISharedProcessLifecycleService>(
-		"sharedProcessLifecycleService"
+		"sharedProcessLifecycleService",
 	);
 
 export interface ISharedProcessLifecycleService {

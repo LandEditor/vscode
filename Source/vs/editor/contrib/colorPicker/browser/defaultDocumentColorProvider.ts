@@ -5,38 +5,38 @@
 
 import { CancellationToken } from "vs/base/common/cancellation";
 import { Color, RGBA } from "vs/base/common/color";
-import { ITextModel } from "vs/editor/common/model";
+import { Disposable } from "vs/base/common/lifecycle";
+import { EditorWorkerClient } from "vs/editor/browser/services/editorWorkerService";
+import { registerEditorFeature } from "vs/editor/common/editorFeatures";
 import {
 	DocumentColorProvider,
 	IColor,
 	IColorInformation,
 	IColorPresentation,
 } from "vs/editor/common/languages";
-import { EditorWorkerClient } from "vs/editor/browser/services/editorWorkerService";
-import { IModelService } from "vs/editor/common/services/model";
 import { ILanguageConfigurationService } from "vs/editor/common/languages/languageConfigurationRegistry";
-import { Disposable } from "vs/base/common/lifecycle";
+import { ITextModel } from "vs/editor/common/model";
 import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
-import { registerEditorFeature } from "vs/editor/common/editorFeatures";
+import { IModelService } from "vs/editor/common/services/model";
 
 export class DefaultDocumentColorProvider implements DocumentColorProvider {
 	private _editorWorkerClient: EditorWorkerClient;
 
 	constructor(
 		modelService: IModelService,
-		languageConfigurationService: ILanguageConfigurationService
+		languageConfigurationService: ILanguageConfigurationService,
 	) {
 		this._editorWorkerClient = new EditorWorkerClient(
 			modelService,
 			false,
 			"editorWorkerService",
-			languageConfigurationService
+			languageConfigurationService,
 		);
 	}
 
 	async provideDocumentColors(
 		model: ITextModel,
-		_token: CancellationToken
+		_token: CancellationToken,
 	): Promise<IColorInformation[] | null> {
 		return this._editorWorkerClient.computeDefaultDocumentColors(model.uri);
 	}
@@ -44,7 +44,7 @@ export class DefaultDocumentColorProvider implements DocumentColorProvider {
 	provideColorPresentations(
 		_model: ITextModel,
 		colorInfo: IColorInformation,
-		_token: CancellationToken
+		_token: CancellationToken,
 	): IColorPresentation[] {
 		const range = colorInfo.range;
 		const colorFromInfo: IColor = colorInfo.color;
@@ -54,8 +54,8 @@ export class DefaultDocumentColorProvider implements DocumentColorProvider {
 				Math.round(255 * colorFromInfo.red),
 				Math.round(255 * colorFromInfo.green),
 				Math.round(255 * colorFromInfo.blue),
-				alpha
-			)
+				alpha,
+			),
 		);
 
 		const rgb = alpha
@@ -91,7 +91,7 @@ class DefaultDocumentColorProviderFeature extends Disposable {
 		@ILanguageConfigurationService
 		_languageConfigurationService: ILanguageConfigurationService,
 		@ILanguageFeaturesService
-		_languageFeaturesService: ILanguageFeaturesService
+		_languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super();
 		this._register(
@@ -99,9 +99,9 @@ class DefaultDocumentColorProviderFeature extends Disposable {
 				"*",
 				new DefaultDocumentColorProvider(
 					_modelService,
-					_languageConfigurationService
-				)
-			)
+					_languageConfigurationService,
+				),
+			),
 		);
 	}
 }

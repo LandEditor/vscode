@@ -14,16 +14,16 @@ export const diffInsertIcon = registerIcon(
 	Codicon.add,
 	localize(
 		"diffInsertIcon",
-		"Line decoration for inserts in the diff editor."
-	)
+		"Line decoration for inserts in the diff editor.",
+	),
 );
 export const diffRemoveIcon = registerIcon(
 	"diff-remove",
 	Codicon.remove,
 	localize(
 		"diffRemoveIcon",
-		"Line decoration for removals in the diff editor."
-	)
+		"Line decoration for removals in the diff editor.",
+	),
 );
 
 export const diffLineAddDecorationBackgroundWithIndicator =

@@ -3,32 +3,32 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
 import { onUnexpectedError } from "vs/base/common/errors";
 import { IJSONSchema } from "vs/base/common/jsonSchema";
 import Severity from "vs/base/common/severity";
+import * as nls from "vs/nls";
+import { ExtensionKind } from "vs/platform/environment/common/environment";
 import { EXTENSION_IDENTIFIER_PATTERN } from "vs/platform/extensionManagement/common/extensionManagement";
+import {
+	IActivationEventsGenerator,
+	ImplicitActivationEvents,
+} from "vs/platform/extensionManagement/common/implicitActivationEvents";
+import {
+	EXTENSION_CATEGORIES,
+	ExtensionIdentifierSet,
+	IExtensionDescription,
+} from "vs/platform/extensions/common/extensions";
 import {
 	Extensions,
 	IJSONContributionRegistry,
 } from "vs/platform/jsonschemas/common/jsonContributionRegistry";
+import { productSchemaId } from "vs/platform/product/common/productService";
 import { Registry } from "vs/platform/registry/common/platform";
 import { IMessage } from "vs/workbench/services/extensions/common/extensions";
-import {
-	IExtensionDescription,
-	EXTENSION_CATEGORIES,
-	ExtensionIdentifierSet,
-} from "vs/platform/extensions/common/extensions";
-import { ExtensionKind } from "vs/platform/environment/common/environment";
 import { allApiProposals } from "vs/workbench/services/extensions/common/extensionsApiProposals";
-import { productSchemaId } from "vs/platform/product/common/productService";
-import {
-	ImplicitActivationEvents,
-	IActivationEventsGenerator,
-} from "vs/platform/extensionManagement/common/implicitActivationEvents";
 
 const schemaRegistry = Registry.as<IJSONContributionRegistry>(
-	Extensions.JSONContribution
+	Extensions.JSONContribution,
 );
 
 export class ExtensionMessageCollector {
@@ -39,7 +39,7 @@ export class ExtensionMessageCollector {
 	constructor(
 		messageHandler: (msg: IMessage) => void,
 		extension: IExtensionDescription,
-		extensionPointId: string
+		extensionPointId: string,
 	) {
 		this._messageHandler = messageHandler;
 		this._extension = extension;
@@ -76,7 +76,7 @@ export interface IExtensionPointUser<T> {
 
 export type IExtensionPointHandler<T> = (
 	extensions: readonly IExtensionPointUser<T>[],
-	delta: ExtensionPointUserDelta<T>
+	delta: ExtensionPointUserDelta<T>,
 ) => void;
 
 export interface IExtensionPoint<T> {
@@ -87,7 +87,7 @@ export interface IExtensionPoint<T> {
 
 export class ExtensionPointUserDelta<T> {
 	private static _toSet<T>(
-		arr: readonly IExtensionPointUser<T>[]
+		arr: readonly IExtensionPointUser<T>[],
 	): ExtensionIdentifierSet {
 		const result = new ExtensionIdentifierSet();
 		for (let i = 0, len = arr.length; i < len; i++) {
@@ -98,7 +98,7 @@ export class ExtensionPointUserDelta<T> {
 
 	public static compute<T>(
 		previous: readonly IExtensionPointUser<T>[] | null,
-		current: readonly IExtensionPointUser<T>[]
+		current: readonly IExtensionPointUser<T>[],
 	): ExtensionPointUserDelta<T> {
 		if (!previous || !previous.length) {
 			return new ExtensionPointUserDelta<T>(current, []);
@@ -111,10 +111,10 @@ export class ExtensionPointUserDelta<T> {
 		const currentSet = this._toSet(current);
 
 		const added = current.filter(
-			(user) => !previousSet.has(user.description.identifier)
+			(user) => !previousSet.has(user.description.identifier),
 		);
 		const removed = previous.filter(
-			(user) => !currentSet.has(user.description.identifier)
+			(user) => !currentSet.has(user.description.identifier),
 		);
 
 		return new ExtensionPointUserDelta<T>(added, removed);
@@ -122,7 +122,7 @@ export class ExtensionPointUserDelta<T> {
 
 	constructor(
 		public readonly added: readonly IExtensionPointUser<T>[],
-		public readonly removed: readonly IExtensionPointUser<T>[]
+		public readonly removed: readonly IExtensionPointUser<T>[],
 	) {}
 }
 
@@ -136,7 +136,7 @@ export class ExtensionPoint<T> implements IExtensionPoint<T> {
 
 	constructor(
 		name: string,
-		defaultExtensionKind: ExtensionKind[] | undefined
+		defaultExtensionKind: ExtensionKind[] | undefined,
 	) {
 		this.name = name;
 		this.defaultExtensionKind = defaultExtensionKind;
@@ -182,11 +182,11 @@ const extensionKindSchema: IJSONSchema = {
 	enumDescriptions: [
 		nls.localize(
 			"ui",
-			"UI extension kind. In a remote window, such extensions are enabled only when available on the local machine."
+			"UI extension kind. In a remote window, such extensions are enabled only when available on the local machine.",
 		),
 		nls.localize(
 			"workspace",
-			"Workspace extension kind. In a remote window, such extensions are enabled only when available on the remote."
+			"Workspace extension kind. In a remote window, such extensions are enabled only when available on the remote.",
 		),
 	],
 };
@@ -198,14 +198,14 @@ export const schema: IJSONSchema = {
 			type: "object",
 			description: nls.localize(
 				"vscode.extension.engines",
-				"Engine compatibility."
+				"Engine compatibility.",
 			),
 			properties: {
-				"vscode": {
+				vscode: {
 					type: "string",
 					description: nls.localize(
 						"vscode.extension.engines.vscode",
-						"For VS Code extensions, specifies the VS Code version that the extension is compatible with. Cannot be *. For example: ^0.10.5 indicates compatibility with a minimum VS Code version of 0.10.5."
+						"For VS Code extensions, specifies the VS Code version that the extension is compatible with. Cannot be *. For example: ^0.10.5 indicates compatibility with a minimum VS Code version of 0.10.5.",
 					),
 					default: "^1.22.0",
 				},
@@ -214,21 +214,21 @@ export const schema: IJSONSchema = {
 		publisher: {
 			description: nls.localize(
 				"vscode.extension.publisher",
-				"The publisher of the VS Code extension."
+				"The publisher of the VS Code extension.",
 			),
 			type: "string",
 		},
 		displayName: {
 			description: nls.localize(
 				"vscode.extension.displayName",
-				"The display name for the extension used in the VS Code gallery."
+				"The display name for the extension used in the VS Code gallery.",
 			),
 			type: "string",
 		},
 		categories: {
 			description: nls.localize(
 				"vscode.extension.categories",
-				"The categories used by the VS Code gallery to categorize the extension."
+				"The categories used by the VS Code gallery to categorize the extension.",
 			),
 			type: "array",
 			uniqueItems: true,
@@ -243,7 +243,7 @@ export const schema: IJSONSchema = {
 						const: "Languages",
 						deprecationMessage: nls.localize(
 							"vscode.extension.category.languages.deprecated",
-							"Use 'Programming  Languages' instead"
+							"Use 'Programming  Languages' instead",
 						),
 					},
 				],
@@ -253,20 +253,20 @@ export const schema: IJSONSchema = {
 			type: "object",
 			description: nls.localize(
 				"vscode.extension.galleryBanner",
-				"Banner used in the VS Code marketplace."
+				"Banner used in the VS Code marketplace.",
 			),
 			properties: {
 				color: {
 					description: nls.localize(
 						"vscode.extension.galleryBanner.color",
-						"The banner color on the VS Code marketplace page header."
+						"The banner color on the VS Code marketplace page header.",
 					),
 					type: "string",
 				},
 				theme: {
 					description: nls.localize(
 						"vscode.extension.galleryBanner.theme",
-						"The color theme for the font used in the banner."
+						"The color theme for the font used in the banner.",
 					),
 					type: "string",
 					enum: ["dark", "light"],
@@ -276,7 +276,7 @@ export const schema: IJSONSchema = {
 		contributes: {
 			description: nls.localize(
 				"vscode.extension.contributes",
-				"All contributions of the VS Code extension represented by this package."
+				"All contributions of the VS Code extension represented by this package.",
 			),
 			type: "object",
 			properties: {
@@ -288,20 +288,20 @@ export const schema: IJSONSchema = {
 			type: "boolean",
 			description: nls.localize(
 				"vscode.extension.preview",
-				"Sets the extension to be flagged as a Preview in the Marketplace."
+				"Sets the extension to be flagged as a Preview in the Marketplace.",
 			),
 		},
 		enableProposedApi: {
 			type: "boolean",
 			deprecationMessage: nls.localize(
 				"vscode.extension.enableProposedApi.deprecated",
-				"Use `enabledApiProposals` instead."
+				"Use `enabledApiProposals` instead.",
 			),
 		},
 		enabledApiProposals: {
 			markdownDescription: nls.localize(
 				"vscode.extension.enabledApiProposals",
-				"Enable API proposals to try them out. Only valid **during development**. Extensions **cannot be published** with this property. For more details visit: https://code.visualstudio.com/api/advanced-topics/using-proposed-api"
+				"Enable API proposals to try them out. Only valid **during development**. Extensions **cannot be published** with this property. For more details visit: https://code.visualstudio.com/api/advanced-topics/using-proposed-api",
 			),
 			type: "array",
 			uniqueItems: true,
@@ -314,21 +314,21 @@ export const schema: IJSONSchema = {
 		api: {
 			markdownDescription: nls.localize(
 				"vscode.extension.api",
-				"Describe the API provided by this extension. For more details visit: https://code.visualstudio.com/api/advanced-topics/remote-extensions#handling-dependencies-with-remote-extensions"
+				"Describe the API provided by this extension. For more details visit: https://code.visualstudio.com/api/advanced-topics/remote-extensions#handling-dependencies-with-remote-extensions",
 			),
 			type: "string",
 			enum: ["none"],
 			enumDescriptions: [
 				nls.localize(
 					"vscode.extension.api.none",
-					"Give up entirely the ability to export any APIs. This allows other extensions that depend on this extension to run in a separate extension host process or in a remote machine."
+					"Give up entirely the ability to export any APIs. This allows other extensions that depend on this extension to run in a separate extension host process or in a remote machine.",
 				),
 			],
 		},
 		activationEvents: {
 			description: nls.localize(
 				"vscode.extension.activationEvents",
-				"Activation events for the VS Code extension."
+				"Activation events for the VS Code extension.",
 			),
 			type: "array",
 			items: {
@@ -338,7 +338,7 @@ export const schema: IJSONSchema = {
 						label: "onWebviewPanel",
 						description: nls.localize(
 							"vscode.extension.activationEvents.onWebviewPanel",
-							"An activation event emmited when a webview is loaded of a certain viewType"
+							"An activation event emmited when a webview is loaded of a certain viewType",
 						),
 						body: "onWebviewPanel:viewType",
 					},
@@ -346,7 +346,7 @@ export const schema: IJSONSchema = {
 						label: "onLanguage",
 						description: nls.localize(
 							"vscode.extension.activationEvents.onLanguage",
-							"An activation event emitted whenever a file that resolves to the specified language gets opened."
+							"An activation event emitted whenever a file that resolves to the specified language gets opened.",
 						),
 						body: "onLanguage:${1:languageId}",
 					},
@@ -354,7 +354,7 @@ export const schema: IJSONSchema = {
 						label: "onCommand",
 						description: nls.localize(
 							"vscode.extension.activationEvents.onCommand",
-							"An activation event emitted whenever the specified command gets invoked."
+							"An activation event emitted whenever the specified command gets invoked.",
 						),
 						body: "onCommand:${2:commandId}",
 					},
@@ -362,7 +362,7 @@ export const schema: IJSONSchema = {
 						label: "onDebug",
 						description: nls.localize(
 							"vscode.extension.activationEvents.onDebug",
-							"An activation event emitted whenever a user is about to start debugging or about to setup debug configurations."
+							"An activation event emitted whenever a user is about to start debugging or about to setup debug configurations.",
 						),
 						body: "onDebug",
 					},
@@ -370,7 +370,7 @@ export const schema: IJSONSchema = {
 						label: "onDebugInitialConfigurations",
 						description: nls.localize(
 							"vscode.extension.activationEvents.onDebugInitialConfigurations",
-							'An activation event emitted whenever a "launch.json" needs to be created (and all provideDebugConfigurations methods need to be called).'
+							'An activation event emitted whenever a "launch.json" needs to be created (and all provideDebugConfigurations methods need to be called).',
 						),
 						body: "onDebugInitialConfigurations",
 					},
@@ -378,7 +378,7 @@ export const schema: IJSONSchema = {
 						label: "onDebugDynamicConfigurations",
 						description: nls.localize(
 							"vscode.extension.activationEvents.onDebugDynamicConfigurations",
-							'An activation event emitted whenever a list of all debug configurations needs to be created (and all provideDebugConfigurations methods for the "dynamic" scope need to be called).'
+							'An activation event emitted whenever a list of all debug configurations needs to be created (and all provideDebugConfigurations methods for the "dynamic" scope need to be called).',
 						),
 						body: "onDebugDynamicConfigurations",
 					},
@@ -386,7 +386,7 @@ export const schema: IJSONSchema = {
 						label: "onDebugResolve",
 						description: nls.localize(
 							"vscode.extension.activationEvents.onDebugResolve",
-							"An activation event emitted whenever a debug session with the specific type is about to be launched (and a corresponding resolveDebugConfiguration method needs to be called)."
+							"An activation event emitted whenever a debug session with the specific type is about to be launched (and a corresponding resolveDebugConfiguration method needs to be called).",
 						),
 						body: "onDebugResolve:${6:type}",
 					},
@@ -394,7 +394,7 @@ export const schema: IJSONSchema = {
 						label: "onDebugAdapterProtocolTracker",
 						description: nls.localize(
 							"vscode.extension.activationEvents.onDebugAdapterProtocolTracker",
-							"An activation event emitted whenever a debug session with the specific type is about to be launched and a debug protocol tracker might be needed."
+							"An activation event emitted whenever a debug session with the specific type is about to be launched and a debug protocol tracker might be needed.",
 						),
 						body: "onDebugAdapterProtocolTracker:${6:type}",
 					},
@@ -402,7 +402,7 @@ export const schema: IJSONSchema = {
 						label: "workspaceContains",
 						description: nls.localize(
 							"vscode.extension.activationEvents.workspaceContains",
-							"An activation event emitted whenever a folder is opened that contains at least a file matching the specified glob pattern."
+							"An activation event emitted whenever a folder is opened that contains at least a file matching the specified glob pattern.",
 						),
 						body: "workspaceContains:${4:filePattern}",
 					},
@@ -410,7 +410,7 @@ export const schema: IJSONSchema = {
 						label: "onStartupFinished",
 						description: nls.localize(
 							"vscode.extension.activationEvents.onStartupFinished",
-							"An activation event emitted after the start-up finished (after all `*` activated extensions have finished activating)."
+							"An activation event emitted after the start-up finished (after all `*` activated extensions have finished activating).",
 						),
 						body: "onStartupFinished",
 					},
@@ -418,7 +418,7 @@ export const schema: IJSONSchema = {
 						label: "onTaskType",
 						description: nls.localize(
 							"vscode.extension.activationEvents.onTaskType",
-							"An activation event emitted whenever tasks of a certain type need to be listed or resolved."
+							"An activation event emitted whenever tasks of a certain type need to be listed or resolved.",
 						),
 						body: "onTaskType:${1:taskType}",
 					},
@@ -426,7 +426,7 @@ export const schema: IJSONSchema = {
 						label: "onFileSystem",
 						description: nls.localize(
 							"vscode.extension.activationEvents.onFileSystem",
-							"An activation event emitted whenever a file or folder is accessed with the given scheme."
+							"An activation event emitted whenever a file or folder is accessed with the given scheme.",
 						),
 						body: "onFileSystem:${1:scheme}",
 					},
@@ -434,7 +434,7 @@ export const schema: IJSONSchema = {
 						label: "onEditSession",
 						description: nls.localize(
 							"vscode.extension.activationEvents.onEditSession",
-							"An activation event emitted whenever an edit session is accessed with the given scheme."
+							"An activation event emitted whenever an edit session is accessed with the given scheme.",
 						),
 						body: "onEditSession:${1:scheme}",
 					},
@@ -442,7 +442,7 @@ export const schema: IJSONSchema = {
 						label: "onSearch",
 						description: nls.localize(
 							"vscode.extension.activationEvents.onSearch",
-							"An activation event emitted whenever a search is started in the folder with the given scheme."
+							"An activation event emitted whenever a search is started in the folder with the given scheme.",
 						),
 						body: "onSearch:${7:scheme}",
 					},
@@ -451,7 +451,7 @@ export const schema: IJSONSchema = {
 						body: "onView:${5:viewId}",
 						description: nls.localize(
 							"vscode.extension.activationEvents.onView",
-							"An activation event emitted whenever the specified view is expanded."
+							"An activation event emitted whenever the specified view is expanded.",
 						),
 					},
 					{
@@ -459,7 +459,7 @@ export const schema: IJSONSchema = {
 						body: "onUri",
 						description: nls.localize(
 							"vscode.extension.activationEvents.onUri",
-							"An activation event emitted whenever a system-wide Uri directed towards this extension is open."
+							"An activation event emitted whenever a system-wide Uri directed towards this extension is open.",
 						),
 					},
 					{
@@ -467,7 +467,7 @@ export const schema: IJSONSchema = {
 						body: "onOpenExternalUri",
 						description: nls.localize(
 							"vscode.extension.activationEvents.onOpenExternalUri",
-							"An activation event emitted whenever a external uri (such as an http or https link) is being opened."
+							"An activation event emitted whenever a external uri (such as an http or https link) is being opened.",
 						),
 					},
 					{
@@ -475,7 +475,7 @@ export const schema: IJSONSchema = {
 						body: "onCustomEditor:${9:viewType}",
 						description: nls.localize(
 							"vscode.extension.activationEvents.onCustomEditor",
-							"An activation event emitted whenever the specified custom editor becomes visible."
+							"An activation event emitted whenever the specified custom editor becomes visible.",
 						),
 					},
 					{
@@ -483,7 +483,7 @@ export const schema: IJSONSchema = {
 						body: "onNotebook:${1:type}",
 						description: nls.localize(
 							"vscode.extension.activationEvents.onNotebook",
-							"An activation event emitted whenever the specified notebook document is opened."
+							"An activation event emitted whenever the specified notebook document is opened.",
 						),
 					},
 					{
@@ -491,14 +491,14 @@ export const schema: IJSONSchema = {
 						body: "onAuthenticationRequest:${11:authenticationProviderId}",
 						description: nls.localize(
 							"vscode.extension.activationEvents.onAuthenticationRequest",
-							"An activation event emitted whenever sessions are requested from the specified authentication provider."
+							"An activation event emitted whenever sessions are requested from the specified authentication provider.",
 						),
 					},
 					{
 						label: "onRenderer",
 						description: nls.localize(
 							"vscode.extension.activationEvents.onRenderer",
-							"An activation event emitted whenever a notebook output renderer is used."
+							"An activation event emitted whenever a notebook output renderer is used.",
 						),
 						body: "onRenderer:${11:rendererId}",
 					},
@@ -507,7 +507,7 @@ export const schema: IJSONSchema = {
 						body: "onTerminalProfile:${1:terminalId}",
 						description: nls.localize(
 							"vscode.extension.activationEvents.onTerminalProfile",
-							"An activation event emitted when a specific terminal profile is launched."
+							"An activation event emitted when a specific terminal profile is launched.",
 						),
 					},
 					{
@@ -515,7 +515,7 @@ export const schema: IJSONSchema = {
 						body: "onTerminalQuickFixRequest:${1:quickFixId}",
 						description: nls.localize(
 							"vscode.extension.activationEvents.onTerminalQuickFixRequest",
-							"An activation event emitted when a command matches the selector associated with this ID"
+							"An activation event emitted when a command matches the selector associated with this ID",
 						),
 					},
 					{
@@ -523,7 +523,7 @@ export const schema: IJSONSchema = {
 						body: "onWalkthrough:${1:walkthroughID}",
 						description: nls.localize(
 							"vscode.extension.activationEvents.onWalkthrough",
-							"An activation event emitted when a specified walkthrough is opened."
+							"An activation event emitted when a specified walkthrough is opened.",
 						),
 					},
 					{
@@ -531,14 +531,14 @@ export const schema: IJSONSchema = {
 						body: "onIssueReporterOpened",
 						description: nls.localize(
 							"vscode.extension.activationEvents.onIssueReporterOpened",
-							"An activation event emitted when the issue reporter is opened."
+							"An activation event emitted when the issue reporter is opened.",
 						),
 					},
 					{
 						label: "*",
 						description: nls.localize(
 							"vscode.extension.activationEvents.star",
-							"An activation event emitted on VS Code startup. To ensure a great end user experience, please use this activation event in your extension only when no other activation events combination works in your use-case."
+							"An activation event emitted on VS Code startup. To ensure a great end user experience, please use this activation event in your extension only when no other activation events combination works in your use-case.",
 						),
 						body: "*",
 					},
@@ -549,7 +549,7 @@ export const schema: IJSONSchema = {
 			type: "array",
 			description: nls.localize(
 				"vscode.extension.badges",
-				"Array of badges to display in the sidebar of the Marketplace's extension page."
+				"Array of badges to display in the sidebar of the Marketplace's extension page.",
 			),
 			items: {
 				type: "object",
@@ -559,21 +559,21 @@ export const schema: IJSONSchema = {
 						type: "string",
 						description: nls.localize(
 							"vscode.extension.badges.url",
-							"Badge image URL."
+							"Badge image URL.",
 						),
 					},
 					href: {
 						type: "string",
 						description: nls.localize(
 							"vscode.extension.badges.href",
-							"Badge link."
+							"Badge link.",
 						),
 					},
 					description: {
 						type: "string",
 						description: nls.localize(
 							"vscode.extension.badges.description",
-							"Badge description."
+							"Badge description.",
 						),
 					},
 				},
@@ -583,7 +583,7 @@ export const schema: IJSONSchema = {
 			type: "string",
 			description: nls.localize(
 				"vscode.extension.markdown",
-				"Controls the Markdown rendering engine used in the Marketplace. Either github (default) or standard."
+				"Controls the Markdown rendering engine used in the Marketplace. Either github (default) or standard.",
 			),
 			enum: ["github", "standard"],
 			default: "github",
@@ -592,7 +592,7 @@ export const schema: IJSONSchema = {
 			default: "marketplace",
 			description: nls.localize(
 				"vscode.extension.qna",
-				"Controls the Q&A link in the Marketplace. Set to marketplace to enable the default Marketplace Q & A site. Set to a string to provide the URL of a custom Q & A site. Set to false to disable Q & A altogether."
+				"Controls the Q&A link in the Marketplace. Set to marketplace to enable the default Marketplace Q & A site. Set to a string to provide the URL of a custom Q & A site. Set to false to disable Q & A altogether.",
 			),
 			anyOf: [
 				{
@@ -607,7 +607,7 @@ export const schema: IJSONSchema = {
 		extensionDependencies: {
 			description: nls.localize(
 				"vscode.extension.extensionDependencies",
-				"Dependencies to other extensions. The identifier of an extension is always ${publisher}.${name}. For example: vscode.csharp."
+				"Dependencies to other extensions. The identifier of an extension is always ${publisher}.${name}. For example: vscode.csharp.",
 			),
 			type: "array",
 			uniqueItems: true,
@@ -619,7 +619,7 @@ export const schema: IJSONSchema = {
 		extensionPack: {
 			description: nls.localize(
 				"vscode.extension.contributes.extensionPack",
-				"A set of extensions that can be installed together. The identifier of an extension is always ${publisher}.${name}. For example: vscode.csharp."
+				"A set of extensions that can be installed together. The identifier of an extension is always ${publisher}.${name}. For example: vscode.csharp.",
 			),
 			type: "array",
 			uniqueItems: true,
@@ -631,7 +631,7 @@ export const schema: IJSONSchema = {
 		extensionKind: {
 			description: nls.localize(
 				"extensionKind",
-				"Define the kind of an extension. `ui` extensions are installed and run on the local machine while `workspace` extensions run on the remote."
+				"Define the kind of an extension. `ui` extensions are installed and run on the local machine while `workspace` extensions run on the remote.",
 			),
 			type: "array",
 			items: extensionKindSchema,
@@ -641,35 +641,35 @@ export const schema: IJSONSchema = {
 					body: ["ui"],
 					description: nls.localize(
 						"extensionKind.ui",
-						"Define an extension which can run only on the local machine when connected to remote window."
+						"Define an extension which can run only on the local machine when connected to remote window.",
 					),
 				},
 				{
 					body: ["workspace"],
 					description: nls.localize(
 						"extensionKind.workspace",
-						"Define an extension which can run only on the remote machine when connected remote window."
+						"Define an extension which can run only on the remote machine when connected remote window.",
 					),
 				},
 				{
 					body: ["ui", "workspace"],
 					description: nls.localize(
 						"extensionKind.ui-workspace",
-						"Define an extension which can run on either side, with a preference towards running on the local machine."
+						"Define an extension which can run on either side, with a preference towards running on the local machine.",
 					),
 				},
 				{
 					body: ["workspace", "ui"],
 					description: nls.localize(
 						"extensionKind.workspace-ui",
-						"Define an extension which can run on either side, with a preference towards running on the remote machine."
+						"Define an extension which can run on either side, with a preference towards running on the remote machine.",
 					),
 				},
 				{
 					body: [],
 					description: nls.localize(
 						"extensionKind.empty",
-						"Define an extension which cannot run in a remote context, neither on the local, nor on the remote machine."
+						"Define an extension which cannot run in a remote context, neither on the local, nor on the remote machine.",
 					),
 				},
 			],
@@ -677,14 +677,14 @@ export const schema: IJSONSchema = {
 		capabilities: {
 			description: nls.localize(
 				"vscode.extension.capabilities",
-				"Declare the set of supported capabilities by the extension."
+				"Declare the set of supported capabilities by the extension.",
 			),
 			type: "object",
 			properties: {
 				virtualWorkspaces: {
 					description: nls.localize(
 						"vscode.extension.capabilities.virtualWorkspaces",
-						"Declares whether the extension should be enabled in virtual workspaces. A virtual workspace is a workspace which is not backed by any on-disk resources. When false, this extension will be automatically disabled in virtual workspaces. Default is true."
+						"Declares whether the extension should be enabled in virtual workspaces. A virtual workspace is a workspace which is not backed by any on-disk resources. When false, this extension will be automatically disabled in virtual workspaces. Default is true.",
 					),
 					type: ["boolean", "object"],
 					defaultSnippets: [
@@ -705,22 +705,22 @@ export const schema: IJSONSchema = {
 						supported: {
 							markdownDescription: nls.localize(
 								"vscode.extension.capabilities.virtualWorkspaces.supported",
-								"Declares the level of support for virtual workspaces by the extension."
+								"Declares the level of support for virtual workspaces by the extension.",
 							),
 							type: ["string", "boolean"],
 							enum: ["limited", true, false],
 							enumDescriptions: [
 								nls.localize(
 									"vscode.extension.capabilities.virtualWorkspaces.supported.limited",
-									"The extension will be enabled in virtual workspaces with some functionality disabled."
+									"The extension will be enabled in virtual workspaces with some functionality disabled.",
 								),
 								nls.localize(
 									"vscode.extension.capabilities.virtualWorkspaces.supported.true",
-									"The extension will be enabled in virtual workspaces with all functionality enabled."
+									"The extension will be enabled in virtual workspaces with all functionality enabled.",
 								),
 								nls.localize(
 									"vscode.extension.capabilities.virtualWorkspaces.supported.false",
-									"The extension will not be enabled in virtual workspaces."
+									"The extension will not be enabled in virtual workspaces.",
 								),
 							],
 						},
@@ -728,7 +728,7 @@ export const schema: IJSONSchema = {
 							type: "string",
 							markdownDescription: nls.localize(
 								"vscode.extension.capabilities.virtualWorkspaces.description",
-								"A description of how virtual workspaces affects the extensions behavior and why it is needed. This only applies when `supported` is not `true`."
+								"A description of how virtual workspaces affects the extensions behavior and why it is needed. This only applies when `supported` is not `true`.",
 							),
 						},
 					},
@@ -736,7 +736,7 @@ export const schema: IJSONSchema = {
 				untrustedWorkspaces: {
 					description: nls.localize(
 						"vscode.extension.capabilities.untrustedWorkspaces",
-						"Declares how the extension should be handled in untrusted workspaces."
+						"Declares how the extension should be handled in untrusted workspaces.",
 					),
 					type: "object",
 					required: ["supported"],
@@ -752,29 +752,29 @@ export const schema: IJSONSchema = {
 						supported: {
 							markdownDescription: nls.localize(
 								"vscode.extension.capabilities.untrustedWorkspaces.supported",
-								"Declares the level of support for untrusted workspaces by the extension."
+								"Declares the level of support for untrusted workspaces by the extension.",
 							),
 							type: ["string", "boolean"],
 							enum: ["limited", true, false],
 							enumDescriptions: [
 								nls.localize(
 									"vscode.extension.capabilities.untrustedWorkspaces.supported.limited",
-									"The extension will be enabled in untrusted workspaces with some functionality disabled."
+									"The extension will be enabled in untrusted workspaces with some functionality disabled.",
 								),
 								nls.localize(
 									"vscode.extension.capabilities.untrustedWorkspaces.supported.true",
-									"The extension will be enabled in untrusted workspaces with all functionality enabled."
+									"The extension will be enabled in untrusted workspaces with all functionality enabled.",
 								),
 								nls.localize(
 									"vscode.extension.capabilities.untrustedWorkspaces.supported.false",
-									"The extension will not be enabled in untrusted workspaces."
+									"The extension will not be enabled in untrusted workspaces.",
 								),
 							],
 						},
 						restrictedConfigurations: {
 							description: nls.localize(
 								"vscode.extension.capabilities.untrustedWorkspaces.restrictedConfigurations",
-								"A list of configuration keys contributed by the extension that should not use workspace values in untrusted workspaces."
+								"A list of configuration keys contributed by the extension that should not use workspace values in untrusted workspaces.",
 							),
 							type: "array",
 							items: {
@@ -785,7 +785,7 @@ export const schema: IJSONSchema = {
 							type: "string",
 							markdownDescription: nls.localize(
 								"vscode.extension.capabilities.untrustedWorkspaces.description",
-								"A description of how workspace trust affects the extensions behavior and why it is needed. This only applies when `supported` is not `true`."
+								"A description of how workspace trust affects the extensions behavior and why it is needed. This only applies when `supported` is not `true`.",
 							),
 						},
 					},
@@ -795,15 +795,15 @@ export const schema: IJSONSchema = {
 		sponsor: {
 			description: nls.localize(
 				"vscode.extension.contributes.sponsor",
-				"Specify the location from where users can sponsor your extension."
+				"Specify the location from where users can sponsor your extension.",
 			),
 			type: "object",
 			defaultSnippets: [{ body: { url: "${1:https:}" } }],
 			properties: {
-				"url": {
+				url: {
 					description: nls.localize(
 						"vscode.extension.contributes.sponsor.url",
-						"URL from where users can sponsor your extension. It must be a valid URL with a HTTP or HTTPS protocol. Example value: https://github.com/sponsors/nvaccess"
+						"URL from where users can sponsor your extension. It must be a valid URL with a HTTP or HTTPS protocol. Example value: https://github.com/sponsors/nvaccess",
 					),
 					type: "string",
 				},
@@ -815,14 +815,14 @@ export const schema: IJSONSchema = {
 				"vscode:prepublish": {
 					description: nls.localize(
 						"vscode.extension.scripts.prepublish",
-						"Script executed before the package is published as a VS Code extension."
+						"Script executed before the package is published as a VS Code extension.",
 					),
 					type: "string",
 				},
 				"vscode:uninstall": {
 					description: nls.localize(
 						"vscode.extension.scripts.uninstall",
-						"Uninstall hook for VS Code extension. Script that gets executed when the extension is completely uninstalled from VS Code which is when VS Code is restarted (shutdown and start) after the extension is uninstalled. Only Node scripts are supported."
+						"Uninstall hook for VS Code extension. Script that gets executed when the extension is completely uninstalled from VS Code which is when VS Code is restarted (shutdown and start) after the extension is uninstalled. Only Node scripts are supported.",
 					),
 					type: "string",
 				},
@@ -832,7 +832,7 @@ export const schema: IJSONSchema = {
 			type: "string",
 			description: nls.localize(
 				"vscode.extension.icon",
-				"The path to a 128x128 pixel icon."
+				"The path to a 128x128 pixel icon.",
 			),
 		},
 		l10n: {
@@ -845,14 +845,14 @@ export const schema: IJSONSchema = {
 						'{Locked="vscode.l10n API"}',
 					],
 				},
-				"The relative path to a folder containing localization (bundle.l10n.*.json) files. Must be specified if you are using the vscode.l10n API."
+				"The relative path to a folder containing localization (bundle.l10n.*.json) files. Must be specified if you are using the vscode.l10n API.",
 			),
 		},
 		pricing: {
 			type: "string",
 			markdownDescription: nls.localize(
 				"vscode.extension.pricing",
-				"The pricing information for the extension. Can be Free (default) or Trial. For more details visit: https://code.visualstudio.com/api/working-with-extensions/publishing-extension#extension-pricing-label"
+				"The pricing information for the extension. Can be Free (default) or Trial. For more details visit: https://code.visualstudio.com/api/working-with-extensions/publishing-extension#extension-pricing-label",
 			),
 			enum: ["Free", "Trial"],
 			default: "Free",
@@ -878,22 +878,22 @@ export class ExtensionsRegistryImpl {
 	private readonly _extensionPoints = new Map<string, ExtensionPoint<any>>();
 
 	public registerExtensionPoint<T>(
-		desc: IExtensionPointDescriptor<T>
+		desc: IExtensionPointDescriptor<T>,
 	): IExtensionPoint<T> {
 		if (this._extensionPoints.has(desc.extensionPoint)) {
 			throw new Error(
-				"Duplicate extension point: " + desc.extensionPoint
+				"Duplicate extension point: " + desc.extensionPoint,
 			);
 		}
 		const result = new ExtensionPoint<T>(
 			desc.extensionPoint,
-			desc.defaultExtensionKind
+			desc.defaultExtensionKind,
 		);
 		this._extensionPoints.set(desc.extensionPoint, result);
 		if (desc.activationEventsGenerator) {
 			ImplicitActivationEvents.register(
 				desc.extensionPoint,
-				desc.activationEventsGenerator
+				desc.activationEventsGenerator,
 			);
 		}
 
@@ -914,7 +914,7 @@ const PRExtensions = {
 };
 Registry.add(PRExtensions.ExtensionsRegistry, new ExtensionsRegistryImpl());
 export const ExtensionsRegistry: ExtensionsRegistryImpl = Registry.as(
-	PRExtensions.ExtensionsRegistry
+	PRExtensions.ExtensionsRegistry,
 );
 
 schemaRegistry.registerSchema(schemaId, schema);
@@ -924,7 +924,7 @@ schemaRegistry.registerSchema(productSchemaId, {
 		extensionEnabledApiProposals: {
 			description: nls.localize(
 				"product.extensionEnabledApiProposals",
-				"API proposals that the respective extensions can freely use."
+				"API proposals that the respective extensions can freely use.",
 			),
 			type: "object",
 			properties: {},

@@ -56,7 +56,7 @@ export class ColorPickerModel {
 	constructor(
 		color: Color,
 		availableColorPresentations: IColorPresentation[],
-		private presentationIndex: number
+		private presentationIndex: number,
 	) {
 		this.originalColor = color;
 		this._color = color;

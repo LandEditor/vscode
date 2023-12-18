@@ -9,6 +9,7 @@ import * as vscode from "vscode";
 import { TypeScriptServiceConfiguration } from "../configuration/configuration";
 import { Logger } from "../logging/logger";
 import { FileWatcherManager } from "./fileWatchingManager";
+import { NodeVersionManager } from "./nodeManager";
 import type * as Proto from "./protocol/protocol";
 import {
 	TsServerLog,
@@ -18,7 +19,6 @@ import {
 } from "./server";
 import { TypeScriptVersionManager } from "./versionManager";
 import { TypeScriptVersion } from "./versionProvider";
-import { NodeVersionManager } from "./nodeManager";
 
 type BrowserWatchEvent =
 	| {
@@ -39,7 +39,7 @@ type BrowserWatchEvent =
 export class WorkerServerProcessFactory implements TsServerProcessFactory {
 	constructor(
 		private readonly _extensionUri: vscode.Uri,
-		private readonly _logger: Logger
+		private readonly _logger: Logger,
 	) {}
 
 	public fork(
@@ -49,7 +49,7 @@ export class WorkerServerProcessFactory implements TsServerProcessFactory {
 		_configuration: TypeScriptServiceConfiguration,
 		_versionManager: TypeScriptVersionManager,
 		_nodeVersionManager: NodeVersionManager,
-		tsServerLog: TsServerLog | undefined
+		tsServerLog: TsServerLog | undefined,
 	) {
 		const tsServerPath = version.tsServerPath;
 		const launchArgs = [
@@ -67,7 +67,7 @@ export class WorkerServerProcessFactory implements TsServerProcessFactory {
 			this._extensionUri,
 			launchArgs,
 			tsServerLog,
-			this._logger
+			this._logger,
 		);
 	}
 }
@@ -101,7 +101,7 @@ class WorkerServerProcess implements TsServerProcess {
 		extensionUri: vscode.Uri,
 		args: readonly string[],
 		private readonly tsServerLog: TsServerLog | undefined,
-		logger: Logger
+		logger: Logger,
 	) {
 		this._worker = new Worker(tsServerPath, {
 			name: `TS ${kind} server #${this.id}`,
@@ -120,8 +120,8 @@ class WorkerServerProcess implements TsServerProcess {
 			if (event.data.type === "log") {
 				console.error(
 					`unexpected log message on tsserver channel: ${JSON.stringify(
-						event
-					)}`
+						event,
+					)}`,
 				);
 				return;
 			}
@@ -162,15 +162,15 @@ class WorkerServerProcess implements TsServerProcess {
 									event: "delete",
 									uri,
 								}),
-						}
+						},
 					);
 					break;
 				}
 				default:
 					console.error(
 						`unexpected message on watcher channel: ${JSON.stringify(
-							event
-						)}`
+							event,
+						)}`,
 					);
 			}
 		};
@@ -182,7 +182,7 @@ class WorkerServerProcess implements TsServerProcess {
 				return;
 			}
 			console.error(
-				`unexpected message on main channel: ${JSON.stringify(msg)}`
+				`unexpected message on main channel: ${JSON.stringify(msg)}`,
 			);
 		};
 
@@ -218,7 +218,7 @@ class WorkerServerProcess implements TsServerProcess {
 	}
 
 	onExit(
-		handler: (code: number | null, signal: string | null) => void
+		handler: (code: number | null, signal: string | null) => void,
 	): void {
 		this._onExitHandlers.add(handler);
 		// Todo: not implemented
@@ -235,7 +235,7 @@ class WorkerServerProcess implements TsServerProcess {
 	private appendLog(msg: string) {
 		if (this.tsServerLog?.type === "output") {
 			this.tsServerLog.output.appendLine(
-				`(${this.id} - ${this.kind}) ${msg}`
+				`(${this.id} - ${this.kind}) ${msg}`,
 			);
 		}
 	}

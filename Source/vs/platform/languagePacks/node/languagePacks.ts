@@ -9,6 +9,7 @@ import { Queue } from "vs/base/common/async";
 import { Disposable } from "vs/base/common/lifecycle";
 import { Schemas } from "vs/base/common/network";
 import { join } from "vs/base/common/path";
+import { URI } from "vs/base/common/uri";
 import { Promises } from "vs/base/node/pfs";
 import { INativeEnvironmentService } from "vs/platform/environment/common/environment";
 import {
@@ -18,13 +19,12 @@ import {
 	ILocalExtension,
 } from "vs/platform/extensionManagement/common/extensionManagement";
 import { areSameExtensions } from "vs/platform/extensionManagement/common/extensionManagementUtil";
-import { ILogService } from "vs/platform/log/common/log";
 import { ILocalizationContribution } from "vs/platform/extensions/common/extensions";
 import {
 	ILanguagePackItem,
 	LanguagePackBaseService,
 } from "vs/platform/languagePacks/common/languagePacks";
-import { URI } from "vs/base/common/uri";
+import { ILogService } from "vs/platform/log/common/log";
 
 interface ILanguagePack {
 	hash: string;
@@ -66,7 +66,7 @@ export class NativeLanguagePackService extends LanguagePackBaseService {
 
 	async getBuiltInExtensionTranslationsUri(
 		id: string,
-		language: string
+		language: string,
 	): Promise<URI | undefined> {
 		const packs = await this.cache.getLanguagePacks();
 		const pack = packs[language];
@@ -86,14 +86,14 @@ export class NativeLanguagePackService extends LanguagePackBaseService {
 				const languagePack = languagePacks[locale];
 				const baseQuickPick = this.createQuickPickItem(
 					locale,
-					languagePack.label
+					languagePack.label,
 				);
 				return {
 					...baseQuickPick,
 					extensionId:
 						languagePack.extensions[0].extensionIdentifier.id,
 				};
-			}
+			},
 		);
 		languages.push(this.createQuickPickItem("en", "English"));
 		languages.sort((a, b) => a.label.localeCompare(b.label));
@@ -101,7 +101,7 @@ export class NativeLanguagePackService extends LanguagePackBaseService {
 	}
 
 	private async postInstallExtension(
-		extension: ILocalExtension
+		extension: ILocalExtension,
 	): Promise<void> {
 		if (
 			extension &&
@@ -112,14 +112,14 @@ export class NativeLanguagePackService extends LanguagePackBaseService {
 		) {
 			this.logService.info(
 				"Adding language packs from the extension",
-				extension.identifier.id
+				extension.identifier.id,
 			);
 			await this.update();
 		}
 	}
 
 	private async postUninstallExtension(
-		extension: ILocalExtension
+		extension: ILocalExtension,
 	): Promise<void> {
 		const languagePacks = await this.cache.getLanguagePacks();
 		if (
@@ -129,14 +129,14 @@ export class NativeLanguagePackService extends LanguagePackBaseService {
 					languagePacks[language].extensions.some((e) =>
 						areSameExtensions(
 							e.extensionIdentifier,
-							extension.identifier
-						)
-					)
+							extension.identifier,
+						),
+					),
 			)
 		) {
 			this.logService.info(
 				"Removing language packs from the extension",
-				extension.identifier.id
+				extension.identifier.id,
 			);
 			await this.update();
 		}
@@ -180,15 +180,15 @@ class LanguagePacksCache extends Disposable {
 	}
 
 	update(
-		extensions: ILocalExtension[]
+		extensions: ILocalExtension[],
 	): Promise<{ [language: string]: ILanguagePack }> {
 		return this.withLanguagePacks((languagePacks) => {
 			Object.keys(languagePacks).forEach(
-				(language) => delete languagePacks[language]
+				(language) => delete languagePacks[language],
 			);
 			this.createLanguagePacksFromExtensions(
 				languagePacks,
-				...extensions
+				...extensions,
 			);
 		}).then(() => this.languagePacks);
 	}
@@ -209,13 +209,13 @@ class LanguagePacksCache extends Disposable {
 			}
 		}
 		Object.keys(languagePacks).forEach((languageId) =>
-			this.updateHash(languagePacks[languageId])
+			this.updateHash(languagePacks[languageId]),
 		);
 	}
 
 	private createLanguagePacksFromExtension(
 		languagePacks: { [language: string]: ILanguagePack },
-		extension: ILocalExtension
+		extension: ILocalExtension,
 	): void {
 		const extensionIdentifier = extension.identifier;
 		const localizations =
@@ -246,8 +246,8 @@ class LanguagePacksCache extends Disposable {
 					(e) =>
 						areSameExtensions(
 							e.extensionIdentifier,
-							extensionIdentifier
-						)
+							extensionIdentifier,
+						),
 				)[0];
 				if (extensionInLanguagePack) {
 					extensionInLanguagePack.version =
@@ -261,7 +261,7 @@ class LanguagePacksCache extends Disposable {
 				for (const translation of localizationContribution.translations) {
 					languagePack.translations[translation.id] = join(
 						extension.location.fsPath,
-						translation.path
+						translation.path,
 					);
 				}
 			}
@@ -274,7 +274,7 @@ class LanguagePacksCache extends Disposable {
 			for (const extension of languagePack.extensions) {
 				md5.update(
 					extension.extensionIdentifier.uuid ||
-						extension.extensionIdentifier.id
+						extension.extensionIdentifier.id,
 				).update(extension.version); // CodeQL [SM01510] The extension UUID is not sensitive info and is not manually created by a user
 			}
 			languagePack.hash = md5.digest("hex");
@@ -284,7 +284,7 @@ class LanguagePacksCache extends Disposable {
 	private withLanguagePacks<T>(
 		fn: (languagePacks: {
 			[language: string]: ILanguagePack;
-		}) => T | null = () => null
+		}) => T | null = () => null,
 	): Promise<T> {
 		return this.languagePacksFileLimiter.queue(() => {
 			let result: T | null = null;
@@ -292,7 +292,7 @@ class LanguagePacksCache extends Disposable {
 				.then(undefined, (err) =>
 					err.code === "ENOENT"
 						? Promise.resolve("{}")
-						: Promise.reject(err)
+						: Promise.reject(err),
 				)
 				.then<{ [language: string]: ILanguagePack }>((raw) => {
 					try {
@@ -319,7 +319,7 @@ class LanguagePacksCache extends Disposable {
 				})
 				.then(
 					() => result,
-					(error) => this.logService.error(error)
+					(error) => this.logService.error(error),
 				);
 		});
 	}

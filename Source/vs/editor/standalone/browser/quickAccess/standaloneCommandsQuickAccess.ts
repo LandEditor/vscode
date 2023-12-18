@@ -3,32 +3,32 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Registry } from "vs/platform/registry/common/platform";
+import { KeyCode } from "vs/base/common/keyCodes";
 import {
-	IQuickAccessRegistry,
-	Extensions,
-} from "vs/platform/quickinput/common/quickAccess";
-import { QuickCommandNLS } from "vs/editor/common/standaloneStrings";
-import { ICommandQuickPick } from "vs/platform/quickinput/browser/commandsQuickAccess";
+	EditorAction,
+	registerEditorAction,
+} from "vs/editor/browser/editorExtensions";
 import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
-import { AbstractEditorCommandsQuickAccessProvider } from "vs/editor/contrib/quickAccess/browser/commandsQuickAccess";
 import { IEditor } from "vs/editor/common/editorCommon";
+import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
+import { QuickCommandNLS } from "vs/editor/common/standaloneStrings";
+import { AbstractEditorCommandsQuickAccessProvider } from "vs/editor/contrib/quickAccess/browser/commandsQuickAccess";
+import { ICommandService } from "vs/platform/commands/common/commands";
+import { IDialogService } from "vs/platform/dialogs/common/dialogs";
 import {
 	IInstantiationService,
 	ServicesAccessor,
 } from "vs/platform/instantiation/common/instantiation";
 import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { IDialogService } from "vs/platform/dialogs/common/dialogs";
-import {
-	EditorAction,
-	registerEditorAction,
-} from "vs/editor/browser/editorExtensions";
-import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
-import { KeyCode } from "vs/base/common/keyCodes";
 import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
+import { ICommandQuickPick } from "vs/platform/quickinput/browser/commandsQuickAccess";
+import {
+	Extensions,
+	IQuickAccessRegistry,
+} from "vs/platform/quickinput/common/quickAccess";
 import { IQuickInputService } from "vs/platform/quickinput/common/quickInput";
+import { Registry } from "vs/platform/registry/common/platform";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 
 export class StandaloneCommandsQuickAccessProvider extends AbstractEditorCommandsQuickAccessProvider {
 	protected get activeTextEditorControl(): IEditor | undefined {
@@ -98,7 +98,7 @@ export class GotoLineAction extends EditorAction {
 registerEditorAction(GotoLineAction);
 
 Registry.as<IQuickAccessRegistry>(
-	Extensions.Quickaccess
+	Extensions.Quickaccess,
 ).registerQuickAccessProvider({
 	ctor: StandaloneCommandsQuickAccessProvider,
 	prefix: StandaloneCommandsQuickAccessProvider.PREFIX,

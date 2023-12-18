@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import {
+	AdapterEndEvent,
 	IDebugModel,
 	IDebugSession,
-	AdapterEndEvent,
 } from "vs/workbench/contrib/debug/common/debug";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import { Debugger } from "vs/workbench/contrib/debug/common/debugger";
 
 export class DebugTelemetry {
@@ -44,7 +44,7 @@ export class DebugTelemetry {
 
 	logDebugSessionStop(
 		session: IDebugSession,
-		adapterExitEvent: AdapterEndEvent
+		adapterExitEvent: AdapterEndEvent,
 	) {
 		const breakpoints = this.model.getBreakpoints();
 

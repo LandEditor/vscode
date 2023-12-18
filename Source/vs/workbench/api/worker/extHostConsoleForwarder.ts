@@ -10,7 +10,7 @@ import { IExtHostRpcService } from "vs/workbench/api/common/extHostRpcService";
 export class ExtHostConsoleForwarder extends AbstractExtHostConsoleForwarder {
 	constructor(
 		@IExtHostRpcService extHostRpc: IExtHostRpcService,
-		@IExtHostInitDataService initData: IExtHostInitDataService
+		@IExtHostInitDataService initData: IExtHostInitDataService,
 	) {
 		super(extHostRpc, initData);
 	}
@@ -18,7 +18,7 @@ export class ExtHostConsoleForwarder extends AbstractExtHostConsoleForwarder {
 	protected override _nativeConsoleLogMessage(
 		_method: unknown,
 		original: (...args: any[]) => void,
-		args: IArguments
+		args: IArguments,
 	) {
 		original.apply(console, args as any);
 	}

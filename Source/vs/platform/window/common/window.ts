@@ -101,12 +101,12 @@ export interface IOpenedAuxiliaryWindow extends IOpenedWindow {
 }
 
 export function isOpenedAuxiliaryWindow(
-	candidate: IOpenedMainWindow | IOpenedAuxiliaryWindow
+	candidate: IOpenedMainWindow | IOpenedAuxiliaryWindow,
 ): candidate is IOpenedAuxiliaryWindow {
 	return typeof (candidate as IOpenedAuxiliaryWindow).parentId === "number";
 }
 
-export interface IOpenEmptyWindowOptions extends IBaseOpenWindowsOptions {}
+export type IOpenEmptyWindowOptions = IBaseOpenWindowsOptions;
 
 export type IWindowOpenable = IWorkspaceToOpen | IFolderToOpen | IFileToOpen;
 
@@ -127,19 +127,19 @@ export interface IFileToOpen extends IBaseWindowOpenable {
 }
 
 export function isWorkspaceToOpen(
-	uriToOpen: IWindowOpenable
+	uriToOpen: IWindowOpenable,
 ): uriToOpen is IWorkspaceToOpen {
 	return !!(uriToOpen as IWorkspaceToOpen).workspaceUri;
 }
 
 export function isFolderToOpen(
-	uriToOpen: IWindowOpenable
+	uriToOpen: IWindowOpenable,
 ): uriToOpen is IFolderToOpen {
 	return !!(uriToOpen as IFolderToOpen).folderUri;
 }
 
 export function isFileToOpen(
-	uriToOpen: IWindowOpenable
+	uriToOpen: IWindowOpenable,
 ): uriToOpen is IFileToOpen {
 	return !!(uriToOpen as IFileToOpen).fileUri;
 }
@@ -152,7 +152,7 @@ export type MenuBarVisibility =
 	| "compact";
 
 export function getMenuBarVisibility(
-	configurationService: IConfigurationService
+	configurationService: IConfigurationService,
 ): MenuBarVisibility {
 	const titleBarStyle = getTitleBarStyle(configurationService);
 	const menuBarVisibility = configurationService.getValue<
@@ -204,7 +204,7 @@ export interface IDensitySettings {
 }
 
 export function getTitleBarStyle(
-	configurationService: IConfigurationService
+	configurationService: IConfigurationService,
 ): "native" | "custom" {
 	if (isWeb) {
 		return "custom";
@@ -235,7 +235,7 @@ export function getTitleBarStyle(
 }
 
 export function useWindowControlsOverlay(
-	configurationService: IConfigurationService
+	configurationService: IConfigurationService,
 ): boolean {
 	if (!isWindows || isWeb) {
 		return false; // only supported on a desktop Windows instance
@@ -250,7 +250,7 @@ export function useWindowControlsOverlay(
 }
 
 export function useNativeFullScreen(
-	configurationService: IConfigurationService
+	configurationService: IConfigurationService,
 ): boolean {
 	const windowConfig = configurationService.getValue<
 		IWindowSettings | undefined

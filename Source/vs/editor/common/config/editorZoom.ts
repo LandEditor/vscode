@@ -12,7 +12,7 @@ export interface IEditorZoom {
 }
 
 export const EditorZoom: IEditorZoom = new (class implements IEditorZoom {
-	private _zoomLevel: number = 0;
+	private _zoomLevel = 0;
 
 	private readonly _onDidChangeZoomLevel = new Emitter<number>();
 	public readonly onDidChangeZoomLevel: Event<number> =

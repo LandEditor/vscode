@@ -3,49 +3,49 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { fromNow } from "vs/base/common/date";
 import { Disposable } from "vs/base/common/lifecycle";
+import Severity from "vs/base/common/severity";
 import * as nls from "vs/nls";
+import { IDialogService } from "vs/platform/dialogs/common/dialogs";
+import { INotificationService } from "vs/platform/notification/common/notification";
+import { IQuickInputService } from "vs/platform/quickinput/common/quickInput";
 import {
-	extHostNamedCustomer,
-	IExtHostContext,
-} from "vs/workbench/services/extensions/common/extHostCustomers";
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from "vs/platform/storage/common/storage";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import {
 	AllowedExtension,
-	readAllowedExtensions,
-	getAuthenticationProviderActivationEvent,
 	addAccountUsage,
+	getAuthenticationProviderActivationEvent,
 	readAccountUsages,
+	readAllowedExtensions,
 	removeAccountUsage,
 } from "vs/workbench/services/authentication/browser/authenticationService";
 import {
-	IAuthenticationCreateSessionOptions,
 	AuthenticationSession,
 	AuthenticationSessionsChangeEvent,
+	IAuthenticationCreateSessionOptions,
 	IAuthenticationProvider,
 	IAuthenticationService,
 } from "vs/workbench/services/authentication/common/authentication";
+import {
+	IExtHostContext,
+	extHostNamedCustomer,
+} from "vs/workbench/services/extensions/common/extHostCustomers";
+import {
+	ActivationKind,
+	IExtensionService,
+} from "vs/workbench/services/extensions/common/extensions";
+import type { AuthenticationGetSessionOptions } from "vscode";
 import {
 	ExtHostAuthenticationShape,
 	ExtHostContext,
 	MainContext,
 	MainThreadAuthenticationShape,
 } from "../common/extHost.protocol";
-import { IDialogService } from "vs/platform/dialogs/common/dialogs";
-import {
-	IStorageService,
-	StorageScope,
-	StorageTarget,
-} from "vs/platform/storage/common/storage";
-import Severity from "vs/base/common/severity";
-import { IQuickInputService } from "vs/platform/quickinput/common/quickInput";
-import { INotificationService } from "vs/platform/notification/common/notification";
-import { fromNow } from "vs/base/common/date";
-import {
-	ActivationKind,
-	IExtensionService,
-} from "vs/workbench/services/extensions/common/extensions";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import type { AuthenticationGetSessionOptions } from "vscode";
 
 interface TrustedExtensionsQuickPickItem {
 	label: string;
@@ -65,7 +65,7 @@ export class MainThreadAuthenticationProvider
 		private readonly notificationService: INotificationService,
 		private readonly storageService: IStorageService,
 		private readonly quickInputService: IQuickInputService,
-		private readonly dialogService: IDialogService
+		private readonly dialogService: IDialogService,
 	) {
 		super();
 	}
@@ -73,15 +73,15 @@ export class MainThreadAuthenticationProvider
 		const allowedExtensions = readAllowedExtensions(
 			this.storageService,
 			this.id,
-			accountName
+			accountName,
 		);
 
 		if (!allowedExtensions.length) {
 			this.dialogService.info(
 				nls.localize(
 					"noTrustedExtensions",
-					"This account has not been used by any extensions."
-				)
+					"This account has not been used by any extensions.",
+				),
 			);
 			return;
 		}
@@ -92,16 +92,16 @@ export class MainThreadAuthenticationProvider
 		quickPick.customButton = true;
 		quickPick.customLabel = nls.localize(
 			"manageTrustedExtensions.cancel",
-			"Cancel"
+			"Cancel",
 		);
 		const usages = readAccountUsages(
 			this.storageService,
 			this.id,
-			accountName
+			accountName,
 		);
 		const items = allowedExtensions.map((extension) => {
 			const usage = usages.find(
-				(usage) => extension.id === usage.extensionId
+				(usage) => extension.id === usage.extensionId,
 			);
 			return {
 				label: extension.name,
@@ -114,8 +114,8 @@ export class MainThreadAuthenticationProvider
 								],
 							},
 							"Last used this account {0}",
-							fromNow(usage.lastUsed, true)
-						)
+							fromNow(usage.lastUsed, true),
+					  )
 					: nls.localize("notUsed", "Has not used this account"),
 				extension,
 			};
@@ -124,26 +124,26 @@ export class MainThreadAuthenticationProvider
 		quickPick.items = items;
 		quickPick.selectedItems = items.filter(
 			(item) =>
-				item.extension.allowed === undefined || item.extension.allowed
+				item.extension.allowed === undefined || item.extension.allowed,
 		);
 		quickPick.title = nls.localize(
 			"manageTrustedExtensions",
-			"Manage Trusted Extensions"
+			"Manage Trusted Extensions",
 		);
 		quickPick.placeholder = nls.localize(
 			"manageExtensions",
-			"Choose which extensions can access this account"
+			"Choose which extensions can access this account",
 		);
 
 		quickPick.onDidAccept(() => {
 			const updatedAllowedList = quickPick.items.map(
-				(i) => (i as TrustedExtensionsQuickPickItem).extension
+				(i) => (i as TrustedExtensionsQuickPickItem).extension,
 			);
 			this.storageService.store(
 				`${this.id}-${accountName}`,
 				JSON.stringify(updatedAllowedList),
 				StorageScope.APPLICATION,
-				StorageTarget.USER
+				StorageTarget.USER,
 			);
 
 			quickPick.dispose();
@@ -152,8 +152,9 @@ export class MainThreadAuthenticationProvider
 		quickPick.onDidChangeSelection((changed) => {
 			quickPick.items.forEach((item) => {
 				if ((item as TrustedExtensionsQuickPickItem).extension) {
-					(item as TrustedExtensionsQuickPickItem).extension.allowed =
-						false;
+					(
+						item as TrustedExtensionsQuickPickItem
+					).extension.allowed = false;
 				}
 			});
 
@@ -173,12 +174,12 @@ export class MainThreadAuthenticationProvider
 
 	async removeAccountSessions(
 		accountName: string,
-		sessions: AuthenticationSession[]
+		sessions: AuthenticationSession[],
 	): Promise<void> {
 		const accountUsages = readAccountUsages(
 			this.storageService,
 			this.id,
-			accountName
+			accountName,
 		);
 
 		const { confirmed } = await this.dialogService.confirm({
@@ -190,28 +191,28 @@ export class MainThreadAuthenticationProvider
 						accountName,
 						accountUsages
 							.map((usage) => usage.extensionName)
-							.join("\n")
-					)
+							.join("\n"),
+				  )
 				: nls.localize(
 						"signOutMessageSimple",
 						"Sign out of '{0}'?",
-						accountName
-					),
+						accountName,
+				  ),
 			primaryButton: nls.localize(
 				{ key: "signOut", comment: ["&& denotes a mnemonic"] },
-				"&&Sign Out"
+				"&&Sign Out",
 			),
 		});
 
 		if (confirmed) {
 			const removeSessionPromises = sessions.map((session) =>
-				this.removeSession(session.id)
+				this.removeSession(session.id),
 			);
 			await Promise.all(removeSessionPromises);
 			removeAccountUsage(this.storageService, this.id, accountName);
 			this.storageService.remove(
 				`${this.id}-${accountName}`,
-				StorageScope.APPLICATION
+				StorageScope.APPLICATION,
 			);
 		}
 	}
@@ -222,7 +223,7 @@ export class MainThreadAuthenticationProvider
 
 	createSession(
 		scopes: string[],
-		options: IAuthenticationCreateSessionOptions
+		options: IAuthenticationCreateSessionOptions,
 	): Promise<AuthenticationSession> {
 		return this._proxy.$createSession(this.id, scopes, options);
 	}
@@ -230,7 +231,7 @@ export class MainThreadAuthenticationProvider
 	async removeSession(sessionId: string): Promise<void> {
 		await this._proxy.$removeSession(this.id, sessionId);
 		this.notificationService.info(
-			nls.localize("signedOut", "Successfully signed out.")
+			nls.localize("signedOut", "Successfully signed out."),
 		);
 	}
 }
@@ -281,7 +282,7 @@ export class MainThreadAuthentication
 	async $registerAuthenticationProvider(
 		id: string,
 		label: string,
-		supportsMultipleAccounts: boolean
+		supportsMultipleAccounts: boolean,
 	): Promise<void> {
 		const provider = new MainThreadAuthenticationProvider(
 			this._proxy,
@@ -291,7 +292,7 @@ export class MainThreadAuthentication
 			this.notificationService,
 			this.storageService,
 			this.quickInputService,
-			this.dialogService
+			this.dialogService,
 		);
 		this.authenticationService.registerAuthenticationProvider(id, provider);
 	}
@@ -303,13 +304,13 @@ export class MainThreadAuthentication
 	$ensureProvider(id: string): Promise<void> {
 		return this.extensionService.activateByEvent(
 			getAuthenticationProviderActivationEvent(id),
-			ActivationKind.Immediate
+			ActivationKind.Immediate,
 		);
 	}
 
 	$sendDidChangeSessions(
 		id: string,
-		event: AuthenticationSessionsChangeEvent
+		event: AuthenticationSessionsChangeEvent,
 	): void {
 		this.authenticationService.sessionsUpdate(id, event);
 	}
@@ -321,28 +322,28 @@ export class MainThreadAuthentication
 		providerName: string,
 		extensionName: string,
 		recreatingSession: boolean,
-		detail?: string
+		detail?: string,
 	): Promise<boolean> {
 		const message = recreatingSession
 			? nls.localize(
 					"confirmRelogin",
 					"The extension '{0}' wants you to sign in again using {1}.",
 					extensionName,
-					providerName
-				)
+					providerName,
+			  )
 			: nls.localize(
 					"confirmLogin",
 					"The extension '{0}' wants to sign in using {1}.",
 					extensionName,
-					providerName
-				);
+					providerName,
+			  );
 		const { confirmed } = await this.dialogService.confirm({
 			type: Severity.Info,
 			message,
 			detail,
 			primaryButton: nls.localize(
 				{ key: "allow", comment: ["&& denotes a mnemonic"] },
-				"&&Allow"
+				"&&Allow",
 			),
 		});
 
@@ -354,12 +355,12 @@ export class MainThreadAuthentication
 		scopes: string[],
 		extensionId: string,
 		extensionName: string,
-		options: AuthenticationGetSessionOptions
+		options: AuthenticationGetSessionOptions,
 	): Promise<AuthenticationSession | undefined> {
 		const sessions = await this.authenticationService.getSessions(
 			providerId,
 			scopes,
-			true
+			true,
 		);
 		const supportsMultipleAccounts =
 			this.authenticationService.supportsMultipleAccounts(providerId);
@@ -367,17 +368,17 @@ export class MainThreadAuthentication
 		// Error cases
 		if (options.forceNewSession && options.createIfNone) {
 			throw new Error(
-				"Invalid combination of options. Please remove one of the following: forceNewSession, createIfNone"
+				"Invalid combination of options. Please remove one of the following: forceNewSession, createIfNone",
 			);
 		}
 		if (options.forceNewSession && options.silent) {
 			throw new Error(
-				"Invalid combination of options. Please remove one of the following: forceNewSession, silent"
+				"Invalid combination of options. Please remove one of the following: forceNewSession, silent",
 			);
 		}
 		if (options.createIfNone && options.silent) {
 			throw new Error(
-				"Invalid combination of options. Please remove one of the following: createIfNone, silent"
+				"Invalid combination of options. Please remove one of the following: createIfNone, silent",
 			);
 		}
 
@@ -390,7 +391,7 @@ export class MainThreadAuthentication
 					this.authenticationService.removeSessionPreference(
 						providerId,
 						extensionId,
-						scopes
+						scopes,
 					);
 				} else {
 					// If we have an existing session preference, use that. If not, we'll return any valid session at the end of this function.
@@ -398,19 +399,19 @@ export class MainThreadAuthentication
 						this.authenticationService.getSessionPreference(
 							providerId,
 							extensionId,
-							scopes
+							scopes,
 						);
 					if (existingSessionPreference) {
 						const matchingSession = sessions.find(
 							(session) =>
-								session.id === existingSessionPreference
+								session.id === existingSessionPreference,
 						);
 						if (
 							matchingSession &&
 							this.authenticationService.isAccessAllowed(
 								providerId,
 								matchingSession.account.label,
-								extensionId
+								extensionId,
 							)
 						) {
 							return matchingSession;
@@ -421,7 +422,7 @@ export class MainThreadAuthentication
 				this.authenticationService.isAccessAllowed(
 					providerId,
 					sessions[0].account.label,
-					extensionId
+					extensionId,
 				)
 			) {
 				return sessions[0];
@@ -447,7 +448,7 @@ export class MainThreadAuthentication
 				providerName,
 				extensionName,
 				recreatingSession,
-				detail
+				detail,
 			);
 			if (!isAllowed) {
 				throw new Error("User did not consent to login.");
@@ -461,8 +462,8 @@ export class MainThreadAuthentication
 							extensionId,
 							extensionName,
 							scopes,
-							sessions
-						)
+							sessions,
+					  )
 					: sessions[0];
 			} else {
 				let sessionToRecreate: AuthenticationSession | undefined;
@@ -477,18 +478,18 @@ export class MainThreadAuthentication
 						this.authenticationService.getSessionPreference(
 							providerId,
 							extensionId,
-							scopes
+							scopes,
 						);
 					sessionToRecreate = sessionIdToRecreate
 						? sessions.find(
-								(session) => session.id === sessionIdToRecreate
-							)
+								(session) => session.id === sessionIdToRecreate,
+						  )
 						: undefined;
 				}
 				session = await this.authenticationService.createSession(
 					providerId,
 					scopes,
-					{ activateImmediate: true, sessionToRecreate }
+					{ activateImmediate: true, sessionToRecreate },
 				);
 			}
 
@@ -497,12 +498,12 @@ export class MainThreadAuthentication
 				session.account.label,
 				extensionId,
 				extensionName,
-				true
+				true,
 			);
 			this.authenticationService.updateSessionPreference(
 				providerId,
 				extensionId,
-				session
+				session,
 			);
 			return session;
 		}
@@ -513,8 +514,8 @@ export class MainThreadAuthentication
 			this.authenticationService.isAccessAllowed(
 				providerId,
 				session.account.label,
-				extensionId
-			)
+				extensionId,
+			),
 		);
 		if (validSession) {
 			// Migration. If we have a valid session, but no preference, we'll set the preference to the valid session.
@@ -523,18 +524,18 @@ export class MainThreadAuthentication
 				!this.authenticationService.getSessionPreference(
 					providerId,
 					extensionId,
-					scopes
+					scopes,
 				)
 			) {
 				if (
 					this.storageService.get(
 						`${extensionName}-${providerId}`,
-						StorageScope.APPLICATION
+						StorageScope.APPLICATION,
 					)
 				) {
 					this.storageService.remove(
 						`${extensionName}-${providerId}`,
-						StorageScope.APPLICATION
+						StorageScope.APPLICATION,
 					);
 				}
 				this.authenticationService.updateAllowedExtension(
@@ -542,12 +543,12 @@ export class MainThreadAuthentication
 					validSession.account.label,
 					extensionId,
 					extensionName,
-					true
+					true,
 				);
 				this.authenticationService.updateSessionPreference(
 					providerId,
 					extensionId,
-					validSession
+					validSession,
 				);
 			}
 			return validSession;
@@ -563,14 +564,14 @@ export class MainThreadAuthentication
 						extensionId,
 						extensionName,
 						scopes,
-						sessions
-					)
+						sessions,
+				  )
 				: await this.authenticationService.requestNewSession(
 						providerId,
 						scopes,
 						extensionId,
-						extensionName
-					);
+						extensionName,
+				  );
 		}
 		return undefined;
 	}
@@ -580,14 +581,14 @@ export class MainThreadAuthentication
 		scopes: string[],
 		extensionId: string,
 		extensionName: string,
-		options: AuthenticationGetSessionOptions
+		options: AuthenticationGetSessionOptions,
 	): Promise<AuthenticationSession | undefined> {
 		const session = await this.doGetSession(
 			providerId,
 			scopes,
 			extensionId,
 			extensionName,
-			options
+			options,
 		);
 
 		if (session) {
@@ -597,7 +598,7 @@ export class MainThreadAuthentication
 				providerId,
 				session.account.label,
 				extensionId,
-				extensionName
+				extensionName,
 			);
 		}
 
@@ -608,19 +609,19 @@ export class MainThreadAuthentication
 		providerId: string,
 		scopes: readonly string[],
 		extensionId: string,
-		extensionName: string
+		extensionName: string,
 	): Promise<AuthenticationSession[]> {
 		const sessions = await this.authenticationService.getSessions(
 			providerId,
 			[...scopes],
-			true
+			true,
 		);
 		const accessibleSessions = sessions.filter((s) =>
 			this.authenticationService.isAccessAllowed(
 				providerId,
 				s.account.label,
-				extensionId
-			)
+				extensionId,
+			),
 		);
 		if (accessibleSessions.length) {
 			this.sendProviderUsageTelemetry(extensionId, providerId);
@@ -630,7 +631,7 @@ export class MainThreadAuthentication
 					providerId,
 					session.account.label,
 					extensionId,
-					extensionName
+					extensionName,
 				);
 			}
 		}
@@ -639,7 +640,7 @@ export class MainThreadAuthentication
 
 	private sendProviderUsageTelemetry(
 		extensionId: string,
-		providerId: string
+		providerId: string,
 	): void {
 		type AuthProviderUsageClassification = {
 			owner: "TylerLeonhardt";

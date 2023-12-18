@@ -5,20 +5,20 @@
 
 import * as vscode from "vscode";
 import { CommandManager } from "./commands/commandManager";
+import { ServiceConfigurationProvider } from "./configuration/configuration";
+import * as fileSchemes from "./configuration/fileSchemes";
+import { standardLanguageDescriptions } from "./configuration/languageDescription";
 import { IExperimentationTelemetryReporter } from "./experimentTelemetryReporter";
+import { Logger } from "./logging/logger";
 import { OngoingRequestCancellerFactory } from "./tsServer/cancellation";
 import { ILogDirectoryProvider } from "./tsServer/logDirectoryProvider";
+import { PluginManager } from "./tsServer/plugins";
 import { TsServerProcessFactory } from "./tsServer/server";
 import { ITypeScriptVersionProvider } from "./tsServer/versionProvider";
 import TypeScriptServiceClientHost from "./typeScriptServiceClientHost";
 import { ActiveJsTsEditorTracker } from "./ui/activeJsTsEditorTracker";
 import ManagedFileContextManager from "./ui/managedFileContext";
-import { ServiceConfigurationProvider } from "./configuration/configuration";
-import * as fileSchemes from "./configuration/fileSchemes";
-import { standardLanguageDescriptions } from "./configuration/languageDescription";
 import { Lazy, lazy } from "./utils/lazy";
-import { Logger } from "./logging/logger";
-import { PluginManager } from "./tsServer/plugins";
 
 export function createLazyClientHost(
 	context: vscode.ExtensionContext,
@@ -37,7 +37,7 @@ export function createLazyClientHost(
 			| undefined;
 		logger: Logger;
 	},
-	onCompletionAccepted: (item: vscode.CompletionItem) => void
+	onCompletionAccepted: (item: vscode.CompletionItem) => void,
 ): Lazy<TypeScriptServiceClientHost> {
 	return lazy(() => {
 		const clientHost = new TypeScriptServiceClientHost(
@@ -45,7 +45,7 @@ export function createLazyClientHost(
 			context,
 			onCaseInsensitiveFileSystem,
 			services,
-			onCompletionAccepted
+			onCompletionAccepted,
 		);
 
 		context.subscriptions.push(clientHost);
@@ -58,7 +58,7 @@ export function lazilyActivateClient(
 	lazyClientHost: Lazy<TypeScriptServiceClientHost>,
 	pluginManager: PluginManager,
 	activeJsTsEditorTracker: ActiveJsTsEditorTracker,
-	onActivate: () => Promise<void> = () => Promise.resolve()
+	onActivate: () => Promise<void> = () => Promise.resolve(),
 ): vscode.Disposable {
 	const disposables: vscode.Disposable[] = [];
 
@@ -80,7 +80,7 @@ export function lazilyActivateClient(
 				void lazyClientHost.value;
 
 				disposables.push(
-					new ManagedFileContextManager(activeJsTsEditorTracker)
+					new ManagedFileContextManager(activeJsTsEditorTracker),
 				);
 			});
 
@@ -98,7 +98,7 @@ export function lazilyActivateClient(
 				}
 			},
 			undefined,
-			disposables
+			disposables,
 		);
 	}
 
@@ -107,7 +107,7 @@ export function lazilyActivateClient(
 
 function isSupportedDocument(
 	supportedLanguage: readonly string[],
-	document: vscode.TextDocument
+	document: vscode.TextDocument,
 ): boolean {
 	return (
 		supportedLanguage.indexOf(document.languageId) >= 0 &&

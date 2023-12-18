@@ -32,6 +32,7 @@ import {
 	transaction,
 } from "vs/base/common/observable";
 import { ThemeIcon } from "vs/base/common/themables";
+import "vs/css!./accessibleDiffViewer";
 import { applyFontInfo } from "vs/editor/browser/config/domFontInfo";
 import { DiffEditorEditors } from "vs/editor/browser/widget/diffEditor/diffEditorEditors";
 import { applyStyle } from "vs/editor/browser/widget/diffEditor/utils";
@@ -64,31 +65,30 @@ import {
 } from "vs/platform/audioCues/browser/audioCueService";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { registerIcon } from "vs/platform/theme/common/iconRegistry";
-import "vs/css!./accessibleDiffViewer";
 
 const accessibleDiffViewerInsertIcon = registerIcon(
 	"diff-review-insert",
 	Codicon.add,
 	localize(
 		"accessibleDiffViewerInsertIcon",
-		"Icon for 'Insert' in accessible diff viewer."
-	)
+		"Icon for 'Insert' in accessible diff viewer.",
+	),
 );
 const accessibleDiffViewerRemoveIcon = registerIcon(
 	"diff-review-remove",
 	Codicon.remove,
 	localize(
 		"accessibleDiffViewerRemoveIcon",
-		"Icon for 'Remove' in accessible diff viewer."
-	)
+		"Icon for 'Remove' in accessible diff viewer.",
+	),
 );
 const accessibleDiffViewerCloseIcon = registerIcon(
 	"diff-review-close",
 	Codicon.close,
 	localize(
 		"accessibleDiffViewerCloseIcon",
-		"Icon for 'Close' in accessible diff viewer."
-	)
+		"Icon for 'Close' in accessible diff viewer.",
+	),
 );
 
 export class AccessibleDiffViewer extends Disposable {
@@ -128,8 +128,8 @@ export class AccessibleDiffViewer extends Disposable {
 				this._diffs,
 				this._editors,
 				this._setVisible,
-				this._canClose
-			)
+				this._canClose,
+			),
 		);
 		const view = store.add(
 			this._instantiationService.createInstance(
@@ -138,8 +138,8 @@ export class AccessibleDiffViewer extends Disposable {
 				model,
 				this._width,
 				this._height,
-				this._editors
-			)
+				this._editors,
+			),
 		);
 		return { model, view };
 	}).recomputeInitiallyAndOnChange(this._store);
@@ -181,7 +181,7 @@ class ViewModel extends Disposable {
 
 	public readonly currentElement: IObservable<ViewElement | undefined> =
 		this._currentElementIdx.map(
-			(idx, r) => this.currentGroup.read(r)?.lines[idx]
+			(idx, r) => this.currentGroup.read(r)?.lines[idx],
 		);
 
 	constructor(
@@ -276,9 +276,9 @@ class ViewModel extends Disposable {
 		subtransaction(tx, (tx) => {
 			this._currentGroupIdx.set(
 				OffsetRange.ofLength(groups.length).clipCyclic(
-					this._currentGroupIdx.get() + delta
+					this._currentGroupIdx.get() + delta,
 				),
-				tx
+				tx,
 			);
 			this._currentElementIdx.set(0, tx);
 		});
@@ -299,9 +299,9 @@ class ViewModel extends Disposable {
 		transaction((tx) => {
 			this._currentElementIdx.set(
 				OffsetRange.ofLength(group.lines.length).clip(
-					this._currentElementIdx.get() + delta
+					this._currentElementIdx.get() + delta,
 				),
-				tx
+				tx,
 			);
 		});
 	}
@@ -335,8 +335,8 @@ class ViewModel extends Disposable {
 			if (curElem.type === LineType.Deleted) {
 				this._editors.original.setSelection(
 					Range.fromPositions(
-						new Position(curElem.originalLineNumber, 1)
-					)
+						new Position(curElem.originalLineNumber, 1),
+					),
 				);
 				this._editors.original.revealLine(curElem.originalLineNumber);
 				this._editors.original.focus();
@@ -344,11 +344,11 @@ class ViewModel extends Disposable {
 				if (curElem.type !== LineType.Header) {
 					this._editors.modified.setSelection(
 						Range.fromPositions(
-							new Position(curElem.modifiedLineNumber, 1)
-						)
+							new Position(curElem.modifiedLineNumber, 1),
+						),
 					);
 					this._editors.modified.revealLine(
-						curElem.modifiedLineNumber
+						curElem.modifiedLineNumber,
 					);
 				}
 				this._editors.modified.focus();
@@ -367,7 +367,7 @@ const viewElementGroupLineMargin = 3;
 function computeViewElementGroups(
 	diffs: DetailedLineRangeMapping[],
 	originalLineCount: number,
-	modifiedLineCount: number
+	modifiedLineCount: number,
 ): ViewElementGroup[] {
 	const result: ViewElementGroup[] = [];
 
@@ -375,7 +375,7 @@ function computeViewElementGroups(
 		diffs,
 		(a, b) =>
 			b.modified.startLineNumber - a.modified.endLineNumberExclusive <
-			2 * viewElementGroupLineMargin
+			2 * viewElementGroupLineMargin,
 	)) {
 		const viewElements: ViewElement[] = [];
 		viewElements.push(new HeaderViewElement());
@@ -383,24 +383,24 @@ function computeViewElementGroups(
 		const origFullRange = new LineRange(
 			Math.max(
 				1,
-				g[0].original.startLineNumber - viewElementGroupLineMargin
+				g[0].original.startLineNumber - viewElementGroupLineMargin,
 			),
 			Math.min(
 				g[g.length - 1].original.endLineNumberExclusive +
 					viewElementGroupLineMargin,
-				originalLineCount + 1
-			)
+				originalLineCount + 1,
+			),
 		);
 		const modifiedFullRange = new LineRange(
 			Math.max(
 				1,
-				g[0].modified.startLineNumber - viewElementGroupLineMargin
+				g[0].modified.startLineNumber - viewElementGroupLineMargin,
 			),
 			Math.min(
 				g[g.length - 1].modified.endLineNumberExclusive +
 					viewElementGroupLineMargin,
-				modifiedLineCount + 1
-			)
+				modifiedLineCount + 1,
+			),
 		);
 
 		forEachAdjacent(g, (a, b) => {
@@ -410,7 +410,7 @@ function computeViewElementGroups(
 					: origFullRange.startLineNumber,
 				b
 					? b.original.startLineNumber
-					: origFullRange.endLineNumberExclusive
+					: origFullRange.endLineNumberExclusive,
 			);
 			const modifiedRange = new LineRange(
 				a
@@ -418,7 +418,7 @@ function computeViewElementGroups(
 					: modifiedFullRange.startLineNumber,
 				b
 					? b.modified.startLineNumber
-					: modifiedFullRange.endLineNumberExclusive
+					: modifiedFullRange.endLineNumberExclusive,
 			);
 
 			origRange.forEach((origLineNumber) => {
@@ -426,20 +426,20 @@ function computeViewElementGroups(
 					new UnchangedLineViewElement(
 						origLineNumber,
 						modifiedRange.startLineNumber +
-							(origLineNumber - origRange.startLineNumber)
-					)
+							(origLineNumber - origRange.startLineNumber),
+					),
 				);
 			});
 
 			if (b) {
 				b.original.forEach((origLineNumber) => {
 					viewElements.push(
-						new DeletedLineViewElement(b, origLineNumber)
+						new DeletedLineViewElement(b, origLineNumber),
 					);
 				});
 				b.modified.forEach((modifiedLineNumber) => {
 					viewElements.push(
-						new AddedLineViewElement(b, modifiedLineNumber)
+						new AddedLineViewElement(b, modifiedLineNumber),
 					);
 				});
 			}
@@ -451,24 +451,24 @@ function computeViewElementGroups(
 		result.push(
 			new ViewElementGroup(
 				new LineRangeMapping(modifiedRange, originalRange),
-				viewElements
-			)
+				viewElements,
+			),
 		);
 	}
 	return result;
 }
 
 enum LineType {
-	Header,
-	Unchanged,
-	Deleted,
-	Added,
+	Header = 0,
+	Unchanged = 1,
+	Deleted = 2,
+	Added = 3,
 }
 
 class ViewElementGroup {
 	constructor(
 		public readonly range: LineRangeMapping,
-		public readonly lines: readonly ViewElement[]
+		public readonly lines: readonly ViewElement[],
 	) {}
 }
 
@@ -489,7 +489,7 @@ class DeletedLineViewElement {
 
 	constructor(
 		public readonly diff: DetailedLineRangeMapping,
-		public readonly originalLineNumber: number
+		public readonly originalLineNumber: number,
 	) {}
 }
 
@@ -500,7 +500,7 @@ class AddedLineViewElement {
 
 	constructor(
 		public readonly diff: DetailedLineRangeMapping,
-		public readonly modifiedLineNumber: number
+		public readonly modifiedLineNumber: number,
 	) {}
 }
 
@@ -508,7 +508,7 @@ class UnchangedLineViewElement {
 	public readonly type = LineType.Unchanged;
 	constructor(
 		public readonly originalLineNumber: number,
-		public readonly modifiedLineNumber: number
+		public readonly modifiedLineNumber: number,
 	) {}
 }
 
@@ -641,8 +641,8 @@ class View extends Disposable {
 			"aria-label",
 			localize(
 				"ariaLabel",
-				"Accessible Diff Viewer. Use arrow up and down to navigate."
-			)
+				"Accessible Diff Viewer. Use arrow up and down to navigate.",
+			),
 		);
 		applyFontInfo(container, modifiedOptions.get(EditorOption.fontInfo));
 
@@ -677,18 +677,18 @@ class View extends Disposable {
 					lines === 0
 						? localize("no_lines_changed", "no lines changed")
 						: lines === 1
-							? localize("one_line_changed", "1 line changed")
-							: localize(
+						  ? localize("one_line_changed", "1 line changed")
+						  : localize(
 									"more_lines_changed",
 									"{0} lines changed",
-									lines
-								);
+									lines,
+							  );
 
 				const originalChangedLinesCntAria = getAriaLines(
-					r.original.length
+					r.original.length,
 				);
 				const modifiedChangedLinesCntAria = getAriaLines(
-					r.modified.length
+					r.modified.length,
 				);
 				header.setAttribute(
 					"aria-label",
@@ -710,8 +710,8 @@ class View extends Disposable {
 						r.original.startLineNumber,
 						originalChangedLinesCntAria,
 						r.modified.startLineNumber,
-						modifiedChangedLinesCntAria
-					)
+						modifiedChangedLinesCntAria,
+					),
 				);
 
 				const cell = document.createElement("div");
@@ -723,8 +723,8 @@ class View extends Disposable {
 							r.original.startLineNumber
 						},${r.original.length} +${r.modified.startLineNumber},${
 							r.modified.length
-						} @@`
-					)
+						} @@`,
+					),
 				);
 				header.appendChild(cell);
 
@@ -739,7 +739,7 @@ class View extends Disposable {
 					originalModelOpts,
 					modifiedOptions,
 					modifiedModel,
-					modifiedModelOpts
+					modifiedModelOpts,
 				);
 			}
 
@@ -748,8 +748,8 @@ class View extends Disposable {
 			const isSelectedObs = derived(
 				(reader) =>
 					/** @description isSelected */ this._model.currentElement.read(
-						reader
-					) === viewItem
+						reader,
+					) === viewItem,
 			);
 
 			store.add(
@@ -760,13 +760,13 @@ class View extends Disposable {
 					if (isSelected) {
 						row.focus();
 					}
-				})
+				}),
 			);
 
 			store.add(
 				addDisposableListener(row, "focus", () => {
 					this._model.goToLine(viewItem);
-				})
+				}),
 			);
 		}
 
@@ -785,7 +785,7 @@ class View extends Disposable {
 		originalModelOpts: TextModelResolvedOptions,
 		modifiedOptions: IComputedEditorOptions,
 		modifiedModel: ITextModel,
-		modifiedModelOpts: TextModelResolvedOptions
+		modifiedModelOpts: TextModelResolvedOptions,
 	): HTMLDivElement {
 		const originalLayoutInfo = originalOptions.get(EditorOption.layoutInfo);
 		const originalLineNumbersWidth =
@@ -798,8 +798,8 @@ class View extends Disposable {
 			modifiedLayoutInfo.glyphMarginWidth +
 			modifiedLayoutInfo.lineNumbersWidth;
 
-		let rowClassName: string = "diff-review-row";
-		let lineNumbersExtraClassName: string = "";
+		let rowClassName = "diff-review-row";
+		let lineNumbersExtraClassName = "";
 		const spacerClassName: string = "diff-review-spacer";
 		let spacerIcon: ThemeIcon | null = null;
 		switch (item.type) {
@@ -833,7 +833,7 @@ class View extends Disposable {
 			"diff-review-line-number" + lineNumbersExtraClassName;
 		if (item.originalLineNumber !== undefined) {
 			originalLineNumber.appendChild(
-				document.createTextNode(String(item.originalLineNumber))
+				document.createTextNode(String(item.originalLineNumber)),
 			);
 		} else {
 			originalLineNumber.innerText = "\u00a0";
@@ -848,7 +848,7 @@ class View extends Disposable {
 			"diff-review-line-number" + lineNumbersExtraClassName;
 		if (item.modifiedLineNumber !== undefined) {
 			modifiedLineNumber.appendChild(
-				document.createTextNode(String(item.modifiedLineNumber))
+				document.createTextNode(String(item.modifiedLineNumber)),
 			);
 		} else {
 			modifiedLineNumber.innerText = "\u00a0";
@@ -875,11 +875,11 @@ class View extends Disposable {
 				modifiedOptions,
 				modifiedModelOpts.tabSize,
 				item.modifiedLineNumber,
-				this._languageService.languageIdCodec
+				this._languageService.languageIdCodec,
 			);
 			if (AccessibleDiffViewer._ttPolicy) {
 				html = AccessibleDiffViewer._ttPolicy.createHTML(
-					html as string
+					html as string,
 				);
 			}
 			cell.insertAdjacentHTML("beforeend", html as string);
@@ -890,11 +890,11 @@ class View extends Disposable {
 				originalOptions,
 				originalModelOpts.tabSize,
 				item.originalLineNumber,
-				this._languageService.languageIdCodec
+				this._languageService.languageIdCodec,
 			);
 			if (AccessibleDiffViewer._ttPolicy) {
 				html = AccessibleDiffViewer._ttPolicy.createHTML(
-					html as string
+					html as string,
 				);
 			}
 			cell.insertAdjacentHTML("beforeend", html as string);
@@ -905,7 +905,7 @@ class View extends Disposable {
 			lineContent = localize("blankLine", "blank");
 		}
 
-		let ariaLabel: string = "";
+		let ariaLabel = "";
 		switch (item.type) {
 			case LineType.Unchanged:
 				if (item.originalLineNumber === item.modifiedLineNumber) {
@@ -918,7 +918,7 @@ class View extends Disposable {
 						},
 						"{0} unchanged line {1}",
 						lineContent,
-						item.originalLineNumber
+						item.originalLineNumber,
 					);
 				} else {
 					ariaLabel = localize(
@@ -926,7 +926,7 @@ class View extends Disposable {
 						"{0} original line {1} modified line {2}",
 						lineContent,
 						item.originalLineNumber,
-						item.modifiedLineNumber
+						item.modifiedLineNumber,
 					);
 				}
 				break;
@@ -935,7 +935,7 @@ class View extends Disposable {
 					"insertLine",
 					"+ {0} modified line {1}",
 					lineContent,
-					item.modifiedLineNumber
+					item.modifiedLineNumber,
 				);
 				break;
 			case LineType.Deleted:
@@ -943,7 +943,7 @@ class View extends Disposable {
 					"deleteLine",
 					"- {0} original line {1}",
 					lineContent,
-					item.originalLineNumber
+					item.originalLineNumber,
 				);
 				break;
 		}
@@ -957,19 +957,19 @@ class View extends Disposable {
 		options: IComputedEditorOptions,
 		tabSize: number,
 		lineNumber: number,
-		languageIdCodec: ILanguageIdCodec
+		languageIdCodec: ILanguageIdCodec,
 	): string {
 		const lineContent = model.getLineContent(lineNumber);
 		const fontInfo = options.get(EditorOption.fontInfo);
 		const lineTokens = LineTokens.createEmpty(lineContent, languageIdCodec);
 		const isBasicASCII = ViewLineRenderingData.isBasicASCII(
 			lineContent,
-			model.mightContainNonBasicASCII()
+			model.mightContainNonBasicASCII(),
 		);
 		const containsRTL = ViewLineRenderingData.containsRTL(
 			lineContent,
 			isBasicASCII,
-			model.mightContainRTL()
+			model.mightContainRTL(),
 		);
 		const r = renderViewLine2(
 			new RenderLineInput(
@@ -993,8 +993,8 @@ class View extends Disposable {
 				options.get(EditorOption.renderControlCharacters),
 				options.get(EditorOption.fontLigatures) !==
 					EditorFontLigatures.OFF,
-				null
-			)
+				null,
+			),
 		);
 
 		return r.html;

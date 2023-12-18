@@ -4,12 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as aria from "vs/base/browser/ui/aria/aria";
+import { mainWindow } from "vs/base/browser/window";
 import {
 	Disposable,
+	DisposableStore,
 	IDisposable,
 	toDisposable,
-	DisposableStore,
 } from "vs/base/common/lifecycle";
+import { URI } from "vs/base/common/uri";
+import { IEditorConstructionOptions } from "vs/editor/browser/config/editorConfiguration";
 import {
 	ICodeEditor,
 	IDiffEditor,
@@ -17,23 +20,38 @@ import {
 } from "vs/editor/browser/editorBrowser";
 import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
 import { CodeEditorWidget } from "vs/editor/browser/widget/codeEditorWidget";
+import { DiffEditorWidget } from "vs/editor/browser/widget/diffEditor/diffEditorWidget";
 import {
 	IDiffEditorOptions,
 	IEditorOptions,
 } from "vs/editor/common/config/editorOptions";
 import { InternalEditorAction } from "vs/editor/common/editorAction";
 import { IModelChangedEvent } from "vs/editor/common/editorCommon";
+import {
+	ILanguageSelection,
+	ILanguageService,
+} from "vs/editor/common/languages/language";
+import { ILanguageConfigurationService } from "vs/editor/common/languages/languageConfigurationRegistry";
+import { PLAINTEXT_LANGUAGE_ID } from "vs/editor/common/languages/modesRegistry";
 import { ITextModel } from "vs/editor/common/model";
+import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
+import { IModelService } from "vs/editor/common/services/model";
+import { StandaloneCodeEditorNLS } from "vs/editor/common/standaloneStrings";
+import { StandaloneCodeEditorService } from "vs/editor/standalone/browser/standaloneCodeEditorService";
 import {
 	StandaloneKeybindingService,
 	updateConfigurationService,
 } from "vs/editor/standalone/browser/standaloneServices";
+import { StandaloneThemeService } from "vs/editor/standalone/browser/standaloneThemeService";
 import { IStandaloneThemeService } from "vs/editor/standalone/common/standaloneTheme";
+import { IAccessibilityService } from "vs/platform/accessibility/common/accessibility";
 import {
 	IMenuItem,
 	MenuId,
 	MenuRegistry,
 } from "vs/platform/actions/common/actions";
+import { IAudioCueService } from "vs/platform/audioCues/browser/audioCueService";
+import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
 import {
 	CommandsRegistry,
 	ICommandHandler,
@@ -53,26 +71,8 @@ import {
 } from "vs/platform/instantiation/common/instantiation";
 import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import { INotificationService } from "vs/platform/notification/common/notification";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import { IAccessibilityService } from "vs/platform/accessibility/common/accessibility";
-import { StandaloneCodeEditorNLS } from "vs/editor/common/standaloneStrings";
-import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
 import { IEditorProgressService } from "vs/platform/progress/common/progress";
-import { StandaloneThemeService } from "vs/editor/standalone/browser/standaloneThemeService";
-import { IModelService } from "vs/editor/common/services/model";
-import {
-	ILanguageSelection,
-	ILanguageService,
-} from "vs/editor/common/languages/language";
-import { URI } from "vs/base/common/uri";
-import { StandaloneCodeEditorService } from "vs/editor/standalone/browser/standaloneCodeEditorService";
-import { PLAINTEXT_LANGUAGE_ID } from "vs/editor/common/languages/modesRegistry";
-import { ILanguageConfigurationService } from "vs/editor/common/languages/languageConfigurationRegistry";
-import { IEditorConstructionOptions } from "vs/editor/browser/config/editorConfiguration";
-import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
-import { DiffEditorWidget } from "vs/editor/browser/widget/diffEditor/diffEditorWidget";
-import { IAudioCueService } from "vs/platform/audioCues/browser/audioCueService";
-import { mainWindow } from "vs/base/browser/window";
+import { IThemeService } from "vs/platform/theme/common/themeService";
 
 /**
  * Description of an action contribution
@@ -268,11 +268,11 @@ export interface IStandaloneCodeEditor extends ICodeEditor {
 	addCommand(
 		keybinding: number,
 		handler: ICommandHandler,
-		context?: string
+		context?: string,
 	): string | null;
 	createContextKey<T extends ContextKeyValue = ContextKeyValue>(
 		key: string,
-		defaultValue: T
+		defaultValue: T,
 	): IContextKey<T>;
 	addAction(descriptor: IActionDescriptor): IDisposable;
 }
@@ -281,11 +281,11 @@ export interface IStandaloneDiffEditor extends IDiffEditor {
 	addCommand(
 		keybinding: number,
 		handler: ICommandHandler,
-		context?: string
+		context?: string,
 	): string | null;
 	createContextKey<T extends ContextKeyValue = ContextKeyValue>(
 		key: string,
-		defaultValue: T
+		defaultValue: T,
 	): IContextKey<T>;
 	addAction(descriptor: IActionDescriptor): IDisposable;
 
@@ -334,7 +334,7 @@ export class StandaloneCodeEditor
 		@ILanguageConfigurationService
 		languageConfigurationService: ILanguageConfigurationService,
 		@ILanguageFeaturesService
-		languageFeaturesService: ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
 	) {
 		const options = { ..._options };
 		options.ariaLabel =
@@ -356,7 +356,7 @@ export class StandaloneCodeEditor
 			notificationService,
 			accessibilityService,
 			languageConfigurationService,
-			languageFeaturesService
+			languageFeaturesService,
 		);
 
 		if (keybindingService instanceof StandaloneKeybindingService) {
@@ -371,11 +371,11 @@ export class StandaloneCodeEditor
 	public addCommand(
 		keybinding: number,
 		handler: ICommandHandler,
-		context?: string
+		context?: string,
 	): string | null {
 		if (!this._standaloneKeybindingService) {
 			console.warn(
-				"Cannot add command because the editor is configured with an unrecognized KeybindingService"
+				"Cannot add command because the editor is configured with an unrecognized KeybindingService",
 			);
 			return null;
 		}
@@ -385,14 +385,14 @@ export class StandaloneCodeEditor
 			commandId,
 			keybinding,
 			handler,
-			whenExpression
+			whenExpression,
 		);
 		return commandId;
 	}
 
 	public createContextKey<T extends ContextKeyValue = ContextKeyValue>(
 		key: string,
-		defaultValue: T
+		defaultValue: T,
 	): IContextKey<T> {
 		return this._contextKeyService.createKey(key, defaultValue);
 	}
@@ -404,12 +404,12 @@ export class StandaloneCodeEditor
 			typeof _descriptor.run !== "function"
 		) {
 			throw new Error(
-				"Invalid action descriptor, `id`, `label` and `run` are required properties!"
+				"Invalid action descriptor, `id`, `label` and `run` are required properties!",
 			);
 		}
 		if (!this._standaloneKeybindingService) {
 			console.warn(
-				"Cannot add keybinding because the editor is configured with an unrecognized KeybindingService"
+				"Cannot add keybinding because the editor is configured with an unrecognized KeybindingService",
 			);
 			return Disposable.None;
 		}
@@ -419,12 +419,12 @@ export class StandaloneCodeEditor
 		const label = _descriptor.label;
 		const precondition = ContextKeyExpr.and(
 			ContextKeyExpr.equals("editorId", this.getId()),
-			ContextKeyExpr.deserialize(_descriptor.precondition)
+			ContextKeyExpr.deserialize(_descriptor.precondition),
 		);
 		const keybindings = _descriptor.keybindings;
 		const keybindingsWhen = ContextKeyExpr.and(
 			precondition,
-			ContextKeyExpr.deserialize(_descriptor.keybindingContext)
+			ContextKeyExpr.deserialize(_descriptor.keybindingContext),
 		);
 		const contextMenuGroupId = _descriptor.contextMenuGroupId || null;
 		const contextMenuOrder = _descriptor.contextMenuOrder || 0;
@@ -455,7 +455,7 @@ export class StandaloneCodeEditor
 				order: contextMenuOrder,
 			};
 			toDispose.add(
-				MenuRegistry.appendMenuItem(MenuId.EditorContext, menuItem)
+				MenuRegistry.appendMenuItem(MenuId.EditorContext, menuItem),
 			);
 		}
 
@@ -467,8 +467,8 @@ export class StandaloneCodeEditor
 						uniqueId,
 						kb,
 						run,
-						keybindingsWhen
-					)
+						keybindingsWhen,
+					),
 				);
 			}
 		}
@@ -482,7 +482,7 @@ export class StandaloneCodeEditor
 			precondition,
 			(...args: unknown[]) =>
 				Promise.resolve(_descriptor.run(this, ...args)),
-			this._contextKeyService
+			this._contextKeyService,
 		);
 
 		// Store it under the original id, such that trigger with the original id will work
@@ -490,7 +490,7 @@ export class StandaloneCodeEditor
 		toDispose.add(
 			toDisposable(() => {
 				this._actions.delete(id);
-			})
+			}),
 		);
 
 		return toDispose;
@@ -536,7 +536,7 @@ export class StandaloneEditor
 		@ILanguageConfigurationService
 		languageConfigurationService: ILanguageConfigurationService,
 		@ILanguageFeaturesService
-		languageFeaturesService: ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
 	) {
 		const options = { ..._options };
 		updateConfigurationService(configurationService, options, false);
@@ -548,7 +548,7 @@ export class StandaloneEditor
 		}
 		if (typeof options.autoDetectHighContrast !== "undefined") {
 			themeService.setAutoDetectHighContrast(
-				Boolean(options.autoDetectHighContrast)
+				Boolean(options.autoDetectHighContrast),
 			);
 		}
 		const _model: ITextModel | null | undefined = options.model;
@@ -565,7 +565,7 @@ export class StandaloneEditor
 			notificationService,
 			accessibilityService,
 			languageConfigurationService,
-			languageFeaturesService
+			languageFeaturesService,
 		);
 
 		this._configurationService = configurationService;
@@ -583,7 +583,7 @@ export class StandaloneEditor
 				languageService,
 				options.value || "",
 				languageId,
-				undefined
+				undefined,
 			);
 			this._ownsModel = true;
 		} else {
@@ -606,26 +606,26 @@ export class StandaloneEditor
 	}
 
 	public override updateOptions(
-		newOptions: Readonly<IEditorOptions & IGlobalEditorOptions>
+		newOptions: Readonly<IEditorOptions & IGlobalEditorOptions>,
 	): void {
 		updateConfigurationService(
 			this._configurationService,
 			newOptions,
-			false
+			false,
 		);
 		if (typeof newOptions.theme === "string") {
 			this._standaloneThemeService.setTheme(newOptions.theme);
 		}
 		if (typeof newOptions.autoDetectHighContrast !== "undefined") {
 			this._standaloneThemeService.setAutoDetectHighContrast(
-				Boolean(newOptions.autoDetectHighContrast)
+				Boolean(newOptions.autoDetectHighContrast),
 			);
 		}
 		super.updateOptions(newOptions);
 	}
 
 	protected override _postDetachModelCleanup(
-		detachedModel: ITextModel
+		detachedModel: ITextModel,
 	): void {
 		super._postDetachModelCleanup(detachedModel);
 		if (detachedModel && this._ownsModel) {
@@ -656,7 +656,7 @@ export class StandaloneDiffEditor2
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IEditorProgressService editorProgressService: IEditorProgressService,
 		@IClipboardService clipboardService: IClipboardService,
-		@IAudioCueService audioCueService: IAudioCueService
+		@IAudioCueService audioCueService: IAudioCueService,
 	) {
 		const options = { ..._options };
 		updateConfigurationService(configurationService, options, true);
@@ -668,7 +668,7 @@ export class StandaloneDiffEditor2
 		}
 		if (typeof options.autoDetectHighContrast !== "undefined") {
 			themeService.setAutoDetectHighContrast(
-				Boolean(options.autoDetectHighContrast)
+				Boolean(options.autoDetectHighContrast),
 			);
 		}
 
@@ -680,7 +680,7 @@ export class StandaloneDiffEditor2
 			instantiationService,
 			codeEditorService,
 			audioCueService,
-			editorProgressService
+			editorProgressService,
 		);
 
 		this._configurationService = configurationService;
@@ -694,19 +694,19 @@ export class StandaloneDiffEditor2
 	}
 
 	public override updateOptions(
-		newOptions: Readonly<IDiffEditorOptions & IGlobalEditorOptions>
+		newOptions: Readonly<IDiffEditorOptions & IGlobalEditorOptions>,
 	): void {
 		updateConfigurationService(
 			this._configurationService,
 			newOptions,
-			true
+			true,
 		);
 		if (typeof newOptions.theme === "string") {
 			this._standaloneThemeService.setTheme(newOptions.theme);
 		}
 		if (typeof newOptions.autoDetectHighContrast !== "undefined") {
 			this._standaloneThemeService.setAutoDetectHighContrast(
-				Boolean(newOptions.autoDetectHighContrast)
+				Boolean(newOptions.autoDetectHighContrast),
 			);
 		}
 		super.updateOptions(newOptions);
@@ -715,12 +715,12 @@ export class StandaloneDiffEditor2
 	protected override _createInnerEditor(
 		instantiationService: IInstantiationService,
 		container: HTMLElement,
-		options: Readonly<IEditorOptions>
+		options: Readonly<IEditorOptions>,
 	): CodeEditorWidget {
 		return instantiationService.createInstance(
 			StandaloneCodeEditor,
 			container,
-			options
+			options,
 		);
 	}
 
@@ -735,18 +735,18 @@ export class StandaloneDiffEditor2
 	public addCommand(
 		keybinding: number,
 		handler: ICommandHandler,
-		context?: string
+		context?: string,
 	): string | null {
 		return this.getModifiedEditor().addCommand(
 			keybinding,
 			handler,
-			context
+			context,
 		);
 	}
 
 	public createContextKey<T extends ContextKeyValue = ContextKeyValue>(
 		key: string,
-		defaultValue: T
+		defaultValue: T,
 	): IContextKey<T> {
 		return this.getModifiedEditor().createContextKey(key, defaultValue);
 	}
@@ -764,7 +764,7 @@ export function createTextModel(
 	languageService: ILanguageService,
 	value: string,
 	languageId: string | undefined,
-	uri: URI | undefined
+	uri: URI | undefined,
 ): ITextModel {
 	value = value || "";
 	if (!languageId) {
@@ -777,14 +777,14 @@ export function createTextModel(
 			modelService,
 			value,
 			languageService.createByFilepathOrFirstLine(uri || null, firstLine),
-			uri
+			uri,
 		);
 	}
 	return doCreateModel(
 		modelService,
 		value,
 		languageService.createById(languageId),
-		uri
+		uri,
 	);
 }
 
@@ -795,7 +795,7 @@ function doCreateModel(
 	modelService: IModelService,
 	value: string,
 	languageSelection: ILanguageSelection,
-	uri: URI | undefined
+	uri: URI | undefined,
 ): ITextModel {
 	return modelService.createModel(value, languageSelection, uri);
 }

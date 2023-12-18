@@ -166,7 +166,7 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 		const newEditorHeight = calculateEditorHeight(
 			this._parentEditor,
 			this.commentEditor,
-			this._editorHeight
+			this._editorHeight,
 		);
 		if (newEditorHeight !== this._editorHeight) {
 			this._editorHeight = newEditorHeight;
@@ -176,7 +176,7 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 	}
 
 	public updateCommentThread(
-		commentThread: languages.CommentThread<IRange | ICellRange>
+		commentThread: languages.CommentThread<IRange | ICellRange>,
 	) {
 		const isReplying = this.commentEditor.hasTextFocus();
 
@@ -249,10 +249,10 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 	}
 
 	public updateCanReply() {
-		if (!this._commentThread.canReply) {
-			this.form.style.display = "none";
-		} else {
+		if (this._commentThread.canReply) {
 			this.form.style.display = "block";
+		} else {
+			this.form.style.display = "none";
 		}
 	}
 
@@ -272,10 +272,10 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 				valueLength > 0
 					? ""
 					: hasExistingComments
-						? this._commentOptions?.placeHolder ||
-							nls.localize("reply", "Reply...")
-						: this._commentOptions?.placeHolder ||
-							nls.localize("newComment", "Type a new comment");
+					  ? this._commentOptions?.placeHolder ||
+						  nls.localize("reply", "Reply...")
+					  : this._commentOptions?.placeHolder ||
+						  nls.localize("newComment", "Type a new comment");
 			const decorations = [
 				{
 					range: {
@@ -289,7 +289,7 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 							contentText: placeholder,
 							color: `${resolveColorValue(
 								editorForeground,
-								this.themeService.getColorTheme()
+								this.themeService.getColorTheme(),
 							)?.transparent(0.4)}`,
 						},
 					},
@@ -299,14 +299,14 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 			this.commentEditor.setDecorationsByType(
 				"review-zone-widget",
 				COMMENTEDITOR_DECORATION_KEY,
-				decorations
+				decorations,
 			);
 		}
 	}
 
 	private createTextModelListener(
 		commentEditor: ICodeEditor,
-		commentForm: HTMLElement
+		commentForm: HTMLElement,
 	) {
 		this._commentThreadDisposables.push(
 			commentEditor.onDidFocusEditorWidget(() => {
@@ -315,7 +315,7 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 					value: commentEditor.getValue(),
 				};
 				this.commentService.setActiveCommentThread(this._commentThread);
-			})
+			}),
 		);
 
 		this._commentThreadDisposables.push(
@@ -333,7 +333,7 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 					this._commentThread.input = newInput;
 				}
 				this.commentService.setActiveCommentThread(this._commentThread);
-			})
+			}),
 		);
 
 		this._commentThreadDisposables.push(
@@ -358,7 +358,7 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 						this._error.classList.add("hidden");
 					}
 				}
-			})
+			}),
 		);
 	}
 
@@ -367,17 +367,17 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 	 */
 	private createCommentWidgetFormActions(
 		container: HTMLElement,
-		model: ITextModel
+		model: ITextModel,
 	) {
 		const menu = this._commentMenus.getCommentThreadActions(
-			this._contextKeyService
+			this._contextKeyService,
 		);
 
 		this._register(menu);
 		this._register(
 			menu.onDidChange(() => {
 				this._commentFormActions.setActions(menu);
-			})
+			}),
 		);
 
 		this._commentFormActions = new CommentFormActions(
@@ -392,7 +392,7 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 				});
 
 				this.hideReplyArea();
-			}
+			},
 		);
 
 		this._register(this._commentFormActions);
@@ -401,16 +401,16 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 
 	private createCommentWidgetEditorActions(
 		container: HTMLElement,
-		model: ITextModel
+		model: ITextModel,
 	) {
 		const editorMenu = this._commentMenus.getCommentEditorActions(
-			this._contextKeyService
+			this._contextKeyService,
 		);
 		this._register(editorMenu);
 		this._register(
 			editorMenu.onDidChange(() => {
 				this._commentEditorActions.setActions(editorMenu);
-			})
+			}),
 		);
 
 		this._commentEditorActions = new CommentFormActions(
@@ -425,7 +425,7 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 				});
 
 				this.focusCommentEditor();
-			}
+			},
 		);
 
 		this._register(this._commentEditorActions);
@@ -462,14 +462,14 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 
 	private createReplyButton(
 		commentEditor: ICodeEditor,
-		commentForm: HTMLElement
+		commentForm: HTMLElement,
 	) {
 		this._reviewThreadReplyButton = <HTMLButtonElement>(
 			dom.append(
 				commentForm,
 				dom.$(
-					`button.review-thread-reply-button.${MOUSE_CURSOR_TEXT_CSS_CLASS_NAME}`
-				)
+					`button.review-thread-reply-button.${MOUSE_CURSOR_TEXT_CSS_CLASS_NAME}`,
+				),
 			)
 		);
 		this._reviewThreadReplyButton.title =
@@ -482,15 +482,15 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 			dom.addDisposableListener(
 				this._reviewThreadReplyButton,
 				"click",
-				(_) => this.clearAndExpandReplyArea()
-			)
+				(_) => this.clearAndExpandReplyArea(),
+			),
 		);
 		this._register(
 			dom.addDisposableListener(
 				this._reviewThreadReplyButton,
 				"focus",
-				(_) => this.clearAndExpandReplyArea()
-			)
+				(_) => this.clearAndExpandReplyArea(),
+			),
 		);
 
 		commentEditor.onDidBlurEditorWidget(() => {

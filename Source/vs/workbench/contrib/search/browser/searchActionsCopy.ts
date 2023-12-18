@@ -1,13 +1,24 @@
+import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
+import { isWindows } from "vs/base/common/platform";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as nls from "vs/nls";
+import {
+	Action2,
+	MenuId,
+	registerAction2,
+} from "vs/platform/actions/common/actions";
 import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
 import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
 import { ILabelService } from "vs/platform/label/common/label";
 import { IViewsService } from "vs/workbench/common/views";
-import * as Constants from "vs/workbench/contrib/search/common/constants";
+import {
+	category,
+	getSearchView,
+} from "vs/workbench/contrib/search/browser/searchActionsBase";
 import {
 	FileMatch,
 	FolderMatch,
@@ -16,18 +27,7 @@ import {
 	RenderableMatch,
 	searchMatchComparer,
 } from "vs/workbench/contrib/search/browser/searchModel";
-import {
-	Action2,
-	MenuId,
-	registerAction2,
-} from "vs/platform/actions/common/actions";
-import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
-import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
-import {
-	category,
-	getSearchView,
-} from "vs/workbench/contrib/search/browser/searchActionsBase";
-import { isWindows } from "vs/base/common/platform";
+import * as Constants from "vs/workbench/contrib/search/common/constants";
 
 //#region Actions
 registerAction2(
@@ -58,11 +58,11 @@ registerAction2(
 
 		override async run(
 			accessor: ServicesAccessor,
-			match: RenderableMatch | undefined
+			match: RenderableMatch | undefined,
 		): Promise<any> {
 			await copyMatchCommand(accessor, match);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -96,11 +96,11 @@ registerAction2(
 
 		override async run(
 			accessor: ServicesAccessor,
-			fileMatch: FileMatch | FolderMatchWithResource | undefined
+			fileMatch: FileMatch | FolderMatchWithResource | undefined,
 		): Promise<any> {
 			await copyPathCommand(accessor, fileMatch);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -127,7 +127,7 @@ registerAction2(
 		override async run(accessor: ServicesAccessor): Promise<any> {
 			await copyAllCommand(accessor);
 		}
-	}
+	},
 );
 
 //#endregion
@@ -137,7 +137,7 @@ export const lineDelimiter = isWindows ? "\r\n" : "\n";
 
 async function copyPathCommand(
 	accessor: ServicesAccessor,
-	fileMatch: FileMatch | FolderMatchWithResource | undefined
+	fileMatch: FileMatch | FolderMatchWithResource | undefined,
 ) {
 	if (!fileMatch) {
 		const selection = getSelectedRow(accessor);
@@ -164,7 +164,7 @@ async function copyPathCommand(
 
 async function copyMatchCommand(
 	accessor: ServicesAccessor,
-	match: RenderableMatch | undefined
+	match: RenderableMatch | undefined,
 ) {
 	if (!match) {
 		const selection = getSelectedRow(accessor);
@@ -203,7 +203,7 @@ async function copyAllCommand(accessor: ServicesAccessor) {
 
 		const text = allFolderMatchesToString(
 			root.folderMatches(),
-			labelService
+			labelService,
 		);
 		await clipboardService.writeText(text);
 	}
@@ -238,7 +238,7 @@ function matchToString(match: Match, indent = 0): string {
 
 function fileFolderMatchToString(
 	match: FileMatch | FolderMatch | FolderMatchWithResource,
-	labelService: ILabelService
+	labelService: ILabelService,
 ): { text: string; count: number } {
 	if (match instanceof FileMatch) {
 		return fileMatchToString(match, labelService);
@@ -249,7 +249,7 @@ function fileFolderMatchToString(
 
 function fileMatchToString(
 	fileMatch: FileMatch,
-	labelService: ILabelService
+	labelService: ILabelService,
 ): { text: string; count: number } {
 	const matchTextRows = fileMatch
 		.matches()
@@ -260,7 +260,7 @@ function fileMatchToString(
 	});
 	return {
 		text: `${uriString}${lineDelimiter}${matchTextRows.join(
-			lineDelimiter
+			lineDelimiter,
 		)}`,
 		count: matchTextRows.length,
 	};
@@ -268,7 +268,7 @@ function fileMatchToString(
 
 function folderMatchToString(
 	folderMatch: FolderMatchWithResource | FolderMatch,
-	labelService: ILabelService
+	labelService: ILabelService,
 ): { text: string; count: number } {
 	const results: string[] = [];
 	let numMatches = 0;
@@ -289,14 +289,14 @@ function folderMatchToString(
 
 function allFolderMatchesToString(
 	folderMatches: Array<FolderMatchWithResource | FolderMatch>,
-	labelService: ILabelService
+	labelService: ILabelService,
 ): string {
 	const folderResults: string[] = [];
 	folderMatches = folderMatches.sort(searchMatchComparer);
 	for (let i = 0; i < folderMatches.length; i++) {
 		const folderResult = folderMatchToString(
 			folderMatches[i],
-			labelService
+			labelService,
 		);
 		if (folderResult.count) {
 			folderResults.push(folderResult.text);
@@ -307,7 +307,7 @@ function allFolderMatchesToString(
 }
 
 function getSelectedRow(
-	accessor: ServicesAccessor
+	accessor: ServicesAccessor,
 ): RenderableMatch | undefined | null {
 	const viewsService = accessor.get(IViewsService);
 	const searchView = getSearchView(viewsService);

@@ -10,11 +10,11 @@ const fs = require("fs");
 
 const TYPESCRIPT_LIB_SOURCE = path.join(
 	__dirname,
-	"../../../node_modules/typescript/lib"
+	"../../../node_modules/typescript/lib",
 );
 const JQUERY_DTS = path.join(__dirname, "../lib/jquery.d.ts");
 
-module.exports = function () {
+module.exports = () => {
 	function getFileName(name) {
 		return name === "" ? "lib.d.ts" : `lib.${name}.d.ts`;
 	}
@@ -26,7 +26,7 @@ module.exports = function () {
 	var queue = [];
 	var in_queue = {};
 
-	var enqueue = function (name) {
+	var enqueue = (name) => {
 		if (in_queue[name]) {
 			return;
 		}
@@ -44,7 +44,7 @@ module.exports = function () {
 
 		var outputLines = [];
 		for (let i = 0; i < lines.length; i++) {
-			let m = lines[i].match(/\/\/\/\s*<reference\s*lib="([^"]+)"/);
+			const m = lines[i].match(/\/\/\/\s*<reference\s*lib="([^"]+)"/);
 			if (m) {
 				enqueue(m[1]);
 			}

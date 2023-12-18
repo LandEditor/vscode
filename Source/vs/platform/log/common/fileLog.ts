@@ -29,8 +29,8 @@ const MAX_FILE_SIZE = 5 * ByteSize.MB;
 class FileLogger extends AbstractMessageLogger implements ILogger {
 	private readonly initializePromise: Promise<void>;
 	private readonly flushDelayer: ThrottledDelayer<void>;
-	private backupIndex: number = 1;
-	private buffer: string = "";
+	private backupIndex = 1;
+	private buffer = "";
 
 	constructor(
 		private readonly resource: URI,
@@ -55,7 +55,7 @@ class FileLogger extends AbstractMessageLogger implements ILogger {
 		if (content.length > MAX_FILE_SIZE) {
 			await this.fileService.writeFile(
 				this.getBackupResource(),
-				VSBuffer.fromString(content)
+				VSBuffer.fromString(content),
 			);
 			content = "";
 		}
@@ -64,7 +64,7 @@ class FileLogger extends AbstractMessageLogger implements ILogger {
 			this.buffer = "";
 			await this.fileService.writeFile(
 				this.resource,
-				VSBuffer.fromString(content)
+				VSBuffer.fromString(content),
 			);
 		}
 	}
@@ -87,7 +87,7 @@ class FileLogger extends AbstractMessageLogger implements ILogger {
 			this.buffer += message;
 		} else {
 			this.buffer += `${this.getCurrentTimestamp()} [${this.stringifyLogLevel(
-				level
+				level,
 			)}] ${message}\n`;
 		}
 		this.flushDelayer.trigger(() => this.flush());
@@ -99,11 +99,11 @@ class FileLogger extends AbstractMessageLogger implements ILogger {
 			v < 10 ? `00${v}` : v < 100 ? `0${v}` : v;
 		const currentTime = new Date();
 		return `${currentTime.getFullYear()}-${toTwoDigits(
-			currentTime.getMonth() + 1
+			currentTime.getMonth() + 1,
 		)}-${toTwoDigits(currentTime.getDate())} ${toTwoDigits(
-			currentTime.getHours()
+			currentTime.getHours(),
 		)}:${toTwoDigits(currentTime.getMinutes())}:${toTwoDigits(
-			currentTime.getSeconds()
+			currentTime.getSeconds(),
 		)}.${toThreeDigits(currentTime.getMilliseconds())}`;
 	}
 
@@ -111,7 +111,7 @@ class FileLogger extends AbstractMessageLogger implements ILogger {
 		this.backupIndex = this.backupIndex > 5 ? 1 : this.backupIndex;
 		return joinPath(
 			dirname(this.resource),
-			`${basename(this.resource)}_${this.backupIndex++}`
+			`${basename(this.resource)}_${this.backupIndex++}`,
 		);
 	}
 
@@ -148,7 +148,7 @@ export class FileLoggerService
 	constructor(
 		logLevel: LogLevel,
 		logsHome: URI,
-		private readonly fileService: IFileService
+		private readonly fileService: IFileService,
 	) {
 		super(logLevel, logsHome);
 	}
@@ -156,7 +156,7 @@ export class FileLoggerService
 	protected doCreateLogger(
 		resource: URI,
 		logLevel: LogLevel,
-		options?: ILoggerOptions
+		options?: ILoggerOptions,
 	): ILogger {
 		const logger = new BufferLogger(logLevel);
 		whenProviderRegistered(resource, this.fileService).then(
@@ -165,8 +165,8 @@ export class FileLoggerService
 					resource,
 					logger.getLevel(),
 					!!options?.donotUseFormatters,
-					this.fileService
-				))
+					this.fileService,
+				)),
 		);
 		return logger;
 	}

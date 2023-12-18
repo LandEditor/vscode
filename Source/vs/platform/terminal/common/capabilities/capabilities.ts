@@ -45,33 +45,33 @@ export interface IMarker extends IDisposable {
  * Primarily driven by the shell integration feature, a terminal capability is the mechanism for
  * progressively enhancing various features that may not be supported in all terminals/shells.
  */
-export const enum TerminalCapability {
+export enum TerminalCapability {
 	/**
 	 * The terminal can reliably detect the current working directory as soon as the change happens
 	 * within the buffer.
 	 */
-	CwdDetection,
+	CwdDetection = 0,
 	/**
 	 * The terminal can reliably detect the current working directory when requested.
 	 */
-	NaiveCwdDetection,
+	NaiveCwdDetection = 1,
 	/**
 	 * The terminal can reliably identify prompts, commands and command outputs within the buffer.
 	 */
-	CommandDetection,
+	CommandDetection = 2,
 	/**
 	 * The terminal can often identify prompts, commands and command outputs within the buffer. It
 	 * may not be so good at remembering the position of commands that ran in the past. This state
 	 * may be enabled when something goes wrong or when using conpty for example.
 	 */
-	PartialCommandDetection,
+	PartialCommandDetection = 3,
 
 	/**
 	 * Manages buffer marks that can be used for terminal navigation. The source of
 	 * the request (task, debug, etc) provides an ID, optional marker, hoverMessage, and hidden property. When
 	 * hidden is not provided, a generic decoration is added to the buffer and overview ruler.
 	 */
-	BufferMarkDetection,
+	BufferMarkDetection = 4,
 }
 
 /**
@@ -117,7 +117,7 @@ export interface ITerminalCapabilityStore {
 	 * Gets the implementation of a capability if it has been added to the store.
 	 */
 	get<T extends TerminalCapability>(
-		capability: T
+		capability: T,
 	): ITerminalCapabilityImplMap[T] | undefined;
 }
 
@@ -146,7 +146,7 @@ export interface ICwdDetectionCapability {
 	updateCwd(cwd: string): void;
 }
 
-export const enum CommandInvalidationReason {
+export enum CommandInvalidationReason {
 	Windows = "windows",
 	NoProblemsReported = "noProblemsReported",
 }
@@ -191,7 +191,7 @@ export interface ICommandDetectionCapability {
 	 */
 	getCwdForLine(line: number): string | undefined;
 	getCommandForLine(
-		line: number
+		line: number,
 	): ITerminalCommand | ICurrentPartialCommand | undefined;
 	handlePromptStart(options?: IHandleCommandOptions): void;
 	handleContinuationStart(): void;
@@ -202,7 +202,7 @@ export interface ICommandDetectionCapability {
 	handleCommandExecuted(options?: IHandleCommandOptions): void;
 	handleCommandFinished(
 		exitCode?: number,
-		options?: IHandleCommandOptions
+		options?: IHandleCommandOptions,
 	): void;
 	/**
 	 * Set the command line explicitly.
@@ -272,7 +272,7 @@ export interface ITerminalCommand extends IBaseTerminalCommand {
 
 	getOutput(): string | undefined;
 	getOutputMatch(
-		outputMatcher: ITerminalOutputMatcher
+		outputMatcher: ITerminalOutputMatcher,
 	): ITerminalOutputMatch | undefined;
 	hasOutput(): boolean;
 	getPromptRowCount(): number;

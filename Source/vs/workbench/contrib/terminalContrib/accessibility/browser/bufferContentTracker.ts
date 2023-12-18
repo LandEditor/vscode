@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import type { IMarker, Terminal } from "@xterm/xterm";
 import { Disposable } from "vs/base/common/lifecycle";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
@@ -10,7 +11,6 @@ import {
 	TerminalSettingId,
 } from "vs/platform/terminal/common/terminal";
 import { IXtermTerminal } from "vs/workbench/contrib/terminal/browser/terminal";
-import type { IMarker, Terminal } from "@xterm/xterm";
 
 export class BufferContentTracker extends Disposable {
 	/**
@@ -20,7 +20,7 @@ export class BufferContentTracker extends Disposable {
 	/**
 	 * The number of wrapped lines in the viewport when the last cached marker was set
 	 */
-	private _priorEditorViewportLineCount: number = 0;
+	private _priorEditorViewportLineCount = 0;
 
 	private _lines: string[] = [];
 	get lines(): string[] {
@@ -56,12 +56,12 @@ export class BufferContentTracker extends Disposable {
 		this._updateCachedContent();
 		this._updateViewportContent();
 		this._lastCachedMarker = this._register(
-			this._xterm.raw.registerMarker()
+			this._xterm.raw.registerMarker(),
 		);
 		this._logService.debug(
 			"Buffer content tracker: set ",
 			this._lines.length,
-			" lines"
+			" lines",
 		);
 	}
 
@@ -78,7 +78,7 @@ export class BufferContentTracker extends Disposable {
 
 		// to keep the cache size down, remove any lines that are no longer in the scrollback
 		const scrollback: number = this._configurationService.getValue(
-			TerminalSettingId.Scrollback
+			TerminalSettingId.Scrollback,
 		);
 		const maxBufferSize = scrollback + this._xterm.raw.rows - 1;
 		const linesToAdd = end - start;
@@ -92,13 +92,13 @@ export class BufferContentTracker extends Disposable {
 				numToRemove,
 				" lines from top of cached lines, now ",
 				this._lines.length,
-				" lines"
+				" lines",
 			);
 		}
 
 		// iterate through the buffer lines and add them to the editor line cache
 		const cachedLines = [];
-		let currentLine: string = "";
+		let currentLine = "";
 		for (let i = start; i < end; i++) {
 			const line = buffer.getLine(i);
 			if (!line) {
@@ -106,7 +106,7 @@ export class BufferContentTracker extends Disposable {
 			}
 			this.bufferToEditorLineMapping.set(
 				i,
-				this._lines.length + cachedLines.length
+				this._lines.length + cachedLines.length,
 			);
 			const isWrapped = buffer.getLine(i + 1)?.isWrapped;
 			currentLine += line.translateToString(!isWrapped);
@@ -123,7 +123,7 @@ export class BufferContentTracker extends Disposable {
 		this._logService.debug(
 			"Buffer content tracker:",
 			cachedLines.length,
-			" lines cached"
+			" lines cached",
 		);
 		this._lines.push(...cachedLines);
 	}
@@ -148,14 +148,14 @@ export class BufferContentTracker extends Disposable {
 		this._logService.debug(
 			"Buffer content tracker: removed lines from viewport, now ",
 			this._lines.length,
-			" lines cached"
+			" lines cached",
 		);
 	}
 
 	private _updateViewportContent(): void {
 		const buffer = this._xterm.raw.buffer.active;
 		this._priorEditorViewportLineCount = 0;
-		let currentLine: string = "";
+		let currentLine = "";
 		for (
 			let i = buffer.baseY;
 			i < buffer.baseY + this._xterm.raw.rows;
@@ -182,7 +182,7 @@ export class BufferContentTracker extends Disposable {
 		this._logService.debug(
 			"Viewport content update complete, ",
 			this._lines.length,
-			" lines in the viewport"
+			" lines in the viewport",
 		);
 	}
 }

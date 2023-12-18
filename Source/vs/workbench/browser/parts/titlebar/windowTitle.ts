@@ -3,49 +3,49 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import { dirname, basename } from "vs/base/common/resources";
-import { ITitleProperties } from "vs/workbench/browser/parts/titlebar/titlebarPart";
-import {
-	IConfigurationService,
-	IConfigurationChangeEvent,
-} from "vs/platform/configuration/common/configuration";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
-import {
-	EditorResourceAccessor,
-	Verbosity,
-	SideBySideEditor,
-} from "vs/workbench/common/editor";
-import { IBrowserWorkbenchEnvironmentService } from "vs/workbench/services/environment/browser/environmentService";
-import {
-	IWorkspaceContextService,
-	WorkbenchState,
-	IWorkspaceFolder,
-} from "vs/platform/workspace/common/workspace";
-import { isWindows, isWeb, isMacintosh } from "vs/base/common/platform";
-import { URI } from "vs/base/common/uri";
-import { trim } from "vs/base/common/strings";
-import { IEditorGroupsContainer } from "vs/workbench/services/editor/common/editorGroupsService";
-import { template } from "vs/base/common/labels";
-import {
-	ILabelService,
-	Verbosity as LabelVerbosity,
-} from "vs/platform/label/common/label";
-import { Emitter } from "vs/base/common/event";
 import { RunOnceScheduler } from "vs/base/common/async";
-import { IProductService } from "vs/platform/product/common/productService";
+import { Emitter } from "vs/base/common/event";
+import { template } from "vs/base/common/labels";
+import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
 import { Schemas } from "vs/base/common/network";
-import { getVirtualWorkspaceLocation } from "vs/platform/workspace/common/virtualWorkspace";
-import { IUserDataProfileService } from "vs/workbench/services/userDataProfile/common/userDataProfile";
-import { IViewsService } from "vs/workbench/common/views";
+import { isMacintosh, isWeb, isWindows } from "vs/base/common/platform";
+import { basename, dirname } from "vs/base/common/resources";
+import { trim } from "vs/base/common/strings";
+import { URI } from "vs/base/common/uri";
 import {
 	ICodeEditor,
 	isCodeEditor,
 	isDiffEditor,
 } from "vs/editor/browser/editorBrowser";
+import { localize } from "vs/nls";
+import {
+	IConfigurationChangeEvent,
+	IConfigurationService,
+} from "vs/platform/configuration/common/configuration";
+import {
+	ILabelService,
+	Verbosity as LabelVerbosity,
+} from "vs/platform/label/common/label";
+import { IProductService } from "vs/platform/product/common/productService";
+import { getVirtualWorkspaceLocation } from "vs/platform/workspace/common/virtualWorkspace";
+import {
+	IWorkspaceContextService,
+	IWorkspaceFolder,
+	WorkbenchState,
+} from "vs/platform/workspace/common/workspace";
+import { ITitleProperties } from "vs/workbench/browser/parts/titlebar/titlebarPart";
+import {
+	EditorResourceAccessor,
+	SideBySideEditor,
+	Verbosity,
+} from "vs/workbench/common/editor";
+import { IViewsService } from "vs/workbench/common/views";
+import { IEditorGroupsContainer } from "vs/workbench/services/editor/common/editorGroupsService";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { IBrowserWorkbenchEnvironmentService } from "vs/workbench/services/environment/browser/environmentService";
+import { IUserDataProfileService } from "vs/workbench/services/userDataProfile/common/userDataProfile";
 
-const enum WindowSettingNames {
+enum WindowSettingNames {
 	titleSeparator = "window.titleSeparator",
 	title = "window.title",
 }
@@ -56,7 +56,7 @@ export class WindowTitle extends Disposable {
 		: localize("userIsSudo", "[Superuser]");
 	private static readonly NLS_EXTENSION_HOST = localize(
 		"devExtensionWindowTitlePrefix",
-		"[Extension Development Host]"
+		"[Extension Development Host]",
 	);
 	private static readonly TITLE_DIRTY = "\u25cf ";
 
@@ -66,10 +66,10 @@ export class WindowTitle extends Disposable {
 		prefix: undefined,
 	};
 	private readonly activeEditorListeners = this._register(
-		new DisposableStore()
+		new DisposableStore(),
 	);
 	private readonly titleUpdater = this._register(
-		new RunOnceScheduler(() => this.doUpdateTitle(), 0)
+		new RunOnceScheduler(() => this.doUpdateTitle(), 0),
 	);
 
 	private readonly onDidChangeEmitter = new Emitter<void>();
@@ -80,7 +80,7 @@ export class WindowTitle extends Disposable {
 	}
 	get workspaceName() {
 		return this.labelService.getWorkspaceLabel(
-			this.contextService.getWorkspace()
+			this.contextService.getWorkspace(),
 		);
 	}
 	get fileName() {
@@ -97,7 +97,7 @@ export class WindowTitle extends Disposable {
 	}
 
 	private title: string | undefined;
-	private titleIncludesFocusedView: boolean = false;
+	private titleIncludesFocusedView = false;
 
 	private readonly editorService: IEditorService;
 
@@ -131,45 +131,45 @@ export class WindowTitle extends Disposable {
 	private registerListeners(): void {
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) =>
-				this.onConfigurationChanged(e)
-			)
+				this.onConfigurationChanged(e),
+			),
 		);
 		this._register(
 			this.editorService.onDidActiveEditorChange(() =>
-				this.onActiveEditorChange()
-			)
+				this.onActiveEditorChange(),
+			),
 		);
 		this._register(
 			this.contextService.onDidChangeWorkspaceFolders(() =>
-				this.titleUpdater.schedule()
-			)
+				this.titleUpdater.schedule(),
+			),
 		);
 		this._register(
 			this.contextService.onDidChangeWorkbenchState(() =>
-				this.titleUpdater.schedule()
-			)
+				this.titleUpdater.schedule(),
+			),
 		);
 		this._register(
 			this.contextService.onDidChangeWorkspaceName(() =>
-				this.titleUpdater.schedule()
-			)
+				this.titleUpdater.schedule(),
+			),
 		);
 		this._register(
 			this.labelService.onDidChangeFormatters(() =>
-				this.titleUpdater.schedule()
-			)
+				this.titleUpdater.schedule(),
+			),
 		);
 		this._register(
 			this.userDataProfileService.onDidChangeCurrentProfile(() =>
-				this.titleUpdater.schedule()
-			)
+				this.titleUpdater.schedule(),
+			),
 		);
 		this._register(
 			this.viewsService.onDidChangeFocusedView(() => {
 				if (this.titleIncludesFocusedView) {
 					this.titleUpdater.schedule();
 				}
-			})
+			}),
 		);
 	}
 
@@ -188,7 +188,7 @@ export class WindowTitle extends Disposable {
 
 	private updateTitleIncludesFocusedView(): void {
 		const titleTemplate = this.configurationService.getValue<unknown>(
-			WindowSettingNames.title
+			WindowSettingNames.title,
 		);
 		this.titleIncludesFocusedView =
 			typeof titleTemplate === "string" &&
@@ -207,13 +207,13 @@ export class WindowTitle extends Disposable {
 		if (activeEditor) {
 			this.activeEditorListeners.add(
 				activeEditor.onDidChangeDirty(() =>
-					this.titleUpdater.schedule()
-				)
+					this.titleUpdater.schedule(),
+				),
 			);
 			this.activeEditorListeners.add(
 				activeEditor.onDidChangeLabel(() =>
-					this.titleUpdater.schedule()
-				)
+					this.titleUpdater.schedule(),
+				),
 			);
 		}
 
@@ -227,20 +227,20 @@ export class WindowTitle extends Disposable {
 			} else if (isDiffEditor(activeTextEditorControl)) {
 				textEditorControls.push(
 					activeTextEditorControl.getOriginalEditor(),
-					activeTextEditorControl.getModifiedEditor()
+					activeTextEditorControl.getModifiedEditor(),
 				);
 			}
 
 			for (const textEditorControl of textEditorControls) {
 				this.activeEditorListeners.add(
 					textEditorControl.onDidBlurEditorText(() =>
-						this.titleUpdater.schedule()
-					)
+						this.titleUpdater.schedule(),
+					),
 				);
 				this.activeEditorListeners.add(
 					textEditorControl.onDidFocusEditorText(() =>
-						this.titleUpdater.schedule()
-					)
+						this.titleUpdater.schedule(),
+					),
 				);
 			}
 		}
@@ -302,9 +302,9 @@ export class WindowTitle extends Disposable {
 		}
 
 		if (this.environmentService.isExtensionDevelopment) {
-			prefix = !prefix
-				? WindowTitle.NLS_EXTENSION_HOST
-				: `${WindowTitle.NLS_EXTENSION_HOST} - ${prefix}`;
+			prefix = prefix
+				? `${WindowTitle.NLS_EXTENSION_HOST} - ${prefix}`
+				: WindowTitle.NLS_EXTENSION_HOST;
 		}
 
 		if (this.properties.isAdmin) {
@@ -402,7 +402,7 @@ export class WindowTitle extends Disposable {
 		if (this.environmentService.remoteAuthority && !isWeb) {
 			remoteName = this.labelService.getHostLabel(
 				Schemas.vscodeRemote,
-				this.environmentService.remoteAuthority
+				this.environmentService.remoteAuthority,
 			);
 		} else {
 			const virtualWorkspaceLocation =
@@ -410,7 +410,7 @@ export class WindowTitle extends Disposable {
 			if (virtualWorkspaceLocation) {
 				remoteName = this.labelService.getHostLabel(
 					virtualWorkspaceLocation.scheme,
-					virtualWorkspaceLocation.authority
+					virtualWorkspaceLocation.authority,
 				);
 			}
 		}
@@ -431,7 +431,7 @@ export class WindowTitle extends Disposable {
 		const activeFolderMedium = editorFolderResource
 			? this.labelService.getUriLabel(editorFolderResource, {
 					relative: true,
-				})
+			  })
 			: "";
 		const activeFolderLong = editorFolderResource
 			? this.labelService.getUriLabel(editorFolderResource)
@@ -454,10 +454,10 @@ export class WindowTitle extends Disposable {
 			? ""
 			: this.userDataProfileService.currentProfile.name;
 		const separator = this.configurationService.getValue<string>(
-			WindowSettingNames.titleSeparator
+			WindowSettingNames.titleSeparator,
 		);
 		const titleTemplate = this.configurationService.getValue<string>(
-			WindowSettingNames.title
+			WindowSettingNames.title,
 		);
 		const focusedView: string = this.viewsService.getFocusedViewName();
 
@@ -484,10 +484,10 @@ export class WindowTitle extends Disposable {
 
 	isCustomTitleFormat(): boolean {
 		const title = this.configurationService.inspect<string>(
-			WindowSettingNames.title
+			WindowSettingNames.title,
 		);
 		const titleSeparator = this.configurationService.inspect<string>(
-			WindowSettingNames.titleSeparator
+			WindowSettingNames.titleSeparator,
 		);
 
 		return (

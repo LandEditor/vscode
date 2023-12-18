@@ -6,8 +6,8 @@
 import { URI } from "vs/base/common/uri";
 import { localize } from "vs/nls";
 import {
-	ITerminalQuickFixInternalOptions,
 	ITerminalCommandMatchResult,
+	ITerminalQuickFixInternalOptions,
 	ITerminalQuickFixTerminalCommandAction,
 	TerminalQuickFixActionInternal,
 	TerminalQuickFixType,
@@ -31,7 +31,7 @@ export const PwshGeneralErrorOutputRegex = /Suggestion \[General\]:/;
 export const PwshUnixCommandNotFoundErrorOutputRegex =
 	/Suggestion \[cmd-not-found\]:/;
 
-export const enum QuickFixSource {
+export enum QuickFixSource {
 	Builtin = "builtin",
 }
 
@@ -55,10 +55,10 @@ export function gitSimilar(): ITerminalQuickFixInternalOptions {
 			const actions: TerminalQuickFixActionInternal[] = [];
 			const startIndex =
 				matchResult.outputMatch.outputLines.findIndex((l) =>
-					l.includes(regexMatch)
+					l.includes(regexMatch),
 				) + 1;
 			const results = matchResult.outputMatch.outputLines.map((r) =>
-				r.trim()
+				r.trim(),
 			);
 			for (let i = startIndex; i < results.length; i++) {
 				const fixedCommand = results[i];
@@ -68,7 +68,7 @@ export function gitSimilar(): ITerminalQuickFixInternalOptions {
 						type: TerminalQuickFixType.TerminalCommand,
 						terminalCommand: matchResult.commandLine.replace(
 							/git\s+[^\s]+/,
-							() => `git ${fixedCommand}`
+							() => `git ${fixedCommand}`,
 						),
 						shouldExecute: true,
 						source: QuickFixSource.Builtin,
@@ -126,7 +126,7 @@ export function gitTwoDashes(): ITerminalQuickFixInternalOptions {
 				id: "Git Two Dashes",
 				terminalCommand: matchResult.commandLine.replace(
 					` -${problemArg}`,
-					() => ` --${problemArg}`
+					() => ` --${problemArg}`,
 				),
 				shouldExecute: true,
 				source: QuickFixSource.Builtin,
@@ -135,7 +135,7 @@ export function gitTwoDashes(): ITerminalQuickFixInternalOptions {
 	};
 }
 export function freePort(
-	runCallback: (port: string, commandLine: string) => Promise<void>
+	runCallback: (port: string, commandLine: string) => Promise<void>,
 ): ITerminalQuickFixInternalOptions {
 	return {
 		id: "Free Port",
@@ -221,7 +221,7 @@ export function gitPushSetUpstream(): ITerminalQuickFixInternalOptions {
 				}
 				fixedCommand = fixedCommand.replaceAll(
 					varToResolve,
-					() => value
+					() => value,
 				);
 			}
 			if (fixedCommand) {
@@ -377,7 +377,7 @@ export function pwshUnixCommandNotFoundError(): ITerminalQuickFixInternalOptions
 					break;
 				}
 				const installCommand = line.match(
-					/You also have .+ installed, you can run '(?<command>.+)' instead./
+					/You also have .+ installed, you can run '(?<command>.+)' instead./,
 				)?.groups?.command;
 				if (installCommand) {
 					result.push({
@@ -391,7 +391,7 @@ export function pwshUnixCommandNotFoundError(): ITerminalQuickFixInternalOptions
 				}
 				if (
 					line.match(
-						/Command '.+' not found, but can be installed with:/
+						/Command '.+' not found, but can be installed with:/,
 					)
 				) {
 					inSuggestions = true;

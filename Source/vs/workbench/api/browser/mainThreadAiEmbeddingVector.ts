@@ -27,7 +27,7 @@ export class MainThreadAiEmbeddingVector
 {
 	private readonly _proxy: ExtHostAiEmbeddingVectorShape;
 	private readonly _registrations = this._register(
-		new DisposableMap<number>()
+		new DisposableMap<number>(),
 	);
 
 	constructor(
@@ -43,12 +43,12 @@ export class MainThreadAiEmbeddingVector
 		const provider: IAiEmbeddingVectorProvider = {
 			provideAiEmbeddingVector: (
 				strings: string[],
-				token: CancellationToken
+				token: CancellationToken,
 			) => {
 				return this._proxy.$provideAiEmbeddingVector(
 					handle,
 					strings,
-					token
+					token,
 				);
 			},
 		};
@@ -56,8 +56,8 @@ export class MainThreadAiEmbeddingVector
 			handle,
 			this._AiEmbeddingVectorService.registerAiEmbeddingVectorProvider(
 				model,
-				provider
-			)
+				provider,
+			),
 		);
 	}
 

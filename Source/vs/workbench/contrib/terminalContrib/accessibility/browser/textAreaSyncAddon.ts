@@ -3,12 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import type { ITerminalAddon, Terminal } from "@xterm/xterm";
+import { addDisposableListener } from "vs/base/browser/dom";
+import { debounce } from "vs/base/common/decorators";
 import {
 	Disposable,
 	DisposableStore,
 	MutableDisposable,
 } from "vs/base/common/lifecycle";
 import { IAccessibilityService } from "vs/platform/accessibility/common/accessibility";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
 	ITerminalCapabilityStore,
 	TerminalCapability,
@@ -17,10 +21,6 @@ import {
 	ITerminalLogService,
 	TerminalSettingId,
 } from "vs/platform/terminal/common/terminal";
-import type { Terminal, ITerminalAddon } from "@xterm/xterm";
-import { debounce } from "vs/base/common/decorators";
-import { addDisposableListener } from "vs/base/browser/dom";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 
 export interface ITextAreaData {
 	content: string;
@@ -30,7 +30,7 @@ export interface ITextAreaData {
 export class TextAreaSyncAddon extends Disposable implements ITerminalAddon {
 	private _terminal: Terminal | undefined;
 	private _listeners = this._register(
-		new MutableDisposable<DisposableStore>()
+		new MutableDisposable<DisposableStore>(),
 	);
 	private _currentCommand: string | undefined;
 	private _cursorX: number | undefined;
@@ -67,15 +67,15 @@ export class TextAreaSyncAddon extends Disposable implements ITerminalAddon {
 		if (this._shouldBeActive() && this._terminal?.textarea) {
 			this._listeners.value = new DisposableStore();
 			this._listeners.value.add(
-				this._terminal.onCursorMove(() => this._syncTextArea())
+				this._terminal.onCursorMove(() => this._syncTextArea()),
 			);
 			this._listeners.value.add(
-				this._terminal.onData(() => this._syncTextArea())
+				this._terminal.onData(() => this._syncTextArea()),
 			);
 			this._listeners.value.add(
 				addDisposableListener(this._terminal.textarea, "focus", () =>
-					this._syncTextArea()
-				)
+					this._syncTextArea(),
+				),
 			);
 		}
 	}
@@ -93,7 +93,7 @@ export class TextAreaSyncAddon extends Disposable implements ITerminalAddon {
 		const textArea = this._terminal?.textarea;
 		if (!textArea) {
 			this._logService.debug(
-				`TextAreaSyncAddon#syncTextArea: no textarea`
+				`TextAreaSyncAddon#syncTextArea: no textarea`,
 			);
 			return;
 		}
@@ -103,12 +103,12 @@ export class TextAreaSyncAddon extends Disposable implements ITerminalAddon {
 		if (this._currentCommand !== textArea.value) {
 			textArea.value = this._currentCommand || "";
 			this._logService.debug(
-				`TextAreaSyncAddon#syncTextArea: text changed to "${this._currentCommand}"`
+				`TextAreaSyncAddon#syncTextArea: text changed to "${this._currentCommand}"`,
 			);
 		} else if (!this._currentCommand) {
 			textArea.value = "";
 			this._logService.debug(
-				`TextAreaSyncAddon#syncTextArea: text cleared`
+				`TextAreaSyncAddon#syncTextArea: text cleared`,
 			);
 		}
 
@@ -118,7 +118,7 @@ export class TextAreaSyncAddon extends Disposable implements ITerminalAddon {
 			textArea.selectionStart = selection;
 			textArea.selectionEnd = selection;
 			this._logService.debug(
-				`TextAreaSyncAddon#syncTextArea: selection start/end changed to ${selection}`
+				`TextAreaSyncAddon#syncTextArea: selection start/end changed to ${selection}`,
 			);
 		}
 	}
@@ -128,12 +128,12 @@ export class TextAreaSyncAddon extends Disposable implements ITerminalAddon {
 			return;
 		}
 		const commandCapability = this._capabilities.get(
-			TerminalCapability.CommandDetection
+			TerminalCapability.CommandDetection,
 		);
 		const currentCommand = commandCapability?.currentCommand;
 		if (!currentCommand) {
 			this._logService.debug(
-				`TextAreaSyncAddon#updateCommandAndCursor: no current command`
+				`TextAreaSyncAddon#updateCommandAndCursor: no current command`,
 			);
 			return;
 		}
@@ -145,13 +145,13 @@ export class TextAreaSyncAddon extends Disposable implements ITerminalAddon {
 		const commandLine = buffer.getLine(lineNumber)?.translateToString(true);
 		if (!commandLine) {
 			this._logService.debug(
-				`TextAreaSyncAddon#updateCommandAndCursor: no line`
+				`TextAreaSyncAddon#updateCommandAndCursor: no line`,
 			);
 			return;
 		}
 		if (currentCommand.commandStartX !== undefined) {
 			this._currentCommand = commandLine.substring(
-				currentCommand.commandStartX
+				currentCommand.commandStartX,
 			);
 			const cursorPosition =
 				buffer.cursorX - currentCommand.commandStartX;
@@ -160,7 +160,7 @@ export class TextAreaSyncAddon extends Disposable implements ITerminalAddon {
 			this._currentCommand = undefined;
 			this._cursorX = undefined;
 			this._logService.debug(
-				`TextAreaSyncAddon#updateCommandAndCursor: no commandStartX`
+				`TextAreaSyncAddon#updateCommandAndCursor: no commandStartX`,
 			);
 		}
 	}

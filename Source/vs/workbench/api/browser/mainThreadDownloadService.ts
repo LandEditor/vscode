@@ -4,16 +4,16 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Disposable } from "vs/base/common/lifecycle";
+import { URI, UriComponents } from "vs/base/common/uri";
+import { IDownloadService } from "vs/platform/download/common/download";
 import {
 	MainContext,
 	MainThreadDownloadServiceShape,
 } from "vs/workbench/api/common/extHost.protocol";
 import {
-	extHostNamedCustomer,
 	IExtHostContext,
+	extHostNamedCustomer,
 } from "vs/workbench/services/extensions/common/extHostCustomers";
-import { IDownloadService } from "vs/platform/download/common/download";
-import { UriComponents, URI } from "vs/base/common/uri";
 
 @extHostNamedCustomer(MainContext.MainThreadDownloadService)
 export class MainThreadDownloadService

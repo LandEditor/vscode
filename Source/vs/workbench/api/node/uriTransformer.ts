@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	UriParts,
 	IRawURITransformer,
-	URITransformer,
 	IURITransformer,
+	URITransformer,
+	UriParts,
 } from "vs/base/common/uriIpc";
 
 /**

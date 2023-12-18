@@ -3,39 +3,39 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from "vscode";
-import { UriComponents, URI } from "vs/base/common/uri";
+import { CancellationToken } from "vs/base/common/cancellation";
+import {
+	DisposableStore,
+	IDisposable,
+	toDisposable,
+} from "vs/base/common/lifecycle";
+import { MarshalledId } from "vs/base/common/marshallingIds";
+import { isString } from "vs/base/common/types";
+import { URI, UriComponents } from "vs/base/common/uri";
+import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import {
 	ExtHostTimelineShape,
-	MainThreadTimelineShape,
 	IMainContext,
 	MainContext,
+	MainThreadTimelineShape,
 } from "vs/workbench/api/common/extHost.protocol";
+import {
+	CommandsConverter,
+	ExtHostCommands,
+} from "vs/workbench/api/common/extHostCommands";
+import { MarkdownString } from "vs/workbench/api/common/extHostTypeConverters";
+import {
+	MarkdownString as MarkdownStringType,
+	ThemeIcon,
+} from "vs/workbench/api/common/extHostTypes";
 import {
 	Timeline,
 	TimelineItem,
 	TimelineOptions,
 	TimelineProvider,
 } from "vs/workbench/contrib/timeline/common/timeline";
-import {
-	IDisposable,
-	toDisposable,
-	DisposableStore,
-} from "vs/base/common/lifecycle";
-import { CancellationToken } from "vs/base/common/cancellation";
-import {
-	CommandsConverter,
-	ExtHostCommands,
-} from "vs/workbench/api/common/extHostCommands";
-import {
-	ThemeIcon,
-	MarkdownString as MarkdownStringType,
-} from "vs/workbench/api/common/extHostTypes";
-import { MarkdownString } from "vs/workbench/api/common/extHostTypeConverters";
-import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
-import { MarshalledId } from "vs/base/common/marshallingIds";
-import { isString } from "vs/base/common/types";
+import * as vscode from "vscode";
 
 export interface IExtHostTimeline extends ExtHostTimelineShape {
 	readonly _serviceBrand: undefined;
@@ -43,7 +43,7 @@ export interface IExtHostTimeline extends ExtHostTimelineShape {
 		id: string,
 		uri: UriComponents,
 		options: vscode.TimelineOptions,
-		token: vscode.CancellationToken
+		token: vscode.CancellationToken,
 	): Promise<Timeline | undefined>;
 }
 
@@ -75,7 +75,7 @@ export class ExtHostTimeline implements IExtHostTimeline {
 						this._providers.get(arg.source) &&
 						ExtensionIdentifier.equals(
 							extension,
-							this._providers.get(arg.source)?.extension
+							this._providers.get(arg.source)?.extension,
 						)
 					) {
 						const uri =
@@ -99,7 +99,7 @@ export class ExtHostTimeline implements IExtHostTimeline {
 		id: string,
 		uri: UriComponents,
 		options: vscode.TimelineOptions,
-		token: vscode.CancellationToken
+		token: vscode.CancellationToken,
 	): Promise<Timeline | undefined> {
 		const item = this._providers.get(id);
 		return item?.provider.provideTimeline(URI.revive(uri), options, token);
@@ -109,14 +109,14 @@ export class ExtHostTimeline implements IExtHostTimeline {
 		scheme: string | string[],
 		provider: vscode.TimelineProvider,
 		extensionId: ExtensionIdentifier,
-		commandConverter: CommandsConverter
+		commandConverter: CommandsConverter,
 	): IDisposable {
 		const timelineDisposables = new DisposableStore();
 
 		const convertTimelineItem = this.convertTimelineItem(
 			provider.id,
 			commandConverter,
-			timelineDisposables
+			timelineDisposables,
 		).bind(this);
 
 		let disposable: IDisposable | undefined;
@@ -129,7 +129,7 @@ export class ExtHostTimeline implements IExtHostTimeline {
 						...e,
 						id: provider.id,
 					}),
-				this
+				this,
 			);
 		}
 
@@ -142,7 +142,7 @@ export class ExtHostTimeline implements IExtHostTimeline {
 				async provideTimeline(
 					uri: URI,
 					options: TimelineOptions,
-					token: CancellationToken
+					token: CancellationToken,
 				) {
 					if (options?.resetCache) {
 						timelineDisposables.clear();
@@ -155,7 +155,7 @@ export class ExtHostTimeline implements IExtHostTimeline {
 					const result = await provider.provideTimeline(
 						uri,
 						options,
-						token
+						token,
 					);
 					if (result === undefined || result === null) {
 						return undefined;
@@ -179,14 +179,14 @@ export class ExtHostTimeline implements IExtHostTimeline {
 					timelineDisposables.dispose();
 				},
 			},
-			extensionId
+			extensionId,
 		);
 	}
 
 	private convertTimelineItem(
 		source: string,
 		commandConverter: CommandsConverter,
-		disposables: DisposableStore
+		disposables: DisposableStore,
 	) {
 		return (uri: URI, options?: TimelineOptions) => {
 			let items: Map<string, vscode.TimelineItem> | undefined;
@@ -239,12 +239,12 @@ export class ExtHostTimeline implements IExtHostTimeline {
 					MarkdownStringType.isMarkdownString((props as any).detail)
 				) {
 					console.warn(
-						"Using deprecated TimelineItem.detail, migrate to TimelineItem.tooltip"
+						"Using deprecated TimelineItem.detail, migrate to TimelineItem.tooltip",
 					);
 					tooltip = MarkdownString.from((props as any).detail);
 				} else if (isString((props as any).detail)) {
 					console.warn(
-						"Using deprecated TimelineItem.detail, migrate to TimelineItem.tooltip"
+						"Using deprecated TimelineItem.detail, migrate to TimelineItem.tooltip",
 					);
 					tooltip = (props as any).detail;
 				}
@@ -269,7 +269,7 @@ export class ExtHostTimeline implements IExtHostTimeline {
 
 	private registerTimelineProviderCore(
 		provider: TimelineProvider,
-		extension: ExtensionIdentifier
+		extension: ExtensionIdentifier,
 	): IDisposable {
 		// console.log(`ExtHostTimeline#registerTimelineProvider: id=${provider.id}`);
 

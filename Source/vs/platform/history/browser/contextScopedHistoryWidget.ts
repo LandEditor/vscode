@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { isActiveElement } from "vs/base/browser/dom";
 import { IHistoryNavigationWidget } from "vs/base/browser/history";
 import { IContextViewProvider } from "vs/base/browser/ui/contextview/contextview";
 import {
@@ -19,27 +20,26 @@ import {
 } from "vs/base/browser/ui/inputbox/inputBox";
 import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
 import {
+	DisposableStore,
+	IDisposable,
+	toDisposable,
+} from "vs/base/common/lifecycle";
+import { localize } from "vs/nls";
+import {
 	ContextKeyExpr,
 	IContextKey,
 	IContextKeyService,
 	RawContextKey,
 } from "vs/platform/contextkey/common/contextkey";
 import {
-	KeybindingsRegistry,
 	KeybindingWeight,
+	KeybindingsRegistry,
 } from "vs/platform/keybinding/common/keybindingsRegistry";
-import { localize } from "vs/nls";
-import {
-	DisposableStore,
-	IDisposable,
-	toDisposable,
-} from "vs/base/common/lifecycle";
-import { isActiveElement } from "vs/base/browser/dom";
 
 export const historyNavigationVisible = new RawContextKey<boolean>(
 	"suggestWidgetVisible",
 	false,
-	localize("suggestWidgetVisible", "Whether suggestion are visible")
+	localize("suggestWidgetVisible", "Whether suggestion are visible"),
 );
 
 const HistoryNavigationWidgetFocusContext = "historyNavigationWidgetFocus";
@@ -58,7 +58,7 @@ const widgets: IHistoryNavigationWidget[] = [];
 
 export function registerAndCreateHistoryNavigationContext(
 	scopedContextKeyService: IContextKeyService,
-	widget: IHistoryNavigationWidget
+	widget: IHistoryNavigationWidget,
 ): IHistoryNavigationContext {
 	if (widgets.includes(widget)) {
 		throw new Error("Cannot register the same widget multiple times");
@@ -68,15 +68,15 @@ export function registerAndCreateHistoryNavigationContext(
 	const disposableStore = new DisposableStore();
 	const historyNavigationWidgetFocus = new RawContextKey<boolean>(
 		HistoryNavigationWidgetFocusContext,
-		false
+		false,
 	).bindTo(scopedContextKeyService);
 	const historyNavigationForwardsEnablement = new RawContextKey<boolean>(
 		HistoryNavigationForwardsEnablementContext,
-		true
+		true,
 	).bindTo(scopedContextKeyService);
 	const historyNavigationBackwardsEnablement = new RawContextKey<boolean>(
 		HistoryNavigationBackwardsEnablementContext,
-		true
+		true,
 	).bindTo(scopedContextKeyService);
 
 	const onDidFocus = () => {
@@ -102,7 +102,7 @@ export function registerAndCreateHistoryNavigationContext(
 		toDisposable(() => {
 			widgets.splice(widgets.indexOf(widget), 1);
 			onDidBlur();
-		})
+		}),
 	);
 
 	return {
@@ -119,17 +119,17 @@ export class ContextScopedHistoryInputBox extends HistoryInputBox {
 		container: HTMLElement,
 		contextViewProvider: IContextViewProvider | undefined,
 		options: IHistoryInputOptions,
-		@IContextKeyService contextKeyService: IContextKeyService
+		@IContextKeyService contextKeyService: IContextKeyService,
 	) {
 		super(container, contextViewProvider, options);
 		const scopedContextKeyService = this._register(
-			contextKeyService.createScoped(this.element)
+			contextKeyService.createScoped(this.element),
 		);
 		this._register(
 			registerAndCreateHistoryNavigationContext(
 				scopedContextKeyService,
-				this
-			)
+				this,
+			),
 		);
 	}
 }
@@ -139,17 +139,17 @@ export class ContextScopedFindInput extends FindInput {
 		container: HTMLElement | null,
 		contextViewProvider: IContextViewProvider,
 		options: IFindInputOptions,
-		@IContextKeyService contextKeyService: IContextKeyService
+		@IContextKeyService contextKeyService: IContextKeyService,
 	) {
 		super(container, contextViewProvider, options);
 		const scopedContextKeyService = this._register(
-			contextKeyService.createScoped(this.inputBox.element)
+			contextKeyService.createScoped(this.inputBox.element),
 		);
 		this._register(
 			registerAndCreateHistoryNavigationContext(
 				scopedContextKeyService,
-				this.inputBox
-			)
+				this.inputBox,
+			),
 		);
 	}
 }
@@ -160,17 +160,17 @@ export class ContextScopedReplaceInput extends ReplaceInput {
 		contextViewProvider: IContextViewProvider | undefined,
 		options: IReplaceInputOptions,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		showReplaceOptions: boolean = false
+		showReplaceOptions = false,
 	) {
 		super(container, contextViewProvider, showReplaceOptions, options);
 		const scopedContextKeyService = this._register(
-			contextKeyService.createScoped(this.inputBox.element)
+			contextKeyService.createScoped(this.inputBox.element),
 		);
 		this._register(
 			registerAndCreateHistoryNavigationContext(
 				scopedContextKeyService,
-				this.inputBox
-			)
+				this.inputBox,
+			),
 		);
 	}
 }
@@ -182,10 +182,10 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		ContextKeyExpr.has(HistoryNavigationWidgetFocusContext),
 		ContextKeyExpr.equals(
 			HistoryNavigationBackwardsEnablementContext,
-			true
+			true,
 		),
 		ContextKeyExpr.not("isComposing"),
-		historyNavigationVisible.isEqualTo(false)
+		historyNavigationVisible.isEqualTo(false),
 	),
 	primary: KeyCode.UpArrow,
 	secondary: [KeyMod.Alt | KeyCode.UpArrow],
@@ -201,7 +201,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		ContextKeyExpr.has(HistoryNavigationWidgetFocusContext),
 		ContextKeyExpr.equals(HistoryNavigationForwardsEnablementContext, true),
 		ContextKeyExpr.not("isComposing"),
-		historyNavigationVisible.isEqualTo(false)
+		historyNavigationVisible.isEqualTo(false),
 	),
 	primary: KeyCode.DownArrow,
 	secondary: [KeyMod.Alt | KeyCode.DownArrow],

@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { CssNode, HtmlNode } from "EmmetFlatNode";
 import * as vscode from "vscode";
-import { validate, isStyleSheet } from "./util";
+import { getRootNode } from "./parseDocument";
 import { nextItemHTML, prevItemHTML } from "./selectItemHTML";
 import { nextItemStylesheet, prevItemStylesheet } from "./selectItemStylesheet";
-import { HtmlNode, CssNode } from "EmmetFlatNode";
-import { getRootNode } from "./parseDocument";
+import { isStyleSheet, validate } from "./util";
 
 export function fetchSelectItem(direction: string): void {
 	if (!validate() || !vscode.window.activeTextEditor) {
@@ -38,14 +38,14 @@ export function fetchSelectItem(direction: string): void {
 							document,
 							selectionStart,
 							selectionEnd,
-							<CssNode>rootNode
-						)
+							<CssNode>rootNode,
+					  )
 					: prevItemStylesheet(
 							document,
 							selectionStart,
 							selectionEnd,
-							<CssNode>rootNode
-						);
+							<CssNode>rootNode,
+					  );
 		} else {
 			updatedSelection =
 				direction === "next"
@@ -53,14 +53,14 @@ export function fetchSelectItem(direction: string): void {
 							document,
 							selectionStart,
 							selectionEnd,
-							<HtmlNode>rootNode
-						)
+							<HtmlNode>rootNode,
+					  )
 					: prevItemHTML(
 							document,
 							selectionStart,
 							selectionEnd,
-							<HtmlNode>rootNode
-						);
+							<HtmlNode>rootNode,
+					  );
 		}
 		newSelections.push(updatedSelection ? updatedSelection : selection);
 	});

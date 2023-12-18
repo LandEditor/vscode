@@ -3,7 +3,7 @@ declare module "ternary-stream" {
 	function f(
 		check: (f: File) => boolean,
 		onTrue: NodeJS.ReadWriteStream,
-		opnFalse?: NodeJS.ReadWriteStream
+		opnFalse?: NodeJS.ReadWriteStream,
 	): NodeJS.ReadWriteStream;
 
 	/**

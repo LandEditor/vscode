@@ -3,9 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { ArrayQueue } from "vs/base/common/arrays";
+import { Color } from "vs/base/common/color";
+import { isDefined } from "vs/base/common/types";
 import "vs/css!./indentGuides";
 import { DynamicViewOverlay } from "vs/editor/browser/view/dynamicViewOverlay";
+import { RenderingContext } from "vs/editor/browser/view/renderingContext";
 import {
+	EditorOption,
+	InternalGuidesOptions,
+} from "vs/editor/common/config/editorOptions";
+import {
+	editorActiveIndentGuide1,
+	editorActiveIndentGuide2,
+	editorActiveIndentGuide3,
+	editorActiveIndentGuide4,
+	editorActiveIndentGuide5,
+	editorActiveIndentGuide6,
 	editorBracketHighlightingForeground1,
 	editorBracketHighlightingForeground2,
 	editorBracketHighlightingForeground3,
@@ -30,30 +44,16 @@ import {
 	editorIndentGuide4,
 	editorIndentGuide5,
 	editorIndentGuide6,
-	editorActiveIndentGuide1,
-	editorActiveIndentGuide2,
-	editorActiveIndentGuide3,
-	editorActiveIndentGuide4,
-	editorActiveIndentGuide5,
-	editorActiveIndentGuide6,
 } from "vs/editor/common/core/editorColorRegistry";
-import { RenderingContext } from "vs/editor/browser/view/renderingContext";
-import { ViewContext } from "vs/editor/common/viewModel/viewContext";
-import * as viewEvents from "vs/editor/common/viewEvents";
-import { registerThemingParticipant } from "vs/platform/theme/common/themeService";
-import {
-	EditorOption,
-	InternalGuidesOptions,
-} from "vs/editor/common/config/editorOptions";
 import { Position } from "vs/editor/common/core/position";
-import { ArrayQueue } from "vs/base/common/arrays";
-import { Color } from "vs/base/common/color";
-import { isDefined } from "vs/base/common/types";
 import { BracketPairGuidesClassNames } from "vs/editor/common/model/guidesTextModelPart";
 import {
-	IndentGuide,
 	HorizontalGuidesState,
+	IndentGuide,
 } from "vs/editor/common/textModelGuides";
+import * as viewEvents from "vs/editor/common/viewEvents";
+import { ViewContext } from "vs/editor/common/viewModel/viewContext";
+import { registerThemingParticipant } from "vs/platform/theme/common/themeService";
 
 export class IndentGuidesOverlay extends DynamicViewOverlay {
 	private readonly _context: ViewContext;
@@ -79,7 +79,7 @@ export class IndentGuidesOverlay extends DynamicViewOverlay {
 			wrappingInfo.wrappingColumn === -1
 				? -1
 				: wrappingInfo.wrappingColumn *
-					fontInfo.typicalHalfwidthCharacterWidth;
+				  fontInfo.typicalHalfwidthCharacterWidth;
 		this._bracketPairGuideOptions = options.get(EditorOption.guides);
 
 		this._renderResult = null;
@@ -96,7 +96,7 @@ export class IndentGuidesOverlay extends DynamicViewOverlay {
 	// --- begin event handlers
 
 	public override onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent
+		e: viewEvents.ViewConfigurationChangedEvent,
 	): boolean {
 		const options = this._context.configuration.options;
 		const wrappingInfo = options.get(EditorOption.wrappingInfo);
@@ -108,13 +108,13 @@ export class IndentGuidesOverlay extends DynamicViewOverlay {
 			wrappingInfo.wrappingColumn === -1
 				? -1
 				: wrappingInfo.wrappingColumn *
-					fontInfo.typicalHalfwidthCharacterWidth;
+				  fontInfo.typicalHalfwidthCharacterWidth;
 		this._bracketPairGuideOptions = options.get(EditorOption.guides);
 
 		return true;
 	}
 	public override onCursorStateChanged(
-		e: viewEvents.ViewCursorStateChangedEvent
+		e: viewEvents.ViewCursorStateChangedEvent,
 	): boolean {
 		const selection = e.selections[0];
 		const newPosition = selection.getPosition();
@@ -126,7 +126,7 @@ export class IndentGuidesOverlay extends DynamicViewOverlay {
 		return false;
 	}
 	public override onDecorationsChanged(
-		e: viewEvents.ViewDecorationsChangedEvent
+		e: viewEvents.ViewDecorationsChangedEvent,
 	): boolean {
 		// true for inline decorations
 		return true;
@@ -135,32 +135,32 @@ export class IndentGuidesOverlay extends DynamicViewOverlay {
 		return true;
 	}
 	public override onLinesChanged(
-		e: viewEvents.ViewLinesChangedEvent
+		e: viewEvents.ViewLinesChangedEvent,
 	): boolean {
 		return true;
 	}
 	public override onLinesDeleted(
-		e: viewEvents.ViewLinesDeletedEvent
+		e: viewEvents.ViewLinesDeletedEvent,
 	): boolean {
 		return true;
 	}
 	public override onLinesInserted(
-		e: viewEvents.ViewLinesInsertedEvent
+		e: viewEvents.ViewLinesInsertedEvent,
 	): boolean {
 		return true;
 	}
 	public override onScrollChanged(
-		e: viewEvents.ViewScrollChangedEvent
+		e: viewEvents.ViewScrollChangedEvent,
 	): boolean {
 		return e.scrollTopChanged; // || e.scrollWidthChanged;
 	}
 	public override onZonesChanged(
-		e: viewEvents.ViewZonesChangedEvent
+		e: viewEvents.ViewZonesChangedEvent,
 	): boolean {
 		return true;
 	}
 	public override onLanguageConfigurationChanged(
-		e: viewEvents.ViewLanguageConfigurationEvent
+		e: viewEvents.ViewLanguageConfigurationEvent,
 	): boolean {
 		return true;
 	}
@@ -187,9 +187,9 @@ export class IndentGuidesOverlay extends DynamicViewOverlay {
 			visibleStartLineNumber,
 			Math.min(
 				visibleEndLineNumber + 1,
-				this._context.viewModel.getLineCount()
+				this._context.viewModel.getLineCount(),
 			),
-			activeCursorPosition
+			activeCursorPosition,
 		);
 
 		const output: string[] = [];
@@ -208,10 +208,10 @@ export class IndentGuidesOverlay extends DynamicViewOverlay {
 				const left =
 					guide.column === -1
 						? leftOffset +
-							(guide.visibleColumn - 1) * this._spaceWidth
+						  (guide.visibleColumn - 1) * this._spaceWidth
 						: ctx.visibleRangeForPosition(
-								new Position(lineNumber, guide.column)
-							)!.left;
+								new Position(lineNumber, guide.column),
+						  )!.left;
 
 				if (
 					left > scrollWidth ||
@@ -230,9 +230,9 @@ export class IndentGuidesOverlay extends DynamicViewOverlay {
 					? (ctx.visibleRangeForPosition(
 							new Position(
 								lineNumber,
-								guide.horizontalLine.endColumn
-							)
-						)?.left ?? left + this._spaceWidth) - left
+								guide.horizontalLine.endColumn,
+							),
+					  )?.left ?? left + this._spaceWidth) - left
 					: this._spaceWidth;
 
 				result += `<div class="core-guide ${guide.className} ${className}" style="left:${left}px;height:${lineHeight}px;width:${width}px"></div>`;
@@ -245,7 +245,7 @@ export class IndentGuidesOverlay extends DynamicViewOverlay {
 	private getGuidesByLine(
 		visibleStartLineNumber: number,
 		visibleEndLineNumber: number,
-		activeCursorPosition: Position | null
+		activeCursorPosition: Position | null,
 	): IndentGuide[][] {
 		const bracketGuides =
 			this._bracketPairGuideOptions.bracketPairs !== false
@@ -264,20 +264,20 @@ export class IndentGuidesOverlay extends DynamicViewOverlay {
 									: this._bracketPairGuideOptions
 												.bracketPairsHorizontal ===
 										  "active"
-										? HorizontalGuidesState.EnabledForActive
-										: HorizontalGuidesState.Disabled,
+									  ? HorizontalGuidesState.EnabledForActive
+									  : HorizontalGuidesState.Disabled,
 							includeInactive:
 								this._bracketPairGuideOptions.bracketPairs ===
 								true,
-						}
-					)
+						},
+				  )
 				: null;
 
 		const indentGuides = this._bracketPairGuideOptions.indentation
 			? this._context.viewModel.getLinesIndentGuides(
 					visibleStartLineNumber,
-					visibleEndLineNumber
-				)
+					visibleEndLineNumber,
+			  )
 			: null;
 
 		let activeIndentStartLineNumber = 0;
@@ -293,7 +293,7 @@ export class IndentGuidesOverlay extends DynamicViewOverlay {
 				this._context.viewModel.getActiveIndentGuide(
 					activeCursorPosition.lineNumber,
 					visibleStartLineNumber,
-					visibleEndLineNumber
+					visibleEndLineNumber,
 				);
 			activeIndentStartLineNumber = activeIndentInfo.startLineNumber;
 			activeIndentEndLineNumber = activeIndentInfo.endLineNumber;
@@ -315,7 +315,7 @@ export class IndentGuidesOverlay extends DynamicViewOverlay {
 				? bracketGuides[lineNumber - visibleStartLineNumber]
 				: [];
 			const bracketGuidesInLineQueue = new ArrayQueue(
-				bracketGuidesInLine
+				bracketGuidesInLine,
 			);
 
 			const indentGuidesInLine = indentGuides
@@ -338,8 +338,8 @@ export class IndentGuidesOverlay extends DynamicViewOverlay {
 					indentLvl === activeIndentLevel;
 				lineGuides.push(
 					...(bracketGuidesInLineQueue.takeWhile(
-						(g) => g.visibleColumn < indentGuide
-					) || [])
+						(g) => g.visibleColumn < indentGuide,
+					) || []),
 				);
 				const peeked = bracketGuidesInLineQueue.peek();
 				if (
@@ -355,14 +355,14 @@ export class IndentGuidesOverlay extends DynamicViewOverlay {
 								(isActive ? " indent-active" : ""),
 							null,
 							-1,
-							-1
-						)
+							-1,
+						),
 					);
 				}
 			}
 
 			lineGuides.push(
-				...(bracketGuidesInLineQueue.takeWhile((g) => true) || [])
+				...(bracketGuidesInLineQueue.takeWhile((g) => true) || []),
 			);
 		}
 
@@ -458,10 +458,10 @@ registerThemingParticipant((theme, collector) => {
 
 			const effectiveGuideColor = transparentToUndefined(
 				transparentToUndefined(guideColor) ??
-					bracketColor?.transparent(0.3)
+					bracketColor?.transparent(0.3),
 			);
 			const effectiveGuideColorActive = transparentToUndefined(
-				transparentToUndefined(guideColorActive) ?? bracketColor
+				transparentToUndefined(guideColorActive) ?? bracketColor,
 			);
 
 			if (!effectiveGuideColor || !effectiveGuideColorActive) {
@@ -503,28 +503,28 @@ registerThemingParticipant((theme, collector) => {
 					.getInlineClassNameOfLevel(level)
 					.replace(/ /g, ".")} { --guide-color: ${
 					colors.guideColor
-				}; --guide-color-active: ${colors.guideColorActive}; }`
+				}; --guide-color-active: ${colors.guideColorActive}; }`,
 			);
 		}
 
 		collector.addRule(
-			`.monaco-editor .vertical { box-shadow: 1px 0 0 0 var(--guide-color) inset; }`
+			`.monaco-editor .vertical { box-shadow: 1px 0 0 0 var(--guide-color) inset; }`,
 		);
 		collector.addRule(
-			`.monaco-editor .horizontal-top { border-top: 1px solid var(--guide-color); }`
+			`.monaco-editor .horizontal-top { border-top: 1px solid var(--guide-color); }`,
 		);
 		collector.addRule(
-			`.monaco-editor .horizontal-bottom { border-bottom: 1px solid var(--guide-color); }`
+			`.monaco-editor .horizontal-bottom { border-bottom: 1px solid var(--guide-color); }`,
 		);
 
 		collector.addRule(
-			`.monaco-editor .vertical.${colorProvider.activeClassName} { box-shadow: 1px 0 0 0 var(--guide-color-active) inset; }`
+			`.monaco-editor .vertical.${colorProvider.activeClassName} { box-shadow: 1px 0 0 0 var(--guide-color-active) inset; }`,
 		);
 		collector.addRule(
-			`.monaco-editor .horizontal-top.${colorProvider.activeClassName} { border-top: 1px solid var(--guide-color-active); }`
+			`.monaco-editor .horizontal-top.${colorProvider.activeClassName} { border-top: 1px solid var(--guide-color-active); }`,
 		);
 		collector.addRule(
-			`.monaco-editor .horizontal-bottom.${colorProvider.activeClassName} { border-bottom: 1px solid var(--guide-color-active); }`
+			`.monaco-editor .horizontal-bottom.${colorProvider.activeClassName} { border-bottom: 1px solid var(--guide-color-active); }`,
 		);
 	}
 
@@ -532,15 +532,15 @@ registerThemingParticipant((theme, collector) => {
 		for (let level = 0; level < 30; level++) {
 			const colors = indentColorValues[level % indentColorValues.length];
 			collector.addRule(
-				`.monaco-editor .lines-content .core-guide-indent.lvl-${level} { --indent-color: ${colors.indentColor}; --indent-color-active: ${colors.indentColorActive}; }`
+				`.monaco-editor .lines-content .core-guide-indent.lvl-${level} { --indent-color: ${colors.indentColor}; --indent-color-active: ${colors.indentColorActive}; }`,
 			);
 		}
 
 		collector.addRule(
-			`.monaco-editor .lines-content .core-guide-indent { box-shadow: 1px 0 0 0 var(--indent-color) inset; }`
+			`.monaco-editor .lines-content .core-guide-indent { box-shadow: 1px 0 0 0 var(--indent-color) inset; }`,
 		);
 		collector.addRule(
-			`.monaco-editor .lines-content .core-guide-indent.indent-active { box-shadow: 1px 0 0 0 var(--indent-color-active) inset; }`
+			`.monaco-editor .lines-content .core-guide-indent.indent-active { box-shadow: 1px 0 0 0 var(--indent-color-active) inset; }`,
 		);
 	}
 });

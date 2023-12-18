@@ -42,7 +42,7 @@ export interface IRelatedInformation {
 	endColumn: number;
 }
 
-export const enum MarkerTag {
+export enum MarkerTag {
 	Unnecessary = 1,
 	Deprecated = 2,
 }
@@ -63,7 +63,7 @@ export namespace MarkerSeverity {
 	_displayStrings[MarkerSeverity.Error] = localize("sev.error", "Error");
 	_displayStrings[MarkerSeverity.Warning] = localize(
 		"sev.warning",
-		"Warning"
+		"Warning",
 	);
 	_displayStrings[MarkerSeverity.Info] = localize("sev.info", "Info");
 
@@ -151,7 +151,7 @@ export namespace IMarkerData {
 
 	export function makeKeyOptionalMessage(
 		markerData: IMarkerData,
-		useMessage: boolean
+		useMessage: boolean,
 	): string {
 		const result: string[] = [emptyString];
 		if (markerData.source) {

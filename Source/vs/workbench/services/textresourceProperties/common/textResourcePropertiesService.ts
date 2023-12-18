@@ -3,22 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from "vs/base/common/uri";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { ITextResourcePropertiesService } from "vs/editor/common/services/textResourceConfiguration";
-import { OperatingSystem, OS } from "vs/base/common/platform";
 import { Schemas } from "vs/base/common/network";
+import { OS, OperatingSystem } from "vs/base/common/platform";
+import { URI } from "vs/base/common/uri";
+import { ITextResourcePropertiesService } from "vs/editor/common/services/textResourceConfiguration";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import { IRemoteAgentEnvironment } from "vs/platform/remote/common/remoteAgentEnvironment";
 import {
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
 import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { IRemoteAgentEnvironment } from "vs/platform/remote/common/remoteAgentEnvironment";
 import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteAgentService";
 
 export class TextResourcePropertiesService
@@ -67,13 +67,13 @@ export class TextResourcePropertiesService
 					: /* Get it from cache */ this.storageService.getNumber(
 							osCacheKey,
 							StorageScope.WORKSPACE,
-							OS
-						);
+							OS,
+					  );
 				this.storageService.store(
 					osCacheKey,
 					os,
 					StorageScope.WORKSPACE,
-					StorageTarget.MACHINE
+					StorageTarget.MACHINE,
 				);
 			}
 		}
@@ -85,5 +85,5 @@ export class TextResourcePropertiesService
 registerSingleton(
 	ITextResourcePropertiesService,
 	TextResourcePropertiesService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

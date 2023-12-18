@@ -3,46 +3,46 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
+import { Emitter, Event } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
+import { basename } from "vs/base/common/path";
+import { isLinux, isWindows } from "vs/base/common/platform";
+import Severity from "vs/base/common/severity";
 import {
 	EDITOR_FONT_DEFAULTS,
 	IEditorOptions,
 } from "vs/editor/common/config/editorOptions";
+import * as nls from "vs/nls";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import {
-	ITerminalConfiguration,
-	TERMINAL_CONFIG_SECTION,
-	DEFAULT_LETTER_SPACING,
-	DEFAULT_LINE_HEIGHT,
-	MINIMUM_LETTER_SPACING,
-	MINIMUM_FONT_WEIGHT,
-	MAXIMUM_FONT_WEIGHT,
-	DEFAULT_FONT_WEIGHT,
-	DEFAULT_BOLD_FONT_WEIGHT,
-	FontWeight,
-	ITerminalFont,
-} from "vs/workbench/contrib/terminal/common/terminal";
-import Severity from "vs/base/common/severity";
+import { IExtensionManagementService } from "vs/platform/extensionManagement/common/extensionManagement";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import {
 	INotificationService,
 	NeverShowAgainScope,
 } from "vs/platform/notification/common/notification";
+import { IProductService } from "vs/platform/product/common/productService";
+import { IShellLaunchConfig } from "vs/platform/terminal/common/terminal";
+import { InstallRecommendedExtensionAction } from "vs/workbench/contrib/extensions/browser/extensionsActions";
 import {
 	ITerminalConfigHelper,
 	LinuxDistro,
 } from "vs/workbench/contrib/terminal/browser/terminal";
-import { Emitter, Event } from "vs/base/common/event";
-import { basename } from "vs/base/common/path";
-import { IExtensionManagementService } from "vs/platform/extensionManagement/common/extensionManagement";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { InstallRecommendedExtensionAction } from "vs/workbench/contrib/extensions/browser/extensionsActions";
-import { IProductService } from "vs/platform/product/common/productService";
 import { IXtermCore } from "vs/workbench/contrib/terminal/browser/xterm-private";
-import { IShellLaunchConfig } from "vs/platform/terminal/common/terminal";
-import { isLinux, isWindows } from "vs/base/common/platform";
-import { Disposable } from "vs/base/common/lifecycle";
+import {
+	DEFAULT_BOLD_FONT_WEIGHT,
+	DEFAULT_FONT_WEIGHT,
+	DEFAULT_LETTER_SPACING,
+	DEFAULT_LINE_HEIGHT,
+	FontWeight,
+	ITerminalConfiguration,
+	ITerminalFont,
+	MAXIMUM_FONT_WEIGHT,
+	MINIMUM_FONT_WEIGHT,
+	MINIMUM_LETTER_SPACING,
+	TERMINAL_CONFIG_SECTION,
+} from "vs/workbench/contrib/terminal/common/terminal";
 
-const enum FontConstants {
+enum FontConstants {
 	MinimumFontSize = 6,
 	MaximumFontSize = 100,
 }
@@ -99,15 +99,15 @@ export class TerminalConfigHelper
 	private _updateConfig(): void {
 		const configValues =
 			this._configurationService.getValue<ITerminalConfiguration>(
-				TERMINAL_CONFIG_SECTION
+				TERMINAL_CONFIG_SECTION,
 			);
 		configValues.fontWeight = this._normalizeFontWeight(
 			configValues.fontWeight,
-			DEFAULT_FONT_WEIGHT
+			DEFAULT_FONT_WEIGHT,
 		);
 		configValues.fontWeightBold = this._normalizeFontWeight(
 			configValues.fontWeightBold,
-			DEFAULT_BOLD_FONT_WEIGHT
+			DEFAULT_BOLD_FONT_WEIGHT,
 		);
 
 		this.config = configValues;
@@ -135,7 +135,7 @@ export class TerminalConfigHelper
 	private _createCharMeasureElementIfNecessary(): HTMLElement {
 		if (!this.panelContainer) {
 			throw new Error(
-				"Cannot measure element when terminal is not attached"
+				"Cannot measure element when terminal is not attached",
 			);
 		}
 		// Create charMeasureElement if it hasn't been created or if it was orphaned by its parent
@@ -152,7 +152,7 @@ export class TerminalConfigHelper
 	private _getBoundingRectFor(
 		char: string,
 		fontFamily: string,
-		fontSize: number
+		fontSize: number,
 	): ClientRect | DOMRect | undefined {
 		let charMeasureElement: HTMLElement;
 		try {
@@ -177,7 +177,7 @@ export class TerminalConfigHelper
 		fontFamily: string,
 		fontSize: number,
 		letterSpacing: number,
-		lineHeight: number
+		lineHeight: number,
 	): ITerminalFont {
 		const rect = this._getBoundingRectFor("X", fontFamily, fontSize);
 
@@ -206,7 +206,7 @@ export class TerminalConfigHelper
 				this._lastFontMeasurement.charWidth = rect.width;
 			} else {
 				const deviceCharWidth = Math.floor(
-					rect.width * w.devicePixelRatio
+					rect.width * w.devicePixelRatio,
 				);
 				const deviceCellWidth =
 					deviceCharWidth + Math.round(letterSpacing);
@@ -227,7 +227,7 @@ export class TerminalConfigHelper
 	getFont(
 		w: Window,
 		xtermCore?: IXtermCore,
-		excludeDimensions?: boolean
+		excludeDimensions?: boolean,
 	): ITerminalFont {
 		const editorConfig =
 			this._configurationService.getValue<IEditorOptions>("editor");
@@ -240,7 +240,7 @@ export class TerminalConfigHelper
 			this.config.fontSize,
 			FontConstants.MinimumFontSize,
 			FontConstants.MaximumFontSize,
-			EDITOR_FONT_DEFAULTS.fontSize
+			EDITOR_FONT_DEFAULTS.fontSize,
 		);
 
 		// Work around bad font on Fedora/Ubuntu
@@ -256,7 +256,7 @@ export class TerminalConfigHelper
 					fontSize + 2,
 					FontConstants.MinimumFontSize,
 					FontConstants.MaximumFontSize,
-					EDITOR_FONT_DEFAULTS.fontSize
+					EDITOR_FONT_DEFAULTS.fontSize,
 				);
 			}
 		}
@@ -267,8 +267,8 @@ export class TerminalConfigHelper
 		const letterSpacing = this.config.letterSpacing
 			? Math.max(
 					Math.floor(this.config.letterSpacing),
-					MINIMUM_LETTER_SPACING
-				)
+					MINIMUM_LETTER_SPACING,
+			  )
 			: DEFAULT_LETTER_SPACING;
 		const lineHeight = this.config.lineHeight
 			? Math.max(this.config.lineHeight, 1)
@@ -306,7 +306,7 @@ export class TerminalConfigHelper
 			fontFamily,
 			fontSize,
 			letterSpacing,
-			lineHeight
+			lineHeight,
 		);
 	}
 
@@ -314,7 +314,7 @@ export class TerminalConfigHelper
 		source: any,
 		minimum: number,
 		maximum: number,
-		fallback: T
+		fallback: T,
 	): number | T {
 		let r = parseInt(source, 10);
 		if (isNaN(r)) {
@@ -332,7 +332,7 @@ export class TerminalConfigHelper
 	private _recommendationsShown = false;
 
 	async showRecommendations(
-		shellLaunchConfig: IShellLaunchConfig
+		shellLaunchConfig: IShellLaunchConfig,
 	): Promise<void> {
 		if (this._recommendationsShown) {
 			return;
@@ -350,10 +350,10 @@ export class TerminalConfigHelper
 				return;
 			}
 			const extId = Object.keys(
-				exeBasedExtensionTips.wsl.recommendations
+				exeBasedExtensionTips.wsl.recommendations,
 			).find(
 				(extId) =>
-					exeBasedExtensionTips.wsl.recommendations[extId].important
+					exeBasedExtensionTips.wsl.recommendations[extId].important,
 			);
 			if (extId && !(await this._isExtensionInstalled(extId))) {
 				this._notificationService.prompt(
@@ -361,7 +361,7 @@ export class TerminalConfigHelper
 					nls.localize(
 						"useWslExtension.title",
 						"The '{0}' extension is recommended for opening a terminal in WSL.",
-						exeBasedExtensionTips.wsl.friendlyName
+						exeBasedExtensionTips.wsl.friendlyName,
 					),
 					[
 						{
@@ -370,7 +370,7 @@ export class TerminalConfigHelper
 								this._instantiationService
 									.createInstance(
 										InstallRecommendedExtensionAction,
-										extId
+										extId,
 									)
 									.run();
 							},
@@ -383,7 +383,7 @@ export class TerminalConfigHelper
 							scope: NeverShowAgainScope.APPLICATION,
 						},
 						onCancel: () => {},
-					}
+					},
 				);
 			}
 		}
@@ -397,7 +397,7 @@ export class TerminalConfigHelper
 
 	private _normalizeFontWeight(
 		input: any,
-		defaultWeight: FontWeight
+		defaultWeight: FontWeight,
 	): FontWeight {
 		if (input === "normal" || input === "bold") {
 			return input;
@@ -406,7 +406,7 @@ export class TerminalConfigHelper
 			input,
 			MINIMUM_FONT_WEIGHT,
 			MAXIMUM_FONT_WEIGHT,
-			defaultWeight
+			defaultWeight,
 		);
 	}
 }

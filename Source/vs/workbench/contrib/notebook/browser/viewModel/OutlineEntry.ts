@@ -4,6 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { Codicon } from "vs/base/common/codicons";
 import { ThemeIcon } from "vs/base/common/themables";
+import { IRange } from "vs/editor/common/core/range";
+import { SymbolKind, SymbolKinds } from "vs/editor/common/languages";
 import {
 	IMarkerService,
 	MarkerSeverity,
@@ -11,8 +13,6 @@ import {
 import { ICellViewModel } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
 import { executingStateIcon } from "vs/workbench/contrib/notebook/browser/notebookIcons";
 import { CellKind } from "vs/workbench/contrib/notebook/common/notebookCommon";
-import { IRange } from "vs/editor/common/core/range";
-import { SymbolKind, SymbolKinds } from "vs/editor/common/languages";
 
 export interface IOutlineMarkerInfo {
 	readonly count: number;
@@ -31,10 +31,10 @@ export class OutlineEntry {
 		return this.isExecuting && this.isPaused
 			? executingStateIcon
 			: this.isExecuting
-				? ThemeIcon.modify(executingStateIcon, "spin")
-				: this.cell.cellKind === CellKind.Markup
-					? Codicon.markdown
-					: Codicon.code;
+			  ? ThemeIcon.modify(executingStateIcon, "spin")
+			  : this.cell.cellKind === CellKind.Markup
+				  ? Codicon.markdown
+				  : Codicon.code;
 	}
 
 	constructor(
@@ -45,7 +45,7 @@ export class OutlineEntry {
 		readonly isExecuting: boolean,
 		readonly isPaused: boolean,
 		readonly range?: IRange,
-		readonly symbolKind?: SymbolKind
+		readonly symbolKind?: SymbolKind,
 	) {}
 
 	addChild(entry: OutlineEntry) {
@@ -96,9 +96,9 @@ export class OutlineEntry {
 			for (const child of this.children) {
 				child.updateMarkers(markerService);
 				if (child.markerInfo) {
-					topChild = !topChild
-						? child.markerInfo.topSev
-						: Math.max(child.markerInfo.topSev, topChild);
+					topChild = topChild
+						? Math.max(child.markerInfo.topSev, topChild)
+						: child.markerInfo.topSev;
 				}
 			}
 			this._markerInfo = topChild && { topSev: topChild, count: 0 };
@@ -114,7 +114,7 @@ export class OutlineEntry {
 
 	find(
 		cell: ICellViewModel,
-		parents: OutlineEntry[]
+		parents: OutlineEntry[],
 	): OutlineEntry | undefined {
 		if (cell.id === this.cell.id) {
 			return this;

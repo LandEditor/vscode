@@ -67,7 +67,7 @@ export class MainThreadManagedSockets
 				connectTo: ManagedRemoteConnection,
 				path: string,
 				query: string,
-				debugLabel: string
+				debugLabel: string,
 			): Promise<ISocket> {
 				return new Promise<ISocket>((resolve, reject) => {
 					if (connectTo.id !== socketFactoryId) {
@@ -91,18 +91,18 @@ export class MainThreadManagedSockets
 								path,
 								query,
 								debugLabel,
-								half
+								half,
 							).then(
 								(socket) => {
 									socket.onDidDispose(() =>
-										that._remoteSockets.delete(socketId)
+										that._remoteSockets.delete(socketId),
 									);
 									resolve(socket);
 								},
 								(err) => {
 									that._remoteSockets.delete(socketId);
 									reject(err);
-								}
+								},
 							);
 						})
 						.catch(reject);
@@ -113,8 +113,8 @@ export class MainThreadManagedSockets
 			socketFactoryId,
 			this._remoteSocketFactoryService.register(
 				RemoteConnectionType.Managed,
-				socketFactory
-			)
+				socketFactory,
+			),
 		);
 	}
 
@@ -128,7 +128,7 @@ export class MainThreadManagedSockets
 
 	$onDidManagedSocketClose(
 		socketId: number,
-		error: string | undefined
+		error: string | undefined,
 	): void {
 		this._remoteSockets.get(socketId)?.onClose.fire({
 			type: SocketCloseEventType.NodeSocketCloseEvent,
@@ -150,13 +150,13 @@ export class MainThreadManagedSocket extends ManagedSocket {
 		path: string,
 		query: string,
 		debugLabel: string,
-		half: RemoteSocketHalf
+		half: RemoteSocketHalf,
 	): Promise<MainThreadManagedSocket> {
 		const socket = new MainThreadManagedSocket(
 			socketId,
 			proxy,
 			debugLabel,
-			half
+			half,
 		);
 		return connectManagedSocket(socket, path, query, debugLabel, half);
 	}
@@ -165,7 +165,7 @@ export class MainThreadManagedSocket extends ManagedSocket {
 		private readonly socketId: number,
 		private readonly proxy: ExtHostManagedSocketsShape,
 		debugLabel: string,
-		half: RemoteSocketHalf
+		half: RemoteSocketHalf,
 	) {
 		super(debugLabel, half);
 	}

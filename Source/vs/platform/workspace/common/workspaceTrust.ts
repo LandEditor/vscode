@@ -38,7 +38,7 @@ export interface WorkspaceTrustRequestOptions {
 
 export const IWorkspaceTrustEnablementService =
 	createDecorator<IWorkspaceTrustEnablementService>(
-		"workspaceTrustEnablementService"
+		"workspaceTrustEnablementService",
 	);
 
 export interface IWorkspaceTrustEnablementService {
@@ -49,7 +49,7 @@ export interface IWorkspaceTrustEnablementService {
 
 export const IWorkspaceTrustManagementService =
 	createDecorator<IWorkspaceTrustManagementService>(
-		"workspaceTrustManagementService"
+		"workspaceTrustManagementService",
 	);
 
 export interface IWorkspaceTrustManagementService {
@@ -78,11 +78,11 @@ export interface IWorkspaceTrustManagementService {
 	setTrustedUris(uris: URI[]): Promise<void>;
 
 	addWorkspaceTrustTransitionParticipant(
-		participant: IWorkspaceTrustTransitionParticipant
+		participant: IWorkspaceTrustTransitionParticipant,
 	): IDisposable;
 }
 
-export const enum WorkspaceTrustUriResponse {
+export enum WorkspaceTrustUriResponse {
 	Open = 1,
 	OpenInNewWindow = 2,
 	Cancel = 3,
@@ -90,7 +90,7 @@ export const enum WorkspaceTrustUriResponse {
 
 export const IWorkspaceTrustRequestService =
 	createDecorator<IWorkspaceTrustRequestService>(
-		"workspaceTrustRequestService"
+		"workspaceTrustRequestService",
 	);
 
 export interface IWorkspaceTrustRequestService {
@@ -104,14 +104,14 @@ export interface IWorkspaceTrustRequestService {
 
 	completeOpenFilesTrustRequest(
 		result: WorkspaceTrustUriResponse,
-		saveResponse?: boolean
+		saveResponse?: boolean,
 	): Promise<void>;
 	requestOpenFilesTrust(openFiles: URI[]): Promise<WorkspaceTrustUriResponse>;
 
 	cancelWorkspaceTrustRequest(): void;
 	completeWorkspaceTrustRequest(trusted?: boolean): Promise<void>;
 	requestWorkspaceTrust(
-		options?: WorkspaceTrustRequestOptions
+		options?: WorkspaceTrustRequestOptions,
 	): Promise<boolean | undefined>;
 	requestWorkspaceTrustOnStartup(): void;
 }

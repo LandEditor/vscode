@@ -3,35 +3,35 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import type {
-	IKeyValueStorage,
 	IExperimentationTelemetry,
+	IKeyValueStorage,
 } from "tas-client-umd";
-import { MementoObject, Memento } from "vs/workbench/common/memento";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { ITelemetryData } from "vs/base/common/actions";
+import { localize } from "vs/nls";
+import { IAssignmentService } from "vs/platform/assignment/common/assignment";
+import { BaseAssignmentService } from "vs/platform/assignment/common/assignmentService";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import {
+	ConfigurationScope,
+	Extensions as ConfigurationExtensions,
+	IConfigurationRegistry,
+} from "vs/platform/configuration/common/configurationRegistry";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { IProductService } from "vs/platform/product/common/productService";
+import { Registry } from "vs/platform/registry/common/platform";
 import {
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
-import { ITelemetryData } from "vs/base/common/actions";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IProductService } from "vs/platform/product/common/productService";
-import { IAssignmentService } from "vs/platform/assignment/common/assignment";
-import { Registry } from "vs/platform/registry/common/platform";
-import { BaseAssignmentService } from "vs/platform/assignment/common/assignmentService";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import { workbenchConfigurationNodeBase } from "vs/workbench/common/configuration";
-import {
-	IConfigurationRegistry,
-	Extensions as ConfigurationExtensions,
-	ConfigurationScope,
-} from "vs/platform/configuration/common/configurationRegistry";
+import { Memento, MementoObject } from "vs/workbench/common/memento";
 
 export const IWorkbenchAssignmentService =
 	createDecorator<IWorkbenchAssignmentService>("WorkbenchAssignmentService");
@@ -45,13 +45,13 @@ class MementoKeyValueStorage implements IKeyValueStorage {
 	constructor(private memento: Memento) {
 		this.mementoObj = memento.getMemento(
 			StorageScope.APPLICATION,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 	}
 
 	async getValue<T>(
 		key: string,
-		defaultValue?: T | undefined
+		defaultValue?: T | undefined,
 	): Promise<T | undefined> {
 		const value = await this.mementoObj[key];
 		return value || defaultValue;
@@ -67,7 +67,7 @@ class WorkbenchAssignmentServiceTelemetry implements IExperimentationTelemetry {
 	private _lastAssignmentContext: string | undefined;
 	constructor(
 		private telemetryService: ITelemetryService,
-		private productService: IProductService
+		private productService: IProductService,
 	) {}
 
 	get assignmentContext(): string[] | undefined {
@@ -128,13 +128,13 @@ export class WorkbenchAssignmentService extends BaseAssignmentService {
 	protected override get experimentsEnabled(): boolean {
 		return (
 			this.configurationService.getValue(
-				"workbench.enableExperiments"
+				"workbench.enableExperiments",
 			) === true
 		);
 	}
 
 	override async getTreatment<T extends string | number | boolean>(
-		name: string
+		name: string,
 	): Promise<T | undefined> {
 		const result = await super.getTreatment<T>(name);
 		type TASClientReadTreatmentData = {
@@ -187,24 +187,24 @@ export class WorkbenchAssignmentService extends BaseAssignmentService {
 registerSingleton(
 	IWorkbenchAssignmentService,
 	WorkbenchAssignmentService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 const registry = Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration
+	ConfigurationExtensions.Configuration,
 );
 registry.registerConfiguration({
 	...workbenchConfigurationNodeBase,
-	"properties": {
+	properties: {
 		"workbench.enableExperiments": {
-			"type": "boolean",
-			"description": localize(
+			type: "boolean",
+			description: localize(
 				"workbench.enableExperiments",
-				"Fetches experiments to run from a Microsoft online service."
+				"Fetches experiments to run from a Microsoft online service.",
 			),
-			"default": true,
-			"scope": ConfigurationScope.APPLICATION,
-			"restricted": true,
-			"tags": ["usesOnlineServices"],
+			default: true,
+			scope: ConfigurationScope.APPLICATION,
+			restricted: true,
+			tags: ["usesOnlineServices"],
 		},
 	},
 });

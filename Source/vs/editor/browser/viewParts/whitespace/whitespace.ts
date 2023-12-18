@@ -3,20 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { CharCode } from "vs/base/common/charCode";
+import * as strings from "vs/base/common/strings";
 import "vs/css!./whitespace";
 import { DynamicViewOverlay } from "vs/editor/browser/view/dynamicViewOverlay";
-import { Selection } from "vs/editor/common/core/selection";
 import { RenderingContext } from "vs/editor/browser/view/renderingContext";
-import { ViewContext } from "vs/editor/common/viewModel/viewContext";
-import * as viewEvents from "vs/editor/common/viewEvents";
-import { ViewLineData } from "vs/editor/common/viewModel";
-import { EditorOption } from "vs/editor/common/config/editorOptions";
 import { IEditorConfiguration } from "vs/editor/common/config/editorConfiguration";
-import * as strings from "vs/base/common/strings";
-import { CharCode } from "vs/base/common/charCode";
-import { LineRange } from "vs/editor/common/viewLayout/viewLineRenderer";
-import { Position } from "vs/editor/common/core/position";
+import { EditorOption } from "vs/editor/common/config/editorOptions";
 import { editorWhitespaces } from "vs/editor/common/core/editorColorRegistry";
+import { Position } from "vs/editor/common/core/position";
+import { Selection } from "vs/editor/common/core/selection";
+import * as viewEvents from "vs/editor/common/viewEvents";
+import { LineRange } from "vs/editor/common/viewLayout/viewLineRenderer";
+import { ViewLineData } from "vs/editor/common/viewModel";
+import { ViewContext } from "vs/editor/common/viewModel/viewContext";
 
 export class WhitespaceOverlay extends DynamicViewOverlay {
 	private readonly _context: ViewContext;
@@ -42,7 +42,7 @@ export class WhitespaceOverlay extends DynamicViewOverlay {
 	// --- begin event handlers
 
 	public override onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent
+		e: viewEvents.ViewConfigurationChangedEvent,
 	): boolean {
 		const newOptions = new WhitespaceOptions(this._context.configuration);
 		if (this._options.equals(newOptions)) {
@@ -52,7 +52,7 @@ export class WhitespaceOverlay extends DynamicViewOverlay {
 		return true;
 	}
 	public override onCursorStateChanged(
-		e: viewEvents.ViewCursorStateChangedEvent
+		e: viewEvents.ViewCursorStateChangedEvent,
 	): boolean {
 		this._selection = e.selections;
 		if (this._options.renderWhitespace === "selection") {
@@ -61,7 +61,7 @@ export class WhitespaceOverlay extends DynamicViewOverlay {
 		return false;
 	}
 	public override onDecorationsChanged(
-		e: viewEvents.ViewDecorationsChangedEvent
+		e: viewEvents.ViewDecorationsChangedEvent,
 	): boolean {
 		return true;
 	}
@@ -69,27 +69,27 @@ export class WhitespaceOverlay extends DynamicViewOverlay {
 		return true;
 	}
 	public override onLinesChanged(
-		e: viewEvents.ViewLinesChangedEvent
+		e: viewEvents.ViewLinesChangedEvent,
 	): boolean {
 		return true;
 	}
 	public override onLinesDeleted(
-		e: viewEvents.ViewLinesDeletedEvent
+		e: viewEvents.ViewLinesDeletedEvent,
 	): boolean {
 		return true;
 	}
 	public override onLinesInserted(
-		e: viewEvents.ViewLinesInsertedEvent
+		e: viewEvents.ViewLinesInsertedEvent,
 	): boolean {
 		return true;
 	}
 	public override onScrollChanged(
-		e: viewEvents.ViewScrollChangedEvent
+		e: viewEvents.ViewScrollChangedEvent,
 	): boolean {
 		return e.scrollTopChanged;
 	}
 	public override onZonesChanged(
-		e: viewEvents.ViewZonesChangedEvent
+		e: viewEvents.ViewZonesChangedEvent,
 	): boolean {
 		return true;
 	}
@@ -112,7 +112,7 @@ export class WhitespaceOverlay extends DynamicViewOverlay {
 			this._context.viewModel.getMinimapLinesRenderingData(
 				ctx.viewportData.startLineNumber,
 				ctx.viewportData.endLineNumber,
-				needed
+				needed,
 			);
 
 		this._renderResult = [];
@@ -150,7 +150,7 @@ export class WhitespaceOverlay extends DynamicViewOverlay {
 							selectionsOnLine = [];
 						}
 						selectionsOnLine.push(
-							new LineRange(startColumn - 1, endColumn - 1)
+							new LineRange(startColumn - 1, endColumn - 1),
 						);
 					}
 				}
@@ -160,7 +160,7 @@ export class WhitespaceOverlay extends DynamicViewOverlay {
 				ctx,
 				lineNumber,
 				selectionsOnLine,
-				lineData
+				lineData,
 			);
 		}
 	}
@@ -169,7 +169,7 @@ export class WhitespaceOverlay extends DynamicViewOverlay {
 		ctx: RenderingContext,
 		lineNumber: number,
 		selections: LineRange[] | null,
-		lineData: ViewLineData
+		lineData: ViewLineData,
 	): string {
 		if (this._options.renderWhitespace === "selection" && !selections) {
 			return "";
@@ -189,8 +189,8 @@ export class WhitespaceOverlay extends DynamicViewOverlay {
 				? lineContent.length
 				: Math.min(
 						this._options.stopRenderingLineAfter,
-						lineContent.length
-					);
+						lineContent.length,
+				  );
 		const continuesWithWrappedLine = lineData.continuesWithWrappedLine;
 		const fauxIndentLength = lineData.minColumn - 1;
 		const onlyBoundary = this._options.renderWhitespace === "boundary";
@@ -209,7 +209,7 @@ export class WhitespaceOverlay extends DynamicViewOverlay {
 		const canUseHalfwidthRightwardsArrow =
 			this._options.canUseHalfwidthRightwardsArrow;
 
-		let result: string = "";
+		let result = "";
 
 		let lineIsEmptyOrWhitespace = false;
 		let firstNonWhitespaceIndex =
@@ -302,7 +302,7 @@ export class WhitespaceOverlay extends DynamicViewOverlay {
 			}
 
 			const visibleRange = ctx.visibleRangeForPosition(
-				new Position(lineNumber, charIndex + 1)
+				new Position(lineNumber, charIndex + 1),
 			);
 			if (!visibleRange) {
 				continue;
@@ -314,7 +314,7 @@ export class WhitespaceOverlay extends DynamicViewOverlay {
 					result += this._renderArrow(
 						lineHeight,
 						spaceWidth,
-						visibleRange.left
+						visibleRange.left,
 					);
 				} else {
 					result += `<circle cx="${(
@@ -324,22 +324,20 @@ export class WhitespaceOverlay extends DynamicViewOverlay {
 						spaceWidth / 7
 					).toFixed(2)}" />`;
 				}
+			} else if (chCode === CharCode.Tab) {
+				result += `<div class="mwh" style="left:${
+					visibleRange.left
+				}px;height:${lineHeight}px;">${
+					canUseHalfwidthRightwardsArrow
+						? String.fromCharCode(0xffeb)
+						: String.fromCharCode(0x2192)
+				}</div>`;
 			} else {
-				if (chCode === CharCode.Tab) {
-					result += `<div class="mwh" style="left:${
-						visibleRange.left
-					}px;height:${lineHeight}px;">${
-						canUseHalfwidthRightwardsArrow
-							? String.fromCharCode(0xffeb)
-							: String.fromCharCode(0x2192)
-					}</div>`;
-				} else {
-					result += `<div class="mwh" style="left:${
-						visibleRange.left
-					}px;height:${lineHeight}px;">${String.fromCharCode(
-						renderSpaceCharCode
-					)}</div>`;
-				}
+				result += `<div class="mwh" style="left:${
+					visibleRange.left
+				}px;height:${lineHeight}px;">${String.fromCharCode(
+					renderSpaceCharCode,
+				)}</div>`;
 			}
 		}
 
@@ -358,7 +356,7 @@ export class WhitespaceOverlay extends DynamicViewOverlay {
 	private _renderArrow(
 		lineHeight: number,
 		spaceWidth: number,
-		left: number
+		left: number,
 	): string {
 		const strokeWidth = spaceWidth / 7;
 		const width = spaceWidth;
@@ -414,7 +412,7 @@ class WhitespaceOptions {
 		const options = config.options;
 		const fontInfo = options.get(EditorOption.fontInfo);
 		const experimentalWhitespaceRendering = options.get(
-			EditorOption.experimentalWhitespaceRendering
+			EditorOption.experimentalWhitespaceRendering,
 		);
 		if (experimentalWhitespaceRendering === "off") {
 			// whitespace is rendered in the view line
@@ -434,7 +432,7 @@ class WhitespaceOptions {
 			fontInfo.canUseHalfwidthRightwardsArrow;
 		this.lineHeight = options.get(EditorOption.lineHeight);
 		this.stopRenderingLineAfter = options.get(
-			EditorOption.stopRenderingLineAfter
+			EditorOption.stopRenderingLineAfter,
 		);
 	}
 

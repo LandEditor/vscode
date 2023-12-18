@@ -59,7 +59,7 @@ class SelectListRenderer
 		data.detail = dom.append(container, $(".option-detail"));
 		data.decoratorRight = dom.append(
 			container,
-			$(".option-decorator-right")
+			$(".option-decorator-right"),
 		);
 
 		return data;
@@ -68,7 +68,7 @@ class SelectListRenderer
 	renderElement(
 		element: ISelectOptionItem,
 		index: number,
-		templateData: ISelectListTemplateData
+		templateData: ISelectListTemplateData,
 	): void {
 		const data: ISelectListTemplateData = templateData;
 
@@ -121,19 +121,19 @@ export class SelectBoxList
 	private widthControlElement!: HTMLElement;
 	private _currentSelection = 0;
 	private _dropDownPosition!: AnchorPosition;
-	private _hasDetails: boolean = false;
+	private _hasDetails = false;
 	private selectionDetailsPane!: HTMLElement;
-	private _skipLayout: boolean = false;
+	private _skipLayout = false;
 	private _cachedMaxDetailsHeight?: number;
 
-	private _sticky: boolean = false; // for dev purposes only
+	private _sticky = false; // for dev purposes only
 
 	constructor(
 		options: ISelectOptionItem[],
 		selected: number,
 		contextViewProvider: IContextViewProvider,
 		styles: ISelectBoxStyles,
-		selectBoxOptions?: ISelectBoxOptions
+		selectBoxOptions?: ISelectBoxOptions,
 	) {
 		super();
 		this._isVisible = false;
@@ -157,14 +157,14 @@ export class SelectBoxList
 		if (typeof this.selectBoxOptions.ariaLabel === "string") {
 			this.selectElement.setAttribute(
 				"aria-label",
-				this.selectBoxOptions.ariaLabel
+				this.selectBoxOptions.ariaLabel,
 			);
 		}
 
 		if (typeof this.selectBoxOptions.ariaDescription === "string") {
 			this.selectElement.setAttribute(
 				"aria-description",
-				this.selectBoxOptions.ariaDescription
+				this.selectBoxOptions.ariaDescription,
 			);
 		}
 
@@ -197,27 +197,27 @@ export class SelectBoxList
 		// SetUp ContextView container to hold select Dropdown
 		this.contextViewProvider = contextViewProvider;
 		this.selectDropDownContainer = dom.$(
-			".monaco-select-box-dropdown-container"
+			".monaco-select-box-dropdown-container",
 		);
 		// Use custom CSS vars for padding calculation (shared with parent select)
 		this.selectDropDownContainer.classList.add(
-			"monaco-select-box-dropdown-padding"
+			"monaco-select-box-dropdown-padding",
 		);
 
 		// Setup container for select option details
 		this.selectionDetailsPane = dom.append(
 			this.selectDropDownContainer,
-			$(".select-box-details-pane")
+			$(".select-box-details-pane"),
 		);
 
 		// Create span flex box item/div we can measure and control
 		const widthControlOuterDiv = dom.append(
 			this.selectDropDownContainer,
-			$(".select-box-dropdown-container-width-control")
+			$(".select-box-dropdown-container-width-control"),
 		);
 		const widthControlInnerDiv = dom.append(
 			widthControlOuterDiv,
-			$(".width-control-div")
+			$(".width-control-div"),
 		);
 		this.widthControlElement = document.createElement("span");
 		this.widthControlElement.className = "option-text-width-control";
@@ -237,8 +237,8 @@ export class SelectBoxList
 				dom.EventType.DRAG_START,
 				(e) => {
 					dom.EventHelper.stop(e, true);
-				}
-			)
+				},
+			),
 		);
 	}
 
@@ -262,8 +262,8 @@ export class SelectBoxList
 						this.selectElement.title =
 							this.options[this.selected].text;
 					}
-				}
-			)
+				},
+			),
 		);
 
 		// Have to implement both keyboard and mouse controllers to handle disabled options
@@ -281,8 +281,8 @@ export class SelectBoxList
 					} else {
 						this.showSelectDropDown();
 					}
-				}
-			)
+				},
+			),
 		);
 
 		this._register(
@@ -291,8 +291,8 @@ export class SelectBoxList
 				dom.EventType.MOUSE_DOWN,
 				(e) => {
 					dom.EventHelper.stop(e);
-				}
-			)
+				},
+			),
 		);
 
 		// Intercept touch events
@@ -302,7 +302,7 @@ export class SelectBoxList
 		this._register(
 			dom.addDisposableListener(this.selectElement, "touchstart", (e) => {
 				listIsVisibleOnTouchStart = this._isVisible;
-			})
+			}),
 		);
 		this._register(
 			dom.addDisposableListener(this.selectElement, "touchend", (e) => {
@@ -313,7 +313,7 @@ export class SelectBoxList
 				} else {
 					this.showSelectDropDown();
 				}
-			})
+			}),
 		);
 
 		// Intercept keyboard handling
@@ -336,25 +336,21 @@ export class SelectBoxList
 						) {
 							showDropDown = true;
 						}
-					} else {
-						if (
-							(event.keyCode === KeyCode.DownArrow &&
-								event.altKey) ||
-							(event.keyCode === KeyCode.UpArrow &&
-								event.altKey) ||
-							event.keyCode === KeyCode.Space ||
-							event.keyCode === KeyCode.Enter
-						) {
-							showDropDown = true;
-						}
+					} else if (
+						(event.keyCode === KeyCode.DownArrow && event.altKey) ||
+						(event.keyCode === KeyCode.UpArrow && event.altKey) ||
+						event.keyCode === KeyCode.Space ||
+						event.keyCode === KeyCode.Enter
+					) {
+						showDropDown = true;
 					}
 
 					if (showDropDown) {
 						this.showSelectDropDown();
 						dom.EventHelper.stop(e, true);
 					}
-				}
-			)
+				},
+			),
 		);
 	}
 
@@ -371,7 +367,7 @@ export class SelectBoxList
 
 			this.options.forEach((option, index) => {
 				this.selectElement.add(
-					this.createOption(option.text, index, option.isDisabled)
+					this.createOption(option.text, index, option.isDisabled),
 				);
 				if (typeof option.description === "string") {
 					this._hasDetails = true;
@@ -416,7 +412,7 @@ export class SelectBoxList
 		this.selectBoxOptions.ariaLabel = label;
 		this.selectElement.setAttribute(
 			"aria-label",
-			this.selectBoxOptions.ariaLabel
+			this.selectBoxOptions.ariaLabel,
 		);
 	}
 
@@ -452,19 +448,19 @@ export class SelectBoxList
 
 		if (this.styles.listFocusBackground) {
 			content.push(
-				`.monaco-select-box-dropdown-container > .select-box-dropdown-list-container .monaco-list .monaco-list-row.focused { background-color: ${this.styles.listFocusBackground} !important; }`
+				`.monaco-select-box-dropdown-container > .select-box-dropdown-list-container .monaco-list .monaco-list-row.focused { background-color: ${this.styles.listFocusBackground} !important; }`,
 			);
 		}
 
 		if (this.styles.listFocusForeground) {
 			content.push(
-				`.monaco-select-box-dropdown-container > .select-box-dropdown-list-container .monaco-list .monaco-list-row.focused { color: ${this.styles.listFocusForeground} !important; }`
+				`.monaco-select-box-dropdown-container > .select-box-dropdown-list-container .monaco-list .monaco-list-row.focused { color: ${this.styles.listFocusForeground} !important; }`,
 			);
 		}
 
 		if (this.styles.decoratorRightForeground) {
 			content.push(
-				`.monaco-select-box-dropdown-container > .select-box-dropdown-list-container .monaco-list .monaco-list-row:not(.focused) .option-decorator-right { color: ${this.styles.decoratorRightForeground}; }`
+				`.monaco-select-box-dropdown-container > .select-box-dropdown-list-container .monaco-list .monaco-list-row:not(.focused) .option-decorator-right { color: ${this.styles.decoratorRightForeground}; }`,
 			);
 		}
 
@@ -474,56 +470,56 @@ export class SelectBoxList
 			this.styles.selectBorder !== this.styles.selectBackground
 		) {
 			content.push(
-				`.monaco-select-box-dropdown-container { border: 1px solid ${this.styles.selectBorder} } `
+				`.monaco-select-box-dropdown-container { border: 1px solid ${this.styles.selectBorder} } `,
 			);
 			content.push(
-				`.monaco-select-box-dropdown-container > .select-box-details-pane.border-top { border-top: 1px solid ${this.styles.selectBorder} } `
+				`.monaco-select-box-dropdown-container > .select-box-details-pane.border-top { border-top: 1px solid ${this.styles.selectBorder} } `,
 			);
 			content.push(
-				`.monaco-select-box-dropdown-container > .select-box-details-pane.border-bottom { border-bottom: 1px solid ${this.styles.selectBorder} } `
+				`.monaco-select-box-dropdown-container > .select-box-details-pane.border-bottom { border-bottom: 1px solid ${this.styles.selectBorder} } `,
 			);
 		} else if (this.styles.selectListBorder) {
 			content.push(
-				`.monaco-select-box-dropdown-container > .select-box-details-pane.border-top { border-top: 1px solid ${this.styles.selectListBorder} } `
+				`.monaco-select-box-dropdown-container > .select-box-details-pane.border-top { border-top: 1px solid ${this.styles.selectListBorder} } `,
 			);
 			content.push(
-				`.monaco-select-box-dropdown-container > .select-box-details-pane.border-bottom { border-bottom: 1px solid ${this.styles.selectListBorder} } `
+				`.monaco-select-box-dropdown-container > .select-box-details-pane.border-bottom { border-bottom: 1px solid ${this.styles.selectListBorder} } `,
 			);
 		}
 
 		// Hover foreground - ignore for disabled options
 		if (this.styles.listHoverForeground) {
 			content.push(
-				`.monaco-select-box-dropdown-container > .select-box-dropdown-list-container .monaco-list .monaco-list-row:not(.option-disabled):not(.focused):hover { color: ${this.styles.listHoverForeground} !important; }`
+				`.monaco-select-box-dropdown-container > .select-box-dropdown-list-container .monaco-list .monaco-list-row:not(.option-disabled):not(.focused):hover { color: ${this.styles.listHoverForeground} !important; }`,
 			);
 		}
 
 		// Hover background - ignore for disabled options
 		if (this.styles.listHoverBackground) {
 			content.push(
-				`.monaco-select-box-dropdown-container > .select-box-dropdown-list-container .monaco-list .monaco-list-row:not(.option-disabled):not(.focused):hover { background-color: ${this.styles.listHoverBackground} !important; }`
+				`.monaco-select-box-dropdown-container > .select-box-dropdown-list-container .monaco-list .monaco-list-row:not(.option-disabled):not(.focused):hover { background-color: ${this.styles.listHoverBackground} !important; }`,
 			);
 		}
 
 		// Match quick input outline styles - ignore for disabled options
 		if (this.styles.listFocusOutline) {
 			content.push(
-				`.monaco-select-box-dropdown-container > .select-box-dropdown-list-container .monaco-list .monaco-list-row.focused { outline: 1.6px dotted ${this.styles.listFocusOutline} !important; outline-offset: -1.6px !important; }`
+				`.monaco-select-box-dropdown-container > .select-box-dropdown-list-container .monaco-list .monaco-list-row.focused { outline: 1.6px dotted ${this.styles.listFocusOutline} !important; outline-offset: -1.6px !important; }`,
 			);
 		}
 
 		if (this.styles.listHoverOutline) {
 			content.push(
-				`.monaco-select-box-dropdown-container > .select-box-dropdown-list-container .monaco-list .monaco-list-row:not(.option-disabled):not(.focused):hover { outline: 1.6px dashed ${this.styles.listHoverOutline} !important; outline-offset: -1.6px !important; }`
+				`.monaco-select-box-dropdown-container > .select-box-dropdown-list-container .monaco-list .monaco-list-row:not(.option-disabled):not(.focused):hover { outline: 1.6px dashed ${this.styles.listHoverOutline} !important; outline-offset: -1.6px !important; }`,
 			);
 		}
 
 		// Clear list styles on focus and on hover for disabled options
 		content.push(
-			`.monaco-select-box-dropdown-container > .select-box-dropdown-list-container .monaco-list .monaco-list-row.option-disabled.focused { background-color: transparent !important; color: inherit !important; outline: none !important; }`
+			`.monaco-select-box-dropdown-container > .select-box-dropdown-list-container .monaco-list .monaco-list-row.option-disabled.focused { background-color: transparent !important; color: inherit !important; outline: none !important; }`,
 		);
 		content.push(
-			`.monaco-select-box-dropdown-container > .select-box-dropdown-list-container .monaco-list .monaco-list-row.option-disabled:hover { background-color: transparent !important; color: inherit !important; outline: none !important; }`
+			`.monaco-select-box-dropdown-container > .select-box-dropdown-list-container .monaco-list .monaco-list-row.option-disabled:hover { background-color: transparent !important; color: inherit !important; outline: none !important; }`,
 		);
 
 		this.styleElement.textContent = content.join("\n");
@@ -544,7 +540,7 @@ export class SelectBoxList
 
 		const listBackground = dom.asCssValueWithDefault(
 			this.styles.selectListBackground,
-			background
+			background,
 		);
 		this.selectDropDownListContainer.style.backgroundColor = listBackground;
 		this.selectionDetailsPane.style.backgroundColor = listBackground;
@@ -558,7 +554,7 @@ export class SelectBoxList
 	private createOption(
 		value: string,
 		index: number,
-		disabled?: boolean
+		disabled?: boolean,
 	): HTMLOptionElement {
 		const option = document.createElement("option");
 		option.value = value;
@@ -599,7 +595,9 @@ export class SelectBoxList
 				},
 				anchorPosition: this._dropDownPosition,
 			},
-			this.selectBoxOptions.optionsAsChildren ? this.container : undefined
+			this.selectBoxOptions.optionsAsChildren
+				? this.container
+				: undefined,
 		);
 
 		// Hide so we can relay out
@@ -618,7 +616,9 @@ export class SelectBoxList
 				},
 				anchorPosition: this._dropDownPosition,
 			},
-			this.selectBoxOptions.optionsAsChildren ? this.container : undefined
+			this.selectBoxOptions.optionsAsChildren
+				? this.container
+				: undefined,
 		);
 
 		// Track initial selection the case user escape, blur
@@ -644,7 +644,7 @@ export class SelectBoxList
 
 	private renderSelectDropDown(
 		container: HTMLElement,
-		preLayoutPosition?: boolean
+		preLayoutPosition?: boolean,
 	): IDisposable {
 		container.appendChild(this.selectDropDownContainer);
 
@@ -693,7 +693,7 @@ export class SelectBoxList
 
 			const window = dom.getWindow(this.selectElement);
 			const selectPosition = dom.getDomNodePagePosition(
-				this.selectElement
+				this.selectElement,
 			);
 			const styles = dom
 				.getWindow(this.selectElement)
@@ -701,7 +701,7 @@ export class SelectBoxList
 			const verticalPadding =
 				parseFloat(styles.getPropertyValue("--dropdown-padding-top")) +
 				parseFloat(
-					styles.getPropertyValue("--dropdown-padding-bottom")
+					styles.getPropertyValue("--dropdown-padding-bottom"),
 				);
 			const maxSelectDropDownHeightBelow =
 				window.innerHeight -
@@ -715,7 +715,7 @@ export class SelectBoxList
 			// Determine optimal width - min(longest option), opt(parent select, excluding margins), max(ContextView controlled)
 			const selectWidth = this.selectElement.offsetWidth;
 			const selectMinWidth = this.setWidthControlElement(
-				this.widthControlElement
+				this.widthControlElement,
 			);
 			const selectOptimalWidth =
 				Math.max(selectMinWidth, Math.round(selectWidth)).toString() +
@@ -744,13 +744,13 @@ export class SelectBoxList
 				(maxSelectDropDownHeightBelow -
 					verticalPadding -
 					maxDetailsPaneHeight) /
-					this.getHeight()
+					this.getHeight(),
 			);
 			const maxVisibleOptionsAbove = Math.floor(
 				(maxSelectDropDownHeightAbove -
 					verticalPadding -
 					maxDetailsPaneHeight) /
-					this.getHeight()
+					this.getHeight(),
 			);
 
 			// If we are only doing pre-layout check/adjust position only
@@ -783,16 +783,16 @@ export class SelectBoxList
 				) {
 					this._dropDownPosition = AnchorPosition.ABOVE;
 					this.selectDropDownContainer.removeChild(
-						this.selectDropDownListContainer
+						this.selectDropDownListContainer,
 					);
 					this.selectDropDownContainer.removeChild(
-						this.selectionDetailsPane
+						this.selectionDetailsPane,
 					);
 					this.selectDropDownContainer.appendChild(
-						this.selectionDetailsPane
+						this.selectionDetailsPane,
 					);
 					this.selectDropDownContainer.appendChild(
-						this.selectDropDownListContainer
+						this.selectDropDownListContainer,
 					);
 
 					this.selectionDetailsPane.classList.remove("border-top");
@@ -800,16 +800,16 @@ export class SelectBoxList
 				} else {
 					this._dropDownPosition = AnchorPosition.BELOW;
 					this.selectDropDownContainer.removeChild(
-						this.selectDropDownListContainer
+						this.selectDropDownListContainer,
 					);
 					this.selectDropDownContainer.removeChild(
-						this.selectionDetailsPane
+						this.selectionDetailsPane,
 					);
 					this.selectDropDownContainer.appendChild(
-						this.selectDropDownListContainer
+						this.selectDropDownListContainer,
 					);
 					this.selectDropDownContainer.appendChild(
-						this.selectionDetailsPane
+						this.selectionDetailsPane,
 					);
 
 					this.selectionDetailsPane.classList.remove("border-bottom");
@@ -852,10 +852,10 @@ export class SelectBoxList
 				if (minRequiredDropDownHeight > maxSelectDropDownHeightBelow) {
 					listHeight = maxVisibleOptionsBelow * this.getHeight();
 				}
-			} else {
-				if (minRequiredDropDownHeight > maxSelectDropDownHeightAbove) {
-					listHeight = maxVisibleOptionsAbove * this.getHeight();
-				}
+			} else if (
+				minRequiredDropDownHeight > maxSelectDropDownHeightAbove
+			) {
+				listHeight = maxVisibleOptionsAbove * this.getHeight();
 			}
 
 			// Set adjusted list height and relayout
@@ -934,7 +934,7 @@ export class SelectBoxList
 		// SetUp container for list
 		this.selectDropDownListContainer = dom.append(
 			parent,
-			$(".select-box-dropdown-list-container")
+			$(".select-box-dropdown-list-container"),
 		);
 
 		this.listRenderer = new SelectListRenderer();
@@ -974,12 +974,12 @@ export class SelectBoxList
 									"Behave like native select dropdown element.",
 								],
 							},
-							"Select Box"
+							"Select Box",
 						),
 					getRole: () => (isMacintosh ? "" : "option"),
 					getWidgetRole: () => "listbox",
 				},
-			}
+			},
 		);
 		if (this.selectBoxOptions.ariaLabel) {
 			this.selectList.ariaLabel = this.selectBoxOptions.ariaLabel;
@@ -987,58 +987,58 @@ export class SelectBoxList
 
 		// SetUp list keyboard controller - control navigation, disabled items, focus
 		const onKeyDown = this._register(
-			new DomEmitter(this.selectDropDownListContainer, "keydown")
+			new DomEmitter(this.selectDropDownListContainer, "keydown"),
 		);
 		const onSelectDropDownKeyDown = Event.chain(onKeyDown.event, ($) =>
 			$.filter(() => this.selectList.length > 0).map(
-				(e) => new StandardKeyboardEvent(e)
-			)
+				(e) => new StandardKeyboardEvent(e),
+			),
 		);
 
 		this._register(
 			Event.chain(onSelectDropDownKeyDown, ($) =>
-				$.filter((e) => e.keyCode === KeyCode.Enter)
-			)(this.onEnter, this)
+				$.filter((e) => e.keyCode === KeyCode.Enter),
+			)(this.onEnter, this),
 		);
 		this._register(
 			Event.chain(onSelectDropDownKeyDown, ($) =>
-				$.filter((e) => e.keyCode === KeyCode.Tab)
-			)(this.onEnter, this)
+				$.filter((e) => e.keyCode === KeyCode.Tab),
+			)(this.onEnter, this),
 		); // Tab should behave the same as enter, #79339
 		this._register(
 			Event.chain(onSelectDropDownKeyDown, ($) =>
-				$.filter((e) => e.keyCode === KeyCode.Escape)
-			)(this.onEscape, this)
+				$.filter((e) => e.keyCode === KeyCode.Escape),
+			)(this.onEscape, this),
 		);
 		this._register(
 			Event.chain(onSelectDropDownKeyDown, ($) =>
-				$.filter((e) => e.keyCode === KeyCode.UpArrow)
-			)(this.onUpArrow, this)
+				$.filter((e) => e.keyCode === KeyCode.UpArrow),
+			)(this.onUpArrow, this),
 		);
 		this._register(
 			Event.chain(onSelectDropDownKeyDown, ($) =>
-				$.filter((e) => e.keyCode === KeyCode.DownArrow)
-			)(this.onDownArrow, this)
+				$.filter((e) => e.keyCode === KeyCode.DownArrow),
+			)(this.onDownArrow, this),
 		);
 		this._register(
 			Event.chain(onSelectDropDownKeyDown, ($) =>
-				$.filter((e) => e.keyCode === KeyCode.PageDown)
-			)(this.onPageDown, this)
+				$.filter((e) => e.keyCode === KeyCode.PageDown),
+			)(this.onPageDown, this),
 		);
 		this._register(
 			Event.chain(onSelectDropDownKeyDown, ($) =>
-				$.filter((e) => e.keyCode === KeyCode.PageUp)
-			)(this.onPageUp, this)
+				$.filter((e) => e.keyCode === KeyCode.PageUp),
+			)(this.onPageUp, this),
 		);
 		this._register(
 			Event.chain(onSelectDropDownKeyDown, ($) =>
-				$.filter((e) => e.keyCode === KeyCode.Home)
-			)(this.onHome, this)
+				$.filter((e) => e.keyCode === KeyCode.Home),
+			)(this.onHome, this),
 		);
 		this._register(
 			Event.chain(onSelectDropDownKeyDown, ($) =>
-				$.filter((e) => e.keyCode === KeyCode.End)
-			)(this.onEnd, this)
+				$.filter((e) => e.keyCode === KeyCode.End),
+			)(this.onEnd, this),
 		);
 		this._register(
 			Event.chain(onSelectDropDownKeyDown, ($) =>
@@ -1047,9 +1047,9 @@ export class SelectBoxList
 						(e.keyCode >= KeyCode.Digit0 &&
 							e.keyCode <= KeyCode.KeyZ) ||
 						(e.keyCode >= KeyCode.Semicolon &&
-							e.keyCode <= KeyCode.NumpadDivide)
-				)
-			)(this.onCharacter, this)
+							e.keyCode <= KeyCode.NumpadDivide),
+				),
+			)(this.onCharacter, this),
 		);
 
 		// SetUp list mouse controller - control navigation, disabled items, focus
@@ -1057,19 +1057,19 @@ export class SelectBoxList
 			dom.addDisposableListener(
 				this.selectList.getHTMLElement(),
 				dom.EventType.POINTER_UP,
-				(e) => this.onPointerUp(e)
-			)
+				(e) => this.onPointerUp(e),
+			),
 		);
 
 		this._register(
 			this.selectList.onMouseOver(
 				(e) =>
 					typeof e.index !== "undefined" &&
-					this.selectList.setFocus([e.index])
-			)
+					this.selectList.setFocus([e.index]),
+			),
 		);
 		this._register(
-			this.selectList.onDidChangeFocus((e) => this.onListFocus(e))
+			this.selectList.onDidChangeFocus((e) => this.onListFocus(e)),
 		);
 
 		this._register(
@@ -1081,14 +1081,14 @@ export class SelectBoxList
 						!this._isVisible ||
 						dom.isAncestor(
 							e.relatedTarget as HTMLElement,
-							this.selectDropDownContainer
+							this.selectDropDownContainer,
 						)
 					) {
 						return;
 					}
 					this.onListBlur();
-				}
-			)
+				},
+			),
 		);
 
 		this.selectList
@@ -1172,7 +1172,7 @@ export class SelectBoxList
 
 	private renderDescriptionMarkdown(
 		text: string,
-		actionHandler?: IContentActionHandler
+		actionHandler?: IContentActionHandler,
 	): HTMLElement {
 		const cleanRenderedMarkdown = (element: Node) => {
 			for (let i = 0; i < element.childNodes.length; i++) {
@@ -1189,7 +1189,7 @@ export class SelectBoxList
 
 		const rendered = renderMarkdown(
 			{ value: text, supportThemeIcons: true },
-			{ actionHandler }
+			{ actionHandler },
 		);
 
 		rendered.element.classList.add("select-box-description-markdown");
@@ -1218,7 +1218,7 @@ export class SelectBoxList
 			if (descriptionIsMarkdown) {
 				const actionHandler = option.descriptionMarkdownActionHandler;
 				this.selectionDetailsPane.appendChild(
-					this.renderDescriptionMarkdown(description, actionHandler)
+					this.renderDescriptionMarkdown(description, actionHandler),
 				);
 			} else {
 				this.selectionDetailsPane.innerText = description;

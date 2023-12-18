@@ -4,20 +4,20 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	CancellationTokenSource,
 	CancellationToken,
+	CancellationTokenSource,
 } from "vs/base/common/cancellation";
+import { Schemas } from "vs/base/common/network";
+import { Progress } from "vs/platform/progress/common/progress";
+import {
+	TextSearchComplete,
+	TextSearchOptions,
+	TextSearchProvider,
+	TextSearchQuery,
+	TextSearchResult,
+} from "vs/workbench/services/search/common/searchExtTypes";
 import { OutputChannel } from "vs/workbench/services/search/node/ripgrepSearchUtils";
 import { RipgrepTextSearchEngine } from "vs/workbench/services/search/node/ripgrepTextSearchEngine";
-import {
-	TextSearchProvider,
-	TextSearchComplete,
-	TextSearchResult,
-	TextSearchQuery,
-	TextSearchOptions,
-} from "vs/workbench/services/search/common/searchExtTypes";
-import { Progress } from "vs/platform/progress/common/progress";
-import { Schemas } from "vs/base/common/network";
 
 export class RipgrepSearchProvider implements TextSearchProvider {
 	private inProgress: Set<CancellationTokenSource> = new Set();
@@ -30,7 +30,7 @@ export class RipgrepSearchProvider implements TextSearchProvider {
 		query: TextSearchQuery,
 		options: TextSearchOptions,
 		progress: Progress<TextSearchResult>,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<TextSearchComplete> {
 		const engine = new RipgrepTextSearchEngine(this.outputChannel);
 		if (options.folder.scheme === Schemas.vscodeUserData) {
@@ -44,26 +44,31 @@ export class RipgrepSearchProvider implements TextSearchProvider {
 				progress.report({
 					...data,
 					uri: data.uri.with({ scheme: options.folder.scheme }),
-				})
+				}),
 			);
 			return this.withToken(token, (token) =>
 				engine.provideTextSearchResults(
 					query,
 					translatedOptions,
 					progressTranslator,
-					token
-				)
+					token,
+				),
 			);
 		} else {
 			return this.withToken(token, (token) =>
-				engine.provideTextSearchResults(query, options, progress, token)
+				engine.provideTextSearchResults(
+					query,
+					options,
+					progress,
+					token,
+				),
 			);
 		}
 	}
 
 	private async withToken<T>(
 		token: CancellationToken,
-		fn: (token: CancellationToken) => Promise<T>
+		fn: (token: CancellationToken) => Promise<T>,
 	): Promise<T> {
 		const merged = mergedTokenSource(token);
 		this.inProgress.add(merged);

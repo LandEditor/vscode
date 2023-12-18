@@ -25,8 +25,8 @@ import {
 	getIdAndVersion,
 } from "vs/platform/extensionManagement/common/extensionManagementUtil";
 import {
-	ExtensionType,
 	EXTENSION_CATEGORIES,
+	ExtensionType,
 	IExtensionManifest,
 } from "vs/platform/extensions/common/extensions";
 import { ILogger } from "vs/platform/log/common/log";
@@ -36,7 +36,7 @@ const notFound = (id: string) =>
 const useId = localize(
 	"useId",
 	"Make sure you use the full extension ID, including the publisher, e.g.: {0}",
-	"ms-dotnettools.csharp"
+	"ms-dotnettools.csharp",
 );
 
 function getId(manifest: IExtensionManifest, withVersion?: boolean): string {
@@ -70,17 +70,17 @@ export class ExtensionManagementCLI {
 	public async listExtensions(
 		showVersions: boolean,
 		category?: string,
-		profileLocation?: URI
+		profileLocation?: URI,
 	): Promise<void> {
 		let extensions = await this.extensionManagementService.getInstalled(
 			ExtensionType.User,
-			profileLocation
+			profileLocation,
 		);
 		const categories = EXTENSION_CATEGORIES.map((c) => c.toLowerCase());
 		if (category && category !== "") {
 			if (categories.indexOf(category.toLowerCase()) < 0) {
 				this.logger.info(
-					"Invalid category please enter a valid category. To list valid categories run --category without a category specified"
+					"Invalid category please enter a valid category. To list valid categories run --category without a category specified",
 				);
 				return;
 			}
@@ -106,13 +106,13 @@ export class ExtensionManagementCLI {
 				localize(
 					"listFromLocation",
 					"Extensions installed on {0}:",
-					this.location
-				)
+					this.location,
+				),
 			);
 		}
 
 		extensions = extensions.sort((e1, e2) =>
-			e1.identifier.id.localeCompare(e2.identifier.id)
+			e1.identifier.id.localeCompare(e2.identifier.id),
 		);
 		let lastId: string | undefined = undefined;
 		for (const extension of extensions) {
@@ -127,7 +127,7 @@ export class ExtensionManagementCLI {
 		extensions: (string | URI)[],
 		builtinExtensions: (string | URI)[],
 		installOptions: InstallOptions,
-		force: boolean
+		force: boolean,
 	): Promise<void> {
 		const failed: string[] = [];
 
@@ -139,12 +139,12 @@ export class ExtensionManagementCLI {
 						? localize(
 								"installingExtensionsOnLocation",
 								"Installing extensions on {0}...",
-								this.location
-							)
+								this.location,
+						  )
 						: localize(
 								"installingExtensions",
-								"Installing extensions..."
-							)
+								"Installing extensions...",
+						  ),
 				);
 			}
 
@@ -153,7 +153,7 @@ export class ExtensionManagementCLI {
 			const addInstallExtensionInfo = (
 				id: string,
 				version: string | undefined,
-				isBuiltin: boolean
+				isBuiltin: boolean,
 			) => {
 				installExtensionInfos.push({
 					id,
@@ -194,7 +194,7 @@ export class ExtensionManagementCLI {
 			const installed =
 				await this.extensionManagementService.getInstalled(
 					ExtensionType.User,
-					installOptions.profileLocation
+					installOptions.profileLocation,
 				);
 
 			if (installVSIXInfos.length) {
@@ -205,7 +205,7 @@ export class ExtensionManagementCLI {
 								vsix,
 								installOptions,
 								force,
-								installed
+								installed,
 							);
 							if (manifest) {
 								installedExtensionsManifests.push(manifest);
@@ -214,7 +214,7 @@ export class ExtensionManagementCLI {
 							this.logger.error(err);
 							failed.push(vsix.toString());
 						}
-					})
+					}),
 				);
 			}
 
@@ -222,7 +222,7 @@ export class ExtensionManagementCLI {
 				installExtensionInfos = installExtensionInfos.filter(
 					({ id, version }) => {
 						const installedExtension = installed.find((i) =>
-							areSameExtensions(i.identifier, { id })
+							areSameExtensions(i.identifier, { id }),
 						);
 						if (installedExtension) {
 							if (
@@ -237,8 +237,8 @@ export class ExtensionManagementCLI {
 										"Extension '{0}' v{1} is already installed. Use '--force' option to update to latest version or provide '@<version>' to install a specific version, for example: '{2}@1.2.3'.",
 										id,
 										installedExtension.manifest.version,
-										id
-									)
+										id,
+									),
 								);
 								return false;
 							}
@@ -250,23 +250,23 @@ export class ExtensionManagementCLI {
 									localize(
 										"alreadyInstalled",
 										"Extension '{0}' is already installed.",
-										`${id}@${version}`
-									)
+										`${id}@${version}`,
+									),
 								);
 								return false;
 							}
 						}
 						return true;
-					}
+					},
 				);
 				if (installExtensionInfos.length) {
 					const galleryExtensions = await this.getGalleryExtensions(
-						installExtensionInfos
+						installExtensionInfos,
 					);
 					await Promise.all(
 						installExtensionInfos.map(async (extensionInfo) => {
 							const gallery = galleryExtensions.get(
-								extensionInfo.id.toLowerCase()
+								extensionInfo.id.toLowerCase(),
 							);
 							if (gallery) {
 								try {
@@ -274,16 +274,16 @@ export class ExtensionManagementCLI {
 										await this.installFromGallery(
 											extensionInfo,
 											gallery,
-											installed
+											installed,
 										);
 									if (manifest) {
 										installedExtensionsManifests.push(
-											manifest
+											manifest,
 										);
 									}
 								} catch (err) {
 									this.logger.error(
-										err.message || err.stack || err
+										err.message || err.stack || err,
 									);
 									failed.push(extensionInfo.id);
 								}
@@ -292,12 +292,12 @@ export class ExtensionManagementCLI {
 									`${notFound(
 										extensionInfo.version
 											? `${extensionInfo.id}@${extensionInfo.version}`
-											: extensionInfo.id
-									)}\n${useId}`
+											: extensionInfo.id,
+									)}\n${useId}`,
 								);
 								failed.push(extensionInfo.id);
 							}
-						})
+						}),
 					);
 				}
 			}
@@ -306,8 +306,8 @@ export class ExtensionManagementCLI {
 				localize(
 					"error while installing extensions",
 					"Error while installing extensions: {0}",
-					getErrorMessage(error)
-				)
+					getErrorMessage(error),
+				),
 			);
 			throw error;
 		}
@@ -317,8 +317,8 @@ export class ExtensionManagementCLI {
 				localize(
 					"installation failed",
 					"Failed Installing Extensions: {0}",
-					failed.join(", ")
-				)
+					failed.join(", "),
+				),
 			);
 		}
 	}
@@ -327,7 +327,7 @@ export class ExtensionManagementCLI {
 		vsix: URI,
 		installOptions: InstallOptions,
 		force: boolean,
-		installedExtensions: ILocalExtension[]
+		installedExtensions: ILocalExtension[],
 	): Promise<IExtensionManifest | null> {
 		const manifest =
 			await this.extensionManagementService.getManifest(vsix);
@@ -339,20 +339,20 @@ export class ExtensionManagementCLI {
 			manifest,
 			force,
 			installOptions.profileLocation,
-			installedExtensions
+			installedExtensions,
 		);
 		if (valid) {
 			try {
 				await this.extensionManagementService.install(
 					vsix,
-					installOptions
+					installOptions,
 				);
 				this.logger.info(
 					localize(
 						"successVsixInstall",
 						"Extension '{0}' was successfully installed.",
-						basename(vsix)
-					)
+						basename(vsix),
+					),
 				);
 				return manifest;
 			} catch (error) {
@@ -361,8 +361,8 @@ export class ExtensionManagementCLI {
 						localize(
 							"cancelVsixInstall",
 							"Cancelled installing extension '{0}'.",
-							basename(vsix)
-						)
+							basename(vsix),
+						),
 					);
 					return null;
 				} else {
@@ -374,11 +374,11 @@ export class ExtensionManagementCLI {
 	}
 
 	private async getGalleryExtensions(
-		extensions: InstallExtensionInfo[]
+		extensions: InstallExtensionInfo[],
 	): Promise<Map<string, IGalleryExtension>> {
 		const galleryExtensions = new Map<string, IGalleryExtension>();
 		const preRelease = extensions.some(
-			(e) => e.installOptions.installPreReleaseVersion
+			(e) => e.installOptions.installPreReleaseVersion,
 		);
 		const targetPlatform =
 			await this.extensionManagementService.getTargetPlatform();
@@ -392,12 +392,12 @@ export class ExtensionManagementCLI {
 			const result = await this.extensionGalleryService.getExtensions(
 				extensionInfos,
 				{ targetPlatform },
-				CancellationToken.None
+				CancellationToken.None,
 			);
 			for (const extension of result) {
 				galleryExtensions.set(
 					extension.identifier.id.toLowerCase(),
-					extension
+					extension,
 				);
 			}
 		}
@@ -407,18 +407,18 @@ export class ExtensionManagementCLI {
 	private async installFromGallery(
 		{ id, version, installOptions }: InstallExtensionInfo,
 		galleryExtension: IGalleryExtension,
-		installed: ILocalExtension[]
+		installed: ILocalExtension[],
 	): Promise<IExtensionManifest | null> {
 		const manifest = await this.extensionGalleryService.getManifest(
 			galleryExtension,
-			CancellationToken.None
+			CancellationToken.None,
 		);
 		if (manifest && !this.validateExtensionKind(manifest)) {
 			return null;
 		}
 
 		const installedExtension = installed.find((e) =>
-			areSameExtensions(e.identifier, galleryExtension.identifier)
+			areSameExtensions(e.identifier, galleryExtension.identifier),
 		);
 		if (installedExtension) {
 			if (
@@ -428,8 +428,8 @@ export class ExtensionManagementCLI {
 					localize(
 						"alreadyInstalled",
 						"Extension '{0}' is already installed.",
-						version ? `${id}@${version}` : id
-					)
+						version ? `${id}@${version}` : id,
+					),
 				);
 				return null;
 			}
@@ -438,8 +438,8 @@ export class ExtensionManagementCLI {
 					"updateMessage",
 					"Updating the extension '{0}' to the version {1}",
 					id,
-					galleryExtension.version
-				)
+					galleryExtension.version,
+				),
 			);
 		}
 
@@ -451,13 +451,13 @@ export class ExtensionManagementCLI {
 								"installing builtin with version",
 								"Installing builtin extension '{0}' v{1}...",
 								id,
-								version
-							)
+								version,
+						  )
 						: localize(
 								"installing builtin ",
 								"Installing builtin extension '{0}'...",
-								id
-							)
+								id,
+						  ),
 				);
 			} else {
 				this.logger.info(
@@ -466,28 +466,28 @@ export class ExtensionManagementCLI {
 								"installing with version",
 								"Installing extension '{0}' v{1}...",
 								id,
-								version
-							)
+								version,
+						  )
 						: localize(
 								"installing",
 								"Installing extension '{0}'...",
-								id
-							)
+								id,
+						  ),
 				);
 			}
 
 			const local =
 				await this.extensionManagementService.installFromGallery(
 					galleryExtension,
-					{ ...installOptions, installGivenVersion: !!version }
+					{ ...installOptions, installGivenVersion: !!version },
 				);
 			this.logger.info(
 				localize(
 					"successInstall",
 					"Extension '{0}' v{1} was successfully installed.",
 					id,
-					local.manifest.version
-				)
+					local.manifest.version,
+				),
 			);
 			return manifest;
 		} catch (error) {
@@ -496,8 +496,8 @@ export class ExtensionManagementCLI {
 					localize(
 						"cancelInstall",
 						"Cancelled installing extension '{0}'.",
-						id
-					)
+						id,
+					),
 				);
 				return null;
 			} else {
@@ -514,7 +514,7 @@ export class ExtensionManagementCLI {
 		manifest: IExtensionManifest,
 		force: boolean,
 		profileLocation: URI | undefined,
-		installedExtensions: ILocalExtension[]
+		installedExtensions: ILocalExtension[],
 	): Promise<boolean> {
 		if (!force) {
 			const extensionIdentifier = {
@@ -523,7 +523,7 @@ export class ExtensionManagementCLI {
 			const newer = installedExtensions.find(
 				(local) =>
 					areSameExtensions(extensionIdentifier, local.identifier) &&
-					gt(local.manifest.version, manifest.version)
+					gt(local.manifest.version, manifest.version),
 			);
 			if (newer) {
 				this.logger.info(
@@ -532,8 +532,8 @@ export class ExtensionManagementCLI {
 						"A newer version of extension '{0}' v{1} is already installed. Use '--force' option to downgrade to older version.",
 						newer.identifier.id,
 						newer.manifest.version,
-						manifest.version
-					)
+						manifest.version,
+					),
 				);
 				return false;
 			}
@@ -545,15 +545,15 @@ export class ExtensionManagementCLI {
 	public async uninstallExtensions(
 		extensions: (string | URI)[],
 		force: boolean,
-		profileLocation?: URI
+		profileLocation?: URI,
 	): Promise<void> {
 		const getExtensionId = async (
-			extensionDescription: string | URI
+			extensionDescription: string | URI,
 		): Promise<string> => {
 			if (extensionDescription instanceof URI) {
 				const manifest =
 					await this.extensionManagementService.getManifest(
-						extensionDescription
+						extensionDescription,
 					);
 				return getId(manifest);
 			}
@@ -566,25 +566,25 @@ export class ExtensionManagementCLI {
 			const installed =
 				await this.extensionManagementService.getInstalled(
 					undefined,
-					profileLocation
+					profileLocation,
 				);
 			const extensionsToUninstall = installed.filter((e) =>
-				areSameExtensions(e.identifier, { id })
+				areSameExtensions(e.identifier, { id }),
 			);
 			if (!extensionsToUninstall.length) {
 				throw new Error(`${this.notInstalled(id)}\n${useId}`);
 			}
 			if (
 				extensionsToUninstall.some(
-					(e) => e.type === ExtensionType.System
+					(e) => e.type === ExtensionType.System,
 				)
 			) {
 				this.logger.info(
 					localize(
 						"builtin",
 						"Extension '{0}' is a Built-in extension and cannot be uninstalled",
-						id
-					)
+						id,
+					),
 				);
 				return;
 			}
@@ -593,18 +593,18 @@ export class ExtensionManagementCLI {
 					localize(
 						"forceUninstall",
 						"Extension '{0}' is marked as a Built-in extension by user. Please use '--force' option to uninstall it.",
-						id
-					)
+						id,
+					),
 				);
 				return;
 			}
 			this.logger.info(
-				localize("uninstalling", "Uninstalling {0}...", id)
+				localize("uninstalling", "Uninstalling {0}...", id),
 			);
 			for (const extensionToUninstall of extensionsToUninstall) {
 				await this.extensionManagementService.uninstall(
 					extensionToUninstall,
-					{ profileLocation }
+					{ profileLocation },
 				);
 				uninstalledExtensions.push(extensionToUninstall);
 			}
@@ -615,16 +615,16 @@ export class ExtensionManagementCLI {
 						"successUninstallFromLocation",
 						"Extension '{0}' was successfully uninstalled from {1}!",
 						id,
-						this.location
-					)
+						this.location,
+					),
 				);
 			} else {
 				this.logger.info(
 					localize(
 						"successUninstall",
 						"Extension '{0}' was successfully uninstalled!",
-						id
-					)
+						id,
+					),
 				);
 			}
 		}
@@ -650,8 +650,8 @@ export class ExtensionManagementCLI {
 					"notInstalleddOnLocation",
 					"Extension '{0}' is not installed on {1}.",
 					id,
-					this.location
-				)
+					this.location,
+			  )
 			: localize("notInstalled", "Extension '{0}' is not installed.", id);
 	}
 }

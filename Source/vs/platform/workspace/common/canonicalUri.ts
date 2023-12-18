@@ -13,12 +13,12 @@ export interface ICanonicalUriProvider {
 	provideCanonicalUri(
 		uri: UriComponents,
 		targetScheme: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<URI | undefined>;
 }
 
 export const ICanonicalUriService = createDecorator<ICanonicalUriService>(
-	"canonicalUriIdentityService"
+	"canonicalUriIdentityService",
 );
 
 export interface ICanonicalUriService {

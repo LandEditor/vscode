@@ -22,15 +22,15 @@ import {
 	INotebookActionContext,
 	NotebookAction,
 } from "vs/workbench/contrib/notebook/browser/controller/coreActions";
-import {
-	NOTEBOOK_CELL_LIST_FOCUSED,
-	NOTEBOOK_EDITOR_EDITABLE,
-} from "vs/workbench/contrib/notebook/common/notebookContextKeys";
 import { CellViewModel } from "vs/workbench/contrib/notebook/browser/viewModel/notebookViewModelImpl";
 import {
 	CellKind,
 	NotebookSetting,
 } from "vs/workbench/contrib/notebook/common/notebookCommon";
+import {
+	NOTEBOOK_CELL_LIST_FOCUSED,
+	NOTEBOOK_EDITOR_EDITABLE,
+} from "vs/workbench/contrib/notebook/common/notebookContextKeys";
 
 const INSERT_CODE_CELL_ABOVE_COMMAND_ID = "notebook.cell.insertCodeCellAbove";
 const INSERT_CODE_CELL_BELOW_COMMAND_ID = "notebook.cell.insertCodeCellBelow";
@@ -51,7 +51,7 @@ export function insertNewCell(
 	context: INotebookActionContext,
 	kind: CellKind,
 	direction: "above" | "below",
-	focusEditor: boolean
+	focusEditor: boolean,
 ) {
 	let newCell: CellViewModel | null = null;
 	if (context.ui) {
@@ -68,7 +68,7 @@ export function insertNewCell(
 			kind,
 			direction,
 			undefined,
-			true
+			true,
 		);
 	} else {
 		const focusRange = context.notebookEditor.getFocus();
@@ -80,7 +80,7 @@ export function insertNewCell(
 			kind,
 			direction,
 			undefined,
-			true
+			true,
 		);
 	}
 
@@ -92,27 +92,27 @@ export abstract class InsertCellCommand extends NotebookAction {
 		desc: Readonly<IAction2Options>,
 		private kind: CellKind,
 		private direction: "above" | "below",
-		private focusEditor: boolean
+		private focusEditor: boolean,
 	) {
 		super(desc);
 	}
 
 	async runWithContext(
 		accessor: ServicesAccessor,
-		context: INotebookActionContext
+		context: INotebookActionContext,
 	): Promise<void> {
 		const newCell = await insertNewCell(
 			accessor,
 			context,
 			this.kind,
 			this.direction,
-			this.focusEditor
+			this.focusEditor,
 		);
 
 		if (newCell) {
 			await context.notebookEditor.focusNotebookCell(
 				newCell,
-				this.focusEditor ? "editor" : "container"
+				this.focusEditor ? "editor" : "container",
 			);
 		}
 	}
@@ -126,13 +126,13 @@ registerAction2(
 					id: INSERT_CODE_CELL_ABOVE_COMMAND_ID,
 					title: localize(
 						"notebookActions.insertCodeCellAbove",
-						"Insert Code Cell Above"
+						"Insert Code Cell Above",
 					),
 					keybinding: {
 						primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.Enter,
 						when: ContextKeyExpr.and(
 							NOTEBOOK_CELL_LIST_FOCUSED,
-							InputFocusedContext.toNegated()
+							InputFocusedContext.toNegated(),
 						),
 						weight: KeybindingWeight.WorkbenchContrib,
 					},
@@ -143,10 +143,10 @@ registerAction2(
 				},
 				CellKind.Code,
 				"above",
-				true
+				true,
 			);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -157,15 +157,15 @@ registerAction2(
 					id: INSERT_CODE_CELL_ABOVE_AND_FOCUS_CONTAINER_COMMAND_ID,
 					title: localize(
 						"notebookActions.insertCodeCellAboveAndFocusContainer",
-						"Insert Code Cell Above and Focus Container"
+						"Insert Code Cell Above and Focus Container",
 					),
 				},
 				CellKind.Code,
 				"above",
-				false
+				false,
 			);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -176,13 +176,13 @@ registerAction2(
 					id: INSERT_CODE_CELL_BELOW_COMMAND_ID,
 					title: localize(
 						"notebookActions.insertCodeCellBelow",
-						"Insert Code Cell Below"
+						"Insert Code Cell Below",
 					),
 					keybinding: {
 						primary: KeyMod.CtrlCmd | KeyCode.Enter,
 						when: ContextKeyExpr.and(
 							NOTEBOOK_CELL_LIST_FOCUSED,
-							InputFocusedContext.toNegated()
+							InputFocusedContext.toNegated(),
 						),
 						weight: KeybindingWeight.WorkbenchContrib,
 					},
@@ -193,10 +193,10 @@ registerAction2(
 				},
 				CellKind.Code,
 				"below",
-				true
+				true,
 			);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -207,15 +207,15 @@ registerAction2(
 					id: INSERT_CODE_CELL_BELOW_AND_FOCUS_CONTAINER_COMMAND_ID,
 					title: localize(
 						"notebookActions.insertCodeCellBelowAndFocusContainer",
-						"Insert Code Cell Below and Focus Container"
+						"Insert Code Cell Below and Focus Container",
 					),
 				},
 				CellKind.Code,
 				"below",
-				false
+				false,
 			);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -226,7 +226,7 @@ registerAction2(
 					id: INSERT_MARKDOWN_CELL_ABOVE_COMMAND_ID,
 					title: localize(
 						"notebookActions.insertMarkdownCellAbove",
-						"Insert Markdown Cell Above"
+						"Insert Markdown Cell Above",
 					),
 					menu: {
 						id: MenuId.NotebookCellInsert,
@@ -235,10 +235,10 @@ registerAction2(
 				},
 				CellKind.Markup,
 				"above",
-				true
+				true,
 			);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -249,7 +249,7 @@ registerAction2(
 					id: INSERT_MARKDOWN_CELL_BELOW_COMMAND_ID,
 					title: localize(
 						"notebookActions.insertMarkdownCellBelow",
-						"Insert Markdown Cell Below"
+						"Insert Markdown Cell Below",
 					),
 					menu: {
 						id: MenuId.NotebookCellInsert,
@@ -258,10 +258,10 @@ registerAction2(
 				},
 				CellKind.Markup,
 				"below",
-				true
+				true,
 			);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -271,7 +271,7 @@ registerAction2(
 				id: INSERT_CODE_CELL_AT_TOP_COMMAND_ID,
 				title: localize(
 					"notebookActions.insertCodeCellAtTop",
-					"Add Code Cell At Top"
+					"Add Code Cell At Top",
 				),
 				f1: false,
 			});
@@ -279,7 +279,7 @@ registerAction2(
 
 		override async run(
 			accessor: ServicesAccessor,
-			context?: INotebookActionContext
+			context?: INotebookActionContext,
 		): Promise<void> {
 			context =
 				context ?? this.getEditorContextFromArgsOrActive(accessor);
@@ -290,7 +290,7 @@ registerAction2(
 
 		async runWithContext(
 			accessor: ServicesAccessor,
-			context: INotebookActionContext
+			context: INotebookActionContext,
 		): Promise<void> {
 			const languageService = accessor.get(ILanguageService);
 			const newCell = insertCell(
@@ -300,17 +300,17 @@ registerAction2(
 				CellKind.Code,
 				"above",
 				undefined,
-				true
+				true,
 			);
 
 			if (newCell) {
 				await context.notebookEditor.focusNotebookCell(
 					newCell,
-					"editor"
+					"editor",
 				);
 			}
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -320,7 +320,7 @@ registerAction2(
 				id: INSERT_MARKDOWN_CELL_AT_TOP_COMMAND_ID,
 				title: localize(
 					"notebookActions.insertMarkdownCellAtTop",
-					"Add Markdown Cell At Top"
+					"Add Markdown Cell At Top",
 				),
 				f1: false,
 			});
@@ -328,7 +328,7 @@ registerAction2(
 
 		override async run(
 			accessor: ServicesAccessor,
-			context?: INotebookActionContext
+			context?: INotebookActionContext,
 		): Promise<void> {
 			context =
 				context ?? this.getEditorContextFromArgsOrActive(accessor);
@@ -339,7 +339,7 @@ registerAction2(
 
 		async runWithContext(
 			accessor: ServicesAccessor,
-			context: INotebookActionContext
+			context: INotebookActionContext,
 		): Promise<void> {
 			const languageService = accessor.get(ILanguageService);
 			const newCell = insertCell(
@@ -349,17 +349,17 @@ registerAction2(
 				CellKind.Markup,
 				"above",
 				undefined,
-				true
+				true,
 			);
 
 			if (newCell) {
 				await context.notebookEditor.focusNotebookCell(
 					newCell,
-					"editor"
+					"editor",
 				);
 			}
 		}
-	}
+	},
 );
 
 MenuRegistry.appendMenuItem(MenuId.NotebookCellBetween, {
@@ -368,7 +368,7 @@ MenuRegistry.appendMenuItem(MenuId.NotebookCellBetween, {
 		title: "$(add) " + localize("notebookActions.menu.insertCode", "Code"),
 		tooltip: localize(
 			"notebookActions.menu.insertCode.tooltip",
-			"Add Code Cell"
+			"Add Code Cell",
 		),
 	},
 	order: 0,
@@ -377,8 +377,8 @@ MenuRegistry.appendMenuItem(MenuId.NotebookCellBetween, {
 		NOTEBOOK_EDITOR_EDITABLE.isEqualTo(true),
 		ContextKeyExpr.notEquals(
 			"config.notebook.experimental.insertToolbarAlignment",
-			"left"
-		)
+			"left",
+		),
 	),
 });
 
@@ -387,12 +387,12 @@ MenuRegistry.appendMenuItem(MenuId.NotebookCellBetween, {
 		id: INSERT_CODE_CELL_BELOW_COMMAND_ID,
 		title: localize(
 			"notebookActions.menu.insertCode.minimalToolbar",
-			"Add Code"
+			"Add Code",
 		),
 		icon: Codicon.add,
 		tooltip: localize(
 			"notebookActions.menu.insertCode.tooltip",
-			"Add Code Cell"
+			"Add Code Cell",
 		),
 	},
 	order: 0,
@@ -401,8 +401,8 @@ MenuRegistry.appendMenuItem(MenuId.NotebookCellBetween, {
 		NOTEBOOK_EDITOR_EDITABLE.isEqualTo(true),
 		ContextKeyExpr.equals(
 			"config.notebook.experimental.insertToolbarAlignment",
-			"left"
-		)
+			"left",
+		),
 	),
 });
 
@@ -413,7 +413,7 @@ MenuRegistry.appendMenuItem(MenuId.NotebookToolbar, {
 		title: localize("notebookActions.menu.insertCode.ontoolbar", "Code"),
 		tooltip: localize(
 			"notebookActions.menu.insertCode.tooltip",
-			"Add Code Cell"
+			"Add Code Cell",
 		),
 	},
 	order: -5,
@@ -422,12 +422,12 @@ MenuRegistry.appendMenuItem(MenuId.NotebookToolbar, {
 		NOTEBOOK_EDITOR_EDITABLE.isEqualTo(true),
 		ContextKeyExpr.notEquals(
 			"config.notebook.insertToolbarLocation",
-			"betweenCells"
+			"betweenCells",
 		),
 		ContextKeyExpr.notEquals(
 			"config.notebook.insertToolbarLocation",
-			"hidden"
-		)
+			"hidden",
+		),
 	),
 });
 
@@ -437,7 +437,7 @@ MenuRegistry.appendMenuItem(MenuId.NotebookCellListTop, {
 		title: "$(add) " + localize("notebookActions.menu.insertCode", "Code"),
 		tooltip: localize(
 			"notebookActions.menu.insertCode.tooltip",
-			"Add Code Cell"
+			"Add Code Cell",
 		),
 	},
 	order: 0,
@@ -446,8 +446,8 @@ MenuRegistry.appendMenuItem(MenuId.NotebookCellListTop, {
 		NOTEBOOK_EDITOR_EDITABLE.isEqualTo(true),
 		ContextKeyExpr.notEquals(
 			"config.notebook.experimental.insertToolbarAlignment",
-			"left"
-		)
+			"left",
+		),
 	),
 });
 
@@ -456,12 +456,12 @@ MenuRegistry.appendMenuItem(MenuId.NotebookCellListTop, {
 		id: INSERT_CODE_CELL_AT_TOP_COMMAND_ID,
 		title: localize(
 			"notebookActions.menu.insertCode.minimaltoolbar",
-			"Add Code"
+			"Add Code",
 		),
 		icon: Codicon.add,
 		tooltip: localize(
 			"notebookActions.menu.insertCode.tooltip",
-			"Add Code Cell"
+			"Add Code Cell",
 		),
 	},
 	order: 0,
@@ -470,8 +470,8 @@ MenuRegistry.appendMenuItem(MenuId.NotebookCellListTop, {
 		NOTEBOOK_EDITOR_EDITABLE.isEqualTo(true),
 		ContextKeyExpr.equals(
 			"config.notebook.experimental.insertToolbarAlignment",
-			"left"
-		)
+			"left",
+		),
 	),
 });
 
@@ -483,7 +483,7 @@ MenuRegistry.appendMenuItem(MenuId.NotebookCellBetween, {
 			localize("notebookActions.menu.insertMarkdown", "Markdown"),
 		tooltip: localize(
 			"notebookActions.menu.insertMarkdown.tooltip",
-			"Add Markdown Cell"
+			"Add Markdown Cell",
 		),
 	},
 	order: 1,
@@ -492,8 +492,8 @@ MenuRegistry.appendMenuItem(MenuId.NotebookCellBetween, {
 		NOTEBOOK_EDITOR_EDITABLE.isEqualTo(true),
 		ContextKeyExpr.notEquals(
 			"config.notebook.experimental.insertToolbarAlignment",
-			"left"
-		)
+			"left",
+		),
 	),
 });
 
@@ -503,11 +503,11 @@ MenuRegistry.appendMenuItem(MenuId.NotebookToolbar, {
 		icon: Codicon.add,
 		title: localize(
 			"notebookActions.menu.insertMarkdown.ontoolbar",
-			"Markdown"
+			"Markdown",
 		),
 		tooltip: localize(
 			"notebookActions.menu.insertMarkdown.tooltip",
-			"Add Markdown Cell"
+			"Add Markdown Cell",
 		),
 	},
 	order: -5,
@@ -516,20 +516,20 @@ MenuRegistry.appendMenuItem(MenuId.NotebookToolbar, {
 		NOTEBOOK_EDITOR_EDITABLE.isEqualTo(true),
 		ContextKeyExpr.notEquals(
 			"config.notebook.insertToolbarLocation",
-			"betweenCells"
+			"betweenCells",
 		),
 		ContextKeyExpr.notEquals(
 			"config.notebook.insertToolbarLocation",
-			"hidden"
+			"hidden",
 		),
 		ContextKeyExpr.notEquals(
 			`config.${NotebookSetting.globalToolbarShowLabel}`,
-			false
+			false,
 		),
 		ContextKeyExpr.notEquals(
 			`config.${NotebookSetting.globalToolbarShowLabel}`,
-			"never"
-		)
+			"never",
+		),
 	),
 });
 
@@ -541,7 +541,7 @@ MenuRegistry.appendMenuItem(MenuId.NotebookCellListTop, {
 			localize("notebookActions.menu.insertMarkdown", "Markdown"),
 		tooltip: localize(
 			"notebookActions.menu.insertMarkdown.tooltip",
-			"Add Markdown Cell"
+			"Add Markdown Cell",
 		),
 	},
 	order: 1,
@@ -550,7 +550,7 @@ MenuRegistry.appendMenuItem(MenuId.NotebookCellListTop, {
 		NOTEBOOK_EDITOR_EDITABLE.isEqualTo(true),
 		ContextKeyExpr.notEquals(
 			"config.notebook.experimental.insertToolbarAlignment",
-			"left"
-		)
+			"left",
+		),
 	),
 });

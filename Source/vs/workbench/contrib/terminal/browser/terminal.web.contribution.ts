@@ -5,24 +5,24 @@
 
 import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
 import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import {
 	KeybindingWeight,
 	KeybindingsRegistry,
 } from "vs/platform/keybinding/common/keybindingsRegistry";
+import { BrowserTerminalProfileResolverService } from "vs/workbench/contrib/terminal/browser/terminalProfileResolverService";
 import {
 	ITerminalProfileResolverService,
 	TerminalCommandId,
 } from "vs/workbench/contrib/terminal/common/terminal";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { BrowserTerminalProfileResolverService } from "vs/workbench/contrib/terminal/browser/terminalProfileResolverService";
 import { TerminalContextKeys } from "vs/workbench/contrib/terminal/common/terminalContextKey";
 
 registerSingleton(
 	ITerminalProfileResolverService,
 	BrowserTerminalProfileResolverService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 
 // Register standard external terminal keybinding as integrated terminal when in web as the

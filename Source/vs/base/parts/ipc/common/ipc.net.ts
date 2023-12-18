@@ -16,7 +16,7 @@ import {
 	IPCClient,
 } from "vs/base/parts/ipc/common/ipc";
 
-export const enum SocketDiagnosticsEventType {
+export enum SocketDiagnosticsEventType {
 	Created = "created",
 	Read = "read",
 	Write = "write",
@@ -85,7 +85,7 @@ export namespace SocketDiagnostics {
 		nativeObject: any,
 		socketDebugLabel: string,
 		type: SocketDiagnosticsEventType,
-		data?: VSBuffer | Uint8Array | ArrayBuffer | ArrayBufferView | any
+		data?: VSBuffer | Uint8Array | ArrayBuffer | ArrayBufferView | any,
 	): void {
 		if (!enableDiagnostics) {
 			return;
@@ -120,7 +120,7 @@ export namespace SocketDiagnostics {
 	}
 }
 
-export const enum SocketCloseEventType {
+export enum SocketCloseEventType {
 	NodeSocketCloseEvent = 0,
 	WebSocketCloseEvent = 1,
 }
@@ -184,7 +184,7 @@ export interface ISocket extends IDisposable {
 
 	traceSocketEvent(
 		type: SocketDiagnosticsEventType,
-		data?: VSBuffer | Uint8Array | ArrayBuffer | ArrayBufferView | any
+		data?: VSBuffer | Uint8Array | ArrayBuffer | ArrayBufferView | any,
 	): void;
 }
 
@@ -287,7 +287,7 @@ export class ChunkStream {
 	}
 }
 
-const enum ProtocolMessageType {
+enum ProtocolMessageType {
 	None = 0,
 	Regular = 1,
 	Control = 2,
@@ -322,7 +322,7 @@ function protocolMessageTypeToString(messageType: ProtocolMessageType) {
 	}
 }
 
-export const enum ProtocolConstants {
+export enum ProtocolConstants {
 	HeaderLength = 13,
 	/**
 	 * Send an Acknowledge message at most 2 seconds later...
@@ -355,7 +355,7 @@ class ProtocolMessage {
 		public readonly type: ProtocolMessageType,
 		public readonly id: number,
 		public readonly ack: number,
-		public readonly data: VSBuffer
+		public readonly data: VSBuffer,
 	) {
 		this.writtenTime = 0;
 	}
@@ -372,7 +372,7 @@ class ProtocolReader extends Disposable {
 	public lastReadTime: number;
 
 	private readonly _onMessage = this._register(
-		new Emitter<ProtocolMessage>()
+		new Emitter<ProtocolMessage>(),
 	);
 	public readonly onMessage: Event<ProtocolMessage> = this._onMessage.event;
 
@@ -419,12 +419,12 @@ class ProtocolReader extends Disposable {
 					SocketDiagnosticsEventType.ProtocolHeaderRead,
 					{
 						messageType: protocolMessageTypeToString(
-							this._state.messageType
+							this._state.messageType,
 						),
 						id: this._state.id,
 						ack: this._state.ack,
 						messageSize: this._state.readLen,
-					}
+					},
 				);
 			} else {
 				// buff is the body
@@ -441,11 +441,11 @@ class ProtocolReader extends Disposable {
 
 				this._socket.traceSocketEvent(
 					SocketDiagnosticsEventType.ProtocolMessageRead,
-					buff
+					buff,
 				);
 
 				this._onMessage.fire(
-					new ProtocolMessage(messageType, id, ack, buff)
+					new ProtocolMessage(messageType, id, ack, buff),
 				);
 
 				if (this._isDisposed) {
@@ -532,11 +532,11 @@ class ProtocolWriter {
 				id: msg.id,
 				ack: msg.ack,
 				messageSize: msg.data.byteLength,
-			}
+			},
 		);
 		this._socket.traceSocketEvent(
 			SocketDiagnosticsEventType.ProtocolMessageWrite,
-			msg.data
+			msg.data,
 		);
 
 		this._writeSoon(header, msg.data);
@@ -583,7 +583,7 @@ class ProtocolWriter {
 		const data = this._bufferTake();
 		this._socket.traceSocketEvent(
 			SocketDiagnosticsEventType.ProtocolWrite,
-			{ byteLength: data.byteLength }
+			{ byteLength: data.byteLength },
 		);
 		this._socket.write(data);
 	}
@@ -628,7 +628,7 @@ export class Protocol extends Disposable implements IMessagePassingProtocol {
 				if (msg.type === ProtocolMessageType.Regular) {
 					this._onMessage.fire(msg.data);
 				}
-			})
+			}),
 		);
 
 		this._register(this._socket.onClose(() => this._onDidDispose.fire()));
@@ -648,7 +648,7 @@ export class Protocol extends Disposable implements IMessagePassingProtocol {
 
 	send(buffer: VSBuffer): void {
 		this._socketWriter.write(
-			new ProtocolMessage(ProtocolMessageType.Regular, 0, 0, buffer)
+			new ProtocolMessage(ProtocolMessageType.Regular, 0, 0, buffer),
 		);
 	}
 }
@@ -656,7 +656,7 @@ export class Protocol extends Disposable implements IMessagePassingProtocol {
 export class Client<TContext = string> extends IPCClient<TContext> {
 	static fromSocket<TContext = string>(
 		socket: ISocket,
-		id: TContext
+		id: TContext,
 	): Client<TContext> {
 		return new Client(new Protocol(socket), id);
 	}
@@ -668,7 +668,7 @@ export class Client<TContext = string> extends IPCClient<TContext> {
 	constructor(
 		private protocol: Protocol | PersistentProtocol,
 		id: TContext,
-		ipcLogger: IIPCLogger | null = null
+		ipcLogger: IIPCLogger | null = null,
 	) {
 		super(protocol, id, ipcLogger);
 	}
@@ -949,16 +949,16 @@ export class PersistentProtocol implements IMessagePassingProtocol {
 		this._socketDisposables = new DisposableStore();
 		this._socket = opts.socket;
 		this._socketWriter = this._socketDisposables.add(
-			new ProtocolWriter(this._socket)
+			new ProtocolWriter(this._socket),
 		);
 		this._socketReader = this._socketDisposables.add(
-			new ProtocolReader(this._socket)
+			new ProtocolReader(this._socket),
 		);
 		this._socketDisposables.add(
-			this._socketReader.onMessage((msg) => this._receiveMessage(msg))
+			this._socketReader.onMessage((msg) => this._receiveMessage(msg)),
 		);
 		this._socketDisposables.add(
-			this._socket.onClose((e) => this._onSocketClose.fire(e))
+			this._socket.onClose((e) => this._onSocketClose.fire(e)),
 		);
 
 		if (opts.initialChunk) {
@@ -999,7 +999,7 @@ export class PersistentProtocol implements IMessagePassingProtocol {
 			ProtocolMessageType.Disconnect,
 			0,
 			0,
-			getEmptyBuffer()
+			getEmptyBuffer(),
 		);
 		this._socketWriter.write(msg);
 		this._socketWriter.flush();
@@ -1010,7 +1010,7 @@ export class PersistentProtocol implements IMessagePassingProtocol {
 			ProtocolMessageType.Pause,
 			0,
 			0,
-			getEmptyBuffer()
+			getEmptyBuffer(),
 		);
 		this._socketWriter.write(msg);
 	}
@@ -1020,7 +1020,7 @@ export class PersistentProtocol implements IMessagePassingProtocol {
 			ProtocolMessageType.Resume,
 			0,
 			0,
-			getEmptyBuffer()
+			getEmptyBuffer(),
 		);
 		this._socketWriter.write(msg);
 	}
@@ -1039,7 +1039,7 @@ export class PersistentProtocol implements IMessagePassingProtocol {
 
 	public beginAcceptReconnection(
 		socket: ISocket,
-		initialDataChunk: VSBuffer | null
+		initialDataChunk: VSBuffer | null,
 	): void {
 		this._isReconnecting = true;
 
@@ -1055,16 +1055,16 @@ export class PersistentProtocol implements IMessagePassingProtocol {
 
 		this._socket = socket;
 		this._socketWriter = this._socketDisposables.add(
-			new ProtocolWriter(this._socket)
+			new ProtocolWriter(this._socket),
 		);
 		this._socketReader = this._socketDisposables.add(
-			new ProtocolReader(this._socket)
+			new ProtocolReader(this._socket),
 		);
 		this._socketDisposables.add(
-			this._socketReader.onMessage((msg) => this._receiveMessage(msg))
+			this._socketReader.onMessage((msg) => this._receiveMessage(msg)),
 		);
 		this._socketDisposables.add(
-			this._socket.onClose((e) => this._onSocketClose.fire(e))
+			this._socket.onClose((e) => this._onSocketClose.fire(e)),
 		);
 
 		this._socketReader.acceptChunk(initialDataChunk);
@@ -1080,7 +1080,7 @@ export class PersistentProtocol implements IMessagePassingProtocol {
 			ProtocolMessageType.Ack,
 			0,
 			this._incomingAckId,
-			getEmptyBuffer()
+			getEmptyBuffer(),
 		);
 		this._socketWriter.write(msg);
 
@@ -1128,8 +1128,8 @@ export class PersistentProtocol implements IMessagePassingProtocol {
 									ProtocolMessageType.ReplayRequest,
 									0,
 									0,
-									getEmptyBuffer()
-								)
+									getEmptyBuffer(),
+								),
 							);
 						}
 					} else {
@@ -1192,7 +1192,7 @@ export class PersistentProtocol implements IMessagePassingProtocol {
 			ProtocolMessageType.Regular,
 			myId,
 			this._incomingAckId,
-			buffer
+			buffer,
 		);
 		this._outgoingUnackMsg.push(msg);
 		if (!this._isReconnecting) {
@@ -1210,7 +1210,7 @@ export class PersistentProtocol implements IMessagePassingProtocol {
 			ProtocolMessageType.Control,
 			0,
 			0,
-			buffer
+			buffer,
 		);
 		this._socketWriter.write(msg);
 	}
@@ -1240,7 +1240,7 @@ export class PersistentProtocol implements IMessagePassingProtocol {
 				this._incomingAckTimeout = null;
 				this._sendAckCheck();
 			},
-			ProtocolConstants.AcknowledgeTime - timeSinceLastIncomingMsg + 5
+			ProtocolConstants.AcknowledgeTime - timeSinceLastIncomingMsg + 5,
 		);
 	}
 
@@ -1293,7 +1293,7 @@ export class PersistentProtocol implements IMessagePassingProtocol {
 			ProtocolConstants.TimeoutTime - timeSinceOldestUnacknowledgedMsg,
 			ProtocolConstants.TimeoutTime - timeSinceLastReceivedSomeData,
 			ProtocolConstants.TimeoutTime - timeSinceLastTimeout,
-			500
+			500,
 		);
 
 		this._outgoingAckTimeout = setTimeout(() => {
@@ -1313,7 +1313,7 @@ export class PersistentProtocol implements IMessagePassingProtocol {
 			ProtocolMessageType.Ack,
 			0,
 			this._incomingAckId,
-			getEmptyBuffer()
+			getEmptyBuffer(),
 		);
 		this._socketWriter.write(msg);
 	}
@@ -1324,7 +1324,7 @@ export class PersistentProtocol implements IMessagePassingProtocol {
 			ProtocolMessageType.KeepAlive,
 			0,
 			this._incomingAckId,
-			getEmptyBuffer()
+			getEmptyBuffer(),
 		);
 		this._socketWriter.write(msg);
 	}

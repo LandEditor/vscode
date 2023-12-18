@@ -3,34 +3,34 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { raceCancellationError } from "vs/base/common/async";
 import { CancellationToken } from "vs/base/common/cancellation";
+import { IDisposable } from "vs/base/common/lifecycle";
 import { shouldSynchronizeModel } from "vs/editor/common/model";
 import { localize } from "vs/nls";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IProgressStep, IProgress } from "vs/platform/progress/common/progress";
+import { IProgress, IProgressStep } from "vs/platform/progress/common/progress";
+import { SaveReason } from "vs/workbench/common/editor";
 import {
-	extHostCustomer,
 	IExtHostContext,
+	extHostCustomer,
 } from "vs/workbench/services/extensions/common/extHostCustomers";
 import {
+	ITextFileEditorModel,
 	ITextFileSaveParticipant,
 	ITextFileService,
-	ITextFileEditorModel,
 } from "vs/workbench/services/textfile/common/textfiles";
-import { SaveReason } from "vs/workbench/common/editor";
 import {
 	ExtHostContext,
 	ExtHostDocumentSaveParticipantShape,
 } from "../common/extHost.protocol";
-import { IDisposable } from "vs/base/common/lifecycle";
-import { raceCancellationError } from "vs/base/common/async";
 
 class ExtHostSaveParticipant implements ITextFileSaveParticipant {
 	private readonly _proxy: ExtHostDocumentSaveParticipantShape;
 
 	constructor(extHostContext: IExtHostContext) {
 		this._proxy = extHostContext.getProxy(
-			ExtHostContext.ExtHostDocumentSaveParticipant
+			ExtHostContext.ExtHostDocumentSaveParticipant,
 		);
 	}
 
@@ -38,7 +38,7 @@ class ExtHostSaveParticipant implements ITextFileSaveParticipant {
 		editorModel: ITextFileEditorModel,
 		env: { reason: SaveReason },
 		_progress: IProgress<IProgressStep>,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void> {
 		if (
 			!editorModel.textEditorModel ||
@@ -56,11 +56,11 @@ class ExtHostSaveParticipant implements ITextFileSaveParticipant {
 						new Error(
 							localize(
 								"timeout.onWillSave",
-								"Aborted onWillSaveTextDocument-event after 1750ms"
-							)
-						)
+								"Aborted onWillSaveTextDocument-event after 1750ms",
+							),
+						),
 					),
-				1750
+				1750,
 			);
 			this._proxy
 				.$participateInSave(editorModel.resource, env.reason)

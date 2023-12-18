@@ -3,84 +3,84 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/workbench/contrib/markers/browser/markersFileDecorations";
-import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
+import { Codicon } from "vs/base/common/codicons";
+import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
+import {
+	Disposable,
+	IDisposable,
+	MutableDisposable,
+} from "vs/base/common/lifecycle";
+import { localize } from "vs/nls";
+import { Categories } from "vs/platform/action/common/actionCommonCategories";
+import {
+	Action2,
+	MenuId,
+	registerAction2,
+} from "vs/platform/actions/common/actions";
+import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
 	Extensions,
 	IConfigurationRegistry,
 } from "vs/platform/configuration/common/configurationRegistry";
-import { Categories } from "vs/platform/action/common/actionCommonCategories";
+import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
+import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
+import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
 import {
-	KeybindingsRegistry,
 	KeybindingWeight,
+	KeybindingsRegistry,
 } from "vs/platform/keybinding/common/keybindingsRegistry";
-import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
-import { localize } from "vs/nls";
+import {
+	IMarkerService,
+	MarkerStatistics,
+} from "vs/platform/markers/common/markers";
+import { Registry } from "vs/platform/registry/common/platform";
+import { registerIcon } from "vs/platform/theme/common/iconRegistry";
+import { viewFilterSubmenu } from "vs/workbench/browser/parts/views/viewFilter";
+import { ViewAction } from "vs/workbench/browser/parts/views/viewPane";
+import { ViewPaneContainer } from "vs/workbench/browser/parts/views/viewPaneContainer";
+import {
+	FocusedViewContext,
+	getVisbileViewContextKey,
+} from "vs/workbench/common/contextkeys";
+import {
+	Extensions as WorkbenchExtensions,
+	IWorkbenchContribution,
+	IWorkbenchContributionsRegistry,
+} from "vs/workbench/common/contributions";
+import {
+	Extensions as ViewContainerExtensions,
+	IViewContainersRegistry,
+	IViewsRegistry,
+	IViewsService,
+	ViewContainer,
+	ViewContainerLocation,
+} from "vs/workbench/common/views";
+import { IMarkersView } from "vs/workbench/contrib/markers/browser/markers";
+import "vs/workbench/contrib/markers/browser/markersFileDecorations";
 import {
 	Marker,
 	RelatedInformation,
 	ResourceMarkers,
 } from "vs/workbench/contrib/markers/browser/markersModel";
 import { MarkersView } from "vs/workbench/contrib/markers/browser/markersView";
-import {
-	MenuId,
-	registerAction2,
-	Action2,
-} from "vs/platform/actions/common/actions";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	MarkersViewMode,
-	Markers,
-	MarkersContextKeys,
-} from "vs/workbench/contrib/markers/common/markers";
 import Messages from "vs/workbench/contrib/markers/browser/messages";
 import {
-	IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
-	IWorkbenchContribution,
-} from "vs/workbench/common/contributions";
-import { IMarkersView } from "vs/workbench/contrib/markers/browser/markers";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
-import {
-	Disposable,
-	IDisposable,
-	MutableDisposable,
-} from "vs/base/common/lifecycle";
-import {
-	IStatusbarEntryAccessor,
-	IStatusbarService,
-	StatusbarAlignment,
-	IStatusbarEntry,
-} from "vs/workbench/services/statusbar/browser/statusbar";
-import {
-	IMarkerService,
-	MarkerStatistics,
-} from "vs/platform/markers/common/markers";
-import {
-	ViewContainer,
-	IViewContainersRegistry,
-	Extensions as ViewContainerExtensions,
-	ViewContainerLocation,
-	IViewsRegistry,
-	IViewsService,
-} from "vs/workbench/common/views";
-import {
-	getVisbileViewContextKey,
-	FocusedViewContext,
-} from "vs/workbench/common/contextkeys";
-import { ViewPaneContainer } from "vs/workbench/browser/parts/views/viewPaneContainer";
-import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
-import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import { Codicon } from "vs/base/common/codicons";
-import { registerIcon } from "vs/platform/theme/common/iconRegistry";
-import { ViewAction } from "vs/workbench/browser/parts/views/viewPane";
+	Markers,
+	MarkersContextKeys,
+	MarkersViewMode,
+} from "vs/workbench/contrib/markers/common/markers";
 import {
 	IActivityService,
 	NumberBadge,
 } from "vs/workbench/services/activity/common/activity";
-import { viewFilterSubmenu } from "vs/workbench/browser/parts/views/viewFilter";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
+import {
+	IStatusbarEntry,
+	IStatusbarEntryAccessor,
+	IStatusbarService,
+	StatusbarAlignment,
+} from "vs/workbench/services/statusbar/browser/statusbar";
 
 KeybindingsRegistry.registerCommandAndKeybindingRule({
 	id: Markers.MARKER_OPEN_ACTION_ID,
@@ -99,7 +99,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			markersView.getFocusElement(),
 			false,
 			false,
-			true
+			true,
 		);
 	},
 });
@@ -120,7 +120,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			markersView.getFocusElement(),
 			false,
 			true,
-			true
+			true,
 		);
 	},
 });
@@ -153,36 +153,36 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 
 // configuration
 Registry.as<IConfigurationRegistry>(
-	Extensions.Configuration
+	Extensions.Configuration,
 ).registerConfiguration({
-	"id": "problems",
-	"order": 101,
-	"title": Messages.PROBLEMS_PANEL_CONFIGURATION_TITLE,
-	"type": "object",
-	"properties": {
+	id: "problems",
+	order: 101,
+	title: Messages.PROBLEMS_PANEL_CONFIGURATION_TITLE,
+	type: "object",
+	properties: {
 		"problems.autoReveal": {
-			"description": Messages.PROBLEMS_PANEL_CONFIGURATION_AUTO_REVEAL,
-			"type": "boolean",
-			"default": true,
+			description: Messages.PROBLEMS_PANEL_CONFIGURATION_AUTO_REVEAL,
+			type: "boolean",
+			default: true,
 		},
 		"problems.defaultViewMode": {
-			"description": Messages.PROBLEMS_PANEL_CONFIGURATION_VIEW_MODE,
-			"type": "string",
-			"default": "tree",
-			"enum": ["table", "tree"],
+			description: Messages.PROBLEMS_PANEL_CONFIGURATION_VIEW_MODE,
+			type: "string",
+			default: "tree",
+			enum: ["table", "tree"],
 		},
 		"problems.showCurrentInStatus": {
-			"description":
+			description:
 				Messages.PROBLEMS_PANEL_CONFIGURATION_SHOW_CURRENT_STATUS,
-			"type": "boolean",
-			"default": false,
+			type: "boolean",
+			default: false,
 		},
 		"problems.sortOrder": {
-			"description": Messages.PROBLEMS_PANEL_CONFIGURATION_COMPARE_ORDER,
-			"type": "string",
-			"default": "severity",
-			"enum": ["severity", "position"],
-			"enumDescriptions": [
+			description: Messages.PROBLEMS_PANEL_CONFIGURATION_COMPARE_ORDER,
+			type: "string",
+			default: "severity",
+			enum: ["severity", "position"],
+			enumDescriptions: [
 				Messages.PROBLEMS_PANEL_CONFIGURATION_COMPARE_ORDER_SEVERITY,
 				Messages.PROBLEMS_PANEL_CONFIGURATION_COMPARE_ORDER_POSITION,
 			],
@@ -193,7 +193,7 @@ Registry.as<IConfigurationRegistry>(
 			tags: ["experimental"],
 			description: localize(
 				"problems.visibility",
-				"Controls whether the problems are visible throughout the editor and workbench."
+				"Controls whether the problems are visible throughout the editor and workbench.",
 			),
 		},
 	},
@@ -202,12 +202,12 @@ Registry.as<IConfigurationRegistry>(
 const markersViewIcon = registerIcon(
 	"markers-view-icon",
 	Codicon.warning,
-	localize("markersViewIcon", "View icon of the markers view.")
+	localize("markersViewIcon", "View icon of the markers view."),
 );
 
 // markers view container
 const VIEW_CONTAINER: ViewContainer = Registry.as<IViewContainersRegistry>(
-	ViewContainerExtensions.ViewContainersRegistry
+	ViewContainerExtensions.ViewContainersRegistry,
 ).registerViewContainer(
 	{
 		id: Markers.MARKERS_CONTAINER_ID,
@@ -222,11 +222,11 @@ const VIEW_CONTAINER: ViewContainer = Registry.as<IViewContainersRegistry>(
 		storageId: Markers.MARKERS_VIEW_STORAGE_ID,
 	},
 	ViewContainerLocation.Panel,
-	{ doNotRegisterOpenCommand: true }
+	{ doNotRegisterOpenCommand: true },
 );
 
 Registry.as<IViewsRegistry>(
-	ViewContainerExtensions.ViewsRegistry
+	ViewContainerExtensions.ViewsRegistry,
 ).registerViews(
 	[
 		{
@@ -240,7 +240,7 @@ Registry.as<IViewsRegistry>(
 				id: "workbench.actions.view.problems",
 				mnemonicTitle: localize(
 					{ key: "miMarker", comment: ["&& denotes a mnemonic"] },
-					"&&Problems"
+					"&&Problems",
 				),
 				keybindings: {
 					primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyM,
@@ -249,12 +249,12 @@ Registry.as<IViewsRegistry>(
 			},
 		},
 	],
-	VIEW_CONTAINER
+	VIEW_CONTAINER,
 );
 
 // workbench
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 );
 
 // actions
@@ -269,8 +269,8 @@ registerAction2(
 					when: ContextKeyExpr.and(
 						ContextKeyExpr.equals("view", Markers.MARKERS_VIEW_ID),
 						MarkersContextKeys.MarkersViewModeContextKey.isEqualTo(
-							MarkersViewMode.Table
-						)
+							MarkersViewMode.Table,
+						),
 					),
 					group: "navigation",
 					order: 3,
@@ -282,11 +282,11 @@ registerAction2(
 
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			view: IMarkersView
+			view: IMarkersView,
 		): Promise<void> {
 			view.setViewMode(MarkersViewMode.Tree);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -300,8 +300,8 @@ registerAction2(
 					when: ContextKeyExpr.and(
 						ContextKeyExpr.equals("view", Markers.MARKERS_VIEW_ID),
 						MarkersContextKeys.MarkersViewModeContextKey.isEqualTo(
-							MarkersViewMode.Tree
-						)
+							MarkersViewMode.Tree,
+						),
 					),
 					group: "navigation",
 					order: 3,
@@ -313,11 +313,11 @@ registerAction2(
 
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			view: IMarkersView
+			view: IMarkersView,
 		): Promise<void> {
 			view.setViewMode(MarkersViewMode.Table);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -336,7 +336,7 @@ registerAction2(
 					group: "1_filter",
 					when: ContextKeyExpr.equals(
 						"view",
-						Markers.MARKERS_VIEW_ID
+						Markers.MARKERS_VIEW_ID,
 					),
 					order: 1,
 				},
@@ -346,11 +346,11 @@ registerAction2(
 
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			view: IMarkersView
+			view: IMarkersView,
 		): Promise<void> {
 			view.filters.showErrors = !view.filters.showErrors;
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -369,7 +369,7 @@ registerAction2(
 					group: "1_filter",
 					when: ContextKeyExpr.equals(
 						"view",
-						Markers.MARKERS_VIEW_ID
+						Markers.MARKERS_VIEW_ID,
 					),
 					order: 2,
 				},
@@ -379,11 +379,11 @@ registerAction2(
 
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			view: IMarkersView
+			view: IMarkersView,
 		): Promise<void> {
 			view.filters.showWarnings = !view.filters.showWarnings;
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -402,7 +402,7 @@ registerAction2(
 					group: "1_filter",
 					when: ContextKeyExpr.equals(
 						"view",
-						Markers.MARKERS_VIEW_ID
+						Markers.MARKERS_VIEW_ID,
 					),
 					order: 3,
 				},
@@ -412,11 +412,11 @@ registerAction2(
 
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			view: IMarkersView
+			view: IMarkersView,
 		): Promise<void> {
 			view.filters.showInfos = !view.filters.showInfos;
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -436,7 +436,7 @@ registerAction2(
 					group: "2_filter",
 					when: ContextKeyExpr.equals(
 						"view",
-						Markers.MARKERS_VIEW_ID
+						Markers.MARKERS_VIEW_ID,
 					),
 					order: 1,
 				},
@@ -446,11 +446,11 @@ registerAction2(
 
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			view: IMarkersView
+			view: IMarkersView,
 		): Promise<void> {
 			view.filters.activeFile = !view.filters.activeFile;
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -460,7 +460,7 @@ registerAction2(
 				id: `workbench.actions.${Markers.MARKERS_VIEW_ID}.toggleExcludedFiles`,
 				title: localize(
 					"toggle Excluded Files",
-					"Toggle Excluded Files"
+					"Toggle Excluded Files",
 				),
 				category: localize("problems", "Problems"),
 				toggled: {
@@ -473,7 +473,7 @@ registerAction2(
 					group: "2_filter",
 					when: ContextKeyExpr.equals(
 						"view",
-						Markers.MARKERS_VIEW_ID
+						Markers.MARKERS_VIEW_ID,
 					),
 					order: 2,
 				},
@@ -483,11 +483,11 @@ registerAction2(
 
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			view: IMarkersView
+			view: IMarkersView,
 		): Promise<void> {
 			view.filters.excludedFiles = !view.filters.excludedFiles;
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -506,7 +506,7 @@ registerAction2(
 		async run(accessor: ServicesAccessor): Promise<void> {
 			accessor.get(IViewsService).openView(Markers.MARKERS_VIEW_ID, true);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -515,7 +515,7 @@ registerAction2(
 			const when = ContextKeyExpr.and(
 				FocusedViewContext.isEqualTo(Markers.MARKERS_VIEW_ID),
 				MarkersContextKeys.MarkersTreeVisibilityContextKey,
-				MarkersContextKeys.RelatedInformationFocusContextKey.toNegated()
+				MarkersContextKeys.RelatedInformationFocusContextKey.toNegated(),
 			);
 			super({
 				id: Markers.MARKER_COPY_ACTION_ID,
@@ -538,7 +538,7 @@ registerAction2(
 		}
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			markersView: IMarkersView
+			markersView: IMarkersView,
 		): Promise<void> {
 			const clipboardService = serviceAccessor.get(IClipboardService);
 			const selection =
@@ -561,7 +561,7 @@ registerAction2(
 				await clipboardService.writeText(`[${markers}]`);
 			}
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -583,7 +583,7 @@ registerAction2(
 		}
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			markersView: IMarkersView
+			markersView: IMarkersView,
 		): Promise<void> {
 			const clipboardService = serviceAccessor.get(IClipboardService);
 			const element = markersView.getFocusElement();
@@ -591,7 +591,7 @@ registerAction2(
 				await clipboardService.writeText(element.marker.message);
 			}
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -613,7 +613,7 @@ registerAction2(
 		}
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			markersView: IMarkersView
+			markersView: IMarkersView,
 		): Promise<void> {
 			const clipboardService = serviceAccessor.get(IClipboardService);
 			const element = markersView.getFocusElement();
@@ -621,7 +621,7 @@ registerAction2(
 				await clipboardService.writeText(element.raw.message);
 			}
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -640,11 +640,11 @@ registerAction2(
 		}
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			markersView: IMarkersView
+			markersView: IMarkersView,
 		): Promise<void> {
 			markersView.focus();
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -663,11 +663,11 @@ registerAction2(
 		}
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			markersView: IMarkersView
+			markersView: IMarkersView,
 		): Promise<void> {
 			markersView.focusFilter();
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -678,7 +678,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"show multiline",
-						"Show message in multiple lines"
+						"Show message in multiple lines",
 					),
 					original: "Problems: Show message in multiple lines",
 				},
@@ -686,7 +686,7 @@ registerAction2(
 				menu: {
 					id: MenuId.CommandPalette,
 					when: ContextKeyExpr.has(
-						getVisbileViewContextKey(Markers.MARKERS_VIEW_ID)
+						getVisbileViewContextKey(Markers.MARKERS_VIEW_ID),
 					),
 				},
 				viewId: Markers.MARKERS_VIEW_ID,
@@ -694,11 +694,11 @@ registerAction2(
 		}
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			markersView: IMarkersView
+			markersView: IMarkersView,
 		): Promise<void> {
 			markersView.setMultiline(true);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -709,7 +709,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"show singleline",
-						"Show message in single line"
+						"Show message in single line",
 					),
 					original: "Problems: Show message in single line",
 				},
@@ -717,7 +717,7 @@ registerAction2(
 				menu: {
 					id: MenuId.CommandPalette,
 					when: ContextKeyExpr.has(
-						getVisbileViewContextKey(Markers.MARKERS_VIEW_ID)
+						getVisbileViewContextKey(Markers.MARKERS_VIEW_ID),
 					),
 				},
 				viewId: Markers.MARKERS_VIEW_ID,
@@ -725,11 +725,11 @@ registerAction2(
 		}
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			markersView: IMarkersView
+			markersView: IMarkersView,
 		): Promise<void> {
 			markersView.setMultiline(false);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -749,11 +749,11 @@ registerAction2(
 		}
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			markersView: IMarkersView
+			markersView: IMarkersView,
 		): Promise<void> {
 			markersView.clearFilterText();
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -767,8 +767,8 @@ registerAction2(
 					when: ContextKeyExpr.and(
 						ContextKeyExpr.equals("view", Markers.MARKERS_VIEW_ID),
 						MarkersContextKeys.MarkersViewModeContextKey.isEqualTo(
-							MarkersViewMode.Tree
-						)
+							MarkersViewMode.Tree,
+						),
 					),
 					group: "navigation",
 					order: 2,
@@ -779,11 +779,11 @@ registerAction2(
 		}
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			view: IMarkersView
+			view: IMarkersView,
 		): Promise<void> {
 			return view.collapseAll();
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -802,7 +802,7 @@ registerAction2(
 				viewsService.openView(Markers.MARKERS_VIEW_ID, true);
 			}
 		}
-	}
+	},
 );
 
 class MarkersStatusBarContributions
@@ -885,13 +885,13 @@ class MarkersStatusBarContributions
 		// Update to true, config checked before `getMarkersItemTurnedOff` is called.
 		this.statusbarService.updateEntryVisibility(
 			"status.problemsVisibility",
-			true
+			true,
 		);
 		const openSettingsCommand = "workbench.action.openSettings";
 		const configureSettingsLabel = "@id:problems.visibility";
 		const tooltip = localize(
 			"status.problemsVisibilityOff",
-			"Problems are turned off. Click to open settings."
+			"Problems are turned off. Click to open settings.",
 		);
 		return {
 			name: localize("status.problemsVisibility", "Problems Visibility"),
@@ -958,19 +958,19 @@ class MarkersStatusBarContributions
 		return n > 9999
 			? manyProblems
 			: n > 999
-				? n.toString().charAt(0) + "K"
-				: n.toString();
+			  ? n.toString().charAt(0) + "K"
+			  : n.toString();
 	}
 }
 
 workbenchRegistry.registerWorkbenchContribution(
 	MarkersStatusBarContributions,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );
 
 class ActivityUpdater extends Disposable implements IWorkbenchContribution {
 	private readonly activity = this._register(
-		new MutableDisposable<IDisposable>()
+		new MutableDisposable<IDisposable>(),
 	);
 
 	constructor(
@@ -991,11 +991,11 @@ class ActivityUpdater extends Disposable implements IWorkbenchContribution {
 			const message = localize(
 				"totalProblems",
 				"Total {0} Problems",
-				total
+				total,
 			);
 			this.activity.value = this.activityService.showViewActivity(
 				Markers.MARKERS_VIEW_ID,
-				{ badge: new NumberBadge(total, () => message) }
+				{ badge: new NumberBadge(total, () => message) },
 			);
 		} else {
 			this.activity.value = undefined;
@@ -1005,5 +1005,5 @@ class ActivityUpdater extends Disposable implements IWorkbenchContribution {
 
 workbenchRegistry.registerWorkbenchContribution(
 	ActivityUpdater,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );

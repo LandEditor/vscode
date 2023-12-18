@@ -41,7 +41,7 @@ export function getStdinFilePath(): string {
 export async function readFromStdin(
 	targetPath: string,
 	verbose: boolean,
-	onEnd?: Function
+	onEnd?: Function,
 ): Promise<void> {
 	let [encoding, iconv] = await Promise.all([
 		resolveTerminalEncoding(verbose), // respect terminal encoding when piping into file
@@ -51,7 +51,7 @@ export async function readFromStdin(
 
 	if (!iconv.encodingExists(encoding)) {
 		console.log(
-			`Unsupported terminal encoding: ${encoding}, falling back to UTF-8.`
+			`Unsupported terminal encoding: ${encoding}, falling back to UTF-8.`,
 		);
 		encoding = "utf8";
 	}

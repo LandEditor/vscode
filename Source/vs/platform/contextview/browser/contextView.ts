@@ -27,7 +27,7 @@ export interface IContextViewService extends IContextViewProvider {
 	showContextView(
 		delegate: IContextViewDelegate,
 		container?: HTMLElement,
-		shadowRoot?: boolean
+		shadowRoot?: boolean,
 	): IDisposable;
 	hideContextView(data?: any): void;
 	getContextViewElement(): HTMLElement;
@@ -63,7 +63,7 @@ export interface IContextMenuService {
 	readonly onDidHideContextMenu: Event<void>;
 
 	showContextMenu(
-		delegate: IContextMenuDelegate | IContextMenuMenuDelegate
+		delegate: IContextMenuDelegate | IContextMenuMenuDelegate,
 	): void;
 }
 

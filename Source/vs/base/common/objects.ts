@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	isTypedArray,
 	isObject,
+	isTypedArray,
 	isUndefinedOrNull,
 } from "vs/base/common/types";
 
@@ -57,7 +57,7 @@ export function cloneAndChange(obj: any, changer: (orig: any) => any): any {
 function _cloneAndChange(
 	obj: any,
 	changer: (orig: any) => any,
-	seen: Set<any>
+	seen: Set<any>,
 ): any {
 	if (isUndefinedOrNull(obj)) {
 		return obj;
@@ -98,11 +98,7 @@ function _cloneAndChange(
  * Copies all properties of source into destination. The optional parameter "overwrite" allows to control
  * if existing properties on the destination should be overwritten or not. Defaults to true (overwrite).
  */
-export function mixin(
-	destination: any,
-	source: any,
-	overwrite: boolean = true
-): any {
+export function mixin(destination: any, source: any, overwrite = true): any {
 	if (!isObject(destination)) {
 		return source;
 	}
@@ -236,14 +232,14 @@ export function distinct(base: obj, target: obj): obj {
 export function getCaseInsensitive(target: obj, key: string): any {
 	const lowercaseKey = key.toLowerCase();
 	const equivalentKey = Object.keys(target).find(
-		(k) => k.toLowerCase() === lowercaseKey
+		(k) => k.toLowerCase() === lowercaseKey,
 	);
 	return equivalentKey ? target[equivalentKey] : target[key];
 }
 
 export function filter(
 	obj: obj,
-	predicate: (key: string, value: any) => boolean
+	predicate: (key: string, value: any) => boolean,
 ): obj {
 	const result = Object.create(null);
 	for (const [key, value] of Object.entries(obj)) {
@@ -275,10 +271,10 @@ export function getAllMethodNames(obj: object): string[] {
 
 export function createProxyObject<T extends object>(
 	methodNames: string[],
-	invoke: (method: string, args: unknown[]) => unknown
+	invoke: (method: string, args: unknown[]) => unknown,
 ): T {
 	const createProxyMethod = (method: string): (() => unknown) => {
-		return function () {
+		return () => {
 			const args = Array.prototype.slice.call(arguments, 0);
 			return invoke(method, args);
 		};

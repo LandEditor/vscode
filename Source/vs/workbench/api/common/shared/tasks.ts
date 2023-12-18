@@ -32,7 +32,7 @@ export interface IExecutionOptionsDTO {
 	env?: { [key: string]: string };
 }
 
-export interface IProcessExecutionOptionsDTO extends IExecutionOptionsDTO {}
+export type IProcessExecutionOptionsDTO = IExecutionOptionsDTO;
 
 export interface IProcessExecutionDTO {
 	process: string;

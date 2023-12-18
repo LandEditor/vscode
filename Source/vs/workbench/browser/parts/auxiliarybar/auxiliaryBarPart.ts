@@ -3,8 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { ActionsOrientation } from "vs/base/browser/ui/actionbar/actionbar";
+import { HoverPosition } from "vs/base/browser/ui/hover/hoverWidget";
+import { LayoutPriority } from "vs/base/browser/ui/splitview/splitview";
+import { IAction, Separator, toAction } from "vs/base/common/actions";
+import { assertIsDefined } from "vs/base/common/types";
 import "vs/css!./media/auxiliaryBarPart";
 import { localize } from "vs/nls";
+import { IMenuService } from "vs/platform/actions/common/actions";
+import { ICommandService } from "vs/platform/commands/common/commands";
 import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
 import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
@@ -13,6 +20,10 @@ import { INotificationService } from "vs/platform/notification/common/notificati
 import { IStorageService } from "vs/platform/storage/common/storage";
 import { contrastBorder } from "vs/platform/theme/common/colorRegistry";
 import { IThemeService } from "vs/platform/theme/common/themeService";
+import { ToggleSidebarPositionAction } from "vs/workbench/browser/actions/layoutActions";
+import { ToggleAuxiliaryBarAction } from "vs/workbench/browser/parts/auxiliarybar/auxiliaryBarActions";
+import { IPaneCompositeBarOptions } from "vs/workbench/browser/parts/paneCompositeBar";
+import { AbstractPaneCompositePart } from "vs/workbench/browser/parts/paneCompositePart";
 import {
 	ActiveAuxiliaryContext,
 	AuxiliaryBarFocusContext,
@@ -35,17 +46,6 @@ import {
 	Parts,
 	Position,
 } from "vs/workbench/services/layout/browser/layoutService";
-import { HoverPosition } from "vs/base/browser/ui/hover/hoverWidget";
-import { IAction, Separator, toAction } from "vs/base/common/actions";
-import { ToggleAuxiliaryBarAction } from "vs/workbench/browser/parts/auxiliarybar/auxiliaryBarActions";
-import { assertIsDefined } from "vs/base/common/types";
-import { LayoutPriority } from "vs/base/browser/ui/splitview/splitview";
-import { ToggleSidebarPositionAction } from "vs/workbench/browser/actions/layoutActions";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import { AbstractPaneCompositePart } from "vs/workbench/browser/parts/paneCompositePart";
-import { ActionsOrientation } from "vs/base/browser/ui/actionbar/actionbar";
-import { IPaneCompositeBarOptions } from "vs/workbench/browser/parts/paneCompositeBar";
-import { IMenuService } from "vs/platform/actions/common/actions";
 
 export class AuxiliaryBarPart extends AbstractPaneCompositePart {
 	static readonly activePanelSettingsKey =
@@ -179,13 +179,13 @@ export class AuxiliaryBarPart extends AbstractPaneCompositePart {
 				activeBackgroundColor: theme.getColor(SIDE_BAR_BACKGROUND),
 				inactiveBackgroundColor: theme.getColor(SIDE_BAR_BACKGROUND),
 				activeBorderBottomColor: theme.getColor(
-					PANEL_ACTIVE_TITLE_BORDER
+					PANEL_ACTIVE_TITLE_BORDER,
 				),
 				activeForegroundColor: theme.getColor(
-					PANEL_ACTIVE_TITLE_FOREGROUND
+					PANEL_ACTIVE_TITLE_FOREGROUND,
 				),
 				inactiveForegroundColor: theme.getColor(
-					PANEL_INACTIVE_TITLE_FOREGROUND
+					PANEL_INACTIVE_TITLE_FOREGROUND,
 				),
 				badgeBackground: theme.getColor(ACTIVITY_BAR_BADGE_BACKGROUND),
 				badgeForeground: theme.getColor(ACTIVITY_BAR_BADGE_FOREGROUND),
@@ -211,29 +211,29 @@ export class AuxiliaryBarPart extends AbstractPaneCompositePart {
 					label: currentPositionRight
 						? localize(
 								"move second side bar left",
-								"Move Secondary Side Bar Left"
-							)
+								"Move Secondary Side Bar Left",
+						  )
 						: localize(
 								"move second side bar right",
-								"Move Secondary Side Bar Right"
-							),
+								"Move Secondary Side Bar Right",
+						  ),
 					run: () =>
 						this.commandService.executeCommand(
-							ToggleSidebarPositionAction.ID
+							ToggleSidebarPositionAction.ID,
 						),
 				}),
 				toAction({
 					id: ToggleAuxiliaryBarAction.ID,
 					label: localize(
 						"hide second side bar",
-						"Hide Secondary Side Bar"
+						"Hide Secondary Side Bar",
 					),
 					run: () =>
 						this.commandService.executeCommand(
-							ToggleAuxiliaryBarAction.ID
+							ToggleAuxiliaryBarAction.ID,
 						),
 				}),
-			]
+			],
 		);
 	}
 

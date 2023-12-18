@@ -8,7 +8,9 @@ let initialized = false;
 const pendingMessages: any[] = [];
 
 const messageHandler = async (e: any) => {
-	if (!initialized) {
+	if (initialized) {
+		pendingMessages.push(e);
+	} else {
 		const l10nLog: string[] = [];
 		initialized = true;
 		const i10lLocation = e.data.i10lLocation;
@@ -18,7 +20,7 @@ const messageHandler = async (e: any) => {
 				l10nLog.push(`l10n: Configured to ${i10lLocation.toString()}.`);
 			} catch (e) {
 				l10nLog.push(
-					`l10n: Problems loading ${i10lLocation.toString()} : ${e}.`
+					`l10n: Problems loading ${i10lLocation.toString()} : ${e}.`,
 				);
 			}
 		} else {
@@ -33,8 +35,6 @@ const messageHandler = async (e: any) => {
 		}
 
 		l10nLog.forEach(console.log);
-	} else {
-		pendingMessages.push(e);
 	}
 };
 self.onmessage = messageHandler;

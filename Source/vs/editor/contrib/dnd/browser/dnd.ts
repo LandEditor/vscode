@@ -22,10 +22,10 @@ import {
 } from "vs/editor/browser/editorExtensions";
 import { CodeEditorWidget } from "vs/editor/browser/widget/codeEditorWidget";
 import { EditorOption } from "vs/editor/common/config/editorOptions";
-import { CursorChangeReason } from "vs/editor/common/cursorEvents";
 import { Position } from "vs/editor/common/core/position";
 import { Range } from "vs/editor/common/core/range";
 import { Selection } from "vs/editor/common/core/selection";
+import { CursorChangeReason } from "vs/editor/common/cursorEvents";
 import {
 	IEditorContribution,
 	IEditorDecorationsCollection,
@@ -59,7 +59,7 @@ export class DragAndDropController
 
 	static get(editor: ICodeEditor): DragAndDropController | null {
 		return editor.getContribution<DragAndDropController>(
-			DragAndDropController.ID
+			DragAndDropController.ID,
 		);
 	}
 
@@ -69,42 +69,42 @@ export class DragAndDropController
 		this._dndDecorationIds = this._editor.createDecorationsCollection();
 		this._register(
 			this._editor.onMouseDown((e: IEditorMouseEvent) =>
-				this._onEditorMouseDown(e)
-			)
+				this._onEditorMouseDown(e),
+			),
 		);
 		this._register(
 			this._editor.onMouseUp((e: IEditorMouseEvent) =>
-				this._onEditorMouseUp(e)
-			)
+				this._onEditorMouseUp(e),
+			),
 		);
 		this._register(
 			this._editor.onMouseDrag((e: IEditorMouseEvent) =>
-				this._onEditorMouseDrag(e)
-			)
+				this._onEditorMouseDrag(e),
+			),
 		);
 		this._register(
 			this._editor.onMouseDrop((e: IPartialEditorMouseEvent) =>
-				this._onEditorMouseDrop(e)
-			)
+				this._onEditorMouseDrop(e),
+			),
 		);
 		this._register(
 			this._editor.onMouseDropCanceled(() =>
-				this._onEditorMouseDropCanceled()
-			)
+				this._onEditorMouseDropCanceled(),
+			),
 		);
 		this._register(
 			this._editor.onKeyDown((e: IKeyboardEvent) =>
-				this.onEditorKeyDown(e)
-			)
+				this.onEditorKeyDown(e),
+			),
 		);
 		this._register(
-			this._editor.onKeyUp((e: IKeyboardEvent) => this.onEditorKeyUp(e))
+			this._editor.onKeyUp((e: IKeyboardEvent) => this.onEditorKeyUp(e)),
 		);
 		this._register(
-			this._editor.onDidBlurEditorWidget(() => this.onEditorBlur())
+			this._editor.onDidBlurEditorWidget(() => this.onEditorBlur()),
 		);
 		this._register(
-			this._editor.onDidBlurEditorText(() => this.onEditorBlur())
+			this._editor.onDidBlurEditorText(() => this.onEditorBlur()),
 		);
 		this._mouseDown = false;
 		this._modifierPressed = false;
@@ -179,7 +179,7 @@ export class DragAndDropController
 			const possibleSelections = selections.filter(
 				(selection) =>
 					target.position &&
-					selection.containsPosition(target.position)
+					selection.containsPosition(target.position),
 			);
 			if (possibleSelections.length === 1) {
 				this._dragSelection = possibleSelections[0];
@@ -226,7 +226,7 @@ export class DragAndDropController
 		) {
 			const newCursorPosition = new Position(
 				mouseEvent.target.position.lineNumber,
-				mouseEvent.target.position.column
+				mouseEvent.target.position.column,
 			);
 
 			if (this._dragSelection === null) {
@@ -243,7 +243,7 @@ export class DragAndDropController
 								selectionStartLineNumber,
 								selectionStartColumn,
 								newCursorPosition.lineNumber,
-								newCursorPosition.column
+								newCursorPosition.column,
 							),
 						];
 					}
@@ -255,19 +255,19 @@ export class DragAndDropController
 									newCursorPosition.lineNumber,
 									newCursorPosition.column,
 									newCursorPosition.lineNumber,
-									newCursorPosition.column
+									newCursorPosition.column,
 								);
 							} else {
 								return selection;
 							}
-						}
+						},
 					);
 				}
 				// Use `mouse` as the source instead of `api` and setting the reason to explicit (to behave like any other mouse operation).
 				(<CodeEditorWidget>this._editor).setSelections(
 					newSelections || [],
 					"mouse",
-					CursorChangeReason.Explicit
+					CursorChangeReason.Explicit,
 				);
 			} else if (
 				!this._dragSelection.containsPosition(newCursorPosition) ||
@@ -287,8 +287,8 @@ export class DragAndDropController
 						this._dragSelection,
 						newCursorPosition,
 						hasTriggerModifier(mouseEvent.event) ||
-							this._modifierPressed
-					)
+							this._modifierPressed,
+					),
 				);
 				this._editor.pushUndoStop();
 			}
@@ -316,7 +316,7 @@ export class DragAndDropController
 					position.lineNumber,
 					position.column,
 					position.lineNumber,
-					position.column
+					position.column,
 				),
 				options: DragAndDropController._DECORATION_OPTIONS,
 			},
@@ -355,5 +355,5 @@ export class DragAndDropController
 registerEditorContribution(
 	DragAndDropController.ID,
 	DragAndDropController,
-	EditorContributionInstantiation.BeforeFirstInteraction
+	EditorContributionInstantiation.BeforeFirstInteraction,
 );

@@ -15,7 +15,7 @@ import {
 
 export const INotebookCellStatusBarService =
 	createDecorator<INotebookCellStatusBarService>(
-		"notebookCellStatusBarService"
+		"notebookCellStatusBarService",
 	);
 
 export interface INotebookCellStatusBarService {
@@ -25,13 +25,13 @@ export interface INotebookCellStatusBarService {
 	readonly onDidChangeItems: Event<void>;
 
 	registerCellStatusBarItemProvider(
-		provider: INotebookCellStatusBarItemProvider
+		provider: INotebookCellStatusBarItemProvider,
 	): IDisposable;
 
 	getStatusBarItemsForCell(
 		docUri: URI,
 		cellIndex: number,
 		viewType: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<INotebookCellStatusBarItemList[]>;
 }

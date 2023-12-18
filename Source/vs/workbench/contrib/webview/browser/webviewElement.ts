@@ -4,10 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { isFirefox } from "vs/base/browser/browser";
-import { addDisposableListener, EventType } from "vs/base/browser/dom";
+import { EventType, addDisposableListener } from "vs/base/browser/dom";
+import { parentOriginHash } from "vs/base/browser/iframe";
 import { IMouseWheelEvent } from "vs/base/browser/mouseEvent";
+import { $window } from "vs/base/browser/window";
 import { ThrottledDelayer } from "vs/base/common/async";
-import { streamToBuffer, VSBufferReadableStream } from "vs/base/common/buffer";
+import { VSBufferReadableStream, streamToBuffer } from "vs/base/common/buffer";
 import { CancellationTokenSource } from "vs/base/common/cancellation";
 import { Emitter, Event } from "vs/base/common/event";
 import {
@@ -33,20 +35,19 @@ import { IRemoteAuthorityResolverService } from "vs/platform/remote/common/remot
 import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import { ITunnelService } from "vs/platform/tunnel/common/tunnel";
 import { WebviewPortMappingManager } from "vs/platform/webview/common/webviewPortMapping";
-import { parentOriginHash } from "vs/base/browser/iframe";
 import {
-	loadLocalResource,
 	WebviewResourceResponse,
+	loadLocalResource,
 } from "vs/workbench/contrib/webview/browser/resourceLoading";
 import { WebviewThemeDataProvider } from "vs/workbench/contrib/webview/browser/themeing";
 import {
-	areWebviewContentOptionsEqual,
 	IWebview,
 	WebviewContentOptions,
 	WebviewExtensionDescription,
 	WebviewInitInfo,
 	WebviewMessageReceivedEvent,
 	WebviewOptions,
+	areWebviewContentOptionsEqual,
 } from "vs/workbench/contrib/webview/browser/webview";
 import {
 	WebviewFindDelegate,
@@ -63,7 +64,6 @@ import {
 	webviewRootResourceAuthority,
 } from "vs/workbench/contrib/webview/common/webview";
 import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { $window } from "vs/base/browser/window";
 
 interface WebviewContent {
 	readonly html: string;
@@ -73,9 +73,9 @@ interface WebviewContent {
 }
 
 namespace WebviewState {
-	export const enum Type {
-		Initializing,
-		Ready,
+	export enum Type {
+		Initializing = 0,
+		Ready = 1,
 	}
 
 	export class Initializing {
@@ -87,7 +87,7 @@ namespace WebviewState {
 				readonly data?: any;
 				readonly transferable: Transferable[];
 				readonly resolve: (posted: boolean) => void;
-			}>
+			}>,
 		) {}
 	}
 
@@ -156,7 +156,7 @@ export class WebviewElement
 	private readonly _portMappingManager: WebviewPortMappingManager;
 
 	private readonly _resourceLoadingCts = this._register(
-		new CancellationTokenSource()
+		new CancellationTokenSource(),
 	);
 
 	private _contextKeyService: IContextKeyService | undefined;
@@ -166,7 +166,7 @@ export class WebviewElement
 	private readonly _focusDelayer = this._register(new ThrottledDelayer(50));
 
 	private readonly _onDidHtmlChange: Emitter<string> = this._register(
-		new Emitter<string>()
+		new Emitter<string>(),
 	);
 	protected readonly onDidHtmlChange = this._onDidHtmlChange.event;
 
@@ -535,7 +535,7 @@ export class WebviewElement
 	}
 
 	private readonly _onMissingCsp = this._register(
-		new Emitter<ExtensionIdentifier>()
+		new Emitter<ExtensionIdentifier>(),
 	);
 	public readonly onMissingCsp = this._onMissingCsp.event;
 
@@ -546,22 +546,22 @@ export class WebviewElement
 	public readonly onDidReload = this._onDidReload.event;
 
 	private readonly _onMessage = this._register(
-		new Emitter<WebviewMessageReceivedEvent>()
+		new Emitter<WebviewMessageReceivedEvent>(),
 	);
 	public readonly onMessage = this._onMessage.event;
 
 	private readonly _onDidScroll = this._register(
-		new Emitter<{ readonly scrollYPercentage: number }>()
+		new Emitter<{ readonly scrollYPercentage: number }>(),
 	);
 	public readonly onDidScroll = this._onDidScroll.event;
 
 	private readonly _onDidWheel = this._register(
-		new Emitter<IMouseWheelEvent>()
+		new Emitter<IMouseWheelEvent>(),
 	);
 	public readonly onDidWheel = this._onDidWheel.event;
 
 	private readonly _onDidUpdateState = this._register(
-		new Emitter<string | undefined>()
+		new Emitter<string | undefined>(),
 	);
 	public readonly onDidUpdateState = this._onDidUpdateState.event;
 
@@ -572,7 +572,7 @@ export class WebviewElement
 	public readonly onDidBlur = this._onDidBlur.event;
 
 	private readonly _onFatalError = this._register(
-		new Emitter<{ readonly message: string }>()
+		new Emitter<{ readonly message: string }>(),
 	);
 	public readonly onFatalError = this._onFatalError.event;
 
@@ -581,7 +581,7 @@ export class WebviewElement
 
 	public postMessage(
 		message: any,
-		transfer?: ArrayBuffer[]
+		transfer?: ArrayBuffer[],
 	): Promise<boolean> {
 		return this._send("message", { message, transfer });
 	}
@@ -589,7 +589,7 @@ export class WebviewElement
 	private async _send<K extends keyof ToWebviewMessage>(
 		channel: K,
 		data: ToWebviewMessage[K],
-		_createElement: Transferable[] = []
+		_createElement: Transferable[] = [],
 	): Promise<boolean> {
 		if (this._state.type === WebviewState.Type.Initializing) {
 			let resolve: (x: boolean) => void;
@@ -608,7 +608,7 @@ export class WebviewElement
 
 	private _createElement(
 		options: WebviewOptions,
-		_contentOptions: WebviewContentOptions
+		_contentOptions: WebviewContentOptions,
 	) {
 		// Do not start loading the webview yet.
 		// Wait the end of the ctor when all listeners have been hooked up.
@@ -620,7 +620,7 @@ export class WebviewElement
 			"allow-same-origin",
 			"allow-forms",
 			"allow-pointer-lock",
-			"allow-downloads"
+			"allow-downloads",
 		);
 
 		const allowRules = ["cross-origin-isolated", "autoplay"];
@@ -643,7 +643,7 @@ export class WebviewElement
 	private _initElement(
 		encodedWebviewOrigin: string,
 		extension: WebviewExtensionDescription | undefined,
-		options: WebviewOptions
+		options: WebviewOptions,
 	) {
 		// The extensionId and purpose in the URL are used for filtering in js-debug:
 		const params: { [key: string]: string } = {
@@ -678,8 +678,8 @@ export class WebviewElement
 		this.element!.setAttribute(
 			"src",
 			`${this.webviewContentEndpoint(
-				encodedWebviewOrigin
-			)}/${fileName}?${queryString}`
+				encodedWebviewOrigin,
+			)}/${fileName}?${queryString}`,
 		);
 	}
 
@@ -700,7 +700,7 @@ export class WebviewElement
 			this._register(
 				addDisposableListener(element, eventName, () => {
 					this._stopBlockingIframeDragEvents();
-				})
+				}),
 			);
 		}
 
@@ -708,7 +708,7 @@ export class WebviewElement
 			this._register(
 				addDisposableListener(node, EventType.DRAG_END, () => {
 					this._stopBlockingIframeDragEvents();
-				})
+				}),
 			);
 		}
 
@@ -734,13 +734,13 @@ export class WebviewElement
 			this._environmentService.webviewExternalEndpoint;
 		if (!webviewExternalEndpoint) {
 			throw new Error(
-				`'webviewExternalEndpoint' has not been configured. Webviews will not work!`
+				`'webviewExternalEndpoint' has not been configured. Webviews will not work!`,
 			);
 		}
 
 		const endpoint = webviewExternalEndpoint.replace(
 			"{{uuid}}",
-			encodedWebviewOrigin
+			encodedWebviewOrigin,
 		);
 		if (endpoint[endpoint.length - 1] === "/") {
 			return endpoint.slice(0, endpoint.length - 1);
@@ -750,7 +750,7 @@ export class WebviewElement
 
 	private _webviewContentOrigin(encodedWebviewOrigin: string): string {
 		const uri = URI.parse(
-			this.webviewContentEndpoint(encodedWebviewOrigin)
+			this.webviewContentEndpoint(encodedWebviewOrigin),
 		);
 		return uri.scheme + "://" + uri.authority.toLowerCase();
 	}
@@ -758,12 +758,12 @@ export class WebviewElement
 	private doPostMessage(
 		channel: string,
 		data?: any,
-		transferable: Transferable[] = []
+		transferable: Transferable[] = [],
 	): boolean {
 		if (this.element && this._messagePort) {
 			this._messagePort.postMessage(
 				{ channel, args: data },
-				transferable
+				transferable,
 			);
 			return true;
 		}
@@ -772,7 +772,7 @@ export class WebviewElement
 
 	private on<K extends keyof FromWebviewMessage>(
 		channel: K,
-		handler: (data: FromWebviewMessage[K], e: MessageEvent) => void
+		handler: (data: FromWebviewMessage[K], e: MessageEvent) => void,
 	): IDisposable {
 		let handlers = this._messageHandlers.get(channel);
 		if (!handlers) {
@@ -814,7 +814,7 @@ export class WebviewElement
 
 			this._telemetryService.publicLog2<typeof payload, Classification>(
 				"webviewMissingCsp",
-				payload
+				payload,
 			);
 		}
 	}
@@ -826,7 +826,7 @@ export class WebviewElement
 			this.on("did-load", () => {
 				this._onDidReload.fire();
 				subscription.dispose();
-			})
+			}),
 		);
 	}
 
@@ -842,12 +842,12 @@ export class WebviewElement
 
 	public set contentOptions(options: WebviewContentOptions) {
 		this._logService.debug(
-			`Webview(${this.id}): will update content options`
+			`Webview(${this.id}): will update content options`,
 		);
 
 		if (areWebviewContentOptionsEqual(options, this._content.options)) {
 			this._logService.debug(
-				`Webview(${this.id}): skipping content options update`
+				`Webview(${this.id}): skipping content options update`,
 			);
 			return;
 		}
@@ -979,7 +979,7 @@ export class WebviewElement
 	private async loadResource(
 		id: number,
 		uri: URI,
-		ifNoneMatch: string | undefined
+		ifNoneMatch: string | undefined,
 	) {
 		try {
 			const result = await loadLocalResource(
@@ -990,7 +990,7 @@ export class WebviewElement
 				},
 				this._fileService,
 				this._logService,
-				this._resourceLoadingCts.token
+				this._resourceLoadingCts.token,
 			);
 
 			switch (result.type) {
@@ -1007,7 +1007,7 @@ export class WebviewElement
 							etag: result.etag,
 							mtime: result.mtime,
 						},
-						[buffer]
+						[buffer],
 					);
 				}
 				case WebviewResourceResponse.Type.NotModified: {
@@ -1039,7 +1039,7 @@ export class WebviewElement
 	}
 
 	protected async streamToBuffer(
-		stream: VSBufferReadableStream
+		stream: VSBufferReadableStream,
 	): Promise<ArrayBufferLike> {
 		const vsBuffer = await streamToBuffer(stream);
 		return vsBuffer.buffer.buffer;
@@ -1049,14 +1049,14 @@ export class WebviewElement
 		const authority = this._environmentService.remoteAuthority;
 		const resolveAuthority = authority
 			? await this._remoteAuthorityResolverService.resolveAuthority(
-					authority
-				)
+					authority,
+			  )
 			: undefined;
 		const redirect = resolveAuthority
 			? await this._portMappingManager.getRedirect(
 					resolveAuthority.authority,
-					origin
-				)
+					origin,
+			  )
 			: undefined;
 		return this._send("did-load-localhost", {
 			id,

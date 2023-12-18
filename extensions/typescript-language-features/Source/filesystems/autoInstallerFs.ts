@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from "vscode";
-import { MemFs } from "./memFs";
-import { URI } from "vscode-uri";
+import { basename, dirname, join } from "path";
 import {
-	PackageManager,
 	FileSystem,
+	PackageManager,
 	packagePath,
 } from "@vscode/ts-package-manager";
-import { join, basename, dirname } from "path";
+import * as vscode from "vscode";
+import { URI } from "vscode-uri";
+import { MemFs } from "./memFs";
 
 const TEXT_DECODER = new TextDecoder("utf-8");
 const TEXT_ENCODER = new TextEncoder();
@@ -30,7 +30,7 @@ export class AutoInstallerFs implements vscode.FileSystemProvider {
 
 	constructor() {
 		this.watcher = vscode.workspace.createFileSystemWatcher(
-			"**/{package.json,package-lock.json,package-lock.kdl}"
+			"**/{package.json,package-lock.json,package-lock.kdl}",
 		);
 		const handler = (uri: URI) => {
 			const root = dirname(uri.path);
@@ -63,7 +63,7 @@ export class AutoInstallerFs implements vscode.FileSystemProvider {
 					type: ev.type,
 					// TODO: we're gonna need a MappedUri dance...
 					uri: ev.uri.with({ scheme: "memfs" }),
-				}))
+				})),
 			);
 		});
 		this.fs = {
@@ -72,7 +72,7 @@ export class AutoInstallerFs implements vscode.FileSystemProvider {
 				_extensions?: readonly string[],
 				_exclude?: readonly string[],
 				_include?: readonly string[],
-				_depth?: number
+				_depth?: number,
 			): string[] {
 				return memfs
 					.readDirectory(URI.file(path))
@@ -90,7 +90,7 @@ export class AutoInstallerFs implements vscode.FileSystemProvider {
 			writeFile(
 				path: string,
 				data: string,
-				_writeByteOrderMark?: boolean
+				_writeByteOrderMark?: boolean,
 			): void {
 				memfs.writeFile(URI.file(path), TEXT_ENCODER.encode(data), {
 					overwrite: true,
@@ -167,7 +167,7 @@ export class AutoInstallerFs implements vscode.FileSystemProvider {
 	writeFile(
 		_uri: vscode.Uri,
 		_content: Uint8Array,
-		_options: { create: boolean; overwrite: boolean }
+		_options: { create: boolean; overwrite: boolean },
 	): void {
 		throw new Error("not implemented");
 	}
@@ -175,7 +175,7 @@ export class AutoInstallerFs implements vscode.FileSystemProvider {
 	rename(
 		_oldUri: vscode.Uri,
 		_newUri: vscode.Uri,
-		_options: { overwrite: boolean }
+		_options: { overwrite: boolean },
 	): void {
 		throw new Error("not implemented");
 	}
@@ -213,7 +213,7 @@ export class AutoInstallerFs implements vscode.FileSystemProvider {
 
 		const proj = await new PackageManager(this.fs).resolveProject(
 			root,
-			await this.getInstallOpts(incomingUri.original, root)
+			await this.getInstallOpts(incomingUri.original, root),
 		);
 
 		const restore = proj.restorePackageAt(incomingUri.path);
@@ -222,7 +222,7 @@ export class AutoInstallerFs implements vscode.FileSystemProvider {
 		} catch (e) {
 			console.error(
 				`failed to restore package at ${incomingUri.path}: `,
-				e
+				e,
 			);
 			throw e;
 		}
@@ -238,8 +238,8 @@ export class AutoInstallerFs implements vscode.FileSystemProvider {
 		try {
 			pkgJson = TEXT_DECODER.decode(
 				await vsfs.readFile(
-					originalUri.with({ path: join(root, "package.json") })
-				)
+					originalUri.with({ path: join(root, "package.json") }),
+				),
 			);
 		} catch (e) {}
 
@@ -247,8 +247,8 @@ export class AutoInstallerFs implements vscode.FileSystemProvider {
 		try {
 			kdlLock = TEXT_DECODER.decode(
 				await vsfs.readFile(
-					originalUri.with({ path: join(root, "package-lock.kdl") })
-				)
+					originalUri.with({ path: join(root, "package-lock.kdl") }),
+				),
 			);
 		} catch (e) {}
 
@@ -256,8 +256,8 @@ export class AutoInstallerFs implements vscode.FileSystemProvider {
 		try {
 			npmLock = TEXT_DECODER.decode(
 				await vsfs.readFile(
-					originalUri.with({ path: join(root, "package-lock.json") })
-				)
+					originalUri.with({ path: join(root, "package-lock.json") }),
+				),
 			);
 		} catch (e) {}
 

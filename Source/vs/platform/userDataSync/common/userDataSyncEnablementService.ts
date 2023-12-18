@@ -16,10 +16,10 @@ import {
 import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import {
 	ALL_SYNC_RESOURCES,
-	getEnablementKey,
 	IUserDataSyncEnablementService,
 	IUserDataSyncStoreManagementService,
 	SyncResource,
+	getEnablementKey,
 } from "vs/platform/userDataSync/common/userDataSync";
 
 type SyncEnablementClassification = {
@@ -79,7 +79,7 @@ export class UserDataSyncEnablementService
 		return this.storageService.getBoolean(
 			enablementKey,
 			StorageScope.APPLICATION,
-			false
+			false,
 		);
 	}
 
@@ -102,7 +102,7 @@ export class UserDataSyncEnablementService
 			enablementKey,
 			enabled,
 			StorageScope.APPLICATION,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 	}
 
@@ -110,7 +110,7 @@ export class UserDataSyncEnablementService
 		return this.storageService.getBoolean(
 			getEnablementKey(resource),
 			StorageScope.APPLICATION,
-			true
+			true,
 		);
 	}
 
@@ -127,18 +127,20 @@ export class UserDataSyncEnablementService
 
 	private storeResourceEnablement(
 		resourceEnablementKey: string,
-		enabled: boolean
+		enabled: boolean,
 	): void {
 		this.storageService.store(
 			resourceEnablementKey,
 			enabled,
 			StorageScope.APPLICATION,
-			isWeb ? StorageTarget.USER /* sync in web */ : StorageTarget.MACHINE
+			isWeb
+				? StorageTarget.USER /* sync in web */
+				: StorageTarget.MACHINE,
 		);
 	}
 
 	private onDidStorageChange(
-		storageChangeEvent: IApplicationStorageValueChangeEvent
+		storageChangeEvent: IApplicationStorageValueChangeEvent,
 	): void {
 		if (enablementKey === storageChangeEvent.key) {
 			this._onDidChangeEnablement.fire(this.isEnabled());
@@ -147,7 +149,7 @@ export class UserDataSyncEnablementService
 
 		const resourceKey = ALL_SYNC_RESOURCES.filter(
 			(resourceKey) =>
-				getEnablementKey(resourceKey) === storageChangeEvent.key
+				getEnablementKey(resourceKey) === storageChangeEvent.key,
 		)[0];
 		if (resourceKey) {
 			this._onDidChangeResourceEnablement.fire([

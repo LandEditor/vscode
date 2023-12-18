@@ -4,27 +4,41 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { BrowserFeatures } from "vs/base/browser/canIUse";
+import {
+	isKeyboardEvent,
+	isMouseEvent,
+	isPointerEvent,
+} from "vs/base/browser/dom";
 import { Action } from "vs/base/common/actions";
+import { CancellationToken } from "vs/base/common/cancellation";
 import { Codicon } from "vs/base/common/codicons";
+import { Iterable } from "vs/base/common/iterator";
 import { KeyChord, KeyCode, KeyMod } from "vs/base/common/keyCodes";
-import { Schemas } from "vs/base/common/network";
-import { isLinux, isWindows } from "vs/base/common/platform";
 import { IDisposable } from "vs/base/common/lifecycle";
+import { Schemas } from "vs/base/common/network";
+import { isAbsolute } from "vs/base/common/path";
+import { isLinux, isWindows } from "vs/base/common/platform";
+import { dirname } from "vs/base/common/resources";
 import { isObject, isString } from "vs/base/common/types";
 import { URI } from "vs/base/common/uri";
 import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
+import { ILanguageService } from "vs/editor/common/languages/language";
 import { EndOfLinePreference } from "vs/editor/common/model";
+import { getIconClasses } from "vs/editor/common/services/getIconClasses";
+import { IModelService } from "vs/editor/common/services/model";
 import { localize } from "vs/nls";
 import { CONTEXT_ACCESSIBILITY_MODE_ENABLED } from "vs/platform/accessibility/common/accessibility";
 import {
 	Action2,
-	registerAction2,
 	IAction2Options,
 	MenuId,
+	registerAction2,
 } from "vs/platform/actions/common/actions";
+import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
 import { ICommandService } from "vs/platform/commands/common/commands";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
+import { FileKind } from "vs/platform/files/common/files";
 import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
 import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
 import { ILabelService } from "vs/platform/label/common/label";
@@ -39,6 +53,7 @@ import {
 	IQuickInputService,
 	IQuickPickItem,
 } from "vs/platform/quickinput/common/quickInput";
+import { TerminalCapability } from "vs/platform/terminal/common/capabilities/capabilities";
 import {
 	ITerminalProfile,
 	TerminalExitReason,
@@ -46,12 +61,20 @@ import {
 	TerminalLocation,
 	TerminalSettingId,
 } from "vs/platform/terminal/common/terminal";
+import { createProfileSchemaEnums } from "vs/platform/terminal/common/terminalProfiles";
+import { IThemeService } from "vs/platform/theme/common/themeService";
 import {
 	IWorkspaceContextService,
 	IWorkspaceFolder,
 } from "vs/platform/workspace/common/workspace";
 import { PICK_WORKSPACE_FOLDER_COMMAND_ID } from "vs/workbench/browser/actions/workspaceCommands";
 import { CLOSE_EDITOR_COMMAND_ID } from "vs/workbench/browser/parts/editor/editorCommands";
+import {
+	AccessibleViewProviderId,
+	accessibleViewCurrentProviderId,
+	accessibleViewIsShown,
+	accessibleViewOnLastLine,
+} from "vs/workbench/contrib/accessibility/browser/accessibilityConfiguration";
 import {
 	Direction,
 	ICreateTerminalOptions,
@@ -64,7 +87,22 @@ import {
 	ITerminalService,
 	IXtermTerminal,
 } from "vs/workbench/contrib/terminal/browser/terminal";
+import { InstanceContext } from "vs/workbench/contrib/terminal/browser/terminalContextMenu";
+import {
+	getColorClass,
+	getIconId,
+	getUriClasses,
+} from "vs/workbench/contrib/terminal/browser/terminalIcon";
+import {
+	killTerminalIcon,
+	newTerminalIcon,
+} from "vs/workbench/contrib/terminal/browser/terminalIcons";
+import { ITerminalQuickPickItem } from "vs/workbench/contrib/terminal/browser/terminalProfileQuickpick";
 import { TerminalQuickAccessProvider } from "vs/workbench/contrib/terminal/browser/terminalQuickAccess";
+import {
+	clearShellFileHistory,
+	getCommandHistory,
+} from "vs/workbench/contrib/terminal/common/history";
 import {
 	IRemoteTerminalAttachTarget,
 	ITerminalProfileResolverService,
@@ -73,60 +111,22 @@ import {
 	TerminalCommandId,
 } from "vs/workbench/contrib/terminal/common/terminal";
 import { TerminalContextKeys } from "vs/workbench/contrib/terminal/common/terminalContextKey";
-import { createProfileSchemaEnums } from "vs/platform/terminal/common/terminalProfiles";
 import { terminalStrings } from "vs/workbench/contrib/terminal/common/terminalStrings";
 import { IConfigurationResolverService } from "vs/workbench/services/configurationResolver/common/configurationResolver";
+import { AbstractVariableResolverService } from "vs/workbench/services/configurationResolver/common/variableResolver";
+import { editorGroupToColumn } from "vs/workbench/services/editor/common/editorGroupColumn";
+import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
+import { SIDE_GROUP } from "vs/workbench/services/editor/common/editorService";
 import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
 import { IHistoryService } from "vs/workbench/services/history/common/history";
 import { IPreferencesService } from "vs/workbench/services/preferences/common/preferences";
 import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteAgentService";
-import { SIDE_GROUP } from "vs/workbench/services/editor/common/editorService";
-import { isAbsolute } from "vs/base/common/path";
-import { AbstractVariableResolverService } from "vs/workbench/services/configurationResolver/common/variableResolver";
-import { ITerminalQuickPickItem } from "vs/workbench/contrib/terminal/browser/terminalProfileQuickpick";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import {
-	getIconId,
-	getColorClass,
-	getUriClasses,
-} from "vs/workbench/contrib/terminal/browser/terminalIcon";
-import {
-	clearShellFileHistory,
-	getCommandHistory,
-} from "vs/workbench/contrib/terminal/common/history";
-import { IModelService } from "vs/editor/common/services/model";
-import { ILanguageService } from "vs/editor/common/languages/language";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { dirname } from "vs/base/common/resources";
-import { getIconClasses } from "vs/editor/common/services/getIconClasses";
-import { FileKind } from "vs/platform/files/common/files";
-import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
-import { TerminalCapability } from "vs/platform/terminal/common/capabilities/capabilities";
-import {
-	killTerminalIcon,
-	newTerminalIcon,
-} from "vs/workbench/contrib/terminal/browser/terminalIcons";
-import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
-import { Iterable } from "vs/base/common/iterator";
-import {
-	AccessibleViewProviderId,
-	accessibleViewCurrentProviderId,
-	accessibleViewIsShown,
-	accessibleViewOnLastLine,
-} from "vs/workbench/contrib/accessibility/browser/accessibilityConfiguration";
-import {
-	isKeyboardEvent,
-	isMouseEvent,
-	isPointerEvent,
-} from "vs/base/browser/dom";
-import { editorGroupToColumn } from "vs/workbench/services/editor/common/editorGroupColumn";
-import { InstanceContext } from "vs/workbench/contrib/terminal/browser/terminalContextMenu";
 
 export const switchTerminalActionViewItemSeparator =
 	"\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500";
 export const switchTerminalShowTabsTitle = localize(
 	"showTerminalTabs",
-	"Show Tabs"
+	"Show Tabs",
 );
 
 const category = terminalStrings.actionCategory;
@@ -136,25 +136,25 @@ const category = terminalStrings.actionCategory;
 const sharedWhenClause = (() => {
 	const terminalAvailable = ContextKeyExpr.or(
 		TerminalContextKeys.processSupported,
-		TerminalContextKeys.terminalHasBeenCreated
+		TerminalContextKeys.terminalHasBeenCreated,
 	);
 	return {
 		terminalAvailable,
 		terminalAvailable_and_opened: ContextKeyExpr.and(
 			terminalAvailable,
-			TerminalContextKeys.isOpen
+			TerminalContextKeys.isOpen,
 		),
 		terminalAvailable_and_editorActive: ContextKeyExpr.and(
 			terminalAvailable,
-			TerminalContextKeys.terminalEditorActive
+			TerminalContextKeys.terminalEditorActive,
 		),
 		terminalAvailable_and_singularSelection: ContextKeyExpr.and(
 			terminalAvailable,
-			TerminalContextKeys.tabsSingularSelection
+			TerminalContextKeys.tabsSingularSelection,
 		),
 		focusInAny_and_normalBuffer: ContextKeyExpr.and(
 			TerminalContextKeys.focusInAny,
-			TerminalContextKeys.altBufferActive.negate()
+			TerminalContextKeys.altBufferActive.negate(),
 		),
 	};
 })();
@@ -170,7 +170,7 @@ export async function getCwdForSplit(
 	configHelper: ITerminalConfigHelper,
 	instance: ITerminalInstance,
 	folders?: IWorkspaceFolder[],
-	commandService?: ICommandService
+	commandService?: ICommandService,
 ): Promise<string | URI | undefined> {
 	switch (configHelper.config.splitCwd) {
 		case "workspaceRoot":
@@ -182,12 +182,12 @@ export async function getCwdForSplit(
 					const options: IPickOptions<IQuickPickItem> = {
 						placeHolder: localize(
 							"workbench.action.terminal.newWorkspacePlaceholder",
-							"Select current working directory for new terminal"
+							"Select current working directory for new terminal",
 						),
 					};
 					const workspace = await commandService.executeCommand(
 						PICK_WORKSPACE_FOLDER_COMMAND_ID,
-						[options]
+						[options],
 					);
 					if (!workspace) {
 						// Don't split the instance if the workspace picker was canceled
@@ -206,7 +206,7 @@ export async function getCwdForSplit(
 
 export const terminalSendSequenceCommand = async (
 	accessor: ServicesAccessor,
-	args: unknown
+	args: unknown,
 ) => {
 	const instance = accessor.get(ITerminalService).activeInstance;
 	if (instance) {
@@ -218,22 +218,22 @@ export const terminalSendSequenceCommand = async (
 			return;
 		}
 		const configurationResolverService = accessor.get(
-			IConfigurationResolverService
+			IConfigurationResolverService,
 		);
 		const workspaceContextService = accessor.get(IWorkspaceContextService);
 		const historyService = accessor.get(IHistoryService);
 		const activeWorkspaceRootUri =
 			historyService.getLastActiveWorkspaceRoot(
-				instance.isRemote ? Schemas.vscodeRemote : Schemas.file
+				instance.isRemote ? Schemas.vscodeRemote : Schemas.file,
 			);
 		const lastActiveWorkspaceRoot = activeWorkspaceRootUri
 			? workspaceContextService.getWorkspaceFolder(
-					activeWorkspaceRootUri
-				) ?? undefined
+					activeWorkspaceRootUri,
+			  ) ?? undefined
 			: undefined;
 		const resolvedText = await configurationResolverService.resolveAsync(
 			lastActiveWorkspaceRoot,
-			text
+			text,
 		);
 		instance.sendText(resolvedText, false);
 	}
@@ -251,7 +251,7 @@ export class TerminalLaunchHelpAction extends Action {
 
 	override async run(): Promise<void> {
 		this._openerService.open(
-			"https://aka.ms/vscode-troubleshoot-terminal-launch"
+			"https://aka.ms/vscode-troubleshoot-terminal-launch",
 		);
 	}
 }
@@ -270,9 +270,9 @@ export function registerTerminalAction(
 			c: ITerminalServicesCollection,
 			accessor: ServicesAccessor,
 			args?: unknown,
-			args2?: unknown
+			args2?: unknown,
 		) => void | Promise<unknown>;
-	}
+	},
 ): IDisposable {
 	// Set defaults
 	options.f1 = options.f1 ?? true;
@@ -285,7 +285,7 @@ export function registerTerminalAction(
 		run?: (
 			c: ITerminalServicesCollection,
 			accessor: ServicesAccessor,
-			args?: unknown
+			args?: unknown,
 		) => void | Promise<unknown>;
 	} = options;
 	delete (
@@ -293,7 +293,7 @@ export function registerTerminalAction(
 			run?: (
 				c: ITerminalServicesCollection,
 				accessor: ServicesAccessor,
-				args?: unknown
+				args?: unknown,
 			) => void | Promise<unknown>;
 		}
 	)["run"];
@@ -308,10 +308,10 @@ export function registerTerminalAction(
 					getTerminalServices(accessor),
 					accessor,
 					args,
-					args2
+					args2,
 				);
 			}
-		}
+		},
 	);
 }
 
@@ -341,7 +341,7 @@ export function registerContextualInstanceAction(
 			instance: ITerminalInstance,
 			c: ITerminalServicesCollection,
 			accessor: ServicesAccessor,
-			args?: unknown
+			args?: unknown,
 		) => void | Promise<unknown>;
 		/**
 		 * A callback to run after the the `run` callbacks have completed.
@@ -351,9 +351,9 @@ export function registerContextualInstanceAction(
 			instances: ITerminalInstance[],
 			c: ITerminalServicesCollection,
 			accessor: ServicesAccessor,
-			args?: unknown
+			args?: unknown,
 		) => void | Promise<unknown>;
-	}
+	},
 ): IDisposable {
 	const originalRun = options.run;
 	return registerTerminalAction({
@@ -365,8 +365,8 @@ export function registerContextualInstanceAction(
 					options.activeInstanceType === "view"
 						? c.groupService
 						: options.activeInstanceType === "editor"
-							? c.editorService
-							: c.service
+						  ? c.editorService
+						  : c.service
 				).activeInstance;
 				if (!activeInstance) {
 					return;
@@ -376,7 +376,7 @@ export function registerContextualInstanceAction(
 			const results: (Promise<unknown> | void)[] = [];
 			for (const instance of instances) {
 				results.push(
-					originalRun(instance, c, accessor, focusedInstanceArgs)
+					originalRun(instance, c, accessor, focusedInstanceArgs),
 				);
 			}
 			await Promise.all(results);
@@ -397,9 +397,9 @@ export function registerActiveInstanceAction(
 			activeInstance: ITerminalInstance,
 			c: ITerminalServicesCollection,
 			accessor: ServicesAccessor,
-			args?: unknown
+			args?: unknown,
 		) => void | Promise<unknown>;
-	}
+	},
 ): IDisposable {
 	const originalRun = options.run;
 	return registerTerminalAction({
@@ -425,9 +425,9 @@ export function registerActiveXtermAction(
 			activeTerminal: IXtermTerminal,
 			accessor: ServicesAccessor,
 			instance: ITerminalInstance | IDetachedTerminalInstance,
-			args?: unknown
+			args?: unknown,
 		) => void | Promise<unknown>;
-	}
+	},
 ): IDisposable {
 	const originalRun = options.run;
 	return registerTerminalAction({
@@ -435,14 +435,14 @@ export function registerActiveXtermAction(
 		run: (c, accessor, args) => {
 			const activeDetached = Iterable.find(
 				c.service.detachedInstances,
-				(d) => d.xterm.isFocused
+				(d) => d.xterm.isFocused,
 			);
 			if (activeDetached) {
 				return originalRun(
 					activeDetached.xterm,
 					accessor,
 					activeDetached,
-					args
+					args,
 				);
 			}
 
@@ -452,7 +452,7 @@ export function registerActiveXtermAction(
 					activeInstance.xterm,
 					accessor,
 					activeInstance,
-					args
+					args,
 				);
 			}
 		},
@@ -469,7 +469,7 @@ export interface ITerminalServicesCollection {
 }
 
 function getTerminalServices(
-	accessor: ServicesAccessor
+	accessor: ServicesAccessor,
 ): ITerminalServicesCollection {
 	return {
 		service: accessor.get(ITerminalService),
@@ -487,7 +487,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.newInActiveWorkspace",
-				"Create New Terminal (In Active Workspace)"
+				"Create New Terminal (In Active Workspace)",
 			),
 			original: "Create New Terminal (In Active Workspace)",
 		},
@@ -513,7 +513,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.createTerminalEditor",
-				"Create New Terminal in Editor Area"
+				"Create New Terminal in Editor Area",
 			),
 			original: "Create New Terminal in Editor Area",
 		},
@@ -532,7 +532,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.createTerminalEditor",
-				"Create New Terminal in Editor Area"
+				"Create New Terminal in Editor Area",
 			),
 			original: "Create New Terminal in Editor Area",
 		},
@@ -545,7 +545,7 @@ export function registerTerminalActions() {
 				location: {
 					viewColumn: editorGroupToColumn(
 						editorGroupsService,
-						editorGroupsService.activeGroup
+						editorGroupsService.activeGroup,
 					),
 				},
 			});
@@ -558,7 +558,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.createTerminalEditorSide",
-				"Create New Terminal in Editor Area to the Side"
+				"Create New Terminal in Editor Area to the Side",
 			),
 			original: "Create New Terminal in Editor Area to the Side",
 		},
@@ -597,7 +597,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.focusPreviousPane",
-				"Focus Previous Terminal in Terminal Group"
+				"Focus Previous Terminal in Terminal Group",
 			),
 			original: "Focus Previous Terminal in Terminal Group",
 		},
@@ -623,7 +623,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.focusNextPane",
-				"Focus Next Terminal in Terminal Group"
+				"Focus Next Terminal in Terminal Group",
 			),
 			original: "Focus Next Terminal in Terminal Group",
 		},
@@ -649,7 +649,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.runRecentCommand",
-				"Run Recent Command..."
+				"Run Recent Command...",
 			),
 			original: "Run Recent Command...",
 		},
@@ -664,10 +664,10 @@ export function registerTerminalActions() {
 						ContextKeyExpr.and(
 							accessibleViewIsShown,
 							accessibleViewCurrentProviderId.isEqualTo(
-								AccessibleViewProviderId.Terminal
-							)
-						)
-					)
+								AccessibleViewProviderId.Terminal,
+							),
+						),
+					),
 				),
 				weight: KeybindingWeight.WorkbenchContrib,
 			},
@@ -676,7 +676,7 @@ export function registerTerminalActions() {
 				mac: { primary: KeyMod.WinCtrl | KeyMod.Alt | KeyCode.KeyR },
 				when: ContextKeyExpr.and(
 					TerminalContextKeys.focus,
-					CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate()
+					CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate(),
 				),
 				weight: KeybindingWeight.WorkbenchContrib,
 			},
@@ -696,7 +696,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.copyLastCommand",
-				"Copy Last Command"
+				"Copy Last Command",
 			),
 			original: "Copy Last Command",
 		},
@@ -704,7 +704,7 @@ export function registerTerminalActions() {
 		run: async (instance, c, accessor) => {
 			const clipboardService = accessor.get(IClipboardService);
 			const commands = instance.capabilities.get(
-				TerminalCapability.CommandDetection
+				TerminalCapability.CommandDetection,
 			)?.commands;
 			if (!commands || commands.length === 0) {
 				return;
@@ -722,7 +722,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.copyLastCommandOutput",
-				"Copy Last Command Output"
+				"Copy Last Command Output",
 			),
 			original: "Copy Last Command Output",
 		},
@@ -730,7 +730,7 @@ export function registerTerminalActions() {
 		run: async (instance, c, accessor) => {
 			const clipboardService = accessor.get(IClipboardService);
 			const commands = instance.capabilities.get(
-				TerminalCapability.CommandDetection
+				TerminalCapability.CommandDetection,
 			)?.commands;
 			if (!commands || commands.length === 0) {
 				return;
@@ -751,7 +751,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.copyLastCommandAndOutput",
-				"Copy Last Command and Output"
+				"Copy Last Command and Output",
 			),
 			original: "Copy Last Command and Output",
 		},
@@ -759,7 +759,7 @@ export function registerTerminalActions() {
 		run: async (instance, c, accessor) => {
 			const clipboardService = accessor.get(IClipboardService);
 			const commands = instance.capabilities.get(
-				TerminalCapability.CommandDetection
+				TerminalCapability.CommandDetection,
 			)?.commands;
 			if (!commands || commands.length === 0) {
 				return;
@@ -773,7 +773,7 @@ export function registerTerminalActions() {
 				await clipboardService.writeText(
 					`${
 						command.command !== "" ? command.command + "\n" : ""
-					}${output}`
+					}${output}`,
 				);
 			}
 		},
@@ -784,7 +784,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.goToRecentDirectory",
-				"Go to Recent Directory..."
+				"Go to Recent Directory...",
 			),
 			original: "Go to Recent Directory...",
 		},
@@ -809,7 +809,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.resizePaneLeft",
-				"Resize Terminal Left"
+				"Resize Terminal Left",
 			),
 			original: "Resize Terminal Left",
 		},
@@ -832,7 +832,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.resizePaneRight",
-				"Resize Terminal Right"
+				"Resize Terminal Right",
 			),
 			original: "Resize Terminal Right",
 		},
@@ -855,7 +855,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.resizePaneUp",
-				"Resize Terminal Up"
+				"Resize Terminal Up",
 			),
 			original: "Resize Terminal Up",
 		},
@@ -873,7 +873,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.resizePaneDown",
-				"Resize Terminal Down"
+				"Resize Terminal Down",
 			),
 			original: "Resize Terminal Down",
 		},
@@ -896,8 +896,8 @@ export function registerTerminalActions() {
 				CONTEXT_ACCESSIBILITY_MODE_ENABLED,
 				accessibleViewOnLastLine,
 				accessibleViewCurrentProviderId.isEqualTo(
-					AccessibleViewProviderId.Terminal
-				)
+					AccessibleViewProviderId.Terminal,
+				),
 			),
 			primary: KeyMod.CtrlCmd | KeyCode.DownArrow,
 			weight: KeybindingWeight.WorkbenchContrib,
@@ -922,7 +922,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.focus.tabsView",
-				"Focus Terminal Tabs View"
+				"Focus Terminal Tabs View",
 			),
 			original: "Focus Terminal Tabs View",
 		},
@@ -931,7 +931,7 @@ export function registerTerminalActions() {
 			weight: KeybindingWeight.WorkbenchContrib,
 			when: ContextKeyExpr.or(
 				TerminalContextKeys.tabsFocus,
-				TerminalContextKeys.focus
+				TerminalContextKeys.focus,
 			),
 		},
 		precondition: sharedWhenClause.terminalAvailable,
@@ -943,7 +943,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.focusNext",
-				"Focus Next Terminal Group"
+				"Focus Next Terminal Group",
 			),
 			original: "Focus Next Terminal Group",
 		},
@@ -955,7 +955,7 @@ export function registerTerminalActions() {
 			},
 			when: ContextKeyExpr.and(
 				TerminalContextKeys.focus,
-				TerminalContextKeys.editorFocus.negate()
+				TerminalContextKeys.editorFocus.negate(),
 			),
 			weight: KeybindingWeight.WorkbenchContrib,
 		},
@@ -970,7 +970,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.focusPrevious",
-				"Focus Previous Terminal Group"
+				"Focus Previous Terminal Group",
 			),
 			original: "Focus Previous Terminal Group",
 		},
@@ -982,7 +982,7 @@ export function registerTerminalActions() {
 			},
 			when: ContextKeyExpr.and(
 				TerminalContextKeys.focus,
-				TerminalContextKeys.editorFocus.negate()
+				TerminalContextKeys.editorFocus.negate(),
 			),
 			weight: KeybindingWeight.WorkbenchContrib,
 		},
@@ -997,7 +997,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.runSelectedText",
-				"Run Selected Text In Active Terminal"
+				"Run Selected Text In Active Terminal",
 			),
 			original: "Run Selected Text In Active Terminal",
 		},
@@ -1035,7 +1035,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.runActiveFile",
-				"Run Active File In Active Terminal"
+				"Run Active File In Active Terminal",
 			),
 			original: "Run Active File In Active Terminal",
 		},
@@ -1044,7 +1044,7 @@ export function registerTerminalActions() {
 			const codeEditorService = accessor.get(ICodeEditorService);
 			const notificationService = accessor.get(INotificationService);
 			const workbenchEnvironmentService = accessor.get(
-				IWorkbenchEnvironmentService
+				IWorkbenchEnvironmentService,
 			);
 
 			const editor = codeEditorService.getActiveCodeEditor();
@@ -1058,8 +1058,8 @@ export function registerTerminalActions() {
 			const isRemote = instance
 				? instance.isRemote
 				: workbenchEnvironmentService.remoteAuthority
-					? true
-					: false;
+				  ? true
+				  : false;
 			const uri = editor.getModel().uri;
 			if (
 				(!isRemote &&
@@ -1070,8 +1070,8 @@ export function registerTerminalActions() {
 				notificationService.warn(
 					localize(
 						"workbench.action.terminal.runActiveFile.noFile",
-						"Only files on disk can be run in the terminal"
-					)
+						"Only files on disk can be run in the terminal",
+					),
 				);
 				return;
 			}
@@ -1087,7 +1087,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.scrollDown",
-				"Scroll Down (Line)"
+				"Scroll Down (Line)",
 			),
 			original: "Scroll Down (Line)",
 		},
@@ -1108,7 +1108,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.scrollDownPage",
-				"Scroll Down (Page)"
+				"Scroll Down (Page)",
 			),
 			original: "Scroll Down (Page)",
 		},
@@ -1127,7 +1127,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.scrollToBottom",
-				"Scroll to Bottom"
+				"Scroll to Bottom",
 			),
 			original: "Scroll to Bottom",
 		},
@@ -1146,7 +1146,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.scrollUp",
-				"Scroll Up (Line)"
+				"Scroll Up (Line)",
 			),
 			original: "Scroll Up (Line)",
 		},
@@ -1165,7 +1165,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.scrollUpPage",
-				"Scroll Up (Page)"
+				"Scroll Up (Page)",
 			),
 			original: "Scroll Up (Page)",
 		},
@@ -1186,7 +1186,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.scrollToTop",
-				"Scroll to Top"
+				"Scroll to Top",
 			),
 			original: "Scroll to Top",
 		},
@@ -1205,7 +1205,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.clearSelection",
-				"Clear Selection"
+				"Clear Selection",
 			),
 			original: "Clear Selection",
 		},
@@ -1214,7 +1214,7 @@ export function registerTerminalActions() {
 			when: ContextKeyExpr.and(
 				TerminalContextKeys.focusInAny,
 				TerminalContextKeys.textSelected,
-				TerminalContextKeys.notFindVisible
+				TerminalContextKeys.notFindVisible,
 			),
 			weight: KeybindingWeight.WorkbenchContrib,
 		},
@@ -1312,7 +1312,7 @@ export function registerTerminalActions() {
 							promises.push(
 								(async () => {
 									await instance.rename(value);
-								})()
+								})(),
 							);
 						}
 						try {
@@ -1331,7 +1331,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.detachSession",
-				"Detach Session"
+				"Detach Session",
 			),
 			original: "Detach Session",
 		},
@@ -1344,7 +1344,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.attachToSession",
-				"Attach to Session"
+				"Attach to Session",
 			),
 			original: "Attach to Session",
 		},
@@ -1363,7 +1363,7 @@ export function registerTerminalActions() {
 
 			if (!backend) {
 				throw new Error(
-					`No backend registered for remote authority '${remoteAuthority}'`
+					`No backend registered for remote authority '${remoteAuthority}'`,
 				);
 			}
 
@@ -1372,7 +1372,7 @@ export function registerTerminalActions() {
 			backend.reduceConnectionGraceTime();
 
 			const unattachedTerms = terms.filter(
-				(term) => !c.service.isAttachedToTerminal(term)
+				(term) => !c.service.isAttachedToTerminal(term),
 			);
 			const items = unattachedTerms.map((term) => {
 				const cwdLabel = labelService.getUriLabel(URI.file(term.cwd));
@@ -1389,14 +1389,14 @@ export function registerTerminalActions() {
 				notificationService.info(
 					localize(
 						"noUnattachedTerminals",
-						"There are no unattached terminals to attach to"
-					)
+						"There are no unattached terminals to attach to",
+					),
 				);
 				return;
 			}
 			const selected = await quickInputService.pick<IRemoteTerminalPick>(
 				items,
-				{ canPickMany: false }
+				{ canPickMany: false },
 			);
 			if (selected) {
 				const instance = await c.service.createTerminal({
@@ -1428,7 +1428,7 @@ export function registerTerminalActions() {
 			primary: KeyMod.CtrlCmd | KeyCode.UpArrow,
 			when: ContextKeyExpr.and(
 				TerminalContextKeys.focus,
-				CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate()
+				CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate(),
 			),
 			weight: KeybindingWeight.WorkbenchContrib,
 		},
@@ -1448,8 +1448,8 @@ export function registerTerminalActions() {
 				undefined,
 				undefined,
 				activeInstance.capabilities.has(
-					TerminalCapability.CommandDetection
-				)
+					TerminalCapability.CommandDetection,
+				),
 			),
 	});
 
@@ -1460,7 +1460,7 @@ export function registerTerminalActions() {
 			primary: KeyMod.CtrlCmd | KeyCode.DownArrow,
 			when: ContextKeyExpr.and(
 				TerminalContextKeys.focus,
-				CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate()
+				CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate(),
 			),
 			weight: KeybindingWeight.WorkbenchContrib,
 		},
@@ -1486,7 +1486,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.selectToPreviousCommand",
-				"Select To Previous Command"
+				"Select To Previous Command",
 			),
 			original: "Select To Previous Command",
 		},
@@ -1507,7 +1507,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.selectToNextCommand",
-				"Select To Next Command"
+				"Select To Next Command",
 			),
 			original: "Select To Next Command",
 		},
@@ -1528,7 +1528,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.selectToPreviousLine",
-				"Select To Previous Line"
+				"Select To Previous Line",
 			),
 			original: "Select To Previous Line",
 		},
@@ -1545,7 +1545,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.selectToNextLine",
-				"Select To Next Line"
+				"Select To Next Line",
 			),
 			original: "Select To Next Line",
 		},
@@ -1573,7 +1573,7 @@ export function registerTerminalActions() {
 							text: {
 								description: localize(
 									"sendSequence",
-									"The sequence of text to send to the terminal"
+									"The sequence of text to send to the terminal",
 								),
 								type: "string",
 							},
@@ -1600,7 +1600,7 @@ export function registerTerminalActions() {
 							cwd: {
 								description: localize(
 									"workbench.action.terminal.newWithCwd.cwd",
-									"The directory to start the terminal at"
+									"The directory to start the terminal at",
 								),
 								type: "string",
 							},
@@ -1638,7 +1638,7 @@ export function registerTerminalActions() {
 							name: {
 								description: localize(
 									"workbench.action.terminal.renameWithArg.name",
-									"The new name for the terminal"
+									"The new name for the terminal",
 								),
 								type: "string",
 								minLength: 1,
@@ -1659,8 +1659,8 @@ export function registerTerminalActions() {
 				notificationService.warn(
 					localize(
 						"workbench.action.terminal.renameWithArg.noName",
-						"No name argument provided"
-					)
+						"No name argument provided",
+					),
 				);
 				return;
 			}
@@ -1673,7 +1673,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.relaunch",
-				"Relaunch Active Terminal"
+				"Relaunch Active Terminal",
 			),
 			original: "Relaunch Active Terminal",
 		},
@@ -1685,7 +1685,7 @@ export function registerTerminalActions() {
 		title: terminalStrings.split,
 		precondition: ContextKeyExpr.or(
 			TerminalContextKeys.processSupported,
-			TerminalContextKeys.webExtensionContributedProfile
+			TerminalContextKeys.webExtensionContributedProfile,
 		),
 		keybinding: {
 			primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.Digit5,
@@ -1703,7 +1703,7 @@ export function registerTerminalActions() {
 				: undefined;
 			const commandService = accessor.get(ICommandService);
 			const workspaceContextService = accessor.get(
-				IWorkspaceContextService
+				IWorkspaceContextService,
 			);
 			const options = convertOptionsOrProfileToOptions(optionsOrProfile);
 			const activeInstance = (
@@ -1716,7 +1716,7 @@ export function registerTerminalActions() {
 				c.service.configHelper,
 				activeInstance,
 				workspaceContextService.getWorkspace().folders,
-				commandService
+				commandService,
 			);
 			if (cwd === undefined) {
 				return;
@@ -1754,7 +1754,7 @@ export function registerTerminalActions() {
 								location: { parentTerminal: t },
 							});
 							await c.groupService.showPanel(true);
-						})()
+						})(),
 					);
 				}
 				await Promise.all(promises);
@@ -1779,13 +1779,13 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.joinInstance",
-				"Join Terminals"
+				"Join Terminals",
 			),
 			original: "Join Terminals",
 		},
 		precondition: ContextKeyExpr.and(
 			sharedWhenClause.terminalAvailable,
-			TerminalContextKeys.tabsSingularSelection.toNegated()
+			TerminalContextKeys.tabsSingularSelection.toNegated(),
 		),
 		run: async (c, accessor) => {
 			const instances = getSelectedInstances(accessor);
@@ -1812,14 +1812,14 @@ export function registerTerminalActions() {
 				notificationService.warn(
 					localize(
 						"workbench.action.terminal.join.insufficientTerminals",
-						"Insufficient terminals for the join action"
-					)
+						"Insufficient terminals for the join action",
+					),
 				);
 				return;
 			}
 			const otherInstances = c.groupService.instances.filter(
 				(i) =>
-					i.instanceId !== c.groupService.activeInstance?.instanceId
+					i.instanceId !== c.groupService.activeInstance?.instanceId,
 			);
 			for (const terminal of otherInstances) {
 				const group = c.groupService.getGroupForInstance(terminal);
@@ -1833,7 +1833,7 @@ export function registerTerminalActions() {
 					}
 					const uriClasses = getUriClasses(
 						terminal,
-						themeService.getColorTheme().type
+						themeService.getColorTheme().type,
 					);
 					if (uriClasses) {
 						iconClasses.push(...uriClasses);
@@ -1849,8 +1849,8 @@ export function registerTerminalActions() {
 				notificationService.warn(
 					localize(
 						"workbench.action.terminal.join.onlySplits",
-						"All terminals are joined already"
-					)
+						"All terminals are joined already",
+					),
 				);
 				return;
 			}
@@ -1869,7 +1869,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.splitInActiveWorkspace",
-				"Split Terminal (In Active Workspace)"
+				"Split Terminal (In Active Workspace)",
 			),
 			original: "Split Terminal (In Active Workspace)",
 		},
@@ -1888,7 +1888,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.selectAll",
-				"Select All"
+				"Select All",
 			),
 			original: "Select All",
 		},
@@ -1914,13 +1914,13 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.new",
-				"Create New Terminal"
+				"Create New Terminal",
 			),
 			original: "Create New Terminal",
 		},
 		precondition: ContextKeyExpr.or(
 			TerminalContextKeys.processSupported,
-			TerminalContextKeys.webExtensionContributedProfile
+			TerminalContextKeys.webExtensionContributedProfile,
 		),
 		icon: newTerminalIcon,
 		keybinding: {
@@ -1933,7 +1933,7 @@ export function registerTerminalActions() {
 				? (args as MouseEvent | ICreateTerminalOptions)
 				: undefined;
 			const workspaceContextService = accessor.get(
-				IWorkspaceContextService
+				IWorkspaceContextService,
 			);
 			const commandService = accessor.get(ICommandService);
 			const folders = workspaceContextService.getWorkspace().folders;
@@ -1970,21 +1970,17 @@ export function registerTerminalActions() {
 				}
 				c.service.setActiveInstance(instance);
 				await focusActiveTerminal(instance, c);
+			} else if (c.profileService.contributedProfiles.length > 0) {
+				commandService.executeCommand(TerminalCommandId.NewWithProfile);
 			} else {
-				if (c.profileService.contributedProfiles.length > 0) {
-					commandService.executeCommand(
-						TerminalCommandId.NewWithProfile
-					);
-				} else {
-					commandService.executeCommand(TerminalCommandId.Toggle);
-				}
+				commandService.executeCommand(TerminalCommandId.Toggle);
 			}
 		},
 	});
 
 	async function killInstance(
 		c: ITerminalServicesCollection,
-		instance: ITerminalInstance | undefined
+		instance: ITerminalInstance | undefined,
 	): Promise<void> {
 		if (!instance) {
 			return;
@@ -1999,13 +1995,13 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.kill",
-				"Kill the Active Terminal Instance"
+				"Kill the Active Terminal Instance",
 			),
 			original: "Kill the Active Terminal Instance",
 		},
 		precondition: ContextKeyExpr.or(
 			sharedWhenClause.terminalAvailable,
-			TerminalContextKeys.isOpen
+			TerminalContextKeys.isOpen,
 		),
 		icon: killTerminalIcon,
 		run: async (c) => killInstance(c, c.groupService.activeInstance),
@@ -2016,7 +2012,7 @@ export function registerTerminalActions() {
 		f1: false, // This is an internal command used for context menus
 		precondition: ContextKeyExpr.or(
 			sharedWhenClause.terminalAvailable,
-			TerminalContextKeys.isOpen
+			TerminalContextKeys.isOpen,
 		),
 		run: async (c) => killInstance(c, c.service.activeInstance),
 	});
@@ -2026,13 +2022,13 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.killAll",
-				"Kill All Terminals"
+				"Kill All Terminals",
 			),
 			original: "Kill All Terminals",
 		},
 		precondition: ContextKeyExpr.or(
 			sharedWhenClause.terminalAvailable,
-			TerminalContextKeys.isOpen
+			TerminalContextKeys.isOpen,
 		),
 		icon: Codicon.trash,
 		run: async (c) => {
@@ -2049,7 +2045,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.killEditor",
-				"Kill the Active Terminal in Editor Area"
+				"Kill the Active Terminal in Editor Area",
 			),
 			original: "Kill the Active Terminal in Editor Area",
 		},
@@ -2063,7 +2059,7 @@ export function registerTerminalActions() {
 			weight: KeybindingWeight.WorkbenchContrib,
 			when: ContextKeyExpr.and(
 				TerminalContextKeys.focus,
-				TerminalContextKeys.editorFocus
+				TerminalContextKeys.editorFocus,
 			),
 		},
 		run: (c, accessor) =>
@@ -2078,7 +2074,7 @@ export function registerTerminalActions() {
 		f1: false,
 		precondition: ContextKeyExpr.or(
 			sharedWhenClause.terminalAvailable,
-			TerminalContextKeys.isOpen
+			TerminalContextKeys.isOpen,
 		),
 		keybinding: {
 			primary: KeyCode.Delete,
@@ -2104,17 +2100,17 @@ export function registerTerminalActions() {
 		title: terminalStrings.focusHover,
 		precondition: ContextKeyExpr.or(
 			sharedWhenClause.terminalAvailable,
-			TerminalContextKeys.isOpen
+			TerminalContextKeys.isOpen,
 		),
 		keybinding: {
 			primary: KeyChord(
 				KeyMod.CtrlCmd | KeyCode.KeyK,
-				KeyMod.CtrlCmd | KeyCode.KeyI
+				KeyMod.CtrlCmd | KeyCode.KeyI,
 			),
 			weight: KeybindingWeight.WorkbenchContrib,
 			when: ContextKeyExpr.or(
 				TerminalContextKeys.tabsFocus,
-				TerminalContextKeys.focus
+				TerminalContextKeys.focus,
 			),
 		},
 		run: (c) => c.groupService.focusHover(),
@@ -2139,15 +2135,15 @@ export function registerTerminalActions() {
 				when: ContextKeyExpr.or(
 					ContextKeyExpr.and(
 						TerminalContextKeys.focus,
-						CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate()
+						CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate(),
 					),
 					ContextKeyExpr.and(
 						CONTEXT_ACCESSIBILITY_MODE_ENABLED,
 						accessibleViewIsShown,
 						accessibleViewCurrentProviderId.isEqualTo(
-							AccessibleViewProviderId.Terminal
-						)
-					)
+							AccessibleViewProviderId.Terminal,
+						),
+					),
 				),
 			},
 		],
@@ -2159,7 +2155,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.selectDefaultShell",
-				"Select Default Profile"
+				"Select Default Profile",
 			),
 			original: "Select Default Profile",
 		},
@@ -2171,18 +2167,16 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.openSettings",
-				"Configure Terminal Settings"
+				"Configure Terminal Settings",
 			),
 			original: "Configure Terminal Settings",
 		},
 		precondition: sharedWhenClause.terminalAvailable,
 		run: (c, accessor) =>
-			accessor
-				.get(IPreferencesService)
-				.openSettings({
-					jsonEditor: false,
-					query: "@feature:terminal",
-				}),
+			accessor.get(IPreferencesService).openSettings({
+				jsonEditor: false,
+				query: "@feature:terminal",
+			}),
 	});
 
 	registerActiveInstanceAction({
@@ -2190,7 +2184,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.setFixedDimensions",
-				"Set Fixed Dimensions"
+				"Set Fixed Dimensions",
 			),
 			original: "Set Fixed Dimensions",
 		},
@@ -2215,7 +2209,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.clearPreviousSessionHistory",
-				"Clear Previous Session History"
+				"Clear Previous Session History",
 			),
 			original: "Clear Previous Session History",
 		},
@@ -2231,29 +2225,29 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.toggleStickyScroll",
-				"Toggle Sticky Scroll"
+				"Toggle Sticky Scroll",
 			),
 			original: "Toggle Sticky Scroll",
 		},
 		toggled: {
 			condition: ContextKeyExpr.equals(
 				"config.terminal.integrated.stickyScroll.enabled",
-				true
+				true,
 			),
 			title: localize("stickyScroll", "Sticky Scroll"),
 			mnemonicTitle: localize(
 				{ key: "miStickyScroll", comment: ["&& denotes a mnemonic"] },
-				"&&Sticky Scroll"
+				"&&Sticky Scroll",
 			),
 		},
 		run: (c, accessor) => {
 			const configurationService = accessor.get(IConfigurationService);
 			const newValue = !configurationService.getValue(
-				TerminalSettingId.StickyScrollEnabled
+				TerminalSettingId.StickyScrollEnabled,
 			);
 			return configurationService.updateValue(
 				TerminalSettingId.StickyScrollEnabled,
-				newValue
+				newValue,
 			);
 		},
 		menu: [{ id: MenuId.TerminalStickyScrollContext }],
@@ -2266,7 +2260,7 @@ export function registerTerminalActions() {
 			title: {
 				value: localize(
 					"workbench.action.terminal.copySelection",
-					"Copy Selection"
+					"Copy Selection",
 				),
 				original: "Copy Selection",
 			},
@@ -2275,8 +2269,8 @@ export function registerTerminalActions() {
 				TerminalContextKeys.textSelectedInFocused,
 				ContextKeyExpr.and(
 					sharedWhenClause.terminalAvailable,
-					TerminalContextKeys.textSelected
-				)
+					TerminalContextKeys.textSelected,
+				),
 			),
 			keybinding: [
 				{
@@ -2286,9 +2280,9 @@ export function registerTerminalActions() {
 					when: ContextKeyExpr.or(
 						ContextKeyExpr.and(
 							TerminalContextKeys.textSelected,
-							TerminalContextKeys.focus
+							TerminalContextKeys.focus,
 						),
-						TerminalContextKeys.textSelectedInFocused
+						TerminalContextKeys.textSelectedInFocused,
 					),
 				},
 			],
@@ -2300,7 +2294,7 @@ export function registerTerminalActions() {
 			title: {
 				value: localize(
 					"workbench.action.terminal.copyAndClearSelection",
-					"Copy and Clear Selection"
+					"Copy and Clear Selection",
 				),
 				original: "Copy and Clear Selection",
 			},
@@ -2308,8 +2302,8 @@ export function registerTerminalActions() {
 				TerminalContextKeys.textSelectedInFocused,
 				ContextKeyExpr.and(
 					sharedWhenClause.terminalAvailable,
-					TerminalContextKeys.textSelected
-				)
+					TerminalContextKeys.textSelected,
+				),
 			),
 			keybinding: [
 				{
@@ -2318,9 +2312,9 @@ export function registerTerminalActions() {
 					when: ContextKeyExpr.or(
 						ContextKeyExpr.and(
 							TerminalContextKeys.textSelected,
-							TerminalContextKeys.focus
+							TerminalContextKeys.focus,
 						),
-						TerminalContextKeys.textSelectedInFocused
+						TerminalContextKeys.textSelectedInFocused,
 					),
 				},
 			],
@@ -2335,7 +2329,7 @@ export function registerTerminalActions() {
 			title: {
 				value: localize(
 					"workbench.action.terminal.copySelectionAsHtml",
-					"Copy Selection as HTML"
+					"Copy Selection as HTML",
 				),
 				original: "Copy Selection as HTML",
 			},
@@ -2345,8 +2339,8 @@ export function registerTerminalActions() {
 				TerminalContextKeys.textSelectedInFocused,
 				ContextKeyExpr.and(
 					sharedWhenClause.terminalAvailable,
-					TerminalContextKeys.textSelected
-				)
+					TerminalContextKeys.textSelected,
+				),
 			),
 			run: (xterm) => xterm.copySelection(true),
 		});
@@ -2358,7 +2352,7 @@ export function registerTerminalActions() {
 			title: {
 				value: localize(
 					"workbench.action.terminal.paste",
-					"Paste into Active Terminal"
+					"Paste into Active Terminal",
 				),
 				original: "Paste into Active Terminal",
 			},
@@ -2389,7 +2383,7 @@ export function registerTerminalActions() {
 			title: {
 				value: localize(
 					"workbench.action.terminal.pasteSelection",
-					"Paste Selection into Active Terminal"
+					"Paste Selection into Active Terminal",
 				),
 				original: "Paste Selection into Active Terminal",
 			},
@@ -2410,7 +2404,7 @@ export function registerTerminalActions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.switchTerminal",
-				"Switch Terminal"
+				"Switch Terminal",
 			),
 			original: "Switch Terminal",
 		},
@@ -2435,7 +2429,7 @@ export function registerTerminalActions() {
 			const indexMatches = terminalIndexRe.exec(item);
 			if (indexMatches) {
 				c.groupService.setActiveGroupByIndex(
-					Number(indexMatches[1]) - 1
+					Number(indexMatches[1]) - 1,
 				);
 				return c.groupService.showPanel(true);
 			}
@@ -2446,7 +2440,7 @@ export function registerTerminalActions() {
 			const profileSelection = item.substring(4);
 			if (quickSelectProfiles) {
 				const profile = quickSelectProfiles.find(
-					(profile) => profile.profileName === profileSelection
+					(profile) => profile.profileName === profileSelection,
 				);
 				if (profile) {
 					const instance = await c.service.createTerminal({
@@ -2469,7 +2463,7 @@ interface IRemoteTerminalPick extends IQuickPickItem {
 
 function getSelectedInstances2(
 	accessor: ServicesAccessor,
-	args?: unknown
+	args?: unknown,
 ): ITerminalInstance[] | undefined {
 	const terminalService = accessor.get(ITerminalService);
 	const result: ITerminalInstance[] = [];
@@ -2477,7 +2471,7 @@ function getSelectedInstances2(
 	if (context && context.length > 0) {
 		for (const instanceContext of context) {
 			const instance = terminalService.getInstanceFromId(
-				instanceContext.instanceId
+				instanceContext.instanceId,
 			);
 			if (instance) {
 				result.push(instance);
@@ -2493,7 +2487,7 @@ function getSelectedInstances2(
 function getSelectedInstances(
 	accessor: ServicesAccessor,
 	args?: unknown,
-	args2?: unknown
+	args2?: unknown,
 ): ITerminalInstance[] | undefined {
 	const listService = accessor.get(IListService);
 	const terminalService = accessor.get(ITerminalService);
@@ -2522,8 +2516,8 @@ function getSelectedInstances(
 		// if the focused one is not in the selected list, return that item
 		result.push(
 			terminalService.getInstanceFromIndex(
-				focused[0]
-			) as ITerminalInstance
+				focused[0],
+			) as ITerminalInstance,
 		);
 		return result;
 	}
@@ -2531,20 +2525,22 @@ function getSelectedInstances(
 	// multi-select
 	for (const selection of selections) {
 		result.push(
-			terminalService.getInstanceFromIndex(selection) as ITerminalInstance
+			terminalService.getInstanceFromIndex(
+				selection,
+			) as ITerminalInstance,
 		);
 	}
 	return result;
 }
 
 export function validateTerminalName(
-	name: string
+	name: string,
 ): { content: string; severity: Severity } | null {
 	if (!name || name.trim().length === 0) {
 		return {
 			content: localize(
 				"emptyTerminalNameInfo",
-				"Providing no name will reset it to the default value"
+				"Providing no name will reset it to the default value",
 			),
 			severity: Severity.Info,
 		};
@@ -2554,7 +2550,7 @@ export function validateTerminalName(
 }
 
 function convertOptionsOrProfileToOptions(
-	optionsOrProfile?: ICreateTerminalOptions | ITerminalProfile
+	optionsOrProfile?: ICreateTerminalOptions | ITerminalProfile,
 ): ICreateTerminalOptions | undefined {
 	if (isObject(optionsOrProfile) && "profileName" in optionsOrProfile) {
 		return {
@@ -2579,7 +2575,7 @@ export function refreshTerminalActions(detectedProfiles: ITerminalProfile[]) {
 					title: {
 						value: localize(
 							"workbench.action.terminal.newWithProfile",
-							"Create New Terminal (With Profile)"
+							"Create New Terminal (With Profile)",
 						),
 						original: "Create New Terminal (With Profile)",
 					},
@@ -2587,7 +2583,7 @@ export function refreshTerminalActions(detectedProfiles: ITerminalProfile[]) {
 					category,
 					precondition: ContextKeyExpr.or(
 						TerminalContextKeys.processSupported,
-						TerminalContextKeys.webExtensionContributedProfile
+						TerminalContextKeys.webExtensionContributedProfile,
 					),
 					metadata: {
 						description: TerminalCommandId.NewWithProfile,
@@ -2601,7 +2597,7 @@ export function refreshTerminalActions(detectedProfiles: ITerminalProfile[]) {
 										profileName: {
 											description: localize(
 												"workbench.action.terminal.newWithProfile.profileName",
-												"The name of the profile to create"
+												"The name of the profile to create",
 											),
 											type: "string",
 											enum: profileEnum.values,
@@ -2623,11 +2619,11 @@ export function refreshTerminalActions(detectedProfiles: ITerminalProfile[]) {
 					| ITerminalProfile
 					| { profileName: string }
 					| undefined,
-				profile?: ITerminalProfile
+				profile?: ITerminalProfile,
 			) {
 				const c = getTerminalServices(accessor);
 				const workspaceContextService = accessor.get(
-					IWorkspaceContextService
+					IWorkspaceContextService,
 				);
 				const commandService = accessor.get(ICommandService);
 
@@ -2648,11 +2644,11 @@ export function refreshTerminalActions(detectedProfiles: ITerminalProfile[]) {
 					const config = c.profileService.availableProfiles.find(
 						(profile) =>
 							profile.profileName ===
-							eventOrOptionsOrProfile.profileName
+							eventOrOptionsOrProfile.profileName,
 					);
 					if (!config) {
 						throw new Error(
-							`Could not find terminal profile "${eventOrOptionsOrProfile.profileName}"`
+							`Could not find terminal profile "${eventOrOptionsOrProfile.profileName}"`,
 						);
 					}
 					options = { config };
@@ -2665,7 +2661,7 @@ export function refreshTerminalActions(detectedProfiles: ITerminalProfile[]) {
 					options = profile ? { config: profile } : undefined;
 				} else {
 					options = convertOptionsOrProfileToOptions(
-						eventOrOptionsOrProfile
+						eventOrOptionsOrProfile,
 					);
 				}
 
@@ -2687,12 +2683,12 @@ export function refreshTerminalActions(detectedProfiles: ITerminalProfile[]) {
 					const options: IPickOptions<IQuickPickItem> = {
 						placeHolder: localize(
 							"workbench.action.terminal.newWorkspacePlaceholder",
-							"Select current working directory for new terminal"
+							"Select current working directory for new terminal",
 						),
 					};
 					const workspace = await commandService.executeCommand(
 						PICK_WORKSPACE_FOLDER_COMMAND_ID,
-						[options]
+						[options],
 					);
 					if (!workspace) {
 						// Don't create the instance if the workspace picker was canceled
@@ -2707,7 +2703,7 @@ export function refreshTerminalActions(detectedProfiles: ITerminalProfile[]) {
 				} else {
 					instance = await c.service.showProfileQuickPick(
 						"createInstance",
-						cwd
+						cwd,
 					);
 				}
 
@@ -2716,13 +2712,13 @@ export function refreshTerminalActions(detectedProfiles: ITerminalProfile[]) {
 					await focusActiveTerminal(instance, c);
 				}
 			}
-		}
+		},
 	);
 }
 
 function getResourceOrActiveInstance(
 	c: ITerminalServicesCollection,
-	resource: unknown
+	resource: unknown,
 ): ITerminalInstance | undefined {
 	return (
 		c.service.getInstanceFromResource(toOptionalUri(resource)) ||
@@ -2732,7 +2728,7 @@ function getResourceOrActiveInstance(
 
 async function pickTerminalCwd(
 	accessor: ServicesAccessor,
-	cancel?: CancellationToken
+	cancel?: CancellationToken,
 ): Promise<WorkspaceFolderCwdPair | undefined> {
 	const quickInputService = accessor.get(IQuickInputService);
 	const labelService = accessor.get(ILabelService);
@@ -2741,7 +2737,7 @@ async function pickTerminalCwd(
 	const languageService = accessor.get(ILanguageService);
 	const configurationService = accessor.get(IConfigurationService);
 	const configurationResolverService = accessor.get(
-		IConfigurationResolverService
+		IConfigurationResolverService,
 	);
 
 	const folders = contextService.getWorkspace().folders;
@@ -2754,9 +2750,9 @@ async function pickTerminalCwd(
 			resolveWorkspaceFolderCwd(
 				x,
 				configurationService,
-				configurationResolverService
-			)
-		)
+				configurationResolverService,
+			),
+		),
 	);
 	const shrinkedPairs = shrinkWorkspaceFolderCwdPairs(folderCwdPairs);
 
@@ -2773,8 +2769,8 @@ async function pickTerminalCwd(
 					"(Overriden) {0}",
 					labelService.getUriLabel(pair.cwd, {
 						relative: !pair.isAbsolute,
-					})
-				)
+					}),
+			  )
 			: labelService.getUriLabel(dirname(pair.cwd), { relative: true });
 
 		return {
@@ -2785,14 +2781,14 @@ async function pickTerminalCwd(
 				modelService,
 				languageService,
 				pair.cwd,
-				FileKind.ROOT_FOLDER
+				FileKind.ROOT_FOLDER,
 			),
 		};
 	});
 	const options: IPickOptions<Item> = {
 		placeHolder: localize(
 			"workbench.action.terminal.newWorkspacePlaceholder",
-			"Select current working directory for new terminal"
+			"Select current working directory for new terminal",
 		),
 		matchOnDescription: true,
 		canPickMany: false,
@@ -2802,7 +2798,7 @@ async function pickTerminalCwd(
 	const pick = await quickInputService.pick<Item>(
 		folderPicks,
 		options,
-		token
+		token,
 	);
 	return pick?.pair;
 }
@@ -2810,7 +2806,7 @@ async function pickTerminalCwd(
 async function resolveWorkspaceFolderCwd(
 	folder: IWorkspaceFolder,
 	configurationService: IConfigurationService,
-	configurationResolverService: IConfigurationResolverService
+	configurationResolverService: IConfigurationResolverService,
 ): Promise<WorkspaceFolderCwdPair> {
 	const cwdConfig = configurationService.getValue(TerminalSettingId.Cwd, {
 		resource: folder.uri,
@@ -2826,11 +2822,11 @@ async function resolveWorkspaceFolderCwd(
 
 	const resolvedCwdConfig = await configurationResolverService.resolveAsync(
 		folder,
-		cwdConfig
+		cwdConfig,
 	);
 	return isAbsolute(resolvedCwdConfig) ||
 		resolvedCwdConfig.startsWith(
-			AbstractVariableResolverService.VARIABLE_LHS
+			AbstractVariableResolverService.VARIABLE_LHS,
 		)
 		? {
 				folder,
@@ -2840,20 +2836,20 @@ async function resolveWorkspaceFolderCwd(
 					scheme: folder.uri.scheme,
 					path: resolvedCwdConfig,
 				}),
-			}
+		  }
 		: {
 				folder,
 				isAbsolute: false,
 				isOverridden: true,
 				cwd: URI.joinPath(folder.uri, resolvedCwdConfig),
-			};
+		  };
 }
 
 /**
  * Drops repeated CWDs, if any, by keeping the one which best matches the workspace folder. It also preserves the original order.
  */
 export function shrinkWorkspaceFolderCwdPairs(
-	pairs: WorkspaceFolderCwdPair[]
+	pairs: WorkspaceFolderCwdPair[],
 ): WorkspaceFolderCwdPair[] {
 	const map = new Map<string, WorkspaceFolderCwdPair>();
 	for (const pair of pairs) {
@@ -2870,7 +2866,7 @@ export function shrinkWorkspaceFolderCwdPairs(
 
 async function focusActiveTerminal(
 	instance: ITerminalInstance,
-	c: ITerminalServicesCollection
+	c: ITerminalServicesCollection,
 ): Promise<void> {
 	if (instance.target === TerminalLocation.Editor) {
 		await c.editorService.revealActiveEditor();
@@ -2883,7 +2879,7 @@ async function focusActiveTerminal(
 async function renameWithQuickPick(
 	c: ITerminalServicesCollection,
 	accessor: ServicesAccessor,
-	resource?: unknown
+	resource?: unknown,
 ) {
 	let instance: ITerminalInstance | undefined = resource as ITerminalInstance;
 	if (!instance) {
@@ -2895,7 +2891,7 @@ async function renameWithQuickPick(
 			value: instance.title,
 			prompt: localize(
 				"workbench.action.terminal.rename.prompt",
-				"Enter terminal name"
+				"Enter terminal name",
 			),
 		});
 		instance.rename(title);

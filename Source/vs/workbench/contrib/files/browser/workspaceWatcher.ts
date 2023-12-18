@@ -3,42 +3,42 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import {
+	Disposable,
+	DisposableStore,
+	IDisposable,
+	dispose,
+} from "vs/base/common/lifecycle";
+import { ResourceMap } from "vs/base/common/map";
+import { isAbsolute } from "vs/base/common/path";
+import { URI } from "vs/base/common/uri";
 import { localize } from "vs/nls";
 import {
-	IDisposable,
-	Disposable,
-	dispose,
-	DisposableStore,
-} from "vs/base/common/lifecycle";
-import { URI } from "vs/base/common/uri";
-import {
-	IConfigurationService,
 	IConfigurationChangeEvent,
+	IConfigurationService,
 } from "vs/platform/configuration/common/configuration";
 import {
 	IFileService,
 	IFilesConfiguration,
 } from "vs/platform/files/common/files";
 import {
+	INotificationService,
+	NeverShowAgainScope,
+	NotificationPriority,
+	Severity,
+} from "vs/platform/notification/common/notification";
+import { IOpenerService } from "vs/platform/opener/common/opener";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import {
 	IWorkspaceContextService,
 	IWorkspaceFolder,
 	IWorkspaceFoldersChangeEvent,
 } from "vs/platform/workspace/common/workspace";
-import { ResourceMap } from "vs/base/common/map";
-import {
-	INotificationService,
-	Severity,
-	NeverShowAgainScope,
-	NotificationPriority,
-} from "vs/platform/notification/common/notification";
-import { IOpenerService } from "vs/platform/opener/common/opener";
-import { isAbsolute } from "vs/base/common/path";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
 import { IHostService } from "vs/workbench/services/host/browser/host";
 
 export class WorkspaceWatcher extends Disposable {
 	private readonly watchedWorkspaces = new ResourceMap<IDisposable>(
-		(resource) => this.uriIdentityService.extUri.getComparisonKey(resource)
+		(resource) => this.uriIdentityService.extUri.getComparisonKey(resource),
 	);
 
 	constructor(
@@ -64,23 +64,23 @@ export class WorkspaceWatcher extends Disposable {
 	private registerListeners(): void {
 		this._register(
 			this.contextService.onDidChangeWorkspaceFolders((e) =>
-				this.onDidChangeWorkspaceFolders(e)
-			)
+				this.onDidChangeWorkspaceFolders(e),
+			),
 		);
 		this._register(
 			this.contextService.onDidChangeWorkbenchState(() =>
-				this.onDidChangeWorkbenchState()
-			)
+				this.onDidChangeWorkbenchState(),
+			),
 		);
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) =>
-				this.onDidChangeConfiguration(e)
-			)
+				this.onDidChangeConfiguration(e),
+			),
 		);
 		this._register(
 			this.fileService.onDidWatchError((error) =>
-				this.onDidWatchError(error)
-			)
+				this.onDidWatchError(error),
+			),
 		);
 	}
 
@@ -118,7 +118,7 @@ export class WorkspaceWatcher extends Disposable {
 				Severity.Warning,
 				localize(
 					"enospcError",
-					"Unable to watch for file changes in this large workspace folder. Please follow the instructions link to resolve this issue."
+					"Unable to watch for file changes in this large workspace folder. Please follow the instructions link to resolve this issue.",
 				),
 				[
 					{
@@ -126,8 +126,8 @@ export class WorkspaceWatcher extends Disposable {
 						run: () =>
 							this.openerService.open(
 								URI.parse(
-									"https://go.microsoft.com/fwlink/?linkid=867693"
-								)
+									"https://go.microsoft.com/fwlink/?linkid=867693",
+								),
 							),
 					},
 				],
@@ -138,7 +138,7 @@ export class WorkspaceWatcher extends Disposable {
 						isSecondary: true,
 						scope: NeverShowAgainScope.WORKSPACE,
 					},
-				}
+				},
 			);
 		}
 
@@ -148,7 +148,7 @@ export class WorkspaceWatcher extends Disposable {
 				Severity.Warning,
 				localize(
 					"eshutdownError",
-					"File changes watcher stopped unexpectedly. A reload of the window may enable the watcher again unless the workspace cannot be watched for file changes."
+					"File changes watcher stopped unexpectedly. A reload of the window may enable the watcher again unless the workspace cannot be watched for file changes.",
 				),
 				[
 					{
@@ -159,7 +159,7 @@ export class WorkspaceWatcher extends Disposable {
 				{
 					sticky: true,
 					priority: NotificationPriority.SILENT, // reduce potential spam since we don't really know how often this fires
-				}
+				},
 			);
 		}
 	}
@@ -179,7 +179,7 @@ export class WorkspaceWatcher extends Disposable {
 		}
 
 		const pathsToWatch = new ResourceMap<URI>((uri) =>
-			this.uriIdentityService.extUri.getComparisonKey(uri)
+			this.uriIdentityService.extUri.getComparisonKey(uri),
 		);
 
 		// Add the workspace as path to watch
@@ -200,7 +200,7 @@ export class WorkspaceWatcher extends Disposable {
 					if (
 						this.uriIdentityService.extUri.isEqualOrParent(
 							candidate,
-							workspace.uri
+							workspace.uri,
 						)
 					) {
 						pathsToWatch.set(candidate, candidate);
@@ -222,7 +222,7 @@ export class WorkspaceWatcher extends Disposable {
 				this.fileService.watch(pathToWatch, {
 					recursive: true,
 					excludes,
-				})
+				}),
 			);
 		}
 		this.watchedWorkspaces.set(workspace.uri, disposables);

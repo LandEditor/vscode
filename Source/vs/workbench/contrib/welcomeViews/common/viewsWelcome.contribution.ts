@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 import { Registry } from "vs/platform/registry/common/platform";
 import {
 	Extensions as WorkbenchExtensions,
@@ -16,10 +15,11 @@ import {
 	viewsWelcomeExtensionPointDescriptor,
 } from "vs/workbench/contrib/welcomeViews/common/viewsWelcomeExtensionPoint";
 import { ExtensionsRegistry } from "vs/workbench/services/extensions/common/extensionsRegistry";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 const extensionPoint =
 	ExtensionsRegistry.registerExtensionPoint<ViewsWelcomeExtensionPoint>(
-		viewsWelcomeExtensionPointDescriptor
+		viewsWelcomeExtensionPointDescriptor,
 	);
 
 class WorkbenchConfigurationContribution {
@@ -34,8 +34,8 @@ class WorkbenchConfigurationContribution {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	WorkbenchConfigurationContribution,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );

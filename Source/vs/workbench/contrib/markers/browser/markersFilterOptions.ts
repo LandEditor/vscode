@@ -6,15 +6,15 @@
 import { IFilter, matchesFuzzy, matchesFuzzy2 } from "vs/base/common/filters";
 import {
 	IExpression,
-	splitGlobAware,
-	getEmptyExpression,
 	ParsedExpression,
+	getEmptyExpression,
 	parse,
+	splitGlobAware,
 } from "vs/base/common/glob";
-import * as strings from "vs/base/common/strings";
-import { URI } from "vs/base/common/uri";
 import { relativePath } from "vs/base/common/resources";
+import * as strings from "vs/base/common/strings";
 import { TernarySearchTree } from "vs/base/common/ternarySearchTree";
+import { URI } from "vs/base/common/uri";
 import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
 
 export class ResourceGlobMatcher {
@@ -27,7 +27,7 @@ export class ResourceGlobMatcher {
 	constructor(
 		globalExpression: IExpression,
 		rootExpressions: { root: URI; expression: IExpression }[],
-		uriIdentityService: IUriIdentityService
+		uriIdentityService: IUriIdentityService,
 	) {
 		this.globalExpression = parse(globalExpression);
 		this.expressionsByRoot = TernarySearchTree.forUris<{
@@ -72,7 +72,7 @@ export class FilterOptions {
 			false,
 			false,
 			false,
-			uriIdentityService
+			uriIdentityService,
 		);
 	}
 
@@ -82,7 +82,7 @@ export class FilterOptions {
 		showWarnings: boolean,
 		showErrors: boolean,
 		showInfos: boolean,
-		uriIdentityService: IUriIdentityService
+		uriIdentityService: IUriIdentityService,
 	) {
 		filter = filter.trim();
 		this.showWarnings = showWarnings;
@@ -132,12 +132,12 @@ export class FilterOptions {
 		this.excludesMatcher = new ResourceGlobMatcher(
 			excludesExpression,
 			filesExcludeByRoot,
-			uriIdentityService
+			uriIdentityService,
 		);
 		this.includesMatcher = new ResourceGlobMatcher(
 			includeExpression,
 			[],
-			uriIdentityService
+			uriIdentityService,
 		);
 	}
 

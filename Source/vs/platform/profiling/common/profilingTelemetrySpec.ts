@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { errorHandler } from "vs/base/common/errors";
 import { ILogService } from "vs/platform/log/common/log";
 import { BottomUpSample } from "vs/platform/profiling/common/profilingModel";
 import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { errorHandler } from "vs/base/common/errors";
 
 type TelemetrySampleData = {
 	selfTime: number;
@@ -78,7 +78,7 @@ export function reportSample(
 	data: SampleData,
 	telemetryService: ITelemetryService,
 	logService: ILogService,
-	sendAsErrorTelemtry: boolean
+	sendAsErrorTelemtry: boolean,
 ): void {
 	const { sample, perfBaseline, source } = data;
 

@@ -3,17 +3,26 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { DeferredPromise } from "vs/base/common/async";
+import { memoize } from "vs/base/common/decorators";
 import { Emitter } from "vs/base/common/event";
+import { PerformanceMark, mark } from "vs/base/common/performance";
 import {
 	IProcessEnvironment,
+	OperatingSystem,
 	isMacintosh,
 	isWindows,
-	OperatingSystem,
 } from "vs/base/common/platform";
+import { StopWatch } from "vs/base/common/stopwatch";
 import { URI } from "vs/base/common/uri";
+import { ProxyChannel, getDelayedChannel } from "vs/base/parts/ipc/common/ipc";
+import { Client as MessagePortClient } from "vs/base/parts/ipc/common/ipc.mp";
+import { acquirePort } from "vs/base/parts/ipc/electron-sandbox/ipc.mp";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { ILabelService } from "vs/platform/label/common/label";
+import { INativeHostService } from "vs/platform/native/common/native";
+import { IProductService } from "vs/platform/product/common/productService";
 import { Registry } from "vs/platform/registry/common/platform";
 import {
 	IStorageService,
@@ -47,35 +56,26 @@ import {
 } from "vs/platform/terminal/common/terminalProcess";
 import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
 import { IWorkbenchContribution } from "vs/workbench/common/contributions";
+import { BaseTerminalBackend } from "vs/workbench/contrib/terminal/browser/baseTerminalBackend";
 import { ITerminalInstanceService } from "vs/workbench/contrib/terminal/browser/terminal";
+import { IEnvironmentVariableService } from "vs/workbench/contrib/terminal/common/environmentVariable";
 import {
 	ITerminalConfiguration,
 	ITerminalProfileResolverService,
 	TERMINAL_CONFIG_SECTION,
 } from "vs/workbench/contrib/terminal/common/terminal";
+import * as terminalEnvironment from "vs/workbench/contrib/terminal/common/terminalEnvironment";
 import { TerminalStorageKeys } from "vs/workbench/contrib/terminal/common/terminalStorageKeys";
 import { LocalPty } from "vs/workbench/contrib/terminal/electron-sandbox/localPty";
 import { IConfigurationResolverService } from "vs/workbench/services/configurationResolver/common/configurationResolver";
 import { IShellEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/shellEnvironmentService";
 import { IHistoryService } from "vs/workbench/services/history/common/history";
-import * as terminalEnvironment from "vs/workbench/contrib/terminal/common/terminalEnvironment";
-import { IProductService } from "vs/platform/product/common/productService";
-import { IEnvironmentVariableService } from "vs/workbench/contrib/terminal/common/environmentVariable";
-import { BaseTerminalBackend } from "vs/workbench/contrib/terminal/browser/baseTerminalBackend";
-import { INativeHostService } from "vs/platform/native/common/native";
-import { Client as MessagePortClient } from "vs/base/parts/ipc/common/ipc.mp";
-import { acquirePort } from "vs/base/parts/ipc/electron-sandbox/ipc.mp";
-import { getDelayedChannel, ProxyChannel } from "vs/base/parts/ipc/common/ipc";
-import { mark, PerformanceMark } from "vs/base/common/performance";
 import {
 	ILifecycleService,
 	LifecyclePhase,
 } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { DeferredPromise } from "vs/base/common/async";
-import { IStatusbarService } from "vs/workbench/services/statusbar/browser/statusbar";
-import { memoize } from "vs/base/common/decorators";
-import { StopWatch } from "vs/base/common/stopwatch";
 import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteAgentService";
+import { IStatusbarService } from "vs/workbench/services/statusbar/browser/statusbar";
 
 export class LocalTerminalBackendContribution
 	implements IWorkbenchContribution
@@ -83,12 +83,12 @@ export class LocalTerminalBackendContribution
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
 		@ITerminalInstanceService
-		terminalInstanceService: ITerminalInstanceService
+		terminalInstanceService: ITerminalInstanceService,
 	) {
 		const backend =
 			instantiationService.createInstance(LocalTerminalBackend);
 		Registry.as<ITerminalBackendRegistry>(
-			TerminalExtensions.Backend
+			TerminalExtensions.Backend,
 		).registerTerminalBackend(backend);
 		terminalInstanceService.didRegisterBackend(backend.remoteAuthority);
 	}
@@ -128,7 +128,7 @@ class LocalTerminalBackend
 			requestId: number;
 			workspaceId: string;
 			instanceId: number;
-		}>()
+		}>(),
 	);
 	readonly onDidRequestDetach = this._onDidRequestDetach.event;
 
@@ -193,9 +193,9 @@ class LocalTerminalBackend
 		const directProxy = ProxyChannel.toService<IPtyService>(
 			getDelayedChannel(
 				this._directProxyClientEventually.p.then((client) =>
-					client.getChannel(TerminalIpcChannels.PtyHostWindow)
-				)
-			)
+					client.getChannel(TerminalIpcChannels.PtyHostWindow),
+				),
+			),
 		);
 		this._directProxy = directProxy;
 
@@ -209,11 +209,11 @@ class LocalTerminalBackend
 		this._logService.trace("Renderer->PtyHost#connect: before acquirePort");
 		acquirePort(
 			"vscode:createPtyHostMessageChannel",
-			"vscode:createPtyHostMessageChannelResult"
+			"vscode:createPtyHostMessageChannelResult",
 		).then((port) => {
 			mark("code/terminal/didConnectPtyHost");
 			this._logService.trace(
-				"Renderer->PtyHost#connect: connection established"
+				"Renderer->PtyHost#connect: connection established",
 			);
 			// There are two connections to the pty host; one to the regular shared process
 			// _localPtyService, and one directly via message port _ptyHostDirectProxy. The former is
@@ -221,17 +221,17 @@ class LocalTerminalBackend
 			// separate interface/service for this one.
 			const client = new MessagePortClient(
 				port,
-				`window:${this._nativeHostService.windowId}`
+				`window:${this._nativeHostService.windowId}`,
 			);
 			directProxyClientEventually.complete(client);
 			this._onPtyHostConnected.fire();
 
 			// Attach process listeners
-			directProxy.onProcessData(
-				(e) => this._ptys.get(e.id)?.handleData(e.event)
+			directProxy.onProcessData((e) =>
+				this._ptys.get(e.id)?.handleData(e.event),
 			);
-			directProxy.onDidChangeProperty(
-				(e) => this._ptys.get(e.id)?.handleDidChangeProperty(e.property)
+			directProxy.onDidChangeProperty((e) =>
+				this._ptys.get(e.id)?.handleDidChangeProperty(e.property),
 			);
 			directProxy.onProcessExit((e) => {
 				const pty = this._ptys.get(e.id);
@@ -240,23 +240,23 @@ class LocalTerminalBackend
 					this._ptys.delete(e.id);
 				}
 			});
-			directProxy.onProcessReady(
-				(e) => this._ptys.get(e.id)?.handleReady(e.event)
+			directProxy.onProcessReady((e) =>
+				this._ptys.get(e.id)?.handleReady(e.event),
 			);
-			directProxy.onProcessReplay(
-				(e) => this._ptys.get(e.id)?.handleReplay(e.event)
+			directProxy.onProcessReplay((e) =>
+				this._ptys.get(e.id)?.handleReplay(e.event),
 			);
-			directProxy.onProcessOrphanQuestion(
-				(e) => this._ptys.get(e.id)?.handleOrphanQuestion()
+			directProxy.onProcessOrphanQuestion((e) =>
+				this._ptys.get(e.id)?.handleOrphanQuestion(),
 			);
 			directProxy.onDidRequestDetach((e) =>
-				this._onDidRequestDetach.fire(e)
+				this._onDidRequestDetach.fire(e),
 			);
 
 			// Listen for config changes
 			const initialConfig =
 				this._configurationService.getValue<ITerminalConfiguration>(
-					TERMINAL_CONFIG_SECTION
+					TERMINAL_CONFIG_SECTION,
 				);
 			for (const match of Object.keys(initialConfig.autoReplies)) {
 				// Ensure the reply is value
@@ -271,16 +271,16 @@ class LocalTerminalBackend
 					async (e) => {
 						if (
 							e.affectsConfiguration(
-								TerminalSettingId.AutoReplies
+								TerminalSettingId.AutoReplies,
 							)
 						) {
 							directProxy.uninstallAllAutoReplies();
 							const config =
 								this._configurationService.getValue<ITerminalConfiguration>(
-									TERMINAL_CONFIG_SECTION
+									TERMINAL_CONFIG_SECTION,
 								);
 							for (const match of Object.keys(
-								config.autoReplies
+								config.autoReplies,
 							)) {
 								// Ensure the reply is value
 								const reply = config.autoReplies[match] as
@@ -291,8 +291,8 @@ class LocalTerminalBackend
 								}
 							}
 						}
-					}
-				)
+					},
+				),
 			);
 
 			// Eagerly fetch the backend's environment for memoization
@@ -302,24 +302,24 @@ class LocalTerminalBackend
 
 	async requestDetachInstance(
 		workspaceId: string,
-		instanceId: number
+		instanceId: number,
 	): Promise<IProcessDetails | undefined> {
 		return this._proxy.requestDetachInstance(workspaceId, instanceId);
 	}
 
 	async acceptDetachInstanceReply(
 		requestId: number,
-		persistentProcessId?: number
+		persistentProcessId?: number,
 	): Promise<void> {
 		if (!persistentProcessId) {
 			this._logService.warn(
-				"Cannot attach to feature terminals, custom pty terminals, or those without a persistentProcessId"
+				"Cannot attach to feature terminals, custom pty terminals, or those without a persistentProcessId",
 			);
 			return;
 		}
 		return this._proxy.acceptDetachInstanceReply(
 			requestId,
-			persistentProcessId
+			persistentProcessId,
 		);
 	}
 
@@ -330,14 +330,14 @@ class LocalTerminalBackend
 			TerminalStorageKeys.TerminalBufferState,
 			serialized,
 			StorageScope.WORKSPACE,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 	}
 
 	async updateTitle(
 		id: number,
 		title: string,
-		titleSource: TitleEventSource
+		titleSource: TitleEventSource,
 	): Promise<void> {
 		await this._proxy.updateTitle(id, title, titleSource);
 	}
@@ -349,7 +349,7 @@ class LocalTerminalBackend
 			| URI
 			| { light: URI; dark: URI }
 			| { id: string; color?: { id: string } },
-		color?: string
+		color?: string,
 	): Promise<void> {
 		await this._proxy.updateIcon(id, userInitiated, icon, color);
 	}
@@ -357,7 +357,7 @@ class LocalTerminalBackend
 	async updateProperty<T extends ProcessPropertyType>(
 		id: number,
 		property: ProcessPropertyType,
-		value: IProcessPropertyMap[T]
+		value: IProcessPropertyMap[T],
 	): Promise<void> {
 		return this._proxy.updateProperty(id, property, value);
 	}
@@ -370,7 +370,7 @@ class LocalTerminalBackend
 		unicodeVersion: "6" | "11",
 		env: IProcessEnvironment,
 		options: ITerminalProcessOptions,
-		shouldPersist: boolean
+		shouldPersist: boolean,
 	): Promise<ITerminalChildProcess> {
 		await this._connectToDirectProxy();
 		const executableEnv = await this._shellEnvironmentService.getShellEnv();
@@ -385,7 +385,7 @@ class LocalTerminalBackend
 			options,
 			shouldPersist,
 			this._getWorkspaceId(),
-			this._getWorkspaceName()
+			this._getWorkspaceName(),
 		);
 		const pty = new LocalPty(id, shouldPersist, this._proxy);
 		this._ptys.set(id, pty);
@@ -393,7 +393,7 @@ class LocalTerminalBackend
 	}
 
 	async attachToProcess(
-		id: number
+		id: number,
 	): Promise<ITerminalChildProcess | undefined> {
 		await this._connectToDirectProxy();
 		try {
@@ -408,14 +408,14 @@ class LocalTerminalBackend
 	}
 
 	async attachToRevivedProcess(
-		id: number
+		id: number,
 	): Promise<ITerminalChildProcess | undefined> {
 		await this._connectToDirectProxy();
 		try {
 			const newId =
 				(await this._proxy.getRevivedPtyNewId(
 					this._getWorkspaceId(),
-					id
+					id,
 				)) ?? id;
 			return await this.attachToProcess(newId);
 		} catch (e) {
@@ -465,14 +465,14 @@ class LocalTerminalBackend
 	async getProfiles(
 		profiles: unknown,
 		defaultProfile: unknown,
-		includeDetectedProfiles?: boolean
+		includeDetectedProfiles?: boolean,
 	) {
 		return (
 			this._localPtyService.getProfiles(
 				this._workspaceContextService.getWorkspace().id,
 				profiles,
 				defaultProfile,
-				includeDetectedProfiles
+				includeDetectedProfiles,
 			) || []
 		);
 	}
@@ -489,13 +489,13 @@ class LocalTerminalBackend
 
 	async getWslPath(
 		original: string,
-		direction: "unix-to-win" | "win-to-unix"
+		direction: "unix-to-win" | "win-to-unix",
 	): Promise<string> {
 		return this._proxy.getWslPath(original, direction);
 	}
 
 	async setTerminalLayoutInfo(
-		layoutInfo?: ITerminalsLayoutInfoById
+		layoutInfo?: ITerminalsLayoutInfoById,
 	): Promise<void> {
 		const args: ISetTerminalLayoutInfoArgs = {
 			workspaceId: this._getWorkspaceId(),
@@ -508,7 +508,7 @@ class LocalTerminalBackend
 			TerminalStorageKeys.TerminalLayoutInfo,
 			JSON.stringify(args),
 			StorageScope.WORKSPACE,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 	}
 
@@ -519,7 +519,7 @@ class LocalTerminalBackend
 		// Revive processes if needed
 		const serializedState = this._storageService.get(
 			TerminalStorageKeys.TerminalBufferState,
-			StorageScope.WORKSPACE
+			StorageScope.WORKSPACE,
 		);
 		const reviveBufferState =
 			this._deserializeTerminalState(serializedState);
@@ -530,16 +530,16 @@ class LocalTerminalBackend
 					this._historyService.getLastActiveWorkspaceRoot();
 				const lastActiveWorkspace = activeWorkspaceRootUri
 					? this._workspaceContextService.getWorkspaceFolder(
-							activeWorkspaceRootUri
-						) ?? undefined
+							activeWorkspaceRootUri,
+					  ) ?? undefined
 					: undefined;
 				const variableResolver =
 					terminalEnvironment.createVariableResolver(
 						lastActiveWorkspace,
 						await this._terminalProfileResolverService.getEnvironment(
-							this.remoteAuthority
+							this.remoteAuthority,
 						),
-						this._configurationResolverService
+						this._configurationResolverService,
 					);
 
 				// Re-resolve the environments and replace it on the state so local terminals use a fresh
@@ -551,13 +551,13 @@ class LocalTerminalBackend
 							new Promise<void>((r) => {
 								this._resolveEnvironmentForRevive(
 									variableResolver,
-									state.shellLaunchConfig
+									state.shellLaunchConfig,
 								).then((freshEnv) => {
 									state.processLaunchConfig.env = freshEnv;
 									r();
 								});
-							})
-					)
+							}),
+					),
 				);
 				mark("code/terminal/didGetReviveEnvironments");
 
@@ -565,34 +565,36 @@ class LocalTerminalBackend
 				await this._proxy.reviveTerminalProcesses(
 					workspaceId,
 					reviveBufferState,
-					Intl.DateTimeFormat().resolvedOptions().locale
+					Intl.DateTimeFormat().resolvedOptions().locale,
 				);
 				mark("code/terminal/didReviveTerminalProcesses");
 				this._storageService.remove(
 					TerminalStorageKeys.TerminalBufferState,
-					StorageScope.WORKSPACE
+					StorageScope.WORKSPACE,
 				);
 				// If reviving processes, send the terminal layout info back to the pty host as it
 				// will not have been persisted on application exit
 				const layoutInfo = this._storageService.get(
 					TerminalStorageKeys.TerminalLayoutInfo,
-					StorageScope.WORKSPACE
+					StorageScope.WORKSPACE,
 				);
 				if (layoutInfo) {
 					mark("code/terminal/willSetTerminalLayoutInfo");
 					await this._proxy.setTerminalLayoutInfo(
-						JSON.parse(layoutInfo)
+						JSON.parse(layoutInfo),
 					);
 					mark("code/terminal/didSetTerminalLayoutInfo");
 					this._storageService.remove(
 						TerminalStorageKeys.TerminalLayoutInfo,
-						StorageScope.WORKSPACE
+						StorageScope.WORKSPACE,
 					);
 				}
 			} catch (e: unknown) {
 				this._logService.warn(
 					"LocalTerminalBackend#getTerminalLayoutInfo Error",
-					e && typeof e === "object" && "message" in e ? e.message : e
+					e && typeof e === "object" && "message" in e
+						? e.message
+						: e,
 				);
 			}
 		}
@@ -602,13 +604,13 @@ class LocalTerminalBackend
 
 	private async _resolveEnvironmentForRevive(
 		variableResolver: terminalEnvironment.VariableResolver | undefined,
-		shellLaunchConfig: IShellLaunchConfig
+		shellLaunchConfig: IShellLaunchConfig,
 	): Promise<IProcessEnvironment> {
 		const platformKey = isWindows
 			? "windows"
 			: isMacintosh
-				? "osx"
-				: "linux";
+			  ? "osx"
+			  : "linux";
 		const envFromConfigValue = this._configurationService.getValue<
 			ITerminalEnvironment | undefined
 		>(`terminal.integrated.env.${platformKey}`);
@@ -621,18 +623,18 @@ class LocalTerminalBackend
 			variableResolver,
 			this._productService.version,
 			this._configurationService.getValue(TerminalSettingId.DetectLocale),
-			baseEnv
+			baseEnv,
 		);
 		if (!shellLaunchConfig.strictEnv && !shellLaunchConfig.hideFromUser) {
 			const workspaceFolder = terminalEnvironment.getWorkspaceForTerminal(
 				shellLaunchConfig.cwd,
 				this._workspaceContextService,
-				this._historyService
+				this._historyService,
 			);
 			await this._environmentVariableService.mergedCollection.applyToProcessEnvironment(
 				env,
 				{ workspaceFolder },
-				variableResolver
+				variableResolver,
 			);
 		}
 		return env;
@@ -640,7 +642,7 @@ class LocalTerminalBackend
 
 	private _getWorkspaceName(): string {
 		return this._labelService.getWorkspaceLabel(
-			this._workspaceContextService.getWorkspace()
+			this._workspaceContextService.getWorkspace(),
 		);
 	}
 }

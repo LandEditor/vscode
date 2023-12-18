@@ -3,39 +3,39 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { isNonEmptyArray } from "vs/base/common/arrays";
+import { Promises } from "vs/base/common/async";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { toErrorMessage } from "vs/base/common/errorMessage";
+import { URI } from "vs/base/common/uri";
 import { IChannel } from "vs/base/parts/ipc/common/ipc";
+import { localize } from "vs/nls";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
-	ILocalExtension,
-	IGalleryExtension,
+	ExtensionManagementError,
+	ExtensionManagementErrorCode,
 	IExtensionGalleryService,
+	IGalleryExtension,
+	ILocalExtension,
 	InstallOperation,
 	InstallOptions,
 	InstallVSIXOptions,
-	ExtensionManagementError,
-	ExtensionManagementErrorCode,
 } from "vs/platform/extensionManagement/common/extensionManagement";
-import { URI } from "vs/base/common/uri";
+import { areSameExtensions } from "vs/platform/extensionManagement/common/extensionManagementUtil";
 import {
 	ExtensionType,
 	IExtensionManifest,
 } from "vs/platform/extensions/common/extensions";
-import { areSameExtensions } from "vs/platform/extensionManagement/common/extensionManagementUtil";
-import { ILogService } from "vs/platform/log/common/log";
-import { toErrorMessage } from "vs/base/common/errorMessage";
-import { isNonEmptyArray } from "vs/base/common/arrays";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { localize } from "vs/nls";
-import { IProductService } from "vs/platform/product/common/productService";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IExtensionManagementServer } from "vs/workbench/services/extensionManagement/common/extensionManagement";
-import { Promises } from "vs/base/common/async";
-import { IExtensionManifestPropertiesService } from "vs/workbench/services/extensions/common/extensionManifestPropertiesService";
 import { IFileService } from "vs/platform/files/common/files";
-import { RemoteExtensionManagementService } from "vs/workbench/services/extensionManagement/common/remoteExtensionManagementService";
-import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
-import { IUserDataProfileService } from "vs/workbench/services/userDataProfile/common/userDataProfile";
-import { IRemoteUserDataProfilesService } from "vs/workbench/services/userDataProfile/common/remoteUserDataProfiles";
+import { ILogService } from "vs/platform/log/common/log";
+import { IProductService } from "vs/platform/product/common/productService";
 import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
+import { IExtensionManagementServer } from "vs/workbench/services/extensionManagement/common/extensionManagement";
+import { RemoteExtensionManagementService } from "vs/workbench/services/extensionManagement/common/remoteExtensionManagementService";
+import { IExtensionManifestPropertiesService } from "vs/workbench/services/extensions/common/extensionManifestPropertiesService";
+import { IRemoteUserDataProfilesService } from "vs/workbench/services/userDataProfile/common/remoteUserDataProfiles";
+import { IUserDataProfileService } from "vs/workbench/services/userDataProfile/common/userDataProfile";
 
 export class NativeRemoteExtensionManagementService extends RemoteExtensionManagementService {
 	constructor(
@@ -69,7 +69,7 @@ export class NativeRemoteExtensionManagementService extends RemoteExtensionManag
 
 	override async install(
 		vsix: URI,
-		options?: InstallVSIXOptions
+		options?: InstallVSIXOptions,
 	): Promise<ILocalExtension> {
 		const local = await super.install(vsix, options);
 		await this.installUIDependenciesAndPackedExtensions(local);
@@ -78,11 +78,11 @@ export class NativeRemoteExtensionManagementService extends RemoteExtensionManag
 
 	override async installFromGallery(
 		extension: IGalleryExtension,
-		installOptions?: InstallOptions
+		installOptions?: InstallOptions,
 	): Promise<ILocalExtension> {
 		const local = await this.doInstallFromGallery(
 			extension,
-			installOptions
+			installOptions,
 		);
 		await this.installUIDependenciesAndPackedExtensions(local);
 		return local;
@@ -90,11 +90,11 @@ export class NativeRemoteExtensionManagementService extends RemoteExtensionManag
 
 	private async doInstallFromGallery(
 		extension: IGalleryExtension,
-		installOptions?: InstallOptions
+		installOptions?: InstallOptions,
 	): Promise<ILocalExtension> {
 		if (
 			this.configurationService.getValue(
-				"remote.downloadExtensionsLocally"
+				"remote.downloadExtensionsLocally",
 			)
 		) {
 			return this.downloadAndInstall(extension, installOptions || {});
@@ -108,11 +108,11 @@ export class NativeRemoteExtensionManagementService extends RemoteExtensionManag
 					try {
 						this.logService.error(
 							`Error while installing '${extension.identifier.id}' extension in the remote server.`,
-							toErrorMessage(error)
+							toErrorMessage(error),
 						);
 						return await this.downloadAndInstall(
 							extension,
-							installOptions || {}
+							installOptions || {},
 						);
 					} catch (e) {
 						this.logService.error(e);
@@ -121,7 +121,7 @@ export class NativeRemoteExtensionManagementService extends RemoteExtensionManag
 				default:
 					this.logService.debug(
 						"Remote Install Error Name",
-						error.name
+						error.name,
 					);
 					throw error;
 			}
@@ -130,14 +130,14 @@ export class NativeRemoteExtensionManagementService extends RemoteExtensionManag
 
 	private async downloadAndInstall(
 		extension: IGalleryExtension,
-		installOptions: InstallOptions
+		installOptions: InstallOptions,
 	): Promise<ILocalExtension> {
 		this.logService.info(
-			`Downloading the '${extension.identifier.id}' extension locally and install`
+			`Downloading the '${extension.identifier.id}' extension locally and install`,
 		);
 		const compatible = await this.checkAndGetCompatible(
 			extension,
-			!!installOptions.installPreReleaseVersion
+			!!installOptions.installPreReleaseVersion,
 		);
 		installOptions = {
 			...installOptions,
@@ -147,59 +147,59 @@ export class NativeRemoteExtensionManagementService extends RemoteExtensionManag
 		const workspaceExtensions =
 			await this.getAllWorkspaceDependenciesAndPackedExtensions(
 				compatible,
-				CancellationToken.None
+				CancellationToken.None,
 			);
 		if (workspaceExtensions.length) {
 			this.logService.info(
-				`Downloading the workspace dependencies and packed extensions of '${compatible.identifier.id}' locally and install`
+				`Downloading the workspace dependencies and packed extensions of '${compatible.identifier.id}' locally and install`,
 			);
 			for (const workspaceExtension of workspaceExtensions) {
 				await this.downloadCompatibleAndInstall(
 					workspaceExtension,
 					installed,
-					installOptions
+					installOptions,
 				);
 			}
 		}
 		return await this.downloadCompatibleAndInstall(
 			compatible,
 			installed,
-			installOptions
+			installOptions,
 		);
 	}
 
 	private async downloadCompatibleAndInstall(
 		extension: IGalleryExtension,
 		installed: ILocalExtension[],
-		installOptions: InstallOptions
+		installOptions: InstallOptions,
 	): Promise<ILocalExtension> {
 		const compatible = await this.checkAndGetCompatible(
 			extension,
-			!!installOptions.installPreReleaseVersion
+			!!installOptions.installPreReleaseVersion,
 		);
 		this.logService.trace(
 			"Downloading extension:",
-			compatible.identifier.id
+			compatible.identifier.id,
 		);
 		const location =
 			await this.localExtensionManagementServer.extensionManagementService.download(
 				compatible,
 				installed.filter((i) =>
-					areSameExtensions(i.identifier, compatible.identifier)
+					areSameExtensions(i.identifier, compatible.identifier),
 				)[0]
 					? InstallOperation.Update
 					: InstallOperation.Install,
-				!!installOptions.donotVerifySignature
+				!!installOptions.donotVerifySignature,
 			);
 		this.logService.info(
 			"Downloaded extension:",
 			compatible.identifier.id,
-			location.path
+			location.path,
 		);
 		try {
 			const local = await super.install(location, installOptions);
 			this.logService.info(
-				`Successfully installed '${compatible.identifier.id}' extension`
+				`Successfully installed '${compatible.identifier.id}' extension`,
 			);
 			return local;
 		} finally {
@@ -213,7 +213,7 @@ export class NativeRemoteExtensionManagementService extends RemoteExtensionManag
 
 	private async checkAndGetCompatible(
 		extension: IGalleryExtension,
-		includePreRelease: boolean
+		includePreRelease: boolean,
 	): Promise<IGalleryExtension> {
 		const targetPlatform = await this.getTargetPlatform();
 		let compatibleExtension: IGalleryExtension | null = null;
@@ -232,7 +232,7 @@ export class NativeRemoteExtensionManagementService extends RemoteExtensionManag
 							},
 						],
 						{ targetPlatform, compatible: true },
-						CancellationToken.None
+						CancellationToken.None,
 					)
 				)[0] || null;
 		}
@@ -242,7 +242,7 @@ export class NativeRemoteExtensionManagementService extends RemoteExtensionManag
 			(await this.galleryService.isExtensionCompatible(
 				extension,
 				includePreRelease,
-				targetPlatform
+				targetPlatform,
 			))
 		) {
 			compatibleExtension = extension;
@@ -253,7 +253,7 @@ export class NativeRemoteExtensionManagementService extends RemoteExtensionManag
 				await this.galleryService.getCompatibleExtension(
 					extension,
 					includePreRelease,
-					targetPlatform
+					targetPlatform,
 				);
 		}
 
@@ -265,7 +265,7 @@ export class NativeRemoteExtensionManagementService extends RemoteExtensionManag
 				(
 					await this.galleryService.getExtensions(
 						[extension.identifier],
-						CancellationToken.None
+						CancellationToken.None,
 					)
 				)[0]
 			) {
@@ -273,9 +273,9 @@ export class NativeRemoteExtensionManagementService extends RemoteExtensionManag
 					localize(
 						"notFoundReleaseExtension",
 						"Can't install release version of '{0}' extension because it has no release version.",
-						extension.identifier.id
+						extension.identifier.id,
 					),
-					ExtensionManagementErrorCode.ReleaseVersionNotFound
+					ExtensionManagementErrorCode.ReleaseVersionNotFound,
 				);
 			}
 			throw new ExtensionManagementError(
@@ -284,9 +284,9 @@ export class NativeRemoteExtensionManagementService extends RemoteExtensionManag
 					"Can't install '{0}' extension because it is not compatible with the current version of {1} (version {2}).",
 					extension.identifier.id,
 					this.productService.nameLong,
-					this.productService.version
+					this.productService.version,
 				),
-				ExtensionManagementErrorCode.Incompatible
+				ExtensionManagementErrorCode.Incompatible,
 			);
 		}
 
@@ -294,36 +294,36 @@ export class NativeRemoteExtensionManagementService extends RemoteExtensionManag
 	}
 
 	private async installUIDependenciesAndPackedExtensions(
-		local: ILocalExtension
+		local: ILocalExtension,
 	): Promise<void> {
 		const uiExtensions = await this.getAllUIDependenciesAndPackedExtensions(
 			local.manifest,
-			CancellationToken.None
+			CancellationToken.None,
 		);
 		const installed =
 			await this.localExtensionManagementServer.extensionManagementService.getInstalled();
 		const toInstall = uiExtensions.filter((e) =>
 			installed.every(
-				(i) => !areSameExtensions(i.identifier, e.identifier)
-			)
+				(i) => !areSameExtensions(i.identifier, e.identifier),
+			),
 		);
 		if (toInstall.length) {
 			this.logService.info(
-				`Installing UI dependencies and packed extensions of '${local.identifier.id}' locally`
+				`Installing UI dependencies and packed extensions of '${local.identifier.id}' locally`,
 			);
 			await Promises.settled(
 				toInstall.map((d) =>
 					this.localExtensionManagementServer.extensionManagementService.installFromGallery(
-						d
-					)
-				)
+						d,
+					),
+				),
 			);
 		}
 	}
 
 	private async getAllUIDependenciesAndPackedExtensions(
 		manifest: IExtensionManifest,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IGalleryExtension[]> {
 		const result = new Map<string, IGalleryExtension>();
 		const extensions = [
@@ -334,20 +334,20 @@ export class NativeRemoteExtensionManagementService extends RemoteExtensionManag
 			extensions,
 			result,
 			true,
-			token
+			token,
 		);
 		return [...result.values()];
 	}
 
 	private async getAllWorkspaceDependenciesAndPackedExtensions(
 		extension: IGalleryExtension,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IGalleryExtension[]> {
 		const result = new Map<string, IGalleryExtension>();
 		result.set(extension.identifier.id.toLowerCase(), extension);
 		const manifest = await this.galleryService.getManifest(
 			extension,
-			token
+			token,
 		);
 		if (manifest) {
 			const extensions = [
@@ -358,7 +358,7 @@ export class NativeRemoteExtensionManagementService extends RemoteExtensionManag
 				extensions,
 				result,
 				false,
-				token
+				token,
 			);
 		}
 		result.delete(extension.identifier.id);
@@ -369,7 +369,7 @@ export class NativeRemoteExtensionManagementService extends RemoteExtensionManag
 		toGet: string[],
 		result: Map<string, IGalleryExtension>,
 		uiExtension: boolean,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void> {
 		if (toGet.length === 0) {
 			return Promise.resolve();
@@ -377,10 +377,10 @@ export class NativeRemoteExtensionManagementService extends RemoteExtensionManag
 
 		const extensions = await this.galleryService.getExtensions(
 			toGet.map((id) => ({ id })),
-			token
+			token,
 		);
 		const manifests = await Promise.all(
-			extensions.map((e) => this.galleryService.getManifest(e, token))
+			extensions.map((e) => this.galleryService.getManifest(e, token)),
 		);
 		const extensionsManifests: IExtensionManifest[] = [];
 		for (let idx = 0; idx < extensions.length; idx++) {
@@ -389,7 +389,7 @@ export class NativeRemoteExtensionManagementService extends RemoteExtensionManag
 			if (
 				manifest &&
 				this.extensionManifestPropertiesService.prefersExecuteOnUI(
-					manifest
+					manifest,
 				) === uiExtension
 			) {
 				result.set(extension.identifier.id.toLowerCase(), extension);
@@ -417,7 +417,7 @@ export class NativeRemoteExtensionManagementService extends RemoteExtensionManag
 			toGet,
 			result,
 			uiExtension,
-			token
+			token,
 		);
 	}
 }

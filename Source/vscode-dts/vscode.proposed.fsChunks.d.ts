@@ -9,7 +9,7 @@ declare module "vscode" {
 	export interface FileSystemProvider {
 		open?(
 			resource: Uri,
-			options: { create: boolean }
+			options: { create: boolean },
 		): number | Thenable<number>;
 		close?(fd: number): void | Thenable<void>;
 		read?(
@@ -17,14 +17,14 @@ declare module "vscode" {
 			pos: number,
 			data: Uint8Array,
 			offset: number,
-			length: number
+			length: number,
 		): number | Thenable<number>;
 		write?(
 			fd: number,
 			pos: number,
 			data: Uint8Array,
 			offset: number,
-			length: number
+			length: number,
 		): number | Thenable<number>;
 	}
 }

@@ -33,12 +33,12 @@ export class StreamSplitter extends Transform {
 	override _transform(
 		chunk: Buffer,
 		_encoding: string,
-		callback: (error?: Error | null, data?: any) => void
+		callback: (error?: Error | null, data?: any) => void,
 	): void {
-		if (!this.buffer) {
-			this.buffer = chunk;
-		} else {
+		if (this.buffer) {
 			this.buffer = Buffer.concat([this.buffer, chunk]);
+		} else {
+			this.buffer = chunk;
 		}
 
 		let offset = 0;
@@ -63,7 +63,7 @@ export class StreamSplitter extends Transform {
 	}
 
 	override _flush(
-		callback: (error?: Error | null, data?: any) => void
+		callback: (error?: Error | null, data?: any) => void,
 	): void {
 		if (this.buffer) {
 			this.push(this.buffer);

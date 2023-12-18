@@ -1,4 +1,3 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -59,7 +58,7 @@ class ShortIdent {
 	]);
 	static _alphabet =
 		"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890$_".split(
-			""
+			"",
 		);
 	_value = 0;
 	constructor(prefix) {
@@ -90,7 +89,7 @@ class ShortIdent {
 	}
 }
 var FieldType;
-(function (FieldType) {
+((FieldType) => {
 	FieldType[(FieldType["Public"] = 0)] = "Public";
 	FieldType[(FieldType["Protected"] = 1)] = "Protected";
 	FieldType[(FieldType["Private"] = 2)] = "Private";
@@ -192,7 +191,7 @@ class ClassData {
 					const parentPos = parent.node
 						.getSourceFile()
 						.getLineAndCharacterOfPosition(
-							parent.fields.get(name).pos
+							parent.fields.get(name).pos,
 						);
 					const infoPos = data.node
 						.getSourceFile()
@@ -202,7 +201,7 @@ class ClassData {
 						`'${name}' from ${parent.fileName}:${
 							parentPos.line + 1
 						}`,
-						`${data.fileName}:${infoPos.line + 1}`
+						`${data.fileName}:${infoPos.line + 1}`,
 					);
 					parent.fields.get(name).type = 0 /* FieldType.Public */;
 				}
@@ -372,7 +371,7 @@ class DeclarationData {
 			// If the const aliases any types, we need to rename those too
 			const definitionResult = this.service.getDefinitionAndBoundSpan(
 				this.fileName,
-				this.node.name.getStart()
+				this.node.name.getStart(),
 			);
 			if (
 				definitionResult?.definitions &&
@@ -433,15 +432,15 @@ class Mangler {
 		this.config = config;
 		this.service = ts.createLanguageService(
 			new staticLanguageServiceHost_1.StaticLanguageServiceHost(
-				projectPath
-			)
+				projectPath,
+			),
 		);
 		this.renameWorkerPool = workerpool.pool(
 			path.join(__dirname, "renameWorker.js"),
 			{
 				maxWorkers: 1,
 				minWorkers: "max",
-			}
+			},
 		);
 	}
 	async computeNewFileContents(strictImplicitPublicHandling) {
@@ -461,7 +460,7 @@ class Mangler {
 					}
 					this.allClassDataByKey.set(
 						key,
-						new ClassData(node.getSourceFile().fileName, node)
+						new ClassData(node.getSourceFile().fileName, node),
 					);
 				}
 			}
@@ -482,7 +481,7 @@ class Mangler {
 					(ts.isVariableDeclaration(node) &&
 						hasModifier(
 							node.parent.parent,
-							ts.SyntaxKind.ExportKeyword
+							ts.SyntaxKind.ExportKeyword,
 						) && // Variable statement is exported
 						ts.isSourceFile(node.parent.parent.parent))
 					// Disabled for now because we need to figure out how to handle
@@ -504,8 +503,8 @@ class Mangler {
 							node.getSourceFile().fileName,
 							node,
 							this.service,
-							fileIdents
-						)
+							fileIdents,
+						),
 					);
 				}
 			}
@@ -517,12 +516,12 @@ class Mangler {
 			}
 		}
 		this.log(
-			`Done collecting. Classes: ${this.allClassDataByKey.size}. Exported symbols: ${this.allExportedSymbols.size}`
+			`Done collecting. Classes: ${this.allClassDataByKey.size}. Exported symbols: ${this.allExportedSymbols.size}`,
 		);
 		//  STEP: connect sub and super-types
 		const setupParents = (data) => {
 			const extendsClause = data.node.heritageClauses?.find(
-				(h) => h.token === ts.SyntaxKind.ExtendsKeyword
+				(h) => h.token === ts.SyntaxKind.ExtendsKeyword,
 			);
 			if (!extendsClause) {
 				// no EXTENDS-clause
@@ -530,7 +529,7 @@ class Mangler {
 			}
 			const info = this.service.getDefinitionAtPosition(
 				data.fileName,
-				extendsClause.types[0].expression.getEnd()
+				extendsClause.types[0].expression.getEnd(),
 			);
 			if (!info || info.length === 0) {
 				// throw new Error('SUPER type not found');
@@ -571,12 +570,12 @@ class Mangler {
 					) {
 						violationsCauseFailure = true;
 					}
-				}
+				},
 			);
 		}
 		for (const [why, whys] of violations) {
 			this.log(
-				`WARN: ${why} became PUBLIC because of: ${whys.join(" , ")}`
+				`WARN: ${why} became PUBLIC because of: ${whys.join(" , ")}`,
 			);
 		}
 		if (violationsCauseFailure) {
@@ -595,10 +594,10 @@ class Mangler {
 		const editsByFile = new Map();
 		const appendEdit = (fileName, edit) => {
 			const edits = editsByFile.get(fileName);
-			if (!edits) {
-				editsByFile.set(fileName, [edit]);
-			} else {
+			if (edits) {
 				edits.push(edit);
+			} else {
+				editsByFile.set(fileName, [edit]);
 			}
 		};
 		const appendRename = (newText, loc) => {
@@ -617,8 +616,8 @@ class Mangler {
 						this.projectPath,
 						fileName,
 						pos,
-					])
-				).then((locations) => ({ newName, locations }))
+					]),
+				).then((locations) => ({ newName, locations })),
 			);
 		};
 		for (const data of this.allClassDataByKey.values()) {
@@ -627,7 +626,7 @@ class Mangler {
 			}
 			fields: for (const [name, info] of data.fields) {
 				if (!ClassData._shouldMangle(info.type)) {
-					continue fields;
+					continue;
 				}
 				// TS-HACK: protected became public via 'some' child
 				// and because of that we might need to ignore this now
@@ -649,10 +648,10 @@ class Mangler {
 			if (
 				data.fileName.endsWith(".d.ts") ||
 				skippedExportMangledProjects.some((proj) =>
-					data.fileName.includes(proj)
+					data.fileName.includes(proj),
 				) ||
 				skippedExportMangledFiles.some((file) =>
-					data.fileName.endsWith(file + ".ts")
+					data.fileName.endsWith(file + ".ts"),
 				)
 			) {
 				continue;
@@ -689,13 +688,10 @@ class Mangler {
 			let generator;
 			let newFullText;
 			const edits = editsByFile.get(item.fileName);
-			if (!edits) {
-				// just copy
-				newFullText = item.getFullText();
-			} else {
+			if (edits) {
 				// source map generator
 				const relativeFileName = normalize(
-					path.relative(projectDir, item.fileName)
+					path.relative(projectDir, item.fileName),
 				);
 				const mappingsByLine = new Map();
 				// apply renames
@@ -713,7 +709,7 @@ class Mangler {
 								"ERROR: Overlapping edit",
 								item.fileName,
 								edit.offset,
-								edits
+								edits,
 							);
 							throw new Error("OVERLAPPING edit");
 						} else {
@@ -755,7 +751,7 @@ class Mangler {
 								line: pos.line + 1,
 								column: pos.character + edit.newText.length,
 							},
-						}
+						},
 					);
 				}
 				// source map generation, make sure to get mappings per line correct
@@ -765,7 +761,7 @@ class Mangler {
 				});
 				generator.setSourceContent(
 					relativeFileName,
-					item.getFullText()
+					item.getFullText(),
 				);
 				for (const [, mappings] of mappingsByLine) {
 					let lineDelta = 0;
@@ -782,6 +778,9 @@ class Mangler {
 					}
 				}
 				newFullText = characters.join("");
+			} else {
+				// just copy
+				newFullText = item.getFullText();
 			}
 			result.set(item.fileName, {
 				out: newFullText,
@@ -817,7 +816,7 @@ async function _run() {
 	const projectPath = path.join(projectBase, "tsconfig.json");
 	const newProjectBase = path.join(
 		path.dirname(projectBase),
-		path.basename(projectBase) + "2"
+		path.basename(projectBase) + "2",
 	);
 	fs.cpSync(projectBase, newProjectBase, { recursive: true });
 	const mangler = new Mangler(projectPath, console.log, {
@@ -825,18 +824,18 @@ async function _run() {
 		manglePrivateFields: true,
 	});
 	for (const [fileName, contents] of await mangler.computeNewFileContents(
-		new Set(["saveState"])
+		new Set(["saveState"]),
 	)) {
 		const newFilePath = path.join(
 			newProjectBase,
-			path.relative(projectBase, fileName)
+			path.relative(projectBase, fileName),
 		);
 		await fs.promises.mkdir(path.dirname(newFilePath), { recursive: true });
 		await fs.promises.writeFile(newFilePath, contents.out);
 		if (contents.sourceMap) {
 			await fs.promises.writeFile(
 				newFilePath + ".map",
-				contents.sourceMap
+				contents.sourceMap,
 			);
 		}
 	}

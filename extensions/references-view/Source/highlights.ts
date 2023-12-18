@@ -10,12 +10,12 @@ export class EditorHighlights<T> {
 	private readonly _decorationType =
 		vscode.window.createTextEditorDecorationType({
 			backgroundColor: new vscode.ThemeColor(
-				"editor.findMatchHighlightBackground"
+				"editor.findMatchHighlightBackground",
 			),
 			rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
 			overviewRulerLane: vscode.OverviewRulerLane.Center,
 			overviewRulerColor: new vscode.ThemeColor(
-				"editor.findMatchHighlightBackground"
+				"editor.findMatchHighlightBackground",
 			),
 		});
 
@@ -24,23 +24,23 @@ export class EditorHighlights<T> {
 
 	constructor(
 		private readonly _view: vscode.TreeView<T>,
-		private readonly _delegate: SymbolItemEditorHighlights<T>
+		private readonly _delegate: SymbolItemEditorHighlights<T>,
 	) {
 		this.disposables.push(
 			vscode.workspace.onDidChangeTextDocument((e) =>
-				this._ignore.add(e.document.uri.toString())
+				this._ignore.add(e.document.uri.toString()),
 			),
 			vscode.window.onDidChangeActiveTextEditor(
-				() => _view.visible && this.update()
+				() => _view.visible && this.update(),
 			),
 			_view.onDidChangeVisibility((e) =>
-				e.visible ? this._show() : this._hide()
+				e.visible ? this._show() : this._hide(),
 			),
 			_view.onDidChangeSelection(() => {
 				if (_view.visible) {
 					this.update();
 				}
-			})
+			}),
 		);
 		this._show();
 	}
@@ -66,7 +66,7 @@ export class EditorHighlights<T> {
 		}
 		const ranges = this._delegate.getEditorHighlights(
 			anchor,
-			editor.document.uri
+			editor.document.uri,
 		);
 		if (ranges) {
 			editor.setDecorations(this._decorationType, ranges);

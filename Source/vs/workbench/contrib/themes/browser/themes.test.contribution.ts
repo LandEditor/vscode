@@ -3,32 +3,32 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Color } from "vs/base/common/color";
+import { Schemas } from "vs/base/common/network";
+import { basename } from "vs/base/common/resources";
+import { splitLines } from "vs/base/common/strings";
 import { URI } from "vs/base/common/uri";
+import { TokenMetadata } from "vs/editor/common/encodedTokenAttributes";
+import { TokenizationRegistry } from "vs/editor/common/languages";
 import { ILanguageService } from "vs/editor/common/languages/language";
 import { CommandsRegistry } from "vs/platform/commands/common/commands";
+import { IFileService } from "vs/platform/files/common/files";
 import {
 	IInstantiationService,
 	ServicesAccessor,
 } from "vs/platform/instantiation/common/instantiation";
-import {
-	IWorkbenchThemeService,
-	IWorkbenchColorTheme,
-} from "vs/workbench/services/themes/common/workbenchThemeService";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 import { EditorResourceAccessor } from "vs/workbench/common/editor";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 import { ITextMateTokenizationService } from "vs/workbench/services/textMate/browser/textMateTokenizationFeature";
-import type { IGrammar, StateStack } from "vscode-textmate";
-import { TokenizationRegistry } from "vs/editor/common/languages";
-import { TokenMetadata } from "vs/editor/common/encodedTokenAttributes";
 import {
 	ThemeRule,
 	findMatchingThemeRule,
 } from "vs/workbench/services/textMate/common/TMHelper";
-import { Color } from "vs/base/common/color";
-import { IFileService } from "vs/platform/files/common/files";
-import { basename } from "vs/base/common/resources";
-import { Schemas } from "vs/base/common/network";
-import { splitLines } from "vs/base/common/strings";
+import {
+	IWorkbenchColorTheme,
+	IWorkbenchThemeService,
+} from "vs/workbench/services/themes/common/workbenchThemeService";
+import type { IGrammar, StateStack } from "vscode-textmate";
 
 interface IToken {
 	c: string;
@@ -68,7 +68,7 @@ class ThemeDocument {
 	private _generateExplanation(selector: string, color: Color): string {
 		return `${selector}: ${Color.Format.CSS.formatHexA(
 			color,
-			true
+			true,
 		).toUpperCase()}`;
 	}
 
@@ -82,10 +82,10 @@ class ThemeDocument {
 					`[${
 						this._theme.label
 					}]: Unexpected color ${Color.Format.CSS.formatHexA(
-						color
+						color,
 					)} for ${scopes}. Expected default ${Color.Format.CSS.formatHexA(
-						expected
-					)}`
+						expected,
+					)}`,
 				);
 			}
 			return this._generateExplanation("default", color);
@@ -97,10 +97,10 @@ class ThemeDocument {
 				`[${
 					this._theme.label
 				}]: Unexpected color ${Color.Format.CSS.formatHexA(
-					color
+					color,
 				)} for ${scopes}. Expected ${Color.Format.CSS.formatHexA(
-					expected
-				)} coming in from ${matchingRule.rawSelector}`
+					expected,
+				)} coming in from ${matchingRule.rawSelector}`,
 			);
 		}
 		return this._generateExplanation(matchingRule.rawSelector, color);
@@ -110,7 +110,7 @@ class ThemeDocument {
 		if (!this._cache[scopes]) {
 			this._cache[scopes] = findMatchingThemeRule(
 				this._theme,
-				scopes.split(" ")
+				scopes.split(" "),
 			)!;
 		}
 		return this._cache[scopes];
@@ -128,7 +128,7 @@ class Snapper {
 
 	private _themedTokenize(
 		grammar: IGrammar,
-		lines: string[]
+		lines: string[],
 	): IThemedToken[] {
 		const colorMap = TokenizationRegistry.getColorMap();
 		let state: StateStack | null = null;
@@ -184,7 +184,7 @@ class Snapper {
 				const token = tokenizationResult.tokens[j];
 				const tokenText = line.substring(
 					token.startIndex,
-					token.endIndex
+					token.endIndex,
 				);
 				const tokenScopes = token.scopes.join(" ");
 
@@ -213,7 +213,7 @@ class Snapper {
 
 	private async _getThemesResult(
 		grammar: IGrammar,
-		lines: string[]
+		lines: string[],
 	): Promise<IThemesResult> {
 		const currentTheme = this.themeService.getColorTheme();
 
@@ -230,19 +230,19 @@ class Snapper {
 
 		const themeDatas = await this.themeService.getColorThemes();
 		const defaultThemes = themeDatas.filter(
-			(themeData) => !!getThemeName(themeData.id)
+			(themeData) => !!getThemeName(themeData.id),
 		);
 		for (const defaultTheme of defaultThemes) {
 			const themeId = defaultTheme.id;
 			const success = await this.themeService.setColorTheme(
 				themeId,
-				undefined
+				undefined,
 			);
 			if (success) {
 				const themeName = getThemeName(themeId);
 				result[themeName!] = {
 					document: new ThemeDocument(
-						this.themeService.getColorTheme()
+						this.themeService.getColorTheme(),
 					),
 					tokens: this._themedTokenize(grammar, lines),
 				};
@@ -279,11 +279,11 @@ class Snapper {
 
 	public captureSyntaxTokens(
 		fileName: string,
-		content: string
+		content: string,
 	): Promise<IToken[]> {
 		const languageId =
 			this.languageService.guessLanguageIdByFilepathOrFirstLine(
-				URI.file(fileName)
+				URI.file(fileName),
 			);
 		return this.textMateService
 			.createTokenizer(languageId!)
@@ -298,7 +298,7 @@ class Snapper {
 					(themesResult) => {
 						this._enrichResult(result, themesResult);
 						return result.filter((t) => t.c.length > 0);
-					}
+					},
 				);
 			});
 	}
@@ -306,7 +306,7 @@ class Snapper {
 
 CommandsRegistry.registerCommand(
 	"_workbench.captureSyntaxTokens",
-	function (accessor: ServicesAccessor, resource: URI) {
+	(accessor: ServicesAccessor, resource: URI) => {
 		const process = (resource: URI) => {
 			const fileService = accessor.get(IFileService);
 			const fileName = basename(resource);
@@ -317,18 +317,20 @@ CommandsRegistry.registerCommand(
 			return fileService.readFile(resource).then((content) => {
 				return snapper.captureSyntaxTokens(
 					fileName,
-					content.value.toString()
+					content.value.toString(),
 				);
 			});
 		};
 
-		if (!resource) {
+		if (resource) {
+			return process(resource);
+		} else {
 			const editorService = accessor.get(IEditorService);
 			const file = editorService.activeEditor
 				? EditorResourceAccessor.getCanonicalUri(
 						editorService.activeEditor,
-						{ filterByScheme: Schemas.file }
-					)
+						{ filterByScheme: Schemas.file },
+				  )
 				: null;
 			if (file) {
 				process(file).then((result) => {
@@ -337,9 +339,7 @@ CommandsRegistry.registerCommand(
 			} else {
 				console.log("No file editor active");
 			}
-		} else {
-			return process(resource);
 		}
 		return undefined;
-	}
+	},
 );

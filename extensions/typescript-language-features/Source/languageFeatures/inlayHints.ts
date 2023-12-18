@@ -42,7 +42,7 @@ class TypeScriptInlayHintsProvider
 	public static readonly minVersion = API.v440;
 
 	private readonly _onDidChangeInlayHints = this._register(
-		new vscode.EventEmitter<void>()
+		new vscode.EventEmitter<void>(),
 	);
 	public readonly onDidChangeInlayHints = this._onDidChangeInlayHints.event;
 
@@ -52,7 +52,7 @@ class TypeScriptInlayHintsProvider
 		private readonly language: LanguageDescription,
 		private readonly client: ITypeScriptServiceClient,
 		private readonly fileConfigurationManager: FileConfigurationManager,
-		private readonly telemetryReporter: TelemetryReporter
+		private readonly telemetryReporter: TelemetryReporter,
 	) {
 		super();
 
@@ -60,12 +60,12 @@ class TypeScriptInlayHintsProvider
 			vscode.workspace.onDidChangeConfiguration((e) => {
 				if (
 					inlayHintSettingNames.some((settingName) =>
-						e.affectsConfiguration(language.id + "." + settingName)
+						e.affectsConfiguration(language.id + "." + settingName),
 					)
 				) {
 					this._onDidChangeInlayHints.fire();
 				}
-			})
+			}),
 		);
 
 		// When a JS/TS file changes, change inlay hints for all visible editors
@@ -75,14 +75,14 @@ class TypeScriptInlayHintsProvider
 				if (language.languageIds.includes(e.document.languageId)) {
 					this._onDidChangeInlayHints.fire();
 				}
-			})
+			}),
 		);
 	}
 
 	async provideInlayHints(
 		model: vscode.TextDocument,
 		range: vscode.Range,
-		token: vscode.CancellationToken
+		token: vscode.CancellationToken,
 	): Promise<vscode.InlayHint[] | undefined> {
 		const filepath = this.client.toOpenTsFilePath(model);
 		if (!filepath) {
@@ -98,7 +98,7 @@ class TypeScriptInlayHintsProvider
 
 		await this.fileConfigurationManager.ensureConfigurationForDocument(
 			model,
-			token
+			token,
 		);
 		if (token.isCancellationRequested) {
 			return;
@@ -120,7 +120,7 @@ class TypeScriptInlayHintsProvider
 		const response = await this.client.execute(
 			"provideInlayHints",
 			{ file: filepath, start, length },
-			token
+			token,
 		);
 		if (
 			response.type !== "response" ||
@@ -134,7 +134,7 @@ class TypeScriptInlayHintsProvider
 			const result = new vscode.InlayHint(
 				Position.fromLocation(hint.position),
 				this.convertInlayHintText(hint),
-				fromProtocolInlayHintKind(hint.kind)
+				fromProtocolInlayHintKind(hint.kind),
 			);
 			result.paddingLeft = hint.whitespaceBefore;
 			result.paddingRight = hint.whitespaceAfter;
@@ -143,7 +143,7 @@ class TypeScriptInlayHintsProvider
 	}
 
 	private convertInlayHintText(
-		tsHint: Proto.InlayHintItem
+		tsHint: Proto.InlayHintItem,
 	): string | vscode.InlayHintLabelPart[] {
 		if (tsHint.displayParts) {
 			return tsHint.displayParts.map(
@@ -152,11 +152,11 @@ class TypeScriptInlayHintsProvider
 					if (part.span) {
 						out.location = Location.fromTextSpan(
 							this.client.toResource(part.span.file),
-							part.span
+							part.span,
 						);
 					}
 					return out;
-				}
+				},
 			);
 		}
 
@@ -165,7 +165,7 @@ class TypeScriptInlayHintsProvider
 }
 
 function fromProtocolInlayHintKind(
-	kind: Proto.InlayHintKind
+	kind: Proto.InlayHintKind,
 ): vscode.InlayHintKind | undefined {
 	switch (kind) {
 		case "Parameter":
@@ -181,7 +181,7 @@ function fromProtocolInlayHintKind(
 
 function areInlayHintsEnabledForFile(
 	language: LanguageDescription,
-	document: vscode.TextDocument
+	document: vscode.TextDocument,
 ) {
 	const config = vscode.workspace.getConfiguration(language.id, document);
 	const preferences = getInlayHintsPreferences(config);
@@ -202,7 +202,7 @@ export function register(
 	language: LanguageDescription,
 	client: ITypeScriptServiceClient,
 	fileConfigurationManager: FileConfigurationManager,
-	telemetryReporter: TelemetryReporter
+	telemetryReporter: TelemetryReporter,
 ) {
 	return conditionalRegistration(
 		[
@@ -214,12 +214,12 @@ export function register(
 				language,
 				client,
 				fileConfigurationManager,
-				telemetryReporter
+				telemetryReporter,
 			);
 			return vscode.languages.registerInlayHintsProvider(
 				selector.semantic,
-				provider
+				provider,
 			);
-		}
+		},
 	);
 }

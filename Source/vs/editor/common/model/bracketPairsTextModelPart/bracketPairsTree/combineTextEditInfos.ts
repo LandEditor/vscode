@@ -18,7 +18,7 @@ import {
 
 export function combineTextEditInfos(
 	textEditInfoFirst: TextEditInfo[],
-	textEditInfoSecond: TextEditInfo[]
+	textEditInfoSecond: TextEditInfo[],
 ): TextEditInfo[] {
 	if (textEditInfoFirst.length === 0) {
 		return textEditInfoSecond;
@@ -47,7 +47,7 @@ export function combineTextEditInfos(
 	 * @param s1Length Use undefined for length "infinity"
 	 */
 	function nextS0ToS1MapWithS1LengthOf(
-		s1Length: Length | undefined
+		s1Length: Length | undefined,
 	): LengthMapping[] {
 		if (s1Length === undefined) {
 			const arr = s0ToS1Map.takeWhile((v) => true) || [];
@@ -75,7 +75,7 @@ export function combineTextEditInfos(
 	function pushEdit(
 		startOffset: Length,
 		endOffset: Length,
-		newLength: Length
+		newLength: Length,
 	): void {
 		if (
 			result.length > 0 &&
@@ -85,7 +85,7 @@ export function combineTextEditInfos(
 			result[result.length - 1] = new TextEditInfo(
 				lastResult.startOffset,
 				endOffset,
-				lengthAdd(lastResult.newLength, newLength)
+				lengthAdd(lastResult.newLength, newLength),
 			);
 		} else {
 			result.push({ startOffset, endOffset, newLength });
@@ -121,13 +121,13 @@ class LengthMapping {
 		 */
 		public readonly modified: boolean,
 		public readonly lengthBefore: Length,
-		public readonly lengthAfter: Length
+		public readonly lengthAfter: Length,
 	) {}
 
 	splitAt(lengthAfter: Length): [LengthMapping, LengthMapping | undefined] {
 		const remainingLengthAfter = lengthDiffNonNegative(
 			lengthAfter,
-			this.lengthAfter
+			this.lengthAfter,
 		);
 		if (lengthEquals(remainingLengthAfter, lengthZero)) {
 			return [this, undefined];
@@ -136,12 +136,12 @@ class LengthMapping {
 				new LengthMapping(
 					this.modified,
 					this.lengthBefore,
-					lengthAfter
+					lengthAfter,
 				),
 				new LengthMapping(
 					this.modified,
 					lengthZero,
-					remainingLengthAfter
+					remainingLengthAfter,
 				),
 			];
 		} else {
@@ -150,7 +150,7 @@ class LengthMapping {
 				new LengthMapping(
 					this.modified,
 					remainingLengthAfter,
-					remainingLengthAfter
+					remainingLengthAfter,
 				),
 			];
 		}
@@ -158,7 +158,7 @@ class LengthMapping {
 
 	toString(): string {
 		return `${this.modified ? "M" : "U"}:${lengthToObj(
-			this.lengthBefore
+			this.lengthBefore,
 		)} -> ${lengthToObj(this.lengthAfter)}`;
 	}
 }
@@ -169,7 +169,7 @@ function toLengthMapping(textEditInfos: TextEditInfo[]): LengthMapping[] {
 	for (const textEditInfo of textEditInfos) {
 		const spaceLength = lengthDiffNonNegative(
 			lastOffset,
-			textEditInfo.startOffset
+			textEditInfo.startOffset,
 		);
 		if (!lengthIsZero(spaceLength)) {
 			result.push(new LengthMapping(false, spaceLength, spaceLength));
@@ -177,10 +177,10 @@ function toLengthMapping(textEditInfos: TextEditInfo[]): LengthMapping[] {
 
 		const lengthBefore = lengthDiffNonNegative(
 			textEditInfo.startOffset,
-			textEditInfo.endOffset
+			textEditInfo.endOffset,
 		);
 		result.push(
-			new LengthMapping(true, lengthBefore, textEditInfo.newLength)
+			new LengthMapping(true, lengthBefore, textEditInfo.newLength),
 		);
 		lastOffset = textEditInfo.endOffset;
 	}

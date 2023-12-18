@@ -20,20 +20,20 @@ export class UserDataProfilePreviewContribution
 		environmentService: IBrowserWorkbenchEnvironmentService,
 		@IUserDataProfileImportExportService
 		userDataProfileImportExportService: IUserDataProfileImportExportService,
-		@ILogService logService: ILogService
+		@ILogService logService: ILogService,
 	) {
 		super();
 		if (environmentService.options?.profileToPreview) {
 			userDataProfileImportExportService
 				.importProfile(
 					URI.revive(environmentService.options.profileToPreview),
-					{ mode: "both" }
+					{ mode: "both" },
 				)
 				.then(null, (error) =>
 					logService.error(
 						"Error while previewing the profile",
-						getErrorMessage(error)
-					)
+						getErrorMessage(error),
+					),
 				);
 		}
 	}

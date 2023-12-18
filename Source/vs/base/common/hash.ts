@@ -78,16 +78,12 @@ export class Hasher {
 	}
 }
 
-const enum SHA1Constant {
+enum SHA1Constant {
 	BLOCK_SIZE = 64, // 512 / 8
 	UNICODE_REPLACEMENT = 0xfffd,
 }
 
-function leftRotate(
-	value: number,
-	bits: number,
-	totalBits: number = 32
-): number {
+function leftRotate(value: number, bits: number, totalBits = 32): number {
 	// delta + bits = totalBits
 	const delta = totalBits - bits;
 
@@ -100,16 +96,16 @@ function leftRotate(
 
 function fill(
 	dest: Uint8Array,
-	index: number = 0,
+	index = 0,
 	count: number = dest.byteLength,
-	value: number = 0
+	value = 0,
 ): void {
 	for (let i = 0; i < count; i++) {
 		dest[index + i] = value;
 	}
 }
 
-function leftPad(value: string, length: number, char: string = "0"): string {
+function leftPad(value: string, length: number, char = "0"): string {
 	while (value.length < length) {
 		value = char + value;
 	}
@@ -120,7 +116,7 @@ export function toHexString(buffer: ArrayBuffer): string;
 export function toHexString(value: number, bitsize?: number): string;
 export function toHexString(
 	bufferOrValue: ArrayBuffer | number,
-	bitsize: number = 32
+	bitsize = 32,
 ): string {
 	if (bufferOrValue instanceof ArrayBuffer) {
 		return Array.from(new Uint8Array(bufferOrValue))
@@ -152,7 +148,7 @@ export class StringSHA1 {
 
 	constructor() {
 		this._buff = new Uint8Array(
-			SHA1Constant.BLOCK_SIZE + 3 /* to fit any utf-8 */
+			SHA1Constant.BLOCK_SIZE + 3 /* to fit any utf-8 */,
 		);
 		this._buffDV = new DataView(this._buff.buffer);
 		this._buffLen = 0;
@@ -191,7 +187,7 @@ export class StringSHA1 {
 						offset++;
 						codePoint = strings.computeCodePoint(
 							charCode,
-							nextCharCode
+							nextCharCode,
 						);
 					} else {
 						// illegal => unicode replacement character
@@ -223,7 +219,7 @@ export class StringSHA1 {
 	private _push(
 		buff: Uint8Array,
 		buffLen: number,
-		codePoint: number
+		codePoint: number,
 	): number {
 		if (codePoint < 0x0080) {
 			buff[buffLen++] = codePoint;
@@ -281,7 +277,7 @@ export class StringSHA1 {
 				this._buffLen = this._push(
 					this._buff,
 					this._buffLen,
-					SHA1Constant.UNICODE_REPLACEMENT
+					SHA1Constant.UNICODE_REPLACEMENT,
 				);
 			}
 			this._totalLen += this._buffLen;
@@ -331,9 +327,9 @@ export class StringSHA1 {
 						bigBlock32.getUint32(j - 32, false) ^
 						bigBlock32.getUint32(j - 56, false) ^
 						bigBlock32.getUint32(j - 64, false),
-					1
+					1,
 				),
-				false
+				false,
 			);
 		}
 

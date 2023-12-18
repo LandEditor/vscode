@@ -4,32 +4,32 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	Location,
-	getLocation,
-	createScanner,
-	SyntaxKind,
-	ScanError,
 	JSONScanner,
+	Location,
+	ScanError,
+	SyntaxKind,
+	createScanner,
+	getLocation,
 } from "jsonc-parser";
+import { XHRRequest } from "request-light";
 import { BowerJSONContribution } from "./bowerJSONContribution";
 import { PackageJSONContribution } from "./packageJSONContribution";
-import { XHRRequest } from "request-light";
 
 import {
+	CancellationToken,
 	CompletionItem,
 	CompletionItemProvider,
 	CompletionList,
-	TextDocument,
-	Position,
+	Disposable,
+	DocumentSelector,
 	Hover,
 	HoverProvider,
-	CancellationToken,
-	Range,
-	DocumentSelector,
-	languages,
-	Disposable,
-	Uri,
 	MarkdownString,
+	Position,
+	Range,
+	TextDocument,
+	Uri,
+	languages,
 } from "vscode";
 
 export interface ISuggestionsCollector {
@@ -43,7 +43,7 @@ export interface IJSONContribution {
 	getDocumentSelector(): DocumentSelector;
 	getInfoContribution(
 		resourceUri: Uri,
-		location: Location
+		location: Location,
 	): Thenable<MarkdownString[] | null> | null;
 	collectPropertySuggestions(
 		resourceUri: Uri,
@@ -51,26 +51,26 @@ export interface IJSONContribution {
 		currentWord: string,
 		addValue: boolean,
 		isLast: boolean,
-		result: ISuggestionsCollector
+		result: ISuggestionsCollector,
 	): Thenable<any> | null;
 	collectValueSuggestions(
 		resourceUri: Uri,
 		location: Location,
-		result: ISuggestionsCollector
+		result: ISuggestionsCollector,
 	): Thenable<any> | null;
 	collectDefaultSuggestions(
 		resourceUri: Uri,
-		result: ISuggestionsCollector
+		result: ISuggestionsCollector,
 	): Thenable<any>;
 	resolveSuggestion?(
 		resourceUri: Uri | undefined,
-		item: CompletionItem
+		item: CompletionItem,
 	): Thenable<CompletionItem | null> | null;
 }
 
 export function addJSONProviders(
 	xhr: XHRRequest,
-	npmCommandPath: string | undefined
+	npmCommandPath: string | undefined,
 ): Disposable {
 	const contributions = [
 		new PackageJSONContribution(xhr, npmCommandPath),
@@ -84,14 +84,14 @@ export function addJSONProviders(
 				selector,
 				new JSONCompletionItemProvider(contribution),
 				'"',
-				":"
-			)
+				":",
+			),
 		);
 		subscriptions.push(
 			languages.registerHoverProvider(
 				selector,
-				new JSONHoverProvider(contribution)
-			)
+				new JSONHoverProvider(contribution),
+			),
 		);
 	});
 	return Disposable.from(...subscriptions);
@@ -103,7 +103,7 @@ export class JSONHoverProvider implements HoverProvider {
 	public provideHover(
 		document: TextDocument,
 		position: Position,
-		_token: CancellationToken
+		_token: CancellationToken,
 	): Thenable<Hover> | null {
 		const offset = document.offsetAt(position);
 		const location = getLocation(document.getText(), offset);
@@ -118,13 +118,13 @@ export class JSONHoverProvider implements HoverProvider {
 		) {
 			const promise = this.jsonContribution.getInfoContribution(
 				document.uri,
-				location
+				location,
 			);
 			if (promise) {
 				return promise.then((htmlContent) => {
 					const range = new Range(
 						document.positionAt(node.offset),
-						document.positionAt(node.offset + node.length)
+						document.positionAt(node.offset + node.length),
 					);
 					const result: Hover = {
 						contents: htmlContent || [],
@@ -145,12 +145,12 @@ export class JSONCompletionItemProvider implements CompletionItemProvider {
 
 	public resolveCompletionItem(
 		item: CompletionItem,
-		_token: CancellationToken
+		_token: CancellationToken,
 	): Thenable<CompletionItem | null> {
 		if (this.jsonContribution.resolveSuggestion) {
 			const resolver = this.jsonContribution.resolveSuggestion(
 				this.lastResource,
-				item
+				item,
 			);
 			if (resolver) {
 				return resolver;
@@ -162,7 +162,7 @@ export class JSONCompletionItemProvider implements CompletionItemProvider {
 	public provideCompletionItems(
 		document: TextDocument,
 		position: Position,
-		_token: CancellationToken
+		_token: CancellationToken,
 	): Thenable<CompletionList | null> | null {
 		this.lastResource = document.uri;
 
@@ -188,12 +188,12 @@ export class JSONCompletionItemProvider implements CompletionItemProvider {
 		) {
 			overwriteRange = new Range(
 				document.positionAt(node.offset),
-				document.positionAt(node.offset + node.length)
+				document.positionAt(node.offset + node.length),
 			);
 		} else {
 			overwriteRange = new Range(
 				document.positionAt(offset - currentWord.length),
-				position
+				position,
 			);
 		}
 
@@ -210,7 +210,7 @@ export class JSONCompletionItemProvider implements CompletionItemProvider {
 						replacing: overwriteRange,
 						inserting: new Range(
 							overwriteRange.start,
-							overwriteRange.start
+							overwriteRange.start,
 						),
 					};
 					items.push(suggestion);
@@ -229,7 +229,7 @@ export class JSONCompletionItemProvider implements CompletionItemProvider {
 				!location.previousNode ||
 				!this.hasColonAfter(
 					scanner,
-					location.previousNode.offset + location.previousNode.length
+					location.previousNode.offset + location.previousNode.length,
 				);
 			const isLast = this.isLast(scanner, document.offsetAt(position));
 			collectPromise = this.jsonContribution.collectPropertySuggestions(
@@ -238,22 +238,19 @@ export class JSONCompletionItemProvider implements CompletionItemProvider {
 				currentWord,
 				addValue,
 				isLast,
-				collector
+				collector,
+			);
+		} else if (location.path.length === 0) {
+			collectPromise = this.jsonContribution.collectDefaultSuggestions(
+				document.uri,
+				collector,
 			);
 		} else {
-			if (location.path.length === 0) {
-				collectPromise =
-					this.jsonContribution.collectDefaultSuggestions(
-						document.uri,
-						collector
-					);
-			} else {
-				collectPromise = this.jsonContribution.collectValueSuggestions(
-					document.uri,
-					location,
-					collector
-				);
-			}
+			collectPromise = this.jsonContribution.collectValueSuggestions(
+				document.uri,
+				location,
+				collector,
+			);
 		}
 		if (collectPromise) {
 			return collectPromise.then(() => {

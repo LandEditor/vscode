@@ -43,15 +43,15 @@ import { LengthObj } from "vs/editor/common/model/bracketPairsTextModelPart/brac
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
 	ContextKeyValue,
-	RawContextKey,
 	IContextKeyService,
+	RawContextKey,
 } from "vs/platform/contextkey/common/contextkey";
 
 export function joinCombine<T>(
 	arr1: readonly T[],
 	arr2: readonly T[],
 	keySelector: (val: T) => number,
-	combine: (v1: T, v2: T) => T
+	combine: (v1: T, v2: T) => T,
 ): readonly T[] {
 	if (arr1.length === 0) {
 		return arr2;
@@ -95,7 +95,7 @@ export function joinCombine<T>(
 // TODO make utility
 export function applyObservableDecorations(
 	editor: ICodeEditor,
-	decorations: IObservable<IModelDeltaDecoration[]>
+	decorations: IObservable<IModelDeltaDecoration[]>,
 ): IDisposable {
 	const d = new DisposableStore();
 	const decorationsCollection = editor.createDecorationsCollection();
@@ -108,8 +108,8 @@ export function applyObservableDecorations(
 			(reader) => {
 				const d = decorations.read(reader);
 				decorationsCollection.set(d);
-			}
-		)
+			},
+		),
 	);
 	d.add({
 		dispose: () => {
@@ -129,7 +129,7 @@ export function appendRemoveOnDispose(parent: HTMLElement, child: HTMLElement) {
 export function observableConfigValue<T>(
 	key: string,
 	defaultValue: T,
-	configurationService: IConfigurationService
+	configurationService: IConfigurationService,
 ): IObservable<T> {
 	return observableFromEvent(
 		(handleChange) =>
@@ -138,7 +138,7 @@ export function observableConfigValue<T>(
 					handleChange(e);
 				}
 			}),
-		() => configurationService.getValue<T>(key) ?? defaultValue
+		() => configurationService.getValue<T>(key) ?? defaultValue,
 	);
 }
 
@@ -157,20 +157,20 @@ export class ObservableElementSizeObserver extends Disposable {
 
 	constructor(
 		element: HTMLElement | null,
-		dimension: IDimension | undefined
+		dimension: IDimension | undefined,
 	) {
 		super();
 
 		this.elementSizeObserver = this._register(
-			new ElementSizeObserver(element, dimension)
+			new ElementSizeObserver(element, dimension),
 		);
 		this._width = observableValue(
 			this,
-			this.elementSizeObserver.getWidth()
+			this.elementSizeObserver.getWidth(),
 		);
 		this._height = observableValue(
 			this,
-			this.elementSizeObserver.getHeight()
+			this.elementSizeObserver.getHeight(),
 		);
 
 		this._register(
@@ -179,8 +179,8 @@ export class ObservableElementSizeObserver extends Disposable {
 					/** @description Set width/height from elementSizeObserver */
 					this._width.set(this.elementSizeObserver.getWidth(), tx);
 					this._height.set(this.elementSizeObserver.getHeight(), tx);
-				})
-			)
+				}),
+			),
 		);
 	}
 
@@ -200,14 +200,14 @@ export class ObservableElementSizeObserver extends Disposable {
 export function animatedObservable(
 	targetWindow: Window,
 	base: IObservable<number, boolean>,
-	store: DisposableStore
+	store: DisposableStore,
 ): IObservable<number> {
 	let targetVal = base.get();
 	let startVal = targetVal;
 	let curVal = targetVal;
 	const result = observableValue("animatedValue", targetVal);
 
-	let animationStartMs: number = -1;
+	let animationStartMs = -1;
 	const durationMs = 300;
 	let animationFrame: number | undefined = undefined;
 
@@ -234,14 +234,14 @@ export function animatedObservable(
 				animationStartMs = Date.now() - (s.animate ? 0 : durationMs);
 
 				update();
-			}
-		)
+			},
+		),
 	);
 
 	function update() {
 		const passedMs = Date.now() - animationStartMs;
 		curVal = Math.floor(
-			easeOutExpo(passedMs, startVal, targetVal - startVal, durationMs)
+			easeOutExpo(passedMs, startVal, targetVal - startVal, durationMs),
 		);
 
 		if (passedMs < durationMs) {
@@ -284,7 +284,7 @@ export abstract class ViewZoneOverlayWidget extends Disposable {
 	constructor(
 		editor: ICodeEditor,
 		viewZone: PlaceholderViewZone,
-		htmlElement: HTMLElement
+		htmlElement: HTMLElement,
 	) {
 		super();
 
@@ -293,7 +293,7 @@ export abstract class ViewZoneOverlayWidget extends Disposable {
 			applyStyle(htmlElement, {
 				height: viewZone.actualHeight,
 				top: viewZone.actualTop,
-			})
+			}),
 		);
 	}
 }
@@ -311,11 +311,11 @@ export class PlaceholderViewZone implements IObservableViewZone {
 
 	private readonly _actualTop = observableValue<number | undefined>(
 		this,
-		undefined
+		undefined,
 	);
 	private readonly _actualHeight = observableValue<number | undefined>(
 		this,
-		undefined
+		undefined,
 	);
 
 	public readonly actualTop: IObservable<number | undefined> =
@@ -333,7 +333,7 @@ export class PlaceholderViewZone implements IObservableViewZone {
 
 	constructor(
 		private readonly _afterLineNumber: IObservable<number>,
-		public readonly heightInPx: number
+		public readonly heightInPx: number,
 	) {}
 
 	onDomNodeTop = (top: number) => {
@@ -357,7 +357,7 @@ export class ManagedOverlayWidget implements IDisposable {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		private readonly _domElement: HTMLElement
+		private readonly _domElement: HTMLElement,
 	) {
 		this._editor.addOverlayWidget(this._overlayWidget);
 	}
@@ -384,7 +384,7 @@ export function applyStyle(
 			| CSSStyle[TKey]
 			| IObservable<CSSStyle[TKey] | undefined>
 			| undefined;
-	}>
+	}>,
 ) {
 	return autorun((reader) => {
 		/** @description applyStyle */
@@ -403,7 +403,7 @@ export function applyStyle(
 
 export function readHotReloadableExport<T>(
 	value: T,
-	reader: IReader | undefined
+	reader: IReader | undefined,
 ): T {
 	observeHotReloadableExports([value], reader);
 	return value;
@@ -411,14 +411,14 @@ export function readHotReloadableExport<T>(
 
 export function observeHotReloadableExports(
 	values: any[],
-	reader: IReader | undefined
+	reader: IReader | undefined,
 ): void {
 	if (isHotReloadEnabled()) {
 		const o = observableSignalFromEvent("reload", (event) =>
 			registerHotReloadHandler(({ oldExports }) => {
 				if (
 					![...Object.values(oldExports)].some((v) =>
-						values.includes(v)
+						values.includes(v),
 					)
 				) {
 					return undefined;
@@ -427,7 +427,7 @@ export function observeHotReloadableExports(
 					event(undefined);
 					return true;
 				};
-			})
+			}),
 		);
 		o.read(reader);
 	}
@@ -437,7 +437,7 @@ export function applyViewZones(
 	editor: ICodeEditor,
 	viewZones: IObservable<IObservableViewZone[]>,
 	setIsUpdating?: (isUpdatingViewZones: boolean) => void,
-	zoneIds?: Set<string>
+	zoneIds?: Set<string>,
 ): IDisposable {
 	const store = new DisposableStore();
 	const lastViewZoneIds: string[] = [];
@@ -490,7 +490,7 @@ export function applyViewZones(
 						},
 						handleChange(context, changeSummary) {
 							const id = viewZoneIdPerOnChangeObservable.get(
-								context.changedObservable
+								context.changedObservable,
 							);
 							if (id !== undefined) {
 								changeSummary.zoneIds.push(id);
@@ -504,7 +504,7 @@ export function applyViewZones(
 							if (vz.onChange) {
 								viewZoneIdPerOnChangeObservable.set(
 									vz.onChange,
-									viewZonIdsPerViewZone.get(vz)!
+									viewZonIdsPerViewZone.get(vz)!,
 								);
 								vz.onChange.read(reader);
 							}
@@ -520,10 +520,10 @@ export function applyViewZones(
 						if (setIsUpdating) {
 							setIsUpdating(false);
 						}
-					}
-				)
+					},
+				),
 			);
-		})
+		}),
 	);
 
 	store.add({
@@ -554,11 +554,11 @@ export class DisposableCancellationTokenSource extends CancellationTokenSource {
 
 export function translatePosition(
 	posInOriginal: Position,
-	mappings: DetailedLineRangeMapping[]
+	mappings: DetailedLineRangeMapping[],
 ): Range {
 	const mapping = findLast(
 		mappings,
-		(m) => m.original.startLineNumber <= posInOriginal.lineNumber
+		(m) => m.original.startLineNumber <= posInOriginal.lineNumber,
 	);
 	if (!mapping) {
 		// No changes before the position
@@ -571,19 +571,19 @@ export function translatePosition(
 			mapping.original.endLineNumberExclusive +
 			mapping.modified.endLineNumberExclusive;
 		return Range.fromPositions(
-			new Position(newLineNumber, posInOriginal.column)
+			new Position(newLineNumber, posInOriginal.column),
 		);
 	}
 
 	if (!mapping.innerChanges) {
 		// Only for legacy algorithm
 		return Range.fromPositions(
-			new Position(mapping.modified.startLineNumber, 1)
+			new Position(mapping.modified.startLineNumber, 1),
 		);
 	}
 
 	const innerMapping = findLast(mapping.innerChanges, (m) =>
-		m.originalRange.getStartPosition().isBeforeOrEqual(posInOriginal)
+		m.originalRange.getStartPosition().isBeforeOrEqual(posInOriginal),
 	);
 	if (!innerMapping) {
 		const newLineNumber =
@@ -591,7 +591,7 @@ export function translatePosition(
 			mapping.original.startLineNumber +
 			mapping.modified.startLineNumber;
 		return Range.fromPositions(
-			new Position(newLineNumber, posInOriginal.column)
+			new Position(newLineNumber, posInOriginal.column),
 		);
 	}
 
@@ -600,24 +600,24 @@ export function translatePosition(
 	} else {
 		const l = lengthBetweenPositions(
 			innerMapping.originalRange.getEndPosition(),
-			posInOriginal
+			posInOriginal,
 		);
 		return Range.fromPositions(
-			addLength(innerMapping.modifiedRange.getEndPosition(), l)
+			addLength(innerMapping.modifiedRange.getEndPosition(), l),
 		);
 	}
 }
 
 function lengthBetweenPositions(
 	position1: Position,
-	position2: Position
+	position2: Position,
 ): LengthObj {
 	if (position1.lineNumber === position2.lineNumber) {
 		return new LengthObj(0, position2.column - position1.column);
 	} else {
 		return new LengthObj(
 			position2.lineNumber - position1.lineNumber,
-			position2.column - 1
+			position2.column - 1,
 		);
 	}
 }
@@ -626,12 +626,12 @@ function addLength(position: Position, length: LengthObj): Position {
 	if (length.lineCount === 0) {
 		return new Position(
 			position.lineNumber,
-			position.column + length.columnCount
+			position.column + length.columnCount,
 		);
 	} else {
 		return new Position(
 			position.lineNumber + length.lineCount,
-			length.columnCount + 1
+			length.columnCount + 1,
 		);
 	}
 }
@@ -639,7 +639,7 @@ function addLength(position: Position, length: LengthObj): Position {
 export function bindContextKey<T extends ContextKeyValue>(
 	key: RawContextKey<T>,
 	service: IContextKeyService,
-	computeValue: (reader: IReader) => T
+	computeValue: (reader: IReader) => T,
 ): IDisposable {
 	const boundKey = key.bindTo(service);
 	return autorunOpts({ debugName: () => `Update ${key.key}` }, (reader) => {

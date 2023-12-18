@@ -12,7 +12,7 @@ export class ActionRunnerWithContext extends ActionRunner {
 
 	protected override runAction(
 		action: IAction,
-		_context?: unknown
+		_context?: unknown,
 	): Promise<void> {
 		return super.runAction(action, this._getContext());
 	}

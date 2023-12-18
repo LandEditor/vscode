@@ -17,11 +17,7 @@ export class ReplaceCommand implements ICommand {
 	private readonly _text: string;
 	public readonly insertsAutoWhitespace: boolean;
 
-	constructor(
-		range: Range,
-		text: string,
-		insertsAutoWhitespace: boolean = false
-	) {
+	constructor(range: Range, text: string, insertsAutoWhitespace = false) {
 		this._range = range;
 		this._text = text;
 		this.insertsAutoWhitespace = insertsAutoWhitespace;
@@ -29,14 +25,14 @@ export class ReplaceCommand implements ICommand {
 
 	public getEditOperations(
 		model: ITextModel,
-		builder: IEditOperationBuilder
+		builder: IEditOperationBuilder,
 	): void {
 		builder.addTrackedEditOperation(this._range, this._text);
 	}
 
 	public computeCursorState(
 		model: ITextModel,
-		helper: ICursorStateComputerData
+		helper: ICursorStateComputerData,
 	): Selection {
 		const inverseEditOperations = helper.getInverseEditOperations();
 		const srcRange = inverseEditOperations[0].range;
@@ -55,14 +51,14 @@ export class ReplaceCommandThatSelectsText implements ICommand {
 
 	public getEditOperations(
 		model: ITextModel,
-		builder: IEditOperationBuilder
+		builder: IEditOperationBuilder,
 	): void {
 		builder.addTrackedEditOperation(this._range, this._text);
 	}
 
 	public computeCursorState(
 		model: ITextModel,
-		helper: ICursorStateComputerData
+		helper: ICursorStateComputerData,
 	): Selection {
 		const inverseEditOperations = helper.getInverseEditOperations();
 		const srcRange = inverseEditOperations[0].range;
@@ -75,11 +71,7 @@ export class ReplaceCommandWithoutChangingPosition implements ICommand {
 	private readonly _text: string;
 	public readonly insertsAutoWhitespace: boolean;
 
-	constructor(
-		range: Range,
-		text: string,
-		insertsAutoWhitespace: boolean = false
-	) {
+	constructor(range: Range, text: string, insertsAutoWhitespace = false) {
 		this._range = range;
 		this._text = text;
 		this.insertsAutoWhitespace = insertsAutoWhitespace;
@@ -87,14 +79,14 @@ export class ReplaceCommandWithoutChangingPosition implements ICommand {
 
 	public getEditOperations(
 		model: ITextModel,
-		builder: IEditOperationBuilder
+		builder: IEditOperationBuilder,
 	): void {
 		builder.addTrackedEditOperation(this._range, this._text);
 	}
 
 	public computeCursorState(
 		model: ITextModel,
-		helper: ICursorStateComputerData
+		helper: ICursorStateComputerData,
 	): Selection {
 		const inverseEditOperations = helper.getInverseEditOperations();
 		const srcRange = inverseEditOperations[0].range;
@@ -114,7 +106,7 @@ export class ReplaceCommandWithOffsetCursorState implements ICommand {
 		text: string,
 		lineNumberDeltaOffset: number,
 		columnDeltaOffset: number,
-		insertsAutoWhitespace: boolean = false
+		insertsAutoWhitespace = false,
 	) {
 		this._range = range;
 		this._text = text;
@@ -125,21 +117,21 @@ export class ReplaceCommandWithOffsetCursorState implements ICommand {
 
 	public getEditOperations(
 		model: ITextModel,
-		builder: IEditOperationBuilder
+		builder: IEditOperationBuilder,
 	): void {
 		builder.addTrackedEditOperation(this._range, this._text);
 	}
 
 	public computeCursorState(
 		model: ITextModel,
-		helper: ICursorStateComputerData
+		helper: ICursorStateComputerData,
 	): Selection {
 		const inverseEditOperations = helper.getInverseEditOperations();
 		const srcRange = inverseEditOperations[0].range;
 		return Selection.fromPositions(
 			srcRange
 				.getEndPosition()
-				.delta(this._lineNumberDeltaOffset, this._columnDeltaOffset)
+				.delta(this._lineNumberDeltaOffset, this._columnDeltaOffset),
 		);
 	}
 }
@@ -155,7 +147,7 @@ export class ReplaceCommandThatPreservesSelection implements ICommand {
 		editRange: Range,
 		text: string,
 		initialSelection: Selection,
-		forceMoveMarkers: boolean = false
+		forceMoveMarkers = false,
 	) {
 		this._range = editRange;
 		this._text = text;
@@ -166,19 +158,19 @@ export class ReplaceCommandThatPreservesSelection implements ICommand {
 
 	public getEditOperations(
 		model: ITextModel,
-		builder: IEditOperationBuilder
+		builder: IEditOperationBuilder,
 	): void {
 		builder.addTrackedEditOperation(
 			this._range,
 			this._text,
-			this._forceMoveMarkers
+			this._forceMoveMarkers,
 		);
 		this._selectionId = builder.trackSelection(this._initialSelection);
 	}
 
 	public computeCursorState(
 		model: ITextModel,
-		helper: ICursorStateComputerData
+		helper: ICursorStateComputerData,
 	): Selection {
 		return helper.getTrackedSelection(this._selectionId!);
 	}

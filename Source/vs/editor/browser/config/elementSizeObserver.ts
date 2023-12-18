@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { getWindow, scheduleAtNextAnimationFrame } from "vs/base/browser/dom";
+import { Emitter, Event } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
 import { IDimension } from "vs/editor/common/core/dimension";
-import { Emitter, Event } from "vs/base/common/event";
-import { getWindow, scheduleAtNextAnimationFrame } from "vs/base/browser/dom";
 
 export class ElementSizeObserver extends Disposable {
 	private _onDidChange = this._register(new Emitter<void>());
@@ -19,7 +19,7 @@ export class ElementSizeObserver extends Disposable {
 
 	constructor(
 		referenceDomElement: HTMLElement | null,
-		dimension: IDimension | undefined
+		dimension: IDimension | undefined,
 	) {
 		super();
 		this._referenceDomElement = referenceDomElement;
@@ -76,7 +76,7 @@ export class ElementSizeObserver extends Disposable {
 							() => {
 								alreadyObservedThisAnimationFrame = false;
 								update();
-							}
+							},
 						);
 					}
 				}
@@ -107,7 +107,7 @@ export class ElementSizeObserver extends Disposable {
 
 	private measureReferenceDomElement(
 		emitEvent: boolean,
-		dimension?: IDimension
+		dimension?: IDimension,
 	): void {
 		let observedWidth = 0;
 		let observedHeight = 0;

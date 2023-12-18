@@ -3,18 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
 import { IEditorOptions } from "vs/editor/common/config/editorOptions";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { IStorageService } from "vs/platform/storage/common/storage";
 import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
+import { localize } from "vs/nls";
+import { IFileService } from "vs/platform/files/common/files";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { AbstractTextResourceEditor } from "vs/workbench/browser/parts/editor/textResourceEditor";
+import { IStorageService } from "vs/platform/storage/common/storage";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import { IThemeService } from "vs/platform/theme/common/themeService";
+import { IEditorConfiguration } from "vs/workbench/browser/parts/editor/textEditor";
+import { AbstractTextResourceEditor } from "vs/workbench/browser/parts/editor/textResourceEditor";
 import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { IFileService } from "vs/platform/files/common/files";
-import { IEditorConfiguration } from "vs/workbench/browser/parts/editor/textEditor";
 
 export class LogViewer extends AbstractTextResourceEditor {
 	static readonly LOG_VIEWER_EDITOR_ID = "workbench.editors.logViewer";
@@ -28,7 +28,7 @@ export class LogViewer extends AbstractTextResourceEditor {
 		@IThemeService themeService: IThemeService,
 		@IEditorGroupsService editorGroupService: IEditorGroupsService,
 		@IEditorService editorService: IEditorService,
-		@IFileService fileService: IFileService
+		@IFileService fileService: IFileService,
 	) {
 		super(
 			LogViewer.LOG_VIEWER_EDITOR_ID,
@@ -39,12 +39,12 @@ export class LogViewer extends AbstractTextResourceEditor {
 			themeService,
 			editorGroupService,
 			editorService,
-			fileService
+			fileService,
 		);
 	}
 
 	protected override getConfigurationOverrides(
-		configuration: IEditorConfiguration
+		configuration: IEditorConfiguration,
 	): IEditorOptions {
 		const options = super.getConfigurationOverrides(configuration);
 		options.wordWrap = "off"; // all log viewers do not wrap

@@ -1,10 +1,13 @@
+import { matchesFuzzy } from "vs/base/common/filters";
+import { DisposableStore } from "vs/base/common/lifecycle";
+import { ILanguageService } from "vs/editor/common/languages/language";
+import { getIconClasses } from "vs/editor/common/services/getIconClasses";
+import { IModelService } from "vs/editor/common/services/model";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as nls from "vs/nls";
-import { matchesFuzzy } from "vs/base/common/filters";
-import { Source } from "vs/workbench/contrib/debug/common/debugSource";
 import {
 	IQuickInputService,
 	IQuickPickItem,
@@ -14,11 +17,8 @@ import {
 	IDebugService,
 	IDebugSession,
 } from "vs/workbench/contrib/debug/common/debug";
+import { Source } from "vs/workbench/contrib/debug/common/debugSource";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { getIconClasses } from "vs/editor/common/services/getIconClasses";
-import { IModelService } from "vs/editor/common/services/model";
-import { ILanguageService } from "vs/editor/common/languages/language";
-import { DisposableStore } from "vs/base/common/lifecycle";
 
 import { dirname } from "vs/base/common/resources";
 import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
@@ -51,7 +51,7 @@ export async function showLoadedScriptMenu(accessor: ServicesAccessor) {
 			false;
 	quickPick.placeholder = nls.localize(
 		"moveFocusedView.selectView",
-		"Search loaded scripts by name"
+		"Search loaded scripts by name",
 	);
 	quickPick.items = await _getPicks(
 		quickPick.value,
@@ -59,7 +59,7 @@ export async function showLoadedScriptMenu(accessor: ServicesAccessor) {
 		editorService,
 		modelService,
 		languageService,
-		labelService
+		labelService,
 	);
 
 	localDisposableStore.add(
@@ -70,9 +70,9 @@ export async function showLoadedScriptMenu(accessor: ServicesAccessor) {
 				editorService,
 				modelService,
 				languageService,
-				labelService
+				labelService,
 			);
-		})
+		}),
 	);
 	localDisposableStore.add(
 		quickPick.onDidAccept(() => {
@@ -80,7 +80,7 @@ export async function showLoadedScriptMenu(accessor: ServicesAccessor) {
 			selectedItem.accept();
 			quickPick.hide();
 			localDisposableStore.dispose();
-		})
+		}),
 	);
 	quickPick.show();
 }
@@ -91,7 +91,7 @@ async function _getPicksFromSession(
 	editorService: IEditorService,
 	modelService: IModelService,
 	languageService: ILanguageService,
-	labelService: ILabelService
+	labelService: ILabelService,
 ): Promise<Array<IPickerDebugItem | IQuickPickSeparator>> {
 	const items: Array<IPickerDebugItem | IQuickPickSeparator> = [];
 	items.push({ type: "separator", label: session.name });
@@ -104,7 +104,7 @@ async function _getPicksFromSession(
 			editorService,
 			modelService,
 			languageService,
-			labelService
+			labelService,
 		);
 		if (pick) {
 			items.push(pick);
@@ -118,7 +118,7 @@ async function _getPicks(
 	editorService: IEditorService,
 	modelService: IModelService,
 	languageService: ILanguageService,
-	labelService: ILabelService
+	labelService: ILabelService,
 ): Promise<Array<IPickerDebugItem | IQuickPickSeparator>> {
 	const loadedScriptPicks: Array<IPickerDebugItem | IQuickPickSeparator> = [];
 
@@ -130,9 +130,9 @@ async function _getPicks(
 				editorService,
 				modelService,
 				languageService,
-				labelService
-			)
-		)
+				labelService,
+			),
+		),
 	);
 
 	for (const row of picks) {
@@ -149,7 +149,7 @@ function _createPick(
 	editorService: IEditorService,
 	modelService: IModelService,
 	languageService: ILanguageService,
-	labelService: ILabelService
+	labelService: ILabelService,
 ): IPickerDebugItem | undefined {
 	const label = labelService.getUriBasenameLabel(source.uri);
 	const desc = labelService.getUriLabel(dirname(source.uri));
@@ -168,7 +168,7 @@ function _createPick(
 			iconClasses: getIconClasses(
 				modelService,
 				languageService,
-				source.uri
+				source.uri,
 			),
 			accept: () => {
 				if (source.available) {

@@ -11,23 +11,23 @@ import {
 	registerAction2,
 } from "vs/platform/actions/common/actions";
 import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
+import { ILogService } from "vs/platform/log/common/log";
+import { copyCellOutput } from "vs/workbench/contrib/notebook/browser/contrib/clipboard/cellOutputClipboard";
 import {
 	INotebookOutputActionContext,
 	NOTEBOOK_ACTIONS_CATEGORY,
 } from "vs/workbench/contrib/notebook/browser/controller/coreActions";
-import { NOTEBOOK_CELL_HAS_OUTPUTS } from "vs/workbench/contrib/notebook/common/notebookContextKeys";
-import * as icons from "vs/workbench/contrib/notebook/browser/notebookIcons";
-import { ILogService } from "vs/platform/log/common/log";
-import { copyCellOutput } from "vs/workbench/contrib/notebook/browser/contrib/clipboard/cellOutputClipboard";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 import {
 	ICellOutputViewModel,
 	ICellViewModel,
 	INotebookEditor,
 	getNotebookEditorFromEditorPane,
 } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
-import { CellKind } from "vs/workbench/contrib/notebook/common/notebookCommon";
+import * as icons from "vs/workbench/contrib/notebook/browser/notebookIcons";
 import { CodeCellViewModel } from "vs/workbench/contrib/notebook/browser/viewModel/codeCellViewModel";
+import { CellKind } from "vs/workbench/contrib/notebook/common/notebookCommon";
+import { NOTEBOOK_CELL_HAS_OUTPUTS } from "vs/workbench/contrib/notebook/common/notebookContextKeys";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 
 export const COPY_OUTPUT_COMMAND_ID = "notebook.cellOutput.copy";
 
@@ -50,11 +50,11 @@ registerAction2(
 			accessor: ServicesAccessor,
 			outputContext:
 				| INotebookOutputActionContext
-				| { outputViewModel: ICellOutputViewModel }
+				| { outputViewModel: ICellOutputViewModel },
 		): Promise<void> {
 			const editorService = accessor.get(IEditorService);
 			const notebookEditor = getNotebookEditorFromEditorPane(
-				editorService.activeEditorPane
+				editorService.activeEditorPane,
 			);
 
 			if (!notebookEditor) {
@@ -68,7 +68,7 @@ registerAction2(
 			) {
 				outputViewModel = getOutputViewModelFromId(
 					outputContext.outputId,
-					notebookEditor
+					notebookEditor,
 				);
 			} else {
 				outputViewModel = outputContext.outputViewModel;
@@ -89,7 +89,7 @@ registerAction2(
 				await notebookEditor.focusNotebookCell(
 					outputViewModel.cellViewModel as ICellViewModel,
 					"output",
-					focusOptions
+					focusOptions,
 				);
 				notebookEditor.copyOutputImage(outputViewModel);
 			} else {
@@ -100,25 +100,25 @@ registerAction2(
 					mimeType,
 					outputViewModel,
 					clipboardService,
-					logService
+					logService,
 				);
 			}
 		}
-	}
+	},
 );
 
 function getOutputViewModelFromId(
 	outputId: string,
-	notebookEditor: INotebookEditor
+	notebookEditor: INotebookEditor,
 ): ICellOutputViewModel | undefined {
 	const notebookViewModel = notebookEditor.getViewModel();
 	if (notebookViewModel) {
 		const codeCells = notebookViewModel.viewCells.filter(
-			(cell) => cell.cellKind === CellKind.Code
+			(cell) => cell.cellKind === CellKind.Code,
 		) as CodeCellViewModel[];
 		for (const cell of codeCells) {
 			const output = cell.outputsViewModels.find(
-				(output) => output.model.outputId === outputId
+				(output) => output.model.outputId === outputId,
 			);
 			if (output) {
 				return output;

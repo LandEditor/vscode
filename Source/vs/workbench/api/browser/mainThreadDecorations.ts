@@ -3,26 +3,26 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI, UriComponents } from "vs/base/common/uri";
+import { CancellationToken } from "vs/base/common/cancellation";
 import { Emitter } from "vs/base/common/event";
 import { IDisposable, dispose } from "vs/base/common/lifecycle";
+import { URI, UriComponents } from "vs/base/common/uri";
 import {
-	ExtHostContext,
-	MainContext,
-	MainThreadDecorationsShape,
-	ExtHostDecorationsShape,
-	DecorationData,
-	DecorationRequest,
-} from "../common/extHost.protocol";
+	IDecorationData,
+	IDecorationsService,
+} from "vs/workbench/services/decorations/common/decorations";
 import {
-	extHostNamedCustomer,
 	IExtHostContext,
+	extHostNamedCustomer,
 } from "vs/workbench/services/extensions/common/extHostCustomers";
 import {
-	IDecorationsService,
-	IDecorationData,
-} from "vs/workbench/services/decorations/common/decorations";
-import { CancellationToken } from "vs/base/common/cancellation";
+	DecorationData,
+	DecorationRequest,
+	ExtHostContext,
+	ExtHostDecorationsShape,
+	MainContext,
+	MainThreadDecorationsShape,
+} from "../common/extHost.protocol";
 
 class DecorationRequestsQueue {
 	private _idPool = 0;
@@ -33,7 +33,7 @@ class DecorationRequestsQueue {
 
 	constructor(
 		private readonly _proxy: ExtHostDecorationsShape,
-		private readonly _handle: number
+		private readonly _handle: number,
 	) {
 		//
 	}
@@ -65,7 +65,7 @@ class DecorationRequestsQueue {
 				.$provideDecorations(
 					this._handle,
 					[...requests.values()],
-					CancellationToken.None
+					CancellationToken.None,
 				)
 				.then((data) => {
 					for (const [id, resolve] of resolver) {

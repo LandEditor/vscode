@@ -3,24 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken } from "vs/base/common/cancellation";
 import {
 	CancelablePromise,
 	createCancelablePromise,
 	raceTimeout,
 } from "vs/base/common/async";
+import { CancellationToken } from "vs/base/common/cancellation";
 import { IDisposable } from "vs/base/common/lifecycle";
+import { StopWatch } from "vs/base/common/stopwatch";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { StopWatch } from "vs/base/common/stopwatch";
 import { ILogService } from "vs/platform/log/common/log";
 import {
-	IAiRelatedInformationService,
 	IAiRelatedInformationProvider,
-	RelatedInformationType,
+	IAiRelatedInformationService,
 	RelatedInformationResult,
+	RelatedInformationType,
 } from "vs/workbench/services/aiRelatedInformation/common/aiRelatedInformation";
 
 export class AiRelatedInformationService
@@ -43,7 +43,7 @@ export class AiRelatedInformationService
 
 	registerAiRelatedInformationProvider(
 		type: RelatedInformationType,
-		provider: IAiRelatedInformationProvider
+		provider: IAiRelatedInformationProvider,
 	): IDisposable {
 		const providers = this._providers.get(type) ?? [];
 		providers.push(provider);
@@ -66,7 +66,7 @@ export class AiRelatedInformationService
 	async getRelatedInformation(
 		query: string,
 		types: RelatedInformationType[],
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<RelatedInformationResult[]> {
 		if (this._providers.size === 0) {
 			throw new Error("No related information providers registered");
@@ -83,7 +83,7 @@ export class AiRelatedInformationService
 
 		if (providers.length === 0) {
 			throw new Error(
-				"No related information providers registered for the given types"
+				"No related information providers registered for the given types",
 			);
 		}
 
@@ -96,7 +96,7 @@ export class AiRelatedInformationService
 				try {
 					const result = await provider.provideAiRelatedInformation(
 						query,
-						t
+						t,
 					);
 					// double filter just in case
 					return result.filter((r) => types.includes(r.type));
@@ -114,9 +114,9 @@ export class AiRelatedInformationService
 				() => {
 					cancellablePromises.forEach((p) => p.cancel());
 					this.logService.warn(
-						"[AiRelatedInformationService]: Related information provider timed out"
+						"[AiRelatedInformationService]: Related information provider timed out",
 					);
-				}
+				},
 			);
 			if (!results) {
 				return [];
@@ -129,13 +129,13 @@ export class AiRelatedInformationService
 							r as PromiseFulfilledResult<
 								RelatedInformationResult[]
 							>
-						).value
+						).value,
 				);
 			return result;
 		} finally {
 			stopwatch.stop();
 			this.logService.trace(
-				`[AiRelatedInformationService]: getRelatedInformation took ${stopwatch.elapsed()}ms`
+				`[AiRelatedInformationService]: getRelatedInformation took ${stopwatch.elapsed()}ms`,
 			);
 		}
 	}
@@ -144,5 +144,5 @@ export class AiRelatedInformationService
 registerSingleton(
 	IAiRelatedInformationService,
 	AiRelatedInformationService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

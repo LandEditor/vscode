@@ -3,21 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { refineServiceDecorator } from "vs/platform/instantiation/common/instantiation";
-import { Event } from "vs/base/common/event";
 import { Color } from "vs/base/common/color";
-import {
-	IColorTheme,
-	IThemeService,
-	IFileIconTheme,
-	IProductIconTheme,
-} from "vs/platform/theme/common/themeService";
-import { ConfigurationTarget } from "vs/platform/configuration/common/configuration";
+import { Event } from "vs/base/common/event";
 import { isBoolean, isString } from "vs/base/common/types";
+import { ConfigurationTarget } from "vs/platform/configuration/common/configuration";
+import { refineServiceDecorator } from "vs/platform/instantiation/common/instantiation";
 import {
 	IconContribution,
 	IconDefinition,
 } from "vs/platform/theme/common/iconRegistry";
+import {
+	IColorTheme,
+	IFileIconTheme,
+	IProductIconTheme,
+	IThemeService,
+} from "vs/platform/theme/common/themeService";
 
 export const IWorkbenchThemeService = refineServiceDecorator<
 	IThemeService,
@@ -115,14 +115,14 @@ export interface IWorkbenchThemeService extends IThemeService {
 	readonly _serviceBrand: undefined;
 	setColorTheme(
 		themeId: string | undefined | IWorkbenchColorTheme,
-		settingsTarget: ThemeSettingTarget
+		settingsTarget: ThemeSettingTarget,
 	): Promise<IWorkbenchColorTheme | null>;
 	getColorTheme(): IWorkbenchColorTheme;
 	getColorThemes(): Promise<IWorkbenchColorTheme[]>;
 	getMarketplaceColorThemes(
 		publisher: string,
 		name: string,
-		version: string
+		version: string,
 	): Promise<IWorkbenchColorTheme[]>;
 	onDidColorThemeChange: Event<IWorkbenchColorTheme>;
 
@@ -130,27 +130,27 @@ export interface IWorkbenchThemeService extends IThemeService {
 
 	setFileIconTheme(
 		iconThemeId: string | undefined | IWorkbenchFileIconTheme,
-		settingsTarget: ThemeSettingTarget
+		settingsTarget: ThemeSettingTarget,
 	): Promise<IWorkbenchFileIconTheme>;
 	getFileIconTheme(): IWorkbenchFileIconTheme;
 	getFileIconThemes(): Promise<IWorkbenchFileIconTheme[]>;
 	getMarketplaceFileIconThemes(
 		publisher: string,
 		name: string,
-		version: string
+		version: string,
 	): Promise<IWorkbenchFileIconTheme[]>;
 	onDidFileIconThemeChange: Event<IWorkbenchFileIconTheme>;
 
 	setProductIconTheme(
 		iconThemeId: string | undefined | IWorkbenchProductIconTheme,
-		settingsTarget: ThemeSettingTarget
+		settingsTarget: ThemeSettingTarget,
 	): Promise<IWorkbenchProductIconTheme>;
 	getProductIconTheme(): IWorkbenchProductIconTheme;
 	getProductIconThemes(): Promise<IWorkbenchProductIconTheme[]>;
 	getMarketplaceProductIconThemes(
 		publisher: string,
 		name: string,
-		version: string
+		version: string,
 	): Promise<IWorkbenchProductIconTheme[]>;
 	onDidProductIconThemeChange: Event<IWorkbenchProductIconTheme>;
 }
@@ -302,7 +302,7 @@ export namespace ExtensionData {
 	export function fromName(
 		publisher: string,
 		name: string,
-		isBuiltin = false
+		isBuiltin = false,
 	): ExtensionData {
 		return {
 			extensionPublisher: publisher,

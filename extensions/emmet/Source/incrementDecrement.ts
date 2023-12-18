@@ -13,7 +13,7 @@ const reNumber = /[0-9]/;
  * Incerement number under caret of given editor
  */
 export function incrementDecrement(
-	delta: number
+	delta: number,
 ): Thenable<boolean> | undefined {
 	if (!vscode.window.activeTextEditor) {
 		vscode.window.showInformationMessage("No editor is active");
@@ -25,7 +25,7 @@ export function incrementDecrement(
 		editor.selections.forEach((selection) => {
 			const rangeToReplace = locate(
 				editor.document,
-				selection.isReversed ? selection.anchor : selection.active
+				selection.isReversed ? selection.anchor : selection.active,
 			);
 			if (!rangeToReplace) {
 				return;
@@ -47,7 +47,7 @@ export function update(numString: string, delta: number): string {
 	let m: RegExpMatchArray | null;
 	const decimals = (m = numString.match(/\.(\d+)$/)) ? m[1].length : 1;
 	let output = String(
-		(parseFloat(numString) + delta).toFixed(decimals)
+		(parseFloat(numString) + delta).toFixed(decimals),
 	).replace(/\.0+$/, "");
 
 	if ((m = numString.match(/^\-?(0\d+)/))) {
@@ -57,7 +57,7 @@ export function update(numString: string, delta: number): string {
 			(_, minus, prefix) =>
 				minus +
 				"0".repeat(Math.max(0, (m ? m[1].length : 0) - prefix.length)) +
-				prefix
+				prefix,
 		);
 	}
 
@@ -76,7 +76,7 @@ export function update(numString: string, delta: number): string {
  */
 export function locate(
 	document: vscode.TextDocument,
-	pos: vscode.Position
+	pos: vscode.Position,
 ): vscode.Range | undefined {
 	const line = document.lineAt(pos.line).text;
 	let start = pos.character;

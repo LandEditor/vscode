@@ -26,7 +26,7 @@ function getAgent(url: string | undefined = process.env.HTTPS_PROXY): Agent {
 		});
 	} catch (e) {
 		window.showErrorMessage(
-			`HTTPS_PROXY environment variable ignored: ${e.message}`
+			`HTTPS_PROXY environment variable ignored: ${e.message}`,
 		);
 		return globalAgent;
 	}

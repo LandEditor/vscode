@@ -46,9 +46,9 @@ export class InlayHintsAccessibility implements IEditorContribution {
 			type: "boolean",
 			description: localize(
 				"isReadingLineWithInlayHints",
-				"Whether the current line and its inlay hints are currently focused"
+				"Whether the current line and its inlay hints are currently focused",
 			),
-		}
+		},
 	);
 
 	static readonly ID: string = "editor.contrib.InlayHintsAccessibility";
@@ -56,7 +56,7 @@ export class InlayHintsAccessibility implements IEditorContribution {
 	static get(editor: ICodeEditor): InlayHintsAccessibility | undefined {
 		return (
 			editor.getContribution<InlayHintsAccessibility>(
-				InlayHintsAccessibility.ID
+				InlayHintsAccessibility.ID,
 			) ?? undefined
 		);
 	}
@@ -163,7 +163,7 @@ export class InlayHintsAccessibility implements IEditorContribution {
 								label: part.label,
 								title: part.command.title,
 							},
-							undefined
+							undefined,
 						);
 						this._sessionDispoosables.add(link);
 					} else {
@@ -182,7 +182,7 @@ export class InlayHintsAccessibility implements IEditorContribution {
 					startColumn: start + 1,
 					endLineNumber: line,
 					endColumn: Number.MAX_SAFE_INTEGER,
-				})
+				}),
 			);
 		}
 
@@ -194,7 +194,7 @@ export class InlayHintsAccessibility implements IEditorContribution {
 		this._sessionDispoosables.add(
 			dom.addDisposableListener(this._ariaElement, "focusout", () => {
 				this._reset();
-			})
+			}),
 		);
 	}
 
@@ -204,7 +204,7 @@ export class InlayHintsAccessibility implements IEditorContribution {
 		}
 		const line = this._editor.getPosition().lineNumber;
 		const hints = InlayHintsController.get(
-			this._editor
+			this._editor,
 		)?.getInlayHintsForLine(line);
 		if (!hints || hints.length === 0) {
 			this._audioCueService.playAudioCue(AudioCue.noInlayHints);
@@ -227,7 +227,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"read.title",
-						"Read Line With Inline Hints"
+						"Read Line With Inline Hints",
 					),
 					original: "Read Line With Inline Hints",
 				},
@@ -240,7 +240,7 @@ registerAction2(
 			const ctrl = InlayHintsAccessibility.get(editor);
 			ctrl?.startInlayHintsReading();
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -265,11 +265,11 @@ registerAction2(
 			const ctrl = InlayHintsAccessibility.get(editor);
 			ctrl?.stopInlayHintsReading();
 		}
-	}
+	},
 );
 
 registerEditorContribution(
 	InlayHintsAccessibility.ID,
 	InlayHintsAccessibility,
-	EditorContributionInstantiation.Lazy
+	EditorContributionInstantiation.Lazy,
 );

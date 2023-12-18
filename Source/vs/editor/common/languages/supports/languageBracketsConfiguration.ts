@@ -16,7 +16,7 @@ export class LanguageBracketsConfiguration {
 
 	constructor(
 		public readonly languageId: string,
-		config: LanguageConfiguration
+		config: LanguageConfiguration,
 	) {
 		const bracketPairs = config.brackets
 			? filterValidBrackets(config.brackets)
@@ -37,7 +37,7 @@ export class LanguageBracketsConfiguration {
 					this,
 					bracket,
 					opening,
-					openingColorized
+					openingColorized,
 				),
 				opening,
 				openingColorized,
@@ -56,10 +56,10 @@ export class LanguageBracketsConfiguration {
 		const colorizedBracketPairs = config.colorizedBracketPairs
 			? filterValidBrackets(config.colorizedBracketPairs)
 			: // If not configured: Take all brackets except `<` ... `>`
-				// Many languages set < ... > as bracket pair, even though they also use it as comparison operator.
-				// This leads to problems when colorizing this bracket, so we exclude it if not explicitly configured otherwise.
-				// https://github.com/microsoft/vscode/issues/132476
-				bracketPairs.filter((p) => !(p[0] === "<" && p[1] === ">"));
+			  // Many languages set < ... > as bracket pair, even though they also use it as comparison operator.
+			  // This leads to problems when colorizing this bracket, so we exclude it if not explicitly configured otherwise.
+			  // https://github.com/microsoft/vscode/issues/132476
+			  bracketPairs.filter((p) => !(p[0] === "<" && p[1] === ">"));
 		for (const [open, close] of colorizedBracketPairs) {
 			const opening = openingBracketInfos.get(open);
 			const closing = closingBracketInfos.get(close);
@@ -70,10 +70,10 @@ export class LanguageBracketsConfiguration {
 		}
 
 		this._openingBrackets = new Map(
-			[...openingBracketInfos.cachedValues].map(([k, v]) => [k, v.info])
+			[...openingBracketInfos.cachedValues].map(([k, v]) => [k, v.info]),
 		);
 		this._closingBrackets = new Map(
-			[...closingBracketInfos.cachedValues].map(([k, v]) => [k, v.info])
+			[...closingBracketInfos.cachedValues].map(([k, v]) => [k, v.info]),
 		);
 	}
 
@@ -92,13 +92,13 @@ export class LanguageBracketsConfiguration {
 	}
 
 	public getOpeningBracketInfo(
-		bracketText: string
+		bracketText: string,
 	): OpeningBracketKind | undefined {
 		return this._openingBrackets.get(bracketText);
 	}
 
 	public getClosingBracketInfo(
-		bracketText: string
+		bracketText: string,
 	): ClosingBracketKind | undefined {
 		return this._closingBrackets.get(bracketText);
 	}
@@ -112,7 +112,7 @@ export class LanguageBracketsConfiguration {
 }
 
 function filterValidBrackets(
-	bracketPairs: [string, string][]
+	bracketPairs: [string, string][],
 ): [string, string][] {
 	return bracketPairs.filter(([open, close]) => open !== "" && close !== "");
 }
@@ -122,7 +122,7 @@ export type BracketKind = OpeningBracketKind | ClosingBracketKind;
 export class BracketKindBase {
 	constructor(
 		protected readonly config: LanguageBracketsConfiguration,
-		public readonly bracketText: string
+		public readonly bracketText: string,
 	) {}
 
 	public get languageId(): string {
@@ -136,7 +136,7 @@ export class OpeningBracketKind extends BracketKindBase {
 	constructor(
 		config: LanguageBracketsConfiguration,
 		bracketText: string,
-		public readonly openedBrackets: ReadonlySet<ClosingBracketKind>
+		public readonly openedBrackets: ReadonlySet<ClosingBracketKind>,
 	) {
 		super(config, bracketText);
 	}
@@ -152,7 +152,7 @@ export class ClosingBracketKind extends BracketKindBase {
 		 * Non empty array of all opening brackets this bracket closes.
 		 */
 		public readonly openingBrackets: ReadonlySet<OpeningBracketKind>,
-		private readonly openingColorizedBrackets: ReadonlySet<OpeningBracketKind>
+		private readonly openingColorizedBrackets: ReadonlySet<OpeningBracketKind>,
 	) {
 		super(config, bracketText);
 	}

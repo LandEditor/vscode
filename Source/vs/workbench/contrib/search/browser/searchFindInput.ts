@@ -5,18 +5,18 @@
 
 import { IContextViewProvider } from "vs/base/browser/ui/contextview/contextview";
 import { IFindInputOptions } from "vs/base/browser/ui/findinput/findInput";
+import * as nls from "vs/nls";
 import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
 import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
 import { ContextScopedFindInput } from "vs/platform/history/browser/contextScopedHistoryWidget";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { NotebookFindFilters } from "vs/workbench/contrib/notebook/browser/contrib/find/findFilters";
 import { NotebookFindInputFilterButton } from "vs/workbench/contrib/notebook/browser/contrib/find/notebookFindReplaceWidget";
-import * as nls from "vs/nls";
 
 export class SearchFindInput extends ContextScopedFindInput {
 	private _findFilter: NotebookFindInputFilterButton;
-	private _filterChecked: boolean = false;
-	private _visible: boolean = false;
+	private _filterChecked = false;
+	private _visible = false;
 
 	constructor(
 		container: HTMLElement | null,
@@ -26,7 +26,7 @@ export class SearchFindInput extends ContextScopedFindInput {
 		readonly contextMenuService: IContextMenuService,
 		readonly instantiationService: IInstantiationService,
 		readonly filters: NotebookFindFilters,
-		filterStartVisiblitity: boolean
+		filterStartVisiblitity: boolean,
 	) {
 		super(container, contextViewProvider, options, contextKeyService);
 		this._findFilter = this._register(
@@ -37,9 +37,9 @@ export class SearchFindInput extends ContextScopedFindInput {
 				options,
 				nls.localize(
 					"searchFindInputNotebookFilter.label",
-					"Notebook Find Filters"
-				)
-			)
+					"Notebook Find Filters",
+				),
+			),
 		);
 		this.inputBox.paddingRight =
 			(this.caseSensitive?.width() ?? 0) +

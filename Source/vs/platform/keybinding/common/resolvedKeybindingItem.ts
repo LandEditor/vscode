@@ -27,7 +27,7 @@ export class ResolvedKeybindingItem {
 		when: ContextKeyExpression | undefined,
 		isDefault: boolean,
 		extensionId: string | null,
-		isBuiltinExtension: boolean
+		isBuiltinExtension: boolean,
 	) {
 		this.resolvedKeybinding = resolvedKeybinding;
 		this.chords = resolvedKeybinding
@@ -36,7 +36,7 @@ export class ResolvedKeybindingItem {
 		if (resolvedKeybinding && this.chords.length === 0) {
 			// handle possible single modifier chord keybindings
 			this.chords = toEmptyArrayIfContainsNull(
-				resolvedKeybinding.getSingleModifierDispatchChords()
+				resolvedKeybinding.getSingleModifierDispatchChords(),
 			);
 		}
 		this.bubble = command

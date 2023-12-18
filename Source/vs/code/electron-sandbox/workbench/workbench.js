@@ -6,9 +6,7 @@
 /// <reference path="../../../../typings/require.d.ts" />
 
 //@ts-check
-(function () {
-	"use strict";
-
+(() => {
 	const bootstrapWindow = bootstrapWindowLib();
 
 	// Add a perf entry right from the top
@@ -24,34 +22,32 @@
 			"vs/nls!vs/workbench/workbench.desktop.main",
 			"vs/css!vs/workbench/workbench.desktop.main",
 		],
-		function (desktopMain, configuration) {
+		(desktopMain, configuration) => {
 			// Mark start of workbench
 			performance.mark("code/didLoadWorkbenchMain");
 
 			return desktopMain.main(configuration);
 		},
 		{
-			configureDeveloperSettings: function (windowConfig) {
-				return {
-					// disable automated devtools opening on error when running extension tests
-					// as this can lead to nondeterministic test execution (devtools steals focus)
-					forceDisableShowDevtoolsOnError:
-						typeof windowConfig.extensionTestsPath === "string" ||
-						windowConfig["enable-smoke-test-driver"] === true,
-					// enable devtools keybindings in extension development window
-					forceEnableDeveloperKeybindings:
-						Array.isArray(windowConfig.extensionDevelopmentPath) &&
-						windowConfig.extensionDevelopmentPath.length > 0,
-					removeDeveloperKeybindingsAfterLoad: true,
-				};
-			},
-			canModifyDOM: function (windowConfig) {
+			configureDeveloperSettings: (windowConfig) => ({
+				// disable automated devtools opening on error when running extension tests
+				// as this can lead to nondeterministic test execution (devtools steals focus)
+				forceDisableShowDevtoolsOnError:
+					typeof windowConfig.extensionTestsPath === "string" ||
+					windowConfig["enable-smoke-test-driver"] === true,
+				// enable devtools keybindings in extension development window
+				forceEnableDeveloperKeybindings:
+					Array.isArray(windowConfig.extensionDevelopmentPath) &&
+					windowConfig.extensionDevelopmentPath.length > 0,
+				removeDeveloperKeybindingsAfterLoad: true,
+			}),
+			canModifyDOM: (windowConfig) => {
 				showSplash(windowConfig);
 			},
-			beforeLoaderConfig: function (loaderConfig) {
+			beforeLoaderConfig: (loaderConfig) => {
 				loaderConfig.recordStats = true;
 			},
-			beforeRequire: function (windowConfig) {
+			beforeRequire: (windowConfig) => {
 				performance.mark("code/willLoadWorkbenchMain");
 
 				// Code windows have a `vscodeWindowId` property to identify them
@@ -72,10 +68,10 @@
 						context?.clearRect(0, 0, canvas.width, canvas.height);
 						canvas.remove();
 					},
-					{ timeout: 50 }
+					{ timeout: 50 },
 				);
 			},
-		}
+		},
 	);
 
 	//#region Helpers
@@ -206,7 +202,7 @@
 				splash.style.border = "1px solid var(--window-border-color)";
 				splash.style.setProperty(
 					"--window-border-color",
-					colorInfo.windowBorder
+					colorInfo.windowBorder,
 				);
 
 				if (layoutInfo.windowBorderRadius) {
@@ -219,14 +215,14 @@
 				layoutInfo.sideBarWidth,
 				window.innerWidth -
 					(layoutInfo.activityBarWidth +
-						layoutInfo.editorPartMinWidth)
+						layoutInfo.editorPartMinWidth),
 			);
 
 			// part: title
 			const titleDiv = document.createElement("div");
 			titleDiv.setAttribute(
 				"style",
-				`position: absolute; width: 100%; left: 0; top: 0; height: ${layoutInfo.titleBarHeight}px; background-color: ${colorInfo.titleBarBackground}; -webkit-app-region: drag;`
+				`position: absolute; width: 100%; left: 0; top: 0; height: ${layoutInfo.titleBarHeight}px; background-color: ${colorInfo.titleBarBackground}; -webkit-app-region: drag;`,
 			);
 			splash.appendChild(titleDiv);
 
@@ -234,7 +230,7 @@
 			const activityDiv = document.createElement("div");
 			activityDiv.setAttribute(
 				"style",
-				`position: absolute; height: calc(100% - ${layoutInfo.titleBarHeight}px); top: ${layoutInfo.titleBarHeight}px; ${layoutInfo.sideBarSide}: 0; width: ${layoutInfo.activityBarWidth}px; background-color: ${colorInfo.activityBarBackground};`
+				`position: absolute; height: calc(100% - ${layoutInfo.titleBarHeight}px); top: ${layoutInfo.titleBarHeight}px; ${layoutInfo.sideBarSide}: 0; width: ${layoutInfo.activityBarWidth}px; background-color: ${colorInfo.activityBarBackground};`,
 			);
 			splash.appendChild(activityDiv);
 
@@ -244,7 +240,7 @@
 				const sideDiv = document.createElement("div");
 				sideDiv.setAttribute(
 					"style",
-					`position: absolute; height: calc(100% - ${layoutInfo.titleBarHeight}px); top: ${layoutInfo.titleBarHeight}px; ${layoutInfo.sideBarSide}: ${layoutInfo.activityBarWidth}px; width: ${layoutInfo.sideBarWidth}px; background-color: ${colorInfo.sideBarBackground};`
+					`position: absolute; height: calc(100% - ${layoutInfo.titleBarHeight}px); top: ${layoutInfo.titleBarHeight}px; ${layoutInfo.sideBarSide}: ${layoutInfo.activityBarWidth}px; width: ${layoutInfo.sideBarWidth}px; background-color: ${colorInfo.sideBarBackground};`,
 				);
 				splash.appendChild(sideDiv);
 			}
@@ -259,7 +255,7 @@
 					configuration.workspace
 						? colorInfo.statusBarBackground
 						: colorInfo.statusBarNoFolderBackground
-				};`
+				};`,
 			);
 			splash.appendChild(statusDiv);
 

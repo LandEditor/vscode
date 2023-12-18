@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Location, getLocation, parse } from "jsonc-parser";
 import * as vscode from "vscode";
-import { getLocation, Location, parse } from "jsonc-parser";
 import { provideInstalledExtensionProposals } from "./extensionsProposals";
 
 const OVERRIDE_IDENTIFIER_REGEX = /\[([^\[\]]*)\]/g;
@@ -14,11 +14,11 @@ export class SettingsDocument {
 
 	public async provideCompletionItems(
 		position: vscode.Position,
-		_token: vscode.CancellationToken
+		_token: vscode.CancellationToken,
 	): Promise<vscode.CompletionItem[] | vscode.CompletionList> {
 		const location = getLocation(
 			this.document.getText(),
-			this.document.offsetAt(position)
+			this.document.offsetAt(position),
 		);
 
 		// window.title
@@ -30,7 +30,7 @@ export class SettingsDocument {
 		if (location.path[0] === "files.associations") {
 			return this.provideFilesAssociationsCompletionItems(
 				location,
-				position
+				position,
 			);
 		}
 
@@ -63,7 +63,7 @@ export class SettingsDocument {
 				ignoredExtensions,
 				"",
 				range,
-				true
+				true,
 			);
 		}
 
@@ -76,7 +76,7 @@ export class SettingsDocument {
 			let alreadyConfigured: string[] = [];
 			try {
 				alreadyConfigured = Object.keys(
-					parse(this.document.getText())["remote.extensionKind"]
+					parse(this.document.getText())["remote.extensionKind"],
 				);
 			} catch (e) {
 				/* ignore error */
@@ -86,7 +86,7 @@ export class SettingsDocument {
 				alreadyConfigured,
 				location.previousNode ? "" : `: [\n\t"ui"\n]`,
 				range,
-				true
+				true,
 			);
 		}
 
@@ -97,7 +97,7 @@ export class SettingsDocument {
 			location.isAtPropertyKey
 		) {
 			return this.providePortsAttributesCompletionItem(
-				this.getReplaceRange(location, position)
+				this.getReplaceRange(location, position),
 			);
 		}
 
@@ -121,7 +121,7 @@ export class SettingsDocument {
 
 	private isCompletingPropertyValue(
 		location: Location,
-		pos: vscode.Position
+		pos: vscode.Position,
 	) {
 		if (location.isAtPropertyKey) {
 			return false;
@@ -139,7 +139,7 @@ export class SettingsDocument {
 
 	private async provideWindowTitleCompletionItems(
 		location: Location,
-		pos: vscode.Position
+		pos: vscode.Position,
 	): Promise<vscode.CompletionItem[]> {
 		const completions: vscode.CompletionItem[] = [];
 
@@ -166,130 +166,130 @@ export class SettingsDocument {
 			this.newSimpleCompletionItem(
 				getText("activeEditorShort"),
 				range,
-				vscode.l10n.t("the file name (e.g. myFile.txt)")
-			)
+				vscode.l10n.t("the file name (e.g. myFile.txt)"),
+			),
 		);
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("activeEditorMedium"),
 				range,
 				vscode.l10n.t(
-					"the path of the file relative to the workspace folder (e.g. myFolder/myFileFolder/myFile.txt)"
-				)
-			)
+					"the path of the file relative to the workspace folder (e.g. myFolder/myFileFolder/myFile.txt)",
+				),
+			),
 		);
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("activeEditorLong"),
 				range,
 				vscode.l10n.t(
-					"the full path of the file (e.g. /Users/Development/myFolder/myFileFolder/myFile.txt)"
-				)
-			)
+					"the full path of the file (e.g. /Users/Development/myFolder/myFileFolder/myFile.txt)",
+				),
+			),
 		);
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("activeFolderShort"),
 				range,
 				vscode.l10n.t(
-					"the name of the folder the file is contained in (e.g. myFileFolder)"
-				)
-			)
+					"the name of the folder the file is contained in (e.g. myFileFolder)",
+				),
+			),
 		);
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("activeFolderMedium"),
 				range,
 				vscode.l10n.t(
-					"the path of the folder the file is contained in, relative to the workspace folder (e.g. myFolder/myFileFolder)"
-				)
-			)
+					"the path of the folder the file is contained in, relative to the workspace folder (e.g. myFolder/myFileFolder)",
+				),
+			),
 		);
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("activeFolderLong"),
 				range,
 				vscode.l10n.t(
-					"the full path of the folder the file is contained in (e.g. /Users/Development/myFolder/myFileFolder)"
-				)
-			)
+					"the full path of the folder the file is contained in (e.g. /Users/Development/myFolder/myFileFolder)",
+				),
+			),
 		);
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("rootName"),
 				range,
 				vscode.l10n.t(
-					"name of the workspace with optional remote name and workspace indicator if applicable (e.g. myFolder, myRemoteFolder [SSH] or myWorkspace (Workspace))"
-				)
-			)
+					"name of the workspace with optional remote name and workspace indicator if applicable (e.g. myFolder, myRemoteFolder [SSH] or myWorkspace (Workspace))",
+				),
+			),
 		);
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("rootNameShort"),
 				range,
 				vscode.l10n.t(
-					"shortened name of the workspace without suffixes (e.g. myFolder or myWorkspace)"
-				)
-			)
+					"shortened name of the workspace without suffixes (e.g. myFolder or myWorkspace)",
+				),
+			),
 		);
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("rootPath"),
 				range,
 				vscode.l10n.t(
-					"file path of the workspace (e.g. /Users/Development/myWorkspace)"
-				)
-			)
+					"file path of the workspace (e.g. /Users/Development/myWorkspace)",
+				),
+			),
 		);
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("folderName"),
 				range,
 				vscode.l10n.t(
-					"name of the workspace folder the file is contained in (e.g. myFolder)"
-				)
-			)
+					"name of the workspace folder the file is contained in (e.g. myFolder)",
+				),
+			),
 		);
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("folderPath"),
 				range,
 				vscode.l10n.t(
-					"file path of the workspace folder the file is contained in (e.g. /Users/Development/myFolder)"
-				)
-			)
+					"file path of the workspace folder the file is contained in (e.g. /Users/Development/myFolder)",
+				),
+			),
 		);
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("appName"),
 				range,
-				vscode.l10n.t("e.g. VS Code")
-			)
+				vscode.l10n.t("e.g. VS Code"),
+			),
 		);
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("remoteName"),
 				range,
-				vscode.l10n.t("e.g. SSH")
-			)
+				vscode.l10n.t("e.g. SSH"),
+			),
 		);
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("dirty"),
 				range,
 				vscode.l10n.t(
-					"an indicator for when the active editor has unsaved changes"
-				)
-			)
+					"an indicator for when the active editor has unsaved changes",
+				),
+			),
 		);
 		completions.push(
 			this.newSimpleCompletionItem(
 				getText("separator"),
 				range,
 				vscode.l10n.t(
-					"a conditional separator (' - ') that only shows when surrounded by variables with values"
-				)
-			)
+					"a conditional separator (' - ') that only shows when surrounded by variables with values",
+				),
+			),
 		);
 
 		return completions;
@@ -297,7 +297,7 @@ export class SettingsDocument {
 
 	private async provideFilesAssociationsCompletionItems(
 		location: Location,
-		position: vscode.Position
+		position: vscode.Position,
 	): Promise<vscode.CompletionItem[]> {
 		const completions: vscode.CompletionItem[] = [];
 
@@ -310,31 +310,31 @@ export class SettingsDocument {
 					this.newSnippetCompletionItem({
 						label: vscode.l10n.t("Files with Extension"),
 						documentation: vscode.l10n.t(
-							"Map all files matching the glob pattern in their filename to the language with the given identifier."
+							"Map all files matching the glob pattern in their filename to the language with the given identifier.",
 						),
 						snippet: location.isAtPropertyKey
 							? '"*.${1:extension}": "${2:language}"'
 							: '{ "*.${1:extension}": "${2:language}" }',
 						range,
-					})
+					}),
 				);
 
 				completions.push(
 					this.newSnippetCompletionItem({
 						label: vscode.l10n.t("Files with Path"),
 						documentation: vscode.l10n.t(
-							"Map all files matching the absolute path glob pattern in their path to the language with the given identifier."
+							"Map all files matching the absolute path glob pattern in their path to the language with the given identifier.",
 						),
 						snippet: location.isAtPropertyKey
 							? '"/${1:path to file}/*.${2:extension}": "${3:language}"'
 							: '{ "/${1:path to file}/*.${2:extension}": "${3:language}" }',
 						range,
-					})
+					}),
 				);
 			} else if (this.isCompletingPropertyValue(location, position)) {
 				// Value
 				return this.provideLanguageCompletionItemsForLanguageOverrides(
-					this.getReplaceRange(location, position)
+					this.getReplaceRange(location, position),
 				);
 			}
 		}
@@ -344,7 +344,7 @@ export class SettingsDocument {
 
 	private async provideExcludeCompletionItems(
 		location: Location,
-		position: vscode.Position
+		position: vscode.Position,
 	): Promise<vscode.CompletionItem[]> {
 		const completions: vscode.CompletionItem[] = [];
 
@@ -359,86 +359,86 @@ export class SettingsDocument {
 				this.newSnippetCompletionItem({
 					label: vscode.l10n.t("Files by Extension"),
 					documentation: vscode.l10n.t(
-						"Match all files of a specific file extension."
+						"Match all files of a specific file extension.",
 					),
 					snippet:
 						location.path.length === 2
 							? '"**/*.${1:extension}": true'
 							: '{ "**/*.${1:extension}": true }',
 					range,
-				})
+				}),
 			);
 
 			completions.push(
 				this.newSnippetCompletionItem({
 					label: vscode.l10n.t("Files with Multiple Extensions"),
 					documentation: vscode.l10n.t(
-						"Match all files with any of the file extensions."
+						"Match all files with any of the file extensions.",
 					),
 					snippet:
 						location.path.length === 2
 							? '"**/*.{ext1,ext2,ext3}": true'
 							: '{ "**/*.{ext1,ext2,ext3}": true }',
 					range,
-				})
+				}),
 			);
 
 			completions.push(
 				this.newSnippetCompletionItem({
 					label: vscode.l10n.t("Files with Siblings by Name"),
 					documentation: vscode.l10n.t(
-						"Match files that have siblings with the same name but a different extension."
+						"Match files that have siblings with the same name but a different extension.",
 					),
 					snippet:
 						location.path.length === 2
 							? '"**/*.${1:source-extension}": { "when": "$(basename).${2:target-extension}" }'
 							: '{ "**/*.${1:source-extension}": { "when": "$(basename).${2:target-extension}" } }',
 					range,
-				})
+				}),
 			);
 
 			completions.push(
 				this.newSnippetCompletionItem({
 					label: vscode.l10n.t("Folder by Name (Top Level)"),
 					documentation: vscode.l10n.t(
-						"Match a top level folder with a specific name."
+						"Match a top level folder with a specific name.",
 					),
 					snippet:
 						location.path.length === 2
 							? '"${1:name}": true'
 							: '{ "${1:name}": true }',
 					range,
-				})
+				}),
 			);
 
 			completions.push(
 				this.newSnippetCompletionItem({
 					label: vscode.l10n.t(
-						"Folders with Multiple Names (Top Level)"
+						"Folders with Multiple Names (Top Level)",
 					),
 					documentation: vscode.l10n.t(
-						"Match multiple top level folders."
+						"Match multiple top level folders.",
 					),
 					snippet:
 						location.path.length === 2
 							? '"{folder1,folder2,folder3}": true'
 							: '{ "{folder1,folder2,folder3}": true }',
 					range,
-				})
+				}),
 			);
 
 			completions.push(
 				this.newSnippetCompletionItem({
 					label: vscode.l10n.t("Folder by Name (Any Location)"),
 					documentation: vscode.l10n.t(
-						"Match a folder with a specific name in any location."
+						"Match a folder with a specific name in any location.",
 					),
 					snippet:
 						location.path.length === 2
 							? '"**/${1:name}": true'
 							: '{ "**/${1:name}": true }',
 					range,
-				})
+				}),
 			);
 		}
 
@@ -452,11 +452,11 @@ export class SettingsDocument {
 				this.newSnippetCompletionItem({
 					label: vscode.l10n.t("Files with Siblings by Name"),
 					documentation: vscode.l10n.t(
-						"Match files that have siblings with the same name but a different extension."
+						"Match files that have siblings with the same name but a different extension.",
 					),
 					snippet: '{ "when": "$(basename).${1:extension}" }',
 					range,
-				})
+				}),
 			);
 		}
 
@@ -465,7 +465,7 @@ export class SettingsDocument {
 
 	private async provideLanguageCompletionItems(
 		location: Location,
-		position: vscode.Position
+		position: vscode.Position,
 	): Promise<vscode.CompletionItem[]> {
 		if (
 			location.path.length === 1 &&
@@ -478,11 +478,11 @@ export class SettingsDocument {
 					JSON.stringify("${activeEditorLanguage}"),
 					range,
 					vscode.l10n.t(
-						"Use the language of the currently active text editor if any"
-					)
+						"Use the language of the currently active text editor if any",
+					),
 				),
 				...languages.map((l) =>
-					this.newSimpleCompletionItem(JSON.stringify(l), range)
+					this.newSimpleCompletionItem(JSON.stringify(l), range),
 				),
 			];
 		}
@@ -490,7 +490,7 @@ export class SettingsDocument {
 	}
 
 	private async provideLanguageCompletionItemsForLanguageOverrides(
-		range: vscode.Range
+		range: vscode.Range,
 	): Promise<vscode.CompletionItem[]> {
 		const languages = await vscode.languages.getLanguages();
 		const completionItems = [];
@@ -505,7 +505,7 @@ export class SettingsDocument {
 
 	private async provideLanguageOverridesCompletionItems(
 		location: Location,
-		position: vscode.Position
+		position: vscode.Position,
 	): Promise<vscode.CompletionItem[]> {
 		if (
 			location.path.length === 1 &&
@@ -515,29 +515,29 @@ export class SettingsDocument {
 			location.previousNode.value.startsWith("[")
 		) {
 			const startPosition = this.document.positionAt(
-				location.previousNode.offset + 1
+				location.previousNode.offset + 1,
 			);
 			const endPosition = startPosition.translate(
 				undefined,
-				location.previousNode.value.length
+				location.previousNode.value.length,
 			);
 			const donotSuggestLanguages: string[] = [];
 			const languageOverridesRanges: vscode.Range[] = [];
 			let matches = OVERRIDE_IDENTIFIER_REGEX.exec(
-				location.previousNode.value
+				location.previousNode.value,
 			);
 			let lastLanguageOverrideRange: vscode.Range | undefined;
 			while (matches?.length) {
 				lastLanguageOverrideRange = new vscode.Range(
 					this.document.positionAt(
-						location.previousNode.offset + 1 + matches.index
+						location.previousNode.offset + 1 + matches.index,
 					),
 					this.document.positionAt(
 						location.previousNode.offset +
 							1 +
 							matches.index +
-							matches[0].length
-					)
+							matches[0].length,
+					),
 				);
 				languageOverridesRanges.push(lastLanguageOverrideRange);
 				/* Suggest the configured language if the position is in the match range */
@@ -545,7 +545,7 @@ export class SettingsDocument {
 					donotSuggestLanguages.push(matches[1].trim());
 				}
 				matches = OVERRIDE_IDENTIFIER_REGEX.exec(
-					location.previousNode.value
+					location.previousNode.value,
 				);
 			}
 			const lastLanguageOverrideEndPosition = lastLanguageOverrideRange
@@ -555,12 +555,12 @@ export class SettingsDocument {
 				languageOverridesRanges.push(
 					new vscode.Range(
 						lastLanguageOverrideEndPosition,
-						endPosition
-					)
+						endPosition,
+					),
 				);
 			}
 			const languageOverrideRange = languageOverridesRanges.find(
-				(range) => range.contains(position)
+				(range) => range.contains(position),
 			);
 
 			/**
@@ -588,7 +588,7 @@ export class SettingsDocument {
 	}
 
 	private providePortsAttributesCompletionItem(
-		range: vscode.Range
+		range: vscode.Range,
 	): vscode.CompletionItem[] {
 		return [
 			this.newSnippetCompletionItem({
@@ -619,7 +619,7 @@ export class SettingsDocument {
 		text: string,
 		range: vscode.Range,
 		description?: string,
-		insertText?: string
+		insertText?: string,
 	): vscode.CompletionItem {
 		const item = new vscode.CompletionItem(text);
 		item.kind = vscode.CompletionItemKind.Value;

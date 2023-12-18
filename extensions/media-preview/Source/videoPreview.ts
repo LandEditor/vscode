@@ -13,7 +13,7 @@ class VideoPreviewProvider implements vscode.CustomReadonlyEditorProvider {
 
 	constructor(
 		private readonly extensionRoot: vscode.Uri,
-		private readonly binarySizeStatusBarEntry: BinarySizeStatusBarEntry
+		private readonly binarySizeStatusBarEntry: BinarySizeStatusBarEntry,
 	) {}
 
 	public async openCustomDocument(uri: vscode.Uri) {
@@ -22,13 +22,13 @@ class VideoPreviewProvider implements vscode.CustomReadonlyEditorProvider {
 
 	public async resolveCustomEditor(
 		document: vscode.CustomDocument,
-		webviewEditor: vscode.WebviewPanel
+		webviewEditor: vscode.WebviewPanel,
 	): Promise<void> {
 		new VideoPreview(
 			this.extensionRoot,
 			document.uri,
 			webviewEditor,
-			this.binarySizeStatusBarEntry
+			this.binarySizeStatusBarEntry,
 		);
 	}
 }
@@ -38,7 +38,7 @@ class VideoPreview extends MediaPreview {
 		private readonly extensionRoot: vscode.Uri,
 		resource: vscode.Uri,
 		webviewEditor: vscode.WebviewPanel,
-		binarySizeStatusBarEntry: BinarySizeStatusBarEntry
+		binarySizeStatusBarEntry: BinarySizeStatusBarEntry,
 	) {
 		super(extensionRoot, resource, webviewEditor, binarySizeStatusBarEntry);
 
@@ -50,7 +50,7 @@ class VideoPreview extends MediaPreview {
 						break;
 					}
 				}
-			})
+			}),
 		);
 
 		this.updateBinarySize();
@@ -66,7 +66,7 @@ class VideoPreview extends MediaPreview {
 			src: await this.getResourcePath(
 				this.webviewEditor,
 				this.resource,
-				version
+				version,
 			),
 			autoplay: configurations.get("autoPlay"),
 			loop: configurations.get("loop"),
@@ -87,12 +87,12 @@ class VideoPreview extends MediaPreview {
 	<title>Video Preview</title>
 
 	<link rel="stylesheet" href="${escapeAttribute(
-		this.extensionResource("media", "videoPreview.css")
+		this.extensionResource("media", "videoPreview.css"),
 	)}" type="text/css" media="screen" nonce="${nonce}">
 
 	<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: ${cspSource}; media-src ${cspSource}; script-src 'nonce-${nonce}'; style-src ${cspSource} 'nonce-${nonce}';">
 	<meta id="settings" data-settings="${escapeAttribute(
-		JSON.stringify(settings)
+		JSON.stringify(settings),
 	)}">
 </head>
 <body class="loading" data-vscode-context='{ "preventDefaultContextMenuItems": true }'>
@@ -100,11 +100,11 @@ class VideoPreview extends MediaPreview {
 	<div class="loading-error">
 		<p>${vscode.l10n.t("An error occurred while loading the video file.")}</p>
 		<a href="#" class="open-file-link">${vscode.l10n.t(
-			"Open file using VS Code's standard text/binary editor?"
+			"Open file using VS Code's standard text/binary editor?",
 		)}</a>
 	</div>
 	<script src="${escapeAttribute(
-		this.extensionResource("media", "videoPreview.js")
+		this.extensionResource("media", "videoPreview.js"),
 	)}" nonce="${nonce}"></script>
 </body>
 </html>`;
@@ -113,7 +113,7 @@ class VideoPreview extends MediaPreview {
 	private async getResourcePath(
 		webviewEditor: vscode.WebviewPanel,
 		resource: vscode.Uri,
-		version: string
+		version: string,
 	): Promise<string | null> {
 		if (resource.scheme === "git") {
 			const stat = await vscode.workspace.fs.stat(resource);
@@ -135,18 +135,18 @@ class VideoPreview extends MediaPreview {
 
 	private extensionResource(...parts: string[]) {
 		return this.webviewEditor.webview.asWebviewUri(
-			vscode.Uri.joinPath(this.extensionRoot, ...parts)
+			vscode.Uri.joinPath(this.extensionRoot, ...parts),
 		);
 	}
 }
 
 export function registerVideoPreviewSupport(
 	context: vscode.ExtensionContext,
-	binarySizeStatusBarEntry: BinarySizeStatusBarEntry
+	binarySizeStatusBarEntry: BinarySizeStatusBarEntry,
 ): vscode.Disposable {
 	const provider = new VideoPreviewProvider(
 		context.extensionUri,
-		binarySizeStatusBarEntry
+		binarySizeStatusBarEntry,
 	);
 	return vscode.window.registerCustomEditorProvider(
 		VideoPreviewProvider.viewType,
@@ -156,6 +156,6 @@ export function registerVideoPreviewSupport(
 			webviewOptions: {
 				retainContextWhenHidden: true,
 			},
-		}
+		},
 	);
 }

@@ -26,7 +26,7 @@ export class QuickInputBox extends Disposable {
 	constructor(
 		private parent: HTMLElement,
 		inputBoxStyles: IInputBoxStyles,
-		toggleStyles: IToggleStyles
+		toggleStyles: IToggleStyles,
 	) {
 		super();
 		this.container = dom.append(this.parent, $(".quick-input-box"));
@@ -35,7 +35,7 @@ export class QuickInputBox extends Disposable {
 				label: "",
 				inputBoxStyles,
 				toggleStyles,
-			})
+			}),
 		);
 		const input = this.findInput.inputBox.inputElement;
 		input.role = "combobox";
@@ -45,22 +45,22 @@ export class QuickInputBox extends Disposable {
 	}
 
 	onKeyDown = (
-		handler: (event: StandardKeyboardEvent) => void
+		handler: (event: StandardKeyboardEvent) => void,
 	): IDisposable => {
 		return dom.addStandardDisposableListener(
 			this.findInput.inputBox.inputElement,
 			dom.EventType.KEY_DOWN,
-			handler
+			handler,
 		);
 	};
 
 	onMouseDown = (
-		handler: (event: StandardMouseEvent) => void
+		handler: (event: StandardMouseEvent) => void,
 	): IDisposable => {
 		return dom.addStandardDisposableListener(
 			this.findInput.inputBox.inputElement,
 			dom.EventType.MOUSE_DOWN,
-			handler
+			handler,
 		);
 	};
 
@@ -117,7 +117,7 @@ export class QuickInputBox extends Disposable {
 		// on findInput to change it to readonly?
 		this.findInput.inputBox.inputElement.toggleAttribute(
 			"readonly",
-			!enabled
+			!enabled,
 		);
 		// TODO: styles of the quick pick need to be moved to the CSS instead of being in line
 		// so things like this can be done in CSS
@@ -149,8 +149,8 @@ export class QuickInputBox extends Disposable {
 					decoration === Severity.Info
 						? MessageType.INFO
 						: decoration === Severity.Warning
-							? MessageType.WARNING
-							: MessageType.ERROR,
+						  ? MessageType.WARNING
+						  : MessageType.ERROR,
 				content: "",
 			});
 		}
@@ -161,8 +161,8 @@ export class QuickInputBox extends Disposable {
 			decoration === Severity.Info
 				? MessageType.INFO
 				: decoration === Severity.Warning
-					? MessageType.WARNING
-					: MessageType.ERROR
+				  ? MessageType.WARNING
+				  : MessageType.ERROR,
 		);
 	}
 

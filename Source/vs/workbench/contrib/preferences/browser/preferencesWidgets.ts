@@ -5,11 +5,11 @@
 
 import * as DOM from "vs/base/browser/dom";
 import { StandardKeyboardEvent } from "vs/base/browser/keyboardEvent";
+import { BaseActionViewItem } from "vs/base/browser/ui/actionbar/actionViewItems";
 import {
 	ActionBar,
 	ActionsOrientation,
 } from "vs/base/browser/ui/actionbar/actionbar";
-import { BaseActionViewItem } from "vs/base/browser/ui/actionbar/actionViewItems";
 import {
 	HistoryInputBox,
 	IHistoryInputOptions,
@@ -22,19 +22,19 @@ import { KeyCode } from "vs/base/common/keyCodes";
 import { Disposable } from "vs/base/common/lifecycle";
 import { Schemas } from "vs/base/common/network";
 import { isEqual } from "vs/base/common/resources";
+import { ThemeIcon } from "vs/base/common/themables";
 import { URI } from "vs/base/common/uri";
 import {
 	ICodeEditor,
 	IEditorMouseEvent,
 	MouseTargetType,
 } from "vs/editor/browser/editorBrowser";
+import { ILanguageService } from "vs/editor/common/languages/language";
 import {
 	IModelDeltaDecoration,
 	TrackedRangeStickiness,
 } from "vs/editor/common/model";
 import { localize } from "vs/nls";
-import { ContextScopedHistoryInputBox } from "vs/platform/history/browser/contextScopedHistoryWidget";
-import { showHistoryKeybindingHint } from "vs/platform/history/browser/historyWidgetKeybindingHint";
 import { ConfigurationTarget } from "vs/platform/configuration/common/configuration";
 import {
 	IContextKey,
@@ -44,6 +44,8 @@ import {
 	IContextMenuService,
 	IContextViewService,
 } from "vs/platform/contextview/browser/contextView";
+import { ContextScopedHistoryInputBox } from "vs/platform/history/browser/contextScopedHistoryWidget";
+import { showHistoryKeybindingHint } from "vs/platform/history/browser/historyWidgetKeybindingHint";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import { ILabelService } from "vs/platform/label/common/label";
@@ -53,19 +55,17 @@ import {
 	badgeForeground,
 	contrastBorder,
 } from "vs/platform/theme/common/colorRegistry";
-import { ThemeIcon } from "vs/base/common/themables";
 import {
-	isWorkspaceFolder,
 	IWorkspaceContextService,
 	IWorkspaceFolder,
 	WorkbenchState,
+	isWorkspaceFolder,
 } from "vs/platform/workspace/common/workspace";
 import {
 	settingsEditIcon,
 	settingsScopeDropDownIcon,
 } from "vs/workbench/contrib/preferences/browser/preferencesIcons";
 import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { ILanguageService } from "vs/editor/common/languages/language";
 export class FolderSettingsActionViewItem extends BaseActionViewItem {
 	private _folder: IWorkspaceFolder | null;
 	private _folderSettingCounts = new Map<string, number>();
@@ -122,39 +122,39 @@ export class FolderSettingsActionViewItem extends BaseActionViewItem {
 		this.detailsElement = DOM.$(".action-details");
 		this.dropDownElement = DOM.$(
 			".dropdown-icon.hide" +
-				ThemeIcon.asCSSSelector(settingsScopeDropDownIcon)
+				ThemeIcon.asCSSSelector(settingsScopeDropDownIcon),
 		);
 		this.anchorElement = DOM.$(
 			"a.action-label.folder-settings",
 			{
 				role: "button",
 				"aria-haspopup": "true",
-				"tabindex": "0",
+				tabindex: "0",
 			},
 			this.labelElement,
 			this.detailsElement,
-			this.dropDownElement
+			this.dropDownElement,
 		);
 		this._register(
 			DOM.addDisposableListener(
 				this.anchorElement,
 				DOM.EventType.MOUSE_DOWN,
-				(e) => DOM.EventHelper.stop(e)
-			)
+				(e) => DOM.EventHelper.stop(e),
+			),
 		);
 		this._register(
 			DOM.addDisposableListener(
 				this.anchorElement,
 				DOM.EventType.CLICK,
-				(e) => this.onClick(e)
-			)
+				(e) => this.onClick(e),
+			),
 		);
 		this._register(
 			DOM.addDisposableListener(
 				this.container,
 				DOM.EventType.KEY_UP,
-				(e) => this.onKeyUp(e)
-			)
+				(e) => this.onKeyUp(e),
+			),
 		);
 
 		DOM.append(this.container, this.anchorElement);
@@ -195,14 +195,14 @@ export class FolderSettingsActionViewItem extends BaseActionViewItem {
 		if (oldFolder) {
 			this._folder =
 				workspace.folders.filter((folder) =>
-					isEqual(folder.uri, oldFolder.uri)
+					isEqual(folder.uri, oldFolder.uri),
 				)[0] || workspace.folders[0];
 		}
 		this._folder = this._folder
 			? this._folder
 			: workspace.folders.length === 1
-				? workspace.folders[0]
-				: null;
+			  ? workspace.folders[0]
+			  : null;
 
 		this.update();
 
@@ -223,7 +223,7 @@ export class FolderSettingsActionViewItem extends BaseActionViewItem {
 			this.detailsElement.textContent = detailsText;
 			this.dropDownElement.classList.toggle(
 				"hide",
-				workspace.folders.length === 1 || !this._action.checked
+				workspace.folders.length === 1 || !this._action.checked,
 			);
 		} else {
 			const labelText = this.labelWithCount(this._action.label, total);
@@ -259,7 +259,7 @@ export class FolderSettingsActionViewItem extends BaseActionViewItem {
 			actions.push(
 				...workspaceFolders.map((folder, index) => {
 					const folderCount = this._folderSettingCounts.get(
-						folder.uri.toString()
+						folder.uri.toString(),
 					);
 					return <IAction>{
 						id: "folderSettingsTarget" + index,
@@ -269,7 +269,7 @@ export class FolderSettingsActionViewItem extends BaseActionViewItem {
 						enabled: true,
 						run: () => this._action.run(folder),
 					};
-				})
+				}),
 			);
 		}
 		return actions;
@@ -308,7 +308,7 @@ export class SettingsTargetsWidget extends Widget {
 	private _settingsTarget: SettingsTarget | null = null;
 
 	private readonly _onDidTargetChange = this._register(
-		new Emitter<SettingsTarget>()
+		new Emitter<SettingsTarget>(),
 	);
 	readonly onDidTargetChange: Event<SettingsTarget> =
 		this._onDidTargetChange.event;
@@ -344,7 +344,7 @@ export class SettingsTargetsWidget extends Widget {
 			remoteAuthority &&
 			this.labelService.getHostLabel(
 				Schemas.vscodeRemote,
-				remoteAuthority
+				remoteAuthority,
 			);
 		this.userLocalSettings.label = localize("userSettings", "User");
 		this.userRemoteSettings.label =
@@ -352,7 +352,7 @@ export class SettingsTargetsWidget extends Widget {
 			(hostLabel ? ` [${hostLabel}]` : "");
 		this.workspaceSettings.label = localize(
 			"workspaceSettings",
-			"Workspace"
+			"Workspace",
 		);
 		this.folderSettingsAction.label = localize("folderSettings", "Folder");
 	}
@@ -360,7 +360,7 @@ export class SettingsTargetsWidget extends Widget {
 	private create(parent: HTMLElement): void {
 		const settingsTabsWidget = DOM.append(
 			parent,
-			DOM.$(".settings-tabs-widget")
+			DOM.$(".settings-tabs-widget"),
 		);
 		this.settingsSwitcherBar = this._register(
 			new ActionBar(settingsTabsWidget, {
@@ -368,14 +368,14 @@ export class SettingsTargetsWidget extends Widget {
 				focusOnlyEnabledItems: true,
 				ariaLabel: localize(
 					"settingsSwitcherBarAriaLabel",
-					"Settings Switcher"
+					"Settings Switcher",
 				),
 				animated: false,
 				actionViewItemProvider: (action: IAction) =>
 					action.id === "folderSettings"
 						? this.folderSettings
 						: undefined,
-			})
+			}),
 		);
 
 		this.userLocalSettings = new Action(
@@ -383,7 +383,7 @@ export class SettingsTargetsWidget extends Widget {
 			"",
 			".settings-tab",
 			true,
-			() => this.updateTarget(ConfigurationTarget.USER_LOCAL)
+			() => this.updateTarget(ConfigurationTarget.USER_LOCAL),
 		);
 		this.userLocalSettings.tooltip = localize("userSettings", "User");
 
@@ -392,14 +392,14 @@ export class SettingsTargetsWidget extends Widget {
 			"",
 			".settings-tab",
 			true,
-			() => this.updateTarget(ConfigurationTarget.USER_REMOTE)
+			() => this.updateTarget(ConfigurationTarget.USER_REMOTE),
 		);
 		const remoteAuthority = this.environmentService.remoteAuthority;
 		const hostLabel =
 			remoteAuthority &&
 			this.labelService.getHostLabel(
 				Schemas.vscodeRemote,
-				remoteAuthority
+				remoteAuthority,
 			);
 		this.userRemoteSettings.tooltip =
 			localize("userSettingsRemote", "Remote") +
@@ -410,7 +410,7 @@ export class SettingsTargetsWidget extends Widget {
 			"",
 			".settings-tab",
 			false,
-			() => this.updateTarget(ConfigurationTarget.WORKSPACE)
+			() => this.updateTarget(ConfigurationTarget.WORKSPACE),
 		);
 
 		this.folderSettingsAction = new Action(
@@ -422,13 +422,13 @@ export class SettingsTargetsWidget extends Widget {
 				this.updateTarget(
 					isWorkspaceFolder(folder)
 						? folder.uri
-						: ConfigurationTarget.USER_LOCAL
+						: ConfigurationTarget.USER_LOCAL,
 				);
-			}
+			},
 		);
 		this.folderSettings = this.instantiationService.createInstance(
 			FolderSettingsActionViewItem,
-			this.folderSettingsAction
+			this.folderSettingsAction,
 		);
 
 		this.resetLabels();
@@ -457,7 +457,7 @@ export class SettingsTargetsWidget extends Widget {
 		if (this.settingsTarget instanceof URI) {
 			this.folderSettings.action.checked = true;
 			this.folderSettings.folder = this.contextService.getWorkspaceFolder(
-				this.settingsTarget as URI
+				this.settingsTarget as URI,
 			);
 		} else {
 			this.folderSettings.action.checked = false;
@@ -527,7 +527,7 @@ export class SettingsTargetsWidget extends Widget {
 	private async update(): Promise<void> {
 		this.settingsSwitcherBar.domNode.classList.toggle(
 			"empty-workbench",
-			this.contextService.getWorkbenchState() === WorkbenchState.EMPTY
+			this.contextService.getWorkbenchState() === WorkbenchState.EMPTY,
 		);
 		this.userRemoteSettings.enabled = !!(
 			this.options.enableRemoteSettings &&
@@ -542,7 +542,7 @@ export class SettingsTargetsWidget extends Widget {
 
 		this.workspaceSettings.tooltip = localize(
 			"workspaceSettings",
-			"Workspace"
+			"Workspace",
 		);
 	}
 }
@@ -563,12 +563,12 @@ export class SearchWidget extends Widget {
 	private controlsDiv!: HTMLElement;
 
 	private readonly _onDidChange: Emitter<string> = this._register(
-		new Emitter<string>()
+		new Emitter<string>(),
 	);
 	readonly onDidChange: Event<string> = this._onDidChange.event;
 
 	private readonly _onFocus: Emitter<void> = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onFocus: Event<void> = this._onFocus.event;
 
@@ -591,39 +591,39 @@ export class SearchWidget extends Widget {
 	private create(parent: HTMLElement) {
 		this.domNode = DOM.append(parent, DOM.$("div.settings-header-widget"));
 		this.createSearchContainer(
-			DOM.append(this.domNode, DOM.$("div.settings-search-container"))
+			DOM.append(this.domNode, DOM.$("div.settings-search-container")),
 		);
 		this.controlsDiv = DOM.append(
 			this.domNode,
-			DOM.$("div.settings-search-controls")
+			DOM.$("div.settings-search-controls"),
 		);
 
 		if (this.options.showResultCount) {
 			this.countElement = DOM.append(
 				this.controlsDiv,
-				DOM.$(".settings-count-widget")
+				DOM.$(".settings-count-widget"),
 			);
 
 			this.countElement.style.backgroundColor =
 				asCssVariable(badgeBackground);
 			this.countElement.style.color = asCssVariable(badgeForeground);
 			this.countElement.style.border = `1px solid ${asCssVariable(
-				contrastBorder
+				contrastBorder,
 			)}`;
 		}
 
 		this.inputBox.inputElement.setAttribute(
 			"aria-live",
-			this.options.ariaLive || "off"
+			this.options.ariaLive || "off",
 		);
 		if (this.options.ariaLabelledBy) {
 			this.inputBox.inputElement.setAttribute(
 				"aria-labelledBy",
-				this.options.ariaLabelledBy
+				this.options.ariaLabelledBy,
 			);
 		}
 		const focusTracker = this._register(
-			DOM.trackFocus(this.inputBox.inputElement)
+			DOM.trackFocus(this.inputBox.inputElement),
 		);
 		this._register(focusTracker.onDidFocus(() => this._onFocus.fire()));
 
@@ -638,11 +638,11 @@ export class SearchWidget extends Widget {
 		this.searchContainer = searchContainer;
 		const searchInput = DOM.append(
 			this.searchContainer,
-			DOM.$("div.settings-search-input")
+			DOM.$("div.settings-search-input"),
 		);
 		this.inputBox = this._register(this.createInputBox(searchInput));
 		this._register(
-			this.inputBox.onDidChange((value) => this._onDidChange.fire(value))
+			this.inputBox.onDidChange((value) => this._onDidChange.fire(value)),
 		);
 	}
 
@@ -654,8 +654,8 @@ export class SearchWidget extends Widget {
 				parent,
 				this.contextViewService,
 				{ ...this.options, showHistoryHint },
-				this.contextKeyService
-			)
+				this.contextKeyService,
+			),
 		);
 		return box;
 	}
@@ -720,14 +720,14 @@ export class SearchWidget extends Widget {
 }
 
 export class EditPreferenceWidget<T> extends Disposable {
-	private _line: number = -1;
+	private _line = -1;
 	private _preferences: T[] = [];
 
 	private readonly _editPreferenceDecoration =
 		this.editor.createDecorationsCollection();
 
 	private readonly _onClick = this._register(
-		new Emitter<IEditorMouseEvent>()
+		new Emitter<IEditorMouseEvent>(),
 	);
 	readonly onClick: Event<IEditorMouseEvent> = this._onClick.event;
 
@@ -743,7 +743,7 @@ export class EditPreferenceWidget<T> extends Disposable {
 					return;
 				}
 				this._onClick.fire(e);
-			})
+			}),
 		);
 	}
 
@@ -764,7 +764,7 @@ export class EditPreferenceWidget<T> extends Disposable {
 				description: "edit-preference-widget-decoration",
 				glyphMarginClassName: ThemeIcon.asClassName(settingsEditIcon),
 				glyphMarginHoverMessage: new MarkdownString().appendText(
-					hoverMessage
+					hoverMessage,
 				),
 				stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
 			},

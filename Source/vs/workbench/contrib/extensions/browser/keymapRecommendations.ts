@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	ExtensionRecommendations,
-	ExtensionRecommendation,
-} from "vs/workbench/contrib/extensions/browser/extensionRecommendations";
 import { IProductService } from "vs/platform/product/common/productService";
+import {
+	ExtensionRecommendation,
+	ExtensionRecommendations,
+} from "vs/workbench/contrib/extensions/browser/extensionRecommendations";
 import { ExtensionRecommendationReason } from "vs/workbench/services/extensionRecommendations/common/extensionRecommendations";
 
 export class KeymapRecommendations extends ExtensionRecommendations {
@@ -32,7 +32,7 @@ export class KeymapRecommendations extends ExtensionRecommendations {
 							reasonId: ExtensionRecommendationReason.Application,
 							reasonText: "",
 						},
-					}
+					},
 			);
 		}
 	}

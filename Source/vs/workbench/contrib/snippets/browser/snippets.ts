@@ -5,8 +5,8 @@
 
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import {
-	SnippetFile,
 	Snippet,
+	SnippetFile,
 } from "vs/workbench/contrib/snippets/browser/snippetsFile";
 
 export const ISnippetsService =
@@ -32,7 +32,7 @@ export interface ISnippetsService {
 
 	getSnippets(
 		languageId: string | undefined,
-		opt?: ISnippetGetOptions
+		opt?: ISnippetGetOptions,
 	): Promise<Snippet[]>;
 
 	getSnippetsSync(languageId: string, opt?: ISnippetGetOptions): Snippet[];

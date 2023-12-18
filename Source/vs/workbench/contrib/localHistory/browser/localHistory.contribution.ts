@@ -3,16 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/workbench/contrib/localHistory/browser/localHistoryCommands";
 import { Registry } from "vs/platform/registry/common/platform";
 import {
-	IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
+	IWorkbenchContributionsRegistry,
 } from "vs/workbench/common/contributions";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
+import "vs/workbench/contrib/localHistory/browser/localHistoryCommands";
 import { LocalHistoryTimeline } from "vs/workbench/contrib/localHistory/browser/localHistoryTimeline";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 // Register Local History Timeline
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(LocalHistoryTimeline, LifecyclePhase.Ready);

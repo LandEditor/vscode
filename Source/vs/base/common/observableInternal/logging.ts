@@ -33,11 +33,11 @@ interface IChangeInformation {
 export interface IObservableLogger {
 	handleObservableChanged(
 		observable: ObservableValue<any, any>,
-		info: IChangeInformation
+		info: IChangeInformation,
 	): void;
 	handleFromEventObservableTriggered(
 		observable: FromEventObservable<any, any>,
-		info: IChangeInformation
+		info: IChangeInformation,
 	): void;
 
 	handleAutorunCreated(autorun: AutorunObserver): void;
@@ -47,7 +47,7 @@ export interface IObservableLogger {
 	handleDerivedCreated(observable: Derived<any>): void;
 	handleDerivedRecomputed(
 		observable: Derived<any>,
-		info: IChangeInformation
+		info: IChangeInformation,
 	): void;
 
 	handleBeginTransaction(transaction: TransactionImpl): void;
@@ -85,20 +85,20 @@ export class ConsoleObservableLogger implements IObservableLogger {
 					styled(formatValue(info.newValue, 60), {
 						color: "green",
 					}),
-				]
+			  ]
 			: [normalText(` (unchanged)`)];
 	}
 
 	handleObservableChanged(
 		observable: IObservable<unknown, unknown>,
-		info: IChangeInformation
+		info: IChangeInformation,
 	): void {
 		console.log(
 			...this.textToConsoleArgs([
 				formatKind("observable value changed"),
 				styled(observable.debugName, { color: "BlueViolet" }),
 				...this.formatInfo(info),
-			])
+			]),
 		);
 	}
 
@@ -108,7 +108,7 @@ export class ConsoleObservableLogger implements IObservableLogger {
 	>();
 
 	formatChanges(
-		changes: Set<IObservable<any, any>>
+		changes: Set<IObservable<any, any>>,
 	): ConsoleText | undefined {
 		if (changes.size === 0) {
 			return undefined;
@@ -117,7 +117,7 @@ export class ConsoleObservableLogger implements IObservableLogger {
 			" (changed deps: " +
 				[...changes].map((o) => o.debugName).join(", ") +
 				")",
-			{ color: "gray" }
+			{ color: "gray" },
 		);
 	}
 
@@ -132,7 +132,7 @@ export class ConsoleObservableLogger implements IObservableLogger {
 
 	handleDerivedRecomputed(
 		derived: Derived<unknown>,
-		info: IChangeInformation
+		info: IChangeInformation,
 	): void {
 		const changedObservables = this.changedObservablesSets.get(derived)!;
 		console.log(
@@ -142,14 +142,14 @@ export class ConsoleObservableLogger implements IObservableLogger {
 				...this.formatInfo(info),
 				this.formatChanges(changedObservables),
 				{ data: [{ fn: derived._computeFn }] },
-			])
+			]),
 		);
 		changedObservables.clear();
 	}
 
 	handleFromEventObservableTriggered(
 		observable: FromEventObservable<any, any>,
-		info: IChangeInformation
+		info: IChangeInformation,
 	): void {
 		console.log(
 			...this.textToConsoleArgs([
@@ -157,7 +157,7 @@ export class ConsoleObservableLogger implements IObservableLogger {
 				styled(observable.debugName, { color: "BlueViolet" }),
 				...this.formatInfo(info),
 				{ data: [{ fn: observable._getValue }] },
-			])
+			]),
 		);
 	}
 
@@ -178,7 +178,7 @@ export class ConsoleObservableLogger implements IObservableLogger {
 				styled(autorun.debugName, { color: "BlueViolet" }),
 				this.formatChanges(changedObservables),
 				{ data: [{ fn: autorun._runFn }] },
-			])
+			]),
 		);
 		changedObservables.clear();
 		this.indentation++;
@@ -198,7 +198,7 @@ export class ConsoleObservableLogger implements IObservableLogger {
 				formatKind("transaction"),
 				styled(transactionName, { color: "BlueViolet" }),
 				{ data: [{ fn: transaction._fn }] },
-			])
+			]),
 		);
 		this.indentation++;
 	}
@@ -255,14 +255,14 @@ function styled(
 	text: string,
 	options: { color: string; strikeThrough?: boolean; bold?: boolean } = {
 		color: "black",
-	}
+	},
 ): ConsoleText {
 	function objToCss(styleObj: Record<string, string>): string {
 		return Object.entries(styleObj).reduce(
 			(styleString, [propName, propValue]) => {
 				return `${styleString}${propName}:${propValue};`;
 			},
-			""
+			"",
 		);
 	}
 

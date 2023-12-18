@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as strings from "vs/base/common/strings";
-import * as stringBuilder from "vs/editor/common/core/stringBuilder";
 import { Range } from "vs/editor/common/core/range";
+import * as stringBuilder from "vs/editor/common/core/stringBuilder";
 import { CharacterPair } from "vs/editor/common/languages/languageConfiguration";
 
 interface InternalBracket {
@@ -83,7 +83,7 @@ export class RichEditBracket {
 		open: string[],
 		close: string[],
 		forwardRegex: RegExp,
-		reversedRegex: RegExp
+		reversedRegex: RegExp,
 	) {
 		this.languageId = languageId;
 		this.index = index;
@@ -132,7 +132,7 @@ export class RichEditBracket {
  *
  */
 function groupFuzzyBrackets(
-	brackets: readonly CharacterPair[]
+	brackets: readonly CharacterPair[],
 ): InternalBracket[] {
 	const N = brackets.length;
 
@@ -238,7 +238,12 @@ export class RichEditBrackets {
 				b.open,
 				b.close,
 				getRegexForBracketPair(b.open, b.close, brackets, index),
-				getReversedRegexForBracketPair(b.open, b.close, brackets, index)
+				getReversedRegexForBracketPair(
+					b.open,
+					b.close,
+					brackets,
+					index,
+				),
 			);
 		});
 
@@ -255,7 +260,7 @@ export class RichEditBrackets {
 				this.textIsOpenBracket[open] = true;
 				this.maxBracketLength = Math.max(
 					this.maxBracketLength,
-					open.length
+					open.length,
 				);
 			}
 			for (const close of bracket.close) {
@@ -263,7 +268,7 @@ export class RichEditBrackets {
 				this.textIsOpenBracket[close] = false;
 				this.maxBracketLength = Math.max(
 					this.maxBracketLength,
-					close.length
+					close.length,
 				);
 			}
 		}
@@ -274,7 +279,7 @@ function collectSuperstrings(
 	str: string,
 	brackets: InternalBracket[],
 	currentIndex: number,
-	dest: string[]
+	dest: string[],
 ): void {
 	for (let i = 0, len = brackets.length; i < len; i++) {
 		if (i === currentIndex) {
@@ -341,7 +346,7 @@ function getRegexForBracketPair(
 	open: string[],
 	close: string[],
 	brackets: InternalBracket[],
-	currentIndex: number
+	currentIndex: number,
 ): RegExp {
 	// search in all brackets for other brackets that are a superstring of these brackets
 	let pieces: string[] = [];
@@ -370,7 +375,7 @@ function getReversedRegexForBracketPair(
 	open: string[],
 	close: string[],
 	brackets: InternalBracket[],
-	currentIndex: number
+	currentIndex: number,
 ): RegExp {
 	// search in all brackets for other brackets that are a superstring of these brackets
 	let pieces: string[] = [];
@@ -448,7 +453,7 @@ function createBracketOrRegExp(pieces: string[]): RegExp {
 	return strings.createRegExp(regexStr, true);
 }
 
-const toReversedString = (function () {
+const toReversedString = (() => {
 	function reverse(str: string): string {
 		// create a Uint16Array and then use a TextDecoder to create a string
 		const arr = new Uint16Array(str.length);
@@ -475,7 +480,7 @@ export class BracketsUtils {
 		reversedBracketRegex: RegExp,
 		lineNumber: number,
 		reversedText: string,
-		offset: number
+		offset: number,
 	): Range | null {
 		const m = reversedText.match(reversedBracketRegex);
 
@@ -491,7 +496,7 @@ export class BracketsUtils {
 			lineNumber,
 			absoluteMatchOffset - matchLength + 1,
 			lineNumber,
-			absoluteMatchOffset + 1
+			absoluteMatchOffset + 1,
 		);
 	}
 
@@ -500,19 +505,19 @@ export class BracketsUtils {
 		lineNumber: number,
 		lineText: string,
 		startOffset: number,
-		endOffset: number
+		endOffset: number,
 	): Range | null {
 		// Because JS does not support backwards regex search, we search forwards in a reversed string with a reversed regex ;)
 		const reversedLineText = toReversedString(lineText);
 		const reversedSubstr = reversedLineText.substring(
 			lineText.length - endOffset,
-			lineText.length - startOffset
+			lineText.length - startOffset,
 		);
 		return this._findPrevBracketInText(
 			reversedBracketRegex,
 			lineNumber,
 			reversedSubstr,
-			startOffset
+			startOffset,
 		);
 	}
 
@@ -520,7 +525,7 @@ export class BracketsUtils {
 		bracketRegex: RegExp,
 		lineNumber: number,
 		text: string,
-		offset: number
+		offset: number,
 	): Range | null {
 		const m = text.match(bracketRegex);
 
@@ -539,7 +544,7 @@ export class BracketsUtils {
 			lineNumber,
 			absoluteMatchOffset + 1,
 			lineNumber,
-			absoluteMatchOffset + 1 + matchLength
+			absoluteMatchOffset + 1 + matchLength,
 		);
 	}
 
@@ -548,14 +553,14 @@ export class BracketsUtils {
 		lineNumber: number,
 		lineText: string,
 		startOffset: number,
-		endOffset: number
+		endOffset: number,
 	): Range | null {
 		const substr = lineText.substring(startOffset, endOffset);
 		return this.findNextBracketInText(
 			bracketRegex,
 			lineNumber,
 			substr,
-			startOffset
+			startOffset,
 		);
 	}
 }

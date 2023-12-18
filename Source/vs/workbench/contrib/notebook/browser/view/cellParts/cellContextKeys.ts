@@ -21,7 +21,6 @@ import { CodeCellViewModel } from "vs/workbench/contrib/notebook/browser/viewMod
 import { MarkupCellViewModel } from "vs/workbench/contrib/notebook/browser/viewModel/markupCellViewModel";
 import { NotebookCellExecutionState } from "vs/workbench/contrib/notebook/common/notebookCommon";
 import {
-	NotebookCellExecutionStateContext,
 	NOTEBOOK_CELL_EDITABLE,
 	NOTEBOOK_CELL_EDITOR_FOCUSED,
 	NOTEBOOK_CELL_EXECUTING,
@@ -34,6 +33,7 @@ import {
 	NOTEBOOK_CELL_OUTPUT_COLLAPSED,
 	NOTEBOOK_CELL_RESOURCE,
 	NOTEBOOK_CELL_TYPE,
+	NotebookCellExecutionStateContext,
 } from "vs/workbench/contrib/notebook/common/notebookContextKeys";
 import {
 	INotebookExecutionStateService,
@@ -154,19 +154,19 @@ export class CellContextKeyManager extends Disposable {
 		}
 
 		this.elementDisposables.add(
-			element.onDidChangeState((e) => this.onDidChangeState(e))
+			element.onDidChangeState((e) => this.onDidChangeState(e)),
 		);
 
 		if (element instanceof CodeCellViewModel) {
 			this.elementDisposables.add(
-				element.onDidChangeOutputs(() => this.updateForOutputs())
+				element.onDidChangeOutputs(() => this.updateForOutputs()),
 			);
 		}
 
 		this.elementDisposables.add(
 			this.notebookEditor.onDidChangeActiveCell(() =>
-				this.updateForFocusState()
-			)
+				this.updateForFocusState(),
+			),
 		);
 
 		if (this.element instanceof MarkupCellViewModel) {
@@ -218,12 +218,12 @@ export class CellContextKeyManager extends Disposable {
 
 		const activeCell = this.notebookEditor.getActiveCell();
 		this.cellFocused.set(
-			this.notebookEditor.getActiveCell() === this.element
+			this.notebookEditor.getActiveCell() === this.element,
 		);
 
 		if (activeCell === this.element) {
 			this.cellEditorFocused.set(
-				this.element.focusMode === CellFocusMode.Editor
+				this.element.focusMode === CellFocusMode.Editor,
 			);
 		} else {
 			this.cellEditorFocused.set(false);
@@ -239,7 +239,7 @@ export class CellContextKeyManager extends Disposable {
 		this.cellEditable.set(!this.notebookEditor.isReadOnly);
 
 		const exeState = this._notebookExecutionStateService.getCellExecution(
-			this.element.uri
+			this.element.uri,
 		);
 		if (this.element instanceof MarkupCellViewModel) {
 			this.cellRunState.reset();
@@ -272,7 +272,7 @@ export class CellContextKeyManager extends Disposable {
 
 		if (this.element instanceof MarkupCellViewModel) {
 			this.markdownEditMode.set(
-				this.element.getEditState() === CellEditState.Editing
+				this.element.getEditState() === CellEditState.Editing,
 			);
 		} else {
 			this.markdownEditMode.set(false);

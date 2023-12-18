@@ -16,17 +16,17 @@ import {
 	ITreeNode,
 	ITreeRenderer,
 } from "vs/base/browser/ui/tree/tree";
-import { createMatches, FuzzyScore } from "vs/base/common/filters";
-import { dispose, IDisposable } from "vs/base/common/lifecycle";
+import { FuzzyScore, createMatches } from "vs/base/common/filters";
+import { IDisposable, dispose } from "vs/base/common/lifecycle";
 import { basename } from "vs/base/common/path";
 import severity from "vs/base/common/severity";
+import { ThemeIcon } from "vs/base/common/themables";
 import { localize } from "vs/nls";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { IContextViewService } from "vs/platform/contextview/browser/contextView";
 import { ILabelService } from "vs/platform/label/common/label";
 import { defaultCountBadgeStyles } from "vs/platform/theme/browser/defaultStyles";
 import { IThemeService } from "vs/platform/theme/common/themeService";
-import { ThemeIcon } from "vs/base/common/themables";
 import {
 	AbstractExpressionsRenderer,
 	IExpressionTemplateData,
@@ -111,8 +111,8 @@ export class ReplEvaluationInputsRenderer
 			container,
 			$(
 				"span.arrow" +
-					ThemeIcon.asCSSSelector(debugConsoleEvaluationInput)
-			)
+					ThemeIcon.asCSSSelector(debugConsoleEvaluationInput),
+			),
 		);
 		const input = dom.append(container, $(".expression"));
 		const label = new HighlightedLabel(input);
@@ -122,12 +122,12 @@ export class ReplEvaluationInputsRenderer
 	renderElement(
 		element: ITreeNode<ReplEvaluationInput, FuzzyScore>,
 		index: number,
-		templateData: IReplEvaluationInputTemplateData
+		templateData: IReplEvaluationInputTemplateData,
 	): void {
 		const evaluation = element.element;
 		templateData.label.set(
 			evaluation.value,
-			createMatches(element.filterData)
+			createMatches(element.filterData),
 		);
 	}
 
@@ -158,7 +158,7 @@ export class ReplGroupRenderer
 	renderElement(
 		element: ITreeNode<ReplGroup, FuzzyScore>,
 		_index: number,
-		templateData: IReplGroupTemplateData
+		templateData: IReplGroupTemplateData,
 	): void {
 		const replGroup = element.element;
 		dom.clearNode(templateData.label);
@@ -166,7 +166,7 @@ export class ReplGroupRenderer
 			replGroup.name,
 			this.linkDetector,
 			this.themeService,
-			undefined
+			undefined,
 		);
 		templateData.label.appendChild(result);
 	}
@@ -195,7 +195,7 @@ export class ReplEvaluationResultsRenderer
 	renderTemplate(container: HTMLElement): IReplEvaluationResultTemplateData {
 		const output = dom.append(
 			container,
-			$(".evaluation-result.expression")
+			$(".evaluation-result.expression"),
 		);
 		const value = dom.append(output, $("span.value"));
 
@@ -205,7 +205,7 @@ export class ReplEvaluationResultsRenderer
 	renderElement(
 		element: ITreeNode<ReplEvaluationResult | Variable, FuzzyScore>,
 		index: number,
-		templateData: IReplEvaluationResultTemplateData
+		templateData: IReplEvaluationResultTemplateData,
 	): void {
 		const expression = element.element;
 		renderExpressionValue(expression, templateData.value, {
@@ -246,7 +246,7 @@ export class ReplOutputElementRenderer
 		container.classList.add("output");
 		const expression = dom.append(
 			container,
-			$(".output.expression.value-and-source")
+			$(".output.expression.value-and-source"),
 		);
 
 		data.container = container;
@@ -254,7 +254,7 @@ export class ReplOutputElementRenderer
 		data.count = new CountBadge(
 			data.countContainer,
 			{},
-			defaultCountBadgeStyles
+			defaultCountBadgeStyles,
 		);
 		data.value = dom.append(expression, $("span.value"));
 		data.source = dom.append(expression, $(".source"));
@@ -272,7 +272,7 @@ export class ReplOutputElementRenderer
 						endColumn: source.column,
 					});
 				}
-			})
+			}),
 		);
 
 		return data;
@@ -281,11 +281,11 @@ export class ReplOutputElementRenderer
 	renderElement(
 		{ element }: ITreeNode<ReplOutputElement, FuzzyScore>,
 		index: number,
-		templateData: IOutputReplElementTemplateData
+		templateData: IOutputReplElementTemplateData,
 	): void {
 		this.setElementCount(element, templateData);
 		templateData.elementListener = element.onDidChangeCount(() =>
-			this.setElementCount(element, templateData)
+			this.setElementCount(element, templateData),
 		);
 		// value
 		dom.clearNode(templateData.value);
@@ -297,35 +297,35 @@ export class ReplOutputElementRenderer
 				element.value,
 				this.linkDetector,
 				this.themeService,
-				element.session.root
-			)
+				element.session.root,
+			),
 		);
 
 		templateData.value.classList.add(
 			element.severity === severity.Warning
 				? "warn"
 				: element.severity === severity.Error
-					? "error"
-					: element.severity === severity.Ignore
-						? "ignore"
-						: "info"
+				  ? "error"
+				  : element.severity === severity.Ignore
+					  ? "ignore"
+					  : "info",
 		);
 		templateData.source.textContent = element.sourceData
 			? `${basename(element.sourceData.source.name)}:${
 					element.sourceData.lineNumber
-				}`
+			  }`
 			: "";
 		templateData.source.title = element.sourceData
 			? `${this.labelService.getUriLabel(
-					element.sourceData.source.uri
-				)}:${element.sourceData.lineNumber}`
+					element.sourceData.source.uri,
+			  )}:${element.sourceData.lineNumber}`
 			: "";
 		templateData.getReplElementSource = () => element.sourceData;
 	}
 
 	private setElementCount(
 		element: ReplOutputElement,
-		templateData: IOutputReplElementTemplateData
+		templateData: IOutputReplElementTemplateData,
 	): void {
 		if (element.count >= 2) {
 			templateData.count.setCount(element.count);
@@ -342,7 +342,7 @@ export class ReplOutputElementRenderer
 	disposeElement(
 		_element: ITreeNode<ReplOutputElement, FuzzyScore>,
 		_index: number,
-		templateData: IOutputReplElementTemplateData
+		templateData: IOutputReplElementTemplateData,
 	): void {
 		templateData.elementListener.dispose();
 	}
@@ -360,7 +360,7 @@ export class ReplVariablesRenderer extends AbstractExpressionsRenderer<
 	constructor(
 		private readonly linkDetector: LinkDetector,
 		@IDebugService debugService: IDebugService,
-		@IContextViewService contextViewService: IContextViewService
+		@IContextViewService contextViewService: IContextViewService,
 	) {
 		super(debugService, contextViewService);
 	}
@@ -368,7 +368,7 @@ export class ReplVariablesRenderer extends AbstractExpressionsRenderer<
 	public renderElement(
 		node: ITreeNode<IExpression | ReplVariableElement, FuzzyScore>,
 		_index: number,
-		data: IExpressionTemplateData
+		data: IExpressionTemplateData,
 	): void {
 		const element = node.element;
 		super.renderExpressionElement(
@@ -376,14 +376,14 @@ export class ReplVariablesRenderer extends AbstractExpressionsRenderer<
 				? element.expression
 				: element,
 			node,
-			data
+			data,
 		);
 	}
 
 	protected renderExpression(
 		expression: IExpression | ReplVariableElement,
 		data: IExpressionTemplateData,
-		highlights: IHighlight[]
+		highlights: IHighlight[],
 	): void {
 		const isReplVariable = expression instanceof ReplVariableElement;
 		if (isReplVariable || !expression.name) {
@@ -395,7 +395,7 @@ export class ReplVariablesRenderer extends AbstractExpressionsRenderer<
 					showHover: false,
 					colorize: true,
 					linkDetector: this.linkDetector,
-				}
+				},
 			);
 			data.expression.classList.remove("nested-variable");
 		} else {
@@ -404,17 +404,17 @@ export class ReplVariablesRenderer extends AbstractExpressionsRenderer<
 				data,
 				true,
 				highlights,
-				this.linkDetector
+				this.linkDetector,
 			);
 			data.expression.classList.toggle(
 				"nested-variable",
-				isNestedVariable(expression)
+				isNestedVariable(expression),
 			);
 		}
 	}
 
 	protected getInputBoxOptions(
-		expression: IExpression
+		expression: IExpression,
 	): IInputBoxOptions | undefined {
 		return undefined;
 	}
@@ -450,13 +450,13 @@ export class ReplRawObjectsRenderer
 	renderElement(
 		node: ITreeNode<RawObjectReplElement, FuzzyScore>,
 		index: number,
-		templateData: IRawObjectReplTemplateData
+		templateData: IRawObjectReplTemplateData,
 	): void {
 		// key
 		const element = node.element;
 		templateData.label.set(
 			element.name ? `${element.name}:` : "",
-			createMatches(node.filterData)
+			createMatches(node.filterData),
 		);
 		if (element.name) {
 			templateData.name.textContent = `${element.name}:`;
@@ -487,7 +487,7 @@ function isNestedVariable(element: IReplElement) {
 export class ReplDelegate extends CachedListVirtualDelegate<IReplElement> {
 	constructor(
 		private readonly configurationService: IConfigurationService,
-		private readonly replOptions: IReplOptions
+		private readonly replOptions: IReplOptions,
 	) {
 		super();
 	}
@@ -508,7 +508,7 @@ export class ReplDelegate extends CachedListVirtualDelegate<IReplElement> {
 	 */
 	protected estimateHeight(
 		element: IReplElement,
-		ignoreValueLength = false
+		ignoreValueLength = false,
 	): number {
 		const lineHeight = this.replOptions.replConfiguration.lineHeight;
 		const countNumberOfLines = (str: string) =>
@@ -579,14 +579,14 @@ export class ReplDataSource
 	}
 
 	getChildren(
-		element: IReplElement | IDebugSession
+		element: IReplElement | IDebugSession,
 	): Promise<IReplElement[]> {
 		if (isDebugSession(element)) {
 			return Promise.resolve(element.getReplElements());
 		}
 
 		return Promise.resolve(
-			(<IExpression | INestingReplElement>element).getChildren()
+			(<IExpression | INestingReplElement>element).getChildren(),
 		);
 	}
 }
@@ -604,7 +604,7 @@ export class ReplAccessibilityProvider
 				"replVariableAriaLabel",
 				"Variable {0}, value {1}",
 				element.name,
-				element.value
+				element.value,
 			);
 		}
 		if (
@@ -623,8 +623,8 @@ export class ReplAccessibilityProvider
 								],
 							},
 							", occurred {0} times",
-							element.count
-						)
+							element.count,
+					  )
 					: "")
 			);
 		}
@@ -633,14 +633,14 @@ export class ReplAccessibilityProvider
 				"replRawObjectAriaLabel",
 				"Debug console variable {0}, value {1}",
 				element.name,
-				element.value
+				element.value,
 			);
 		}
 		if (element instanceof ReplGroup) {
 			return localize(
 				"replGroup",
 				"Debug console group {0}",
-				element.name
+				element.name,
 			);
 		}
 

@@ -27,14 +27,14 @@ export const unthemedCountStyles: ICountBadgeStyles = {
 
 export class CountBadge {
 	private element: HTMLElement;
-	private count: number = 0;
+	private count = 0;
 	private countFormat: string;
 	private titleFormat: string;
 
 	constructor(
 		container: HTMLElement,
 		private readonly options: ICountBadgeOptions,
-		private readonly styles: ICountBadgeStyles
+		private readonly styles: ICountBadgeStyles,
 	) {
 		this.element = append(container, $(".monaco-count-badge"));
 		this.countFormat = this.options.countFormat || "{0}";

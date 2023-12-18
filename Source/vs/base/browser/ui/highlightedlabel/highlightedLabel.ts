@@ -29,11 +29,11 @@ export interface IHighlightedLabelOptions {
  */
 export class HighlightedLabel {
 	private readonly domNode: HTMLElement;
-	private text: string = "";
-	private title: string = "";
+	private text = "";
+	private title = "";
 	private highlights: readonly IHighlight[] = [];
 	private supportIcons: boolean;
-	private didEverRender: boolean = false;
+	private didEverRender = false;
 
 	/**
 	 * Create a new {@link HighlightedLabel}.
@@ -44,7 +44,7 @@ export class HighlightedLabel {
 		this.supportIcons = options?.supportIcons ?? false;
 		this.domNode = dom.append(
 			container,
-			dom.$("span.monaco-highlighted-label")
+			dom.$("span.monaco-highlighted-label"),
 		);
 	}
 
@@ -67,8 +67,8 @@ export class HighlightedLabel {
 	set(
 		text: string | undefined,
 		highlights: readonly IHighlight[] = [],
-		title: string = "",
-		escapeNewLines?: boolean
+		title = "",
+		escapeNewLines?: boolean,
 	) {
 		if (!text) {
 			text = "";
@@ -119,7 +119,7 @@ export class HighlightedLabel {
 				undefined,
 				...(this.supportIcons
 					? renderLabelWithIcons(substring)
-					: [substring])
+					: [substring]),
 			);
 
 			if (highlight.extraClasses) {
@@ -152,7 +152,7 @@ export class HighlightedLabel {
 
 	static escapeNewLines(
 		text: string,
-		highlights: readonly IHighlight[]
+		highlights: readonly IHighlight[],
 	): string {
 		let total = 0;
 		let extra = 0;

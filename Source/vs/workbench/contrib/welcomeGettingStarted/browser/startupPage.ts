@@ -3,49 +3,49 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from "vs/base/common/uri";
-import { ICommandService } from "vs/platform/commands/common/commands";
 import * as arrays from "vs/base/common/arrays";
-import { IWorkbenchContribution } from "vs/workbench/common/contributions";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 import { onUnexpectedError } from "vs/base/common/errors";
-import {
-	IWorkspaceContextService,
-	UNKNOWN_EMPTY_WINDOW_WORKSPACE,
-	WorkbenchState,
-} from "vs/platform/workspace/common/workspace";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IWorkingCopyBackupService } from "vs/workbench/services/workingCopy/common/workingCopyBackup";
-import {
-	ILifecycleService,
-	StartupKind,
-} from "vs/workbench/services/lifecycle/common/lifecycle";
-import { IFileService } from "vs/platform/files/common/files";
 import { joinPath } from "vs/base/common/resources";
+import { URI } from "vs/base/common/uri";
+import { localize } from "vs/nls";
+import { ICommandService } from "vs/platform/commands/common/commands";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { IEditorOptions } from "vs/platform/editor/common/editor";
-import { IWorkbenchLayoutService } from "vs/workbench/services/layout/browser/layoutService";
-import {
-	GettingStartedEditorOptions,
-	GettingStartedInput,
-	gettingStartedInputTypeId,
-} from "vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedInput";
-import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
+import { IFileService } from "vs/platform/files/common/files";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { ILogService } from "vs/platform/log/common/log";
+import { INotificationService } from "vs/platform/notification/common/notification";
+import { IProductService } from "vs/platform/product/common/productService";
 import {
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
-import { getTelemetryLevel } from "vs/platform/telemetry/common/telemetryUtils";
 import { TelemetryLevel } from "vs/platform/telemetry/common/telemetry";
-import { IProductService } from "vs/platform/product/common/productService";
-import { ILogService } from "vs/platform/log/common/log";
-import { INotificationService } from "vs/platform/notification/common/notification";
-import { localize } from "vs/nls";
+import { getTelemetryLevel } from "vs/platform/telemetry/common/telemetryUtils";
+import {
+	IWorkspaceContextService,
+	UNKNOWN_EMPTY_WINDOW_WORKSPACE,
+	WorkbenchState,
+} from "vs/platform/workspace/common/workspace";
+import { IWorkbenchContribution } from "vs/workbench/common/contributions";
+import {
+	GettingStartedEditorOptions,
+	GettingStartedInput,
+	gettingStartedInputTypeId,
+} from "vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedInput";
 import {
 	IEditorResolverService,
 	RegisteredEditorPriority,
 } from "vs/workbench/services/editor/common/editorResolverService";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
+import { IWorkbenchLayoutService } from "vs/workbench/services/layout/browser/layoutService";
+import {
+	ILifecycleService,
+	StartupKind,
+} from "vs/workbench/services/lifecycle/common/lifecycle";
+import { IWorkingCopyBackupService } from "vs/workbench/services/workingCopy/common/workingCopyBackup";
 
 export const restoreWalkthroughsConfigurationKey =
 	"workbench.welcomePage.restorableWalkthroughs";
@@ -125,14 +125,14 @@ export class StartupPageContribution implements IWorkbenchContribution {
 			!this.environmentService.skipWelcome &&
 			!this.storageService.get(
 				telemetryOptOutStorageKey,
-				StorageScope.PROFILE
+				StorageScope.PROFILE,
 			)
 		) {
 			this.storageService.store(
 				telemetryOptOutStorageKey,
 				true,
 				StorageScope.PROFILE,
-				StorageTarget.USER
+				StorageTarget.USER,
 			);
 			await this.openGettingStarted(true);
 			return;
@@ -145,7 +145,7 @@ export class StartupPageContribution implements IWorkbenchContribution {
 		const enabled = isStartupPageEnabled(
 			this.configurationService,
 			this.contextService,
-			this.environmentService
+			this.environmentService,
 		);
 		if (
 			enabled &&
@@ -179,7 +179,7 @@ export class StartupPageContribution implements IWorkbenchContribution {
 						!isStartupEditorDefaultReadme)
 				) {
 					this.logService.warn(
-						`Warning: 'workbench.startupEditor: readme' setting ignored due to being set somewhere other than user or default settings (user=${startupEditorSetting.userValue}, default=${startupEditorSetting.defaultValue})`
+						`Warning: 'workbench.startupEditor: readme' setting ignored due to being set somewhere other than user or default settings (user=${startupEditorSetting.userValue}, default=${startupEditorSetting.defaultValue})`,
 					);
 				}
 
@@ -201,11 +201,9 @@ export class StartupPageContribution implements IWorkbenchContribution {
 	private tryOpenWalkthroughForFolder(): boolean {
 		const toRestore = this.storageService.get(
 			restoreWalkthroughsConfigurationKey,
-			StorageScope.PROFILE
+			StorageScope.PROFILE,
 		);
-		if (!toRestore) {
-			return false;
-		} else {
+		if (toRestore) {
 			const restoreData: RestoreWalkthroughsConfigurationValue =
 				JSON.parse(toRestore);
 			const currentWorkspace = this.contextService.getWorkspace();
@@ -224,10 +222,12 @@ export class StartupPageContribution implements IWorkbenchContribution {
 				});
 				this.storageService.remove(
 					restoreWalkthroughsConfigurationKey,
-					StorageScope.PROFILE
+					StorageScope.PROFILE,
 				);
 				return true;
 			}
+		} else {
+			return false;
 		}
 		return false;
 	}
@@ -249,18 +249,18 @@ export class StartupPageContribution implements IWorkbenchContribution {
 							: [];
 						const file =
 							files.find(
-								(file) => file.toLowerCase() === "readme.md"
+								(file) => file.toLowerCase() === "readme.md",
 							) ||
 							files.find((file) =>
-								file.toLowerCase().startsWith("readme")
+								file.toLowerCase().startsWith("readme"),
 							);
 						if (file) {
 							return joinPath(folderUri, file);
 						} else {
 							return undefined;
 						}
-					})
-			)
+					}),
+			),
 		);
 
 		if (!this.editorService.activeEditor) {
@@ -273,21 +273,21 @@ export class StartupPageContribution implements IWorkbenchContribution {
 							"markdown.showPreview",
 							null,
 							readmes.filter(isMarkDown),
-							{ locked: true }
+							{ locked: true },
 						)
 						.catch((error) => {
 							this.notificationService.error(
 								localize(
 									"startupPage.markdownPreviewError",
 									"Could not open markdown preview: {0}.\n\nPlease make sure the markdown extension is enabled.",
-									error.message
-								)
+									error.message,
+								),
 							);
 						}),
 					this.editorService.openEditors(
 						readmes
 							.filter((readme) => !isMarkDown(readme))
-							.map((readme) => ({ resource: readme }))
+							.map((readme) => ({ resource: readme })),
 					),
 				]);
 			} else {
@@ -305,7 +305,7 @@ export class StartupPageContribution implements IWorkbenchContribution {
 		if (
 			editor?.typeId === startupEditorTypeID ||
 			this.editorService.editors.some(
-				(e) => e.typeId === startupEditorTypeID
+				(e) => e.typeId === startupEditorTypeID,
 			)
 		) {
 			return;
@@ -329,7 +329,7 @@ export class StartupPageContribution implements IWorkbenchContribution {
 function isStartupPageEnabled(
 	configurationService: IConfigurationService,
 	contextService: IWorkspaceContextService,
-	environmentService: IWorkbenchEnvironmentService
+	environmentService: IWorkbenchEnvironmentService,
 ) {
 	if (environmentService.skipWelcome) {
 		return false;

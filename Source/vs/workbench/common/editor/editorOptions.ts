@@ -20,7 +20,7 @@ import { isTextEditorViewState } from "vs/workbench/common/editor";
 export function applyTextEditorOptions(
 	options: ITextEditorOptions,
 	editor: IEditor,
-	scrollType: ScrollType
+	scrollType: ScrollType,
 ): boolean {
 	let applied = false;
 
@@ -50,7 +50,7 @@ export function applyTextEditorOptions(
 		// signal this navigation.
 		editor.setSelection(
 			range,
-			options.selectionSource ?? TextEditorSelectionSource.NAVIGATION
+			options.selectionSource ?? TextEditorSelectionSource.NAVIGATION,
 		);
 
 		// Reveal selection
@@ -80,7 +80,7 @@ export function applyTextEditorOptions(
 }
 
 function massageEditorViewState(
-	options: ITextEditorOptions
+	options: ITextEditorOptions,
 ): object | undefined {
 	// Without a selection or view state, just return immediately
 	if (!options.selection || !options.viewState) {

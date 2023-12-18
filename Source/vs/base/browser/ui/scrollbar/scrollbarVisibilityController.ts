@@ -22,7 +22,7 @@ export class ScrollbarVisibilityController extends Disposable {
 	constructor(
 		visibility: ScrollbarVisibility,
 		visibleClassName: string,
-		invisibleClassName: string
+		invisibleClassName: string,
 	) {
 		super();
 		this._visibility = visibility;
@@ -117,7 +117,7 @@ export class ScrollbarVisibilityController extends Disposable {
 		}
 		this._isVisible = false;
 		this._domNode?.setClassName(
-			this._invisibleClassName + (withFadeAway ? " fade" : "")
+			this._invisibleClassName + (withFadeAway ? " fade" : ""),
 		);
 	}
 }

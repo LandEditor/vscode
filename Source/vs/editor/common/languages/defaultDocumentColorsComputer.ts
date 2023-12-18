@@ -38,7 +38,7 @@ function _toIColor(r: number, g: number, b: number, a: number): IColor {
 
 function _findRange(
 	model: IDocumentColorComputerTarget,
-	match: RegExpMatchArray
+	match: RegExpMatchArray,
 ): IRange | undefined {
 	const index = match.index;
 	const length = match[0].length;
@@ -69,7 +69,7 @@ function _findHexColorInformation(range: IRange | undefined, hexValue: string) {
 			parsedHexColor.rgba.r,
 			parsedHexColor.rgba.g,
 			parsedHexColor.rgba.b,
-			parsedHexColor.rgba.a
+			parsedHexColor.rgba.a,
 		),
 	};
 }
@@ -77,7 +77,7 @@ function _findHexColorInformation(range: IRange | undefined, hexValue: string) {
 function _findRGBColorInformation(
 	range: IRange | undefined,
 	matches: RegExpMatchArray[],
-	isAlpha: boolean
+	isAlpha: boolean,
 ) {
 	if (!range || matches.length !== 1) {
 		return;
@@ -91,7 +91,7 @@ function _findRGBColorInformation(
 			parsedRegex[0],
 			parsedRegex[1],
 			parsedRegex[2],
-			isAlpha ? parsedRegex[3] : 1
+			isAlpha ? parsedRegex[3] : 1,
 		),
 	};
 }
@@ -99,7 +99,7 @@ function _findRGBColorInformation(
 function _findHSLColorInformation(
 	range: IRange | undefined,
 	matches: RegExpMatchArray[],
-	isAlpha: boolean
+	isAlpha: boolean,
 ) {
 	if (!range || matches.length !== 1) {
 		return;
@@ -112,8 +112,8 @@ function _findHSLColorInformation(
 			parsedRegex[0],
 			parsedRegex[1] / 100,
 			parsedRegex[2] / 100,
-			isAlpha ? parsedRegex[3] : 1
-		)
+			isAlpha ? parsedRegex[3] : 1,
+		),
 	);
 	return {
 		range: range,
@@ -121,14 +121,14 @@ function _findHSLColorInformation(
 			colorEquivalent.rgba.r,
 			colorEquivalent.rgba.g,
 			colorEquivalent.rgba.b,
-			colorEquivalent.rgba.a
+			colorEquivalent.rgba.a,
 		),
 	};
 }
 
 function _findMatches(
 	model: IDocumentColorComputerTarget | string,
-	regex: RegExp
+	regex: RegExp,
 ): RegExpMatchArray[] {
 	if (typeof model === "string") {
 		return [...model.matchAll(regex)];
@@ -138,7 +138,7 @@ function _findMatches(
 }
 
 function computeColors(
-	model: IDocumentColorComputerTarget
+	model: IDocumentColorComputerTarget,
 ): IColorInformation[] {
 	const result: IColorInformation[] = [];
 	// Early validation for RGB and HSL
@@ -146,14 +146,14 @@ function computeColors(
 		/\b(rgb|rgba|hsl|hsla)(\([0-9\s,.\%]*\))|(#)([A-Fa-f0-9]{3})\b|(#)([A-Fa-f0-9]{4})\b|(#)([A-Fa-f0-9]{6})\b|(#)([A-Fa-f0-9]{8})\b/gm;
 	const initialValidationMatches = _findMatches(
 		model,
-		initialValidationRegex
+		initialValidationRegex,
 	);
 
 	// Potential colors have been found, validate the parameters
 	if (initialValidationMatches.length > 0) {
 		for (const initialMatch of initialValidationMatches) {
 			const initialCaptureGroups = initialMatch.filter(
-				(captureGroup) => captureGroup !== undefined
+				(captureGroup) => captureGroup !== undefined,
 			);
 			const colorScheme = initialCaptureGroups[1];
 			const colorParameters = initialCaptureGroups[2];
@@ -167,7 +167,7 @@ function computeColors(
 				colorInformation = _findRGBColorInformation(
 					_findRange(model, initialMatch),
 					_findMatches(colorParameters, regexParameters),
-					false
+					false,
 				);
 			} else if (colorScheme === "rgba") {
 				const regexParameters =
@@ -175,7 +175,7 @@ function computeColors(
 				colorInformation = _findRGBColorInformation(
 					_findRange(model, initialMatch),
 					_findMatches(colorParameters, regexParameters),
-					true
+					true,
 				);
 			} else if (colorScheme === "hsl") {
 				const regexParameters =
@@ -183,7 +183,7 @@ function computeColors(
 				colorInformation = _findHSLColorInformation(
 					_findRange(model, initialMatch),
 					_findMatches(colorParameters, regexParameters),
-					false
+					false,
 				);
 			} else if (colorScheme === "hsla") {
 				const regexParameters =
@@ -191,12 +191,12 @@ function computeColors(
 				colorInformation = _findHSLColorInformation(
 					_findRange(model, initialMatch),
 					_findMatches(colorParameters, regexParameters),
-					true
+					true,
 				);
 			} else if (colorScheme === "#") {
 				colorInformation = _findHexColorInformation(
 					_findRange(model, initialMatch),
-					colorScheme + colorParameters
+					colorScheme + colorParameters,
 				);
 			}
 			if (colorInformation) {
@@ -211,7 +211,7 @@ function computeColors(
  * Returns an array of all default document colors in the provided document
  */
 export function computeDefaultDocumentColors(
-	model: IDocumentColorComputerTarget
+	model: IDocumentColorComputerTarget,
 ): IColorInformation[] {
 	if (
 		!model ||

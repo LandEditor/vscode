@@ -9,16 +9,16 @@ import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 import { IProductService } from "vs/platform/product/common/productService";
 import { Registry } from "vs/platform/registry/common/platform";
 import {
 	Extensions,
 	IWorkbenchContributionsRegistry,
 } from "vs/workbench/common/contributions";
+import { BaseIssueContribution } from "vs/workbench/contrib/issue/common/issue.contribution";
 import { WebIssueService } from "vs/workbench/services/issue/browser/issueService";
 import { IWorkbenchIssueService } from "vs/workbench/services/issue/common/issue";
-import { BaseIssueContribution } from "vs/workbench/contrib/issue/common/issue.contribution";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 class WebIssueContribution extends BaseIssueContribution {
 	constructor(@IProductService productService: IProductService) {
@@ -27,18 +27,18 @@ class WebIssueContribution extends BaseIssueContribution {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench
+	Extensions.Workbench,
 ).registerWorkbenchContribution(WebIssueContribution, LifecyclePhase.Restored);
 
 registerSingleton(
 	IWorkbenchIssueService,
 	WebIssueService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 
 CommandsRegistry.registerCommand("_issues.getSystemStatus", (accessor) => {
 	return nls.localize(
 		"statusUnsupported",
-		"The --status argument is not yet supported in browsers."
+		"The --status argument is not yet supported in browsers.",
 	);
 });

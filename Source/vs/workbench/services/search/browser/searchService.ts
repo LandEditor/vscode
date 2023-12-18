@@ -3,14 +3,38 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { DefaultWorkerFactory } from "vs/base/browser/defaultWorkerFactory";
 import { CancellationToken } from "vs/base/common/cancellation";
+import { memoize } from "vs/base/common/decorators";
+import { Emitter, Event } from "vs/base/common/event";
+import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
+import { revive } from "vs/base/common/marshalling";
+import { Schemas } from "vs/base/common/network";
+import { URI, UriComponents } from "vs/base/common/uri";
+import {
+	IWorkerClient,
+	SimpleWorkerClient,
+	logOnceWebWorkerWarning,
+} from "vs/base/common/worker/simpleWorker";
 import { IModelService } from "vs/editor/common/services/model";
+import { localize } from "vs/nls";
+import { HTMLFileSystemProvider } from "vs/platform/files/browser/htmlFileSystemProvider";
+import { WebFileSystemAccess } from "vs/platform/files/browser/webFileSystemAccess";
 import { IFileService } from "vs/platform/files/common/files";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { ILogService } from "vs/platform/log/common/log";
 import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
+import {
+	ILocalFileSearchSimpleWorker,
+	ILocalFileSearchSimpleWorkerHost,
+} from "vs/workbench/services/search/common/localFileSearchWorkerTypes";
 import {
 	IFileMatch,
 	IFileQuery,
@@ -23,30 +47,6 @@ import {
 	TextSearchCompleteMessageType,
 } from "vs/workbench/services/search/common/search";
 import { SearchService } from "vs/workbench/services/search/common/searchService";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import {
-	IWorkerClient,
-	logOnceWebWorkerWarning,
-	SimpleWorkerClient,
-} from "vs/base/common/worker/simpleWorker";
-import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
-import { DefaultWorkerFactory } from "vs/base/browser/defaultWorkerFactory";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import {
-	ILocalFileSearchSimpleWorker,
-	ILocalFileSearchSimpleWorkerHost,
-} from "vs/workbench/services/search/common/localFileSearchWorkerTypes";
-import { memoize } from "vs/base/common/decorators";
-import { HTMLFileSystemProvider } from "vs/platform/files/browser/htmlFileSystemProvider";
-import { Schemas } from "vs/base/common/network";
-import { URI, UriComponents } from "vs/base/common/uri";
-import { Emitter, Event } from "vs/base/common/event";
-import { localize } from "vs/nls";
-import { WebFileSystemAccess } from "vs/platform/files/browser/webFileSystemAccess";
-import { revive } from "vs/base/common/marshalling";
 
 export class RemoteSearchService extends SearchService {
 	constructor(
@@ -103,7 +103,7 @@ export class LocalFileSearchWorkerClient
 
 	private cache: { key: string; cache: ISearchComplete } | undefined;
 
-	private queryId: number = 0;
+	private queryId = 0;
 
 	constructor(
 		@IFileService private fileService: IFileService,
@@ -116,7 +116,7 @@ export class LocalFileSearchWorkerClient
 
 	sendTextSearchMatch(
 		match: IFileMatch<UriComponents>,
-		queryId: number
+		queryId: number,
 	): void {
 		this._onDidReceiveTextSearchMatch.fire({ match, queryId });
 	}
@@ -124,7 +124,7 @@ export class LocalFileSearchWorkerClient
 	@memoize
 	private get fileSystemProvider(): HTMLFileSystemProvider {
 		return this.fileService.getProvider(
-			Schemas.file
+			Schemas.file,
 		) as HTMLFileSystemProvider;
 	}
 
@@ -136,7 +136,7 @@ export class LocalFileSearchWorkerClient
 	async textSearch(
 		query: ITextQuery,
 		onProgress?: (p: ISearchProgressItem) => void,
-		token?: CancellationToken
+		token?: CancellationToken,
 	): Promise<ISearchComplete> {
 		try {
 			const queryDisposables = new DisposableStore();
@@ -151,8 +151,8 @@ export class LocalFileSearchWorkerClient
 					const queryId = this.queryId++;
 					queryDisposables.add(
 						token?.onCancellationRequested((e) =>
-							this.cancelQuery(queryId)
-						) || Disposable.None
+							this.cancelQuery(queryId),
+						) || Disposable.None,
 					);
 
 					const handle: FileSystemHandle | undefined =
@@ -163,7 +163,7 @@ export class LocalFileSearchWorkerClient
 					) {
 						console.error(
 							"Could not get directory handle for ",
-							fq
+							fq,
 						);
 						return;
 					}
@@ -173,19 +173,19 @@ export class LocalFileSearchWorkerClient
 							if (e.queryId === queryId) {
 								onProgress?.(revive(e.match));
 							}
-						})
+						}),
 					);
 
 					const ignorePathCasing =
 						this.uriIdentityService.extUri.ignorePathCasing(
-							fq.folder
+							fq.folder,
 						);
 					const folderResults = await proxy.searchDirectory(
 						handle,
 						query,
 						fq,
 						ignorePathCasing,
-						queryId
+						queryId,
 					);
 					for (const folderResult of folderResults.results) {
 						results.push(revive(folderResult));
@@ -194,7 +194,7 @@ export class LocalFileSearchWorkerClient
 					if (folderResults.limitHit) {
 						limitHit = true;
 					}
-				})
+				}),
 			);
 
 			queryDisposables.dispose();
@@ -208,7 +208,7 @@ export class LocalFileSearchWorkerClient
 					{
 						text: localize(
 							"errorSearchText",
-							"Unable to search with Web Worker text searcher"
+							"Unable to search with Web Worker text searcher",
 						),
 						type: TextSearchCompleteMessageType.Warning,
 					},
@@ -219,7 +219,7 @@ export class LocalFileSearchWorkerClient
 
 	async fileSearch(
 		query: IFileQuery,
-		token?: CancellationToken
+		token?: CancellationToken,
 	): Promise<ISearchComplete> {
 		try {
 			const queryDisposables = new DisposableStore();
@@ -232,8 +232,8 @@ export class LocalFileSearchWorkerClient
 					const queryId = this.queryId++;
 					queryDisposables.add(
 						token?.onCancellationRequested((e) =>
-							this.cancelQuery(queryId)
-						) || Disposable.None
+							this.cancelQuery(queryId),
+						) || Disposable.None,
 					);
 
 					const handle: FileSystemHandle | undefined =
@@ -244,20 +244,20 @@ export class LocalFileSearchWorkerClient
 					) {
 						console.error(
 							"Could not get directory handle for ",
-							fq
+							fq,
 						);
 						return;
 					}
 					const caseSensitive =
 						this.uriIdentityService.extUri.ignorePathCasing(
-							fq.folder
+							fq.folder,
 						);
 					const folderResults = await proxy.listDirectory(
 						handle,
 						query,
 						fq,
 						caseSensitive,
-						queryId
+						queryId,
 					);
 					for (const folderResult of folderResults.results) {
 						results.push({
@@ -267,7 +267,7 @@ export class LocalFileSearchWorkerClient
 					if (folderResults.limitHit) {
 						limitHit = true;
 					}
-				})
+				}),
 			);
 
 			queryDisposables.dispose();
@@ -282,7 +282,7 @@ export class LocalFileSearchWorkerClient
 					{
 						text: localize(
 							"errorSearchFile",
-							"Unable to search with Web Worker file searcher"
+							"Unable to search with Web Worker file searcher",
 						),
 						type: TextSearchCompleteMessageType.Warning,
 					},
@@ -307,8 +307,8 @@ export class LocalFileSearchWorkerClient
 					>(
 						this._workerFactory,
 						"vs/workbench/services/search/worker/localFileSearch",
-						this
-					)
+						this,
+					),
 				);
 			} catch (err) {
 				logOnceWebWorkerWarning(err);
@@ -322,5 +322,5 @@ export class LocalFileSearchWorkerClient
 registerSingleton(
 	ISearchService,
 	RemoteSearchService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

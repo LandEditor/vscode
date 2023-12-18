@@ -45,7 +45,7 @@ class NotebookCellPausing extends Disposable implements IWorkbenchContribution {
 	}
 
 	private async onDidChangeCallStack(
-		fallBackOnStaleCallstack: boolean
+		fallBackOnStaleCallstack: boolean,
 	): Promise<void> {
 		const newPausedCells = new Set<string>();
 
@@ -98,5 +98,5 @@ class NotebookCellPausing extends Disposable implements IWorkbenchContribution {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(NotebookCellPausing, LifecyclePhase.Restored);

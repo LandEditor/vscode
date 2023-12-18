@@ -15,25 +15,25 @@ import { ScrollType } from "vs/editor/common/editorCommon";
 import { IModelDecorationsChangedEvent } from "vs/editor/common/textModelEvents";
 import { IColorTheme } from "vs/platform/theme/common/themeService";
 
-export const enum ViewEventType {
-	ViewCompositionStart,
-	ViewCompositionEnd,
-	ViewConfigurationChanged,
-	ViewCursorStateChanged,
-	ViewDecorationsChanged,
-	ViewFlushed,
-	ViewFocusChanged,
-	ViewLanguageConfigurationChanged,
-	ViewLineMappingChanged,
-	ViewLinesChanged,
-	ViewLinesDeleted,
-	ViewLinesInserted,
-	ViewRevealRangeRequest,
-	ViewScrollChanged,
-	ViewThemeChanged,
-	ViewTokensChanged,
-	ViewTokensColorsChanged,
-	ViewZonesChanged,
+export enum ViewEventType {
+	ViewCompositionStart = 0,
+	ViewCompositionEnd = 1,
+	ViewConfigurationChanged = 2,
+	ViewCursorStateChanged = 3,
+	ViewDecorationsChanged = 4,
+	ViewFlushed = 5,
+	ViewFocusChanged = 6,
+	ViewLanguageConfigurationChanged = 7,
+	ViewLineMappingChanged = 8,
+	ViewLinesChanged = 9,
+	ViewLinesDeleted = 10,
+	ViewLinesInserted = 11,
+	ViewRevealRangeRequest = 12,
+	ViewScrollChanged = 13,
+	ViewThemeChanged = 14,
+	ViewTokensChanged = 15,
+	ViewTokensColorsChanged = 16,
+	ViewZonesChanged = 17,
 }
 
 export class ViewCompositionStartEvent {
@@ -66,7 +66,7 @@ export class ViewCursorStateChangedEvent {
 	constructor(
 		public readonly selections: Selection[],
 		public readonly modelSelections: Selection[],
-		public readonly reason: CursorChangeReason
+		public readonly reason: CursorChangeReason,
 	) {}
 }
 
@@ -131,7 +131,7 @@ export class ViewLinesChangedEvent {
 		/**
 		 * The number of lines that have changed.
 		 */
-		public readonly count: number
+		public readonly count: number,
 	) {}
 }
 
@@ -171,7 +171,7 @@ export class ViewLinesInsertedEvent {
 	}
 }
 
-export const enum VerticalRevealType {
+export enum VerticalRevealType {
 	Simple = 0,
 	Center = 1,
 	CenterIfOutsideViewport = 2,
@@ -213,7 +213,7 @@ export class ViewRevealRangeRequestEvent {
 		/**
 		 * The scroll type.
 		 */
-		public readonly scrollType: ScrollType
+		public readonly scrollType: ScrollType,
 	) {}
 }
 

@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
 import { Disposable } from "vs/base/common/lifecycle";
+import { localize } from "vs/nls";
 import {
 	IWorkspaceTrustEnablementService,
 	IWorkspaceTrustManagementService,
@@ -30,7 +30,7 @@ export class ExtensionEnablementWorkspaceTrustTransitionParticipant
 		@IWorkspaceTrustEnablementService
 		workspaceTrustEnablementService: IWorkspaceTrustEnablementService,
 		@IWorkspaceTrustManagementService
-		workspaceTrustManagementService: IWorkspaceTrustManagementService
+		workspaceTrustManagementService: IWorkspaceTrustManagementService,
 	) {
 		super();
 
@@ -57,8 +57,8 @@ export class ExtensionEnablementWorkspaceTrustTransitionParticipant
 										await extensionService.stopExtensionHosts(
 											localize(
 												"restartExtensionHost.reason",
-												"Restarting extension host due to workspace trust change."
-											)
+												"Restarting extension host due to workspace trust change.",
+											),
 										);
 									await extensionEnablementService.updateExtensionsEnablementsWhenWorkspaceTrustChanges();
 									if (stopped) {
@@ -72,10 +72,10 @@ export class ExtensionEnablementWorkspaceTrustTransitionParticipant
 					// Execute BEFORE the workspace trust transition completes
 					this._register(
 						workspaceTrustManagementService.addWorkspaceTrustTransitionParticipant(
-							workspaceTrustTransitionParticipant
-						)
+							workspaceTrustTransitionParticipant,
+						),
 					);
-				}
+				},
 			);
 		}
 	}

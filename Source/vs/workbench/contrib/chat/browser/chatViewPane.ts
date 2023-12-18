@@ -30,8 +30,8 @@ import { SIDE_BAR_FOREGROUND } from "vs/workbench/common/theme";
 import { IViewDescriptorService } from "vs/workbench/common/views";
 import { IChatViewPane } from "vs/workbench/contrib/chat/browser/chat";
 import {
-	IChatViewState,
 	ChatWidget,
+	IChatViewState,
 } from "vs/workbench/contrib/chat/browser/chatWidget";
 import { IChatModel } from "vs/workbench/contrib/chat/common/chatModel";
 import { IChatService } from "vs/workbench/contrib/chat/common/chatService";
@@ -124,7 +124,7 @@ export class ChatViewPane extends ViewPane implements IChatViewPane {
 
 	private updateModel(
 		model?: IChatModel | undefined,
-		viewState?: IViewPaneState
+		viewState?: IViewPaneState,
 	): void {
 		this.modelDisposables.clear();
 
@@ -132,12 +132,12 @@ export class ChatViewPane extends ViewPane implements IChatViewPane {
 			model ??
 			(this.chatService.transferredSessionData?.sessionId
 				? this.chatService.getOrRestoreSession(
-						this.chatService.transferredSessionData.sessionId
-					)
+						this.chatService.transferredSessionData.sessionId,
+				  )
 				: this.chatService.startSession(
 						this.chatViewOptions.providerId,
-						CancellationToken.None
-					));
+						CancellationToken.None,
+				  ));
 		if (!model) {
 			throw new Error("Could not start chat session");
 		}
@@ -148,7 +148,7 @@ export class ChatViewPane extends ViewPane implements IChatViewPane {
 
 	override shouldShowWelcome(): boolean {
 		const noPersistedSessions = !this.chatService.hasSessions(
-			this.chatViewOptions.providerId
+			this.chatViewOptions.providerId,
 		);
 		return (
 			!this._widget?.viewModel &&
@@ -177,7 +177,7 @@ export class ChatViewPane extends ViewPane implements IChatViewPane {
 					new ServiceCollection([
 						IContextKeyService,
 						this.scopedContextKeyService,
-					])
+					]),
 				);
 
 			this._widget = this._register(
@@ -190,13 +190,13 @@ export class ChatViewPane extends ViewPane implements IChatViewPane {
 						listBackground: this.getBackgroundColor(),
 						inputEditorBackground: this.getBackgroundColor(),
 						resultEditorBackground: editorBackground,
-					}
-				)
+					},
+				),
 			);
 			this._register(
 				this.onDidChangeBodyVisibility((visible) => {
 					this._widget.setVisible(visible);
-				})
+				}),
 			);
 			this._register(this._widget.onDidClear(() => this.clear()));
 			this._widget.render(parent);
@@ -215,8 +215,8 @@ export class ChatViewPane extends ViewPane implements IChatViewPane {
 								disposeListener?.dispose();
 								this._onDidChangeViewWelcomeState.fire();
 							}
-						})
-					)
+						}),
+				  )
 				: undefined;
 			const model = sessionId
 				? this.chatService.getOrRestoreSession(sessionId)

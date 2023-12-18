@@ -3,47 +3,47 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import {
-	hasWorkspaceFileExtension,
-	IWorkspaceContextService,
-} from "vs/platform/workspace/common/workspace";
-import { IWorkspaceEditingService } from "vs/workbench/services/workspaces/common/workspaceEditing";
-import { dirname } from "vs/base/common/resources";
 import { CancellationToken } from "vs/base/common/cancellation";
 import { mnemonicButtonLabel } from "vs/base/common/labels";
+import { Schemas } from "vs/base/common/network";
+import { dirname } from "vs/base/common/resources";
+import { URI, UriComponents } from "vs/base/common/uri";
+import { ILanguageService } from "vs/editor/common/languages/language";
+import { getIconClasses } from "vs/editor/common/services/getIconClasses";
+import { IModelService } from "vs/editor/common/services/model";
+import { localize } from "vs/nls";
+import { ILocalizedString } from "vs/platform/action/common/action";
 import {
 	CommandsRegistry,
 	ICommandService,
 } from "vs/platform/commands/common/commands";
-import { FileKind } from "vs/platform/files/common/files";
-import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import { ILabelService } from "vs/platform/label/common/label";
-import {
-	IQuickInputService,
-	IPickOptions,
-	IQuickPickItem,
-} from "vs/platform/quickinput/common/quickInput";
-import { getIconClasses } from "vs/editor/common/services/getIconClasses";
-import { IModelService } from "vs/editor/common/services/model";
-import { ILanguageService } from "vs/editor/common/languages/language";
 import {
 	IFileDialogService,
 	IPickAndOpenOptions,
 } from "vs/platform/dialogs/common/dialogs";
-import { URI, UriComponents } from "vs/base/common/uri";
-import { Schemas } from "vs/base/common/network";
+import { FileKind } from "vs/platform/files/common/files";
+import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+import { ILabelService } from "vs/platform/label/common/label";
+import {
+	IPickOptions,
+	IQuickInputService,
+	IQuickPickItem,
+} from "vs/platform/quickinput/common/quickInput";
 import {
 	IOpenEmptyWindowOptions,
 	IOpenWindowOptions,
 	IWindowOpenable,
 } from "vs/platform/window/common/window";
 import {
+	IWorkspaceContextService,
+	hasWorkspaceFileExtension,
+} from "vs/platform/workspace/common/workspace";
+import {
 	IRecent,
 	IWorkspacesService,
 } from "vs/platform/workspaces/common/workspaces";
 import { IPathService } from "vs/workbench/services/path/common/pathService";
-import { ILocalizedString } from "vs/platform/action/common/action";
+import { IWorkspaceEditingService } from "vs/workbench/services/workspaces/common/workspaceEditing";
 
 export const ADD_ROOT_FOLDER_COMMAND_ID = "addRootFolder";
 export const ADD_ROOT_FOLDER_LABEL: ILocalizedString = {
@@ -70,7 +70,7 @@ CommandsRegistry.registerCommand({
 	id: "_files.pickFolderAndOpen",
 	handler: (
 		accessor: ServicesAccessor,
-		options: { forceNewWindow: boolean }
+		options: { forceNewWindow: boolean },
 	) => accessor.get(IFileDialogService).pickFolderAndOpen(options),
 });
 
@@ -109,7 +109,7 @@ CommandsRegistry.registerCommand({
 		}
 
 		await workspaceEditingService.addFolders(
-			folders.map((folder) => ({ uri: folder }))
+			folders.map((folder) => ({ uri: folder })),
 		);
 	},
 });
@@ -128,13 +128,13 @@ CommandsRegistry.registerCommand({
 		await workspaceEditingService.updateFolders(
 			0,
 			contextService.getWorkspace().folders.length,
-			folders.map((folder) => ({ uri: folder }))
+			folders.map((folder) => ({ uri: folder })),
 		);
 	},
 });
 
 async function selectWorkspaceFolders(
-	accessor: ServicesAccessor
+	accessor: ServicesAccessor,
 ): Promise<URI[] | undefined> {
 	const dialogsService = accessor.get(IFileDialogService);
 	const pathService = accessor.get(IPathService);
@@ -143,8 +143,8 @@ async function selectWorkspaceFolders(
 		openLabel: mnemonicButtonLabel(
 			localize(
 				{ key: "add", comment: ["&& denotes a mnemonic"] },
-				"&&Add"
-			)
+				"&&Add",
+			),
 		),
 		title: localize("addFolderToWorkspaceTitle", "Add Folder to Workspace"),
 		canSelectFolders: true,
@@ -158,10 +158,10 @@ async function selectWorkspaceFolders(
 
 CommandsRegistry.registerCommand(
 	PICK_WORKSPACE_FOLDER_COMMAND_ID,
-	async function (
+	async (
 		accessor,
-		args?: [IPickOptions<IQuickPickItem>, CancellationToken]
-	) {
+		args?: [IPickOptions<IQuickPickItem>, CancellationToken],
+	) => {
 		const quickInputService = accessor.get(IQuickInputService);
 		const labelService = accessor.get(ILabelService);
 		const contextService = accessor.get(IWorkspaceContextService);
@@ -187,7 +187,7 @@ CommandsRegistry.registerCommand(
 					modelService,
 					languageService,
 					folder.uri,
-					FileKind.ROOT_FOLDER
+					FileKind.ROOT_FOLDER,
 				),
 			};
 		});
@@ -202,7 +202,7 @@ CommandsRegistry.registerCommand(
 		if (!options.placeHolder) {
 			options.placeHolder = localize(
 				"workspaceFolderPickerPlaceholder",
-				"Select workspace folder"
+				"Select workspace folder",
 			);
 		}
 
@@ -218,7 +218,7 @@ CommandsRegistry.registerCommand(
 		}
 
 		return;
-	}
+	},
 );
 
 // API Command registration
@@ -237,7 +237,7 @@ CommandsRegistry.registerCommand({
 	handler: (
 		accessor: ServicesAccessor,
 		uriComponents?: UriComponents,
-		arg?: boolean | IOpenFolderAPICommandOptions
+		arg?: boolean | IOpenFolderAPICommandOptions,
 	) => {
 		const commandService = accessor.get(ICommandService);
 
@@ -259,7 +259,7 @@ CommandsRegistry.registerCommand({
 
 			return commandService.executeCommand(
 				"_files.pickFolderAndOpen",
-				options
+				options,
 			);
 		}
 
@@ -281,7 +281,7 @@ CommandsRegistry.registerCommand({
 		return commandService.executeCommand(
 			"_files.windowOpen",
 			[uriToOpen],
-			options
+			options,
 		);
 	},
 	metadata: {
@@ -327,7 +327,7 @@ CommandsRegistry.registerCommand({
 	id: "vscode.newWindow",
 	handler: (
 		accessor: ServicesAccessor,
-		options?: INewWindowAPICommandOptions
+		options?: INewWindowAPICommandOptions,
 	) => {
 		const commandService = accessor.get(ICommandService);
 
@@ -338,7 +338,7 @@ CommandsRegistry.registerCommand({
 
 		return commandService.executeCommand(
 			"_files.newWindow",
-			commandOptions
+			commandOptions,
 		);
 	},
 	metadata: {
@@ -360,10 +360,10 @@ CommandsRegistry.registerCommand({
 
 CommandsRegistry.registerCommand(
 	"_workbench.removeFromRecentlyOpened",
-	function (accessor: ServicesAccessor, uri: URI) {
+	(accessor: ServicesAccessor, uri: URI) => {
 		const workspacesService = accessor.get(IWorkspacesService);
 		return workspacesService.removeRecentlyOpened([uri]);
-	}
+	},
 );
 
 CommandsRegistry.registerCommand({
@@ -405,7 +405,7 @@ interface RecentEntry {
 
 CommandsRegistry.registerCommand(
 	"_workbench.addToRecentlyOpened",
-	async function (accessor: ServicesAccessor, recentEntry: RecentEntry) {
+	async (accessor: ServicesAccessor, recentEntry: RecentEntry) => {
 		const workspacesService = accessor.get(IWorkspacesService);
 		const uri = recentEntry.uri;
 		const label = recentEntry.label;
@@ -423,14 +423,14 @@ CommandsRegistry.registerCommand(
 		}
 
 		return workspacesService.addRecentlyOpened([recent]);
-	}
+	},
 );
 
 CommandsRegistry.registerCommand(
 	"_workbench.getRecentlyOpened",
-	async function (accessor: ServicesAccessor) {
+	async (accessor: ServicesAccessor) => {
 		const workspacesService = accessor.get(IWorkspacesService);
 
 		return workspacesService.getRecentlyOpened();
-	}
+	},
 );

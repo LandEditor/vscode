@@ -3,31 +3,31 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/exceptionWidget";
-import * as nls from "vs/nls";
 import * as dom from "vs/base/browser/dom";
-import { ZoneWidget } from "vs/editor/contrib/zoneWidget/browser/zoneWidget";
-import { ICodeEditor } from "vs/editor/browser/editorBrowser";
-import {
-	IExceptionInfo,
-	IDebugSession,
-	IDebugEditorContribution,
-	EDITOR_CONTRIBUTION_ID,
-} from "vs/workbench/contrib/debug/common/debug";
-import { RunOnceScheduler } from "vs/base/common/async";
-import {
-	IThemeService,
-	IColorTheme,
-} from "vs/platform/theme/common/themeService";
-import { ThemeIcon } from "vs/base/common/themables";
-import { Color } from "vs/base/common/color";
-import { registerColor } from "vs/platform/theme/common/colorRegistry";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { LinkDetector } from "vs/workbench/contrib/debug/browser/linkDetector";
-import { EditorOption } from "vs/editor/common/config/editorOptions";
 import { ActionBar } from "vs/base/browser/ui/actionbar/actionbar";
 import { Action } from "vs/base/common/actions";
+import { RunOnceScheduler } from "vs/base/common/async";
+import { Color } from "vs/base/common/color";
+import { ThemeIcon } from "vs/base/common/themables";
+import "vs/css!./media/exceptionWidget";
+import { ICodeEditor } from "vs/editor/browser/editorBrowser";
+import { EditorOption } from "vs/editor/common/config/editorOptions";
+import { ZoneWidget } from "vs/editor/contrib/zoneWidget/browser/zoneWidget";
+import * as nls from "vs/nls";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { registerColor } from "vs/platform/theme/common/colorRegistry";
 import { widgetClose } from "vs/platform/theme/common/iconRegistry";
+import {
+	IColorTheme,
+	IThemeService,
+} from "vs/platform/theme/common/themeService";
+import { LinkDetector } from "vs/workbench/contrib/debug/browser/linkDetector";
+import {
+	EDITOR_CONTRIBUTION_ID,
+	IDebugEditorContribution,
+	IDebugSession,
+	IExceptionInfo,
+} from "vs/workbench/contrib/debug/common/debug";
 const $ = dom.$;
 
 // theming
@@ -40,7 +40,10 @@ const debugExceptionWidgetBorder = registerColor(
 		hcDark: "#a31515",
 		hcLight: "#a31515",
 	},
-	nls.localize("debugExceptionWidgetBorder", "Exception widget border color.")
+	nls.localize(
+		"debugExceptionWidgetBorder",
+		"Exception widget border color.",
+	),
 );
 const debugExceptionWidgetBackground = registerColor(
 	"debugExceptionWidget.background",
@@ -52,8 +55,8 @@ const debugExceptionWidgetBackground = registerColor(
 	},
 	nls.localize(
 		"debugExceptionWidgetBackground",
-		"Exception widget background color."
-	)
+		"Exception widget background color.",
+	),
 );
 
 export class ExceptionWidget extends ZoneWidget {
@@ -127,8 +130,8 @@ export class ExceptionWidget extends ZoneWidget {
 			? nls.localize(
 					"exceptionThrownWithId",
 					"Exception has occurred: {0}",
-					this.exceptionInfo.id
-				)
+					this.exceptionInfo.id,
+			  )
 			: nls.localize("exceptionThrown", "Exception has occurred.");
 		let ariaLabel = label.textContent;
 
@@ -142,12 +145,12 @@ export class ExceptionWidget extends ZoneWidget {
 				async () => {
 					const contribution =
 						this.editor.getContribution<IDebugEditorContribution>(
-							EDITOR_CONTRIBUTION_ID
+							EDITOR_CONTRIBUTION_ID,
 						);
 					contribution?.closeExceptionWidget();
-				}
+				},
 			),
-			{ label: false, icon: true }
+			{ label: false, icon: true },
 		);
 
 		dom.append(container, title);
@@ -169,7 +172,7 @@ export class ExceptionWidget extends ZoneWidget {
 			const linkedStackTrace = linkDetector.linkify(
 				this.exceptionInfo.details.stackTrace,
 				true,
-				this.debugSession ? this.debugSession.root : undefined
+				this.debugSession ? this.debugSession.root : undefined,
 			);
 			stackTrace.appendChild(linkedStackTrace);
 			dom.append(container, stackTrace);
@@ -180,7 +183,7 @@ export class ExceptionWidget extends ZoneWidget {
 
 	protected override _doLayout(
 		_heightInPixel: number | undefined,
-		_widthInPixel: number | undefined
+		_widthInPixel: number | undefined,
 	): void {
 		// Reload the height with respect to the exception text content and relayout it to match the line count.
 		this.container!.style.height = "initial";
@@ -188,7 +191,7 @@ export class ExceptionWidget extends ZoneWidget {
 		const lineHeight = this.editor.getOption(EditorOption.lineHeight);
 		const arrowHeight = Math.round(lineHeight / 3);
 		const computedLinesNumber = Math.ceil(
-			(this.container!.offsetHeight + arrowHeight) / lineHeight
+			(this.container!.offsetHeight + arrowHeight) / lineHeight,
 		);
 
 		this._relayout(computedLinesNumber);

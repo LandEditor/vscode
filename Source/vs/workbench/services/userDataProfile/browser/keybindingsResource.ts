@@ -4,12 +4,25 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { VSBuffer } from "vs/base/common/buffer";
+import { Platform, platform } from "vs/base/common/platform";
+import { localize } from "vs/nls";
 import {
 	FileOperationError,
 	FileOperationResult,
 	IFileService,
 } from "vs/platform/files/common/files";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { ILogService } from "vs/platform/log/common/log";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import {
+	IUserDataProfile,
+	ProfileResourceType,
+} from "vs/platform/userDataProfile/common/userDataProfile";
+import { API_OPEN_EDITOR_COMMAND_ID } from "vs/workbench/browser/parts/editor/editorCommands";
+import {
+	ITreeItemCheckboxState,
+	TreeItemCollapsibleState,
+} from "vs/workbench/common/views";
 import {
 	IProfileResource,
 	IProfileResourceChildTreeItem,
@@ -17,19 +30,6 @@ import {
 	IProfileResourceTreeItem,
 	IUserDataProfileService,
 } from "vs/workbench/services/userDataProfile/common/userDataProfile";
-import { platform, Platform } from "vs/base/common/platform";
-import {
-	ITreeItemCheckboxState,
-	TreeItemCollapsibleState,
-} from "vs/workbench/common/views";
-import {
-	IUserDataProfile,
-	ProfileResourceType,
-} from "vs/platform/userDataProfile/common/userDataProfile";
-import { API_OPEN_EDITOR_COMMAND_ID } from "vs/workbench/browser/parts/editor/editorCommands";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { localize } from "vs/nls";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
 
 interface IKeybindingsResourceContent {
 	platform: Platform;
@@ -51,13 +51,13 @@ export class KeybindingsResourceInitializer
 			JSON.parse(content);
 		if (keybindingsContent.keybindings === null) {
 			this.logService.info(
-				`Initializing Profile: No keybindings to apply...`
+				`Initializing Profile: No keybindings to apply...`,
 			);
 			return;
 		}
 		await this.fileService.writeFile(
 			this.userDataProfileService.currentProfile.keybindingsResource,
-			VSBuffer.fromString(keybindingsContent.keybindings)
+			VSBuffer.fromString(keybindingsContent.keybindings),
 		);
 	}
 }
@@ -75,7 +75,7 @@ export class KeybindingsResource implements IProfileResource {
 	}
 
 	async getKeybindingsResourceContent(
-		profile: IUserDataProfile
+		profile: IUserDataProfile,
 	): Promise<IKeybindingsResourceContent> {
 		const keybindings = await this.getKeybindingsContent(profile);
 		return { keybindings, platform };
@@ -86,22 +86,22 @@ export class KeybindingsResource implements IProfileResource {
 			JSON.parse(content);
 		if (keybindingsContent.keybindings === null) {
 			this.logService.info(
-				`Importing Profile (${profile.name}): No keybindings to apply...`
+				`Importing Profile (${profile.name}): No keybindings to apply...`,
 			);
 			return;
 		}
 		await this.fileService.writeFile(
 			profile.keybindingsResource,
-			VSBuffer.fromString(keybindingsContent.keybindings)
+			VSBuffer.fromString(keybindingsContent.keybindings),
 		);
 	}
 
 	private async getKeybindingsContent(
-		profile: IUserDataProfile
+		profile: IUserDataProfile,
 	): Promise<string | null> {
 		try {
 			const content = await this.fileService.readFile(
-				profile.keybindingsResource
+				profile.keybindingsResource,
 			);
 			return content.value.toString();
 		} catch (error) {
@@ -149,7 +149,7 @@ export class KeybindingsResourceTreeItem implements IProfileResourceTreeItem {
 				parent: this,
 				accessibilityInformation: {
 					label: this.uriIdentityService.extUri.basename(
-						this.profile.settingsResource
+						this.profile.settingsResource,
 					),
 				},
 				command: {

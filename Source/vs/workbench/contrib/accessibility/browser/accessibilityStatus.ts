@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Event } from "vs/base/common/event";
 import {
 	Disposable,
 	DisposableStore,
 	MutableDisposable,
 	toDisposable,
 } from "vs/base/common/lifecycle";
-import { Event } from "vs/base/common/event";
 import Severity from "vs/base/common/severity";
 import { localize } from "vs/nls";
 import { IAccessibilityService } from "vs/platform/accessibility/common/accessibility";
@@ -18,23 +18,23 @@ import {
 	ConfigurationTarget,
 	IConfigurationService,
 } from "vs/platform/configuration/common/configuration";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import {
 	INotificationHandle,
 	INotificationService,
 	NotificationPriority,
 } from "vs/platform/notification/common/notification";
 import { IWorkbenchContribution } from "vs/workbench/common/contributions";
+import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
 import {
 	IStatusbarEntryAccessor,
 	IStatusbarService,
 	StatusbarAlignment,
 } from "vs/workbench/services/statusbar/browser/statusbar";
-import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 
 class ScreenReaderModeStatusEntry extends Disposable {
 	private readonly screenReaderModeElement = this._register(
-		new MutableDisposable<IStatusbarEntryAccessor>()
+		new MutableDisposable<IStatusbarEntryAccessor>(),
 	);
 
 	constructor(
@@ -48,14 +48,14 @@ class ScreenReaderModeStatusEntry extends Disposable {
 			if (!this.screenReaderModeElement.value) {
 				const text = localize(
 					"screenReaderDetected",
-					"Screen Reader Optimized"
+					"Screen Reader Optimized",
 				);
 				this.screenReaderModeElement.value =
 					this.statusbarService.addEntry(
 						{
 							name: localize(
 								"status.editor.screenReaderMode",
-								"Screen Reader Mode"
+								"Screen Reader Mode",
 							),
 							text,
 							ariaLabel: text,
@@ -64,7 +64,7 @@ class ScreenReaderModeStatusEntry extends Disposable {
 						},
 						"status.editor.screenReaderMode",
 						StatusbarAlignment.RIGHT,
-						100.6
+						100.6,
 					);
 			}
 		} else {
@@ -78,7 +78,7 @@ export class AccessibilityStatus
 	implements IWorkbenchContribution
 {
 	private screenReaderNotification: INotificationHandle | null = null;
-	private promptedScreenReader: boolean = false;
+	private promptedScreenReader = false;
 	private readonly screenReaderModeElements =
 		new Set<ScreenReaderModeStatusEntry>();
 
@@ -110,15 +110,15 @@ export class AccessibilityStatus
 
 	private createScreenReaderModeElement(
 		instantiationService: IInstantiationService,
-		disposables: DisposableStore
+		disposables: DisposableStore,
 	): ScreenReaderModeStatusEntry {
 		const entry = disposables.add(
-			instantiationService.createInstance(ScreenReaderModeStatusEntry)
+			instantiationService.createInstance(ScreenReaderModeStatusEntry),
 		);
 
 		this.screenReaderModeElements.add(entry);
 		disposables.add(
-			toDisposable(() => this.screenReaderModeElements.delete(entry))
+			toDisposable(() => this.screenReaderModeElements.delete(entry)),
 		);
 
 		return entry;
@@ -133,8 +133,8 @@ export class AccessibilityStatus
 	private registerListeners(): void {
 		this._register(
 			this.accessibilityService.onDidChangeScreenReaderOptimized(() =>
-				this.onScreenReaderModeChange()
-			)
+				this.onScreenReaderModeChange(),
+			),
 		);
 
 		this._register(
@@ -142,7 +142,7 @@ export class AccessibilityStatus
 				if (c.affectsConfiguration("editor.accessibilitySupport")) {
 					this.onScreenReaderModeChange();
 				}
-			})
+			}),
 		);
 
 		this._register(
@@ -150,13 +150,13 @@ export class AccessibilityStatus
 				({ instantiationService, disposables }) => {
 					const entry = this.createScreenReaderModeElement(
 						instantiationService,
-						disposables
+						disposables,
 					);
 					entry.updateScreenReaderModeElement(
-						this.accessibilityService.isScreenReaderOptimized()
+						this.accessibilityService.isScreenReaderOptimized(),
 					);
-				}
-			)
+				},
+			),
 		);
 	}
 
@@ -165,32 +165,32 @@ export class AccessibilityStatus
 			Severity.Info,
 			localize(
 				"screenReaderDetectedExplanation.question",
-				"Are you using a screen reader to operate VS Code?"
+				"Are you using a screen reader to operate VS Code?",
 			),
 			[
 				{
 					label: localize(
 						"screenReaderDetectedExplanation.answerYes",
-						"Yes"
+						"Yes",
 					),
 					run: () => {
 						this.configurationService.updateValue(
 							"editor.accessibilitySupport",
 							"on",
-							ConfigurationTarget.USER
+							ConfigurationTarget.USER,
 						);
 					},
 				},
 				{
 					label: localize(
 						"screenReaderDetectedExplanation.answerNo",
-						"No"
+						"No",
 					),
 					run: () => {
 						this.configurationService.updateValue(
 							"editor.accessibilitySupport",
 							"off",
-							ConfigurationTarget.USER
+							ConfigurationTarget.USER,
 						);
 					},
 				},
@@ -198,11 +198,11 @@ export class AccessibilityStatus
 			{
 				sticky: true,
 				priority: NotificationPriority.URGENT,
-			}
+			},
 		);
 
 		Event.once(this.screenReaderNotification.onDidClose)(
-			() => (this.screenReaderNotification = null)
+			() => (this.screenReaderNotification = null),
 		);
 	}
 
@@ -213,7 +213,7 @@ export class AccessibilityStatus
 		if (screenReaderDetected) {
 			const screenReaderConfiguration =
 				this.configurationService.getValue(
-					"editor.accessibilitySupport"
+					"editor.accessibilitySupport",
 				);
 			if (screenReaderConfiguration === "auto") {
 				if (!this.promptedScreenReader) {
@@ -227,7 +227,7 @@ export class AccessibilityStatus
 			this.screenReaderNotification.close();
 		}
 		this.updateScreenReaderModeElements(
-			this.accessibilityService.isScreenReaderOptimized()
+			this.accessibilityService.isScreenReaderOptimized(),
 		);
 	}
 

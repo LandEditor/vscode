@@ -45,21 +45,21 @@ class ZIndexRegistry {
 		this.zIndexMap = new Map<string, number>();
 		this.scheduler = new RunOnceScheduler(
 			() => this.updateStyleElement(),
-			200
+			200,
 		);
 	}
 
 	registerZIndex(relativeLayer: ZIndex, z: number, name: string): string {
 		if (this.zIndexMap.get(name)) {
 			throw new Error(
-				`z-index with name ${name} has already been registered.`
+				`z-index with name ${name} has already been registered.`,
 			);
 		}
 
 		const proposedZValue = relativeLayer + z;
 		if (findBase(proposedZValue) !== relativeLayer) {
 			throw new Error(
-				`Relative layer: ${relativeLayer} + z-index: ${z} exceeds next layer ${proposedZValue}.`
+				`Relative layer: ${relativeLayer} + z-index: ${z} exceeds next layer ${proposedZValue}.`,
 			);
 		}
 
@@ -87,7 +87,7 @@ const zIndexRegistry = new ZIndexRegistry();
 export function registerZIndex(
 	relativeLayer: ZIndex,
 	z: number,
-	name: string
+	name: string,
 ): string {
 	return zIndexRegistry.registerZIndex(relativeLayer, z, name);
 }

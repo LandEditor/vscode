@@ -3,26 +3,46 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { DefaultWorkerFactory } from "vs/base/browser/defaultWorkerFactory";
+import { WindowIntervalTimer } from "vs/base/browser/dom";
+import { $window } from "vs/base/browser/window";
+import { isNonEmptyArray } from "vs/base/common/arrays";
 import { IntervalTimer, timeout } from "vs/base/common/async";
+import { canceled, onUnexpectedError } from "vs/base/common/errors";
 import {
 	Disposable,
+	DisposableStore,
 	IDisposable,
 	dispose,
 	toDisposable,
-	DisposableStore,
 } from "vs/base/common/lifecycle";
+import { StopWatch } from "vs/base/common/stopwatch";
 import { URI } from "vs/base/common/uri";
 import {
+	IWorkerClient,
 	SimpleWorkerClient,
 	logOnceWebWorkerWarning,
-	IWorkerClient,
 } from "vs/base/common/worker/simpleWorker";
-import { DefaultWorkerFactory } from "vs/base/browser/defaultWorkerFactory";
+import { LineRange } from "vs/editor/common/core/lineRange";
 import { Position } from "vs/editor/common/core/position";
 import { IRange, Range } from "vs/editor/common/core/range";
-import { ITextModel } from "vs/editor/common/model";
+import {
+	IDocumentDiff,
+	IDocumentDiffProviderOptions,
+} from "vs/editor/common/diff/documentDiffProvider";
+import { IChange } from "vs/editor/common/diff/legacyLinesDiffComputer";
+import {
+	ILinesDiffComputerOptions,
+	MovedText,
+} from "vs/editor/common/diff/linesDiffComputer";
+import {
+	DetailedLineRangeMapping,
+	LineRangeMapping,
+	RangeMapping,
+} from "vs/editor/common/diff/rangeMapping";
 import * as languages from "vs/editor/common/languages";
 import { ILanguageConfigurationService } from "vs/editor/common/languages/languageConfigurationRegistry";
+import { ITextModel } from "vs/editor/common/model";
 import { EditorSimpleWorker } from "vs/editor/common/services/editorSimpleWorker";
 import {
 	DiffAlgorithmName,
@@ -31,32 +51,12 @@ import {
 	ILineChange,
 	IUnicodeHighlightsResult,
 } from "vs/editor/common/services/editorWorker";
-import { IModelService } from "vs/editor/common/services/model";
-import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
-import { isNonEmptyArray } from "vs/base/common/arrays";
-import { ILogService } from "vs/platform/log/common/log";
-import { StopWatch } from "vs/base/common/stopwatch";
-import { canceled, onUnexpectedError } from "vs/base/common/errors";
-import { UnicodeHighlighterOptions } from "vs/editor/common/services/unicodeTextModelHighlighter";
 import { IEditorWorkerHost } from "vs/editor/common/services/editorWorkerHost";
 import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
-import { IChange } from "vs/editor/common/diff/legacyLinesDiffComputer";
-import {
-	IDocumentDiff,
-	IDocumentDiffProviderOptions,
-} from "vs/editor/common/diff/documentDiffProvider";
-import {
-	ILinesDiffComputerOptions,
-	MovedText,
-} from "vs/editor/common/diff/linesDiffComputer";
-import {
-	DetailedLineRangeMapping,
-	RangeMapping,
-	LineRangeMapping,
-} from "vs/editor/common/diff/rangeMapping";
-import { LineRange } from "vs/editor/common/core/lineRange";
-import { $window } from "vs/base/browser/window";
-import { WindowIntervalTimer } from "vs/base/browser/dom";
+import { IModelService } from "vs/editor/common/services/model";
+import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
+import { UnicodeHighlighterOptions } from "vs/editor/common/services/unicodeTextModelHighlighter";
+import { ILogService } from "vs/platform/log/common/log";
 
 /**
  * Stop syncing a model to the worker if it was not needed for 1 min.
@@ -97,12 +97,12 @@ export class EditorWorkerService
 		@ILanguageConfigurationService
 		languageConfigurationService: ILanguageConfigurationService,
 		@ILanguageFeaturesService
-		languageFeaturesService: ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super();
 		this._modelService = modelService;
 		this._workerManager = this._register(
-			new WorkerManager(this._modelService, languageConfigurationService)
+			new WorkerManager(this._modelService, languageConfigurationService),
 		);
 		this._logService = logService;
 
@@ -122,8 +122,8 @@ export class EditorWorkerService
 								return links && { links };
 							});
 					},
-				}
-			)
+				},
+			),
 		);
 		this._register(
 			languageFeaturesService.completionProvider.register(
@@ -132,9 +132,9 @@ export class EditorWorkerService
 					this._workerManager,
 					configurationService,
 					this._modelService,
-					languageConfigurationService
-				)
-			)
+					languageConfigurationService,
+				),
+			),
 		);
 	}
 
@@ -149,12 +149,12 @@ export class EditorWorkerService
 	public computedUnicodeHighlights(
 		uri: URI,
 		options: UnicodeHighlighterOptions,
-		range?: IRange
+		range?: IRange,
 	): Promise<IUnicodeHighlightsResult> {
 		return this._workerManager
 			.withWorker()
 			.then((client) =>
-				client.computedUnicodeHighlights(uri, options, range)
+				client.computedUnicodeHighlights(uri, options, range),
 			);
 	}
 
@@ -162,12 +162,12 @@ export class EditorWorkerService
 		original: URI,
 		modified: URI,
 		options: IDocumentDiffProviderOptions,
-		algorithm: DiffAlgorithmName
+		algorithm: DiffAlgorithmName,
 	): Promise<IDocumentDiff | null> {
 		const result = await this._workerManager
 			.withWorker()
 			.then((client) =>
-				client.computeDiff(original, modified, options, algorithm)
+				client.computeDiff(original, modified, options, algorithm),
 			);
 		if (!result) {
 			return null;
@@ -182,16 +182,16 @@ export class EditorWorkerService
 					new MovedText(
 						new LineRangeMapping(
 							new LineRange(m[0], m[1]),
-							new LineRange(m[2], m[3])
+							new LineRange(m[2], m[3]),
 						),
-						toLineRangeMappings(m[4])
-					)
+						toLineRangeMappings(m[4]),
+					),
 			),
 		};
 		return diff;
 
 		function toLineRangeMappings(
-			changes: readonly ILineChange[]
+			changes: readonly ILineChange[],
 		): readonly DetailedLineRangeMapping[] {
 			return changes.map(
 				(c) =>
@@ -202,10 +202,10 @@ export class EditorWorkerService
 							(c) =>
 								new RangeMapping(
 									new Range(c[0], c[1], c[2], c[3]),
-									new Range(c[4], c[5], c[6], c[7])
-								)
-						)
-					)
+									new Range(c[4], c[5], c[6], c[7]),
+								),
+						),
+					),
 			);
 		}
 	}
@@ -220,7 +220,7 @@ export class EditorWorkerService
 	public computeDirtyDiff(
 		original: URI,
 		modified: URI,
-		ignoreTrimWhitespace: boolean
+		ignoreTrimWhitespace: boolean,
 	): Promise<IChange[] | null> {
 		return this._workerManager
 			.withWorker()
@@ -228,15 +228,15 @@ export class EditorWorkerService
 				client.computeDirtyDiff(
 					original,
 					modified,
-					ignoreTrimWhitespace
-				)
+					ignoreTrimWhitespace,
+				),
 			);
 	}
 
 	public computeMoreMinimalEdits(
 		resource: URI,
 		edits: languages.TextEdit[] | null | undefined,
-		pretty: boolean = false
+		pretty = false,
 	): Promise<languages.TextEdit[] | undefined> {
 		if (isNonEmptyArray(edits)) {
 			if (!canSyncModel(this._modelService, resource)) {
@@ -246,14 +246,14 @@ export class EditorWorkerService
 			const result = this._workerManager
 				.withWorker()
 				.then((client) =>
-					client.computeMoreMinimalEdits(resource, edits, pretty)
+					client.computeMoreMinimalEdits(resource, edits, pretty),
 				);
 			result.finally(() =>
 				this._logService.trace(
 					"FORMAT#computeMoreMinimalEdits",
 					resource.toString(true),
-					sw.elapsed()
-				)
+					sw.elapsed(),
+				),
 			);
 			return Promise.race([result, timeout(1000).then(() => edits)]);
 		} else {
@@ -263,7 +263,7 @@ export class EditorWorkerService
 
 	public computeHumanReadableDiff(
 		resource: URI,
-		edits: languages.TextEdit[] | null | undefined
+		edits: languages.TextEdit[] | null | undefined,
 	): Promise<languages.TextEdit[] | undefined> {
 		if (isNonEmptyArray(edits)) {
 			if (!canSyncModel(this._modelService, resource)) {
@@ -277,7 +277,7 @@ export class EditorWorkerService
 						ignoreTrimWhitespace: false,
 						maxComputationTimeMs: 1000,
 						computeMoves: false,
-					})
+					}),
 				)
 				.catch((err) => {
 					onUnexpectedError(err);
@@ -288,8 +288,8 @@ export class EditorWorkerService
 				this._logService.trace(
 					"FORMAT#computeHumanReadableDiff",
 					resource.toString(true),
-					sw.elapsed()
-				)
+					sw.elapsed(),
+				),
 			);
 			return result;
 		} else {
@@ -304,7 +304,7 @@ export class EditorWorkerService
 	public navigateValueSet(
 		resource: URI,
 		range: IRange,
-		up: boolean
+		up: boolean,
 	): Promise<languages.IInplaceReplaceSupportResult | null> {
 		return this._workerManager
 			.withWorker()
@@ -317,7 +317,7 @@ export class EditorWorkerService
 
 	computeWordRanges(
 		resource: URI,
-		range: IRange
+		range: IRange,
 	): Promise<{ [word: string]: IRange[] } | null> {
 		return this._workerManager
 			.withWorker()
@@ -338,7 +338,7 @@ class WordBasedCompletionItemProvider
 		workerManager: WorkerManager,
 		configurationService: ITextResourceConfigurationService,
 		modelService: IModelService,
-		private readonly languageConfigurationService: ILanguageConfigurationService
+		private readonly languageConfigurationService: ILanguageConfigurationService,
 	) {
 		this._workerManager = workerManager;
 		this._configurationService = configurationService;
@@ -347,7 +347,7 @@ class WordBasedCompletionItemProvider
 
 	async provideCompletionItems(
 		model: ITextModel,
-		position: Position
+		position: Position,
 	): Promise<languages.CompletionList | undefined> {
 		type WordBasedSuggestionsConfig = {
 			wordBasedSuggestions?:
@@ -360,7 +360,7 @@ class WordBasedCompletionItemProvider
 			this._configurationService.getValue<WordBasedSuggestionsConfig>(
 				model.uri,
 				position,
-				"editor"
+				"editor",
 			);
 		if (config.wordBasedSuggestions === "off") {
 			return undefined;
@@ -397,24 +397,24 @@ class WordBasedCompletionItemProvider
 			.getLanguageConfiguration(model.getLanguageId())
 			.getWordDefinition();
 		const word = model.getWordAtPosition(position);
-		const replace = !word
-			? Range.fromPositions(position)
-			: new Range(
+		const replace = word
+			? new Range(
 					position.lineNumber,
 					word.startColumn,
 					position.lineNumber,
-					word.endColumn
-				);
+					word.endColumn,
+			  )
+			: Range.fromPositions(position);
 		const insert = replace.setEndPosition(
 			position.lineNumber,
-			position.column
+			position.column,
 		);
 
 		const client = await this._workerManager.withWorker();
 		const data = await client.textualSuggest(
 			models,
 			word?.word,
-			wordDefRegExp
+			wordDefRegExp,
 		);
 		if (!data) {
 			return undefined;
@@ -441,7 +441,7 @@ class WorkerManager extends Disposable {
 
 	constructor(
 		modelService: IModelService,
-		private readonly languageConfigurationService: ILanguageConfigurationService
+		private readonly languageConfigurationService: ILanguageConfigurationService,
 	) {
 		super();
 		this._modelService = modelService;
@@ -452,13 +452,13 @@ class WorkerManager extends Disposable {
 		stopWorkerInterval.cancelAndSet(
 			() => this._checkStopIdleWorker(),
 			Math.round(STOP_WORKER_DELTA_TIME_MS / 2),
-			$window
+			$window,
 		);
 
 		this._register(
 			this._modelService.onModelRemoved((_) =>
-				this._checkStopEmptyWorker()
-			)
+				this._checkStopEmptyWorker(),
+			),
 		);
 	}
 
@@ -509,7 +509,7 @@ class WorkerManager extends Disposable {
 				this._modelService,
 				false,
 				"editorWorkerService",
-				this.languageConfigurationService
+				this.languageConfigurationService,
 			);
 		}
 		return Promise.resolve(this._editorWorkerClient);
@@ -527,7 +527,7 @@ class EditorModelManager extends Disposable {
 	constructor(
 		proxy: EditorSimpleWorker,
 		modelService: IModelService,
-		keepIdleModels: boolean
+		keepIdleModels: boolean,
 	) {
 		super();
 		this._proxy = proxy;
@@ -537,7 +537,7 @@ class EditorModelManager extends Disposable {
 			const timer = new IntervalTimer();
 			timer.cancelAndSet(
 				() => this._checkStopModelSync(),
-				Math.round(STOP_SYNC_MODEL_DELTA_TIME_MS / 2)
+				Math.round(STOP_SYNC_MODEL_DELTA_TIME_MS / 2),
 			);
 			this._register(timer);
 		}
@@ -554,7 +554,7 @@ class EditorModelManager extends Disposable {
 
 	public ensureSyncedResources(
 		resources: URI[],
-		forceLargeModels: boolean
+		forceLargeModels: boolean,
 	): void {
 		for (const resource of resources) {
 			const resourceStr = resource.toString();
@@ -608,17 +608,17 @@ class EditorModelManager extends Disposable {
 		toDispose.add(
 			model.onDidChangeContent((e) => {
 				this._proxy.acceptModelChanged(modelUrl.toString(), e);
-			})
+			}),
 		);
 		toDispose.add(
 			model.onWillDispose(() => {
 				this._stopModelSync(modelUrl);
-			})
+			}),
 		);
 		toDispose.add(
 			toDisposable(() => {
 				this._proxy.acceptRemovedModel(modelUrl);
-			})
+			}),
 		);
 
 		this._syncedModels[modelUrl] = toDispose;
@@ -684,7 +684,7 @@ export class EditorWorkerClient
 		modelService: IModelService,
 		keepIdleModels: boolean,
 		label: string | undefined,
-		private readonly languageConfigurationService: ILanguageConfigurationService
+		private readonly languageConfigurationService: ILanguageConfigurationService,
 	) {
 		super();
 		this._modelService = modelService;
@@ -709,13 +709,13 @@ export class EditorWorkerClient
 					>(
 						this._workerFactory,
 						"vs/editor/common/services/editorSimpleWorker",
-						new EditorWorkerHost(this)
-					)
+						new EditorWorkerHost(this),
+					),
 				);
 			} catch (err) {
 				logOnceWebWorkerWarning(err);
 				this._worker = new SynchronousWorkerClient(
-					new EditorSimpleWorker(new EditorWorkerHost(this), null)
+					new EditorSimpleWorker(new EditorWorkerHost(this), null),
 				);
 			}
 		}
@@ -728,22 +728,22 @@ export class EditorWorkerClient
 			.then(undefined, (err) => {
 				logOnceWebWorkerWarning(err);
 				this._worker = new SynchronousWorkerClient(
-					new EditorSimpleWorker(new EditorWorkerHost(this), null)
+					new EditorSimpleWorker(new EditorWorkerHost(this), null),
 				);
 				return this._getOrCreateWorker().getProxyObject();
 			});
 	}
 
 	private _getOrCreateModelManager(
-		proxy: EditorSimpleWorker
+		proxy: EditorSimpleWorker,
 	): EditorModelManager {
 		if (!this._modelManager) {
 			this._modelManager = this._register(
 				new EditorModelManager(
 					proxy,
 					this._modelService,
-					this._keepIdleModels
-				)
+					this._keepIdleModels,
+				),
 			);
 		}
 		return this._modelManager;
@@ -751,7 +751,7 @@ export class EditorWorkerClient
 
 	protected async _withSyncedResources(
 		resources: URI[],
-		forceLargeModels: boolean = false
+		forceLargeModels = false,
 	): Promise<EditorSimpleWorker> {
 		if (this._disposed) {
 			return Promise.reject(canceled());
@@ -759,7 +759,7 @@ export class EditorWorkerClient
 		return this._getProxy().then((proxy) => {
 			this._getOrCreateModelManager(proxy).ensureSyncedResources(
 				resources,
-				forceLargeModels
+				forceLargeModels,
 			);
 			return proxy;
 		});
@@ -768,13 +768,13 @@ export class EditorWorkerClient
 	public computedUnicodeHighlights(
 		uri: URI,
 		options: UnicodeHighlighterOptions,
-		range?: IRange
+		range?: IRange,
 	): Promise<IUnicodeHighlightsResult> {
 		return this._withSyncedResources([uri]).then((proxy) => {
 			return proxy.computeUnicodeHighlights(
 				uri.toString(),
 				options,
-				range
+				range,
 			);
 		});
 	}
@@ -783,17 +783,17 @@ export class EditorWorkerClient
 		original: URI,
 		modified: URI,
 		options: IDocumentDiffProviderOptions,
-		algorithm: DiffAlgorithmName
+		algorithm: DiffAlgorithmName,
 	): Promise<IDiffComputationResult | null> {
 		return this._withSyncedResources(
 			[original, modified],
-			/* forceLargeModels */ true
+			/* forceLargeModels */ true,
 		).then((proxy) => {
 			return proxy.computeDiff(
 				original.toString(),
 				modified.toString(),
 				options,
-				algorithm
+				algorithm,
 			);
 		});
 	}
@@ -801,13 +801,13 @@ export class EditorWorkerClient
 	public computeDirtyDiff(
 		original: URI,
 		modified: URI,
-		ignoreTrimWhitespace: boolean
+		ignoreTrimWhitespace: boolean,
 	): Promise<IChange[] | null> {
 		return this._withSyncedResources([original, modified]).then((proxy) => {
 			return proxy.computeDirtyDiff(
 				original.toString(),
 				modified.toString(),
-				ignoreTrimWhitespace
+				ignoreTrimWhitespace,
 			);
 		});
 	}
@@ -815,13 +815,13 @@ export class EditorWorkerClient
 	public computeMoreMinimalEdits(
 		resource: URI,
 		edits: languages.TextEdit[],
-		pretty: boolean
+		pretty: boolean,
 	): Promise<languages.TextEdit[]> {
 		return this._withSyncedResources([resource]).then((proxy) => {
 			return proxy.computeMoreMinimalEdits(
 				resource.toString(),
 				edits,
-				pretty
+				pretty,
 			);
 		});
 	}
@@ -829,13 +829,13 @@ export class EditorWorkerClient
 	public computeHumanReadableDiff(
 		resource: URI,
 		edits: languages.TextEdit[],
-		options: ILinesDiffComputerOptions
+		options: ILinesDiffComputerOptions,
 	): Promise<languages.TextEdit[]> {
 		return this._withSyncedResources([resource]).then((proxy) => {
 			return proxy.computeHumanReadableDiff(
 				resource.toString(),
 				edits,
-				options
+				options,
 			);
 		});
 	}
@@ -847,7 +847,7 @@ export class EditorWorkerClient
 	}
 
 	public computeDefaultDocumentColors(
-		resource: URI
+		resource: URI,
 	): Promise<languages.IColorInformation[] | null> {
 		return this._withSyncedResources([resource]).then((proxy) => {
 			return proxy.computeDefaultDocumentColors(resource.toString());
@@ -857,7 +857,7 @@ export class EditorWorkerClient
 	public async textualSuggest(
 		resources: URI[],
 		leadingWord: string | undefined,
-		wordDefRegExp: RegExp
+		wordDefRegExp: RegExp,
 	): Promise<{ words: string[]; duration: number } | null> {
 		const proxy = await this._withSyncedResources(resources);
 		const wordDef = wordDefRegExp.source;
@@ -866,13 +866,13 @@ export class EditorWorkerClient
 			resources.map((r) => r.toString()),
 			leadingWord,
 			wordDef,
-			wordDefFlags
+			wordDefFlags,
 		);
 	}
 
 	computeWordRanges(
 		resource: URI,
-		range: IRange
+		range: IRange,
 	): Promise<{ [word: string]: IRange[] } | null> {
 		return this._withSyncedResources([resource]).then((proxy) => {
 			const model = this._modelService.getModel(resource);
@@ -888,7 +888,7 @@ export class EditorWorkerClient
 				resource.toString(),
 				range,
 				wordDef,
-				wordDefFlags
+				wordDefFlags,
 			);
 		});
 	}
@@ -896,7 +896,7 @@ export class EditorWorkerClient
 	public navigateValueSet(
 		resource: URI,
 		range: IRange,
-		up: boolean
+		up: boolean,
 	): Promise<languages.IInplaceReplaceSupportResult | null> {
 		return this._withSyncedResources([resource]).then((proxy) => {
 			const model = this._modelService.getModel(resource);
@@ -913,7 +913,7 @@ export class EditorWorkerClient
 				range,
 				up,
 				wordDef,
-				wordDefFlags
+				wordDefFlags,
 			);
 		});
 	}

@@ -3,31 +3,38 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
-import { Registry } from "vs/platform/registry/common/platform";
-import { Categories } from "vs/platform/action/common/actionCommonCategories";
-import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
-import { SetLogLevelAction } from "vs/workbench/contrib/logs/common/logsActions";
+import { createCancelablePromise, timeout } from "vs/base/common/async";
+import { CancellationToken } from "vs/base/common/cancellation";
 import {
-	IWorkbenchContribution,
-	IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
-} from "vs/workbench/common/contributions";
-import {
-	IFileService,
-	whenProviderRegistered,
-} from "vs/platform/files/common/files";
-import {
-	IOutputChannelRegistry,
-	IOutputService,
-	Extensions,
-} from "vs/workbench/services/output/common/output";
+	CancellationError,
+	getErrorMessage,
+	isCancellationError,
+} from "vs/base/common/errors";
+import { Event } from "vs/base/common/event";
 import {
 	Disposable,
 	DisposableMap,
 	DisposableStore,
 	toDisposable,
 } from "vs/base/common/lifecycle";
+import { CounterSet } from "vs/base/common/map";
+import { Schemas } from "vs/base/common/network";
+import { URI } from "vs/base/common/uri";
+import * as nls from "vs/nls";
+import { Categories } from "vs/platform/action/common/actionCommonCategories";
+import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
+import {
+	ContextKeyExpr,
+	IContextKeyService,
+} from "vs/platform/contextkey/common/contextkey";
+import {
+	IFileService,
+	whenProviderRegistered,
+} from "vs/platform/files/common/files";
+import {
+	IInstantiationService,
+	ServicesAccessor,
+} from "vs/platform/instantiation/common/instantiation";
 import {
 	CONTEXT_LOG_LEVEL,
 	ILogService,
@@ -37,32 +44,25 @@ import {
 	LogLevelToString,
 	isLogLevel,
 } from "vs/platform/log/common/log";
+import { Registry } from "vs/platform/registry/common/platform";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import {
+	Extensions as WorkbenchExtensions,
+	IWorkbenchContribution,
+	IWorkbenchContributionsRegistry,
+} from "vs/workbench/common/contributions";
+import { IDefaultLogLevelsService } from "vs/workbench/contrib/logs/common/defaultLogLevels";
+import { SetLogLevelAction } from "vs/workbench/contrib/logs/common/logsActions";
 import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 import {
-	IInstantiationService,
-	ServicesAccessor,
-} from "vs/platform/instantiation/common/instantiation";
-import { URI } from "vs/base/common/uri";
-import { Event } from "vs/base/common/event";
-import {
-	windowLogId,
 	showWindowLogActionId,
+	windowLogId,
 } from "vs/workbench/services/log/common/logConstants";
-import { createCancelablePromise, timeout } from "vs/base/common/async";
 import {
-	CancellationError,
-	getErrorMessage,
-	isCancellationError,
-} from "vs/base/common/errors";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { IDefaultLogLevelsService } from "vs/workbench/contrib/logs/common/defaultLogLevels";
-import {
-	ContextKeyExpr,
-	IContextKeyService,
-} from "vs/platform/contextkey/common/contextkey";
-import { CounterSet } from "vs/base/common/map";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import { Schemas } from "vs/base/common/network";
+	Extensions,
+	IOutputChannelRegistry,
+	IOutputService,
+} from "vs/workbench/services/output/common/output";
 
 registerAction2(
 	class extends Action2 {
@@ -80,11 +80,11 @@ registerAction2(
 				.createInstance(
 					SetLogLevelAction,
 					SetLogLevelAction.ID,
-					SetLogLevelAction.TITLE.value
+					SetLogLevelAction.TITLE.value,
 				)
 				.run();
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -95,7 +95,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"setDefaultLogLevel",
-						"Set Default Log Level"
+						"Set Default Log Level",
 					),
 					original: "Set Default Log Level",
 				},
@@ -105,13 +105,13 @@ registerAction2(
 		run(
 			servicesAccessor: ServicesAccessor,
 			logLevel: LogLevel,
-			extensionId?: string
+			extensionId?: string,
 		): Promise<void> {
 			return servicesAccessor
 				.get(IDefaultLogLevelsService)
 				.setDefaultLogLevel(logLevel, extensionId);
 		}
-	}
+	},
 );
 
 class LogOutputChannels extends Disposable implements IWorkbenchContribution {
@@ -175,7 +175,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 					}
 					if (
 						!this.contextKeyService.contextMatchesRules(
-							contextKeyExpr
+							contextKeyExpr,
 						)
 					) {
 						continue;
@@ -194,7 +194,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 			if (logger.when) {
 				if (
 					this.contextKeyService.contextMatchesRules(
-						ContextKeyExpr.deserialize(logger.when)
+						ContextKeyExpr.deserialize(logger.when),
 					)
 				) {
 					this.registerLogChannel(logger);
@@ -225,7 +225,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 			channel &&
 			this.uriIdentityService.extUri.isEqual(
 				channel.file,
-				logger.resource
+				logger.resource,
 			)
 		) {
 			return;
@@ -236,13 +236,13 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 			try {
 				await this.whenFileExists(logger.resource, 1, token);
 				const existingChannel = this.outputChannelRegistry.getChannel(
-					logger.id
+					logger.id,
 				);
 				const remoteLogger =
 					existingChannel?.file?.scheme === Schemas.vscodeRemote
 						? this.loggerService.getRegisteredLogger(
-								existingChannel.file
-							)
+								existingChannel.file,
+						  )
 						: undefined;
 				if (remoteLogger) {
 					this.deregisterLogChannel(remoteLogger);
@@ -257,8 +257,8 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 					? nls.localize(
 							"remote name",
 							"{0} (Remote)",
-							logger.name ?? logger.id
-						)
+							logger.name ?? logger.id,
+					  )
 					: logger.name ?? logger.id;
 				this.outputChannelRegistry.registerChannel({
 					id,
@@ -269,8 +269,8 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 				});
 				disposables.add(
 					toDisposable(() =>
-						this.outputChannelRegistry.removeChannel(id)
-					)
+						this.outputChannelRegistry.removeChannel(id),
+					),
 				);
 				if (remoteLogger) {
 					this.registerLogChannel(remoteLogger);
@@ -280,7 +280,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 					this.logService.error(
 						"Error while registering log channel",
 						logger.resource.toString(),
-						getErrorMessage(error)
+						getErrorMessage(error),
 					);
 				}
 			}
@@ -296,7 +296,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 	private async whenFileExists(
 		file: URI,
 		trial: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void> {
 		const exists = await this.fileService.exists(file);
 		if (exists) {
@@ -310,7 +310,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 		}
 		this.logService.debug(
 			`[Registering Log Channel] File does not exist. Waiting for 1s to retry.`,
-			file.toString()
+			file.toString(),
 		);
 		await timeout(1000, token);
 		await this.whenFileExists(file, trial + 1, token);
@@ -325,7 +325,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 						title: {
 							value: nls.localize(
 								"show window log",
-								"Show Window Log"
+								"Show Window Log",
 							),
 							original: "Show Window Log",
 						},
@@ -337,7 +337,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 					const outputService = servicesAccessor.get(IOutputService);
 					outputService.showChannel(windowLogId);
 				}
-			}
+			},
 		);
 	}
 }
@@ -352,8 +352,8 @@ class LogLevelMigration implements IWorkbenchContribution {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(LogOutputChannels, LifecyclePhase.Restored);
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(LogLevelMigration, LifecyclePhase.Eventually);

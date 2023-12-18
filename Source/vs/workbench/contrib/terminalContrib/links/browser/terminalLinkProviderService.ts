@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ITerminalExternalLinkProvider } from "vs/workbench/contrib/terminal/browser/terminal";
-import { ITerminalLinkProviderService } from "vs/workbench/contrib/terminalContrib/links/browser/links";
 import { Emitter, Event } from "vs/base/common/event";
 import { IDisposable } from "vs/base/common/lifecycle";
+import { ITerminalExternalLinkProvider } from "vs/workbench/contrib/terminal/browser/terminal";
+import { ITerminalLinkProviderService } from "vs/workbench/contrib/terminalContrib/links/browser/links";
 
 export class TerminalLinkProviderService
 	implements ITerminalLinkProviderService
@@ -30,7 +30,7 @@ export class TerminalLinkProviderService
 	}
 
 	registerLinkProvider(
-		linkProvider: ITerminalExternalLinkProvider
+		linkProvider: ITerminalExternalLinkProvider,
 	): IDisposable {
 		const disposables: IDisposable[] = [];
 		this._linkProviders.add(linkProvider);

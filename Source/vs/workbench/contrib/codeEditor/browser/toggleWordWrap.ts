@@ -3,7 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
+import {
+	addDisposableListener,
+	onDidRegisterWindow,
+} from "vs/base/browser/dom";
+import { mainWindow } from "vs/base/browser/window";
+import { Codicon } from "vs/base/common/codicons";
+import { Event } from "vs/base/common/event";
 import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
 import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
 import {
@@ -13,11 +19,11 @@ import {
 } from "vs/editor/browser/editorBrowser";
 import {
 	EditorAction,
+	EditorContributionInstantiation,
 	ServicesAccessor,
+	registerDiffEditorContribution,
 	registerEditorAction,
 	registerEditorContribution,
-	registerDiffEditorContribution,
-	EditorContributionInstantiation,
 } from "vs/editor/browser/editorExtensions";
 import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
 import { EditorOption } from "vs/editor/common/config/editorOptions";
@@ -25,7 +31,9 @@ import {
 	IDiffEditorContribution,
 	IEditorContribution,
 } from "vs/editor/common/editorCommon";
+import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
 import { ITextModel } from "vs/editor/common/model";
+import * as nls from "vs/nls";
 import { MenuId, MenuRegistry } from "vs/platform/actions/common/actions";
 import {
 	ContextKeyExpr,
@@ -34,22 +42,14 @@ import {
 	RawContextKey,
 } from "vs/platform/contextkey/common/contextkey";
 import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
-import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
-import { Codicon } from "vs/base/common/codicons";
 import { Registry } from "vs/platform/registry/common/platform";
 import {
+	Extensions,
 	IWorkbenchContribution,
 	IWorkbenchContributionsRegistry,
-	Extensions,
 } from "vs/workbench/common/contributions";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { Event } from "vs/base/common/event";
-import {
-	addDisposableListener,
-	onDidRegisterWindow,
-} from "vs/base/browser/dom";
-import { mainWindow } from "vs/base/browser/window";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 const transientWordWrapState = "transientWordWrapState";
 const isWordWrapMinifiedKey = "isWordWrapMinified";
@@ -57,15 +57,15 @@ const isDominatedByLongLinesKey = "isDominatedByLongLines";
 const CAN_TOGGLE_WORD_WRAP = new RawContextKey<boolean>(
 	"canToggleWordWrap",
 	false,
-	true
+	true,
 );
 const EDITOR_WORD_WRAP = new RawContextKey<boolean>(
 	"editorWordWrap",
 	false,
 	nls.localize(
 		"editorWordWrap",
-		"Whether the editor is currently using word wrapping."
-	)
+		"Whether the editor is currently using word wrapping.",
+	),
 );
 
 /**
@@ -81,12 +81,12 @@ export interface IWordWrapTransientState {
 export function writeTransientState(
 	model: ITextModel,
 	state: IWordWrapTransientState | null,
-	codeEditorService: ICodeEditorService
+	codeEditorService: ICodeEditorService,
 ): void {
 	codeEditorService.setTransientModelProperty(
 		model,
 		transientWordWrapState,
-		state
+		state,
 	);
 }
 
@@ -95,11 +95,11 @@ export function writeTransientState(
  */
 export function readTransientState(
 	model: ITextModel,
-	codeEditorService: ICodeEditorService
+	codeEditorService: ICodeEditorService,
 ): IWordWrapTransientState | null {
 	return codeEditorService.getTransientModelProperty(
 		model,
-		transientWordWrapState
+		transientWordWrapState,
 	);
 }
 
@@ -137,7 +137,7 @@ class ToggleWordWrapAction extends EditorAction {
 			newState = null;
 		} else {
 			const actualWrappingInfo = editor.getOption(
-				EditorOption.wrappingInfo
+				EditorOption.wrappingInfo,
 			);
 			const wordWrapOverride =
 				actualWrappingInfo.wrappingColumn === -1 ? "on" : "off";
@@ -151,7 +151,7 @@ class ToggleWordWrapAction extends EditorAction {
 		// if we are in a diff editor, update the other editor (if possible)
 		const diffEditor = findDiffEditorContainingCodeEditor(
 			editor,
-			codeEditorService
+			codeEditorService,
 		);
 		if (diffEditor) {
 			const originalEditor = diffEditor.getOriginalEditor();
@@ -162,7 +162,7 @@ class ToggleWordWrapAction extends EditorAction {
 				writeTransientState(
 					otherEditor.getModel(),
 					newState,
-					codeEditorService
+					codeEditorService,
 				);
 				diffEditor.updateOptions({});
 			}
@@ -176,7 +176,7 @@ class ToggleWordWrapAction extends EditorAction {
  */
 function findDiffEditorContainingCodeEditor(
 	editor: ICodeEditor,
-	codeEditorService: ICodeEditorService
+	codeEditorService: ICodeEditorService,
 ): IDiffEditor | null {
 	if (!editor.getOption(EditorOption.inDiffEditor)) {
 		return null;
@@ -304,11 +304,11 @@ class DiffToggleWordWrapController
 
 		const originalTransientState = readTransientState(
 			originalEditor.getModel(),
-			this._codeEditorService
+			this._codeEditorService,
 		);
 		const modifiedTransientState = readTransientState(
 			modifiedEditor.getModel(),
-			this._codeEditorService
+			this._codeEditorService,
 		);
 
 		if (
@@ -319,7 +319,7 @@ class DiffToggleWordWrapController
 			writeTransientState(
 				modifiedEditor.getModel(),
 				originalTransientState,
-				this._codeEditorService
+				this._codeEditorService,
 			);
 			this._diffEditor.updateOptions({});
 		}
@@ -331,7 +331,7 @@ class DiffToggleWordWrapController
 			writeTransientState(
 				originalEditor.getModel(),
 				modifiedTransientState,
-				this._codeEditorService
+				this._codeEditorService,
 			);
 			this._diffEditor.updateOptions({});
 		}
@@ -340,7 +340,7 @@ class DiffToggleWordWrapController
 
 function canToggleWordWrap(
 	codeEditorService: ICodeEditorService,
-	editor: ICodeEditor | null
+	editor: ICodeEditor | null,
 ): editor is IActiveCodeEditor {
 	if (!editor) {
 		return false;
@@ -438,28 +438,28 @@ class EditorWordWrapContextKeyTracker
 		if (activeEditor) {
 			this._activeEditorListener.add(
 				activeEditor.onDidChangeModel(() =>
-					this._updateFromCodeEditor()
-				)
+					this._updateFromCodeEditor(),
+				),
 			);
 			this._activeEditorListener.add(
 				activeEditor.onDidChangeConfiguration((e) => {
 					if (e.hasChanged(EditorOption.wrappingInfo)) {
 						this._updateFromCodeEditor();
 					}
-				})
+				}),
 			);
 			this._updateFromCodeEditor();
 		}
 	}
 
 	private _updateFromCodeEditor(): void {
-		if (!canToggleWordWrap(this._codeEditorService, this._activeEditor)) {
-			return this._setValues(false, false);
-		} else {
+		if (canToggleWordWrap(this._codeEditorService, this._activeEditor)) {
 			const wrappingInfo = this._activeEditor.getOption(
-				EditorOption.wrappingInfo
+				EditorOption.wrappingInfo,
 			);
 			this._setValues(true, wrappingInfo.wrappingColumn !== -1);
+		} else {
+			return this._setValues(false, false);
 		}
 	}
 
@@ -470,21 +470,21 @@ class EditorWordWrapContextKeyTracker
 }
 
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench
+	Extensions.Workbench,
 );
 workbenchRegistry.registerWorkbenchContribution(
 	EditorWordWrapContextKeyTracker,
-	LifecyclePhase.Ready
+	LifecyclePhase.Ready,
 );
 
 registerEditorContribution(
 	ToggleWordWrapController.ID,
 	ToggleWordWrapController,
-	EditorContributionInstantiation.Eager
+	EditorContributionInstantiation.Eager,
 ); // eager because it needs to change the editor word wrap configuration
 registerDiffEditorContribution(
 	DiffToggleWordWrapController.ID,
-	DiffToggleWordWrapController
+	DiffToggleWordWrapController,
 );
 registerEditorAction(ToggleWordWrapAction);
 
@@ -498,7 +498,7 @@ MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
 	order: 1,
 	when: ContextKeyExpr.and(
 		ContextKeyExpr.has(isDominatedByLongLinesKey),
-		ContextKeyExpr.has(isWordWrapMinifiedKey)
+		ContextKeyExpr.has(isWordWrapMinifiedKey),
 	),
 });
 MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
@@ -512,7 +512,7 @@ MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
 	when: ContextKeyExpr.and(
 		EditorContextKeys.inDiffEditor.negate(),
 		ContextKeyExpr.has(isDominatedByLongLinesKey),
-		ContextKeyExpr.not(isWordWrapMinifiedKey)
+		ContextKeyExpr.not(isWordWrapMinifiedKey),
 	),
 });
 
@@ -522,7 +522,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarViewMenu, {
 		id: TOGGLE_WORD_WRAP_ID,
 		title: nls.localize(
 			{ key: "miToggleWordWrap", comment: ["&& denotes a mnemonic"] },
-			"&&Word Wrap"
+			"&&Word Wrap",
 		),
 		toggled: EDITOR_WORD_WRAP,
 		precondition: CAN_TOGGLE_WORD_WRAP,

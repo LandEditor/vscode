@@ -16,12 +16,12 @@ import { ISelectedSuggestion } from "./suggestWidget";
 export class SuggestAlternatives {
 	static readonly OtherSuggestions = new RawContextKey<boolean>(
 		"hasOtherSuggestions",
-		false
+		false,
 	);
 
 	private readonly _ckOtherSuggestions: IContextKey<boolean>;
 
-	private _index: number = 0;
+	private _index = 0;
 	private _model: CompletionModel | undefined;
 	private _acceptNext: ((selected: ISelectedSuggestion) => any) | undefined;
 	private _listener: IDisposable | undefined;
@@ -29,7 +29,7 @@ export class SuggestAlternatives {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IContextKeyService contextKeyService: IContextKeyService
+		@IContextKeyService contextKeyService: IContextKeyService,
 	) {
 		this._ckOtherSuggestions =
 			SuggestAlternatives.OtherSuggestions.bindTo(contextKeyService);
@@ -49,7 +49,7 @@ export class SuggestAlternatives {
 
 	set(
 		{ model, index }: ISelectedSuggestion,
-		acceptNext: (selected: ISelectedSuggestion) => any
+		acceptNext: (selected: ISelectedSuggestion) => any,
 	): void {
 		// no suggestions -> nothing to do
 		if (model.items.length === 0) {
@@ -78,7 +78,7 @@ export class SuggestAlternatives {
 	private static _moveIndex(
 		fwd: boolean,
 		model: CompletionModel,
-		index: number
+		index: number,
 	): number {
 		let newIndex = index;
 		for (let rounds = model.items.length; rounds > 0; rounds--) {
@@ -113,7 +113,7 @@ export class SuggestAlternatives {
 			this._index = SuggestAlternatives._moveIndex(
 				fwd,
 				this._model,
-				this._index
+				this._index,
 			);
 			this._acceptNext!({
 				index: this._index,

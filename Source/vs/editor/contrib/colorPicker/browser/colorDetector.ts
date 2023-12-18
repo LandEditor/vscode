@@ -5,8 +5,8 @@
 
 import {
 	CancelablePromise,
-	createCancelablePromise,
 	TimeoutTimer,
+	createCancelablePromise,
 } from "vs/base/common/async";
 import { RGBA } from "vs/base/common/color";
 import { onUnexpectedError } from "vs/base/common/errors";
@@ -35,8 +35,8 @@ import {
 } from "vs/editor/common/services/languageFeatureDebounce";
 import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
 import {
-	getColors,
 	IColorData,
+	getColors,
 } from "vs/editor/contrib/colorPicker/browser/color";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 
@@ -189,7 +189,7 @@ export class ColorDetector extends Disposable implements IEditorContribution {
 						this.beginCompute();
 					}, this._debounceInformation.get(model));
 				}
-			})
+			}),
 		);
 		this.beginCompute();
 	}
@@ -205,7 +205,7 @@ export class ColorDetector extends Disposable implements IEditorContribution {
 				this._languageFeaturesService.colorProvider,
 				model,
 				token,
-				this._isDefaultColorDecoratorsEnabled
+				this._isDefaultColorDecoratorsEnabled,
 			);
 			this._debounceInformation.update(model, sw.elapsed());
 			return colors;
@@ -246,12 +246,12 @@ export class ColorDetector extends Disposable implements IEditorContribution {
 		this._editor.changeDecorations((changeAccessor) => {
 			this._decorationsIds = changeAccessor.deltaDecorations(
 				this._decorationsIds,
-				decorations
+				decorations,
 			);
 
 			this._colorDatas = new Map<string, IColorData>();
 			this._decorationsIds.forEach((id, i) =>
-				this._colorDatas.set(id, colorDatas[i])
+				this._colorDatas.set(id, colorDatas[i]),
 			);
 		});
 	}
@@ -275,14 +275,14 @@ export class ColorDetector extends Disposable implements IEditorContribution {
 				Math.round(red * 255),
 				Math.round(green * 255),
 				Math.round(blue * 255),
-				alpha
+				alpha,
 			);
 			const color = `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${rgba.a})`;
 
 			const ref = this._colorDecorationClassRefs.add(
 				this._ruleFactory.createClassNameRef({
 					backgroundColor: color,
-				})
+				}),
 			);
 
 			decorations.push({
@@ -343,7 +343,7 @@ export class DecoratorLimitReporter {
 	private _onDidChange = new Emitter<void>();
 	public readonly onDidChange: Event<void> = this._onDidChange.event;
 
-	private _computed: number = 0;
+	private _computed = 0;
 	private _limited: number | false = false;
 	public get computed(): number {
 		return this._computed;
@@ -363,5 +363,5 @@ export class DecoratorLimitReporter {
 registerEditorContribution(
 	ColorDetector.ID,
 	ColorDetector,
-	EditorContributionInstantiation.AfterFirstRender
+	EditorContributionInstantiation.AfterFirstRender,
 );

@@ -12,7 +12,7 @@ function register(id: string, fontCharacter: number | string): ThemeIcon {
 		const val = _codiconFontCharacters[fontCharacter];
 		if (val === undefined) {
 			throw new Error(
-				`${id} references an unknown codicon: ${fontCharacter}`
+				`${id} references an unknown codicon: ${fontCharacter}`,
 			);
 		}
 		fontCharacter = val;
@@ -190,33 +190,33 @@ export const Codicon = {
 	bookmark: register("bookmark", 0xeaa5),
 	debugBreakpointConditionalUnverified: register(
 		"debug-breakpoint-conditional-unverified",
-		0xeaa6
+		0xeaa6,
 	),
 	debugBreakpointConditional: register(
 		"debug-breakpoint-conditional",
-		0xeaa7
+		0xeaa7,
 	),
 	debugBreakpointConditionalDisabled: register(
 		"debug-breakpoint-conditional-disabled",
-		0xeaa7
+		0xeaa7,
 	),
 	debugBreakpointDataUnverified: register(
 		"debug-breakpoint-data-unverified",
-		0xeaa8
+		0xeaa8,
 	),
 	debugBreakpointData: register("debug-breakpoint-data", 0xeaa9),
 	debugBreakpointDataDisabled: register(
 		"debug-breakpoint-data-disabled",
-		0xeaa9
+		0xeaa9,
 	),
 	debugBreakpointLogUnverified: register(
 		"debug-breakpoint-log-unverified",
-		0xeaaa
+		0xeaaa,
 	),
 	debugBreakpointLog: register("debug-breakpoint-log", 0xeaab),
 	debugBreakpointLogDisabled: register(
 		"debug-breakpoint-log-disabled",
-		0xeaab
+		0xeaab,
 	),
 	briefcase: register("briefcase", 0xeaac),
 	broadcast: register("broadcast", 0xeaad),
@@ -446,12 +446,12 @@ export const Codicon = {
 	listTree: register("list-tree", 0xeb86),
 	debugBreakpointFunctionUnverified: register(
 		"debug-breakpoint-function-unverified",
-		0xeb87
+		0xeb87,
 	),
 	debugBreakpointFunction: register("debug-breakpoint-function", 0xeb88),
 	debugBreakpointFunctionDisabled: register(
 		"debug-breakpoint-function-disabled",
-		0xeb88
+		0xeb88,
 	),
 	debugStackframeActive: register("debug-stackframe-active", 0xeb89),
 	circleSmallFilled: register("circle-small-filled", 0xeb8a),
@@ -460,7 +460,7 @@ export const Codicon = {
 	debugStackframeFocused: register("debug-stackframe-focused", 0xeb8b),
 	debugBreakpointUnsupported: register(
 		"debug-breakpoint-unsupported",
-		0xeb8c
+		0xeb8c,
 	),
 	symbolString: register("symbol-string", 0xeb8d),
 	debugReverseContinue: register("debug-reverse-continue", 0xeb8e),
@@ -593,7 +593,7 @@ export const Codicon = {
 	commentUnresolved: register("comment-unresolved", 0xec0a),
 	gitPullRequestGoToChanges: register(
 		"git-pull-request-go-to-changes",
-		0xec0b
+		0xec0b,
 	),
 	gitPullRequestNewChanges: register("git-pull-request-new-changes", 0xec0c),
 	searchFuzzy: register("search-fuzzy", 0xec0d),

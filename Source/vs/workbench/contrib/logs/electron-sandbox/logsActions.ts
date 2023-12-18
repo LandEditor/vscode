@@ -4,12 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Action } from "vs/base/common/actions";
+import { Schemas } from "vs/base/common/network";
+import { joinPath } from "vs/base/common/resources";
 import * as nls from "vs/nls";
+import { IFileService } from "vs/platform/files/common/files";
 import { INativeHostService } from "vs/platform/native/common/native";
 import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
-import { IFileService } from "vs/platform/files/common/files";
-import { joinPath } from "vs/base/common/resources";
-import { Schemas } from "vs/base/common/network";
 
 export class OpenLogsFolderAction extends Action {
 	static readonly ID = "workbench.action.openLogsFolder";
@@ -33,7 +33,7 @@ export class OpenLogsFolderAction extends Action {
 		return this.nativeHostService.showItemInFolder(
 			joinPath(this.environmentService.logsHome, "main.log").with({
 				scheme: Schemas.file,
-			}).fsPath
+			}).fsPath,
 		);
 	}
 }
@@ -43,7 +43,7 @@ export class OpenExtensionLogsFolderAction extends Action {
 	static readonly TITLE = {
 		value: nls.localize(
 			"openExtensionLogsFolder",
-			"Open Extension Logs Folder"
+			"Open Extension Logs Folder",
 		),
 		original: "Open Extension Logs Folder",
 	};
@@ -62,12 +62,12 @@ export class OpenExtensionLogsFolderAction extends Action {
 
 	override async run(): Promise<void> {
 		const folderStat = await this.fileService.resolve(
-			this.environmentSerice.extHostLogsPath
+			this.environmentSerice.extHostLogsPath,
 		);
 		if (folderStat.children && folderStat.children[0]) {
 			return this.nativeHostService.showItemInFolder(
 				folderStat.children[0].resource.with({ scheme: Schemas.file })
-					.fsPath
+					.fsPath,
 			);
 		}
 	}

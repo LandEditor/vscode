@@ -3,24 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
 import { IJSONSchema } from "vs/base/common/jsonSchema";
+import * as nls from "vs/nls";
 
 const idDescription = nls.localize(
 	"JsonSchema.input.id",
-	"The input's id is used to associate an input with a variable of the form ${input:id}."
+	"The input's id is used to associate an input with a variable of the form ${input:id}.",
 );
 const typeDescription = nls.localize(
 	"JsonSchema.input.type",
-	"The type of user input prompt to use."
+	"The type of user input prompt to use.",
 );
 const descriptionDescription = nls.localize(
 	"JsonSchema.input.description",
-	"The description is shown when the user is prompted for input."
+	"The description is shown when the user is prompted for input.",
 );
 const defaultDescription = nls.localize(
 	"JsonSchema.input.default",
-	"The default value for the input."
+	"The default value for the input.",
 );
 
 export const inputsSchema: IJSONSchema = {
@@ -29,7 +29,7 @@ export const inputsSchema: IJSONSchema = {
 			type: "array",
 			description: nls.localize(
 				"JsonSchema.inputs",
-				"User inputs. Used for defining user input prompts, such as free string input or a choice from several options."
+				"User inputs. Used for defining user input prompts, such as free string input or a choice from several options.",
 			),
 			items: {
 				oneOf: [
@@ -49,7 +49,7 @@ export const inputsSchema: IJSONSchema = {
 								enumDescriptions: [
 									nls.localize(
 										"JsonSchema.input.type.promptString",
-										"The 'promptString' type opens an input box to ask the user for input."
+										"The 'promptString' type opens an input box to ask the user for input.",
 									),
 								],
 							},
@@ -65,7 +65,7 @@ export const inputsSchema: IJSONSchema = {
 								type: "boolean",
 								description: nls.localize(
 									"JsonSchema.input.password",
-									"Controls if a password input is shown. Password input hides the typed text."
+									"Controls if a password input is shown. Password input hides the typed text.",
 								),
 							},
 						},
@@ -86,7 +86,7 @@ export const inputsSchema: IJSONSchema = {
 								enumDescriptions: [
 									nls.localize(
 										"JsonSchema.input.type.pickString",
-										"The 'pickString' type shows a selection list."
+										"The 'pickString' type shows a selection list.",
 									),
 								],
 							},
@@ -102,7 +102,7 @@ export const inputsSchema: IJSONSchema = {
 								type: "array",
 								description: nls.localize(
 									"JsonSchema.input.options",
-									"An array of strings that defines the options for a quick pick."
+									"An array of strings that defines the options for a quick pick.",
 								),
 								items: {
 									oneOf: [
@@ -118,14 +118,14 @@ export const inputsSchema: IJSONSchema = {
 													type: "string",
 													description: nls.localize(
 														"JsonSchema.input.pickString.optionLabel",
-														"Label for the option."
+														"Label for the option.",
 													),
 												},
 												value: {
 													type: "string",
 													description: nls.localize(
 														"JsonSchema.input.pickString.optionValue",
-														"Value for the option."
+														"Value for the option.",
 													),
 												},
 											},
@@ -151,7 +151,7 @@ export const inputsSchema: IJSONSchema = {
 								enumDescriptions: [
 									nls.localize(
 										"JsonSchema.input.type.command",
-										"The 'command' type executes a command."
+										"The 'command' type executes a command.",
 									),
 								],
 							},
@@ -159,7 +159,7 @@ export const inputsSchema: IJSONSchema = {
 								type: "string",
 								description: nls.localize(
 									"JsonSchema.input.command.command",
-									"The command to execute for this input variable."
+									"The command to execute for this input variable.",
 								),
 							},
 							args: {
@@ -168,21 +168,21 @@ export const inputsSchema: IJSONSchema = {
 										type: "object",
 										description: nls.localize(
 											"JsonSchema.input.command.args",
-											"Optional arguments passed to the command."
+											"Optional arguments passed to the command.",
 										),
 									},
 									{
 										type: "array",
 										description: nls.localize(
 											"JsonSchema.input.command.args",
-											"Optional arguments passed to the command."
+											"Optional arguments passed to the command.",
 										),
 									},
 									{
 										type: "string",
 										description: nls.localize(
 											"JsonSchema.input.command.args",
-											"Optional arguments passed to the command."
+											"Optional arguments passed to the command.",
 										),
 									},
 								],

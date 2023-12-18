@@ -53,7 +53,7 @@ export class TMScopeRegistry {
 				console.warn(
 					`Overwriting grammar scope name to file mapping for scope ${def.scopeName}.\n` +
 						`Old grammar file: ${existingRegistration.location.toString()}.\n` +
-						`New grammar file: ${def.location.toString()}`
+						`New grammar file: ${def.location.toString()}`,
 				);
 			}
 		}
@@ -61,7 +61,7 @@ export class TMScopeRegistry {
 	}
 
 	public getGrammarDefinition(
-		scopeName: string
+		scopeName: string,
 	): IValidGrammarDefinition | null {
 		return this._scopeNameToLanguageRegistration[scopeName] || null;
 	}

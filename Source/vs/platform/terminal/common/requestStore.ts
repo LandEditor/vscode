@@ -3,13 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { timeout } from "vs/base/common/async";
 import { CancellationTokenSource } from "vs/base/common/cancellation";
 import { Emitter } from "vs/base/common/event";
 import {
 	Disposable,
-	dispose,
 	IDisposable,
+	dispose,
 	toDisposable,
 } from "vs/base/common/lifecycle";
 import { ILogService } from "vs/platform/log/common/log";
@@ -25,7 +24,7 @@ export class RequestStore<T, RequestArgs> extends Disposable {
 	private _pendingRequestDisposables: Map<number, IDisposable[]> = new Map();
 
 	private readonly _onCreateRequest = this._register(
-		new Emitter<RequestArgs & { requestId: number }>()
+		new Emitter<RequestArgs & { requestId: number }>(),
 	);
 	readonly onCreateRequest = this._onCreateRequest.event;
 
@@ -59,7 +58,7 @@ export class RequestStore<T, RequestArgs> extends Disposable {
 			this._onCreateRequest.fire({ requestId, ...args });
 			const tokenSource = new CancellationTokenSource();
 			timeout(this._timeout, tokenSource.token).then(() =>
-				reject(`Request ${requestId} timed out (${this._timeout}ms)`)
+				reject(`Request ${requestId} timed out (${this._timeout}ms)`),
 			);
 			this._pendingRequestDisposables.set(requestId, [
 				toDisposable(() => tokenSource.cancel()),
@@ -81,7 +80,7 @@ export class RequestStore<T, RequestArgs> extends Disposable {
 			resolveRequest(data);
 		} else {
 			this._logService.warn(
-				`RequestStore#acceptReply was called without receiving a matching request ${requestId}`
+				`RequestStore#acceptReply was called without receiving a matching request ${requestId}`,
 			);
 		}
 	}

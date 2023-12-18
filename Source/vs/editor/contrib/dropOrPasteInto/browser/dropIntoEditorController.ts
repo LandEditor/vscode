@@ -46,7 +46,7 @@ export const changeDropTypeCommandId = "editor.changeDropType";
 export const dropWidgetVisibleCtx = new RawContextKey<boolean>(
 	"dropWidgetVisible",
 	false,
-	localize("dropWidgetVisible", "Whether the drop widget is showing")
+	localize("dropWidgetVisible", "Whether the drop widget is showing"),
 );
 
 export class DropIntoEditorController
@@ -57,7 +57,7 @@ export class DropIntoEditorController
 
 	public static get(editor: ICodeEditor): DropIntoEditorController | null {
 		return editor.getContribution<DropIntoEditorController>(
-			DropIntoEditorController.ID
+			DropIntoEditorController.ID,
 		);
 	}
 
@@ -122,7 +122,7 @@ export class DropIntoEditorController
 	private async onDropIntoEditor(
 		editor: ICodeEditor,
 		position: IPosition,
-		dragEvent: DragEvent
+		dragEvent: DragEvent,
 	) {
 		if (!dragEvent.dataTransfer || !editor.hasModel()) {
 			return;
@@ -138,7 +138,7 @@ export class DropIntoEditorController
 				editor,
 				CodeEditorStateFlag.Value,
 				undefined,
-				token
+				token,
 			);
 
 			try {
@@ -165,7 +165,7 @@ export class DropIntoEditorController
 								return true;
 							}
 							return provider.dropMimeTypes.some((mime) =>
-								ourDataTransfer.matches(mime)
+								ourDataTransfer.matches(mime),
 							);
 						});
 
@@ -174,7 +174,7 @@ export class DropIntoEditorController
 					model,
 					position,
 					ourDataTransfer,
-					tokenSource
+					tokenSource,
 				);
 				if (tokenSource.token.isCancellationRequested) {
 					return;
@@ -183,7 +183,7 @@ export class DropIntoEditorController
 				if (edits.length) {
 					const activeEditIndex = this.getInitialActiveEditIndex(
 						model,
-						edits
+						edits,
 					);
 					const canShowWidget =
 						editor.getOption(EditorOption.dropIntoEditor)
@@ -193,7 +193,7 @@ export class DropIntoEditorController
 						[Range.fromPositions(position)],
 						{ activeEditIndex, allEdits: edits },
 						canShowWidget,
-						token
+						token,
 					);
 				}
 			} finally {
@@ -208,9 +208,9 @@ export class DropIntoEditorController
 			position,
 			localize(
 				"dropIntoEditorProgress",
-				"Running drop handlers. Click to cancel"
+				"Running drop handlers. Click to cancel",
 			),
-			p
+			p,
 		);
 		this._currentOperation = p;
 	}
@@ -220,7 +220,7 @@ export class DropIntoEditorController
 		model: ITextModel,
 		position: IPosition,
 		dataTransfer: VSDataTransfer,
-		tokenSource: EditorStateCancellationTokenSource
+		tokenSource: EditorStateCancellationTokenSource,
 	) {
 		const results = await raceCancellation(
 			Promise.all(
@@ -230,7 +230,7 @@ export class DropIntoEditorController
 							model,
 							position,
 							dataTransfer,
-							tokenSource.token
+							tokenSource.token,
 						);
 						if (edit) {
 							return { ...edit, providerId: provider.id };
@@ -239,9 +239,9 @@ export class DropIntoEditorController
 						console.error(err);
 					}
 					return undefined;
-				})
+				}),
 			),
-			tokenSource.token
+			tokenSource.token,
 		);
 
 		const edits = coalesce(results ?? []);
@@ -252,19 +252,19 @@ export class DropIntoEditorController
 		model: ITextModel,
 		edits: ReadonlyArray<
 			DocumentOnDropEdit & { readonly providerId?: string }
-		>
+		>,
 	) {
 		const preferredProviders = this._configService.getValue<
 			Record<string, string>
 		>(defaultProviderConfig, { resource: model.uri });
 		for (const [configMime, desiredId] of Object.entries(
-			preferredProviders
+			preferredProviders,
 		)) {
 			const editIndex = edits.findIndex(
 				(edit) =>
 					desiredId === edit.providerId &&
 					edit.handledMimeType &&
-					matchesMimeType(configMime, [edit.handledMimeType])
+					matchesMimeType(configMime, [edit.handledMimeType]),
 			);
 			if (editIndex >= 0) {
 				return editIndex;
@@ -274,7 +274,7 @@ export class DropIntoEditorController
 	}
 
 	private async extractDataTransferData(
-		dragEvent: DragEvent
+		dragEvent: DragEvent,
 	): Promise<VSDataTransfer> {
 		if (!dragEvent.dataTransfer) {
 			return new VSDataTransfer();
@@ -286,13 +286,13 @@ export class DropIntoEditorController
 			this.treeItemsTransfer.hasData(DraggedTreeItemsIdentifier.prototype)
 		) {
 			const data = this.treeItemsTransfer.getData(
-				DraggedTreeItemsIdentifier.prototype
+				DraggedTreeItemsIdentifier.prototype,
 			);
 			if (Array.isArray(data)) {
 				for (const id of data) {
 					const treeDataTransfer =
 						await this._treeViewsDragAndDropService.removeDragOperationTransfer(
-							id.identifier
+							id.identifier,
 						);
 					if (treeDataTransfer) {
 						for (const [type, value] of treeDataTransfer) {

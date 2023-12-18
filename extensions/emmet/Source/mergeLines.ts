@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from "vscode";
 import { Node } from "EmmetFlatNode";
-import { getFlatNode, offsetRangeToVsRange, validate } from "./util";
+import * as vscode from "vscode";
 import { getRootNode } from "./parseDocument";
+import { getFlatNode, offsetRangeToVsRange, validate } from "./util";
 
 export function mergeLines() {
 	if (!validate(false) || !vscode.window.activeTextEditor) {
@@ -27,7 +27,7 @@ export function mergeLines() {
 				const textEdit = getRangesToReplace(
 					editor.document,
 					selection,
-					rootNode
+					rootNode,
 				);
 				if (textEdit) {
 					editBuilder.replace(textEdit.range, textEdit.newText);
@@ -39,7 +39,7 @@ export function mergeLines() {
 function getRangesToReplace(
 	document: vscode.TextDocument,
 	selection: vscode.Selection,
-	rootNode: Node
+	rootNode: Node,
 ): vscode.TextEdit | undefined {
 	let startNodeToUpdate: Node | undefined;
 	let endNodeToUpdate: Node | undefined;
@@ -50,7 +50,7 @@ function getRangesToReplace(
 		startNodeToUpdate = endNodeToUpdate = getFlatNode(
 			rootNode,
 			selectionStart,
-			true
+			true,
 		);
 	} else {
 		startNodeToUpdate = getFlatNode(rootNode, selectionStart, true);
@@ -73,7 +73,7 @@ function getRangesToReplace(
 	const rangeToReplace = offsetRangeToVsRange(
 		document,
 		startNodeToUpdate.start,
-		endNodeToUpdate.end
+		endNodeToUpdate.end,
 	);
 	let textToReplaceWith = document.lineAt(startLine).text.substr(startChar);
 	for (let i = startLine + 1; i <= endLine; i++) {

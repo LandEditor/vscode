@@ -3,17 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
-import { ExtensionsRegistry } from "vs/workbench/services/extensions/common/extensionsRegistry";
-import {
-	IIconRegistry,
-	Extensions as IconRegistryExtensions,
-} from "vs/platform/theme/common/iconRegistry";
-import { Registry } from "vs/platform/registry/common/platform";
-import { ThemeIcon } from "vs/base/common/themables";
-import * as resources from "vs/base/common/resources";
-import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
 import { extname, posix } from "vs/base/common/path";
+import * as resources from "vs/base/common/resources";
+import { ThemeIcon } from "vs/base/common/themables";
+import * as nls from "vs/nls";
+import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
+import { Registry } from "vs/platform/registry/common/platform";
+import {
+	Extensions as IconRegistryExtensions,
+	IIconRegistry,
+} from "vs/platform/theme/common/iconRegistry";
+import { ExtensionsRegistry } from "vs/workbench/services/extensions/common/extensionsRegistry";
 
 interface IIconExtensionPoint {
 	[id: string]: {
@@ -23,7 +23,7 @@ interface IIconExtensionPoint {
 }
 
 const iconRegistry: IIconRegistry = Registry.as<IIconRegistry>(
-	IconRegistryExtensions.IconContribution
+	IconRegistryExtensions.IconContribution,
 );
 
 const iconReferenceSchema = iconRegistry.getIconReferenceSchema();
@@ -35,18 +35,18 @@ const iconConfigurationExtPoint =
 		jsonSchema: {
 			description: nls.localize(
 				"contributes.icons",
-				"Contributes extension defined themable icons"
+				"Contributes extension defined themable icons",
 			),
 			type: "object",
 			propertyNames: {
 				pattern: iconIdPattern,
 				description: nls.localize(
 					"contributes.icon.id",
-					"The identifier of the themable icon"
+					"The identifier of the themable icon",
 				),
 				patternErrorMessage: nls.localize(
 					"contributes.icon.id.format",
-					"Identifiers can only contain letters, digits and minuses and need to consist of at least two segments in the form `component-iconname`."
+					"Identifiers can only contain letters, digits and minuses and need to consist of at least two segments in the form `component-iconname`.",
 				),
 			},
 			additionalProperties: {
@@ -56,7 +56,7 @@ const iconConfigurationExtPoint =
 						type: "string",
 						description: nls.localize(
 							"contributes.icon.description",
-							"The description of the themable icon"
+							"The description of the themable icon",
 						),
 					},
 					default: {
@@ -68,14 +68,14 @@ const iconConfigurationExtPoint =
 									fontPath: {
 										description: nls.localize(
 											"contributes.icon.default.fontPath",
-											"The path of the icon font that defines the icon."
+											"The path of the icon font that defines the icon.",
 										),
 										type: "string",
 									},
 									fontCharacter: {
 										description: nls.localize(
 											"contributes.icon.default.fontCharacter",
-											"The character for the icon in the icon font."
+											"The character for the icon in the icon font.",
 										),
 										type: "string",
 									},
@@ -93,7 +93,7 @@ const iconConfigurationExtPoint =
 						],
 						description: nls.localize(
 							"contributes.icon.default",
-							"The default of the icon. Either a reference to an extisting ThemeIcon or an icon in an icon font."
+							"The default of the icon. Either a reference to an extisting ThemeIcon or an icon in an icon font.",
 						),
 					},
 				},
@@ -137,8 +137,8 @@ export class IconExtensionPoint {
 					collector.error(
 						nls.localize(
 							"invalid.icons.configuration",
-							"'configuration.icons' must be an object with the icon names as properties."
-						)
+							"'configuration.icons' must be an object with the icon names as properties.",
+						),
 					);
 					return;
 				}
@@ -148,8 +148,8 @@ export class IconExtensionPoint {
 						collector.error(
 							nls.localize(
 								"invalid.icons.id.format",
-								"'configuration.icons' keys represent the icon id and can only contain letter, digits and minuses. They need to consist of at least two segments in the form `component-iconname`."
-							)
+								"'configuration.icons' keys represent the icon id and can only contain letter, digits and minuses. They need to consist of at least two segments in the form `component-iconname`.",
+							),
 						);
 						return;
 					}
@@ -161,8 +161,8 @@ export class IconExtensionPoint {
 						collector.error(
 							nls.localize(
 								"invalid.icons.description",
-								"'configuration.icons.description' must be defined and can not be empty"
-							)
+								"'configuration.icons.description' must be defined and can not be empty",
+							),
 						);
 						return;
 					}
@@ -171,7 +171,7 @@ export class IconExtensionPoint {
 						iconRegistry.registerIcon(
 							id,
 							{ id: defaultIcon },
-							iconContribution.description
+							iconContribution.description,
 						);
 					} else if (
 						typeof defaultIcon === "object" &&
@@ -179,7 +179,7 @@ export class IconExtensionPoint {
 						typeof defaultIcon.fontCharacter === "string"
 					) {
 						const fileExt = extname(defaultIcon.fontPath).substring(
-							1
+							1,
 						);
 						const format = formatMap[fileExt];
 						if (!format) {
@@ -187,8 +187,8 @@ export class IconExtensionPoint {
 								nls.localize(
 									"invalid.icons.default.fontPath.extension",
 									"Expected `contributes.icons.default.fontPath` to have file extension 'woff', woff2' or 'ttf', is '{0}'.",
-									fileExt
-								)
+									fileExt,
+								),
 							);
 							return;
 						}
@@ -196,12 +196,12 @@ export class IconExtensionPoint {
 							extension.description.extensionLocation;
 						const iconFontLocation = resources.joinPath(
 							extensionLocation,
-							defaultIcon.fontPath
+							defaultIcon.fontPath,
 						);
 						if (
 							!resources.isEqualOrParent(
 								iconFontLocation,
-								extensionLocation
+								extensionLocation,
 							)
 						) {
 							collector.warn(
@@ -209,18 +209,18 @@ export class IconExtensionPoint {
 									"invalid.icons.default.fontPath.path",
 									"Expected `contributes.icons.default.fontPath` ({0}) to be included inside extension's folder ({0}).",
 									iconFontLocation.path,
-									extensionLocation.path
-								)
+									extensionLocation.path,
+								),
 							);
 							return;
 						}
 						const fontId = getFontId(
 							extension.description,
-							defaultIcon.fontPath
+							defaultIcon.fontPath,
 						);
 						const definition = iconRegistry.registerIconFont(
 							fontId,
-							{ src: [{ location: iconFontLocation, format }] }
+							{ src: [{ location: iconFontLocation, format }] },
 						);
 						iconRegistry.registerIcon(
 							id,
@@ -231,14 +231,14 @@ export class IconExtensionPoint {
 									definition,
 								},
 							},
-							iconContribution.description
+							iconContribution.description,
 						);
 					} else {
 						collector.error(
 							nls.localize(
 								"invalid.icons.default",
-								"'configuration.icons.default' must be either a reference to the id of an other theme icon (string) or a icon definition (object) with properties `fontPath` and `fontCharacter`."
-							)
+								"'configuration.icons.default' must be either a reference to the id of an other theme icon (string) or a icon definition (object) with properties `fontPath` and `fontCharacter`.",
+							),
 						);
 					}
 				}
@@ -254,9 +254,9 @@ export class IconExtensionPoint {
 }
 
 const formatMap: Record<string, string> = {
-	"ttf": "truetype",
-	"woff": "woff",
-	"woff2": "woff2",
+	ttf: "truetype",
+	woff: "woff",
+	woff2: "woff2",
 };
 
 function getFontId(description: IExtensionDescription, fontPath: string) {

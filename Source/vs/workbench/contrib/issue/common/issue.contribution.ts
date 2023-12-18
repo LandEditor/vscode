@@ -68,10 +68,10 @@ export class BaseIssueContribution implements IWorkbenchContribution {
 
 		CommandsRegistry.registerCommand({
 			id: OpenIssueReporterActionId,
-			handler: function (
+			handler: (
 				accessor,
 				args?: string | [string] | OpenIssueReporterArgs
-			) {
+			) => {
 				const data: Partial<IssueReporterData> =
 					typeof args === "string"
 						? { extensionId: args }
@@ -86,10 +86,10 @@ export class BaseIssueContribution implements IWorkbenchContribution {
 
 		CommandsRegistry.registerCommand({
 			id: OpenIssueReporterApiId,
-			handler: function (
+			handler: (
 				accessor,
 				args?: string | [string] | OpenIssueReporterArgs
-			) {
+			) => {
 				const data: Partial<IssueReporterData> =
 					typeof args === "string"
 						? { extensionId: args }

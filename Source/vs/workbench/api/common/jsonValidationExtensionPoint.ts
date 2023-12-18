@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
-import { ExtensionsRegistry } from "vs/workbench/services/extensions/common/extensionsRegistry";
 import * as resources from "vs/base/common/resources";
 import { isString } from "vs/base/common/types";
+import * as nls from "vs/nls";
+import { ExtensionsRegistry } from "vs/workbench/services/extensions/common/extensionsRegistry";
 
 interface IJSONValidationExtensionPoint {
 	fileMatch: string | string[];
@@ -21,7 +21,7 @@ const configurationExtPoint = ExtensionsRegistry.registerExtensionPoint<
 	jsonSchema: {
 		description: nls.localize(
 			"contributes.jsonValidation",
-			"Contributes json schema configuration."
+			"Contributes json schema configuration.",
 		),
 		type: "array",
 		defaultSnippets: [
@@ -37,7 +37,7 @@ const configurationExtPoint = ExtensionsRegistry.registerExtensionPoint<
 					type: ["string", "array"],
 					description: nls.localize(
 						"contributes.jsonValidation.fileMatch",
-						'The file pattern (or an array of patterns) to match, for example "package.json" or "*.launch". Exclusion patterns start with \'!\''
+						'The file pattern (or an array of patterns) to match, for example "package.json" or "*.launch". Exclusion patterns start with \'!\'',
 					),
 					items: {
 						type: ["string"],
@@ -46,7 +46,7 @@ const configurationExtPoint = ExtensionsRegistry.registerExtensionPoint<
 				url: {
 					description: nls.localize(
 						"contributes.jsonValidation.url",
-						"A schema URL ('http:', 'https:') or relative path to the extension folder ('./')."
+						"A schema URL ('http:', 'https:') or relative path to the extension folder ('./').",
 					),
 					type: "string",
 				},
@@ -70,8 +70,8 @@ export class JSONValidationExtensionPoint {
 					collector.error(
 						nls.localize(
 							"invalid.jsonValidation",
-							"'configuration.jsonValidation' must be a array"
-						)
+							"'configuration.jsonValidation' must be a array",
+						),
 					);
 					return;
 				}
@@ -86,8 +86,8 @@ export class JSONValidationExtensionPoint {
 						collector.error(
 							nls.localize(
 								"invalid.fileMatch",
-								"'configuration.jsonValidation.fileMatch' must be defined as a string or an array of strings."
-							)
+								"'configuration.jsonValidation.fileMatch' must be defined as a string or an array of strings.",
+							),
 						);
 						return;
 					}
@@ -96,8 +96,8 @@ export class JSONValidationExtensionPoint {
 						collector.error(
 							nls.localize(
 								"invalid.url",
-								"'configuration.jsonValidation.url' must be a URL or relative path"
-							)
+								"'configuration.jsonValidation.url' must be a URL or relative path",
+							),
 						);
 						return;
 					}
@@ -105,12 +105,12 @@ export class JSONValidationExtensionPoint {
 						try {
 							const colorThemeLocation = resources.joinPath(
 								extensionLocation,
-								uri
+								uri,
 							);
 							if (
 								!resources.isEqualOrParent(
 									colorThemeLocation,
-									extensionLocation
+									extensionLocation,
 								)
 							) {
 								collector.warn(
@@ -119,8 +119,8 @@ export class JSONValidationExtensionPoint {
 										"Expected `contributes.{0}.url` ({1}) to be included inside extension's folder ({2}). This might make the extension non-portable.",
 										configurationExtPoint.name,
 										colorThemeLocation.toString(),
-										extensionLocation.path
-									)
+										extensionLocation.path,
+									),
 								);
 							}
 						} catch (e) {
@@ -128,16 +128,16 @@ export class JSONValidationExtensionPoint {
 								nls.localize(
 									"invalid.url.fileschema",
 									"'configuration.jsonValidation.url' is an invalid relative URL: {0}",
-									e.message
-								)
+									e.message,
+								),
 							);
 						}
 					} else if (!/^[^:/?#]+:\/\//.test(uri)) {
 						collector.error(
 							nls.localize(
 								"invalid.url.schema",
-								"'configuration.jsonValidation.url' must be an absolute URL or start with './'  to reference schemas located in the extension."
-							)
+								"'configuration.jsonValidation.url' must be an absolute URL or start with './'  to reference schemas located in the extension.",
+							),
 						);
 						return;
 					}

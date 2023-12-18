@@ -3,17 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
 import * as nls from "vs/nls";
-import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import * as Constants from "vs/workbench/contrib/search/common/constants";
 import {
 	Action2,
 	MenuId,
 	registerAction2,
 } from "vs/platform/actions/common/actions";
+import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
 import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
-import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
 import { IQuickInputService } from "vs/platform/quickinput/common/quickInput";
+import * as Constants from "vs/workbench/contrib/search/common/constants";
 
 //#region Actions
 registerAction2(
@@ -21,7 +21,7 @@ registerAction2(
 		static readonly ID = "workbench.action.showAllSymbols";
 		static readonly LABEL = nls.localize(
 			"showTriggerActions",
-			"Go to Symbol in Workspace..."
+			"Go to Symbol in Workspace...",
 		);
 		static readonly ALL_SYMBOLS_PREFIX = "#";
 
@@ -31,7 +31,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"showTriggerActions",
-						"Go to Symbol in Workspace..."
+						"Go to Symbol in Workspace...",
 					),
 					original: "Go to Symbol in Workspace...",
 					mnemonicTitle: nls.localize(
@@ -39,7 +39,7 @@ registerAction2(
 							key: "miGotoSymbolInWorkspace",
 							comment: ["&& denotes a mnemonic"],
 						},
-						"Go to Symbol in &&Workspace..."
+						"Go to Symbol in &&Workspace...",
 					),
 				},
 				f1: true,
@@ -60,7 +60,7 @@ registerAction2(
 				.get(IQuickInputService)
 				.quickAccess.show(ShowAllSymbolsAction.ALL_SYMBOLS_PREFIX);
 		}
-	}
+	},
 );
 
 //#endregion

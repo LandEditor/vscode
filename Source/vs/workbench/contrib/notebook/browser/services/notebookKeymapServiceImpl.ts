@@ -3,10 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { distinct } from "vs/base/common/arrays";
 import { onUnexpectedError } from "vs/base/common/errors";
 import { Event } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
 import { localize } from "vs/nls";
+import {
+	IExtensionIdentifier,
+	IExtensionManagementService,
+	InstallOperation,
+} from "vs/platform/extensionManagement/common/extensionManagement";
+import { areSameExtensions } from "vs/platform/extensionManagement/common/extensionManagementUtil";
 import {
 	IInstantiationService,
 	ServicesAccessor,
@@ -16,8 +23,14 @@ import {
 	Severity,
 } from "vs/platform/notification/common/notification";
 import {
-	getInstalledExtensions,
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from "vs/platform/storage/common/storage";
+import { Memento, MementoObject } from "vs/workbench/common/memento";
+import {
 	IExtensionStatus,
+	getInstalledExtensions,
 } from "vs/workbench/contrib/extensions/common/extensionsUtils";
 import { INotebookKeymapService } from "vs/workbench/contrib/notebook/common/notebookKeymapService";
 import {
@@ -25,35 +38,22 @@ import {
 	IWorkbenchExtensionEnablementService,
 } from "vs/workbench/services/extensionManagement/common/extensionManagement";
 import { ILifecycleService } from "vs/workbench/services/lifecycle/common/lifecycle";
-import {
-	IExtensionIdentifier,
-	IExtensionManagementService,
-	InstallOperation,
-} from "vs/platform/extensionManagement/common/extensionManagement";
-import { areSameExtensions } from "vs/platform/extensionManagement/common/extensionManagementUtil";
-import {
-	IStorageService,
-	StorageScope,
-	StorageTarget,
-} from "vs/platform/storage/common/storage";
-import { Memento, MementoObject } from "vs/workbench/common/memento";
-import { distinct } from "vs/base/common/arrays";
 
 function onExtensionChanged(
-	accessor: ServicesAccessor
+	accessor: ServicesAccessor,
 ): Event<IExtensionIdentifier[]> {
 	const extensionService = accessor.get(IExtensionManagementService);
 	const extensionEnablementService = accessor.get(
-		IWorkbenchExtensionEnablementService
+		IWorkbenchExtensionEnablementService,
 	);
 	const onDidInstallExtensions = Event.chain(
 		extensionService.onDidInstallExtensions,
 		($) =>
 			$.filter((e) =>
 				e.some(
-					({ operation }) => operation === InstallOperation.Install
-				)
-			).map((e) => e.map(({ identifier }) => identifier))
+					({ operation }) => operation === InstallOperation.Install,
+				),
+			).map((e) => e.map(({ identifier }) => identifier)),
 	);
 	return Event.debounce<IExtensionIdentifier[], IExtensionIdentifier[]>(
 		Event.any(
@@ -61,16 +61,16 @@ function onExtensionChanged(
 				onDidInstallExtensions,
 				Event.map(extensionService.onDidUninstallExtension, (e) => [
 					e.identifier,
-				])
+				]),
 			),
 			Event.map(
 				extensionEnablementService.onEnablementChanged,
-				(extensions) => extensions.map((e) => e.identifier)
-			)
+				(extensions) => extensions.map((e) => e.identifier),
+			),
 		),
 		(
 			result: IExtensionIdentifier[] | undefined,
-			identifiers: IExtensionIdentifier[]
+			identifiers: IExtensionIdentifier[],
 		) => {
 			result = result || (identifiers.length ? [identifiers[0]] : []);
 			for (const identifier of identifiers) {
@@ -80,7 +80,7 @@ function onExtensionChanged(
 			}
 
 			return result;
-		}
+		},
 	);
 }
 
@@ -131,16 +131,19 @@ export class NotebookKeymapService
 	}
 
 	private checkForOtherKeymaps(
-		extensionIdentifier: IExtensionIdentifier
+		extensionIdentifier: IExtensionIdentifier,
 	): Promise<void> {
 		return this.instantiationService
 			.invokeFunction(getInstalledExtensions)
 			.then((extensions) => {
 				const keymaps = extensions.filter((extension) =>
-					isNotebookKeymapExtension(extension)
+					isNotebookKeymapExtension(extension),
 				);
 				const extension = keymaps.find((extension) =>
-					areSameExtensions(extension.identifier, extensionIdentifier)
+					areSameExtensions(
+						extension.identifier,
+						extensionIdentifier,
+					),
 				);
 				if (extension && extension.globallyEnabled) {
 					// there is already a keymap extension
@@ -150,13 +153,13 @@ export class NotebookKeymapService
 						(extension) =>
 							!areSameExtensions(
 								extension.identifier,
-								extensionIdentifier
-							) && extension.globallyEnabled
+								extensionIdentifier,
+							) && extension.globallyEnabled,
 					);
 					if (otherKeymaps.length) {
 						return this.promptForDisablingOtherKeymaps(
 							extension,
-							otherKeymaps
+							otherKeymaps,
 						);
 					}
 				}
@@ -166,13 +169,13 @@ export class NotebookKeymapService
 
 	private promptForDisablingOtherKeymaps(
 		newKeymap: IExtensionStatus,
-		oldKeymaps: IExtensionStatus[]
+		oldKeymaps: IExtensionStatus[],
 	): void {
 		const onPrompt = (confirmed: boolean) => {
 			if (confirmed) {
 				this.extensionEnablementService.setEnablement(
 					oldKeymaps.map((keymap) => keymap.local),
-					EnablementState.DisabledGlobally
+					EnablementState.DisabledGlobally,
 				);
 			}
 		};
@@ -184,7 +187,7 @@ export class NotebookKeymapService
 				"Disable other keymaps ({0}) to avoid conflicts between keybindings?",
 				distinct(oldKeymaps.map((k) => k.local.manifest.displayName))
 					.map((name) => `'${name}'`)
-					.join(", ")
+					.join(", "),
 			),
 			[
 				{
@@ -195,13 +198,13 @@ export class NotebookKeymapService
 					label: localize("no", "No"),
 					run: () => onPrompt(false),
 				},
-			]
+			],
 		);
 	}
 }
 
 export function isNotebookKeymapExtension(
-	extension: IExtensionStatus
+	extension: IExtensionStatus,
 ): boolean {
 	if (extension.local.manifest.extensionPack) {
 		return false;

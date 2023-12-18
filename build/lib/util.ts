@@ -5,16 +5,16 @@
 
 import * as es from "event-stream";
 import _debounce = require("debounce");
+import * as fs from "fs";
+import * as path from "path";
+import { pathToFileURL } from "url";
 import * as _filter from "gulp-filter";
 import * as rename from "gulp-rename";
-import * as path from "path";
-import * as fs from "fs";
 import * as _rimraf from "rimraf";
-import * as VinylFile from "vinyl";
-import { ThroughStream } from "through";
 import * as sm from "source-map";
-import { pathToFileURL } from "url";
 import * as ternaryStream from "ternary-stream";
+import { ThroughStream } from "through";
+import * as VinylFile from "vinyl";
 
 const root = path.dirname(path.dirname(__dirname));
 
@@ -33,23 +33,23 @@ export interface IStreamProvider {
 export function incremental(
 	streamProvider: IStreamProvider,
 	initial: NodeJS.ReadWriteStream,
-	supportsCancellation?: boolean
+	supportsCancellation?: boolean,
 ): NodeJS.ReadWriteStream {
 	const input = es.through();
 	const output = es.through();
 	let state = "idle";
 	let buffer = Object.create(null);
 
-	const token: ICancellationToken | undefined = !supportsCancellation
-		? undefined
-		: { isCancellationRequested: () => Object.keys(buffer).length > 0 };
+	const token: ICancellationToken | undefined = supportsCancellation
+		? { isCancellationRequested: () => Object.keys(buffer).length > 0 }
+		: undefined;
 
 	const run = (input: NodeJS.ReadWriteStream, isCancellable: boolean) => {
 		state = "running";
 
-		const stream = !supportsCancellation
-			? streamProvider()
-			: streamProvider(isCancellable ? token : NoCancellationToken);
+		const stream = supportsCancellation
+			? streamProvider(isCancellable ? token : NoCancellationToken)
+			: streamProvider();
 
 		input
 			.pipe(stream)
@@ -57,7 +57,7 @@ export function incremental(
 				es.through(undefined, () => {
 					state = "idle";
 					eventuallyRun();
-				})
+				}),
 			)
 			.pipe(output);
 	};
@@ -91,7 +91,7 @@ export function incremental(
 
 export function debounce(
 	task: () => NodeJS.ReadWriteStream,
-	duration = 500
+	duration = 500,
 ): NodeJS.ReadWriteStream {
 	const input = es.through();
 	const output = es.through();
@@ -109,7 +109,7 @@ export function debounce(
 					if (shouldRunAgain) {
 						eventuallyRun();
 					}
-				})
+				}),
 			)
 			.pipe(output);
 	};
@@ -144,7 +144,7 @@ export function fixWin32DirectoryPermissions(): NodeJS.ReadWriteStream {
 }
 
 export function setExecutableBit(
-	pattern?: string | string[]
+	pattern?: string | string[],
 ): NodeJS.ReadWriteStream {
 	const setBit = es.mapSync<VinylFile, VinylFile>((f) => {
 		if (!f.stat) {
@@ -204,7 +204,7 @@ export function cleanNodeModules(rulePath: string): NodeJS.ReadWriteStream {
 	const input = es.through();
 	const output = es.merge(
 		input.pipe(_filter(["**", ...excludes])),
-		input.pipe(_filter(includes))
+		input.pipe(_filter(includes)),
 	);
 
 	return es.duplex(input, output);
@@ -255,7 +255,7 @@ export function loadSourcemaps(): NodeJS.ReadWriteStream {
 
 				f.contents = Buffer.from(
 					contents.replace(/\/\/# sourceMappingURL=(.*)$/g, ""),
-					"utf8"
+					"utf8",
 				);
 
 				fs.readFile(
@@ -268,10 +268,10 @@ export function loadSourcemaps(): NodeJS.ReadWriteStream {
 
 						f.sourceMap = JSON.parse(contents);
 						cb(undefined, f);
-					}
+					},
 				);
-			}
-		)
+			},
+		),
 	);
 
 	return es.duplex(input, output);
@@ -285,10 +285,10 @@ export function stripSourceMappingURL(): NodeJS.ReadWriteStream {
 			const contents = (<Buffer>f.contents).toString("utf8");
 			f.contents = Buffer.from(
 				contents.replace(/\n\/\/# sourceMappingURL=(.*)$/gm, ""),
-				"utf8"
+				"utf8",
 			);
 			return f;
-		})
+		}),
 	);
 
 	return es.duplex(input, output);
@@ -298,7 +298,7 @@ export function stripSourceMappingURL(): NodeJS.ReadWriteStream {
 export function $if(
 	test: boolean | ((f: VinylFile) => boolean),
 	onTrue: NodeJS.ReadWriteStream,
-	onFalse: NodeJS.ReadWriteStream = es.through()
+	onFalse: NodeJS.ReadWriteStream = es.through(),
 ) {
 	if (typeof test === "boolean") {
 		return test ? onTrue : onFalse;
@@ -322,14 +322,14 @@ export function appendOwnPathSourceURL(): NodeJS.ReadWriteStream {
 				Buffer.from(`\n//# sourceURL=${pathToFileURL(f.path)}`),
 			]);
 			return f;
-		})
+		}),
 	);
 
 	return es.duplex(input, output);
 }
 
 export function rewriteSourceMappingURL(
-	sourceMappingURLBase: string
+	sourceMappingURLBase: string,
 ): NodeJS.ReadWriteStream {
 	const input = es.through();
 
@@ -340,10 +340,10 @@ export function rewriteSourceMappingURL(
 				.dirname(f.relative)
 				.replace(/\\/g, "/")}/$1`;
 			f.contents = Buffer.from(
-				contents.replace(/\n\/\/# sourceMappingURL=(.*)$/gm, str)
+				contents.replace(/\n\/\/# sourceMappingURL=(.*)$/gm, str),
 			);
 			return f;
-		})
+		}),
 	);
 
 	return es.duplex(input, output);
@@ -382,7 +382,7 @@ function _rreaddir(dirPath: string, prepend: string, result: string[]): void {
 			_rreaddir(
 				path.join(dirPath, entry.name),
 				`${prepend}/${entry.name}`,
-				result
+				result,
 			);
 		} else {
 			result.push(`${prepend}/${entry.name}`);
@@ -433,7 +433,7 @@ export function versionStringToNumber(versionStr: string) {
 	const match = versionStr.match(semverRegex);
 	if (!match) {
 		throw new Error(
-			"Version string is not properly formatted: " + versionStr
+			"Version string is not properly formatted: " + versionStr,
 		);
 	}
 
@@ -462,16 +462,16 @@ export function acquireWebNodePaths() {
 	const root = path.join(__dirname, "..", "..");
 	const webPackageJSON = path.join(root, "/remote/web", "package.json");
 	const webPackages = JSON.parse(
-		fs.readFileSync(webPackageJSON, "utf8")
+		fs.readFileSync(webPackageJSON, "utf8"),
 	).dependencies;
 
 	const distroWebPackageJson = path.join(
 		root,
-		".build/distro/npm/remote/web/package.json"
+		".build/distro/npm/remote/web/package.json",
 	);
 	if (fs.existsSync(distroWebPackageJson)) {
 		const distroWebPackages = JSON.parse(
-			fs.readFileSync(distroWebPackageJson, "utf8")
+			fs.readFileSync(distroWebPackageJson, "utf8"),
 		).dependencies;
 		Object.assign(webPackages, distroWebPackages);
 	}
@@ -482,7 +482,7 @@ export function acquireWebNodePaths() {
 			root,
 			"node_modules",
 			key,
-			"package.json"
+			"package.json",
 		);
 		const packageData = JSON.parse(fs.readFileSync(packageJSON, "utf8"));
 		// Only cases where the browser is a string are handled
@@ -496,7 +496,7 @@ export function acquireWebNodePaths() {
 			// TODO @lramos15 remove this when jschardet adds an entrypoint so we can warn on all packages w/out entrypoint
 			if (key !== "jschardet") {
 				console.warn(
-					`No entry point for ${key} assuming dist/${key}.min.js`
+					`No entry point for ${key} assuming dist/${key}.min.js`,
 				);
 			}
 
@@ -516,7 +516,7 @@ export function acquireWebNodePaths() {
 
 			if (
 				fs.existsSync(
-					path.join(root, "node_modules", key, minEntryPoint)
+					path.join(root, "node_modules", key, minEntryPoint),
 				)
 			) {
 				entryPoint = minEntryPoint;
@@ -548,14 +548,14 @@ export interface IExternalLoaderInfo {
 export function createExternalLoaderConfig(
 	webEndpoint?: string,
 	commit?: string,
-	quality?: string
+	quality?: string,
 ): IExternalLoaderInfo | undefined {
 	if (!webEndpoint || !commit || !quality) {
 		return undefined;
 	}
 	webEndpoint = webEndpoint + `/${quality}/${commit}`;
 	const nodePaths = acquireWebNodePaths();
-	Object.keys(nodePaths).map(function (key, _) {
+	Object.keys(nodePaths).map((key, _) => {
 		nodePaths[key] = `../node_modules/${key}/${nodePaths[key]}`;
 	});
 	const externalLoaderConfig: IExternalLoaderInfo = {
@@ -583,12 +583,12 @@ export function buildWebNodePaths(outDir: string) {
 			const fileContents = `${headerWithGeneratedFileWarning}\nself.webPackagePaths = ${JSON.stringify(
 				nodePaths,
 				null,
-				2
+				2,
 			)};`;
 			fs.writeFileSync(
 				path.join(outDirectory, "webPackagePaths.js"),
 				fileContents,
-				"utf8"
+				"utf8",
 			);
 			resolve();
 		});

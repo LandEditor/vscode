@@ -3,55 +3,55 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
+import { localize } from "vs/nls";
+import {
+	Extensions as ConfigExt,
+	IConfigurationRegistry,
+} from "vs/platform/configuration/common/configurationRegistry";
 import { Registry } from "vs/platform/registry/common/platform";
+import { applicationConfigurationNodeBase } from "vs/workbench/common/configuration";
 import {
 	Extensions,
 	IWorkbenchContributionsRegistry,
 } from "vs/workbench/common/contributions";
+import { RendererProfiling } from "vs/workbench/contrib/performance/electron-sandbox/rendererAutoProfiler";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 import { StartupProfiler } from "./startupProfiler";
 import { NativeStartupTimings } from "./startupTimings";
-import { RendererProfiling } from "vs/workbench/contrib/performance/electron-sandbox/rendererAutoProfiler";
-import {
-	IConfigurationRegistry,
-	Extensions as ConfigExt,
-} from "vs/platform/configuration/common/configurationRegistry";
-import { localize } from "vs/nls";
-import { applicationConfigurationNodeBase } from "vs/workbench/common/configuration";
 
 // -- auto profiler
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench
+	Extensions.Workbench,
 ).registerWorkbenchContribution(RendererProfiling, LifecyclePhase.Eventually);
 
 // -- startup profiler
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench
+	Extensions.Workbench,
 ).registerWorkbenchContribution(StartupProfiler, LifecyclePhase.Restored);
 
 // -- startup timings
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench
+	Extensions.Workbench,
 ).registerWorkbenchContribution(
 	NativeStartupTimings,
-	LifecyclePhase.Eventually
+	LifecyclePhase.Eventually,
 );
 
 Registry.as<IConfigurationRegistry>(
-	ConfigExt.Configuration
+	ConfigExt.Configuration,
 ).registerConfiguration({
 	...applicationConfigurationNodeBase,
-	"properties": {
+	properties: {
 		"application.experimental.rendererProfiling": {
 			type: "boolean",
 			default: false,
 			tags: ["experimental"],
 			markdownDescription: localize(
 				"experimental.rendererProfiling",
-				"When enabled slow renderers are automatically profiled"
+				"When enabled slow renderers are automatically profiled",
 			),
 		},
 	},

@@ -13,13 +13,13 @@ import { RawContextKey } from "vs/platform/contextkey/common/contextkey";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import { IRevertOptions, ISaveOptions } from "vs/workbench/common/editor";
 import {
+	RegisteredEditorPriority,
 	globMatchesResource,
 	priorityToRank,
-	RegisteredEditorPriority,
 } from "vs/workbench/services/editor/common/editorResolverService";
 
 export const ICustomEditorService = createDecorator<ICustomEditorService>(
-	"customEditorService"
+	"customEditorService",
 );
 
 export const CONTEXT_ACTIVE_CUSTOM_EDITOR_ID = new RawContextKey<string>(
@@ -29,9 +29,9 @@ export const CONTEXT_ACTIVE_CUSTOM_EDITOR_ID = new RawContextKey<string>(
 		type: "string",
 		description: nls.localize(
 			"context.customEditor",
-			"The viewType of the currently active custom editor."
+			"The viewType of the currently active custom editor.",
 		),
-	}
+	},
 );
 
 export const CONTEXT_FOCUSED_CUSTOM_EDITOR_IS_EDITABLE =
@@ -53,10 +53,10 @@ export interface ICustomEditorService {
 
 	registerCustomEditorCapabilities(
 		viewType: string,
-		options: CustomEditorCapabilities
+		options: CustomEditorCapabilities,
 	): IDisposable;
 	getCustomEditorCapabilities(
-		viewType: string
+		viewType: string,
 	): CustomEditorCapabilities | undefined;
 }
 
@@ -65,18 +65,18 @@ export interface ICustomEditorModelManager {
 
 	get(
 		resource: URI,
-		viewType: string
+		viewType: string,
 	): Promise<ICustomEditorModel | undefined>;
 
 	tryRetain(
 		resource: URI,
-		viewType: string
+		viewType: string,
 	): Promise<IReference<ICustomEditorModel>> | undefined;
 
 	add(
 		resource: URI,
 		viewType: string,
-		model: Promise<ICustomEditorModel>
+		model: Promise<ICustomEditorModel>,
 	): Promise<IReference<ICustomEditorModel>>;
 
 	disposeAllModelsForView(viewType: string): void;
@@ -102,11 +102,11 @@ export interface ICustomEditorModel extends IDisposable {
 	saveCustomEditorAs(
 		resource: URI,
 		targetResource: URI,
-		currentOptions?: ISaveOptions
+		currentOptions?: ISaveOptions,
 	): Promise<boolean>;
 }
 
-export const enum CustomEditorPriority {
+export enum CustomEditorPriority {
 	default = "default",
 	builtin = "builtin",
 	option = "option",
@@ -143,7 +143,7 @@ export class CustomEditorInfo implements CustomEditorDescriptor {
 		return this.selector.some(
 			(selector) =>
 				selector.filenamePattern &&
-				globMatchesResource(selector.filenamePattern, resource)
+				globMatchesResource(selector.filenamePattern, resource),
 		);
 	}
 }
@@ -172,7 +172,7 @@ export class CustomEditorInfoCollection {
 					return this.allEditors.every(
 						(otherEditor) =>
 							otherEditor === editor ||
-							isLowerPriority(otherEditor, editor)
+							isLowerPriority(otherEditor, editor),
 					);
 
 				default:
@@ -197,7 +197,7 @@ export class CustomEditorInfoCollection {
 
 function isLowerPriority(
 	otherEditor: CustomEditorInfo,
-	editor: CustomEditorInfo
+	editor: CustomEditorInfo,
 ): unknown {
 	return (
 		priorityToRank(otherEditor.priority) < priorityToRank(editor.priority)

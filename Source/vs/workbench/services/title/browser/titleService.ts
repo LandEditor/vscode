@@ -25,6 +25,6 @@ export interface ITitleService extends ITitlebarPart {
 	 */
 	createAuxiliaryTitlebarPart(
 		container: HTMLElement,
-		editorGroupsContainer: IEditorGroupsContainer
+		editorGroupsContainer: IEditorGroupsContainer,
 	): IAuxiliaryTitlebarPart;
 }

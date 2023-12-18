@@ -14,7 +14,7 @@ async function setupMain() {
 			l10nLog.push(`l10n: Configured to ${i10lLocation.toString()}`);
 		} catch (e) {
 			l10nLog.push(
-				`l10n: Problems loading ${i10lLocation.toString()} : ${e}`
+				`l10n: Problems loading ${i10lLocation.toString()} : ${e}`,
 			);
 		}
 	}

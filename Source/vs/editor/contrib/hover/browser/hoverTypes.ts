@@ -44,7 +44,7 @@ export interface IHoverPart {
 	isValidForHoverAnchor(anchor: HoverAnchor): boolean;
 }
 
-export const enum HoverAnchorType {
+export enum HoverAnchorType {
 	Range = 1,
 	ForeignElement = 2,
 }
@@ -55,7 +55,7 @@ export class HoverRangeAnchor {
 		public readonly priority: number,
 		public readonly range: Range,
 		public readonly initialMousePosX: number | undefined,
-		public readonly initialMousePosY: number | undefined
+		public readonly initialMousePosY: number | undefined,
 	) {}
 	public equals(other: HoverAnchor) {
 		return (
@@ -65,7 +65,7 @@ export class HoverRangeAnchor {
 	}
 	public canAdoptVisibleHover(
 		lastAnchor: HoverAnchor,
-		showAtPosition: Position
+		showAtPosition: Position,
 	): boolean {
 		return (
 			lastAnchor.type === HoverAnchorType.Range &&
@@ -82,7 +82,7 @@ export class HoverForeignElementAnchor {
 		public readonly range: Range,
 		public readonly initialMousePosX: number | undefined,
 		public readonly initialMousePosY: number | undefined,
-		public readonly supportsMarkerHover: boolean | undefined
+		public readonly supportsMarkerHover: boolean | undefined,
 	) {}
 	public equals(other: HoverAnchor) {
 		return (
@@ -92,7 +92,7 @@ export class HoverForeignElementAnchor {
 	}
 	public canAdoptVisibleHover(
 		lastAnchor: HoverAnchor,
-		showAtPosition: Position
+		showAtPosition: Position,
 	): boolean {
 		return (
 			lastAnchor.type === HoverAnchorType.ForeignElement &&
@@ -155,12 +155,12 @@ export interface IEditorHoverParticipant<T extends IHoverPart = IHoverPart> {
 	computeAsync?(
 		anchor: HoverAnchor,
 		lineDecorations: IModelDecoration[],
-		token: CancellationToken
+		token: CancellationToken,
 	): AsyncIterableObject<T>;
 	createLoadingMessage?(anchor: HoverAnchor): T | null;
 	renderHoverParts(
 		context: IEditorHoverRenderContext,
-		hoverParts: T[]
+		hoverParts: T[],
 	): IDisposable;
 }
 

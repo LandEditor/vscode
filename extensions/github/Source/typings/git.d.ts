@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Uri, Event, Disposable, ProviderResult, Command } from "vscode";
+import { Command, Disposable, Event, ProviderResult, Uri } from "vscode";
 export { ProviderResult } from "vscode";
 
 export interface Git {
@@ -14,15 +14,15 @@ export interface InputBox {
 	value: string;
 }
 
-export const enum ForcePushMode {
-	Force,
-	ForceWithLease,
+export enum ForcePushMode {
+	Force = 0,
+	ForceWithLease = 1,
 }
 
-export const enum RefType {
-	Head,
-	RemoteHead,
-	Tag,
+export enum RefType {
+	Head = 0,
+	RemoteHead = 1,
+	Tag = 2,
 }
 
 export interface Ref {
@@ -66,28 +66,28 @@ export interface Remote {
 	readonly isReadOnly: boolean;
 }
 
-export const enum Status {
-	INDEX_MODIFIED,
-	INDEX_ADDED,
-	INDEX_DELETED,
-	INDEX_RENAMED,
-	INDEX_COPIED,
+export enum Status {
+	INDEX_MODIFIED = 0,
+	INDEX_ADDED = 1,
+	INDEX_DELETED = 2,
+	INDEX_RENAMED = 3,
+	INDEX_COPIED = 4,
 
-	MODIFIED,
-	DELETED,
-	UNTRACKED,
-	IGNORED,
-	INTENT_TO_ADD,
-	INTENT_TO_RENAME,
-	TYPE_CHANGED,
+	MODIFIED = 5,
+	DELETED = 6,
+	UNTRACKED = 7,
+	IGNORED = 8,
+	INTENT_TO_ADD = 9,
+	INTENT_TO_RENAME = 10,
+	TYPE_CHANGED = 11,
 
-	ADDED_BY_US,
-	ADDED_BY_THEM,
-	DELETED_BY_US,
-	DELETED_BY_THEM,
-	BOTH_ADDED,
-	BOTH_DELETED,
-	BOTH_MODIFIED,
+	ADDED_BY_US = 12,
+	ADDED_BY_THEM = 13,
+	DELETED_BY_US = 14,
+	DELETED_BY_THEM = 15,
+	BOTH_ADDED = 16,
+	BOTH_DELETED = 17,
+	BOTH_MODIFIED = 18,
 }
 
 export interface Change {
@@ -181,10 +181,10 @@ export interface Repository {
 
 	getObjectDetails(
 		treeish: string,
-		path: string
+		path: string,
 	): Promise<{ mode: string; object: string; size: number }>;
 	detectObjectType(
-		object: string
+		object: string,
 	): Promise<{ mimetype: string; encoding?: string }>;
 	buffer(ref: string, path: string): Promise<Buffer>;
 	show(ref: string, path: string): Promise<string>;
@@ -235,7 +235,7 @@ export interface Repository {
 		remoteName?: string,
 		branchName?: string,
 		setUpstream?: boolean,
-		force?: ForcePushMode
+		force?: ForcePushMode,
 	): Promise<void>;
 
 	blame(path: string): Promise<string>;
@@ -283,7 +283,7 @@ export interface PushErrorHandler {
 		repository: Repository,
 		remote: Remote,
 		refspec: string,
-		error: Error & { gitErrorCode: GitErrorCodes }
+		error: Error & { gitErrorCode: GitErrorCodes },
 	): Promise<boolean>;
 }
 
@@ -327,12 +327,12 @@ export interface API {
 	registerRemoteSourceProvider(provider: RemoteSourceProvider): Disposable;
 	registerCredentialsProvider(provider: CredentialsProvider): Disposable;
 	registerPostCommitCommandsProvider(
-		provider: PostCommitCommandsProvider
+		provider: PostCommitCommandsProvider,
 	): Disposable;
 	registerPushErrorHandler(handler: PushErrorHandler): Disposable;
 	registerBranchProtectionProvider(
 		root: Uri,
-		provider: BranchProtectionProvider
+		provider: BranchProtectionProvider,
 	): Disposable;
 }
 
@@ -353,7 +353,7 @@ export interface GitExtension {
 	getAPI(version: 1): API;
 }
 
-export const enum GitErrorCodes {
+export enum GitErrorCodes {
 	BadConfigFile = "BadConfigFile",
 	AuthenticationFailed = "AuthenticationFailed",
 	NoUserNameConfigured = "NoUserNameConfigured",

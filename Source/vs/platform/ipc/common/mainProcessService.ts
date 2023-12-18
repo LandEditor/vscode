@@ -15,7 +15,7 @@ import { IRemoteService } from "vs/platform/ipc/common/services";
 export const IMainProcessService =
 	createDecorator<IMainProcessService>("mainProcessService");
 
-export interface IMainProcessService extends IRemoteService {}
+export type IMainProcessService = IRemoteService;
 
 /**
  * An implementation of `IMainProcessService` that leverages `IPCServer`.
@@ -23,10 +23,7 @@ export interface IMainProcessService extends IRemoteService {}
 export class MainProcessService implements IMainProcessService {
 	declare readonly _serviceBrand: undefined;
 
-	constructor(
-		private server: IPCServer,
-		private router: StaticRouter
-	) {}
+	constructor(private server: IPCServer, private router: StaticRouter) {}
 
 	getChannel(channelName: string): IChannel {
 		return this.server.getChannel(channelName, this.router);
@@ -34,7 +31,7 @@ export class MainProcessService implements IMainProcessService {
 
 	registerChannel(
 		channelName: string,
-		channel: IServerChannel<string>
+		channel: IServerChannel<string>,
 	): void {
 		this.server.registerChannel(channelName, channel);
 	}

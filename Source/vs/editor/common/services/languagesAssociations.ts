@@ -40,7 +40,7 @@ let userRegisteredAssociations: ILanguageAssociationItem[] = [];
  */
 export function registerPlatformLanguageAssociation(
 	association: ILanguageAssociation,
-	warnOnOverwrite = false
+	warnOnOverwrite = false,
 ): void {
 	_registerLanguageAssociation(association, false, warnOnOverwrite);
 }
@@ -51,7 +51,7 @@ export function registerPlatformLanguageAssociation(
  * * **NOTE**: Use `clearConfiguredLanguageAssociations` to remove all associations registered using this function.
  */
 export function registerConfiguredLanguageAssociation(
-	association: ILanguageAssociation
+	association: ILanguageAssociation,
 ): void {
 	_registerLanguageAssociation(association, true, false);
 }
@@ -59,18 +59,18 @@ export function registerConfiguredLanguageAssociation(
 function _registerLanguageAssociation(
 	association: ILanguageAssociation,
 	userConfigured: boolean,
-	warnOnOverwrite: boolean
+	warnOnOverwrite: boolean,
 ): void {
 	// Register
 	const associationItem = toLanguageAssociationItem(
 		association,
-		userConfigured
+		userConfigured,
 	);
 	registeredAssociations.push(associationItem);
-	if (!associationItem.userConfigured) {
-		nonUserRegisteredAssociations.push(associationItem);
-	} else {
+	if (associationItem.userConfigured) {
 		userRegisteredAssociations.push(associationItem);
+	} else {
+		nonUserRegisteredAssociations.push(associationItem);
 	}
 
 	// Check for conflicts unless this is a user configured association
@@ -85,7 +85,7 @@ function _registerLanguageAssociation(
 				a.extension === associationItem.extension
 			) {
 				console.warn(
-					`Overwriting extension <<${associationItem.extension}>> to now point to mime <<${associationItem.mime}>>`
+					`Overwriting extension <<${associationItem.extension}>> to now point to mime <<${associationItem.mime}>>`,
 				);
 			}
 
@@ -94,7 +94,7 @@ function _registerLanguageAssociation(
 				a.filename === associationItem.filename
 			) {
 				console.warn(
-					`Overwriting filename <<${associationItem.filename}>> to now point to mime <<${associationItem.mime}>>`
+					`Overwriting filename <<${associationItem.filename}>> to now point to mime <<${associationItem.mime}>>`,
 				);
 			}
 
@@ -103,7 +103,7 @@ function _registerLanguageAssociation(
 				a.filepattern === associationItem.filepattern
 			) {
 				console.warn(
-					`Overwriting filepattern <<${associationItem.filepattern}>> to now point to mime <<${associationItem.mime}>>`
+					`Overwriting filepattern <<${associationItem.filepattern}>> to now point to mime <<${associationItem.mime}>>`,
 				);
 			}
 
@@ -112,7 +112,7 @@ function _registerLanguageAssociation(
 				a.firstline === associationItem.firstline
 			) {
 				console.warn(
-					`Overwriting firstline <<${associationItem.firstline}>> to now point to mime <<${associationItem.mime}>>`
+					`Overwriting firstline <<${associationItem.firstline}>> to now point to mime <<${associationItem.mime}>>`,
 				);
 			}
 		});
@@ -121,7 +121,7 @@ function _registerLanguageAssociation(
 
 function toLanguageAssociationItem(
 	association: ILanguageAssociation,
-	userConfigured: boolean
+	userConfigured: boolean,
 ): ILanguageAssociationItem {
 	return {
 		id: association.id,
@@ -151,7 +151,7 @@ function toLanguageAssociationItem(
  */
 export function clearPlatformLanguageAssociations(): void {
 	registeredAssociations = registeredAssociations.filter(
-		(a) => a.userConfigured
+		(a) => a.userConfigured,
 	);
 	nonUserRegisteredAssociations = [];
 }
@@ -161,7 +161,7 @@ export function clearPlatformLanguageAssociations(): void {
  */
 export function clearConfiguredLanguageAssociations(): void {
 	registeredAssociations = registeredAssociations.filter(
-		(a) => !a.userConfigured
+		(a) => !a.userConfigured,
 	);
 	userRegisteredAssociations = [];
 }
@@ -177,7 +177,7 @@ interface IdAndMime {
  */
 export function getMimeTypes(
 	resource: URI | null,
-	firstLine?: string
+	firstLine?: string,
 ): string[] {
 	return getAssociations(resource, firstLine).map((item) => item.mime);
 }
@@ -187,14 +187,14 @@ export function getMimeTypes(
  */
 export function getLanguageIds(
 	resource: URI | null,
-	firstLine?: string
+	firstLine?: string,
 ): string[] {
 	return getAssociations(resource, firstLine).map((item) => item.id);
 }
 
 function getAssociations(
 	resource: URI | null,
-	firstLine?: string
+	firstLine?: string,
 ): IdAndMime[] {
 	let path: string | undefined;
 	if (resource) {
@@ -228,7 +228,7 @@ function getAssociations(
 	const configuredLanguage = getAssociationByPath(
 		path,
 		filename,
-		userRegisteredAssociations
+		userRegisteredAssociations,
 	);
 	if (configuredLanguage) {
 		return [
@@ -241,7 +241,7 @@ function getAssociations(
 	const registeredLanguage = getAssociationByPath(
 		path,
 		filename,
-		nonUserRegisteredAssociations
+		nonUserRegisteredAssociations,
 	);
 	if (registeredLanguage) {
 		return [
@@ -267,7 +267,7 @@ function getAssociations(
 function getAssociationByPath(
 	path: string,
 	filename: string,
-	associations: ILanguageAssociationItem[]
+	associations: ILanguageAssociationItem[],
 ): ILanguageAssociationItem | undefined {
 	let filenameMatch: ILanguageAssociationItem | undefined = undefined;
 	let patternMatch: ILanguageAssociationItem | undefined = undefined;
@@ -330,7 +330,7 @@ function getAssociationByPath(
 }
 
 function getAssociationByFirstline(
-	firstLine: string
+	firstLine: string,
 ): ILanguageAssociationItem | undefined {
 	if (startsWithUTF8BOM(firstLine)) {
 		firstLine = firstLine.substr(1);

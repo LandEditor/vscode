@@ -6,8 +6,8 @@
 import * as DOM from "vs/base/browser/dom";
 import {
 	DisposableStore,
-	dispose,
 	IDisposable,
+	dispose,
 } from "vs/base/common/lifecycle";
 import {
 	IContextKey,
@@ -189,7 +189,7 @@ export class NotebookEditorContextKeys {
 		};
 
 		const layoutDisposable = this._viewModelDisposables.add(
-			new DisposableStore()
+			new DisposableStore(),
 		);
 
 		const addCellOutputsListener = (c: ICellViewModel) => {
@@ -201,8 +201,8 @@ export class NotebookEditorContextKeys {
 						DOM.getWindow(this._editor.getDomNode()),
 						() => {
 							recomputeOutputsExistence();
-						}
-					)
+						},
+					),
 				);
 			});
 		};
@@ -223,28 +223,28 @@ export class NotebookEditorContextKeys {
 						this._cellOutputsListeners.splice(
 							start,
 							deleted,
-							...newCells.map(addCellOutputsListener)
+							...newCells.map(addCellOutputsListener),
 						);
 					dispose(deletedCellOutputStates);
 				});
-			})
+			}),
 		);
 		this._viewType.set(this._editor.textModel.viewType);
 	}
 	private _updateForExecution(
-		e: ICellExecutionStateChangedEvent | IExecutionStateChangedEvent
+		e: ICellExecutionStateChangedEvent | IExecutionStateChangedEvent,
 	): void {
 		if (this._editor.textModel) {
 			const notebookExe =
 				this._notebookExecutionStateService.getExecution(
-					this._editor.textModel.uri
+					this._editor.textModel.uri,
 				);
 			const notebookCellExe =
 				this._notebookExecutionStateService.getCellExecutionsForNotebook(
-					this._editor.textModel.uri
+					this._editor.textModel.uri,
 				);
 			this._kernelRunning.set(
-				notebookCellExe.length > 0 || !!notebookExe
+				notebookCellExe.length > 0 || !!notebookExe,
 			);
 			if (e.type === NotebookExecutionType.cell) {
 				this._someCellRunning.set(notebookCellExe.length > 0);
@@ -258,7 +258,7 @@ export class NotebookEditorContextKeys {
 	}
 
 	private _updateForLastRunFailState(
-		e: INotebookFailStateChangedEvent
+		e: INotebookFailStateChangedEvent,
 	): void {
 		if (e.notebook === this._editor.textModel?.uri) {
 			this._lastCellFailed.set(e.visible);
@@ -274,7 +274,7 @@ export class NotebookEditorContextKeys {
 		const kernelExtensionId = KERNEL_EXTENSIONS.get(viewType);
 		this._missingKernelExtension.set(
 			!!kernelExtensionId &&
-				!(await this._extensionService.getExtension(kernelExtensionId))
+				!(await this._extensionService.getExtension(kernelExtensionId)),
 		);
 	}
 
@@ -287,11 +287,11 @@ export class NotebookEditorContextKeys {
 		}
 
 		const { selected, all } = this._notebookKernelService.getMatchingKernel(
-			this._editor.textModel
+			this._editor.textModel,
 		);
 		const sourceActions = this._notebookKernelService.getSourceActions(
 			this._editor.textModel,
-			this._editor.scopedContextKeyService
+			this._editor.scopedContextKeyService,
 		);
 		this._notebookKernelCount.set(all.length);
 		this._notebookKernelSourceCount.set(sourceActions.length);
@@ -304,9 +304,9 @@ export class NotebookEditorContextKeys {
 			this._selectedKernelDisposables.add(
 				selected.onDidChange(() => {
 					this._interruptibleKernel.set(
-						selected?.implementsInterrupt ?? false
+						selected?.implementsInterrupt ?? false,
 					);
-				})
+				}),
 			);
 		}
 	}
@@ -316,8 +316,8 @@ export class NotebookEditorContextKeys {
 		this._useConsolidatedOutputButton.set(layout.consolidatedOutputButton);
 		this._cellToolbarLocation.set(
 			this._editor.notebookOptions.computeCellToolbarLocation(
-				this._editor.textModel?.viewType
-			)
+				this._editor.textModel?.viewType,
+			),
 		);
 	}
 }

@@ -3,20 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { alert } from "vs/base/browser/ui/aria/aria";
+import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
 import "vs/css!./accessibility";
+import { AccessibilityHelpNLS } from "vs/editor/common/standaloneStrings";
 import * as nls from "vs/nls";
+import { IAccessibilityService } from "vs/platform/accessibility/common/accessibility";
+import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
 import {
 	ConfigurationTarget,
 	IConfigurationService,
 } from "vs/platform/configuration/common/configuration";
 import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import { IAccessibilityService } from "vs/platform/accessibility/common/accessibility";
-import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
-import { accessibilityHelpIsShown } from "vs/workbench/contrib/accessibility/browser/accessibilityConfiguration";
 import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
-import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
-import { alert } from "vs/base/browser/ui/aria/aria";
-import { AccessibilityHelpNLS } from "vs/editor/common/standaloneStrings";
+import { accessibilityHelpIsShown } from "vs/workbench/contrib/accessibility/browser/accessibilityConfiguration";
 
 class ToggleScreenReaderMode extends Action2 {
 	constructor() {
@@ -25,7 +25,7 @@ class ToggleScreenReaderMode extends Action2 {
 			title: {
 				value: nls.localize(
 					"toggleScreenReaderMode",
-					"Toggle Screen Reader Accessibility Mode"
+					"Toggle Screen Reader Accessibility Mode",
 				),
 				original: "Toggle Screen Reader Accessibility Mode",
 			},
@@ -53,12 +53,12 @@ class ToggleScreenReaderMode extends Action2 {
 		configurationService.updateValue(
 			"editor.accessibilitySupport",
 			isScreenReaderOptimized ? "off" : "on",
-			ConfigurationTarget.USER
+			ConfigurationTarget.USER,
 		);
 		alert(
 			isScreenReaderOptimized
 				? AccessibilityHelpNLS.screenReaderModeDisabled
-				: AccessibilityHelpNLS.screenReaderModeEnabled
+				: AccessibilityHelpNLS.screenReaderModeEnabled,
 		);
 	}
 }

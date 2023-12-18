@@ -16,21 +16,18 @@ import {
 	SourceControlHistoryProvider,
 	ThemeIcon,
 	Uri,
-	window,
 	l10n,
+	window,
 } from "vscode";
-import { Repository, Resource } from "./repository";
-import { IDisposable, filterEvent } from "./util";
-import { toGitUri } from "./uri";
 import { Branch, RefType, Status } from "./api/git";
 import { emojify, ensureEmojis } from "./emoji";
 import { Operation } from "./operation";
+import { Repository, Resource } from "./repository";
+import { toGitUri } from "./uri";
+import { IDisposable, filterEvent } from "./util";
 
 export class GitHistoryProvider
-	implements
-		SourceControlHistoryProvider,
-		FileDecorationProvider,
-		IDisposable
+	implements SourceControlHistoryProvider, FileDecorationProvider, IDisposable
 {
 	private readonly _onDidChangeCurrentHistoryItemGroup =
 		new EventEmitter<void>();
@@ -47,9 +44,9 @@ export class GitHistoryProvider
 	get currentHistoryItemGroup(): SourceControlHistoryItemGroup | undefined {
 		return this._currentHistoryItemGroup;
 	}
-	set currentHistoryItemGroup(
-		value: SourceControlHistoryItemGroup | undefined
-	) {
+	set currentHistoryItemGroup(value:
+		| SourceControlHistoryItemGroup
+		| undefined) {
 		this._currentHistoryItemGroup = value;
 		this._onDidChangeCurrentHistoryItemGroup.fire();
 	}
@@ -60,13 +57,13 @@ export class GitHistoryProvider
 
 	constructor(protected readonly repository: Repository) {
 		this.disposables.push(
-			repository.onDidRunGitStatus(this.onDidRunGitStatus, this)
+			repository.onDidRunGitStatus(this.onDidRunGitStatus, this),
 		);
 		this.disposables.push(
 			filterEvent(
 				repository.onDidRunOperation,
-				(e) => e.operation === Operation.Refresh
-			)(() => this._onDidChangeCurrentHistoryItemGroup.fire())
+				(e) => e.operation === Operation.Refresh,
+			)(() => this._onDidChangeCurrentHistoryItemGroup.fire()),
 		);
 
 		this.disposables.push(window.registerFileDecorationProvider(this));
@@ -106,14 +103,14 @@ export class GitHistoryProvider
 				? {
 						id: `refs/remotes/${this._HEAD.upstream.remote}/${this._HEAD.upstream.name}`,
 						label: `${this._HEAD.upstream.remote}/${this._HEAD.upstream.name}`,
-					}
+				  }
 				: undefined,
 		};
 	}
 
 	async provideHistoryItems(
 		historyItemGroupId: string,
-		options: SourceControlHistoryOptions
+		options: SourceControlHistoryOptions,
 	): Promise<SourceControlHistoryItem[]> {
 		//TODO@lszomoru - support limit and cursor
 		if (typeof options.limit === "number") {
@@ -160,14 +157,14 @@ export class GitHistoryProvider
 						deletions: 0,
 					},
 				};
-			})
+			}),
 		);
 
 		return historyItems;
 	}
 
 	async provideHistoryItemChanges(
-		historyItemId: string
+		historyItemId: string,
 	): Promise<SourceControlHistoryItemChange[]> {
 		// The "All Changes" history item uses a special id
 		// which is a commit range instead of a single commit id
@@ -187,7 +184,7 @@ export class GitHistoryProvider
 		const historyItemChanges: SourceControlHistoryItemChange[] = [];
 		const changes = await this.repository.diffBetween(
 			originalRef,
-			modifiedRef
+			modifiedRef,
 		);
 
 		for (const change of changes) {
@@ -205,11 +202,11 @@ export class GitHistoryProvider
 
 			// History item change decoration
 			const fileDecoration = this.getHistoryItemChangeFileDecoration(
-				change.status
+				change.status,
 			);
 			this.historyItemDecorations.set(
 				historyItemUri.toString(),
-				fileDecoration
+				fileDecoration,
 			);
 
 			historyItemChangesUri.push(historyItemUri);
@@ -220,7 +217,7 @@ export class GitHistoryProvider
 	}
 
 	async resolveHistoryItemGroupBase(
-		historyItemGroupId: string
+		historyItemGroupId: string,
 	): Promise<SourceControlHistoryItemGroup | undefined> {
 		// TODO - support for all history item groups
 		if (historyItemGroupId !== this.currentHistoryItemGroup?.id) {
@@ -257,7 +254,7 @@ export class GitHistoryProvider
 
 	async resolveHistoryItemGroupCommonAncestor(
 		refId1: string,
-		refId2: string
+		refId2: string,
 	): Promise<{ id: string; ahead: number; behind: number } | undefined> {
 		const ancestor = await this.repository.getMergeBase(refId1, refId2);
 		if (!ancestor) {
@@ -265,7 +262,7 @@ export class GitHistoryProvider
 		}
 
 		const commitCount = await this.repository.getCommitCount(
-			`${refId1}...${refId2}`
+			`${refId1}...${refId2}`,
 		);
 		return {
 			id: ancestor,
@@ -288,11 +285,11 @@ export class GitHistoryProvider
 
 	private async getSummaryHistoryItem(
 		ref1: string,
-		ref2: string
+		ref2: string,
 	): Promise<SourceControlHistoryItem> {
 		const statistics = await this.repository.diffBetweenShortStat(
 			ref1,
-			ref2
+			ref2,
 		);
 		return {
 			id: `${ref1}..${ref2}`,

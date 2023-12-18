@@ -105,7 +105,7 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 
 	async validateLink(
 		resource: URI | string,
-		openOptions?: OpenOptions
+		openOptions?: OpenOptions,
 	): Promise<boolean> {
 		if (
 			!matchesScheme(resource, Schemas.http) &&
@@ -118,7 +118,7 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 			openOptions?.fromWorkspace &&
 			this._workspaceTrustService.isWorkspaceTrusted() &&
 			!this._configurationService.getValue(
-				"workbench.trustedDomains.promptInTrustedWorkspace"
+				"workbench.trustedDomains.promptInTrustedWorkspace",
 			)
 		) {
 			return true;
@@ -159,7 +159,7 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 			const remainingLength = Math.max(0, 60 - formattedLink.length);
 			const linkTailLengthToKeep = Math.min(
 				Math.max(5, remainingLength),
-				linkTail.length
+				linkTail.length,
 			);
 
 			if (linkTailLengthToKeep === linkTail.length) {
@@ -171,7 +171,7 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 					linkTail.charAt(0) +
 					"..." +
 					linkTail.substring(
-						linkTail.length - linkTailLengthToKeep + 1
+						linkTail.length - linkTailLengthToKeep + 1,
 					);
 			}
 
@@ -180,7 +180,7 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 				message: localize(
 					"openExternalLinkAt",
 					"Do you want {0} to open the external website?",
-					this._productService.nameShort
+					this._productService.nameShort,
 				),
 				detail:
 					typeof originalResource === "string"
@@ -190,20 +190,20 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 					{
 						label: localize(
 							{ key: "open", comment: ["&& denotes a mnemonic"] },
-							"&&Open"
+							"&&Open",
 						),
 						run: () => true,
 					},
 					{
 						label: localize(
 							{ key: "copy", comment: ["&& denotes a mnemonic"] },
-							"&&Copy"
+							"&&Copy",
 						),
 						run: () => {
 							this._clipboardService.writeText(
 								typeof originalResource === "string"
 									? originalResource
-									: resourceUri.toString(true)
+									: resourceUri.toString(true),
 							);
 							return false;
 						},
@@ -214,7 +214,7 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 								key: "configureTrustedDomains",
 								comment: ["&& denotes a mnemonic"],
 							},
-							"Configure &&Trusted Domains"
+							"Configure &&Trusted Domains",
 						),
 						run: async () => {
 							const pickedDomains =
@@ -225,7 +225,7 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 									this._quickInputService,
 									this._storageService,
 									this._editorService,
-									this._telemetryService
+									this._telemetryService,
 								);
 							// Trust all domains
 							if (pickedDomains.indexOf("*") !== -1) {

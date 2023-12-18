@@ -3,19 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { RunOnceScheduler } from "vs/base/common/async";
 import { Disposable } from "vs/base/common/lifecycle";
 import { ILifecycleMainService } from "vs/platform/lifecycle/electron-main/lifecycleMainService";
+import { IUserDataProfilesMainService } from "vs/platform/userDataProfile/electron-main/userDataProfile";
 import {
 	ICodeWindow,
 	LoadReason,
 } from "vs/platform/window/electron-main/window";
-import { IUserDataProfilesMainService } from "vs/platform/userDataProfile/electron-main/userDataProfile";
+import { IWindowsMainService } from "vs/platform/windows/electron-main/windows";
 import {
 	IAnyWorkspaceIdentifier,
 	toWorkspaceIdentifier,
 } from "vs/platform/workspace/common/workspace";
-import { RunOnceScheduler } from "vs/base/common/async";
-import { IWindowsMainService } from "vs/platform/windows/electron-main/windows";
 
 export class UserDataProfilesHandler extends Disposable {
 	constructor(
@@ -53,7 +53,7 @@ export class UserDataProfilesHandler extends Disposable {
 		if (profile?.isTransient) {
 			this.userDataProfilesService.unsetWorkspace(
 				workspace,
-				profile.isTransient
+				profile.isTransient,
 			);
 			if (profile.isTransient) {
 				await this.userDataProfilesService.cleanUpTransientProfiles();
@@ -66,7 +66,7 @@ export class UserDataProfilesHandler extends Disposable {
 			window.openedWorkspace ??
 			toWorkspaceIdentifier(
 				window.backupPath,
-				window.isExtensionDevelopmentHost
+				window.isExtensionDevelopmentHost,
 			)
 		);
 	}
@@ -84,14 +84,14 @@ export class UserDataProfilesHandler extends Disposable {
 			if (
 				openedWorkspaces.some(
 					(openedWorkspace) =>
-						openedWorkspace.id === associatedEmptyWindow.id
+						openedWorkspace.id === associatedEmptyWindow.id,
 				)
 			) {
 				continue;
 			}
 			this.userDataProfilesService.unsetWorkspace(
 				associatedEmptyWindow,
-				false
+				false,
 			);
 		}
 	}

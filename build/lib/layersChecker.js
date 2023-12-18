@@ -1,4 +1,3 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -240,7 +239,7 @@ const TS_CONFIG_PATH = (0, path_1.join)(
 	__dirname,
 	"../../",
 	"src",
-	"tsconfig.json"
+	"tsconfig.json",
 );
 let hasErrors = false;
 function checkFile(program, sourceFile, rule) {
@@ -271,7 +270,7 @@ function checkFile(program, sourceFile, rule) {
 					rule.target
 				}' (${sourceFile.fileName} (${line + 1},${
 					character + 1
-				}). Learn more about our source code organization at https://github.com/microsoft/vscode/wiki/Source-Code-Organization.`
+				}). Learn more about our source code organization at https://github.com/microsoft/vscode/wiki/Source-Code-Organization.`,
 			);
 			hasErrors = true;
 			return;
@@ -290,7 +289,7 @@ function checkFile(program, sourceFile, rule) {
 								for (const allowedDefinition of rule.allowedDefinitions) {
 									if (
 										definitionFileName.indexOf(
-											allowedDefinition
+											allowedDefinition,
 										) >= 0
 									) {
 										continue DeclarationLoop;
@@ -301,12 +300,12 @@ function checkFile(program, sourceFile, rule) {
 								for (const disallowedDefinition of rule.disallowedDefinitions) {
 									if (
 										definitionFileName.indexOf(
-											disallowedDefinition
+											disallowedDefinition,
 										) >= 0
 									) {
 										const { line, character } =
 											sourceFile.getLineAndCharacterOfPosition(
-												node.getStart()
+												node.getStart(),
 											);
 										console.log(
 											`[build/lib/layersChecker.ts]: Reference to symbol '${text}' from '${disallowedDefinition}' violates layer '${
@@ -315,7 +314,7 @@ function checkFile(program, sourceFile, rule) {
 												line + 1
 											},${
 												character + 1
-											}) Learn more about our source code organization at https://github.com/microsoft/vscode/wiki/Source-Code-Organization.`
+											}) Learn more about our source code organization at https://github.com/microsoft/vscode/wiki/Source-Code-Organization.`,
 										);
 										hasErrors = true;
 										return;
@@ -341,13 +340,13 @@ function createProgram(tsconfigPath) {
 		tsConfig.config,
 		configHostParser,
 		(0, path_1.resolve)((0, path_1.dirname)(tsconfigPath)),
-		{ noEmit: true }
+		{ noEmit: true },
 	);
 	const compilerHost = ts.createCompilerHost(tsConfigParsed.options, true);
 	return ts.createProgram(
 		tsConfigParsed.fileNames,
 		tsConfigParsed.options,
-		compilerHost
+		compilerHost,
 	);
 }
 //

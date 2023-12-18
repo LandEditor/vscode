@@ -15,7 +15,7 @@ const CSS_INFINITE = "infinite";
 const CSS_INFINITE_LONG_RUNNING = "infinite-long-running";
 const CSS_DISCRETE = "discrete";
 
-export interface IProgressBarOptions extends IProgressBarStyles {}
+export type IProgressBarOptions = IProgressBarStyles;
 
 export interface IProgressBarStyles {
 	progressBarBackground: string | undefined;
@@ -52,13 +52,13 @@ export class ProgressBar extends Disposable {
 		this.workedVal = 0;
 
 		this.showDelayedScheduler = this._register(
-			new RunOnceScheduler(() => show(this.element), 0)
+			new RunOnceScheduler(() => show(this.element), 0),
 		);
 		this.longRunningScheduler = this._register(
 			new RunOnceScheduler(
 				() => this.infiniteLongRunning(),
-				ProgressBar.LONG_RUNNING_INFINITE_THRESHOLD
-			)
+				ProgressBar.LONG_RUNNING_INFINITE_THRESHOLD,
+			),
 		);
 
 		this.create(container, options);
@@ -66,7 +66,7 @@ export class ProgressBar extends Disposable {
 
 	private create(
 		container: HTMLElement,
-		options?: IProgressBarOptions
+		options?: IProgressBarOptions,
 	): void {
 		this.element = document.createElement("div");
 		this.element.classList.add("monaco-progress-container");
@@ -88,7 +88,7 @@ export class ProgressBar extends Disposable {
 			CSS_ACTIVE,
 			CSS_INFINITE,
 			CSS_INFINITE_LONG_RUNNING,
-			CSS_DISCRETE
+			CSS_DISCRETE,
 		);
 
 		this.workedVal = 0;
@@ -115,19 +115,16 @@ export class ProgressBar extends Disposable {
 		this.element.classList.add(CSS_DONE);
 
 		// discrete: let it grow to 100% width and hide afterwards
-		if (!this.element.classList.contains(CSS_INFINITE)) {
-			this.bit.style.width = "inherit";
-
+		if (this.element.classList.contains(CSS_INFINITE)) {
+			this.bit.style.opacity = "0";
 			if (delayed) {
 				setTimeout(() => this.off(), 200);
 			} else {
 				this.off();
 			}
-		}
+		} else {
+			this.bit.style.width = "inherit";
 
-		// infinite: let it fade out and hide afterwards
-		else {
-			this.bit.style.opacity = "0";
 			if (delayed) {
 				setTimeout(() => this.off(), 200);
 			} else {
@@ -148,7 +145,7 @@ export class ProgressBar extends Disposable {
 		this.element.classList.remove(
 			CSS_DISCRETE,
 			CSS_DONE,
-			CSS_INFINITE_LONG_RUNNING
+			CSS_INFINITE_LONG_RUNNING,
 		);
 		this.element.classList.add(CSS_ACTIVE, CSS_INFINITE);
 
@@ -207,7 +204,7 @@ export class ProgressBar extends Disposable {
 		this.element.classList.remove(
 			CSS_INFINITE,
 			CSS_INFINITE_LONG_RUNNING,
-			CSS_DONE
+			CSS_DONE,
 		);
 		this.element.classList.add(CSS_ACTIVE, CSS_DISCRETE);
 		this.element.setAttribute("aria-valuenow", value.toString());

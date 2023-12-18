@@ -36,16 +36,16 @@ export class RequestService
 
 	async request(
 		options: IRequestOptions,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IRequestContext> {
 		if (!options.proxyAuthorization) {
 			options.proxyAuthorization =
 				this.configurationService.getValue<string>(
-					"http.proxyAuthorization"
+					"http.proxyAuthorization",
 				);
 		}
 		return this.logAndRequest("browser", options, () =>
-			request(options, token)
+			request(options, token),
 		);
 	}
 

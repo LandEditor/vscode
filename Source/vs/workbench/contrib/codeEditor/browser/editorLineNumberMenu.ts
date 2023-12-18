@@ -12,8 +12,8 @@ import {
 	MouseTargetType,
 } from "vs/editor/browser/editorBrowser";
 import {
-	registerEditorContribution,
 	EditorContributionInstantiation,
+	registerEditorContribution,
 } from "vs/editor/browser/editorExtensions";
 import { IEditorContribution } from "vs/editor/common/editorCommon";
 import {
@@ -38,7 +38,7 @@ export interface IGutterActionsGenerator {
 			editor: ICodeEditor;
 			accessor: ServicesAccessor;
 		},
-		result: { push(action: IAction, group?: string): void }
+		result: { push(action: IAction, group?: string): void },
 	): void;
 }
 
@@ -53,13 +53,13 @@ export class GutterActionsRegistryImpl {
 	 * If you want an action to show up in the gutter context menu, you should generally use MenuId.EditorLineNumberMenu instead.
 	 */
 	public registerGutterActionsGenerator(
-		gutterActionsGenerator: IGutterActionsGenerator
+		gutterActionsGenerator: IGutterActionsGenerator,
 	): IDisposable {
 		this._registeredGutterActionsGenerators.add(gutterActionsGenerator);
 		return {
 			dispose: () => {
 				this._registeredGutterActionsGenerators.delete(
-					gutterActionsGenerator
+					gutterActionsGenerator,
 				);
 			},
 		};
@@ -72,7 +72,7 @@ export class GutterActionsRegistryImpl {
 
 Registry.add("gutterActionsRegistry", new GutterActionsRegistryImpl());
 export const GutterActionsRegistry: GutterActionsRegistryImpl = Registry.as(
-	"gutterActionsRegistry"
+	"gutterActionsRegistry",
 );
 
 export class EditorLineNumberContextMenu
@@ -127,7 +127,7 @@ export class EditorLineNumberContextMenu
 		]);
 		const menu = this.menuService.createMenu(
 			MenuId.EditorLineNumberContext,
-			contextKeyService
+			contextKeyService,
 		);
 
 		const allActions: [
@@ -141,15 +141,12 @@ export class EditorLineNumberContextMenu
 				generator(
 					{ lineNumber, editor: this.editor, accessor },
 					{
-						push: (
-							action: IAction,
-							group: string = "navigation"
-						) => {
+						push: (action: IAction, group = "navigation") => {
 							const actions = collectedActions.get(group) ?? [];
 							actions.push(action);
 							collectedActions.set(group, actions);
 						},
-					}
+					},
 				);
 				for (const [group, actions] of collectedActions.entries()) {
 					allActions.push([group, actions]);
@@ -177,12 +174,12 @@ export class EditorLineNumberContextMenu
 				const containsSelection = currentSelections?.some(
 					(selection) =>
 						!selection.isEmpty() &&
-						selection.intersectRanges(lineRange) !== null
+						selection.intersectRanges(lineRange) !== null,
 				);
 				if (!containsSelection) {
 					this.editor.setSelection(
 						lineRange,
-						TextEditorSelectionSource.PROGRAMMATIC
+						TextEditorSelectionSource.PROGRAMMATIC,
 					);
 				}
 			}
@@ -200,5 +197,5 @@ export class EditorLineNumberContextMenu
 registerEditorContribution(
 	EditorLineNumberContextMenu.ID,
 	EditorLineNumberContextMenu,
-	EditorContributionInstantiation.AfterFirstRender
+	EditorContributionInstantiation.AfterFirstRender,
 );

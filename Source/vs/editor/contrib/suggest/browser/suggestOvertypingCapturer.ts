@@ -12,7 +12,7 @@ export class OvertypingCapturer implements IDisposable {
 	private readonly _disposables = new DisposableStore();
 
 	private _lastOvertyped: { value: string; multiline: boolean }[] = [];
-	private _locked: boolean = false;
+	private _locked = false;
 
 	constructor(editor: ICodeEditor, suggestModel: SuggestModel) {
 		this._disposables.add(
@@ -57,24 +57,24 @@ export class OvertypingCapturer implements IDisposable {
 							selection.endLineNumber,
 					};
 				}
-			})
+			}),
 		);
 
 		this._disposables.add(
 			suggestModel.onDidTrigger((e) => {
 				this._locked = true;
-			})
+			}),
 		);
 
 		this._disposables.add(
 			suggestModel.onDidCancel((e) => {
 				this._locked = false;
-			})
+			}),
 		);
 	}
 
 	getLastOvertypedInfo(
-		idx: number
+		idx: number,
 	): { value: string; multiline: boolean } | undefined {
 		if (idx >= 0 && idx < this._lastOvertyped.length) {
 			return this._lastOvertyped[idx];

@@ -21,10 +21,12 @@ import { computeMovedLines } from "vs/editor/common/diff/defaultLinesDiffCompute
 import {
 	extendDiffsToEntireWordIfAppropriate,
 	optimizeSequenceDiffs,
+	removeShortMatches,
 	removeVeryShortMatchingLinesBetweenDiffs,
 	removeVeryShortMatchingTextBetweenLongDiffs,
-	removeShortMatches,
 } from "vs/editor/common/diff/defaultLinesDiffComputer/heuristicSequenceOptimizations";
+import { LineSequence } from "vs/editor/common/diff/defaultLinesDiffComputer/lineSequence";
+import { LinesSliceCharSequence } from "vs/editor/common/diff/defaultLinesDiffComputer/linesSliceCharSequence";
 import {
 	ILinesDiffComputer,
 	ILinesDiffComputerOptions,
@@ -32,8 +34,6 @@ import {
 	MovedText,
 } from "vs/editor/common/diff/linesDiffComputer";
 import { DetailedLineRangeMapping, RangeMapping } from "../rangeMapping";
-import { LinesSliceCharSequence } from "vs/editor/common/diff/defaultLinesDiffComputer/linesSliceCharSequence";
-import { LineSequence } from "vs/editor/common/diff/defaultLinesDiffComputer/lineSequence";
 
 export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 	private readonly dynamicProgrammingDiffing =
@@ -43,7 +43,7 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 	computeDiff(
 		originalLines: string[],
 		modifiedLines: string[],
-		options: ILinesDiffComputerOptions
+		options: ILinesDiffComputerOptions,
 	): LinesDiff {
 		if (
 			originalLines.length <= 1 &&
@@ -67,20 +67,20 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 									1,
 									1,
 									originalLines.length,
-									originalLines[0].length + 1
+									originalLines[0].length + 1,
 								),
 								new Range(
 									1,
 									1,
 									modifiedLines.length,
-									modifiedLines[0].length + 1
-								)
+									modifiedLines[0].length + 1,
+								),
 							),
-						]
+						],
 					),
 				],
 				[],
-				false
+				false,
 			);
 		}
 
@@ -101,10 +101,10 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 		}
 
 		const originalLinesHashes = originalLines.map((l) =>
-			getOrCreateHash(l.trim())
+			getOrCreateHash(l.trim()),
 		);
 		const modifiedLinesHashes = modifiedLines.map((l) =>
-			getOrCreateHash(l.trim())
+			getOrCreateHash(l.trim()),
 		);
 
 		const sequence1 = new LineSequence(originalLinesHashes, originalLines);
@@ -122,8 +122,8 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 							? modifiedLines[offset2].length === 0
 								? 0.1
 								: 1 +
-									Math.log(1 + modifiedLines[offset2].length)
-							: 0.99
+								  Math.log(1 + modifiedLines[offset2].length)
+							: 0.99,
 				);
 			}
 
@@ -135,12 +135,12 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 		lineAlignments = optimizeSequenceDiffs(
 			sequence1,
 			sequence2,
-			lineAlignments
+			lineAlignments,
 		);
 		lineAlignments = removeVeryShortMatchingLinesBetweenDiffs(
 			sequence1,
 			sequence2,
-			lineAlignments
+			lineAlignments,
 		);
 
 		const alignments: RangeMapping[] = [];
@@ -160,10 +160,10 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 						modifiedLines,
 						new SequenceDiff(
 							new OffsetRange(seq1Offset, seq1Offset + 1),
-							new OffsetRange(seq2Offset, seq2Offset + 1)
+							new OffsetRange(seq2Offset, seq2Offset + 1),
 						),
 						timeout,
-						considerWhitespaceChanges
+						considerWhitespaceChanges,
 					);
 					for (const a of characterDiffs.mappings) {
 						alignments.push(a);
@@ -182,7 +182,7 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 			assertFn(
 				() =>
 					diff.seq1Range.start - seq1LastStart ===
-					diff.seq2Range.start - seq2LastStart
+					diff.seq2Range.start - seq2LastStart,
 			);
 
 			const equalLinesCount = diff.seq1Range.start - seq1LastStart;
@@ -197,7 +197,7 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 				modifiedLines,
 				diff,
 				timeout,
-				considerWhitespaceChanges
+				considerWhitespaceChanges,
 			);
 			if (characterDiffs.hitTimeout) {
 				hitTimeout = true;
@@ -212,7 +212,7 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 		const changes = lineRangeMappingFromRangeMappings(
 			alignments,
 			originalLines,
-			modifiedLines
+			modifiedLines,
 		);
 
 		let moves: MovedText[] = [];
@@ -224,7 +224,7 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 				originalLinesHashes,
 				modifiedLinesHashes,
 				timeout,
-				considerWhitespaceChanges
+				considerWhitespaceChanges,
 			);
 		}
 
@@ -265,19 +265,19 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 					const valid =
 						validatePosition(
 							ic.modifiedRange.getStartPosition(),
-							modifiedLines
+							modifiedLines,
 						) &&
 						validatePosition(
 							ic.modifiedRange.getEndPosition(),
-							modifiedLines
+							modifiedLines,
 						) &&
 						validatePosition(
 							ic.originalRange.getStartPosition(),
-							originalLines
+							originalLines,
 						) &&
 						validatePosition(
 							ic.originalRange.getEndPosition(),
-							originalLines
+							originalLines,
 						);
 					if (!valid) {
 						return false;
@@ -303,7 +303,7 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 		hashedOriginalLines: number[],
 		hashedModifiedLines: number[],
 		timeout: ITimeout,
-		considerWhitespaceChanges: boolean
+		considerWhitespaceChanges: boolean,
 	): MovedText[] {
 		const moves = computeMovedLines(
 			changes,
@@ -311,7 +311,7 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 			modifiedLines,
 			hashedOriginalLines,
 			hashedModifiedLines,
-			timeout
+			timeout,
 		);
 		const movesWithDiffs = moves.map((m) => {
 			const moveChanges = this.refineDiff(
@@ -319,16 +319,16 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 				modifiedLines,
 				new SequenceDiff(
 					m.original.toOffsetRange(),
-					m.modified.toOffsetRange()
+					m.modified.toOffsetRange(),
 				),
 				timeout,
-				considerWhitespaceChanges
+				considerWhitespaceChanges,
 			);
 			const mappings = lineRangeMappingFromRangeMappings(
 				moveChanges.mappings,
 				originalLines,
 				modifiedLines,
-				true
+				true,
 			);
 			return new MovedText(m, mappings);
 		});
@@ -340,17 +340,17 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 		modifiedLines: string[],
 		diff: SequenceDiff,
 		timeout: ITimeout,
-		considerWhitespaceChanges: boolean
+		considerWhitespaceChanges: boolean,
 	): { mappings: RangeMapping[]; hitTimeout: boolean } {
 		const slice1 = new LinesSliceCharSequence(
 			originalLines,
 			diff.seq1Range,
-			considerWhitespaceChanges
+			considerWhitespaceChanges,
 		);
 		const slice2 = new LinesSliceCharSequence(
 			modifiedLines,
 			diff.seq2Range,
-			considerWhitespaceChanges
+			considerWhitespaceChanges,
 		);
 
 		const diffResult =
@@ -358,8 +358,8 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 				? this.dynamicProgrammingDiffing.compute(
 						slice1,
 						slice2,
-						timeout
-					)
+						timeout,
+				  )
 				: this.myersDiffingAlgorithm.compute(slice1, slice2, timeout);
 
 		let diffs = diffResult.diffs;
@@ -369,15 +369,15 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 		diffs = removeVeryShortMatchingTextBetweenLongDiffs(
 			slice1,
 			slice2,
-			diffs
+			diffs,
 		);
 
 		const result = diffs.map(
 			(d) =>
 				new RangeMapping(
 					slice1.translateRange(d.seq1Range),
-					slice2.translateRange(d.seq2Range)
-				)
+					slice2.translateRange(d.seq2Range),
+				),
 		);
 
 		// Assert: result applied on original should be the same as diff applied to original
@@ -393,16 +393,16 @@ export function lineRangeMappingFromRangeMappings(
 	alignments: RangeMapping[],
 	originalLines: string[],
 	modifiedLines: string[],
-	dontAssertStartLine: boolean = false
+	dontAssertStartLine = false,
 ): DetailedLineRangeMapping[] {
 	const changes: DetailedLineRangeMapping[] = [];
 	for (const g of groupAdjacentBy(
 		alignments.map((a) =>
-			getLineRangeMapping(a, originalLines, modifiedLines)
+			getLineRangeMapping(a, originalLines, modifiedLines),
 		),
 		(a1, a2) =>
 			a1.original.overlapOrTouch(a2.original) ||
-			a1.modified.overlapOrTouch(a2.modified)
+			a1.modified.overlapOrTouch(a2.modified),
 	)) {
 		const first = g[0];
 		const last = g[g.length - 1];
@@ -411,8 +411,8 @@ export function lineRangeMappingFromRangeMappings(
 			new DetailedLineRangeMapping(
 				first.original.join(last.original),
 				first.modified.join(last.modified),
-				g.map((a) => a.innerChanges![0])
-			)
+				g.map((a) => a.innerChanges![0]),
+			),
 		);
 	}
 
@@ -436,7 +436,8 @@ export function lineRangeMappingFromRangeMappings(
 				// There has to be an unchanged line in between (otherwise both diffs should have been joined)
 				m1.original.endLineNumberExclusive <
 					m2.original.startLineNumber &&
-				m1.modified.endLineNumberExclusive < m2.modified.startLineNumber
+				m1.modified.endLineNumberExclusive <
+					m2.modified.startLineNumber,
 		);
 	});
 
@@ -446,7 +447,7 @@ export function lineRangeMappingFromRangeMappings(
 export function getLineRangeMapping(
 	rangeMapping: RangeMapping,
 	originalLines: string[],
-	modifiedLines: string[]
+	modifiedLines: string[],
 ): DetailedLineRangeMapping {
 	let lineStartDelta = 0;
 	let lineEndDelta = 0;
@@ -487,11 +488,11 @@ export function getLineRangeMapping(
 
 	const originalLineRange = new LineRange(
 		rangeMapping.originalRange.startLineNumber + lineStartDelta,
-		rangeMapping.originalRange.endLineNumber + 1 + lineEndDelta
+		rangeMapping.originalRange.endLineNumber + 1 + lineEndDelta,
 	);
 	const modifiedLineRange = new LineRange(
 		rangeMapping.modifiedRange.startLineNumber + lineStartDelta,
-		rangeMapping.modifiedRange.endLineNumber + 1 + lineEndDelta
+		rangeMapping.modifiedRange.endLineNumber + 1 + lineEndDelta,
 	);
 
 	return new DetailedLineRangeMapping(originalLineRange, modifiedLineRange, [

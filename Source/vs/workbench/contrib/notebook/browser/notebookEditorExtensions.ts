@@ -26,7 +26,7 @@ class EditorContributionRegistry {
 				editor: INotebookEditor,
 				...services: Services
 			): INotebookEditorContribution;
-		}
+		},
 	): void {
 		this.editorContributions.push({
 			id,
@@ -46,7 +46,7 @@ export function registerNotebookContribution<Services extends BrandedService[]>(
 			editor: INotebookEditor,
 			...services: Services
 		): INotebookEditorContribution;
-	}
+	},
 ): void {
 	EditorContributionRegistry.INSTANCE.registerEditorContribution(id, ctor);
 }
@@ -57,10 +57,10 @@ export namespace NotebookEditorExtensionsRegistry {
 	}
 
 	export function getSomeEditorContributions(
-		ids: string[]
+		ids: string[],
 	): INotebookEditorContributionDescription[] {
 		return EditorContributionRegistry.INSTANCE.getEditorContributions().filter(
-			(c) => ids.indexOf(c.id) >= 0
+			(c) => ids.indexOf(c.id) >= 0,
 		);
 	}
 }

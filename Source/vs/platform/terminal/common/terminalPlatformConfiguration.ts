@@ -45,7 +45,7 @@ export const terminalIconSchema: IJSONSchema = {
 	enum: Array.from(getAllCodicons(), (icon) => icon.id),
 	markdownEnumDescriptions: Array.from(
 		getAllCodicons(),
-		(icon) => `$(${icon.id})`
+		(icon) => `$(${icon.id})`,
 	),
 };
 
@@ -53,7 +53,7 @@ const terminalProfileBaseProperties: IJSONSchemaMap = {
 	args: {
 		description: localize(
 			"terminalProfile.args",
-			"An optional set of arguments to run the shell executable with."
+			"An optional set of arguments to run the shell executable with.",
 		),
 		type: "array",
 		items: {
@@ -63,28 +63,28 @@ const terminalProfileBaseProperties: IJSONSchemaMap = {
 	overrideName: {
 		description: localize(
 			"terminalProfile.overrideName",
-			"Whether or not to replace the dynamic terminal title that detects what program is running with the static profile name."
+			"Whether or not to replace the dynamic terminal title that detects what program is running with the static profile name.",
 		),
 		type: "boolean",
 	},
 	icon: {
 		description: localize(
 			"terminalProfile.icon",
-			"A codicon ID to associate with the terminal icon."
+			"A codicon ID to associate with the terminal icon.",
 		),
 		...terminalIconSchema,
 	},
 	color: {
 		description: localize(
 			"terminalProfile.color",
-			"A theme color ID to associate with the terminal icon."
+			"A theme color ID to associate with the terminal icon.",
 		),
 		...terminalColorSchema,
 	},
 	env: {
 		markdownDescription: localize(
 			"terminalProfile.env",
-			"An object with environment variables that will be added to the terminal profile process. Set to `null` to delete environment variables from the base environment."
+			"An object with environment variables that will be added to the terminal profile process. Set to `null` to delete environment variables from the base environment.",
 		),
 		type: "object",
 		additionalProperties: {
@@ -101,7 +101,7 @@ const terminalProfileSchema: IJSONSchema = {
 		path: {
 			description: localize(
 				"terminalProfile.path",
-				"A single path to a shell executable or an array of paths that will be used as fallbacks when one fails."
+				"A single path to a shell executable or an array of paths that will be used as fallbacks when one fails.",
 			),
 			type: ["string", "array"],
 			items: {
@@ -119,7 +119,7 @@ const terminalAutomationProfileSchema: IJSONSchema = {
 		path: {
 			description: localize(
 				"terminalAutomationProfile.path",
-				"A single path to a shell executable."
+				"A single path to a shell executable.",
 			),
 			type: ["string"],
 			items: {
@@ -131,14 +131,14 @@ const terminalAutomationProfileSchema: IJSONSchema = {
 };
 
 function createTerminalProfileMarkdownDescription(
-	platform: Platform.Linux | Platform.Mac | Platform.Windows
+	platform: Platform.Linux | Platform.Mac | Platform.Windows,
 ): string {
 	const key =
 		platform === Platform.Linux
 			? "linux"
 			: platform === Platform.Mac
-				? "osx"
-				: "windows";
+			  ? "osx"
+			  : "windows";
 	return localize(
 		{
 			key: "terminal.integrated.profile",
@@ -152,7 +152,7 @@ function createTerminalProfileMarkdownDescription(
 			key +
 			'": {\n  "bash": null\n}\n```',
 		"[",
-		"](https://code.visualstudio.com/docs/terminal/profiles)"
+		"](https://code.visualstudio.com/docs/terminal/profiles)",
 	);
 }
 
@@ -161,7 +161,7 @@ const terminalPlatformConfiguration: IConfigurationNode = {
 	order: 100,
 	title: localize(
 		"terminalIntegratedConfigurationTitle",
-		"Integrated Terminal"
+		"Integrated Terminal",
 	),
 	type: "object",
 	properties: {
@@ -169,11 +169,11 @@ const terminalPlatformConfiguration: IConfigurationNode = {
 			restricted: true,
 			markdownDescription: localize(
 				"terminal.integrated.automationProfile.linux",
-				"The terminal profile to use on Linux for automation-related terminal usage like tasks and debug."
+				"The terminal profile to use on Linux for automation-related terminal usage like tasks and debug.",
 			),
 			type: ["object", "null"],
 			default: null,
-			"anyOf": [{ type: "null" }, terminalAutomationProfileSchema],
+			anyOf: [{ type: "null" }, terminalAutomationProfileSchema],
 			defaultSnippets: [
 				{
 					body: {
@@ -187,11 +187,11 @@ const terminalPlatformConfiguration: IConfigurationNode = {
 			restricted: true,
 			markdownDescription: localize(
 				"terminal.integrated.automationProfile.osx",
-				"The terminal profile to use on macOS for automation-related terminal usage like tasks and debug."
+				"The terminal profile to use on macOS for automation-related terminal usage like tasks and debug.",
 			),
 			type: ["object", "null"],
 			default: null,
-			"anyOf": [{ type: "null" }, terminalAutomationProfileSchema],
+			anyOf: [{ type: "null" }, terminalAutomationProfileSchema],
 			defaultSnippets: [
 				{
 					body: {
@@ -206,11 +206,11 @@ const terminalPlatformConfiguration: IConfigurationNode = {
 			markdownDescription: localize(
 				"terminal.integrated.automationProfile.windows",
 				"The terminal profile to use for automation-related terminal usage like tasks and debug. This setting will currently be ignored if {0} (now deprecated) is set.",
-				"`terminal.integrated.automationShell.windows`"
+				"`terminal.integrated.automationShell.windows`",
 			),
 			type: ["object", "null"],
 			default: null,
-			"anyOf": [{ type: "null" }, terminalAutomationProfileSchema],
+			anyOf: [{ type: "null" }, terminalAutomationProfileSchema],
 			defaultSnippets: [
 				{
 					body: {
@@ -223,11 +223,11 @@ const terminalPlatformConfiguration: IConfigurationNode = {
 		[TerminalSettingId.ProfilesWindows]: {
 			restricted: true,
 			markdownDescription: createTerminalProfileMarkdownDescription(
-				Platform.Windows
+				Platform.Windows,
 			),
 			type: "object",
 			default: {
-				"PowerShell": {
+				PowerShell: {
 					source: "PowerShell",
 					icon: "terminal-powershell",
 				},
@@ -244,7 +244,7 @@ const terminalPlatformConfiguration: IConfigurationNode = {
 				},
 			},
 			additionalProperties: {
-				"anyOf": [
+				anyOf: [
 					{
 						type: "object",
 						required: ["source"],
@@ -252,7 +252,7 @@ const terminalPlatformConfiguration: IConfigurationNode = {
 							source: {
 								description: localize(
 									"terminalProfile.windowsSource",
-									"A profile source that will auto detect the paths to the shell. Note that non-standard executable locations are not supported and must be created manually in a new profile."
+									"A profile source that will auto detect the paths to the shell. Note that non-standard executable locations are not supported and must be created manually in a new profile.",
 								),
 								enum: ["PowerShell", "Git Bash"],
 							},
@@ -266,21 +266,21 @@ const terminalPlatformConfiguration: IConfigurationNode = {
 							extensionIdentifier: {
 								description: localize(
 									"terminalProfile.windowsExtensionIdentifier",
-									"The extension that contributed this profile."
+									"The extension that contributed this profile.",
 								),
 								type: "string",
 							},
 							id: {
 								description: localize(
 									"terminalProfile.windowsExtensionId",
-									"The id of the extension terminal"
+									"The id of the extension terminal",
 								),
 								type: "string",
 							},
 							title: {
 								description: localize(
 									"terminalProfile.windowsExtensionTitle",
-									"The name of the extension terminal"
+									"The name of the extension terminal",
 								),
 								type: "string",
 							},
@@ -295,34 +295,34 @@ const terminalPlatformConfiguration: IConfigurationNode = {
 		[TerminalSettingId.ProfilesMacOs]: {
 			restricted: true,
 			markdownDescription: createTerminalProfileMarkdownDescription(
-				Platform.Mac
+				Platform.Mac,
 			),
 			type: "object",
 			default: {
-				"bash": {
+				bash: {
 					path: "bash",
 					args: ["-l"],
 					icon: "terminal-bash",
 				},
-				"zsh": {
+				zsh: {
 					path: "zsh",
 					args: ["-l"],
 				},
-				"fish": {
+				fish: {
 					path: "fish",
 					args: ["-l"],
 				},
-				"tmux": {
+				tmux: {
 					path: "tmux",
 					icon: "terminal-tmux",
 				},
-				"pwsh": {
+				pwsh: {
 					path: "pwsh",
 					icon: "terminal-powershell",
 				},
 			},
 			additionalProperties: {
-				"anyOf": [
+				anyOf: [
 					{
 						type: "object",
 						required: ["extensionIdentifier", "id", "title"],
@@ -330,21 +330,21 @@ const terminalPlatformConfiguration: IConfigurationNode = {
 							extensionIdentifier: {
 								description: localize(
 									"terminalProfile.osxExtensionIdentifier",
-									"The extension that contributed this profile."
+									"The extension that contributed this profile.",
 								),
 								type: "string",
 							},
 							id: {
 								description: localize(
 									"terminalProfile.osxExtensionId",
-									"The id of the extension terminal"
+									"The id of the extension terminal",
 								),
 								type: "string",
 							},
 							title: {
 								description: localize(
 									"terminalProfile.osxExtensionTitle",
-									"The name of the extension terminal"
+									"The name of the extension terminal",
 								),
 								type: "string",
 							},
@@ -359,31 +359,31 @@ const terminalPlatformConfiguration: IConfigurationNode = {
 		[TerminalSettingId.ProfilesLinux]: {
 			restricted: true,
 			markdownDescription: createTerminalProfileMarkdownDescription(
-				Platform.Linux
+				Platform.Linux,
 			),
 			type: "object",
 			default: {
-				"bash": {
+				bash: {
 					path: "bash",
 					icon: "terminal-bash",
 				},
-				"zsh": {
+				zsh: {
 					path: "zsh",
 				},
-				"fish": {
+				fish: {
 					path: "fish",
 				},
-				"tmux": {
+				tmux: {
 					path: "tmux",
 					icon: "terminal-tmux",
 				},
-				"pwsh": {
+				pwsh: {
 					path: "pwsh",
 					icon: "terminal-powershell",
 				},
 			},
 			additionalProperties: {
-				"anyOf": [
+				anyOf: [
 					{
 						type: "object",
 						required: ["extensionIdentifier", "id", "title"],
@@ -391,21 +391,21 @@ const terminalPlatformConfiguration: IConfigurationNode = {
 							extensionIdentifier: {
 								description: localize(
 									"terminalProfile.linuxExtensionIdentifier",
-									"The extension that contributed this profile."
+									"The extension that contributed this profile.",
 								),
 								type: "string",
 							},
 							id: {
 								description: localize(
 									"terminalProfile.linuxExtensionId",
-									"The id of the extension terminal"
+									"The id of the extension terminal",
 								),
 								type: "string",
 							},
 							title: {
 								description: localize(
 									"terminalProfile.linuxExtensionTitle",
-									"The name of the extension terminal"
+									"The name of the extension terminal",
 								),
 								type: "string",
 							},
@@ -420,7 +420,7 @@ const terminalPlatformConfiguration: IConfigurationNode = {
 		[TerminalSettingId.UseWslProfiles]: {
 			description: localize(
 				"terminal.integrated.useWslProfiles",
-				"Controls whether or not WSL distros are shown in the terminal dropdown"
+				"Controls whether or not WSL distros are shown in the terminal dropdown",
 			),
 			type: "boolean",
 			default: true,
@@ -429,7 +429,7 @@ const terminalPlatformConfiguration: IConfigurationNode = {
 			scope: ConfigurationScope.APPLICATION,
 			description: localize(
 				"terminal.integrated.inheritEnv",
-				"Whether new shells should inherit their environment from VS Code, which may source a login shell to ensure $PATH and other development variables are initialized. This has no effect on Windows."
+				"Whether new shells should inherit their environment from VS Code, which may source a login shell to ensure $PATH and other development variables are initialized. This has no effect on Windows.",
 			),
 			type: "boolean",
 			default: true,
@@ -438,7 +438,7 @@ const terminalPlatformConfiguration: IConfigurationNode = {
 			scope: ConfigurationScope.APPLICATION,
 			markdownDescription: localize(
 				"terminal.integrated.persistentSessionScrollback",
-				"Controls the maximum amount of lines that will be restored when reconnecting to a persistent terminal session. Increasing this will restore more lines of scrollback at the cost of more memory and increase the time it takes to connect to terminals on start up. This setting requires a restart to take effect and should be set to a value less than or equal to `#terminal.integrated.scrollback#`."
+				"Controls the maximum amount of lines that will be restored when reconnecting to a persistent terminal session. Increasing this will restore more lines of scrollback at the cost of more memory and increase the time it takes to connect to terminals on start up. This setting requires a restart to take effect and should be set to a value less than or equal to `#terminal.integrated.scrollback#`.",
 			),
 			type: "number",
 			default: 100,
@@ -447,7 +447,7 @@ const terminalPlatformConfiguration: IConfigurationNode = {
 			scope: ConfigurationScope.APPLICATION,
 			description: localize(
 				"terminal.integrated.showLinkHover",
-				"Whether to show hovers for links in the terminal output."
+				"Whether to show hovers for links in the terminal output.",
 			),
 			type: "boolean",
 			default: true,
@@ -456,7 +456,7 @@ const terminalPlatformConfiguration: IConfigurationNode = {
 			markdownDescription: localize(
 				"terminal.integrated.confirmIgnoreProcesses",
 				"A set of process names to ignore when using the {0} setting.",
-				"`#terminal.integrated.confirmOnKill#`"
+				"`#terminal.integrated.confirmOnKill#`",
 			),
 			type: "array",
 			items: {
@@ -480,7 +480,7 @@ const terminalPlatformConfiguration: IConfigurationNode = {
  */
 export function registerTerminalPlatformConfiguration() {
 	Registry.as<IConfigurationRegistry>(
-		Extensions.Configuration
+		Extensions.Configuration,
 	).registerConfiguration(terminalPlatformConfiguration);
 	registerTerminalDefaultProfileConfiguration();
 }
@@ -488,16 +488,16 @@ export function registerTerminalPlatformConfiguration() {
 let defaultProfilesConfiguration: IConfigurationNode | undefined;
 export function registerTerminalDefaultProfileConfiguration(
 	detectedProfiles?: { os: OperatingSystem; profiles: ITerminalProfile[] },
-	extensionContributedProfiles?: readonly IExtensionTerminalProfile[]
+	extensionContributedProfiles?: readonly IExtensionTerminalProfile[],
 ) {
 	const registry = Registry.as<IConfigurationRegistry>(
-		Extensions.Configuration
+		Extensions.Configuration,
 	);
 	let profileEnum;
 	if (detectedProfiles) {
 		profileEnum = createProfileSchemaEnums(
 			detectedProfiles?.profiles,
-			extensionContributedProfiles
+			extensionContributedProfiles,
 		);
 	}
 	const oldDefaultProfilesConfiguration = defaultProfilesConfiguration;
@@ -506,7 +506,7 @@ export function registerTerminalDefaultProfileConfiguration(
 		order: 100,
 		title: localize(
 			"terminalIntegratedConfigurationTitle",
-			"Integrated Terminal"
+			"Integrated Terminal",
 		),
 		type: "object",
 		properties: {
@@ -514,7 +514,7 @@ export function registerTerminalDefaultProfileConfiguration(
 				restricted: true,
 				markdownDescription: localize(
 					"terminal.integrated.defaultProfile.linux",
-					"The default terminal profile on Linux."
+					"The default terminal profile on Linux.",
 				),
 				type: ["string", "null"],
 				default: null,
@@ -531,7 +531,7 @@ export function registerTerminalDefaultProfileConfiguration(
 				restricted: true,
 				markdownDescription: localize(
 					"terminal.integrated.defaultProfile.osx",
-					"The default terminal profile on macOS."
+					"The default terminal profile on macOS.",
 				),
 				type: ["string", "null"],
 				default: null,
@@ -548,7 +548,7 @@ export function registerTerminalDefaultProfileConfiguration(
 				restricted: true,
 				markdownDescription: localize(
 					"terminal.integrated.defaultProfile.windows",
-					"The default terminal profile on Windows."
+					"The default terminal profile on Windows.",
 				),
 				type: ["string", "null"],
 				default: null,

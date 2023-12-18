@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	isLinuxSnap,
-	platform,
 	Platform,
 	PlatformToString,
+	isLinuxSnap,
+	platform,
 } from "vs/base/common/platform";
 import { env, platform as nodePlatform } from "vs/base/common/process";
 import { generateUuid } from "vs/base/common/uuid";
@@ -30,7 +30,7 @@ export function resolveCommonProperties(
 	machineId: string | undefined,
 	sqmId: string | undefined,
 	isInternalTelemetry: boolean,
-	product?: string
+	product?: string,
 ): ICommonProperties {
 	const result: ICommonProperties = Object.create(null);
 
@@ -47,7 +47,7 @@ export function resolveCommonProperties(
 	// __GDPR__COMMON__ "common.platformVersion" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
 	result["common.platformVersion"] = (release || "").replace(
 		/^(\d+)(\.\d+)?(\.\d+)?(.*)/,
-		"$1$2$3"
+		"$1$2$3",
 	);
 	// __GDPR__COMMON__ "common.platform" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
 	result["common.platform"] = PlatformToString(platform);
@@ -68,7 +68,7 @@ export function resolveCommonProperties(
 	const startTime = Date.now();
 	Object.defineProperties(result, {
 		// __GDPR__COMMON__ "timestamp" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
-		"timestamp": {
+		timestamp: {
 			get: () => new Date(),
 			enumerable: true,
 		},
@@ -100,7 +100,7 @@ export function resolveCommonProperties(
 }
 
 export function verifyMicrosoftInternalDomain(
-	domainList: readonly string[]
+	domainList: readonly string[],
 ): boolean {
 	const userDnsDomain = env["USERDNSDOMAIN"];
 	if (!userDnsDomain) {

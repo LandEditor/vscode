@@ -10,40 +10,40 @@ import {
 	toDisposable,
 } from "vs/base/common/lifecycle";
 import * as strings from "vs/base/common/strings";
-import { ITextModel } from "vs/editor/common/model";
+import { EditorAutoIndentStrategy } from "vs/editor/common/config/editorOptions";
 import {
 	DEFAULT_WORD_REGEXP,
 	ensureValidWordDefinition,
 } from "vs/editor/common/core/wordHelper";
+import { ILanguageService } from "vs/editor/common/languages/language";
 import {
+	AutoClosingPairs,
+	CharacterPair,
 	EnterAction,
+	ExplicitLanguageConfiguration,
 	FoldingRules,
 	IAutoClosingPair,
 	IndentationRule,
 	LanguageConfiguration,
-	AutoClosingPairs,
-	CharacterPair,
-	ExplicitLanguageConfiguration,
 } from "vs/editor/common/languages/languageConfiguration";
+import { PLAINTEXT_LANGUAGE_ID } from "vs/editor/common/languages/modesRegistry";
 import {
-	createScopedLineTokens,
 	ScopedLineTokens,
+	createScopedLineTokens,
 } from "vs/editor/common/languages/supports";
 import { CharacterPairSupport } from "vs/editor/common/languages/supports/characterPair";
 import { BracketElectricCharacterSupport } from "vs/editor/common/languages/supports/electricCharacter";
 import { IndentRulesSupport } from "vs/editor/common/languages/supports/indentRules";
+import { LanguageBracketsConfiguration } from "vs/editor/common/languages/supports/languageBracketsConfiguration";
 import { OnEnterSupport } from "vs/editor/common/languages/supports/onEnter";
 import { RichEditBrackets } from "vs/editor/common/languages/supports/richEditBrackets";
-import { EditorAutoIndentStrategy } from "vs/editor/common/config/editorOptions";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { ITextModel } from "vs/editor/common/model";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { ILanguageService } from "vs/editor/common/languages/language";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { PLAINTEXT_LANGUAGE_ID } from "vs/editor/common/languages/modesRegistry";
-import { LanguageBracketsConfiguration } from "vs/editor/common/languages/supports/languageBracketsConfiguration";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 
 /**
  * Interface used to support insertion of mode specific comments.
@@ -65,7 +65,7 @@ export interface ILanguageConfigurationService {
 	register(
 		languageId: string,
 		configuration: LanguageConfiguration,
-		priority?: number
+		priority?: number,
 	): IDisposable;
 
 	getLanguageConfiguration(languageId: string): ResolvedLanguageConfiguration;
@@ -75,13 +75,13 @@ export class LanguageConfigurationServiceChangeEvent {
 	constructor(public readonly languageId: string | undefined) {}
 
 	public affects(languageId: string): boolean {
-		return !this.languageId ? true : this.languageId === languageId;
+		return this.languageId ? this.languageId === languageId : true;
 	}
 }
 
 export const ILanguageConfigurationService =
 	createDecorator<ILanguageConfigurationService>(
-		"languageConfigurationService"
+		"languageConfigurationService",
 	);
 
 export class LanguageConfigurationService
@@ -91,11 +91,11 @@ export class LanguageConfigurationService
 	_serviceBrand: undefined;
 
 	private readonly _registry = this._register(
-		new LanguageConfigurationRegistry()
+		new LanguageConfigurationRegistry(),
 	);
 
 	private readonly onDidChangeEmitter = this._register(
-		new Emitter<LanguageConfigurationServiceChangeEvent>()
+		new Emitter<LanguageConfigurationServiceChangeEvent>(),
 	);
 	public readonly onDidChange = this.onDidChangeEmitter.event;
 
@@ -163,13 +163,13 @@ export class LanguageConfigurationService
 	public register(
 		languageId: string,
 		configuration: LanguageConfiguration,
-		priority?: number
+		priority?: number,
 	): IDisposable {
 		return this._registry.register(languageId, configuration, priority);
 	}
 
 	public getLanguageConfiguration(
-		languageId: string
+		languageId: string,
 	): ResolvedLanguageConfiguration {
 		let result = this.configurations.get(languageId);
 		if (!result) {
@@ -177,7 +177,7 @@ export class LanguageConfigurationService
 				languageId,
 				this._registry,
 				this.configurationService,
-				this.languageService
+				this.languageService,
 			);
 			this.configurations.set(languageId, result);
 		}
@@ -189,7 +189,7 @@ function computeConfig(
 	languageId: string,
 	registry: LanguageConfigurationRegistry,
 	configurationService: IConfigurationService,
-	languageService: ILanguageService
+	languageService: ILanguageService,
 ): ResolvedLanguageConfiguration {
 	let languageConfig = registry.getLanguageConfiguration(languageId);
 
@@ -204,7 +204,7 @@ function computeConfig(
 
 	const customizedConfig = getCustomizedLanguageConfig(
 		languageConfig.languageId,
-		configurationService
+		configurationService,
 	);
 	const data = combineLanguageConfigurations([
 		languageConfig.underlyingConfig,
@@ -212,7 +212,7 @@ function computeConfig(
 	]);
 	const config = new ResolvedLanguageConfiguration(
 		languageConfig.languageId,
-		data
+		data,
 	);
 	return config;
 }
@@ -224,20 +224,20 @@ const customizedLanguageConfigKeys = {
 
 function getCustomizedLanguageConfig(
 	languageId: string,
-	configurationService: IConfigurationService
+	configurationService: IConfigurationService,
 ): LanguageConfiguration {
 	const brackets = configurationService.getValue(
 		customizedLanguageConfigKeys.brackets,
 		{
 			overrideIdentifier: languageId,
-		}
+		},
 	);
 
 	const colorizedBracketPairs = configurationService.getValue(
 		customizedLanguageConfigKeys.colorizedBracketPairs,
 		{
 			overrideIdentifier: languageId,
-		}
+		},
 	);
 
 	return {
@@ -263,7 +263,7 @@ function validateBracketPairs(data: unknown): CharacterPair[] | undefined {
 export function getIndentationAtPosition(
 	model: ITextModel,
 	lineNumber: number,
-	column: number
+	column: number,
 ): string {
 	const lineText = model.getLineContent(lineNumber);
 	let indentation = strings.getLeadingWhitespace(lineText);
@@ -276,7 +276,7 @@ export function getIndentationAtPosition(
 export function getScopedLineTokens(
 	model: ITextModel,
 	lineNumber: number,
-	columnNumber?: number
+	columnNumber?: number,
 ): ScopedLineTokens {
 	model.tokenization.forceTokenization(lineNumber);
 	const lineTokens = model.tokenization.getLineTokens(lineNumber);
@@ -300,12 +300,12 @@ class ComposedLanguageConfiguration {
 
 	public register(
 		configuration: LanguageConfiguration,
-		priority: number
+		priority: number,
 	): IDisposable {
 		const entry = new LanguageConfigurationContribution(
 			configuration,
 			priority,
-			++this._order
+			++this._order,
 		);
 		this._entries.push(entry);
 		this._resolved = null;
@@ -326,7 +326,7 @@ class ComposedLanguageConfiguration {
 			if (config) {
 				this._resolved = new ResolvedLanguageConfiguration(
 					this.languageId,
-					config
+					config,
 				);
 			}
 		}
@@ -339,13 +339,13 @@ class ComposedLanguageConfiguration {
 		}
 		this._entries.sort(LanguageConfigurationContribution.cmp);
 		return combineLanguageConfigurations(
-			this._entries.map((e) => e.configuration)
+			this._entries.map((e) => e.configuration),
 		);
 	}
 }
 
 function combineLanguageConfigurations(
-	configs: LanguageConfiguration[]
+	configs: LanguageConfiguration[],
 ): LanguageConfiguration {
 	let result: ExplicitLanguageConfiguration = {
 		comments: undefined,
@@ -386,12 +386,12 @@ class LanguageConfigurationContribution {
 	constructor(
 		public readonly configuration: LanguageConfiguration,
 		public readonly priority: number,
-		public readonly order: number
+		public readonly order: number,
 	) {}
 
 	public static cmp(
 		a: LanguageConfigurationContribution,
-		b: LanguageConfigurationContribution
+		b: LanguageConfigurationContribution,
 	) {
 		if (a.priority === b.priority) {
 			// higher order last
@@ -413,7 +413,7 @@ export class LanguageConfigurationRegistry extends Disposable {
 	>();
 
 	private readonly _onDidChange = this._register(
-		new Emitter<LanguageConfigurationChangeEvent>()
+		new Emitter<LanguageConfigurationChangeEvent>(),
 	);
 	public readonly onDidChange: Event<LanguageConfigurationChangeEvent> =
 		this._onDidChange.event;
@@ -443,8 +443,8 @@ export class LanguageConfigurationRegistry extends Disposable {
 						offSide: true,
 					},
 				},
-				0
-			)
+				0,
+			),
 		);
 	}
 
@@ -454,7 +454,7 @@ export class LanguageConfigurationRegistry extends Disposable {
 	public register(
 		languageId: string,
 		configuration: LanguageConfiguration,
-		priority: number = 0
+		priority = 0,
 	): IDisposable {
 		let entries = this._entries.get(languageId);
 		if (!entries) {
@@ -464,19 +464,19 @@ export class LanguageConfigurationRegistry extends Disposable {
 
 		const disposable = entries.register(configuration, priority);
 		this._onDidChange.fire(
-			new LanguageConfigurationChangeEvent(languageId)
+			new LanguageConfigurationChangeEvent(languageId),
 		);
 
 		return toDisposable(() => {
 			disposable.dispose();
 			this._onDidChange.fire(
-				new LanguageConfigurationChangeEvent(languageId)
+				new LanguageConfigurationChangeEvent(languageId),
 			);
 		});
 	}
 
 	public getLanguageConfiguration(
-		languageId: string
+		languageId: string,
 	): ResolvedLanguageConfiguration | null {
 		const entries = this._entries.get(languageId);
 		return entries?.getResolvedConfiguration() || null;
@@ -501,7 +501,7 @@ export class ResolvedLanguageConfiguration {
 
 	constructor(
 		public readonly languageId: string,
-		public readonly underlyingConfig: LanguageConfiguration
+		public readonly underlyingConfig: LanguageConfiguration,
 	) {
 		this._brackets = null;
 		this._electricCharacter = null;
@@ -512,7 +512,7 @@ export class ResolvedLanguageConfiguration {
 				? new OnEnterSupport(this.underlyingConfig)
 				: null;
 		this.comments = ResolvedLanguageConfiguration._handleComments(
-			this.underlyingConfig
+			this.underlyingConfig,
 		);
 		this.characterPair = new CharacterPairSupport(this.underlyingConfig);
 
@@ -521,7 +521,7 @@ export class ResolvedLanguageConfiguration {
 		this.indentationRules = this.underlyingConfig.indentationRules;
 		if (this.underlyingConfig.indentationRules) {
 			this.indentRulesSupport = new IndentRulesSupport(
-				this.underlyingConfig.indentationRules
+				this.underlyingConfig.indentationRules,
 			);
 		} else {
 			this.indentRulesSupport = null;
@@ -530,7 +530,7 @@ export class ResolvedLanguageConfiguration {
 
 		this.bracketsNew = new LanguageBracketsConfiguration(
 			languageId,
-			this.underlyingConfig
+			this.underlyingConfig,
 		);
 	}
 
@@ -542,7 +542,7 @@ export class ResolvedLanguageConfiguration {
 		if (!this._brackets && this.underlyingConfig.brackets) {
 			this._brackets = new RichEditBrackets(
 				this.languageId,
-				this.underlyingConfig.brackets
+				this.underlyingConfig.brackets,
 			);
 		}
 		return this._brackets;
@@ -551,7 +551,7 @@ export class ResolvedLanguageConfiguration {
 	public get electricCharacter(): BracketElectricCharacterSupport | null {
 		if (!this._electricCharacter) {
 			this._electricCharacter = new BracketElectricCharacterSupport(
-				this.brackets
+				this.brackets,
 			);
 		}
 		return this._electricCharacter;
@@ -561,7 +561,7 @@ export class ResolvedLanguageConfiguration {
 		autoIndent: EditorAutoIndentStrategy,
 		previousLineText: string,
 		beforeEnterText: string,
-		afterEnterText: string
+		afterEnterText: string,
 	): EnterAction | null {
 		if (!this._onEnterSupport) {
 			return null;
@@ -570,7 +570,7 @@ export class ResolvedLanguageConfiguration {
 			autoIndent,
 			previousLineText,
 			beforeEnterText,
-			afterEnterText
+			afterEnterText,
 		);
 	}
 
@@ -587,7 +587,7 @@ export class ResolvedLanguageConfiguration {
 	}
 
 	private static _handleComments(
-		conf: LanguageConfiguration
+		conf: LanguageConfiguration,
 	): ICommentsConfiguration | null {
 		const commentRule = conf.comments;
 		if (!commentRule) {
@@ -613,5 +613,5 @@ export class ResolvedLanguageConfiguration {
 registerSingleton(
 	ILanguageConfigurationService,
 	LanguageConfigurationService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

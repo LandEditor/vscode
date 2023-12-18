@@ -8,8 +8,8 @@ import { onceDocumentLoaded } from "./events";
 import { createPosterForVsCode } from "./messaging";
 import {
 	getEditorLineNumberForPageOffset,
-	scrollToRevealSourceLine,
 	getLineElementForFragment,
+	scrollToRevealSourceLine,
 } from "./scroll-sync";
 import { SettingsManager, getData } from "./settings";
 import throttle = require("lodash.throttle");
@@ -76,7 +76,7 @@ onceDocumentLoaded(() => {
 			// Always set scroll of at least 1 to prevent VS Code's webview code from auto scrolling us
 			const scrollToY = Math.max(
 				1,
-				scrollProgress * document.body.clientHeight
+				scrollProgress * document.body.clientHeight,
 			);
 			window.scrollTo(0, scrollToY);
 		});
@@ -98,25 +98,23 @@ onceDocumentLoaded(() => {
 
 				const element = getLineElementForFragment(
 					fragment,
-					documentVersion
+					documentVersion,
 				);
 				if (element) {
 					scrollDisabledCount += 1;
 					scrollToRevealSourceLine(
 						element.line,
 						documentVersion,
-						settings
+						settings,
 					);
 				}
-			} else {
-				if (!isNaN(settings.settings.line!)) {
-					scrollDisabledCount += 1;
-					scrollToRevealSourceLine(
-						settings.settings.line!,
-						documentVersion,
-						settings
-					);
-				}
+			} else if (!isNaN(settings.settings.line!)) {
+				scrollDisabledCount += 1;
+				scrollToRevealSourceLine(
+					settings.settings.line!,
+					documentVersion,
+					settings,
+				);
 			}
 		});
 	}
@@ -124,7 +122,7 @@ onceDocumentLoaded(() => {
 	if (typeof settings.settings.selectedLine === "number") {
 		marker.onDidChangeTextEditorSelection(
 			settings.settings.selectedLine,
-			documentVersion
+			documentVersion,
 		);
 	}
 });
@@ -133,7 +131,7 @@ const onUpdateView = (() => {
 	const doScroll = throttle((line: number) => {
 		scrollDisabledCount += 1;
 		doAfterImagesLoaded(() =>
-			scrollToRevealSourceLine(line, documentVersion, settings)
+			scrollToRevealSourceLine(line, documentVersion, settings),
 		);
 	}, 50);
 
@@ -152,7 +150,7 @@ window.addEventListener(
 		scrollDisabledCount += 1;
 		updateScrollProgress();
 	},
-	true
+	true,
 );
 
 function addImageContexts() {
@@ -166,9 +164,9 @@ function addImageContexts() {
 			JSON.stringify({
 				webviewSection: "image",
 				id: img.id,
-				"preventDefaultContextMenuItems": true,
+				preventDefaultContextMenuItems: true,
 				resource: documentResource,
-			})
+			}),
 		);
 	}
 }
@@ -225,7 +223,7 @@ window.addEventListener(
 				if (data.source === documentResource) {
 					marker.onDidChangeTextEditorSelection(
 						data.line,
-						documentVersion
+						documentVersion,
 					);
 				}
 				return;
@@ -242,12 +240,12 @@ window.addEventListener(
 				const parser = new DOMParser();
 				const newContent = parser.parseFromString(
 					data.content,
-					"text/html"
+					"text/html",
 				); // CodeQL [SM03712] This renderers content from the workspace into the Markdown preview. Webviews (and the markdown preview) have many other security measures in place to make this safe
 
 				// Strip out meta http-equiv tags
 				for (const metaElement of Array.from(
-					newContent.querySelectorAll("meta")
+					newContent.querySelectorAll("meta"),
 				)) {
 					if (metaElement.hasAttribute("http-equiv")) {
 						metaElement.remove();
@@ -256,7 +254,7 @@ window.addEventListener(
 
 				if (data.source !== documentResource) {
 					root.replaceWith(
-						newContent.querySelector(".markdown-body")!
+						newContent.querySelector(".markdown-body")!,
 					);
 					documentResource = data.source;
 				} else {
@@ -278,10 +276,10 @@ window.addEventListener(
 						}
 
 						const aAttrs = [...a.attributes].filter(
-							(attr) => !skippedAttrs.includes(attr.name)
+							(attr) => !skippedAttrs.includes(attr.name),
 						);
 						const bAttrs = [...b.attributes].filter(
-							(attr) => !skippedAttrs.includes(attr.name)
+							(attr) => !skippedAttrs.includes(attr.name),
 						);
 						if (aAttrs.length !== bAttrs.length) {
 							return false;
@@ -330,7 +328,7 @@ window.addEventListener(
 									toEl.querySelectorAll("[data-line]");
 								if (fromLines.length !== toLines.length) {
 									console.log(
-										"unexpected line number change"
+										"unexpected line number change",
 									);
 								}
 
@@ -340,7 +338,7 @@ window.addEventListener(
 									if (toChild) {
 										fromChild.setAttribute(
 											"data-line",
-											toChild.getAttribute("data-line")!
+											toChild.getAttribute("data-line")!,
 										);
 									}
 								}
@@ -365,14 +363,14 @@ window.addEventListener(
 				++documentVersion;
 
 				window.dispatchEvent(
-					new CustomEvent("vscode.markdown.updateContent")
+					new CustomEvent("vscode.markdown.updateContent"),
 				);
 				addImageContexts();
 				break;
 			}
 		}
 	},
-	false
+	false,
 );
 
 document.addEventListener("dblclick", (event) => {
@@ -425,7 +423,7 @@ document.addEventListener(
 					// Pass through known schemes
 					if (
 						passThroughLinkSchemes.some((scheme) =>
-							node.href.startsWith(scheme)
+							node.href.startsWith(scheme),
 						)
 					) {
 						return;
@@ -446,7 +444,7 @@ document.addEventListener(
 			node = node.parentNode;
 		}
 	},
-	true
+	true,
 );
 
 window.addEventListener(
@@ -459,13 +457,13 @@ window.addEventListener(
 		} else {
 			const line = getEditorLineNumberForPageOffset(
 				window.scrollY,
-				documentVersion
+				documentVersion,
 			);
 			if (typeof line === "number" && !isNaN(line)) {
 				messaging.postMessage("revealLine", { line });
 			}
 		}
-	}, 50)
+	}, 50),
 );
 
 function updateScrollProgress() {

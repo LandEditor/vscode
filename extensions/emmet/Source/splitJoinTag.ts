@@ -3,16 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { HtmlNode as HtmlFlatNode } from "EmmetFlatNode";
 import * as vscode from "vscode";
+import { getRootNode } from "./parseDocument";
 import {
-	validate,
-	getEmmetMode,
 	getEmmetConfiguration,
+	getEmmetMode,
 	getHtmlFlatNode,
 	offsetRangeToVsRange,
+	validate,
 } from "./util";
-import { HtmlNode as HtmlFlatNode } from "EmmetFlatNode";
-import { getRootNode } from "./parseDocument";
 
 export function splitJoinTag() {
 	if (!validate(false) || !vscode.window.activeTextEditor) {
@@ -36,7 +36,7 @@ export function splitJoinTag() {
 					documentText,
 					rootNode,
 					offset,
-					true
+					true,
 				);
 				if (nodeToUpdate) {
 					const textEdit = getRangesToReplace(document, nodeToUpdate);
@@ -48,7 +48,7 @@ export function splitJoinTag() {
 
 function getRangesToReplace(
 	document: vscode.TextDocument,
-	nodeToUpdate: HtmlFlatNode
+	nodeToUpdate: HtmlFlatNode,
 ): vscode.TextEdit {
 	let rangeToReplace: vscode.Range;
 	let textToReplaceWith: string;

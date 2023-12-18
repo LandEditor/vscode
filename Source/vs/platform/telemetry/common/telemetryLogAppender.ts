@@ -32,7 +32,7 @@ export class TelemetryLogAppender
 		@ILoggerService loggerService: ILoggerService,
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@IProductService productService: IProductService,
-		private readonly prefix: string = ""
+		private readonly prefix: string = "",
 	) {
 		super();
 
@@ -43,7 +43,7 @@ export class TelemetryLogAppender
 			// Not a perfect check, but a nice way to indicate if we only have logging enabled for debug purposes and nothing is actually being sent
 			const justLoggingAndNotSending = isLoggingOnly(
 				productService,
-				environmentService
+				environmentService,
 			);
 			const logSuffix = justLoggingAndNotSending ? " (Not Sent)" : "";
 			const isVisible = () =>
@@ -53,18 +53,18 @@ export class TelemetryLogAppender
 				loggerService.createLogger(telemetryLogId, {
 					name: localize("telemetryLog", "Telemetry{0}", logSuffix),
 					hidden: !isVisible(),
-				})
+				}),
 			);
 			this._register(
 				logService.onDidChangeLogLevel(() =>
-					loggerService.setVisibility(telemetryLogId, isVisible())
-				)
+					loggerService.setVisibility(telemetryLogId, isVisible()),
+				),
 			);
 			this.logger.info(
-				"Below are logs for every telemetry event sent from VS Code once the log level is set to trace."
+				"Below are logs for every telemetry event sent from VS Code once the log level is set to trace.",
 			);
 			this.logger.info(
-				"==========================================================="
+				"===========================================================",
 			);
 		}
 	}
@@ -76,7 +76,7 @@ export class TelemetryLogAppender
 	log(eventName: string, data: any): void {
 		this.logger.trace(
 			`${this.prefix}telemetry/${eventName}`,
-			validateTelemetryData(data)
+			validateTelemetryData(data),
 		);
 	}
 }

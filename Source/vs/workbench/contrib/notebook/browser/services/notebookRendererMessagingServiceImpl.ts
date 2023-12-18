@@ -31,7 +31,7 @@ export class NotebookRendererMessagingService
 		IScopedRendererMessaging
 	>();
 	private readonly postMessageEmitter = this._register(
-		new Emitter<MessageToSend>()
+		new Emitter<MessageToSend>(),
 	);
 	public readonly onShouldPostMessage = this.postMessageEmitter.event;
 
@@ -45,11 +45,11 @@ export class NotebookRendererMessagingService
 	public receiveMessage(
 		editorId: string | undefined,
 		rendererId: string,
-		message: unknown
+		message: unknown,
 	): Promise<boolean> {
 		if (editorId === undefined) {
-			const sends = [...this.scopedMessaging.values()].map(
-				(e) => e.receiveMessageHandler?.(rendererId, message)
+			const sends = [...this.scopedMessaging.values()].map((e) =>
+				e.receiveMessageHandler?.(rendererId, message),
 			);
 			return Promise.all(sends).then((s) => s.some((s) => !!s));
 		}
@@ -102,7 +102,7 @@ export class NotebookRendererMessagingService
 	private postMessage(
 		editorId: string,
 		rendererId: string,
-		message: unknown
+		message: unknown,
 	): void {
 		if (!this.activations.has(rendererId)) {
 			this.prepare(rendererId);

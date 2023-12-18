@@ -55,7 +55,7 @@ export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
 		const window = BrowserWindow.fromWebContents(this.contents);
 		if (window) {
 			this.logService.trace(
-				"[aux window] Claimed browser window instance"
+				"[aux window] Claimed browser window instance",
 			);
 
 			// Remember

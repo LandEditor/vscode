@@ -17,7 +17,7 @@ declare module "event-stream" {
 	function through(
 		write?: (this: ThroughStream, data: any) => void,
 		end?: (this: ThroughStream) => void,
-		opts?: { autoDestroy: boolean }
+		opts?: { autoDestroy: boolean },
 	): ThroughStream;
 
 	function readArray<T>(array: T[]): ThroughStream;
@@ -25,10 +25,10 @@ declare module "event-stream" {
 
 	function mapSync<I, O>(cb: (data: I) => O): ThroughStream;
 	function map<I, O>(
-		cb: (data: I, cb: (err?: Error, data?: O) => void) => O
+		cb: (data: I, cb: (err?: Error, data?: O) => void) => O,
 	): ThroughStream;
 
 	function readable(
-		asyncFunction: (this: ThroughStream, ...args: any[]) => any
+		asyncFunction: (this: ThroughStream, ...args: any[]) => any,
 	): any;
 }

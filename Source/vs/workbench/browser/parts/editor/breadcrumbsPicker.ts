@@ -3,22 +3,39 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import {
+	IIdentityProvider,
+	IKeyboardNavigationLabelProvider,
+	IListVirtualDelegate,
+} from "vs/base/browser/ui/list/list";
+import { IListAccessibilityProvider } from "vs/base/browser/ui/list/listWidget";
+import {
+	IAsyncDataSource,
+	ITreeFilter,
+	ITreeNode,
+	ITreeRenderer,
+	ITreeSorter,
+	TreeVisibility,
+} from "vs/base/browser/ui/tree/tree";
 import { compareFileNames } from "vs/base/common/comparers";
 import { onUnexpectedError } from "vs/base/common/errors";
 import { Emitter, Event } from "vs/base/common/event";
-import { createMatches, FuzzyScore } from "vs/base/common/filters";
+import { FuzzyScore, createMatches } from "vs/base/common/filters";
 import * as glob from "vs/base/common/glob";
 import {
-	IDisposable,
-	DisposableStore,
-	MutableDisposable,
 	Disposable,
+	DisposableStore,
+	IDisposable,
+	MutableDisposable,
 } from "vs/base/common/lifecycle";
 import { posix, relative } from "vs/base/common/path";
 import { basename, dirname, isEqual } from "vs/base/common/resources";
 import { URI } from "vs/base/common/uri";
 import "vs/css!./media/breadcrumbscontrol";
+import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
+import { localize } from "vs/nls";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IEditorOptions } from "vs/platform/editor/common/editor";
 import {
 	FileKind,
 	IFileService,
@@ -26,8 +43,8 @@ import {
 } from "vs/platform/files/common/files";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import {
-	WorkbenchDataTree,
 	WorkbenchAsyncDataTree,
+	WorkbenchDataTree,
 } from "vs/platform/list/browser/listService";
 import {
 	breadcrumbsPickerBackground,
@@ -35,51 +52,34 @@ import {
 	widgetShadow,
 } from "vs/platform/theme/common/colorRegistry";
 import {
-	isWorkspace,
-	isWorkspaceFolder,
-	IWorkspace,
-	IWorkspaceContextService,
-	IWorkspaceFolder,
-} from "vs/platform/workspace/common/workspace";
-import {
-	ResourceLabels,
-	IResourceLabel,
-	DEFAULT_LABELS_CONTAINER,
-} from "vs/workbench/browser/labels";
-import { BreadcrumbsConfig } from "vs/workbench/browser/parts/editor/breadcrumbs";
-import {
-	OutlineElement2,
-	FileElement,
-} from "vs/workbench/browser/parts/editor/breadcrumbsModel";
-import {
-	IAsyncDataSource,
-	ITreeRenderer,
-	ITreeNode,
-	ITreeFilter,
-	TreeVisibility,
-	ITreeSorter,
-} from "vs/base/browser/ui/tree/tree";
-import {
-	IIdentityProvider,
-	IListVirtualDelegate,
-	IKeyboardNavigationLabelProvider,
-} from "vs/base/browser/ui/list/list";
-import {
 	IFileIconTheme,
 	IThemeService,
 } from "vs/platform/theme/common/themeService";
-import { IListAccessibilityProvider } from "vs/base/browser/ui/list/listWidget";
-import { localize } from "vs/nls";
 import {
-	IOutline,
-	IOutlineComparator,
-} from "vs/workbench/services/outline/browser/outline";
-import { IEditorOptions } from "vs/platform/editor/common/editor";
+	IWorkspace,
+	IWorkspaceContextService,
+	IWorkspaceFolder,
+	isWorkspace,
+	isWorkspaceFolder,
+} from "vs/platform/workspace/common/workspace";
+import {
+	DEFAULT_LABELS_CONTAINER,
+	IResourceLabel,
+	ResourceLabels,
+} from "vs/workbench/browser/labels";
+import { BreadcrumbsConfig } from "vs/workbench/browser/parts/editor/breadcrumbs";
+import {
+	FileElement,
+	OutlineElement2,
+} from "vs/workbench/browser/parts/editor/breadcrumbsModel";
 import {
 	IEditorService,
 	SIDE_GROUP,
 } from "vs/workbench/services/editor/common/editorService";
-import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
+import {
+	IOutline,
+	IOutlineComparator,
+} from "vs/workbench/services/outline/browser/outline";
 
 interface ILayoutInfo {
 	maxHeight: number;
@@ -139,7 +139,7 @@ export abstract class BreadcrumbsPicker {
 		maxHeight: number,
 		width: number,
 		arrowSize: number,
-		arrowOffset: number
+		arrowOffset: number,
 	): Promise<void> {
 		const theme = this._themeService.getColorTheme();
 		const color = theme.getColor(breadcrumbsPickerBackground);
@@ -178,24 +178,24 @@ export abstract class BreadcrumbsPicker {
 				const didReveal = await this._revealElement(
 					element,
 					{ ...editorOptions, preserveFocus: false },
-					sideBySide
+					sideBySide,
 				);
 				if (!didReveal) {
 					return;
 				}
-			})
+			}),
 		);
 		this._disposables.add(
 			this._tree.onDidChangeFocus((e) => {
 				this._previewDispoables.value = this._previewElement(
-					e.elements[0]
+					e.elements[0],
 				);
-			})
+			}),
 		);
 		this._disposables.add(
 			this._tree.onDidChangeContentHeight(() => {
 				this._layout();
-			})
+			}),
 		);
 
 		this._domNode.focus();
@@ -211,7 +211,7 @@ export abstract class BreadcrumbsPicker {
 		const headerHeight = 2 * this._layoutInfo.arrowSize;
 		const treeHeight = Math.min(
 			this._layoutInfo.maxHeight - headerHeight,
-			this._tree.contentHeight
+			this._tree.contentHeight,
 		);
 		const totalHeight = treeHeight + headerHeight;
 
@@ -228,17 +228,17 @@ export abstract class BreadcrumbsPicker {
 	restoreViewState(): void {}
 
 	protected abstract _setInput(
-		element: FileElement | OutlineElement2
+		element: FileElement | OutlineElement2,
 	): Promise<void>;
 	protected abstract _createTree(
 		container: HTMLElement,
-		input: any
+		input: any,
 	): Tree<any, any>;
 	protected abstract _previewElement(element: any): IDisposable;
 	protected abstract _revealElement(
 		element: any,
 		options: IEditorOptions,
-		sideBySide: boolean
+		sideBySide: boolean,
 	): Promise<boolean>;
 }
 
@@ -280,7 +280,7 @@ class FileDataSource
 	constructor(@IFileService private readonly _fileService: IFileService) {}
 
 	hasChildren(
-		element: IWorkspace | URI | IWorkspaceFolder | IFileStat
+		element: IWorkspace | URI | IWorkspaceFolder | IFileStat,
 	): boolean {
 		return (
 			URI.isUri(element) ||
@@ -291,7 +291,7 @@ class FileDataSource
 	}
 
 	async getChildren(
-		element: IWorkspace | URI | IWorkspaceFolder | IFileStat
+		element: IWorkspace | URI | IWorkspaceFolder | IFileStat,
 	): Promise<(IWorkspaceFolder | IFileStat)[]> {
 		if (isWorkspace(element)) {
 			return element.folders;
@@ -328,7 +328,7 @@ class FileRenderer
 	renderElement(
 		node: ITreeNode<IWorkspaceFolder | IFileStat, [number, number, number]>,
 		index: number,
-		templateData: IResourceLabel
+		templateData: IResourceLabel,
 	): void {
 		const fileDecorations = this._configService.getValue<{
 			colors: boolean;
@@ -435,14 +435,14 @@ class FileFilter implements ITreeFilter<IWorkspaceFolder | IFileStat> {
 
 	filter(
 		element: IWorkspaceFolder | IFileStat,
-		_parentVisibility: TreeVisibility
+		_parentVisibility: TreeVisibility,
 	): boolean {
 		if (isWorkspaceFolder(element)) {
 			// not a file
 			return true;
 		}
 		const folder = this._workspaceService.getWorkspaceFolder(
-			element.resource
+			element.resource,
 		);
 		if (!folder || !this._cachedExpressions.has(folder.uri.toString())) {
 			// no folder or no filer
@@ -452,7 +452,7 @@ class FileFilter implements ITreeFilter<IWorkspaceFolder | IFileStat> {
 		const expression = this._cachedExpressions.get(folder.uri.toString())!;
 		return !expression(
 			relative(folder.uri.path, element.resource.path),
-			basename(element.resource)
+			basename(element.resource),
 		);
 	}
 }
@@ -460,7 +460,7 @@ class FileFilter implements ITreeFilter<IWorkspaceFolder | IFileStat> {
 export class FileSorter implements ITreeSorter<IFileStat | IWorkspaceFolder> {
 	compare(
 		a: IFileStat | IWorkspaceFolder,
-		b: IFileStat | IWorkspaceFolder
+		b: IFileStat | IWorkspaceFolder,
 	): number {
 		if (isWorkspaceFolder(a) && isWorkspaceFolder(b)) {
 			return a.index - b.index;
@@ -503,21 +503,21 @@ export class BreadcrumbsFilePicker extends BreadcrumbsPicker {
 		const onFileIconThemeChange = (fileIconTheme: IFileIconTheme) => {
 			this._treeContainer.classList.toggle(
 				"align-icons-and-twisties",
-				fileIconTheme.hasFileIcons && !fileIconTheme.hasFolderIcons
+				fileIconTheme.hasFileIcons && !fileIconTheme.hasFolderIcons,
 			);
 			this._treeContainer.classList.toggle(
 				"hide-arrows",
-				fileIconTheme.hidesExplorerArrows === true
+				fileIconTheme.hidesExplorerArrows === true,
 			);
 		};
 		this._disposables.add(
-			this._themeService.onDidFileIconThemeChange(onFileIconThemeChange)
+			this._themeService.onDidFileIconThemeChange(onFileIconThemeChange),
 		);
 		onFileIconThemeChange(this._themeService.getFileIconTheme());
 
 		const labels = this._instantiationService.createInstance(
 			ResourceLabels,
-			DEFAULT_LABELS_CONTAINER /* TODO@Jo visibility propagation */
+			DEFAULT_LABELS_CONTAINER /* TODO@Jo visibility propagation */,
 		);
 		this._disposables.add(labels);
 
@@ -543,18 +543,18 @@ export class BreadcrumbsFilePicker extends BreadcrumbsPicker {
 					new FileNavigationLabelProvider(),
 				accessibilityProvider:
 					this._instantiationService.createInstance(
-						FileAccessibilityProvider
+						FileAccessibilityProvider,
 					),
 				showNotFoundMessage: false,
 				overrideStyles: {
 					listBackground: breadcrumbsPickerBackground,
 				},
-			}
+			},
 		);
 	}
 
 	protected async _setInput(
-		element: FileElement | OutlineElement2
+		element: FileElement | OutlineElement2,
 	): Promise<void> {
 		const { uri, kind } = element as FileElement;
 		let input: IWorkspace | URI;
@@ -594,13 +594,13 @@ export class BreadcrumbsFilePicker extends BreadcrumbsPicker {
 	protected async _revealElement(
 		element: IFileStat | IWorkspaceFolder,
 		options: IEditorOptions,
-		sideBySide: boolean
+		sideBySide: boolean,
 	): Promise<boolean> {
 		if (!isWorkspaceFolder(element) && element.isFile) {
 			this._onWillPickElement.fire();
 			await this._editorService.openEditor(
 				{ resource: element.resource, options },
-				sideBySide ? SIDE_GROUP : undefined
+				sideBySide ? SIDE_GROUP : undefined,
 			);
 			return true;
 		}
@@ -618,11 +618,11 @@ class OutlineTreeSorter<E> implements ITreeSorter<E> {
 		private comparator: IOutlineComparator<E>,
 		uri: URI | undefined,
 		@ITextResourceConfigurationService
-		configService: ITextResourceConfigurationService
+		configService: ITextResourceConfigurationService,
 	) {
 		this._order = configService.getValue(
 			uri,
-			"breadcrumbs.symbolSortOrder"
+			"breadcrumbs.symbolSortOrder",
 		);
 	}
 
@@ -654,13 +654,13 @@ export class BreadcrumbsOutlinePicker extends BreadcrumbsPicker {
 					sorter: this._instantiationService.createInstance(
 						OutlineTreeSorter,
 						config.comparator,
-						undefined
+						undefined,
 					),
 					collapseByDefault: true,
 					expandOnlyOnTwistieClick: true,
 					multipleSelectionSupport: false,
 					showNotFoundMessage: false,
-				}
+				},
 			)
 		);
 	}
@@ -695,7 +695,7 @@ export class BreadcrumbsOutlinePicker extends BreadcrumbsPicker {
 	protected async _revealElement(
 		element: any,
 		options: IEditorOptions,
-		sideBySide: boolean
+		sideBySide: boolean,
 	): Promise<boolean> {
 		this._onWillPickElement.fire();
 		const outline: IOutline<any> = this._tree.getInput();

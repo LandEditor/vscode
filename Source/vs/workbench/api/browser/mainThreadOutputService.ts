@@ -3,30 +3,30 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Event } from "vs/base/common/event";
+import { Disposable, toDisposable } from "vs/base/common/lifecycle";
+import { isNumber } from "vs/base/common/types";
+import { URI, UriComponents } from "vs/base/common/uri";
 import { Registry } from "vs/platform/registry/common/platform";
+import { IViewsService } from "vs/workbench/common/views";
+import {
+	IExtHostContext,
+	extHostNamedCustomer,
+} from "vs/workbench/services/extensions/common/extHostCustomers";
 import {
 	Extensions,
+	IOutputChannel,
 	IOutputChannelRegistry,
 	IOutputService,
-	IOutputChannel,
 	OUTPUT_VIEW_ID,
 	OutputChannelUpdateMode,
 } from "vs/workbench/services/output/common/output";
 import {
-	MainThreadOutputServiceShape,
-	MainContext,
-	ExtHostOutputServiceShape,
 	ExtHostContext,
+	ExtHostOutputServiceShape,
+	MainContext,
+	MainThreadOutputServiceShape,
 } from "../common/extHost.protocol";
-import {
-	extHostNamedCustomer,
-	IExtHostContext,
-} from "vs/workbench/services/extensions/common/extHostCustomers";
-import { UriComponents, URI } from "vs/base/common/uri";
-import { Disposable, toDisposable } from "vs/base/common/lifecycle";
-import { Event } from "vs/base/common/event";
-import { IViewsService } from "vs/workbench/common/views";
-import { isNumber } from "vs/base/common/types";
 
 @extHostNamedCustomer(MainContext.MainThreadOutputService)
 export class MainThreadOutputService
@@ -42,24 +42,24 @@ export class MainThreadOutputService
 	constructor(
 		extHostContext: IExtHostContext,
 		@IOutputService outputService: IOutputService,
-		@IViewsService viewsService: IViewsService
+		@IViewsService viewsService: IViewsService,
 	) {
 		super();
 		this._outputService = outputService;
 		this._viewsService = viewsService;
 
 		this._proxy = extHostContext.getProxy(
-			ExtHostContext.ExtHostOutputService
+			ExtHostContext.ExtHostOutputService,
 		);
 
 		const setVisibleChannel = () => {
 			const visibleChannel = this._viewsService.isViewVisible(
-				OUTPUT_VIEW_ID
+				OUTPUT_VIEW_ID,
 			)
 				? this._outputService.getActiveChannel()
 				: undefined;
 			this._proxy.$setVisibleChannel(
-				visibleChannel ? visibleChannel.id : null
+				visibleChannel ? visibleChannel.id : null,
 			);
 		};
 		this._register(
@@ -67,9 +67,9 @@ export class MainThreadOutputService
 				this._outputService.onActiveOutputChannel,
 				Event.filter(
 					this._viewsService.onDidChangeViewVisibility,
-					({ id }) => id === OUTPUT_VIEW_ID
-				)
-			)(() => setVisibleChannel())
+					({ id }) => id === OUTPUT_VIEW_ID,
+				),
+			)(() => setVisibleChannel()),
 		);
 		setVisibleChannel();
 	}
@@ -78,7 +78,7 @@ export class MainThreadOutputService
 		label: string,
 		file: UriComponents,
 		languageId: string | undefined,
-		extensionId: string
+		extensionId: string,
 	): Promise<string> {
 		const idCounter =
 			(MainThreadOutputService._extensionIdPool.get(extensionId) || 0) +
@@ -88,7 +88,7 @@ export class MainThreadOutputService
 		const resource = URI.revive(file);
 
 		Registry.as<IOutputChannelRegistry>(
-			Extensions.OutputChannels
+			Extensions.OutputChannels,
 		).registerChannel({
 			id,
 			label,
@@ -104,7 +104,7 @@ export class MainThreadOutputService
 	public async $update(
 		channelId: string,
 		mode: OutputChannelUpdateMode,
-		till?: number
+		till?: number,
 	): Promise<void> {
 		const channel = this._getChannel(channelId);
 		if (channel) {
@@ -118,7 +118,7 @@ export class MainThreadOutputService
 
 	public async $reveal(
 		channelId: string,
-		preserveFocus: boolean
+		preserveFocus: boolean,
 	): Promise<void> {
 		const channel = this._getChannel(channelId);
 		if (channel) {

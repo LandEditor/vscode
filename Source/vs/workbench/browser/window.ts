@@ -5,11 +5,19 @@
 
 import { isSafari, setFullscreen } from "vs/base/browser/browser";
 import {
+	HidDeviceData,
+	SerialPortData,
+	UsbDeviceData,
+	requestHidDevice,
+	requestSerialPort,
+	requestUsbDevice,
+} from "vs/base/browser/deviceAccess";
+import {
+	EventHelper,
+	EventType,
 	addDisposableListener,
 	addDisposableThrottledListener,
 	detectFullscreen,
-	EventHelper,
-	EventType,
 	getActiveWindow,
 	getWindow,
 	getWindows,
@@ -20,22 +28,20 @@ import {
 } from "vs/base/browser/dom";
 import { DomEmitter } from "vs/base/browser/event";
 import {
-	HidDeviceData,
-	requestHidDevice,
-	requestSerialPort,
-	requestUsbDevice,
-	SerialPortData,
-	UsbDeviceData,
-} from "vs/base/browser/deviceAccess";
+	CodeWindow,
+	isAuxiliaryWindow,
+	mainWindow,
+} from "vs/base/browser/window";
 import { timeout } from "vs/base/common/async";
 import { Event } from "vs/base/common/event";
+import { createSingleCallFunction } from "vs/base/common/functional";
 import {
 	Disposable,
 	IDisposable,
 	dispose,
 	toDisposable,
 } from "vs/base/common/lifecycle";
-import { matchesScheme, Schemas } from "vs/base/common/network";
+import { Schemas, matchesScheme } from "vs/base/common/network";
 import { isIOS, isMacintosh } from "vs/base/common/platform";
 import Severity from "vs/base/common/severity";
 import { URI } from "vs/base/common/uri";
@@ -52,18 +58,12 @@ import {
 import { ILabelService } from "vs/platform/label/common/label";
 import { IOpenerService } from "vs/platform/opener/common/opener";
 import { IProductService } from "vs/platform/product/common/productService";
+import { registerWindowDriver } from "vs/workbench/services/driver/browser/driver";
 import { IBrowserWorkbenchEnvironmentService } from "vs/workbench/services/environment/browser/environmentService";
+import { IHostService } from "vs/workbench/services/host/browser/host";
 import { IWorkbenchLayoutService } from "vs/workbench/services/layout/browser/layoutService";
 import { BrowserLifecycleService } from "vs/workbench/services/lifecycle/browser/lifecycleService";
 import { ILifecycleService } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { IHostService } from "vs/workbench/services/host/browser/host";
-import { registerWindowDriver } from "vs/workbench/services/driver/browser/driver";
-import {
-	CodeWindow,
-	isAuxiliaryWindow,
-	mainWindow,
-} from "vs/base/browser/window";
-import { createSingleCallFunction } from "vs/base/common/functional";
 
 export abstract class BaseWindow extends Disposable {
 	private static TIMEOUT_HANDLES = Number.MIN_SAFE_INTEGER; // try to not compete with the IDs of native `setTimeout`
@@ -74,7 +74,7 @@ export abstract class BaseWindow extends Disposable {
 
 	constructor(
 		targetWindow: CodeWindow,
-		dom = { getWindowsCount, getWindows } /* for testing */
+		dom = { getWindowsCount, getWindows } /* for testing */,
 	) {
 		super();
 
@@ -89,7 +89,7 @@ export abstract class BaseWindow extends Disposable {
 
 		targetWindow.HTMLElement.prototype.focus = function (
 			this: HTMLElement,
-			options?: FocusOptions | undefined
+			options?: FocusOptions | undefined,
 		): void {
 			// If the active focused window is not the same as the
 			// window of the element to focus, make sure to focus
@@ -119,7 +119,7 @@ export abstract class BaseWindow extends Disposable {
 	 */
 	private enableMultiWindowAwareTimeout(
 		targetWindow: Window,
-		dom = { getWindowsCount, getWindows }
+		dom = { getWindowsCount, getWindows },
 	): void {
 		const originalSetTimeout = targetWindow.setTimeout;
 		Object.defineProperty(targetWindow, "vscodeOriginalSetTimeout", {
@@ -153,7 +153,7 @@ export abstract class BaseWindow extends Disposable {
 			const timeoutHandle = BaseWindow.TIMEOUT_HANDLES++;
 			BaseWindow.TIMEOUT_DISPOSABLES.set(
 				timeoutHandle,
-				timeoutDisposables
+				timeoutDisposables,
 			);
 
 			const handlerFn = createSingleCallFunction(handler, () => {
@@ -171,7 +171,7 @@ export abstract class BaseWindow extends Disposable {
 
 				const handle = (window as any).vscodeOriginalSetTimeout.apply(
 					this,
-					[handlerFn, timeout, ...args]
+					[handlerFn, timeout, ...args],
 				);
 
 				const timeoutDisposable = toDisposable(() => {
@@ -188,7 +188,7 @@ export abstract class BaseWindow extends Disposable {
 
 		targetWindow.clearTimeout = function (
 			this: unknown,
-			timeoutHandle: number | undefined
+			timeoutHandle: number | undefined,
 		): void {
 			const timeoutDisposables =
 				typeof timeoutHandle === "number"
@@ -231,7 +231,7 @@ export class BrowserWindow extends BaseWindow {
 	private registerListeners(): void {
 		// Lifecycle
 		this._register(
-			this.lifecycleService.onWillShutdown(() => this.onWillShutdown())
+			this.lifecycleService.onWillShutdown(() => this.onWillShutdown()),
 		);
 
 		// Layout
@@ -247,7 +247,7 @@ export class BrowserWindow extends BaseWindow {
 				if (isIOS) {
 					mainWindow.scrollTo(0, 0);
 				}
-			})
+			}),
 		);
 
 		// Prevent the back/forward gestures in macOS
@@ -256,8 +256,8 @@ export class BrowserWindow extends BaseWindow {
 				this.layoutService.mainContainer,
 				EventType.WHEEL,
 				(e) => e.preventDefault(),
-				{ passive: false }
-			)
+				{ passive: false },
+			),
 		);
 
 		// Prevent native context menus in web
@@ -265,8 +265,8 @@ export class BrowserWindow extends BaseWindow {
 			addDisposableListener(
 				this.layoutService.mainContainer,
 				EventType.CONTEXT_MENU,
-				(e) => EventHelper.stop(e, true)
-			)
+				(e) => EventHelper.stop(e, true),
+			),
 		);
 
 		// Prevent default navigation on drop
@@ -274,8 +274,8 @@ export class BrowserWindow extends BaseWindow {
 			addDisposableListener(
 				this.layoutService.mainContainer,
 				EventType.DROP,
-				(e) => EventHelper.stop(e, true)
-			)
+				(e) => EventHelper.stop(e, true),
+			),
 		);
 
 		// Fullscreen (Browser)
@@ -285,8 +285,8 @@ export class BrowserWindow extends BaseWindow {
 		]) {
 			this._register(
 				addDisposableListener(mainWindow.document, event, () =>
-					setFullscreen(!!detectFullscreen(mainWindow))
-				)
+					setFullscreen(!!detectFullscreen(mainWindow)),
+				),
 			);
 		}
 
@@ -301,8 +301,8 @@ export class BrowserWindow extends BaseWindow {
 				undefined,
 				isMacintosh
 					? 2000 /* adjust for macOS animation */
-					: 800 /* can be throttled */
-			)
+					: 800 /* can be throttled */,
+			),
 		);
 	}
 
@@ -316,17 +316,17 @@ export class BrowserWindow extends BaseWindow {
 					new DomEmitter(
 						mainWindow.document.body,
 						EventType.KEY_DOWN,
-						true
-					).event
+						true,
+					).event,
 				),
 				Event.once(
 					new DomEmitter(
 						mainWindow.document.body,
 						EventType.MOUSE_DOWN,
-						true
-					).event
-				)
-			)
+						true,
+					).event,
+				),
+			),
 		).then(async () => {
 			// Delay the dialog in case the user interacted
 			// with the page before it transitioned away
@@ -340,11 +340,11 @@ export class BrowserWindow extends BaseWindow {
 				type: Severity.Error,
 				message: localize(
 					"shutdownError",
-					"An unexpected error occurred that requires a reload of this page."
+					"An unexpected error occurred that requires a reload of this page.",
 				),
 				detail: localize(
 					"shutdownErrorDetail",
-					"The workbench was unexpectedly disposed while running."
+					"The workbench was unexpectedly disposed while running.",
 				),
 				buttons: [
 					{
@@ -353,7 +353,7 @@ export class BrowserWindow extends BaseWindow {
 								key: "reload",
 								comment: ["&& denotes a mnemonic"],
 							},
-							"&&Reload"
+							"&&Reload",
 						),
 						run: () => mainWindow.location.reload(), // do not use any services at this point since they are likely not functional at this point
 					},
@@ -414,14 +414,14 @@ export class BrowserWindow extends BaseWindow {
 					if (isSafari) {
 						const opened = windowOpenWithSuccess(
 							href,
-							!isAllowedOpener
+							!isAllowedOpener,
 						);
 						if (!opened) {
 							await this.dialogService.prompt({
 								type: Severity.Warning,
 								message: localize(
 									"unableToOpenExternal",
-									"The browser interrupted the opening of a new tab or window. Press 'Open' to open it anyway."
+									"The browser interrupted the opening of a new tab or window. Press 'Open' to open it anyway.",
 								),
 								detail: href,
 								buttons: [
@@ -433,7 +433,7 @@ export class BrowserWindow extends BaseWindow {
 													"&& denotes a mnemonic",
 												],
 											},
-											"&&Open"
+											"&&Open",
 										),
 										run: () =>
 											isAllowedOpener
@@ -448,13 +448,13 @@ export class BrowserWindow extends BaseWindow {
 													"&& denotes a mnemonic",
 												],
 											},
-											"&&Learn More"
+											"&&Learn More",
 										),
 										run: () =>
 											this.openerService.open(
 												URI.parse(
-													"https://aka.ms/allow-vscode-popup"
-												)
+													"https://aka.ms/allow-vscode-popup",
+												),
 											),
 									},
 								],
@@ -475,7 +475,7 @@ export class BrowserWindow extends BaseWindow {
 					const invokeProtocolHandler = () => {
 						this.lifecycleService.withExpectedShutdown(
 							{ disableShutdownHandling: true },
-							() => (mainWindow.location.href = href)
+							() => (mainWindow.location.href = href),
 						);
 					};
 
@@ -492,7 +492,7 @@ export class BrowserWindow extends BaseWindow {
 										key: "openExternalDialogButtonRetry.v2",
 										comment: ["&& denotes a mnemonic"],
 									},
-									"&&Try Again"
+									"&&Try Again",
 								),
 								run: () => invokeProtocolHandler(),
 							},
@@ -503,7 +503,7 @@ export class BrowserWindow extends BaseWindow {
 								"openExternalDialogDetail.v2",
 								"We launched {0} on your computer.\n\nIf {1} did not launch, try again or install it below.",
 								this.productService.nameLong,
-								this.productService.nameLong
+								this.productService.nameLong,
 							);
 
 							buttons.push({
@@ -512,11 +512,11 @@ export class BrowserWindow extends BaseWindow {
 										key: "openExternalDialogButtonInstall.v3",
 										comment: ["&& denotes a mnemonic"],
 									},
-									"&&Install"
+									"&&Install",
 								),
 								run: async () => {
 									await this.openerService.open(
-										URI.parse(downloadUrl)
+										URI.parse(downloadUrl),
 									);
 
 									// Re-show the dialog so that the user can come back after installing and try again
@@ -528,7 +528,7 @@ export class BrowserWindow extends BaseWindow {
 								"openExternalDialogDetailNoInstall",
 								"We launched {0} on your computer.\n\nIf {1} did not launch, try again below.",
 								this.productService.nameLong,
-								this.productService.nameLong
+								this.productService.nameLong,
 							);
 						}
 
@@ -539,12 +539,12 @@ export class BrowserWindow extends BaseWindow {
 								type: Severity.Info,
 								message: localize(
 									"openExternalDialogTitle",
-									"All done. You can close this tab now."
+									"All done. You can close this tab now.",
 								),
 								detail,
 								buttons,
 								cancelButton: true,
-							})
+							}),
 						);
 					};
 
@@ -569,7 +569,7 @@ export class BrowserWindow extends BaseWindow {
 					label: "(Settings) ${path}",
 					separator: "/",
 				},
-			})
+			}),
 		);
 	}
 
@@ -579,10 +579,10 @@ export class BrowserWindow extends BaseWindow {
 			"workbench.experimental.requestUsbDevice",
 			async (
 				_accessor: ServicesAccessor,
-				options?: { filters?: unknown[] }
+				options?: { filters?: unknown[] },
 			): Promise<UsbDeviceData | undefined> => {
 				return requestUsbDevice(options);
-			}
+			},
 		);
 
 		// Allow extensions to request Serial devices in Web
@@ -590,10 +590,10 @@ export class BrowserWindow extends BaseWindow {
 			"workbench.experimental.requestSerialPort",
 			async (
 				_accessor: ServicesAccessor,
-				options?: { filters?: unknown[] }
+				options?: { filters?: unknown[] },
 			): Promise<SerialPortData | undefined> => {
 				return requestSerialPort(options);
-			}
+			},
 		);
 
 		// Allow extensions to request HID devices in Web
@@ -601,10 +601,10 @@ export class BrowserWindow extends BaseWindow {
 			"workbench.experimental.requestHidDevice",
 			async (
 				_accessor: ServicesAccessor,
-				options?: { filters?: unknown[] }
+				options?: { filters?: unknown[] },
 			): Promise<HidDeviceData | undefined> => {
 				return requestHidDevice(options);
-			}
+			},
 		);
 	}
 }

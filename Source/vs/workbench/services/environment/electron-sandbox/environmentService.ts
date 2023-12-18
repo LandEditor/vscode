@@ -3,8 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { memoize } from "vs/base/common/decorators";
+import { Schemas } from "vs/base/common/network";
 import { PerformanceMark } from "vs/base/common/performance";
-import { IBrowserWorkbenchEnvironmentService } from "vs/workbench/services/environment/browser/environmentService";
+import { joinPath } from "vs/base/common/resources";
+import { URI } from "vs/base/common/uri";
+import {
+	IEnvironmentService,
+	INativeEnvironmentService,
+} from "vs/platform/environment/common/environment";
+import { AbstractNativeEnvironmentService } from "vs/platform/environment/common/environmentService";
+import { refineServiceDecorator } from "vs/platform/instantiation/common/instantiation";
+import { IProductService } from "vs/platform/product/common/productService";
 import {
 	IColorScheme,
 	INativeWindowConfiguration,
@@ -12,17 +22,7 @@ import {
 	IPath,
 	IPathsToWaitFor,
 } from "vs/platform/window/common/window";
-import {
-	IEnvironmentService,
-	INativeEnvironmentService,
-} from "vs/platform/environment/common/environment";
-import { refineServiceDecorator } from "vs/platform/instantiation/common/instantiation";
-import { AbstractNativeEnvironmentService } from "vs/platform/environment/common/environmentService";
-import { memoize } from "vs/base/common/decorators";
-import { URI } from "vs/base/common/uri";
-import { Schemas } from "vs/base/common/network";
-import { IProductService } from "vs/platform/product/common/productService";
-import { joinPath } from "vs/base/common/resources";
+import { IBrowserWorkbenchEnvironmentService } from "vs/workbench/services/environment/browser/environmentService";
 
 export const INativeWorkbenchEnvironmentService = refineServiceDecorator<
 	IEnvironmentService,
@@ -202,7 +202,7 @@ export class NativeWorkbenchEnvironmentService
 
 	constructor(
 		private readonly configuration: INativeWindowConfiguration,
-		productService: IProductService
+		productService: IProductService,
 	) {
 		super(
 			configuration,
@@ -211,7 +211,7 @@ export class NativeWorkbenchEnvironmentService
 				tmpDir: configuration.tmpDir,
 				userDataDir: configuration.userDataDir,
 			},
-			productService
+			productService,
 		);
 	}
 }

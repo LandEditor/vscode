@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Extension, extensions, Uri } from "vscode";
+import { Extension, Uri, extensions } from "vscode";
 
 export interface RemoteHubApi {
 	getProviderUri(uri: Uri): Uri;
@@ -25,7 +25,7 @@ namespace RemoteRepositories {
 
 		remoteHub =
 			extensions.getExtension<RemoteHubApi>(
-				"ms-vscode.remote-repositories"
+				"ms-vscode.remote-repositories",
 			) ??
 			extensions.getExtension<RemoteHubApi>("GitHub.remoteHub") ??
 			extensions.getExtension<RemoteHubApi>("GitHub.remoteHub-insiders");

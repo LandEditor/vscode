@@ -4,13 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { h } from "vs/base/browser/dom";
+import { Event } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
 import {
 	ICodeEditor,
 	IOverlayWidget,
 	IViewZoneChangeAccessor,
 } from "vs/editor/browser/editorBrowser";
-import { Event } from "vs/base/common/event";
 
 export abstract class FixedZoneWidget extends Disposable {
 	private static counter = 0;
@@ -29,7 +29,7 @@ export abstract class FixedZoneWidget extends Disposable {
 		viewZoneAccessor: IViewZoneChangeAccessor,
 		afterLineNumber: number,
 		height: number,
-		viewZoneIdsToCleanUp: string[]
+		viewZoneIdsToCleanUp: string[],
 	) {
 		super();
 
@@ -50,7 +50,7 @@ export abstract class FixedZoneWidget extends Disposable {
 			Event.runAndSubscribe(this.editor.onDidLayoutChange, () => {
 				this.widgetDomNode.style.left =
 					this.editor.getLayoutInfo().contentLeft + "px";
-			})
+			}),
 		);
 
 		this.editor.addOverlayWidget(this.overlayWidget);

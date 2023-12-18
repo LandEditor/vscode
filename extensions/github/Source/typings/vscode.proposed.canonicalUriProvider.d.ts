@@ -17,7 +17,7 @@ declare module "vscode" {
 		 */
 		export function registerCanonicalUriProvider(
 			scheme: string,
-			provider: CanonicalUriProvider
+			provider: CanonicalUriProvider,
 		): Disposable;
 
 		/**
@@ -28,7 +28,7 @@ declare module "vscode" {
 		export function getCanonicalUri(
 			uri: Uri,
 			options: CanonicalUriRequestOptions,
-			token: CancellationToken
+			token: CancellationToken,
 		): ProviderResult<Uri>;
 	}
 
@@ -43,7 +43,7 @@ declare module "vscode" {
 		provideCanonicalUri(
 			uri: Uri,
 			options: CanonicalUriRequestOptions,
-			token: CancellationToken
+			token: CancellationToken,
 		): ProviderResult<Uri>;
 	}
 

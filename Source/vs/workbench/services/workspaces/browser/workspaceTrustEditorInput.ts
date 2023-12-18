@@ -20,8 +20,8 @@ const WorkspaceTrustEditorIcon = registerIcon(
 	Codicon.shield,
 	localize(
 		"workspaceTrustEditorLabelIcon",
-		"Icon of the workspace trust editor label."
-	)
+		"Icon of the workspace trust editor label.",
+	),
 );
 
 export class WorkspaceTrustEditorInput extends EditorInput {

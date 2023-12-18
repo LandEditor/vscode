@@ -3,29 +3,29 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import type { IBufferLine, Terminal } from "@xterm/xterm";
 import { Disposable } from "vs/base/common/lifecycle";
+import { matchesScheme } from "vs/base/common/network";
 import { escapeRegExpCharacters } from "vs/base/common/strings";
 import { URI } from "vs/base/common/uri";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { matchesScheme } from "vs/base/common/network";
 import { IProductService } from "vs/platform/product/common/productService";
 import { TerminalSettingId } from "vs/platform/terminal/common/terminal";
 import {
-	ITerminalSimpleLink,
+	ITerminalConfiguration,
+	TERMINAL_CONFIG_SECTION,
+} from "vs/workbench/contrib/terminal/common/terminal";
+import {
 	ITerminalLinkDetector,
+	ITerminalSimpleLink,
 	TerminalBuiltinLinkType,
 } from "vs/workbench/contrib/terminalContrib/links/browser/links";
 import {
 	convertLinkRangeToBuffer,
 	getXtermLineContent,
 } from "vs/workbench/contrib/terminalContrib/links/browser/terminalLinkHelpers";
-import {
-	ITerminalConfiguration,
-	TERMINAL_CONFIG_SECTION,
-} from "vs/workbench/contrib/terminal/common/terminal";
-import type { IBufferLine, Terminal } from "@xterm/xterm";
 
-const enum Constants {
+enum Constants {
 	/**
 	 * The max line length to try extract word links from.
 	 */
@@ -71,7 +71,7 @@ export class TerminalWordLinkDetector
 	detect(
 		lines: IBufferLine[],
 		startLine: number,
-		endLine: number
+		endLine: number,
 	): ITerminalSimpleLink[] {
 		const links: ITerminalSimpleLink[] = [];
 
@@ -80,7 +80,7 @@ export class TerminalWordLinkDetector
 			this.xterm.buffer.active,
 			startLine,
 			endLine,
-			this.xterm.cols
+			this.xterm.cols,
 		);
 		if (text === "" || text.length > Constants.MaxLineLength) {
 			return [];
@@ -110,7 +110,7 @@ export class TerminalWordLinkDetector
 					endColumn: word.endIndex + 1,
 					endLineNumber: 1,
 				},
-				startLine
+				startLine,
 			);
 
 			// Support this product's URL protocol
@@ -156,7 +156,7 @@ export class TerminalWordLinkDetector
 	private _refreshSeparatorCodes(): void {
 		const separators =
 			this._configurationService.getValue<ITerminalConfiguration>(
-				TERMINAL_CONFIG_SECTION
+				TERMINAL_CONFIG_SECTION,
 			).wordSeparators;
 		let powerlineSymbols = "";
 		for (let i = 0xe0b0; i <= 0xe0bf; i++) {
@@ -164,7 +164,7 @@ export class TerminalWordLinkDetector
 		}
 		this._separatorRegex = new RegExp(
 			`[${escapeRegExpCharacters(separators)}${powerlineSymbols}]`,
-			"g"
+			"g",
 		);
 	}
 }

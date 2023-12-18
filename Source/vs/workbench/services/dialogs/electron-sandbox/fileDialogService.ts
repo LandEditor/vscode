@@ -3,42 +3,42 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Schemas } from "vs/base/common/network";
+import { URI } from "vs/base/common/uri";
 import {
-	SaveDialogOptions,
 	OpenDialogOptions,
+	SaveDialogOptions,
 } from "vs/base/parts/sandbox/common/electronTypes";
-import { IHostService } from "vs/workbench/services/host/browser/host";
+import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
+import { ILanguageService } from "vs/editor/common/languages/language";
+import { ICommandService } from "vs/platform/commands/common/commands";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
+	IDialogService,
+	IFileDialogService,
+	INativeOpenDialogOptions,
+	IOpenDialogOptions,
 	IPickAndOpenOptions,
 	ISaveDialogOptions,
-	IOpenDialogOptions,
-	IFileDialogService,
-	IDialogService,
-	INativeOpenDialogOptions,
 } from "vs/platform/dialogs/common/dialogs";
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
-import { IHistoryService } from "vs/workbench/services/history/common/history";
-import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { URI } from "vs/base/common/uri";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IFileService } from "vs/platform/files/common/files";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { IFileService } from "vs/platform/files/common/files";
-import { IOpenerService } from "vs/platform/opener/common/opener";
-import { INativeHostService } from "vs/platform/native/common/native";
-import { AbstractFileDialogService } from "vs/workbench/services/dialogs/browser/abstractFileDialogService";
-import { Schemas } from "vs/base/common/network";
-import { ILanguageService } from "vs/editor/common/languages/language";
-import { IWorkspacesService } from "vs/platform/workspaces/common/workspaces";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { ILabelService } from "vs/platform/label/common/label";
-import { IPathService } from "vs/workbench/services/path/common/pathService";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 import { ILogService } from "vs/platform/log/common/log";
+import { INativeHostService } from "vs/platform/native/common/native";
+import { IOpenerService } from "vs/platform/opener/common/opener";
+import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import { IWorkspacesService } from "vs/platform/workspaces/common/workspaces";
+import { AbstractFileDialogService } from "vs/workbench/services/dialogs/browser/abstractFileDialogService";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
+import { IHistoryService } from "vs/workbench/services/history/common/history";
+import { IHostService } from "vs/workbench/services/host/browser/host";
+import { IPathService } from "vs/workbench/services/path/common/pathService";
 
 export class FileDialogService
 	extends AbstractFileDialogService
@@ -88,7 +88,7 @@ export class FileDialogService
 	}
 
 	private toNativeOpenDialogOptions(
-		options: IPickAndOpenOptions
+		options: IPickAndOpenOptions,
 	): INativeOpenDialogOptions {
 		return {
 			forceNewWindow: options.forceNewWindow,
@@ -106,7 +106,7 @@ export class FileDialogService
 			true;
 		const newWindowSetting =
 			this.configurationService.getValue(
-				"window.openFilesInNewWindow"
+				"window.openFilesInNewWindow",
 			) === "on";
 		return {
 			useSimplified:
@@ -129,11 +129,11 @@ export class FileDialogService
 			return this.pickFileFolderAndOpenSimplified(
 				schema,
 				options,
-				shouldUseSimplified.isSetting
+				shouldUseSimplified.isSetting,
 			);
 		}
 		return this.nativeHostService.pickFileFolderAndOpen(
-			this.toNativeOpenDialogOptions(options)
+			this.toNativeOpenDialogOptions(options),
 		);
 	}
 
@@ -149,11 +149,11 @@ export class FileDialogService
 			return this.pickFileAndOpenSimplified(
 				schema,
 				options,
-				shouldUseSimplified.isSetting
+				shouldUseSimplified.isSetting,
 			);
 		}
 		return this.nativeHostService.pickFileAndOpen(
-			this.toNativeOpenDialogOptions(options)
+			this.toNativeOpenDialogOptions(options),
 		);
 	}
 
@@ -168,7 +168,7 @@ export class FileDialogService
 			return this.pickFolderAndOpenSimplified(schema, options);
 		}
 		return this.nativeHostService.pickFolderAndOpen(
-			this.toNativeOpenDialogOptions(options)
+			this.toNativeOpenDialogOptions(options),
 		);
 	}
 
@@ -185,13 +185,13 @@ export class FileDialogService
 			return this.pickWorkspaceAndOpenSimplified(schema, options);
 		}
 		return this.nativeHostService.pickWorkspaceAndOpen(
-			this.toNativeOpenDialogOptions(options)
+			this.toNativeOpenDialogOptions(options),
 		);
 	}
 
 	async pickFileToSave(
 		defaultUri: URI,
-		availableFileSystems?: string[]
+		availableFileSystems?: string[],
 	): Promise<URI | undefined> {
 		const schema = this.getFileSystemSchema({
 			defaultUri,
@@ -199,13 +199,13 @@ export class FileDialogService
 		});
 		const options = this.getPickFileToSaveDialogOptions(
 			defaultUri,
-			availableFileSystems
+			availableFileSystems,
 		);
 		if (this.shouldUseSimplified(schema).useSimplified) {
 			return this.pickFileToSaveSimplified(schema, options);
 		} else {
 			const result = await this.nativeHostService.showSaveDialog(
-				this.toNativeSaveDialogOptions(options)
+				this.toNativeSaveDialogOptions(options),
 			);
 			if (result && !result.canceled && result.filePath) {
 				const uri = URI.file(result.filePath);
@@ -219,7 +219,7 @@ export class FileDialogService
 	}
 
 	private toNativeSaveDialogOptions(
-		options: ISaveDialogOptions
+		options: ISaveDialogOptions,
 	): SaveDialogOptions {
 		options.defaultUri = options.defaultUri
 			? URI.file(options.defaultUri.path)
@@ -233,7 +233,7 @@ export class FileDialogService
 	}
 
 	async showSaveDialog(
-		options: ISaveDialogOptions
+		options: ISaveDialogOptions,
 	): Promise<URI | undefined> {
 		const schema = this.getFileSystemSchema(options);
 		if (this.shouldUseSimplified(schema).useSimplified) {
@@ -241,7 +241,7 @@ export class FileDialogService
 		}
 
 		const result = await this.nativeHostService.showSaveDialog(
-			this.toNativeSaveDialogOptions(options)
+			this.toNativeSaveDialogOptions(options),
 		);
 		if (result && !result.canceled && result.filePath) {
 			return URI.file(result.filePath);
@@ -251,7 +251,7 @@ export class FileDialogService
 	}
 
 	async showOpenDialog(
-		options: IOpenDialogOptions
+		options: IOpenDialogOptions,
 	): Promise<URI[] | undefined> {
 		const schema = this.getFileSystemSchema(options);
 		if (this.shouldUseSimplified(schema).useSimplified) {
@@ -292,5 +292,5 @@ export class FileDialogService
 registerSingleton(
 	IFileDialogService,
 	FileDialogService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

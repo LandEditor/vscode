@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { DeferredPromise } from "vs/base/common/async";
-import { Event, Emitter } from "vs/base/common/event";
+import { Emitter, Event } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
 import { IDialogArgs, IDialogResult } from "vs/platform/dialogs/common/dialogs";
 

@@ -13,9 +13,9 @@ import {
 	IConfigurationService,
 } from "vs/platform/configuration/common/configuration";
 import {
+	ConfigurationScope,
 	Extensions,
 	IConfigurationRegistry,
-	ConfigurationScope,
 } from "vs/platform/configuration/common/configurationRegistry";
 import {
 	InstantiationType,
@@ -29,7 +29,7 @@ import {
 } from "vs/workbench/common/editor";
 
 export const IBreadcrumbsService = createDecorator<IBreadcrumbsService>(
-	"IEditorBreadcrumbsService"
+	"IEditorBreadcrumbsService",
 );
 
 export interface IBreadcrumbsService {
@@ -63,7 +63,7 @@ export class BreadcrumbsService implements IBreadcrumbsService {
 registerSingleton(
 	IBreadcrumbsService,
 	BreadcrumbsService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 
 //#region config
@@ -75,7 +75,7 @@ export abstract class BreadcrumbsConfig<T> {
 	abstract getValue(overrides?: IConfigurationOverrides): T;
 	abstract updateValue(
 		value: T,
-		overrides?: IConfigurationOverrides
+		overrides?: IConfigurationOverrides,
 	): Promise<void>;
 	abstract dispose(): void;
 
@@ -84,16 +84,16 @@ export abstract class BreadcrumbsConfig<T> {
 	}
 
 	static readonly IsEnabled = BreadcrumbsConfig._stub<boolean>(
-		"breadcrumbs.enabled"
+		"breadcrumbs.enabled",
 	);
 	static readonly UseQuickPick = BreadcrumbsConfig._stub<boolean>(
-		"breadcrumbs.useQuickPick"
+		"breadcrumbs.useQuickPick",
 	);
 	static readonly FilePath = BreadcrumbsConfig._stub<"on" | "off" | "last">(
-		"breadcrumbs.filePath"
+		"breadcrumbs.filePath",
 	);
 	static readonly SymbolPath = BreadcrumbsConfig._stub<"on" | "off" | "last">(
-		"breadcrumbs.symbolPath"
+		"breadcrumbs.symbolPath",
 	);
 	static readonly SymbolSortOrder = BreadcrumbsConfig._stub<
 		"position" | "name" | "type"
@@ -107,7 +107,9 @@ export abstract class BreadcrumbsConfig<T> {
 	static readonly FileExcludes =
 		BreadcrumbsConfig._stub<glob.IExpression>("files.exclude");
 
-	private static _stub<T>(name: string): {
+	private static _stub<T>(
+		name: string,
+	): {
 		bindTo(service: IConfigurationService): BreadcrumbsConfig<T>;
 	} {
 		return {
@@ -132,13 +134,13 @@ export abstract class BreadcrumbsConfig<T> {
 					}
 					updateValue(
 						newValue: T,
-						overrides?: IConfigurationOverrides
+						overrides?: IConfigurationOverrides,
 					): Promise<void> {
 						if (overrides) {
 							return service.updateValue(
 								name,
 								newValue,
-								overrides
+								overrides,
 							);
 						} else {
 							return service.updateValue(name, newValue);
@@ -155,7 +157,7 @@ export abstract class BreadcrumbsConfig<T> {
 }
 
 Registry.as<IConfigurationRegistry>(
-	Extensions.Configuration
+	Extensions.Configuration,
 ).registerConfiguration({
 	id: "breadcrumbs",
 	title: localize("title", "Breadcrumb Navigation"),
@@ -165,7 +167,7 @@ Registry.as<IConfigurationRegistry>(
 		"breadcrumbs.enabled": {
 			description: localize(
 				"enabled",
-				"Enable/disable navigation breadcrumbs."
+				"Enable/disable navigation breadcrumbs.",
 			),
 			type: "boolean",
 			default: true,
@@ -173,7 +175,7 @@ Registry.as<IConfigurationRegistry>(
 		"breadcrumbs.filePath": {
 			description: localize(
 				"filepath",
-				"Controls whether and how file paths are shown in the breadcrumbs view."
+				"Controls whether and how file paths are shown in the breadcrumbs view.",
 			),
 			type: "string",
 			default: "on",
@@ -181,22 +183,22 @@ Registry.as<IConfigurationRegistry>(
 			enumDescriptions: [
 				localize(
 					"filepath.on",
-					"Show the file path in the breadcrumbs view."
+					"Show the file path in the breadcrumbs view.",
 				),
 				localize(
 					"filepath.off",
-					"Do not show the file path in the breadcrumbs view."
+					"Do not show the file path in the breadcrumbs view.",
 				),
 				localize(
 					"filepath.last",
-					"Only show the last element of the file path in the breadcrumbs view."
+					"Only show the last element of the file path in the breadcrumbs view.",
 				),
 			],
 		},
 		"breadcrumbs.symbolPath": {
 			description: localize(
 				"symbolpath",
-				"Controls whether and how symbols are shown in the breadcrumbs view."
+				"Controls whether and how symbols are shown in the breadcrumbs view.",
 			),
 			type: "string",
 			default: "on",
@@ -204,22 +206,22 @@ Registry.as<IConfigurationRegistry>(
 			enumDescriptions: [
 				localize(
 					"symbolpath.on",
-					"Show all symbols in the breadcrumbs view."
+					"Show all symbols in the breadcrumbs view.",
 				),
 				localize(
 					"symbolpath.off",
-					"Do not show symbols in the breadcrumbs view."
+					"Do not show symbols in the breadcrumbs view.",
 				),
 				localize(
 					"symbolpath.last",
-					"Only show the current symbol in the breadcrumbs view."
+					"Only show the current symbol in the breadcrumbs view.",
 				),
 			],
 		},
 		"breadcrumbs.symbolSortOrder": {
 			description: localize(
 				"symbolSortOrder",
-				"Controls how symbols are sorted in the breadcrumbs outline view."
+				"Controls how symbols are sorted in the breadcrumbs outline view.",
 			),
 			type: "string",
 			default: "position",
@@ -228,22 +230,22 @@ Registry.as<IConfigurationRegistry>(
 			enumDescriptions: [
 				localize(
 					"symbolSortOrder.position",
-					"Show symbol outline in file position order."
+					"Show symbol outline in file position order.",
 				),
 				localize(
 					"symbolSortOrder.name",
-					"Show symbol outline in alphabetical order."
+					"Show symbol outline in alphabetical order.",
 				),
 				localize(
 					"symbolSortOrder.type",
-					"Show symbol outline in symbol type order."
+					"Show symbol outline in symbol type order.",
 				),
 			],
 		},
 		"breadcrumbs.icons": {
 			description: localize(
 				"icons",
-				"Render breadcrumb items with icons."
+				"Render breadcrumb items with icons.",
 			),
 			type: "boolean",
 			default: true,
@@ -254,7 +256,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.file",
-				"When enabled breadcrumbs show `file`-symbols."
+				"When enabled breadcrumbs show `file`-symbols.",
 			),
 		},
 		"breadcrumbs.showModules": {
@@ -263,7 +265,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.module",
-				"When enabled breadcrumbs show `module`-symbols."
+				"When enabled breadcrumbs show `module`-symbols.",
 			),
 		},
 		"breadcrumbs.showNamespaces": {
@@ -272,7 +274,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.namespace",
-				"When enabled breadcrumbs show `namespace`-symbols."
+				"When enabled breadcrumbs show `namespace`-symbols.",
 			),
 		},
 		"breadcrumbs.showPackages": {
@@ -281,7 +283,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.package",
-				"When enabled breadcrumbs show `package`-symbols."
+				"When enabled breadcrumbs show `package`-symbols.",
 			),
 		},
 		"breadcrumbs.showClasses": {
@@ -290,7 +292,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.class",
-				"When enabled breadcrumbs show `class`-symbols."
+				"When enabled breadcrumbs show `class`-symbols.",
 			),
 		},
 		"breadcrumbs.showMethods": {
@@ -299,7 +301,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.method",
-				"When enabled breadcrumbs show `method`-symbols."
+				"When enabled breadcrumbs show `method`-symbols.",
 			),
 		},
 		"breadcrumbs.showProperties": {
@@ -308,7 +310,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.property",
-				"When enabled breadcrumbs show `property`-symbols."
+				"When enabled breadcrumbs show `property`-symbols.",
 			),
 		},
 		"breadcrumbs.showFields": {
@@ -317,7 +319,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.field",
-				"When enabled breadcrumbs show `field`-symbols."
+				"When enabled breadcrumbs show `field`-symbols.",
 			),
 		},
 		"breadcrumbs.showConstructors": {
@@ -326,7 +328,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.constructor",
-				"When enabled breadcrumbs show `constructor`-symbols."
+				"When enabled breadcrumbs show `constructor`-symbols.",
 			),
 		},
 		"breadcrumbs.showEnums": {
@@ -335,7 +337,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.enum",
-				"When enabled breadcrumbs show `enum`-symbols."
+				"When enabled breadcrumbs show `enum`-symbols.",
 			),
 		},
 		"breadcrumbs.showInterfaces": {
@@ -344,7 +346,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.interface",
-				"When enabled breadcrumbs show `interface`-symbols."
+				"When enabled breadcrumbs show `interface`-symbols.",
 			),
 		},
 		"breadcrumbs.showFunctions": {
@@ -353,7 +355,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.function",
-				"When enabled breadcrumbs show `function`-symbols."
+				"When enabled breadcrumbs show `function`-symbols.",
 			),
 		},
 		"breadcrumbs.showVariables": {
@@ -362,7 +364,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.variable",
-				"When enabled breadcrumbs show `variable`-symbols."
+				"When enabled breadcrumbs show `variable`-symbols.",
 			),
 		},
 		"breadcrumbs.showConstants": {
@@ -371,7 +373,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.constant",
-				"When enabled breadcrumbs show `constant`-symbols."
+				"When enabled breadcrumbs show `constant`-symbols.",
 			),
 		},
 		"breadcrumbs.showStrings": {
@@ -380,7 +382,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.string",
-				"When enabled breadcrumbs show `string`-symbols."
+				"When enabled breadcrumbs show `string`-symbols.",
 			),
 		},
 		"breadcrumbs.showNumbers": {
@@ -389,7 +391,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.number",
-				"When enabled breadcrumbs show `number`-symbols."
+				"When enabled breadcrumbs show `number`-symbols.",
 			),
 		},
 		"breadcrumbs.showBooleans": {
@@ -398,7 +400,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.boolean",
-				"When enabled breadcrumbs show `boolean`-symbols."
+				"When enabled breadcrumbs show `boolean`-symbols.",
 			),
 		},
 		"breadcrumbs.showArrays": {
@@ -407,7 +409,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.array",
-				"When enabled breadcrumbs show `array`-symbols."
+				"When enabled breadcrumbs show `array`-symbols.",
 			),
 		},
 		"breadcrumbs.showObjects": {
@@ -416,7 +418,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.object",
-				"When enabled breadcrumbs show `object`-symbols."
+				"When enabled breadcrumbs show `object`-symbols.",
 			),
 		},
 		"breadcrumbs.showKeys": {
@@ -425,7 +427,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.key",
-				"When enabled breadcrumbs show `key`-symbols."
+				"When enabled breadcrumbs show `key`-symbols.",
 			),
 		},
 		"breadcrumbs.showNull": {
@@ -434,7 +436,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.null",
-				"When enabled breadcrumbs show `null`-symbols."
+				"When enabled breadcrumbs show `null`-symbols.",
 			),
 		},
 		"breadcrumbs.showEnumMembers": {
@@ -443,7 +445,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.enumMember",
-				"When enabled breadcrumbs show `enumMember`-symbols."
+				"When enabled breadcrumbs show `enumMember`-symbols.",
 			),
 		},
 		"breadcrumbs.showStructs": {
@@ -452,7 +454,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.struct",
-				"When enabled breadcrumbs show `struct`-symbols."
+				"When enabled breadcrumbs show `struct`-symbols.",
 			),
 		},
 		"breadcrumbs.showEvents": {
@@ -461,7 +463,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.event",
-				"When enabled breadcrumbs show `event`-symbols."
+				"When enabled breadcrumbs show `event`-symbols.",
 			),
 		},
 		"breadcrumbs.showOperators": {
@@ -470,7 +472,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.operator",
-				"When enabled breadcrumbs show `operator`-symbols."
+				"When enabled breadcrumbs show `operator`-symbols.",
 			),
 		},
 		"breadcrumbs.showTypeParameters": {
@@ -479,7 +481,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			markdownDescription: localize(
 				"filteredTypes.typeParameter",
-				"When enabled breadcrumbs show `typeParameter`-symbols."
+				"When enabled breadcrumbs show `typeParameter`-symbols.",
 			),
 		},
 	},

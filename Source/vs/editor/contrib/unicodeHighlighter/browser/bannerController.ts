@@ -1,19 +1,19 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
-import "vs/css!./bannerController";
 import { $, append, clearNode } from "vs/base/browser/dom";
 import { ActionBar } from "vs/base/browser/ui/actionbar/actionbar";
 import { Action } from "vs/base/common/actions";
 import { MarkdownString } from "vs/base/common/htmlContent";
 import { Disposable } from "vs/base/common/lifecycle";
-import { MarkdownRenderer } from "vs/editor/contrib/markdownRenderer/browser/markdownRenderer";
+import { ThemeIcon } from "vs/base/common/themables";
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+import "vs/css!./bannerController";
 import { ICodeEditor } from "vs/editor/browser/editorBrowser";
+import { MarkdownRenderer } from "vs/editor/contrib/markdownRenderer/browser/markdownRenderer";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { ILinkDescriptor, Link } from "vs/platform/opener/browser/link";
 import { widgetClose } from "vs/platform/theme/common/iconRegistry";
-import { ThemeIcon } from "vs/base/common/themables";
 
 const BANNER_ELEMENT_HEIGHT = 26;
 
@@ -115,14 +115,14 @@ class Banner extends Disposable {
 
 		if (item.icon) {
 			iconContainer.appendChild(
-				$(`div${ThemeIcon.asCSSSelector(item.icon)}`)
+				$(`div${ThemeIcon.asCSSSelector(item.icon)}`),
 			);
 		}
 
 		// Message
 		const messageContainer = append(
 			this.element,
-			$("div.message-container")
+			$("div.message-container"),
 		);
 		messageContainer.setAttribute("aria-hidden", "true");
 		messageContainer.appendChild(this.getBannerMessage(item.message));
@@ -130,7 +130,7 @@ class Banner extends Disposable {
 		// Message Actions
 		this.messageActionsContainer = append(
 			this.element,
-			$("div.message-actions-container")
+			$("div.message-actions-container"),
 		);
 		if (item.actions) {
 			for (const action of item.actions) {
@@ -139,8 +139,8 @@ class Banner extends Disposable {
 						Link,
 						this.messageActionsContainer,
 						{ ...action, tabIndex: -1 },
-						{}
-					)
+						{},
+					),
 				);
 			}
 		}
@@ -148,7 +148,7 @@ class Banner extends Disposable {
 		// Action
 		const actionBarContainer = append(
 			this.element,
-			$("div.action-container")
+			$("div.action-container"),
 		);
 		this.actionBar = this._register(new ActionBar(actionBarContainer));
 		this.actionBar.push(
@@ -162,10 +162,10 @@ class Banner extends Disposable {
 						if (typeof item.onClose === "function") {
 							item.onClose();
 						}
-					}
-				)
+					},
+				),
 			),
-			{ icon: true, label: false }
+			{ icon: true, label: false },
 		);
 		this.actionBar.setFocusable(false);
 	}

@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as es from "event-stream";
-import * as fancyLog from "fancy-log";
-import * as ansiColors from "ansi-colors";
 import * as fs from "fs";
 import * as path from "path";
+import * as ansiColors from "ansi-colors";
+import * as es from "event-stream";
+import * as fancyLog from "fancy-log";
 
 class ErrorLog {
 	constructor(public id: string) {}
@@ -24,7 +24,7 @@ class ErrorLog {
 		fancyLog(
 			`Starting ${ansiColors.green("compilation")}${
 				this.id ? ansiColors.blue(` ${this.id}`) : ""
-			}...`
+			}...`,
 		);
 	}
 
@@ -51,8 +51,8 @@ class ErrorLog {
 			`Finished ${ansiColors.green("compilation")}${
 				this.id ? ansiColors.blue(` ${this.id}`) : ""
 			} with ${errors.length} errors after ${ansiColors.magenta(
-				new Date().getTime() - this.startTime! + " ms"
-			)}`
+				new Date().getTime() - this.startTime! + " ms",
+			)}`,
 		);
 
 		const regex = /^([^(]+)\((\d+),(\d+)\): (.*)$/s;
@@ -71,7 +71,7 @@ class ErrorLog {
 			const logFileName = "log" + (this.id ? `_${this.id}` : "");
 			fs.writeFileSync(
 				path.join(buildLogFolder, logFileName),
-				JSON.stringify(messages)
+				JSON.stringify(messages),
 			);
 		} catch (err) {
 			//noop
@@ -80,7 +80,7 @@ class ErrorLog {
 }
 
 const errorLogsById = new Map<string, ErrorLog>();
-function getErrorLog(id: string = "") {
+function getErrorLog(id = "") {
 	let errorLog = errorLogsById.get(id);
 	if (!errorLog) {
 		errorLog = new ErrorLog(id);
@@ -91,7 +91,7 @@ function getErrorLog(id: string = "") {
 
 const buildLogFolder = path.join(
 	path.dirname(path.dirname(__dirname)),
-	".build"
+	".build",
 );
 
 try {

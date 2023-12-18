@@ -1,4 +1,3 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -13,7 +12,7 @@ const manifests = require("../../../cgmanifest.json");
 const dep_lists_1 = require("./dep-lists");
 function generatePackageDeps(files, arch, chromiumSysroot, vscodeSysroot) {
 	const dependencies = files.map((file) =>
-		calculatePackageDeps(file, arch, chromiumSysroot, vscodeSysroot)
+		calculatePackageDeps(file, arch, chromiumSysroot, vscodeSysroot),
 	);
 	const additionalDepsSet = new Set(dep_lists_1.additionalDeps);
 	dependencies.push(additionalDepsSet);
@@ -25,12 +24,12 @@ function calculatePackageDeps(
 	binaryPath,
 	arch,
 	chromiumSysroot,
-	vscodeSysroot
+	vscodeSysroot,
 ) {
 	try {
 		if (!((0, fs_1.statSync)(binaryPath).mode & fs_1.constants.S_IXUSR)) {
 			throw new Error(
-				`Binary ${binaryPath} needs to have an executable bit set.`
+				`Binary ${binaryPath} needs to have an executable bit set.`,
 			);
 		}
 	} catch (e) {
@@ -54,7 +53,7 @@ function calculatePackageDeps(
 	]);
 	if (result.status !== 0) {
 		throw new Error(
-			"Cannot retrieve dpkg-shlibdeps. Stderr:\n" + result.stderr
+			"Cannot retrieve dpkg-shlibdeps. Stderr:\n" + result.stderr,
 		);
 	}
 	const cmd = [dpkgShlibdepsScriptLocation, "--ignore-weak-undefined"];
@@ -64,7 +63,7 @@ function calculatePackageDeps(
 				`-l${chromiumSysroot}/usr/lib/x86_64-linux-gnu`,
 				`-l${chromiumSysroot}/lib/x86_64-linux-gnu`,
 				`-l${vscodeSysroot}/usr/lib/x86_64-linux-gnu`,
-				`-l${vscodeSysroot}/lib/x86_64-linux-gnu`
+				`-l${vscodeSysroot}/lib/x86_64-linux-gnu`,
 			);
 			break;
 		case "armhf":
@@ -72,7 +71,7 @@ function calculatePackageDeps(
 				`-l${chromiumSysroot}/usr/lib/arm-linux-gnueabihf`,
 				`-l${chromiumSysroot}/lib/arm-linux-gnueabihf`,
 				`-l${vscodeSysroot}/usr/lib/arm-linux-gnueabihf`,
-				`-l${vscodeSysroot}/lib/arm-linux-gnueabihf`
+				`-l${vscodeSysroot}/lib/arm-linux-gnueabihf`,
 			);
 			break;
 		case "arm64":
@@ -80,7 +79,7 @@ function calculatePackageDeps(
 				`-l${chromiumSysroot}/usr/lib/aarch64-linux-gnu`,
 				`-l${chromiumSysroot}/lib/aarch64-linux-gnu`,
 				`-l${vscodeSysroot}/usr/lib/aarch64-linux-gnu`,
-				`-l${vscodeSysroot}/lib/aarch64-linux-gnu`
+				`-l${vscodeSysroot}/lib/aarch64-linux-gnu`,
 			);
 			break;
 	}
@@ -92,7 +91,7 @@ function calculatePackageDeps(
 	});
 	if (dpkgShlibdepsResult.status !== 0) {
 		throw new Error(
-			`dpkg-shlibdeps failed with exit code ${dpkgShlibdepsResult.status}. stderr:\n${dpkgShlibdepsResult.stderr} `
+			`dpkg-shlibdeps failed with exit code ${dpkgShlibdepsResult.status}. stderr:\n${dpkgShlibdepsResult.stderr} `,
 		);
 	}
 	const shlibsDependsPrefix = "shlibs:Depends=";

@@ -24,19 +24,19 @@ export interface IUserKeybindingItem {
 export class KeybindingIO {
 	public static writeKeybindingItem(
 		out: OutputBuilder,
-		item: ResolvedKeybindingItem
+		item: ResolvedKeybindingItem,
 	): void {
 		if (!item.resolvedKeybinding) {
 			return;
 		}
 		const quotedSerializedKeybinding = JSON.stringify(
-			item.resolvedKeybinding.getUserSettingsLabel()
+			item.resolvedKeybinding.getUserSettingsLabel(),
 		);
 		out.write(
 			`{ "key": ${rightPaddedString(
 				quotedSerializedKeybinding + ",",
-				25
-			)} "command": `
+				25,
+			)} "command": `,
 		);
 
 		const quotedSerializedWhen = item.when
@@ -47,7 +47,7 @@ export class KeybindingIO {
 			out.write(`${quotedSerializeCommand},`);
 			out.writeLine();
 			out.write(
-				`                                     "when": ${quotedSerializedWhen}`
+				`                                     "when": ${quotedSerializedWhen}`,
 			);
 		} else {
 			out.write(`${quotedSerializeCommand}`);
@@ -57,8 +57,8 @@ export class KeybindingIO {
 			out.writeLine();
 			out.write(
 				`                                     "args": ${JSON.stringify(
-					item.commandArgs
-				)}`
+					item.commandArgs,
+				)}`,
 			);
 		}
 		out.write(" }");
@@ -103,13 +103,13 @@ function rightPaddedString(str: string, minChars: number): string {
 
 export class OutputBuilder {
 	private _lines: string[] = [];
-	private _currentLine: string = "";
+	private _currentLine = "";
 
 	write(str: string): void {
 		this._currentLine += str;
 	}
 
-	writeLine(str: string = ""): void {
+	writeLine(str = ""): void {
 		this._lines.push(this._currentLine + str);
 		this._currentLine = "";
 	}

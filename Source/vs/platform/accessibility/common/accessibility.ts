@@ -8,7 +8,7 @@ import { RawContextKey } from "vs/platform/contextkey/common/contextkey";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 
 export const IAccessibilityService = createDecorator<IAccessibilityService>(
-	"accessibilityService"
+	"accessibilityService",
 );
 
 export interface IAccessibilityService {
@@ -25,7 +25,7 @@ export interface IAccessibilityService {
 	alert(message: string): void;
 }
 
-export const enum AccessibilitySupport {
+export enum AccessibilitySupport {
 	/**
 	 * This should be the browser case where it is not known if a screen reader is attached or no.
 	 */
@@ -38,7 +38,7 @@ export const enum AccessibilitySupport {
 
 export const CONTEXT_ACCESSIBILITY_MODE_ENABLED = new RawContextKey<boolean>(
 	"accessibilityModeEnabled",
-	false
+	false,
 );
 
 export interface IAccessibilityInformation {
@@ -47,7 +47,7 @@ export interface IAccessibilityInformation {
 }
 
 export function isAccessibilityInformation(
-	obj: any
+	obj: any,
 ): obj is IAccessibilityInformation {
 	return (
 		obj &&
@@ -59,7 +59,7 @@ export function isAccessibilityInformation(
 
 export const IAccessibleNotificationService =
 	createDecorator<IAccessibleNotificationService>(
-		"accessibleNotificationService"
+		"accessibleNotificationService",
 	);
 /**
  * Manages whether an audio cue or an aria alert will be used
@@ -71,7 +71,7 @@ export interface IAccessibleNotificationService {
 	notify(event: AccessibleNotificationEvent, userGesture?: boolean): void;
 }
 
-export const enum AccessibleNotificationEvent {
+export enum AccessibleNotificationEvent {
 	Clear = "clear",
 	Save = "save",
 	Format = "format",

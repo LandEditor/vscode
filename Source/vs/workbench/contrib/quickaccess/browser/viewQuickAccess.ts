@@ -3,42 +3,42 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { matchesFuzzy } from "vs/base/common/filters";
+import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
+import { fuzzyContains } from "vs/base/common/strings";
 import { localize } from "vs/nls";
-import {
-	IQuickPickSeparator,
-	IQuickInputService,
-	ItemActivation,
-} from "vs/platform/quickinput/common/quickInput";
+import { Categories } from "vs/platform/action/common/actionCommonCategories";
+import { Action2 } from "vs/platform/actions/common/actions";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
 import {
 	IPickerQuickAccessItem,
 	PickerQuickAccessProvider,
 } from "vs/platform/quickinput/browser/pickerQuickAccess";
+import {
+	IQuickInputService,
+	IQuickPickSeparator,
+	ItemActivation,
+} from "vs/platform/quickinput/common/quickInput";
+import { PaneCompositeDescriptor } from "vs/workbench/browser/panecomposite";
 import {
 	IViewDescriptorService,
 	IViewsService,
 	ViewContainer,
 	ViewContainerLocation,
 } from "vs/workbench/common/views";
-import { IOutputService } from "vs/workbench/services/output/common/output";
-import {
-	ITerminalGroupService,
-	ITerminalService,
-} from "vs/workbench/contrib/terminal/browser/terminal";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import { PaneCompositeDescriptor } from "vs/workbench/browser/panecomposite";
-import { matchesFuzzy } from "vs/base/common/filters";
-import { fuzzyContains } from "vs/base/common/strings";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { Action2 } from "vs/platform/actions/common/actions";
-import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import { KeyMod, KeyCode } from "vs/base/common/keyCodes";
-import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
-import { Categories } from "vs/platform/action/common/actionCommonCategories";
-import { IPaneCompositePartService } from "vs/workbench/services/panecomposite/browser/panecomposite";
 import {
 	IDebugService,
 	REPL_VIEW_ID,
 } from "vs/workbench/contrib/debug/common/debug";
+import {
+	ITerminalGroupService,
+	ITerminalService,
+} from "vs/workbench/contrib/terminal/browser/terminal";
+import { IOutputService } from "vs/workbench/services/output/common/output";
+import { IPaneCompositePartService } from "vs/workbench/services/panecomposite/browser/panecomposite";
 
 interface IViewQuickPickItem extends IPickerQuickAccessItem {
 	containerLabel: string;
@@ -70,7 +70,7 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 	}
 
 	protected _getPicks(
-		filter: string
+		filter: string,
 	): Array<IViewQuickPickItem | IQuickPickSeparator> {
 		const filteredViewEntries = this.doGetViewPickItems().filter(
 			(entry) => {
@@ -88,7 +88,7 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 					entry.highlights.label ||
 					fuzzyContains(entry.containerLabel, filter)
 				);
-			}
+			},
 		);
 
 		// Map entries to container labels
@@ -113,7 +113,7 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 				let separatorLabel: string;
 				if (mapEntryToContainer.has(lastContainer)) {
 					separatorLabel = `${mapEntryToContainer.get(
-						lastContainer
+						lastContainer,
 					)} / ${lastContainer}`;
 				} else {
 					separatorLabel = lastContainer;
@@ -136,7 +136,7 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 
 		const getViewEntriesForPaneComposite = (
 			paneComposite: PaneCompositeDescriptor,
-			viewContainer: ViewContainer
+			viewContainer: ViewContainer,
 		): IViewQuickPickItem[] => {
 			const viewContainerModel =
 				this.viewDescriptorService.getViewContainerModel(viewContainer);
@@ -156,7 +156,7 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 
 		const addPaneComposites = (
 			location: ViewContainerLocation,
-			containerLabel: string
+			containerLabel: string,
 		) => {
 			const paneComposites =
 				this.paneCompositeService.getPaneComposites(location);
@@ -165,10 +165,10 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 
 			paneComposites.sort((a, b) => {
 				let aIndex = visiblePaneCompositeIds.findIndex(
-					(id) => a.id === id
+					(id) => a.id === id,
 				);
 				let bIndex = visiblePaneCompositeIds.findIndex(
-					(id) => b.id === id
+					(id) => b.id === id,
 				);
 
 				if (aIndex < 0) {
@@ -190,19 +190,19 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 				if (this.includeViewContainer(paneComposite)) {
 					const viewContainer =
 						this.viewDescriptorService.getViewContainerById(
-							paneComposite.id
+							paneComposite.id,
 						);
 					if (viewContainer) {
 						viewEntries.push({
 							label: this.viewDescriptorService.getViewContainerModel(
-								viewContainer
+								viewContainer,
 							).title,
 							containerLabel,
 							accept: () =>
 								this.paneCompositeService.openPaneComposite(
 									paneComposite.id,
 									location,
-									true
+									true,
 								),
 						});
 					}
@@ -213,15 +213,15 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 		// Viewlets / Panels
 		addPaneComposites(
 			ViewContainerLocation.Sidebar,
-			localize("views", "Side Bar")
+			localize("views", "Side Bar"),
 		);
 		addPaneComposites(
 			ViewContainerLocation.Panel,
-			localize("panels", "Panel")
+			localize("panels", "Panel"),
 		);
 		addPaneComposites(
 			ViewContainerLocation.AuxiliaryBar,
-			localize("secondary side bar", "Secondary Side Bar")
+			localize("secondary side bar", "Secondary Side Bar"),
 		);
 
 		const addPaneCompositeViews = (location: ViewContainerLocation) => {
@@ -230,14 +230,14 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 			for (const paneComposite of paneComposites) {
 				const viewContainer =
 					this.viewDescriptorService.getViewContainerById(
-						paneComposite.id
+						paneComposite.id,
 					);
 				if (viewContainer) {
 					viewEntries.push(
 						...getViewEntriesForPaneComposite(
 							paneComposite,
-							viewContainer
-						)
+							viewContainer,
+						),
 					);
 				}
 			}
@@ -255,7 +255,7 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 					"terminalTitle",
 					"{0}: {1}",
 					`${groupIndex + 1}.${terminalIndex + 1}`,
-					terminal.title
+					terminal.title,
 				);
 				viewEntries.push({
 					label,
@@ -283,13 +283,13 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 							undefined,
 							undefined,
 							session,
-							{ explicit: true }
+							{ explicit: true },
 						);
 
 						if (!this.viewsService.isViewVisible(REPL_VIEW_ID)) {
 							await this.viewsService.openView(
 								REPL_VIEW_ID,
-								true
+								true,
 							);
 						}
 					},
@@ -311,7 +311,7 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 
 	private includeViewContainer(container: PaneCompositeDescriptor): boolean {
 		const viewContainer = this.viewDescriptorService.getViewContainerById(
-			container.id
+			container.id,
 		);
 		if (viewContainer?.hideIfEmpty) {
 			return (
@@ -378,7 +378,7 @@ export class QuickAccessViewPickerAction extends Action2 {
 		const quickInputService = accessor.get(IQuickInputService);
 
 		const keys = keybindingService.lookupKeybindings(
-			QuickAccessViewPickerAction.ID
+			QuickAccessViewPickerAction.ID,
 		);
 
 		quickInputService.quickAccess.show(ViewQuickAccessProvider.PREFIX, {

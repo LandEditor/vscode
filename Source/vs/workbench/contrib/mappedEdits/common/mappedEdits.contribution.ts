@@ -5,11 +5,11 @@
 
 import { CancellationTokenSource } from "vs/base/common/cancellation";
 import { URI } from "vs/base/common/uri";
+import * as languages from "vs/editor/common/languages";
 import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
 import { ITextModelService } from "vs/editor/common/services/resolverService";
 import { CommandsRegistry } from "vs/platform/commands/common/commands";
 import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import * as languages from "vs/editor/common/languages";
 
 CommandsRegistry.registerCommand(
 	"_executeMappedEditsProvider",
@@ -17,7 +17,7 @@ CommandsRegistry.registerCommand(
 		accessor: ServicesAccessor,
 		documentUri: URI,
 		codeBlocks: string[],
-		context: languages.MappedEditsContext
+		context: languages.MappedEditsContext,
 	): Promise<languages.WorkspaceEdit | null> => {
 		const modelService = accessor.get(ITextModelService);
 		const langFeaturesService = accessor.get(ILanguageFeaturesService);
@@ -28,7 +28,7 @@ CommandsRegistry.registerCommand(
 
 		try {
 			const providers = langFeaturesService.mappedEditsProvider.ordered(
-				document.object.textEditorModel
+				document.object.textEditorModel,
 			);
 
 			if (providers.length > 0) {
@@ -40,7 +40,7 @@ CommandsRegistry.registerCommand(
 					document.object.textEditorModel,
 					codeBlocks,
 					context,
-					cancellationTokenSource.token
+					cancellationTokenSource.token,
 				);
 			}
 		} finally {
@@ -48,5 +48,5 @@ CommandsRegistry.registerCommand(
 		}
 
 		return result;
-	}
+	},
 );

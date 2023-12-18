@@ -30,29 +30,29 @@ export class TypeScriptReferencesCodeLensProvider extends TypeScriptBaseCodeLens
 	public constructor(
 		client: ITypeScriptServiceClient,
 		protected _cachedResponse: CachedResponse<Proto.NavTreeResponse>,
-		private readonly language: LanguageDescription
+		private readonly language: LanguageDescription,
 	) {
 		super(client, _cachedResponse);
 		this._register(
 			vscode.workspace.onDidChangeConfiguration((evt) => {
 				if (
 					evt.affectsConfiguration(
-						`${language.id}.referencesCodeLens.showOnAllFunctions`
+						`${language.id}.referencesCodeLens.showOnAllFunctions`,
 					)
 				) {
 					this.changeEmitter.fire();
 				}
-			})
+			}),
 		);
 	}
 
 	public async resolveCodeLens(
 		codeLens: ReferencesCodeLens,
-		token: vscode.CancellationToken
+		token: vscode.CancellationToken,
 	): Promise<vscode.CodeLens> {
 		const args = typeConverters.Position.toFileLocationRequestArgs(
 			codeLens.file,
-			codeLens.range.start
+			codeLens.range.start,
 		);
 		const response = await this.client.execute("references", args, token, {
 			lowPriority: true,
@@ -72,8 +72,8 @@ export class TypeScriptReferencesCodeLensProvider extends TypeScriptBaseCodeLens
 			.map((reference) =>
 				typeConverters.Location.fromTextSpan(
 					this.client.toResource(reference.file),
-					reference
-				)
+					reference,
+				),
 			);
 
 		codeLens.command = {
@@ -85,7 +85,7 @@ export class TypeScriptReferencesCodeLensProvider extends TypeScriptBaseCodeLens
 	}
 
 	private getCodeLensLabel(
-		locations: ReadonlyArray<vscode.Location>
+		locations: ReadonlyArray<vscode.Location>,
 	): string {
 		return locations.length === 1
 			? vscode.l10n.t("1 reference")
@@ -95,7 +95,7 @@ export class TypeScriptReferencesCodeLensProvider extends TypeScriptBaseCodeLens
 	protected extractSymbol(
 		document: vscode.TextDocument,
 		item: Proto.NavigationTree,
-		parent: Proto.NavigationTree | undefined
+		parent: Proto.NavigationTree | undefined,
 	): vscode.Range | undefined {
 		if (parent && parent.kind === PConst.Kind.enum) {
 			return getSymbolRange(document, item);
@@ -142,11 +142,11 @@ export class TypeScriptReferencesCodeLensProvider extends TypeScriptBaseCodeLens
 				if (
 					parent &&
 					typeConverters.Position.fromLocation(
-						parent.spans[0].start
+						parent.spans[0].start,
 					).isEqual(
 						typeConverters.Position.fromLocation(
-							item.spans[0].start
-						)
+							item.spans[0].start,
+						),
 					)
 				) {
 					return undefined;
@@ -170,13 +170,13 @@ export function register(
 	selector: DocumentSelector,
 	language: LanguageDescription,
 	client: ITypeScriptServiceClient,
-	cachedResponse: CachedResponse<Proto.NavTreeResponse>
+	cachedResponse: CachedResponse<Proto.NavTreeResponse>,
 ) {
 	return conditionalRegistration(
 		[
 			requireGlobalConfiguration(
 				language.id,
-				"referencesCodeLens.enabled"
+				"referencesCodeLens.enabled",
 			),
 			requireSomeCapability(client, ClientCapability.Semantic),
 		],
@@ -186,9 +186,9 @@ export function register(
 				new TypeScriptReferencesCodeLensProvider(
 					client,
 					cachedResponse,
-					language
-				)
+					language,
+				),
 			);
-		}
+		},
 	);
 }

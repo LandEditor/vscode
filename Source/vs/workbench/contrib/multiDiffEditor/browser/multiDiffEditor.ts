@@ -5,6 +5,8 @@
 
 import * as DOM from "vs/base/browser/dom";
 import { CancellationToken } from "vs/base/common/cancellation";
+import { URI } from "vs/base/common/uri";
+import { MultiDiffEditorViewModel } from "vs/editor/browser/widget/multiDiffEditorWidget/multiDiffEditorViewModel";
 import { MultiDiffEditorWidget } from "vs/editor/browser/widget/multiDiffEditorWidget/multiDiffEditorWidget";
 import {
 	IResourceLabel,
@@ -25,8 +27,6 @@ import { EditorInput } from "vs/workbench/common/editor/editorInput";
 import { MultiDiffEditorInput } from "vs/workbench/contrib/multiDiffEditor/browser/multiDiffEditorInput";
 import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { URI } from "vs/base/common/uri";
-import { MultiDiffEditorViewModel } from "vs/editor/browser/widget/multiDiffEditorWidget/multiDiffEditorViewModel";
 
 export class MultiDiffEditor extends AbstractEditorWithViewState<IMultiDiffEditorViewState> {
 	static readonly ID = "multiDiffEditor";
@@ -47,7 +47,7 @@ export class MultiDiffEditor extends AbstractEditorWithViewState<IMultiDiffEdito
 		@IEditorService editorService: IEditorService,
 		@IEditorGroupsService editorGroupService: IEditorGroupsService,
 		@ITextResourceConfigurationService
-		textResourceConfigurationService: ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
 	) {
 		super(
 			MultiDiffEditor.ID,
@@ -58,7 +58,7 @@ export class MultiDiffEditor extends AbstractEditorWithViewState<IMultiDiffEdito
 			textResourceConfigurationService,
 			themeService,
 			editorService,
-			editorGroupService
+			editorGroupService,
 		);
 	}
 
@@ -68,15 +68,15 @@ export class MultiDiffEditor extends AbstractEditorWithViewState<IMultiDiffEdito
 				MultiDiffEditorWidget,
 				parent,
 				this.instantiationService.createInstance(
-					WorkbenchUIElementFactory
-				)
-			)
+					WorkbenchUIElementFactory,
+				),
+			),
 		);
 
 		this._register(
 			this._multiDiffEditorWidget.onDidChangeActiveControl(() => {
 				this._onDidChangeControl.fire();
-			})
+			}),
 		);
 	}
 
@@ -84,7 +84,7 @@ export class MultiDiffEditor extends AbstractEditorWithViewState<IMultiDiffEdito
 		input: MultiDiffEditorInput,
 		options: IEditorOptions | undefined,
 		context: IEditorOpenContext,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void> {
 		await super.setInput(input, options, context, token);
 		this._viewModel = await input.getViewModel();
@@ -110,7 +110,7 @@ export class MultiDiffEditor extends AbstractEditorWithViewState<IMultiDiffEdito
 	}
 
 	protected override computeEditorViewState(
-		resource: URI
+		resource: URI,
 	): IMultiDiffEditorViewState | undefined {
 		return {
 			scrollState: this._multiDiffEditorWidget!.getScrollState(),
@@ -122,7 +122,7 @@ export class MultiDiffEditor extends AbstractEditorWithViewState<IMultiDiffEdito
 	}
 
 	protected override toEditorViewStateResource(
-		input: EditorInput
+		input: EditorInput,
 	): URI | undefined {
 		return (input as MultiDiffEditorInput).resource;
 	}
@@ -142,7 +142,7 @@ class WorkbenchUIElementFactory implements IWorkbenchUIElementFactory {
 		const label = this._instantiationService.createInstance(
 			ResourceLabel,
 			element,
-			{}
+			{},
 		);
 		return {
 			setUri(uri) {

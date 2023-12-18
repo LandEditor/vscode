@@ -192,18 +192,18 @@ function createScreenReaderHelp(): IDisposable {
 					"msg2",
 					"View the next ({0}) or previous ({1}) diff in diff review mode, which is optimized for screen readers.",
 					next,
-					previous
+					previous,
 				),
 				localize(
 					"msg3",
 					"To control which audio cues should be played, the following settings can be configured: {0}.",
-					keys.join(", ")
+					keys.join(", "),
 				),
 			];
 			const commentCommandInfo = getCommentCommandInfo(
 				keybindingService,
 				contextKeyService,
-				codeEditor
+				codeEditor,
 			);
 			if (commentCommandInfo) {
 				content.push(commentCommandInfo);
@@ -218,17 +218,17 @@ function createScreenReaderHelp(): IDisposable {
 				options: { type: AccessibleViewType.Help },
 			});
 		},
-		ContextKeyEqualsExpr.create("isInDiffEditor", true)
+		ContextKeyEqualsExpr.create("isInDiffEditor", true),
 	);
 }
 
 registerDiffEditorContribution(
 	DiffEditorHelperContribution.ID,
-	DiffEditorHelperContribution
+	DiffEditorHelperContribution,
 );
 
 Registry.as<IConfigurationMigrationRegistry>(
-	Extensions.ConfigurationMigration
+	Extensions.ConfigurationMigration,
 ).registerConfigurationMigrations([
 	{
 		key: "diffEditor.experimental.collapseUnchangedRegions",

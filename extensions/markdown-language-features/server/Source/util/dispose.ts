@@ -19,7 +19,7 @@ export function disposeAll(disposables: Iterable<IDisposable>) {
 	} else if (errors.length > 1) {
 		throw new AggregateError(
 			errors,
-			"Encountered errors while disposing of store"
+			"Encountered errors while disposing of store",
 		);
 	}
 }

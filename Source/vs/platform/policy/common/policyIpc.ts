@@ -32,9 +32,9 @@ export class PolicyChannel implements IServerChannel {
 								[name]:
 									this.service.getPolicyValue(name) ?? null,
 							}),
-							{}
+							{},
 						),
-					this.disposables
+					this.disposables,
 				);
 		}
 
@@ -45,7 +45,7 @@ export class PolicyChannel implements IServerChannel {
 		switch (command) {
 			case "updatePolicyDefinitions":
 				return this.service.updatePolicyDefinitions(
-					arg as IStringDictionary<PolicyDefinition>
+					arg as IStringDictionary<PolicyDefinition>,
 				);
 		}
 
@@ -66,7 +66,7 @@ export class PolicyChannelClient
 			definition: PolicyDefinition;
 			value: PolicyValue;
 		}>,
-		private readonly channel: IChannel
+		private readonly channel: IChannel,
 	) {
 		super();
 		for (const name in policiesData) {
@@ -92,7 +92,7 @@ export class PolicyChannelClient
 	}
 
 	protected async _updatePolicyDefinitions(
-		policyDefinitions: IStringDictionary<PolicyDefinition>
+		policyDefinitions: IStringDictionary<PolicyDefinition>,
 	): Promise<void> {
 		const result = await this.channel.call<{
 			[name: PolicyName]: PolicyValue;

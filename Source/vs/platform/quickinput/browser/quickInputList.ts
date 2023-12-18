@@ -10,8 +10,8 @@ import { AriaRole } from "vs/base/browser/ui/aria/aria";
 import { HoverPosition } from "vs/base/browser/ui/hover/hoverWidget";
 import { IHoverWidget } from "vs/base/browser/ui/iconLabel/iconHoverDelegate";
 import {
-	IconLabel,
 	IIconLabelValueOptions,
+	IconLabel,
 } from "vs/base/browser/ui/iconLabel/iconLabel";
 import { KeybindingLabel } from "vs/base/browser/ui/keybindingLabel/keybindingLabel";
 import {
@@ -34,19 +34,21 @@ import { Emitter, Event } from "vs/base/common/event";
 import { IMatch } from "vs/base/common/filters";
 import { IMarkdownString } from "vs/base/common/htmlContent";
 import {
-	getCodiconAriaLabel,
 	IParsedLabelWithIcons,
+	getCodiconAriaLabel,
 	matchesFuzzyIconAware,
 	parseLabelWithIcons,
 } from "vs/base/common/iconLabels";
 import { KeyCode } from "vs/base/common/keyCodes";
+import { Lazy } from "vs/base/common/lazy";
 import {
 	DisposableStore,
-	dispose,
 	IDisposable,
+	dispose,
 } from "vs/base/common/lifecycle";
 import * as platform from "vs/base/common/platform";
 import { ltrim } from "vs/base/common/strings";
+import { URI } from "vs/base/common/uri";
 import "vs/css!./media/quickInput";
 import { localize } from "vs/nls";
 import { IQuickInputOptions } from "vs/platform/quickinput/browser/quickInput";
@@ -58,8 +60,6 @@ import {
 	IQuickPickSeparatorButtonEvent,
 	QuickPickItem,
 } from "vs/platform/quickinput/common/quickInput";
-import { Lazy } from "vs/base/common/lazy";
-import { URI } from "vs/base/common/uri";
 import { isDark } from "vs/platform/theme/common/theme";
 import { IThemeService } from "vs/platform/theme/common/themeService";
 
@@ -79,10 +79,10 @@ interface IListElement extends IListElementLazyParts {
 	readonly saneDetail?: string;
 	readonly saneTooltip?: string | IMarkdownString | HTMLElement;
 	readonly fireButtonTriggered: (
-		event: IQuickPickItemButtonEvent<IQuickPickItem>
+		event: IQuickPickItemButtonEvent<IQuickPickItem>,
 	) => void;
 	readonly fireSeparatorButtonTriggered: (
-		event: IQuickPickSeparatorButtonEvent
+		event: IQuickPickSeparatorButtonEvent,
 	) => void;
 	readonly onChecked: Event<boolean>;
 	checked: boolean;
@@ -104,15 +104,15 @@ class ListElement implements IListElement {
 	readonly saneDetail?: string;
 	readonly saneTooltip?: string | IMarkdownString | HTMLElement;
 	readonly fireButtonTriggered: (
-		event: IQuickPickItemButtonEvent<IQuickPickItem>
+		event: IQuickPickItemButtonEvent<IQuickPickItem>,
 	) => void;
 	readonly fireSeparatorButtonTriggered: (
-		event: IQuickPickSeparatorButtonEvent
+		event: IQuickPickSeparatorButtonEvent,
 	) => void;
 
 	// state will get updated later
-	private _checked: boolean = false;
-	private _hidden: boolean = false;
+	private _checked = false;
+	private _hidden = false;
 	private _element?: HTMLElement;
 	private _labelHighlights?: IMatch[];
 	private _descriptionHighlights?: IMatch[];
@@ -131,15 +131,15 @@ class ListElement implements IListElement {
 		index: number,
 		hasCheckbox: boolean,
 		fireButtonTriggered: (
-			event: IQuickPickItemButtonEvent<IQuickPickItem>
+			event: IQuickPickItemButtonEvent<IQuickPickItem>,
 		) => void,
 		fireSeparatorButtonTriggered: (
-			event: IQuickPickSeparatorButtonEvent
+			event: IQuickPickSeparatorButtonEvent,
 		) => void,
 		onCheckedEmitter: Emitter<{
 			listElement: IListElement;
 			checked: boolean;
-		}>
+		}>,
 	) {
 		this.hasCheckbox = hasCheckbox;
 		this.index = index;
@@ -152,8 +152,8 @@ class ListElement implements IListElement {
 						listElement: IListElement;
 						checked: boolean;
 					}>(this._onChecked.event, (e) => e.listElement === this),
-					(e) => e.checked
-				)
+					(e) => e.checked,
+			  )
 			: Event.None;
 
 		if (mainItem.type === "separator") {
@@ -316,8 +316,8 @@ class ListElementRenderer
 						// If checkbox not visible:
 						e.preventDefault(); // Prevent toggle of checkbox when it is immediately shown afterwards. #91740
 					}
-				}
-			)
+				},
+			),
 		);
 		data.checkbox = <HTMLInputElement>(
 			dom.append(label, $("input.quick-input-list-checkbox"))
@@ -329,8 +329,8 @@ class ListElementRenderer
 				dom.EventType.CHANGE,
 				(e) => {
 					data.element.checked = data.checkbox.checked;
-				}
-			)
+				},
+			),
 		);
 
 		// Rows
@@ -352,14 +352,14 @@ class ListElementRenderer
 		// Keybinding
 		const keybindingContainer = dom.append(
 			row1,
-			$(".quick-input-list-entry-keybinding")
+			$(".quick-input-list-entry-keybinding"),
 		);
 		data.keybinding = new KeybindingLabel(keybindingContainer, platform.OS);
 
 		// Detail
 		const detailContainer = dom.append(
 			row2,
-			$(".quick-input-list-label-meta")
+			$(".quick-input-list-label-meta"),
 		);
 		data.detail = new IconLabel(detailContainer, {
 			supportHighlights: true,
@@ -370,13 +370,13 @@ class ListElementRenderer
 		// Separator
 		data.separator = dom.append(
 			data.entry,
-			$(".quick-input-list-separator")
+			$(".quick-input-list-separator"),
 		);
 
 		// Actions
 		data.actionBar = new ActionBar(data.entry);
 		data.actionBar.domNode.classList.add(
-			"quick-input-list-entry-action-bar"
+			"quick-input-list-entry-action-bar",
 		);
 		data.toDisposeTemplate.push(data.actionBar);
 
@@ -386,7 +386,7 @@ class ListElementRenderer
 	renderElement(
 		element: IListElement,
 		index: number,
-		data: IListElementTemplateData
+		data: IListElementTemplateData,
 	): void {
 		data.element = element;
 		element.element = data.entry ?? undefined;
@@ -396,7 +396,7 @@ class ListElementRenderer
 
 		data.checkbox.checked = element.checked;
 		data.toDisposeElement.push(
-			element.onChecked((checked) => (data.checkbox.checked = checked))
+			element.onChecked((checked) => (data.checkbox.checked = checked)),
 		);
 
 		const { labelHighlights, descriptionHighlights, detailHighlights } =
@@ -434,12 +434,12 @@ class ListElementRenderer
 		data.label.setLabel(
 			element.saneLabel,
 			element.saneDescription,
-			options
+			options,
 		);
 
 		// Keybinding
 		data.keybinding.set(
-			mainItem.type === "separator" ? undefined : mainItem.keybinding
+			mainItem.type === "separator" ? undefined : mainItem.keybinding,
 		);
 
 		// Detail
@@ -463,7 +463,7 @@ class ListElementRenderer
 		}
 		data.entry.classList.toggle(
 			"quick-input-list-separator-border",
-			!!element.separator
+			!!element.separator,
 		);
 
 		// Actions
@@ -492,15 +492,15 @@ class ListElementRenderer
 								? element.fireButtonTriggered({
 										button,
 										item: mainItem,
-									})
+								  })
 								: element.fireSeparatorButtonTriggered({
 										button,
 										separator: mainItem,
-									});
+								  });
 						},
 					};
 				}),
-				{ icon: true, label: false }
+				{ icon: true, label: false },
 			);
 			data.entry.classList.add("has-actions");
 		} else {
@@ -511,7 +511,7 @@ class ListElementRenderer
 	disposeElement(
 		element: IListElement,
 		index: number,
-		data: IListElementTemplateData
+		data: IListElementTemplateData,
 	): void {
 		data.toDisposeElement = dispose(data.toDisposeElement);
 		data.actionBar.clear();
@@ -539,12 +539,12 @@ class ListElementDelegate implements IListVirtualDelegate<IListElement> {
 
 export enum QuickInputListFocus {
 	First = 1,
-	Second,
-	Last,
-	Next,
-	Previous,
-	NextPage,
-	PreviousPage,
+	Second = 2,
+	Last = 3,
+	Next = 4,
+	Previous = 5,
+	NextPage = 6,
+	PreviousPage = 7,
 }
 
 export class QuickInputList {
@@ -597,7 +597,7 @@ export class QuickInputList {
 		private parent: HTMLElement,
 		id: string,
 		private options: IQuickInputOptions,
-		themeService: IThemeService
+		themeService: IThemeService,
 	) {
 		this.id = id;
 		this.container = dom.append(this.parent, $(".quick-input-list"));
@@ -626,7 +626,7 @@ export class QuickInputList {
 				multipleSelectionSupport: false,
 				horizontalScrolling: false,
 				accessibilityProvider,
-			} as IListOptions<IListElement>
+			} as IListOptions<IListElement>,
 		);
 		this.list.getHTMLElement().id = id;
 		this.disposables.push(this.list);
@@ -662,7 +662,7 @@ export class QuickInputList {
 				}
 
 				this._onKeyDown.fire(event);
-			})
+			}),
 		);
 		this.disposables.push(
 			this.list.onMouseDown((e) => {
@@ -670,7 +670,7 @@ export class QuickInputList {
 					// Works around / fixes #64350.
 					e.browserEvent.preventDefault();
 				}
-			})
+			}),
 		);
 		this.disposables.push(
 			dom.addDisposableListener(
@@ -681,13 +681,13 @@ export class QuickInputList {
 						// Avoid 'click' triggered by 'space' on checkbox.
 						this._onLeave.fire();
 					}
-				}
-			)
+				},
+			),
 		);
 		this.disposables.push(
 			this.list.onMouseMiddleClick((e) => {
 				this._onLeave.fire();
-			})
+			}),
 		);
 		this.disposables.push(
 			this.list.onContextMenu((e) => {
@@ -701,7 +701,7 @@ export class QuickInputList {
 					// click on an item to open it.
 					this.list.setSelection([e.index]);
 				}
-			})
+			}),
 		);
 
 		if (options.hoverDelegate) {
@@ -725,7 +725,7 @@ export class QuickInputList {
 						// check if the mouse is still over the same element
 						dom.isAncestor(
 							e.browserEvent.relatedTarget as Node,
-							e.element?.element as Node
+							e.element?.element as Node,
 						)
 					) {
 						return;
@@ -742,7 +742,7 @@ export class QuickInputList {
 							throw e;
 						}
 					}
-				})
+				}),
 			);
 			this.disposables.push(
 				this.list.onMouseOut((e) => {
@@ -752,18 +752,18 @@ export class QuickInputList {
 					if (
 						dom.isAncestor(
 							e.browserEvent.relatedTarget as Node,
-							e.element?.element as Node
+							e.element?.element as Node,
 						)
 					) {
 						return;
 					}
 					delayer.cancel();
-				})
+				}),
 			);
 			this.disposables.push(delayer);
 		}
 		this.disposables.push(
-			this._listElementChecked.event((_) => this.fireCheckedEvents())
+			this._listElementChecked.event((_) => this.fireCheckedEvents()),
 		);
 		this.disposables.push(
 			this._onChangedAllVisibleChecked,
@@ -773,14 +773,14 @@ export class QuickInputList {
 			this._onButtonTriggered,
 			this._onSeparatorButtonTriggered,
 			this._onLeave,
-			this._onKeyDown
+			this._onKeyDown,
 		);
 	}
 
 	@memoize
 	get onDidChangeFocus() {
 		return Event.map(this.list.onDidChangeFocus, (e) =>
-			e.elements.map((e) => e.item)
+			e.elements.map((e) => e.item),
 		);
 	}
 
@@ -814,15 +814,15 @@ export class QuickInputList {
 
 	private allVisibleChecked(
 		elements: IListElement[],
-		whenNoneVisible = true
+		whenNoneVisible = true,
 	) {
 		for (let i = 0, n = elements.length; i < n; i++) {
 			const element = elements[i];
 			if (!element.hidden) {
-				if (!element.checked) {
-					return false;
-				} else {
+				if (element.checked) {
 					whenNoneVisible = true;
+				} else {
+					return false;
 				}
 			}
 		}
@@ -868,41 +868,45 @@ export class QuickInputList {
 	setElements(inputElements: Array<QuickPickItem>): void {
 		this.elementDisposables = dispose(this.elementDisposables);
 		const fireButtonTriggered = (
-			event: IQuickPickItemButtonEvent<IQuickPickItem>
+			event: IQuickPickItemButtonEvent<IQuickPickItem>,
 		) => this.fireButtonTriggered(event);
 		const fireSeparatorButtonTriggered = (
-			event: IQuickPickSeparatorButtonEvent
+			event: IQuickPickSeparatorButtonEvent,
 		) => this.fireSeparatorButtonTriggered(event);
 		this.inputElements = inputElements;
 		const elementsToIndexes = new Map<QuickPickItem, number>();
 		const hasCheckbox = this.parent.classList.contains("show-checkboxes");
-		this.elements = inputElements.reduce((result, item, index) => {
-			const previous = index > 0 ? inputElements[index - 1] : undefined;
-			if (item.type === "separator") {
-				if (!item.buttons) {
-					// This separator will be rendered as a part of the list item
-					return result;
+		this.elements = inputElements.reduce(
+			(result, item, index) => {
+				const previous =
+					index > 0 ? inputElements[index - 1] : undefined;
+				if (item.type === "separator") {
+					if (!item.buttons) {
+						// This separator will be rendered as a part of the list item
+						return result;
+					}
 				}
-			}
 
-			const element = new ListElement(
-				item,
-				previous,
-				index,
-				hasCheckbox,
-				fireButtonTriggered,
-				fireSeparatorButtonTriggered,
-				this._listElementChecked
-			);
+				const element = new ListElement(
+					item,
+					previous,
+					index,
+					hasCheckbox,
+					fireButtonTriggered,
+					fireSeparatorButtonTriggered,
+					this._listElementChecked,
+				);
 
-			const resultIndex = result.length;
-			result.push(element);
-			elementsToIndexes.set(
-				element.item ?? element.separator!,
-				resultIndex
-			);
-			return result;
-		}, [] as IListElement[]);
+				const resultIndex = result.length;
+				result.push(element);
+				elementsToIndexes.set(
+					element.item ?? element.separator!,
+					resultIndex,
+				);
+				return result;
+			},
+			[] as IListElement[],
+		);
 		this.elementsToIndexes = elementsToIndexes;
 		this.list.splice(0, this.list.length); // Clear focus and selection first, sending the events when the list is empty.
 		this.list.splice(0, this.list.length, this.elements);
@@ -921,7 +925,7 @@ export class QuickInputList {
 		this.list.setFocus(
 			items
 				.filter((item) => this.elementsToIndexes.has(item))
-				.map((item) => this.elementsToIndexes.get(item)!)
+				.map((item) => this.elementsToIndexes.get(item)!),
 		);
 		if (items.length > 0) {
 			const focused = this.list.getFocus()[0];
@@ -943,7 +947,7 @@ export class QuickInputList {
 		this.list.setSelection(
 			items
 				.filter((item) => this.elementsToIndexes.has(item))
-				.map((item) => this.elementsToIndexes.get(item)!)
+				.map((item) => this.elementsToIndexes.get(item)!),
 		);
 	}
 
@@ -1001,7 +1005,7 @@ export class QuickInputList {
 					undefined,
 					true,
 					undefined,
-					(e) => !!e.item
+					(e) => !!e.item,
 				);
 				const index = this.list.getFocus()[0];
 				if (
@@ -1018,7 +1022,7 @@ export class QuickInputList {
 					undefined,
 					true,
 					undefined,
-					(e) => !!e.item
+					(e) => !!e.item,
 				);
 				const index = this.list.getFocus()[0];
 				if (
@@ -1083,7 +1087,7 @@ export class QuickInputList {
 					hoverPosition: HoverPosition.RIGHT,
 				},
 			},
-			false
+			false,
 		);
 	}
 
@@ -1094,7 +1098,7 @@ export class QuickInputList {
 					Math.floor(maxHeight / 44) * 44 +
 					// Add some extra height so that it's clear there's more to scroll
 					6
-				}px`
+			  }px`
 			: "";
 		this.list.layout();
 	}
@@ -1151,28 +1155,28 @@ export class QuickInputList {
 					labelHighlights = this.matchOnLabel
 						? matchesFuzzyIconAware(
 								query,
-								parseLabelWithIcons(element.saneLabel)
-							) ?? undefined
+								parseLabelWithIcons(element.saneLabel),
+						  ) ?? undefined
 						: undefined;
 				} else {
 					labelHighlights = this.matchOnLabel
 						? matchesContiguousIconAware(
 								queryWithWhitespace,
-								parseLabelWithIcons(element.saneLabel)
-							) ?? undefined
+								parseLabelWithIcons(element.saneLabel),
+						  ) ?? undefined
 						: undefined;
 				}
 				const descriptionHighlights = this.matchOnDescription
 					? matchesFuzzyIconAware(
 							query,
-							parseLabelWithIcons(element.saneDescription || "")
-						) ?? undefined
+							parseLabelWithIcons(element.saneDescription || ""),
+					  ) ?? undefined
 					: undefined;
 				const detailHighlights = this.matchOnDetail
 					? matchesFuzzyIconAware(
 							query,
-							parseLabelWithIcons(element.saneDetail || "")
-						) ?? undefined
+							parseLabelWithIcons(element.saneDetail || ""),
+					  ) ?? undefined
 					: undefined;
 
 				if (
@@ -1217,7 +1221,7 @@ export class QuickInputList {
 		}
 
 		const shownElements = this.elements.filter(
-			(element) => !element.hidden
+			(element) => !element.hidden,
 		);
 
 		// Sort by value
@@ -1278,13 +1282,13 @@ export class QuickInputList {
 	}
 
 	private fireButtonTriggered(
-		event: IQuickPickItemButtonEvent<IQuickPickItem>
+		event: IQuickPickItemButtonEvent<IQuickPickItem>,
 	) {
 		this._onButtonTriggered.fire(event);
 	}
 
 	private fireSeparatorButtonTriggered(
-		event: IQuickPickSeparatorButtonEvent
+		event: IQuickPickSeparatorButtonEvent,
 	) {
 		this._onSeparatorButtonTriggered.fire(event);
 	}
@@ -1318,7 +1322,7 @@ export class QuickInputList {
 				if (e.indexes.length) {
 					this.showHover(e.elements[0]);
 				}
-			})
+			}),
 		);
 		if (this._lastHover) {
 			store.add(this._lastHover);
@@ -1330,7 +1334,7 @@ export class QuickInputList {
 
 function matchesContiguousIconAware(
 	query: string,
-	target: IParsedLabelWithIcons
+	target: IParsedLabelWithIcons,
 ): IMatch[] | null {
 	const { text, iconOffsets } = target;
 
@@ -1348,7 +1352,7 @@ function matchesContiguousIconAware(
 	// match on value without icon
 	const matches = matchesContiguous(
 		query,
-		wordToMatchAgainstWithoutIconsTrimmed
+		wordToMatchAgainstWithoutIconsTrimmed,
 	);
 
 	// Map matches back to offsets with icon and trimming
@@ -1369,7 +1373,7 @@ function matchesContiguousIconAware(
 
 function matchesContiguous(
 	word: string,
-	wordToMatchAgainst: string
+	wordToMatchAgainst: string,
 ): IMatch[] | null {
 	const matchIndex = wordToMatchAgainst
 		.toLowerCase()
@@ -1383,7 +1387,7 @@ function matchesContiguous(
 function compareEntries(
 	elementA: IListElement,
 	elementB: IListElement,
-	lookFor: string
+	lookFor: string,
 ): number {
 	const labelHighlightsA = elementA.labelHighlights || [];
 	const labelHighlightsB = elementB.labelHighlights || [];
@@ -1402,7 +1406,7 @@ function compareEntries(
 	return compareAnything(
 		elementA.saneSortLabel,
 		elementB.saneSortLabel,
-		lookFor
+		lookFor,
 	);
 }
 

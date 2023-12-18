@@ -6,8 +6,8 @@
 import * as DOM from "vs/base/browser/dom";
 import { renderLabelWithIcons } from "vs/base/browser/ui/iconLabel/iconLabels";
 import { Disposable } from "vs/base/common/lifecycle";
-import { localize } from "vs/nls";
 import { ThemeIcon } from "vs/base/common/themables";
+import { localize } from "vs/nls";
 import {
 	ICellViewModel,
 	INotebookEditorDelegate,
@@ -72,11 +72,11 @@ export class CollapsedCodeCellExecutionIcon extends Disposable {
 		}
 
 		const runState = this._executionStateService.getCellExecution(
-			this._cell.uri
+			this._cell.uri,
 		);
 		const item = this._getItemForState(
 			runState,
-			this._cell.model.internalMetadata
+			this._cell.model.internalMetadata,
 		);
 		if (item) {
 			this._element.style.display = "";
@@ -90,7 +90,7 @@ export class CollapsedCodeCellExecutionIcon extends Disposable {
 
 	private _getItemForState(
 		runState: INotebookCellExecution | undefined,
-		internalMetadata: NotebookCellInternalMetadata
+		internalMetadata: NotebookCellInternalMetadata,
 	): IExecutionItem | undefined {
 		const state = runState?.state;
 		const { lastRunSuccess } = internalMetadata;
@@ -118,7 +118,7 @@ export class CollapsedCodeCellExecutionIcon extends Disposable {
 				text: `$(${icon.id})`,
 				tooltip: localize(
 					"notebook.cell.status.executing",
-					"Executing"
+					"Executing",
 				),
 			};
 		}

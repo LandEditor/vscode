@@ -43,7 +43,7 @@ export class Position {
 	 */
 	with(
 		newLineNumber: number = this.lineNumber,
-		newColumn: number = this.column
+		newColumn: number = this.column,
 	): Position {
 		if (newLineNumber === this.lineNumber && newColumn === this.column) {
 			return this;
@@ -58,10 +58,10 @@ export class Position {
 	 * @param deltaLineNumber line number delta
 	 * @param deltaColumn column delta
 	 */
-	delta(deltaLineNumber: number = 0, deltaColumn: number = 0): Position {
+	delta(deltaLineNumber = 0, deltaColumn = 0): Position {
 		return this.with(
 			this.lineNumber + deltaLineNumber,
-			this.column + deltaColumn
+			this.column + deltaColumn,
 		);
 	}
 

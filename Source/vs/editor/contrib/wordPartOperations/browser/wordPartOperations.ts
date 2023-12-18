@@ -5,14 +5,14 @@
 
 import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
 import { registerEditorCommand } from "vs/editor/browser/editorExtensions";
+import { Position } from "vs/editor/common/core/position";
+import { Range } from "vs/editor/common/core/range";
+import { WordCharacterClassifier } from "vs/editor/common/core/wordCharacterClassifier";
 import {
 	DeleteWordContext,
 	WordNavigationType,
 	WordPartOperations,
 } from "vs/editor/common/cursor/cursorWordOperations";
-import { WordCharacterClassifier } from "vs/editor/common/core/wordCharacterClassifier";
-import { Position } from "vs/editor/common/core/position";
-import { Range } from "vs/editor/common/core/range";
 import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
 import { ITextModel } from "vs/editor/common/model";
 import {
@@ -42,7 +42,7 @@ export class DeleteWordPartLeft extends DeleteWordCommand {
 
 	protected _delete(
 		ctx: DeleteWordContext,
-		wordNavigationType: WordNavigationType
+		wordNavigationType: WordNavigationType,
 	): Range {
 		const r = WordPartOperations.deleteWordPartLeft(ctx);
 		if (r) {
@@ -70,7 +70,7 @@ export class DeleteWordPartRight extends DeleteWordCommand {
 
 	protected _delete(
 		ctx: DeleteWordContext,
-		wordNavigationType: WordNavigationType
+		wordNavigationType: WordNavigationType,
 	): Range {
 		const r = WordPartOperations.deleteWordPartRight(ctx);
 		if (r) {
@@ -87,12 +87,12 @@ export class WordPartLeftCommand extends MoveWordCommand {
 		wordSeparators: WordCharacterClassifier,
 		model: ITextModel,
 		position: Position,
-		wordNavigationType: WordNavigationType
+		wordNavigationType: WordNavigationType,
 	): Position {
 		return WordPartOperations.moveWordPartLeft(
 			wordSeparators,
 			model,
-			position
+			position,
 		);
 	}
 }
@@ -117,7 +117,7 @@ export class CursorWordPartLeft extends WordPartLeftCommand {
 // Register previous id for compatibility purposes
 CommandsRegistry.registerCommandAlias(
 	"cursorWordPartStartLeft",
-	"cursorWordPartLeft"
+	"cursorWordPartLeft",
 );
 
 export class CursorWordPartLeftSelect extends WordPartLeftCommand {
@@ -145,7 +145,7 @@ export class CursorWordPartLeftSelect extends WordPartLeftCommand {
 // Register previous id for compatibility purposes
 CommandsRegistry.registerCommandAlias(
 	"cursorWordPartStartLeftSelect",
-	"cursorWordPartLeftSelect"
+	"cursorWordPartLeftSelect",
 );
 
 export class WordPartRightCommand extends MoveWordCommand {
@@ -153,12 +153,12 @@ export class WordPartRightCommand extends MoveWordCommand {
 		wordSeparators: WordCharacterClassifier,
 		model: ITextModel,
 		position: Position,
-		wordNavigationType: WordNavigationType
+		wordNavigationType: WordNavigationType,
 	): Position {
 		return WordPartOperations.moveWordPartRight(
 			wordSeparators,
 			model,
-			position
+			position,
 		);
 	}
 }

@@ -6,9 +6,9 @@
 import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
 import { Registry } from "vs/platform/registry/common/platform";
 import {
-	IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
 	IWorkbenchContribution,
+	IWorkbenchContributionsRegistry,
 } from "vs/workbench/common/contributions";
 import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
@@ -25,5 +25,5 @@ export class ListContext implements IWorkbenchContribution {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(ListContext, LifecyclePhase.Starting);

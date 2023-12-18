@@ -10,30 +10,30 @@ import { join } from "vs/base/common/path";
 import { isLinux } from "vs/base/common/platform";
 import { extUriBiasedIgnorePathCase } from "vs/base/common/resources";
 import { Promises, RimRafMode } from "vs/base/node/pfs";
+import {
+	IFolderBackupInfo,
+	IWorkspaceBackupInfo,
+	isFolderBackupInfo,
+} from "vs/platform/backup/common/backup";
 import { IBackupMainService } from "vs/platform/backup/electron-main/backup";
 import {
-	ISerializedBackupWorkspaces,
 	IEmptyWindowBackupInfo,
-	isEmptyWindowBackupInfo,
-	deserializeWorkspaceInfos,
-	deserializeFolderInfos,
-	ISerializedWorkspaceBackupInfo,
-	ISerializedFolderBackupInfo,
+	ISerializedBackupWorkspaces,
 	ISerializedEmptyWindowBackupInfo,
+	ISerializedFolderBackupInfo,
+	ISerializedWorkspaceBackupInfo,
+	deserializeFolderInfos,
+	deserializeWorkspaceInfos,
+	isEmptyWindowBackupInfo,
 } from "vs/platform/backup/node/backup";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { IEnvironmentMainService } from "vs/platform/environment/electron-main/environmentMainService";
-import { IStateService } from "vs/platform/state/node/state";
 import {
 	HotExitConfiguration,
 	IFilesConfiguration,
 } from "vs/platform/files/common/files";
 import { ILogService } from "vs/platform/log/common/log";
-import {
-	IFolderBackupInfo,
-	isFolderBackupInfo,
-	IWorkspaceBackupInfo,
-} from "vs/platform/backup/common/backup";
+import { IStateService } from "vs/platform/state/node/state";
 import { isWorkspaceIdentifier } from "vs/platform/workspace/common/workspace";
 import { createEmptyWorkspaceIdentifier } from "vs/platform/workspaces/node/workspaces";
 
@@ -71,22 +71,22 @@ export class BackupMainService implements IBackupMainService {
 		// read backup workspaces
 		const serializedBackupWorkspaces =
 			this.stateService.getItem<ISerializedBackupWorkspaces>(
-				BackupMainService.backupWorkspacesMetadataStorageKey
+				BackupMainService.backupWorkspacesMetadataStorageKey,
 			) ?? { workspaces: [], folders: [], emptyWindows: [] };
 
 		// validate empty workspaces backups first
 		this.emptyWindows = await this.validateEmptyWorkspaces(
-			serializedBackupWorkspaces.emptyWindows
+			serializedBackupWorkspaces.emptyWindows,
 		);
 
 		// validate workspace backups
 		this.workspaces = await this.validateWorkspaces(
-			deserializeWorkspaceInfos(serializedBackupWorkspaces)
+			deserializeWorkspaceInfos(serializedBackupWorkspaces),
 		);
 
 		// validate folder backups
 		this.folders = await this.validateFolders(
-			deserializeFolderInfos(serializedBackupWorkspaces)
+			deserializeFolderInfos(serializedBackupWorkspaces),
 		);
 
 		// store metadata in case some workspaces or folders have been removed
@@ -138,16 +138,16 @@ export class BackupMainService implements IBackupMainService {
 	registerWorkspaceBackup(workspaceInfo: IWorkspaceBackupInfo): string;
 	registerWorkspaceBackup(
 		workspaceInfo: IWorkspaceBackupInfo,
-		migrateFrom: string
+		migrateFrom: string,
 	): Promise<string>;
 	registerWorkspaceBackup(
 		workspaceInfo: IWorkspaceBackupInfo,
-		migrateFrom?: string
+		migrateFrom?: string,
 	): string | Promise<string> {
 		if (
 			!this.workspaces.some(
 				(workspace) =>
-					workspaceInfo.workspace.id === workspace.workspace.id
+					workspaceInfo.workspace.id === workspace.workspace.id,
 			)
 		) {
 			this.workspaces.push(workspaceInfo);
@@ -158,7 +158,7 @@ export class BackupMainService implements IBackupMainService {
 
 		if (migrateFrom) {
 			return this.moveBackupFolder(backupPath, migrateFrom).then(
-				() => backupPath
+				() => backupPath,
 			);
 		}
 
@@ -167,7 +167,7 @@ export class BackupMainService implements IBackupMainService {
 
 	private async moveBackupFolder(
 		backupPath: string,
-		moveFromPath: string
+		moveFromPath: string,
 	): Promise<void> {
 		// Target exists: make sure to convert existing backups to empty window backups
 		if (await Promises.exists(backupPath)) {
@@ -180,11 +180,11 @@ export class BackupMainService implements IBackupMainService {
 				await Promises.rename(
 					moveFromPath,
 					backupPath,
-					false /* no retry */
+					false /* no retry */,
 				);
 			} catch (error) {
 				this.logService.error(
-					`Backup: Could not move backup folder to new location: ${error.toString()}`
+					`Backup: Could not move backup folder to new location: ${error.toString()}`,
 				);
 			}
 		}
@@ -195,8 +195,8 @@ export class BackupMainService implements IBackupMainService {
 			!this.folders.some((folder) =>
 				this.backupUriComparer.isEqual(
 					folderInfo.folderUri,
-					folder.folderUri
-				)
+					folder.folderUri,
+				),
 			)
 		) {
 			this.folders.push(folderInfo);
@@ -213,8 +213,8 @@ export class BackupMainService implements IBackupMainService {
 					!!emptyWindow.backupFolder &&
 					this.backupPathComparer.isEqual(
 						emptyWindow.backupFolder,
-						emptyWindowInfo.backupFolder
-					)
+						emptyWindowInfo.backupFolder,
+					),
 			)
 		) {
 			this.emptyWindows.push(emptyWindowInfo);
@@ -225,7 +225,7 @@ export class BackupMainService implements IBackupMainService {
 	}
 
 	private async validateWorkspaces(
-		rootWorkspaces: IWorkspaceBackupInfo[]
+		rootWorkspaces: IWorkspaceBackupInfo[],
 	): Promise<IWorkspaceBackupInfo[]> {
 		if (!Array.isArray(rootWorkspaces)) {
 			return [];
@@ -268,7 +268,7 @@ export class BackupMainService implements IBackupMainService {
 	}
 
 	private async validateFolders(
-		folderWorkspaces: IFolderBackupInfo[]
+		folderWorkspaces: IFolderBackupInfo[],
 	): Promise<IFolderBackupInfo[]> {
 		if (!Array.isArray(folderWorkspaces)) {
 			return [];
@@ -284,7 +284,7 @@ export class BackupMainService implements IBackupMainService {
 
 				const backupPath = join(
 					this.backupHome,
-					this.getFolderHash(folderInfo)
+					this.getFolderHash(folderInfo),
 				);
 				const hasBackups = await this.doHasBackups(backupPath);
 
@@ -309,7 +309,7 @@ export class BackupMainService implements IBackupMainService {
 	}
 
 	private async validateEmptyWorkspaces(
-		emptyWorkspaces: IEmptyWindowBackupInfo[]
+		emptyWorkspaces: IEmptyWindowBackupInfo[],
 	): Promise<IEmptyWindowBackupInfo[]> {
 		if (!Array.isArray(emptyWorkspaces)) {
 			return [];
@@ -345,7 +345,7 @@ export class BackupMainService implements IBackupMainService {
 			await Promises.rm(backupPath, RimRafMode.MOVE);
 		} catch (error) {
 			this.logService.error(
-				`Backup: Could not delete stale backup: ${error.toString()}`
+				`Backup: Could not delete stale backup: ${error.toString()}`,
 			);
 		}
 	}
@@ -363,8 +363,8 @@ export class BackupMainService implements IBackupMainService {
 					!!emptyWindow.backupFolder &&
 					this.backupPathComparer.isEqual(
 						emptyWindow.backupFolder,
-						emptyWorkspaceIdentifier.id
-					)
+						emptyWorkspaceIdentifier.id,
+					),
 			)
 		) {
 			emptyWorkspaceIdentifier = createEmptyWorkspaceIdentifier();
@@ -374,24 +374,24 @@ export class BackupMainService implements IBackupMainService {
 	}
 
 	private async convertToEmptyWindowBackup(
-		backupPath: string
+		backupPath: string,
 	): Promise<boolean> {
 		const newEmptyWindowBackupInfo = this.prepareNewEmptyWindowBackup();
 
 		// Rename backupPath to new empty window backup path
 		const newEmptyWindowBackupPath = join(
 			this.backupHome,
-			newEmptyWindowBackupInfo.backupFolder
+			newEmptyWindowBackupInfo.backupFolder,
 		);
 		try {
 			await Promises.rename(
 				backupPath,
 				newEmptyWindowBackupPath,
-				false /* no retry */
+				false /* no retry */,
 			);
 		} catch (error) {
 			this.logService.error(
-				`Backup: Could not rename backup folder: ${error.toString()}`
+				`Backup: Could not rename backup folder: ${error.toString()}`,
 			);
 			return false;
 		}
@@ -427,7 +427,7 @@ export class BackupMainService implements IBackupMainService {
 		backupLocation:
 			| IWorkspaceBackupInfo
 			| IEmptyWindowBackupInfo
-			| IFolderBackupInfo
+			| IFolderBackupInfo,
 	): Promise<boolean> {
 		let backupPath: string;
 
@@ -440,7 +440,7 @@ export class BackupMainService implements IBackupMainService {
 		else if (isFolderBackupInfo(backupLocation)) {
 			backupPath = join(
 				this.backupHome,
-				this.getFolderHash(backupLocation)
+				this.getFolderHash(backupLocation),
 			);
 		}
 
@@ -459,7 +459,7 @@ export class BackupMainService implements IBackupMainService {
 			for (const backupSchema of backupSchemas) {
 				try {
 					const backupSchemaChildren = await Promises.readdir(
-						join(backupPath, backupSchema)
+						join(backupPath, backupSchema),
 					);
 					if (backupSchemaChildren.length > 0) {
 						return true;
@@ -491,7 +491,7 @@ export class BackupMainService implements IBackupMainService {
 					}
 
 					return serializedWorkspaceBackupInfo;
-				}
+				},
 			),
 			folders: this.folders.map(({ folderUri, remoteAuthority }) => {
 				const serializedFolderBackupInfo: ISerializedFolderBackupInfo =
@@ -519,13 +519,13 @@ export class BackupMainService implements IBackupMainService {
 					}
 
 					return serializedEmptyWindowBackupInfo;
-				}
+				},
 			),
 		};
 
 		this.stateService.setItem(
 			BackupMainService.backupWorkspacesMetadataStorageKey,
-			serializedBackupWorkspaces
+			serializedBackupWorkspaces,
 		);
 	}
 

@@ -3,35 +3,35 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	DEFAULT_EDITOR_ASSOCIATION,
-	GroupIdentifier,
-	IRevertOptions,
-	isResourceEditorInput,
-	IUntypedEditorInput,
-} from "vs/workbench/common/editor";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import { AbstractResourceEditorInput } from "vs/workbench/common/editor/resourceEditorInput";
-import { URI } from "vs/base/common/uri";
-import {
-	ITextFileService,
-	ITextFileSaveOptions,
-	ILanguageSupport,
-} from "vs/workbench/services/textfile/common/textfiles";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { IFileService } from "vs/platform/files/common/files";
-import { ILabelService } from "vs/platform/label/common/label";
+import { IReference } from "vs/base/common/lifecycle";
 import { Schemas } from "vs/base/common/network";
 import { isEqual } from "vs/base/common/resources";
+import { URI } from "vs/base/common/uri";
+import { createTextBufferFactory } from "vs/editor/common/model/textModel";
 import {
 	ITextEditorModel,
 	ITextModelService,
 } from "vs/editor/common/services/resolverService";
-import { TextResourceEditorModel } from "vs/workbench/common/editor/textResourceEditorModel";
-import { IReference } from "vs/base/common/lifecycle";
-import { createTextBufferFactory } from "vs/editor/common/model/textModel";
-import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
 import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
+import { IFileService } from "vs/platform/files/common/files";
+import { ILabelService } from "vs/platform/label/common/label";
+import {
+	DEFAULT_EDITOR_ASSOCIATION,
+	GroupIdentifier,
+	IRevertOptions,
+	IUntypedEditorInput,
+	isResourceEditorInput,
+} from "vs/workbench/common/editor";
+import { EditorInput } from "vs/workbench/common/editor/editorInput";
+import { AbstractResourceEditorInput } from "vs/workbench/common/editor/resourceEditorInput";
+import { TextResourceEditorModel } from "vs/workbench/common/editor/textResourceEditorModel";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
+import {
+	ILanguageSupport,
+	ITextFileSaveOptions,
+	ITextFileService,
+} from "vs/workbench/services/textfile/common/textfiles";
 
 /**
  * The base class for all editor inputs that open in text editors.
@@ -61,7 +61,7 @@ export abstract class AbstractTextResourceEditorInput extends AbstractResourceEd
 
 	override save(
 		group: GroupIdentifier,
-		options?: ITextFileSaveOptions
+		options?: ITextFileSaveOptions,
 	): Promise<IUntypedEditorInput | undefined> {
 		// If this is neither an `untitled` resource, nor a resource
 		// we can handle with the file service, we can only "Save As..."
@@ -78,7 +78,7 @@ export abstract class AbstractTextResourceEditorInput extends AbstractResourceEd
 
 	override saveAs(
 		group: GroupIdentifier,
-		options?: ITextFileSaveOptions
+		options?: ITextFileSaveOptions,
 	): Promise<IUntypedEditorInput | undefined> {
 		return this.doSave(options, true, group);
 	}
@@ -86,7 +86,7 @@ export abstract class AbstractTextResourceEditorInput extends AbstractResourceEd
 	private async doSave(
 		options: ITextFileSaveOptions | undefined,
 		saveAs: boolean,
-		group: GroupIdentifier | undefined
+		group: GroupIdentifier | undefined,
 	): Promise<IUntypedEditorInput | undefined> {
 		// Save / Save As
 		let target: URI | undefined;
@@ -94,7 +94,7 @@ export abstract class AbstractTextResourceEditorInput extends AbstractResourceEd
 			target = await this.textFileService.saveAs(
 				this.resource,
 				undefined,
-				{ ...options, suggestedTarget: this.preferredResource }
+				{ ...options, suggestedTarget: this.preferredResource },
 			);
 		} else {
 			target = await this.textFileService.save(this.resource, options);
@@ -109,7 +109,7 @@ export abstract class AbstractTextResourceEditorInput extends AbstractResourceEd
 
 	override async revert(
 		group: GroupIdentifier,
-		options?: IRevertOptions
+		options?: IRevertOptions,
 	): Promise<void> {
 		await this.textFileService.revert(this.resource, options);
 	}
@@ -216,7 +216,7 @@ export class TextResourceEditorInput
 
 		if (!this.modelReference) {
 			this.modelReference = this.textModelService.createModelReference(
-				this.resource
+				this.resource,
 			);
 		}
 
@@ -229,7 +229,7 @@ export class TextResourceEditorInput
 			this.modelReference = undefined;
 
 			throw new Error(
-				`Unexpected model for TextResourceEditorInput: ${this.resource}`
+				`Unexpected model for TextResourceEditorInput: ${this.resource}`,
 			);
 		}
 
@@ -244,7 +244,7 @@ export class TextResourceEditorInput
 				typeof preferredContents === "string"
 					? createTextBufferFactory(preferredContents)
 					: undefined,
-				preferredLanguageId
+				preferredLanguageId,
 			);
 		}
 

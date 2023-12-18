@@ -8,8 +8,8 @@ import { ICodeEditor } from "vs/editor/browser/editorBrowser";
 import {
 	EditorAction,
 	IActionOptions,
-	registerEditorAction,
 	ServicesAccessor,
+	registerEditorAction,
 } from "vs/editor/browser/editorExtensions";
 import { EditorOption } from "vs/editor/common/config/editorOptions";
 import { Range } from "vs/editor/common/core/range";
@@ -35,7 +35,7 @@ abstract class CommentLineAction extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor): void {
 		const languageConfigurationService = accessor.get(
-			ILanguageConfigurationService
+			ILanguageConfigurationService,
 		);
 
 		if (!editor.hasModel()) {
@@ -47,15 +47,13 @@ abstract class CommentLineAction extends EditorAction {
 		const modelOptions = model.getOptions();
 		const commentsOptions = editor.getOption(EditorOption.comments);
 
-		const selections = editor
-			.getSelections()
-			.map((selection, index) => ({
-				selection,
-				index,
-				ignoreFirstLine: false,
-			}));
+		const selections = editor.getSelections().map((selection, index) => ({
+			selection,
+			index,
+			ignoreFirstLine: false,
+		}));
 		selections.sort((a, b) =>
-			Range.compareRangesUsingStarts(a.selection, b.selection)
+			Range.compareRangesUsingStarts(a.selection, b.selection),
 		);
 
 		// Remove selections that would result in copying the same line
@@ -86,8 +84,8 @@ abstract class CommentLineAction extends EditorAction {
 					this._type,
 					commentsOptions.insertSpace,
 					commentsOptions.ignoreEmptyLines,
-					selection.ignoreFirstLine
-				)
+					selection.ignoreFirstLine,
+				),
 			);
 		}
 
@@ -117,7 +115,7 @@ class ToggleCommentLineAction extends CommentLineAction {
 						key: "miToggleLineComment",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Toggle Line Comment"
+					"&&Toggle Line Comment",
 				),
 				order: 1,
 			},
@@ -136,7 +134,7 @@ class AddLineCommentAction extends CommentLineAction {
 				kbExpr: EditorContextKeys.editorTextFocus,
 				primary: KeyChord(
 					KeyMod.CtrlCmd | KeyCode.KeyK,
-					KeyMod.CtrlCmd | KeyCode.KeyC
+					KeyMod.CtrlCmd | KeyCode.KeyC,
 				),
 				weight: KeybindingWeight.EditorContrib,
 			},
@@ -155,7 +153,7 @@ class RemoveLineCommentAction extends CommentLineAction {
 				kbExpr: EditorContextKeys.editorTextFocus,
 				primary: KeyChord(
 					KeyMod.CtrlCmd | KeyCode.KeyK,
-					KeyMod.CtrlCmd | KeyCode.KeyU
+					KeyMod.CtrlCmd | KeyCode.KeyU,
 				),
 				weight: KeybindingWeight.EditorContrib,
 			},
@@ -186,7 +184,7 @@ class BlockCommentAction extends EditorAction {
 						key: "miToggleBlockComment",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"Toggle &&Block Comment"
+					"Toggle &&Block Comment",
 				),
 				order: 2,
 			},
@@ -195,7 +193,7 @@ class BlockCommentAction extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor): void {
 		const languageConfigurationService = accessor.get(
-			ILanguageConfigurationService
+			ILanguageConfigurationService,
 		);
 
 		if (!editor.hasModel()) {
@@ -210,8 +208,8 @@ class BlockCommentAction extends EditorAction {
 				new BlockCommentCommand(
 					selection,
 					commentsOptions.insertSpace,
-					languageConfigurationService
-				)
+					languageConfigurationService,
+				),
 			);
 		}
 

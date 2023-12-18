@@ -3,21 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize, localize2 } from "vs/nls";
-import {
-	IQuickInputService,
-	IQuickPickSeparator,
-} from "vs/platform/quickinput/common/quickInput";
 import { CancellationTokenSource } from "vs/base/common/cancellation";
 import { DisposableStore } from "vs/base/common/lifecycle";
+import { localize, localize2 } from "vs/nls";
 import { Action2, MenuId } from "vs/platform/actions/common/actions";
 import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
 import {
 	ILanguagePackItem,
 	ILanguagePackService,
 } from "vs/platform/languagePacks/common/languagePacks";
-import { ILocaleService } from "vs/workbench/services/localization/common/locale";
+import {
+	IQuickInputService,
+	IQuickPickSeparator,
+} from "vs/platform/quickinput/common/quickInput";
 import { IExtensionsWorkbenchService } from "vs/workbench/contrib/extensions/common/extensions";
+import { ILocaleService } from "vs/workbench/services/localization/common/locale";
 
 export class ConfigureDisplayLanguageAction extends Action2 {
 	public static readonly ID = "workbench.action.configureLocale";
@@ -32,7 +32,7 @@ export class ConfigureDisplayLanguageAction extends Action2 {
 			metadata: {
 				description: localize2(
 					"configureLocaleDescription",
-					"Changes the locale of VS Code based on installed language packs. Common languages include French, Chinese, Spanish, Japanese, German, Korean, and more."
+					"Changes the locale of VS Code based on installed language packs. Common languages include French, Chinese, Spanish, Japanese, German, Korean, and more.",
 				),
 			},
 		});
@@ -62,7 +62,7 @@ export class ConfigureDisplayLanguageAction extends Action2 {
 				},
 			];
 			qp.items = items.concat(
-				this.withMoreInfoButton(installedLanguages)
+				this.withMoreInfoButton(installedLanguages),
 			);
 		}
 
@@ -72,17 +72,17 @@ export class ConfigureDisplayLanguageAction extends Action2 {
 			qp.onDispose(() => {
 				source.cancel();
 				disposables.dispose();
-			})
+			}),
 		);
 
 		const installedSet = new Set<string>(
-			installedLanguages?.map((language) => language.id!) ?? []
+			installedLanguages?.map((language) => language.id!) ?? [],
 		);
 		languagePackService
 			.getAvailableLanguages()
 			.then((availableLanguages) => {
 				const newLanguages = availableLanguages.filter(
-					(l) => l.id && !installedSet.has(l.id)
+					(l) => l.id && !installedSet.has(l.id),
 				);
 				if (newLanguages.length) {
 					qp.items = [
@@ -106,7 +106,7 @@ export class ConfigureDisplayLanguageAction extends Action2 {
 					qp.hide();
 					await localeService.setLocale(selectedLanguage);
 				}
-			})
+			}),
 		);
 
 		disposables.add(
@@ -115,7 +115,7 @@ export class ConfigureDisplayLanguageAction extends Action2 {
 				if (e.item.extensionId) {
 					await extensionWorkbenchService.open(e.item.extensionId);
 				}
-			})
+			}),
 		);
 
 		qp.show();
@@ -123,7 +123,7 @@ export class ConfigureDisplayLanguageAction extends Action2 {
 	}
 
 	private withMoreInfoButton(
-		items: ILanguagePackItem[]
+		items: ILanguagePackItem[],
 	): ILanguagePackItem[] {
 		for (const item of items) {
 			if (item.extensionId) {
@@ -143,7 +143,7 @@ export class ClearDisplayLanguageAction extends Action2 {
 	public static readonly ID = "workbench.action.clearLocalePreference";
 	public static readonly LABEL = localize(
 		"clearDisplayLanguage",
-		"Clear Display Language Preference"
+		"Clear Display Language Preference",
 	);
 
 	constructor() {

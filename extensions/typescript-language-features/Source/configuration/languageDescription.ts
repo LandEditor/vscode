@@ -7,9 +7,9 @@ import { basename } from "path";
 import * as vscode from "vscode";
 import * as languageIds from "./languageIds";
 
-export const enum DiagnosticLanguage {
-	JavaScript,
-	TypeScript,
+export enum DiagnosticLanguage {
+	JavaScript = 0,
+	TypeScript = 1,
 }
 
 export const allDiagnosticLanguages = [
@@ -58,13 +58,13 @@ export function isJsConfigOrTsConfigFileName(fileName: string): boolean {
 }
 
 export function doesResourceLookLikeATypeScriptFile(
-	resource: vscode.Uri
+	resource: vscode.Uri,
 ): boolean {
 	return /\.(tsx?|mts|cts)$/i.test(resource.fsPath);
 }
 
 export function doesResourceLookLikeAJavaScriptFile(
-	resource: vscode.Uri
+	resource: vscode.Uri,
 ): boolean {
 	return /\.(jsx?|mjs|cjs)$/i.test(resource.fsPath);
 }

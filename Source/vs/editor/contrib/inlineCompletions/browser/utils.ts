@@ -13,7 +13,7 @@ import { IModelDeltaDecoration } from "vs/editor/common/model";
 
 export function applyEdits(
 	text: string,
-	edits: { range: IRange; text: string }[]
+	edits: { range: IRange; text: string }[],
 ): string {
 	const transformer = new PositionOffsetTransformer(text);
 	const offsetEdits = edits.map((e) => {
@@ -67,11 +67,11 @@ export function getReadonlyEmptyArray<T>(): readonly T[] {
 export class ColumnRange {
 	constructor(
 		public readonly startColumn: number,
-		public readonly endColumnExclusive: number
+		public readonly endColumnExclusive: number,
 	) {
 		if (startColumn > endColumnExclusive) {
 			throw new BugIndicatingError(
-				`startColumn ${startColumn} cannot be after endColumnExclusive ${endColumnExclusive}`
+				`startColumn ${startColumn} cannot be after endColumnExclusive ${endColumnExclusive}`,
 			);
 		}
 	}
@@ -81,7 +81,7 @@ export class ColumnRange {
 			lineNumber,
 			this.startColumn,
 			lineNumber,
-			this.endColumnExclusive
+			this.endColumnExclusive,
 		);
 	}
 
@@ -95,7 +95,7 @@ export class ColumnRange {
 
 export function applyObservableDecorations(
 	editor: ICodeEditor,
-	decorations: IObservable<IModelDeltaDecoration[]>
+	decorations: IObservable<IModelDeltaDecoration[]>,
 ): IDisposable {
 	const d = new DisposableStore();
 	const decorationsCollection = editor.createDecorationsCollection();
@@ -108,8 +108,8 @@ export function applyObservableDecorations(
 			(reader) => {
 				const d = decorations.read(reader);
 				decorationsCollection.set(d);
-			}
-		)
+			},
+		),
 	);
 	d.add({
 		dispose: () => {
@@ -122,7 +122,7 @@ export function applyObservableDecorations(
 export function addPositions(pos1: Position, pos2: Position): Position {
 	return new Position(
 		pos1.lineNumber + pos2.lineNumber - 1,
-		pos2.lineNumber === 1 ? pos1.column + pos2.column - 1 : pos2.column
+		pos2.lineNumber === 1 ? pos1.column + pos2.column - 1 : pos2.column,
 	);
 }
 

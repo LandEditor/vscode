@@ -3,34 +3,34 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { ThrottledDelayer } from "vs/base/common/async";
+import { IMarkdownString } from "vs/base/common/htmlContent";
+import { MutableDisposable } from "vs/base/common/lifecycle";
+import { URI } from "vs/base/common/uri";
 import {
-	ITextModel,
+	ILanguageSelection,
+	ILanguageService,
+} from "vs/editor/common/languages/language";
+import { PLAINTEXT_LANGUAGE_ID } from "vs/editor/common/languages/modesRegistry";
+import {
 	ITextBufferFactory,
+	ITextModel,
 	ITextSnapshot,
 	ModelConstants,
 } from "vs/editor/common/model";
-import { EditorModel } from "vs/workbench/common/editor/editorModel";
-import { ILanguageSupport } from "vs/workbench/services/textfile/common/textfiles";
-import { URI } from "vs/base/common/uri";
-import {
-	ITextEditorModel,
-	IResolvedTextEditorModel,
-} from "vs/editor/common/services/resolverService";
-import {
-	ILanguageService,
-	ILanguageSelection,
-} from "vs/editor/common/languages/language";
 import { IModelService } from "vs/editor/common/services/model";
-import { MutableDisposable } from "vs/base/common/lifecycle";
-import { PLAINTEXT_LANGUAGE_ID } from "vs/editor/common/languages/modesRegistry";
+import {
+	IResolvedTextEditorModel,
+	ITextEditorModel,
+} from "vs/editor/common/services/resolverService";
+import { localize } from "vs/nls";
+import { IAccessibilityService } from "vs/platform/accessibility/common/accessibility";
+import { EditorModel } from "vs/workbench/common/editor/editorModel";
 import {
 	ILanguageDetectionService,
 	LanguageDetectionLanguageEventSource,
 } from "vs/workbench/services/languageDetection/common/languageDetectionWorkerService";
-import { ThrottledDelayer } from "vs/base/common/async";
-import { IAccessibilityService } from "vs/platform/accessibility/common/accessibility";
-import { localize } from "vs/nls";
-import { IMarkdownString } from "vs/base/common/htmlContent";
+import { ILanguageSupport } from "vs/workbench/services/textfile/common/textfiles";
 
 /**
  * The base text editor model leverages the code editor model. This class is only intended to be subclassed and not instantiated.
@@ -46,12 +46,12 @@ export class BaseTextEditorModel
 	private createdEditorModel: boolean | undefined;
 
 	private readonly modelDisposeListener = this._register(
-		new MutableDisposable()
+		new MutableDisposable(),
 	);
 	private readonly autoDetectLanguageThrottler = this._register(
 		new ThrottledDelayer<void>(
-			BaseTextEditorModel.AUTO_DETECT_LANGUAGE_THROTTLE_DELAY
-		)
+			BaseTextEditorModel.AUTO_DETECT_LANGUAGE_THROTTLE_DELAY,
+		),
 	);
 
 	constructor(
@@ -76,8 +76,8 @@ export class BaseTextEditorModel
 		if (!model) {
 			throw new Error(
 				`Document with resource ${textEditorModelHandle.toString(
-					true
-				)} does not exist`
+					true,
+				)} does not exist`,
 			);
 		}
 
@@ -104,7 +104,7 @@ export class BaseTextEditorModel
 		return true;
 	}
 
-	private _hasLanguageSetExplicitly: boolean = false;
+	private _hasLanguageSetExplicitly = false;
 	get hasLanguageSetExplicitly(): boolean {
 		return this._hasLanguageSetExplicitly;
 	}
@@ -130,7 +130,7 @@ export class BaseTextEditorModel
 
 		this.textEditorModel.setLanguage(
 			this.languageService.createById(languageId),
-			source
+			source,
 		);
 	}
 
@@ -144,7 +144,7 @@ export class BaseTextEditorModel
 
 				this._hasLanguageSetExplicitly = true;
 				disposable.dispose();
-			})
+			}),
 		);
 	}
 
@@ -154,7 +154,7 @@ export class BaseTextEditorModel
 
 	protected autoDetectLanguage(): Promise<void> {
 		return this.autoDetectLanguageThrottler.trigger(() =>
-			this.doAutoDetectLanguage()
+			this.doAutoDetectLanguage(),
 		);
 	}
 
@@ -163,28 +163,28 @@ export class BaseTextEditorModel
 			this.hasLanguageSetExplicitly || // skip detection when the user has made an explicit choice on the language
 			!this.textEditorModelHandle || // require a URI to run the detection for
 			!this.languageDetectionService.isEnabledForLanguage(
-				this.getLanguageId() ?? PLAINTEXT_LANGUAGE_ID
+				this.getLanguageId() ?? PLAINTEXT_LANGUAGE_ID,
 			) // require a valid language that is enlisted for detection
 		) {
 			return;
 		}
 
 		const lang = await this.languageDetectionService.detectLanguage(
-			this.textEditorModelHandle
+			this.textEditorModelHandle,
 		);
 		const prevLang = this.getLanguageId();
 		if (lang && lang !== prevLang && !this.isDisposed()) {
 			this.setLanguageIdInternal(
 				lang,
-				LanguageDetectionLanguageEventSource
+				LanguageDetectionLanguageEventSource,
 			);
 			const languageName = this.languageService.getLanguageName(lang);
 			this.accessibilityService.alert(
 				localize(
 					"languageAutoDetected",
 					"Language {0} was automatically detected and set as the language mode.",
-					languageName ?? lang
-				)
+					languageName ?? lang,
+				),
 			);
 		}
 	}
@@ -196,14 +196,14 @@ export class BaseTextEditorModel
 	protected createTextEditorModel(
 		value: ITextBufferFactory,
 		resource: URI | undefined,
-		preferredLanguageId?: string
+		preferredLanguageId?: string,
 	): ITextModel {
 		const firstLineText = this.getFirstLineText(value);
 		const languageSelection = this.getOrCreateLanguage(
 			resource,
 			this.languageService,
 			preferredLanguageId,
-			firstLineText
+			firstLineText,
 		);
 
 		return this.doCreateTextEditorModel(value, languageSelection, resource);
@@ -212,21 +212,21 @@ export class BaseTextEditorModel
 	private doCreateTextEditorModel(
 		value: ITextBufferFactory,
 		languageSelection: ILanguageSelection,
-		resource: URI | undefined
+		resource: URI | undefined,
 	): ITextModel {
 		let model = resource && this.modelService.getModel(resource);
-		if (!model) {
+		if (model) {
+			this.updateTextEditorModel(value, languageSelection.languageId);
+		} else {
 			model = this.modelService.createModel(
 				value,
 				languageSelection,
-				resource
+				resource,
 			);
 			this.createdEditorModel = true;
 
 			// Make sure we clean up when this model gets disposed
 			this.registerModelDisposeListener(model);
-		} else {
-			this.updateTextEditorModel(value, languageSelection.languageId);
 		}
 
 		this.textEditorModelHandle = model.uri;
@@ -239,7 +239,7 @@ export class BaseTextEditorModel
 		const textBufferFactory = value as ITextBufferFactory;
 		if (typeof textBufferFactory.getFirstLineText === "function") {
 			return textBufferFactory.getFirstLineText(
-				ModelConstants.FIRST_LINE_DETECTION_LENGTH_LIMIT
+				ModelConstants.FIRST_LINE_DETECTION_LENGTH_LIMIT,
 			);
 		}
 
@@ -259,13 +259,13 @@ export class BaseTextEditorModel
 		resource: URI | undefined,
 		languageService: ILanguageService,
 		preferredLanguage: string | undefined,
-		firstLineText?: string
+		firstLineText?: string,
 	): ILanguageSelection {
 		// lookup language via resource path if the provided language is unspecific
 		if (!preferredLanguage || preferredLanguage === PLAINTEXT_LANGUAGE_ID) {
 			return languageService.createByFilepathOrFirstLine(
 				resource ?? null,
-				firstLineText
+				firstLineText,
 			);
 		}
 
@@ -278,7 +278,7 @@ export class BaseTextEditorModel
 	 */
 	updateTextEditorModel(
 		newValue?: ITextBufferFactory,
-		preferredLanguageId?: string
+		preferredLanguageId?: string,
 	): void {
 		if (!this.isResolved()) {
 			return;
@@ -296,7 +296,7 @@ export class BaseTextEditorModel
 			this.textEditorModel.getLanguageId() !== preferredLanguageId
 		) {
 			this.textEditorModel.setLanguage(
-				this.languageService.createById(preferredLanguageId)
+				this.languageService.createById(preferredLanguageId),
 			);
 		}
 	}

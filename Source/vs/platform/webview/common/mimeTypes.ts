@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { getMediaMime, Mimes } from "vs/base/common/mime";
+import { Mimes, getMediaMime } from "vs/base/common/mime";
 import { extname } from "vs/base/common/path";
 import { URI } from "vs/base/common/uri";
 

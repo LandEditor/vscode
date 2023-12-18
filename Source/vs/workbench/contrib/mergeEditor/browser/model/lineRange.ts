@@ -12,7 +12,7 @@ import { ITextModel } from "vs/editor/common/model";
 export class LineRange {
 	public static readonly compareByStart: Comparator<LineRange> = compareBy(
 		(l) => l.startLineNumber,
-		numberComparator
+		numberComparator,
 	);
 
 	public static join(ranges: LineRange[]): LineRange | undefined {
@@ -26,7 +26,7 @@ export class LineRange {
 			startLineNumber = Math.min(startLineNumber, range.startLineNumber);
 			endLineNumber = Math.max(
 				endLineNumber,
-				range.startLineNumber + range.lineCount
+				range.startLineNumber + range.lineCount,
 			);
 		}
 		return new LineRange(startLineNumber, endLineNumber - startLineNumber);
@@ -34,17 +34,17 @@ export class LineRange {
 
 	static fromLineNumbers(
 		startLineNumber: number,
-		endExclusiveLineNumber: number
+		endExclusiveLineNumber: number,
 	): LineRange {
 		return new LineRange(
 			startLineNumber,
-			endExclusiveLineNumber - startLineNumber
+			endExclusiveLineNumber - startLineNumber,
 		);
 	}
 
 	constructor(
 		public readonly startLineNumber: number,
-		public readonly lineCount: number
+		public readonly lineCount: number,
 	) {
 		if (lineCount < 0) {
 			throw new BugIndicatingError();
@@ -56,8 +56,8 @@ export class LineRange {
 			Math.min(this.startLineNumber, other.startLineNumber),
 			Math.max(
 				this.endLineNumberExclusive,
-				other.endLineNumberExclusive
-			) - this.startLineNumber
+				other.endLineNumberExclusive,
+			) - this.startLineNumber,
 		);
 	}
 
@@ -116,7 +116,7 @@ export class LineRange {
 	public deltaStart(lineDelta: number): LineRange {
 		return new LineRange(
 			this.startLineNumber + lineDelta,
-			this.lineCount - lineDelta
+			this.lineCount - lineDelta,
 		);
 	}
 
@@ -140,7 +140,7 @@ export class LineRange {
 			this.startLineNumber,
 			1,
 			this.endLineNumberExclusive,
-			1
+			1,
 		);
 	}
 
@@ -152,7 +152,7 @@ export class LineRange {
 			this.startLineNumber,
 			1,
 			this.endLineNumberExclusive - 1,
-			Constants.MAX_SAFE_SMALL_INTEGER
+			Constants.MAX_SAFE_SMALL_INTEGER,
 		);
 	}
 
@@ -164,7 +164,7 @@ export class LineRange {
 			this.startLineNumber,
 			1,
 			this.endLineNumberExclusive - 1,
-			Constants.MAX_SAFE_SMALL_INTEGER
+			Constants.MAX_SAFE_SMALL_INTEGER,
 		);
 	}
 

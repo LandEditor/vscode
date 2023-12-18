@@ -3,8 +3,8 @@ declare module "gulp-flatmap" {
 	function f(
 		fn: (
 			stream: NodeJS.ReadWriteStream,
-			file: File
-		) => NodeJS.ReadWriteStream
+			file: File,
+		) => NodeJS.ReadWriteStream,
 	): NodeJS.ReadWriteStream;
 
 	/**

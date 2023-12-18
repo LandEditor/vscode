@@ -8,8 +8,8 @@ import {
 	BaseLanguageClient,
 	LanguageClientOptions,
 } from "vscode-languageclient";
-import { startClient, LanguageClientConstructor } from "../cssClient";
 import { LanguageClient } from "vscode-languageclient/browser";
+import { LanguageClientConstructor, startClient } from "../cssClient";
 
 declare const Worker: {
 	new (stringUrl: string): any;
@@ -24,7 +24,7 @@ let client: BaseLanguageClient | undefined;
 export async function activate(context: ExtensionContext) {
 	const serverMain = Uri.joinPath(
 		context.extensionUri,
-		"server/dist/browser/cssServerMain.js"
+		"server/dist/browser/cssServerMain.js",
 	);
 	try {
 		const worker = new Worker(serverMain.toString());
@@ -33,7 +33,7 @@ export async function activate(context: ExtensionContext) {
 		const newLanguageClient: LanguageClientConstructor = (
 			id: string,
 			name: string,
-			clientOptions: LanguageClientOptions
+			clientOptions: LanguageClientOptions,
 		) => {
 			return new LanguageClient(id, name, clientOptions, worker);
 		};

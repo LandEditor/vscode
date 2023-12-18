@@ -3,27 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/review";
 import * as dom from "vs/base/browser/dom";
 import { Emitter } from "vs/base/common/event";
-import { Disposable, dispose, IDisposable } from "vs/base/common/lifecycle";
+import { Disposable, IDisposable, dispose } from "vs/base/common/lifecycle";
 import { URI } from "vs/base/common/uri";
+import "vs/css!./media/review";
+import { FontInfo } from "vs/editor/common/config/fontInfo";
+import { IRange } from "vs/editor/common/core/range";
 import * as languages from "vs/editor/common/languages";
 import { IMarkdownRendererOptions } from "vs/editor/contrib/markdownRenderer/browser/markdownRenderer";
+import { localize } from "vs/nls";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
 	IContextKey,
 	IContextKeyService,
 } from "vs/platform/contextkey/common/contextkey";
+import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { CommentMenus } from "vs/workbench/contrib/comments/browser/commentMenus";
-import { CommentReply } from "vs/workbench/contrib/comments/browser/commentReply";
-import { ICommentService } from "vs/workbench/contrib/comments/browser/commentService";
-import { CommentThreadBody } from "vs/workbench/contrib/comments/browser/commentThreadBody";
-import { CommentThreadHeader } from "vs/workbench/contrib/comments/browser/commentThreadHeader";
-import { CommentThreadAdditionalActions } from "vs/workbench/contrib/comments/browser/commentThreadAdditionalActions";
-import { CommentContextKeys } from "vs/workbench/contrib/comments/common/commentContextKeys";
-import { ICommentThreadWidget } from "vs/workbench/contrib/comments/common/commentThreadWidget";
-import { IColorTheme } from "vs/platform/theme/common/themeService";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import {
 	contrastBorder,
 	focusBorder,
@@ -35,26 +32,29 @@ import {
 	textLinkActiveForeground,
 	textLinkForeground,
 } from "vs/platform/theme/common/colorRegistry";
+import { IColorTheme } from "vs/platform/theme/common/themeService";
+import { registerNavigableContainer } from "vs/workbench/browser/actions/widgetNavigationCommands";
 import { PANEL_BORDER } from "vs/workbench/common/theme";
-import { IRange } from "vs/editor/common/core/range";
+import { AccessibilityVerbositySettingId } from "vs/workbench/contrib/accessibility/browser/accessibilityConfiguration";
+import { AccessibilityCommandId } from "vs/workbench/contrib/accessibility/common/accessibilityCommands";
 import {
 	commentThreadStateBackgroundColorVar,
 	commentThreadStateColorVar,
 } from "vs/workbench/contrib/comments/browser/commentColors";
-import { ICellRange } from "vs/workbench/contrib/notebook/common/notebookRange";
-import { FontInfo } from "vs/editor/common/config/fontInfo";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { registerNavigableContainer } from "vs/workbench/browser/actions/widgetNavigationCommands";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { CommentMenus } from "vs/workbench/contrib/comments/browser/commentMenus";
+import { CommentReply } from "vs/workbench/contrib/comments/browser/commentReply";
+import { ICommentService } from "vs/workbench/contrib/comments/browser/commentService";
+import { CommentThreadAdditionalActions } from "vs/workbench/contrib/comments/browser/commentThreadAdditionalActions";
+import { CommentThreadBody } from "vs/workbench/contrib/comments/browser/commentThreadBody";
+import { CommentThreadHeader } from "vs/workbench/contrib/comments/browser/commentThreadHeader";
+import { LayoutableEditor } from "vs/workbench/contrib/comments/browser/simpleCommentEditor";
+import { CommentContextKeys } from "vs/workbench/contrib/comments/common/commentContextKeys";
+import { ICommentThreadWidget } from "vs/workbench/contrib/comments/common/commentThreadWidget";
 import {
 	COMMENTS_SECTION,
 	ICommentsConfiguration,
 } from "vs/workbench/contrib/comments/common/commentsConfiguration";
-import { localize } from "vs/nls";
-import { AccessibilityVerbositySettingId } from "vs/workbench/contrib/accessibility/browser/accessibilityConfiguration";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { AccessibilityCommandId } from "vs/workbench/contrib/accessibility/common/accessibilityCommands";
-import { LayoutableEditor } from "vs/workbench/contrib/comments/browser/simpleCommentEditor";
+import { ICellRange } from "vs/workbench/contrib/notebook/common/notebookRange";
 
 export const COMMENTEDITOR_DECORATION_KEY = "commenteditordecoration";
 
@@ -210,14 +210,14 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 		let ariaLabel = localize("commentLabel", "Comment");
 		let keybinding: string | undefined;
 		const verbose = this.configurationService.getValue(
-			AccessibilityVerbositySettingId.Comments
+			AccessibilityVerbositySettingId.Comments,
 		);
 		if (verbose) {
 			keybinding =
 				this._keybindingService
 					.lookupKeybinding(
 						AccessibilityCommandId.OpenAccessibilityHelp,
-						this._contextKeyService
+						this._contextKeyService,
 					)
 					?.getLabel() ?? undefined;
 		}
@@ -226,13 +226,13 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 				"commentLabelWithKeybinding",
 				"{0}, use ({1}) for accessibility help",
 				ariaLabel,
-				keybinding
+				keybinding,
 			);
 		} else {
 			ariaLabel = localize(
 				"commentLabelWithKeybindingNoKeybinding",
 				"{0}, run the command Open Accessibility Help which is currently not triggerable via keybinding.",
-				ariaLabel
+				ariaLabel,
 			);
 		}
 		this._body.container.ariaLabel = ariaLabel;
@@ -259,8 +259,8 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 						this.updateCurrentThread(hasMouse, hasFocus);
 					}
 				},
-				true
-			)
+				true,
+			),
 		);
 		this._register(
 			dom.addDisposableListener(
@@ -272,8 +272,8 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 						this.updateCurrentThread(hasMouse, hasFocus);
 					}
 				},
-				true
-			)
+				true,
+			),
 		);
 		this._register(
 			dom.addDisposableListener(
@@ -283,8 +283,8 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 					hasFocus = true;
 					this.updateCurrentThread(hasMouse, hasFocus);
 				},
-				true
-			)
+				true,
+			),
 		);
 		this._register(
 			dom.addDisposableListener(
@@ -294,8 +294,8 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 					hasFocus = false;
 					this.updateCurrentThread(hasMouse, hasFocus);
 				},
-				true
-			)
+				true,
+			),
 		);
 	}
 
@@ -314,7 +314,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 
 		this._body.updateCommentThread(
 			commentThread,
-			this._commentReply?.isCommentEditorFocused() ?? false
+			this._commentReply?.isCommentEditorFocused() ?? false,
 		);
 		this._threadIsEmpty.set(!this._body.length);
 		this._header.updateCommentThread(commentThread);
@@ -322,7 +322,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 
 		if (this._commentThread.contextValue) {
 			this._commentThreadContextValue.set(
-				this._commentThread.contextValue
+				this._commentThread.contextValue,
 			);
 		} else {
 			this._commentThreadContextValue.reset();
@@ -331,7 +331,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 		if (
 			shouldCollapse &&
 			this.configurationService.getValue<ICommentsConfiguration>(
-				COMMENTS_SECTION
+				COMMENTS_SECTION,
 			).collapseOnResolve
 		) {
 			this.collapse();
@@ -353,7 +353,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 		this._register(
 			this._body.onDidResize((dimension) => {
 				this._refresh(dimension);
-			})
+			}),
 		);
 
 		// If there are no existing comments, place focus on the text area. This must be done after show, which also moves focus.
@@ -380,24 +380,22 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 			this._commentThread.onDidChangeCanReply(() => {
 				if (this._commentReply) {
 					this._commentReply.updateCanReply();
-				} else {
-					if (this._commentThread.canReply) {
-						this._createCommentForm();
-					}
+				} else if (this._commentThread.canReply) {
+					this._createCommentForm();
 				}
-			})
+			}),
 		);
 
 		this._commentThreadDisposables.push(
 			this._commentThread.onDidChangeComments(async (_) => {
 				await this.updateCommentThread(this._commentThread);
-			})
+			}),
 		);
 
 		this._commentThreadDisposables.push(
 			this._commentThread.onDidChangeLabel((_) => {
 				this._header.createThreadLabel();
-			})
+			}),
 		);
 	}
 
@@ -414,7 +412,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 			this._commentOptions,
 			this._pendingComment,
 			this,
-			this._containerDelegate.actionRunner
+			this._containerDelegate.actionRunner,
 		);
 
 		this._register(this._commentReply);
@@ -428,7 +426,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 				this._commentThread,
 				this._contextKeyService,
 				this._commentMenus,
-				this._containerDelegate.actionRunner
+				this._containerDelegate.actionRunner,
 			);
 
 		this._register(this._additionalActions);
@@ -492,85 +490,85 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 		const content: string[] = [];
 
 		content.push(
-			`.monaco-editor .review-widget > .body { border-top: 1px solid var(${commentThreadStateColorVar}) }`
+			`.monaco-editor .review-widget > .body { border-top: 1px solid var(${commentThreadStateColorVar}) }`,
 		);
 		content.push(
-			`.monaco-editor .review-widget > .head { background-color: var(${commentThreadStateBackgroundColorVar}) }`
+			`.monaco-editor .review-widget > .head { background-color: var(${commentThreadStateBackgroundColorVar}) }`,
 		);
 
 		const linkColor = theme.getColor(textLinkForeground);
 		if (linkColor) {
 			content.push(
-				`.review-widget .body .comment-body a { color: ${linkColor} }`
+				`.review-widget .body .comment-body a { color: ${linkColor} }`,
 			);
 		}
 
 		const linkActiveColor = theme.getColor(textLinkActiveForeground);
 		if (linkActiveColor) {
 			content.push(
-				`.review-widget .body .comment-body a:hover, a:active { color: ${linkActiveColor} }`
+				`.review-widget .body .comment-body a:hover, a:active { color: ${linkActiveColor} }`,
 			);
 		}
 
 		const focusColor = theme.getColor(focusBorder);
 		if (focusColor) {
 			content.push(
-				`.review-widget .body .comment-body a:focus { outline: 1px solid ${focusColor}; }`
+				`.review-widget .body .comment-body a:focus { outline: 1px solid ${focusColor}; }`,
 			);
 			content.push(
-				`.review-widget .body .monaco-editor.focused { outline: 1px solid ${focusColor}; }`
+				`.review-widget .body .monaco-editor.focused { outline: 1px solid ${focusColor}; }`,
 			);
 		}
 
 		const blockQuoteBackground = theme.getColor(textBlockQuoteBackground);
 		if (blockQuoteBackground) {
 			content.push(
-				`.review-widget .body .review-comment blockquote { background: ${blockQuoteBackground}; }`
+				`.review-widget .body .review-comment blockquote { background: ${blockQuoteBackground}; }`,
 			);
 		}
 
 		const blockQuoteBOrder = theme.getColor(textBlockQuoteBorder);
 		if (blockQuoteBOrder) {
 			content.push(
-				`.review-widget .body .review-comment blockquote { border-color: ${blockQuoteBOrder}; }`
+				`.review-widget .body .review-comment blockquote { border-color: ${blockQuoteBOrder}; }`,
 			);
 		}
 
 		const border = theme.getColor(PANEL_BORDER);
 		if (border) {
 			content.push(
-				`.review-widget .body .review-comment .review-comment-contents .comment-reactions .action-item a.action-label { border-color: ${border}; }`
+				`.review-widget .body .review-comment .review-comment-contents .comment-reactions .action-item a.action-label { border-color: ${border}; }`,
 			);
 		}
 
 		const hcBorder = theme.getColor(contrastBorder);
 		if (hcBorder) {
 			content.push(
-				`.review-widget .body .comment-form .review-thread-reply-button { outline-color: ${hcBorder}; }`
+				`.review-widget .body .comment-form .review-thread-reply-button { outline-color: ${hcBorder}; }`,
 			);
 			content.push(
-				`.review-widget .body .monaco-editor { outline: 1px solid ${hcBorder}; }`
+				`.review-widget .body .monaco-editor { outline: 1px solid ${hcBorder}; }`,
 			);
 		}
 
 		const errorBorder = theme.getColor(inputValidationErrorBorder);
 		if (errorBorder) {
 			content.push(
-				`.review-widget .validation-error { border: 1px solid ${errorBorder}; }`
+				`.review-widget .validation-error { border: 1px solid ${errorBorder}; }`,
 			);
 		}
 
 		const errorBackground = theme.getColor(inputValidationErrorBackground);
 		if (errorBackground) {
 			content.push(
-				`.review-widget .validation-error { background: ${errorBackground}; }`
+				`.review-widget .validation-error { background: ${errorBackground}; }`,
 			);
 		}
 
 		const errorForeground = theme.getColor(inputValidationErrorForeground);
 		if (errorForeground) {
 			content.push(
-				`.review-widget .body .comment-form .validation-error { color: ${errorForeground}; }`
+				`.review-widget .body .comment-form .validation-error { color: ${errorForeground}; }`,
 			);
 		}
 
@@ -580,7 +578,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 		this.container?.style.setProperty(fontFamilyVar, fontInfo.fontFamily);
 		this.container?.style.setProperty(
 			fontSizeVar,
-			`${fontInfo.fontSize}px`
+			`${fontInfo.fontSize}px`,
 		);
 		this.container?.style.setProperty(fontWeightVar, fontInfo.fontWeight);
 

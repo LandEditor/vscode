@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { IMarkdownString } from "vs/base/common/htmlContent";
 import { DisposableStore, IDisposable } from "vs/base/common/lifecycle";
 import { ThemeColor } from "vs/base/common/themables";
 import { Command } from "vs/editor/common/languages";
-import { IMarkdownString } from "vs/base/common/htmlContent";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import { ColorIdentifier } from "vs/platform/theme/common/colorRegistry";
 import {
 	IAuxiliaryStatusbarPart,
@@ -29,7 +29,7 @@ export interface IStatusbarService extends IStatusbarEntryContainer {
 	 * Creates a new auxililary status bar part in the provided container.
 	 */
 	createAuxiliaryStatusbarPart(
-		container: HTMLElement
+		container: HTMLElement,
 	): IAuxiliaryStatusbarPart;
 
 	/**
@@ -38,13 +38,13 @@ export interface IStatusbarService extends IStatusbarEntryContainer {
 	 */
 	createScoped(
 		statusbarEntryContainer: IStatusbarEntryContainer,
-		disposables: DisposableStore
+		disposables: DisposableStore,
 	): IStatusbarService;
 }
 
-export const enum StatusbarAlignment {
-	LEFT,
-	RIGHT,
+export enum StatusbarAlignment {
+	LEFT = 0,
+	RIGHT = 1,
 }
 
 export interface IStatusbarEntryLocation {
@@ -69,7 +69,7 @@ export interface IStatusbarEntryLocation {
 }
 
 export function isStatusbarEntryLocation(
-	thing: unknown
+	thing: unknown,
 ): thing is IStatusbarEntryLocation {
 	const candidate = thing as IStatusbarEntryLocation | undefined;
 
@@ -102,7 +102,7 @@ export interface IStatusbarEntryPriority {
 }
 
 export function isStatusbarEntryPriority(
-	thing: unknown
+	thing: unknown,
 ): thing is IStatusbarEntryPriority {
 	const candidate = thing as IStatusbarEntryPriority | undefined;
 

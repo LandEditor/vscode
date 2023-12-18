@@ -26,7 +26,7 @@ export class WebLanguagePacksService extends LanguagePackBaseService {
 
 	async getBuiltInExtensionTranslationsUri(
 		id: string,
-		language: string
+		language: string,
 	): Promise<URI | undefined> {
 		const queryTimeout = new CancellationTokenSource();
 		setTimeout(() => queryTimeout.cancel(), 1000);
@@ -39,7 +39,7 @@ export class WebLanguagePacksService extends LanguagePackBaseService {
 					text: `tag:"lp-${language}"`,
 					pageSize: 5,
 				},
-				queryTimeout.token
+				queryTimeout.token,
 			);
 		} catch (err) {
 			this.logService.error(err);
@@ -47,11 +47,11 @@ export class WebLanguagePacksService extends LanguagePackBaseService {
 		}
 
 		const languagePackExtensions = result.firstPage.find(
-			(e) => e.properties.localizedLanguages?.length
+			(e) => e.properties.localizedLanguages?.length,
 		);
 		if (!languagePackExtensions) {
 			this.logService.trace(
-				`No language pack found for language ${language}`
+				`No language pack found for language ${language}`,
 			);
 			return undefined;
 		}
@@ -61,17 +61,17 @@ export class WebLanguagePacksService extends LanguagePackBaseService {
 		setTimeout(() => queryTimeout.cancel(), 1000);
 		const manifest = await this.extensionGalleryService.getManifest(
 			languagePackExtensions,
-			manifestTimeout.token
+			manifestTimeout.token,
 		);
 
 		// Find the translation from the language pack
 		const localization = manifest?.contributes?.localizations?.find(
-			(l) => l.languageId === language
+			(l) => l.languageId === language,
 		);
 		const translation = localization?.translations.find((t) => t.id === id);
 		if (!translation) {
 			this.logService.trace(
-				`No translation found for id '${id}, in ${manifest?.name}`
+				`No translation found for id '${id}, in ${manifest?.name}`,
 			);
 			return undefined;
 		}
@@ -86,7 +86,7 @@ export class WebLanguagePacksService extends LanguagePackBaseService {
 			});
 		if (!uri) {
 			this.logService.trace(
-				"Gallery does not provide extension resources."
+				"Gallery does not provide extension resources.",
 			);
 			return undefined;
 		}

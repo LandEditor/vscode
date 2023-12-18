@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
+import { WindowIdleValue } from "vs/base/browser/dom";
 import {
 	IIconLabelValueOptions,
 	IconLabel,
@@ -18,6 +18,8 @@ import {
 	ITreeNode,
 	ITreeRenderer,
 } from "vs/base/browser/ui/tree/tree";
+import { mainWindow } from "vs/base/browser/window";
+import { CancellationToken } from "vs/base/common/cancellation";
 import { Emitter, Event } from "vs/base/common/event";
 import { FuzzyScore, createMatches } from "vs/base/common/filters";
 import {
@@ -28,7 +30,10 @@ import {
 } from "vs/base/common/lifecycle";
 import { ThemeIcon } from "vs/base/common/themables";
 import { URI } from "vs/base/common/uri";
+import { Range } from "vs/editor/common/core/range";
+import { IModelDeltaDecoration } from "vs/editor/common/model";
 import { getIconClassesForLanguageId } from "vs/editor/common/services/getIconClasses";
+import { localize } from "vs/nls";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
 	Extensions as ConfigurationExtensions,
@@ -45,8 +50,8 @@ import {
 } from "vs/platform/theme/common/colorRegistry";
 import { IThemeService } from "vs/platform/theme/common/themeService";
 import {
-	IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
+	IWorkbenchContributionsRegistry,
 } from "vs/workbench/common/contributions";
 import { IEditorPane } from "vs/workbench/common/editor";
 import {
@@ -57,6 +62,7 @@ import {
 	INotebookEditorPane,
 } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
 import { NotebookEditor } from "vs/workbench/contrib/notebook/browser/notebookEditor";
+import { OutlineEntry } from "vs/workbench/contrib/notebook/browser/viewModel/OutlineEntry";
 import { NotebookCellOutlineProvider } from "vs/workbench/contrib/notebook/browser/viewModel/notebookOutlineProvider";
 import {
 	CellKind,
@@ -80,12 +86,6 @@ import {
 	OutlineConfigKeys,
 	OutlineTarget,
 } from "vs/workbench/services/outline/browser/outline";
-import { OutlineEntry } from "vs/workbench/contrib/notebook/browser/viewModel/OutlineEntry";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { IModelDeltaDecoration } from "vs/editor/common/model";
-import { Range } from "vs/editor/common/core/range";
-import { mainWindow } from "vs/base/browser/window";
-import { WindowIdleValue } from "vs/base/browser/dom";
 
 class NotebookOutlineTemplate {
 	static readonly templateId = "NotebookOutlineRenderer";
@@ -94,7 +94,7 @@ class NotebookOutlineTemplate {
 		readonly container: HTMLElement,
 		readonly iconClass: HTMLElement,
 		readonly iconLabel: IconLabel,
-		readonly decoration: HTMLElement
+		readonly decoration: HTMLElement,
 	) {}
 }
 
@@ -121,7 +121,7 @@ class NotebookOutlineRenderer
 			container,
 			iconClass,
 			iconLabel,
-			decoration
+			decoration,
 		);
 	}
 
@@ -129,7 +129,7 @@ class NotebookOutlineRenderer
 		node: ITreeNode<OutlineEntry, FuzzyScore>,
 		_index: number,
 		template: NotebookOutlineTemplate,
-		_height: number | undefined
+		_height: number | undefined,
 	): void {
 		const extraClasses: string[] = [];
 		const options: IIconLabelValueOptions = {
@@ -145,7 +145,9 @@ class NotebookOutlineRenderer
 		) {
 			template.iconClass.className = "";
 			extraClasses.push(
-				...getIconClassesForLanguageId(node.element.cell.language ?? "")
+				...getIconClassesForLanguageId(
+					node.element.cell.language ?? "",
+				),
 			);
 		} else {
 			template.iconClass.className =
@@ -161,10 +163,10 @@ class NotebookOutlineRenderer
 		template.decoration.innerText = "";
 		if (markerInfo) {
 			const problem = this._configurationService.getValue(
-				"problems.visibility"
+				"problems.visibility",
 			);
 			const useBadges = this._configurationService.getValue(
-				OutlineConfigKeys.problemsBadges
+				OutlineConfigKeys.problemsBadges,
 			);
 
 			if (!useBadges || !problem) {
@@ -183,26 +185,26 @@ class NotebookOutlineRenderer
 				.getColor(
 					markerInfo.topSev === MarkerSeverity.Error
 						? listErrorForeground
-						: listWarningForeground
+						: listWarningForeground,
 				);
 			if (problem === undefined) {
 				return;
 			}
 			const useColors = this._configurationService.getValue(
-				OutlineConfigKeys.problemsColors
+				OutlineConfigKeys.problemsColors,
 			);
 			if (!useColors || !problem) {
 				template.container.style.removeProperty(
-					"--outline-element-color"
+					"--outline-element-color",
 				);
 				template.decoration.style.setProperty(
 					"--outline-element-color",
-					color?.toString() ?? "inherit"
+					color?.toString() ?? "inherit",
 				);
 			} else {
 				template.container.style.setProperty(
 					"--outline-element-color",
-					color?.toString() ?? "inherit"
+					color?.toString() ?? "inherit",
 				);
 			}
 		}
@@ -228,7 +230,7 @@ class NotebookNavigationLabelProvider
 	implements IKeyboardNavigationLabelProvider<OutlineEntry>
 {
 	getKeyboardNavigationLabel(
-		element: OutlineEntry
+		element: OutlineEntry,
 	):
 		| { toString(): string | undefined }
 		| { toString(): string | undefined }[]
@@ -285,7 +287,7 @@ class NotebookQuickPickProvider implements IQuickPickDataSource<OutlineEntry> {
 class NotebookComparator implements IOutlineComparator<OutlineEntry> {
 	private readonly _collator = new WindowIdleValue<Intl.Collator>(
 		mainWindow,
-		() => new Intl.Collator(undefined, { numeric: true })
+		() => new Intl.Collator(undefined, { numeric: true }),
 	);
 
 	compareByPosition(a: OutlineEntry, b: OutlineEntry): number {
@@ -335,11 +337,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 	) {
 		const installSelectionListener = () => {
 			const notebookEditor = _editor.getControl();
-			if (!notebookEditor?.hasModel()) {
-				this._outlineProvider?.dispose();
-				this._outlineProvider = undefined;
-				this._localDisposables.clear();
-			} else {
+			if (notebookEditor?.hasModel()) {
 				this._outlineProvider?.dispose();
 				this._localDisposables.clear();
 				this._outlineProvider = instantiationService.createInstance(
@@ -352,6 +350,10 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 						this._onDidChange.fire(e);
 					})
 				);
+			} else {
+				this._outlineProvider?.dispose();
+				this._outlineProvider = undefined;
+				this._localDisposables.clear();
 			}
 		};
 
@@ -428,7 +430,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 	async reveal(
 		entry: OutlineEntry,
 		options: IEditorOptions,
-		sideBySide: boolean
+		sideBySide: boolean,
 	): Promise<void> {
 		await this._editorService.openEditor(
 			{
@@ -440,7 +442,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 					selection: entry.position,
 				} as INotebookEditorOptions,
 			},
-			sideBySide ? SIDE_GROUP : undefined
+			sideBySide ? SIDE_GROUP : undefined,
 		);
 	}
 
@@ -467,7 +469,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 						outputClassName: "nb-symbolHighlight",
 					},
 				},
-			]
+			],
 		);
 
 		let editorDecorations: ICellModelDecorations[];
@@ -491,7 +493,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 
 				editorDecorations = accessor.deltaDecorations(
 					[],
-					[deltaDecoration]
+					[deltaDecoration],
 				);
 			}
 		});
@@ -548,16 +550,16 @@ export class NotebookOutlineCreator
 	async createOutline(
 		editor: NotebookEditor,
 		target: OutlineTarget,
-		cancelToken: CancellationToken
+		cancelToken: CancellationToken,
 	): Promise<IOutline<OutlineEntry> | undefined> {
 		const outline = this._instantiationService.createInstance(
 			NotebookCellOutline,
 			editor,
-			target
+			target,
 		);
 
 		const showAllSymbols = this._configurationService.getValue<boolean>(
-			NotebookSetting.gotoSymbolsAllSymbols
+			NotebookSetting.gotoSymbolsAllSymbols,
 		);
 		if (target === OutlineTarget.QuickPick && showAllSymbols) {
 			await outline.setFullSymbols(cancelToken);
@@ -567,25 +569,25 @@ export class NotebookOutlineCreator
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	NotebookOutlineCreator,
-	LifecyclePhase.Eventually
+	LifecyclePhase.Eventually,
 );
 
 Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration
+	ConfigurationExtensions.Configuration,
 ).registerConfiguration({
 	id: "notebook",
 	order: 100,
 	type: "object",
-	"properties": {
+	properties: {
 		"notebook.outline.showCodeCells": {
 			type: "boolean",
 			default: false,
 			markdownDescription: localize(
 				"outline.showCodeCells",
-				"When enabled notebook outline shows code cells."
+				"When enabled notebook outline shows code cells.",
 			),
 		},
 		"notebook.breadcrumbs.showCodeCells": {
@@ -593,7 +595,7 @@ Registry.as<IConfigurationRegistry>(
 			default: true,
 			markdownDescription: localize(
 				"breadcrumbs.showCodeCells",
-				"When enabled notebook breadcrumbs contain code cells."
+				"When enabled notebook breadcrumbs contain code cells.",
 			),
 		},
 		[NotebookSetting.gotoSymbolsAllSymbols]: {
@@ -601,7 +603,7 @@ Registry.as<IConfigurationRegistry>(
 			default: true,
 			markdownDescription: localize(
 				"notebook.gotoSymbols.showAllSymbols",
-				"When enabled the Go to Symbol Quick Pick will display full code symbols from the notebook, as well as Markdown headers."
+				"When enabled the Go to Symbol Quick Pick will display full code symbols from the notebook, as well as Markdown headers.",
 			),
 		},
 	},

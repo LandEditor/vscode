@@ -66,10 +66,10 @@ export class MainThreadChatAgents2
 	implements MainThreadChatAgentsShape2
 {
 	private readonly _agents = this._register(
-		new DisposableMap<number, AgentData>()
+		new DisposableMap<number, AgentData>(),
 	);
 	private readonly _agentCompletionProviders = this._register(
-		new DisposableMap<number, IDisposable>()
+		new DisposableMap<number, IDisposable>(),
 	);
 
 	private readonly _pendingProgress = new Map<
@@ -141,7 +141,7 @@ export class MainThreadChatAgents2
 	$registerAgent(
 		handle: number,
 		name: string,
-		metadata: IExtensionChatAgentMetadata
+		metadata: IExtensionChatAgentMetadata,
 	): void {
 		const d = this._chatAgentService.registerAgent({
 			id: name,
@@ -156,7 +156,7 @@ export class MainThreadChatAgents2
 							request.requestId,
 							request,
 							{ history },
-							token
+							token,
 						)) ?? {}
 					);
 				} finally {
@@ -165,7 +165,7 @@ export class MainThreadChatAgents2
 			},
 			provideFollowups: async (
 				sessionId,
-				token
+				token,
 			): Promise<IChatFollowup[]> => {
 				if (!this._agents.get(handle)?.hasFollowups) {
 					return [];
@@ -190,7 +190,7 @@ export class MainThreadChatAgents2
 
 	$updateAgent(
 		handle: number,
-		metadataUpdate: IExtensionChatAgentMetadata
+		metadataUpdate: IExtensionChatAgentMetadata,
 	): void {
 		const data = this._agents.get(handle);
 		if (!data) {
@@ -204,7 +204,7 @@ export class MainThreadChatAgents2
 	async $handleProgressChunk(
 		requestId: string,
 		progress: IChatProgressDto,
-		responsePartHandle?: number
+		responsePartHandle?: number,
 	): Promise<number | void> {
 		if (progress.kind === "asyncContent") {
 			const handle = ++this._responsePartHandlePool;
@@ -214,7 +214,7 @@ export class MainThreadChatAgents2
 			>();
 			this._activeResponsePartPromises.set(
 				responsePartId,
-				deferredContentPromise
+				deferredContentPromise,
 			);
 			this._pendingProgress.get(requestId)?.({
 				...progress,
@@ -244,13 +244,13 @@ export class MainThreadChatAgents2
 
 		const revivedProgress = revive(progress);
 		this._pendingProgress.get(requestId)?.(
-			revivedProgress as IChatProgress
+			revivedProgress as IChatProgress,
 		);
 	}
 
 	$registerAgentCompletionsProvider(
 		handle: number,
-		triggerCharacters: string[]
+		triggerCharacters: string[],
 	): void {
 		this._agentCompletionProviders.set(
 			handle,
@@ -266,11 +266,11 @@ export class MainThreadChatAgents2
 						model: ITextModel,
 						position: Position,
 						_context: CompletionContext,
-						token: CancellationToken
+						token: CancellationToken,
 					) => {
 						const widget =
 							this._chatWidgetService.getWidgetByInputUri(
-								model.uri
+								model.uri,
 							);
 						if (!widget || !widget.viewModel) {
 							return;
@@ -281,14 +281,14 @@ export class MainThreadChatAgents2
 							.join("");
 						const wordRegex = new RegExp(
 							`[${triggerCharsPart}]\\S*`,
-							"g"
+							"g",
 						);
 						const query =
 							getWordAtText(
 								position.column,
 								wordRegex,
 								model.getLineContent(position.lineNumber),
-								0
+								0,
 							)?.word ?? "";
 
 						if (
@@ -303,12 +303,12 @@ export class MainThreadChatAgents2
 								.createInstance(ChatRequestParser)
 								.parseChatRequest(
 									widget.viewModel.sessionId,
-									model.getValue()
+									model.getValue(),
 								)
 						).parts;
 						const agentPart = parsedRequest.find(
 							(part): part is ChatRequestAgentPart =>
-								part instanceof ChatRequestAgentPart
+								part instanceof ChatRequestAgentPart,
 						);
 						const thisAgentName = this._agents.get(handle)?.name;
 						if (agentPart?.agent.id !== thisAgentName) {
@@ -318,7 +318,7 @@ export class MainThreadChatAgents2
 						const range = computeCompletionRanges(
 							model,
 							position,
-							wordRegex
+							wordRegex,
 						);
 						if (!range) {
 							return null;
@@ -328,7 +328,7 @@ export class MainThreadChatAgents2
 							await this._proxy.$invokeCompletionProvider(
 								handle,
 								query,
-								token
+								token,
 							);
 						const variableItems = result.map((v) => {
 							const insertText =
@@ -340,7 +340,7 @@ export class MainThreadChatAgents2
 								range.insert.startLineNumber,
 								range.insert.startColumn,
 								range.insert.endLineNumber,
-								range.insert.startColumn + insertText.length
+								range.insert.startColumn + insertText.length,
 							);
 							return {
 								label: v.label,
@@ -367,8 +367,8 @@ export class MainThreadChatAgents2
 							suggestions: variableItems,
 						} satisfies CompletionList;
 					},
-				}
-			)
+				},
+			),
 		);
 	}
 
@@ -380,13 +380,13 @@ export class MainThreadChatAgents2
 function computeCompletionRanges(
 	model: ITextModel,
 	position: Position,
-	reg: RegExp
+	reg: RegExp,
 ): { insert: Range; replace: Range } | undefined {
 	const varWord = getWordAtText(
 		position.column,
 		reg,
 		model.getLineContent(position.lineNumber),
-		0
+		0,
 	);
 	if (!varWord && model.getWordUntilPosition(position).word) {
 		// inside a "normal" word
@@ -395,21 +395,21 @@ function computeCompletionRanges(
 
 	let insert: Range;
 	let replace: Range;
-	if (!varWord) {
-		insert = replace = Range.fromPositions(position);
-	} else {
+	if (varWord) {
 		insert = new Range(
 			position.lineNumber,
 			varWord.startColumn,
 			position.lineNumber,
-			position.column
+			position.column,
 		);
 		replace = new Range(
 			position.lineNumber,
 			varWord.startColumn,
 			position.lineNumber,
-			varWord.endColumn
+			varWord.endColumn,
 		);
+	} else {
+		insert = replace = Range.fromPositions(position);
 	}
 
 	return { insert, replace };

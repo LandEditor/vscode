@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as Vinyl from "vinyl";
-import * as through from "through";
-import * as builder from "./builder";
-import * as ts from "typescript";
-import { Readable, Writable, Duplex } from "stream";
-import { dirname } from "path";
-import { strings } from "./utils";
 import { readFileSync, statSync } from "fs";
+import { dirname } from "path";
+import { Duplex, Readable, Writable } from "stream";
 import * as log from "fancy-log";
+import * as through from "through";
+import * as ts from "typescript";
+import * as Vinyl from "vinyl";
+import * as builder from "./builder";
+import { strings } from "./utils";
 import colors = require("ansi-colors");
 import { ITranspiler, SwcTranspiler, TscTranspiler } from "./transpiler";
 
@@ -24,7 +24,7 @@ class EmptyDuplex extends Duplex {
 	_write(
 		_chunk: any,
 		_encoding: string,
-		callback: (err?: Error) => void
+		callback: (err?: Error) => void,
 	): void {
 		callback();
 	}
@@ -34,9 +34,7 @@ class EmptyDuplex extends Duplex {
 }
 
 function createNullCompiler(): IncrementalCompiler {
-	const result: IncrementalCompiler = function () {
-		return new EmptyDuplex();
-	};
+	const result: IncrementalCompiler = () => new EmptyDuplex();
 	result.src = () => new EmptyDuplex();
 	return result;
 }
@@ -53,7 +51,7 @@ export function create(
 		transpileOnlyIncludesDts?: boolean;
 		transpileWithSwc?: boolean;
 	},
-	onError: (message: string) => void = _defaultOnError
+	onError: (message: string) => void = _defaultOnError,
 ): IncrementalCompiler {
 	function printDiagnostic(diag: ts.Diagnostic | Error): void {
 		if (diag instanceof Error) {
@@ -62,7 +60,7 @@ export function create(
 			onError(ts.flattenDiagnosticMessageText(diag.messageText, "\n"));
 		} else {
 			const lineAndCh = diag.file.getLineAndCharacterOfPosition(
-				diag.start
+				diag.start,
 			);
 			onError(
 				strings.format(
@@ -70,8 +68,8 @@ export function create(
 					diag.file.fileName,
 					lineAndCh.line + 1,
 					lineAndCh.character + 1,
-					ts.flattenDiagnosticMessageText(diag.messageText, "\n")
-				)
+					ts.flattenDiagnosticMessageText(diag.messageText, "\n"),
+				),
 			);
 		}
 	}
@@ -86,7 +84,7 @@ export function create(
 		parsed.config,
 		ts.sys,
 		dirname(projectPath),
-		existingOptions
+		existingOptions,
 	);
 	if (cmdLine.errors.length > 0) {
 		cmdLine.errors.forEach(printDiagnostic);
@@ -102,7 +100,7 @@ export function create(
 	// FULL COMPILE stream doing transpile, syntax and semantic diagnostics
 	function createCompileStream(
 		builder: builder.ITypeScriptBuilder,
-		token?: builder.CancellationToken
+		token?: builder.CancellationToken,
 	): Readable & Writable {
 		return through(
 			function (this: through.ThroughStream, file: Vinyl) {
@@ -119,18 +117,18 @@ export function create(
 					.build((file) => this.queue(file), printDiagnostic, token)
 					.catch((e) => console.error(e))
 					.then(() => this.queue(null));
-			}
+			},
 		);
 	}
 
 	// TRANSPILE ONLY stream doing just TS to JS conversion
 	function createTranspileStream(
-		transpiler: ITranspiler
+		transpiler: ITranspiler,
 	): Readable & Writable {
 		return through(
 			function (
 				this: through.ThroughStream & { queue(a: any): void },
-				file: Vinyl
+				file: Vinyl,
 			) {
 				// give the file to the compiler
 				if (file.isStream()) {
@@ -158,21 +156,21 @@ export function create(
 					this.queue(null);
 					transpiler.onOutfile = undefined;
 				});
-			}
+			},
 		);
 	}
 
 	let result: IncrementalCompiler;
 	if (config.transpileOnly) {
-		const transpiler = !config.transpileWithSwc
-			? new TscTranspiler(logFn, printDiagnostic, projectPath, cmdLine)
-			: new SwcTranspiler(logFn, printDiagnostic, projectPath, cmdLine);
+		const transpiler = config.transpileWithSwc
+			? new SwcTranspiler(logFn, printDiagnostic, projectPath, cmdLine)
+			: new TscTranspiler(logFn, printDiagnostic, projectPath, cmdLine);
 		result = <any>(() => createTranspileStream(transpiler));
 	} else {
 		const _builder = builder.createTypeScriptBuilder(
 			{ logFn },
 			projectPath,
-			cmdLine
+			cmdLine,
 		);
 		result = <any>(
 			((token: builder.CancellationToken) =>
@@ -188,7 +186,7 @@ export function create(
 				super({ objectMode: true });
 			}
 			_read() {
-				let more: boolean = true;
+				let more = true;
 				let path: string;
 				for (; more && _pos < _fileNames.length; _pos++) {
 					path = _fileNames[_pos];
@@ -199,7 +197,7 @@ export function create(
 							stat: statSync(path),
 							cwd: opts && opts.cwd,
 							base: (opts && opts.base) || dirname(projectPath),
-						})
+						}),
 					);
 				}
 				if (_pos >= _fileNames.length) {

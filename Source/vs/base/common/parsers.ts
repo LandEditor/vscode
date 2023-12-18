@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-export const enum ValidationState {
+export enum ValidationState {
 	OK = 0,
 	Info = 1,
 	Warning = 2,

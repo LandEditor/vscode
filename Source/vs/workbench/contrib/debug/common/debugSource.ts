@@ -3,27 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
-import { URI } from "vs/base/common/uri";
-import { normalize, isAbsolute } from "vs/base/common/path";
+import { Schemas } from "vs/base/common/network";
+import { isAbsolute, normalize } from "vs/base/common/path";
 import * as resources from "vs/base/common/resources";
-import { DEBUG_SCHEME } from "vs/workbench/contrib/debug/common/debug";
+import { URI } from "vs/base/common/uri";
 import { IRange } from "vs/editor/common/core/range";
+import * as nls from "vs/nls";
+import { TextEditorSelectionRevealType } from "vs/platform/editor/common/editor";
+import { ILogService } from "vs/platform/log/common/log";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import { IEditorPane } from "vs/workbench/common/editor";
+import { DEBUG_SCHEME } from "vs/workbench/contrib/debug/common/debug";
+import { isUri } from "vs/workbench/contrib/debug/common/debugUtils";
 import {
+	ACTIVE_GROUP,
 	IEditorService,
 	SIDE_GROUP,
-	ACTIVE_GROUP,
 } from "vs/workbench/services/editor/common/editorService";
-import { Schemas } from "vs/base/common/network";
-import { isUri } from "vs/workbench/contrib/debug/common/debugUtils";
-import { IEditorPane } from "vs/workbench/common/editor";
-import { TextEditorSelectionRevealType } from "vs/platform/editor/common/editor";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import { ILogService } from "vs/platform/log/common/log";
 
 export const UNKNOWN_SOURCE_LABEL = nls.localize(
 	"unknownSource",
-	"Unknown Source"
+	"Unknown Source",
 );
 
 /**
@@ -48,7 +48,7 @@ export class Source {
 		raw_: DebugProtocol.Source | undefined,
 		sessionId: string,
 		uriIdentityService: IUriIdentityService,
-		logService: ILogService
+		logService: ILogService,
 	) {
 		let path: string;
 		if (raw_) {
@@ -66,7 +66,7 @@ export class Source {
 			path,
 			sessionId,
 			uriIdentityService,
-			logService
+			logService,
 		);
 	}
 
@@ -95,11 +95,10 @@ export class Source {
 		selection: IRange,
 		preserveFocus?: boolean,
 		sideBySide?: boolean,
-		pinned?: boolean
+		pinned?: boolean,
 	): Promise<IEditorPane | undefined> {
-		return !this.available
-			? Promise.resolve(undefined)
-			: editorService.openEditor(
+		return this.available
+			? editorService.openEditor(
 					{
 						resource: this.uri,
 						description: this.origin,
@@ -112,8 +111,9 @@ export class Source {
 							pinned,
 						},
 					},
-					sideBySide ? SIDE_GROUP : ACTIVE_GROUP
-				);
+					sideBySide ? SIDE_GROUP : ACTIVE_GROUP,
+			  )
+			: Promise.resolve(undefined);
 	}
 
 	static getEncodedDebugData(modelUri: URI): {
@@ -168,7 +168,7 @@ export function getUriFromSource(
 	path: string | undefined,
 	sessionId: string,
 	uriIdentityService: IUriIdentityService,
-	logService: ILogService
+	logService: ILogService,
 ): URI {
 	const _getUriFromSource = (path: string | undefined) => {
 		if (
@@ -197,7 +197,7 @@ export function getUriFromSource(
 				scheme: DEBUG_SCHEME,
 				path,
 				query: `session=${sessionId}`,
-			})
+			}),
 		);
 	};
 

@@ -66,17 +66,17 @@ import {
 	terminalStickyScrollHoverBackground,
 } from "vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollColorRegistry";
 
-const enum OverlayState {
+enum OverlayState {
 	/** Initial state/disabled by the alt buffer. */
 	Off = 0,
 	On = 1,
 }
 
-const enum CssClasses {
+enum CssClasses {
 	Visible = "visible",
 }
 
-const enum Constants {
+enum Constants {
 	StickyScrollPercentageCap = 0.4,
 }
 
@@ -85,7 +85,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 	private _serializeAddon?: SerializeAddonType;
 
 	private _canvasAddon = this._register(
-		new MutableDisposable<CanvasAddonType>()
+		new MutableDisposable<CanvasAddonType>(),
 	);
 	private _pendingCanvasAddon?: CancelablePromise<void>;
 
@@ -97,7 +97,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 	private _refreshListeners = this._register(new MutableDisposable());
 
 	private _state: OverlayState = OverlayState.Off;
-	private _rawMaxLineCount: number = 5;
+	private _rawMaxLineCount = 5;
 
 	constructor(
 		private readonly _instance: ITerminalInstance,
@@ -222,13 +222,13 @@ export class TerminalStickyScrollOverlay extends Disposable {
 					this._xterm.raw.onLineFeed,
 					// Rarely an update may be required after just a cursor move, like when
 					// scrolling horizontally in a pager
-					this._xterm.raw.onCursorMove
+					this._xterm.raw.onCursorMove,
 				)(() => this._refresh()),
 				addStandardDisposableListener(
 					this._xterm.raw.element!.querySelector(".xterm-viewport")!,
 					"scroll",
-					() => this._refresh()
-				)
+					() => this._refresh(),
+				),
 			);
 		}
 	}
@@ -270,7 +270,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 			return;
 		}
 		const command = this._commandDetection.getCommandForLine(
-			this._xterm.raw.buffer.active.viewportY
+			this._xterm.raw.buffer.active.viewportY,
 		);
 		if (command && this._currentStickyCommand !== command) {
 			this._throttledRefresh();
@@ -287,7 +287,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 	@throttle(0)
 	private _throttledRefresh(): void {
 		const command = this._commandDetection.getCommandForLine(
-			this._xterm.raw.buffer.active.viewportY
+			this._xterm.raw.buffer.active.viewportY,
 		);
 
 		// The command from viewportY + 1 is used because this one will not be obscured by sticky
@@ -309,7 +309,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 			) {
 				this._updateContent(
 					partialCommand,
-					partialCommand.commandStartMarker
+					partialCommand.commandStartMarker,
 				);
 				return;
 			}
@@ -331,7 +331,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 
 	private _updateContent(
 		command: ITerminalCommand | ICurrentPartialCommand,
-		startMarker: IMarker
+		startMarker: IMarker,
 	) {
 		const xterm = this._xterm.raw;
 		if (
@@ -359,7 +359,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 				: 0;
 		const maxLineCount = Math.min(
 			this._rawMaxLineCount,
-			Math.floor(xterm.rows * Constants.StickyScrollPercentageCap)
+			Math.floor(xterm.rows * Constants.StickyScrollPercentageCap),
 		);
 		const stickyScrollLineCount =
 			Math.min(promptRowCount + commandRowCount - 1, maxLineCount) -
@@ -405,7 +405,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 		if (content && this._currentContent !== content) {
 			this._stickyScrollOverlay.resize(
 				this._stickyScrollOverlay.cols,
-				stickyScrollLineCount
+				stickyScrollLineCount,
 			);
 			this._stickyScrollOverlay.write("\x1b[0m\x1b[H\x1b[2J");
 			this._stickyScrollOverlay.write(content);
@@ -456,11 +456,11 @@ export class TerminalStickyScrollOverlay extends Disposable {
 		// Fill tooltip
 		let hoverTitle = localize(
 			"stickyScrollHoverTitle",
-			"Navigate to Command"
+			"Navigate to Command",
 		);
 		const scrollToPreviousCommandKeybinding =
 			this._keybindingService.lookupKeybinding(
-				TerminalCommandId.ScrollToPreviousCommand
+				TerminalCommandId.ScrollToPreviousCommand,
 			);
 		if (scrollToPreviousCommandKeybinding) {
 			const label = scrollToPreviousCommandKeybinding.getLabel();
@@ -471,13 +471,13 @@ export class TerminalStickyScrollOverlay extends Disposable {
 						"labelWithKeybinding",
 						"{0} ({1})",
 						terminalStrings.scrollToPreviousCommand.value,
-						label
+						label,
 					);
 			}
 		}
 		const scrollToNextCommandKeybinding =
 			this._keybindingService.lookupKeybinding(
-				TerminalCommandId.ScrollToNextCommand
+				TerminalCommandId.ScrollToNextCommand,
 			);
 		if (scrollToNextCommandKeybinding) {
 			const label = scrollToNextCommandKeybinding.getLabel();
@@ -488,7 +488,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 						"labelWithKeybinding",
 						"{0} ({1})",
 						terminalStrings.scrollToNextCommand.value,
-						label
+						label,
 					);
 			}
 		}
@@ -511,11 +511,11 @@ export class TerminalStickyScrollOverlay extends Disposable {
 					"getOutput" in this._currentStickyCommand
 				) {
 					this._xterm.markTracker.revealCommand(
-						this._currentStickyCommand
+						this._currentStickyCommand,
 					);
 					this._instance.focus();
 				}
-			})
+			}),
 		);
 
 		// Context menu - stop propagation on mousedown because rightClickBehavior listens on
@@ -524,7 +524,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 			addDisposableListener(hoverOverlay, "mousedown", (e) => {
 				e.stopImmediatePropagation();
 				e.preventDefault();
-			})
+			}),
 		);
 		this._register(
 			addDisposableListener(hoverOverlay, "contextmenu", (e) => {
@@ -535,9 +535,9 @@ export class TerminalStickyScrollOverlay extends Disposable {
 					e,
 					this._instance,
 					this._contextMenu,
-					this._contextMenuService
+					this._contextMenuService,
 				);
-			})
+			}),
 		);
 
 		// Instead of juggling decorations for hover styles, swap out the theme to indicate the
@@ -547,15 +547,15 @@ export class TerminalStickyScrollOverlay extends Disposable {
 			addStandardDisposableListener(
 				hoverOverlay,
 				"mouseover",
-				() => (overlay.options.theme = this._getTheme(true))
-			)
+				() => (overlay.options.theme = this._getTheme(true)),
+			),
 		);
 		this._register(
 			addStandardDisposableListener(
 				hoverOverlay,
 				"mouseleave",
-				() => (overlay.options.theme = this._getTheme(false))
-			)
+				() => (overlay.options.theme = this._getTheme(false)),
+			),
 		);
 	}
 
@@ -566,7 +566,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 		}
 		this._stickyScrollOverlay.resize(
 			this._xterm.raw.cols,
-			this._stickyScrollOverlay.rows
+			this._stickyScrollOverlay.rows,
 		);
 		this._stickyScrollOverlay.options = this._getOptions();
 		this._syncGpuAccelerationState();
@@ -592,7 +592,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 							overlay.loadAddon(this._canvasAddon.value);
 						}
 						this._pendingCanvasAddon = undefined;
-					}
+					},
 				);
 			}
 		} else {
@@ -632,11 +632,9 @@ export class TerminalStickyScrollOverlay extends Disposable {
 				? theme
 						.getColor(terminalStickyScrollHoverBackground)
 						?.toString() ??
-					this._xtermColorProvider
-						.getBackgroundColor(theme)
-						?.toString()
+				  this._xtermColorProvider.getBackgroundColor(theme)?.toString()
 				: theme.getColor(terminalStickyScrollBackground)?.toString() ??
-					this._xtermColorProvider
+				  this._xtermColorProvider
 						.getBackgroundColor(theme)
 						?.toString(),
 			selectionBackground: undefined,

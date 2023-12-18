@@ -3,20 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	MessagePortMain,
-	isUtilityProcess,
-	MessageEvent,
-} from "vs/base/parts/sandbox/node/electronTypes";
+import { firstOrDefault } from "vs/base/common/arrays";
 import { VSBuffer } from "vs/base/common/buffer";
+import { Emitter, Event } from "vs/base/common/event";
+import { assertType } from "vs/base/common/types";
 import {
 	ClientConnectionEvent,
 	IMessagePassingProtocol,
 	IPCServer,
 } from "vs/base/parts/ipc/common/ipc";
-import { Emitter, Event } from "vs/base/common/event";
-import { assertType } from "vs/base/common/types";
-import { firstOrDefault } from "vs/base/common/arrays";
+import {
+	MessageEvent,
+	MessagePortMain,
+	isUtilityProcess,
+} from "vs/base/parts/sandbox/node/electronTypes";
 
 /**
  * The MessagePort `Protocol` leverages MessagePortMain style IPC communication
@@ -26,7 +26,7 @@ class Protocol implements IMessagePassingProtocol {
 	readonly onMessage = Event.fromNodeEventEmitter<VSBuffer>(
 		this.port,
 		"message",
-		(e: MessageEvent) => VSBuffer.wrap(e.data)
+		(e: MessageEvent) => VSBuffer.wrap(e.data),
 	);
 
 	constructor(private port: MessagePortMain) {
@@ -61,7 +61,7 @@ export interface IClientConnectionFilter {
  */
 export class Server extends IPCServer {
 	private static getOnDidClientConnect(
-		filter?: IClientConnectionFilter
+		filter?: IClientConnectionFilter,
 	): Event<ClientConnectionEvent> {
 		assertType(isUtilityProcess(process), "Electron Utility Process");
 
@@ -88,7 +88,7 @@ export class Server extends IPCServer {
 				// (https://github.com/electron/electron/blob/11-x-y/docs/api/message-port-main.md#event-close)
 				onDidClientDisconnect: Event.fromNodeEventEmitter(
 					port,
-					"close"
+					"close",
 				),
 			};
 
@@ -105,14 +105,14 @@ interface INodeMessagePortFragment {
 	on(event: "message", listener: (messageEvent: MessageEvent) => void): this;
 	removeListener(
 		event: "message",
-		listener: (messageEvent: MessageEvent) => void
+		listener: (messageEvent: MessageEvent) => void,
 	): this;
 }
 
 export function once(
 	port: INodeMessagePortFragment,
 	message: unknown,
-	callback: () => void
+	callback: () => void,
 ): void {
 	const listener = (e: MessageEvent) => {
 		if (e.data === message) {

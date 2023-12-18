@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./inspectTokens";
 import { $, append, reset } from "vs/base/browser/dom";
 import { CharCode } from "vs/base/common/charCode";
 import { Color } from "vs/base/common/color";
 import { KeyCode } from "vs/base/common/keyCodes";
 import { Disposable } from "vs/base/common/lifecycle";
+import "vs/css!./inspectTokens";
 import {
 	ContentWidgetPositionPreference,
 	IActiveCodeEditor,
@@ -18,34 +18,34 @@ import {
 } from "vs/editor/browser/editorBrowser";
 import {
 	EditorAction,
+	EditorContributionInstantiation,
 	ServicesAccessor,
 	registerEditorAction,
 	registerEditorContribution,
-	EditorContributionInstantiation,
 } from "vs/editor/browser/editorExtensions";
 import { Position } from "vs/editor/common/core/position";
 import { IEditorContribution } from "vs/editor/common/editorCommon";
-import { ITextModel } from "vs/editor/common/model";
-import {
-	IState,
-	ITokenizationSupport,
-	TokenizationRegistry,
-	ILanguageIdCodec,
-	Token,
-} from "vs/editor/common/languages";
 import {
 	FontStyle,
 	StandardTokenType,
 	TokenMetadata,
 } from "vs/editor/common/encodedTokenAttributes";
 import {
+	ILanguageIdCodec,
+	IState,
+	ITokenizationSupport,
+	Token,
+	TokenizationRegistry,
+} from "vs/editor/common/languages";
+import { ILanguageService } from "vs/editor/common/languages/language";
+import {
 	NullState,
 	nullTokenize,
 	nullTokenizeEncoded,
 } from "vs/editor/common/languages/nullTokenize";
-import { ILanguageService } from "vs/editor/common/languages/language";
-import { IStandaloneThemeService } from "vs/editor/standalone/common/standaloneTheme";
+import { ITextModel } from "vs/editor/common/model";
 import { InspectTokensNLS } from "vs/editor/common/standaloneStrings";
+import { IStandaloneThemeService } from "vs/editor/standalone/common/standaloneTheme";
 
 class InspectTokensController
 	extends Disposable
@@ -55,7 +55,7 @@ class InspectTokensController
 
 	public static get(editor: ICodeEditor): InspectTokensController | null {
 		return editor.getContribution<InspectTokensController>(
-			InspectTokensController.ID
+			InspectTokensController.ID,
 		);
 	}
 
@@ -67,7 +67,7 @@ class InspectTokensController
 		editor: ICodeEditor,
 		@IStandaloneThemeService
 		standaloneColorService: IStandaloneThemeService,
-		@ILanguageService languageService: ILanguageService
+		@ILanguageService languageService: ILanguageService,
 	) {
 		super();
 		this._editor = editor;
@@ -76,13 +76,13 @@ class InspectTokensController
 
 		this._register(this._editor.onDidChangeModel((e) => this.stop()));
 		this._register(
-			this._editor.onDidChangeModelLanguage((e) => this.stop())
+			this._editor.onDidChangeModelLanguage((e) => this.stop()),
 		);
 		this._register(TokenizationRegistry.onDidChange((e) => this.stop()));
 		this._register(
 			this._editor.onKeyUp(
-				(e) => e.keyCode === KeyCode.Escape && this.stop()
-			)
+				(e) => e.keyCode === KeyCode.Escape && this.stop(),
+			),
 		);
 	}
 
@@ -100,7 +100,7 @@ class InspectTokensController
 		}
 		this._widget = new InspectTokensWidget(
 			this._editor,
-			this._languageService
+			this._languageService,
 		);
 	}
 
@@ -144,7 +144,7 @@ interface IDecodedMetadata {
 }
 
 function renderTokenText(tokenText: string): string {
-	let result: string = "";
+	let result = "";
 	for (
 		let charIndex = 0, len = tokenText.length;
 		charIndex < len;
@@ -169,7 +169,7 @@ function renderTokenText(tokenText: string): string {
 
 function getSafeTokenizationSupport(
 	languageIdCodec: ILanguageIdCodec,
-	languageId: string
+	languageId: string,
 ): ITokenizationSupport {
 	const tokenizationSupport = TokenizationRegistry.get(languageId);
 	if (tokenizationSupport) {
@@ -206,13 +206,13 @@ class InspectTokensWidget extends Disposable implements IContentWidget {
 		this._domNode.className = "tokens-inspect-widget";
 		this._tokenizationSupport = getSafeTokenizationSupport(
 			this._languageService.languageIdCodec,
-			this._model.getLanguageId()
+			this._model.getLanguageId(),
 		);
 		this._compute(this._editor.getPosition());
 		this._register(
 			this._editor.onDidChangeCursorPosition((e) =>
-				this._compute(this._editor.getPosition())
-			)
+				this._compute(this._editor.getPosition()),
+			),
 		);
 		this._editor.addContentWidget(this);
 	}
@@ -267,14 +267,14 @@ class InspectTokensWidget extends Disposable implements IContentWidget {
 					undefined,
 					`${tokenText.length} ${
 						tokenText.length === 1 ? "char" : "chars"
-					}`
-				)
-			)
+					}`,
+				),
+			),
 		);
 
 		append(
 			this._domNode,
-			$("hr.tokens-inspect-separator", { "style": "clear:both" })
+			$("hr.tokens-inspect-separator", { style: "clear:both" }),
 		);
 
 		const metadata =
@@ -296,8 +296,8 @@ class InspectTokensWidget extends Disposable implements IContentWidget {
 						$(
 							"td.tm-metadata-value",
 							undefined,
-							`${metadata ? metadata.languageId : "-?-"}`
-						)
+							`${metadata ? metadata.languageId : "-?-"}`,
+						),
 					),
 					$(
 						"tr",
@@ -305,7 +305,7 @@ class InspectTokensWidget extends Disposable implements IContentWidget {
 						$(
 							"td.tm-metadata-key",
 							undefined,
-							"token type" as string
+							"token type" as string,
 						),
 						$(
 							"td.tm-metadata-value",
@@ -313,11 +313,11 @@ class InspectTokensWidget extends Disposable implements IContentWidget {
 							`${
 								metadata
 									? this._tokenTypeToString(
-											metadata.tokenType
-										)
+											metadata.tokenType,
+									  )
 									: "-?-"
-							}`
-						)
+							}`,
+						),
 					),
 					$(
 						"tr",
@@ -325,7 +325,7 @@ class InspectTokensWidget extends Disposable implements IContentWidget {
 						$(
 							"td.tm-metadata-key",
 							undefined,
-							"font style" as string
+							"font style" as string,
 						),
 						$(
 							"td.tm-metadata-value",
@@ -333,11 +333,11 @@ class InspectTokensWidget extends Disposable implements IContentWidget {
 							`${
 								metadata
 									? this._fontStyleToString(
-											metadata.fontStyle
-										)
+											metadata.fontStyle,
+									  )
 									: "-?-"
-							}`
-						)
+							}`,
+						),
 					),
 					$(
 						"tr",
@@ -349,11 +349,11 @@ class InspectTokensWidget extends Disposable implements IContentWidget {
 							`${
 								metadata
 									? Color.Format.CSS.formatHex(
-											metadata.foreground
-										)
+											metadata.foreground,
+									  )
 									: "-?-"
-							}`
-						)
+							}`,
+						),
 					),
 					$(
 						"tr",
@@ -365,14 +365,14 @@ class InspectTokensWidget extends Disposable implements IContentWidget {
 							`${
 								metadata
 									? Color.Format.CSS.formatHex(
-											metadata.background
-										)
+											metadata.background,
+									  )
 									: "-?-"
-							}`
-						)
-					)
-				)
-			)
+							}`,
+						),
+					),
+				),
+			),
 		);
 		append(this._domNode, $("hr.tokens-inspect-separator"));
 
@@ -382,8 +382,8 @@ class InspectTokensWidget extends Disposable implements IContentWidget {
 				$(
 					"span.tm-token-type",
 					undefined,
-					data.tokens1[token1Index].type
-				)
+					data.tokens1[token1Index].type,
+				),
 			);
 		}
 
@@ -400,7 +400,7 @@ class InspectTokensWidget extends Disposable implements IContentWidget {
 		return {
 			languageId:
 				this._languageService.languageIdCodec.decodeLanguageId(
-					languageId
+					languageId,
 				),
 			tokenType: tokenType,
 			fontStyle: fontStyle,
@@ -450,12 +450,12 @@ class InspectTokensWidget extends Disposable implements IContentWidget {
 		const tokenizationResult1 = this._tokenizationSupport.tokenize(
 			this._model.getLineContent(lineNumber),
 			true,
-			stateBeforeLine
+			stateBeforeLine,
 		);
 		const tokenizationResult2 = this._tokenizationSupport.tokenizeEncoded(
 			this._model.getLineContent(lineNumber),
 			true,
-			stateBeforeLine
+			stateBeforeLine,
 		);
 
 		return {
@@ -473,7 +473,7 @@ class InspectTokensWidget extends Disposable implements IContentWidget {
 			const tokenizationResult = this._tokenizationSupport.tokenize(
 				this._model.getLineContent(i),
 				true,
-				state
+				state,
 			);
 			state = tokenizationResult.endState;
 		}
@@ -499,6 +499,6 @@ class InspectTokensWidget extends Disposable implements IContentWidget {
 registerEditorContribution(
 	InspectTokensController.ID,
 	InspectTokensController,
-	EditorContributionInstantiation.Lazy
+	EditorContributionInstantiation.Lazy,
 );
 registerEditorAction(InspectTokens);

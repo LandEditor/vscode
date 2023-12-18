@@ -30,8 +30,8 @@ class DisplayChangeRemeasureFonts
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	DisplayChangeRemeasureFonts,
-	LifecyclePhase.Eventually
+	LifecyclePhase.Eventually,
 );

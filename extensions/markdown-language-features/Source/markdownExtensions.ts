@@ -9,14 +9,14 @@ import { Disposable } from "./util/dispose";
 
 function resolveExtensionResource(
 	extension: vscode.Extension<any>,
-	resourcePath: string
+	resourcePath: string,
 ): vscode.Uri {
 	return vscode.Uri.joinPath(extension.extensionUri, resourcePath);
 }
 
 function* resolveExtensionResources(
 	extension: vscode.Extension<any>,
-	resourcePaths: unknown
+	resourcePaths: unknown,
 ): Iterable<vscode.Uri> {
 	if (Array.isArray(resourcePaths)) {
 		for (const resource of resourcePaths) {
@@ -46,7 +46,7 @@ export namespace MarkdownContributions {
 
 	export function merge(
 		a: MarkdownContributions,
-		b: MarkdownContributions
+		b: MarkdownContributions,
 	): MarkdownContributions {
 		return {
 			previewScripts: [...a.previewScripts, ...b.previewScripts],
@@ -68,7 +68,7 @@ export namespace MarkdownContributions {
 
 	export function equal(
 		a: MarkdownContributions,
-		b: MarkdownContributions
+		b: MarkdownContributions,
 	): boolean {
 		return (
 			arrays.equals(a.previewScripts, b.previewScripts, uriEqual) &&
@@ -76,17 +76,17 @@ export namespace MarkdownContributions {
 			arrays.equals(
 				a.previewResourceRoots,
 				b.previewResourceRoots,
-				uriEqual
+				uriEqual,
 			) &&
 			arrays.equals(
 				Array.from(a.markdownItPlugins.keys()),
-				Array.from(b.markdownItPlugins.keys())
+				Array.from(b.markdownItPlugins.keys()),
 			)
 		);
 	}
 
 	export function fromExtension(
-		extension: vscode.Extension<any>
+		extension: vscode.Extension<any>,
 	): MarkdownContributions {
 		const contributions = extension.packageJSON?.contributes;
 		if (!contributions) {
@@ -94,10 +94,10 @@ export namespace MarkdownContributions {
 		}
 
 		const previewStyles = Array.from(
-			getContributedStyles(contributions, extension)
+			getContributedStyles(contributions, extension),
 		);
 		const previewScripts = Array.from(
-			getContributedScripts(contributions, extension)
+			getContributedScripts(contributions, extension),
 		);
 		const previewResourceRoots =
 			previewStyles.length || previewScripts.length
@@ -105,7 +105,7 @@ export namespace MarkdownContributions {
 				: [];
 		const markdownItPlugins = getContributedMarkdownItPlugins(
 			contributions,
-			extension
+			extension,
 		);
 
 		return {
@@ -118,7 +118,7 @@ export namespace MarkdownContributions {
 
 	function getContributedMarkdownItPlugins(
 		contributes: any,
-		extension: vscode.Extension<any>
+		extension: vscode.Extension<any>,
 	): Map<string, Thenable<(md: any) => any>> {
 		const map = new Map<string, Thenable<(md: any) => any>>();
 		if (contributes["markdown.markdownItPlugins"]) {
@@ -133,7 +133,7 @@ export namespace MarkdownContributions {
 							extension.exports.extendMarkdownIt(md);
 					}
 					return (md: any) => md;
-				})
+				}),
 			);
 		}
 		return map;
@@ -141,21 +141,21 @@ export namespace MarkdownContributions {
 
 	function getContributedScripts(
 		contributes: any,
-		extension: vscode.Extension<any>
+		extension: vscode.Extension<any>,
 	) {
 		return resolveExtensionResources(
 			extension,
-			contributes["markdown.previewScripts"]
+			contributes["markdown.previewScripts"],
 		);
 	}
 
 	function getContributedStyles(
 		contributes: any,
-		extension: vscode.Extension<any>
+		extension: vscode.Extension<any>,
 	) {
 		return resolveExtensionResources(
 			extension,
-			contributes["markdown.previewStyles"]
+			contributes["markdown.previewStyles"],
 		);
 	}
 }
@@ -176,7 +176,7 @@ class VSCodeExtensionMarkdownContributionProvider
 	private _contributions?: MarkdownContributions;
 
 	public constructor(
-		private readonly _extensionContext: vscode.ExtensionContext
+		private readonly _extensionContext: vscode.ExtensionContext,
 	) {
 		super();
 
@@ -188,13 +188,13 @@ class VSCodeExtensionMarkdownContributionProvider
 				if (
 					!MarkdownContributions.equal(
 						existingContributions,
-						currentContributions
+						currentContributions,
 					)
 				) {
 					this._contributions = currentContributions;
 					this._onContributionsChanged.fire(this);
 				}
-			})
+			}),
 		);
 	}
 
@@ -203,7 +203,7 @@ class VSCodeExtensionMarkdownContributionProvider
 	}
 
 	private readonly _onContributionsChanged = this._register(
-		new vscode.EventEmitter<this>()
+		new vscode.EventEmitter<this>(),
 	);
 	public readonly onContributionsChanged = this._onContributionsChanged.event;
 
@@ -220,7 +220,7 @@ class VSCodeExtensionMarkdownContributionProvider
 }
 
 export function getMarkdownExtensionContributions(
-	context: vscode.ExtensionContext
+	context: vscode.ExtensionContext,
 ): MarkdownContributionProvider {
 	return new VSCodeExtensionMarkdownContributionProvider(context);
 }

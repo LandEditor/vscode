@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { AstNode } from "./ast";
-import { lengthAdd, lengthZero, Length, lengthLessThan } from "./length";
+import { Length, lengthAdd, lengthLessThan, lengthZero } from "./length";
 
 /**
  * Allows to efficiently find a longest child at a given offset in a fixed node.
@@ -28,7 +28,7 @@ export class NodeReader {
 	 */
 	readLongestNodeAt(
 		offset: Length,
-		predicate: (node: AstNode) => boolean
+		predicate: (node: AstNode) => boolean,
 	): AstNode | undefined {
 		if (lengthLessThan(offset, this.lastOffset)) {
 			throw new Error("Invalid offset");
@@ -108,13 +108,13 @@ export class NodeReader {
 			const parent = lastOrUndefined(this.nextNodes)!;
 			const nextChildIdx = getNextChildIdx(
 				parent,
-				this.idxs[this.idxs.length - 1]
+				this.idxs[this.idxs.length - 1],
 			);
 
 			if (nextChildIdx !== -1) {
 				this.nextNodes.push(parent.getChild(nextChildIdx)!);
 				this.offsets.push(
-					lengthAdd(currentOffset!, currentNode!.length)
+					lengthAdd(currentOffset!, currentNode!.length),
 				);
 				this.idxs[this.idxs.length - 1] = nextChildIdx;
 				break;
@@ -127,7 +127,7 @@ export class NodeReader {
 	}
 }
 
-function getNextChildIdx(node: AstNode, curIdx: number = -1): number | -1 {
+function getNextChildIdx(node: AstNode, curIdx = -1): number | -1 {
 	while (true) {
 		curIdx++;
 		if (curIdx >= node.childrenLength) {

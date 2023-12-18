@@ -54,14 +54,14 @@ export class FloatingClickWidget extends Widget {
 		clearNode(this._domNode);
 		this._domNode.style.backgroundColor = asCssVariableWithDefault(
 			buttonBackground,
-			asCssVariable(editorBackground)
+			asCssVariable(editorBackground),
 		);
 		this._domNode.style.color = asCssVariableWithDefault(
 			buttonForeground,
-			asCssVariable(editorForeground)
+			asCssVariable(editorForeground),
 		);
 		this._domNode.style.border = `1px solid ${asCssVariable(
-			contrastBorder
+			contrastBorder,
 		)}`;
 
 		append(this._domNode, $("")).textContent = this.label;
@@ -78,11 +78,11 @@ export abstract class AbstractFloatingClickMenu extends Disposable {
 	constructor(
 		menuId: MenuId,
 		@IMenuService menuService: IMenuService,
-		@IContextKeyService contextKeyService: IContextKeyService
+		@IContextKeyService contextKeyService: IContextKeyService,
 	) {
 		super();
 		this.menu = this._register(
-			menuService.createMenu(menuId, contextKeyService)
+			menuService.createMenu(menuId, contextKeyService),
 		);
 	}
 
@@ -98,7 +98,7 @@ export abstract class AbstractFloatingClickMenu extends Disposable {
 			createAndFillInActionBarActions(
 				this.menu,
 				{ renderShortTitle: true, shouldForwardArgs: true },
-				actions
+				actions,
 			);
 			if (actions.length === 0) {
 				return;
@@ -108,7 +108,7 @@ export abstract class AbstractFloatingClickMenu extends Disposable {
 			const widget = this.createWidget(first, menuDisposables);
 			menuDisposables.add(widget);
 			menuDisposables.add(
-				widget.onClick(() => first.run(this.getActionArg()))
+				widget.onClick(() => first.run(this.getActionArg())),
 			);
 			widget.render();
 		};
@@ -118,7 +118,7 @@ export abstract class AbstractFloatingClickMenu extends Disposable {
 
 	protected abstract createWidget(
 		action: IAction,
-		disposables: DisposableStore
+		disposables: DisposableStore,
 	): FloatingClickWidget;
 
 	protected getActionArg(): unknown {
@@ -151,16 +151,16 @@ export class FloatingClickMenu extends AbstractFloatingClickMenu {
 
 	protected override createWidget(
 		action: IAction,
-		disposable: DisposableStore
+		disposable: DisposableStore,
 	): FloatingClickWidget {
 		const w = this.instantiationService.createInstance(
 			FloatingClickWidget,
-			action.label
+			action.label,
 		);
 		const node = w.getDomNode();
 		this.options.container.appendChild(node);
 		disposable.add(
-			toDisposable(() => this.options.container.removeChild(node))
+			toDisposable(() => this.options.container.removeChild(node)),
 		);
 		return w;
 	}

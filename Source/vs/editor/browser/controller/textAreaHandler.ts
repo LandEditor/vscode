@@ -3,21 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./textAreaHandler";
-import * as nls from "vs/nls";
 import * as browser from "vs/base/browser/browser";
 import { FastDomNode, createFastDomNode } from "vs/base/browser/fastDomNode";
 import { IKeyboardEvent } from "vs/base/browser/keyboardEvent";
+import { MOUSE_CURSOR_TEXT_CSS_CLASS_NAME } from "vs/base/browser/ui/mouseCursor/mouseCursor";
+import { Color } from "vs/base/common/color";
+import { IME } from "vs/base/common/ime";
 import * as platform from "vs/base/common/platform";
 import * as strings from "vs/base/common/strings";
+import "vs/css!./textAreaHandler";
 import { applyFontInfo } from "vs/editor/browser/config/domFontInfo";
 import {
+	ClipboardDataToCopy,
 	CopyOptions,
 	ICompositionData,
 	IPasteData,
 	ITextAreaInputHost,
 	TextAreaInput,
-	ClipboardDataToCopy,
 	TextAreaWrapper,
 } from "vs/editor/browser/controller/textAreaInput";
 import {
@@ -27,6 +29,12 @@ import {
 	TextAreaState,
 	_debugComposition,
 } from "vs/editor/browser/controller/textAreaState";
+import { IEditorAriaOptions } from "vs/editor/browser/editorBrowser";
+import {
+	HorizontalPosition,
+	RenderingContext,
+	RestrictedRenderingContext,
+} from "vs/editor/browser/view/renderingContext";
 import { ViewController } from "vs/editor/browser/view/viewController";
 import {
 	PartFingerprint,
@@ -36,40 +44,32 @@ import {
 import { LineNumbersOverlay } from "vs/editor/browser/viewParts/lineNumbers/lineNumbers";
 import { Margin } from "vs/editor/browser/viewParts/margin/margin";
 import {
-	RenderLineNumbersType,
 	EditorOption,
-	IComputedEditorOptions,
 	EditorOptions,
+	IComputedEditorOptions,
+	RenderLineNumbersType,
 } from "vs/editor/common/config/editorOptions";
 import { FontInfo } from "vs/editor/common/config/fontInfo";
+import { Position } from "vs/editor/common/core/position";
+import { Range } from "vs/editor/common/core/range";
+import { Selection } from "vs/editor/common/core/selection";
 import {
 	WordCharacterClass,
 	getMapForWordSeparators,
 } from "vs/editor/common/core/wordCharacterClassifier";
-import { Position } from "vs/editor/common/core/position";
-import { Range } from "vs/editor/common/core/range";
-import { Selection } from "vs/editor/common/core/selection";
 import { ScrollType } from "vs/editor/common/editorCommon";
-import { EndOfLinePreference } from "vs/editor/common/model";
-import {
-	RenderingContext,
-	RestrictedRenderingContext,
-	HorizontalPosition,
-} from "vs/editor/browser/view/renderingContext";
-import { ViewContext } from "vs/editor/common/viewModel/viewContext";
-import * as viewEvents from "vs/editor/common/viewEvents";
-import { AccessibilitySupport } from "vs/platform/accessibility/common/accessibility";
-import { IEditorAriaOptions } from "vs/editor/browser/editorBrowser";
-import { MOUSE_CURSOR_TEXT_CSS_CLASS_NAME } from "vs/base/browser/ui/mouseCursor/mouseCursor";
-import { TokenizationRegistry } from "vs/editor/common/languages";
 import {
 	ColorId,
 	ITokenPresentation,
 } from "vs/editor/common/encodedTokenAttributes";
-import { Color } from "vs/base/common/color";
-import { IME } from "vs/base/common/ime";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { TokenizationRegistry } from "vs/editor/common/languages";
+import { EndOfLinePreference } from "vs/editor/common/model";
+import * as viewEvents from "vs/editor/common/viewEvents";
+import { ViewContext } from "vs/editor/common/viewModel/viewContext";
+import * as nls from "vs/nls";
+import { AccessibilitySupport } from "vs/platform/accessibility/common/accessibility";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 
 export interface IVisibleRangeProvider {
 	visibleRangeForPosition(position: Position): HorizontalPosition | null;
@@ -97,34 +97,34 @@ class VisibleTextAreaData {
 		public readonly modelLineNumber: number,
 		public readonly distanceToModelLineStart: number,
 		public readonly widthOfHiddenLineTextBefore: number,
-		public readonly distanceToModelLineEnd: number
+		public readonly distanceToModelLineEnd: number,
 	) {}
 
 	prepareRender(visibleRangeProvider: IVisibleRangeProvider): void {
 		const startModelPosition = new Position(
 			this.modelLineNumber,
-			this.distanceToModelLineStart + 1
+			this.distanceToModelLineStart + 1,
 		);
 		const endModelPosition = new Position(
 			this.modelLineNumber,
 			this._context.viewModel.model.getLineMaxColumn(
-				this.modelLineNumber
-			) - this.distanceToModelLineEnd
+				this.modelLineNumber,
+			) - this.distanceToModelLineEnd,
 		);
 
 		this.startPosition =
 			this._context.viewModel.coordinatesConverter.convertModelPositionToViewPosition(
-				startModelPosition
+				startModelPosition,
 			);
 		this.endPosition =
 			this._context.viewModel.coordinatesConverter.convertModelPositionToViewPosition(
-				endModelPosition
+				endModelPosition,
 			);
 
 		if (this.startPosition.lineNumber === this.endPosition.lineNumber) {
 			this.visibleTextareaStart =
 				visibleRangeProvider.visibleRangeForPosition(
-					this.startPosition
+					this.startPosition,
 				);
 			this.visibleTextareaEnd =
 				visibleRangeProvider.visibleRangeForPosition(this.endPosition);
@@ -136,7 +136,7 @@ class VisibleTextAreaData {
 	}
 
 	definePresentation(
-		tokenPresentation: ITokenPresentation | null
+		tokenPresentation: ITokenPresentation | null,
 	): ITokenPresentation {
 		if (!this._previousPresentation) {
 			// To avoid flickering, once set, always reuse a presentation throughout the entire IME session
@@ -760,7 +760,7 @@ export class TextAreaHandler extends ViewPart {
 	private _getAndroidWordAtPosition(position: Position): [string, number] {
 		const ANDROID_WORD_SEPARATORS = '`~!@#$%^&*()-=+[{]}\\|;:",.<>/?';
 		const lineContent = this._context.viewModel.getLineContent(
-			position.lineNumber
+			position.lineNumber,
 		);
 		const wordSeparators = getMapForWordSeparators(ANDROID_WORD_SEPARATORS);
 
@@ -805,10 +805,12 @@ export class TextAreaHandler extends ViewPart {
 
 	private _getWordBeforePosition(position: Position): string {
 		const lineContent = this._context.viewModel.getLineContent(
-			position.lineNumber
+			position.lineNumber,
 		);
 		const wordSeparators = getMapForWordSeparators(
-			this._context.configuration.options.get(EditorOption.wordSeparators)
+			this._context.configuration.options.get(
+				EditorOption.wordSeparators,
+			),
 		);
 
 		let column = position.column;
@@ -828,7 +830,7 @@ export class TextAreaHandler extends ViewPart {
 	private _getCharacterBeforePosition(position: Position): string {
 		if (position.column > 1) {
 			const lineContent = this._context.viewModel.getLineContent(
-				position.lineNumber
+				position.lineNumber,
 			);
 			const charBefore = lineContent.charAt(position.column - 2);
 			if (!strings.isHighSurrogate(charBefore.charCodeAt(0))) {
@@ -840,12 +842,12 @@ export class TextAreaHandler extends ViewPart {
 
 	private _getAriaLabel(options: IComputedEditorOptions): string {
 		const accessibilitySupport = options.get(
-			EditorOption.accessibilitySupport
+			EditorOption.accessibilitySupport,
 		);
 		if (accessibilitySupport === AccessibilitySupport.Disabled) {
 			const toggleKeybindingLabel = this._keybindingService
 				.lookupKeybinding(
-					"editor.action.toggleScreenReaderAccessibilityMode"
+					"editor.action.toggleScreenReaderAccessibilityMode",
 				)
 				?.getAriaLabel();
 			const runCommandKeybindingLabel = this._keybindingService
@@ -856,28 +858,28 @@ export class TextAreaHandler extends ViewPart {
 				?.getAriaLabel();
 			const editorNotAccessibleMessage = nls.localize(
 				"accessibilityModeOff",
-				"The editor is not accessible at this time."
+				"The editor is not accessible at this time.",
 			);
 			if (toggleKeybindingLabel) {
 				return nls.localize(
 					"accessibilityOffAriaLabel",
 					"{0} To enable screen reader optimized mode, use {1}",
 					editorNotAccessibleMessage,
-					toggleKeybindingLabel
+					toggleKeybindingLabel,
 				);
 			} else if (runCommandKeybindingLabel) {
 				return nls.localize(
 					"accessibilityOffAriaLabelNoKb",
 					"{0} To enable screen reader optimized mode, open the quick pick with {1} and run the command Toggle Screen Reader Accessibility Mode, which is currently not triggerable via keyboard.",
 					editorNotAccessibleMessage,
-					runCommandKeybindingLabel
+					runCommandKeybindingLabel,
 				);
 			} else if (keybindingEditorKeybindingLabel) {
 				return nls.localize(
 					"accessibilityOffAriaLabelNoKbs",
 					"{0} Please assign a keybinding for the command Toggle Screen Reader Accessibility Mode by accessing the keybindings editor with {1} and run it.",
 					editorNotAccessibleMessage,
-					keybindingEditorKeybindingLabel
+					keybindingEditorKeybindingLabel,
 				);
 			} else {
 				// SOS
@@ -889,10 +891,10 @@ export class TextAreaHandler extends ViewPart {
 
 	private _setAccessibilityOptions(options: IComputedEditorOptions): void {
 		this._accessibilitySupport = options.get(
-			EditorOption.accessibilitySupport
+			EditorOption.accessibilitySupport,
 		);
 		const accessibilityPageSize = options.get(
-			EditorOption.accessibilityPageSize
+			EditorOption.accessibilityPageSize,
 		);
 		if (
 			this._accessibilitySupport === AccessibilitySupport.Enabled &&
@@ -918,7 +920,7 @@ export class TextAreaHandler extends ViewPart {
 			const fontInfo = options.get(EditorOption.fontInfo);
 			this._textAreaWrapping = true;
 			this._textAreaWidth = Math.round(
-				wrappingColumn * fontInfo.typicalHalfwidthCharacterWidth
+				wrappingColumn * fontInfo.typicalHalfwidthCharacterWidth,
 			);
 		} else {
 			this._textAreaWrapping = false;
@@ -929,7 +931,7 @@ export class TextAreaHandler extends ViewPart {
 	// --- begin event handlers
 
 	public override onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent
+		e: viewEvents.ViewConfigurationChangedEvent,
 	): boolean {
 		const options = this._context.configuration.options;
 		const layoutInfo = options.get(EditorOption.layoutInfo);
@@ -941,14 +943,14 @@ export class TextAreaHandler extends ViewPart {
 		this._fontInfo = options.get(EditorOption.fontInfo);
 		this._lineHeight = options.get(EditorOption.lineHeight);
 		this._emptySelectionClipboard = options.get(
-			EditorOption.emptySelectionClipboard
+			EditorOption.emptySelectionClipboard,
 		);
 		this._copyWithSyntaxHighlighting = options.get(
-			EditorOption.copyWithSyntaxHighlighting
+			EditorOption.copyWithSyntaxHighlighting,
 		);
 		this.textArea.setAttribute(
 			"wrap",
-			this._textAreaWrapping && !this._visibleTextArea ? "on" : "off"
+			this._textAreaWrapping && !this._visibleTextArea ? "on" : "off",
 		);
 		const { tabSize } = this._context.viewModel.model.getOptions();
 		this.textArea.domNode.style.tabSize = `${
@@ -957,11 +959,11 @@ export class TextAreaHandler extends ViewPart {
 		this.textArea.setAttribute("aria-label", this._getAriaLabel(options));
 		this.textArea.setAttribute(
 			"aria-required",
-			options.get(EditorOption.ariaRequired) ? "true" : "false"
+			options.get(EditorOption.ariaRequired) ? "true" : "false",
 		);
 		this.textArea.setAttribute(
 			"tabindex",
-			String(options.get(EditorOption.tabIndex))
+			String(options.get(EditorOption.tabIndex)),
 		);
 
 		if (
@@ -978,7 +980,7 @@ export class TextAreaHandler extends ViewPart {
 		return true;
 	}
 	public override onCursorStateChanged(
-		e: viewEvents.ViewCursorStateChangedEvent
+		e: viewEvents.ViewCursorStateChangedEvent,
 	): boolean {
 		this._selections = e.selections.slice(0);
 		this._modelSelections = e.modelSelections.slice(0);
@@ -988,7 +990,7 @@ export class TextAreaHandler extends ViewPart {
 		return true;
 	}
 	public override onDecorationsChanged(
-		e: viewEvents.ViewDecorationsChangedEvent
+		e: viewEvents.ViewDecorationsChangedEvent,
 	): boolean {
 		// true for inline decorations that can end up relayouting text
 		return true;
@@ -997,29 +999,29 @@ export class TextAreaHandler extends ViewPart {
 		return true;
 	}
 	public override onLinesChanged(
-		e: viewEvents.ViewLinesChangedEvent
+		e: viewEvents.ViewLinesChangedEvent,
 	): boolean {
 		return true;
 	}
 	public override onLinesDeleted(
-		e: viewEvents.ViewLinesDeletedEvent
+		e: viewEvents.ViewLinesDeletedEvent,
 	): boolean {
 		return true;
 	}
 	public override onLinesInserted(
-		e: viewEvents.ViewLinesInsertedEvent
+		e: viewEvents.ViewLinesInsertedEvent,
 	): boolean {
 		return true;
 	}
 	public override onScrollChanged(
-		e: viewEvents.ViewScrollChangedEvent
+		e: viewEvents.ViewScrollChangedEvent,
 	): boolean {
 		this._scrollLeft = e.scrollLeft;
 		this._scrollTop = e.scrollTop;
 		return true;
 	}
 	public override onZonesChanged(
-		e: viewEvents.ViewZonesChangedEvent
+		e: viewEvents.ViewZonesChangedEvent,
 	): boolean {
 		return true;
 	}
@@ -1050,7 +1052,7 @@ export class TextAreaHandler extends ViewPart {
 			this.textArea.setAttribute("aria-autocomplete", "list");
 			this.textArea.setAttribute(
 				"aria-activedescendant",
-				options.activeDescendant
+				options.activeDescendant,
 			);
 		} else {
 			this.textArea.setAttribute("aria-haspopup", "false");
@@ -1085,10 +1087,10 @@ export class TextAreaHandler extends ViewPart {
 	public prepareRender(ctx: RenderingContext): void {
 		this._primaryCursorPosition = new Position(
 			this._selections[0].positionLineNumber,
-			this._selections[0].positionColumn
+			this._selections[0].positionColumn,
 		);
 		this._primaryCursorVisibleRange = ctx.visibleRangeForPosition(
-			this._primaryCursorPosition
+			this._primaryCursorPosition,
 		);
 		this._visibleTextArea?.prepareRender(ctx);
 	}
@@ -1116,13 +1118,13 @@ export class TextAreaHandler extends ViewPart {
 			) {
 				const top =
 					this._context.viewLayout.getVerticalOffsetForLineNumber(
-						this._primaryCursorPosition.lineNumber
+						this._primaryCursorPosition.lineNumber,
 					) - this._scrollTop;
 				const lineCount = this._newlinecount(
 					this.textArea.domNode.value.substr(
 						0,
-						this.textArea.domNode.selectionStart
-					)
+						this.textArea.domNode.selectionStart,
+					),
 				);
 
 				let scrollLeft =
@@ -1154,22 +1156,22 @@ export class TextAreaHandler extends ViewPart {
 
 				// Try to render the textarea with the color/font style to match the text under it
 				const viewLineData = this._context.viewModel.getViewLineData(
-					startPosition.lineNumber
+					startPosition.lineNumber,
 				);
 				const startTokenIndex =
 					viewLineData.tokens.findTokenIndexAtOffset(
-						startPosition.column - 1
+						startPosition.column - 1,
 					);
 				const endTokenIndex =
 					viewLineData.tokens.findTokenIndexAtOffset(
-						endPosition.column - 1
+						endPosition.column - 1,
 					);
 				const textareaSpansSingleToken =
 					startTokenIndex === endTokenIndex;
 				const presentation = this._visibleTextArea.definePresentation(
 					textareaSpansSingleToken
 						? viewLineData.tokens.getPresentation(startTokenIndex)
-						: null
+						: null,
 				);
 
 				this.textArea.domNode.scrollTop = lineCount * this._lineHeight;
@@ -1215,7 +1217,7 @@ export class TextAreaHandler extends ViewPart {
 
 		const top =
 			this._context.viewLayout.getVerticalOffsetForLineNumber(
-				this._selections[0].positionLineNumber
+				this._selections[0].positionLineNumber,
 			) - this._scrollTop;
 		if (top < 0 || top > this._contentHeight) {
 			// cursor is outside the viewport
@@ -1248,8 +1250,8 @@ export class TextAreaHandler extends ViewPart {
 				this._newlinecount(
 					this.textArea.domNode.value.substr(
 						0,
-						this.textArea.domNode.selectionStart
-					)
+						this.textArea.domNode.selectionStart,
+					),
 				);
 			this.textArea.domNode.scrollTop = lineCount * this._lineHeight;
 			return;
@@ -1304,7 +1306,9 @@ export class TextAreaHandler extends ViewPart {
 		ta.setHeight(renderData.height);
 
 		ta.setColor(
-			renderData.color ? Color.Format.CSS.formatHex(renderData.color) : ""
+			renderData.color
+				? Color.Format.CSS.formatHex(renderData.color)
+				: "",
 		);
 		ta.setFontStyle(renderData.italic ? "italic" : "");
 		if (renderData.bold) {
@@ -1314,7 +1318,7 @@ export class TextAreaHandler extends ViewPart {
 		ta.setTextDecoration(
 			`${renderData.underline ? " underline" : ""}${
 				renderData.strikethrough ? " line-through" : ""
-			}`
+			}`,
 		);
 
 		tac.setTop(renderData.useCover ? renderData.top : 0);
@@ -1327,20 +1331,18 @@ export class TextAreaHandler extends ViewPart {
 		if (options.get(EditorOption.glyphMargin)) {
 			tac.setClassName(
 				"monaco-editor-background textAreaCover " +
-					Margin.OUTER_CLASS_NAME
+					Margin.OUTER_CLASS_NAME,
+			);
+		} else if (
+			options.get(EditorOption.lineNumbers).renderType !==
+			RenderLineNumbersType.Off
+		) {
+			tac.setClassName(
+				"monaco-editor-background textAreaCover " +
+					LineNumbersOverlay.CLASS_NAME,
 			);
 		} else {
-			if (
-				options.get(EditorOption.lineNumbers).renderType !==
-				RenderLineNumbersType.Off
-			) {
-				tac.setClassName(
-					"monaco-editor-background textAreaCover " +
-						LineNumbersOverlay.CLASS_NAME
-				);
-			} else {
-				tac.setClassName("monaco-editor-background textAreaCover");
-			}
+			tac.setClassName("monaco-editor-background textAreaCover");
 		}
 	}
 }
@@ -1364,7 +1366,7 @@ function measureText(
 	targetDocument: Document,
 	text: string,
 	fontInfo: FontInfo,
-	tabSize: number
+	tabSize: number,
 ): number {
 	if (text.length === 0) {
 		return 0;

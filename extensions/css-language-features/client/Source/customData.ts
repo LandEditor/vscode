@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { workspace, extensions, Uri, EventEmitter, Disposable } from "vscode";
+import { Disposable, EventEmitter, Uri, extensions, workspace } from "vscode";
 import { Utils } from "vscode-uri";
 
 export function getCustomDataSource(toDispose: Disposable[]) {
@@ -18,13 +18,13 @@ export function getCustomDataSource(toDispose: Disposable[]) {
 			if (
 				newPathsInExtensions.length !== pathsInExtensions.length ||
 				!newPathsInExtensions.every(
-					(val, idx) => val === pathsInExtensions[idx]
+					(val, idx) => val === pathsInExtensions[idx],
 				)
 			) {
 				pathsInExtensions = newPathsInExtensions;
 				onChange.fire();
 			}
-		})
+		}),
 	);
 	toDispose.push(
 		workspace.onDidChangeConfiguration((e) => {
@@ -32,7 +32,7 @@ export function getCustomDataSource(toDispose: Disposable[]) {
 				pathsInWorkspace = getCustomDataPathsInAllWorkspaces();
 				onChange.fire();
 			}
-		})
+		}),
 	);
 
 	return {
@@ -59,7 +59,7 @@ function getCustomDataPathsInAllWorkspaces(): string[] {
 			for (const path of paths) {
 				if (typeof path === "string") {
 					dataPaths.push(
-						Utils.resolvePath(rootFolder, path).toString()
+						Utils.resolvePath(rootFolder, path).toString(),
 					);
 				}
 			}
@@ -76,7 +76,7 @@ function getCustomDataPathsInAllWorkspaces(): string[] {
 				if (workspace.workspaceFile) {
 					collect(
 						customDataInspect.workspaceValue,
-						workspace.workspaceFile
+						workspace.workspaceFile,
 					);
 				}
 				collect(customDataInspect.globalValue, folderUri);
@@ -93,7 +93,7 @@ function getCustomDataPathsFromAllExtensions(): string[] {
 		if (Array.isArray(customData)) {
 			for (const rp of customData) {
 				dataPaths.push(
-					Utils.joinPath(extension.extensionUri, rp).toString()
+					Utils.joinPath(extension.extensionUri, rp).toString(),
 				);
 			}
 		}

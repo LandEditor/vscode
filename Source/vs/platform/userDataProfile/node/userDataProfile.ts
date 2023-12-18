@@ -3,24 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { IStringDictionary } from "vs/base/common/collections";
+import { isString } from "vs/base/common/types";
 import { URI, UriComponents, UriDto } from "vs/base/common/uri";
 import { INativeEnvironmentService } from "vs/platform/environment/common/environment";
 import { IFileService } from "vs/platform/files/common/files";
 import { ILogService } from "vs/platform/log/common/log";
 import { IStateReadService, IStateService } from "vs/platform/state/node/state";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import {
-	IUserDataProfilesService,
-	UserDataProfilesService as BaseUserDataProfilesService,
-	StoredUserDataProfile,
-	StoredProfileAssociations,
-} from "vs/platform/userDataProfile/common/userDataProfile";
-import { IStringDictionary } from "vs/base/common/collections";
-import { isString } from "vs/base/common/types";
 import {
 	SaveStrategy,
 	StateService,
 } from "vs/platform/state/node/stateService";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import {
+	IUserDataProfilesService,
+	StoredProfileAssociations,
+	StoredUserDataProfile,
+	UserDataProfilesService as BaseUserDataProfilesService,
+} from "vs/platform/userDataProfile/common/userDataProfile";
 
 type StoredUserDataProfileState = StoredUserDataProfile & {
 	location: URI | string;
@@ -59,8 +59,8 @@ export class UserDataProfilesReadonlyService
 			location: isString(p.location)
 				? this.uriIdentityService.extUri.joinPath(
 						this.profilesHome,
-						p.location
-					)
+						p.location,
+				  )
 				: URI.revive(p.location),
 		}));
 	}
@@ -69,11 +69,11 @@ export class UserDataProfilesReadonlyService
 		const associations =
 			this.stateReadonlyService.getItem<StoredProfileAssociations>(
 				UserDataProfilesReadonlyService.PROFILE_ASSOCIATIONS_KEY,
-				{}
+				{},
 			);
 		const migrated = this.stateReadonlyService.getItem<boolean>(
 			UserDataProfilesReadonlyService.PROFILE_ASSOCIATIONS_MIGRATION_KEY,
-			false
+			false,
 		);
 		return migrated
 			? associations
@@ -85,7 +85,7 @@ export class UserDataProfilesReadonlyService
 			URI.file(this.nativeEnvironmentService.extensionsPath).with({
 				scheme: this.profilesHome.scheme,
 			}),
-			"extensions.json"
+			"extensions.json",
 		);
 	}
 }
@@ -112,7 +112,7 @@ export class UserDataProfilesService
 	}
 
 	protected override saveStoredProfiles(
-		storedProfiles: StoredUserDataProfile[]
+		storedProfiles: StoredUserDataProfile[],
 	): void {
 		if (storedProfiles.length) {
 			this.stateService.setItem(
@@ -120,9 +120,9 @@ export class UserDataProfilesService
 				storedProfiles.map((profile) => ({
 					...profile,
 					location: this.uriIdentityService.extUri.basename(
-						profile.location
+						profile.location,
 					),
-				}))
+				})),
 			);
 		} else {
 			this.stateService.removeItem(UserDataProfilesService.PROFILES_KEY);
@@ -134,7 +134,7 @@ export class UserDataProfilesService
 		if (
 			!this.stateService.getItem<boolean>(
 				"userDataProfilesMigration",
-				false
+				false,
 			)
 		) {
 			this.saveStoredProfiles(storedProfiles);
@@ -144,7 +144,7 @@ export class UserDataProfilesService
 	}
 
 	protected override saveStoredProfileAssociations(
-		storedProfileAssociations: StoredProfileAssociations
+		storedProfileAssociations: StoredProfileAssociations,
 	): void {
 		if (
 			storedProfileAssociations.emptyWindows ||
@@ -152,11 +152,11 @@ export class UserDataProfilesService
 		) {
 			this.stateService.setItem(
 				UserDataProfilesService.PROFILE_ASSOCIATIONS_KEY,
-				storedProfileAssociations
+				storedProfileAssociations,
 			);
 		} else {
 			this.stateService.removeItem(
-				UserDataProfilesService.PROFILE_ASSOCIATIONS_KEY
+				UserDataProfilesService.PROFILE_ASSOCIATIONS_KEY,
 			);
 		}
 	}
@@ -177,20 +177,20 @@ export class UserDataProfilesService
 			}, {});
 			this.stateService.setItem(
 				UserDataProfilesService.PROFILE_ASSOCIATIONS_KEY,
-				<StoredProfileAssociations>{ workspaces }
+				<StoredProfileAssociations>{ workspaces },
 			);
 		}
 		const associations = super.getStoredProfileAssociations();
 		if (
 			!this.stateService.getItem<boolean>(
 				UserDataProfilesService.PROFILE_ASSOCIATIONS_MIGRATION_KEY,
-				false
+				false,
 			)
 		) {
 			this.saveStoredProfileAssociations(associations);
 			this.stateService.setItem(
 				UserDataProfilesService.PROFILE_ASSOCIATIONS_MIGRATION_KEY,
-				true
+				true,
 			);
 		}
 		return associations;
@@ -206,19 +206,19 @@ export class ServerUserDataProfilesService
 		@INativeEnvironmentService
 		environmentService: INativeEnvironmentService,
 		@IFileService fileService: IFileService,
-		@ILogService logService: ILogService
+		@ILogService logService: ILogService,
 	) {
 		super(
 			new StateService(
 				SaveStrategy.IMMEDIATE,
 				environmentService,
 				logService,
-				fileService
+				fileService,
 			),
 			uriIdentityService,
 			environmentService,
 			fileService,
-			logService
+			logService,
 		);
 	}
 

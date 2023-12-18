@@ -3,39 +3,41 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { VSBuffer } from "vs/base/common/buffer";
 import { Emitter, Event } from "vs/base/common/event";
+import { IMarkdownString } from "vs/base/common/htmlContent";
 import {
+	DisposableMap,
+	DisposableStore,
 	IDisposable,
 	toDisposable,
-	DisposableStore,
-	DisposableMap,
 } from "vs/base/common/lifecycle";
 import { URI, UriComponents } from "vs/base/common/uri";
 import {
-	IFileWriteOptions,
-	FileSystemProviderCapabilities,
-	IFileChange,
-	IFileService,
-	IStat,
-	IWatchOptions,
-	FileType,
-	IFileOverwriteOptions,
-	IFileDeleteOptions,
-	IFileOpenOptions,
 	FileOperationError,
 	FileOperationResult,
-	FileSystemProviderErrorCode,
-	IFileSystemProviderWithOpenReadWriteCloseCapability,
-	IFileSystemProviderWithFileReadWriteCapability,
-	IFileSystemProviderWithFileFolderCopyCapability,
 	FilePermission,
-	toFileSystemProviderErrorCode,
-	IFileStatWithPartialMetadata,
+	FileSystemProviderCapabilities,
+	FileSystemProviderErrorCode,
+	FileType,
+	IFileChange,
+	IFileDeleteOptions,
+	IFileOpenOptions,
+	IFileOverwriteOptions,
+	IFileService,
 	IFileStat,
+	IFileStatWithPartialMetadata,
+	IFileSystemProviderWithFileFolderCopyCapability,
+	IFileSystemProviderWithFileReadWriteCapability,
+	IFileSystemProviderWithOpenReadWriteCloseCapability,
+	IFileWriteOptions,
+	IStat,
+	IWatchOptions,
+	toFileSystemProviderErrorCode,
 } from "vs/platform/files/common/files";
 import {
-	extHostNamedCustomer,
 	IExtHostContext,
+	extHostNamedCustomer,
 } from "vs/workbench/services/extensions/common/extHostCustomers";
 import {
 	ExtHostContext,
@@ -44,8 +46,6 @@ import {
 	MainContext,
 	MainThreadFileSystemShape,
 } from "../common/extHost.protocol";
-import { VSBuffer } from "vs/base/common/buffer";
-import { IMarkdownString } from "vs/base/common/htmlContent";
 
 @extHostNamedCustomer(MainContext.MainThreadFileSystem)
 export class MainThreadFileSystem implements MainThreadFileSystemShape {
@@ -99,7 +99,7 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 		handle: number,
 		scheme: string,
 		capabilities: FileSystemProviderCapabilities,
-		readonlyMessage?: IMarkdownString
+		readonlyMessage?: IMarkdownString,
 	): Promise<void> {
 		this._fileProvider.set(
 			handle,
@@ -109,8 +109,8 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 				capabilities,
 				readonlyMessage,
 				handle,
-				this._proxy
-			)
+				this._proxy,
+			),
 		);
 	}
 
@@ -154,21 +154,21 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 					err.name = FileSystemProviderErrorCode.FileNotADirectory;
 					throw err;
 				}
-				return !stat.children
-					? []
-					: stat.children.map(
+				return stat.children
+					? stat.children.map(
 							(child) =>
 								[
 									child.name,
 									MainThreadFileSystem._asFileType(child),
-								] as [string, FileType]
-						);
+								] as [string, FileType],
+					  )
+					: [];
 			})
 			.catch(MainThreadFileSystem._handleError);
 	}
 
 	private static _asFileType(
-		stat: IFileStat | IFileStatWithPartialMetadata
+		stat: IFileStat | IFileStatWithPartialMetadata,
 	): FileType {
 		let res = 0;
 		if (stat.isFile) {
@@ -199,7 +199,7 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 	$rename(
 		source: UriComponents,
 		target: UriComponents,
-		opts: IFileOverwriteOptions
+		opts: IFileOverwriteOptions,
 	): Promise<void> {
 		return this._fileService
 			.move(URI.revive(source), URI.revive(target), opts.overwrite)
@@ -210,7 +210,7 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 	$copy(
 		source: UriComponents,
 		target: UriComponents,
-		opts: IFileOverwriteOptions
+		opts: IFileOverwriteOptions,
 	): Promise<void> {
 		return this._fileService
 			.copy(URI.revive(source), URI.revive(target), opts.overwrite)
@@ -283,7 +283,7 @@ class RemoteFileSystemProvider
 		capabilities: FileSystemProviderCapabilities,
 		public readonly readOnlyMessage: IMarkdownString | undefined,
 		private readonly _handle: number,
-		private readonly _proxy: ExtHostFileSystemShape
+		private readonly _proxy: ExtHostFileSystemShape,
 	) {
 		this.capabilities = capabilities;
 		this._registration = fileService.registerProvider(scheme, this);
@@ -304,7 +304,7 @@ class RemoteFileSystemProvider
 
 	$onFileSystemChange(changes: IFileChangeDto[]): void {
 		this._onDidChange.fire(
-			changes.map(RemoteFileSystemProvider._createFileChange)
+			changes.map(RemoteFileSystemProvider._createFileChange),
 		);
 	}
 
@@ -331,13 +331,13 @@ class RemoteFileSystemProvider
 	writeFile(
 		resource: URI,
 		content: Uint8Array,
-		opts: IFileWriteOptions
+		opts: IFileWriteOptions,
 	): Promise<void> {
 		return this._proxy.$writeFile(
 			this._handle,
 			resource,
 			VSBuffer.wrap(content),
-			opts
+			opts,
 		);
 	}
 
@@ -356,7 +356,7 @@ class RemoteFileSystemProvider
 	rename(
 		resource: URI,
 		target: URI,
-		opts: IFileOverwriteOptions
+		opts: IFileOverwriteOptions,
 	): Promise<void> {
 		return this._proxy.$rename(this._handle, resource, target, opts);
 	}
@@ -364,7 +364,7 @@ class RemoteFileSystemProvider
 	copy(
 		resource: URI,
 		target: URI,
-		opts: IFileOverwriteOptions
+		opts: IFileOverwriteOptions,
 	): Promise<void> {
 		return this._proxy.$copy(this._handle, resource, target, opts);
 	}
@@ -382,7 +382,7 @@ class RemoteFileSystemProvider
 		pos: number,
 		data: Uint8Array,
 		offset: number,
-		length: number
+		length: number,
 	): Promise<number> {
 		return this._proxy
 			.$read(this._handle, fd, pos, length)
@@ -397,13 +397,13 @@ class RemoteFileSystemProvider
 		pos: number,
 		data: Uint8Array,
 		offset: number,
-		length: number
+		length: number,
 	): Promise<number> {
 		return this._proxy.$write(
 			this._handle,
 			fd,
 			pos,
-			VSBuffer.wrap(data).slice(offset, offset + length)
+			VSBuffer.wrap(data).slice(offset, offset + length),
 		);
 	}
 }

@@ -3,46 +3,46 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { KeyMod, KeyCode } from "vs/base/common/keyCodes";
-import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import {
-	KeybindingsRegistry,
-	KeybindingWeight,
-} from "vs/platform/keybinding/common/keybindingsRegistry";
-import { List } from "vs/base/browser/ui/list/listWidget";
-import {
-	WorkbenchListFocusContextKey,
-	IListService,
-	WorkbenchListSupportsMultiSelectContextKey,
-	ListWidget,
-	WorkbenchListHasSelectionOrFocus,
-	getSelectionKeyboardEvent,
-	WorkbenchListWidget,
-	WorkbenchListSelectionNavigation,
-	WorkbenchTreeElementCanCollapse,
-	WorkbenchTreeElementHasParent,
-	WorkbenchTreeElementHasChild,
-	WorkbenchTreeElementCanExpand,
-	RawWorkbenchListFocusContextKey,
-	WorkbenchTreeFindOpen,
-	WorkbenchListSupportsFind,
-	WorkbenchListScrollAtBottomContextKey,
-	WorkbenchListScrollAtTopContextKey,
-} from "vs/platform/list/browser/listService";
+import { isActiveElement } from "vs/base/browser/dom";
 import { PagedList } from "vs/base/browser/ui/list/listPaging";
-import { equals, range } from "vs/base/common/arrays";
-import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
-import { ObjectTree } from "vs/base/browser/ui/tree/objectTree";
-import { AsyncDataTree } from "vs/base/browser/ui/tree/asyncDataTree";
-import { DataTree } from "vs/base/browser/ui/tree/dataTree";
-import { ITreeNode } from "vs/base/browser/ui/tree/tree";
-import { CommandsRegistry } from "vs/platform/commands/common/commands";
+import { List } from "vs/base/browser/ui/list/listWidget";
 import { Table } from "vs/base/browser/ui/table/tableWidget";
 import {
 	AbstractTree,
 	TreeFindMode,
 } from "vs/base/browser/ui/tree/abstractTree";
-import { isActiveElement } from "vs/base/browser/dom";
+import { AsyncDataTree } from "vs/base/browser/ui/tree/asyncDataTree";
+import { DataTree } from "vs/base/browser/ui/tree/dataTree";
+import { ObjectTree } from "vs/base/browser/ui/tree/objectTree";
+import { ITreeNode } from "vs/base/browser/ui/tree/tree";
+import { equals, range } from "vs/base/common/arrays";
+import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
+import { CommandsRegistry } from "vs/platform/commands/common/commands";
+import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
+import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+import {
+	KeybindingWeight,
+	KeybindingsRegistry,
+} from "vs/platform/keybinding/common/keybindingsRegistry";
+import {
+	IListService,
+	ListWidget,
+	RawWorkbenchListFocusContextKey,
+	WorkbenchListFocusContextKey,
+	WorkbenchListHasSelectionOrFocus,
+	WorkbenchListScrollAtBottomContextKey,
+	WorkbenchListScrollAtTopContextKey,
+	WorkbenchListSelectionNavigation,
+	WorkbenchListSupportsFind,
+	WorkbenchListSupportsMultiSelectContextKey,
+	WorkbenchListWidget,
+	WorkbenchTreeElementCanCollapse,
+	WorkbenchTreeElementCanExpand,
+	WorkbenchTreeElementHasChild,
+	WorkbenchTreeElementHasParent,
+	WorkbenchTreeFindOpen,
+	getSelectionKeyboardEvent,
+} from "vs/platform/list/browser/listService";
 
 function ensureDOMFocus(widget: ListWidget | undefined): void {
 	// it can happen that one of the commands is executed while
@@ -57,7 +57,7 @@ function ensureDOMFocus(widget: ListWidget | undefined): void {
 
 async function updateFocus(
 	widget: WorkbenchListWidget,
-	updateFocusFn: (widget: WorkbenchListWidget) => void | Promise<void>
+	updateFocusFn: (widget: WorkbenchListWidget) => void | Promise<void>,
 ): Promise<void> {
 	if (!WorkbenchListSelectionNavigation.getValue(widget.contextKeyService)) {
 		return updateFocusFn(widget);
@@ -84,7 +84,7 @@ async function updateFocus(
 
 async function navigate(
 	widget: WorkbenchListWidget | undefined,
-	updateFocusFn: (widget: WorkbenchListWidget) => void | Promise<void>
+	updateFocusFn: (widget: WorkbenchListWidget) => void | Promise<void>,
 ): Promise<void> {
 	if (!widget) {
 		return;
@@ -117,7 +117,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			await widget.focusNext(
 				typeof arg2 === "number" ? arg2 : 1,
 				false,
-				fakeKeyboardEvent
+				fakeKeyboardEvent,
 			);
 		});
 	},
@@ -138,7 +138,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			await widget.focusPrevious(
 				typeof arg2 === "number" ? arg2 : 1,
 				false,
-				fakeKeyboardEvent
+				fakeKeyboardEvent,
 			);
 		});
 	},
@@ -198,7 +198,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 
 function expandMultiSelection(
 	focused: WorkbenchListWidget,
-	previousFocus: unknown
+	previousFocus: unknown,
 ): void {
 	// List
 	if (
@@ -216,10 +216,8 @@ function expandMultiSelection(
 			selection.indexOf(focus) >= 0
 		) {
 			list.setSelection(selection.filter((s) => s !== previousFocus));
-		} else {
-			if (typeof focus === "number") {
-				list.setSelection(selection.concat(focus));
-			}
+		} else if (typeof focus === "number") {
+			list.setSelection(selection.concat(focus));
 		}
 	}
 
@@ -245,7 +243,7 @@ function expandMultiSelection(
 		if (selection && selection.indexOf(focus) >= 0) {
 			list.setSelection(
 				selection.filter((s) => s !== previousFocus),
-				fakeKeyboardEvent
+				fakeKeyboardEvent,
 			);
 		} else {
 			list.setSelection(selection.concat(focus), fakeKeyboardEvent);
@@ -258,7 +256,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	weight: KeybindingWeight.WorkbenchContrib,
 	when: ContextKeyExpr.and(
 		WorkbenchListFocusContextKey,
-		WorkbenchListSupportsMultiSelectContextKey
+		WorkbenchListSupportsMultiSelectContextKey,
 	),
 	primary: KeyMod.Shift | KeyCode.DownArrow,
 	handler: (accessor, arg2) => {
@@ -276,7 +274,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		widget.focusNext(
 			typeof arg2 === "number" ? arg2 : 1,
 			false,
-			fakeKeyboardEvent
+			fakeKeyboardEvent,
 		);
 
 		// Then adjust selection
@@ -297,7 +295,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	weight: KeybindingWeight.WorkbenchContrib,
 	when: ContextKeyExpr.and(
 		WorkbenchListFocusContextKey,
-		WorkbenchListSupportsMultiSelectContextKey
+		WorkbenchListSupportsMultiSelectContextKey,
 	),
 	primary: KeyMod.Shift | KeyCode.UpArrow,
 	handler: (accessor, arg2) => {
@@ -315,7 +313,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		widget.focusPrevious(
 			typeof arg2 === "number" ? arg2 : 1,
 			false,
-			fakeKeyboardEvent
+			fakeKeyboardEvent,
 		);
 
 		// Then adjust selection
@@ -338,8 +336,8 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		WorkbenchListFocusContextKey,
 		ContextKeyExpr.or(
 			WorkbenchTreeElementCanCollapse,
-			WorkbenchTreeElementHasParent
-		)
+			WorkbenchTreeElementHasParent,
+		),
 	),
 	primary: KeyCode.LeftArrow,
 	mac: {
@@ -473,8 +471,8 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		WorkbenchListFocusContextKey,
 		ContextKeyExpr.or(
 			WorkbenchTreeElementCanExpand,
-			WorkbenchTreeElementHasChild
-		)
+			WorkbenchTreeElementHasChild,
+		),
 	),
 	primary: KeyCode.RightArrow,
 	handler: (accessor) => {
@@ -503,7 +501,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 					if (node.visible) {
 						navigate(widget, (widget) => {
 							const fakeKeyboardEvent = new KeyboardEvent(
-								"keydown"
+								"keydown",
 							);
 							widget.setFocus([child], fakeKeyboardEvent);
 						});
@@ -529,7 +527,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 						if (node.visible) {
 							navigate(widget, (widget) => {
 								const fakeKeyboardEvent = new KeyboardEvent(
-									"keydown"
+									"keydown",
 								);
 								widget.setFocus([child], fakeKeyboardEvent);
 							});
@@ -543,12 +541,12 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 
 function selectElement(
 	accessor: ServicesAccessor,
-	retainCurrentFocus: boolean
+	retainCurrentFocus: boolean,
 ): void {
 	const focused = accessor.get(IListService).lastFocusedList;
 	const fakeKeyboardEvent = getSelectionKeyboardEvent(
 		"keydown",
-		retainCurrentFocus
+		retainCurrentFocus,
 	);
 	// List
 	if (
@@ -619,7 +617,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	weight: KeybindingWeight.WorkbenchContrib,
 	when: ContextKeyExpr.and(
 		WorkbenchListFocusContextKey,
-		WorkbenchListSupportsMultiSelectContextKey
+		WorkbenchListSupportsMultiSelectContextKey,
 	),
 	primary: KeyMod.CtrlCmd | KeyCode.KeyA,
 	handler: (accessor) => {
@@ -663,10 +661,10 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			// What is the scope of select all?
 			let scope: unknown | undefined = undefined;
 
-			if (!start) {
-				scope = undefined;
-			} else {
+			if (start) {
 				scope = tree.getParentElement(start);
+			} else {
+				scope = undefined;
 			}
 
 			const newSelection: unknown[] = [];
@@ -760,7 +758,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	weight: KeybindingWeight.WorkbenchContrib,
 	when: ContextKeyExpr.and(
 		WorkbenchListFocusContextKey,
-		WorkbenchListHasSelectionOrFocus
+		WorkbenchListHasSelectionOrFocus,
 	),
 	primary: KeyCode.Escape,
 	handler: (accessor) => {
@@ -776,7 +774,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		if (selection.length > 1) {
 			const useSelectionNavigation =
 				WorkbenchListSelectionNavigation.getValue(
-					widget.contextKeyService
+					widget.contextKeyService,
 				);
 			if (useSelectionNavigation) {
 				const focus = widget.getFocus();
@@ -819,11 +817,11 @@ CommandsRegistry.registerCommand({
 // Deprecated commands
 CommandsRegistry.registerCommandAlias(
 	"list.toggleKeyboardNavigation",
-	"list.triggerTypeNavigation"
+	"list.triggerTypeNavigation",
 );
 CommandsRegistry.registerCommandAlias(
 	"list.toggleFilterOnType",
-	"list.toggleFindMode"
+	"list.toggleFindMode",
 );
 
 KeybindingsRegistry.registerCommandAndKeybindingRule({
@@ -831,7 +829,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	weight: KeybindingWeight.WorkbenchContrib,
 	when: ContextKeyExpr.and(
 		RawWorkbenchListFocusContextKey,
-		WorkbenchListSupportsFind
+		WorkbenchListSupportsFind,
 	),
 	primary: KeyMod.CtrlCmd | KeyCode.KeyF,
 	secondary: [KeyCode.F3],
@@ -863,7 +861,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	weight: KeybindingWeight.WorkbenchContrib,
 	when: ContextKeyExpr.and(
 		RawWorkbenchListFocusContextKey,
-		WorkbenchTreeFindOpen
+		WorkbenchTreeFindOpen,
 	),
 	primary: KeyCode.Escape,
 	handler: (accessor) => {
@@ -884,7 +882,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	// top-most position. This will give chance for widgetNavigation.focusPrevious to execute
 	when: ContextKeyExpr.and(
 		WorkbenchListFocusContextKey,
-		WorkbenchListScrollAtTopContextKey?.negate()
+		WorkbenchListScrollAtTopContextKey?.negate(),
 	),
 	primary: KeyMod.CtrlCmd | KeyCode.UpArrow,
 	handler: (accessor) => {
@@ -904,7 +902,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	// same as above
 	when: ContextKeyExpr.and(
 		WorkbenchListFocusContextKey,
-		WorkbenchListScrollAtBottomContextKey?.negate()
+		WorkbenchListScrollAtBottomContextKey?.negate(),
 	),
 	primary: KeyMod.CtrlCmd | KeyCode.DownArrow,
 	handler: (accessor) => {

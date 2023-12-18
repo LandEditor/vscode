@@ -104,27 +104,27 @@ export class Gesture extends Disposable {
 							window.document,
 							"touchstart",
 							(e: TouchEvent) => this.onTouchStart(e),
-							{ passive: false }
-						)
+							{ passive: false },
+						),
 					);
 					disposables.add(
 						DomUtils.addDisposableListener(
 							window.document,
 							"touchend",
-							(e: TouchEvent) => this.onTouchEnd(window, e)
-						)
+							(e: TouchEvent) => this.onTouchEnd(window, e),
+						),
 					);
 					disposables.add(
 						DomUtils.addDisposableListener(
 							window.document,
 							"touchmove",
 							(e: TouchEvent) => this.onTouchMove(e),
-							{ passive: false }
-						)
+							{ passive: false },
+						),
 					);
 				},
-				{ window: mainWindow, disposables: this._store }
-			)
+				{ window: mainWindow, disposables: this._store },
+			),
 		);
 	}
 
@@ -228,7 +228,7 @@ export class Gesture extends Disposable {
 			) {
 				const evt = this.newGestureEvent(
 					EventType.Tap,
-					data.initialTarget
+					data.initialTarget,
 				);
 				evt.pageX = arrays.tail(data.rollingPageX);
 				evt.pageY = arrays.tail(data.rollingPageY);
@@ -242,7 +242,7 @@ export class Gesture extends Disposable {
 			) {
 				const evt = this.newGestureEvent(
 					EventType.Contextmenu,
-					data.initialTarget
+					data.initialTarget,
 				);
 				evt.pageX = arrays.tail(data.rollingPageX);
 				evt.pageY = arrays.tail(data.rollingPageY);
@@ -261,7 +261,7 @@ export class Gesture extends Disposable {
 				const dispatchTo = [...this.targets].filter(
 					(t) =>
 						data.initialTarget instanceof Node &&
-						t.contains(data.initialTarget)
+						t.contains(data.initialTarget),
 				);
 				this.inertia(
 					targetWindow,
@@ -272,12 +272,12 @@ export class Gesture extends Disposable {
 					finalX, // x now
 					Math.abs(deltaY) / deltaT, // y speed
 					deltaY > 0 ? 1 : -1, // y direction
-					finalY // y now
+					finalY, // y now
 				);
 			}
 
 			this.dispatchEvent(
-				this.newGestureEvent(EventType.End, data.initialTarget)
+				this.newGestureEvent(EventType.End, data.initialTarget),
 			);
 			// forget about this touch
 			delete this.activeTouches[touch.identifier];
@@ -292,10 +292,10 @@ export class Gesture extends Disposable {
 
 	private newGestureEvent(
 		type: string,
-		initialTarget?: EventTarget
+		initialTarget?: EventTarget,
 	): GestureEvent {
 		const event = document.createEvent(
-			"CustomEvent"
+			"CustomEvent",
 		) as unknown as GestureEvent;
 		event.initEvent(type, false, true);
 		event.initialTarget = initialTarget;
@@ -351,7 +351,7 @@ export class Gesture extends Disposable {
 		x: number,
 		vY: number,
 		dirY: number,
-		y: number
+		y: number,
 	): void {
 		this.handle = DomUtils.scheduleAtNextAnimationFrame(
 			targetWindow,
@@ -393,10 +393,10 @@ export class Gesture extends Disposable {
 						x + delta_pos_x,
 						vY,
 						dirY,
-						y + delta_pos_y
+						y + delta_pos_y,
 					);
 				}
-			}
+			},
 		);
 	}
 
@@ -415,7 +415,7 @@ export class Gesture extends Disposable {
 
 			const evt = this.newGestureEvent(
 				EventType.Change,
-				data.initialTarget
+				data.initialTarget,
 			);
 			evt.translationX = touch.pageX - arrays.tail(data.rollingPageX);
 			evt.translationY = touch.pageY - arrays.tail(data.rollingPageY);

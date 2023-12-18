@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TextDocument, SemanticTokenData } from "./languageModes";
 import * as ts from "typescript";
+import { SemanticTokenData, TextDocument } from "./languageModes";
 
 export function getSemanticTokenLegend() {
 	if (tokenTypes.length !== TokenType._) {
@@ -19,12 +19,12 @@ export function getSemanticTokenLegend() {
 export function* getSemanticTokens(
 	jsLanguageService: ts.LanguageService,
 	document: TextDocument,
-	fileName: string
+	fileName: string,
 ): Iterable<SemanticTokenData> {
 	const { spans } = jsLanguageService.getEncodedSemanticClassifications(
 		fileName,
 		{ start: 0, length: document.getText().length },
-		"2020" as ts.SemanticClassificationFormat
+		"2020" as ts.SemanticClassificationFormat,
 	);
 
 	for (let i = 0; i < spans.length; ) {
@@ -52,7 +52,7 @@ export function* getSemanticTokens(
 // typescript encodes type and modifiers in the classification:
 // TSClassification = (TokenType + 1) << 8 + TokenModifier
 
-const enum TokenType {
+enum TokenType {
 	class = 0,
 	enum = 1,
 	interface = 2,
@@ -68,7 +68,7 @@ const enum TokenType {
 	_ = 12,
 }
 
-const enum TokenModifier {
+enum TokenModifier {
 	declaration = 0,
 	static = 1,
 	async = 2,
@@ -78,13 +78,13 @@ const enum TokenModifier {
 	_ = 6,
 }
 
-const enum TokenEncodingConsts {
+enum TokenEncodingConsts {
 	typeOffset = 8,
 	modifierMask = 255,
 }
 
 function getTokenTypeFromClassification(
-	tsClassification: number
+	tsClassification: number,
 ): number | undefined {
 	if (tsClassification > TokenEncodingConsts.modifierMask) {
 		return (tsClassification >> TokenEncodingConsts.typeOffset) - 1;

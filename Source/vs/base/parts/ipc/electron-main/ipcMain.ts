@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	ipcMain as unsafeIpcMain,
 	IpcMainEvent,
 	IpcMainInvokeEvent,
+	ipcMain as unsafeIpcMain,
 } from "electron";
 import { onUnexpectedError } from "vs/base/common/errors";
 import { Event } from "vs/base/common/event";
@@ -78,7 +78,7 @@ class ValidatedIpcMain implements Event.NodeEventEmitter {
 		listener: (
 			event: IpcMainInvokeEvent,
 			...args: any[]
-		) => Promise<unknown>
+		) => Promise<unknown>,
 	): this {
 		unsafeIpcMain.handle(
 			channel,
@@ -88,9 +88,9 @@ class ValidatedIpcMain implements Event.NodeEventEmitter {
 				}
 
 				return Promise.reject(
-					`Invalid channel '${channel}' or sender for ipcMain.handle() usage.`
+					`Invalid channel '${channel}' or sender for ipcMain.handle() usage.`,
 				);
-			}
+			},
 		);
 
 		return this;
@@ -121,11 +121,11 @@ class ValidatedIpcMain implements Event.NodeEventEmitter {
 
 	private validateEvent(
 		channel: string,
-		event: IpcMainEvent | IpcMainInvokeEvent
+		event: IpcMainEvent | IpcMainInvokeEvent,
 	): boolean {
 		if (!channel || !channel.startsWith("vscode:")) {
 			onUnexpectedError(
-				`Refused to handle ipcMain event for channel '${channel}' because the channel is unknown.`
+				`Refused to handle ipcMain event for channel '${channel}' because the channel is unknown.`,
 			);
 			return false; // unexpected channel
 		}
@@ -146,21 +146,21 @@ class ValidatedIpcMain implements Event.NodeEventEmitter {
 			host = new URL(url).host;
 		} catch (error) {
 			onUnexpectedError(
-				`Refused to handle ipcMain event for channel '${channel}' because of a malformed URL '${url}'.`
+				`Refused to handle ipcMain event for channel '${channel}' because of a malformed URL '${url}'.`,
 			);
 			return false; // unexpected URL
 		}
 
 		if (host !== VSCODE_AUTHORITY) {
 			onUnexpectedError(
-				`Refused to handle ipcMain event for channel '${channel}' because of a bad origin of '${host}'.`
+				`Refused to handle ipcMain event for channel '${channel}' because of a bad origin of '${host}'.`,
 			);
 			return false; // unexpected sender
 		}
 
 		if (sender.parent !== null) {
 			onUnexpectedError(
-				`Refused to handle ipcMain event for channel '${channel}' because sender of origin '${host}' is not a main frame.`
+				`Refused to handle ipcMain event for channel '${channel}' because sender of origin '${host}' is not a main frame.`,
 			);
 			return false; // unexpected frame
 		}

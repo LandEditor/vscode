@@ -3,32 +3,32 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
-import { IJSONEditingService } from "vs/workbench/services/configuration/common/jsonEditing";
-import { IWorkspacesService } from "vs/platform/workspaces/common/workspaces";
-import { WorkspaceService } from "vs/workbench/services/configuration/browser/configurationService";
+import { URI } from "vs/base/common/uri";
 import { ICommandService } from "vs/platform/commands/common/commands";
-import { INotificationService } from "vs/platform/notification/common/notification";
-import { IFileService } from "vs/platform/files/common/files";
-import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
 import {
-	IFileDialogService,
 	IDialogService,
+	IFileDialogService,
 } from "vs/platform/dialogs/common/dialogs";
-import { ITextFileService } from "vs/workbench/services/textfile/common/textfiles";
-import { IHostService } from "vs/workbench/services/host/browser/host";
-import { AbstractWorkspaceEditingService } from "vs/workbench/services/workspaces/browser/abstractWorkspaceEditingService";
-import { IWorkspaceEditingService } from "vs/workbench/services/workspaces/common/workspaceEditing";
+import { IFileService } from "vs/platform/files/common/files";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { URI } from "vs/base/common/uri";
+import { INotificationService } from "vs/platform/notification/common/notification";
 import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import { IWorkspaceTrustManagementService } from "vs/platform/workspace/common/workspaceTrust";
-import { IWorkbenchConfigurationService } from "vs/workbench/services/configuration/common/configuration";
 import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
+import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import { IWorkspaceTrustManagementService } from "vs/platform/workspace/common/workspaceTrust";
+import { IWorkspacesService } from "vs/platform/workspaces/common/workspaces";
+import { WorkspaceService } from "vs/workbench/services/configuration/browser/configurationService";
+import { IWorkbenchConfigurationService } from "vs/workbench/services/configuration/common/configuration";
+import { IJSONEditingService } from "vs/workbench/services/configuration/common/jsonEditing";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
+import { IHostService } from "vs/workbench/services/host/browser/host";
+import { ITextFileService } from "vs/workbench/services/textfile/common/textfiles";
 import { IUserDataProfileService } from "vs/workbench/services/userDataProfile/common/userDataProfile";
+import { AbstractWorkspaceEditingService } from "vs/workbench/services/workspaces/browser/abstractWorkspaceEditingService";
+import { IWorkspaceEditingService } from "vs/workbench/services/workspaces/common/workspaceEditing";
 
 export class BrowserWorkspaceEditingService extends AbstractWorkspaceEditingService {
 	constructor(
@@ -51,7 +51,7 @@ export class BrowserWorkspaceEditingService extends AbstractWorkspaceEditingServ
 		workspaceTrustManagementService: IWorkspaceTrustManagementService,
 		@IUserDataProfilesService
 		userDataProfilesService: IUserDataProfilesService,
-		@IUserDataProfileService userDataProfileService: IUserDataProfileService
+		@IUserDataProfileService userDataProfileService: IUserDataProfileService,
 	) {
 		super(
 			jsonEditingService,
@@ -69,7 +69,7 @@ export class BrowserWorkspaceEditingService extends AbstractWorkspaceEditingServ
 			uriIdentityService,
 			workspaceTrustManagementService,
 			userDataProfilesService,
-			userDataProfileService
+			userDataProfileService,
 		);
 	}
 
@@ -87,5 +87,5 @@ export class BrowserWorkspaceEditingService extends AbstractWorkspaceEditingServ
 registerSingleton(
 	IWorkspaceEditingService,
 	BrowserWorkspaceEditingService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

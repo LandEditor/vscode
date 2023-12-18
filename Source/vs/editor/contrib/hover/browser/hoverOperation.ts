@@ -6,8 +6,8 @@
 import {
 	AsyncIterableObject,
 	CancelableAsyncIterableObject,
-	createCancelableAsyncIterable,
 	RunOnceScheduler,
+	createCancelableAsyncIterable,
 } from "vs/base/common/async";
 import { CancellationToken } from "vs/base/common/cancellation";
 import { onUnexpectedError } from "vs/base/common/errors";
@@ -27,20 +27,20 @@ export interface IHoverComputer<T> {
 	computeSync?: () => T[];
 }
 
-const enum HoverOperationState {
-	Idle,
-	FirstWait,
-	SecondWait,
+enum HoverOperationState {
+	Idle = 0,
+	FirstWait = 1,
+	SecondWait = 2,
 	WaitingForAsync = 3,
 	WaitingForAsyncShowingLoading = 4,
 }
 
-export const enum HoverStartMode {
+export enum HoverStartMode {
 	Delayed = 0,
 	Immediate = 1,
 }
 
-export const enum HoverStartSource {
+export enum HoverStartSource {
 	Mouse = 0,
 	Keyboard = 1,
 }
@@ -49,7 +49,7 @@ export class HoverResult<T> {
 	constructor(
 		public readonly value: T[],
 		public readonly isComplete: boolean,
-		public readonly hasLoadingMessage: boolean
+		public readonly hasLoadingMessage: boolean,
 	) {}
 }
 
@@ -68,23 +68,23 @@ export class HoverOperation<T> extends Disposable {
 	public readonly onResult = this._onResult.event;
 
 	private readonly _firstWaitScheduler = this._register(
-		new RunOnceScheduler(() => this._triggerAsyncComputation(), 0)
+		new RunOnceScheduler(() => this._triggerAsyncComputation(), 0),
 	);
 	private readonly _secondWaitScheduler = this._register(
-		new RunOnceScheduler(() => this._triggerSyncComputation(), 0)
+		new RunOnceScheduler(() => this._triggerSyncComputation(), 0),
 	);
 	private readonly _loadingMessageScheduler = this._register(
-		new RunOnceScheduler(() => this._triggerLoadingMessage(), 0)
+		new RunOnceScheduler(() => this._triggerLoadingMessage(), 0),
 	);
 
 	private _state = HoverOperationState.Idle;
 	private _asyncIterable: CancelableAsyncIterableObject<T> | null = null;
-	private _asyncIterableDone: boolean = false;
+	private _asyncIterableDone = false;
 	private _result: T[] = [];
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		private readonly _computer: IHoverComputer<T>
+		private readonly _computer: IHoverComputer<T>,
 	) {
 		super();
 	}
@@ -113,10 +113,7 @@ export class HoverOperation<T> extends Disposable {
 		return 3 * this._hoverTime;
 	}
 
-	private _setState(
-		state: HoverOperationState,
-		fireResult: boolean = true
-	): void {
+	private _setState(state: HoverOperationState, fireResult = true): void {
 		this._state = state;
 		if (fireResult) {
 			this._fireResult();
@@ -130,7 +127,7 @@ export class HoverOperation<T> extends Disposable {
 		if (this._computer.computeAsync) {
 			this._asyncIterableDone = false;
 			this._asyncIterable = createCancelableAsyncIterable((token) =>
-				this._computer.computeAsync!(token)
+				this._computer.computeAsync!(token),
 			);
 
 			(async () => {
@@ -166,7 +163,7 @@ export class HoverOperation<T> extends Disposable {
 		this._setState(
 			this._asyncIterableDone
 				? HoverOperationState.Idle
-				: HoverOperationState.WaitingForAsync
+				: HoverOperationState.WaitingForAsync,
 		);
 	}
 
@@ -191,8 +188,8 @@ export class HoverOperation<T> extends Disposable {
 			new HoverResult(
 				this._result.slice(0),
 				isComplete,
-				hasLoadingMessage
-			)
+				hasLoadingMessage,
+			),
 		);
 	}
 
@@ -202,7 +199,7 @@ export class HoverOperation<T> extends Disposable {
 				this._setState(HoverOperationState.FirstWait);
 				this._firstWaitScheduler.schedule(this._firstWaitTime);
 				this._loadingMessageScheduler.schedule(
-					this._loadingMessageTime
+					this._loadingMessageTime,
 				);
 			}
 		} else {

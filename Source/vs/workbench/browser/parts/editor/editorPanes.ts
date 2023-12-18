@@ -3,11 +3,58 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
+import {
+	Dimension,
+	IDomNodePagePosition,
+	getActiveElement,
+	getWindow,
+	hide,
+	isAncestor,
+	show,
+} from "vs/base/browser/dom";
+import { IBoundarySashes } from "vs/base/browser/ui/sash/sash";
+import { mainWindow } from "vs/base/browser/window";
 import { IAction, toAction } from "vs/base/common/actions";
+import { toErrorMessage } from "vs/base/common/errorMessage";
+import { isCancellationError } from "vs/base/common/errors";
 import { Emitter } from "vs/base/common/event";
-import Severity from "vs/base/common/severity";
 import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
+import Severity from "vs/base/common/severity";
+import { assertIsDefined } from "vs/base/common/types";
+import { localize } from "vs/nls";
+import {
+	IDialogService,
+	IPromptButton,
+	IPromptCancelButton,
+} from "vs/platform/dialogs/common/dialogs";
+import {
+	EditorOpenSource,
+	IEditorOptions,
+} from "vs/platform/editor/common/editor";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { ILogService } from "vs/platform/log/common/log";
+import {
+	IEditorProgressService,
+	LongRunningOperation,
+} from "vs/platform/progress/common/progress";
+import { Registry } from "vs/platform/registry/common/platform";
+import { IWorkspaceTrustManagementService } from "vs/platform/workspace/common/workspaceTrust";
+import {
+	IEditorPaneDescriptor,
+	IEditorPaneRegistry,
+} from "vs/workbench/browser/editor";
+import {
+	DEFAULT_EDITOR_MAX_DIMENSIONS,
+	DEFAULT_EDITOR_MIN_DIMENSIONS,
+	IEditorGroupView,
+	IInternalEditorOpenOptions,
+} from "vs/workbench/browser/parts/editor/editor";
+import { EditorPane } from "vs/workbench/browser/parts/editor/editorPane";
+import {
+	ErrorPlaceholderEditor,
+	IErrorEditorPlaceholderOptions,
+	WorkspaceTrustRequiredPlaceholderEditor,
+} from "vs/workbench/browser/parts/editor/editorPlaceholder";
 import {
 	EditorExtensions,
 	EditorInputCapabilities,
@@ -17,55 +64,8 @@ import {
 	isEditorOpenError,
 } from "vs/workbench/common/editor";
 import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import {
-	Dimension,
-	show,
-	hide,
-	IDomNodePagePosition,
-	isAncestor,
-	getWindow,
-	getActiveElement,
-} from "vs/base/browser/dom";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	IEditorPaneRegistry,
-	IEditorPaneDescriptor,
-} from "vs/workbench/browser/editor";
-import { IWorkbenchLayoutService } from "vs/workbench/services/layout/browser/layoutService";
-import { EditorPane } from "vs/workbench/browser/parts/editor/editorPane";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import {
-	IEditorProgressService,
-	LongRunningOperation,
-} from "vs/platform/progress/common/progress";
-import {
-	IEditorGroupView,
-	DEFAULT_EDITOR_MIN_DIMENSIONS,
-	DEFAULT_EDITOR_MAX_DIMENSIONS,
-	IInternalEditorOpenOptions,
-} from "vs/workbench/browser/parts/editor/editor";
-import { assertIsDefined } from "vs/base/common/types";
-import { IWorkspaceTrustManagementService } from "vs/platform/workspace/common/workspaceTrust";
-import {
-	ErrorPlaceholderEditor,
-	IErrorEditorPlaceholderOptions,
-	WorkspaceTrustRequiredPlaceholderEditor,
-} from "vs/workbench/browser/parts/editor/editorPlaceholder";
-import {
-	EditorOpenSource,
-	IEditorOptions,
-} from "vs/platform/editor/common/editor";
-import { isCancellationError } from "vs/base/common/errors";
-import { toErrorMessage } from "vs/base/common/errorMessage";
-import { ILogService } from "vs/platform/log/common/log";
-import {
-	IDialogService,
-	IPromptButton,
-	IPromptCancelButton,
-} from "vs/platform/dialogs/common/dialogs";
-import { IBoundarySashes } from "vs/base/browser/ui/sash/sash";
 import { IHostService } from "vs/workbench/services/host/browser/host";
-import { mainWindow } from "vs/base/browser/window";
+import { IWorkbenchLayoutService } from "vs/workbench/services/layout/browser/layoutService";
 
 export interface IOpenEditorResult {
 	/**
@@ -107,7 +107,7 @@ export class EditorPanes extends Disposable {
 	readonly onDidFocus = this._onDidFocus.event;
 
 	private _onDidChangeSizeConstraints = this._register(
-		new Emitter<{ width: number; height: number } | undefined>()
+		new Emitter<{ width: number; height: number } | undefined>(),
 	);
 	readonly onDidChangeSizeConstraints =
 		this._onDidChangeSizeConstraints.event;
@@ -147,15 +147,15 @@ export class EditorPanes extends Disposable {
 	private readonly editorPanes: EditorPane[] = [];
 
 	private readonly activeEditorPaneDisposables = this._register(
-		new DisposableStore()
+		new DisposableStore(),
 	);
 	private pagePosition: IDomNodePagePosition | undefined;
 	private boundarySashes: IBoundarySashes | undefined;
 	private readonly editorOperation = this._register(
-		new LongRunningOperation(this.editorProgressService)
+		new LongRunningOperation(this.editorProgressService),
 	);
 	private readonly editorPanesRegistry = Registry.as<IEditorPaneRegistry>(
-		EditorExtensions.EditorPane
+		EditorExtensions.EditorPane,
 	);
 
 	constructor(
@@ -182,8 +182,8 @@ export class EditorPanes extends Disposable {
 	private registerListeners(): void {
 		this._register(
 			this.workspaceTrustService.onDidChangeTrust(() =>
-				this.onDidChangeWorkspaceTrust()
-			)
+				this.onDidChangeWorkspaceTrust(),
+			),
 		);
 	}
 
@@ -204,21 +204,21 @@ export class EditorPanes extends Disposable {
 		editor: EditorInput,
 		options: IEditorOptions | undefined,
 		internalOptions: IInternalEditorOpenOptions | undefined,
-		context: IEditorOpenContext = Object.create(null)
+		context: IEditorOpenContext = Object.create(null),
 	): Promise<IOpenEditorResult> {
 		try {
 			// Assert the `EditorInputCapabilities.AuxWindowUnsupported` condition
 			if (
 				getWindow(this.editorGroupParent) !== mainWindow &&
 				editor.hasCapability(
-					EditorInputCapabilities.AuxWindowUnsupported
+					EditorInputCapabilities.AuxWindowUnsupported,
 				)
 			) {
 				return await this.doShowError(
 					createEditorOpenError(
 						localize(
 							"editorUnsupportedInAuxWindow",
-							"This type of editor cannot be opened in other windows yet."
+							"This type of editor cannot be opened in other windows yet.",
 						),
 						[
 							toAction({
@@ -229,12 +229,12 @@ export class EditorPanes extends Disposable {
 								},
 							}),
 						],
-						{ forceMessage: true, forceSeverity: Severity.Warning }
+						{ forceMessage: true, forceSeverity: Severity.Warning },
 					),
 					editor,
 					options,
 					internalOptions,
-					context
+					context,
 				);
 			}
 
@@ -245,7 +245,7 @@ export class EditorPanes extends Disposable {
 					editor,
 					options,
 					internalOptions,
-					context
+					context,
 				);
 			}
 		} catch (error) {
@@ -266,7 +266,7 @@ export class EditorPanes extends Disposable {
 				editor,
 				options,
 				internalOptions,
-				context
+				context,
 			);
 		}
 	}
@@ -276,7 +276,7 @@ export class EditorPanes extends Disposable {
 		editor: EditorInput,
 		options: IEditorOptions | undefined,
 		internalOptions: IInternalEditorOpenOptions | undefined,
-		context?: IEditorOpenContext
+		context?: IEditorOpenContext,
 	): Promise<IOpenEditorResult> {
 		// Always log the error to figure out what is going on
 		this.logService.error(error);
@@ -309,7 +309,7 @@ export class EditorPanes extends Disposable {
 				editor,
 				editorPlaceholderOptions,
 				internalOptions,
-				context
+				context,
 			)),
 			error,
 		};
@@ -317,7 +317,7 @@ export class EditorPanes extends Disposable {
 
 	private async doShowErrorDialog(
 		error: Error,
-		editor: EditorInput
+		editor: EditorInput,
 	): Promise<boolean> {
 		let severity = Severity.Error;
 		let message: string | undefined = undefined;
@@ -337,7 +337,7 @@ export class EditorPanes extends Disposable {
 			message = localize(
 				"editorOpenErrorDialog",
 				"Unable to open '{0}'",
-				editor.getName()
+				editor.getName(),
 			);
 		}
 
@@ -353,7 +353,7 @@ export class EditorPanes extends Disposable {
 			buttons.push({
 				label: localize(
 					{ key: "ok", comment: ["&& denotes a mnemonic"] },
-					"&&OK"
+					"&&OK",
 				),
 				run: () => undefined,
 			});
@@ -385,7 +385,7 @@ export class EditorPanes extends Disposable {
 			const errorActionResult = result.run();
 			if (errorActionResult instanceof Promise) {
 				errorActionResult.catch((error) =>
-					this.dialogService.error(toErrorMessage(error))
+					this.dialogService.error(toErrorMessage(error)),
 				);
 			}
 
@@ -400,7 +400,7 @@ export class EditorPanes extends Disposable {
 		editor: EditorInput,
 		options: IEditorOptions | undefined,
 		internalOptions: IInternalEditorOpenOptions | undefined,
-		context: IEditorOpenContext = Object.create(null)
+		context: IEditorOpenContext = Object.create(null),
 	): Promise<IOpenEditorResult> {
 		// Editor pane
 		const pane = this.doShowEditorPane(descriptor);
@@ -413,7 +413,7 @@ export class EditorPanes extends Disposable {
 			pane,
 			editor,
 			options,
-			context
+			context,
 		);
 
 		// Make sure to pass focus to the pane or otherwise
@@ -472,7 +472,7 @@ export class EditorPanes extends Disposable {
 	}
 
 	private getEditorPaneDescriptor(
-		editor: EditorInput
+		editor: EditorInput,
 	): IEditorPaneDescriptor {
 		if (
 			editor.hasCapability(EditorInputCapabilities.RequiresTrust) &&
@@ -519,9 +519,9 @@ export class EditorPanes extends Disposable {
 			editorPane.layout(
 				new Dimension(
 					this.pagePosition.width,
-					this.pagePosition.height
+					this.pagePosition.height,
 				),
-				{ top: this.pagePosition.top, left: this.pagePosition.left }
+				{ top: this.pagePosition.top, left: this.pagePosition.left },
 			);
 		}
 
@@ -549,11 +549,11 @@ export class EditorPanes extends Disposable {
 	}
 
 	private doInstantiateEditorPane(
-		descriptor: IEditorPaneDescriptor
+		descriptor: IEditorPaneDescriptor,
 	): EditorPane {
 		// Return early if already instantiated
 		const existingEditorPane = this.editorPanes.find((editorPane) =>
-			descriptor.describes(editorPane)
+			descriptor.describes(editorPane),
 		);
 		if (existingEditorPane) {
 			return existingEditorPane;
@@ -561,7 +561,7 @@ export class EditorPanes extends Disposable {
 
 		// Otherwise instantiate new
 		const editorPane = this._register(
-			descriptor.instantiate(this.instantiationService)
+			descriptor.instantiate(this.instantiationService),
 		);
 		this.editorPanes.push(editorPane);
 
@@ -578,11 +578,11 @@ export class EditorPanes extends Disposable {
 		if (editorPane) {
 			this.activeEditorPaneDisposables.add(
 				editorPane.onDidChangeSizeConstraints((e) =>
-					this._onDidChangeSizeConstraints.fire(e)
-				)
+					this._onDidChangeSizeConstraints.fire(e),
+				),
 			);
 			this.activeEditorPaneDisposables.add(
-				editorPane.onDidFocus(() => this._onDidFocus.fire())
+				editorPane.onDidFocus(() => this._onDidFocus.fire()),
 			);
 		}
 
@@ -594,7 +594,7 @@ export class EditorPanes extends Disposable {
 		editorPane: EditorPane,
 		editor: EditorInput,
 		options: IEditorOptions | undefined,
-		context: IEditorOpenContext
+		context: IEditorOpenContext,
 	): Promise<{ changed: boolean; cancelled: boolean }> {
 		// If the input did not change, return early and only
 		// apply the options unless the options instruct us to
@@ -610,7 +610,7 @@ export class EditorPanes extends Disposable {
 		// and to support cancellation. Any new operation that is
 		// started will cancel the previous one.
 		const operation = this.editorOperation.start(
-			this.layoutService.isRestored() ? 800 : 3200
+			this.layoutService.isRestored() ? 800 : 3200,
 		);
 
 		let cancelled = false;
@@ -626,17 +626,17 @@ export class EditorPanes extends Disposable {
 				editor,
 				options,
 				context,
-				operation.token
+				operation.token,
 			);
 
 			if (!operation.isCurrent()) {
 				cancelled = true;
 			}
 		} catch (error) {
-			if (!operation.isCurrent()) {
-				cancelled = true;
-			} else {
+			if (operation.isCurrent()) {
 				throw error;
+			} else {
+				cancelled = true;
 			}
 		} finally {
 			operation.stop();
@@ -657,8 +657,8 @@ export class EditorPanes extends Disposable {
 		// the DOM to give a chance to persist certain state that
 		// might depend on still being the active DOM element.
 		this.safeRun(() => this._activeEditorPane?.clearInput());
-		this.safeRun(
-			() => this._activeEditorPane?.setVisible(false, this.groupView)
+		this.safeRun(() =>
+			this._activeEditorPane?.setVisible(false, this.groupView),
 		);
 
 		// Remove editor pane from parent
@@ -682,20 +682,19 @@ export class EditorPanes extends Disposable {
 	}
 
 	setVisible(visible: boolean): void {
-		this.safeRun(
-			() => this._activeEditorPane?.setVisible(visible, this.groupView)
+		this.safeRun(() =>
+			this._activeEditorPane?.setVisible(visible, this.groupView),
 		);
 	}
 
 	layout(pagePosition: IDomNodePagePosition): void {
 		this.pagePosition = pagePosition;
 
-		this.safeRun(
-			() =>
-				this._activeEditorPane?.layout(
-					new Dimension(pagePosition.width, pagePosition.height),
-					pagePosition
-				)
+		this.safeRun(() =>
+			this._activeEditorPane?.layout(
+				new Dimension(pagePosition.width, pagePosition.height),
+				pagePosition,
+			),
 		);
 	}
 

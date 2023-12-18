@@ -6,7 +6,7 @@
 import { CharCode } from "vs/base/common/charCode";
 import { CharacterClassifier } from "vs/editor/common/core/characterClassifier";
 
-export const enum WordCharacterClass {
+export enum WordCharacterClass {
 	Regular = 0,
 	Whitespace = 1,
 	WordSeparator = 2,
@@ -19,7 +19,7 @@ export class WordCharacterClassifier extends CharacterClassifier<WordCharacterCl
 		for (let i = 0, len = wordSeparators.length; i < len; i++) {
 			this.set(
 				wordSeparators.charCodeAt(i),
-				WordCharacterClass.WordSeparator
+				WordCharacterClass.WordSeparator,
 			);
 		}
 
@@ -39,5 +39,5 @@ function once<R>(computeFn: (input: string) => R): (input: string) => R {
 }
 
 export const getMapForWordSeparators = once<WordCharacterClassifier>(
-	(input) => new WordCharacterClassifier(input)
+	(input) => new WordCharacterClassifier(input),
 );

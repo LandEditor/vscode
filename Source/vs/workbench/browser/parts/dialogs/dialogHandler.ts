@@ -3,40 +3,40 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { EventHelper } from "vs/base/browser/dom";
+import { StandardKeyboardEvent } from "vs/base/browser/keyboardEvent";
+import { Dialog, IDialogResult } from "vs/base/browser/ui/dialog/dialog";
+import { fromNow } from "vs/base/common/date";
+import { DisposableStore } from "vs/base/common/lifecycle";
+import Severity from "vs/base/common/severity";
+import { MarkdownRenderer } from "vs/editor/contrib/markdownRenderer/browser/markdownRenderer";
 import { localize } from "vs/nls";
+import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
 import {
-	IConfirmation,
-	IConfirmationResult,
-	IInputResult,
-	ICheckbox,
-	IInputElement,
-	ICustomDialogOptions,
-	IInput,
 	AbstractDialogHandler,
 	DialogType,
-	IPrompt,
 	IAsyncPromptResult,
+	ICheckbox,
+	IConfirmation,
+	IConfirmationResult,
+	ICustomDialogOptions,
+	IInput,
+	IInputElement,
+	IInputResult,
+	IPrompt,
 } from "vs/platform/dialogs/common/dialogs";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { ResultKind } from "vs/platform/keybinding/common/keybindingResolver";
 import { ILayoutService } from "vs/platform/layout/browser/layoutService";
 import { ILogService } from "vs/platform/log/common/log";
-import Severity from "vs/base/common/severity";
-import { Dialog, IDialogResult } from "vs/base/browser/ui/dialog/dialog";
-import { DisposableStore } from "vs/base/common/lifecycle";
-import { StandardKeyboardEvent } from "vs/base/browser/keyboardEvent";
-import { EventHelper } from "vs/base/browser/dom";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import { IProductService } from "vs/platform/product/common/productService";
-import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
-import { fromNow } from "vs/base/common/date";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { MarkdownRenderer } from "vs/editor/contrib/markdownRenderer/browser/markdownRenderer";
 import {
 	defaultButtonStyles,
 	defaultCheckboxStyles,
 	defaultDialogStyles,
 	defaultInputBoxStyles,
 } from "vs/platform/theme/browser/defaultStyles";
-import { ResultKind } from "vs/platform/keybinding/common/keybindingResolver";
 
 export class BrowserDialogHandler extends AbstractDialogHandler {
 	private static readonly ALLOWABLE_COMMANDS = [
@@ -77,7 +77,7 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 			prompt.cancelButton ? buttons.length - 1 : -1 /* Disabled */,
 			prompt.checkbox,
 			undefined,
-			typeof prompt?.custom === "object" ? prompt.custom : undefined
+			typeof prompt?.custom === "object" ? prompt.custom : undefined,
 		);
 
 		return this.getPromptResult(prompt, button, checkboxChecked);
@@ -98,7 +98,7 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 			undefined,
 			typeof confirmation?.custom === "object"
 				? confirmation.custom
-				: undefined
+				: undefined,
 		);
 
 		return { confirmed: button === 0, checkboxChecked };
@@ -117,7 +117,7 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 			buttons.length - 1,
 			input?.checkbox,
 			input.inputs,
-			typeof input.custom === "object" ? input.custom : undefined
+			typeof input.custom === "object" ? input.custom : undefined,
 		);
 
 		return { confirmed: button === 0, checkboxChecked, values };
@@ -134,15 +134,15 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 					? `${this.productService.date}${
 							useAgo
 								? " (" +
-									fromNow(
+								  fromNow(
 										new Date(this.productService.date),
-										true
-									) +
-									")"
+										true,
+								  ) +
+								  ")"
 								: ""
-						}`
+					  }`
 					: "Unknown",
-				navigator.userAgent
+				navigator.userAgent,
 			);
 		};
 
@@ -155,12 +155,12 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 			[
 				localize(
 					{ key: "copy", comment: ["&& denotes a mnemonic"] },
-					"&&Copy"
+					"&&Copy",
 				),
 				localize("ok", "OK"),
 			],
 			detail,
-			1
+			1,
 		);
 
 		if (button === 0) {
@@ -176,7 +176,7 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 		cancelId?: number,
 		checkbox?: ICheckbox,
 		inputs?: IInputElement[],
-		customOptions?: ICustomDialogOptions
+		customOptions?: ICustomDialogOptions,
 	): Promise<IDialogResult> {
 		const dialogDisposables = new DisposableStore();
 
@@ -185,15 +185,15 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 					parent.classList.add(...(customOptions.classes || []));
 					customOptions.markdownDetails?.forEach((markdownDetail) => {
 						const result = this.markdownRenderer.render(
-							markdownDetail.markdown
+							markdownDetail.markdown,
 						);
 						parent.appendChild(result.element);
 						result.element.classList.add(
-							...(markdownDetail.classes || [])
+							...(markdownDetail.classes || []),
 						);
 						dialogDisposables.add(result);
 					});
-				}
+			  }
 			: undefined;
 
 		const dialog = new Dialog(
@@ -207,7 +207,7 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 				keyEventProcessor: (event: StandardKeyboardEvent) => {
 					const resolved = this.keybindingService.softDispatch(
 						event,
-						this.layoutService.activeContainer
+						this.layoutService.activeContainer,
 					);
 					if (
 						resolved.kind === ResultKind.KbFound &&
@@ -215,7 +215,7 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 					) {
 						if (
 							BrowserDialogHandler.ALLOWABLE_COMMANDS.indexOf(
-								resolved.commandId
+								resolved.commandId,
 							) === -1
 						) {
 							EventHelper.stop(event, true);
@@ -233,7 +233,7 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 				checkboxStyles: defaultCheckboxStyles,
 				inputBoxStyles: defaultInputBoxStyles,
 				dialogStyles: defaultDialogStyles,
-			}
+			},
 		);
 
 		dialogDisposables.add(dialog);

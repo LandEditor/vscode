@@ -6,7 +6,7 @@
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 
 export const INotebookKeymapService = createDecorator<INotebookKeymapService>(
-	"notebookKeymapService"
+	"notebookKeymapService",
 );
 
 export interface INotebookKeymapService {

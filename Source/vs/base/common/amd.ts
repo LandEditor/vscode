@@ -111,7 +111,7 @@ export abstract class LoaderStats {
 
 	static toMarkdownTable(
 		header: string[],
-		rows: Array<Array<{ toString(): string } | undefined>>
+		rows: Array<Array<{ toString(): string } | undefined>>,
 	): string {
 		let result = "";
 

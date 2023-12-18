@@ -4,19 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Event } from "vs/base/common/event";
-import { IWorkbenchContribution } from "vs/workbench/common/contributions";
-import {
-	IDebugService,
-	VIEWLET_ID,
-	IDebugSession,
-} from "vs/workbench/contrib/debug/common/debug";
+import { IDisposable, dispose } from "vs/base/common/lifecycle";
+import { NotificationPriority } from "vs/platform/notification/common/notification";
 import {
 	IProgressService,
 	ProgressLocation,
 } from "vs/platform/progress/common/progress";
-import { dispose, IDisposable } from "vs/base/common/lifecycle";
+import { IWorkbenchContribution } from "vs/workbench/common/contributions";
 import { IViewsService } from "vs/workbench/common/views";
-import { NotificationPriority } from "vs/platform/notification/common/notification";
+import {
+	IDebugService,
+	IDebugSession,
+	VIEWLET_ID,
+} from "vs/workbench/contrib/debug/common/debug";
 
 export class DebugProgressContribution implements IWorkbenchContribution {
 	private toDispose: IDisposable[] = [];
@@ -24,7 +24,7 @@ export class DebugProgressContribution implements IWorkbenchContribution {
 	constructor(
 		@IDebugService debugService: IDebugService,
 		@IProgressService progressService: IProgressService,
-		@IViewsService viewsService: IViewsService
+		@IViewsService viewsService: IViewsService,
 	) {
 		let progressListener: IDisposable | undefined;
 		const listenOnProgress = (session: IDebugSession | undefined) => {
@@ -42,9 +42,9 @@ export class DebugProgressContribution implements IWorkbenchContribution {
 									session.onDidProgressEnd,
 									(e) =>
 										e.body.progressId ===
-										progressStartEvent.body.progressId
+										progressStartEvent.body.progressId,
 								),
-								session.onDidEndAdapter
+								session.onDidEndAdapter,
 							)(() => {
 								listener.dispose();
 								r();
@@ -54,7 +54,7 @@ export class DebugProgressContribution implements IWorkbenchContribution {
 						if (viewsService.isViewContainerVisible(VIEWLET_ID)) {
 							progressService.withProgress(
 								{ location: VIEWLET_ID },
-								() => promise
+								() => promise,
 							);
 						}
 						const source = debugService
@@ -107,20 +107,20 @@ export class DebugProgressContribution implements IWorkbenchContribution {
 									});
 
 								return promise.then(() =>
-									progressUpdateListener.dispose()
+									progressUpdateListener.dispose(),
 								);
 							},
 							() =>
 								session.cancel(
-									progressStartEvent.body.progressId
-								)
+									progressStartEvent.body.progressId,
+								),
 						);
-					}
+					},
 				);
 			}
 		};
 		this.toDispose.push(
-			debugService.getViewModel().onDidFocusSession(listenOnProgress)
+			debugService.getViewModel().onDidFocusSession(listenOnProgress),
 		);
 		listenOnProgress(debugService.getViewModel().focusedSession);
 		this.toDispose.push(
@@ -128,7 +128,7 @@ export class DebugProgressContribution implements IWorkbenchContribution {
 				if (!progressListener) {
 					listenOnProgress(session);
 				}
-			})
+			}),
 		);
 	}
 

@@ -5,15 +5,15 @@
 
 import { timeout } from "vs/base/common/async";
 import { CancellationToken } from "vs/base/common/cancellation";
-import { Event, Emitter } from "vs/base/common/event";
+import { Emitter, Event } from "vs/base/common/event";
 import { Disposable, IDisposable } from "vs/base/common/lifecycle";
 import { URI } from "vs/base/common/uri";
 import {
-	FileChangesEvent,
 	FileChangeType,
+	FileChangesEvent,
 	IFileService,
 } from "vs/platform/files/common/files";
-import { ISaveOptions, IRevertOptions } from "vs/workbench/common/editor";
+import { IRevertOptions, ISaveOptions } from "vs/workbench/common/editor";
 import {
 	IWorkingCopy,
 	IWorkingCopyBackup,
@@ -81,7 +81,7 @@ export abstract class ResourceWorkingCopy
 		if (this.orphaned) {
 			const fileWorkingCopyResourceAdded = e.contains(
 				this.resource,
-				FileChangeType.ADDED
+				FileChangeType.ADDED,
 			);
 			if (fileWorkingCopyResourceAdded) {
 				newInOrphanModeGuess = false;
@@ -93,7 +93,7 @@ export abstract class ResourceWorkingCopy
 		else {
 			const fileWorkingCopyResourceDeleted = e.contains(
 				this.resource,
-				FileChangeType.DELETED
+				FileChangeType.DELETED,
 			);
 			if (fileWorkingCopyResourceDeleted) {
 				newInOrphanModeGuess = true;
@@ -102,7 +102,7 @@ export abstract class ResourceWorkingCopy
 		}
 
 		if (fileEventImpactsUs && this.orphaned !== newInOrphanModeGuess) {
-			let newInOrphanModeValidated: boolean = false;
+			let newInOrphanModeValidated = false;
 			if (newInOrphanModeGuess) {
 				// We have received reports of users seeing delete events even though the file still
 				// exists (network shares issue: https://github.com/microsoft/vscode/issues/13665).

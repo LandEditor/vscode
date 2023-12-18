@@ -3,21 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IQuickPickSeparator } from "vs/platform/quickinput/common/quickInput";
+import { matchesFuzzy } from "vs/base/common/filters";
+import { ThemeIcon } from "vs/base/common/themables";
+import { localize } from "vs/nls";
+import { ICommandService } from "vs/platform/commands/common/commands";
+import { INotificationService } from "vs/platform/notification/common/notification";
 import {
-	PickerQuickAccessProvider,
 	IPickerQuickAccessItem,
+	PickerQuickAccessProvider,
 	TriggerAction,
 } from "vs/platform/quickinput/browser/pickerQuickAccess";
-import { localize } from "vs/nls";
-import { INotificationService } from "vs/platform/notification/common/notification";
-import { IDebugService } from "vs/workbench/contrib/debug/common/debug";
+import { IQuickPickSeparator } from "vs/platform/quickinput/common/quickInput";
 import {
 	IWorkspaceContextService,
 	WorkbenchState,
 } from "vs/platform/workspace/common/workspace";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import { matchesFuzzy } from "vs/base/common/filters";
 import {
 	ADD_CONFIGURATION_ID,
 	DEBUG_QUICK_ACCESS_PREFIX,
@@ -26,7 +26,7 @@ import {
 	debugConfigure,
 	debugRemoveConfig,
 } from "vs/workbench/contrib/debug/browser/debugIcons";
-import { ThemeIcon } from "vs/base/common/themables";
+import { IDebugService } from "vs/workbench/contrib/debug/common/debug";
 
 export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPickerQuickAccessItem> {
 	constructor(
@@ -48,7 +48,7 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
 	}
 
 	protected async _getPicks(
-		filter: string
+		filter: string,
 	): Promise<(IQuickPickSeparator | IPickerQuickAccessItem)[]> {
 		const picks: Array<IPickerQuickAccessItem | IQuickPickSeparator> = [];
 		if (!this.debugService.getAdapterManager().hasEnabledDebuggers()) {
@@ -84,7 +84,7 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
 							iconClass: ThemeIcon.asClassName(debugConfigure),
 							tooltip: localize(
 								"customizeLaunchConfig",
-								"Configure Launch Configuration"
+								"Configure Launch Configuration",
 							),
 						},
 					],
@@ -96,13 +96,13 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
 					accept: async () => {
 						await configManager.selectConfiguration(
 							config.launch,
-							config.name
+							config.name,
 						);
 						try {
 							await this.debugService.startDebugging(
 								config.launch,
 								undefined,
-								{ startedByUser: true }
+								{ startedByUser: true },
 							);
 						} catch (error) {
 							this.notificationService.error(error);
@@ -124,7 +124,7 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
 							"contributed is lower case because it looks better like that in UI. Nothing preceeds it. It is a name of the grouping of debug configurations.",
 						],
 					},
-					"contributed"
+					"contributed",
 				),
 			});
 		}
@@ -143,14 +143,14 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
 									ThemeIcon.asClassName(debugRemoveConfig),
 								tooltip: localize(
 									"removeLaunchConfig",
-									"Remove Launch Configuration"
+									"Remove Launch Configuration",
 								),
 							},
 						],
 						trigger: () => {
 							configManager.removeRecentDynamicConfigurations(
 								name,
-								type
+								type,
 							);
 							return TriggerAction.CLOSE_PICKER;
 						},
@@ -159,7 +159,7 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
 								undefined,
 								name,
 								undefined,
-								{ type }
+								{ type },
 							);
 							try {
 								const { launch, getConfig } =
@@ -168,7 +168,7 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
 								await this.debugService.startDebugging(
 									launch,
 									config,
-									{ startedByUser: true }
+									{ startedByUser: true },
 								);
 							} catch (error) {
 								this.notificationService.error(error);
@@ -189,7 +189,7 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
 						],
 					},
 					"{0} contributed configurations",
-					provider.label
+					provider.label,
 				),
 				accept: async () => {
 					const pick = await provider.pick();
@@ -199,12 +199,12 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
 							pick.launch,
 							pick.config.name,
 							pick.config,
-							{ type: provider.type }
+							{ type: provider.type },
 						);
 						this.debugService.startDebugging(
 							pick.launch,
 							pick.config,
-							{ startedByUser: true }
+							{ startedByUser: true },
 						);
 					}
 				},
@@ -231,8 +231,8 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
 					? localize(
 							"addConfigTo",
 							"Add Config ({0})...",
-							launch.name
-						)
+							launch.name,
+					  )
 					: localize("addConfiguration", "Add Configuration...");
 
 			// Add Config entry
@@ -249,7 +249,7 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
 				accept: () =>
 					this.commandService.executeCommand(
 						ADD_CONFIGURATION_ID,
-						launch.uri.toString()
+						launch.uri.toString(),
 					),
 			});
 		}

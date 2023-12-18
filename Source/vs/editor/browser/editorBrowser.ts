@@ -149,19 +149,19 @@ export interface IViewZoneChangeAccessor {
 /**
  * A positioning preference for rendering content widgets.
  */
-export const enum ContentWidgetPositionPreference {
+export enum ContentWidgetPositionPreference {
 	/**
 	 * Place the content widget exactly at a position
 	 */
-	EXACT,
+	EXACT = 0,
 	/**
 	 * Place the content widget above a position
 	 */
-	ABOVE,
+	ABOVE = 1,
 	/**
 	 * Place the content widget below a position
 	 */
-	BELOW,
+	BELOW = 2,
 }
 /**
  * A position for rendering content widgets.
@@ -239,21 +239,21 @@ export interface IContentWidget {
 /**
  * A positioning preference for rendering overlay widgets.
  */
-export const enum OverlayWidgetPositionPreference {
+export enum OverlayWidgetPositionPreference {
 	/**
 	 * Position the overlay widget in the top right corner
 	 */
-	TOP_RIGHT_CORNER,
+	TOP_RIGHT_CORNER = 0,
 
 	/**
 	 * Position the overlay widget in the bottom right corner
 	 */
-	BOTTOM_RIGHT_CORNER,
+	BOTTOM_RIGHT_CORNER = 1,
 
 	/**
 	 * Position the overlay widget in the top center
 	 */
-	TOP_CENTER,
+	TOP_CENTER = 2,
 }
 
 /**
@@ -349,63 +349,63 @@ export interface IGlyphMarginWidgetPosition {
 /**
  * Type of hit element with the mouse in the editor.
  */
-export const enum MouseTargetType {
+export enum MouseTargetType {
 	/**
 	 * Mouse is on top of an unknown element.
 	 */
-	UNKNOWN,
+	UNKNOWN = 0,
 	/**
 	 * Mouse is on top of the textarea used for input.
 	 */
-	TEXTAREA,
+	TEXTAREA = 1,
 	/**
 	 * Mouse is on top of the glyph margin
 	 */
-	GUTTER_GLYPH_MARGIN,
+	GUTTER_GLYPH_MARGIN = 2,
 	/**
 	 * Mouse is on top of the line numbers
 	 */
-	GUTTER_LINE_NUMBERS,
+	GUTTER_LINE_NUMBERS = 3,
 	/**
 	 * Mouse is on top of the line decorations
 	 */
-	GUTTER_LINE_DECORATIONS,
+	GUTTER_LINE_DECORATIONS = 4,
 	/**
 	 * Mouse is on top of the whitespace left in the gutter by a view zone.
 	 */
-	GUTTER_VIEW_ZONE,
+	GUTTER_VIEW_ZONE = 5,
 	/**
 	 * Mouse is on top of text in the content.
 	 */
-	CONTENT_TEXT,
+	CONTENT_TEXT = 6,
 	/**
 	 * Mouse is on top of empty space in the content (e.g. after line text or below last line)
 	 */
-	CONTENT_EMPTY,
+	CONTENT_EMPTY = 7,
 	/**
 	 * Mouse is on top of a view zone in the content.
 	 */
-	CONTENT_VIEW_ZONE,
+	CONTENT_VIEW_ZONE = 8,
 	/**
 	 * Mouse is on top of a content widget.
 	 */
-	CONTENT_WIDGET,
+	CONTENT_WIDGET = 9,
 	/**
 	 * Mouse is on top of the decorations overview ruler.
 	 */
-	OVERVIEW_RULER,
+	OVERVIEW_RULER = 10,
 	/**
 	 * Mouse is on top of a scrollbar.
 	 */
-	SCROLLBAR,
+	SCROLLBAR = 11,
 	/**
 	 * Mouse is on top of an overlay widget.
 	 */
-	OVERLAY_WIDGET,
+	OVERLAY_WIDGET = 12,
 	/**
 	 * Mouse is outside of the editor.
 	 */
-	OUTSIDE_EDITOR,
+	OUTSIDE_EDITOR = 13,
 }
 export interface IBaseMouseTarget {
 	/**
@@ -812,7 +812,7 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	 * @return The contribution or null if contribution not found.
 	 */
 	getContribution<T extends editorCommon.IEditorContribution>(
-		id: string
+		id: string,
 	): T | null;
 
 	/**
@@ -845,7 +845,7 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	 * Gets a specific editor option.
 	 */
 	getOption<T extends EditorOption>(
-		id: T
+		id: T,
 	): FindComputedEditorOptionValueById<T>;
 
 	/**
@@ -908,21 +908,21 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	 */
 	setScrollLeft(
 		newScrollLeft: number,
-		scrollType?: editorCommon.ScrollType
+		scrollType?: editorCommon.ScrollType,
 	): void;
 	/**
 	 * Change the scrollTop of the editor's viewport.
 	 */
 	setScrollTop(
 		newScrollTop: number,
-		scrollType?: editorCommon.ScrollType
+		scrollType?: editorCommon.ScrollType,
 	): void;
 	/**
 	 * Change the scroll position of the editor's viewport.
 	 */
 	setScrollPosition(
 		position: editorCommon.INewScrollPosition,
-		scrollType?: editorCommon.ScrollType
+		scrollType?: editorCommon.ScrollType,
 	): void;
 	/**
 	 * Check if the editor is currently scrolling towards a different scroll position.
@@ -944,7 +944,7 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	 */
 	executeCommand(
 		source: string | null | undefined,
-		command: editorCommon.ICommand
+		command: editorCommon.ICommand,
 	): void;
 
 	/**
@@ -967,7 +967,7 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	executeEdits(
 		source: string | null | undefined,
 		edits: IIdentifiedSingleEditOperation[],
-		endCursorState?: ICursorStateComputer | Selection[]
+		endCursorState?: ICursorStateComputer | Selection[],
 	): boolean;
 
 	/**
@@ -977,7 +977,7 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	 */
 	executeCommands(
 		source: string | null | undefined,
-		commands: (editorCommon.ICommand | null)[]
+		commands: (editorCommon.ICommand | null)[],
 	): void;
 
 	/**
@@ -1002,7 +1002,7 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	 */
 	deltaDecorations(
 		oldDecorations: string[],
-		newDecorations: IModelDeltaDecoration[]
+		newDecorations: IModelDeltaDecoration[],
 	): string[];
 
 	/**
@@ -1016,7 +1016,7 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	setDecorationsByType(
 		description: string,
 		decorationTypeKey: string,
-		ranges: editorCommon.IDecorationOptions[]
+		ranges: editorCommon.IDecorationOptions[],
 	): void;
 
 	/**
@@ -1145,7 +1145,7 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	 * Change the view zones. View zones are lost when a new model is attached to the editor.
 	 */
 	changeViewZones(
-		callback: (accessor: IViewZoneChangeAccessor) => void
+		callback: (accessor: IViewZoneChangeAccessor) => void,
 	): void;
 
 	/**
@@ -1168,7 +1168,7 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	 */
 	getTargetAtClientPoint(
 		clientX: number,
-		clientY: number
+		clientY: number,
 	): IMouseTarget | null;
 
 	/**
@@ -1179,7 +1179,7 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	 * Warning: the results of this method are inaccurate for positions that are outside the current editor viewport.
 	 */
 	getScrolledVisiblePosition(
-		position: IPosition
+		position: IPosition,
 	): { top: number; left: number; height: number } | null;
 
 	/**
@@ -1263,10 +1263,10 @@ export interface IActiveCodeEditor extends ICodeEditor {
 /**
  * @internal
  */
-export const enum DiffEditorState {
-	Idle,
-	ComputingDiff,
-	DiffComputed,
+export enum DiffEditorState {
+	Idle = 0,
+	ComputingDiff = 1,
+	DiffComputed = 2,
 }
 
 /**
@@ -1322,7 +1322,7 @@ export interface IDiffEditor extends editorCommon.IEditor {
 	getModel(): editorCommon.IDiffEditorModel | null;
 
 	createViewModel(
-		model: editorCommon.IDiffEditorModel
+		model: editorCommon.IDiffEditorModel,
 	): editorCommon.IDiffEditorViewModel;
 
 	/**
@@ -1337,7 +1337,7 @@ export interface IDiffEditor extends editorCommon.IEditor {
 		model:
 			| editorCommon.IDiffEditorModel
 			| editorCommon.IDiffEditorViewModel
-			| null
+			| null,
 	): void;
 
 	/**
@@ -1421,7 +1421,7 @@ export function isDiffEditor(thing: unknown): thing is IDiffEditor {
  *@internal
  */
 export function isCompositeEditor(
-	thing: unknown
+	thing: unknown,
 ): thing is editorCommon.ICompositeCodeEditor {
 	return (
 		!!thing &&

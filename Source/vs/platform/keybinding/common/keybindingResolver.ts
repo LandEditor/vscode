@@ -4,26 +4,26 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	implies,
-	ContextKeyExpression,
 	ContextKeyExprType,
+	ContextKeyExpression,
 	IContext,
 	IContextKeyService,
 	expressionsAreEqualWithConstantSubstitution,
+	implies,
 } from "vs/platform/contextkey/common/contextkey";
 import { ResolvedKeybindingItem } from "vs/platform/keybinding/common/resolvedKeybindingItem";
 
 //#region resolution-result
 
-export const enum ResultKind {
+export enum ResultKind {
 	/** No keybinding found this sequence of chords */
-	NoMatchingKb,
+	NoMatchingKb = 0,
 
 	/** There're several keybindings that have the given sequence of chords as a prefix */
-	MoreChordsNeeded,
+	MoreChordsNeeded = 1,
 
 	/** A single keybinding found to be dispatched/invoked */
-	KbFound,
+	KbFound = 2,
 }
 
 export type ResolutionResult =
@@ -45,7 +45,7 @@ const MoreChordsNeeded: ResolutionResult = {
 function KbFound(
 	commandId: string | null,
 	commandArgs: any,
-	isBubble: boolean
+	isBubble: boolean,
 ): ResolutionResult {
 	return { kind: ResultKind.KbFound, commandId, commandArgs, isBubble };
 }
@@ -78,7 +78,7 @@ export class KeybindingResolver {
 		defaultKeybindings: ResolvedKeybindingItem[],
 		/** user's keybindings */
 		overrides: ResolvedKeybindingItem[],
-		log: (str: string) => void
+		log: (str: string) => void,
 	) {
 		this._log = log;
 		this._defaultKeybindings = defaultKeybindings;
@@ -97,7 +97,7 @@ export class KeybindingResolver {
 		this._keybindings = KeybindingResolver.handleRemovals(
 			([] as ResolvedKeybindingItem[])
 				.concat(defaultKeybindings)
-				.concat(overrides)
+				.concat(overrides),
 		);
 		for (let i = 0, len = this._keybindings.length; i < len; i++) {
 			const k = this._keybindings[i];
@@ -121,7 +121,7 @@ export class KeybindingResolver {
 	private static _isTargetedForRemoval(
 		defaultKb: ResolvedKeybindingItem,
 		keypress: string[] | null,
-		when: ContextKeyExpression | undefined
+		when: ContextKeyExpression | undefined,
 	): boolean {
 		if (keypress) {
 			for (let i = 0; i < keypress.length; i++) {
@@ -140,7 +140,7 @@ export class KeybindingResolver {
 			if (
 				!expressionsAreEqualWithConstantSubstitution(
 					when,
-					defaultKb.when
+					defaultKb.when,
 				)
 			) {
 				return false;
@@ -153,7 +153,7 @@ export class KeybindingResolver {
 	 * Looks for rules containing "-commandId" and removes them.
 	 */
 	public static handleRemovals(
-		rules: ResolvedKeybindingItem[]
+		rules: ResolvedKeybindingItem[],
 	): ResolvedKeybindingItem[] {
 		// Do a first pass and construct a hash-map for removals
 		const removals = new Map<
@@ -164,10 +164,10 @@ export class KeybindingResolver {
 			const rule = rules[i];
 			if (rule.command && rule.command.charAt(0) === "-") {
 				const command = rule.command.substring(1);
-				if (!removals.has(command)) {
-					removals.set(command, [rule]);
-				} else {
+				if (removals.has(command)) {
 					removals.get(command)!.push(rule);
+				} else {
+					removals.set(command, [rule]);
 				}
 			}
 		}
@@ -201,7 +201,7 @@ export class KeybindingResolver {
 					this._isTargetedForRemoval(
 						rule,
 						commandRemoval.chords,
-						when
+						when,
 					)
 				) {
 					isRemoved = true;
@@ -254,7 +254,7 @@ export class KeybindingResolver {
 			if (
 				KeybindingResolver.whenIsEntirelyIncluded(
 					conflict.when,
-					item.when
+					item.when,
 				)
 			) {
 				// `item` completely overwrites `conflict`
@@ -302,7 +302,7 @@ export class KeybindingResolver {
 	 */
 	public static whenIsEntirelyIncluded(
 		a: ContextKeyExpression | null | undefined,
-		b: ContextKeyExpression | null | undefined
+		b: ContextKeyExpression | null | undefined,
 	): boolean {
 		if (!b || b.type === ContextKeyExprType.True) {
 			return true;
@@ -343,7 +343,7 @@ export class KeybindingResolver {
 
 	public lookupPrimaryKeybinding(
 		commandId: string,
-		context: IContextKeyService
+		context: IContextKeyService,
 	): ResolvedKeybindingItem | null {
 		const items = this._lookupMap.get(commandId);
 		if (typeof items === "undefined" || items.length === 0) {
@@ -372,7 +372,7 @@ export class KeybindingResolver {
 	public resolve(
 		context: IContext,
 		currentChords: string[],
-		keypress: string
+		keypress: string,
 	): ResolutionResult {
 		const pressedChords = [...currentChords, keypress];
 
@@ -417,7 +417,7 @@ export class KeybindingResolver {
 		const result = this._findCommand(context, lookupMap);
 		if (!result) {
 			this._log(
-				`\\ From ${lookupMap.length} keybinding entries, no when clauses matched the context.`
+				`\\ From ${lookupMap.length} keybinding entries, no when clauses matched the context.`,
 			);
 			return NoMatchingKb;
 		}
@@ -429,8 +429,8 @@ export class KeybindingResolver {
 				`\\ From ${lookupMap.length} keybinding entries, awaiting ${
 					result.chords.length - pressedChords.length
 				} more chord(s), when: ${printWhenExplanation(
-					result.when
-				)}, source: ${printSourceExplanation(result)}.`
+					result.when,
+				)}, source: ${printSourceExplanation(result)}.`,
 			);
 			return MoreChordsNeeded;
 		}
@@ -439,8 +439,8 @@ export class KeybindingResolver {
 			`\\ From ${lookupMap.length} keybinding entries, matched ${
 				result.command
 			}, when: ${printWhenExplanation(
-				result.when
-			)}, source: ${printSourceExplanation(result)}.`
+				result.when,
+			)}, source: ${printSourceExplanation(result)}.`,
 		);
 
 		return KbFound(result.command, result.commandArgs, result.bubble);
@@ -448,7 +448,7 @@ export class KeybindingResolver {
 
 	private _findCommand(
 		context: IContext,
-		matches: ResolvedKeybindingItem[]
+		matches: ResolvedKeybindingItem[],
 	): ResolvedKeybindingItem | null {
 		for (let i = matches.length - 1; i >= 0; i--) {
 			const k = matches[i];
@@ -465,7 +465,7 @@ export class KeybindingResolver {
 
 	private static _contextMatchesRules(
 		context: IContext,
-		rules: ContextKeyExpression | null | undefined
+		rules: ContextKeyExpression | null | undefined,
 	): boolean {
 		if (!rules) {
 			return true;
@@ -487,6 +487,6 @@ function printSourceExplanation(kb: ResolvedKeybindingItem): string {
 			? `built-in extension ${kb.extensionId}`
 			: `user extension ${kb.extensionId}`
 		: kb.isDefault
-			? `built-in`
-			: `user`;
+		  ? `built-in`
+		  : `user`;
 }

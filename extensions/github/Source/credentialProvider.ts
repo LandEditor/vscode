@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CredentialsProvider, Credentials, API as GitAPI } from "./typings/git";
-import { workspace, Uri, Disposable } from "vscode";
+import { Disposable, Uri, workspace } from "vscode";
 import { getSession } from "./auth";
+import { API as GitAPI, Credentials, CredentialsProvider } from "./typings/git";
 
 const EmptyDisposable: Disposable = { dispose() {} };
 
@@ -34,7 +34,7 @@ export class GithubCredentialProviderManager {
 
 		if (enabled) {
 			this.providerDisposable = this.gitAPI.registerCredentialsProvider(
-				new GitHubCredentialProvider()
+				new GitHubCredentialProvider(),
 			);
 		} else {
 			this.providerDisposable.dispose();

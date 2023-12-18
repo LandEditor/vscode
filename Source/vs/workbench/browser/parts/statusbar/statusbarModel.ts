@@ -3,19 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { hide, isAncestorOfActiveElement, show } from "vs/base/browser/dom";
+import { Emitter } from "vs/base/common/event";
 import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
-import {
-	isStatusbarEntryLocation,
-	IStatusbarEntryPriority,
-	StatusbarAlignment,
-} from "vs/workbench/services/statusbar/browser/statusbar";
-import { hide, show, isAncestorOfActiveElement } from "vs/base/browser/dom";
 import {
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
-import { Emitter } from "vs/base/common/event";
+import {
+	IStatusbarEntryPriority,
+	StatusbarAlignment,
+	isStatusbarEntryLocation,
+} from "vs/workbench/services/statusbar/browser/statusbar";
 
 export interface IStatusbarViewModelEntry {
 	readonly id: string;
@@ -31,7 +31,7 @@ export class StatusbarViewModel extends Disposable {
 	private static readonly HIDDEN_ENTRIES_KEY = "workbench.statusbar.hidden";
 
 	private readonly _onDidChangeEntryVisibility = this._register(
-		new Emitter<{ id: string; visible: boolean }>()
+		new Emitter<{ id: string; visible: boolean }>(),
 	);
 	readonly onDidChangeEntryVisibility =
 		this._onDidChangeEntryVisibility.event;
@@ -61,7 +61,7 @@ export class StatusbarViewModel extends Disposable {
 	private restoreState(): void {
 		const hiddenRaw = this.storageService.get(
 			StatusbarViewModel.HIDDEN_ENTRIES_KEY,
-			StorageScope.PROFILE
+			StorageScope.PROFILE,
 		);
 		if (hiddenRaw) {
 			try {
@@ -78,8 +78,8 @@ export class StatusbarViewModel extends Disposable {
 			this.storageService.onDidChangeValue(
 				StorageScope.PROFILE,
 				StatusbarViewModel.HIDDEN_ENTRIES_KEY,
-				this._register(new DisposableStore())
-			)(() => this.onDidStorageValueChange())
+				this._register(new DisposableStore()),
+			)(() => this.onDidStorageValueChange()),
 		);
 	}
 
@@ -145,7 +145,7 @@ export class StatusbarViewModel extends Disposable {
 				this._entries.some(
 					(otherEntry) =>
 						isStatusbarEntryLocation(otherEntry.priority.primary) &&
-						otherEntry.priority.primary.id === entry.id
+						otherEntry.priority.primary.id === entry.id,
 				)
 			) {
 				this.sort();
@@ -202,7 +202,7 @@ export class StatusbarViewModel extends Disposable {
 
 	private getFocusedEntry(): IStatusbarViewModelEntry | undefined {
 		return this._entries.find((entry) =>
-			isAncestorOfActiveElement(entry.container)
+			isAncestorOfActiveElement(entry.container),
 		);
 	}
 
@@ -227,7 +227,7 @@ export class StatusbarViewModel extends Disposable {
 		const focused = this.getFocusedEntry();
 		if (focused) {
 			const entry = getVisibleEntry(
-				this._entries.indexOf(focused) + delta
+				this._entries.indexOf(focused) + delta,
 			);
 			if (entry) {
 				this._lastFocusedEntry = entry;
@@ -248,11 +248,11 @@ export class StatusbarViewModel extends Disposable {
 	private updateVisibility(id: string, trigger: boolean): void;
 	private updateVisibility(
 		entry: IStatusbarViewModelEntry,
-		trigger: boolean
+		trigger: boolean,
 	): void;
 	private updateVisibility(
 		arg1: string | IStatusbarViewModelEntry,
-		trigger: boolean
+		trigger: boolean,
 	): void {
 		// By identifier
 		if (typeof arg1 === "string") {
@@ -295,12 +295,12 @@ export class StatusbarViewModel extends Disposable {
 				StatusbarViewModel.HIDDEN_ENTRIES_KEY,
 				JSON.stringify(Array.from(this.hidden.values())),
 				StorageScope.PROFILE,
-				StorageTarget.USER
+				StorageTarget.USER,
 			);
 		} else {
 			this.storageService.remove(
 				StatusbarViewModel.HIDDEN_ENTRIES_KEY,
-				StorageScope.PROFILE
+				StorageScope.PROFILE,
 			);
 		}
 	}
@@ -324,13 +324,13 @@ export class StatusbarViewModel extends Disposable {
 				mapEntryWithNumberedPriorityToIndex.set(entry, i);
 			} else {
 				let entries = mapEntryWithRelativePriority.get(
-					entry.priority.primary.id
+					entry.priority.primary.id,
 				);
 				if (!entries) {
 					entries = [];
 					mapEntryWithRelativePriority.set(
 						entry.priority.primary.id,
-						entries
+						entries,
 					);
 				}
 				entries.push(entry);
@@ -339,7 +339,7 @@ export class StatusbarViewModel extends Disposable {
 
 		// Sort the entries with `priority: number` according to that
 		const sortedEntriesWithNumberedPriority = Array.from(
-			mapEntryWithNumberedPriorityToIndex.keys()
+			mapEntryWithNumberedPriorityToIndex.keys(),
 		);
 		sortedEntriesWithNumberedPriority.sort((entryA, entryB) => {
 			if (entryA.alignment === entryB.alignment) {
@@ -384,7 +384,7 @@ export class StatusbarViewModel extends Disposable {
 
 			for (const entry of sortedEntriesWithNumberedPriority) {
 				const relativeEntries = mapEntryWithRelativePriority.get(
-					entry.id
+					entry.id,
 				);
 
 				// Fill relative entries to LEFT
@@ -393,11 +393,11 @@ export class StatusbarViewModel extends Disposable {
 						...relativeEntries.filter(
 							(entry) =>
 								isStatusbarEntryLocation(
-									entry.priority.primary
+									entry.priority.primary,
 								) &&
 								entry.priority.primary.alignment ===
-									StatusbarAlignment.LEFT
-						)
+									StatusbarAlignment.LEFT,
+						),
 					);
 				}
 
@@ -410,11 +410,11 @@ export class StatusbarViewModel extends Disposable {
 						...relativeEntries.filter(
 							(entry) =>
 								isStatusbarEntryLocation(
-									entry.priority.primary
+									entry.priority.primary,
 								) &&
 								entry.priority.primary.alignment ===
-									StatusbarAlignment.RIGHT
-						)
+									StatusbarAlignment.RIGHT,
+						),
 					);
 				}
 
@@ -440,15 +440,15 @@ export class StatusbarViewModel extends Disposable {
 
 	private markFirstLastVisibleEntry(): void {
 		this.doMarkFirstLastVisibleStatusbarItem(
-			this.getEntries(StatusbarAlignment.LEFT)
+			this.getEntries(StatusbarAlignment.LEFT),
 		);
 		this.doMarkFirstLastVisibleStatusbarItem(
-			this.getEntries(StatusbarAlignment.RIGHT)
+			this.getEntries(StatusbarAlignment.RIGHT),
 		);
 	}
 
 	private doMarkFirstLastVisibleStatusbarItem(
-		entries: IStatusbarViewModelEntry[]
+		entries: IStatusbarViewModelEntry[],
 	): void {
 		let firstVisibleItem: IStatusbarViewModelEntry | undefined;
 		let lastVisibleItem: IStatusbarViewModelEntry | undefined;
@@ -457,7 +457,7 @@ export class StatusbarViewModel extends Disposable {
 			// Clear previous first
 			entry.container.classList.remove(
 				"first-visible-item",
-				"last-visible-item"
+				"last-visible-item",
 			);
 
 			const isVisible = !this.isHidden(entry.id);

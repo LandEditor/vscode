@@ -3,8 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/editortitlecontrol";
 import { Dimension, clearNode } from "vs/base/browser/dom";
+import { DisposableStore } from "vs/base/common/lifecycle";
+import "vs/css!./media/editortitlecontrol";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { IThemeService, Themable } from "vs/platform/theme/common/themeService";
 import {
@@ -12,21 +13,20 @@ import {
 	BreadcrumbsControlFactory,
 } from "vs/workbench/browser/parts/editor/breadcrumbsControl";
 import {
-	IEditorGroupsView,
 	IEditorGroupTitleHeight,
 	IEditorGroupView,
+	IEditorGroupsView,
 	IEditorPartsView,
 	IInternalEditorOpenOptions,
 } from "vs/workbench/browser/parts/editor/editor";
 import { IEditorTabsControl } from "vs/workbench/browser/parts/editor/editorTabsControl";
 import { MultiEditorTabsControl } from "vs/workbench/browser/parts/editor/multiEditorTabsControl";
+import { MultiRowEditorControl } from "vs/workbench/browser/parts/editor/multiRowEditorTabsControl";
+import { NoEditorTabsControl } from "vs/workbench/browser/parts/editor/noEditorTabsControl";
 import { SingleEditorTabsControl } from "vs/workbench/browser/parts/editor/singleEditorTabsControl";
 import { IEditorPartOptions } from "vs/workbench/common/editor";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import { DisposableStore } from "vs/base/common/lifecycle";
-import { MultiRowEditorControl } from "vs/workbench/browser/parts/editor/multiRowEditorTabsControl";
 import { IReadonlyEditorGroupModel } from "vs/workbench/common/editor/editorGroupModel";
-import { NoEditorTabsControl } from "vs/workbench/browser/parts/editor/noEditorTabsControl";
+import { EditorInput } from "vs/workbench/common/editor/editorInput";
 
 export interface IEditorTitleControlDimensions {
 	/**
@@ -47,7 +47,7 @@ export class EditorTitleControl extends Themable {
 
 	private breadcrumbsControlFactory: BreadcrumbsControlFactory | undefined;
 	private breadcrumbsControlDisposables = this._register(
-		new DisposableStore()
+		new DisposableStore(),
 	);
 	private get breadcrumbsControl() {
 		return this.breadcrumbsControlFactory?.control;
@@ -93,7 +93,7 @@ export class EditorTitleControl extends Themable {
 			this.editorPartsView,
 			this.groupsView,
 			this.groupView,
-			this.model
+			this.model,
 		);
 		return this.editorTabsControlDisposable.add(control);
 	}
@@ -119,21 +119,21 @@ export class EditorTitleControl extends Themable {
 						showSymbolIcons: true,
 						showDecorationColors: false,
 						showPlaceholder: true,
-					}
-				)
+					},
+				),
 			);
 
 		// Breadcrumbs enablement & visibility change have an impact on layout
 		// so we need to relayout the editor group when that happens.
 		this.breadcrumbsControlDisposables.add(
 			breadcrumbsControlFactory.onDidEnablementChange(() =>
-				this.groupView.relayout()
-			)
+				this.groupView.relayout(),
+			),
 		);
 		this.breadcrumbsControlDisposables.add(
 			breadcrumbsControlFactory.onDidVisibilityChange(() =>
-				this.groupView.relayout()
-			)
+				this.groupView.relayout(),
+			),
 		);
 
 		return breadcrumbsControlFactory;
@@ -141,7 +141,7 @@ export class EditorTitleControl extends Themable {
 
 	openEditor(
 		editor: EditorInput,
-		options?: IInternalEditorOpenOptions
+		options?: IInternalEditorOpenOptions,
 	): void {
 		const didChange = this.editorTabsControl.openEditor(editor, options);
 
@@ -188,13 +188,13 @@ export class EditorTitleControl extends Themable {
 		editor: EditorInput,
 		fromIndex: number,
 		targetIndex: number,
-		stickyStateChange: boolean
+		stickyStateChange: boolean,
 	): void {
 		return this.editorTabsControl.moveEditor(
 			editor,
 			fromIndex,
 			targetIndex,
-			stickyStateChange
+			stickyStateChange,
 		);
 	}
 
@@ -224,7 +224,7 @@ export class EditorTitleControl extends Themable {
 
 	updateOptions(
 		oldOptions: IEditorPartOptions,
-		newOptions: IEditorPartOptions
+		newOptions: IEditorPartOptions,
 	): void {
 		// Update editor tabs control if options changed
 		if (
@@ -258,7 +258,7 @@ export class EditorTitleControl extends Themable {
 		if (this.breadcrumbsControl?.isHidden() === false) {
 			breadcrumbsControlDimension = new Dimension(
 				dimensions.container.width,
-				BreadcrumbsControl.HEIGHT
+				BreadcrumbsControl.HEIGHT,
 			);
 			this.breadcrumbsControl.layout(breadcrumbsControlDimension);
 		}
@@ -268,7 +268,7 @@ export class EditorTitleControl extends Themable {
 			tabsControlDimension.height +
 				(breadcrumbsControlDimension
 					? breadcrumbsControlDimension.height
-					: 0)
+					: 0),
 		);
 	}
 

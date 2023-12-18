@@ -10,7 +10,7 @@ import { IKeyboardEvent } from "vs/platform/keybinding/common/keybinding";
 import { IKeyboardMapper } from "vs/platform/keyboardLayout/common/keyboardMapper";
 
 export const IKeyboardLayoutService = createDecorator<IKeyboardLayoutService>(
-	"keyboardLayoutService"
+	"keyboardLayoutService",
 );
 
 export interface IWindowsKeyMapping {
@@ -96,7 +96,7 @@ export interface IKeyboardLayoutService {
 
 export function areKeyboardLayoutsEqual(
 	a: IKeyboardLayoutInfo | null,
-	b: IKeyboardLayoutInfo | null
+	b: IKeyboardLayoutInfo | null,
 ): boolean {
 	if (!a || !b) {
 		return false;
@@ -134,7 +134,7 @@ export function areKeyboardLayoutsEqual(
 }
 
 export function parseKeyboardLayoutDescription(
-	layout: IKeyboardLayoutInfo | null
+	layout: IKeyboardLayoutInfo | null,
 ): { label: string; description: string } {
 	if (!layout) {
 		return { label: "", description: "" };
@@ -203,7 +203,7 @@ export function getKeyboardLayoutId(layout: IKeyboardLayoutInfo): string {
 
 function windowsKeyMappingEquals(
 	a: IWindowsKeyMapping,
-	b: IWindowsKeyMapping
+	b: IWindowsKeyMapping,
 ): boolean {
 	if (!a && !b) {
 		return true;
@@ -222,7 +222,7 @@ function windowsKeyMappingEquals(
 
 export function windowsKeyboardMappingEquals(
 	a: IWindowsKeyboardMapping | null,
-	b: IWindowsKeyboardMapping | null
+	b: IWindowsKeyboardMapping | null,
 ): boolean {
 	if (!a && !b) {
 		return true;
@@ -243,7 +243,7 @@ export function windowsKeyboardMappingEquals(
 
 function macLinuxKeyMappingEquals(
 	a: IMacLinuxKeyMapping,
-	b: IMacLinuxKeyMapping
+	b: IMacLinuxKeyMapping,
 ): boolean {
 	if (!a && !b) {
 		return true;
@@ -261,7 +261,7 @@ function macLinuxKeyMappingEquals(
 
 export function macLinuxKeyboardMappingEquals(
 	a: IMacLinuxKeyboardMapping | null,
-	b: IMacLinuxKeyboardMapping | null
+	b: IMacLinuxKeyboardMapping | null,
 ): boolean {
 	if (!a && !b) {
 		return true;

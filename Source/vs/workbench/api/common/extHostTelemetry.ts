@@ -3,36 +3,36 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type * as vscode from "vscode";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { Event, Emitter } from "vs/base/common/event";
-import { ExtHostTelemetryShape } from "vs/workbench/api/common/extHost.protocol";
+import { Emitter, Event } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
+import { mixin } from "vs/base/common/objects";
+import { URI } from "vs/base/common/uri";
+import { localize } from "vs/nls";
 import {
-	ICommonProperties,
-	TelemetryLevel,
-} from "vs/platform/telemetry/common/telemetry";
+	ExtensionIdentifier,
+	IExtensionDescription,
+} from "vs/platform/extensions/common/extensions";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import {
 	ILogger,
 	ILoggerService,
 	LogLevel,
 	isLogLevel,
 } from "vs/platform/log/common/log";
-import { IExtHostInitDataService } from "vs/workbench/api/common/extHostInitDataService";
-import {
-	ExtensionIdentifier,
-	IExtensionDescription,
-} from "vs/platform/extensions/common/extensions";
-import { UIKind } from "vs/workbench/services/extensions/common/extensionHostProtocol";
 import { getRemoteName } from "vs/platform/remote/common/remoteHosts";
+import {
+	ICommonProperties,
+	TelemetryLevel,
+} from "vs/platform/telemetry/common/telemetry";
 import {
 	cleanData,
 	cleanRemoteAuthority,
 	extensionTelemetryLogChannelId,
 } from "vs/platform/telemetry/common/telemetryUtils";
-import { mixin } from "vs/base/common/objects";
-import { URI } from "vs/base/common/uri";
-import { Disposable } from "vs/base/common/lifecycle";
-import { localize } from "vs/nls";
+import { ExtHostTelemetryShape } from "vs/workbench/api/common/extHost.protocol";
+import { IExtHostInitDataService } from "vs/workbench/api/common/extHostInitDataService";
+import { UIKind } from "vs/workbench/services/extensions/common/extensionHostProtocol";
+import type * as vscode from "vscode";
 
 export class ExtHostTelemetry
 	extends Disposable
@@ -41,13 +41,13 @@ export class ExtHostTelemetry
 	readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeTelemetryEnabled = this._register(
-		new Emitter<boolean>()
+		new Emitter<boolean>(),
 	);
 	readonly onDidChangeTelemetryEnabled: Event<boolean> =
 		this._onDidChangeTelemetryEnabled.event;
 
 	private readonly _onDidChangeTelemetryConfiguration = this._register(
-		new Emitter<vscode.TelemetryConfiguration>()
+		new Emitter<vscode.TelemetryConfiguration>(),
 	);
 	readonly onDidChangeTelemetryConfiguration: Event<vscode.TelemetryConfiguration> =
 		this._onDidChangeTelemetryConfiguration.event;
@@ -58,7 +58,7 @@ export class ExtHostTelemetry
 	};
 	private _level: TelemetryLevel = TelemetryLevel.NONE;
 	// This holds whether or not we're running with --disable-telemetry, etc. Usings supportsTelemtry() from the main thread
-	private _telemetryIsSupported: boolean = false;
+	private _telemetryIsSupported = false;
 	private _oldTelemetryEnablement: boolean | undefined;
 	private readonly _inLoggingOnlyMode: boolean = false;
 	private readonly extHostTelemetryLogFile: URI;
@@ -111,7 +111,7 @@ export class ExtHostTelemetry
 		this.loggerService.setVisibility(
 			this.extHostTelemetryLogFile,
 			this._telemetryIsSupported &&
-				this.loggerService.getLogLevel() === LogLevel.Trace
+				this.loggerService.getLogLevel() === LogLevel.Trace,
 		);
 	}
 
@@ -134,7 +134,7 @@ export class ExtHostTelemetry
 	instantiateLogger(
 		extension: IExtensionDescription,
 		sender: vscode.TelemetrySender,
-		options?: vscode.TelemetryLoggerOptions
+		options?: vscode.TelemetryLoggerOptions,
 	) {
 		const telemetryDetails = this.getTelemetryDetails();
 		const logger = new ExtHostTelemetryLogger(
@@ -147,7 +147,7 @@ export class ExtHostTelemetry
 			{
 				isUsageEnabled: telemetryDetails.isUsageEnabled,
 				isErrorsEnabled: telemetryDetails.isErrorsEnabled,
-			}
+			},
 		);
 		const loggers =
 			this._telemetryLoggers.get(extension.identifier.value) ?? [];
@@ -161,7 +161,7 @@ export class ExtHostTelemetry
 	$initializeTelemetryLevel(
 		level: TelemetryLevel,
 		supportsTelemetry: boolean,
-		productConfig?: { usage: boolean; error: boolean }
+		productConfig?: { usage: boolean; error: boolean },
 	): void {
 		this._level = level;
 		this._telemetryIsSupported = supportsTelemetry;
@@ -170,13 +170,14 @@ export class ExtHostTelemetry
 	}
 
 	getBuiltInCommonProperties(
-		extension: IExtensionDescription
+		extension: IExtensionDescription,
 	): ICommonProperties {
 		const commonProperties: ICommonProperties = Object.create(null);
 		// TODO @lramos15, does os info like node arch, platform version, etc exist here.
 		// Or will first party extensions just mix this in
-		commonProperties["common.extname"] =
-			`${extension.publisher}.${extension.name}`;
+		commonProperties[
+			"common.extname"
+		] = `${extension.publisher}.${extension.name}`;
 		commonProperties["common.extversion"] = extension.version;
 		commonProperties["common.vscodemachineid"] =
 			this.initData.telemetryInfo.machineId;
@@ -185,7 +186,7 @@ export class ExtHostTelemetry
 		commonProperties["common.sqmid"] = this.initData.telemetryInfo.sqmId;
 		commonProperties["common.vscodeversion"] = this.initData.version;
 		commonProperties["common.isnewappinstall"] = isNewAppInstall(
-			this.initData.telemetryInfo.firstSessionDate
+			this.initData.telemetryInfo.firstSessionDate,
 		);
 		commonProperties["common.product"] = this.initData.environment.appHost;
 
@@ -201,7 +202,7 @@ export class ExtHostTelemetry
 		}
 
 		commonProperties["common.remotename"] = getRemoteName(
-			cleanRemoteAuthority(this.initData.remote.authority)
+			cleanRemoteAuthority(this.initData.remote.authority),
 		);
 
 		return commonProperties;
@@ -225,18 +226,18 @@ export class ExtHostTelemetry
 			for (const logger of loggers) {
 				logger.updateTelemetryEnablements(
 					telemetryDetails.isUsageEnabled,
-					telemetryDetails.isErrorsEnabled
+					telemetryDetails.isErrorsEnabled,
 				);
 			}
 		});
 
 		if (this._oldTelemetryEnablement !== this.getTelemetryConfiguration()) {
 			this._onDidChangeTelemetryEnabled.fire(
-				this.getTelemetryConfiguration()
+				this.getTelemetryConfiguration(),
 			);
 		}
 		this._onDidChangeTelemetryConfiguration.fire(
-			this.getTelemetryDetails()
+			this.getTelemetryDetails(),
 		);
 		this.updateLoggerVisibility();
 	}
@@ -267,12 +268,12 @@ export class ExtHostTelemetryLogger {
 		}
 		if (typeof sender.sendEventData !== "function") {
 			throw new TypeError(
-				"TelemetrySender.sendEventData must be a function"
+				"TelemetrySender.sendEventData must be a function",
 			);
 		}
 		if (typeof sender.sendErrorData !== "function") {
 			throw new TypeError(
-				"TelemetrySender.sendErrorData must be a function"
+				"TelemetrySender.sendErrorData must be a function",
 			);
 		}
 		if (
@@ -280,7 +281,7 @@ export class ExtHostTelemetryLogger {
 			typeof sender.flush !== "function"
 		) {
 			throw new TypeError(
-				"TelemetrySender.flush must be a function or undefined"
+				"TelemetrySender.flush must be a function or undefined",
 			);
 		}
 	}
@@ -310,7 +311,7 @@ export class ExtHostTelemetryLogger {
 		telemetryEnablements: {
 			isUsageEnabled: boolean;
 			isErrorsEnabled: boolean;
-		}
+		},
 	) {
 		this.ignoreUnhandledExtHostErrors =
 			options?.ignoreUnhandledErrors ?? false;
@@ -326,7 +327,7 @@ export class ExtHostTelemetryLogger {
 
 	updateTelemetryEnablements(
 		isUsageEnabled: boolean,
-		isErrorsEnabled: boolean
+		isErrorsEnabled: boolean,
 	): void {
 		if (this._apiObject) {
 			this._telemetryEnablements = { isUsageEnabled, isErrorsEnabled };
@@ -335,7 +336,7 @@ export class ExtHostTelemetryLogger {
 	}
 
 	mixInCommonPropsAndCleanData(
-		data: Record<string, any>
+		data: Record<string, any>,
 	): Record<string, any> {
 		// Some telemetry modules prefer to break properties and measurmements up
 		// We mix common properties into the properties tab.
@@ -388,7 +389,7 @@ export class ExtHostTelemetryLogger {
 
 	logError(
 		eventNameOrException: Error | string,
-		data?: Record<string, any>
+		data?: Record<string, any>,
 	): void {
 		if (!this._telemetryEnablements.isErrorsEnabled || !this._sender) {
 			return;

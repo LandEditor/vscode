@@ -48,7 +48,7 @@ function _throttle<T>(fn: Function, key: string): Function {
 }
 
 function decorate(
-	decorator: (fn: Function, key: string) => Function
+	decorator: (fn: Function, key: string) => Function,
 ): Function {
 	return (_target: any, key: string, descriptor: any) => {
 		let fnKey: string | null = null;

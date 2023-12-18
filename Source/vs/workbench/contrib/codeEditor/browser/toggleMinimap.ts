@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { localize } from "vs/nls";
+import { Categories } from "vs/platform/action/common/actionCommonCategories";
 import {
 	Action2,
 	MenuId,
@@ -11,7 +12,6 @@ import {
 } from "vs/platform/actions/common/actions";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
-import { Categories } from "vs/platform/action/common/actionCommonCategories";
 import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
 
 export class ToggleMinimapAction extends Action2 {
@@ -25,14 +25,14 @@ export class ToggleMinimapAction extends Action2 {
 				original: "Toggle Minimap",
 				mnemonicTitle: localize(
 					{ key: "miMinimap", comment: ["&& denotes a mnemonic"] },
-					"&&Minimap"
+					"&&Minimap",
 				),
 			},
 			category: Categories.View,
 			f1: true,
 			toggled: ContextKeyExpr.equals(
 				"config.editor.minimap.enabled",
-				true
+				true,
 			),
 			menu: {
 				id: MenuId.MenubarAppearanceMenu,
@@ -46,11 +46,11 @@ export class ToggleMinimapAction extends Action2 {
 		const configurationService = accessor.get(IConfigurationService);
 
 		const newValue = !configurationService.getValue(
-			"editor.minimap.enabled"
+			"editor.minimap.enabled",
 		);
 		return configurationService.updateValue(
 			"editor.minimap.enabled",
-			newValue
+			newValue,
 		);
 	}
 }

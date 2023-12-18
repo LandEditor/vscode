@@ -24,7 +24,7 @@ export class StandaloneReferencesController extends ReferencesController {
 		@INotificationService notificationService: INotificationService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IStorageService storageService: IStorageService,
-		@IConfigurationService configurationService: IConfigurationService
+		@IConfigurationService configurationService: IConfigurationService,
 	) {
 		super(
 			true,
@@ -34,7 +34,7 @@ export class StandaloneReferencesController extends ReferencesController {
 			notificationService,
 			instantiationService,
 			storageService,
-			configurationService
+			configurationService,
 		);
 	}
 }
@@ -42,5 +42,5 @@ export class StandaloneReferencesController extends ReferencesController {
 registerEditorContribution(
 	ReferencesController.ID,
 	StandaloneReferencesController,
-	EditorContributionInstantiation.Lazy
+	EditorContributionInstantiation.Lazy,
 );

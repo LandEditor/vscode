@@ -3,33 +3,33 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from "vs/base/common/uri";
-import { Event, Emitter } from "vs/base/common/event";
-import { localize } from "vs/nls";
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
-import {
-	IDecorationsProvider,
-	IDecorationData,
-} from "vs/workbench/services/decorations/common/decorations";
-import {
-	listInvalidItemForeground,
-	listDeemphasizedForeground,
-} from "vs/platform/theme/common/colorRegistry";
+import { toErrorMessage } from "vs/base/common/errorMessage";
+import { Emitter, Event } from "vs/base/common/event";
 import { DisposableStore } from "vs/base/common/lifecycle";
+import { URI } from "vs/base/common/uri";
+import { localize } from "vs/nls";
+import {
+	listDeemphasizedForeground,
+	listInvalidItemForeground,
+} from "vs/platform/theme/common/colorRegistry";
+import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import { IExplorerService } from "vs/workbench/contrib/files/browser/files";
 import { explorerRootErrorEmitter } from "vs/workbench/contrib/files/browser/views/explorerViewer";
 import { ExplorerItem } from "vs/workbench/contrib/files/common/explorerModel";
-import { IExplorerService } from "vs/workbench/contrib/files/browser/files";
-import { toErrorMessage } from "vs/base/common/errorMessage";
+import {
+	IDecorationData,
+	IDecorationsProvider,
+} from "vs/workbench/services/decorations/common/decorations";
 
 export function provideDecorations(
-	fileStat: ExplorerItem
+	fileStat: ExplorerItem,
 ): IDecorationData | undefined {
 	if (fileStat.isRoot && fileStat.error) {
 		return {
 			tooltip: localize(
 				"canNotResolve",
 				"Unable to resolve workspace folder ({0})",
-				toErrorMessage(fileStat.error)
+				toErrorMessage(fileStat.error),
 			),
 			letter: "!",
 			color: listInvalidItemForeground,
@@ -85,7 +85,7 @@ export class ExplorerDecorationsProvider implements IDecorationsProvider {
 	}
 
 	async provideDecorations(
-		resource: URI
+		resource: URI,
 	): Promise<IDecorationData | undefined> {
 		const fileStat = this.explorerService.findClosest(resource);
 		if (!fileStat) {

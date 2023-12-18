@@ -1,4 +1,3 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -49,7 +48,7 @@ exports.extraLanguages = [
 	{ id: "tr", folderName: "trk" },
 ];
 var LocalizeInfo;
-(function (LocalizeInfo) {
+((LocalizeInfo) => {
 	function is(value) {
 		const candidate = value;
 		return (
@@ -58,14 +57,14 @@ var LocalizeInfo;
 			(candidate.comment === undefined ||
 				(Array.isArray(candidate.comment) &&
 					candidate.comment.every(
-						(element) => typeof element === "string"
+						(element) => typeof element === "string",
 					)))
 		);
 	}
 	LocalizeInfo.is = is;
 })(LocalizeInfo || (LocalizeInfo = {}));
 var BundledFormat;
-(function (BundledFormat) {
+((BundledFormat) => {
 	function is(value) {
 		if (value === undefined) {
 			return false;
@@ -123,7 +122,7 @@ class XLF {
 		for (const file of files) {
 			this.appendNewLine(
 				`<file original="${file}" source-language="en" datatype="plaintext"><body>`,
-				2
+				2,
 			);
 			const items = this.files[file].sort((a, b) => {
 				return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
@@ -143,7 +142,7 @@ class XLF {
 		}
 		if (keys.length !== messages.length) {
 			throw new Error(
-				`Unmatching keys(${keys.length}) and messages(${messages.length}).`
+				`Unmatching keys(${keys.length}) and messages(${messages.length}).`,
 			);
 		}
 		this.numberOfMessages += keys.length;
@@ -180,13 +179,13 @@ class XLF {
 		if (!item.id || item.message === undefined || item.message === null) {
 			throw new Error(
 				`No item ID or value specified: ${JSON.stringify(
-					item
-				)}. File: ${file}`
+					item,
+				)}. File: ${file}`,
 			);
 		}
 		if (item.message.length === 0) {
 			log(
-				`Item with id ${item.id} in file ${file} has an empty message.`
+				`Item with id ${item.id} in file ${file} has an empty message.`,
 			);
 		}
 		this.appendNewLine(`<trans-unit id="${item.id}">`, 4);
@@ -200,7 +199,7 @@ class XLF {
 		this.appendNewLine('<?xml version="1.0" encoding="utf-8"?>', 0);
 		this.appendNewLine(
 			'<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">',
-			0
+			0,
 		);
 	}
 	appendFooter() {
@@ -211,24 +210,24 @@ class XLF {
 		line.append(content);
 		this.buffer.push(line.toString());
 	}
-	static parse = function (xlfString) {
-		return new Promise((resolve, reject) => {
+	static parse = (xlfString) =>
+		new Promise((resolve, reject) => {
 			const parser = new xml2js.Parser();
 			const files = [];
-			parser.parseString(xlfString, function (err, result) {
+			parser.parseString(xlfString, (err, result) => {
 				if (err) {
 					reject(
 						new Error(
-							`XLF parsing error: Failed to parse XLIFF string. ${err}`
-						)
+							`XLF parsing error: Failed to parse XLIFF string. ${err}`,
+						),
 					);
 				}
 				const fileNodes = result["xliff"]["file"];
 				if (!fileNodes) {
 					reject(
 						new Error(
-							`XLF parsing error: XLIFF file does not contain "xliff" or "file" node(s) required for parsing.`
-						)
+							`XLF parsing error: XLIFF file does not contain "xliff" or "file" node(s) required for parsing.`,
+						),
 					);
 				}
 				fileNodes.forEach((file) => {
@@ -236,16 +235,16 @@ class XLF {
 					if (!name) {
 						reject(
 							new Error(
-								`XLF parsing error: XLIFF file node does not contain original attribute to determine the original location of the resource file.`
-							)
+								`XLF parsing error: XLIFF file node does not contain original attribute to determine the original location of the resource file.`,
+							),
 						);
 					}
 					const language = file.$["target-language"];
 					if (!language) {
 						reject(
 							new Error(
-								`XLF parsing error: XLIFF file node does not contain target-language attribute to determine translated language.`
-							)
+								`XLF parsing error: XLIFF file node does not contain target-language attribute to determine translated language.`,
+							),
 						);
 					}
 					const messages = {};
@@ -267,9 +266,9 @@ class XLF {
 										`XLF parsing error: trans-unit ${JSON.stringify(
 											unit,
 											undefined,
-											0
-										)} defined in file ${name} is missing the ID attribute.`
-									)
+											0,
+										)} defined in file ${name} is missing the ID attribute.`,
+									),
 								);
 								return;
 							}
@@ -285,7 +284,6 @@ class XLF {
 				resolve(files);
 			});
 		});
-	};
 }
 exports.XLF = XLF;
 function sortLanguages(languages) {
@@ -375,7 +373,7 @@ function processCoreBundleFormat(fileHeader, languages, json, emitter) {
 		if (!messages || keys.length !== messages.length) {
 			emitter.emit(
 				"error",
-				`Message for module ${module} corrupted. Mismatch in number of keys and messages.`
+				`Message for module ${module} corrupted. Mismatch in number of keys and messages.`,
 			);
 			return;
 		}
@@ -395,14 +393,14 @@ function processCoreBundleFormat(fileHeader, languages, json, emitter) {
 		"..",
 		"..",
 		"vscode-loc",
-		"i18n"
+		"i18n",
 	);
 	if (!fs.existsSync(languageDirectory)) {
 		log(
-			`No VS Code localization repository found. Looking at ${languageDirectory}`
+			`No VS Code localization repository found. Looking at ${languageDirectory}`,
 		);
 		log(
-			`To bundle translations please check out the vscode-loc repository as a sibling of the vscode repository.`
+			`To bundle translations please check out the vscode-loc repository as a sibling of the vscode repository.`,
 		);
 	}
 	const sortedLanguages = sortLanguages(languages);
@@ -417,7 +415,7 @@ function processCoreBundleFormat(fileHeader, languages, json, emitter) {
 			languageDirectory,
 			`vscode-language-pack-${languageFolderName}`,
 			"translations",
-			"main.i18n.json"
+			"main.i18n.json",
 		);
 		let allMessages;
 		if (fs.existsSync(i18nFile)) {
@@ -433,7 +431,7 @@ function processCoreBundleFormat(fileHeader, languages, json, emitter) {
 			if (!moduleMessage) {
 				if (process.env["VSCODE_BUILD_VERBOSE"]) {
 					log(
-						`No localized messages found for module ${module}. Using default messages.`
+						`No localized messages found for module ${module}. Using default messages.`,
 					);
 				}
 				moduleMessage = defaultMessages[module];
@@ -452,7 +450,7 @@ function processCoreBundleFormat(fileHeader, languages, json, emitter) {
 				if (!message) {
 					if (process.env["VSCODE_BUILD_VERBOSE"]) {
 						log(
-							`No localized message found for key ${key} in module ${module}. Using default message.`
+							`No localized message found for key ${key} in module ${module}. Using default message.`,
 						);
 					}
 					message = defaultMessages[module][key];
@@ -474,7 +472,7 @@ function processCoreBundleFormat(fileHeader, languages, json, emitter) {
 				if (!messages) {
 					emitter.emit(
 						"error",
-						`Didn't find messages for module ${module}.`
+						`Didn't find messages for module ${module}.`,
 					);
 					return;
 				}
@@ -482,7 +480,7 @@ function processCoreBundleFormat(fileHeader, languages, json, emitter) {
 					contents.push(
 						`\t\t"${escapeCharacters(message)}${
 							index < messages.length ? '",' : '"'
-						}`
+						}`,
 					);
 				});
 				contents.push(index < modules.length - 1 ? "\t]," : "\t]");
@@ -492,7 +490,7 @@ function processCoreBundleFormat(fileHeader, languages, json, emitter) {
 				new File({
 					path: bundle + ".nls." + language.id + ".js",
 					contents: Buffer.from(contents.join("\n"), "utf-8"),
-				})
+				}),
 			);
 		});
 	});
@@ -504,7 +502,7 @@ function processCoreBundleFormat(fileHeader, languages, json, emitter) {
 		const stats = statistics[language.id];
 		if (!stats) {
 			log(
-				`\tNo translations found for language ${language.id}. Using default language instead.`
+				`\tNo translations found for language ${language.id}. Using default language instead.`,
 			);
 		}
 	});
@@ -519,7 +517,7 @@ function processNlsFiles(opts) {
 			} else {
 				this.emit(
 					"error",
-					`Failed to read component file: ${file.relative}`
+					`Failed to read component file: ${file.relative}`,
 				);
 				return;
 			}
@@ -528,7 +526,7 @@ function processNlsFiles(opts) {
 					opts.fileHeader,
 					opts.languages,
 					json,
-					this
+					this,
 				);
 			}
 		}
@@ -583,7 +581,7 @@ function createXlfFilesForCoreBundle() {
 					if (keys.length !== messages.length) {
 						this.emit(
 							"error",
-							`There is a mismatch between keys and messages in ${file.relative} for module ${coreModule}`
+							`There is a mismatch between keys and messages in ${file.relative} for module ${coreModule}`,
 						);
 						return;
 					} else {
@@ -599,7 +597,7 @@ function createXlfFilesForCoreBundle() {
 					const xlf = xlfs[resource];
 					const filePath = `${xlf.project}/${resource.replace(
 						/\//g,
-						"_"
+						"_",
 					)}.xlf`;
 					const xlfFile = new File({
 						path: filePath,
@@ -611,15 +609,17 @@ function createXlfFilesForCoreBundle() {
 				this.emit(
 					"error",
 					new Error(
-						`File ${file.relative} is not using a buffer content`
-					)
+						`File ${file.relative} is not using a buffer content`,
+					),
 				);
 				return;
 			}
 		} else {
 			this.emit(
 				"error",
-				new Error(`File ${file.relative} is not a core meta data file.`)
+				new Error(
+					`File ${file.relative} is not a core meta data file.`,
+				),
 			);
 			return;
 		}
@@ -628,7 +628,7 @@ function createXlfFilesForCoreBundle() {
 exports.createXlfFilesForCoreBundle = createXlfFilesForCoreBundle;
 function createL10nBundleForExtension(
 	extensionFolderName,
-	prefixWithBuildFolder
+	prefixWithBuildFolder,
 ) {
 	const prefix = prefixWithBuildFolder ? ".build/" : "";
 	return gulp
@@ -641,7 +641,7 @@ function createL10nBundleForExtension(
 			`${prefix}extensions/${extensionFolderName}/**/bundle.l10n.json`,
 		])
 		.pipe(
-			(0, event_stream_1.map)(function (data, callback) {
+			(0, event_stream_1.map)((data, callback) => {
 				const file = data;
 				if (!file.isBuffer()) {
 					// Not a buffer so we drop it
@@ -659,16 +659,16 @@ function createL10nBundleForExtension(
 									path: `extensions/${extensionFolderName}/bundle.l10n.json`,
 									contents: Buffer.from(
 										JSON.stringify(json),
-										"utf8"
+										"utf8",
 									),
-								})
+								}),
 							);
 						})
 						.catch((err) => {
 							callback(
 								new Error(
-									`File ${file.relative} threw an error when parsing: ${err}`
-								)
+									`File ${file.relative} threw an error when parsing: ${err}`,
+								),
 							);
 						});
 					// signal pause?
@@ -681,8 +681,8 @@ function createL10nBundleForExtension(
 				} catch (err) {
 					callback(
 						new Error(
-							`File ${file.relative} threw an error when parsing: ${err}`
-						)
+							`File ${file.relative} threw an error when parsing: ${err}`,
+						),
 					);
 					return;
 				}
@@ -695,21 +695,21 @@ function createL10nBundleForExtension(
 					) {
 						callback(
 							new Error(
-								`Invalid bundle.l10n.json file. The value for key ${key} is not in the expected format.`
-							)
+								`Invalid bundle.l10n.json file. The value for key ${key} is not in the expected format.`,
+							),
 						);
 						return;
 					}
 				}
 				callback(undefined, file);
-			})
+			}),
 		)
 		.pipe(
 			jsonMerge({
 				fileName: `extensions/${extensionFolderName}/bundle.l10n.json`,
 				jsonSpace: "",
 				concatArrays: true,
-			})
+			}),
 		);
 }
 exports.EXTERNAL_EXTENSIONS = [
@@ -735,7 +735,7 @@ function createXlfFilesForExtensions() {
 			// Get extension id and use that as the id
 			const manifest = fs.readFileSync(
 				path.join(extensionFolder.path, "package.json"),
-				"utf-8"
+				"utf-8",
 			);
 			const manifestJson = JSON.parse(manifest);
 			const extensionId =
@@ -754,12 +754,12 @@ function createXlfFilesForExtensions() {
 						`.build/extensions/${extensionFolderName}/package.nls.json`,
 						`.build/extensions/${extensionFolderName}/**/nls.metadata.json`,
 					],
-					{ allowEmpty: true }
+					{ allowEmpty: true },
 				),
 				createL10nBundleForExtension(
 					extensionFolderName,
-					exports.EXTERNAL_EXTENSIONS.includes(extensionId)
-				)
+					exports.EXTERNAL_EXTENSIONS.includes(extensionId),
+				),
 			).pipe(
 				(0, event_stream_1.through)(
 					function (file) {
@@ -768,19 +768,19 @@ function createXlfFilesForExtensions() {
 							const basename = path.basename(file.path);
 							if (basename === "package.nls.json") {
 								const json = JSON.parse(
-									buffer.toString("utf8")
+									buffer.toString("utf8"),
 								);
 								getL10nMap().set(
 									`extensions/${extensionId}/package`,
-									json
+									json,
 								);
 							} else if (basename === "nls.metadata.json") {
 								const json = JSON.parse(
-									buffer.toString("utf8")
+									buffer.toString("utf8"),
 								);
 								const relPath = path.relative(
 									`.build/extensions/${extensionFolderName}`,
-									path.dirname(file.path)
+									path.dirname(file.path),
 								);
 								for (const file in json) {
 									const fileContent = json[file];
@@ -799,30 +799,30 @@ function createXlfFilesForExtensions() {
 															i
 														],
 														comment: undefined,
-													};
+												  };
 										info[key] = comment
 											? { message, comment }
 											: message;
 									}
 									getL10nMap().set(
 										`extensions/${extensionId}/${relPath}/${file}`,
-										info
+										info,
 									);
 								}
 							} else if (basename === "bundle.l10n.json") {
 								const json = JSON.parse(
-									buffer.toString("utf8")
+									buffer.toString("utf8"),
 								);
 								getL10nMap().set(
 									`extensions/${extensionId}/bundle`,
-									json
+									json,
 								);
 							} else {
 								this.emit(
 									"error",
 									new Error(
-										`${file.path} is not a valid extension nls file`
-									)
+										`${file.path} is not a valid extension nls file`,
+									),
 								);
 								return;
 							}
@@ -833,11 +833,11 @@ function createXlfFilesForExtensions() {
 							const xlfFile = new File({
 								path: path.join(
 									extensionsProject,
-									extensionId + ".xlf"
+									extensionId + ".xlf",
 								),
 								contents: Buffer.from(
 									(0, l10n_dev_1.getL10nXlf)(_l10nMap),
-									"utf8"
+									"utf8",
 								),
 							});
 							folderStream.queue(xlfFile);
@@ -852,8 +852,8 @@ function createXlfFilesForExtensions() {
 							folderStreamEndEmitted = true;
 							folderStream.queue(null);
 						}
-					}
-				)
+					},
+				),
 			);
 		},
 		function () {
@@ -862,7 +862,7 @@ function createXlfFilesForExtensions() {
 				folderStreamEndEmitted = true;
 				this.queue(null);
 			}
-		}
+		},
 	);
 }
 exports.createXlfFilesForExtensions = createXlfFilesForExtensions;
@@ -959,14 +959,14 @@ function prepareI18nPackFiles(resultingTranslationPaths) {
 	const extensionsPacks = {};
 	const errors = [];
 	return (0, event_stream_1.through)(
-		function (xlf) {
+		(xlf) => {
 			let project = path.basename(
-				path.dirname(path.dirname(xlf.relative))
+				path.dirname(path.dirname(xlf.relative)),
 			);
 			// strip `-new` since vscode-extensions-loc uses the `-new` suffix to indicate that it's from the new loc pipeline
 			const resource = path.basename(
 				path.basename(xlf.relative, ".xlf"),
-				"-new"
+				"-new",
 			);
 			if (exports.EXTERNAL_EXTENSIONS.find((e) => e === resource)) {
 				project = extensionsProject;
@@ -992,7 +992,7 @@ function prepareI18nPackFiles(resultingTranslationPaths) {
 							// remove 'extensions/extensionId/' segment
 							const secondSlash = path.indexOf(
 								"/",
-								firstSlash + 1
+								firstSlash + 1,
 							);
 							extPack.contents[path.substring(secondSlash + 1)] =
 								getRecordFromL10nJsonFormat(file.messages);
@@ -1014,7 +1014,7 @@ function prepareI18nPackFiles(resultingTranslationPaths) {
 					}
 					const translatedMainFile = createI18nFile(
 						"./main",
-						mainPack
+						mainPack,
 					);
 					resultingTranslationPaths.push({
 						id: "vscode",
@@ -1024,7 +1024,7 @@ function prepareI18nPackFiles(resultingTranslationPaths) {
 					for (const extensionId in extensionsPacks) {
 						const translatedExtFile = createI18nFile(
 							`extensions/${extensionId}`,
-							extensionsPacks[extensionId]
+							extensionsPacks[extensionId],
 						);
 						this.queue(translatedExtFile);
 						resultingTranslationPaths.push({
@@ -1037,7 +1037,7 @@ function prepareI18nPackFiles(resultingTranslationPaths) {
 				.catch((reason) => {
 					this.emit("error", reason);
 				});
-		}
+		},
 	);
 }
 exports.prepareI18nPackFiles = prepareI18nPackFiles;
@@ -1045,7 +1045,6 @@ function prepareIslFiles(language, innoSetupConfig) {
 	const parsePromises = [];
 	return (0, event_stream_1.through)(
 		function (xlf) {
-			const stream = this;
 			const parsePromise = XLF.parse(xlf.contents.toString());
 			parsePromises.push(parsePromise);
 			parsePromise
@@ -1055,9 +1054,9 @@ function prepareIslFiles(language, innoSetupConfig) {
 							file.name,
 							file.messages,
 							language,
-							innoSetupConfig
+							innoSetupConfig,
 						);
-						stream.queue(translatedFile);
+						this.queue(translatedFile);
 					});
 				})
 				.catch((reason) => {
@@ -1072,7 +1071,7 @@ function prepareIslFiles(language, innoSetupConfig) {
 				.catch((reason) => {
 					this.emit("error", reason);
 				});
-		}
+		},
 	);
 }
 exports.prepareIslFiles = prepareIslFiles;
@@ -1083,7 +1082,7 @@ function createIslFile(name, messages, language, innoSetup) {
 		originalContent = new TextModel(fs.readFileSync(name + ".isl", "utf8"));
 	} else {
 		originalContent = new TextModel(
-			fs.readFileSync(name + ".en.isl", "utf8")
+			fs.readFileSync(name + ".en.isl", "utf8"),
 		);
 	}
 	originalContent.lines.forEach((line) => {
@@ -1109,7 +1108,7 @@ function createIslFile(name, messages, language, innoSetup) {
 	const filePath = `${basename}.${language.id}.isl`;
 	const encoded = iconv.encode(
 		Buffer.from(content.join("\r\n"), "utf8").toString(),
-		innoSetup.codePage
+		innoSetup.codePage,
 	);
 	return new File({
 		path: filePath,

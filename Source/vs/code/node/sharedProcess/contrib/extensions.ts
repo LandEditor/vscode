@@ -28,7 +28,7 @@ export class ExtensionsContributions extends Disposable {
 		@IGlobalExtensionEnablementService
 		extensionEnablementService: IGlobalExtensionEnablementService,
 		@IStorageService storageService: IStorageService,
-		@ILogService logService: ILogService
+		@ILogService logService: ILogService,
 	) {
 		super();
 
@@ -38,11 +38,11 @@ export class ExtensionsContributions extends Disposable {
 			extensionGalleryService,
 			extensionStorageService,
 			extensionEnablementService,
-			logService
+			logService,
 		);
 		ExtensionStorageService.removeOutdatedExtensionVersions(
 			extensionManagementService,
-			storageService
+			storageService,
 		);
 	}
 }

@@ -3,18 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter, Event } from "vs/base/common/event";
-import { Disposable, dispose, IDisposable } from "vs/base/common/lifecycle";
-import { ResourceMap } from "vs/base/common/map";
 import { Promises } from "vs/base/common/async";
-import { IFileService } from "vs/platform/files/common/files";
+import { Emitter, Event } from "vs/base/common/event";
+import { Disposable, IDisposable, dispose } from "vs/base/common/lifecycle";
+import { ResourceMap } from "vs/base/common/map";
 import { URI } from "vs/base/common/uri";
+import { IFileService } from "vs/platform/files/common/files";
 import { ILogService } from "vs/platform/log/common/log";
-import { IWorkingCopyBackupService } from "vs/workbench/services/workingCopy/common/workingCopyBackup";
 import {
 	IFileWorkingCopy,
 	IFileWorkingCopyModel,
 } from "vs/workbench/services/workingCopy/common/fileWorkingCopy";
+import { IWorkingCopyBackupService } from "vs/workbench/services/workingCopy/common/workingCopyBackup";
 
 export interface IBaseFileWorkingCopyManager<
 	M extends IFileWorkingCopyModel,
@@ -89,7 +89,7 @@ export abstract class BaseFileWorkingCopyManager<
 		this.mapResourceToDisposeListener.get(resource)?.dispose();
 		this.mapResourceToDisposeListener.set(
 			resource,
-			workingCopy.onWillDispose(() => this.remove(resource))
+			workingCopy.onWillDispose(() => this.remove(resource)),
 		);
 
 		// Signal creation event
@@ -148,7 +148,7 @@ export abstract class BaseFileWorkingCopyManager<
 					if (workingCopy.isDirty()) {
 						await this.saveWithFallback(workingCopy);
 					}
-				})
+				}),
 			);
 		} catch (error) {
 			this.logService.error(error);
@@ -178,7 +178,7 @@ export abstract class BaseFileWorkingCopyManager<
 				await this.fileService.writeFile(
 					workingCopy.resource,
 					backup.value,
-					{ unlock: true }
+					{ unlock: true },
 				);
 			}
 		}

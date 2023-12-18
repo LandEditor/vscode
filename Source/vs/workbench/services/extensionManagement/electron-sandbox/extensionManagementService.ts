@@ -3,36 +3,36 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Schemas } from "vs/base/common/network";
+import { joinPath } from "vs/base/common/resources";
+import { URI } from "vs/base/common/uri";
 import { generateUuid } from "vs/base/common/uuid";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IDialogService } from "vs/platform/dialogs/common/dialogs";
+import { IDownloadService } from "vs/platform/download/common/download";
 import {
-	ILocalExtension,
 	IExtensionGalleryService,
+	ILocalExtension,
 	InstallVSIXOptions,
 } from "vs/platform/extensionManagement/common/extensionManagement";
-import { URI } from "vs/base/common/uri";
-import { ExtensionManagementService as BaseExtensionManagementService } from "vs/workbench/services/extensionManagement/common/extensionManagementService";
+import { IFileService } from "vs/platform/files/common/files";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { ILogService } from "vs/platform/log/common/log";
+import { IProductService } from "vs/platform/product/common/productService";
+import { IUserDataSyncEnablementService } from "vs/platform/userDataSync/common/userDataSync";
+import { IWorkspaceTrustRequestService } from "vs/platform/workspace/common/workspaceTrust";
+import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
 import {
 	IExtensionManagementServer,
 	IExtensionManagementServerService,
 	IWorkbenchExtensionManagementService,
 } from "vs/workbench/services/extensionManagement/common/extensionManagement";
-import { Schemas } from "vs/base/common/network";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IDownloadService } from "vs/platform/download/common/download";
-import { IProductService } from "vs/platform/product/common/productService";
-import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
-import { joinPath } from "vs/base/common/resources";
-import { IUserDataSyncEnablementService } from "vs/platform/userDataSync/common/userDataSync";
-import { IDialogService } from "vs/platform/dialogs/common/dialogs";
-import { IWorkspaceTrustRequestService } from "vs/platform/workspace/common/workspaceTrust";
+import { ExtensionManagementService as BaseExtensionManagementService } from "vs/workbench/services/extensionManagement/common/extensionManagementService";
 import { IExtensionManifestPropertiesService } from "vs/workbench/services/extensions/common/extensionManifestPropertiesService";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IFileService } from "vs/platform/files/common/files";
-import { ILogService } from "vs/platform/log/common/log";
 import { IUserDataProfileService } from "vs/workbench/services/userDataProfile/common/userDataProfile";
 
 export class ExtensionManagementService extends BaseExtensionManagementService {
@@ -79,7 +79,7 @@ export class ExtensionManagementService extends BaseExtensionManagementService {
 	protected override async installVSIXInServer(
 		vsix: URI,
 		server: IExtensionManagementServer,
-		options: InstallVSIXOptions | undefined
+		options: InstallVSIXOptions | undefined,
 	): Promise<ILocalExtension> {
 		if (
 			vsix.scheme === Schemas.vscodeRemote &&
@@ -89,7 +89,7 @@ export class ExtensionManagementService extends BaseExtensionManagementService {
 		) {
 			const downloadedLocation = joinPath(
 				this.environmentService.tmpDir,
-				generateUuid()
+				generateUuid(),
 			);
 			await this.downloadService.download(vsix, downloadedLocation);
 			vsix = downloadedLocation;
@@ -101,5 +101,5 @@ export class ExtensionManagementService extends BaseExtensionManagementService {
 registerSingleton(
 	IWorkbenchExtensionManagementService,
 	ExtensionManagementService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

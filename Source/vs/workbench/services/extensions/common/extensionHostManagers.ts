@@ -30,23 +30,23 @@ export interface IExtensionHostManager {
 	dispose(): void;
 	ready(): Promise<void>;
 	representsRunningLocation(
-		runningLocation: ExtensionRunningLocation
+		runningLocation: ExtensionRunningLocation,
 	): boolean;
 	deltaExtensions(extensionsDelta: IExtensionDescriptionDelta): Promise<void>;
 	containsExtension(extensionId: ExtensionIdentifier): boolean;
 	activate(
 		extension: ExtensionIdentifier,
-		reason: ExtensionActivationReason
+		reason: ExtensionActivationReason,
 	): Promise<boolean>;
 	activateByEvent(
 		activationEvent: string,
-		activationKind: ActivationKind
+		activationKind: ActivationKind,
 	): Promise<void>;
 	activationEventIsDone(activationEvent: string): boolean;
 	getInspectPort(tryEnableInspector: boolean): Promise<number>;
 	resolveAuthority(
 		remoteAuthority: string,
-		resolveAttempt: number
+		resolveAttempt: number,
 	): Promise<IResolveAuthorityResult>;
 	/**
 	 * Returns `null` if no resolver for `remoteAuthority` is found.
@@ -55,7 +55,7 @@ export interface IExtensionHostManager {
 	start(
 		extensionRegistryVersionId: number,
 		allExtensions: readonly IExtensionDescription[],
-		myExtensions: ExtensionIdentifier[]
+		myExtensions: ExtensionIdentifier[],
 	): Promise<void>;
 	extensionTestsExecute(): Promise<number>;
 	setRemoteEnvironment(env: { [key: string]: string | null }): Promise<void>;

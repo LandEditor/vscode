@@ -5,6 +5,7 @@
 
 import { URI } from "vs/base/common/uri";
 import { localize } from "vs/nls";
+import { IFileService } from "vs/platform/files/common/files";
 import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
 import { IProductService } from "vs/platform/product/common/productService";
 import {
@@ -16,13 +17,12 @@ import {
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { IAuthenticationService } from "vs/workbench/services/authentication/common/authentication";
-import { IFileService } from "vs/platform/files/common/files";
-import { ITextFileService } from "vs/workbench/services/textfile/common/textfiles";
 import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import { IAuthenticationService } from "vs/workbench/services/authentication/common/authentication";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 import { IBrowserWorkbenchEnvironmentService } from "vs/workbench/services/environment/browser/environmentService";
+import { ITextFileService } from "vs/workbench/services/textfile/common/textfiles";
 
 const TRUSTED_DOMAINS_URI = URI.parse("trustedDomains:/Trusted Domains");
 
@@ -35,7 +35,7 @@ export const manageTrustedDomainSettingsCommand = {
 	description: {
 		description: localize(
 			"trustedDomain.manageTrustedDomain",
-			"Manage Trusted Domains"
+			"Manage Trusted Domains",
 		),
 		args: [],
 	},
@@ -60,7 +60,7 @@ export async function configureOpenerTrustedDomainsHandler(
 	quickInputService: IQuickInputService,
 	storageService: IStorageService,
 	editorService: IEditorService,
-	telemetryService: ITelemetryService
+	telemetryService: ITelemetryService,
 ) {
 	const parsedDomainToConfigure = URI.parse(domainToConfigure);
 	const toplevelDomainSegements =
@@ -76,7 +76,7 @@ export async function configureOpenerTrustedDomainsHandler(
 		label: localize(
 			"trustedDomain.trustDomain",
 			"Trust {0}",
-			domainToConfigure
+			domainToConfigure,
 		),
 		id: "trust",
 		toTrust: domainToConfigure,
@@ -88,7 +88,7 @@ export async function configureOpenerTrustedDomainsHandler(
 		toplevelDomainSegements.every(
 			(segment) =>
 				Number.isInteger(+segment) ||
-				Number.isInteger(+segment.split(":")[0])
+				Number.isInteger(+segment.split(":")[0]),
 		);
 
 	if (isIP) {
@@ -99,7 +99,7 @@ export async function configureOpenerTrustedDomainsHandler(
 				label: localize(
 					"trustedDomain.trustAllPorts",
 					"Trust {0} on all ports",
-					base
+					base,
 				),
 				toTrust: base + ":*",
 				id: "trust",
@@ -111,7 +111,7 @@ export async function configureOpenerTrustedDomainsHandler(
 			label: localize(
 				"trustedDomain.trustSubDomain",
 				"Trust {0} and all its subdomains",
-				domainEnd
+				domainEnd,
 			),
 			toTrust: topLevelDomain,
 			id: "trust",
@@ -122,7 +122,7 @@ export async function configureOpenerTrustedDomainsHandler(
 		type: "item",
 		label: localize(
 			"trustedDomain.trustAllDomains",
-			"Trust all domains (disables link protection)"
+			"Trust all domains (disables link protection)",
 		),
 		toTrust: "*",
 		id: "trust",
@@ -131,7 +131,7 @@ export async function configureOpenerTrustedDomainsHandler(
 		type: "item",
 		label: localize(
 			"trustedDomain.manageTrustedDomains",
-			"Manage Trusted Domains"
+			"Manage Trusted Domains",
 		),
 		id: "manage",
 	});
@@ -139,7 +139,7 @@ export async function configureOpenerTrustedDomainsHandler(
 	const pickedResult =
 		await quickInputService.pick<ConfigureTrustedDomainsQuickPickItem>(
 			options,
-			{ activeItem: options[0] }
+			{ activeItem: options[0] },
 		);
 
 	if (pickedResult && pickedResult.id) {
@@ -158,13 +158,13 @@ export async function configureOpenerTrustedDomainsHandler(
 				if (trustedDomains.indexOf(itemToTrust) === -1) {
 					storageService.remove(
 						TRUSTED_DOMAINS_CONTENT_STORAGE_KEY,
-						StorageScope.APPLICATION
+						StorageScope.APPLICATION,
 					);
 					storageService.store(
 						TRUSTED_DOMAINS_STORAGE_KEY,
 						JSON.stringify([...trustedDomains, itemToTrust]),
 						StorageScope.APPLICATION,
-						StorageTarget.USER
+						StorageTarget.USER,
 					);
 
 					return [...trustedDomains, itemToTrust];
@@ -195,14 +195,14 @@ export function extractGitHubRemotesFromGitConfig(gitConfig: string): string[] {
 async function getRemotes(
 	fileService: IFileService,
 	textFileService: ITextFileService,
-	contextService: IWorkspaceContextService
+	contextService: IWorkspaceContextService,
 ): Promise<string[]> {
 	const workspaceUris = contextService
 		.getWorkspace()
 		.folders.map((folder) => folder.uri);
 	const domains = await Promise.race([
 		new Promise<string[][]>((resolve) =>
-			setTimeout(() => resolve([]), 2000)
+			setTimeout(() => resolve([]), 2000),
 		),
 		Promise.all<string[]>(
 			workspaceUris.map(async (workspaceUri) => {
@@ -224,13 +224,13 @@ async function getRemotes(
 				} catch {
 					return [];
 				}
-			})
+			}),
 		),
 	]);
 
 	const set = domains.reduce(
 		(set, list) => list.reduce((set, item) => set.add(item), set),
-		new Set<string>()
+		new Set<string>(),
 	);
 	return [...set];
 }
@@ -246,7 +246,7 @@ export interface ITrustedDomains extends IStaticTrustedDomains {
 }
 
 export async function readTrustedDomains(
-	accessor: ServicesAccessor
+	accessor: ServicesAccessor,
 ): Promise<ITrustedDomains> {
 	const { defaultTrustedDomains, trustedDomains } =
 		readStaticTrustedDomains(accessor);
@@ -263,7 +263,7 @@ export async function readTrustedDomains(
 }
 
 export async function readWorkspaceTrustedDomains(
-	accessor: ServicesAccessor
+	accessor: ServicesAccessor,
 ): Promise<string[]> {
 	const fileService = accessor.get(IFileService);
 	const textFileService = accessor.get(ITextFileService);
@@ -272,7 +272,7 @@ export async function readWorkspaceTrustedDomains(
 }
 
 export async function readAuthenticationTrustedDomains(
-	accessor: ServicesAccessor
+	accessor: ServicesAccessor,
 ): Promise<string[]> {
 	const authenticationService = accessor.get(IAuthenticationService);
 	return authenticationService.isAuthenticationProviderRegistered("github") &&
@@ -282,12 +282,12 @@ export async function readAuthenticationTrustedDomains(
 }
 
 export function readStaticTrustedDomains(
-	accessor: ServicesAccessor
+	accessor: ServicesAccessor,
 ): IStaticTrustedDomains {
 	const storageService = accessor.get(IStorageService);
 	const productService = accessor.get(IProductService);
 	const environmentService = accessor.get(
-		IBrowserWorkbenchEnvironmentService
+		IBrowserWorkbenchEnvironmentService,
 	);
 
 	const defaultTrustedDomains = [
@@ -299,7 +299,7 @@ export function readStaticTrustedDomains(
 	try {
 		const trustedDomainsSrc = storageService.get(
 			TRUSTED_DOMAINS_STORAGE_KEY,
-			StorageScope.APPLICATION
+			StorageScope.APPLICATION,
 		);
 		if (trustedDomainsSrc) {
 			trustedDomains = JSON.parse(trustedDomainsSrc);

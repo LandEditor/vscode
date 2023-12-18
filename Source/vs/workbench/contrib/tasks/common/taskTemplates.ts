@@ -88,7 +88,7 @@ const command: ITaskEntry = {
 	autoDetect: false,
 	description: nls.localize(
 		"externalCommand",
-		"Example to run an arbitrary external command"
+		"Example to run an arbitrary external command",
 	),
 	content: [
 		"{",

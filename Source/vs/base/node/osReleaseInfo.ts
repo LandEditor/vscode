@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { constants as FSConstants } from "fs";
-import { open, FileHandle } from "fs/promises";
 import { createInterface as readLines } from "readline";
+import { FileHandle, open } from "fs/promises";
 import * as Platform from "vs/base/common/platform";
 
 type ReleaseInfo = {
@@ -15,7 +15,7 @@ type ReleaseInfo = {
 };
 
 export async function getOSReleaseInfo(
-	errorLogger: (error: any) => void
+	errorLogger: (error: any) => void,
 ): Promise<ReleaseInfo | undefined> {
 	if (Platform.isMacintosh || Platform.isWindows) {
 		return;
@@ -38,7 +38,7 @@ export async function getOSReleaseInfo(
 
 	if (!handle) {
 		errorLogger(
-			"Unable to retrieve release information from known identifier paths."
+			"Unable to retrieve release information from known identifier paths.",
 		);
 		return;
 	}

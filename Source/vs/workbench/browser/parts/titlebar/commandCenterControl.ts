@@ -46,7 +46,7 @@ export class CommandCenterControl {
 		windowTitle: WindowTitle,
 		hoverDelegate: IHoverDelegate,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IQuickInputService quickInputService: IQuickInputService
+		@IQuickInputService quickInputService: IQuickInputService,
 	) {
 		this.element.classList.add("command-center");
 
@@ -71,32 +71,32 @@ export class CommandCenterControl {
 							action,
 							windowTitle,
 							hoverDelegate,
-							{}
+							{},
 						);
 					} else {
 						return createActionViewItem(
 							instantiationService,
 							action,
-							{ hoverDelegate }
+							{ hoverDelegate },
 						);
 					}
 				},
-			}
+			},
 		);
 
 		this._disposables.add(
 			Event.filter(
 				quickInputService.onShow,
 				() => isActiveDocument(this.element),
-				this._disposables
-			)(this._setVisibility.bind(this, false))
+				this._disposables,
+			)(this._setVisibility.bind(this, false)),
 		);
 		this._disposables.add(
 			Event.filter(
 				quickInputService.onHide,
 				() => isActiveDocument(this.element),
-				this._disposables
-			)(this._setVisibility.bind(this, true))
+				this._disposables,
+			)(this._setVisibility.bind(this, true)),
 		);
 		this._disposables.add(titleToolbar);
 	}
@@ -138,18 +138,18 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
 		container.classList.add("command-center-center");
 		container.classList.toggle(
 			"multiple",
-			this._submenu.actions.length > 1
+			this._submenu.actions.length > 1,
 		);
 
 		const hover = this._store.add(
-			setupCustomHover(this._hoverDelegate, container, this.getTooltip())
+			setupCustomHover(this._hoverDelegate, container, this.getTooltip()),
 		);
 
 		// update label & tooltip when window title changes
 		this._store.add(
 			this._windowTitle.onDidChange(() => {
 				hover.update(this.getTooltip());
-			})
+			}),
 		);
 
 		const groups: (readonly IAction[])[] = [];
@@ -184,7 +184,7 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
 							return createActionViewItem(
 								this._instaService,
 								action,
-								options
+								options,
 							);
 						}
 
@@ -199,7 +199,7 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
 								override render(container: HTMLElement): void {
 									super.render(container);
 									container.classList.toggle(
-										"command-center-quick-pick"
+										"command-center-quick-pick",
 									);
 
 									const action = this.action;
@@ -223,8 +223,8 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
 										setupCustomHover(
 											that._hoverDelegate,
 											container,
-											this.getTooltip()
-										)
+											this.getTooltip(),
+										),
 									);
 
 									// update label & tooltip when window title changes
@@ -233,7 +233,7 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
 											hover.update(this.getTooltip());
 											labelElement.innerText =
 												this._getLabel();
-										})
+										}),
 									);
 
 									// update label & tooltip when tabs visibility changes
@@ -248,13 +248,13 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
 													oldPartOptions.showTabs
 												) {
 													hover.update(
-														this.getTooltip()
+														this.getTooltip(),
 													);
 													labelElement.innerText =
 														this._getLabel();
 												}
-											}
-										)
+											},
+										),
 									);
 								}
 
@@ -287,7 +287,7 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
 											"label1",
 											"{0} {1}",
 											prefix,
-											label
+											label,
 										);
 									}
 									if (suffix) {
@@ -295,15 +295,15 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
 											"label2",
 											"{0} {1}",
 											label,
-											suffix
+											suffix,
 										);
 									}
 									return label;
 								}
-							}
+							},
 						);
 					},
-				}
+				},
 			);
 			toolbar.setActions(group);
 			this._store.add(toolbar);
@@ -330,14 +330,14 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
 					"Search {0} ({1}) \u2014 {2}",
 					this._windowTitle.workspaceName,
 					kb,
-					this._windowTitle.value
-				)
+					this._windowTitle.value,
+			  )
 			: localize(
 					"title2",
 					"Search {0} \u2014 {1}",
 					this._windowTitle.workspaceName,
-					this._windowTitle.value
-				);
+					this._windowTitle.value,
+			  );
 
 		return title;
 	}

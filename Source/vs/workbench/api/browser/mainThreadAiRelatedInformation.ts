@@ -29,7 +29,7 @@ export class MainThreadAiRelatedInformation
 {
 	private readonly _proxy: ExtHostAiRelatedInformationShape;
 	private readonly _registrations = this._register(
-		new DisposableMap<number>()
+		new DisposableMap<number>(),
 	);
 
 	constructor(
@@ -45,26 +45,26 @@ export class MainThreadAiRelatedInformation
 
 	$getAiRelatedInformation(
 		query: string,
-		types: RelatedInformationType[]
+		types: RelatedInformationType[],
 	): Promise<RelatedInformationResult[]> {
 		// TODO: use a real cancellation token
 		return this._aiRelatedInformationService.getRelatedInformation(
 			query,
 			types,
-			CancellationToken.None
+			CancellationToken.None,
 		);
 	}
 
 	$registerAiRelatedInformationProvider(
 		handle: number,
-		type: RelatedInformationType
+		type: RelatedInformationType,
 	): void {
 		const provider: IAiRelatedInformationProvider = {
 			provideAiRelatedInformation: (query, token) => {
 				return this._proxy.$provideAiRelatedInformation(
 					handle,
 					query,
-					token
+					token,
 				);
 			},
 		};
@@ -72,8 +72,8 @@ export class MainThreadAiRelatedInformation
 			handle,
 			this._aiRelatedInformationService.registerAiRelatedInformationProvider(
 				type,
-				provider
-			)
+				provider,
+			),
 		);
 	}
 

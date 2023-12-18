@@ -34,7 +34,7 @@ export interface IWordAtPosition {
  * The default would look like this:
  * /(-?\d*\.\d\w*)|([^\`\~\!\@\#\$\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g
  */
-function createWordRegExp(allowInWords: string = ""): RegExp {
+function createWordRegExp(allowInWords = ""): RegExp {
 	let source = "(-?\\d*\\.\\d\\w*)|([^";
 	for (const sep of USUAL_WORD_SEPARATORS) {
 		if (allowInWords.indexOf(sep) >= 0) {
@@ -50,12 +50,14 @@ function createWordRegExp(allowInWords: string = ""): RegExp {
 export const DEFAULT_WORD_REGEXP = createWordRegExp();
 
 export function ensureValidWordDefinition(
-	wordDefinition?: RegExp | null
+	wordDefinition?: RegExp | null,
 ): RegExp {
 	let result: RegExp = DEFAULT_WORD_REGEXP;
 
 	if (wordDefinition && wordDefinition instanceof RegExp) {
-		if (!wordDefinition.global) {
+		if (wordDefinition.global) {
+			result = wordDefinition;
+		} else {
 			let flags = "g";
 			if (wordDefinition.ignoreCase) {
 				flags += "i";
@@ -67,8 +69,6 @@ export function ensureValidWordDefinition(
 				flags += "u";
 			}
 			result = new RegExp(wordDefinition.source, flags);
-		} else {
-			result = wordDefinition;
 		}
 	}
 
@@ -100,7 +100,7 @@ export function getWordAtText(
 	wordDefinition: RegExp,
 	text: string,
 	textOffset: number,
-	config?: IGetWordAtTextConfig
+	config?: IGetWordAtTextConfig,
 ): IWordAtPosition | null {
 	// Ensure the regex has the 'g' flag, otherwise this will loop forever
 	wordDefinition = ensureValidWordDefinition(wordDefinition);
@@ -142,7 +142,7 @@ export function getWordAtText(
 			wordDefinition,
 			text,
 			pos,
-			prevRegexIndex
+			prevRegexIndex,
 		);
 
 		if (!thisMatch && match) {
@@ -176,7 +176,7 @@ function _findRegexMatchEnclosingPosition(
 	wordDefinition: RegExp,
 	text: string,
 	pos: number,
-	stopPos: number
+	stopPos: number,
 ): RegExpExecArray | null {
 	let match: RegExpExecArray | null;
 	while ((match = wordDefinition.exec(text))) {

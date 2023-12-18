@@ -3,28 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter, Event } from "vs/base/common/event";
-import { IHostService } from "vs/workbench/services/host/browser/host";
-import { INativeHostService } from "vs/platform/native/common/native";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { ILabelService, Verbosity } from "vs/platform/label/common/label";
-import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import {
-	IWindowOpenable,
-	IOpenWindowOptions,
-	isFolderToOpen,
-	isWorkspaceToOpen,
-	IOpenEmptyWindowOptions,
-	IPoint,
-	IRectangle,
-} from "vs/platform/window/common/window";
-import { Disposable } from "vs/base/common/lifecycle";
-import { NativeHostService } from "vs/platform/native/common/nativeHostService";
-import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
-import { IMainProcessService } from "vs/platform/ipc/common/mainProcessService";
 import {
 	disposableWindowInterval,
 	getActiveDocument,
@@ -33,14 +11,36 @@ import {
 	hasWindow,
 	onDidRegisterWindow,
 } from "vs/base/browser/dom";
-import { memoize } from "vs/base/common/decorators";
 import { isAuxiliaryWindow } from "vs/base/browser/window";
+import { memoize } from "vs/base/common/decorators";
+import { Emitter, Event } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import { IMainProcessService } from "vs/platform/ipc/common/mainProcessService";
+import { ILabelService, Verbosity } from "vs/platform/label/common/label";
+import { INativeHostService } from "vs/platform/native/common/native";
+import { NativeHostService } from "vs/platform/native/common/nativeHostService";
+import {
+	IOpenEmptyWindowOptions,
+	IOpenWindowOptions,
+	IPoint,
+	IRectangle,
+	IWindowOpenable,
+	isFolderToOpen,
+	isWorkspaceToOpen,
+} from "vs/platform/window/common/window";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
+import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
+import { IHostService } from "vs/workbench/services/host/browser/host";
 
 class WorkbenchNativeHostService extends NativeHostService {
 	constructor(
 		@INativeWorkbenchEnvironmentService
 		environmentService: INativeWorkbenchEnvironmentService,
-		@IMainProcessService mainProcessService: IMainProcessService
+		@IMainProcessService mainProcessService: IMainProcessService,
 	) {
 		super(environmentService.window.id, mainProcessService);
 	}
@@ -67,28 +67,28 @@ class WorkbenchHostService extends Disposable implements IHostService {
 				Event.filter(
 					this.nativeHostService.onDidFocusMainOrAuxiliaryWindow,
 					(id) => hasWindow(id),
-					this._store
+					this._store,
 				),
 				() => this.hasFocus,
-				this._store
+				this._store,
 			),
 			Event.map(
 				Event.filter(
 					this.nativeHostService.onDidBlurMainOrAuxiliaryWindow,
 					(id) => hasWindow(id),
-					this._store
+					this._store,
 				),
 				() => this.hasFocus,
-				this._store
+				this._store,
 			),
 			Event.map(
 				this.onDidChangeActiveWindow,
 				() => this.hasFocus,
-				this._store
-			)
+				this._store,
+			),
 		),
 		undefined,
-		this._store
+		this._store,
 	);
 
 	get hasFocus(): boolean {
@@ -118,8 +118,8 @@ class WorkbenchHostService extends Disposable implements IHostService {
 			Event.filter(
 				this.nativeHostService.onDidFocusMainOrAuxiliaryWindow,
 				(id) => hasWindow(id),
-				this._store
-			)((id) => emitter.fire(id))
+				this._store,
+			)((id) => emitter.fire(id)),
 		);
 
 		this._register(
@@ -139,10 +139,10 @@ class WorkbenchHostService extends Disposable implements IHostService {
 							return hasFocus;
 						},
 						100,
-						20
-					)
+						20,
+					),
 				);
-			})
+			}),
 		);
 
 		return Event.latch(emitter.event, undefined, this._store);
@@ -151,11 +151,11 @@ class WorkbenchHostService extends Disposable implements IHostService {
 	openWindow(options?: IOpenEmptyWindowOptions): Promise<void>;
 	openWindow(
 		toOpen: IWindowOpenable[],
-		options?: IOpenWindowOptions
+		options?: IOpenWindowOptions,
 	): Promise<void>;
 	openWindow(
 		arg1?: IOpenEmptyWindowOptions | IWindowOpenable[],
-		arg2?: IOpenWindowOptions
+		arg2?: IOpenWindowOptions,
 	): Promise<void> {
 		if (Array.isArray(arg1)) {
 			return this.doOpenWindow(arg1, arg2);
@@ -166,14 +166,14 @@ class WorkbenchHostService extends Disposable implements IHostService {
 
 	private doOpenWindow(
 		toOpen: IWindowOpenable[],
-		options?: IOpenWindowOptions
+		options?: IOpenWindowOptions,
 	): Promise<void> {
 		const remoteAuthority = this.environmentService.remoteAuthority;
 		if (!!remoteAuthority) {
 			toOpen.forEach(
 				(openable) =>
 					(openable.label =
-						openable.label || this.getRecentLabel(openable))
+						openable.label || this.getRecentLabel(openable)),
 			);
 
 			if (options?.remoteAuthority === undefined) {
@@ -198,7 +198,7 @@ class WorkbenchHostService extends Disposable implements IHostService {
 		if (isWorkspaceToOpen(openable)) {
 			return this.labelService.getWorkspaceLabel(
 				{ id: "", configPath: openable.workspaceUri },
-				{ verbose: Verbosity.LONG }
+				{ verbose: Verbosity.LONG },
 			);
 		}
 
@@ -206,7 +206,7 @@ class WorkbenchHostService extends Disposable implements IHostService {
 	}
 
 	private doOpenEmptyWindow(
-		options?: IOpenEmptyWindowOptions
+		options?: IOpenEmptyWindowOptions,
 	): Promise<void> {
 		const remoteAuthority = this.environmentService.remoteAuthority;
 		if (!!remoteAuthority && options?.remoteAuthority === undefined) {
@@ -234,7 +234,7 @@ class WorkbenchHostService extends Disposable implements IHostService {
 		return this.nativeHostService.moveWindowTop(
 			isAuxiliaryWindow(targetWindow)
 				? { targetWindowId: targetWindow.vscodeWindowId }
-				: undefined
+				: undefined,
 		);
 	}
 
@@ -269,7 +269,7 @@ class WorkbenchHostService extends Disposable implements IHostService {
 	}
 
 	async withExpectedShutdown<T>(
-		expectedShutdownTask: () => Promise<T>
+		expectedShutdownTask: () => Promise<T>,
 	): Promise<T> {
 		return await expectedShutdownTask();
 	}
@@ -280,10 +280,10 @@ class WorkbenchHostService extends Disposable implements IHostService {
 registerSingleton(
 	IHostService,
 	WorkbenchHostService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 registerSingleton(
 	INativeHostService,
 	WorkbenchNativeHostService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

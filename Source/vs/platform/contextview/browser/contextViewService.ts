@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { getWindow } from "vs/base/browser/dom";
 import {
 	ContextView,
 	ContextViewDOMPosition,
@@ -14,7 +15,6 @@ import {
 } from "vs/base/common/lifecycle";
 import { ILayoutService } from "vs/platform/layout/browser/layoutService";
 import { IContextViewDelegate, IContextViewService } from "./contextView";
-import { getWindow } from "vs/base/browser/dom";
 
 export class ContextViewService
 	extends Disposable
@@ -26,8 +26,8 @@ export class ContextViewService
 	private readonly contextView = this._register(
 		new ContextView(
 			this.layoutService.mainContainer,
-			ContextViewDOMPosition.ABSOLUTE
-		)
+			ContextViewDOMPosition.ABSOLUTE,
+		),
 	);
 
 	constructor(
@@ -44,7 +44,7 @@ export class ContextViewService
 	showContextView(
 		delegate: IContextViewDelegate,
 		container?: HTMLElement,
-		shadowRoot?: boolean
+		shadowRoot?: boolean,
 	): IDisposable {
 		let domPosition: ContextViewDOMPosition;
 		if (container) {
@@ -64,7 +64,7 @@ export class ContextViewService
 
 		this.contextView.setContainer(
 			container ?? this.layoutService.activeContainer,
-			domPosition
+			domPosition,
 		);
 
 		this.contextView.show(delegate);

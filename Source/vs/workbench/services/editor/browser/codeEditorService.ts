@@ -3,31 +3,31 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { isEqual } from "vs/base/common/resources";
 import {
 	ICodeEditor,
-	isCodeEditor,
-	isDiffEditor,
-	isCompositeEditor,
 	getCodeEditor,
+	isCodeEditor,
+	isCompositeEditor,
+	isDiffEditor,
 } from "vs/editor/browser/editorBrowser";
 import { AbstractCodeEditorService } from "vs/editor/browser/services/abstractCodeEditorService";
+import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
 import { ScrollType } from "vs/editor/common/editorCommon";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { IResourceEditorInput } from "vs/platform/editor/common/editor";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
 import { IThemeService } from "vs/platform/theme/common/themeService";
 import { IWorkbenchEditorConfiguration } from "vs/workbench/common/editor";
+import { applyTextEditorOptions } from "vs/workbench/common/editor/editorOptions";
 import {
 	ACTIVE_GROUP,
 	IEditorService,
 	SIDE_GROUP,
 } from "vs/workbench/services/editor/common/editorService";
-import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { isEqual } from "vs/base/common/resources";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { applyTextEditorOptions } from "vs/workbench/common/editor/editorOptions";
 
 export class CodeEditorService extends AbstractCodeEditorService {
 	constructor(
@@ -73,7 +73,7 @@ export class CodeEditorService extends AbstractCodeEditorService {
 	private async doOpenCodeEditorFromDiff(
 		input: IResourceEditorInput,
 		source: ICodeEditor | null,
-		sideBySide?: boolean
+		sideBySide?: boolean,
 	): Promise<ICodeEditor | null> {
 		// Special case: If the active editor is a diff editor and the request to open originates and
 		// targets the modified side of it, we just apply the request there to prevent opening the modified
@@ -89,7 +89,7 @@ export class CodeEditorService extends AbstractCodeEditorService {
 			activeTextEditorControl.getModel() && // we need a target model to compare with
 			isEqual(
 				input.resource,
-				activeTextEditorControl.getModel()?.modified.uri
+				activeTextEditorControl.getModel()?.modified.uri,
 			) // we need the input resources to match with modified side
 		) {
 			const targetEditor = activeTextEditorControl.getModifiedEditor();
@@ -97,7 +97,7 @@ export class CodeEditorService extends AbstractCodeEditorService {
 			applyTextEditorOptions(
 				input.options,
 				targetEditor,
-				ScrollType.Smooth
+				ScrollType.Smooth,
 			);
 
 			return targetEditor;
@@ -110,7 +110,7 @@ export class CodeEditorService extends AbstractCodeEditorService {
 	private async doOpenCodeEditor(
 		input: IResourceEditorInput,
 		source: ICodeEditor | null,
-		sideBySide?: boolean
+		sideBySide?: boolean,
 	): Promise<ICodeEditor | null> {
 		// Special case: we want to detect the request to open an editor that
 		// is different from the current one to decide whether the current editor
@@ -138,7 +138,7 @@ export class CodeEditorService extends AbstractCodeEditorService {
 		// Open as editor
 		const control = await this.editorService.openEditor(
 			input,
-			sideBySide ? SIDE_GROUP : ACTIVE_GROUP
+			sideBySide ? SIDE_GROUP : ACTIVE_GROUP,
 		);
 		if (control) {
 			const widget = control.getControl();
@@ -161,5 +161,5 @@ export class CodeEditorService extends AbstractCodeEditorService {
 registerSingleton(
 	ICodeEditorService,
 	CodeEditorService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as cp from "child_process";
 import * as fs from "fs";
 import * as path from "path";
-import * as cp from "child_process";
 const parseSemver = require("parse-semver");
 const root = fs.realpathSync(path.dirname(path.dirname(__dirname)));
 
@@ -48,7 +48,7 @@ function asYarnDependency(prefix: string, tree: Tree): Dependency | null {
 	for (const child of tree.children || []) {
 		const dep = asYarnDependency(
 			path.join(prefix, name, "node_modules"),
-			child
+			child,
 		);
 
 		if (dep) {
@@ -76,13 +76,13 @@ function getYarnProductionDependencies(folderPath: string): Dependency[] {
 
 	return trees
 		.map((tree) =>
-			asYarnDependency(path.join(folderPath, "node_modules"), tree)
+			asYarnDependency(path.join(folderPath, "node_modules"), tree),
 		)
 		.filter<Dependency>((dep): dep is Dependency => !!dep);
 }
 
 export function getProductionDependencies(
-	folderPath: string
+	folderPath: string,
 ): FlatDependency[] {
 	const result: FlatDependency[] = [];
 	const deps = getYarnProductionDependencies(folderPath);
@@ -99,10 +99,10 @@ export function getProductionDependencies(
 
 	if (fs.existsSync(distroPackageJsonPath)) {
 		const distroPackageJson = JSON.parse(
-			fs.readFileSync(distroPackageJsonPath, "utf8")
+			fs.readFileSync(distroPackageJsonPath, "utf8"),
 		);
 		const distroDependencyNames = Object.keys(
-			distroPackageJson.dependencies ?? {}
+			distroPackageJson.dependencies ?? {},
 		);
 
 		for (const name of distroDependencyNames) {

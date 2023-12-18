@@ -12,23 +12,23 @@ import { Emitter, Event, PauseableEmitter } from "vs/base/common/event";
 import {
 	Disposable,
 	DisposableStore,
-	dispose,
 	MutableDisposable,
+	dispose,
 } from "vs/base/common/lifecycle";
 import { mark } from "vs/base/common/performance";
 import { isUndefinedOrNull } from "vs/base/common/types";
 import {
-	InMemoryStorageDatabase,
 	IStorage,
 	IStorageChangeEvent,
+	InMemoryStorageDatabase,
 	Storage,
 	StorageHint,
 	StorageValue,
 } from "vs/base/parts/storage/common/storage";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import {
-	isUserDataProfile,
 	IUserDataProfile,
+	isUserDataProfile,
 } from "vs/platform/userDataProfile/common/userDataProfile";
 import { IAnyWorkspaceIdentifier } from "vs/platform/workspace/common/workspace";
 
@@ -42,12 +42,12 @@ export enum WillSaveStateReason {
 	/**
 	 * No specific reason to save state.
 	 */
-	NONE,
+	NONE = 0,
 
 	/**
 	 * A hint that the workbench is about to shutdown.
 	 */
-	SHUTDOWN,
+	SHUTDOWN = 1,
 }
 
 export interface IWillSaveStateEvent {
@@ -90,22 +90,22 @@ export interface IStorageService {
 	onDidChangeValue(
 		scope: StorageScope.WORKSPACE,
 		key: string | undefined,
-		disposable: DisposableStore
+		disposable: DisposableStore,
 	): Event<IWorkspaceStorageValueChangeEvent>;
 	onDidChangeValue(
 		scope: StorageScope.PROFILE,
 		key: string | undefined,
-		disposable: DisposableStore
+		disposable: DisposableStore,
 	): Event<IProfileStorageValueChangeEvent>;
 	onDidChangeValue(
 		scope: StorageScope.APPLICATION,
 		key: string | undefined,
-		disposable: DisposableStore
+		disposable: DisposableStore,
 	): Event<IApplicationStorageValueChangeEvent>;
 	onDidChangeValue(
 		scope: StorageScope,
 		key: string | undefined,
-		disposable: DisposableStore
+		disposable: DisposableStore,
 	): Event<IStorageValueChangeEvent>;
 
 	/**
@@ -139,7 +139,7 @@ export interface IStorageService {
 	get(
 		key: string,
 		scope: StorageScope,
-		fallbackValue?: string
+		fallbackValue?: string,
 	): string | undefined;
 
 	/**
@@ -153,12 +153,12 @@ export interface IStorageService {
 	getBoolean(
 		key: string,
 		scope: StorageScope,
-		fallbackValue: boolean
+		fallbackValue: boolean,
 	): boolean;
 	getBoolean(
 		key: string,
 		scope: StorageScope,
-		fallbackValue?: boolean
+		fallbackValue?: boolean,
 	): boolean | undefined;
 
 	/**
@@ -174,7 +174,7 @@ export interface IStorageService {
 	getNumber(
 		key: string,
 		scope: StorageScope,
-		fallbackValue?: number
+		fallbackValue?: number,
 	): number | undefined;
 
 	/**
@@ -188,12 +188,12 @@ export interface IStorageService {
 	getObject<T extends object>(
 		key: string,
 		scope: StorageScope,
-		fallbackValue: T
+		fallbackValue: T,
 	): T;
 	getObject<T extends object>(
 		key: string,
 		scope: StorageScope,
-		fallbackValue?: T
+		fallbackValue?: T,
 	): T | undefined;
 
 	/**
@@ -211,7 +211,7 @@ export interface IStorageService {
 		key: string,
 		value: StorageValue,
 		scope: StorageScope,
-		target: StorageTarget
+		target: StorageTarget,
 	): void;
 
 	/**
@@ -264,7 +264,7 @@ export interface IStorageService {
 	 */
 	switch(
 		to: IAnyWorkspaceIdentifier | IUserDataProfile,
-		preserveData: boolean
+		preserveData: boolean,
 	): Promise<void>;
 
 	/**
@@ -289,7 +289,7 @@ export interface IStorageService {
 	flush(reason?: WillSaveStateReason): Promise<void>;
 }
 
-export const enum StorageScope {
+export enum StorageScope {
 	/**
 	 * The stored data will be scoped to all workspaces across all profiles.
 	 */
@@ -306,16 +306,16 @@ export const enum StorageScope {
 	WORKSPACE = 1,
 }
 
-export const enum StorageTarget {
+export enum StorageTarget {
 	/**
 	 * The stored data is user specific and applies across machines.
 	 */
-	USER,
+	USER = 0,
 
 	/**
 	 * The stored data is machine specific.
 	 */
-	MACHINE,
+	MACHINE = 1,
 }
 
 export interface IStorageValueChangeEvent {
@@ -386,16 +386,16 @@ export abstract class AbstractStorageService
 	private static DEFAULT_FLUSH_INTERVAL = 60 * 1000; // every minute
 
 	private readonly _onDidChangeValue = this._register(
-		new PauseableEmitter<IStorageValueChangeEvent>()
+		new PauseableEmitter<IStorageValueChangeEvent>(),
 	);
 
 	private readonly _onDidChangeTarget = this._register(
-		new PauseableEmitter<IStorageTargetChangeEvent>()
+		new PauseableEmitter<IStorageTargetChangeEvent>(),
 	);
 	readonly onDidChangeTarget = this._onDidChangeTarget.event;
 
 	private readonly _onWillSaveState = this._register(
-		new Emitter<IWillSaveStateEvent>()
+		new Emitter<IWillSaveStateEvent>(),
 	);
 	readonly onWillSaveState = this._onWillSaveState.event;
 
@@ -404,15 +404,15 @@ export abstract class AbstractStorageService
 	private readonly flushWhenIdleScheduler = this._register(
 		new RunOnceScheduler(
 			() => this.doFlushWhenIdle(),
-			this.options.flushInterval
-		)
+			this.options.flushInterval,
+		),
 	);
 	private readonly runFlushWhenIdle = this._register(new MutableDisposable());
 
 	constructor(
 		private readonly options: IStorageServiceOptions = {
 			flushInterval: AbstractStorageService.DEFAULT_FLUSH_INTERVAL,
-		}
+		},
 	) {
 		super();
 	}
@@ -420,27 +420,27 @@ export abstract class AbstractStorageService
 	onDidChangeValue(
 		scope: StorageScope.WORKSPACE,
 		key: string | undefined,
-		disposable: DisposableStore
+		disposable: DisposableStore,
 	): Event<IWorkspaceStorageValueChangeEvent>;
 	onDidChangeValue(
 		scope: StorageScope.PROFILE,
 		key: string | undefined,
-		disposable: DisposableStore
+		disposable: DisposableStore,
 	): Event<IProfileStorageValueChangeEvent>;
 	onDidChangeValue(
 		scope: StorageScope.APPLICATION,
 		key: string | undefined,
-		disposable: DisposableStore
+		disposable: DisposableStore,
 	): Event<IApplicationStorageValueChangeEvent>;
 	onDidChangeValue(
 		scope: StorageScope,
 		key: string | undefined,
-		disposable: DisposableStore
+		disposable: DisposableStore,
 	): Event<IStorageValueChangeEvent> {
 		return Event.filter(
 			this._onDidChangeValue.event,
 			(e) => e.scope === scope && (key === undefined || e.key === key),
-			disposable
+			disposable,
 		);
 	}
 
@@ -491,7 +491,7 @@ export abstract class AbstractStorageService
 
 	protected emitDidChangeValue(
 		scope: StorageScope,
-		event: IStorageChangeEvent
+		event: IStorageChangeEvent,
 	): void {
 		const { key, external } = event;
 
@@ -534,7 +534,7 @@ export abstract class AbstractStorageService
 	get(
 		key: string,
 		scope: StorageScope,
-		fallbackValue?: string
+		fallbackValue?: string,
 	): string | undefined {
 		return this.getStorage(scope)?.get(key, fallbackValue);
 	}
@@ -542,13 +542,13 @@ export abstract class AbstractStorageService
 	getBoolean(
 		key: string,
 		scope: StorageScope,
-		fallbackValue: boolean
+		fallbackValue: boolean,
 	): boolean;
 	getBoolean(key: string, scope: StorageScope): boolean | undefined;
 	getBoolean(
 		key: string,
 		scope: StorageScope,
-		fallbackValue?: boolean
+		fallbackValue?: boolean,
 	): boolean | undefined {
 		return this.getStorage(scope)?.getBoolean(key, fallbackValue);
 	}
@@ -558,7 +558,7 @@ export abstract class AbstractStorageService
 	getNumber(
 		key: string,
 		scope: StorageScope,
-		fallbackValue?: number
+		fallbackValue?: number,
 	): number | undefined {
 		return this.getStorage(scope)?.getNumber(key, fallbackValue);
 	}
@@ -568,7 +568,7 @@ export abstract class AbstractStorageService
 	getObject(
 		key: string,
 		scope: StorageScope,
-		fallbackValue?: object
+		fallbackValue?: object,
 	): object | undefined {
 		return this.getStorage(scope)?.getObject(key, fallbackValue);
 	}
@@ -581,7 +581,7 @@ export abstract class AbstractStorageService
 					entry.value,
 					entry.scope,
 					entry.target,
-					external
+					external,
 				);
 			}
 		});
@@ -592,7 +592,7 @@ export abstract class AbstractStorageService
 		value: StorageValue,
 		scope: StorageScope,
 		target: StorageTarget,
-		external = false
+		external = false,
 	): void {
 		// We remove the key for undefined/null values
 		if (isUndefinedOrNull(value)) {
@@ -653,7 +653,7 @@ export abstract class AbstractStorageService
 		key: string,
 		scope: StorageScope,
 		target: StorageTarget | undefined,
-		external = false
+		external = false,
 	): void {
 		// Add
 		const keyTargets = this.getKeyTargets(scope);
@@ -663,21 +663,19 @@ export abstract class AbstractStorageService
 				this.getStorage(scope)?.set(
 					TARGET_KEY,
 					JSON.stringify(keyTargets),
-					external
+					external,
 				);
 			}
 		}
 
 		// Remove
-		else {
-			if (typeof keyTargets[key] === "number") {
-				delete keyTargets[key];
-				this.getStorage(scope)?.set(
-					TARGET_KEY,
-					JSON.stringify(keyTargets),
-					external
-				);
-			}
+		else if (typeof keyTargets[key] === "number") {
+			delete keyTargets[key];
+			this.getStorage(scope)?.set(
+				TARGET_KEY,
+				JSON.stringify(keyTargets),
+				external,
+			);
 		}
 	}
 
@@ -685,7 +683,7 @@ export abstract class AbstractStorageService
 	private get workspaceKeyTargets(): IKeyTargets {
 		if (!this._workspaceKeyTargets) {
 			this._workspaceKeyTargets = this.loadKeyTargets(
-				StorageScope.WORKSPACE
+				StorageScope.WORKSPACE,
 			);
 		}
 
@@ -705,7 +703,7 @@ export abstract class AbstractStorageService
 	private get applicationKeyTargets(): IKeyTargets {
 		if (!this._applicationKeyTargets) {
 			this._applicationKeyTargets = this.loadKeyTargets(
-				StorageScope.APPLICATION
+				StorageScope.APPLICATION,
 			);
 		}
 
@@ -782,7 +780,7 @@ export abstract class AbstractStorageService
 			workspaceItems,
 			this.getLogDetails(StorageScope.APPLICATION) ?? "",
 			this.getLogDetails(StorageScope.PROFILE) ?? "",
-			this.getLogDetails(StorageScope.WORKSPACE) ?? ""
+			this.getLogDetails(StorageScope.WORKSPACE) ?? "",
 		);
 	}
 
@@ -796,7 +794,7 @@ export abstract class AbstractStorageService
 
 	async switch(
 		to: IAnyWorkspaceIdentifier | IUserDataProfile,
-		preserveData: boolean
+		preserveData: boolean,
 	): Promise<void> {
 		// Signal as event so that clients can store data before we switch
 		this.emitWillSaveState(WillSaveStateReason.NONE);
@@ -810,7 +808,7 @@ export abstract class AbstractStorageService
 
 	protected canSwitchProfile(
 		from: IUserDataProfile,
-		to: IUserDataProfile
+		to: IUserDataProfile,
 	): boolean {
 		if (from.id === to.id) {
 			return false; // both profiles are same
@@ -829,7 +827,7 @@ export abstract class AbstractStorageService
 	protected switchData(
 		oldStorage: Map<string, string>,
 		newStorage: IStorage,
-		scope: StorageScope
+		scope: StorageScope,
 	): void {
 		this.withPausedEmitters(() => {
 			// Signal storage keys that have changed
@@ -854,7 +852,7 @@ export abstract class AbstractStorageService
 	// --- abstract
 
 	abstract hasScope(
-		scope: IAnyWorkspaceIdentifier | IUserDataProfile
+		scope: IAnyWorkspaceIdentifier | IUserDataProfile,
 	): boolean;
 
 	protected abstract doInitialize(): Promise<void>;
@@ -865,16 +863,16 @@ export abstract class AbstractStorageService
 
 	protected abstract switchToProfile(
 		toProfile: IUserDataProfile,
-		preserveData: boolean
+		preserveData: boolean,
 	): Promise<void>;
 	protected abstract switchToWorkspace(
 		toWorkspace: IAnyWorkspaceIdentifier | IUserDataProfile,
-		preserveData: boolean
+		preserveData: boolean,
 	): Promise<void>;
 }
 
 export function isProfileUsingDefaultStorage(
-	profile: IUserDataProfile
+	profile: IUserDataProfile,
 ): boolean {
 	return profile.isDefault || !!profile.useDefaultFlags?.globalState;
 }
@@ -883,17 +881,17 @@ export class InMemoryStorageService extends AbstractStorageService {
 	private readonly applicationStorage = this._register(
 		new Storage(new InMemoryStorageDatabase(), {
 			hint: StorageHint.STORAGE_IN_MEMORY,
-		})
+		}),
 	);
 	private readonly profileStorage = this._register(
 		new Storage(new InMemoryStorageDatabase(), {
 			hint: StorageHint.STORAGE_IN_MEMORY,
-		})
+		}),
 	);
 	private readonly workspaceStorage = this._register(
 		new Storage(new InMemoryStorageDatabase(), {
 			hint: StorageHint.STORAGE_IN_MEMORY,
-		})
+		}),
 	);
 
 	constructor() {
@@ -901,18 +899,18 @@ export class InMemoryStorageService extends AbstractStorageService {
 
 		this._register(
 			this.workspaceStorage.onDidChangeStorage((e) =>
-				this.emitDidChangeValue(StorageScope.WORKSPACE, e)
-			)
+				this.emitDidChangeValue(StorageScope.WORKSPACE, e),
+			),
 		);
 		this._register(
 			this.profileStorage.onDidChangeStorage((e) =>
-				this.emitDidChangeValue(StorageScope.PROFILE, e)
-			)
+				this.emitDidChangeValue(StorageScope.PROFILE, e),
+			),
 		);
 		this._register(
 			this.applicationStorage.onDidChangeStorage((e) =>
-				this.emitDidChangeValue(StorageScope.APPLICATION, e)
-			)
+				this.emitDidChangeValue(StorageScope.APPLICATION, e),
+			),
 		);
 	}
 
@@ -963,7 +961,7 @@ export async function logStorage(
 	workspace: Map<string, string>,
 	applicationPath: string,
 	profilePath: string,
-	workspacePath: string
+	workspacePath: string,
 ): Promise<void> {
 	const safeParse = (value: string) => {
 		try {
@@ -998,7 +996,7 @@ export async function logStorage(
 		console.group(`Storage: Application (path: ${applicationPath})`);
 	} else {
 		console.group(
-			`Storage: Application & Profile (path: ${applicationPath}, default profile)`
+			`Storage: Application & Profile (path: ${applicationPath}, default profile)`,
 		);
 	}
 	const applicationValues: { key: string; value: string }[] = [];
@@ -1012,7 +1010,7 @@ export async function logStorage(
 
 	if (applicationPath !== profilePath) {
 		console.group(
-			`Storage: Profile (path: ${profilePath}, profile specific)`
+			`Storage: Profile (path: ${profilePath}, profile specific)`,
 		);
 		const profileValues: { key: string; value: string }[] = [];
 		profileItems.forEach((value, key) => {

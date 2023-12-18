@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
 import { isMacintosh } from "vs/base/common/platform";
+import { localize } from "vs/nls";
 import {
 	Action2,
 	MenuId,
@@ -17,14 +17,14 @@ import {
 	IContextKeyService,
 	RawContextKey,
 } from "vs/platform/contextkey/common/contextkey";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
+import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
 import { Registry } from "vs/platform/registry/common/platform";
 import {
 	Extensions as WorkbenchExtensions,
 	IWorkbenchContribution,
 	IWorkbenchContributionsRegistry,
 } from "vs/workbench/common/contributions";
-import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 export class ToggleMultiCursorModifierAction extends Action2 {
 	static readonly ID = "workbench.action.toggleMultiCursorModifier";
@@ -38,7 +38,7 @@ export class ToggleMultiCursorModifierAction extends Action2 {
 			title: {
 				value: localize(
 					"toggleLocation",
-					"Toggle Multi-Cursor Modifier"
+					"Toggle Multi-Cursor Modifier",
 				),
 				original: "Toggle Multi-Cursor Modifier",
 			},
@@ -57,14 +57,14 @@ export class ToggleMultiCursorModifierAction extends Action2 {
 
 		return configurationService.updateValue(
 			ToggleMultiCursorModifierAction.multiCursorModifierConfigurationKey,
-			newValue
+			newValue,
 		);
 	}
 }
 
 const multiCursorModifier = new RawContextKey<string>(
 	"multiCursorModifier",
-	"altKey"
+	"altKey",
 );
 
 class MultiCursorModifierContextKeyController
@@ -99,10 +99,10 @@ class MultiCursorModifierContextKeyController
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	MultiCursorModifierContextKeyController,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );
 
 registerAction2(ToggleMultiCursorModifierAction);
@@ -113,7 +113,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarSelectionMenu, {
 		id: ToggleMultiCursorModifierAction.ID,
 		title: localize(
 			"miMultiCursorAlt",
-			"Switch to Alt+Click for Multi-Cursor"
+			"Switch to Alt+Click for Multi-Cursor",
 		),
 	},
 	when: multiCursorModifier.isEqualTo("ctrlCmd"),
@@ -126,12 +126,12 @@ MenuRegistry.appendMenuItem(MenuId.MenubarSelectionMenu, {
 		title: isMacintosh
 			? localize(
 					"miMultiCursorCmd",
-					"Switch to Cmd+Click for Multi-Cursor"
-				)
+					"Switch to Cmd+Click for Multi-Cursor",
+			  )
 			: localize(
 					"miMultiCursorCtrl",
-					"Switch to Ctrl+Click for Multi-Cursor"
-				),
+					"Switch to Ctrl+Click for Multi-Cursor",
+			  ),
 	},
 	when: multiCursorModifier.isEqualTo("altKey"),
 	order: 1,

@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable, Event, ProviderResult, Uri } from "vscode";
+import { Disposable, Event, ProviderResult } from "vscode";
 export { ProviderResult } from "vscode";
 
 export interface API {
 	pickRemoteSource(
-		options: PickRemoteSourceOptions
+		options: PickRemoteSourceOptions,
 	): Promise<string | PickRemoteSourceResult | undefined>;
 	getRemoteSourceActions(url: string): Promise<RemoteSourceAction[]>;
 	registerRemoteSourceProvider(provider: RemoteSourceProvider): Disposable;
@@ -83,7 +83,7 @@ export interface RemoteSourceProvider {
 	getBranches?(url: string): ProviderResult<string[]>;
 	getRemoteSourceActions?(url: string): ProviderResult<RemoteSourceAction[]>;
 	getRecentRemoteSources?(
-		query?: string
+		query?: string,
 	): ProviderResult<RecentRemoteSource[]>;
 	getRemoteSources(query?: string): ProviderResult<RemoteSource[]>;
 }

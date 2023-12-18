@@ -8,7 +8,7 @@ import { BareFontInfo } from "vs/editor/common/config/fontInfo";
 
 export function applyFontInfo(
 	domNode: FastDomNode<HTMLElement> | HTMLElement,
-	fontInfo: BareFontInfo
+	fontInfo: BareFontInfo,
 ): void {
 	if (domNode instanceof FastDomNode) {
 		domNode.setFontFamily(fontInfo.getMassagedFontFamily());

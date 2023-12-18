@@ -3,23 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Schemas } from "vs/base/common/network";
 import { URI } from "vs/base/common/uri";
-import {
-	MainThreadDiaglogsShape,
-	MainContext,
-	MainThreadDialogOpenOptions,
-	MainThreadDialogSaveOptions,
-} from "../common/extHost.protocol";
-import {
-	extHostNamedCustomer,
-	IExtHostContext,
-} from "vs/workbench/services/extensions/common/extHostCustomers";
 import {
 	IFileDialogService,
 	IOpenDialogOptions,
 	ISaveDialogOptions,
 } from "vs/platform/dialogs/common/dialogs";
-import { Schemas } from "vs/base/common/network";
+import {
+	IExtHostContext,
+	extHostNamedCustomer,
+} from "vs/workbench/services/extensions/common/extHostCustomers";
+import {
+	MainContext,
+	MainThreadDiaglogsShape,
+	MainThreadDialogOpenOptions,
+	MainThreadDialogSaveOptions,
+} from "../common/extHost.protocol";
 
 @extHostNamedCustomer(MainContext.MainThreadDialogs)
 export class MainThreadDialogs implements MainThreadDiaglogsShape {
@@ -36,7 +36,7 @@ export class MainThreadDialogs implements MainThreadDiaglogsShape {
 	}
 
 	async $showOpenDialog(
-		options?: MainThreadDialogOpenOptions
+		options?: MainThreadDialogOpenOptions,
 	): Promise<URI[] | undefined> {
 		const convertedOptions = MainThreadDialogs._convertOpenOptions(options);
 		if (!convertedOptions.defaultUri) {
@@ -44,12 +44,12 @@ export class MainThreadDialogs implements MainThreadDiaglogsShape {
 				await this._fileDialogService.defaultFilePath();
 		}
 		return Promise.resolve(
-			this._fileDialogService.showOpenDialog(convertedOptions)
+			this._fileDialogService.showOpenDialog(convertedOptions),
 		);
 	}
 
 	async $showSaveDialog(
-		options?: MainThreadDialogSaveOptions
+		options?: MainThreadDialogSaveOptions,
 	): Promise<URI | undefined> {
 		const convertedOptions = MainThreadDialogs._convertSaveOptions(options);
 		if (!convertedOptions.defaultUri) {
@@ -57,12 +57,12 @@ export class MainThreadDialogs implements MainThreadDiaglogsShape {
 				await this._fileDialogService.defaultFilePath();
 		}
 		return Promise.resolve(
-			this._fileDialogService.showSaveDialog(convertedOptions)
+			this._fileDialogService.showSaveDialog(convertedOptions),
 		);
 	}
 
 	private static _convertOpenOptions(
-		options?: MainThreadDialogOpenOptions
+		options?: MainThreadDialogOpenOptions,
 	): IOpenDialogOptions {
 		const result: IOpenDialogOptions = {
 			openLabel: options?.openLabel || undefined,
@@ -89,7 +89,7 @@ export class MainThreadDialogs implements MainThreadDiaglogsShape {
 	}
 
 	private static _convertSaveOptions(
-		options?: MainThreadDialogSaveOptions
+		options?: MainThreadDialogSaveOptions,
 	): ISaveDialogOptions {
 		const result: ISaveDialogOptions = {
 			defaultUri: options?.defaultUri

@@ -34,7 +34,7 @@ class VsCodeDocument implements md.ITextDocument {
 	constructor(uri: string, init: { onDiskDoc: TextDocument });
 	constructor(
 		uri: string,
-		init: { inMemoryDoc?: TextDocument; onDiskDoc?: TextDocument }
+		init: { inMemoryDoc?: TextDocument; onDiskDoc?: TextDocument },
 	) {
 		this.uri = uri;
 		this.inMemoryDoc = init?.inMemoryDoc;
@@ -126,7 +126,7 @@ export class VsCodeClientWorkspace implements md.IWorkspaceWithWatching {
 		private readonly config: LsConfiguration,
 		private readonly documents: TextDocuments<TextDocument>,
 		private readonly notebooks: NotebookDocuments<TextDocument>,
-		private readonly logger: md.ILogger
+		private readonly logger: md.ILogger,
 	) {
 		documents.onDidOpen((e) => {
 			if (!this.isRelevantMarkdownDocument(e.document)) {
@@ -136,7 +136,7 @@ export class VsCodeClientWorkspace implements md.IWorkspaceWithWatching {
 			this.logger.log(
 				md.LogLevel.Trace,
 				"VsCodeClientWorkspace.TextDocument.onDidOpen",
-				{ document: e.document.uri }
+				{ document: e.document.uri },
 			);
 
 			const uri = URI.parse(e.document.uri);
@@ -167,7 +167,7 @@ export class VsCodeClientWorkspace implements md.IWorkspaceWithWatching {
 			this.logger.log(
 				md.LogLevel.Trace,
 				"VsCodeClientWorkspace.TextDocument.onDidChanceContent",
-				{ document: e.document.uri }
+				{ document: e.document.uri },
 			);
 
 			const uri = URI.parse(e.document.uri);
@@ -186,7 +186,7 @@ export class VsCodeClientWorkspace implements md.IWorkspaceWithWatching {
 			this.logger.log(
 				md.LogLevel.Trace,
 				"VsCodeClientWorkspace.TextDocument.onDidClose",
-				{ document: e.document.uri }
+				{ document: e.document.uri },
 			);
 
 			const uri = URI.parse(e.document.uri);
@@ -228,7 +228,7 @@ export class VsCodeClientWorkspace implements md.IWorkspaceWithWatching {
 				this.logger.log(
 					md.LogLevel.Trace,
 					"VsCodeClientWorkspace.onDidChangeWatchedFiles",
-					{ type: change.type, resource: resource.toString() }
+					{ type: change.type, resource: resource.toString() },
 				);
 				switch (change.type) {
 					case FileChangeType.Changed: {
@@ -239,7 +239,7 @@ export class VsCodeClientWorkspace implements md.IWorkspaceWithWatching {
 								await this.openMarkdownDocumentFromFs(resource);
 							if (document) {
 								this._onDidChangeMarkdownDocument.fire(
-									document
+									document,
 								);
 							}
 						}
@@ -253,7 +253,7 @@ export class VsCodeClientWorkspace implements md.IWorkspaceWithWatching {
 								await this.openMarkdownDocumentFromFs(resource);
 							if (document) {
 								this._onDidCreateMarkdownDocument.fire(
-									document
+									document,
 								);
 							}
 						}
@@ -277,7 +277,7 @@ export class VsCodeClientWorkspace implements md.IWorkspaceWithWatching {
 			this.logger.log(
 				md.LogLevel.Trace,
 				"VsCodeClientWorkspace.fs_watcher_onChange",
-				{ kind: params.kind, uri: params.uri }
+				{ kind: params.kind, uri: params.uri },
 			);
 
 			const watcher = this._watchers.get(params.id);
@@ -331,11 +331,11 @@ export class VsCodeClientWorkspace implements md.IWorkspaceWithWatching {
 		// And then add files on disk
 		const maxConcurrent = 20;
 		const limiter = new Limiter<md.ITextDocument | undefined>(
-			maxConcurrent
+			maxConcurrent,
 		);
 		const resources = await this.connection.sendRequest(
 			protocol.findMarkdownFilesInWorkspace,
-			{}
+			{},
 		);
 		await Promise.all(
 			resources.map((strResource) => {
@@ -351,7 +351,7 @@ export class VsCodeClientWorkspace implements md.IWorkspaceWithWatching {
 					}
 					return doc;
 				});
-			})
+			}),
 		);
 
 		return allDocs.values();
@@ -362,7 +362,7 @@ export class VsCodeClientWorkspace implements md.IWorkspaceWithWatching {
 	}
 
 	async openMarkdownDocument(
-		resource: URI
+		resource: URI,
 	): Promise<md.ITextDocument | undefined> {
 		const existing = this._documentCache.get(resource);
 		if (existing) {
@@ -388,7 +388,7 @@ export class VsCodeClientWorkspace implements md.IWorkspaceWithWatching {
 	}
 
 	private async openMarkdownDocumentFromFs(
-		resource: URI
+		resource: URI,
 	): Promise<md.ITextDocument | undefined> {
 		if (!looksLikeMarkdownPath(this.config, resource)) {
 			return undefined;
@@ -397,7 +397,7 @@ export class VsCodeClientWorkspace implements md.IWorkspaceWithWatching {
 		try {
 			const response = await this.connection.sendRequest(
 				protocol.fs_readFile,
-				{ uri: resource.toString() }
+				{ uri: resource.toString() },
 			);
 			// TODO: LSP doesn't seem to handle Array buffers well
 			const bytes = new Uint8Array(response);
@@ -409,7 +409,7 @@ export class VsCodeClientWorkspace implements md.IWorkspaceWithWatching {
 					resource.toString(),
 					"markdown",
 					0,
-					text
+					text,
 				),
 			});
 			this._documentCache.set(resource, doc);
@@ -430,7 +430,7 @@ export class VsCodeClientWorkspace implements md.IWorkspaceWithWatching {
 	}
 
 	private async statBypassingCache(
-		resource: URI
+		resource: URI,
 	): Promise<md.FileStat | undefined> {
 		const uri = resource.toString();
 		if (this.documents.get(uri)) {
@@ -452,11 +452,11 @@ export class VsCodeClientWorkspace implements md.IWorkspaceWithWatching {
 	}
 
 	getContainingDocument(
-		resource: URI
+		resource: URI,
 	): md.ContainingDocumentContext | undefined {
 		if (resource.scheme === Schemes.notebookCell) {
 			const nb = this.notebooks.findNotebookDocumentForCell(
-				resource.toString()
+				resource.toString(),
 			);
 			if (nb) {
 				return {
@@ -472,7 +472,7 @@ export class VsCodeClientWorkspace implements md.IWorkspaceWithWatching {
 
 	watchFile(
 		resource: URI,
-		options: md.FileWatcherOptions
+		options: md.FileWatcherOptions,
 	): md.IFileSystemWatcher {
 		const id = this._watcherPool++;
 		this.logger.log(md.LogLevel.Trace, "VsCodeClientWorkspace.watchFile", {
@@ -504,7 +504,7 @@ export class VsCodeClientWorkspace implements md.IWorkspaceWithWatching {
 				this.logger.log(
 					md.LogLevel.Trace,
 					"VsCodeClientWorkspace.disposeWatcher",
-					{ id, resource: resource.toString() }
+					{ id, resource: resource.toString() },
 				);
 				this.connection.sendRequest(protocol.fs_watcher_delete, { id });
 				this._watchers.delete(id);
@@ -523,7 +523,7 @@ export class VsCodeClientWorkspace implements md.IWorkspaceWithWatching {
 		this.logger.log(
 			md.LogLevel.Trace,
 			"VsCodeClientWorkspace.deleteDocument",
-			{ document: uri.toString() }
+			{ document: uri.toString() },
 		);
 
 		this._documentCache.delete(uri);

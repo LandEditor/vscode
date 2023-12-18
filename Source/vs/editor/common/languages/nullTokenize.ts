@@ -4,18 +4,18 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	Token,
-	TokenizationResult,
+	ColorId,
+	FontStyle,
+	LanguageId,
+	MetadataConsts,
+	StandardTokenType,
+} from "vs/editor/common/encodedTokenAttributes";
+import {
 	EncodedTokenizationResult,
 	IState,
+	Token,
+	TokenizationResult,
 } from "vs/editor/common/languages";
-import {
-	LanguageId,
-	FontStyle,
-	ColorId,
-	StandardTokenType,
-	MetadataConsts,
-} from "vs/editor/common/encodedTokenAttributes";
 
 export const NullState: IState = new (class implements IState {
 	public clone(): IState {
@@ -28,14 +28,14 @@ export const NullState: IState = new (class implements IState {
 
 export function nullTokenize(
 	languageId: string,
-	state: IState
+	state: IState,
 ): TokenizationResult {
 	return new TokenizationResult([new Token(0, "", languageId)], state);
 }
 
 export function nullTokenizeEncoded(
 	languageId: LanguageId,
-	state: IState | null
+	state: IState | null,
 ): EncodedTokenizationResult {
 	const tokens = new Uint32Array(2);
 	tokens[0] = 0;
@@ -49,6 +49,6 @@ export function nullTokenizeEncoded(
 
 	return new EncodedTokenizationResult(
 		tokens,
-		state === null ? NullState : state
+		state === null ? NullState : state,
 	);
 }

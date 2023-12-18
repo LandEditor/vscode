@@ -8,10 +8,10 @@ import { Event } from "vs/base/common/event";
 import { IDisposable } from "vs/base/common/lifecycle";
 import Severity from "vs/base/common/severity";
 import { compare } from "vs/base/common/strings";
-import { ITextModel } from "vs/editor/common/model";
-import { Command } from "vs/editor/common/languages";
 import { LanguageFeatureRegistry } from "vs/editor/common/languageFeatureRegistry";
 import { LanguageSelector } from "vs/editor/common/languageSelector";
+import { Command } from "vs/editor/common/languages";
+import { ITextModel } from "vs/editor/common/model";
 import { IAccessibilityInformation } from "vs/platform/accessibility/common/accessibility";
 import {
 	InstantiationType,
@@ -35,12 +35,12 @@ export interface ILanguageStatus {
 export interface ILanguageStatusProvider {
 	provideLanguageStatus(
 		langId: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ILanguageStatus | undefined>;
 }
 
 export const ILanguageStatusService = createDecorator<ILanguageStatusService>(
-	"ILanguageStatusService"
+	"ILanguageStatusService",
 );
 
 export interface ILanguageStatusService {
@@ -81,5 +81,5 @@ class LanguageStatusServiceImpl implements ILanguageStatusService {
 registerSingleton(
 	ILanguageStatusService,
 	LanguageStatusServiceImpl,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

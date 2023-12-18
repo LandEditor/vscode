@@ -3,24 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { joinPath } from "vs/base/common/resources";
 import { IFileService } from "vs/platform/files/common/files";
-import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { ILogService } from "vs/platform/log/common/log";
-import { WorkingCopyBackupService } from "vs/workbench/services/workingCopy/common/workingCopyBackupService";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { IWorkingCopyBackupService } from "vs/workbench/services/workingCopy/common/workingCopyBackup";
-import { joinPath } from "vs/base/common/resources";
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import { ILogService } from "vs/platform/log/common/log";
 import { Registry } from "vs/platform/registry/common/platform";
+import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
 import {
-	IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
+	IWorkbenchContributionsRegistry,
 } from "vs/workbench/common/contributions";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
 import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 import { BrowserWorkingCopyBackupTracker } from "vs/workbench/services/workingCopy/browser/workingCopyBackupTracker";
+import { IWorkingCopyBackupService } from "vs/workbench/services/workingCopy/common/workingCopyBackup";
+import { WorkingCopyBackupService } from "vs/workbench/services/workingCopy/common/workingCopyBackupService";
 
 export class BrowserWorkingCopyBackupService extends WorkingCopyBackupService {
 	constructor(
@@ -28,16 +28,16 @@ export class BrowserWorkingCopyBackupService extends WorkingCopyBackupService {
 		@IWorkbenchEnvironmentService
 		environmentService: IWorkbenchEnvironmentService,
 		@IFileService fileService: IFileService,
-		@ILogService logService: ILogService
+		@ILogService logService: ILogService,
 	) {
 		super(
 			joinPath(
 				environmentService.userRoamingDataHome,
 				"Backups",
-				contextService.getWorkspace().id
+				contextService.getWorkspace().id,
 			),
 			fileService,
-			logService
+			logService,
 		);
 	}
 }
@@ -46,13 +46,13 @@ export class BrowserWorkingCopyBackupService extends WorkingCopyBackupService {
 registerSingleton(
 	IWorkingCopyBackupService,
 	BrowserWorkingCopyBackupService,
-	InstantiationType.Eager
+	InstantiationType.Eager,
 );
 
 // Register Backup Tracker
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	BrowserWorkingCopyBackupTracker,
-	LifecyclePhase.Starting
+	LifecyclePhase.Starting,
 );

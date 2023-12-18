@@ -26,7 +26,7 @@ export class SettingsSearchFilterDropdownMenuActionViewItem extends DropdownMenu
 		action: IAction,
 		actionRunner: IActionRunner | undefined,
 		private readonly searchWidget: SuggestEnabledInput,
-		@IContextMenuService contextMenuService: IContextMenuService
+		@IContextMenuService contextMenuService: IContextMenuService,
 	) {
 		super(
 			action,
@@ -37,11 +37,11 @@ export class SettingsSearchFilterDropdownMenuActionViewItem extends DropdownMenu
 				classNames: action.class,
 				anchorAlignmentProvider: () => AnchorAlignment.RIGHT,
 				menuAsChild: true,
-			}
+			},
 		);
 
 		this.suggestController = SuggestController.get(
-			this.searchWidget.inputWidget
+			this.searchWidget.inputWidget,
 		);
 	}
 
@@ -51,10 +51,10 @@ export class SettingsSearchFilterDropdownMenuActionViewItem extends DropdownMenu
 
 	private doSearchWidgetAction(
 		queryToAppend: string,
-		triggerSuggest: boolean
+		triggerSuggest: boolean,
 	) {
 		this.searchWidget.setValue(
-			this.searchWidget.getValue().trimEnd() + " " + queryToAppend
+			this.searchWidget.getValue().trimEnd() + " " + queryToAppend,
 		);
 		this.searchWidget.focus();
 		if (triggerSuggest && this.suggestController) {
@@ -70,7 +70,7 @@ export class SettingsSearchFilterDropdownMenuActionViewItem extends DropdownMenu
 		label: string,
 		tooltip: string,
 		queryToAppend: string,
-		triggerSuggest: boolean
+		triggerSuggest: boolean,
 	): IAction {
 		return {
 			id,
@@ -94,7 +94,7 @@ export class SettingsSearchFilterDropdownMenuActionViewItem extends DropdownMenu
 		id: string,
 		label: string,
 		tooltip: string,
-		queryToAppend: string
+		queryToAppend: string,
 	): IAction {
 		const splitCurrentQuery = this.searchWidget.getValue().split(" ");
 		const queryContainsQueryToAppend =
@@ -107,7 +107,14 @@ export class SettingsSearchFilterDropdownMenuActionViewItem extends DropdownMenu
 			enabled: true,
 			checked: queryContainsQueryToAppend,
 			run: () => {
-				if (!queryContainsQueryToAppend) {
+				if (queryContainsQueryToAppend) {
+					const queryWithRemovedTags = this.searchWidget
+						.getValue()
+						.split(" ")
+						.filter((word) => word !== queryToAppend)
+						.join(" ");
+					this.searchWidget.setValue(queryWithRemovedTags);
+				} else {
 					const trimmedCurrentQuery = this.searchWidget
 						.getValue()
 						.trimEnd();
@@ -115,13 +122,6 @@ export class SettingsSearchFilterDropdownMenuActionViewItem extends DropdownMenu
 						? trimmedCurrentQuery + " " + queryToAppend
 						: queryToAppend;
 					this.searchWidget.setValue(newQuery);
-				} else {
-					const queryWithRemovedTags = this.searchWidget
-						.getValue()
-						.split(" ")
-						.filter((word) => word !== queryToAppend)
-						.join(" ");
-					this.searchWidget.setValue(queryWithRemovedTags);
 				}
 				this.searchWidget.focus();
 			},
@@ -135,55 +135,55 @@ export class SettingsSearchFilterDropdownMenuActionViewItem extends DropdownMenu
 				localize("modifiedSettingsSearch", "Modified"),
 				localize(
 					"modifiedSettingsSearchTooltip",
-					"Add or remove modified settings filter"
+					"Add or remove modified settings filter",
 				),
-				`@${MODIFIED_SETTING_TAG}`
+				`@${MODIFIED_SETTING_TAG}`,
 			),
 			this.createAction(
 				"extSettingsSearch",
 				localize("extSettingsSearch", "Extension ID..."),
 				localize("extSettingsSearchTooltip", "Add extension ID filter"),
 				`@${EXTENSION_SETTING_TAG}`,
-				true
+				true,
 			),
 			this.createAction(
 				"featuresSettingsSearch",
 				localize("featureSettingsSearch", "Feature..."),
 				localize("featureSettingsSearchTooltip", "Add feature filter"),
 				`@${FEATURE_SETTING_TAG}`,
-				true
+				true,
 			),
 			this.createAction(
 				"tagSettingsSearch",
 				localize("tagSettingsSearch", "Tag..."),
 				localize("tagSettingsSearchTooltip", "Add tag filter"),
 				`@${GENERAL_TAG_SETTING_TAG}`,
-				true
+				true,
 			),
 			this.createAction(
 				"langSettingsSearch",
 				localize("langSettingsSearch", "Language..."),
 				localize("langSettingsSearchTooltip", "Add language ID filter"),
 				`@${LANGUAGE_SETTING_TAG}`,
-				true
+				true,
 			),
 			this.createToggleAction(
 				"onlineSettingsSearch",
 				localize("onlineSettingsSearch", "Online services"),
 				localize(
 					"onlineSettingsSearchTooltip",
-					"Show settings for online services"
+					"Show settings for online services",
 				),
-				"@tag:usesOnlineServices"
+				"@tag:usesOnlineServices",
 			),
 			this.createToggleAction(
 				"policySettingsSearch",
 				localize("policySettingsSearch", "Policy services"),
 				localize(
 					"policySettingsSearchTooltip",
-					"Show settings for policy services"
+					"Show settings for policy services",
 				),
-				`@${POLICY_SETTING_TAG}`
+				`@${POLICY_SETTING_TAG}`,
 			),
 		];
 	}

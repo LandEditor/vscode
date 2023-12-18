@@ -23,7 +23,7 @@ export class DisposableStore {
 }
 
 export function getRepositoryFromUrl(
-	url: string
+	url: string,
 ): { owner: string; repo: string } | undefined {
 	const match =
 		/^https:\/\/github\.com\/([^/]+)\/([^/]+?)(\.git)?$/i.exec(url) ||
@@ -32,7 +32,7 @@ export function getRepositoryFromUrl(
 }
 
 export function getRepositoryFromQuery(
-	query: string
+	query: string,
 ): { owner: string; repo: string } | undefined {
 	const match = /^([^/]+)\/([^/]+)$/i.exec(query);
 	return match ? { owner: match[1], repo: match[2] } : undefined;
@@ -40,6 +40,6 @@ export function getRepositoryFromQuery(
 
 export function repositoryHasGitHubRemote(repository: Repository) {
 	return !!repository.state.remotes.find((remote) =>
-		remote.fetchUrl ? getRepositoryFromUrl(remote.fetchUrl) : undefined
+		remote.fetchUrl ? getRepositoryFromUrl(remote.fetchUrl) : undefined,
 	);
 }

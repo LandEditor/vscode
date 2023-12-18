@@ -24,14 +24,14 @@ export enum RimRafMode {
 	/**
 	 * Slow version that unlinks each file and folder.
 	 */
-	UNLINK,
+	UNLINK = 0,
 
 	/**
 	 * Fast version that first moves the file/folder
 	 * into a temp directory and then deletes that
 	 * without waiting for it.
 	 */
-	MOVE,
+	MOVE = 1,
 }
 
 /**
@@ -47,17 +47,17 @@ async function rimraf(path: string, mode: RimRafMode.UNLINK): Promise<void>;
 async function rimraf(
 	path: string,
 	mode: RimRafMode.MOVE,
-	moveToPath?: string
+	moveToPath?: string,
 ): Promise<void>;
 async function rimraf(
 	path: string,
 	mode?: RimRafMode,
-	moveToPath?: string
+	moveToPath?: string,
 ): Promise<void>;
 async function rimraf(
 	path: string,
 	mode = RimRafMode.UNLINK,
-	moveToPath?: string
+	moveToPath?: string,
 ): Promise<void> {
 	if (isRootOrDriveLetter(path)) {
 		throw new Error("rimraf - will refuse to recursively delete root");
@@ -74,7 +74,7 @@ async function rimraf(
 
 async function rimrafMove(
 	path: string,
-	moveToPath = randomPath(tmpdir())
+	moveToPath = randomPath(tmpdir()),
 ): Promise<void> {
 	try {
 		try {
@@ -142,16 +142,16 @@ export interface IDirent {
 async function readdir(path: string): Promise<string[]>;
 async function readdir(
 	path: string,
-	options: { withFileTypes: true }
+	options: { withFileTypes: true },
 ): Promise<IDirent[]>;
 async function readdir(
 	path: string,
-	options?: { withFileTypes: true }
+	options?: { withFileTypes: true },
 ): Promise<(string | IDirent)[]> {
 	return handleDirectoryChildren(
 		await (options
 			? safeReaddirWithFileTypes(path)
-			: promisify(fs.readdir)(path))
+			: promisify(fs.readdir)(path)),
 	);
 }
 
@@ -161,7 +161,7 @@ async function safeReaddirWithFileTypes(path: string): Promise<IDirent[]> {
 	} catch (error) {
 		console.warn(
 			"[node.js fs] readdir with filetypes failed with error: ",
-			error
+			error,
 		);
 	}
 
@@ -187,7 +187,7 @@ async function safeReaddirWithFileTypes(path: string): Promise<IDirent[]> {
 		} catch (error) {
 			console.warn(
 				"[node.js fs] unexpected error from lstat after readdir: ",
-				error
+				error,
 			);
 		}
 
@@ -214,10 +214,10 @@ export function readdirSync(path: string): string[] {
 function handleDirectoryChildren(children: string[]): string[];
 function handleDirectoryChildren(children: IDirent[]): IDirent[];
 function handleDirectoryChildren(
-	children: (string | IDirent)[]
+	children: (string | IDirent)[],
 ): (string | IDirent)[];
 function handleDirectoryChildren(
-	children: (string | IDirent)[]
+	children: (string | IDirent)[],
 ): (string | IDirent)[] {
 	return children.map((child) => {
 		// Mac: uses NFD unicode form on disk, but we want NFC
@@ -340,7 +340,7 @@ export namespace SymlinkSupport {
 			if (isWindows && error.code === "EACCES") {
 				try {
 					const stats = await Promises.stat(
-						await Promises.readlink(path)
+						await Promises.readlink(path),
 					);
 
 					return { stat: stats, symbolicLink: { dangling: false } };
@@ -426,27 +426,27 @@ const writeQueues = new ResourceQueue();
 function writeFile(
 	path: string,
 	data: string,
-	options?: IWriteFileOptions
+	options?: IWriteFileOptions,
 ): Promise<void>;
 function writeFile(
 	path: string,
 	data: Buffer,
-	options?: IWriteFileOptions
+	options?: IWriteFileOptions,
 ): Promise<void>;
 function writeFile(
 	path: string,
 	data: Uint8Array,
-	options?: IWriteFileOptions
+	options?: IWriteFileOptions,
 ): Promise<void>;
 function writeFile(
 	path: string,
 	data: string | Buffer | Uint8Array,
-	options?: IWriteFileOptions
+	options?: IWriteFileOptions,
 ): Promise<void>;
 function writeFile(
 	path: string,
 	data: string | Buffer | Uint8Array,
-	options?: IWriteFileOptions
+	options?: IWriteFileOptions,
 ): Promise<void> {
 	return writeQueues
 		.queueFor(URI.file(path), extUriBiasedIgnorePathCase)
@@ -455,8 +455,8 @@ function writeFile(
 
 			return new Promise((resolve, reject) =>
 				doWriteFileAndFlush(path, data, ensuredOptions, (error) =>
-					error ? reject(error) : resolve()
-				)
+					error ? reject(error) : resolve(),
+				),
 			);
 		});
 }
@@ -485,14 +485,14 @@ function doWriteFileAndFlush(
 	path: string,
 	data: string | Buffer | Uint8Array,
 	options: IEnsuredWriteFileOptions,
-	callback: (error: Error | null) => void
+	callback: (error: Error | null) => void,
 ): void {
 	if (!canFlush) {
 		return fs.writeFile(
 			path,
 			data,
 			{ mode: options.mode, flag: options.flag },
-			callback
+			callback,
 		);
 	}
 
@@ -516,7 +516,7 @@ function doWriteFileAndFlush(
 				if (syncError) {
 					console.warn(
 						"[node.js fs] fdatasync is now disabled for this session because it failed: ",
-						syncError
+						syncError,
 					);
 					configureFlushOnWrite(false);
 				}
@@ -535,7 +535,7 @@ function doWriteFileAndFlush(
 export function writeFileSync(
 	path: string,
 	data: string | Buffer,
-	options?: IWriteFileOptions
+	options?: IWriteFileOptions,
 ): void {
 	const ensuredOptions = ensureWriteOptions(options);
 
@@ -559,7 +559,7 @@ export function writeFileSync(
 		} catch (syncError) {
 			console.warn(
 				"[node.js fs] fdatasyncSync is now disabled for this session because it failed: ",
-				syncError
+				syncError,
 			);
 			configureFlushOnWrite(false);
 		}
@@ -569,7 +569,7 @@ export function writeFileSync(
 }
 
 function ensureWriteOptions(
-	options?: IWriteFileOptions
+	options?: IWriteFileOptions,
 ): IEnsuredWriteFileOptions {
 	if (!options) {
 		return { mode: 0o666 /* default node.js mode for files */, flag: "w" };
@@ -596,7 +596,7 @@ function ensureWriteOptions(
 async function rename(
 	source: string,
 	target: string,
-	windowsRetryTimeout: number | false = 60000 /* matches graceful-fs */
+	windowsRetryTimeout: number | false = 60000 /* matches graceful-fs */,
 ): Promise<void> {
 	if (source === target) {
 		return; // simulate node.js behaviour here and do a no-op if paths match
@@ -612,7 +612,7 @@ async function rename(
 				source,
 				target,
 				Date.now(),
-				windowsRetryTimeout
+				windowsRetryTimeout,
 			);
 		} else {
 			await promisify(fs.rename)(source, target);
@@ -646,7 +646,7 @@ async function renameWithRetry(
 	target: string,
 	startTime: number,
 	retryTimeout: number,
-	attempt = 0
+	attempt = 0,
 ): Promise<void> {
 	try {
 		return await promisify(fs.rename)(source, target);
@@ -661,7 +661,7 @@ async function renameWithRetry(
 
 		if (Date.now() - startTime >= retryTimeout) {
 			console.error(
-				`[node.js fs] rename failed after ${attempt} retries with error: ${error}`
+				`[node.js fs] rename failed after ${attempt} retries with error: ${error}`,
 			);
 
 			throw error; // give up after configurable timeout
@@ -692,7 +692,7 @@ async function renameWithRetry(
 			target,
 			startTime,
 			retryTimeout,
-			attempt + 1
+			attempt + 1,
 		);
 	}
 }
@@ -713,7 +713,7 @@ interface ICopyPayload {
 async function copy(
 	source: string,
 	target: string,
-	options: { preserveSymlinks: boolean }
+	options: { preserveSymlinks: boolean },
 ): Promise<void> {
 	return doCopy(source, target, {
 		root: { source, target },
@@ -731,7 +731,7 @@ const COPY_MODE_MASK = 0o777;
 async function doCopy(
 	source: string,
 	target: string,
-	payload: ICopyPayload
+	payload: ICopyPayload,
 ): Promise<void> {
 	// Keep track of paths already copied to prevent
 	// cycles from symbolic links to cause issues
@@ -765,7 +765,7 @@ async function doCopy(
 			source,
 			target,
 			stat.mode & COPY_MODE_MASK,
-			payload
+			payload,
 		);
 	}
 
@@ -779,7 +779,7 @@ async function doCopyDirectory(
 	source: string,
 	target: string,
 	mode: number,
-	payload: ICopyPayload
+	payload: ICopyPayload,
 ): Promise<void> {
 	// Create folder
 	await Promises.mkdir(target, { recursive: true, mode });
@@ -794,7 +794,7 @@ async function doCopyDirectory(
 async function doCopyFile(
 	source: string,
 	target: string,
-	mode: number
+	mode: number,
 ): Promise<void> {
 	// Copy file
 	await Promises.copyFile(source, target);
@@ -806,7 +806,7 @@ async function doCopyFile(
 async function doCopySymlink(
 	source: string,
 	target: string,
-	payload: ICopyPayload
+	payload: ICopyPayload,
 ): Promise<void> {
 	// Figure out link target
 	let linkTarget = await Promises.readlink(source);
@@ -818,7 +818,7 @@ async function doCopySymlink(
 	if (isEqualOrParent(linkTarget, payload.root.source, !isLinux)) {
 		linkTarget = join(
 			payload.root.target,
-			linkTarget.substr(payload.root.source.length + 1)
+			linkTarget.substr(payload.root.source.length + 1),
 		);
 	}
 
@@ -873,7 +873,7 @@ export const Promises = new (class {
 			buffer: Uint8Array,
 			offset: number,
 			length: number,
-			position: number | null
+			position: number | null,
 		) => {
 			return new Promise<{ bytesRead: number; buffer: Uint8Array }>(
 				(resolve, reject) => {
@@ -889,9 +889,9 @@ export const Promises = new (class {
 							}
 
 							return resolve({ bytesRead, buffer });
-						}
+						},
 					);
-				}
+				},
 			);
 		};
 	}
@@ -909,7 +909,7 @@ export const Promises = new (class {
 			buffer: Uint8Array,
 			offset: number | undefined | null,
 			length: number | undefined | null,
-			position: number | undefined | null
+			position: number | undefined | null,
 		) => {
 			return new Promise<{ bytesWritten: number; buffer: Uint8Array }>(
 				(resolve, reject) => {
@@ -925,9 +925,9 @@ export const Promises = new (class {
 							}
 
 							return resolve({ bytesWritten, buffer });
-						}
+						},
 					);
-				}
+				},
 			);
 		};
 	}

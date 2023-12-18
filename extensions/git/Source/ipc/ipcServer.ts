@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as crypto from "crypto";
+import * as fs from "fs";
+import * as http from "http";
+import * as os from "os";
+import * as path from "path";
 import { Disposable } from "vscode";
 import { ITerminalEnvironmentProvider } from "../terminal";
 import { toDisposable } from "../util";
-import * as path from "path";
-import * as http from "http";
-import * as os from "os";
-import * as fs from "fs";
-import * as crypto from "crypto";
 
 function getIPCHandlePath(id: string): string {
 	if (process.platform === "win32") {
@@ -20,7 +20,7 @@ function getIPCHandlePath(id: string): string {
 	if (process.platform !== "darwin" && process.env["XDG_RUNTIME_DIR"]) {
 		return path.join(
 			process.env["XDG_RUNTIME_DIR"] as string,
-			`vscode-git-${id}.sock`
+			`vscode-git-${id}.sock`,
 		);
 	}
 
@@ -35,13 +35,13 @@ export async function createIPCServer(context?: string): Promise<IPCServer> {
 	const server = http.createServer();
 	const hash = crypto.createHash("sha1");
 
-	if (!context) {
+	if (context) {
+		hash.update(context);
+	} else {
 		const buffer = await new Promise<Buffer>((c, e) =>
-			crypto.randomBytes(20, (err, buf) => (err ? e(err) : c(buf)))
+			crypto.randomBytes(20, (err, buf) => (err ? e(err) : c(buf))),
 		);
 		hash.update(buffer);
-	} else {
-		hash.update(context);
 	}
 
 	const ipcHandlePath = getIPCHandlePath(hash.digest("hex").substr(0, 10));
@@ -79,10 +79,7 @@ export class IPCServer
 		return this._ipcHandlePath;
 	}
 
-	constructor(
-		private server: http.Server,
-		private _ipcHandlePath: string
-	) {
+	constructor(private server: http.Server, private _ipcHandlePath: string) {
 		this.server.on("request", this.onRequest.bind(this));
 	}
 
@@ -93,7 +90,7 @@ export class IPCServer
 
 	private onRequest(
 		req: http.IncomingMessage,
-		res: http.ServerResponse
+		res: http.ServerResponse,
 	): void {
 		if (!req.url) {
 			console.warn(`Request lacks url`);
@@ -119,7 +116,7 @@ export class IPCServer
 				() => {
 					res.writeHead(500);
 					res.end();
-				}
+				},
 			);
 		});
 	}

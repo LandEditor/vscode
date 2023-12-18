@@ -10,7 +10,7 @@ import { CellContentPart } from "vs/workbench/contrib/notebook/browser/view/cell
 export class CellDecorations extends CellContentPart {
 	constructor(
 		readonly rootContainer: HTMLElement,
-		readonly decorationContainer: HTMLElement
+		readonly decorationContainer: HTMLElement,
 	) {
 		super();
 	}
@@ -37,7 +37,7 @@ export class CellDecorations extends CellContentPart {
 				.filter((options) => options.topClassName !== undefined)
 				.forEach((options) => {
 					this.decorationContainer.append(
-						DOM.$(`.${options.topClassName!}`)
+						DOM.$(`.${options.topClassName!}`),
 					);
 				});
 		};
@@ -51,7 +51,7 @@ export class CellDecorations extends CellContentPart {
 				if (modified) {
 					generateCellTopDecorations();
 				}
-			})
+			}),
 		);
 
 		generateCellTopDecorations();

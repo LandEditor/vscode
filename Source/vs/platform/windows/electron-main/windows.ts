@@ -4,7 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { BrowserWindowConstructorOptions, WebContents } from "electron";
+import { Color } from "vs/base/common/color";
 import { Event } from "vs/base/common/event";
+import { join } from "vs/base/common/path";
 import {
 	IProcessEnvironment,
 	isLinux,
@@ -12,15 +14,17 @@ import {
 	isWindows,
 } from "vs/base/common/platform";
 import { URI } from "vs/base/common/uri";
+import { IAuxiliaryWindow } from "vs/platform/auxiliaryWindow/electron-main/auxiliaryWindow";
+import { IAuxiliaryWindowsMainService } from "vs/platform/auxiliaryWindow/electron-main/auxiliaryWindows";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { NativeParsedArgs } from "vs/platform/environment/common/argv";
+import { IEnvironmentMainService } from "vs/platform/environment/electron-main/environmentMainService";
 import {
 	ServicesAccessor,
 	createDecorator,
 } from "vs/platform/instantiation/common/instantiation";
-import {
-	ICodeWindow,
-	IWindowState,
-} from "vs/platform/window/electron-main/window";
+import { IProductService } from "vs/platform/product/common/productService";
+import { IThemeMainService } from "vs/platform/theme/electron-main/themeMainService";
 import {
 	IOpenEmptyWindowOptions,
 	IWindowOpenable,
@@ -31,14 +35,10 @@ import {
 	useWindowControlsOverlay,
 	zoomLevelToZoomFactor,
 } from "vs/platform/window/common/window";
-import { IThemeMainService } from "vs/platform/theme/electron-main/themeMainService";
-import { IProductService } from "vs/platform/product/common/productService";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IEnvironmentMainService } from "vs/platform/environment/electron-main/environmentMainService";
-import { join } from "vs/base/common/path";
-import { IAuxiliaryWindow } from "vs/platform/auxiliaryWindow/electron-main/auxiliaryWindow";
-import { IAuxiliaryWindowsMainService } from "vs/platform/auxiliaryWindow/electron-main/auxiliaryWindows";
-import { Color } from "vs/base/common/color";
+import {
+	ICodeWindow,
+	IWindowState,
+} from "vs/platform/window/electron-main/window";
 
 export const IWindowsMainService =
 	createDecorator<IWindowsMainService>("windowsMainService");
@@ -62,16 +62,16 @@ export interface IWindowsMainService {
 	open(openConfig: IOpenConfiguration): Promise<ICodeWindow[]>;
 	openEmptyWindow(
 		openConfig: IOpenEmptyConfiguration,
-		options?: IOpenEmptyWindowOptions
+		options?: IOpenEmptyWindowOptions,
 	): Promise<ICodeWindow[]>;
 	openExtensionDevelopmentHostWindow(
 		extensionDevelopmentPath: string[],
-		openConfig: IOpenConfiguration
+		openConfig: IOpenConfiguration,
 	): Promise<ICodeWindow[]>;
 
 	openExistingWindow(
 		window: ICodeWindow,
-		openConfig: IOpenConfiguration
+		openConfig: IOpenConfiguration,
 	): void;
 
 	sendToFocused(channel: string, ...args: any[]): void;
@@ -79,7 +79,7 @@ export interface IWindowsMainService {
 	sendToAll(
 		channel: string,
 		payload?: any,
-		windowIdsToIgnore?: number[]
+		windowIdsToIgnore?: number[],
 	): void;
 
 	getWindows(): ICodeWindow[];
@@ -97,24 +97,24 @@ export interface IWindowsCountChangedEvent {
 	readonly newCount: number;
 }
 
-export const enum OpenContext {
+export enum OpenContext {
 	// opening when running from the command line
-	CLI,
+	CLI = 0,
 
 	// macOS only: opening from the dock (also when opening files to a running instance from desktop)
-	DOCK,
+	DOCK = 1,
 
 	// opening from the main application window
-	MENU,
+	MENU = 2,
 
 	// opening from a file or folder dialog
-	DIALOG,
+	DIALOG = 3,
 
 	// opening from the OS's UI
-	DESKTOP,
+	DESKTOP = 4,
 
 	// opening through the API
-	API,
+	API = 5,
 }
 
 export interface IBaseOpenConfiguration {
@@ -148,12 +148,12 @@ export interface IOpenConfiguration extends IBaseOpenConfiguration {
 	readonly forceTempProfile?: boolean;
 }
 
-export interface IOpenEmptyConfiguration extends IBaseOpenConfiguration {}
+export type IOpenEmptyConfiguration = IBaseOpenConfiguration;
 
 export function defaultBrowserWindowOptions(
 	accessor: ServicesAccessor,
 	windowState?: IWindowState,
-	overrides?: BrowserWindowConstructorOptions
+	overrides?: BrowserWindowConstructorOptions,
 ): BrowserWindowConstructorOptions & { experimentalDarkMode: boolean } {
 	const themeMainService = accessor.get(IThemeMainService);
 	const productService = accessor.get(IProductService);
@@ -196,12 +196,12 @@ export function defaultBrowserWindowOptions(
 	if (isLinux) {
 		options.icon = join(
 			environmentMainService.appRoot,
-			"resources/linux/code.png"
+			"resources/linux/code.png",
 		); // always on Linux
 	} else if (isWindows && !environmentMainService.isBuilt) {
 		options.icon = join(
 			environmentMainService.appRoot,
-			"resources/win32/code_150x150.png"
+			"resources/win32/code_150x150.png",
 		); // only when running out of sources on Windows
 	}
 
@@ -255,11 +255,11 @@ export function defaultBrowserWindowOptions(
 }
 
 export function getFocusedOrLastActiveWindow(
-	accessor: ServicesAccessor
+	accessor: ServicesAccessor,
 ): ICodeWindow | IAuxiliaryWindow | undefined {
 	const windowsMainService = accessor.get(IWindowsMainService);
 	const auxiliaryWindowsMainService = accessor.get(
-		IAuxiliaryWindowsMainService
+		IAuxiliaryWindowsMainService,
 	);
 
 	// By: Electron focused window
@@ -287,10 +287,10 @@ export function getFocusedOrLastActiveWindow(
 
 export function getLastFocused(windows: ICodeWindow[]): ICodeWindow | undefined;
 export function getLastFocused(
-	windows: IAuxiliaryWindow[]
+	windows: IAuxiliaryWindow[],
 ): IAuxiliaryWindow | undefined;
 export function getLastFocused(
-	windows: ICodeWindow[] | IAuxiliaryWindow[]
+	windows: ICodeWindow[] | IAuxiliaryWindow[],
 ): ICodeWindow | IAuxiliaryWindow | undefined {
 	let lastFocusedWindow: ICodeWindow | IAuxiliaryWindow | undefined =
 		undefined;

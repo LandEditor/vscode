@@ -3,60 +3,60 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	ITreeItem,
-	TreeItemCollapsibleState,
-	TreeViewItemHandleArg,
-	IViewDescriptorService,
-} from "vs/workbench/common/views";
+import * as DOM from "vs/base/browser/dom";
+import { Codicon } from "vs/base/common/codicons";
+import { basename, isEqual } from "vs/base/common/resources";
+import { URI } from "vs/base/common/uri";
 import { localize } from "vs/nls";
-import { TreeViewPane } from "vs/workbench/browser/parts/views/treeView";
 import {
-	IInstantiationService,
-	ServicesAccessor,
-} from "vs/platform/instantiation/common/instantiation";
-import {
-	IUserDataSyncService,
-	Change,
-	MergeState,
-	IUserDataSyncResource,
-	IResourcePreview,
-	IUserDataSyncEnablementService,
-} from "vs/platform/userDataSync/common/userDataSync";
-import {
-	registerAction2,
 	Action2,
 	MenuId,
+	registerAction2,
 } from "vs/platform/actions/common/actions";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
 	ContextKeyExpr,
 	IContextKeyService,
 } from "vs/platform/contextkey/common/contextkey";
-import { URI } from "vs/base/common/uri";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import {
-	getSyncAreaLabel,
-	IUserDataSyncConflictsView,
-	IUserDataSyncWorkbenchService,
-	SYNC_CONFLICTS_VIEW_ID,
-} from "vs/workbench/services/userDataSync/common/userDataSync";
-import { basename, isEqual } from "vs/base/common/resources";
-import * as DOM from "vs/base/browser/dom";
-import { IViewletViewOptions } from "vs/workbench/browser/parts/views/viewsViewlet";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IOpenerService } from "vs/platform/opener/common/opener";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import {
+	IInstantiationService,
+	ServicesAccessor,
+} from "vs/platform/instantiation/common/instantiation";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import { INotificationService } from "vs/platform/notification/common/notification";
-import { Codicon } from "vs/base/common/codicons";
+import { IOpenerService } from "vs/platform/opener/common/opener";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { IThemeService } from "vs/platform/theme/common/themeService";
 import {
 	IUserDataProfile,
 	IUserDataProfilesService,
 	reviveProfile,
 } from "vs/platform/userDataProfile/common/userDataProfile";
+import {
+	Change,
+	IResourcePreview,
+	IUserDataSyncEnablementService,
+	IUserDataSyncResource,
+	IUserDataSyncService,
+	MergeState,
+} from "vs/platform/userDataSync/common/userDataSync";
+import { TreeViewPane } from "vs/workbench/browser/parts/views/treeView";
+import { IViewletViewOptions } from "vs/workbench/browser/parts/views/viewsViewlet";
 import { DEFAULT_EDITOR_ASSOCIATION } from "vs/workbench/common/editor";
+import {
+	ITreeItem,
+	IViewDescriptorService,
+	TreeItemCollapsibleState,
+	TreeViewItemHandleArg,
+} from "vs/workbench/common/views";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import {
+	IUserDataSyncConflictsView,
+	IUserDataSyncWorkbenchService,
+	SYNC_CONFLICTS_VIEW_ID,
+	getSyncAreaLabel,
+} from "vs/workbench/services/userDataSync/common/userDataSync";
 
 type UserDataSyncConflictResource = IUserDataSyncResource & IResourcePreview;
 
@@ -113,7 +113,7 @@ export class UserDataSyncConflictsViewPane
 		const that = this;
 		this.treeView.message = localize(
 			"explanation",
-			"Please go through each entry and merge to resolve conflicts."
+			"Please go through each entry and merge to resolve conflicts.",
 		);
 		this.treeView.dataProvider = {
 			getChildren() {
@@ -127,22 +127,21 @@ export class UserDataSyncConflictsViewPane
 
 		const conflictResources: UserDataSyncConflictResource[] =
 			this.userDataSyncService.conflicts
-				.map((conflict) =>
+				.flatMap((conflict) =>
 					conflict.conflicts.map((resourcePreview) => ({
 						...resourcePreview,
 						syncResource: conflict.syncResource,
 						profile: conflict.profile,
-					}))
+					})),
 				)
-				.flat()
 				.sort((a, b) =>
 					a.profile.id === b.profile.id
 						? 0
 						: a.profile.isDefault
-							? -1
-							: b.profile.isDefault
-								? 1
-								: a.profile.name.localeCompare(b.profile.name)
+						  ? -1
+						  : b.profile.isDefault
+							  ? 1
+							  : a.profile.name.localeCompare(b.profile.name),
 				);
 		const conflictResourcesByProfile: [
 			IUserDataProfile,
@@ -155,7 +154,7 @@ export class UserDataSyncConflictsViewPane
 				]?.[0].id === previewResource.profile.id
 					? conflictResourcesByProfile[
 							conflictResourcesByProfile.length - 1
-						][1]
+					  ][1]
 					: undefined;
 			if (!result) {
 				conflictResourcesByProfile.push([
@@ -216,7 +215,7 @@ export class UserDataSyncConflictsViewPane
 			syncResource: parsed.syncResource,
 			profile: reviveProfile(
 				parsed.profile,
-				this.userDataProfilesService.profilesHome.scheme
+				this.userDataProfilesService.profilesHome.scheme,
 			),
 			localResource: URI.revive(parsed.localResource),
 			remoteResource: URI.revive(parsed.remoteResource),
@@ -245,21 +244,21 @@ export class UserDataSyncConflictsViewPane
 										"This is an action title to show the conflicts between local and remote version of resources",
 									],
 								},
-								"Show Conflicts"
+								"Show Conflicts",
 							),
 						});
 					}
 					async run(
 						accessor: ServicesAccessor,
-						handle: TreeViewItemHandleArg
+						handle: TreeViewItemHandleArg,
 					): Promise<void> {
 						const conflict = that.parseHandle(
-							handle.$treeItemHandle
+							handle.$treeItemHandle,
 						);
 						return that.open(conflict);
 					}
-				}
-			)
+				},
+			),
 		);
 
 		this._register(
@@ -270,7 +269,7 @@ export class UserDataSyncConflictsViewPane
 							id: `workbench.actions.sync.acceptRemote`,
 							title: localize(
 								"workbench.actions.sync.acceptRemote",
-								"Accept Remote"
+								"Accept Remote",
 							),
 							icon: Codicon.cloudDownload,
 							menu: {
@@ -278,12 +277,12 @@ export class UserDataSyncConflictsViewPane
 								when: ContextKeyExpr.and(
 									ContextKeyExpr.equals(
 										"view",
-										SYNC_CONFLICTS_VIEW_ID
+										SYNC_CONFLICTS_VIEW_ID,
 									),
 									ContextKeyExpr.equals(
 										"viewItem",
-										"sync-conflict-resource"
-									)
+										"sync-conflict-resource",
+									),
 								),
 								group: "inline",
 								order: 1,
@@ -292,10 +291,10 @@ export class UserDataSyncConflictsViewPane
 					}
 					async run(
 						accessor: ServicesAccessor,
-						handle: TreeViewItemHandleArg
+						handle: TreeViewItemHandleArg,
 					): Promise<void> {
 						const conflict = that.parseHandle(
-							handle.$treeItemHandle
+							handle.$treeItemHandle,
 						);
 						await that.userDataSyncWorkbenchService.accept(
 							{
@@ -304,11 +303,11 @@ export class UserDataSyncConflictsViewPane
 							},
 							conflict.remoteResource,
 							undefined,
-							that.userDataSyncEnablementService.isEnabled()
+							that.userDataSyncEnablementService.isEnabled(),
 						);
 					}
-				}
-			)
+				},
+			),
 		);
 
 		this._register(
@@ -319,7 +318,7 @@ export class UserDataSyncConflictsViewPane
 							id: `workbench.actions.sync.acceptLocal`,
 							title: localize(
 								"workbench.actions.sync.acceptLocal",
-								"Accept Local"
+								"Accept Local",
 							),
 							icon: Codicon.cloudUpload,
 							menu: {
@@ -327,12 +326,12 @@ export class UserDataSyncConflictsViewPane
 								when: ContextKeyExpr.and(
 									ContextKeyExpr.equals(
 										"view",
-										SYNC_CONFLICTS_VIEW_ID
+										SYNC_CONFLICTS_VIEW_ID,
 									),
 									ContextKeyExpr.equals(
 										"viewItem",
-										"sync-conflict-resource"
-									)
+										"sync-conflict-resource",
+									),
 								),
 								group: "inline",
 								order: 2,
@@ -341,10 +340,10 @@ export class UserDataSyncConflictsViewPane
 					}
 					async run(
 						accessor: ServicesAccessor,
-						handle: TreeViewItemHandleArg
+						handle: TreeViewItemHandleArg,
 					): Promise<void> {
 						const conflict = that.parseHandle(
-							handle.$treeItemHandle
+							handle.$treeItemHandle,
 						);
 						await that.userDataSyncWorkbenchService.accept(
 							{
@@ -353,11 +352,11 @@ export class UserDataSyncConflictsViewPane
 							},
 							conflict.localResource,
 							undefined,
-							that.userDataSyncEnablementService.isEnabled()
+							that.userDataSyncEnablementService.isEnabled(),
 						);
 					}
-				}
-			)
+				},
+			),
 		);
 	}
 
@@ -365,8 +364,8 @@ export class UserDataSyncConflictsViewPane
 		if (
 			!this.userDataSyncService.conflicts.some(({ conflicts }) =>
 				conflicts.some(({ localResource }) =>
-					isEqual(localResource, conflictToOpen.localResource)
-				)
+					isEqual(localResource, conflictToOpen.localResource),
+				),
 			)
 		) {
 			return;
@@ -378,12 +377,12 @@ export class UserDataSyncConflictsViewPane
 				comment: ["remote as in file in cloud"],
 			},
 			"{0} (Remote)",
-			basename(conflictToOpen.remoteResource)
+			basename(conflictToOpen.remoteResource),
 		);
 		const localResourceName = localize(
 			"localResourceName",
 			"{0} (Local)",
-			basename(conflictToOpen.remoteResource)
+			basename(conflictToOpen.remoteResource),
 		);
 		await this.editorService.openEditor({
 			input1: {

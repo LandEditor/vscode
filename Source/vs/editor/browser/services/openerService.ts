@@ -11,9 +11,9 @@ import { LinkedList } from "vs/base/common/linkedList";
 import { ResourceMap } from "vs/base/common/map";
 import { parse } from "vs/base/common/marshalling";
 import {
+	Schemas,
 	matchesScheme,
 	matchesSomeScheme,
-	Schemas,
 } from "vs/base/common/network";
 import { normalizePath } from "vs/base/common/resources";
 import { URI } from "vs/base/common/uri";
@@ -21,7 +21,6 @@ import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService
 import { ICommandService } from "vs/platform/commands/common/commands";
 import { EditorOpenSource } from "vs/platform/editor/common/editor";
 import {
-	extractSelection,
 	IExternalOpener,
 	IExternalUriResolver,
 	IOpener,
@@ -30,6 +29,7 @@ import {
 	IValidator,
 	OpenOptions,
 	ResolveExternalUriOptions,
+	extractSelection,
 } from "vs/platform/opener/common/opener";
 
 class CommandOpener implements IOpener {
@@ -108,7 +108,7 @@ class EditorOpener implements IOpener {
 				},
 			},
 			this._editorService.getFocusedCodeEditor(),
-			options?.openToSide
+			options?.openToSide,
 		);
 
 		return true;
@@ -122,7 +122,7 @@ export class OpenerService implements IOpenerService {
 	private readonly _validators = new LinkedList<IValidator>();
 	private readonly _resolvers = new LinkedList<IExternalUriResolver>();
 	private readonly _resolvedUriTargets = new ResourceMap<URI>((uri) =>
-		uri.with({ path: null, fragment: null, query: null }).toString()
+		uri.with({ path: null, fragment: null, query: null }).toString(),
 	);
 
 	private _defaultExternalOpener: IExternalOpener;
@@ -130,7 +130,7 @@ export class OpenerService implements IOpenerService {
 
 	constructor(
 		@ICodeEditorService editorService: ICodeEditorService,
-		@ICommandService commandService: ICommandService
+		@ICommandService commandService: ICommandService,
 	) {
 		// Default external opener is going through window.open()
 		this._defaultExternalOpener = {
@@ -158,7 +158,7 @@ export class OpenerService implements IOpenerService {
 						Schemas.mailto,
 						Schemas.http,
 						Schemas.https,
-						Schemas.vsls
+						Schemas.vsls,
 					)
 				) {
 					// open externally
@@ -222,13 +222,13 @@ export class OpenerService implements IOpenerService {
 
 	async resolveExternalUri(
 		resource: URI,
-		options?: ResolveExternalUriOptions
+		options?: ResolveExternalUriOptions,
 	): Promise<IResolvedExternalUri> {
 		for (const resolver of this._resolvers) {
 			try {
 				const result = await resolver.resolveExternalUri(
 					resource,
-					options
+					options,
 				);
 				if (result) {
 					if (!this._resolvedUriTargets.has(result.resolved)) {
@@ -242,13 +242,13 @@ export class OpenerService implements IOpenerService {
 		}
 
 		throw new Error(
-			"Could not resolve external URI: " + resource.toString()
+			"Could not resolve external URI: " + resource.toString(),
 		);
 	}
 
 	private async _doOpenExternal(
 		resource: URI | string,
-		options: OpenOptions | undefined
+		options: OpenOptions | undefined,
 	): Promise<boolean> {
 		//todo@jrieken IExternalUriResolver should support `uri: URI | string`
 		const uri =
@@ -286,7 +286,7 @@ export class OpenerService implements IOpenerService {
 						sourceUri: uri,
 						preferredOpenerId,
 					},
-					CancellationToken.None
+					CancellationToken.None,
 				);
 				if (didOpen) {
 					return true;
@@ -297,7 +297,7 @@ export class OpenerService implements IOpenerService {
 		return this._defaultExternalOpener.openExternal(
 			href,
 			{ sourceUri: uri },
-			CancellationToken.None
+			CancellationToken.None,
 		);
 	}
 

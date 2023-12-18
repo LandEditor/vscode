@@ -117,8 +117,9 @@ export class ChatEditorOptions extends Disposable {
 
 		// TODO shouldn't the setting keys be more specific?
 		const chatEditorConfig =
-			this.configurationService.getValue<IChatConfiguration>("chat")
-				?.editor;
+			this.configurationService.getValue<IChatConfiguration>(
+				"chat",
+			)?.editor;
 		const accessibilitySupport = this.configurationService.getValue<
 			"auto" | "off" | "on"
 		>("editor.accessibilitySupport");
@@ -145,14 +146,14 @@ export class ChatEditorOptions extends Disposable {
 				lineHeight: chatEditorConfig.lineHeight
 					? chatEditorConfig.lineHeight
 					: ChatEditorOptions.lineHeightEm *
-						chatEditorConfig.fontSize,
+					  chatEditorConfig.fontSize,
 				bracketPairColorization: {
 					enabled: this.configurationService.getValue<boolean>(
-						"editor.bracketPairColorization.enabled"
+						"editor.bracketPairColorization.enabled",
 					),
 					independentColorPoolPerBracketType:
 						this.configurationService.getValue<boolean>(
-							"editor.bracketPairColorization.independentColorPoolPerBracketType"
+							"editor.bracketPairColorization.independentColorPoolPerBracketType",
 						),
 				},
 				wordWrap: chatEditorConfig.wordWrap,

@@ -6,11 +6,11 @@
 import { findLast } from "vs/base/common/arraysFind";
 import { Disposable } from "vs/base/common/lifecycle";
 import {
-	derived,
-	derivedObservableWithWritableCache,
 	IObservable,
 	IReader,
 	ITransaction,
+	derived,
+	derivedObservableWithWritableCache,
 	observableValue,
 	transaction,
 } from "vs/base/common/observable";
@@ -40,7 +40,7 @@ export class MergeEditorViewModel extends Disposable {
 	}>(this, { range: undefined, counter: 0 });
 
 	private readonly attachedHistory = this._register(
-		new AttachedHistory(this.model.resultTextModel)
+		new AttachedHistory(this.model.resultTextModel),
 	);
 
 	constructor(
@@ -125,7 +125,7 @@ export class MergeEditorViewModel extends Disposable {
 		observableConfigValue<boolean>(
 			"mergeEditor.shouldUseAppendInsteadOfAccept",
 			false,
-			this.configurationService
+			this.configurationService,
 		);
 
 	private counter = 0;
@@ -155,7 +155,7 @@ export class MergeEditorViewModel extends Disposable {
 				return 2;
 			}
 			return undefined;
-		}
+		},
 	);
 
 	public readonly selectionInBase = derived(this, (reader) => {
@@ -188,12 +188,12 @@ export class MergeEditorViewModel extends Disposable {
 	private getRangeOfModifiedBaseRange(
 		editor: CodeEditorView,
 		modifiedBaseRange: ModifiedBaseRange,
-		reader: IReader | undefined
+		reader: IReader | undefined,
 	): LineRange {
 		if (editor === this.resultCodeEditorView) {
 			return this.model.getLineRangeInResult(
 				modifiedBaseRange.baseRange,
-				reader
+				reader,
 			);
 		} else if (editor === this.baseCodeEditorView.get()) {
 			return modifiedBaseRange.baseRange;
@@ -226,7 +226,7 @@ export class MergeEditorViewModel extends Disposable {
 			const range = this.getRangeOfModifiedBaseRange(
 				focusedEditor.view!,
 				r,
-				reader
+				reader,
 			);
 			return range.isEmpty
 				? range.startLineNumber === cursorLineNumber
@@ -236,11 +236,11 @@ export class MergeEditorViewModel extends Disposable {
 
 	public setActiveModifiedBaseRange(
 		range: ModifiedBaseRange | undefined,
-		tx: ITransaction
+		tx: ITransaction,
 	): void {
 		this.manuallySetActiveModifiedBaseRange.set(
 			{ range, counter: this.counter++ },
-			tx
+			tx,
 		);
 	}
 
@@ -248,11 +248,11 @@ export class MergeEditorViewModel extends Disposable {
 		baseRange: ModifiedBaseRange,
 		state: ModifiedBaseRangeState,
 		tx: ITransaction,
-		inputNumber: InputNumber
+		inputNumber: InputNumber,
 	): void {
 		this.manuallySetActiveModifiedBaseRange.set(
 			{ range: baseRange, counter: this.counter++ },
-			tx
+			tx,
 		);
 		this.model.setState(baseRange, state, inputNumber, tx);
 	}
@@ -260,8 +260,8 @@ export class MergeEditorViewModel extends Disposable {
 	private goToConflict(
 		getModifiedBaseRange: (
 			editor: CodeEditorView,
-			curLineNumber: number
-		) => ModifiedBaseRange | undefined
+			curLineNumber: number,
+		) => ModifiedBaseRange | undefined,
 	): void {
 		let editor = this.lastFocusedEditor.get().view;
 		if (!editor) {
@@ -276,7 +276,7 @@ export class MergeEditorViewModel extends Disposable {
 			const range = this.getRangeOfModifiedBaseRange(
 				editor,
 				modifiedBaseRange,
-				undefined
+				undefined,
 			);
 			editor.editor.focus();
 
@@ -302,13 +302,13 @@ export class MergeEditorViewModel extends Disposable {
 			editor.editor.revealLinesNearTop(
 				startLineNumber,
 				endLineNumberExclusive,
-				ScrollType.Smooth
+				ScrollType.Smooth,
 			);
 		}
 	}
 
 	public goToNextModifiedBaseRange(
-		predicate: (m: ModifiedBaseRange) => boolean
+		predicate: (m: ModifiedBaseRange) => boolean,
 	): void {
 		this.goToConflict(
 			(e, l) =>
@@ -318,14 +318,14 @@ export class MergeEditorViewModel extends Disposable {
 						(r) =>
 							predicate(r) &&
 							this.getRangeOfModifiedBaseRange(e, r, undefined)
-								.startLineNumber > l
+								.startLineNumber > l,
 					) ||
-				this.model.modifiedBaseRanges.get().find((r) => predicate(r))
+				this.model.modifiedBaseRanges.get().find((r) => predicate(r)),
 		);
 	}
 
 	public goToPreviousModifiedBaseRange(
-		predicate: (m: ModifiedBaseRange) => boolean
+		predicate: (m: ModifiedBaseRange) => boolean,
 	): void {
 		this.goToConflict(
 			(e, l) =>
@@ -334,11 +334,11 @@ export class MergeEditorViewModel extends Disposable {
 					(r) =>
 						predicate(r) &&
 						this.getRangeOfModifiedBaseRange(e, r, undefined)
-							.endLineNumberExclusive < l
+							.endLineNumberExclusive < l,
 				) ||
 				findLast(this.model.modifiedBaseRanges.get(), (r) =>
-					predicate(r)
-				)
+					predicate(r),
+				),
 		);
 	}
 
@@ -348,8 +348,8 @@ export class MergeEditorViewModel extends Disposable {
 			this.notificationService.error(
 				localize(
 					"noConflictMessage",
-					"There is currently no conflict focused that can be toggled."
-				)
+					"There is currently no conflict focused that can be toggled.",
+				),
 			);
 			return;
 		}
@@ -362,7 +362,7 @@ export class MergeEditorViewModel extends Disposable {
 					.get()
 					.toggle(inputNumber),
 				tx,
-				inputNumber
+				inputNumber,
 			);
 		});
 	}
@@ -378,7 +378,7 @@ export class MergeEditorViewModel extends Disposable {
 						.get()
 						.withInputValue(inputNumber, true),
 					tx,
-					inputNumber
+					inputNumber,
 				);
 			}
 		});
@@ -431,7 +431,7 @@ class AttachedHistory extends Disposable {
 				}
 
 				this.previousAltId = currentAltId;
-			})
+			}),
 		);
 	}
 

@@ -26,6 +26,7 @@ import {
 	LineRange,
 } from "vs/editor/common/core/lineRange";
 import { DefaultLinesDiffComputer } from "vs/editor/common/diff/defaultLinesDiffComputer/defaultLinesDiffComputer";
+import { optimizeSequenceDiffs } from "vs/editor/common/diff/defaultLinesDiffComputer/heuristicSequenceOptimizations";
 import { IDocumentDiff } from "vs/editor/common/diff/documentDiffProvider";
 import { MovedText } from "vs/editor/common/diff/linesDiffComputer";
 import {
@@ -40,7 +41,6 @@ import { ITextModel } from "vs/editor/common/model";
 import { TextEditInfo } from "vs/editor/common/model/bracketPairsTextModelPart/bracketPairsTree/beforeEditPositionMapper";
 import { combineTextEditInfos } from "vs/editor/common/model/bracketPairsTextModelPart/bracketPairsTree/combineTextEditInfos";
 import { DiffEditorOptions } from "./diffEditorOptions";
-import { optimizeSequenceDiffs } from "vs/editor/common/diff/defaultLinesDiffComputer/heuristicSequenceOptimizations";
 
 export class DiffEditorViewModel
 	extends Disposable
@@ -52,7 +52,7 @@ export class DiffEditorViewModel
 	private _lastDiff: IDocumentDiff | undefined;
 	private readonly _diff = observableValue<DiffState | undefined>(
 		this,
-		undefined
+		undefined,
 	);
 	public readonly diff: IObservable<DiffState | undefined> = this._diff;
 
@@ -79,21 +79,21 @@ export class DiffEditorViewModel
 				});
 				return [];
 			}
-		}
+		},
 	);
 
 	public readonly movedTextToCompare = observableValue<MovedText | undefined>(
 		this,
-		undefined
+		undefined,
 	);
 
 	private readonly _activeMovedText = observableValue<MovedText | undefined>(
 		this,
-		undefined
+		undefined,
 	);
 	private readonly _hoveredMovedText = observableValue<MovedText | undefined>(
 		this,
-		undefined
+		undefined,
 	);
 
 	public readonly activeMovedText = derived(
@@ -101,7 +101,7 @@ export class DiffEditorViewModel
 		(r) =>
 			this.movedTextToCompare.read(r) ??
 			this._hoveredMovedText.read(r) ??
-			this._activeMovedText.read(r)
+			this._activeMovedText.read(r),
 	);
 
 	public setActiveMovedText(movedText: MovedText | undefined): void {
@@ -121,7 +121,7 @@ export class DiffEditorViewModel
 			});
 		const onChangeSignal = observableSignalFromEvent(
 			"onDidChange",
-			diffProvider.onDidChange
+			diffProvider.onDidChange,
 		);
 		return {
 			diffProvider,
@@ -417,7 +417,7 @@ export class DiffEditorViewModel
 
 	public ensureModifiedLineIsVisible(
 		lineNumber: number,
-		tx: ITransaction | undefined
+		tx: ITransaction | undefined,
 	): void {
 		if (this.diff.get()?.mappings.length === 0) {
 			return;
@@ -433,7 +433,7 @@ export class DiffEditorViewModel
 
 	public ensureOriginalLineIsVisible(
 		lineNumber: number,
-		tx: ITransaction | undefined
+		tx: ITransaction | undefined,
 	): void {
 		if (this.diff.get()?.mappings.length === 0) {
 			return;
@@ -462,7 +462,7 @@ export class DiffEditorViewModel
 
 	public restoreSerializedState(state: SerializedState): void {
 		const ranges = state.collapsedRegions.map((r) =>
-			LineRange.deserialize(r.range)
+			LineRange.deserialize(r.range),
 		);
 		const regions = this._unchangedRegions.get();
 		transaction((tx) => {
@@ -481,7 +481,7 @@ export class DiffEditorViewModel
 function normalizeDocumentDiff(
 	diff: IDocumentDiff,
 	original: ITextModel,
-	modified: ITextModel
+	modified: ITextModel,
 ): IDocumentDiff {
 	return {
 		changes: diff.changes.map(
@@ -491,10 +491,10 @@ function normalizeDocumentDiff(
 					c.modified,
 					c.innerChanges
 						? c.innerChanges.map((i) =>
-								normalizeRangeMapping(i, original, modified)
-							)
-						: undefined
-				)
+								normalizeRangeMapping(i, original, modified),
+						  )
+						: undefined,
+				),
 		),
 		moves: diff.moves,
 		identical: diff.identical,
@@ -505,7 +505,7 @@ function normalizeDocumentDiff(
 function normalizeRangeMapping(
 	rangeMapping: RangeMapping,
 	original: ITextModel,
-	modified: ITextModel
+	modified: ITextModel,
 ): RangeMapping {
 	let originalRange = rangeMapping.originalRange;
 	let modifiedRange = rangeMapping.modifiedRange;
@@ -520,11 +520,11 @@ function normalizeRangeMapping(
 	) {
 		originalRange = originalRange.setEndPosition(
 			originalRange.endLineNumber + 1,
-			1
+			1,
 		);
 		modifiedRange = modifiedRange.setEndPosition(
 			modifiedRange.endLineNumber + 1,
-			1
+			1,
 		);
 	}
 	return new RangeMapping(originalRange, modifiedRange);
@@ -540,7 +540,7 @@ export class DiffState {
 			result.changes.map((c) => new DiffMapping(c)),
 			result.moves || [],
 			result.identical,
-			result.quitEarly
+			result.quitEarly,
 		);
 	}
 
@@ -548,7 +548,7 @@ export class DiffState {
 		public readonly mappings: readonly DiffMapping[],
 		public readonly movedTexts: readonly MovedText[],
 		public readonly identical: boolean,
-		public readonly quitEarly: boolean
+		public readonly quitEarly: boolean,
 	) {}
 }
 
@@ -581,12 +581,12 @@ export class UnchangedRegion {
 		originalLineCount: number,
 		modifiedLineCount: number,
 		minHiddenLineCount: number,
-		minContext: number
+		minContext: number,
 	): UnchangedRegion[] {
 		const inversedMappings = DetailedLineRangeMapping.inverse(
 			changes,
 			originalLineCount,
-			modifiedLineCount
+			modifiedLineCount,
 		);
 		const result: UnchangedRegion[] = [];
 
@@ -613,14 +613,14 @@ export class UnchangedRegion {
 					length -= minContext;
 				}
 				result.push(
-					new UnchangedRegion(origStart, modStart, length, 0, 0)
+					new UnchangedRegion(origStart, modStart, length, 0, 0),
 				);
 			} else if (length >= minContext * 2 + minHiddenLineCount) {
 				origStart += minContext;
 				modStart += minContext;
 				length -= minContext * 2;
 				result.push(
-					new UnchangedRegion(origStart, modStart, length, 0, 0)
+					new UnchangedRegion(origStart, modStart, length, 0, 0),
 				);
 			}
 		}
@@ -649,12 +649,12 @@ export class UnchangedRegion {
 		(reader /** @description isVisible */) =>
 			this.visibleLineCountTop.read(reader) +
 				this.visibleLineCountBottom.read(reader) ===
-				this.lineCount && !this.isDragged.read(reader)
+				this.lineCount && !this.isDragged.read(reader),
 	);
 
 	public readonly isDragged = observableValue<undefined | "bottom" | "top">(
 		this,
-		undefined
+		undefined,
 	);
 
 	constructor(
@@ -662,7 +662,7 @@ export class UnchangedRegion {
 		public readonly modifiedLineNumber: number,
 		public readonly lineCount: number,
 		visibleLineCountTop: number,
-		visibleLineCountBottom: number
+		visibleLineCountBottom: number,
 	) {
 		this._visibleLineCountTop.set(visibleLineCountTop, undefined);
 		this._visibleLineCountBottom.set(visibleLineCountBottom, undefined);
@@ -677,7 +677,7 @@ export class UnchangedRegion {
 			this.originalLineNumber + this._visibleLineCountTop.read(reader),
 			this.lineCount -
 				this._visibleLineCountTop.read(reader) -
-				this._visibleLineCountBottom.read(reader)
+				this._visibleLineCountBottom.read(reader),
 		);
 	}
 
@@ -686,7 +686,7 @@ export class UnchangedRegion {
 			this.modifiedLineNumber + this._visibleLineCountTop.read(reader),
 			this.lineCount -
 				this._visibleLineCountTop.read(reader) -
-				this._visibleLineCountBottom.read(reader)
+				this._visibleLineCountBottom.read(reader),
 		);
 	}
 
@@ -713,9 +713,9 @@ export class UnchangedRegion {
 		this._visibleLineCountTop.set(
 			Math.min(
 				this._visibleLineCountTop.get() + count,
-				maxVisibleLineCountTop
+				maxVisibleLineCountTop,
 			),
-			tx
+			tx,
 		);
 	}
 
@@ -725,22 +725,22 @@ export class UnchangedRegion {
 		this._visibleLineCountBottom.set(
 			Math.min(
 				this._visibleLineCountBottom.get() + count,
-				maxVisibleLineCountBottom
+				maxVisibleLineCountBottom,
 			),
-			tx
+			tx,
 		);
 	}
 
 	public showAll(tx: ITransaction | undefined): void {
 		this._visibleLineCountBottom.set(
 			this.lineCount - this._visibleLineCountTop.get(),
-			tx
+			tx,
 		);
 	}
 
 	public showModifiedLine(
 		lineNumber: number,
-		tx: ITransaction | undefined
+		tx: ITransaction | undefined,
 	): void {
 		const top =
 			lineNumber +
@@ -754,19 +754,19 @@ export class UnchangedRegion {
 		if (top < bottom) {
 			this._visibleLineCountTop.set(
 				this._visibleLineCountTop.get() + top,
-				tx
+				tx,
 			);
 		} else {
 			this._visibleLineCountBottom.set(
 				this._visibleLineCountBottom.get() + bottom,
-				tx
+				tx,
 			);
 		}
 	}
 
 	public showOriginalLine(
 		lineNumber: number,
-		tx: ITransaction | undefined
+		tx: ITransaction | undefined,
 	): void {
 		const top = lineNumber - this.originalLineNumber;
 		const bottom = this.originalLineNumber + this.lineCount - lineNumber;
@@ -774,17 +774,17 @@ export class UnchangedRegion {
 			this._visibleLineCountTop.set(
 				Math.min(
 					this._visibleLineCountTop.get() + bottom - top,
-					this.getMaxVisibleLineCountTop()
+					this.getMaxVisibleLineCountTop(),
 				),
-				tx
+				tx,
 			);
 		} else {
 			this._visibleLineCountBottom.set(
 				Math.min(
 					this._visibleLineCountBottom.get() + top - bottom,
-					this.getMaxVisibleLineCountBottom()
+					this.getMaxVisibleLineCountBottom(),
 				),
-				tx
+				tx,
 			);
 		}
 	}
@@ -797,18 +797,18 @@ export class UnchangedRegion {
 	public setState(
 		visibleLineCountTop: number,
 		visibleLineCountBottom: number,
-		tx: ITransaction | undefined
+		tx: ITransaction | undefined,
 	): void {
 		visibleLineCountTop = Math.max(
 			Math.min(visibleLineCountTop, this.lineCount),
-			0
+			0,
 		);
 		visibleLineCountBottom = Math.max(
 			Math.min(
 				visibleLineCountBottom,
-				this.lineCount - visibleLineCountTop
+				this.lineCount - visibleLineCountTop,
 			),
-			0
+			0,
 		);
 
 		this._visibleLineCountTop.set(visibleLineCountTop, tx);
@@ -820,7 +820,7 @@ function applyOriginalEdits(
 	diff: IDocumentDiff,
 	textEdits: TextEditInfo[],
 	originalTextModel: ITextModel,
-	modifiedTextModel: ITextModel
+	modifiedTextModel: ITextModel,
 ): IDocumentDiff | undefined {
 	return undefined;
 	/*
@@ -850,7 +850,7 @@ function applyModifiedEdits(
 	diff: IDocumentDiff,
 	textEdits: TextEditInfo[],
 	originalTextModel: ITextModel,
-	modifiedTextModel: ITextModel
+	modifiedTextModel: ITextModel,
 ): IDocumentDiff | undefined {
 	return undefined;
 	/*

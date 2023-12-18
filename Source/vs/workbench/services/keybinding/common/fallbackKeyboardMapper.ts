@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	ResolvedKeybinding,
 	KeyCodeChord,
 	Keybinding,
+	ResolvedKeybinding,
 } from "vs/base/common/keybindings";
 import { OperatingSystem } from "vs/base/common/platform";
 import { IKeyboardEvent } from "vs/platform/keybinding/common/keybinding";
@@ -19,7 +19,7 @@ import { IKeyboardMapper } from "vs/platform/keyboardLayout/common/keyboardMappe
 export class FallbackKeyboardMapper implements IKeyboardMapper {
 	constructor(
 		private readonly _mapAltGrToCtrlAlt: boolean,
-		private readonly _OS: OperatingSystem
+		private readonly _OS: OperatingSystem,
 	) {}
 
 	public dumpDebugInfo(): string {
@@ -27,7 +27,7 @@ export class FallbackKeyboardMapper implements IKeyboardMapper {
 	}
 
 	public resolveKeyboardEvent(
-		keyboardEvent: IKeyboardEvent
+		keyboardEvent: IKeyboardEvent,
 	): ResolvedKeybinding {
 		const ctrlKey =
 			keyboardEvent.ctrlKey ||
@@ -40,7 +40,7 @@ export class FallbackKeyboardMapper implements IKeyboardMapper {
 			keyboardEvent.shiftKey,
 			altKey,
 			keyboardEvent.metaKey,
-			keyboardEvent.keyCode
+			keyboardEvent.keyCode,
 		);
 		const result = this.resolveKeybinding(new Keybinding([chord]));
 		return result[0];
@@ -49,7 +49,7 @@ export class FallbackKeyboardMapper implements IKeyboardMapper {
 	public resolveKeybinding(keybinding: Keybinding): ResolvedKeybinding[] {
 		return USLayoutResolvedKeybinding.resolveKeybinding(
 			keybinding,
-			this._OS
+			this._OS,
 		);
 	}
 }

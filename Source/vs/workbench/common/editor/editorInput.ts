@@ -3,30 +3,30 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter } from "vs/base/common/event";
-import { URI } from "vs/base/common/uri";
-import { IEditorOptions } from "vs/platform/editor/common/editor";
 import { firstOrDefault } from "vs/base/common/arrays";
-import {
-	EditorInputCapabilities,
-	Verbosity,
-	GroupIdentifier,
-	ISaveOptions,
-	IRevertOptions,
-	IMoveResult,
-	IEditorDescriptor,
-	IEditorPane,
-	IUntypedEditorInput,
-	EditorResourceAccessor,
-	AbstractEditorInput,
-	isEditorInput,
-	IEditorIdentifier,
-} from "vs/workbench/common/editor";
-import { isEqual } from "vs/base/common/resources";
-import { ConfirmResult } from "vs/platform/dialogs/common/dialogs";
+import { Emitter } from "vs/base/common/event";
 import { IMarkdownString } from "vs/base/common/htmlContent";
 import { IDisposable } from "vs/base/common/lifecycle";
+import { isEqual } from "vs/base/common/resources";
 import { ThemeIcon } from "vs/base/common/themables";
+import { URI } from "vs/base/common/uri";
+import { ConfirmResult } from "vs/platform/dialogs/common/dialogs";
+import { IEditorOptions } from "vs/platform/editor/common/editor";
+import {
+	AbstractEditorInput,
+	EditorInputCapabilities,
+	EditorResourceAccessor,
+	GroupIdentifier,
+	IEditorDescriptor,
+	IEditorIdentifier,
+	IEditorPane,
+	IMoveResult,
+	IRevertOptions,
+	ISaveOptions,
+	IUntypedEditorInput,
+	Verbosity,
+	isEditorInput,
+} from "vs/workbench/common/editor";
 
 export interface IEditorCloseHandler {
 	/**
@@ -60,7 +60,7 @@ export abstract class EditorInput extends AbstractEditorInput {
 	protected readonly _onDidChangeDirty = this._register(new Emitter<void>());
 	protected readonly _onDidChangeLabel = this._register(new Emitter<void>());
 	protected readonly _onDidChangeCapabilities = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 
 	private readonly _onWillDispose = this._register(new Emitter<void>());
@@ -247,7 +247,7 @@ export abstract class EditorInput extends AbstractEditorInput {
 	 */
 	async save(
 		group: GroupIdentifier,
-		options?: ISaveOptions
+		options?: ISaveOptions,
 	): Promise<EditorInput | IUntypedEditorInput | undefined> {
 		return this;
 	}
@@ -263,7 +263,7 @@ export abstract class EditorInput extends AbstractEditorInput {
 	 */
 	async saveAs(
 		group: GroupIdentifier,
-		options?: ISaveOptions
+		options?: ISaveOptions,
 	): Promise<EditorInput | IUntypedEditorInput | undefined> {
 		return this;
 	}
@@ -273,7 +273,7 @@ export abstract class EditorInput extends AbstractEditorInput {
 	 */
 	async revert(
 		group: GroupIdentifier,
-		options?: IRevertOptions
+		options?: IRevertOptions,
 	): Promise<void> {}
 
 	/**
@@ -286,7 +286,7 @@ export abstract class EditorInput extends AbstractEditorInput {
 	 */
 	async rename(
 		group: GroupIdentifier,
-		target: URI
+		target: URI,
 	): Promise<IMoveResult | undefined> {
 		return undefined;
 	}
@@ -321,7 +321,7 @@ export abstract class EditorInput extends AbstractEditorInput {
 
 		return isEqual(
 			this.resource,
-			EditorResourceAccessor.getCanonicalUri(otherInput)
+			EditorResourceAccessor.getCanonicalUri(otherInput),
 		);
 	}
 
@@ -333,7 +333,7 @@ export abstract class EditorInput extends AbstractEditorInput {
 	 * for the editor to open in.
 	 */
 	prefersEditorPane<T extends IEditorDescriptor<IEditorPane>>(
-		editorPanes: T[]
+		editorPanes: T[],
 	): T | undefined {
 		return firstOrDefault(editorPanes);
 	}

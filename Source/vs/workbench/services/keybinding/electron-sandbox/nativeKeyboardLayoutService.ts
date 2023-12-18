@@ -3,7 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Emitter, Event } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
+import { OS, OperatingSystem } from "vs/base/common/platform";
+import { ProxyChannel } from "vs/base/parts/ipc/common/ipc";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { IMainProcessService } from "vs/platform/ipc/common/mainProcessService";
 import {
 	IKeyboardLayoutInfo,
 	IKeyboardMapping,
@@ -12,16 +17,11 @@ import {
 	macLinuxKeyboardMappingEquals,
 	windowsKeyboardMappingEquals,
 } from "vs/platform/keyboardLayout/common/keyboardLayout";
-import { Emitter, Event } from "vs/base/common/event";
-import { OperatingSystem, OS } from "vs/base/common/platform";
-import { IMainProcessService } from "vs/platform/ipc/common/mainProcessService";
 import { INativeKeyboardLayoutService as IBaseNativeKeyboardLayoutService } from "vs/platform/keyboardLayout/common/keyboardLayoutService";
-import { ProxyChannel } from "vs/base/parts/ipc/common/ipc";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 
 export const INativeKeyboardLayoutService =
 	createDecorator<INativeKeyboardLayoutService>(
-		"nativeKeyboardLayoutService"
+		"nativeKeyboardLayoutService",
 	);
 
 export interface INativeKeyboardLayoutService {
@@ -38,7 +38,7 @@ export class NativeKeyboardLayoutService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeKeyboardLayout = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onDidChangeKeyboardLayout = this._onDidChangeKeyboardLayout.event;
 
@@ -105,17 +105,17 @@ export class NativeKeyboardLayoutService
 
 function keyboardMappingEquals(
 	a: IKeyboardMapping | null,
-	b: IKeyboardMapping | null
+	b: IKeyboardMapping | null,
 ): boolean {
 	if (OS === OperatingSystem.Windows) {
 		return windowsKeyboardMappingEquals(
 			<IWindowsKeyboardMapping | null>a,
-			<IWindowsKeyboardMapping | null>b
+			<IWindowsKeyboardMapping | null>b,
 		);
 	}
 
 	return macLinuxKeyboardMappingEquals(
 		<IMacLinuxKeyboardMapping | null>a,
-		<IMacLinuxKeyboardMapping | null>b
+		<IMacLinuxKeyboardMapping | null>b,
 	);
 }

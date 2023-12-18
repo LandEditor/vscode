@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { onUnexpectedError } from "vs/base/common/errors";
+import { isEmptyObject } from "vs/base/common/types";
 import {
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
-import { isEmptyObject } from "vs/base/common/types";
-import { onUnexpectedError } from "vs/base/common/errors";
 
 export type MementoObject = { [key: string]: any };
 
@@ -28,10 +28,7 @@ export class Memento {
 
 	private readonly id: string;
 
-	constructor(
-		id: string,
-		private storageService: IStorageService
-	) {
+	constructor(id: string, private storageService: IStorageService) {
 		this.id = Memento.COMMON_PREFIX + id;
 	}
 
@@ -45,7 +42,7 @@ export class Memento {
 						this.id,
 						scope,
 						target,
-						this.storageService
+						this.storageService,
 					);
 					Memento.workspaceMementos.set(this.id, workspaceMemento);
 				}
@@ -61,7 +58,7 @@ export class Memento {
 						this.id,
 						scope,
 						target,
-						this.storageService
+						this.storageService,
 					);
 					Memento.profileMementos.set(this.id, profileMemento);
 				}
@@ -72,18 +69,18 @@ export class Memento {
 			// Scope Application
 			case StorageScope.APPLICATION: {
 				let applicationMemento = Memento.applicationMementos.get(
-					this.id
+					this.id,
 				);
 				if (!applicationMemento) {
 					applicationMemento = new ScopedMemento(
 						this.id,
 						scope,
 						target,
-						this.storageService
+						this.storageService,
 					);
 					Memento.applicationMementos.set(
 						this.id,
-						applicationMemento
+						applicationMemento,
 					);
 				}
 
@@ -120,7 +117,7 @@ class ScopedMemento {
 		private id: string,
 		private scope: StorageScope,
 		private target: StorageTarget,
-		private storageService: IStorageService
+		private storageService: IStorageService,
 	) {
 		this.mementoObj = this.load();
 	}
@@ -140,7 +137,7 @@ class ScopedMemento {
 				// to diagnose further
 				// https://github.com/microsoft/vscode/issues/102251
 				onUnexpectedError(
-					`[memento]: failed to parse contents: ${error} (id: ${this.id}, scope: ${this.scope}, contents: ${memento})`
+					`[memento]: failed to parse contents: ${error} (id: ${this.id}, scope: ${this.scope}, contents: ${memento})`,
 				);
 			}
 		}
@@ -149,15 +146,15 @@ class ScopedMemento {
 	}
 
 	save(): void {
-		if (!isEmptyObject(this.mementoObj)) {
+		if (isEmptyObject(this.mementoObj)) {
+			this.storageService.remove(this.id, this.scope);
+		} else {
 			this.storageService.store(
 				this.id,
 				JSON.stringify(this.mementoObj),
 				this.scope,
-				this.target
+				this.target,
 			);
-		} else {
-			this.storageService.remove(this.id, this.scope);
 		}
 	}
 }

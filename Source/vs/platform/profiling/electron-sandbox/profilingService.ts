@@ -8,5 +8,5 @@ import { IV8InspectProfilingService } from "vs/platform/profiling/common/profili
 
 registerSharedProcessRemoteService(
 	IV8InspectProfilingService,
-	"v8InspectProfiling"
+	"v8InspectProfiling",
 );

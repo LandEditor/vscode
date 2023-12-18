@@ -45,7 +45,7 @@ export interface IUserActivityService {
 }
 
 export const IUserActivityService = createDecorator<IUserActivityService>(
-	"IUserActivityService"
+	"IUserActivityService",
 );
 
 export class UserActivityService
@@ -57,7 +57,7 @@ export class UserActivityService
 		new RunOnceScheduler(() => {
 			this.isActive = false;
 			this.changeEmitter.fire(false);
-		}, 10_000)
+		}, 10_000),
 	);
 
 	private readonly changeEmitter = this._register(new Emitter<boolean>());
@@ -105,5 +105,5 @@ export class UserActivityService
 registerSingleton(
 	IUserActivityService,
 	UserActivityService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

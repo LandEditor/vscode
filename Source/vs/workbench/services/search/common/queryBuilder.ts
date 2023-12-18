@@ -11,14 +11,14 @@ import { ResourceMap } from "vs/base/common/map";
 import { Schemas } from "vs/base/common/network";
 import * as path from "vs/base/common/path";
 import {
-	isEqual,
 	basename,
-	relativePath,
 	isAbsolutePath,
+	isEqual,
+	relativePath,
 } from "vs/base/common/resources";
 import * as strings from "vs/base/common/strings";
 import { assertIsDefined, isDefined } from "vs/base/common/types";
-import { URI, URI as uri } from "vs/base/common/uri";
+import { URI as uri } from "vs/base/common/uri";
 import { isMultilineRegexSource } from "vs/editor/common/model/textModelSearch";
 import * as nls from "vs/nls";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
@@ -26,13 +26,12 @@ import { ILogService } from "vs/platform/log/common/log";
 import {
 	IWorkspaceContextService,
 	IWorkspaceFolderData,
-	toWorkspaceFolder,
 	WorkbenchState,
+	toWorkspaceFolder,
 } from "vs/platform/workspace/common/workspace";
 import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
 import { IPathService } from "vs/workbench/services/path/common/pathService";
 import {
-	getExcludes,
 	ICommonQueryProps,
 	IFileQuery,
 	IFolderQuery,
@@ -40,8 +39,9 @@ import {
 	ISearchConfiguration,
 	ITextQuery,
 	ITextSearchPreviewOptions,
-	pathIncludedInQuery,
 	QueryType,
+	getExcludes,
+	pathIncludedInQuery,
 } from "vs/workbench/services/search/common/search";
 
 /**
@@ -124,7 +124,7 @@ export class QueryBuilder {
 	text(
 		contentPattern: IPatternInfo,
 		folderResources?: uri[],
-		options: ITextQueryBuilderOptions = {}
+		options: ITextQueryBuilderOptions = {},
 	): ITextQuery {
 		contentPattern = this.getContentPattern(contentPattern, options);
 		const searchConfig =
@@ -142,7 +142,7 @@ export class QueryBuilder {
 
 		const commonQuery = this.commonQuery(
 			folderResources?.map(toWorkspaceFolder),
-			options
+			options,
 		);
 		return <ITextQuery>{
 			...commonQuery,
@@ -164,7 +164,7 @@ export class QueryBuilder {
 	 */
 	private getContentPattern(
 		inputPattern: IPatternInfo,
-		options: ITextQueryBuilderOptions
+		options: ITextQueryBuilderOptions,
 	): IPatternInfo {
 		const searchConfig =
 			this.configurationService.getValue<ISearchConfiguration>();
@@ -172,7 +172,7 @@ export class QueryBuilder {
 		if (inputPattern.isRegExp) {
 			inputPattern.pattern = inputPattern.pattern.replace(
 				/\r?\n/g,
-				"\\n"
+				"\\n",
 			);
 		}
 
@@ -226,7 +226,7 @@ export class QueryBuilder {
 
 	file(
 		folders: (IWorkspaceFolderData | URI)[],
-		options: IFileQueryBuilderOptions = {}
+		options: IFileQueryBuilderOptions = {},
 	): IFileQuery {
 		const commonQuery = this.commonQuery(folders, options);
 		return <IFileQuery>{
@@ -243,7 +243,7 @@ export class QueryBuilder {
 
 	private handleIncludeExclude(
 		pattern: string | string[] | undefined,
-		expandPatterns: boolean | undefined
+		expandPatterns: boolean | undefined,
 	): ISearchPathsInfo {
 		if (!pattern) {
 			return {};
@@ -256,24 +256,24 @@ export class QueryBuilder {
 			? this.parseSearchPaths(pattern)
 			: {
 					pattern: patternListToIExpression(
-						...(Array.isArray(pattern) ? pattern : [pattern])
+						...(Array.isArray(pattern) ? pattern : [pattern]),
 					),
-				};
+			  };
 	}
 
 	private commonQuery(
 		folderResources: (IWorkspaceFolderData | URI)[] = [],
-		options: ICommonQueryBuilderOptions = {}
+		options: ICommonQueryBuilderOptions = {},
 	): ICommonQueryProps<uri> {
 		const includeSearchPathsInfo: ISearchPathsInfo =
 			this.handleIncludeExclude(
 				options.includePattern,
-				options.expandPatterns
+				options.expandPatterns,
 			);
 		const excludeSearchPathsInfo: ISearchPathsInfo =
 			this.handleIncludeExclude(
 				options.excludePattern,
-				options.expandPatterns
+				options.expandPatterns,
 			);
 
 		// Build folderQueries from searchPaths, if given, otherwise folderResources
@@ -285,17 +285,17 @@ export class QueryBuilder {
 						this.getFolderQueryForSearchPath(
 							searchPath,
 							options,
-							excludeSearchPathsInfo
-						)
-					)
+							excludeSearchPathsInfo,
+						),
+				  )
 				: folderResources.map((folder) =>
 						this.getFolderQueryForRoot(
 							folder,
 							options,
 							excludeSearchPathsInfo,
-							includeFolderName
-						)
-					)
+							includeFolderName,
+						),
+				  )
 		).filter((query) => !!query) as IFolderQuery[];
 
 		const queryProps: ICommonQueryProps<uri> = {
@@ -317,22 +317,22 @@ export class QueryBuilder {
 			const openEditors = arrays.coalesce(
 				arrays.flatten(
 					this.editorGroupsService.groups.map((group) =>
-						group.editors.map((editor) => editor.resource)
-					)
-				)
+						group.editors.map((editor) => editor.resource),
+					),
+				),
 			);
 			this.logService.trace(
 				"QueryBuilder#commonQuery - openEditor URIs",
-				JSON.stringify(openEditors)
+				JSON.stringify(openEditors),
 			);
 			const openEditorsInQuery = openEditors.filter((editor) =>
-				pathIncludedInQuery(queryProps, editor.fsPath)
+				pathIncludedInQuery(queryProps, editor.fsPath),
 			);
 			const openEditorsQueryProps =
 				this.commonQueryFromFileList(openEditorsInQuery);
 			this.logService.trace(
 				"QueryBuilder#commonQuery - openEditor Query",
-				JSON.stringify(openEditorsQueryProps)
+				JSON.stringify(openEditorsQueryProps),
 			);
 			return { ...queryProps, ...openEditorsQueryProps };
 		}
@@ -341,7 +341,7 @@ export class QueryBuilder {
 		const extraFileResources =
 			options.extraFileResources &&
 			options.extraFileResources.filter((extraFile) =>
-				pathIncludedInQuery(queryProps, extraFile.fsPath)
+				pathIncludedInQuery(queryProps, extraFile.fsPath),
 			);
 		queryProps.extraFileResources =
 			extraFileResources && extraFileResources.length
@@ -380,11 +380,9 @@ export class QueryBuilder {
 				assertIsDefined(folderQuery.includePattern)[
 					relPath.replace(/\\/g, "/")
 				] = true;
-			} else {
-				if (file.fsPath) {
-					hasIncludedFile = true;
-					includePattern[file.fsPath] = true;
-				}
+			} else if (file.fsPath) {
+				hasIncludedFile = true;
+				includePattern[file.fsPath] = true;
 			}
 		});
 
@@ -401,7 +399,7 @@ export class QueryBuilder {
 	 */
 	private isCaseSensitive(
 		contentPattern: IPatternInfo,
-		options: ITextQueryBuilderOptions
+		options: ITextQueryBuilderOptions,
 	): boolean {
 		if (options.isSmartCase) {
 			if (contentPattern.isRegExp) {
@@ -409,7 +407,7 @@ export class QueryBuilder {
 				if (
 					strings.containsUppercaseCharacter(
 						contentPattern.pattern,
-						true
+						true,
 					)
 				) {
 					return true;
@@ -465,14 +463,14 @@ export class QueryBuilder {
 					segment,
 					userHome.scheme === Schemas.file
 						? userHome.fsPath
-						: userHome.path
+						: userHome.path,
 				);
 			}
 
 			return segment;
 		});
 		const groups = collections.groupBy(segments, (segment) =>
-			isSearchPath(segment) ? "searchPaths" : "exprSegments"
+			isSearchPath(segment) ? "searchPaths" : "exprSegments",
 		);
 
 		const expandedExprSegments = (groups.exprSegments || [])
@@ -488,7 +486,7 @@ export class QueryBuilder {
 
 		const result: ISearchPathsInfo = {};
 		const searchPaths = this.expandSearchPathPatterns(
-			groups.searchPaths || []
+			groups.searchPaths || [],
 		);
 		if (searchPaths && searchPaths.length) {
 			result.searchPaths = searchPaths;
@@ -505,21 +503,21 @@ export class QueryBuilder {
 
 	private getExcludesForFolder(
 		folderConfig: ISearchConfiguration,
-		options: ICommonQueryBuilderOptions
+		options: ICommonQueryBuilderOptions,
 	): glob.IExpression | undefined {
 		return options.disregardExcludeSettings
 			? undefined
 			: getExcludes(
 					folderConfig,
-					!options.disregardSearchExcludeSettings
-				);
+					!options.disregardSearchExcludeSettings,
+			  );
 	}
 
 	/**
 	 * Split search paths (./ or ../ or absolute paths in the includePatterns) into absolute paths and globs applied to those paths
 	 */
 	private expandSearchPathPatterns(
-		searchPaths: string[]
+		searchPaths: string[],
 	): ISearchPathPattern[] {
 		if (!searchPaths || !searchPaths.length) {
 			// No workspace => ignore search paths
@@ -539,7 +537,10 @@ export class QueryBuilder {
 
 			// Expanded search paths to multiple resolved patterns (with ** and without)
 			return oneExpanded.flatMap((oneExpandedResult) =>
-				this.resolveOneSearchPathPattern(oneExpandedResult, globPortion)
+				this.resolveOneSearchPathPattern(
+					oneExpandedResult,
+					globPortion,
+				),
 			);
 		});
 
@@ -605,7 +606,7 @@ export class QueryBuilder {
 			if (searchPath.startsWith("../") || searchPath === "..") {
 				const resolvedPath = path.posix.resolve(
 					workspaceUri.path,
-					searchPath
+					searchPath,
 				);
 				return [
 					{
@@ -626,7 +627,7 @@ export class QueryBuilder {
 		} else {
 			const searchPathWithoutDotSlash = searchPath.replace(
 				/^\.[\/\\]/,
-				""
+				"",
 			);
 			const folders = this.workspaceContextService.getWorkspace().folders;
 			const folderMatches = folders
@@ -634,15 +635,15 @@ export class QueryBuilder {
 					const match = searchPathWithoutDotSlash.match(
 						new RegExp(
 							`^${strings.escapeRegExpCharacters(
-								folder.name
-							)}(?:/(.*)|$)`
-						)
+								folder.name,
+							)}(?:/(.*)|$)`,
+						),
 					);
 					return match
 						? {
 								match,
 								folder,
-							}
+						  }
 						: null;
 				})
 				.filter(isDefined);
@@ -668,7 +669,7 @@ export class QueryBuilder {
 				const searchPathNotFoundError = nls.localize(
 					"search.noWorkspaceWithName",
 					"Workspace folder does not exist: {0}",
-					probableWorkspaceFolderName
+					probableWorkspaceFolderName,
 				);
 				throw new Error(searchPathNotFoundError);
 			}
@@ -677,7 +678,7 @@ export class QueryBuilder {
 
 	private resolveOneSearchPathPattern(
 		oneExpandedResult: IOneSearchPathPattern,
-		globPortion?: string
+		globPortion?: string,
 	): IOneSearchPathPattern[] {
 		const pattern =
 			oneExpandedResult.pattern && globPortion
@@ -704,13 +705,13 @@ export class QueryBuilder {
 	private getFolderQueryForSearchPath(
 		searchPath: ISearchPathPattern,
 		options: ICommonQueryBuilderOptions,
-		searchPathExcludes: ISearchPathsInfo
+		searchPathExcludes: ISearchPathsInfo,
 	): IFolderQuery | null {
 		const rootConfig = this.getFolderQueryForRoot(
 			toWorkspaceFolder(searchPath.searchPath),
 			options,
 			searchPathExcludes,
-			false
+			false,
 		);
 		if (!rootConfig) {
 			return null;
@@ -728,14 +729,14 @@ export class QueryBuilder {
 		folder: IWorkspaceFolderData | URI,
 		options: ICommonQueryBuilderOptions,
 		searchPathExcludes: ISearchPathsInfo,
-		includeFolderName: boolean
+		includeFolderName: boolean,
 	): IFolderQuery | null {
 		let thisFolderExcludeSearchPathPattern: glob.IExpression | undefined;
 		const folderUri = URI.isUri(folder) ? folder : folder.uri;
 		if (searchPathExcludes.searchPaths) {
 			const thisFolderExcludeSearchPath =
 				searchPathExcludes.searchPaths.filter((sp) =>
-					isEqual(sp.searchPath, folderUri)
+					isEqual(sp.searchPath, folderUri),
 				)[0];
 			if (
 				thisFolderExcludeSearchPath &&
@@ -755,7 +756,7 @@ export class QueryBuilder {
 			});
 		const settingExcludes = this.getExcludesForFolder(
 			folderConfig,
-			options
+			options,
 		);
 		const excludePattern: glob.IExpression = {
 			...(settingExcludes || {}),
@@ -826,7 +827,7 @@ function patternListToIExpression(...patterns: string[]): glob.IExpression {
 		? patterns.reduce((glob, cur) => {
 				glob[cur] = true;
 				return glob;
-			}, Object.create(null))
+		  }, Object.create(null))
 		: undefined;
 }
 
@@ -874,7 +875,7 @@ function escapeGlobPattern(path: string): string {
  */
 export function resolveResourcesForSearchIncludes(
 	resources: URI[],
-	contextService: IWorkspaceContextService
+	contextService: IWorkspaceContextService,
 ): string[] {
 	resources = arrays.distinct(resources, (resource) => resource.toString());
 
@@ -898,12 +899,12 @@ export function resolveResourcesForSearchIncludes(
 					// If this root is the only one with its basename, use a relative ./ path. If there is another, use an absolute path
 					const isUniqueFolder =
 						workspace.folders.filter(
-							(folder) => folder.name === owningRootName
+							(folder) => folder.name === owningRootName,
 						).length === 1;
 					if (isUniqueFolder) {
 						const relPath = relativePath(
 							owningFolder.uri,
-							resource
+							resource,
 						); // always uses forward slashes
 						if (relPath === "") {
 							folderPath = `./${owningFolder.name}`;

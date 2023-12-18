@@ -67,24 +67,24 @@ export class ViewZoneManager extends Disposable {
 	private readonly _originalScrollTop: IObservable<number>;
 	private readonly _originalScrollOffset = observableValue<number, boolean>(
 		this,
-		0
+		0,
 	);
 	private readonly _originalScrollOffsetAnimated = animatedObservable(
 		this._targetWindow,
 		this._originalScrollOffset,
-		this._store
+		this._store,
 	);
 
 	private readonly _modifiedTopPadding = observableValue(this, 0);
 	private readonly _modifiedScrollTop: IObservable<number>;
 	private readonly _modifiedScrollOffset = observableValue<number, boolean>(
 		this,
-		0
+		0,
 	);
 	private readonly _modifiedScrollOffsetAnimated = animatedObservable(
 		this._targetWindow,
 		this._modifiedScrollOffset,
-		this._store
+		this._store,
 	);
 
 	public readonly viewZones: IObservable<{
@@ -257,11 +257,10 @@ export class ViewZoneManager extends Disposable {
 			const renderSideBySide =
 				this._options.renderSideBySide.read(reader);
 
-			const deletedCodeLineBreaksComputer = !renderSideBySide
-				? this._editors.modified
+			const deletedCodeLineBreaksComputer = renderSideBySide
+				? undefined : this._editors.modified
 						._getViewModel()
-						?.createLineBreaksComputer()
-				: undefined;
+						?.createLineBreaksComputer();
 			if (deletedCodeLineBreaksComputer) {
 				for (const a of alignmentsVal) {
 					if (a.diff) {
@@ -696,19 +695,19 @@ function computeRangeAlignment(
 	diffs: readonly DiffMapping[],
 	originalEditorAlignmentViewZones: ReadonlySet<string>,
 	modifiedEditorAlignmentViewZones: ReadonlySet<string>,
-	innerHunkAlignment: boolean
+	innerHunkAlignment: boolean,
 ): ILineRangeAlignment[] {
 	const originalLineHeightOverrides = new ArrayQueue(
 		getAdditionalLineHeights(
 			originalEditor,
-			originalEditorAlignmentViewZones
-		)
+			originalEditorAlignmentViewZones,
+		),
 	);
 	const modifiedLineHeightOverrides = new ArrayQueue(
 		getAdditionalLineHeights(
 			modifiedEditor,
-			modifiedEditorAlignmentViewZones
-		)
+			modifiedEditorAlignmentViewZones,
+		),
 	);
 
 	const origLineHeight = originalEditor.getOption(EditorOption.lineHeight);
@@ -721,7 +720,7 @@ function computeRangeAlignment(
 
 	function handleAlignmentsOutsideOfDiffs(
 		untilOriginalLineNumberExclusive: number,
-		untilModifiedLineNumberExclusive: number
+		untilModifiedLineNumberExclusive: number,
 	) {
 		while (true) {
 			let origNext = originalLineHeightOverrides.peek();
@@ -786,7 +785,7 @@ function computeRangeAlignment(
 		const c = m.lineRangeMapping;
 		handleAlignmentsOutsideOfDiffs(
 			c.original.startLineNumber,
-			c.modified.startLineNumber
+			c.modified.startLineNumber,
 		);
 
 		let first = true;
@@ -795,7 +794,7 @@ function computeRangeAlignment(
 
 		function emitAlignment(
 			origLineNumberExclusive: number,
-			modLineNumberExclusive: number
+			modLineNumberExclusive: number,
 		) {
 			if (
 				origLineNumberExclusive < lastOrigLineNumber ||
@@ -813,11 +812,11 @@ function computeRangeAlignment(
 			}
 			const originalRange = new LineRange(
 				lastOrigLineNumber,
-				origLineNumberExclusive
+				origLineNumberExclusive,
 			);
 			const modifiedRange = new LineRange(
 				lastModLineNumber,
-				modLineNumberExclusive
+				modLineNumberExclusive,
 			);
 			if (originalRange.isEmpty && modifiedRange.isEmpty) {
 				return;
@@ -857,7 +856,7 @@ function computeRangeAlignment(
 					// There is some unmodified text on this line before the diff
 					emitAlignment(
 						i.originalRange.startLineNumber,
-						i.modifiedRange.startLineNumber
+						i.modifiedRange.startLineNumber,
 					);
 				}
 				if (
@@ -869,7 +868,7 @@ function computeRangeAlignment(
 					// // There is some unmodified text on this line after the diff
 					emitAlignment(
 						i.originalRange.endLineNumber,
-						i.modifiedRange.endLineNumber
+						i.modifiedRange.endLineNumber,
 					);
 				}
 			}
@@ -877,7 +876,7 @@ function computeRangeAlignment(
 
 		emitAlignment(
 			c.original.endLineNumberExclusive,
-			c.modified.endLineNumberExclusive
+			c.modified.endLineNumberExclusive,
 		);
 
 		lastOriginalLineNumber = c.original.endLineNumberExclusive;
@@ -895,7 +894,7 @@ interface AdditionalLineHeightInfo {
 
 function getAdditionalLineHeights(
 	editor: CodeEditorWidget,
-	viewZonesToIgnore: ReadonlySet<string>
+	viewZonesToIgnore: ReadonlySet<string>,
 ): readonly AdditionalLineHeightInfo[] {
 	const viewZoneHeights: { lineNumber: number; heightInPx: number }[] = [];
 	const wrappingZoneHeights: { lineNumber: number; heightInPx: number }[] =
@@ -925,8 +924,8 @@ function getAdditionalLineHeights(
 			w.afterLineNumber === 0
 				? 0
 				: coordinatesConverter.convertViewPositionToModelPosition(
-						new Position(w.afterLineNumber, 1)
-					).lineNumber;
+						new Position(w.afterLineNumber, 1),
+				  ).lineNumber;
 		viewZoneHeights.push({
 			lineNumber: modelLineNumber,
 			heightInPx: w.height,
@@ -940,7 +939,7 @@ function getAdditionalLineHeights(
 		(v1, v2) => ({
 			lineNumber: v1.lineNumber,
 			heightInPx: v1.heightInPx + v2.heightInPx,
-		})
+		}),
 	);
 
 	return result;

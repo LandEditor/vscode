@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { registerColor } from "vs/platform/theme/common/colorRegistry";
-import { localize } from "vs/nls";
 import { Color, RGBA } from "vs/base/common/color";
+import { localize } from "vs/nls";
+import { registerColor } from "vs/platform/theme/common/colorRegistry";
 
 export const embeddedEditorBackground = registerColor(
 	"walkThrough.embeddedEditorBackground",
@@ -17,6 +17,6 @@ export const embeddedEditorBackground = registerColor(
 	},
 	localize(
 		"walkThrough.embeddedEditorBackground",
-		"Background color for the embedded editors on the Interactive Playground."
-	)
+		"Background color for the embedded editors on the Interactive Playground.",
+	),
 );

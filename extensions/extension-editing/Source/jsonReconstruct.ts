@@ -19,7 +19,7 @@ export class JsonStringScanner {
 	 */
 	constructor(
 		private readonly text: string,
-		initialPos: number /* offset within `text` */
+		initialPos: number /* offset within `text` */,
 	) {
 		this.pos = initialPos;
 	}
@@ -91,7 +91,7 @@ export class JsonStringScanner {
 	}
 }
 
-const enum CharacterCodes {
+enum CharacterCodes {
 	lineFeed = 0x0a, // \n
 	carriageReturn = 0x0d, // \r
 

@@ -3,12 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
+import { insert } from "vs/base/common/arrays";
 import { raceCancellation } from "vs/base/common/async";
 import {
-	CancellationTokenSource,
 	CancellationToken,
+	CancellationTokenSource,
 } from "vs/base/common/cancellation";
+import {
+	Disposable,
+	IDisposable,
+	toDisposable,
+} from "vs/base/common/lifecycle";
+import { localize } from "vs/nls";
 import { ILogService } from "vs/platform/log/common/log";
 import {
 	IProgressService,
@@ -16,16 +22,10 @@ import {
 } from "vs/platform/progress/common/progress";
 import { SaveReason } from "vs/workbench/common/editor";
 import {
-	IDisposable,
-	Disposable,
-	toDisposable,
-} from "vs/base/common/lifecycle";
-import { insert } from "vs/base/common/arrays";
-import { IStoredFileWorkingCopySaveParticipant } from "vs/workbench/services/workingCopy/common/workingCopyFileService";
-import {
 	IStoredFileWorkingCopy,
 	IStoredFileWorkingCopyModel,
 } from "vs/workbench/services/workingCopy/common/storedFileWorkingCopy";
+import { IStoredFileWorkingCopySaveParticipant } from "vs/workbench/services/workingCopy/common/workingCopyFileService";
 
 export class StoredFileWorkingCopySaveParticipant extends Disposable {
 	private readonly saveParticipants: IStoredFileWorkingCopySaveParticipant[] =
@@ -43,7 +43,7 @@ export class StoredFileWorkingCopySaveParticipant extends Disposable {
 	}
 
 	addSaveParticipant(
-		participant: IStoredFileWorkingCopySaveParticipant
+		participant: IStoredFileWorkingCopySaveParticipant,
 	): IDisposable {
 		const remove = insert(this.saveParticipants, participant);
 
@@ -53,7 +53,7 @@ export class StoredFileWorkingCopySaveParticipant extends Disposable {
 	participate(
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
 		context: { reason: SaveReason },
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void> {
 		const cts = new CancellationTokenSource(token);
 
@@ -62,7 +62,7 @@ export class StoredFileWorkingCopySaveParticipant extends Disposable {
 				title: localize(
 					"saveParticipants",
 					"Saving '{0}'",
-					workingCopy.name
+					workingCopy.name,
 				),
 				location: ProgressLocation.Notification,
 				cancellable: true,
@@ -85,7 +85,7 @@ export class StoredFileWorkingCopySaveParticipant extends Disposable {
 							workingCopy,
 							context,
 							progress,
-							cts.token
+							cts.token,
 						);
 						await raceCancellation(promise, cts.token);
 					} catch (err) {
@@ -102,7 +102,7 @@ export class StoredFileWorkingCopySaveParticipant extends Disposable {
 			() => {
 				// user cancel
 				cts.dispose(true);
-			}
+			},
 		);
 	}
 

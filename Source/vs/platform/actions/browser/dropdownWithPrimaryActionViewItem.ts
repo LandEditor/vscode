@@ -14,14 +14,14 @@ import { IAction, IActionRunner } from "vs/base/common/actions";
 import { Event } from "vs/base/common/event";
 import { KeyCode } from "vs/base/common/keyCodes";
 import { ResolvedKeybinding } from "vs/base/common/keybindings";
+import { IAccessibilityService } from "vs/platform/accessibility/common/accessibility";
 import { MenuEntryActionViewItem } from "vs/platform/actions/browser/menuEntryActionViewItem";
 import { MenuItemAction } from "vs/platform/actions/common/actions";
 import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
 import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import { INotificationService } from "vs/platform/notification/common/notification";
 import { IThemeService } from "vs/platform/theme/common/themeService";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { IAccessibilityService } from "vs/platform/accessibility/common/accessibility";
 
 export interface IDropdownWithPrimaryActionViewItemOptions {
 	actionRunner?: IActionRunner;
@@ -51,7 +51,7 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 		@INotificationService _notificationService: INotificationService,
 		@IContextKeyService _contextKeyService: IContextKeyService,
 		@IThemeService _themeService: IThemeService,
-		@IAccessibilityService _accessibilityService: IAccessibilityService
+		@IAccessibilityService _accessibilityService: IAccessibilityService,
 	) {
 		super(null, primaryAction);
 		this._primaryAction = new MenuEntryActionViewItem(
@@ -62,7 +62,7 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 			_contextKeyService,
 			_themeService,
 			_contextMenuProvider,
-			_accessibilityService
+			_accessibilityService,
 		);
 		if (_options?.actionRunner) {
 			this._primaryAction.actionRunner = _options.actionRunner;
@@ -79,7 +79,7 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 					: ["codicon", "codicon-chevron-down"],
 				actionRunner: this._options?.actionRunner,
 				keybindingProvider: this._options?.getKeyBinding,
-			}
+			},
 		);
 	}
 
@@ -95,11 +95,11 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 		this._container.classList.add("monaco-dropdown-with-primary");
 		const primaryContainer = DOM.$(".action-container");
 		this._primaryAction.render(
-			DOM.append(this._container, primaryContainer)
+			DOM.append(this._container, primaryContainer),
 		);
 		this._dropdownContainer = DOM.$(".dropdown-action-container");
 		this._dropdown.render(
-			DOM.append(this._container, this._dropdownContainer)
+			DOM.append(this._container, this._dropdownContainer),
 		);
 		this._register(
 			DOM.addDisposableListener(
@@ -112,8 +112,8 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 						this._dropdown.focus();
 						event.stopPropagation();
 					}
-				}
-			)
+				},
+			),
 		);
 		this._register(
 			DOM.addDisposableListener(
@@ -127,8 +127,8 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 						this._primaryAction.element?.focus();
 						event.stopPropagation();
 					}
-				}
-			)
+				},
+			),
 		);
 
 		this.updateEnabled();
@@ -166,7 +166,7 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 	update(
 		dropdownAction: IAction,
 		dropdownMenuActions: IAction[],
-		dropdownIcon?: string
+		dropdownIcon?: string,
 	): void {
 		this._dropdown.dispose();
 		this._dropdown = new DropdownMenuActionViewItem(
@@ -176,7 +176,7 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 			{
 				menuAsChild: true,
 				classNames: ["codicon", dropdownIcon || "codicon-chevron-down"],
-			}
+			},
 		);
 		if (this._dropdownContainer) {
 			this._dropdown.render(this._dropdownContainer);

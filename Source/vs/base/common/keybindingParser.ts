@@ -5,10 +5,10 @@
 
 import { KeyCodeUtils, ScanCodeUtils } from "vs/base/common/keyCodes";
 import {
-	KeyCodeChord,
-	ScanCodeChord,
-	Keybinding,
 	Chord,
+	KeyCodeChord,
+	Keybinding,
+	ScanCodeChord,
 } from "vs/base/common/keybindings";
 
 export class KeybindingParser {
@@ -89,7 +89,7 @@ export class KeybindingParser {
 					mods.shift,
 					mods.alt,
 					mods.meta,
-					scanCode
+					scanCode,
 				),
 				mods.remains,
 			];
@@ -101,7 +101,7 @@ export class KeybindingParser {
 				mods.shift,
 				mods.alt,
 				mods.meta,
-				keyCode
+				keyCode,
 			),
 			mods.remains,
 		];

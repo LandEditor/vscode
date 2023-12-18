@@ -23,11 +23,11 @@ export class ExtensionRecommendationNotificationServiceChannelClient
 	}
 
 	promptImportantExtensionsInstallNotification(
-		extensionRecommendations: IExtensionRecommendations
+		extensionRecommendations: IExtensionRecommendations,
 	): Promise<RecommendationsNotificationResult> {
 		return this.channel.call(
 			"promptImportantExtensionsInstallNotification",
-			[extensionRecommendations]
+			[extensionRecommendations],
 		);
 	}
 
@@ -53,7 +53,7 @@ export class ExtensionRecommendationNotificationServiceChannel
 		switch (command) {
 			case "promptImportantExtensionsInstallNotification":
 				return this.service.promptImportantExtensionsInstallNotification(
-					args[0]
+					args[0],
 				);
 		}
 

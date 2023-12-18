@@ -12,17 +12,17 @@ import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
 import { Registry } from "vs/platform/registry/common/platform";
 import { ViewPaneContainer } from "vs/workbench/browser/parts/views/viewPaneContainer";
 import {
+	Extensions as WorkbenchExtensions,
 	IWorkbenchContribution,
 	IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "vs/workbench/common/contributions";
 import {
+	Extensions as ViewExtensions,
 	IViewContainersRegistry,
 	IViewDescriptor,
 	IViewsRegistry,
 	ViewContainer,
 	ViewContainerLocation,
-	Extensions as ViewExtensions,
 } from "vs/workbench/common/views";
 import {
 	getHistoryAction,
@@ -55,7 +55,7 @@ const chatExtensionPoint =
 		jsonSchema: {
 			description: localize(
 				"vscode.extension.contributes.interactiveSession",
-				"Contributes an Interactive Session provider"
+				"Contributes an Interactive Session provider",
 			),
 			type: "array",
 			items: {
@@ -69,28 +69,28 @@ const chatExtensionPoint =
 					id: {
 						description: localize(
 							"vscode.extension.contributes.interactiveSession.id",
-							"Unique identifier for this Interactive Session provider."
+							"Unique identifier for this Interactive Session provider.",
 						),
 						type: "string",
 					},
 					label: {
 						description: localize(
 							"vscode.extension.contributes.interactiveSession.label",
-							"Display name for this Interactive Session provider."
+							"Display name for this Interactive Session provider.",
 						),
 						type: "string",
 					},
 					icon: {
 						description: localize(
 							"vscode.extension.contributes.interactiveSession.icon",
-							"An icon for this Interactive Session provider."
+							"An icon for this Interactive Session provider.",
 						),
 						type: "string",
 					},
 					when: {
 						description: localize(
 							"vscode.extension.contributes.interactiveSession.when",
-							"A condition which must be true to enable this Interactive Session provider."
+							"A condition which must be true to enable this Interactive Session provider.",
 						),
 						type: "string",
 					},
@@ -99,7 +99,7 @@ const chatExtensionPoint =
 		},
 		activationEventsGenerator: (
 			contributions: IRawChatProviderContribution[],
-			result: { push(item: string): void }
+			result: { push(item: string): void },
 		) => {
 			for (const contrib of contributions) {
 				result.push(`onInteractiveSession:${contrib.id}`);
@@ -126,29 +126,29 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 				for (const providerDescriptor of extension.value) {
 					this.registerChatProvider(providerDescriptor);
 					this._chatContributionService.registerChatProvider(
-						providerDescriptor
+						providerDescriptor,
 					);
 				}
 				this._registrationDisposables.set(
 					extension.description.identifier.value,
-					extensionDisposable
+					extensionDisposable,
 				);
 			}
 
 			for (const extension of delta.removed) {
 				const registration = this._registrationDisposables.get(
-					extension.description.identifier.value
+					extension.description.identifier.value,
 				);
 				if (registration) {
 					registration.dispose();
 					this._registrationDisposables.delete(
-						extension.description.identifier.value
+						extension.description.identifier.value,
 					);
 				}
 
 				for (const providerDescriptor of extension.value) {
 					this._chatContributionService.deregisterChatProvider(
-						providerDescriptor.id
+						providerDescriptor.id,
 					);
 				}
 			}
@@ -162,7 +162,7 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 		const viewContainerId = CHAT_SIDEBAR_PANEL_ID;
 		const viewContainer: ViewContainer =
 			Registry.as<IViewContainersRegistry>(
-				ViewExtensions.ViewContainersRegistry
+				ViewExtensions.ViewContainersRegistry,
 			).registerViewContainer(
 				{
 					id: viewContainerId,
@@ -176,18 +176,18 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 					hideIfEmpty: true,
 					order: 100,
 				},
-				ViewContainerLocation.Sidebar
+				ViewContainerLocation.Sidebar,
 			);
 
 		return viewContainer;
 	}
 
 	private registerChatProvider(
-		providerDescriptor: IRawChatProviderContribution
+		providerDescriptor: IRawChatProviderContribution,
 	): IDisposable {
 		// Register View
 		const viewId = this._chatContributionService.getViewIdForProvider(
-			providerDescriptor.id
+			providerDescriptor.id,
 		);
 		const viewDescriptor: IViewDescriptor[] = [
 			{
@@ -208,7 +208,7 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 		];
 		Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).registerViews(
 			viewDescriptor,
-			this._viewContainer
+			this._viewContainer,
 		);
 
 		// Per-provider actions
@@ -216,20 +216,20 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 		// Actions in view title
 		const disposables = new DisposableStore();
 		disposables.add(
-			registerAction2(getHistoryAction(viewId, providerDescriptor.id))
+			registerAction2(getHistoryAction(viewId, providerDescriptor.id)),
 		);
 		disposables.add(
-			registerAction2(getClearAction(viewId, providerDescriptor.id))
-		);
-		disposables.add(
-			registerAction2(
-				getMoveToEditorAction(viewId, providerDescriptor.id)
-			)
+			registerAction2(getClearAction(viewId, providerDescriptor.id)),
 		);
 		disposables.add(
 			registerAction2(
-				getMoveToNewWindowAction(viewId, providerDescriptor.id)
-			)
+				getMoveToEditorAction(viewId, providerDescriptor.id),
+			),
+		);
+		disposables.add(
+			registerAction2(
+				getMoveToNewWindowAction(viewId, providerDescriptor.id),
+			),
 		);
 
 		// "Open Chat" Actions
@@ -238,26 +238,26 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 				getOpenChatEditorAction(
 					providerDescriptor.id,
 					providerDescriptor.label,
-					providerDescriptor.when
-				)
-			)
+					providerDescriptor.when,
+				),
+			),
 		);
 		disposables.add(
 			registerAction2(
 				getQuickChatActionForProvider(
 					providerDescriptor.id,
-					providerDescriptor.label
-				)
-			)
+					providerDescriptor.label,
+				),
+			),
 		);
 
 		return {
 			dispose: () => {
 				Registry.as<IViewsRegistry>(
-					ViewExtensions.ViewsRegistry
+					ViewExtensions.ViewsRegistry,
 				).deregisterViews(viewDescriptor, this._viewContainer);
 				Registry.as<IViewContainersRegistry>(
-					ViewExtensions.ViewContainersRegistry
+					ViewExtensions.ViewContainersRegistry,
 				).deregisterViewContainer(this._viewContainer);
 				disposables.dispose();
 			},
@@ -266,11 +266,11 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 }
 
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 );
 workbenchRegistry.registerWorkbenchContribution(
 	ChatExtensionPointHandler,
-	LifecyclePhase.Starting
+	LifecyclePhase.Starting,
 );
 
 export class ChatContributionService implements IChatContributionService {

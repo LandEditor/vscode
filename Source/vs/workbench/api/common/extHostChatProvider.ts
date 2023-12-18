@@ -3,12 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { AsyncIterableSource } from "vs/base/common/async";
 import {
 	CancellationToken,
 	CancellationTokenSource,
 } from "vs/base/common/cancellation";
+import { Emitter } from "vs/base/common/event";
 import { IDisposable, toDisposable } from "vs/base/common/lifecycle";
+import {
+	ExtensionIdentifier,
+	ExtensionIdentifierMap,
+} from "vs/platform/extensions/common/extensions";
 import { ILogService } from "vs/platform/log/common/log";
+import { Progress } from "vs/platform/progress/common/progress";
 import {
 	ExtHostChatProviderShape,
 	IMainContext,
@@ -16,18 +23,11 @@ import {
 	MainThreadChatProviderShape,
 } from "vs/workbench/api/common/extHost.protocol";
 import * as typeConvert from "vs/workbench/api/common/extHostTypeConverters";
-import type * as vscode from "vscode";
-import { Progress } from "vs/platform/progress/common/progress";
 import {
 	IChatMessage,
 	IChatResponseFragment,
 } from "vs/workbench/contrib/chat/common/chatProvider";
-import {
-	ExtensionIdentifier,
-	ExtensionIdentifierMap,
-} from "vs/platform/extensions/common/extensions";
-import { AsyncIterableSource } from "vs/base/common/async";
-import { Emitter } from "vs/base/common/event";
+import type * as vscode from "vscode";
 
 type ProviderData = {
 	readonly extension: ExtensionIdentifier;
@@ -40,10 +40,9 @@ class ChatResponseStream {
 
 	constructor(option: number, stream?: AsyncIterableSource<string>) {
 		this.stream = stream ?? new AsyncIterableSource<string>();
-		const that = this;
 		this.apiObj = {
 			option: option,
-			response: that.stream.asyncIterable,
+			response: this.stream.asyncIterable,
 		};
 	}
 }
@@ -54,14 +53,13 @@ class ChatRequest {
 	private readonly _onDidStart = new Emitter<vscode.ChatResponseStream>();
 	private readonly _responseStreams = new Map<number, ChatResponseStream>();
 	private readonly _defaultStream = new AsyncIterableSource<string>();
-	private _isDone: boolean = false;
+	private _isDone = false;
 
 	constructor(promise: Promise<any>, cts: CancellationTokenSource) {
-		const that = this;
 		this.apiObject = {
 			result: promise,
-			response: that._defaultStream.asyncIterable,
-			onDidStartResponseStream: that._onDidStart.event,
+			response: this._defaultStream.asyncIterable,
+			onDidStartResponseStream: this._onDidStart.event,
 			cancel() {
 				cts.cancel();
 			},
@@ -89,7 +87,7 @@ class ChatRequest {
 				// the first response claims the default response
 				res = new ChatResponseStream(
 					fragment.index,
-					this._defaultStream
+					this._defaultStream,
 				);
 			} else {
 				res = new ChatResponseStream(fragment.index);
@@ -109,7 +107,7 @@ export class ExtHostChatProvider implements ExtHostChatProviderShape {
 
 	constructor(
 		mainContext: IMainContext,
-		private readonly _logService: ILogService
+		private readonly _logService: ILogService,
 	) {
 		this._proxy = mainContext.getProxy(MainContext.MainThreadChatProvider);
 	}
@@ -118,7 +116,7 @@ export class ExtHostChatProvider implements ExtHostChatProviderShape {
 		extension: ExtensionIdentifier,
 		identifier: string,
 		provider: vscode.ChatResponseProvider,
-		metadata: vscode.ChatResponseProviderMetadata
+		metadata: vscode.ChatResponseProviderMetadata,
 	): IDisposable {
 		const handle = ExtHostChatProvider._idPool++;
 		this._providers.set(handle, { extension, provider });
@@ -138,7 +136,7 @@ export class ExtHostChatProvider implements ExtHostChatProviderShape {
 		requestId: number,
 		messages: IChatMessage[],
 		options: { [name: string]: any },
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<any> {
 		const data = this._providers.get(handle);
 		if (!data) {
@@ -148,7 +146,7 @@ export class ExtHostChatProvider implements ExtHostChatProviderShape {
 			async (fragment) => {
 				if (token.isCancellationRequested) {
 					this._logService.warn(
-						`[CHAT](${data.extension.value}) CANNOT send progress because the REQUEST IS CANCELLED`
+						`[CHAT](${data.extension.value}) CANNOT send progress because the REQUEST IS CANCELLED`,
 					);
 					return;
 				}
@@ -156,14 +154,14 @@ export class ExtHostChatProvider implements ExtHostChatProviderShape {
 					index: fragment.index,
 					part: fragment.part,
 				});
-			}
+			},
 		);
 
 		return data.provider.provideChatResponse(
 			messages.map(typeConvert.ChatMessage.to),
 			options,
 			progress,
-			token
+			token,
 		);
 	}
 
@@ -177,7 +175,7 @@ export class ExtHostChatProvider implements ExtHostChatProviderShape {
 
 	allowListExtensionWhile(
 		extension: ExtensionIdentifier,
-		promise: Promise<unknown>
+		promise: Promise<unknown>,
 	): void {
 		this._chatAccessAllowList.set(extension, promise);
 		promise.finally(() => this._chatAccessAllowList.delete(extension));
@@ -185,7 +183,7 @@ export class ExtHostChatProvider implements ExtHostChatProviderShape {
 
 	async requestChatResponseProvider(
 		from: ExtensionIdentifier,
-		identifier: string
+		identifier: string,
 	): Promise<vscode.ChatAccess> {
 		// check if a UI command is running/active
 
@@ -220,7 +218,7 @@ export class ExtHostChatProvider implements ExtHostChatProviderShape {
 					requestId,
 					messages.map(typeConvert.ChatMessage.from),
 					options ?? {},
-					cts.token
+					cts.token,
 				);
 				const res = new ChatRequest(requestPromise, cts);
 				that._pendingRequest.set(requestId, { res });
@@ -236,7 +234,7 @@ export class ExtHostChatProvider implements ExtHostChatProviderShape {
 
 	async $handleResponseFragment(
 		requestId: number,
-		chunk: IChatResponseFragment
+		chunk: IChatResponseFragment,
 	): Promise<void> {
 		const data = this._pendingRequest.get(requestId); //.report(chunk);
 		if (data) {

@@ -6,7 +6,7 @@ import { MessagePoster } from "./messaging";
 
 export class StyleLoadingMonitor {
 	private unloadedStyles: string[] = [];
-	private finishedLoading: boolean = false;
+	private finishedLoading = false;
 
 	private poster?: MessagePoster;
 
@@ -18,7 +18,7 @@ export class StyleLoadingMonitor {
 
 		window.addEventListener("DOMContentLoaded", () => {
 			for (const link of document.getElementsByClassName(
-				"code-user-style"
+				"code-user-style",
 			) as HTMLCollectionOf<HTMLElement>) {
 				if (link.dataset.source) {
 					link.onerror = onStyleLoadError;

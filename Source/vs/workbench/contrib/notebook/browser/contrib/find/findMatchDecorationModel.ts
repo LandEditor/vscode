@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { Disposable } from "vs/base/common/lifecycle";
+import { Range } from "vs/editor/common/core/range";
 import { IModelDeltaDecoration } from "vs/editor/common/model";
 import { ModelDecorationOptions } from "vs/editor/common/model/textModel";
 import { FindDecorations } from "vs/editor/contrib/find/browser/findDecorations";
-import { Range } from "vs/editor/common/core/range";
 import {
-	overviewRulerSelectionHighlightForeground,
 	overviewRulerFindMatchForeground,
+	overviewRulerSelectionHighlightForeground,
 } from "vs/platform/theme/common/colorRegistry";
 import {
 	CellFindMatchWithIndex,
@@ -32,7 +32,7 @@ export class FindMatchDecorationModel extends Disposable {
 
 	constructor(
 		private readonly _notebookEditor: INotebookEditor,
-		private readonly ownerID: string
+		private readonly ownerID: string,
 	) {
 		super();
 	}
@@ -48,7 +48,7 @@ export class FindMatchDecorationModel extends Disposable {
 
 	public async highlightCurrentFindMatchDecorationInCell(
 		cell: ICellViewModel,
-		cellRange: Range
+		cellRange: Range,
 	): Promise<number | null> {
 		this.clearCurrentFindMatchDecoration();
 
@@ -72,7 +72,7 @@ export class FindMatchDecorationModel extends Disposable {
 					this._currentMatchDecorations?.kind === "input"
 						? this._currentMatchDecorations.decorations
 						: [],
-					[deltaDecoration]
+					[deltaDecoration],
 				),
 			};
 		});
@@ -93,7 +93,7 @@ export class FindMatchDecorationModel extends Disposable {
 							},
 						},
 					} as INotebookDeltaDecoration,
-				]
+				],
 			);
 
 		return null;
@@ -101,13 +101,13 @@ export class FindMatchDecorationModel extends Disposable {
 
 	public async highlightCurrentFindMatchDecorationInWebview(
 		cell: ICellViewModel,
-		index: number
+		index: number,
 	): Promise<number | null> {
 		this.clearCurrentFindMatchDecoration();
 
 		const offset = await this._notebookEditor.findHighlightCurrent(
 			index,
-			this.ownerID
+			this.ownerID,
 		);
 		this._currentMatchDecorations = { kind: "output", index: index };
 
@@ -127,7 +127,7 @@ export class FindMatchDecorationModel extends Disposable {
 							},
 						},
 					} as INotebookDeltaDecoration,
-				]
+				],
 			);
 
 		return offset;
@@ -140,26 +140,26 @@ export class FindMatchDecorationModel extends Disposable {
 					this._currentMatchDecorations?.kind === "input"
 						? this._currentMatchDecorations.decorations
 						: [],
-					[]
+					[],
 				);
 				this._currentMatchDecorations = null;
 			});
 		} else if (this._currentMatchDecorations?.kind === "output") {
 			this._notebookEditor.findUnHighlightCurrent(
 				this._currentMatchDecorations.index,
-				this.ownerID
+				this.ownerID,
 			);
 		}
 
 		this._currentMatchCellDecorations =
 			this._notebookEditor.deltaCellDecorations(
 				this._currentMatchCellDecorations,
-				[]
+				[],
 			);
 	}
 
 	public setAllFindMatchesDecorations(
-		cellFindMatches: CellFindMatchWithIndex[]
+		cellFindMatches: CellFindMatchWithIndex[],
 	) {
 		this._notebookEditor.changeModelDecorations((accessor) => {
 			const findMatchesOptions: ModelDecorationOptions =
@@ -170,7 +170,7 @@ export class FindMatchDecorationModel extends Disposable {
 					// Find matches
 					const newFindMatchesDecorations: IModelDeltaDecoration[] =
 						new Array<IModelDeltaDecoration>(
-							cellFindMatch.contentMatches.length
+							cellFindMatch.contentMatches.length,
 						);
 					for (
 						let i = 0;
@@ -191,7 +191,7 @@ export class FindMatchDecorationModel extends Disposable {
 
 			this._allMatchesDecorations = accessor.deltaDecorations(
 				this._allMatchesDecorations,
-				deltaDecorations
+				deltaDecorations,
 			);
 		});
 
@@ -206,7 +206,7 @@ export class FindMatchDecorationModel extends Disposable {
 							overviewRuler: {
 								color: overviewRulerFindMatchForeground,
 								modelRanges: cellFindMatch.contentMatches.map(
-									(match) => match.range
+									(match) => match.range,
 								),
 								includeOutput:
 									cellFindMatch.webviewMatches.length > 0,
@@ -214,7 +214,7 @@ export class FindMatchDecorationModel extends Disposable {
 							},
 						},
 					};
-				})
+				}),
 			);
 	}
 

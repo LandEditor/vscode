@@ -10,18 +10,18 @@ declare module "vscode" {
 		saveProfile(
 			name: string,
 			content: string,
-			token: CancellationToken
+			token: CancellationToken,
 		): Thenable<{ readonly id: string; readonly link: Uri } | null>;
 		readProfile(
 			idOrUri: string | Uri,
-			token: CancellationToken
+			token: CancellationToken,
 		): Thenable<string | null>;
 	}
 
 	export namespace window {
 		export function registerProfileContentHandler(
 			id: string,
-			profileContentHandler: ProfileContentHandler
+			profileContentHandler: ProfileContentHandler,
 		): Disposable;
 	}
 }

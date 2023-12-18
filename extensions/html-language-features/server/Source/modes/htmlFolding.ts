@@ -3,26 +3,26 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { CancellationToken } from "vscode-languageserver";
 import {
-	TextDocument,
 	FoldingRange,
+	LanguageMode,
+	LanguageModes,
 	Position,
 	Range,
-	LanguageModes,
-	LanguageMode,
+	TextDocument,
 } from "./languageModes";
-import { CancellationToken } from "vscode-languageserver";
 
 export async function getFoldingRanges(
 	languageModes: LanguageModes,
 	document: TextDocument,
 	maxRanges: number | undefined,
-	_cancellationToken: CancellationToken | null
+	_cancellationToken: CancellationToken | null,
 ): Promise<FoldingRange[]> {
 	const htmlMode = languageModes.getMode("html");
 	const range = Range.create(
 		Position.create(0, 0),
-		Position.create(document.lineCount, 0)
+		Position.create(document.lineCount, 0),
 	);
 	let result: FoldingRange[] = [];
 	if (htmlMode && htmlMode.getFoldingRanges) {
@@ -53,8 +53,8 @@ export async function getFoldingRanges(
 				...ranges.filter(
 					(r) =>
 						r.startLine >= modeRange.start.line &&
-						r.endLine < modeRange.end.line
-				)
+						r.endLine < modeRange.end.line,
+				),
 			);
 		}
 	}
@@ -90,10 +90,7 @@ function limitRanges(ranges: FoldingRange[], maxRanges: number) {
 	// compute nesting levels and sanitize
 	for (let i = 0; i < ranges.length; i++) {
 		const entry = ranges[i];
-		if (!top) {
-			top = entry;
-			setNestingLevel(i, 0);
-		} else {
+		if (top) {
 			if (entry.startLine > top.startLine) {
 				if (entry.endLine <= top.endLine) {
 					previous.push(top);
@@ -110,6 +107,9 @@ function limitRanges(ranges: FoldingRange[], maxRanges: number) {
 					setNestingLevel(i, previous.length);
 				}
 			}
+		} else {
+			top = entry;
+			setNestingLevel(i, 0);
 		}
 	}
 	let entries = 0;

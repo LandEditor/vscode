@@ -28,7 +28,7 @@ export class CustomTextEditorModel
 	public static async create(
 		instantiationService: IInstantiationService,
 		viewType: string,
-		resource: URI
+		resource: URI,
 	): Promise<CustomTextEditorModel> {
 		return instantiationService.invokeFunction(async (accessor) => {
 			const textModelResolverService = accessor.get(ITextModelService);
@@ -38,7 +38,7 @@ export class CustomTextEditorModel
 				CustomTextEditorModel,
 				viewType,
 				resource,
-				model
+				model,
 			);
 		});
 	}
@@ -106,12 +106,12 @@ export class CustomTextEditorModel
 	}
 
 	private readonly _onDidChangeDirty: Emitter<void> = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onDidChangeDirty: Event<void> = this._onDidChangeDirty.event;
 
 	private readonly _onDidChangeContent: Emitter<void> = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onDidChangeContent: Event<void> = this._onDidChangeContent.event;
 
@@ -126,12 +126,12 @@ export class CustomTextEditorModel
 	public async saveCustomEditorAs(
 		resource: URI,
 		targetResource: URI,
-		options?: ISaveOptions
+		options?: ISaveOptions,
 	): Promise<boolean> {
 		return !!(await this.textFileService.saveAs(
 			resource,
 			targetResource,
-			options
+			options,
 		));
 	}
 }

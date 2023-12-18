@@ -4,31 +4,41 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { DisposableStore } from "vs/base/common/lifecycle";
+import { isEqual } from "vs/base/common/resources";
+import { URI } from "vs/base/common/uri";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { ILogService } from "vs/platform/log/common/log";
 import {
+	AnyInputDto,
 	ExtHostContext,
-	IExtHostEditorTabsShape,
-	MainContext,
 	IEditorTabDto,
 	IEditorTabGroupDto,
+	IExtHostEditorTabsShape,
+	MainContext,
 	MainThreadEditorTabsShape,
-	AnyInputDto,
 	TabInputKind,
 	TabModelOperationKind,
 } from "vs/workbench/api/common/extHost.protocol";
-import {
-	extHostNamedCustomer,
-	IExtHostContext,
-} from "vs/workbench/services/extensions/common/extHostCustomers";
 import {
 	EditorResourceAccessor,
 	GroupModelChangeKind,
 	SideBySideEditor,
 } from "vs/workbench/common/editor";
 import { DiffEditorInput } from "vs/workbench/common/editor/diffEditorInput";
+import { isGroupEditorMoveEvent } from "vs/workbench/common/editor/editorGroupModel";
 import { EditorInput } from "vs/workbench/common/editor/editorInput";
+import { SideBySideEditorInput } from "vs/workbench/common/editor/sideBySideEditorInput";
+import { AbstractTextResourceEditorInput } from "vs/workbench/common/editor/textResourceEditorInput";
+import { ChatEditorInput } from "vs/workbench/contrib/chat/browser/chatEditorInput";
+import { CustomEditorInput } from "vs/workbench/contrib/customEditor/browser/customEditorInput";
+import { InteractiveEditorInput } from "vs/workbench/contrib/interactive/browser/interactiveEditorInput";
+import { MergeEditorInput } from "vs/workbench/contrib/mergeEditor/browser/mergeEditorInput";
+import { NotebookEditorInput } from "vs/workbench/contrib/notebook/common/notebookEditorInput";
+import { TerminalEditorInput } from "vs/workbench/contrib/terminal/browser/terminalEditorInput";
+import { WebviewInput } from "vs/workbench/contrib/webviewPanel/browser/webviewEditorInput";
 import {
-	columnToEditorGroup,
 	EditorGroupColumn,
+	columnToEditorGroup,
 	editorGroupToColumn,
 } from "vs/workbench/services/editor/common/editorGroupColumn";
 import {
@@ -38,24 +48,14 @@ import {
 	preferredSideBySideGroupDirection,
 } from "vs/workbench/services/editor/common/editorGroupsService";
 import {
-	IEditorsChangeEvent,
 	IEditorService,
+	IEditorsChangeEvent,
 	SIDE_GROUP,
 } from "vs/workbench/services/editor/common/editorService";
-import { AbstractTextResourceEditorInput } from "vs/workbench/common/editor/textResourceEditorInput";
-import { NotebookEditorInput } from "vs/workbench/contrib/notebook/common/notebookEditorInput";
-import { CustomEditorInput } from "vs/workbench/contrib/customEditor/browser/customEditorInput";
-import { URI } from "vs/base/common/uri";
-import { WebviewInput } from "vs/workbench/contrib/webviewPanel/browser/webviewEditorInput";
-import { TerminalEditorInput } from "vs/workbench/contrib/terminal/browser/terminalEditorInput";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { SideBySideEditorInput } from "vs/workbench/common/editor/sideBySideEditorInput";
-import { isEqual } from "vs/base/common/resources";
-import { isGroupEditorMoveEvent } from "vs/workbench/common/editor/editorGroupModel";
-import { InteractiveEditorInput } from "vs/workbench/contrib/interactive/browser/interactiveEditorInput";
-import { MergeEditorInput } from "vs/workbench/contrib/mergeEditor/browser/mergeEditorInput";
-import { ILogService } from "vs/platform/log/common/log";
-import { ChatEditorInput } from "vs/workbench/contrib/chat/browser/chatEditorInput";
+import {
+	IExtHostContext,
+	extHostNamedCustomer,
+} from "vs/workbench/services/extensions/common/extHostCustomers";
 
 interface TabInfo {
 	tab: IEditorTabDto;
@@ -132,7 +132,7 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 	private _buildTabObject(
 		group: IEditorGroup,
 		editor: EditorInput,
-		editorIndex: number
+		editorIndex: number,
 	): IEditorTabDto {
 		const editorId = editor.editorId;
 		const tab: IEditorTabDto = {
@@ -300,7 +300,7 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 	private _onDidTabLabelChange(
 		groupId: number,
 		editorInput: EditorInput,
-		editorIndex: number
+		editorIndex: number,
 	) {
 		const tabId = this._generateTabId(editorInput, groupId);
 		const tabInfo = this._tabInfoLookup.get(tabId);
@@ -315,7 +315,7 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 			});
 		} else {
 			this._logService.error(
-				"Invalid model for label change, rebuilding"
+				"Invalid model for label change, rebuilding",
 			);
 			this._createTabsModel();
 		}
@@ -330,7 +330,7 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 	private _onDidTabOpen(
 		groupId: number,
 		editorInput: EditorInput,
-		editorIndex: number
+		editorIndex: number,
 	) {
 		const group = this._editorGroupsService.getGroup(groupId);
 		// Even if the editor service knows about the group the group might not exist yet in our model
@@ -426,14 +426,14 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 	private _onDidTabDirty(
 		groupId: number,
 		editorIndex: number,
-		editor: EditorInput
+		editor: EditorInput,
 	) {
 		const tabId = this._generateTabId(editor, groupId);
 		const tabInfo = this._tabInfoLookup.get(tabId);
 		// Something wrong with the model state so we rebuild
 		if (!tabInfo) {
 			this._logService.error(
-				"Invalid model for dirty change, rebuilding"
+				"Invalid model for dirty change, rebuilding",
 			);
 			this._createTabsModel();
 			return;
@@ -456,7 +456,7 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 	private _onDidTabPinChange(
 		groupId: number,
 		editorIndex: number,
-		editor: EditorInput
+		editor: EditorInput,
 	) {
 		const tabId = this._generateTabId(editor, groupId);
 		const tabInfo = this._tabInfoLookup.get(tabId);
@@ -465,7 +465,7 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 		// Something wrong with the model state so we rebuild
 		if (!group || !tab) {
 			this._logService.error(
-				"Invalid model for sticky change, rebuilding"
+				"Invalid model for sticky change, rebuilding",
 			);
 			this._createTabsModel();
 			return;
@@ -489,7 +489,7 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 	private _onDidTabPreviewChange(
 		groupId: number,
 		editorIndex: number,
-		editor: EditorInput
+		editor: EditorInput,
 	) {
 		const tabId = this._generateTabId(editor, groupId);
 		const tabInfo = this._tabInfoLookup.get(tabId);
@@ -498,7 +498,7 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 		// Something wrong with the model state so we rebuild
 		if (!group || !tab) {
 			this._logService.error(
-				"Invalid model for sticky change, rebuilding"
+				"Invalid model for sticky change, rebuilding",
 			);
 			this._createTabsModel();
 			return;
@@ -517,7 +517,7 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 		groupId: number,
 		editorIndex: number,
 		oldEditorIndex: number,
-		editor: EditorInput
+		editor: EditorInput,
 	) {
 		const tabs = this._groupLookup.get(groupId)?.tabs;
 		// Something wrong with the model state so we rebuild
@@ -558,7 +558,7 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 				isActive: group.id === this._editorGroupsService.activeGroup.id,
 				viewColumn: editorGroupToColumn(
 					this._editorGroupsService,
-					group
+					group,
 				),
 				tabs: [],
 			};
@@ -624,7 +624,7 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 					this._onDidTabLabelChange(
 						groupId,
 						event.editor,
-						event.editorIndex
+						event.editorIndex,
 					);
 					break;
 				}
@@ -636,7 +636,7 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 					this._onDidTabOpen(
 						groupId,
 						event.editor,
-						event.editorIndex
+						event.editorIndex,
 					);
 					break;
 				}
@@ -658,7 +658,7 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 					this._onDidTabDirty(
 						groupId,
 						event.editorIndex,
-						event.editor
+						event.editor,
 					);
 					break;
 				}
@@ -670,7 +670,7 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 					this._onDidTabPinChange(
 						groupId,
 						event.editorIndex,
-						event.editor
+						event.editor,
 					);
 					break;
 				}
@@ -682,7 +682,7 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 					this._onDidTabPreviewChange(
 						groupId,
 						event.editorIndex,
-						event.editor
+						event.editor,
 					);
 					break;
 				}
@@ -697,7 +697,7 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 						groupId,
 						event.editorIndex,
 						event.oldEditorIndex,
-						event.editor
+						event.editor,
 					);
 					break;
 				}
@@ -711,23 +711,23 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 		tabId: string,
 		index: number,
 		viewColumn: EditorGroupColumn,
-		preserveFocus?: boolean
+		preserveFocus?: boolean,
 	): void {
 		const groupId = columnToEditorGroup(
 			this._editorGroupsService,
 			this._configurationService,
-			viewColumn
+			viewColumn,
 		);
 		const tabInfo = this._tabInfoLookup.get(tabId);
 		const tab = tabInfo?.tab;
 		if (!tab) {
 			throw new Error(
-				`Attempted to close tab with id ${tabId} which does not exist`
+				`Attempted to close tab with id ${tabId} which does not exist`,
 			);
 		}
 		let targetGroup: IEditorGroup | undefined;
 		const sourceGroup = this._editorGroupsService.getGroup(
-			tabInfo.group.id
+			tabInfo.group.id,
 		);
 		if (!sourceGroup) {
 			return;
@@ -738,14 +738,14 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 			// Make sure we respect the user's preferred side direction
 			if (viewColumn === SIDE_GROUP) {
 				direction = preferredSideBySideGroupDirection(
-					this._configurationService
+					this._configurationService,
 				);
 			}
 			targetGroup = this._editorGroupsService.addGroup(
 				this._editorGroupsService.groups[
 					this._editorGroupsService.groups.length - 1
 				],
-				direction
+				direction,
 			);
 		} else {
 			targetGroup = this._editorGroupsService.getGroup(groupId);
@@ -773,7 +773,7 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 
 	async $closeTab(
 		tabIds: string[],
-		preserveFocus?: boolean
+		preserveFocus?: boolean,
 	): Promise<boolean> {
 		const groups: Map<IEditorGroup, EditorInput[]> = new Map();
 		for (const tabId of tabIds) {
@@ -786,10 +786,10 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 				continue;
 			}
 			const groupEditors = groups.get(group);
-			if (!groupEditors) {
-				groups.set(group, [editorTab]);
-			} else {
+			if (groupEditors) {
 				groupEditors.push(editorTab);
+			} else {
+				groups.set(group, [editorTab]);
 			}
 		}
 		// Loop over keys of the groups map and call closeEditors
@@ -803,7 +803,7 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 
 	async $closeGroup(
 		groupIds: number[],
-		preserveFocus?: boolean
+		preserveFocus?: boolean,
 	): Promise<boolean> {
 		const groupCloseResults: boolean[] = [];
 		for (const groupId of groupIds) {

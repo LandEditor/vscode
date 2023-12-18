@@ -5,8 +5,8 @@
 
 /* Based on @sergeche's work in his emmet plugin */
 
-import * as vscode from "vscode";
 import evaluate, { extract } from "@emmetio/math-expression";
+import * as vscode from "vscode";
 
 export function evaluateMathExpression(): Thenable<boolean> {
 	if (!vscode.window.activeTextEditor) {
@@ -24,7 +24,7 @@ export function evaluateMathExpression(): Thenable<boolean> {
 				? selection.anchor
 				: selection.active;
 			const selectionText = editor.document.getText(
-				new vscode.Range(startpos, endpos)
+				new vscode.Range(startpos, endpos),
 			);
 
 			try {
@@ -33,15 +33,15 @@ export function evaluateMathExpression(): Thenable<boolean> {
 					const result = String(evaluate(selectionText));
 					editBuilder.replace(
 						new vscode.Range(startpos, endpos),
-						result
+						result,
 					);
 				} else {
 					// no selection made, extract expression from line
 					const lineToSelectionEnd = editor.document.getText(
 						new vscode.Range(
 							new vscode.Position(selection.end.line, 0),
-							endpos
-						)
+							endpos,
+						),
 					);
 					const extractedIndices = extract(lineToSelectionEnd);
 					if (!extractedIndices) {
@@ -51,19 +51,19 @@ export function evaluateMathExpression(): Thenable<boolean> {
 						evaluate(
 							lineToSelectionEnd.substr(
 								extractedIndices[0],
-								extractedIndices[1]
-							)
-						)
+								extractedIndices[1],
+							),
+						),
 					);
 					const rangeToReplace = new vscode.Range(
 						new vscode.Position(
 							selection.end.line,
-							extractedIndices[0]
+							extractedIndices[0],
 						),
 						new vscode.Position(
 							selection.end.line,
-							extractedIndices[1]
-						)
+							extractedIndices[1],
+						),
 					);
 					editBuilder.replace(rangeToReplace, result);
 				}

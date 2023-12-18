@@ -6,10 +6,10 @@
 import { isFirefox } from "vs/base/browser/browser";
 import { DataTransfers } from "vs/base/browser/dnd";
 import {
-	addDisposableListener,
 	EventHelper,
 	EventLike,
 	EventType,
+	addDisposableListener,
 } from "vs/base/browser/dom";
 import { EventType as TouchEventType, Gesture } from "vs/base/browser/touch";
 import { IActionViewItem } from "vs/base/browser/ui/actionbar/actionbar";
@@ -64,7 +64,7 @@ export class BaseActionViewItem extends Disposable implements IActionViewItem {
 	constructor(
 		context: unknown,
 		action: IAction,
-		protected options: IBaseActionViewItemOptions = {}
+		protected options: IBaseActionViewItemOptions = {},
 	) {
 		super();
 
@@ -81,7 +81,7 @@ export class BaseActionViewItem extends Disposable implements IActionViewItem {
 					}
 
 					this.handleActionChangeEvent(event);
-				})
+				}),
 			);
 		}
 	}
@@ -146,17 +146,17 @@ export class BaseActionViewItem extends Disposable implements IActionViewItem {
 						(e) =>
 							e.dataTransfer?.setData(
 								DataTransfers.TEXT,
-								this._action.label
-							)
-					)
+								this._action.label,
+							),
+					),
 				);
 			}
 		}
 
 		this._register(
 			addDisposableListener(element, TouchEventType.Tap, (e) =>
-				this.onClick(e, true)
-			)
+				this.onClick(e, true),
+			),
 		); // Preserve focus on tap #125470
 
 		this._register(
@@ -168,7 +168,7 @@ export class BaseActionViewItem extends Disposable implements IActionViewItem {
 				if (this._action.enabled && e.button === 0) {
 					element.classList.add("active");
 				}
-			})
+			}),
 		);
 
 		if (platform.isMacintosh) {
@@ -181,7 +181,7 @@ export class BaseActionViewItem extends Disposable implements IActionViewItem {
 					if (e.button === 0 && e.ctrlKey === true) {
 						this.onClick(e);
 					}
-				})
+				}),
 			);
 		}
 
@@ -193,13 +193,13 @@ export class BaseActionViewItem extends Disposable implements IActionViewItem {
 				if (!(this.options && this.options.isMenu)) {
 					this.onClick(e);
 				}
-			})
+			}),
 		);
 
 		this._register(
 			addDisposableListener(element, EventType.DBLCLICK, (e) => {
 				EventHelper.stop(e, true);
-			})
+			}),
 		);
 
 		[EventType.MOUSE_UP, EventType.MOUSE_OUT].forEach((event) => {
@@ -207,7 +207,7 @@ export class BaseActionViewItem extends Disposable implements IActionViewItem {
 				addDisposableListener(element, event, (e) => {
 					EventHelper.stop(e);
 					element.classList.remove("active");
-				})
+				}),
 			);
 		});
 	}
@@ -277,20 +277,20 @@ export class BaseActionViewItem extends Disposable implements IActionViewItem {
 		}
 		const title = this.getTooltip() ?? "";
 		this.updateAriaLabel();
-		if (!this.options.hoverDelegate) {
-			this.element.title = title;
-		} else {
+		if (this.options.hoverDelegate) {
 			this.element.title = "";
-			if (!this.customHover) {
+			if (this.customHover) {
+				this.customHover.update(title);
+			} else {
 				this.customHover = setupCustomHover(
 					this.options.hoverDelegate,
 					this.element,
-					title
+					title,
 				);
 				this._store.add(this.customHover);
-			} else {
-				this.customHover.update(title);
 			}
+		} else {
+			this.element.title = title;
 		}
 	}
 
@@ -335,7 +335,7 @@ export class ActionViewItem extends BaseActionViewItem {
 	constructor(
 		context: unknown,
 		action: IAction,
-		options: IActionViewItemOptions
+		options: IActionViewItemOptions,
 	) {
 		super(context, action, options);
 
@@ -373,12 +373,10 @@ export class ActionViewItem extends BaseActionViewItem {
 	private getDefaultAriaRole(): "presentation" | "menuitem" | "button" {
 		if (this._action.id === Separator.ID) {
 			return "presentation"; // A separator is a presentation item
+		} else if (this.options.isMenu) {
+			return "menuitem";
 		} else {
-			if (this.options.isMenu) {
-				return "menuitem";
-			} else {
-				return "button";
-			}
+			return "button";
 		}
 	}
 
@@ -433,7 +431,7 @@ export class ActionViewItem extends BaseActionViewItem {
 					},
 					"{0} ({1})",
 					title,
-					this.options.keybinding
+					this.options.keybinding,
 				);
 			}
 		}
@@ -491,7 +489,7 @@ export class ActionViewItem extends BaseActionViewItem {
 				this.label.classList.toggle("checked", this.action.checked);
 				this.label.setAttribute(
 					"aria-checked",
-					this.action.checked ? "true" : "false"
+					this.action.checked ? "true" : "false",
 				);
 				this.label.setAttribute("role", "checkbox");
 			} else {
@@ -513,7 +511,7 @@ export class SelectActionViewItem<T = string> extends BaseActionViewItem {
 		selected: number,
 		contextViewProvider: IContextViewProvider,
 		styles: ISelectBoxStyles,
-		selectBoxOptions?: ISelectBoxOptions
+		selectBoxOptions?: ISelectBoxOptions,
 	) {
 		super(ctx, action);
 
@@ -522,7 +520,7 @@ export class SelectActionViewItem<T = string> extends BaseActionViewItem {
 			selected,
 			contextViewProvider,
 			styles,
-			selectBoxOptions
+			selectBoxOptions,
 		);
 		this.selectBox.setFocusable(false);
 
@@ -541,15 +539,15 @@ export class SelectActionViewItem<T = string> extends BaseActionViewItem {
 	private registerListeners(): void {
 		this._register(
 			this.selectBox.onDidSelect((e) =>
-				this.runAction(e.selected, e.index)
-			)
+				this.runAction(e.selected, e.index),
+			),
 		);
 	}
 
 	protected runAction(option: string, index: number): void {
 		this.actionRunner.run(
 			this._action,
-			this.getActionContext(option, index)
+			this.getActionContext(option, index),
 		);
 	}
 

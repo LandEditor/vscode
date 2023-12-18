@@ -8,7 +8,7 @@ import type { IGrammar } from "vscode-textmate";
 
 export const ITextMateTokenizationService =
 	createDecorator<ITextMateTokenizationService>(
-		"textMateTokenizationFeature"
+		"textMateTokenizationFeature",
 	);
 
 export interface ITextMateTokenizationService {

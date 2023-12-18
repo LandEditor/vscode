@@ -11,8 +11,8 @@ import { LinkedList } from "vs/base/common/linkedList";
 import { TypeConstraint, validateConstraints } from "vs/base/common/types";
 import { ILocalizedString } from "vs/platform/action/common/action";
 import {
-	createDecorator,
 	ServicesAccessor,
+	createDecorator,
 } from "vs/platform/instantiation/common/instantiation";
 
 export const ICommandService =
@@ -84,7 +84,7 @@ export const CommandsRegistry: ICommandRegistry = new (class
 
 	registerCommand(
 		idOrCommand: string | ICommand,
-		handler?: ICommandHandler
+		handler?: ICommandHandler,
 	): IDisposable {
 		if (!idOrCommand) {
 			throw new Error(`invalid command`);
@@ -104,7 +104,7 @@ export const CommandsRegistry: ICommandRegistry = new (class
 				constraints.push(arg.constraint);
 			}
 			const actualHandler = idOrCommand.handler;
-			idOrCommand.handler = function (accessor, ...args: any[]) {
+			idOrCommand.handler = (accessor, ...args: any[]) => {
 				validateConstraints(args, constraints);
 				return actualHandler(accessor, ...args);
 			};
@@ -137,7 +137,7 @@ export const CommandsRegistry: ICommandRegistry = new (class
 
 	registerCommandAlias(oldId: string, newId: string): IDisposable {
 		return CommandsRegistry.registerCommand(oldId, (accessor, ...args) =>
-			accessor.get(ICommandService).executeCommand(newId, ...args)
+			accessor.get(ICommandService).executeCommand(newId, ...args),
 		);
 	}
 

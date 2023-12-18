@@ -3,66 +3,66 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/workbench/contrib/welcomeWalkthrough/common/walkThroughUtils";
-import "vs/css!./media/walkThroughPart";
-import { DomScrollableElement } from "vs/base/browser/ui/scrollbar/scrollableElement";
 import {
-	EventType as TouchEventType,
-	GestureEvent,
-	Gesture,
-} from "vs/base/browser/touch";
-import { ScrollbarVisibility } from "vs/base/common/scrollable";
-import * as strings from "vs/base/common/strings";
-import { URI } from "vs/base/common/uri";
-import {
-	IDisposable,
-	dispose,
-	toDisposable,
-	DisposableStore,
-} from "vs/base/common/lifecycle";
-import { IEditorMemento, IEditorOpenContext } from "vs/workbench/common/editor";
-import { EditorPane } from "vs/workbench/browser/parts/editor/editorPane";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { WalkThroughInput } from "vs/workbench/contrib/welcomeWalkthrough/browser/walkThroughInput";
-import { IOpenerService } from "vs/platform/opener/common/opener";
-import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
-import { CodeEditorWidget } from "vs/editor/browser/widget/codeEditorWidget";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { localize } from "vs/nls";
-import { IStorageService } from "vs/platform/storage/common/storage";
-import {
-	RawContextKey,
-	IContextKey,
-	IContextKeyService,
-} from "vs/platform/contextkey/common/contextkey";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { isObject } from "vs/base/common/types";
-import { CommandsRegistry } from "vs/platform/commands/common/commands";
-import {
-	IEditorOptions as ICodeEditorOptions,
-	EditorOption,
-} from "vs/editor/common/config/editorOptions";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import { UILabelProvider } from "vs/base/common/keybindingLabels";
-import { OS, OperatingSystem } from "vs/base/common/platform";
-import { deepClone } from "vs/base/common/objects";
-import { INotificationService } from "vs/platform/notification/common/notification";
-import {
-	addDisposableListener,
 	Dimension,
+	addDisposableListener,
 	getWindow,
 	safeInnerHtml,
 	size,
 } from "vs/base/browser/dom";
-import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
+import {
+	EventType as TouchEventType,
+	Gesture,
+	GestureEvent,
+} from "vs/base/browser/touch";
+import { DomScrollableElement } from "vs/base/browser/ui/scrollbar/scrollableElement";
 import { CancellationToken } from "vs/base/common/cancellation";
-import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
+import { UILabelProvider } from "vs/base/common/keybindingLabels";
+import {
+	DisposableStore,
+	IDisposable,
+	dispose,
+	toDisposable,
+} from "vs/base/common/lifecycle";
+import { deepClone } from "vs/base/common/objects";
+import { OS, OperatingSystem } from "vs/base/common/platform";
+import { ScrollbarVisibility } from "vs/base/common/scrollable";
+import * as strings from "vs/base/common/strings";
+import { isObject } from "vs/base/common/types";
+import { URI } from "vs/base/common/uri";
+import "vs/css!./media/walkThroughPart";
+import { CodeEditorWidget } from "vs/editor/browser/widget/codeEditorWidget";
+import {
+	EditorOption,
+	IEditorOptions as ICodeEditorOptions,
+} from "vs/editor/common/config/editorOptions";
+import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
+import { localize } from "vs/nls";
+import { CommandsRegistry } from "vs/platform/commands/common/commands";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import {
+	IContextKey,
+	IContextKeyService,
+	RawContextKey,
+} from "vs/platform/contextkey/common/contextkey";
 import { IEditorOptions } from "vs/platform/editor/common/editor";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { INotificationService } from "vs/platform/notification/common/notification";
+import { IOpenerService } from "vs/platform/opener/common/opener";
+import { IStorageService } from "vs/platform/storage/common/storage";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import { EditorPane } from "vs/workbench/browser/parts/editor/editorPane";
+import { IEditorMemento, IEditorOpenContext } from "vs/workbench/common/editor";
+import { WalkThroughInput } from "vs/workbench/contrib/welcomeWalkthrough/browser/walkThroughInput";
+import "vs/workbench/contrib/welcomeWalkthrough/common/walkThroughUtils";
+import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
+import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
 
 export const WALK_THROUGH_FOCUS = new RawContextKey<boolean>(
 	"interactivePlaygroundFocus",
-	false
+	false,
 );
 
 const UNBOUND_COMMAND = localize("walkThrough.unboundCommand", "unbound");
@@ -141,7 +141,7 @@ export class WalkThroughPart extends EditorPane {
 		this.registerClickHandler();
 
 		this.disposables.add(
-			this.scrollbar.onScroll((e) => this.updatedScrollPosition())
+			this.scrollbar.onScroll((e) => this.updatedScrollPosition()),
 		);
 	}
 
@@ -154,7 +154,7 @@ export class WalkThroughPart extends EditorPane {
 			const height = scrollDimensions.height;
 			this.input.relativeScrollPosition(
 				scrollTop / scrollHeight,
-				(scrollTop + height) / scrollHeight
+				(scrollTop + height) / scrollHeight,
 			);
 		}
 	}
@@ -176,19 +176,19 @@ export class WalkThroughPart extends EditorPane {
 		element: E,
 		type: K,
 		listener: (this: E, ev: HTMLElementEventMap[K]) => any,
-		useCapture?: boolean
+		useCapture?: boolean,
 	): IDisposable;
 	private addEventListener<E extends HTMLElement>(
 		element: E,
 		type: string,
 		listener: EventListenerOrEventListenerObject,
-		useCapture?: boolean
+		useCapture?: boolean,
 	): IDisposable;
 	private addEventListener<E extends HTMLElement>(
 		element: E,
 		type: string,
 		listener: EventListenerOrEventListenerObject,
-		useCapture?: boolean
+		useCapture?: boolean,
 	): IDisposable {
 		element.addEventListener(type, listener, useCapture);
 		return toDisposable(() => {
@@ -200,17 +200,17 @@ export class WalkThroughPart extends EditorPane {
 		this.disposables.add(
 			this.addEventListener(this.content, "mousedown", (e) => {
 				this.focus();
-			})
+			}),
 		);
 		this.disposables.add(
 			this.addEventListener(this.content, "focus", (e) => {
 				this.editorFocus.set(true);
-			})
+			}),
 		);
 		this.disposables.add(
 			this.addEventListener(this.content, "blur", (e) => {
 				this.editorFocus.reset();
-			})
+			}),
 		);
 		this.disposables.add(
 			this.addEventListener(this.content, "focusin", (e: FocusEvent) => {
@@ -226,7 +226,7 @@ export class WalkThroughPart extends EditorPane {
 				if (e.target instanceof HTMLElement) {
 					this.lastFocus = e.target;
 				}
-			})
+			}),
 		);
 	}
 
@@ -247,7 +247,7 @@ export class WalkThroughPart extends EditorPane {
 						node.hash
 					) {
 						const scrollTarget = this.content.querySelector(
-							node.hash
+							node.hash,
 						);
 						const innerContent = this.content.firstElementChild;
 						if (scrollTarget && innerContent) {
@@ -286,8 +286,8 @@ export class WalkThroughPart extends EditorPane {
 			this.notificationService.info(
 				localize(
 					"walkThrough.gitNotFound",
-					"It looks like Git is not installed on your system."
-				)
+					"It looks like Git is not installed on your system.",
+				),
 			);
 			return;
 		}
@@ -328,7 +328,7 @@ export class WalkThroughPart extends EditorPane {
 		if (this.size && innerContent) {
 			innerContent.classList.toggle(
 				"max-height-685px",
-				this.size.height <= 685
+				this.size.height <= 685,
 			);
 		}
 	}
@@ -388,7 +388,7 @@ export class WalkThroughPart extends EditorPane {
 		input: WalkThroughInput,
 		options: IEditorOptions | undefined,
 		context: IEditorOpenContext,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void> {
 		const store = new DisposableStore();
 		this.contentDisposables.push(store);
@@ -416,12 +416,12 @@ export class WalkThroughPart extends EditorPane {
 					this.decorateContent();
 					this.contentDisposables.push(
 						this.keybindingService.onDidUpdateKeybindings(() =>
-							this.decorateContent()
-						)
+							this.decorateContent(),
+						),
 					);
 					input.onReady?.(
 						this.content.firstElementChild as HTMLElement,
-						store
+						store,
 					);
 					this.scrollbar.scanDomNode();
 					this.loadTextEditorViewState(input);
@@ -442,11 +442,11 @@ export class WalkThroughPart extends EditorPane {
 					}
 					const id = `snippet-${model.uri.fragment}`;
 					const div = innerContent.querySelector(
-						`#${id.replace(/[\\.]/g, "\\$&")}`
+						`#${id.replace(/[\\.]/g, "\\$&")}`,
 					) as HTMLElement;
 
 					const options = this.getEditorOptions(
-						model.getLanguageId()
+						model.getLanguageId(),
 					);
 					const telemetryData = {
 						target:
@@ -461,14 +461,14 @@ export class WalkThroughPart extends EditorPane {
 						options,
 						{
 							telemetryData: telemetryData,
-						}
+						},
 					);
 					editor.setModel(model);
 					this.contentDisposables.push(editor);
 
 					const updateHeight = (initial: boolean) => {
 						const lineHeight = editor.getOption(
-							EditorOption.lineHeight
+							EditorOption.lineHeight,
 						);
 						const height = `${
 							Math.max(model.getLineCount() + 1, 4) * lineHeight
@@ -484,8 +484,8 @@ export class WalkThroughPart extends EditorPane {
 					updateHeight(true);
 					this.contentDisposables.push(
 						editor.onDidChangeModelContent(() =>
-							updateHeight(false)
-						)
+							updateHeight(false),
+						),
 					);
 					this.contentDisposables.push(
 						editor.onDidChangeCursorPosition((e) => {
@@ -496,7 +496,7 @@ export class WalkThroughPart extends EditorPane {
 								const containerTop =
 									innerContent.getBoundingClientRect().top;
 								const lineHeight = editor.getOption(
-									EditorOption.lineHeight
+									EditorOption.lineHeight,
 								);
 								const lineTop =
 									targetTop +
@@ -519,7 +519,7 @@ export class WalkThroughPart extends EditorPane {
 									});
 								}
 							}
-						})
+						}),
 					);
 
 					this.contentDisposables.push(
@@ -531,12 +531,12 @@ export class WalkThroughPart extends EditorPane {
 								) {
 									editor.updateOptions(
 										this.getEditorOptions(
-											snippet.textEditorModel.getLanguageId()
-										)
+											snippet.textEditorModel.getLanguageId(),
+										),
 									);
 								}
-							}
-						)
+							},
+						),
 					);
 				});
 				this.updateSizeClasses();
@@ -548,7 +548,7 @@ export class WalkThroughPart extends EditorPane {
 						) {
 							this.multiCursorModifier();
 						}
-					})
+					}),
 				);
 				input.onReady?.(innerContent, store);
 				this.scrollbar.scanDomNode();
@@ -559,8 +559,8 @@ export class WalkThroughPart extends EditorPane {
 					addDisposableListener(
 						innerContent,
 						TouchEventType.Change,
-						(e) => this.onTouchChange(e as GestureEvent)
-					)
+						(e) => this.onTouchChange(e as GestureEvent),
+					),
 				);
 			});
 	}
@@ -569,7 +569,7 @@ export class WalkThroughPart extends EditorPane {
 		const config = deepClone(
 			this.configurationService.getValue<IEditorOptions>("editor", {
 				overrideIdentifier: language,
-			})
+			}),
 		);
 		return {
 			...(isObject(config) ? config : Object.create(null)),
@@ -598,9 +598,9 @@ export class WalkThroughPart extends EditorPane {
 					? keybinding.getLabel() || ""
 					: UNBOUND_COMMAND;
 				return `<span class="shortcut">${strings.escape(
-					shortcut
+					shortcut,
 				)}</span>`;
-			}
+			},
 		);
 	}
 
@@ -619,20 +619,20 @@ export class WalkThroughPart extends EditorPane {
 			key.appendChild(document.createTextNode(label));
 		});
 		const ifkeys = this.content.querySelectorAll(
-			".if_shortcut[data-command]"
+			".if_shortcut[data-command]",
 		);
 		Array.prototype.forEach.call(ifkeys, (key: HTMLElement) => {
 			const command = key.getAttribute("data-command");
 			const keybinding =
 				command && this.keybindingService.lookupKeybinding(command);
-			key.style.display = !keybinding ? "none" : "";
+			key.style.display = keybinding ? "" : "none";
 		});
 	}
 
 	private multiCursorModifier() {
 		const labels = UILabelProvider.modifierLabels[OS];
 		const value = this.configurationService.getValue(
-			"editor.multiCursorModifier"
+			"editor.multiCursorModifier",
 		);
 		const modifier =
 			labels[

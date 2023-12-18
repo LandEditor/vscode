@@ -134,7 +134,7 @@ export const activate: ActivationFunction<void> = (ctx) => {
 		highlight: (str: string, lang?: string) => {
 			if (lang) {
 				return `<code class="vscode-code-block" data-vscode-code-block-lang="${markdownIt.utils.escapeHtml(
-					lang
+					lang,
 				)}">${markdownIt.utils.escapeHtml(str)}</code>`;
 			}
 			return `<code>${markdownIt.utils.escapeHtml(str)}</code>`;
@@ -149,7 +149,7 @@ export const activate: ActivationFunction<void> = (ctx) => {
 	style.textContent = `
 		.emptyMarkdownCell::before {
 			content: "${document.documentElement.style.getPropertyValue(
-				"--notebook-cell-markup-empty-content"
+				"--notebook-cell-markup-empty-content",
 			)}";
 			font-style: italic;
 			opacity: 0.6;
@@ -302,23 +302,25 @@ export const activate: ActivationFunction<void> = (ctx) => {
 	return {
 		renderOutputItem: (outputInfo, element) => {
 			let previewNode: HTMLElement;
-			if (!element.shadowRoot) {
+			if (element.shadowRoot) {
+				previewNode = element.shadowRoot.getElementById("preview")!;
+			} else {
 				const previewRoot = element.attachShadow({ mode: "open" });
 
 				// Insert styles into markdown preview shadow dom so that they are applied.
 				// First add default webview style
 				const defaultStyles = document.getElementById(
-					"_defaultStyles"
+					"_defaultStyles",
 				) as HTMLStyleElement;
 				previewRoot.appendChild(defaultStyles.cloneNode(true));
 
 				// And then contributed styles
 				for (const element of document.getElementsByClassName(
-					"markdown-style"
+					"markdown-style",
 				)) {
 					if (element instanceof HTMLTemplateElement) {
 						previewRoot.appendChild(
-							element.content.cloneNode(true)
+							element.content.cloneNode(true),
 						);
 					} else {
 						previewRoot.appendChild(element.cloneNode(true));
@@ -328,8 +330,6 @@ export const activate: ActivationFunction<void> = (ctx) => {
 				previewNode = document.createElement("div");
 				previewNode.id = "preview";
 				previewRoot.appendChild(previewNode);
-			} else {
-				previewNode = element.shadowRoot.getElementById("preview")!;
 			}
 
 			const text = outputInfo.text();
@@ -341,21 +341,21 @@ export const activate: ActivationFunction<void> = (ctx) => {
 				const markdownText = outputInfo.mime.startsWith("text/x-")
 					? `\`\`\`${outputInfo.mime.substr(7)}\n${text}\n\`\`\``
 					: outputInfo.mime.startsWith("application/")
-						? `\`\`\`${outputInfo.mime.substr(12)}\n${text}\n\`\`\``
-						: text;
+					  ? `\`\`\`${outputInfo.mime.substr(12)}\n${text}\n\`\`\``
+					  : text;
 				const unsanitizedRenderedMarkdown = markdownIt.render(
 					markdownText,
 					{
 						outputItem: outputInfo,
-					}
+					},
 				);
 				previewNode.innerHTML = (
 					ctx.workspace.isTrusted
 						? unsanitizedRenderedMarkdown
 						: DOMPurify.sanitize(
 								unsanitizedRenderedMarkdown,
-								sanitizerOptions
-							)
+								sanitizerOptions,
+						  )
 				) as string;
 			}
 		},
@@ -374,11 +374,11 @@ function addNamedHeaderRendering(md: InstanceType<typeof MarkdownIt>): void {
 		idx: number,
 		options,
 		env,
-		self
+		self,
 	) => {
 		const title = tokens[idx + 1].children!.reduce<string>(
 			(acc, t) => acc + t.content,
-			""
+			"",
 		);
 		let slug = slugify(title);
 
@@ -414,7 +414,7 @@ function addLinkRenderer(md: MarkdownIt): void {
 		idx: number,
 		options,
 		env,
-		self
+		self,
 	) => {
 		const token = tokens[idx];
 		const href = token.attrGet("href");
@@ -438,10 +438,10 @@ function slugify(text: string): string {
 			// allow-any-unicode-next-line
 			.replace(
 				/[\]\[\!\/\'\"\#\$\%\&\(\)\*\+\,\.\/\:\;\<\=\>\?\@\\\^\{\|\}\~\`。，、；：？！…—·ˉ¨‘’“”々～‖∶＂＇｀｜〃〔〕〈〉《》「」『』．〖〗【】（）［］｛｝]/g,
-				""
+				"",
 			) // Remove known punctuators
 			.replace(/^\-+/, "") // Remove leading -
-			.replace(/\-+$/, "") // Remove trailing -
+			.replace(/\-+$/, ""), // Remove trailing -
 	);
 	return slugifiedHeading;
 }

@@ -3,17 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as querystring from "querystring";
 import {
-	UriHandler,
-	Uri,
-	window,
 	Disposable,
-	commands,
 	LogOutputChannel,
+	Uri,
+	UriHandler,
+	commands,
 	l10n,
+	window,
 } from "vscode";
 import { dispose } from "./util";
-import * as querystring from "querystring";
 
 const schemes = new Set(["file", "git", "http", "https", "ssh"]);
 const refRegEx =
@@ -52,7 +52,7 @@ export class GitProtocolHandler implements UriHandler {
 		if (ref !== undefined && typeof ref !== "string") {
 			this.logger.warn(
 				"Failed to open URI due to multiple references:" +
-					uri.toString()
+					uri.toString(),
 			);
 			return;
 		}
@@ -81,13 +81,19 @@ export class GitProtocolHandler implements UriHandler {
 			return;
 		}
 
-		if (!(await commands.getCommands(true)).includes("git.clone")) {
+		if ((await commands.getCommands(true)).includes("git.clone")) {
+			const cloneTarget = cloneUri.toString(true);
+			this.logger.info(`Executing git.clone for ${cloneTarget}`);
+			commands.executeCommand("git.clone", cloneTarget, undefined, {
+				ref: ref,
+			});
+		} else {
 			this.logger.error(
-				"Could not complete git clone operation as git installation was not found."
+				"Could not complete git clone operation as git installation was not found.",
 			);
 
 			const errorMessage = l10n.t(
-				"Could not clone your repository as Git is not installed."
+				"Could not clone your repository as Git is not installed.",
 			);
 			const downloadGit = l10n.t("Download Git");
 
@@ -95,22 +101,16 @@ export class GitProtocolHandler implements UriHandler {
 				(await window.showErrorMessage(
 					errorMessage,
 					{ modal: true },
-					downloadGit
+					downloadGit,
 				)) === downloadGit
 			) {
 				commands.executeCommand(
 					"vscode.open",
-					Uri.parse("https://aka.ms/vscode-download-git")
+					Uri.parse("https://aka.ms/vscode-download-git"),
 				);
 			}
 
 			return;
-		} else {
-			const cloneTarget = cloneUri.toString(true);
-			this.logger.info(`Executing git.clone for ${cloneTarget}`);
-			commands.executeCommand("git.clone", cloneTarget, undefined, {
-				ref: ref,
-			});
 		}
 	}
 

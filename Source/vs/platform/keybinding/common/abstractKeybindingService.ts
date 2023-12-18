@@ -33,10 +33,10 @@ import {
 	KeybindingsSchemaContribution,
 } from "vs/platform/keybinding/common/keybinding";
 import {
-	ResolutionResult,
 	KeybindingResolver,
-	ResultKind,
 	NoMatchingKb,
+	ResolutionResult,
+	ResultKind,
 } from "vs/platform/keybinding/common/keybindingResolver";
 import { ResolvedKeybindingItem } from "vs/platform/keybinding/common/resolvedKeybindingItem";
 import { ILogService } from "vs/platform/log/common/log";
@@ -58,7 +58,7 @@ export abstract class AbstractKeybindingService
 	public _serviceBrand: undefined;
 
 	protected readonly _onDidUpdateKeybindings: Emitter<void> = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	get onDidUpdateKeybindings(): Event<void> {
 		return this._onDidUpdateKeybindings
@@ -92,7 +92,7 @@ export abstract class AbstractKeybindingService
 		protected _commandService: ICommandService,
 		protected _telemetryService: ITelemetryService,
 		private _notificationService: INotificationService,
-		protected _logService: ILogService
+		protected _logService: ILogService,
 	) {
 		super();
 
@@ -112,16 +112,16 @@ export abstract class AbstractKeybindingService
 	protected abstract _getResolver(): KeybindingResolver;
 	protected abstract _documentHasFocus(): boolean;
 	public abstract resolveKeybinding(
-		keybinding: Keybinding
+		keybinding: Keybinding,
 	): ResolvedKeybinding[];
 	public abstract resolveKeyboardEvent(
-		keyboardEvent: IKeyboardEvent
+		keyboardEvent: IKeyboardEvent,
 	): ResolvedKeybinding;
 	public abstract resolveUserBinding(
-		userBinding: string
+		userBinding: string,
 	): ResolvedKeybinding[];
 	public abstract registerSchemaContribution(
-		contribution: KeybindingsSchemaContribution
+		contribution: KeybindingsSchemaContribution,
 	): void;
 	public abstract _dumpDebugInfo(): string;
 	public abstract _dumpDebugInfoJSON(): string;
@@ -157,17 +157,17 @@ export abstract class AbstractKeybindingService
 		return arrays.coalesce(
 			this._getResolver()
 				.lookupKeybindings(commandId)
-				.map((item) => item.resolvedKeybinding)
+				.map((item) => item.resolvedKeybinding),
 		);
 	}
 
 	public lookupKeybinding(
 		commandId: string,
-		context?: IContextKeyService
+		context?: IContextKeyService,
 	): ResolvedKeybinding | undefined {
 		const result = this._getResolver().lookupPrimaryKeybinding(
 			commandId,
-			context || this._contextKeyService
+			context || this._contextKeyService,
 		);
 		if (!result) {
 			return undefined;
@@ -177,7 +177,7 @@ export abstract class AbstractKeybindingService
 
 	public dispatchEvent(
 		e: IKeyboardEvent,
-		target: IContextKeyServiceTarget
+		target: IContextKeyServiceTarget,
 	): boolean {
 		return this._dispatch(e, target);
 	}
@@ -186,13 +186,13 @@ export abstract class AbstractKeybindingService
 	// TODO@ulugbekna: this fn doesn't seem to take into account single-modifier keybindings, eg `shift shift`
 	public softDispatch(
 		e: IKeyboardEvent,
-		target: IContextKeyServiceTarget
+		target: IContextKeyServiceTarget,
 	): ResolutionResult {
 		this._log(`/ Soft dispatching keyboard event`);
 		const keybinding = this.resolveKeyboardEvent(e);
 		if (keybinding.hasMultipleChords()) {
 			console.warn(
-				"keyboard event should not be mapped to multiple chords"
+				"keyboard event should not be mapped to multiple chords",
 			);
 			return NoMatchingKb;
 		}
@@ -205,12 +205,12 @@ export abstract class AbstractKeybindingService
 
 		const contextValue = this._contextKeyService.getContext(target);
 		const currentChords = this._currentChords.map(
-			({ keypress }) => keypress
+			({ keypress }) => keypress,
 		);
 		return this._getResolver().resolve(
 			contextValue,
 			currentChords,
-			firstChord
+			firstChord,
 		);
 	}
 
@@ -232,7 +232,7 @@ export abstract class AbstractKeybindingService
 
 	private _expectAnotherChord(
 		firstChord: string,
-		keypressLabel: string | null
+		keypressLabel: string | null,
 	): void {
 		this._currentChords.push({
 			keypress: firstChord,
@@ -249,8 +249,8 @@ export abstract class AbstractKeybindingService
 						nls.localize(
 							"first.chord",
 							"({0}) was pressed. Waiting for second key of chord...",
-							keypressLabel
-						)
+							keypressLabel,
+						),
 					);
 				break;
 			default: {
@@ -262,8 +262,8 @@ export abstract class AbstractKeybindingService
 						nls.localize(
 							"next.chord",
 							"({0}) was pressed. Waiting for next key of chord...",
-							fullKeypressLabel
-						)
+							fullKeypressLabel,
+						),
 					);
 			}
 		}
@@ -287,10 +287,10 @@ export abstract class AbstractKeybindingService
 
 	public dispatchByUserSettingsLabel(
 		userSettingsLabel: string,
-		target: IContextKeyServiceTarget
+		target: IContextKeyServiceTarget,
 	): void {
 		this._log(
-			`/ Dispatching keybinding triggered via menu entry accelerator - ${userSettingsLabel}`
+			`/ Dispatching keybinding triggered via menu entry accelerator - ${userSettingsLabel}`,
 		);
 		const keybindings = this.resolveUserBinding(userSettingsLabel);
 		if (keybindings.length === 0) {
@@ -299,25 +299,25 @@ export abstract class AbstractKeybindingService
 			this._doDispatch(
 				keybindings[0],
 				target,
-				/*isSingleModiferChord*/ false
+				/*isSingleModiferChord*/ false,
 			);
 		}
 	}
 
 	protected _dispatch(
 		e: IKeyboardEvent,
-		target: IContextKeyServiceTarget
+		target: IContextKeyServiceTarget,
 	): boolean {
 		return this._doDispatch(
 			this.resolveKeyboardEvent(e),
 			target,
-			/*isSingleModiferChord*/ false
+			/*isSingleModiferChord*/ false,
 		);
 	}
 
 	protected _singleModifierDispatch(
 		e: IKeyboardEvent,
-		target: IContextKeyServiceTarget
+		target: IContextKeyServiceTarget,
 	): boolean {
 		const keybinding = this.resolveKeyboardEvent(e);
 		const [singleModifier] = keybinding.getSingleModifierDispatchChords();
@@ -325,7 +325,7 @@ export abstract class AbstractKeybindingService
 		if (singleModifier) {
 			if (this._ignoreSingleModifiers.has(singleModifier)) {
 				this._log(
-					`+ Ignoring single modifier ${singleModifier} due to it being pressed together with other keys.`
+					`+ Ignoring single modifier ${singleModifier} due to it being pressed together with other keys.`,
 				);
 				this._ignoreSingleModifiers = KeybindingModifierSet.EMPTY;
 				this._currentSingleModifierClearTimeout.cancel();
@@ -338,12 +338,12 @@ export abstract class AbstractKeybindingService
 			if (this._currentSingleModifier === null) {
 				// we have a valid `singleModifier`, store it for the next keyup, but clear it in 300ms
 				this._log(
-					`+ Storing single modifier for possible chord ${singleModifier}.`
+					`+ Storing single modifier for possible chord ${singleModifier}.`,
 				);
 				this._currentSingleModifier = singleModifier;
 				this._currentSingleModifierClearTimeout.cancelAndSet(() => {
 					this._log(
-						`+ Clearing single modifier due to 300ms elapsed.`
+						`+ Clearing single modifier due to 300ms elapsed.`,
 					);
 					this._currentSingleModifier = null;
 				}, 300);
@@ -353,19 +353,19 @@ export abstract class AbstractKeybindingService
 			if (singleModifier === this._currentSingleModifier) {
 				// bingo!
 				this._log(
-					`/ Dispatching single modifier chord ${singleModifier} ${singleModifier}`
+					`/ Dispatching single modifier chord ${singleModifier} ${singleModifier}`,
 				);
 				this._currentSingleModifierClearTimeout.cancel();
 				this._currentSingleModifier = null;
 				return this._doDispatch(
 					keybinding,
 					target,
-					/*isSingleModiferChord*/ true
+					/*isSingleModiferChord*/ true,
 				);
 			}
 
 			this._log(
-				`+ Clearing single modifier due to modifier mismatch: ${this._currentSingleModifier} ${singleModifier}`
+				`+ Clearing single modifier due to modifier mismatch: ${this._currentSingleModifier} ${singleModifier}`,
 			);
 			this._currentSingleModifierClearTimeout.cancel();
 			this._currentSingleModifier = null;
@@ -388,7 +388,7 @@ export abstract class AbstractKeybindingService
 	private _doDispatch(
 		userKeypress: ResolvedKeybinding,
 		target: IContextKeyServiceTarget,
-		isSingleModiferChord = false
+		isSingleModiferChord = false,
 	): boolean {
 		let shouldPreventDefault = false;
 
@@ -416,7 +416,7 @@ export abstract class AbstractKeybindingService
 
 		if (userPressedChord === null) {
 			this._log(
-				`\\ Keyboard event cannot be dispatched in keydown phase.`
+				`\\ Keyboard event cannot be dispatched in keydown phase.`,
 			);
 			// cannot be dispatched, probably only modifier keys
 			return shouldPreventDefault;
@@ -428,7 +428,7 @@ export abstract class AbstractKeybindingService
 		const resolveResult = this._getResolver().resolve(
 			contextValue,
 			currentChords,
-			userPressedChord
+			userPressedChord,
 		);
 
 		switch (resolveResult.kind) {
@@ -436,7 +436,7 @@ export abstract class AbstractKeybindingService
 				this._logService.trace(
 					"KeybindingService#dispatch",
 					keypressLabel,
-					`[ No matching keybinding ]`
+					`[ No matching keybinding ]`,
 				);
 
 				if (this.inChordMode) {
@@ -444,16 +444,16 @@ export abstract class AbstractKeybindingService
 						.map(({ label }) => label)
 						.join(", ");
 					this._log(
-						`+ Leaving multi-chord mode: Nothing bound to "${currentChordsLabel}, ${keypressLabel}".`
+						`+ Leaving multi-chord mode: Nothing bound to "${currentChordsLabel}, ${keypressLabel}".`,
 					);
 					this._notificationService.status(
 						nls.localize(
 							"missing.chord",
 							"The key combination ({0}, {1}) is not a command.",
 							currentChordsLabel,
-							keypressLabel
+							keypressLabel,
 						),
-						{ hideAfter: 10 * 1000 /* 10s */ }
+						{ hideAfter: 10 * 1000 /* 10s */ },
 					);
 					this._leaveChordMode();
 
@@ -466,7 +466,7 @@ export abstract class AbstractKeybindingService
 				this._logService.trace(
 					"KeybindingService#dispatch",
 					keypressLabel,
-					`[ Several keybindings match - more chords needed ]`
+					`[ Several keybindings match - more chords needed ]`,
 				);
 
 				shouldPreventDefault = true;
@@ -474,7 +474,7 @@ export abstract class AbstractKeybindingService
 				this._log(
 					this._currentChords.length === 1
 						? `+ Entering multi-chord mode...`
-						: `+ Continuing multi-chord mode...`
+						: `+ Continuing multi-chord mode...`,
 				);
 				return shouldPreventDefault;
 			}
@@ -483,7 +483,7 @@ export abstract class AbstractKeybindingService
 				this._logService.trace(
 					"KeybindingService#dispatch",
 					keypressLabel,
-					`[ Will dispatch command ${resolveResult.commandId} ]`
+					`[ Will dispatch command ${resolveResult.commandId} ]`,
 				);
 
 				if (
@@ -495,16 +495,16 @@ export abstract class AbstractKeybindingService
 							.map(({ label }) => label)
 							.join(", ");
 						this._log(
-							`+ Leaving chord mode: Nothing bound to "${currentChordsLabel}, ${keypressLabel}".`
+							`+ Leaving chord mode: Nothing bound to "${currentChordsLabel}, ${keypressLabel}".`,
 						);
 						this._notificationService.status(
 							nls.localize(
 								"missing.chord",
 								"The key combination ({0}, {1}) is not a command.",
 								currentChordsLabel,
-								keypressLabel
+								keypressLabel,
 							),
-							{ hideAfter: 10 * 1000 /* 10s */ }
+							{ hideAfter: 10 * 1000 /* 10s */ },
 						);
 						this._leaveChordMode();
 						shouldPreventDefault = true;
@@ -523,16 +523,16 @@ export abstract class AbstractKeybindingService
 						this._commandService
 							.executeCommand(resolveResult.commandId)
 							.then(undefined, (err) =>
-								this._notificationService.warn(err)
+								this._notificationService.warn(err),
 							);
 					} else {
 						this._commandService
 							.executeCommand(
 								resolveResult.commandId,
-								resolveResult.commandArgs
+								resolveResult.commandArgs,
 							)
 							.then(undefined, (err) =>
-								this._notificationService.warn(err)
+								this._notificationService.warn(err),
 							);
 					}
 

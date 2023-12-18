@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Emitter, Event } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
-import { Event, Emitter } from "vs/base/common/event";
 
 export interface INotebookFindFiltersChangeEvent {
 	markupInput?: boolean;
@@ -19,7 +19,7 @@ export class NotebookFindFilters extends Disposable {
 	readonly onDidChange: Event<INotebookFindFiltersChangeEvent> =
 		this._onDidChange.event;
 
-	private _markupInput: boolean = true;
+	private _markupInput = true;
 
 	get markupInput(): boolean {
 		return this._markupInput;
@@ -32,7 +32,7 @@ export class NotebookFindFilters extends Disposable {
 		}
 	}
 
-	private _markupPreview: boolean = true;
+	private _markupPreview = true;
 
 	get markupPreview(): boolean {
 		return this._markupPreview;
@@ -44,7 +44,7 @@ export class NotebookFindFilters extends Disposable {
 			this._onDidChange.fire({ markupPreview: value });
 		}
 	}
-	private _codeInput: boolean = true;
+	private _codeInput = true;
 
 	get codeInput(): boolean {
 		return this._codeInput;
@@ -57,7 +57,7 @@ export class NotebookFindFilters extends Disposable {
 		}
 	}
 
-	private _codeOutput: boolean = true;
+	private _codeOutput = true;
 
 	get codeOutput(): boolean {
 		return this._codeOutput;
@@ -79,7 +79,7 @@ export class NotebookFindFilters extends Disposable {
 		markupInput: boolean,
 		markupPreview: boolean,
 		codeInput: boolean,
-		codeOutput: boolean
+		codeOutput: boolean,
 	) {
 		super();
 

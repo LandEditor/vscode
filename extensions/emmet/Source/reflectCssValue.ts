@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { window, TextEditor } from "vscode";
+import { Property, Rule } from "EmmetFlatNode";
+import { TextEditor, window } from "vscode";
 import {
-	getCssPropertyFromRule,
 	getCssPropertyFromDocument,
+	getCssPropertyFromRule,
 	offsetRangeToVsRange,
 } from "./util";
-import { Property, Rule } from "EmmetFlatNode";
 
 const vendorPrefixes = ["-webkit-", "-moz-", "-ms-", "-o-", ""];
 
@@ -30,7 +30,7 @@ export function reflectCssValue(): Thenable<boolean> | undefined {
 
 function updateCSSNode(
 	editor: TextEditor,
-	property: Property
+	property: Property,
 ): Thenable<boolean> {
 	const rule: Rule = property.parent;
 	let currentPrefix = "";
@@ -54,13 +54,13 @@ function updateCSSNode(
 			}
 			const vendorProperty = getCssPropertyFromRule(
 				rule,
-				prefix + propertyName
+				prefix + propertyName,
 			);
 			if (vendorProperty) {
 				const rangeToReplace = offsetRangeToVsRange(
 					editor.document,
 					vendorProperty.valueToken.start,
-					vendorProperty.valueToken.end
+					vendorProperty.valueToken.end,
 				);
 				builder.replace(rangeToReplace, propertyValue);
 			}

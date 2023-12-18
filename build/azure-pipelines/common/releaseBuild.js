@@ -1,4 +1,3 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -38,7 +37,7 @@ async function main(force) {
 	const aadCredentials = new identity_1.ClientSecretCredential(
 		process.env["AZURE_TENANT_ID"],
 		process.env["AZURE_CLIENT_ID"],
-		process.env["AZURE_CLIENT_SECRET"]
+		process.env["AZURE_CLIENT_SECRET"],
 	);
 	const client = new cosmos_1.CosmosClient({
 		endpoint: process.env["AZURE_DOCUMENTDB_ENDPOINT"],
@@ -49,7 +48,7 @@ async function main(force) {
 		console.log("Quality config:", config);
 		if (config.frozen) {
 			console.log(
-				`Skipping release because quality ${quality} is frozen.`
+				`Skipping release because quality ${quality} is frozen.`,
 			);
 			return;
 		}
@@ -57,7 +56,7 @@ async function main(force) {
 	console.log(`Releasing build ${commit}...`);
 	const scripts = client.database("builds").container(quality).scripts;
 	await (0, retry_1.retry)(() =>
-		scripts.storedProcedure("releaseBuild").execute("", [commit])
+		scripts.storedProcedure("releaseBuild").execute("", [commit]),
 	);
 }
 const [, , force] = process.argv;
@@ -70,6 +69,6 @@ main(/^true$/i.test(force)).then(
 	(err) => {
 		console.error(err);
 		process.exit(1);
-	}
+	},
 );
 //# sourceMappingURL=releaseBuild.js.map

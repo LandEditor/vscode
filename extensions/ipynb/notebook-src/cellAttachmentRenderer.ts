@@ -13,7 +13,7 @@ interface MarkdownItRenderer {
 
 export async function activate(ctx: RendererContext<void>) {
 	const markdownItRenderer = (await ctx.getRenderer(
-		"vscode.markdown-it-renderer"
+		"vscode.markdown-it-renderer",
 	)) as MarkdownItRenderer | any;
 	if (!markdownItRenderer) {
 		throw new Error(`Could not load 'vscode.markdown-it-renderer'`);
@@ -26,7 +26,7 @@ export async function activate(ctx: RendererContext<void>) {
 			idx: number,
 			options,
 			env,
-			self
+			self,
 		) => {
 			const token = tokens[idx];
 			const src = token.attrGet("src");

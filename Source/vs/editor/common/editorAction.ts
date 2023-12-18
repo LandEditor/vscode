@@ -18,7 +18,7 @@ export class InternalEditorAction implements IEditorAction {
 		public readonly metadata: ICommandMetadata | undefined,
 		private readonly _precondition: ContextKeyExpression | undefined,
 		private readonly _run: (args: unknown) => Promise<void>,
-		private readonly _contextKeyService: IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
 	) {}
 
 	public isSupported(): boolean {

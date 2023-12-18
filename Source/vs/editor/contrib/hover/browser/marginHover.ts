@@ -4,13 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as dom from "vs/base/browser/dom";
+import { HoverWidget } from "vs/base/browser/ui/hover/hoverWidget";
 import { asArray } from "vs/base/common/arrays";
 import {
 	IMarkdownString,
 	isEmptyMarkdownString,
 } from "vs/base/common/htmlContent";
 import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
-import { MarkdownRenderer } from "vs/editor/contrib/markdownRenderer/browser/markdownRenderer";
 import {
 	ICodeEditor,
 	IOverlayWidget,
@@ -26,8 +26,8 @@ import {
 	HoverStartMode,
 	IHoverComputer,
 } from "vs/editor/contrib/hover/browser/hoverOperation";
+import { MarkdownRenderer } from "vs/editor/contrib/markdownRenderer/browser/markdownRenderer";
 import { IOpenerService } from "vs/platform/opener/common/opener";
-import { HoverWidget } from "vs/base/browser/ui/hover/hoverWidget";
 
 const $ = dom.$;
 
@@ -48,13 +48,13 @@ export class MarginHoverWidget extends Disposable implements IOverlayWidget {
 	private readonly _computer: MarginHoverComputer;
 	private readonly _hoverOperation: HoverOperation<IHoverMessage>;
 	private readonly _renderDisposeables = this._register(
-		new DisposableStore()
+		new DisposableStore(),
 	);
 
 	constructor(
 		editor: ICodeEditor,
 		languageService: ILanguageService,
-		openerService: IOpenerService
+		openerService: IOpenerService,
 	) {
 		super();
 		this._editor = editor;
@@ -65,30 +65,30 @@ export class MarginHoverWidget extends Disposable implements IOverlayWidget {
 		this._hover = this._register(new HoverWidget());
 		this._hover.containerDomNode.classList.toggle(
 			"hidden",
-			!this._isVisible
+			!this._isVisible,
 		);
 
 		this._markdownRenderer = this._register(
 			new MarkdownRenderer(
 				{ editor: this._editor },
 				languageService,
-				openerService
-			)
+				openerService,
+			),
 		);
 		this._computer = new MarginHoverComputer(this._editor);
 		this._hoverOperation = this._register(
-			new HoverOperation(this._editor, this._computer)
+			new HoverOperation(this._editor, this._computer),
 		);
 		this._register(
 			this._hoverOperation.onResult((result) => {
 				this._withResult(result.value);
-			})
+			}),
 		);
 
 		this._register(
 			this._editor.onDidChangeModelDecorations(() =>
-				this._onModelDecorationsChanged()
-			)
+				this._onModelDecorationsChanged(),
+			),
 		);
 		this._register(
 			this._editor.onDidChangeConfiguration(
@@ -96,8 +96,8 @@ export class MarginHoverWidget extends Disposable implements IOverlayWidget {
 					if (e.hasChanged(EditorOption.fontInfo)) {
 						this._updateFont();
 					}
-				}
-			)
+				},
+			),
 		);
 
 		this._editor.addOverlayWidget(this);
@@ -122,7 +122,7 @@ export class MarginHoverWidget extends Disposable implements IOverlayWidget {
 
 	private _updateFont(): void {
 		const codeClasses: HTMLElement[] = Array.prototype.slice.call(
-			this._hover.contentsDomNode.getElementsByClassName("code")
+			this._hover.contentsDomNode.getElementsByClassName("code"),
 		);
 		codeClasses.forEach((node) => this._editor.applyFontInfo(node));
 	}
@@ -159,7 +159,7 @@ export class MarginHoverWidget extends Disposable implements IOverlayWidget {
 		this._isVisible = false;
 		this._hover.containerDomNode.classList.toggle(
 			"hidden",
-			!this._isVisible
+			!this._isVisible,
 		);
 	}
 
@@ -175,7 +175,7 @@ export class MarginHoverWidget extends Disposable implements IOverlayWidget {
 
 	private _renderMessages(
 		lineNumber: number,
-		messages: IHoverMessage[]
+		messages: IHoverMessage[],
 	): void {
 		this._renderDisposeables.clear();
 
@@ -185,10 +185,10 @@ export class MarginHoverWidget extends Disposable implements IOverlayWidget {
 			const markdownHoverElement = $("div.hover-row.markdown-hover");
 			const hoverContentsElement = dom.append(
 				markdownHoverElement,
-				$("div.hover-contents")
+				$("div.hover-contents"),
 			);
 			const renderedContents = this._renderDisposeables.add(
-				this._markdownRenderer.render(msg.value)
+				this._markdownRenderer.render(msg.value),
 			);
 			hoverContentsElement.appendChild(renderedContents.element);
 			fragment.appendChild(markdownHoverElement);
@@ -209,7 +209,7 @@ export class MarginHoverWidget extends Disposable implements IOverlayWidget {
 			this._isVisible = true;
 			this._hover.containerDomNode.classList.toggle(
 				"hidden",
-				!this._isVisible
+				!this._isVisible,
 			);
 		}
 
@@ -226,13 +226,13 @@ export class MarginHoverWidget extends Disposable implements IOverlayWidget {
 		}px`;
 		this._hover.containerDomNode.style.top = `${Math.max(
 			Math.round(top),
-			0
+			0,
 		)}px`;
 	}
 }
 
 class MarginHoverComputer implements IHoverComputer<IHoverMessage> {
-	private _lineNumber: number = -1;
+	private _lineNumber = -1;
 
 	public get lineNumber(): number {
 		return this._lineNumber;
@@ -252,7 +252,7 @@ class MarginHoverComputer implements IHoverComputer<IHoverMessage> {
 		};
 
 		const lineDecorations = this._editor.getLineDecorations(
-			this._lineNumber
+			this._lineNumber,
 		);
 
 		const result: IHoverMessage[] = [];

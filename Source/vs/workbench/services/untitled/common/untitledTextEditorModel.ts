@@ -3,53 +3,53 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ISaveOptions } from "vs/workbench/common/editor";
-import { BaseTextEditorModel } from "vs/workbench/common/editor/textEditorModel";
-import { URI } from "vs/base/common/uri";
-import { ILanguageService } from "vs/editor/common/languages/language";
-import { IModelService } from "vs/editor/common/services/model";
-import { Event, Emitter } from "vs/base/common/event";
-import { IWorkingCopyBackupService } from "vs/workbench/services/workingCopy/common/workingCopyBackup";
 import {
-	ITextResourceConfigurationChangeEvent,
-	ITextResourceConfigurationService,
-} from "vs/editor/common/services/textResourceConfiguration";
+	VSBuffer,
+	VSBufferReadable,
+	VSBufferReadableStream,
+	bufferToReadable,
+	bufferToStream,
+} from "vs/base/common/buffer";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { Emitter, Event } from "vs/base/common/event";
+import { getCharContainingOffset } from "vs/base/common/strings";
+import { assertIsDefined } from "vs/base/common/types";
+import { URI } from "vs/base/common/uri";
+import { ensureValidWordDefinition } from "vs/editor/common/core/wordHelper";
+import { ILanguageService } from "vs/editor/common/languages/language";
 import { ITextModel } from "vs/editor/common/model";
 import {
 	createTextBufferFactory,
 	createTextBufferFactoryFromStream,
 } from "vs/editor/common/model/textModel";
+import { IModelService } from "vs/editor/common/services/model";
 import { ITextEditorModel } from "vs/editor/common/services/resolverService";
-import { IWorkingCopyService } from "vs/workbench/services/workingCopy/common/workingCopyService";
 import {
-	IWorkingCopy,
-	WorkingCopyCapabilities,
-	IWorkingCopyBackup,
-	NO_TYPE_ID,
-	IWorkingCopySaveEvent,
-} from "vs/workbench/services/workingCopy/common/workingCopy";
+	ITextResourceConfigurationChangeEvent,
+	ITextResourceConfigurationService,
+} from "vs/editor/common/services/textResourceConfiguration";
+import { IModelContentChangedEvent } from "vs/editor/common/textModelEvents";
+import { IAccessibilityService } from "vs/platform/accessibility/common/accessibility";
+import { ILabelService } from "vs/platform/label/common/label";
+import { ISaveOptions } from "vs/workbench/common/editor";
+import { BaseTextEditorModel } from "vs/workbench/common/editor/textEditorModel";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { ILanguageDetectionService } from "vs/workbench/services/languageDetection/common/languageDetectionWorkerService";
+import { UTF8 } from "vs/workbench/services/textfile/common/encoding";
 import {
 	IEncodingSupport,
 	ILanguageSupport,
 	ITextFileService,
 } from "vs/workbench/services/textfile/common/textfiles";
-import { IModelContentChangedEvent } from "vs/editor/common/textModelEvents";
-import { assertIsDefined } from "vs/base/common/types";
-import { ILabelService } from "vs/platform/label/common/label";
-import { ensureValidWordDefinition } from "vs/editor/common/core/wordHelper";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { getCharContainingOffset } from "vs/base/common/strings";
-import { UTF8 } from "vs/workbench/services/textfile/common/encoding";
 import {
-	bufferToReadable,
-	bufferToStream,
-	VSBuffer,
-	VSBufferReadable,
-	VSBufferReadableStream,
-} from "vs/base/common/buffer";
-import { ILanguageDetectionService } from "vs/workbench/services/languageDetection/common/languageDetectionWorkerService";
-import { IAccessibilityService } from "vs/platform/accessibility/common/accessibility";
+	IWorkingCopy,
+	IWorkingCopyBackup,
+	IWorkingCopySaveEvent,
+	NO_TYPE_ID,
+	WorkingCopyCapabilities,
+} from "vs/workbench/services/workingCopy/common/workingCopy";
+import { IWorkingCopyBackupService } from "vs/workbench/services/workingCopy/common/workingCopyBackup";
+import { IWorkingCopyService } from "vs/workbench/services/workingCopy/common/workingCopyService";
 
 export interface IUntitledTextEditorModel
 	extends ITextEditorModel,
@@ -123,7 +123,7 @@ export class UntitledTextEditorModel
 	readonly onDidChangeEncoding = this._onDidChangeEncoding.event;
 
 	private readonly _onDidSave = this._register(
-		new Emitter<IWorkingCopySaveEvent>()
+		new Emitter<IWorkingCopySaveEvent>(),
 	);
 	readonly onDidSave = this._onDidSave.event;
 
@@ -206,21 +206,21 @@ export class UntitledTextEditorModel
 		// Config Changes
 		this._register(
 			this.textResourceConfigurationService.onDidChangeConfiguration(
-				(e) => this.onConfigurationChange(e, true)
-			)
+				(e) => this.onConfigurationChange(e, true),
+			),
 		);
 	}
 
 	private onConfigurationChange(
 		e: ITextResourceConfigurationChangeEvent | undefined,
-		fromEvent: boolean
+		fromEvent: boolean,
 	): void {
 		// Encoding
 		if (!e || e.affectsConfiguration(this.resource, "files.encoding")) {
 			const configuredEncoding =
 				this.textResourceConfigurationService.getValue(
 					this.resource,
-					"files.encoding"
+					"files.encoding",
 				);
 			if (
 				this.configuredEncoding !== configuredEncoding &&
@@ -239,13 +239,13 @@ export class UntitledTextEditorModel
 			!e ||
 			e.affectsConfiguration(
 				this.resource,
-				"workbench.editor.untitled.labelFormat"
+				"workbench.editor.untitled.labelFormat",
 			)
 		) {
 			const configuredLabelFormat =
 				this.textResourceConfigurationService.getValue(
 					this.resource,
-					"workbench.editor.untitled.labelFormat"
+					"workbench.editor.untitled.labelFormat",
 				);
 			if (
 				this.configuredLabelFormat !== configuredLabelFormat &&
@@ -373,7 +373,7 @@ export class UntitledTextEditorModel
 			content = await this.textFileService.getEncodedReadable(
 				this.resource,
 				this.createSnapshot() ?? undefined,
-				{ encoding: UTF8 }
+				{ encoding: UTF8 },
 			);
 		} else if (typeof this.initialValue === "string") {
 			content = bufferToReadable(VSBuffer.fromString(this.initialValue));
@@ -392,7 +392,9 @@ export class UntitledTextEditorModel
 		// Create text editor model if not yet done
 		let createdUntitledModel = false;
 		let hasBackup = false;
-		if (!this.textEditorModel) {
+		if (this.textEditorModel) {
+			this.updateTextEditorModel(undefined, this.preferredLanguageId);
+		} else {
 			let untitledContents: VSBufferReadableStream;
 
 			// Check for backups or use initial value or empty
@@ -402,7 +404,7 @@ export class UntitledTextEditorModel
 				hasBackup = true;
 			} else {
 				untitledContents = bufferToStream(
-					VSBuffer.fromString(this.initialValue || "")
+					VSBuffer.fromString(this.initialValue || ""),
 				);
 			}
 
@@ -415,23 +417,16 @@ export class UntitledTextEditorModel
 					await this.textFileService.getDecodedStream(
 						this.resource,
 						untitledContents,
-						{ encoding: UTF8 }
-					)
+						{ encoding: UTF8 },
+					),
 				);
 
 			this.createTextEditorModel(
 				untitledContentsFactory,
 				this.resource,
-				this.preferredLanguageId
+				this.preferredLanguageId,
 			);
 			createdUntitledModel = true;
-		}
-
-		// Otherwise: the untitled model already exists and we must assume
-		// that the value of the model was changed by the user. As such we
-		// do not update the contents, only the language if configured.
-		else {
-			this.updateTextEditorModel(undefined, this.preferredLanguageId);
 		}
 
 		// Listen to text model events
@@ -448,7 +443,9 @@ export class UntitledTextEditorModel
 
 			// Untitled associated to file path are dirty right away as well as untitled with content
 			this.setDirty(
-				this.hasAssociatedFilePath || !!hasBackup || !!this.initialValue
+				this.hasAssociatedFilePath ||
+					!!hasBackup ||
+					!!this.initialValue,
 			);
 
 			// If we have initial contents, make sure to emit this
@@ -464,13 +461,13 @@ export class UntitledTextEditorModel
 	protected override installModelListeners(model: ITextModel): void {
 		this._register(
 			model.onDidChangeContent((e) =>
-				this.onModelContentChanged(model, e)
-			)
+				this.onModelContentChanged(model, e),
+			),
 		);
 		this._register(
 			model.onDidChangeLanguage(() =>
-				this.onConfigurationChange(undefined, true)
-			)
+				this.onConfigurationChange(undefined, true),
+			),
 		); // language change can have impact on config
 
 		super.installModelListeners(model);
@@ -478,7 +475,7 @@ export class UntitledTextEditorModel
 
 	private onModelContentChanged(
 		textEditorModel: ITextModel,
-		e: IModelContentChangedEvent
+		e: IModelContentChangedEvent,
 	): void {
 		if (!this.ignoreDirtyOnModelContentChange) {
 			// mark the untitled text editor as non-dirty once its content becomes empty and we do
@@ -504,7 +501,7 @@ export class UntitledTextEditorModel
 					(change.range.startLineNumber === 1 ||
 						change.range.endLineNumber === 1) &&
 					change.range.startColumn <=
-						UntitledTextEditorModel.FIRST_LINE_NAME_CANDIDATE_MAX_LENGTH
+						UntitledTextEditorModel.FIRST_LINE_NAME_CANDIDATE_MAX_LENGTH,
 			)
 		) {
 			this.updateNameFromFirstLine(textEditorModel);
@@ -547,8 +544,8 @@ export class UntitledTextEditorModel
 			getCharContainingOffset(
 				// finally cap at FIRST_LINE_NAME_MAX_LENGTH (grapheme aware #111235)
 				firstLineText,
-				UntitledTextEditorModel.FIRST_LINE_NAME_MAX_LENGTH
-			)[0]
+				UntitledTextEditorModel.FIRST_LINE_NAME_MAX_LENGTH,
+			)[0],
 		);
 
 		if (firstLineText && ensureValidWordDefinition().exec(firstLineText)) {

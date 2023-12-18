@@ -6,8 +6,8 @@
 import { Disposable } from "vs/base/common/lifecycle";
 import { Registry } from "vs/platform/registry/common/platform";
 import {
-	IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
+	IWorkbenchContributionsRegistry,
 } from "vs/workbench/common/contributions";
 import { IChatVariablesService } from "vs/workbench/contrib/chat/common/chatVariables";
 import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
@@ -48,8 +48,8 @@ class ChatHistoryVariables extends Disposable {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	ChatHistoryVariables,
-	LifecyclePhase.Eventually
+	LifecyclePhase.Eventually,
 );

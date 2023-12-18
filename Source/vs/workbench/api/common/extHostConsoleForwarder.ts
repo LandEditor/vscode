@@ -19,10 +19,10 @@ export abstract class AbstractExtHostConsoleForwarder {
 
 	constructor(
 		@IExtHostRpcService extHostRpc: IExtHostRpcService,
-		@IExtHostInitDataService initData: IExtHostInitDataService
+		@IExtHostInitDataService initData: IExtHostInitDataService,
 	) {
 		this._mainThreadConsole = extHostRpc.getProxy(
-			MainContext.MainThreadConsole
+			MainContext.MainThreadConsole,
 		);
 		this._includeStack = initData.consoleForward.includeStack;
 		this._logNative = initData.consoleForward.logNative;
@@ -46,22 +46,15 @@ export abstract class AbstractExtHostConsoleForwarder {
 	 */
 	private _wrapConsoleMethod(
 		method: "log" | "info" | "warn" | "error" | "debug",
-		severity: "log" | "warn" | "error" | "debug"
+		severity: "log" | "warn" | "error" | "debug",
 	) {
-		const that = this;
 		const original = console[method];
 
 		Object.defineProperty(console, method, {
 			set: () => {},
-			get: () =>
-				function () {
-					that._handleConsoleCall(
-						method,
-						severity,
-						original,
-						arguments
-					);
-				},
+			get: () => () => {
+				this._handleConsoleCall(method, severity, original, arguments);
+			},
 		});
 	}
 
@@ -69,7 +62,7 @@ export abstract class AbstractExtHostConsoleForwarder {
 		method: "log" | "info" | "warn" | "error" | "debug",
 		severity: "log" | "warn" | "error" | "debug",
 		original: (...args: any[]) => void,
-		args: IArguments
+		args: IArguments,
 	): void {
 		this._mainThreadConsole.$logExtensionHostMessage({
 			type: "__$console",
@@ -84,7 +77,7 @@ export abstract class AbstractExtHostConsoleForwarder {
 	protected abstract _nativeConsoleLogMessage(
 		method: "log" | "info" | "warn" | "error" | "debug",
 		original: (...args: any[]) => void,
-		args: IArguments
+		args: IArguments,
 	): void;
 }
 
@@ -95,7 +88,7 @@ const MAX_LENGTH = 100000;
  */
 function safeStringifyArgumentsToArray(
 	args: IArguments,
-	includeStack: boolean
+	includeStack: boolean,
 ): string {
 	const argsArray = [];
 

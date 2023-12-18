@@ -17,7 +17,7 @@ class UserActivityRegistry {
 
 	public take(
 		userActivityService: IUserActivityService,
-		instantiation: IInstantiationService
+		instantiation: IInstantiationService,
 	) {
 		this.add = (ctor) =>
 			instantiation.createInstance(ctor, userActivityService);

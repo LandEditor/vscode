@@ -79,7 +79,7 @@ export class FindDecorations implements IDisposable {
 				.map((findScopeDecorationId) =>
 					this._editor
 						.getModel()
-						.getDecorationRange(findScopeDecorationId)
+						.getDecorationRange(findScopeDecorationId),
 				)
 				.filter((element) => !!element);
 			if (scopes.length) {
@@ -157,7 +157,7 @@ export class FindDecorations implements IDisposable {
 					if (this._highlightedDecorationId !== null) {
 						changeAccessor.changeDecorationOptions(
 							this._highlightedDecorationId,
-							FindDecorations._FIND_MATCH_DECORATION
+							FindDecorations._FIND_MATCH_DECORATION,
 						);
 						this._highlightedDecorationId = null;
 					}
@@ -165,12 +165,12 @@ export class FindDecorations implements IDisposable {
 						this._highlightedDecorationId = newCurrentDecorationId;
 						changeAccessor.changeDecorationOptions(
 							this._highlightedDecorationId,
-							FindDecorations._CURRENT_FIND_MATCH_DECORATION
+							FindDecorations._CURRENT_FIND_MATCH_DECORATION,
 						);
 					}
 					if (this._rangeHighlightDecorationId !== null) {
 						changeAccessor.removeDecoration(
-							this._rangeHighlightDecorationId
+							this._rangeHighlightDecorationId,
 						);
 						this._rangeHighlightDecorationId = null;
 					}
@@ -190,16 +190,16 @@ export class FindDecorations implements IDisposable {
 								rng.startLineNumber,
 								rng.startColumn,
 								lineBeforeEnd,
-								lineBeforeEndMaxColumn
+								lineBeforeEndMaxColumn,
 							);
 						}
 						this._rangeHighlightDecorationId =
 							changeAccessor.addDecoration(
 								rng,
-								FindDecorations._RANGE_HIGHLIGHT_DECORATION
+								FindDecorations._RANGE_HIGHLIGHT_DECORATION,
 							);
 					}
-				}
+				},
 			);
 		}
 
@@ -225,7 +225,7 @@ export class FindDecorations implements IDisposable {
 				const approxPixelsPerLine = height / lineCount;
 				const mergeLinesDelta = Math.max(
 					2,
-					Math.ceil(3 / approxPixelsPerLine)
+					Math.ceil(3 / approxPixelsPerLine),
 				);
 
 				// merge decorations as much as possible
@@ -246,7 +246,7 @@ export class FindDecorations implements IDisposable {
 								prevStartLineNumber,
 								1,
 								prevEndLineNumber,
-								1
+								1,
 							),
 							options:
 								FindDecorations._FIND_MATCH_ONLY_OVERVIEW_DECORATION,
@@ -261,7 +261,7 @@ export class FindDecorations implements IDisposable {
 						prevStartLineNumber,
 						1,
 						prevEndLineNumber,
-						1
+						1,
 					),
 					options:
 						FindDecorations._FIND_MATCH_ONLY_OVERVIEW_DECORATION,
@@ -279,14 +279,14 @@ export class FindDecorations implements IDisposable {
 			}
 			this._decorations = accessor.deltaDecorations(
 				this._decorations,
-				newFindMatchesDecorations
+				newFindMatchesDecorations,
 			);
 
 			// Overview ruler approximate decorations
 			this._overviewRulerApproximateDecorations =
 				accessor.deltaDecorations(
 					this._overviewRulerApproximateDecorations,
-					newOverviewRulerApproximateDecorations
+					newOverviewRulerApproximateDecorations,
 				);
 
 			// Range highlight
@@ -298,7 +298,7 @@ export class FindDecorations implements IDisposable {
 			// Find scope
 			if (this._findScopeDecorationIds.length) {
 				this._findScopeDecorationIds.forEach((findScopeDecorationId) =>
-					accessor.removeDecoration(findScopeDecorationId)
+					accessor.removeDecoration(findScopeDecorationId),
 				);
 				this._findScopeDecorationIds = [];
 			}
@@ -306,8 +306,8 @@ export class FindDecorations implements IDisposable {
 				this._findScopeDecorationIds = findScopes.map((findScope) =>
 					accessor.addDecoration(
 						findScope,
-						FindDecorations._FIND_SCOPE_DECORATION
-					)
+						FindDecorations._FIND_SCOPE_DECORATION,
+					),
 				);
 			}
 		});
@@ -335,7 +335,7 @@ export class FindDecorations implements IDisposable {
 		return this._editor
 			.getModel()
 			.getDecorationRange(
-				this._decorations[this._decorations.length - 1]
+				this._decorations[this._decorations.length - 1],
 			);
 	}
 

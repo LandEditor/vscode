@@ -19,8 +19,8 @@ import * as nls from "vs/nls";
 import { MenuId, MenuRegistry } from "vs/platform/actions/common/actions";
 import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
 import {
-	IWebviewService,
 	IWebview,
+	IWebviewService,
 } from "vs/workbench/contrib/webview/browser/webview";
 import { WebviewInput } from "vs/workbench/contrib/webviewPanel/browser/webviewEditorInput";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
@@ -29,7 +29,7 @@ const PRIORITY = 100;
 
 function overrideCommandForWebview(
 	command: MultiCommand | undefined,
-	f: (webview: IWebview) => void
+	f: (webview: IWebview) => void,
 ) {
 	command?.addImplementation(PRIORITY, "webview", (accessor) => {
 		const webviewService = accessor.get(IWebviewService);

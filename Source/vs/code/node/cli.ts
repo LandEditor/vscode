@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ChildProcess, spawn, SpawnOptions, StdioOptions } from "child_process";
+import { ChildProcess, SpawnOptions, StdioOptions, spawn } from "child_process";
 import {
 	chmodSync,
 	existsSync,
@@ -14,23 +14,29 @@ import {
 } from "fs";
 import { homedir, release, tmpdir } from "os";
 import type { ProfilingSession, Target } from "v8-inspect-profiler";
+import { DeferredPromise } from "vs/base/common/async";
+import { CancellationTokenSource } from "vs/base/common/cancellation";
 import { Event } from "vs/base/common/event";
-import { isAbsolute, resolve, join, dirname } from "vs/base/common/path";
+import { isUNC, randomPath } from "vs/base/common/extpath";
+import { FileAccess } from "vs/base/common/network";
+import { dirname, isAbsolute, join, resolve } from "vs/base/common/path";
 import {
 	IProcessEnvironment,
 	isMacintosh,
 	isWindows,
 } from "vs/base/common/platform";
 import { randomPort } from "vs/base/common/ports";
+import { cwd } from "vs/base/common/process";
+import { URI } from "vs/base/common/uri";
 import { whenDeleted, writeFileSync } from "vs/base/node/pfs";
 import { findFreePort } from "vs/base/node/ports";
-import { watchFileContents } from "vs/platform/files/node/watcher/nodejs/nodejsWatcherLib";
+import { addUNCHostToAllowlist } from "vs/base/node/unc";
 import { NativeParsedArgs } from "vs/platform/environment/common/argv";
 import {
-	buildHelpMessage,
-	buildVersionMessage,
 	NATIVE_CLI_COMMANDS,
 	OPTIONS,
+	buildHelpMessage,
+	buildVersionMessage,
 } from "vs/platform/environment/node/argv";
 import {
 	addArg,
@@ -43,15 +49,9 @@ import {
 	stdinDataListener,
 } from "vs/platform/environment/node/stdin";
 import { createWaitMarkerFileSync } from "vs/platform/environment/node/wait";
+import { watchFileContents } from "vs/platform/files/node/watcher/nodejs/nodejsWatcherLib";
 import product from "vs/platform/product/common/product";
-import { CancellationTokenSource } from "vs/base/common/cancellation";
-import { isUNC, randomPath } from "vs/base/common/extpath";
 import { Utils } from "vs/platform/profiling/common/profiling";
-import { FileAccess } from "vs/base/common/network";
-import { cwd } from "vs/base/common/process";
-import { addUNCHostToAllowlist } from "vs/base/node/unc";
-import { URI } from "vs/base/common/uri";
-import { DeferredPromise } from "vs/base/common/async";
 
 function shouldSpawnCliProcess(argv: NativeParsedArgs): boolean {
 	return (
@@ -82,7 +82,7 @@ export async function main(argv: string[]): Promise<any> {
 		if (args[subcommand]) {
 			if (!product.tunnelApplicationName) {
 				console.error(
-					`'${subcommand}' command not supported in ${product.applicationName}`
+					`'${subcommand}' command not supported in ${product.applicationName}`,
 				);
 				return;
 			}
@@ -94,29 +94,29 @@ export async function main(argv: string[]): Promise<any> {
 					tunnelProcess = spawn(
 						"cargo",
 						["run", "--", subcommand, ...tunnelArgs],
-						{ cwd: join(getAppRoot(), "cli"), stdio }
+						{ cwd: join(getAppRoot(), "cli"), stdio },
 					);
 				} else {
 					const appPath =
 						process.platform === "darwin"
 							? // ./Contents/MacOS/Electron => ./Contents/Resources/app/bin/code-tunnel-insiders
-								join(
+							  join(
 									dirname(dirname(process.execPath)),
 									"Resources",
-									"app"
-								)
+									"app",
+							  )
 							: dirname(process.execPath);
 					const tunnelCommand = join(
 						appPath,
 						"bin",
 						`${product.tunnelApplicationName}${
 							isWindows ? ".exe" : ""
-						}`
+						}`,
 					);
 					tunnelProcess = spawn(
 						tunnelCommand,
 						[subcommand, ...tunnelArgs],
-						{ cwd: cwd(), stdio }
+						{ cwd: cwd(), stdio },
 					);
 				}
 
@@ -138,8 +138,8 @@ export async function main(argv: string[]): Promise<any> {
 				product.nameLong,
 				executable,
 				product.version,
-				OPTIONS
-			)
+				OPTIONS,
+			),
 		);
 	}
 
@@ -170,7 +170,7 @@ export async function main(argv: string[]): Promise<any> {
 				break;
 			default:
 				throw new Error(
-					"Error using --locate-shell-integration-path: Invalid shell type"
+					"Error using --locate-shell-integration-path: Invalid shell type",
 				);
 		}
 		console.log(
@@ -183,15 +183,15 @@ export async function main(argv: string[]): Promise<any> {
 				"terminal",
 				"browser",
 				"media",
-				file
-			)
+				file,
+			),
 		);
 	}
 
 	// Extensions Management
 	else if (shouldSpawnCliProcess(args)) {
 		const cli = await new Promise<IMainCli>((resolve, reject) =>
-			require(["vs/code/node/cliProcessMain"], resolve, reject)
+			require(["vs/code/node/cliProcessMain"], resolve, reject),
 		);
 		await cli.main(args);
 
@@ -230,7 +230,7 @@ export async function main(argv: string[]): Promise<any> {
 
 		try {
 			// Check for readonly status and chmod if so if we are told so
-			let targetMode: number = 0;
+			let targetMode = 0;
 			let restoreMode = false;
 			if (!!args["file-chmod"]) {
 				targetMode = statSync(target).mode;
@@ -275,7 +275,7 @@ export async function main(argv: string[]): Promise<any> {
 	else {
 		const env: IProcessEnvironment = {
 			...process.env,
-			"ELECTRON_NO_ATTACH_CONSOLE": "1",
+			ELECTRON_NO_ATTACH_CONSOLE: "1",
 		};
 
 		delete env["ELECTRON_RUN_AS_NODE"];
@@ -289,14 +289,14 @@ export async function main(argv: string[]): Promise<any> {
 		if (args.verbose || args.status) {
 			processCallbacks.push(async (child) => {
 				child.stdout?.on("data", (data: Buffer) =>
-					console.log(data.toString("utf8").trim())
+					console.log(data.toString("utf8").trim()),
 				);
 				child.stderr?.on("data", (data: Buffer) =>
-					console.log(data.toString("utf8").trim())
+					console.log(data.toString("utf8").trim()),
 				);
 
 				await Event.toPromise(
-					Event.fromNodeEventEmitter(child, "exit")
+					Event.fromNodeEventEmitter(child, "exit"),
 				);
 			});
 		}
@@ -320,7 +320,7 @@ export async function main(argv: string[]): Promise<any> {
 				try {
 					const readFromStdinDone = new DeferredPromise<void>();
 					await readFromStdin(stdinFilePath, !!args.verbose, () =>
-						readFromStdinDone.complete()
+						readFromStdinDone.complete(),
 					);
 					processCallbacks.push(() => readFromStdinDone.p);
 
@@ -331,7 +331,7 @@ export async function main(argv: string[]): Promise<any> {
 					console.log(`Reading from stdin via: ${stdinFilePath}`);
 				} catch (e) {
 					console.log(
-						`Failed to create file to read via stdin: ${e.toString()}`
+						`Failed to create file to read via stdin: ${e.toString()}`,
 					);
 					stdinFilePath = undefined;
 				}
@@ -343,15 +343,15 @@ export async function main(argv: string[]): Promise<any> {
 						if (dataReceived) {
 							if (isWindows) {
 								console.log(
-									`Run with '${product.applicationName} -' to read output from another program (e.g. 'echo Hello World | ${product.applicationName} -').`
+									`Run with '${product.applicationName} -' to read output from another program (e.g. 'echo Hello World | ${product.applicationName} -').`,
 								);
 							} else {
 								console.log(
-									`Run with '${product.applicationName} -' to read from stdin (e.g. 'ps aux | grep code | ${product.applicationName} -').`
+									`Run with '${product.applicationName} -' to read from stdin (e.g. 'ps aux | grep code | ${product.applicationName} -').`,
 								);
 							}
 						}
-					})
+					}),
 				);
 			}
 		}
@@ -391,14 +391,14 @@ export async function main(argv: string[]): Promise<any> {
 					// On other platforms, we listen for exit in case the child exits before the
 					// marker file is deleted.
 					childExitPromise = Event.toPromise(
-						Event.fromNodeEventEmitter(child, "exit")
+						Event.fromNodeEventEmitter(child, "exit"),
 					);
 				}
 				try {
 					await Promise.race([
 						whenDeleted(waitMarkerFilePath!),
 						Event.toPromise(
-							Event.fromNodeEventEmitter(child, "error")
+							Event.fromNodeEventEmitter(child, "error"),
 						),
 						childExitPromise,
 					]);
@@ -422,7 +422,7 @@ export async function main(argv: string[]): Promise<any> {
 			// fail the operation when one of the ports couldn't be acquired.
 			if (portMain * portRenderer * portExthost === 0) {
 				throw new Error(
-					"Failed to find free ports for profiler. Make sure to shutdown all instances of the editor first."
+					"Failed to find free ports for profiler. Make sure to shutdown all instances of the editor first.",
 				);
 			}
 
@@ -445,7 +445,7 @@ export async function main(argv: string[]): Promise<any> {
 							port: number;
 							tries?: number;
 							target?: (targets: Target[]) => Target;
-						}
+						},
 					) {
 						const profiler = await import("v8-inspect-profiler");
 
@@ -454,7 +454,7 @@ export async function main(argv: string[]): Promise<any> {
 							session = await profiler.startProfiling(opts);
 						} catch (err) {
 							console.error(
-								`FAILED to start profiling for '${name}' on port '${opts.port}'`
+								`FAILED to start profiling for '${name}' on port '${opts.port}'`,
 							);
 						}
 
@@ -472,14 +472,18 @@ export async function main(argv: string[]): Promise<any> {
 									// easier to attach these files to GH issues
 									result.profile = Utils.rewriteAbsolutePaths(
 										result.profile,
-										"piiRemoved"
+										"piiRemoved",
 									);
 									suffix = ".txt";
 								}
 
 								writeFileSync(
 									`${filenamePrefix}.${name}.cpuprofile${suffix}`,
-									JSON.stringify(result.profile, undefined, 4)
+									JSON.stringify(
+										result.profile,
+										undefined,
+										4,
+									),
 								);
 							},
 						};
@@ -491,12 +495,12 @@ export async function main(argv: string[]): Promise<any> {
 					const mainProfileRequest = Profiler.start(
 						"main",
 						filenamePrefix,
-						{ port: portMain }
+						{ port: portMain },
 					);
 					const extHostProfileRequest = Profiler.start(
 						"extHost",
 						filenamePrefix,
-						{ port: portExthost, tries: 300 }
+						{ port: portExthost, tries: 300 },
 					);
 					const rendererProfileRequest = Profiler.start(
 						"renderer",
@@ -504,26 +508,25 @@ export async function main(argv: string[]): Promise<any> {
 						{
 							port: portRenderer,
 							tries: 200,
-							target: function (targets) {
-								return targets.filter((target) => {
+							target: (targets) =>
+								targets.filter((target) => {
 									if (!target.webSocketDebuggerUrl) {
 										return false;
 									}
 									if (target.type === "page") {
 										return (
 											target.url.indexOf(
-												"workbench/workbench.html"
+												"workbench/workbench.html",
 											) > 0 ||
 											target.url.indexOf(
-												"workbench/workbench-dev.html"
+												"workbench/workbench-dev.html",
 											) > 0
 										);
 									} else {
 										return true;
 									}
-								})[0];
-							},
-						}
+								})[0],
+						},
 					);
 
 					const main = await mainProfileRequest;
@@ -542,7 +545,7 @@ export async function main(argv: string[]): Promise<any> {
 					writeFileSync(filenamePrefix, "");
 				} catch (e) {
 					console.error(
-						"Failed to profile startup. Make sure to quit Code first."
+						"Failed to profile startup. Make sure to quit Code first.",
 					);
 				}
 			});
@@ -558,14 +561,7 @@ export async function main(argv: string[]): Promise<any> {
 		}
 
 		let child: ChildProcess;
-		if (!isMacOSBigSurOrNewer) {
-			if (!args.verbose && args.status) {
-				options["stdio"] = ["ignore", "pipe", "ignore"]; // restore ability to see output when --status is used
-			}
-
-			// We spawn process.execPath directly
-			child = spawn(process.execPath, argv.slice(2), options);
-		} else {
+		if (isMacOSBigSurOrNewer) {
 			// On Big Sur, we spawn using the open command to obtain behavior
 			// similar to if the app was launched from the dock
 			// https://github.com/microsoft/vscode/issues/102975
@@ -615,7 +611,7 @@ export async function main(argv: string[]): Promise<any> {
 								() => {
 									/* ignore */
 								},
-								cts.token
+								cts.token,
 							);
 						} finally {
 							unlinkSync(tmpName);
@@ -652,6 +648,13 @@ export async function main(argv: string[]): Promise<any> {
 			// using the --env flags, so we can leave them out here.
 			// Also, we don't need to pass env._, which is different from argv._
 			child = spawn("open", spawnArgs, { ...options, env: {} });
+		} else {
+			if (!args.verbose && args.status) {
+				options["stdio"] = ["ignore", "pipe", "ignore"]; // restore ability to see output when --status is used
+			}
+
+			// We spawn process.execPath directly
+			child = spawn(process.execPath, argv.slice(2), options);
 		}
 
 		return Promise.all(processCallbacks.map((callback) => callback(child)));

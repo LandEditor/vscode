@@ -1,4 +1,3 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -18,16 +17,10 @@ class Entry {
 		this.totalSize = totalSize;
 	}
 	toString(pretty) {
-		if (!pretty) {
-			if (this.totalCount === 1) {
-				return `${this.name}: ${this.totalSize} bytes`;
-			} else {
-				return `${this.name}: ${this.totalCount} files with ${this.totalSize} bytes`;
-			}
-		} else {
+		if (pretty) {
 			if (this.totalCount === 1) {
 				return `Stats for '${ansiColors.grey(this.name)}': ${Math.round(
-					this.totalSize / 1204
+					this.totalSize / 1204,
 				)}KB`;
 			} else {
 				const count =
@@ -35,9 +28,13 @@ class Entry {
 						? ansiColors.green(this.totalCount.toString())
 						: ansiColors.red(this.totalCount.toString());
 				return `Stats for '${ansiColors.grey(
-					this.name
+					this.name,
 				)}': ${count} files, ${Math.round(this.totalSize / 1204)}KB`;
 			}
+		} else if (this.totalCount === 1) {
+			return `${this.name}: ${this.totalSize} bytes`;
+		} else {
+			return `${this.name}: ${this.totalCount} files with ${this.totalSize} bytes`;
 		}
 	}
 }
@@ -65,8 +62,8 @@ function createStatsStream(group, log) {
 				if (entry.totalCount === 1) {
 					fancyLog(
 						`Stats for '${ansiColors.grey(
-							entry.name
-						)}': ${Math.round(entry.totalSize / 1204)}KB`
+							entry.name,
+						)}': ${Math.round(entry.totalSize / 1204)}KB`,
 					);
 				} else {
 					const count =
@@ -75,15 +72,15 @@ function createStatsStream(group, log) {
 							: ansiColors.red(entry.totalCount.toString());
 					fancyLog(
 						`Stats for '${ansiColors.grey(
-							entry.name
+							entry.name,
 						)}': ${count} files, ${Math.round(
-							entry.totalSize / 1204
-						)}KB`
+							entry.totalSize / 1204,
+						)}KB`,
 					);
 				}
 			}
 			this.emit("end");
-		}
+		},
 	);
 }
 exports.createStatsStream = createStatsStream;

@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from "vscode";
-import { MergeConflictParser } from "./mergeConflictParser";
-import * as interfaces from "./interfaces";
-import { Delayer } from "./delayer";
 import TelemetryReporter from "@vscode/extension-telemetry";
+import * as vscode from "vscode";
+import { Delayer } from "./delayer";
+import * as interfaces from "./interfaces";
+import { MergeConflictParser } from "./mergeConflictParser";
 
 class ScanTask {
 	public origins: Set<string> = new Set<string>();
@@ -16,7 +16,7 @@ class ScanTask {
 	constructor(delayTime: number, initialOrigin: string) {
 		this.origins.add(initialOrigin);
 		this.delayTask = new Delayer<interfaces.IDocumentMergeConflict[]>(
-			delayTime
+			delayTime,
 		);
 	}
 
@@ -34,11 +34,11 @@ class OriginDocumentMergeConflictTracker
 {
 	constructor(
 		private parent: DocumentMergeConflictTracker,
-		private origin: string
+		private origin: string,
 	) {}
 
 	getConflicts(
-		document: vscode.TextDocument
+		document: vscode.TextDocument,
 	): PromiseLike<interfaces.IDocumentMergeConflict[]> {
 		return this.parent.getConflicts(document, this.origin);
 	}
@@ -58,13 +58,13 @@ export default class DocumentMergeConflictTracker
 		interfaces.IDocumentMergeConflictTrackerService
 {
 	private cache: Map<string, ScanTask> = new Map();
-	private delayExpireTime: number = 0;
+	private delayExpireTime = 0;
 
 	constructor(private readonly telemetryReporter: TelemetryReporter) {}
 
 	getConflicts(
 		document: vscode.TextDocument,
-		origin: string
+		origin: string,
 	): PromiseLike<interfaces.IDocumentMergeConflict[]> {
 		// Attempt from cache
 
@@ -73,22 +73,22 @@ export default class DocumentMergeConflictTracker
 		if (!key) {
 			// Document doesn't have a uri, can't cache it, so return
 			return Promise.resolve(
-				this.getConflictsOrEmpty(document, [origin])
+				this.getConflictsOrEmpty(document, [origin]),
 			);
 		}
 
 		let cacheItem = this.cache.get(key);
-		if (!cacheItem) {
+		if (cacheItem) {
+			cacheItem.addOrigin(origin);
+		} else {
 			cacheItem = new ScanTask(this.delayExpireTime, origin);
 			this.cache.set(key, cacheItem);
-		} else {
-			cacheItem.addOrigin(origin);
 		}
 
 		return cacheItem.delayTask.trigger(() => {
 			const conflicts = this.getConflictsOrEmpty(
 				document,
-				Array.from(cacheItem!.origins)
+				Array.from(cacheItem!.origins),
 			);
 
 			this.cache?.delete(key!);
@@ -135,7 +135,7 @@ export default class DocumentMergeConflictTracker
 
 	private getConflictsOrEmpty(
 		document: vscode.TextDocument,
-		_origins: string[]
+		_origins: string[],
 	): interfaces.IDocumentMergeConflict[] {
 		const containsConflict = MergeConflictParser.containsConflict(document);
 
@@ -145,7 +145,7 @@ export default class DocumentMergeConflictTracker
 
 		const conflicts = MergeConflictParser.scanDocument(
 			document,
-			this.telemetryReporter
+			this.telemetryReporter,
 		);
 
 		const key = document.uri.toString();
@@ -166,7 +166,7 @@ export default class DocumentMergeConflictTracker
 				{},
 				{
 					conflictCount: conflicts.length,
-				}
+				},
 			);
 		}
 

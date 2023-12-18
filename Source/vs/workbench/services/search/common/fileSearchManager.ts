@@ -3,29 +3,29 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as path from "vs/base/common/path";
 import {
 	CancellationToken,
 	CancellationTokenSource,
 } from "vs/base/common/cancellation";
 import { toErrorMessage } from "vs/base/common/errorMessage";
 import * as glob from "vs/base/common/glob";
+import * as path from "vs/base/common/path";
 import * as resources from "vs/base/common/resources";
 import { StopWatch } from "vs/base/common/stopwatch";
 import { URI } from "vs/base/common/uri";
 import {
 	IFileMatch,
+	IFileQuery,
 	IFileSearchProviderStats,
 	IFolderQuery,
 	ISearchCompleteStats,
-	IFileQuery,
 	QueryGlobTester,
-	resolvePatternsForProvider,
 	hasSiblingFn,
+	resolvePatternsForProvider,
 } from "vs/workbench/services/search/common/search";
 import {
-	FileSearchProvider,
 	FileSearchOptions,
+	FileSearchProvider,
 } from "vs/workbench/services/search/common/searchExtTypes";
 
 interface IInternalFileMatch {
@@ -63,7 +63,7 @@ class FileSearchEngine {
 	constructor(
 		private config: IFileQuery,
 		private provider: FileSearchProvider,
-		private sessionToken?: CancellationToken
+		private sessionToken?: CancellationToken,
 	) {
 		this.filePattern = config.filePattern;
 		this.includePattern =
@@ -83,7 +83,7 @@ class FileSearchEngine {
 	}
 
 	search(
-		_onResult: (match: IInternalFileMatch) => void
+		_onResult: (match: IInternalFileMatch) => void,
 	): Promise<IInternalSearchComplete> {
 		const folderQueries = this.config.folderQueries || [];
 
@@ -119,7 +119,7 @@ class FileSearchEngine {
 			Promise.all(
 				folderQueries.map((fq) => {
 					return this.searchInFolder(fq, onResult);
-				})
+				}),
 			).then(
 				(stats) => {
 					resolve({
@@ -129,14 +129,14 @@ class FileSearchEngine {
 				},
 				(err: Error) => {
 					reject(new Error(toErrorMessage(err)));
-				}
+				},
 			);
 		});
 	}
 
 	private async searchInFolder(
 		fq: IFolderQuery<URI>,
-		onResult: (match: IInternalFileMatch) => void
+		onResult: (match: IInternalFileMatch) => void,
 	): Promise<IFileSearchProviderStats | null> {
 		const cancellation = new CancellationTokenSource();
 		const options = this.getSearchOptionsForFolder(fq);
@@ -156,7 +156,7 @@ class FileSearchEngine {
 					pattern: this.config.filePattern || "",
 				},
 				options,
-				cancellation.token
+				cancellation.token,
 			);
 			const providerTime = providerSW.elapsed();
 			const postProcessSW = StopWatch.create();
@@ -169,7 +169,7 @@ class FileSearchEngine {
 				results.forEach((result) => {
 					const relativePath = path.posix.relative(
 						fq.folder.path,
-						result.path
+						result.path,
 					);
 
 					if (noSiblingsClauses) {
@@ -188,7 +188,7 @@ class FileSearchEngine {
 						tree,
 						fq.folder,
 						relativePath,
-						onResult
+						onResult,
 					);
 				});
 			}
@@ -209,15 +209,15 @@ class FileSearchEngine {
 	}
 
 	private getSearchOptionsForFolder(
-		fq: IFolderQuery<URI>
+		fq: IFolderQuery<URI>,
 	): FileSearchOptions {
 		const includes = resolvePatternsForProvider(
 			this.config.includePattern,
-			fq.includePattern
+			fq.includePattern,
 		);
 		const excludes = resolvePatternsForProvider(
 			this.config.excludePattern,
-			fq.excludePattern
+			fq.excludePattern,
 		);
 
 		return {
@@ -246,7 +246,7 @@ class FileSearchEngine {
 		{ pathToEntries }: IDirectoryTree,
 		base: URI,
 		relativeFile: string,
-		onResult: (result: IInternalFileMatch) => void
+		onResult: (result: IInternalFileMatch) => void,
 	) {
 		// Support relative paths to files from a root resource (ignores excludes)
 		if (relativeFile === this.filePattern) {
@@ -279,13 +279,13 @@ class FileSearchEngine {
 	private matchDirectoryTree(
 		{ rootEntries, pathToEntries }: IDirectoryTree,
 		queryTester: QueryGlobTester,
-		onResult: (result: IInternalFileMatch) => void
+		onResult: (result: IInternalFileMatch) => void,
 	) {
 		const self = this;
 		const filePattern = this.filePattern;
 		function matchDirectory(entries: IDirectoryEntry[]) {
 			const hasSibling = hasSiblingFn(() =>
-				entries.map((entry) => entry.basename)
+				entries.map((entry) => entry.basename),
 			);
 			for (let i = 0, n = entries.length; i < n; i++) {
 				const entry = entries[i];
@@ -299,7 +299,7 @@ class FileSearchEngine {
 					queryTester.matchesExcludesSync(
 						relativePath,
 						basename,
-						filePattern !== basename ? hasSibling : undefined
+						filePattern !== basename ? hasSibling : undefined,
 					)
 				) {
 					continue;
@@ -326,7 +326,7 @@ class FileSearchEngine {
 
 	private matchFile(
 		onResult: (result: IInternalFileMatch) => void,
-		candidate: IInternalFileMatch
+		candidate: IInternalFileMatch,
 	): void {
 		if (
 			!this.includePattern ||
@@ -362,13 +362,13 @@ export class FileSearchManager {
 		config: IFileQuery,
 		provider: FileSearchProvider,
 		onBatch: (matches: IFileMatch[]) => void,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ISearchCompleteStats> {
 		const sessionTokenSource = this.getSessionTokenSource(config.cacheKey);
 		const engine = new FileSearchEngine(
 			config,
 			provider,
-			sessionTokenSource && sessionTokenSource.token
+			sessionTokenSource && sessionTokenSource.token,
 		);
 
 		let resultCount = 0;
@@ -381,7 +381,7 @@ export class FileSearchManager {
 			engine,
 			FileSearchManager.BATCH_SIZE,
 			onInternalResult,
-			token
+			token,
 		).then((result) => {
 			return <ISearchCompleteStats>{
 				limitHit: result.limitHit,
@@ -401,7 +401,7 @@ export class FileSearchManager {
 	}
 
 	private getSessionTokenSource(
-		cacheKey: string | undefined
+		cacheKey: string | undefined,
 	): CancellationTokenSource | undefined {
 		if (!cacheKey) {
 			return undefined;
@@ -431,7 +431,7 @@ export class FileSearchManager {
 		engine: FileSearchEngine,
 		batchSize: number,
 		onResultBatch: (matches: IInternalFileMatch[]) => void,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IInternalSearchComplete> {
 		const listener = token.onCancellationRequested(() => {
 			engine.cancel();
@@ -464,7 +464,7 @@ export class FileSearchManager {
 
 				listener.dispose();
 				return Promise.reject(error);
-			}
+			},
 		);
 	}
 }

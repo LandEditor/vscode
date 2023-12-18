@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { IDisposable, dispose } from "vs/base/common/lifecycle";
 import { IWorkbenchContribution } from "vs/workbench/common/contributions";
 import { IDebugService, State } from "vs/workbench/contrib/debug/common/debug";
-import { dispose, IDisposable } from "vs/base/common/lifecycle";
 import { IHostService } from "vs/workbench/services/host/browser/host";
 import { ITitleService } from "vs/workbench/services/title/browser/titleService";
 
@@ -15,7 +15,7 @@ export class DebugTitleContribution implements IWorkbenchContribution {
 	constructor(
 		@IDebugService debugService: IDebugService,
 		@IHostService hostService: IHostService,
-		@ITitleService titleService: ITitleService
+		@ITitleService titleService: ITitleService,
 	) {
 		const updateTitle = () => {
 			if (debugService.state === State.Stopped && !hostService.hasFocus) {

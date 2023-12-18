@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IDiffEditorModel } from "vs/editor/common/editorCommon";
-import { BaseTextEditorModel } from "vs/workbench/common/editor/textEditorModel";
-import { DiffEditorModel } from "vs/workbench/common/editor/diffEditorModel";
 import { IMarkdownString } from "vs/base/common/htmlContent";
+import { IDiffEditorModel } from "vs/editor/common/editorCommon";
+import { DiffEditorModel } from "vs/workbench/common/editor/diffEditorModel";
+import { BaseTextEditorModel } from "vs/workbench/common/editor/textEditorModel";
 
 /**
  * The base text editor model for the diff editor. It is made up of two text editor models, the original version
@@ -30,7 +30,7 @@ export class TextDiffEditorModel extends DiffEditorModel {
 
 	constructor(
 		originalModel: BaseTextEditorModel,
-		modifiedModel: BaseTextEditorModel
+		modifiedModel: BaseTextEditorModel,
 	) {
 		super(originalModel, modifiedModel);
 
@@ -52,19 +52,16 @@ export class TextDiffEditorModel extends DiffEditorModel {
 			this.modifiedModel?.isResolved()
 		) {
 			// Create new
-			if (!this._textDiffEditorModel) {
-				this._textDiffEditorModel = {
-					original: this.originalModel.textEditorModel,
-					modified: this.modifiedModel.textEditorModel,
-				};
-			}
-
-			// Update existing
-			else {
+			if (this._textDiffEditorModel) {
 				this._textDiffEditorModel.original =
 					this.originalModel.textEditorModel;
 				this._textDiffEditorModel.modified =
 					this.modifiedModel.textEditorModel;
+			} else {
+				this._textDiffEditorModel = {
+					original: this.originalModel.textEditorModel,
+					modified: this.modifiedModel.textEditorModel,
+				};
 			}
 		}
 	}

@@ -4,9 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 // @ts-check
-(function () {
-	"use strict";
-
+(() => {
 	const { ipcRenderer, webFrame, contextBridge } = require("electron");
 
 	/**

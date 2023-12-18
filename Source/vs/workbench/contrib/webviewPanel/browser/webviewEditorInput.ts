@@ -68,7 +68,7 @@ export class WebviewInput extends EditorInput {
 	constructor(
 		init: WebviewInputInitInfo,
 		webview: IOverlayWebview,
-		private readonly _iconManager: WebviewIconManager
+		private readonly _iconManager: WebviewIconManager,
 	) {
 		super();
 

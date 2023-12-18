@@ -3,28 +3,28 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
+import { insert } from "vs/base/common/arrays";
 import { raceCancellation } from "vs/base/common/async";
 import {
-	CancellationTokenSource,
 	CancellationToken,
+	CancellationTokenSource,
 } from "vs/base/common/cancellation";
+import {
+	Disposable,
+	IDisposable,
+	toDisposable,
+} from "vs/base/common/lifecycle";
+import { localize } from "vs/nls";
 import { ILogService } from "vs/platform/log/common/log";
 import {
 	IProgressService,
 	ProgressLocation,
 } from "vs/platform/progress/common/progress";
-import {
-	ITextFileSaveParticipant,
-	ITextFileEditorModel,
-} from "vs/workbench/services/textfile/common/textfiles";
 import { SaveReason } from "vs/workbench/common/editor";
 import {
-	IDisposable,
-	Disposable,
-	toDisposable,
-} from "vs/base/common/lifecycle";
-import { insert } from "vs/base/common/arrays";
+	ITextFileEditorModel,
+	ITextFileSaveParticipant,
+} from "vs/workbench/services/textfile/common/textfiles";
 
 export class TextFileSaveParticipant extends Disposable {
 	private readonly saveParticipants: ITextFileSaveParticipant[] = [];
@@ -45,7 +45,7 @@ export class TextFileSaveParticipant extends Disposable {
 	participate(
 		model: ITextFileEditorModel,
 		context: { reason: SaveReason },
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void> {
 		const cts = new CancellationTokenSource(token);
 
@@ -55,7 +55,7 @@ export class TextFileSaveParticipant extends Disposable {
 					title: localize(
 						"saveParticipants",
 						"Saving '{0}'",
-						model.name
+						model.name,
 					),
 					location: ProgressLocation.Notification,
 					cancellable: true,
@@ -78,7 +78,7 @@ export class TextFileSaveParticipant extends Disposable {
 								model,
 								context,
 								progress,
-								cts.token
+								cts.token,
 							);
 							await raceCancellation(promise, cts.token);
 						} catch (err) {
@@ -92,7 +92,7 @@ export class TextFileSaveParticipant extends Disposable {
 				() => {
 					// user cancel
 					cts.cancel();
-				}
+				},
 			)
 			.finally(() => {
 				cts.dispose();

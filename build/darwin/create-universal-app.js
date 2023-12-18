@@ -1,4 +1,3 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -15,7 +14,7 @@ async function main(buildDir) {
 		throw new Error("Build dir not provided");
 	}
 	const product = JSON.parse(
-		fs.readFileSync(path.join(root, "product.json"), "utf8")
+		fs.readFileSync(path.join(root, "product.json"), "utf8"),
 	);
 	const appName = product.nameLong + ".app";
 	const x64AppPath = path.join(buildDir, "VSCode-darwin-x64", appName);
@@ -25,14 +24,14 @@ async function main(buildDir) {
 		"Contents",
 		"Resources",
 		"app",
-		"node_modules.asar"
+		"node_modules.asar",
 	);
 	const arm64AsarPath = path.join(
 		arm64AppPath,
 		"Contents",
 		"Resources",
 		"app",
-		"node_modules.asar"
+		"node_modules.asar",
 	);
 	const outAppPath = path.join(buildDir, `VSCode-darwin-${arch}`, appName);
 	const productJsonPath = path.resolve(
@@ -40,7 +39,7 @@ async function main(buildDir) {
 		"Contents",
 		"Resources",
 		"app",
-		"product.json"
+		"product.json",
 	);
 	await (0, vscode_universal_bundler_1.makeUniversalApp)({
 		x64AppPath,

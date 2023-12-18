@@ -1,59 +1,59 @@
+import { Dimension } from "vs/base/browser/dom";
+import {
+	CancelablePromise,
+	createCancelablePromise,
+} from "vs/base/common/async";
+import { CancellationToken } from "vs/base/common/cancellation";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import "vs/css!./output";
-import * as nls from "vs/nls";
 import { ICodeEditor } from "vs/editor/browser/editorBrowser";
 import { IEditorOptions as ICodeEditorOptions } from "vs/editor/common/config/editorOptions";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { IStorageService } from "vs/platform/storage/common/storage";
+import { CursorChangeReason } from "vs/editor/common/cursorEvents";
 import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import * as nls from "vs/nls";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
-	IContextKeyService,
 	IContextKey,
+	IContextKeyService,
 } from "vs/platform/contextkey/common/contextkey";
-import { IEditorOpenContext } from "vs/workbench/common/editor";
-import { AbstractTextResourceEditor } from "vs/workbench/browser/parts/editor/textResourceEditor";
+import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
+import { ITextEditorOptions } from "vs/platform/editor/common/editor";
+import { IFileService } from "vs/platform/files/common/files";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { IOpenerService } from "vs/platform/opener/common/opener";
+import { IStorageService } from "vs/platform/storage/common/storage";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { editorBackground } from "vs/platform/theme/common/colorRegistry";
 import {
-	OUTPUT_VIEW_ID,
-	CONTEXT_IN_OUTPUT,
-	IOutputChannel,
-	CONTEXT_OUTPUT_SCROLL_LOCK,
-} from "vs/workbench/services/output/common/output";
-import {
-	IThemeService,
-	registerThemingParticipant,
 	IColorTheme,
 	ICssStyleCollector,
+	IThemeService,
+	registerThemingParticipant,
 } from "vs/platform/theme/common/themeService";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { CursorChangeReason } from "vs/editor/common/cursorEvents";
-import {
-	ViewPane,
-	IViewPaneOptions,
-} from "vs/workbench/browser/parts/views/viewPane";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { IViewDescriptorService } from "vs/workbench/common/views";
-import { TextResourceEditorInput } from "vs/workbench/common/editor/textResourceEditorInput";
-import { IOpenerService } from "vs/platform/opener/common/opener";
-import { SIDE_BAR_BACKGROUND } from "vs/workbench/common/theme";
-import { editorBackground } from "vs/platform/theme/common/colorRegistry";
-import { Dimension } from "vs/base/browser/dom";
-import { ITextEditorOptions } from "vs/platform/editor/common/editor";
-import {
-	CancelablePromise,
-	createCancelablePromise,
-} from "vs/base/common/async";
-import { IFileService } from "vs/platform/files/common/files";
-import { ResourceContextKey } from "vs/workbench/common/contextkeys";
-import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
 import { IEditorConfiguration } from "vs/workbench/browser/parts/editor/textEditor";
+import { AbstractTextResourceEditor } from "vs/workbench/browser/parts/editor/textResourceEditor";
+import {
+	IViewPaneOptions,
+	ViewPane,
+} from "vs/workbench/browser/parts/views/viewPane";
+import { ResourceContextKey } from "vs/workbench/common/contextkeys";
+import { IEditorOpenContext } from "vs/workbench/common/editor";
+import { TextResourceEditorInput } from "vs/workbench/common/editor/textResourceEditorInput";
+import { SIDE_BAR_BACKGROUND } from "vs/workbench/common/theme";
+import { IViewDescriptorService } from "vs/workbench/common/views";
+import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import {
+	CONTEXT_IN_OUTPUT,
+	CONTEXT_OUTPUT_SCROLL_LOCK,
+	IOutputChannel,
+	OUTPUT_VIEW_ID,
+} from "vs/workbench/services/output/common/output";
 
 export class OutputViewPane extends ViewPane {
 	private readonly editor: OutputEditor;
@@ -78,7 +78,7 @@ export class OutputViewPane extends ViewPane {
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IOpenerService openerService: IOpenerService,
 		@IThemeService themeService: IThemeService,
-		@ITelemetryService telemetryService: ITelemetryService
+		@ITelemetryService telemetryService: ITelemetryService,
 	) {
 		super(
 			options,
@@ -90,29 +90,29 @@ export class OutputViewPane extends ViewPane {
 			instantiationService,
 			openerService,
 			themeService,
-			telemetryService
+			telemetryService,
 		);
 		this.scrollLockContextKey = CONTEXT_OUTPUT_SCROLL_LOCK.bindTo(
-			this.contextKeyService
+			this.contextKeyService,
 		);
 
 		const editorInstantiationService = instantiationService.createChild(
 			new ServiceCollection([
 				IContextKeyService,
 				this.scopedContextKeyService,
-			])
+			]),
 		);
 		this.editor = editorInstantiationService.createInstance(OutputEditor);
 		this._register(
 			this.editor.onTitleAreaUpdate(() => {
 				this.updateTitle(this.editor.getTitle());
 				this.updateActions();
-			})
+			}),
 		);
 		this._register(
 			this.onDidChangeBodyVisibility(() =>
-				this.onDidChangeVisibility(this.isBodyVisible())
-			)
+				this.onDidChangeVisibility(this.isBodyVisible()),
+			),
 		);
 	}
 
@@ -144,7 +144,7 @@ export class OutputViewPane extends ViewPane {
 				if (!this.scrollLock) {
 					this.editor.revealLastLine();
 				}
-			})
+			}),
 		);
 		this._register(
 			codeEditor.onDidChangeCursorPosition((e) => {
@@ -154,7 +154,7 @@ export class OutputViewPane extends ViewPane {
 
 				if (
 					!this.configurationService.getValue(
-						"output.smartScroll.enabled"
+						"output.smartScroll.enabled",
 					)
 				) {
 					return;
@@ -166,7 +166,7 @@ export class OutputViewPane extends ViewPane {
 					const lastLine = model.getLineCount();
 					this.scrollLock = lastLine !== newPositionLine;
 				}
-			})
+			}),
 		);
 	}
 
@@ -194,9 +194,9 @@ export class OutputViewPane extends ViewPane {
 						this.createInput(channel),
 						{ preserveFocus: true },
 						Object.create(null),
-						token
+						token,
 					)
-					.then(() => this.editor)
+					.then(() => this.editor),
 			);
 		}
 	}
@@ -214,7 +214,7 @@ export class OutputViewPane extends ViewPane {
 			nls.localize("output model title", "{0} - Output", channel.label),
 			nls.localize("channel", "Output channel for '{0}'", channel.label),
 			undefined,
-			undefined
+			undefined,
 		);
 	}
 }
@@ -262,7 +262,7 @@ class OutputEditor extends AbstractTextResourceEditor {
 	}
 
 	protected override getConfigurationOverrides(
-		configuration: IEditorConfiguration
+		configuration: IEditorConfiguration,
 	): ICodeEditorOptions {
 		const options = super.getConfigurationOverrides(configuration);
 		options.wordWrap = "on"; // all output editors wrap
@@ -307,7 +307,7 @@ class OutputEditor extends AbstractTextResourceEditor {
 		input: TextResourceEditorInput,
 		options: ITextEditorOptions | undefined,
 		context: IEditorOpenContext,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void> {
 		const focus = !(options && options.preserveFocus);
 		if (this.input && input.matches(this.input)) {
@@ -366,5 +366,5 @@ registerThemingParticipant(
 			}
 		`);
 		}
-	}
+	},
 );

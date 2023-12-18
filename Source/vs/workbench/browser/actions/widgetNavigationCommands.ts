@@ -3,7 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { KeyMod, KeyCode } from "vs/base/common/keyCodes";
+import { Event } from "vs/base/common/event";
+import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
+import {
+	Disposable,
+	IDisposable,
+	combinedDisposable,
+	toDisposable,
+} from "vs/base/common/lifecycle";
 import {
 	ContextKeyExpr,
 	IContextKey,
@@ -19,17 +26,10 @@ import {
 	WorkbenchListScrollAtBottomContextKey,
 	WorkbenchListScrollAtTopContextKey,
 } from "vs/platform/list/browser/listService";
-import { Event } from "vs/base/common/event";
-import {
-	combinedDisposable,
-	toDisposable,
-	IDisposable,
-	Disposable,
-} from "vs/base/common/lifecycle";
 import { Registry } from "vs/platform/registry/common/platform";
 import {
-	IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
+	IWorkbenchContributionsRegistry,
 } from "vs/workbench/common/contributions";
 import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
@@ -58,7 +58,7 @@ interface IFocusNotifier {
 
 function handleFocusEventsGroup(
 	group: readonly IFocusNotifier[],
-	handler: (isFocus: boolean) => void
+	handler: (isFocus: boolean) => void,
 ): IDisposable {
 	const focusedIndices = new Set<number>();
 	return combinedDisposable(
@@ -75,15 +75,15 @@ function handleFocusEventsGroup(
 					if (!focusedIndices.size) {
 						handler(false);
 					}
-				})
-			)
-		)
+				}),
+			),
+		),
 	);
 }
 
 const NavigableContainerFocusedContextKey = new RawContextKey<boolean>(
 	"navigableContainerFocused",
-	false
+	false,
 );
 
 class NavigableContainerManager implements IDisposable {
@@ -128,7 +128,7 @@ class NavigableContainerManager implements IDisposable {
 					instance.focused.set(false);
 					instance.lastContainer = undefined;
 				}
-			})
+			}),
 		);
 	}
 
@@ -138,16 +138,16 @@ class NavigableContainerManager implements IDisposable {
 }
 
 export function registerNavigableContainer(
-	container: INavigableContainer
+	container: INavigableContainer,
 ): IDisposable {
 	return NavigableContainerManager.register(container);
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	NavigableContainerManager,
-	LifecyclePhase.Starting
+	LifecyclePhase.Starting,
 );
 
 KeybindingsRegistry.registerCommandAndKeybindingRule({
@@ -157,8 +157,8 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		NavigableContainerFocusedContextKey,
 		ContextKeyExpr.or(
 			WorkbenchListFocusContextKey?.negate(),
-			WorkbenchListScrollAtTopContextKey
-		)
+			WorkbenchListScrollAtTopContextKey,
+		),
 	),
 	primary: KeyMod.CtrlCmd | KeyCode.UpArrow,
 	handler: () => {
@@ -174,8 +174,8 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		NavigableContainerFocusedContextKey,
 		ContextKeyExpr.or(
 			WorkbenchListFocusContextKey?.negate(),
-			WorkbenchListScrollAtBottomContextKey
-		)
+			WorkbenchListScrollAtBottomContextKey,
+		),
 	),
 	primary: KeyMod.CtrlCmd | KeyCode.DownArrow,
 	handler: () => {

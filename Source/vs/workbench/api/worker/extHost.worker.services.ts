@@ -25,15 +25,15 @@ import { ExtHostExtensionService } from "vs/workbench/api/worker/extHostExtensio
 
 registerSingleton(
 	ILogService,
-	new SyncDescriptor(ExtHostLogService, [true], true)
+	new SyncDescriptor(ExtHostLogService, [true], true),
 );
 registerSingleton(
 	IExtHostExtensionService,
 	ExtHostExtensionService,
-	InstantiationType.Eager
+	InstantiationType.Eager,
 );
 registerSingleton(
 	IExtensionStoragePaths,
 	ExtensionStoragePaths,
-	InstantiationType.Eager
+	InstantiationType.Eager,
 );

@@ -39,7 +39,7 @@ export class DiffChange {
 		originalStart: number,
 		originalLength: number,
 		modifiedStart: number,
-		modifiedLength: number
+		modifiedLength: number,
 	) {
 		//Debug.Assert(originalLength > 0 || modifiedLength > 0, "originalLength and modifiedLength cannot both be <= 0");
 		this.originalStart = originalStart;

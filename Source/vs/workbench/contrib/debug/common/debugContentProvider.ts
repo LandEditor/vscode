@@ -3,16 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { CancellationTokenSource } from "vs/base/common/cancellation";
+import { ErrorNoTelemetry } from "vs/base/common/errors";
 import { URI as uri } from "vs/base/common/uri";
-import { localize } from "vs/nls";
-import { getMimeTypes } from "vs/editor/common/services/languagesAssociations";
-import { ITextModel } from "vs/editor/common/model";
-import { IModelService } from "vs/editor/common/services/model";
+import { EditOperation } from "vs/editor/common/core/editOperation";
+import { Range } from "vs/editor/common/core/range";
 import { ILanguageService } from "vs/editor/common/languages/language";
+import { PLAINTEXT_LANGUAGE_ID } from "vs/editor/common/languages/modesRegistry";
+import { ITextModel } from "vs/editor/common/model";
+import { IEditorWorkerService } from "vs/editor/common/services/editorWorker";
+import { getMimeTypes } from "vs/editor/common/services/languagesAssociations";
+import { IModelService } from "vs/editor/common/services/model";
 import {
-	ITextModelService,
 	ITextModelContentProvider,
+	ITextModelService,
 } from "vs/editor/common/services/resolverService";
+import { localize } from "vs/nls";
 import { IWorkbenchContribution } from "vs/workbench/common/contributions";
 import {
 	DEBUG_SCHEME,
@@ -20,12 +26,6 @@ import {
 	IDebugSession,
 } from "vs/workbench/contrib/debug/common/debug";
 import { Source } from "vs/workbench/contrib/debug/common/debugSource";
-import { IEditorWorkerService } from "vs/editor/common/services/editorWorker";
-import { EditOperation } from "vs/editor/common/core/editOperation";
-import { Range } from "vs/editor/common/core/range";
-import { CancellationTokenSource } from "vs/base/common/cancellation";
-import { PLAINTEXT_LANGUAGE_ID } from "vs/editor/common/languages/modesRegistry";
-import { ErrorNoTelemetry } from "vs/base/common/errors";
 
 /**
  * Debug URI format
@@ -67,7 +67,7 @@ export class DebugContentProvider
 
 	dispose(): void {
 		this.pendingUpdates.forEach((cancellationSource) =>
-			cancellationSource.dispose()
+			cancellationSource.dispose(),
 		);
 	}
 
@@ -82,7 +82,7 @@ export class DebugContentProvider
 	static refreshDebugContent(resource: uri): void {
 		DebugContentProvider.INSTANCE?.createOrUpdateContentModel(
 			resource,
-			false
+			false,
 		);
 	}
 
@@ -91,7 +91,7 @@ export class DebugContentProvider
 	 */
 	private createOrUpdateContentModel(
 		resource: uri,
-		createIfNotExists: boolean
+		createIfNotExists: boolean,
 	): Promise<ITextModel> | null {
 		const model = this.modelService.getModel(resource);
 		if (!model && !createIfNotExists) {
@@ -116,32 +116,32 @@ export class DebugContentProvider
 				new ErrorNoTelemetry(
 					localize(
 						"unable",
-						"Unable to resolve the resource without a debug session"
-					)
-				)
+						"Unable to resolve the resource without a debug session",
+					),
+				),
 			);
 		}
 		const createErrModel = (errMsg?: string) => {
 			this.debugService.sourceIsNotAvailable(resource);
 			const languageSelection = this.languageService.createById(
-				PLAINTEXT_LANGUAGE_ID
+				PLAINTEXT_LANGUAGE_ID,
 			);
 			const message = errMsg
 				? localize(
 						"canNotResolveSourceWithError",
 						"Could not load source '{0}': {1}.",
 						resource.path,
-						errMsg
-					)
+						errMsg,
+				  )
 				: localize(
 						"canNotResolveSource",
 						"Could not load source '{0}'.",
-						resource.path
-					);
+						resource.path,
+				  );
 			return this.modelService.createModel(
 				message,
 				languageSelection,
-				resource
+				resource,
 			);
 		};
 
@@ -153,7 +153,7 @@ export class DebugContentProvider
 
 						// cancel and dispose an existing update
 						const cancellationSource = this.pendingUpdates.get(
-							model.id
+							model.id,
 						);
 						cancellationSource?.cancel();
 
@@ -183,9 +183,9 @@ export class DebugContentProvider
 										edits.map((edit) =>
 											EditOperation.replace(
 												Range.lift(edit.range),
-												edit.text
-											)
-										)
+												edit.text,
+											),
+										),
 									);
 								}
 								return model;
@@ -199,14 +199,14 @@ export class DebugContentProvider
 						return this.modelService.createModel(
 							response.body.content,
 							languageSelection,
-							resource
+							resource,
 						);
 					}
 				}
 
 				return createErrModel();
 			},
-			(err: DebugProtocol.ErrorResponse) => createErrModel(err.message)
+			(err: DebugProtocol.ErrorResponse) => createErrModel(err.message),
 		);
 	}
 }

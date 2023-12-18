@@ -3,24 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Emitter } from "vs/base/common/event";
+import {
+	Disposable,
+	IDisposable,
+	toDisposable,
+} from "vs/base/common/lifecycle";
+import * as path from "vs/base/common/path";
 import {
 	ExtensionIdentifier,
 	ExtensionIdentifierMap,
 	ExtensionIdentifierSet,
 	IExtensionDescription,
 } from "vs/platform/extensions/common/extensions";
-import { Emitter } from "vs/base/common/event";
-import * as path from "vs/base/common/path";
-import {
-	Disposable,
-	IDisposable,
-	toDisposable,
-} from "vs/base/common/lifecycle";
 
 export class DeltaExtensionsResult {
 	constructor(
 		public readonly versionId: number,
-		public readonly removedDueToLooping: IExtensionDescription[]
+		public readonly removedDueToLooping: IExtensionDescription[],
 	) {}
 }
 
@@ -28,18 +28,18 @@ export interface IReadOnlyExtensionDescriptionRegistry {
 	containsActivationEvent(activationEvent: string): boolean;
 	containsExtension(extensionId: ExtensionIdentifier): boolean;
 	getExtensionDescriptionsForActivationEvent(
-		activationEvent: string
+		activationEvent: string,
 	): IExtensionDescription[];
 	getAllExtensionDescriptions(): IExtensionDescription[];
 	getExtensionDescription(
-		extensionId: ExtensionIdentifier | string
+		extensionId: ExtensionIdentifier | string,
 	): IExtensionDescription | undefined;
 	getExtensionDescriptionByUUID(
-		uuid: string
+		uuid: string,
 	): IExtensionDescription | undefined;
 	getExtensionDescriptionByIdOrUUID(
 		extensionId: ExtensionIdentifier | string,
-		uuid: string | undefined
+		uuid: string | undefined,
 	): IExtensionDescription | undefined;
 }
 
@@ -49,7 +49,7 @@ export class ExtensionDescriptionRegistry
 	public static isHostExtension(
 		extensionId: ExtensionIdentifier | string,
 		myRegistry: ExtensionDescriptionRegistry,
-		globalRegistry: ExtensionDescriptionRegistry
+		globalRegistry: ExtensionDescriptionRegistry,
 	): boolean {
 		if (myRegistry.getExtensionDescription(extensionId)) {
 			// I have this extension
@@ -73,7 +73,7 @@ export class ExtensionDescriptionRegistry
 	private readonly _onDidChange = new Emitter<void>();
 	public readonly onDidChange = this._onDidChange.event;
 
-	private _versionId: number = 0;
+	private _versionId = 0;
 	private _extensionDescriptions: IExtensionDescription[];
 	private _extensionsMap!: ExtensionIdentifierMap<IExtensionDescription>;
 	private _extensionsArr!: IExtensionDescription[];
@@ -81,7 +81,7 @@ export class ExtensionDescriptionRegistry
 
 	constructor(
 		private readonly _activationEventsReader: IActivationEventsReader,
-		extensionDescriptions: IExtensionDescription[]
+		extensionDescriptions: IExtensionDescription[],
 	) {
 		this._extensionDescriptions = extensionDescriptions;
 		this._initialize();
@@ -102,20 +102,20 @@ export class ExtensionDescriptionRegistry
 				console.error(
 					"Extension `" +
 						extensionDescription.identifier.value +
-						"` is already registered"
+						"` is already registered",
 				);
 				continue;
 			}
 
 			this._extensionsMap.set(
 				extensionDescription.identifier,
-				extensionDescription
+				extensionDescription,
 			);
 			this._extensionsArr.push(extensionDescription);
 
 			const activationEvents =
 				this._activationEventsReader.readActivationEvents(
-					extensionDescription
+					extensionDescription,
 				);
 			for (const activationEvent of activationEvents) {
 				if (!this._activationMap.has(activationEvent)) {
@@ -142,13 +142,13 @@ export class ExtensionDescriptionRegistry
 
 	public deltaExtensions(
 		toAdd: IExtensionDescription[],
-		toRemove: ExtensionIdentifier[]
+		toRemove: ExtensionIdentifier[],
 	): DeltaExtensionsResult {
 		// It is possible that an extension is removed, only to be added again at a different version
 		// so we will first handle removals
 		this._extensionDescriptions = removeExtensions(
 			this._extensionDescriptions,
-			toRemove
+			toRemove,
 		);
 
 		// Then, handle the extensions to add
@@ -156,11 +156,11 @@ export class ExtensionDescriptionRegistry
 
 		// Immediately remove looping extensions!
 		const looping = ExtensionDescriptionRegistry._findLoopingExtensions(
-			this._extensionDescriptions
+			this._extensionDescriptions,
 		);
 		this._extensionDescriptions = removeExtensions(
 			this._extensionDescriptions,
-			looping.map((ext) => ext.identifier)
+			looping.map((ext) => ext.identifier),
 		);
 
 		this._initialize();
@@ -170,7 +170,7 @@ export class ExtensionDescriptionRegistry
 	}
 
 	private static _findLoopingExtensions(
-		extensionDescriptions: IExtensionDescription[]
+		extensionDescriptions: IExtensionDescription[],
 	): IExtensionDescription[] {
 		const G = new (class {
 			private _arcs = new Map<string, string[]>();
@@ -223,9 +223,9 @@ export class ExtensionDescriptionRegistry
 				for (const depId of extensionDescription.extensionDependencies) {
 					G.addArc(
 						ExtensionIdentifier.toKey(
-							extensionDescription.identifier
+							extensionDescription.identifier,
 						),
-						ExtensionIdentifier.toKey(depId)
+						ExtensionIdentifier.toKey(depId),
 					);
 				}
 			}
@@ -270,7 +270,7 @@ export class ExtensionDescriptionRegistry
 	}
 
 	public getExtensionDescriptionsForActivationEvent(
-		activationEvent: string
+		activationEvent: string,
 	): IExtensionDescription[] {
 		const extensions = this._activationMap.get(activationEvent);
 		return extensions ? extensions.slice(0) : [];
@@ -283,19 +283,19 @@ export class ExtensionDescriptionRegistry
 	public getSnapshot(): ExtensionDescriptionRegistrySnapshot {
 		return new ExtensionDescriptionRegistrySnapshot(
 			this._versionId,
-			this.getAllExtensionDescriptions()
+			this.getAllExtensionDescriptions(),
 		);
 	}
 
 	public getExtensionDescription(
-		extensionId: ExtensionIdentifier | string
+		extensionId: ExtensionIdentifier | string,
 	): IExtensionDescription | undefined {
 		const extension = this._extensionsMap.get(extensionId);
 		return extension ? extension : undefined;
 	}
 
 	public getExtensionDescriptionByUUID(
-		uuid: string
+		uuid: string,
 	): IExtensionDescription | undefined {
 		for (const extensionDescription of this._extensionsArr) {
 			if (extensionDescription.uuid === uuid) {
@@ -307,7 +307,7 @@ export class ExtensionDescriptionRegistry
 
 	public getExtensionDescriptionByIdOrUUID(
 		extensionId: ExtensionIdentifier | string,
-		uuid: string | undefined
+		uuid: string | undefined,
 	): IExtensionDescription | undefined {
 		return (
 			this.getExtensionDescription(extensionId) ??
@@ -319,7 +319,7 @@ export class ExtensionDescriptionRegistry
 export class ExtensionDescriptionRegistrySnapshot {
 	constructor(
 		public readonly versionId: number,
-		public readonly extensions: readonly IExtensionDescription[]
+		public readonly extensions: readonly IExtensionDescription[],
 	) {}
 }
 
@@ -336,12 +336,12 @@ export class LockableExtensionDescriptionRegistry
 	constructor(activationEventsReader: IActivationEventsReader) {
 		this._actual = new ExtensionDescriptionRegistry(
 			activationEventsReader,
-			[]
+			[],
 		);
 	}
 
 	public async acquireLock(
-		customerName: string
+		customerName: string,
 	): Promise<ExtensionDescriptionRegistryLock> {
 		const lock = await this._lock.acquire(customerName);
 		return new ExtensionDescriptionRegistryLock(this, lock);
@@ -350,7 +350,7 @@ export class LockableExtensionDescriptionRegistry
 	public deltaExtensions(
 		acquiredLock: ExtensionDescriptionRegistryLock,
 		toAdd: IExtensionDescription[],
-		toRemove: ExtensionIdentifier[]
+		toRemove: ExtensionIdentifier[],
 	): DeltaExtensionsResult {
 		if (!acquiredLock.isAcquiredFor(this)) {
 			throw new Error("Lock is not held");
@@ -365,10 +365,10 @@ export class LockableExtensionDescriptionRegistry
 		return this._actual.containsExtension(extensionId);
 	}
 	public getExtensionDescriptionsForActivationEvent(
-		activationEvent: string
+		activationEvent: string,
 	): IExtensionDescription[] {
 		return this._actual.getExtensionDescriptionsForActivationEvent(
-			activationEvent
+			activationEvent,
 		);
 	}
 	public getAllExtensionDescriptions(): IExtensionDescription[] {
@@ -378,22 +378,22 @@ export class LockableExtensionDescriptionRegistry
 		return this._actual.getSnapshot();
 	}
 	public getExtensionDescription(
-		extensionId: ExtensionIdentifier | string
+		extensionId: ExtensionIdentifier | string,
 	): IExtensionDescription | undefined {
 		return this._actual.getExtensionDescription(extensionId);
 	}
 	public getExtensionDescriptionByUUID(
-		uuid: string
+		uuid: string,
 	): IExtensionDescription | undefined {
 		return this._actual.getExtensionDescriptionByUUID(uuid);
 	}
 	public getExtensionDescriptionByIdOrUUID(
 		extensionId: ExtensionIdentifier | string,
-		uuid: string | undefined
+		uuid: string | undefined,
 	): IExtensionDescription | undefined {
 		return this._actual.getExtensionDescriptionByIdOrUUID(
 			extensionId,
-			uuid
+			uuid,
 		);
 	}
 }
@@ -403,14 +403,14 @@ export class ExtensionDescriptionRegistryLock extends Disposable {
 
 	constructor(
 		private readonly _registry: LockableExtensionDescriptionRegistry,
-		lock: IDisposable
+		lock: IDisposable,
 	) {
 		super();
 		this._register(lock);
 	}
 
 	public isAcquiredFor(
-		registry: LockableExtensionDescriptionRegistry
+		registry: LockableExtensionDescriptionRegistry,
 	): boolean {
 		return !this._isDisposed && this._registry === registry;
 	}
@@ -460,7 +460,7 @@ class Lock {
 		const logLongRunningCustomerTimeout = setTimeout(() => {
 			if (customerHoldsLock) {
 				console.warn(
-					`The customer named ${customer.name} has been holding on to the lock for 30s. This might be a problem.`
+					`The customer named ${customer.name} has been holding on to the lock for 30s. This might be a problem.`,
 				);
 			}
 		}, 30 * 1000 /* 30 seconds */);
@@ -479,7 +479,7 @@ class Lock {
 	}
 }
 
-const enum SortBucket {
+enum SortBucket {
 	Builtin = 0,
 	User = 1,
 	Dev = 2,
@@ -495,18 +495,18 @@ const enum SortBucket {
  */
 function extensionCmp(
 	a: IExtensionDescription,
-	b: IExtensionDescription
+	b: IExtensionDescription,
 ): number {
 	const aSortBucket = a.isBuiltin
 		? SortBucket.Builtin
 		: a.isUnderDevelopment
-			? SortBucket.Dev
-			: SortBucket.User;
+		  ? SortBucket.Dev
+		  : SortBucket.User;
 	const bSortBucket = b.isBuiltin
 		? SortBucket.Builtin
 		: b.isUnderDevelopment
-			? SortBucket.Dev
-			: SortBucket.User;
+		  ? SortBucket.Dev
+		  : SortBucket.User;
 	if (aSortBucket !== bSortBucket) {
 		return aSortBucket - bSortBucket;
 	}
@@ -523,7 +523,7 @@ function extensionCmp(
 
 function removeExtensions(
 	arr: IExtensionDescription[],
-	toRemove: ExtensionIdentifier[]
+	toRemove: ExtensionIdentifier[],
 ): IExtensionDescription[] {
 	const toRemoveSet = new ExtensionIdentifierSet(toRemove);
 	return arr.filter((extension) => !toRemoveSet.has(extension.identifier));

@@ -3,31 +3,31 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { IDisposable } from "vs/base/common/lifecycle";
+import { URI, UriComponents } from "vs/base/common/uri";
+import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
+import { IOpenURLOptions, IURLService } from "vs/platform/url/common/url";
 import {
 	ExtHostContext,
+	ExtHostUrlsShape,
 	MainContext,
 	MainThreadUrlsShape,
-	ExtHostUrlsShape,
 } from "vs/workbench/api/common/extHost.protocol";
-import {
-	extHostNamedCustomer,
-	IExtHostContext,
-} from "../../services/extensions/common/extHostCustomers";
-import { IURLService, IOpenURLOptions } from "vs/platform/url/common/url";
-import { URI, UriComponents } from "vs/base/common/uri";
-import { IDisposable } from "vs/base/common/lifecycle";
 import {
 	IExtensionContributedURLHandler,
 	IExtensionUrlHandler,
 } from "vs/workbench/services/extensions/browser/extensionUrlHandler";
-import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
+import {
+	IExtHostContext,
+	extHostNamedCustomer,
+} from "../../services/extensions/common/extHostCustomers";
 
 class ExtensionUrlHandler implements IExtensionContributedURLHandler {
 	constructor(
 		private readonly proxy: ExtHostUrlsShape,
 		private readonly handle: number,
 		readonly extensionId: ExtensionIdentifier,
-		readonly extensionDisplayName: string
+		readonly extensionDisplayName: string,
 	) {}
 
 	handleURL(uri: URI, options?: IOpenURLOptions): Promise<boolean> {
@@ -36,7 +36,7 @@ class ExtensionUrlHandler implements IExtensionContributedURLHandler {
 		}
 
 		return Promise.resolve(
-			this.proxy.$handleExternalUri(this.handle, uri)
+			this.proxy.$handleExternalUri(this.handle, uri),
 		).then(() => true);
 	}
 }
@@ -61,13 +61,13 @@ export class MainThreadUrls implements MainThreadUrlsShape {
 	$registerUriHandler(
 		handle: number,
 		extensionId: ExtensionIdentifier,
-		extensionDisplayName: string
+		extensionDisplayName: string,
 	): Promise<void> {
 		const handler = new ExtensionUrlHandler(
 			this.proxy,
 			handle,
 			extensionId,
-			extensionDisplayName
+			extensionDisplayName,
 		);
 		const disposable = this.urlService.registerHandler(handler);
 

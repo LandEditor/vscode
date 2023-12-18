@@ -4,11 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	TextDocument,
-	Position,
 	LanguageService,
-	TokenType,
+	Position,
 	Range,
+	TextDocument,
+	TokenType,
 } from "./languageModes";
 
 export interface LanguageRange extends Range {
@@ -19,7 +19,7 @@ export interface LanguageRange extends Range {
 export interface HTMLDocumentRegions {
 	getEmbeddedDocument(
 		languageId: string,
-		ignoreAttributeValues?: boolean
+		ignoreAttributeValues?: boolean,
 	): TextDocument;
 	getLanguageRanges(range: Range): LanguageRange[];
 	getLanguageAtPosition(position: Position): string | undefined;
@@ -38,11 +38,11 @@ interface EmbeddedRegion {
 
 export function getDocumentRegions(
 	languageService: LanguageService,
-	document: TextDocument
+	document: TextDocument,
 ): HTMLDocumentRegions {
 	const regions: EmbeddedRegion[] = [];
 	const scanner = languageService.createScanner(document.getText());
-	let lastTagName: string = "";
+	let lastTagName = "";
 	let lastAttributeName: string | null = null;
 	let languageIdFromType: string | undefined = undefined;
 	const importedScripts: string[] = [];
@@ -88,7 +88,7 @@ export function getDocumentRegions(
 				) {
 					if (
 						/["'](module|(text|application)\/(java|ecma)script|text\/babel)["']/.test(
-							scanner.getTokenText()
+							scanner.getTokenText(),
 						)
 					) {
 						languageIdFromType = "javascript";
@@ -101,7 +101,7 @@ export function getDocumentRegions(
 					}
 				} else {
 					const attributeLanguageId = getAttributeLanguage(
-						lastAttributeName!
+						lastAttributeName!,
 					);
 					if (attributeLanguageId) {
 						let start = scanner.getTokenOffset();
@@ -129,13 +129,13 @@ export function getDocumentRegions(
 			getLanguageRanges(document, regions, range),
 		getEmbeddedDocument: (
 			languageId: string,
-			ignoreAttributeValues: boolean
+			ignoreAttributeValues: boolean,
 		) =>
 			getEmbeddedDocument(
 				document,
 				regions,
 				languageId,
-				ignoreAttributeValues
+				ignoreAttributeValues,
 			),
 		getLanguageAtPosition: (position: Position) =>
 			getLanguageAtPosition(document, regions, position),
@@ -147,7 +147,7 @@ export function getDocumentRegions(
 function getLanguageRanges(
 	document: TextDocument,
 	regions: EmbeddedRegion[],
-	range: Range
+	range: Range,
 ): LanguageRange[] {
 	const result: LanguageRange[] = [];
 	let currentPos = range ? range.start : Position.create(0, 0);
@@ -193,7 +193,7 @@ function getLanguageRanges(
 
 function getLanguagesInDocument(
 	_document: TextDocument,
-	regions: EmbeddedRegion[]
+	regions: EmbeddedRegion[],
 ): string[] {
 	const result = [];
 	for (const region of regions) {
@@ -211,7 +211,7 @@ function getLanguagesInDocument(
 function getLanguageAtPosition(
 	document: TextDocument,
 	regions: EmbeddedRegion[],
-	position: Position
+	position: Position,
 ): string | undefined {
 	const offset = document.offsetAt(position);
 	for (const region of regions) {
@@ -230,7 +230,7 @@ function getEmbeddedDocument(
 	document: TextDocument,
 	contents: EmbeddedRegion[],
 	languageId: string,
-	ignoreAttributeValues: boolean
+	ignoreAttributeValues: boolean,
 ): TextDocument {
 	let currentPos = 0;
 	const oldContent = document.getText();
@@ -247,7 +247,7 @@ function getEmbeddedDocument(
 				c.start,
 				oldContent,
 				lastSuffix,
-				getPrefix(c)
+				getPrefix(c),
 			);
 			result += updateContent(c, oldContent.substring(c.start, c.end));
 			currentPos = c.end;
@@ -260,13 +260,13 @@ function getEmbeddedDocument(
 		oldContent.length,
 		oldContent,
 		lastSuffix,
-		""
+		"",
 	);
 	return TextDocument.create(
 		document.uri,
 		languageId,
 		document.version,
-		result
+		result,
 	);
 }
 
@@ -303,7 +303,7 @@ function substituteWithWhitespace(
 	end: number,
 	oldContent: string,
 	before: string,
-	after: string
+	after: string,
 ) {
 	result += before;
 	let accumulatedWS = -before.length; // start with a negative value to account for the before string

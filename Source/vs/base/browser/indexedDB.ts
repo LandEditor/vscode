@@ -24,7 +24,7 @@ export class IndexedDB {
 	static async create(
 		name: string,
 		version: number | undefined,
-		stores: string[]
+		stores: string[],
 	): Promise<IndexedDB> {
 		const database = await IndexedDB.openDatabase(name, version, stores);
 		return new IndexedDB(database, name);
@@ -33,7 +33,7 @@ export class IndexedDB {
 	private static async openDatabase(
 		name: string,
 		version: number | undefined,
-		stores: string[]
+		stores: string[],
 	): Promise<IDBDatabase> {
 		mark(`code/willOpenDatabase/${name}`);
 		try {
@@ -42,7 +42,7 @@ export class IndexedDB {
 			if (err instanceof MissingStoresError) {
 				console.info(
 					`Attempting to recreate the IndexedDB once.`,
-					name
+					name,
 				);
 
 				try {
@@ -51,7 +51,7 @@ export class IndexedDB {
 				} catch (error) {
 					console.error(
 						`Error while deleting the IndexedDB`,
-						getErrorMessage(error)
+						getErrorMessage(error),
 					);
 					throw error;
 				}
@@ -68,7 +68,7 @@ export class IndexedDB {
 	private static doOpenDatabase(
 		name: string,
 		version: number | undefined,
-		stores: string[]
+		stores: string[],
 	): Promise<IDBDatabase> {
 		return new Promise((c, e) => {
 			const request = indexedDB.open(name, version);
@@ -78,7 +78,7 @@ export class IndexedDB {
 				for (const store of stores) {
 					if (!db.objectStoreNames.contains(store)) {
 						console.error(
-							`Error while opening IndexedDB. Could not find '${store}'' object store`
+							`Error while opening IndexedDB. Could not find '${store}'' object store`,
 						);
 						e(new MissingStoresError(db));
 						return;
@@ -112,10 +112,7 @@ export class IndexedDB {
 	private database: IDBDatabase | null = null;
 	private readonly pendingTransactions: IDBTransaction[] = [];
 
-	constructor(
-		database: IDBDatabase,
-		private readonly name: string
-	) {
+	constructor(database: IDBDatabase, private readonly name: string) {
 		this.database = database;
 	}
 
@@ -136,17 +133,17 @@ export class IndexedDB {
 	runInTransaction<T>(
 		store: string,
 		transactionMode: IDBTransactionMode,
-		dbRequestFn: (store: IDBObjectStore) => IDBRequest<T>[]
+		dbRequestFn: (store: IDBObjectStore) => IDBRequest<T>[],
 	): Promise<T[]>;
 	runInTransaction<T>(
 		store: string,
 		transactionMode: IDBTransactionMode,
-		dbRequestFn: (store: IDBObjectStore) => IDBRequest<T>
+		dbRequestFn: (store: IDBObjectStore) => IDBRequest<T>,
 	): Promise<T>;
 	async runInTransaction<T>(
 		store: string,
 		transactionMode: IDBTransactionMode,
-		dbRequestFn: (store: IDBObjectStore) => IDBRequest<T> | IDBRequest<T>[]
+		dbRequestFn: (store: IDBObjectStore) => IDBRequest<T> | IDBRequest<T>[],
 	): Promise<T | T[]> {
 		if (!this.database) {
 			throw new DBClosedError(this.name);
@@ -167,14 +164,14 @@ export class IndexedDB {
 		}).finally(() =>
 			this.pendingTransactions.splice(
 				this.pendingTransactions.indexOf(transaction),
-				1
-			)
+				1,
+			),
 		);
 	}
 
 	async getKeyValues<V>(
 		store: string,
-		isValid: (value: unknown) => value is V
+		isValid: (value: unknown) => value is V,
 	): Promise<Map<string, V>> {
 		if (!this.database) {
 			throw new DBClosedError(this.name);
@@ -199,7 +196,7 @@ export class IndexedDB {
 					if (isValid(cursor.result.value)) {
 						items.set(
 							cursor.result.key.toString(),
-							cursor.result.value
+							cursor.result.value,
 						);
 					}
 
@@ -213,7 +210,7 @@ export class IndexedDB {
 			// Error handlers
 			const onError = (error: Error | null) => {
 				console.error(
-					`IndexedDB getKeyValues(): ${toErrorMessage(error, true)}`
+					`IndexedDB getKeyValues(): ${toErrorMessage(error, true)}`,
 				);
 
 				resolve(items);
@@ -223,8 +220,8 @@ export class IndexedDB {
 		}).finally(() =>
 			this.pendingTransactions.splice(
 				this.pendingTransactions.indexOf(transaction),
-				1
-			)
+				1,
+			),
 		);
 	}
 }

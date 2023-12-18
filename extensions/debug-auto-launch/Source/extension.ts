@@ -4,11 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { promises as fs } from "fs";
-import { createServer, Server } from "net";
+import { Server, createServer } from "net";
 import { dirname } from "path";
 import * as vscode from "vscode";
 
-const enum State {
+enum State {
 	Disabled = "disabled",
 	OnlyWithFlag = "onlyWithFlag",
 	Smart = "smart",
@@ -29,24 +29,24 @@ const TEXT_STATE_LABEL = {
 };
 const TEXT_STATE_DESCRIPTION = {
 	[State.Disabled]: vscode.l10n.t(
-		"Auto attach is disabled and not shown in status bar"
+		"Auto attach is disabled and not shown in status bar",
 	),
 	[State.Always]: vscode.l10n.t(
-		"Auto attach to every Node.js process launched in the terminal"
+		"Auto attach to every Node.js process launched in the terminal",
 	),
 	[State.Smart]: vscode.l10n.t(
-		"Auto attach when running scripts that aren't in a node_modules folder"
+		"Auto attach when running scripts that aren't in a node_modules folder",
 	),
 	[State.OnlyWithFlag]: vscode.l10n.t(
-		"Only auto attach when the `--inspect` flag is given"
+		"Only auto attach when the `--inspect` flag is given",
 	),
 };
 const TEXT_TOGGLE_WORKSPACE = vscode.l10n.t(
-	"Toggle auto attach in this workspace"
+	"Toggle auto attach in this workspace",
 );
 const TEXT_TOGGLE_GLOBAL = vscode.l10n.t("Toggle auto attach on this machine");
 const TEXT_TEMP_DISABLE = vscode.l10n.t(
-	"Temporarily disable auto attach in this session"
+	"Temporarily disable auto attach in this session",
 );
 const TEXT_TEMP_ENABLE = vscode.l10n.t("Re-enable auto attach");
 const TEXT_TEMP_DISABLE_LABEL = vscode.l10n.t("Auto Attach: Disabled");
@@ -62,8 +62,8 @@ const SETTING_STATE = "autoAttachFilter";
  */
 const SETTINGS_CAUSE_REFRESH = new Set(
 	["autoAttachSmartPattern", SETTING_STATE].map(
-		(s) => `${SETTING_SECTION}.${s}`
-	)
+		(s) => `${SETTING_SECTION}.${s}`,
+	),
 );
 
 let currentState: Promise<{
@@ -80,8 +80,8 @@ export function activate(context: vscode.ExtensionContext): void {
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			TOGGLE_COMMAND,
-			toggleAutoAttachSetting.bind(null, context)
-		)
+			toggleAutoAttachSetting.bind(null, context),
+		),
 	);
 
 	context.subscriptions.push(
@@ -91,12 +91,12 @@ export function activate(context: vscode.ExtensionContext): void {
 			if (
 				e.affectsConfiguration(`${SETTING_SECTION}.${SETTING_STATE}`) ||
 				[...SETTINGS_CAUSE_REFRESH].some((setting) =>
-					e.affectsConfiguration(setting)
+					e.affectsConfiguration(setting),
 				)
 			) {
 				refreshAutoAttachVars();
 			}
-		})
+		}),
 	);
 
 	updateAutoAttach(readCurrentState());
@@ -112,7 +112,7 @@ function refreshAutoAttachVars() {
 }
 
 function getDefaultScope(
-	info: ReturnType<vscode.WorkspaceConfiguration["inspect"]>
+	info: ReturnType<vscode.WorkspaceConfiguration["inspect"]>,
 ) {
 	if (!info) {
 		return vscode.ConfigurationTarget.Global;
@@ -137,7 +137,7 @@ type PickItem = vscode.QuickPickItem &
 
 async function toggleAutoAttachSetting(
 	context: vscode.ExtensionContext,
-	scope?: vscode.ConfigurationTarget
+	scope?: vscode.ConfigurationTarget,
 ): Promise<void> {
 	const section = vscode.workspace.getConfiguration(SETTING_SECTION);
 	scope = scope || getDefaultScope(section.inspect(SETTING_STATE));
@@ -233,7 +233,7 @@ async function clearJsDebugAttachState(context: vscode.ExtensionContext) {
 	if (server || (await context.workspaceState.get(STORAGE_IPC))) {
 		await context.workspaceState.update(STORAGE_IPC, undefined);
 		await vscode.commands.executeCommand(
-			"extension.js-debug.clearAutoAttachVariables"
+			"extension.js-debug.clearAutoAttachVariables",
 		);
 		await destroyAttachServer();
 	}
@@ -252,7 +252,7 @@ async function createAttachServer(context: vscode.ExtensionContext) {
 	server = createServerInner(ipcAddress).catch(async (err) => {
 		console.error(
 			"[debug-auto-launch] Error creating auto attach server: ",
-			err
+			err,
 		);
 
 		if (process.platform !== "win32") {
@@ -263,7 +263,7 @@ async function createAttachServer(context: vscode.ExtensionContext) {
 				await fs.access(dirname(ipcAddress));
 			} catch {
 				console.error(
-					"[debug-auto-launch] Refreshing variables from error"
+					"[debug-auto-launch] Refreshing variables from error",
 				);
 				refreshAutoAttachVars();
 				return undefined;
@@ -303,7 +303,7 @@ const createServerInstance = (ipcAddress: string) =>
 				try {
 					await vscode.commands.executeCommand(
 						"extension.js-debug.autoAttachToProcess",
-						JSON.parse(Buffer.concat(data).toString())
+						JSON.parse(Buffer.concat(data).toString()),
 					);
 					socket.write(Buffer.from([0]));
 				} catch (err) {
@@ -362,7 +362,7 @@ const transitions: {
 function updateStatusBar(
 	context: vscode.ExtensionContext,
 	state: State,
-	busy = false
+	busy = false,
 ) {
 	if (state === State.Disabled && !busy) {
 		statusItem?.hide();
@@ -372,12 +372,12 @@ function updateStatusBar(
 	if (!statusItem) {
 		statusItem = vscode.window.createStatusBarItem(
 			"status.debug.autoAttach",
-			vscode.StatusBarAlignment.Left
+			vscode.StatusBarAlignment.Left,
 		);
 		statusItem.name = vscode.l10n.t("Debug Auto Attach");
 		statusItem.command = TOGGLE_COMMAND;
 		statusItem.tooltip = vscode.l10n.t(
-			"Automatically attach to node.js processes in debug mode"
+			"Automatically attach to node.js processes in debug mode",
 		);
 		context.subscriptions.push(statusItem);
 	}
@@ -439,7 +439,7 @@ async function getIpcAddress(context: vscode.ExtensionContext) {
 
 	const result = await vscode.commands.executeCommand<{ ipcAddress: string }>(
 		"extension.js-debug.setAutoAttachVariables",
-		cachedIpc?.ipcAddress
+		cachedIpc?.ipcAddress,
 	);
 	if (!result) {
 		return;

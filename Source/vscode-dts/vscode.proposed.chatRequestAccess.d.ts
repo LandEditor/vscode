@@ -87,7 +87,7 @@ declare module "vscode" {
 		makeRequest(
 			messages: ChatMessage[],
 			options: { [name: string]: any },
-			token: CancellationToken
+			token: CancellationToken,
 		): ChatRequest;
 	}
 

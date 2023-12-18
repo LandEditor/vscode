@@ -7,8 +7,8 @@ import { IAction } from "vs/base/common/actions";
 import { distinct } from "vs/base/common/arrays";
 import {
 	CancelablePromise,
-	createCancelablePromise,
 	Promises,
+	createCancelablePromise,
 	raceCancellablePromises,
 	raceCancellation,
 	timeout,
@@ -19,8 +19,8 @@ import { Emitter, Event } from "vs/base/common/event";
 import {
 	Disposable,
 	DisposableStore,
-	isDisposable,
 	MutableDisposable,
+	isDisposable,
 	toDisposable,
 } from "vs/base/common/lifecycle";
 import { localize } from "vs/nls";
@@ -29,9 +29,9 @@ import { areSameExtensions } from "vs/platform/extensionManagement/common/extens
 import {
 	IExtensionRecommendationNotificationService,
 	IExtensionRecommendations,
-	RecommendationsNotificationResult,
 	RecommendationSource,
 	RecommendationSourceToString,
+	RecommendationsNotificationResult,
 } from "vs/platform/extensionRecommendations/common/extensionRecommendations";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import {
@@ -60,8 +60,8 @@ import {
 import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
 import {
 	EnablementState,
-	IWorkbenchExtensionManagementService,
 	IWorkbenchExtensionEnablementService,
+	IWorkbenchExtensionManagementService,
 } from "vs/workbench/services/extensionManagement/common/extensionManagement";
 import { IExtensionIgnoredRecommendationsService } from "vs/workbench/services/extensionRecommendations/common/extensionRecommendations";
 
@@ -116,13 +116,13 @@ class RecommendationsNotification extends Disposable {
 	readonly onDidChangeVisibility = this._onDidChangeVisibility.event;
 
 	private notificationHandle: INotificationHandle | undefined;
-	private cancelled: boolean = false;
+	private cancelled = false;
 
 	constructor(
 		private readonly severity: Severity,
 		private readonly message: string,
 		private readonly choices: IPromptChoice[],
-		private readonly notificationService: INotificationService
+		private readonly notificationService: INotificationService,
 	) {
 		super();
 	}
@@ -134,8 +134,8 @@ class RecommendationsNotification extends Disposable {
 					this.severity,
 					this.message,
 					this.choices,
-					{ sticky: true, onCancel: () => (this.cancelled = true) }
-				)
+					{ sticky: true, onCancel: () => (this.cancelled = true) },
+				),
 			);
 		}
 	}
@@ -153,8 +153,8 @@ class RecommendationsNotification extends Disposable {
 					{
 						priority: NotificationPriority.SILENT,
 						onCancel: () => (this.cancelled = true),
-					}
-				)
+					},
+				),
 			);
 		}
 	}
@@ -165,7 +165,7 @@ class RecommendationsNotification extends Disposable {
 
 	private onDidCloseDisposable = this._register(new MutableDisposable());
 	private onDidChangeVisibilityDisposable = this._register(
-		new MutableDisposable()
+		new MutableDisposable(),
 	);
 	private updateNotificationHandle(notificationHandle: INotificationHandle) {
 		this.onDidCloseDisposable.clear();
@@ -181,11 +181,11 @@ class RecommendationsNotification extends Disposable {
 
 				this._onDidClose.dispose();
 				this._onDidChangeVisibility.dispose();
-			}
+			},
 		);
 		this.onDidChangeVisibilityDisposable.value =
 			this.notificationHandle.onDidChangeVisibility((e) =>
-				this._onDidChangeVisibility.fire(e)
+				this._onDidChangeVisibility.fire(e),
 			);
 	}
 }
@@ -216,11 +216,11 @@ export class ExtensionRecommendationNotificationService
 						this.storageService.get(
 							ignoreImportantExtensionRecommendationStorageKey,
 							StorageScope.PROFILE,
-							"[]"
-						)
+							"[]",
+						),
 					)
 				)),
-			].map((i) => i.toLowerCase())
+			].map((i) => i.toLowerCase()),
 		);
 	}
 
@@ -268,7 +268,7 @@ export class ExtensionRecommendationNotificationService
 	}
 
 	async promptImportantExtensionsInstallNotification(
-		extensionRecommendations: IExtensionRecommendations
+		extensionRecommendations: IExtensionRecommendations,
 	): Promise<RecommendationsNotificationResult> {
 		const ignoredRecommendations = [
 			...this.extensionIgnoredRecommendationsService
@@ -276,7 +276,7 @@ export class ExtensionRecommendationNotificationService
 			...this.ignoredRecommendations,
 		];
 		const extensions = extensionRecommendations.extensions.filter(
-			(id) => !ignoredRecommendations.includes(id)
+			(id) => !ignoredRecommendations.includes(id),
 		);
 		if (!extensions.length) {
 			return RecommendationsNotificationResult.Ignored;
@@ -298,9 +298,9 @@ export class ExtensionRecommendationNotificationService
 							userReaction: "install",
 							extensionId: extension.identifier.id,
 							source: RecommendationSourceToString(
-								extensionRecommendations.source
+								extensionRecommendations.source,
 							),
-						})
+						}),
 					),
 				onDidShowRecommendedExtensions: (extensions: IExtension[]) =>
 					extensions.forEach((extension) =>
@@ -315,9 +315,9 @@ export class ExtensionRecommendationNotificationService
 							userReaction: "show",
 							extensionId: extension.identifier.id,
 							source: RecommendationSourceToString(
-								extensionRecommendations.source
+								extensionRecommendations.source,
 							),
-						})
+						}),
 					),
 				onDidCancelRecommendedExtensions: (extensions: IExtension[]) =>
 					extensions.forEach((extension) =>
@@ -332,16 +332,16 @@ export class ExtensionRecommendationNotificationService
 							userReaction: "cancelled",
 							extensionId: extension.identifier.id,
 							source: RecommendationSourceToString(
-								extensionRecommendations.source
+								extensionRecommendations.source,
 							),
-						})
+						}),
 					),
 				onDidNeverShowRecommendedExtensionsAgain: (
-					extensions: IExtension[]
+					extensions: IExtension[],
 				) => {
 					for (const extension of extensions) {
 						this.addToImportantRecommendationsIgnore(
-							extension.identifier.id
+							extension.identifier.id,
 						);
 						this.telemetryService.publicLog2<
 							{
@@ -354,7 +354,7 @@ export class ExtensionRecommendationNotificationService
 							userReaction: "neverShowAgain",
 							extensionId: extension.identifier.id,
 							source: RecommendationSourceToString(
-								extensionRecommendations.source
+								extensionRecommendations.source,
 							),
 						});
 					}
@@ -362,7 +362,7 @@ export class ExtensionRecommendationNotificationService
 						Severity.Info,
 						localize(
 							"ignoreExtensionRecommendations",
-							"Do you want to ignore all extension recommendations?"
+							"Do you want to ignore all extension recommendations?",
 						),
 						[
 							{
@@ -375,21 +375,21 @@ export class ExtensionRecommendationNotificationService
 								run: () =>
 									this.setIgnoreRecommendationsConfig(false),
 							},
-						]
+						],
 					);
 				},
-			}
+			},
 		);
 	}
 
 	async promptWorkspaceRecommendations(
-		recommendations: string[]
+		recommendations: string[],
 	): Promise<void> {
 		if (
 			this.storageService.getBoolean(
 				donotShowWorkspaceRecommendationsStorageKey,
 				StorageScope.WORKSPACE,
-				false
+				false,
 			)
 		) {
 			return;
@@ -399,13 +399,13 @@ export class ExtensionRecommendationNotificationService
 		installed = installed.filter(
 			(l) =>
 				this.extensionEnablementService.getEnablementState(l) !==
-				EnablementState.DisabledByExtensionKind
+				EnablementState.DisabledByExtensionKind,
 		); // Filter extensions disabled by kind
 		recommendations = recommendations.filter((extensionId) =>
 			installed.every(
 				(local) =>
-					!areSameExtensions({ id: extensionId }, local.identifier)
-			)
+					!areSameExtensions({ id: extensionId }, local.identifier),
+			),
 		);
 		if (!recommendations.length) {
 			return;
@@ -422,7 +422,7 @@ export class ExtensionRecommendationNotificationService
 							"this repository means the current repository that is opened",
 						],
 					},
-					"this repository"
+					"this repository",
 				),
 			},
 			{
@@ -458,10 +458,10 @@ export class ExtensionRecommendationNotificationService
 						donotShowWorkspaceRecommendationsStorageKey,
 						true,
 						StorageScope.WORKSPACE,
-						StorageTarget.MACHINE
+						StorageTarget.MACHINE,
 					);
 				},
-			}
+			},
 		);
 	}
 
@@ -472,7 +472,7 @@ export class ExtensionRecommendationNotificationService
 			name,
 			searchValue,
 		}: IExtensionRecommendations,
-		recommendationsNotificationActions: RecommendationsNotificationActions
+		recommendationsNotificationActions: RecommendationsNotificationActions,
 	): Promise<RecommendationsNotificationResult> {
 		if (this.hasToIgnoreRecommendationNotifications()) {
 			return RecommendationsNotificationResult.Ignored;
@@ -523,14 +523,14 @@ export class ExtensionRecommendationNotificationService
 				"extensionFromPublisher",
 				"'{0}' extension from {1}",
 				extensions[0].displayName,
-				extensions[0].publisherDisplayName
+				extensions[0].publisherDisplayName,
 			);
 		} else {
 			const publishers = [
 				...extensions.reduce(
 					(result, extension) =>
 						result.add(extension.publisherDisplayName),
-					new Set<string>()
+					new Set<string>(),
 				),
 			];
 			if (publishers.length > 2) {
@@ -538,20 +538,20 @@ export class ExtensionRecommendationNotificationService
 					"extensionsFromMultiplePublishers",
 					"extensions from {0}, {1} and others",
 					publishers[0],
-					publishers[1]
+					publishers[1],
 				);
 			} else if (publishers.length === 2) {
 				extensionsMessage = localize(
 					"extensionsFromPublishers",
 					"extensions from {0} and {1}",
 					publishers[0],
-					publishers[1]
+					publishers[1],
 				);
 			} else {
 				extensionsMessage = localize(
 					"extensionsFromPublisher",
 					"extensions from {0}",
-					publishers[0]
+					publishers[0],
 				);
 			}
 		}
@@ -560,7 +560,7 @@ export class ExtensionRecommendationNotificationService
 			"recommended",
 			"Do you want to install the recommended {0} for {1}?",
 			extensionsMessage,
-			name
+			name,
 		);
 		if (source === RecommendationSource.EXE) {
 			message = localize(
@@ -572,7 +572,7 @@ export class ExtensionRecommendationNotificationService
 				},
 				"You have {0} installed on your system. Do you want to install the recommended {1} for it?",
 				name,
-				extensionsMessage
+				extensionsMessage,
 			);
 		}
 		if (!searchValue) {
@@ -582,7 +582,7 @@ export class ExtensionRecommendationNotificationService
 					: extensions
 							.map(
 								(extensionId) =>
-									`@id:${extensionId.identifier.id}`
+									`@id:${extensionId.identifier.id}`,
 							)
 							.join(" ");
 		}
@@ -594,11 +594,11 @@ export class ExtensionRecommendationNotificationService
 					message,
 					searchValue,
 					source,
-					recommendationsNotificationActions
-				)
+					recommendationsNotificationActions,
+				),
 			),
 			this._registerP(
-				this.waitUntilRecommendationsAreInstalled(extensions)
+				this.waitUntilRecommendationsAreInstalled(extensions),
 			),
 		]);
 	}
@@ -613,7 +613,7 @@ export class ExtensionRecommendationNotificationService
 			onDidShowRecommendedExtensions,
 			onDidCancelRecommendedExtensions,
 			onDidNeverShowRecommendedExtensionsAgain,
-		}: RecommendationsNotificationActions
+		}: RecommendationsNotificationActions,
 	): CancelablePromise<RecommendationsNotificationResult> {
 		return createCancelablePromise<RecommendationsNotificationResult>(
 			async (token) => {
@@ -623,8 +623,8 @@ export class ExtensionRecommendationNotificationService
 					this.runAction(
 						this.instantiationService.createInstance(
 							SearchExtensionsAction,
-							searchValue
-						)
+							searchValue,
+						),
 					);
 					onDidInstallRecommendedExtensions(extensions);
 					await Promises.settled<any>([
@@ -632,15 +632,15 @@ export class ExtensionRecommendationNotificationService
 							extensions.map((extension) =>
 								this.extensionsWorkbenchService.open(
 									extension,
-									{ pinned: true }
-								)
-							)
+									{ pinned: true },
+								),
+							),
 						),
 						this.extensionManagementService.installGalleryExtensions(
 							extensions.map((e) => ({
 								extension: e.gallery!,
 								options: { isMachineScoped },
-							}))
+							})),
 						),
 					]);
 				};
@@ -650,17 +650,17 @@ export class ExtensionRecommendationNotificationService
 					menu:
 						this.userDataSyncEnablementService.isEnabled() &&
 						this.userDataSyncEnablementService.isResourceEnabled(
-							SyncResource.Extensions
+							SyncResource.Extensions,
 						)
 							? [
 									{
 										label: localize(
 											"install and do no sync",
-											"Install (Do not sync)"
+											"Install (Do not sync)",
 										),
 										run: () => installExtensions(true),
 									},
-								]
+							  ]
 							: undefined,
 				});
 				choices.push(
@@ -668,21 +668,21 @@ export class ExtensionRecommendationNotificationService
 						{
 							label: localize(
 								"show recommendations",
-								"Show Recommendations"
+								"Show Recommendations",
 							),
 							run: async () => {
 								onDidShowRecommendedExtensions(extensions);
 								for (const extension of extensions) {
 									this.extensionsWorkbenchService.open(
 										extension,
-										{ pinned: true }
+										{ pinned: true },
 									);
 								}
 								this.runAction(
 									this.instantiationService.createInstance(
 										SearchExtensionsAction,
-										searchValue
-									)
+										searchValue,
+									),
 								);
 							},
 						},
@@ -691,11 +691,11 @@ export class ExtensionRecommendationNotificationService
 							isSecondary: true,
 							run: () => {
 								onDidNeverShowRecommendedExtensionsAgain(
-									extensions
+									extensions,
 								);
 							},
 						},
-					]
+					],
 				);
 				try {
 					accepted = await this.doShowRecommendationsNotification(
@@ -703,7 +703,7 @@ export class ExtensionRecommendationNotificationService
 						message,
 						choices,
 						source,
-						token
+						token,
 					);
 				} catch (error) {
 					if (!isCancellationError(error)) {
@@ -717,18 +717,18 @@ export class ExtensionRecommendationNotificationService
 					onDidCancelRecommendedExtensions(extensions);
 					return RecommendationsNotificationResult.Cancelled;
 				}
-			}
+			},
 		);
 	}
 
 	private waitUntilRecommendationsAreInstalled(
-		extensions: IExtension[]
+		extensions: IExtension[],
 	): CancelablePromise<RecommendationsNotificationResult.Accepted> {
 		const installedExtensions: string[] = [];
 		const disposables = new DisposableStore();
 		return createCancelablePromise(async (token) => {
 			disposables.add(
-				token.onCancellationRequested((e) => disposables.dispose())
+				token.onCancellationRequested((e) => disposables.dispose()),
 			);
 			return new Promise<RecommendationsNotificationResult.Accepted>(
 				(c, e) => {
@@ -736,23 +736,23 @@ export class ExtensionRecommendationNotificationService
 						this.extensionManagementService.onInstallExtension(
 							(e) => {
 								installedExtensions.push(
-									e.identifier.id.toLowerCase()
+									e.identifier.id.toLowerCase(),
 								);
 								if (
 									extensions.every((e) =>
 										installedExtensions.includes(
-											e.identifier.id.toLowerCase()
-										)
+											e.identifier.id.toLowerCase(),
+										),
 									)
 								) {
 									c(
-										RecommendationsNotificationResult.Accepted
+										RecommendationsNotificationResult.Accepted,
 									);
 								}
-							}
-						)
+							},
+						),
 					);
-				}
+				},
 			);
 		});
 	}
@@ -771,7 +771,7 @@ export class ExtensionRecommendationNotificationService
 		message: string,
 		choices: IPromptChoice[],
 		source: RecommendationSource,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<boolean> {
 		const disposables = new DisposableStore();
 		try {
@@ -780,23 +780,23 @@ export class ExtensionRecommendationNotificationService
 					severity,
 					message,
 					choices,
-					this.notificationService
-				)
+					this.notificationService,
+				),
 			);
 			disposables.add(
 				Event.once(
 					Event.filter(
 						recommendationsNotification.onDidChangeVisibility,
-						(e) => !e
-					)
-				)(() => this.showNextNotification())
+						(e) => !e,
+					),
+				)(() => this.showNextNotification()),
 			);
 			if (this.visibleNotification) {
 				const index = this.pendingNotificaitons.length;
 				disposables.add(
 					token.onCancellationRequested(() =>
-						this.pendingNotificaitons.splice(index, 1)
-					)
+						this.pendingNotificaitons.splice(index, 1),
+					),
 				);
 				this.pendingNotificaitons.push({
 					recommendationsNotification,
@@ -820,10 +820,10 @@ export class ExtensionRecommendationNotificationService
 			await raceCancellation(
 				new Promise((c) =>
 					disposables.add(
-						Event.once(recommendationsNotification.onDidClose)(c)
-					)
+						Event.once(recommendationsNotification.onDidClose)(c),
+					),
 				),
-				token
+				token,
 			);
 			return !recommendationsNotification.isCancelled();
 		} finally {
@@ -875,11 +875,11 @@ export class ExtensionRecommendationNotificationService
 			this.hideVisibleNotificationPromise = timeout(
 				Math.max(
 					timeInMillis - (Date.now() - visibleNotification.from),
-					0
-				)
+					0,
+				),
 			);
 			this.hideVisibleNotificationPromise.then(() =>
-				visibleNotification!.recommendationsNotification.hide()
+				visibleNotification!.recommendationsNotification.hide(),
 			);
 		}
 	}
@@ -891,7 +891,7 @@ export class ExtensionRecommendationNotificationService
 	}
 
 	private async getInstallableExtensions(
-		extensionIds: string[]
+		extensionIds: string[],
 	): Promise<IExtension[]> {
 		const result: IExtension[] = [];
 		if (extensionIds.length) {
@@ -899,13 +899,13 @@ export class ExtensionRecommendationNotificationService
 				await this.extensionsWorkbenchService.getExtensions(
 					extensionIds.map((id) => ({ id })),
 					{ source: "install-recommendations" },
-					CancellationToken.None
+					CancellationToken.None,
 				);
 			for (const extension of extensions) {
 				if (
 					extension.gallery &&
 					(await this.extensionManagementService.canInstall(
-						extension.gallery
+						extension.gallery,
 					))
 				) {
 					result.push(extension);
@@ -935,7 +935,7 @@ export class ExtensionRecommendationNotificationService
 				ignoreImportantExtensionRecommendationStorageKey,
 				JSON.stringify(importantRecommendationsIgnoreList),
 				StorageScope.PROFILE,
-				StorageTarget.USER
+				StorageTarget.USER,
 			);
 		}
 	}
@@ -943,7 +943,7 @@ export class ExtensionRecommendationNotificationService
 	private setIgnoreRecommendationsConfig(configVal: boolean) {
 		this.configurationService.updateValue(
 			"extensions.ignoreRecommendations",
-			configVal
+			configVal,
 		);
 	}
 

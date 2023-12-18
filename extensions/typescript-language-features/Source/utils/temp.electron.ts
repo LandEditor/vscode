@@ -66,6 +66,6 @@ export const getInstanceTempDir = (() => {
 export function getTempFile(prefix: string): string {
 	return path.join(
 		getInstanceTempDir(),
-		`${prefix}-${makeRandomHexString(20)}.tmp`
+		`${prefix}-${makeRandomHexString(20)}.tmp`,
 	);
 }

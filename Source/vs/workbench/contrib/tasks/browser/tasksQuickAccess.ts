@@ -3,39 +3,39 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { CancellationToken } from "vs/base/common/cancellation";
+import { matchesFuzzy } from "vs/base/common/filters";
+import { DisposableStore } from "vs/base/common/lifecycle";
+import { isString } from "vs/base/common/types";
 import { localize } from "vs/nls";
-import {
-	IQuickPickSeparator,
-	IQuickInputService,
-} from "vs/platform/quickinput/common/quickInput";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IDialogService } from "vs/platform/dialogs/common/dialogs";
+import { INotificationService } from "vs/platform/notification/common/notification";
 import {
 	IPickerQuickAccessItem,
 	PickerQuickAccessProvider,
 	TriggerAction,
 } from "vs/platform/quickinput/browser/pickerQuickAccess";
-import { matchesFuzzy } from "vs/base/common/filters";
-import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
+import {
+	IQuickInputService,
+	IQuickPickSeparator,
+} from "vs/platform/quickinput/common/quickInput";
+import { IStorageService } from "vs/platform/storage/common/storage";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import {
+	ITaskTwoLevelQuickPickEntry,
+	TaskQuickPick,
+} from "vs/workbench/contrib/tasks/browser/taskQuickPick";
 import {
 	ITaskService,
 	Task,
 } from "vs/workbench/contrib/tasks/common/taskService";
 import {
-	CustomTask,
-	ContributedTask,
 	ConfiguringTask,
+	ContributedTask,
+	CustomTask,
 } from "vs/workbench/contrib/tasks/common/tasks";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { DisposableStore } from "vs/base/common/lifecycle";
-import {
-	TaskQuickPick,
-	ITaskTwoLevelQuickPickEntry,
-} from "vs/workbench/contrib/tasks/browser/taskQuickPick";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { isString } from "vs/base/common/types";
-import { INotificationService } from "vs/platform/notification/common/notification";
-import { IDialogService } from "vs/platform/dialogs/common/dialogs";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import { IStorageService } from "vs/platform/storage/common/storage";
+import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
 
 export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQuickAccessItem> {
 	static PREFIX = "task ";
@@ -62,7 +62,7 @@ export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQ
 	protected async _getPicks(
 		filter: string,
 		disposables: DisposableStore,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<Array<IPickerQuickAccessItem | IQuickPickSeparator>> {
 		if (token.isCancellationRequested) {
 			return [];
@@ -75,7 +75,7 @@ export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQ
 			this._notificationService,
 			this._themeService,
 			this._dialogService,
-			this._storageService
+			this._storageService,
 		);
 		const topLevelPicks = await taskQuickPick.getTopLevelEntries();
 		const taskPicks: Array<IPickerQuickAccessItem | IQuickPickSeparator> =
@@ -121,10 +121,10 @@ export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQ
 					const showResult = await taskQuickPick.show(
 						localize(
 							"TaskService.pickRunTask",
-							"Select the task to run"
+							"Select the task to run",
 						),
 						undefined,
-						task
+						task,
 					);
 					if (showResult) {
 						this._taskService.run(showResult, {
@@ -144,7 +144,7 @@ export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQ
 	}
 
 	private async _toTask(
-		task: Task | ConfiguringTask
+		task: Task | ConfiguringTask,
 	): Promise<Task | undefined> {
 		if (!ConfiguringTask.is(task)) {
 			return task;

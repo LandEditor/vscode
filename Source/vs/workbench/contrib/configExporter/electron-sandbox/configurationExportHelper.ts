@@ -3,20 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	IConfigurationNode,
-	IConfigurationRegistry,
-	Extensions,
-	IConfigurationPropertySchema,
-} from "vs/platform/configuration/common/configurationRegistry";
-import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import { IFileService } from "vs/platform/files/common/files";
 import { VSBuffer } from "vs/base/common/buffer";
 import { URI } from "vs/base/common/uri";
+import { ICommandService } from "vs/platform/commands/common/commands";
+import {
+	Extensions,
+	IConfigurationNode,
+	IConfigurationPropertySchema,
+	IConfigurationRegistry,
+} from "vs/platform/configuration/common/configurationRegistry";
+import { IFileService } from "vs/platform/files/common/files";
 import { IProductService } from "vs/platform/product/common/productService";
+import { Registry } from "vs/platform/registry/common/platform";
+import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
+import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
 
 interface IExportedConfigurationNode {
 	name: string;
@@ -67,13 +67,13 @@ export class DefaultConfigurationExportHelper {
 		const resultString = JSON.stringify(config, undefined, "  ");
 		await this.fileService.writeFile(
 			target,
-			VSBuffer.fromString(resultString)
+			VSBuffer.fromString(resultString),
 		);
 	}
 
 	private getConfigModel(): IConfigurationExport {
 		const configRegistry = Registry.as<IConfigurationRegistry>(
-			Extensions.Configuration
+			Extensions.Configuration,
 		);
 		const configurations = configRegistry.getConfigurations().slice();
 		const settings: IExportedConfigurationNode[] = [];
@@ -81,7 +81,7 @@ export class DefaultConfigurationExportHelper {
 
 		const processProperty = (
 			name: string,
-			prop: IConfigurationPropertySchema
+			prop: IConfigurationPropertySchema,
 		) => {
 			if (processedNames.has(name)) {
 				console.warn("Setting is registered twice: " + name);

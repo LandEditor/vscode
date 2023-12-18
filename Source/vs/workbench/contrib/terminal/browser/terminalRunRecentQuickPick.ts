@@ -4,7 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Toggle } from "vs/base/browser/ui/toggle/toggle";
-import { isMacintosh, OperatingSystem } from "vs/base/common/platform";
+import { fromNow } from "vs/base/common/date";
+import { OperatingSystem, isMacintosh } from "vs/base/common/platform";
+import { ThemeIcon } from "vs/base/common/themables";
+import { URI } from "vs/base/common/uri";
 import { ITextModel } from "vs/editor/common/model";
 import { IModelService } from "vs/editor/common/services/model";
 import {
@@ -12,16 +15,19 @@ import {
 	ITextModelService,
 } from "vs/editor/common/services/resolverService";
 import { localize } from "vs/nls";
+import { IContextKey } from "vs/platform/contextkey/common/contextkey";
 import {
 	IInstantiationService,
 	ServicesAccessor,
 } from "vs/platform/instantiation/common/instantiation";
+import { showWithPinnedItems } from "vs/platform/quickinput/browser/quickPickPin";
 import {
 	IQuickInputButton,
 	IQuickInputService,
 	IQuickPickItem,
 	IQuickPickSeparator,
 } from "vs/platform/quickinput/common/quickInput";
+import { IStorageService } from "vs/platform/storage/common/storage";
 import {
 	ITerminalCommand,
 	TerminalCapability,
@@ -33,7 +39,8 @@ import {
 	inputActiveOptionBorder,
 	inputActiveOptionForeground,
 } from "vs/platform/theme/common/colorRegistry";
-import { ThemeIcon } from "vs/base/common/themables";
+import { AccessibleViewProviderId } from "vs/workbench/contrib/accessibility/browser/accessibilityConfiguration";
+import { IAccessibleViewService } from "vs/workbench/contrib/accessibility/browser/accessibleView";
 import { ITerminalInstance } from "vs/workbench/contrib/terminal/browser/terminal";
 import {
 	commandHistoryFuzzySearchIcon,
@@ -47,14 +54,7 @@ import {
 } from "vs/workbench/contrib/terminal/common/history";
 import { TerminalStorageKeys } from "vs/workbench/contrib/terminal/common/terminalStorageKeys";
 import { terminalStrings } from "vs/workbench/contrib/terminal/common/terminalStrings";
-import { URI } from "vs/base/common/uri";
-import { fromNow } from "vs/base/common/date";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { showWithPinnedItems } from "vs/platform/quickinput/browser/quickPickPin";
-import { IStorageService } from "vs/platform/storage/common/storage";
-import { IContextKey } from "vs/platform/contextkey/common/contextkey";
-import { IAccessibleViewService } from "vs/workbench/contrib/accessibility/browser/accessibleView";
-import { AccessibleViewProviderId } from "vs/workbench/contrib/accessibility/browser/accessibilityConfiguration";
 
 export async function showRunRecentQuickPick(
 	accessor: ServicesAccessor,
@@ -62,7 +62,7 @@ export async function showRunRecentQuickPick(
 	terminalInRunCommandPicker: IContextKey<boolean>,
 	type: "command" | "cwd",
 	filterMode?: "fuzzy" | "contiguous",
-	value?: string
+	value?: string,
 ): Promise<void> {
 	if (!instance.xterm) {
 		return;
@@ -102,14 +102,14 @@ export async function showRunRecentQuickPick(
 		placeholder = isMacintosh
 			? localize(
 					"selectRecentCommandMac",
-					"Select a command to run (hold Option-key to edit the command)"
-				)
+					"Select a command to run (hold Option-key to edit the command)",
+			  )
 			: localize(
 					"selectRecentCommand",
-					"Select a command to run (hold Alt-key to edit the command)"
-				);
+					"Select a command to run (hold Alt-key to edit the command)",
+			  );
 		const cmdDetection = instance.capabilities.get(
-			TerminalCapability.CommandDetection
+			TerminalCapability.CommandDetection,
 		);
 		const commands = cmdDetection?.commands;
 		// Current session history
@@ -138,7 +138,7 @@ export async function showRunRecentQuickPick(
 				let description = collapseTildePath(
 					entry.cwd,
 					instance.userHome,
-					instance.os === OperatingSystem.Windows ? "\\" : "/"
+					instance.os === OperatingSystem.Windows ? "\\" : "/",
 				);
 				if (entry.exitCode) {
 					// Since you cannot get the last command's exit code on pwsh, just whether it failed
@@ -213,14 +213,14 @@ export async function showRunRecentQuickPick(
 					type: "separator",
 					label: terminalStrings.previousSessionCategory,
 				},
-				...previousSessionItems
+				...previousSessionItems,
 			);
 		}
 
 		// Gather shell file history
 		const shellFileHistory = await instantiationService.invokeFunction(
 			getShellFileHistory,
-			instance.shellType
+			instance.shellType,
 		);
 		const dedupedShellFileItems: (IQuickPickItem & { rawLabel: string })[] =
 			[];
@@ -239,22 +239,22 @@ export async function showRunRecentQuickPick(
 					label: localize(
 						"shellFileHistoryCategory",
 						"{0} history",
-						instance.shellType
+						instance.shellType,
 					),
 				},
-				...dedupedShellFileItems
+				...dedupedShellFileItems,
 			);
 		}
 	} else {
 		placeholder = isMacintosh
 			? localize(
 					"selectRecentDirectoryMac",
-					"Select a directory to go to (hold Option-key to edit the command)"
-				)
+					"Select a directory to go to (hold Option-key to edit the command)",
+			  )
 			: localize(
 					"selectRecentDirectory",
-					"Select a directory to go to (hold Alt-key to edit the command)"
-				);
+					"Select a directory to go to (hold Alt-key to edit the command)",
+			  );
 		const cwds =
 			instance.capabilities.get(TerminalCapability.CwdDetection)?.cwds ||
 			[];
@@ -294,7 +294,7 @@ export async function showRunRecentQuickPick(
 					type: "separator",
 					label: terminalStrings.previousSessionCategory,
 				},
-				...previousSessionItems
+				...previousSessionItems,
 			);
 		}
 	}
@@ -316,11 +316,11 @@ export async function showRunRecentQuickPick(
 			terminalInRunCommandPicker,
 			type,
 			fuzzySearchToggle.checked ? "fuzzy" : "contiguous",
-			quickPick.value
+			quickPick.value,
 		);
 	});
 	const outputProvider = instantiationService.createInstance(
-		TerminalOutputProvider
+		TerminalOutputProvider,
 	);
 	const quickPick = quickInputService.createQuickPick<
 		IQuickPickItem & { rawLabel: string }
@@ -351,11 +351,11 @@ export async function showRunRecentQuickPick(
 						scheme: TerminalOutputProvider.scheme,
 						path: `${selectedCommand.command}... ${fromNow(
 							selectedCommand.timestamp,
-							true
+							true,
 						)}`,
 						fragment: output,
 						query: `terminal-output-${selectedCommand.timestamp}-${instance.instanceId}`,
-					})
+					}),
 				);
 				if (textContent) {
 					await editorService.openEditor({
@@ -370,7 +370,7 @@ export async function showRunRecentQuickPick(
 			terminalInRunCommandPicker,
 			type,
 			filterMode,
-			value
+			value,
 		);
 	});
 	quickPick.onDidChangeValue(async (value) => {
@@ -381,7 +381,7 @@ export async function showRunRecentQuickPick(
 				terminalInRunCommandPicker,
 				type,
 				filterMode,
-				value
+				value,
 			);
 		}
 	});
@@ -409,12 +409,12 @@ export async function showRunRecentQuickPick(
 			storageService,
 			runRecentStorageKey,
 			quickPick,
-			true
+			true,
 		);
 		quickPick.onDidHide(() => {
 			terminalInRunCommandPicker.set(false);
 			accessibleViewService.showLastProvider(
-				AccessibleViewProviderId.Terminal
+				AccessibleViewProviderId.Terminal,
 			);
 			r();
 		});
@@ -444,7 +444,7 @@ class TerminalOutputProvider implements ITextModelContentProvider {
 			resource.fragment,
 			null,
 			resource,
-			false
+			false,
 		);
 	}
 }

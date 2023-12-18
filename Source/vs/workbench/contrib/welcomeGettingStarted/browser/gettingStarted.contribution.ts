@@ -3,76 +3,76 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import {
-	GettingStartedInputSerializer,
-	GettingStartedPage,
-	inWelcomeContext,
-} from "vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	EditorExtensions,
-	IEditorFactoryRegistry,
-} from "vs/workbench/common/editor";
-import {
-	MenuId,
-	registerAction2,
-	Action2,
-} from "vs/platform/actions/common/actions";
-import {
-	IInstantiationService,
-	ServicesAccessor,
-} from "vs/platform/instantiation/common/instantiation";
-import {
-	ContextKeyExpr,
-	IContextKeyService,
-	RawContextKey,
-} from "vs/platform/contextkey/common/contextkey";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
 import { KeyCode } from "vs/base/common/keyCodes";
 import {
-	EditorPaneDescriptor,
-	IEditorPaneRegistry,
-} from "vs/workbench/browser/editor";
-import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
-import { IWalkthroughsService } from "vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService";
+	OperatingSystem as OS,
+	isLinux,
+	isMacintosh,
+	isWindows,
+} from "vs/base/common/platform";
+import { localize } from "vs/nls";
+import { Categories } from "vs/platform/action/common/actionCommonCategories";
 import {
-	GettingStartedEditorOptions,
-	GettingStartedInput,
-} from "vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedInput";
-import {
-	Extensions as WorkbenchExtensions,
-	IWorkbenchContributionsRegistry,
-} from "vs/workbench/common/contributions";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
-import {
-	ConfigurationScope,
-	Extensions as ConfigurationExtensions,
-	IConfigurationRegistry,
-} from "vs/platform/configuration/common/configurationRegistry";
-import { workbenchConfigurationNodeBase } from "vs/workbench/common/configuration";
-import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
+	Action2,
+	MenuId,
+	registerAction2,
+} from "vs/platform/actions/common/actions";
 import {
 	CommandsRegistry,
 	ICommandService,
 } from "vs/platform/commands/common/commands";
 import {
+	ConfigurationScope,
+	Extensions as ConfigurationExtensions,
+	IConfigurationRegistry,
+} from "vs/platform/configuration/common/configurationRegistry";
+import {
+	ContextKeyExpr,
+	IContextKeyService,
+	RawContextKey,
+} from "vs/platform/contextkey/common/contextkey";
+import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
+import {
+	IInstantiationService,
+	ServicesAccessor,
+} from "vs/platform/instantiation/common/instantiation";
+import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
+import {
 	IQuickInputService,
 	IQuickPickItem,
 } from "vs/platform/quickinput/common/quickInput";
-import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteAgentService";
+import { Registry } from "vs/platform/registry/common/platform";
 import {
-	isLinux,
-	isMacintosh,
-	isWindows,
-	OperatingSystem as OS,
-} from "vs/base/common/platform";
+	EditorPaneDescriptor,
+	IEditorPaneRegistry,
+} from "vs/workbench/browser/editor";
+import { workbenchConfigurationNodeBase } from "vs/workbench/common/configuration";
+import {
+	Extensions as WorkbenchExtensions,
+	IWorkbenchContributionsRegistry,
+} from "vs/workbench/common/contributions";
+import {
+	EditorExtensions,
+	IEditorFactoryRegistry,
+} from "vs/workbench/common/editor";
+import { ExtensionsInput } from "vs/workbench/contrib/extensions/common/extensionsInput";
+import {
+	GettingStartedInputSerializer,
+	GettingStartedPage,
+	inWelcomeContext,
+} from "vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted";
+import {
+	GettingStartedEditorOptions,
+	GettingStartedInput,
+} from "vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedInput";
+import { IWalkthroughsService } from "vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedService";
+import { StartupPageContribution } from "vs/workbench/contrib/welcomeGettingStarted/browser/startupPage";
+import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 import { IExtensionManagementServerService } from "vs/workbench/services/extensionManagement/common/extensionManagement";
 import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
-import { StartupPageContribution } from "vs/workbench/contrib/welcomeGettingStarted/browser/startupPage";
-import { ExtensionsInput } from "vs/workbench/contrib/extensions/common/extensionsInput";
-import { Categories } from "vs/platform/action/common/actionCommonCategories";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
+import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteAgentService";
 
 export * as icons from "vs/workbench/contrib/welcomeGettingStarted/browser/gettingStartedIcons";
 
@@ -101,7 +101,7 @@ registerAction2(
 				| string
 				| { category: string; step: string }
 				| undefined,
-			toSide: boolean | undefined
+			toSide: boolean | undefined,
 		) {
 			const editorGroupsService = accessor.get(IEditorGroupsService);
 			const instantiationService = accessor.get(IInstantiationService);
@@ -125,7 +125,7 @@ registerAction2(
 							group.activeEditorPane as GettingStartedPage
 						).makeCategoryVisibleWhenAvailable(
 							selectedCategory,
-							selectedStep
+							selectedStep,
 						);
 						return;
 					}
@@ -158,7 +158,7 @@ registerAction2(
 				) {
 					commandService.executeCommand(
 						"walkthroughs.selectStep",
-						selectedStep
+						selectedStep,
 					);
 					return;
 				}
@@ -174,7 +174,7 @@ registerAction2(
 								{
 									selectedCategory: selectedCategory,
 									selectedStep: selectedStep,
-								}
+								},
 							),
 						},
 					]);
@@ -194,7 +194,7 @@ registerAction2(
 								editor as GettingStartedPage
 							)?.makeCategoryVisibleWhenAvailable(
 								selectedCategory,
-								selectedStep
+								selectedStep,
 							);
 						});
 				}
@@ -204,24 +204,24 @@ registerAction2(
 				});
 			}
 		}
-	}
+	},
 );
 
 Registry.as<IEditorFactoryRegistry>(
-	EditorExtensions.EditorFactory
+	EditorExtensions.EditorFactory,
 ).registerEditorSerializer(
 	GettingStartedInput.ID,
-	GettingStartedInputSerializer
+	GettingStartedInputSerializer,
 );
 Registry.as<IEditorPaneRegistry>(
-	EditorExtensions.EditorPane
+	EditorExtensions.EditorPane,
 ).registerEditorPane(
 	EditorPaneDescriptor.create(
 		GettingStartedPage,
 		GettingStartedPage.ID,
-		localize("welcome", "Welcome")
+		localize("welcome", "Welcome"),
 	),
-	[new SyncDescriptor(GettingStartedInput)]
+	[new SyncDescriptor(GettingStartedInput)],
 );
 
 const category = { value: localize("welcome", "Welcome"), original: "Welcome" };
@@ -243,7 +243,7 @@ registerAction2(
 				},
 				precondition: ContextKeyExpr.equals(
 					"activeEditor",
-					"gettingStartedPage"
+					"gettingStartedPage",
 				),
 				f1: true,
 			});
@@ -256,7 +256,7 @@ registerAction2(
 				editorPane.escape();
 			}
 		}
-	}
+	},
 );
 
 CommandsRegistry.registerCommand({
@@ -268,7 +268,7 @@ CommandsRegistry.registerCommand({
 			editorPane.selectStepLoose(stepID);
 		} else {
 			console.error(
-				"Cannot run walkthroughs.selectStep outside of walkthrough context"
+				"Cannot run walkthroughs.selectStep outside of walkthrough context",
 			);
 		}
 	},
@@ -281,7 +281,7 @@ registerAction2(
 				id: "welcome.markStepComplete",
 				title: localize(
 					"welcome.markStepComplete",
-					"Mark Step Complete"
+					"Mark Step Complete",
 				),
 				category,
 			});
@@ -294,7 +294,7 @@ registerAction2(
 			const gettingStartedService = accessor.get(IWalkthroughsService);
 			gettingStartedService.progressStep(arg);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -304,7 +304,7 @@ registerAction2(
 				id: "welcome.markStepIncomplete",
 				title: localize(
 					"welcome.markStepInomplete",
-					"Mark Step Incomplete"
+					"Mark Step Incomplete",
 				),
 				category,
 			});
@@ -317,7 +317,7 @@ registerAction2(
 			const gettingStartedService = accessor.get(IWalkthroughsService);
 			gettingStartedService.deprogressStep(arg);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -328,7 +328,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"welcome.showAllWalkthroughs",
-						"Open Walkthrough..."
+						"Open Walkthrough...",
 					),
 					original: "Open Walkthrough...",
 				},
@@ -339,7 +339,7 @@ registerAction2(
 
 		private async getQuickPickItems(
 			contextService: IContextKeyService,
-			gettingStartedService: IWalkthroughsService
+			gettingStartedService: IWalkthroughsService,
 		): Promise<IQuickPickItem[]> {
 			const categories = await gettingStartedService.getWalkthroughs();
 			return categories
@@ -365,11 +365,11 @@ registerAction2(
 			quickPick.matchOnDetail = true;
 			quickPick.placeholder = localize(
 				"pickWalkthroughs",
-				"Select a walkthrough to open"
+				"Select a walkthrough to open",
 			);
 			quickPick.items = await this.getQuickPickItems(
 				contextService,
-				gettingStartedService
+				gettingStartedService,
 			);
 			quickPick.busy = true;
 			quickPick.onDidAccept(() => {
@@ -377,7 +377,7 @@ registerAction2(
 				if (selection) {
 					commandService.executeCommand(
 						"workbench.action.openWalkthrough",
-						selection.id
+						selection.id,
 					);
 				}
 				quickPick.hide();
@@ -387,13 +387,13 @@ registerAction2(
 			gettingStartedService.onDidAddWalkthrough(async () => {
 				quickPick.items = await this.getQuickPickItems(
 					contextService,
-					gettingStartedService
+					gettingStartedService,
 				);
 			});
 			quickPick.show();
 			quickPick.busy = false;
 		}
-	}
+	},
 );
 
 export const WorkspacePlatform = new RawContextKey<
@@ -403,8 +403,8 @@ export const WorkspacePlatform = new RawContextKey<
 	undefined,
 	localize(
 		"workspacePlatform",
-		"The platform of the current workspace, which in remote or serverless contexts may be different from the platform of the UI"
-	)
+		"The platform of the current workspace, which in remote or serverless contexts may be different from the platform of the UI",
+	),
 );
 class WorkspacePlatformContribution {
 	constructor(
@@ -456,14 +456,14 @@ class WorkspacePlatformContribution {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	WorkspacePlatformContribution,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );
 
 const configurationRegistry = Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration
+	ConfigurationExtensions.Configuration,
 );
 configurationRegistry.registerConfiguration({
 	...workbenchConfigurationNodeBase,
@@ -474,20 +474,20 @@ configurationRegistry.registerConfiguration({
 			default: true,
 			description: localize(
 				"workbench.welcomePage.walkthroughs.openOnInstall",
-				"When enabled, an extension's walkthrough will open upon install of the extension."
+				"When enabled, an extension's walkthrough will open upon install of the extension.",
 			),
 		},
 		"workbench.startupEditor": {
-			"scope": ConfigurationScope.RESOURCE,
-			"type": "string",
-			"enum": [
+			scope: ConfigurationScope.RESOURCE,
+			type: "string",
+			enum: [
 				"none",
 				"welcomePage",
 				"readme",
 				"newUntitledFile",
 				"welcomePageInEmptyWorkbench",
 			],
-			"enumDescriptions": [
+			enumDescriptions: [
 				localize(
 					{
 						comment: [
@@ -495,7 +495,7 @@ configurationRegistry.registerConfiguration({
 						],
 						key: "workbench.startupEditor.none",
 					},
-					"Start without an editor."
+					"Start without an editor.",
 				),
 				localize(
 					{
@@ -504,7 +504,7 @@ configurationRegistry.registerConfiguration({
 						],
 						key: "workbench.startupEditor.welcomePage",
 					},
-					"Open the Welcome page, with content to aid in getting started with VS Code and extensions."
+					"Open the Welcome page, with content to aid in getting started with VS Code and extensions.",
 				),
 				localize(
 					{
@@ -513,7 +513,7 @@ configurationRegistry.registerConfiguration({
 						],
 						key: "workbench.startupEditor.readme",
 					},
-					"Open the README when opening a folder that contains one, fallback to 'welcomePage' otherwise. Note: This is only observed as a global configuration, it will be ignored if set in a workspace or folder configuration."
+					"Open the README when opening a folder that contains one, fallback to 'welcomePage' otherwise. Note: This is only observed as a global configuration, it will be ignored if set in a workspace or folder configuration.",
 				),
 				localize(
 					{
@@ -522,7 +522,7 @@ configurationRegistry.registerConfiguration({
 						],
 						key: "workbench.startupEditor.newUntitledFile",
 					},
-					"Open a new untitled text file (only applies when opening an empty window)."
+					"Open a new untitled text file (only applies when opening an empty window).",
 				),
 				localize(
 					{
@@ -531,13 +531,13 @@ configurationRegistry.registerConfiguration({
 						],
 						key: "workbench.startupEditor.welcomePageInEmptyWorkbench",
 					},
-					"Open the Welcome page when opening an empty workbench."
+					"Open the Welcome page when opening an empty workbench.",
 				),
 			],
-			"default": "welcomePage",
-			"description": localize(
+			default: "welcomePage",
+			description: localize(
 				"workbench.startupEditor",
-				"Controls which editor is shown at startup, if none are restored from the previous session."
+				"Controls which editor is shown at startup, if none are restored from the previous session.",
 			),
 		},
 		"workbench.welcomePage.preferReducedMotion": {
@@ -546,19 +546,19 @@ configurationRegistry.registerConfiguration({
 			default: false,
 			deprecationMessage: localize(
 				"deprecationMessage",
-				"Deprecated, use the global `workbench.reduceMotion`."
+				"Deprecated, use the global `workbench.reduceMotion`.",
 			),
 			description: localize(
 				"workbench.welcomePage.preferReducedMotion",
-				"When enabled, reduce motion in welcome page."
+				"When enabled, reduce motion in welcome page.",
 			),
 		},
 	},
 });
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	StartupPageContribution,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );

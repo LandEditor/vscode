@@ -76,7 +76,7 @@ export interface IColorTheme {
 	getTokenStyleMetadata(
 		type: string,
 		modifiers: string[],
-		modelLanguage: string
+		modelLanguage: string,
 	): ITokenStyle | undefined;
 
 	/**
@@ -113,7 +113,7 @@ export interface IThemingParticipant {
 	(
 		theme: IColorTheme,
 		collector: ICssStyleCollector,
-		environment: IEnvironmentService
+		environment: IEnvironmentService,
 	): void;
 }
 
@@ -181,7 +181,7 @@ const themingRegistry = new ThemingRegistry();
 platform.Registry.add(Extensions.ThemingContribution, themingRegistry);
 
 export function registerThemingParticipant(
-	participant: IThemingParticipant
+	participant: IThemingParticipant,
 ): IDisposable {
 	return themingRegistry.onColorThemeChange(participant);
 }
@@ -200,8 +200,8 @@ export class Themable extends Disposable {
 		// Hook up to theme changes
 		this._register(
 			this.themeService.onDidColorThemeChange((theme) =>
-				this.onThemeChange(theme)
-			)
+				this.onThemeChange(theme),
+			),
 		);
 	}
 
@@ -217,7 +217,7 @@ export class Themable extends Disposable {
 
 	protected getColor(
 		id: string,
-		modify?: (color: Color, theme: IColorTheme) => Color
+		modify?: (color: Color, theme: IColorTheme) => Color,
 	): string | null {
 		let color = this.theme.getColor(id);
 

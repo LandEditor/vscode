@@ -10,7 +10,7 @@ import { ISequence } from "vs/editor/common/diff/defaultLinesDiffComputer/algori
 export class LineSequence implements ISequence {
 	constructor(
 		private readonly trimmedHash: number[],
-		private readonly lines: string[]
+		private readonly lines: string[],
 	) {}
 
 	getElement(offset: number): number {

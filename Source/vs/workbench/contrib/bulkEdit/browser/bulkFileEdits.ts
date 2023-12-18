@@ -3,40 +3,40 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { tail } from "vs/base/common/arrays";
+import { VSBuffer } from "vs/base/common/buffer";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { Schemas } from "vs/base/common/network";
+import { URI } from "vs/base/common/uri";
+import { ResourceFileEdit } from "vs/editor/browser/services/bulkEditService";
 import { WorkspaceFileEditOptions } from "vs/editor/common/languages";
-import {
-	IFileService,
-	FileSystemProviderCapabilities,
-	IFileContent,
-	IFileStatWithMetadata,
-} from "vs/platform/files/common/files";
-import { IProgress } from "vs/platform/progress/common/progress";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
-	IWorkingCopyFileService,
-	IFileOperationUndoRedoInfo,
-	IMoveOperation,
-	ICopyOperation,
-	IDeleteOperation,
-	ICreateOperation,
-	ICreateFileOperation,
-} from "vs/workbench/services/workingCopy/common/workingCopyFileService";
+	FileSystemProviderCapabilities,
+	IFileContent,
+	IFileService,
+	IFileStatWithMetadata,
+} from "vs/platform/files/common/files";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { ILogService } from "vs/platform/log/common/log";
+import { IProgress } from "vs/platform/progress/common/progress";
 import {
+	IUndoRedoService,
 	IWorkspaceUndoRedoElement,
 	UndoRedoElementType,
-	IUndoRedoService,
 	UndoRedoGroup,
 	UndoRedoSource,
 } from "vs/platform/undoRedo/common/undoRedo";
-import { URI } from "vs/base/common/uri";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { ILogService } from "vs/platform/log/common/log";
-import { VSBuffer } from "vs/base/common/buffer";
-import { ResourceFileEdit } from "vs/editor/browser/services/bulkEditService";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { tail } from "vs/base/common/arrays";
 import { ITextFileService } from "vs/workbench/services/textfile/common/textfiles";
-import { Schemas } from "vs/base/common/network";
+import {
+	ICopyOperation,
+	ICreateFileOperation,
+	ICreateOperation,
+	IDeleteOperation,
+	IFileOperationUndoRedoInfo,
+	IMoveOperation,
+	IWorkingCopyFileService,
+} from "vs/workbench/services/workingCopy/common/workingCopyFileService";
 
 interface IFileOperation {
 	uris: URI[];
@@ -58,7 +58,7 @@ class RenameEdit {
 	constructor(
 		readonly newUri: URI,
 		readonly oldUri: URI,
-		readonly options: WorkspaceFileEditOptions
+		readonly options: WorkspaceFileEditOptions,
 	) {}
 }
 
@@ -92,7 +92,7 @@ class RenameOperation implements IFileOperation {
 
 				// reverse edit
 				undoes.push(
-					new RenameEdit(edit.oldUri, edit.newUri, edit.options)
+					new RenameEdit(edit.oldUri, edit.newUri, edit.options),
 				);
 			}
 		}
@@ -104,13 +104,13 @@ class RenameOperation implements IFileOperation {
 		await this._workingCopyFileService.move(
 			moves,
 			token,
-			this._undoRedoInfo
+			this._undoRedoInfo,
 		);
 		return new RenameOperation(
 			undoes,
 			{ isUndoing: true },
 			this._workingCopyFileService,
-			this._fileService
+			this._fileService,
 		);
 	}
 
@@ -126,7 +126,7 @@ class CopyEdit {
 	constructor(
 		readonly newUri: URI,
 		readonly oldUri: URI,
-		readonly options: WorkspaceFileEditOptions
+		readonly options: WorkspaceFileEditOptions,
 	) {}
 }
 
@@ -170,7 +170,7 @@ class CopyOperation implements IFileOperation {
 		const stats = await this._workingCopyFileService.copy(
 			copies,
 			token,
-			this._undoRedoInfo
+			this._undoRedoInfo,
 		);
 		const undoes: DeleteEdit[] = [];
 
@@ -186,8 +186,8 @@ class CopyOperation implements IFileOperation {
 							this._edits[i].options.folder || stat.isDirectory,
 						...edit.options,
 					},
-					false
-				)
+					false,
+				),
 			);
 		}
 
@@ -208,7 +208,7 @@ class CreateEdit {
 	constructor(
 		readonly newUri: URI,
 		readonly options: WorkspaceFileEditOptions,
-		readonly contents: VSBuffer | undefined
+		readonly contents: VSBuffer | undefined,
 	) {}
 }
 
@@ -252,8 +252,8 @@ class CreateOperation implements IFileOperation {
 					typeof edit.contents !== "undefined"
 						? edit.contents
 						: await this._textFileService.getEncodedReadable(
-								edit.newUri
-							);
+								edit.newUri,
+						  );
 				fileCreates.push({
 					resource: edit.newUri,
 					contents: encodedReadable,
@@ -264,8 +264,8 @@ class CreateOperation implements IFileOperation {
 				new DeleteEdit(
 					edit.newUri,
 					edit.options,
-					!edit.options.folder && !edit.contents
-				)
+					!edit.options.folder && !edit.contents,
+				),
 			);
 		}
 
@@ -276,12 +276,12 @@ class CreateOperation implements IFileOperation {
 		await this._workingCopyFileService.createFolder(
 			folderCreates,
 			token,
-			this._undoRedoInfo
+			this._undoRedoInfo,
 		);
 		await this._workingCopyFileService.create(
 			fileCreates,
 			token,
-			this._undoRedoInfo
+			this._undoRedoInfo,
 		);
 
 		return this._instaService.createInstance(DeleteOperation, undoes, {
@@ -296,7 +296,7 @@ class CreateOperation implements IFileOperation {
 					? `folder ${edit.newUri}`
 					: `file ${edit.newUri} with ${
 							edit.contents?.byteLength || 0
-						} bytes`
+					  } bytes`,
 			)
 			.join(", ")})`;
 	}
@@ -307,7 +307,7 @@ class DeleteEdit {
 	constructor(
 		readonly oldUri: URI,
 		readonly options: WorkspaceFileEditOptions,
-		readonly undoesCreate: boolean
+		readonly undoesCreate: boolean,
 	) {}
 }
 
@@ -344,7 +344,7 @@ class DeleteOperation implements IFileOperation {
 			} catch (err) {
 				if (!edit.options.ignoreIfNotExists) {
 					throw new Error(
-						`${edit.oldUri} does not exist and can not be deleted`
+						`${edit.oldUri} does not exist and can not be deleted`,
 					);
 				}
 				continue;
@@ -357,10 +357,10 @@ class DeleteOperation implements IFileOperation {
 					!edit.options.skipTrashBin &&
 					this._fileService.hasCapability(
 						edit.oldUri,
-						FileSystemProviderCapabilities.Trash
+						FileSystemProviderCapabilities.Trash,
 					) &&
 					this._configurationService.getValue<boolean>(
-						"files.enableTrash"
+						"files.enableTrash",
 					),
 			});
 
@@ -382,7 +382,11 @@ class DeleteOperation implements IFileOperation {
 			}
 			if (fileContent !== undefined) {
 				undoes.push(
-					new CreateEdit(edit.oldUri, edit.options, fileContent.value)
+					new CreateEdit(
+						edit.oldUri,
+						edit.options,
+						fileContent.value,
+					),
 				);
 			}
 		}
@@ -394,7 +398,7 @@ class DeleteOperation implements IFileOperation {
 		await this._workingCopyFileService.delete(
 			deletes,
 			token,
-			this._undoRedoInfo
+			this._undoRedoInfo,
 		);
 
 		if (undoes.length === 0) {
@@ -419,7 +423,7 @@ class FileUndoRedoElement implements IWorkspaceUndoRedoElement {
 		readonly label: string,
 		readonly code: string,
 		readonly operations: IFileOperation[],
-		readonly confirmBeforeUndo: boolean
+		readonly confirmBeforeUndo: boolean,
 	) {
 		this.resources = operations.flatMap((op) => op.uris);
 	}
@@ -472,8 +476,8 @@ export class BulkFileEdits {
 					new RenameEdit(
 						edit.newResource,
 						edit.oldResource,
-						edit.options ?? {}
-					)
+						edit.options ?? {},
+					),
 				);
 			} else if (
 				edit.newResource &&
@@ -484,20 +488,20 @@ export class BulkFileEdits {
 					new CopyEdit(
 						edit.newResource,
 						edit.oldResource,
-						edit.options ?? {}
-					)
+						edit.options ?? {},
+					),
 				);
 			} else if (!edit.newResource && edit.oldResource) {
 				edits.push(
-					new DeleteEdit(edit.oldResource, edit.options ?? {}, false)
+					new DeleteEdit(edit.oldResource, edit.options ?? {}, false),
 				);
 			} else if (edit.newResource && !edit.oldResource) {
 				edits.push(
 					new CreateEdit(
 						edit.newResource,
 						edit.options ?? {},
-						await edit.options.contents
-					)
+						await edit.options.contents,
+					),
 				);
 			}
 		}
@@ -531,28 +535,28 @@ export class BulkFileEdits {
 					op = this._instaService.createInstance(
 						RenameOperation,
 						<RenameEdit[]>group,
-						undoRedoInfo
+						undoRedoInfo,
 					);
 					break;
 				case "copy":
 					op = this._instaService.createInstance(
 						CopyOperation,
 						<CopyEdit[]>group,
-						undoRedoInfo
+						undoRedoInfo,
 					);
 					break;
 				case "delete":
 					op = this._instaService.createInstance(
 						DeleteOperation,
 						<DeleteEdit[]>group,
-						undoRedoInfo
+						undoRedoInfo,
 					);
 					break;
 				case "create":
 					op = this._instaService.createInstance(
 						CreateOperation,
 						<CreateEdit[]>group,
-						undoRedoInfo
+						undoRedoInfo,
 					);
 					break;
 			}
@@ -568,12 +572,12 @@ export class BulkFileEdits {
 			this._label,
 			this._code,
 			undoOperations,
-			this._confirmBeforeUndo
+			this._confirmBeforeUndo,
 		);
 		this._undoRedoService.pushElement(
 			undoRedoElement,
 			this._undoRedoGroup,
-			this._undoRedoSource
+			this._undoRedoSource,
 		);
 		return undoRedoElement.resources;
 	}

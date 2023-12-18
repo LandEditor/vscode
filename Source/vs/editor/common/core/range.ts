@@ -52,7 +52,7 @@ export class Range {
 		startLineNumber: number,
 		startColumn: number,
 		endLineNumber: number,
-		endColumn: number
+		endColumn: number,
 	) {
 		if (
 			startLineNumber > endLineNumber ||
@@ -99,7 +99,7 @@ export class Range {
 	 */
 	public static containsPosition(
 		range: IRange,
-		position: IPosition
+		position: IPosition,
 	): boolean {
 		if (
 			position.lineNumber < range.startLineNumber ||
@@ -128,7 +128,7 @@ export class Range {
 	 */
 	public static strictContainsPosition(
 		range: IRange,
-		position: IPosition
+		position: IPosition,
 	): boolean {
 		if (
 			position.lineNumber < range.startLineNumber ||
@@ -201,7 +201,7 @@ export class Range {
 	 */
 	public static strictContainsRange(
 		range: IRange,
-		otherRange: IRange
+		otherRange: IRange,
 	): boolean {
 		if (
 			otherRange.startLineNumber < range.startLineNumber ||
@@ -274,7 +274,7 @@ export class Range {
 			startLineNumber,
 			startColumn,
 			endLineNumber,
-			endColumn
+			endColumn,
 		);
 	}
 
@@ -326,7 +326,7 @@ export class Range {
 			resultStartLineNumber,
 			resultStartColumn,
 			resultEndLineNumber,
-			resultEndColumn
+			resultEndColumn,
 		);
 	}
 
@@ -342,7 +342,7 @@ export class Range {
 	 */
 	public static equalsRange(
 		a: IRange | null | undefined,
-		b: IRange | null | undefined
+		b: IRange | null | undefined,
 	): boolean {
 		if (!a && !b) {
 			return true;
@@ -410,7 +410,7 @@ export class Range {
 			this.startLineNumber,
 			this.startColumn,
 			endLineNumber,
-			endColumn
+			endColumn,
 		);
 	}
 
@@ -419,13 +419,13 @@ export class Range {
 	 */
 	public setStartPosition(
 		startLineNumber: number,
-		startColumn: number
+		startColumn: number,
 	): Range {
 		return new Range(
 			startLineNumber,
 			startColumn,
 			this.endLineNumber,
-			this.endColumn
+			this.endColumn,
 		);
 	}
 
@@ -444,7 +444,7 @@ export class Range {
 			range.startLineNumber,
 			range.startColumn,
 			range.startLineNumber,
-			range.startColumn
+			range.startColumn,
 		);
 	}
 
@@ -463,7 +463,7 @@ export class Range {
 			range.endLineNumber,
 			range.endColumn,
 			range.endLineNumber,
-			range.endColumn
+			range.endColumn,
 		);
 	}
 
@@ -475,7 +475,7 @@ export class Range {
 			this.startLineNumber + lineCount,
 			this.startColumn,
 			this.endLineNumber + lineCount,
-			this.endColumn
+			this.endColumn,
 		);
 	}
 
@@ -483,13 +483,13 @@ export class Range {
 
 	public static fromPositions(
 		start: IPosition,
-		end: IPosition = start
+		end: IPosition = start,
 	): Range {
 		return new Range(
 			start.lineNumber,
 			start.column,
 			end.lineNumber,
-			end.column
+			end.column,
 		);
 	}
 
@@ -507,7 +507,7 @@ export class Range {
 			range.startLineNumber,
 			range.startColumn,
 			range.endLineNumber,
-			range.endColumn
+			range.endColumn,
 		);
 	}
 
@@ -582,7 +582,7 @@ export class Range {
 	 */
 	public static compareRangesUsingStarts(
 		a: IRange | null | undefined,
-		b: IRange | null | undefined
+		b: IRange | null | undefined,
 	): number {
 		if (a && b) {
 			const aStartLineNumber = a.startLineNumber | 0;

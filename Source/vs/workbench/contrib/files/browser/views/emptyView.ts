@@ -3,37 +3,37 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { DragAndDropObserver, getWindow } from "vs/base/browser/dom";
+import { isWeb } from "vs/base/common/platform";
 import * as nls from "vs/nls";
-import { IViewletViewOptions } from "vs/workbench/browser/parts/views/viewsViewlet";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import {
-	isTemporaryWorkspace,
-	IWorkspaceContextService,
-	WorkbenchState,
-} from "vs/platform/workspace/common/workspace";
+import { ILocalizedString } from "vs/platform/action/common/action";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { ViewPane } from "vs/workbench/browser/parts/views/viewPane";
-import { ResourcesDropHandler } from "vs/workbench/browser/dnd";
-import { listDropBackground } from "vs/platform/theme/common/colorRegistry";
-import { ILabelService } from "vs/platform/label/common/label";
 import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import { IViewDescriptorService } from "vs/workbench/common/views";
+import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { ILabelService } from "vs/platform/label/common/label";
 import { IOpenerService } from "vs/platform/opener/common/opener";
 import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { isWeb } from "vs/base/common/platform";
-import { DragAndDropObserver, getWindow } from "vs/base/browser/dom";
-import { ILocalizedString } from "vs/platform/action/common/action";
+import { listDropBackground } from "vs/platform/theme/common/colorRegistry";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import {
+	IWorkspaceContextService,
+	WorkbenchState,
+	isTemporaryWorkspace,
+} from "vs/platform/workspace/common/workspace";
+import { ResourcesDropHandler } from "vs/workbench/browser/dnd";
+import { ViewPane } from "vs/workbench/browser/parts/views/viewPane";
+import { IViewletViewOptions } from "vs/workbench/browser/parts/views/viewsViewlet";
+import { IViewDescriptorService } from "vs/workbench/common/views";
 
 export class EmptyView extends ViewPane {
 	static readonly ID: string = "workbench.explorer.emptyView";
 	static readonly NAME: ILocalizedString = nls.localize2(
 		"noWorkspace",
-		"No Folder Opened"
+		"No Folder Opened",
 	);
-	private _disposed: boolean = false;
+	private _disposed = false;
 
 	constructor(
 		options: IViewletViewOptions,
@@ -91,9 +91,9 @@ export class EmptyView extends ViewPane {
 								allowWorkspaceOpen:
 									!isWeb ||
 									isTemporaryWorkspace(
-										this.contextService.getWorkspace()
+										this.contextService.getWorkspace(),
 									),
-							}
+							},
 						);
 					dropHandler.handleDrop(e, getWindow(container));
 				},
@@ -116,7 +116,7 @@ export class EmptyView extends ViewPane {
 						e.dataTransfer.dropEffect = "copy";
 					}
 				},
-			})
+			}),
 		);
 
 		this.refreshTitle();

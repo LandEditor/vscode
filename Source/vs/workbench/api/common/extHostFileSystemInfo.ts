@@ -37,7 +37,7 @@ export class ExtHostFileSystemInfo implements ExtHostFileSystemInfoShape {
 
 	$acceptProviderInfos(
 		uri: UriComponents,
-		capabilities: number | null
+		capabilities: number | null,
 	): void {
 		if (capabilities === null) {
 			this._providerInfo.delete(uri.scheme);
@@ -61,5 +61,5 @@ export interface IExtHostFileSystemInfo extends ExtHostFileSystemInfo {
 	readonly extUri: IExtUri;
 }
 export const IExtHostFileSystemInfo = createDecorator<IExtHostFileSystemInfo>(
-	"IExtHostFileSystemInfo"
+	"IExtHostFileSystemInfo",
 );

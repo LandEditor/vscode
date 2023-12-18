@@ -19,7 +19,7 @@ const eventPrivateApis = new WeakMap<vscode.TestItem, IExtHostTestItemApi>();
 
 export const createPrivateApiFor = (
 	impl: vscode.TestItem,
-	controllerId: string
+	controllerId: string,
 ) => {
 	const api: IExtHostTestItemApi = { controllerId };
 	eventPrivateApis.set(impl, api);

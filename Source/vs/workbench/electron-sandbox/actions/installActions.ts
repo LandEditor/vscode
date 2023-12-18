@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { toErrorMessage } from "vs/base/common/errorMessage";
 import { localize } from "vs/nls";
-import { Action2 } from "vs/platform/actions/common/actions";
 import { ILocalizedString } from "vs/platform/action/common/action";
-import product from "vs/platform/product/common/product";
+import { Action2 } from "vs/platform/actions/common/actions";
 import { IDialogService } from "vs/platform/dialogs/common/dialogs";
 import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
 import { INativeHostService } from "vs/platform/native/common/native";
-import { toErrorMessage } from "vs/base/common/errorMessage";
+import product from "vs/platform/product/common/product";
 import { IProductService } from "vs/platform/product/common/productService";
 
 const shellCommandCategory: ILocalizedString = {
@@ -26,7 +26,7 @@ export class InstallShellScriptAction extends Action2 {
 				value: localize(
 					"install",
 					"Install '{0}' command in PATH",
-					product.applicationName
+					product.applicationName,
 				),
 				original: `Install \'${product.applicationName}\' command in PATH`,
 			},
@@ -47,8 +47,8 @@ export class InstallShellScriptAction extends Action2 {
 				localize(
 					"successIn",
 					"Shell command '{0}' successfully installed in PATH.",
-					productService.applicationName
-				)
+					productService.applicationName,
+				),
 			);
 		} catch (error) {
 			dialogService.error(toErrorMessage(error));
@@ -64,7 +64,7 @@ export class UninstallShellScriptAction extends Action2 {
 				value: localize(
 					"uninstall",
 					"Uninstall '{0}' command from PATH",
-					product.applicationName
+					product.applicationName,
 				),
 				original: `Uninstall \'${product.applicationName}\' command from PATH`,
 			},
@@ -85,8 +85,8 @@ export class UninstallShellScriptAction extends Action2 {
 				localize(
 					"successFrom",
 					"Shell command '{0}' successfully uninstalled from PATH.",
-					productService.applicationName
-				)
+					productService.applicationName,
+				),
 			);
 		} catch (error) {
 			dialogService.error(toErrorMessage(error));

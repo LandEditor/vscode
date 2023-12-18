@@ -4,13 +4,16 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as dom from "vs/base/browser/dom";
+import { StandardMouseEvent } from "vs/base/browser/mouseEvent";
 import { ActionBar } from "vs/base/browser/ui/actionbar/actionbar";
 import { Action, ActionRunner } from "vs/base/common/actions";
 import { Codicon } from "vs/base/common/codicons";
 import { Disposable } from "vs/base/common/lifecycle";
+import { MarshalledId } from "vs/base/common/marshallingIds";
 import * as strings from "vs/base/common/strings";
-import * as languages from "vs/editor/common/languages";
+import { ThemeIcon } from "vs/base/common/themables";
 import { IRange } from "vs/editor/common/core/range";
+import * as languages from "vs/editor/common/languages";
 import * as nls from "vs/nls";
 import { createActionViewItem } from "vs/platform/actions/browser/menuEntryActionViewItem";
 import {
@@ -19,18 +22,15 @@ import {
 	SubmenuItemAction,
 } from "vs/platform/actions/common/actions";
 import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { registerIcon } from "vs/platform/theme/common/iconRegistry";
-import { ThemeIcon } from "vs/base/common/themables";
 import { CommentMenus } from "vs/workbench/contrib/comments/browser/commentMenus";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { MarshalledId } from "vs/base/common/marshallingIds";
-import { StandardMouseEvent } from "vs/base/browser/mouseEvent";
 
 const collapseIcon = registerIcon(
 	"review-comment-collapse",
 	Codicon.chevronUp,
-	nls.localize("collapseIcon", "Icon to collapse a review comment.")
+	nls.localize("collapseIcon", "Icon to collapse a review comment."),
 );
 const COLLAPSE_ACTION_CLASS =
 	"expand-review-action " + ThemeIcon.asClassName(collapseIcon);
@@ -48,7 +48,7 @@ export class CommentThreadHeader<T = IRange> extends Disposable {
 		private _commentThread: languages.CommentThread<T>,
 		private _contextKeyService: IContextKeyService,
 		private instantiationService: IInstantiationService,
-		private _contextMenuService: IContextMenuService
+		private _contextMenuService: IContextMenuService,
 	) {
 		super();
 		this._headElement = <HTMLDivElement>dom.$(".head");
@@ -59,7 +59,7 @@ export class CommentThreadHeader<T = IRange> extends Disposable {
 	protected _fillHead(): void {
 		const titleElement = dom.append(
 			this._headElement,
-			dom.$(".review-title")
+			dom.$(".review-title"),
 		);
 
 		this._headingLabel = dom.append(titleElement, dom.$("span.filename"));
@@ -67,12 +67,12 @@ export class CommentThreadHeader<T = IRange> extends Disposable {
 
 		const actionsContainer = dom.append(
 			this._headElement,
-			dom.$(".review-actions")
+			dom.$(".review-actions"),
 		);
 		this._actionbarWidget = new ActionBar(actionsContainer, {
 			actionViewItemProvider: createActionViewItem.bind(
 				undefined,
-				this.instantiationService
+				this.instantiationService,
 			),
 		});
 
@@ -83,11 +83,11 @@ export class CommentThreadHeader<T = IRange> extends Disposable {
 			nls.localize("label.collapse", "Collapse"),
 			COLLAPSE_ACTION_CLASS,
 			true,
-			() => this._delegate.collapse()
+			() => this._delegate.collapse(),
 		);
 
 		const menu = this._commentMenus.getCommentThreadTitleActions(
-			this._contextKeyService
+			this._contextKeyService,
 		);
 		this.setActionBarActions(menu);
 
@@ -95,7 +95,7 @@ export class CommentThreadHeader<T = IRange> extends Disposable {
 		this._register(
 			menu.onDidChange((e) => {
 				this.setActionBarActions(menu);
-			})
+			}),
 		);
 
 		this._register(
@@ -104,8 +104,8 @@ export class CommentThreadHeader<T = IRange> extends Disposable {
 				dom.EventType.CONTEXT_MENU,
 				(e) => {
 					return this.onContextMenu(e);
-				}
-			)
+				},
+			),
 		);
 
 		this._actionbarWidget.context = this._commentThread;
@@ -116,7 +116,7 @@ export class CommentThreadHeader<T = IRange> extends Disposable {
 			.getActions({ shouldForwardArgs: true })
 			.reduce(
 				(r, [, actions]) => [...r, ...actions],
-				<(MenuItemAction | SubmenuItemAction)[]>[]
+				<(MenuItemAction | SubmenuItemAction)[]>[],
 			);
 		this._actionbarWidget.clear();
 		this._actionbarWidget.push([...groups, this._collapseAction], {
@@ -162,14 +162,13 @@ export class CommentThreadHeader<T = IRange> extends Disposable {
 		const actions = this._commentMenus
 			.getCommentThreadTitleContextActions(this._contextKeyService)
 			.getActions({ shouldForwardArgs: true })
-			.map((value) => value[1])
-			.flat();
+			.flatMap((value) => value[1]);
 		if (!actions.length) {
 			return;
 		}
 		const event = new StandardMouseEvent(
 			dom.getWindow(this._headElement),
-			e
+			e,
 		);
 		this._contextMenuService.showContextMenu({
 			getAnchor: () => event,

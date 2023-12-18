@@ -38,11 +38,11 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
 	}
 
 	protected provideWithoutTextEditor(
-		picker: IQuickPick<IGotoLineQuickPickItem>
+		picker: IQuickPick<IGotoLineQuickPickItem>,
 	): IDisposable {
 		const label = localize(
 			"cannotRunGotoLine",
-			"Open a text editor first to go to a line."
+			"Open a text editor first to go to a line.",
 		);
 
 		picker.items = [{ label }];
@@ -54,7 +54,7 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
 	protected provideWithTextEditor(
 		context: IQuickAccessTextEditorContext,
 		picker: IQuickPick<IGotoLineQuickPickItem>,
-		token: CancellationToken
+		token: CancellationToken,
 	): IDisposable {
 		const editor = context.editor;
 		const disposables = new DisposableStore();
@@ -78,7 +78,7 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
 						picker.hide();
 					}
 				}
-			})
+			}),
 		);
 
 		// React to picker changes
@@ -87,12 +87,12 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
 				editor,
 				picker.value
 					.trim()
-					.substr(AbstractGotoLineQuickAccessProvider.PREFIX.length)
+					.substr(AbstractGotoLineQuickAccessProvider.PREFIX.length),
 			);
 			const label = this.getPickLabel(
 				editor,
 				position.lineNumber,
-				position.column
+				position.column,
 			);
 
 			// Picker
@@ -133,8 +133,8 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
 
 				disposables.add(
 					toDisposable(() =>
-						codeEditor.updateOptions({ lineNumbers: "relative" })
-					)
+						codeEditor.updateOptions({ lineNumbers: "relative" }),
+					),
 				);
 			}
 		}
@@ -168,7 +168,7 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
 	private getPickLabel(
 		editor: IEditor,
 		lineNumber: number,
-		column: number | undefined
+		column: number | undefined,
 	): string {
 		// Location valid: indicate this as picker label
 		if (this.isValidLineNumber(editor, lineNumber)) {
@@ -177,7 +177,7 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
 					"gotoLineColumnLabel",
 					"Go to line {0} and character {1}.",
 					lineNumber,
-					column
+					column,
 				);
 			}
 
@@ -193,7 +193,7 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
 				"Current Line: {0}, Character: {1}. Type a line number between 1 and {2} to navigate to.",
 				position.lineNumber,
 				position.column,
-				lineCount
+				lineCount,
 			);
 		}
 
@@ -201,13 +201,13 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
 			"gotoLineLabelEmpty",
 			"Current Line: {0}, Character: {1}. Type a line number to navigate to.",
 			position.lineNumber,
-			position.column
+			position.column,
 		);
 	}
 
 	private isValidLineNumber(
 		editor: IEditor,
-		lineNumber: number | undefined
+		lineNumber: number | undefined,
 	): boolean {
 		if (!lineNumber || typeof lineNumber !== "number") {
 			return false;
@@ -219,7 +219,7 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
 	private isValidColumn(
 		editor: IEditor,
 		lineNumber: number,
-		column: number | undefined
+		column: number | undefined,
 	): boolean {
 		if (!column || typeof column !== "number") {
 			return false;

@@ -2,30 +2,29 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-"use strict";
 
-let i18n = require("../lib/i18n");
+const i18n = require("../lib/i18n");
 
-let fs = require("fs");
-let path = require("path");
+const fs = require("fs");
+const path = require("path");
 
-let gulp = require("gulp");
-let vfs = require("vinyl-fs");
-let rimraf = require("rimraf");
-let minimist = require("minimist");
+const gulp = require("gulp");
+const vfs = require("vinyl-fs");
+const rimraf = require("rimraf");
+const minimist = require("minimist");
 
 function update(options) {
-	let idOrPath = options._;
+	const idOrPath = options._;
 	if (!idOrPath) {
 		throw new Error(
-			"Argument must be the location of the localization extension."
+			"Argument must be the location of the localization extension.",
 		);
 	}
-	let location = options.location;
+	const location = options.location;
 	if (location !== undefined && !fs.existsSync(location)) {
 		throw new Error(`${location} doesn't exist.`);
 	}
-	let externalExtensionsLocation = options.externalExtensionsLocation;
+	const externalExtensionsLocation = options.externalExtensionsLocation;
 	if (
 		externalExtensionsLocation !== undefined &&
 		!fs.existsSync(externalExtensionsLocation)
@@ -38,41 +37,41 @@ function update(options) {
 			"..",
 			"vscode-loc",
 			"i18n",
-			`vscode-language-pack-${idOrPath}`
+			`vscode-language-pack-${idOrPath}`,
 		);
 	}
-	let locExtStat = fs.statSync(locExtFolder);
+	const locExtStat = fs.statSync(locExtFolder);
 	if (!locExtStat || !locExtStat.isDirectory) {
 		throw new Error("No directory found at " + idOrPath);
 	}
-	let packageJSON = JSON.parse(
-		fs.readFileSync(path.join(locExtFolder, "package.json")).toString()
+	const packageJSON = JSON.parse(
+		fs.readFileSync(path.join(locExtFolder, "package.json")).toString(),
 	);
-	let contributes = packageJSON["contributes"];
+	const contributes = packageJSON["contributes"];
 	if (!contributes) {
 		throw new Error(
-			'The extension must define a "localizations" contribution in the "package.json"'
+			'The extension must define a "localizations" contribution in the "package.json"',
 		);
 	}
-	let localizations = contributes["localizations"];
+	const localizations = contributes["localizations"];
 	if (!localizations) {
 		throw new Error(
-			'The extension must define a "localizations" contribution of type array in the "package.json"'
+			'The extension must define a "localizations" contribution of type array in the "package.json"',
 		);
 	}
 
-	localizations.forEach(function (localization) {
+	localizations.forEach((localization) => {
 		if (
 			!localization.languageId ||
 			!localization.languageName ||
 			!localization.localizedLanguageName
 		) {
 			throw new Error(
-				'Each localization contribution must define "languageId", "languageName" and "localizedLanguageName" properties.'
+				'Each localization contribution must define "languageId", "languageName" and "localizedLanguageName" properties.',
 			);
 		}
 		let languageId = localization.languageId;
-		let translationDataFolder = path.join(locExtFolder, "translations");
+		const translationDataFolder = path.join(locExtFolder, "translations");
 
 		switch (languageId) {
 			case "zh-cn":
@@ -95,7 +94,7 @@ function update(options) {
 		}
 
 		console.log(
-			`Importing translations for ${languageId} form '${location}' to '${translationDataFolder}' ...`
+			`Importing translations for ${languageId} form '${location}' to '${translationDataFolder}' ...`,
 		);
 		let translationPaths = [];
 		gulp.src(
@@ -106,11 +105,11 @@ function update(options) {
 						externalExtensionsLocation,
 						extensionId,
 						languageId,
-						"*-new.xlf"
-					)
+						"*-new.xlf",
+					),
 				),
 			],
-			{ silent: false }
+			{ silent: false },
 		)
 			.pipe(i18n.prepareI18nPackFiles(translationPaths))
 			.on("error", (error) => {
@@ -125,10 +124,10 @@ function update(options) {
 				}
 			})
 			.pipe(vfs.dest(translationDataFolder))
-			.on("end", function () {
+			.on("end", () => {
 				if (translationPaths !== undefined) {
 					localization.translations = [];
-					for (let tp of translationPaths) {
+					for (const tp of translationPaths) {
 						localization.translations.push({
 							id: tp.id,
 							path: `./translations/${tp.resourceName}`,
@@ -136,7 +135,7 @@ function update(options) {
 					}
 					fs.writeFileSync(
 						path.join(locExtFolder, "package.json"),
-						JSON.stringify(packageJSON, null, "\t") + "\n"
+						JSON.stringify(packageJSON, null, "\t") + "\n",
 					);
 				}
 			});

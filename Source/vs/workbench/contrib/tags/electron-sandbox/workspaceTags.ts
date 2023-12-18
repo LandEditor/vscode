@@ -5,39 +5,39 @@
 
 import { sha1Hex } from "vs/base/browser/hash";
 import { onUnexpectedError } from "vs/base/common/errors";
+import { isWindows } from "vs/base/common/platform";
 import { URI } from "vs/base/common/uri";
+import {
+	IDiagnosticsService,
+	IWorkspaceInformation,
+} from "vs/platform/diagnostics/common/diagnostics";
+import {
+	AllowedSecondLevelDomains,
+	getDomainsOfRemotes,
+} from "vs/platform/extensionManagement/common/configRemotes";
 import { IFileService, IFileStat } from "vs/platform/files/common/files";
+import { INativeHostService } from "vs/platform/native/common/native";
+import { IProductService } from "vs/platform/product/common/productService";
+import { IRequestService } from "vs/platform/request/common/request";
 import {
 	ITelemetryService,
 	TelemetryLevel,
 } from "vs/platform/telemetry/common/telemetry";
 import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
 import { IWorkbenchContribution } from "vs/workbench/common/contributions";
-import { ITextFileService } from "vs/workbench/services/textfile/common/textfiles";
 import {
 	IWorkspaceTagsService,
 	Tags,
 	getHashedRemotesFromConfig as baseGetHashedRemotesFromConfig,
 } from "vs/workbench/contrib/tags/common/workspaceTags";
-import {
-	IDiagnosticsService,
-	IWorkspaceInformation,
-} from "vs/platform/diagnostics/common/diagnostics";
-import { IRequestService } from "vs/platform/request/common/request";
-import { isWindows } from "vs/base/common/platform";
-import {
-	AllowedSecondLevelDomains,
-	getDomainsOfRemotes,
-} from "vs/platform/extensionManagement/common/configRemotes";
-import { INativeHostService } from "vs/platform/native/common/native";
-import { IProductService } from "vs/platform/product/common/productService";
+import { ITextFileService } from "vs/workbench/services/textfile/common/textfiles";
 
 export async function getHashedRemotesFromConfig(
 	text: string,
-	stripEndingDotGit: boolean = false
+	stripEndingDotGit = false,
 ): Promise<string[]> {
 	return baseGetHashedRemotesFromConfig(text, stripEndingDotGit, (remote) =>
-		sha1Hex(remote)
+		sha1Hex(remote),
 	);
 }
 
@@ -69,7 +69,7 @@ export class WorkspaceTags implements IWorkbenchContribution {
 		// Workspace Tags
 		this.workspaceTagsService.getTags().then(
 			(tags) => this.reportWorkspaceTags(tags),
-			(error) => onUnexpectedError(error)
+			(error) => onUnexpectedError(error),
 		);
 
 		// Cloud Stats
@@ -78,7 +78,7 @@ export class WorkspaceTags implements IWorkbenchContribution {
 		this.reportProxyStats();
 
 		this.getWorkspaceInformation().then((stats) =>
-			this.diagnosticsService.reportWorkspaceStats(stats)
+			this.diagnosticsService.reportWorkspaceStats(stats),
 		);
 	}
 
@@ -90,7 +90,7 @@ export class WorkspaceTags implements IWorkbenchContribution {
 		let value = await this.nativeHostService.windowsGetStringRegKey(
 			"HKEY_LOCAL_MACHINE",
 			"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion",
-			"EditionID"
+			"EditionID",
 		);
 		if (value === undefined) {
 			value = "Unknown";
@@ -116,7 +116,7 @@ export class WorkspaceTags implements IWorkbenchContribution {
 		const telemetryId =
 			await this.workspaceTagsService.getTelemetryWorkspaceId(
 				workspace,
-				state
+				state,
 			);
 
 		return {
@@ -158,16 +158,16 @@ export class WorkspaceTags implements IWorkbenchContribution {
 							(content) =>
 								getDomainsOfRemotes(
 									content.value,
-									AllowedSecondLevelDomains
+									AllowedSecondLevelDomains,
 								),
-							(err) => [] // ignore missing or binary file
+							(err) => [], // ignore missing or binary file
 						);
 				});
-			})
+			}),
 		).then((domains) => {
 			const set = domains.reduce(
 				(set, list) => list.reduce((set, item) => set.add(item), set),
-				new Set<string>()
+				new Set<string>(),
 			);
 			const list: string[] = [];
 			set.forEach((item) => list.push(item));
@@ -188,9 +188,9 @@ export class WorkspaceTags implements IWorkbenchContribution {
 			workspaceUris.map((workspaceUri) => {
 				return this.workspaceTagsService.getHashedRemotesFromUri(
 					workspaceUri,
-					true
+					true,
 				);
-			})
+			}),
 		).then(() => {}, onUnexpectedError);
 	}
 
@@ -216,13 +216,13 @@ export class WorkspaceTags implements IWorkbenchContribution {
 							...results.map((result) =>
 								result.success
 									? result.stat!.children || []
-									: []
-							)
+									: [],
+							),
 						)
 						.map((c) => c.name);
 					const referencesAzure = WorkspaceTags.searchArray(
 						names,
-						/azure/i
+						/azure/i,
 					);
 					if (referencesAzure) {
 						tags["node"] = true;
@@ -231,13 +231,13 @@ export class WorkspaceTags implements IWorkbenchContribution {
 				},
 				(err) => {
 					return tags;
-				}
+				},
 			);
 	}
 
 	private static searchArray(
 		arr: string[],
-		regEx: RegExp
+		regEx: RegExp,
 	): boolean | undefined {
 		return arr.some((v) => v.search(regEx) > -1) || undefined;
 	}
@@ -262,10 +262,10 @@ export class WorkspaceTags implements IWorkbenchContribution {
 						.read(uri, { acceptTextOnly: true })
 						.then(
 							(content) => !!content.value.match(/azure/i),
-							(err) => false
+							(err) => false,
 						);
 				});
-			})
+			}),
 		).then((javas) => {
 			if (javas.indexOf(true) !== -1) {
 				tags["java"] = true;
@@ -320,7 +320,7 @@ export class WorkspaceTags implements IWorkbenchContribution {
 					: "EMPTY";
 				if (
 					["DIRECT", "PROXY", "HTTPS", "SOCKS", "EMPTY"].indexOf(
-						type
+						type,
 					) === -1
 				) {
 					type = "UNKNOWN";

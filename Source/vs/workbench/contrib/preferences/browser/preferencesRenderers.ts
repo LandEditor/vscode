@@ -7,28 +7,32 @@ import { EventHelper, getDomNodePagePosition } from "vs/base/browser/dom";
 import { IAction, SubmenuAction } from "vs/base/common/actions";
 import { Delayer } from "vs/base/common/async";
 import { CancellationToken } from "vs/base/common/cancellation";
+import { IStringDictionary } from "vs/base/common/collections";
 import { Emitter, Event } from "vs/base/common/event";
 import { IJSONSchema } from "vs/base/common/jsonSchema";
 import { Disposable, IDisposable } from "vs/base/common/lifecycle";
 import { ResourceMap } from "vs/base/common/map";
+import { isEqual } from "vs/base/common/resources";
+import { ThemeIcon } from "vs/base/common/themables";
 import {
 	ICodeEditor,
 	IEditorMouseEvent,
 	MouseTargetType,
 } from "vs/editor/browser/editorBrowser";
 import { EditorOption } from "vs/editor/common/config/editorOptions";
-import { ICursorPositionChangedEvent } from "vs/editor/common/cursorEvents";
 import { Position } from "vs/editor/common/core/position";
 import { IRange, Range } from "vs/editor/common/core/range";
 import { Selection } from "vs/editor/common/core/selection";
+import { ICursorPositionChangedEvent } from "vs/editor/common/cursorEvents";
 import * as editorCommon from "vs/editor/common/editorCommon";
+import * as languages from "vs/editor/common/languages";
 import {
 	IModelDeltaDecoration,
 	ITextModel,
 	TrackedRangeStickiness,
 } from "vs/editor/common/model";
 import { ModelDecorationOptions } from "vs/editor/common/model/textModel";
-import * as languages from "vs/editor/common/languages";
+import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
 import { CodeActionKind } from "vs/editor/contrib/codeAction/common/types";
 import * as nls from "vs/nls";
 import {
@@ -41,8 +45,8 @@ import {
 	IConfigurationPropertySchema,
 	IConfigurationRegistry,
 	IRegisteredConfigurationPropertySchema,
-	overrideIdentifiersFromKey,
 	OVERRIDE_PROPERTY_REGEX,
+	overrideIdentifiersFromKey,
 } from "vs/platform/configuration/common/configurationRegistry";
 import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
@@ -53,7 +57,8 @@ import {
 	MarkerTag,
 } from "vs/platform/markers/common/markers";
 import { Registry } from "vs/platform/registry/common/platform";
-import { ThemeIcon } from "vs/base/common/themables";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
 import {
 	IWorkspaceContextService,
 	WorkbenchState,
@@ -62,6 +67,10 @@ import { IWorkspaceTrustManagementService } from "vs/platform/workspace/common/w
 import { RangeHighlightDecorations } from "vs/workbench/browser/codeeditor";
 import { settingsEditIcon } from "vs/workbench/contrib/preferences/browser/preferencesIcons";
 import { EditPreferenceWidget } from "vs/workbench/contrib/preferences/browser/preferencesWidgets";
+import {
+	APPLY_ALL_PROFILES_SETTING,
+	IWorkbenchConfigurationService,
+} from "vs/workbench/services/configuration/common/configuration";
 import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
 import {
 	IPreferencesEditorModel,
@@ -75,16 +84,7 @@ import {
 	SettingsEditorModel,
 	WorkspaceConfigurationEditorModel,
 } from "vs/workbench/services/preferences/common/preferencesModels";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
 import { IUserDataProfileService } from "vs/workbench/services/userDataProfile/common/userDataProfile";
-import { isEqual } from "vs/base/common/resources";
-import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
-import { IStringDictionary } from "vs/base/common/collections";
-import {
-	APPLY_ALL_PROFILES_SETTING,
-	IWorkbenchConfigurationService,
-} from "vs/workbench/services/configuration/common/configuration";
 
 export interface IPreferencesRenderer extends IDisposable {
 	render(): void;
@@ -151,7 +151,7 @@ export class UserSettingsRenderer
 	render(): void {
 		this.editSettingActionRenderer.render(
 			this.preferencesModel.settingsGroups,
-			this.associatedPreferencesModel
+			this.associatedPreferencesModel,
 		);
 		this.unsupportedSettingsRenderer.render();
 	}
@@ -166,7 +166,7 @@ export class UserSettingsRenderer
 				key,
 				value,
 				{ overrideIdentifiers, resource },
-				this.preferencesModel.configurationTarget
+				this.preferencesModel.configurationTarget,
 			)
 			.then(() => this.onSettingUpdated(source));
 	}
@@ -241,21 +241,21 @@ export class WorkspaceSettingsRenderer
 		preferencesModel: SettingsEditorModel,
 		@IPreferencesService preferencesService: IPreferencesService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IInstantiationService instantiationService: IInstantiationService
+		@IInstantiationService instantiationService: IInstantiationService,
 	) {
 		super(
 			editor,
 			preferencesModel,
 			preferencesService,
 			configurationService,
-			instantiationService
+			instantiationService,
 		);
 		this.workspaceConfigurationRenderer = this._register(
 			instantiationService.createInstance(
 				WorkspaceConfigurationRenderer,
 				editor,
-				preferencesModel
-			)
+				preferencesModel,
+			),
 		);
 	}
 
@@ -356,7 +356,7 @@ class EditSettingRenderer extends Disposable {
 
 	render(
 		settingsGroups: ISettingsGroup[],
-		associatedPreferencesModel: IPreferencesEditorModel<ISetting>
+		associatedPreferencesModel: IPreferencesEditorModel<ISetting>,
 	): void {
 		this.editPreferenceWidgetForCursorPosition.hide();
 		this.editPreferenceWidgetForMouseMove.hide();
@@ -364,12 +364,12 @@ class EditSettingRenderer extends Disposable {
 		this.associatedPreferencesModel = associatedPreferencesModel;
 
 		const settings = this.getSettings(
-			this.editor.getPosition()!.lineNumber
+			this.editor.getPosition()!.lineNumber,
 		);
 		if (settings.length) {
 			this.showEditPreferencesWidget(
 				this.editPreferenceWidgetForCursorPosition,
-				settings
+				settings,
 			);
 		}
 	}
@@ -386,16 +386,16 @@ class EditSettingRenderer extends Disposable {
 	}
 
 	private onPositionChanged(
-		positionChangeEvent: ICursorPositionChangedEvent
+		positionChangeEvent: ICursorPositionChangedEvent,
 	) {
 		this.editPreferenceWidgetForMouseMove.hide();
 		const settings = this.getSettings(
-			positionChangeEvent.position.lineNumber
+			positionChangeEvent.position.lineNumber,
 		);
 		if (settings.length) {
 			this.showEditPreferencesWidget(
 				this.editPreferenceWidgetForCursorPosition,
-				settings
+				settings,
 			);
 		} else {
 			this.editPreferenceWidgetForCursorPosition.hide();
@@ -411,12 +411,12 @@ class EditSettingRenderer extends Disposable {
 		}
 		this.settingHighlighter.clear();
 		this.toggleEditPreferencesForMouseMoveDelayer.trigger(() =>
-			this.toggleEditPreferenceWidgetForMouseMove(mouseMoveEvent)
+			this.toggleEditPreferenceWidgetForMouseMove(mouseMoveEvent),
 		);
 	}
 
 	private getEditPreferenceWidgetUnderMouse(
-		mouseMoveEvent: IEditorMouseEvent
+		mouseMoveEvent: IEditorMouseEvent,
 	): EditPreferenceWidget<ISetting> | undefined {
 		if (
 			mouseMoveEvent.target.type === MouseTargetType.GUTTER_GLYPH_MARGIN
@@ -439,7 +439,7 @@ class EditSettingRenderer extends Disposable {
 	}
 
 	private toggleEditPreferenceWidgetForMouseMove(
-		mouseMoveEvent: IEditorMouseEvent
+		mouseMoveEvent: IEditorMouseEvent,
 	): void {
 		const settings = mouseMoveEvent.target.position
 			? this.getSettings(mouseMoveEvent.target.position.lineNumber)
@@ -447,7 +447,7 @@ class EditSettingRenderer extends Disposable {
 		if (settings && settings.length) {
 			this.showEditPreferencesWidget(
 				this.editPreferenceWidgetForMouseMove,
-				settings
+				settings,
 			);
 		} else {
 			this.editPreferenceWidgetForMouseMove.hide();
@@ -456,7 +456,7 @@ class EditSettingRenderer extends Disposable {
 
 	private showEditPreferencesWidget(
 		editPreferencesWidget: EditPreferenceWidget<ISetting>,
-		settings: IIndexedSetting[]
+		settings: IIndexedSetting[],
 	) {
 		const line = settings[0].valueRange.startLineNumber;
 		if (
@@ -466,7 +466,7 @@ class EditSettingRenderer extends Disposable {
 			editPreferencesWidget.show(
 				line,
 				nls.localize("editTtile", "Edit"),
-				settings
+				settings,
 			);
 			const editPreferenceWidgetToHide =
 				editPreferencesWidget ===
@@ -484,7 +484,7 @@ class EditSettingRenderer extends Disposable {
 				if (
 					options.glyphMarginClassName &&
 					options.glyphMarginClassName.indexOf(
-						ThemeIcon.asClassName(settingsEditIcon)
+						ThemeIcon.asClassName(settingsEditIcon),
 					) === -1
 				) {
 					return false;
@@ -598,14 +598,14 @@ class EditSettingRenderer extends Disposable {
 	}
 
 	private onMouseOver(
-		editPreferenceWidget: EditPreferenceWidget<ISetting>
+		editPreferenceWidget: EditPreferenceWidget<ISetting>,
 	): void {
 		this.settingHighlighter.highlight(editPreferenceWidget.preferences[0]);
 	}
 
 	private onEditSettingClicked(
 		editPreferenceWidget: EditPreferenceWidget<IIndexedSetting>,
-		e: IEditorMouseEvent
+		e: IEditorMouseEvent,
 	): void {
 		EventHelper.stop(e.event, true);
 
@@ -615,8 +615,8 @@ class EditSettingRenderer extends Disposable {
 						editPreferenceWidget.preferences[0],
 						this.getConfigurationsMap()[
 							editPreferenceWidget.preferences[0].key
-						]
-					)
+						],
+				  )
 				: editPreferenceWidget.preferences.map(
 						(setting) =>
 							new SubmenuAction(
@@ -624,10 +624,10 @@ class EditSettingRenderer extends Disposable {
 								setting.key,
 								this.getActions(
 									setting,
-									this.getConfigurationsMap()[setting.key]
-								)
-							)
-					);
+									this.getConfigurationsMap()[setting.key],
+								),
+							),
+				  );
 		this.contextMenuService.showContextMenu({
 			getAnchor: () => e.event,
 			getActions: () => actions,
@@ -646,7 +646,7 @@ class EditSettingRenderer extends Disposable {
 			this.editPreferenceWidgetForMouseMove.preferences[0],
 			this.getConfigurationsMap()[
 				this.editPreferenceWidgetForMouseMove.preferences[0].key
-			]
+			],
 		);
 		this.contextMenuService.showContextMenu({
 			getAnchor: () => this.toAbsoluteCoords(new Position(startLine, 1)),
@@ -670,13 +670,13 @@ class EditSettingRenderer extends Disposable {
 		[qualifiedKey: string]: IConfigurationPropertySchema;
 	} {
 		return Registry.as<IConfigurationRegistry>(
-			ConfigurationExtensions.Configuration
+			ConfigurationExtensions.Configuration,
 		).getConfigurationProperties();
 	}
 
 	private getActions(
 		setting: IIndexedSetting,
-		jsonSchema: IJSONSchema
+		jsonSchema: IJSONSchema,
 	): IAction[] {
 		if (jsonSchema.type === "boolean") {
 			return [
@@ -717,8 +717,8 @@ class EditSettingRenderer extends Disposable {
 					label: settingInOtherModel
 						? nls.localize(
 								"replaceDefaultValue",
-								"Replace in Settings"
-							)
+								"Replace in Settings",
+						  )
 						: nls.localize("copyDefaultValue", "Copy to Settings"),
 					enabled: true,
 					run: () =>
@@ -732,7 +732,7 @@ class EditSettingRenderer extends Disposable {
 	private updateSetting(
 		key: string,
 		value: any,
-		source: IIndexedSetting
+		source: IIndexedSetting,
 	): void {
 		this._onUpdateSetting.fire({ key, value, source });
 	}
@@ -744,18 +744,18 @@ class SettingHighlighter extends Disposable {
 
 	constructor(
 		private editor: ICodeEditor,
-		@IInstantiationService instantiationService: IInstantiationService
+		@IInstantiationService instantiationService: IInstantiationService,
 	) {
 		super();
 		this.fixedHighlighter = this._register(
-			instantiationService.createInstance(RangeHighlightDecorations)
+			instantiationService.createInstance(RangeHighlightDecorations),
 		);
 		this.volatileHighlighter = this._register(
-			instantiationService.createInstance(RangeHighlightDecorations)
+			instantiationService.createInstance(RangeHighlightDecorations),
 		);
 	}
 
-	highlight(setting: ISetting, fix: boolean = false) {
+	highlight(setting: ISetting, fix = false) {
 		this.volatileHighlighter.removeHighlightRange();
 		this.fixedHighlighter.removeHighlightRange();
 
@@ -767,16 +767,16 @@ class SettingHighlighter extends Disposable {
 				range: setting.valueRange,
 				resource: this.editor.getModel()!.uri,
 			},
-			this.editor
+			this.editor,
 		);
 
 		this.editor.revealLineInCenterIfOutsideViewport(
 			setting.valueRange.startLineNumber,
-			editorCommon.ScrollType.Smooth
+			editorCommon.ScrollType.Smooth,
 		);
 	}
 
-	clear(fix: boolean = false): void {
+	clear(fix = false): void {
 		this.volatileHighlighter.removeHighlightRange();
 		if (fix) {
 			this.fixedHighlighter.removeHighlightRange();
@@ -844,7 +844,7 @@ class UnsupportedSettingsRenderer
 			this.markerService.changeOne(
 				"UnsupportedSettingsRenderer",
 				this.settingsEditorModel.uri,
-				markerData
+				markerData,
 			);
 		} else {
 			this.markerService.remove("UnsupportedSettingsRenderer", [
@@ -857,7 +857,7 @@ class UnsupportedSettingsRenderer
 		model: ITextModel,
 		range: Range | Selection,
 		context: languages.CodeActionContext,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<languages.CodeActionList> {
 		const actions: languages.CodeAction[] = [];
 		const codeActionsByRange = this.codeActions.get(model.uri);
@@ -877,7 +877,7 @@ class UnsupportedSettingsRenderer
 	private generateMarkerData(): IMarkerData[] {
 		const markerData: IMarkerData[] = [];
 		const configurationRegistry = Registry.as<IConfigurationRegistry>(
-			ConfigurationExtensions.Configuration
+			ConfigurationExtensions.Configuration,
 		).getConfigurationProperties();
 		for (const settingsGroup of this.settingsEditorModel.settingsGroups) {
 			for (const section of settingsGroup.sections) {
@@ -887,7 +887,7 @@ class UnsupportedSettingsRenderer
 							this.handleOverrides(
 								setting.overrides,
 								configurationRegistry,
-								markerData
+								markerData,
 							);
 						}
 						continue;
@@ -898,7 +898,7 @@ class UnsupportedSettingsRenderer
 							this.handlePolicyConfiguration(
 								setting,
 								configuration,
-								markerData
+								markerData,
 							)
 						) {
 							continue;
@@ -908,34 +908,34 @@ class UnsupportedSettingsRenderer
 								this.handleLocalUserConfiguration(
 									setting,
 									configuration,
-									markerData
+									markerData,
 								);
 								break;
 							case ConfigurationTarget.USER_REMOTE:
 								this.handleRemoteUserConfiguration(
 									setting,
 									configuration,
-									markerData
+									markerData,
 								);
 								break;
 							case ConfigurationTarget.WORKSPACE:
 								this.handleWorkspaceConfiguration(
 									setting,
 									configuration,
-									markerData
+									markerData,
 								);
 								break;
 							case ConfigurationTarget.WORKSPACE_FOLDER:
 								this.handleWorkspaceFolderConfiguration(
 									setting,
 									configuration,
-									markerData
+									markerData,
 								);
 								break;
 						}
 					} else {
 						markerData.push(
-							this.gemerateUnknownConfigurationMarker(setting)
+							this.gemerateUnknownConfigurationMarker(setting),
 						);
 					}
 				}
@@ -947,7 +947,7 @@ class UnsupportedSettingsRenderer
 	private handlePolicyConfiguration(
 		setting: ISetting,
 		configuration: IConfigurationPropertySchema,
-		markerData: IMarkerData[]
+		markerData: IMarkerData[],
 	): boolean {
 		if (!configuration.policy) {
 			return false;
@@ -970,7 +970,7 @@ class UnsupportedSettingsRenderer
 			...setting.range,
 			message: nls.localize(
 				"unsupportedPolicySetting",
-				"This setting cannot be applied because it is configured in the system policy."
+				"This setting cannot be applied because it is configured in the system policy.",
 			),
 		});
 		return true;
@@ -979,7 +979,7 @@ class UnsupportedSettingsRenderer
 	private handleOverrides(
 		overrides: ISetting[],
 		configurationRegistry: IStringDictionary<IRegisteredConfigurationPropertySchema>,
-		markerData: IMarkerData[]
+		markerData: IMarkerData[],
 	): void {
 		for (const setting of overrides || []) {
 			const configuration = configurationRegistry[setting.key];
@@ -994,13 +994,13 @@ class UnsupportedSettingsRenderer
 						...setting.range,
 						message: nls.localize(
 							"unsupportLanguageOverrideSetting",
-							"This setting cannot be applied because it is not registered as language override setting."
+							"This setting cannot be applied because it is not registered as language override setting.",
 						),
 					});
 				}
 			} else {
 				markerData.push(
-					this.gemerateUnknownConfigurationMarker(setting)
+					this.gemerateUnknownConfigurationMarker(setting),
 				);
 			}
 		}
@@ -1009,7 +1009,7 @@ class UnsupportedSettingsRenderer
 	private handleLocalUserConfiguration(
 		setting: ISetting,
 		configuration: IConfigurationPropertySchema,
-		markerData: IMarkerData[]
+		markerData: IMarkerData[],
 	): void {
 		if (
 			!this.userDataProfileService.currentProfile.isDefault &&
@@ -1020,10 +1020,10 @@ class UnsupportedSettingsRenderer
 				isEqual(
 					this.userDataProfilesService.defaultProfile
 						.settingsResource,
-					this.settingsEditorModel.uri
+					this.settingsEditorModel.uri,
 				) &&
 				!this.configurationService.isSettingAppliedForAllProfiles(
-					setting.key
+					setting.key,
 				)
 			) {
 				// If we're in the default profile setting file, and the setting cannot be applied in all profiles
@@ -1033,25 +1033,25 @@ class UnsupportedSettingsRenderer
 					...setting.range,
 					message: nls.localize(
 						"defaultProfileSettingWhileNonDefaultActive",
-						"This setting cannot be applied while a non-default profile is active. It will be applied when the default profile is active."
+						"This setting cannot be applied while a non-default profile is active. It will be applied when the default profile is active.",
 					),
 				});
 			} else if (
 				isEqual(
 					this.userDataProfileService.currentProfile.settingsResource,
-					this.settingsEditorModel.uri
+					this.settingsEditorModel.uri,
 				)
 			) {
 				if (configuration.scope === ConfigurationScope.APPLICATION) {
 					// If we're in a profile setting file, and the setting is application-scoped, fade it out.
 					markerData.push(
 						this.generateUnsupportedApplicationSettingMarker(
-							setting
-						)
+							setting,
+						),
 					);
 				} else if (
 					this.configurationService.isSettingAppliedForAllProfiles(
-						setting.key
+						setting.key,
 					)
 				) {
 					// If we're in the non-default profile setting file, and the setting can be applied in all profiles, fade it out.
@@ -1062,7 +1062,7 @@ class UnsupportedSettingsRenderer
 						message: nls.localize(
 							"allProfileSettingWhileInNonDefaultProfileSetting",
 							"This setting cannot be applied because it is configured to be applied in all profiles using setting {0}. Value from the default profile will be used instead.",
-							APPLY_ALL_PROFILES_SETTING
+							APPLY_ALL_PROFILES_SETTING,
 						),
 					});
 				}
@@ -1079,7 +1079,7 @@ class UnsupportedSettingsRenderer
 				...setting.range,
 				message: nls.localize(
 					"unsupportedRemoteMachineSetting",
-					"This setting cannot be applied in this window. It will be applied when you open a local window."
+					"This setting cannot be applied in this window. It will be applied when you open a local window.",
 				),
 			});
 		}
@@ -1088,11 +1088,11 @@ class UnsupportedSettingsRenderer
 	private handleRemoteUserConfiguration(
 		setting: ISetting,
 		configuration: IConfigurationPropertySchema,
-		markerData: IMarkerData[]
+		markerData: IMarkerData[],
 	): void {
 		if (configuration.scope === ConfigurationScope.APPLICATION) {
 			markerData.push(
-				this.generateUnsupportedApplicationSettingMarker(setting)
+				this.generateUnsupportedApplicationSettingMarker(setting),
 			);
 		}
 	}
@@ -1100,17 +1100,17 @@ class UnsupportedSettingsRenderer
 	private handleWorkspaceConfiguration(
 		setting: ISetting,
 		configuration: IConfigurationPropertySchema,
-		markerData: IMarkerData[]
+		markerData: IMarkerData[],
 	): void {
 		if (configuration.scope === ConfigurationScope.APPLICATION) {
 			markerData.push(
-				this.generateUnsupportedApplicationSettingMarker(setting)
+				this.generateUnsupportedApplicationSettingMarker(setting),
 			);
 		}
 
 		if (configuration.scope === ConfigurationScope.MACHINE) {
 			markerData.push(
-				this.generateUnsupportedMachineSettingMarker(setting)
+				this.generateUnsupportedMachineSettingMarker(setting),
 			);
 		}
 
@@ -1130,17 +1130,17 @@ class UnsupportedSettingsRenderer
 	private handleWorkspaceFolderConfiguration(
 		setting: ISetting,
 		configuration: IConfigurationPropertySchema,
-		markerData: IMarkerData[]
+		markerData: IMarkerData[],
 	): void {
 		if (configuration.scope === ConfigurationScope.APPLICATION) {
 			markerData.push(
-				this.generateUnsupportedApplicationSettingMarker(setting)
+				this.generateUnsupportedApplicationSettingMarker(setting),
 			);
 		}
 
 		if (configuration.scope === ConfigurationScope.MACHINE) {
 			markerData.push(
-				this.generateUnsupportedMachineSettingMarker(setting)
+				this.generateUnsupportedMachineSettingMarker(setting),
 			);
 		}
 
@@ -1151,7 +1151,7 @@ class UnsupportedSettingsRenderer
 				...setting.range,
 				message: nls.localize(
 					"unsupportedWindowSetting",
-					"This setting cannot be applied in this workspace. It will be applied when you open the containing workspace folder directly."
+					"This setting cannot be applied in this workspace. It will be applied when you open the containing workspace folder directly.",
 				),
 			});
 		}
@@ -1170,7 +1170,7 @@ class UnsupportedSettingsRenderer
 	}
 
 	private generateUnsupportedApplicationSettingMarker(
-		setting: ISetting
+		setting: ISetting,
 	): IMarkerData {
 		return {
 			severity: MarkerSeverity.Hint,
@@ -1178,13 +1178,13 @@ class UnsupportedSettingsRenderer
 			...setting.range,
 			message: nls.localize(
 				"unsupportedApplicationSetting",
-				"This setting has an application scope and can be set only in the user settings file."
+				"This setting has an application scope and can be set only in the user settings file.",
 			),
 		};
 	}
 
 	private generateUnsupportedMachineSettingMarker(
-		setting: ISetting
+		setting: ISetting,
 	): IMarkerData {
 		return {
 			severity: MarkerSeverity.Hint,
@@ -1192,7 +1192,7 @@ class UnsupportedSettingsRenderer
 			...setting.range,
 			message: nls.localize(
 				"unsupportedMachineSetting",
-				"This setting can only be applied in user settings in local window or in remote settings in remote window."
+				"This setting can only be applied in user settings in local window or in remote settings in remote window.",
 			),
 		};
 	}
@@ -1203,7 +1203,7 @@ class UnsupportedSettingsRenderer
 			...setting.range,
 			message: nls.localize(
 				"untrustedSetting",
-				"This setting can only be applied in a trusted workspace."
+				"This setting can only be applied in a trusted workspace.",
 			),
 		};
 	}
@@ -1215,25 +1215,25 @@ class UnsupportedSettingsRenderer
 			...setting.range,
 			message: nls.localize(
 				"unknown configuration setting",
-				"Unknown Configuration Setting"
+				"Unknown Configuration Setting",
 			),
 		};
 	}
 
 	private generateUntrustedSettingCodeActions(
-		diagnostics: IMarkerData[]
+		diagnostics: IMarkerData[],
 	): languages.CodeAction[] {
 		return [
 			{
 				title: nls.localize(
 					"manage workspace trust",
-					"Manage Workspace Trust"
+					"Manage Workspace Trust",
 				),
 				command: {
 					id: "workbench.trust.manage",
 					title: nls.localize(
 						"manage workspace trust",
-						"Manage Workspace Trust"
+						"Manage Workspace Trust",
 					),
 				},
 				diagnostics,
@@ -1244,7 +1244,7 @@ class UnsupportedSettingsRenderer
 
 	private addCodeActions(
 		range: IRange,
-		codeActions: languages.CodeAction[]
+		codeActions: languages.CodeAction[],
 	): void {
 		let actions = this.codeActions.get(this.settingsEditorModel.uri);
 		if (!actions) {
@@ -1309,7 +1309,7 @@ class WorkspaceConfigurationRenderer extends Disposable {
 					for (const setting of section.settings) {
 						if (
 							!WorkspaceConfigurationRenderer.supportedKeys.includes(
-								setting.key
+								setting.key,
 							)
 						) {
 							markerData.push({
@@ -1318,7 +1318,7 @@ class WorkspaceConfigurationRenderer extends Disposable {
 								...setting.range,
 								message: nls.localize(
 									"unsupportedProperty",
-									"Unsupported Property"
+									"Unsupported Property",
 								),
 							});
 						}
@@ -1326,14 +1326,14 @@ class WorkspaceConfigurationRenderer extends Disposable {
 				}
 			}
 			this.decorations.set(
-				ranges.map((range) => this.createDecoration(range))
+				ranges.map((range) => this.createDecoration(range)),
 			);
 		}
 		if (markerData.length) {
 			this.markerService.changeOne(
 				"WorkspaceConfigurationRenderer",
 				this.workspaceSettingsEditorModel.uri,
-				markerData
+				markerData,
 			);
 		} else {
 			this.markerService.remove("WorkspaceConfigurationRenderer", [

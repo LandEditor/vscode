@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { CancellationToken } from "vs/base/common/cancellation";
+import { Emitter, Event } from "vs/base/common/event";
 import { IDisposable, toDisposable } from "vs/base/common/lifecycle";
 import { LinkedList } from "vs/base/common/linkedList";
 import {
@@ -17,7 +18,6 @@ import {
 	IOutlineService,
 	OutlineTarget,
 } from "vs/workbench/services/outline/browser/outline";
-import { Event, Emitter } from "vs/base/common/event";
 
 class OutlineService implements IOutlineService {
 	declare _serviceBrand: undefined;
@@ -39,7 +39,7 @@ class OutlineService implements IOutlineService {
 	async createOutline(
 		pane: IEditorPane,
 		target: OutlineTarget,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IOutline<any> | undefined> {
 		for (const factory of this._factories) {
 			if (factory.matches(pane)) {

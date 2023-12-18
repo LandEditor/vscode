@@ -31,8 +31,8 @@ import {
 } from "vs/workbench/contrib/externalUriOpener/common/externalUriOpenerService";
 import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
 import {
-	extHostNamedCustomer,
 	IExtHostContext,
+	extHostNamedCustomer,
 } from "../../services/extensions/common/extHostCustomers";
 
 interface RegisteredOpenerMetadata {
@@ -79,7 +79,7 @@ export class MainThreadUriOpeners
 	}
 
 	public async *getOpeners(
-		targetUri: URI
+		targetUri: URI,
 	): AsyncIterable<IExternalUriOpener> {
 		// Currently we only allow openers for http and https urls
 		if (
@@ -90,7 +90,7 @@ export class MainThreadUriOpeners
 		}
 
 		await this.extensionService.activateByEvent(
-			`onOpenExternalUri:${targetUri.scheme}`
+			`onOpenExternalUri:${targetUri.scheme}`,
 		);
 
 		for (const [id, openerMetadata] of this._registeredOpeners) {
@@ -102,7 +102,7 @@ export class MainThreadUriOpeners
 
 	private createOpener(
 		id: string,
-		metadata: RegisteredOpenerMetadata
+		metadata: RegisteredOpenerMetadata,
 	): IExternalUriOpener {
 		return {
 			id: id,
@@ -115,7 +115,7 @@ export class MainThreadUriOpeners
 					await this.proxy.$openUri(
 						id,
 						{ resolvedUri: uri, sourceUri: ctx.sourceUri },
-						token
+						token,
 					);
 				} catch (e) {
 					if (!isCancellationError(e)) {
@@ -123,7 +123,7 @@ export class MainThreadUriOpeners
 							"default",
 							localize(
 								"openerFailedUseDefault",
-								"Open using default opener"
+								"Open using default opener",
 							),
 							undefined,
 							undefined,
@@ -133,7 +133,7 @@ export class MainThreadUriOpeners
 									allowContributedOpeners:
 										defaultExternalUriOpenerId,
 								});
-							}
+							},
 						);
 						openDefaultAction.tooltip = uri.toString();
 
@@ -148,7 +148,7 @@ export class MainThreadUriOpeners
 								},
 								"Could not open uri with '{0}': {1}",
 								id,
-								e.toString()
+								e.toString(),
 							),
 							actions: {
 								primary: [openDefaultAction],
@@ -165,7 +165,7 @@ export class MainThreadUriOpeners
 		id: string,
 		schemes: readonly string[],
 		extensionId: ExtensionIdentifier,
-		label: string
+		label: string,
 	): Promise<void> {
 		if (this._registeredOpeners.has(id)) {
 			throw new Error(`Opener with id '${id}' already registered`);
@@ -179,7 +179,7 @@ export class MainThreadUriOpeners
 
 		this._contributedExternalUriOpenersStore.didRegisterOpener(
 			id,
-			extensionId.value
+			extensionId.value,
 		);
 	}
 

@@ -6,6 +6,7 @@
 import * as http from "http";
 import * as https from "https";
 import { parse as parseUrl } from "url";
+import { createGunzip } from "zlib";
 import { Promises } from "vs/base/common/async";
 import { streamToBufferReadableStream } from "vs/base/common/buffer";
 import { CancellationToken } from "vs/base/common/cancellation";
@@ -18,14 +19,13 @@ import {
 } from "vs/base/parts/request/common/request";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { INativeEnvironmentService } from "vs/platform/environment/common/environment";
-import { getResolvedShellEnv } from "vs/platform/shell/node/shellEnv";
 import { ILogService, ILoggerService } from "vs/platform/log/common/log";
 import {
 	AbstractRequestService,
 	IRequestService,
 } from "vs/platform/request/common/request";
 import { Agent, getProxyAgent } from "vs/platform/request/node/proxy";
-import { createGunzip } from "zlib";
+import { getResolvedShellEnv } from "vs/platform/shell/node/shellEnv";
 
 interface IHTTPConfiguration {
 	proxy?: string;
@@ -36,7 +36,7 @@ interface IHTTPConfiguration {
 export interface IRawRequestFunction {
 	(
 		options: http.RequestOptions,
-		callback?: (res: http.IncomingMessage) => void
+		callback?: (res: http.IncomingMessage) => void,
 	): http.ClientRequest;
 }
 
@@ -93,7 +93,7 @@ export class RequestService
 
 	async request(
 		options: NodeRequestOptions,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IRequestContext> {
 		const { proxyUrl, strictSSL } = this;
 
@@ -103,14 +103,14 @@ export class RequestService
 				this.configurationService,
 				this.logService,
 				this.environmentService.args,
-				process.env
+				process.env,
 			);
 		} catch (error) {
 			if (!this.shellEnvErrorLogged) {
 				this.shellEnvErrorLogged = true;
 				this.logService.error(
 					`resolving shell environment failed`,
-					getErrorMessage(error)
+					getErrorMessage(error),
 				);
 			}
 		}
@@ -124,7 +124,7 @@ export class RequestService
 			: await getProxyAgent(options.url || "", env, {
 					proxyUrl,
 					strictSSL,
-				});
+			  });
 
 		options.agent = agent;
 		options.strictSSL = strictSSL;
@@ -139,7 +139,7 @@ export class RequestService
 		return this.logAndRequest(
 			options.isChromiumNetwork ? "electron" : "node",
 			options,
-			() => nodeRequest(options, token)
+			() => nodeRequest(options, token),
 		);
 	}
 
@@ -154,7 +154,7 @@ export class RequestService
 }
 
 async function getNodeRequest(
-	options: IRequestOptions
+	options: IRequestOptions,
 ): Promise<IRawRequestFunction> {
 	const endpoint = parseUrl(options.url!);
 	const module =
@@ -167,7 +167,7 @@ async function getNodeRequest(
 
 export async function nodeRequest(
 	options: NodeRequestOptions,
-	token: CancellationToken
+	token: CancellationToken,
 ): Promise<IRequestContext> {
 	return Promises.withAsyncBody<IRequestContext>(async (resolve, reject) => {
 		const endpoint = parseUrl(options.url!);
@@ -180,8 +180,8 @@ export async function nodeRequest(
 			port: endpoint.port
 				? parseInt(endpoint.port)
 				: endpoint.protocol === "https:"
-					? 443
-					: 80,
+				  ? 443
+				  : 80,
 			protocol: endpoint.protocol,
 			path: endpoint.path,
 			method: options.type || "GET",
@@ -213,7 +213,7 @@ export async function nodeRequest(
 						url: res.headers["location"],
 						followRedirects: followRedirects - 1,
 					},
-					token
+					token,
 				).then(resolve, reject);
 			} else {
 				let stream: streams.ReadableStreamEvents<Uint8Array> = res;

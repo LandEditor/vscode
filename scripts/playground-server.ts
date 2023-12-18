@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as fsPromise from "fs/promises";
-import path from "path";
 import * as http from "http";
+import path from "path";
 import * as parcelWatcher from "@parcel/watcher";
+import * as fsPromise from "fs/promises";
 
 /**
  * Launches the server for the monaco editor playground
@@ -24,14 +24,14 @@ function main() {
 	server.use(fileServer.handleRequest);
 
 	const moduleIdMapper = new SimpleModuleIdPathMapper(
-		path.join(rootDir, "out")
+		path.join(rootDir, "out"),
 	);
 	const editorMainBundle = new CachedBundle(
 		"vs/editor/editor.main",
-		moduleIdMapper
+		moduleIdMapper,
 	);
 	fileServer.overrideFileContent(editorMainBundle.entryModulePath, () =>
-		editorMainBundle.bundle()
+		editorMainBundle.bundle(),
 	);
 
 	const loaderPath = path.join(rootDir, "out/vs/loader.js");
@@ -40,10 +40,10 @@ function main() {
 			new TextEncoder().encode(
 				makeLoaderJsHotReloadable(
 					await fsPromise.readFile(loaderPath, "utf8"),
-					new URL("/file-changes", server.url)
-				)
-			)
-		)
+					new URL("/file-changes", server.url),
+				),
+			),
+		),
 	);
 
 	const watcher = DirWatcher.watchRecursively(moduleIdMapper.rootDir);
@@ -54,7 +54,7 @@ function main() {
 	});
 	server.use(
 		"/file-changes",
-		handleGetFileChangesRequest(watcher, fileServer, moduleIdMapper)
+		handleGetFileChangesRequest(watcher, fileServer, moduleIdMapper),
 	);
 
 	console.log(`Server listening on ${server.url}`);
@@ -65,12 +65,12 @@ setTimeout(main, 0);
 
 type RequestHandler = (
 	req: http.IncomingMessage,
-	res: http.ServerResponse
+	res: http.ServerResponse,
 ) => Promise<void>;
 type ChainableRequestHandler = (
 	req: http.IncomingMessage,
 	res: http.ServerResponse,
-	next: RequestHandler
+	next: RequestHandler,
 ) => Promise<void>;
 
 class HttpServer {
@@ -88,7 +88,7 @@ class HttpServer {
 			let i = 0;
 			const next = async (
 				req: http.IncomingMessage,
-				res: http.ServerResponse
+				res: http.ServerResponse,
 			) => {
 				if (i >= this.handler.length) {
 					res.writeHead(404, { "Content-Type": "text/plain" });
@@ -123,7 +123,7 @@ class HttpServer {
 						} else {
 							return next(req, res);
 						}
-					};
+				  };
 
 		this.handler.push(handler);
 	}
@@ -132,7 +132,7 @@ class HttpServer {
 function redirectToMonacoEditorPlayground(): ChainableRequestHandler {
 	return async (req, res) => {
 		const url = new URL(
-			"https://microsoft.github.io/monaco-editor/playground.html"
+			"https://microsoft.github.io/monaco-editor/playground.html",
 		);
 		url.searchParams.append("source", `http://${req.headers.host}/out/vs`);
 		res.writeHead(302, { Location: url.toString() });
@@ -148,7 +148,7 @@ class FileServer {
 	public readonly handleRequest: ChainableRequestHandler = async (
 		req,
 		res,
-		next
+		next,
 	) => {
 		const requestedUrl = new URL(req.url!, `http://${req.headers.host}`);
 
@@ -199,7 +199,7 @@ class FileServer {
 
 	public overrideFileContent(
 		filePath: string,
-		content: () => Promise<Buffer>
+		content: () => Promise<Buffer>,
 	): void {
 		this.overrides.set(filePath, content);
 	}
@@ -268,15 +268,15 @@ class DirWatcher {
 
 	constructor(
 		public readonly onDidChange: (
-			handler: (path: string, newContent: string) => void
-		) => IDisposable
+			handler: (path: string, newContent: string) => void,
+		) => IDisposable,
 	) {}
 }
 
 function handleGetFileChangesRequest(
 	watcher: DirWatcher,
 	fileServer: FileServer,
-	moduleIdMapper: SimpleModuleIdPathMapper
+	moduleIdMapper: SimpleModuleIdPathMapper,
 ): ChainableRequestHandler {
 	return async (req, res) => {
 		res.writeHead(200, { "Content-Type": "text/plain" });
@@ -287,7 +287,7 @@ function handleGetFileChangesRequest(
 					JSON.stringify({
 						changedPath: path,
 						moduleId: moduleIdMapper.getModuleId(fsPath),
-					}) + "\n"
+					}) + "\n",
 				);
 			}
 		});
@@ -296,11 +296,11 @@ function handleGetFileChangesRequest(
 }
 function makeLoaderJsHotReloadable(
 	loaderJsCode: string,
-	fileChangesUrl: URL
+	fileChangesUrl: URL,
 ): string {
 	loaderJsCode = loaderJsCode.replace(
 		/constructor\(env, scriptLoader, defineFunc, requireFunc, loaderAvailableTimestamp = 0\) {/,
-		"$&globalThis.___globalModuleManager = this;"
+		"$&globalThis.___globalModuleManager = this;",
 	);
 
 	const ___globalModuleManager: any = undefined;
@@ -338,13 +338,13 @@ function makeLoaderJsHotReloadable(
 								console.log("css changed", data.changedPath);
 								const styleSheet = [
 									...document.querySelectorAll(
-										`link[rel='stylesheet']`
+										`link[rel='stylesheet']`,
 									),
 								].find((l: any) =>
 									new URL(
 										l.href,
-										document.location.href
-									).pathname.endsWith(data.changedPath)
+										document.location.href,
+									).pathname.endsWith(data.changedPath),
 								) as any;
 								if (styleSheet) {
 									styleSheet.href =
@@ -361,18 +361,18 @@ function makeLoaderJsHotReloadable(
 							console.log("js changed", data.changedPath);
 							const moduleId =
 								___globalModuleManager._moduleIdProvider.getModuleId(
-									data.moduleId
+									data.moduleId,
 								);
 							if (___globalModuleManager._modules2[moduleId]) {
 								const srcUrl =
 									___globalModuleManager._config.moduleIdToPaths(
-										data.moduleId
+										data.moduleId,
 									);
 								const newSrc = await (
 									await fetch(srcUrl)
 								).text();
 								new Function("define", newSrc)(
-									function (deps, callback) {
+									(deps, callback) => {
 										// CodeQL [SM01632] This code is only executed during development (as part of the dev-only playground-server). It is required for the hot-reload functionality.
 										const oldModule =
 											___globalModuleManager._modules2[
@@ -385,7 +385,7 @@ function makeLoaderJsHotReloadable(
 										___globalModuleManager.defineModule(
 											data.moduleId,
 											deps,
-											callback
+											callback,
 										);
 										const newModule =
 											___globalModuleManager._modules2[
@@ -397,7 +397,7 @@ function makeLoaderJsHotReloadable(
 
 										Object.assign(
 											oldModule.exports,
-											newModule.exports
+											newModule.exports,
 										);
 										newModule.exports = oldModule.exports;
 
@@ -412,10 +412,10 @@ function makeLoaderJsHotReloadable(
 										if (handled) {
 											console.log(
 												"hot reloaded",
-												data.moduleId
+												data.moduleId,
 											);
 										}
-									}
+									},
 								);
 							}
 						}
@@ -433,7 +433,7 @@ function makeLoaderJsHotReloadable(
 	}
 
 	const additionalJsCode = `
-(${function () {
+(${() => {
 		globalThis.$hotReload_deprecateExports = new Set<
 			(oldExports: any, newExports: any) => void
 		>();
@@ -451,12 +451,12 @@ $watchChanges(${JSON.stringify(fileChangesUrl)});
 
 class CachedBundle {
 	public readonly entryModulePath = this.mapper.resolveRequestToPath(
-		this.moduleId
+		this.moduleId,
 	)!;
 
 	constructor(
 		private readonly moduleId: string,
-		private readonly mapper: SimpleModuleIdPathMapper
+		private readonly mapper: SimpleModuleIdPathMapper,
 	) {}
 
 	private loader: ModuleLoader | undefined = undefined;
@@ -468,11 +468,11 @@ class CachedBundle {
 				if (!this.loader) {
 					this.loader = new ModuleLoader(this.mapper);
 					await this.loader.addModuleAndDependencies(
-						this.entryModulePath
+						this.entryModulePath,
 					);
 				}
 				const editorEntryPoint = await this.loader.getModule(
-					this.entryModulePath
+					this.entryModulePath,
 				);
 				const content = bundleWithDependencies(editorEntryPoint!);
 				return content;
@@ -483,7 +483,7 @@ class CachedBundle {
 
 	public async setModuleContent(
 		path: string,
-		newContent: string
+		newContent: string,
 	): Promise<void> {
 		if (!this.loader) {
 			return;
@@ -518,11 +518,11 @@ function bundleWithDependencies(module: IModule): Buffer {
 	const sourceMap = builder.toSourceMap();
 	sourceMap.sourceRoot = module.source.sourceMap.sourceRoot;
 	const sourceMapBase64Str = Buffer.from(JSON.stringify(sourceMap)).toString(
-		"base64"
+		"base64",
 	);
 
 	builder.addLine(
-		`//# sourceMappingURL=data:application/json;base64,${sourceMapBase64Str}`
+		`//# sourceMappingURL=data:application/json;base64,${sourceMapBase64Str}`,
 	);
 
 	return builder.toContent();
@@ -545,7 +545,7 @@ class ModuleLoader {
 		if (
 			!arrayEquals(
 				parsedModule.dependencyRequests,
-				module.dependencyRequests
+				module.dependencyRequests,
 			)
 		) {
 			return false;
@@ -585,13 +585,13 @@ class ModuleLoader {
 
 						const depPath = this.mapper.resolveRequestToPath(
 							r,
-							path
+							path,
 						);
 						if (!depPath) {
 							return null;
 						}
 						return await this.addModuleAndDependencies(depPath);
-					})
+					}),
 				)
 			).filter((d): d is IModule => !!d);
 
@@ -627,7 +627,7 @@ const encoder = new TextEncoder();
 function parseModule(
 	content: string,
 	path: string,
-	mapper: SimpleModuleIdPathMapper
+	mapper: SimpleModuleIdPathMapper,
 ): { source: Source; dependencyRequests: string[] } | undefined {
 	const m = content.match(/define\((\[.*?\])/);
 	if (!m) {
@@ -644,7 +644,7 @@ function parseModule(
 	if (idx !== -1) {
 		const sourceMapJsonStr = Buffer.from(
 			content.substring(idx + sourceMapHeader.length),
-			"base64"
+			"base64",
 		).toString("utf-8");
 		sourceMap = JSON.parse(sourceMapJsonStr);
 		content = content.substring(0, idx);
@@ -652,7 +652,7 @@ function parseModule(
 
 	content = content.replace(
 		"define([",
-		`define("${mapper.getModuleId(path)}", [`
+		`define("${mapper.getModuleId(path)}", [`,
 	);
 
 	const contentBuffer = Buffer.from(encoder.encode(content));
@@ -675,7 +675,7 @@ class SimpleModuleIdPathMapper {
 
 	public resolveRequestToPath(
 		request: string,
-		requestingModulePath?: string
+		requestingModulePath?: string,
 	): string | null {
 		if (request.indexOf("css!") !== -1) {
 			return null;
@@ -684,7 +684,7 @@ class SimpleModuleIdPathMapper {
 		if (request.startsWith(".")) {
 			return path.join(
 				path.dirname(requestingModulePath!),
-				request + ".js"
+				request + ".js",
 			);
 		} else {
 			return path.join(this.rootDir, request + ".js");

@@ -17,7 +17,7 @@ export class ServiceCollection {
 
 	set<T>(
 		id: ServiceIdentifier<T>,
-		instanceOrDescriptor: T | SyncDescriptor<T>
+		instanceOrDescriptor: T | SyncDescriptor<T>,
 	): T | SyncDescriptor<T> {
 		const result = this._entries.get(id);
 		this._entries.set(id, instanceOrDescriptor);

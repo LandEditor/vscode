@@ -3,31 +3,31 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { DisposableStore } from "vs/base/common/lifecycle";
+import { URI, UriComponents, UriDto } from "vs/base/common/uri";
+import { CommandsRegistry } from "vs/platform/commands/common/commands";
+import { IEnvironmentService } from "vs/platform/environment/common/environment";
+import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
 import {
-	extHostNamedCustomer,
-	IExtHostContext,
-} from "vs/workbench/services/extensions/common/extHostCustomers";
-import {
+	ILogService,
 	ILoggerOptions,
 	ILoggerResource,
 	ILoggerService,
-	ILogService,
-	isLogLevel,
-	log,
 	LogLevel,
 	LogLevelToString,
+	isLogLevel,
+	log,
 	parseLogLevel,
 } from "vs/platform/log/common/log";
-import { DisposableStore } from "vs/base/common/lifecycle";
 import {
 	ExtHostContext,
-	MainThreadLoggerShape,
 	MainContext,
+	MainThreadLoggerShape,
 } from "vs/workbench/api/common/extHost.protocol";
-import { UriComponents, URI, UriDto } from "vs/base/common/uri";
-import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import { CommandsRegistry } from "vs/platform/commands/common/commands";
-import { IEnvironmentService } from "vs/platform/environment/common/environment";
+import {
+	IExtHostContext,
+	extHostNamedCustomer,
+} from "vs/workbench/services/extensions/common/extHostCustomers";
 
 @extHostNamedCustomer(MainContext.MainThreadLogger)
 export class MainThreadLoggerService implements MainThreadLoggerShape {
@@ -63,7 +63,7 @@ export class MainThreadLoggerService implements MainThreadLoggerShape {
 
 	async $createLogger(
 		file: UriComponents,
-		options?: ILoggerOptions
+		options?: ILoggerOptions,
 	): Promise<void> {
 		this.loggerService.createLogger(URI.revive(file), options);
 	}
@@ -81,7 +81,7 @@ export class MainThreadLoggerService implements MainThreadLoggerShape {
 
 	async $setVisibility(
 		resource: UriComponents,
-		visible: boolean
+		visible: boolean,
 	): Promise<void> {
 		this.loggerService.setVisibility(URI.revive(resource), visible);
 	}
@@ -103,7 +103,7 @@ export class MainThreadLoggerService implements MainThreadLoggerShape {
 
 CommandsRegistry.registerCommand(
 	"_extensionTests.setLogLevel",
-	function (accessor: ServicesAccessor, level: string) {
+	(accessor: ServicesAccessor, level: string) => {
 		const loggerService = accessor.get(ILoggerService);
 		const environmentService = accessor.get(IEnvironmentService);
 
@@ -116,14 +116,14 @@ CommandsRegistry.registerCommand(
 				loggerService.setLogLevel(logLevel);
 			}
 		}
-	}
+	},
 );
 
 CommandsRegistry.registerCommand(
 	"_extensionTests.getLogLevel",
-	function (accessor: ServicesAccessor) {
+	(accessor: ServicesAccessor) => {
 		const logService = accessor.get(ILogService);
 
 		return LogLevelToString(logService.getLevel());
-	}
+	},
 );

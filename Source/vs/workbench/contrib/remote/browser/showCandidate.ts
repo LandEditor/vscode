@@ -16,7 +16,7 @@ export class ShowCandidateContribution
 	constructor(
 		@IRemoteExplorerService remoteExplorerService: IRemoteExplorerService,
 		@IBrowserWorkbenchEnvironmentService
-		environmentService: IBrowserWorkbenchEnvironmentService
+		environmentService: IBrowserWorkbenchEnvironmentService,
 	) {
 		super();
 		const showPortCandidate =
@@ -25,16 +25,16 @@ export class ShowCandidateContribution
 			this._register(
 				remoteExplorerService.setCandidateFilter(
 					async (
-						candidates: CandidatePort[]
+						candidates: CandidatePort[],
 					): Promise<CandidatePort[]> => {
 						const filters: boolean[] = await Promise.all(
 							candidates.map((candidate) =>
 								showPortCandidate(
 									candidate.host,
 									candidate.port,
-									candidate.detail ?? ""
-								)
-							)
+									candidate.detail ?? "",
+								),
+							),
 						);
 						const filteredCandidates: CandidatePort[] = [];
 						if (filters.length !== candidates.length) {
@@ -46,8 +46,8 @@ export class ShowCandidateContribution
 							}
 						}
 						return filteredCandidates;
-					}
-				)
+					},
+				),
 			);
 		}
 	}

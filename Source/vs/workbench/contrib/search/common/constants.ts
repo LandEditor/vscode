@@ -57,85 +57,85 @@ export const FindInWorkspaceId = "filesExplorer.findInWorkspace";
 
 export const SearchViewVisibleKey = new RawContextKey<boolean>(
 	"searchViewletVisible",
-	true
+	true,
 );
 export const SearchViewFocusedKey = new RawContextKey<boolean>(
 	"searchViewletFocus",
-	false
+	false,
 );
 export const InputBoxFocusedKey = new RawContextKey<boolean>(
 	"inputBoxFocus",
-	false
+	false,
 );
 export const SearchInputBoxFocusedKey = new RawContextKey<boolean>(
 	"searchInputBoxFocus",
-	false
+	false,
 );
 export const ReplaceInputBoxFocusedKey = new RawContextKey<boolean>(
 	"replaceInputBoxFocus",
-	false
+	false,
 );
 export const PatternIncludesFocusedKey = new RawContextKey<boolean>(
 	"patternIncludesInputBoxFocus",
-	false
+	false,
 );
 export const PatternExcludesFocusedKey = new RawContextKey<boolean>(
 	"patternExcludesInputBoxFocus",
-	false
+	false,
 );
 export const ReplaceActiveKey = new RawContextKey<boolean>(
 	"replaceActive",
-	false
+	false,
 );
 export const HasSearchResults = new RawContextKey<boolean>(
 	"hasSearchResult",
-	false
+	false,
 );
 export const FirstMatchFocusKey = new RawContextKey<boolean>(
 	"firstMatchFocus",
-	false
+	false,
 );
 export const FileMatchOrMatchFocusKey = new RawContextKey<boolean>(
 	"fileMatchOrMatchFocus",
-	false
+	false,
 ); // This is actually, Match or File or Folder
 export const FileMatchOrFolderMatchFocusKey = new RawContextKey<boolean>(
 	"fileMatchOrFolderMatchFocus",
-	false
+	false,
 );
 export const FileMatchOrFolderMatchWithResourceFocusKey =
 	new RawContextKey<boolean>(
 		"fileMatchOrFolderMatchWithResourceFocus",
-		false
+		false,
 	); // Excludes "Other files"
 export const FileFocusKey = new RawContextKey<boolean>("fileMatchFocus", false);
 export const FolderFocusKey = new RawContextKey<boolean>(
 	"folderMatchFocus",
-	false
+	false,
 );
 export const ResourceFolderFocusKey = new RawContextKey<boolean>(
 	"folderMatchWithResourceFocus",
-	false
+	false,
 );
 export const IsEditableItemKey = new RawContextKey<boolean>(
 	"isEditableItem",
-	true
+	true,
 );
 export const MatchFocusKey = new RawContextKey<boolean>("matchFocus", false);
 export const ViewHasSearchPatternKey = new RawContextKey<boolean>(
 	"viewHasSearchPattern",
-	false
+	false,
 );
 export const ViewHasReplacePatternKey = new RawContextKey<boolean>(
 	"viewHasReplacePattern",
-	false
+	false,
 );
 export const ViewHasFilePatternKey = new RawContextKey<boolean>(
 	"viewHasFilePattern",
-	false
+	false,
 );
 export const ViewHasSomeCollapsibleKey = new RawContextKey<boolean>(
 	"viewHasSomeCollapsibleResult",
-	false
+	false,
 );
 export const InTreeViewKey = new RawContextKey<boolean>("inTreeView", false);

@@ -16,6 +16,7 @@ import { URI } from "vs/base/common/uri";
 import { Position } from "vs/editor/common/core/position";
 import { Range } from "vs/editor/common/core/range";
 import { ITextModel } from "vs/editor/common/model";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
 	InstantiationType,
 	registerSingleton,
@@ -26,13 +27,12 @@ import {
 	IMarkerService,
 	MarkerSeverity,
 } from "vs/platform/markers/common/markers";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 
 export class MarkerCoordinate {
 	constructor(
 		readonly marker: IMarker,
 		readonly index: number,
-		readonly total: number
+		readonly total: number,
 	) {}
 }
 
@@ -44,7 +44,7 @@ export class MarkerList {
 	private readonly _dispoables = new DisposableStore();
 
 	private _markers: IMarker[] = [];
-	private _nextIdx: number = -1;
+	private _nextIdx = -1;
 
 	constructor(
 		resourceFilter: URI | ((uri: URI) => boolean) | undefined,
@@ -133,7 +133,7 @@ export class MarkerList {
 			new MarkerCoordinate(
 				marker,
 				this._nextIdx + 1,
-				this._markers.length
+				this._markers.length,
 			)
 		);
 	}
@@ -141,18 +141,18 @@ export class MarkerList {
 	private _initIdx(
 		model: ITextModel,
 		position: Position,
-		fwd: boolean
+		fwd: boolean,
 	): void {
 		let found = false;
 
 		let idx = this._markers.findIndex(
-			(marker) => marker.resource.toString() === model.uri.toString()
+			(marker) => marker.resource.toString() === model.uri.toString(),
 		);
 		if (idx < 0) {
 			idx = binarySearch(
 				this._markers,
 				<any>{ resource: model.uri },
-				(a, b) => compare(a.resource.toString(), b.resource.toString())
+				(a, b) => compare(a.resource.toString(), b.resource.toString()),
 			);
 			if (idx < 0) {
 				idx = ~idx;
@@ -169,7 +169,7 @@ export class MarkerList {
 						range.startLineNumber,
 						word.startColumn,
 						range.startLineNumber,
-						word.endColumn
+						word.endColumn,
 					);
 				}
 			}
@@ -226,7 +226,7 @@ export class MarkerList {
 
 	find(uri: URI, position: Position): MarkerCoordinate | undefined {
 		let idx = this._markers.findIndex(
-			(marker) => marker.resource.toString() === uri.toString()
+			(marker) => marker.resource.toString() === uri.toString(),
 		);
 		if (idx < 0) {
 			return undefined;
@@ -236,7 +236,7 @@ export class MarkerList {
 				return new MarkerCoordinate(
 					this._markers[idx],
 					idx + 1,
-					this._markers.length
+					this._markers.length,
 				);
 			}
 		}
@@ -286,7 +286,7 @@ class MarkerNavigationService
 		return new MarkerList(
 			resource,
 			this._markerService,
-			this._configService
+			this._configService,
 		);
 	}
 }
@@ -294,5 +294,5 @@ class MarkerNavigationService
 registerSingleton(
 	IMarkerNavigationService,
 	MarkerNavigationService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

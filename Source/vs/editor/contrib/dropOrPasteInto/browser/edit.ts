@@ -5,8 +5,8 @@
 
 import { URI } from "vs/base/common/uri";
 import { ResourceTextEdit } from "vs/editor/browser/services/bulkEditService";
-import { DropYieldTo, WorkspaceEdit } from "vs/editor/common/languages";
 import { Range } from "vs/editor/common/core/range";
+import { DropYieldTo, WorkspaceEdit } from "vs/editor/common/languages";
 
 export interface DropOrPasteEdit {
 	readonly label: string;
@@ -17,7 +17,7 @@ export interface DropOrPasteEdit {
 export function createCombinedWorkspaceEdit(
 	uri: URI,
 	ranges: readonly Range[],
-	edit: DropOrPasteEdit
+	edit: DropOrPasteEdit,
 ): WorkspaceEdit {
 	return {
 		edits: [
@@ -30,13 +30,13 @@ export function createCombinedWorkspaceEdit(
 									range,
 									text: edit.insertText,
 									insertAsSnippet: false,
-								}
+							  }
 							: {
 									range,
 									text: edit.insertText.snippet,
 									insertAsSnippet: true,
-								}
-					)
+							  },
+					),
 			),
 			...(edit.additionalEdit?.edits ?? []),
 		],

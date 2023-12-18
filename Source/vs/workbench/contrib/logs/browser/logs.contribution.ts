@@ -3,22 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Registry } from "vs/platform/registry/common/platform";
+import { Disposable } from "vs/base/common/lifecycle";
 import { Categories } from "vs/platform/action/common/actionCommonCategories";
 import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
-import { OpenWindowSessionLogFileAction } from "vs/workbench/contrib/logs/common/logsActions";
-import {
-	IWorkbenchContribution,
-	IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
-} from "vs/workbench/common/contributions";
-import { Disposable } from "vs/base/common/lifecycle";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 import {
 	IInstantiationService,
 	ServicesAccessor,
 } from "vs/platform/instantiation/common/instantiation";
+import { Registry } from "vs/platform/registry/common/platform";
+import {
+	Extensions as WorkbenchExtensions,
+	IWorkbenchContribution,
+	IWorkbenchContributionsRegistry,
+} from "vs/workbench/common/contributions";
+import { OpenWindowSessionLogFileAction } from "vs/workbench/contrib/logs/common/logsActions";
 import { LogsDataCleaner } from "vs/workbench/contrib/logs/common/logsDataCleaner";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 class WebLogOutputChannels
 	extends Disposable
@@ -51,15 +51,15 @@ class WebLogOutputChannels
 						.createInstance(
 							OpenWindowSessionLogFileAction,
 							OpenWindowSessionLogFileAction.ID,
-							OpenWindowSessionLogFileAction.TITLE.value
+							OpenWindowSessionLogFileAction.TITLE.value,
 						)
 						.run();
 				}
-			}
+			},
 		);
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(WebLogOutputChannels, LifecyclePhase.Restored);

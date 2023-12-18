@@ -2,7 +2,6 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getDependencies = void 0;
 const child_process_1 = require("child_process");
@@ -47,7 +46,7 @@ async function getDependencies(packageType, buildDir, applicationName, arch) {
 		buildDir,
 		"resources",
 		"app",
-		"node_modules.asar.unpacked"
+		"node_modules.asar.unpacked",
 	);
 	const findResult = (0, child_process_1.spawnSync)("find", [
 		nativeModulesPath,
@@ -73,16 +72,16 @@ async function getDependencies(packageType, buildDir, applicationName, arch) {
 	let dependencies;
 	if (packageType === "deb") {
 		const chromiumSysroot = await (0, install_sysroot_1.getChromiumSysroot)(
-			arch
+			arch,
 		);
 		const vscodeSysroot = await (0, install_sysroot_1.getVSCodeSysroot)(
-			arch
+			arch,
 		);
 		dependencies = (0, calculate_deps_1.generatePackageDeps)(
 			files,
 			arch,
 			chromiumSysroot,
-			vscodeSysroot
+			vscodeSysroot,
 		);
 	} else {
 		dependencies = (0, calculate_deps_2.generatePackageDeps)(files);
@@ -93,7 +92,7 @@ async function getDependencies(packageType, buildDir, applicationName, arch) {
 	const sortedDependencies = Array.from(mergedDependencies)
 		.filter((dependency) => {
 			return !bundledDeps.some((bundledDep) =>
-				dependency.startsWith(bundledDep)
+				dependency.startsWith(bundledDep),
 			);
 		})
 		.sort();

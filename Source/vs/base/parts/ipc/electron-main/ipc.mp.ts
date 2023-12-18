@@ -4,11 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { BrowserWindow, IpcMainEvent, MessagePortMain } from "electron";
-import { validatedIpcMain } from "vs/base/parts/ipc/electron-main/ipcMain";
 import { Event } from "vs/base/common/event";
 import { IDisposable } from "vs/base/common/lifecycle";
 import { generateUuid } from "vs/base/common/uuid";
 import { Client as MessagePortClient } from "vs/base/parts/ipc/common/ipc.mp";
+import { validatedIpcMain } from "vs/base/parts/ipc/electron-main/ipcMain";
 
 /**
  * An implementation of a `IPCClient` on top of Electron `MessagePortMain`.
@@ -30,7 +30,7 @@ export class Client extends MessagePortClient implements IDisposable {
 				start: () => port.start(),
 				close: () => port.close(),
 			},
-			clientId
+			clientId,
 		);
 	}
 }
@@ -44,7 +44,7 @@ export async function connect(window: BrowserWindow): Promise<MessagePortMain> {
 	// Assert healthy window to talk to
 	if (window.isDestroyed() || window.webContents.isDestroyed()) {
 		throw new Error(
-			"ipc.mp#connect: Cannot talk to window because it is closed or destroyed"
+			"ipc.mp#connect: Cannot talk to window because it is closed or destroyed",
 		);
 	}
 
@@ -62,12 +62,12 @@ export async function connect(window: BrowserWindow): Promise<MessagePortMain> {
 	}>(
 		validatedIpcMain,
 		"vscode:createMessageChannelResult",
-		(e: IpcMainEvent, nonce: string) => ({ nonce, port: e.ports[0] })
+		(e: IpcMainEvent, nonce: string) => ({ nonce, port: e.ports[0] }),
 	);
 	const { port } = await Event.toPromise(
 		Event.once(
-			Event.filter(onMessageChannelResult, (e) => e.nonce === nonce)
-		)
+			Event.filter(onMessageChannelResult, (e) => e.nonce === nonce),
+		),
 	);
 
 	return port;

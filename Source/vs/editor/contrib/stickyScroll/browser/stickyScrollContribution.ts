@@ -8,12 +8,12 @@ import {
 	registerEditorContribution,
 } from "vs/editor/browser/editorExtensions";
 import {
-	ToggleStickyScroll,
 	FocusStickyScroll,
-	SelectEditor,
-	SelectPreviousStickyScrollLine,
-	SelectNextStickyScrollLine,
 	GoToStickyScrollLine,
+	SelectEditor,
+	SelectNextStickyScrollLine,
+	SelectPreviousStickyScrollLine,
+	ToggleStickyScroll,
 } from "vs/editor/contrib/stickyScroll/browser/stickyScrollActions";
 import { StickyScrollController } from "vs/editor/contrib/stickyScroll/browser/stickyScrollController";
 import { registerAction2 } from "vs/platform/actions/common/actions";
@@ -21,7 +21,7 @@ import { registerAction2 } from "vs/platform/actions/common/actions";
 registerEditorContribution(
 	StickyScrollController.ID,
 	StickyScrollController,
-	EditorContributionInstantiation.AfterFirstRender
+	EditorContributionInstantiation.AfterFirstRender,
 );
 registerAction2(ToggleStickyScroll);
 registerAction2(FocusStickyScroll);

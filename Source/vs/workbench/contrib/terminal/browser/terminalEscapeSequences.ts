@@ -6,7 +6,7 @@
 /**
  * The identifier for the first numeric parameter (`Ps`) for OSC commands used by shell integration.
  */
-const enum ShellIntegrationOscPs {
+enum ShellIntegrationOscPs {
 	/**
 	 * Sequences pioneered by FinalTerm.
 	 */
@@ -27,7 +27,7 @@ const enum ShellIntegrationOscPs {
  * those pioneered in FinalTerm. The decision to move to entirely custom sequences was to try to
  * improve reliability and prevent the possibility of applications confusing the terminal.
  */
-export const enum VSCodeOscPt {
+export enum VSCodeOscPt {
 	/**
 	 * The start of the prompt, this is expected to always appear at the start of a line.
 	 * Based on FinalTerm's `OSC 133 ; A ST`.
@@ -88,7 +88,7 @@ export const enum VSCodeOscPt {
 	Property = "P",
 }
 
-export const enum VSCodeOscProperty {
+export enum VSCodeOscProperty {
 	Task = "Task",
 	Cwd = "Cwd",
 }
@@ -96,7 +96,7 @@ export const enum VSCodeOscProperty {
 /**
  * ITerm sequences
  */
-export const enum ITermOscPt {
+export enum ITermOscPt {
 	/**
 	 * Based on ITerm's `OSC 1337 ; SetMark` sets a mark on the scrollbar
 	 */
@@ -105,7 +105,7 @@ export const enum ITermOscPt {
 
 export function VSCodeSequence(
 	osc: VSCodeOscPt,
-	data?: string | VSCodeOscProperty
+	data?: string | VSCodeOscProperty,
 ): string {
 	return oscSequence(ShellIntegrationOscPs.VSCode, osc, data);
 }

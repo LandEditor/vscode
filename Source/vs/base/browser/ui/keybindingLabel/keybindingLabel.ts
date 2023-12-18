@@ -5,7 +5,7 @@
 
 import * as dom from "vs/base/browser/dom";
 import { UILabelProvider } from "vs/base/common/keybindingLabels";
-import { ResolvedKeybinding, ResolvedChord } from "vs/base/common/keybindings";
+import { ResolvedChord, ResolvedKeybinding } from "vs/base/common/keybindings";
 import { equals } from "vs/base/common/objects";
 import { OperatingSystem } from "vs/base/common/platform";
 import "vs/css!./keybindingLabel";
@@ -63,7 +63,7 @@ export class KeybindingLabel {
 	constructor(
 		container: HTMLElement,
 		private os: OperatingSystem,
-		options?: KeybindingLabelOptions
+		options?: KeybindingLabelOptions,
 	) {
 		this.options = options || Object.create(null);
 
@@ -105,7 +105,7 @@ export class KeybindingLabel {
 				this.renderChord(
 					this.domNode,
 					chords[0],
-					this.matches ? this.matches.firstPart : null
+					this.matches ? this.matches.firstPart : null,
 				);
 			}
 			for (let i = 1; i < chords.length; i++) {
@@ -114,13 +114,13 @@ export class KeybindingLabel {
 					$(
 						"span.monaco-keybinding-key-chord-separator",
 						undefined,
-						" "
-					)
+						" ",
+					),
 				);
 				this.renderChord(
 					this.domNode,
 					chords[i],
-					this.matches ? this.matches.chordPart : null
+					this.matches ? this.matches.chordPart : null,
 				);
 			}
 			const title =
@@ -147,7 +147,7 @@ export class KeybindingLabel {
 	private renderChord(
 		parent: HTMLElement,
 		chord: ResolvedChord,
-		match: ChordMatches | null
+		match: ChordMatches | null,
 	) {
 		const modifierLabels = UILabelProvider.modifierLabels[this.os];
 		if (chord.ctrlKey) {
@@ -155,7 +155,7 @@ export class KeybindingLabel {
 				parent,
 				modifierLabels.ctrlKey,
 				Boolean(match?.ctrlKey),
-				modifierLabels.separator
+				modifierLabels.separator,
 			);
 		}
 		if (chord.shiftKey) {
@@ -163,7 +163,7 @@ export class KeybindingLabel {
 				parent,
 				modifierLabels.shiftKey,
 				Boolean(match?.shiftKey),
-				modifierLabels.separator
+				modifierLabels.separator,
 			);
 		}
 		if (chord.altKey) {
@@ -171,7 +171,7 @@ export class KeybindingLabel {
 				parent,
 				modifierLabels.altKey,
 				Boolean(match?.altKey),
-				modifierLabels.separator
+				modifierLabels.separator,
 			);
 		}
 		if (chord.metaKey) {
@@ -179,7 +179,7 @@ export class KeybindingLabel {
 				parent,
 				modifierLabels.metaKey,
 				Boolean(match?.metaKey),
-				modifierLabels.separator
+				modifierLabels.separator,
 			);
 		}
 		const keyLabel = chord.keyLabel;
@@ -192,16 +192,16 @@ export class KeybindingLabel {
 		parent: HTMLElement,
 		label: string,
 		highlight: boolean,
-		separator: string
+		separator: string,
 	): void {
 		dom.append(
 			parent,
-			this.createKeyElement(label, highlight ? ".highlight" : "")
+			this.createKeyElement(label, highlight ? ".highlight" : ""),
 		);
 		if (separator) {
 			dom.append(
 				parent,
-				$("span.monaco-keybinding-key-separator", undefined, separator)
+				$("span.monaco-keybinding-key-separator", undefined, separator),
 			);
 		}
 	}
@@ -209,7 +209,7 @@ export class KeybindingLabel {
 	private renderUnbound(parent: HTMLElement): void {
 		dom.append(
 			parent,
-			this.createKeyElement(localize("unbound", "Unbound"))
+			this.createKeyElement(localize("unbound", "Unbound")),
 		);
 	}
 
@@ -217,7 +217,7 @@ export class KeybindingLabel {
 		const keyElement = $(
 			"span.monaco-keybinding-key" + extraClass,
 			undefined,
-			label
+			label,
 		);
 		this.keyElements.add(keyElement);
 
@@ -241,7 +241,7 @@ export class KeybindingLabel {
 
 	private static areSame(
 		a: Matches | undefined,
-		b: Matches | undefined
+		b: Matches | undefined,
 	): boolean {
 		if (a === b || (!a && !b)) {
 			return true;

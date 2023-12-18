@@ -39,7 +39,7 @@ export class BinarySizeStatusBarEntry extends PreviewStatusBarEntry {
 			"status.imagePreview.binarySize",
 			vscode.l10n.t("Image Binary Size"),
 			vscode.StatusBarAlignment.Right,
-			100
+			100,
 		);
 	}
 

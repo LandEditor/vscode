@@ -3,73 +3,73 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { getActiveElement } from "vs/base/browser/dom";
+import { Codicon } from "vs/base/common/codicons";
+import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
+import { ModesRegistry } from "vs/editor/common/languages/modesRegistry";
+import { Context as SuggestContext } from "vs/editor/contrib/suggest/browser/suggest";
 import { localize, localize2 } from "vs/nls";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
-} from "vs/workbench/common/contributions";
-import { DirtyDiffWorkbenchController } from "./dirtydiffDecorator";
-import {
-	VIEWLET_ID,
-	ISCMService,
-	VIEW_PANE_ID,
-	ISCMProvider,
-	ISCMViewService,
-	REPOSITORIES_VIEW_PANE_ID,
-} from "vs/workbench/contrib/scm/common/scm";
-import { KeyMod, KeyCode } from "vs/base/common/keyCodes";
-import { MenuRegistry, MenuId } from "vs/platform/actions/common/actions";
-import {
-	SCMActiveResourceContextKeyController,
-	SCMStatusController,
-} from "./activity";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
-import {
-	IConfigurationRegistry,
-	Extensions as ConfigurationExtensions,
-	ConfigurationScope,
-} from "vs/platform/configuration/common/configurationRegistry";
-import {
-	IContextKeyService,
-	ContextKeyExpr,
-} from "vs/platform/contextkey/common/contextkey";
+import { MenuId, MenuRegistry } from "vs/platform/actions/common/actions";
 import {
 	CommandsRegistry,
 	ICommandService,
 } from "vs/platform/commands/common/commands";
 import {
-	KeybindingsRegistry,
-	KeybindingWeight,
-} from "vs/platform/keybinding/common/keybindingsRegistry";
+	ConfigurationScope,
+	Extensions as ConfigurationExtensions,
+	IConfigurationRegistry,
+} from "vs/platform/configuration/common/configurationRegistry";
+import {
+	ContextKeyExpr,
+	IContextKeyService,
+} from "vs/platform/contextkey/common/contextkey";
+import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { SCMService } from "vs/workbench/contrib/scm/common/scmService";
-import {
-	IViewContainersRegistry,
-	ViewContainerLocation,
-	Extensions as ViewContainerExtensions,
-	IViewsRegistry,
-} from "vs/workbench/common/views";
-import { SCMViewPaneContainer } from "vs/workbench/contrib/scm/browser/scmViewPaneContainer";
-import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
-import { ModesRegistry } from "vs/editor/common/languages/modesRegistry";
-import { Codicon } from "vs/base/common/codicons";
-import { registerIcon } from "vs/platform/theme/common/iconRegistry";
-import { SCMViewPane } from "vs/workbench/contrib/scm/browser/scmViewPane";
-import { SCMViewService } from "vs/workbench/contrib/scm/browser/scmViewService";
-import { SCMRepositoriesViewPane } from "vs/workbench/contrib/scm/browser/scmRepositoriesViewPane";
 import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import { Context as SuggestContext } from "vs/editor/contrib/suggest/browser/suggest";
+import {
+	KeybindingWeight,
+	KeybindingsRegistry,
+} from "vs/platform/keybinding/common/keybindingsRegistry";
+import { Registry } from "vs/platform/registry/common/platform";
+import { registerIcon } from "vs/platform/theme/common/iconRegistry";
+import {
+	Extensions as WorkbenchExtensions,
+	IWorkbenchContributionsRegistry,
+} from "vs/workbench/common/contributions";
+import {
+	Extensions as ViewContainerExtensions,
+	IViewContainersRegistry,
+	IViewsRegistry,
+	ViewContainerLocation,
+} from "vs/workbench/common/views";
+import { SCMRepositoriesViewPane } from "vs/workbench/contrib/scm/browser/scmRepositoriesViewPane";
+import { SCMViewPane } from "vs/workbench/contrib/scm/browser/scmViewPane";
+import { SCMViewPaneContainer } from "vs/workbench/contrib/scm/browser/scmViewPaneContainer";
+import { SCMViewService } from "vs/workbench/contrib/scm/browser/scmViewService";
+import { IQuickDiffService } from "vs/workbench/contrib/scm/common/quickDiff";
+import { QuickDiffService } from "vs/workbench/contrib/scm/common/quickDiffService";
+import {
+	ISCMProvider,
+	ISCMService,
+	ISCMViewService,
+	REPOSITORIES_VIEW_PANE_ID,
+	VIEWLET_ID,
+	VIEW_PANE_ID,
+} from "vs/workbench/contrib/scm/common/scm";
+import { SCMService } from "vs/workbench/contrib/scm/common/scmService";
 import {
 	MANAGE_TRUST_COMMAND_ID,
 	WorkspaceTrustContext,
 } from "vs/workbench/contrib/workspace/common/workspace";
-import { IQuickDiffService } from "vs/workbench/contrib/scm/common/quickDiff";
-import { QuickDiffService } from "vs/workbench/contrib/scm/common/quickDiffService";
-import { getActiveElement } from "vs/base/browser/dom";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
+import {
+	SCMActiveResourceContextKeyController,
+	SCMStatusController,
+} from "./activity";
+import { DirtyDiffWorkbenchController } from "./dirtydiffDecorator";
 
 ModesRegistry.registerLanguage({
 	id: "scminput",
@@ -79,20 +79,20 @@ ModesRegistry.registerLanguage({
 });
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	DirtyDiffWorkbenchController,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );
 
 const sourceControlViewIcon = registerIcon(
 	"source-control-view-icon",
 	Codicon.sourceControl,
-	localize("sourceControlViewIcon", "View icon of the Source Control view.")
+	localize("sourceControlViewIcon", "View icon of the Source Control view."),
 );
 
 const viewContainer = Registry.as<IViewContainersRegistry>(
-	ViewContainerExtensions.ViewContainersRegistry
+	ViewContainerExtensions.ViewContainersRegistry,
 ).registerViewContainer(
 	{
 		id: VIEWLET_ID,
@@ -108,17 +108,17 @@ const viewContainer = Registry.as<IViewContainersRegistry>(
 		hideIfEmpty: true,
 	},
 	ViewContainerLocation.Sidebar,
-	{ doNotRegisterOpenCommand: true }
+	{ doNotRegisterOpenCommand: true },
 );
 
 const viewsRegistry = Registry.as<IViewsRegistry>(
-	ViewContainerExtensions.ViewsRegistry
+	ViewContainerExtensions.ViewsRegistry,
 );
 
 viewsRegistry.registerViewWelcomeContent(VIEW_PANE_ID, {
 	content: localize(
 		"no open repo",
-		"No source control providers registered."
+		"No source control providers registered.",
 	),
 	when: "default",
 });
@@ -126,24 +126,24 @@ viewsRegistry.registerViewWelcomeContent(VIEW_PANE_ID, {
 viewsRegistry.registerViewWelcomeContent(VIEW_PANE_ID, {
 	content: localize(
 		"no open repo in an untrusted workspace",
-		"None of the registered source control providers work in Restricted Mode."
+		"None of the registered source control providers work in Restricted Mode.",
 	),
 	when: ContextKeyExpr.and(
 		ContextKeyExpr.equals("scm.providerCount", 0),
 		WorkspaceTrustContext.IsEnabled,
-		WorkspaceTrustContext.IsTrusted.toNegated()
+		WorkspaceTrustContext.IsTrusted.toNegated(),
 	),
 });
 
 viewsRegistry.registerViewWelcomeContent(VIEW_PANE_ID, {
 	content: `[${localize(
 		"manageWorkspaceTrustAction",
-		"Manage Workspace Trust"
+		"Manage Workspace Trust",
 	)}](command:${MANAGE_TRUST_COMMAND_ID})`,
 	when: ContextKeyExpr.and(
 		ContextKeyExpr.equals("scm.providerCount", 0),
 		WorkspaceTrustContext.IsEnabled,
-		WorkspaceTrustContext.IsTrusted.toNegated()
+		WorkspaceTrustContext.IsTrusted.toNegated(),
 	),
 });
 
@@ -162,7 +162,7 @@ viewsRegistry.registerViews(
 				id: viewContainer.id,
 				mnemonicTitle: localize(
 					{ key: "miViewSCM", comment: ["&& denotes a mnemonic"] },
-					"Source &&Control"
+					"Source &&Control",
 				),
 				keybindings: {
 					primary: 0,
@@ -180,7 +180,7 @@ viewsRegistry.registerViews(
 			},
 		},
 	],
-	viewContainer
+	viewContainer,
 );
 
 viewsRegistry.registerViews(
@@ -189,7 +189,7 @@ viewsRegistry.registerViews(
 			id: REPOSITORIES_VIEW_PANE_ID,
 			name: localize2(
 				"source control repositories",
-				"Source Control Repositories"
+				"Source Control Repositories",
 			),
 			ctorDescriptor: new SyncDescriptor(SCMRepositoriesViewPane),
 			canToggleVisibility: true,
@@ -199,28 +199,28 @@ viewsRegistry.registerViews(
 			order: -1000,
 			when: ContextKeyExpr.and(
 				ContextKeyExpr.has("scm.providerCount"),
-				ContextKeyExpr.notEquals("scm.providerCount", 0)
+				ContextKeyExpr.notEquals("scm.providerCount", 0),
 			),
 			// readonly when = ContextKeyExpr.or(ContextKeyExpr.equals('config.scm.alwaysShowProviders', true), ContextKeyExpr.and(ContextKeyExpr.notEquals('scm.providerCount', 0), ContextKeyExpr.notEquals('scm.providerCount', 1)));
 			containerIcon: sourceControlViewIcon,
 		},
 	],
-	viewContainer
+	viewContainer,
 );
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	SCMActiveResourceContextKeyController,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(SCMStatusController, LifecyclePhase.Restored);
 
 Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration
+	ConfigurationExtensions.Configuration,
 ).registerConfiguration({
 	id: "scm",
 	order: 5,
@@ -234,29 +234,29 @@ Registry.as<IConfigurationRegistry>(
 			enumDescriptions: [
 				localize(
 					"scm.diffDecorations.all",
-					"Show the diff decorations in all available locations."
+					"Show the diff decorations in all available locations.",
 				),
 				localize(
 					"scm.diffDecorations.gutter",
-					"Show the diff decorations only in the editor gutter."
+					"Show the diff decorations only in the editor gutter.",
 				),
 				localize(
 					"scm.diffDecorations.overviewRuler",
-					"Show the diff decorations only in the overview ruler."
+					"Show the diff decorations only in the overview ruler.",
 				),
 				localize(
 					"scm.diffDecorations.minimap",
-					"Show the diff decorations only in the minimap."
+					"Show the diff decorations only in the minimap.",
 				),
 				localize(
 					"scm.diffDecorations.none",
-					"Do not show the diff decorations."
+					"Do not show the diff decorations.",
 				),
 			],
 			default: "all",
 			description: localize(
 				"diffDecorations",
-				"Controls diff decorations in the editor."
+				"Controls diff decorations in the editor.",
 			),
 		},
 		"scm.diffDecorationsGutterWidth": {
@@ -265,7 +265,7 @@ Registry.as<IConfigurationRegistry>(
 			default: 3,
 			description: localize(
 				"diffGutterWidth",
-				"Controls the width(px) of diff decorations in gutter (added & modified)."
+				"Controls the width(px) of diff decorations in gutter (added & modified).",
 			),
 		},
 		"scm.diffDecorationsGutterVisibility": {
@@ -274,16 +274,16 @@ Registry.as<IConfigurationRegistry>(
 			enumDescriptions: [
 				localize(
 					"scm.diffDecorationsGutterVisibility.always",
-					"Show the diff decorator in the gutter at all times."
+					"Show the diff decorator in the gutter at all times.",
 				),
 				localize(
 					"scm.diffDecorationsGutterVisibility.hover",
-					"Show the diff decorator in the gutter only on hover."
+					"Show the diff decorator in the gutter only on hover.",
 				),
 			],
 			description: localize(
 				"scm.diffDecorationsGutterVisibility",
-				"Controls the visibility of the Source Control diff decorator in the gutter."
+				"Controls the visibility of the Source Control diff decorator in the gutter.",
 			),
 			default: "always",
 		},
@@ -293,13 +293,13 @@ Registry.as<IConfigurationRegistry>(
 			enumDescriptions: [
 				localize(
 					"scm.diffDecorationsGutterAction.diff",
-					"Show the inline diff Peek view on click."
+					"Show the inline diff Peek view on click.",
 				),
 				localize("scm.diffDecorationsGutterAction.none", "Do nothing."),
 			],
 			description: localize(
 				"scm.diffDecorationsGutterAction",
-				"Controls the behavior of Source Control diff gutter decorations."
+				"Controls the behavior of Source Control diff gutter decorations.",
 			),
 			default: "diff",
 		},
@@ -307,28 +307,28 @@ Registry.as<IConfigurationRegistry>(
 			type: "object",
 			description: localize(
 				"diffGutterPattern",
-				"Controls whether a pattern is used for the diff decorations in gutter."
+				"Controls whether a pattern is used for the diff decorations in gutter.",
 			),
 			additionalProperties: false,
 			properties: {
-				"added": {
+				added: {
 					type: "boolean",
 					description: localize(
 						"diffGutterPatternAdded",
-						"Use pattern for the diff decorations in gutter for added lines."
+						"Use pattern for the diff decorations in gutter for added lines.",
 					),
 				},
-				"modified": {
+				modified: {
 					type: "boolean",
 					description: localize(
 						"diffGutterPatternModifed",
-						"Use pattern for the diff decorations in gutter for modified lines."
+						"Use pattern for the diff decorations in gutter for modified lines.",
 					),
 				},
 			},
 			default: {
-				"added": false,
-				"modified": true,
+				added: false,
+				modified: true,
 			},
 		},
 		"scm.diffDecorationsIgnoreTrimWhitespace": {
@@ -337,20 +337,20 @@ Registry.as<IConfigurationRegistry>(
 			enumDescriptions: [
 				localize(
 					"scm.diffDecorationsIgnoreTrimWhitespace.true",
-					"Ignore leading and trailing whitespace."
+					"Ignore leading and trailing whitespace.",
 				),
 				localize(
 					"scm.diffDecorationsIgnoreTrimWhitespace.false",
-					"Do not ignore leading and trailing whitespace."
+					"Do not ignore leading and trailing whitespace.",
 				),
 				localize(
 					"scm.diffDecorationsIgnoreTrimWhitespace.inherit",
-					"Inherit from `diffEditor.ignoreTrimWhitespace`."
+					"Inherit from `diffEditor.ignoreTrimWhitespace`.",
 				),
 			],
 			description: localize(
 				"diffDecorationsIgnoreTrimWhitespace",
-				"Controls whether leading and trailing whitespace is ignored in Source Control diff gutter decorations."
+				"Controls whether leading and trailing whitespace is ignored in Source Control diff gutter decorations.",
 			),
 			default: "false",
 		},
@@ -358,7 +358,7 @@ Registry.as<IConfigurationRegistry>(
 			type: "boolean",
 			description: localize(
 				"alwaysShowActions",
-				"Controls whether inline actions are always visible in the Source Control view."
+				"Controls whether inline actions are always visible in the Source Control view.",
 			),
 			default: false,
 		},
@@ -368,20 +368,20 @@ Registry.as<IConfigurationRegistry>(
 			enumDescriptions: [
 				localize(
 					"scm.countBadge.all",
-					"Show the sum of all Source Control Provider count badges."
+					"Show the sum of all Source Control Provider count badges.",
 				),
 				localize(
 					"scm.countBadge.focused",
-					"Show the count badge of the focused Source Control Provider."
+					"Show the count badge of the focused Source Control Provider.",
 				),
 				localize(
 					"scm.countBadge.off",
-					"Disable the Source Control count badge."
+					"Disable the Source Control count badge.",
 				),
 			],
 			description: localize(
 				"scm.countBadge",
-				"Controls the count badge on the Source Control icon on the Activity Bar."
+				"Controls the count badge on the Source Control icon on the Activity Bar.",
 			),
 			default: "all",
 		},
@@ -391,21 +391,21 @@ Registry.as<IConfigurationRegistry>(
 			enumDescriptions: [
 				localize(
 					"scm.providerCountBadge.hidden",
-					"Hide Source Control Provider count badges."
+					"Hide Source Control Provider count badges.",
 				),
 				localize(
 					"scm.providerCountBadge.auto",
-					"Only show count badge for Source Control Provider when non-zero."
+					"Only show count badge for Source Control Provider when non-zero.",
 				),
 				localize(
 					"scm.providerCountBadge.visible",
-					"Show Source Control Provider count badges."
+					"Show Source Control Provider count badges.",
 				),
 			],
 			markdownDescription: localize(
 				"scm.providerCountBadge",
 				"Controls the count badges on Source Control Provider headers. These headers appear in the Source Control view when there is more than one provider or when the {0} setting is enabled, and in the Source Control Repositories view.",
-				"`#scm.alwaysShowRepositories#`"
+				"`#scm.alwaysShowRepositories#`",
 			),
 			default: "hidden",
 		},
@@ -415,16 +415,16 @@ Registry.as<IConfigurationRegistry>(
 			enumDescriptions: [
 				localize(
 					"scm.defaultViewMode.tree",
-					"Show the repository changes as a tree."
+					"Show the repository changes as a tree.",
 				),
 				localize(
 					"scm.defaultViewMode.list",
-					"Show the repository changes as a list."
+					"Show the repository changes as a list.",
 				),
 			],
 			description: localize(
 				"scm.defaultViewMode",
-				"Controls the default Source Control repository view mode."
+				"Controls the default Source Control repository view mode.",
 			),
 			default: "list",
 		},
@@ -434,20 +434,20 @@ Registry.as<IConfigurationRegistry>(
 			enumDescriptions: [
 				localize(
 					"scm.defaultViewSortKey.name",
-					"Sort the repository changes by file name."
+					"Sort the repository changes by file name.",
 				),
 				localize(
 					"scm.defaultViewSortKey.path",
-					"Sort the repository changes by path."
+					"Sort the repository changes by path.",
 				),
 				localize(
 					"scm.defaultViewSortKey.status",
-					"Sort the repository changes by Source Control status."
+					"Sort the repository changes by Source Control status.",
 				),
 			],
 			description: localize(
 				"scm.defaultViewSortKey",
-				"Controls the default Source Control repository changes sort order when viewed as a list."
+				"Controls the default Source Control repository changes sort order when viewed as a list.",
 			),
 			default: "path",
 		},
@@ -455,7 +455,7 @@ Registry.as<IConfigurationRegistry>(
 			type: "boolean",
 			description: localize(
 				"autoReveal",
-				"Controls whether the Source Control view should automatically reveal and select files when opening them."
+				"Controls whether the Source Control view should automatically reveal and select files when opening them.",
 			),
 			default: true,
 		},
@@ -463,7 +463,7 @@ Registry.as<IConfigurationRegistry>(
 			type: "string",
 			markdownDescription: localize(
 				"inputFontFamily",
-				"Controls the font for the input message. Use `default` for the workbench user interface font family, `editor` for the `#editor.fontFamily#`'s value, or a custom font family."
+				"Controls the font for the input message. Use `default` for the workbench user interface font family, `editor` for the `#editor.fontFamily#`'s value, or a custom font family.",
 			),
 			default: "default",
 		},
@@ -471,7 +471,7 @@ Registry.as<IConfigurationRegistry>(
 			type: "number",
 			markdownDescription: localize(
 				"inputFontSize",
-				"Controls the font size for the input message in pixels."
+				"Controls the font size for the input message in pixels.",
 			),
 			default: 13,
 		},
@@ -479,7 +479,7 @@ Registry.as<IConfigurationRegistry>(
 			type: "number",
 			markdownDescription: localize(
 				"inputMaxLines",
-				"Controls the maximum number of lines that the input will auto-grow to."
+				"Controls the maximum number of lines that the input will auto-grow to.",
 			),
 			minimum: 1,
 			maximum: 50,
@@ -489,7 +489,7 @@ Registry.as<IConfigurationRegistry>(
 			type: "number",
 			markdownDescription: localize(
 				"inputMinLines",
-				"Controls the minimum number of lines that the input will auto-grow from."
+				"Controls the minimum number of lines that the input will auto-grow from.",
 			),
 			minimum: 1,
 			maximum: 50,
@@ -499,7 +499,7 @@ Registry.as<IConfigurationRegistry>(
 			type: "boolean",
 			markdownDescription: localize(
 				"alwaysShowRepository",
-				"Controls whether repositories should always be visible in the Source Control view."
+				"Controls whether repositories should always be visible in the Source Control view.",
 			),
 			default: false,
 		},
@@ -509,20 +509,20 @@ Registry.as<IConfigurationRegistry>(
 			enumDescriptions: [
 				localize(
 					"scm.repositoriesSortOrder.discoveryTime",
-					"Repositories in the Source Control Repositories view are sorted by discovery time. Repositories in the Source Control view are sorted in the order that they were selected."
+					"Repositories in the Source Control Repositories view are sorted by discovery time. Repositories in the Source Control view are sorted in the order that they were selected.",
 				),
 				localize(
 					"scm.repositoriesSortOrder.name",
-					"Repositories in the Source Control Repositories and Source Control views are sorted by repository name."
+					"Repositories in the Source Control Repositories and Source Control views are sorted by repository name.",
 				),
 				localize(
 					"scm.repositoriesSortOrder.path",
-					"Repositories in the Source Control Repositories and Source Control views are sorted by repository path."
+					"Repositories in the Source Control Repositories and Source Control views are sorted by repository path.",
 				),
 			],
 			description: localize(
 				"repositoriesSortOrder",
-				"Controls the sort order of the repositories in the source control repositories view."
+				"Controls the sort order of the repositories in the source control repositories view.",
 			),
 			default: "discovery time",
 		},
@@ -530,7 +530,7 @@ Registry.as<IConfigurationRegistry>(
 			type: "number",
 			description: localize(
 				"providersVisible",
-				"Controls how many repositories are visible in the Source Control Repositories section. Set to 0, to be able to manually resize the view."
+				"Controls how many repositories are visible in the Source Control Repositories section. Set to 0, to be able to manually resize the view.",
 			),
 			default: 10,
 		},
@@ -538,7 +538,7 @@ Registry.as<IConfigurationRegistry>(
 			type: "boolean",
 			markdownDescription: localize(
 				"showActionButton",
-				"Controls whether an action button can be shown in the Source Control view."
+				"Controls whether an action button can be shown in the Source Control view.",
 			),
 			default: true,
 		},
@@ -546,7 +546,7 @@ Registry.as<IConfigurationRegistry>(
 			type: "boolean",
 			markdownDescription: localize(
 				"showInputActionButton",
-				"Controls whether an action button can be shown in the Source Control input."
+				"Controls whether an action button can be shown in the Source Control input.",
 			),
 			default: true,
 		},
@@ -556,20 +556,20 @@ Registry.as<IConfigurationRegistry>(
 			enumDescriptions: [
 				localize(
 					"scm.showIncomingChanges.always",
-					"Always show incoming changes in the Source Control view."
+					"Always show incoming changes in the Source Control view.",
 				),
 				localize(
 					"scm.showIncomingChanges.never",
-					"Never show incoming changes in the Source Control view."
+					"Never show incoming changes in the Source Control view.",
 				),
 				localize(
 					"scm.showIncomingChanges.auto",
-					"Only show incoming changes in the Source Control view when any exist."
+					"Only show incoming changes in the Source Control view when any exist.",
 				),
 			],
 			description: localize(
 				"scm.showIncomingChanges",
-				"Controls whether incoming changes are shown in the Source Control view."
+				"Controls whether incoming changes are shown in the Source Control view.",
 			),
 			default: "auto",
 		},
@@ -579,20 +579,20 @@ Registry.as<IConfigurationRegistry>(
 			enumDescriptions: [
 				localize(
 					"scm.showOutgoingChanges.always",
-					"Always show outgoing changes in the Source Control view."
+					"Always show outgoing changes in the Source Control view.",
 				),
 				localize(
 					"scm.showOutgoingChanges.never",
-					"Never show outgoing changes in the Source Control view."
+					"Never show outgoing changes in the Source Control view.",
 				),
 				localize(
 					"scm.showOutgoingChanges.auto",
-					"Only show outgoing changes in the Source Control view when any exist."
+					"Only show outgoing changes in the Source Control view when any exist.",
 				),
 			],
 			description: localize(
 				"scm.showOutgoingChanges",
-				"Controls whether outgoing changes are shown in the Source Control view."
+				"Controls whether outgoing changes are shown in the Source Control view.",
 			),
 			default: "auto",
 		},
@@ -612,7 +612,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		const contextKeyService = accessor.get(IContextKeyService);
 		const context = contextKeyService.getContext(getActiveElement());
 		const repositoryId = context.getValue<string | undefined>(
-			"scmRepository"
+			"scmRepository",
 		);
 
 		if (!repositoryId) {
@@ -638,7 +638,7 @@ const viewNextCommitCommand = {
 	description: {
 		description: localize(
 			"scm view next commit",
-			"Source Control: View Next Commit"
+			"Source Control: View Next Commit",
 		),
 		args: [],
 	},
@@ -648,7 +648,7 @@ const viewNextCommitCommand = {
 		const scmService = accessor.get(ISCMService);
 		const context = contextKeyService.getContext(getActiveElement());
 		const repositoryId = context.getValue<string | undefined>(
-			"scmRepository"
+			"scmRepository",
 		);
 		const repository = repositoryId
 			? scmService.getRepository(repositoryId)
@@ -661,7 +661,7 @@ const viewPreviousCommitCommand = {
 	description: {
 		description: localize(
 			"scm view previous commit",
-			"Source Control: View Previous Commit"
+			"Source Control: View Previous Commit",
 		),
 		args: [],
 	},
@@ -671,7 +671,7 @@ const viewPreviousCommitCommand = {
 		const scmService = accessor.get(ISCMService);
 		const context = contextKeyService.getContext(getActiveElement());
 		const repositoryId = context.getValue<string | undefined>(
-			"scmRepository"
+			"scmRepository",
 		);
 		const repository = repositoryId
 			? scmService.getRepository(repositoryId)
@@ -686,7 +686,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	when: ContextKeyExpr.and(
 		ContextKeyExpr.has("scmRepository"),
 		ContextKeyExpr.has("scmInputIsInLastPosition"),
-		SuggestContext.Visible.toNegated()
+		SuggestContext.Visible.toNegated(),
 	),
 	primary: KeyCode.DownArrow,
 });
@@ -697,7 +697,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	when: ContextKeyExpr.and(
 		ContextKeyExpr.has("scmRepository"),
 		ContextKeyExpr.has("scmInputIsInFirstPosition"),
-		SuggestContext.Visible.toNegated()
+		SuggestContext.Visible.toNegated(),
 	),
 	primary: KeyCode.UpArrow,
 });
@@ -726,9 +726,9 @@ CommandsRegistry.registerCommand(
 		const commandService = accessor.get(ICommandService);
 		await commandService.executeCommand(
 			"openInIntegratedTerminal",
-			provider.rootUri
+			provider.rootUri,
 		);
-	}
+	},
 );
 
 CommandsRegistry.registerCommand(
@@ -740,7 +740,7 @@ CommandsRegistry.registerCommand(
 
 		const commandService = accessor.get(ICommandService);
 		await commandService.executeCommand("openInTerminal", provider.rootUri);
-	}
+	},
 );
 
 MenuRegistry.appendMenuItem(MenuId.SCMSourceControl, {
@@ -749,7 +749,7 @@ MenuRegistry.appendMenuItem(MenuId.SCMSourceControl, {
 		id: "scm.openInTerminal",
 		title: localize(
 			"open in external terminal",
-			"Open in External Terminal"
+			"Open in External Terminal",
 		),
 	},
 	when: ContextKeyExpr.and(
@@ -757,13 +757,13 @@ MenuRegistry.appendMenuItem(MenuId.SCMSourceControl, {
 		ContextKeyExpr.or(
 			ContextKeyExpr.equals(
 				"config.terminal.sourceControlRepositoriesKind",
-				"external"
+				"external",
 			),
 			ContextKeyExpr.equals(
 				"config.terminal.sourceControlRepositoriesKind",
-				"both"
-			)
-		)
+				"both",
+			),
+		),
 	),
 });
 
@@ -773,7 +773,7 @@ MenuRegistry.appendMenuItem(MenuId.SCMSourceControl, {
 		id: "scm.openInIntegratedTerminal",
 		title: localize(
 			"open in integrated terminal",
-			"Open in Integrated Terminal"
+			"Open in Integrated Terminal",
 		),
 	},
 	when: ContextKeyExpr.and(
@@ -781,13 +781,13 @@ MenuRegistry.appendMenuItem(MenuId.SCMSourceControl, {
 		ContextKeyExpr.or(
 			ContextKeyExpr.equals(
 				"config.terminal.sourceControlRepositoriesKind",
-				"integrated"
+				"integrated",
 			),
 			ContextKeyExpr.equals(
 				"config.terminal.sourceControlRepositoriesKind",
-				"both"
-			)
-		)
+				"both",
+			),
+		),
 	),
 });
 
@@ -796,5 +796,5 @@ registerSingleton(ISCMViewService, SCMViewService, InstantiationType.Delayed);
 registerSingleton(
 	IQuickDiffService,
 	QuickDiffService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

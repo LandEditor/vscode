@@ -4,32 +4,32 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { localize } from "vs/nls";
+import { Categories } from "vs/platform/action/common/actionCommonCategories";
 import {
-	MenuRegistry,
-	MenuId,
-	registerAction2,
 	Action2,
+	MenuId,
+	MenuRegistry,
+	registerAction2,
 } from "vs/platform/actions/common/actions";
-import { IWorkbenchIssueService } from "vs/workbench/services/issue/common/issue";
 import { CommandsRegistry } from "vs/platform/commands/common/commands";
-import { BaseIssueContribution } from "vs/workbench/contrib/issue/common/issue.contribution";
+import { IDialogService } from "vs/platform/dialogs/common/dialogs";
+import { INativeEnvironmentService } from "vs/platform/environment/common/environment";
+import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+import { IIssueMainService, IssueType } from "vs/platform/issue/common/issue";
+import { INativeHostService } from "vs/platform/native/common/native";
 import { IProductService } from "vs/platform/product/common/productService";
+import {
+	IProgressService,
+	ProgressLocation,
+} from "vs/platform/progress/common/progress";
 import { Registry } from "vs/platform/registry/common/platform";
 import {
 	Extensions,
 	IWorkbenchContributionsRegistry,
 } from "vs/workbench/common/contributions";
+import { BaseIssueContribution } from "vs/workbench/contrib/issue/common/issue.contribution";
+import { IWorkbenchIssueService } from "vs/workbench/services/issue/common/issue";
 import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { Categories } from "vs/platform/action/common/actionCommonCategories";
-import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import { INativeEnvironmentService } from "vs/platform/environment/common/environment";
-import { IDialogService } from "vs/platform/dialogs/common/dialogs";
-import { INativeHostService } from "vs/platform/native/common/native";
-import {
-	IProgressService,
-	ProgressLocation,
-} from "vs/platform/progress/common/progress";
-import { IIssueMainService, IssueType } from "vs/platform/issue/common/issue";
 
 //#region Issue Contribution
 
@@ -43,10 +43,10 @@ class NativeIssueContribution extends BaseIssueContribution {
 	}
 }
 Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench
+	Extensions.Workbench,
 ).registerWorkbenchContribution(
 	NativeIssueContribution,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );
 
 class ReportPerformanceIssueUsingReporterAction extends Action2 {
@@ -61,7 +61,7 @@ class ReportPerformanceIssueUsingReporterAction extends Action2 {
 						key: "reportPerformanceIssue",
 						comment: [`Here, 'issue' means problem or bug`],
 					},
-					"Report Performance Issue..."
+					"Report Performance Issue...",
 				),
 				original: "Report Performance Issue",
 			},
@@ -114,7 +114,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarHelpMenu, {
 				key: "miOpenProcessExplorerer",
 				comment: ["&& denotes a mnemonic"],
 			},
-			"Open &&Process Explorer"
+			"Open &&Process Explorer",
 		),
 	},
 	order: 2,
@@ -146,14 +146,14 @@ class StopTracing extends Action2 {
 			const { confirmed } = await dialogService.confirm({
 				message: localize(
 					"stopTracing.message",
-					"Tracing requires to launch with a '--trace' argument"
+					"Tracing requires to launch with a '--trace' argument",
 				),
 				primaryButton: localize(
 					{
 						key: "stopTracing.button",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Relaunch and Enable Tracing"
+					"&&Relaunch and Enable Tracing",
 				),
 			});
 
@@ -169,10 +169,10 @@ class StopTracing extends Action2 {
 				cancellable: false,
 				detail: localize(
 					"stopTracing.detail",
-					"This can take up to one minute to complete."
+					"This can take up to one minute to complete.",
 				),
 			},
-			() => issueService.stopTracing()
+			() => issueService.stopTracing(),
 		);
 	}
 }

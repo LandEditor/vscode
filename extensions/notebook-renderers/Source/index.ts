@@ -8,11 +8,7 @@ import type {
 	OutputItem,
 	RendererContext,
 } from "vscode-notebook-renderer";
-import {
-	createOutputContent,
-	appendOutput,
-	scrollableClass,
-} from "./textHelper";
+import { ttPolicy } from "./htmlHelper";
 import {
 	HtmlRenderingHook,
 	IDisposable,
@@ -21,8 +17,12 @@ import {
 	OutputWithAppend,
 	RenderOptions,
 } from "./rendererTypes";
-import { ttPolicy } from "./htmlHelper";
 import { formatStackTrace } from "./stackTraceHelper";
+import {
+	appendOutput,
+	createOutputContent,
+	scrollableClass,
+} from "./textHelper";
 
 function clearContainer(container: HTMLElement) {
 	while (container.firstChild) {
@@ -32,7 +32,7 @@ function clearContainer(container: HTMLElement) {
 
 function renderImage(
 	outputInfo: OutputItem,
-	element: HTMLElement
+	element: HTMLElement,
 ): IDisposable {
 	const blob = new Blob([outputInfo.data()], { type: outputInfo.mime });
 	const src = URL.createObjectURL(blob);
@@ -65,8 +65,8 @@ function renderImage(
 		JSON.stringify({
 			webviewSection: "image",
 			outputId: outputInfo.id,
-			"preventDefaultContextMenuItems": true,
-		})
+			preventDefaultContextMenuItems: true,
+		}),
 	);
 	const display = document.createElement("div");
 	display.classList.add("display");
@@ -134,7 +134,7 @@ async function renderHTML(
 	outputInfo: OutputItem,
 	container: HTMLElement,
 	signal: AbortSignal,
-	hooks: Iterable<HtmlRenderingHook>
+	hooks: Iterable<HtmlRenderingHook>,
 ): Promise<void> {
 	clearContainer(container);
 	let element: HTMLElement = document.createElement("div");
@@ -159,7 +159,7 @@ async function renderJavascript(
 	outputInfo: OutputItem,
 	container: HTMLElement,
 	signal: AbortSignal,
-	hooks: Iterable<JavaScriptRenderingHook>
+	hooks: Iterable<JavaScriptRenderingHook>,
 ): Promise<void> {
 	let scriptText = outputInfo.text();
 
@@ -169,7 +169,7 @@ async function renderJavascript(
 				outputInfo,
 				container,
 				scriptText,
-				signal
+				signal,
 			)) ?? scriptText;
 		if (signal.aborted) {
 			return;
@@ -192,7 +192,7 @@ interface Event<T> {
 	(
 		listener: (e: T) => any,
 		thisArgs?: any,
-		disposables?: IDisposable[]
+		disposables?: IDisposable[],
 	): IDisposable;
 }
 
@@ -219,7 +219,7 @@ function renderError(
 	outputInfo: OutputItem,
 	outputElement: HTMLElement,
 	ctx: IRichRenderContext,
-	trustHtml: boolean
+	trustHtml: boolean,
 ): IDisposable {
 	const disposableStore = createDisposableStore();
 
@@ -251,17 +251,17 @@ function renderError(
 		const content = createOutputContent(
 			outputInfo.id,
 			stackTrace ?? "",
-			outputOptions
+			outputOptions,
 		);
 		const contentParent = document.createElement("div");
 		contentParent.classList.toggle(
 			"word-wrap",
-			ctx.settings.outputWordWrap
+			ctx.settings.outputWordWrap,
 		);
 		disposableStore.push(
 			ctx.onDidChangeSettings((e) => {
 				contentParent.classList.toggle("word-wrap", e.outputWordWrap);
-			})
+			}),
 		);
 		contentParent.classList.toggle("scrollable", outputScrolling);
 
@@ -335,14 +335,14 @@ function onKeypressHandler(e: KeyboardEvent) {
 function initializeScroll(
 	scrollableElement: HTMLElement,
 	disposables: DisposableStore,
-	scrollTop?: number
+	scrollTop?: number,
 ) {
 	if (scrollableElement.classList.contains(scrollableClass)) {
 		const scrollbarVisible =
 			scrollableElement.scrollHeight > scrollableElement.clientHeight;
 		scrollableElement.classList.toggle(
 			"scrollbar-visible",
-			scrollbarVisible
+			scrollbarVisible,
 		);
 		scrollableElement.scrollTop =
 			scrollTop !== undefined
@@ -354,7 +354,7 @@ function initializeScroll(
 				dispose: () =>
 					scrollableElement.removeEventListener(
 						"scroll",
-						onScrollHandler
+						onScrollHandler,
 					),
 			});
 			scrollableElement.addEventListener("keydown", onKeypressHandler);
@@ -362,7 +362,7 @@ function initializeScroll(
 				dispose: () =>
 					scrollableElement.removeEventListener(
 						"keydown",
-						onKeypressHandler
+						onKeypressHandler,
 					),
 			});
 		}
@@ -404,7 +404,7 @@ function renderStream(
 	outputInfo: OutputWithAppend,
 	outputElement: HTMLElement,
 	error: boolean,
-	ctx: IRichRenderContext
+	ctx: IRichRenderContext,
 ): IDisposable {
 	const disposableStore = createDisposableStore();
 	const outputScrolling = scrollingEnabled(outputInfo, ctx.settings);
@@ -426,7 +426,7 @@ function renderStream(
 	// If the previous output item for the same cell was also a stream, append this output to the previous
 	if (previousOutputParent) {
 		const existingContent = previousOutputParent.querySelector(
-			`[output-item-id="${outputInfo.id}"]`
+			`[output-item-id="${outputInfo.id}"]`,
 		) as HTMLElement | null;
 		if (existingContent) {
 			appendOutput(outputInfo, existingContent, outputOptions);
@@ -434,14 +434,14 @@ function renderStream(
 			const newContent = createOutputContent(
 				outputInfo.id,
 				outputInfo.text(),
-				outputOptions
+				outputOptions,
 			);
 			previousOutputParent.appendChild(newContent);
 		}
 		previousOutputParent.classList.toggle(
 			"scrollbar-visible",
 			previousOutputParent.scrollHeight >
-				previousOutputParent.clientHeight
+				previousOutputParent.clientHeight,
 		);
 		previousOutputParent.scrollTop =
 			scrollTop !== undefined
@@ -449,7 +449,7 @@ function renderStream(
 				: previousOutputParent.scrollHeight;
 	} else {
 		const existingContent = outputElement.querySelector(
-			`[output-item-id="${outputInfo.id}"]`
+			`[output-item-id="${outputInfo.id}"]`,
 		) as HTMLElement | null;
 		let contentParent = existingContent?.parentElement;
 		if (existingContent && contentParent) {
@@ -458,7 +458,7 @@ function renderStream(
 			const newContent = createOutputContent(
 				outputInfo.id,
 				outputInfo.text(),
-				outputOptions
+				outputOptions,
 			);
 			contentParent = document.createElement("div");
 			contentParent.appendChild(newContent);
@@ -471,12 +471,12 @@ function renderStream(
 		contentParent.classList.toggle("scrollable", outputScrolling);
 		contentParent.classList.toggle(
 			"word-wrap",
-			ctx.settings.outputWordWrap
+			ctx.settings.outputWordWrap,
 		);
 		disposableStore.push(
 			ctx.onDidChangeSettings((e) => {
 				contentParent!.classList.toggle("word-wrap", e.outputWordWrap);
-			})
+			}),
 		);
 
 		initializeScroll(contentParent, disposableStore, scrollTop);
@@ -488,7 +488,7 @@ function renderStream(
 function renderText(
 	outputInfo: OutputItem,
 	outputElement: HTMLElement,
-	ctx: IRichRenderContext
+	ctx: IRichRenderContext,
 ): IDisposable {
 	const disposableStore = createDisposableStore();
 	clearContainer(outputElement);
@@ -633,63 +633,58 @@ export const activate: ActivationFunction<void> = (ctx) => {
 				case "image/gif":
 				case "image/png":
 				case "image/jpeg":
-				case "image/git":
-					{
-						disposables.get(outputInfo.id)?.dispose();
-						const disposable = renderImage(outputInfo, element);
-						disposables.set(outputInfo.id, disposable);
-					}
-					break;
-				case "application/vnd.code.notebook.error":
-					{
-						disposables.get(outputInfo.id)?.dispose();
-						const disposable = renderError(
-							outputInfo,
-							element,
-							latestContext,
-							ctx.workspace.isTrusted
-						);
-						disposables.set(outputInfo.id, disposable);
-					}
-					break;
+				case "image/git": {
+					disposables.get(outputInfo.id)?.dispose();
+					const disposable = renderImage(outputInfo, element);
+					disposables.set(outputInfo.id, disposable);
+				}
+				break;
+				case "application/vnd.code.notebook.error": {
+					disposables.get(outputInfo.id)?.dispose();
+					const disposable = renderError(
+						outputInfo,
+						element,
+						latestContext,
+						ctx.workspace.isTrusted,
+					);
+					disposables.set(outputInfo.id, disposable);
+				}
+				break;
 				case "application/vnd.code.notebook.stdout":
 				case "application/x.notebook.stdout":
-				case "application/x.notebook.stream":
-					{
-						disposables.get(outputInfo.id)?.dispose();
-						const disposable = renderStream(
-							outputInfo,
-							element,
-							false,
-							latestContext
-						);
-						disposables.set(outputInfo.id, disposable);
-					}
-					break;
+				case "application/x.notebook.stream": {
+					disposables.get(outputInfo.id)?.dispose();
+					const disposable = renderStream(
+						outputInfo,
+						element,
+						false,
+						latestContext,
+					);
+					disposables.set(outputInfo.id, disposable);
+				}
+				break;
 				case "application/vnd.code.notebook.stderr":
-				case "application/x.notebook.stderr":
-					{
-						disposables.get(outputInfo.id)?.dispose();
-						const disposable = renderStream(
-							outputInfo,
-							element,
-							true,
-							latestContext
-						);
-						disposables.set(outputInfo.id, disposable);
-					}
-					break;
-				case "text/plain":
-					{
-						disposables.get(outputInfo.id)?.dispose();
-						const disposable = renderText(
-							outputInfo,
-							element,
-							latestContext
-						);
-						disposables.set(outputInfo.id, disposable);
-					}
-					break;
+				case "application/x.notebook.stderr": {
+					disposables.get(outputInfo.id)?.dispose();
+					const disposable = renderStream(
+						outputInfo,
+						element,
+						true,
+						latestContext,
+					);
+					disposables.set(outputInfo.id, disposable);
+				}
+				break;
+				case "text/plain": {
+					disposables.get(outputInfo.id)?.dispose();
+					const disposable = renderText(
+						outputInfo,
+						element,
+						latestContext,
+					);
+					disposables.set(outputInfo.id, disposable);
+				}
+				break;
 				default:
 					break;
 			}
@@ -705,7 +700,7 @@ export const activate: ActivationFunction<void> = (ctx) => {
 			}
 		},
 		experimental_registerHtmlRenderingHook: (
-			hook: HtmlRenderingHook
+			hook: HtmlRenderingHook,
 		): IDisposable => {
 			htmlHooks.add(hook);
 			return {
@@ -715,7 +710,7 @@ export const activate: ActivationFunction<void> = (ctx) => {
 			};
 		},
 		experimental_registerJavaScriptRenderingHook: (
-			hook: JavaScriptRenderingHook
+			hook: JavaScriptRenderingHook,
 		): IDisposable => {
 			jsHooks.add(hook);
 			return {

@@ -20,7 +20,7 @@ export interface ITerminalFormatMessageOptions {
  */
 export function formatMessageForTerminal(
 	message: string,
-	options: ITerminalFormatMessageOptions = {}
+	options: ITerminalFormatMessageOptions = {},
 ): string {
 	let result = "";
 	if (!options.excludeLeadingNewLine) {

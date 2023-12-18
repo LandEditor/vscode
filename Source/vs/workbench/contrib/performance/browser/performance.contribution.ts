@@ -3,44 +3,44 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { EventProfiling } from "vs/base/common/event";
 import { localize } from "vs/nls";
-import { registerAction2, Action2 } from "vs/platform/actions/common/actions";
+import { Categories } from "vs/platform/action/common/actionCommonCategories";
+import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
 import {
 	IInstantiationService,
 	ServicesAccessor,
 } from "vs/platform/instantiation/common/instantiation";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
+import {
+	InstantiationService,
+	Trace,
+} from "vs/platform/instantiation/common/instantiationService";
 import { Registry } from "vs/platform/registry/common/platform";
-import { Categories } from "vs/platform/action/common/actionCommonCategories";
 import {
 	Extensions,
 	IWorkbenchContributionsRegistry,
 } from "vs/workbench/common/contributions";
 import {
 	EditorExtensions,
-	IEditorSerializer,
 	IEditorFactoryRegistry,
+	IEditorSerializer,
 } from "vs/workbench/common/editor";
+import { InputLatencyContrib } from "vs/workbench/contrib/performance/browser/inputLatencyContrib";
 import {
 	PerfviewContrib,
 	PerfviewInput,
 } from "vs/workbench/contrib/performance/browser/perfviewEditor";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import {
-	InstantiationService,
-	Trace,
-} from "vs/platform/instantiation/common/instantiationService";
-import { EventProfiling } from "vs/base/common/event";
-import { InputLatencyContrib } from "vs/workbench/contrib/performance/browser/inputLatencyContrib";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 // -- startup performance view
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench
+	Extensions.Workbench,
 ).registerWorkbenchContribution(PerfviewContrib, LifecyclePhase.Ready);
 
 Registry.as<IEditorFactoryRegistry>(
-	EditorExtensions.EditorFactory
+	EditorExtensions.EditorFactory,
 ).registerEditorSerializer(
 	PerfviewInput.Id,
 	class implements IEditorSerializer {
@@ -51,11 +51,11 @@ Registry.as<IEditorFactoryRegistry>(
 			return "";
 		}
 		deserialize(
-			instantiationService: IInstantiationService
+			instantiationService: IInstantiationService,
 		): PerfviewInput {
 			return instantiationService.createInstance(PerfviewInput);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -77,10 +77,10 @@ registerAction2(
 			const instaService = accessor.get(IInstantiationService);
 			return editorService.openEditor(
 				instaService.createInstance(PerfviewInput),
-				{ pinned: true }
+				{ pinned: true },
 			);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -108,7 +108,7 @@ registerAction2(
 				}
 			}
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -128,7 +128,7 @@ registerAction2(
 		run() {
 			if (Trace.all.size === 0) {
 				console.log(
-					"Enable via `instantiationService.ts#_enableAllTracing`"
+					"Enable via `instantiationService.ts#_enableAllTracing`",
 				);
 				return;
 			}
@@ -137,7 +137,7 @@ registerAction2(
 				console.log(item);
 			}
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -157,7 +157,7 @@ registerAction2(
 		run(): void {
 			if (EventProfiling.all.size === 0) {
 				console.log(
-					"USE `EmitterOptions._profName` to enable profiling"
+					"USE `EmitterOptions._profName` to enable profiling",
 				);
 				return;
 			}
@@ -168,15 +168,15 @@ registerAction2(
 					}ms, ${item.listenerCount} listeners, avg cost is ${
 						item.durations.reduce((a, b) => a + b, 0) /
 						item.durations.length
-					}ms`
+					}ms`,
 				);
 			}
 		}
-	}
+	},
 );
 
 // -- input latency
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench
+	Extensions.Workbench,
 ).registerWorkbenchContribution(InputLatencyContrib, LifecyclePhase.Eventually);

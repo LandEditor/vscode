@@ -11,7 +11,7 @@ import { createDecorator } from "vs/platform/instantiation/common/instantiation"
 
 export const IAuxiliaryWindowsMainService =
 	createDecorator<IAuxiliaryWindowsMainService>(
-		"auxiliaryWindowsMainService"
+		"auxiliaryWindowsMainService",
 	);
 
 export interface IAuxiliaryWindowsMainService {
@@ -38,6 +38,6 @@ export interface IAuxiliaryWindowsMainService {
 
 export function isAuxiliaryWindow(webContents: WebContents): boolean {
 	return webContents?.opener?.url.startsWith(
-		`${Schemas.vscodeFileResource}://${VSCODE_AUTHORITY}/`
+		`${Schemas.vscodeFileResource}://${VSCODE_AUTHORITY}/`,
 	);
 }

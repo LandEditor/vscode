@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
 import * as dom from "vs/base/browser/dom";
+import { ActionViewItem } from "vs/base/browser/ui/actionbar/actionViewItems";
 import { Action, IAction } from "vs/base/common/actions";
 import { URI, UriComponents } from "vs/base/common/uri";
-import { ActionViewItem } from "vs/base/browser/ui/actionbar/actionViewItems";
+import * as nls from "vs/nls";
 
 export class ToggleReactionsAction extends Action {
 	static readonly ID = "toolbar.toggle.pickReactions";
@@ -18,7 +18,7 @@ export class ToggleReactionsAction extends Action {
 			ToggleReactionsAction.ID,
 			title || nls.localize("pickReactions", "Pick Reactions..."),
 			"toggle-reactions",
-			true
+			true,
 		);
 		this.toggleDropdownMenu = toggleDropdownMenu;
 	}
@@ -46,25 +46,25 @@ export class ReactionActionViewItem extends ActionViewItem {
 		if (action.class) {
 			this.label.classList.add(action.class);
 		}
-		if (!action.icon) {
-			const reactionLabel = dom.append(
-				this.label,
-				dom.$("span.reaction-label")
-			);
-			reactionLabel.innerText = action.label;
-		} else {
+		if (action.icon) {
 			const reactionIcon = dom.append(
 				this.label,
-				dom.$(".reaction-icon")
+				dom.$(".reaction-icon"),
 			);
 			const uri = URI.revive(action.icon);
 			reactionIcon.style.backgroundImage = dom.asCSSUrl(uri);
 			reactionIcon.title = action.label;
+		} else {
+			const reactionLabel = dom.append(
+				this.label,
+				dom.$("span.reaction-label"),
+			);
+			reactionLabel.innerText = action.label;
 		}
 		if (action.count) {
 			const reactionCount = dom.append(
 				this.label,
-				dom.$("span.reaction-count")
+				dom.$("span.reaction-count"),
 			);
 			reactionCount.innerText = `${action.count}`;
 		}
@@ -87,7 +87,7 @@ export class ReactionActionViewItem extends ActionViewItem {
 				},
 				"{0}{1} reaction",
 				toggleMessage,
-				action.label
+				action.label,
 			);
 		} else if (action.count === 1) {
 			return nls.localize(
@@ -101,7 +101,7 @@ export class ReactionActionViewItem extends ActionViewItem {
 				},
 				"{0}1 reaction with {1}",
 				toggleMessage,
-				action.label
+				action.label,
 			);
 		} else if (action.count > 1) {
 			return nls.localize(
@@ -116,7 +116,7 @@ export class ReactionActionViewItem extends ActionViewItem {
 				"{0}{1} reactions with {2}",
 				toggleMessage,
 				action.count,
-				action.label
+				action.label,
 			);
 		}
 		return undefined;
@@ -126,12 +126,12 @@ export class ReactionAction extends Action {
 	static readonly ID = "toolbar.toggle.reaction";
 	constructor(
 		id: string,
-		label: string = "",
-		cssClass: string = "",
-		enabled: boolean = true,
+		label = "",
+		cssClass = "",
+		enabled = true,
 		actionCallback?: (event?: any) => Promise<any>,
 		public icon?: UriComponents,
-		public count?: number
+		public count?: number,
 	) {
 		super(ReactionAction.ID, label, cssClass, enabled, actionCallback);
 	}

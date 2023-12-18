@@ -21,14 +21,14 @@ class RawContentChangeEvent {
 		readonly start: number,
 		readonly deletedCount: number,
 		readonly deletedItems: vscode.NotebookCell[],
-		readonly items: ExtHostCell[]
+		readonly items: ExtHostCell[],
 	) {}
 
 	asApiEvent(): vscode.NotebookDocumentContentChange {
 		return {
 			range: new NotebookRange(
 				this.start,
-				this.start + this.deletedCount
+				this.start + this.deletedCount,
 			),
 			addedCells: this.items.map((cell) => cell.apiCell),
 			removedCells: this.deletedItems,
@@ -39,7 +39,7 @@ class RawContentChangeEvent {
 export class ExtHostCell {
 	static asModelAddData(
 		notebook: vscode.NotebookDocument,
-		cell: extHostProtocol.NotebookCellDto
+		cell: extHostProtocol.NotebookCellDto,
 	): IExtHostModelAddedData {
 		return {
 			EOL: cell.eol,
@@ -69,20 +69,20 @@ export class ExtHostCell {
 	constructor(
 		readonly notebook: ExtHostNotebookDocument,
 		private readonly _extHostDocument: ExtHostDocumentsAndEditors,
-		private readonly _cellData: extHostProtocol.NotebookCellDto
+		private readonly _cellData: extHostProtocol.NotebookCellDto,
 	) {
 		this.handle = _cellData.handle;
 		this.uri = URI.revive(_cellData.uri);
 		this.cellKind = _cellData.cellKind;
 		this._outputs = _cellData.outputs.map(
-			extHostTypeConverters.NotebookCellOutput.to
+			extHostTypeConverters.NotebookCellOutput.to,
 		);
 		this._internalMetadata = _cellData.internalMetadata ?? {};
 		this._metadata = Object.freeze(_cellData.metadata ?? {});
 		this._previousResult = Object.freeze(
 			extHostTypeConverters.NotebookCellExecutionSummary.to(
-				_cellData.internalMetadata ?? {}
-			)
+				_cellData.internalMetadata ?? {},
+			),
 		);
 	}
 
@@ -96,7 +96,7 @@ export class ExtHostCell {
 			const data = this._extHostDocument.getDocument(this.uri);
 			if (!data) {
 				throw new Error(
-					`MISSING extHostDocument for notebook cell: ${this.uri}`
+					`MISSING extHostDocument for notebook cell: ${this.uri}`,
 				);
 			}
 			const apiCell: vscode.NotebookCell = {
@@ -105,7 +105,7 @@ export class ExtHostCell {
 				},
 				notebook: that.notebook.apiNotebook,
 				kind: extHostTypeConverters.NotebookCellKind.to(
-					this._cellData.cellKind
+					this._cellData.cellKind,
 				),
 				document: data.document,
 				get mime() {
@@ -131,17 +131,17 @@ export class ExtHostCell {
 
 	setOutputs(newOutputs: extHostProtocol.NotebookOutputDto[]): void {
 		this._outputs = newOutputs.map(
-			extHostTypeConverters.NotebookCellOutput.to
+			extHostTypeConverters.NotebookCellOutput.to,
 		);
 	}
 
 	setOutputItems(
 		outputId: string,
 		append: boolean,
-		newOutputItems: extHostProtocol.NotebookOutputItemDto[]
+		newOutputItems: extHostProtocol.NotebookOutputItemDto[],
 	) {
 		const newItems = newOutputItems.map(
-			extHostTypeConverters.NotebookCellOutputItem.to
+			extHostTypeConverters.NotebookCellOutputItem.to,
 		);
 		const output = this._outputs.find((op) => op.id === outputId);
 		if (output) {
@@ -153,7 +153,7 @@ export class ExtHostCell {
 			if (
 				output.items.length > 1 &&
 				output.items.every((item) =>
-					notebookCommon.isTextStreamMime(item.mime)
+					notebookCommon.isTextStreamMime(item.mime),
 				)
 			) {
 				// Look for the mimes in the items, and keep track of their order.
@@ -174,7 +174,7 @@ export class ExtHostCell {
 				output.items.length = 0;
 				mimeTypes.forEach((mime) => {
 					const compressed = notebookCommon.compressOutputItemStreams(
-						mimeOutputs.get(mime)!
+						mimeOutputs.get(mime)!,
 					);
 					output.items.push({
 						mime,
@@ -190,13 +190,13 @@ export class ExtHostCell {
 	}
 
 	setInternalMetadata(
-		newInternalMetadata: notebookCommon.NotebookCellInternalMetadata
+		newInternalMetadata: notebookCommon.NotebookCellInternalMetadata,
 	): void {
 		this._internalMetadata = newInternalMetadata;
 		this._previousResult = Object.freeze(
 			extHostTypeConverters.NotebookCellExecutionSummary.to(
-				newInternalMetadata
-			)
+				newInternalMetadata,
+			),
 		);
 	}
 
@@ -204,7 +204,7 @@ export class ExtHostCell {
 }
 
 export class ExtHostNotebookDocument {
-	private static _handlePool: number = 0;
+	private static _handlePool = 0;
 	readonly handle = ExtHostNotebookDocument._handlePool++;
 
 	private readonly _cells: ExtHostCell[] = [];
@@ -213,23 +213,23 @@ export class ExtHostNotebookDocument {
 
 	private _notebook: vscode.NotebookDocument | undefined;
 	private _metadata: Record<string, any>;
-	private _versionId: number = 0;
-	private _isDirty: boolean = false;
-	private _disposed: boolean = false;
+	private _versionId = 0;
+	private _isDirty = false;
+	private _disposed = false;
 
 	constructor(
 		private readonly _proxy: extHostProtocol.MainThreadNotebookDocumentsShape,
 		private readonly _textDocumentsAndEditors: ExtHostDocumentsAndEditors,
 		private readonly _textDocuments: ExtHostDocuments,
 		readonly uri: URI,
-		data: extHostProtocol.INotebookModelAddedData
+		data: extHostProtocol.INotebookModelAddedData,
 	) {
 		this._notebookType = data.viewType;
 		this._metadata = Object.freeze(data.metadata ?? Object.create(null));
 		this._spliceNotebookCells(
 			[[0, 0, data.cells]],
 			true /* init -> no event*/,
-			undefined
+			undefined,
 		);
 		this._versionId = data.versionId;
 	}
@@ -288,7 +288,7 @@ export class ExtHostNotebookDocument {
 	}
 
 	acceptDocumentPropertiesChanged(
-		data: extHostProtocol.INotebookDocumentPropertiesChangeData
+		data: extHostProtocol.INotebookDocumentPropertiesChangeData,
 	) {
 		if (data.metadata) {
 			this._metadata = Object.freeze({
@@ -305,7 +305,7 @@ export class ExtHostNotebookDocument {
 	acceptModelChanged(
 		event: extHostProtocol.NotebookCellsChangedEventDto,
 		isDirty: boolean,
-		newMetadata: notebookCommon.NotebookDocumentMetadata | undefined
+		newMetadata: notebookCommon.NotebookDocumentMetadata | undefined,
 	): vscode.NotebookDocumentChangeEvent {
 		this._versionId = event.versionId;
 		this._isDirty = isDirty;
@@ -333,7 +333,7 @@ export class ExtHostNotebookDocument {
 				this._spliceNotebookCells(
 					rawEvent.changes,
 					false,
-					result.contentChanges
+					result.contentChanges,
 				);
 			} else if (
 				rawEvent.kind === notebookCommon.NotebookCellsChangeType.Move
@@ -342,7 +342,7 @@ export class ExtHostNotebookDocument {
 					rawEvent.index,
 					rawEvent.length,
 					rawEvent.newIdx,
-					result.contentChanges
+					result.contentChanges,
 				);
 			} else if (
 				rawEvent.kind === notebookCommon.NotebookCellsChangeType.Output
@@ -360,7 +360,7 @@ export class ExtHostNotebookDocument {
 					rawEvent.index,
 					rawEvent.outputId,
 					rawEvent.append,
-					rawEvent.outputItems
+					rawEvent.outputItems,
 				);
 				relaxedCellChanges.push({
 					cell: this._cells[rawEvent.index].apiCell,
@@ -404,7 +404,7 @@ export class ExtHostNotebookDocument {
 			) {
 				this._changeCellInternalMetadata(
 					rawEvent.index,
-					rawEvent.internalMetadata
+					rawEvent.internalMetadata,
 				);
 				relaxedCellChanges.push({
 					cell: this._cells[rawEvent.index].apiCell,
@@ -487,7 +487,7 @@ export class ExtHostNotebookDocument {
 	private _spliceNotebookCells(
 		splices: notebookCommon.NotebookCellTextModelSplice<extHostProtocol.NotebookCellDto>[],
 		initialization: boolean,
-		bucket: vscode.NotebookDocumentContentChange[] | undefined
+		bucket: vscode.NotebookDocumentContentChange[] | undefined,
 	): void {
 		if (this._disposed) {
 			return;
@@ -503,11 +503,11 @@ export class ExtHostNotebookDocument {
 				const extCell = new ExtHostCell(
 					this,
 					this._textDocumentsAndEditors,
-					cell
+					cell,
 				);
 				if (!initialization) {
 					addedCellDocuments.push(
-						ExtHostCell.asModelAddData(this.apiNotebook, cell)
+						ExtHostCell.asModelAddData(this.apiNotebook, cell),
 					);
 				}
 				return extCell;
@@ -517,12 +517,12 @@ export class ExtHostNotebookDocument {
 				splice[0],
 				splice[1],
 				[],
-				newCells
+				newCells,
 			);
 			const deletedItems = this._cells.splice(
 				splice[0],
 				splice[1],
-				...newCells
+				...newCells,
 			);
 			for (const cell of deletedItems) {
 				removedCellDocuments.push(cell.uri);
@@ -547,7 +547,7 @@ export class ExtHostNotebookDocument {
 		index: number,
 		length: number,
 		newIdx: number,
-		bucket: vscode.NotebookDocumentContentChange[]
+		bucket: vscode.NotebookDocumentContentChange[],
 	): void {
 		const cells = this._cells.splice(index, length);
 		this._cells.splice(newIdx, 0, ...cells);
@@ -556,7 +556,7 @@ export class ExtHostNotebookDocument {
 				index,
 				length,
 				cells.map((c) => c.apiCell),
-				[]
+				[],
 			),
 			new RawContentChangeEvent(newIdx, 0, [], cells),
 		];
@@ -567,7 +567,7 @@ export class ExtHostNotebookDocument {
 
 	private _setCellOutputs(
 		index: number,
-		outputs: extHostProtocol.NotebookOutputDto[]
+		outputs: extHostProtocol.NotebookOutputDto[],
 	): void {
 		const cell = this._cells[index];
 		cell.setOutputs(outputs);
@@ -577,7 +577,7 @@ export class ExtHostNotebookDocument {
 		index: number,
 		outputId: string,
 		append: boolean,
-		outputItems: extHostProtocol.NotebookOutputItemDto[]
+		outputItems: extHostProtocol.NotebookOutputItemDto[],
 	): void {
 		const cell = this._cells[index];
 		cell.setOutputItems(outputId, append, outputItems);
@@ -588,7 +588,7 @@ export class ExtHostNotebookDocument {
 		if (cell.apiCell.document.languageId !== newLanguageId) {
 			this._textDocuments.$acceptModelLanguageChanged(
 				cell.uri,
-				newLanguageId
+				newLanguageId,
 			);
 		}
 	}
@@ -600,7 +600,7 @@ export class ExtHostNotebookDocument {
 
 	private _changeCellMetadata(
 		index: number,
-		newMetadata: notebookCommon.NotebookCellMetadata
+		newMetadata: notebookCommon.NotebookCellMetadata,
 	): void {
 		const cell = this._cells[index];
 		cell.setMetadata(newMetadata);
@@ -608,7 +608,7 @@ export class ExtHostNotebookDocument {
 
 	private _changeCellInternalMetadata(
 		index: number,
-		newInternalMetadata: notebookCommon.NotebookCellInternalMetadata
+		newInternalMetadata: notebookCommon.NotebookCellInternalMetadata,
 	): void {
 		const cell = this._cells[index];
 		cell.setInternalMetadata(newInternalMetadata);

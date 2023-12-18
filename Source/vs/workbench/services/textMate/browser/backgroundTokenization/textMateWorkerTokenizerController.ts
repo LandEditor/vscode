@@ -35,7 +35,7 @@ import type {
 	StateDeltas,
 	TextMateTokenizationWorker,
 } from "vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateTokenizationWorker.worker";
-import type { applyStateStackDiff, StateStack } from "vscode-textmate";
+import type { StateStack, applyStateStackDiff } from "vscode-textmate";
 
 export class TextMateWorkerTokenizerController extends Disposable {
 	private static _id = 0;
@@ -52,7 +52,7 @@ export class TextMateWorkerTokenizerController extends Disposable {
 	private readonly _loggingEnabled = observableConfigValue(
 		"editor.experimental.asyncTokenizationLogging",
 		false,
-		this._configurationService
+		this._configurationService,
 	);
 
 	private _applyStateStackDiffFn?: typeof applyStateStackDiff;
@@ -64,7 +64,7 @@ export class TextMateWorkerTokenizerController extends Disposable {
 		private readonly _languageIdCodec: ILanguageIdCodec,
 		private readonly _backgroundTokenizationStore: IBackgroundTokenizationStore,
 		private readonly _configurationService: IConfigurationService,
-		private readonly _maxTokenizationLineLength: IObservable<number>
+		private readonly _maxTokenizationLineLength: IObservable<number>,
 	) {
 		super();
 
@@ -80,7 +80,7 @@ export class TextMateWorkerTokenizerController extends Disposable {
 				}
 				this._worker.acceptModelChanged(this.controllerId, e);
 				this._pendingChanges.push(e);
-			})
+			}),
 		);
 
 		this._register(
@@ -91,9 +91,9 @@ export class TextMateWorkerTokenizerController extends Disposable {
 				this._worker.acceptModelLanguageChanged(
 					this.controllerId,
 					languageId,
-					encodedLanguageId
+					encodedLanguageId,
 				);
-			})
+			}),
 		);
 
 		const languageId = this._model.getLanguageId();
@@ -117,9 +117,9 @@ export class TextMateWorkerTokenizerController extends Disposable {
 					this._maxTokenizationLineLength.read(reader);
 				this._worker.acceptMaxTokenizationLineLength(
 					this.controllerId,
-					maxTokenizationLineLength
+					maxTokenizationLineLength,
 				);
-			})
+			}),
 		);
 	}
 
@@ -130,12 +130,12 @@ export class TextMateWorkerTokenizerController extends Disposable {
 
 	public requestTokens(
 		startLineNumber: number,
-		endLineNumberExclusive: number
+		endLineNumberExclusive: number,
 	): void {
 		this._worker.retokenize(
 			this.controllerId,
 			startLineNumber,
-			endLineNumberExclusive
+			endLineNumberExclusive,
 		);
 	}
 
@@ -146,7 +146,7 @@ export class TextMateWorkerTokenizerController extends Disposable {
 		controllerId: number,
 		versionId: number,
 		rawTokens: ArrayBuffer,
-		stateDeltas: StateDeltas[]
+		stateDeltas: StateDeltas[],
 	): Promise<void> {
 		if (this.controllerId !== controllerId) {
 			// This event is for an outdated controller (the worker didn't receive the delete/create messages yet), ignore the event.
@@ -158,7 +158,7 @@ export class TextMateWorkerTokenizerController extends Disposable {
 		//                | past changes                                                   | future states
 
 		let tokens = ContiguousMultilineTokensBuilder.deserialize(
-			new Uint8Array(rawTokens)
+			new Uint8Array(rawTokens),
 		);
 
 		if (this._shouldLog) {
@@ -171,8 +171,8 @@ export class TextMateWorkerTokenizerController extends Disposable {
 					.map((s) =>
 						new LineRange(
 							s.startLineNumber,
-							s.startLineNumber + s.stateDeltas.length
-						).toString()
+							s.startLineNumber + s.stateDeltas.length,
+						).toString(),
 					)
 					.join(" & "),
 			});
@@ -208,8 +208,8 @@ export class TextMateWorkerTokenizerController extends Disposable {
 			const curToFutureTransformerTokens =
 				MonotonousIndexTransformer.fromMany(
 					this._pendingChanges.map((c) =>
-						fullLineArrayEditFromModelContentChange(c.changes)
-					)
+						fullLineArrayEditFromModelContentChange(c.changes),
+					),
 				);
 
 			// Filter tokens in lines that got changed in the future to prevent flickering
@@ -218,7 +218,7 @@ export class TextMateWorkerTokenizerController extends Disposable {
 			for (const t of tokens) {
 				for (let i = t.startLineNumber; i <= t.endLineNumber; i++) {
 					const result = curToFutureTransformerTokens.transform(
-						i - 1
+						i - 1,
 					);
 					// If result is undefined, the current line got touched by an edit.
 					// The webworker will send us new tokens for all the new/touched lines after it received the edits.
@@ -235,7 +235,7 @@ export class TextMateWorkerTokenizerController extends Disposable {
 					for (let j = 0; j < tokens.length; j++) {
 						tokens[j].applyEdit(
 							innerChanges.range,
-							innerChanges.text
+							innerChanges.text,
 						);
 					}
 				}
@@ -245,8 +245,8 @@ export class TextMateWorkerTokenizerController extends Disposable {
 		const curToFutureTransformerStates =
 			MonotonousIndexTransformer.fromMany(
 				this._pendingChanges.map((c) =>
-					fullLineArrayEditFromModelContentChange(c.changes)
-				)
+					fullLineArrayEditFromModelContentChange(c.changes),
+				),
 			);
 
 		if (!this._applyStateStackDiffFn || !this._initialState) {
@@ -274,14 +274,14 @@ export class TextMateWorkerTokenizerController extends Disposable {
 				}
 
 				const offset = curToFutureTransformerStates.transform(
-					d.startLineNumber + i - 1
+					d.startLineNumber + i - 1,
 				);
 				if (offset !== undefined) {
 					// Only set the state if there is no future change in this line,
 					// as this might make consumers believe that the state/tokens are accurate
 					this._backgroundTokenizationStore.setEndState(
 						offset + 1,
-						state
+						state,
 					);
 				}
 
@@ -302,7 +302,7 @@ export class TextMateWorkerTokenizerController extends Disposable {
 }
 
 function fullLineArrayEditFromModelContentChange(
-	c: IModelContentChange[]
+	c: IModelContentChange[],
 ): ArrayEdit {
 	return new ArrayEdit(
 		c.map(
@@ -311,9 +311,9 @@ function fullLineArrayEditFromModelContentChange(
 					c.range.startLineNumber - 1,
 					// Expand the edit range to include the entire line
 					c.range.endLineNumber - c.range.startLineNumber + 1,
-					countEOL(c.text)[0] + 1
-				)
-		)
+					countEOL(c.text)[0] + 1,
+				),
+		),
 	);
 }
 
@@ -326,7 +326,7 @@ function changesToString(changes: IModelContentChange[]): string {
 function observableConfigValue<T>(
 	key: string,
 	defaultValue: T,
-	configurationService: IConfigurationService
+	configurationService: IConfigurationService,
 ): IObservable<T> {
 	return observableFromEvent(
 		(handleChange) =>
@@ -335,6 +335,6 @@ function observableConfigValue<T>(
 					handleChange(e);
 				}
 			}),
-		() => configurationService.getValue<T>(key) ?? defaultValue
+		() => configurationService.getValue<T>(key) ?? defaultValue,
 	);
 }

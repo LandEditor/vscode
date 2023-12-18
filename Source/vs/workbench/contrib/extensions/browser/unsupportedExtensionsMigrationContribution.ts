@@ -25,7 +25,7 @@ export class UnsupportedExtensionsMigrationContrib
 		extensionStorageService: IExtensionStorageService,
 		@IGlobalExtensionEnablementService
 		extensionEnablementService: IGlobalExtensionEnablementService,
-		@ILogService logService: ILogService
+		@ILogService logService: ILogService,
 	) {
 		// Unsupported extensions are not migrated for local extension management server, because it is done in shared process
 		if (extensionManagementServerService.remoteExtensionManagementServer) {
@@ -35,7 +35,7 @@ export class UnsupportedExtensionsMigrationContrib
 				extensionGalleryService,
 				extensionStorageService,
 				extensionEnablementService,
-				logService
+				logService,
 			);
 		}
 		if (extensionManagementServerService.webExtensionManagementServer) {
@@ -45,7 +45,7 @@ export class UnsupportedExtensionsMigrationContrib
 				extensionGalleryService,
 				extensionStorageService,
 				extensionEnablementService,
-				logService
+				logService,
 			);
 		}
 	}

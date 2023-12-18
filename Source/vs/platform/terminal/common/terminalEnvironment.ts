@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { OperatingSystem, OS } from "vs/base/common/platform";
+import { OS, OperatingSystem } from "vs/base/common/platform";
 
 /**
  * Aggressively escape non-windows paths to prepare for being sent to a shell. This will do some
@@ -27,7 +27,7 @@ export function escapeNonWindowsPath(path: string): string {
 export function collapseTildePath(
 	path: string | undefined,
 	userHome: string | undefined,
-	separator: string
+	separator: string,
 ): string {
 	if (!path) {
 		return "";

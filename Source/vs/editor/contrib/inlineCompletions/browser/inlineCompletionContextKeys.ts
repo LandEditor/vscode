@@ -3,16 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Disposable } from "vs/base/common/lifecycle";
 import { IObservable, autorun } from "vs/base/common/observable";
 import { firstNonWhitespaceIndex } from "vs/base/common/strings";
 import { CursorColumns } from "vs/editor/common/core/cursorColumns";
 import { InlineCompletionsModel } from "vs/editor/contrib/inlineCompletions/browser/inlineCompletionsModel";
-import {
-	RawContextKey,
-	IContextKeyService,
-} from "vs/platform/contextkey/common/contextkey";
-import { Disposable } from "vs/base/common/lifecycle";
 import { localize } from "vs/nls";
+import {
+	IContextKeyService,
+	RawContextKey,
+} from "vs/platform/contextkey/common/contextkey";
 
 export class InlineCompletionContextKeys extends Disposable {
 	public static readonly inlineSuggestionVisible = new RawContextKey<boolean>(
@@ -20,8 +20,8 @@ export class InlineCompletionContextKeys extends Disposable {
 		false,
 		localize(
 			"inlineSuggestionVisible",
-			"Whether an inline suggestion is visible"
-		)
+			"Whether an inline suggestion is visible",
+		),
 	);
 	public static readonly inlineSuggestionHasIndentation =
 		new RawContextKey<boolean>(
@@ -29,8 +29,8 @@ export class InlineCompletionContextKeys extends Disposable {
 			false,
 			localize(
 				"inlineSuggestionHasIndentation",
-				"Whether the inline suggestion starts with whitespace"
-			)
+				"Whether the inline suggestion starts with whitespace",
+			),
 		);
 	public static readonly inlineSuggestionHasIndentationLessThanTabSize =
 		new RawContextKey<boolean>(
@@ -38,8 +38,8 @@ export class InlineCompletionContextKeys extends Disposable {
 			true,
 			localize(
 				"inlineSuggestionHasIndentationLessThanTabSize",
-				"Whether the inline suggestion starts with whitespace that is less than what would be inserted by tab"
-			)
+				"Whether the inline suggestion starts with whitespace that is less than what would be inserted by tab",
+			),
 		);
 	public static readonly suppressSuggestions = new RawContextKey<
 		boolean | undefined
@@ -48,30 +48,30 @@ export class InlineCompletionContextKeys extends Disposable {
 		undefined,
 		localize(
 			"suppressSuggestions",
-			"Whether suggestions should be suppressed for the current suggestion"
-		)
+			"Whether suggestions should be suppressed for the current suggestion",
+		),
 	);
 
 	public readonly inlineCompletionVisible =
 		InlineCompletionContextKeys.inlineSuggestionVisible.bindTo(
-			this.contextKeyService
+			this.contextKeyService,
 		);
 	public readonly inlineCompletionSuggestsIndentation =
 		InlineCompletionContextKeys.inlineSuggestionHasIndentation.bindTo(
-			this.contextKeyService
+			this.contextKeyService,
 		);
 	public readonly inlineCompletionSuggestsIndentationLessThanTabSize =
 		InlineCompletionContextKeys.inlineSuggestionHasIndentationLessThanTabSize.bindTo(
-			this.contextKeyService
+			this.contextKeyService,
 		);
 	public readonly suppressSuggestions =
 		InlineCompletionContextKeys.suppressSuggestions.bindTo(
-			this.contextKeyService
+			this.contextKeyService,
 		);
 
 	constructor(
 		private readonly contextKeyService: IContextKeyService,
-		private readonly model: IObservable<InlineCompletionsModel | undefined>
+		private readonly model: IObservable<InlineCompletionsModel | undefined>,
 	) {
 		super();
 
@@ -90,10 +90,10 @@ export class InlineCompletionContextKeys extends Disposable {
 				if (state?.ghostText && state?.inlineCompletion) {
 					this.suppressSuggestions.set(
 						state.inlineCompletion.inlineCompletion.source
-							.inlineCompletions.suppressSuggestions
+							.inlineCompletions.suppressSuggestions,
 					);
 				}
-			})
+			}),
 		);
 
 		this._register(
@@ -116,7 +116,7 @@ export class InlineCompletionContextKeys extends Disposable {
 
 					const indentationEndColumn =
 						model.textModel.getLineIndentColumn(
-							ghostText.lineNumber
+							ghostText.lineNumber,
 						);
 					const inIndentation = column <= indentationEndColumn;
 
@@ -132,7 +132,7 @@ export class InlineCompletionContextKeys extends Disposable {
 							CursorColumns.visibleColumnFromColumn(
 								firstLine,
 								firstNonWsIdx + 1,
-								tabSize
+								tabSize,
 							);
 						startsWithIndentationLessThanTabSize =
 							visibleColumnIndentation < tabSize;
@@ -140,12 +140,12 @@ export class InlineCompletionContextKeys extends Disposable {
 				}
 
 				this.inlineCompletionSuggestsIndentation.set(
-					startsWithIndentation
+					startsWithIndentation,
 				);
 				this.inlineCompletionSuggestsIndentationLessThanTabSize.set(
-					startsWithIndentationLessThanTabSize
+					startsWithIndentationLessThanTabSize,
 				);
-			})
+			}),
 		);
 	}
 }

@@ -3,8 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { decodeKeybinding, Keybinding } from "vs/base/common/keybindings";
-import { OperatingSystem, OS } from "vs/base/common/platform";
+import { Keybinding, decodeKeybinding } from "vs/base/common/keybindings";
+import {
+	DisposableStore,
+	IDisposable,
+	combinedDisposable,
+	toDisposable,
+} from "vs/base/common/lifecycle";
+import { LinkedList } from "vs/base/common/linkedList";
+import { OS, OperatingSystem } from "vs/base/common/platform";
 import {
 	CommandsRegistry,
 	ICommandHandler,
@@ -12,13 +19,6 @@ import {
 } from "vs/platform/commands/common/commands";
 import { ContextKeyExpression } from "vs/platform/contextkey/common/contextkey";
 import { Registry } from "vs/platform/registry/common/platform";
-import {
-	combinedDisposable,
-	DisposableStore,
-	IDisposable,
-	toDisposable,
-} from "vs/base/common/lifecycle";
-import { LinkedList } from "vs/base/common/linkedList";
 
 export interface IKeybindingItem {
 	keybinding: Keybinding | null;
@@ -65,7 +65,7 @@ export interface IExtensionKeybindingRule {
 	isBuiltinExtension?: boolean;
 }
 
-export const enum KeybindingWeight {
+export enum KeybindingWeight {
 	EditorCore = 0,
 	EditorContrib = 100,
 	WorkbenchContrib = 200,
@@ -82,7 +82,7 @@ export interface IKeybindingsRegistry {
 	registerKeybindingRule(rule: IKeybindingRule): IDisposable;
 	setExtensionKeybindings(rules: IExtensionKeybindingRule[]): void;
 	registerCommandAndKeybindingRule(
-		desc: ICommandAndKeybindingRule
+		desc: ICommandAndKeybindingRule,
 	): IDisposable;
 	getDefaultKeybindings(): IKeybindingItem[];
 }
@@ -116,10 +116,8 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 			if (kb && kb.mac) {
 				return kb.mac;
 			}
-		} else {
-			if (kb && kb.linux) {
-				return kb.linux;
-			}
+		} else if (kb && kb.linux) {
+			return kb.linux;
 		}
 
 		return kb;
@@ -139,8 +137,8 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 						rule.args,
 						rule.weight,
 						0,
-						rule.when
-					)
+						rule.when,
+					),
 				);
 			}
 		}
@@ -157,8 +155,8 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 							rule.args,
 							rule.weight,
 							-i - 1,
-							rule.when
-						)
+							rule.when,
+						),
 					);
 				}
 			}
@@ -189,11 +187,11 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 	}
 
 	public registerCommandAndKeybindingRule(
-		desc: ICommandAndKeybindingRule
+		desc: ICommandAndKeybindingRule,
 	): IDisposable {
 		return combinedDisposable(
 			this.registerKeybindingRule(desc),
-			CommandsRegistry.registerCommand(desc)
+			CommandsRegistry.registerCommand(desc),
 		);
 	}
 
@@ -203,7 +201,7 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 		commandArgs: any,
 		weight1: number,
 		weight2: number,
-		when: ContextKeyExpression | null | undefined
+		when: ContextKeyExpression | null | undefined,
 	): IDisposable {
 		const remove = this._coreKeybindings.push({
 			keybinding: keybinding,
@@ -226,7 +224,7 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 	public getDefaultKeybindings(): IKeybindingItem[] {
 		if (!this._cachedMergedKeybindings) {
 			this._cachedMergedKeybindings = Array.from(
-				this._coreKeybindings
+				this._coreKeybindings,
 			).concat(this._extensionKeybindings);
 			this._cachedMergedKeybindings.sort(sorter);
 		}

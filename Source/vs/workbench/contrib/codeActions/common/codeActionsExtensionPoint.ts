@@ -31,7 +31,7 @@ const codeActionsExtensionPointSchema =
 		type: "array",
 		markdownDescription: nls.localize(
 			"contributes.codeActions",
-			"Configure which editor to use for a resource."
+			"Configure which editor to use for a resource.",
 		),
 		items: {
 			type: "object",
@@ -44,7 +44,7 @@ const codeActionsExtensionPointSchema =
 					type: "array",
 					description: nls.localize(
 						"contributes.codeActions.languages",
-						"Language modes that the code actions are enabled for."
+						"Language modes that the code actions are enabled for.",
 					),
 					items: { type: "string" },
 				},
@@ -59,21 +59,21 @@ const codeActionsExtensionPointSchema =
 							type: "string",
 							markdownDescription: nls.localize(
 								"contributes.codeActions.kind",
-								"`CodeActionKind` of the contributed code action."
+								"`CodeActionKind` of the contributed code action.",
 							),
 						},
 						[CodeActionExtensionPointFields.title]: {
 							type: "string",
 							description: nls.localize(
 								"contributes.codeActions.title",
-								"Label for the code action used in the UI."
+								"Label for the code action used in the UI.",
 							),
 						},
 						[CodeActionExtensionPointFields.description]: {
 							type: "string",
 							description: nls.localize(
 								"contributes.codeActions.description",
-								"Description of what the code action does."
+								"Description of what the code action does.",
 							),
 						},
 					},

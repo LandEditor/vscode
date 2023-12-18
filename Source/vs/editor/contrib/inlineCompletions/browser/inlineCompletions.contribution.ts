@@ -10,14 +10,14 @@ import {
 } from "vs/editor/browser/editorExtensions";
 import { HoverParticipantRegistry } from "vs/editor/contrib/hover/browser/hoverTypes";
 import {
-	TriggerInlineSuggestionAction,
+	AcceptInlineCompletion,
+	AcceptNextLineOfInlineCompletion,
+	AcceptNextWordOfInlineCompletion,
+	HideInlineCompletion,
 	ShowNextInlineSuggestionAction,
 	ShowPreviousInlineSuggestionAction,
-	AcceptNextWordOfInlineCompletion,
-	AcceptInlineCompletion,
-	HideInlineCompletion,
 	ToggleAlwaysShowInlineSuggestionToolbar,
-	AcceptNextLineOfInlineCompletion,
+	TriggerInlineSuggestionAction,
 } from "vs/editor/contrib/inlineCompletions/browser/commands";
 import { InlineCompletionsHoverParticipant } from "vs/editor/contrib/inlineCompletions/browser/hoverParticipant";
 import { InlineCompletionsController } from "vs/editor/contrib/inlineCompletions/browser/inlineCompletionsController";
@@ -26,7 +26,7 @@ import { registerAction2 } from "vs/platform/actions/common/actions";
 registerEditorContribution(
 	InlineCompletionsController.ID,
 	InlineCompletionsController,
-	EditorContributionInstantiation.Eventually
+	EditorContributionInstantiation.Eventually,
 );
 
 registerEditorAction(TriggerInlineSuggestionAction);

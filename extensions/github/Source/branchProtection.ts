@@ -4,17 +4,18 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	authentication,
+	Repository as GitHubRepository,
+	RepositoryRuleset,
+} from "@octokit/graphql-schema";
+import TelemetryReporter from "@vscode/extension-telemetry";
+import {
 	EventEmitter,
 	LogOutputChannel,
 	Memento,
 	Uri,
+	authentication,
 	workspace,
 } from "vscode";
-import {
-	Repository as GitHubRepository,
-	RepositoryRuleset,
-} from "@octokit/graphql-schema";
 import { AuthenticationError, getOctokitGraphql } from "./auth";
 import {
 	API,
@@ -24,7 +25,6 @@ import {
 	Repository,
 } from "./typings/git";
 import { DisposableStore, getRepositoryFromUrl } from "./util";
-import TelemetryReporter from "@vscode/extension-telemetry";
 
 const REPOSITORY_QUERY = `
 	query repositoryPermissions($owner: String!, $repo: String!) {
@@ -83,9 +83,9 @@ export class GithubBranchProtectionProviderManager {
 							repository,
 							this.globalState,
 							this.logger,
-							this.telemetryReporter
-						)
-					)
+							this.telemetryReporter,
+						),
+					),
 				);
 			}
 		} else {
@@ -99,7 +99,7 @@ export class GithubBranchProtectionProviderManager {
 		private readonly gitAPI: API,
 		private readonly globalState: Memento,
 		private readonly logger: LogOutputChannel,
-		private readonly telemetryReporter: TelemetryReporter
+		private readonly telemetryReporter: TelemetryReporter,
 	) {
 		this.disposables.add(
 			this.gitAPI.onDidOpenRepository((repository) => {
@@ -111,12 +111,12 @@ export class GithubBranchProtectionProviderManager {
 								repository,
 								this.globalState,
 								this.logger,
-								this.telemetryReporter
-							)
-						)
+								this.telemetryReporter,
+							),
+						),
 					);
 				}
-			})
+			}),
 		);
 
 		this.disposables.add(
@@ -124,7 +124,7 @@ export class GithubBranchProtectionProviderManager {
 				if (e.affectsConfiguration("github.branchProtection")) {
 					this.updateEnablement();
 				}
-			})
+			}),
 		);
 
 		this.updateEnablement();
@@ -154,12 +154,12 @@ export class GithubBranchProtectionProvider
 		private readonly repository: Repository,
 		private readonly globalState: Memento,
 		private readonly logger: LogOutputChannel,
-		private readonly telemetryReporter: TelemetryReporter
+		private readonly telemetryReporter: TelemetryReporter,
 	) {
 		// Restore branch protection from global state
 		this.branchProtection = this.globalState.get<BranchProtection[]>(
 			this.globalStateKey,
-			[]
+			[],
 		);
 
 		repository.status().then(() => {
@@ -178,12 +178,12 @@ export class GithubBranchProtectionProvider
 
 	private async getRepositoryDetails(
 		owner: string,
-		repo: string
+		repo: string,
 	): Promise<GitHubRepository> {
 		const graphql = await getOctokitGraphql();
 		const { repository } = await graphql<{ repository: GitHubRepository }>(
 			REPOSITORY_QUERY,
-			{ owner, repo }
+			{ owner, repo },
 		);
 
 		return repository;
@@ -191,7 +191,7 @@ export class GithubBranchProtectionProvider
 
 	private async getRepositoryRulesets(
 		owner: string,
-		repo: string
+		repo: string,
 	): Promise<RepositoryRuleset[]> {
 		const rulesets: RepositoryRuleset[] = [];
 
@@ -211,8 +211,8 @@ export class GithubBranchProtectionProvider
 							node &&
 							node.target === "BRANCH" &&
 							node.enforcement === "ACTIVE" &&
-							(node.rules?.totalCount ?? 0) > 0
-					) as RepositoryRuleset[])
+							(node.rules?.totalCount ?? 0) > 0,
+					) as RepositoryRuleset[]),
 			);
 
 			if (repository.rulesets?.pageInfo.hasNextPage) {
@@ -233,7 +233,7 @@ export class GithubBranchProtectionProvider
 		try {
 			for (const remote of this.repository.state.remotes) {
 				const repository = getRepositoryFromUrl(
-					remote.pushUrl ?? remote.fetchUrl ?? ""
+					remote.pushUrl ?? remote.fetchUrl ?? "",
 				);
 
 				if (!repository) {
@@ -242,11 +242,11 @@ export class GithubBranchProtectionProvider
 
 				// Repository details
 				this.logger.trace(
-					`Fetching repository details for "${repository.owner}/${repository.repo}".`
+					`Fetching repository details for "${repository.owner}/${repository.repo}".`,
 				);
 				const repositoryDetails = await this.getRepositoryDetails(
 					repository.owner,
-					repository.repo
+					repository.repo,
 				);
 
 				// Check repository write permission
@@ -256,7 +256,7 @@ export class GithubBranchProtectionProvider
 					repositoryDetails.viewerPermission !== "WRITE"
 				) {
 					this.logger.trace(
-						`Skipping branch protection for "${repository.owner}/${repository.repo}" due to missing repository write permission.`
+						`Skipping branch protection for "${repository.owner}/${repository.repo}" due to missing repository write permission.`,
 					);
 					continue;
 				}
@@ -265,7 +265,7 @@ export class GithubBranchProtectionProvider
 				const branchProtectionRules: BranchProtectionRule[] = [];
 				const repositoryRulesets = await this.getRepositoryRulesets(
 					repository.owner,
-					repository.repo
+					repository.repo,
 				);
 
 				for (const ruleset of repositoryRulesets) {
@@ -273,12 +273,12 @@ export class GithubBranchProtectionProvider
 						include: (
 							ruleset.conditions.refName?.include ?? []
 						).map((r) =>
-							this.parseRulesetRefName(repositoryDetails, r)
+							this.parseRulesetRefName(repositoryDetails, r),
 						),
 						exclude: (
 							ruleset.conditions.refName?.exclude ?? []
 						).map((r) =>
-							this.parseRulesetRefName(repositoryDetails, r)
+							this.parseRulesetRefName(repositoryDetails, r),
 						),
 					});
 				}
@@ -295,12 +295,12 @@ export class GithubBranchProtectionProvider
 			// Save branch protection to global state
 			await this.globalState.update(
 				this.globalStateKey,
-				branchProtection
+				branchProtection,
 			);
 			this.logger.trace(
 				`Branch protection for "${this.repository.rootUri.toString()}": ${JSON.stringify(
-					branchProtection
-				)}.`
+					branchProtection,
+				)}.`,
 			);
 
 			/* __GDPR__
@@ -312,11 +312,11 @@ export class GithubBranchProtectionProvider
 			this.telemetryReporter.sendTelemetryEvent(
 				"branchProtection",
 				undefined,
-				{ rulesetCount: this.branchProtection.length }
+				{ rulesetCount: this.branchProtection.length },
 			);
 		} catch (err) {
 			this.logger.warn(
-				`Failed to update repository branch protection: ${err.message}`
+				`Failed to update repository branch protection: ${err.message}`,
 			);
 
 			if (err instanceof AuthenticationError) {
@@ -326,12 +326,12 @@ export class GithubBranchProtectionProvider
 				if (this.branchProtection.length !== 0) {
 					this.branchProtection = branchProtection;
 					this._onDidChangeBranchProtection.fire(
-						this.repository.rootUri
+						this.repository.rootUri,
 					);
 
 					await this.globalState.update(
 						this.globalStateKey,
-						undefined
+						undefined,
 					);
 				}
 			}
@@ -340,7 +340,7 @@ export class GithubBranchProtectionProvider
 
 	private parseRulesetRefName(
 		repository: GitHubRepository,
-		refName: string
+		refName: string,
 	): string {
 		if (refName.startsWith("refs/heads/")) {
 			return refName.substring(11);

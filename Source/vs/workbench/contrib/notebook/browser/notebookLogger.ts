@@ -25,7 +25,7 @@ class NotebookLogger {
 				.toString()
 				.padStart(3, "0")}`,
 			`frame #${this._frameId}: `,
-			...args
+			...args,
 		);
 	}
 }

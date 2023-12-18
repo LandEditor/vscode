@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { MarkdownString } from "vs/base/common/htmlContent";
+import { ThemeIcon } from "vs/base/common/themables";
 import { URI } from "vs/base/common/uri";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import { ILinkDescriptor } from "vs/platform/opener/browser/link";
-import { ThemeIcon } from "vs/base/common/themables";
 
 export interface IBannerItem {
 	readonly id: string;

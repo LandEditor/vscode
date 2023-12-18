@@ -16,7 +16,7 @@ export class LengthObj {
 
 	public static lengthDiffNonNegative(
 		start: LengthObj,
-		end: LengthObj
+		end: LengthObj,
 	): LengthObj {
 		if (end.isLessThan(start)) {
 			return LengthObj.zero;
@@ -26,14 +26,14 @@ export class LengthObj {
 		} else {
 			return new LengthObj(
 				end.lineCount - start.lineCount,
-				end.columnCount
+				end.columnCount,
 			);
 		}
 	}
 
 	constructor(
 		public readonly lineCount: number,
-		public readonly columnCount: number
+		public readonly columnCount: number,
 	) {}
 
 	public isZero() {
@@ -76,12 +76,12 @@ export class LengthObj {
 		if (other.lineCount === 0) {
 			return new LengthObj(
 				this.lineCount,
-				this.columnCount + other.columnCount
+				this.columnCount + other.columnCount,
 			);
 		} else {
 			return new LengthObj(
 				this.lineCount + other.lineCount,
-				other.columnCount
+				other.columnCount,
 			);
 		}
 	}
@@ -98,7 +98,7 @@ export function lengthDiff(
 	startLineCount: number,
 	startColumnCount: number,
 	endLineCount: number,
-	endColumnCount: number
+	endColumnCount: number,
 ): Length {
 	return startLineCount !== endLineCount
 		? toLength(endLineCount - startLineCount, endColumnCount)
@@ -168,7 +168,7 @@ export function lengthAdd(l1: any, l2: any): Length {
 
 export function sumLengths<T>(
 	items: readonly T[],
-	lengthFn: (item: T) => Length
+	lengthFn: (item: T) => Length,
 ): Length {
 	return items.reduce((a, b) => lengthAdd(a, lengthFn(b)), lengthZero);
 }
@@ -182,7 +182,7 @@ export function lengthEquals(length1: Length, length2: Length): boolean {
  */
 export function lengthDiffNonNegative(
 	length1: Length,
-	length2: Length
+	length2: Length,
 ): Length {
 	const l1 = length1 as any as number;
 	const l2 = length2 as any as number;
@@ -218,7 +218,7 @@ export function lengthLessThanEqual(length1: Length, length2: Length): boolean {
 
 export function lengthGreaterThanEqual(
 	length1: Length,
-	length2: Length
+	length2: Length,
 ): boolean {
 	return (length1 as any as number) >= (length2 as any as number);
 }
@@ -247,7 +247,7 @@ export function lengthsToRange(lengthStart: Length, lengthEnd: Length): Range {
 		lineCount + 1,
 		colCount + 1,
 		lineCount2 + 1,
-		colCount2 + 1
+		colCount2 + 1,
 	);
 }
 
@@ -257,7 +257,7 @@ export function lengthOfRange(range: Range): LengthObj {
 	} else {
 		return new LengthObj(
 			range.endLineNumber - range.startLineNumber,
-			range.endColumn - 1
+			range.endColumn - 1,
 		);
 	}
 }

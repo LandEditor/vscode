@@ -161,7 +161,7 @@ export function isReadableStream<T>(obj: unknown): obj is ReadableStream<T> {
 }
 
 export function isReadableBufferedStream<T>(
-	obj: unknown
+	obj: unknown,
 ): obj is ReadableBufferedStream<T> {
 	const candidate = obj as ReadableBufferedStream<T> | undefined;
 	if (!candidate) {
@@ -194,7 +194,7 @@ export interface ITransformer<Original, Transformed> {
 
 export function newWriteableStream<T>(
 	reducer: IReducer<T>,
-	options?: WriteableStreamOptions
+	options?: WriteableStreamOptions,
 ): WriteableStream<T> {
 	return new WriteableStreamImpl<T>(reducer, options);
 }
@@ -230,7 +230,7 @@ class WriteableStreamImpl<T> implements WriteableStream<T> {
 
 	constructor(
 		private reducer: IReducer<T>,
-		private options?: WriteableStreamOptions
+		private options?: WriteableStreamOptions,
 	) {}
 
 	pause(): void {
@@ -276,7 +276,7 @@ class WriteableStreamImpl<T> implements WriteableStream<T> {
 				this.buffer.data.length > this.options.highWaterMark
 			) {
 				return new Promise((resolve) =>
-					this.pendingWritePromises.push(resolve)
+					this.pendingWritePromises.push(resolve),
 				);
 			}
 		}
@@ -424,7 +424,7 @@ class WriteableStreamImpl<T> implements WriteableStream<T> {
 			const pendingWritePromises = [...this.pendingWritePromises];
 			this.pendingWritePromises.length = 0;
 			pendingWritePromises.forEach((pendingWritePromise) =>
-				pendingWritePromise()
+				pendingWritePromise(),
 			);
 		}
 	}
@@ -471,7 +471,7 @@ class WriteableStreamImpl<T> implements WriteableStream<T> {
  */
 export function consumeReadable<T>(
 	readable: Readable<T>,
-	reducer: IReducer<T>
+	reducer: IReducer<T>,
 ): T {
 	const chunks: T[] = [];
 
@@ -491,7 +491,7 @@ export function consumeReadable<T>(
 export function peekReadable<T>(
 	readable: Readable<T>,
 	reducer: IReducer<T>,
-	maxChunks: number
+	maxChunks: number,
 ): T | Readable<T> {
 	const chunks: T[] = [];
 
@@ -541,14 +541,14 @@ export function peekReadable<T>(
  */
 export function consumeStream<T, R = T>(
 	stream: ReadableStreamEvents<T>,
-	reducer: IReducer<T, R>
+	reducer: IReducer<T, R>,
 ): Promise<R>;
 export function consumeStream(
-	stream: ReadableStreamEvents<unknown>
+	stream: ReadableStreamEvents<unknown>,
 ): Promise<undefined>;
 export function consumeStream<T, R = T>(
 	stream: ReadableStreamEvents<T>,
-	reducer?: IReducer<T, R>
+	reducer?: IReducer<T, R>,
 ): Promise<R | undefined> {
 	return new Promise((resolve, reject) => {
 		const chunks: T[] = [];
@@ -603,7 +603,7 @@ export interface IStreamListener<T> {
 export function listenStream<T>(
 	stream: ReadableStreamEvents<T>,
 	listener: IStreamListener<T>,
-	token?: CancellationToken
+	token?: CancellationToken,
 ): void {
 	stream.on("error", (error) => {
 		if (!token?.isCancellationRequested) {
@@ -634,7 +634,7 @@ export function listenStream<T>(
  */
 export function peekStream<T>(
 	stream: ReadableStream<T>,
-	maxChunks: number
+	maxChunks: number,
 ): Promise<ReadableBufferedStream<T>> {
 	return new Promise((resolve, reject) => {
 		const streamListeners = new DisposableStore();
@@ -671,12 +671,12 @@ export function peekStream<T>(
 		};
 
 		streamListeners.add(
-			toDisposable(() => stream.removeListener("error", errorListener))
+			toDisposable(() => stream.removeListener("error", errorListener)),
 		);
 		stream.on("error", errorListener);
 
 		streamListeners.add(
-			toDisposable(() => stream.removeListener("end", endListener))
+			toDisposable(() => stream.removeListener("end", endListener)),
 		);
 		stream.on("end", endListener);
 
@@ -684,7 +684,7 @@ export function peekStream<T>(
 		// this can turn the stream into flowing mode and we
 		// want `error` events to be received as well.
 		streamListeners.add(
-			toDisposable(() => stream.removeListener("data", dataListener))
+			toDisposable(() => stream.removeListener("data", dataListener)),
 		);
 		stream.on("data", dataListener);
 	});
@@ -738,7 +738,7 @@ export function toReadable<T>(t: T): Readable<T> {
 export function transform<Original, Transformed>(
 	stream: ReadableStreamEvents<Original>,
 	transformer: ITransformer<Original, Transformed>,
-	reducer: IReducer<Transformed>
+	reducer: IReducer<Transformed>,
 ): ReadableStream<Transformed> {
 	const target = newWriteableStream<Transformed>(reducer);
 
@@ -759,7 +759,7 @@ export function transform<Original, Transformed>(
 export function prefixedReadable<T>(
 	prefix: T,
 	readable: Readable<T>,
-	reducer: IReducer<T>
+	reducer: IReducer<T>,
 ): Readable<T> {
 	let prefixHandled = false;
 
@@ -793,7 +793,7 @@ export function prefixedReadable<T>(
 export function prefixedStream<T>(
 	prefix: T,
 	stream: ReadableStream<T>,
-	reducer: IReducer<T>
+	reducer: IReducer<T>,
 ): ReadableStream<T> {
 	let prefixHandled = false;
 

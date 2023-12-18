@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { EventEmitter, Disposable } from "vscode";
-import { toDisposable } from "./util";
+import { Disposable, EventEmitter } from "vscode";
 import { RemoteSourceProvider } from "./api/git-base";
 import { IRemoteSourceProviderRegistry } from "./remoteProvider";
+import { toDisposable } from "./util";
 
 export class Model implements IRemoteSourceProviderRegistry {
 	private remoteSourceProviders = new Set<RemoteSourceProvider>();

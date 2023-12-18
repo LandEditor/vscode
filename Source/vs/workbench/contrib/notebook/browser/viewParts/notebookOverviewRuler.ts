@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as browser from "vs/base/browser/browser";
-import { createFastDomNode, FastDomNode } from "vs/base/browser/fastDomNode";
+import { FastDomNode, createFastDomNode } from "vs/base/browser/fastDomNode";
 import { IThemeService, Themable } from "vs/platform/theme/common/themeService";
 import {
 	INotebookEditorDelegate,
@@ -18,7 +18,7 @@ export class NotebookOverviewRuler extends Themable {
 	constructor(
 		readonly notebookEditor: INotebookEditorDelegate,
 		container: HTMLElement,
-		@IThemeService themeService: IThemeService
+		@IThemeService themeService: IThemeService,
 	) {
 		super(themeService);
 		this._domNode = createFastDomNode(document.createElement("canvas"));
@@ -31,13 +31,13 @@ export class NotebookOverviewRuler extends Themable {
 		this._register(
 			notebookEditor.onDidChangeDecorations(() => {
 				this.layout();
-			})
+			}),
 		);
 
 		this._register(
 			browser.PixelRatio.onDidChange(() => {
 				this.layout();
-			})
+			}),
 		);
 	}
 
@@ -58,7 +58,7 @@ export class NotebookOverviewRuler extends Themable {
 			width * ratio,
 			height * ratio,
 			scrollHeight * ratio,
-			ratio
+			ratio,
 		);
 	}
 
@@ -67,7 +67,7 @@ export class NotebookOverviewRuler extends Themable {
 		width: number,
 		height: number,
 		scrollHeight: number,
-		ratio: number
+		ratio: number,
 	) {
 		const viewModel = this.notebookEditor.getViewModel();
 		const fontInfo = this.notebookEditor.getLayoutInfo().fontInfo;
@@ -97,22 +97,26 @@ export class NotebookOverviewRuler extends Themable {
 								scrollHeight /
 								textBuffer.getLineCount()) *
 								ratio *
-								height
+								height,
 						);
 						const lineNumbers = overviewRuler.modelRanges
 							.map((range) => range.startLineNumber)
-							.reduce((previous: number[], current: number) => {
-								if (previous.length === 0) {
-									previous.push(current);
-								} else {
-									const last = previous[previous.length - 1];
-									if (last !== current) {
+							.reduce(
+								(previous: number[], current: number) => {
+									if (previous.length === 0) {
 										previous.push(current);
+									} else {
+										const last =
+											previous[previous.length - 1];
+										if (last !== current) {
+											previous.push(current);
+										}
 									}
-								}
 
-								return previous;
-							}, [] as number[]);
+									return previous;
+								},
+								[] as number[],
+							);
 
 						let x = 0;
 						switch (overviewRuler.position) {
@@ -143,7 +147,7 @@ export class NotebookOverviewRuler extends Themable {
 								x,
 								currentFrom + offset,
 								width,
-								lineHeight
+								lineHeight,
 							);
 						}
 
@@ -162,7 +166,7 @@ export class NotebookOverviewRuler extends Themable {
 								laneWidth,
 								currentFrom + outputOffset,
 								laneWidth,
-								decorationHeight
+								decorationHeight,
 							);
 						}
 					});

@@ -26,7 +26,7 @@ class ChatProviderWrapper<T> {
 
 	constructor(
 		readonly extension: Readonly<IRelaxedExtensionDescription>,
-		readonly provider: T
+		readonly provider: T,
 	) {}
 }
 
@@ -54,7 +54,7 @@ export class ExtHostChat implements ExtHostChatShape {
 	registerChatProvider(
 		extension: Readonly<IRelaxedExtensionDescription>,
 		id: string,
-		provider: vscode.InteractiveSessionProvider
+		provider: vscode.InteractiveSessionProvider,
 	): vscode.Disposable {
 		const wrapper = new ChatProviderWrapper(extension, provider);
 		this._chatProvider.set(wrapper.handle, wrapper);
@@ -67,12 +67,12 @@ export class ExtHostChat implements ExtHostChatShape {
 
 	transferChatSession(
 		session: vscode.InteractiveSession,
-		newWorkspace: vscode.Uri
+		newWorkspace: vscode.Uri,
 	): void {
 		const sessionId =
 			Iterable.find(
 				this._chatSessions.keys(),
-				(key) => this._chatSessions.get(key) === session
+				(key) => this._chatSessions.get(key) === session,
 			) ?? 0;
 		if (typeof sessionId !== "number") {
 			return;
@@ -83,14 +83,14 @@ export class ExtHostChat implements ExtHostChatShape {
 
 	sendInteractiveRequestToProvider(
 		providerId: string,
-		message: vscode.InteractiveSessionDynamicRequest
+		message: vscode.InteractiveSessionDynamicRequest,
 	): void {
 		this._proxy.$sendRequestToProvider(providerId, message);
 	}
 
 	async $prepareChat(
 		handle: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IChatDto | undefined> {
 		const entry = this._chatProvider.get(handle);
 		if (!entry) {
@@ -117,7 +117,7 @@ export class ExtHostChat implements ExtHostChatShape {
 
 	async $provideWelcomeMessage(
 		handle: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<
 		(string | IMarkdownString | IChatReplyFollowup[])[] | undefined
 	> {
@@ -147,7 +147,7 @@ export class ExtHostChat implements ExtHostChatShape {
 
 	async $provideSampleQuestions(
 		handle: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IChatReplyFollowup[] | undefined> {
 		const entry = this._chatProvider.get(handle);
 		if (!entry) {

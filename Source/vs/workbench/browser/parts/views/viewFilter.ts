@@ -3,44 +3,44 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Delayer } from "vs/base/common/async";
 import * as DOM from "vs/base/browser/dom";
-import { IAction } from "vs/base/common/actions";
-import { HistoryInputBox } from "vs/base/browser/ui/inputbox/inputBox";
-import { KeyCode } from "vs/base/common/keyCodes";
 import { StandardKeyboardEvent } from "vs/base/browser/keyboardEvent";
-import { IContextViewService } from "vs/platform/contextview/browser/contextView";
-import { toDisposable } from "vs/base/common/lifecycle";
-import {
-	badgeBackground,
-	badgeForeground,
-	contrastBorder,
-	asCssVariable,
-} from "vs/platform/theme/common/colorRegistry";
-import { localize } from "vs/nls";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { ContextScopedHistoryInputBox } from "vs/platform/history/browser/contextScopedHistoryWidget";
-import {
-	IContextKey,
-	IContextKeyService,
-	RawContextKey,
-} from "vs/platform/contextkey/common/contextkey";
+import { HistoryInputBox } from "vs/base/browser/ui/inputbox/inputBox";
+import { Widget } from "vs/base/browser/ui/widget";
+import { IAction } from "vs/base/common/actions";
+import { Delayer } from "vs/base/common/async";
 import { Codicon } from "vs/base/common/codicons";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { showHistoryKeybindingHint } from "vs/platform/history/browser/historyWidgetKeybindingHint";
+import { Emitter } from "vs/base/common/event";
+import { KeyCode } from "vs/base/common/keyCodes";
+import { toDisposable } from "vs/base/common/lifecycle";
+import { localize } from "vs/nls";
+import { SubmenuEntryActionViewItem } from "vs/platform/actions/browser/menuEntryActionViewItem";
+import {
+	HiddenItemStrategy,
+	MenuWorkbenchToolBar,
+} from "vs/platform/actions/browser/toolbar";
 import {
 	MenuId,
 	MenuRegistry,
 	SubmenuItemAction,
 } from "vs/platform/actions/common/actions";
 import {
-	HiddenItemStrategy,
-	MenuWorkbenchToolBar,
-} from "vs/platform/actions/browser/toolbar";
-import { SubmenuEntryActionViewItem } from "vs/platform/actions/browser/menuEntryActionViewItem";
-import { Widget } from "vs/base/browser/ui/widget";
-import { Emitter } from "vs/base/common/event";
+	IContextKey,
+	IContextKeyService,
+	RawContextKey,
+} from "vs/platform/contextkey/common/contextkey";
+import { IContextViewService } from "vs/platform/contextview/browser/contextView";
+import { ContextScopedHistoryInputBox } from "vs/platform/history/browser/contextScopedHistoryWidget";
+import { showHistoryKeybindingHint } from "vs/platform/history/browser/historyWidgetKeybindingHint";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import { defaultInputBoxStyles } from "vs/platform/theme/browser/defaultStyles";
+import {
+	asCssVariable,
+	badgeBackground,
+	badgeForeground,
+	contrastBorder,
+} from "vs/platform/theme/common/colorRegistry";
 
 const viewFilterMenu = new MenuId("menu.view.filter");
 export const viewFilterSubmenu = new MenuId("submenu.view.filter");
@@ -52,7 +52,7 @@ MenuRegistry.appendMenuItem(viewFilterMenu, {
 });
 
 class MoreFiltersActionViewItem extends SubmenuEntryActionViewItem {
-	private _checked: boolean = false;
+	private _checked = false;
 	set checked(checked: boolean) {
 		if (this._checked !== checked) {
 			this._checked = checked;
@@ -89,12 +89,12 @@ export class FilterWidget extends Widget {
 	private readonly focusContextKey: IContextKey<boolean> | undefined;
 
 	private readonly _onDidChangeFilterText = this._register(
-		new Emitter<string>()
+		new Emitter<string>(),
 	);
 	readonly onDidChangeFilterText = this._onDidChangeFilterText.event;
 
 	private moreFiltersActionViewItem: MoreFiltersActionViewItem | undefined;
-	private isMoreFiltersChecked: boolean = false;
+	private isMoreFiltersChecked = false;
 
 	private focusTracker: DOM.IFocusTracker;
 	public get onDidFocus() {
@@ -186,7 +186,7 @@ export class FilterWidget extends Widget {
 	}
 
 	private createInput(
-		container: HTMLElement
+		container: HTMLElement,
 	): [ContextScopedHistoryInputBox, DOM.IFocusTracker] {
 		const inputBox = this._register(
 			this.instantiationService.createInstance(
@@ -200,8 +200,8 @@ export class FilterWidget extends Widget {
 					showHistoryHint: () =>
 						showHistoryKeybindingHint(this.keybindingService),
 					inputBoxStyles: defaultInputBoxStyles,
-				}
-			)
+				},
+			),
 		);
 		if (this.options.text) {
 			inputBox.value = this.options.text;
@@ -209,30 +209,30 @@ export class FilterWidget extends Widget {
 		this._register(
 			inputBox.onDidChange((filter) =>
 				this.delayedFilterUpdate.trigger(() =>
-					this.onDidInputChange(inputBox!)
-				)
-			)
+					this.onDidInputChange(inputBox!),
+				),
+			),
 		);
 		this._register(
 			DOM.addStandardDisposableListener(
 				inputBox.inputElement,
 				DOM.EventType.KEY_DOWN,
-				(e: any) => this.onInputKeyDown(e, inputBox!)
-			)
+				(e: any) => this.onInputKeyDown(e, inputBox!),
+			),
 		);
 		this._register(
 			DOM.addStandardDisposableListener(
 				container,
 				DOM.EventType.KEY_DOWN,
-				this.handleKeyboardEvent
-			)
+				this.handleKeyboardEvent,
+			),
 		);
 		this._register(
 			DOM.addStandardDisposableListener(
 				container,
 				DOM.EventType.KEY_UP,
-				this.handleKeyboardEvent
-			)
+				this.handleKeyboardEvent,
+			),
 		);
 		this._register(
 			DOM.addStandardDisposableListener(
@@ -241,19 +241,19 @@ export class FilterWidget extends Widget {
 				(e) => {
 					e.stopPropagation();
 					e.preventDefault();
-				}
-			)
+				},
+			),
 		);
 
 		const focusTracker = this._register(
-			DOM.trackFocus(inputBox.inputElement)
+			DOM.trackFocus(inputBox.inputElement),
 		);
 		if (this.focusContextKey) {
 			this._register(
-				focusTracker.onDidFocus(() => this.focusContextKey!.set(true))
+				focusTracker.onDidFocus(() => this.focusContextKey!.set(true)),
 			);
 			this._register(
-				focusTracker.onDidBlur(() => this.focusContextKey!.set(false))
+				focusTracker.onDidBlur(() => this.focusContextKey!.set(false)),
 			);
 			this._register(toDisposable(() => this.focusContextKey!.reset()));
 		}
@@ -263,7 +263,7 @@ export class FilterWidget extends Widget {
 	private createBadge(container: HTMLElement): HTMLElement {
 		const filterBadge = DOM.append(
 			container,
-			DOM.$(".viewpane-filter-badge.hidden")
+			DOM.$(".viewpane-filter-badge.hidden"),
 		);
 		filterBadge.style.backgroundColor = asCssVariable(badgeBackground);
 		filterBadge.style.color = asCssVariable(badgeForeground);
@@ -287,7 +287,7 @@ export class FilterWidget extends Widget {
 							this.instantiationService.createInstance(
 								MoreFiltersActionViewItem,
 								action,
-								undefined
+								undefined,
 							);
 						this.moreFiltersActionViewItem.checked =
 							this.isMoreFiltersChecked;
@@ -295,7 +295,7 @@ export class FilterWidget extends Widget {
 					}
 					return undefined;
 				},
-			}
+			},
 		);
 	}
 
@@ -325,7 +325,7 @@ export class FilterWidget extends Widget {
 
 	private onInputKeyDown(
 		event: StandardKeyboardEvent,
-		filterInputBox: HistoryInputBox
+		filterInputBox: HistoryInputBox,
 	) {
 		let handled = false;
 		if (event.equals(KeyCode.Tab) && !this.toolbar.isEmpty()) {

@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { getErrorMessage } from "vs/base/common/errors";
 import {
 	Disposable,
 	DisposableStore,
@@ -10,8 +11,10 @@ import {
 	MutableDisposable,
 } from "vs/base/common/lifecycle";
 import { isWeb } from "vs/base/common/platform";
+import { URI } from "vs/base/common/uri";
 import { ServicesAccessor } from "vs/editor/browser/editorExtensions";
 import { localize } from "vs/nls";
+import { Categories } from "vs/platform/action/common/actionCommonCategories";
 import {
 	Action2,
 	IMenuService,
@@ -25,11 +28,22 @@ import {
 	IContextKey,
 	IContextKeyService,
 } from "vs/platform/contextkey/common/contextkey";
+import { IFileDialogService } from "vs/platform/dialogs/common/dialogs";
+import { INotificationService } from "vs/platform/notification/common/notification";
+import { IOpenerService } from "vs/platform/opener/common/opener";
+import {
+	IQuickInputService,
+	IQuickPickItem,
+	IQuickPickSeparator,
+} from "vs/platform/quickinput/common/quickInput";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import {
 	IUserDataProfile,
 	IUserDataProfilesService,
 } from "vs/platform/userDataProfile/common/userDataProfile";
+import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
 import { IWorkbenchContribution } from "vs/workbench/common/contributions";
+import { IWorkspaceTagsService } from "vs/workbench/contrib/tags/common/workspaceTags";
 import {
 	ILifecycleService,
 	LifecyclePhase,
@@ -37,33 +51,19 @@ import {
 import {
 	CURRENT_PROFILE_CONTEXT,
 	HAS_PROFILES_CONTEXT,
+	IProfileTemplateInfo,
 	IS_CURRENT_PROFILE_TRANSIENT_CONTEXT,
+	IS_PROFILE_EXPORT_IN_PROGRESS_CONTEXT,
 	IS_PROFILE_IMPORT_IN_PROGRESS_CONTEXT,
 	IUserDataProfileImportExportService,
 	IUserDataProfileManagementService,
 	IUserDataProfileService,
 	PROFILES_CATEGORY,
-	PROFILE_FILTER,
-	IS_PROFILE_EXPORT_IN_PROGRESS_CONTEXT,
-	ProfilesMenu,
 	PROFILES_ENABLEMENT_CONTEXT,
 	PROFILES_TITLE,
-	IProfileTemplateInfo,
+	PROFILE_FILTER,
+	ProfilesMenu,
 } from "vs/workbench/services/userDataProfile/common/userDataProfile";
-import {
-	IQuickInputService,
-	IQuickPickItem,
-	IQuickPickSeparator,
-} from "vs/platform/quickinput/common/quickInput";
-import { INotificationService } from "vs/platform/notification/common/notification";
-import { IFileDialogService } from "vs/platform/dialogs/common/dialogs";
-import { URI } from "vs/base/common/uri";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
-import { IWorkspaceTagsService } from "vs/workbench/contrib/tags/common/workspaceTags";
-import { getErrorMessage } from "vs/base/common/errors";
-import { Categories } from "vs/platform/action/common/actionCommonCategories";
-import { IOpenerService } from "vs/platform/opener/common/opener";
 
 type IProfileTemplateQuickPickItem = IQuickPickItem & IProfileTemplateInfo;
 
@@ -150,15 +150,15 @@ export class UserDataProfilesWorkbenchContribution
 		this.registerProfilesActions();
 		this._register(
 			this.userDataProfilesService.onDidChangeProfiles(() =>
-				this.registerProfilesActions()
-			)
+				this.registerProfilesActions(),
+			),
 		);
 
 		this.registerCurrentProfilesActions();
 		this._register(
 			this.userDataProfileService.onDidChangeCurrentProfile(() =>
-				this.registerCurrentProfilesActions()
-			)
+				this.registerCurrentProfilesActions(),
+			),
 		);
 
 		this.registerCreateFromCurrentProfileAction();
@@ -173,7 +173,7 @@ export class UserDataProfilesWorkbenchContribution
 			return localize(
 				"profiles",
 				"Profiles ({0})",
-				this.userDataProfileService.currentProfile.name
+				this.userDataProfileService.currentProfile.name,
 			);
 		};
 		MenuRegistry.appendMenuItem(MenuId.GlobalActivity, <ISubmenuItem>{
@@ -198,13 +198,13 @@ export class UserDataProfilesWorkbenchContribution
 	}
 
 	private readonly profilesDisposable = this._register(
-		new MutableDisposable<DisposableStore>()
+		new MutableDisposable<DisposableStore>(),
 	);
 	private registerProfilesActions(): void {
 		this.profilesDisposable.value = new DisposableStore();
 		for (const profile of this.userDataProfilesService.profiles) {
 			this.profilesDisposable.value.add(
-				this.registerProfileEntryAction(profile)
+				this.registerProfileEntryAction(profile),
 			);
 		}
 	}
@@ -219,7 +219,7 @@ export class UserDataProfilesWorkbenchContribution
 						title: profile.name,
 						toggled: ContextKeyExpr.equals(
 							CURRENT_PROFILE_CONTEXT.key,
-							profile.id
+							profile.id,
 						),
 						menu: [
 							{
@@ -236,11 +236,11 @@ export class UserDataProfilesWorkbenchContribution
 						profile.id
 					) {
 						return that.userDataProfileManagementService.switchProfile(
-							profile
+							profile,
 						);
 					}
 				}
-			}
+			},
 		);
 	}
 
@@ -253,7 +253,7 @@ export class UserDataProfilesWorkbenchContribution
 						title: {
 							value: localize(
 								"switchProfile",
-								"Switch Profile..."
+								"Switch Profile...",
 							),
 							original: "Switch Profile...",
 						},
@@ -267,7 +267,7 @@ export class UserDataProfilesWorkbenchContribution
 					const menuService = accessor.get(IMenuService);
 					const menu = menuService.createMenu(
 						ProfilesMenu,
-						accessor.get(IContextKeyService)
+						accessor.get(IContextKeyService),
 					);
 					const actions =
 						menu
@@ -285,35 +285,35 @@ export class UserDataProfilesWorkbenchContribution
 							{
 								placeHolder: localize(
 									"selectProfile",
-									"Select Profile"
+									"Select Profile",
 								),
-							}
+							},
 						);
 						await result?.action.run();
 					} finally {
 						menu.dispose();
 					}
 				}
-			}
+			},
 		);
 	}
 
 	private readonly currentprofileActionsDisposable = this._register(
-		new MutableDisposable<DisposableStore>()
+		new MutableDisposable<DisposableStore>(),
 	);
 	private registerCurrentProfilesActions(): void {
 		this.currentprofileActionsDisposable.value = new DisposableStore();
 		this.currentprofileActionsDisposable.value.add(
-			this.registerEditCurrentProfileAction()
+			this.registerEditCurrentProfileAction(),
 		);
 		this.currentprofileActionsDisposable.value.add(
-			this.registerShowCurrentProfileContentsAction()
+			this.registerShowCurrentProfileContentsAction(),
 		);
 		this.currentprofileActionsDisposable.value.add(
-			this.registerExportCurrentProfileAction()
+			this.registerExportCurrentProfileAction(),
 		);
 		this.currentprofileActionsDisposable.value.add(
-			this.registerImportProfileAction()
+			this.registerImportProfileAction(),
 		);
 	}
 
@@ -325,9 +325,9 @@ export class UserDataProfilesWorkbenchContribution
 					const when = ContextKeyExpr.and(
 						ContextKeyExpr.notEquals(
 							CURRENT_PROFILE_CONTEXT.key,
-							that.userDataProfilesService.defaultProfile.id
+							that.userDataProfilesService.defaultProfile.id,
 						),
-						IS_CURRENT_PROFILE_TRANSIENT_CONTEXT.toNegated()
+						IS_CURRENT_PROFILE_TRANSIENT_CONTEXT.toNegated(),
 					);
 					super({
 						id: `workbench.profiles.actions.editCurrentProfile`,
@@ -349,10 +349,10 @@ export class UserDataProfilesWorkbenchContribution
 				}
 				run() {
 					return that.userDataProfileImportExportService.editProfile(
-						that.userDataProfileService.currentProfile
+						that.userDataProfileService.currentProfile,
 					);
 				}
-			}
+			},
 		);
 	}
 
@@ -366,7 +366,7 @@ export class UserDataProfilesWorkbenchContribution
 						title: {
 							value: localize(
 								"show profile contents",
-								"Show Profile Contents"
+								"Show Profile Contents",
 							),
 							original: `Show Profile Contents`,
 						},
@@ -386,11 +386,11 @@ export class UserDataProfilesWorkbenchContribution
 
 				async run(accessor: ServicesAccessor) {
 					const userDataProfileImportExportService = accessor.get(
-						IUserDataProfileImportExportService
+						IUserDataProfileImportExportService,
 					);
 					return userDataProfileImportExportService.showProfileContents();
 				}
-			}
+			},
 		);
 	}
 
@@ -407,7 +407,7 @@ export class UserDataProfilesWorkbenchContribution
 							title: {
 								value: localize(
 									"export profile",
-									"Export Profile..."
+									"Export Profile...",
 								),
 								original: `Export Profile (${that.userDataProfileService.currentProfile.name})...`,
 							},
@@ -429,12 +429,12 @@ export class UserDataProfilesWorkbenchContribution
 
 					async run(accessor: ServicesAccessor) {
 						const userDataProfileImportExportService = accessor.get(
-							IUserDataProfileImportExportService
+							IUserDataProfileImportExportService,
 						);
 						return userDataProfileImportExportService.exportProfile();
 					}
-				}
-			)
+				},
+			),
 		);
 		disposables.add(
 			MenuRegistry.appendMenuItem(MenuId.MenubarShare, {
@@ -444,13 +444,13 @@ export class UserDataProfilesWorkbenchContribution
 						value: localize(
 							"export profile in share",
 							"Export Profile ({0})...",
-							that.userDataProfileService.currentProfile.name
+							that.userDataProfileService.currentProfile.name,
 						),
 						original: `Export Profile (${that.userDataProfileService.currentProfile.name})...`,
 					},
 					precondition: PROFILES_ENABLEMENT_CONTEXT,
 				},
-			})
+			}),
 		);
 		return disposables;
 	}
@@ -468,7 +468,7 @@ export class UserDataProfilesWorkbenchContribution
 							title: {
 								value: localize(
 									"import profile",
-									"Import Profile..."
+									"Import Profile...",
 								),
 								original: "Import Profile...",
 							},
@@ -496,14 +496,14 @@ export class UserDataProfilesWorkbenchContribution
 						const quickInputService =
 							accessor.get(IQuickInputService);
 						const userDataProfileImportExportService = accessor.get(
-							IUserDataProfileImportExportService
+							IUserDataProfileImportExportService,
 						);
 						const notificationService =
 							accessor.get(INotificationService);
 
 						const disposables = new DisposableStore();
 						const quickPick = disposables.add(
-							quickInputService.createQuickPick()
+							quickInputService.createQuickPick(),
 						);
 						const profileTemplateQuickPickItems =
 							await that.getProfileTemplatesQuickPickItems();
@@ -518,14 +518,14 @@ export class UserDataProfilesWorkbenchContribution
 									label: quickPick.value,
 									description: localize(
 										"import from url",
-										"Import from URL"
+										"Import from URL",
 									),
 								});
 							}
 							quickPickItems.push({
 								label: localize(
 									"import from file",
-									"Select File..."
+									"Select File...",
 								),
 							});
 							if (profileTemplateQuickPickItems.length) {
@@ -534,10 +534,10 @@ export class UserDataProfilesWorkbenchContribution
 										type: "separator",
 										label: localize(
 											"templates",
-											"Profile Templates"
+											"Profile Templates",
 										),
 									},
-									...profileTemplateQuickPickItems
+									...profileTemplateQuickPickItems,
 								);
 							}
 							quickPick.items = quickPickItems;
@@ -545,15 +545,15 @@ export class UserDataProfilesWorkbenchContribution
 
 						quickPick.title = localize(
 							"import profile quick pick title",
-							"Import from Profile Template..."
+							"Import from Profile Template...",
 						);
 						quickPick.placeholder = localize(
 							"import profile placeholder",
-							"Provide Profile Template URL"
+							"Provide Profile Template URL",
 						);
 						quickPick.ignoreFocusOut = true;
 						disposables.add(
-							quickPick.onDidChangeValue(updateQuickPickItems)
+							quickPick.onDidChangeValue(updateQuickPickItems),
 						);
 						updateQuickPickItems();
 						quickPick.matchOnLabel = false;
@@ -575,19 +575,19 @@ export class UserDataProfilesWorkbenchContribution
 											URI.parse(
 												(<
 													IProfileTemplateQuickPickItem
-												>selectedItem).url
-											)
+												>selectedItem).url,
+											),
 										);
 									}
 									const profile =
 										selectedItem.label === quickPick.value
 											? URI.parse(quickPick.value)
 											: await this.getProfileUriFromFileSystem(
-													fileDialogService
-												);
+													fileDialogService,
+											  );
 									if (profile) {
 										await userDataProfileImportExportService.importProfile(
-											profile
+											profile,
 										);
 									}
 								} catch (error) {
@@ -595,20 +595,20 @@ export class UserDataProfilesWorkbenchContribution
 										localize(
 											"profile import error",
 											"Error while creating profile: {0}",
-											getErrorMessage(error)
-										)
+											getErrorMessage(error),
+										),
 									);
 								}
-							})
+							}),
 						);
 						disposables.add(
-							quickPick.onDidHide(() => disposables.dispose())
+							quickPick.onDidHide(() => disposables.dispose()),
 						);
 						quickPick.show();
 					}
 
 					private async getProfileUriFromFileSystem(
-						fileDialogService: IFileDialogService
+						fileDialogService: IFileDialogService,
 					): Promise<URI | null> {
 						const profileLocation =
 							await fileDialogService.showOpenDialog({
@@ -618,7 +618,7 @@ export class UserDataProfilesWorkbenchContribution
 								filters: PROFILE_FILTER,
 								title: localize(
 									"import profile dialog",
-									"Select Profile Template File"
+									"Select Profile Template File",
 								),
 							});
 						if (!profileLocation) {
@@ -626,8 +626,8 @@ export class UserDataProfilesWorkbenchContribution
 						}
 						return profileLocation[0];
 					}
-				}
-			)
+				},
+			),
 		);
 		disposables.add(
 			MenuRegistry.appendMenuItem(MenuId.MenubarShare, {
@@ -636,13 +636,13 @@ export class UserDataProfilesWorkbenchContribution
 					title: {
 						value: localize(
 							"import profile share",
-							"Import Profile..."
+							"Import Profile...",
 						),
 						original: "Import Profile...",
 					},
 					precondition: PROFILES_ENABLEMENT_CONTEXT,
 				},
-			})
+			}),
 		);
 		return disposables;
 	}
@@ -658,7 +658,7 @@ export class UserDataProfilesWorkbenchContribution
 							title: {
 								value: localize(
 									"save profile as",
-									"Save Current Profile As..."
+									"Save Current Profile As...",
 								),
 								original: "Save Current Profile As...",
 							},
@@ -670,11 +670,11 @@ export class UserDataProfilesWorkbenchContribution
 
 					run(accessor: ServicesAccessor) {
 						return that.userDataProfileImportExportService.createProfile(
-							that.userDataProfileService.currentProfile
+							that.userDataProfileService.currentProfile,
 						);
 					}
-				}
-			)
+				},
+			),
 		);
 	}
 
@@ -689,7 +689,7 @@ export class UserDataProfilesWorkbenchContribution
 							title: {
 								value: localize(
 									"create profile",
-									"Create Profile..."
+									"Create Profile...",
 								),
 								original: "Create Profile...",
 							},
@@ -710,8 +710,8 @@ export class UserDataProfilesWorkbenchContribution
 					async run(accessor: ServicesAccessor) {
 						return that.userDataProfileImportExportService.createProfile();
 					}
-				}
-			)
+				},
+			),
 		);
 	}
 
@@ -724,7 +724,7 @@ export class UserDataProfilesWorkbenchContribution
 						title: {
 							value: localize(
 								"delete profile",
-								"Delete Profile..."
+								"Delete Profile...",
 							),
 							original: "Delete Profile...",
 						},
@@ -732,7 +732,7 @@ export class UserDataProfilesWorkbenchContribution
 						f1: true,
 						precondition: ContextKeyExpr.and(
 							PROFILES_ENABLEMENT_CONTEXT,
-							HAS_PROFILES_CONTEXT
+							HAS_PROFILES_CONTEXT,
 						),
 						menu: [
 							{
@@ -748,19 +748,19 @@ export class UserDataProfilesWorkbenchContribution
 				async run(accessor: ServicesAccessor) {
 					const quickInputService = accessor.get(IQuickInputService);
 					const userDataProfileService = accessor.get(
-						IUserDataProfileService
+						IUserDataProfileService,
 					);
 					const userDataProfilesService = accessor.get(
-						IUserDataProfilesService
+						IUserDataProfilesService,
 					);
 					const userDataProfileManagementService = accessor.get(
-						IUserDataProfileManagementService
+						IUserDataProfileManagementService,
 					);
 					const notificationService =
 						accessor.get(INotificationService);
 
 					const profiles = userDataProfilesService.profiles.filter(
-						(p) => !p.isDefault && !p.isTransient
+						(p) => !p.isDefault && !p.isTransient,
 					);
 					if (profiles.length) {
 						const picks = await quickInputService.pick(
@@ -776,23 +776,23 @@ export class UserDataProfilesWorkbenchContribution
 							{
 								title: localize(
 									"delete specific profile",
-									"Delete Profile..."
+									"Delete Profile...",
 								),
 								placeHolder: localize(
 									"pick profile to delete",
-									"Select Profiles to Delete"
+									"Select Profiles to Delete",
 								),
 								canPickMany: true,
-							}
+							},
 						);
 						if (picks) {
 							try {
 								await Promise.all(
 									picks.map((pick) =>
 										userDataProfileManagementService.removeProfile(
-											pick.profile
-										)
-									)
+											pick.profile,
+										),
+									),
 								);
 							} catch (error) {
 								notificationService.error(error);
@@ -800,7 +800,7 @@ export class UserDataProfilesWorkbenchContribution
 						}
 					}
 				}
-			}
+			},
 		);
 	}
 
@@ -824,11 +824,13 @@ export class UserDataProfilesWorkbenchContribution
 						return accessor
 							.get(IOpenerService)
 							.open(
-								URI.parse("https://aka.ms/vscode-profiles-help")
+								URI.parse(
+									"https://aka.ms/vscode-profiles-help",
+								),
 							);
 					}
-				}
-			)
+				},
+			),
 		);
 	}
 
@@ -852,7 +854,7 @@ export class UserDataProfilesWorkbenchContribution
 		const workspaceId =
 			await this.workspaceTagsService.getTelemetryWorkspaceId(
 				this.workspaceContextService.getWorkspace(),
-				this.workspaceContextService.getWorkbenchState()
+				this.workspaceContextService.getWorkbenchState(),
 			);
 		type WorkspaceProfileInfoClassification = {
 			owner: "sandy081";

@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { localize } from "vs/nls";
+import { Categories } from "vs/platform/action/common/actionCommonCategories";
 import {
 	Action2,
 	MenuId,
@@ -11,7 +12,6 @@ import {
 } from "vs/platform/actions/common/actions";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
-import { Categories } from "vs/platform/action/common/actionCommonCategories";
 import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
 
 class ToggleRenderWhitespaceAction extends Action2 {
@@ -23,14 +23,14 @@ class ToggleRenderWhitespaceAction extends Action2 {
 			title: {
 				value: localize(
 					"toggleRenderWhitespace",
-					"Toggle Render Whitespace"
+					"Toggle Render Whitespace",
 				),
 				mnemonicTitle: localize(
 					{
 						key: "miToggleRenderWhitespace",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Render Whitespace"
+					"&&Render Whitespace",
 				),
 				original: "Toggle Render Whitespace",
 			},
@@ -38,7 +38,7 @@ class ToggleRenderWhitespaceAction extends Action2 {
 			f1: true,
 			toggled: ContextKeyExpr.notEquals(
 				"config.editor.renderWhitespace",
-				"none"
+				"none",
 			),
 			menu: {
 				id: MenuId.MenubarAppearanceMenu,
@@ -52,7 +52,7 @@ class ToggleRenderWhitespaceAction extends Action2 {
 		const configurationService = accessor.get(IConfigurationService);
 
 		const renderWhitespace = configurationService.getValue<string>(
-			"editor.renderWhitespace"
+			"editor.renderWhitespace",
 		);
 
 		let newRenderWhitespace: string;
@@ -64,7 +64,7 @@ class ToggleRenderWhitespaceAction extends Action2 {
 
 		return configurationService.updateValue(
 			"editor.renderWhitespace",
-			newRenderWhitespace
+			newRenderWhitespace,
 		);
 	}
 }

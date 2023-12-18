@@ -10,9 +10,9 @@ import {
 } from "vs/base/common/lifecycle";
 import { Registry } from "vs/platform/registry/common/platform";
 import {
+	Extensions as WorkbenchExtensions,
 	IWorkbenchContribution,
 	IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "vs/workbench/common/contributions";
 import { INotebookKernelService } from "vs/workbench/contrib/notebook/common/notebookKernelService";
 import { INotebookLoggingService } from "vs/workbench/contrib/notebook/common/notebookLoggingService";
@@ -51,7 +51,7 @@ class NotebookKernelDetection
 
 					// parse the event to get the notebook type
 					const notebookType = e.event.substring(
-						"onNotebook:".length
+						"onNotebook:".length,
 					);
 
 					if (notebookType === "*") {
@@ -82,19 +82,19 @@ class NotebookKernelDetection
 					) {
 						this._notebookLoggingService.debug(
 							"KernelDetection",
-							`start extension activation for ${notebookType}`
+							`start extension activation for ${notebookType}`,
 						);
 						const task =
 							this._notebookKernelService.registerNotebookKernelDetectionTask(
 								{
 									notebookType: notebookType,
-								}
+								},
 							);
 
 						this._detectionMap.set(notebookType, task);
 					}
 				}
-			})
+			}),
 		);
 
 		let timer: any = null;
@@ -111,12 +111,12 @@ class NotebookKernelDetection
 					for (const [notebookType, task] of this._detectionMap) {
 						if (
 							this._extensionService.activationEventIsDone(
-								`onNotebook:${notebookType}`
+								`onNotebook:${notebookType}`,
 							)
 						) {
 							this._notebookLoggingService.debug(
 								"KernelDetection",
-								`finish extension activation for ${notebookType}`
+								`finish extension activation for ${notebookType}`,
 							);
 							taskToDelete.push(notebookType);
 							task.dispose();
@@ -127,7 +127,7 @@ class NotebookKernelDetection
 						this._detectionMap.delete(notebookType);
 					});
 				});
-			})
+			}),
 		);
 
 		this._localDisposableStore.add({
@@ -141,8 +141,8 @@ class NotebookKernelDetection
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	NotebookKernelDetection,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );

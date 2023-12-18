@@ -3,20 +3,28 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import { IExtensionManagementService } from "vs/platform/extensionManagement/common/extensionManagement";
-import { ExtensionType } from "vs/platform/extensions/common/extensions";
-import { IProductService } from "vs/platform/product/common/productService";
-import { IWorkbenchIssueService } from "vs/workbench/services/issue/common/issue";
 import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
+import { URI } from "vs/base/common/uri";
+import { localize } from "vs/nls";
+import { Categories } from "vs/platform/action/common/actionCommonCategories";
 import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
 import {
-	IUserDataProfileImportExportService,
-	IUserDataProfileManagementService,
-	IUserDataProfileService,
-} from "vs/workbench/services/userDataProfile/common/userDataProfile";
+	ContextKeyExpr,
+	IContextKeyService,
+	RawContextKey,
+} from "vs/platform/contextkey/common/contextkey";
+import { IsWebContext } from "vs/platform/contextkey/common/contextkeys";
 import { IDialogService } from "vs/platform/dialogs/common/dialogs";
-import { IExtensionBisectService } from "vs/workbench/services/extensionManagement/browser/extensionBisect";
+import { IExtensionManagementService } from "vs/platform/extensionManagement/common/extensionManagement";
+import { ExtensionType } from "vs/platform/extensions/common/extensions";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import {
+	ServicesAccessor,
+	createDecorator,
+} from "vs/platform/instantiation/common/instantiation";
 import {
 	INotificationHandle,
 	INotificationService,
@@ -24,44 +32,36 @@ import {
 	NotificationPriority,
 	Severity,
 } from "vs/platform/notification/common/notification";
-import { IWorkbenchExtensionEnablementService } from "vs/workbench/services/extensionManagement/common/extensionManagement";
-import { IHostService } from "vs/workbench/services/host/browser/host";
-import {
-	IUserDataProfile,
-	IUserDataProfilesService,
-} from "vs/platform/userDataProfile/common/userDataProfile";
-import {
-	ServicesAccessor,
-	createDecorator,
-} from "vs/platform/instantiation/common/instantiation";
-import { Categories } from "vs/platform/action/common/actionCommonCategories";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import {
-	ContextKeyExpr,
-	IContextKeyService,
-	RawContextKey,
-} from "vs/platform/contextkey/common/contextkey";
+import { IOpenerService } from "vs/platform/opener/common/opener";
+import { IProductService } from "vs/platform/product/common/productService";
 import { Registry } from "vs/platform/registry/common/platform";
-import {
-	Extensions,
-	IWorkbenchContributionsRegistry,
-} from "vs/workbench/common/contributions";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 import {
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
-import { IOpenerService } from "vs/platform/opener/common/opener";
-import { URI } from "vs/base/common/uri";
+import {
+	IUserDataProfile,
+	IUserDataProfilesService,
+} from "vs/platform/userDataProfile/common/userDataProfile";
 import { RemoteNameContext } from "vs/workbench/common/contextkeys";
-import { IsWebContext } from "vs/platform/contextkey/common/contextkeys";
+import {
+	Extensions,
+	IWorkbenchContributionsRegistry,
+} from "vs/workbench/common/contributions";
+import { IExtensionBisectService } from "vs/workbench/services/extensionManagement/browser/extensionBisect";
+import { IWorkbenchExtensionEnablementService } from "vs/workbench/services/extensionManagement/common/extensionManagement";
+import { IHostService } from "vs/workbench/services/host/browser/host";
+import { IWorkbenchIssueService } from "vs/workbench/services/issue/common/issue";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
+import {
+	IUserDataProfileImportExportService,
+	IUserDataProfileManagementService,
+	IUserDataProfileService,
+} from "vs/workbench/services/userDataProfile/common/userDataProfile";
 
 const ITroubleshootIssueService = createDecorator<ITroubleshootIssueService>(
-	"ITroubleshootIssueService"
+	"ITroubleshootIssueService",
 );
 
 interface ITroubleshootIssueService {
@@ -74,7 +74,7 @@ interface ITroubleshootIssueService {
 
 enum TroubleshootStage {
 	EXTENSIONS = 1,
-	WORKBENCH,
+	WORKBENCH = 2,
 }
 
 type TroubleShootResult = "good" | "bad" | "stop";
@@ -85,7 +85,7 @@ class TroubleShootState {
 			return undefined;
 		}
 		try {
-			interface Raw extends TroubleShootState {}
+			type Raw = TroubleShootState;
 			const data: Raw = JSON.parse(raw);
 			if (
 				(data.stage === TroubleshootStage.EXTENSIONS ||
@@ -100,10 +100,7 @@ class TroubleShootState {
 		return undefined;
 	}
 
-	constructor(
-		readonly stage: TroubleshootStage,
-		readonly profile: string
-	) {}
+	constructor(readonly stage: TroubleshootStage, readonly profile: string) {}
 }
 
 class TroubleshootIssueService
@@ -158,11 +155,11 @@ class TroubleshootIssueService
 			detail: localize(
 				"detail.start",
 				"Issue troubleshooting is a process to help you identify the cause for an issue. The cause for an issue can be a misconfiguration, due to an extension, or be {0} itself.\n\nDuring the process the window reloads repeatedly. Each time you must confirm if you are still seeing the issue.",
-				this.productService.nameLong
+				this.productService.nameLong,
 			),
 			primaryButton: localize(
 				{ key: "msg", comment: ["&& denotes a mnemonic"] },
-				"&&Troubleshoot Issue"
+				"&&Troubleshoot Issue",
 			),
 			custom: true,
 		});
@@ -175,7 +172,7 @@ class TroubleshootIssueService
 		await this.userDataProfileImportExportService.createTroubleshootProfile();
 		this.state = new TroubleShootState(
 			TroubleshootStage.EXTENSIONS,
-			originalProfile.id
+			originalProfile.id,
 		);
 		await this.resume();
 	}
@@ -215,7 +212,7 @@ class TroubleshootIssueService
 
 		const profile =
 			this.userDataProfilesService.profiles.find(
-				(p) => p.id === this.state?.profile
+				(p) => p.id === this.state?.profile,
 			) ?? this.userDataProfilesService.defaultProfile;
 		this.state = undefined;
 		await this.userDataProfileManagementService.switchProfile(profile);
@@ -225,13 +222,13 @@ class TroubleshootIssueService
 		if (
 			!(
 				await this.extensionManagementService.getInstalled(
-					ExtensionType.User
+					ExtensionType.User,
 				)
 			).length
 		) {
 			this.state = new TroubleShootState(
 				TroubleshootStage.WORKBENCH,
-				this.state!.profile
+				this.state!.profile,
 			);
 			return;
 		}
@@ -239,20 +236,20 @@ class TroubleshootIssueService
 		const result = await this.askToReproduceIssue(
 			localize(
 				"profile.extensions.disabled",
-				"Issue troubleshooting is active and has temporarily disabled all installed extensions. Check if you can still reproduce the problem and proceed by selecting from these options."
-			)
+				"Issue troubleshooting is active and has temporarily disabled all installed extensions. Check if you can still reproduce the problem and proceed by selecting from these options.",
+			),
 		);
 		if (result === "good") {
 			const profile =
 				this.userDataProfilesService.profiles.find(
-					(p) => p.id === this.state!.profile
+					(p) => p.id === this.state!.profile,
 				) ?? this.userDataProfilesService.defaultProfile;
 			await this.reproduceIssueWithExtensionsBisect(profile);
 		}
 		if (result === "bad") {
 			this.state = new TroubleShootState(
 				TroubleshootStage.WORKBENCH,
-				this.state!.profile
+				this.state!.profile,
 			);
 		}
 		if (result === "stop") {
@@ -266,8 +263,8 @@ class TroubleshootIssueService
 		const result = await this.askToReproduceIssue(
 			localize(
 				"empty.profile",
-				"Issue troubleshooting is active and has temporarily reset your configurations to defaults. Check if you can still reproduce the problem and proceed by selecting from these options."
-			)
+				"Issue troubleshooting is active and has temporarily reset your configurations to defaults. Check if you can still reproduce the problem and proceed by selecting from these options.",
+			),
 		);
 		if (result === "stop") {
 			await this.stop();
@@ -276,8 +273,8 @@ class TroubleshootIssueService
 			await this.askToReportIssue(
 				localize(
 					"issue is with configuration",
-					'Issue troubleshooting has identified that the issue is caused by your configurations. Please report the issue by exporting your configurations using "Export Profile" command and share the file in the issue report.'
-				)
+					'Issue troubleshooting has identified that the issue is caused by your configurations. Please report the issue by exporting your configurations using "Export Profile" command and share the file in the issue report.',
+				),
 			);
 		}
 		if (result === "bad") {
@@ -285,19 +282,19 @@ class TroubleshootIssueService
 				localize(
 					"issue is in core",
 					"Issue troubleshooting has identified that the issue is with {0}.",
-					this.productService.nameLong
-				)
+					this.productService.nameLong,
+				),
 			);
 		}
 	}
 
 	private async reproduceIssueWithExtensionsBisect(
-		profile: IUserDataProfile
+		profile: IUserDataProfile,
 	): Promise<void> {
 		await this.userDataProfileManagementService.switchProfile(profile);
 		const extensions = (
 			await this.extensionManagementService.getInstalled(
-				ExtensionType.User
+				ExtensionType.User,
 			)
 		).filter((ext) => this.extensionEnablementService.isEnabled(ext));
 		await this.extensionBisectService.start(extensions);
@@ -322,7 +319,7 @@ class TroubleshootIssueService
 				Severity.Info,
 				message,
 				[goodPrompt, badPrompt, stop],
-				{ sticky: true, priority: NotificationPriority.URGENT }
+				{ sticky: true, priority: NotificationPriority.URGENT },
 			);
 		});
 	}
@@ -336,12 +333,12 @@ class TroubleshootIssueService
 					type: Severity.Info,
 					message: localize(
 						"troubleshoot issue",
-						"Troubleshoot Issue"
+						"Troubleshoot Issue",
 					),
 					detail: localize(
 						"use insiders",
 						"This likely means that the issue has been addressed already and will be available in an upcoming release. You can safely use {0} insiders until the new stable version is available.",
-						this.productService.nameLong
+						this.productService.nameLong,
 					),
 					custom: true,
 				});
@@ -374,13 +371,13 @@ class TroubleshootIssueService
 			primaryButton: localize(
 				"download insiders",
 				"Download {0} Insiders",
-				this.productService.nameLong
+				this.productService.nameLong,
 			),
 			cancelButton: localize("report anyway", "Report Issue Anyway"),
 			detail: localize(
 				"ask to download insiders",
 				"Please try to download and reproduce the issue in {0} insiders.",
-				this.productService.nameLong
+				this.productService.nameLong,
 			),
 			custom: {
 				disableCloseAction: true,
@@ -392,7 +389,7 @@ class TroubleshootIssueService
 		}
 
 		const opened = await this.openerService.open(
-			URI.parse("https://aka.ms/vscode-insiders")
+			URI.parse("https://aka.ms/vscode-insiders"),
 		);
 		if (!opened) {
 			return undefined;
@@ -418,7 +415,7 @@ class TroubleshootIssueService
 			detail: localize(
 				"ask to reproduce issue",
 				"Please try to reproduce the issue in {0} insiders and confirm if the issue exists there.",
-				this.productService.nameLong
+				this.productService.nameLong,
 			),
 			custom: {
 				disableCloseAction: true,
@@ -433,7 +430,7 @@ class TroubleshootIssueService
 		if (this._state === undefined) {
 			const raw = this.storageService.get(
 				TroubleshootIssueService.storageKey,
-				StorageScope.PROFILE
+				StorageScope.PROFILE,
 			);
 			this._state = TroubleShootState.fromJSON(raw);
 		}
@@ -451,12 +448,12 @@ class TroubleshootIssueService
 				TroubleshootIssueService.storageKey,
 				JSON.stringify(state),
 				StorageScope.PROFILE,
-				StorageTarget.MACHINE
+				StorageTarget.MACHINE,
 			);
 		} else {
 			this.storageService.remove(
 				TroubleshootIssueService.storageKey,
-				StorageScope.PROFILE
+				StorageScope.PROFILE,
 			);
 		}
 	}
@@ -465,7 +462,7 @@ class TroubleshootIssueService
 class IssueTroubleshootUi extends Disposable {
 	static ctxIsTroubleshootActive = new RawContextKey<boolean>(
 		"isIssueTroubleshootActive",
-		false
+		false,
 	);
 
 	constructor(
@@ -499,7 +496,7 @@ class IssueTroubleshootUi extends Disposable {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench
+	Extensions.Workbench,
 ).registerWorkbenchContribution(IssueTroubleshootUi, LifecyclePhase.Restored);
 
 registerAction2(
@@ -510,7 +507,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"troubleshootIssue",
-						"Troubleshoot Issue..."
+						"Troubleshoot Issue...",
 					),
 					original: "Troubleshoot Issue...",
 				},
@@ -519,14 +516,14 @@ registerAction2(
 				precondition: ContextKeyExpr.and(
 					IssueTroubleshootUi.ctxIsTroubleshootActive.negate(),
 					RemoteNameContext.isEqualTo(""),
-					IsWebContext.negate()
+					IsWebContext.negate(),
 				),
 			});
 		}
 		run(accessor: ServicesAccessor): Promise<void> {
 			return accessor.get(ITroubleshootIssueService).start();
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -547,11 +544,11 @@ registerAction2(
 		async run(accessor: ServicesAccessor): Promise<void> {
 			return accessor.get(ITroubleshootIssueService).stop();
 		}
-	}
+	},
 );
 
 registerSingleton(
 	ITroubleshootIssueService,
 	TroubleshootIssueService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

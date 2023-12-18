@@ -14,12 +14,11 @@ import {
 	TreeviewsService,
 } from "vs/workbench/services/views/common/treeViewsService";
 
-export interface ITreeViewsService
-	extends ITreeViewsServiceCommon<ITreeItem, HTMLElement> {}
+export type ITreeViewsService = ITreeViewsServiceCommon<ITreeItem, HTMLElement>;
 export const ITreeViewsService =
 	createDecorator<ITreeViewsService>("treeViewsService");
 registerSingleton(
 	ITreeViewsService,
 	TreeviewsService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

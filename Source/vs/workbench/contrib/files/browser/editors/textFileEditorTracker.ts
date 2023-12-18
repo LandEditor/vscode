@@ -3,25 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IWorkbenchContribution } from "vs/workbench/common/contributions";
+import { coalesce, distinct } from "vs/base/common/arrays";
+import { RunOnceWorker } from "vs/base/common/async";
+import { Disposable } from "vs/base/common/lifecycle";
+import { Schemas } from "vs/base/common/network";
 import { URI } from "vs/base/common/uri";
+import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
+import { IWorkbenchContribution } from "vs/workbench/common/contributions";
+import { DEFAULT_EDITOR_ASSOCIATION } from "vs/workbench/common/editor";
+import { FILE_EDITOR_INPUT_ID } from "vs/workbench/contrib/files/common/files";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
+import { IHostService } from "vs/workbench/services/host/browser/host";
+import { ILifecycleService } from "vs/workbench/services/lifecycle/common/lifecycle";
 import {
 	ITextFileService,
 	TextFileEditorModelState,
 } from "vs/workbench/services/textfile/common/textfiles";
-import { ILifecycleService } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { Disposable } from "vs/base/common/lifecycle";
-import { distinct, coalesce } from "vs/base/common/arrays";
-import { IHostService } from "vs/workbench/services/host/browser/host";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { RunOnceWorker } from "vs/base/common/async";
-import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
-import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
-import { FILE_EDITOR_INPUT_ID } from "vs/workbench/contrib/files/common/files";
-import { Schemas } from "vs/base/common/network";
 import { UntitledTextEditorInput } from "vs/workbench/services/untitled/common/untitledTextEditorInput";
 import { IWorkingCopyEditorService } from "vs/workbench/services/workingCopy/common/workingCopyEditorService";
-import { DEFAULT_EDITOR_ASSOCIATION } from "vs/workbench/common/editor";
 
 export class TextFileEditorTracker
 	extends Disposable
@@ -48,30 +48,30 @@ export class TextFileEditorTracker
 		// Ensure dirty text file and untitled models are always opened as editors
 		this._register(
 			this.textFileService.files.onDidChangeDirty((model) =>
-				this.ensureDirtyFilesAreOpenedWorker.work(model.resource)
-			)
+				this.ensureDirtyFilesAreOpenedWorker.work(model.resource),
+			),
 		);
 		this._register(
 			this.textFileService.files.onDidSaveError((model) =>
-				this.ensureDirtyFilesAreOpenedWorker.work(model.resource)
-			)
+				this.ensureDirtyFilesAreOpenedWorker.work(model.resource),
+			),
 		);
 		this._register(
 			this.textFileService.untitled.onDidChangeDirty((model) =>
-				this.ensureDirtyFilesAreOpenedWorker.work(model.resource)
-			)
+				this.ensureDirtyFilesAreOpenedWorker.work(model.resource),
+			),
 		);
 
 		// Update visible text file editors when focus is gained
 		this._register(
 			this.hostService.onDidChangeFocus((hasFocus) =>
-				hasFocus ? this.reloadVisibleTextFileEditors() : undefined
-			)
+				hasFocus ? this.reloadVisibleTextFileEditors() : undefined,
+			),
 		);
 
 		// Lifecycle
 		this._register(
-			this.lifecycleService.onDidShutdown(() => this.dispose())
+			this.lifecycleService.onDidShutdown(() => this.dispose()),
 		);
 	}
 
@@ -80,8 +80,8 @@ export class TextFileEditorTracker
 	private readonly ensureDirtyFilesAreOpenedWorker = this._register(
 		new RunOnceWorker<URI>(
 			(units) => this.ensureDirtyTextFilesAreOpened(units),
-			this.getDirtyTextFileTrackerDelay()
-		)
+			this.getDirtyTextFileTrackerDelay(),
+		),
 	);
 
 	protected getDirtyTextFileTrackerDelay(): number {
@@ -99,7 +99,7 @@ export class TextFileEditorTracker
 					const fileModel = this.textFileService.files.get(resource);
 					if (
 						fileModel?.hasState(
-							TextFileEditorModelState.PENDING_SAVE
+							TextFileEditorModelState.PENDING_SAVE,
 						)
 					) {
 						return false; // resource must not be pending to save
@@ -109,7 +109,7 @@ export class TextFileEditorTracker
 						resource.scheme !== Schemas.untitled &&
 						!fileModel?.hasState(TextFileEditorModelState.ERROR) &&
 						this.filesConfigurationService.isShortAutoSaveDelayConfigured(
-							resource
+							resource,
 						)
 					) {
 						// leave models auto saved after short delay unless
@@ -143,8 +143,8 @@ export class TextFileEditorTracker
 
 					return true;
 				}),
-				(resource) => resource.toString()
-			)
+				(resource) => resource.toString(),
+			),
 		);
 	}
 
@@ -157,7 +157,7 @@ export class TextFileEditorTracker
 			resources.map((resource) => ({
 				resource,
 				options: { inactive: true, pinned: true, preserveFocus: true },
-			}))
+			})),
 		);
 	}
 
@@ -184,13 +184,13 @@ export class TextFileEditorTracker
 					}
 
 					return model;
-				})
+				}),
 			),
-			(model) => model.resource.toString()
+			(model) => model.resource.toString(),
 		).forEach((model) =>
 			this.textFileService.files.resolve(model.resource, {
 				reload: { async: true },
-			})
+			}),
 		);
 	}
 

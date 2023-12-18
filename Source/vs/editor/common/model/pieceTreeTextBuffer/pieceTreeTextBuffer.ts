@@ -4,9 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Emitter, Event } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
 import * as strings from "vs/base/common/strings";
+import { StringEOL, countEOL } from "vs/editor/common/core/eolCounter";
 import { Position } from "vs/editor/common/core/position";
 import { Range } from "vs/editor/common/core/range";
+import { TextChange } from "vs/editor/common/core/textChange";
 import {
 	ApplyEditsResult,
 	EndOfLinePreference,
@@ -15,17 +18,14 @@ import {
 	ISingleEditOperationIdentifier,
 	ITextBuffer,
 	ITextSnapshot,
-	ValidAnnotatedEditOperation,
 	IValidEditOperation,
 	SearchData,
+	ValidAnnotatedEditOperation,
 } from "vs/editor/common/model";
 import {
 	PieceTreeBase,
 	StringBuffer,
 } from "vs/editor/common/model/pieceTreeTextBuffer/pieceTreeBase";
-import { countEOL, StringEOL } from "vs/editor/common/core/eolCounter";
-import { TextChange } from "vs/editor/common/core/textChange";
-import { Disposable } from "vs/base/common/lifecycle";
 
 export interface IValidatedEditOperation {
 	sortIndex: number;
@@ -53,7 +53,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 	private _mightContainNonBasicASCII: boolean;
 
 	private readonly _onDidChangeContent: Emitter<void> = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	public readonly onDidChangeContent: Event<void> =
 		this._onDidChangeContent.event;
@@ -65,7 +65,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 		containsRTL: boolean,
 		containsUnusualLineTerminators: boolean,
 		isBasicASCII: boolean,
-		eolNormalized: boolean
+		eolNormalized: boolean,
 	) {
 		super();
 		this._BOM = BOM;
@@ -128,13 +128,13 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 			startPosition.lineNumber,
 			startPosition.column,
 			endPosition.lineNumber,
-			endPosition.column
+			endPosition.column,
 		);
 	}
 
 	public getValueInRange(
 		range: Range,
-		eol: EndOfLinePreference = EndOfLinePreference.TextDefined
+		eol: EndOfLinePreference = EndOfLinePreference.TextDefined,
 	): string {
 		if (range.isEmpty()) {
 			return "";
@@ -146,7 +146,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 
 	public getValueLengthInRange(
 		range: Range,
-		eol: EndOfLinePreference = EndOfLinePreference.TextDefined
+		eol: EndOfLinePreference = EndOfLinePreference.TextDefined,
 	): number {
 		if (range.isEmpty()) {
 			return 0;
@@ -158,11 +158,11 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 
 		const startOffset = this.getOffsetAt(
 			range.startLineNumber,
-			range.startColumn
+			range.startColumn,
 		);
 		const endOffset = this.getOffsetAt(
 			range.endLineNumber,
-			range.endColumn
+			range.endColumn,
 		);
 
 		// offsets use the text EOL, so we need to compensate for length differences
@@ -181,7 +181,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 
 	public getCharacterCountInRange(
 		range: Range,
-		eol: EndOfLinePreference = EndOfLinePreference.TextDefined
+		eol: EndOfLinePreference = EndOfLinePreference.TextDefined,
 	): number {
 		if (this._mightContainNonBasicASCII) {
 			// we must count by iterating
@@ -263,7 +263,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 
 	public getLineFirstNonWhitespaceColumn(lineNumber: number): number {
 		const result = strings.firstNonWhitespaceIndex(
-			this.getLineContent(lineNumber)
+			this.getLineContent(lineNumber),
 		);
 		if (result === -1) {
 			return 0;
@@ -273,7 +273,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 
 	public getLineLastNonWhitespaceColumn(lineNumber: number): number {
 		const result = strings.lastNonWhitespaceIndex(
-			this.getLineContent(lineNumber)
+			this.getLineContent(lineNumber),
 		);
 		if (result === -1) {
 			return 0;
@@ -301,7 +301,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 	public applyEdits(
 		rawOperations: ValidAnnotatedEditOperation[],
 		recordTrimAutoWhitespace: boolean,
-		computeUndoEdits: boolean
+		computeUndoEdits: boolean,
 	): ApplyEditsResult {
 		let mightContainRTL = this._mightContainRTL;
 		let mightContainUnusualLineTerminators =
@@ -320,7 +320,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 				let textMightContainNonBasicASCII = true;
 				if (!mightContainNonBasicASCII) {
 					textMightContainNonBasicASCII = !strings.isBasicASCII(
-						op.text
+						op.text,
 					);
 					mightContainNonBasicASCII = textMightContainNonBasicASCII;
 				}
@@ -345,7 +345,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 			if (op.text) {
 				let strEOL: StringEOL;
 				[eolCount, firstLineLength, lastLineLength, strEOL] = countEOL(
-					op.text
+					op.text,
 				);
 
 				const bufferEOL = this.getEOL();
@@ -364,7 +364,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 				range: validatedRange,
 				rangeOffset: this.getOffsetAt(
 					validatedRange.startLineNumber,
-					validatedRange.startColumn
+					validatedRange.startColumn,
 				),
 				rangeLength: this.getValueLengthInRange(validatedRange),
 				text: validText,
@@ -421,11 +421,11 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 						let currentLineContent = "";
 						if (lineNumber === reverseRange.startLineNumber) {
 							currentLineContent = this.getLineContent(
-								op.range.startLineNumber
+								op.range.startLineNumber,
 							);
 							if (
 								strings.firstNonWhitespaceIndex(
-									currentLineContent
+									currentLineContent,
 								) !== -1
 							) {
 								continue;
@@ -461,7 +461,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 						op.rangeOffset,
 						bufferText,
 						reverseRangeOffset,
-						op.text
+						op.text,
 					),
 				};
 			}
@@ -486,7 +486,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 		) {
 			// sort line numbers auto whitespace removal candidates for next edit descending
 			newTrimAutoWhitespaceCandidates.sort(
-				(a, b) => b.lineNumber - a.lineNumber
+				(a, b) => b.lineNumber - a.lineNumber,
 			);
 
 			trimAutoWhitespaceLineNumbers = [];
@@ -527,7 +527,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 		return new ApplyEditsResult(
 			reverseOperations,
 			contentChanges,
-			trimAutoWhitespaceLineNumbers
+			trimAutoWhitespaceLineNumbers,
 		);
 	}
 
@@ -536,7 +536,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 	 * but that they also do not cause OOM crashes.
 	 */
 	private _reduceOperations(
-		operations: IValidatedEditOperation[]
+		operations: IValidatedEditOperation[],
 	): IValidatedEditOperation[] {
 		if (operations.length < 1000) {
 			// We know from empirical testing that a thousand edits work fine regardless of their shape.
@@ -552,7 +552,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 	}
 
 	_toSingleEditOperation(
-		operations: IValidatedEditOperation[]
+		operations: IValidatedEditOperation[],
 	): IValidatedEditOperation {
 		let forceMoveMarkers = false;
 		const firstEditRange = operations[0].range;
@@ -561,7 +561,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 			firstEditRange.startLineNumber,
 			firstEditRange.startColumn,
 			lastEditRange.endLineNumber,
-			lastEditRange.endColumn
+			lastEditRange.endColumn,
 		);
 		let lastEndLineNumber = firstEditRange.startLineNumber;
 		let lastEndColumn = firstEditRange.startColumn;
@@ -580,9 +580,9 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 						lastEndLineNumber,
 						lastEndColumn,
 						range.startLineNumber,
-						range.startColumn
-					)
-				)
+						range.startColumn,
+					),
+				),
 			);
 
 			// (2) -- Push new text
@@ -603,11 +603,11 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 			range: entireEditRange,
 			rangeOffset: this.getOffsetAt(
 				entireEditRange.startLineNumber,
-				entireEditRange.startColumn
+				entireEditRange.startColumn,
 			),
 			rangeLength: this.getValueLengthInRange(
 				entireEditRange,
-				EndOfLinePreference.TextDefined
+				EndOfLinePreference.TextDefined,
 			),
 			text: text,
 			eolCount: eolCount,
@@ -619,7 +619,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 	}
 
 	private _doApplyEdits(
-		operations: IValidatedEditOperation[]
+		operations: IValidatedEditOperation[],
 	): IInternalModelContentChange[] {
 		operations.sort(PieceTreeTextBuffer._sortOpsDescending);
 
@@ -656,7 +656,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 				startLineNumber,
 				startColumn,
 				endLineNumber,
-				endColumn
+				endColumn,
 			);
 			contentChanges.push({
 				range: contentChangeRange,
@@ -673,13 +673,13 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 		searchRange: Range,
 		searchData: SearchData,
 		captureMatches: boolean,
-		limitResultCount: number
+		limitResultCount: number,
 	): FindMatch[] {
 		return this._pieceTree.findMatchesLineByLine(
 			searchRange,
 			searchData,
 			captureMatches,
-			limitResultCount
+			limitResultCount,
 		);
 	}
 
@@ -707,7 +707,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 					startLineNumber,
 					startColumn,
 					startLineNumber,
-					startColumn + firstLineLength
+					startColumn + firstLineLength,
 				);
 			} else {
 				// multi line insert
@@ -715,7 +715,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 					startLineNumber,
 					startColumn,
 					startLineNumber + lineCount - 1,
-					lastLineLength + 1
+					lastLineLength + 1,
 				);
 			}
 		} else {
@@ -724,7 +724,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 				startLineNumber,
 				startColumn,
 				startLineNumber,
-				startColumn
+				startColumn,
 			);
 		}
 
@@ -735,12 +735,12 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 	 * Assumes `operations` are validated and sorted ascending
 	 */
 	public static _getInverseEditRanges(
-		operations: IValidatedEditOperation[]
+		operations: IValidatedEditOperation[],
 	): Range[] {
 		const result: Range[] = [];
 
-		let prevOpEndLineNumber: number = 0;
-		let prevOpEndColumn: number = 0;
+		let prevOpEndLineNumber = 0;
+		let prevOpEndColumn = 0;
 		let prevOp: IValidatedEditOperation | null = null;
 		for (let i = 0, len = operations.length; i < len; i++) {
 			const op = operations[i];
@@ -777,7 +777,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 						startLineNumber,
 						startColumn,
 						startLineNumber,
-						startColumn + op.firstLineLength
+						startColumn + op.firstLineLength,
 					);
 				} else {
 					// multi line insert
@@ -785,7 +785,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 						startLineNumber,
 						startColumn,
 						startLineNumber + lineCount - 1,
-						op.lastLineLength + 1
+						op.lastLineLength + 1,
 					);
 				}
 			} else {
@@ -794,7 +794,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 					startLineNumber,
 					startColumn,
 					startLineNumber,
-					startColumn
+					startColumn,
 				);
 			}
 
@@ -810,7 +810,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 
 	private static _sortOpsAscending(
 		a: IValidatedEditOperation,
-		b: IValidatedEditOperation
+		b: IValidatedEditOperation,
 	): number {
 		const r = Range.compareRangesUsingEnds(a.range, b.range);
 		if (r === 0) {
@@ -821,7 +821,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 
 	private static _sortOpsDescending(
 		a: IValidatedEditOperation,
-		b: IValidatedEditOperation
+		b: IValidatedEditOperation,
 	): number {
 		const r = Range.compareRangesUsingEnds(a.range, b.range);
 		if (r === 0) {

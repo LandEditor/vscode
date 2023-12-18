@@ -22,7 +22,7 @@ export class TelemetryAppenderChannel implements IServerChannel {
 	call(
 		_: unknown,
 		command: string,
-		{ eventName, data }: ITelemetryLog
+		{ eventName, data }: ITelemetryLog,
 	): Promise<any> {
 		this.appenders.forEach((a) => a.log(eventName, data));
 		return Promise.resolve(null);
@@ -37,7 +37,7 @@ export class TelemetryAppenderClient implements ITelemetryAppender {
 			.call("log", { eventName, data })
 			.then(
 				undefined,
-				(err) => `Failed to log telemetry: ${console.warn(err)}`
+				(err) => `Failed to log telemetry: ${console.warn(err)}`,
 			);
 
 		return Promise.resolve(null);

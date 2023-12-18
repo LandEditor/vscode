@@ -19,8 +19,8 @@ import { IProductService } from "vs/platform/product/common/productService";
 import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
 import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
 import {
-	getNLSConfiguration,
 	InternalNLSConfiguration,
+	getNLSConfiguration,
 } from "vs/server/node/remoteLanguagePacks";
 
 export class ExtensionsScannerService
@@ -64,12 +64,12 @@ export class ExtensionsScannerService
 	protected async getTranslations(language: string): Promise<Translations> {
 		const config = await getNLSConfiguration(
 			language,
-			this.nativeEnvironmentService.userDataPath
+			this.nativeEnvironmentService.userDataPath,
 		);
 		if (InternalNLSConfiguration.is(config)) {
 			try {
 				const content = await this.fileService.readFile(
-					URI.file(config._translationsConfigFile)
+					URI.file(config._translationsConfigFile),
 				);
 				return JSON.parse(content.value.toString());
 			} catch (err) {

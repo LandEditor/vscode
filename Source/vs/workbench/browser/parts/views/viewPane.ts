@@ -3,113 +3,113 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/paneviewlet";
-import * as nls from "vs/nls";
-import { Event, Emitter } from "vs/base/common/event";
 import {
-	asCssVariable,
-	foreground,
-} from "vs/platform/theme/common/colorRegistry";
-import {
-	PANEL_BACKGROUND,
-	SIDE_BAR_BACKGROUND,
-} from "vs/workbench/common/theme";
-import {
-	after,
-	append,
 	$,
-	trackFocus,
+	Dimension,
 	EventType,
 	addDisposableListener,
-	createCSSRule,
+	after,
+	append,
 	asCSSUrl,
-	Dimension,
-	reset,
 	asCssValueWithDefault,
+	createCSSRule,
 	focusWindow,
+	reset,
+	trackFocus,
 } from "vs/base/browser/dom";
-import { DisposableStore, toDisposable } from "vs/base/common/lifecycle";
-import { Action, IAction, IActionRunner } from "vs/base/common/actions";
+import { BaseActionViewItem } from "vs/base/browser/ui/actionbar/actionViewItems";
 import {
 	ActionsOrientation,
 	IActionViewItem,
 	prepareActions,
 } from "vs/base/browser/ui/actionbar/actionbar";
-import { Registry } from "vs/platform/registry/common/platform";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import { ThemeIcon } from "vs/base/common/themables";
+import { Button } from "vs/base/browser/ui/button/button";
+import { IDropdownMenuActionViewItemOptions } from "vs/base/browser/ui/dropdown/dropdownActionViewItem";
+import { ProgressBar } from "vs/base/browser/ui/progressbar/progressbar";
+import { Orientation } from "vs/base/browser/ui/sash/sash";
+import { DomScrollableElement } from "vs/base/browser/ui/scrollbar/scrollableElement";
 import {
 	IPaneOptions,
-	Pane,
 	IPaneStyles,
+	Pane,
 } from "vs/base/browser/ui/splitview/paneview";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import {
-	Extensions as ViewContainerExtensions,
-	IView,
-	IViewDescriptorService,
-	ViewContainerLocation,
-	IViewsRegistry,
-	IViewContentDescriptor,
-	defaultViewIcon,
-	IViewsService,
-	ViewContainerLocationToString,
-} from "vs/workbench/common/views";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { Action, IAction, IActionRunner } from "vs/base/common/actions";
+import { Codicon } from "vs/base/common/codicons";
+import { Emitter, Event } from "vs/base/common/event";
+import { DisposableStore, toDisposable } from "vs/base/common/lifecycle";
+import { parseLinkedText } from "vs/base/common/linkedText";
+import { ScrollbarVisibility } from "vs/base/common/scrollable";
+import { ThemeIcon } from "vs/base/common/themables";
 import { assertIsDefined } from "vs/base/common/types";
+import { URI } from "vs/base/common/uri";
+import "vs/css!./media/paneviewlet";
+import * as nls from "vs/nls";
+import { createActionViewItem } from "vs/platform/actions/browser/menuEntryActionViewItem";
+import { WorkbenchToolBar } from "vs/platform/actions/browser/toolbar";
+import {
+	Action2,
+	IAction2Options,
+	MenuId,
+	SubmenuItemAction,
+} from "vs/platform/actions/common/actions";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
 import {
 	IInstantiationService,
 	ServicesAccessor,
 } from "vs/platform/instantiation/common/instantiation";
-import {
-	MenuId,
-	Action2,
-	IAction2Options,
-	SubmenuItemAction,
-} from "vs/platform/actions/common/actions";
-import { createActionViewItem } from "vs/platform/actions/browser/menuEntryActionViewItem";
-import { parseLinkedText } from "vs/base/common/linkedText";
-import { IOpenerService } from "vs/platform/opener/common/opener";
-import { Button } from "vs/base/browser/ui/button/button";
-import { Link } from "vs/platform/opener/browser/link";
-import { Orientation } from "vs/base/browser/ui/sash/sash";
-import { ProgressBar } from "vs/base/browser/ui/progressbar/progressbar";
-import {
-	AbstractProgressScope,
-	ScopedProgressIndicator,
-} from "vs/workbench/services/progress/browser/progressIndicator";
-import { IProgressIndicator } from "vs/platform/progress/common/progress";
-import { DomScrollableElement } from "vs/base/browser/ui/scrollbar/scrollableElement";
-import { ScrollbarVisibility } from "vs/base/common/scrollable";
-import { URI } from "vs/base/common/uri";
-import { registerIcon } from "vs/platform/theme/common/iconRegistry";
-import { Codicon } from "vs/base/common/codicons";
-import { CompositeMenuActions } from "vs/workbench/browser/actions";
-import { IDropdownMenuActionViewItemOptions } from "vs/base/browser/ui/dropdown/dropdownActionViewItem";
-import { WorkbenchToolBar } from "vs/platform/actions/browser/toolbar";
-import {
-	FilterWidget,
-	IFilterWidgetOptions,
-} from "vs/workbench/browser/parts/views/viewFilter";
-import { BaseActionViewItem } from "vs/base/browser/ui/actionbar/actionViewItems";
 import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { Link } from "vs/platform/opener/browser/link";
+import { IOpenerService } from "vs/platform/opener/common/opener";
+import { IProgressIndicator } from "vs/platform/progress/common/progress";
+import { Registry } from "vs/platform/registry/common/platform";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import {
 	defaultButtonStyles,
 	defaultProgressBarStyles,
 } from "vs/platform/theme/browser/defaultStyles";
+import {
+	asCssVariable,
+	foreground,
+} from "vs/platform/theme/common/colorRegistry";
+import { registerIcon } from "vs/platform/theme/common/iconRegistry";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import { CompositeMenuActions } from "vs/workbench/browser/actions";
+import {
+	FilterWidget,
+	IFilterWidgetOptions,
+} from "vs/workbench/browser/parts/views/viewFilter";
+import {
+	PANEL_BACKGROUND,
+	SIDE_BAR_BACKGROUND,
+} from "vs/workbench/common/theme";
+import {
+	Extensions as ViewContainerExtensions,
+	IView,
+	IViewContentDescriptor,
+	IViewDescriptorService,
+	IViewsRegistry,
+	IViewsService,
+	ViewContainerLocation,
+	ViewContainerLocationToString,
+	defaultViewIcon,
+} from "vs/workbench/common/views";
+import {
+	AbstractProgressScope,
+	ScopedProgressIndicator,
+} from "vs/workbench/services/progress/browser/progressIndicator";
 
 export enum ViewPaneShowActions {
 	/** Show the actions when the view is hovered. This is the default behavior. */
-	Default,
+	Default = 0,
 
 	/** Always shows the actions when the view is expanded */
-	WhenExpanded,
+	WhenExpanded = 1,
 
 	/** Always shows the actions */
-	Always,
+	Always = 2,
 }
 
 export interface IViewPaneOptions extends IPaneOptions {
@@ -145,20 +145,20 @@ const viewPaneContainerExpandedIcon = registerIcon(
 	Codicon.chevronDown,
 	nls.localize(
 		"viewPaneContainerExpandedIcon",
-		"Icon for an expanded view pane container."
-	)
+		"Icon for an expanded view pane container.",
+	),
 );
 const viewPaneContainerCollapsedIcon = registerIcon(
 	"view-pane-container-collapsed",
 	Codicon.chevronRight,
 	nls.localize(
 		"viewPaneContainerCollapsedIcon",
-		"Icon for a collapsed view pane container."
-	)
+		"Icon for a collapsed view pane container.",
+	),
 );
 
 const viewsRegistry = Registry.as<IViewsRegistry>(
-	ViewContainerExtensions.ViewsRegistry
+	ViewContainerExtensions.ViewsRegistry,
 );
 
 interface IItem {
@@ -179,16 +179,16 @@ class ViewWelcomeController {
 	get enabled(): boolean {
 		return this._enabled;
 	}
-	private _enabled: boolean = false;
+	private _enabled = false;
 	private element: HTMLElement | undefined;
 	private scrollableElement: DomScrollableElement | undefined;
 
 	private readonly disposables = new DisposableStore();
 	private readonly enabledDisposables = this.disposables.add(
-		new DisposableStore()
+		new DisposableStore(),
 	);
 	private readonly renderDisposables = this.disposables.add(
-		new DisposableStore()
+		new DisposableStore(),
 	);
 
 	constructor(
@@ -258,23 +258,23 @@ class ViewWelcomeController {
 				viewWelcomeContainer.remove();
 				this.scrollableElement = undefined;
 				this.element = undefined;
-			})
+			}),
 		);
 
 		this.contextKeyService.onDidChangeContext(
 			this.onDidChangeContext,
 			this,
-			this.enabledDisposables
+			this.enabledDisposables,
 		);
 		Event.chain(viewsRegistry.onDidChangeViewWelcomeContent, ($) =>
-			$.filter((id) => id === this.delegate.id)
+			$.filter((id) => id === this.delegate.id),
 		)(this.onDidChangeViewWelcomeContent, this, this.enabledDisposables);
 		this.onDidChangeViewWelcomeContent();
 	}
 
 	private onDidChangeViewWelcomeContent(): void {
 		const descriptors = viewsRegistry.getViewWelcomeContent(
-			this.delegate.id
+			this.delegate.id,
 		);
 
 		this.items = [];
@@ -285,8 +285,8 @@ class ViewWelcomeController {
 			} else {
 				const visible = descriptor.when
 					? this.contextKeyService.contextMatchesRules(
-							descriptor.when
-						)
+							descriptor.when,
+					  )
 					: true;
 				this.items.push({ descriptor, visible });
 			}
@@ -304,7 +304,7 @@ class ViewWelcomeController {
 			}
 
 			const visible = this.contextKeyService.contextMatchesRules(
-				item.descriptor.when
+				item.descriptor.when,
 			);
 
 			if (item.visible === visible) {
@@ -351,7 +351,7 @@ class ViewWelcomeController {
 					const node = linkedText.nodes[0];
 					const buttonContainer = append(
 						this.element!,
-						$(".button-container")
+						$(".button-container"),
 					);
 					const button = new Button(buttonContainer, {
 						title: node.title,
@@ -373,7 +373,7 @@ class ViewWelcomeController {
 							});
 						},
 						null,
-						this.renderDisposables
+						this.renderDisposables,
 					);
 					this.renderDisposables.add(button);
 
@@ -381,19 +381,19 @@ class ViewWelcomeController {
 						const updateEnablement = () =>
 							(button.enabled =
 								this.contextKeyService.contextMatchesRules(
-									precondition
+									precondition,
 								));
 						updateEnablement();
 
 						const keys = new Set(precondition.keys());
 						const onDidChangeContext = Event.filter(
 							this.contextKeyService.onDidChangeContext,
-							(e) => e.affectsSome(keys)
+							(e) => e.affectsSome(keys),
 						);
 						onDidChangeContext(
 							updateEnablement,
 							null,
-							this.renderDisposables
+							this.renderDisposables,
 						);
 					}
 				} else {
@@ -408,8 +408,8 @@ class ViewWelcomeController {
 									Link,
 									p,
 									node,
-									{}
-								)
+									{},
+								),
 							);
 
 							if (
@@ -419,19 +419,19 @@ class ViewWelcomeController {
 								const updateEnablement = () =>
 									(link.enabled =
 										this.contextKeyService.contextMatchesRules(
-											precondition
+											precondition,
 										));
 								updateEnablement();
 
 								const keys = new Set(precondition.keys());
 								const onDidChangeContext = Event.filter(
 									this.contextKeyService.onDidChangeContext,
-									(e) => e.affectsSome(keys)
+									(e) => e.affectsSome(keys),
 								);
 								onDidChangeContext(
 									updateEnablement,
 									null,
-									this.renderDisposables
+									this.renderDisposables,
 								);
 							}
 						}
@@ -478,12 +478,12 @@ export abstract class ViewPane extends Pane implements IView {
 		this._onDidChangeTitleArea.event;
 
 	protected _onDidChangeViewWelcomeState = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onDidChangeViewWelcomeState: Event<void> =
 		this._onDidChangeViewWelcomeState.event;
 
-	private _isVisible: boolean = false;
+	private _isVisible = false;
 	readonly id: string;
 
 	private _title: string;
@@ -640,9 +640,9 @@ export abstract class ViewPane extends Pane implements IView {
 			container,
 			$(
 				`.twisty-container${ThemeIcon.asCSSSelector(
-					this.getTwistyIcon(this.isExpanded())
-				)}`
-			)
+					this.getTwistyIcon(this.isExpanded()),
+				)}`,
+			),
 		);
 
 		this.renderHeaderTitle(container, this.title);
@@ -650,11 +650,11 @@ export abstract class ViewPane extends Pane implements IView {
 		const actions = append(container, $(".actions"));
 		actions.classList.toggle(
 			"show-always",
-			this.showActions === ViewPaneShowActions.Always
+			this.showActions === ViewPaneShowActions.Always,
 		);
 		actions.classList.toggle(
 			"show-expanded",
-			this.showActions === ViewPaneShowActions.WhenExpanded
+			this.showActions === ViewPaneShowActions.WhenExpanded,
 		);
 		this.toolbar = this.instantiationService.createInstance(
 			WorkbenchToolBar,
@@ -666,14 +666,14 @@ export abstract class ViewPane extends Pane implements IView {
 				ariaLabel: nls.localize(
 					"viewToolbarAriaLabel",
 					"{0} actions",
-					this.title
+					this.title,
 				),
 				getKeyBinding: (action) =>
 					this.keybindingService.lookupKeybinding(action.id),
 				renderDropdownAsChildElement: true,
 				actionRunner: this.getActionRunner(),
 				resetMenu: this.menuActions.menuId,
-			}
+			},
 		);
 
 		this._register(this.toolbar);
@@ -681,8 +681,8 @@ export abstract class ViewPane extends Pane implements IView {
 
 		this._register(
 			addDisposableListener(actions, EventType.CLICK, (e) =>
-				e.preventDefault()
-			)
+				e.preventDefault(),
+			),
 		);
 
 		const viewContainerModel =
@@ -692,8 +692,8 @@ export abstract class ViewPane extends Pane implements IView {
 				this.viewDescriptorService
 					.getViewContainerModel(viewContainerModel)
 					.onDidChangeContainerInfo(({ title }) =>
-						this.updateTitle(this.title)
-					)
+						this.updateTitle(this.title),
+					),
 			);
 		} else {
 			console.error(`View container model not found for view ${this.id}`);
@@ -701,10 +701,13 @@ export abstract class ViewPane extends Pane implements IView {
 
 		const onDidRelevantConfigurationChange = Event.filter(
 			this.configurationService.onDidChangeConfiguration,
-			(e) => e.affectsConfiguration(ViewPane.AlwaysShowActionsConfig)
+			(e) => e.affectsConfiguration(ViewPane.AlwaysShowActionsConfig),
 		);
 		this._register(
-			onDidRelevantConfigurationChange(this.updateActionsVisibility, this)
+			onDidRelevantConfigurationChange(
+				this.updateActionsVisibility,
+				this,
+			),
 		);
 		this.updateActionsVisibility();
 	}
@@ -718,13 +721,13 @@ export abstract class ViewPane extends Pane implements IView {
 		if (this.twistiesContainer) {
 			this.twistiesContainer.classList.remove(
 				...ThemeIcon.asClassNameArray(
-					this.getTwistyIcon(!this._expanded)
-				)
+					this.getTwistyIcon(!this._expanded),
+				),
 			);
 			this.twistiesContainer.classList.add(
 				...ThemeIcon.asClassNameArray(
-					this.getTwistyIcon(this._expanded)
-				)
+					this.getTwistyIcon(this._expanded),
+				),
 			);
 		}
 	}
@@ -742,7 +745,7 @@ export abstract class ViewPane extends Pane implements IView {
 		if (this.iconContainer) {
 			const fgColor = asCssValueWithDefault(
 				styles.headerForeground,
-				asCssVariable(foreground)
+				asCssVariable(foreground),
 			);
 			if (URI.isUri(icon)) {
 				// Apply background color to activity bar item provided with iconUrls
@@ -779,7 +782,7 @@ export abstract class ViewPane extends Pane implements IView {
 				mask-size: 24px;
 				-webkit-mask: ${asCSSUrl(icon)} no-repeat 50% 50%;
 				-webkit-mask-size: 16px;
-			`
+			`,
 			);
 		} else if (ThemeIcon.isThemeIcon(icon)) {
 			cssClass = ThemeIcon.asClassName(icon);
@@ -792,7 +795,7 @@ export abstract class ViewPane extends Pane implements IView {
 		const calculatedTitle = this.calculateTitle(title);
 		this.titleContainer = append(
 			container,
-			$("h3.title", { title: calculatedTitle }, calculatedTitle)
+			$("h3.title", { title: calculatedTitle }, calculatedTitle),
 		);
 
 		if (this._titleDescription) {
@@ -824,12 +827,12 @@ export abstract class ViewPane extends Pane implements IView {
 			this.titleDescriptionContainer.textContent = description ?? "";
 			this.titleDescriptionContainer.setAttribute(
 				"title",
-				description ?? ""
+				description ?? "",
 			);
 		} else if (description && this.titleContainer) {
 			this.titleDescriptionContainer = after(
 				this.titleContainer,
-				$("span.description", { title: description }, description)
+				$("span.description", { title: description }, description),
 			);
 		}
 	}
@@ -847,7 +850,7 @@ export abstract class ViewPane extends Pane implements IView {
 		const model =
 			this.viewDescriptorService.getViewContainerModel(viewContainer);
 		const viewDescriptor = this.viewDescriptorService.getViewDescriptorById(
-			this.id
+			this.id,
 		);
 		const isDefault =
 			this.viewDescriptorService.getDefaultContainerById(this.id) ===
@@ -872,8 +875,8 @@ export abstract class ViewPane extends Pane implements IView {
 				this.instantiationService,
 				this.openerService,
 				this.telemetryService,
-				this.contextKeyService
-			)
+				this.contextKeyService,
+			),
 		);
 	}
 
@@ -889,7 +892,7 @@ export abstract class ViewPane extends Pane implements IView {
 		if (this.progressBar === undefined) {
 			// Progress bar
 			this.progressBar = this._register(
-				new ProgressBar(this.element, defaultProgressBarStyles)
+				new ProgressBar(this.element, defaultProgressBarStyles),
 			);
 			this.progressBar.hide();
 		}
@@ -905,11 +908,11 @@ export abstract class ViewPane extends Pane implements IView {
 							that.onDidChangeBodyVisibility((isVisible) =>
 								isVisible
 									? this.onScopeOpened(that.id)
-									: this.onScopeClosed(that.id)
-							)
+									: this.onScopeClosed(that.id),
+							),
 						);
 					}
-				})()
+				})(),
 			);
 		}
 		return this.progressIndicator;
@@ -950,7 +953,7 @@ export abstract class ViewPane extends Pane implements IView {
 			}
 			this.toolbar.setActions(
 				prepareActions(primaryActions),
-				prepareActions(this.menuActions.getSecondaryActions())
+				prepareActions(this.menuActions.getSecondaryActions()),
 			);
 			this.toolbar.context = this.getActionsContext();
 		}
@@ -962,11 +965,11 @@ export abstract class ViewPane extends Pane implements IView {
 		}
 		const shouldAlwaysShowActions =
 			this.configurationService.getValue<boolean>(
-				"workbench.view.alwaysShowHeaderActions"
+				"workbench.view.alwaysShowHeaderActions",
 			);
 		this.headerContainer.classList.toggle(
 			"actions-always-visible",
-			shouldAlwaysShowActions
+			shouldAlwaysShowActions,
 		);
 	}
 
@@ -977,7 +980,7 @@ export abstract class ViewPane extends Pane implements IView {
 
 	getActionViewItem(
 		action: IAction,
-		options?: IDropdownMenuActionViewItemOptions
+		options?: IDropdownMenuActionViewItemOptions,
 	): IActionViewItem | undefined {
 		if (action.id === VIEWPANE_FILTER_ACTION.id) {
 			const that = this;
@@ -1047,7 +1050,7 @@ export abstract class FilterViewPane extends ViewPane {
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IOpenerService openerService: IOpenerService,
 		@IThemeService themeService: IThemeService,
-		@ITelemetryService telemetryService: ITelemetryService
+		@ITelemetryService telemetryService: ITelemetryService,
 	) {
 		super(
 			options,
@@ -1059,7 +1062,7 @@ export abstract class FilterViewPane extends ViewPane {
 			instantiationService,
 			openerService,
 			themeService,
-			telemetryService
+			telemetryService,
 		);
 		this.filterWidget = this._register(
 			instantiationService
@@ -1067,9 +1070,9 @@ export abstract class FilterViewPane extends ViewPane {
 					new ServiceCollection([
 						IContextKeyService,
 						this.scopedContextKeyService,
-					])
+					]),
 				)
-				.createInstance(FilterWidget, options.filterOptions)
+				.createInstance(FilterWidget, options.filterOptions),
 		);
 	}
 
@@ -1081,7 +1084,7 @@ export abstract class FilterViewPane extends ViewPane {
 		super.renderBody(container);
 		this.filterContainer = append(
 			container,
-			$(".viewpane-filter-container")
+			$(".viewpane-filter-container"),
 		);
 	}
 

@@ -3,26 +3,26 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import { WorkingCopyBackupService } from "vs/workbench/services/workingCopy/common/workingCopyBackupService";
 import { URI } from "vs/base/common/uri";
+import { localize } from "vs/nls";
+import { IFileService } from "vs/platform/files/common/files";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { IWorkingCopyBackupService } from "vs/workbench/services/workingCopy/common/workingCopyBackup";
-import { IFileService } from "vs/platform/files/common/files";
 import { ILogService } from "vs/platform/log/common/log";
-import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
 import { Registry } from "vs/platform/registry/common/platform";
 import {
-	IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
+	IWorkbenchContributionsRegistry,
 } from "vs/workbench/common/contributions";
+import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
 import {
 	ILifecycleService,
 	LifecyclePhase,
 } from "vs/workbench/services/lifecycle/common/lifecycle";
+import { IWorkingCopyBackupService } from "vs/workbench/services/workingCopy/common/workingCopyBackup";
+import { WorkingCopyBackupService } from "vs/workbench/services/workingCopy/common/workingCopyBackupService";
 import { NativeWorkingCopyBackupTracker } from "vs/workbench/services/workingCopy/electron-sandbox/workingCopyBackupTracker";
 
 export class NativeWorkingCopyBackupService extends WorkingCopyBackupService {
@@ -56,10 +56,10 @@ export class NativeWorkingCopyBackupService extends WorkingCopyBackupService {
 					id: "join.workingCopyBackups",
 					label: localize(
 						"join.workingCopyBackups",
-						"Backup working copies"
+						"Backup working copies",
 					),
-				})
-			)
+				}),
+			),
 		);
 	}
 }
@@ -68,13 +68,13 @@ export class NativeWorkingCopyBackupService extends WorkingCopyBackupService {
 registerSingleton(
 	IWorkingCopyBackupService,
 	NativeWorkingCopyBackupService,
-	InstantiationType.Eager
+	InstantiationType.Eager,
 );
 
 // Register Backup Tracker
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	NativeWorkingCopyBackupTracker,
-	LifecyclePhase.Starting
+	LifecyclePhase.Starting,
 );

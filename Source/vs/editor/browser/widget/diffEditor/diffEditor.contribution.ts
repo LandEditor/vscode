@@ -38,13 +38,13 @@ export class ToggleCollapseUnchangedRegions extends Action2 {
 			title: {
 				value: localize(
 					"toggleCollapseUnchangedRegions",
-					"Toggle Collapse Unchanged Regions"
+					"Toggle Collapse Unchanged Regions",
 				),
 				original: "Toggle Collapse Unchanged Regions",
 			},
 			icon: Codicon.map,
 			toggled: ContextKeyExpr.has(
-				"config.diffEditor.hideUnchangedRegions.enabled"
+				"config.diffEditor.hideUnchangedRegions.enabled",
 			),
 			precondition: ContextKeyExpr.has("isInDiffEditor"),
 			menu: {
@@ -59,11 +59,11 @@ export class ToggleCollapseUnchangedRegions extends Action2 {
 	run(accessor: ServicesAccessor, ...args: unknown[]): void {
 		const configurationService = accessor.get(IConfigurationService);
 		const newValue = !configurationService.getValue<boolean>(
-			"diffEditor.hideUnchangedRegions.enabled"
+			"diffEditor.hideUnchangedRegions.enabled",
 		);
 		configurationService.updateValue(
 			"diffEditor.hideUnchangedRegions.enabled",
-			newValue
+			newValue,
 		);
 	}
 }
@@ -77,7 +77,7 @@ export class ToggleShowMovedCodeBlocks extends Action2 {
 			title: {
 				value: localize(
 					"toggleShowMovedCodeBlocks",
-					"Toggle Show Moved Code Blocks"
+					"Toggle Show Moved Code Blocks",
 				),
 				original: "Toggle Show Moved Code Blocks",
 			},
@@ -88,11 +88,11 @@ export class ToggleShowMovedCodeBlocks extends Action2 {
 	run(accessor: ServicesAccessor, ...args: unknown[]): void {
 		const configurationService = accessor.get(IConfigurationService);
 		const newValue = !configurationService.getValue<boolean>(
-			"diffEditor.experimental.showMoves"
+			"diffEditor.experimental.showMoves",
 		);
 		configurationService.updateValue(
 			"diffEditor.experimental.showMoves",
-			newValue
+			newValue,
 		);
 	}
 }
@@ -106,7 +106,7 @@ export class ToggleUseInlineViewWhenSpaceIsLimited extends Action2 {
 			title: {
 				value: localize(
 					"toggleUseInlineViewWhenSpaceIsLimited",
-					"Toggle Use Inline View When Space Is Limited"
+					"Toggle Use Inline View When Space Is Limited",
 				),
 				original: "Toggle Use Inline View When Space Is Limited",
 			},
@@ -117,11 +117,11 @@ export class ToggleUseInlineViewWhenSpaceIsLimited extends Action2 {
 	run(accessor: ServicesAccessor, ...args: unknown[]): void {
 		const configurationService = accessor.get(IConfigurationService);
 		const newValue = !configurationService.getValue<boolean>(
-			"diffEditor.useInlineViewWhenSpaceIsLimited"
+			"diffEditor.useInlineViewWhenSpaceIsLimited",
 		);
 		configurationService.updateValue(
 			"diffEditor.useInlineViewWhenSpaceIsLimited",
-			newValue
+			newValue,
 		);
 	}
 }
@@ -133,10 +133,10 @@ MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
 		id: new ToggleUseInlineViewWhenSpaceIsLimited().desc.id,
 		title: localize(
 			"useInlineViewWhenSpaceIsLimited",
-			"Use Inline View When Space Is Limited"
+			"Use Inline View When Space Is Limited",
 		),
 		toggled: ContextKeyExpr.has(
-			"config.diffEditor.useInlineViewWhenSpaceIsLimited"
+			"config.diffEditor.useInlineViewWhenSpaceIsLimited",
 		),
 		precondition: ContextKeyExpr.has("isInDiffEditor"),
 	},
@@ -144,7 +144,7 @@ MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
 	group: "1_diff",
 	when: ContextKeyExpr.and(
 		EditorContextKeys.diffEditorRenderSideBySideInlineBreakpointReached,
-		ContextKeyExpr.has("isInDiffEditor")
+		ContextKeyExpr.has("isInDiffEditor"),
 	),
 });
 
@@ -155,7 +155,7 @@ MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
 		icon: Codicon.move,
 		toggled: ContextKeyEqualsExpr.create(
 			"config.diffEditor.experimental.showMoves",
-			true
+			true,
 		),
 		precondition: ContextKeyExpr.has("isInDiffEditor"),
 	},
@@ -187,7 +187,7 @@ export class SwitchSide extends EditorAction2 {
 	runEditorCommand(
 		accessor: ServicesAccessor,
 		editor: ICodeEditor,
-		arg?: { dryRun: boolean }
+		arg?: { dryRun: boolean },
 	): unknown {
 		const diffEditor = findFocusedDiffEditor(accessor);
 		if (diffEditor instanceof DiffEditorWidget) {
@@ -246,7 +246,7 @@ export class CollapseAllUnchangedRegions extends EditorAction2 {
 			title: {
 				value: localize(
 					"collapseAllUnchangedRegions",
-					"Collapse All Unchanged Regions"
+					"Collapse All Unchanged Regions",
 				),
 				original: "Collapse All Unchanged Regions",
 			},
@@ -278,7 +278,7 @@ export class ShowAllUnchangedRegions extends EditorAction2 {
 			title: {
 				value: localize(
 					"showAllUnchangedRegions",
-					"Show All Unchanged Regions"
+					"Show All Unchanged Regions",
 				),
 				original: "Show All Unchanged Regions",
 			},
@@ -317,7 +317,7 @@ export class AccessibleDiffViewerNext extends Action2 {
 			title: {
 				value: localize(
 					"editor.action.accessibleDiffViewer.next",
-					"Go to Next Difference"
+					"Go to Next Difference",
 				),
 				original: "Go to Next Difference",
 			},
@@ -342,7 +342,7 @@ MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
 		id: AccessibleDiffViewerNext.id,
 		title: localize(
 			"Open Accessible Diff Viewer",
-			"Open Accessible Diff Viewer"
+			"Open Accessible Diff Viewer",
 		),
 		precondition: ContextKeyExpr.has("isInDiffEditor"),
 	},
@@ -350,7 +350,7 @@ MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
 	group: "2_diff",
 	when: ContextKeyExpr.and(
 		EditorContextKeys.accessibleDiffViewerVisible.negate(),
-		ContextKeyExpr.has("isInDiffEditor")
+		ContextKeyExpr.has("isInDiffEditor"),
 	),
 });
 
@@ -363,7 +363,7 @@ export class AccessibleDiffViewerPrev extends Action2 {
 			title: {
 				value: localize(
 					"editor.action.accessibleDiffViewer.prev",
-					"Go to Previous Difference"
+					"Go to Previous Difference",
 				),
 				original: "Go to Previous Difference",
 			},
@@ -384,7 +384,7 @@ export class AccessibleDiffViewerPrev extends Action2 {
 }
 
 export function findFocusedDiffEditor(
-	accessor: ServicesAccessor
+	accessor: ServicesAccessor,
 ): IDiffEditor | null {
 	const codeEditorService = accessor.get(ICodeEditorService);
 	const diffEditors = codeEditorService.listDiffEditors();
@@ -404,7 +404,7 @@ export function findFocusedDiffEditor(
 
 function isElementOrParentOf(
 	elementOrParent: Element,
-	element: Element
+	element: Element,
 ): boolean {
 	let e: Element | null = element;
 	while (e) {
@@ -418,12 +418,12 @@ function isElementOrParentOf(
 
 CommandsRegistry.registerCommandAlias(
 	"editor.action.diffReview.next",
-	AccessibleDiffViewerNext.id
+	AccessibleDiffViewerNext.id,
 );
 registerAction2(AccessibleDiffViewerNext);
 
 CommandsRegistry.registerCommandAlias(
 	"editor.action.diffReview.prev",
-	AccessibleDiffViewerPrev.id
+	AccessibleDiffViewerPrev.id,
 );
 registerAction2(AccessibleDiffViewerPrev);

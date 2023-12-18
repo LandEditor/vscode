@@ -18,7 +18,7 @@ import { IEditorPane } from "vs/workbench/common/editor";
 export const IOutlineService =
 	createDecorator<IOutlineService>("IOutlineService");
 
-export const enum OutlineTarget {
+export enum OutlineTarget {
 	OutlinePane = 1,
 	Breadcrumbs = 2,
 	QuickPick = 4,
@@ -31,7 +31,7 @@ export interface IOutlineService {
 	createOutline(
 		editor: IEditorPane,
 		target: OutlineTarget,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IOutline<any> | undefined>;
 	registerOutlineCreator(creator: IOutlineCreator<any, any>): IDisposable;
 }
@@ -41,7 +41,7 @@ export interface IOutlineCreator<P extends IEditorPane, E> {
 	createOutline(
 		editor: P,
 		target: OutlineTarget,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IOutline<E> | undefined>;
 }
 
@@ -94,22 +94,22 @@ export interface IOutline<E> {
 	reveal(
 		entry: E,
 		options: IEditorOptions,
-		sideBySide: boolean
+		sideBySide: boolean,
 	): Promise<void> | void;
 	preview(entry: E): IDisposable;
 	captureViewState(): IDisposable;
 	dispose(): void;
 }
 
-export const enum OutlineConfigKeys {
-	"icons" = "outline.icons",
-	"collapseItems" = "outline.collapseItems",
-	"problemsEnabled" = "outline.problems.enabled",
-	"problemsColors" = "outline.problems.colors",
-	"problemsBadges" = "outline.problems.badges",
+export enum OutlineConfigKeys {
+	icons = "outline.icons",
+	collapseItems = "outline.collapseItems",
+	problemsEnabled = "outline.problems.enabled",
+	problemsColors = "outline.problems.colors",
+	problemsBadges = "outline.problems.badges",
 }
 
-export const enum OutlineConfigCollapseItemsValues {
+export enum OutlineConfigCollapseItemsValues {
 	Collapsed = "alwaysCollapse",
 	Expanded = "alwaysExpand",
 }

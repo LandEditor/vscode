@@ -40,7 +40,7 @@ export class MainThreadBulkEdits implements MainThreadBulkEditsShape {
 	$tryApplyWorkspaceEdit(
 		dto: IWorkspaceEditDto,
 		undoRedoGroupId?: number,
-		isRefactoring?: boolean
+		isRefactoring?: boolean,
 	): Promise<boolean> {
 		const edits = reviveWorkspaceEditDto(dto, this._uriIdentService);
 		return this._bulkEditService
@@ -53,7 +53,7 @@ export class MainThreadBulkEdits implements MainThreadBulkEditsShape {
 				(err) => {
 					this._logService.warn(`IGNORING workspace edit: ${err}`);
 					return false;
-				}
+				},
 			);
 	}
 }
@@ -61,17 +61,17 @@ export class MainThreadBulkEdits implements MainThreadBulkEditsShape {
 export function reviveWorkspaceEditDto(
 	data: IWorkspaceEditDto,
 	uriIdentityService: IUriIdentityService,
-	resolveDataTransferFile?: (id: string) => Promise<VSBuffer>
+	resolveDataTransferFile?: (id: string) => Promise<VSBuffer>,
 ): WorkspaceEdit;
 export function reviveWorkspaceEditDto(
 	data: IWorkspaceEditDto | undefined,
 	uriIdentityService: IUriIdentityService,
-	resolveDataTransferFile?: (id: string) => Promise<VSBuffer>
+	resolveDataTransferFile?: (id: string) => Promise<VSBuffer>,
 ): WorkspaceEdit | undefined;
 export function reviveWorkspaceEditDto(
 	data: IWorkspaceEditDto | undefined,
 	uriIdentityService: IUriIdentityService,
-	resolveDataTransferFile?: (id: string) => Promise<VSBuffer>
+	resolveDataTransferFile?: (id: string) => Promise<VSBuffer>,
 ): WorkspaceEdit | undefined {
 	if (!data || !data.edits) {
 		return <WorkspaceEdit>data;
@@ -88,18 +88,14 @@ export function reviveWorkspaceEditDto(
 				if (inContents) {
 					if (inContents.type === "base64") {
 						edit.options.contents = Promise.resolve(
-							decodeBase64(inContents.value)
+							decodeBase64(inContents.value),
+						);
+					} else if (resolveDataTransferFile) {
+						edit.options.contents = resolveDataTransferFile(
+							inContents.id,
 						);
 					} else {
-						if (resolveDataTransferFile) {
-							edit.options.contents = resolveDataTransferFile(
-								inContents.id
-							);
-						} else {
-							throw new Error(
-								"Could not revive data transfer file"
-							);
-						}
+						throw new Error("Could not revive data transfer file");
 					}
 				}
 			}

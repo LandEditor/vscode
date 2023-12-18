@@ -14,7 +14,7 @@ export default class MergeConflictCodeLensProvider
 	private tracker: interfaces.IDocumentMergeConflictTracker;
 
 	constructor(
-		trackerService: interfaces.IDocumentMergeConflictTrackerService
+		trackerService: interfaces.IDocumentMergeConflictTrackerService,
 	) {
 		this.tracker = trackerService.createTracker("codelens");
 	}
@@ -53,7 +53,7 @@ export default class MergeConflictCodeLensProvider
 
 	async provideCodeLenses(
 		document: vscode.TextDocument,
-		_token: vscode.CancellationToken
+		_token: vscode.CancellationToken,
 	): Promise<vscode.CodeLens[] | null> {
 		if (!this.config || !this.config.enableCodeLens) {
 			return null;
@@ -64,7 +64,7 @@ export default class MergeConflictCodeLensProvider
 		vscode.commands.executeCommand(
 			"setContext",
 			"mergeConflictsCount",
-			conflictsCount
+			conflictsCount,
 		);
 
 		if (!conflictsCount) {
@@ -103,7 +103,7 @@ export default class MergeConflictCodeLensProvider
 				new vscode.CodeLens(range, acceptCurrentCommand),
 				new vscode.CodeLens(range, acceptIncomingCommand),
 				new vscode.CodeLens(range, acceptBothCommand),
-				new vscode.CodeLens(range, diffCommand)
+				new vscode.CodeLens(range, diffCommand),
 			);
 		});
 
@@ -119,7 +119,7 @@ export default class MergeConflictCodeLensProvider
 					{ scheme: "untitled" },
 					{ scheme: "vscode-userdata" },
 				],
-				this
+				this,
 			);
 	}
 }

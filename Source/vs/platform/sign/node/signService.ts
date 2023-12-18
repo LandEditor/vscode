@@ -9,7 +9,7 @@ import {
 } from "vs/platform/sign/common/abstractSignService";
 import { ISignService } from "vs/platform/sign/common/sign";
 
-declare module vsda {
+declare namespace vsda {
 	// the signer is a native module that for historical reasons uses a lower case class name
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	export class signer {
@@ -33,7 +33,7 @@ export class SignService extends AbstractSignService implements ISignService {
 
 	private vsda(): Promise<typeof vsda> {
 		return new Promise((resolve, reject) =>
-			require(["vsda"], resolve, reject)
+			require(["vsda"], resolve, reject),
 		);
 	}
 }

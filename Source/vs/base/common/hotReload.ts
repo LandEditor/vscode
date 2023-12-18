@@ -10,11 +10,9 @@ export function isHotReloadEnabled(): boolean {
 	return env && !!env["VSCODE_DEV"];
 }
 export function registerHotReloadHandler(
-	handler: HotReloadHandler
+	handler: HotReloadHandler,
 ): IDisposable {
-	if (!isHotReloadEnabled()) {
-		return { dispose() {} };
-	} else {
+	if (isHotReloadEnabled()) {
 		const handlers = registerGlobalHotReloadHandler();
 		handlers.add(handler);
 		return {
@@ -22,6 +20,8 @@ export function registerHotReloadHandler(
 				handlers.delete(handler);
 			},
 		};
+	} else {
+		return { dispose() {} };
 	}
 }
 
@@ -36,7 +36,7 @@ export type HotReloadHandler = (args: {
 	newSrc: string;
 }) => AcceptNewExportsHandler | undefined;
 export type AcceptNewExportsHandler = (
-	newExports: Record<string, unknown>
+	newExports: Record<string, unknown>,
 ) => boolean;
 
 function registerGlobalHotReloadHandler() {
@@ -93,7 +93,7 @@ if (isHotReloadEnabled()) {
 				const exportedItem = newExports[key];
 				console.log(
 					`[hot-reload] Patching prototype methods of '${key}'`,
-					{ exportedItem }
+					{ exportedItem },
 				);
 				if (
 					typeof exportedItem === "function" &&
@@ -102,16 +102,16 @@ if (isHotReloadEnabled()) {
 					const oldExportedItem = oldExports[key];
 					if (oldExportedItem) {
 						for (const prop of Object.getOwnPropertyNames(
-							exportedItem.prototype
+							exportedItem.prototype,
 						)) {
 							const descriptor = Object.getOwnPropertyDescriptor(
 								exportedItem.prototype,
-								prop
+								prop,
 							)!;
 							const oldDescriptor =
 								Object.getOwnPropertyDescriptor(
 									(oldExportedItem as any).prototype,
-									prop
+									prop,
 								);
 
 							if (
@@ -119,14 +119,14 @@ if (isHotReloadEnabled()) {
 								oldDescriptor?.value?.toString()
 							) {
 								console.log(
-									`[hot-reload] Patching prototype method '${key}.${prop}'`
+									`[hot-reload] Patching prototype method '${key}.${prop}'`,
 								);
 							}
 
 							Object.defineProperty(
 								(oldExportedItem as any).prototype,
 								prop,
-								descriptor
+								descriptor,
 							);
 						}
 						newExports[key] = oldExportedItem;

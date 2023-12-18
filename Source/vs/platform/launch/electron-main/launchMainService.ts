@@ -14,14 +14,14 @@ import { isLaunchedFromCli } from "vs/platform/environment/node/argvHelper";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import { ILogService } from "vs/platform/log/common/log";
 import { IURLService } from "vs/platform/url/common/url";
-import { ICodeWindow } from "vs/platform/window/electron-main/window";
+import { IProtocolUrl } from "vs/platform/url/electron-main/url";
 import { IWindowSettings } from "vs/platform/window/common/window";
+import { ICodeWindow } from "vs/platform/window/electron-main/window";
 import {
 	IOpenConfiguration,
 	IWindowsMainService,
 	OpenContext,
 } from "vs/platform/windows/electron-main/windows";
-import { IProtocolUrl } from "vs/platform/url/electron-main/url";
 
 export const ID = "launchMainService";
 export const ILaunchMainService = createDecorator<ILaunchMainService>(ID);
@@ -53,12 +53,12 @@ export class LaunchMainService implements ILaunchMainService {
 
 	async start(
 		args: NativeParsedArgs,
-		userEnv: IProcessEnvironment
+		userEnv: IProcessEnvironment,
 	): Promise<void> {
 		this.logService.trace(
 			"Received data from other instance: ",
 			args,
-			userEnv
+			userEnv,
 		);
 
 		// macOS: Electron > 7.x changed its behaviour to not
@@ -84,7 +84,7 @@ export class LaunchMainService implements ILaunchMainService {
 				const window = firstOrDefault(
 					await this.windowsMainService.openEmptyWindow({
 						context: OpenContext.DESKTOP,
-					})
+					}),
 				);
 				if (window) {
 					whenWindowReady = window.ready();
@@ -117,7 +117,7 @@ export class LaunchMainService implements ILaunchMainService {
 					} catch (err) {
 						return null;
 					}
-				})
+				}),
 			);
 		}
 
@@ -126,7 +126,7 @@ export class LaunchMainService implements ILaunchMainService {
 
 	private async startOpenWindow(
 		args: NativeParsedArgs,
-		userEnv: IProcessEnvironment
+		userEnv: IProcessEnvironment,
 	): Promise<void> {
 		const context = isLaunchedFromCli(userEnv)
 			? OpenContext.CLI
@@ -153,7 +153,7 @@ export class LaunchMainService implements ILaunchMainService {
 		if (!!args.extensionDevelopmentPath) {
 			await this.windowsMainService.openExtensionDevelopmentHostWindow(
 				args.extensionDevelopmentPath,
-				baseConfig
+				baseConfig,
 			);
 		}
 
@@ -212,7 +212,7 @@ export class LaunchMainService implements ILaunchMainService {
 				if (lastActive) {
 					this.windowsMainService.openExistingWindow(
 						lastActive,
-						baseConfig
+						baseConfig,
 					);
 
 					usedWindows = [lastActive];
@@ -249,14 +249,14 @@ export class LaunchMainService implements ILaunchMainService {
 				whenDeleted(waitMarkerFileURI.fsPath),
 			]).then(
 				() => undefined,
-				() => undefined
+				() => undefined,
 			);
 		}
 	}
 
 	async getMainProcessId(): Promise<number> {
 		this.logService.trace(
-			"Received request for process ID from other instance."
+			"Received request for process ID from other instance.",
 		);
 
 		return process.pid;

@@ -4,21 +4,21 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Emitter } from "vs/base/common/event";
-import { INativeHostService } from "vs/platform/native/common/native";
+import { Disposable } from "vs/base/common/lifecycle";
+import { isBoolean, isObject } from "vs/base/common/types";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { Disposable } from "vs/base/common/lifecycle";
-import { IHostColorSchemeService } from "vs/workbench/services/themes/common/hostColorSchemeService";
-import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
+import { INativeHostService } from "vs/platform/native/common/native";
 import {
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
-import { isBoolean, isObject } from "vs/base/common/types";
 import { IColorScheme } from "vs/platform/window/common/window";
+import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
+import { IHostColorSchemeService } from "vs/workbench/services/themes/common/hostColorSchemeService";
 
 export class NativeHostColorSchemeService
 	extends Disposable
@@ -29,7 +29,7 @@ export class NativeHostColorSchemeService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeColorScheme = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onDidChangeColorScheme = this._onDidChangeColorScheme.event;
 
@@ -66,7 +66,7 @@ export class NativeHostColorSchemeService
 	private getStoredValue(): IColorScheme | undefined {
 		const stored = this.storageService.get(
 			NativeHostColorSchemeService.STORAGE_KEY,
-			StorageScope.APPLICATION
+			StorageScope.APPLICATION,
 		);
 		if (stored) {
 			try {
@@ -93,7 +93,7 @@ export class NativeHostColorSchemeService
 				NativeHostColorSchemeService.STORAGE_KEY,
 				JSON.stringify({ highContrast, dark }),
 				StorageScope.APPLICATION,
-				StorageTarget.MACHINE
+				StorageTarget.MACHINE,
 			);
 			this._onDidChangeColorScheme.fire();
 		}
@@ -103,5 +103,5 @@ export class NativeHostColorSchemeService
 registerSingleton(
 	IHostColorSchemeService,
 	NativeHostColorSchemeService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

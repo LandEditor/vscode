@@ -3,44 +3,44 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	Extensions as WorkbenchExtensions,
-	IWorkbenchContributionsRegistry,
-} from "vs/workbench/common/contributions";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
+import { CancellationToken } from "vs/base/common/cancellation";
 import * as platform from "vs/base/common/platform";
+import Severity from "vs/base/common/severity";
+import { localize } from "vs/nls";
 import {
-	IExtensionManagementService,
+	DidUninstallExtensionEvent,
 	IExtensionGalleryService,
-	InstallOperation,
+	IExtensionManagementService,
 	ILocalExtension,
 	InstallExtensionResult,
-	DidUninstallExtensionEvent,
+	InstallOperation,
 } from "vs/platform/extensionManagement/common/extensionManagement";
 import {
 	INotificationService,
 	NeverShowAgainScope,
 } from "vs/platform/notification/common/notification";
-import Severity from "vs/base/common/severity";
+import { IProductService } from "vs/platform/product/common/productService";
+import { Registry } from "vs/platform/registry/common/platform";
 import {
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
-import {
-	VIEWLET_ID as EXTENSIONS_VIEWLET_ID,
-	IExtensionsViewPaneContainer,
-} from "vs/workbench/contrib/extensions/common/extensions";
-import { minimumTranslatedStrings } from "vs/workbench/contrib/localization/electron-sandbox/minimalTranslations";
 import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { IPaneCompositePartService } from "vs/workbench/services/panecomposite/browser/panecomposite";
+import {
+	Extensions as WorkbenchExtensions,
+	IWorkbenchContributionsRegistry,
+} from "vs/workbench/common/contributions";
 import { ViewContainerLocation } from "vs/workbench/common/views";
-import { ILocaleService } from "vs/workbench/services/localization/common/locale";
-import { IProductService } from "vs/platform/product/common/productService";
+import {
+	IExtensionsViewPaneContainer,
+	VIEWLET_ID as EXTENSIONS_VIEWLET_ID,
+} from "vs/workbench/contrib/extensions/common/extensions";
 import { BaseLocalizationWorkbenchContribution } from "vs/workbench/contrib/localization/common/localization.contribution";
+import { minimumTranslatedStrings } from "vs/workbench/contrib/localization/electron-sandbox/minimalTranslations";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
+import { ILocaleService } from "vs/workbench/services/localization/common/locale";
+import { IPaneCompositePartService } from "vs/workbench/services/panecomposite/browser/panecomposite";
 
 class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchContribution {
 	private static LANGUAGEPACK_SUGGESTION_IGNORE_STORAGE_KEY =
@@ -76,13 +76,13 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 	}
 
 	private async onDidInstallExtensions(
-		results: readonly InstallExtensionResult[]
+		results: readonly InstallExtensionResult[],
 	): Promise<void> {
 		for (const result of results) {
 			if (result.operation === InstallOperation.Install && result.local) {
 				await this.onDidInstallExtension(
 					result.local,
-					!!result.context?.extensionsSync
+					!!result.context?.extensionsSync,
 				);
 			}
 		}
@@ -90,7 +90,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 
 	private async onDidInstallExtension(
 		localExtension: ILocalExtension,
-		fromSettingsSync: boolean
+		fromSettingsSync: boolean,
 	): Promise<void> {
 		const localization =
 			localExtension.manifest.contributes?.localizations?.[0];
@@ -105,13 +105,13 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 				"updateLocale",
 				"Would you like to change {0}'s display language to {1} and restart?",
 				this.productService.nameLong,
-				languageName || languageId
+				languageName || languageId,
 			),
 			[
 				{
 					label: localize(
 						"changeAndRestart",
-						"Change Language and Restart"
+						"Change Language and Restart",
 					),
 					run: async () => {
 						await this.localeService.setLocale(
@@ -122,7 +122,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 								// If settings sync installs the language pack, then we would have just shown the notification so no
 								// need to show the dialog.
 							},
-							true
+							true,
 						);
 					},
 				},
@@ -134,12 +134,12 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 					isSecondary: true,
 					scope: NeverShowAgainScope.APPLICATION,
 				},
-			}
+			},
 		);
 	}
 
 	private async onDidUninstallExtension(
-		_event: DidUninstallExtensionEvent
+		_event: DidUninstallExtensionEvent,
 	): Promise<void> {
 		if (!(await this.isLocaleInstalled(platform.language))) {
 			this.localeService.setLocale({
@@ -156,8 +156,8 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 			this.storageService.get(
 				NativeLocalizationWorkbenchContribution.LANGUAGEPACK_SUGGESTION_IGNORE_STORAGE_KEY,
 				StorageScope.APPLICATION,
-				"[]"
-			)
+				"[]",
+			),
 		);
 
 		if (!this.galleryService.isEnabled()) {
@@ -186,14 +186,14 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 		const fullLocale = locale;
 		let tagResult = await this.galleryService.query(
 			{ text: `tag:lp-${locale}` },
-			CancellationToken.None
+			CancellationToken.None,
 		);
 		if (tagResult.total === 0) {
 			// Trim the locale and try again.
 			locale = locale.split("-")[0];
 			tagResult = await this.galleryService.query(
 				{ text: `tag:lp-${locale}` },
-				CancellationToken.None
+				CancellationToken.None,
 			);
 			if (tagResult.total === 0) {
 				return;
@@ -206,8 +206,8 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 				: tagResult.firstPage.find(
 						(e) =>
 							e.publisher === "MS-CEINTL" &&
-							e.name.startsWith("vscode-language-pack")
-					);
+							e.name.startsWith("vscode-language-pack"),
+				  );
 		const extensionToFetchTranslationsFrom =
 			extensionToInstall ?? tagResult.firstPage[0];
 
@@ -218,15 +218,15 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 		const [manifest, translation] = await Promise.all([
 			this.galleryService.getManifest(
 				extensionToFetchTranslationsFrom,
-				CancellationToken.None
+				CancellationToken.None,
 			),
 			this.galleryService.getCoreTranslation(
 				extensionToFetchTranslationsFrom,
-				locale
+				locale,
 			),
 		]);
 		const loc = manifest?.contributes?.localizations?.find((x) =>
-			locale.startsWith(x.languageId.toLowerCase())
+			locale.startsWith(x.languageId.toLowerCase()),
 		);
 		const languageName = loc ? loc.languageName || locale : locale;
 		const languageDisplayName = loc
@@ -246,15 +246,15 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 			if (!translationsFromPack[key] || useEnglish) {
 				translations[key] = minimumTranslatedStrings[key].replace(
 					"{0}",
-					() => languageName
+					() => languageName,
 				);
 			} else {
 				translations[key] = `${translationsFromPack[key].replace(
 					"{0}",
-					() => languageDisplayName
+					() => languageDisplayName,
 				)} (${minimumTranslatedStrings[key].replace(
 					"{0}",
-					() => languageName
+					() => languageName,
 				)})`;
 			}
 		});
@@ -281,7 +281,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 					await this.paneCompositeService.openPaneComposite(
 						EXTENSIONS_VIEWLET_ID,
 						ViewContainerLocation.Sidebar,
-						true
+						true,
 					);
 				if (!viewlet) {
 					return;
@@ -291,7 +291,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 					return;
 				}
 				(container as IExtensionsViewPaneContainer).search(
-					`tag:lp-${locale}`
+					`tag:lp-${locale}`,
 				);
 				container.focus();
 			},
@@ -309,7 +309,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 						galleryExtension: extensionToInstall,
 						// The user will be prompted if they want to install the language pack before this.
 					},
-					true
+					true,
 				);
 			},
 		};
@@ -330,7 +330,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 							NativeLocalizationWorkbenchContribution.LANGUAGEPACK_SUGGESTION_IGNORE_STORAGE_KEY,
 							JSON.stringify(languagePackSuggestionIgnoreList),
 							StorageScope.APPLICATION,
-							StorageTarget.USER
+							StorageTarget.USER,
 						);
 						logUserReaction("neverShowAgain");
 					},
@@ -340,7 +340,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 				onCancel: () => {
 					logUserReaction("cancelled");
 				},
-			}
+			},
 		);
 	}
 
@@ -350,16 +350,16 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 			(i) =>
 				!!i.manifest.contributes?.localizations?.length &&
 				i.manifest.contributes.localizations.some((l) =>
-					locale.startsWith(l.languageId.toLowerCase())
-				)
+					locale.startsWith(l.languageId.toLowerCase()),
+				),
 		);
 	}
 }
 
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 );
 workbenchRegistry.registerWorkbenchContribution(
 	NativeLocalizationWorkbenchContribution,
-	LifecyclePhase.Eventually
+	LifecyclePhase.Eventually,
 );

@@ -22,7 +22,7 @@ export interface IDataTransferItem {
 }
 
 export function createStringDataTransferItem(
-	stringOrPromise: string | Promise<string>
+	stringOrPromise: string | Promise<string>,
 ): IDataTransferItem {
 	return {
 		asString: async () => stringOrPromise,
@@ -35,7 +35,7 @@ export function createStringDataTransferItem(
 export function createFileDataTransferItem(
 	fileName: string,
 	uri: URI | undefined,
-	data: () => Promise<Uint8Array>
+	data: () => Promise<Uint8Array>,
 ): IDataTransferItem {
 	const file = { id: generateUuid(), name: fileName, uri, data };
 	return {
@@ -159,17 +159,17 @@ function normalizeMimeType(mimeType: string): string {
 
 export function matchesMimeType(
 	pattern: string,
-	mimeTypes: readonly string[]
+	mimeTypes: readonly string[],
 ): boolean {
 	return matchesMimeType_normalized(
 		normalizeMimeType(pattern),
-		mimeTypes.map(normalizeMimeType)
+		mimeTypes.map(normalizeMimeType),
 	);
 }
 
 function matchesMimeType_normalized(
 	normalizedPattern: string,
-	normalizedMimeTypes: readonly string[]
+	normalizedMimeTypes: readonly string[],
 ): boolean {
 	// Anything wildcard
 	if (normalizedPattern === "*/*") {

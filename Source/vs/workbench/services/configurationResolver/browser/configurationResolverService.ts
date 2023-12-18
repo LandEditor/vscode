@@ -28,7 +28,7 @@ export class ConfigurationResolverService extends BaseConfigurationResolverServi
 		@IQuickInputService quickInputService: IQuickInputService,
 		@ILabelService labelService: ILabelService,
 		@IPathService pathService: IPathService,
-		@IExtensionService extensionService: IExtensionService
+		@IExtensionService extensionService: IExtensionService,
 	) {
 		super(
 			{ getAppRoot: () => undefined, getExecPath: () => undefined },
@@ -40,7 +40,7 @@ export class ConfigurationResolverService extends BaseConfigurationResolverServi
 			quickInputService,
 			labelService,
 			pathService,
-			extensionService
+			extensionService,
 		);
 	}
 }
@@ -48,5 +48,5 @@ export class ConfigurationResolverService extends BaseConfigurationResolverServi
 registerSingleton(
 	IConfigurationResolverService,
 	ConfigurationResolverService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

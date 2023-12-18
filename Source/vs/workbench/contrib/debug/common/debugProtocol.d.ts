@@ -6,7 +6,7 @@
 /** Declaration module describing the VS Code debug protocol.
 	Auto-generated from json schema. Do not edit manually.
 */
-declare module DebugProtocol {
+declare namespace DebugProtocol {
 	/** Base class of requests, responses, and events. */
 	interface ProtocolMessage {
 		/** Sequence number of the message (also known as message ID). The `seq` for the first message sent by a client or debug adapter is 1, and for each subsequent message is 1 greater than the previous message sent by that actor. `seq` can be used to order requests, responses, and events, and to associate requests with their corresponding responses. For protocol messages of type `request` the sequence number can be used to cancel the request. */
@@ -96,7 +96,7 @@ declare module DebugProtocol {
 	}
 
 	/** Response to `cancel` request. This is just an acknowledgement, so no body field is required. */
-	interface CancelResponse extends Response {}
+	type CancelResponse = Response;
 
 	/** Event message for 'initialized' event type.
 		This event indicates that the debug adapter is ready to accept configuration requests (e.g. `setBreakpoints`, `setExceptionBreakpoints`).
@@ -109,9 +109,7 @@ declare module DebugProtocol {
 		- client sends other future configuration requests
 		- client sends one `configurationDone` request to indicate the end of the configuration.
 	*/
-	interface InitializedEvent extends Event {
-		// event: 'initialized';
-	}
+	type InitializedEvent = Event;
 
 	/** Event message for 'stopped' event type.
 		The event indicates that the execution of the debuggee has stopped due to some condition.
@@ -487,7 +485,7 @@ declare module DebugProtocol {
 	}
 
 	/** Response to `startDebugging` request. This is just an acknowledgement, so no body field is required. */
-	interface StartDebuggingResponse extends Response {}
+	type StartDebuggingResponse = Response;
 
 	/** Initialize request; value of command field is 'initialize'.
 		The `initialize` request is sent as the first request from the client to the debug adapter in order to configure it with client capabilities and to retrieve capabilities from the debug adapter.
@@ -555,10 +553,10 @@ declare module DebugProtocol {
 	}
 
 	/** Arguments for `configurationDone` request. */
-	interface ConfigurationDoneArguments {}
+	type ConfigurationDoneArguments = {};
 
 	/** Response to `configurationDone` request. This is just an acknowledgement, so no body field is required. */
-	interface ConfigurationDoneResponse extends Response {}
+	type ConfigurationDoneResponse = Response;
 
 	/** Launch request; value of command field is 'launch'.
 		This launch request is sent from the client to the debug adapter to start the debuggee with or without debugging (if `noDebug` is true).
@@ -581,7 +579,7 @@ declare module DebugProtocol {
 	}
 
 	/** Response to `launch` request. This is just an acknowledgement, so no body field is required. */
-	interface LaunchResponse extends Response {}
+	type LaunchResponse = Response;
 
 	/** Attach request; value of command field is 'attach'.
 		The `attach` request is sent from the client to the debug adapter to attach to a debuggee that is already running.
@@ -602,7 +600,7 @@ declare module DebugProtocol {
 	}
 
 	/** Response to `attach` request. This is just an acknowledgement, so no body field is required. */
-	interface AttachResponse extends Response {}
+	type AttachResponse = Response;
 
 	/** Restart request; value of command field is 'restart'.
 		Restarts a debug session. Clients should only call this request if the corresponding capability `supportsRestartRequest` is true.
@@ -620,7 +618,7 @@ declare module DebugProtocol {
 	}
 
 	/** Response to `restart` request. This is just an acknowledgement, so no body field is required. */
-	interface RestartResponse extends Response {}
+	type RestartResponse = Response;
 
 	/** Disconnect request; value of command field is 'disconnect'.
 		The `disconnect` request asks the debug adapter to disconnect from the debuggee (thus ending the debug session) and then to shut down itself (the debug adapter).
@@ -649,7 +647,7 @@ declare module DebugProtocol {
 	}
 
 	/** Response to `disconnect` request. This is just an acknowledgement, so no body field is required. */
-	interface DisconnectResponse extends Response {}
+	type DisconnectResponse = Response;
 
 	/** Terminate request; value of command field is 'terminate'.
 		The `terminate` request is sent from the client to the debug adapter in order to shut down the debuggee gracefully. Clients should only call this request if the capability `supportsTerminateRequest` is true.
@@ -669,7 +667,7 @@ declare module DebugProtocol {
 	}
 
 	/** Response to `terminate` request. This is just an acknowledgement, so no body field is required. */
-	interface TerminateResponse extends Response {}
+	type TerminateResponse = Response;
 
 	/** BreakpointLocations request; value of command field is 'breakpointLocations'.
 		The `breakpointLocations` request returns all possible locations for source breakpoints in a given range.
@@ -934,7 +932,7 @@ declare module DebugProtocol {
 	}
 
 	/** Response to `next` request. This is just an acknowledgement, so no body field is required. */
-	interface NextResponse extends Response {}
+	type NextResponse = Response;
 
 	/** StepIn request; value of command field is 'stepIn'.
 		The request resumes the given thread to step into a function/method and allows all other threads to run freely by resuming them.
@@ -963,7 +961,7 @@ declare module DebugProtocol {
 	}
 
 	/** Response to `stepIn` request. This is just an acknowledgement, so no body field is required. */
-	interface StepInResponse extends Response {}
+	type StepInResponse = Response;
 
 	/** StepOut request; value of command field is 'stepOut'.
 		The request resumes the given thread to step out (return) from a function/method and allows all other threads to run freely by resuming them.
@@ -986,7 +984,7 @@ declare module DebugProtocol {
 	}
 
 	/** Response to `stepOut` request. This is just an acknowledgement, so no body field is required. */
-	interface StepOutResponse extends Response {}
+	type StepOutResponse = Response;
 
 	/** StepBack request; value of command field is 'stepBack'.
 		The request executes one backward step (in the given granularity) for the specified thread and allows all other threads to run backward freely by resuming them.
@@ -1010,7 +1008,7 @@ declare module DebugProtocol {
 	}
 
 	/** Response to `stepBack` request. This is just an acknowledgement, so no body field is required. */
-	interface StepBackResponse extends Response {}
+	type StepBackResponse = Response;
 
 	/** ReverseContinue request; value of command field is 'reverseContinue'.
 		The request resumes backward execution of all threads. If the debug adapter supports single thread execution (see capability `supportsSingleThreadExecutionRequests`), setting the `singleThread` argument to true resumes only the specified thread. If not all threads were resumed, the `allThreadsContinued` attribute of the response should be set to false.
@@ -1030,7 +1028,7 @@ declare module DebugProtocol {
 	}
 
 	/** Response to `reverseContinue` request. This is just an acknowledgement, so no body field is required. */
-	interface ReverseContinueResponse extends Response {}
+	type ReverseContinueResponse = Response;
 
 	/** RestartFrame request; value of command field is 'restartFrame'.
 		The request restarts execution of the specified stackframe.
@@ -1049,7 +1047,7 @@ declare module DebugProtocol {
 	}
 
 	/** Response to `restartFrame` request. This is just an acknowledgement, so no body field is required. */
-	interface RestartFrameResponse extends Response {}
+	type RestartFrameResponse = Response;
 
 	/** Goto request; value of command field is 'goto'.
 		The request sets the location where the debuggee will continue to run.
@@ -1072,7 +1070,7 @@ declare module DebugProtocol {
 	}
 
 	/** Response to `goto` request. This is just an acknowledgement, so no body field is required. */
-	interface GotoResponse extends Response {}
+	type GotoResponse = Response;
 
 	/** Pause request; value of command field is 'pause'.
 		The request suspends the debuggee.
@@ -1090,7 +1088,7 @@ declare module DebugProtocol {
 	}
 
 	/** Response to `pause` request. This is just an acknowledgement, so no body field is required. */
-	interface PauseResponse extends Response {}
+	type PauseResponse = Response;
 
 	/** StackTrace request; value of command field is 'stackTrace'.
 		The request returns a stacktrace from the current execution state of a given thread.
@@ -1258,9 +1256,7 @@ declare module DebugProtocol {
 	/** Threads request; value of command field is 'threads'.
 		The request retrieves a list of all threads.
 	*/
-	interface ThreadsRequest extends Request {
-		// command: 'threads';
-	}
+	type ThreadsRequest = Request;
 
 	/** Response to `threads` request. */
 	interface ThreadsResponse extends Response {
@@ -1286,7 +1282,7 @@ declare module DebugProtocol {
 	}
 
 	/** Response to `terminateThreads` request. This is just an acknowledgement, no body field is required. */
-	interface TerminateThreadsResponse extends Response {}
+	type TerminateThreadsResponse = Response;
 
 	/** Modules request; value of command field is 'modules'.
 		Modules can be retrieved from the debug adapter with this request which can either return all modules or a range of modules to support paging.
@@ -1325,7 +1321,7 @@ declare module DebugProtocol {
 	}
 
 	/** Arguments for `loadedSources` request. */
-	interface LoadedSourcesArguments {}
+	type LoadedSourcesArguments = {};
 
 	/** Response to `loadedSources` request. */
 	interface LoadedSourcesResponse extends Response {

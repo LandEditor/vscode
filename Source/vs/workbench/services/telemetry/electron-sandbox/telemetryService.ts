@@ -3,40 +3,40 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	ITelemetryService,
-	ITelemetryData,
-	TelemetryLevel,
-} from "vs/platform/telemetry/common/telemetry";
-import {
-	supportsTelemetry,
-	NullTelemetryService,
-	getPiiPathsFromEnvironment,
-	isInternalTelemetry,
-} from "vs/platform/telemetry/common/telemetryUtils";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { Disposable } from "vs/base/common/lifecycle";
-import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
-import { IProductService } from "vs/platform/product/common/productService";
-import { ISharedProcessService } from "vs/platform/ipc/electron-sandbox/services";
-import { TelemetryAppenderClient } from "vs/platform/telemetry/common/telemetryIpc";
-import { IStorageService } from "vs/platform/storage/common/storage";
-import { resolveWorkbenchCommonProperties } from "vs/workbench/services/telemetry/common/workbenchCommonProperties";
-import {
-	TelemetryService as BaseTelemetryService,
-	ITelemetryServiceConfig,
-} from "vs/platform/telemetry/common/telemetryService";
+import { process } from "vs/base/parts/sandbox/electron-sandbox/globals";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
+import { ISharedProcessService } from "vs/platform/ipc/electron-sandbox/services";
+import { IProductService } from "vs/platform/product/common/productService";
+import { IStorageService } from "vs/platform/storage/common/storage";
 import {
 	ClassifiedEvent,
-	StrictPropertyCheck,
-	OmitMetadata,
 	IGDPRProperty,
+	OmitMetadata,
+	StrictPropertyCheck,
 } from "vs/platform/telemetry/common/gdprTypings";
-import { process } from "vs/base/parts/sandbox/electron-sandbox/globals";
+import {
+	ITelemetryData,
+	ITelemetryService,
+	TelemetryLevel,
+} from "vs/platform/telemetry/common/telemetry";
+import { TelemetryAppenderClient } from "vs/platform/telemetry/common/telemetryIpc";
+import {
+	ITelemetryServiceConfig,
+	TelemetryService as BaseTelemetryService,
+} from "vs/platform/telemetry/common/telemetryService";
+import {
+	NullTelemetryService,
+	getPiiPathsFromEnvironment,
+	isInternalTelemetry,
+	supportsTelemetry,
+} from "vs/platform/telemetry/common/telemetryUtils";
+import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
+import { resolveWorkbenchCommonProperties } from "vs/workbench/services/telemetry/common/workbenchCommonProperties";
 
 export class TelemetryService extends Disposable implements ITelemetryService {
 	declare readonly _serviceBrand: undefined;
@@ -66,14 +66,14 @@ export class TelemetryService extends Disposable implements ITelemetryService {
 		@IProductService productService: IProductService,
 		@ISharedProcessService sharedProcessService: ISharedProcessService,
 		@IStorageService storageService: IStorageService,
-		@IConfigurationService configurationService: IConfigurationService
+		@IConfigurationService configurationService: IConfigurationService,
 	) {
 		super();
 
 		if (supportsTelemetry(productService, environmentService)) {
 			const isInternal = isInternalTelemetry(
 				productService,
-				configurationService
+				configurationService,
 			);
 			const channel =
 				sharedProcessService.getChannel("telemetryAppender");
@@ -89,7 +89,7 @@ export class TelemetryService extends Disposable implements ITelemetryService {
 					environmentService.sqmId,
 					isInternal,
 					process,
-					environmentService.remoteAuthority
+					environmentService.remoteAuthority,
 				),
 				piiPaths: getPiiPathsFromEnvironment(environmentService),
 				sendErrorTelemetry: true,
@@ -99,8 +99,8 @@ export class TelemetryService extends Disposable implements ITelemetryService {
 				new BaseTelemetryService(
 					config,
 					configurationService,
-					productService
-				)
+					productService,
+				),
 			);
 		} else {
 			this.impl = NullTelemetryService;
@@ -143,5 +143,5 @@ export class TelemetryService extends Disposable implements ITelemetryService {
 registerSingleton(
 	ITelemetryService,
 	TelemetryService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

@@ -20,7 +20,7 @@ class TypeScriptDocumentHighlightProvider
 		document: vscode.TextDocument,
 		position: vscode.Position,
 		otherDocuments: vscode.TextDocument[],
-		token: vscode.CancellationToken
+		token: vscode.CancellationToken,
 	): Promise<vscode.MultiDocumentHighlight[]> {
 		const allFiles = [document, ...otherDocuments]
 			.map((doc) => this.client.toOpenTsFilePath(doc))
@@ -34,14 +34,14 @@ class TypeScriptDocumentHighlightProvider
 		const args = {
 			...typeConverters.Position.toFileLocationRequestArgs(
 				file,
-				position
+				position,
 			),
 			filesToSearch: allFiles,
 		};
 		const response = await this.client.execute(
 			"documentHighlights",
 			args,
-			token
+			token,
 		);
 		if (response.type !== "response" || !response.body) {
 			return [];
@@ -51,8 +51,8 @@ class TypeScriptDocumentHighlightProvider
 			(highlightItem) =>
 				new vscode.MultiDocumentHighlight(
 					vscode.Uri.file(highlightItem.file),
-					[...convertDocumentHighlight(highlightItem)]
-				)
+					[...convertDocumentHighlight(highlightItem)],
+				),
 		);
 
 		return result;
@@ -61,7 +61,7 @@ class TypeScriptDocumentHighlightProvider
 	public async provideDocumentHighlights(
 		document: vscode.TextDocument,
 		position: vscode.Position,
-		token: vscode.CancellationToken
+		token: vscode.CancellationToken,
 	): Promise<vscode.DocumentHighlight[]> {
 		const file = this.client.toOpenTsFilePath(document);
 		if (!file) {
@@ -71,14 +71,14 @@ class TypeScriptDocumentHighlightProvider
 		const args = {
 			...typeConverters.Position.toFileLocationRequestArgs(
 				file,
-				position
+				position,
 			),
 			filesToSearch: [file],
 		};
 		const response = await this.client.execute(
 			"documentHighlights",
 			args,
-			token
+			token,
 		);
 		if (response.type !== "response" || !response.body) {
 			return [];
@@ -89,7 +89,7 @@ class TypeScriptDocumentHighlightProvider
 }
 
 function convertDocumentHighlight(
-	highlight: Proto.DocumentHighlightsItem
+	highlight: Proto.DocumentHighlightsItem,
 ): ReadonlyArray<vscode.DocumentHighlight> {
 	return highlight.highlightSpans.map(
 		(span) =>
@@ -97,25 +97,25 @@ function convertDocumentHighlight(
 				typeConverters.Range.fromTextSpan(span),
 				span.kind === "writtenReference"
 					? vscode.DocumentHighlightKind.Write
-					: vscode.DocumentHighlightKind.Read
-			)
+					: vscode.DocumentHighlightKind.Read,
+			),
 	);
 }
 
 export function register(
 	selector: DocumentSelector,
-	client: ITypeScriptServiceClient
+	client: ITypeScriptServiceClient,
 ) {
 	const provider = new TypeScriptDocumentHighlightProvider(client);
 
 	return vscode.Disposable.from(
 		vscode.languages.registerDocumentHighlightProvider(
 			selector.syntax,
-			provider
+			provider,
 		),
 		vscode.languages.registerMultiDocumentHighlightProvider(
 			selector.syntax,
-			provider
-		)
+			provider,
+		),
 	);
 }

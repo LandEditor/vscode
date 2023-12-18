@@ -5,8 +5,6 @@
 
 //@ts-check
 
-"use strict";
-
 const withBrowserDefaults = require("../../shared.webpack.config").browser;
 const path = require("path");
 

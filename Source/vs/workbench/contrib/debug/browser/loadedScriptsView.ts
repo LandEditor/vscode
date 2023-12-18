@@ -3,64 +3,64 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
-import { IViewletViewOptions } from "vs/workbench/browser/parts/views/viewsViewlet";
-import { normalize, isAbsolute, posix } from "vs/base/common/path";
-import { ViewPane } from "vs/workbench/browser/parts/views/viewPane";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { renderViewTree } from "vs/workbench/contrib/debug/browser/baseDebugView";
+import { IListVirtualDelegate } from "vs/base/browser/ui/list/list";
+import { IListAccessibilityProvider } from "vs/base/browser/ui/list/listWidget";
+import { TreeFindMode } from "vs/base/browser/ui/tree/abstractTree";
+import type { ICompressedTreeNode } from "vs/base/browser/ui/tree/compressedObjectTreeModel";
+import type { ICompressibleTreeRenderer } from "vs/base/browser/ui/tree/objectTree";
 import {
-	IDebugSession,
-	IDebugService,
-	CONTEXT_LOADED_SCRIPTS_ITEM_TYPE,
-} from "vs/workbench/contrib/debug/common/debug";
-import { Source } from "vs/workbench/contrib/debug/common/debugSource";
+	ITreeElement,
+	ITreeFilter,
+	ITreeNode,
+	TreeFilterResult,
+	TreeVisibility,
+} from "vs/base/browser/ui/tree/tree";
+import { RunOnceScheduler } from "vs/base/common/async";
+import { FuzzyScore, createMatches } from "vs/base/common/filters";
+import { normalizeDriveLetter, tildify } from "vs/base/common/labels";
+import { dispose } from "vs/base/common/lifecycle";
+import { isAbsolute, normalize, posix } from "vs/base/common/path";
+import { isWindows } from "vs/base/common/platform";
+import { ltrim } from "vs/base/common/strings";
+import { URI } from "vs/base/common/uri";
+import * as nls from "vs/nls";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import {
+	IContextKey,
+	IContextKeyService,
+} from "vs/platform/contextkey/common/contextkey";
+import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
+import { FileKind } from "vs/platform/files/common/files";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { ILabelService } from "vs/platform/label/common/label";
+import { WorkbenchCompressibleObjectTree } from "vs/platform/list/browser/listService";
+import { IOpenerService } from "vs/platform/opener/common/opener";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { IThemeService } from "vs/platform/theme/common/themeService";
 import {
 	IWorkspaceContextService,
 	IWorkspaceFolder,
 } from "vs/platform/workspace/common/workspace";
 import {
-	IContextKey,
-	IContextKeyService,
-} from "vs/platform/contextkey/common/contextkey";
-import { normalizeDriveLetter, tildify } from "vs/base/common/labels";
-import { isWindows } from "vs/base/common/platform";
-import { URI } from "vs/base/common/uri";
-import { ltrim } from "vs/base/common/strings";
-import { RunOnceScheduler } from "vs/base/common/async";
-import {
-	ResourceLabels,
-	IResourceLabelProps,
-	IResourceLabelOptions,
 	IResourceLabel,
+	IResourceLabelOptions,
+	IResourceLabelProps,
+	ResourceLabels,
 } from "vs/workbench/browser/labels";
-import { FileKind } from "vs/platform/files/common/files";
-import { IListVirtualDelegate } from "vs/base/browser/ui/list/list";
-import {
-	ITreeNode,
-	ITreeFilter,
-	TreeVisibility,
-	TreeFilterResult,
-	ITreeElement,
-} from "vs/base/browser/ui/tree/tree";
-import { IListAccessibilityProvider } from "vs/base/browser/ui/list/listWidget";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { WorkbenchCompressibleObjectTree } from "vs/platform/list/browser/listService";
-import { dispose } from "vs/base/common/lifecycle";
-import { createMatches, FuzzyScore } from "vs/base/common/filters";
-import { DebugContentProvider } from "vs/workbench/contrib/debug/common/debugContentProvider";
-import { ILabelService } from "vs/platform/label/common/label";
-import type { ICompressedTreeNode } from "vs/base/browser/ui/tree/compressedObjectTreeModel";
-import type { ICompressibleTreeRenderer } from "vs/base/browser/ui/tree/objectTree";
+import { ViewPane } from "vs/workbench/browser/parts/views/viewPane";
+import { IViewletViewOptions } from "vs/workbench/browser/parts/views/viewsViewlet";
 import { IViewDescriptorService } from "vs/workbench/common/views";
-import { IOpenerService } from "vs/platform/opener/common/opener";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { renderViewTree } from "vs/workbench/contrib/debug/browser/baseDebugView";
+import {
+	CONTEXT_LOADED_SCRIPTS_ITEM_TYPE,
+	IDebugService,
+	IDebugSession,
+} from "vs/workbench/contrib/debug/common/debug";
+import { DebugContentProvider } from "vs/workbench/contrib/debug/common/debugContentProvider";
+import { Source } from "vs/workbench/contrib/debug/common/debugSource";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 import { IPathService } from "vs/workbench/services/path/common/pathService";
-import { TreeFindMode } from "vs/base/browser/ui/tree/abstractTree";
 
 const NEW_STYLE_COMPRESS = true;
 
@@ -77,7 +77,7 @@ class BaseTreeItem {
 	constructor(
 		private _parent: BaseTreeItem | undefined,
 		private _label: string,
-		public readonly isIncompressible = false
+		public readonly isIncompressible = false,
 	) {
 		this._showedMoreThanOne = false;
 	}
@@ -114,7 +114,7 @@ class BaseTreeItem {
 
 	createIfNeeded<T extends BaseTreeItem>(
 		key: string,
-		factory: (parent: BaseTreeItem, label: string) => T
+		factory: (parent: BaseTreeItem, label: string) => T,
 	): T {
 		let child = <T>this._children.get(key);
 		if (!child) {
@@ -272,10 +272,7 @@ class BaseTreeItem {
 }
 
 class RootFolderTreeItem extends BaseTreeItem {
-	constructor(
-		parent: BaseTreeItem,
-		public folder: IWorkspaceFolder
-	) {
+	constructor(parent: BaseTreeItem, public folder: IWorkspaceFolder) {
 		super(parent, folder.name, true);
 	}
 }
@@ -284,7 +281,7 @@ class RootTreeItem extends BaseTreeItem {
 	constructor(
 		private _pathService: IPathService,
 		private _contextService: IWorkspaceContextService,
-		private _labelService: ILabelService
+		private _labelService: ILabelService,
 	) {
 		super(undefined, "Root");
 	}
@@ -298,8 +295,8 @@ class RootTreeItem extends BaseTreeItem {
 					this,
 					session,
 					this._pathService,
-					this._contextService
-				)
+					this._contextService,
+				),
 		);
 	}
 
@@ -320,7 +317,7 @@ class SessionTreeItem extends BaseTreeItem {
 		parent: BaseTreeItem,
 		session: IDebugSession,
 		private _pathService: IPathService,
-		private rootProvider: IWorkspaceContextService
+		private rootProvider: IWorkspaceContextService,
 	) {
 		super(parent, session.getLabel(), true);
 		this._labelService = labelService;
@@ -385,41 +382,39 @@ class SessionTreeItem extends BaseTreeItem {
 		if (match && match.length === 3) {
 			url = match[1];
 			path = decodeURI(match[2]);
-		} else {
-			if (isAbsolute(path)) {
-				const resource = URI.file(path);
+		} else if (isAbsolute(path)) {
+			const resource = URI.file(path);
 
-				// return early if we can resolve a relative path label from the root folder
-				folder = this.rootProvider
-					? this.rootProvider.getWorkspaceFolder(resource)
-					: null;
-				if (folder) {
-					// strip off the root folder path
-					path = normalize(
-						ltrim(
-							resource.path.substring(folder.uri.path.length),
-							posix.sep
-						)
-					);
-					const hasMultipleRoots =
-						this.rootProvider.getWorkspace().folders.length > 1;
-					if (hasMultipleRoots) {
-						path = posix.sep + path;
-					} else {
-						// don't show root folder
-						folder = null;
-					}
+			// return early if we can resolve a relative path label from the root folder
+			folder = this.rootProvider
+				? this.rootProvider.getWorkspaceFolder(resource)
+				: null;
+			if (folder) {
+				// strip off the root folder path
+				path = normalize(
+					ltrim(
+						resource.path.substring(folder.uri.path.length),
+						posix.sep,
+					),
+				);
+				const hasMultipleRoots =
+					this.rootProvider.getWorkspace().folders.length > 1;
+				if (hasMultipleRoots) {
+					path = posix.sep + path;
 				} else {
-					// on unix try to tildify absolute paths
-					path = normalize(path);
-					if (isWindows) {
-						path = normalizeDriveLetter(path);
-					} else {
-						path = tildify(
-							path,
-							(await this._pathService.userHome()).fsPath
-						);
-					}
+					// don't show root folder
+					folder = null;
+				}
+			} else {
+				// on unix try to tildify absolute paths
+				path = normalize(path);
+				if (isWindows) {
+					path = normalizeDriveLetter(path);
+				} else {
+					path = tildify(
+						path,
+						(await this._pathService.userHome()).fsPath,
+					);
 				}
 			}
 		}
@@ -430,17 +425,17 @@ class SessionTreeItem extends BaseTreeItem {
 				const f = folder;
 				leaf = leaf.createIfNeeded(
 					folder.name,
-					(parent) => new RootFolderTreeItem(parent, f)
+					(parent) => new RootFolderTreeItem(parent, f),
 				);
 			} else if (i === 0 && url) {
 				leaf = leaf.createIfNeeded(
 					url,
-					(parent) => new BaseTreeItem(parent, url)
+					(parent) => new BaseTreeItem(parent, url),
 				);
 			} else {
 				leaf = leaf.createIfNeeded(
 					segment,
-					(parent) => new BaseTreeItem(parent, segment)
+					(parent) => new BaseTreeItem(parent, segment),
 				);
 			}
 		});
@@ -472,7 +467,7 @@ interface IViewState {
  */
 function asTreeElement(
 	item: BaseTreeItem,
-	viewState?: IViewState
+	viewState?: IViewState,
 ): ITreeElement<LoadedScriptsItem> {
 	const children = item.getChildren();
 	const collapsed = viewState
@@ -547,12 +542,12 @@ export class LoadedScriptsView extends ViewPane {
 		const root = new RootTreeItem(
 			this.pathService,
 			this.contextService,
-			this.labelService
+			this.labelService,
 		);
 
 		this.treeLabels = this.instantiationService.createInstance(
 			ResourceLabels,
-			{ onDidChangeVisibility: this.onDidChangeBodyVisibility }
+			{ onDidChangeVisibility: this.onDidChangeBodyVisibility },
 		);
 		this._register(this.treeLabels);
 
@@ -573,12 +568,12 @@ export class LoadedScriptsView extends ViewPane {
 				},
 				keyboardNavigationLabelProvider: {
 					getKeyboardNavigationLabel: (
-						element: LoadedScriptsItem
+						element: LoadedScriptsItem,
 					) => {
 						return element.getLabel();
 					},
 					getCompressedNodeKeyboardNavigationLabel: (
-						elements: LoadedScriptsItem[]
+						elements: LoadedScriptsItem[],
 					) => {
 						return elements.map((e) => e.getLabel()).join("/");
 					},
@@ -588,13 +583,13 @@ export class LoadedScriptsView extends ViewPane {
 				overrideStyles: {
 					listBackground: this.getBackgroundColor(),
 				},
-			}
+			},
 		);
 
 		const updateView = (viewState?: IViewState) =>
 			this.tree.setChildren(
 				null,
-				asTreeElement(root, viewState).children
+				asTreeElement(root, viewState).children,
 			);
 
 		updateView();
@@ -623,11 +618,11 @@ export class LoadedScriptsView extends ViewPane {
 							nullRange,
 							e.editorOptions.preserveFocus,
 							e.sideBySide,
-							e.editorOptions.pinned
+							e.editorOptions.pinned,
 						);
 					}
 				}
-			})
+			}),
 		);
 
 		this._register(
@@ -638,7 +633,7 @@ export class LoadedScriptsView extends ViewPane {
 				} else {
 					this.loadedScriptsItemType.reset();
 				}
-			})
+			}),
 		);
 
 		const scheduleRefreshOnVisible = () => {
@@ -668,7 +663,7 @@ export class LoadedScriptsView extends ViewPane {
 						sessionRoot.updateLabel(session.getLabel());
 						scheduleRefreshOnVisible();
 					}
-				})
+				}),
 			);
 			this._register(
 				session.onDidLoadedSource(async (event) => {
@@ -681,7 +676,7 @@ export class LoadedScriptsView extends ViewPane {
 							scheduleRefreshOnVisible();
 							if (event.reason === "changed") {
 								DebugContentProvider.refreshDebugContent(
-									event.source.uri
+									event.source.uri,
 								);
 							}
 							break;
@@ -699,12 +694,12 @@ export class LoadedScriptsView extends ViewPane {
 							this.tree.refilter();
 							break;
 					}
-				})
+				}),
 			);
 		};
 
 		this._register(
-			this.debugService.onDidNewSession(registerSessionListeners)
+			this.debugService.onDidNewSession(registerSessionListeners),
 		);
 		this.debugService
 			.getModel()
@@ -715,7 +710,7 @@ export class LoadedScriptsView extends ViewPane {
 			this.debugService.onDidEndSession(({ session }) => {
 				root.remove(session.getId());
 				this.changeScheduler.schedule();
-			})
+			}),
 		);
 
 		this.changeScheduler.schedule(0);
@@ -725,7 +720,7 @@ export class LoadedScriptsView extends ViewPane {
 				if (visible && this.treeNeedsRefreshOnVisible) {
 					this.changeScheduler.schedule();
 				}
-			})
+			}),
 		);
 
 		// feature: expand all nodes when filtering (not when finding)
@@ -739,7 +734,7 @@ export class LoadedScriptsView extends ViewPane {
 				if (!viewState && pattern) {
 					const expanded = new Set<string>();
 					const visit = (
-						node: ITreeNode<BaseTreeItem | null, FuzzyScore>
+						node: ITreeNode<BaseTreeItem | null, FuzzyScore>,
 					) => {
 						if (node.element && !node.collapsed) {
 							expanded.add(node.element.getId());
@@ -758,7 +753,7 @@ export class LoadedScriptsView extends ViewPane {
 					updateView(viewState);
 					viewState = undefined;
 				}
-			})
+			}),
 		);
 
 		// populate tree model with source paths from all debug sessions
@@ -820,7 +815,7 @@ class LoadedScriptsRenderer
 	renderElement(
 		node: ITreeNode<BaseTreeItem, FuzzyScore>,
 		index: number,
-		data: ILoadedScriptsItemTemplateData
+		data: ILoadedScriptsItemTemplateData,
 	): void {
 		const element = node.element;
 		const label = element.getLabel();
@@ -832,7 +827,7 @@ class LoadedScriptsRenderer
 		node: ITreeNode<ICompressedTreeNode<BaseTreeItem>, FuzzyScore>,
 		index: number,
 		data: ILoadedScriptsItemTemplateData,
-		height: number | undefined
+		height: number | undefined,
 	): void {
 		const element = node.element.elements[node.element.elements.length - 1];
 		const labels = node.element.elements.map((e) => e.getLabel());
@@ -844,7 +839,7 @@ class LoadedScriptsRenderer
 		element: BaseTreeItem,
 		labels: string | string[],
 		data: ILoadedScriptsItemTemplateData,
-		filterData: FuzzyScore | undefined
+		filterData: FuzzyScore | undefined,
 	) {
 		const label: IResourceLabelProps = {
 			name: labels,
@@ -858,7 +853,7 @@ class LoadedScriptsRenderer
 		} else if (element instanceof SessionTreeItem) {
 			options.title = nls.localize(
 				"loadedScriptsSession",
-				"Debug Session"
+				"Debug Session",
 			);
 			options.hideIcon = true;
 		} else if (element instanceof BaseTreeItem) {
@@ -889,7 +884,7 @@ class LoadedSciptsAccessibilityProvider
 				comment: ["Debug is a noun in this context, not a verb."],
 				key: "loadedScriptsAriaLabel",
 			},
-			"Debug Loaded Scripts"
+			"Debug Loaded Scripts",
 		);
 	}
 
@@ -898,7 +893,7 @@ class LoadedSciptsAccessibilityProvider
 			return nls.localize(
 				"loadedScriptsRootFolderAriaLabel",
 				"Workspace folder {0}, loaded script, debug",
-				element.getLabel()
+				element.getLabel(),
 			);
 		}
 
@@ -906,7 +901,7 @@ class LoadedSciptsAccessibilityProvider
 			return nls.localize(
 				"loadedScriptsSessionAriaLabel",
 				"Session {0}, loaded script, debug",
-				element.getLabel()
+				element.getLabel(),
 			);
 		}
 
@@ -914,13 +909,13 @@ class LoadedSciptsAccessibilityProvider
 			return nls.localize(
 				"loadedScriptsFolderAriaLabel",
 				"Folder {0}, loaded script, debug",
-				element.getLabel()
+				element.getLabel(),
 			);
 		} else {
 			return nls.localize(
 				"loadedScriptsSourceAriaLabel",
 				"{0}, loaded script, debug",
-				element.getLabel()
+				element.getLabel(),
 			);
 		}
 	}
@@ -935,7 +930,7 @@ class LoadedScriptsFilter implements ITreeFilter<BaseTreeItem, FuzzyScore> {
 
 	filter(
 		element: BaseTreeItem,
-		parentVisibility: TreeVisibility
+		parentVisibility: TreeVisibility,
 	): TreeFilterResult<FuzzyScore> {
 		if (!this.filterText) {
 			return TreeVisibility.Visible;

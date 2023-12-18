@@ -4,9 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as nls from "vs/nls";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
 import { IWorkspaceFolder } from "vs/platform/workspace/common/workspace";
-import { ITaskSystem } from "vs/workbench/contrib/tasks/common/taskSystem";
-import { ExecutionEngine } from "vs/workbench/contrib/tasks/common/tasks";
 import {
 	AbstractTaskService,
 	IWorkspaceFolderConfigurationResult,
@@ -15,15 +17,13 @@ import {
 	ITaskFilter,
 	ITaskService,
 } from "vs/workbench/contrib/tasks/common/taskService";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
+import { ITaskSystem } from "vs/workbench/contrib/tasks/common/taskSystem";
+import { ExecutionEngine } from "vs/workbench/contrib/tasks/common/tasks";
 
 export class TaskService extends AbstractTaskService {
 	private static readonly ProcessTaskSystemSupportMessage = nls.localize(
 		"taskService.processTaskSystem",
-		"Process task system is not support in the web."
+		"Process task system is not support in the web.",
 	);
 
 	protected _getTaskSystem(): ITaskSystem {
@@ -44,7 +44,7 @@ export class TaskService extends AbstractTaskService {
 	}
 
 	protected _computeLegacyConfiguration(
-		workspaceFolder: IWorkspaceFolder
+		workspaceFolder: IWorkspaceFolder,
 	): Promise<IWorkspaceFolderConfigurationResult> {
 		throw new Error(TaskService.ProcessTaskSystemSupportMessage);
 	}

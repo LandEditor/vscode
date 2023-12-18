@@ -3,59 +3,59 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
+import { CancellationTokenSource } from "vs/base/common/cancellation";
+import { Codicon } from "vs/base/common/codicons";
+import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
+import Severity from "vs/base/common/severity";
+import {
+	IBulkEditService,
+	ResourceEdit,
+} from "vs/editor/browser/services/bulkEditService";
+import { localize, localize2 } from "vs/nls";
+import {
+	Action2,
+	MenuId,
+	registerAction2,
+} from "vs/platform/actions/common/actions";
+import {
+	ContextKeyExpr,
+	IContextKey,
+	IContextKeyService,
+	RawContextKey,
+} from "vs/platform/contextkey/common/contextkey";
+import { IDialogService } from "vs/platform/dialogs/common/dialogs";
+import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
+import type { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
+import { WorkbenchListFocusContextKey } from "vs/platform/list/browser/listService";
 import { Registry } from "vs/platform/registry/common/platform";
+import { registerIcon } from "vs/platform/theme/common/iconRegistry";
+import { ViewPaneContainer } from "vs/workbench/browser/parts/views/viewPaneContainer";
+import { FocusedViewContext } from "vs/workbench/common/contextkeys";
 import {
 	Extensions as WorkbenchExtensions,
 	IWorkbenchContributionsRegistry,
 } from "vs/workbench/common/contributions";
 import {
-	IBulkEditService,
-	ResourceEdit,
-} from "vs/editor/browser/services/bulkEditService";
-import { BulkEditPane } from "vs/workbench/contrib/bulkEdit/browser/preview/bulkEditPane";
-import {
-	IViewContainersRegistry,
-	Extensions as ViewContainerExtensions,
-	ViewContainerLocation,
-	IViewsRegistry,
-	IViewsService,
-} from "vs/workbench/common/views";
-import { FocusedViewContext } from "vs/workbench/common/contextkeys";
-import { localize, localize2 } from "vs/nls";
-import { ViewPaneContainer } from "vs/workbench/browser/parts/views/viewPaneContainer";
-import {
-	RawContextKey,
-	IContextKeyService,
-	IContextKey,
-	ContextKeyExpr,
-} from "vs/platform/contextkey/common/contextkey";
-import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
-import { BulkEditPreviewProvider } from "vs/workbench/contrib/bulkEdit/browser/preview/bulkEditPreview";
-import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
-import { KeyMod, KeyCode } from "vs/base/common/keyCodes";
-import { WorkbenchListFocusContextKey } from "vs/platform/list/browser/listService";
-import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
-import {
-	MenuId,
-	registerAction2,
-	Action2,
-} from "vs/platform/actions/common/actions";
-import {
 	EditorResourceAccessor,
 	SideBySideEditor,
 } from "vs/workbench/common/editor";
 import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import type { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import { CancellationTokenSource } from "vs/base/common/cancellation";
-import { IDialogService } from "vs/platform/dialogs/common/dialogs";
-import Severity from "vs/base/common/severity";
-import { Codicon } from "vs/base/common/codicons";
-import { registerIcon } from "vs/platform/theme/common/iconRegistry";
+import {
+	Extensions as ViewContainerExtensions,
+	IViewContainersRegistry,
+	IViewsRegistry,
+	IViewsService,
+	ViewContainerLocation,
+} from "vs/workbench/common/views";
+import { BulkEditPane } from "vs/workbench/contrib/bulkEdit/browser/preview/bulkEditPane";
+import { BulkEditPreviewProvider } from "vs/workbench/contrib/bulkEdit/browser/preview/bulkEditPreview";
+import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 import { IPaneCompositePartService } from "vs/workbench/services/panecomposite/browser/panecomposite";
 
 async function getBulkEditPane(
-	viewsService: IViewsService
+	viewsService: IViewsService,
 ): Promise<BulkEditPane | undefined> {
 	const view = await viewsService.openView(BulkEditPane.ID, true);
 	if (view instanceof BulkEditPane) {
@@ -84,11 +84,11 @@ class UXState {
 			if (typeof this._activePanel === "string") {
 				await this._paneCompositeService.openPaneComposite(
 					this._activePanel,
-					ViewContainerLocation.Panel
+					ViewContainerLocation.Panel,
 				);
 			} else {
 				this._paneCompositeService.hideActivePaneComposite(
-					ViewContainerLocation.Panel
+					ViewContainerLocation.Panel,
 				);
 			}
 		}
@@ -100,7 +100,7 @@ class UXState {
 				for (const input of group.editors) {
 					const resource = EditorResourceAccessor.getCanonicalUri(
 						input,
-						{ supportSideBySide: SideBySideEditor.PRIMARY }
+						{ supportSideBySide: SideBySideEditor.PRIMARY },
 					);
 					if (resource?.scheme === BulkEditPreviewProvider.Schema) {
 						previewEditors.push(input);
@@ -118,14 +118,14 @@ class UXState {
 class PreviewSession {
 	constructor(
 		readonly uxState: UXState,
-		readonly cts: CancellationTokenSource = new CancellationTokenSource()
+		readonly cts: CancellationTokenSource = new CancellationTokenSource(),
 	) {}
 }
 
 class BulkEditPreviewContribution {
 	static readonly ctxEnabled = new RawContextKey(
 		"refactorPreview.enabled",
-		false
+		false,
 	);
 
 	private readonly _ctxEnabled: IContextKey<boolean>;
@@ -165,15 +165,15 @@ class BulkEditPreviewContribution {
 				type: Severity.Info,
 				message: localize(
 					"overlap",
-					"Another refactoring is being previewed."
+					"Another refactoring is being previewed.",
 				),
 				detail: localize(
 					"detail",
-					"Press 'Continue' to discard the previous refactoring and continue with the current refactoring."
+					"Press 'Continue' to discard the previous refactoring and continue with the current refactoring.",
 				),
 				primaryButton: localize(
 					{ key: "continue", comment: ["&& denotes a mnemonic"] },
-					"&&Continue"
+					"&&Continue",
 				),
 			});
 
@@ -219,7 +219,7 @@ registerAction2(
 				icon: Codicon.check,
 				precondition: ContextKeyExpr.and(
 					BulkEditPreviewContribution.ctxEnabled,
-					BulkEditPane.ctxHasCheckedChanges
+					BulkEditPane.ctxHasCheckedChanges,
 				),
 				menu: [
 					{
@@ -231,7 +231,7 @@ registerAction2(
 					weight: KeybindingWeight.EditorContrib - 10,
 					when: ContextKeyExpr.and(
 						BulkEditPreviewContribution.ctxEnabled,
-						FocusedViewContext.isEqualTo(BulkEditPane.ID)
+						FocusedViewContext.isEqualTo(BulkEditPane.ID),
 					),
 					primary: KeyMod.Shift + KeyCode.Enter,
 				},
@@ -243,7 +243,7 @@ registerAction2(
 			const view = await getBulkEditPane(viewsService);
 			view?.accept();
 		}
-	}
+	},
 );
 
 // CMD: discard
@@ -270,7 +270,7 @@ registerAction2(
 			const view = await getBulkEditPane(viewsService);
 			view?.discard();
 		}
-	}
+	},
 );
 
 // CMD: toggle change
@@ -299,7 +299,7 @@ registerAction2(
 			const view = await getBulkEditPane(viewsService);
 			view?.toggleChecked();
 		}
-	}
+	},
 );
 
 // CMD: toggle category
@@ -314,14 +314,14 @@ registerAction2(
 				precondition: ContextKeyExpr.and(
 					BulkEditPane.ctxHasCategories,
 					BulkEditPane.ctxGroupByFile.negate(),
-					BulkEditPreviewContribution.ctxEnabled
+					BulkEditPreviewContribution.ctxEnabled,
 				),
 				menu: [
 					{
 						id: MenuId.BulkEditTitle,
 						when: ContextKeyExpr.and(
 							BulkEditPane.ctxHasCategories,
-							BulkEditPane.ctxGroupByFile.negate()
+							BulkEditPane.ctxGroupByFile.negate(),
 						),
 						group: "navigation",
 						order: 3,
@@ -335,7 +335,7 @@ registerAction2(
 			const view = await getBulkEditPane(viewsService);
 			view?.groupByFile();
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -349,14 +349,14 @@ registerAction2(
 				precondition: ContextKeyExpr.and(
 					BulkEditPane.ctxHasCategories,
 					BulkEditPane.ctxGroupByFile,
-					BulkEditPreviewContribution.ctxEnabled
+					BulkEditPreviewContribution.ctxEnabled,
 				),
 				menu: [
 					{
 						id: MenuId.BulkEditTitle,
 						when: ContextKeyExpr.and(
 							BulkEditPane.ctxHasCategories,
-							BulkEditPane.ctxGroupByFile
+							BulkEditPane.ctxGroupByFile,
 						),
 						group: "navigation",
 						order: 3,
@@ -370,7 +370,7 @@ registerAction2(
 			const view = await getBulkEditPane(viewsService);
 			view?.groupByType();
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -384,7 +384,7 @@ registerAction2(
 				toggled: BulkEditPane.ctxGroupByFile.negate(),
 				precondition: ContextKeyExpr.and(
 					BulkEditPane.ctxHasCategories,
-					BulkEditPreviewContribution.ctxEnabled
+					BulkEditPreviewContribution.ctxEnabled,
 				),
 				menu: [
 					{
@@ -400,14 +400,14 @@ registerAction2(
 			const view = await getBulkEditPane(viewsService);
 			view?.toggleGrouping();
 		}
-	}
+	},
 );
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	BulkEditPreviewContribution,
-	LifecyclePhase.Ready
+	LifecyclePhase.Ready,
 );
 
 const refactorPreviewViewIcon = registerIcon(
@@ -415,12 +415,12 @@ const refactorPreviewViewIcon = registerIcon(
 	Codicon.lightbulb,
 	localize(
 		"refactorPreviewViewIcon",
-		"View icon of the refactor preview view."
-	)
+		"View icon of the refactor preview view.",
+	),
 );
 
 const container = Registry.as<IViewContainersRegistry>(
-	ViewContainerExtensions.ViewContainersRegistry
+	ViewContainerExtensions.ViewContainersRegistry,
 ).registerViewContainer(
 	{
 		id: BulkEditPane.ID,
@@ -433,11 +433,11 @@ const container = Registry.as<IViewContainersRegistry>(
 		icon: refactorPreviewViewIcon,
 		storageId: BulkEditPane.ID,
 	},
-	ViewContainerLocation.Panel
+	ViewContainerLocation.Panel,
 );
 
 Registry.as<IViewsRegistry>(
-	ViewContainerExtensions.ViewsRegistry
+	ViewContainerExtensions.ViewsRegistry,
 ).registerViews(
 	[
 		{
@@ -448,5 +448,5 @@ Registry.as<IViewsRegistry>(
 			containerIcon: refactorPreviewViewIcon,
 		},
 	],
-	container
+	container,
 );

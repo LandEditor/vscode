@@ -3,33 +3,33 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
+import { ThrottledDelayer } from "vs/base/common/async";
+import { Event } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
 import { language } from "vs/base/common/platform";
+import { platform } from "vs/base/common/process";
+import { URI } from "vs/base/common/uri";
+import * as nls from "vs/nls";
 import {
-	IWorkbenchContributionsRegistry,
-	IWorkbenchContribution,
-	Extensions as WorkbenchExtensions,
-} from "vs/workbench/common/contributions";
+	INotificationService,
+	Severity,
+} from "vs/platform/notification/common/notification";
+import { IOpenerService } from "vs/platform/opener/common/opener";
+import { IProductService } from "vs/platform/product/common/productService";
 import { Registry } from "vs/platform/registry/common/platform";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import {
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
-import { IProductService } from "vs/platform/product/common/productService";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import {
-	Severity,
-	INotificationService,
-} from "vs/platform/notification/common/notification";
-import { IOpenerService } from "vs/platform/opener/common/opener";
+	Extensions as WorkbenchExtensions,
+	IWorkbenchContribution,
+	IWorkbenchContributionsRegistry,
+} from "vs/workbench/common/contributions";
 import { IWorkbenchAssignmentService } from "vs/workbench/services/assignment/common/assignmentService";
-import { URI } from "vs/base/common/uri";
-import { platform } from "vs/base/common/process";
-import { ThrottledDelayer } from "vs/base/common/async";
-import { Disposable } from "vs/base/common/lifecycle";
-import { Event } from "vs/base/common/event";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 const WAIT_TIME_TO_SHOW_SURVEY = 1000 * 60 * 60; // 1 hour
 const MIN_WAIT_TIME_TO_SHOW_SURVEY = 1000 * 60 * 2; // 2 minutes
@@ -87,7 +87,7 @@ class CESContribution extends Disposable implements IWorkbenchContribution {
 				| "accept"
 				| "remindLater"
 				| "neverShowAgain"
-				| "cancelled"
+				| "cancelled",
 		) => {
 			/* __GDPR__
 			"cesSurvey:popup" : {
@@ -102,15 +102,15 @@ class CESContribution extends Disposable implements IWorkbenchContribution {
 
 		const message =
 			(await this.tasExperimentService?.getTreatment<string>(
-				"CESSurveyMessage"
+				"CESSurveyMessage",
 			)) ??
 			nls.localize(
 				"cesSurveyQuestion",
-				"Got a moment to help the VS Code team? Please tell us about your experience with VS Code so far."
+				"Got a moment to help the VS Code team? Please tell us about your experience with VS Code so far.",
 			);
 		const button =
 			(await this.tasExperimentService?.getTreatment<string>(
-				"CESSurveyButton"
+				"CESSurveyButton",
 			)) ?? nls.localize("giveFeedback", "Give Feedback");
 
 		const notification = this.notificationService.prompt(
@@ -124,17 +124,18 @@ class CESContribution extends Disposable implements IWorkbenchContribution {
 						let surveyUrl = `${
 							this.productService.cesSurveyUrl
 						}?o=${encodeURIComponent(
-							platform
+							platform,
 						)}&v=${encodeURIComponent(
-							this.productService.version
+							this.productService.version,
 						)}&m=${encodeURIComponent(
-							this.telemetryService.machineId
+							this.telemetryService.machineId,
 						)}`;
 
 						const usedParams = this.productService.surveys
 							?.filter(
 								(surveyData) =>
-									surveyData.surveyId && surveyData.languageId
+									surveyData.surveyId &&
+									surveyData.languageId,
 							)
 							// Counts provided by contrib/surveys/browser/languageSurveys
 							.filter(
@@ -142,14 +143,14 @@ class CESContribution extends Disposable implements IWorkbenchContribution {
 									this.storageService.getNumber(
 										`${surveyData.surveyId}.editedCount`,
 										StorageScope.APPLICATION,
-										0
-									) > 0
+										0,
+									) > 0,
 							)
 							.map(
 								(surveyData) =>
 									`${encodeURIComponent(
-										surveyData.languageId
-									)}Lang=1`
+										surveyData.languageId,
+									)}Lang=1`,
 							)
 							.join("&");
 						if (usedParams) {
@@ -167,7 +168,7 @@ class CESContribution extends Disposable implements IWorkbenchContribution {
 							REMIND_LATER_DATE_KEY,
 							new Date().toUTCString(),
 							StorageScope.APPLICATION,
-							StorageTarget.USER
+							StorageTarget.USER,
 						);
 						this.schedulePrompt();
 					},
@@ -179,7 +180,7 @@ class CESContribution extends Disposable implements IWorkbenchContribution {
 					sendTelemetry("cancelled");
 					this.skipSurvey();
 				},
-			}
+			},
 		);
 
 		await Event.toPromise(notification.onDidClose);
@@ -190,7 +191,7 @@ class CESContribution extends Disposable implements IWorkbenchContribution {
 		const remindLaterDate = this.storageService.get(
 			REMIND_LATER_DATE_KEY,
 			StorageScope.APPLICATION,
-			""
+			"",
 		);
 		if (remindLaterDate) {
 			const timeToRemind =
@@ -228,7 +229,7 @@ class CESContribution extends Disposable implements IWorkbenchContribution {
 			async () => {
 				await this.promptUser();
 			},
-			Math.max(waitTimeToShowSurvey, MIN_WAIT_TIME_TO_SHOW_SURVEY)
+			Math.max(waitTimeToShowSurvey, MIN_WAIT_TIME_TO_SHOW_SURVEY),
 		);
 	}
 
@@ -237,17 +238,17 @@ class CESContribution extends Disposable implements IWorkbenchContribution {
 			SKIP_SURVEY_KEY,
 			this.productService.version,
 			StorageScope.APPLICATION,
-			StorageTarget.USER
+			StorageTarget.USER,
 		);
 	}
 }
 
 if (language === "en") {
 	const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-		WorkbenchExtensions.Workbench
+		WorkbenchExtensions.Workbench,
 	);
 	workbenchRegistry.registerWorkbenchContribution(
 		CESContribution,
-		LifecyclePhase.Restored
+		LifecyclePhase.Restored,
 	);
 }

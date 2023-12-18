@@ -63,7 +63,7 @@ export class MarkerHover implements IHoverPart {
 	constructor(
 		public readonly owner: IEditorHoverParticipant<MarkerHover>,
 		public readonly range: Range,
-		public readonly marker: IMarker
+		public readonly marker: IMarker,
 	) {}
 
 	public isValidForHoverAnchor(anchor: HoverAnchor): boolean {
@@ -101,7 +101,7 @@ export class MarkerHoverParticipant
 
 	public computeSync(
 		anchor: HoverAnchor,
-		lineDecorations: IModelDecoration[]
+		lineDecorations: IModelDecoration[],
 	): MarkerHover[] {
 		if (
 			!this._editor.hasModel() ||
@@ -127,7 +127,7 @@ export class MarkerHoverParticipant
 
 			const marker = this._markerDecorationsService.getMarker(
 				model.uri,
-				d
+				d,
 			);
 			if (!marker) {
 				continue;
@@ -137,7 +137,7 @@ export class MarkerHoverParticipant
 				anchor.range.startLineNumber,
 				startColumn,
 				anchor.range.startLineNumber,
-				endColumn
+				endColumn,
 			);
 			result.push(new MarkerHover(this, range, marker));
 		}
@@ -147,7 +147,7 @@ export class MarkerHoverParticipant
 
 	public renderHoverParts(
 		context: IEditorHoverRenderContext,
-		hoverParts: MarkerHover[]
+		hoverParts: MarkerHover[],
 	): IDisposable {
 		if (!hoverParts.length) {
 			return Disposable.None;
@@ -155,8 +155,8 @@ export class MarkerHoverParticipant
 		const disposables = new DisposableStore();
 		hoverParts.forEach((msg) =>
 			context.fragment.appendChild(
-				this.renderMarkerHover(msg, disposables)
-			)
+				this.renderMarkerHover(msg, disposables),
+			),
 		);
 		const markerHoverForStatusbar =
 			hoverParts.length === 1
@@ -164,25 +164,25 @@ export class MarkerHoverParticipant
 				: hoverParts.sort((a, b) =>
 						MarkerSeverity.compare(
 							a.marker.severity,
-							b.marker.severity
-						)
-					)[0];
+							b.marker.severity,
+						),
+				  )[0];
 		this.renderMarkerStatusbar(
 			context,
 			markerHoverForStatusbar,
-			disposables
+			disposables,
 		);
 		return disposables;
 	}
 
 	private renderMarkerHover(
 		markerHover: MarkerHover,
-		disposables: DisposableStore
+		disposables: DisposableStore,
 	): HTMLElement {
 		const hoverElement = $("div.hover-row");
 		const markerElement = dom.append(
 			hoverElement,
-			$("div.marker.hover-contents")
+			$("div.marker.hover-contents"),
 		);
 		const { source, message, code, relatedInformation } =
 			markerHover.marker;
@@ -199,13 +199,13 @@ export class MarkerHoverParticipant
 				if (source) {
 					const sourceElement = dom.append(
 						sourceAndCodeElement,
-						$("span")
+						$("span"),
 					);
 					sourceElement.innerText = source;
 				}
 				const codeLink = dom.append(
 					sourceAndCodeElement,
-					$("a.code-link")
+					$("a.code-link"),
 				);
 				codeLink.setAttribute("href", code.target.toString());
 
@@ -216,7 +216,7 @@ export class MarkerHoverParticipant
 						});
 						e.preventDefault();
 						e.stopPropagation();
-					})
+					}),
 				);
 
 				const codeElement = dom.append(codeLink, $("span"));
@@ -224,7 +224,7 @@ export class MarkerHoverParticipant
 
 				const detailsElement = dom.append(
 					markerElement,
-					sourceAndCodeElement
+					sourceAndCodeElement,
 				);
 				detailsElement.style.opacity = "0.6";
 				detailsElement.style.paddingLeft = "6px";
@@ -236,8 +236,8 @@ export class MarkerHoverParticipant
 					source && code
 						? `${source}(${code})`
 						: source
-							? source
-							: `(${code})`;
+						  ? source
+						  : `(${code})`;
 			}
 		}
 
@@ -250,12 +250,12 @@ export class MarkerHoverParticipant
 			} of relatedInformation) {
 				const relatedInfoContainer = dom.append(
 					markerElement,
-					$("div")
+					$("div"),
 				);
 				relatedInfoContainer.style.marginTop = "8px";
 				const a = dom.append(relatedInfoContainer, $("a"));
 				a.innerText = `${basename(
-					resource
+					resource,
 				)}(${startLineNumber}, ${startColumn}): `;
 				a.style.cursor = "pointer";
 				disposables.add(
@@ -275,11 +275,11 @@ export class MarkerHoverParticipant
 								})
 								.catch(onUnexpectedError);
 						}
-					})
+					}),
 				);
 				const messageElement = dom.append<HTMLAnchorElement>(
 					relatedInfoContainer,
-					$("span")
+					$("span"),
 				);
 				messageElement.innerText = message;
 				this._editor.applyFontInfo(messageElement);
@@ -292,7 +292,7 @@ export class MarkerHoverParticipant
 	private renderMarkerStatusbar(
 		context: IEditorHoverRenderContext,
 		markerHover: MarkerHover,
-		disposables: DisposableStore
+		disposables: DisposableStore,
 	): void {
 		if (
 			markerHover.marker.severity === MarkerSeverity.Error ||
@@ -305,7 +305,7 @@ export class MarkerHoverParticipant
 				run: () => {
 					context.hide();
 					MarkerController.get(this._editor)?.showAtMarker(
-						markerHover.marker
+						markerHover.marker,
 					);
 					this._editor.focus();
 				},
@@ -314,18 +314,18 @@ export class MarkerHoverParticipant
 
 		if (!this._editor.getOption(EditorOption.readOnly)) {
 			const quickfixPlaceholderElement = context.statusBar.append(
-				$("div")
+				$("div"),
 			);
 			if (this.recentMarkerCodeActionsInfo) {
 				if (
 					IMarkerData.makeKey(
-						this.recentMarkerCodeActionsInfo.marker
+						this.recentMarkerCodeActionsInfo.marker,
 					) === IMarkerData.makeKey(markerHover.marker)
 				) {
 					if (!this.recentMarkerCodeActionsInfo.hasCodeActions) {
 						quickfixPlaceholderElement.textContent = nls.localize(
 							"noQuickFixes",
-							"No quick fixes available"
+							"No quick fixes available",
 						);
 					}
 				} else {
@@ -341,11 +341,11 @@ export class MarkerHoverParticipant
 								(quickfixPlaceholderElement.textContent =
 									nls.localize(
 										"checkingForQuickFixes",
-										"Checking for quick fixes..."
+										"Checking for quick fixes...",
 									)),
 							200,
-							disposables
-						);
+							disposables,
+					  );
 			if (!quickfixPlaceholderElement.textContent) {
 				// Have some content in here to avoid flickering
 				quickfixPlaceholderElement.textContent =
@@ -364,7 +364,7 @@ export class MarkerHoverParticipant
 					actions.dispose();
 					quickfixPlaceholderElement.textContent = nls.localize(
 						"noQuickFixes",
-						"No quick fixes available"
+						"No quick fixes available",
 					);
 					return;
 				}
@@ -376,7 +376,7 @@ export class MarkerHoverParticipant
 						if (!showing) {
 							actions.dispose();
 						}
-					})
+					}),
 				);
 
 				context.statusBar.addAction({
@@ -385,7 +385,7 @@ export class MarkerHoverParticipant
 					run: (target) => {
 						showing = true;
 						const controller = CodeActionController.get(
-							this._editor
+							this._editor,
 						);
 						const elementPosition =
 							dom.getDomNodePagePosition(target);
@@ -400,7 +400,7 @@ export class MarkerHoverParticipant
 								y: elementPosition.top,
 								width: elementPosition.width,
 								height: elementPosition.height,
-							}
+							},
 						);
 					},
 				});
@@ -417,11 +417,11 @@ export class MarkerHoverParticipant
 					marker.startLineNumber,
 					marker.startColumn,
 					marker.endLineNumber,
-					marker.endColumn
+					marker.endColumn,
 				),
 				markerCodeActionTrigger,
 				Progress.None,
-				cancellationToken
+				cancellationToken,
 			);
 		});
 	}

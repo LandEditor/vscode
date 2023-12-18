@@ -48,7 +48,7 @@ export class WebviewIconManager implements IDisposable {
 			this._styleElement = dom.createStyleSheet(
 				undefined,
 				undefined,
-				this._styleElementDisposable
+				this._styleElementDisposable,
 			);
 			this._styleElement.className = "webview-icons";
 		}
@@ -75,11 +75,11 @@ export class WebviewIconManager implements IDisposable {
 				try {
 					cssRules.push(
 						`.monaco-workbench.vs ${webviewSelector}, .monaco-workbench.hc-light ${webviewSelector} { content: ""; background-image: ${dom.asCSSUrl(
-							value.light
+							value.light,
 						)}; }`,
 						`.monaco-workbench.vs-dark ${webviewSelector}, .monaco-workbench.hc-black ${webviewSelector} { content: ""; background-image: ${dom.asCSSUrl(
-							value.dark
-						)}; }`
+							value.dark,
+						)}; }`,
 					);
 				} catch {
 					// noop

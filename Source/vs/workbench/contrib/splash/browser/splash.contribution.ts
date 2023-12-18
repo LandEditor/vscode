@@ -3,19 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	Extensions,
-	IWorkbenchContributionsRegistry,
-} from "vs/workbench/common/contributions";
-import { ISplashStorageService } from "vs/workbench/contrib/splash/browser/splash";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { PartsSplash } from "vs/workbench/contrib/splash/browser/partsSplash";
+import { Registry } from "vs/platform/registry/common/platform";
 import { IPartsSplash } from "vs/platform/theme/common/themeService";
+import {
+	Extensions,
+	IWorkbenchContributionsRegistry,
+} from "vs/workbench/common/contributions";
+import { PartsSplash } from "vs/workbench/contrib/splash/browser/partsSplash";
+import { ISplashStorageService } from "vs/workbench/contrib/splash/browser/splash";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 registerSingleton(
 	ISplashStorageService,
@@ -27,9 +27,9 @@ registerSingleton(
 			localStorage.setItem("monaco-parts-splash", raw);
 		}
 	},
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench
+	Extensions.Workbench,
 ).registerWorkbenchContribution(PartsSplash, LifecyclePhase.Starting);

@@ -3,17 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/bannerpart";
-import { localize } from "vs/nls";
 import {
 	$,
+	EventType,
 	addDisposableListener,
 	append,
 	asCSSUrl,
 	clearNode,
-	EventType,
 } from "vs/base/browser/dom";
 import { ActionBar } from "vs/base/browser/ui/actionbar/actionbar";
+import { Action } from "vs/base/common/actions";
+import { Emitter } from "vs/base/common/event";
+import { MarkdownString } from "vs/base/common/htmlContent";
+import { KeyCode } from "vs/base/common/keyCodes";
+import { ThemeIcon } from "vs/base/common/themables";
+import { URI } from "vs/base/common/uri";
+import "vs/css!./media/bannerpart";
+import { MarkdownRenderer } from "vs/editor/contrib/markdownRenderer/browser/markdownRenderer";
+import { localize } from "vs/nls";
+import { Categories } from "vs/platform/action/common/actionCommonCategories";
+import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
 import {
 	InstantiationType,
 	registerSingleton,
@@ -22,34 +32,24 @@ import {
 	IInstantiationService,
 	ServicesAccessor,
 } from "vs/platform/instantiation/common/instantiation";
-import { IStorageService } from "vs/platform/storage/common/storage";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import { ThemeIcon } from "vs/base/common/themables";
-import { Part } from "vs/workbench/browser/part";
 import {
-	IWorkbenchLayoutService,
-	Parts,
-} from "vs/workbench/services/layout/browser/layoutService";
-import { Action } from "vs/base/common/actions";
+	KeybindingWeight,
+	KeybindingsRegistry,
+} from "vs/platform/keybinding/common/keybindingsRegistry";
 import { Link } from "vs/platform/opener/browser/link";
-import { MarkdownString } from "vs/base/common/htmlContent";
-import { Emitter } from "vs/base/common/event";
+import { IStorageService } from "vs/platform/storage/common/storage";
+import { widgetClose } from "vs/platform/theme/common/iconRegistry";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import { Part } from "vs/workbench/browser/part";
+import { BannerFocused } from "vs/workbench/common/contextkeys";
 import {
 	IBannerItem,
 	IBannerService,
 } from "vs/workbench/services/banner/browser/bannerService";
-import { MarkdownRenderer } from "vs/editor/contrib/markdownRenderer/browser/markdownRenderer";
-import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
-import { Categories } from "vs/platform/action/common/actionCommonCategories";
 import {
-	KeybindingsRegistry,
-	KeybindingWeight,
-} from "vs/platform/keybinding/common/keybindingsRegistry";
-import { KeyCode } from "vs/base/common/keyCodes";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import { URI } from "vs/base/common/uri";
-import { widgetClose } from "vs/platform/theme/common/iconRegistry";
-import { BannerFocused } from "vs/workbench/common/contextkeys";
+	IWorkbenchLayoutService,
+	Parts,
+} from "vs/workbench/services/layout/browser/layoutService";
 
 // Banner Part
 
@@ -71,7 +71,7 @@ export class BannerPart extends Part implements IBannerService {
 	}
 
 	private _onDidChangeSize = this._register(
-		new Emitter<{ width: number; height: number } | undefined>()
+		new Emitter<{ width: number; height: number } | undefined>(),
 	);
 	override get onDidChange() {
 		return this._onDidChangeSize.event;
@@ -85,7 +85,7 @@ export class BannerPart extends Part implements IBannerService {
 
 	private actionBar: ActionBar | undefined;
 	private messageActionsContainer: HTMLElement | undefined;
-	private focusedActionIndex: number = -1;
+	private focusedActionIndex = -1;
 
 	constructor(
 		@IThemeService themeService: IThemeService,
@@ -120,12 +120,12 @@ export class BannerPart extends Part implements IBannerService {
 				if (this.focusedActionIndex !== -1) {
 					this.focusActionLink();
 				}
-			})
+			}),
 		);
 
 		// Track focus
 		const scopedContextKeyService = this.contextKeyService.createScoped(
-			this.element
+			this.element,
 		);
 		BannerFocused.bindTo(scopedContextKeyService).set(true);
 
@@ -243,7 +243,7 @@ export class BannerPart extends Part implements IBannerService {
 
 		if (ThemeIcon.isThemeIcon(item.icon)) {
 			iconContainer.appendChild(
-				$(`div${ThemeIcon.asCSSSelector(item.icon)}`)
+				$(`div${ThemeIcon.asCSSSelector(item.icon)}`),
 			);
 		} else {
 			iconContainer.classList.add("custom-icon");
@@ -256,7 +256,7 @@ export class BannerPart extends Part implements IBannerService {
 		// Message
 		const messageContainer = append(
 			this.element,
-			$("div.message-container")
+			$("div.message-container"),
 		);
 		messageContainer.setAttribute("aria-hidden", "true");
 		messageContainer.appendChild(this.getBannerMessage(item.message));
@@ -264,7 +264,7 @@ export class BannerPart extends Part implements IBannerService {
 		// Message Actions
 		this.messageActionsContainer = append(
 			this.element,
-			$("div.message-actions-container")
+			$("div.message-actions-container"),
 		);
 		if (item.actions) {
 			for (const action of item.actions) {
@@ -273,8 +273,8 @@ export class BannerPart extends Part implements IBannerService {
 						Link,
 						this.messageActionsContainer,
 						{ ...action, tabIndex: -1 },
-						{}
-					)
+						{},
+					),
 				);
 			}
 		}
@@ -282,7 +282,7 @@ export class BannerPart extends Part implements IBannerService {
 		// Action
 		const actionBarContainer = append(
 			this.element,
-			$("div.action-container")
+			$("div.action-container"),
 		);
 		this.actionBar = this._register(new ActionBar(actionBarContainer));
 		const closeAction = this._register(
@@ -291,8 +291,8 @@ export class BannerPart extends Part implements IBannerService {
 				"Close Banner",
 				ThemeIcon.asClassName(widgetClose),
 				true,
-				() => this.close(item)
-			)
+				() => this.close(item),
+			),
 		);
 		this.actionBar.push(closeAction, { icon: true, label: false });
 		this.actionBar.setFocusable(false);

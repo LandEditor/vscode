@@ -3,37 +3,37 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { matchesFuzzy } from "vs/base/common/filters";
+import { ThemeIcon } from "vs/base/common/themables";
 import { localize } from "vs/nls";
-import { IQuickPickSeparator } from "vs/platform/quickinput/common/quickInput";
+import { ICommandService } from "vs/platform/commands/common/commands";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import {
 	IPickerQuickAccessItem,
 	PickerQuickAccessProvider,
 	TriggerAction,
 } from "vs/platform/quickinput/browser/pickerQuickAccess";
-import { matchesFuzzy } from "vs/base/common/filters";
+import { IQuickPickSeparator } from "vs/platform/quickinput/common/quickInput";
+import { TerminalLocation } from "vs/platform/terminal/common/terminal";
+import { IThemeService } from "vs/platform/theme/common/themeService";
 import {
 	ITerminalEditorService,
 	ITerminalGroupService,
 	ITerminalInstance,
 	ITerminalService,
 } from "vs/workbench/contrib/terminal/browser/terminal";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import { TerminalCommandId } from "vs/workbench/contrib/terminal/common/terminal";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import { ThemeIcon } from "vs/base/common/themables";
-import {
-	killTerminalIcon,
-	renameTerminalIcon,
-} from "vs/workbench/contrib/terminal/browser/terminalIcons";
 import {
 	getColorClass,
 	getIconId,
 	getUriClasses,
 } from "vs/workbench/contrib/terminal/browser/terminalIcon";
+import {
+	killTerminalIcon,
+	renameTerminalIcon,
+} from "vs/workbench/contrib/terminal/browser/terminalIcons";
+import { TerminalCommandId } from "vs/workbench/contrib/terminal/common/terminal";
 import { terminalStrings } from "vs/workbench/contrib/terminal/common/terminalStrings";
-import { TerminalLocation } from "vs/platform/terminal/common/terminal";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 let terminalPicks: Array<IPickerQuickAccessItem | IQuickPickSeparator> = [];
 
 export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPickerQuickAccessItem> {
@@ -56,7 +56,7 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 		});
 	}
 	protected _getPicks(
-		filter: string
+		filter: string,
 	): Array<IPickerQuickAccessItem | IQuickPickSeparator> {
 		terminalPicks = [];
 		terminalPicks.push({ type: "separator", label: "panel" });
@@ -107,7 +107,7 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 
 		const createTerminalLabel = localize(
 			"workbench.action.terminal.newplus",
-			"Create New Terminal"
+			"Create New Terminal",
 		);
 		terminalPicks.push({
 			label: `$(plus) ${createTerminalLabel}`,
@@ -117,14 +117,14 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 		});
 		const createWithProfileLabel = localize(
 			"workbench.action.terminal.newWithProfilePlus",
-			"Create New Terminal With Profile"
+			"Create New Terminal With Profile",
 		);
 		terminalPicks.push({
 			label: `$(plus) ${createWithProfileLabel}`,
 			ariaLabel: createWithProfileLabel,
 			accept: () =>
 				this._commandService.executeCommand(
-					TerminalCommandId.NewWithProfile
+					TerminalCommandId.NewWithProfile,
 				),
 		});
 		return terminalPicks;
@@ -134,11 +134,11 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 		terminal: ITerminalInstance,
 		terminalIndex: number,
 		filter: string,
-		groupInfo?: { groupIndex: number; groupSize: number }
+		groupInfo?: { groupIndex: number; groupSize: number },
 	): IPickerQuickAccessItem | undefined {
 		const iconId = this._instantiationService.invokeFunction(
 			getIconId,
-			terminal
+			terminal,
 		);
 		const index = groupInfo
 			? groupInfo.groupSize > 1
@@ -153,7 +153,7 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 		}
 		const uriClasses = getUriClasses(
 			terminal,
-			this._themeService.getColorTheme().type
+			this._themeService.getColorTheme().type,
 		);
 		if (uriClasses) {
 			iconClasses.push(...uriClasses);
@@ -180,7 +180,7 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 						case 0:
 							this._commandService.executeCommand(
 								TerminalCommandId.Rename,
-								terminal
+								terminal,
 							);
 							return TriggerAction.NO_ACTION;
 						case 1:
@@ -193,7 +193,7 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 				accept: (keyMod, event) => {
 					if (terminal.target === TerminalLocation.Editor) {
 						const existingEditors = this._editorService.findEditors(
-							terminal.resource
+							terminal.resource,
 						);
 						this._terminalEditorService.openEditor(terminal, {
 							viewColumn: existingEditors?.[0].groupId,
@@ -201,7 +201,7 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 						this._terminalEditorService.setActiveInstance(terminal);
 					} else {
 						this._terminalGroupService.showPanel(
-							!event.inBackground
+							!event.inBackground,
 						);
 						this._terminalGroupService.setActiveInstance(terminal);
 					}

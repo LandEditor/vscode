@@ -80,7 +80,7 @@ export class TreeNode {
 	}
 }
 
-export const enum NodeColor {
+export enum NodeColor {
 	Black = 0,
 	Red = 1,
 }
@@ -227,12 +227,10 @@ export function rbDelete(tree: PieceTreeBase, z: TreeNode) {
 
 		if (z === tree.root) {
 			tree.root = y;
+		} else if (z === z.parent.left) {
+			z.parent.left = y;
 		} else {
-			if (z === z.parent.left) {
-				z.parent.left = y;
-			} else {
-				z.parent.right = y;
-			}
+			z.parent.right = y;
 		}
 
 		if (y.left !== SENTINEL) {
@@ -390,7 +388,7 @@ export function updateTreeMetadata(
 	tree: PieceTreeBase,
 	x: TreeNode,
 	delta: number,
-	lineFeedCntDelta: number
+	lineFeedCntDelta: number,
 ): void {
 	// node length change or line feed count change
 	while (x !== tree.root && x !== SENTINEL) {

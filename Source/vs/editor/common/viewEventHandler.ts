@@ -33,7 +33,7 @@ export class ViewEventHandler extends Disposable {
 	// --- begin event handlers
 
 	public onCompositionStart(
-		e: viewEvents.ViewCompositionStartEvent
+		e: viewEvents.ViewCompositionStartEvent,
 	): boolean {
 		return false;
 	}
@@ -41,17 +41,17 @@ export class ViewEventHandler extends Disposable {
 		return false;
 	}
 	public onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent
+		e: viewEvents.ViewConfigurationChangedEvent,
 	): boolean {
 		return false;
 	}
 	public onCursorStateChanged(
-		e: viewEvents.ViewCursorStateChangedEvent
+		e: viewEvents.ViewCursorStateChangedEvent,
 	): boolean {
 		return false;
 	}
 	public onDecorationsChanged(
-		e: viewEvents.ViewDecorationsChangedEvent
+		e: viewEvents.ViewDecorationsChangedEvent,
 	): boolean {
 		return false;
 	}
@@ -62,12 +62,12 @@ export class ViewEventHandler extends Disposable {
 		return false;
 	}
 	public onLanguageConfigurationChanged(
-		e: viewEvents.ViewLanguageConfigurationEvent
+		e: viewEvents.ViewLanguageConfigurationEvent,
 	): boolean {
 		return false;
 	}
 	public onLineMappingChanged(
-		e: viewEvents.ViewLineMappingChangedEvent
+		e: viewEvents.ViewLineMappingChangedEvent,
 	): boolean {
 		return false;
 	}
@@ -81,7 +81,7 @@ export class ViewEventHandler extends Disposable {
 		return false;
 	}
 	public onRevealRangeRequest(
-		e: viewEvents.ViewRevealRangeRequestEvent
+		e: viewEvents.ViewRevealRangeRequestEvent,
 	): boolean {
 		return false;
 	}
@@ -95,7 +95,7 @@ export class ViewEventHandler extends Disposable {
 		return false;
 	}
 	public onTokensColorsChanged(
-		e: viewEvents.ViewTokensColorsChangedEvent
+		e: viewEvents.ViewTokensColorsChangedEvent,
 	): boolean {
 		return false;
 	}

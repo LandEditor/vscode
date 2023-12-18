@@ -4,18 +4,18 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	hookDomPurifyHrefAndSrcSanitizer,
 	basicMarkupHtmlTags,
+	hookDomPurifyHrefAndSrcSanitizer,
 } from "vs/base/browser/dom";
 import * as dompurify from "vs/base/browser/dompurify/dompurify";
 import { allowedMarkdownAttr } from "vs/base/browser/markdownRenderer";
 import { CancellationToken } from "vs/base/common/cancellation";
 import { marked } from "vs/base/common/marked/marked";
 import { Schemas } from "vs/base/common/network";
+import { escape } from "vs/base/common/strings";
 import { ILanguageService } from "vs/editor/common/languages/language";
 import { tokenizeToString } from "vs/editor/common/languages/textToHtmlTokenizer";
 import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
-import { escape } from "vs/base/common/strings";
 
 export const DEFAULT_MARKDOWN_STYLES = `
 body {
@@ -162,7 +162,7 @@ pre code {
 const allowedProtocols = [Schemas.http, Schemas.https, Schemas.command];
 function sanitize(
 	documentContent: string,
-	allowUnknownProtocols: boolean
+	allowUnknownProtocols: boolean,
 ): string {
 	const hook = hookDomPurifyHrefAndSrcSanitizer(allowedProtocols, true);
 
@@ -201,14 +201,14 @@ export async function renderMarkdownDocument(
 	text: string,
 	extensionService: IExtensionService,
 	languageService: ILanguageService,
-	shouldSanitize: boolean = true,
-	allowUnknownProtocols: boolean = false,
-	token?: CancellationToken
+	shouldSanitize = true,
+	allowUnknownProtocols = false,
+	token?: CancellationToken,
 ): Promise<string> {
 	const highlight = (
 		code: string,
 		lang: string | undefined,
-		callback: ((error: any, code: string) => void) | undefined
+		callback: ((error: any, code: string) => void) | undefined,
 	): any => {
 		if (!callback) {
 			return code;
@@ -230,7 +230,7 @@ export async function renderMarkdownDocument(
 			const html = await tokenizeToString(
 				languageService,
 				code,
-				languageId
+				languageId,
 			);
 			callback(null, `<code>${html}</code>`);
 		});
@@ -239,7 +239,7 @@ export async function renderMarkdownDocument(
 
 	return new Promise<string>((resolve, reject) => {
 		marked(text, { highlight }, (err, value) =>
-			err ? reject(err) : resolve(value)
+			err ? reject(err) : resolve(value),
 		);
 	}).then((raw) => {
 		if (shouldSanitize) {

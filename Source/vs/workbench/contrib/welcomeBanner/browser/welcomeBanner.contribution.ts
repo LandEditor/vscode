@@ -3,21 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
+import { ThemeIcon } from "vs/base/common/themables";
+import { URI } from "vs/base/common/uri";
 import { Registry } from "vs/platform/registry/common/platform";
-import {
-	Extensions as WorkbenchExtensions,
-	IWorkbenchContributionsRegistry,
-} from "vs/workbench/common/contributions";
-import { IBannerService } from "vs/workbench/services/banner/browser/bannerService";
 import {
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
+import {
+	Extensions as WorkbenchExtensions,
+	IWorkbenchContributionsRegistry,
+} from "vs/workbench/common/contributions";
+import { IBannerService } from "vs/workbench/services/banner/browser/bannerService";
 import { IBrowserWorkbenchEnvironmentService } from "vs/workbench/services/environment/browser/environmentService";
-import { URI } from "vs/base/common/uri";
-import { ThemeIcon } from "vs/base/common/themables";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 class WelcomeBannerContribution {
 	private static readonly WELCOME_BANNER_DISMISSED_KEY =
@@ -27,7 +27,7 @@ class WelcomeBannerContribution {
 		@IBannerService bannerService: IBannerService,
 		@IStorageService storageService: IStorageService,
 		@IBrowserWorkbenchEnvironmentService
-		environmentService: IBrowserWorkbenchEnvironmentService
+		environmentService: IBrowserWorkbenchEnvironmentService,
 	) {
 		const welcomeBanner = environmentService.options?.welcomeBanner;
 		if (!welcomeBanner) {
@@ -38,7 +38,7 @@ class WelcomeBannerContribution {
 			storageService.getBoolean(
 				WelcomeBannerContribution.WELCOME_BANNER_DISMISSED_KEY,
 				StorageScope.PROFILE,
-				false
+				false,
 			)
 		) {
 			return; // welcome banner dismissed
@@ -61,7 +61,7 @@ class WelcomeBannerContribution {
 					WelcomeBannerContribution.WELCOME_BANNER_DISMISSED_KEY,
 					true,
 					StorageScope.PROFILE,
-					StorageTarget.MACHINE
+					StorageTarget.MACHINE,
 				);
 			},
 		});
@@ -69,8 +69,8 @@ class WelcomeBannerContribution {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	WelcomeBannerContribution,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );

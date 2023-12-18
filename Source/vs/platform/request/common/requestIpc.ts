@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+	VSBuffer,
 	bufferToStream,
 	streamToBuffer,
-	VSBuffer,
 } from "vs/base/common/buffer";
 import { CancellationToken } from "vs/base/common/cancellation";
 import { Event } from "vs/base/common/event";
@@ -37,7 +37,7 @@ export class RequestChannel implements IServerChannel {
 		context: any,
 		command: string,
 		args?: any,
-		token: CancellationToken = CancellationToken.None
+		token: CancellationToken = CancellationToken.None,
 	): Promise<any> {
 		switch (command) {
 			case "request":
@@ -69,12 +69,12 @@ export class RequestChannelClient implements IRequestService {
 
 	async request(
 		options: IRequestOptions,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IRequestContext> {
 		const [res, buffer] = await this.channel.call<RequestResponse>(
 			"request",
 			[options],
-			token
+			token,
 		);
 		return { res, stream: bufferToStream(buffer) };
 	}

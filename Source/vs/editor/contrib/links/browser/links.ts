@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	createCancelablePromise,
 	CancelablePromise,
 	RunOnceScheduler,
+	createCancelablePromise,
 } from "vs/base/common/async";
 import { CancellationToken } from "vs/base/common/cancellation";
 import { onUnexpectedError } from "vs/base/common/errors";
@@ -22,9 +22,9 @@ import { ICodeEditor, MouseTargetType } from "vs/editor/browser/editorBrowser";
 import {
 	EditorAction,
 	EditorContributionInstantiation,
+	ServicesAccessor,
 	registerEditorAction,
 	registerEditorContribution,
-	ServicesAccessor,
 } from "vs/editor/browser/editorExtensions";
 import { EditorOption } from "vs/editor/common/config/editorOptions";
 import { Position } from "vs/editor/common/core/position";
@@ -48,9 +48,9 @@ import {
 	ClickLinkMouseEvent,
 } from "vs/editor/contrib/gotoSymbol/browser/link/clickLinkGesture";
 import {
-	getLinks,
 	Link,
 	LinksList,
+	getLinks,
 } from "vs/editor/contrib/links/browser/getLinks";
 import * as nls from "vs/nls";
 import { INotificationService } from "vs/platform/notification/common/notification";
@@ -189,7 +189,7 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 		}
 
 		this.computePromise = createCancelablePromise((token) =>
-			getLinks(this.providers, model, token)
+			getLinks(this.providers, model, token),
 		);
 		try {
 			const sw = new StopWatch(false);
@@ -222,7 +222,7 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 			// Not sure why this is sometimes null
 			for (const link of links) {
 				newDecorations.push(
-					LinkOccurrence.decoration(link, useMetaKey)
+					LinkOccurrence.decoration(link, useMetaKey),
 				);
 			}
 		}
@@ -230,7 +230,7 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 		this.editor.changeDecorations((changeAccessor) => {
 			const decorations = changeAccessor.deltaDecorations(
 				oldDecorations,
-				newDecorations
+				newDecorations,
 			);
 
 			this.currentOccurrences = {};
@@ -244,7 +244,7 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 
 	private _onEditorMouseMove(
 		mouseEvent: ClickLinkMouseEvent,
-		withKey: ClickLinkKeyboardEvent | null
+		withKey: ClickLinkKeyboardEvent | null,
 	): void {
 		const useMetaKey =
 			this.editor.getOption(EditorOption.multiCursorModifier) ===
@@ -252,7 +252,7 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 		if (this.isEnabled(mouseEvent, withKey)) {
 			this.cleanUpActiveLinkDecoration(); // always remove previous link decoration as their can only be one
 			const occurrence = this.getLinkOccurrence(
-				mouseEvent.target.position
+				mouseEvent.target.position,
 			);
 			if (occurrence) {
 				this.editor.changeDecorations((changeAccessor) => {
@@ -293,14 +293,14 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 		this.openLinkOccurrence(
 			occurrence,
 			mouseEvent.hasSideBySideModifier,
-			true /* from user gesture */
+			true /* from user gesture */,
 		);
 	}
 
 	public openLinkOccurrence(
 		occurrence: LinkOccurrence,
 		openToSide: boolean,
-		fromUserGesture = false
+		fromUserGesture = false,
 	): void {
 		if (!this.openerService) {
 			return;
@@ -331,7 +331,7 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 							if (relativePath) {
 								uri = resources.joinPath(
 									modelUri,
-									relativePath
+									relativePath,
 								);
 							}
 						}
@@ -355,20 +355,20 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 						nls.localize(
 							"invalid.url",
 							"Failed to open this link because it is not well-formed: {0}",
-							link.url!.toString()
-						)
+							link.url!.toString(),
+						),
 					);
 				} else if (messageOrError === "missing") {
 					this.notificationService.warn(
 						nls.localize(
 							"missing.url",
-							"Failed to open this link because its target is missing."
-						)
+							"Failed to open this link because its target is missing.",
+						),
 					);
 				} else {
 					onUnexpectedError(err);
 				}
-			}
+			},
 		);
 	}
 
@@ -384,7 +384,7 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 				endColumn: position.column,
 			},
 			0,
-			true
+			true,
 		);
 
 		for (const decoration of decorations) {
@@ -399,12 +399,12 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 
 	private isEnabled(
 		mouseEvent: ClickLinkMouseEvent,
-		withKey?: ClickLinkKeyboardEvent | null
+		withKey?: ClickLinkKeyboardEvent | null,
 	): boolean {
 		return Boolean(
 			mouseEvent.target.type === MouseTargetType.CONTENT_TEXT &&
 				(mouseEvent.hasTriggerModifier ||
-					(withKey && withKey.keyCodeIsTriggerKey))
+					(withKey && withKey.keyCodeIsTriggerKey)),
 		);
 	}
 
@@ -444,7 +444,7 @@ const decoration = {
 class LinkOccurrence {
 	public static decoration(
 		link: Link,
-		useMetaKey: boolean
+		useMetaKey: boolean,
 	): IModelDeltaDecoration {
 		return {
 			range: link.range,
@@ -455,7 +455,7 @@ class LinkOccurrence {
 	private static _getOptions(
 		link: Link,
 		useMetaKey: boolean,
-		isActive: boolean
+		isActive: boolean,
 	): ModelDecorationOptions {
 		const options = {
 			...(isActive ? decoration.active : decoration.general),
@@ -474,21 +474,21 @@ class LinkOccurrence {
 
 	public activate(
 		changeAccessor: IModelDecorationsChangeAccessor,
-		useMetaKey: boolean
+		useMetaKey: boolean,
 	): void {
 		changeAccessor.changeDecorationOptions(
 			this.decorationId,
-			LinkOccurrence._getOptions(this.link, useMetaKey, true)
+			LinkOccurrence._getOptions(this.link, useMetaKey, true),
 		);
 	}
 
 	public deactivate(
 		changeAccessor: IModelDecorationsChangeAccessor,
-		useMetaKey: boolean
+		useMetaKey: boolean,
 	): void {
 		changeAccessor.changeDecorationOptions(
 			this.decorationId,
-			LinkOccurrence._getOptions(this.link, useMetaKey, false)
+			LinkOccurrence._getOptions(this.link, useMetaKey, false),
 		);
 	}
 }
@@ -499,16 +499,16 @@ function getHoverMessage(link: Link, useMetaKey: boolean): MarkdownString {
 	const label = link.tooltip
 		? link.tooltip
 		: executeCmd
-			? nls.localize("links.navigate.executeCmd", "Execute command")
-			: nls.localize("links.navigate.follow", "Follow link");
+		  ? nls.localize("links.navigate.executeCmd", "Execute command")
+		  : nls.localize("links.navigate.follow", "Follow link");
 
 	const kb = useMetaKey
 		? platform.isMacintosh
 			? nls.localize("links.navigate.kb.meta.mac", "cmd + click")
 			: nls.localize("links.navigate.kb.meta", "ctrl + click")
 		: platform.isMacintosh
-			? nls.localize("links.navigate.kb.alt.mac", "option + click")
-			: nls.localize("links.navigate.kb.alt", "alt + click");
+		  ? nls.localize("links.navigate.kb.alt.mac", "option + click")
+		  : nls.localize("links.navigate.kb.alt", "alt + click");
 
 	if (link.url) {
 		let nativeLabel = "";
@@ -520,7 +520,7 @@ function getHoverMessage(link: Link, useMetaKey: boolean): MarkdownString {
 				nativeLabel = nls.localize(
 					"tooltip.explanation",
 					"Execute command {0}",
-					commandId
+					commandId,
 				);
 			}
 		}
@@ -528,7 +528,7 @@ function getHoverMessage(link: Link, useMetaKey: boolean): MarkdownString {
 			.appendLink(
 				link.url.toString(true).replace(/ /g, "%20"),
 				label,
-				nativeLabel
+				nativeLabel,
 			)
 			.appendMarkdown(` (${kb})`);
 		return hoverMessage;
@@ -569,6 +569,6 @@ class OpenLinkAction extends EditorAction {
 registerEditorContribution(
 	LinkDetector.ID,
 	LinkDetector,
-	EditorContributionInstantiation.AfterFirstRender
+	EditorContributionInstantiation.AfterFirstRender,
 );
 registerEditorAction(OpenLinkAction);

@@ -13,15 +13,16 @@ import { ElementSizeObserver } from "vs/editor/browser/config/elementSizeObserve
 import { FontMeasurements } from "vs/editor/browser/config/fontMeasurements";
 import { migrateOptions } from "vs/editor/browser/config/migrateOptions";
 import { TabFocus } from "vs/editor/browser/config/tabFocus";
+import { IEditorConfiguration } from "vs/editor/common/config/editorConfiguration";
 import {
 	ComputeOptionsMemory,
 	ConfigurationChangedEvent,
 	EditorOption,
-	editorOptionsRegistry,
 	FindComputedEditorOptionValueById,
 	IComputedEditorOptions,
 	IEditorOptions,
 	IEnvironmentalOptions,
+	editorOptionsRegistry,
 } from "vs/editor/common/config/editorOptions";
 import { EditorZoom } from "vs/editor/common/config/editorZoom";
 import {
@@ -30,7 +31,6 @@ import {
 	IValidatedEditorOptions,
 } from "vs/editor/common/config/fontInfo";
 import { IDimension } from "vs/editor/common/core/dimension";
-import { IEditorConfiguration } from "vs/editor/common/config/editorConfiguration";
 import {
 	AccessibilitySupport,
 	IAccessibilityService,
@@ -53,13 +53,13 @@ export class EditorConfiguration
 	implements IEditorConfiguration
 {
 	private _onDidChange = this._register(
-		new Emitter<ConfigurationChangedEvent>()
+		new Emitter<ConfigurationChangedEvent>(),
 	);
 	public readonly onDidChange: Event<ConfigurationChangedEvent> =
 		this._onDidChange.event;
 
 	private _onDidChangeFast = this._register(
-		new Emitter<ConfigurationChangedEvent>()
+		new Emitter<ConfigurationChangedEvent>(),
 	);
 	public readonly onDidChangeFast: Event<ConfigurationChangedEvent> =
 		this._onDidChangeFast.event;
@@ -67,11 +67,11 @@ export class EditorConfiguration
 	public readonly isSimpleWidget: boolean;
 	private readonly _containerObserver: ElementSizeObserver;
 
-	private _isDominatedByLongLines: boolean = false;
-	private _viewLineCount: number = 1;
-	private _lineNumbersDigitCount: number = 1;
-	private _reservedHeight: number = 0;
-	private _glyphMarginDecorationLaneCount: number = 1;
+	private _isDominatedByLongLines = false;
+	private _viewLineCount = 1;
+	private _lineNumbersDigitCount = 1;
+	private _reservedHeight = 0;
+	private _glyphMarginDecorationLaneCount = 1;
 
 	private readonly _computeOptionsMemory: ComputeOptionsMemory =
 		new ComputeOptionsMemory();
@@ -137,7 +137,7 @@ export class EditorConfiguration
 		const newOptions = this._computeOptions();
 		const changeEvent = EditorOptionsUtil.checkEquals(
 			this.options,
-			newOptions
+			newOptions,
 		);
 		if (changeEvent === null) {
 			// nothing changed!
@@ -154,7 +154,7 @@ export class EditorConfiguration
 		const bareFontInfo = BareFontInfo.createFromValidatedSettings(
 			this._validatedOptions,
 			partialEnv.pixelRatio,
-			this.isSimpleWidget
+			this.isSimpleWidget,
 		);
 		const fontInfo = this._readFontInfo(bareFontInfo);
 		const env: IEnvironmentalOptions = {
@@ -203,14 +203,14 @@ export class EditorConfiguration
 
 		const didChange = EditorOptionsUtil.applyUpdate(
 			this._rawOptions,
-			newOptions
+			newOptions,
 		);
 		if (!didChange) {
 			return;
 		}
 
 		this._validatedOptions = EditorOptionsUtil.validateOptions(
-			this._rawOptions
+			this._rawOptions,
 		);
 		this._recomputeOptions();
 	}
@@ -253,7 +253,7 @@ export class EditorConfiguration
 	}
 
 	public setGlyphMarginDecorationLaneCount(
-		decorationLaneCount: number
+		decorationLaneCount: number,
 	): void {
 		if (this._glyphMarginDecorationLaneCount === decorationLaneCount) {
 			return;
@@ -304,7 +304,7 @@ class ValidatedEditorOptions implements IValidatedEditorOptions {
 		return this._values[option];
 	}
 	public get<T extends EditorOption>(
-		id: T
+		id: T,
 	): FindComputedEditorOptionValueById<T> {
 		return this._values[id];
 	}
@@ -322,7 +322,7 @@ export class ComputedEditorOptions implements IComputedEditorOptions {
 		return this._values[id];
 	}
 	public get<T extends EditorOption>(
-		id: T
+		id: T,
 	): FindComputedEditorOptionValueById<T> {
 		return this._read(id);
 	}
@@ -333,7 +333,7 @@ export class ComputedEditorOptions implements IComputedEditorOptions {
 
 class EditorOptionsUtil {
 	public static validateOptions(
-		options: IEditorOptions
+		options: IEditorOptions,
 	): ValidatedEditorOptions {
 		const result = new ValidatedEditorOptions();
 		for (const editorOption of editorOptionsRegistry) {
@@ -348,7 +348,7 @@ class EditorOptionsUtil {
 
 	public static computeOptions(
 		options: ValidatedEditorOptions,
-		env: IEnvironmentalOptions
+		env: IEnvironmentalOptions,
 	): ComputedEditorOptions {
 		const result = new ComputedEditorOptions();
 		for (const editorOption of editorOptionsRegistry) {
@@ -357,8 +357,8 @@ class EditorOptionsUtil {
 				editorOption.compute(
 					env,
 					result,
-					options._read(editorOption.id)
-				)
+					options._read(editorOption.id),
+				),
 			);
 		}
 		return result;
@@ -389,14 +389,14 @@ class EditorOptionsUtil {
 
 	public static checkEquals(
 		a: ComputedEditorOptions,
-		b: ComputedEditorOptions
+		b: ComputedEditorOptions,
 	): ConfigurationChangedEvent | null {
 		const result: boolean[] = [];
 		let somethingChanged = false;
 		for (const editorOption of editorOptionsRegistry) {
 			const changed = !EditorOptionsUtil._deepEquals(
 				a._read(editorOption.id),
-				b._read(editorOption.id)
+				b._read(editorOption.id),
 			);
 			result[editorOption.id] = changed;
 			if (changed) {
@@ -412,14 +412,14 @@ class EditorOptionsUtil {
 	 */
 	public static applyUpdate(
 		options: IEditorOptions,
-		update: Readonly<IEditorOptions>
+		update: Readonly<IEditorOptions>,
 	): boolean {
 		let changed = false;
 		for (const editorOption of editorOptionsRegistry) {
 			if (update.hasOwnProperty(editorOption.name)) {
 				const result = editorOption.applyUpdate(
 					(options as any)[editorOption.name],
-					(update as any)[editorOption.name]
+					(update as any)[editorOption.name],
 				);
 				(options as any)[editorOption.name] = result.newValue;
 				changed = changed || result.didChange;
@@ -430,7 +430,7 @@ class EditorOptionsUtil {
 }
 
 function deepCloneAndMigrateOptions(
-	_options: Readonly<IEditorOptions>
+	_options: Readonly<IEditorOptions>,
 ): IEditorOptions {
 	const options = objects.deepClone(_options);
 	migrateOptions(options);

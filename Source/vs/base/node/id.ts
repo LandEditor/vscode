@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { networkInterfaces } from "os";
+import { isWindows } from "vs/base/common/platform";
 import { TernarySearchTree } from "vs/base/common/ternarySearchTree";
 import * as uuid from "vs/base/common/uuid";
 import { getMac } from "vs/base/node/macAddress";
-import { isWindows } from "vs/base/common/platform";
 
 // http://www.techrepublic.com/blog/data-center/mac-address-scorecard-for-common-virtual-machine-platforms/
 // VMware ESX 3, Server, Workstation, Player	00-50-56, 00-0C-29, 00-05-69
@@ -62,7 +62,7 @@ export const virtualMachineHint: { value(): number } = new (class {
 							interfaceCount += 1;
 							if (
 								this._isVirtualMachineMacAddress(
-									mac.toUpperCase()
+									mac.toUpperCase(),
 								)
 							) {
 								vmOui += 1;
@@ -80,7 +80,7 @@ export const virtualMachineHint: { value(): number } = new (class {
 
 let machineId: Promise<string>;
 export async function getMachineId(
-	errorLogger: (error: any) => void
+	errorLogger: (error: any) => void,
 ): Promise<string> {
 	if (!machineId) {
 		machineId = (async () => {
@@ -94,7 +94,7 @@ export async function getMachineId(
 }
 
 async function getMacMachineId(
-	errorLogger: (error: any) => void
+	errorLogger: (error: any) => void,
 ): Promise<string | undefined> {
 	try {
 		const crypto = await import("crypto");
@@ -111,7 +111,7 @@ async function getMacMachineId(
 
 const SQM_KEY: string = "Software\\Microsoft\\SQMClient";
 export async function getSqmMachineId(
-	errorLogger: (error: any) => void
+	errorLogger: (error: any) => void,
 ): Promise<string> {
 	if (isWindows) {
 		const Registry = await import("@vscode/windows-registry");
@@ -120,7 +120,7 @@ export async function getSqmMachineId(
 				Registry.GetStringRegKey(
 					"HKEY_LOCAL_MACHINE",
 					SQM_KEY,
-					"MachineId"
+					"MachineId",
 				) || ""
 			);
 		} catch (err) {

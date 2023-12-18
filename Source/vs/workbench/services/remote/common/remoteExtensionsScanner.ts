@@ -3,27 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteAgentService";
-import {
-	IRemoteExtensionsScannerService,
-	RemoteExtensionsScannerChannelName,
-} from "vs/platform/remote/common/remoteExtensionsScanner";
 import * as platform from "vs/base/common/platform";
+import { URI } from "vs/base/common/uri";
 import { IChannel } from "vs/base/parts/ipc/common/ipc";
 import {
 	IExtensionDescription,
 	IRelaxedExtensionDescription,
 } from "vs/platform/extensions/common/extensions";
-import { URI } from "vs/base/common/uri";
-import { IUserDataProfileService } from "vs/workbench/services/userDataProfile/common/userDataProfile";
-import { IRemoteUserDataProfilesService } from "vs/workbench/services/userDataProfile/common/remoteUserDataProfiles";
-import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { ILogService } from "vs/platform/log/common/log";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
+import { ILogService } from "vs/platform/log/common/log";
+import {
+	IRemoteExtensionsScannerService,
+	RemoteExtensionsScannerChannelName,
+} from "vs/platform/remote/common/remoteExtensionsScanner";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
 import { IActiveLanguagePackService } from "vs/workbench/services/localization/common/locale";
+import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteAgentService";
+import { IRemoteUserDataProfilesService } from "vs/workbench/services/userDataProfile/common/remoteUserDataProfiles";
+import { IUserDataProfileService } from "vs/workbench/services/userDataProfile/common/userDataProfile";
 
 class RemoteExtensionsScannerService
 	implements IRemoteExtensionsScannerService
@@ -47,7 +47,7 @@ class RemoteExtensionsScannerService
 	whenExtensionsReady(): Promise<void> {
 		return this.withChannel(
 			(channel) => channel.call("whenExtensionsReady"),
-			undefined
+			undefined,
 		);
 	}
 
@@ -61,9 +61,9 @@ class RemoteExtensionsScannerService
 					? undefined
 					: (
 							await this.remoteUserDataProfilesService.getRemoteProfile(
-								this.userDataProfileService.currentProfile
+								this.userDataProfileService.currentProfile,
 							)
-						).extensionsResource;
+					  ).extensionsResource;
 				const scannedExtensions = await channel.call<
 					IRelaxedExtensionDescription[]
 				>("scanExtensions", [
@@ -74,7 +74,7 @@ class RemoteExtensionsScannerService
 				]);
 				scannedExtensions.forEach((extension) => {
 					extension.extensionLocation = URI.revive(
-						extension.extensionLocation
+						extension.extensionLocation,
 					);
 				});
 				return scannedExtensions;
@@ -87,18 +87,18 @@ class RemoteExtensionsScannerService
 
 	async scanSingleExtension(
 		extensionLocation: URI,
-		isBuiltin: boolean
+		isBuiltin: boolean,
 	): Promise<IExtensionDescription | null> {
 		try {
 			return await this.withChannel(async (channel) => {
 				const extension =
 					await channel.call<IRelaxedExtensionDescription>(
 						"scanSingleExtension",
-						[extensionLocation, isBuiltin, platform.language]
+						[extensionLocation, isBuiltin, platform.language],
 					);
 				if (extension !== null) {
 					extension.extensionLocation = URI.revive(
-						extension.extensionLocation
+						extension.extensionLocation,
 					);
 					// ImplicitActivationEvents.updateManifest(extension);
 				}
@@ -112,7 +112,7 @@ class RemoteExtensionsScannerService
 
 	private withChannel<R>(
 		callback: (channel: IChannel) => Promise<R>,
-		fallback: R
+		fallback: R,
 	): Promise<R> {
 		const connection = this.remoteAgentService.getConnection();
 		if (!connection) {
@@ -120,7 +120,7 @@ class RemoteExtensionsScannerService
 		}
 		return connection.withChannel(
 			RemoteExtensionsScannerChannelName,
-			(channel) => callback(channel)
+			(channel) => callback(channel),
 		);
 	}
 }
@@ -128,5 +128,5 @@ class RemoteExtensionsScannerService
 registerSingleton(
 	IRemoteExtensionsScannerService,
 	RemoteExtensionsScannerService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

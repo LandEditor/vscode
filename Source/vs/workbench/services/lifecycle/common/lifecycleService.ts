@@ -3,27 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter } from "vs/base/common/event";
 import { Barrier } from "vs/base/common/async";
+import { Emitter } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
-import {
-	ILifecycleService,
-	WillShutdownEvent,
-	StartupKind,
-	LifecyclePhase,
-	LifecyclePhaseToString,
-	ShutdownReason,
-	BeforeShutdownErrorEvent,
-	InternalBeforeShutdownEvent,
-} from "vs/workbench/services/lifecycle/common/lifecycle";
-import { ILogService } from "vs/platform/log/common/log";
 import { mark } from "vs/base/common/performance";
+import { ILogService } from "vs/platform/log/common/log";
 import {
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 	WillSaveStateReason,
 } from "vs/platform/storage/common/storage";
+import {
+	BeforeShutdownErrorEvent,
+	ILifecycleService,
+	InternalBeforeShutdownEvent,
+	LifecyclePhase,
+	LifecyclePhaseToString,
+	ShutdownReason,
+	StartupKind,
+	WillShutdownEvent,
+} from "vs/workbench/services/lifecycle/common/lifecycle";
 
 export abstract class AbstractLifecycleService
 	extends Disposable
@@ -35,12 +35,12 @@ export abstract class AbstractLifecycleService
 	declare readonly _serviceBrand: undefined;
 
 	protected readonly _onBeforeShutdown = this._register(
-		new Emitter<InternalBeforeShutdownEvent>()
+		new Emitter<InternalBeforeShutdownEvent>(),
 	);
 	readonly onBeforeShutdown = this._onBeforeShutdown.event;
 
 	protected readonly _onWillShutdown = this._register(
-		new Emitter<WillShutdownEvent>()
+		new Emitter<WillShutdownEvent>(),
 	);
 	readonly onWillShutdown = this._onWillShutdown.event;
 
@@ -48,7 +48,7 @@ export abstract class AbstractLifecycleService
 	readonly onDidShutdown = this._onDidShutdown.event;
 
 	protected readonly _onBeforeShutdownError = this._register(
-		new Emitter<BeforeShutdownErrorEvent>()
+		new Emitter<BeforeShutdownErrorEvent>(),
 	);
 	readonly onBeforeShutdownError = this._onBeforeShutdownError.event;
 
@@ -95,11 +95,11 @@ export abstract class AbstractLifecycleService
 		// Retrieve and reset last shutdown reason
 		const lastShutdownReason = this.storageService.getNumber(
 			AbstractLifecycleService.LAST_SHUTDOWN_REASON_KEY,
-			StorageScope.WORKSPACE
+			StorageScope.WORKSPACE,
 		);
 		this.storageService.remove(
 			AbstractLifecycleService.LAST_SHUTDOWN_REASON_KEY,
-			StorageScope.WORKSPACE
+			StorageScope.WORKSPACE,
 		);
 
 		// Convert into startup kind
@@ -116,7 +116,7 @@ export abstract class AbstractLifecycleService
 		}
 
 		this.logService.trace(
-			`[lifecycle] starting up (startup kind: ${startupKind})`
+			`[lifecycle] starting up (startup kind: ${startupKind})`,
 		);
 
 		return startupKind;

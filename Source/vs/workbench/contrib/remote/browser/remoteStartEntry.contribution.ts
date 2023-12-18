@@ -8,9 +8,9 @@ import {
 	Extensions as WorkbenchExtensions,
 	IWorkbenchContributionsRegistry,
 } from "vs/workbench/common/contributions";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 import { RemoteStartEntry } from "vs/workbench/contrib/remote/browser/remoteStartEntry";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(RemoteStartEntry, LifecyclePhase.Restored);

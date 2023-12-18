@@ -77,7 +77,7 @@ export function setStyle(
 		height?: number | string;
 		left?: number | string;
 		top?: number | string;
-	}
+	},
 ): void {
 	Object.entries(style).forEach(([key, value]) => {
 		element.style.setProperty(key, toSize(value));
@@ -90,7 +90,7 @@ function toSize(value: number | string): string {
 
 export function applyObservableDecorations(
 	editor: CodeEditorWidget,
-	decorations: IObservable<IModelDeltaDecoration[]>
+	decorations: IObservable<IModelDeltaDecoration[]>,
 ): IDisposable {
 	const d = new DisposableStore();
 	let decorationIds: string[] = [];
@@ -105,8 +105,8 @@ export function applyObservableDecorations(
 				editor.changeDecorations((a) => {
 					decorationIds = a.deltaDecorations(decorationIds, d);
 				});
-			}
-		)
+			},
+		),
 	);
 	d.add({
 		dispose: () => {
@@ -121,17 +121,17 @@ export function applyObservableDecorations(
 export function* leftJoin<TLeft, TRight>(
 	left: Iterable<TLeft>,
 	right: readonly TRight[],
-	compare: (left: TLeft, right: TRight) => CompareResult
+	compare: (left: TLeft, right: TRight) => CompareResult,
 ): IterableIterator<{ left: TLeft; rights: TRight[] }> {
 	const rightQueue = new ArrayQueue(right);
 	for (const leftElement of left) {
 		rightQueue.takeWhile((rightElement) =>
-			CompareResult.isGreaterThan(compare(leftElement, rightElement))
+			CompareResult.isGreaterThan(compare(leftElement, rightElement)),
 		);
 		const equals = rightQueue.takeWhile((rightElement) =>
 			CompareResult.isNeitherLessOrGreaterThan(
-				compare(leftElement, rightElement)
-			)
+				compare(leftElement, rightElement),
+			),
 		);
 		yield { left: leftElement, rights: equals || [] };
 	}
@@ -140,20 +140,20 @@ export function* leftJoin<TLeft, TRight>(
 export function* join<TLeft, TRight>(
 	left: Iterable<TLeft>,
 	right: readonly TRight[],
-	compare: (left: TLeft, right: TRight) => CompareResult
+	compare: (left: TLeft, right: TRight) => CompareResult,
 ): IterableIterator<{ left?: TLeft; rights: TRight[] }> {
 	const rightQueue = new ArrayQueue(right);
 	for (const leftElement of left) {
 		const skipped = rightQueue.takeWhile((rightElement) =>
-			CompareResult.isGreaterThan(compare(leftElement, rightElement))
+			CompareResult.isGreaterThan(compare(leftElement, rightElement)),
 		);
 		if (skipped) {
 			yield { rights: skipped };
 		}
 		const equals = rightQueue.takeWhile((rightElement) =>
 			CompareResult.isNeitherLessOrGreaterThan(
-				compare(leftElement, rightElement)
-			)
+				compare(leftElement, rightElement),
+			),
 		);
 		yield { left: leftElement, rights: equals || [] };
 	}
@@ -167,14 +167,14 @@ export function concatArrays<TArr extends any[]>(
 
 export function elementAtOrUndefined<T>(
 	arr: T[],
-	index: number
+	index: number,
 ): T | undefined {
 	return arr[index];
 }
 
 export function thenIfNotDisposed<T>(
 	promise: Promise<T>,
-	then: () => void
+	then: () => void,
 ): IDisposable {
 	let disposed = false;
 	promise.then(() => {
@@ -225,7 +225,7 @@ export class PersistentStore<T> {
 		if (!this.hasValue) {
 			const value = this.storageService.get(
 				this.key,
-				StorageScope.PROFILE
+				StorageScope.PROFILE,
 			);
 			if (value !== undefined) {
 				try {
@@ -247,7 +247,7 @@ export class PersistentStore<T> {
 			this.key,
 			JSON.stringify(this.value),
 			StorageScope.PROFILE,
-			StorageTarget.USER
+			StorageTarget.USER,
 		);
 	}
 }
@@ -255,7 +255,7 @@ export class PersistentStore<T> {
 export function observableConfigValue<T>(
 	key: string,
 	defaultValue: T,
-	configurationService: IConfigurationService
+	configurationService: IConfigurationService,
 ): IObservable<T> {
 	return observableFromEvent(
 		(handleChange) =>
@@ -264,6 +264,6 @@ export function observableConfigValue<T>(
 					handleChange(e);
 				}
 			}),
-		() => configurationService.getValue<T>(key) ?? defaultValue
+		() => configurationService.getValue<T>(key) ?? defaultValue,
 	);
 }

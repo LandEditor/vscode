@@ -9,7 +9,7 @@ export async function provideInstalledExtensionProposals(
 	existing: string[],
 	additionalText: string,
 	range: vscode.Range,
-	includeBuiltinExtensions: boolean
+	includeBuiltinExtensions: boolean,
 ): Promise<vscode.CompletionItem[] | vscode.CompletionList> {
 	if (Array.isArray(existing)) {
 		const extensions = includeBuiltinExtensions
@@ -19,10 +19,10 @@ export async function provideInstalledExtensionProposals(
 						!(
 							e.id.startsWith("vscode.") ||
 							e.id === "Microsoft.vscode-markdown"
-						)
-				);
+						),
+			  );
 		const knownExtensionProposals = extensions.filter(
-			(e) => existing.indexOf(e.id) === -1
+			(e) => existing.indexOf(e.id) === -1,
 		);
 		if (knownExtensionProposals.length) {
 			return knownExtensionProposals.map((e) => {
@@ -47,14 +47,14 @@ export async function provideInstalledExtensionProposals(
 
 export async function provideWorkspaceTrustExtensionProposals(
 	existing: string[],
-	range: vscode.Range
+	range: vscode.Range,
 ): Promise<vscode.CompletionItem[] | vscode.CompletionList> {
 	if (Array.isArray(existing)) {
 		const extensions = vscode.extensions.all.filter(
-			(e) => e.packageJSON.main
+			(e) => e.packageJSON.main,
 		);
 		const extensionProposals = extensions.filter(
-			(e) => existing.indexOf(e.id) === -1
+			(e) => existing.indexOf(e.id) === -1,
 		);
 		if (extensionProposals.length) {
 			return extensionProposals.map((e) => {

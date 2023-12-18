@@ -3,23 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Event } from "vs/base/common/event";
+import { DisposableStore } from "vs/base/common/lifecycle";
 import { localize } from "vs/nls";
+import { BrowserClipboardService as BaseBrowserClipboardService } from "vs/platform/clipboard/browser/clipboardService";
+import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
-import { BrowserClipboardService as BaseBrowserClipboardService } from "vs/platform/clipboard/browser/clipboardService";
+import { ILayoutService } from "vs/platform/layout/browser/layoutService";
+import { ILogService } from "vs/platform/log/common/log";
 import {
 	INotificationService,
 	Severity,
 } from "vs/platform/notification/common/notification";
 import { IOpenerService } from "vs/platform/opener/common/opener";
-import { Event } from "vs/base/common/event";
-import { DisposableStore } from "vs/base/common/lifecycle";
 import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { ILogService } from "vs/platform/log/common/log";
-import { ILayoutService } from "vs/platform/layout/browser/layoutService";
 
 export class BrowserClipboardService extends BaseBrowserClipboardService {
 	constructor(
@@ -53,7 +53,7 @@ export class BrowserClipboardService extends BaseBrowserClipboardService {
 					Severity.Error,
 					localize(
 						"clipboardError",
-						"Unable to read from the browser's clipboard. Please make sure you have granted access for this website to read from the clipboard."
+						"Unable to read from the browser's clipboard. Please make sure you have granted access for this website to read from the clipboard.",
 					),
 					[
 						{
@@ -67,13 +67,13 @@ export class BrowserClipboardService extends BaseBrowserClipboardService {
 							label: localize("learnMore", "Learn More"),
 							run: () =>
 								this.openerService.open(
-									"https://go.microsoft.com/fwlink/?linkid=2151362"
+									"https://go.microsoft.com/fwlink/?linkid=2151362",
 								),
 						},
 					],
 					{
 						sticky: true,
-					}
+					},
 				);
 
 				// Always resolve the promise once the notification closes
@@ -86,5 +86,5 @@ export class BrowserClipboardService extends BaseBrowserClipboardService {
 registerSingleton(
 	IClipboardService,
 	BrowserClipboardService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

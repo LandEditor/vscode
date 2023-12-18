@@ -3,21 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event, Emitter } from "vs/base/common/event";
-import {
-	ExtHostWindowShape,
-	MainContext,
-	MainThreadWindowShape,
-	IOpenUriOptions,
-} from "./extHost.protocol";
-import { WindowState } from "vscode";
-import { URI } from "vs/base/common/uri";
+import { Emitter, Event } from "vs/base/common/event";
 import { Schemas } from "vs/base/common/network";
 import { isFalsyOrWhitespace } from "vs/base/common/strings";
+import { URI } from "vs/base/common/uri";
+import { IRelaxedExtensionDescription } from "vs/platform/extensions/common/extensions";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import { IExtHostRpcService } from "vs/workbench/api/common/extHostRpcService";
-import { IRelaxedExtensionDescription } from "vs/platform/extensions/common/extensions";
 import { checkProposedApiEnabled } from "vs/workbench/services/extensions/common/extensions";
+import { WindowState } from "vscode";
+import {
+	ExtHostWindowShape,
+	IOpenUriOptions,
+	MainContext,
+	MainThreadWindowShape,
+} from "./extHost.protocol";
 
 export class ExtHostWindow implements ExtHostWindowShape {
 	private static InitialState: WindowState = {
@@ -66,7 +66,7 @@ export class ExtHostWindow implements ExtHostWindowShape {
 
 	onDidChangeWindowProperty(
 		property: keyof WindowState,
-		value: boolean
+		value: boolean,
 	): void {
 		if (value === this._state[property]) {
 			return;
@@ -78,7 +78,7 @@ export class ExtHostWindow implements ExtHostWindowShape {
 
 	openUri(
 		stringOrUri: string | URI,
-		options: IOpenUriOptions
+		options: IOpenUriOptions,
 	): Promise<boolean> {
 		let uriAsString: string | undefined;
 		if (typeof stringOrUri === "string") {

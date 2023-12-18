@@ -12,13 +12,13 @@ import {
 } from "vs/platform/log/common/log";
 
 enum SpdLogLevel {
-	Trace,
-	Debug,
-	Info,
-	Warning,
-	Error,
-	Critical,
-	Off,
+	Trace = 0,
+	Debug = 1,
+	Info = 2,
+	Warning = 3,
+	Error = 4,
+	Critical = 5,
+	Off = 6,
 }
 
 async function createSpdLogLogger(
@@ -26,7 +26,7 @@ async function createSpdLogLogger(
 	logfilePath: string,
 	filesize: number,
 	filecount: number,
-	donotUseFormatters: boolean
+	donotUseFormatters: boolean,
 ): Promise<spdlog.Logger | null> {
 	// Do not crash if spdlog cannot be loaded
 	try {
@@ -36,7 +36,7 @@ async function createSpdLogLogger(
 			name,
 			logfilePath,
 			filesize,
-			filecount
+			filecount,
 		);
 		if (donotUseFormatters) {
 			logger.clearFormatters();
@@ -114,7 +114,7 @@ export class SpdLogLogger extends AbstractMessageLogger implements ILogger {
 		filepath: string,
 		rotating: boolean,
 		donotUseFormatters: boolean,
-		level: LogLevel
+		level: LogLevel,
 	) {
 		super();
 		this.setLevel(level);
@@ -122,14 +122,14 @@ export class SpdLogLogger extends AbstractMessageLogger implements ILogger {
 			name,
 			filepath,
 			rotating,
-			donotUseFormatters
+			donotUseFormatters,
 		);
 		this._register(
 			this.onDidChangeLogLevel((level) => {
 				if (this._logger) {
 					setLogLevel(this._logger, level);
 				}
-			})
+			}),
 		);
 	}
 
@@ -137,7 +137,7 @@ export class SpdLogLogger extends AbstractMessageLogger implements ILogger {
 		name: string,
 		filepath: string,
 		rotating: boolean,
-		donotUseFormatters: boolean
+		donotUseFormatters: boolean,
 	): Promise<void> {
 		const filecount = rotating ? 6 : 1;
 		const filesize = (30 / filecount) * ByteSize.MB;
@@ -146,7 +146,7 @@ export class SpdLogLogger extends AbstractMessageLogger implements ILogger {
 			filepath,
 			filesize,
 			filecount,
-			donotUseFormatters
+			donotUseFormatters,
 		);
 		if (logger) {
 			this._logger = logger;

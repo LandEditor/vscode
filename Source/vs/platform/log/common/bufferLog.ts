@@ -7,8 +7,8 @@ import {
 	AbstractMessageLogger,
 	DEFAULT_LOG_LEVEL,
 	ILogger,
-	log,
 	LogLevel,
+	log,
 } from "vs/platform/log/common/log";
 
 interface ILog {
@@ -27,7 +27,7 @@ export class BufferLogger extends AbstractMessageLogger {
 		this._register(
 			this.onDidChangeLogLevel((level) => {
 				this._logger?.setLevel(level);
-			})
+			}),
 		);
 	}
 

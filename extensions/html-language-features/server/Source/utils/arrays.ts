@@ -60,7 +60,7 @@ function _divideAndMerge<T>(data: T[], compare: (a: T, b: T) => number): void {
 export function binarySearch<T>(
 	array: T[],
 	key: T,
-	comparator: (op1: T, op2: T) => number
+	comparator: (op1: T, op2: T) => number,
 ): number {
 	let low = 0,
 		high = array.length - 1;

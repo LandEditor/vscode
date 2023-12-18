@@ -27,10 +27,10 @@ class TerminalHighlightContribution
 	static readonly ID = "terminal.highlight";
 
 	static get(
-		instance: ITerminalInstance | IDetachedTerminalInstance
+		instance: ITerminalInstance | IDetachedTerminalInstance,
 	): TerminalHighlightContribution | null {
 		return instance.getContribution<TerminalHighlightContribution>(
-			TerminalHighlightContribution.ID
+			TerminalHighlightContribution.ID,
 		);
 	}
 
@@ -39,7 +39,7 @@ class TerminalHighlightContribution
 			| ITerminalInstance
 			| IDetachedTerminalInstance,
 		processManager: ITerminalProcessManager | ITerminalProcessInfo,
-		widgetManager: TerminalWidgetManager
+		widgetManager: TerminalWidgetManager,
 	) {
 		super();
 	}
@@ -60,30 +60,30 @@ class TerminalHighlightContribution
 						return;
 					}
 					const mouseCursorY = Math.floor(
-						e.offsetY / (rect.height / xterm.raw.rows)
+						e.offsetY / (rect.height / xterm.raw.rows),
 					);
 					const command = this._instance.capabilities
 						.get(TerminalCapability.CommandDetection)
 						?.getCommandForLine(
-							xterm.raw.buffer.active.viewportY + mouseCursorY
+							xterm.raw.buffer.active.viewportY + mouseCursorY,
 						);
 					if (command && "getOutput" in command) {
 						xterm.markTracker.showCommandGuide(command);
 					} else {
 						xterm.markTracker.showCommandGuide(undefined);
 					}
-				}
-			)
+				},
+			),
 		);
 		this._register(
 			addDisposableListener(screenElement, "mouseout", () =>
-				xterm.markTracker.showCommandGuide(undefined)
-			)
+				xterm.markTracker.showCommandGuide(undefined),
+			),
 		);
 		this._register(
 			xterm.raw.onData(() =>
-				xterm.markTracker.showCommandGuide(undefined)
-			)
+				xterm.markTracker.showCommandGuide(undefined),
+			),
 		);
 	}
 }
@@ -91,5 +91,5 @@ class TerminalHighlightContribution
 registerTerminalContribution(
 	TerminalHighlightContribution.ID,
 	TerminalHighlightContribution,
-	false
+	false,
 );

@@ -5,8 +5,8 @@
 
 import {
 	JSONScanner,
-	createScanner as createJSONScanner,
 	SyntaxKind as JSONSyntaxKind,
+	createScanner as createJSONScanner,
 } from "vs/base/common/json";
 import { Position } from "vs/editor/common/core/position";
 import { Range } from "vs/editor/common/core/range";
@@ -33,7 +33,7 @@ export class SmartSnippetInserter {
 
 	private static offsetToPosition(
 		model: ITextModel,
-		offset: number
+		offset: number,
 	): Position {
 		let offsetBeforeLine = 0;
 		const eolLength = model.getEOL().length;
@@ -52,10 +52,10 @@ export class SmartSnippetInserter {
 
 	static insertSnippet(
 		model: ITextModel,
-		_position: Position
+		_position: Position,
 	): InsertSnippetResult {
 		const desiredPosition = model.getValueLengthInRange(
-			new Range(1, 1, _position.lineNumber, _position.column)
+			new Range(1, 1, _position.lineNumber, _position.column),
 		);
 
 		// <INVALID> [ <BEFORE_OBJECT> { <INVALID> } <AFTER_OBJECT>, <BEFORE_OBJECT> { <INVALID> } <AFTER_OBJECT> ] <INVALID>
@@ -77,11 +77,9 @@ export class SmartSnippetInserter {
 				currentState = state;
 				lastValidPos = pos;
 				lastValidState = state;
-			} else {
-				if (currentState !== State.INVALID) {
-					currentState = State.INVALID;
-					lastValidPos = scanner.getTokenOffset();
-				}
+			} else if (currentState !== State.INVALID) {
+				currentState = State.INVALID;
+				lastValidPos = scanner.getTokenOffset();
 			}
 		};
 
@@ -159,7 +157,7 @@ export class SmartSnippetInserter {
 		return {
 			position: new Position(
 				modelLineCount,
-				model.getLineMaxColumn(modelLineCount)
+				model.getLineMaxColumn(modelLineCount),
 			),
 			prepend: "\n[",
 			append: "]",

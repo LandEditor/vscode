@@ -25,7 +25,7 @@ export class ModifierLabelProvider {
 	constructor(
 		mac: ModifierLabels,
 		windows: ModifierLabels,
-		linux: ModifierLabels = windows
+		linux: ModifierLabels = windows,
 	) {
 		this.modifierLabels = [null!]; // index 0 will never me accessed.
 		this.modifierLabels[OperatingSystem.Macintosh] = mac;
@@ -36,7 +36,7 @@ export class ModifierLabelProvider {
 	public toLabel<T extends Modifiers>(
 		OS: OperatingSystem,
 		chords: readonly T[],
-		keyLabelProvider: KeyLabelProvider<T>
+		keyLabelProvider: KeyLabelProvider<T>,
 	): string | null {
 		if (chords.length === 0) {
 			return null;
@@ -53,7 +53,7 @@ export class ModifierLabelProvider {
 			result[i] = _simpleAsString(
 				chord,
 				keyLabel,
-				this.modifierLabels[OS]
+				this.modifierLabels[OS],
 			);
 		}
 		return result.join(" ");
@@ -79,7 +79,7 @@ export const UILabelProvider = new ModifierLabelProvider(
 					"This is the short form for the Control key on the keyboard",
 				],
 			},
-			"Ctrl"
+			"Ctrl",
 		),
 		shiftKey: nls.localize(
 			{
@@ -88,7 +88,7 @@ export const UILabelProvider = new ModifierLabelProvider(
 					"This is the short form for the Shift key on the keyboard",
 				],
 			},
-			"Shift"
+			"Shift",
 		),
 		altKey: nls.localize(
 			{
@@ -97,7 +97,7 @@ export const UILabelProvider = new ModifierLabelProvider(
 					"This is the short form for the Alt key on the keyboard",
 				],
 			},
-			"Alt"
+			"Alt",
 		),
 		metaKey: nls.localize(
 			{
@@ -106,7 +106,7 @@ export const UILabelProvider = new ModifierLabelProvider(
 					"This is the short form for the Windows key on the keyboard",
 				],
 			},
-			"Windows"
+			"Windows",
 		),
 		separator: "+",
 	},
@@ -118,7 +118,7 @@ export const UILabelProvider = new ModifierLabelProvider(
 					"This is the short form for the Control key on the keyboard",
 				],
 			},
-			"Ctrl"
+			"Ctrl",
 		),
 		shiftKey: nls.localize(
 			{
@@ -127,7 +127,7 @@ export const UILabelProvider = new ModifierLabelProvider(
 					"This is the short form for the Shift key on the keyboard",
 				],
 			},
-			"Shift"
+			"Shift",
 		),
 		altKey: nls.localize(
 			{
@@ -136,7 +136,7 @@ export const UILabelProvider = new ModifierLabelProvider(
 					"This is the short form for the Alt key on the keyboard",
 				],
 			},
-			"Alt"
+			"Alt",
 		),
 		metaKey: nls.localize(
 			{
@@ -145,10 +145,10 @@ export const UILabelProvider = new ModifierLabelProvider(
 					"This is the short form for the Super key on the keyboard",
 				],
 			},
-			"Super"
+			"Super",
 		),
 		separator: "+",
-	}
+	},
 );
 
 /**
@@ -163,7 +163,7 @@ export const AriaLabelProvider = new ModifierLabelProvider(
 					"This is the long form for the Control key on the keyboard",
 				],
 			},
-			"Control"
+			"Control",
 		),
 		shiftKey: nls.localize(
 			{
@@ -172,7 +172,7 @@ export const AriaLabelProvider = new ModifierLabelProvider(
 					"This is the long form for the Shift key on the keyboard",
 				],
 			},
-			"Shift"
+			"Shift",
 		),
 		altKey: nls.localize(
 			{
@@ -181,7 +181,7 @@ export const AriaLabelProvider = new ModifierLabelProvider(
 					"This is the long form for the Alt/Option key on the keyboard",
 				],
 			},
-			"Option"
+			"Option",
 		),
 		metaKey: nls.localize(
 			{
@@ -190,7 +190,7 @@ export const AriaLabelProvider = new ModifierLabelProvider(
 					"This is the long form for the Command key on the keyboard",
 				],
 			},
-			"Command"
+			"Command",
 		),
 		separator: "+",
 	},
@@ -202,7 +202,7 @@ export const AriaLabelProvider = new ModifierLabelProvider(
 					"This is the long form for the Control key on the keyboard",
 				],
 			},
-			"Control"
+			"Control",
 		),
 		shiftKey: nls.localize(
 			{
@@ -211,7 +211,7 @@ export const AriaLabelProvider = new ModifierLabelProvider(
 					"This is the long form for the Shift key on the keyboard",
 				],
 			},
-			"Shift"
+			"Shift",
 		),
 		altKey: nls.localize(
 			{
@@ -220,7 +220,7 @@ export const AriaLabelProvider = new ModifierLabelProvider(
 					"This is the long form for the Alt key on the keyboard",
 				],
 			},
-			"Alt"
+			"Alt",
 		),
 		metaKey: nls.localize(
 			{
@@ -229,7 +229,7 @@ export const AriaLabelProvider = new ModifierLabelProvider(
 					"This is the long form for the Windows key on the keyboard",
 				],
 			},
-			"Windows"
+			"Windows",
 		),
 		separator: "+",
 	},
@@ -241,7 +241,7 @@ export const AriaLabelProvider = new ModifierLabelProvider(
 					"This is the long form for the Control key on the keyboard",
 				],
 			},
-			"Control"
+			"Control",
 		),
 		shiftKey: nls.localize(
 			{
@@ -250,7 +250,7 @@ export const AriaLabelProvider = new ModifierLabelProvider(
 					"This is the long form for the Shift key on the keyboard",
 				],
 			},
-			"Shift"
+			"Shift",
 		),
 		altKey: nls.localize(
 			{
@@ -259,7 +259,7 @@ export const AriaLabelProvider = new ModifierLabelProvider(
 					"This is the long form for the Alt key on the keyboard",
 				],
 			},
-			"Alt"
+			"Alt",
 		),
 		metaKey: nls.localize(
 			{
@@ -268,10 +268,10 @@ export const AriaLabelProvider = new ModifierLabelProvider(
 					"This is the long form for the Super key on the keyboard",
 				],
 			},
-			"Super"
+			"Super",
 		),
 		separator: "+",
-	}
+	},
 );
 
 /**
@@ -292,7 +292,7 @@ export const ElectronAcceleratorLabelProvider = new ModifierLabelProvider(
 		altKey: "Alt",
 		metaKey: "Super",
 		separator: "+",
-	}
+	},
 );
 
 /**
@@ -319,13 +319,13 @@ export const UserSettingsLabelProvider = new ModifierLabelProvider(
 		altKey: "alt",
 		metaKey: "meta",
 		separator: "+",
-	}
+	},
 );
 
 function _simpleAsString(
 	modifiers: Modifiers,
 	key: string,
-	labels: ModifierLabels
+	labels: ModifierLabels,
 ): string {
 	if (key === null) {
 		return "";

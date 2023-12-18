@@ -6,7 +6,7 @@
 import { IPtyHostProcessReplayEvent } from "vs/platform/terminal/common/capabilities/capabilities";
 import { ReplayEntry } from "vs/platform/terminal/common/terminalProcess";
 
-const enum Constants {
+enum Constants {
 	MaxRecorderDataSize = 1024 * 1024, // 1MB
 }
 
@@ -22,7 +22,7 @@ export interface IRemoteTerminalProcessReplayEvent {
 
 export class TerminalRecorder {
 	private _entries: RecorderEntry[];
-	private _totalDataLength: number = 0;
+	private _totalDataLength = 0;
 
 	constructor(cols: number, rows: number) {
 		this._entries = [{ cols, rows, data: [] }];

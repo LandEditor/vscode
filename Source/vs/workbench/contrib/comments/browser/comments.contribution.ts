@@ -3,23 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { getActiveElement } from "vs/base/browser/dom";
+import { Disposable } from "vs/base/common/lifecycle";
+import * as strings from "vs/base/common/strings";
+import { ToggleTabFocusModeAction } from "vs/editor/contrib/toggleTabFocusMode/browser/toggleTabFocusMode";
 import * as nls from "vs/nls";
+import {
+	Extensions as ConfigurationExtensions,
+	IConfigurationRegistry,
+} from "vs/platform/configuration/common/configurationRegistry";
+import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import { Registry } from "vs/platform/registry/common/platform";
-import "vs/workbench/contrib/comments/browser/commentsEditorContribution";
-import {
-	ICommentService,
-	CommentService,
-} from "vs/workbench/contrib/comments/browser/commentService";
-import {
-	IConfigurationRegistry,
-	Extensions as ConfigurationExtensions,
-} from "vs/platform/configuration/common/configurationRegistry";
-import { ctxCommentEditorFocused } from "vs/workbench/contrib/comments/browser/simpleCommentEditor";
-import * as strings from "vs/base/common/strings";
 import {
 	AccessibilityVerbositySettingId,
 	AccessibleViewProviderId,
@@ -31,17 +31,17 @@ import {
 	IAccessibleViewService,
 } from "vs/workbench/contrib/accessibility/browser/accessibleView";
 import { AccessibilityHelpAction } from "vs/workbench/contrib/accessibility/browser/accessibleViewActions";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { Disposable } from "vs/base/common/lifecycle";
-import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
-import { CommentContextKeys } from "vs/workbench/contrib/comments/common/commentContextKeys";
+import {
+	CommentService,
+	ICommentService,
+} from "vs/workbench/contrib/comments/browser/commentService";
+import "vs/workbench/contrib/comments/browser/commentsEditorContribution";
+import { ctxCommentEditorFocused } from "vs/workbench/contrib/comments/browser/simpleCommentEditor";
 import { CommentCommandId } from "vs/workbench/contrib/comments/common/commentCommandIds";
-import { ToggleTabFocusModeAction } from "vs/editor/contrib/toggleTabFocusMode/browser/toggleTabFocusMode";
-import { getActiveElement } from "vs/base/browser/dom";
+import { CommentContextKeys } from "vs/workbench/contrib/comments/common/commentContextKeys";
 
 Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration
+	ConfigurationExtensions.Configuration,
 ).registerConfiguration({
 	id: "comments",
 	order: 20,
@@ -57,12 +57,12 @@ Registry.as<IConfigurationRegistry>(
 			default: "openOnSessionStartWithComments",
 			description: nls.localize(
 				"openComments",
-				"Controls when the comments panel should open."
+				"Controls when the comments panel should open.",
 			),
 			restricted: false,
 			markdownDeprecationMessage: nls.localize(
 				"comments.openPanel.deprecated",
-				"This setting is deprecated in favor of `comments.openView`."
+				"This setting is deprecated in favor of `comments.openView`.",
 			),
 		},
 		"comments.openView": {
@@ -70,25 +70,25 @@ Registry.as<IConfigurationRegistry>(
 			enumDescriptions: [
 				nls.localize(
 					"comments.openView.never",
-					"The comments view will never be opened."
+					"The comments view will never be opened.",
 				),
 				nls.localize(
 					"comments.openView.file",
-					"The comments view will open when a file with comments is active."
+					"The comments view will open when a file with comments is active.",
 				),
 				nls.localize(
 					"comments.openView.firstFile",
-					"If the comments view has not been opened yet during this session it will open the first time during a session that a file with comments is active."
+					"If the comments view has not been opened yet during this session it will open the first time during a session that a file with comments is active.",
 				),
 				nls.localize(
 					"comments.openView.firstFileUnresolved",
-					"If the comments view has not been opened yet during this session and the comment is not resolved, it will open the first time during a session that a file with comments is active."
+					"If the comments view has not been opened yet during this session and the comment is not resolved, it will open the first time during a session that a file with comments is active.",
 				),
 			],
 			default: "firstFile",
 			description: nls.localize(
 				"comments.openView",
-				"Controls when the comments view should open."
+				"Controls when the comments view should open.",
 			),
 			restricted: false,
 		},
@@ -97,7 +97,7 @@ Registry.as<IConfigurationRegistry>(
 			default: true,
 			description: nls.localize(
 				"useRelativeTime",
-				"Determines if relative time will be used in comment timestamps (ex. '1 day ago')."
+				"Determines if relative time will be used in comment timestamps (ex. '1 day ago').",
 			),
 		},
 		"comments.visible": {
@@ -105,7 +105,7 @@ Registry.as<IConfigurationRegistry>(
 			default: true,
 			description: nls.localize(
 				"comments.visible",
-				'Controls the visibility of the comments bar and comment threads in editors that have commenting ranges and comments. Comments are still accessible via the Comments view and will cause commenting to be toggled on in the same way running the command "Comments: Toggle Editor Commenting" toggles comments.'
+				'Controls the visibility of the comments bar and comment threads in editors that have commenting ranges and comments. Comments are still accessible via the Comments view and will cause commenting to be toggled on in the same way running the command "Comments: Toggle Editor Commenting" toggles comments.',
 			),
 		},
 		"comments.maxHeight": {
@@ -113,7 +113,7 @@ Registry.as<IConfigurationRegistry>(
 			default: true,
 			description: nls.localize(
 				"comments.maxHeight",
-				"Controls whether the comments widget scrolls or expands."
+				"Controls whether the comments widget scrolls or expands.",
 			),
 		},
 		"comments.collapseOnResolve": {
@@ -121,7 +121,7 @@ Registry.as<IConfigurationRegistry>(
 			default: true,
 			description: nls.localize(
 				"collapseOnResolve",
-				"Controls whether the comment thread should collapse when the thread is resolved."
+				"Controls whether the comment thread should collapse when the thread is resolved.",
 			),
 		},
 	},
@@ -132,65 +132,65 @@ registerSingleton(ICommentService, CommentService, InstantiationType.Delayed);
 export namespace CommentAccessibilityHelpNLS {
 	export const intro = nls.localize(
 		"intro",
-		"The editor contains commentable range(s). Some useful commands include:"
+		"The editor contains commentable range(s). Some useful commands include:",
 	);
 	export const introWidget = nls.localize(
 		"introWidget",
-		"This widget contains a text area, for composition of new comments, and actions, that can be tabbed to once tab moves focus mode has been enabled ({0})."
+		"This widget contains a text area, for composition of new comments, and actions, that can be tabbed to once tab moves focus mode has been enabled ({0}).",
 	);
 	export const introWidgetNoKb = nls.localize(
 		"introWidgetNoKb",
-		"This widget contains a text area, for composition of new comments, and actions, that can be tabbed to once tab moves focus mode has been enabled with the command Toggle Tab Key Moves Focus, which is currently not triggerable via keybinding."
+		"This widget contains a text area, for composition of new comments, and actions, that can be tabbed to once tab moves focus mode has been enabled with the command Toggle Tab Key Moves Focus, which is currently not triggerable via keybinding.",
 	);
 	export const commentCommands = nls.localize(
 		"commentCommands",
-		"Some useful comment commands include:"
+		"Some useful comment commands include:",
 	);
 	export const escape = nls.localize("escape", "- Dismiss Comment (Escape)");
 	export const nextRange = nls.localize(
 		"next",
-		"- Go to Next Commenting Range ({0})"
+		"- Go to Next Commenting Range ({0})",
 	);
 	export const nextRangeNoKb = nls.localize(
 		"nextNoKb",
-		"- Go to Next Commenting Range, which is currently not triggerable via keybinding."
+		"- Go to Next Commenting Range, which is currently not triggerable via keybinding.",
 	);
 	export const previousRange = nls.localize(
 		"previous",
-		"- Go to Previous Commenting Range ({0})"
+		"- Go to Previous Commenting Range ({0})",
 	);
 	export const previousRangeNoKb = nls.localize(
 		"previousNoKb",
-		"- Go to Previous Commenting Range, which is currently not triggerable via keybinding."
+		"- Go to Previous Commenting Range, which is currently not triggerable via keybinding.",
 	);
 	export const nextCommentThreadKb = nls.localize(
 		"nextCommentThreadKb",
-		"- Go to Next Comment Thread ({0})"
+		"- Go to Next Comment Thread ({0})",
 	);
 	export const nextCommentThreadNoKb = nls.localize(
 		"nextCommentThreadNoKb",
-		"- Go to Next Comment Thread, which is currently not triggerable via keybinding."
+		"- Go to Next Comment Thread, which is currently not triggerable via keybinding.",
 	);
 	export const previousCommentThreadKb = nls.localize(
 		"previousCommentThreadKb",
-		"- Go to Previous Comment Thread ({0})"
+		"- Go to Previous Comment Thread ({0})",
 	);
 	export const previousCommentThreadNoKb = nls.localize(
 		"previousCommentThreadNoKb",
-		"- Go to Previous Comment Thread, which is currently not triggerable via keybinding."
+		"- Go to Previous Comment Thread, which is currently not triggerable via keybinding.",
 	);
 	export const addComment = nls.localize("addComment", "- Add Comment ({0})");
 	export const addCommentNoKb = nls.localize(
 		"addCommentNoKb",
-		"- Add Comment on Current Selection, which is currently not triggerable via keybinding."
+		"- Add Comment on Current Selection, which is currently not triggerable via keybinding.",
 	);
 	export const submitComment = nls.localize(
 		"submitComment",
-		"- Submit Comment ({0})"
+		"- Submit Comment ({0})",
 	);
 	export const submitCommentNoKb = nls.localize(
 		"submitCommentNoKb",
-		"- Submit Comment, accessible via tabbing, as it's currently not triggerable with a keybinding."
+		"- Submit Comment, accessible via tabbing, as it's currently not triggerable with a keybinding.",
 	);
 }
 
@@ -204,23 +204,23 @@ export class CommentsAccessibilityHelpContribution extends Disposable {
 				"comments",
 				(accessor) => {
 					const instantiationService = accessor.get(
-						IInstantiationService
+						IInstantiationService,
 					);
 					const accessibleViewService = accessor.get(
-						IAccessibleViewService
+						IAccessibleViewService,
 					);
 					accessibleViewService.show(
 						instantiationService.createInstance(
-							CommentsAccessibilityHelpProvider
-						)
+							CommentsAccessibilityHelpProvider,
+						),
 					);
 					return true;
 				},
 				ContextKeyExpr.or(
 					ctxCommentEditorFocused,
-					CommentContextKeys.commentFocused
-				)
-			)
+					CommentContextKeys.commentFocused,
+				),
+			),
 		);
 	}
 }
@@ -239,7 +239,7 @@ export class CommentsAccessibilityHelpProvider
 	private _descriptionForCommand(
 		commandId: string,
 		msg: string,
-		noKbMsg: string
+		noKbMsg: string,
 	): string {
 		const kb = this._keybindingService.lookupKeybinding(commandId);
 		if (kb) {
@@ -254,8 +254,8 @@ export class CommentsAccessibilityHelpProvider
 			this._descriptionForCommand(
 				ToggleTabFocusModeAction.ID,
 				CommentAccessibilityHelpNLS.introWidget,
-				CommentAccessibilityHelpNLS.introWidgetNoKb
-			) + "\n"
+				CommentAccessibilityHelpNLS.introWidgetNoKb,
+			) + "\n",
 		);
 		content.push(CommentAccessibilityHelpNLS.commentCommands);
 		content.push(CommentAccessibilityHelpNLS.escape);
@@ -263,29 +263,29 @@ export class CommentsAccessibilityHelpProvider
 			this._descriptionForCommand(
 				CommentCommandId.Add,
 				CommentAccessibilityHelpNLS.addComment,
-				CommentAccessibilityHelpNLS.addCommentNoKb
-			)
+				CommentAccessibilityHelpNLS.addCommentNoKb,
+			),
 		);
 		content.push(
 			this._descriptionForCommand(
 				CommentCommandId.Submit,
 				CommentAccessibilityHelpNLS.submitComment,
-				CommentAccessibilityHelpNLS.submitCommentNoKb
-			)
+				CommentAccessibilityHelpNLS.submitCommentNoKb,
+			),
 		);
 		content.push(
 			this._descriptionForCommand(
 				CommentCommandId.NextRange,
 				CommentAccessibilityHelpNLS.nextRange,
-				CommentAccessibilityHelpNLS.nextRangeNoKb
-			)
+				CommentAccessibilityHelpNLS.nextRangeNoKb,
+			),
 		);
 		content.push(
 			this._descriptionForCommand(
 				CommentCommandId.PreviousRange,
 				CommentAccessibilityHelpNLS.previousRange,
-				CommentAccessibilityHelpNLS.previousRangeNoKb
-			)
+				CommentAccessibilityHelpNLS.previousRangeNoKb,
+			),
 		);
 		return content.join("\n");
 	}

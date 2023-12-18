@@ -7,32 +7,32 @@ import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
 import { ICodeEditor } from "vs/editor/browser/editorBrowser";
 import {
 	EditorAction,
-	registerEditorAction,
 	ServicesAccessor,
+	registerEditorAction,
 } from "vs/editor/browser/editorExtensions";
 import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
-import * as nls from "vs/nls";
-import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
-import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import { INotificationService } from "vs/platform/notification/common/notification";
-import {
-	VIEWLET_ID,
-	IExtensionsViewPaneContainer,
-} from "vs/workbench/contrib/extensions/common/extensions";
-import { IDialogService } from "vs/platform/dialogs/common/dialogs";
-import { IPaneCompositePartService } from "vs/workbench/services/panecomposite/browser/panecomposite";
-import { ViewContainerLocation } from "vs/workbench/common/views";
 import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
+import * as nls from "vs/nls";
+import { ICommandService } from "vs/platform/commands/common/commands";
+import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
+import { IDialogService } from "vs/platform/dialogs/common/dialogs";
+import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
+import { INotificationService } from "vs/platform/notification/common/notification";
+import { ViewContainerLocation } from "vs/workbench/common/views";
+import {
+	IExtensionsViewPaneContainer,
+	VIEWLET_ID,
+} from "vs/workbench/contrib/extensions/common/extensions";
+import { IPaneCompositePartService } from "vs/workbench/services/panecomposite/browser/panecomposite";
 
 async function showExtensionQuery(
 	paneCompositeService: IPaneCompositePartService,
-	query: string
+	query: string,
 ) {
 	const viewlet = await paneCompositeService.openPaneComposite(
 		VIEWLET_ID,
 		ViewContainerLocation.Sidebar,
-		true
+		true,
 	);
 	if (viewlet) {
 		(
@@ -48,12 +48,12 @@ registerEditorAction(
 				id: "editor.action.formatDocument.none",
 				label: nls.localize(
 					"formatDocument.label.multiple",
-					"Format Document"
+					"Format Document",
 				),
 				alias: "Format Document",
 				precondition: ContextKeyExpr.and(
 					EditorContextKeys.writable,
-					EditorContextKeys.hasDocumentFormattingProvider.toNegated()
+					EditorContextKeys.hasDocumentFormattingProvider.toNegated(),
 				),
 				kbOpts: {
 					kbExpr: EditorContextKeys.editorTextFocus,
@@ -68,7 +68,7 @@ registerEditorAction(
 
 		async run(
 			accessor: ServicesAccessor,
-			editor: ICodeEditor
+			editor: ICodeEditor,
 		): Promise<void> {
 			if (!editor.hasModel()) {
 				return;
@@ -76,41 +76,41 @@ registerEditorAction(
 
 			const commandService = accessor.get(ICommandService);
 			const paneCompositeService = accessor.get(
-				IPaneCompositePartService
+				IPaneCompositePartService,
 			);
 			const notificationService = accessor.get(INotificationService);
 			const dialogService = accessor.get(IDialogService);
 			const languageFeaturesService = accessor.get(
-				ILanguageFeaturesService
+				ILanguageFeaturesService,
 			);
 
 			const model = editor.getModel();
 			const formatterCount =
 				languageFeaturesService.documentFormattingEditProvider.all(
-					model
+					model,
 				).length;
 
 			if (formatterCount > 1) {
 				return commandService.executeCommand(
-					"editor.action.formatDocument.multiple"
+					"editor.action.formatDocument.multiple",
 				);
 			} else if (formatterCount === 1) {
 				return commandService.executeCommand(
-					"editor.action.formatDocument"
+					"editor.action.formatDocument",
 				);
 			} else if (model.isTooLargeForSyncing()) {
 				notificationService.warn(
 					nls.localize(
 						"too.large",
-						"This file cannot be formatted because it is too large"
-					)
+						"This file cannot be formatted because it is too large",
+					),
 				);
 			} else {
 				const langName = model.getLanguageId();
 				const message = nls.localize(
 					"no.provider",
 					"There is no formatter for '{0}' files installed.",
-					langName
+					langName,
 				);
 				const { confirmed } = await dialogService.confirm({
 					message,
@@ -119,16 +119,16 @@ registerEditorAction(
 							key: "install.formatter",
 							comment: ["&& denotes a mnemonic"],
 						},
-						"&&Install Formatter..."
+						"&&Install Formatter...",
 					),
 				});
 				if (confirmed) {
 					showExtensionQuery(
 						paneCompositeService,
-						`category:formatters ${langName}`
+						`category:formatters ${langName}`,
 					);
 				}
 			}
 		}
-	}
+	},
 );

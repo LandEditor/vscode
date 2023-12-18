@@ -5,12 +5,12 @@
 
 import { h } from "vs/base/browser/dom";
 import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
-import { autorun, IObservable } from "vs/base/common/observable";
+import { IObservable, autorun } from "vs/base/common/observable";
 import { ICodeEditor } from "vs/editor/browser/editorBrowser";
 import { ITextModel } from "vs/editor/common/model";
+import * as nls from "vs/nls";
 import { LineRange } from "vs/workbench/contrib/mergeEditor/browser/model/lineRange";
 import { MergeEditorViewModel } from "vs/workbench/contrib/mergeEditor/browser/view/viewModel";
-import * as nls from "vs/nls";
 
 export const conflictMarkers = {
 	start: "<<<<<<<",
@@ -25,20 +25,20 @@ export class MergeMarkersController extends Disposable {
 		public readonly editor: ICodeEditor,
 		public readonly mergeEditorViewModel: IObservable<
 			MergeEditorViewModel | undefined
-		>
+		>,
 	) {
 		super();
 
 		this._register(
 			editor.onDidChangeModelContent((e) => {
 				this.updateDecorations();
-			})
+			}),
 		);
 
 		this._register(
 			editor.onDidChangeModel((e) => {
 				this.updateDecorations();
-			})
+			}),
 		);
 
 		this.updateDecorations();
@@ -50,12 +50,12 @@ export class MergeMarkersController extends Disposable {
 			? getBlocks(model, {
 					blockToRemoveStartLinePrefix: conflictMarkers.start,
 					blockToRemoveEndLinePrefix: conflictMarkers.end,
-				})
+			  })
 			: { blocks: [] };
 
 		this.editor.setHiddenAreas(
 			blocks.blocks.map((b) => b.lineRange.deltaEnd(-1).toRange()),
-			this
+			this,
 		);
 		this.editor.changeViewZones((c) => {
 			this.disposableStore.clear();
@@ -82,13 +82,13 @@ export class MergeMarkersController extends Disposable {
 							conflictingLinesCount === 1
 								? nls.localize(
 										"conflictingLine",
-										"1 Conflicting Line"
-									)
+										"1 Conflicting Line",
+								  )
 								: nls.localize(
 										"conflictingLines",
 										"{0} Conflicting Lines",
-										conflictingLinesCount
-									),
+										conflictingLinesCount,
+								  ),
 						]),
 					]),
 				]).root;
@@ -97,7 +97,7 @@ export class MergeMarkersController extends Disposable {
 						afterLineNumber: b.lineRange.endLineNumberExclusive - 1,
 						domNode,
 						heightInLines: 1.5,
-					})
+					}),
 				);
 
 				const updateWidth = () => {
@@ -111,7 +111,7 @@ export class MergeMarkersController extends Disposable {
 				this.disposableStore.add(
 					this.editor.onDidLayoutChange(() => {
 						updateWidth();
-					})
+					}),
 				);
 				updateWidth();
 
@@ -132,7 +132,7 @@ export class MergeMarkersController extends Disposable {
 							const activeRangeInResult =
 								vm.model.getLineRangeInResult(
 									activeRange.baseRange,
-									reader
+									reader,
 								);
 							if (activeRangeInResult.intersects(b.lineRange)) {
 								classNames.push("focused");
@@ -140,7 +140,7 @@ export class MergeMarkersController extends Disposable {
 						}
 
 						domNode.className = classNames.join(" ");
-					})
+					}),
 				);
 			}
 		});
@@ -149,7 +149,7 @@ export class MergeMarkersController extends Disposable {
 
 function getBlocks(
 	document: ITextModel,
-	configuration: ProjectionConfiguration
+	configuration: ProjectionConfiguration,
 ): { blocks: Block[]; transformedContent: string } {
 	const blocks: Block[] = [];
 	const transformedContent: string[] = [];
@@ -160,26 +160,26 @@ function getBlocks(
 
 	for (const line of document.getLinesContent()) {
 		curLine++;
-		if (!inBlock) {
-			if (line.startsWith(configuration.blockToRemoveStartLinePrefix)) {
-				inBlock = true;
-				startLineNumber = curLine;
-			} else {
-				transformedContent.push(line);
-			}
-		} else {
+		if (inBlock) {
 			if (line.startsWith(configuration.blockToRemoveEndLinePrefix)) {
 				inBlock = false;
 				blocks.push(
 					new Block(
 						new LineRange(
 							startLineNumber,
-							curLine - startLineNumber + 1
-						)
-					)
+							curLine - startLineNumber + 1,
+						),
+					),
 				);
 				transformedContent.push("");
 			}
+		} else if (
+			line.startsWith(configuration.blockToRemoveStartLinePrefix)
+		) {
+			inBlock = true;
+			startLineNumber = curLine;
+		} else {
+			transformedContent.push(line);
 		}
 	}
 

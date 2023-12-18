@@ -5,8 +5,6 @@
 
 //@ts-check
 
-"use strict";
-
 const withBrowserDefaults = require("../shared.webpack.config").browser;
 
 module.exports = withBrowserDefaults(
@@ -18,5 +16,5 @@ module.exports = withBrowserDefaults(
 	},
 	{
 		configFile: "tsconfig.browser.json",
-	}
+	},
 );

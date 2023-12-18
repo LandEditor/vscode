@@ -3,56 +3,56 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Emitter } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
+import { equals } from "vs/base/common/objects";
+import { OperatingSystem, isWindows } from "vs/base/common/platform";
+import { URI } from "vs/base/common/uri";
 import { localize } from "vs/nls";
-import {
-	ConfigurationScope,
-	IConfigurationNode,
-	IConfigurationRegistry,
-	Extensions as ConfigurationExtensions,
-} from "vs/platform/configuration/common/configurationRegistry";
-import { Registry } from "vs/platform/registry/common/platform";
-import { IWorkbenchContribution } from "vs/workbench/common/contributions";
-import {
-	IWorkspaceContextService,
-	IWorkspaceFolder,
-	WorkbenchState,
-} from "vs/platform/workspace/common/workspace";
 import {
 	ConfigurationTarget,
 	IConfigurationOverrides,
 	IConfigurationService,
 	IConfigurationValue,
 } from "vs/platform/configuration/common/configuration";
-import { Disposable } from "vs/base/common/lifecycle";
-import { Emitter } from "vs/base/common/event";
+import {
+	ConfigurationScope,
+	Extensions as ConfigurationExtensions,
+	IConfigurationNode,
+	IConfigurationRegistry,
+} from "vs/platform/configuration/common/configurationRegistry";
+import { Registry } from "vs/platform/registry/common/platform";
+import {
+	IWorkspaceContextService,
+	IWorkspaceFolder,
+	WorkbenchState,
+} from "vs/platform/workspace/common/workspace";
+import { IWorkbenchContribution } from "vs/workbench/common/contributions";
 import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteAgentService";
-import { OperatingSystem, isWindows } from "vs/base/common/platform";
-import { URI } from "vs/base/common/uri";
-import { equals } from "vs/base/common/objects";
 
 export const applicationConfigurationNodeBase =
 	Object.freeze<IConfigurationNode>({
-		"id": "application",
-		"order": 100,
-		"title": localize("applicationConfigurationTitle", "Application"),
-		"type": "object",
+		id: "application",
+		order: 100,
+		title: localize("applicationConfigurationTitle", "Application"),
+		type: "object",
 	});
 
 export const workbenchConfigurationNodeBase = Object.freeze<IConfigurationNode>(
 	{
-		"id": "workbench",
-		"order": 7,
-		"title": localize("workbenchConfigurationTitle", "Workbench"),
-		"type": "object",
-	}
+		id: "workbench",
+		order: 7,
+		title: localize("workbenchConfigurationTitle", "Workbench"),
+		type: "object",
+	},
 );
 
 export const securityConfigurationNodeBase = Object.freeze<IConfigurationNode>({
-	"id": "security",
-	"scope": ConfigurationScope.APPLICATION,
-	"title": localize("securityConfigurationTitle", "Security"),
-	"type": "object",
-	"order": 7,
+	id: "security",
+	scope: ConfigurationScope.APPLICATION,
+	title: localize("securityConfigurationTitle", "Security"),
+	type: "object",
+	order: 7,
 });
 
 export const Extensions = {
@@ -63,7 +63,7 @@ export type ConfigurationValue = { value: any | undefined /* Remove */ };
 export type ConfigurationKeyValuePairs = [string, ConfigurationValue][];
 export type ConfigurationMigrationFn = (
 	value: any,
-	valueAccessor: (key: string) => any
+	valueAccessor: (key: string) => any,
 ) =>
 	| ConfigurationValue
 	| ConfigurationKeyValuePairs
@@ -75,7 +75,7 @@ export type ConfigurationMigration = {
 
 export interface IConfigurationMigrationRegistry {
 	registerConfigurationMigrations(
-		configurationMigrations: ConfigurationMigration[]
+		configurationMigrations: ConfigurationMigration[],
 	): void;
 }
 
@@ -91,7 +91,7 @@ class ConfigurationMigrationRegistry
 		this._onDidRegisterConfigurationMigrations.event;
 
 	registerConfigurationMigrations(
-		configurationMigrations: ConfigurationMigration[]
+		configurationMigrations: ConfigurationMigration[],
 	): void {
 		this.migrations.push(...configurationMigrations);
 	}
@@ -130,7 +130,7 @@ export class ConfigurationMigrationWorkbenchContribution
 	}
 
 	private async migrateConfigurations(
-		migrations: ConfigurationMigration[]
+		migrations: ConfigurationMigration[],
 	): Promise<void> {
 		await this.migrateConfigurationsForFolder(undefined, migrations);
 		for (const folder of this.workspaceService.getWorkspace().folders) {
@@ -140,21 +140,21 @@ export class ConfigurationMigrationWorkbenchContribution
 
 	private async migrateConfigurationsForFolder(
 		folder: IWorkspaceFolder | undefined,
-		migrations: ConfigurationMigration[]
+		migrations: ConfigurationMigration[],
 	): Promise<void> {
 		await Promise.all([
 			migrations.map((migration) =>
 				this.migrateConfigurationsForFolderAndOverride(
 					migration,
-					folder?.uri
-				)
+					folder?.uri,
+				),
 			),
 		]);
 	}
 
 	private async migrateConfigurationsForFolderAndOverride(
 		migration: ConfigurationMigration,
-		resource?: URI
+		resource?: URI,
 	): Promise<void> {
 		const inspectData = this.configurationService.inspect(migration.key, {
 			resource,
@@ -175,13 +175,13 @@ export class ConfigurationMigrationWorkbenchContribution
 							"workspaceFolder",
 							ConfigurationTarget.WORKSPACE_FOLDER,
 						],
-					]
+				  ]
 				: [
 						["user", ConfigurationTarget.USER],
 						["userLocal", ConfigurationTarget.USER_LOCAL],
 						["userRemote", ConfigurationTarget.USER_REMOTE],
 						["workspace", ConfigurationTarget.WORKSPACE],
-					];
+				  ];
 		for (const [dataKey, target] of targetPairs) {
 			const migrationValues: [[string, ConfigurationValue], string[]][] =
 				[];
@@ -192,17 +192,17 @@ export class ConfigurationMigrationWorkbenchContribution
 				const keyValuePairs = await this.runMigration(
 					migration,
 					{ resource, overrideIdentifier },
-					dataKey
+					dataKey,
 				);
 				for (const keyValuePair of keyValuePairs ?? []) {
 					let keyValueAndOverridesPair = migrationValues.find(
 						([[k, v]]) =>
 							k === keyValuePair[0] &&
-							equals(v.value, keyValuePair[1].value)
+							equals(v.value, keyValuePair[1].value),
 					);
 					if (!keyValueAndOverridesPair) {
 						migrationValues.push(
-							(keyValueAndOverridesPair = [keyValuePair, []])
+							(keyValueAndOverridesPair = [keyValuePair, []]),
 						);
 					}
 					keyValueAndOverridesPair[1].push(overrideIdentifier);
@@ -214,7 +214,7 @@ export class ConfigurationMigrationWorkbenchContribution
 				migration,
 				{ resource },
 				dataKey,
-				inspectData
+				inspectData,
 			);
 			for (const keyValuePair of keyValuePairs ?? []) {
 				migrationValues.push([keyValuePair, []]);
@@ -229,9 +229,9 @@ export class ConfigurationMigrationWorkbenchContribution
 								key,
 								value.value,
 								{ resource, overrideIdentifiers },
-								target
-							)
-					)
+								target,
+							),
+					),
 				);
 			}
 		}
@@ -241,7 +241,7 @@ export class ConfigurationMigrationWorkbenchContribution
 		migration: ConfigurationMigration,
 		overrides: IConfigurationOverrides,
 		dataKey: keyof IConfigurationValue<any>,
-		data?: IConfigurationValue<any>
+		data?: IConfigurationValue<any>,
 	): Promise<ConfigurationKeyValuePairs | undefined> {
 		const valueAccessor = (key: string) =>
 			getInspectValue(this.configurationService.inspect(key, overrides));

@@ -3,17 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createRandomIPCHandle } from "vs/base/parts/ipc/node/ipc.net";
-import * as http from "http";
 import * as fs from "fs";
-import { IExtHostCommands } from "vs/workbench/api/common/extHostCommands";
-import {
-	IWindowOpenable,
-	IOpenWindowOptions,
-} from "vs/platform/window/common/window";
+import * as http from "http";
 import { URI } from "vs/base/common/uri";
+import { createRandomIPCHandle } from "vs/base/parts/ipc/node/ipc.net";
 import { ILogService } from "vs/platform/log/common/log";
+import {
+	IOpenWindowOptions,
+	IWindowOpenable,
+} from "vs/platform/window/common/window";
 import { hasWorkspaceFileExtension } from "vs/platform/workspace/common/workspace";
+import { IExtHostCommands } from "vs/workbench/api/common/extHostCommands";
 
 export interface OpenCommandPipeArgs {
 	type: "open";
@@ -62,10 +62,10 @@ export class CLIServerBase {
 	constructor(
 		private readonly _commands: ICommandsExecuter,
 		private readonly logService: ILogService,
-		private readonly _ipcHandlePath: string
+		private readonly _ipcHandlePath: string,
 	) {
 		this._server = http.createServer((req, res) =>
-			this.onRequest(req, res)
+			this.onRequest(req, res),
 		);
 		this.setup().catch((err) => {
 			logService.error(err);
@@ -90,16 +90,16 @@ export class CLIServerBase {
 
 	private onRequest(
 		req: http.IncomingMessage,
-		res: http.ServerResponse
+		res: http.ServerResponse,
 	): void {
 		const sendResponse = (
 			statusCode: number,
-			returnObj: string | undefined
+			returnObj: string | undefined,
 		) => {
 			res.writeHead(statusCode, { "content-type": "application/json" });
 			res.end(
 				JSON.stringify(returnObj || null),
-				(err?: any) => err && this.logService.error(err)
+				(err?: any) => err && this.logService.error(err),
 			); // CodeQL [SM01524] Only the message portion of errors are passed in.
 		};
 
@@ -192,29 +192,29 @@ export class CLIServerBase {
 		this._commands.executeCommand(
 			"_remoteCLI.windowOpen",
 			urisToOpen,
-			windowOpenArgs
+			windowOpenArgs,
 		);
 	}
 
 	private async openExternal(
-		data: OpenExternalCommandPipeArgs
+		data: OpenExternalCommandPipeArgs,
 	): Promise<undefined> {
 		for (const uriString of data.uris) {
 			const uri = URI.parse(uriString);
 			const urioOpen = uri.scheme === "file" ? uri : uriString; // workaround for #112577
 			await this._commands.executeCommand(
 				"_remoteCLI.openExternal",
-				urioOpen
+				urioOpen,
 			);
 		}
 	}
 
 	private async manageExtensions(
-		data: ExtensionManagementPipeArgs
+		data: ExtensionManagementPipeArgs,
 	): Promise<string | undefined> {
 		const toExtOrVSIX = (inputs: string[] | undefined) =>
 			inputs?.map((input) =>
-				/\.vsix$/i.test(input) ? URI.parse(input) : input
+				/\.vsix$/i.test(input) ? URI.parse(input) : input,
 			);
 		const commandArgs = {
 			list: data.list,
@@ -224,13 +224,13 @@ export class CLIServerBase {
 		};
 		return await this._commands.executeCommand<string | undefined>(
 			"_remoteCLI.manageExtensions",
-			commandArgs
+			commandArgs,
 		);
 	}
 
 	private async getStatus(data: StatusPipeArgs): Promise<string | undefined> {
 		return await this._commands.executeCommand<string | undefined>(
-			"_remoteCLI.getSystemStatus"
+			"_remoteCLI.getSystemStatus",
 		);
 	}
 
@@ -250,7 +250,7 @@ export class CLIServerBase {
 export class CLIServer extends CLIServerBase {
 	constructor(
 		@IExtHostCommands commands: IExtHostCommands,
-		@ILogService logService: ILogService
+		@ILogService logService: ILogService,
 	) {
 		super(commands, logService, createRandomIPCHandle());
 	}

@@ -5,7 +5,7 @@
 
 import * as fs from "fs";
 import { Uri } from "vscode";
-import { RequestService, FileType } from "../requests";
+import { FileType, RequestService } from "../requests";
 
 export function getNodeFSRequestService(): RequestService {
 	function ensureFileUri(location: string) {
@@ -82,7 +82,7 @@ export function getNodeFSRequestService(): RequestService {
 							} else {
 								return [stat.name, FileType.Unknown];
 							}
-						})
+						}),
 					);
 				});
 			});

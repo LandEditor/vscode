@@ -3,21 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from "vs/base/common/uri";
+import { Emitter } from "vs/base/common/event";
+import { getDriveLetter } from "vs/base/common/extpath";
+import { IExpression, ParsedExpression, parse } from "vs/base/common/glob";
+import { Disposable } from "vs/base/common/lifecycle";
+import { ResourceSet } from "vs/base/common/map";
+import { Schemas } from "vs/base/common/network";
 import { equals } from "vs/base/common/objects";
 import { isAbsolute } from "vs/base/common/path";
-import { Emitter } from "vs/base/common/event";
 import { relativePath } from "vs/base/common/resources";
-import { Disposable } from "vs/base/common/lifecycle";
-import { ParsedExpression, IExpression, parse } from "vs/base/common/glob";
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import { URI } from "vs/base/common/uri";
 import {
-	IConfigurationService,
 	IConfigurationChangeEvent,
+	IConfigurationService,
 } from "vs/platform/configuration/common/configuration";
-import { Schemas } from "vs/base/common/network";
-import { ResourceSet } from "vs/base/common/map";
-import { getDriveLetter } from "vs/base/common/extpath";
+import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
 
 interface IConfiguredExpression {
 	readonly expression: IExpression;
@@ -60,13 +60,13 @@ export class ResourceGlobMatcher extends Disposable {
 				if (this.shouldUpdate(e)) {
 					this.updateExpressions(true);
 				}
-			})
+			}),
 		);
 
 		this._register(
 			this.contextService.onDidChangeWorkspaceFolders(() =>
-				this.updateExpressions(true)
-			)
+				this.updateExpressions(true),
+			),
 		);
 	}
 
@@ -86,27 +86,25 @@ export class ResourceGlobMatcher extends Disposable {
 					!currentExpression ||
 					!equals(
 						currentExpression.expression,
-						newExpression.expression
+						newExpression.expression,
 					)
 				) {
 					changed = true;
 
 					this.mapFolderToParsedExpression.set(
 						folderUriStr,
-						parse(newExpression.expression)
+						parse(newExpression.expression),
 					);
 					this.mapFolderToConfiguredExpression.set(
 						folderUriStr,
-						newExpression
+						newExpression,
 					);
 				}
-			} else {
-				if (currentExpression) {
-					changed = true;
+			} else if (currentExpression) {
+				changed = true;
 
-					this.mapFolderToParsedExpression.delete(folderUriStr);
-					this.mapFolderToConfiguredExpression.delete(folderUriStr);
-				}
+				this.mapFolderToParsedExpression.delete(folderUriStr);
+				this.mapFolderToConfiguredExpression.delete(folderUriStr);
 			}
 		}
 
@@ -114,7 +112,7 @@ export class ResourceGlobMatcher extends Disposable {
 		const foldersMap = new ResourceSet(
 			this.contextService
 				.getWorkspace()
-				.folders.map((folder) => folder.uri)
+				.folders.map((folder) => folder.uri),
 		);
 		for (const [folder] of this.mapFolderToConfiguredExpression) {
 			if (folder === ResourceGlobMatcher.NO_FOLDER) {
@@ -133,38 +131,36 @@ export class ResourceGlobMatcher extends Disposable {
 		const globalNewExpression = this.doGetExpression(undefined);
 		const globalCurrentExpression =
 			this.mapFolderToConfiguredExpression.get(
-				ResourceGlobMatcher.NO_FOLDER
+				ResourceGlobMatcher.NO_FOLDER,
 			);
 		if (globalNewExpression) {
 			if (
 				!globalCurrentExpression ||
 				!equals(
 					globalCurrentExpression.expression,
-					globalNewExpression.expression
+					globalNewExpression.expression,
 				)
 			) {
 				changed = true;
 
 				this.mapFolderToParsedExpression.set(
 					ResourceGlobMatcher.NO_FOLDER,
-					parse(globalNewExpression.expression)
+					parse(globalNewExpression.expression),
 				);
 				this.mapFolderToConfiguredExpression.set(
 					ResourceGlobMatcher.NO_FOLDER,
-					globalNewExpression
+					globalNewExpression,
 				);
 			}
-		} else {
-			if (globalCurrentExpression) {
-				changed = true;
+		} else if (globalCurrentExpression) {
+			changed = true;
 
-				this.mapFolderToParsedExpression.delete(
-					ResourceGlobMatcher.NO_FOLDER
-				);
-				this.mapFolderToConfiguredExpression.delete(
-					ResourceGlobMatcher.NO_FOLDER
-				);
-			}
+			this.mapFolderToParsedExpression.delete(
+				ResourceGlobMatcher.NO_FOLDER,
+			);
+			this.mapFolderToConfiguredExpression.delete(
+				ResourceGlobMatcher.NO_FOLDER,
+			);
 		}
 
 		if (fromEvent && changed) {
@@ -173,7 +169,7 @@ export class ResourceGlobMatcher extends Disposable {
 	}
 
 	private doGetExpression(
-		resource: URI | undefined
+		resource: URI | undefined,
 	): IConfiguredExpression | undefined {
 		const expression = this.getExpression(resource);
 		if (!expression) {
@@ -203,13 +199,13 @@ export class ResourceGlobMatcher extends Disposable {
 
 			const driveLetter = getDriveLetter(
 				massagedKey,
-				true /* probe for windows */
+				true /* probe for windows */,
 			);
 			if (driveLetter) {
 				const driveLetterLower = driveLetter.toLowerCase();
 				if (driveLetter !== driveLetter.toLowerCase()) {
 					massagedKey = `${driveLetterLower}${massagedKey.substring(
-						1
+						1,
 					)}`;
 				}
 			}
@@ -236,17 +232,17 @@ export class ResourceGlobMatcher extends Disposable {
 			this.mapFolderToParsedExpression.has(folder.uri.toString())
 		) {
 			expressionForFolder = this.mapFolderToParsedExpression.get(
-				folder.uri.toString()
+				folder.uri.toString(),
 			);
 			expressionConfigForFolder =
 				this.mapFolderToConfiguredExpression.get(folder.uri.toString());
 		} else {
 			expressionForFolder = this.mapFolderToParsedExpression.get(
-				ResourceGlobMatcher.NO_FOLDER
+				ResourceGlobMatcher.NO_FOLDER,
 			);
 			expressionConfigForFolder =
 				this.mapFolderToConfiguredExpression.get(
-					ResourceGlobMatcher.NO_FOLDER
+					ResourceGlobMatcher.NO_FOLDER,
 				);
 		}
 
@@ -284,7 +280,7 @@ export class ResourceGlobMatcher extends Disposable {
 			return !!expressionForFolder(
 				this.uriToPath(resource),
 				undefined,
-				hasSibling
+				hasSibling,
 			);
 		}
 

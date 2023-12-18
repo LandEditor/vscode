@@ -29,155 +29,155 @@ import "vs/workbench/browser/web.main";
 
 //#region --- workbench services
 
-import "vs/workbench/services/integrity/browser/integrityService";
-import "vs/workbench/services/search/browser/searchService";
-import "vs/workbench/services/textfile/browser/browserTextFileService";
-import "vs/workbench/services/keybinding/browser/keyboardLayoutService";
-import "vs/workbench/services/extensions/browser/extensionService";
-import "vs/workbench/services/extensionManagement/browser/webExtensionsScannerService";
-import "vs/workbench/services/extensionManagement/common/extensionManagementServerService";
-import "vs/workbench/services/telemetry/browser/telemetryService";
-import "vs/workbench/services/url/browser/urlService";
-import "vs/workbench/services/update/browser/updateService";
-import "vs/workbench/services/workspaces/browser/workspacesService";
-import "vs/workbench/services/workspaces/browser/workspaceEditingService";
-import "vs/workbench/services/dialogs/browser/fileDialogService";
-import "vs/workbench/services/host/browser/browserHostService";
-import "vs/workbench/services/lifecycle/browser/lifecycleService";
-import "vs/workbench/services/clipboard/browser/clipboardService";
-import "vs/workbench/services/localization/browser/localeService";
-import "vs/workbench/services/path/browser/pathService";
-import "vs/workbench/services/themes/browser/browserHostColorSchemeService";
-import "vs/workbench/services/encryption/browser/encryptionService";
-import "vs/workbench/services/secrets/browser/secretStorageService";
-import "vs/workbench/services/workingCopy/browser/workingCopyBackupService";
-import "vs/workbench/services/tunnel/browser/tunnelService";
-import "vs/workbench/services/files/browser/elevatedFileService";
-import "vs/workbench/services/workingCopy/browser/workingCopyHistoryService";
-import "vs/workbench/services/userDataSync/browser/webUserDataSyncEnablementService";
-import "vs/workbench/services/userDataProfile/browser/userDataProfileStorageService";
-import "vs/workbench/services/configurationResolver/browser/configurationResolverService";
 import "vs/platform/extensionResourceLoader/browser/extensionResourceLoaderService";
 import "vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService";
+import "vs/workbench/services/clipboard/browser/clipboardService";
+import "vs/workbench/services/configurationResolver/browser/configurationResolverService";
+import "vs/workbench/services/dialogs/browser/fileDialogService";
+import "vs/workbench/services/encryption/browser/encryptionService";
+import "vs/workbench/services/extensionManagement/browser/webExtensionsScannerService";
+import "vs/workbench/services/extensionManagement/common/extensionManagementServerService";
+import "vs/workbench/services/extensions/browser/extensionService";
+import "vs/workbench/services/files/browser/elevatedFileService";
+import "vs/workbench/services/host/browser/browserHostService";
+import "vs/workbench/services/integrity/browser/integrityService";
+import "vs/workbench/services/keybinding/browser/keyboardLayoutService";
+import "vs/workbench/services/lifecycle/browser/lifecycleService";
+import "vs/workbench/services/localization/browser/localeService";
+import "vs/workbench/services/path/browser/pathService";
+import "vs/workbench/services/search/browser/searchService";
+import "vs/workbench/services/secrets/browser/secretStorageService";
+import "vs/workbench/services/telemetry/browser/telemetryService";
+import "vs/workbench/services/textfile/browser/browserTextFileService";
+import "vs/workbench/services/themes/browser/browserHostColorSchemeService";
+import "vs/workbench/services/tunnel/browser/tunnelService";
+import "vs/workbench/services/update/browser/updateService";
+import "vs/workbench/services/url/browser/urlService";
+import "vs/workbench/services/userDataProfile/browser/userDataProfileStorageService";
+import "vs/workbench/services/userDataSync/browser/webUserDataSyncEnablementService";
+import "vs/workbench/services/workingCopy/browser/workingCopyBackupService";
+import "vs/workbench/services/workingCopy/browser/workingCopyHistoryService";
+import "vs/workbench/services/workspaces/browser/workspaceEditingService";
+import "vs/workbench/services/workspaces/browser/workspacesService";
 
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { IAccessibilityService } from "vs/platform/accessibility/common/accessibility";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { ContextMenuService } from "vs/platform/contextview/browser/contextMenuService";
-import { IExtensionTipsService } from "vs/platform/extensionManagement/common/extensionManagement";
-import { ExtensionTipsService } from "vs/platform/extensionManagement/common/extensionTipsService";
-import { IWorkbenchExtensionManagementService } from "vs/workbench/services/extensionManagement/common/extensionManagement";
-import { ExtensionManagementService } from "vs/workbench/services/extensionManagement/common/extensionManagementService";
-import { LogLevel } from "vs/platform/log/common/log";
-import {
-	UserDataSyncMachinesService,
-	IUserDataSyncMachinesService,
-} from "vs/platform/userDataSync/common/userDataSyncMachines";
-import {
-	IUserDataSyncStoreService,
-	IUserDataSyncService,
-	IUserDataAutoSyncService,
-	IUserDataSyncLocalStoreService,
-	IUserDataSyncResourceProviderService,
-} from "vs/platform/userDataSync/common/userDataSync";
-import { UserDataSyncStoreService } from "vs/platform/userDataSync/common/userDataSyncStoreService";
-import { UserDataSyncLocalStoreService } from "vs/platform/userDataSync/common/userDataSyncLocalStoreService";
-import { UserDataSyncService } from "vs/platform/userDataSync/common/userDataSyncService";
-import {
-	IUserDataSyncAccountService,
-	UserDataSyncAccountService,
-} from "vs/platform/userDataSync/common/userDataSyncAccount";
-import { UserDataAutoSyncService } from "vs/platform/userDataSync/common/userDataAutoSyncService";
 import { AccessibilityService } from "vs/platform/accessibility/browser/accessibilityService";
-import { ICustomEndpointTelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { NullEndpointTelemetryService } from "vs/platform/telemetry/common/telemetryUtils";
-import { ITitleService } from "vs/workbench/services/title/browser/titleService";
-import { BrowserTitleService } from "vs/workbench/browser/parts/titlebar/titlebarPart";
-import {
-	ITimerService,
-	TimerService,
-} from "vs/workbench/services/timer/browser/timerService";
+import { IAccessibilityService } from "vs/platform/accessibility/common/accessibility";
+import { ContextMenuService } from "vs/platform/contextview/browser/contextMenuService";
+import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
 import {
 	IDiagnosticsService,
 	NullDiagnosticsService,
 } from "vs/platform/diagnostics/common/diagnostics";
-import { ILanguagePackService } from "vs/platform/languagePacks/common/languagePacks";
+import { IExtensionTipsService } from "vs/platform/extensionManagement/common/extensionManagement";
+import { ExtensionTipsService } from "vs/platform/extensionManagement/common/extensionTipsService";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
 import { WebLanguagePacksService } from "vs/platform/languagePacks/browser/languagePacks";
+import { ILanguagePackService } from "vs/platform/languagePacks/common/languagePacks";
+import { LogLevel } from "vs/platform/log/common/log";
+import { ICustomEndpointTelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { NullEndpointTelemetryService } from "vs/platform/telemetry/common/telemetryUtils";
+import { UserDataAutoSyncService } from "vs/platform/userDataSync/common/userDataAutoSyncService";
+import {
+	IUserDataAutoSyncService,
+	IUserDataSyncLocalStoreService,
+	IUserDataSyncResourceProviderService,
+	IUserDataSyncService,
+	IUserDataSyncStoreService,
+} from "vs/platform/userDataSync/common/userDataSync";
+import {
+	IUserDataSyncAccountService,
+	UserDataSyncAccountService,
+} from "vs/platform/userDataSync/common/userDataSyncAccount";
+import { UserDataSyncLocalStoreService } from "vs/platform/userDataSync/common/userDataSyncLocalStoreService";
+import {
+	IUserDataSyncMachinesService,
+	UserDataSyncMachinesService,
+} from "vs/platform/userDataSync/common/userDataSyncMachines";
+import { UserDataSyncService } from "vs/platform/userDataSync/common/userDataSyncService";
+import { UserDataSyncStoreService } from "vs/platform/userDataSync/common/userDataSyncStoreService";
+import { BrowserTitleService } from "vs/workbench/browser/parts/titlebar/titlebarPart";
+import { IWorkbenchExtensionManagementService } from "vs/workbench/services/extensionManagement/common/extensionManagement";
+import { ExtensionManagementService } from "vs/workbench/services/extensionManagement/common/extensionManagementService";
+import {
+	ITimerService,
+	TimerService,
+} from "vs/workbench/services/timer/browser/timerService";
+import { ITitleService } from "vs/workbench/services/title/browser/titleService";
 
 registerSingleton(
 	IWorkbenchExtensionManagementService,
 	ExtensionManagementService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 registerSingleton(
 	IAccessibilityService,
 	AccessibilityService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 registerSingleton(
 	IContextMenuService,
 	ContextMenuService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 registerSingleton(
 	IUserDataSyncStoreService,
 	UserDataSyncStoreService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 registerSingleton(
 	IUserDataSyncMachinesService,
 	UserDataSyncMachinesService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 registerSingleton(
 	IUserDataSyncLocalStoreService,
 	UserDataSyncLocalStoreService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 registerSingleton(
 	IUserDataSyncAccountService,
 	UserDataSyncAccountService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 registerSingleton(
 	IUserDataSyncService,
 	UserDataSyncService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 registerSingleton(
 	IUserDataSyncResourceProviderService,
 	UserDataSyncResourceProviderService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 registerSingleton(
 	IUserDataAutoSyncService,
 	UserDataAutoSyncService,
-	InstantiationType.Eager /* Eager to start auto sync */
+	InstantiationType.Eager /* Eager to start auto sync */,
 );
 registerSingleton(ITitleService, BrowserTitleService, InstantiationType.Eager);
 registerSingleton(
 	IExtensionTipsService,
 	ExtensionTipsService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 registerSingleton(ITimerService, TimerService, InstantiationType.Delayed);
 registerSingleton(
 	ICustomEndpointTelemetryService,
 	NullEndpointTelemetryService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 registerSingleton(
 	IDiagnosticsService,
 	NullDiagnosticsService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 registerSingleton(
 	ILanguagePackService,
 	WebLanguagePacksService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 
 //#endregion
@@ -211,9 +211,9 @@ import "vs/workbench/contrib/webview/browser/webview.web.contribution";
 // Extensions Management
 import "vs/workbench/contrib/extensions/browser/extensions.web.contribution";
 
+import "vs/workbench/contrib/externalTerminal/browser/externalTerminal.contribution";
 // Terminal
 import "vs/workbench/contrib/terminal/browser/terminal.web.contribution";
-import "vs/workbench/contrib/externalTerminal/browser/externalTerminal.contribution";
 import "vs/workbench/contrib/terminal/browser/terminalInstanceService";
 
 // Tasks
@@ -243,29 +243,28 @@ import "vs/workbench/contrib/remote/browser/remoteStartEntry.contribution";
 //
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-import {
-	create,
-	commands,
-	env,
-	window,
-	workspace,
-	logger,
-} from "vs/workbench/browser/web.factory";
-import { Menu } from "vs/workbench/browser/web.api";
-import { URI } from "vs/base/common/uri";
-import { Event, Emitter } from "vs/base/common/event";
+import { Emitter, Event } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
-import { GroupOrientation } from "vs/workbench/services/editor/common/editorGroupsService";
-import { UserDataSyncResourceProviderService } from "vs/platform/userDataSync/common/userDataSyncResourceProvider";
+import { URI } from "vs/base/common/uri";
 import {
 	RemoteAuthorityResolverError,
 	RemoteAuthorityResolverErrorCode,
 } from "vs/platform/remote/common/remoteAuthorityResolver";
+import { UserDataSyncResourceProviderService } from "vs/platform/userDataSync/common/userDataSyncResourceProvider";
+import { Menu } from "vs/workbench/browser/web.api";
+import {
+	commands,
+	create,
+	env,
+	logger,
+	window,
+	workspace,
+} from "vs/workbench/browser/web.factory";
+import { GroupOrientation } from "vs/workbench/services/editor/common/editorGroupsService";
 
 export {
 	// Factory
 	create,
-
 	// Basic Types
 	URI,
 	Event,
@@ -275,7 +274,6 @@ export {
 	LogLevel,
 	RemoteAuthorityResolverError,
 	RemoteAuthorityResolverErrorCode,
-
 	// Facade API
 	env,
 	window,

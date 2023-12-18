@@ -9,7 +9,7 @@ declare module "vscode" {
 	export namespace scm {
 		export function registerSourceControlInputBoxValueProvider(
 			sourceControlId: string,
-			provider: SourceControlInputBoxValueProvider
+			provider: SourceControlInputBoxValueProvider,
 		): Disposable;
 	}
 
@@ -25,7 +25,7 @@ declare module "vscode" {
 		provideValue(
 			rootUri: Uri,
 			context: SourceControlInputBoxValueProviderContext[],
-			token: CancellationToken
+			token: CancellationToken,
 		): ProviderResult<string | undefined>;
 	}
 }

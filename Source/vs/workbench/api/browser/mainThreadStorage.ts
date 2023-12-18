@@ -3,29 +3,29 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	IStorageService,
-	StorageScope,
-} from "vs/platform/storage/common/storage";
-import {
-	MainThreadStorageShape,
-	MainContext,
-	ExtHostStorageShape,
-	ExtHostContext,
-} from "../common/extHost.protocol";
-import {
-	extHostNamedCustomer,
-	IExtHostContext,
-} from "vs/workbench/services/extensions/common/extHostCustomers";
 import { DisposableStore } from "vs/base/common/lifecycle";
 import { isWeb } from "vs/base/common/platform";
 import {
 	IExtensionIdWithVersion,
 	IExtensionStorageService,
 } from "vs/platform/extensionManagement/common/extensionStorage";
-import { migrateExtensionStorage } from "vs/workbench/services/extensions/common/extensionStorageMigration";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { ILogService } from "vs/platform/log/common/log";
+import {
+	IStorageService,
+	StorageScope,
+} from "vs/platform/storage/common/storage";
+import {
+	IExtHostContext,
+	extHostNamedCustomer,
+} from "vs/workbench/services/extensions/common/extHostCustomers";
+import { migrateExtensionStorage } from "vs/workbench/services/extensions/common/extensionStorageMigration";
+import {
+	ExtHostContext,
+	ExtHostStorageShape,
+	MainContext,
+	MainThreadStorageShape,
+} from "../common/extHost.protocol";
 
 @extHostNamedCustomer(MainContext.MainThreadStorage)
 export class MainThreadStorage implements MainThreadStorageShape {
@@ -73,7 +73,7 @@ export class MainThreadStorage implements MainThreadStorageShape {
 
 	async $initializeExtensionStorage(
 		shared: boolean,
-		extensionId: string
+		extensionId: string,
 	): Promise<string | undefined> {
 		await this.checkAndMigrateExtensionStorage(extensionId, shared);
 
@@ -82,33 +82,33 @@ export class MainThreadStorage implements MainThreadStorageShape {
 		}
 		return this._extensionStorageService.getExtensionStateRaw(
 			extensionId,
-			shared
+			shared,
 		);
 	}
 
 	async $setValue(
 		shared: boolean,
 		key: string,
-		value: object
+		value: object,
 	): Promise<void> {
 		this._extensionStorageService.setExtensionState(key, value, shared);
 	}
 
 	$registerExtensionStorageKeysToSync(
 		extension: IExtensionIdWithVersion,
-		keys: string[]
+		keys: string[],
 	): void {
 		this._extensionStorageService.setKeysForSync(extension, keys);
 	}
 
 	private async checkAndMigrateExtensionStorage(
 		extensionId: string,
-		shared: boolean
+		shared: boolean,
 	): Promise<void> {
 		try {
 			let sourceExtensionId =
 				this._extensionStorageService.getSourceExtensionToMigrate(
-					extensionId
+					extensionId,
 				);
 
 			// TODO: @sandy081 - Remove it after 6 months
@@ -133,11 +133,11 @@ export class MainThreadStorage implements MainThreadStorageShape {
 					sourceExtensionId !== sourceExtensionId.toLowerCase() &&
 					this._extensionStorageService.getExtensionState(
 						sourceExtensionId.toLowerCase(),
-						shared
+						shared,
 					) &&
 					!this._extensionStorageService.getExtensionState(
 						sourceExtensionId,
-						shared
+						shared,
 					)
 				) {
 					sourceExtensionId = sourceExtensionId.toLowerCase();
@@ -146,7 +146,7 @@ export class MainThreadStorage implements MainThreadStorageShape {
 					sourceExtensionId,
 					extensionId,
 					shared,
-					this._instantiationService
+					this._instantiationService,
 				);
 			}
 		} catch (error) {

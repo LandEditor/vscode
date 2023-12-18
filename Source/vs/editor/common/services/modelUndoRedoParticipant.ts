@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IModelService } from "vs/editor/common/services/model";
-import { ITextModelService } from "vs/editor/common/services/resolverService";
 import { Disposable, IDisposable, dispose } from "vs/base/common/lifecycle";
-import { IUndoRedoService } from "vs/platform/undoRedo/common/undoRedo";
 import {
 	IUndoRedoDelegate,
 	MultiModelEditStackElement,
 } from "vs/editor/common/model/editStack";
+import { IModelService } from "vs/editor/common/services/model";
+import { ITextModelService } from "vs/editor/common/services/resolverService";
+import { IUndoRedoService } from "vs/platform/undoRedo/common/undoRedo";
 
 export class ModelUndoRedoParticipant
 	extends Disposable
@@ -48,7 +48,7 @@ export class ModelUndoRedoParticipant
 	}
 
 	public prepareUndoRedo(
-		element: MultiModelEditStackElement
+		element: MultiModelEditStackElement,
 	): IDisposable | Promise<IDisposable> {
 		// Load all the needed text models
 		const missingModels = element.getMissingModels();

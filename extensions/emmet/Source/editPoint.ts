@@ -26,7 +26,7 @@ export function fetchEditPoint(direction: string): void {
 
 function nextEditPoint(
 	selection: vscode.Selection,
-	editor: vscode.TextEditor
+	editor: vscode.TextEditor,
 ): vscode.Selection {
 	for (
 		let lineNum = selection.anchor.line;
@@ -37,7 +37,7 @@ function nextEditPoint(
 			lineNum,
 			editor,
 			selection.anchor,
-			"next"
+			"next",
 		);
 		if (updatedSelection) {
 			return updatedSelection;
@@ -48,14 +48,14 @@ function nextEditPoint(
 
 function prevEditPoint(
 	selection: vscode.Selection,
-	editor: vscode.TextEditor
+	editor: vscode.TextEditor,
 ): vscode.Selection {
 	for (let lineNum = selection.anchor.line; lineNum >= 0; lineNum--) {
 		const updatedSelection = findEditPoint(
 			lineNum,
 			editor,
 			selection.anchor,
-			"prev"
+			"prev",
 		);
 		if (updatedSelection) {
 			return updatedSelection;
@@ -68,7 +68,7 @@ function findEditPoint(
 	lineNum: number,
 	editor: vscode.TextEditor,
 	position: vscode.Position,
-	direction: string
+	direction: string,
 ): vscode.Selection | undefined {
 	const line = editor.document.lineAt(lineNum);
 	let lineContent = line.text;
@@ -82,7 +82,7 @@ function findEditPoint(
 			lineNum,
 			lineContent.length,
 			lineNum,
-			lineContent.length
+			lineContent.length,
 		);
 	}
 
@@ -93,15 +93,15 @@ function findEditPoint(
 		direction === "next"
 			? lineContent.indexOf(
 					'""',
-					lineNum === position.line ? position.character : 0
-				)
+					lineNum === position.line ? position.character : 0,
+			  )
 			: lineContent.lastIndexOf('""');
 	const emptyTagIndex =
 		direction === "next"
 			? lineContent.indexOf(
 					"><",
-					lineNum === position.line ? position.character : 0
-				)
+					lineNum === position.line ? position.character : 0,
+			  )
 			: lineContent.lastIndexOf("><");
 
 	let winner = -1;

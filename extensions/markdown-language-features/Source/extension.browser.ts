@@ -31,11 +31,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
 function startServer(
 	context: vscode.ExtensionContext,
-	parser: IMdParser
+	parser: IMdParser,
 ): Promise<MdLanguageClient> {
 	const serverMain = vscode.Uri.joinPath(
 		context.extensionUri,
-		"server/dist/browser/workerMain.js"
+		"server/dist/browser/workerMain.js",
 	);
 
 	const worker = new Worker(serverMain.toString());
@@ -45,6 +45,6 @@ function startServer(
 		(id: string, name: string, clientOptions: LanguageClientOptions) => {
 			return new LanguageClient(id, name, clientOptions, worker);
 		},
-		parser
+		parser,
 	);
 }

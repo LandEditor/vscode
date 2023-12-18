@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	WorkbenchState,
-	IWorkspace,
-} from "vs/platform/workspace/common/workspace";
 import { URI } from "vs/base/common/uri";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
+import {
+	IWorkspace,
+	WorkbenchState,
+} from "vs/platform/workspace/common/workspace";
 import {
 	IWorkspaceTagsService,
 	Tags,
@@ -26,14 +26,14 @@ export class NoOpWorkspaceTagsService implements IWorkspaceTagsService {
 
 	async getTelemetryWorkspaceId(
 		workspace: IWorkspace,
-		state: WorkbenchState
+		state: WorkbenchState,
 	): Promise<string | undefined> {
 		return undefined;
 	}
 
 	getHashedRemotesFromUri(
 		workspaceUri: URI,
-		stripEndingDotGit?: boolean
+		stripEndingDotGit?: boolean,
 	): Promise<string[]> {
 		return Promise.resolve([]);
 	}
@@ -42,5 +42,5 @@ export class NoOpWorkspaceTagsService implements IWorkspaceTagsService {
 registerSingleton(
 	IWorkspaceTagsService,
 	NoOpWorkspaceTagsService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

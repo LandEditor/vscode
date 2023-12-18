@@ -73,7 +73,7 @@ export interface IChatAccessibilityService {
 	acceptRequest(): number;
 	acceptResponse(
 		response: IChatResponseViewModel | string | undefined,
-		requestId: number
+		requestId: number,
 	): void;
 }
 
@@ -137,13 +137,13 @@ export interface IChatWidget {
 	hasInputFocus(): boolean;
 	getCodeBlockInfoForEditor(uri: URI): IChatCodeBlockInfo | undefined;
 	getCodeBlockInfosForResponse(
-		response: IChatResponseViewModel
+		response: IChatResponseViewModel,
 	): IChatCodeBlockInfo[];
 	getFileTreeInfosForResponse(
-		response: IChatResponseViewModel
+		response: IChatResponseViewModel,
 	): IChatFileTreeInfo[];
 	getLastFocusedFileTreeForResponse(
-		response: IChatResponseViewModel
+		response: IChatResponseViewModel,
 	): IChatFileTreeInfo | undefined;
 	clear(): void;
 }

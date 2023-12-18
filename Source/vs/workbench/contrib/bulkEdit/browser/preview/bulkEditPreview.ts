@@ -3,45 +3,45 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	ITextModelContentProvider,
-	ITextModelService,
-} from "vs/editor/common/services/resolverService";
-import { URI } from "vs/base/common/uri";
-import { ILanguageService } from "vs/editor/common/languages/language";
-import { IModelService } from "vs/editor/common/services/model";
-import { createTextBufferFactoryFromSnapshot } from "vs/editor/common/model/textModel";
-import { WorkspaceEditMetadata } from "vs/editor/common/languages";
-import { DisposableStore } from "vs/base/common/lifecycle";
 import { coalesceInPlace } from "vs/base/common/arrays";
-import { Range } from "vs/editor/common/core/range";
-import {
-	EditOperation,
-	ISingleEditOperation,
-} from "vs/editor/common/core/editOperation";
-import {
-	ServicesAccessor,
-	IInstantiationService,
-} from "vs/platform/instantiation/common/instantiation";
-import { IFileService } from "vs/platform/files/common/files";
+import { Codicon } from "vs/base/common/codicons";
 import { Emitter, Event } from "vs/base/common/event";
-import { ConflictDetector } from "vs/workbench/contrib/bulkEdit/browser/conflicts";
+import { DisposableStore } from "vs/base/common/lifecycle";
 import { ResourceMap } from "vs/base/common/map";
-import { localize } from "vs/nls";
 import { extUri } from "vs/base/common/resources";
+import { MicrotaskDelay } from "vs/base/common/symbols";
+import { URI } from "vs/base/common/uri";
+import { generateUuid } from "vs/base/common/uuid";
 import {
 	ResourceEdit,
 	ResourceFileEdit,
 	ResourceTextEdit,
 } from "vs/editor/browser/services/bulkEditService";
-import { Codicon } from "vs/base/common/codicons";
-import { generateUuid } from "vs/base/common/uuid";
+import {
+	EditOperation,
+	ISingleEditOperation,
+} from "vs/editor/common/core/editOperation";
+import { Range } from "vs/editor/common/core/range";
+import { WorkspaceEditMetadata } from "vs/editor/common/languages";
+import { ILanguageService } from "vs/editor/common/languages/language";
+import { createTextBufferFactoryFromSnapshot } from "vs/editor/common/model/textModel";
+import { IModelService } from "vs/editor/common/services/model";
+import {
+	ITextModelContentProvider,
+	ITextModelService,
+} from "vs/editor/common/services/resolverService";
 import { SnippetParser } from "vs/editor/contrib/snippet/browser/snippetParser";
-import { MicrotaskDelay } from "vs/base/common/symbols";
+import { localize } from "vs/nls";
+import { IFileService } from "vs/platform/files/common/files";
+import {
+	IInstantiationService,
+	ServicesAccessor,
+} from "vs/platform/instantiation/common/instantiation";
+import { ConflictDetector } from "vs/workbench/contrib/bulkEdit/browser/conflicts";
 
 export class CheckedStates<T extends object> {
 	private readonly _states = new WeakMap<T, boolean>();
-	private _checkedCount: number = 0;
+	private _checkedCount = 0;
 
 	private readonly _onDidChange = new Emitter<T>();
 	readonly onDidChange: Event<T> = this._onDidChange.event;
@@ -67,12 +67,10 @@ export class CheckedStates<T extends object> {
 			if (value) {
 				this._checkedCount += 1;
 			}
+		} else if (value) {
+			this._checkedCount += 1;
 		} else {
-			if (value) {
-				this._checkedCount += 1;
-			} else {
-				this._checkedCount -= 1;
-			}
+			this._checkedCount -= 1;
 		}
 		this._states.set(obj, value);
 		this._onDidChange.fire(obj);
@@ -82,11 +80,11 @@ export class CheckedStates<T extends object> {
 export class BulkTextEdit {
 	constructor(
 		readonly parent: BulkFileOperation,
-		readonly textEdit: ResourceTextEdit
+		readonly textEdit: ResourceTextEdit,
 	) {}
 }
 
-export const enum BulkFileOperationType {
+export enum BulkFileOperationType {
 	TextEdit = 1,
 	Create = 2,
 	Delete = 4,
@@ -99,15 +97,12 @@ export class BulkFileOperation {
 	originalEdits = new Map<number, ResourceTextEdit | ResourceFileEdit>();
 	newUri?: URI;
 
-	constructor(
-		readonly uri: URI,
-		readonly parent: BulkFileOperations
-	) {}
+	constructor(readonly uri: URI, readonly parent: BulkFileOperations) {}
 
 	addEdit(
 		index: number,
 		type: BulkFileOperationType,
-		edit: ResourceTextEdit | ResourceFileEdit
+		edit: ResourceTextEdit | ResourceFileEdit,
 	) {
 		this.type |= type;
 		this.originalEdits.set(index, edit);
@@ -142,7 +137,7 @@ export class BulkCategory {
 	readonly operationByResource = new Map<string, BulkFileOperation>();
 
 	constructor(
-		readonly metadata: WorkspaceEditMetadata = BulkCategory._defaultMetadata
+		readonly metadata: WorkspaceEditMetadata = BulkCategory._defaultMetadata,
 	) {}
 
 	get fileOperations(): IterableIterator<BulkFileOperation> {
@@ -153,7 +148,7 @@ export class BulkCategory {
 export class BulkFileOperations {
 	static async create(
 		accessor: ServicesAccessor,
-		bulkEdit: ResourceEdit[]
+		bulkEdit: ResourceEdit[],
 	): Promise<BulkFileOperations> {
 		const result = accessor
 			.get(IInstantiationService)
@@ -346,12 +341,12 @@ export class BulkFileOperations {
 							result.push(
 								EditOperation.replaceMove(
 									Range.lift(edit.textEdit.range),
-									!edit.textEdit.insertAsSnippet
-										? edit.textEdit.text
-										: SnippetParser.asInsertText(
-												edit.textEdit.text
-											)
-								)
+									edit.textEdit.insertAsSnippet
+										? SnippetParser.asInsertText(
+												edit.textEdit.text,
+										  )
+										: edit.textEdit.text,
+								),
 							);
 						}
 					} else if (!this.checked.isChecked(edit)) {
@@ -365,7 +360,7 @@ export class BulkFileOperations {
 				}
 
 				return result.sort((a, b) =>
-					Range.compareRangesUsingStarts(a.range, b.range)
+					Range.compareRangesUsingStarts(a.range, b.range),
 				);
 			}
 		}
@@ -441,11 +436,11 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
 			Event.debounce(
 				this._operations.checked.onDidChange,
 				(_last, e) => e,
-				MicrotaskDelay
+				MicrotaskDelay,
 			)((e) => {
 				const uri = this._operations.getUriOfEdit(e);
 				this._applyTextEditsToPreviewModel(uri);
-			})
+			}),
 		);
 	}
 
@@ -471,17 +466,17 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
 				// try: copy existing
 				const ref =
 					await this._textModelResolverService.createModelReference(
-						uri
+						uri,
 					);
 				const sourceModel = ref.object.textEditorModel;
 				model = this._modelService.createModel(
 					createTextBufferFactoryFromSnapshot(
-						sourceModel.createSnapshot()
+						sourceModel.createSnapshot(),
 					),
 					this._languageService.createById(
-						sourceModel.getLanguageId()
+						sourceModel.getLanguageId(),
 					),
-					previewUri
+					previewUri,
 				);
 				ref.dispose();
 			} catch {
@@ -489,9 +484,9 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
 				model = this._modelService.createModel(
 					"",
 					this._languageService.createByFilepathOrFirstLine(
-						previewUri
+						previewUri,
 					),
-					previewUri
+					previewUri,
 				);
 			}
 			// this is a little weird but otherwise editors and other cusomers
@@ -500,8 +495,8 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
 			queueMicrotask(async () => {
 				this._disposables.add(
 					await this._textModelResolverService.createModelReference(
-						model!.uri
-					)
+						model!.uri,
+					),
 				);
 			});
 		}

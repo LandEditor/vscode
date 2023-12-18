@@ -22,7 +22,7 @@ async function generate() {
 	for (const file of files) {
 		await download(
 			`https://raw.githubusercontent.com/milesj/emojibase/master/packages/data/en/shortcodes/${file}`,
-			file
+			file,
 		);
 
 		/**
@@ -51,7 +51,7 @@ async function generate() {
 	// https://github.com/carloscuesta/gitmoji/blob/master/src/data/gitmojis.json
 	await download(
 		"https://raw.githubusercontent.com/carloscuesta/gitmoji/master/src/data/gitmojis.json",
-		"gitmojis.json"
+		"gitmojis.json",
 	);
 
 	/**
@@ -59,7 +59,7 @@ async function generate() {
 	 */
 	// eslint-disable-next-line import/no-dynamic-require
 	const gitmojis = require(
-		path.join(process.cwd(), "gitmojis.json")
+		path.join(process.cwd(), "gitmojis.json"),
 	).gitmojis;
 	for (const emoji of gitmojis) {
 		if (emoji.code.startsWith(":") && emoji.code.endsWith(":")) {
@@ -87,7 +87,7 @@ async function generate() {
 	fs.writeFileSync(
 		path.join(process.cwd(), "resources/emojis.json"),
 		JSON.stringify(map),
-		"utf8"
+		"utf8",
 	);
 }
 

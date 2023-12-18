@@ -4,15 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type {
-	IViewportRange,
-	IBufferRange,
-	IBufferLine,
 	IBuffer,
 	IBufferCellPosition,
+	IBufferLine,
+	IBufferRange,
+	IViewportRange,
 } from "@xterm/xterm";
-import { IRange } from "vs/editor/common/core/range";
-import { OperatingSystem } from "vs/base/common/platform";
 import { IPath, posix, win32 } from "vs/base/common/path";
+import { OperatingSystem } from "vs/base/common/platform";
+import { IRange } from "vs/editor/common/core/range";
 import {
 	ITerminalCapabilityStore,
 	TerminalCapability,
@@ -31,7 +31,7 @@ export function convertLinkRangeToBuffer(
 	lines: IBufferLine[],
 	bufferWidth: number,
 	range: IRange,
-	startLine: number
+	startLine: number,
 ): IBufferRange {
 	const bufferRange: IBufferRange = {
 		start: {
@@ -50,7 +50,7 @@ export function convertLinkRangeToBuffer(
 	for (let y = 0; y < Math.min(startWrappedLineCount); y++) {
 		const lineLength = Math.min(
 			bufferWidth,
-			range.startColumn - 1 - y * bufferWidth
+			range.startColumn - 1 - y * bufferWidth,
 		);
 		let lineOffset = 0;
 		const line = lines[y];
@@ -97,7 +97,7 @@ export function convertLinkRangeToBuffer(
 				: 0;
 		const lineLength = Math.min(
 			bufferWidth,
-			range.endColumn + startOffset - y * bufferWidth
+			range.endColumn + startOffset - y * bufferWidth,
 		);
 		let lineOffset = 0;
 		const line = lines[y];
@@ -155,7 +155,7 @@ export function convertLinkRangeToBuffer(
 
 export function convertBufferRangeToViewport(
 	bufferRange: IBufferRange,
-	viewportY: number
+	viewportY: number,
 ): IViewportRange {
 	return {
 		start: {
@@ -173,7 +173,7 @@ export function getXtermLineContent(
 	buffer: IBuffer,
 	lineStart: number,
 	lineEnd: number,
-	cols: number
+	cols: number,
 ): string {
 	// Cap the maximum number of lines generated to prevent potential performance problems. This is
 	// more of a sanity check as the wrapped line should already be trimmed down at this point.
@@ -195,11 +195,11 @@ export function getXtermRangesByAttr(
 	buffer: IBuffer,
 	lineStart: number,
 	lineEnd: number,
-	cols: number
+	cols: number,
 ): IBufferRange[] {
 	let bufferRangeStart: IBufferCellPosition | undefined = undefined;
-	let lastFgAttr: number = -1;
-	let lastBgAttr: number = -1;
+	let lastFgAttr = -1;
+	let lastBgAttr = -1;
 	const ranges: IBufferRange[] = [];
 	for (let y = lineStart; y <= lineEnd; y++) {
 		const line = buffer.getLine(y);
@@ -221,16 +221,14 @@ export function getXtermRangesByAttr(
 			const thisBgAttr = cell.isDim() | cell.isItalic();
 			if (lastFgAttr === -1 || lastBgAttr === -1) {
 				bufferRangeStart = { x, y };
-			} else {
-				if (lastFgAttr !== thisFgAttr || lastBgAttr !== thisBgAttr) {
-					// TODO: x overflow
-					const bufferRangeEnd = { x, y };
-					ranges.push({
-						start: bufferRangeStart!,
-						end: bufferRangeEnd,
-					});
-					bufferRangeStart = { x, y };
-				}
+			} else if (lastFgAttr !== thisFgAttr || lastBgAttr !== thisBgAttr) {
+				// TODO: x overflow
+				const bufferRangeEnd = { x, y };
+				ranges.push({
+					start: bufferRangeStart!,
+					end: bufferRangeEnd,
+				});
+				bufferRangeStart = { x, y };
 			}
 			lastFgAttr = thisFgAttr;
 			lastBgAttr = thisBgAttr;
@@ -261,7 +259,7 @@ export function updateLinkWithRelativeCwd(
 	y: number,
 	text: string,
 	osPath: IPath,
-	logService: ITerminalLogService
+	logService: ITerminalLogService,
 ): string[] | undefined {
 	const cwd = capabilities
 		.get(TerminalCapability.CommandDetection)
@@ -272,9 +270,7 @@ export function updateLinkWithRelativeCwd(
 	}
 	const result: string[] = [];
 	const sep = osPath.sep;
-	if (!text.includes(sep)) {
-		result.push(osPath.resolve(cwd + sep + text));
-	} else {
+	if (text.includes(sep)) {
 		let commonDirs = 0;
 		let i = 0;
 		const cwdPath = cwd.split(sep).reverse();
@@ -285,7 +281,9 @@ export function updateLinkWithRelativeCwd(
 		// likely as cwd detection is active.
 		while (i < cwdPath.length) {
 			result.push(
-				osPath.resolve(cwd + sep + linkPath.slice(commonDirs).join(sep))
+				osPath.resolve(
+					cwd + sep + linkPath.slice(commonDirs).join(sep),
+				),
 			);
 			if (cwdPath[i] === linkPath[i]) {
 				commonDirs++;
@@ -294,6 +292,8 @@ export function updateLinkWithRelativeCwd(
 			}
 			i++;
 		}
+	} else {
+		result.push(osPath.resolve(cwd + sep + text));
 	}
 	return result;
 }

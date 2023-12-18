@@ -23,11 +23,11 @@ export interface IShareProvider {
 	readonly selector: LanguageSelector;
 	prepareShare?(
 		item: IShareableItem,
-		token: CancellationToken
+		token: CancellationToken,
 	): Thenable<boolean | undefined>;
 	provideShare(
 		item: IShareableItem,
-		token: CancellationToken
+		token: CancellationToken,
 	): Thenable<URI | string | undefined>;
 }
 
@@ -39,6 +39,6 @@ export interface IShareService {
 	getShareActions(): ISubmenuItem[];
 	provideShare(
 		item: IShareableItem,
-		token: CancellationToken
+		token: CancellationToken,
 	): Thenable<URI | string | undefined>;
 }

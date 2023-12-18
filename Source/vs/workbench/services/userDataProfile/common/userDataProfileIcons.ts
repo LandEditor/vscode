@@ -10,7 +10,7 @@ import { registerIcon } from "vs/platform/theme/common/iconRegistry";
 export const DEFAULT_ICON = registerIcon(
 	"settings-view-bar-icon",
 	Codicon.settingsGear,
-	localize("settingsViewBarIcon", "Settings icon in the view bar.")
+	localize("settingsViewBarIcon", "Settings icon in the view bar."),
 );
 
 export const ICONS = [

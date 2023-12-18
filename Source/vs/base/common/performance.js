@@ -3,11 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-"use strict";
-
 //@ts-check
 
-(function () {
+(() => {
 	/**
 	 * @returns {{mark(name:string):void, getMarks():{name:string, startTime:number}[]}}
 	 */
@@ -76,12 +74,12 @@
 							},
 						];
 						for (const entry of performance.getEntriesByType(
-							"mark"
+							"mark",
 						)) {
 							result.push({
 								name: entry.name,
 								startTime: Math.round(
-									timeOrigin + entry.startTime
+									timeOrigin + entry.startTime,
 								),
 							});
 						}
@@ -96,7 +94,7 @@
 				performance?.timeOrigin ??
 				Math.round(
 					(require.__$__nodeRequire || require)("perf_hooks")
-						.performance.timeOrigin
+						.performance.timeOrigin,
 				);
 			return _definePolyfillMarks(timeOrigin);
 		} else {
@@ -131,9 +129,7 @@
 
 	if (typeof define === "function") {
 		// amd
-		define([], function () {
-			return _factory(sharedObj);
-		});
+		define([], () => _factory(sharedObj));
 	} else if (
 		typeof module === "object" &&
 		typeof module.exports === "object"
@@ -142,7 +138,7 @@
 		module.exports = _factory(sharedObj);
 	} else {
 		console.trace(
-			"perf-util defined in UNKNOWN context (neither requirejs or commonjs)"
+			"perf-util defined in UNKNOWN context (neither requirejs or commonjs)",
 		);
 		sharedObj.perf = _factory(sharedObj);
 	}

@@ -23,7 +23,7 @@ const remoteAuthority = searchParams.get("remoteAuthority");
  * Origin used for resources
  */
 const resourceBaseAuthority = searchParams.get(
-	"vscode-resource-base-authority"
+	"vscode-resource-base-authority",
 );
 
 const resolveTimeout = 30_000;
@@ -154,7 +154,7 @@ sw.addEventListener("message", async (event) => {
 			if (!resourceRequestStore.resolve(response.id, response)) {
 				console.log(
 					"Could not resolve unknown resource",
-					response.path
+					response.path,
 				);
 			}
 			return;
@@ -185,7 +185,7 @@ sw.addEventListener("fetch", (event) => {
 				const firstHostSegment = requestUrl.hostname.slice(
 					0,
 					requestUrl.hostname.length -
-						(resourceBaseAuthority.length + 1)
+						(resourceBaseAuthority.length + 1),
 				);
 				const scheme = firstHostSegment.split("+", 1)[0];
 				const authority = firstHostSegment.slice(scheme.length + 1); // may be empty
@@ -195,7 +195,7 @@ sw.addEventListener("fetch", (event) => {
 						authority,
 						path: requestUrl.pathname,
 						query: requestUrl.search.replace(/^\?/, ""),
-					})
+					}),
 				);
 			}
 			default: {
@@ -220,11 +220,11 @@ sw.addEventListener("fetch", (event) => {
 						path: requestUrl.pathname,
 						scheme: requestUrl.protocol.slice(
 							0,
-							requestUrl.protocol.length - 1
+							requestUrl.protocol.length - 1,
 						),
 						authority: requestUrl.host,
 						query: requestUrl.search.replace(/^\?/, ""),
-					})
+					}),
 				);
 			}
 			default: {
@@ -354,7 +354,7 @@ async function processResourceRequest(event, requestUrlComponents) {
 
 		// support COI requests, see network.ts#COI.getHeadersFromQuery(...)
 		const coiRequest = new URL(event.request.url).searchParams.get(
-			"vscode-coi"
+			"vscode-coi",
 		);
 		if (coiRequest === "3") {
 			headers["Cross-Origin-Opener-Policy"] = "same-origin";
@@ -440,7 +440,7 @@ async function processLocalhostRequest(event, requestUrl) {
 		const redirectOrigin = result.value;
 		const location = event.request.url.replace(
 			new RegExp(`^${requestUrl.origin}(/|$)`),
-			`${redirectOrigin}$1`
+			`${redirectOrigin}$1`,
 		);
 		return new Response(null, {
 			status: 302,

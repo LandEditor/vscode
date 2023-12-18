@@ -3,16 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { EXTENSION_IDENTIFIER_PATTERN } from "vs/platform/extensionManagement/common/extensionManagement";
 import { distinct, flatten } from "vs/base/common/arrays";
-import {
-	ExtensionRecommendations,
-	ExtensionRecommendation,
-} from "vs/workbench/contrib/extensions/browser/extensionRecommendations";
-import { INotificationService } from "vs/platform/notification/common/notification";
-import { ExtensionRecommendationReason } from "vs/workbench/services/extensionRecommendations/common/extensionRecommendations";
-import { localize } from "vs/nls";
 import { Emitter } from "vs/base/common/event";
+import { localize } from "vs/nls";
+import { EXTENSION_IDENTIFIER_PATTERN } from "vs/platform/extensionManagement/common/extensionManagement";
+import { INotificationService } from "vs/platform/notification/common/notification";
+import {
+	ExtensionRecommendation,
+	ExtensionRecommendations,
+} from "vs/workbench/contrib/extensions/browser/extensionRecommendations";
+import { ExtensionRecommendationReason } from "vs/workbench/services/extensionRecommendations/common/extensionRecommendations";
 import {
 	IExtensionsConfigContent,
 	IWorkspaceExtensionsConfigService,
@@ -46,8 +46,8 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 		await this.fetch();
 		this._register(
 			this.workspaceExtensionsConfigService.onDidChangeExtensionsConfigs(
-				() => this.onDidChangeExtensionsConfigs()
-			)
+				() => this.onDidChangeExtensionsConfigs(),
+			),
 		);
 	}
 
@@ -62,7 +62,7 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 			await this.validateExtensions(extensionsConfigs);
 		if (invalidRecommendations.length) {
 			this.notificationService.warn(
-				`The ${invalidRecommendations.length} extension(s) below, in workspace recommendations have issues:\n${message}`
+				`The ${invalidRecommendations.length} extension(s) below, in workspace recommendations have issues:\n${message}`,
 			);
 		}
 
@@ -74,11 +74,11 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 				for (const unwantedRecommendation of extensionsConfig.unwantedRecommendations) {
 					if (
 						invalidRecommendations.indexOf(
-							unwantedRecommendation
+							unwantedRecommendation,
 						) === -1
 					) {
 						this._ignoredRecommendations.push(
-							unwantedRecommendation
+							unwantedRecommendation,
 						);
 					}
 				}
@@ -93,7 +93,7 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 									ExtensionRecommendationReason.Workspace,
 								reasonText: localize(
 									"workspaceRecommendation",
-									"This extension is recommended by users of the current workspace."
+									"This extension is recommended by users of the current workspace.",
 								),
 							},
 						});
@@ -104,7 +104,7 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 	}
 
 	private async validateExtensions(
-		contents: IExtensionsConfigContent[]
+		contents: IExtensionsConfigContent[],
 	): Promise<{
 		validRecommendations: string[];
 		invalidRecommendations: string[];
@@ -116,8 +116,8 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 
 		const allRecommendations = distinct(
 			flatten(
-				contents.map(({ recommendations }) => recommendations || [])
-			)
+				contents.map(({ recommendations }) => recommendations || []),
+			),
 		);
 		const regEx = new RegExp(EXTENSION_IDENTIFIER_PATTERN);
 		for (const extensionId of allRecommendations) {

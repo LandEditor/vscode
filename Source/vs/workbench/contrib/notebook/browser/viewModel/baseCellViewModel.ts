@@ -6,9 +6,9 @@
 import { Emitter, Event } from "vs/base/common/event";
 import {
 	Disposable,
-	dispose,
 	IDisposable,
 	IReference,
+	dispose,
 } from "vs/base/common/lifecycle";
 import { Mimes } from "vs/base/common/mime";
 import { ICodeEditor } from "vs/editor/browser/editorBrowser";
@@ -38,6 +38,10 @@ import {
 	IEditableCellViewModel,
 	INotebookCellDecorationOptions,
 } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
+import {
+	NotebookOptionsChangeEvent,
+	getEditorTopPadding,
+} from "vs/workbench/contrib/notebook/browser/notebookOptions";
 import { CellViewModelStateChangeEvent } from "vs/workbench/contrib/notebook/browser/notebookViewEvents";
 import { ViewContext } from "vs/workbench/contrib/notebook/browser/viewModel/viewContext";
 import { NotebookCellTextModel } from "vs/workbench/contrib/notebook/common/model/notebookCellTextModel";
@@ -46,20 +50,16 @@ import {
 	INotebookCellStatusBarItem,
 	INotebookSearchOptions,
 } from "vs/workbench/contrib/notebook/common/notebookCommon";
-import {
-	getEditorTopPadding,
-	NotebookOptionsChangeEvent,
-} from "vs/workbench/contrib/notebook/browser/notebookOptions";
 
 export abstract class BaseCellViewModel extends Disposable {
 	protected readonly _onDidChangeEditorAttachState = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	// Do not merge this event with `onDidChangeState` as we are using `Event.once(onDidChangeEditorAttachState)` elsewhere.
 	readonly onDidChangeEditorAttachState =
 		this._onDidChangeEditorAttachState.event;
 	protected readonly _onDidChangeState = this._register(
-		new Emitter<CellViewModelStateChangeEvent>()
+		new Emitter<CellViewModelStateChangeEvent>(),
 	);
 	public readonly onDidChangeState: Event<CellViewModelStateChangeEvent> =
 		this._onDidChangeState.event;
@@ -142,7 +142,7 @@ export abstract class BaseCellViewModel extends Disposable {
 		new Emitter<{
 			added: INotebookCellDecorationOptions[];
 			removed: INotebookCellDecorationOptions[];
-		}>()
+		}>(),
 	);
 	onCellDecorationsChanged: Event<{
 		added: INotebookCellDecorationOptions[];
@@ -156,15 +156,15 @@ export abstract class BaseCellViewModel extends Disposable {
 			options: model.IModelDeltaDecoration;
 		}
 	>();
-	private _lastDecorationId: number = 0;
+	private _lastDecorationId = 0;
 
 	private _cellStatusBarItems = new Map<string, INotebookCellStatusBarItem>();
 	private readonly _onDidChangeCellStatusBarItems = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onDidChangeCellStatusBarItems: Event<void> =
 		this._onDidChangeCellStatusBarItems.event;
-	private _lastStatusBarId: number = 0;
+	private _lastStatusBarId = 0;
 
 	get textModel(): model.ITextModel | undefined {
 		return this.model.textModel;
@@ -174,7 +174,7 @@ export abstract class BaseCellViewModel extends Disposable {
 		return !!this.textModel;
 	}
 
-	private _dragging: boolean = false;
+	private _dragging = false;
 	get dragging(): boolean {
 		return this._dragging;
 	}
@@ -186,7 +186,7 @@ export abstract class BaseCellViewModel extends Disposable {
 
 	protected _textModelRef: IReference<IResolvedTextEditorModel> | undefined;
 
-	private _inputCollapsed: boolean = false;
+	private _inputCollapsed = false;
 	get isInputCollapsed(): boolean {
 		return this._inputCollapsed;
 	}
@@ -195,7 +195,7 @@ export abstract class BaseCellViewModel extends Disposable {
 		this._onDidChangeState.fire({ inputCollapsedChanged: true });
 	}
 
-	private _outputCollapsed: boolean = false;
+	private _outputCollapsed = false;
 	get isOutputCollapsed(): boolean {
 		return this._outputCollapsed;
 	}
@@ -214,7 +214,7 @@ export abstract class BaseCellViewModel extends Disposable {
 		private readonly _configurationService: IConfigurationService,
 		private readonly _modelService: ITextModelService,
 		private readonly _undoRedoService: IUndoRedoService,
-		private readonly _codeEditorService: ICodeEditorService
+		private readonly _codeEditorService: ICodeEditorService,
 		// private readonly _keymapService: INotebookKeymapService
 	) {
 		super();
@@ -222,7 +222,7 @@ export abstract class BaseCellViewModel extends Disposable {
 		this._register(
 			model.onDidChangeMetadata(() => {
 				this._onDidChangeState.fire({ metadataChanged: true });
-			})
+			}),
 		);
 
 		this._register(
@@ -232,7 +232,7 @@ export abstract class BaseCellViewModel extends Disposable {
 					// Statusbar visibility may change
 					this.layoutChange({});
 				}
-			})
+			}),
 		);
 
 		this._register(
@@ -240,7 +240,7 @@ export abstract class BaseCellViewModel extends Disposable {
 				if (e.affectsConfiguration("notebook.lineNumbers")) {
 					this.lineNumbers = "inherit";
 				}
-			})
+			}),
 		);
 
 		if (this.model.collapseState?.inputCollapsed) {
@@ -277,7 +277,7 @@ export abstract class BaseCellViewModel extends Disposable {
 
 	attachTextEditor(
 		editor: ICodeEditor,
-		estimatedHasHorizontalScrolling?: boolean
+		estimatedHasHorizontalScrolling?: boolean,
 	) {
 		if (!editor.hasModel()) {
 			throw new Error("Invalid editor: model is missing");
@@ -288,7 +288,7 @@ export abstract class BaseCellViewModel extends Disposable {
 				this._editorListeners.push(
 					this._textEditor.onDidChangeCursorSelection(() => {
 						this._onDidChangeState.fire({ selectionChanged: true });
-					})
+					}),
 				);
 				// this._editorListeners.push(this._textEditor.onKeyDown(e => this.handleKeyDown(e)));
 				this._onDidChangeState.fire({ selectionChanged: true });
@@ -320,7 +320,7 @@ export abstract class BaseCellViewModel extends Disposable {
 			writeTransientState(
 				editor.getModel(),
 				this._editorTransientState,
-				this._codeEditorService
+				this._codeEditorService,
 			);
 		}
 
@@ -330,13 +330,13 @@ export abstract class BaseCellViewModel extends Disposable {
 					// lazy ones
 					const ret = accessor.addDecoration(
 						value.options.range,
-						value.options.options
+						value.options.options,
 					);
 					this._resolvedDecorations.get(key)!.id = ret;
 				} else {
 					const ret = accessor.addDecoration(
 						value.options.range,
-						value.options.options
+						value.options.options,
 					);
 					this._resolvedDecorations.get(key)!.id = ret;
 				}
@@ -346,7 +346,7 @@ export abstract class BaseCellViewModel extends Disposable {
 		this._editorListeners.push(
 			this._textEditor.onDidChangeCursorSelection(() => {
 				this._onDidChangeState.fire({ selectionChanged: true });
-			})
+			}),
 		);
 		// this._editorListeners.push(this._textEditor.onKeyDown(e => this.handleKeyDown(e)));
 		this._onDidChangeState.fire({ selectionChanged: true });
@@ -401,7 +401,7 @@ export abstract class BaseCellViewModel extends Disposable {
 
 		this._editorTransientState = readTransientState(
 			this._textEditor.getModel(),
-			this._codeEditorService
+			this._codeEditorService,
 		);
 	}
 
@@ -415,13 +415,13 @@ export abstract class BaseCellViewModel extends Disposable {
 
 	restoreEditorViewState(
 		editorViewStates: editorCommon.ICodeEditorViewState | null,
-		totalHeight?: number
+		totalHeight?: number,
 	) {
 		this._editorViewStates = editorViewStates;
 	}
 
 	private _restoreViewState(
-		state: editorCommon.ICodeEditorViewState | null
+		state: editorCommon.ICodeEditorViewState | null,
 	): void {
 		if (state) {
 			this._textEditor?.restoreViewState(state);
@@ -465,7 +465,7 @@ export abstract class BaseCellViewModel extends Disposable {
 
 	deltaModelDecorations(
 		oldDecorations: readonly string[],
-		newDecorations: readonly model.IModelDeltaDecoration[]
+		newDecorations: readonly model.IModelDeltaDecoration[],
 	): string[] {
 		oldDecorations.forEach((id) => {
 			this.removeModelDecoration(id);
@@ -511,7 +511,7 @@ export abstract class BaseCellViewModel extends Disposable {
 	}
 
 	private _addCellDecoration(
-		options: INotebookCellDecorationOptions
+		options: INotebookCellDecorationOptions,
 	): string {
 		const id = ++this._lastDecorationId;
 		const decorationId = `_cell_${this.id};${id}`;
@@ -538,7 +538,7 @@ export abstract class BaseCellViewModel extends Disposable {
 
 	deltaCellDecorations(
 		oldDecorations: string[],
-		newDecorations: INotebookCellDecorationOptions[]
+		newDecorations: INotebookCellDecorationOptions[],
 	): string[] {
 		oldDecorations.forEach((id) => {
 			this._removeCellDecoration(id);
@@ -553,7 +553,7 @@ export abstract class BaseCellViewModel extends Disposable {
 
 	deltaCellStatusBarItems(
 		oldItems: readonly string[],
-		newItems: readonly INotebookCellStatusBarItem[]
+		newItems: readonly INotebookCellStatusBarItem[],
 	): string[] {
 		oldItems.forEach((id) => {
 			const item = this._cellStatusBarItems.get(id);
@@ -581,7 +581,7 @@ export abstract class BaseCellViewModel extends Disposable {
 	revealRangeInCenter(range: Range) {
 		this._textEditor?.revealRangeInCenter(
 			range,
-			editorCommon.ScrollType.Immediate
+			editorCommon.ScrollType.Immediate,
 		);
 	}
 
@@ -617,7 +617,7 @@ export abstract class BaseCellViewModel extends Disposable {
 		const editorPadding =
 			this._viewContext.notebookOptions.computeEditorPadding(
 				this.internalMetadata,
-				this.uri
+				this.uri,
 			);
 		return this._textEditor.getTopForLineNumber(line) + editorPadding.top;
 	}
@@ -635,12 +635,12 @@ export abstract class BaseCellViewModel extends Disposable {
 		const editorPadding =
 			this._viewContext.notebookOptions.computeEditorPadding(
 				this.internalMetadata,
-				this.uri
+				this.uri,
 			);
 		return (
 			this._textEditor.getTopForPosition(
 				position.lineNumber,
-				position.column
+				position.column,
 			) + editorPadding.top
 		);
 	}
@@ -661,7 +661,7 @@ export abstract class BaseCellViewModel extends Disposable {
 		}
 
 		const currentLineLength = this.textModel.getLineLength(
-			selection.startLineNumber
+			selection.startLineNumber,
 		);
 
 		if (currentLineLength === 0) {
@@ -698,11 +698,11 @@ export abstract class BaseCellViewModel extends Disposable {
 		const firstViewLineTop = this._textEditor.getTopForPosition(1, 1);
 		const lastViewLineTop = this._textEditor.getTopForPosition(
 			this.textModel!.getLineCount(),
-			this.textModel!.getLineLength(this.textModel!.getLineCount())
+			this.textModel!.getLineLength(this.textModel!.getLineCount()),
 		);
 		const selectionTop = this._textEditor.getTopForPosition(
 			selection.startLineNumber,
-			selection.startColumn
+			selection.startColumn,
 		);
 
 		if (selectionTop === lastViewLineTop) {
@@ -711,16 +711,14 @@ export abstract class BaseCellViewModel extends Disposable {
 			} else {
 				return CursorAtBoundary.Bottom;
 			}
+		} else if (selectionTop === firstViewLineTop) {
+			return CursorAtBoundary.Top;
 		} else {
-			if (selectionTop === firstViewLineTop) {
-				return CursorAtBoundary.Top;
-			} else {
-				return CursorAtBoundary.None;
-			}
+			return CursorAtBoundary.None;
 		}
 	}
 
-	private _editStateSource: string = "";
+	private _editStateSource = "";
 
 	get editStateSource(): string {
 		return this._editStateSource;
@@ -753,7 +751,7 @@ export abstract class BaseCellViewModel extends Disposable {
 	async resolveTextModel(): Promise<model.ITextModel> {
 		if (!this._textModelRef || !this.textModel) {
 			this._textModelRef = await this._modelService.createModelReference(
-				this.uri
+				this.uri,
 			);
 			if (this._isDisposed) {
 				return this.textModel!;
@@ -765,8 +763,8 @@ export abstract class BaseCellViewModel extends Disposable {
 
 			this._register(
 				this.textModel!.onDidChangeContent(() =>
-					this.onDidChangeTextModelContent()
-				)
+					this.onDidChangeTextModelContent(),
+				),
 			);
 		}
 
@@ -777,7 +775,7 @@ export abstract class BaseCellViewModel extends Disposable {
 
 	protected cellStartFind(
 		value: string,
-		options: INotebookSearchOptions
+		options: INotebookSearchOptions,
 	): model.FindMatch[] | null {
 		let cellMatches: model.FindMatch[] = [];
 
@@ -788,7 +786,7 @@ export abstract class BaseCellViewModel extends Disposable {
 				options.regex || false,
 				options.caseSensitive || false,
 				options.wholeWord ? options.wordSeparators || null : null,
-				options.regex || false
+				options.regex || false,
 			);
 		} else {
 			const lineCount = this.textBuffer.getLineCount();
@@ -796,13 +794,13 @@ export abstract class BaseCellViewModel extends Disposable {
 				1,
 				1,
 				lineCount,
-				this.textBuffer.getLineLength(lineCount) + 1
+				this.textBuffer.getLineLength(lineCount) + 1,
 			);
 			const searchParams = new SearchParams(
 				value,
 				options.regex || false,
 				options.caseSensitive || false,
-				options.wholeWord ? options.wordSeparators || null : null
+				options.wholeWord ? options.wordSeparators || null : null,
 			);
 			const searchData = searchParams.parseSearchRequest();
 
@@ -814,7 +812,7 @@ export abstract class BaseCellViewModel extends Disposable {
 				fullRange,
 				searchData,
 				options.regex || false,
-				1000
+				1000,
 			);
 		}
 

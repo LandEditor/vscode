@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	addDisposableListener,
 	Dimension,
 	EventType,
+	addDisposableListener,
 	findParentWithClass,
 } from "vs/base/browser/dom";
 import { CancellationTokenSource } from "vs/base/common/cancellation";
@@ -71,20 +71,20 @@ export class WebviewViewPane extends ViewPane {
 	private static _originStore?: ExtensionKeyedWebviewOriginStore;
 
 	private static getOriginStore(
-		storageService: IStorageService
+		storageService: IStorageService,
 	): ExtensionKeyedWebviewOriginStore {
 		this._originStore ??= new ExtensionKeyedWebviewOriginStore(
 			"webviewViews.origins",
-			storageService
+			storageService,
 		);
 		return this._originStore;
 	}
 
 	private readonly _webview = this._register(
-		new MutableDisposable<IOverlayWebview>()
+		new MutableDisposable<IOverlayWebview>(),
 	);
 	private readonly _webviewDisposables = this._register(
-		new DisposableStore()
+		new DisposableStore(),
 	);
 	private _activated = false;
 
@@ -166,7 +166,7 @@ export class WebviewViewPane extends ViewPane {
 	}
 
 	private readonly _onDidChangeVisibility = this._register(
-		new Emitter<boolean>()
+		new Emitter<boolean>(),
 	);
 	readonly onDidChangeVisibility = this._onDidChangeVisibility.event;
 
@@ -202,7 +202,7 @@ export class WebviewViewPane extends ViewPane {
 			this._register(
 				toDisposable(() => {
 					this._resizeObserver.disconnect();
-				})
+				}),
 			);
 			this._resizeObserver.observe(container);
 		}
@@ -243,8 +243,8 @@ export class WebviewViewPane extends ViewPane {
 		const origin = this.extensionId
 			? WebviewViewPane.getOriginStore(this.storageService).getOrigin(
 					this.id,
-					this.extensionId
-				)
+					this.extensionId,
+			  )
 			: undefined;
 		const webview = this.webviewService.createWebviewOverlay({
 			origin,
@@ -264,13 +264,13 @@ export class WebviewViewPane extends ViewPane {
 		this._webviewDisposables.add(
 			toDisposable(() => {
 				this._webview.value?.release(this);
-			})
+			}),
 		);
 
 		this._webviewDisposables.add(
 			webview.onDidUpdateState(() => {
 				this.viewState[storageKeys.webviewState] = webview.state;
-			})
+			}),
 		);
 
 		// Re-dispatch all drag events back to the drop target to support view drag drop
@@ -289,19 +289,19 @@ export class WebviewViewPane extends ViewPane {
 						e.preventDefault();
 						e.stopImmediatePropagation();
 						this.dropTargetElement.dispatchEvent(
-							new DragEvent(e.type, e)
+							new DragEvent(e.type, e),
 						);
-					}
-				)
+					},
+				),
 			);
 		}
 
 		this._webviewDisposables.add(
-			new WebviewWindowDragMonitor(() => this._webview.value)
+			new WebviewWindowDragMonitor(() => this._webview.value),
 		);
 
 		const source = this._webviewDisposables.add(
-			new CancellationTokenSource()
+			new CancellationTokenSource(),
 		);
 
 		this.withProgress(async () => {
@@ -349,7 +349,7 @@ export class WebviewViewPane extends ViewPane {
 			await this.webviewViewService.resolve(
 				this.id,
 				webviewView,
-				source.token
+				source.token,
 			);
 		});
 	}
@@ -357,7 +357,7 @@ export class WebviewViewPane extends ViewPane {
 	protected override updateTitle(value: string | undefined) {
 		this.setTitle = value;
 		super.updateTitle(
-			typeof value === "string" ? value : this.defaultTitle
+			typeof value === "string" ? value : this.defaultTitle,
 		);
 	}
 
@@ -387,7 +387,7 @@ export class WebviewViewPane extends ViewPane {
 	private async withProgress(task: () => Promise<void>): Promise<void> {
 		return this.progressService.withProgress(
 			{ location: this.id, delay: 500 },
-			task
+			task,
 		);
 	}
 
@@ -408,7 +408,7 @@ export class WebviewViewPane extends ViewPane {
 		webviewEntry.layoutWebviewOverElement(
 			this._container,
 			dimension,
-			this._rootContainer
+			this._rootContainer,
 		);
 	}
 
@@ -419,7 +419,7 @@ export class WebviewViewPane extends ViewPane {
 		clearTimeout(this._repositionTimeout);
 		this._repositionTimeout = setTimeout(
 			() => this.doLayoutWebview(dimension),
-			200
+			200,
 		);
 	}
 

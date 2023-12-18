@@ -314,7 +314,7 @@ export class MergeEditorTelemetry {
 
 	reportAcceptInvoked(
 		inputNumber: InputNumber,
-		otherAccepted: boolean
+		otherAccepted: boolean,
 	): void {
 		this.telemetryService.publicLog2<
 			{
@@ -362,7 +362,7 @@ export class MergeEditorTelemetry {
 
 	reportRemoveInvoked(
 		inputNumber: InputNumber,
-		otherAccepted: boolean
+		otherAccepted: boolean,
 	): void {
 		this.telemetryService.publicLog2<
 			{

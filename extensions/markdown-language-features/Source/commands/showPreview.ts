@@ -20,7 +20,7 @@ async function showPreview(
 	webviewManager: MarkdownPreviewManager,
 	telemetryReporter: TelemetryReporter,
 	uri: vscode.Uri | undefined,
-	previewSettings: ShowPreviewSettings
+	previewSettings: ShowPreviewSettings,
 ): Promise<any> {
 	let resource = uri;
 	if (!(resource instanceof vscode.Uri)) {
@@ -62,13 +62,13 @@ export class ShowPreviewCommand implements Command {
 
 	public constructor(
 		private readonly _webviewManager: MarkdownPreviewManager,
-		private readonly _telemetryReporter: TelemetryReporter
+		private readonly _telemetryReporter: TelemetryReporter,
 	) {}
 
 	public execute(
 		mainUri?: vscode.Uri,
 		allUris?: vscode.Uri[],
-		previewSettings?: DynamicPreviewSettings
+		previewSettings?: DynamicPreviewSettings,
 	) {
 		for (const uri of Array.isArray(allUris) ? allUris : [mainUri]) {
 			showPreview(this._webviewManager, this._telemetryReporter, uri, {
@@ -84,7 +84,7 @@ export class ShowPreviewToSideCommand implements Command {
 
 	public constructor(
 		private readonly _webviewManager: MarkdownPreviewManager,
-		private readonly _telemetryReporter: TelemetryReporter
+		private readonly _telemetryReporter: TelemetryReporter,
 	) {}
 
 	public execute(uri?: vscode.Uri, previewSettings?: DynamicPreviewSettings) {
@@ -100,7 +100,7 @@ export class ShowLockedPreviewToSideCommand implements Command {
 
 	public constructor(
 		private readonly _webviewManager: MarkdownPreviewManager,
-		private readonly _telemetryReporter: TelemetryReporter
+		private readonly _telemetryReporter: TelemetryReporter,
 	) {}
 
 	public execute(uri?: vscode.Uri) {

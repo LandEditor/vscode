@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as cp from "child_process";
-import * as fs from "fs";
 import * as crypto from "crypto";
-import * as path from "path";
+import * as fs from "fs";
 import * as os from "os";
+import * as path from "path";
 
 export class Temp {
 	private _files: string[] = [];
@@ -15,7 +15,7 @@ export class Temp {
 	tmpNameSync(): string {
 		const file = path.join(
 			os.tmpdir(),
-			crypto.randomBytes(20).toString("hex")
+			crypto.randomBytes(20).toString("hex"),
 		);
 		this._files.push(file);
 		return file;
@@ -183,7 +183,7 @@ export function main([
 	const iv = crypto.randomBytes(16);
 	fs.writeFileSync(
 		keyFile,
-		JSON.stringify({ key: key.toString("hex"), iv: iv.toString("hex") })
+		JSON.stringify({ key: key.toString("hex"), iv: iv.toString("hex") }),
 	);
 
 	const clientkeyPath = tmp.tmpNameSync();

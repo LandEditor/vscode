@@ -4,11 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Emitter, Event } from "vs/base/common/event";
+import { StringSHA1 } from "vs/base/common/hash";
 import {
 	Disposable,
-	IDisposable,
 	DisposableStore,
+	IDisposable,
 } from "vs/base/common/lifecycle";
+import { Schemas } from "vs/base/common/network";
+import { equals } from "vs/base/common/objects";
 import * as platform from "vs/base/common/platform";
 import { URI } from "vs/base/common/uri";
 import {
@@ -16,6 +19,13 @@ import {
 	ISingleEditOperation,
 } from "vs/editor/common/core/editOperation";
 import { Range } from "vs/editor/common/core/range";
+import { EDITOR_MODEL_DEFAULTS } from "vs/editor/common/core/textModelDefaults";
+import {
+	ILanguageSelection,
+	ILanguageService,
+} from "vs/editor/common/languages/language";
+import { ILanguageConfigurationService } from "vs/editor/common/languages/languageConfigurationRegistry";
+import { PLAINTEXT_LANGUAGE_ID } from "vs/editor/common/languages/modesRegistry";
 import {
 	DefaultEndOfLine,
 	EndOfLinePreference,
@@ -25,16 +35,11 @@ import {
 	ITextModel,
 	ITextModelCreationOptions,
 } from "vs/editor/common/model";
+import { isEditStackElement } from "vs/editor/common/model/editStack";
 import { TextModel, createTextBuffer } from "vs/editor/common/model/textModel";
-import { EDITOR_MODEL_DEFAULTS } from "vs/editor/common/core/textModelDefaults";
-import { IModelLanguageChangedEvent } from "vs/editor/common/textModelEvents";
-import { PLAINTEXT_LANGUAGE_ID } from "vs/editor/common/languages/modesRegistry";
-import {
-	ILanguageSelection,
-	ILanguageService,
-} from "vs/editor/common/languages/language";
 import { IModelService } from "vs/editor/common/services/model";
 import { ITextResourcePropertiesService } from "vs/editor/common/services/textResourceConfiguration";
+import { IModelLanguageChangedEvent } from "vs/editor/common/textModelEvents";
 import {
 	IConfigurationChangeEvent,
 	IConfigurationService,
@@ -43,11 +48,6 @@ import {
 	IUndoRedoService,
 	ResourceEditStackSnapshot,
 } from "vs/platform/undoRedo/common/undoRedo";
-import { StringSHA1 } from "vs/base/common/hash";
-import { isEditStackElement } from "vs/editor/common/model/editStack";
-import { Schemas } from "vs/base/common/network";
-import { equals } from "vs/base/common/objects";
-import { ILanguageConfigurationService } from "vs/editor/common/languages/languageConfigurationRegistry";
 
 function MODEL_ID(resource: URI): string {
 	return resource.toString();
@@ -61,15 +61,15 @@ class ModelData implements IDisposable {
 		onWillDispose: (model: ITextModel) => void,
 		onDidChangeLanguage: (
 			model: ITextModel,
-			e: IModelLanguageChangedEvent
-		) => void
+			e: IModelLanguageChangedEvent,
+		) => void,
 	) {
 		this.model = model;
 		this._modelEventListeners.add(
-			model.onWillDispose(() => onWillDispose(model))
+			model.onWillDispose(() => onWillDispose(model)),
 		);
 		this._modelEventListeners.add(
-			model.onDidChangeLanguage((e) => onDidChangeLanguage(model, e))
+			model.onDidChangeLanguage((e) => onDidChangeLanguage(model, e)),
 		);
 	}
 
@@ -108,7 +108,7 @@ class DisposedModelInfo {
 		public readonly heapSize: number,
 		public readonly sha1: string,
 		public readonly versionId: number,
-		public readonly alternativeVersionId: number
+		public readonly alternativeVersionId: number,
 	) {}
 }
 
@@ -118,18 +118,18 @@ export class ModelService extends Disposable implements IModelService {
 	public _serviceBrand: undefined;
 
 	private readonly _onModelAdded: Emitter<ITextModel> = this._register(
-		new Emitter<ITextModel>()
+		new Emitter<ITextModel>(),
 	);
 	public readonly onModelAdded: Event<ITextModel> = this._onModelAdded.event;
 
 	private readonly _onModelRemoved: Emitter<ITextModel> = this._register(
-		new Emitter<ITextModel>()
+		new Emitter<ITextModel>(),
 	);
 	public readonly onModelRemoved: Event<ITextModel> =
 		this._onModelRemoved.event;
 
 	private readonly _onModelModeChanged = this._register(
-		new Emitter<{ model: ITextModel; oldLanguageId: string }>()
+		new Emitter<{ model: ITextModel; oldLanguageId: string }>(),
 	);
 	public readonly onModelLanguageChanged = this._onModelModeChanged.event;
 
@@ -170,7 +170,7 @@ export class ModelService extends Disposable implements IModelService {
 
 	private static _readModelOptions(
 		config: IRawConfig,
-		isForSimpleWidget: boolean
+		isForSimpleWidget: boolean,
 	): ITextModelCreationOptions {
 		let tabSize = EDITOR_MODEL_DEFAULTS.tabSize;
 		if (config.editor && typeof config.editor.tabSize !== "undefined") {
@@ -292,7 +292,7 @@ export class ModelService extends Disposable implements IModelService {
 
 	private _shouldRestoreUndoStack(): boolean {
 		const result = this._configurationService.getValue(
-			"files.restoreUndoStack"
+			"files.restoreUndoStack",
 		);
 		if (typeof result === "boolean") {
 			return result;
@@ -303,7 +303,7 @@ export class ModelService extends Disposable implements IModelService {
 	public getCreationOptions(
 		languageIdOrSelection: string | ILanguageSelection,
 		resource: URI | undefined,
-		isForSimpleWidget: boolean
+		isForSimpleWidget: boolean,
 	): ITextModelCreationOptions {
 		const language =
 			typeof languageIdOrSelection === "string"
@@ -317,12 +317,12 @@ export class ModelService extends Disposable implements IModelService {
 			const editor =
 				this._configurationService.getValue<IRawEditorConfig>(
 					"editor",
-					{ overrideIdentifier: language, resource }
+					{ overrideIdentifier: language, resource },
 				);
 			const eol = this._getEOL(resource, language);
 			creationOptions = ModelService._readModelOptions(
 				{ editor, eol },
-				isForSimpleWidget
+				isForSimpleWidget,
 			);
 			this._modelCreationOptionsByLanguageAndResource[
 				language + resource
@@ -332,7 +332,7 @@ export class ModelService extends Disposable implements IModelService {
 	}
 
 	private _updateModelOptions(
-		e: IConfigurationChangeEvent | undefined
+		e: IConfigurationChangeEvent | undefined,
 	): void {
 		const oldOptionsByLanguageAndResource =
 			this._modelCreationOptionsByLanguageAndResource;
@@ -364,12 +364,12 @@ export class ModelService extends Disposable implements IModelService {
 			const newOptions = this.getCreationOptions(
 				language,
 				uri,
-				modelData.model.isForSimpleWidget
+				modelData.model.isForSimpleWidget,
 			);
 			ModelService._setModelOptionsForModel(
 				modelData.model,
 				newOptions,
-				oldOptions
+				oldOptions,
 			);
 		}
 	}
@@ -377,7 +377,7 @@ export class ModelService extends Disposable implements IModelService {
 	private static _setModelOptionsForModel(
 		model: ITextModel,
 		newOptions: ITextModelCreationOptions,
-		currentOptions: ITextModelCreationOptions
+		currentOptions: ITextModelCreationOptions,
 	): void {
 		if (
 			currentOptions &&
@@ -387,7 +387,7 @@ export class ModelService extends Disposable implements IModelService {
 			model.setEOL(
 				newOptions.defaultEOL === DefaultEndOfLine.LF
 					? EndOfLineSequence.LF
-					: EndOfLineSequence.CRLF
+					: EndOfLineSequence.CRLF,
 			);
 		}
 
@@ -401,7 +401,7 @@ export class ModelService extends Disposable implements IModelService {
 				newOptions.trimAutoWhitespace &&
 			equals(
 				currentOptions.bracketPairColorizationOptions,
-				newOptions.bracketPairColorizationOptions
+				newOptions.bracketPairColorizationOptions,
 			)
 		) {
 			// Same indent opts, no need to touch the model
@@ -411,7 +411,7 @@ export class ModelService extends Disposable implements IModelService {
 		if (newOptions.detectIndentation) {
 			model.detectIndentation(
 				newOptions.insertSpaces,
-				newOptions.tabSize
+				newOptions.tabSize,
 			);
 			model.updateOptions({
 				trimAutoWhitespace: newOptions.trimAutoWhitespace,
@@ -435,7 +435,7 @@ export class ModelService extends Disposable implements IModelService {
 	private _insertDisposedModel(disposedModelData: DisposedModelInfo): void {
 		this._disposedModels.set(
 			MODEL_ID(disposedModelData.uri),
-			disposedModelData
+			disposedModelData,
 		);
 		this._disposedModelsHeapSize += disposedModelData.heapSize;
 	}
@@ -467,7 +467,7 @@ export class ModelService extends Disposable implements IModelService {
 				this._removeDisposedModel(disposedModel.uri);
 				if (disposedModel.initialUndoRedoSnapshot !== null) {
 					this._undoRedoService.restoreSnapshot(
-						disposedModel.initialUndoRedoSnapshot
+						disposedModel.initialUndoRedoSnapshot,
 					);
 				}
 			}
@@ -478,13 +478,13 @@ export class ModelService extends Disposable implements IModelService {
 		value: string | ITextBufferFactory,
 		languageIdOrSelection: string | ILanguageSelection,
 		resource: URI | undefined,
-		isForSimpleWidget: boolean
+		isForSimpleWidget: boolean,
 	): ModelData {
 		// create & save the model
 		const options = this.getCreationOptions(
 			languageIdOrSelection,
 			resource,
-			isForSimpleWidget
+			isForSimpleWidget,
 		);
 		const model: TextModel = new TextModel(
 			value,
@@ -493,7 +493,7 @@ export class ModelService extends Disposable implements IModelService {
 			resource,
 			this._undoRedoService,
 			this._languageService,
-			this._languageConfigurationService
+			this._languageConfigurationService,
 		);
 		if (resource && this._disposedModels.has(MODEL_ID(resource))) {
 			const disposedModelData = this._removeDisposedModel(resource)!;
@@ -524,23 +524,21 @@ export class ModelService extends Disposable implements IModelService {
 					true,
 					(element) =>
 						isEditStackElement(element) &&
-						element.matchesResource(resource)
+						element.matchesResource(resource),
 				);
 				if (sha1IsEqual) {
 					model._overwriteVersionId(disposedModelData.versionId);
 					model._overwriteAlternativeVersionId(
-						disposedModelData.alternativeVersionId
+						disposedModelData.alternativeVersionId,
 					);
 					model._overwriteInitialUndoRedoSnapshot(
-						disposedModelData.initialUndoRedoSnapshot
+						disposedModelData.initialUndoRedoSnapshot,
 					);
 				}
-			} else {
-				if (disposedModelData.initialUndoRedoSnapshot !== null) {
-					this._undoRedoService.restoreSnapshot(
-						disposedModelData.initialUndoRedoSnapshot
-					);
-				}
+			} else if (disposedModelData.initialUndoRedoSnapshot !== null) {
+				this._undoRedoService.restoreSnapshot(
+					disposedModelData.initialUndoRedoSnapshot,
+				);
 			}
 		}
 		const modelId = MODEL_ID(model.uri);
@@ -548,14 +546,14 @@ export class ModelService extends Disposable implements IModelService {
 		if (this._models[modelId]) {
 			// There already exists a model with this id => this is a programmer error
 			throw new Error(
-				"ModelService: Cannot add model because it already exists!"
+				"ModelService: Cannot add model because it already exists!",
 			);
 		}
 
 		const modelData = new ModelData(
 			model,
 			(model) => this._onWillDispose(model),
-			(model, e) => this._onDidChangeLanguage(model, e)
+			(model, e) => this._onDidChangeLanguage(model, e),
 		);
 		this._models[modelId] = modelData;
 
@@ -564,16 +562,16 @@ export class ModelService extends Disposable implements IModelService {
 
 	public updateModel(
 		model: ITextModel,
-		value: string | ITextBufferFactory
+		value: string | ITextBufferFactory,
 	): void {
 		const options = this.getCreationOptions(
 			model.getLanguageId(),
 			model.uri,
-			model.isForSimpleWidget
+			model.isForSimpleWidget,
 		);
 		const { textBuffer, disposable } = createTextBuffer(
 			value,
-			options.defaultEOL
+			options.defaultEOL,
 		);
 
 		// Return early if the text is already set in that form
@@ -587,12 +585,12 @@ export class ModelService extends Disposable implements IModelService {
 		model.pushEOL(
 			textBuffer.getEOL() === "\r\n"
 				? EndOfLineSequence.CRLF
-				: EndOfLineSequence.LF
+				: EndOfLineSequence.LF,
 		);
 		model.pushEditOperations(
 			[],
 			ModelService._computeEdits(model, textBuffer),
-			() => []
+			() => [],
 		);
 		model.pushStackElement();
 		disposable.dispose();
@@ -604,7 +602,7 @@ export class ModelService extends Disposable implements IModelService {
 		aDelta: number,
 		b: ITextBuffer,
 		bLen: number,
-		bDelta: number
+		bDelta: number,
 	): number {
 		const maxResult = Math.min(aLen, bLen);
 
@@ -626,7 +624,7 @@ export class ModelService extends Disposable implements IModelService {
 		aDelta: number,
 		b: ITextBuffer,
 		bLen: number,
-		bDelta: number
+		bDelta: number,
 	): number {
 		const maxResult = Math.min(aLen, bLen);
 
@@ -648,7 +646,7 @@ export class ModelService extends Disposable implements IModelService {
 	 */
 	public static _computeEdits(
 		model: ITextModel,
-		textBuffer: ITextBuffer
+		textBuffer: ITextBuffer,
 	): ISingleEditOperation[] {
 		const modelLineCount = model.getLineCount();
 		const textBufferLineCount = textBuffer.getLineCount();
@@ -658,7 +656,7 @@ export class ModelService extends Disposable implements IModelService {
 			1,
 			textBuffer,
 			textBufferLineCount,
-			1
+			1,
 		);
 
 		if (
@@ -675,7 +673,7 @@ export class ModelService extends Disposable implements IModelService {
 			commonPrefix,
 			textBuffer,
 			textBufferLineCount - commonPrefix,
-			commonPrefix
+			commonPrefix,
 		);
 
 		let oldRange: Range;
@@ -685,39 +683,39 @@ export class ModelService extends Disposable implements IModelService {
 				commonPrefix + 1,
 				1,
 				modelLineCount - commonSuffix + 1,
-				1
+				1,
 			);
 			newRange = new Range(
 				commonPrefix + 1,
 				1,
 				textBufferLineCount - commonSuffix + 1,
-				1
+				1,
 			);
 		} else if (commonPrefix > 0) {
 			oldRange = new Range(
 				commonPrefix,
 				model.getLineMaxColumn(commonPrefix),
 				modelLineCount,
-				model.getLineMaxColumn(modelLineCount)
+				model.getLineMaxColumn(modelLineCount),
 			);
 			newRange = new Range(
 				commonPrefix,
 				1 + textBuffer.getLineLength(commonPrefix),
 				textBufferLineCount,
-				1 + textBuffer.getLineLength(textBufferLineCount)
+				1 + textBuffer.getLineLength(textBufferLineCount),
 			);
 		} else {
 			oldRange = new Range(
 				1,
 				1,
 				modelLineCount,
-				model.getLineMaxColumn(modelLineCount)
+				model.getLineMaxColumn(modelLineCount),
 			);
 			newRange = new Range(
 				1,
 				1,
 				textBufferLineCount,
-				1 + textBuffer.getLineLength(textBufferLineCount)
+				1 + textBuffer.getLineLength(textBufferLineCount),
 			);
 		}
 
@@ -726,8 +724,8 @@ export class ModelService extends Disposable implements IModelService {
 				oldRange,
 				textBuffer.getValueInRange(
 					newRange,
-					EndOfLinePreference.TextDefined
-				)
+					EndOfLinePreference.TextDefined,
+				),
 			),
 		];
 	}
@@ -736,7 +734,7 @@ export class ModelService extends Disposable implements IModelService {
 		value: string | ITextBufferFactory,
 		languageSelection: ILanguageSelection | null,
 		resource?: URI,
-		isForSimpleWidget: boolean = false
+		isForSimpleWidget = false,
 	): ITextModel {
 		let modelData: ModelData;
 
@@ -745,14 +743,14 @@ export class ModelService extends Disposable implements IModelService {
 				value,
 				languageSelection,
 				resource,
-				isForSimpleWidget
+				isForSimpleWidget,
 			);
 		} else {
 			modelData = this._createModelData(
 				value,
 				PLAINTEXT_LANGUAGE_ID,
 				resource,
-				isForSimpleWidget
+				isForSimpleWidget,
 			);
 		}
 
@@ -850,7 +848,7 @@ export class ModelService extends Disposable implements IModelService {
 					modelData.model.getInitialUndoRedoSnapshot();
 				if (initialUndoRedoSnapshot !== null) {
 					this._undoRedoService.restoreSnapshot(
-						initialUndoRedoSnapshot
+						initialUndoRedoSnapshot,
 					);
 				}
 			}
@@ -872,7 +870,7 @@ export class ModelService extends Disposable implements IModelService {
 				false,
 				(element) =>
 					isEditStackElement(element) &&
-					element.matchesResource(model.uri)
+					element.matchesResource(model.uri),
 			);
 			this._insertDisposedModel(
 				new DisposedModelInfo(
@@ -883,8 +881,8 @@ export class ModelService extends Disposable implements IModelService {
 					heapSize,
 					sha1Computer.computeSHA1(model),
 					model.getVersionId(),
-					model.getAlternativeVersionId()
-				)
+					model.getAlternativeVersionId(),
+				),
 			);
 		}
 
@@ -901,19 +899,19 @@ export class ModelService extends Disposable implements IModelService {
 
 	private _onDidChangeLanguage(
 		model: ITextModel,
-		e: IModelLanguageChangedEvent
+		e: IModelLanguageChangedEvent,
 	): void {
 		const oldLanguageId = e.oldLanguage;
 		const newLanguageId = model.getLanguageId();
 		const oldOptions = this.getCreationOptions(
 			oldLanguageId,
 			model.uri,
-			model.isForSimpleWidget
+			model.isForSimpleWidget,
 		);
 		const newOptions = this.getCreationOptions(
 			newLanguageId,
 			model.uri,
-			model.isForSimpleWidget
+			model.isForSimpleWidget,
 		);
 		ModelService._setModelOptionsForModel(model, newOptions, oldOptions);
 		this._onModelModeChanged.fire({ model, oldLanguageId: oldLanguageId });

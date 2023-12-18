@@ -35,32 +35,32 @@ export class LogsDataCleaner extends Disposable {
 		try {
 			const currentLog = basename(this.environmentService.logsHome);
 			const logsRoot = dirname(
-				this.environmentService.logsHome.with({ scheme: Schemas.file })
+				this.environmentService.logsHome.with({ scheme: Schemas.file }),
 			).fsPath;
 			const logFiles = await Promises.readdir(logsRoot);
 
 			const allSessions = logFiles.filter((logFile) =>
-				/^\d{8}T\d{6}$/.test(logFile)
+				/^\d{8}T\d{6}$/.test(logFile),
 			);
 			const oldSessions = allSessions
 				.sort()
 				.filter((session) => session !== currentLog);
 			const sessionsToDelete = oldSessions.slice(
 				0,
-				Math.max(0, oldSessions.length - 9)
+				Math.max(0, oldSessions.length - 9),
 			);
 
 			if (sessionsToDelete.length > 0) {
 				this.logService.trace(
 					`[logs cleanup]: Removing log folders '${sessionsToDelete.join(
-						", "
-					)}'`
+						", ",
+					)}'`,
 				);
 
 				await Promise.all(
 					sessionsToDelete.map((sessionToDelete) =>
-						Promises.rm(join(logsRoot, sessionToDelete))
-					)
+						Promises.rm(join(logsRoot, sessionToDelete)),
+					),
 				);
 			}
 		} catch (error) {

@@ -21,8 +21,8 @@ export class EditorSettingMigration {
 		public readonly migrate: (
 			value: any,
 			read: ISettingsReader,
-			write: ISettingsWriter
-		) => void
+			write: ISettingsWriter,
+		) => void,
 	) {}
 
 	apply(options: any): void {
@@ -44,7 +44,7 @@ export class EditorSettingMigration {
 			const firstSegment = key.substring(0, firstDotIndex);
 			return this._read(
 				source[firstSegment],
-				key.substring(firstDotIndex + 1)
+				key.substring(firstDotIndex + 1),
 			);
 		}
 		return source[key];
@@ -58,7 +58,7 @@ export class EditorSettingMigration {
 			this._write(
 				target[firstSegment],
 				key.substring(firstDotIndex + 1),
-				value
+				value,
 			);
 			return;
 		}
@@ -68,14 +68,18 @@ export class EditorSettingMigration {
 
 function registerEditorSettingMigration(
 	key: string,
-	migrate: (value: any, read: ISettingsReader, write: ISettingsWriter) => void
+	migrate: (
+		value: any,
+		read: ISettingsReader,
+		write: ISettingsWriter,
+	) => void,
 ): void {
 	EditorSettingMigration.items.push(new EditorSettingMigration(key, migrate));
 }
 
 function registerSimpleEditorSettingMigration(
 	key: string,
-	values: [any, any][]
+	values: [any, any][],
 ): void {
 	registerEditorSettingMigration(key, (value, read, write) => {
 		if (typeof value !== "undefined") {
@@ -94,7 +98,7 @@ function registerSimpleEditorSettingMigration(
  */
 export function migrateOptions(options: IEditorOptions): void {
 	EditorSettingMigration.items.forEach((migration) =>
-		migration.apply(options)
+		migration.apply(options),
 	);
 }
 
@@ -188,7 +192,7 @@ registerEditorSettingMigration(
 				write("guides.highlightActiveIndentation", !!value);
 			}
 		}
-	}
+	},
 );
 
 const suggestFilteredTypesMapping: Record<string, string> = {
@@ -234,7 +238,7 @@ registerEditorSettingMigration(
 			}
 			write("suggest.filteredTypes", undefined);
 		}
-	}
+	},
 );
 
 registerEditorSettingMigration("quickSuggestions", (input, read, write) => {
@@ -256,7 +260,7 @@ registerEditorSettingMigration(
 				write("stickyScroll.enabled", value);
 			}
 		}
-	}
+	},
 );
 
 registerEditorSettingMigration(
@@ -268,7 +272,7 @@ registerEditorSettingMigration(
 				write("stickyScroll.maxLineCount", value);
 			}
 		}
-	}
+	},
 );
 
 // Code Actions on Save
@@ -303,7 +307,7 @@ registerEditorSettingMigration(
 				write("codeActionWidget.includeNearbyQuickFixes", value);
 			}
 		}
-	}
+	},
 );
 
 // Migrate the lightbulb settings

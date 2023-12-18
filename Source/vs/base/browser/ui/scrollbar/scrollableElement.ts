@@ -5,7 +5,7 @@
 
 import { getZoomFactor } from "vs/base/browser/browser";
 import * as dom from "vs/base/browser/dom";
-import { createFastDomNode, FastDomNode } from "vs/base/browser/fastDomNode";
+import { FastDomNode, createFastDomNode } from "vs/base/browser/fastDomNode";
 import {
 	IMouseEvent,
 	IMouseWheelEvent,
@@ -22,16 +22,16 @@ import { VerticalScrollbar } from "vs/base/browser/ui/scrollbar/verticalScrollba
 import { Widget } from "vs/base/browser/ui/widget";
 import { TimeoutTimer } from "vs/base/common/async";
 import { Emitter, Event } from "vs/base/common/event";
-import { dispose, IDisposable } from "vs/base/common/lifecycle";
+import { IDisposable, dispose } from "vs/base/common/lifecycle";
 import * as platform from "vs/base/common/platform";
 import {
 	INewScrollDimensions,
 	INewScrollPosition,
 	IScrollDimensions,
 	IScrollPosition,
+	ScrollEvent,
 	Scrollable,
 	ScrollbarVisibility,
-	ScrollEvent,
 } from "vs/base/common/scrollable";
 import "vs/css!./media/scrollbars";
 
@@ -113,7 +113,7 @@ export class MouseWheelClassifier {
 			this.accept(
 				Date.now(),
 				e.deltaX / osZoomFactor,
-				e.deltaY / osZoomFactor
+				e.deltaY / osZoomFactor,
 			);
 		} else {
 			this.accept(Date.now(), e.deltaX, e.deltaY);
@@ -149,7 +149,7 @@ export class MouseWheelClassifier {
 			return 1;
 		}
 
-		let score: number = 0.5;
+		let score = 0.5;
 		const prev =
 			this._front === -1 && this._rear === -1
 				? null
@@ -219,7 +219,7 @@ export abstract class AbstractScrollableElement extends Widget {
 	protected constructor(
 		element: HTMLElement,
 		options: ScrollableElementCreationOptions,
-		scrollable: Scrollable
+		scrollable: Scrollable,
 	) {
 		super();
 		element.style.overflow = "hidden";
@@ -231,7 +231,7 @@ export abstract class AbstractScrollableElement extends Widget {
 				this._onWillScroll.fire(e);
 				this._onDidScroll(e);
 				this._onScroll.fire(e);
-			})
+			}),
 		);
 
 		const scrollbarHost: ScrollbarHost = {
@@ -244,15 +244,15 @@ export abstract class AbstractScrollableElement extends Widget {
 			new VerticalScrollbar(
 				this._scrollable,
 				this._options,
-				scrollbarHost
-			)
+				scrollbarHost,
+			),
 		);
 		this._horizontalScrollbar = this._register(
 			new HorizontalScrollbar(
 				this._scrollable,
 				this._options,
-				scrollbarHost
-			)
+				scrollbarHost,
+			),
 		);
 
 		this._domNode = document.createElement("div");
@@ -267,19 +267,19 @@ export abstract class AbstractScrollableElement extends Widget {
 
 		if (this._options.useShadows) {
 			this._leftShadowDomNode = createFastDomNode(
-				document.createElement("div")
+				document.createElement("div"),
 			);
 			this._leftShadowDomNode.setClassName("shadow");
 			this._domNode.appendChild(this._leftShadowDomNode.domNode);
 
 			this._topShadowDomNode = createFastDomNode(
-				document.createElement("div")
+				document.createElement("div"),
 			);
 			this._topShadowDomNode.setClassName("shadow");
 			this._domNode.appendChild(this._topShadowDomNode.domNode);
 
 			this._topLeftShadowDomNode = createFastDomNode(
-				document.createElement("div")
+				document.createElement("div"),
 			);
 			this._topLeftShadowDomNode.setClassName("shadow");
 			this._domNode.appendChild(this._topLeftShadowDomNode.domNode);
@@ -330,7 +330,7 @@ export abstract class AbstractScrollableElement extends Widget {
 	 * This is to help with clicking somewhere else and having the scrollbar react.
 	 */
 	public delegateVerticalScrollbarPointerDown(
-		browserEvent: PointerEvent
+		browserEvent: PointerEvent,
 	): void {
 		this._verticalScrollbar.delegatePointerDown(browserEvent);
 	}
@@ -433,8 +433,8 @@ export abstract class AbstractScrollableElement extends Widget {
 					this._listenOnDomNode,
 					dom.EventType.MOUSE_WHEEL,
 					onMouseWheel,
-					{ passive: false }
-				)
+					{ passive: false },
+				),
 			);
 		}
 	}
@@ -506,7 +506,7 @@ export abstract class AbstractScrollableElement extends Widget {
 						: Math.ceil(deltaScrollTop));
 				this._verticalScrollbar.writeScrollPosition(
 					desiredScrollPosition,
-					desiredScrollTop
+					desiredScrollTop,
 				);
 			}
 			if (deltaX) {
@@ -519,13 +519,13 @@ export abstract class AbstractScrollableElement extends Widget {
 						: Math.ceil(deltaScrollLeft));
 				this._horizontalScrollbar.writeScrollPosition(
 					desiredScrollPosition,
-					desiredScrollLeft
+					desiredScrollLeft,
 				);
 			}
 
 			// Check that we are scrolling towards a location which is valid
 			desiredScrollPosition = this._scrollable.validateScrollPosition(
-				desiredScrollPosition
+				desiredScrollPosition,
 			);
 
 			if (
@@ -541,11 +541,11 @@ export abstract class AbstractScrollableElement extends Widget {
 
 				if (canPerformSmoothScroll) {
 					this._scrollable.setScrollPositionSmooth(
-						desiredScrollPosition
+						desiredScrollPosition,
 					);
 				} else {
 					this._scrollable.setScrollPositionNow(
-						desiredScrollPosition
+						desiredScrollPosition,
 					);
 				}
 
@@ -598,7 +598,7 @@ export abstract class AbstractScrollableElement extends Widget {
 	public renderNow(): void {
 		if (!this._options.lazyRender) {
 			throw new Error(
-				"Please use `lazyRender` together with `renderNow`!"
+				"Please use `lazyRender` together with `renderNow`!",
 			);
 		}
 
@@ -627,7 +627,7 @@ export abstract class AbstractScrollableElement extends Widget {
 			this._leftShadowDomNode!.setClassName(`shadow${leftClassName}`);
 			this._topShadowDomNode!.setClassName(`shadow${topClassName}`);
 			this._topLeftShadowDomNode!.setClassName(
-				`shadow${topLeftClassName}${topClassName}${leftClassName}`
+				`shadow${topLeftClassName}${topClassName}${leftClassName}`,
 			);
 		}
 	}
@@ -677,7 +677,7 @@ export abstract class AbstractScrollableElement extends Widget {
 export class ScrollableElement extends AbstractScrollableElement {
 	constructor(
 		element: HTMLElement,
-		options: ScrollableElementCreationOptions
+		options: ScrollableElementCreationOptions,
 	) {
 		options = options || {};
 		options.mouseWheelSmoothScroll = false;
@@ -687,7 +687,7 @@ export class ScrollableElement extends AbstractScrollableElement {
 			scheduleAtNextAnimationFrame: (callback) =>
 				dom.scheduleAtNextAnimationFrame(
 					dom.getWindow(element),
-					callback
+					callback,
 				),
 		});
 		super(element, options, scrollable);
@@ -707,18 +707,18 @@ export class SmoothScrollableElement extends AbstractScrollableElement {
 	constructor(
 		element: HTMLElement,
 		options: ScrollableElementCreationOptions,
-		scrollable: Scrollable
+		scrollable: Scrollable,
 	) {
 		super(element, options, scrollable);
 	}
 
 	public setScrollPosition(
-		update: INewScrollPosition & { reuseAnimation?: boolean }
+		update: INewScrollPosition & { reuseAnimation?: boolean },
 	): void {
 		if (update.reuseAnimation) {
 			this._scrollable.setScrollPositionSmooth(
 				update,
-				update.reuseAnimation
+				update.reuseAnimation,
 			);
 		} else {
 			this._scrollable.setScrollPositionNow(update);
@@ -735,7 +735,7 @@ export class DomScrollableElement extends AbstractScrollableElement {
 
 	constructor(
 		element: HTMLElement,
-		options: ScrollableElementCreationOptions
+		options: ScrollableElementCreationOptions,
 	) {
 		options = options || {};
 		options.mouseWheelSmoothScroll = false;
@@ -745,7 +745,7 @@ export class DomScrollableElement extends AbstractScrollableElement {
 			scheduleAtNextAnimationFrame: (callback) =>
 				dom.scheduleAtNextAnimationFrame(
 					dom.getWindow(element),
-					callback
+					callback,
 				),
 		});
 		super(element, options, scrollable);
@@ -759,7 +759,7 @@ export class DomScrollableElement extends AbstractScrollableElement {
 				if (e.scrollLeftChanged) {
 					this._element.scrollLeft = e.scrollLeft;
 				}
-			})
+			}),
 		);
 		this.scanDomNode();
 	}
@@ -788,7 +788,7 @@ export class DomScrollableElement extends AbstractScrollableElement {
 }
 
 function resolveOptions(
-	opts: ScrollableElementCreationOptions
+	opts: ScrollableElementCreationOptions,
 ): ScrollableElementResolvedOptions {
 	const result: ScrollableElementResolvedOptions = {
 		lazyRender:

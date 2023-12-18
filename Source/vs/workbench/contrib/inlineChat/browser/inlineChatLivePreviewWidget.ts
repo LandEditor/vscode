@@ -9,9 +9,17 @@ import {
 	h,
 	runAtThisOrScheduleAtNextAnimationFrame,
 } from "vs/base/browser/dom";
+import { ButtonBar, IButton } from "vs/base/browser/ui/button/button";
+import { renderIcon } from "vs/base/browser/ui/iconLabel/iconLabels";
+import { IAction, toAction } from "vs/base/common/actions";
+import { Codicon } from "vs/base/common/codicons";
+import { Event } from "vs/base/common/event";
 import { DisposableStore, MutableDisposable } from "vs/base/common/lifecycle";
 import { assertType } from "vs/base/common/types";
+import { generateUuid } from "vs/base/common/uuid";
 import { ICodeEditor } from "vs/editor/browser/editorBrowser";
+import { EditorExtensionsRegistry } from "vs/editor/browser/editorExtensions";
+import { DiffEditorWidget } from "vs/editor/browser/widget/diffEditor/diffEditorWidget";
 import {
 	EmbeddedCodeEditorWidget,
 	EmbeddedDiffEditorWidget,
@@ -20,49 +28,41 @@ import {
 	EditorOption,
 	IDiffEditorOptions,
 } from "vs/editor/common/config/editorOptions";
-import { Range } from "vs/editor/common/core/range";
-import { IModelDecorationOptions, ITextModel } from "vs/editor/common/model";
-import { ZoneWidget } from "vs/editor/contrib/zoneWidget/browser/zoneWidget";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import * as colorRegistry from "vs/platform/theme/common/colorRegistry";
 import * as editorColorRegistry from "vs/editor/common/core/editorColorRegistry";
+import { LineRange } from "vs/editor/common/core/lineRange";
+import { Position } from "vs/editor/common/core/position";
+import { Range } from "vs/editor/common/core/range";
+import { LineRangeMapping } from "vs/editor/common/diff/rangeMapping";
+import { IEditorDecorationsCollection } from "vs/editor/common/editorCommon";
+import { IModelDecorationOptions, ITextModel } from "vs/editor/common/model";
+import { ITextModelService } from "vs/editor/common/services/resolverService";
+import { FoldingController } from "vs/editor/contrib/folding/browser/folding";
+import { ZoneWidget } from "vs/editor/contrib/zoneWidget/browser/zoneWidget";
+import { localize } from "vs/nls";
+import { IAccessibilityService } from "vs/platform/accessibility/common/accessibility";
+import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
+import { FileKind } from "vs/platform/files/common/files";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { ILogService } from "vs/platform/log/common/log";
+import { defaultButtonStyles } from "vs/platform/theme/browser/defaultStyles";
+import * as colorRegistry from "vs/platform/theme/common/colorRegistry";
 import { IThemeService } from "vs/platform/theme/common/themeService";
+import { ResourceLabel } from "vs/workbench/browser/labels";
+import { SaveReason, SideBySideEditor } from "vs/workbench/common/editor";
+import { TAB_ACTIVE_MODIFIED_BORDER } from "vs/workbench/common/theme";
+import { Session } from "vs/workbench/contrib/inlineChat/browser/inlineChatSession";
+import {
+	invertLineRange,
+	lineRangeAsRange,
+} from "vs/workbench/contrib/inlineChat/browser/utils";
 import {
 	INLINE_CHAT_ID,
 	inlineChatDiffInserted,
 	inlineChatDiffRemoved,
 	inlineChatRegionHighlight,
 } from "vs/workbench/contrib/inlineChat/common/inlineChat";
-import { LineRange } from "vs/editor/common/core/lineRange";
-import { LineRangeMapping } from "vs/editor/common/diff/rangeMapping";
-import { Position } from "vs/editor/common/core/position";
-import { EditorExtensionsRegistry } from "vs/editor/browser/editorExtensions";
-import { IEditorDecorationsCollection } from "vs/editor/common/editorCommon";
-import { ILogService } from "vs/platform/log/common/log";
-import {
-	lineRangeAsRange,
-	invertLineRange,
-} from "vs/workbench/contrib/inlineChat/browser/utils";
-import { ResourceLabel } from "vs/workbench/browser/labels";
-import { FileKind } from "vs/platform/files/common/files";
-import { Session } from "vs/workbench/contrib/inlineChat/browser/inlineChatSession";
-import { FoldingController } from "vs/editor/contrib/folding/browser/folding";
-import { IAccessibilityService } from "vs/platform/accessibility/common/accessibility";
-import { generateUuid } from "vs/base/common/uuid";
-import { DiffEditorWidget } from "vs/editor/browser/widget/diffEditor/diffEditorWidget";
-import { ITextModelService } from "vs/editor/common/services/resolverService";
-import { ButtonBar, IButton } from "vs/base/browser/ui/button/button";
-import { defaultButtonStyles } from "vs/platform/theme/browser/defaultStyles";
-import { SaveReason, SideBySideEditor } from "vs/workbench/common/editor";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { IAction, toAction } from "vs/base/common/actions";
 import { IUntitledTextEditorModel } from "vs/workbench/services/untitled/common/untitledTextEditorModel";
-import { renderIcon } from "vs/base/browser/ui/iconLabel/iconLabels";
-import { Codicon } from "vs/base/common/codicons";
-import { TAB_ACTIVE_MODIFIED_BORDER } from "vs/workbench/common/theme";
-import { localize } from "vs/nls";
-import { Event } from "vs/base/common/event";
 
 export class InlineChatLivePreviewWidget extends ZoneWidget {
 	private readonly _hideId = `overlayDiff:${generateUuid()}`;
@@ -73,7 +73,7 @@ export class InlineChatLivePreviewWidget extends ZoneWidget {
 	private readonly _diffEditor: DiffEditorWidget;
 
 	private _dim: Dimension | undefined;
-	private _isVisible: boolean = false;
+	private _isVisible = false;
 
 	constructor(
 		editor: ICodeEditor,
@@ -274,7 +274,7 @@ export class InlineChatLivePreviewWidget extends ZoneWidget {
 					range: lineRangeAsRange(change.modified),
 					options,
 				};
-			})
+			}),
 		);
 	}
 
@@ -289,11 +289,11 @@ export class InlineChatLivePreviewWidget extends ZoneWidget {
 		this._hideEditorRanges(this.editor, [ranges.modifiedHidden]);
 		this._hideEditorRanges(
 			this._diffEditor.getOriginalEditor(),
-			ranges.originalDiffHidden
+			ranges.originalDiffHidden,
 		);
 		this._hideEditorRanges(
 			this._diffEditor.getModifiedEditor(),
-			ranges.modifiedDiffHidden
+			ranges.modifiedDiffHidden,
 		);
 
 		// this._diffEditor.revealLine(ranges.modifiedHidden.startLineNumber, ScrollType.Immediate);
@@ -305,7 +305,7 @@ export class InlineChatLivePreviewWidget extends ZoneWidget {
 
 		super.show(ranges.anchor, heightInLines);
 		this._logService.debug(
-			`[IE] diff SHOWING at ${ranges.anchor} with ${heightInLines} (approx) lines height`
+			`[IE] diff SHOWING at ${ranges.anchor} with ${heightInLines} (approx) lines height`,
 		);
 	}
 
@@ -319,7 +319,7 @@ export class InlineChatLivePreviewWidget extends ZoneWidget {
 
 	private _computeHiddenRanges(
 		model: ITextModel,
-		changes: readonly LineRangeMapping[]
+		changes: readonly LineRangeMapping[],
 	) {
 		let originalLineRange = changes[0].original;
 		let modifiedLineRange = changes[0].modified;
@@ -331,13 +331,13 @@ export class InlineChatLivePreviewWidget extends ZoneWidget {
 		if (originalLineRange.isEmpty) {
 			originalLineRange = new LineRange(
 				originalLineRange.startLineNumber,
-				originalLineRange.endLineNumberExclusive + 1
+				originalLineRange.endLineNumberExclusive + 1,
 			);
 		}
 
 		const originalDiffHidden = invertLineRange(
 			originalLineRange,
-			this._session.textModel0
+			this._session.textModel0,
 		);
 		const modifiedDiffHidden = invertLineRange(modifiedLineRange, model);
 
@@ -352,7 +352,7 @@ export class InlineChatLivePreviewWidget extends ZoneWidget {
 
 	private _hideEditorRanges(
 		editor: ICodeEditor,
-		lineRanges: LineRange[]
+		lineRanges: LineRange[],
 	): void {
 		assertType(editor.hasModel());
 
@@ -361,8 +361,8 @@ export class InlineChatLivePreviewWidget extends ZoneWidget {
 			// todo?
 			this._logService.debug(
 				`[IE] diff NOTHING to hide for ${editor.getId()} with ${String(
-					editor.getModel()?.uri
-				)}`
+					editor.getModel()?.uri,
+				)}`,
 			);
 			return;
 		}
@@ -378,8 +378,8 @@ export class InlineChatLivePreviewWidget extends ZoneWidget {
 		editor.setHiddenAreas(hiddenRanges, this._hideId);
 		this._logService.debug(
 			`[IE] diff HIDING ${hiddenRanges} for ${editor.getId()} with ${String(
-				editor.getModel()?.uri
-			)}`
+				editor.getModel()?.uri,
+			)}`,
 		);
 	}
 
@@ -397,13 +397,13 @@ export class InlineChatLivePreviewWidget extends ZoneWidget {
 
 	protected override _doLayout(
 		heightInPixel: number,
-		widthInPixel: number
+		widthInPixel: number,
 	): void {
 		const newDim = new Dimension(widthInPixel, heightInPixel);
 		if (!Dimension.equals(this._dim, newDim)) {
 			this._dim = newDim;
 			this._diffEditor.layout(
-				this._dim.with(undefined, this._dim.height)
+				this._dim.with(undefined, this._dim.height),
 			);
 			this._logService.debug("[IE] diff LAYOUT", this._dim);
 		}
@@ -518,7 +518,7 @@ export class InlineChatFileCreatePreviewWidget extends ZoneWidget {
 
 	async showCreation(
 		where: Position,
-		untitledTextModel: IUntitledTextEditorModel
+		untitledTextModel: IUntitledTextEditorModel,
 	): Promise<void> {
 		const store = new DisposableStore();
 		this._previewStore.value = store;
@@ -539,7 +539,7 @@ export class InlineChatFileCreatePreviewWidget extends ZoneWidget {
 			run: async () => {
 				const ids = this._editorService.findEditors(
 					untitledTextModel.resource,
-					{ supportSideBySide: SideBySideEditor.ANY }
+					{ supportSideBySide: SideBySideEditor.ANY },
 				);
 				await this._editorService.save(ids.slice(), {
 					saveAs: true,
@@ -564,14 +564,14 @@ export class InlineChatFileCreatePreviewWidget extends ZoneWidget {
 				untitledTextModel.onDidRevert,
 				untitledTextModel.onDidSave,
 				untitledTextModel.onDidChangeDirty,
-				untitledTextModel.onWillDispose
-			)(() => this.hide())
+				untitledTextModel.onWillDispose,
+			)(() => this.hide()),
 		);
 
 		await untitledTextModel.resolve();
 
 		const ref = await this._textModelResolverService.createModelReference(
-			untitledTextModel.resource
+			untitledTextModel.resource,
 		);
 		store.add(ref);
 
@@ -586,7 +586,9 @@ export class InlineChatFileCreatePreviewWidget extends ZoneWidget {
 
 		const maxLines = Math.max(
 			4,
-			Math.floor((this.editor.getLayoutInfo().height / lineHeight) * 0.33)
+			Math.floor(
+				(this.editor.getLayoutInfo().height / lineHeight) * 0.33,
+			),
 		);
 		const lines = Math.min(maxLines, model.getLineCount());
 
@@ -612,7 +614,7 @@ export class InlineChatFileCreatePreviewWidget extends ZoneWidget {
 
 	protected override _doLayout(
 		heightInPixel: number,
-		widthInPixel: number
+		widthInPixel: number,
 	): void {
 		const { lineNumbersLeft } = this.editor.getLayoutInfo();
 		this._elements.title.style.marginLeft = `${lineNumbersLeft}px`;
@@ -624,8 +626,8 @@ export class InlineChatFileCreatePreviewWidget extends ZoneWidget {
 				this._dim.with(
 					undefined,
 					this._dim.height -
-						InlineChatFileCreatePreviewWidget.TitleHeight
-				)
+						InlineChatFileCreatePreviewWidget.TitleHeight,
+				),
 			);
 		}
 	}

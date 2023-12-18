@@ -25,7 +25,7 @@ export interface IInternalExtHostContext extends IExtHostContext {
 	readonly internalExtensionService: IInternalExtensionService;
 	_setExtensionHostProxy(extensionHostProxy: IExtensionHostProxy): void;
 	_setAllMainProxyIdentifiers(
-		mainProxyIdentifiers: ProxyIdentifier<any>[]
+		mainProxyIdentifiers: ProxyIdentifier<any>[],
 	): void;
 }
 
@@ -40,14 +40,14 @@ export type IExtHostCustomerCtor<T extends IDisposable> = IConstructorSignature<
 >;
 
 export function extHostNamedCustomer<T extends IDisposable>(
-	id: ProxyIdentifier<T>
+	id: ProxyIdentifier<T>,
 ) {
-	return function <Services extends BrandedService[]>(ctor: {
+	return <Services extends BrandedService[]>(ctor: {
 		new (context: IExtHostContext, ...services: Services): T;
-	}): void {
+	}): void => {
 		ExtHostCustomersRegistryImpl.INSTANCE.registerNamedCustomer(
 			id,
-			ctor as IExtHostCustomerCtor<T>
+			ctor as IExtHostCustomerCtor<T>,
 		);
 	};
 }
@@ -57,7 +57,7 @@ export function extHostCustomer<
 	Services extends BrandedService[],
 >(ctor: { new (context: IExtHostContext, ...services: Services): T }): void {
 	ExtHostCustomersRegistryImpl.INSTANCE.registerCustomer(
-		ctor as IExtHostCustomerCtor<T>
+		ctor as IExtHostCustomerCtor<T>,
 	);
 }
 
@@ -84,7 +84,7 @@ class ExtHostCustomersRegistryImpl {
 
 	public registerNamedCustomer<T extends IDisposable>(
 		id: ProxyIdentifier<T>,
-		ctor: IExtHostCustomerCtor<T>
+		ctor: IExtHostCustomerCtor<T>,
 	): void {
 		const entry: IExtHostNamedCustomer<T> = [id, ctor];
 		this._namedCustomers.push(entry);
@@ -94,7 +94,7 @@ class ExtHostCustomersRegistryImpl {
 	}
 
 	public registerCustomer<T extends IDisposable>(
-		ctor: IExtHostCustomerCtor<T>
+		ctor: IExtHostCustomerCtor<T>,
 	): void {
 		this._customers.push(ctor);
 	}

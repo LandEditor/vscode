@@ -79,7 +79,7 @@ const defaultCodeblockPadding = 10;
 
 export class CodeBlockPart extends Disposable implements ICodeBlockPart {
 	private readonly _onDidChangeContentHeight = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	public readonly onDidChangeContentHeight =
 		this._onDidChangeContentHeight.event;
@@ -309,12 +309,12 @@ export class CodeBlockPart extends Disposable implements ICodeBlockPart {
 		if (this.accessibilityService.isScreenReaderOptimized()) {
 			toolbarElt.style.display = "block";
 			toolbarElt.ariaLabel = this.configurationService.getValue(
-				AccessibilityVerbositySettingId.Chat
+				AccessibilityVerbositySettingId.Chat,
 			)
 				? localize(
 						"chat.codeBlock.toolbarVerbose",
-						"Toolbar for code block which can be reached via tab"
-					)
+						"Toolbar for code block which can be reached via tab",
+				  )
 				: localize("chat.codeBlock.toolbar", "Code block toolbar");
 		} else {
 			toolbarElt.style.display = "";
@@ -373,7 +373,7 @@ export class CodeBlockPart extends Disposable implements ICodeBlockPart {
 			ariaLabel: localize(
 				"chat.codeBlockLabel",
 				"Code block {0}",
-				data.codeBlockIndex + 1
+				data.codeBlockIndex + 1,
 			),
 		});
 		this.toolbar.context = <ICodeBlockActionContext>{
@@ -394,7 +394,7 @@ export class CodeBlockPart extends Disposable implements ICodeBlockPart {
 			this.element.classList.remove("no-vulns");
 			this.element.classList.toggle(
 				"chat-vulnerabilities-collapsed",
-				!data.element.vulnerabilitiesListExpanded
+				!data.element.vulnerabilitiesListExpanded,
 			);
 			dom.append(
 				this.vulnsListElement,
@@ -403,9 +403,9 @@ export class CodeBlockPart extends Disposable implements ICodeBlockPart {
 						"li",
 						undefined,
 						$("span.chat-vuln-title", undefined, v.title),
-						" " + v.description
-					)
-				)
+						" " + v.description,
+					),
+				),
 			);
 			this.vulnsButton.label = this.getVulnerabilitiesLabel();
 		} else {
@@ -423,8 +423,8 @@ export class CodeBlockPart extends Disposable implements ICodeBlockPart {
 				? localize(
 						"vulnerabilitiesPlural",
 						"{0} vulnerabilities",
-						this.currentCodeBlockData.vulns.length
-					)
+						this.currentCodeBlockData.vulns.length,
+				  )
 				: localize("vulnerabilitiesSingular", "{0} vulnerability", 1);
 		const icon = (element: IChatResponseViewModel) =>
 			element.vulnerabilitiesListExpanded

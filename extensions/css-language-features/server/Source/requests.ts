@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { RequestType, Connection } from "vscode-languageserver";
+import { Connection, RequestType } from "vscode-languageserver";
 import { RuntimeEnvironment } from "./cssServer";
 
 export namespace FsContentRequest {
@@ -15,7 +15,7 @@ export namespace FsContentRequest {
 }
 export namespace FsStatRequest {
 	export const type: RequestType<string, FileStat, any> = new RequestType(
-		"fs/stat"
+		"fs/stat",
 	);
 }
 
@@ -72,7 +72,7 @@ export interface RequestService {
 export function getRequestService(
 	handledSchemas: string[],
 	connection: Connection,
-	runtime: RuntimeEnvironment
+	runtime: RuntimeEnvironment,
 ): RequestService {
 	const builtInHandlers: { [protocol: string]: RequestService | undefined } =
 		{};
@@ -91,7 +91,7 @@ export function getRequestService(
 			}
 			const res = await connection.sendRequest(
 				FsStatRequest.type,
-				uri.toString()
+				uri.toString(),
 			);
 			return res;
 		},
@@ -102,7 +102,7 @@ export function getRequestService(
 			}
 			return connection.sendRequest(
 				FsReadDirRequest.type,
-				uri.toString()
+				uri.toString(),
 			);
 		},
 		getContent(uri: string, encoding?: string): Promise<string> {

@@ -6,44 +6,44 @@
 import * as dom from "vs/base/browser/dom";
 import { Color } from "vs/base/common/color";
 import { Emitter, Event } from "vs/base/common/event";
-import { IDisposable, DisposableStore } from "vs/base/common/lifecycle";
+import { DisposableStore, IDisposable } from "vs/base/common/lifecycle";
 import {
 	ICodeEditor,
 	IEditorMouseEvent,
 	MouseTargetType,
 } from "vs/editor/browser/editorBrowser";
-import { IPosition } from "vs/editor/common/core/position";
-import { IRange, Range } from "vs/editor/common/core/range";
-import * as languages from "vs/editor/common/languages";
-import { ZoneWidget } from "vs/editor/contrib/zoneWidget/browser/zoneWidget";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import {
-	IColorTheme,
-	IThemeService,
-} from "vs/platform/theme/common/themeService";
-import { CommentGlyphWidget } from "vs/workbench/contrib/comments/browser/commentGlyphWidget";
-import { ICommentService } from "vs/workbench/contrib/comments/browser/commentService";
-import { ICommentThreadWidget } from "vs/workbench/contrib/comments/common/commentThreadWidget";
 import {
 	EDITOR_FONT_DEFAULTS,
 	EditorOption,
 	IEditorOptions,
 } from "vs/editor/common/config/editorOptions";
+import { IPosition } from "vs/editor/common/core/position";
+import { IRange, Range } from "vs/editor/common/core/range";
+import * as languages from "vs/editor/common/languages";
+import { peekViewBorder } from "vs/editor/contrib/peekView/browser/peekView";
+import { ZoneWidget } from "vs/editor/contrib/zoneWidget/browser/zoneWidget";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
-import { CommentThreadWidget } from "vs/workbench/contrib/comments/browser/commentThreadWidget";
-import { ICellRange } from "vs/workbench/contrib/notebook/common/notebookRange";
+import {
+	IColorTheme,
+	IThemeService,
+} from "vs/platform/theme/common/themeService";
 import {
 	commentThreadStateBackgroundColorVar,
 	commentThreadStateColorVar,
 	getCommentThreadStateBorderColor,
 } from "vs/workbench/contrib/comments/browser/commentColors";
-import { peekViewBorder } from "vs/editor/contrib/peekView/browser/peekView";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { CommentGlyphWidget } from "vs/workbench/contrib/comments/browser/commentGlyphWidget";
+import { ICommentService } from "vs/workbench/contrib/comments/browser/commentService";
+import { CommentThreadWidget } from "vs/workbench/contrib/comments/browser/commentThreadWidget";
+import { ICommentThreadWidget } from "vs/workbench/contrib/comments/common/commentThreadWidget";
+import { ICellRange } from "vs/workbench/contrib/notebook/common/notebookRange";
 
 function getCommentThreadWidgetStateColor(
 	thread: languages.CommentThreadState | undefined,
-	theme: IColorTheme
+	theme: IColorTheme,
 ): Color | undefined {
 	return (
 		getCommentThreadStateBorderColor(thread, theme) ??
@@ -83,7 +83,7 @@ export function parseMouseDownInfoFromEvent(e: IEditorMouseEvent) {
 
 export function isMouseUpEventDragFromMouseDown(
 	mouseDownInfo: { lineNumber: number } | null,
-	e: IEditorMouseEvent
+	e: IEditorMouseEvent,
 ) {
 	if (!mouseDownInfo) {
 		return null;
@@ -102,7 +102,7 @@ export function isMouseUpEventDragFromMouseDown(
 
 export function isMouseUpEventMatchMouseDown(
 	mouseDownInfo: { lineNumber: number } | null,
-	e: IEditorMouseEvent
+	e: IEditorMouseEvent,
 ) {
 	if (!mouseDownInfo) {
 		return null;
@@ -224,7 +224,7 @@ export class ReviewZoneWidget
 		// we don't do anything here as we always do the reveal ourselves.
 	}
 
-	public reveal(commentUniqueId?: number, focus: boolean = false) {
+	public reveal(commentUniqueId?: number, focus = false) {
 		if (!this._isExpanded) {
 			this.show(this.arrowPosition(this._commentThread.range), 2);
 		}
@@ -234,13 +234,13 @@ export class ReviewZoneWidget
 			const coords =
 				this._commentThreadWidget.getCommentCoords(commentUniqueId);
 			if (coords) {
-				let scrollTop: number = 1;
+				let scrollTop = 1;
 				if (this._commentThread.range) {
 					const commentThreadCoords = coords.thread;
 					const commentCoords = coords.comment;
 					scrollTop =
 						this.editor.getTopForLineNumber(
-							this._commentThread.range.startLineNumber
+							this._commentThread.range.startLineNumber,
 						) -
 						height / 2 +
 						commentCoords.top -
@@ -255,7 +255,7 @@ export class ReviewZoneWidget
 		}
 
 		this.editor.revealRangeInCenter(
-			this._commentThread.range ?? new Range(1, 1, 1, 1)
+			this._commentThread.range ?? new Range(1, 1, 1, 1),
 		);
 		if (focus) {
 			this._commentThreadWidget.focus();
@@ -299,7 +299,7 @@ export class ReviewZoneWidget
 					codeBlockFontSize: "",
 					codeBlockFontFamily:
 						this.configurationService.getValue<IEditorOptions>(
-							"editor"
+							"editor",
 						).fontFamily || EDITOR_FONT_DEFAULTS.fontFamily,
 				},
 				this._commentOptions,
@@ -332,20 +332,20 @@ export class ReviewZoneWidget
 											distance,
 										originalRange.startColumn,
 										originalRange.endLineNumber + distance,
-										originalRange.endColumn
+										originalRange.endColumn,
 									);
 								} else {
 									range = new Range(
 										originalRange.startLineNumber,
 										originalRange.startColumn,
 										originalRange.endLineNumber,
-										originalRange.endColumn
+										originalRange.endColumn,
 									);
 								}
 								await this.commentService.updateCommentThreadTemplate(
 									this.owner,
 									this._commentThread.commentThreadHandle,
-									range
+									range,
 								);
 							}
 						}
@@ -353,7 +353,7 @@ export class ReviewZoneWidget
 					collapse: () => {
 						this.collapse();
 					},
-				}
+				},
 			) as unknown as CommentThreadWidget<IRange>;
 
 		this._disposables.add(this._commentThreadWidget);
@@ -377,7 +377,7 @@ export class ReviewZoneWidget
 		this.dispose();
 		this.commentService.disposeCommentThread(
 			this.owner,
-			this._commentThread.threadId
+			this._commentThread.threadId,
 		);
 	}
 
@@ -411,7 +411,7 @@ export class ReviewZoneWidget
 	async update(commentThread: languages.CommentThread<IRange>) {
 		if (this._commentThread !== commentThread) {
 			this._commentThreadDisposables.forEach((disposable) =>
-				disposable.dispose()
+				disposable.dispose(),
 			);
 			this._commentThread = commentThread;
 			this._commentThreadDisposables = [];
@@ -455,7 +455,7 @@ export class ReviewZoneWidget
 
 	protected override _doLayout(
 		heightInPixel: number,
-		widthInPixel: number
+		widthInPixel: number,
 	): void {
 		this._commentThreadWidget.layout(widthInPixel);
 	}
@@ -464,18 +464,18 @@ export class ReviewZoneWidget
 		if (range) {
 			this._commentGlyph = new CommentGlyphWidget(
 				this.editor,
-				range?.endLineNumber ?? -1
+				range?.endLineNumber ?? -1,
 			);
 			this._commentGlyph.setThreadState(this._commentThread.state);
 		}
 
 		this._commentThreadWidget.display(
-			this.editor.getOption(EditorOption.lineHeight)
+			this.editor.getOption(EditorOption.lineHeight),
 		);
 		this._disposables.add(
 			this._commentThreadWidget.onDidResize((dimension) => {
 				this._refresh(dimension);
-			})
+			}),
 		);
 		if (
 			this._commentThread.collapsibleState ===
@@ -502,7 +502,7 @@ export class ReviewZoneWidget
 		this._commentThreadDisposables.push(
 			this._commentThread.onDidChangeComments(async (_) => {
 				await this.update(this._commentThread);
-			})
+			}),
 		);
 
 		this._commentThreadDisposables.push(
@@ -524,7 +524,7 @@ export class ReviewZoneWidget
 				if (shouldMoveWidget && this._isExpanded) {
 					this.show(this.arrowPosition(this._commentThread.range), 2);
 				}
-			})
+			}),
 		);
 
 		this._commentThreadDisposables.push(
@@ -546,7 +546,7 @@ export class ReviewZoneWidget
 					this.hide();
 					return;
 				}
-			})
+			}),
 		);
 
 		if (this._initialCollapsibleState === undefined) {
@@ -558,10 +558,10 @@ export class ReviewZoneWidget
 						this._commentThread.collapsibleState =
 							this._initialCollapsibleState;
 						onDidChangeInitialCollapsibleState.dispose();
-					}
+					},
 				);
 			this._commentThreadDisposables.push(
-				onDidChangeInitialCollapsibleState
+				onDidChangeInitialCollapsibleState,
 			);
 		}
 
@@ -570,7 +570,7 @@ export class ReviewZoneWidget
 				const borderColor =
 					getCommentThreadWidgetStateColor(
 						this._commentThread.state,
-						this.themeService.getColorTheme()
+						this.themeService.getColorTheme(),
 					) || Color.transparent;
 				this.style({
 					frameColor: borderColor,
@@ -578,13 +578,13 @@ export class ReviewZoneWidget
 				});
 				this.container?.style.setProperty(
 					commentThreadStateColorVar,
-					`${borderColor}`
+					`${borderColor}`,
 				);
 				this.container?.style.setProperty(
 					commentThreadStateBackgroundColorVar,
-					`${borderColor.transparent(0.1)}`
+					`${borderColor.transparent(0.1)}`,
 				);
-			})
+			}),
 		);
 	}
 
@@ -602,7 +602,7 @@ export class ReviewZoneWidget
 			this._commentThreadWidget.layout();
 
 			const headHeight = Math.ceil(
-				this.editor.getOption(EditorOption.lineHeight) * 1.2
+				this.editor.getOption(EditorOption.lineHeight) * 1.2,
 			);
 			const lineHeight = this.editor.getOption(EditorOption.lineHeight);
 			const arrowHeight = Math.round(lineHeight / 3);
@@ -614,7 +614,7 @@ export class ReviewZoneWidget
 					arrowHeight +
 					frameThickness +
 					8) /** margin bottom to avoid margin collapse */ /
-					lineHeight
+					lineHeight,
 			);
 
 			if (this._viewZone?.heightInLines === computedLinesNumber) {
@@ -647,7 +647,7 @@ export class ReviewZoneWidget
 		const borderColor =
 			getCommentThreadWidgetStateColor(
 				this._commentThread.state,
-				this.themeService.getColorTheme()
+				this.themeService.getColorTheme(),
 			) || Color.transparent;
 		this.style({
 			arrowColor: borderColor,
@@ -661,14 +661,14 @@ export class ReviewZoneWidget
 
 	override show(
 		rangeOrPos: IRange | IPosition | undefined,
-		heightInLines: number
+		heightInLines: number,
 	): void {
 		const glyphPosition = this._commentGlyph?.getPosition();
 		let range = Range.isIRange(rangeOrPos)
 			? rangeOrPos
 			: rangeOrPos
-				? Range.fromPositions(rangeOrPos)
-				: undefined;
+			  ? Range.fromPositions(rangeOrPos)
+			  : undefined;
 		if (
 			glyphPosition?.position &&
 			range &&
@@ -682,7 +682,7 @@ export class ReviewZoneWidget
 				range.startLineNumber + distance,
 				range.startColumn,
 				range.endLineNumber + distance,
-				range.endColumn
+				range.endColumn,
 			);
 		}
 

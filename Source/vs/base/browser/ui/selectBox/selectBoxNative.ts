@@ -30,7 +30,7 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
 		options: ISelectOptionItem[],
 		selected: number,
 		styles: ISelectBoxStyles,
-		selectBoxOptions?: ISelectBoxOptions
+		selectBoxOptions?: ISelectBoxOptions,
 	) {
 		super();
 		this.selectBoxOptions = selectBoxOptions || Object.create(null);
@@ -44,14 +44,14 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
 		if (typeof this.selectBoxOptions.ariaLabel === "string") {
 			this.selectElement.setAttribute(
 				"aria-label",
-				this.selectBoxOptions.ariaLabel
+				this.selectBoxOptions.ariaLabel,
 			);
 		}
 
 		if (typeof this.selectBoxOptions.ariaDescription === "string") {
 			this.selectElement.setAttribute(
 				"aria-description",
-				this.selectBoxOptions.ariaDescription
+				this.selectBoxOptions.ariaDescription,
 			);
 		}
 
@@ -72,8 +72,8 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
 					eventType,
 					(e) => {
 						this.selectElement.focus();
-					}
-				)
+					},
+				),
 			);
 		});
 
@@ -83,8 +83,8 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
 				"click",
 				(e) => {
 					dom.EventHelper.stop(e, true);
-				}
-			)
+				},
+			),
 		);
 
 		this._register(
@@ -97,8 +97,8 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
 						index: e.target.selectedIndex,
 						selected: e.target.value,
 					});
-				}
-			)
+				},
+			),
 		);
 
 		this._register(
@@ -116,22 +116,20 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
 						) {
 							showSelect = true;
 						}
-					} else {
-						if (
-							(e.keyCode === KeyCode.DownArrow && e.altKey) ||
-							e.keyCode === KeyCode.Space ||
-							e.keyCode === KeyCode.Enter
-						) {
-							showSelect = true;
-						}
+					} else if (
+						(e.keyCode === KeyCode.DownArrow && e.altKey) ||
+						e.keyCode === KeyCode.Space ||
+						e.keyCode === KeyCode.Enter
+					) {
+						showSelect = true;
 					}
 
 					if (showSelect) {
 						// Space, Enter, is used to expand select box, do not propagate it (prevent action bar action run)
 						e.stopPropagation();
 					}
-				}
-			)
+				},
+			),
 		);
 	}
 
@@ -146,7 +144,7 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
 
 			this.options.forEach((option, index) => {
 				this.selectElement.add(
-					this.createOption(option.text, index, option.isDisabled)
+					this.createOption(option.text, index, option.isDisabled),
 				);
 			});
 		}
@@ -229,7 +227,7 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
 	private createOption(
 		value: string,
 		index: number,
-		disabled?: boolean
+		disabled?: boolean,
 	): HTMLOptionElement {
 		const option = document.createElement("option");
 		option.value = value;

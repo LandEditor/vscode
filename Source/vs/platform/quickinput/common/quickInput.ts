@@ -5,16 +5,16 @@
 
 import { CancellationToken } from "vs/base/common/cancellation";
 import { Event } from "vs/base/common/event";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { IQuickAccessController } from "vs/platform/quickinput/common/quickAccess";
 import { IMatch } from "vs/base/common/filters";
 import { IItemAccessor } from "vs/base/common/fuzzyScorer";
+import { IMarkdownString } from "vs/base/common/htmlContent";
 import { ResolvedKeybinding } from "vs/base/common/keybindings";
 import { IDisposable } from "vs/base/common/lifecycle";
 import { Schemas } from "vs/base/common/network";
 import Severity from "vs/base/common/severity";
 import { URI } from "vs/base/common/uri";
-import { IMarkdownString } from "vs/base/common/htmlContent";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { IQuickAccessController } from "vs/platform/quickinput/common/quickAccess";
 
 export interface IQuickPickItemHighlights {
 	label?: IMatch[];
@@ -131,7 +131,7 @@ export interface IPickOptions<T extends IQuickPickItem> {
 	onDidFocus?: (entry: T) => void;
 	onDidTriggerItemButton?: (context: IQuickPickItemButtonContext<T>) => void;
 	onDidTriggerSeparatorButton?: (
-		context: IQuickPickSeparatorButtonEvent
+		context: IQuickPickSeparatorButtonEvent,
 	) => void;
 }
 
@@ -175,7 +175,7 @@ export interface IInputOptions {
 	 * an optional function that is used to validate user input.
 	 */
 	validateInput?: (
-		input: string
+		input: string,
 	) => Promise<
 		string | null | undefined | { content: string; severity: Severity }
 	>;
@@ -190,12 +190,12 @@ export enum QuickInputHideReason {
 	/**
 	 * An explicit user gesture, e.g. pressing Escape key.
 	 */
-	Gesture,
+	Gesture = 2,
 
 	/**
 	 * Anything else.
 	 */
-	Other,
+	Other = 3,
 }
 
 export interface IQuickInputHideEvent {
@@ -322,19 +322,19 @@ export enum ItemActivation {
 	/**
 	 * No item will be active.
 	 */
-	NONE,
+	NONE = 0,
 	/**
 	 * First item will be active.
 	 */
-	FIRST,
+	FIRST = 1,
 	/**
 	 * Second item will be active.
 	 */
-	SECOND,
+	SECOND = 2,
 	/**
 	 * Last item will be active.
 	 */
-	LAST,
+	LAST = 3,
 }
 
 /**
@@ -679,7 +679,7 @@ export class QuickPickItemScorerAccessor
 	implements IItemAccessor<IQuickPickItemWithResource>
 {
 	constructor(
-		private options?: { skipDescription?: boolean; skipPath?: boolean }
+		private options?: { skipDescription?: boolean; skipPath?: boolean },
 	) {}
 
 	getItemLabel(entry: IQuickPickItemWithResource): string {
@@ -746,17 +746,17 @@ export interface IQuickInputService {
 	pick<T extends IQuickPickItem>(
 		picks: Promise<QuickPickInput<T>[]> | QuickPickInput<T>[],
 		options?: IPickOptions<T> & { canPickMany: true },
-		token?: CancellationToken
+		token?: CancellationToken,
 	): Promise<T[] | undefined>;
 	pick<T extends IQuickPickItem>(
 		picks: Promise<QuickPickInput<T>[]> | QuickPickInput<T>[],
 		options?: IPickOptions<T> & { canPickMany: false },
-		token?: CancellationToken
+		token?: CancellationToken,
 	): Promise<T | undefined>;
 	pick<T extends IQuickPickItem>(
 		picks: Promise<QuickPickInput<T>[]> | QuickPickInput<T>[],
 		options?: Omit<IPickOptions<T>, "canPickMany">,
-		token?: CancellationToken
+		token?: CancellationToken,
 	): Promise<T | undefined>;
 
 	/**
@@ -764,7 +764,7 @@ export interface IQuickInputService {
 	 */
 	input(
 		options?: IInputOptions,
-		token?: CancellationToken
+		token?: CancellationToken,
 	): Promise<string | undefined>;
 
 	/**

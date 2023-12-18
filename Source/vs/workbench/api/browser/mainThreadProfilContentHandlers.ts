@@ -18,8 +18,8 @@ import {
 	MainThreadProfileContentHandlersShape,
 } from "vs/workbench/api/common/extHost.protocol";
 import {
-	extHostNamedCustomer,
 	IExtHostContext,
+	extHostNamedCustomer,
 } from "vs/workbench/services/extensions/common/extHostCustomers";
 import {
 	ISaveProfileResult,
@@ -34,7 +34,7 @@ export class MainThreadProfileContentHandlers
 	private readonly proxy: ExtHostProfileContentHandlersShape;
 
 	private readonly registeredHandlers = this._register(
-		new DisposableMap<string, IDisposable>()
+		new DisposableMap<string, IDisposable>(),
 	);
 
 	constructor(
@@ -52,7 +52,7 @@ export class MainThreadProfileContentHandlers
 		id: string,
 		name: string,
 		description: string | undefined,
-		extensionId: string
+		extensionId: string,
 	): Promise<void> {
 		this.registeredHandlers.set(
 			id,
@@ -65,13 +65,13 @@ export class MainThreadProfileContentHandlers
 					saveProfile: async (
 						name: string,
 						content: string,
-						token: CancellationToken
+						token: CancellationToken,
 					) => {
 						const result = await this.proxy.$saveProfile(
 							id,
 							name,
 							content,
-							token
+							token,
 						);
 						return result
 							? revive<ISaveProfileResult>(result)
@@ -80,8 +80,8 @@ export class MainThreadProfileContentHandlers
 					readProfile: async (uri: URI, token: CancellationToken) => {
 						return this.proxy.$readProfile(id, uri, token);
 					},
-				}
-			)
+				},
+			),
 		);
 	}
 

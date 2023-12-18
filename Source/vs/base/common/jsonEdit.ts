@@ -4,19 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	findNodeAtLocation,
 	JSONPath,
 	Node,
 	ParseError,
-	parseTree,
 	Segment,
+	findNodeAtLocation,
+	parseTree,
 } from "./json";
-import { Edit, format, FormattingOptions, isEOL } from "./jsonFormatter";
+import { Edit, FormattingOptions, format, isEOL } from "./jsonFormatter";
 
 export function removeProperty(
 	text: string,
 	path: JSONPath,
-	formattingOptions: FormattingOptions
+	formattingOptions: FormattingOptions,
 ): Edit[] {
 	return setProperty(text, path, undefined, formattingOptions);
 }
@@ -26,7 +26,7 @@ export function setProperty(
 	originalPath: JSONPath,
 	value: any,
 	formattingOptions: FormattingOptions,
-	getInsertionIndex?: (properties: string[]) => number
+	getInsertionIndex?: (properties: string[]) => number,
 ): Edit[] {
 	const path = originalPath.slice();
 	const errors: ParseError[] = [];
@@ -61,7 +61,7 @@ export function setProperty(
 				length: root ? root.length : 0,
 				content: JSON.stringify(value),
 			},
-			formattingOptions
+			formattingOptions,
 		);
 	} else if (
 		parent.type === "object" &&
@@ -97,7 +97,7 @@ export function setProperty(
 						length: removeEnd - removeBegin,
 						content: "",
 					},
-					formattingOptions
+					formattingOptions,
 				);
 			} else {
 				// set value of existing property
@@ -108,7 +108,7 @@ export function setProperty(
 						length: existing.length,
 						content: JSON.stringify(value),
 					},
-					formattingOptions
+					formattingOptions,
 				);
 			}
 		} else {
@@ -117,12 +117,12 @@ export function setProperty(
 				return []; // property does not exist, nothing to do
 			}
 			const newProperty = `${JSON.stringify(
-				lastSegment
+				lastSegment,
 			)}: ${JSON.stringify(value)}`;
 			const index = getInsertionIndex
 				? getInsertionIndex(
-						parent.children.map((p) => p.children![0].value)
-					)
+						parent.children.map((p) => p.children![0].value),
+				  )
 				: parent.children.length;
 			let edit: Edit;
 			if (index > 0) {
@@ -215,7 +215,7 @@ export function setProperty(
 		throw new Error(
 			`Can not add ${
 				typeof lastSegment !== "number" ? "index" : "property"
-			} to parent of type ${parent.type}`
+			} to parent of type ${parent.type}`,
 		);
 	}
 }
@@ -223,7 +223,7 @@ export function setProperty(
 export function withFormatting(
 	text: string,
 	edit: Edit,
-	formattingOptions: FormattingOptions
+	formattingOptions: FormattingOptions,
 ): Edit[] {
 	// apply the edit
 	let newText = applyEdit(text, edit);
@@ -244,7 +244,7 @@ export function withFormatting(
 	const edits = format(
 		newText,
 		{ offset: begin, length: end - begin },
-		formattingOptions
+		formattingOptions,
 	);
 
 	// apply the formatting edits and track the begin and end offsets of the changes

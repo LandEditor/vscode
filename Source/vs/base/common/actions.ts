@@ -72,16 +72,16 @@ export class Action extends Disposable implements IAction {
 	protected _label: string;
 	protected _tooltip: string | undefined;
 	protected _cssClass: string | undefined;
-	protected _enabled: boolean = true;
+	protected _enabled = true;
 	protected _checked?: boolean;
 	protected readonly _actionCallback?: (event?: unknown) => unknown;
 
 	constructor(
 		id: string,
-		label: string = "",
-		cssClass: string = "",
-		enabled: boolean = true,
-		actionCallback?: (event?: unknown) => unknown
+		label = "",
+		cssClass = "",
+		enabled = true,
+		actionCallback?: (event?: unknown) => unknown,
 	) {
 		super();
 		this._id = id;
@@ -208,7 +208,7 @@ export class ActionRunner extends Disposable implements IActionRunner {
 
 	protected async runAction(
 		action: IAction,
-		context?: unknown
+		context?: unknown,
 	): Promise<void> {
 		await action.run(context);
 	}
@@ -262,7 +262,7 @@ export class SubmenuAction implements IAction {
 		id: string,
 		label: string,
 		actions: readonly IAction[],
-		cssClass?: string
+		cssClass?: string,
 	) {
 		this.id = id;
 		this.label = label;
@@ -281,7 +281,7 @@ export class EmptySubmenuAction extends Action {
 			EmptySubmenuAction.ID,
 			nls.localize("submenu.empty", "(empty)"),
 			undefined,
-			false
+			false,
 		);
 	}
 }

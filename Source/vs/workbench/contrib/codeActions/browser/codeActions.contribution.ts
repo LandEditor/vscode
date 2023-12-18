@@ -34,11 +34,11 @@ const codeActionsExtensionPoint = ExtensionsRegistry.registerExtensionPoint<
 >(codeActionsExtensionPointDescriptor);
 const documentationExtensionPoint =
 	ExtensionsRegistry.registerExtensionPoint<DocumentationExtensionPoint>(
-		documentationExtensionPointDescriptor
+		documentationExtensionPointDescriptor,
 	);
 
 Registry.as<IConfigurationRegistry>(
-	Extensions.Configuration
+	Extensions.Configuration,
 ).registerConfiguration(editorConfiguration);
 
 class WorkbenchConfigurationContribution {
@@ -57,8 +57,8 @@ class WorkbenchConfigurationContribution {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	WorkbenchConfigurationContribution,
-	LifecyclePhase.Eventually
+	LifecyclePhase.Eventually,
 );

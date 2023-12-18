@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	Match,
-	FileMatch,
-	FileMatchOrMatch,
-} from "vs/workbench/contrib/search/browser/searchModel";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import { IProgress, IProgressStep } from "vs/platform/progress/common/progress";
+import {
+	FileMatch,
+	FileMatchOrMatch,
+	Match,
+} from "vs/workbench/contrib/search/browser/searchModel";
 
 export const IReplaceService =
 	createDecorator<IReplaceService>("replaceService");
@@ -28,7 +28,7 @@ export interface IReplaceService {
 	 */
 	replace(
 		files: FileMatch[],
-		progress?: IProgress<IProgressStep>
+		progress?: IProgress<IProgressStep>,
 	): Promise<any>;
 
 	/**
@@ -38,7 +38,7 @@ export interface IReplaceService {
 		element: FileMatchOrMatch,
 		preserveFocus?: boolean,
 		sideBySide?: boolean,
-		pinned?: boolean
+		pinned?: boolean,
 	): Promise<any>;
 
 	/**

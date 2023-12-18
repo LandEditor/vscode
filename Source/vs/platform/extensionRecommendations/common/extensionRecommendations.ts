@@ -5,7 +5,7 @@
 
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 
-export const enum RecommendationSource {
+export enum RecommendationSource {
 	FILE = 1,
 	WORKSPACE = 2,
 	EXE = 3,
@@ -29,7 +29,7 @@ export function RecommendationSourceToString(source: RecommendationSource) {
 	}
 }
 
-export const enum RecommendationsNotificationResult {
+export enum RecommendationsNotificationResult {
 	Ignored = "ignored",
 	Cancelled = "cancelled",
 	TooMany = "toomany",
@@ -39,7 +39,7 @@ export const enum RecommendationsNotificationResult {
 
 export const IExtensionRecommendationNotificationService =
 	createDecorator<IExtensionRecommendationNotificationService>(
-		"IExtensionRecommendationNotificationService"
+		"IExtensionRecommendationNotificationService",
 	);
 
 export interface IExtensionRecommendationNotificationService {
@@ -49,7 +49,7 @@ export interface IExtensionRecommendationNotificationService {
 	hasToIgnoreRecommendationNotifications(): boolean;
 
 	promptImportantExtensionsInstallNotification(
-		recommendations: IExtensionRecommendations
+		recommendations: IExtensionRecommendations,
 	): Promise<RecommendationsNotificationResult>;
 	promptWorkspaceRecommendations(recommendations: string[]): Promise<void>;
 }

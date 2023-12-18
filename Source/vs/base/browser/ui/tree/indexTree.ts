@@ -18,8 +18,10 @@ import {
 import { Iterable } from "vs/base/common/iterator";
 import "vs/css!./media/tree";
 
-export interface IIndexTreeOptions<T, TFilterData = void>
-	extends IAbstractTreeOptions<T, TFilterData> {}
+export type IIndexTreeOptions<T, TFilterData = void> = IAbstractTreeOptions<
+	T,
+	TFilterData
+>;
 
 export class IndexTree<T, TFilterData = void> extends AbstractTree<
 	T,
@@ -34,7 +36,7 @@ export class IndexTree<T, TFilterData = void> extends AbstractTree<
 		delegate: IListVirtualDelegate<T>,
 		renderers: ITreeRenderer<T, TFilterData, any>[],
 		private rootElement: T,
-		options: IIndexTreeOptions<T, TFilterData> = {}
+		options: IIndexTreeOptions<T, TFilterData> = {},
 	) {
 		super(user, container, delegate, renderers, options);
 	}
@@ -42,7 +44,7 @@ export class IndexTree<T, TFilterData = void> extends AbstractTree<
 	splice(
 		location: number[],
 		deleteCount: number,
-		toInsert: Iterable<ITreeElement<T>> = Iterable.empty()
+		toInsert: Iterable<ITreeElement<T>> = Iterable.empty(),
 	): void {
 		this.model.splice(location, deleteCount, toInsert);
 	}
@@ -63,7 +65,7 @@ export class IndexTree<T, TFilterData = void> extends AbstractTree<
 	protected createModel(
 		user: string,
 		view: IList<ITreeNode<T, TFilterData>>,
-		options: IIndexTreeOptions<T, TFilterData>
+		options: IIndexTreeOptions<T, TFilterData>,
 	): ITreeModel<T, TFilterData, number[]> {
 		return new IndexTreeModel(user, view, this.rootElement, options);
 	}

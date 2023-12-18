@@ -40,7 +40,7 @@ const fs = nodeReq<INodeFS>("fs");
 const path = nodeReq<INodePath>("path");
 
 let inlineResources: boolean | "base64" = false;
-let inlineResourcesLimit: number = 5000;
+let inlineResourcesLimit = 5000;
 
 const contentsMap: { [moduleName: string]: string } = {};
 const pathMap: { [moduleName: string]: string } = {};
@@ -54,7 +54,7 @@ export function load(
 	name: string,
 	req: AMDLoader.IRelativeRequire,
 	load: AMDLoader.IPluginLoadCallback,
-	config: AMDLoader.IConfigurationOptions
+	config: AMDLoader.IConfigurationOptions,
 ): void {
 	if (!fs) {
 		throw new Error(`Cannot load files without 'fs'!`);
@@ -85,7 +85,7 @@ export function load(
 export function write(
 	pluginName: string,
 	moduleName: string,
-	write: AMDLoader.IPluginWriteCallback
+	write: AMDLoader.IPluginWriteCallback,
 ): void {
 	const entryPoint = write.getEntryPoint();
 
@@ -98,7 +98,7 @@ export function write(
 
 	write.asModule(
 		pluginName + "!" + moduleName,
-		"define(['vs/css!" + entryPoint + "'], {});"
+		"define(['vs/css!" + entryPoint + "'], {});",
 	);
 }
 
@@ -110,7 +110,7 @@ export function writeFile(
 	moduleName: string,
 	req: AMDLoader.IRelativeRequire,
 	write: AMDLoader.IPluginWriteFileCallback,
-	config: AMDLoader.IConfigurationOptions
+	config: AMDLoader.IConfigurationOptions,
 ): void {
 	if (entryPoints && entryPoints.hasOwnProperty(moduleName)) {
 		const fileName = req.toUrl(moduleName + ".css");
@@ -129,16 +129,16 @@ export function writeFile(
 						moduleName,
 						entries[i].contents,
 						inlineResources === "base64",
-						inlineResourcesLimit
-					)
+						inlineResourcesLimit,
+					),
 				);
 			} else {
 				contents.push(
 					rewriteUrls(
 						entries[i].moduleName,
 						moduleName,
-						entries[i].contents
-					)
+						entries[i].contents,
+					),
 				);
 			}
 		}
@@ -156,11 +156,11 @@ function rewriteOrInlineUrls(
 	newFile: string,
 	contents: string,
 	forceBase64: boolean,
-	inlineByteLimit: number
+	inlineByteLimit: number,
 ): string {
 	if (!fs || !path) {
 		throw new Error(
-			`Cannot rewrite or inline urls without 'fs' or 'path'!`
+			`Cannot rewrite or inline urls without 'fs' or 'path'!`,
 		);
 	}
 	return CSSPluginUtilities.replaceURL(contents, (url) => {
@@ -197,7 +197,7 @@ function rewriteOrInlineUrls(
 
 		const absoluteUrl = CSSPluginUtilities.joinPaths(
 			CSSPluginUtilities.pathOf(originalFile),
-			url
+			url,
 		);
 		return CSSPluginUtilities.relativePath(newFile, absoluteUrl);
 	});
@@ -206,12 +206,12 @@ function rewriteOrInlineUrls(
 export function rewriteUrls(
 	originalFile: string,
 	newFile: string,
-	contents: string
+	contents: string,
 ): string {
 	return CSSPluginUtilities.replaceURL(contents, (url) => {
 		const absoluteUrl = CSSPluginUtilities.joinPaths(
 			CSSPluginUtilities.pathOf(originalFile),
-			url
+			url,
 		);
 		return CSSPluginUtilities.relativePath(newFile, absoluteUrl);
 	});
@@ -245,12 +245,12 @@ export class CSSPluginUtilities {
 	public static joinPaths(a: string, b: string): string {
 		function findSlashIndexAfterPrefix(
 			haystack: string,
-			prefix: string
+			prefix: string,
 		): number {
 			if (CSSPluginUtilities.startsWith(haystack, prefix)) {
 				return Math.max(
 					prefix.length,
-					haystack.indexOf("/", prefix.length)
+					haystack.indexOf("/", prefix.length),
 				);
 			}
 			return 0;
@@ -348,7 +348,7 @@ export class CSSPluginUtilities {
 
 	public static replaceURL(
 		contents: string,
-		replacer: (url: string) => string
+		replacer: (url: string) => string,
 	): string {
 		// Use ")" as the terminator as quotes are oftentimes not used at all
 		return contents.replace(
@@ -384,7 +384,7 @@ export class CSSPluginUtilities {
 				}
 
 				return "url(" + url + ")";
-			}
+			},
 		);
 	}
 }

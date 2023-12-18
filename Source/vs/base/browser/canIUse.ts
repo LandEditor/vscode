@@ -7,10 +7,10 @@ import * as browser from "vs/base/browser/browser";
 import { mainWindow } from "vs/base/browser/window";
 import * as platform from "vs/base/common/platform";
 
-export const enum KeyboardSupport {
-	Always,
-	FullScreen,
-	None,
+export enum KeyboardSupport {
+	Always = 0,
+	FullScreen = 1,
+	None = 2,
 }
 
 /**

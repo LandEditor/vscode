@@ -9,7 +9,7 @@ import { Selection } from "vs/editor/common/core/selection";
 /**
  * Describes the reason the cursor has changed its position.
  */
-export const enum CursorChangeReason {
+export enum CursorChangeReason {
 	/**
 	 * Unknown or not set.
 	 */

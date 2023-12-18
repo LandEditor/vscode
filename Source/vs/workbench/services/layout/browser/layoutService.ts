@@ -3,19 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { refineServiceDecorator } from "vs/platform/instantiation/common/instantiation";
-import { Event } from "vs/base/common/event";
-import { ILayoutService } from "vs/platform/layout/browser/layoutService";
-import { Part } from "vs/workbench/browser/part";
 import { IDimension } from "vs/base/browser/dom";
 import { Direction } from "vs/base/browser/ui/grid/grid";
+import { Event } from "vs/base/common/event";
+import { refineServiceDecorator } from "vs/platform/instantiation/common/instantiation";
+import { ILayoutService } from "vs/platform/layout/browser/layoutService";
+import { Part } from "vs/workbench/browser/part";
 
 export const IWorkbenchLayoutService = refineServiceDecorator<
 	ILayoutService,
 	IWorkbenchLayoutService
 >(ILayoutService);
 
-export const enum Parts {
+export enum Parts {
 	TITLEBAR_PART = "workbench.parts.titlebar",
 	BANNER_PART = "workbench.parts.banner",
 	ACTIVITYBAR_PART = "workbench.parts.activitybar",
@@ -26,7 +26,7 @@ export const enum Parts {
 	STATUSBAR_PART = "workbench.parts.statusbar",
 }
 
-export const enum ZenModeSettings {
+export enum ZenModeSettings {
 	SHOW_TABS = "zenMode.showTabs",
 	HIDE_LINENUMBERS = "zenMode.hideLineNumbers",
 	HIDE_STATUSBAR = "zenMode.hideStatusBar",
@@ -37,34 +37,34 @@ export const enum ZenModeSettings {
 	SILENT_NOTIFICATIONS = "zenMode.silentNotifications",
 }
 
-export const enum LayoutSettings {
+export enum LayoutSettings {
 	ACTIVITY_BAR_LOCATION = "workbench.activityBar.location",
 	EDITOR_TABS_MODE = "workbench.editor.showTabs",
 	COMMAND_CENTER = "window.commandCenter",
 }
 
-export const enum ActivityBarPosition {
+export enum ActivityBarPosition {
 	SIDE = "side",
 	TOP = "top",
 	HIDDEN = "hidden",
 }
 
-export const enum EditorTabsMode {
+export enum EditorTabsMode {
 	MULTIPLE = "multiple",
 	SINGLE = "single",
 	NONE = "none",
 }
 
-export const enum Position {
-	LEFT,
-	RIGHT,
-	BOTTOM,
+export enum Position {
+	LEFT = 0,
+	RIGHT = 1,
+	BOTTOM = 2,
 }
 
-export const enum PanelOpensMaximizedOptions {
-	ALWAYS,
-	NEVER,
-	REMEMBER_LAST,
+export enum PanelOpensMaximizedOptions {
+	ALWAYS = 0,
+	NEVER = 1,
+	REMEMBER_LAST = 2,
 }
 
 export type PanelAlignment = "left" | "center" | "right" | "justify";
@@ -93,7 +93,7 @@ export function positionFromString(str: string): Position {
 }
 
 function panelOpensMaximizedSettingToString(
-	setting: PanelOpensMaximizedOptions
+	setting: PanelOpensMaximizedOptions,
 ): string {
 	switch (setting) {
 		case PanelOpensMaximizedOptions.ALWAYS:
@@ -115,12 +115,12 @@ const panelOpensMaximizedByString: {
 	[panelOpensMaximizedSettingToString(PanelOpensMaximizedOptions.NEVER)]:
 		PanelOpensMaximizedOptions.NEVER,
 	[panelOpensMaximizedSettingToString(
-		PanelOpensMaximizedOptions.REMEMBER_LAST
+		PanelOpensMaximizedOptions.REMEMBER_LAST,
 	)]: PanelOpensMaximizedOptions.REMEMBER_LAST,
 };
 
 export function panelOpensMaximizedFromString(
-	str: string
+	str: string,
 ): PanelOpensMaximizedOptions {
 	return panelOpensMaximizedByString[str];
 }
@@ -231,7 +231,7 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 		part: Exclude<
 			SINGLE_WINDOW_PARTS,
 			Parts.STATUSBAR_PART | Parts.TITLEBAR_PART
-		>
+		>,
 	): void;
 	setPartHidden(
 		hidden: boolean,
@@ -239,12 +239,12 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 			MULTI_WINDOW_PARTS,
 			Parts.STATUSBAR_PART | Parts.TITLEBAR_PART
 		>,
-		targetWindow: Window
+		targetWindow: Window,
 	): void;
 	setPartHidden(
 		hidden: boolean,
 		part: Exclude<Parts, Parts.STATUSBAR_PART | Parts.TITLEBAR_PART>,
-		targetWindow: Window
+		targetWindow: Window,
 	): void;
 
 	/**
@@ -324,7 +324,7 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 	resizePart(
 		part: Parts,
 		sizeChangeWidth: number,
-		sizeChangeHeight: number
+		sizeChangeHeight: number,
 	): void;
 
 	/**
@@ -347,6 +347,6 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 	 */
 	getVisibleNeighborPart(
 		part: Parts,
-		direction: Direction
+		direction: Direction,
 	): Parts | undefined;
 }

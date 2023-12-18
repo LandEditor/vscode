@@ -47,7 +47,7 @@ const stringTrim = unapply(String.prototype.trim);
 const regExpTest = unapply(RegExp.prototype.test);
 const typeErrorCreate = unconstruct(TypeError);
 function unapply(func) {
-	return function (thisArg) {
+	return (thisArg) => {
 		for (
 			var _len = arguments.length,
 				args = new Array(_len > 1 ? _len - 1 : 0),
@@ -62,7 +62,7 @@ function unapply(func) {
 	};
 }
 function unconstruct(func) {
-	return function () {
+	return () => {
 		for (
 			var _len2 = arguments.length, args = new Array(_len2), _key2 = 0;
 			_key2 < _len2;
@@ -794,11 +794,11 @@ const DATA_ATTR = seal(/^data-[\-\w.\u00B7-\uFFFF]/); // eslint-disable-line no-
 const ARIA_ATTR = seal(/^aria-[\-\w]+$/); // eslint-disable-line no-useless-escape
 
 const IS_ALLOWED_URI = seal(
-	/^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i // eslint-disable-line no-useless-escape
+	/^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i, // eslint-disable-line no-useless-escape
 );
 const IS_SCRIPT_OR_DATA = seal(/^(?:\w+script|data):/i);
 const ATTR_WHITESPACE = seal(
-	/[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205F\u3000]/g // eslint-disable-line no-control-regex
+	/[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205F\u3000]/g, // eslint-disable-line no-control-regex
 );
 const DOCTYPE_NAME = seal(/^html$/i);
 
@@ -827,7 +827,7 @@ const getGlobal = () => (typeof window === "undefined" ? null : window);
 
 const _createTrustedTypesPolicy = function _createTrustedTypesPolicy(
 	trustedTypes,
-	purifyHostElement
+	purifyHostElement,
 ) {
 	if (
 		typeof trustedTypes !== "object" ||
@@ -862,14 +862,14 @@ const _createTrustedTypesPolicy = function _createTrustedTypesPolicy(
 		// already run). Skip creating the policy, as this will only cause errors
 		// if TT are enforced.
 		console.warn(
-			"TrustedTypes policy " + policyName + " could not be created."
+			"TrustedTypes policy " + policyName + " could not be created.",
 		);
 		return null;
 	}
 };
 
 function createDOMPurify() {
-	let window =
+	const window =
 		arguments.length > 0 && arguments[0] !== undefined
 			? arguments[0]
 			: getGlobal();
@@ -1008,7 +1008,7 @@ function createDOMPurify() {
 				enumerable: true,
 				value: false,
 			},
-		})
+		}),
 	);
 	/* Explicitly forbidden tags (overrides ALLOWED_TAGS/ADD_TAGS) */
 
@@ -1162,7 +1162,7 @@ function createDOMPurify() {
 	const DEFAULT_ALLOWED_NAMESPACES = addToSet(
 		{},
 		[MATHML_NAMESPACE, SVG_NAMESPACE, HTML_NAMESPACE],
-		stringToString
+		stringToString,
 	);
 	/* Parsing of strict XHTML documents */
 
@@ -1229,16 +1229,16 @@ function createDOMPurify() {
 				? addToSet(
 						clone(DEFAULT_URI_SAFE_ATTRIBUTES), // eslint-disable-line indent
 						cfg.ADD_URI_SAFE_ATTR, // eslint-disable-line indent
-						transformCaseFunc // eslint-disable-line indent
-					) // eslint-disable-line indent
+						transformCaseFunc, // eslint-disable-line indent
+				  ) // eslint-disable-line indent
 				: DEFAULT_URI_SAFE_ATTRIBUTES;
 		DATA_URI_TAGS =
 			"ADD_DATA_URI_TAGS" in cfg
 				? addToSet(
 						clone(DEFAULT_DATA_URI_TAGS), // eslint-disable-line indent
 						cfg.ADD_DATA_URI_TAGS, // eslint-disable-line indent
-						transformCaseFunc // eslint-disable-line indent
-					) // eslint-disable-line indent
+						transformCaseFunc, // eslint-disable-line indent
+				  ) // eslint-disable-line indent
 				: DEFAULT_DATA_URI_TAGS;
 		FORBID_CONTENTS =
 			"FORBID_CONTENTS" in cfg
@@ -1368,7 +1368,7 @@ function createDOMPurify() {
 			addToSet(
 				URI_SAFE_ATTRIBUTES,
 				cfg.ADD_URI_SAFE_ATTR,
-				transformCaseFunc
+				transformCaseFunc,
 			);
 		}
 
@@ -1399,7 +1399,7 @@ function createDOMPurify() {
 		if (cfg.TRUSTED_TYPES_POLICY) {
 			if (typeof cfg.TRUSTED_TYPES_POLICY.createHTML !== "function") {
 				throw typeErrorCreate(
-					'TRUSTED_TYPES_POLICY configuration option must provide a "createHTML" hook.'
+					'TRUSTED_TYPES_POLICY configuration option must provide a "createHTML" hook.',
 				);
 			}
 
@@ -1407,7 +1407,7 @@ function createDOMPurify() {
 				typeof cfg.TRUSTED_TYPES_POLICY.createScriptURL !== "function"
 			) {
 				throw typeErrorCreate(
-					'TRUSTED_TYPES_POLICY configuration option must provide a "createScriptURL" hook.'
+					'TRUSTED_TYPES_POLICY configuration option must provide a "createScriptURL" hook.',
 				);
 			} // Overwrite existing TrustedTypes policy.
 
@@ -1419,7 +1419,7 @@ function createDOMPurify() {
 			if (trustedTypesPolicy === undefined) {
 				trustedTypesPolicy = _createTrustedTypesPolicy(
 					trustedTypes,
-					currentScript
+					currentScript,
 				);
 			} // If creating the internal policy succeeded sign internal variables.
 
@@ -1670,7 +1670,7 @@ function createDOMPurify() {
 			try {
 				doc = new DOMParser().parseFromString(
 					dirtyPayload,
-					PARSER_MEDIA_TYPE
+					PARSER_MEDIA_TYPE,
 				);
 			} catch (_) {}
 		}
@@ -1693,7 +1693,7 @@ function createDOMPurify() {
 		if (dirty && leadingWhitespace) {
 			body.insertBefore(
 				document.createTextNode(leadingWhitespace),
-				body.childNodes[0] || null
+				body.childNodes[0] || null,
 			);
 		}
 		/* Work on whole document or just its body */
@@ -1701,7 +1701,7 @@ function createDOMPurify() {
 		if (NAMESPACE === HTML_NAMESPACE) {
 			return getElementsByTagName.call(
 				doc,
-				WHOLE_DOCUMENT ? "html" : "body"
+				WHOLE_DOCUMENT ? "html" : "body",
 			)[0];
 		}
 
@@ -1722,7 +1722,7 @@ function createDOMPurify() {
 				NodeFilter.SHOW_COMMENT |
 				NodeFilter.SHOW_TEXT,
 			null,
-			false
+			false,
 		);
 	};
 	/**
@@ -1855,7 +1855,7 @@ function createDOMPurify() {
 					for (let i = childCount - 1; i >= 0; --i) {
 						parentNode.insertBefore(
 							cloneNode(childNodes[i], true),
-							getNextSibling(currentNode)
+							getNextSibling(currentNode),
 						);
 					}
 				}
@@ -1948,7 +1948,7 @@ function createDOMPurify() {
 					((CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof RegExp &&
 						regExpTest(
 							CUSTOM_ELEMENT_HANDLING.tagNameCheck,
-							lcTag
+							lcTag,
 						)) ||
 						(CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof
 							Function &&
@@ -1957,12 +1957,12 @@ function createDOMPurify() {
 						RegExp &&
 						regExpTest(
 							CUSTOM_ELEMENT_HANDLING.attributeNameCheck,
-							lcName
+							lcName,
 						)) ||
 						(CUSTOM_ELEMENT_HANDLING.attributeNameCheck instanceof
 							Function &&
 							CUSTOM_ELEMENT_HANDLING.attributeNameCheck(
-								lcName
+								lcName,
 							)))) || // Alternative, second condition checks if it's an `is`-attribute, AND
 				// the value passes whatever the user has configured for CUSTOM_ELEMENT_HANDLING.tagNameCheck
 				(lcName === "is" &&
@@ -1970,7 +1970,7 @@ function createDOMPurify() {
 					((CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof RegExp &&
 						regExpTest(
 							CUSTOM_ELEMENT_HANDLING.tagNameCheck,
-							value
+							value,
 						)) ||
 						(CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof
 							Function &&
@@ -1984,7 +1984,7 @@ function createDOMPurify() {
 		else if (
 			regExpTest(
 				IS_ALLOWED_URI$1,
-				stringReplace(value, ATTR_WHITESPACE, "")
+				stringReplace(value, ATTR_WHITESPACE, ""),
 			)
 		);
 		else if (
@@ -1999,7 +1999,7 @@ function createDOMPurify() {
 			ALLOW_UNKNOWN_PROTOCOLS &&
 			!regExpTest(
 				IS_SCRIPT_OR_DATA,
-				stringReplace(value, ATTR_WHITESPACE, "")
+				stringReplace(value, ATTR_WHITESPACE, ""),
 			)
 		);
 		else if (value) {
@@ -2199,8 +2199,8 @@ function createDOMPurify() {
 	 */
 	// eslint-disable-next-line complexity
 
-	DOMPurify.sanitize = function (dirty) {
-		let cfg =
+	DOMPurify.sanitize = (dirty) => {
+		const cfg =
 			arguments.length > 1 && arguments[1] !== undefined
 				? arguments[1]
 				: {};
@@ -2256,7 +2256,7 @@ function createDOMPurify() {
 
 				if (!ALLOWED_TAGS[tagName] || FORBID_TAGS[tagName]) {
 					throw typeErrorCreate(
-						"root node is forbidden and cannot be sanitized in-place"
+						"root node is forbidden and cannot be sanitized in-place",
 					);
 				}
 			}
@@ -2353,7 +2353,7 @@ function createDOMPurify() {
 				returnNode = importNode.call(
 					originalDocument,
 					returnNode,
-					true
+					true,
 				);
 			}
 
@@ -2396,7 +2396,7 @@ function createDOMPurify() {
 	 * @param {Object} cfg configuration object
 	 */
 
-	DOMPurify.setConfig = function (cfg) {
+	DOMPurify.setConfig = (cfg) => {
 		_parseConfig(cfg);
 
 		SET_CONFIG = true;
@@ -2407,7 +2407,7 @@ function createDOMPurify() {
 	 *
 	 */
 
-	DOMPurify.clearConfig = function () {
+	DOMPurify.clearConfig = () => {
 		CONFIG = null;
 		SET_CONFIG = false;
 	};
@@ -2422,7 +2422,7 @@ function createDOMPurify() {
 	 * @return {Boolean} Returns true if `value` is valid. Otherwise, returns false.
 	 */
 
-	DOMPurify.isValidAttribute = function (tag, attr, value) {
+	DOMPurify.isValidAttribute = (tag, attr, value) => {
 		/* Initialize shared config vars if necessary. */
 		if (!CONFIG) {
 			_parseConfig({});
@@ -2440,7 +2440,7 @@ function createDOMPurify() {
 	 * @param {Function} hookFunction function to execute
 	 */
 
-	DOMPurify.addHook = function (entryPoint, hookFunction) {
+	DOMPurify.addHook = (entryPoint, hookFunction) => {
 		if (typeof hookFunction !== "function") {
 			return;
 		}
@@ -2457,7 +2457,7 @@ function createDOMPurify() {
 	 * @return {Function} removed(popped) hook
 	 */
 
-	DOMPurify.removeHook = function (entryPoint) {
+	DOMPurify.removeHook = (entryPoint) => {
 		if (hooks[entryPoint]) {
 			return arrayPop(hooks[entryPoint]);
 		}
@@ -2469,7 +2469,7 @@ function createDOMPurify() {
 	 * @param  {String} entryPoint entry point for the hooks to remove
 	 */
 
-	DOMPurify.removeHooks = function (entryPoint) {
+	DOMPurify.removeHooks = (entryPoint) => {
 		if (hooks[entryPoint]) {
 			hooks[entryPoint] = [];
 		}
@@ -2480,7 +2480,7 @@ function createDOMPurify() {
 	 *
 	 */
 
-	DOMPurify.removeAllHooks = function () {
+	DOMPurify.removeAllHooks = () => {
 		hooks = {};
 	};
 
@@ -2490,9 +2490,7 @@ function createDOMPurify() {
 var purify = createDOMPurify();
 
 // ESM-comment-begin
-define(function () {
-	return purify;
-});
+define(() => purify);
 // ESM-comment-end
 
 // ESM-uncomment-begin

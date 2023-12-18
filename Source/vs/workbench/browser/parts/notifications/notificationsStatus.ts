@@ -3,27 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	INotificationsModel,
-	INotificationChangeEvent,
-	NotificationChangeType,
-	IStatusMessageChangeEvent,
-	StatusMessageChangeType,
-	IStatusMessageViewItem,
-} from "vs/workbench/common/notifications";
-import {
-	IStatusbarService,
-	StatusbarAlignment,
-	IStatusbarEntryAccessor,
-	IStatusbarEntry,
-} from "vs/workbench/services/statusbar/browser/statusbar";
 import { Disposable, IDisposable, dispose } from "vs/base/common/lifecycle";
+import { localize } from "vs/nls";
+import { INotificationService } from "vs/platform/notification/common/notification";
 import {
 	HIDE_NOTIFICATIONS_CENTER,
 	SHOW_NOTIFICATIONS_CENTER,
 } from "vs/workbench/browser/parts/notifications/notificationsCommands";
-import { localize } from "vs/nls";
-import { INotificationService } from "vs/platform/notification/common/notification";
+import {
+	INotificationChangeEvent,
+	INotificationsModel,
+	IStatusMessageChangeEvent,
+	IStatusMessageViewItem,
+	NotificationChangeType,
+	StatusMessageChangeType,
+} from "vs/workbench/common/notifications";
+import {
+	IStatusbarEntry,
+	IStatusbarEntryAccessor,
+	IStatusbarService,
+	StatusbarAlignment,
+} from "vs/workbench/services/statusbar/browser/statusbar";
 
 export class NotificationsStatus extends Disposable {
 	private notificationsCenterStatusItem: IStatusbarEntryAccessor | undefined;
@@ -33,8 +33,8 @@ export class NotificationsStatus extends Disposable {
 		| [IStatusMessageViewItem, IDisposable]
 		| undefined;
 
-	private isNotificationsCenterVisible: boolean = false;
-	private isNotificationsToastsVisible: boolean = false;
+	private isNotificationsCenterVisible = false;
+	private isNotificationsToastsVisible = false;
 
 	constructor(
 		private readonly model: INotificationsModel,
@@ -56,18 +56,18 @@ export class NotificationsStatus extends Disposable {
 	private registerListeners(): void {
 		this._register(
 			this.model.onDidChangeNotification((e) =>
-				this.onDidChangeNotification(e)
-			)
+				this.onDidChangeNotification(e),
+			),
 		);
 		this._register(
 			this.model.onDidChangeStatusMessage((e) =>
-				this.onDidChangeStatusMessage(e)
-			)
+				this.onDidChangeStatusMessage(e),
+			),
 		);
 		this._register(
 			this.notificationService.onDidChangeDoNotDisturbMode(() =>
-				this.updateNotificationsCenterStatusItem()
-			)
+				this.updateNotificationsCenterStatusItem(),
+			),
 		);
 	}
 
@@ -134,20 +134,20 @@ export class NotificationsStatus extends Disposable {
 				ariaLabel: localize("status.doNotDisturb", "Do Not Disturb"),
 				tooltip: localize(
 					"status.doNotDisturbTooltip",
-					"Do Not Disturb Mode is Enabled"
+					"Do Not Disturb Mode is Enabled",
 				),
 			};
 		}
 
-		if (!this.notificationsCenterStatusItem) {
+		if (this.notificationsCenterStatusItem) {
+			this.notificationsCenterStatusItem.update(statusProperties);
+		} else {
 			this.notificationsCenterStatusItem = this.statusbarService.addEntry(
 				statusProperties,
 				"status.notifications",
 				StatusbarAlignment.RIGHT,
-				-Number.MAX_VALUE /* towards the far end of the right hand side */
+				-Number.MAX_VALUE /* towards the far end of the right hand side */,
 			);
-		} else {
-			this.notificationsCenterStatusItem.update(statusProperties);
 		}
 	}
 
@@ -175,7 +175,7 @@ export class NotificationsStatus extends Disposable {
 					comment: ["{0} will be replaced by a number"],
 				},
 				"{0} New Notifications",
-				this.newNotificationsCount
+				this.newNotificationsCount,
 			);
 		}
 
@@ -186,7 +186,7 @@ export class NotificationsStatus extends Disposable {
 					comment: ["{0} will be replaced by a number"],
 				},
 				"No New Notifications ({0} in progress)",
-				notificationsInProgress
+				notificationsInProgress,
 			);
 		}
 
@@ -197,7 +197,7 @@ export class NotificationsStatus extends Disposable {
 					comment: ["{0} will be replaced by a number"],
 				},
 				"1 New Notification ({0} in progress)",
-				notificationsInProgress
+				notificationsInProgress,
 			);
 		}
 
@@ -208,7 +208,7 @@ export class NotificationsStatus extends Disposable {
 			},
 			"{0} New Notifications ({1} in progress)",
 			this.newNotificationsCount,
-			notificationsInProgress
+			notificationsInProgress,
 		);
 	}
 
@@ -284,7 +284,7 @@ export class NotificationsStatus extends Disposable {
 				},
 				"status.message",
 				StatusbarAlignment.LEFT,
-				-Number.MAX_VALUE /* far right on left hand side */
+				-Number.MAX_VALUE /* far right on left hand side */,
 			);
 			showHandle = null;
 		}, showAfter);
@@ -308,7 +308,7 @@ export class NotificationsStatus extends Disposable {
 		if (hideAfter > 0) {
 			hideHandle = setTimeout(
 				() => statusMessageDispose.dispose(),
-				hideAfter
+				hideAfter,
 			);
 		}
 

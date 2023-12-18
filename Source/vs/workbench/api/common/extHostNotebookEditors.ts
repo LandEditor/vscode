@@ -32,23 +32,23 @@ export class ExtHostNotebookEditors implements ExtHostNotebookEditorsShape {
 
 	$acceptEditorPropertiesChanged(
 		id: string,
-		data: INotebookEditorPropertiesChangeData
+		data: INotebookEditorPropertiesChangeData,
 	): void {
 		this._logService.debug(
 			"ExtHostNotebook#$acceptEditorPropertiesChanged",
 			id,
-			data
+			data,
 		);
 		const editor = this._notebooksAndEditors.getEditorById(id);
 		// ONE: make all state updates
 		if (data.visibleRanges) {
 			editor._acceptVisibleRanges(
-				data.visibleRanges.ranges.map(typeConverters.NotebookRange.to)
+				data.visibleRanges.ranges.map(typeConverters.NotebookRange.to),
 			);
 		}
 		if (data.selections) {
 			editor._acceptSelections(
-				data.selections.selections.map(typeConverters.NotebookRange.to)
+				data.selections.selections.map(typeConverters.NotebookRange.to),
 			);
 		}
 
@@ -64,7 +64,7 @@ export class ExtHostNotebookEditors implements ExtHostNotebookEditorsShape {
 				Object.freeze({
 					notebookEditor: editor.apiEditor,
 					selections: editor.apiEditor.selections,
-				})
+				}),
 			);
 		}
 	}

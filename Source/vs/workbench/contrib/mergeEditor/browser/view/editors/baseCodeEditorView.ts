@@ -38,20 +38,20 @@ export class BaseCodeEditorView extends CodeEditorView {
 	constructor(
 		viewModel: IObservable<MergeEditorViewModel | undefined>,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IConfigurationService configurationService: IConfigurationService
+		@IConfigurationService configurationService: IConfigurationService,
 	) {
 		super(instantiationService, viewModel, configurationService);
 
 		this._register(
-			createSelectionsAutorun(this, (baseRange, viewModel) => baseRange)
+			createSelectionsAutorun(this, (baseRange, viewModel) => baseRange),
 		);
 
 		this._register(
 			instantiationService.createInstance(
 				TitleMenu,
 				MenuId.MergeBaseToolbar,
-				this.htmlElements.title
-			)
+				this.htmlElements.title,
+			),
 		);
 
 		this._register(
@@ -65,16 +65,16 @@ export class BaseCodeEditorView extends CodeEditorView {
 							{
 								getIntersectingGutterItems: (
 									range,
-									reader
+									reader,
 								) => [],
 								createView: (item, target) => {
 									throw new BugIndicatingError();
 								},
-							}
-						)
+							},
+						),
 					);
 				}
-			})
+			}),
 		);
 
 		this._register(
@@ -87,7 +87,7 @@ export class BaseCodeEditorView extends CodeEditorView {
 				this.editor.setModel(vm.model.base);
 				reset(
 					this.htmlElements.title,
-					...renderLabelWithIcons(localize("base", "Base"))
+					...renderLabelWithIcons(localize("base", "Base")),
 				);
 
 				const baseShowDiffAgainst = vm.baseShowDiffAgainst.read(reader);
@@ -99,20 +99,20 @@ export class BaseCodeEditorView extends CodeEditorView {
 						"Comparing with {0}",
 						baseShowDiffAgainst === 1
 							? vm.model.input1.title
-							: vm.model.input2.title
+							: vm.model.input2.title,
 					);
 					const tooltip = localize(
 						"compareWithTooltip",
-						"Differences are highlighted with a background color."
+						"Differences are highlighted with a background color.",
 					);
 					node = h("span", { title: tooltip }, [label]).root;
 				}
 				reset(this.htmlElements.description, ...(node ? [node] : []));
-			})
+			}),
 		);
 
 		this._register(
-			applyObservableDecorations(this.editor, this.decorations)
+			applyObservableDecorations(this.editor, this.decorations),
 		);
 	}
 
@@ -167,7 +167,7 @@ export class BaseCodeEditorView extends CodeEditorView {
 
 			if (inputToDiffAgainst) {
 				for (const diff of modifiedBaseRange.getInputDiffs(
-					inputToDiffAgainst
+					inputToDiffAgainst,
 				)) {
 					const range = diff.inputRange.toInclusiveRange();
 					if (range) {
@@ -226,7 +226,7 @@ export class BaseCodeEditorView extends CodeEditorView {
 										? handledConflictMinimapOverViewRulerColor
 										: unhandledConflictMinimapOverViewRulerColor,
 								},
-							}
+						  }
 						: undefined,
 				},
 			});

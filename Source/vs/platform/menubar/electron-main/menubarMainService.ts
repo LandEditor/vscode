@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	createDecorator,
 	IInstantiationService,
+	createDecorator,
 } from "vs/platform/instantiation/common/instantiation";
 import {
 	ILifecycleMainService,
@@ -42,7 +42,7 @@ export class MenubarMainService implements IMenubarMainService {
 
 	private async installMenuBarAfterWindowOpen(): Promise<Menubar> {
 		await this.lifecycleMainService.when(
-			LifecycleMainPhase.AfterWindowOpen
+			LifecycleMainPhase.AfterWindowOpen,
 		);
 
 		return this.instantiationService.createInstance(Menubar);

@@ -84,7 +84,7 @@ export interface IpcRenderer {
 	 */
 	on(
 		channel: string,
-		listener: (event: IpcRendererEvent, ...args: any[]) => void
+		listener: (event: IpcRendererEvent, ...args: any[]) => void,
 	): this;
 	/**
 	 * Adds a one time `listener` function for the event. This `listener` is invoked
@@ -92,7 +92,7 @@ export interface IpcRenderer {
 	 */
 	once(
 		channel: string,
-		listener: (event: IpcRendererEvent, ...args: any[]) => void
+		listener: (event: IpcRendererEvent, ...args: any[]) => void,
 	): this;
 	/**
 	 * Removes the specified `listener` from the listener array for the specified

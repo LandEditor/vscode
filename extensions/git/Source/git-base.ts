@@ -13,10 +13,10 @@ export class GitBaseApi {
 		if (!this._gitBaseApi) {
 			const gitBaseExtension =
 				extensions.getExtension<GitBaseExtension>(
-					"vscode.git-base"
+					"vscode.git-base",
 				)!.exports;
 			const onDidChangeGitBaseExtensionEnablement = (
-				enabled: boolean
+				enabled: boolean,
 			) => {
 				this._gitBaseApi = enabled
 					? gitBaseExtension.getAPI(1)
@@ -24,7 +24,7 @@ export class GitBaseApi {
 			};
 
 			gitBaseExtension.onDidChangeEnablement(
-				onDidChangeGitBaseExtensionEnablement
+				onDidChangeGitBaseExtensionEnablement,
 			);
 			onDidChangeGitBaseExtensionEnablement(gitBaseExtension.enabled);
 

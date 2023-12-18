@@ -39,7 +39,7 @@ export interface IWindowDriver {
 	getElementXY(
 		selector: string,
 		xoffset?: number,
-		yoffset?: number
+		yoffset?: number,
 	): Promise<{ x: number; y: number }>;
 	typeInEditor(selector: string, text: string): Promise<void>;
 	getTerminalBuffer(selector: string): Promise<string[]>;

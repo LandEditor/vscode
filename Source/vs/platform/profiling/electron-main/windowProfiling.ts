@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { ProfileResult } from "v8-inspect-profiler";
 import { BrowserWindow } from "electron";
+import type { ProfileResult } from "v8-inspect-profiler";
 import { timeout } from "vs/base/common/async";
 import { ILogService } from "vs/platform/log/common/log";
 import { IV8Profile } from "vs/platform/profiling/common/profiling";

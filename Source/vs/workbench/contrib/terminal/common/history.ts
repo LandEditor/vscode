@@ -3,9 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { env } from "vs/base/common/process";
 import { Disposable } from "vs/base/common/lifecycle";
 import { LRUCache } from "vs/base/common/map";
+import { Schemas } from "vs/base/common/network";
+import { posix, win32 } from "vs/base/common/path";
+import { OperatingSystem, isWindows } from "vs/base/common/platform";
+import { env } from "vs/base/common/process";
+import { URI } from "vs/base/common/uri";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
 	FileOperationError,
@@ -27,11 +31,7 @@ import {
 	TerminalSettingId,
 	TerminalShellType,
 } from "vs/platform/terminal/common/terminal";
-import { URI } from "vs/base/common/uri";
 import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteAgentService";
-import { Schemas } from "vs/base/common/network";
-import { isWindows, OperatingSystem } from "vs/base/common/platform";
-import { posix, win32 } from "vs/base/common/path";
 
 /**
  * Tracks a list of generic entries.
@@ -59,11 +59,11 @@ interface ISerializedCache<T> {
 	entries: { key: string; value: T }[];
 }
 
-const enum Constants {
+enum Constants {
 	DefaultHistoryLimit = 100,
 }
 
-const enum StorageKeys {
+enum StorageKeys {
 	Entries = "terminal.history.entries",
 	Timestamp = "terminal.history.timestamp",
 }
@@ -72,14 +72,14 @@ let commandHistory:
 	| ITerminalPersistedHistory<{ shellType: TerminalShellType }>
 	| undefined = undefined;
 export function getCommandHistory(
-	accessor: ServicesAccessor
+	accessor: ServicesAccessor,
 ): ITerminalPersistedHistory<{ shellType: TerminalShellType | undefined }> {
 	if (!commandHistory) {
 		commandHistory = accessor
 			.get(IInstantiationService)
 			.createInstance(
 				TerminalPersistedHistory,
-				"commands"
+				"commands",
 			) as TerminalPersistedHistory<{ shellType: TerminalShellType }>;
 	}
 	return commandHistory;
@@ -89,14 +89,14 @@ let directoryHistory:
 	| ITerminalPersistedHistory<{ remoteAuthority?: string }>
 	| undefined = undefined;
 export function getDirectoryHistory(
-	accessor: ServicesAccessor
+	accessor: ServicesAccessor,
 ): ITerminalPersistedHistory<{ remoteAuthority?: string }> {
 	if (!directoryHistory) {
 		directoryHistory = accessor
 			.get(IInstantiationService)
 			.createInstance(
 				TerminalPersistedHistory,
-				"dirs"
+				"dirs",
 			) as TerminalPersistedHistory<{ remoteAuthority?: string }>;
 	}
 	return directoryHistory;
@@ -107,7 +107,7 @@ const shellFileHistory: Map<TerminalShellType | undefined, string[] | null> =
 	new Map();
 export async function getShellFileHistory(
 	accessor: ServicesAccessor,
-	shellType: TerminalShellType | undefined
+	shellType: TerminalShellType | undefined,
 ): Promise<string[]> {
 	const cached = shellFileHistory.get(shellType);
 	if (cached === null) {
@@ -150,7 +150,7 @@ export class TerminalPersistedHistory<T>
 	implements ITerminalPersistedHistory<T>
 {
 	private readonly _entries: LRUCache<string, T>;
-	private _timestamp: number = 0;
+	private _timestamp = 0;
 	private _isReady = false;
 	private _isStale = true;
 
@@ -241,7 +241,7 @@ export class TerminalPersistedHistory<T>
 		this._timestamp = this._storageService.getNumber(
 			this._getTimestampStorageKey(),
 			StorageScope.APPLICATION,
-			0
+			0,
 		);
 
 		// Load global entries plus
@@ -256,7 +256,7 @@ export class TerminalPersistedHistory<T>
 	private _loadPersistedState(): ISerializedCache<T> | undefined {
 		const raw = this._storageService.get(
 			this._getEntriesStorageKey(),
-			StorageScope.APPLICATION
+			StorageScope.APPLICATION,
 		);
 		if (raw === undefined || raw.length === 0) {
 			return undefined;
@@ -274,26 +274,26 @@ export class TerminalPersistedHistory<T>
 	private _saveState() {
 		const serialized: ISerializedCache<T> = { entries: [] };
 		this._entries.forEach((value, key) =>
-			serialized.entries.push({ key, value })
+			serialized.entries.push({ key, value }),
 		);
 		this._storageService.store(
 			this._getEntriesStorageKey(),
 			JSON.stringify(serialized),
 			StorageScope.APPLICATION,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 		this._timestamp = Date.now();
 		this._storageService.store(
 			this._getTimestampStorageKey(),
 			this._timestamp,
 			StorageScope.APPLICATION,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 	}
 
 	private _getHistoryLimit() {
 		const historyLimit = this._configurationService.getValue(
-			TerminalSettingId.ShellIntegrationCommandHistory
+			TerminalSettingId.ShellIntegrationCommandHistory,
 		);
 		return typeof historyLimit === "number"
 			? historyLimit
@@ -310,7 +310,7 @@ export class TerminalPersistedHistory<T>
 }
 
 export async function fetchBashHistory(
-	accessor: ServicesAccessor
+	accessor: ServicesAccessor,
 ): Promise<IterableIterator<string> | undefined> {
 	const fileService = accessor.get(IFileService);
 	const remoteAgentService = accessor.get(IRemoteAgentService);
@@ -326,7 +326,7 @@ export async function fetchBashHistory(
 		".bash_history",
 		false,
 		fileService,
-		remoteAgentService
+		remoteAgentService,
 	);
 	if (content === undefined) {
 		return undefined;
@@ -350,10 +350,8 @@ export async function fetchBashHistory(
 				if (currentLine[c] === wrapChar) {
 					wrapChar = undefined;
 				}
-			} else {
-				if (currentLine[c].match(/['"]/)) {
-					wrapChar = currentLine[c];
-				}
+			} else if (currentLine[c].match(/['"]/)) {
+				wrapChar = currentLine[c];
 			}
 		}
 		if (wrapChar === undefined) {
@@ -382,7 +380,7 @@ export async function fetchZshHistory(accessor: ServicesAccessor) {
 		".zsh_history",
 		false,
 		fileService,
-		remoteAgentService
+		remoteAgentService,
 	);
 	if (content === undefined) {
 		return undefined;
@@ -424,7 +422,7 @@ export async function fetchPwshHistory(accessor: ServicesAccessor) {
 		filePath,
 		isFileWindows,
 		fileService,
-		remoteAgentService
+		remoteAgentService,
 	);
 	if (content === undefined) {
 		return undefined;
@@ -456,24 +454,22 @@ export async function fetchPwshHistory(accessor: ServicesAccessor) {
 				if (currentLine[c] === wrapChar) {
 					wrapChar = undefined;
 				}
-			} else {
-				if (currentLine[c].match(/`/)) {
-					wrapChar = currentLine[c];
-				}
+			} else if (currentLine[c].match(/`/)) {
+				wrapChar = currentLine[c];
 			}
 		}
 		// Having an even number of backticks means the line is terminated
 		// TODO: This doesn't cover more complicated cases where ` is within quotes
-		if (!wrapChar) {
+		if (wrapChar) {
+			// Remove trailing backtick
+			currentCommand = currentCommand.replace(/`$/, "");
+			wrapChar = undefined;
+		} else {
 			const sanitized = currentCommand.trim();
 			if (sanitized.length > 0) {
 				result.add(sanitized);
 			}
 			currentCommand = undefined;
-		} else {
-			// Remove trailing backtick
-			currentCommand = currentCommand.replace(/`$/, "");
-			wrapChar = undefined;
 		}
 	}
 
@@ -510,15 +506,15 @@ export async function fetchFishHistory(accessor: ServicesAccessor) {
 				"fish/fish_history",
 				false,
 				fileService,
-				remoteAgentService
-			)
+				remoteAgentService,
+		  )
 		: fetchFileContents(
 				env["HOME"],
 				".local/share/fish/fish_history",
 				false,
 				fileService,
-				remoteAgentService
-			));
+				remoteAgentService,
+		  ));
 	if (content === undefined) {
 		return undefined;
 	}
@@ -570,7 +566,7 @@ export function sanitizeFishHistoryCmd(cmd: string): string {
 function repeatedReplace(
 	pattern: RegExp,
 	value: string,
-	replaceValue: string
+	replaceValue: string,
 ): string {
 	let last;
 	let current = value;
@@ -588,7 +584,7 @@ async function fetchFileContents(
 	filePath: string,
 	isFileWindows: boolean,
 	fileService: Pick<IFileService, "readFile">,
-	remoteAgentService: Pick<IRemoteAgentService, "getConnection">
+	remoteAgentService: Pick<IRemoteAgentService, "getConnection">,
 ): Promise<string | undefined> {
 	if (!folderPrefix) {
 		return undefined;

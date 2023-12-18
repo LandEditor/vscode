@@ -4,40 +4,40 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Event } from "vs/base/common/event";
+import type * as performance from "vs/base/common/performance";
 import { IProcessEnvironment, OperatingSystem } from "vs/base/common/platform";
+import { ThemeIcon } from "vs/base/common/themables";
 import { URI, UriComponents } from "vs/base/common/uri";
+import { RawContextKey } from "vs/platform/contextkey/common/contextkey";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { ILogService } from "vs/platform/log/common/log";
+import { Registry } from "vs/platform/registry/common/platform";
 import {
 	IPtyHostProcessReplayEvent,
 	ISerializedCommandDetectionCapability,
 	ITerminalCapabilityStore,
 } from "vs/platform/terminal/common/capabilities/capabilities";
+import { ISerializableEnvironmentVariableCollections } from "vs/platform/terminal/common/environmentVariable";
 import {
 	IGetTerminalLayoutInfoArgs,
 	IProcessDetails,
 	ISetTerminalLayoutInfoArgs,
 } from "vs/platform/terminal/common/terminalProcess";
-import { ThemeIcon } from "vs/base/common/themables";
-import { ISerializableEnvironmentVariableCollections } from "vs/platform/terminal/common/environmentVariable";
-import { RawContextKey } from "vs/platform/contextkey/common/contextkey";
 import { IWorkspaceFolder } from "vs/platform/workspace/common/workspace";
-import { Registry } from "vs/platform/registry/common/platform";
-import type * as performance from "vs/base/common/performance";
-import { ILogService } from "vs/platform/log/common/log";
 
 export const terminalTabFocusModeContextKey = new RawContextKey<boolean>(
 	"terminalTabFocusMode",
 	false,
-	true
+	true,
 );
 
-export const enum TerminalSettingPrefix {
+export enum TerminalSettingPrefix {
 	AutomationProfile = "terminal.integrated.automationProfile.",
 	DefaultProfile = "terminal.integrated.defaultProfile.",
 	Profiles = "terminal.integrated.profiles.",
 }
 
-export const enum TerminalSettingId {
+export enum TerminalSettingId {
 	SendKeybindingsToShell = "terminal.integrated.sendKeybindingsToShell",
 	AutomationProfileLinux = "terminal.integrated.automationProfile.linux",
 	AutomationProfileMacOs = "terminal.integrated.automationProfile.osx",
@@ -144,7 +144,7 @@ export const enum TerminalSettingId {
 	DevMode = "terminal.integrated.developer.devMode",
 }
 
-export const enum PosixShellType {
+export enum PosixShellType {
 	PowerShell = "pwsh",
 	Bash = "bash",
 	Fish = "fish",
@@ -153,7 +153,7 @@ export const enum PosixShellType {
 	Ksh = "ksh",
 	Zsh = "zsh",
 }
-export const enum WindowsShellType {
+export enum WindowsShellType {
 	CommandPrompt = "cmd",
 	PowerShell = "pwsh",
 	Wsl = "wsl",
@@ -214,13 +214,13 @@ export type TerminalType = "Task" | "Local" | undefined;
 
 export enum TitleEventSource {
 	/** From the API or the rename command that overrides any other type */
-	Api,
+	Api = 0,
 	/** From the process name property*/
-	Process,
+	Process = 1,
 	/** From the VT sequence */
-	Sequence,
+	Sequence = 2,
 	/** Config changed */
-	Config,
+	Config = 3,
 }
 
 export type ITerminalsLayoutInfo =
@@ -250,7 +250,7 @@ export enum TerminalIpcChannels {
 	Heartbeat = "heartbeat",
 }
 
-export const enum ProcessPropertyType {
+export enum ProcessPropertyType {
 	Cwd = "cwd",
 	InitialCwd = "initialCwd",
 	FixedDimensions = "fixedDimensions",
@@ -333,7 +333,7 @@ export interface IPtyService {
 		options: ITerminalProcessOptions,
 		shouldPersist: boolean,
 		workspaceId: string,
-		workspaceName: string
+		workspaceName: string,
 	): Promise<number>;
 	attachToProcess(id: number): Promise<void>;
 	detachFromProcess(id: number, forcePersist?: boolean): Promise<void>;
@@ -350,7 +350,7 @@ export interface IPtyService {
 	getLatency(): Promise<IPtyHostLatencyMeasurement[]>;
 
 	start(
-		id: number
+		id: number,
 	): Promise<ITerminalLaunchError | { injectedArgs: string[] } | undefined>;
 	shutdown(id: number, immediate: boolean): Promise<void>;
 	input(id: number, data: string): Promise<void>;
@@ -366,13 +366,13 @@ export interface IPtyService {
 	updateTitle(
 		id: number,
 		title: string,
-		titleSource: TitleEventSource
+		titleSource: TitleEventSource,
 	): Promise<void>;
 	updateIcon(
 		id: number,
 		userInitiated: boolean,
 		icon: TerminalIcon,
-		color?: string
+		color?: string,
 	): Promise<void>;
 
 	installAutoReply(match: string, reply: string): Promise<void>;
@@ -382,27 +382,27 @@ export interface IPtyService {
 	getEnvironment(): Promise<IProcessEnvironment>;
 	getWslPath(
 		original: string,
-		direction: "unix-to-win" | "win-to-unix"
+		direction: "unix-to-win" | "win-to-unix",
 	): Promise<string>;
 	getRevivedPtyNewId(
 		workspaceId: string,
-		id: number
+		id: number,
 	): Promise<number | undefined>;
 	setTerminalLayoutInfo(args: ISetTerminalLayoutInfoArgs): Promise<void>;
 	getTerminalLayoutInfo(
-		args: IGetTerminalLayoutInfoArgs
+		args: IGetTerminalLayoutInfoArgs,
 	): Promise<ITerminalsLayoutInfo | undefined>;
 	reduceConnectionGraceTime(): Promise<void>;
 	requestDetachInstance(
 		workspaceId: string,
-		instanceId: number
+		instanceId: number,
 	): Promise<IProcessDetails | undefined>;
 	acceptDetachInstanceReply(
 		requestId: number,
-		persistentProcessId?: number
+		persistentProcessId?: number,
 	): Promise<void>;
 	freePortKillProcess(
-		port: string
+		port: string,
 	): Promise<{ port: string; processId: string }>;
 	/**
 	 * Serializes and returns terminal state.
@@ -416,16 +416,16 @@ export interface IPtyService {
 	reviveTerminalProcesses(
 		workspaceId: string,
 		state: ISerializedTerminalState[],
-		dateTimeFormatLocate: string
+		dateTimeFormatLocate: string,
 	): Promise<void>;
 	refreshProperty<T extends ProcessPropertyType>(
 		id: number,
-		property: T
+		property: T,
 	): Promise<IProcessPropertyMap[T]>;
 	updateProperty<T extends ProcessPropertyType>(
 		id: number,
 		property: T,
-		value: IProcessPropertyMap[T]
+		value: IProcessPropertyMap[T],
 	): Promise<void>;
 
 	// TODO: Make mandatory and remove impl from pty host service
@@ -443,13 +443,13 @@ export interface IPtyHostController {
 	restartPtyHost(): Promise<void>;
 	acceptPtyHostResolvedVariables(
 		requestId: number,
-		resolved: string[]
+		resolved: string[],
 	): Promise<void>;
 	getProfiles(
 		workspaceId: string,
 		profiles: unknown,
 		defaultProfile: unknown,
-		includeDetectedProfiles?: boolean
+		includeDetectedProfiles?: boolean,
 	): Promise<ITerminalProfile[]>;
 }
 
@@ -592,7 +592,7 @@ export interface IShellLaunchConfig {
 	customPtyImplementation?: (
 		terminalId: number,
 		cols: number,
-		rows: number
+		rows: number,
 	) => ITerminalChildProcess;
 
 	/**
@@ -711,7 +711,7 @@ export enum TerminalLocation {
 	Editor = 2,
 }
 
-export const enum TerminalLocationString {
+export enum TerminalLocationString {
 	TerminalView = "view",
 	Editor = "editor",
 }
@@ -818,7 +818,7 @@ export interface ITerminalChildProcess {
 	 * Frees the port and kills the process
 	 */
 	freePortKillProcess?(
-		port: string
+		port: string,
 	): Promise<{ port: string; processId: string }>;
 
 	/**
@@ -850,11 +850,11 @@ export interface ITerminalChildProcess {
 	getInitialCwd(): Promise<string>;
 	getCwd(): Promise<string>;
 	refreshProperty<T extends ProcessPropertyType>(
-		property: T
+		property: T,
 	): Promise<IProcessPropertyMap[T]>;
 	updateProperty<T extends ProcessPropertyType>(
 		property: T,
-		value: IProcessPropertyMap[T]
+		value: IProcessPropertyMap[T],
 	): Promise<void>;
 }
 
@@ -864,7 +864,7 @@ export interface IReconnectConstants {
 	scrollback: number;
 }
 
-export const enum LocalReconnectConstants {
+export enum LocalReconnectConstants {
 	/**
 	 * If there is no reconnection within this time-frame, consider the connection permanently closed...
 	 */
@@ -875,7 +875,7 @@ export const enum LocalReconnectConstants {
 	ShortGraceTime = 6000, // 6 seconds
 }
 
-export const enum FlowControlConstants {
+export enum FlowControlConstants {
 	/**
 	 * The number of _unacknowledged_ chars to have been sent before the pty is paused in order for
 	 * the client to catch up.
@@ -955,7 +955,7 @@ export interface ITerminalDimensionsOverride
 	forceExactSize?: boolean;
 }
 
-export const enum ProfileSource {
+export enum ProfileSource {
 	GitBash = "Git Bash",
 	Pwsh = "PowerShell",
 }
@@ -1016,13 +1016,13 @@ export interface ITerminalContributions {
 	profiles?: ITerminalProfileContribution[];
 }
 
-export const enum ShellIntegrationStatus {
+export enum ShellIntegrationStatus {
 	/** No shell integration sequences have been encountered. */
-	Off,
+	Off = 0,
 	/** Final term shell integration sequences have been encountered. */
-	FinalTerm,
+	FinalTerm = 1,
 	/** VS Code shell integration sequences have been encountered. Supercedes FinalTerm. */
-	VSCode,
+	VSCode = 2,
 }
 
 export enum TerminalExitReason {
@@ -1116,7 +1116,7 @@ export interface ITerminalBackend {
 
 	attachToProcess(id: number): Promise<ITerminalChildProcess | undefined>;
 	attachToRevivedProcess(
-		id: number
+		id: number,
 	): Promise<ITerminalChildProcess | undefined>;
 	listProcesses(): Promise<IProcessDetails[]>;
 	getLatency(): Promise<IPtyHostLatencyMeasurement[]>;
@@ -1124,11 +1124,11 @@ export interface ITerminalBackend {
 	getProfiles(
 		profiles: unknown,
 		defaultProfile: unknown,
-		includeDetectedProfiles?: boolean
+		includeDetectedProfiles?: boolean,
 	): Promise<ITerminalProfile[]>;
 	getWslPath(
 		original: string,
-		direction: "unix-to-win" | "win-to-unix"
+		direction: "unix-to-win" | "win-to-unix",
 	): Promise<string>;
 	getEnvironment(): Promise<IProcessEnvironment>;
 	getShellEnvironment(): Promise<IProcessEnvironment | undefined>;
@@ -1136,24 +1136,24 @@ export interface ITerminalBackend {
 	updateTitle(
 		id: number,
 		title: string,
-		titleSource: TitleEventSource
+		titleSource: TitleEventSource,
 	): Promise<void>;
 	updateIcon(
 		id: number,
 		userInitiated: boolean,
 		icon: TerminalIcon,
-		color?: string
+		color?: string,
 	): Promise<void>;
 	getTerminalLayoutInfo(): Promise<ITerminalsLayoutInfo | undefined>;
 	getPerformanceMarks(): Promise<performance.PerformanceMark[]>;
 	reduceConnectionGraceTime(): Promise<void>;
 	requestDetachInstance(
 		workspaceId: string,
-		instanceId: number
+		instanceId: number,
 	): Promise<IProcessDetails | undefined>;
 	acceptDetachInstanceReply(
 		requestId: number,
-		persistentProcessId?: number
+		persistentProcessId?: number,
 	): Promise<void>;
 	persistTerminalState(): Promise<void>;
 
@@ -1165,7 +1165,7 @@ export interface ITerminalBackend {
 		unicodeVersion: "6" | "11",
 		env: IProcessEnvironment,
 		options: ITerminalProcessOptions,
-		shouldPersist: boolean
+		shouldPersist: boolean,
 	): Promise<ITerminalChildProcess>;
 
 	restartPtyHost(): void;
@@ -1203,17 +1203,17 @@ class TerminalBackendRegistry implements ITerminalBackendRegistry {
 		const key = this._sanitizeRemoteAuthority(backend.remoteAuthority);
 		if (this._backends.has(key)) {
 			throw new Error(
-				`A terminal backend with remote authority '${key}' was already registered.`
+				`A terminal backend with remote authority '${key}' was already registered.`,
 			);
 		}
 		this._backends.set(key, backend);
 	}
 
 	getTerminalBackend(
-		remoteAuthority: string | undefined
+		remoteAuthority: string | undefined,
 	): ITerminalBackend | undefined {
 		return this._backends.get(
-			this._sanitizeRemoteAuthority(remoteAuthority)
+			this._sanitizeRemoteAuthority(remoteAuthority),
 		);
 	}
 
@@ -1232,7 +1232,7 @@ export const ILocalPtyService =
  *
  * **This service should only be used within the terminal component.**
  */
-export interface ILocalPtyService extends IPtyHostService {}
+export type ILocalPtyService = IPtyHostService;
 
 export const ITerminalLogService =
 	createDecorator<ITerminalLogService>("terminalLogService");

@@ -11,9 +11,7 @@ import {
 /**
  * A feature that will be loaded when the first code editor is constructed and disposed when the system shuts down.
  */
-export interface IEditorFeature {
-	// Marker Interface
-}
+export type IEditorFeature = {};
 
 export type EditorFeatureCtor = IConstructorSignature<IEditorFeature>;
 

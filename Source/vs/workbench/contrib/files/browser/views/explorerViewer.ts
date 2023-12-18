@@ -3,151 +3,151 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IListAccessibilityProvider } from "vs/base/browser/ui/list/listWidget";
+import { DataTransfers, IDragAndDropData } from "vs/base/browser/dnd";
 import * as DOM from "vs/base/browser/dom";
-import * as glob from "vs/base/common/glob";
-import {
-	IListVirtualDelegate,
-	ListDragOverEffect,
-} from "vs/base/browser/ui/list/list";
-import {
-	IProgressService,
-	ProgressLocation,
-} from "vs/platform/progress/common/progress";
-import {
-	INotificationService,
-	Severity,
-} from "vs/platform/notification/common/notification";
-import {
-	IFileService,
-	FileKind,
-	FileOperationError,
-	FileOperationResult,
-	FileChangeType,
-} from "vs/platform/files/common/files";
-import { IWorkbenchLayoutService } from "vs/workbench/services/layout/browser/layoutService";
-import {
-	isTemporaryWorkspace,
-	IWorkspaceContextService,
-	WorkbenchState,
-} from "vs/platform/workspace/common/workspace";
-import {
-	IDisposable,
-	Disposable,
-	dispose,
-	toDisposable,
-	DisposableStore,
-} from "vs/base/common/lifecycle";
-import { KeyCode } from "vs/base/common/keyCodes";
-import {
-	IFileLabelOptions,
-	IResourceLabel,
-	ResourceLabels,
-} from "vs/workbench/browser/labels";
-import {
-	ITreeNode,
-	ITreeFilter,
-	TreeVisibility,
-	IAsyncDataSource,
-	ITreeSorter,
-	ITreeDragAndDrop,
-	ITreeDragOverReaction,
-	TreeDragOverBubble,
-} from "vs/base/browser/ui/tree/tree";
-import {
-	IContextMenuService,
-	IContextViewService,
-} from "vs/platform/contextview/browser/contextView";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import {
-	IConfigurationChangeEvent,
-	IConfigurationService,
-} from "vs/platform/configuration/common/configuration";
-import {
-	IFilesConfiguration,
-	UndoConfirmLevel,
-} from "vs/workbench/contrib/files/common/files";
-import { dirname, joinPath, distinctParents } from "vs/base/common/resources";
-import { InputBox, MessageType } from "vs/base/browser/ui/inputbox/inputBox";
-import { localize } from "vs/nls";
-import { createSingleCallFunction } from "vs/base/common/functional";
 import { IKeyboardEvent } from "vs/base/browser/keyboardEvent";
-import { equals, deepClone } from "vs/base/common/objects";
-import * as path from "vs/base/common/path";
-import {
-	ExplorerItem,
-	NewExplorerItem,
-} from "vs/workbench/contrib/files/common/explorerModel";
-import {
-	compareFileExtensionsDefault,
-	compareFileNamesDefault,
-	compareFileNamesUpper,
-	compareFileExtensionsUpper,
-	compareFileNamesLower,
-	compareFileExtensionsLower,
-	compareFileNamesUnicode,
-	compareFileExtensionsUnicode,
-} from "vs/base/common/comparers";
-import {
-	CodeDataTransfers,
-	containsDragType,
-} from "vs/platform/dnd/browser/dnd";
-import { fillEditorsDragData } from "vs/workbench/browser/dnd";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IDragAndDropData, DataTransfers } from "vs/base/browser/dnd";
-import { Schemas } from "vs/base/common/network";
-import {
-	NativeDragAndDropData,
-	ExternalElementsDragAndDropData,
-	ElementsDragAndDropData,
-} from "vs/base/browser/ui/list/listView";
-import { isMacintosh, isWeb } from "vs/base/common/platform";
-import {
-	IDialogService,
-	getFileNamesMessage,
-} from "vs/platform/dialogs/common/dialogs";
-import { IWorkspaceEditingService } from "vs/workbench/services/workspaces/common/workspaceEditing";
-import { URI } from "vs/base/common/uri";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { IWorkspaceFolderCreationData } from "vs/platform/workspaces/common/workspaces";
-import { findValidPasteFileTarget } from "vs/workbench/contrib/files/browser/fileActions";
-import { FuzzyScore, createMatches } from "vs/base/common/filters";
-import { Emitter, Event, EventMultiplexer } from "vs/base/common/event";
-import { ITreeCompressionDelegate } from "vs/base/browser/ui/tree/asyncDataTree";
-import { ICompressibleTreeRenderer } from "vs/base/browser/ui/tree/objectTree";
-import { ICompressedTreeNode } from "vs/base/browser/ui/tree/compressedObjectTreeModel";
-import { ILabelService } from "vs/platform/label/common/label";
-import { isNumber, isStringArray } from "vs/base/common/types";
-import { IEditableData } from "vs/workbench/common/views";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import { ResourceFileEdit } from "vs/editor/browser/services/bulkEditService";
-import { IExplorerService } from "vs/workbench/contrib/files/browser/files";
-import {
-	BrowserFileUpload,
-	ExternalFileImport,
-	getMultipleFilesOverwriteConfirm,
-} from "vs/workbench/contrib/files/browser/fileImportExport";
-import { toErrorMessage } from "vs/base/common/errorMessage";
-import { WebFileSystemAccess } from "vs/platform/files/browser/webFileSystemAccess";
-import { IgnoreFile } from "vs/workbench/services/search/common/ignoreFile";
-import { ResourceSet } from "vs/base/common/map";
-import { TernarySearchTree } from "vs/base/common/ternarySearchTree";
-import { defaultInputBoxStyles } from "vs/platform/theme/browser/defaultStyles";
-import { timeout } from "vs/base/common/async";
+import { HoverPosition } from "vs/base/browser/ui/hover/hoverWidget";
 import {
 	IHoverDelegate,
 	IHoverDelegateOptions,
 	IHoverWidget,
 } from "vs/base/browser/ui/iconLabel/iconHoverDelegate";
-import { IHoverService } from "vs/workbench/services/hover/browser/hover";
-import { HoverPosition } from "vs/base/browser/ui/hover/hoverWidget";
-import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
+import { InputBox, MessageType } from "vs/base/browser/ui/inputbox/inputBox";
+import {
+	IListVirtualDelegate,
+	ListDragOverEffect,
+} from "vs/base/browser/ui/list/list";
+import {
+	ElementsDragAndDropData,
+	ExternalElementsDragAndDropData,
+	NativeDragAndDropData,
+} from "vs/base/browser/ui/list/listView";
+import { IListAccessibilityProvider } from "vs/base/browser/ui/list/listWidget";
+import { ITreeCompressionDelegate } from "vs/base/browser/ui/tree/asyncDataTree";
+import { ICompressedTreeNode } from "vs/base/browser/ui/tree/compressedObjectTreeModel";
+import { ICompressibleTreeRenderer } from "vs/base/browser/ui/tree/objectTree";
+import {
+	IAsyncDataSource,
+	ITreeDragAndDrop,
+	ITreeDragOverReaction,
+	ITreeFilter,
+	ITreeNode,
+	ITreeSorter,
+	TreeDragOverBubble,
+	TreeVisibility,
+} from "vs/base/browser/ui/tree/tree";
 import { mainWindow } from "vs/base/browser/window";
+import { timeout } from "vs/base/common/async";
+import {
+	compareFileExtensionsDefault,
+	compareFileExtensionsLower,
+	compareFileExtensionsUnicode,
+	compareFileExtensionsUpper,
+	compareFileNamesDefault,
+	compareFileNamesLower,
+	compareFileNamesUnicode,
+	compareFileNamesUpper,
+} from "vs/base/common/comparers";
+import { toErrorMessage } from "vs/base/common/errorMessage";
+import { Emitter, Event, EventMultiplexer } from "vs/base/common/event";
+import { FuzzyScore, createMatches } from "vs/base/common/filters";
+import { createSingleCallFunction } from "vs/base/common/functional";
+import * as glob from "vs/base/common/glob";
+import { KeyCode } from "vs/base/common/keyCodes";
+import {
+	Disposable,
+	DisposableStore,
+	IDisposable,
+	dispose,
+	toDisposable,
+} from "vs/base/common/lifecycle";
+import { ResourceSet } from "vs/base/common/map";
+import { Schemas } from "vs/base/common/network";
+import { deepClone, equals } from "vs/base/common/objects";
+import * as path from "vs/base/common/path";
+import { isMacintosh, isWeb } from "vs/base/common/platform";
+import { dirname, distinctParents, joinPath } from "vs/base/common/resources";
+import { TernarySearchTree } from "vs/base/common/ternarySearchTree";
+import { isNumber, isStringArray } from "vs/base/common/types";
+import { URI } from "vs/base/common/uri";
+import { ResourceFileEdit } from "vs/editor/browser/services/bulkEditService";
+import { localize } from "vs/nls";
+import {
+	IConfigurationChangeEvent,
+	IConfigurationService,
+} from "vs/platform/configuration/common/configuration";
+import {
+	IContextMenuService,
+	IContextViewService,
+} from "vs/platform/contextview/browser/contextView";
+import {
+	IDialogService,
+	getFileNamesMessage,
+} from "vs/platform/dialogs/common/dialogs";
+import {
+	CodeDataTransfers,
+	containsDragType,
+} from "vs/platform/dnd/browser/dnd";
+import { WebFileSystemAccess } from "vs/platform/files/browser/webFileSystemAccess";
+import {
+	FileChangeType,
+	FileKind,
+	FileOperationError,
+	FileOperationResult,
+	IFileService,
+} from "vs/platform/files/common/files";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { ILabelService } from "vs/platform/label/common/label";
+import {
+	INotificationService,
+	Severity,
+} from "vs/platform/notification/common/notification";
+import {
+	IProgressService,
+	ProgressLocation,
+} from "vs/platform/progress/common/progress";
+import { defaultInputBoxStyles } from "vs/platform/theme/browser/defaultStyles";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import {
+	IWorkspaceContextService,
+	WorkbenchState,
+	isTemporaryWorkspace,
+} from "vs/platform/workspace/common/workspace";
+import { IWorkspaceFolderCreationData } from "vs/platform/workspaces/common/workspaces";
+import { fillEditorsDragData } from "vs/workbench/browser/dnd";
+import {
+	IFileLabelOptions,
+	IResourceLabel,
+	ResourceLabels,
+} from "vs/workbench/browser/labels";
+import { EditorInput } from "vs/workbench/common/editor/editorInput";
+import { IEditableData } from "vs/workbench/common/views";
 import {
 	IExplorerFileContribution,
 	explorerFileContribRegistry,
 } from "vs/workbench/contrib/files/browser/explorerFileContrib";
+import { findValidPasteFileTarget } from "vs/workbench/contrib/files/browser/fileActions";
+import {
+	BrowserFileUpload,
+	ExternalFileImport,
+	getMultipleFilesOverwriteConfirm,
+} from "vs/workbench/contrib/files/browser/fileImportExport";
+import { IExplorerService } from "vs/workbench/contrib/files/browser/files";
+import {
+	ExplorerItem,
+	NewExplorerItem,
+} from "vs/workbench/contrib/files/common/explorerModel";
+import {
+	IFilesConfiguration,
+	UndoConfirmLevel,
+} from "vs/workbench/contrib/files/common/files";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
+import { IHoverService } from "vs/workbench/services/hover/browser/hover";
+import { IWorkbenchLayoutService } from "vs/workbench/services/layout/browser/layoutService";
+import { IgnoreFile } from "vs/workbench/services/search/common/ignoreFile";
+import { IWorkspaceEditingService } from "vs/workbench/services/workspaces/common/workspaceEditing";
 
 export class ExplorerDelegate implements IListVirtualDelegate<ExplorerItem> {
 	static readonly ITEM_HEIGHT = 22;
@@ -187,13 +187,13 @@ export class ExplorerDataSource
 		return (
 			Array.isArray(element) ||
 			element.hasChildren((stat) =>
-				this.fileFilter.filter(stat, TreeVisibility.Visible)
+				this.fileFilter.filter(stat, TreeVisibility.Visible),
 			)
 		);
 	}
 
 	getChildren(
-		element: ExplorerItem | ExplorerItem[]
+		element: ExplorerItem | ExplorerItem[],
 	): ExplorerItem[] | Promise<ExplorerItem[]> {
 		if (Array.isArray(element)) {
 			return element;
@@ -235,7 +235,7 @@ export class ExplorerDataSource
 							this.filesConfigService,
 							undefined,
 							undefined,
-							false
+							false,
 						);
 						placeholder.error = e;
 						return [placeholder];
@@ -248,7 +248,7 @@ export class ExplorerDataSource
 				}
 
 				return []; // we could not resolve any children because of an error
-			}
+			},
 		);
 
 		this.progressService.withProgress(
@@ -256,7 +256,7 @@ export class ExplorerDataSource
 				location: ProgressLocation.Explorer,
 				delay: this.layoutService.isRestored() ? 800 : 1500, // reduce progress visibility when still restoring
 			},
-			(_progress) => promise
+			(_progress) => promise,
 		);
 
 		return promise;
@@ -312,19 +312,19 @@ export class CompressedNavigationController
 		readonly items: ExplorerItem[],
 		templateData: IFileTemplateData,
 		private depth: number,
-		private collapsed: boolean
+		private collapsed: boolean,
 	) {
 		this._index = items.length - 1;
 
 		this.updateLabels(templateData);
 		this._updateLabelDisposable = templateData.label.onDidRender(() =>
-			this.updateLabels(templateData)
+			this.updateLabels(templateData),
 		);
 	}
 
 	private updateLabels(templateData: IFileTemplateData): void {
 		this._labels = Array.from(
-			templateData.container.querySelectorAll(".label-name")
+			templateData.container.querySelectorAll(".label-name"),
 		) as HTMLElement[];
 		let parents = "";
 		for (let i = 0; i < this.labels.length; i++) {
@@ -393,7 +393,7 @@ export class CompressedNavigationController
 		for (let i = 0; i < this.labels.length; i++) {
 			this.labels[i].setAttribute(
 				"aria-expanded",
-				collapsed ? "false" : "true"
+				collapsed ? "false" : "true",
 			);
 		}
 	}
@@ -444,18 +444,18 @@ export class FilesRenderer
 			}
 
 			return this.configurationService.getValue<number>(
-				"workbench.hover.delay"
+				"workbench.hover.delay",
 			);
 		}
 
 		constructor(
 			private readonly configurationService: IConfigurationService,
-			private readonly hoverService: IHoverService
+			private readonly hoverService: IHoverService,
 		) {}
 
 		showHover(
 			options: IHoverDelegateOptions,
-			focus?: boolean
+			focus?: boolean,
 		): IHoverWidget | undefined {
 			let element: HTMLElement;
 			if (options.target instanceof HTMLElement) {
@@ -472,10 +472,10 @@ export class FilesRenderer
 				| undefined;
 
 			const child = element.querySelector(
-				"div.monaco-icon-label-container"
+				"div.monaco-icon-label-container",
 			) as Element | undefined;
 			const childOfChild = child?.querySelector(
-				"span.monaco-icon-name-container"
+				"span.monaco-icon-name-container",
 			) as HTMLElement | undefined;
 			let overflowed = false;
 			if (childOfChild && child) {
@@ -491,7 +491,7 @@ export class FilesRenderer
 			overflowed = overflowed || hasDecoration;
 
 			const indentGuideElement = tlRow?.querySelector(
-				".monaco-tl-indent"
+				".monaco-tl-indent",
 			) as HTMLElement | undefined;
 			if (!indentGuideElement) {
 				return;
@@ -513,8 +513,8 @@ export class FilesRenderer
 								showPointer: false,
 							},
 						},
-						focus
-					)
+						focus,
+				  )
 				: undefined;
 		}
 
@@ -582,7 +582,7 @@ export class FilesRenderer
 	renderTemplate(container: HTMLElement): IFileTemplateData {
 		const templateDisposables = new DisposableStore();
 		const experimentalHover = this.configurationService.getValue<boolean>(
-			"explorer.experimental.hover"
+			"explorer.experimental.hover",
 		);
 		const label = templateDisposables.add(
 			this.labels.create(container, {
@@ -590,7 +590,7 @@ export class FilesRenderer
 				hoverDelegate: experimentalHover
 					? this.hoverDelegate
 					: undefined,
-			})
+			}),
 		);
 		templateDisposables.add(
 			label.onDidRender(() => {
@@ -601,13 +601,13 @@ export class FilesRenderer
 				} catch (e) {
 					// noop since the element might no longer be in the tree, no update of width necessary
 				}
-			})
+			}),
 		);
 
 		const contribs = explorerFileContribRegistry.create(
 			this.instantiationService,
 			container,
-			templateDisposables
+			templateDisposables,
 		);
 
 		const templateData: IFileTemplateData = {
@@ -623,7 +623,7 @@ export class FilesRenderer
 	renderElement(
 		node: ITreeNode<ExplorerItem, FuzzyScore>,
 		index: number,
-		templateData: IFileTemplateData
+		templateData: IFileTemplateData,
 	): void {
 		const stat = node.element;
 		templateData.currentContext = stat;
@@ -633,23 +633,20 @@ export class FilesRenderer
 		templateData.label.element.classList.remove("compressed");
 
 		// File Label
-		if (!editableData) {
+		if (editableData) {
+			templateData.label.element.style.display = "none";
+			templateData.contribs.forEach((c) => c.setResource(undefined));
+			templateData.elementDisposables.add(
+				this.renderInputBox(templateData.container, stat, editableData),
+			);
+		} else {
 			templateData.label.element.style.display = "flex";
 			this.renderStat(
 				stat,
 				stat.name,
 				undefined,
 				node.filterData,
-				templateData
-			);
-		}
-
-		// Input Box
-		else {
-			templateData.label.element.style.display = "none";
-			templateData.contribs.forEach((c) => c.setResource(undefined));
-			templateData.elementDisposables.add(
-				this.renderInputBox(templateData.container, stat, editableData)
+				templateData,
 			);
 		}
 	}
@@ -658,13 +655,13 @@ export class FilesRenderer
 		node: ITreeNode<ICompressedTreeNode<ExplorerItem>, FuzzyScore>,
 		index: number,
 		templateData: IFileTemplateData,
-		height: number | undefined
+		height: number | undefined,
 	): void {
 		const stat = node.element.elements[node.element.elements.length - 1];
 		templateData.currentContext = stat;
 
 		const editable = node.element.elements.filter((e) =>
-			this.explorerService.isEditable(e)
+			this.explorerService.isEditable(e),
 		);
 		const editableData =
 			editable.length === 0
@@ -672,7 +669,18 @@ export class FilesRenderer
 				: this.explorerService.getEditableData(editable[0]);
 
 		// File Label
-		if (!editableData) {
+		if (editableData) {
+			templateData.label.element.classList.remove("compressed");
+			templateData.label.element.style.display = "none";
+			templateData.contribs.forEach((c) => c.setResource(undefined));
+			templateData.elementDisposables.add(
+				this.renderInputBox(
+					templateData.container,
+					editable[0],
+					editableData,
+				),
+			);
+		} else {
 			templateData.label.element.classList.add("compressed");
 			templateData.label.element.style.display = "flex";
 
@@ -687,7 +695,7 @@ export class FilesRenderer
 					node.element.elements,
 					templateData,
 					node.depth,
-					node.collapsed
+					node.collapsed,
 				);
 			templateData.elementDisposables.add(compressedNavigationController);
 
@@ -701,8 +709,8 @@ export class FilesRenderer
 			// accessibility
 			templateData.elementDisposables.add(
 				this._onDidChangeActiveDescendant.add(
-					compressedNavigationController.onDidChange
-				)
+					compressedNavigationController.onDidChange,
+				),
 			);
 
 			templateData.elementDisposables.add(
@@ -711,16 +719,16 @@ export class FilesRenderer
 					"mousedown",
 					(e) => {
 						const result = getIconLabelNameFromHTMLElement(
-							e.target
+							e.target,
 						);
 
 						if (result) {
 							compressedNavigationController.setIndex(
-								result.index
+								result.index,
 							);
 						}
-					}
-				)
+					},
+				),
 			);
 
 			templateData.elementDisposables.add(
@@ -729,12 +737,12 @@ export class FilesRenderer
 						this.compressedNavigationControllers.get(stat) ?? [];
 					const renderedIndex = nodeControllers.findIndex(
 						(controller) =>
-							controller === compressedNavigationController
+							controller === compressedNavigationController,
 					);
 
 					if (renderedIndex < 0) {
 						throw new Error(
-							"Disposing unknown navigation controller"
+							"Disposing unknown navigation controller",
 						);
 					}
 
@@ -743,21 +751,7 @@ export class FilesRenderer
 					} else {
 						nodeControllers.splice(renderedIndex, 1);
 					}
-				})
-			);
-		}
-
-		// Input Box
-		else {
-			templateData.label.element.classList.remove("compressed");
-			templateData.label.element.style.display = "none";
-			templateData.contribs.forEach((c) => c.setResource(undefined));
-			templateData.elementDisposables.add(
-				this.renderInputBox(
-					templateData.container,
-					editable[0],
-					editableData
-				)
+				}),
 			);
 		}
 	}
@@ -767,7 +761,7 @@ export class FilesRenderer
 		label: string | string[],
 		domId: string | undefined,
 		filterData: FuzzyScore | undefined,
-		templateData: IFileTemplateData
+		templateData: IFileTemplateData,
 	): void {
 		templateData.label.element.style.display = "flex";
 		const extraClasses = ["explorer-item"];
@@ -781,11 +775,11 @@ export class FilesRenderer
 		// Hack to always render chevrons for file nests, or else may not be able to identify them.
 		const twistieContainer =
 			templateData.container.parentElement?.parentElement?.querySelector(
-				".monaco-tl-twistie"
+				".monaco-tl-twistie",
 			);
 		twistieContainer?.classList.toggle(
 			"force-twistie",
-			stat.hasNests && theme.hidesExplorerArrows
+			stat.hasNests && theme.hidesExplorerArrows,
 		);
 
 		// when explorer arrows are hidden or there are no folder icons, nests get misaligned as they are forced to have arrows and files typically have icons
@@ -797,7 +791,7 @@ export class FilesRenderer
 			stat.nestedParent && themeIsUnhappyWithNesting;
 
 		const experimentalHover = this.configurationService.getValue<boolean>(
-			"explorer.experimental.hover"
+			"explorer.experimental.hover",
 		);
 		templateData.contribs.forEach((c) => c.setResource(stat.resource));
 		templateData.label.setResource(
@@ -811,8 +805,8 @@ export class FilesRenderer
 				fileKind: stat.isRoot
 					? FileKind.ROOT_FOLDER
 					: stat.isDirectory
-						? FileKind.FOLDER
-						: FileKind.FILE,
+					  ? FileKind.FOLDER
+					  : FileKind.FILE,
 				extraClasses: realignNestedChildren
 					? [...extraClasses, "align-nest-icon-with-parent-icon"]
 					: extraClasses,
@@ -820,17 +814,17 @@ export class FilesRenderer
 				matches: createMatches(filterData),
 				separator: this.labelService.getSeparator(
 					stat.resource.scheme,
-					stat.resource.authority
+					stat.resource.authority,
 				),
 				domId,
-			}
+			},
 		);
 	}
 
 	private renderInputBox(
 		container: HTMLElement,
 		stat: ExplorerItem,
-		editableData: IEditableData
+		editableData: IEditableData,
 	): IDisposable {
 		// Use a file label only for the icon next to the input box
 		const label = this.labels.create(container);
@@ -838,8 +832,8 @@ export class FilesRenderer
 		const fileKind = stat.isRoot
 			? FileKind.ROOT_FOLDER
 			: stat.isDirectory
-				? FileKind.FOLDER
-				: FileKind.FILE;
+			  ? FileKind.FOLDER
+			  : FileKind.FILE;
 
 		const theme = this.themeService.getFileIconTheme();
 		const themeIsUnhappyWithNesting =
@@ -883,7 +877,7 @@ export class FilesRenderer
 			},
 			ariaLabel: localize(
 				"fileInputAriaLabel",
-				"Type file name. Press Enter to confirm or Escape to cancel."
+				"Type file name. Press Enter to confirm or Escape to cancel.",
 			),
 			inputBoxStyles: defaultInputBoxStyles,
 		});
@@ -907,7 +901,7 @@ export class FilesRenderer
 				if (finishEditing) {
 					editableData.onFinish(value, success);
 				}
-			}
+			},
 		);
 
 		const showInputBoxNotification = () => {
@@ -921,8 +915,8 @@ export class FilesRenderer
 							message.severity === Severity.Info
 								? MessageType.INFO
 								: message.severity === Severity.Warning
-									? MessageType.WARNING
-									: MessageType.ERROR,
+								  ? MessageType.WARNING
+								  : MessageType.ERROR,
 					});
 				} else {
 					inputBox.hideMessage();
@@ -968,14 +962,14 @@ export class FilesRenderer
 					} else if (e.equals(KeyCode.Escape)) {
 						done(false, true);
 					}
-				}
+				},
 			),
 			DOM.addStandardDisposableListener(
 				inputBox.inputElement,
 				DOM.EventType.KEY_UP,
 				(e: IKeyboardEvent) => {
 					showInputBoxNotification();
-				}
+				},
 			),
 			DOM.addDisposableListener(
 				inputBox.inputElement,
@@ -996,11 +990,11 @@ export class FilesRenderer
 								HTMLElement &&
 							DOM.hasParentWithClass(
 								ownerDocument.activeElement,
-								"context-view"
+								"context-view",
 							)
 						) {
 							await Event.toPromise(
-								this.contextMenuService.onDidHideContextMenu
+								this.contextMenuService.onDidHideContextMenu,
 							);
 						} else {
 							break;
@@ -1008,7 +1002,7 @@ export class FilesRenderer
 					}
 
 					done(inputBox.isInputValid(), true);
-				}
+				},
 			),
 			label,
 		];
@@ -1021,7 +1015,7 @@ export class FilesRenderer
 	disposeElement(
 		element: ITreeNode<ExplorerItem, FuzzyScore>,
 		index: number,
-		templateData: IFileTemplateData
+		templateData: IFileTemplateData,
 	): void {
 		templateData.currentContext = undefined;
 		templateData.elementDisposables.clear();
@@ -1030,7 +1024,7 @@ export class FilesRenderer
 	disposeCompressedElements(
 		node: ITreeNode<ICompressedTreeNode<ExplorerItem>, FuzzyScore>,
 		index: number,
-		templateData: IFileTemplateData
+		templateData: IFileTemplateData,
 	): void {
 		templateData.currentContext = undefined;
 		templateData.elementDisposables.clear();
@@ -1041,7 +1035,7 @@ export class FilesRenderer
 	}
 
 	getCompressedNavigationController(
-		stat: ExplorerItem
+		stat: ExplorerItem,
 	): ICompressedNavigationController[] | undefined {
 		return this.compressedNavigationControllers.get(stat);
 	}
@@ -1222,13 +1216,13 @@ export class FilesFilter implements ITreeFilter<ExplorerItem, FuzzyScore> {
 				updatedGitIgnoreSetting = true;
 				this.ignoreFileResourcesPerRoot.set(
 					folder.uri.toString(),
-					new ResourceSet()
+					new ResourceSet(),
 				);
 				this.ignoreTreesPerRoot.set(
 					folder.uri.toString(),
 					TernarySearchTree.forUris((uri) =>
-						this.uriIdentityService.extUri.ignorePathCasing(uri)
-					)
+						this.uriIdentityService.extUri.ignorePathCasing(uri),
+					),
 				);
 			}
 
@@ -1244,7 +1238,7 @@ export class FilesFilter implements ITreeFilter<ExplorerItem, FuzzyScore> {
 
 			if (!shouldFire) {
 				const cached = this.hiddenExpressionPerRoot.get(
-					folder.uri.toString()
+					folder.uri.toString(),
 				);
 				shouldFire =
 					!cached || !equals(cached.original, excludesConfig);
@@ -1273,7 +1267,7 @@ export class FilesFilter implements ITreeFilter<ExplorerItem, FuzzyScore> {
 	private async processIgnoreFile(
 		root: string,
 		ignoreFileResource: URI,
-		update?: boolean
+		update?: boolean,
 	) {
 		// Get the name of the directory which the ignore file is in
 		const dirUri = dirname(ignoreFileResource);
@@ -1299,7 +1293,7 @@ export class FilesFilter implements ITreeFilter<ExplorerItem, FuzzyScore> {
 			const ignoreFile = new IgnoreFile(
 				content.value.toString(),
 				dirUri.path,
-				ignoreParent
+				ignoreParent,
 			);
 			ignoreTree.set(dirUri, ignoreFile);
 			// If we haven't seen this resource before then we need to add it to the list of resources we're tracking
@@ -1327,7 +1321,7 @@ export class FilesFilter implements ITreeFilter<ExplorerItem, FuzzyScore> {
 			this.processIgnoreFile(
 				stat.root.resource.toString(),
 				stat.resource,
-				false
+				false,
 			);
 			return true;
 		}
@@ -1337,7 +1331,7 @@ export class FilesFilter implements ITreeFilter<ExplorerItem, FuzzyScore> {
 
 	private isVisible(
 		stat: ExplorerItem,
-		parentVisibility: TreeVisibility
+		parentVisibility: TreeVisibility,
 	): boolean {
 		stat.isExcluded = false;
 		if (parentVisibility === TreeVisibility.Hidden) {
@@ -1350,12 +1344,12 @@ export class FilesFilter implements ITreeFilter<ExplorerItem, FuzzyScore> {
 
 		// Hide those that match Hidden Patterns
 		const cached = this.hiddenExpressionPerRoot.get(
-			stat.root.resource.toString()
+			stat.root.resource.toString(),
 		);
 		const globMatch = cached?.parsed(
 			path.relative(stat.root.resource.path, stat.resource.path),
 			stat.name,
-			(name) => !!(stat.parent && stat.parent.getChild(name))
+			(name) => !!(stat.parent && stat.parent.getChild(name)),
 		);
 		// Small optimization to only traverse gitIgnore if the globMatch from fileExclude returned nothing
 		const ignoreFile = globMatch
@@ -1365,7 +1359,7 @@ export class FilesFilter implements ITreeFilter<ExplorerItem, FuzzyScore> {
 					?.findSubstr(stat.resource);
 		const isIncludedInTraversal = ignoreFile?.isPathIncludedInTraversal(
 			stat.resource.path,
-			stat.isDirectory
+			stat.isDirectory,
 		);
 		// Doing !undefined returns true and we want it to be false when undefined because that means it's not included in the ignore file
 		const isIgnoredByIgnoreFile =
@@ -1380,8 +1374,8 @@ export class FilesFilter implements ITreeFilter<ExplorerItem, FuzzyScore> {
 					e.resource &&
 					this.uriIdentityService.extUri.isEqualOrParent(
 						e.resource,
-						stat.resource
-					)
+						stat.resource,
+					),
 			);
 			if (
 				editor &&
@@ -1416,10 +1410,10 @@ export class FileSorter implements ITreeSorter<ExplorerItem> {
 		if (statA.isRoot) {
 			if (statB.isRoot) {
 				const workspaceA = this.contextService.getWorkspaceFolder(
-					statA.resource
+					statA.resource,
 				);
 				const workspaceB = this.contextService.getWorkspaceFolder(
-					statB.resource
+					statB.resource,
 				);
 				return workspaceA && workspaceB
 					? workspaceA.index - workspaceB.index
@@ -1590,7 +1584,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 		data: IDragAndDropData,
 		target: ExplorerItem | undefined,
 		targetIndex: number | undefined,
-		originalEvent: DragEvent
+		originalEvent: DragEvent,
 	): boolean | ITreeDragOverReaction {
 		if (!this.dropEnabled) {
 			return false;
@@ -1601,12 +1595,12 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 			const compressedTarget =
 				FileDragAndDrop.getCompressedStatFromDragEvent(
 					target,
-					originalEvent
+					originalEvent,
 				);
 
 			if (compressedTarget) {
 				const iconLabelName = getIconLabelNameFromHTMLElement(
-					originalEvent.target
+					originalEvent.target,
 				);
 
 				if (
@@ -1617,7 +1611,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 						data,
 						compressedTarget,
 						targetIndex,
-						originalEvent
+						originalEvent,
 					);
 
 					if (result) {
@@ -1631,10 +1625,10 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 							this.compressedDropTargetDisposable = toDisposable(
 								() => {
 									iconLabelName.element.classList.remove(
-										"drop-target"
+										"drop-target",
 									);
 									this.compressedDragOverElement = undefined;
-								}
+								},
 							);
 
 							iconLabelName.element.classList.add("drop-target");
@@ -1659,7 +1653,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 		data: IDragAndDropData,
 		target: ExplorerItem | undefined,
 		targetIndex: number | undefined,
-		originalEvent: DragEvent
+		originalEvent: DragEvent,
 	): boolean | ITreeDragOverReaction {
 		const isCopy =
 			originalEvent &&
@@ -1678,7 +1672,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 					originalEvent,
 					DataTransfers.FILES,
 					CodeDataTransfers.FILES,
-					DataTransfers.RESOURCES
+					DataTransfers.RESOURCES,
 				)
 			) {
 				return false;
@@ -1693,7 +1687,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 		// In-Explorer DND
 		else {
 			const items = FileDragAndDrop.getStatsFromDragAndDropData(
-				data as ElementsDragAndDropData<ExplorerItem, ExplorerItem[]>
+				data as ElementsDragAndDropData<ExplorerItem, ExplorerItem[]>,
 			);
 
 			if (!target) {
@@ -1735,7 +1729,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 					if (
 						this.uriIdentityService.extUri.isEqual(
 							source.resource,
-							target.resource
+							target.resource,
 						)
 					) {
 						return true; // Can not move anything onto itself
@@ -1754,7 +1748,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 						!isCopy &&
 						this.uriIdentityService.extUri.isEqual(
 							dirname(source.resource),
-							target.resource
+							target.resource,
 						)
 					) {
 						return true; // Can not move a file to the same parent unless we copy
@@ -1763,7 +1757,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 					if (
 						this.uriIdentityService.extUri.isEqualOrParent(
 							target.resource,
-							source.resource
+							source.resource,
 						)
 					) {
 						return true; // Can not move a parent folder into one of its children
@@ -1777,12 +1771,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 		}
 
 		// All (target = model)
-		if (!target) {
-			return { accept: true, bubble: TreeDragOverBubble.Down, effect };
-		}
-
-		// All (target = file/folder)
-		else {
+		if (target) {
 			if (target.isDirectory) {
 				if (target.isReadonly) {
 					return false;
@@ -1801,11 +1790,14 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 					.getWorkspace()
 					.folders.every(
 						(folder) =>
-							folder.uri.toString() !== target.resource.toString()
+							folder.uri.toString() !==
+							target.resource.toString(),
 					)
 			) {
 				return { accept: true, bubble: TreeDragOverBubble.Up, effect };
 			}
+		} else {
+			return { accept: true, bubble: TreeDragOverBubble.Down, effect };
 		}
 
 		return false;
@@ -1821,12 +1813,12 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 
 	getDragLabel(
 		elements: ExplorerItem[],
-		originalEvent: DragEvent
+		originalEvent: DragEvent,
 	): string | undefined {
 		if (elements.length === 1) {
 			const stat = FileDragAndDrop.getCompressedStatFromDragEvent(
 				elements[0],
-				originalEvent
+				originalEvent,
 			);
 			return stat.name;
 		}
@@ -1837,12 +1829,12 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 	onDragStart(data: IDragAndDropData, originalEvent: DragEvent): void {
 		const items = FileDragAndDrop.getStatsFromDragAndDropData(
 			data as ElementsDragAndDropData<ExplorerItem, ExplorerItem[]>,
-			originalEvent
+			originalEvent,
 		);
 		if (items && items.length && originalEvent.dataTransfer) {
 			// Apply some datatransfer types to allow for dragging the element outside of the application
 			this.instantiationService.invokeFunction((accessor) =>
-				fillEditorsDragData(accessor, items, originalEvent)
+				fillEditorsDragData(accessor, items, originalEvent),
 			);
 
 			// The only custom data transfer we set from the explorer is a file transfer
@@ -1853,7 +1845,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 			if (fileResources.length) {
 				originalEvent.dataTransfer.setData(
 					CodeDataTransfers.FILES,
-					JSON.stringify(fileResources)
+					JSON.stringify(fileResources),
 				);
 			}
 		}
@@ -1863,7 +1855,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 		data: IDragAndDropData,
 		target: ExplorerItem | undefined,
 		targetIndex: number | undefined,
-		originalEvent: DragEvent
+		originalEvent: DragEvent,
 	): Promise<void> {
 		this.compressedDropTargetDisposable.dispose();
 
@@ -1872,7 +1864,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 			const compressedTarget =
 				FileDragAndDrop.getCompressedStatFromDragEvent(
 					target,
-					originalEvent
+					originalEvent,
 				);
 
 			if (compressedTarget) {
@@ -1909,19 +1901,19 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 				) {
 					const fileImport =
 						this.instantiationService.createInstance(
-							ExternalFileImport
+							ExternalFileImport,
 						);
 					await fileImport.import(
 						resolvedTarget,
 						originalEvent,
-						mainWindow
+						mainWindow,
 					);
 				}
 				// Otherwise fallback to browser based file upload
 				else {
 					const browserUpload =
 						this.instantiationService.createInstance(
-							BrowserFileUpload
+							BrowserFileUpload,
 						);
 					await browserUpload.upload(target, originalEvent);
 				}
@@ -1935,7 +1927,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 						ExplorerItem[]
 					>,
 					resolvedTarget,
-					originalEvent
+					originalEvent,
 				);
 			}
 		} catch (error) {
@@ -1946,11 +1938,11 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 	private async handleExplorerDrop(
 		data: ElementsDragAndDropData<ExplorerItem, ExplorerItem[]>,
 		target: ExplorerItem,
-		originalEvent: DragEvent
+		originalEvent: DragEvent,
 	): Promise<void> {
 		const elementsData = FileDragAndDrop.getStatsFromDragAndDropData(data);
 		const distinctItems = new Map(
-			elementsData.map((element) => [element, this.isCollapsed(element)])
+			elementsData.map((element) => [element, this.isCollapsed(element)]),
 		);
 
 		for (const [item, collapsed] of distinctItems) {
@@ -1968,7 +1960,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 
 		const items = distinctParents(
 			[...distinctItems.keys()],
-			(s) => s.resource
+			(s) => s.resource,
 		);
 		const isCopy =
 			(originalEvent.ctrlKey && !isMacintosh) ||
@@ -1978,34 +1970,34 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 		const confirmDragAndDrop =
 			!isCopy &&
 			this.configurationService.getValue<boolean>(
-				FileDragAndDrop.CONFIRM_DND_SETTING_KEY
+				FileDragAndDrop.CONFIRM_DND_SETTING_KEY,
 			);
 		if (confirmDragAndDrop) {
 			const message =
 				items.length > 1 && items.every((s) => s.isRoot)
 					? localize(
 							"confirmRootsMove",
-							"Are you sure you want to change the order of multiple root folders in your workspace?"
-						)
+							"Are you sure you want to change the order of multiple root folders in your workspace?",
+					  )
 					: items.length > 1
-						? localize(
+					  ? localize(
 								"confirmMultiMove",
 								"Are you sure you want to move the following {0} files into '{1}'?",
 								items.length,
-								target.name
-							)
-						: items[0].isRoot
-							? localize(
+								target.name,
+						  )
+					  : items[0].isRoot
+						  ? localize(
 									"confirmRootMove",
 									"Are you sure you want to change the order of root folder '{0}' in your workspace?",
-									items[0].name
-								)
-							: localize(
+									items[0].name,
+							  )
+						  : localize(
 									"confirmMove",
 									"Are you sure you want to move '{0}' into '{1}'?",
 									items[0].name,
-									target.name
-								);
+									target.name,
+							  );
 			const detail =
 				items.length > 1 && !items.every((s) => s.isRoot)
 					? getFileNamesMessage(items.map((i) => i.resource))
@@ -2022,7 +2014,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 						key: "moveButtonLabel",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Move"
+					"&&Move",
 				),
 			});
 
@@ -2034,14 +2026,14 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 			if (confirmation.checkboxChecked === true) {
 				await this.configurationService.updateValue(
 					FileDragAndDrop.CONFIRM_DND_SETTING_KEY,
-					false
+					false,
 				);
 			}
 		}
 
 		await this.doHandleRootDrop(
 			items.filter((s) => s.isRoot),
-			target
+			target,
 		);
 
 		const sources = items.filter((s) => !s.isRoot);
@@ -2054,7 +2046,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 
 	private async doHandleRootDrop(
 		roots: ExplorerItem[],
-		target: ExplorerItem
+		target: ExplorerItem,
 	): Promise<void> {
 		if (roots.length === 0) {
 			return;
@@ -2074,7 +2066,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 				target instanceof ExplorerItem &&
 				this.uriIdentityService.extUri.isEqual(
 					folders[index].uri,
-					target.resource
+					target.resource,
 				)
 			) {
 				targetIndex = index;
@@ -2083,7 +2075,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 			if (
 				roots.every(
 					(r) =>
-						r.resource.toString() !== folders[index].uri.toString()
+						r.resource.toString() !== folders[index].uri.toString(),
 				)
 			) {
 				workspaceCreationData.push(data);
@@ -2100,13 +2092,13 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 		return this.workspaceEditingService.updateFolders(
 			0,
 			workspaceCreationData.length,
-			workspaceCreationData
+			workspaceCreationData,
 		);
 	}
 
 	private async doHandleExplorerDropOnCopy(
 		sources: ExplorerItem[],
-		target: ExplorerItem
+		target: ExplorerItem,
 	): Promise<void> {
 		// Reuse duplicate action when user copies
 		const explorerConfig =
@@ -2121,7 +2113,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 				this.dialogService,
 				target,
 				{ resource, isDirectory, allowOverwrite },
-				explorerConfig.incrementalNaming
+				explorerConfig.incrementalNaming,
 			);
 			if (!newResource) {
 				continue;
@@ -2158,7 +2150,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 
 	private async doHandleExplorerDropOnMove(
 		sources: ExplorerItem[],
-		target: ExplorerItem
+		target: ExplorerItem,
 	): Promise<void> {
 		// Do not allow moving readonly items
 		const resourceFileEdits = sources
@@ -2167,8 +2159,8 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 				(source) =>
 					new ResourceFileEdit(
 						source.resource,
-						joinPath(target.resource, source.name)
-					)
+						joinPath(target.resource, source.name),
+					),
 			);
 		const labelSuffix = getFileOrFolderLabelSuffix(sources);
 		const options = {
@@ -2182,7 +2174,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 		try {
 			await this.explorerService.applyBulkEdit(
 				resourceFileEdits,
-				options
+				options,
 			);
 		} catch (error) {
 			// Conflict
@@ -2210,10 +2202,10 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 								new ResourceFileEdit(
 									re.oldResource,
 									re.newResource,
-									{ overwrite: true }
-								)
+									{ overwrite: true },
+								),
 						),
-						options
+						options,
 					);
 				}
 			}
@@ -2227,7 +2219,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 
 	private static getStatsFromDragAndDropData(
 		data: ElementsDragAndDropData<ExplorerItem, ExplorerItem[]>,
-		dragStartEvent?: DragEvent
+		dragStartEvent?: DragEvent,
 	): ExplorerItem[] {
 		if (data.context) {
 			return data.context;
@@ -2238,7 +2230,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 			data.context = [
 				FileDragAndDrop.getCompressedStatFromDragEvent(
 					data.elements[0],
-					dragStartEvent
+					dragStartEvent,
 				),
 			];
 			return data.context;
@@ -2249,11 +2241,11 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 
 	private static getCompressedStatFromDragEvent(
 		stat: ExplorerItem,
-		dragEvent: DragEvent
+		dragEvent: DragEvent,
 	): ExplorerItem {
 		const target = DOM.getWindow(dragEvent).document.elementFromPoint(
 			dragEvent.clientX,
-			dragEvent.clientY
+			dragEvent.clientY,
 		);
 		const iconLabelName = getIconLabelNameFromHTMLElement(target);
 
@@ -2282,7 +2274,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 }
 
 function getIconLabelNameFromHTMLElement(
-	target: HTMLElement | EventTarget | Element | null
+	target: HTMLElement | EventTarget | Element | null,
 ): { element: HTMLElement; count: number; index: number } | null {
 	if (!(target instanceof HTMLElement)) {
 		return null;
@@ -2310,7 +2302,7 @@ function getIconLabelNameFromHTMLElement(
 }
 
 export function isCompressedFolderName(
-	target: HTMLElement | EventTarget | Element | null
+	target: HTMLElement | EventTarget | Element | null,
 ): boolean {
 	return !!getIconLabelNameFromHTMLElement(target);
 }

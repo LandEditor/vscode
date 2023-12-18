@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IMarkerDecorationsService } from "vs/editor/common/services/markerDecorations";
+import { ICodeEditor } from "vs/editor/browser/editorBrowser";
 import {
 	EditorContributionInstantiation,
 	registerEditorContribution,
 } from "vs/editor/browser/editorExtensions";
-import { ICodeEditor } from "vs/editor/browser/editorBrowser";
 import { IEditorContribution } from "vs/editor/common/editorCommon";
+import { IMarkerDecorationsService } from "vs/editor/common/services/markerDecorations";
 
 export class MarkerDecorationsContribution implements IEditorContribution {
 	public static readonly ID: string = "editor.contrib.markerDecorations";
@@ -17,7 +17,7 @@ export class MarkerDecorationsContribution implements IEditorContribution {
 	constructor(
 		_editor: ICodeEditor,
 		@IMarkerDecorationsService
-		_markerDecorationsService: IMarkerDecorationsService
+		_markerDecorationsService: IMarkerDecorationsService,
 	) {
 		// Doesn't do anything, just requires `IMarkerDecorationsService` to make sure it gets instantiated
 	}
@@ -28,5 +28,5 @@ export class MarkerDecorationsContribution implements IEditorContribution {
 registerEditorContribution(
 	MarkerDecorationsContribution.ID,
 	MarkerDecorationsContribution,
-	EditorContributionInstantiation.Eager
+	EditorContributionInstantiation.Eager,
 ); // eager because it instantiates IMarkerDecorationsService which is responsible for rendering squiggles

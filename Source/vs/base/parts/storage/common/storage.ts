@@ -14,11 +14,11 @@ export enum StorageHint {
 	// does not exist on disk yet. This allows
 	// the storage library to improve startup
 	// time by not checking the storage for data.
-	STORAGE_DOES_NOT_EXIST,
+	STORAGE_DOES_NOT_EXIST = 0,
 
 	// A hint to the storage that the storage
 	// is backed by an in-memory storage.
-	STORAGE_IN_MEMORY,
+	STORAGE_IN_MEMORY = 1,
 }
 
 export interface IStorageOptions {
@@ -36,7 +36,7 @@ export interface IStorageItemsChangeEvent {
 }
 
 export function isStorageItemsChangeEvent(
-	thing: unknown
+	thing: unknown,
 ): thing is IStorageItemsChangeEvent {
 	const candidate = thing as IStorageItemsChangeEvent | undefined;
 
@@ -113,16 +113,16 @@ export interface IStorage extends IDisposable {
 }
 
 export enum StorageState {
-	None,
-	Initialized,
-	Closed,
+	None = 0,
+	Initialized = 1,
+	Closed = 2,
 }
 
 export class Storage extends Disposable implements IStorage {
 	private static readonly DEFAULT_FLUSH_DELAY = 100;
 
 	private readonly _onDidChangeStorage = this._register(
-		new PauseableEmitter<IStorageChangeEvent>()
+		new PauseableEmitter<IStorageChangeEvent>(),
 	);
 	readonly onDidChangeStorage = this._onDidChangeStorage.event;
 
@@ -131,7 +131,7 @@ export class Storage extends Disposable implements IStorage {
 	private cache = new Map<string, string>();
 
 	private readonly flushDelayer = this._register(
-		new ThrottledDelayer<void>(Storage.DEFAULT_FLUSH_DELAY)
+		new ThrottledDelayer<void>(Storage.DEFAULT_FLUSH_DELAY),
 	);
 
 	private pendingDeletes = new Set<string>();
@@ -143,7 +143,7 @@ export class Storage extends Disposable implements IStorage {
 
 	constructor(
 		protected readonly database: IStorageDatabase,
-		private readonly options: IStorageOptions = Object.create(null)
+		private readonly options: IStorageOptions = Object.create(null),
 	) {
 		super();
 
@@ -153,8 +153,8 @@ export class Storage extends Disposable implements IStorage {
 	private registerListeners(): void {
 		this._register(
 			this.database.onDidChangeItemsExternal((e) =>
-				this.onDidChangeItemsExternal(e)
-			)
+				this.onDidChangeItemsExternal(e),
+			),
 		);
 	}
 
@@ -264,7 +264,7 @@ export class Storage extends Disposable implements IStorage {
 	getObject(key: string, fallbackValue: object): object;
 	getObject(
 		key: string,
-		fallbackValue?: object | undefined
+		fallbackValue?: object | undefined,
 	): object | undefined;
 	getObject(key: string, fallbackValue?: object): object | undefined {
 		const value = this.get(key);
@@ -279,7 +279,7 @@ export class Storage extends Disposable implements IStorage {
 	async set(
 		key: string,
 		value: string | boolean | number | null | undefined | object,
-		external = false
+		external = false,
 	): Promise<void> {
 		if (this.state === StorageState.Closed) {
 			return; // Return early if we are already closed
@@ -429,7 +429,7 @@ export class Storage extends Disposable implements IStorage {
 		}
 
 		return new Promise((resolve) =>
-			this.whenFlushedCallbacks.push(resolve)
+			this.whenFlushedCallbacks.push(resolve),
 		);
 	}
 

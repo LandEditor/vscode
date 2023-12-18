@@ -7,9 +7,9 @@ import * as glob from "vs/base/common/glob";
 import { URI, UriComponents } from "vs/base/common/uri";
 import { CommandsRegistry } from "vs/platform/commands/common/commands";
 import {
-	isDocumentExcludePattern,
 	TransientCellMetadata,
 	TransientDocumentMetadata,
+	isDocumentExcludePattern,
 } from "vs/workbench/contrib/notebook/common/notebookCommon";
 import { INotebookKernelService } from "vs/workbench/contrib/notebook/common/notebookKernelService";
 import { INotebookService } from "vs/workbench/contrib/notebook/common/notebookService";
@@ -17,7 +17,7 @@ import { INotebookService } from "vs/workbench/contrib/notebook/common/notebookS
 CommandsRegistry.registerCommand(
 	"_resolveNotebookContentProvider",
 	(
-		accessor
+		accessor,
 	): {
 		viewType: string;
 		displayName: string;
@@ -80,7 +80,7 @@ CommandsRegistry.registerCommand(
 				},
 			};
 		});
-	}
+	},
 );
 
 CommandsRegistry.registerCommand(
@@ -90,7 +90,7 @@ CommandsRegistry.registerCommand(
 		args: {
 			viewType: string;
 			uri: UriComponents;
-		}
+		},
 	): Promise<
 		{
 			id?: string;
@@ -116,5 +116,5 @@ CommandsRegistry.registerCommand(
 			isPreferred: false, // todo@jrieken,@rebornix
 			preloads: provider.preloadUris,
 		}));
-	}
+	},
 );

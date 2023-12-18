@@ -87,7 +87,7 @@ export function registerChatTitleActions() {
 				});
 				item.setVote(InteractiveSessionVoteDirection.Up);
 			}
-		}
+		},
 	);
 
 	registerAction2(
@@ -98,7 +98,7 @@ export function registerChatTitleActions() {
 					title: {
 						value: localize(
 							"interactive.unhelpful.label",
-							"Unhelpful"
+							"Unhelpful",
 						),
 						original: "Unhelpful",
 					},
@@ -134,7 +134,7 @@ export function registerChatTitleActions() {
 				});
 				item.setVote(InteractiveSessionVoteDirection.Down);
 			}
-		}
+		},
 	);
 
 	registerAction2(
@@ -145,7 +145,7 @@ export function registerChatTitleActions() {
 					title: {
 						value: localize(
 							"interactive.reportIssueForBug.label",
-							"Report Issue"
+							"Report Issue",
 						),
 						original: "Report Issue",
 					},
@@ -158,7 +158,7 @@ export function registerChatTitleActions() {
 						order: 3,
 						when: ContextKeyExpr.and(
 							CONTEXT_CHAT_RESPONSE_SUPPORT_ISSUE_REPORTING,
-							CONTEXT_RESPONSE
+							CONTEXT_RESPONSE,
 						),
 					},
 				});
@@ -181,7 +181,7 @@ export function registerChatTitleActions() {
 					},
 				});
 			}
-		}
+		},
 	);
 
 	registerAction2(
@@ -192,7 +192,7 @@ export function registerChatTitleActions() {
 					title: {
 						value: localize(
 							"interactive.insertIntoNotebook.label",
-							"Insert into Notebook"
+							"Insert into Notebook",
 						),
 						original: "Insert into Notebook",
 					},
@@ -206,7 +206,7 @@ export function registerChatTitleActions() {
 						when: ContextKeyExpr.and(
 							NOTEBOOK_IS_ACTIVE_EDITOR,
 							CONTEXT_RESPONSE,
-							CONTEXT_RESPONSE_FILTERED.negate()
+							CONTEXT_RESPONSE_FILTERED.negate(),
 						),
 					},
 				});
@@ -272,14 +272,14 @@ export function registerChatTitleActions() {
 											metadata: {},
 										};
 									}),
-								}
+								},
 							),
 						],
-						{ quotableLabel: "Insert into Notebook" }
+						{ quotableLabel: "Insert into Notebook" },
 					);
 				}
 			}
-		}
+		},
 	);
 
 	registerAction2(
@@ -290,7 +290,7 @@ export function registerChatTitleActions() {
 					title: {
 						value: localize(
 							"chat.remove.label",
-							"Remove Request and Response"
+							"Remove Request and Response",
 						),
 						original: "Remove Request and Response",
 					},
@@ -304,7 +304,7 @@ export function registerChatTitleActions() {
 						},
 						when: ContextKeyExpr.and(
 							CONTEXT_IN_CHAT_SESSION,
-							CONTEXT_IN_CHAT_INPUT.negate()
+							CONTEXT_IN_CHAT_INPUT.negate(),
 						),
 						weight: KeybindingWeight.WorkbenchContrib,
 					},
@@ -328,15 +328,15 @@ export function registerChatTitleActions() {
 				const requestId = isRequestVM(item)
 					? item.id
 					: isResponseVM(item)
-						? item.requestId
-						: undefined;
+					  ? item.requestId
+					  : undefined;
 
 				if (requestId) {
 					const chatService = accessor.get(IChatService);
 					chatService.removeRequest(item.sessionId, requestId);
 				}
 			}
-		}
+		},
 	);
 }
 

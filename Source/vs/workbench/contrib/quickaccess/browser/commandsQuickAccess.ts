@@ -3,63 +3,63 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { isFirefox } from "vs/base/browser/browser";
+import { raceTimeout, timeout } from "vs/base/common/async";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { Codicon } from "vs/base/common/codicons";
+import { stripIcons } from "vs/base/common/iconLabels";
+import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
+import { Language } from "vs/base/common/platform";
+import { ThemeIcon } from "vs/base/common/themables";
+import { IEditor } from "vs/editor/common/editorCommon";
+import { AbstractEditorCommandsQuickAccessProvider } from "vs/editor/contrib/quickAccess/browser/commandsQuickAccess";
 import { localize } from "vs/nls";
+import { isLocalizedString } from "vs/platform/action/common/action";
 import {
-	ICommandQuickPick,
-	CommandsHistory,
-} from "vs/platform/quickinput/browser/commandsQuickAccess";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import {
+	Action2,
 	IMenuService,
 	MenuId,
 	MenuItemAction,
 	SubmenuItemAction,
-	Action2,
 } from "vs/platform/actions/common/actions";
-import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { raceTimeout, timeout } from "vs/base/common/async";
-import { AbstractEditorCommandsQuickAccessProvider } from "vs/editor/contrib/quickAccess/browser/commandsQuickAccess";
-import { IEditor } from "vs/editor/common/editorCommon";
-import { Language } from "vs/base/common/platform";
+import { ICommandService } from "vs/platform/commands/common/commands";
+import {
+	IConfigurationChangeEvent,
+	IConfigurationService,
+} from "vs/platform/configuration/common/configuration";
+import { IDialogService } from "vs/platform/dialogs/common/dialogs";
 import {
 	IInstantiationService,
 	ServicesAccessor,
 } from "vs/platform/instantiation/common/instantiation";
 import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { IDialogService } from "vs/platform/dialogs/common/dialogs";
-import { DefaultQuickAccessFilterValue } from "vs/platform/quickinput/common/quickAccess";
+import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
+import { IProductService } from "vs/platform/product/common/productService";
 import {
-	IConfigurationChangeEvent,
-	IConfigurationService,
-} from "vs/platform/configuration/common/configuration";
-import { IWorkbenchQuickAccessConfiguration } from "vs/workbench/browser/quickaccess";
-import { Codicon } from "vs/base/common/codicons";
-import { ThemeIcon } from "vs/base/common/themables";
+	CommandsHistory,
+	ICommandQuickPick,
+} from "vs/platform/quickinput/browser/commandsQuickAccess";
+import { TriggerAction } from "vs/platform/quickinput/browser/pickerQuickAccess";
+import { DefaultQuickAccessFilterValue } from "vs/platform/quickinput/common/quickAccess";
 import {
 	IQuickInputService,
 	IQuickPickSeparator,
 } from "vs/platform/quickinput/common/quickInput";
 import { IStorageService } from "vs/platform/storage/common/storage";
-import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
-import { KeyMod, KeyCode } from "vs/base/common/keyCodes";
-import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
-import { TriggerAction } from "vs/platform/quickinput/browser/pickerQuickAccess";
-import { IPreferencesService } from "vs/workbench/services/preferences/common/preferences";
-import { stripIcons } from "vs/base/common/iconLabels";
-import { isFirefox } from "vs/base/browser/browser";
-import { IProductService } from "vs/platform/product/common/productService";
-import { IChatService } from "vs/workbench/contrib/chat/common/chatService";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { IWorkbenchQuickAccessConfiguration } from "vs/workbench/browser/quickaccess";
+import { CHAT_OPEN_ACTION_ID } from "vs/workbench/contrib/chat/browser/actions/chatActions";
 import { ASK_QUICK_QUESTION_ACTION_ID } from "vs/workbench/contrib/chat/browser/actions/chatQuickInputActions";
+import { IChatService } from "vs/workbench/contrib/chat/common/chatService";
 import {
 	CommandInformationResult,
 	IAiRelatedInformationService,
 	RelatedInformationType,
 } from "vs/workbench/services/aiRelatedInformation/common/aiRelatedInformation";
-import { CHAT_OPEN_ACTION_ID } from "vs/workbench/contrib/chat/browser/actions/chatActions";
-import { isLocalizedString } from "vs/platform/action/common/action";
+import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
+import { IPreferencesService } from "vs/workbench/services/preferences/common/preferences";
 
 export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAccessProvider {
 	private static AI_RELATED_INFORMATION_MAX_PICKS = 5;
@@ -72,7 +72,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 	// functional.
 	private readonly extensionRegistrationRace = raceTimeout(
 		this.extensionService.whenInstalledExtensionsRegistered(),
-		800
+		800,
 	);
 
 	private useAiRelatedInfo = false;
@@ -162,7 +162,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 	}
 
 	protected async getCommandPicks(
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<Array<ICommandQuickPick>> {
 		// wait for extensions registration or 800ms once
 		await this.extensionRegistrationRace;
@@ -181,7 +181,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 					iconClass: ThemeIcon.asClassName(Codicon.gear),
 					tooltip: localize(
 						"configure keybinding",
-						"Configure Keybinding"
+						"Configure Keybinding",
 					),
 				},
 			],
@@ -196,7 +196,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 
 	protected hasAdditionalCommandPicks(
 		filter: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): boolean {
 		if (
 			!this.useAiRelatedInfo ||
@@ -214,7 +214,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 		allPicks: ICommandQuickPick[],
 		picksSoFar: ICommandQuickPick[],
 		filter: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<Array<ICommandQuickPick | IQuickPickSeparator>> {
 		if (!this.hasAdditionalCommandPicks(filter, token)) {
 			return [];
@@ -226,13 +226,13 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 			// Wait a bit to see if the user is still typing
 			await timeout(
 				CommandsQuickAccessProvider.AI_RELATED_INFORMATION_DEBOUNCE,
-				token
+				token,
 			);
 			additionalPicks = await this.getRelatedInformationPicks(
 				allPicks,
 				picksSoFar,
 				filter,
-				token
+				token,
 			);
 		} catch (e) {
 			return [];
@@ -251,7 +251,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 					"askXInChat",
 					"Ask {0}: {1}",
 					info.displayName,
-					filter
+					filter,
 				),
 				commandId:
 					this.configuration.experimental.askChatLocation ===
@@ -269,13 +269,13 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 		allPicks: ICommandQuickPick[],
 		picksSoFar: ICommandQuickPick[],
 		filter: string,
-		token: CancellationToken
+		token: CancellationToken,
 	) {
 		const relatedInformation =
 			(await this.aiRelatedInformationService.getRelatedInformation(
 				filter,
 				[RelatedInformationType.CommandInformation],
-				token
+				token,
 			)) as CommandInformationResult[];
 
 		// Sort by weight descending to get the most relevant results first
@@ -298,7 +298,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 			const pick = allPicks.find(
 				(p) =>
 					p.commandId === info.command &&
-					!setOfPicksSoFar.has(p.commandId)
+					!setOfPicksSoFar.has(p.commandId),
 			);
 			if (pick) {
 				additionalPicks.push(pick);
@@ -315,16 +315,16 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 			this.editorGroupService.activeGroup.scopedContextKeyService;
 		const globalCommandsMenu = this.menuService.createMenu(
 			MenuId.CommandPalette,
-			scopedContextKeyService
+			scopedContextKeyService,
 		);
 		const globalCommandsMenuActions = globalCommandsMenu
 			.getActions()
 			.reduce(
 				(r, [, actions]) => [...r, ...actions],
-				<Array<MenuItemAction | SubmenuItemAction | string>>[]
+				<Array<MenuItemAction | SubmenuItemAction | string>>[],
 			)
 			.filter(
-				(action) => action instanceof MenuItemAction && action.enabled
+				(action) => action instanceof MenuItemAction && action.enabled,
 			) as MenuItemAction[];
 
 		for (const action of globalCommandsMenuActions) {
@@ -344,7 +344,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 					"commandWithCategory",
 					"{0}: {1}",
 					category,
-					label
+					label,
 				);
 			}
 
@@ -372,10 +372,10 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 				isLocalizedString(metadataDescription)
 					? metadataDescription
 					: // TODO: this type will eventually not be a string and when that happens, this should simplified.
-						{
+					  {
 							value: metadataDescription,
 							original: metadataDescription,
-						};
+					  };
 			globalCommandPicks.push({
 				commandId: action.item.id,
 				commandAlias,
@@ -406,9 +406,9 @@ export class ShowAllCommandsAction extends Action2 {
 			keybinding: {
 				weight: KeybindingWeight.WorkbenchContrib,
 				when: undefined,
-				primary: !isFirefox
-					? KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyP
-					: undefined,
+				primary: isFirefox
+					? undefined
+					: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyP,
 				secondary: [KeyCode.F1],
 			},
 			f1: true,
@@ -441,7 +441,7 @@ export class ClearCommandHistoryAction extends Action2 {
 
 		const commandHistoryLength =
 			CommandsHistory.getConfiguredCommandHistoryLength(
-				configurationService
+				configurationService,
 			);
 		if (commandHistoryLength > 0) {
 			// Ask for confirmation
@@ -449,18 +449,18 @@ export class ClearCommandHistoryAction extends Action2 {
 				type: "warning",
 				message: localize(
 					"confirmClearMessage",
-					"Do you want to clear the history of recently used commands?"
+					"Do you want to clear the history of recently used commands?",
 				),
 				detail: localize(
 					"confirmClearDetail",
-					"This action is irreversible!"
+					"This action is irreversible!",
 				),
 				primaryButton: localize(
 					{
 						key: "clearButtonLabel",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Clear"
+					"&&Clear",
 				),
 			});
 

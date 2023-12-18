@@ -41,7 +41,7 @@ export class CellOutputViewModel
 	constructor(
 		readonly cellViewModel: IGenericCellViewModel,
 		private readonly _outputRawData: ICellOutput,
-		private readonly _notebookService: INotebookService
+		private readonly _notebookService: INotebookService,
 	) {
 		super();
 	}
@@ -53,23 +53,23 @@ export class CellOutputViewModel
 
 		const firstMimeType = this._outputRawData.outputs[0].mime;
 		return this._outputRawData.outputs.some(
-			(output) => output.mime !== firstMimeType
+			(output) => output.mime !== firstMimeType,
 		);
 	}
 
 	resolveMimeTypes(
 		textModel: NotebookTextModel,
-		kernelProvides: readonly string[] | undefined
+		kernelProvides: readonly string[] | undefined,
 	): [readonly IOrderedMimeType[], number] {
 		const mimeTypes = this._notebookService.getOutputMimeTypeInfo(
 			textModel,
 			kernelProvides,
-			this.model
+			this.model,
 		);
 		const index = mimeTypes.findIndex(
 			(mimeType) =>
 				mimeType.rendererId !== RENDERER_NOT_AVAILABLE &&
-				mimeType.isTrusted
+				mimeType.isTrusted,
 		);
 
 		return [mimeTypes, Math.max(index, 0)];

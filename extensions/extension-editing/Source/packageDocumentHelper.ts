@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Location, getLocation } from "jsonc-parser";
 import * as vscode from "vscode";
-import { getLocation, Location } from "jsonc-parser";
 import {
 	implicitActivationEvent,
 	redundantImplicitActivationEvent,
@@ -15,11 +15,11 @@ export class PackageDocument {
 
 	public provideCompletionItems(
 		position: vscode.Position,
-		_token: vscode.CancellationToken
+		_token: vscode.CancellationToken,
 	): vscode.ProviderResult<vscode.CompletionItem[]> {
 		const location = getLocation(
 			this.document.getText(),
-			this.document.offsetAt(position)
+			this.document.offsetAt(position),
 		);
 
 		if (
@@ -28,7 +28,7 @@ export class PackageDocument {
 		) {
 			return this.provideLanguageOverridesCompletionItems(
 				location,
-				position
+				position,
 			);
 		}
 
@@ -38,7 +38,7 @@ export class PackageDocument {
 	public provideCodeActions(
 		_range: vscode.Range,
 		context: vscode.CodeActionContext,
-		_token: vscode.CancellationToken
+		_token: vscode.CancellationToken,
 	): vscode.ProviderResult<vscode.CodeAction[]> {
 		const codeActions: vscode.CodeAction[] = [];
 		for (const diagnostic of context.diagnostics) {
@@ -48,20 +48,20 @@ export class PackageDocument {
 			) {
 				const codeAction = new vscode.CodeAction(
 					vscode.l10n.t("Remove activation event"),
-					vscode.CodeActionKind.QuickFix
+					vscode.CodeActionKind.QuickFix,
 				);
 				codeAction.edit = new vscode.WorkspaceEdit();
 				const rangeForCharAfter = diagnostic.range.with(
 					diagnostic.range.end,
-					diagnostic.range.end.translate(0, 1)
+					diagnostic.range.end.translate(0, 1),
 				);
 				if (this.document.getText(rangeForCharAfter) === ",") {
 					codeAction.edit.delete(
 						this.document.uri,
 						diagnostic.range.with(
 							undefined,
-							diagnostic.range.end.translate(0, 1)
-						)
+							diagnostic.range.end.translate(0, 1),
+						),
 					);
 				} else {
 					codeAction.edit.delete(this.document.uri, diagnostic.range);
@@ -74,7 +74,7 @@ export class PackageDocument {
 
 	private provideLanguageOverridesCompletionItems(
 		location: Location,
-		position: vscode.Position
+		position: vscode.Position,
 	): vscode.ProviderResult<vscode.CompletionItem[]> {
 		let range = this.getReplaceRange(location, position);
 		const text = this.document.getText(range);
@@ -89,9 +89,9 @@ export class PackageDocument {
 				range = new vscode.Range(
 					new vscode.Position(
 						range.start.line,
-						range.start.character + 1
+						range.start.character + 1,
 					),
-					range.end
+					range.end,
 				);
 				snippet = snippet.substring(1);
 			}
@@ -100,7 +100,7 @@ export class PackageDocument {
 				this.newSnippetCompletionItem({
 					label: vscode.l10n.t("Language specific editor settings"),
 					documentation: vscode.l10n.t(
-						"Override editor settings for language"
+						"Override editor settings for language",
 					),
 					snippet,
 					range,
@@ -119,9 +119,9 @@ export class PackageDocument {
 			range = new vscode.Range(
 				new vscode.Position(
 					range.start.line,
-					range.start.character + 2
+					range.start.character + 2,
 				),
-				range.end
+				range.end,
 			);
 
 			return vscode.languages.getLanguages().then((languages) => {
@@ -154,7 +154,7 @@ export class PackageDocument {
 		text: string,
 		range: vscode.Range,
 		description?: string,
-		insertText?: string
+		insertText?: string,
 	): vscode.CompletionItem {
 		const item = new vscode.CompletionItem(text);
 		item.kind = vscode.CompletionItemKind.Value;

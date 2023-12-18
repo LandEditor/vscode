@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
 import { firstOrDefault } from "vs/base/common/arrays";
 import { CancellationToken } from "vs/base/common/cancellation";
 import { Emitter, Event } from "vs/base/common/event";
 import { IDisposable, toDisposable } from "vs/base/common/lifecycle";
+import { localize } from "vs/nls";
 import {
 	IContextKeyService,
 	RawContextKey,
@@ -25,9 +25,9 @@ export const HasSpeechProvider = new RawContextKey<boolean>(
 		type: "string",
 		description: localize(
 			"hasSpeechProvider",
-			"A speech provider is registered to the speech service."
+			"A speech provider is registered to the speech service.",
 		),
-	}
+	},
 );
 
 export interface ISpeechProviderMetadata {
@@ -67,7 +67,7 @@ export interface ISpeechService {
 
 	registerSpeechProvider(
 		identifier: string,
-		provider: ISpeechProvider
+		provider: ISpeechProvider,
 	): IDisposable;
 
 	createSpeechToTextSession(token: CancellationToken): ISpeechToTextSession;
@@ -93,7 +93,7 @@ export class SpeechService implements ISpeechService {
 	private readonly providers = new Map<string, ISpeechProvider>();
 
 	private readonly hasSpeechProviderContext = HasSpeechProvider.bindTo(
-		this.contextKeyService
+		this.contextKeyService,
 	);
 
 	constructor(
@@ -104,11 +104,11 @@ export class SpeechService implements ISpeechService {
 
 	registerSpeechProvider(
 		identifier: string,
-		provider: ISpeechProvider
+		provider: ISpeechProvider,
 	): IDisposable {
 		if (this.providers.has(identifier)) {
 			throw new Error(
-				`Speech provider with identifier ${identifier} is already registered.`
+				`Speech provider with identifier ${identifier} is already registered.`,
 			);
 		}
 
@@ -133,7 +133,7 @@ export class SpeechService implements ISpeechService {
 			throw new Error(`No Speech provider is registered.`);
 		} else if (this.providers.size > 1) {
 			this.logService.warn(
-				`Multiple speech providers registered. Picking first one: ${provider.metadata.displayName}`
+				`Multiple speech providers registered. Picking first one: ${provider.metadata.displayName}`,
 			);
 		}
 

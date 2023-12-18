@@ -15,7 +15,7 @@ export namespace _util {
 	export const DI_DEPENDENCIES = "$di$dependencies";
 
 	export function getServiceDependencies(
-		ctor: any
+		ctor: any,
 	): { id: ServiceIdentifier<any>; index: number }[] {
 		return ctor[DI_DEPENDENCIES] || [];
 	}
@@ -34,7 +34,7 @@ export interface ServicesAccessor {
 }
 
 export const IInstantiationService = createDecorator<IInstantiationService>(
-	"instantiationService"
+	"instantiationService",
 );
 
 /**
@@ -44,8 +44,8 @@ export const IInstantiationService = createDecorator<IInstantiationService>(
 export type GetLeadingNonServiceArgs<TArgs extends any[]> = TArgs extends []
 	? []
 	: TArgs extends [...infer TFirst, BrandedService]
-		? GetLeadingNonServiceArgs<TFirst>
-		: TArgs;
+	  ? GetLeadingNonServiceArgs<TFirst>
+	  : TArgs;
 
 export interface IInstantiationService {
 	readonly _serviceBrand: undefined;
@@ -55,7 +55,9 @@ export interface IInstantiationService {
 	 */
 	createInstance<T>(descriptor: descriptors.SyncDescriptor0<T>): T;
 	createInstance<
-		Ctor extends new (...args: any[]) => any,
+		Ctor extends new (
+			...args: any[]
+		) => any,
 		R extends InstanceType<Ctor>,
 	>(
 		ctor: Ctor,
@@ -88,7 +90,7 @@ export interface ServiceIdentifier<T> {
 function storeServiceDependency(
 	id: Function,
 	target: Function,
-	index: number
+	index: number,
 ): void {
 	if ((target as any)[_util.DI_TARGET] === target) {
 		(target as any)[_util.DI_DEPENDENCIES].push({ id, index });
@@ -106,16 +108,14 @@ export function createDecorator<T>(serviceId: string): ServiceIdentifier<T> {
 		return _util.serviceIds.get(serviceId)!;
 	}
 
-	const id = <any>(
-		function (target: Function, key: string, index: number): any {
-			if (arguments.length !== 3) {
-				throw new Error(
-					"@IServiceName-decorator can only be used to decorate a parameter"
-				);
-			}
-			storeServiceDependency(id, target, index);
+	const id = <any>((target: Function, key: string, index: number): any => {
+		if (arguments.length !== 3) {
+			throw new Error(
+				"@IServiceName-decorator can only be used to decorate a parameter",
+			);
 		}
-	);
+		storeServiceDependency(id, target, index);
+	});
 
 	id.toString = () => serviceId;
 
@@ -124,7 +124,7 @@ export function createDecorator<T>(serviceId: string): ServiceIdentifier<T> {
 }
 
 export function refineServiceDecorator<T1, T extends T1>(
-	serviceIdentifier: ServiceIdentifier<T1>
+	serviceIdentifier: ServiceIdentifier<T1>,
 ): ServiceIdentifier<T> {
 	return <ServiceIdentifier<T>>serviceIdentifier;
 }

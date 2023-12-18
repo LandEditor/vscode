@@ -3,34 +3,34 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { INativeHostService } from "vs/platform/native/common/native";
-import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
-import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
-import { IUpdateService } from "vs/platform/update/common/update";
-import { ILifecycleService } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { IAccessibilityService } from "vs/platform/accessibility/common/accessibility";
-import {
-	IStartupMetrics,
-	AbstractTimerService,
-	Writeable,
-	ITimerService,
-} from "vs/workbench/services/timer/browser/timerService";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import { process } from "vs/base/parts/sandbox/electron-sandbox/globals";
+import { IAccessibilityService } from "vs/platform/accessibility/common/accessibility";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { IWorkbenchLayoutService } from "vs/workbench/services/layout/browser/layoutService";
+import { INativeHostService } from "vs/platform/native/common/native";
 import { IProductService } from "vs/platform/product/common/productService";
 import {
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { IUpdateService } from "vs/platform/update/common/update";
+import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
+import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
+import { IWorkbenchLayoutService } from "vs/workbench/services/layout/browser/layoutService";
+import { ILifecycleService } from "vs/workbench/services/lifecycle/common/lifecycle";
 import { IPaneCompositePartService } from "vs/workbench/services/panecomposite/browser/panecomposite";
+import {
+	AbstractTimerService,
+	IStartupMetrics,
+	ITimerService,
+	Writeable,
+} from "vs/workbench/services/timer/browser/timerService";
 
 export class TimerService extends AbstractTimerService {
 	constructor(
@@ -72,7 +72,7 @@ export class TimerService extends AbstractTimerService {
 		return didUseCachedData(
 			this._productService,
 			this._storageService,
-			this._environmentService
+			this._environmentService,
 		);
 	}
 	protected _getWindowCount(): Promise<number> {
@@ -80,7 +80,7 @@ export class TimerService extends AbstractTimerService {
 	}
 
 	protected async _extendStartupInfo(
-		info: Writeable<IStartupMetrics>
+		info: Writeable<IStartupMetrics>,
 	): Promise<void> {
 		try {
 			const [
@@ -144,7 +144,7 @@ let _didUseCachedData: boolean | undefined = undefined;
 export function didUseCachedData(
 	productService: IProductService,
 	storageService: IStorageService,
-	environmentService: INativeWorkbenchEnvironmentService
+	environmentService: INativeWorkbenchEnvironmentService,
 ): boolean {
 	// browser code loading: only a guess based on
 	// this being the first start with the commit
@@ -158,7 +158,7 @@ export function didUseCachedData(
 		} else if (
 			storageService.get(
 				lastRunningCommitStorageKey,
-				StorageScope.APPLICATION
+				StorageScope.APPLICATION,
 			) === productService.commit
 		) {
 			_didUseCachedData = true; // subsequent start on same commit, assume cached data is there
@@ -167,7 +167,7 @@ export function didUseCachedData(
 				lastRunningCommitStorageKey,
 				productService.commit,
 				StorageScope.APPLICATION,
-				StorageTarget.MACHINE
+				StorageTarget.MACHINE,
 			);
 			_didUseCachedData = false; // first time start on commit, assume cached data is not yet there
 		}

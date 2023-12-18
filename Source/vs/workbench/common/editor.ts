@@ -3,15 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
+import { IAction, toAction } from "vs/base/common/actions";
+import {
+	IErrorWithActions,
+	createErrorWithActions,
+	isErrorWithActions,
+} from "vs/base/common/errorMessage";
 import { Event } from "vs/base/common/event";
-import { DeepRequiredNonNullable, assertIsDefined } from "vs/base/common/types";
-import { URI } from "vs/base/common/uri";
 import {
 	Disposable,
 	IDisposable,
 	toDisposable,
 } from "vs/base/common/lifecycle";
+import { Schemas } from "vs/base/common/network";
+import { IExtUri } from "vs/base/common/resources";
+import Severity from "vs/base/common/severity";
+import { DeepRequiredNonNullable, assertIsDefined } from "vs/base/common/types";
+import { URI } from "vs/base/common/uri";
 import {
 	ICodeEditorViewState,
 	IDiffEditor,
@@ -19,48 +27,40 @@ import {
 	IEditor,
 	IEditorViewState,
 } from "vs/editor/common/editorCommon";
+import { localize } from "vs/nls";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
 import {
-	IEditorOptions,
-	IResourceEditorInput,
-	ITextResourceEditorInput,
 	IBaseTextResourceEditorInput,
 	IBaseUntypedEditorInput,
+	IEditorOptions,
+	IResourceEditorInput,
 	ITextEditorOptions,
+	ITextResourceEditorInput,
 } from "vs/platform/editor/common/editor";
-import type { EditorInput } from "vs/workbench/common/editor/editorInput";
-import {
-	IInstantiationService,
-	IConstructorSignature,
-	ServicesAccessor,
-	BrandedService,
-} from "vs/platform/instantiation/common/instantiation";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	IEncodingSupport,
-	ILanguageSupport,
-} from "vs/workbench/services/textfile/common/textfiles";
-import { IEditorGroup } from "vs/workbench/services/editor/common/editorGroupsService";
-import { ICompositeControl, IComposite } from "vs/workbench/common/composite";
 import {
 	FileType,
 	IFileReadLimits,
 	IFileService,
 } from "vs/platform/files/common/files";
-import { IPathData } from "vs/platform/window/common/window";
-import { IExtUri } from "vs/base/common/resources";
-import { Schemas } from "vs/base/common/network";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { ILogService } from "vs/platform/log/common/log";
 import {
-	IErrorWithActions,
-	createErrorWithActions,
-	isErrorWithActions,
-} from "vs/base/common/errorMessage";
-import { IAction, toAction } from "vs/base/common/actions";
-import Severity from "vs/base/common/severity";
-import { IPreferencesService } from "vs/workbench/services/preferences/common/preferences";
+	BrandedService,
+	IConstructorSignature,
+	IInstantiationService,
+	ServicesAccessor,
+} from "vs/platform/instantiation/common/instantiation";
+import { ILogService } from "vs/platform/log/common/log";
+import { Registry } from "vs/platform/registry/common/platform";
+import { IPathData } from "vs/platform/window/common/window";
+import { IComposite, ICompositeControl } from "vs/workbench/common/composite";
 import { IReadonlyEditorGroupModel } from "vs/workbench/common/editor/editorGroupModel";
+import type { EditorInput } from "vs/workbench/common/editor/editorInput";
+import { IEditorGroup } from "vs/workbench/services/editor/common/editorGroupsService";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { IPreferencesService } from "vs/workbench/services/preferences/common/preferences";
+import {
+	IEncodingSupport,
+	ILanguageSupport,
+} from "vs/workbench/services/textfile/common/textfiles";
 
 // Static values for editor contributions
 export const EditorExtensions = {
@@ -73,7 +73,7 @@ export const DEFAULT_EDITOR_ASSOCIATION = {
 	id: "default",
 	displayName: localize(
 		"promptOpenWith.defaultEditor.displayName",
-		"Text Editor"
+		"Text Editor",
 	),
 	providerDisplayName: localize("builtinProviderDisplayName", "Built-in"),
 };
@@ -232,7 +232,7 @@ export interface IEditorPaneSelectionChangeEvent {
 	reason: EditorPaneSelectionChangeReason;
 }
 
-export const enum EditorPaneSelectionChangeReason {
+export enum EditorPaneSelectionChangeReason {
 	/**
 	 * The selection was changed as a result of a programmatic
 	 * method invocation.
@@ -248,7 +248,7 @@ export const enum EditorPaneSelectionChangeReason {
 	 * This typically means the user changed the selection
 	 * with mouse or keyboard.
 	 */
-	USER,
+	USER = 2,
 
 	/**
 	 * The selection was changed as a result of editing in
@@ -257,7 +257,7 @@ export const enum EditorPaneSelectionChangeReason {
 	 * For a text editor pane, this for example can be typing
 	 * in the text of the editor pane.
 	 */
-	EDIT,
+	EDIT = 3,
 
 	/**
 	 * The selection was changed as a result of a navigation
@@ -266,7 +266,7 @@ export const enum EditorPaneSelectionChangeReason {
 	 * For a text editor pane, this for example can be a result
 	 * of selecting an entry from a text outline view.
 	 */
-	NAVIGATION,
+	NAVIGATION = 4,
 
 	/**
 	 * The selection was changed as a result of a jump action
@@ -275,7 +275,7 @@ export const enum EditorPaneSelectionChangeReason {
 	 * For a text editor pane, this for example can be a result
 	 * of invoking "Go to definition" from a symbol.
 	 */
-	JUMP,
+	JUMP = 5,
 }
 
 export interface IEditorPaneSelection {
@@ -283,7 +283,7 @@ export interface IEditorPaneSelection {
 	 * Asks to compare this selection to another selection.
 	 */
 	compare(
-		otherSelection: IEditorPaneSelection
+		otherSelection: IEditorPaneSelection,
 	): EditorPaneSelectionCompareResult;
 
 	/**
@@ -302,7 +302,7 @@ export interface IEditorPaneSelection {
 	log?(): string;
 }
 
-export const enum EditorPaneSelectionCompareResult {
+export enum EditorPaneSelectionCompareResult {
 	/**
 	 * The selections are identical.
 	 */
@@ -334,7 +334,7 @@ export interface IEditorPaneWithSelection extends IEditorPane {
 }
 
 export function isEditorPaneWithSelection(
-	editorPane: IEditorPane | undefined
+	editorPane: IEditorPane | undefined,
 ): editorPane is IEditorPaneWithSelection {
 	const candidate = editorPane as IEditorPaneWithSelection | undefined;
 
@@ -355,7 +355,7 @@ export function isEditorPaneWithSelection(
 export function findViewStateForEditor(
 	input: EditorInput,
 	group: GroupIdentifier,
-	editorService: IEditorService
+	editorService: IEditorService,
 ): object | undefined {
 	for (const editorPane of editorService.visibleEditorPanes) {
 		if (editorPane.group.id === group && input.matches(editorPane.input)) {
@@ -399,7 +399,7 @@ export interface ITextDiffEditorPane extends IEditorPane {
  * have to cast the control to work with it, e.g. via methods
  * such as `isCodeEditor(control)`.
  */
-export interface IEditorControl extends ICompositeControl {}
+export type IEditorControl = ICompositeControl;
 
 export interface IFileEditorFactory {
 	/**
@@ -418,7 +418,7 @@ export interface IFileEditorFactory {
 		preferredEncoding: string | undefined,
 		preferredLanguageId: string | undefined,
 		preferredContents: string | undefined,
-		instantiationService: IInstantiationService
+		instantiationService: IInstantiationService,
 	): IFileEditorInput;
 
 	/**
@@ -448,7 +448,7 @@ export interface IEditorFactoryRegistry {
 	 */
 	registerEditorSerializer<Services extends BrandedService[]>(
 		editorTypeId: string,
-		ctor: { new (...Services: Services): IEditorSerializer }
+		ctor: { new (...Services: Services): IEditorSerializer },
 	): IDisposable;
 
 	/**
@@ -481,7 +481,7 @@ export interface IEditorSerializer {
 	 */
 	deserialize(
 		instantiationService: IInstantiationService,
-		serializedEditor: string
+		serializedEditor: string,
 	): EditorInput | undefined;
 }
 
@@ -602,7 +602,7 @@ export interface IResourceMergeEditorInput extends IBaseUntypedEditorInput {
 }
 
 export function isResourceEditorInput(
-	editor: unknown
+	editor: unknown,
 ): editor is IResourceEditorInput {
 	if (isEditorInput(editor)) {
 		return false; // make sure to not accidentally match on typed editor inputs
@@ -614,7 +614,7 @@ export function isResourceEditorInput(
 }
 
 export function isResourceDiffEditorInput(
-	editor: unknown
+	editor: unknown,
 ): editor is IResourceDiffEditorInput {
 	if (isEditorInput(editor)) {
 		return false; // make sure to not accidentally match on typed editor inputs
@@ -628,7 +628,7 @@ export function isResourceDiffEditorInput(
 }
 
 export function isResourceDiffListEditorInput(
-	editor: unknown
+	editor: unknown,
 ): editor is IResourceMultiDiffEditorInput {
 	if (isEditorInput(editor)) {
 		return false; // make sure to not accidentally match on typed editor inputs
@@ -640,7 +640,7 @@ export function isResourceDiffListEditorInput(
 }
 
 export function isResourceSideBySideEditorInput(
-	editor: unknown
+	editor: unknown,
 ): editor is IResourceSideBySideEditorInput {
 	if (isEditorInput(editor)) {
 		return false; // make sure to not accidentally match on typed editor inputs
@@ -658,7 +658,7 @@ export function isResourceSideBySideEditorInput(
 }
 
 export function isUntitledResourceEditorInput(
-	editor: unknown
+	editor: unknown,
 ): editor is IUntitledTextResourceEditorInput {
 	if (isEditorInput(editor)) {
 		return false; // make sure to not accidentally match on typed editor inputs
@@ -677,7 +677,7 @@ export function isUntitledResourceEditorInput(
 }
 
 export function isResourceMergeEditorInput(
-	editor: unknown
+	editor: unknown,
 ): editor is IResourceMergeEditorInput {
 	if (isEditorInput(editor)) {
 		return false; // make sure to not accidentally match on typed editor inputs
@@ -693,13 +693,13 @@ export function isResourceMergeEditorInput(
 	);
 }
 
-export const enum Verbosity {
-	SHORT,
-	MEDIUM,
-	LONG,
+export enum Verbosity {
+	SHORT = 0,
+	MEDIUM = 1,
+	LONG = 2,
 }
 
-export const enum SaveReason {
+export enum SaveReason {
 	/**
 	 * Explicit user gesture.
 	 */
@@ -807,7 +807,7 @@ export interface IMoveResult {
 	options?: IEditorOptions;
 }
 
-export const enum EditorInputCapabilities {
+export enum EditorInputCapabilities {
 	/**
 	 * Signals no specific capability for the input.
 	 */
@@ -912,7 +912,7 @@ export interface EditorInputWithPreferredResource {
 }
 
 function isEditorInputWithPreferredResource(
-	editor: unknown
+	editor: unknown,
 ): editor is EditorInputWithPreferredResource {
 	const candidate = editor as EditorInputWithPreferredResource | undefined;
 
@@ -932,7 +932,7 @@ export interface ISideBySideEditorInput extends EditorInput {
 }
 
 export function isSideBySideEditorInput(
-	editor: unknown
+	editor: unknown,
 ): editor is ISideBySideEditorInput {
 	const candidate = editor as ISideBySideEditorInput | undefined;
 
@@ -1051,7 +1051,7 @@ export function createTooLargeFileError(
 	input: EditorInput,
 	options: IEditorOptions | undefined,
 	message: string,
-	preferencesService: IPreferencesService
+	preferencesService: IPreferencesService,
 ): Error {
 	return createEditorOpenError(
 		message,
@@ -1074,7 +1074,7 @@ export function createTooLargeFileError(
 				id: "workbench.action.configureEditorLargeFileConfirmation",
 				label: localize(
 					"configureEditorLargeFileConfirmation",
-					"Configure Limit"
+					"Configure Limit",
 				),
 				run: () => {
 					return preferencesService.openUserSettings({
@@ -1086,7 +1086,7 @@ export function createTooLargeFileError(
 		{
 			forceMessage: true,
 			forceSeverity: Severity.Warning,
-		}
+		},
 	);
 }
 
@@ -1100,7 +1100,7 @@ export interface EditorInputWithOptionsAndGroup extends EditorInputWithOptions {
 }
 
 export function isEditorInputWithOptions(
-	editor: unknown
+	editor: unknown,
 ): editor is EditorInputWithOptions {
 	const candidate = editor as EditorInputWithOptions | undefined;
 
@@ -1108,7 +1108,7 @@ export function isEditorInputWithOptions(
 }
 
 export function isEditorInputWithOptionsAndGroup(
-	editor: unknown
+	editor: unknown,
 ): editor is EditorInputWithOptionsAndGroup {
 	const candidate = editor as EditorInputWithOptionsAndGroup | undefined;
 
@@ -1136,7 +1136,7 @@ export interface IEditorIdentifier {
 }
 
 export function isEditorIdentifier(
-	identifier: unknown
+	identifier: unknown,
 ): identifier is IEditorIdentifier {
 	const candidate = identifier as IEditorIdentifier | undefined;
 
@@ -1165,25 +1165,25 @@ export enum EditorCloseContext {
 	/**
 	 * No specific context for closing (e.g. explicit user gesture).
 	 */
-	UNKNOWN,
+	UNKNOWN = 0,
 
 	/**
 	 * The editor closed because it was replaced with another editor.
 	 * This can either happen via explicit replace call or when an
 	 * editor is in preview mode and another editor opens.
 	 */
-	REPLACE,
+	REPLACE = 1,
 
 	/**
 	 * The editor closed as a result of moving it to another group.
 	 */
-	MOVE,
+	MOVE = 2,
 
 	/**
 	 * The editor closed because another editor turned into preview
 	 * and this used to be the preview editor before.
 	 */
-	UNPIN,
+	UNPIN = 3,
 }
 
 export interface IEditorCloseEvent extends IEditorIdentifier {
@@ -1217,28 +1217,28 @@ export interface IEditorWillMoveEvent extends IEditorIdentifier {
 	readonly target: GroupIdentifier;
 }
 
-export interface IEditorWillOpenEvent extends IEditorIdentifier {}
+export type IEditorWillOpenEvent = IEditorIdentifier;
 
 export type GroupIdentifier = number;
 
-export const enum GroupModelChangeKind {
+export enum GroupModelChangeKind {
 	/* Group Changes */
-	GROUP_ACTIVE,
-	GROUP_INDEX,
-	GROUP_LABEL,
-	GROUP_LOCKED,
+	GROUP_ACTIVE = 0,
+	GROUP_INDEX = 1,
+	GROUP_LABEL = 2,
+	GROUP_LOCKED = 3,
 
 	/* Editor Changes */
-	EDITOR_OPEN,
-	EDITOR_CLOSE,
-	EDITOR_MOVE,
-	EDITOR_ACTIVE,
-	EDITOR_LABEL,
-	EDITOR_CAPABILITIES,
-	EDITOR_PIN,
-	EDITOR_STICKY,
-	EDITOR_DIRTY,
-	EDITOR_WILL_DISPOSE,
+	EDITOR_OPEN = 4,
+	EDITOR_CLOSE = 5,
+	EDITOR_MOVE = 6,
+	EDITOR_ACTIVE = 7,
+	EDITOR_LABEL = 8,
+	EDITOR_CAPABILITIES = 9,
+	EDITOR_PIN = 10,
+	EDITOR_STICKY = 11,
+	EDITOR_DIRTY = 12,
+	EDITOR_WILL_DISPOSE = 13,
 }
 
 export interface IWorkbenchEditorConfiguration {
@@ -1255,16 +1255,15 @@ interface IEditorPartLimitConfiguration {
 	perEditorGroup?: boolean;
 }
 
-export interface IEditorPartLimitOptions
-	extends Required<IEditorPartLimitConfiguration> {}
+export type IEditorPartLimitOptions = Required<IEditorPartLimitConfiguration>;
 
 interface IEditorPartDecorationsConfiguration {
 	badges?: boolean;
 	colors?: boolean;
 }
 
-export interface IEditorPartDecorationOptions
-	extends Required<IEditorPartDecorationsConfiguration> {}
+export type IEditorPartDecorationOptions =
+	Required<IEditorPartDecorationsConfiguration>;
 
 interface IEditorPartConfiguration {
 	showTabs?: "multiple" | "single" | "none";
@@ -1385,7 +1384,7 @@ class EditorResourceAccessorImpl {
 	 * such, the original URI and the canonical URI can be different.
 	 */
 	getOriginalUri(
-		editor: EditorInput | IUntypedEditorInput | undefined | null
+		editor: EditorInput | IUntypedEditorInput | undefined | null,
 	): URI | undefined;
 	getOriginalUri(
 		editor: EditorInput | IUntypedEditorInput | undefined | null,
@@ -1394,21 +1393,21 @@ class EditorResourceAccessorImpl {
 				| SideBySideEditor.PRIMARY
 				| SideBySideEditor.SECONDARY
 				| SideBySideEditor.ANY;
-		}
+		},
 	): URI | undefined;
 	getOriginalUri(
 		editor: EditorInput | IUntypedEditorInput | undefined | null,
 		options: IEditorResourceAccessorOptions & {
 			supportSideBySide: SideBySideEditor.BOTH;
-		}
+		},
 	): URI | { primary?: URI; secondary?: URI } | undefined;
 	getOriginalUri(
 		editor: EditorInput | IUntypedEditorInput | undefined | null,
-		options?: IEditorResourceAccessorOptions
+		options?: IEditorResourceAccessorOptions,
 	): URI | { primary?: URI; secondary?: URI } | undefined;
 	getOriginalUri(
 		editor: EditorInput | IUntypedEditorInput | undefined | null,
-		options?: IEditorResourceAccessorOptions
+		options?: IEditorResourceAccessorOptions,
 	): URI | { primary?: URI; secondary?: URI } | undefined {
 		if (!editor) {
 			return undefined;
@@ -1418,7 +1417,7 @@ class EditorResourceAccessorImpl {
 		if (isResourceMergeEditorInput(editor)) {
 			return EditorResourceAccessor.getOriginalUri(
 				editor.result,
-				options
+				options,
 			);
 		}
 
@@ -1507,7 +1506,7 @@ class EditorResourceAccessorImpl {
 	 * such, the original URI and the canonical URI can be different.
 	 */
 	getCanonicalUri(
-		editor: EditorInput | IUntypedEditorInput | undefined | null
+		editor: EditorInput | IUntypedEditorInput | undefined | null,
 	): URI | undefined;
 	getCanonicalUri(
 		editor: EditorInput | IUntypedEditorInput | undefined | null,
@@ -1516,21 +1515,21 @@ class EditorResourceAccessorImpl {
 				| SideBySideEditor.PRIMARY
 				| SideBySideEditor.SECONDARY
 				| SideBySideEditor.ANY;
-		}
+		},
 	): URI | undefined;
 	getCanonicalUri(
 		editor: EditorInput | IUntypedEditorInput | undefined | null,
 		options: IEditorResourceAccessorOptions & {
 			supportSideBySide: SideBySideEditor.BOTH;
-		}
+		},
 	): URI | { primary?: URI; secondary?: URI } | undefined;
 	getCanonicalUri(
 		editor: EditorInput | IUntypedEditorInput | undefined | null,
-		options?: IEditorResourceAccessorOptions
+		options?: IEditorResourceAccessorOptions,
 	): URI | { primary?: URI; secondary?: URI } | undefined;
 	getCanonicalUri(
 		editor: EditorInput | IUntypedEditorInput | undefined | null,
-		options?: IEditorResourceAccessorOptions
+		options?: IEditorResourceAccessorOptions,
 	): URI | { primary?: URI; secondary?: URI } | undefined {
 		if (!editor) {
 			return undefined;
@@ -1540,7 +1539,7 @@ class EditorResourceAccessorImpl {
 		if (isResourceMergeEditorInput(editor)) {
 			return EditorResourceAccessor.getCanonicalUri(
 				editor.result,
-				options
+				options,
 			);
 		}
 
@@ -1597,7 +1596,7 @@ class EditorResourceAccessorImpl {
 
 	private filterUri(
 		resource: URI,
-		filter: string | string[]
+		filter: string | string[],
 	): URI | undefined {
 		// Multiple scheme filter
 		if (Array.isArray(filter)) {
@@ -1607,10 +1606,8 @@ class EditorResourceAccessorImpl {
 		}
 
 		// Single scheme filter
-		else {
-			if (filter === resource.scheme) {
-				return resource;
-			}
+		else if (filter === resource.scheme) {
+			return resource;
 		}
 
 		return undefined;
@@ -1625,16 +1622,16 @@ export type PreventPinnedEditorClose =
 	| undefined;
 
 export enum EditorCloseMethod {
-	UNKNOWN,
-	KEYBOARD,
-	MOUSE,
+	UNKNOWN = 0,
+	KEYBOARD = 1,
+	MOUSE = 2,
 }
 
 export function preventEditorClose(
 	group: IEditorGroup | IReadonlyEditorGroupModel,
 	editor: EditorInput,
 	method: EditorCloseMethod,
-	configuration: IEditorPartConfiguration
+	configuration: IEditorPartConfiguration,
 ): boolean {
 	if (!group.isSticky(editor)) {
 		return false; // only interested in sticky editors
@@ -1657,9 +1654,9 @@ export function preventEditorClose(
 
 export const EditorResourceAccessor = new EditorResourceAccessorImpl();
 
-export const enum CloseDirection {
-	LEFT,
-	RIGHT,
+export enum CloseDirection {
+	LEFT = 0,
+	RIGHT = 1,
 }
 
 export interface IEditorMemento<T> {
@@ -1693,7 +1690,7 @@ class EditorFactoryRegistry implements IEditorFactoryRegistry {
 
 	start(accessor: ServicesAccessor): void {
 		const instantiationService = (this.instantiationService = accessor.get(
-			IInstantiationService
+			IInstantiationService,
 		));
 
 		for (const [key, ctor] of this.editorSerializerConstructors) {
@@ -1706,7 +1703,7 @@ class EditorFactoryRegistry implements IEditorFactoryRegistry {
 	private createEditorSerializer(
 		editorTypeId: string,
 		ctor: IConstructorSignature<IEditorSerializer>,
-		instantiationService: IInstantiationService
+		instantiationService: IInstantiationService,
 	): void {
 		const instance = instantiationService.createInstance(ctor);
 		this.editorSerializerInstances.set(editorTypeId, instance);
@@ -1726,25 +1723,25 @@ class EditorFactoryRegistry implements IEditorFactoryRegistry {
 
 	registerEditorSerializer(
 		editorTypeId: string,
-		ctor: IConstructorSignature<IEditorSerializer>
+		ctor: IConstructorSignature<IEditorSerializer>,
 	): IDisposable {
 		if (
 			this.editorSerializerConstructors.has(editorTypeId) ||
 			this.editorSerializerInstances.has(editorTypeId)
 		) {
 			throw new Error(
-				`A editor serializer with type ID '${editorTypeId}' was already registered.`
+				`A editor serializer with type ID '${editorTypeId}' was already registered.`,
 			);
 		}
 
-		if (!this.instantiationService) {
-			this.editorSerializerConstructors.set(editorTypeId, ctor);
-		} else {
+		if (this.instantiationService) {
 			this.createEditorSerializer(
 				editorTypeId,
 				ctor,
-				this.instantiationService
+				this.instantiationService,
 			);
+		} else {
+			this.editorSerializerConstructors.set(editorTypeId, ctor);
 		}
 
 		return toDisposable(() => {
@@ -1756,10 +1753,10 @@ class EditorFactoryRegistry implements IEditorFactoryRegistry {
 	getEditorSerializer(editor: EditorInput): IEditorSerializer | undefined;
 	getEditorSerializer(editorTypeId: string): IEditorSerializer | undefined;
 	getEditorSerializer(
-		arg1: string | EditorInput
+		arg1: string | EditorInput,
 	): IEditorSerializer | undefined {
 		return this.editorSerializerInstances.get(
-			typeof arg1 === "string" ? arg1 : arg1.typeId
+			typeof arg1 === "string" ? arg1 : arg1.typeId,
 		);
 	}
 }
@@ -1769,7 +1766,7 @@ Registry.add(EditorExtensions.EditorFactory, new EditorFactoryRegistry());
 export async function pathsToEditors(
 	paths: IPathData[] | undefined,
 	fileService: IFileService,
-	logService: ILogService
+	logService: ILogService,
 ): Promise<
 	ReadonlyArray<
 		IResourceEditorInput | IUntitledTextResourceEditorInput | undefined
@@ -1785,7 +1782,7 @@ export async function pathsToEditors(
 			if (!resource) {
 				logService.info(
 					"Cannot resolve the path because it is not valid.",
-					path
+					path,
 				);
 				return undefined;
 			}
@@ -1795,7 +1792,7 @@ export async function pathsToEditors(
 			if (!canHandleResource) {
 				logService.info(
 					"Cannot resolve the path because it cannot be handled",
-					path
+					path,
 				);
 				return undefined;
 			}
@@ -1817,7 +1814,7 @@ export async function pathsToEditors(
 			if (!exists && path.openOnlyIfExists) {
 				logService.info(
 					"Cannot resolve the path because it does not exist",
-					path
+					path,
 				);
 				return undefined;
 			}
@@ -1825,7 +1822,7 @@ export async function pathsToEditors(
 			if (type === FileType.Directory) {
 				logService.info(
 					"Cannot resolve the path because it is a directory",
-					path
+					path,
 				);
 				return undefined;
 			}
@@ -1840,24 +1837,24 @@ export async function pathsToEditors(
 			}
 
 			return { resource, options };
-		})
+		}),
 	);
 }
 
-export const enum EditorsOrder {
+export enum EditorsOrder {
 	/**
 	 * Editors sorted by most recent activity (most recent active first)
 	 */
-	MOST_RECENTLY_ACTIVE,
+	MOST_RECENTLY_ACTIVE = 0,
 
 	/**
 	 * Editors sorted by sequential order
 	 */
-	SEQUENTIAL,
+	SEQUENTIAL = 1,
 }
 
 export function isTextEditorViewState(
-	candidate: unknown
+	candidate: unknown,
 ): candidate is IEditorViewState {
 	const viewState = candidate as IEditorViewState | undefined;
 	if (!viewState) {
@@ -1911,11 +1908,11 @@ export function isEditorOpenError(obj: unknown): obj is IEditorOpenError {
 export function createEditorOpenError(
 	messageOrError: string | Error,
 	actions: IAction[],
-	options?: IEditorOpenErrorOptions
+	options?: IEditorOpenErrorOptions,
 ): IEditorOpenError {
 	const error: IEditorOpenError = createErrorWithActions(
 		messageOrError,
-		actions
+		actions,
 	);
 
 	error.forceMessage = options?.forceMessage;

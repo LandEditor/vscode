@@ -4,8 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from "vscode";
-import * as Proto from "../tsServer/protocol/protocol";
+import { DocumentSelector } from "../configuration/documentSelector";
 import { API } from "../tsServer/api";
+import * as Proto from "../tsServer/protocol/protocol";
 import {
 	ClientCapability,
 	ITypeScriptServiceClient,
@@ -15,14 +16,13 @@ import {
 	requireMinVersion,
 	requireSomeCapability,
 } from "./util/dependentRegistration";
-import { DocumentSelector } from "../configuration/documentSelector";
 
 // as we don't do deltas, for performance reasons, don't compute semantic tokens for documents above that limit
 const CONTENT_LENGTH_LIMIT = 100000;
 
 export function register(
 	selector: DocumentSelector,
-	client: ITypeScriptServiceClient
+	client: ITypeScriptServiceClient,
 ) {
 	return conditionalRegistration(
 		[
@@ -34,9 +34,9 @@ export function register(
 			return vscode.languages.registerDocumentRangeSemanticTokensProvider(
 				selector.semantic,
 				provider,
-				provider.getLegend()
+				provider.getLegend(),
 			);
-		}
+		},
 	);
 }
 
@@ -53,7 +53,7 @@ class DocumentSemanticTokensProvider
 
 	public async provideDocumentSemanticTokens(
 		document: vscode.TextDocument,
-		token: vscode.CancellationToken
+		token: vscode.CancellationToken,
 	): Promise<vscode.SemanticTokens | null> {
 		const file = this.client.toOpenTsFilePath(document);
 		if (!file || document.getText().length > CONTENT_LENGTH_LIMIT) {
@@ -62,14 +62,14 @@ class DocumentSemanticTokensProvider
 		return this.provideSemanticTokens(
 			document,
 			{ file, start: 0, length: document.getText().length },
-			token
+			token,
 		);
 	}
 
 	public async provideDocumentRangeSemanticTokens(
 		document: vscode.TextDocument,
 		range: vscode.Range,
-		token: vscode.CancellationToken
+		token: vscode.CancellationToken,
 	): Promise<vscode.SemanticTokens | null> {
 		const file = this.client.toOpenTsFilePath(document);
 		if (
@@ -85,14 +85,14 @@ class DocumentSemanticTokensProvider
 		return this.provideSemanticTokens(
 			document,
 			{ file, start, length },
-			token
+			token,
 		);
 	}
 
 	private async provideSemanticTokens(
 		document: vscode.TextDocument,
 		requestArg: Proto.EncodedSemanticClassificationsRequestArgs,
-		token: vscode.CancellationToken
+		token: vscode.CancellationToken,
 	): Promise<vscode.SemanticTokens | null> {
 		const file = this.client.toOpenTsFilePath(document);
 		if (!file) {
@@ -107,7 +107,7 @@ class DocumentSemanticTokensProvider
 			token,
 			{
 				cancelOnResourceChange: document.uri,
-			}
+			},
 		);
 		if (response.type !== "response" || !response.body) {
 			return null;
@@ -161,7 +161,7 @@ class DocumentSemanticTokensProvider
 					startCharacter,
 					endCharacter - startCharacter,
 					tokenType,
-					tokenModifiers
+					tokenModifiers,
 				);
 			}
 		}
@@ -186,7 +186,7 @@ function waitForDocumentChangesToEnd(document: vscode.TextDocument) {
 // typescript encodes type and modifiers in the classification:
 // TSClassification = (TokenType + 1) << 8 + TokenModifier
 
-const enum TokenType {
+enum TokenType {
 	class = 0,
 	enum = 1,
 	interface = 2,
@@ -202,7 +202,7 @@ const enum TokenType {
 	_ = 12,
 }
 
-const enum TokenModifier {
+enum TokenModifier {
 	declaration = 0,
 	static = 1,
 	async = 2,
@@ -212,13 +212,13 @@ const enum TokenModifier {
 	_ = 6,
 }
 
-const enum TokenEncodingConsts {
+enum TokenEncodingConsts {
 	typeOffset = 8,
 	modifierMask = 255,
 }
 
 function getTokenTypeFromClassification(
-	tsClassification: number
+	tsClassification: number,
 ): number | undefined {
 	if (tsClassification > TokenEncodingConsts.modifierMask) {
 		return (tsClassification >> TokenEncodingConsts.typeOffset) - 1;

@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { join, basename, dirname } from "path";
 import { readFileSync } from "fs";
+import { basename, dirname, join } from "path";
 
 const contents: { [name: string]: string } = {};
 
@@ -14,7 +14,7 @@ const serverFolder =
 		: dirname(dirname(__dirname));
 const TYPESCRIPT_LIB_SOURCE = join(
 	serverFolder,
-	"../../node_modules/typescript/lib"
+	"../../node_modules/typescript/lib",
 );
 const JQUERY_PATH = join(serverFolder, "lib/jquery.d.ts");
 

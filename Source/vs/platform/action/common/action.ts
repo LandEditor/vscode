@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI, UriDto } from "vs/base/common/uri";
-import { ContextKeyExpression } from "vs/platform/contextkey/common/contextkey";
 import { ThemeIcon } from "vs/base/common/themables";
-import { Categories } from "./actionCommonCategories";
+import { URI, UriDto } from "vs/base/common/uri";
 import { ICommandMetadata } from "vs/platform/commands/common/commands";
+import { ContextKeyExpression } from "vs/platform/contextkey/common/contextkey";
+import { Categories } from "./actionCommonCategories";
 
 export interface ILocalizedString {
 	/**
@@ -61,7 +61,7 @@ export interface ICommandActionToggleInfo {
 }
 
 export function isICommandActionToggleInfo(
-	thing: ContextKeyExpression | ICommandActionToggleInfo | undefined
+	thing: ContextKeyExpression | ICommandActionToggleInfo | undefined,
 ): thing is ICommandActionToggleInfo {
 	return thing
 		? (<ICommandActionToggleInfo>thing).condition !== undefined

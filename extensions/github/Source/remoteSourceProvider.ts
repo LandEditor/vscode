@@ -3,16 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Octokit } from "@octokit/rest";
 import { Uri, env, l10n, workspace } from "vscode";
+import { getOctokit } from "./auth";
+import { getBranchLink, getVscodeDevHost } from "./links";
 import {
-	RemoteSourceProvider,
 	RemoteSource,
 	RemoteSourceAction,
+	RemoteSourceProvider,
 } from "./typings/git-base";
-import { getOctokit } from "./auth";
-import { Octokit } from "@octokit/rest";
 import { getRepositoryFromQuery, getRepositoryFromUrl } from "./util";
-import { getBranchLink, getVscodeDevHost } from "./links";
 
 function asRemoteSource(raw: any): RemoteSource {
 	const protocol = workspace
@@ -67,7 +67,7 @@ export class GithubRemoteSourceProvider implements RemoteSourceProvider {
 
 	private async getUserRemoteSources(
 		octokit: Octokit,
-		query?: string
+		query?: string,
 	): Promise<RemoteSource[]> {
 		if (!query) {
 			const user = await octokit.users.getAuthenticated({});
@@ -85,7 +85,7 @@ export class GithubRemoteSourceProvider implements RemoteSourceProvider {
 
 	private async getQueryRemoteSources(
 		octokit: Octokit,
-		query?: string
+		query?: string,
 	): Promise<RemoteSource[]> {
 		if (!query) {
 			return [];
@@ -134,7 +134,7 @@ export class GithubRemoteSourceProvider implements RemoteSourceProvider {
 		const defaultBranch = repo.data.default_branch;
 
 		return branches.sort((a, b) =>
-			a === defaultBranch ? -1 : b === defaultBranch ? 1 : 0
+			a === defaultBranch ? -1 : b === defaultBranch ? 1 : 0,
 		);
 	}
 

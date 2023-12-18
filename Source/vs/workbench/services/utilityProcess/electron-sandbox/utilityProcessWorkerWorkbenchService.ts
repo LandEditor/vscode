@@ -3,30 +3,30 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ILogService } from "vs/platform/log/common/log";
+import { Barrier, timeout } from "vs/base/common/async";
 import {
 	Disposable,
 	DisposableStore,
 	IDisposable,
 	toDisposable,
 } from "vs/base/common/lifecycle";
-import { IMainProcessService } from "vs/platform/ipc/common/mainProcessService";
-import { Client as MessagePortClient } from "vs/base/parts/ipc/common/ipc.mp";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { IPCClient, ProxyChannel } from "vs/base/parts/ipc/common/ipc";
 import { generateUuid } from "vs/base/common/uuid";
+import { IPCClient, ProxyChannel } from "vs/base/parts/ipc/common/ipc";
+import { Client as MessagePortClient } from "vs/base/parts/ipc/common/ipc.mp";
 import { acquirePort } from "vs/base/parts/ipc/electron-sandbox/ipc.mp";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { IMainProcessService } from "vs/platform/ipc/common/mainProcessService";
+import { ILogService } from "vs/platform/log/common/log";
 import {
 	IOnDidTerminateUtilityrocessWorkerProcess,
-	ipcUtilityProcessWorkerChannelName,
 	IUtilityProcessWorkerProcess,
 	IUtilityProcessWorkerService,
+	ipcUtilityProcessWorkerChannelName,
 } from "vs/platform/utilityProcess/common/utilityProcessWorkerService";
-import { Barrier, timeout } from "vs/base/common/async";
 
 export const IUtilityProcessWorkerWorkbenchService =
 	createDecorator<IUtilityProcessWorkerWorkbenchService>(
-		"utilityProcessWorkerWorkbenchService"
+		"utilityProcessWorkerWorkbenchService",
 	);
 
 export interface IUtilityProcessWorker extends IDisposable {
@@ -73,7 +73,7 @@ export interface IUtilityProcessWorkerWorkbenchService {
 	 * allows to terminate the worker if needed.
 	 */
 	createWorker(
-		process: IUtilityProcessWorkerProcess
+		process: IUtilityProcessWorkerProcess,
 	): Promise<IUtilityProcessWorker>;
 
 	/**
@@ -94,7 +94,7 @@ export class UtilityProcessWorkerWorkbenchService
 	private get utilityProcessWorkerService(): IUtilityProcessWorkerService {
 		if (!this._utilityProcessWorkerService) {
 			const channel = this.mainProcessService.getChannel(
-				ipcUtilityProcessWorkerChannelName
+				ipcUtilityProcessWorkerChannelName,
 			);
 			this._utilityProcessWorkerService =
 				ProxyChannel.toService<IUtilityProcessWorkerService>(channel);
@@ -115,7 +115,7 @@ export class UtilityProcessWorkerWorkbenchService
 	}
 
 	async createWorker(
-		process: IUtilityProcessWorkerProcess
+		process: IUtilityProcessWorkerProcess,
 	): Promise<IUtilityProcessWorker> {
 		this.logService.trace("Renderer->UtilityProcess#createWorker");
 
@@ -133,7 +133,7 @@ export class UtilityProcessWorkerWorkbenchService
 		const portPromise = acquirePort(
 			undefined /* we trigger the request via service call! */,
 			responseChannel,
-			nonce
+			nonce,
 		);
 
 		// Actually talk with the utility process service
@@ -149,35 +149,35 @@ export class UtilityProcessWorkerWorkbenchService
 			toDisposable(() => {
 				this.logService.trace(
 					"Renderer->UtilityProcess#disposeWorker",
-					process
+					process,
 				);
 
 				this.utilityProcessWorkerService.disposeWorker({
 					process,
 					reply: { windowId: this.windowId },
 				});
-			})
+			}),
 		);
 
 		const port = await portPromise;
 		const client = disposables.add(
 			new MessagePortClient(
 				port,
-				`window:${this.windowId},module:${process.moduleId}`
-			)
+				`window:${this.windowId},module:${process.moduleId}`,
+			),
 		);
 		this.logService.trace(
-			"Renderer->UtilityProcess#createWorkerChannel: connection established"
+			"Renderer->UtilityProcess#createWorkerChannel: connection established",
 		);
 
 		onDidTerminate.then(({ reason }) => {
 			if (reason?.code === 0) {
 				this.logService.trace(
-					`[UtilityProcessWorker]: terminated normally with code ${reason.code}, signal: ${reason.signal}`
+					`[UtilityProcessWorker]: terminated normally with code ${reason.code}, signal: ${reason.signal}`,
 				);
 			} else {
 				this.logService.error(
-					`[UtilityProcessWorker]: terminated unexpectedly with code ${reason?.code}, signal: ${reason?.signal}`
+					`[UtilityProcessWorker]: terminated unexpectedly with code ${reason?.code}, signal: ${reason?.signal}`,
 				);
 			}
 		});

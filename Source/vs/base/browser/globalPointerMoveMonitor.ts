@@ -30,7 +30,7 @@ export class GlobalPointerMoveMonitor implements IDisposable {
 
 	public stopMonitoring(
 		invokeStopCallback: boolean,
-		browserEvent?: PointerEvent | KeyboardEvent
+		browserEvent?: PointerEvent | KeyboardEvent,
 	): void {
 		if (!this.isMonitoring()) {
 			// Not monitoring
@@ -57,7 +57,7 @@ export class GlobalPointerMoveMonitor implements IDisposable {
 		pointerId: number,
 		initialButtons: number,
 		pointerMoveCallback: IPointerMoveCallback,
-		onStopCallback: IOnStopCallback
+		onStopCallback: IOnStopCallback,
 	): void {
 		if (this.isMonitoring()) {
 			this.stopMonitoring(false);
@@ -82,7 +82,7 @@ export class GlobalPointerMoveMonitor implements IDisposable {
 						//
 						// There's no need to do anything in case of failure
 					}
-				})
+				}),
 			);
 		} catch (err) {
 			// See https://github.com/microsoft/vscode/issues/144584
@@ -109,16 +109,16 @@ export class GlobalPointerMoveMonitor implements IDisposable {
 
 					e.preventDefault();
 					this._pointerMoveCallback!(e);
-				}
-			)
+				},
+			),
 		);
 
 		this._hooks.add(
 			dom.addDisposableListener(
 				eventSource,
 				dom.EventType.POINTER_UP,
-				(e: PointerEvent) => this.stopMonitoring(true)
-			)
+				(e: PointerEvent) => this.stopMonitoring(true),
+			),
 		);
 	}
 }

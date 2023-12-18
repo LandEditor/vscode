@@ -3,51 +3,51 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
 import { Action } from "vs/base/common/actions";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { VSBuffer } from "vs/base/common/buffer";
+import { Event } from "vs/base/common/event";
+import { URI } from "vs/base/common/uri";
+import * as nls from "vs/nls";
+import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
+import {
+	IContextKey,
+	IContextKeyService,
+	RawContextKey,
+} from "vs/platform/contextkey/common/contextkey";
+import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
+import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
+import { IFileService } from "vs/platform/files/common/files";
 import {
 	IInstantiationService,
 	createDecorator,
 } from "vs/platform/instantiation/common/instantiation";
-import { IExtensionsWorkbenchService } from "vs/workbench/contrib/extensions/common/extensions";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import {
-	IExtensionService,
-	IExtensionHostProfile,
-} from "vs/workbench/services/extensions/common/extensions";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { Event } from "vs/base/common/event";
-import { INotificationService } from "vs/platform/notification/common/notification";
-import {
-	IContextKeyService,
-	RawContextKey,
-	IContextKey,
-} from "vs/platform/contextkey/common/contextkey";
-import { IStorageService } from "vs/platform/storage/common/storage";
 import { ILabelService } from "vs/platform/label/common/label";
-import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
-import { SlowExtensionAction } from "vs/workbench/contrib/extensions/electron-sandbox/extensionsSlowActions";
-import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { ReportExtensionIssueAction } from "vs/workbench/contrib/extensions/common/reportExtensionIssueAction";
+import { INativeHostService } from "vs/platform/native/common/native";
+import { INotificationService } from "vs/platform/notification/common/notification";
+import { IV8Profile, Utils } from "vs/platform/profiling/common/profiling";
+import { IStorageService } from "vs/platform/storage/common/storage";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { IThemeService } from "vs/platform/theme/common/themeService";
 import {
 	AbstractRuntimeExtensionsEditor,
 	IRuntimeExtension,
 } from "vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor";
-import { VSBuffer } from "vs/base/common/buffer";
-import { URI } from "vs/base/common/uri";
-import { IFileService } from "vs/platform/files/common/files";
-import { INativeHostService } from "vs/platform/native/common/native";
-import { IV8Profile, Utils } from "vs/platform/profiling/common/profiling";
-import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
+import { IExtensionsWorkbenchService } from "vs/workbench/contrib/extensions/common/extensions";
+import { ReportExtensionIssueAction } from "vs/workbench/contrib/extensions/common/reportExtensionIssueAction";
+import { SlowExtensionAction } from "vs/workbench/contrib/extensions/electron-sandbox/extensionsSlowActions";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
+import {
+	IExtensionHostProfile,
+	IExtensionService,
+} from "vs/workbench/services/extensions/common/extensions";
 
 export const IExtensionHostProfileService =
 	createDecorator<IExtensionHostProfileService>(
-		"extensionHostProfileService"
+		"extensionHostProfileService",
 	);
 export const CONTEXT_PROFILE_SESSION_STATE = new RawContextKey<string>(
 	"profileSessionState",
-	"none"
+	"none",
 );
 export const CONTEXT_EXTENSION_HOST_PROFILE_RECORDED =
 	new RawContextKey<boolean>("extensionHostProfileRecorded", false);
@@ -72,11 +72,11 @@ export interface IExtensionHostProfileService {
 	stopProfiling(): void;
 
 	getUnresponsiveProfile(
-		extensionId: ExtensionIdentifier
+		extensionId: ExtensionIdentifier,
 	): IExtensionHostProfile | undefined;
 	setUnresponsiveProfile(
 		extensionId: ExtensionIdentifier,
-		profile: IExtensionHostProfile
+		profile: IExtensionHostProfile,
 	): void;
 }
 
@@ -146,33 +146,33 @@ export class RuntimeExtensionsEditor extends AbstractRuntimeExtensionsEditor {
 	}
 
 	protected _getUnresponsiveProfile(
-		extensionId: ExtensionIdentifier
+		extensionId: ExtensionIdentifier,
 	): IExtensionHostProfile | undefined {
 		return this._extensionHostProfileService.getUnresponsiveProfile(
-			extensionId
+			extensionId,
 		);
 	}
 
 	protected _createSlowExtensionAction(
-		element: IRuntimeExtension
+		element: IRuntimeExtension,
 	): Action | null {
 		if (element.unresponsiveProfile) {
 			return this._instantiationService.createInstance(
 				SlowExtensionAction,
 				element.description,
-				element.unresponsiveProfile
+				element.unresponsiveProfile,
 			);
 		}
 		return null;
 	}
 
 	protected _createReportExtensionIssueAction(
-		element: IRuntimeExtension
+		element: IRuntimeExtension,
 	): Action | null {
 		if (element.marketplaceInfo) {
 			return this._instantiationService.createInstance(
 				ReportExtensionIssueAction,
-				element.description
+				element.description,
 			);
 		}
 		return null;
@@ -182,7 +182,7 @@ export class RuntimeExtensionsEditor extends AbstractRuntimeExtensionsEditor {
 		return this._instantiationService.createInstance(
 			SaveExtensionHostProfileAction,
 			SaveExtensionHostProfileAction.ID,
-			SaveExtensionHostProfileAction.LABEL
+			SaveExtensionHostProfileAction.LABEL,
 		);
 	}
 
@@ -193,13 +193,13 @@ export class RuntimeExtensionsEditor extends AbstractRuntimeExtensionsEditor {
 				? this._instantiationService.createInstance(
 						StopExtensionHostProfileAction,
 						StopExtensionHostProfileAction.ID,
-						StopExtensionHostProfileAction.LABEL
-					)
+						StopExtensionHostProfileAction.LABEL,
+				  )
 				: this._instantiationService.createInstance(
 						StartExtensionHostProfileAction,
 						StartExtensionHostProfileAction.ID,
-						StartExtensionHostProfileAction.LABEL
-					);
+						StartExtensionHostProfileAction.LABEL,
+				  );
 		return profileAction;
 	}
 }
@@ -208,7 +208,7 @@ export class StartExtensionHostProfileAction extends Action {
 	static readonly ID = "workbench.extensions.action.extensionHostProfile";
 	static readonly LABEL = nls.localize(
 		"extensionHostProfileStart",
-		"Start Extension Host Profile"
+		"Start Extension Host Profile",
 	);
 
 	constructor(
@@ -230,7 +230,7 @@ export class StopExtensionHostProfileAction extends Action {
 	static readonly ID = "workbench.extensions.action.stopExtensionHostProfile";
 	static readonly LABEL = nls.localize(
 		"stopExtensionHostProfileStart",
-		"Stop Extension Host Profile"
+		"Stop Extension Host Profile",
 	);
 
 	constructor(
@@ -251,7 +251,7 @@ export class StopExtensionHostProfileAction extends Action {
 export class SaveExtensionHostProfileAction extends Action {
 	static readonly LABEL = nls.localize(
 		"saveExtensionHostProfile",
-		"Save Extension Host Profile"
+		"Save Extension Host Profile",
 	);
 	static readonly ID = "workbench.extensions.action.saveExtensionHostProfile";
 
@@ -281,7 +281,7 @@ export class SaveExtensionHostProfileAction extends Action {
 		const picked = await this._nativeHostService.showSaveDialog({
 			title: nls.localize(
 				"saveprofile.dialogTitle",
-				"Save Extension Host Profile"
+				"Save Extension Host Profile",
 			),
 			buttonLabel: nls.localize("saveprofile.saveButton", "Save"),
 			defaultPath: `CPU-${new Date()
@@ -311,7 +311,7 @@ export class SaveExtensionHostProfileAction extends Action {
 			// easier to attach these files to GH issues
 			dataToWrite = Utils.rewriteAbsolutePaths(
 				dataToWrite as IV8Profile,
-				"piiRemoved"
+				"piiRemoved",
 			);
 
 			savePath = savePath + ".txt";
@@ -320,8 +320,8 @@ export class SaveExtensionHostProfileAction extends Action {
 		return this._fileService.writeFile(
 			URI.file(savePath),
 			VSBuffer.fromString(
-				JSON.stringify(profileInfo ? profileInfo.data : {}, null, "\t")
-			)
+				JSON.stringify(profileInfo ? profileInfo.data : {}, null, "\t"),
+			),
 		);
 	}
 }

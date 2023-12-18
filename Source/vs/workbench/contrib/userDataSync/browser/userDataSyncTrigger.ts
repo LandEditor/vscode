@@ -75,7 +75,7 @@ export class UserDataSyncTrigger
 	}
 
 	private getUserDataEditorInputSource(
-		editorInput: EditorInput | undefined
+		editorInput: EditorInput | undefined,
 	): string | undefined {
 		if (!editorInput) {
 			return undefined;
@@ -90,7 +90,7 @@ export class UserDataSyncTrigger
 		if (
 			isEqual(
 				resource,
-				this.userDataProfilesService.defaultProfile.settingsResource
+				this.userDataProfilesService.defaultProfile.settingsResource,
 			)
 		) {
 			return "settingsEditor";
@@ -98,7 +98,7 @@ export class UserDataSyncTrigger
 		if (
 			isEqual(
 				resource,
-				this.userDataProfilesService.defaultProfile.keybindingsResource
+				this.userDataProfilesService.defaultProfile.keybindingsResource,
 			)
 		) {
 			return "keybindingsEditor";

@@ -69,7 +69,7 @@ export class ExtensionsProposedApi {
 	}
 
 	private doUpdateEnabledApiProposals(
-		_extension: IExtensionDescription
+		_extension: IExtensionDescription,
 	): void {
 		// this is a trick to make the extension description writeable...
 		type Writeable<T> = { -readonly [P in keyof T]: Writeable<T[P]> };
@@ -81,11 +81,11 @@ export class ExtensionsProposedApi {
 			extension.enabledApiProposals =
 				extension.enabledApiProposals.filter((name) => {
 					const result = Boolean(
-						allApiProposals[<ApiProposalName>name]
+						allApiProposals[<ApiProposalName>name],
 					);
 					if (!result) {
 						this._logService.error(
-							`Extension '${key}' wants API proposal '${name}' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.`
+							`Extension '${key}' wants API proposal '${name}' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.`,
 						);
 					}
 					return result;
@@ -104,22 +104,22 @@ export class ExtensionsProposedApi {
 			const productSet = new Set(productEnabledProposals);
 			const extensionSet = new Set(extension.enabledApiProposals);
 			const diff = new Set(
-				[...extensionSet].filter((a) => !productSet.has(a))
+				[...extensionSet].filter((a) => !productSet.has(a)),
 			);
 			if (diff.size > 0) {
 				this._logService.error(
 					`Extension '${key}' appears in product.json but enables LESS API proposals than the extension wants.\npackage.json (LOSES): ${[
 						...extensionSet,
 					].join(", ")}\nproduct.json (WINS): ${[...productSet].join(
-						", "
-					)}`
+						", ",
+					)}`,
 				);
 
 				if (this._environmentService.isExtensionDevelopment) {
 					this._logService.error(
 						`Proceeding with EXTRA proposals (${[...diff].join(
-							", "
-						)}) because extension is in development mode. Still, this EXTENSION WILL BE BROKEN unless product.json is updated.`
+							", ",
+						)}) because extension is in development mode. Still, this EXTENSION WILL BE BROKEN unless product.json is updated.`,
 					);
 					productEnabledProposals.push(...diff);
 				}
@@ -148,7 +148,7 @@ export class ExtensionsProposedApi {
 					extension.identifier.value
 				} CANNOT USE these API proposals '${
 					extension.enabledApiProposals?.join(", ") || "*"
-				}'. You MUST start in extension development mode or use the --enable-proposed-api command line flag`
+				}'. You MUST start in extension development mode or use the --enable-proposed-api command line flag`,
 			);
 			extension.enabledApiProposals = [];
 		}

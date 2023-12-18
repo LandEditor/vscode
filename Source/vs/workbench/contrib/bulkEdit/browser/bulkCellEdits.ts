@@ -50,7 +50,7 @@ export class ResourceNotebookCellEdit
 			edit.resource,
 			edit.cellEdit,
 			edit.notebookVersionId,
-			edit.metadata
+			edit.metadata,
 		);
 	}
 
@@ -61,7 +61,7 @@ export class ResourceNotebookCellEdit
 			| IDocumentMetadataEdit
 			| ICellReplaceEdit,
 		readonly notebookVersionId: number | undefined = undefined,
-		metadata?: WorkspaceEditMetadata
+		metadata?: WorkspaceEditMetadata,
 	) {
 		super(metadata);
 	}
@@ -100,7 +100,7 @@ export class BulkCellEdits {
 	async apply(): Promise<readonly URI[]> {
 		const resources: URI[] = [];
 		const editsByNotebook = groupBy(this._edits, (a, b) =>
-			compare(a.resource.toString(), b.resource.toString())
+			compare(a.resource.toString(), b.resource.toString()),
 		);
 
 		for (const group of editsByNotebook) {
@@ -109,7 +109,7 @@ export class BulkCellEdits {
 			}
 			const [first] = group;
 			const ref = await this._notebookModelService.resolve(
-				first.resource
+				first.resource,
 			);
 
 			// check state
@@ -119,7 +119,7 @@ export class BulkCellEdits {
 			) {
 				ref.dispose();
 				throw new Error(
-					`Notebook '${first.resource}' has changed in the meantime`
+					`Notebook '${first.resource}' has changed in the meantime`,
 				);
 			}
 
@@ -127,7 +127,7 @@ export class BulkCellEdits {
 			const edits = group.map((entry) => entry.cellEdit);
 			const computeUndo = !ref.object.isReadonly();
 			const editor = getNotebookEditorFromEditorPane(
-				this._editorService.activeEditorPane
+				this._editorService.activeEditorPane,
 			);
 			const initialSelectionState: ISelectionState | undefined =
 				editor?.textModel?.uri.toString() ===
@@ -136,7 +136,7 @@ export class BulkCellEdits {
 							kind: SelectionStateType.Index,
 							focus: editor.getFocus(),
 							selections: editor.getSelections(),
-						}
+					  }
 					: undefined;
 			ref.object.notebook.applyEdits(
 				edits,
@@ -144,7 +144,7 @@ export class BulkCellEdits {
 				initialSelectionState,
 				() => undefined,
 				this._undoRedoGroup,
-				computeUndo
+				computeUndo,
 			);
 			ref.dispose();
 

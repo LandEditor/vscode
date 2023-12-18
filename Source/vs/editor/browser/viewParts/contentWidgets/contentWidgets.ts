@@ -10,22 +10,22 @@ import {
 	IContentWidget,
 } from "vs/editor/browser/editorBrowser";
 import {
+	RenderingContext,
+	RestrictedRenderingContext,
+} from "vs/editor/browser/view/renderingContext";
+import {
 	PartFingerprint,
 	PartFingerprints,
 	ViewPart,
 } from "vs/editor/browser/view/viewPart";
-import {
-	RenderingContext,
-	RestrictedRenderingContext,
-} from "vs/editor/browser/view/renderingContext";
-import { ViewContext } from "vs/editor/common/viewModel/viewContext";
-import * as viewEvents from "vs/editor/common/viewEvents";
-import { ViewportData } from "vs/editor/common/viewLayout/viewLinesViewportData";
 import { EditorOption } from "vs/editor/common/config/editorOptions";
 import { IDimension } from "vs/editor/common/core/dimension";
-import { PositionAffinity } from "vs/editor/common/model";
 import { IPosition, Position } from "vs/editor/common/core/position";
+import { PositionAffinity } from "vs/editor/common/model";
+import * as viewEvents from "vs/editor/common/viewEvents";
+import { ViewportData } from "vs/editor/common/viewLayout/viewLinesViewportData";
 import { IViewModel } from "vs/editor/common/viewModel";
+import { ViewContext } from "vs/editor/common/viewModel/viewContext";
 
 export class ViewContentWidgets extends ViewPart {
 	private readonly _viewDomNode: FastDomNode<HTMLElement>;
@@ -46,14 +46,14 @@ export class ViewContentWidgets extends ViewPart {
 		this.domNode.setTop(0);
 
 		this.overflowingContentWidgetsDomNode = createFastDomNode(
-			document.createElement("div")
+			document.createElement("div"),
 		);
 		PartFingerprints.write(
 			this.overflowingContentWidgetsDomNode,
-			PartFingerprint.OverflowingContentWidgets
+			PartFingerprint.OverflowingContentWidgets,
 		);
 		this.overflowingContentWidgetsDomNode.setClassName(
-			"overflowingContentWidgets"
+			"overflowingContentWidgets",
 		);
 	}
 
@@ -65,7 +65,7 @@ export class ViewContentWidgets extends ViewPart {
 	// --- begin event handlers
 
 	public override onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent
+		e: viewEvents.ViewConfigurationChangedEvent,
 	): boolean {
 		const keys = Object.keys(this._widgets);
 		for (const widgetId of keys) {
@@ -74,7 +74,7 @@ export class ViewContentWidgets extends ViewPart {
 		return true;
 	}
 	public override onDecorationsChanged(
-		e: viewEvents.ViewDecorationsChangedEvent
+		e: viewEvents.ViewDecorationsChangedEvent,
 	): boolean {
 		// true for inline decorations that can end up relayouting text
 		return true;
@@ -83,36 +83,36 @@ export class ViewContentWidgets extends ViewPart {
 		return true;
 	}
 	public override onLineMappingChanged(
-		e: viewEvents.ViewLineMappingChangedEvent
+		e: viewEvents.ViewLineMappingChangedEvent,
 	): boolean {
 		this._updateAnchorsViewPositions();
 		return true;
 	}
 	public override onLinesChanged(
-		e: viewEvents.ViewLinesChangedEvent
+		e: viewEvents.ViewLinesChangedEvent,
 	): boolean {
 		this._updateAnchorsViewPositions();
 		return true;
 	}
 	public override onLinesDeleted(
-		e: viewEvents.ViewLinesDeletedEvent
+		e: viewEvents.ViewLinesDeletedEvent,
 	): boolean {
 		this._updateAnchorsViewPositions();
 		return true;
 	}
 	public override onLinesInserted(
-		e: viewEvents.ViewLinesInsertedEvent
+		e: viewEvents.ViewLinesInsertedEvent,
 	): boolean {
 		this._updateAnchorsViewPositions();
 		return true;
 	}
 	public override onScrollChanged(
-		e: viewEvents.ViewScrollChangedEvent
+		e: viewEvents.ViewScrollChangedEvent,
 	): boolean {
 		return true;
 	}
 	public override onZonesChanged(
-		e: viewEvents.ViewZonesChangedEvent
+		e: viewEvents.ViewZonesChangedEvent,
 	): boolean {
 		return true;
 	}
@@ -144,14 +144,14 @@ export class ViewContentWidgets extends ViewPart {
 		primaryAnchor: IPosition | null,
 		secondaryAnchor: IPosition | null,
 		preference: ContentWidgetPositionPreference[] | null,
-		affinity: PositionAffinity | null
+		affinity: PositionAffinity | null,
 	): void {
 		const myWidget = this._widgets[widget.getId()];
 		myWidget.setPosition(
 			primaryAnchor,
 			secondaryAnchor,
 			preference,
-			affinity
+			affinity,
 		);
 
 		this.setShouldRender();
@@ -244,7 +244,7 @@ class Widget {
 	constructor(
 		context: ViewContext,
 		viewDomNode: FastDomNode<HTMLElement>,
-		actual: IContentWidget
+		actual: IContentWidget,
 	) {
 		this._context = context;
 		this._viewDomNode = viewDomNode;
@@ -259,7 +259,7 @@ class Widget {
 		const layoutInfo = options.get(EditorOption.layoutInfo);
 
 		this._fixedOverflowWidgets = options.get(
-			EditorOption.fixedOverflowWidgets
+			EditorOption.fixedOverflowWidgets,
 		);
 		this._contentWidth = layoutInfo.contentWidth;
 		this._contentLeft = layoutInfo.contentLeft;
@@ -276,7 +276,7 @@ class Widget {
 		this.domNode.setPosition(
 			this._fixedOverflowWidgets && this.allowEditorOverflow
 				? "fixed"
-				: "absolute"
+				: "absolute",
 		);
 		this.domNode.setDisplay("none");
 		this.domNode.setVisibility("hidden");
@@ -285,7 +285,7 @@ class Widget {
 	}
 
 	public onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent
+		e: viewEvents.ViewConfigurationChangedEvent,
 	): void {
 		const options = this._context.configuration.options;
 		this._lineHeight = options.get(EditorOption.lineHeight);
@@ -301,31 +301,31 @@ class Widget {
 		this._setPosition(
 			this._affinity,
 			this._primaryAnchor.modelPosition,
-			this._secondaryAnchor.modelPosition
+			this._secondaryAnchor.modelPosition,
 		);
 	}
 
 	private _setPosition(
 		affinity: PositionAffinity | null,
 		primaryAnchor: IPosition | null,
-		secondaryAnchor: IPosition | null
+		secondaryAnchor: IPosition | null,
 	): void {
 		this._affinity = affinity;
 		this._primaryAnchor = getValidPositionPair(
 			primaryAnchor,
 			this._context.viewModel,
-			this._affinity
+			this._affinity,
 		);
 		this._secondaryAnchor = getValidPositionPair(
 			secondaryAnchor,
 			this._context.viewModel,
-			this._affinity
+			this._affinity,
 		);
 
 		function getValidPositionPair(
 			position: IPosition | null,
 			viewModel: IViewModel,
-			affinity: PositionAffinity | null
+			affinity: PositionAffinity | null,
 		): PositionPair {
 			if (!position) {
 				return new PositionPair(null, null);
@@ -335,13 +335,13 @@ class Widget {
 				viewModel.model.validatePosition(position);
 			if (
 				viewModel.coordinatesConverter.modelPositionIsVisible(
-					validModelPosition
+					validModelPosition,
 				)
 			) {
 				const viewPosition =
 					viewModel.coordinatesConverter.convertModelPositionToViewPosition(
 						validModelPosition,
-						affinity ?? undefined
+						affinity ?? undefined,
 					);
 				return new PositionPair(position, viewPosition);
 			}
@@ -363,7 +363,7 @@ class Widget {
 		primaryAnchor: IPosition | null,
 		secondaryAnchor: IPosition | null,
 		preference: ContentWidgetPositionPreference[] | null,
-		affinity: PositionAffinity | null
+		affinity: PositionAffinity | null,
 	): void {
 		this._setPosition(affinity, primaryAnchor, secondaryAnchor);
 		this._preference = preference;
@@ -388,7 +388,7 @@ class Widget {
 		anchor: AnchorCoordinate,
 		width: number,
 		height: number,
-		ctx: RenderingContext
+		ctx: RenderingContext,
 	): IBoxLayoutResult {
 		// Our visible box is split horizontally by the current line => 2 boxes
 
@@ -421,7 +421,7 @@ class Widget {
 		windowSize: dom.Dimension,
 		domNodePosition: dom.IDomNodePagePosition,
 		left: number,
-		width: number
+		width: number,
 	): [number, number] {
 		// Leave some clearance to the left/right
 		const LEFT_PADDING = 15;
@@ -431,7 +431,7 @@ class Widget {
 		const MIN_LIMIT = Math.max(LEFT_PADDING, domNodePosition.left - width);
 		const MAX_LIMIT = Math.min(
 			domNodePosition.left + domNodePosition.width + width,
-			windowSize.width - RIGHT_PADDING
+			windowSize.width - RIGHT_PADDING,
 		);
 
 		const elDocument = this._viewDomNode.domNode.ownerDocument;
@@ -458,13 +458,13 @@ class Widget {
 		anchor: AnchorCoordinate,
 		width: number,
 		height: number,
-		ctx: RenderingContext
+		ctx: RenderingContext,
 	): IBoxLayoutResult | null {
 		const aboveTop = anchor.top - height;
 		const belowTop = anchor.top + anchor.height;
 
 		const domNodePosition = dom.getDomNodePagePosition(
-			this._viewDomNode.domNode
+			this._viewDomNode.domNode,
 		);
 		const elDocument = this._viewDomNode.domNode.ownerDocument;
 		const elWindow = elDocument.defaultView;
@@ -478,7 +478,7 @@ class Widget {
 			windowSize,
 			domNodePosition,
 			anchor.left - ctx.scrollLeft + this._contentLeft,
-			width
+			width,
 		);
 
 		// Leave some clearance to the top/bottom
@@ -503,7 +503,7 @@ class Widget {
 	}
 
 	private _prepareRenderWidgetAtExactPositionOverflowing(
-		topLeft: Coordinate
+		topLeft: Coordinate,
 	): Coordinate {
 		return new Coordinate(topLeft.top, topLeft.left + this._contentLeft);
 	}
@@ -520,7 +520,7 @@ class Widget {
 		const primary = getCoordinates(
 			this._primaryAnchor.viewPosition,
 			this._affinity,
-			this._lineHeight
+			this._lineHeight,
 		);
 		const secondaryViewPosition =
 			this._secondaryAnchor.viewPosition?.lineNumber ===
@@ -530,14 +530,14 @@ class Widget {
 		const secondary = getCoordinates(
 			secondaryViewPosition,
 			this._affinity,
-			this._lineHeight
+			this._lineHeight,
 		);
 		return { primary, secondary };
 
 		function getCoordinates(
 			position: Position | null,
 			affinity: PositionAffinity | null,
-			lineHeight: number
+			lineHeight: number,
 		): AnchorCoordinate | null {
 			if (!position) {
 				return null;
@@ -564,26 +564,26 @@ class Widget {
 	private _reduceAnchorCoordinates(
 		primary: AnchorCoordinate,
 		secondary: AnchorCoordinate | null,
-		width: number
+		width: number,
 	): AnchorCoordinate {
 		if (!secondary) {
 			return primary;
 		}
 
 		const fontInfo = this._context.configuration.options.get(
-			EditorOption.fontInfo
+			EditorOption.fontInfo,
 		);
 
 		let left = secondary.left;
 		if (left < primary.left) {
 			left = Math.max(
 				left,
-				primary.left - width + fontInfo.typicalFullwidthCharacterWidth
+				primary.left - width + fontInfo.typicalFullwidthCharacterWidth,
 			);
 		} else {
 			left = Math.min(
 				left,
-				primary.left + width - fontInfo.typicalFullwidthCharacterWidth
+				primary.left + width - fontInfo.typicalFullwidthCharacterWidth,
 			);
 		}
 		return new AnchorCoordinate(primary.top, left, primary.height);
@@ -607,7 +607,7 @@ class Widget {
 			if (typeof this._actual.beforeRender === "function") {
 				preferredDimensions = safeInvoke(
 					this._actual.beforeRender,
-					this._actual
+					this._actual,
 				);
 			}
 			if (preferredDimensions) {
@@ -624,7 +624,7 @@ class Widget {
 		const anchor = this._reduceAnchorCoordinates(
 			primary,
 			secondary,
-			this._cachedDomNodeOffsetWidth
+			this._cachedDomNodeOffsetWidth,
 		);
 
 		let placement: IBoxLayoutResult | null;
@@ -633,14 +633,14 @@ class Widget {
 				anchor,
 				this._cachedDomNodeOffsetWidth,
 				this._cachedDomNodeOffsetHeight,
-				ctx
+				ctx,
 			);
 		} else {
 			placement = this._layoutBoxInViewport(
 				anchor,
 				this._cachedDomNodeOffsetWidth,
 				this._cachedDomNodeOffsetHeight,
-				ctx
+				ctx,
 			);
 		}
 
@@ -657,7 +657,7 @@ class Widget {
 						return {
 							coordinate: new Coordinate(
 								placement.aboveTop,
-								placement.left
+								placement.left,
 							),
 							position: ContentWidgetPositionPreference.ABOVE,
 						};
@@ -671,26 +671,24 @@ class Widget {
 						return {
 							coordinate: new Coordinate(
 								placement.belowTop,
-								placement.left
+								placement.left,
 							),
 							position: ContentWidgetPositionPreference.BELOW,
 						};
 					}
+				} else if (this.allowEditorOverflow) {
+					return {
+						coordinate:
+							this._prepareRenderWidgetAtExactPositionOverflowing(
+								new Coordinate(anchor.top, anchor.left),
+							),
+						position: ContentWidgetPositionPreference.EXACT,
+					};
 				} else {
-					if (this.allowEditorOverflow) {
-						return {
-							coordinate:
-								this._prepareRenderWidgetAtExactPositionOverflowing(
-									new Coordinate(anchor.top, anchor.left)
-								),
-							position: ContentWidgetPositionPreference.EXACT,
-						};
-					} else {
-						return {
-							coordinate: new Coordinate(anchor.top, anchor.left),
-							position: ContentWidgetPositionPreference.EXACT,
-						};
-					}
+					return {
+						coordinate: new Coordinate(anchor.top, anchor.left),
+						position: ContentWidgetPositionPreference.EXACT,
+					};
 				}
 			}
 		}
@@ -746,7 +744,7 @@ class Widget {
 			this.domNode.setTop(
 				this._renderData.coordinate.top +
 					ctx.scrollTop -
-					ctx.bigNumbersDelta
+					ctx.bigNumbersDelta,
 			);
 			this.domNode.setLeft(this._renderData.coordinate.left);
 		}
@@ -761,7 +759,7 @@ class Widget {
 			safeInvoke(
 				this._actual.afterRender,
 				this._actual,
-				this._renderData.position
+				this._renderData.position,
 			);
 		}
 	}
@@ -770,17 +768,14 @@ class Widget {
 class PositionPair {
 	constructor(
 		public readonly modelPosition: IPosition | null,
-		public readonly viewPosition: Position | null
+		public readonly viewPosition: Position | null,
 	) {}
 }
 
 class Coordinate {
 	_coordinateBrand: void = undefined;
 
-	constructor(
-		public readonly top: number,
-		public readonly left: number
-	) {}
+	constructor(public readonly top: number, public readonly left: number) {}
 }
 
 class AnchorCoordinate {
@@ -789,7 +784,7 @@ class AnchorCoordinate {
 	constructor(
 		public readonly top: number,
 		public readonly left: number,
-		public readonly height: number
+		public readonly height: number,
 	) {}
 }
 

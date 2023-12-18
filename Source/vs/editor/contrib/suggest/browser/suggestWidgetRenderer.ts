@@ -5,15 +5,15 @@
 
 import { $, append, hide, show } from "vs/base/browser/dom";
 import {
-	IconLabel,
 	IIconLabelValueOptions,
+	IconLabel,
 } from "vs/base/browser/ui/iconLabel/iconLabel";
 import { IListRenderer } from "vs/base/browser/ui/list/list";
 import { Codicon } from "vs/base/common/codicons";
-import { ThemeIcon } from "vs/base/common/themables";
 import { Emitter, Event } from "vs/base/common/event";
 import { createMatches } from "vs/base/common/filters";
 import { DisposableStore } from "vs/base/common/lifecycle";
+import { ThemeIcon } from "vs/base/common/themables";
 import { URI } from "vs/base/common/uri";
 import { ICodeEditor } from "vs/editor/browser/editorBrowser";
 import { EditorOption } from "vs/editor/common/config/editorOptions";
@@ -22,9 +22,9 @@ import {
 	CompletionItemKinds,
 	CompletionItemTag,
 } from "vs/editor/common/languages";
+import { ILanguageService } from "vs/editor/common/languages/language";
 import { getIconClasses } from "vs/editor/common/services/getIconClasses";
 import { IModelService } from "vs/editor/common/services/model";
-import { ILanguageService } from "vs/editor/common/languages/language";
 import * as nls from "vs/nls";
 import { FileKind } from "vs/platform/files/common/files";
 import { registerIcon } from "vs/platform/theme/common/iconRegistry";
@@ -41,8 +41,8 @@ const suggestMoreInfoIcon = registerIcon(
 	Codicon.chevronRight,
 	nls.localize(
 		"suggestMoreInfoIcon",
-		"Icon for more information in the suggest widget."
-	)
+		"Icon for more information in the suggest widget.",
+	),
 );
 
 const _completionItemColor = new (class ColorExtractor {
@@ -50,7 +50,7 @@ const _completionItemColor = new (class ColorExtractor {
 		/(#([\da-fA-F]{3}){1,2}|(rgb|hsl)a\(\s*(\d{1,3}%?\s*,\s*){3}(1|0?\.\d+)\)|(rgb|hsl)\(\s*\d{1,3}%?(\s*,\s*\d{1,3}%?){2}\s*\))/;
 	private static _regexStrict = new RegExp(
 		`^${ColorExtractor._regexRelaxed.source}$`,
-		"i"
+		"i",
 	);
 
 	extract(item: CompletionItem, out: string[]): boolean {
@@ -160,7 +160,7 @@ export class ItemRenderer
 
 		const readMore = append(
 			right,
-			$("span.readMore" + ThemeIcon.asCSSSelector(suggestMoreInfoIcon))
+			$("span.readMore" + ThemeIcon.asCSSSelector(suggestMoreInfoIcon)),
 		);
 		readMore.title = nls.localize("readMore", "Read More");
 
@@ -212,7 +212,7 @@ export class ItemRenderer
 	renderElement(
 		element: CompletionItem,
 		index: number,
-		data: ISuggestionTemplateData
+		data: ISuggestionTemplateData,
 	): void {
 		data.configureFont();
 
@@ -245,13 +245,13 @@ export class ItemRenderer
 				this._modelService,
 				this._languageService,
 				URI.from({ scheme: "fake", path: element.textLabel }),
-				FileKind.FILE
+				FileKind.FILE,
 			);
 			const detailClasses = getIconClasses(
 				this._modelService,
 				this._languageService,
 				URI.from({ scheme: "fake", path: completion.detail }),
-				FileKind.FILE
+				FileKind.FILE,
 			);
 			labelOptions.extraClasses =
 				labelClasses.length > detailClasses.length
@@ -269,13 +269,13 @@ export class ItemRenderer
 					this._modelService,
 					this._languageService,
 					URI.from({ scheme: "fake", path: element.textLabel }),
-					FileKind.FOLDER
+					FileKind.FOLDER,
 				),
 				getIconClasses(
 					this._modelService,
 					this._languageService,
 					URI.from({ scheme: "fake", path: completion.detail }),
-					FileKind.FOLDER
+					FileKind.FOLDER,
 				),
 			].flat();
 		} else {
@@ -285,8 +285,8 @@ export class ItemRenderer
 			data.iconContainer.classList.add(
 				"suggest-icon",
 				...ThemeIcon.asClassNameArray(
-					CompletionItemKinds.toIcon(completion.kind)
-				)
+					CompletionItemKinds.toIcon(completion.kind),
+				),
 			);
 		}
 
@@ -304,15 +304,15 @@ export class ItemRenderer
 		if (typeof completion.label === "string") {
 			data.parametersLabel.textContent = "";
 			data.detailsLabel.textContent = stripNewLines(
-				completion.detail || ""
+				completion.detail || "",
 			);
 			data.root.classList.add("string-label");
 		} else {
 			data.parametersLabel.textContent = stripNewLines(
-				completion.label.detail || ""
+				completion.label.detail || "",
 			);
 			data.detailsLabel.textContent = stripNewLines(
-				completion.label.description || ""
+				completion.label.description || "",
 			);
 			data.root.classList.remove("string-label");
 		}

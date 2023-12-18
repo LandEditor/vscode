@@ -3,37 +3,37 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	IAsyncDataSource,
-	ITreeRenderer,
-	ITreeNode,
-	ITreeSorter,
-} from "vs/base/browser/ui/tree/tree";
-import {
-	CallHierarchyItem,
-	CallHierarchyDirection,
-	CallHierarchyModel,
-} from "vs/workbench/contrib/callHierarchy/common/callHierarchy";
-import { CancellationToken } from "vs/base/common/cancellation";
+import { IconLabel } from "vs/base/browser/ui/iconLabel/iconLabel";
 import {
 	IIdentityProvider,
 	IListVirtualDelegate,
 } from "vs/base/browser/ui/list/list";
-import { FuzzyScore, createMatches } from "vs/base/common/filters";
-import { IconLabel } from "vs/base/browser/ui/iconLabel/iconLabel";
-import { SymbolKinds, Location, SymbolTag } from "vs/editor/common/languages";
-import { compare } from "vs/base/common/strings";
-import { Range } from "vs/editor/common/core/range";
 import { IListAccessibilityProvider } from "vs/base/browser/ui/list/listWidget";
-import { localize } from "vs/nls";
+import {
+	IAsyncDataSource,
+	ITreeNode,
+	ITreeRenderer,
+	ITreeSorter,
+} from "vs/base/browser/ui/tree/tree";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { FuzzyScore, createMatches } from "vs/base/common/filters";
+import { compare } from "vs/base/common/strings";
 import { ThemeIcon } from "vs/base/common/themables";
+import { Range } from "vs/editor/common/core/range";
+import { Location, SymbolKinds, SymbolTag } from "vs/editor/common/languages";
+import { localize } from "vs/nls";
+import {
+	CallHierarchyDirection,
+	CallHierarchyItem,
+	CallHierarchyModel,
+} from "vs/workbench/contrib/callHierarchy/common/callHierarchy";
 
 export class Call {
 	constructor(
 		readonly item: CallHierarchyItem,
 		readonly locations: Location[] | undefined,
 		readonly model: CallHierarchyModel,
-		readonly parent: Call | undefined
+		readonly parent: Call | undefined,
 	) {}
 
 	static compare(a: Call, b: Call): number {
@@ -55,7 +55,7 @@ export class DataSource implements IAsyncDataSource<CallHierarchyModel, Call> {
 	async getChildren(element: CallHierarchyModel | Call): Promise<Call[]> {
 		if (element instanceof CallHierarchyModel) {
 			return element.roots.map(
-				(root) => new Call(root, undefined, element, undefined)
+				(root) => new Call(root, undefined, element, undefined),
 			);
 		}
 
@@ -69,7 +69,7 @@ export class DataSource implements IAsyncDataSource<CallHierarchyModel, Call> {
 					call.to,
 					call.fromRanges.map((range) => ({ range, uri: item.uri })),
 					model,
-					element
+					element,
 				);
 			});
 		} else {
@@ -83,7 +83,7 @@ export class DataSource implements IAsyncDataSource<CallHierarchyModel, Call> {
 						uri: call.from.uri,
 					})),
 					model,
-					element
+					element,
 				);
 			});
 		}
@@ -112,10 +112,7 @@ export class IdentityProvider implements IIdentityProvider<Call> {
 }
 
 class CallRenderingTemplate {
-	constructor(
-		readonly icon: HTMLDivElement,
-		readonly label: IconLabel
-	) {}
+	constructor(readonly icon: HTMLDivElement, readonly label: IconLabel) {}
 }
 
 export class CallRenderer
@@ -136,14 +133,16 @@ export class CallRenderer
 	renderElement(
 		node: ITreeNode<Call, FuzzyScore>,
 		_index: number,
-		template: CallRenderingTemplate
+		template: CallRenderingTemplate,
 	): void {
 		const { element, filterData } = node;
 		const deprecated = element.item.tags?.includes(SymbolTag.Deprecated);
 		template.icon.className = "";
 		template.icon.classList.add(
 			"inline",
-			...ThemeIcon.asClassNameArray(SymbolKinds.toIcon(element.item.kind))
+			...ThemeIcon.asClassNameArray(
+				SymbolKinds.toIcon(element.item.kind),
+			),
 		);
 		template.label.setLabel(element.item.name, element.item.detail, {
 			labelEscapeNewLines: true,

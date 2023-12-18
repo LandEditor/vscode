@@ -3,10 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { app, BrowserWindow, Event as IpcEvent } from "electron";
-import { validatedIpcMain } from "vs/base/parts/ipc/electron-main/ipcMain";
+import { BrowserWindow, Event as IpcEvent, app } from "electron";
 import { CancellationToken } from "vs/base/common/cancellation";
+import { assertIsDefined } from "vs/base/common/types";
 import { URI } from "vs/base/common/uri";
+import { validatedIpcMain } from "vs/base/parts/ipc/electron-main/ipcMain";
 import {
 	IDiagnosticInfo,
 	IDiagnosticInfoOptions,
@@ -17,6 +18,8 @@ import {
 	IWindowDiagnostics,
 } from "vs/platform/diagnostics/common/diagnostics";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { ILogService } from "vs/platform/log/common/log";
+import { UtilityProcess } from "vs/platform/utilityProcess/electron-main/utilityProcess";
 import { ICodeWindow } from "vs/platform/window/electron-main/window";
 import { IWindowsMainService } from "vs/platform/windows/electron-main/windows";
 import {
@@ -24,9 +27,6 @@ import {
 	isWorkspaceIdentifier,
 } from "vs/platform/workspace/common/workspace";
 import { IWorkspacesManagementMainService } from "vs/platform/workspaces/electron-main/workspacesManagementMainService";
-import { assertIsDefined } from "vs/base/common/types";
-import { ILogService } from "vs/platform/log/common/log";
-import { UtilityProcess } from "vs/platform/utilityProcess/electron-main/utilityProcess";
 
 export const ID = "diagnosticsMainService";
 export const IDiagnosticsMainService =
@@ -40,7 +40,7 @@ export interface IRemoteDiagnosticOptions {
 export interface IDiagnosticsMainService {
 	readonly _serviceBrand: undefined;
 	getRemoteDiagnostics(
-		options: IRemoteDiagnosticOptions
+		options: IRemoteDiagnosticOptions,
 	): Promise<(IRemoteDiagnosticInfo | IRemoteDiagnosticError)[]>;
 	getMainDiagnostics(): Promise<IMainProcessDiagnostics>;
 }
@@ -57,7 +57,7 @@ export class DiagnosticsMainService implements IDiagnosticsMainService {
 	) {}
 
 	async getRemoteDiagnostics(
-		options: IRemoteDiagnosticOptions
+		options: IRemoteDiagnosticOptions,
 	): Promise<(IRemoteDiagnosticInfo | IRemoteDiagnosticError)[]> {
 		const windows = this.windowsMainService.getWindows();
 		const diagnostics: Array<
@@ -82,7 +82,7 @@ export class DiagnosticsMainService implements IDiagnosticsMainService {
 						window.sendWhenReady(
 							"vscode:getDiagnosticInfo",
 							CancellationToken.None,
-							{ replyChannel, args }
+							{ replyChannel, args },
 						);
 
 						validatedIpcMain.once(
@@ -97,7 +97,7 @@ export class DiagnosticsMainService implements IDiagnosticsMainService {
 								}
 
 								resolve(data);
-							}
+							},
 						);
 
 						setTimeout(() => {
@@ -106,19 +106,19 @@ export class DiagnosticsMainService implements IDiagnosticsMainService {
 								errorMessage: `Connection to '${remoteAuthority}' could not be established`,
 							});
 						}, 5000);
-					}
+					},
 				);
-			})
+			}),
 		);
 
 		return diagnostics.filter(
-			(x): x is IRemoteDiagnosticInfo | IRemoteDiagnosticError => !!x
+			(x): x is IRemoteDiagnosticInfo | IRemoteDiagnosticError => !!x,
 		);
 	}
 
 	async getMainDiagnostics(): Promise<IMainProcessDiagnostics> {
 		this.logService.trace(
-			"Received request for main process info from other instance."
+			"Received request for main process info from other instance.",
 		);
 
 		const windows: IWindowDiagnostics[] = [];
@@ -147,7 +147,7 @@ export class DiagnosticsMainService implements IDiagnosticsMainService {
 	}
 
 	private async codeWindowToInfo(
-		window: ICodeWindow
+		window: ICodeWindow,
 	): Promise<IWindowDiagnostics> {
 		const folderURIs = await this.getFolderURIs(window);
 		const win = assertIsDefined(window.win);
@@ -155,14 +155,14 @@ export class DiagnosticsMainService implements IDiagnosticsMainService {
 		return this.browserWindowToInfo(
 			win,
 			folderURIs,
-			window.remoteAuthority
+			window.remoteAuthority,
 		);
 	}
 
 	private browserWindowToInfo(
 		window: BrowserWindow,
 		folderURIs: URI[] = [],
-		remoteAuthority?: string
+		remoteAuthority?: string,
 	): IWindowDiagnostics {
 		return {
 			id: window.id,
@@ -182,7 +182,7 @@ export class DiagnosticsMainService implements IDiagnosticsMainService {
 		} else if (isWorkspaceIdentifier(workspace)) {
 			const resolvedWorkspace =
 				await this.workspacesManagementMainService.resolveLocalWorkspace(
-					workspace.configPath
+					workspace.configPath,
 				); // workspace folders can only be shown for local (resolved) workspaces
 			if (resolvedWorkspace) {
 				const rootFolders = resolvedWorkspace.folders;

@@ -4,21 +4,21 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	createConnection,
 	Connection,
 	Disposable,
+	createConnection,
 } from "vscode-languageserver/node";
-import { formatError } from "../utils/runner";
 import { RequestService, RuntimeEnvironment, startServer } from "../jsonServer";
+import { formatError } from "../utils/runner";
 
+import * as fs from "fs";
 import {
-	xhr,
 	XHRResponse,
 	configure as configureHttpRequests,
 	getErrorStatusDescription,
+	xhr,
 } from "request-light";
 import { URI as Uri } from "vscode-uri";
-import * as fs from "fs";
 
 // Create a connection for the server.
 const connection: Connection = createConnection();
@@ -42,9 +42,9 @@ function getHTTPRequestService(): RequestService {
 					return Promise.reject(
 						error.responseText ||
 							getErrorStatusDescription(error.status) ||
-							error.toString()
+							error.toString(),
 					);
-				}
+				},
 			);
 		},
 	};

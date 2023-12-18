@@ -3,8 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-"use strict";
-
 const gulp = require("gulp");
 const path = require("path");
 const es = require("event-stream");
@@ -125,7 +123,7 @@ const serverWithWebEntryPoints = [
 function getNodeVersion() {
 	const yarnrc = fs.readFileSync(
 		path.join(REPO_ROOT, "remote", ".yarnrc"),
-		"utf8"
+		"utf8",
 	);
 	const nodeVersion = /^target "(.*)"$/m.exec(yarnrc)[1];
 	const internalNodeVersion = /^ms_build_id "(.*)"$/m.exec(yarnrc)[1];
@@ -148,7 +146,7 @@ function getNodeChecksum(nodeVersion, platform, arch) {
 
 	const nodeJsChecksums = fs.readFileSync(
 		path.join(REPO_ROOT, "build", "checksums", "nodejs.txt"),
-		"utf8"
+		"utf8",
 	);
 	for (const line of nodeJsChecksums.split("\n")) {
 		const [checksum, name] = line.split(/\s+/);
@@ -162,11 +160,11 @@ function getNodeChecksum(nodeVersion, platform, arch) {
 function extractAlpinefromDocker(nodeVersion, platform, arch) {
 	const imageName = arch === "arm64" ? "arm64v8/node" : "node";
 	log(
-		`Downloading node.js ${nodeVersion} ${platform} ${arch} from docker image ${imageName}`
+		`Downloading node.js ${nodeVersion} ${platform} ${arch} from docker image ${imageName}`,
 	);
 	const contents = cp.execSync(
 		`docker run --rm ${imageName}:${nodeVersion}-alpine /bin/sh -c 'cat \`which node\`'`,
-		{ maxBuffer: 100 * 1024 * 1024, encoding: "buffer" }
+		{ maxBuffer: 100 * 1024 * 1024, encoding: "buffer" },
 	);
 	return es.readArray([
 		new File({
@@ -186,7 +184,7 @@ BUILD_TARGETS.forEach(({ platform, arch }) => {
 				".build",
 				"node",
 				`v${nodeVersion}`,
-				`${platform}-${arch}`
+				`${platform}-${arch}`,
 			);
 
 			if (!fs.existsSync(nodePath)) {
@@ -196,7 +194,7 @@ BUILD_TARGETS.forEach(({ platform, arch }) => {
 			}
 
 			return Promise.resolve(null);
-		})
+		}),
 	);
 });
 
@@ -219,7 +217,7 @@ function nodejs(platform, arch) {
 	}
 
 	log(
-		`Downloading node.js ${nodeVersion} ${platform} ${arch} from ${product.nodejsRepository}...`
+		`Downloading node.js ${nodeVersion} ${platform} ${arch} from ${product.nodejsRepository}...`,
 	);
 
 	const checksumSha256 = getNodeChecksum(nodeVersion, platform, arch);
@@ -228,7 +226,7 @@ function nodejs(platform, arch) {
 		log(`Using SHA256 checksum for checking integrity: ${checksumSha256}`);
 	} else {
 		log.warn(
-			`Unable to verify integrity of downloaded node.js binary because no SHA256 checksum was found!`
+			`Unable to verify integrity of downloaded node.js binary because no SHA256 checksum was found!`,
 		);
 	}
 
@@ -240,11 +238,11 @@ function nodejs(platform, arch) {
 							version: `${nodeVersion}-${internalNodeVersion}`,
 							name: `win-${arch}-node.exe`,
 							checksumSha256,
-						})
+					  })
 					: fetchUrls(`/dist/v${nodeVersion}/win-${arch}/node.exe`, {
 							base: "https://nodejs.org",
 							checksumSha256,
-						})
+					  })
 			).pipe(rename("node.exe"));
 		case "darwin":
 		case "linux":
@@ -254,11 +252,11 @@ function nodejs(platform, arch) {
 							version: `${nodeVersion}-${internalNodeVersion}`,
 							name: `node-v${nodeVersion}-${platform}-${arch}.tar.gz`,
 							checksumSha256,
-						})
+					  })
 					: fetchUrls(
 							`/dist/v${nodeVersion}/node-v${nodeVersion}-${platform}-${arch}.tar.gz`,
-							{ base: "https://nodejs.org", checksumSha256 }
-						)
+							{ base: "https://nodejs.org", checksumSha256 },
+					  )
 			)
 				.pipe(flatmap((stream) => stream.pipe(gunzip()).pipe(untar())))
 				.pipe(filter("**/node"))
@@ -270,11 +268,11 @@ function nodejs(platform, arch) {
 						version: `${nodeVersion}-${internalNodeVersion}`,
 						name: `node-v${nodeVersion}-${platform}-${arch}.tar.gz`,
 						checksumSha256,
-					})
+				  })
 						.pipe(
 							flatmap((stream) =>
-								stream.pipe(gunzip()).pipe(untar())
-							)
+								stream.pipe(gunzip()).pipe(untar()),
+							),
 						)
 						.pipe(filter("**/node"))
 						.pipe(util.setExecutableBit("**"))
@@ -288,7 +286,7 @@ function packageTask(
 	platform,
 	arch,
 	sourceFolderName,
-	destinationFolderName
+	destinationFolderName,
 ) {
 	const destination = path.join(BUILD_ROOT, destinationFolderName);
 
@@ -298,12 +296,12 @@ function packageTask(
 		const src = gulp
 			.src(sourceFolderName + "/**", { base: "." })
 			.pipe(
-				rename(function (path) {
+				rename((path) => {
 					path.dirname = path.dirname.replace(
 						new RegExp("^" + sourceFolderName),
-						"out"
+						"out",
 					);
-				})
+				}),
 			)
 			.pipe(util.setExecutableBit(["**/*.sh"]))
 			.pipe(filter(["**", "!**/*.js.map"]));
@@ -323,7 +321,7 @@ function packageTask(
 						manifest.contributes &&
 						Object.keys(manifest.contributes).some(
 							(key) =>
-								workspaceExtensionPoints.indexOf(key) !== -1
+								workspaceExtensionPoints.indexOf(key) !== -1,
 						)
 					) {
 						return false;
@@ -345,7 +343,7 @@ function packageTask(
 				const manifest = JSON.parse(
 					fs
 						.readFileSync(path.join(REPO_ROOT, extensionPath))
-						.toString()
+						.toString(),
 				);
 				return !isUIExtension(manifest);
 			})
@@ -353,14 +351,14 @@ function packageTask(
 			.filter(
 				(name) =>
 					name !== "vscode-api-tests" &&
-					name !== "vscode-test-resolver"
+					name !== "vscode-test-resolver",
 			); // Do not ship the test extensions
 		const marketplaceExtensions = JSON.parse(
-			fs.readFileSync(path.join(REPO_ROOT, "product.json"), "utf8")
+			fs.readFileSync(path.join(REPO_ROOT, "product.json"), "utf8"),
 		)
 			.builtInExtensions.filter(
 				(entry) =>
-					!entry.platforms || new Set(entry.platforms).has(platform)
+					!entry.platforms || new Set(entry.platforms).has(platform),
 			)
 			.filter((entry) => !entry.clientOnly)
 			.map((entry) => entry.name);
@@ -375,7 +373,7 @@ function packageTask(
 		});
 		const extensionsCommonDependencies = gulp.src(
 			".build/extensions/node_modules/**",
-			{ base: ".build", dot: true }
+			{ base: ".build", dot: true },
 		);
 		const sources = es
 			.merge(src, extensions, extensionsCommonDependencies)
@@ -397,7 +395,7 @@ function packageTask(
 					version,
 					dependencies: undefined,
 					optionalDependencies: undefined,
-				})
+				}),
 			);
 
 		const date = new Date().toISOString();
@@ -412,18 +410,17 @@ function packageTask(
 		});
 
 		const jsFilter = util.filter(
-			(data) => !data.isDirectory() && /\.js$/.test(data.path)
+			(data) => !data.isDirectory() && /\.js$/.test(data.path),
 		);
 
 		const productionDependencies = getProductionDependencies(REMOTE_FOLDER);
 		const dependenciesSrc = productionDependencies
 			.map((d) => path.relative(REPO_ROOT, d.path))
-			.map((d) => [
+			.flatMap((d) => [
 				`${d}/**`,
 				`!${d}/**/{test,tests}/**`,
 				`!${d}/.bin/**`,
-			])
-			.flat();
+			]);
 		const deps = gulp
 			.src(dependenciesSrc, { base: "remote", dot: true })
 			// filter out unnecessary files, no source maps in server build
@@ -433,13 +430,13 @@ function packageTask(
 					"!**/package-lock.json",
 					"!**/yarn.lock",
 					"!**/*.js.map",
-				])
+				]),
 			)
 			.pipe(util.cleanNodeModules(path.join(__dirname, ".moduleignore")))
 			.pipe(
 				util.cleanNodeModules(
-					path.join(__dirname, `.moduleignore.${process.platform}`)
-				)
+					path.join(__dirname, `.moduleignore.${process.platform}`),
+				),
 			)
 			.pipe(jsFilter)
 			.pipe(util.stripSourceMappingURL())
@@ -456,7 +453,7 @@ function packageTask(
 				"resources/server/code-512.png",
 				"resources/server/manifest.json",
 			].map((resource) =>
-				gulp.src(resource, { base: "." }).pipe(rename(resource))
+				gulp.src(resource, { base: "." }).pipe(rename(resource)),
 			);
 		}
 
@@ -467,7 +464,7 @@ function packageTask(
 			sources,
 			deps,
 			node,
-			...web
+			...web,
 		);
 
 		let result = all
@@ -485,7 +482,7 @@ function packageTask(
 					.pipe(replace("@@COMMIT@@", commit))
 					.pipe(replace("@@APPNAME@@", product.applicationName))
 					.pipe(
-						rename(`bin/remote-cli/${product.applicationName}.cmd`)
+						rename(`bin/remote-cli/${product.applicationName}.cmd`),
 					),
 				gulp
 					.src("resources/server/bin/helpers/browser.cmd", {
@@ -497,7 +494,7 @@ function packageTask(
 					.pipe(rename(`bin/helpers/browser.cmd`)),
 				gulp
 					.src("resources/server/bin/code-server.cmd", { base: "." })
-					.pipe(rename(`bin/${product.serverApplicationName}.cmd`))
+					.pipe(rename(`bin/${product.serverApplicationName}.cmd`)),
 			);
 		} else if (
 			platform === "linux" ||
@@ -513,7 +510,7 @@ function packageTask(
 								? "code-darwin.sh"
 								: "code-linux.sh"
 						}`,
-						{ base: "." }
+						{ base: "." },
 					)
 					.pipe(replace("@@VERSION@@", version))
 					.pipe(replace("@@COMMIT@@", commit))
@@ -527,7 +524,7 @@ function packageTask(
 								? "browser-darwin.sh"
 								: "browser-linux.sh"
 						}`,
-						{ base: "." }
+						{ base: "." },
 					)
 					.pipe(replace("@@VERSION@@", version))
 					.pipe(replace("@@COMMIT@@", commit))
@@ -541,10 +538,10 @@ function packageTask(
 								? "code-server-darwin.sh"
 								: "code-server-linux.sh"
 						}`,
-						{ base: "." }
+						{ base: "." },
 					)
 					.pipe(rename(`bin/${product.serverApplicationName}`))
-					.pipe(util.setExecutableBit())
+					.pipe(util.setExecutableBit()),
 			);
 		}
 
@@ -586,7 +583,7 @@ function tweakProductForServerWeb(product) {
 						".build/extensions",
 						type === "reh-web"
 							? tweakProductForServerWeb(product)
-							: product
+							: product,
 					),
 				},
 				commonJS: {
@@ -605,8 +602,8 @@ function tweakProductForServerWeb(product) {
 						"../package.json",
 					],
 				},
-			})
-		)
+			}),
+		),
 	);
 
 	const minifyTask = task.define(
@@ -616,9 +613,9 @@ function tweakProductForServerWeb(product) {
 			util.rimraf(`out-vscode-${type}-min`),
 			optimize.minifyTask(
 				`out-vscode-${type}`,
-				`https://ticino.blob.core.windows.net/sourcemaps/${commit}/core`
-			)
-		)
+				`https://ticino.blob.core.windows.net/sourcemaps/${commit}/core`,
+			),
+		),
 	);
 	gulp.task(minifyTask);
 
@@ -630,12 +627,12 @@ function tweakProductForServerWeb(product) {
 		["", "min"].forEach((minified) => {
 			const sourceFolderName = `out-vscode-${type}${dashed(minified)}`;
 			const destinationFolderName = `vscode-${type}${dashed(
-				platform
+				platform,
 			)}${dashed(arch)}`;
 
 			const serverTaskCI = task.define(
 				`vscode-${type}${dashed(platform)}${dashed(arch)}${dashed(
-					minified
+					minified,
 				)}-ci`,
 				task.series(
 					gulp.task(`node-${platform}-${arch}`),
@@ -645,23 +642,23 @@ function tweakProductForServerWeb(product) {
 						platform,
 						arch,
 						sourceFolderName,
-						destinationFolderName
-					)
-				)
+						destinationFolderName,
+					),
+				),
 			);
 			gulp.task(serverTaskCI);
 
 			const serverTask = task.define(
 				`vscode-${type}${dashed(platform)}${dashed(arch)}${dashed(
-					minified
+					minified,
 				)}`,
 				task.series(
 					compileBuildTask,
 					compileExtensionsBuildTask,
 					compileExtensionMediaBuildTask,
 					minified ? minifyTask : optimizeTask,
-					serverTaskCI
-				)
+					serverTaskCI,
+				),
 			);
 			gulp.task(serverTask);
 		});

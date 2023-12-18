@@ -9,17 +9,17 @@ import { ICodeWindow } from "vs/platform/window/electron-main/window";
 import {
 	IResolvedWorkspace,
 	ISingleFolderWorkspaceIdentifier,
+	IWorkspaceIdentifier,
 	isSingleFolderWorkspaceIdentifier,
 	isWorkspaceIdentifier,
-	IWorkspaceIdentifier,
 } from "vs/platform/workspace/common/workspace";
 
 export async function findWindowOnFile(
 	windows: ICodeWindow[],
 	fileUri: URI,
 	localWorkspaceResolver: (
-		workspace: IWorkspaceIdentifier
-	) => Promise<IResolvedWorkspace | undefined>
+		workspace: IWorkspaceIdentifier,
+	) => Promise<IResolvedWorkspace | undefined>,
 ): Promise<ICodeWindow | undefined> {
 	// First check for windows with workspaces that have a parent folder of the provided path opened
 	for (const window of windows) {
@@ -33,8 +33,8 @@ export async function findWindowOnFile(
 					resolvedWorkspace.folders.some((folder) =>
 						extUriBiasedIgnorePathCase.isEqualOrParent(
 							fileUri,
-							folder.uri
-						)
+							folder.uri,
+						),
 					)
 				) {
 					return window;
@@ -42,15 +42,13 @@ export async function findWindowOnFile(
 			}
 
 			// unresolved: can only compare with workspace location
-			else {
-				if (
-					extUriBiasedIgnorePathCase.isEqualOrParent(
-						fileUri,
-						workspace.configPath
-					)
-				) {
-					return window;
-				}
+			else if (
+				extUriBiasedIgnorePathCase.isEqualOrParent(
+					fileUri,
+					workspace.configPath,
+				)
+			) {
+				return window;
 			}
 		}
 	}
@@ -61,8 +59,8 @@ export async function findWindowOnFile(
 			isSingleFolderWorkspaceIdentifier(window.openedWorkspace) &&
 			extUriBiasedIgnorePathCase.isEqualOrParent(
 				fileUri,
-				window.openedWorkspace.uri
-			)
+				window.openedWorkspace.uri,
+			),
 	);
 	if (singleFolderWindowsOnFilePath.length) {
 		return singleFolderWindowsOnFilePath.sort(
@@ -74,7 +72,7 @@ export async function findWindowOnFile(
 					(
 						windowB.openedWorkspace as ISingleFolderWorkspaceIdentifier
 					).uri.path.length
-				)
+				),
 		)[0];
 	}
 
@@ -83,7 +81,7 @@ export async function findWindowOnFile(
 
 export function findWindowOnWorkspaceOrFolder(
 	windows: ICodeWindow[],
-	folderOrWorkspaceConfigUri: URI
+	folderOrWorkspaceConfigUri: URI,
 ): ICodeWindow | undefined {
 	for (const window of windows) {
 		// check for workspace config path
@@ -91,7 +89,7 @@ export function findWindowOnWorkspaceOrFolder(
 			isWorkspaceIdentifier(window.openedWorkspace) &&
 			extUriBiasedIgnorePathCase.isEqual(
 				window.openedWorkspace.configPath,
-				folderOrWorkspaceConfigUri
+				folderOrWorkspaceConfigUri,
 			)
 		) {
 			return window;
@@ -102,7 +100,7 @@ export function findWindowOnWorkspaceOrFolder(
 			isSingleFolderWorkspaceIdentifier(window.openedWorkspace) &&
 			extUriBiasedIgnorePathCase.isEqual(
 				window.openedWorkspace.uri,
-				folderOrWorkspaceConfigUri
+				folderOrWorkspaceConfigUri,
 			)
 		) {
 			return window;
@@ -114,14 +112,14 @@ export function findWindowOnWorkspaceOrFolder(
 
 export function findWindowOnExtensionDevelopmentPath(
 	windows: ICodeWindow[],
-	extensionDevelopmentPaths: string[]
+	extensionDevelopmentPaths: string[],
 ): ICodeWindow | undefined {
 	const matches = (uriString: string): boolean => {
 		return extensionDevelopmentPaths.some((path) =>
 			extUriBiasedIgnorePathCase.isEqual(
 				URI.file(path),
-				URI.file(uriString)
-			)
+				URI.file(uriString),
+			),
 		);
 	};
 
@@ -130,7 +128,7 @@ export function findWindowOnExtensionDevelopmentPath(
 		// so we check if any of the paths match on any of the provided ones
 		if (
 			window.config?.extensionDevelopmentPath?.some((path) =>
-				matches(path)
+				matches(path),
 			)
 		) {
 			return window;

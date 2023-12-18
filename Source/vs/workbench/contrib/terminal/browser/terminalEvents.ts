@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ITerminalInstance } from "vs/workbench/contrib/terminal/browser/terminal";
 import {
 	DynamicListEventMultiplexer,
 	Event,
@@ -19,6 +18,7 @@ import {
 	ITerminalCapabilityImplMap,
 	TerminalCapability,
 } from "vs/platform/terminal/common/capabilities/capabilities";
+import { ITerminalInstance } from "vs/workbench/contrib/terminal/browser/terminal";
 
 export function createInstanceCapabilityEventMultiplexer<
 	T extends TerminalCapability,
@@ -28,22 +28,22 @@ export function createInstanceCapabilityEventMultiplexer<
 	onAddInstance: Event<ITerminalInstance>,
 	onRemoveInstance: Event<ITerminalInstance>,
 	capabilityId: T,
-	getEvent: (capability: ITerminalCapabilityImplMap[T]) => Event<K>
+	getEvent: (capability: ITerminalCapabilityImplMap[T]) => Event<K>,
 ): IDynamicListEventMultiplexer<{ instance: ITerminalInstance; data: K }> {
 	const store = new DisposableStore();
 	const multiplexer = store.add(
-		new EventMultiplexer<{ instance: ITerminalInstance; data: K }>()
+		new EventMultiplexer<{ instance: ITerminalInstance; data: K }>(),
 	);
 	const capabilityListeners = store.add(
-		new DisposableMap<ITerminalCapabilityImplMap[T], IDisposable>()
+		new DisposableMap<ITerminalCapabilityImplMap[T], IDisposable>(),
 	);
 
 	function addCapability(
 		instance: ITerminalInstance,
-		capability: ITerminalCapabilityImplMap[T]
+		capability: ITerminalCapabilityImplMap[T],
 	) {
 		const listener = multiplexer.add(
-			Event.map(getEvent(capability), (data) => ({ instance, data }))
+			Event.map(getEvent(capability), (data) => ({ instance, data })),
 		);
 		capabilityListeners.set(capability, listener);
 	}
@@ -64,8 +64,8 @@ export function createInstanceCapabilityEventMultiplexer<
 		(instance) =>
 			Event.map(
 				instance.capabilities.onDidAddCapability,
-				(changeEvent) => ({ instance, changeEvent })
-			)
+				(changeEvent) => ({ instance, changeEvent }),
+			),
 	);
 	addCapabilityMultiplexer.event((e) => {
 		if (e.changeEvent.id === capabilityId) {
@@ -78,7 +78,7 @@ export function createInstanceCapabilityEventMultiplexer<
 		currentInstances,
 		onAddInstance,
 		onRemoveInstance,
-		(instance) => instance.capabilities.onDidRemoveCapability
+		(instance) => instance.capabilities.onDidRemoveCapability,
 	);
 	removeCapabilityMultiplexer.event((e) => {
 		if (e.id === capabilityId) {

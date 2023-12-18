@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as glob from "vs/base/common/glob";
 import { Event } from "vs/base/common/event";
+import * as glob from "vs/base/common/glob";
 import { IDisposable } from "vs/base/common/lifecycle";
 import { Schemas } from "vs/base/common/network";
 import { posix } from "vs/base/common/path";
 import { basename } from "vs/base/common/resources";
+import { AtLeastOne } from "vs/base/common/types";
 import { URI } from "vs/base/common/uri";
 import { localize } from "vs/nls";
-import { workbenchConfigurationNodeBase } from "vs/workbench/common/configuration";
 import {
 	Extensions as ConfigurationExtensions,
 	IConfigurationNode,
@@ -23,21 +23,21 @@ import {
 } from "vs/platform/editor/common/editor";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import { Registry } from "vs/platform/registry/common/platform";
+import { workbenchConfigurationNodeBase } from "vs/workbench/common/configuration";
 import {
 	EditorInputWithOptions,
 	EditorInputWithOptionsAndGroup,
 	IResourceDiffEditorInput,
-	IResourceMultiDiffEditorInput,
 	IResourceMergeEditorInput,
+	IResourceMultiDiffEditorInput,
 	IUntitledTextResourceEditorInput,
 	IUntypedEditorInput,
 } from "vs/workbench/common/editor";
 import { IEditorGroup } from "vs/workbench/services/editor/common/editorGroupsService";
 import { PreferredGroup } from "vs/workbench/services/editor/common/editorService";
-import { AtLeastOne } from "vs/base/common/types";
 
 export const IEditorResolverService = createDecorator<IEditorResolverService>(
-	"editorResolverService"
+	"editorResolverService",
 );
 
 //#region Editor Associations
@@ -54,7 +54,7 @@ export type EditorAssociations = readonly EditorAssociation[];
 export const editorsAssociationsSettingId = "workbench.editorAssociations";
 
 const configurationRegistry = Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration
+	ConfigurationExtensions.Configuration,
 );
 
 const editorAssociationsConfigurationNode: IConfigurationNode = {
@@ -64,7 +64,7 @@ const editorAssociationsConfigurationNode: IConfigurationNode = {
 			type: "object",
 			markdownDescription: localize(
 				"editor.editorAssociations",
-				'Configure [glob patterns](https://aka.ms/vscode-glob-patterns) to editors (for example `"*.hex": "hexEditor.hexedit"`). These have precedence over the default behavior.'
+				'Configure [glob patterns](https://aka.ms/vscode-glob-patterns) to editors (for example `"*.hex": "hexEditor.hexedit"`). These have precedence over the default behavior.',
 			),
 			additionalProperties: {
 				type: "string",
@@ -80,7 +80,7 @@ export interface IEditorType {
 }
 
 configurationRegistry.registerConfiguration(
-	editorAssociationsConfigurationNode
+	editorAssociationsConfigurationNode,
 );
 //#endregion
 
@@ -97,7 +97,7 @@ export enum RegisteredEditorPriority {
  * ABORT = Do not continue with opening the editor
  * NONE = Continue as if the resolution has been disabled as the service could not resolve one
  */
-export const enum ResolvedStatus {
+export enum ResolvedStatus {
 	ABORT = 1,
 	NONE = 2,
 }
@@ -130,27 +130,27 @@ type EditorInputFactoryResult =
 
 export type EditorInputFactoryFunction = (
 	editorInput: IResourceEditorInput | ITextResourceEditorInput,
-	group: IEditorGroup
+	group: IEditorGroup,
 ) => EditorInputFactoryResult;
 
 export type UntitledEditorInputFactoryFunction = (
 	untitledEditorInput: IUntitledTextResourceEditorInput,
-	group: IEditorGroup
+	group: IEditorGroup,
 ) => EditorInputFactoryResult;
 
 export type DiffEditorInputFactoryFunction = (
 	diffEditorInput: IResourceDiffEditorInput,
-	group: IEditorGroup
+	group: IEditorGroup,
 ) => EditorInputFactoryResult;
 
 export type DiffListEditorInputFactoryFunction = (
 	diffEditorInput: IResourceMultiDiffEditorInput,
-	group: IEditorGroup
+	group: IEditorGroup,
 ) => EditorInputFactoryResult;
 
 export type MergeEditorInputFactoryFunction = (
 	mergeEditorInput: IResourceMergeEditorInput,
-	group: IEditorGroup
+	group: IEditorGroup,
 ) => EditorInputFactoryResult;
 
 type EditorInputFactories = {
@@ -201,7 +201,7 @@ export interface IEditorResolverService {
 		globPattern: string | glob.IRelativePattern,
 		editorInfo: RegisteredEditorInfo,
 		options: RegisteredEditorOptions,
-		editorFactoryObject: EditorInputFactoryObject
+		editorFactoryObject: EditorInputFactoryObject,
 	): IDisposable;
 
 	/**
@@ -212,7 +212,7 @@ export interface IEditorResolverService {
 	 */
 	resolveEditor(
 		editor: IUntypedEditorInput,
-		preferredGroup: PreferredGroup | undefined
+		preferredGroup: PreferredGroup | undefined,
 	): Promise<ResolvedEditor>;
 
 	/**
@@ -253,7 +253,7 @@ export function priorityToRank(priority: RegisteredEditorPriority): number {
 
 export function globMatchesResource(
 	globPattern: string | glob.IRelativePattern,
-	resource: URI
+	resource: URI,
 ): boolean {
 	const excludedSchemes = new Set([
 		Schemas.extension,
@@ -274,7 +274,7 @@ export function globMatchesResource(
 		typeof globPattern === "string"
 			? globPattern.toLowerCase()
 			: globPattern,
-		target.toLowerCase()
+		target.toLowerCase(),
 	);
 }
 //#endregion

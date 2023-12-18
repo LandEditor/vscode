@@ -53,7 +53,7 @@ export class ExtHostLocalizationService implements ExtHostLocalizationShape {
 		const str = this.bundleCache.get(extensionId)?.contents[key];
 		if (!str) {
 			this.logService.warn(
-				`Using default string since no string found in i18n bundle that has the key: ${key}`
+				`Using default string since no string found in i18n bundle that has the key: ${key}`,
 			);
 		}
 		return format2(str ?? message, args ?? {});
@@ -68,7 +68,7 @@ export class ExtHostLocalizationService implements ExtHostLocalizationShape {
 	}
 
 	async initializeLocalizedMessages(
-		extension: IExtensionDescription
+		extension: IExtensionDescription,
 	): Promise<void> {
 		if (
 			this.isDefaultLanguage ||
@@ -85,7 +85,7 @@ export class ExtHostLocalizationService implements ExtHostLocalizationShape {
 		const bundleUri = await this.getBundleLocation(extension);
 		if (!bundleUri) {
 			this.logService.error(
-				`No bundle location found for extension ${extension.identifier.value}`
+				`No bundle location found for extension ${extension.identifier.value}`,
 			);
 			return;
 		}
@@ -97,7 +97,7 @@ export class ExtHostLocalizationService implements ExtHostLocalizationShape {
 			contents = extension.isBuiltin ? result.contents?.bundle : result;
 		} catch (e) {
 			this.logService.error(
-				`Failed to load translations for ${extension.identifier.value} from ${bundleUri}: ${e.message}`
+				`Failed to load translations for ${extension.identifier.value} from ${bundleUri}: ${e.message}`,
 			);
 			return;
 		}
@@ -111,12 +111,12 @@ export class ExtHostLocalizationService implements ExtHostLocalizationShape {
 	}
 
 	private async getBundleLocation(
-		extension: IExtensionDescription
+		extension: IExtensionDescription,
 	): Promise<URI | undefined> {
 		if (extension.isBuiltin) {
 			const uri = await this._proxy.$fetchBuiltInBundleUri(
 				extension.identifier.value,
-				this.currentLanguage
+				this.currentLanguage,
 			);
 			return URI.revive(uri);
 		}
@@ -125,13 +125,12 @@ export class ExtHostLocalizationService implements ExtHostLocalizationShape {
 			? URI.joinPath(
 					extension.extensionLocation,
 					extension.l10n,
-					`bundle.l10n.${this.currentLanguage}.json`
-				)
+					`bundle.l10n.${this.currentLanguage}.json`,
+			  )
 			: undefined;
 	}
 }
 
 export const IExtHostLocalizationService =
 	createDecorator<IExtHostLocalizationService>("IExtHostLocalizationService");
-export interface IExtHostLocalizationService
-	extends ExtHostLocalizationService {}
+export type IExtHostLocalizationService = ExtHostLocalizationService;

@@ -4,23 +4,23 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	Disposable,
 	Command,
-	EventEmitter,
+	Disposable,
 	Event,
-	workspace,
+	EventEmitter,
 	Uri,
 	l10n,
+	workspace,
 } from "vscode";
-import { Repository } from "./repository";
-import { anyEvent, dispose, filterEvent } from "./util";
 import { Branch, RefType, RemoteSourcePublisher } from "./api/git";
-import { IRemoteSourcePublisherRegistry } from "./remotePublisher";
 import {
 	CheckoutOperation,
 	CheckoutTrackingOperation,
 	OperationKind,
 } from "./operation";
+import { IRemoteSourcePublisherRegistry } from "./remotePublisher";
+import { Repository } from "./repository";
+import { anyEvent, dispose, filterEvent } from "./util";
 
 interface CheckoutStatusBarState {
 	readonly isCheckoutRunning: boolean;
@@ -54,27 +54,27 @@ class CheckoutStatusBar {
 		repository.onDidChangeOperations(
 			this.onDidChangeOperations,
 			this,
-			this.disposables
+			this.disposables,
 		);
 		repository.onDidRunGitStatus(
 			this._onDidChange.fire,
 			this._onDidChange,
-			this.disposables
+			this.disposables,
 		);
 		repository.onDidChangeBranchProtection(
 			this._onDidChange.fire,
 			this._onDidChange,
-			this.disposables
+			this.disposables,
 		);
 	}
 
 	get command(): Command | undefined {
 		const operationData = [
 			...(this.repository.operations.getOperations(
-				OperationKind.Checkout
+				OperationKind.Checkout,
 			) as CheckoutOperation[]),
 			...(this.repository.operations.getOperations(
-				OperationKind.CheckoutTracking
+				OperationKind.CheckoutTracking,
 			) as CheckoutTrackingOperation[]),
 		];
 
@@ -146,12 +146,12 @@ class CheckoutStatusBar {
 
 	private onDidChangeOperations(): void {
 		const isCommitRunning = this.repository.operations.isRunning(
-			OperationKind.Commit
+			OperationKind.Commit,
 		);
 		const isCheckoutRunning =
 			this.repository.operations.isRunning(OperationKind.Checkout) ||
 			this.repository.operations.isRunning(
-				OperationKind.CheckoutTracking
+				OperationKind.CheckoutTracking,
 			);
 		const isSyncRunning =
 			this.repository.operations.isRunning(OperationKind.Sync) ||
@@ -199,7 +199,7 @@ class SyncStatusBar {
 
 	constructor(
 		private repository: Repository,
-		private remoteSourcePublisherRegistry: IRemoteSourcePublisherRegistry
+		private remoteSourcePublisherRegistry: IRemoteSourcePublisherRegistry,
 	) {
 		this._state = {
 			enabled: true,
@@ -215,22 +215,22 @@ class SyncStatusBar {
 		repository.onDidRunGitStatus(
 			this.onDidRunGitStatus,
 			this,
-			this.disposables
+			this.disposables,
 		);
 		repository.onDidChangeOperations(
 			this.onDidChangeOperations,
 			this,
-			this.disposables
+			this.disposables,
 		);
 
 		anyEvent(
 			remoteSourcePublisherRegistry.onDidAddRemoteSourcePublisher,
-			remoteSourcePublisherRegistry.onDidRemoveRemoteSourcePublisher
+			remoteSourcePublisherRegistry.onDidRemoveRemoteSourcePublisher,
 		)(this.onDidChangeRemoteSourcePublishers, this, this.disposables);
 
 		const onEnablementChange = filterEvent(
 			workspace.onDidChangeConfiguration,
-			(e) => e.affectsConfiguration("git.enableStatusBarSync")
+			(e) => e.affectsConfiguration("git.enableStatusBarSync"),
 		);
 		onEnablementChange(this.updateEnablement, this, this.disposables);
 		this.updateEnablement();
@@ -239,7 +239,7 @@ class SyncStatusBar {
 	private updateEnablement(): void {
 		const config = workspace.getConfiguration(
 			"git",
-			Uri.file(this.repository.root)
+			Uri.file(this.repository.root),
 		);
 		const enabled = config.get<boolean>("enableStatusBarSync", true);
 
@@ -248,12 +248,12 @@ class SyncStatusBar {
 
 	private onDidChangeOperations(): void {
 		const isCommitRunning = this.repository.operations.isRunning(
-			OperationKind.Commit
+			OperationKind.Commit,
 		);
 		const isCheckoutRunning =
 			this.repository.operations.isRunning(OperationKind.Checkout) ||
 			this.repository.operations.isRunning(
-				OperationKind.CheckoutTracking
+				OperationKind.CheckoutTracking,
 			);
 		const isSyncRunning =
 			this.repository.operations.isRunning(OperationKind.Sync) ||
@@ -301,13 +301,13 @@ class SyncStatusBar {
 			const tooltip = this.state.isCheckoutRunning
 				? l10n.t("Checking Out Changes...")
 				: this.state.isCommitRunning
-					? l10n.t("Committing Changes...")
-					: this.state.remoteSourcePublishers.length === 1
-						? l10n.t(
+				  ? l10n.t("Committing Changes...")
+				  : this.state.remoteSourcePublishers.length === 1
+					  ? l10n.t(
 								"Publish to {0}",
-								this.state.remoteSourcePublishers[0].name
-							)
-						: l10n.t("Publish to...");
+								this.state.remoteSourcePublishers[0].name,
+						  )
+					  : l10n.t("Publish to...");
 
 			return {
 				command,
@@ -379,16 +379,16 @@ export class StatusBarCommands {
 
 	constructor(
 		repository: Repository,
-		remoteSourcePublisherRegistry: IRemoteSourcePublisherRegistry
+		remoteSourcePublisherRegistry: IRemoteSourcePublisherRegistry,
 	) {
 		this.syncStatusBar = new SyncStatusBar(
 			repository,
-			remoteSourcePublisherRegistry
+			remoteSourcePublisherRegistry,
 		);
 		this.checkoutStatusBar = new CheckoutStatusBar(repository);
 		this.onDidChange = anyEvent(
 			this.syncStatusBar.onDidChange,
-			this.checkoutStatusBar.onDidChange
+			this.checkoutStatusBar.onDidChange,
 		);
 	}
 

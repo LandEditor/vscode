@@ -8,11 +8,11 @@ import * as pfs from "vs/base/node/pfs";
 import {
 	IFileMatch,
 	IProgressMessage,
-	ITextQuery,
-	ITextSearchStats,
-	ITextSearchMatch,
 	ISerializedFileMatch,
 	ISerializedSearchSuccess,
+	ITextQuery,
+	ITextSearchMatch,
+	ITextSearchStats,
 } from "vs/workbench/services/search/common/search";
 import { RipgrepTextSearchEngine } from "vs/workbench/services/search/node/ripgrepTextSearchEngine";
 import { NativeTextSearchManager } from "vs/workbench/services/search/node/textSearchManager";
@@ -23,7 +23,7 @@ export class TextSearchEngineAdapter {
 	search(
 		token: CancellationToken,
 		onResult: (matches: ISerializedFileMatch[]) => void,
-		onMessage: (message: IProgressMessage) => void
+		onMessage: (message: IProgressMessage) => void,
 	): Promise<ISerializedSearchSuccess> {
 		if (
 			(!this.query.folderQueries || !this.query.folderQueries.length) &&
@@ -47,7 +47,7 @@ export class TextSearchEngineAdapter {
 		const textSearchManager = new NativeTextSearchManager(
 			this.query,
 			new RipgrepTextSearchEngine(pretendOutputChannel),
-			pfs
+			pfs,
 		);
 		return new Promise((resolve, reject) => {
 			return textSearchManager
@@ -61,7 +61,7 @@ export class TextSearchEngineAdapter {
 							type: "success",
 							stats: c.stats,
 						} as ISerializedSearchSuccess),
-					reject
+					reject,
 				);
 		});
 	}

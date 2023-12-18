@@ -33,19 +33,19 @@ import {
 	IMergeResult,
 } from "vs/platform/userDataSync/common/abstractSynchronizer";
 import {
-	areSame,
 	IMergeResult as ISnippetsMergeResult,
+	areSame,
 	merge,
 } from "vs/platform/userDataSync/common/snippetsMerge";
 import {
 	Change,
 	IRemoteUserData,
 	ISyncData,
-	IUserDataSyncLocalStoreService,
-	IUserDataSynchroniser,
-	IUserDataSyncLogService,
 	IUserDataSyncEnablementService,
+	IUserDataSyncLocalStoreService,
+	IUserDataSyncLogService,
 	IUserDataSyncStoreService,
+	IUserDataSynchroniser,
 	SyncResource,
 	USER_DATA_SYNC_SCHEME,
 } from "vs/platform/userDataSync/common/userDataSync";
@@ -84,7 +84,7 @@ export class SnippetsSynchroniser
 		@IUserDataSyncEnablementService
 		userDataSyncEnablementService: IUserDataSyncEnablementService,
 		@ITelemetryService telemetryService: ITelemetryService,
-		@IUriIdentityService uriIdentityService: IUriIdentityService
+		@IUriIdentityService uriIdentityService: IUriIdentityService,
 	) {
 		super(
 			{ syncResource: SyncResource.Snippets, profile },
@@ -98,24 +98,24 @@ export class SnippetsSynchroniser
 			telemetryService,
 			logService,
 			configurationService,
-			uriIdentityService
+			uriIdentityService,
 		);
 		this.snippetsFolder = profile.snippetsHome;
 		this._register(
-			this.fileService.watch(environmentService.userRoamingDataHome)
+			this.fileService.watch(environmentService.userRoamingDataHome),
 		);
 		this._register(this.fileService.watch(this.snippetsFolder));
 		this._register(
 			Event.filter(this.fileService.onDidFilesChange, (e) =>
-				e.affects(this.snippetsFolder)
-			)(() => this.triggerLocalChange())
+				e.affects(this.snippetsFolder),
+			)(() => this.triggerLocalChange()),
 		);
 	}
 
 	protected async generateSyncPreview(
 		remoteUserData: IRemoteUserData,
 		lastSyncUserData: IRemoteUserData | null,
-		isRemoteDataFromCurrentMachine: boolean
+		isRemoteDataFromCurrentMachine: boolean,
 	): Promise<ISnippetsResourcePreview[]> {
 		const local = await this.getSnippetsFileContents();
 		const localSnippets = this.toSnippetsContents(local);
@@ -136,29 +136,29 @@ export class SnippetsSynchroniser
 
 		if (remoteSnippets) {
 			this.logService.trace(
-				`${this.syncResourceLogLabel}: Merging remote snippets with local snippets...`
+				`${this.syncResourceLogLabel}: Merging remote snippets with local snippets...`,
 			);
 		} else {
 			this.logService.trace(
-				`${this.syncResourceLogLabel}: Remote snippets does not exist. Synchronizing snippets for the first time.`
+				`${this.syncResourceLogLabel}: Remote snippets does not exist. Synchronizing snippets for the first time.`,
 			);
 		}
 
 		const mergeResult = merge(
 			localSnippets,
 			remoteSnippets,
-			lastSyncSnippets
+			lastSyncSnippets,
 		);
 		return this.getResourcePreviews(
 			mergeResult,
 			local,
 			remoteSnippets || {},
-			lastSyncSnippets || {}
+			lastSyncSnippets || {},
 		);
 	}
 
 	protected async hasRemoteChanged(
-		lastSyncUserData: IRemoteUserData
+		lastSyncUserData: IRemoteUserData,
 	): Promise<boolean> {
 		const lastSyncSnippets: IStringDictionary<string> | null =
 			lastSyncUserData.syncData
@@ -172,7 +172,7 @@ export class SnippetsSynchroniser
 		const mergeResult = merge(
 			localSnippets,
 			lastSyncSnippets,
-			lastSyncSnippets
+			lastSyncSnippets,
 		);
 		return (
 			Object.keys(mergeResult.remote.added).length > 0 ||
@@ -184,7 +184,7 @@ export class SnippetsSynchroniser
 
 	protected async getMergeResult(
 		resourcePreview: ISnippetsResourcePreview,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IMergeResult> {
 		return resourcePreview.previewResult;
 	}
@@ -193,7 +193,7 @@ export class SnippetsSynchroniser
 		resourcePreview: ISnippetsResourcePreview,
 		resource: URI,
 		content: string | null | undefined,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IAcceptResult> {
 		/* Accept local resource */
 		if (
@@ -202,7 +202,7 @@ export class SnippetsSynchroniser
 				this.syncPreviewFolder.with({
 					scheme: USER_DATA_SYNC_SCHEME,
 					authority: "local",
-				})
+				}),
 			)
 		) {
 			return {
@@ -225,7 +225,7 @@ export class SnippetsSynchroniser
 				this.syncPreviewFolder.with({
 					scheme: USER_DATA_SYNC_SCHEME,
 					authority: "remote",
-				})
+				}),
 			)
 		) {
 			return {
@@ -274,7 +274,7 @@ export class SnippetsSynchroniser
 		remoteUserData: IRemoteUserData,
 		lastSyncUserData: IRemoteUserData | null,
 		resourcePreviews: [ISnippetsResourcePreview, IAcceptResult][],
-		force: boolean
+		force: boolean,
 	): Promise<void> {
 		const accptedResourcePreviews: ISnippetsAcceptedResourcePreview[] =
 			resourcePreviews.map(([resourcePreview, acceptResult]) => ({
@@ -284,17 +284,17 @@ export class SnippetsSynchroniser
 		if (
 			accptedResourcePreviews.every(
 				({ localChange, remoteChange }) =>
-					localChange === Change.None && remoteChange === Change.None
+					localChange === Change.None && remoteChange === Change.None,
 			)
 		) {
 			this.logService.info(
-				`${this.syncResourceLogLabel}: No changes found during synchronizing snippets.`
+				`${this.syncResourceLogLabel}: No changes found during synchronizing snippets.`,
 			);
 		}
 
 		if (
 			accptedResourcePreviews.some(
-				({ localChange }) => localChange !== Change.None
+				({ localChange }) => localChange !== Change.None,
 			)
 		) {
 			// back up all snippets
@@ -304,24 +304,24 @@ export class SnippetsSynchroniser
 
 		if (
 			accptedResourcePreviews.some(
-				({ remoteChange }) => remoteChange !== Change.None
+				({ remoteChange }) => remoteChange !== Change.None,
 			)
 		) {
 			remoteUserData = await this.updateRemoteSnippets(
 				accptedResourcePreviews,
 				remoteUserData,
-				force
+				force,
 			);
 		}
 
 		if (lastSyncUserData?.ref !== remoteUserData.ref) {
 			// update last sync
 			this.logService.trace(
-				`${this.syncResourceLogLabel}: Updating last synchronized snippets...`
+				`${this.syncResourceLogLabel}: Updating last synchronized snippets...`,
 			);
 			await this.updateLastSyncUserData(remoteUserData);
 			this.logService.info(
-				`${this.syncResourceLogLabel}: Updated last synchronized snippets`
+				`${this.syncResourceLogLabel}: Updated last synchronized snippets`,
 			);
 		}
 
@@ -339,7 +339,7 @@ export class SnippetsSynchroniser
 		snippetsMergeResult: ISnippetsMergeResult,
 		localFileContent: IStringDictionary<IFileContent>,
 		remoteSnippets: IStringDictionary<string>,
-		baseSnippets: IStringDictionary<string>
+		baseSnippets: IStringDictionary<string>,
 	): ISnippetsResourcePreview[] {
 		const resourcePreviews: Map<string, ISnippetsResourcePreview> = new Map<
 			string,
@@ -376,7 +376,7 @@ export class SnippetsSynchroniser
 				remoteContent: remoteSnippets[key],
 				previewResource: this.extUri.joinPath(
 					this.syncPreviewFolder,
-					key
+					key,
 				),
 				previewResult,
 				localChange: previewResult.localChange,
@@ -423,7 +423,7 @@ export class SnippetsSynchroniser
 				remoteContent: remoteSnippets[key],
 				previewResource: this.extUri.joinPath(
 					this.syncPreviewFolder,
-					key
+					key,
 				),
 				previewResult,
 				localChange: previewResult.localChange,
@@ -470,7 +470,7 @@ export class SnippetsSynchroniser
 				remoteContent: null,
 				previewResource: this.extUri.joinPath(
 					this.syncPreviewFolder,
-					key
+					key,
 				),
 				previewResult,
 				localChange: previewResult.localChange,
@@ -517,7 +517,7 @@ export class SnippetsSynchroniser
 				remoteContent: null,
 				previewResource: this.extUri.joinPath(
 					this.syncPreviewFolder,
-					key
+					key,
 				),
 				previewResult,
 				localChange: previewResult.localChange,
@@ -564,7 +564,7 @@ export class SnippetsSynchroniser
 				remoteContent: remoteSnippets[key],
 				previewResource: this.extUri.joinPath(
 					this.syncPreviewFolder,
-					key
+					key,
 				),
 				previewResult,
 				localChange: previewResult.localChange,
@@ -608,7 +608,7 @@ export class SnippetsSynchroniser
 				remoteContent: remoteSnippets[key],
 				previewResource: this.extUri.joinPath(
 					this.syncPreviewFolder,
-					key
+					key,
 				),
 				previewResult,
 				localChange: previewResult.localChange,
@@ -659,7 +659,7 @@ export class SnippetsSynchroniser
 				remoteContent: remoteSnippets[key] || null,
 				previewResource: this.extUri.joinPath(
 					this.syncPreviewFolder,
-					key
+					key,
 				),
 				previewResult,
 				localChange: previewResult.localChange,
@@ -712,7 +712,7 @@ export class SnippetsSynchroniser
 					remoteContent: remoteSnippets[key] || null,
 					previewResource: this.extUri.joinPath(
 						this.syncPreviewFolder,
-						key
+						key,
 					),
 					previewResult,
 					localChange: previewResult.localChange,
@@ -737,28 +737,28 @@ export class SnippetsSynchroniser
 				this.syncPreviewFolder.with({
 					scheme: USER_DATA_SYNC_SCHEME,
 					authority: "remote",
-				})
+				}),
 			) ||
 			this.extUri.isEqualOrParent(
 				uri,
 				this.syncPreviewFolder.with({
 					scheme: USER_DATA_SYNC_SCHEME,
 					authority: "local",
-				})
+				}),
 			) ||
 			this.extUri.isEqualOrParent(
 				uri,
 				this.syncPreviewFolder.with({
 					scheme: USER_DATA_SYNC_SCHEME,
 					authority: "base",
-				})
+				}),
 			) ||
 			this.extUri.isEqualOrParent(
 				uri,
 				this.syncPreviewFolder.with({
 					scheme: USER_DATA_SYNC_SCHEME,
 					authority: "accepted",
-				})
+				}),
 			)
 		) {
 			return this.resolvePreviewContent(uri);
@@ -779,7 +779,7 @@ export class SnippetsSynchroniser
 	}
 
 	private async updateLocalBackup(
-		resourcePreviews: IFileResourcePreview[]
+		resourcePreviews: IFileResourcePreview[],
 	): Promise<void> {
 		const local: IStringDictionary<IFileContent> = {};
 		for (const resourcePreview of resourcePreviews) {
@@ -793,7 +793,7 @@ export class SnippetsSynchroniser
 
 	private async updateLocalSnippets(
 		resourcePreviews: ISnippetsAcceptedResourcePreview[],
-		force: boolean
+		force: boolean,
 	): Promise<void> {
 		for (const {
 			fileContent,
@@ -812,12 +812,12 @@ export class SnippetsSynchroniser
 				if (localChange === Change.Deleted) {
 					this.logService.trace(
 						`${this.syncResourceLogLabel}: Deleting snippet...`,
-						this.extUri.basename(resource)
+						this.extUri.basename(resource),
 					);
 					await this.fileService.del(resource);
 					this.logService.info(
 						`${this.syncResourceLogLabel}: Deleted snippet`,
-						this.extUri.basename(resource)
+						this.extUri.basename(resource),
 					);
 				}
 
@@ -825,16 +825,16 @@ export class SnippetsSynchroniser
 				else if (localChange === Change.Added) {
 					this.logService.trace(
 						`${this.syncResourceLogLabel}: Creating snippet...`,
-						this.extUri.basename(resource)
+						this.extUri.basename(resource),
 					);
 					await this.fileService.createFile(
 						resource,
 						VSBuffer.fromString(acceptResult.content!),
-						{ overwrite: force }
+						{ overwrite: force },
 					);
 					this.logService.info(
 						`${this.syncResourceLogLabel}: Created snippet`,
-						this.extUri.basename(resource)
+						this.extUri.basename(resource),
 					);
 				}
 
@@ -842,16 +842,16 @@ export class SnippetsSynchroniser
 				else {
 					this.logService.trace(
 						`${this.syncResourceLogLabel}: Updating snippet...`,
-						this.extUri.basename(resource)
+						this.extUri.basename(resource),
 					);
 					await this.fileService.writeFile(
 						resource,
 						VSBuffer.fromString(acceptResult.content!),
-						force ? undefined : fileContent!
+						force ? undefined : fileContent!,
 					);
 					this.logService.info(
 						`${this.syncResourceLogLabel}: Updated snippet`,
-						this.extUri.basename(resource)
+						this.extUri.basename(resource),
 					);
 				}
 			}
@@ -861,7 +861,7 @@ export class SnippetsSynchroniser
 	private async updateRemoteSnippets(
 		resourcePreviews: ISnippetsAcceptedResourcePreview[],
 		remoteUserData: IRemoteUserData,
-		forcePush: boolean
+		forcePush: boolean,
 	): Promise<IRemoteUserData> {
 		const currentSnippets: IStringDictionary<string> =
 			remoteUserData.syncData
@@ -891,14 +891,14 @@ export class SnippetsSynchroniser
 		if (!areSame(currentSnippets, newSnippets)) {
 			// update remote
 			this.logService.trace(
-				`${this.syncResourceLogLabel}: Updating remote snippets...`
+				`${this.syncResourceLogLabel}: Updating remote snippets...`,
 			);
 			remoteUserData = await this.updateRemoteUserData(
 				JSON.stringify(newSnippets),
-				forcePush ? null : remoteUserData.ref
+				forcePush ? null : remoteUserData.ref,
 			);
 			this.logService.info(
-				`${this.syncResourceLogLabel}: Updated remote snippets`
+				`${this.syncResourceLogLabel}: Updated remote snippets`,
 			);
 		}
 		return remoteUserData;
@@ -909,7 +909,7 @@ export class SnippetsSynchroniser
 	}
 
 	private toSnippetsContents(
-		snippetsFileContents: IStringDictionary<IFileContent>
+		snippetsFileContents: IStringDictionary<IFileContent>,
 	): IStringDictionary<string> {
 		const snippets: IStringDictionary<string> = {};
 		for (const key of Object.keys(snippetsFileContents)) {
@@ -942,7 +942,7 @@ export class SnippetsSynchroniser
 			if (extension === ".json" || extension === ".code-snippets") {
 				const key = this.extUri.relativePath(
 					this.snippetsFolder,
-					resource
+					resource,
 				)!;
 				const content = await this.fileService.readFile(resource);
 				snippets[key] = content;
@@ -960,7 +960,7 @@ export class SnippetsInitializer extends AbstractInitializer {
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@IUserDataSyncLogService logService: IUserDataSyncLogService,
 		@IStorageService storageService: IStorageService,
-		@IUriIdentityService uriIdentityService: IUriIdentityService
+		@IUriIdentityService uriIdentityService: IUriIdentityService,
 	) {
 		super(
 			SyncResource.Snippets,
@@ -969,12 +969,12 @@ export class SnippetsInitializer extends AbstractInitializer {
 			logService,
 			fileService,
 			storageService,
-			uriIdentityService
+			uriIdentityService,
 		);
 	}
 
 	protected async doInitialize(
-		remoteUserData: IRemoteUserData
+		remoteUserData: IRemoteUserData,
 	): Promise<void> {
 		const remoteSnippets: IStringDictionary<string> | null =
 			remoteUserData.syncData
@@ -982,7 +982,7 @@ export class SnippetsInitializer extends AbstractInitializer {
 				: null;
 		if (!remoteSnippets) {
 			this.logService.info(
-				"Skipping initializing snippets because remote snippets does not exist."
+				"Skipping initializing snippets because remote snippets does not exist.",
 			);
 			return;
 		}
@@ -990,7 +990,7 @@ export class SnippetsInitializer extends AbstractInitializer {
 		const isEmpty = await this.isEmpty();
 		if (!isEmpty) {
 			this.logService.info(
-				"Skipping initializing snippets because local snippets exist."
+				"Skipping initializing snippets because local snippets exist.",
 			);
 			return;
 		}
@@ -1000,15 +1000,15 @@ export class SnippetsInitializer extends AbstractInitializer {
 			if (content) {
 				const resource = this.extUri.joinPath(
 					this.userDataProfilesService.defaultProfile.snippetsHome,
-					key
+					key,
 				);
 				await this.fileService.createFile(
 					resource,
-					VSBuffer.fromString(content)
+					VSBuffer.fromString(content),
 				);
 				this.logService.info(
 					"Created snippet",
-					this.extUri.basename(resource)
+					this.extUri.basename(resource),
 				);
 			}
 		}
@@ -1019,7 +1019,7 @@ export class SnippetsInitializer extends AbstractInitializer {
 	private async isEmpty(): Promise<boolean> {
 		try {
 			const stat = await this.fileService.resolve(
-				this.userDataProfilesService.defaultProfile.snippetsHome
+				this.userDataProfilesService.defaultProfile.snippetsHome,
 			);
 			return !stat.children?.length;
 		} catch (error) {

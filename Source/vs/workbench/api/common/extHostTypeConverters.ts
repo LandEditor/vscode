@@ -59,11 +59,14 @@ import {
 	SaveReason,
 } from "vs/workbench/common/editor";
 import { IViewBadge } from "vs/workbench/common/views";
+import * as chatProvider from "vs/workbench/contrib/chat/common/chatProvider";
 import {
 	IChatFollowup,
 	IChatReplyFollowup,
 	IChatResponseCommandFollowup,
 } from "vs/workbench/contrib/chat/common/chatService";
+import { IChatRequestVariableValue } from "vs/workbench/contrib/chat/common/chatVariables";
+import { InlineChatResponseFeedbackKind } from "vs/workbench/contrib/inlineChat/common/inlineChat";
 import * as notebooks from "vs/workbench/contrib/notebook/common/notebookCommon";
 import { ICellRange } from "vs/workbench/contrib/notebook/common/notebookRange";
 import * as search from "vs/workbench/contrib/search/common/search";
@@ -90,21 +93,18 @@ import {
 	ACTIVE_GROUP,
 	SIDE_GROUP,
 } from "vs/workbench/services/editor/common/editorService";
+import { checkProposedApiEnabled } from "vs/workbench/services/extensions/common/extensions";
 import type * as vscode from "vscode";
 import * as types from "./extHostTypes";
-import * as chatProvider from "vs/workbench/contrib/chat/common/chatProvider";
-import { IChatRequestVariableValue } from "vs/workbench/contrib/chat/common/chatVariables";
-import { InlineChatResponseFeedbackKind } from "vs/workbench/contrib/inlineChat/common/inlineChat";
-import { checkProposedApiEnabled } from "vs/workbench/services/extensions/common/extensions";
 
 export namespace Command {
 	export interface ICommandsConverter {
 		fromInternal(
-			command: extHostProtocol.ICommandDto
+			command: extHostProtocol.ICommandDto,
 		): vscode.Command | undefined;
 		toInternal(
 			command: vscode.Command | undefined,
-			disposables: DisposableStore
+			disposables: DisposableStore,
 		): extHostProtocol.ICommandDto | undefined;
 	}
 }
@@ -133,11 +133,11 @@ export namespace Selection {
 		} = selection;
 		const start = new types.Position(
 			selectionStartLineNumber - 1,
-			selectionStartColumn - 1
+			selectionStartColumn - 1,
 		);
 		const end = new types.Position(
 			positionLineNumber - 1,
-			positionColumn - 1
+			positionColumn - 1,
 		);
 		return new types.Selection(start, end);
 	}
@@ -156,10 +156,10 @@ export namespace Range {
 	export function from(range: undefined): undefined;
 	export function from(range: RangeLike): editorRange.IRange;
 	export function from(
-		range: RangeLike | undefined
+		range: RangeLike | undefined,
 	): editorRange.IRange | undefined;
 	export function from(
-		range: RangeLike | undefined
+		range: RangeLike | undefined,
 	): editorRange.IRange | undefined {
 		if (!range) {
 			return undefined;
@@ -176,10 +176,10 @@ export namespace Range {
 	export function to(range: undefined): types.Range;
 	export function to(range: editorRange.IRange): types.Range;
 	export function to(
-		range: editorRange.IRange | undefined
+		range: editorRange.IRange | undefined,
 	): types.Range | undefined;
 	export function to(
-		range: editorRange.IRange | undefined
+		range: editorRange.IRange | undefined,
 	): types.Range | undefined {
 		if (!range) {
 			return undefined;
@@ -190,14 +190,14 @@ export namespace Range {
 			startLineNumber - 1,
 			startColumn - 1,
 			endLineNumber - 1,
-			endColumn - 1
+			endColumn - 1,
 		);
 	}
 }
 
 export namespace TokenType {
 	export function to(
-		type: encodedTokenAttributes.StandardTokenType
+		type: encodedTokenAttributes.StandardTokenType,
 	): types.StandardTokenType {
 		switch (type) {
 			case encodedTokenAttributes.StandardTokenType.Comment:
@@ -217,7 +217,7 @@ export namespace Position {
 		return new types.Position(position.lineNumber - 1, position.column - 1);
 	}
 	export function from(
-		position: types.Position | vscode.Position
+		position: types.Position | vscode.Position,
 	): IPosition {
 		return {
 			lineNumber: position.line + 1,
@@ -230,19 +230,19 @@ export namespace DocumentSelector {
 	export function from(
 		value: vscode.DocumentSelector,
 		uriTransformer?: IURITransformer,
-		extension?: IExtensionDescription
+		extension?: IExtensionDescription,
 	): extHostProtocol.IDocumentFilterDto[] {
 		return coalesce(
 			asArray(value).map((sel) =>
-				_doTransformDocumentSelector(sel, uriTransformer, extension)
-			)
+				_doTransformDocumentSelector(sel, uriTransformer, extension),
+			),
 		);
 	}
 
 	function _doTransformDocumentSelector(
 		selector: string | vscode.DocumentFilter,
 		uriTransformer: IURITransformer | undefined,
-		extension: IExtensionDescription | undefined
+		extension: IExtensionDescription | undefined,
 	): extHostProtocol.IDocumentFilterDto | undefined {
 		if (typeof selector === "string") {
 			return {
@@ -269,7 +269,7 @@ export namespace DocumentSelector {
 
 	function _transformScheme(
 		scheme: string | undefined,
-		uriTransformer: IURITransformer | undefined
+		uriTransformer: IURITransformer | undefined,
 	): string | undefined {
 		if (uriTransformer && typeof scheme === "string") {
 			return uriTransformer.transformOutgoingScheme(scheme);
@@ -334,7 +334,7 @@ export namespace Diagnostic {
 		const res = new types.Diagnostic(
 			Range.to(value),
 			value.message,
-			DiagnosticSeverity.to(value.severity)
+			DiagnosticSeverity.to(value.severity),
 		);
 		res.source = value.source;
 		res.code = isString(value.code) ? value.code : value.code?.value;
@@ -348,7 +348,7 @@ export namespace Diagnostic {
 
 export namespace DiagnosticRelatedInformation {
 	export function from(
-		value: vscode.DiagnosticRelatedInformation
+		value: vscode.DiagnosticRelatedInformation,
 	): IRelatedInformation {
 		return {
 			...Range.from(value.location.range),
@@ -357,11 +357,11 @@ export namespace DiagnosticRelatedInformation {
 		};
 	}
 	export function to(
-		value: IRelatedInformation
+		value: IRelatedInformation,
 	): types.DiagnosticRelatedInformation {
 		return new types.DiagnosticRelatedInformation(
 			new types.Location(value.resource, Range.to(value)),
-			value.message
+			value.message,
 		);
 	}
 }
@@ -419,13 +419,13 @@ export namespace ViewColumn {
 }
 
 function isDecorationOptions(
-	something: any
+	something: any,
 ): something is vscode.DecorationOptions {
 	return typeof something.range !== "undefined";
 }
 
 export function isDecorationOptionsArr(
-	something: vscode.Range[] | vscode.DecorationOptions[]
+	something: vscode.Range[] | vscode.DecorationOptions[],
 ): something is vscode.DecorationOptions[] {
 	if (something.length === 0) {
 		return true;
@@ -435,7 +435,7 @@ export function isDecorationOptionsArr(
 
 export namespace MarkdownString {
 	export function fromMany(
-		markup: (vscode.MarkdownString | vscode.MarkedString)[]
+		markup: (vscode.MarkdownString | vscode.MarkedString)[],
 	): htmlContent.IMarkdownString[] {
 		return markup.map(MarkdownString.from);
 	}
@@ -455,7 +455,7 @@ export namespace MarkdownString {
 	}
 
 	export function from(
-		markup: vscode.MarkdownString | vscode.MarkedString
+		markup: vscode.MarkdownString | vscode.MarkedString,
 	): htmlContent.IMarkdownString {
 		let res: htmlContent.IMarkdownString;
 		if (isCodeblock(markup)) {
@@ -503,7 +503,7 @@ export namespace MarkdownString {
 
 	function _uriMassage(
 		part: string,
-		bucket: { [n: string]: UriComponents }
+		bucket: { [n: string]: UriComponents },
 	): string {
 		if (!part) {
 			return part;
@@ -537,11 +537,11 @@ export namespace MarkdownString {
 	}
 
 	export function to(
-		value: htmlContent.IMarkdownString
+		value: htmlContent.IMarkdownString,
 	): vscode.MarkdownString {
 		const result = new types.MarkdownString(
 			value.value,
-			value.supportThemeIcons
+			value.supportThemeIcons,
 		);
 		result.isTrusted = value.isTrusted;
 		result.supportHtml = value.supportHtml;
@@ -550,7 +550,7 @@ export namespace MarkdownString {
 	}
 
 	export function fromStrict(
-		value: string | vscode.MarkdownString | undefined | null
+		value: string | vscode.MarkdownString | undefined | null,
 	): undefined | string | htmlContent.IMarkdownString {
 		if (!value) {
 			return undefined;
@@ -560,7 +560,7 @@ export namespace MarkdownString {
 }
 
 export function fromRangeOrRangeWithMessage(
-	ranges: vscode.Range[] | vscode.DecorationOptions[]
+	ranges: vscode.Range[] | vscode.DecorationOptions[],
 ): IDecorationOptions[] {
 	if (isDecorationOptionsArr(ranges)) {
 		return ranges.map((r): IDecorationOptions => {
@@ -569,8 +569,8 @@ export function fromRangeOrRangeWithMessage(
 				hoverMessage: Array.isArray(r.hoverMessage)
 					? MarkdownString.fromMany(r.hoverMessage)
 					: r.hoverMessage
-						? MarkdownString.from(r.hoverMessage)
-						: undefined,
+					  ? MarkdownString.from(r.hoverMessage)
+					  : undefined,
 				renderOptions: <any>/* URI vs Uri */ r.renderOptions,
 			};
 		});
@@ -596,7 +596,7 @@ export function pathOrURIToURI(value: string | URI): URI {
 
 export namespace ThemableDecorationAttachmentRenderOptions {
 	export function from(
-		options: vscode.ThemableDecorationAttachmentRenderOptions
+		options: vscode.ThemableDecorationAttachmentRenderOptions,
 	): IContentDecorationRenderOptions {
 		if (typeof options === "undefined") {
 			return options;
@@ -622,7 +622,7 @@ export namespace ThemableDecorationAttachmentRenderOptions {
 
 export namespace ThemableDecorationRenderOptions {
 	export function from(
-		options: vscode.ThemableDecorationRenderOptions
+		options: vscode.ThemableDecorationRenderOptions,
 	): IThemeDecorationRenderOptions {
 		if (typeof options === "undefined") {
 			return options;
@@ -665,7 +665,7 @@ export namespace ThemableDecorationRenderOptions {
 
 export namespace DecorationRangeBehavior {
 	export function from(
-		value: types.DecorationRangeBehavior
+		value: types.DecorationRangeBehavior,
 	): TrackedRangeStickiness {
 		if (typeof value === "undefined") {
 			return value;
@@ -685,7 +685,7 @@ export namespace DecorationRangeBehavior {
 
 export namespace DecorationRenderOptions {
 	export function from(
-		options: vscode.DecorationRenderOptions
+		options: vscode.DecorationRenderOptions,
 	): IDecorationRenderOptions {
 		return {
 			isWholeLine: options.isWholeLine,
@@ -761,7 +761,7 @@ export namespace WorkspaceEdit {
 
 	export function from(
 		value: vscode.WorkspaceEdit,
-		versionInfo?: IVersionInformationProvider
+		versionInfo?: IVersionInformationProvider,
 	): extHostProtocol.IWorkspaceEditDto {
 		const result: extHostProtocol.IWorkspaceEditDto = {
 			edits: [],
@@ -792,7 +792,7 @@ export namespace WorkspaceEdit {
 							contents = {
 								type: "base64",
 								value: encodeBase64(
-									VSBuffer.wrap(entry.options.contents)
+									VSBuffer.wrap(entry.options.contents),
 								),
 							};
 						} else {
@@ -818,9 +818,9 @@ export namespace WorkspaceEdit {
 					result.edits.push(<languages.IWorkspaceTextEdit>{
 						resource: entry.uri,
 						textEdit: TextEdit.from(entry.edit),
-						versionId: !toCreate.has(entry.uri)
-							? versionInfo?.getTextDocumentVersion(entry.uri)
-							: undefined,
+						versionId: toCreate.has(entry.uri)
+							? undefined
+							: versionInfo?.getTextDocumentVersion(entry.uri),
 						metadata: entry.metadata,
 					});
 				} else if (entry._type === types.FileEditType.Snippet) {
@@ -831,9 +831,9 @@ export namespace WorkspaceEdit {
 							text: entry.edit.value,
 							insertAsSnippet: true,
 						},
-						versionId: !toCreate.has(entry.uri)
-							? versionInfo?.getTextDocumentVersion(entry.uri)
-							: undefined,
+						versionId: toCreate.has(entry.uri)
+							? undefined
+							: versionInfo?.getTextDocumentVersion(entry.uri),
 						metadata: entry.metadata,
 					});
 				} else if (entry._type === types.FileEditType.Cell) {
@@ -883,29 +883,29 @@ export namespace WorkspaceEdit {
 				if (isSnippet) {
 					editOrSnippetTest = types.SnippetTextEdit.replace(
 						range,
-						new types.SnippetString(text)
+						new types.SnippetString(text),
 					);
 				} else {
 					editOrSnippetTest = types.TextEdit.replace(range, text);
 				}
 
 				const array = edits.get(uri);
-				if (!array) {
-					edits.set(uri, [editOrSnippetTest]);
-				} else {
+				if (array) {
 					array.push(editOrSnippetTest);
+				} else {
+					edits.set(uri, [editOrSnippetTest]);
 				}
 			} else {
 				result.renameFile(
 					URI.revive(
 						(<extHostProtocol.IWorkspaceFileEditDto>edit)
-							.oldResource!
+							.oldResource!,
 					),
 					URI.revive(
 						(<extHostProtocol.IWorkspaceFileEditDto>edit)
-							.newResource!
+							.newResource!,
 					),
-					(<extHostProtocol.IWorkspaceFileEditDto>edit).options
+					(<extHostProtocol.IWorkspaceFileEditDto>edit).options,
 				);
 			}
 		}
@@ -983,7 +983,7 @@ export namespace SymbolTag {
 
 export namespace WorkspaceSymbol {
 	export function from(
-		info: vscode.SymbolInformation
+		info: vscode.SymbolInformation,
 	): search.IWorkspaceSymbol {
 		return <search.IWorkspaceSymbol>{
 			name: info.name,
@@ -998,7 +998,7 @@ export namespace WorkspaceSymbol {
 			info.name,
 			SymbolKind.to(info.kind),
 			info.containerName,
-			location.to(info.location)
+			location.to(info.location),
 		);
 		result.tags = info.tags && info.tags.map(SymbolTag.to);
 		return result;
@@ -1007,7 +1007,7 @@ export namespace WorkspaceSymbol {
 
 export namespace DocumentSymbol {
 	export function from(
-		info: vscode.DocumentSymbol
+		info: vscode.DocumentSymbol,
 	): languages.DocumentSymbol {
 		const result: languages.DocumentSymbol = {
 			name: info.name || "!!MISSING: name!!",
@@ -1028,7 +1028,7 @@ export namespace DocumentSymbol {
 			info.detail,
 			SymbolKind.to(info.kind),
 			Range.to(info.range),
-			Range.to(info.selectionRange)
+			Range.to(info.selectionRange),
 		);
 		if (isNonEmptyArray(info.tags)) {
 			result.tags = info.tags.map(SymbolTag.to);
@@ -1042,7 +1042,7 @@ export namespace DocumentSymbol {
 
 export namespace CallHierarchyItem {
 	export function to(
-		item: extHostProtocol.ICallHierarchyItemDto
+		item: extHostProtocol.ICallHierarchyItemDto,
 	): types.CallHierarchyItem {
 		const result = new types.CallHierarchyItem(
 			SymbolKind.to(item.kind),
@@ -1050,7 +1050,7 @@ export namespace CallHierarchyItem {
 			item.detail || "",
 			URI.revive(item.uri),
 			Range.to(item.range),
-			Range.to(item.selectionRange)
+			Range.to(item.selectionRange),
 		);
 
 		result._sessionId = item._sessionId;
@@ -1062,7 +1062,7 @@ export namespace CallHierarchyItem {
 	export function from(
 		item: vscode.CallHierarchyItem,
 		sessionId?: string,
-		itemId?: string
+		itemId?: string,
 	): extHostProtocol.ICallHierarchyItemDto {
 		sessionId = sessionId ?? (<types.CallHierarchyItem>item)._sessionId;
 		itemId = itemId ?? (<types.CallHierarchyItem>item)._itemId;
@@ -1087,22 +1087,22 @@ export namespace CallHierarchyItem {
 
 export namespace CallHierarchyIncomingCall {
 	export function to(
-		item: extHostProtocol.IIncomingCallDto
+		item: extHostProtocol.IIncomingCallDto,
 	): types.CallHierarchyIncomingCall {
 		return new types.CallHierarchyIncomingCall(
 			CallHierarchyItem.to(item.from),
-			item.fromRanges.map((r) => Range.to(r))
+			item.fromRanges.map((r) => Range.to(r)),
 		);
 	}
 }
 
 export namespace CallHierarchyOutgoingCall {
 	export function to(
-		item: extHostProtocol.IOutgoingCallDto
+		item: extHostProtocol.IOutgoingCallDto,
 	): types.CallHierarchyOutgoingCall {
 		return new types.CallHierarchyOutgoingCall(
 			CallHierarchyItem.to(item.to),
-			item.fromRanges.map((r) => Range.to(r))
+			item.fromRanges.map((r) => Range.to(r)),
 		);
 	}
 }
@@ -1122,7 +1122,7 @@ export namespace location {
 
 export namespace DefinitionLink {
 	export function from(
-		value: vscode.Location | vscode.DefinitionLink
+		value: vscode.Location | vscode.DefinitionLink,
 	): languages.LocationLink {
 		const definitionLink = <vscode.DefinitionLink>value;
 		const location = <vscode.Location>value;
@@ -1136,7 +1136,7 @@ export namespace DefinitionLink {
 			range: Range.from(
 				definitionLink.targetRange
 					? definitionLink.targetRange
-					: location.range
+					: location.range,
 			),
 			targetSelectionRange: definitionLink.targetSelectionRange
 				? Range.from(definitionLink.targetSelectionRange)
@@ -1144,7 +1144,7 @@ export namespace DefinitionLink {
 		};
 	}
 	export function to(
-		value: extHostProtocol.ILocationLinkDto
+		value: extHostProtocol.ILocationLinkDto,
 	): vscode.LocationLink {
 		return {
 			targetUri: URI.revive(value.uri),
@@ -1170,14 +1170,14 @@ export namespace Hover {
 	export function to(info: languages.Hover): types.Hover {
 		return new types.Hover(
 			info.contents.map(MarkdownString.to),
-			Range.to(info.range)
+			Range.to(info.range),
 		);
 	}
 }
 
 export namespace EvaluatableExpression {
 	export function from(
-		expression: vscode.EvaluatableExpression
+		expression: vscode.EvaluatableExpression,
 	): languages.EvaluatableExpression {
 		return <languages.EvaluatableExpression>{
 			range: Range.from(expression.range),
@@ -1186,18 +1186,18 @@ export namespace EvaluatableExpression {
 	}
 
 	export function to(
-		info: languages.EvaluatableExpression
+		info: languages.EvaluatableExpression,
 	): types.EvaluatableExpression {
 		return new types.EvaluatableExpression(
 			Range.to(info.range),
-			info.expression
+			info.expression,
 		);
 	}
 }
 
 export namespace InlineValue {
 	export function from(
-		inlineValue: vscode.InlineValue
+		inlineValue: vscode.InlineValue,
 	): languages.InlineValue {
 		if (inlineValue instanceof types.InlineValueText) {
 			return <languages.InlineValueText>{
@@ -1249,7 +1249,7 @@ export namespace InlineValue {
 
 export namespace InlineValueContext {
 	export function from(
-		inlineValueContext: vscode.InlineValueContext
+		inlineValueContext: vscode.InlineValueContext,
 	): extHostProtocol.IInlineValueContextDto {
 		return <extHostProtocol.IInlineValueContextDto>{
 			frameId: inlineValueContext.frameId,
@@ -1258,18 +1258,18 @@ export namespace InlineValueContext {
 	}
 
 	export function to(
-		inlineValueContext: extHostProtocol.IInlineValueContextDto
+		inlineValueContext: extHostProtocol.IInlineValueContextDto,
 	): types.InlineValueContext {
 		return new types.InlineValueContext(
 			inlineValueContext.frameId,
-			Range.to(inlineValueContext.stoppedLocation)
+			Range.to(inlineValueContext.stoppedLocation),
 		);
 	}
 }
 
 export namespace DocumentHighlight {
 	export function from(
-		documentHighlight: vscode.DocumentHighlight
+		documentHighlight: vscode.DocumentHighlight,
 	): languages.DocumentHighlight {
 		return {
 			range: Range.from(documentHighlight.range),
@@ -1277,33 +1277,33 @@ export namespace DocumentHighlight {
 		};
 	}
 	export function to(
-		occurrence: languages.DocumentHighlight
+		occurrence: languages.DocumentHighlight,
 	): types.DocumentHighlight {
 		return new types.DocumentHighlight(
 			Range.to(occurrence.range),
-			occurrence.kind
+			occurrence.kind,
 		);
 	}
 }
 
 export namespace MultiDocumentHighlight {
 	export function from(
-		multiDocumentHighlight: vscode.MultiDocumentHighlight
+		multiDocumentHighlight: vscode.MultiDocumentHighlight,
 	): languages.MultiDocumentHighlight {
 		return {
 			uri: multiDocumentHighlight.uri,
 			highlights: multiDocumentHighlight.highlights.map(
-				DocumentHighlight.from
+				DocumentHighlight.from,
 			),
 		};
 	}
 
 	export function to(
-		multiDocumentHighlight: languages.MultiDocumentHighlight
+		multiDocumentHighlight: languages.MultiDocumentHighlight,
 	): types.MultiDocumentHighlight {
 		return new types.MultiDocumentHighlight(
 			URI.revive(multiDocumentHighlight.uri),
-			multiDocumentHighlight.highlights.map(DocumentHighlight.to)
+			multiDocumentHighlight.highlights.map(DocumentHighlight.to),
 		);
 	}
 }
@@ -1326,7 +1326,7 @@ export namespace CompletionTriggerKind {
 
 export namespace CompletionContext {
 	export function to(
-		context: languages.CompletionContext
+		context: languages.CompletionContext,
 	): types.CompletionContext {
 		return {
 			triggerKind: CompletionTriggerKind.to(context.triggerKind),
@@ -1337,7 +1337,7 @@ export namespace CompletionContext {
 
 export namespace CompletionItemTag {
 	export function from(
-		kind: types.CompletionItemTag
+		kind: types.CompletionItemTag,
 	): languages.CompletionItemTag {
 		switch (kind) {
 			case types.CompletionItemTag.Deprecated:
@@ -1346,7 +1346,7 @@ export namespace CompletionItemTag {
 	}
 
 	export function to(
-		kind: languages.CompletionItemTag
+		kind: languages.CompletionItemTag,
 	): types.CompletionItemTag {
 		switch (kind) {
 			case languages.CompletionItemTag.Deprecated:
@@ -1426,7 +1426,7 @@ export namespace CompletionItemKind {
 	]);
 
 	export function from(
-		kind: types.CompletionItemKind
+		kind: types.CompletionItemKind,
 	): languages.CompletionItemKind {
 		return _from.get(kind) ?? languages.CompletionItemKind.Property;
 	}
@@ -1526,11 +1526,11 @@ export namespace CompletionItemKind {
 				languages.CompletionItemKind.Issue,
 				types.CompletionItemKind.Issue,
 			],
-		]
+		],
 	);
 
 	export function to(
-		kind: languages.CompletionItemKind
+		kind: languages.CompletionItemKind,
 	): types.CompletionItemKind {
 		return _to.get(kind) ?? types.CompletionItemKind.Property;
 	}
@@ -1539,7 +1539,7 @@ export namespace CompletionItemKind {
 export namespace CompletionItem {
 	export function to(
 		suggestion: languages.CompletionItem,
-		converter?: Command.ICommandsConverter
+		converter?: Command.ICommandsConverter,
 	): types.CompletionItem {
 		const result = new types.CompletionItem(suggestion.label);
 		result.insertText = suggestion.insertText;
@@ -1547,7 +1547,7 @@ export namespace CompletionItem {
 		result.tags = suggestion.tags?.map(CompletionItemTag.to);
 		result.detail = suggestion.detail;
 		result.documentation = htmlContent.isMarkdownString(
-			suggestion.documentation
+			suggestion.documentation,
 		)
 			? MarkdownString.to(suggestion.documentation)
 			: suggestion.documentation;
@@ -1572,8 +1572,8 @@ export namespace CompletionItem {
 				: Boolean(
 						suggestion.insertTextRules &
 							languages.CompletionItemInsertTextRule
-								.KeepWhitespace
-					);
+								.KeepWhitespace,
+				  );
 		// 'insertText'-logic
 		if (
 			typeof suggestion.insertTextRules !== "undefined" &&
@@ -1593,7 +1593,7 @@ export namespace CompletionItem {
 			suggestion.additionalTextEdits.length > 0
 		) {
 			result.additionalTextEdits = suggestion.additionalTextEdits.map(
-				(e) => TextEdit.to(e as languages.TextEdit)
+				(e) => TextEdit.to(e as languages.TextEdit),
 			);
 		}
 		result.command =
@@ -1607,7 +1607,7 @@ export namespace CompletionItem {
 
 export namespace ParameterInformation {
 	export function from(
-		info: types.ParameterInformation
+		info: types.ParameterInformation,
 	): languages.ParameterInformation {
 		if (typeof info.label !== "string" && !Array.isArray(info.label)) {
 			throw new TypeError("Invalid label");
@@ -1619,7 +1619,7 @@ export namespace ParameterInformation {
 		};
 	}
 	export function to(
-		info: languages.ParameterInformation
+		info: languages.ParameterInformation,
 	): types.ParameterInformation {
 		return {
 			label: info.label,
@@ -1632,7 +1632,7 @@ export namespace ParameterInformation {
 
 export namespace SignatureInformation {
 	export function from(
-		info: types.SignatureInformation
+		info: types.SignatureInformation,
 	): languages.SignatureInformation {
 		return {
 			label: info.label,
@@ -1645,7 +1645,7 @@ export namespace SignatureInformation {
 	}
 
 	export function to(
-		info: languages.SignatureInformation
+		info: languages.SignatureInformation,
 	): types.SignatureInformation {
 		return {
 			label: info.label,
@@ -1685,16 +1685,16 @@ export namespace SignatureHelp {
 export namespace InlayHint {
 	export function to(
 		converter: Command.ICommandsConverter,
-		hint: languages.InlayHint
+		hint: languages.InlayHint,
 	): vscode.InlayHint {
 		const res = new types.InlayHint(
 			Position.to(hint.position),
 			typeof hint.label === "string"
 				? hint.label
 				: hint.label.map(
-						InlayHintLabelPart.to.bind(undefined, converter)
-					),
-			hint.kind && InlayHintKind.to(hint.kind)
+						InlayHintLabelPart.to.bind(undefined, converter),
+				  ),
+			hint.kind && InlayHintKind.to(hint.kind),
 		);
 		res.textEdits = hint.textEdits && hint.textEdits.map(TextEdit.to);
 		res.tooltip = htmlContent.isMarkdownString(hint.tooltip)
@@ -1709,7 +1709,7 @@ export namespace InlayHint {
 export namespace InlayHintLabelPart {
 	export function to(
 		converter: Command.ICommandsConverter,
-		part: languages.InlayHintLabelPart
+		part: languages.InlayHintLabelPart,
 	): types.InlayHintLabelPart {
 		const result = new types.InlayHintLabelPart(part.label);
 		result.tooltip = htmlContent.isMarkdownString(part.tooltip)
@@ -1761,7 +1761,7 @@ export namespace DocumentLink {
 
 export namespace ColorPresentation {
 	export function to(
-		colorPresentation: languages.IColorPresentation
+		colorPresentation: languages.IColorPresentation,
 	): types.ColorPresentation {
 		const cp = new types.ColorPresentation(colorPresentation.label);
 		if (colorPresentation.textEdit) {
@@ -1769,14 +1769,14 @@ export namespace ColorPresentation {
 		}
 		if (colorPresentation.additionalTextEdits) {
 			cp.additionalTextEdits = colorPresentation.additionalTextEdits.map(
-				(value) => TextEdit.to(value)
+				(value) => TextEdit.to(value),
 			);
 		}
 		return cp;
 	}
 
 	export function from(
-		colorPresentation: vscode.ColorPresentation
+		colorPresentation: vscode.ColorPresentation,
 	): languages.IColorPresentation {
 		return {
 			label: colorPresentation.label,
@@ -1785,8 +1785,8 @@ export namespace ColorPresentation {
 				: undefined,
 			additionalTextEdits: colorPresentation.additionalTextEdits
 				? colorPresentation.additionalTextEdits.map((value) =>
-						TextEdit.from(value)
-					)
+						TextEdit.from(value),
+				  )
 				: undefined,
 		};
 	}
@@ -1827,7 +1827,7 @@ export namespace TextDocumentSaveReason {
 
 export namespace TextEditorLineNumbersStyle {
 	export function from(
-		style: vscode.TextEditorLineNumbersStyle
+		style: vscode.TextEditorLineNumbersStyle,
 	): RenderLineNumbersType {
 		switch (style) {
 			case types.TextEditorLineNumbersStyle.Off:
@@ -1840,7 +1840,7 @@ export namespace TextEditorLineNumbersStyle {
 		}
 	}
 	export function to(
-		style: RenderLineNumbersType
+		style: RenderLineNumbersType,
 	): vscode.TextEditorLineNumbersStyle {
 		switch (style) {
 			case RenderLineNumbersType.Off:
@@ -1876,7 +1876,7 @@ export namespace EndOfLine {
 
 export namespace ProgressLocation {
 	export function from(
-		loc: vscode.ProgressLocation | { viewId: string }
+		loc: vscode.ProgressLocation | { viewId: string },
 	): MainProgressLocation | string {
 		if (typeof loc === "object") {
 			return loc.viewId;
@@ -1919,7 +1919,7 @@ export namespace FoldingRange {
 
 export namespace FoldingRangeKind {
 	export function from(
-		kind: vscode.FoldingRangeKind | undefined
+		kind: vscode.FoldingRangeKind | undefined,
 	): languages.FoldingRangeKind | undefined {
 		if (kind) {
 			switch (kind) {
@@ -1934,7 +1934,7 @@ export namespace FoldingRangeKind {
 		return undefined;
 	}
 	export function to(
-		kind: languages.FoldingRangeKind | undefined
+		kind: languages.FoldingRangeKind | undefined,
 	): vscode.FoldingRangeKind | undefined {
 		if (kind) {
 			switch (kind.value) {
@@ -1957,7 +1957,7 @@ export interface TextEditorOpenOptions extends vscode.TextDocumentShowOptions {
 
 export namespace TextEditorOpenOptions {
 	export function from(
-		options?: TextEditorOpenOptions
+		options?: TextEditorOpenOptions,
 	): ITextEditorOptions | undefined {
 		if (options) {
 			return {
@@ -1984,15 +1984,15 @@ export namespace TextEditorOpenOptions {
 
 export namespace GlobPattern {
 	export function from(
-		pattern: vscode.GlobPattern
+		pattern: vscode.GlobPattern,
 	): string | extHostProtocol.IRelativePatternDto;
 	export function from(pattern: undefined): undefined;
 	export function from(pattern: null): null;
 	export function from(
-		pattern: vscode.GlobPattern | undefined | null
+		pattern: vscode.GlobPattern | undefined | null,
 	): string | extHostProtocol.IRelativePatternDto | undefined | null;
 	export function from(
-		pattern: vscode.GlobPattern | undefined | null
+		pattern: vscode.GlobPattern | undefined | null,
 	): string | extHostProtocol.IRelativePatternDto | undefined | null {
 		if (pattern instanceof types.RelativePattern) {
 			return pattern.toJSON();
@@ -2013,7 +2013,7 @@ export namespace GlobPattern {
 		) {
 			return new types.RelativePattern(
 				pattern.baseUri ?? pattern.base,
-				pattern.pattern
+				pattern.pattern,
 			).toJSON();
 		}
 
@@ -2021,7 +2021,7 @@ export namespace GlobPattern {
 	}
 
 	function isRelativePatternShape(
-		obj: unknown
+		obj: unknown,
 	): obj is { base: string; baseUri: URI; pattern: string } {
 		const rp = obj as
 			| { base: string; baseUri: URI; pattern: string }
@@ -2035,7 +2035,7 @@ export namespace GlobPattern {
 	}
 
 	function isLegacyRelativePatternShape(
-		obj: unknown
+		obj: unknown,
 	): obj is { base: string; pattern: string } {
 		// Before 1.64.x, `RelativePattern` did not have any `baseUri: Uri`
 		// property. To preserve backwards compatibility with older extensions
@@ -2050,7 +2050,7 @@ export namespace GlobPattern {
 	}
 
 	export function to(
-		pattern: string | extHostProtocol.IRelativePatternDto
+		pattern: string | extHostProtocol.IRelativePatternDto,
 	): vscode.GlobPattern {
 		if (typeof pattern === "string") {
 			return pattern;
@@ -2058,7 +2058,7 @@ export namespace GlobPattern {
 
 		return new types.RelativePattern(
 			URI.revive(pattern.baseUri),
-			pattern.pattern
+			pattern.pattern,
 		);
 	}
 }
@@ -2066,13 +2066,13 @@ export namespace GlobPattern {
 export namespace LanguageSelector {
 	export function from(selector: undefined): undefined;
 	export function from(
-		selector: vscode.DocumentSelector
+		selector: vscode.DocumentSelector,
 	): languageSelector.LanguageSelector;
 	export function from(
-		selector: vscode.DocumentSelector | undefined
+		selector: vscode.DocumentSelector | undefined,
 	): languageSelector.LanguageSelector | undefined;
 	export function from(
-		selector: vscode.DocumentSelector | undefined
+		selector: vscode.DocumentSelector | undefined,
 	): languageSelector.LanguageSelector | undefined {
 		if (!selector) {
 			return undefined;
@@ -2114,15 +2114,15 @@ export namespace MappedEditsContext {
 							"ranges" in docRef &&
 							Array.isArray(docRef.ranges) &&
 							docRef.ranges.every(
-								(r: unknown) => r instanceof types.Range
-							)
-					)
+								(r: unknown) => r instanceof types.Range,
+							),
+					),
 			)
 		);
 	}
 
 	export function from(
-		extContext: vscode.MappedEditsContext
+		extContext: vscode.MappedEditsContext,
 	): languages.MappedEditsContext {
 		return {
 			documents: extContext.documents.map((subArray) =>
@@ -2130,7 +2130,7 @@ export namespace MappedEditsContext {
 					uri: URI.from(r.uri),
 					version: r.version,
 					ranges: r.ranges.map((r) => Range.from(r)),
-				}))
+				})),
 			),
 		};
 	}
@@ -2148,7 +2148,7 @@ export namespace NotebookRange {
 
 export namespace NotebookCellExecutionSummary {
 	export function to(
-		data: notebooks.NotebookCellInternalMetadata
+		data: notebooks.NotebookCellInternalMetadata,
 	): vscode.NotebookCellExecutionSummary {
 		return {
 			timing:
@@ -2162,7 +2162,7 @@ export namespace NotebookCellExecutionSummary {
 	}
 
 	export function from(
-		data: vscode.NotebookCellExecutionSummary
+		data: vscode.NotebookCellExecutionSummary,
 	): Partial<notebooks.NotebookCellInternalMetadata> {
 		return {
 			lastRunSuccess: data.success,
@@ -2175,7 +2175,7 @@ export namespace NotebookCellExecutionSummary {
 
 export namespace NotebookCellExecutionState {
 	export function to(
-		state: notebooks.NotebookCellExecutionState
+		state: notebooks.NotebookCellExecutionState,
 	): vscode.NotebookCellExecutionState | undefined {
 		if (state === notebooks.NotebookCellExecutionState.Unconfirmed) {
 			return types.NotebookCellExecutionState.Pending;
@@ -2214,7 +2214,7 @@ export namespace NotebookCellKind {
 
 export namespace NotebookData {
 	export function from(
-		data: vscode.NotebookData
+		data: vscode.NotebookData,
 	): extHostProtocol.NotebookDataDto {
 		const res: extHostProtocol.NotebookDataDto = {
 			metadata: data.metadata ?? Object.create(null),
@@ -2228,7 +2228,7 @@ export namespace NotebookData {
 	}
 
 	export function to(
-		data: extHostProtocol.NotebookDataDto
+		data: extHostProtocol.NotebookDataDto,
 	): vscode.NotebookData {
 		const res = new types.NotebookData(data.cells.map(NotebookCellData.to));
 		if (!isEmptyObject(data.metadata)) {
@@ -2240,7 +2240,7 @@ export namespace NotebookData {
 
 export namespace NotebookCellData {
 	export function from(
-		data: vscode.NotebookCellData
+		data: vscode.NotebookCellData,
 	): extHostProtocol.NotebookCellDataDto {
 		return {
 			cellKind: NotebookCellKind.from(data.kind),
@@ -2249,7 +2249,7 @@ export namespace NotebookCellData {
 			source: data.value,
 			metadata: data.metadata,
 			internalMetadata: NotebookCellExecutionSummary.from(
-				data.executionSummary ?? {}
+				data.executionSummary ?? {},
 			),
 			outputs: data.outputs
 				? data.outputs.map(NotebookCellOutput.from)
@@ -2258,7 +2258,7 @@ export namespace NotebookCellData {
 	}
 
 	export function to(
-		data: extHostProtocol.NotebookCellDataDto
+		data: extHostProtocol.NotebookCellDataDto,
 	): vscode.NotebookCellData {
 		return new types.NotebookCellData(
 			NotebookCellKind.to(data.cellKind),
@@ -2269,14 +2269,14 @@ export namespace NotebookCellData {
 			data.metadata,
 			data.internalMetadata
 				? NotebookCellExecutionSummary.to(data.internalMetadata)
-				: undefined
+				: undefined,
 		);
 	}
 }
 
 export namespace NotebookCellOutputItem {
 	export function from(
-		item: types.NotebookCellOutputItem
+		item: types.NotebookCellOutputItem,
 	): extHostProtocol.NotebookOutputItemDto {
 		return {
 			mime: item.mime,
@@ -2285,18 +2285,18 @@ export namespace NotebookCellOutputItem {
 	}
 
 	export function to(
-		item: extHostProtocol.NotebookOutputItemDto
+		item: extHostProtocol.NotebookOutputItemDto,
 	): types.NotebookCellOutputItem {
 		return new types.NotebookCellOutputItem(
 			item.valueBytes.buffer,
-			item.mime
+			item.mime,
 		);
 	}
 }
 
 export namespace NotebookCellOutput {
 	export function from(
-		output: vscode.NotebookCellOutput
+		output: vscode.NotebookCellOutput,
 	): extHostProtocol.NotebookOutputDto {
 		return {
 			outputId: output.id,
@@ -2306,13 +2306,13 @@ export namespace NotebookCellOutput {
 	}
 
 	export function to(
-		output: extHostProtocol.NotebookOutputDto
+		output: extHostProtocol.NotebookOutputDto,
 	): vscode.NotebookCellOutput {
 		const items = output.items.map(NotebookCellOutputItem.to);
 		return new types.NotebookCellOutput(
 			items,
 			output.outputId,
-			output.metadata
+			output.metadata,
 		);
 	}
 }
@@ -2326,7 +2326,7 @@ export namespace NotebookExclusiveDocumentPattern {
 		exclude: string | extHostProtocol.IRelativePatternDto | undefined;
 	};
 	export function from(
-		pattern: vscode.GlobPattern
+		pattern: vscode.GlobPattern,
 	): string | extHostProtocol.IRelativePatternDto;
 	export function from(pattern: undefined): undefined;
 	export function from(
@@ -2336,7 +2336,7 @@ export namespace NotebookExclusiveDocumentPattern {
 					exclude: vscode.GlobPattern | undefined;
 			  }
 			| vscode.GlobPattern
-			| undefined
+			| undefined,
 	):
 		| string
 		| extHostProtocol.IRelativePatternDto
@@ -2358,7 +2358,7 @@ export namespace NotebookExclusiveDocumentPattern {
 					exclude: vscode.GlobPattern | undefined;
 			  }
 			| vscode.GlobPattern
-			| undefined
+			| undefined,
 	):
 		| string
 		| extHostProtocol.IRelativePatternDto
@@ -2390,7 +2390,7 @@ export namespace NotebookExclusiveDocumentPattern {
 			| {
 					include: string | extHostProtocol.IRelativePatternDto;
 					exclude: string | extHostProtocol.IRelativePatternDto;
-			  }
+			  },
 	):
 		| { include: vscode.GlobPattern; exclude: vscode.GlobPattern }
 		| vscode.GlobPattern {
@@ -2405,7 +2405,7 @@ export namespace NotebookExclusiveDocumentPattern {
 	}
 
 	function isExclusivePattern<T>(
-		obj: any
+		obj: any,
 	): obj is { include?: T; exclude?: T } {
 		const ep = obj as { include?: T; exclude?: T } | undefined | null;
 		if (!ep) {
@@ -2419,7 +2419,7 @@ export namespace NotebookStatusBarItem {
 	export function from(
 		item: vscode.NotebookCellStatusBarItem,
 		commandsConverter: Command.ICommandsConverter,
-		disposables: DisposableStore
+		disposables: DisposableStore,
 	): notebooks.INotebookCellStatusBarItem {
 		const command =
 			typeof item.command === "string"
@@ -2443,7 +2443,7 @@ export namespace NotebookKernelSourceAction {
 	export function from(
 		item: vscode.NotebookKernelSourceAction,
 		commandsConverter: Command.ICommandsConverter,
-		disposables: DisposableStore
+		disposables: DisposableStore,
 	): notebooks.INotebookKernelSourceAction {
 		const command =
 			typeof item.command === "string"
@@ -2462,7 +2462,7 @@ export namespace NotebookKernelSourceAction {
 
 export namespace NotebookDocumentContentOptions {
 	export function from(
-		options: vscode.NotebookDocumentContentOptions | undefined
+		options: vscode.NotebookDocumentContentOptions | undefined,
 	): notebooks.TransientOptions {
 		return {
 			transientOutputs: options?.transientOutputs ?? false,
@@ -2490,14 +2490,14 @@ export namespace NotebookRendererScript {
 	}): vscode.NotebookRendererScript {
 		return new types.NotebookRendererScript(
 			URI.revive(preload.uri),
-			preload.provides
+			preload.provides,
 		);
 	}
 }
 
 export namespace TestMessage {
 	export function from(
-		message: vscode.TestMessage
+		message: vscode.TestMessage,
 	): ITestErrorMessage.Serialized {
 		return {
 			message: MarkdownString.fromStrict(message.message) || "",
@@ -2516,7 +2516,7 @@ export namespace TestMessage {
 		const message = new types.TestMessage(
 			typeof item.message === "string"
 				? item.message
-				: MarkdownString.to(item.message)
+				: MarkdownString.to(item.message),
 		);
 		message.actualOutput = item.actual;
 		message.expectedOutput = item.expected;
@@ -2596,7 +2596,7 @@ export namespace TestTag {
 export namespace TestResults {
 	const convertTestResultItem = (
 		item: TestResultItem.Serialized,
-		byInternalId: Map<string, TestResultItem.Serialized>
+		byInternalId: Map<string, TestResultItem.Serialized>,
 	): vscode.TestResultSnapshot => {
 		const children: TestResultItem.Serialized[] = [];
 		for (const [id, item] of byInternalId) {
@@ -2615,12 +2615,12 @@ export namespace TestResults {
 				messages: t.messages
 					.filter(
 						(m): m is ITestErrorMessage.Serialized =>
-							m.type === TestMessageType.Error
+							m.type === TestMessageType.Error,
 					)
 					.map(TestMessage.to),
 			})),
 			children: children.map((c) =>
-				convertTestResultItem(c, byInternalId)
+				convertTestResultItem(c, byInternalId),
 			),
 		};
 
@@ -2632,7 +2632,7 @@ export namespace TestResults {
 	};
 
 	export function to(
-		serialized: ISerializedTestResults
+		serialized: ISerializedTestResults,
 	): vscode.TestRunResult {
 		const roots: TestResultItem.Serialized[] = [];
 		const byInternalId = new Map<string, TestResultItem.Serialized>();
@@ -2643,7 +2643,7 @@ export namespace TestResults {
 				serialized.request.targets.some(
 					(t) =>
 						t.controllerId === controllerId &&
-						t.testIds.includes(item.item.extId)
+						t.testIds.includes(item.item.extId),
 				)
 			) {
 				roots.push(item);
@@ -2669,7 +2669,7 @@ export namespace TestCoverage {
 	}
 
 	export function fromDetailed(
-		coverage: vscode.DetailedCoverage
+		coverage: vscode.DetailedCoverage,
 	): CoverageDetails.Serialized {
 		if ("branches" in coverage) {
 			return {
@@ -2680,7 +2680,7 @@ export namespace TestCoverage {
 					? coverage.branches.map((b) => ({
 							count: b.executionCount,
 							location: b.location && fromLocation(b.location),
-						}))
+					  }))
 					: undefined,
 			};
 		} else {
@@ -2694,7 +2694,7 @@ export namespace TestCoverage {
 	}
 
 	export function fromFile(
-		coverage: vscode.FileCoverage
+		coverage: vscode.FileCoverage,
 	): IFileCoverage.Serialized {
 		return {
 			uri: coverage.uri,
@@ -2712,7 +2712,7 @@ export namespace TestCoverage {
 
 export namespace CodeActionTriggerKind {
 	export function to(
-		value: languages.CodeActionTriggerType
+		value: languages.CodeActionTriggerType,
 	): types.CodeActionTriggerKind {
 		switch (value) {
 			case languages.CodeActionTriggerType.Invoke:
@@ -2726,7 +2726,7 @@ export namespace CodeActionTriggerKind {
 
 export namespace TypeHierarchyItem {
 	export function to(
-		item: extHostProtocol.ITypeHierarchyItemDto
+		item: extHostProtocol.ITypeHierarchyItemDto,
 	): types.TypeHierarchyItem {
 		const result = new types.TypeHierarchyItem(
 			SymbolKind.to(item.kind),
@@ -2734,7 +2734,7 @@ export namespace TypeHierarchyItem {
 			item.detail || "",
 			URI.revive(item.uri),
 			Range.to(item.range),
-			Range.to(item.selectionRange)
+			Range.to(item.selectionRange),
 		);
 
 		result._sessionId = item._sessionId;
@@ -2746,7 +2746,7 @@ export namespace TypeHierarchyItem {
 	export function from(
 		item: vscode.TypeHierarchyItem,
 		sessionId?: string,
-		itemId?: string
+		itemId?: string,
 	): extHostProtocol.ITypeHierarchyItemDto {
 		sessionId = sessionId ?? (<types.TypeHierarchyItem>item)._sessionId;
 		itemId = itemId ?? (<types.TypeHierarchyItem>item)._itemId;
@@ -2771,7 +2771,7 @@ export namespace TypeHierarchyItem {
 
 export namespace ViewBadge {
 	export function from(
-		badge: vscode.ViewBadge | undefined
+		badge: vscode.ViewBadge | undefined,
 	): IViewBadge | undefined {
 		if (!badge) {
 			return undefined;
@@ -2788,7 +2788,7 @@ export namespace DataTransferItem {
 	export function to(
 		mime: string,
 		item: extHostProtocol.DataTransferItemDTO,
-		resolveFileData: (id: string) => Promise<Uint8Array>
+		resolveFileData: (id: string) => Promise<Uint8Array>,
 	): types.DataTransferItem {
 		const file = item.fileData;
 		if (file) {
@@ -2797,14 +2797,14 @@ export namespace DataTransferItem {
 					file.name,
 					URI.revive(file.uri),
 					file.id,
-					createSingleCallFunction(() => resolveFileData(file.id))
-				)
+					createSingleCallFunction(() => resolveFileData(file.id)),
+				),
 			);
 		}
 
 		if (mime === Mimes.uriList && item.uriListData) {
 			return new types.InternalDataTransferItem(
-				reviveUriList(item.uriListData)
+				reviveUriList(item.uriListData),
 			);
 		}
 
@@ -2813,7 +2813,7 @@ export namespace DataTransferItem {
 
 	export async function from(
 		mime: string,
-		item: vscode.DataTransferItem | IDataTransferItem
+		item: vscode.DataTransferItem | IDataTransferItem,
 	): Promise<extHostProtocol.DataTransferItemDTO> {
 		const stringValue = await item.asString();
 
@@ -2835,13 +2835,13 @@ export namespace DataTransferItem {
 						id:
 							(fileValue as types.DataTransferFile)._itemId ??
 							(fileValue as IDataTransferFile).id,
-					}
+				  }
 				: undefined,
 		};
 	}
 
 	function serializeUriList(
-		stringValue: string
+		stringValue: string,
 	): ReadonlyArray<string | URI> {
 		return UriList.split(stringValue).map((part) => {
 			if (part.startsWith("#")) {
@@ -2859,12 +2859,12 @@ export namespace DataTransferItem {
 	}
 
 	function reviveUriList(
-		parts: ReadonlyArray<string | UriComponents>
+		parts: ReadonlyArray<string | UriComponents>,
 	): string {
 		return UriList.create(
 			parts.map((part) => {
 				return typeof part === "string" ? part : URI.revive(part);
-			})
+			}),
 		);
 	}
 }
@@ -2872,7 +2872,7 @@ export namespace DataTransferItem {
 export namespace DataTransfer {
 	export function toDataTransfer(
 		value: extHostProtocol.DataTransferDTO,
-		resolveFileData: (itemId: string) => Promise<Uint8Array>
+		resolveFileData: (itemId: string) => Promise<Uint8Array>,
 	): types.DataTransfer {
 		const init = value.items.map(([type, item]) => {
 			return [
@@ -2886,7 +2886,7 @@ export namespace DataTransfer {
 	export async function from(
 		dataTransfer: Iterable<
 			readonly [string, vscode.DataTransferItem | IDataTransferItem]
-		>
+		>,
 	): Promise<extHostProtocol.DataTransferDTO> {
 		const newDTO: extHostProtocol.DataTransferDTO = { items: [] };
 
@@ -2898,7 +2898,7 @@ export namespace DataTransfer {
 						mime,
 						await DataTransferItem.from(mime, value),
 					]);
-				})()
+				})(),
 			);
 		}
 
@@ -2912,7 +2912,7 @@ export namespace ChatReplyFollowup {
 	export function from(
 		followup:
 			| vscode.InteractiveSessionReplyFollowup
-			| vscode.InteractiveEditorReplyFollowup
+			| vscode.InteractiveEditorReplyFollowup,
 	): IChatReplyFollowup {
 		return {
 			kind: "reply",
@@ -2925,7 +2925,7 @@ export namespace ChatReplyFollowup {
 
 export namespace ChatFollowup {
 	export function from(
-		followup: string | vscode.ChatAgentFollowup
+		followup: string | vscode.ChatAgentFollowup,
 	): IChatFollowup {
 		if (typeof followup === "string") {
 			return <IChatReplyFollowup>{
@@ -2951,14 +2951,14 @@ export namespace ChatMessage {
 	export function to(message: chatProvider.IChatMessage): vscode.ChatMessage {
 		const res = new types.ChatMessage(
 			ChatMessageRole.to(message.role),
-			message.content
+			message.content,
 		);
 		res.name = message.name;
 		return res;
 	}
 
 	export function from(
-		message: vscode.ChatMessage
+		message: vscode.ChatMessage,
 	): chatProvider.IChatMessage {
 		return {
 			role: ChatMessageRole.from(message.role),
@@ -2970,7 +2970,7 @@ export namespace ChatMessage {
 
 export namespace ChatMessageRole {
 	export function to(
-		role: chatProvider.ChatMessageRole
+		role: chatProvider.ChatMessageRole,
 	): vscode.ChatMessageRole {
 		switch (role) {
 			case chatProvider.ChatMessageRole.System:
@@ -2985,7 +2985,7 @@ export namespace ChatMessageRole {
 	}
 
 	export function from(
-		role: vscode.ChatMessageRole
+		role: vscode.ChatMessageRole,
 	): chatProvider.ChatMessageRole {
 		switch (role) {
 			case types.ChatMessageRole.System:
@@ -3003,7 +3003,7 @@ export namespace ChatMessageRole {
 
 export namespace ChatVariable {
 	export function objectTo(
-		variableObject: Record<string, IChatRequestVariableValue[]>
+		variableObject: Record<string, IChatRequestVariableValue[]>,
 	): Record<string, vscode.ChatVariableValue[]> {
 		const result: Record<string, vscode.ChatVariableValue[]> = {};
 		for (const key of Object.keys(variableObject)) {
@@ -3014,7 +3014,7 @@ export namespace ChatVariable {
 	}
 
 	export function to(
-		variable: IChatRequestVariableValue
+		variable: IChatRequestVariableValue,
 	): vscode.ChatVariableValue {
 		return {
 			level: ChatVariableLevel.to(variable.level),
@@ -3025,7 +3025,7 @@ export namespace ChatVariable {
 	}
 
 	export function from(
-		variable: vscode.ChatVariableValue
+		variable: vscode.ChatVariableValue,
 	): IChatRequestVariableValue {
 		return {
 			level: ChatVariableLevel.from(variable.level),
@@ -3038,7 +3038,7 @@ export namespace ChatVariable {
 
 export namespace ChatVariableLevel {
 	export function to(
-		level: "short" | "medium" | "full"
+		level: "short" | "medium" | "full",
 	): vscode.ChatVariableLevel {
 		switch (level) {
 			case "short":
@@ -3051,7 +3051,7 @@ export namespace ChatVariableLevel {
 		}
 	}
 	export function from(
-		level: vscode.ChatVariableLevel
+		level: vscode.ChatVariableLevel,
 	): "short" | "medium" | "full" {
 		switch (level) {
 			case types.ChatVariableLevel.Short:
@@ -3067,7 +3067,7 @@ export namespace ChatVariableLevel {
 
 export namespace InteractiveEditorResponseFeedbackKind {
 	export function to(
-		kind: InlineChatResponseFeedbackKind
+		kind: InlineChatResponseFeedbackKind,
 	): vscode.InteractiveEditorResponseFeedbackKind {
 		switch (kind) {
 			case InlineChatResponseFeedbackKind.Helpful:
@@ -3087,7 +3087,7 @@ export namespace InteractiveEditorResponseFeedbackKind {
 export namespace ChatResponseProgress {
 	export function from(
 		extension: IExtensionDescription,
-		progress: vscode.ChatAgentExtendedProgress
+		progress: vscode.ChatAgentExtendedProgress,
 	): extHostProtocol.IChatProgressDto | undefined {
 		if ("placeholder" in progress && "resolvedContent" in progress) {
 			return {
@@ -3135,7 +3135,7 @@ export namespace ChatResponseProgress {
 						? {
 								uri: progress.reference.uri,
 								range: Range.from(progress.reference.range),
-							}
+						  }
 						: progress.reference,
 				kind: "reference",
 			};
@@ -3146,9 +3146,9 @@ export namespace ChatResponseProgress {
 						? {
 								uri: progress.inlineReference.uri,
 								range: Range.from(
-									progress.inlineReference.range
+									progress.inlineReference.range,
 								),
-							}
+						  }
 						: progress.inlineReference,
 				name: progress.title,
 				kind: "inlineReference",
@@ -3172,7 +3172,7 @@ export namespace ChatResponseProgress {
 
 export namespace ChatAgentCompletionItem {
 	export function from(
-		item: vscode.ChatAgentCompletionItem
+		item: vscode.ChatAgentCompletionItem,
 	): extHostProtocol.IChatAgentCompletionItem {
 		return {
 			label: item.label,
@@ -3191,7 +3191,7 @@ export namespace TerminalQuickFix {
 			| vscode.TerminalQuickFixOpener
 			| vscode.Command,
 		converter: Command.ICommandsConverter,
-		disposables: DisposableStore
+		disposables: DisposableStore,
 	):
 		| extHostProtocol.ITerminalQuickFixTerminalCommandDto
 		| extHostProtocol.ITerminalQuickFixOpenerDto

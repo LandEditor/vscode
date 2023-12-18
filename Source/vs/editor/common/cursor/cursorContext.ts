@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ITextModel } from "vs/editor/common/model";
-import { ICoordinatesConverter } from "vs/editor/common/viewModel";
 import {
 	CursorConfiguration,
 	ICursorSimpleModel,
 } from "vs/editor/common/cursorCommon";
+import { ITextModel } from "vs/editor/common/model";
+import { ICoordinatesConverter } from "vs/editor/common/viewModel";
 
 export class CursorContext {
 	_cursorContextBrand: void = undefined;
@@ -22,7 +22,7 @@ export class CursorContext {
 		model: ITextModel,
 		viewModel: ICursorSimpleModel,
 		coordinatesConverter: ICoordinatesConverter,
-		cursorConfig: CursorConfiguration
+		cursorConfig: CursorConfiguration,
 	) {
 		this.model = model;
 		this.viewModel = viewModel;

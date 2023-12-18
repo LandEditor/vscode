@@ -14,12 +14,12 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(binarySizeStatusBarEntry);
 
 	context.subscriptions.push(
-		registerImagePreviewSupport(context, binarySizeStatusBarEntry)
+		registerImagePreviewSupport(context, binarySizeStatusBarEntry),
 	);
 	context.subscriptions.push(
-		registerAudioPreviewSupport(context, binarySizeStatusBarEntry)
+		registerAudioPreviewSupport(context, binarySizeStatusBarEntry),
 	);
 	context.subscriptions.push(
-		registerVideoPreviewSupport(context, binarySizeStatusBarEntry)
+		registerVideoPreviewSupport(context, binarySizeStatusBarEntry),
 	);
 }

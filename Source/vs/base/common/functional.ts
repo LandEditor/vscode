@@ -9,13 +9,12 @@
 export function createSingleCallFunction<T extends Function>(
 	this: unknown,
 	fn: T,
-	fnDidRunCallback?: () => void
+	fnDidRunCallback?: () => void,
 ): T {
-	const _this = this;
 	let didCall = false;
 	let result: unknown;
 
-	return function () {
+	return () => {
 		if (didCall) {
 			return result;
 		}
@@ -23,14 +22,16 @@ export function createSingleCallFunction<T extends Function>(
 		didCall = true;
 		if (fnDidRunCallback) {
 			try {
-				result = fn.apply(_this, arguments);
+				result = fn.apply(this, arguments);
 			} finally {
 				fnDidRunCallback();
 			}
 		} else {
-			result = fn.apply(_this, arguments);
+			result = fn.apply(this, arguments);
 		}
 
 		return result;
-	} as unknown as T;
+	};
+	as;
+	unknown as T;
 }

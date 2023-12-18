@@ -28,14 +28,14 @@ export interface ITooltipMarkdownString {
 		| string
 		| undefined
 		| ((
-				token: CancellationToken
+				token: CancellationToken,
 		  ) => Promise<IMarkdownString | string | undefined>);
 	markdownNotSupportedFallback: string | undefined;
 }
 
 export function setupNativeHover(
 	htmlElement: HTMLElement,
-	tooltip: string | ITooltipMarkdownString | undefined
+	tooltip: string | ITooltipMarkdownString | undefined,
 ): void {
 	if (isString(tooltip)) {
 		// Icons don't render in the native hover so we strip them out
@@ -90,13 +90,13 @@ class UpdatableHoverWidget implements IDisposable {
 	constructor(
 		private hoverDelegate: IHoverDelegate,
 		private target: IHoverDelegateTarget | HTMLElement,
-		private fadeInAnimation: boolean
+		private fadeInAnimation: boolean,
 	) {}
 
 	async update(
 		content: IHoverContent,
 		focus?: boolean,
-		options?: IUpdatableHoverOptions
+		options?: IUpdatableHoverOptions,
 	): Promise<void> {
 		if (this._cancellationTokenSource) {
 			// there's an computation ongoing, cancel it
@@ -114,10 +114,7 @@ class UpdatableHoverWidget implements IDisposable {
 			content instanceof HTMLElement
 		) {
 			resolvedContent = content;
-		} else if (!isFunction(content.markdown)) {
-			resolvedContent =
-				content.markdown ?? content.markdownNotSupportedFallback;
-		} else {
+		} else if (isFunction(content.markdown)) {
 			// compute the content, potentially long-running
 
 			// show 'Loading' if no hover is up yet
@@ -138,6 +135,9 @@ class UpdatableHoverWidget implements IDisposable {
 				// or there has been a new call to `update`
 				return;
 			}
+		} else {
+			resolvedContent =
+				content.markdown ?? content.markdownNotSupportedFallback;
 		}
 
 		this.show(resolvedContent, focus, options);
@@ -146,7 +146,7 @@ class UpdatableHoverWidget implements IDisposable {
 	private show(
 		content: IResolvedHoverContent,
 		focus?: boolean,
-		options?: IUpdatableHoverOptions
+		options?: IUpdatableHoverOptions,
 	): void {
 		const oldHoverWidget = this._hoverWidget;
 
@@ -167,14 +167,14 @@ class UpdatableHoverWidget implements IDisposable {
 
 			this._hoverWidget = this.hoverDelegate.showHover(
 				hoverOptions,
-				focus
+				focus,
 			);
 		}
 		oldHoverWidget?.dispose();
 	}
 
 	private hasContent(
-		content: IResolvedHoverContent
+		content: IResolvedHoverContent,
 	): content is NonNullable<IResolvedHoverContent> {
 		if (!content) {
 			return false;
@@ -202,7 +202,7 @@ export function setupCustomHover(
 	hoverDelegate: IHoverDelegate,
 	htmlElement: HTMLElement,
 	content: IHoverContent,
-	options?: IUpdatableHoverOptions
+	options?: IUpdatableHoverOptions,
 ): ICustomHover {
 	let hoverPreparation: IDisposable | undefined;
 
@@ -226,14 +226,14 @@ export function setupCustomHover(
 	const triggerShowHover = (
 		delay: number,
 		focus?: boolean,
-		target?: IHoverDelegateTarget
+		target?: IHoverDelegateTarget,
 	) => {
 		return new TimeoutTimer(async () => {
 			if (!hoverWidget || hoverWidget.isDisposed) {
 				hoverWidget = new UpdatableHoverWidget(
 					hoverDelegate,
 					target || htmlElement,
-					delay > 0
+					delay > 0,
 				);
 				await hoverWidget.update(content, focus, options);
 			}
@@ -248,7 +248,7 @@ export function setupCustomHover(
 			isMouseDown = true;
 			hideHover(true, true);
 		},
-		true
+		true,
 	);
 	const mouseUpEmitter = dom.addDisposableListener(
 		htmlElement,
@@ -256,7 +256,7 @@ export function setupCustomHover(
 		() => {
 			isMouseDown = false;
 		},
-		true
+		true,
 	);
 	const mouseLeaveEmitter = dom.addDisposableListener(
 		htmlElement,
@@ -265,7 +265,7 @@ export function setupCustomHover(
 			isMouseDown = false;
 			hideHover(false, (<any>e).fromElement === htmlElement);
 		},
-		true
+		true,
 	);
 
 	const onMouseOver = () => {
@@ -298,8 +298,8 @@ export function setupCustomHover(
 					htmlElement,
 					dom.EventType.MOUSE_MOVE,
 					onMouseMove,
-					true
-				)
+					true,
+				),
 			);
 		}
 		toDispose.add(triggerShowHover(hoverDelegate.delay, false, target));
@@ -310,7 +310,7 @@ export function setupCustomHover(
 		htmlElement,
 		dom.EventType.MOUSE_OVER,
 		onMouseOver,
-		true
+		true,
 	);
 
 	const onFocus = () => {
@@ -328,8 +328,8 @@ export function setupCustomHover(
 				htmlElement,
 				dom.EventType.BLUR,
 				onBlur,
-				true
-			)
+				true,
+			),
 		);
 		toDispose.add(triggerShowHover(hoverDelegate.delay, false, target));
 		hoverPreparation = toDispose;
@@ -338,7 +338,7 @@ export function setupCustomHover(
 		htmlElement,
 		dom.EventType.FOCUS,
 		onFocus,
-		true
+		true,
 	);
 	const hover: ICustomHover = {
 		show: (focus) => {

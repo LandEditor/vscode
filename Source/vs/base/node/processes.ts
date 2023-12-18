@@ -32,7 +32,7 @@ export type ErrorCallback = (error?: any) => void;
 export type ProgressCallback<T> = (progress: T) => void;
 
 export function getWindowsShell(
-	env = process.env as Platform.IProcessEnvironment
+	env = process.env as Platform.IProcessEnvironment,
 ): string {
 	return env["comspec"] || "cmd.exe";
 }
@@ -47,12 +47,12 @@ export interface IQueuedSender {
 // On Windows we always wait for the send() method to return before sending the next message
 // to workaround https://github.com/nodejs/node/issues/7657 (IPC can freeze process)
 export function createQueuedSender(
-	childProcess: cp.ChildProcess
+	childProcess: cp.ChildProcess,
 ): IQueuedSender {
 	let msgQueue: string[] = [];
 	let useQueue = false;
 
-	const send = function (msg: any): void {
+	const send = (msg: any): void => {
 		if (useQueue) {
 			msgQueue.push(msg); // add to the queue if the process cannot handle more messages
 			return;
@@ -88,7 +88,7 @@ export namespace win32 {
 	export async function findExecutable(
 		command: string,
 		cwd?: string,
-		paths?: string[]
+		paths?: string[],
 	): Promise<string> {
 		// If we have an absolute path then we take it.
 		if (path.isAbsolute(command)) {

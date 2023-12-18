@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { CharCode } from "vs/base/common/charCode";
+import { countEOL } from "vs/editor/common/core/eolCounter";
 import { Position } from "vs/editor/common/core/position";
 import { IRange, Range } from "vs/editor/common/core/range";
-import { countEOL } from "vs/editor/common/core/eolCounter";
 
 /**
  * Represents sparse tokens over a contiguous range of lines.
@@ -14,11 +14,11 @@ import { countEOL } from "vs/editor/common/core/eolCounter";
 export class SparseMultilineTokens {
 	public static create(
 		startLineNumber: number,
-		tokens: Uint32Array
+		tokens: Uint32Array,
 	): SparseMultilineTokens {
 		return new SparseMultilineTokens(
 			startLineNumber,
-			new SparseMultilineTokensStorage(tokens)
+			new SparseMultilineTokensStorage(tokens),
 		);
 	}
 
@@ -42,7 +42,7 @@ export class SparseMultilineTokens {
 
 	private constructor(
 		startLineNumber: number,
-		tokens: SparseMultilineTokensStorage
+		tokens: SparseMultilineTokensStorage,
 	) {
 		this._startLineNumber = startLineNumber;
 		this._tokens = tokens;
@@ -69,7 +69,7 @@ export class SparseMultilineTokens {
 			lineNumber <= this._endLineNumber
 		) {
 			return this._tokens.getLineTokens(
-				lineNumber - this._startLineNumber
+				lineNumber - this._startLineNumber,
 			);
 		}
 		return null;
@@ -84,7 +84,7 @@ export class SparseMultilineTokens {
 			this._startLineNumber + deltaRange.startLineNumber,
 			deltaRange.startColumn,
 			this._startLineNumber + deltaRange.endLineNumber,
-			deltaRange.endColumn
+			deltaRange.endColumn,
 		);
 	}
 
@@ -96,7 +96,7 @@ export class SparseMultilineTokens {
 			startLineIndex,
 			range.startColumn - 1,
 			endLineIndex,
-			range.endColumn - 1
+			range.endColumn - 1,
 		);
 		this._updateEndLineNumber();
 	}
@@ -112,7 +112,7 @@ export class SparseMultilineTokens {
 			startLineIndex,
 			range.startColumn - 1,
 			endLineIndex,
-			range.endColumn - 1
+			range.endColumn - 1,
 		);
 		return [
 			new SparseMultilineTokens(this._startLineNumber, a),
@@ -127,7 +127,7 @@ export class SparseMultilineTokens {
 			eolCount,
 			firstLineLength,
 			lastLineLength,
-			text.length > 0 ? text.charCodeAt(0) : CharCode.Null
+			text.length > 0 ? text.charCodeAt(0) : CharCode.Null,
 		);
 	}
 
@@ -136,7 +136,7 @@ export class SparseMultilineTokens {
 		eolCount: number,
 		firstLineLength: number,
 		lastLineLength: number,
-		firstCharCode: number
+		firstCharCode: number,
 	): void {
 		this._acceptDeleteRange(range);
 		this._acceptInsertText(
@@ -144,7 +144,7 @@ export class SparseMultilineTokens {
 			eolCount,
 			firstLineLength,
 			lastLineLength,
-			firstCharCode
+			firstCharCode,
 		);
 		this._updateEndLineNumber();
 	}
@@ -191,7 +191,7 @@ export class SparseMultilineTokens {
 				0,
 				0,
 				lastLineIndex,
-				range.endColumn - 1
+				range.endColumn - 1,
 			);
 		} else {
 			this._tokens.acceptDeleteRange(
@@ -199,7 +199,7 @@ export class SparseMultilineTokens {
 				firstLineIndex,
 				range.startColumn - 1,
 				lastLineIndex,
-				range.endColumn - 1
+				range.endColumn - 1,
 			);
 		}
 	}
@@ -209,7 +209,7 @@ export class SparseMultilineTokens {
 		eolCount: number,
 		firstLineLength: number,
 		lastLineLength: number,
-		firstCharCode: number
+		firstCharCode: number,
 	): void {
 		if (eolCount === 0 && firstLineLength === 0) {
 			// Nothing to insert
@@ -237,7 +237,7 @@ export class SparseMultilineTokens {
 			eolCount,
 			firstLineLength,
 			lastLineLength,
-			firstCharCode
+			firstCharCode,
 		);
 	}
 }
@@ -264,7 +264,7 @@ class SparseMultilineTokensStorage {
 			pieces.push(
 				`(${
 					this._getDeltaLine(i) + startLineNumber
-				},${this._getStartCharacter(i)}-${this._getEndCharacter(i)})`
+				},${this._getStartCharacter(i)}-${this._getEndCharacter(i)})`,
 			);
 		}
 		return `[${pieces.join(",")}]`;
@@ -334,14 +334,14 @@ class SparseMultilineTokensStorage {
 					max++;
 				}
 				return new SparseLineTokens(
-					this._tokens.subarray(4 * min, 4 * max + 4)
+					this._tokens.subarray(4 * min, 4 * max + 4),
 				);
 			}
 		}
 
 		if (this._getDeltaLine(low) === deltaLine) {
 			return new SparseLineTokens(
-				this._tokens.subarray(4 * low, 4 * low + 4)
+				this._tokens.subarray(4 * low, 4 * low + 4),
 			);
 		}
 
@@ -356,7 +356,7 @@ class SparseMultilineTokensStorage {
 		startDeltaLine: number,
 		startChar: number,
 		endDeltaLine: number,
-		endChar: number
+		endChar: number,
 	): number {
 		const tokens = this._tokens;
 		const tokenCount = this._tokenCount;
@@ -404,7 +404,7 @@ class SparseMultilineTokensStorage {
 		startDeltaLine: number,
 		startChar: number,
 		endDeltaLine: number,
-		endChar: number
+		endChar: number,
 	): [SparseMultilineTokensStorage, SparseMultilineTokensStorage, number] {
 		const tokens = this._tokens;
 		const tokenCount = this._tokenCount;
@@ -412,7 +412,7 @@ class SparseMultilineTokensStorage {
 		const bTokens: number[] = [];
 		let destTokens: number[] = aTokens;
 		let destOffset = 0;
-		let destFirstDeltaLine: number = 0;
+		let destFirstDeltaLine = 0;
 		for (let i = 0; i < tokenCount; i++) {
 			const srcOffset = 4 * i;
 			const tokenDeltaLine = tokens[srcOffset];
@@ -461,7 +461,7 @@ class SparseMultilineTokensStorage {
 		startDeltaLine: number,
 		startCharacter: number,
 		endDeltaLine: number,
-		endCharacter: number
+		endCharacter: number,
 	): void {
 		// This is a bit complex, here are the cases I used to think about this:
 		//
@@ -629,7 +629,7 @@ class SparseMultilineTokensStorage {
 		eolCount: number,
 		firstLineLength: number,
 		lastLineLength: number,
-		firstCharCode: number
+		firstCharCode: number,
 	): void {
 		// Here are the cases I used to think about this:
 		//

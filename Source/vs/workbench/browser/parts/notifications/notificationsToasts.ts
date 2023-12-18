@@ -3,60 +3,60 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/notificationsToasts";
-import { localize } from "vs/nls";
 import {
-	INotificationsModel,
-	NotificationChangeType,
-	INotificationChangeEvent,
-	INotificationViewItem,
-	NotificationViewItemContentChangeKind,
-} from "vs/workbench/common/notifications";
+	Dimension,
+	EventType,
+	addDisposableListener,
+	getWindow,
+	isAncestorOfActiveElement,
+	scheduleAtNextAnimationFrame,
+} from "vs/base/browser/dom";
+import { mainWindow } from "vs/base/browser/window";
+import { IntervalCounter } from "vs/base/common/async";
+import { Emitter, Event } from "vs/base/common/event";
 import {
+	DisposableStore,
 	IDisposable,
 	dispose,
 	toDisposable,
-	DisposableStore,
 } from "vs/base/common/lifecycle";
-import {
-	addDisposableListener,
-	EventType,
-	Dimension,
-	scheduleAtNextAnimationFrame,
-	isAncestorOfActiveElement,
-	getWindow,
-} from "vs/base/browser/dom";
+import { ScrollbarVisibility } from "vs/base/common/scrollable";
+import { assertIsDefined } from "vs/base/common/types";
+import "vs/css!./media/notificationsToasts";
+import { localize } from "vs/nls";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import {
+	NotificationPriority,
+	NotificationsFilter,
+	Severity,
+} from "vs/platform/notification/common/notification";
+import { widgetShadow } from "vs/platform/theme/common/colorRegistry";
+import { IThemeService, Themable } from "vs/platform/theme/common/themeService";
+import { INotificationsToastController } from "vs/workbench/browser/parts/notifications/notificationsCommands";
 import { NotificationsList } from "vs/workbench/browser/parts/notifications/notificationsList";
-import { Event, Emitter } from "vs/base/common/event";
+import { NotificationsToastsVisibleContext } from "vs/workbench/common/contextkeys";
+import {
+	INotificationChangeEvent,
+	INotificationViewItem,
+	INotificationsModel,
+	NotificationChangeType,
+	NotificationViewItemContentChangeKind,
+} from "vs/workbench/common/notifications";
+import {
+	NOTIFICATIONS_BACKGROUND,
+	NOTIFICATIONS_TOAST_BORDER,
+} from "vs/workbench/common/theme";
+import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
+import { IHostService } from "vs/workbench/services/host/browser/host";
 import {
 	IWorkbenchLayoutService,
 	Parts,
 } from "vs/workbench/services/layout/browser/layoutService";
 import {
-	NOTIFICATIONS_TOAST_BORDER,
-	NOTIFICATIONS_BACKGROUND,
-} from "vs/workbench/common/theme";
-import { IThemeService, Themable } from "vs/platform/theme/common/themeService";
-import { widgetShadow } from "vs/platform/theme/common/colorRegistry";
-import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
-import { INotificationsToastController } from "vs/workbench/browser/parts/notifications/notificationsCommands";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import {
-	Severity,
-	NotificationsFilter,
-	NotificationPriority,
-} from "vs/platform/notification/common/notification";
-import { ScrollbarVisibility } from "vs/base/common/scrollable";
-import {
 	ILifecycleService,
 	LifecyclePhase,
 } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { IHostService } from "vs/workbench/services/host/browser/host";
-import { IntervalCounter } from "vs/base/common/async";
-import { assertIsDefined } from "vs/base/common/types";
-import { NotificationsToastsVisibleContext } from "vs/workbench/common/contextkeys";
-import { mainWindow } from "vs/base/browser/window";
 
 interface INotificationToast {
 	readonly item: INotificationViewItem;
@@ -66,9 +66,9 @@ interface INotificationToast {
 }
 
 enum ToastVisibility {
-	HIDDEN_OR_VISIBLE,
-	HIDDEN,
-	VISIBLE,
+	HIDDEN_OR_VISIBLE = 0,
+	HIDDEN = 1,
+	VISIBLE = 2,
 }
 
 export class NotificationsToasts
@@ -92,7 +92,7 @@ export class NotificationsToasts
 	};
 
 	private readonly _onDidChangeVisibility = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onDidChangeVisibility = this._onDidChangeVisibility.event;
 
@@ -118,7 +118,7 @@ export class NotificationsToasts
 		NotificationsToastsVisibleContext.bindTo(this.contextKeyService);
 
 	private readonly addedToastsIntervalCounter = new IntervalCounter(
-		NotificationsToasts.SPAM_PROTECTION.interval
+		NotificationsToasts.SPAM_PROTECTION.interval,
 	);
 
 	constructor(
@@ -145,8 +145,8 @@ export class NotificationsToasts
 		// Layout
 		this._register(
 			this.layoutService.onDidLayoutMainContainer((dimension) =>
-				this.layout(Dimension.lift(dimension))
-			)
+				this.layout(Dimension.lift(dimension)),
+			),
 		);
 
 		// Delay some tasks until after we have restored
@@ -154,14 +154,14 @@ export class NotificationsToasts
 		this.lifecycleService.when(LifecyclePhase.Restored).then(() => {
 			// Show toast for initial notifications if any
 			this.model.notifications.forEach((notification) =>
-				this.addToast(notification)
+				this.addToast(notification),
 			);
 
 			// Update toasts on notification changes
 			this._register(
 				this.model.onDidChangeNotification((e) =>
-					this.onDidChangeNotification(e)
-				)
+					this.onDidChangeNotification(e),
+				),
 			);
 		});
 
@@ -174,7 +174,7 @@ export class NotificationsToasts
 				) {
 					this.hide();
 				}
-			})
+			}),
 		);
 	}
 
@@ -219,14 +219,14 @@ export class NotificationsToasts
 		this.mapNotificationToDisposable.set(item, itemDisposables);
 		itemDisposables.add(
 			scheduleAtNextAnimationFrame(getWindow(this.container), () =>
-				this.doAddToast(item, itemDisposables)
-			)
+				this.doAddToast(item, itemDisposables),
+			),
 		);
 	}
 
 	private doAddToast(
 		item: INotificationViewItem,
-		itemDisposables: DisposableStore
+		itemDisposables: DisposableStore,
 	): void {
 		// Lazily create toasts containers
 		let notificationsToastsContainer = this.notificationsToastsContainer;
@@ -244,18 +244,18 @@ export class NotificationsToasts
 		// Container
 		const notificationToastContainer = document.createElement("div");
 		notificationToastContainer.classList.add(
-			"notification-toast-container"
+			"notification-toast-container",
 		);
 
 		const firstToast = notificationsToastsContainer.firstChild;
 		if (firstToast) {
 			notificationsToastsContainer.insertBefore(
 				notificationToastContainer,
-				firstToast
+				firstToast,
 			); // always first
 		} else {
 			notificationsToastsContainer.appendChild(
-				notificationToastContainer
+				notificationToastContainer,
 			);
 		}
 
@@ -275,17 +275,17 @@ export class NotificationsToasts
 						return localize(
 							"notificationAriaLabel",
 							"{0}, notification",
-							item.message.raw
+							item.message.raw,
 						);
 					}
 					return localize(
 						"notificationWithSourceAriaLabel",
 						"{0}, source: {1}, notification",
 						item.message.raw,
-						item.source
+						item.source,
 					);
 				})(),
-			}
+			},
 		);
 		itemDisposables.add(notificationList);
 
@@ -299,7 +299,7 @@ export class NotificationsToasts
 
 		// When disposed, remove as visible
 		itemDisposables.add(
-			toDisposable(() => this.updateToastVisibility(toast, false))
+			toDisposable(() => this.updateToastVisibility(toast, false)),
 		);
 
 		// Make visible
@@ -320,7 +320,7 @@ export class NotificationsToasts
 		itemDisposables.add(
 			item.onDidChangeExpansion(() => {
 				notificationList.updateNotificationsList(0, 1, [item]);
-			})
+			}),
 		);
 
 		// Handle content changes
@@ -338,7 +338,7 @@ export class NotificationsToasts
 						}
 						break;
 				}
-			})
+			}),
 		);
 
 		// Remove when item gets closed
@@ -351,7 +351,7 @@ export class NotificationsToasts
 			item,
 			notificationToastContainer,
 			notificationList,
-			itemDisposables
+			itemDisposables,
 		);
 
 		// Theming
@@ -366,7 +366,7 @@ export class NotificationsToasts
 			addDisposableListener(notificationToast, "transitionend", () => {
 				notificationToast.classList.remove("notification-fade-in");
 				notificationToast.classList.add("notification-fade-in-done");
-			})
+			}),
 		);
 
 		// Mark as visible
@@ -383,7 +383,7 @@ export class NotificationsToasts
 		item: INotificationViewItem,
 		notificationToastContainer: HTMLElement,
 		notificationList: NotificationsList,
-		disposables: DisposableStore
+		disposables: DisposableStore,
 	): void {
 		// Track mouse over item
 		let isMouseOverToast = false;
@@ -391,15 +391,15 @@ export class NotificationsToasts
 			addDisposableListener(
 				notificationToastContainer,
 				EventType.MOUSE_OVER,
-				() => (isMouseOverToast = true)
-			)
+				() => (isMouseOverToast = true),
+			),
 		);
 		disposables.add(
 			addDisposableListener(
 				notificationToastContainer,
 				EventType.MOUSE_OUT,
-				() => (isMouseOverToast = false)
-			)
+				() => (isMouseOverToast = false),
+			),
 		);
 
 		// Install Timers to Purge Notification
@@ -407,35 +407,38 @@ export class NotificationsToasts
 		let listener: IDisposable;
 
 		const hideAfterTimeout = () => {
-			purgeTimeoutHandle = setTimeout(() => {
-				// If the window does not have focus, we wait for the window to gain focus
-				// again before triggering the timeout again. This prevents an issue where
-				// focussing the window could immediately hide the notification because the
-				// timeout was triggered again.
-				if (!this.hostService.hasFocus) {
-					if (!listener) {
-						listener = this.hostService.onDidChangeFocus(
-							(focus) => {
-								if (focus) {
-									hideAfterTimeout();
-								}
-							}
-						);
-						disposables.add(listener);
+			purgeTimeoutHandle = setTimeout(
+				() => {
+					// If the window does not have focus, we wait for the window to gain focus
+					// again before triggering the timeout again. This prevents an issue where
+					// focussing the window could immediately hide the notification because the
+					// timeout was triggered again.
+					if (!this.hostService.hasFocus) {
+						if (!listener) {
+							listener = this.hostService.onDidChangeFocus(
+								(focus) => {
+									if (focus) {
+										hideAfterTimeout();
+									}
+								},
+							);
+							disposables.add(listener);
+						}
 					}
-				}
 
-				// Otherwise...
-				else if (
-					item.sticky || // never hide sticky notifications
-					notificationList.hasFocus() || // never hide notifications with focus
-					isMouseOverToast // never hide notifications under mouse
-				) {
-					hideAfterTimeout();
-				} else {
-					this.removeToast(item);
-				}
-			}, NotificationsToasts.PURGE_TIMEOUT[item.severity]);
+					// Otherwise...
+					else if (
+						item.sticky || // never hide sticky notifications
+						notificationList.hasFocus() || // never hide notifications with focus
+						isMouseOverToast // never hide notifications under mouse
+					) {
+						hideAfterTimeout();
+					} else {
+						this.removeToast(item);
+					}
+				},
+				NotificationsToasts.PURGE_TIMEOUT[item.severity],
+			);
 		};
 
 		hideAfterTimeout();
@@ -450,7 +453,7 @@ export class NotificationsToasts
 		const notificationToast = this.mapNotificationToToast.get(item);
 		if (notificationToast) {
 			const toastHasDOMFocus = isAncestorOfActiveElement(
-				notificationToast.container
+				notificationToast.container,
 			);
 			if (toastHasDOMFocus) {
 				focusEditor = !(this.focusNext() || this.focusPrevious()); // focus next if any, otherwise focus editor
@@ -490,7 +493,7 @@ export class NotificationsToasts
 
 		// Disposables
 		this.mapNotificationToDisposable.forEach((disposable) =>
-			dispose(disposable)
+			dispose(disposable),
 		);
 		this.mapNotificationToDisposable.clear();
 
@@ -690,7 +693,7 @@ export class NotificationsToasts
 
 		return new Dimension(
 			Math.min(maxWidth, availableWidth),
-			availableHeight
+			availableHeight,
 		);
 	}
 
@@ -726,7 +729,7 @@ export class NotificationsToasts
 
 	private updateToastVisibility(
 		toast: INotificationToast,
-		visible: boolean
+		visible: boolean,
 	): void {
 		if (this.isToastInDOM(toast) === visible) {
 			return;
@@ -734,7 +737,7 @@ export class NotificationsToasts
 
 		// Update visibility in DOM
 		const notificationsToastsContainer = assertIsDefined(
-			this.notificationsToastsContainer
+			this.notificationsToastsContainer,
 		);
 		if (visible) {
 			notificationsToastsContainer.appendChild(toast.container);

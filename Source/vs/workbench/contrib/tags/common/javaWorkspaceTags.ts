@@ -20,210 +20,210 @@ export const JavaLibrariesToLookFor: {
 }[] = [
 	// azure mgmt sdk
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "com.microsoft.azure" && artifactId === "azure",
-		"tag": "azure",
+		tag: "azure",
 	},
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "com.microsoft.azure" &&
 			artifactId.startsWith("azure-mgmt-"),
-		"tag": "azure",
+		tag: "azure",
 	},
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId.startsWith("com.microsoft.azure") &&
 			artifactId.startsWith("azure-mgmt-"),
-		"tag": "azure",
+		tag: "azure",
 	},
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "com.azure.resourcemanager" &&
 			artifactId.startsWith("azure-resourcemanager"),
-		"tag": "azure",
+		tag: "azure",
 	}, // azure track2 sdk
 	// java ee
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "javax" && artifactId === "javaee-api",
-		"tag": "javaee",
+		tag: "javaee",
 	},
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "javax.xml.bind" && artifactId === "jaxb-api",
-		"tag": "javaee",
+		tag: "javaee",
 	},
 	// jdbc
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "mysql" && artifactId === "mysql-connector-java",
-		"tag": "jdbc",
+		tag: "jdbc",
 	},
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "com.microsoft.sqlserver" &&
 			artifactId === "mssql-jdbc",
-		"tag": "jdbc",
+		tag: "jdbc",
 	},
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "com.oracle.database.jdbc" &&
 			artifactId.startsWith("ojdbc"),
-		"tag": "jdbc",
+		tag: "jdbc",
 	},
 	// jpa
 	{
-		"predicate": (groupId, artifactId) => groupId === "org.hibernate",
-		"tag": "jpa",
+		predicate: (groupId, artifactId) => groupId === "org.hibernate",
+		tag: "jpa",
 	},
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "org.eclipse.persistence" &&
 			artifactId === "eclipselink",
-		"tag": "jpa",
+		tag: "jpa",
 	},
 	// lombok
 	{
-		"predicate": (groupId, artifactId) => groupId === "org.projectlombok",
-		"tag": "lombok",
+		predicate: (groupId, artifactId) => groupId === "org.projectlombok",
+		tag: "lombok",
 	},
 	// redis
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "org.springframework.data" &&
 			artifactId === "spring-data-redis",
-		"tag": "redis",
+		tag: "redis",
 	},
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "redis.clients" && artifactId === "jedis",
-		"tag": "redis",
+		tag: "redis",
 	},
 	{
-		"predicate": (groupId, artifactId) => groupId === "org.redisson",
-		"tag": "redis",
+		predicate: (groupId, artifactId) => groupId === "org.redisson",
+		tag: "redis",
 	},
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "io.lettuce" && artifactId === "lettuce-core",
-		"tag": "redis",
+		tag: "redis",
 	},
 	// spring boot
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "org.springframework.boot",
-		"tag": "springboot",
+		tag: "springboot",
 	},
 	// sql
 	{
-		"predicate": (groupId, artifactId) => groupId === "org.jooq",
-		"tag": "sql",
+		predicate: (groupId, artifactId) => groupId === "org.jooq",
+		tag: "sql",
 	},
 	{
-		"predicate": (groupId, artifactId) => groupId === "org.mybatis",
-		"tag": "sql",
+		predicate: (groupId, artifactId) => groupId === "org.mybatis",
+		tag: "sql",
 	},
 	// unit test
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "org.junit.jupiter" &&
 			artifactId === "junit-jupiter-api",
-		"tag": "unitTest",
+		tag: "unitTest",
 	},
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "junit" && artifactId === "junit",
-		"tag": "unitTest",
+		tag: "unitTest",
 	},
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "org.testng" && artifactId === "testng",
-		"tag": "unitTest",
+		tag: "unitTest",
 	},
 	// cosmos
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "com.azure" && artifactId.includes("cosmos"),
-		"tag": "azure-cosmos",
+		tag: "azure-cosmos",
 	},
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "com.azure.spring" && artifactId.includes("cosmos"),
-		"tag": "azure-cosmos",
+		tag: "azure-cosmos",
 	},
 	// storage account
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "com.azure" && artifactId.includes("azure-storage"),
-		"tag": "azure-storage",
+		tag: "azure-storage",
 	},
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "com.azure.spring" && artifactId.includes("storage"),
-		"tag": "azure-storage",
+		tag: "azure-storage",
 	},
 	// service bus
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "com.azure" &&
 			artifactId === "azure-messaging-servicebus",
-		"tag": "azure-servicebus",
+		tag: "azure-servicebus",
 	},
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "com.azure.spring" && artifactId.includes("servicebus"),
-		"tag": "azure-servicebus",
+		tag: "azure-servicebus",
 	},
 	// event hubs
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "com.azure" &&
 			artifactId.startsWith("azure-messaging-eventhubs"),
-		"tag": "azure-eventhubs",
+		tag: "azure-eventhubs",
 	},
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "com.azure.spring" && artifactId.includes("eventhubs"),
-		"tag": "azure-eventhubs",
+		tag: "azure-eventhubs",
 	},
 	// open ai
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "com.theokanning.openai-gpt3-java",
-		"tag": "openai",
+		tag: "openai",
 	},
 	// azure open ai
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "com.azure" && artifactId === "azure-ai-openai",
-		"tag": "azure-openai",
+		tag: "azure-openai",
 	},
 	// Azure Functions
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId === "com.microsoft.azure.functions" &&
 			artifactId === "azure-functions-java-library",
-		"tag": "azure-functions",
+		tag: "azure-functions",
 	},
 	// quarkus
 	{
-		"predicate": (groupId, artifactId) => groupId === "io.quarkus",
-		"tag": "quarkus",
+		predicate: (groupId, artifactId) => groupId === "io.quarkus",
+		tag: "quarkus",
 	},
 	// microprofile
 	{
-		"predicate": (groupId, artifactId) =>
+		predicate: (groupId, artifactId) =>
 			groupId.startsWith("org.eclipse.microprofile"),
-		"tag": "microprofile",
+		tag: "microprofile",
 	},
 	// micronaut
 	{
-		"predicate": (groupId, artifactId) => groupId === "io.micronaut",
-		"tag": "micronaut",
+		predicate: (groupId, artifactId) => groupId === "io.micronaut",
+		tag: "micronaut",
 	},
 	// GraalVM
 	{
-		"predicate": (groupId, artifactId) => groupId.startsWith("org.graalvm"),
-		"tag": "graalvm",
+		predicate: (groupId, artifactId) => groupId.startsWith("org.graalvm"),
+		tag: "graalvm",
 	},
 ];

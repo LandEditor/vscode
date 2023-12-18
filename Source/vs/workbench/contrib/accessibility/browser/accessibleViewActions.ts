@@ -10,6 +10,8 @@ import {
 	MultiCommand,
 	ServicesAccessor,
 } from "vs/editor/browser/editorExtensions";
+import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
+import { InlineCompletionsController } from "vs/editor/contrib/inlineCompletions/browser/inlineCompletionsController";
 import { localize } from "vs/nls";
 import {
 	Action2,
@@ -18,7 +20,6 @@ import {
 } from "vs/platform/actions/common/actions";
 import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
 import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
-import { AccessibilityCommandId } from "vs/workbench/contrib/accessibility/common/accessibilityCommands";
 import {
 	AccessibleViewProviderId,
 	accessibilityHelpIsShown,
@@ -29,8 +30,7 @@ import {
 	accessibleViewVerbosityEnabled,
 } from "vs/workbench/contrib/accessibility/browser/accessibilityConfiguration";
 import { IAccessibleViewService } from "vs/workbench/contrib/accessibility/browser/accessibleView";
-import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
-import { InlineCompletionsController } from "vs/editor/contrib/inlineCompletions/browser/inlineCompletionsController";
+import { AccessibilityCommandId } from "vs/workbench/contrib/accessibility/common/accessibilityCommands";
 
 const accessibleViewMenu = {
 	id: MenuId.AccessibleView,
@@ -48,7 +48,7 @@ class AccessibleViewNextAction extends Action2 {
 			id: AccessibilityCommandId.ShowNext,
 			precondition: ContextKeyExpr.and(
 				accessibleViewIsShown,
-				accessibleViewSupportsNavigation
+				accessibleViewSupportsNavigation,
 			),
 			keybinding: {
 				primary: KeyMod.Alt | KeyCode.BracketRight,
@@ -60,14 +60,14 @@ class AccessibleViewNextAction extends Action2 {
 					...accessibleViewMenu,
 					when: ContextKeyExpr.and(
 						accessibleViewIsShown,
-						accessibleViewSupportsNavigation
+						accessibleViewSupportsNavigation,
 					),
 				},
 			],
 			icon: Codicon.arrowDown,
 			title: localize(
 				"editor.action.accessibleViewNext",
-				"Show Next in Accessible View"
+				"Show Next in Accessible View",
 			),
 		});
 	}
@@ -83,7 +83,7 @@ class AccessibleViewPreviousAction extends Action2 {
 			id: AccessibilityCommandId.ShowPrevious,
 			precondition: ContextKeyExpr.and(
 				accessibleViewIsShown,
-				accessibleViewSupportsNavigation
+				accessibleViewSupportsNavigation,
 			),
 			keybinding: {
 				primary: KeyMod.Alt | KeyCode.BracketLeft,
@@ -96,13 +96,13 @@ class AccessibleViewPreviousAction extends Action2 {
 					...accessibleViewMenu,
 					when: ContextKeyExpr.and(
 						accessibleViewIsShown,
-						accessibleViewSupportsNavigation
+						accessibleViewSupportsNavigation,
 					),
 				},
 			],
 			title: localize(
 				"editor.action.accessibleViewPrevious",
-				"Show Previous in Accessible View"
+				"Show Previous in Accessible View",
 			),
 		});
 	}
@@ -119,9 +119,9 @@ class AccessibleViewGoToSymbolAction extends Action2 {
 			precondition: ContextKeyExpr.and(
 				ContextKeyExpr.or(
 					accessibleViewIsShown,
-					accessibilityHelpIsShown
+					accessibilityHelpIsShown,
 				),
-				accessibleViewGoToSymbolSupported
+				accessibleViewGoToSymbolSupported,
 			),
 			keybinding: {
 				primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyO,
@@ -136,15 +136,15 @@ class AccessibleViewGoToSymbolAction extends Action2 {
 					when: ContextKeyExpr.and(
 						ContextKeyExpr.or(
 							accessibleViewIsShown,
-							accessibilityHelpIsShown
+							accessibilityHelpIsShown,
 						),
-						accessibleViewGoToSymbolSupported
+						accessibleViewGoToSymbolSupported,
 					),
 				},
 			],
 			title: localize(
 				"editor.action.accessibleViewGoToSymbol",
-				"Go To Symbol in Accessible View"
+				"Go To Symbol in Accessible View",
 			),
 		});
 	}
@@ -178,12 +178,12 @@ export const AccessibilityHelpAction = registerCommand(
 				group: "",
 				title: localize(
 					"editor.action.accessibilityHelp",
-					"Open Accessibility Help"
+					"Open Accessibility Help",
 				),
 				order: 1,
 			},
 		],
-	})
+	}),
 );
 
 export const AccessibleViewAction = registerCommand(
@@ -204,12 +204,12 @@ export const AccessibleViewAction = registerCommand(
 				group: "",
 				title: localize(
 					"editor.action.accessibleView",
-					"Open Accessible View"
+					"Open Accessible View",
 				),
 				order: 1,
 			},
 		],
-	})
+	}),
 );
 
 class AccessibleViewDisableHintAction extends Action2 {
@@ -219,9 +219,9 @@ class AccessibleViewDisableHintAction extends Action2 {
 			precondition: ContextKeyExpr.and(
 				ContextKeyExpr.or(
 					accessibleViewIsShown,
-					accessibilityHelpIsShown
+					accessibilityHelpIsShown,
 				),
-				accessibleViewVerbosityEnabled
+				accessibleViewVerbosityEnabled,
 			),
 			keybinding: {
 				primary: KeyMod.Alt | KeyCode.F6,
@@ -236,15 +236,15 @@ class AccessibleViewDisableHintAction extends Action2 {
 					when: ContextKeyExpr.and(
 						ContextKeyExpr.or(
 							accessibleViewIsShown,
-							accessibilityHelpIsShown
+							accessibilityHelpIsShown,
 						),
-						accessibleViewVerbosityEnabled
+						accessibleViewVerbosityEnabled,
 					),
 				},
 			],
 			title: localize(
 				"editor.action.accessibleViewDisableHint",
-				"Disable Accessible View Hint"
+				"Disable Accessible View Hint",
 			),
 		});
 	}
@@ -262,8 +262,8 @@ class AccessibleViewAcceptInlineCompletionAction extends Action2 {
 				accessibleViewIsShown,
 				ContextKeyExpr.equals(
 					accessibleViewCurrentProviderId.key,
-					AccessibleViewProviderId.InlineCompletions
-				)
+					AccessibleViewProviderId.InlineCompletions,
+				),
 			),
 			keybinding: {
 				primary: KeyMod.CtrlCmd | KeyCode.Slash,
@@ -281,14 +281,14 @@ class AccessibleViewAcceptInlineCompletionAction extends Action2 {
 						accessibleViewIsShown,
 						ContextKeyExpr.equals(
 							accessibleViewCurrentProviderId.key,
-							AccessibleViewProviderId.InlineCompletions
-						)
+							AccessibleViewProviderId.InlineCompletions,
+						),
 					),
 				},
 			],
 			title: localize(
 				"editor.action.accessibleViewAcceptInlineCompletionAction",
-				"Accept Inline Completion"
+				"Accept Inline Completion",
 			),
 		});
 	}

@@ -3,21 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	IRequestOptions,
-	IRequestContext,
-} from "vs/base/parts/request/common/request";
 import { CancellationToken } from "vs/base/common/cancellation";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { ILoggerService } from "vs/platform/log/common/log";
-import { RequestChannelClient } from "vs/platform/request/common/requestIpc";
 import {
-	IRemoteAgentService,
-	IRemoteAgentConnection,
-} from "vs/workbench/services/remote/common/remoteAgentService";
-import { RequestService } from "vs/platform/request/browser/requestService";
+	IRequestContext,
+	IRequestOptions,
+} from "vs/base/parts/request/common/request";
 import { ServicesAccessor } from "vs/editor/browser/editorExtensions";
 import { CommandsRegistry } from "vs/platform/commands/common/commands";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { ILoggerService } from "vs/platform/log/common/log";
+import { RequestService } from "vs/platform/request/browser/requestService";
+import { RequestChannelClient } from "vs/platform/request/common/requestIpc";
+import {
+	IRemoteAgentConnection,
+	IRemoteAgentService,
+} from "vs/workbench/services/remote/common/remoteAgentService";
 
 export class BrowserRequestService extends RequestService {
 	constructor(
@@ -31,7 +31,7 @@ export class BrowserRequestService extends RequestService {
 
 	override async request(
 		options: IRequestOptions,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IRequestContext> {
 		try {
 			const context = await super.request(options, token);
@@ -52,10 +52,10 @@ export class BrowserRequestService extends RequestService {
 	private _makeRemoteRequest(
 		connection: IRemoteAgentConnection,
 		options: IRequestOptions,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IRequestContext> {
 		return connection.withChannel("request", (channel) =>
-			new RequestChannelClient(channel).request(options, token)
+			new RequestChannelClient(channel).request(options, token),
 		);
 	}
 }
@@ -64,7 +64,7 @@ export class BrowserRequestService extends RequestService {
 
 CommandsRegistry.registerCommand(
 	"_workbench.fetchJSON",
-	async function (accessor: ServicesAccessor, url: string, method: string) {
+	async (accessor: ServicesAccessor, url: string, method: string) => {
 		const result = await fetch(url, {
 			method,
 			headers: { Accept: "application/json" },
@@ -75,5 +75,5 @@ CommandsRegistry.registerCommand(
 		} else {
 			throw new Error(result.statusText);
 		}
-	}
+	},
 );

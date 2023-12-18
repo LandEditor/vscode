@@ -22,10 +22,10 @@ import { IV8Profile } from "vs/platform/profiling/common/profiling";
 import { IPartsSplash } from "vs/platform/theme/common/themeService";
 import {
 	IColorScheme,
-	IOpenedAuxiliaryWindow,
-	IOpenedMainWindow,
 	IOpenEmptyWindowOptions,
 	IOpenWindowOptions,
+	IOpenedAuxiliaryWindow,
+	IOpenedMainWindow,
 	IPoint,
 	IRectangle,
 	IWindowOpenable,
@@ -102,7 +102,7 @@ export interface ICommonNativeHostService {
 	openWindow(options?: IOpenEmptyWindowOptions): Promise<void>;
 	openWindow(
 		toOpen: IWindowOpenable[],
-		options?: IOpenWindowOptions
+		options?: IOpenWindowOptions,
 	): Promise<void>;
 
 	toggleFullScreen(options?: INativeOptions): Promise<void>;
@@ -121,7 +121,7 @@ export interface ICommonNativeHostService {
 	moveWindowTop(options?: INativeOptions): Promise<void>;
 	positionWindow(
 		position: IRectangle,
-		options?: INativeOptions
+		options?: INativeOptions,
 	): Promise<void>;
 
 	/**
@@ -134,12 +134,12 @@ export interface ICommonNativeHostService {
 			height?: number;
 			backgroundColor?: string;
 			foregroundColor?: string;
-		}
+		},
 	): Promise<void>;
 
 	setMinimumSize(
 		width: number | undefined,
-		height: number | undefined
+		height: number | undefined,
 	): Promise<void>;
 
 	saveWindowSplash(splash: IPartsSplash): Promise<void>;
@@ -168,7 +168,7 @@ export interface ICommonNativeHostService {
 	showItemInFolder(path: string): Promise<void>;
 	setRepresentedFilename(
 		path: string,
-		options?: INativeOptions
+		options?: INativeOptions,
 	): Promise<void>;
 	setDocumentEdited(edited: boolean, options?: INativeOptions): Promise<void>;
 	openExternal(url: string): Promise<boolean>;
@@ -178,7 +178,7 @@ export interface ICommonNativeHostService {
 	writeElevated(
 		source: URI,
 		target: URI,
-		options?: { unlock?: boolean }
+		options?: { unlock?: boolean },
 	): Promise<void>;
 	isRunningUnderARM64Translation(): Promise<boolean>;
 
@@ -197,19 +197,19 @@ export interface ICommonNativeHostService {
 	readClipboardText(type?: "selection" | "clipboard"): Promise<string>;
 	writeClipboardText(
 		text: string,
-		type?: "selection" | "clipboard"
+		type?: "selection" | "clipboard",
 	): Promise<void>;
 	readClipboardFindText(): Promise<string>;
 	writeClipboardFindText(text: string): Promise<void>;
 	writeClipboardBuffer(
 		format: string,
 		buffer: VSBuffer,
-		type?: "selection" | "clipboard"
+		type?: "selection" | "clipboard",
 	): Promise<void>;
 	readClipboardBuffer(format: string): Promise<VSBuffer>;
 	hasClipboard(
 		format: string,
-		type?: "selection" | "clipboard"
+		type?: "selection" | "clipboard",
 	): Promise<boolean>;
 
 	// macOS Touchbar
@@ -250,7 +250,7 @@ export interface ICommonNativeHostService {
 		startPort: number,
 		giveUpAfter: number,
 		timeout: number,
-		stride?: number
+		stride?: number,
 	): Promise<number>;
 
 	// Registry (windows only)
@@ -262,7 +262,7 @@ export interface ICommonNativeHostService {
 			| "HKEY_USERS"
 			| "HKEY_CURRENT_CONFIG",
 		path: string,
-		name: string
+		name: string,
 	): Promise<string | undefined>;
 }
 
@@ -276,4 +276,4 @@ export const INativeHostService =
  * @see {@link IHostService} for methods that can be used in native and web
  * hosts.
  */
-export interface INativeHostService extends ICommonNativeHostService {}
+export type INativeHostService = ICommonNativeHostService;

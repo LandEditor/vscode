@@ -3,34 +3,34 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event, Emitter } from "vs/base/common/event";
+import { raceCancellation } from "vs/base/common/async";
 import { VSBufferReadableStream } from "vs/base/common/buffer";
-import {
-	IWorkingCopyBackup,
-	IWorkingCopySaveEvent,
-	WorkingCopyCapabilities,
-} from "vs/workbench/services/workingCopy/common/workingCopy";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { Emitter, Event } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
+import { emptyStream } from "vs/base/common/stream";
+import { URI } from "vs/base/common/uri";
+import { ILogService } from "vs/platform/log/common/log";
+import { ISaveOptions } from "vs/workbench/common/editor";
 import {
 	IFileWorkingCopy,
 	IFileWorkingCopyModel,
 	IFileWorkingCopyModelFactory,
 } from "vs/workbench/services/workingCopy/common/fileWorkingCopy";
-import { Disposable } from "vs/base/common/lifecycle";
-import { URI } from "vs/base/common/uri";
-import { IWorkingCopyService } from "vs/workbench/services/workingCopy/common/workingCopyService";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { ISaveOptions } from "vs/workbench/common/editor";
-import { raceCancellation } from "vs/base/common/async";
-import { ILogService } from "vs/platform/log/common/log";
+import {
+	IWorkingCopyBackup,
+	IWorkingCopySaveEvent,
+	WorkingCopyCapabilities,
+} from "vs/workbench/services/workingCopy/common/workingCopy";
 import { IWorkingCopyBackupService } from "vs/workbench/services/workingCopy/common/workingCopyBackup";
-import { emptyStream } from "vs/base/common/stream";
+import { IWorkingCopyService } from "vs/workbench/services/workingCopy/common/workingCopyService";
 
 /**
  * Untitled file specific working copy model factory.
  */
-export interface IUntitledFileWorkingCopyModelFactory<
+export type IUntitledFileWorkingCopyModelFactory<
 	M extends IUntitledFileWorkingCopyModel,
-> extends IFileWorkingCopyModelFactory<M> {}
+> = IFileWorkingCopyModelFactory<M>;
 
 /**
  * The underlying model of a untitled file working copy provides
@@ -83,7 +83,7 @@ export interface IUntitledFileWorkingCopySaveDelegate<
 	 */
 	(
 		workingCopy: IUntitledFileWorkingCopy<M>,
-		options?: ISaveOptions
+		options?: ISaveOptions,
 	): Promise<boolean>;
 }
 
@@ -125,7 +125,7 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 	readonly onDidChangeDirty = this._onDidChangeDirty.event;
 
 	private readonly _onDidSave = this._register(
-		new Emitter<IWorkingCopySaveEvent>()
+		new Emitter<IWorkingCopySaveEvent>(),
 	);
 	readonly onDidSave = this._onDidSave.event;
 
@@ -164,7 +164,7 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 	private modified =
 		this.hasAssociatedFilePath ||
 		Boolean(
-			this.initialContents && this.initialContents.markModified !== false
+			this.initialContents && this.initialContents.markModified !== false,
 		);
 
 	isDirty(): boolean {
@@ -229,8 +229,8 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 				!!backup ||
 				Boolean(
 					this.initialContents &&
-						this.initialContents.markModified !== false
-				)
+						this.initialContents.markModified !== false,
+				),
 		);
 
 		// If we have initial contents, make sure to emit this
@@ -241,7 +241,7 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 	}
 
 	private async doCreateModel(
-		contents: VSBufferReadableStream
+		contents: VSBufferReadableStream,
 	): Promise<void> {
 		this.trace("doCreateModel()");
 
@@ -250,8 +250,8 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 			await this.modelFactory.createModel(
 				this.resource,
 				contents,
-				CancellationToken.None
-			)
+				CancellationToken.None,
+			),
 		);
 
 		// Model listeners
@@ -261,7 +261,7 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 	private installModelListeners(model: M): void {
 		// Content Change
 		this._register(
-			model.onDidChangeContent((e) => this.onModelContentChanged(e))
+			model.onDidChangeContent((e) => this.onModelContentChanged(e)),
 		);
 
 		// Lifecycle
@@ -269,7 +269,7 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 	}
 
 	private onModelContentChanged(
-		e: IUntitledFileWorkingCopyModelContentChangedEvent
+		e: IUntitledFileWorkingCopyModelContentChangedEvent,
 	): void {
 		// Mark the untitled file working copy as non-modified once its
 		// in case provided by the change event and in case we do not
@@ -368,7 +368,7 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 		this.logService.trace(
 			`[untitled file working copy] ${msg}`,
 			this.resource.toString(),
-			this.typeId
+			this.typeId,
 		);
 	}
 }

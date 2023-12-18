@@ -76,7 +76,7 @@ const compilations = [
 const getBaseUrl = (out) =>
 	`https://ticino.blob.core.windows.net/sourcemaps/${commit}/${out}`;
 
-const tasks = compilations.map(function (tsconfigFile) {
+const tasks = compilations.map((tsconfigFile) => {
 	const absolutePath = path.join(extensionsPath, tsconfigFile);
 	const relativeDirname = path.dirname(tsconfigFile);
 
@@ -122,24 +122,24 @@ const tasks = compilations.map(function (tsconfigFile) {
 				transpileOnlyIncludesDts: transpileOnly,
 				transpileWithSwc: true,
 			},
-			(err) => reporter(err.toString())
+			(err) => reporter(err.toString()),
 		);
 
-		const pipeline = function () {
+		const pipeline = () => {
 			const input = es.through();
 			const tsFilter = filter(
 				["**/*.ts", "!**/lib/lib*.d.ts", "!**/node_modules/**"],
-				{ restore: true }
+				{ restore: true },
 			);
 			const output = input
 				.pipe(
 					plumber({
-						errorHandler: function (err) {
+						errorHandler: (err) => {
 							if (err && !err.__reporter__) {
 								reporter(err);
 							}
 						},
-					})
+					}),
 				)
 				.pipe(tsFilter)
 				.pipe(util.loadSourcemaps())
@@ -148,19 +148,19 @@ const tasks = compilations.map(function (tsconfigFile) {
 				.pipe(build ? util.stripSourceMappingURL() : es.through())
 				.pipe(
 					sourcemaps.write(".", {
-						sourceMappingURL: !build
-							? null
-							: (f) => `${baseUrl}/${f.relative}.map`,
+						sourceMappingURL: build
+							? (f) => `${baseUrl}/${f.relative}.map`
+							: null,
 						addComment: !!build,
 						includeContent: !!build,
 						sourceRoot: "../src",
-					})
+					}),
 				)
 				.pipe(tsFilter.restore)
 				.pipe(
 					build
 						? nlsDev.bundleMetaDataFiles(headerId, headerOut)
-						: es.through()
+						: es.through(),
 				)
 				// Filter out *.nls.json file. We needed them only to bundle meta data file.
 				.pipe(filter(["**", "!**/*.nls.json"]))
@@ -188,7 +188,7 @@ const tasks = compilations.map(function (tsconfigFile) {
 			const input = es.merge(nonts, pipeline.tsProjectSrc());
 
 			return input.pipe(pipeline()).pipe(gulp.dest(out));
-		})
+		}),
 	);
 
 	const compileTask = task.define(
@@ -201,7 +201,7 @@ const tasks = compilations.map(function (tsconfigFile) {
 			const input = es.merge(nonts, pipeline.tsProjectSrc());
 
 			return input.pipe(pipeline()).pipe(gulp.dest(out));
-		})
+		}),
 	);
 
 	const watchTask = task.define(
@@ -220,7 +220,7 @@ const tasks = compilations.map(function (tsconfigFile) {
 			return watchInput
 				.pipe(util.incremental(pipeline, input))
 				.pipe(gulp.dest(out));
-		})
+		}),
 	);
 
 	const compileBuildTask = task.define(
@@ -233,7 +233,7 @@ const tasks = compilations.map(function (tsconfigFile) {
 			const input = es.merge(nonts, pipeline.tsProjectSrc());
 
 			return input.pipe(pipeline()).pipe(gulp.dest(out));
-		})
+		}),
 	);
 
 	// Tasks
@@ -246,47 +246,47 @@ const tasks = compilations.map(function (tsconfigFile) {
 
 const transpileExtensionsTask = task.define(
 	"transpile-extensions",
-	task.parallel(...tasks.map((t) => t.transpileTask))
+	task.parallel(...tasks.map((t) => t.transpileTask)),
 );
 gulp.task(transpileExtensionsTask);
 
 const compileExtensionsTask = task.define(
 	"compile-extensions",
-	task.parallel(...tasks.map((t) => t.compileTask))
+	task.parallel(...tasks.map((t) => t.compileTask)),
 );
 gulp.task(compileExtensionsTask);
 exports.compileExtensionsTask = compileExtensionsTask;
 
 const watchExtensionsTask = task.define(
 	"watch-extensions",
-	task.parallel(...tasks.map((t) => t.watchTask))
+	task.parallel(...tasks.map((t) => t.watchTask)),
 );
 gulp.task(watchExtensionsTask);
 exports.watchExtensionsTask = watchExtensionsTask;
 
 const compileExtensionsBuildLegacyTask = task.define(
 	"compile-extensions-build-legacy",
-	task.parallel(...tasks.map((t) => t.compileBuildTask))
+	task.parallel(...tasks.map((t) => t.compileBuildTask)),
 );
 gulp.task(compileExtensionsBuildLegacyTask);
 
 //#region Extension media
 
 const compileExtensionMediaTask = task.define("compile-extension-media", () =>
-	ext.buildExtensionMedia(false)
+	ext.buildExtensionMedia(false),
 );
 gulp.task(compileExtensionMediaTask);
 exports.compileExtensionMediaTask = compileExtensionMediaTask;
 
 const watchExtensionMedia = task.define("watch-extension-media", () =>
-	ext.buildExtensionMedia(true)
+	ext.buildExtensionMedia(true),
 );
 gulp.task(watchExtensionMedia);
 exports.watchExtensionMedia = watchExtensionMedia;
 
 const compileExtensionMediaBuildTask = task.define(
 	"compile-extension-media-build",
-	() => ext.buildExtensionMedia(false, ".build/extensions")
+	() => ext.buildExtensionMedia(false, ".build/extensions"),
 );
 gulp.task(compileExtensionMediaBuildTask);
 exports.compileExtensionMediaBuildTask = compileExtensionMediaBuildTask;
@@ -297,7 +297,7 @@ exports.compileExtensionMediaBuildTask = compileExtensionMediaBuildTask;
 
 const cleanExtensionsBuildTask = task.define(
 	"clean-extensions-build",
-	util.rimraf(".build/extensions")
+	util.rimraf(".build/extensions"),
 );
 const compileExtensionsBuildTask = task.define(
 	"compile-extensions-build",
@@ -306,22 +306,22 @@ const compileExtensionsBuildTask = task.define(
 		task.define("bundle-marketplace-extensions-build", () =>
 			ext
 				.packageMarketplaceExtensionsStream(false)
-				.pipe(gulp.dest(".build"))
+				.pipe(gulp.dest(".build")),
 		),
 		task.define("bundle-extensions-build", () =>
 			ext
 				.packageLocalExtensionsStream(false, false)
-				.pipe(gulp.dest(".build"))
-		)
-	)
+				.pipe(gulp.dest(".build")),
+		),
+	),
 );
 
 gulp.task(compileExtensionsBuildTask);
 gulp.task(
 	task.define(
 		"extensions-ci",
-		task.series(compileExtensionsBuildTask, compileExtensionMediaBuildTask)
-	)
+		task.series(compileExtensionsBuildTask, compileExtensionMediaBuildTask),
+	),
 );
 
 const compileExtensionsBuildPullRequestTask = task.define(
@@ -331,14 +331,14 @@ const compileExtensionsBuildPullRequestTask = task.define(
 		task.define("bundle-marketplace-extensions-build", () =>
 			ext
 				.packageMarketplaceExtensionsStream(false)
-				.pipe(gulp.dest(".build"))
+				.pipe(gulp.dest(".build")),
 		),
 		task.define("bundle-extensions-build-pr", () =>
 			ext
 				.packageLocalExtensionsStream(false, true)
-				.pipe(gulp.dest(".build"))
-		)
-	)
+				.pipe(gulp.dest(".build")),
+		),
+	),
 );
 
 gulp.task(compileExtensionsBuildPullRequestTask);
@@ -347,9 +347,9 @@ gulp.task(
 		"extensions-ci-pr",
 		task.series(
 			compileExtensionsBuildPullRequestTask,
-			compileExtensionMediaBuildTask
-		)
-	)
+			compileExtensionMediaBuildTask,
+		),
+	),
 );
 
 exports.compileExtensionsBuildTask = compileExtensionsBuildTask;
@@ -357,13 +357,13 @@ exports.compileExtensionsBuildTask = compileExtensionsBuildTask;
 //#endregion
 
 const compileWebExtensionsTask = task.define("compile-web", () =>
-	buildWebExtensions(false)
+	buildWebExtensions(false),
 );
 gulp.task(compileWebExtensionsTask);
 exports.compileWebExtensionsTask = compileWebExtensionsTask;
 
 const watchWebExtensionsTask = task.define("watch-web", () =>
-	buildWebExtensions(true)
+	buildWebExtensions(true),
 );
 gulp.task(watchWebExtensionsTask);
 exports.watchWebExtensionsTask = watchWebExtensionsTask;
@@ -374,11 +374,11 @@ exports.watchWebExtensionsTask = watchWebExtensionsTask;
 async function buildWebExtensions(isWatch) {
 	const webpackConfigLocations = await nodeUtil.promisify(glob)(
 		path.join(extensionsPath, "**", "extension-browser.webpack.config.js"),
-		{ ignore: ["**/node_modules"] }
+		{ ignore: ["**/node_modules"] },
 	);
 	return ext.webpackExtensions(
 		"packaging web extension",
 		isWatch,
-		webpackConfigLocations.map((configPath) => ({ configPath }))
+		webpackConfigLocations.map((configPath) => ({ configPath })),
 	);
 }

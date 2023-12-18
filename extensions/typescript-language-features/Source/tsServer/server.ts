@@ -23,15 +23,15 @@ import {
 import { Disposable } from "../utils/dispose";
 import { isWebAndHasSharedArrayBuffers } from "../utils/platform";
 import { OngoingRequestCanceller } from "./cancellation";
+import { NodeVersionManager } from "./nodeManager";
 import type * as Proto from "./protocol/protocol";
 import { EventName } from "./protocol/protocol.const";
 import { TypeScriptVersionManager } from "./versionManager";
 import { TypeScriptVersion } from "./versionProvider";
-import { NodeVersionManager } from "./nodeManager";
 
 export enum ExecutionTarget {
-	Semantic,
-	Syntax,
+	Semantic = 0,
+	Syntax = 1,
 }
 
 export interface TypeScriptServerExitEvent {
@@ -65,7 +65,7 @@ export interface ITypeScriptServer {
 			expectsResult: boolean;
 			lowPriority?: boolean;
 			executionTarget?: ExecutionTarget;
-		}
+		},
 	): Array<Promise<ServerResponse.Response<Proto.Response>> | undefined>;
 
 	dispose(): void;
@@ -75,7 +75,7 @@ export interface TsServerDelegate {
 	onFatalError(command: string, error: Error): void;
 }
 
-export const enum TsServerProcessKind {
+export enum TsServerProcessKind {
 	Main = "main",
 	Syntax = "syntax",
 	Semantic = "semantic",
@@ -90,7 +90,7 @@ export interface TsServerProcessFactory {
 		configuration: TypeScriptServiceConfiguration,
 		versionManager: TypeScriptVersionManager,
 		nodeVersionManager: NodeVersionManager,
-		tsServerLog: TsServerLog | undefined
+		tsServerLog: TsServerLog | undefined,
 	): TsServerProcess;
 }
 
@@ -117,7 +117,7 @@ export class SingleTsServer extends Disposable implements ITypeScriptServer {
 		private readonly _requestCanceller: OngoingRequestCanceller,
 		private readonly _version: TypeScriptVersion,
 		private readonly _telemetryReporter: TelemetryReporter,
-		private readonly _tracer: Tracer
+		private readonly _tracer: Tracer,
 	) {
 		super();
 
@@ -137,12 +137,12 @@ export class SingleTsServer extends Disposable implements ITypeScriptServer {
 	}
 
 	private readonly _onEvent = this._register(
-		new vscode.EventEmitter<Proto.Event>()
+		new vscode.EventEmitter<Proto.Event>(),
 	);
 	public readonly onEvent = this._onEvent.event;
 
 	private readonly _onExit = this._register(
-		new vscode.EventEmitter<TypeScriptServerExitEvent>()
+		new vscode.EventEmitter<TypeScriptServerExitEvent>(),
 	);
 	public readonly onExit = this._onExit.event;
 
@@ -192,7 +192,7 @@ export class SingleTsServer extends Disposable implements ITypeScriptServer {
 								this._serverId,
 								"requestCompleted",
 								seq,
-								callback
+								callback,
 							);
 							callback.onSuccess(undefined);
 						}
@@ -204,7 +204,7 @@ export class SingleTsServer extends Disposable implements ITypeScriptServer {
 				}
 				default:
 					throw new Error(
-						`Unknown message type ${message.type} received`
+						`Unknown message type ${message.type} received`,
 					);
 			}
 		} finally {
@@ -223,15 +223,15 @@ export class SingleTsServer extends Disposable implements ITypeScriptServer {
 				return true;
 			}
 			this.logTrace(
-				`Tried to cancel request with sequence number ${seq}. But request got already delivered.`
+				`Tried to cancel request with sequence number ${seq}. But request got already delivered.`,
 			);
 			return false;
 		} finally {
 			const callback = this.fetchCallback(seq);
 			callback?.onSuccess(
 				new ServerResponse.Cancelled(
-					`Cancelled request ${seq} - ${command}`
-				)
+					`Cancelled request ${seq} - ${command}`,
+				),
 			);
 		}
 	}
@@ -253,8 +253,8 @@ export class SingleTsServer extends Disposable implements ITypeScriptServer {
 				TypeScriptServerError.create(
 					this._serverId,
 					this._version,
-					response
-				)
+					response,
+				),
 			);
 		}
 	}
@@ -268,7 +268,7 @@ export class SingleTsServer extends Disposable implements ITypeScriptServer {
 			expectsResult: boolean;
 			lowPriority?: boolean;
 			executionTarget?: ExecutionTarget;
-		}
+		},
 	): Array<Promise<ServerResponse.Response<Proto.Response>> | undefined> {
 		const request = this._requestQueue.createRequest(command, args);
 		const requestInfo: RequestItem = {
@@ -277,7 +277,7 @@ export class SingleTsServer extends Disposable implements ITypeScriptServer {
 			isAsync: executeInfo.isAsync,
 			queueingType: SingleTsServer.getQueueingType(
 				command,
-				executeInfo.lowPriority
+				executeInfo.lowPriority,
 			),
 		};
 		let result:
@@ -296,7 +296,7 @@ export class SingleTsServer extends Disposable implements ITypeScriptServer {
 							queuingStartTime: Date.now(),
 							isAsync: executeInfo.isAsync,
 						},
-						executeInfo.isAsync
+						executeInfo.isAsync,
 					);
 
 					if (executeInfo.token) {
@@ -309,7 +309,7 @@ export class SingleTsServer extends Disposable implements ITypeScriptServer {
 							this.tryCancelRequest(request, command);
 						});
 					}
-				}
+				},
 			).catch((err: Error) => {
 				if (err instanceof TypeScriptServerError) {
 					if (!executeInfo.token?.isCancellationRequested) {
@@ -324,7 +324,7 @@ export class SingleTsServer extends Disposable implements ITypeScriptServer {
 						*/
 						this._telemetryReporter.logTelemetry(
 							"languageServiceErrorResponse",
-							err.telemetry
+							err.telemetry,
 						);
 					}
 				}
@@ -357,7 +357,7 @@ export class SingleTsServer extends Disposable implements ITypeScriptServer {
 			this._serverId,
 			serverRequest,
 			requestItem.expectsResponse,
-			this._requestQueue.length
+			this._requestQueue.length,
 		);
 
 		if (requestItem.expectsResponse && !requestItem.isAsync) {
@@ -395,7 +395,7 @@ export class SingleTsServer extends Disposable implements ITypeScriptServer {
 
 	private static getQueueingType(
 		command: string,
-		lowPriority?: boolean
+		lowPriority?: boolean,
 	): RequestQueueingType {
 		if (SingleTsServer.fenceCommands.has(command)) {
 			return RequestQueueingType.Fence;
@@ -428,16 +428,16 @@ class RequestRouter {
 			readonly server: ITypeScriptServer;
 			canRun?(
 				command: keyof TypeScriptRequests,
-				executeInfo: ExecuteInfo
+				executeInfo: ExecuteInfo,
 			): boolean;
 		}>,
-		private readonly delegate: TsServerDelegate
+		private readonly delegate: TsServerDelegate,
 	) {}
 
 	public execute(
 		command: keyof TypeScriptRequests,
 		args: any,
-		executeInfo: ExecuteInfo
+		executeInfo: ExecuteInfo,
 	): Array<Promise<ServerResponse.Response<Proto.Response>> | undefined> {
 		if (
 			RequestRouter.sharedCommands.has(command) &&
@@ -446,7 +446,7 @@ class RequestRouter {
 			// Dispatch shared commands to all servers but use first one as the primary response
 
 			const requestStates: RequestState.State[] = this.servers.map(
-				() => RequestState.Unresolved
+				() => RequestState.Unresolved,
 			);
 
 			// Also make sure we never cancel requests to just one server
@@ -456,7 +456,7 @@ class RequestRouter {
 				executeInfo.token.onCancellationRequested(() => {
 					if (
 						requestStates.some(
-							(state) => state === RequestState.Resolved
+							(state) => state === RequestState.Resolved,
 						)
 					) {
 						// Don't cancel.
@@ -491,13 +491,13 @@ class RequestRouter {
 							requestStates[serverIndex] = RequestState.Resolved;
 							const erroredRequest = requestStates.find(
 								(state) =>
-									state.type === RequestState.Type.Errored
+									state.type === RequestState.Type.Errored,
 							) as RequestState.Errored | undefined;
 							if (erroredRequest) {
 								// We've gone out of sync
 								this.delegate.onFatalError(
 									command,
-									erroredRequest.err
+									erroredRequest.err,
 								);
 							}
 							return result;
@@ -507,14 +507,14 @@ class RequestRouter {
 								new RequestState.Errored(err);
 							if (
 								requestStates.some(
-									(state) => state === RequestState.Resolved
+									(state) => state === RequestState.Resolved,
 								)
 							) {
 								// We've gone out of sync
 								this.delegate.onFatalError(command, err);
 							}
 							throw err;
-						}
+						},
 					);
 				}
 			}
@@ -549,7 +549,7 @@ export class GetErrRoutingTsServer
 
 	public constructor(
 		servers: { getErr: ITypeScriptServer; primary: ITypeScriptServer },
-		delegate: TsServerDelegate
+		delegate: TsServerDelegate,
 	) {
 		super();
 
@@ -568,7 +568,7 @@ export class GetErrRoutingTsServer
 					canRun: undefined /* gets all other commands */,
 				},
 			],
-			delegate
+			delegate,
 		);
 
 		this._register(
@@ -577,7 +577,7 @@ export class GetErrRoutingTsServer
 					this._onEvent.fire(e);
 				}
 				// Ignore all other events
-			})
+			}),
 		);
 		this._register(
 			this.mainServer.onEvent((e) => {
@@ -585,7 +585,7 @@ export class GetErrRoutingTsServer
 					this._onEvent.fire(e);
 				}
 				// Ignore all other events
-			})
+			}),
 		);
 
 		this._register(this.getErrServer.onError((e) => this._onError.fire(e)));
@@ -595,17 +595,17 @@ export class GetErrRoutingTsServer
 			this.mainServer.onExit((e) => {
 				this._onExit.fire(e);
 				this.getErrServer.kill();
-			})
+			}),
 		);
 	}
 
 	private readonly _onEvent = this._register(
-		new vscode.EventEmitter<Proto.Event>()
+		new vscode.EventEmitter<Proto.Event>(),
 	);
 	public readonly onEvent = this._onEvent.event;
 
 	private readonly _onExit = this._register(
-		new vscode.EventEmitter<TypeScriptServerExitEvent>()
+		new vscode.EventEmitter<TypeScriptServerExitEvent>(),
 	);
 	public readonly onExit = this._onExit.event;
 
@@ -630,7 +630,7 @@ export class GetErrRoutingTsServer
 			expectsResult: boolean;
 			lowPriority?: boolean;
 			executionTarget?: ExecutionTarget;
-		}
+		},
 	): Array<Promise<ServerResponse.Response<Proto.Response>> | undefined> {
 		return this.router.execute(command, args, executeInfo);
 	}
@@ -692,7 +692,7 @@ export class SyntaxRoutingTsServer
 	public constructor(
 		servers: { syntax: ITypeScriptServer; semantic: ITypeScriptServer },
 		delegate: TsServerDelegate,
-		enableDynamicRouting: boolean
+		enableDynamicRouting: boolean,
 	) {
 		super();
 
@@ -713,7 +713,7 @@ export class SyntaxRoutingTsServer
 
 						if (
 							SyntaxRoutingTsServer.syntaxAlwaysCommands.has(
-								command
+								command,
 							)
 						) {
 							return true;
@@ -727,7 +727,7 @@ export class SyntaxRoutingTsServer
 							enableDynamicRouting &&
 							this.projectLoading &&
 							SyntaxRoutingTsServer.syntaxAllowedCommands.has(
-								command
+								command,
 							)
 						) {
 							return true;
@@ -740,13 +740,13 @@ export class SyntaxRoutingTsServer
 					canRun: undefined /* gets all other commands */,
 				},
 			],
-			delegate
+			delegate,
 		);
 
 		this._register(
 			this.syntaxServer.onEvent((e) => {
 				return this._onEvent.fire(e);
-			})
+			}),
 		);
 
 		this._register(
@@ -765,18 +765,18 @@ export class SyntaxRoutingTsServer
 						break;
 				}
 				return this._onEvent.fire(e);
-			})
+			}),
 		);
 
 		this._register(
 			this.semanticServer.onExit((e) => {
 				this._onExit.fire(e);
 				this.syntaxServer.kill();
-			})
+			}),
 		);
 
 		this._register(
-			this.semanticServer.onError((e) => this._onError.fire(e))
+			this.semanticServer.onError((e) => this._onError.fire(e)),
 		);
 	}
 
@@ -785,7 +785,7 @@ export class SyntaxRoutingTsServer
 	}
 
 	private readonly _onEvent = this._register(
-		new vscode.EventEmitter<Proto.Event>()
+		new vscode.EventEmitter<Proto.Event>(),
 	);
 	public readonly onEvent = this._onEvent.event;
 
@@ -813,17 +813,17 @@ export class SyntaxRoutingTsServer
 			expectsResult: boolean;
 			lowPriority?: boolean;
 			executionTarget?: ExecutionTarget;
-		}
+		},
 	): Array<Promise<ServerResponse.Response<Proto.Response>> | undefined> {
 		return this.router.execute(command, args, executeInfo);
 	}
 }
 
 namespace RequestState {
-	export const enum Type {
-		Unresolved,
-		Resolved,
-		Errored,
+	export enum Type {
+		Unresolved = 0,
+		Resolved = 1,
+		Errored = 2,
 	}
 
 	export const Unresolved = { type: Type.Unresolved } as const;

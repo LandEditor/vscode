@@ -4,24 +4,24 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { localize } from "vs/nls";
-import { Registry } from "vs/platform/registry/common/platform";
 import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
+import { Registry } from "vs/platform/registry/common/platform";
 import {
 	EditorPaneDescriptor,
 	IEditorPaneRegistry,
 } from "vs/workbench/browser/editor";
+import { EditorExtensions } from "vs/workbench/common/editor";
 import { RuntimeExtensionsEditor } from "vs/workbench/contrib/extensions/browser/browserRuntimeExtensionsEditor";
 import { RuntimeExtensionsInput } from "vs/workbench/contrib/extensions/common/runtimeExtensionsInput";
-import { EditorExtensions } from "vs/workbench/common/editor";
 
 // Running Extensions
 Registry.as<IEditorPaneRegistry>(
-	EditorExtensions.EditorPane
+	EditorExtensions.EditorPane,
 ).registerEditorPane(
 	EditorPaneDescriptor.create(
 		RuntimeExtensionsEditor,
 		RuntimeExtensionsEditor.ID,
-		localize("runtimeExtension", "Running Extensions")
+		localize("runtimeExtension", "Running Extensions"),
 	),
-	[new SyncDescriptor(RuntimeExtensionsInput)]
+	[new SyncDescriptor(RuntimeExtensionsInput)],
 );

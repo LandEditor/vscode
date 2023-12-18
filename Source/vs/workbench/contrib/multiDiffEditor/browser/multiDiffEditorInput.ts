@@ -8,8 +8,8 @@ import { Codicon } from "vs/base/common/codicons";
 import { onUnexpectedError } from "vs/base/common/errors";
 import { IMarkdownString } from "vs/base/common/htmlContent";
 import {
-	IDisposable,
 	DisposableStore,
+	IDisposable,
 	toDisposable,
 } from "vs/base/common/lifecycle";
 import { deepClone } from "vs/base/common/objects";
@@ -40,7 +40,10 @@ import { ILanguageSupport } from "vs/workbench/services/textfile/common/textfile
 const MultiDiffEditorIcon = registerIcon(
 	"multi-diff-editor-label-icon",
 	Codicon.diffMultiple,
-	localize("multiDiffEditorLabelIcon", "Icon of the multi diff editor label.")
+	localize(
+		"multiDiffEditorLabelIcon",
+		"Icon of the multi diff editor label.",
+	),
 );
 
 /* hot-reload:patch-prototype-methods */
@@ -121,7 +124,7 @@ export class MultiDiffEditorInput
 		this._register(model);
 		const vm = new MultiDiffEditorViewModel(
 			model,
-			this._instantiationService
+			this._instantiationService,
 		);
 		this._register(vm);
 		await raceTimeout(vm.waitForDiffs(), 1000);
@@ -138,27 +141,33 @@ export class MultiDiffEditorInput
 							originalRef: r.original
 								? store.add(
 										await this._textModelService.createModelReference(
-											r.original
-										)
-									)
+											r.original,
+										),
+								  )
 								: undefined,
-							originalModel: !r.original
-								? store.add(
-										this._modelService.createModel("", null)
-									)
-								: undefined,
+							originalModel: r.original
+								? undefined
+								: store.add(
+										this._modelService.createModel(
+											"",
+											null,
+										),
+								  ),
 							modifiedRef: r.modified
 								? store.add(
 										await this._textModelService.createModelReference(
-											r.modified
-										)
-									)
+											r.modified,
+										),
+								  )
 								: undefined,
-							modifiedModel: !r.modified
-								? store.add(
-										this._modelService.createModel("", null)
-									)
-								: undefined,
+							modifiedModel: r.modified
+								? undefined
+								: store.add(
+										this._modelService.createModel(
+											"",
+											null,
+										),
+								  ),
 							title: r.resource.fsPath,
 						};
 					} catch (e) {
@@ -167,7 +176,7 @@ export class MultiDiffEditorInput
 						onUnexpectedError(e);
 						return undefined;
 					}
-				})
+				}),
 			)
 		).filter(isDefined);
 
@@ -193,10 +202,10 @@ export class MultiDiffEditorInput
 
 						return {
 							...getReadonlyConfiguration(
-								r.modifiedRef?.object.isReadonly() ?? true
+								r.modifiedRef?.object.isReadonly() ?? true,
 							),
 							...computeOptions(
-								textResourceConfigurationService.getValue(uri)
+								textResourceConfigurationService.getValue(uri),
 							),
 						} satisfies IDiffEditorOptions;
 					},
@@ -209,7 +218,7 @@ export class MultiDiffEditorInput
 								) {
 									h();
 								}
-							}
+							},
 						),
 				});
 			}),
@@ -218,7 +227,7 @@ export class MultiDiffEditorInput
 }
 
 function getReadonlyConfiguration(
-	isReadonly: boolean | IMarkdownString | undefined
+	isReadonly: boolean | IMarkdownString | undefined,
 ): { readOnly: boolean; readOnlyMessage: IMarkdownString | undefined } {
 	return {
 		readOnly: !!isReadonly,
@@ -228,14 +237,14 @@ function getReadonlyConfiguration(
 }
 
 function computeOptions(
-	configuration: IEditorConfiguration
+	configuration: IEditorConfiguration,
 ): IDiffEditorOptions {
 	const editorConfiguration = deepClone(configuration.editor);
 
 	// Handle diff editor specially by merging in diffEditor configuration
 	if (isObject(configuration.diffEditor)) {
 		const diffEditorConfiguration: IDiffEditorOptions = deepClone(
-			configuration.diffEditor
+			configuration.diffEditor,
 		);
 
 		// User settings defines `diffEditor.codeLens`, but here we rename that to `diffEditor.diffCodeLens` to avoid collisions with `editor.codeLens`.
@@ -257,6 +266,6 @@ export class MultiDiffEditorInputData {
 	constructor(
 		readonly resource: URI,
 		readonly original: URI | undefined,
-		readonly modified: URI | undefined
+		readonly modified: URI | undefined,
 	) {}
 }

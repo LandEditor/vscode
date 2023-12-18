@@ -13,7 +13,7 @@ export interface IBranchProtectionProviderRegistry {
 	getBranchProtectionProviders(root: Uri): BranchProtectionProvider[];
 	registerBranchProtectionProvider(
 		root: Uri,
-		provider: BranchProtectionProvider
+		provider: BranchProtectionProvider,
 	): Disposable;
 }
 
@@ -29,12 +29,12 @@ export class GitBranchProtectionProvider implements BranchProtectionProvider {
 		const onDidChangeBranchProtectionEvent = filterEvent(
 			workspace.onDidChangeConfiguration,
 			(e) =>
-				e.affectsConfiguration("git.branchProtection", repositoryRoot)
+				e.affectsConfiguration("git.branchProtection", repositoryRoot),
 		);
 		onDidChangeBranchProtectionEvent(
 			this.updateBranchProtection,
 			this,
-			this.disposables
+			this.disposables,
 		);
 		this.updateBranchProtection();
 	}
@@ -46,7 +46,7 @@ export class GitBranchProtectionProvider implements BranchProtectionProvider {
 	private updateBranchProtection(): void {
 		const scopedConfig = workspace.getConfiguration(
 			"git",
-			this.repositoryRoot
+			this.repositoryRoot,
 		);
 		const branchProtectionConfig =
 			scopedConfig.get<unknown>("branchProtection") ?? [];

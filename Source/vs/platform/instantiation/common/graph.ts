@@ -7,10 +7,7 @@ export class Node<T> {
 	readonly incoming = new Map<string, Node<T>>();
 	readonly outgoing = new Map<string, Node<T>>();
 
-	constructor(
-		readonly key: string,
-		readonly data: T
-	) {}
+	constructor(readonly key: string, readonly data: T) {}
 }
 
 export class Graph<T> {
@@ -72,8 +69,10 @@ export class Graph<T> {
 		for (const [key, value] of this._nodes) {
 			data.push(
 				`${key}\n\t(-> incoming)[${[...value.incoming.keys()].join(
-					", "
-				)}]\n\t(outgoing ->)[${[...value.outgoing.keys()].join(",")}]\n`
+					", ",
+				)}]\n\t(outgoing ->)[${[...value.outgoing.keys()].join(
+					",",
+				)}]\n`,
 			);
 		}
 		return data.join("\n");

@@ -1,4 +1,3 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -16,7 +15,7 @@ function bundle(entryPoints, config, callback) {
 	entryPoints.forEach((module) => {
 		if (entryPointsMap[module.name]) {
 			throw new Error(
-				`Cannot have two entry points with the same name '${module.name}'`
+				`Cannot have two entry points with the same name '${module.name}'`,
 			);
 		}
 		entryPointsMap[module.name] = module;
@@ -24,18 +23,18 @@ function bundle(entryPoints, config, callback) {
 	const allMentionedModulesMap = {};
 	entryPoints.forEach((module) => {
 		allMentionedModulesMap[module.name] = true;
-		module.include?.forEach(function (includedModule) {
+		module.include?.forEach((includedModule) => {
 			allMentionedModulesMap[includedModule] = true;
 		});
-		module.exclude?.forEach(function (excludedModule) {
+		module.exclude?.forEach((excludedModule) => {
 			allMentionedModulesMap[excludedModule] = true;
 		});
 	});
 	const code = require("fs").readFileSync(
-		path.join(__dirname, "../../src/vs/loader.js")
+		path.join(__dirname, "../../src/vs/loader.js"),
 	);
 	const r = vm.runInThisContext(
-		"(function(require, module, exports) { " + code + "\n});"
+		"(function(require, module, exports) { " + code + "\n});",
 	);
 	const loaderModule = { exports: {} };
 	r.call({}, require, loaderModule, loaderModule.exports);
@@ -85,7 +84,7 @@ function bundle(entryPoints, config, callback) {
 				bundleData: partialResult.bundleData,
 			});
 		},
-		(err) => callback(err, null)
+		(err) => callback(err, null),
 	);
 }
 exports.bundle = bundle;
@@ -110,7 +109,7 @@ function emitEntryPoints(modules, entryPoints) {
 		const rootNodes = [moduleToBundle].concat(info.include || []);
 		const allDependencies = visit(rootNodes, modulesGraph);
 		const excludes = ["require", "exports", "module"].concat(
-			info.exclude || []
+			info.exclude || [],
 		);
 		excludes.forEach((excludeRoot) => {
 			const allExcludes = visit([excludeRoot], modulesGraph);
@@ -129,7 +128,7 @@ function emitEntryPoints(modules, entryPoints) {
 			includedModules,
 			info.prepend || [],
 			info.append || [],
-			info.dest
+			info.dest,
 		);
 		result = result.concat(res.files);
 		for (const pluginName in res.usedPlugins) {
@@ -202,7 +201,7 @@ function extractStrings(destFiles) {
 		const useCounts = {};
 		destFile.sources.forEach((source) => {
 			const matches = source.contents.match(
-				/define\(("[^"]+"),\s*\[(((, )?("|')[^"']+("|'))+)\]/
+				/define\(("[^"]+"),\s*\[(((, )?("|')[^"']+("|'))+)\]/,
 			);
 			if (!matches) {
 				return;
@@ -232,7 +231,7 @@ function extractStrings(destFiles) {
 					}*/], __M([${defineCall.deps
 						.map((dep) => replacementMap[dep] + "/*" + dep + "*/")
 						.join(",")}])`;
-				}
+				},
 			);
 		});
 		destFile.sources.unshift({
@@ -312,7 +311,7 @@ function emitEntryPoint(
 	includedModules,
 	prepend,
 	append,
-	dest
+	dest,
 ) {
 	if (!dest) {
 		dest = entryPoint + ".js";
@@ -339,8 +338,8 @@ function emitEntryPoint(
 					entryPoint,
 					plugin,
 					pluginName,
-					c.substr(bangIndex + 1)
-				)
+					c.substr(bangIndex + 1),
+				),
 			);
 			return;
 		}
@@ -356,12 +355,17 @@ function emitEntryPoint(
 					deps[c],
 					module.shim,
 					module.path,
-					contents
-				)
+					contents,
+				),
 			);
 		} else if (module.defineLocation) {
 			mainResult.sources.push(
-				emitNamedModule(c, module.defineLocation, module.path, contents)
+				emitNamedModule(
+					c,
+					module.defineLocation,
+					module.path,
+					contents,
+				),
 			);
 		} else {
 			const moduleCopy = {
@@ -374,8 +378,8 @@ function emitEntryPoint(
 				`Cannot bundle module '${
 					module.id
 				}' for entry point '${entryPoint}' because it has no shim and it lacks a defineLocation: ${JSON.stringify(
-					moduleCopy
-				)}`
+					moduleCopy,
+				)}`,
 			);
 		}
 	});
@@ -405,7 +409,7 @@ function emitEntryPoint(
 		if (entry.amdModuleId) {
 			contents = contents.replace(
 				/^define\(/m,
-				`define("${entry.amdModuleId}",`
+				`define("${entry.amdModuleId}",`,
 			);
 		}
 		return {
@@ -455,7 +459,7 @@ function emitNamedModule(moduleId, defineCallPosition, path, contents) {
 	const defineCallOffset = positionToOffset(
 		contents,
 		defineCallPosition.line,
-		defineCallPosition.col
+		defineCallPosition.col,
 	);
 	// `parensOffset` is the position in code: define|()
 	const parensOffset = contents.indexOf("(", defineCallOffset);
@@ -559,7 +563,7 @@ function topologicalSort(graph) {
 	if (Object.keys(outgoingEdgeCount).length > 0) {
 		throw new Error(
 			"Cannot do topological sort on cyclic graph, remaining nodes: " +
-				Object.keys(outgoingEdgeCount)
+				Object.keys(outgoingEdgeCount),
 		);
 	}
 	return L;

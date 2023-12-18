@@ -5,35 +5,35 @@
 
 import { Action } from "vs/base/common/actions";
 import { URI } from "vs/base/common/uri";
+import { EditorExtensionsRegistry } from "vs/editor/browser/editorExtensions";
+import { ILanguageService } from "vs/editor/common/languages/language";
 import { getIconClasses } from "vs/editor/common/services/getIconClasses";
 import { IModelService } from "vs/editor/common/services/model";
-import { ILanguageService } from "vs/editor/common/languages/language";
 import * as nls from "vs/nls";
-import {
-	IQuickInputService,
-	IQuickPickItem,
-} from "vs/platform/quickinput/common/quickInput";
-import { IPreferencesService } from "vs/workbench/services/preferences/common/preferences";
-import { CommandsRegistry } from "vs/platform/commands/common/commands";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	Extensions,
-	IConfigurationRegistry,
-} from "vs/platform/configuration/common/configurationRegistry";
-import { EditorExtensionsRegistry } from "vs/editor/browser/editorExtensions";
 import {
 	MenuId,
 	MenuRegistry,
 	isIMenuItem,
 } from "vs/platform/actions/common/actions";
+import { CommandsRegistry } from "vs/platform/commands/common/commands";
+import {
+	Extensions,
+	IConfigurationRegistry,
+} from "vs/platform/configuration/common/configurationRegistry";
 import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import {
+	IQuickInputService,
+	IQuickPickItem,
+} from "vs/platform/quickinput/common/quickInput";
+import { Registry } from "vs/platform/registry/common/platform";
+import { IPreferencesService } from "vs/workbench/services/preferences/common/preferences";
 
 export class ConfigureLanguageBasedSettingsAction extends Action {
 	static readonly ID = "workbench.action.configureLanguageBasedSettings";
 	static readonly LABEL = {
 		value: nls.localize(
 			"configureLanguageBasedSettings",
-			"Configure Language Specific Settings..."
+			"Configure Language Specific Settings...",
 		),
 		original: "Configure Language Specific Settings...",
 	};
@@ -59,7 +59,7 @@ export class ConfigureLanguageBasedSettingsAction extends Action {
 				const description: string = nls.localize(
 					"languageDescriptionConfigured",
 					"({0})",
-					languageId
+					languageId,
 				);
 				// construct a fake resource to be able to show nice icons if any
 				let fakeResource: URI | undefined;
@@ -79,11 +79,11 @@ export class ConfigureLanguageBasedSettingsAction extends Action {
 					iconClasses: getIconClasses(
 						this.modelService,
 						this.languageService,
-						fakeResource
+						fakeResource,
 					),
 					description,
 				} as IQuickPickItem;
-			}
+			},
 		);
 
 		await this.quickInputService
@@ -94,11 +94,11 @@ export class ConfigureLanguageBasedSettingsAction extends Action {
 				if (pick) {
 					const languageId =
 						this.languageService.getLanguageIdByLanguageName(
-							pick.label
+							pick.label,
 						);
 					if (typeof languageId === "string") {
 						return this.preferencesService.openLanguageSpecificSettings(
-							languageId
+							languageId,
 						);
 					}
 				}
@@ -112,7 +112,7 @@ CommandsRegistry.registerCommand({
 	id: "_getAllSettings",
 	handler: () => {
 		const configRegistry = Registry.as<IConfigurationRegistry>(
-			Extensions.Configuration
+			Extensions.Configuration,
 		);
 		const allSettings = configRegistry.getConfigurationProperties();
 		return allSettings;
@@ -120,7 +120,7 @@ CommandsRegistry.registerCommand({
 });
 
 //#region --- Register a command to get all actions from the command palette
-CommandsRegistry.registerCommand("_getAllCommands", function (accessor) {
+CommandsRegistry.registerCommand("_getAllCommands", (accessor) => {
 	const keybindingService = accessor.get(IKeybindingService);
 	const actions: {
 		command: string;
@@ -150,7 +150,7 @@ CommandsRegistry.registerCommand("_getAllCommands", function (accessor) {
 				: undefined;
 			const label = category ? `${category}: ${title}` : title;
 			const keybinding = keybindingService.lookupKeybinding(
-				menuItem.command.id
+				menuItem.command.id,
 			);
 			actions.push({
 				command: menuItem.command.id,

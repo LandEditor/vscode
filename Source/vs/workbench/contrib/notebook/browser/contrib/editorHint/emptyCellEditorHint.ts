@@ -86,7 +86,7 @@ export class EmptyCellEditorHintContribution extends EmptyTextEditorHintContribu
 		}
 
 		const activeEditor = getNotebookEditorFromEditorPane(
-			this._editorService.activeEditorPane
+			this._editorService.activeEditorPane,
 		);
 		if (!activeEditor) {
 			return false;
@@ -105,5 +105,5 @@ export class EmptyCellEditorHintContribution extends EmptyTextEditorHintContribu
 registerEditorContribution(
 	EmptyCellEditorHintContribution.CONTRIB_ID,
 	EmptyCellEditorHintContribution,
-	EditorContributionInstantiation.Eager
+	EditorContributionInstantiation.Eager,
 ); // eager because it needs to render a help message

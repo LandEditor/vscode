@@ -19,9 +19,9 @@ import { EditorOption } from "vs/editor/common/config/editorOptions";
 import { Range } from "vs/editor/common/core/range";
 import { ScrollType } from "vs/editor/common/editorCommon";
 import {
+	PeekViewWidget,
 	peekViewTitleForeground,
 	peekViewTitleInfoForeground,
-	PeekViewWidget,
 } from "vs/editor/contrib/peekView/browser/peekView";
 import * as nls from "vs/nls";
 import { createAndFillInActionBarActions } from "vs/platform/actions/browser/menuEntryActionViewItem";
@@ -55,8 +55,8 @@ import {
 } from "vs/platform/theme/common/themeService";
 
 class MessageWidget {
-	private _lines: number = 0;
-	private _longestLineLength: number = 0;
+	private _lines = 0;
+	private _longestLineLength = 0;
 
 	private readonly _editor: ICodeEditor;
 	private readonly _messageBlock: HTMLDivElement;
@@ -75,7 +75,7 @@ class MessageWidget {
 		editor: ICodeEditor,
 		onRelatedInformation: (related: IRelatedInformation) => void,
 		private readonly _openerService: IOpenerService,
-		private readonly _labelService: ILabelService
+		private readonly _labelService: ILabelService,
 	) {
 		this._editor = editor;
 
@@ -100,8 +100,8 @@ class MessageWidget {
 					if (related) {
 						onRelatedInformation(related);
 					}
-				}
-			)
+				},
+			),
 		);
 
 		this._scrollable = new ScrollableElement(domNode, {
@@ -116,7 +116,7 @@ class MessageWidget {
 			this._scrollable.onScroll((e) => {
 				domNode.style.left = `-${e.scrollLeft}px`;
 				domNode.style.top = `-${e.scrollTop}px`;
-			})
+			}),
 		);
 		this._disposables.add(this._scrollable);
 	}
@@ -142,14 +142,14 @@ class MessageWidget {
 		for (const line of lines) {
 			this._longestLineLength = Math.max(
 				line.length + sourceAndCodeLength,
-				this._longestLineLength
+				this._longestLineLength,
 			);
 		}
 
 		dom.clearNode(this._messageBlock);
 		this._messageBlock.setAttribute(
 			"aria-label",
-			this.getAriaLabel(marker)
+			this.getAriaLabel(marker),
 		);
 		this._editor.applyFontInfo(this._messageBlock);
 		let lastLineElement = this._messageBlock;
@@ -182,7 +182,7 @@ class MessageWidget {
 					this._codeLink = dom.$("a.code-link");
 					this._codeLink.setAttribute(
 						"href",
-						`${code.target.toString()}`
+						`${code.target.toString()}`,
 					);
 
 					this._codeLink.onclick = (e) => {
@@ -195,7 +195,7 @@ class MessageWidget {
 
 					const codeElement = dom.append(
 						this._codeLink,
-						dom.$("span")
+						dom.$("span"),
 					);
 					codeElement.innerText = code.value;
 					detailsElement.appendChild(this._codeLink);
@@ -207,10 +207,10 @@ class MessageWidget {
 		this._editor.applyFontInfo(this._relatedBlock);
 		if (isNonEmptyArray(relatedInformation)) {
 			const relatedInformationNode = this._relatedBlock.appendChild(
-				document.createElement("div")
+				document.createElement("div"),
 			);
 			relatedInformationNode.style.paddingTop = `${Math.floor(
-				this._editor.getOption(EditorOption.lineHeight) * 0.66
+				this._editor.getOption(EditorOption.lineHeight) * 0.66,
 			)}px`;
 			this._lines += 1;
 
@@ -220,10 +220,10 @@ class MessageWidget {
 				const relatedResource = document.createElement("a");
 				relatedResource.classList.add("filename");
 				relatedResource.innerText = `${this._labelService.getUriBasenameLabel(
-					related.resource
+					related.resource,
 				)}(${related.startLineNumber}, ${related.startColumn}): `;
 				relatedResource.title = this._labelService.getUriLabel(
-					related.resource
+					related.resource,
 				);
 				this._relatedDiagnostics.set(relatedResource, related);
 
@@ -242,7 +242,7 @@ class MessageWidget {
 		const scrollWidth = Math.ceil(
 			fontInfo.typicalFullwidthCharacterWidth *
 				this._longestLineLength *
-				0.75
+				0.75,
 		);
 		const scrollHeight = fontInfo.lineHeight * this._lines;
 		this._scrollable.setScrollDimensions({ scrollWidth, scrollHeight });
@@ -279,7 +279,7 @@ class MessageWidget {
 			"marker aria",
 			"{0} at {1}. ",
 			severityLabel,
-			marker.startLineNumber + ":" + marker.startColumn
+			marker.startLineNumber + ":" + marker.startColumn,
 		);
 		const model = this._editor.getModel();
 		if (
@@ -344,7 +344,7 @@ export class MarkerNavigationWidget extends PeekViewWidget {
 
 	private _applyTheme(theme: IColorTheme) {
 		this._backgroundColor = theme.getColor(
-			editorMarkerNavigationBackground
+			editorMarkerNavigationBackground,
 		);
 		let colorId = editorMarkerNavigationError;
 		let headerBackground = editorMarkerNavigationErrorHeader;
@@ -392,14 +392,14 @@ export class MarkerNavigationWidget extends PeekViewWidget {
 
 		this._disposables.add(
 			this._actionbarWidget!.actionRunner.onWillRun((e) =>
-				this.editor.focus()
-			)
+				this.editor.focus(),
+			),
 		);
 
 		const actions: IAction[] = [];
 		const menu = this._menuService.createMenu(
 			MarkerNavigationWidget.TitleMenu,
-			this._contextKeyService
+			this._contextKeyService,
 		);
 		createAndFillInActionBarActions(menu, undefined, actions);
 		this._actionbarWidget!.push(actions, {
@@ -428,7 +428,7 @@ export class MarkerNavigationWidget extends PeekViewWidget {
 			this.editor,
 			(related) => this._onDidSelectRelatedInformation.fire(related),
 			this._openerService,
-			this._labelService
+			this._labelService,
 		);
 		this._disposables.add(this._message);
 	}
@@ -440,7 +440,7 @@ export class MarkerNavigationWidget extends PeekViewWidget {
 	showAtMarker(
 		marker: IMarker,
 		markerIdx: number,
-		markerCount: number
+		markerCount: number,
 	): void {
 		// update:
 		// * title
@@ -469,18 +469,18 @@ export class MarkerNavigationWidget extends PeekViewWidget {
 							"problems",
 							"{0} of {1} problems",
 							markerIdx,
-							markerCount
-						)
+							markerCount,
+					  )
 					: nls.localize(
 							"change",
 							"{0} of {1} problem",
 							markerIdx,
-							markerCount
-						);
+							markerCount,
+					  );
 			this.setTitle(basename(model.uri), detail);
 		}
 		this._icon.className = `codicon ${SeverityIcon.className(
-			MarkerSeverity.toSeverity(this._severity)
+			MarkerSeverity.toSeverity(this._severity),
 		)}`;
 
 		this.editor.revealPositionNearTop(position, ScrollType.Smooth);
@@ -499,7 +499,7 @@ export class MarkerNavigationWidget extends PeekViewWidget {
 
 	protected override _doLayoutBody(
 		heightInPixel: number,
-		widthInPixel: number
+		widthInPixel: number,
 	): void {
 		super._doLayoutBody(heightInPixel, widthInPixel);
 		this._heightInPixel = heightInPixel;
@@ -536,8 +536,8 @@ const editorMarkerNavigationError = registerColor(
 	},
 	nls.localize(
 		"editorMarkerNavigationError",
-		"Editor marker navigation widget error color."
-	)
+		"Editor marker navigation widget error color.",
+	),
 );
 const editorMarkerNavigationErrorHeader = registerColor(
 	"editorMarkerNavigationError.headerBackground",
@@ -549,8 +549,8 @@ const editorMarkerNavigationErrorHeader = registerColor(
 	},
 	nls.localize(
 		"editorMarkerNavigationErrorHeaderBackground",
-		"Editor marker navigation widget error heading background."
-	)
+		"Editor marker navigation widget error heading background.",
+	),
 );
 
 const editorMarkerNavigationWarning = registerColor(
@@ -563,8 +563,8 @@ const editorMarkerNavigationWarning = registerColor(
 	},
 	nls.localize(
 		"editorMarkerNavigationWarning",
-		"Editor marker navigation widget warning color."
-	)
+		"Editor marker navigation widget warning color.",
+	),
 );
 const editorMarkerNavigationWarningHeader = registerColor(
 	"editorMarkerNavigationWarning.headerBackground",
@@ -576,8 +576,8 @@ const editorMarkerNavigationWarningHeader = registerColor(
 	},
 	nls.localize(
 		"editorMarkerNavigationWarningBackground",
-		"Editor marker navigation widget warning heading background."
-	)
+		"Editor marker navigation widget warning heading background.",
+	),
 );
 
 const editorMarkerNavigationInfo = registerColor(
@@ -590,8 +590,8 @@ const editorMarkerNavigationInfo = registerColor(
 	},
 	nls.localize(
 		"editorMarkerNavigationInfo",
-		"Editor marker navigation widget info color."
-	)
+		"Editor marker navigation widget info color.",
+	),
 );
 const editorMarkerNavigationInfoHeader = registerColor(
 	"editorMarkerNavigationInfo.headerBackground",
@@ -603,8 +603,8 @@ const editorMarkerNavigationInfoHeader = registerColor(
 	},
 	nls.localize(
 		"editorMarkerNavigationInfoHeaderBackground",
-		"Editor marker navigation widget info heading background."
-	)
+		"Editor marker navigation widget info heading background.",
+	),
 );
 
 const editorMarkerNavigationBackground = registerColor(
@@ -617,6 +617,6 @@ const editorMarkerNavigationBackground = registerColor(
 	},
 	nls.localize(
 		"editorMarkerNavigationBackground",
-		"Editor marker navigation widget background."
-	)
+		"Editor marker navigation widget background.",
+	),
 );

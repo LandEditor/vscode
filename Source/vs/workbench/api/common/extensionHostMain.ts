@@ -5,43 +5,43 @@
 
 import * as errors from "vs/base/common/errors";
 import * as performance from "vs/base/common/performance";
+import { Mutable } from "vs/base/common/types";
 import { URI } from "vs/base/common/uri";
 import { IURITransformer } from "vs/base/common/uriIpc";
 import { IMessagePassingProtocol } from "vs/base/parts/ipc/common/ipc";
-import {
-	MainContext,
-	MainThreadConsoleShape,
-} from "vs/workbench/api/common/extHost.protocol";
-import { IExtensionHostInitData } from "vs/workbench/services/extensions/common/extensionHostProtocol";
-import { RPCProtocol } from "vs/workbench/services/extensions/common/rpcProtocol";
 import {
 	ExtensionIdentifier,
 	IExtensionDescription,
 	IRelaxedExtensionDescription,
 } from "vs/platform/extensions/common/extensions";
-import { ILogService } from "vs/platform/log/common/log";
 import { getSingletonServiceDescriptors } from "vs/platform/instantiation/common/extensions";
-import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
-import { IExtHostInitDataService } from "vs/workbench/api/common/extHostInitDataService";
-import { InstantiationService } from "vs/platform/instantiation/common/instantiationService";
 import {
 	IInstantiationService,
 	ServicesAccessor,
 } from "vs/platform/instantiation/common/instantiation";
+import { InstantiationService } from "vs/platform/instantiation/common/instantiationService";
+import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
+import { ILogService } from "vs/platform/log/common/log";
 import {
-	IExtHostRpcService,
-	ExtHostRpcService,
-} from "vs/workbench/api/common/extHostRpcService";
-import {
-	IURITransformerService,
-	URITransformerService,
-} from "vs/workbench/api/common/extHostUriTransformerService";
+	MainContext,
+	MainThreadConsoleShape,
+} from "vs/workbench/api/common/extHost.protocol";
 import {
 	IExtHostExtensionService,
 	IHostUtils,
 } from "vs/workbench/api/common/extHostExtensionService";
+import { IExtHostInitDataService } from "vs/workbench/api/common/extHostInitDataService";
+import {
+	ExtHostRpcService,
+	IExtHostRpcService,
+} from "vs/workbench/api/common/extHostRpcService";
 import { IExtHostTelemetry } from "vs/workbench/api/common/extHostTelemetry";
-import { Mutable } from "vs/base/common/types";
+import {
+	IURITransformerService,
+	URITransformerService,
+} from "vs/workbench/api/common/extHostUriTransformerService";
+import { IExtensionHostInitData } from "vs/workbench/services/extensions/common/extensionHostProtocol";
+import { RPCProtocol } from "vs/workbench/services/extensions/common/rpcProtocol";
 
 export interface IExitFn {
 	(code?: number): any;
@@ -53,7 +53,7 @@ export interface IConsolePatchFn {
 
 export abstract class ErrorHandler {
 	static async installEarlyHandler(
-		accessor: ServicesAccessor
+		accessor: ServicesAccessor,
 	): Promise<void> {
 		// increase number of stack frames (from 10, https://github.com/v8/v8/wiki/Stack-Trace-API)
 		Error.stackTraceLimit = 100;
@@ -63,7 +63,7 @@ export abstract class ErrorHandler {
 		const logService = accessor.get(ILogService);
 		const rpcService = accessor.get(IExtHostRpcService);
 		const mainThreadErrors = rpcService.getProxy(
-			MainContext.MainThreadErrors
+			MainContext.MainThreadErrors,
 		);
 
 		errors.setUnexpectedErrorHandler((err) => {
@@ -82,10 +82,10 @@ export abstract class ErrorHandler {
 		const extensionTelemetry = accessor.get(IExtHostTelemetry);
 
 		const mainThreadExtensions = rpcService.getProxy(
-			MainContext.MainThreadExtensionService
+			MainContext.MainThreadExtensionService,
 		);
 		const mainThreadErrors = rpcService.getProxy(
-			MainContext.MainThreadErrors
+			MainContext.MainThreadErrors,
 		);
 
 		const map = await extensionService.getExtensionPathIndex();
@@ -102,7 +102,7 @@ export abstract class ErrorHandler {
 		// with extensions - this works by looking up callsites in the extension path index
 		function prepareStackTraceAndFindExtension(
 			error: Error,
-			stackTrace: errors.V8CallSite[]
+			stackTrace: errors.V8CallSite[],
 		) {
 			if (extensionErrors.has(error)) {
 				return extensionErrors.get(error)!.stack;
@@ -145,7 +145,7 @@ export abstract class ErrorHandler {
 					return;
 				}
 
-				_prepareStackTrace = function (error, stackTrace) {
+				_prepareStackTrace = (error, stackTrace) => {
 					prepareStackTraceAndFindExtension(error, stackTrace);
 					return v.call(Error, error, stackTrace);
 				};
@@ -170,16 +170,16 @@ export abstract class ErrorHandler {
 
 			mainThreadExtensions.$onExtensionRuntimeError(
 				stackData.extensionIdentifier,
-				errorData
+				errorData,
 			);
 			const reported = extensionTelemetry.onExtensionError(
 				stackData.extensionIdentifier,
-				err
+				err,
 			);
 			logService.trace(
 				"forwarded error to extension?",
 				reported,
-				stackData
+				stackData,
 			);
 		});
 	}
@@ -196,7 +196,7 @@ export class ExtensionHostMain {
 		initData: IExtensionHostInitData,
 		hostUtils: IHostUtils,
 		uriTransformer: IURITransformer | null,
-		messagePorts?: ReadonlyMap<string, MessagePort>
+		messagePorts?: ReadonlyMap<string, MessagePort>,
 	) {
 		this._hostUtils = hostUtils;
 		this._rpcProtocol = new RPCProtocol(protocol, null, uriTransformer);
@@ -206,7 +206,7 @@ export class ExtensionHostMain {
 
 		// bootstrap services
 		const services = new ServiceCollection(
-			...getSingletonServiceDescriptors()
+			...getSingletonServiceDescriptors(),
 		);
 		services.set(IExtHostInitDataService, {
 			_serviceBrand: undefined,
@@ -215,30 +215,30 @@ export class ExtensionHostMain {
 		});
 		services.set(
 			IExtHostRpcService,
-			new ExtHostRpcService(this._rpcProtocol)
+			new ExtHostRpcService(this._rpcProtocol),
 		);
 		services.set(
 			IURITransformerService,
-			new URITransformerService(uriTransformer)
+			new URITransformerService(uriTransformer),
 		);
 		services.set(IHostUtils, hostUtils);
 
 		const instaService: IInstantiationService = new InstantiationService(
 			services,
-			true
+			true,
 		);
 
 		instaService.invokeFunction(ErrorHandler.installEarlyHandler);
 
 		// ugly self - inject
 		this._logService = instaService.invokeFunction((accessor) =>
-			accessor.get(ILogService)
+			accessor.get(ILogService),
 		);
 
 		performance.mark(`code/extHost/didCreateServices`);
 		if (this._hostUtils.pid) {
 			this._logService.info(
-				`Extension host with pid ${this._hostUtils.pid} started`
+				`Extension host with pid ${this._hostUtils.pid} started`,
 			);
 		} else {
 			this._logService.info(`Extension host started`);
@@ -249,7 +249,7 @@ export class ExtensionHostMain {
 		// must call initialize *after* creating the extension service
 		// because `initialize` itself creates instances that depend on it
 		this._extensionService = instaService.invokeFunction((accessor) =>
-			accessor.get(IExtHostExtensionService)
+			accessor.get(IExtHostExtensionService),
 		);
 		this._extensionService.initialize();
 
@@ -259,7 +259,7 @@ export class ExtensionHostMain {
 
 	async asBrowserUri(uri: URI): Promise<URI> {
 		const mainThreadExtensionsProxy = this._rpcProtocol.getProxy(
-			MainContext.MainThreadExtensionService
+			MainContext.MainThreadExtensionService,
 		);
 		return URI.revive(await mainThreadExtensionsProxy.$asBrowserUri(uri));
 	}
@@ -270,52 +270,52 @@ export class ExtensionHostMain {
 
 	private static _transform(
 		initData: IExtensionHostInitData,
-		rpcProtocol: RPCProtocol
+		rpcProtocol: RPCProtocol,
 	): IExtensionHostInitData {
 		initData.extensions.allExtensions.forEach((ext) => {
 			(<Mutable<IRelaxedExtensionDescription>>ext).extensionLocation =
 				URI.revive(
-					rpcProtocol.transformIncomingURIs(ext.extensionLocation)
+					rpcProtocol.transformIncomingURIs(ext.extensionLocation),
 				);
 		});
 		initData.environment.appRoot = URI.revive(
-			rpcProtocol.transformIncomingURIs(initData.environment.appRoot)
+			rpcProtocol.transformIncomingURIs(initData.environment.appRoot),
 		);
 		const extDevLocs = initData.environment.extensionDevelopmentLocationURI;
 		if (extDevLocs) {
 			initData.environment.extensionDevelopmentLocationURI =
 				extDevLocs.map((url) =>
-					URI.revive(rpcProtocol.transformIncomingURIs(url))
+					URI.revive(rpcProtocol.transformIncomingURIs(url)),
 				);
 		}
 		initData.environment.extensionTestsLocationURI = URI.revive(
 			rpcProtocol.transformIncomingURIs(
-				initData.environment.extensionTestsLocationURI
-			)
+				initData.environment.extensionTestsLocationURI,
+			),
 		);
 		initData.environment.globalStorageHome = URI.revive(
 			rpcProtocol.transformIncomingURIs(
-				initData.environment.globalStorageHome
-			)
+				initData.environment.globalStorageHome,
+			),
 		);
 		initData.environment.workspaceStorageHome = URI.revive(
 			rpcProtocol.transformIncomingURIs(
-				initData.environment.workspaceStorageHome
-			)
+				initData.environment.workspaceStorageHome,
+			),
 		);
 		initData.environment.extensionTelemetryLogResource = URI.revive(
 			rpcProtocol.transformIncomingURIs(
-				initData.environment.extensionTelemetryLogResource
-			)
+				initData.environment.extensionTelemetryLogResource,
+			),
 		);
 		initData.nlsBaseUrl = URI.revive(
-			rpcProtocol.transformIncomingURIs(initData.nlsBaseUrl)
+			rpcProtocol.transformIncomingURIs(initData.nlsBaseUrl),
 		);
 		initData.logsLocation = URI.revive(
-			rpcProtocol.transformIncomingURIs(initData.logsLocation)
+			rpcProtocol.transformIncomingURIs(initData.logsLocation),
 		);
 		initData.workspace = rpcProtocol.transformIncomingURIs(
-			initData.workspace
+			initData.workspace,
 		);
 		return initData;
 	}

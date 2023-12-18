@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ILanguageIdCodec } from "vs/editor/common/languages";
 import {
-	FontStyle,
 	ColorId,
-	StandardTokenType,
-	MetadataConsts,
-	TokenMetadata,
+	FontStyle,
 	ITokenPresentation,
+	MetadataConsts,
+	StandardTokenType,
+	TokenMetadata,
 } from "vs/editor/common/encodedTokenAttributes";
+import { ILanguageIdCodec } from "vs/editor/common/languages";
 
 export interface IViewLineTokens {
 	equals(other: IViewLineTokens): boolean;
@@ -43,7 +43,7 @@ export class LineTokens implements IViewLineTokens {
 
 	public static createEmpty(
 		lineContent: string,
-		decoder: ILanguageIdCodec
+		decoder: ILanguageIdCodec,
 	): LineTokens {
 		const defaultMetadata = LineTokens.defaultTokenMetadata;
 
@@ -71,7 +71,7 @@ export class LineTokens implements IViewLineTokens {
 	public slicedEquals(
 		other: LineTokens,
 		sliceFromTokenIndex: number,
-		sliceTokenCount: number
+		sliceTokenCount: number,
 	): boolean {
 		if (this._text !== other._text) {
 			return false;
@@ -160,14 +160,14 @@ export class LineTokens implements IViewLineTokens {
 	public sliceAndInflate(
 		startOffset: number,
 		endOffset: number,
-		deltaOffset: number
+		deltaOffset: number,
 	): IViewLineTokens {
 		return new SliceLineTokens(this, startOffset, endOffset, deltaOffset);
 	}
 
 	public static convertToEndOffset(
 		tokens: Uint32Array,
-		lineTextLength: number
+		lineTextLength: number,
 	): void {
 		const tokenCount = tokens.length >>> 1;
 		const lastTokenIndex = tokenCount - 1;
@@ -179,7 +179,7 @@ export class LineTokens implements IViewLineTokens {
 
 	public static findIndexInTokensArray(
 		tokens: Uint32Array,
-		desiredIndex: number
+		desiredIndex: number,
 	): number {
 		if (tokens.length <= 2) {
 			return 0;
@@ -209,7 +209,7 @@ export class LineTokens implements IViewLineTokens {
 	 * @param insertTokens Must be sorted by offset.
 	 */
 	public withInserted(
-		insertTokens: { offset: number; text: string; tokenMetadata: number }[]
+		insertTokens: { offset: number; text: string; tokenMetadata: number }[],
 	): LineTokens {
 		if (insertTokens.length === 0) {
 			return this;
@@ -239,7 +239,7 @@ export class LineTokens implements IViewLineTokens {
 				// original token ends before next insert token
 				text += this._text.substring(
 					originalEndOffset,
-					nextOriginalTokenEndOffset
+					nextOriginalTokenEndOffset,
 				);
 				const metadata = this._tokens[(nextOriginalTokenIdx << 1) + 1];
 				newTokens.push(text.length, metadata);
@@ -250,7 +250,7 @@ export class LineTokens implements IViewLineTokens {
 					// insert token is in the middle of the next token.
 					text += this._text.substring(
 						originalEndOffset,
-						nextInsertToken.offset
+						nextInsertToken.offset,
 					);
 					const metadata =
 						this._tokens[(nextOriginalTokenIdx << 1) + 1];
@@ -269,7 +269,7 @@ export class LineTokens implements IViewLineTokens {
 		return new LineTokens(
 			new Uint32Array(newTokens),
 			text,
-			this._languageIdCodec
+			this._languageIdCodec,
 		);
 	}
 }
@@ -287,7 +287,7 @@ class SliceLineTokens implements IViewLineTokens {
 		source: LineTokens,
 		startOffset: number,
 		endOffset: number,
-		deltaOffset: number
+		deltaOffset: number,
 	) {
 		this._source = source;
 		this._startOffset = startOffset;
@@ -332,7 +332,7 @@ class SliceLineTokens implements IViewLineTokens {
 				this._source.slicedEquals(
 					other._source,
 					this._firstTokenIndex,
-					this._tokensCount
+					this._tokensCount,
 				)
 			);
 		}
@@ -349,7 +349,7 @@ class SliceLineTokens implements IViewLineTokens {
 
 	public getEndOffset(tokenIndex: number): number {
 		const tokenEndOffset = this._source.getEndOffset(
-			this._firstTokenIndex + tokenIndex
+			this._firstTokenIndex + tokenIndex,
 		);
 		return (
 			Math.min(this._endOffset, tokenEndOffset) -
@@ -365,7 +365,7 @@ class SliceLineTokens implements IViewLineTokens {
 	public getInlineStyle(tokenIndex: number, colorMap: string[]): string {
 		return this._source.getInlineStyle(
 			this._firstTokenIndex + tokenIndex,
-			colorMap
+			colorMap,
 		);
 	}
 
@@ -376,7 +376,7 @@ class SliceLineTokens implements IViewLineTokens {
 	public findTokenIndexAtOffset(offset: number): number {
 		return (
 			this._source.findTokenIndexAtOffset(
-				offset + this._startOffset - this._deltaOffset
+				offset + this._startOffset - this._deltaOffset,
 			) - this._firstTokenIndex
 		);
 	}

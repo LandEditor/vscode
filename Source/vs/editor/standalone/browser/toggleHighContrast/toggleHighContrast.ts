@@ -9,15 +9,15 @@ import {
 	ServicesAccessor,
 	registerEditorAction,
 } from "vs/editor/browser/editorExtensions";
-import { IStandaloneThemeService } from "vs/editor/standalone/common/standaloneTheme";
 import { ToggleHighContrastNLS } from "vs/editor/common/standaloneStrings";
-import { isDark, isHighContrast } from "vs/platform/theme/common/theme";
 import {
 	HC_BLACK_THEME_NAME,
 	HC_LIGHT_THEME_NAME,
 	VS_DARK_THEME_NAME,
 	VS_LIGHT_THEME_NAME,
 } from "vs/editor/standalone/browser/standaloneThemeService";
+import { IStandaloneThemeService } from "vs/editor/standalone/common/standaloneTheme";
+import { isDark, isHighContrast } from "vs/platform/theme/common/theme";
 
 class ToggleHighContrast extends EditorAction {
 	private _originalThemeName: string | null;
@@ -41,14 +41,14 @@ class ToggleHighContrast extends EditorAction {
 				this._originalThemeName ||
 					(isDark(currentTheme.type)
 						? VS_DARK_THEME_NAME
-						: VS_LIGHT_THEME_NAME)
+						: VS_LIGHT_THEME_NAME),
 			);
 			this._originalThemeName = null;
 		} else {
 			standaloneThemeService.setTheme(
 				isDark(currentTheme.type)
 					? HC_BLACK_THEME_NAME
-					: HC_LIGHT_THEME_NAME
+					: HC_LIGHT_THEME_NAME,
 			);
 			this._originalThemeName = currentTheme.themeName;
 		}

@@ -4,24 +4,24 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Dimension } from "vs/base/browser/dom";
+import { Disposable } from "vs/base/common/lifecycle";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import {
-	IEditorGroupsView,
 	IEditorGroupView,
+	IEditorGroupsView,
 	IEditorPartsView,
 	IInternalEditorOpenOptions,
 } from "vs/workbench/browser/parts/editor/editor";
 import { IEditorTabsControl } from "vs/workbench/browser/parts/editor/editorTabsControl";
+import { IEditorTitleControlDimensions } from "vs/workbench/browser/parts/editor/editorTitleControl";
 import { MultiEditorTabsControl } from "vs/workbench/browser/parts/editor/multiEditorTabsControl";
 import { IEditorPartOptions } from "vs/workbench/common/editor";
+import { IReadonlyEditorGroupModel } from "vs/workbench/common/editor/editorGroupModel";
 import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import { Disposable } from "vs/base/common/lifecycle";
 import {
 	StickyEditorGroupModel,
 	UnstickyEditorGroupModel,
 } from "vs/workbench/common/editor/filteredEditorGroupModel";
-import { IEditorTitleControlDimensions } from "vs/workbench/browser/parts/editor/editorTitleControl";
-import { IReadonlyEditorGroupModel } from "vs/workbench/common/editor/editorGroupModel";
 
 export class MultiRowEditorControl
 	extends Disposable
@@ -93,10 +93,10 @@ export class MultiRowEditorControl
 
 	openEditor(
 		editor: EditorInput,
-		options: IInternalEditorOpenOptions
+		options: IInternalEditorOpenOptions,
 	): boolean {
 		const [editorTabController, otherTabController] = this.model.isSticky(
-			editor
+			editor,
 		)
 			? [this.stickyEditorTabsControl, this.unstickyEditorTabsControl]
 			: [this.unstickyEditorTabsControl, this.stickyEditorTabsControl];
@@ -163,7 +163,7 @@ export class MultiRowEditorControl
 		editor: EditorInput,
 		fromIndex: number,
 		targetIndex: number,
-		stickyStateChange: boolean
+		stickyStateChange: boolean,
 	): void {
 		if (stickyStateChange) {
 			// If sticky state changes, move editor between tab bars
@@ -176,22 +176,20 @@ export class MultiRowEditorControl
 			}
 
 			this.handlePinnedTabsSeparateRowToolbars();
+		} else if (this.model.isSticky(editor)) {
+			this.stickyEditorTabsControl.moveEditor(
+				editor,
+				fromIndex,
+				targetIndex,
+				stickyStateChange,
+			);
 		} else {
-			if (this.model.isSticky(editor)) {
-				this.stickyEditorTabsControl.moveEditor(
-					editor,
-					fromIndex,
-					targetIndex,
-					stickyStateChange
-				);
-			} else {
-				this.unstickyEditorTabsControl.moveEditor(
-					editor,
-					fromIndex - this.model.stickyCount,
-					targetIndex - this.model.stickyCount,
-					stickyStateChange
-				);
-			}
+			this.unstickyEditorTabsControl.moveEditor(
+				editor,
+				fromIndex - this.model.stickyCount,
+				targetIndex - this.model.stickyCount,
+				stickyStateChange,
+			);
 		}
 	}
 
@@ -228,7 +226,7 @@ export class MultiRowEditorControl
 
 	updateOptions(
 		oldOptions: IEditorPartOptions,
-		newOptions: IEditorPartOptions
+		newOptions: IEditorPartOptions,
 	): void {
 		this.stickyEditorTabsControl.updateOptions(oldOptions, newOptions);
 		this.unstickyEditorTabsControl.updateOptions(oldOptions, newOptions);
@@ -241,16 +239,16 @@ export class MultiRowEditorControl
 			container: dimensions.container,
 			available: new Dimension(
 				dimensions.available.width,
-				dimensions.available.height - stickyDimensions.height
+				dimensions.available.height - stickyDimensions.height,
 			),
 		};
 		const unstickyDimensions = this.unstickyEditorTabsControl.layout(
-			unstickyAvailableDimensions
+			unstickyAvailableDimensions,
 		);
 
 		return new Dimension(
 			dimensions.container.width,
-			stickyDimensions.height + unstickyDimensions.height
+			stickyDimensions.height + unstickyDimensions.height,
 		);
 	}
 

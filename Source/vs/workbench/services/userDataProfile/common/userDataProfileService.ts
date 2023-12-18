@@ -10,9 +10,9 @@ import { equals } from "vs/base/common/objects";
 import { ThemeIcon } from "vs/base/common/themables";
 import { IUserDataProfile } from "vs/platform/userDataProfile/common/userDataProfile";
 import {
-	defaultUserDataProfileIcon,
 	DidChangeUserDataProfileEvent,
 	IUserDataProfileService,
+	defaultUserDataProfileIcon,
 } from "vs/workbench/services/userDataProfile/common/userDataProfile";
 
 export class UserDataProfileService
@@ -22,7 +22,7 @@ export class UserDataProfileService
 	readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeCurrentProfile = this._register(
-		new Emitter<DidChangeUserDataProfileEvent>()
+		new Emitter<DidChangeUserDataProfileEvent>(),
 	);
 	readonly onDidChangeCurrentProfile = this._onDidChangeCurrentProfile.event;
 
@@ -37,7 +37,7 @@ export class UserDataProfileService
 	}
 
 	async updateCurrentProfile(
-		userDataProfile: IUserDataProfile
+		userDataProfile: IUserDataProfile,
 	): Promise<void> {
 		if (equals(this._currentProfile, userDataProfile)) {
 			return;

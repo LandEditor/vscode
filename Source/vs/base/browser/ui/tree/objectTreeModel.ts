@@ -25,7 +25,7 @@ import { Event } from "vs/base/common/event";
 import { Iterable } from "vs/base/common/iterator";
 
 export type ITreeNodeCallback<T, TFilterData> = (
-	node: ITreeNode<T, TFilterData>
+	node: ITreeNode<T, TFilterData>,
 ) => void;
 
 export interface IObjectTreeModel<
@@ -35,14 +35,14 @@ export interface IObjectTreeModel<
 	setChildren(
 		element: T | null,
 		children: Iterable<IObjectTreeElement<T>> | undefined,
-		options?: IObjectTreeModelSetChildrenOptions<T, TFilterData>
+		options?: IObjectTreeModelSetChildrenOptions<T, TFilterData>,
 	): void;
 	resort(element?: T | null, recursive?: boolean): void;
 	updateElementHeight(element: T, height: number | undefined): void;
 }
 
-export interface IObjectTreeModelSetChildrenOptions<T, TFilterData>
-	extends IIndexTreeModelSpliceOptions<T, TFilterData> {}
+export type IObjectTreeModelSetChildrenOptions<T, TFilterData> =
+	IIndexTreeModelSpliceOptions<T, TFilterData>;
 
 export interface IObjectTreeModelOptions<T, TFilterData>
 	extends IIndexTreeModelOptions<T, TFilterData> {
@@ -79,7 +79,7 @@ export class ObjectTreeModel<
 	constructor(
 		private user: string,
 		list: IList<ITreeNode<T, TFilterData>>,
-		options: IObjectTreeModelOptions<T, TFilterData> = {}
+		options: IObjectTreeModelOptions<T, TFilterData> = {},
 	) {
 		this.model = new IndexTreeModel(user, list, null, options);
 		this.onDidSplice = this.model.onDidSplice;
@@ -104,20 +104,20 @@ export class ObjectTreeModel<
 	setChildren(
 		element: T | null,
 		children: Iterable<IObjectTreeElement<T>> = Iterable.empty(),
-		options: IObjectTreeModelSetChildrenOptions<T, TFilterData> = {}
+		options: IObjectTreeModelSetChildrenOptions<T, TFilterData> = {},
 	): void {
 		const location = this.getElementLocation(element);
 		this._setChildren(
 			location,
 			this.preserveCollapseState(children),
-			options
+			options,
 		);
 	}
 
 	private _setChildren(
 		location: number[],
 		children: Iterable<ITreeElement<T>> = Iterable.empty(),
-		options: IObjectTreeModelSetChildrenOptions<T, TFilterData>
+		options: IObjectTreeModelSetChildrenOptions<T, TFilterData>,
 	): void {
 		const insertedElements = new Set<T | null>();
 		const insertedElementIds = new Set<string>();
@@ -174,11 +174,11 @@ export class ObjectTreeModel<
 	}
 
 	private preserveCollapseState(
-		elements: Iterable<IObjectTreeElement<T>> = Iterable.empty()
+		elements: Iterable<IObjectTreeElement<T>> = Iterable.empty(),
 	): Iterable<ITreeElement<T>> {
 		if (this.sorter) {
 			elements = [...elements].sort(
-				this.sorter.compare.bind(this.sorter)
+				this.sorter.compare.bind(this.sorter),
 			);
 		}
 
@@ -283,13 +283,13 @@ export class ObjectTreeModel<
 	private resortChildren(
 		node: ITreeNode<T | null, TFilterData>,
 		recursive: boolean,
-		first = true
+		first = true,
 	): Iterable<ITreeElement<T>> {
 		let childrenNodes = [...node.children] as ITreeNode<T, TFilterData>[];
 
 		if (recursive || first) {
 			childrenNodes = childrenNodes.sort(
-				this.sorter!.compare.bind(this.sorter)
+				this.sorter!.compare.bind(this.sorter),
 			);
 		}
 
@@ -300,7 +300,7 @@ export class ObjectTreeModel<
 				collapsible: node.collapsible,
 				collapsed: node.collapsed,
 				children: this.resortChildren(node, recursive, false),
-			})
+			}),
 		);
 	}
 
@@ -346,7 +346,7 @@ export class ObjectTreeModel<
 	setCollapsed(
 		element: T | null,
 		collapsed?: boolean,
-		recursive?: boolean
+		recursive?: boolean,
 	): boolean {
 		const location = this.getElementLocation(element);
 		return this.model.setCollapsed(location, collapsed, recursive);
@@ -371,7 +371,7 @@ export class ObjectTreeModel<
 		if (!node) {
 			throw new TreeError(
 				this.user,
-				`Tree element not found: ${element}`
+				`Tree element not found: ${element}`,
 			);
 		}
 
@@ -386,7 +386,7 @@ export class ObjectTreeModel<
 		if (element === null) {
 			throw new TreeError(
 				this.user,
-				`Invalid getParentNodeLocation call`
+				`Invalid getParentNodeLocation call`,
 			);
 		}
 
@@ -395,7 +395,7 @@ export class ObjectTreeModel<
 		if (!node) {
 			throw new TreeError(
 				this.user,
-				`Tree element not found: ${element}`
+				`Tree element not found: ${element}`,
 			);
 		}
 
@@ -416,7 +416,7 @@ export class ObjectTreeModel<
 		if (!node) {
 			throw new TreeError(
 				this.user,
-				`Tree element not found: ${element}`
+				`Tree element not found: ${element}`,
 			);
 		}
 

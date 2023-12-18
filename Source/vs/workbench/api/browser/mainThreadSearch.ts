@@ -6,15 +6,16 @@
 import { CancellationToken } from "vs/base/common/cancellation";
 import {
 	DisposableStore,
-	dispose,
 	IDisposable,
+	dispose,
 } from "vs/base/common/lifecycle";
+import { revive } from "vs/base/common/marshalling";
 import { URI, UriComponents } from "vs/base/common/uri";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import {
-	extHostNamedCustomer,
 	IExtHostContext,
+	extHostNamedCustomer,
 } from "vs/workbench/services/extensions/common/extHostCustomers";
 import {
 	IFileMatch,
@@ -35,7 +36,6 @@ import {
 	MainContext,
 	MainThreadSearchShape,
 } from "../common/extHost.protocol";
-import { revive } from "vs/base/common/marshalling";
 
 @extHostNamedCustomer(MainContext.MainThreadSearch)
 export class MainThreadSearch implements MainThreadSearchShape {
@@ -66,8 +66,8 @@ export class MainThreadSearch implements MainThreadSearchShape {
 				SearchProviderType.text,
 				scheme,
 				handle,
-				this._proxy
-			)
+				this._proxy,
+			),
 		);
 	}
 
@@ -79,8 +79,8 @@ export class MainThreadSearch implements MainThreadSearchShape {
 				SearchProviderType.file,
 				scheme,
 				handle,
-				this._proxy
-			)
+				this._proxy,
+			),
 		);
 	}
 
@@ -92,7 +92,7 @@ export class MainThreadSearch implements MainThreadSearchShape {
 	$handleFileMatch(
 		handle: number,
 		session: number,
-		data: UriComponents[]
+		data: UriComponents[],
 	): void {
 		const provider = this._searchProvider.get(handle);
 		if (!provider) {
@@ -105,7 +105,7 @@ export class MainThreadSearch implements MainThreadSearchShape {
 	$handleTextMatch(
 		handle: number,
 		session: number,
-		data: IRawFileMatch2[]
+		data: IRawFileMatch2[],
 	): void {
 		const provider = this._searchProvider.get(handle);
 		if (!provider) {
@@ -126,7 +126,7 @@ class SearchOperation {
 	constructor(
 		readonly progress?: (match: IFileMatch) => any,
 		readonly id: number = ++SearchOperation._idPool,
-		readonly matches = new Map<string, IFileMatch>()
+		readonly matches = new Map<string, IFileMatch>(),
 	) {
 		//
 	}
@@ -157,10 +157,14 @@ class RemoteSearchProvider implements ISearchResultProvider, IDisposable {
 		type: SearchProviderType,
 		private readonly _scheme: string,
 		private readonly _handle: number,
-		private readonly _proxy: ExtHostSearchShape
+		private readonly _proxy: ExtHostSearchShape,
 	) {
 		this._registrations.add(
-			searchService.registerSearchResultProvider(this._scheme, type, this)
+			searchService.registerSearchResultProvider(
+				this._scheme,
+				type,
+				this,
+			),
 		);
 	}
 
@@ -170,7 +174,7 @@ class RemoteSearchProvider implements ISearchResultProvider, IDisposable {
 
 	fileSearch(
 		query: IFileQuery,
-		token: CancellationToken = CancellationToken.None
+		token: CancellationToken = CancellationToken.None,
 	): Promise<ISearchComplete> {
 		return this.doSearch(query, undefined, token);
 	}
@@ -178,7 +182,7 @@ class RemoteSearchProvider implements ISearchResultProvider, IDisposable {
 	textSearch(
 		query: ITextQuery,
 		onProgress?: (p: ISearchProgressItem) => void,
-		token: CancellationToken = CancellationToken.None
+		token: CancellationToken = CancellationToken.None,
 	): Promise<ISearchComplete> {
 		return this.doSearch(query, onProgress, token);
 	}
@@ -186,7 +190,7 @@ class RemoteSearchProvider implements ISearchResultProvider, IDisposable {
 	doSearch(
 		query: ITextQuery | IFileQuery,
 		onProgress?: (p: ISearchProgressItem) => void,
-		token: CancellationToken = CancellationToken.None
+		token: CancellationToken = CancellationToken.None,
 	): Promise<ISearchComplete> {
 		if (!query.folderQueries.length) {
 			throw new Error("Empty folderQueries");
@@ -201,14 +205,14 @@ class RemoteSearchProvider implements ISearchResultProvider, IDisposable {
 						this._handle,
 						search.id,
 						query,
-						token
-					)
+						token,
+				  )
 				: this._proxy.$provideTextSearchResults(
 						this._handle,
 						search.id,
 						query,
-						token
-					);
+						token,
+				  );
 
 		return Promise.resolve(searchP).then(
 			(result: ISearchCompleteStats) => {
@@ -223,7 +227,7 @@ class RemoteSearchProvider implements ISearchResultProvider, IDisposable {
 			(err) => {
 				this._searches.delete(search.id);
 				return Promise.reject(err);
-			}
+			},
 		);
 	}
 
@@ -233,7 +237,7 @@ class RemoteSearchProvider implements ISearchResultProvider, IDisposable {
 
 	handleFindMatch(
 		session: number,
-		dataOrUri: Array<UriComponents | IRawFileMatch2>
+		dataOrUri: Array<UriComponents | IRawFileMatch2>,
 	): void {
 		const searchOp = this._searches.get(session);
 

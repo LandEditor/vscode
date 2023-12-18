@@ -19,15 +19,15 @@ export interface MessagePortMain extends NodeJS.EventEmitter {
 	on(event: "message", listener: (messageEvent: MessageEvent) => void): this;
 	once(
 		event: "message",
-		listener: (messageEvent: MessageEvent) => void
+		listener: (messageEvent: MessageEvent) => void,
 	): this;
 	addListener(
 		event: "message",
-		listener: (messageEvent: MessageEvent) => void
+		listener: (messageEvent: MessageEvent) => void,
 	): this;
 	removeListener(
 		event: "message",
-		listener: (messageEvent: MessageEvent) => void
+		listener: (messageEvent: MessageEvent) => void,
 	): this;
 	/**
 	 * Disconnects the port, so it is no longer active.
@@ -60,15 +60,15 @@ export interface ParentPort extends NodeJS.EventEmitter {
 	on(event: "message", listener: (messageEvent: MessageEvent) => void): this;
 	once(
 		event: "message",
-		listener: (messageEvent: MessageEvent) => void
+		listener: (messageEvent: MessageEvent) => void,
 	): this;
 	addListener(
 		event: "message",
-		listener: (messageEvent: MessageEvent) => void
+		listener: (messageEvent: MessageEvent) => void,
 	): this;
 	removeListener(
 		event: "message",
-		listener: (messageEvent: MessageEvent) => void
+		listener: (messageEvent: MessageEvent) => void,
 	): this;
 	/**
 	 * Sends a message from the process to its parent.
@@ -85,7 +85,7 @@ export interface UtilityNodeJSProcess extends NodeJS.Process {
 }
 
 export function isUtilityProcess(
-	process: NodeJS.Process
+	process: NodeJS.Process,
 ): process is UtilityNodeJSProcess {
 	return !!(process as UtilityNodeJSProcess).parentPort;
 }

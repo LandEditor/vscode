@@ -12,7 +12,7 @@ import {
 export class GhostText {
 	constructor(
 		public readonly lineNumber: number,
-		public readonly parts: GhostTextPart[]
+		public readonly parts: GhostTextPart[],
 	) {}
 
 	equals(other: GhostText): boolean {
@@ -26,7 +26,7 @@ export class GhostText {
 	/**
 	 * Only used for testing/debugging.
 	 */
-	render(documentText: string, debug: boolean = false): string {
+	render(documentText: string, debug = false): string {
 		const l = this.lineNumber;
 		return applyEdits(documentText, [
 			...this.parts.map((p) => ({
@@ -58,7 +58,7 @@ export class GhostText {
 					endColumn: p.column,
 				},
 				text: p.lines.join("\n"),
-			}))
+			})),
 		);
 
 		return text.substring(this.parts[0].column - 1);
@@ -80,7 +80,7 @@ export class GhostTextPart {
 		/**
 		 * Indicates if this part is a preview of an inline suggestion when a suggestion is previewed.
 		 */
-		readonly preview: boolean
+		readonly preview: boolean,
 	) {}
 
 	equals(other: GhostTextPart): boolean {
@@ -97,7 +97,7 @@ export class GhostTextReplacement {
 		new GhostTextPart(
 			this.columnRange.endColumnExclusive,
 			this.newLines,
-			false
+			false,
 		),
 	];
 
@@ -105,14 +105,14 @@ export class GhostTextReplacement {
 		readonly lineNumber: number,
 		readonly columnRange: ColumnRange,
 		readonly newLines: readonly string[],
-		public readonly additionalReservedLineCount: number = 0
+		public readonly additionalReservedLineCount: number = 0,
 	) {}
 
 	renderForScreenReader(_lineText: string): string {
 		return this.newLines.join("\n");
 	}
 
-	render(documentText: string, debug: boolean = false): string {
+	render(documentText: string, debug = false): string {
 		const replaceRange = this.columnRange.toRange(this.lineNumber);
 
 		if (debug) {
@@ -147,7 +147,7 @@ export class GhostTextReplacement {
 			this.columnRange.equals(other.columnRange) &&
 			this.newLines.length === other.newLines.length &&
 			this.newLines.every(
-				(line, index) => line === other.newLines[index]
+				(line, index) => line === other.newLines[index],
 			) &&
 			this.additionalReservedLineCount ===
 				other.additionalReservedLineCount
@@ -159,7 +159,7 @@ export type GhostTextOrReplacement = GhostText | GhostTextReplacement;
 
 export function ghostTextOrReplacementEquals(
 	a: GhostTextOrReplacement | undefined,
-	b: GhostTextOrReplacement | undefined
+	b: GhostTextOrReplacement | undefined,
 ): boolean {
 	if (a === b) {
 		return true;

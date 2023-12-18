@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event, Disposable, EventEmitter } from "vscode";
-import { dirname, sep, relative } from "path";
+import { createReadStream, promises as fs } from "fs";
+import { dirname, relative, sep } from "path";
 import { Readable } from "stream";
-import { promises as fs, createReadStream } from "fs";
 import * as byline from "byline";
+import { Disposable, Event, EventEmitter } from "vscode";
 
 export const isMacintosh = process.platform === "darwin";
 export const isWindows = process.platform === "win32";
@@ -39,7 +39,7 @@ export function fireEvent<T>(event: Event<T>): Event<T> {
 	return (
 		listener: (e: T) => any,
 		thisArgs?: any,
-		disposables?: Disposable[]
+		disposables?: Disposable[],
 	) => event((_) => (listener as any).call(thisArgs), null, disposables);
 }
 
@@ -47,23 +47,23 @@ export function mapEvent<I, O>(event: Event<I>, map: (i: I) => O): Event<O> {
 	return (
 		listener: (e: O) => any,
 		thisArgs?: any,
-		disposables?: Disposable[]
+		disposables?: Disposable[],
 	) => event((i) => listener.call(thisArgs, map(i)), null, disposables);
 }
 
 export function filterEvent<T>(
 	event: Event<T>,
-	filter: (e: T) => boolean
+	filter: (e: T) => boolean,
 ): Event<T> {
 	return (
 		listener: (e: T) => any,
 		thisArgs?: any,
-		disposables?: Disposable[]
+		disposables?: Disposable[],
 	) =>
 		event(
 			(e) => filter(e) && listener.call(thisArgs, e),
 			null,
-			disposables
+			disposables,
 		);
 }
 
@@ -71,10 +71,10 @@ export function anyEvent<T>(...events: Event<T>[]): Event<T> {
 	return (
 		listener: (e: T) => any,
 		thisArgs?: any,
-		disposables?: Disposable[]
+		disposables?: Disposable[],
 	) => {
 		const result = combinedDisposable(
-			events.map((event) => event((i) => listener.call(thisArgs, i)))
+			events.map((event) => event((i) => listener.call(thisArgs, i))),
 		);
 
 		disposables?.push(result);
@@ -91,7 +91,7 @@ export function onceEvent<T>(event: Event<T>): Event<T> {
 	return (
 		listener: (e: T) => any,
 		thisArgs?: any,
-		disposables?: Disposable[]
+		disposables?: Disposable[],
 	) => {
 		const result = event(
 			(e) => {
@@ -99,7 +99,7 @@ export function onceEvent<T>(event: Event<T>): Event<T> {
 				return listener.call(thisArgs, e);
 			},
 			null,
-			disposables
+			disposables,
 		);
 
 		return result;
@@ -110,7 +110,7 @@ export function debounceEvent<T>(event: Event<T>, delay: number): Event<T> {
 	return (
 		listener: (e: T) => any,
 		thisArgs?: any,
-		disposables?: Disposable[]
+		disposables?: Disposable[],
 	) => {
 		let timer: NodeJS.Timer;
 		return event(
@@ -119,7 +119,7 @@ export function debounceEvent<T>(event: Event<T>, delay: number): Event<T> {
 				timer = setTimeout(() => listener.call(thisArgs, e), delay);
 			},
 			null,
-			disposables
+			disposables,
 		);
 	};
 }
@@ -143,7 +143,7 @@ export function once(fn: (...args: any[]) => any): (...args: any[]) => any {
 export function assign<T>(destination: T, ...sources: any[]): T {
 	for (const source of sources) {
 		Object.keys(source).forEach(
-			(key) => ((destination as any)[key] = source[key])
+			(key) => ((destination as any)[key] = source[key]),
 		);
 	}
 
@@ -167,7 +167,7 @@ export function uniqBy<T>(arr: T[], fn: (el: T) => string): T[] {
 
 export function groupBy<T>(
 	arr: T[],
-	fn: (el: T) => string
+	fn: (el: T) => string,
 ): { [key: string]: T[] } {
 	return arr.reduce((result, el) => {
 		const key = fn(el);
@@ -246,7 +246,7 @@ export function find<T>(array: T[], fn: (t: T) => boolean): T | undefined {
 
 export async function grep(
 	filename: string,
-	pattern: RegExp
+	pattern: RegExp,
 ): Promise<boolean> {
 	return new Promise<boolean>((c, e) => {
 		const fileStream = createReadStream(filename, { encoding: "utf8" });
@@ -295,7 +295,7 @@ export function readBytes(stream: Readable, bytes: number): Promise<Buffer> {
 	});
 }
 
-export const enum Encoding {
+export enum Encoding {
 	UTF8 = "utf8",
 	UTF16be = "utf16be",
 	UTF16le = "utf16le",
@@ -381,7 +381,7 @@ export function relativePath(from: string, to: string): string {
 
 export function* splitInChunks(
 	array: string[],
-	maxChunkLength: number
+	maxChunkLength: number,
 ): IterableIterator<string[]> {
 	let current: string[] = [];
 	let length = 0;
@@ -440,7 +440,7 @@ export class Limiter<T> {
 			promise.then(iLimitedTask.c, iLimitedTask.e);
 			promise.then(
 				() => this.consumed(),
-				() => this.consumed()
+				() => this.consumed(),
 			);
 		}
 	}
@@ -501,7 +501,7 @@ export namespace Versions {
 
 	export function compare(
 		v1: string | Version,
-		v2: string | Version
+		v2: string | Version,
 	): VersionComparisonResult {
 		if (typeof v1 === "string") {
 			v1 = fromString(v1);
@@ -549,7 +549,7 @@ export namespace Versions {
 		major: string | number,
 		minor: string | number,
 		patch?: string | number,
-		pre?: string
+		pre?: string,
 	): Version {
 		return {
 			major: typeof major === "string" ? parseInt(major, 10) : major,
@@ -558,8 +558,8 @@ export namespace Versions {
 				patch === undefined || patch === null
 					? 0
 					: typeof patch === "string"
-						? parseInt(patch, 10)
-						: patch,
+					  ? parseInt(patch, 10)
+					  : patch,
 			pre: pre,
 		};
 	}

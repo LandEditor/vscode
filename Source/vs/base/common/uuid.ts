@@ -19,7 +19,7 @@ declare const crypto:
 			randomUUID?(): string;
 	  };
 
-export const generateUuid = (function (): () => string {
+export const generateUuid = ((): (() => string) => {
 	// use `randomUUID` if possible
 	if (typeof crypto === "object" && typeof crypto.randomUUID === "function") {
 		return crypto.randomUUID.bind(crypto);
@@ -33,7 +33,7 @@ export const generateUuid = (function (): () => string {
 	) {
 		getRandomValues = crypto.getRandomValues.bind(crypto);
 	} else {
-		getRandomValues = function (bucket: Uint8Array): Uint8Array {
+		getRandomValues = (bucket: Uint8Array): Uint8Array => {
 			for (let i = 0; i < bucket.length; i++) {
 				bucket[i] = Math.floor(Math.random() * 256);
 			}

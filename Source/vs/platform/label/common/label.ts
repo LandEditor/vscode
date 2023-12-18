@@ -8,8 +8,8 @@ import { IDisposable } from "vs/base/common/lifecycle";
 import { URI } from "vs/base/common/uri";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import {
-	IWorkspace,
 	ISingleFolderWorkspaceIdentifier,
+	IWorkspace,
 	IWorkspaceIdentifier,
 } from "vs/platform/workspace/common/workspace";
 
@@ -30,7 +30,7 @@ export interface ILabelService {
 			relative?: boolean;
 			noPrefix?: boolean;
 			separator?: "/" | "\\";
-		}
+		},
 	): string;
 	getUriBasenameLabel(resource: URI): string;
 	getWorkspaceLabel(
@@ -39,7 +39,7 @@ export interface ILabelService {
 			| ISingleFolderWorkspaceIdentifier
 			| URI
 			| IWorkspace,
-		options?: { verbose: Verbosity }
+		options?: { verbose: Verbosity },
 	): string;
 	getHostLabel(scheme: string, authority?: string): string;
 	getHostTooltip(scheme: string, authority?: string): string | undefined;
@@ -56,10 +56,10 @@ export interface ILabelService {
 	registerCachedFormatter(formatter: ResourceLabelFormatter): IDisposable;
 }
 
-export const enum Verbosity {
-	SHORT,
-	MEDIUM,
-	LONG,
+export enum Verbosity {
+	SHORT = 0,
+	MEDIUM = 1,
+	LONG = 2,
 }
 
 export interface IFormatterChangeEvent {

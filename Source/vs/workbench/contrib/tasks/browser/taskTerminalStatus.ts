@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
 import { Codicon } from "vs/base/common/codicons";
 import {
 	Disposable,
@@ -12,10 +11,22 @@ import {
 	toDisposable,
 } from "vs/base/common/lifecycle";
 import Severity from "vs/base/common/severity";
+import * as nls from "vs/nls";
+import {
+	AudioCue,
+	IAudioCueService,
+} from "vs/platform/audioCues/browser/audioCueService";
+import { MarkerSeverity } from "vs/platform/markers/common/markers";
+import { IMarker } from "vs/platform/terminal/common/capabilities/capabilities";
+import { spinningLoading } from "vs/platform/theme/common/iconRegistry";
 import {
 	AbstractProblemCollector,
 	StartStopProblemCollector,
 } from "vs/workbench/contrib/tasks/common/problemCollectors";
+import {
+	ITaskService,
+	Task,
+} from "vs/workbench/contrib/tasks/common/taskService";
 import {
 	ITaskGeneralEvent,
 	ITaskProcessEndedEvent,
@@ -23,18 +34,7 @@ import {
 	TaskEventKind,
 	TaskRunType,
 } from "vs/workbench/contrib/tasks/common/tasks";
-import {
-	ITaskService,
-	Task,
-} from "vs/workbench/contrib/tasks/common/taskService";
 import { ITerminalInstance } from "vs/workbench/contrib/terminal/browser/terminal";
-import { MarkerSeverity } from "vs/platform/markers/common/markers";
-import { spinningLoading } from "vs/platform/theme/common/iconRegistry";
-import { IMarker } from "vs/platform/terminal/common/capabilities/capabilities";
-import {
-	AudioCue,
-	IAudioCueService,
-} from "vs/platform/audioCues/browser/audioCueService";
 import { ITerminalStatus } from "vs/workbench/contrib/terminal/common/terminal";
 
 interface ITerminalData {
@@ -65,7 +65,7 @@ const SUCCEEDED_INACTIVE_TASK_STATUS: ITerminalStatus = {
 	severity: Severity.Info,
 	tooltip: nls.localize(
 		"taskTerminalStatus.succeededInactive",
-		"Task succeeded and waiting..."
+		"Task succeeded and waiting...",
 	),
 };
 export const FAILED_TASK_STATUS: ITerminalStatus = {
@@ -80,7 +80,7 @@ const FAILED_INACTIVE_TASK_STATUS: ITerminalStatus = {
 	severity: Severity.Error,
 	tooltip: nls.localize(
 		"taskTerminalStatus.errorsInactive",
-		"Task has errors and is waiting..."
+		"Task has errors and is waiting...",
 	),
 };
 const WARNING_TASK_STATUS: ITerminalStatus = {
@@ -95,7 +95,7 @@ const WARNING_INACTIVE_TASK_STATUS: ITerminalStatus = {
 	severity: Severity.Warning,
 	tooltip: nls.localize(
 		"taskTerminalStatus.warningsInactive",
-		"Task has warnings and is waiting..."
+		"Task has warnings and is waiting...",
 	),
 };
 const INFO_TASK_STATUS: ITerminalStatus = {
@@ -110,7 +110,7 @@ const INFO_INACTIVE_TASK_STATUS: ITerminalStatus = {
 	severity: Severity.Info,
 	tooltip: nls.localize(
 		"taskTerminalStatus.infosInactive",
-		"Task has infos and is waiting..."
+		"Task has infos and is waiting...",
 	),
 };
 
@@ -151,7 +151,7 @@ export class TaskTerminalStatus extends Disposable {
 	addTerminal(
 		task: Task,
 		terminal: ITerminalInstance,
-		problemMatcher: AbstractProblemCollector
+		problemMatcher: AbstractProblemCollector,
 	) {
 		const status: ITerminalStatus = {
 			id: TASK_TERMINAL_STATUS_ID,
@@ -164,7 +164,7 @@ export class TaskTerminalStatus extends Disposable {
 				if (this._marker) {
 					this._register(this._marker);
 				}
-			})
+			}),
 		);
 		this._register(
 			problemMatcher.onDidFindErrors(() => {
@@ -173,18 +173,18 @@ export class TaskTerminalStatus extends Disposable {
 						marker: this._marker,
 						hoverMessage: nls.localize(
 							"task.watchFirstError",
-							"Beginning of detected errors for this run"
+							"Beginning of detected errors for this run",
 						),
 						disableCommandStorage: true,
 					});
 				}
-			})
+			}),
 		);
 		this._register(
 			problemMatcher.onDidRequestInvalidateLastMarker(() => {
 				this._marker?.dispose();
 				this._marker = undefined;
-			})
+			}),
 		);
 
 		this.terminalMap.set(terminal.instanceId, {
@@ -258,7 +258,7 @@ export class TaskTerminalStatus extends Disposable {
 		if (terminalData.problemMatcher.numberOfMatches === 0) {
 			this._audioCueService.playAudioCue(AudioCue.taskCompleted);
 			terminalData.terminal.statusList.add(
-				SUCCEEDED_INACTIVE_TASK_STATUS
+				SUCCEEDED_INACTIVE_TASK_STATUS,
 			);
 		} else if (
 			terminalData.problemMatcher.maxMarkerSeverity ===
@@ -286,7 +286,7 @@ export class TaskTerminalStatus extends Disposable {
 		}
 		if (!terminalData.disposeListener) {
 			terminalData.disposeListener = this._register(
-				new MutableDisposable()
+				new MutableDisposable(),
 			);
 			terminalData.disposeListener.value =
 				terminalData.terminal.onDisposed(() => {

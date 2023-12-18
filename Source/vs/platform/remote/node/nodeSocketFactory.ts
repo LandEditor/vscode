@@ -24,7 +24,7 @@ export const nodeSocketFactory = new (class
 		{ host, port }: WebSocketRemoteConnection,
 		path: string,
 		query: string,
-		debugLabel: string
+		debugLabel: string,
 	): Promise<ISocket> {
 		return new Promise<ISocket>((resolve, reject) => {
 			const socket = net.createConnection(
@@ -43,7 +43,7 @@ export const nodeSocketFactory = new (class
 						}
 					};
 					socket.on("data", onData);
-				}
+				},
 			);
 			// Disable Nagle's algorithm.
 			socket.setNoDelay(true);

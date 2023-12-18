@@ -3,21 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as path from "path";
 import { TextDecoder } from "util";
+import TelemetryReporter from "@vscode/extension-telemetry";
 import {
+	Disposable,
+	FileType,
+	ProgressLocation,
+	QuickPickOptions,
+	TextDocumentContentProvider,
+	Uri,
 	commands,
 	env,
-	ProgressLocation,
-	Uri,
+	l10n,
 	window,
 	workspace,
-	QuickPickOptions,
-	FileType,
-	l10n,
-	Disposable,
-	TextDocumentContentProvider,
 } from "vscode";
-import TelemetryReporter from "@vscode/extension-telemetry";
 import { getOctokit } from "./auth";
 import {
 	GitErrorCodes,
@@ -25,7 +26,6 @@ import {
 	Remote,
 	Repository,
 } from "./typings/git";
-import * as path from "path";
 
 type Awaited<T> = T extends PromiseLike<infer U> ? Awaited<U> : T;
 
@@ -59,7 +59,7 @@ async function assertMarkdownFiles(dir: Uri, files: string[]): Promise<Uri[]> {
 	return dirFiles
 		.filter(
 			([name, type]) =>
-				Boolean(type & FileType.File) && files.indexOf(name) !== -1
+				Boolean(type & FileType.File) && files.indexOf(name) !== -1,
 		)
 		.map(([name]) => Uri.joinPath(dir, name));
 }
@@ -69,7 +69,7 @@ async function findMarkdownFilesInDir(uri: Uri): Promise<Uri[]> {
 	return files
 		.filter(
 			([name, type]) =>
-				Boolean(type & FileType.File) && path.extname(name) === ".md"
+				Boolean(type & FileType.File) && path.extname(name) === ".md",
 		)
 		.map(([name]) => Uri.joinPath(uri, name));
 }
@@ -84,14 +84,17 @@ async function findMarkdownFilesInDir(uri: Uri): Promise<Uri[]> {
  *
  */
 export async function findPullRequestTemplates(
-	repositoryRootUri: Uri
+	repositoryRootUri: Uri,
 ): Promise<Uri[]> {
 	const results = await Promise.allSettled([
 		...PR_TEMPLATE_FILES.map((x) =>
-			assertMarkdownFiles(Uri.joinPath(repositoryRootUri, x.dir), x.files)
+			assertMarkdownFiles(
+				Uri.joinPath(repositoryRootUri, x.dir),
+				x.files,
+			),
 		),
 		...PR_TEMPLATE_DIRECTORY_NAMES.map((x) =>
-			findMarkdownFilesInDir(Uri.joinPath(repositoryRootUri, x))
+			findMarkdownFilesInDir(Uri.joinPath(repositoryRootUri, x)),
 		),
 	]);
 
@@ -100,7 +103,7 @@ export async function findPullRequestTemplates(
 
 export async function pickPullRequestTemplate(
 	repositoryRootUri: Uri,
-	templates: Uri[]
+	templates: Uri[],
 ): Promise<Uri | undefined> {
 	const quickPickItemFromUri = (x: Uri) => ({
 		label: path.relative(repositoryRootUri.path, x.path),
@@ -120,7 +123,7 @@ export async function pickPullRequestTemplate(
 	};
 	const pickedTemplate = await window.showQuickPick(
 		quickPickItems,
-		quickPickOptions
+		quickPickOptions,
 	);
 	return pickedTemplate?.template;
 }
@@ -151,8 +154,8 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 		this.disposables.push(
 			workspace.registerTextDocumentContentProvider(
 				"github-output",
-				this.commandErrors
-			)
+				this.commandErrors,
+			),
 		);
 	}
 
@@ -160,7 +163,7 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 		repository: Repository,
 		remote: Remote,
 		refspec: string,
-		error: Error & { stderr: string; gitErrorCode: GitErrorCodes }
+		error: Error & { stderr: string; gitErrorCode: GitErrorCodes },
 	): Promise<boolean> {
 		if (
 			error.gitErrorCode !== GitErrorCodes.PermissionDenied &&
@@ -177,7 +180,7 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 
 		const match =
 			/^(?:https:\/\/github\.com\/|git@github\.com:)([^\/]+)\/([^\/.]+)/i.exec(
-				remoteUrl
+				remoteUrl,
 			);
 		if (!match) {
 			return false;
@@ -195,7 +198,7 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 				remote,
 				refspec,
 				owner,
-				repo
+				repo,
 			);
 
 			/* __GDPR__
@@ -246,21 +249,21 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 		remote: Remote,
 		refspec: string,
 		owner: string,
-		repo: string
+		repo: string,
 	): Promise<void> {
 		const yes = l10n.t("Create Fork");
 		const no = l10n.t("No");
 		const askFork = l10n.t(
 			'You don\'t have permissions to push to "{0}/{1}" on GitHub. Would you like to create a fork and push to it instead?',
 			owner,
-			repo
+			repo,
 		);
 
 		const answer = await window.showWarningMessage(
 			askFork,
 			{ modal: true },
 			yes,
-			no
+			no,
 		);
 		if (answer !== yes) {
 			return;
@@ -345,7 +348,7 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 					await repository.fetch("origin", remoteName);
 					await repository.setBranchUpstream(
 						localName,
-						`origin/${remoteName}`
+						`origin/${remoteName}`,
 					);
 				} catch {
 					// noop
@@ -354,7 +357,7 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 				await repository.push("origin", localName, true);
 
 				return [octokit, ghRepository] as const;
-			}
+			},
 		);
 
 		// yield
@@ -364,16 +367,16 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 			const action = await window.showInformationMessage(
 				l10n.t(
 					'The fork "{0}" was successfully created on GitHub.',
-					ghRepository.full_name
+					ghRepository.full_name,
 				),
 				openOnGitHub,
-				createPR
+				createPR,
 			);
 
 			if (action === openOnGitHub) {
 				await commands.executeCommand(
 					"vscode.open",
-					Uri.parse(ghRepository.html_url)
+					Uri.parse(ghRepository.html_url),
 				);
 			} else if (action === createPR) {
 				const pr = await window.withProgress(
@@ -397,21 +400,21 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 						}
 
 						const templates = await findPullRequestTemplates(
-							repository.rootUri
+							repository.rootUri,
 						);
 						if (templates.length > 0) {
 							templates.sort((a, b) =>
-								a.path.localeCompare(b.path)
+								a.path.localeCompare(b.path),
 							);
 
 							const template = await pickPullRequestTemplate(
 								repository.rootUri,
-								templates
+								templates,
 							);
 
 							if (template) {
 								body = new TextDecoder("utf-8").decode(
-									await workspace.fs.readFile(template)
+									await workspace.fs.readFile(template),
 								);
 							}
 						}
@@ -427,19 +430,19 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 
 						await repository.setConfig(
 							`branch.${localName}.remote`,
-							"upstream"
+							"upstream",
 						);
 						await repository.setConfig(
 							`branch.${localName}.merge`,
-							`refs/heads/${remoteName}`
+							`refs/heads/${remoteName}`,
 						);
 						await repository.setConfig(
 							`branch.${localName}.github-pr-owner-number`,
-							`${owner}#${repo}#${pr.number}`
+							`${owner}#${repo}#${pr.number}`,
 						);
 
 						return pr;
-					}
+					},
 				);
 
 				const openPR = l10n.t("Open PR");
@@ -448,15 +451,15 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 						'The PR "{0}/{1}#{2}" was successfully created on GitHub.',
 						owner,
 						repo,
-						pr.number
+						pr.number,
 					),
-					openPR
+					openPR,
 				);
 
 				if (action === openPR) {
 					await commands.executeCommand(
 						"vscode.open",
-						Uri.parse(pr.html_url)
+						Uri.parse(pr.html_url),
 					);
 				}
 			}
@@ -466,7 +469,7 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 	private async handlePushProtectionError(
 		owner: string,
 		repo: string,
-		stderr: string
+		stderr: string,
 	): Promise<void> {
 		// Open command output in an editor
 		const timestamp = new Date().getTime();
@@ -485,17 +488,17 @@ export class GithubPushErrorHandler implements PushErrorHandler {
 		const message = l10n.t(
 			'Your push to "{0}/{1}" was rejected by GitHub because push protection is enabled and one or more secrets were detected.',
 			owner,
-			repo
+			repo,
 		);
 		const answer = await window.showWarningMessage(
 			message,
 			{ modal: true },
-			learnMore
+			learnMore,
 		);
 		if (answer === learnMore) {
 			commands.executeCommand(
 				"vscode.open",
-				"https://aka.ms/vscode-github-push-protection"
+				"https://aka.ms/vscode-github-push-protection",
 			);
 		}
 	}

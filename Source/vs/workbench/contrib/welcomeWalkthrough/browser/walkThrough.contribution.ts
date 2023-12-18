@@ -4,66 +4,66 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { localize } from "vs/nls";
-import { WalkThroughInput } from "vs/workbench/contrib/welcomeWalkthrough/browser/walkThroughInput";
-import { WalkThroughPart } from "vs/workbench/contrib/welcomeWalkthrough/browser/walkThroughPart";
 import {
-	WalkThroughArrowUp,
-	WalkThroughArrowDown,
-	WalkThroughPageUp,
-	WalkThroughPageDown,
-} from "vs/workbench/contrib/welcomeWalkthrough/browser/walkThroughActions";
-import { WalkThroughSnippetContentProvider } from "vs/workbench/contrib/welcomeWalkthrough/common/walkThroughContentProvider";
-import {
-	EditorWalkThroughAction,
-	EditorWalkThroughInputSerializer,
-} from "vs/workbench/contrib/welcomeWalkthrough/browser/editor/editorWalkThrough";
+	MenuId,
+	MenuRegistry,
+	registerAction2,
+} from "vs/platform/actions/common/actions";
+import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
+import { KeybindingsRegistry } from "vs/platform/keybinding/common/keybindingsRegistry";
 import { Registry } from "vs/platform/registry/common/platform";
+import {
+	EditorPaneDescriptor,
+	IEditorPaneRegistry,
+} from "vs/workbench/browser/editor";
+import {
+	Extensions as WorkbenchExtensions,
+	IWorkbenchContributionsRegistry,
+} from "vs/workbench/common/contributions";
 import {
 	EditorExtensions,
 	IEditorFactoryRegistry,
 } from "vs/workbench/common/editor";
-import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
 import {
-	MenuRegistry,
-	MenuId,
-	registerAction2,
-} from "vs/platform/actions/common/actions";
+	EditorWalkThroughAction,
+	EditorWalkThroughInputSerializer,
+} from "vs/workbench/contrib/welcomeWalkthrough/browser/editor/editorWalkThrough";
 import {
-	IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
-} from "vs/workbench/common/contributions";
-import {
-	IEditorPaneRegistry,
-	EditorPaneDescriptor,
-} from "vs/workbench/browser/editor";
+	WalkThroughArrowDown,
+	WalkThroughArrowUp,
+	WalkThroughPageDown,
+	WalkThroughPageUp,
+} from "vs/workbench/contrib/welcomeWalkthrough/browser/walkThroughActions";
+import { WalkThroughInput } from "vs/workbench/contrib/welcomeWalkthrough/browser/walkThroughInput";
+import { WalkThroughPart } from "vs/workbench/contrib/welcomeWalkthrough/browser/walkThroughPart";
+import { WalkThroughSnippetContentProvider } from "vs/workbench/contrib/welcomeWalkthrough/common/walkThroughContentProvider";
 import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { KeybindingsRegistry } from "vs/platform/keybinding/common/keybindingsRegistry";
 
 Registry.as<IEditorPaneRegistry>(
-	EditorExtensions.EditorPane
+	EditorExtensions.EditorPane,
 ).registerEditorPane(
 	EditorPaneDescriptor.create(
 		WalkThroughPart,
 		WalkThroughPart.ID,
-		localize("walkThrough.editor.label", "Playground")
+		localize("walkThrough.editor.label", "Playground"),
 	),
-	[new SyncDescriptor(WalkThroughInput)]
+	[new SyncDescriptor(WalkThroughInput)],
 );
 
 registerAction2(EditorWalkThroughAction);
 
 Registry.as<IEditorFactoryRegistry>(
-	EditorExtensions.EditorFactory
+	EditorExtensions.EditorFactory,
 ).registerEditorSerializer(
 	EditorWalkThroughInputSerializer.ID,
-	EditorWalkThroughInputSerializer
+	EditorWalkThroughInputSerializer,
 );
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	WalkThroughSnippetContentProvider,
-	LifecyclePhase.Ready /* cannot be on a later phase because an editor might need this on startup */
+	LifecyclePhase.Ready /* cannot be on a later phase because an editor might need this on startup */,
 );
 
 KeybindingsRegistry.registerCommandAndKeybindingRule(WalkThroughArrowUp);
@@ -80,7 +80,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarHelpMenu, {
 		id: "workbench.action.showInteractivePlayground",
 		title: localize(
 			{ key: "miPlayground", comment: ["&& denotes a mnemonic"] },
-			"Editor Playgrou&&nd"
+			"Editor Playgrou&&nd",
 		),
 	},
 	order: 3,

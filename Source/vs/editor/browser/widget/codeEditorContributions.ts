@@ -22,7 +22,7 @@ export class CodeEditorContributions extends Disposable {
 	 * Contains all instantiated contributions.
 	 */
 	private readonly _instances = this._register(
-		new DisposableMap<string, IEditorContribution>()
+		new DisposableMap<string, IEditorContribution>(),
 	);
 	/**
 	 * Contains contributions which are not yet instantiated.
@@ -39,8 +39,9 @@ export class CodeEditorContributions extends Disposable {
 	constructor() {
 		super();
 
-		this._finishedInstantiation[EditorContributionInstantiation.Eager] =
-			false;
+		this._finishedInstantiation[
+			EditorContributionInstantiation.Eager
+		] = false;
 		this._finishedInstantiation[
 			EditorContributionInstantiation.AfterFirstRender
 		] = false;
@@ -55,7 +56,7 @@ export class CodeEditorContributions extends Disposable {
 	public initialize(
 		editor: ICodeEditor,
 		contributions: IEditorContributionDescription[],
-		instantiationService: IInstantiationService
+		instantiationService: IInstantiationService,
 	) {
 		this._editor = editor;
 		this._instantiationService = instantiationService;
@@ -64,8 +65,8 @@ export class CodeEditorContributions extends Disposable {
 			if (this._pending.has(desc.id)) {
 				onUnexpectedError(
 					new Error(
-						`Cannot have two contributions with the same id ${desc.id}`
-					)
+						`Cannot have two contributions with the same id ${desc.id}`,
+					),
 				);
 				continue;
 			}
@@ -80,9 +81,9 @@ export class CodeEditorContributions extends Disposable {
 		this._register(
 			runWhenWindowIdle(getWindow(this._editor.getDomNode()), () => {
 				this._instantiateSome(
-					EditorContributionInstantiation.AfterFirstRender
+					EditorContributionInstantiation.AfterFirstRender,
 				);
-			})
+			}),
 		);
 
 		// BeforeFirstInteraction
@@ -91,9 +92,9 @@ export class CodeEditorContributions extends Disposable {
 		this._register(
 			runWhenWindowIdle(getWindow(this._editor.getDomNode()), () => {
 				this._instantiateSome(
-					EditorContributionInstantiation.BeforeFirstInteraction
+					EditorContributionInstantiation.BeforeFirstInteraction,
 				);
-			})
+			}),
 		);
 
 		// Eventually
@@ -104,11 +105,11 @@ export class CodeEditorContributions extends Disposable {
 				getWindow(this._editor.getDomNode()),
 				() => {
 					this._instantiateSome(
-						EditorContributionInstantiation.Eventually
+						EditorContributionInstantiation.Eventually,
 					);
 				},
-				5000
-			)
+				5000,
+			),
 		);
 	}
 
@@ -145,7 +146,7 @@ export class CodeEditorContributions extends Disposable {
 	public onBeforeInteractionEvent(): void {
 		// this method is called very often by the editor!
 		this._instantiateSome(
-			EditorContributionInstantiation.BeforeFirstInteraction
+			EditorContributionInstantiation.BeforeFirstInteraction,
 		);
 	}
 
@@ -155,16 +156,16 @@ export class CodeEditorContributions extends Disposable {
 				getWindow(this._editor?.getDomNode()),
 				() => {
 					this._instantiateSome(
-						EditorContributionInstantiation.AfterFirstRender
+						EditorContributionInstantiation.AfterFirstRender,
 					);
 				},
-				50
-			)
+				50,
+			),
 		);
 	}
 
 	private _instantiateSome(
-		instantiation: EditorContributionInstantiation
+		instantiation: EditorContributionInstantiation,
 	): void {
 		if (this._finishedInstantiation[instantiation]) {
 			// already done with this instantiation!
@@ -180,7 +181,7 @@ export class CodeEditorContributions extends Disposable {
 	}
 
 	private _findPendingContributionsByInstantiation(
-		instantiation: EditorContributionInstantiation
+		instantiation: EditorContributionInstantiation,
 	): readonly IEditorContributionDescription[] {
 		const result: IEditorContributionDescription[] = [];
 		for (const [, desc] of this._pending) {
@@ -201,14 +202,14 @@ export class CodeEditorContributions extends Disposable {
 
 		if (!this._instantiationService || !this._editor) {
 			throw new Error(
-				`Cannot instantiate contributions before being initialized!`
+				`Cannot instantiate contributions before being initialized!`,
 			);
 		}
 
 		try {
 			const instance = this._instantiationService.createInstance(
 				desc.ctor,
-				this._editor
+				this._editor,
 			);
 			this._instances.set(desc.id, instance);
 			if (
@@ -216,7 +217,7 @@ export class CodeEditorContributions extends Disposable {
 				desc.instantiation !== EditorContributionInstantiation.Eager
 			) {
 				console.warn(
-					`Editor contribution '${desc.id}' should be eager instantiated because it uses saveViewState / restoreViewState.`
+					`Editor contribution '${desc.id}' should be eager instantiated because it uses saveViewState / restoreViewState.`,
 				);
 			}
 		} catch (err) {

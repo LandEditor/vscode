@@ -11,8 +11,8 @@ import {
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
 import {
-	ICanonicalUriService,
 	ICanonicalUriProvider,
+	ICanonicalUriService,
 } from "vs/platform/workspace/common/canonicalUri";
 
 export class CanonicalUriService implements ICanonicalUriService {
@@ -30,7 +30,7 @@ export class CanonicalUriService implements ICanonicalUriService {
 	async provideCanonicalUri(
 		uri: URI,
 		targetScheme: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<URI | undefined> {
 		const provider = this._providers.get(uri.scheme);
 		if (provider) {
@@ -43,5 +43,5 @@ export class CanonicalUriService implements ICanonicalUriService {
 registerSingleton(
 	ICanonicalUriService,
 	CanonicalUriService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

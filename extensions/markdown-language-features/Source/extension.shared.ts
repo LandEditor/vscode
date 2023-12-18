@@ -7,10 +7,10 @@ import * as vscode from "vscode";
 import { MdLanguageClient } from "./client/client";
 import { CommandManager } from "./commandManager";
 import { registerMarkdownCommands } from "./commands/index";
+import { registerDropIntoEditorSupport } from "./languageFeatures/copyFiles/dropResourceProvider";
 import { registerPasteSupport } from "./languageFeatures/copyFiles/pasteResourceProvider";
 import { registerLinkPasteSupport } from "./languageFeatures/copyFiles/pasteUrlProvider";
 import { registerDiagnosticSupport } from "./languageFeatures/diagnostics";
-import { registerDropIntoEditorSupport } from "./languageFeatures/copyFiles/dropResourceProvider";
 import { registerFindFileReferenceSupport } from "./languageFeatures/fileReferences";
 import { registerUpdateLinksOnRename } from "./languageFeatures/linkUpdater";
 import { ILogger } from "./logging";
@@ -27,14 +27,14 @@ export function activateShared(
 	client: MdLanguageClient,
 	engine: MarkdownItEngine,
 	logger: ILogger,
-	contributions: MarkdownContributionProvider
+	contributions: MarkdownContributionProvider,
 ) {
 	const telemetryReporter = loadDefaultTelemetryReporter();
 	context.subscriptions.push(telemetryReporter);
 
 	const cspArbiter = new ExtensionContentSecurityPolicyArbiter(
 		context.globalState,
-		context.workspaceState
+		context.workspaceState,
 	);
 	const commandManager = new CommandManager();
 
@@ -45,18 +45,18 @@ export function activateShared(
 		context,
 		cspArbiter,
 		contributions,
-		logger
+		logger,
 	);
 	const previewManager = new MarkdownPreviewManager(
 		contentProvider,
 		logger,
 		contributions,
-		opener
+		opener,
 	);
 	context.subscriptions.push(previewManager);
 
 	context.subscriptions.push(
-		registerMarkdownLanguageFeatures(client, commandManager)
+		registerMarkdownLanguageFeatures(client, commandManager),
 	);
 	context.subscriptions.push(
 		registerMarkdownCommands(
@@ -64,20 +64,20 @@ export function activateShared(
 			previewManager,
 			telemetryReporter,
 			cspArbiter,
-			engine
-		)
+			engine,
+		),
 	);
 
 	context.subscriptions.push(
 		vscode.workspace.onDidChangeConfiguration(() => {
 			previewManager.updateConfiguration();
-		})
+		}),
 	);
 }
 
 function registerMarkdownLanguageFeatures(
 	client: MdLanguageClient,
-	commandManager: CommandManager
+	commandManager: CommandManager,
 ): vscode.Disposable {
 	const selector: vscode.DocumentSelector = {
 		language: "markdown",
@@ -90,6 +90,6 @@ function registerMarkdownLanguageFeatures(
 		registerFindFileReferenceSupport(commandManager, client),
 		registerPasteSupport(selector),
 		registerLinkPasteSupport(selector),
-		registerUpdateLinksOnRename(client)
+		registerUpdateLinksOnRename(client),
 	);
 }

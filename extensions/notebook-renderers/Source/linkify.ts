@@ -12,13 +12,13 @@ const WEB_LINK_REGEX = new RegExp(
 		'"]{2,}[^\\s' +
 		CONTROL_CODES +
 		"\"')}\\],:;.!?]",
-	"ug"
+	"ug",
 );
 
 const WIN_ABSOLUTE_PATH = /(?<=^|\s)(?:[a-zA-Z]:(?:(?:\\|\/)[\w\.-]*)+)/;
 const WIN_RELATIVE_PATH = /(?<=^|\s)(?:(?:\~|\.)(?:(?:\\|\/)[\w\.-]*)+)/;
 const WIN_PATH = new RegExp(
-	`(${WIN_ABSOLUTE_PATH.source}|${WIN_RELATIVE_PATH.source})`
+	`(${WIN_ABSOLUTE_PATH.source}|${WIN_RELATIVE_PATH.source})`,
 );
 const POSIX_PATH = /(?<=^|\s)((?:\~|\.)?(?:\/[\w\.-]*)+)/;
 const LINE_COLUMN = /(?:\:([\d]+))?(?:\:([\d]+))?/;
@@ -28,7 +28,7 @@ const isWindows =
 		: false;
 const PATH_LINK_REGEX = new RegExp(
 	`${isWindows ? WIN_PATH.source : POSIX_PATH.source}${LINE_COLUMN.source}`,
-	"g"
+	"g",
 );
 const HTML_LINK_REGEX =
 	/<a\s+(?:[^>]*?\s+)?href=(["'])(.*?)\1[^>]*?>.*?<\/a>/gi;
@@ -73,7 +73,7 @@ export class LinkDetector {
 	linkify(
 		text: string,
 		options: LinkOptions,
-		splitLines?: boolean
+		splitLines?: boolean,
 	): HTMLElement {
 		if (splitLines) {
 			const lines = text.split("\n");
@@ -85,7 +85,7 @@ export class LinkDetector {
 				lines.pop();
 			}
 			const elements = lines.map((line) =>
-				this.linkify(line, options, false)
+				this.linkify(line, options, false),
 			);
 			if (elements.length === 1) {
 				// Do not wrap single line with extra span.
@@ -100,14 +100,14 @@ export class LinkDetector {
 		for (const part of this.detectLinks(
 			text,
 			!!options.trustHtml,
-			options.linkifyFilePaths
+			options.linkifyFilePaths,
 		)) {
 			try {
 				let span: HTMLSpanElement | null = null;
 				switch (part.kind) {
 					case "text":
 						container.appendChild(
-							document.createTextNode(part.value)
+							document.createTextNode(part.value),
 						);
 						break;
 					case "web":
@@ -180,7 +180,7 @@ export class LinkDetector {
 	private detectLinks(
 		text: string,
 		trustHtml: boolean,
-		detectFilepaths: boolean
+		detectFilepaths: boolean,
 	): LinkPart[] {
 		if (text.length > MAX_LENGTH) {
 			return [{ kind: "text", value: text, captures: [] }];
@@ -213,7 +213,7 @@ export class LinkDetector {
 			while ((match = regex.exec(text)) !== null) {
 				const stringBeforeMatch = text.substring(
 					currentIndex,
-					match.index
+					match.index,
 				);
 				if (stringBeforeMatch) {
 					splitOne(stringBeforeMatch, regexIndex + 1);
@@ -241,7 +241,7 @@ const linkDetector = new LinkDetector();
 export function linkify(
 	text: string,
 	linkOptions: LinkOptions,
-	splitLines?: boolean
+	splitLines?: boolean,
 ) {
 	return linkDetector.linkify(text, linkOptions, splitLines);
 }

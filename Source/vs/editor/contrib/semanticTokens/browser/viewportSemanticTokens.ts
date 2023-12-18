@@ -5,10 +5,11 @@
 
 import {
 	CancelablePromise,
-	createCancelablePromise,
 	RunOnceScheduler,
+	createCancelablePromise,
 } from "vs/base/common/async";
 import { Disposable } from "vs/base/common/lifecycle";
+import { StopWatch } from "vs/base/common/stopwatch";
 import { ICodeEditor } from "vs/editor/browser/editorBrowser";
 import {
 	EditorContributionInstantiation,
@@ -16,27 +17,26 @@ import {
 } from "vs/editor/browser/editorExtensions";
 import { Range } from "vs/editor/common/core/range";
 import { IEditorContribution } from "vs/editor/common/editorCommon";
+import { LanguageFeatureRegistry } from "vs/editor/common/languageFeatureRegistry";
+import { DocumentRangeSemanticTokensProvider } from "vs/editor/common/languages";
 import { ITextModel } from "vs/editor/common/model";
+import {
+	IFeatureDebounceInformation,
+	ILanguageFeatureDebounceService,
+} from "vs/editor/common/services/languageFeatureDebounce";
+import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
+import { toMultilineTokens2 } from "vs/editor/common/services/semanticTokensProviderStyling";
+import { ISemanticTokensStylingService } from "vs/editor/common/services/semanticTokensStyling";
 import {
 	getDocumentRangeSemanticTokens,
 	hasDocumentRangeSemanticTokensProvider,
 } from "vs/editor/contrib/semanticTokens/common/getSemanticTokens";
 import {
-	isSemanticColoringEnabled,
 	SEMANTIC_HIGHLIGHTING_SETTING_ID,
+	isSemanticColoringEnabled,
 } from "vs/editor/contrib/semanticTokens/common/semanticTokensConfig";
-import { toMultilineTokens2 } from "vs/editor/common/services/semanticTokensProviderStyling";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { IThemeService } from "vs/platform/theme/common/themeService";
-import {
-	IFeatureDebounceInformation,
-	ILanguageFeatureDebounceService,
-} from "vs/editor/common/services/languageFeatureDebounce";
-import { StopWatch } from "vs/base/common/stopwatch";
-import { LanguageFeatureRegistry } from "vs/editor/common/languageFeatureRegistry";
-import { DocumentRangeSemanticTokensProvider } from "vs/editor/common/languages";
-import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
-import { ISemanticTokensStylingService } from "vs/editor/common/services/semanticTokensStyling";
 
 export class ViewportSemanticTokensContribution
 	extends Disposable
@@ -45,10 +45,10 @@ export class ViewportSemanticTokensContribution
 	public static readonly ID = "editor.contrib.viewportSemanticTokens";
 
 	public static get(
-		editor: ICodeEditor
+		editor: ICodeEditor,
 	): ViewportSemanticTokensContribution | null {
 		return editor.getContribution<ViewportSemanticTokensContribution>(
-			ViewportSemanticTokensContribution.ID
+			ViewportSemanticTokensContribution.ID,
 		);
 	}
 
@@ -158,7 +158,7 @@ export class ViewportSemanticTokensContribution
 			!isSemanticColoringEnabled(
 				model,
 				this._themeService,
-				this._configurationService
+				this._configurationService,
 			)
 		) {
 			if (model.tokenization.hasSomeSemanticTokens()) {
@@ -176,13 +176,13 @@ export class ViewportSemanticTokensContribution
 			this._editor.getVisibleRangesPlusViewportAboveBelow();
 
 		this._outstandingRequests = this._outstandingRequests.concat(
-			visibleRanges.map((range) => this._requestRange(model, range))
+			visibleRanges.map((range) => this._requestRange(model, range)),
 		);
 	}
 
 	private _requestRange(
 		model: ITextModel,
-		range: Range
+		range: Range,
 	): CancelablePromise<any> {
 		const requestVersionId = model.getVersionId();
 		const request = createCancelablePromise((token) =>
@@ -191,9 +191,9 @@ export class ViewportSemanticTokensContribution
 					this._provider,
 					model,
 					range,
-					token
-				)
-			)
+					token,
+				),
+			),
 		);
 		const sw = new StopWatch(false);
 		request
@@ -212,12 +212,12 @@ export class ViewportSemanticTokensContribution
 					this._semanticTokensStylingService.getStyling(provider);
 				model.tokenization.setPartialSemanticTokens(
 					range,
-					toMultilineTokens2(result, styling, model.getLanguageId())
+					toMultilineTokens2(result, styling, model.getLanguageId()),
 				);
 			})
 			.then(
 				() => this._removeOutstandingRequest(request),
-				() => this._removeOutstandingRequest(request)
+				() => this._removeOutstandingRequest(request),
 			);
 		return request;
 	}
@@ -226,5 +226,5 @@ export class ViewportSemanticTokensContribution
 registerEditorContribution(
 	ViewportSemanticTokensContribution.ID,
 	ViewportSemanticTokensContribution,
-	EditorContributionInstantiation.AfterFirstRender
+	EditorContributionInstantiation.AfterFirstRender,
 );

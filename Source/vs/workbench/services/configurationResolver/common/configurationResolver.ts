@@ -4,14 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IStringDictionary } from "vs/base/common/collections";
+import { IProcessEnvironment } from "vs/base/common/platform";
+import { ConfigurationTarget } from "vs/platform/configuration/common/configuration";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import { IWorkspaceFolder } from "vs/platform/workspace/common/workspace";
-import { ConfigurationTarget } from "vs/platform/configuration/common/configuration";
-import { IProcessEnvironment } from "vs/base/common/platform";
 
 export const IConfigurationResolverService =
 	createDecorator<IConfigurationResolverService>(
-		"configurationResolverService"
+		"configurationResolverService",
 	);
 
 export interface IConfigurationResolverService {
@@ -20,20 +20,20 @@ export interface IConfigurationResolverService {
 	resolveWithEnvironment(
 		environment: IProcessEnvironment,
 		folder: IWorkspaceFolder | undefined,
-		value: string
+		value: string,
 	): Promise<string>;
 
 	resolveAsync(
 		folder: IWorkspaceFolder | undefined,
-		value: string
+		value: string,
 	): Promise<string>;
 	resolveAsync(
 		folder: IWorkspaceFolder | undefined,
-		value: string[]
+		value: string[],
 	): Promise<string[]>;
 	resolveAsync(
 		folder: IWorkspaceFolder | undefined,
-		value: IStringDictionary<string>
+		value: IStringDictionary<string>,
 	): Promise<IStringDictionary<string>>;
 
 	/**
@@ -43,7 +43,7 @@ export interface IConfigurationResolverService {
 	resolveAnyAsync(
 		folder: IWorkspaceFolder | undefined,
 		config: any,
-		commandValueMapping?: IStringDictionary<string>
+		commandValueMapping?: IStringDictionary<string>,
 	): Promise<any>;
 
 	/**
@@ -54,7 +54,7 @@ export interface IConfigurationResolverService {
 	resolveAnyMap(
 		folder: IWorkspaceFolder | undefined,
 		config: any,
-		commandValueMapping?: IStringDictionary<string>
+		commandValueMapping?: IStringDictionary<string>,
 	): Promise<{ newConfig: any; resolvedVariables: Map<string, string> }>;
 
 	/**
@@ -69,7 +69,7 @@ export interface IConfigurationResolverService {
 		config: any,
 		section?: string,
 		variables?: IStringDictionary<string>,
-		target?: ConfigurationTarget
+		target?: ConfigurationTarget,
 	): Promise<any>;
 
 	/**
@@ -81,7 +81,7 @@ export interface IConfigurationResolverService {
 		config: any,
 		section?: string,
 		variables?: IStringDictionary<string>,
-		target?: ConfigurationTarget
+		target?: ConfigurationTarget,
 	): Promise<Map<string, string> | undefined>;
 
 	/**
@@ -90,7 +90,7 @@ export interface IConfigurationResolverService {
 	 */
 	contributeVariable(
 		variable: string,
-		resolution: () => Promise<string | undefined>
+		resolution: () => Promise<string | undefined>,
 	): void;
 }
 
@@ -154,10 +154,7 @@ export enum VariableKind {
 }
 
 export class VariableError extends Error {
-	constructor(
-		public readonly variable: VariableKind,
-		message?: string
-	) {
+	constructor(public readonly variable: VariableKind, message?: string) {
 		super(message);
 	}
 }

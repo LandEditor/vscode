@@ -24,8 +24,8 @@ const KeybindingsEditorIcon = registerIcon(
 	Codicon.keyboard,
 	nls.localize(
 		"keybindingsEditorLabelIcon",
-		"Icon of the keybindings editor label."
-	)
+		"Icon of the keybindings editor label.",
+	),
 );
 
 export class KeybindingsEditorInput extends EditorInput {

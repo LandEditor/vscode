@@ -4,15 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IBaseCellEditorOptions } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
-import { NotebookEventDispatcher } from "vs/workbench/contrib/notebook/browser/viewModel/eventDispatcher";
 import { NotebookOptions } from "vs/workbench/contrib/notebook/browser/notebookOptions";
+import { NotebookEventDispatcher } from "vs/workbench/contrib/notebook/browser/viewModel/eventDispatcher";
 
 export class ViewContext {
 	constructor(
 		readonly notebookOptions: NotebookOptions,
 		readonly eventDispatcher: NotebookEventDispatcher,
 		readonly getBaseCellEditorOptions: (
-			language: string
-		) => IBaseCellEditorOptions
+			language: string,
+		) => IBaseCellEditorOptions,
 	) {}
 }

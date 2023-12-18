@@ -3,21 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as os from "os";
 import * as fs from "fs";
 import * as net from "net";
+import * as os from "os";
+import { performance } from "perf_hooks";
 import { FileAccess } from "vs/base/common/network";
+import { dirname, join } from "vs/base/common/path";
+import * as perf from "vs/base/common/performance";
+import { ErrorReporter, parseArgs } from "vs/platform/environment/node/argv";
+import product from "vs/platform/product/common/product";
 import { run as runCli } from "vs/server/node/remoteExtensionHostAgentCli";
 import {
-	createServer as doCreateServer,
 	IServerAPI,
+	createServer as doCreateServer,
 } from "vs/server/node/remoteExtensionHostAgentServer";
-import { parseArgs, ErrorReporter } from "vs/platform/environment/node/argv";
-import { join, dirname } from "vs/base/common/path";
-import { performance } from "perf_hooks";
 import { serverOptions } from "vs/server/node/serverEnvironmentService";
-import product from "vs/platform/product/common/product";
-import * as perf from "vs/base/common/performance";
 
 perf.mark("code/server/codeLoaded");
 (<any>global).vscodeServerCodeLoadedTime = performance.now();
@@ -25,7 +25,7 @@ perf.mark("code/server/codeLoaded");
 const errorReporter: ErrorReporter = {
 	onMultipleValues: (id: string, usedValue: string) => {
 		console.error(
-			`Option '${id}' can only be defined once. Using value ${usedValue}.`
+			`Option '${id}' can only be defined once. Using value ${usedValue}.`,
 		);
 	},
 	onEmptyValue: (id) => {
@@ -86,7 +86,7 @@ export function spawnCli() {
  * invoked by server-main.js
  */
 export function createServer(
-	address: string | net.AddressInfo | null
+	address: string | net.AddressInfo | null,
 ): Promise<IServerAPI> {
 	return doCreateServer(address, args, REMOTE_DATA_FOLDER);
 }

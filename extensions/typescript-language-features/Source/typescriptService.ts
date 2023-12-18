@@ -4,14 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from "vscode";
-import * as Proto from "./tsServer/protocol/protocol";
+import { TypeScriptServiceConfiguration } from "./configuration/configuration";
+import { TelemetryReporter } from "./logging/telemetry";
+import { API } from "./tsServer/api";
 import BufferSyncSupport from "./tsServer/bufferSyncSupport";
+import { PluginManager } from "./tsServer/plugins";
+import * as Proto from "./tsServer/protocol/protocol";
 import { ExecutionTarget } from "./tsServer/server";
 import { TypeScriptVersion } from "./tsServer/versionProvider";
-import { API } from "./tsServer/api";
-import { TypeScriptServiceConfiguration } from "./configuration/configuration";
-import { PluginManager } from "./tsServer/plugins";
-import { TelemetryReporter } from "./logging/telemetry";
 
 export enum ServerType {
 	Syntax = "syntax",
@@ -37,139 +37,136 @@ export namespace ServerResponse {
 }
 
 interface StandardTsServerRequests {
-	"applyCodeActionCommand": [
+	applyCodeActionCommand: [
 		Proto.ApplyCodeActionCommandRequestArgs,
 		Proto.ApplyCodeActionCommandResponse,
 	];
-	"completionEntryDetails": [
+	completionEntryDetails: [
 		Proto.CompletionDetailsRequestArgs,
 		Proto.CompletionDetailsResponse,
 	];
-	"completionInfo": [
+	completionInfo: [
 		Proto.CompletionsRequestArgs,
 		Proto.CompletionInfoResponse,
 	];
-	"completions": [Proto.CompletionsRequestArgs, Proto.CompletionsResponse];
-	"configure": [Proto.ConfigureRequestArguments, Proto.ConfigureResponse];
-	"definition": [Proto.FileLocationRequestArgs, Proto.DefinitionResponse];
-	"definitionAndBoundSpan": [
+	completions: [Proto.CompletionsRequestArgs, Proto.CompletionsResponse];
+	configure: [Proto.ConfigureRequestArguments, Proto.ConfigureResponse];
+	definition: [Proto.FileLocationRequestArgs, Proto.DefinitionResponse];
+	definitionAndBoundSpan: [
 		Proto.FileLocationRequestArgs,
 		Proto.DefinitionInfoAndBoundSpanResponse,
 	];
-	"docCommentTemplate": [
+	docCommentTemplate: [
 		Proto.FileLocationRequestArgs,
 		Proto.DocCommandTemplateResponse,
 	];
-	"documentHighlights": [
+	documentHighlights: [
 		Proto.DocumentHighlightsRequestArgs,
 		Proto.DocumentHighlightsResponse,
 	];
-	"format": [Proto.FormatRequestArgs, Proto.FormatResponse];
-	"formatonkey": [Proto.FormatOnKeyRequestArgs, Proto.FormatResponse];
-	"getApplicableRefactors": [
+	format: [Proto.FormatRequestArgs, Proto.FormatResponse];
+	formatonkey: [Proto.FormatOnKeyRequestArgs, Proto.FormatResponse];
+	getApplicableRefactors: [
 		Proto.GetApplicableRefactorsRequestArgs,
 		Proto.GetApplicableRefactorsResponse,
 	];
-	"getCodeFixes": [Proto.CodeFixRequestArgs, Proto.CodeFixResponse];
-	"getCombinedCodeFix": [
+	getCodeFixes: [Proto.CodeFixRequestArgs, Proto.CodeFixResponse];
+	getCombinedCodeFix: [
 		Proto.GetCombinedCodeFixRequestArgs,
 		Proto.GetCombinedCodeFixResponse,
 	];
-	"getEditsForFileRename": [
+	getEditsForFileRename: [
 		Proto.GetEditsForFileRenameRequestArgs,
 		Proto.GetEditsForFileRenameResponse,
 	];
-	"getEditsForRefactor": [
+	getEditsForRefactor: [
 		Proto.GetEditsForRefactorRequestArgs,
 		Proto.GetEditsForRefactorResponse,
 	];
-	"getOutliningSpans": [Proto.FileRequestArgs, Proto.OutliningSpansResponse];
-	"getSupportedCodeFixes": [null, Proto.GetSupportedCodeFixesResponse];
-	"implementation": [
+	getOutliningSpans: [Proto.FileRequestArgs, Proto.OutliningSpansResponse];
+	getSupportedCodeFixes: [null, Proto.GetSupportedCodeFixesResponse];
+	implementation: [
 		Proto.FileLocationRequestArgs,
 		Proto.ImplementationResponse,
 	];
-	"jsxClosingTag": [
+	jsxClosingTag: [
 		Proto.JsxClosingTagRequestArgs,
 		Proto.JsxClosingTagResponse,
 	];
-	"navto": [Proto.NavtoRequestArgs, Proto.NavtoResponse];
-	"navtree": [Proto.FileRequestArgs, Proto.NavTreeResponse];
-	"organizeImports": [
+	navto: [Proto.NavtoRequestArgs, Proto.NavtoResponse];
+	navtree: [Proto.FileRequestArgs, Proto.NavTreeResponse];
+	organizeImports: [
 		Proto.OrganizeImportsRequestArgs,
 		Proto.OrganizeImportsResponse,
 	];
-	"projectInfo": [Proto.ProjectInfoRequestArgs, Proto.ProjectInfoResponse];
-	"quickinfo": [Proto.FileLocationRequestArgs, Proto.QuickInfoResponse];
-	"references": [Proto.FileLocationRequestArgs, Proto.ReferencesResponse];
-	"rename": [Proto.RenameRequestArgs, Proto.RenameResponse];
-	"selectionRange": [
+	projectInfo: [Proto.ProjectInfoRequestArgs, Proto.ProjectInfoResponse];
+	quickinfo: [Proto.FileLocationRequestArgs, Proto.QuickInfoResponse];
+	references: [Proto.FileLocationRequestArgs, Proto.ReferencesResponse];
+	rename: [Proto.RenameRequestArgs, Proto.RenameResponse];
+	selectionRange: [
 		Proto.SelectionRangeRequestArgs,
 		Proto.SelectionRangeResponse,
 	];
-	"signatureHelp": [
+	signatureHelp: [
 		Proto.SignatureHelpRequestArgs,
 		Proto.SignatureHelpResponse,
 	];
-	"typeDefinition": [
+	typeDefinition: [
 		Proto.FileLocationRequestArgs,
 		Proto.TypeDefinitionResponse,
 	];
-	"updateOpen": [Proto.UpdateOpenRequestArgs, Proto.Response];
-	"prepareCallHierarchy": [
+	updateOpen: [Proto.UpdateOpenRequestArgs, Proto.Response];
+	prepareCallHierarchy: [
 		Proto.FileLocationRequestArgs,
 		Proto.PrepareCallHierarchyResponse,
 	];
-	"provideCallHierarchyIncomingCalls": [
+	provideCallHierarchyIncomingCalls: [
 		Proto.FileLocationRequestArgs,
 		Proto.ProvideCallHierarchyIncomingCallsResponse,
 	];
-	"provideCallHierarchyOutgoingCalls": [
+	provideCallHierarchyOutgoingCalls: [
 		Proto.FileLocationRequestArgs,
 		Proto.ProvideCallHierarchyOutgoingCallsResponse,
 	];
-	"fileReferences": [Proto.FileRequestArgs, Proto.FileReferencesResponse];
-	"provideInlayHints": [
-		Proto.InlayHintsRequestArgs,
-		Proto.InlayHintsResponse,
-	];
+	fileReferences: [Proto.FileRequestArgs, Proto.FileReferencesResponse];
+	provideInlayHints: [Proto.InlayHintsRequestArgs, Proto.InlayHintsResponse];
 	"encodedSemanticClassifications-full": [
 		Proto.EncodedSemanticClassificationsRequestArgs,
 		Proto.EncodedSemanticClassificationsResponse,
 	];
-	"findSourceDefinition": [
+	findSourceDefinition: [
 		Proto.FileLocationRequestArgs,
 		Proto.DefinitionResponse,
 	];
-	"getMoveToRefactoringFileSuggestions": [
+	getMoveToRefactoringFileSuggestions: [
 		Proto.GetMoveToRefactoringFileSuggestionsRequestArgs,
 		Proto.GetMoveToRefactoringFileSuggestions,
 	];
-	"linkedEditingRange": [
+	linkedEditingRange: [
 		Proto.FileLocationRequestArgs,
 		Proto.LinkedEditingRangeResponse,
 	];
-	"mapCode": [Proto.MapCodeRequestArgs, Proto.MapCodeResponse];
+	mapCode: [Proto.MapCodeRequestArgs, Proto.MapCodeResponse];
 }
 
 interface NoResponseTsServerRequests {
-	"open": [Proto.OpenRequestArgs, null];
-	"close": [Proto.FileRequestArgs, null];
-	"change": [Proto.ChangeRequestArgs, null];
-	"compilerOptionsForInferredProjects": [
+	open: [Proto.OpenRequestArgs, null];
+	close: [Proto.FileRequestArgs, null];
+	change: [Proto.ChangeRequestArgs, null];
+	compilerOptionsForInferredProjects: [
 		Proto.SetCompilerOptionsForInferredProjectsArgs,
 		null,
 	];
-	"reloadProjects": [null, null];
-	"configurePlugin": [
+	reloadProjects: [null, null];
+	configurePlugin: [
 		Proto.ConfigurePluginRequest,
 		Proto.ConfigurePluginResponse,
 	];
 }
 
 interface AsyncTsServerRequests {
-	"geterr": [Proto.GeterrRequestArgs, Proto.Response];
-	"geterrForProject": [Proto.GeterrForProjectRequestArgs, Proto.Response];
+	geterr: [Proto.GeterrRequestArgs, Proto.Response];
+	geterrForProject: [Proto.GeterrForProjectRequestArgs, Proto.Response];
 }
 
 export type TypeScriptRequests = StandardTsServerRequests &
@@ -187,17 +184,17 @@ export enum ClientCapability {
 	/**
 	 * Basic syntax server. All clients should support this.
 	 */
-	Syntax,
+	Syntax = 0,
 
 	/**
 	 * Advanced syntax server that can provide single file IntelliSense.
 	 */
-	EnhancedSyntax,
+	EnhancedSyntax = 1,
 
 	/**
 	 * Complete, multi-file semantic server
 	 */
-	Semantic,
+	Semantic = 2,
 }
 
 export class ClientCapabilities {
@@ -232,7 +229,7 @@ export interface ITypeScriptServiceClient {
 		document: vscode.TextDocument,
 		options?: {
 			suppressAlertOnFailure?: boolean;
-		}
+		},
 	): string | undefined;
 
 	/**
@@ -240,7 +237,7 @@ export interface ITypeScriptServiceClient {
 	 */
 	hasCapabilityForResource(
 		resource: vscode.Uri,
-		capability: ClientCapability
+		capability: ClientCapability,
 	): boolean;
 
 	getWorkspaceRootForResource(resource: vscode.Uri): vscode.Uri | undefined;
@@ -272,20 +269,17 @@ export interface ITypeScriptServiceClient {
 		command: K,
 		args: StandardTsServerRequests[K][0],
 		token: vscode.CancellationToken,
-		config?: ExecConfig
+		config?: ExecConfig,
 	): Promise<ServerResponse.Response<StandardTsServerRequests[K][1]>>;
 
 	executeWithoutWaitingForResponse<
 		K extends keyof NoResponseTsServerRequests,
-	>(
-		command: K,
-		args: NoResponseTsServerRequests[K][0]
-	): void;
+	>(command: K, args: NoResponseTsServerRequests[K][0]): void;
 
 	executeAsync<K extends keyof AsyncTsServerRequests>(
 		command: K,
 		args: AsyncTsServerRequests[K][0],
-		token: vscode.CancellationToken
+		token: vscode.CancellationToken,
 	): Promise<ServerResponse.Response<Proto.Response>>;
 
 	/**

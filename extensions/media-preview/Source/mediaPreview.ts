@@ -10,20 +10,20 @@ import { Disposable } from "./util/dispose";
 
 export function reopenAsText(
 	resource: vscode.Uri,
-	viewColumn: vscode.ViewColumn | undefined
+	viewColumn: vscode.ViewColumn | undefined,
 ) {
 	vscode.commands.executeCommand(
 		"vscode.openWith",
 		resource,
 		"default",
-		viewColumn
+		viewColumn,
 	);
 }
 
-export const enum PreviewState {
-	Disposed,
-	Visible,
-	Active,
+export enum PreviewState {
+	Disposed = 0,
+	Visible = 1,
+	Active = 2,
 }
 
 export abstract class MediaPreview extends Disposable {
@@ -34,7 +34,7 @@ export abstract class MediaPreview extends Disposable {
 		extensionRoot: vscode.Uri,
 		protected readonly resource: vscode.Uri,
 		protected readonly webviewEditor: vscode.WebviewPanel,
-		private readonly binarySizeStatusBarEntry: BinarySizeStatusBarEntry
+		private readonly binarySizeStatusBarEntry: BinarySizeStatusBarEntry,
 	) {
 		super();
 
@@ -47,20 +47,20 @@ export abstract class MediaPreview extends Disposable {
 		this._register(
 			webviewEditor.onDidChangeViewState(() => {
 				this.updateState();
-			})
+			}),
 		);
 
 		this._register(
 			webviewEditor.onDidDispose(() => {
 				this.previewState = PreviewState.Disposed;
 				this.dispose();
-			})
+			}),
 		);
 
 		const watcher = this._register(
 			vscode.workspace.createFileSystemWatcher(
-				new vscode.RelativePattern(resource, "*")
-			)
+				new vscode.RelativePattern(resource, "*"),
+			),
 		);
 		this._register(
 			watcher.onDidChange((e) => {
@@ -68,7 +68,7 @@ export abstract class MediaPreview extends Disposable {
 					this.updateBinarySize();
 					this.render();
 				}
-			})
+			}),
 		);
 
 		this._register(
@@ -76,7 +76,7 @@ export abstract class MediaPreview extends Disposable {
 				if (e.toString() === this.resource.toString()) {
 					this.webviewEditor.dispose();
 				}
-			})
+			}),
 		);
 	}
 

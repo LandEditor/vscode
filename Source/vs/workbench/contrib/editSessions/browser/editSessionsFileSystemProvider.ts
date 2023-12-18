@@ -3,8 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable, IDisposable } from "vs/base/common/lifecycle";
+import { NotSupportedError } from "vs/base/common/errors";
 import { Event } from "vs/base/common/event";
+import { Disposable, IDisposable } from "vs/base/common/lifecycle";
 import { URI } from "vs/base/common/uri";
 import {
 	FilePermission,
@@ -19,12 +20,11 @@ import {
 } from "vs/platform/files/common/files";
 import {
 	ChangeType,
-	decodeEditSessionFileContent,
 	EDIT_SESSIONS_SCHEME,
 	EditSession,
 	IEditSessionsStorageService,
+	decodeEditSessionFileContent,
 } from "vs/workbench/contrib/editSessions/common/editSessions";
-import { NotSupportedError } from "vs/base/common/errors";
 
 export class EditSessionsFileSystemProvider
 	implements IFileSystemProviderWithFileReadWriteCapability
@@ -43,7 +43,7 @@ export class EditSessionsFileSystemProvider
 	async readFile(resource: URI): Promise<Uint8Array> {
 		const match =
 			/(?<ref>[^/]+)\/(?<folderName>[^/]+)\/(?<filePath>.*)/.exec(
-				resource.path.substring(1)
+				resource.path.substring(1),
 			);
 		if (!match?.groups) {
 			throw FileSystemProviderErrorCode.FileNotFound;
@@ -51,7 +51,7 @@ export class EditSessionsFileSystemProvider
 		const { ref, folderName, filePath } = match.groups;
 		const data = await this.editSessionsStorageService.read(
 			"editSessions",
-			ref
+			ref,
 		);
 		if (!data) {
 			throw FileSystemProviderErrorCode.FileNotFound;
@@ -60,7 +60,7 @@ export class EditSessionsFileSystemProvider
 		const change = content.folders
 			.find((f) => f.name === folderName)
 			?.workingChanges.find(
-				(change) => change.relativeFilePath === filePath
+				(change) => change.relativeFilePath === filePath,
 			);
 		if (!change || change.type === ChangeType.Deletion) {
 			throw FileSystemProviderErrorCode.FileNotFound;
@@ -97,7 +97,7 @@ export class EditSessionsFileSystemProvider
 	async rename(
 		from: URI,
 		to: URI,
-		opts: IFileOverwriteOptions
+		opts: IFileOverwriteOptions,
 	): Promise<void> {}
 	async delete(resource: URI, opts: IFileDeleteOptions): Promise<void> {}
 

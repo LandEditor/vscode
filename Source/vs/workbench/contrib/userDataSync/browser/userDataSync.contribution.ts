@@ -3,31 +3,31 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Action } from "vs/base/common/actions";
+import { Disposable } from "vs/base/common/lifecycle";
+import { isWeb } from "vs/base/common/platform";
+import { localize } from "vs/nls";
+import { ICommandService } from "vs/platform/commands/common/commands";
 import {
-	IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
-	IWorkbenchContribution,
-} from "vs/workbench/common/contributions";
+	INotificationService,
+	Severity,
+} from "vs/platform/notification/common/notification";
+import { IProductService } from "vs/platform/product/common/productService";
 import { Registry } from "vs/platform/registry/common/platform";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { UserDataSyncWorkbenchContribution } from "vs/workbench/contrib/userDataSync/browser/userDataSync";
 import {
 	IUserDataAutoSyncService,
 	UserDataSyncError,
 	UserDataSyncErrorCode,
 } from "vs/platform/userDataSync/common/userDataSync";
 import {
-	INotificationService,
-	Severity,
-} from "vs/platform/notification/common/notification";
-import { Disposable } from "vs/base/common/lifecycle";
-import { localize } from "vs/nls";
-import { isWeb } from "vs/base/common/platform";
+	Extensions as WorkbenchExtensions,
+	IWorkbenchContribution,
+	IWorkbenchContributionsRegistry,
+} from "vs/workbench/common/contributions";
+import { UserDataSyncWorkbenchContribution } from "vs/workbench/contrib/userDataSync/browser/userDataSync";
 import { UserDataSyncTrigger } from "vs/workbench/contrib/userDataSync/browser/userDataSyncTrigger";
-import { Action } from "vs/base/common/actions";
-import { IProductService } from "vs/platform/product/common/productService";
-import { ICommandService } from "vs/platform/commands/common/commands";
 import { IHostService } from "vs/workbench/services/host/browser/host";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 import { SHOW_SYNC_LOG_COMMAND_ID } from "vs/workbench/services/userDataSync/common/userDataSync";
 
 class UserDataSyncReportIssueContribution
@@ -63,8 +63,8 @@ class UserDataSyncReportIssueContribution
 								],
 							},
 							"Settings sync is suspended temporarily because the current device is making too many requests. Please reload {0} to resume.",
-							this.productService.nameLong
-						)
+							this.productService.nameLong,
+					  )
 					: localize(
 							{
 								key: "local too many requests - restart",
@@ -73,8 +73,8 @@ class UserDataSyncReportIssueContribution
 								],
 							},
 							"Settings sync is suspended temporarily because the current device is making too many requests. Please restart {0} to resume.",
-							this.productService.nameLong
-						);
+							this.productService.nameLong,
+					  );
 				this.notificationService.notify({
 					severity: Severity.Error,
 					message,
@@ -87,8 +87,8 @@ class UserDataSyncReportIssueContribution
 								true,
 								() =>
 									this.commandService.executeCommand(
-										SHOW_SYNC_LOG_COMMAND_ID
-									)
+										SHOW_SYNC_LOG_COMMAND_ID,
+									),
 							),
 							new Action(
 								"Restart",
@@ -97,7 +97,7 @@ class UserDataSyncReportIssueContribution
 									: localize("restart", "Restart"),
 								undefined,
 								true,
-								() => this.hostService.restart()
+								() => this.hostService.restart(),
 							),
 						],
 					},
@@ -109,15 +109,15 @@ class UserDataSyncReportIssueContribution
 					? localize(
 							"operationId",
 							"Operation Id: {0}",
-							error.operationId
-						)
+							error.operationId,
+					  )
 					: undefined;
 				const message = localize(
 					{
 						key: "server too many requests",
 						comment: ["Settings Sync is the name of the feature"],
 					},
-					"Settings sync is disabled because the current device is making too many requests. Please wait for 10 minutes and turn on sync."
+					"Settings sync is disabled because the current device is making too many requests. Please wait for 10 minutes and turn on sync.",
 				);
 				this.notificationService.notify({
 					severity: Severity.Error,
@@ -128,8 +128,8 @@ class UserDataSyncReportIssueContribution
 						? localize(
 								"settings sync",
 								"Settings Sync. Operation Id: {0}",
-								error.operationId
-							)
+								error.operationId,
+						  )
 						: undefined,
 					actions: {
 						primary: [
@@ -140,8 +140,8 @@ class UserDataSyncReportIssueContribution
 								true,
 								() =>
 									this.commandService.executeCommand(
-										SHOW_SYNC_LOG_COMMAND_ID
-									)
+										SHOW_SYNC_LOG_COMMAND_ID,
+									),
 							),
 						],
 					},
@@ -153,17 +153,17 @@ class UserDataSyncReportIssueContribution
 }
 
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 );
 workbenchRegistry.registerWorkbenchContribution(
 	UserDataSyncWorkbenchContribution,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );
 workbenchRegistry.registerWorkbenchContribution(
 	UserDataSyncTrigger,
-	LifecyclePhase.Eventually
+	LifecyclePhase.Eventually,
 );
 workbenchRegistry.registerWorkbenchContribution(
 	UserDataSyncReportIssueContribution,
-	LifecyclePhase.Eventually
+	LifecyclePhase.Eventually,
 );

@@ -97,7 +97,7 @@ function normalizeString(
 	path: string,
 	allowAboveRoot: boolean,
 	separator: string,
-	isPathSeparator: (code?: number) => boolean
+	isPathSeparator: (code?: number) => boolean,
 ) {
 	let res = "";
 	let lastSegmentLength = 0;
@@ -293,7 +293,7 @@ export const win32: IPath = {
 								// We matched a UNC root
 								device = `\\\\${firstPart}\\${path.slice(
 									last,
-									j
+									j,
 								)}`;
 								rootEnd = j;
 							}
@@ -350,7 +350,7 @@ export const win32: IPath = {
 			resolvedTail,
 			!resolvedAbsolute,
 			"\\",
-			isPathSeparator
+			isPathSeparator,
 		);
 
 		return resolvedAbsolute
@@ -445,8 +445,8 @@ export const win32: IPath = {
 						path.slice(rootEnd),
 						!isAbsolute,
 						"\\",
-						isPathSeparator
-					)
+						isPathSeparator,
+				  )
 				: "";
 		if (tail.length === 0 && !isAbsolute) {
 			tail = ".";
@@ -1187,7 +1187,7 @@ export const posix: IPath = {
 			resolvedPath,
 			!resolvedAbsolute,
 			"/",
-			isPosixPathSeparator
+			isPosixPathSeparator,
 		);
 
 		if (resolvedAbsolute) {

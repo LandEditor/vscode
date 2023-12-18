@@ -3,22 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
 import { CancellationToken } from "vs/base/common/cancellation";
 import { getLocation, parse } from "vs/base/common/json";
 import { Disposable } from "vs/base/common/lifecycle";
 import { Position } from "vs/editor/common/core/position";
-import { ITextModel } from "vs/editor/common/model";
+import { Range } from "vs/editor/common/core/range";
 import {
 	CompletionContext,
-	CompletionList,
-	CompletionItemKind,
 	CompletionItem,
+	CompletionItemKind,
+	CompletionList,
 } from "vs/editor/common/languages";
+import { ITextModel } from "vs/editor/common/model";
+import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
+import { localize } from "vs/nls";
 import { IExtensionManagementService } from "vs/platform/extensionManagement/common/extensionManagement";
 import { IWorkbenchContribution } from "vs/workbench/common/contributions";
-import { Range } from "vs/editor/common/core/range";
-import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
 
 export class ExtensionsCompletionItemsProvider
 	extends Disposable
@@ -103,14 +103,14 @@ export class ExtensionsCompletionItemsProvider
 
 	private async provideSupportUntrustedWorkspacesExtensionProposals(
 		alreadyConfigured: string[],
-		range: Range
+		range: Range,
 	): Promise<CompletionItem[]> {
 		const suggestions: CompletionItem[] = [];
 		const installedExtensions = (
 			await this.extensionManagementService.getInstalled()
 		).filter((e) => e.manifest.main);
 		const proposedExtensions = installedExtensions.filter(
-			(e) => alreadyConfigured.indexOf(e.identifier.id) === -1
+			(e) => alreadyConfigured.indexOf(e.identifier.id) === -1,
 		);
 
 		if (proposedExtensions.length) {
@@ -124,7 +124,7 @@ export class ExtensionsCompletionItemsProvider
 						filterText: text,
 						range,
 					};
-				})
+				}),
 			);
 		} else {
 			const text =

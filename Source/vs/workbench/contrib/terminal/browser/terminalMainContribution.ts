@@ -41,7 +41,7 @@ export class TerminalMainContribution
 		@ITerminalEditorService terminalEditorService: ITerminalEditorService,
 		@ITerminalGroupService terminalGroupService: ITerminalGroupService,
 		@ITerminalInstanceService
-		terminalInstanceService: ITerminalInstanceService
+		terminalInstanceService: ITerminalInstanceService,
 	) {
 		super();
 
@@ -71,7 +71,7 @@ export class TerminalMainContribution
 						const terminalIdentifier = parseTerminalUri(resource);
 						if (!terminalIdentifier.instanceId) {
 							throw new Error(
-								"Terminal identifier without instanceId"
+								"Terminal identifier without instanceId",
 							);
 						}
 
@@ -84,16 +84,16 @@ export class TerminalMainContribution
 						const attachPersistentProcess =
 							await primaryBackend.requestDetachInstance(
 								terminalIdentifier.workspaceId,
-								terminalIdentifier.instanceId
+								terminalIdentifier.instanceId,
 							);
 						if (!attachPersistentProcess) {
 							throw new Error(
-								"No terminal persistent process to attach"
+								"No terminal persistent process to attach",
 							);
 						}
 						instance = terminalInstanceService.createInstance(
 							{ attachPersistentProcess },
-							TerminalLocation.Editor
+							TerminalLocation.Editor,
 						);
 					}
 
@@ -101,7 +101,7 @@ export class TerminalMainContribution
 						terminalEditorService.resolveResource(instance);
 					const editor =
 						terminalEditorService.getInputFromResource(
-							resolvedResource
+							resolvedResource,
 						);
 					return {
 						editor,
@@ -113,7 +113,7 @@ export class TerminalMainContribution
 						},
 					};
 				},
-			}
+			},
 		);
 
 		// Register a resource formatter for terminal URIs
@@ -133,7 +133,7 @@ export class TerminalMainContribution
 				});
 				terminalService.setActiveInstance(terminal);
 				await terminalService.revealActiveTerminal();
-			}
+			},
 		);
 	}
 }

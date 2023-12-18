@@ -4,12 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	createConnection,
 	Connection,
 	Disposable,
+	createConnection,
 } from "vscode-languageserver/node";
-import { formatError } from "../utils/runner";
 import { RuntimeEnvironment, startServer } from "../htmlServer";
+import { formatError } from "../utils/runner";
 import { getNodeFileFS } from "./nodeFs";
 
 // Create a connection for the server.

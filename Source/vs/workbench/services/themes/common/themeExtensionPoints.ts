@@ -5,23 +5,23 @@
 
 import * as nls from "vs/nls";
 
-import * as types from "vs/base/common/types";
 import * as resources from "vs/base/common/resources";
+import * as types from "vs/base/common/types";
 import {
 	ExtensionMessageCollector,
-	IExtensionPoint,
 	ExtensionsRegistry,
+	IExtensionPoint,
 } from "vs/workbench/services/extensions/common/extensionsRegistry";
 import {
 	ExtensionData,
 	IThemeExtensionPoint,
-	VS_LIGHT_THEME,
 	VS_DARK_THEME,
-	VS_HC_THEME,
 	VS_HC_LIGHT_THEME,
+	VS_HC_THEME,
+	VS_LIGHT_THEME,
 } from "vs/workbench/services/themes/common/workbenchThemeService";
 
-import { Event, Emitter } from "vs/base/common/event";
+import { Emitter, Event } from "vs/base/common/event";
 import { URI } from "vs/base/common/uri";
 
 export function registerColorThemeExtensionPoint() {
@@ -30,7 +30,7 @@ export function registerColorThemeExtensionPoint() {
 		jsonSchema: {
 			description: nls.localize(
 				"vscode.extension.contributes.themes",
-				"Contributes textmate color themes."
+				"Contributes textmate color themes.",
 			),
 			type: "array",
 			items: {
@@ -49,21 +49,21 @@ export function registerColorThemeExtensionPoint() {
 					id: {
 						description: nls.localize(
 							"vscode.extension.contributes.themes.id",
-							"Id of the color theme as used in the user settings."
+							"Id of the color theme as used in the user settings.",
 						),
 						type: "string",
 					},
 					label: {
 						description: nls.localize(
 							"vscode.extension.contributes.themes.label",
-							"Label of the color theme as shown in the UI."
+							"Label of the color theme as shown in the UI.",
 						),
 						type: "string",
 					},
 					uiTheme: {
 						description: nls.localize(
 							"vscode.extension.contributes.themes.uiTheme",
-							"Base theme defining the colors around the editor: 'vs' is the light color theme, 'vs-dark' is the dark color theme. 'hc-black' is the dark high contrast theme, 'hc-light' is the light high contrast theme."
+							"Base theme defining the colors around the editor: 'vs' is the light color theme, 'vs-dark' is the dark color theme. 'hc-black' is the dark high contrast theme, 'hc-light' is the light high contrast theme.",
 						),
 						enum: [
 							VS_LIGHT_THEME,
@@ -75,7 +75,7 @@ export function registerColorThemeExtensionPoint() {
 					path: {
 						description: nls.localize(
 							"vscode.extension.contributes.themes.path",
-							"Path of the tmTheme file. The path is relative to the extension folder and is typically './colorthemes/awesome-color-theme.json'."
+							"Path of the tmTheme file. The path is relative to the extension folder and is typically './colorthemes/awesome-color-theme.json'.",
 						),
 						type: "string",
 					},
@@ -91,7 +91,7 @@ export function registerFileIconThemeExtensionPoint() {
 		jsonSchema: {
 			description: nls.localize(
 				"vscode.extension.contributes.iconThemes",
-				"Contributes file icon themes."
+				"Contributes file icon themes.",
 			),
 			type: "array",
 			items: {
@@ -109,21 +109,21 @@ export function registerFileIconThemeExtensionPoint() {
 					id: {
 						description: nls.localize(
 							"vscode.extension.contributes.iconThemes.id",
-							"Id of the file icon theme as used in the user settings."
+							"Id of the file icon theme as used in the user settings.",
 						),
 						type: "string",
 					},
 					label: {
 						description: nls.localize(
 							"vscode.extension.contributes.iconThemes.label",
-							"Label of the file icon theme as shown in the UI."
+							"Label of the file icon theme as shown in the UI.",
 						),
 						type: "string",
 					},
 					path: {
 						description: nls.localize(
 							"vscode.extension.contributes.iconThemes.path",
-							"Path of the file icon theme definition file. The path is relative to the extension folder and is typically './fileicons/awesome-icon-theme.json'."
+							"Path of the file icon theme definition file. The path is relative to the extension folder and is typically './fileicons/awesome-icon-theme.json'.",
 						),
 						type: "string",
 					},
@@ -140,7 +140,7 @@ export function registerProductIconThemeExtensionPoint() {
 		jsonSchema: {
 			description: nls.localize(
 				"vscode.extension.contributes.productIconThemes",
-				"Contributes product icon themes."
+				"Contributes product icon themes.",
 			),
 			type: "array",
 			items: {
@@ -158,21 +158,21 @@ export function registerProductIconThemeExtensionPoint() {
 					id: {
 						description: nls.localize(
 							"vscode.extension.contributes.productIconThemes.id",
-							"Id of the product icon theme as used in the user settings."
+							"Id of the product icon theme as used in the user settings.",
 						),
 						type: "string",
 					},
 					label: {
 						description: nls.localize(
 							"vscode.extension.contributes.productIconThemes.label",
-							"Label of the product icon theme as shown in the UI."
+							"Label of the product icon theme as shown in the UI.",
 						),
 						type: "string",
 					},
 					path: {
 						description: nls.localize(
 							"vscode.extension.contributes.productIconThemes.path",
-							"Path of the product icon theme definition file. The path is relative to the extension folder and is typically './producticons/awesome-product-icon-theme.json'."
+							"Path of the product icon theme definition file. The path is relative to the extension folder and is typically './producticons/awesome-product-icon-theme.json'.",
 						),
 						type: "string",
 					},
@@ -209,10 +209,10 @@ export class ThemeRegistry<T extends IThemeData> {
 		private create: (
 			theme: IThemeExtensionPoint,
 			themeLocation: URI,
-			extensionData: ExtensionData
+			extensionData: ExtensionData,
 		) => T,
 		private idRequired = false,
-		private builtInTheme: T | undefined = undefined
+		private builtInTheme: T | undefined = undefined,
 	) {
 		this.extensionThemes = [];
 		this.initialize();
@@ -231,21 +231,21 @@ export class ThemeRegistry<T extends IThemeData> {
 				const extensionData = ExtensionData.fromName(
 					ext.description.publisher,
 					ext.description.name,
-					ext.description.isBuiltin
+					ext.description.isBuiltin,
 				);
 				this.onThemes(
 					extensionData,
 					ext.description.extensionLocation,
 					ext.value,
 					this.extensionThemes,
-					ext.collector
+					ext.collector,
 				);
 			}
 			for (const theme of this.extensionThemes) {
-				if (!previousIds[theme.id]) {
-					added.push(theme);
-				} else {
+				if (previousIds[theme.id]) {
 					delete previousIds[theme.id];
+				} else {
+					added.push(theme);
 				}
 			}
 			const removed = Object.values(previousIds);
@@ -262,15 +262,15 @@ export class ThemeRegistry<T extends IThemeData> {
 		extensionLocation: URI,
 		themeContributions: IThemeExtensionPoint[],
 		resultingThemes: T[] = [],
-		log?: ExtensionMessageCollector
+		log?: ExtensionMessageCollector,
 	): T[] {
 		if (!Array.isArray(themeContributions)) {
 			log?.error(
 				nls.localize(
 					"reqarray",
 					"Extension point `{0}` must be an array.",
-					this.themesExtPoint.name
-				)
+					this.themesExtPoint.name,
+				),
 			);
 			return resultingThemes;
 		}
@@ -281,8 +281,8 @@ export class ThemeRegistry<T extends IThemeData> {
 						"reqpath",
 						"Expected string in `contributes.{0}.path`. Provided value: {1}",
 						this.themesExtPoint.name,
-						String(theme.path)
-					)
+						String(theme.path),
+					),
 				);
 				return;
 			}
@@ -292,15 +292,15 @@ export class ThemeRegistry<T extends IThemeData> {
 						"reqid",
 						"Expected string in `contributes.{0}.id`. Provided value: {1}",
 						this.themesExtPoint.name,
-						String(theme.id)
-					)
+						String(theme.id),
+					),
 				);
 				return;
 			}
 
 			const themeLocation = resources.joinPath(
 				extensionLocation,
-				theme.path
+				theme.path,
 			);
 			if (!resources.isEqualOrParent(themeLocation, extensionLocation)) {
 				log?.warn(
@@ -309,8 +309,8 @@ export class ThemeRegistry<T extends IThemeData> {
 						"Expected `contributes.{0}.path` ({1}) to be included inside extension's folder ({2}). This might make the extension non-portable.",
 						this.themesExtPoint.name,
 						themeLocation.path,
-						extensionLocation.path
-					)
+						extensionLocation.path,
+					),
 				);
 			}
 
@@ -335,7 +335,7 @@ export class ThemeRegistry<T extends IThemeData> {
 
 	public findThemeBySettingsId(
 		settingsId: string | null,
-		defaultSettingsId?: string
+		defaultSettingsId?: string,
 	): T | undefined {
 		if (this.builtInTheme && this.builtInTheme.settingsId === settingsId) {
 			return this.builtInTheme;
@@ -358,7 +358,7 @@ export class ThemeRegistry<T extends IThemeData> {
 			return this.getThemes().filter(
 				(t) =>
 					t.location &&
-					resources.isEqualOrParent(t.location, extLocation)
+					resources.isEqualOrParent(t.location, extLocation),
 			);
 		}
 		return [];
@@ -371,7 +371,7 @@ export class ThemeRegistry<T extends IThemeData> {
 	public getMarketplaceThemes(
 		manifest: any,
 		extensionLocation: URI,
-		extensionData: ExtensionData
+		extensionData: ExtensionData,
 	): T[] {
 		const themes = manifest?.contributes?.[this.themesExtPoint.name];
 		if (Array.isArray(themes)) {

@@ -3,25 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import {
-	WalkThroughPart,
-	WALK_THROUGH_FOCUS,
-} from "vs/workbench/contrib/welcomeWalkthrough/browser/walkThroughPart";
+import { KeyCode } from "vs/base/common/keyCodes";
+import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
+import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
 import {
 	ICommandAndKeybindingRule,
 	KeybindingWeight,
 } from "vs/platform/keybinding/common/keybindingsRegistry";
-import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
-import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
-import { KeyCode } from "vs/base/common/keyCodes";
+import {
+	WALK_THROUGH_FOCUS,
+	WalkThroughPart,
+} from "vs/workbench/contrib/welcomeWalkthrough/browser/walkThroughPart";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 
 export const WalkThroughArrowUp: ICommandAndKeybindingRule = {
 	id: "workbench.action.interactivePlayground.arrowUp",
 	weight: KeybindingWeight.WorkbenchContrib,
 	when: ContextKeyExpr.and(
 		WALK_THROUGH_FOCUS,
-		EditorContextKeys.editorTextFocus.toNegated()
+		EditorContextKeys.editorTextFocus.toNegated(),
 	),
 	primary: KeyCode.UpArrow,
 	handler: (accessor) => {
@@ -38,7 +38,7 @@ export const WalkThroughArrowDown: ICommandAndKeybindingRule = {
 	weight: KeybindingWeight.WorkbenchContrib,
 	when: ContextKeyExpr.and(
 		WALK_THROUGH_FOCUS,
-		EditorContextKeys.editorTextFocus.toNegated()
+		EditorContextKeys.editorTextFocus.toNegated(),
 	),
 	primary: KeyCode.DownArrow,
 	handler: (accessor) => {
@@ -55,7 +55,7 @@ export const WalkThroughPageUp: ICommandAndKeybindingRule = {
 	weight: KeybindingWeight.WorkbenchContrib,
 	when: ContextKeyExpr.and(
 		WALK_THROUGH_FOCUS,
-		EditorContextKeys.editorTextFocus.toNegated()
+		EditorContextKeys.editorTextFocus.toNegated(),
 	),
 	primary: KeyCode.PageUp,
 	handler: (accessor) => {
@@ -72,7 +72,7 @@ export const WalkThroughPageDown: ICommandAndKeybindingRule = {
 	weight: KeybindingWeight.WorkbenchContrib,
 	when: ContextKeyExpr.and(
 		WALK_THROUGH_FOCUS,
-		EditorContextKeys.editorTextFocus.toNegated()
+		EditorContextKeys.editorTextFocus.toNegated(),
 	),
 	primary: KeyCode.PageDown,
 	handler: (accessor) => {

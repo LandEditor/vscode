@@ -3,24 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { VSBuffer } from "vs/base/common/buffer";
 import { Event } from "vs/base/common/event";
 import { Disposable, IDisposable } from "vs/base/common/lifecycle";
+import { isEqual } from "vs/base/common/resources";
 import { URI } from "vs/base/common/uri";
 import {
-	IFileDeleteOptions,
-	IFileOverwriteOptions,
 	FileSystemProviderCapabilities,
 	FileType,
-	IFileWriteOptions,
-	hasReadWriteCapability,
+	IFileDeleteOptions,
+	IFileOverwriteOptions,
 	IFileService,
 	IFileSystemProvider,
 	IFileSystemProviderWithFileReadWriteCapability,
+	IFileWriteOptions,
 	IStat,
 	IWatchOptions,
+	hasReadWriteCapability,
 } from "vs/platform/files/common/files";
-import { isEqual } from "vs/base/common/resources";
-import { VSBuffer } from "vs/base/common/buffer";
 
 interface ILocalHistoryResource {
 	/**
@@ -74,7 +74,7 @@ export class LocalHistoryFileSystemProvider
 		return {
 			location: URI.parse(serializedLocalHistoryResource.location),
 			associatedResource: URI.parse(
-				serializedLocalHistoryResource.associatedResource
+				serializedLocalHistoryResource.associatedResource,
 			),
 		};
 	}
@@ -130,9 +130,9 @@ export class LocalHistoryFileSystemProvider
 
 										resolve(e.provider);
 									}
-								}
+								},
 							);
-					}
+					},
 				);
 			}
 
@@ -147,7 +147,7 @@ export class LocalHistoryFileSystemProvider
 	async stat(resource: URI): Promise<IStat> {
 		const location =
 			LocalHistoryFileSystemProvider.fromLocalHistoryFileSystem(
-				resource
+				resource,
 			).location;
 
 		// Special case: empty resource
@@ -162,7 +162,7 @@ export class LocalHistoryFileSystemProvider
 	async readFile(resource: URI): Promise<Uint8Array> {
 		const location =
 			LocalHistoryFileSystemProvider.fromLocalHistoryFileSystem(
-				resource
+				resource,
 			).location;
 
 		// Special case: empty resource
@@ -189,7 +189,7 @@ export class LocalHistoryFileSystemProvider
 	async writeFile(
 		resource: URI,
 		content: Uint8Array,
-		opts: IFileWriteOptions
+		opts: IFileWriteOptions,
 	): Promise<void> {}
 
 	async mkdir(resource: URI): Promise<void> {}
@@ -200,7 +200,7 @@ export class LocalHistoryFileSystemProvider
 	async rename(
 		from: URI,
 		to: URI,
-		opts: IFileOverwriteOptions
+		opts: IFileOverwriteOptions,
 	): Promise<void> {}
 	async delete(resource: URI, opts: IFileDeleteOptions): Promise<void> {}
 

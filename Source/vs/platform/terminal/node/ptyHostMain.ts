@@ -3,10 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { timeout } from "vs/base/common/async";
+import { DisposableStore } from "vs/base/common/lifecycle";
 import { DefaultURITransformer } from "vs/base/common/uriIpc";
 import { ProxyChannel } from "vs/base/parts/ipc/common/ipc";
 import { Server as ChildProcessServer } from "vs/base/parts/ipc/node/ipc.cp";
 import { Server as UtilityProcessServer } from "vs/base/parts/ipc/node/ipc.mp";
+import { isUtilityProcess } from "vs/base/parts/sandbox/node/electronTypes";
 import { localize } from "vs/nls";
 import { OPTIONS, parseArgs } from "vs/platform/environment/node/argv";
 import { NativeEnvironmentService } from "vs/platform/environment/node/environmentService";
@@ -22,9 +25,6 @@ import {
 } from "vs/platform/terminal/common/terminal";
 import { HeartbeatService } from "vs/platform/terminal/node/heartbeatService";
 import { PtyService } from "vs/platform/terminal/node/ptyService";
-import { isUtilityProcess } from "vs/base/parts/sandbox/node/electronTypes";
-import { timeout } from "vs/base/common/async";
-import { DisposableStore } from "vs/base/common/lifecycle";
 
 startPtyHost();
 
@@ -35,7 +35,7 @@ async function startPtyHost() {
 	const reconnectConstants: IReconnectConstants = {
 		graceTime: parseInt(process.env.VSCODE_RECONNECT_GRACE_TIME || "0"),
 		shortGraceTime: parseInt(
-			process.env.VSCODE_RECONNECT_SHORT_GRACE_TIME || "0"
+			process.env.VSCODE_RECONNECT_SHORT_GRACE_TIME || "0",
 		),
 		scrollback: parseInt(process.env.VSCODE_RECONNECT_SCROLLBACK || "100"),
 	};
@@ -69,15 +69,15 @@ async function startPtyHost() {
 	};
 	const environmentService = new NativeEnvironmentService(
 		parseArgs(process.argv, OPTIONS),
-		productService
+		productService,
 	);
 	const loggerService = new LoggerService(
 		getLogLevel(environmentService),
-		environmentService.logsHome
+		environmentService.logsHome,
 	);
 	server.registerChannel(
 		TerminalIpcChannels.Logger,
-		new LoggerChannel(loggerService, () => DefaultURITransformer)
+		new LoggerChannel(loggerService, () => DefaultURITransformer),
 	);
 	const logger = loggerService.createLogger("ptyhost", {
 		name: localize("ptyHost", "Pty Host"),
@@ -98,7 +98,7 @@ async function startPtyHost() {
 	const heartbeatService = new HeartbeatService();
 	server.registerChannel(
 		TerminalIpcChannels.Heartbeat,
-		ProxyChannel.fromService(heartbeatService, disposables)
+		ProxyChannel.fromService(heartbeatService, disposables),
 	);
 
 	// Init pty service
@@ -106,7 +106,7 @@ async function startPtyHost() {
 		logService,
 		productService,
 		reconnectConstants,
-		simulatedLatency
+		simulatedLatency,
 	);
 	const ptyServiceChannel = ProxyChannel.fromService(ptyService, disposables);
 	server.registerChannel(TerminalIpcChannels.PtyHost, ptyServiceChannel);
@@ -115,7 +115,7 @@ async function startPtyHost() {
 	if (_isUtilityProcess) {
 		server.registerChannel(
 			TerminalIpcChannels.PtyHostWindow,
-			ptyServiceChannel
+			ptyServiceChannel,
 		);
 	}
 

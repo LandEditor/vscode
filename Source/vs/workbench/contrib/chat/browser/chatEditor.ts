@@ -27,16 +27,16 @@ import { IThemeService } from "vs/platform/theme/common/themeService";
 import { EditorPane } from "vs/workbench/browser/parts/editor/editorPane";
 import { IEditorOpenContext } from "vs/workbench/common/editor";
 import { Memento } from "vs/workbench/common/memento";
+import { clearChatEditor } from "vs/workbench/contrib/chat/browser/actions/chatClear";
 import { ChatEditorInput } from "vs/workbench/contrib/chat/browser/chatEditorInput";
 import {
-	IChatViewState,
 	ChatWidget,
+	IChatViewState,
 } from "vs/workbench/contrib/chat/browser/chatWidget";
 import {
 	IChatModel,
 	ISerializableChatData,
 } from "vs/workbench/contrib/chat/common/chatModel";
-import { clearChatEditor } from "vs/workbench/contrib/chat/browser/actions/chatClear";
 
 export interface IChatEditorOptions extends IEditorOptions {
 	target:
@@ -79,14 +79,14 @@ export class ChatEditor extends EditorPane {
 
 	protected override createEditor(parent: HTMLElement): void {
 		this._scopedContextKeyService = this._register(
-			this.contextKeyService.createScoped(parent)
+			this.contextKeyService.createScoped(parent),
 		);
 		const scopedInstantiationService =
 			this.instantiationService.createChild(
 				new ServiceCollection([
 					IContextKeyService,
 					this.scopedContextKeyService,
-				])
+				]),
 			);
 
 		this.widget = this._register(
@@ -99,8 +99,8 @@ export class ChatEditor extends EditorPane {
 					listBackground: editorBackground,
 					inputEditorBackground: inputBackground,
 					resultEditorBackground: editorBackground,
-				}
-			)
+				},
+			),
 		);
 		this._register(this.widget.onDidClear(() => this.clear()));
 		this.widget.render(parent);
@@ -122,14 +122,14 @@ export class ChatEditor extends EditorPane {
 		input: ChatEditorInput,
 		options: IChatEditorOptions,
 		context: IEditorOpenContext,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void> {
 		super.setInput(input, options, context, token);
 
 		const editorModel = await input.resolve();
 		if (!editorModel) {
 			throw new Error(
-				`Failed to get model for chat editor. id: ${input.sessionId}`
+				`Failed to get model for chat editor. id: ${input.sessionId}`,
 			);
 		}
 
@@ -143,11 +143,11 @@ export class ChatEditor extends EditorPane {
 	private updateModel(model: IChatModel): void {
 		this._memento = new Memento(
 			"interactive-session-editor-" + model.sessionId,
-			this.storageService
+			this.storageService,
 		);
 		this._viewState = this._memento.getMemento(
 			StorageScope.WORKSPACE,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		) as IChatViewState;
 		this.widget.setModel(model, { ...this._viewState });
 	}
@@ -164,7 +164,7 @@ export class ChatEditor extends EditorPane {
 
 	override layout(
 		dimension: dom.Dimension,
-		position?: dom.IDomPosition | undefined
+		position?: dom.IDomPosition | undefined,
 	): void {
 		if (this.widget) {
 			this.widget.layout(dimension.height, dimension.width);

@@ -28,7 +28,7 @@ export class ExtHostIssueReporter implements ExtHostIssueReporterShape {
 
 	async $getIssueReporterUri(
 		extensionId: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<UriComponents> {
 		if (this._IssueUriRequestHandlers.size === 0) {
 			throw new Error("No issue request handlers registered");
@@ -48,7 +48,7 @@ export class ExtHostIssueReporter implements ExtHostIssueReporterShape {
 
 	async $getIssueReporterData(
 		extensionId: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<string> {
 		if (this._IssueDataProviders.size === 0) {
 			throw new Error("No issue request handlers registered");
@@ -68,7 +68,7 @@ export class ExtHostIssueReporter implements ExtHostIssueReporterShape {
 
 	async $getIssueReporterTemplate(
 		extensionId: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<string> {
 		if (this._IssueDataProviders.size === 0) {
 			throw new Error("No issue request handlers registered");
@@ -88,7 +88,7 @@ export class ExtHostIssueReporter implements ExtHostIssueReporterShape {
 
 	registerIssueUriRequestHandler(
 		extension: IExtensionDescription,
-		provider: IssueUriRequestHandler
+		provider: IssueUriRequestHandler,
 	): Disposable {
 		const extensionId = extension.identifier.value;
 		this._IssueUriRequestHandlers.set(extensionId, provider);
@@ -101,7 +101,7 @@ export class ExtHostIssueReporter implements ExtHostIssueReporterShape {
 
 	registerIssueDataProvider(
 		extension: IExtensionDescription,
-		provider: IssueDataProvider
+		provider: IssueDataProvider,
 	): Disposable {
 		const extensionId = extension.identifier.value;
 		this._IssueDataProviders.set(extensionId, provider);

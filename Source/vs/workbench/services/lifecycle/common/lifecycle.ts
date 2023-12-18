@@ -109,7 +109,7 @@ export interface WillShutdownEvent {
 	force(): void;
 }
 
-export const enum ShutdownReason {
+export enum ShutdownReason {
 	/**
 	 * The window is closed.
 	 */
@@ -118,20 +118,20 @@ export const enum ShutdownReason {
 	/**
 	 * The window closes because the application quits.
 	 */
-	QUIT,
+	QUIT = 2,
 
 	/**
 	 * The window is reloaded.
 	 */
-	RELOAD,
+	RELOAD = 3,
 
 	/**
 	 * The window is loaded into a different workspace context.
 	 */
-	LOAD,
+	LOAD = 4,
 }
 
-export const enum StartupKind {
+export enum StartupKind {
 	NewWindow = 1,
 	ReloadedWindow = 3,
 	ReopenedWindow = 4,
@@ -148,7 +148,7 @@ export function StartupKindToString(startupKind: StartupKind): string {
 	}
 }
 
-export const enum LifecyclePhase {
+export enum LifecyclePhase {
 	/**
 	 * The first phase signals that we are about to startup getting ready.
 	 *

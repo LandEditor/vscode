@@ -49,7 +49,7 @@ export class DiffNestedCellViewModel
 	protected readonly _onDidChangeState: Emitter<CellViewModelStateChangeEvent> =
 		this._register(new Emitter<CellViewModelStateChangeEvent>());
 
-	private _hoveringOutput: boolean = false;
+	private _hoveringOutput = false;
 	public get outputIsHovered(): boolean {
 		return this._hoveringOutput;
 	}
@@ -59,7 +59,7 @@ export class DiffNestedCellViewModel
 		this._onDidChangeState.fire({ outputIsHoveredChanged: true });
 	}
 
-	private _focusOnOutput: boolean = false;
+	private _focusOnOutput = false;
 	public get outputIsFocused(): boolean {
 		return this._focusOnOutput;
 	}
@@ -79,7 +79,7 @@ export class DiffNestedCellViewModel
 	protected _outputsTop: PrefixSumComputer | null = null;
 
 	protected readonly _onDidChangeOutputLayout = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onDidChangeOutputLayout = this._onDidChangeOutputLayout.event;
 

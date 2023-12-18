@@ -1,4 +1,3 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -30,7 +29,7 @@ function asYarnDependency(prefix, tree) {
 	for (const child of tree.children || []) {
 		const dep = asYarnDependency(
 			path.join(prefix, name, "node_modules"),
-			child
+			child,
 		);
 		if (dep) {
 			children.push(dep);
@@ -52,7 +51,7 @@ function getYarnProductionDependencies(folderPath) {
 	const trees = JSON.parse(match[0]).data.trees;
 	return trees
 		.map((tree) =>
-			asYarnDependency(path.join(folderPath, "node_modules"), tree)
+			asYarnDependency(path.join(folderPath, "node_modules"), tree),
 		)
 		.filter((dep) => !!dep);
 }
@@ -70,10 +69,10 @@ function getProductionDependencies(folderPath) {
 	const distroPackageJsonPath = `${root}/.build/distro/npm/${relativeFolderPath}/package.json`;
 	if (fs.existsSync(distroPackageJsonPath)) {
 		const distroPackageJson = JSON.parse(
-			fs.readFileSync(distroPackageJsonPath, "utf8")
+			fs.readFileSync(distroPackageJsonPath, "utf8"),
 		);
 		const distroDependencyNames = Object.keys(
-			distroPackageJson.dependencies ?? {}
+			distroPackageJson.dependencies ?? {},
 		);
 		for (const name of distroDependencyNames) {
 			result.push({

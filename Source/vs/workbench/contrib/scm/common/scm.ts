@@ -3,16 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from "vs/base/common/uri";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { Event } from "vs/base/common/event";
-import { IDisposable } from "vs/base/common/lifecycle";
-import { Command } from "vs/editor/common/languages";
 import { IAction } from "vs/base/common/actions";
-import { IMenu } from "vs/platform/actions/common/actions";
-import { ThemeIcon } from "vs/base/common/themables";
+import { Event } from "vs/base/common/event";
 import { IMarkdownString } from "vs/base/common/htmlContent";
+import { IDisposable } from "vs/base/common/lifecycle";
 import { ResourceTree } from "vs/base/common/resourceTree";
+import { ThemeIcon } from "vs/base/common/themables";
+import { URI } from "vs/base/common/uri";
+import { Command } from "vs/editor/common/languages";
+import { IMenu } from "vs/platform/actions/common/actions";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import {
 	ISCMHistoryProvider,
 	ISCMHistoryProviderMenus,
@@ -89,7 +89,7 @@ export interface ISCMInputValueProviderContext {
 	readonly resources: readonly URI[];
 }
 
-export const enum InputValidationType {
+export enum InputValidationType {
 	Error = 0,
 	Warning = 1,
 	Information = 2,
@@ -101,15 +101,14 @@ export interface IInputValidation {
 }
 
 export interface IInputValidator {
-	(
-		value: string,
-		cursorPosition: number
-	): Promise<IInputValidation | undefined>;
+	(value: string, cursorPosition: number): Promise<
+		IInputValidation | undefined
+	>;
 }
 
 export enum SCMInputChangeReason {
-	HistoryPrevious,
-	HistoryNext,
+	HistoryPrevious = 0,
+	HistoryNext = 1,
 }
 
 export interface ISCMInputChangeEvent {
@@ -154,7 +153,7 @@ export interface ISCMInput {
 
 	showValidationMessage(
 		message: string | IMarkdownString,
-		type: InputValidationType
+		type: InputValidationType,
 	): void;
 	readonly onDidChangeValidationMessage: Event<IInputValidation>;
 
@@ -200,7 +199,7 @@ export interface ISCMMenus {
 	getRepositoryMenus(provider: ISCMProvider): ISCMRepositoryMenus;
 }
 
-export const enum ISCMRepositorySortKey {
+export enum ISCMRepositorySortKey {
 	DiscoveryTime = "discoveryTime",
 	Name = "name",
 	Path = "path",
@@ -236,4 +235,4 @@ export interface ISCMViewService {
 
 export const SCM_CHANGES_EDITOR_ID = "workbench.editor.scmChangesEditor";
 
-export interface ISCMChangesEditor {}
+export type ISCMChangesEditor = {};

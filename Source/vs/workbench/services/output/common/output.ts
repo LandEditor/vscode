@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event, Emitter } from "vs/base/common/event";
-import { Registry } from "vs/platform/registry/common/platform";
+import { Emitter, Event } from "vs/base/common/event";
 import { URI } from "vs/base/common/uri";
 import { RawContextKey } from "vs/platform/contextkey/common/contextkey";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { Registry } from "vs/platform/registry/common/platform";
 
 /**
  * Mime type used by the output editor.
@@ -43,12 +43,12 @@ export const CONTEXT_IN_OUTPUT = new RawContextKey<boolean>("inOutput", false);
 
 export const CONTEXT_ACTIVE_FILE_OUTPUT = new RawContextKey<boolean>(
 	"activeLogOutput",
-	false
+	false,
 );
 
 export const CONTEXT_OUTPUT_SCROLL_LOCK = new RawContextKey<boolean>(
 	`outputView.scrollLock`,
-	false
+	false,
 );
 
 export const IOutputService = createDecorator<IOutputService>("outputService");
@@ -94,8 +94,8 @@ export interface IOutputService {
 
 export enum OutputChannelUpdateMode {
 	Append = 1,
-	Replace,
-	Clear,
+	Replace = 2,
+	Clear = 3,
 }
 
 export interface IOutputChannel {
@@ -220,5 +220,5 @@ Registry.add(Extensions.OutputChannels, new OutputChannelRegistry());
 
 export const ACTIVE_OUTPUT_CHANNEL_CONTEXT = new RawContextKey<string>(
 	"activeOutputChannel",
-	""
+	"",
 );

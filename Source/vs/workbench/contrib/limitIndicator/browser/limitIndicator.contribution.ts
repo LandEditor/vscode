@@ -3,31 +3,31 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Event } from "vs/base/common/event";
 import { Disposable, IDisposable } from "vs/base/common/lifecycle";
 import Severity from "vs/base/common/severity";
 import { ICodeEditor, getCodeEditor } from "vs/editor/browser/editorBrowser";
+import * as nls from "vs/nls";
+import { Registry } from "vs/platform/registry/common/platform";
+import {
+	Extensions as WorkbenchExtensions,
+	IWorkbenchContribution,
+	IWorkbenchContributionsRegistry,
+} from "vs/workbench/common/contributions";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 import {
 	ILanguageStatus,
 	ILanguageStatusService,
 } from "vs/workbench/services/languageStatus/common/languageStatusService";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	Extensions as WorkbenchExtensions,
-	IWorkbenchContributionsRegistry,
-	IWorkbenchContribution,
-} from "vs/workbench/common/contributions";
 import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { Event } from "vs/base/common/event";
-import * as nls from "vs/nls";
 
-import { FoldingController } from "vs/editor/contrib/folding/browser/folding";
 import { ColorDetector } from "vs/editor/contrib/colorPicker/browser/colorDetector";
+import { FoldingController } from "vs/editor/contrib/folding/browser/folding";
 
 const openSettingsCommand = "workbench.action.openSettings";
 const configureSettingsLabel = nls.localize(
 	"status.button.configure",
-	"Configure"
+	"Configure",
 );
 
 /**
@@ -40,7 +40,7 @@ export class LimitIndicatorContribution
 {
 	constructor(
 		@IEditorService editorService: IEditorService,
-		@ILanguageStatusService languageStatusService: ILanguageStatusService
+		@ILanguageStatusService languageStatusService: ILanguageStatusService,
 	) {
 		super();
 
@@ -50,7 +50,7 @@ export class LimitIndicatorContribution
 		];
 		const statusEntries = accessors.map(
 			(indicator) =>
-				new LanguageStatusEntry(languageStatusService, indicator)
+				new LanguageStatusEntry(languageStatusService, indicator),
 		);
 		statusEntries.forEach((entry) => this._register(entry));
 
@@ -65,11 +65,11 @@ export class LimitIndicatorContribution
 			const editor = getCodeEditor(activeControl);
 
 			statusEntries.forEach((statusEntry) =>
-				statusEntry.onActiveEditorChanged(editor)
+				statusEntry.onActiveEditorChanged(editor),
 			);
 		};
 		this._register(
-			editorService.onDidActiveEditorChange(onActiveEditorChanged)
+			editorService.onDidActiveEditorChange(onActiveEditorChanged),
 		);
 
 		onActiveEditorChanged();
@@ -96,15 +96,15 @@ class ColorDecorationAccessor implements LanguageFeatureAccessor {
 	readonly id = "decoratorsLimitInfo";
 	readonly name = nls.localize(
 		"colorDecoratorsStatusItem.name",
-		"Color Decorator Status"
+		"Color Decorator Status",
 	);
 	readonly label = nls.localize(
 		"status.limitedColorDecorators.short",
-		"Color Decorators"
+		"Color Decorators",
 	);
 	readonly source = nls.localize(
 		"colorDecoratorsStatusItem.source",
-		"Color Decorators"
+		"Color Decorators",
 	);
 	readonly settingsId = "editor.colorDecoratorsLimit";
 
@@ -117,11 +117,11 @@ class FoldingRangeAccessor implements LanguageFeatureAccessor {
 	readonly id = "foldingLimitInfo";
 	readonly name = nls.localize(
 		"foldingRangesStatusItem.name",
-		"Folding Status"
+		"Folding Status",
 	);
 	readonly label = nls.localize(
 		"status.limitedFoldingRanges.short",
-		"Folding Ranges"
+		"Folding Ranges",
 	);
 	readonly source = nls.localize("foldingRangesStatusItem.source", "Folding");
 	readonly settingsId = "editor.foldingMaximumRegions";
@@ -137,7 +137,7 @@ class LanguageStatusEntry {
 
 	constructor(
 		private languageStatusService: ILanguageStatusService,
-		private accessor: LanguageFeatureAccessor
+		private accessor: LanguageFeatureAccessor,
 	) {}
 
 	onActiveEditorChanged(editor: ICodeEditor | null): boolean {
@@ -175,7 +175,7 @@ class LanguageStatusEntry {
 				detail: nls.localize(
 					"status.limited.details",
 					"only {0} shown for performance reasons",
-					info.limited
+					info.limited,
 				),
 				command: {
 					id: openSettingsCommand,
@@ -200,8 +200,8 @@ class LanguageStatusEntry {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	LimitIndicatorContribution,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );

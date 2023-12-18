@@ -5,11 +5,11 @@
 
 import * as arrays from "vs/base/common/arrays";
 import { readUInt32BE, writeUInt32BE } from "vs/base/common/buffer";
+import { countEOL } from "vs/editor/common/core/eolCounter";
+import { LineRange } from "vs/editor/common/core/lineRange";
 import { Position } from "vs/editor/common/core/position";
 import { IRange } from "vs/editor/common/core/range";
-import { countEOL } from "vs/editor/common/core/eolCounter";
 import { ContiguousTokensEditing } from "vs/editor/common/tokens/contiguousTokensEditing";
-import { LineRange } from "vs/editor/common/core/lineRange";
 
 /**
  * Represents contiguous tokens over a contiguous range of lines.
@@ -18,7 +18,7 @@ export class ContiguousMultilineTokens {
 	public static deserialize(
 		buff: Uint8Array,
 		offset: number,
-		result: ContiguousMultilineTokens[]
+		result: ContiguousMultilineTokens[],
 	): number {
 		const view32 = new Uint32Array(buff.buffer);
 		const startLineNumber = readUInt32BE(buff, offset);
@@ -30,7 +30,7 @@ export class ContiguousMultilineTokens {
 			const byteCount = readUInt32BE(buff, offset);
 			offset += 4;
 			tokens.push(
-				view32.subarray(offset / 4, offset / 4 + byteCount / 4)
+				view32.subarray(offset / 4, offset / 4 + byteCount / 4),
 			);
 			offset += byteCount;
 		}
@@ -76,7 +76,7 @@ export class ContiguousMultilineTokens {
 	getLineRange(): LineRange {
 		return new LineRange(
 			this._startLineNumber,
-			this._startLineNumber + this._tokens.length
+			this._startLineNumber + this._tokens.length,
 		);
 	}
 
@@ -130,7 +130,7 @@ export class ContiguousMultilineTokens {
 		this._acceptInsertText(
 			new Position(range.startLineNumber, range.startColumn),
 			eolCount,
-			firstLineLength
+			firstLineLength,
 		);
 	}
 
@@ -170,7 +170,7 @@ export class ContiguousMultilineTokens {
 			this._tokens[firstLineIndex] = ContiguousTokensEditing.delete(
 				this._tokens[firstLineIndex],
 				range.startColumn - 1,
-				range.endColumn - 1
+				range.endColumn - 1,
 			);
 			return;
 		}
@@ -179,26 +179,26 @@ export class ContiguousMultilineTokens {
 			// The first line survives
 			this._tokens[firstLineIndex] = ContiguousTokensEditing.deleteEnding(
 				this._tokens[firstLineIndex],
-				range.startColumn - 1
+				range.startColumn - 1,
 			);
 
 			if (lastLineIndex < this._tokens.length) {
 				// The last line survives
 				const lastLineTokens = ContiguousTokensEditing.deleteBeginning(
 					this._tokens[lastLineIndex],
-					range.endColumn - 1
+					range.endColumn - 1,
 				);
 
 				// Take remaining text on last line and append it to remaining text on first line
 				this._tokens[firstLineIndex] = ContiguousTokensEditing.append(
 					this._tokens[firstLineIndex],
-					lastLineTokens
+					lastLineTokens,
 				);
 
 				// Delete middle lines
 				this._tokens.splice(
 					firstLineIndex + 1,
-					lastLineIndex - firstLineIndex
+					lastLineIndex - firstLineIndex,
 				);
 			} else {
 				// The last line does not survive
@@ -206,7 +206,7 @@ export class ContiguousMultilineTokens {
 				// Take remaining text on last line and append it to remaining text on first line
 				this._tokens[firstLineIndex] = ContiguousTokensEditing.append(
 					this._tokens[firstLineIndex],
-					null
+					null,
 				);
 
 				// Delete lines
@@ -222,7 +222,7 @@ export class ContiguousMultilineTokens {
 			this._tokens[lastLineIndex] =
 				ContiguousTokensEditing.deleteBeginning(
 					this._tokens[lastLineIndex],
-					range.endColumn - 1
+					range.endColumn - 1,
 				);
 
 			// Delete lines
@@ -233,7 +233,7 @@ export class ContiguousMultilineTokens {
 	private _acceptInsertText(
 		position: Position,
 		eolCount: number,
-		firstLineLength: number
+		firstLineLength: number,
 	): void {
 		if (eolCount === 0 && firstLineLength === 0) {
 			// Nothing to insert
@@ -258,19 +258,19 @@ export class ContiguousMultilineTokens {
 			this._tokens[lineIndex] = ContiguousTokensEditing.insert(
 				this._tokens[lineIndex],
 				position.column - 1,
-				firstLineLength
+				firstLineLength,
 			);
 			return;
 		}
 
 		this._tokens[lineIndex] = ContiguousTokensEditing.deleteEnding(
 			this._tokens[lineIndex],
-			position.column - 1
+			position.column - 1,
 		);
 		this._tokens[lineIndex] = ContiguousTokensEditing.insert(
 			this._tokens[lineIndex],
 			position.column - 1,
-			firstLineLength
+			firstLineLength,
 		);
 
 		this._insertLines(position.lineNumber, eolCount);
@@ -287,7 +287,7 @@ export class ContiguousMultilineTokens {
 		this._tokens = arrays.arrayInsert(
 			this._tokens,
 			insertIndex,
-			lineTokens
+			lineTokens,
 		);
 	}
 }

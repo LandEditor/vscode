@@ -3,32 +3,32 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { timeout } from "vs/base/common/async";
+import { getErrorMessage } from "vs/base/common/errors";
 import * as path from "vs/base/common/path";
 import * as platform from "vs/base/common/platform";
+import Severity from "vs/base/common/severity";
 import { URI } from "vs/base/common/uri";
-import {
-	IExtensionDescription,
-	ExtensionType,
-} from "vs/platform/extensions/common/extensions";
-import { dedupExtensions } from "vs/workbench/services/extensions/common/extensionsUtil";
+import { localize } from "vs/nls";
 import {
 	IExtensionsScannerService,
 	IScannedExtension,
 	toExtensionDescription,
 } from "vs/platform/extensionManagement/common/extensionsScannerService";
+import {
+	ExtensionType,
+	IExtensionDescription,
+} from "vs/platform/extensions/common/extensions";
 import { ILogService } from "vs/platform/log/common/log";
-import Severity from "vs/base/common/severity";
-import { localize } from "vs/nls";
 import { INotificationService } from "vs/platform/notification/common/notification";
+import { dedupExtensions } from "vs/workbench/services/extensions/common/extensionsUtil";
 import { IHostService } from "vs/workbench/services/host/browser/host";
-import { timeout } from "vs/base/common/async";
 import { IUserDataProfileService } from "vs/workbench/services/userDataProfile/common/userDataProfile";
-import { getErrorMessage } from "vs/base/common/errors";
 
 export class CachedExtensionScanner {
 	public readonly scannedExtensions: Promise<IExtensionDescription[]>;
 	private _scannedExtensionsResolve!: (
-		result: IExtensionDescription[]
+		result: IExtensionDescription[],
 	) => void;
 	private _scannedExtensionsReject!: (err: any) => void;
 
@@ -52,13 +52,13 @@ export class CachedExtensionScanner {
 
 	public async scanSingleExtension(
 		extensionPath: string,
-		isBuiltin: boolean
+		isBuiltin: boolean,
 	): Promise<IExtensionDescription | null> {
 		const scannedExtension =
 			await this._extensionsScannerService.scanExistingExtension(
 				URI.file(path.resolve(extensionPath)),
 				isBuiltin ? ExtensionType.System : ExtensionType.User,
-				{ language: platform.language }
+				{ language: platform.language },
 			);
 		return scannedExtension
 			? toExtensionDescription(scannedExtension, false)
@@ -103,7 +103,7 @@ export class CachedExtensionScanner {
 				hasErrors = true;
 				this._logService.error(
 					`Error scanning system extensions:`,
-					getErrorMessage(result[0].reason)
+					getErrorMessage(result[0].reason),
 				);
 			}
 
@@ -113,7 +113,7 @@ export class CachedExtensionScanner {
 				hasErrors = true;
 				this._logService.error(
 					`Error scanning user extensions:`,
-					getErrorMessage(result[1].reason)
+					getErrorMessage(result[1].reason),
 				);
 			}
 
@@ -121,26 +121,26 @@ export class CachedExtensionScanner {
 				scannedDevelopedExtensions =
 					await this._extensionsScannerService.scanExtensionsUnderDevelopment(
 						{ language },
-						[...scannedSystemExtensions, ...scannedUserExtensions]
+						[...scannedSystemExtensions, ...scannedUserExtensions],
 					);
 			} catch (error) {
 				this._logService.error(error);
 			}
 
 			const system = scannedSystemExtensions.map((e) =>
-				toExtensionDescription(e, false)
+				toExtensionDescription(e, false),
 			);
 			const user = scannedUserExtensions.map((e) =>
-				toExtensionDescription(e, false)
+				toExtensionDescription(e, false),
 			);
 			const development = scannedDevelopedExtensions.map((e) =>
-				toExtensionDescription(e, true)
+				toExtensionDescription(e, true),
 			);
 			const r = dedupExtensions(
 				system,
 				user,
 				development,
-				this._logService
+				this._logService,
 			);
 
 			if (!hasErrors) {
@@ -151,17 +151,17 @@ export class CachedExtensionScanner {
 							Severity.Error,
 							localize(
 								"extensionCache.invalid",
-								"Extensions have been modified on disk. Please reload the window."
+								"Extensions have been modified on disk. Please reload the window.",
 							),
 							[
 								{
 									label: localize(
 										"reloadWindow",
-										"Reload Window"
+										"Reload Window",
 									),
 									run: () => this._hostService.reload(),
 								},
-							]
+							],
 						);
 					});
 				timeout(5000).then(() => disposable.dispose());

@@ -19,7 +19,7 @@ export interface IPager<T> {
 	pageSize: number;
 	getPage(
 		pageIndex: number,
-		cancellationToken: CancellationToken
+		cancellationToken: CancellationToken,
 	): Promise<T[]>;
 }
 
@@ -58,7 +58,7 @@ export function singlePagePager<T>(elements: T[]): IPager<T> {
 		pageSize: elements.length,
 		getPage: (
 			pageIndex: number,
-			cancellationToken: CancellationToken
+			cancellationToken: CancellationToken,
 		): Promise<T[]> => {
 			return Promise.resolve(elements);
 		},
@@ -126,7 +126,7 @@ export class PagedModel<T> implements IPagedModel<T> {
 					page.promise = null;
 					page.cts = null;
 					return Promise.reject(err);
-				}
+				},
 			);
 		}
 
@@ -155,10 +155,7 @@ export class DelayedPagedModel<T> implements IPagedModel<T> {
 		return this.model.length;
 	}
 
-	constructor(
-		private model: IPagedModel<T>,
-		private timeout: number = 500
-	) {}
+	constructor(private model: IPagedModel<T>, private timeout = 500) {}
 
 	isResolved(index: number): boolean {
 		return this.model.isResolved(index);

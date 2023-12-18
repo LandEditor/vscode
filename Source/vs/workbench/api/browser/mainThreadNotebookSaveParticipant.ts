@@ -3,30 +3,30 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { raceCancellationError } from "vs/base/common/async";
 import { CancellationToken } from "vs/base/common/cancellation";
+import { IDisposable } from "vs/base/common/lifecycle";
 import { localize } from "vs/nls";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IProgressStep, IProgress } from "vs/platform/progress/common/progress";
-import {
-	extHostCustomer,
-	IExtHostContext,
-} from "vs/workbench/services/extensions/common/extHostCustomers";
+import { IProgress, IProgressStep } from "vs/platform/progress/common/progress";
 import { SaveReason } from "vs/workbench/common/editor";
+import { NotebookFileWorkingCopyModel } from "vs/workbench/contrib/notebook/common/notebookEditorModel";
 import {
-	ExtHostContext,
-	ExtHostNotebookDocumentSaveParticipantShape,
-} from "../common/extHost.protocol";
-import { IDisposable } from "vs/base/common/lifecycle";
-import { raceCancellationError } from "vs/base/common/async";
+	IExtHostContext,
+	extHostCustomer,
+} from "vs/workbench/services/extensions/common/extHostCustomers";
+import {
+	IStoredFileWorkingCopy,
+	IStoredFileWorkingCopyModel,
+} from "vs/workbench/services/workingCopy/common/storedFileWorkingCopy";
 import {
 	IStoredFileWorkingCopySaveParticipant,
 	IWorkingCopyFileService,
 } from "vs/workbench/services/workingCopy/common/workingCopyFileService";
 import {
-	IStoredFileWorkingCopy,
-	IStoredFileWorkingCopyModel,
-} from "vs/workbench/services/workingCopy/common/storedFileWorkingCopy";
-import { NotebookFileWorkingCopyModel } from "vs/workbench/contrib/notebook/common/notebookEditorModel";
+	ExtHostContext,
+	ExtHostNotebookDocumentSaveParticipantShape,
+} from "../common/extHost.protocol";
 
 class ExtHostNotebookDocumentSaveParticipant
 	implements IStoredFileWorkingCopySaveParticipant
@@ -35,7 +35,7 @@ class ExtHostNotebookDocumentSaveParticipant
 
 	constructor(extHostContext: IExtHostContext) {
 		this._proxy = extHostContext.getProxy(
-			ExtHostContext.ExtHostNotebookDocumentSaveParticipant
+			ExtHostContext.ExtHostNotebookDocumentSaveParticipant,
 		);
 	}
 
@@ -43,7 +43,7 @@ class ExtHostNotebookDocumentSaveParticipant
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
 		env: { reason: SaveReason },
 		_progress: IProgress<IProgressStep>,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void> {
 		if (
 			!workingCopy.model ||
@@ -61,11 +61,11 @@ class ExtHostNotebookDocumentSaveParticipant
 						new Error(
 							localize(
 								"timeout.onWillSave",
-								"Aborted onWillSaveNotebookDocument-event after 1750ms"
-							)
-						)
+								"Aborted onWillSaveNotebookDocument-event after 1750ms",
+							),
+						),
 					),
-				1750
+				1750,
 			);
 			this._proxy
 				.$participateInSave(workingCopy.resource, env.reason, token)

@@ -3,28 +3,28 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IAction, Action, Separator } from "vs/base/common/actions";
-import { localize } from "vs/nls";
-import { IWorkbenchLayoutService } from "vs/workbench/services/layout/browser/layoutService";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { Disposable } from "vs/base/common/lifecycle";
 import {
 	EventHelper,
 	addDisposableListener,
 	getActiveDocument,
 	getWindow,
 } from "vs/base/browser/dom";
+import { StandardMouseEvent } from "vs/base/browser/mouseEvent";
+import { Action, IAction, Separator } from "vs/base/common/actions";
+import { Event as BaseEvent } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
+import { isNative } from "vs/base/common/platform";
+import { localize } from "vs/nls";
+import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
+import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
+import { Registry } from "vs/platform/registry/common/platform";
 import {
+	Extensions as WorkbenchExtensions,
 	IWorkbenchContribution,
 	IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "vs/workbench/common/contributions";
-import { Registry } from "vs/platform/registry/common/platform";
+import { IWorkbenchLayoutService } from "vs/workbench/services/layout/browser/layoutService";
 import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { isNative } from "vs/base/common/platform";
-import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
-import { StandardMouseEvent } from "vs/base/browser/mouseEvent";
-import { Event as BaseEvent } from "vs/base/common/event";
 
 export class TextInputActionsProvider
 	extends Disposable
@@ -54,14 +54,14 @@ export class TextInputActionsProvider
 				localize("undo", "Undo"),
 				undefined,
 				true,
-				async () => getActiveDocument().execCommand("undo")
+				async () => getActiveDocument().execCommand("undo"),
 			),
 			new Action(
 				"redo",
 				localize("redo", "Redo"),
 				undefined,
 				true,
-				async () => getActiveDocument().execCommand("redo")
+				async () => getActiveDocument().execCommand("redo"),
 			),
 			new Separator(),
 
@@ -71,14 +71,14 @@ export class TextInputActionsProvider
 				localize("cut", "Cut"),
 				undefined,
 				true,
-				async () => getActiveDocument().execCommand("cut")
+				async () => getActiveDocument().execCommand("cut"),
 			),
 			new Action(
 				"editor.action.clipboardCopyAction",
 				localize("copy", "Copy"),
 				undefined,
 				true,
-				async () => getActiveDocument().execCommand("copy")
+				async () => getActiveDocument().execCommand("copy"),
 			),
 			new Action(
 				"editor.action.clipboardPasteAction",
@@ -104,10 +104,10 @@ export class TextInputActionsProvider
 
 							element.value = `${element.value.substring(
 								0,
-								selectionStart
+								selectionStart,
 							)}${clipboardText}${element.value.substring(
 								selectionEnd,
-								element.value.length
+								element.value.length,
 							)}`;
 							element.selectionStart =
 								selectionStart + clipboardText.length;
@@ -116,11 +116,11 @@ export class TextInputActionsProvider
 								new Event("input", {
 									bubbles: true,
 									cancelable: true,
-								})
+								}),
 							);
 						}
 					}
-				}
+				},
 			),
 			new Separator(),
 
@@ -130,8 +130,8 @@ export class TextInputActionsProvider
 				localize("selectAll", "Select All"),
 				undefined,
 				true,
-				async () => getActiveDocument().execCommand("selectAll")
-			)
+				async () => getActiveDocument().execCommand("selectAll"),
+			),
 		);
 	}
 
@@ -143,15 +143,15 @@ export class TextInputActionsProvider
 				({ container, disposables }) => {
 					disposables.add(
 						addDisposableListener(container, "contextmenu", (e) =>
-							this.onContextMenu(getWindow(container), e)
-						)
+							this.onContextMenu(getWindow(container), e),
+						),
 					);
 				},
 				{
 					container: this.layoutService.mainContainer,
 					disposables: this._store,
-				}
-			)
+				},
+			),
 		);
 	}
 
@@ -182,5 +182,5 @@ export class TextInputActionsProvider
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(TextInputActionsProvider, LifecyclePhase.Ready);

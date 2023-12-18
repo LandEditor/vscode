@@ -12,7 +12,7 @@ import { CommandsRegistry } from "vs/platform/commands/common/commands";
 
 CommandsRegistry.registerCommand(
 	"_executeDocumentSymbolProvider",
-	async function (accessor, ...args) {
+	async (accessor, ...args) => {
 		const [resource] = args;
 		assertType(URI.isUri(resource));
 
@@ -24,11 +24,11 @@ CommandsRegistry.registerCommand(
 			return (
 				await outlineService.getOrCreate(
 					reference.object.textEditorModel,
-					CancellationToken.None
+					CancellationToken.None,
 				)
 			).getTopLevelSymbols();
 		} finally {
 			reference.dispose();
 		}
-	}
+	},
 );

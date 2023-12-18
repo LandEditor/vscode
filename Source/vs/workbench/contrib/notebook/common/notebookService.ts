@@ -3,33 +3,33 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { URI } from "vs/base/common/uri";
-import { NotebookProviderInfo } from "vs/workbench/contrib/notebook/common/notebookProvider";
-import { Event } from "vs/base/common/event";
-import {
-	INotebookRendererInfo,
-	NotebookData,
-	TransientOptions,
-	IOrderedMimeType,
-	IOutputDto,
-	INotebookContributionData,
-	NotebookExtensionDescription,
-	INotebookStaticPreloadInfo,
-} from "vs/workbench/contrib/notebook/common/notebookCommon";
-import { NotebookTextModel } from "vs/workbench/contrib/notebook/common/model/notebookTextModel";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { NotebookCellTextModel } from "vs/workbench/contrib/notebook/common/model/notebookCellTextModel";
-import { IDisposable } from "vs/base/common/lifecycle";
 import { VSBuffer } from "vs/base/common/buffer";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { Event } from "vs/base/common/event";
+import { IDisposable } from "vs/base/common/lifecycle";
+import { URI } from "vs/base/common/uri";
 import { ConfigurationTarget } from "vs/platform/configuration/common/configuration";
 import {
 	IFileStatWithMetadata,
 	IWriteFileOptions,
 } from "vs/platform/files/common/files";
-import { ITextQuery } from "vs/workbench/services/search/common/search";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { NotebookCellTextModel } from "vs/workbench/contrib/notebook/common/model/notebookCellTextModel";
+import { NotebookTextModel } from "vs/workbench/contrib/notebook/common/model/notebookTextModel";
+import {
+	INotebookContributionData,
+	INotebookRendererInfo,
+	INotebookStaticPreloadInfo,
+	IOrderedMimeType,
+	IOutputDto,
+	NotebookData,
+	NotebookExtensionDescription,
+	TransientOptions,
+} from "vs/workbench/contrib/notebook/common/notebookCommon";
+import { NotebookProviderInfo } from "vs/workbench/contrib/notebook/common/notebookProvider";
 import { NotebookPriorityInfo } from "vs/workbench/contrib/search/common/search";
 import { INotebookFileMatchNoModel } from "vs/workbench/contrib/search/common/searchNotebookHelpers";
+import { ITextQuery } from "vs/workbench/services/search/common/search";
 
 export const INotebookService =
 	createDecorator<INotebookService>("notebookService");
@@ -41,7 +41,7 @@ export interface INotebookContentProvider {
 		uri: URI,
 		backupId: string | VSBuffer | undefined,
 		untitledDocumentData: VSBuffer | undefined,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<{ data: NotebookData; transientOptions: TransientOptions }>;
 	backup(uri: URI, token: CancellationToken): Promise<string | VSBuffer>;
 }
@@ -54,12 +54,12 @@ export interface INotebookSerializer {
 		uri: URI,
 		versionId: number,
 		options: IWriteFileOptions,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IFileStatWithMetadata>;
 	searchInNotebooks(
 		textQuery: ITextQuery,
 		token: CancellationToken,
-		allPriorityInfo: Map<string, NotebookPriorityInfo[]>
+		allPriorityInfo: Map<string, NotebookPriorityInfo[]>,
 	): Promise<{
 		results: INotebookFileMatchNoModel<URI>[];
 		limitHit: boolean;
@@ -75,7 +75,7 @@ export class SimpleNotebookProviderInfo {
 	constructor(
 		readonly viewType: string,
 		readonly serializer: INotebookSerializer,
-		readonly extensionData: NotebookExtensionDescription
+		readonly extensionData: NotebookExtensionDescription,
 	) {}
 }
 
@@ -95,16 +95,16 @@ export interface INotebookService {
 	registerNotebookSerializer(
 		viewType: string,
 		extensionData: NotebookExtensionDescription,
-		serializer: INotebookSerializer
+		serializer: INotebookSerializer,
 	): IDisposable;
 	withNotebookDataProvider(
-		viewType: string
+		viewType: string,
 	): Promise<SimpleNotebookProviderInfo>;
 
 	getOutputMimeTypeInfo(
 		textModel: NotebookTextModel,
 		kernelProvides: readonly string[] | undefined,
-		output: IOutputDto
+		output: IOutputDto,
 	): readonly IOrderedMimeType[];
 
 	getViewTypeProvider(viewType: string): string | undefined;
@@ -118,7 +118,7 @@ export interface INotebookService {
 		viewType: string,
 		mimeType: string,
 		rendererId: string,
-		otherMimetypes: readonly string[]
+		otherMimetypes: readonly string[],
 	): void;
 	saveMimeDisplayOrder(target: ConfigurationTarget): void;
 
@@ -126,7 +126,7 @@ export interface INotebookService {
 		viewType: string,
 		uri: URI,
 		data: NotebookData,
-		transientOptions: TransientOptions
+		transientOptions: TransientOptions,
 	): NotebookTextModel;
 	getNotebookTextModel(uri: URI): NotebookTextModel | undefined;
 	getNotebookTextModels(): Iterable<NotebookTextModel>;
@@ -135,13 +135,13 @@ export interface INotebookService {
 	/**	Register a notebook type that we will handle. The notebook editor will be registered for notebook types contributed by extensions */
 	registerContributedNotebookType(
 		viewType: string,
-		data: INotebookContributionData
+		data: INotebookContributionData,
 	): IDisposable;
 	getContributedNotebookType(
-		viewType: string
+		viewType: string,
 	): NotebookProviderInfo | undefined;
 	getContributedNotebookTypes(
-		resource?: URI
+		resource?: URI,
 	): readonly NotebookProviderInfo[];
 	getNotebookProviderResourceRoots(): URI[];
 

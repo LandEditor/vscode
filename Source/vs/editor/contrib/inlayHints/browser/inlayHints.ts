@@ -9,41 +9,41 @@ import {
 	onUnexpectedExternalError,
 } from "vs/base/common/errors";
 import { DisposableStore } from "vs/base/common/lifecycle";
+import { Schemas } from "vs/base/common/network";
+import { URI } from "vs/base/common/uri";
 import { IPosition, Position } from "vs/editor/common/core/position";
 import { Range } from "vs/editor/common/core/range";
 import { LanguageFeatureRegistry } from "vs/editor/common/languageFeatureRegistry";
 import {
+	Command,
 	InlayHint,
 	InlayHintList,
 	InlayHintsProvider,
-	Command,
 } from "vs/editor/common/languages";
 import { ITextModel } from "vs/editor/common/model";
-import { Schemas } from "vs/base/common/network";
-import { URI } from "vs/base/common/uri";
 
 export class InlayHintAnchor {
 	constructor(
 		readonly range: Range,
-		readonly direction: "before" | "after"
+		readonly direction: "before" | "after",
 	) {}
 }
 
 export class InlayHintItem {
-	private _isResolved: boolean = false;
+	private _isResolved = false;
 	private _currentResolve?: Promise<void>;
 
 	constructor(
 		readonly hint: InlayHint,
 		readonly anchor: InlayHintAnchor,
-		readonly provider: InlayHintsProvider
+		readonly provider: InlayHintsProvider,
 	) {}
 
 	with(delta: { anchor: InlayHintAnchor }): InlayHintItem {
 		const result = new InlayHintItem(
 			this.hint,
 			delta.anchor,
-			this.provider
+			this.provider,
 		);
 		result._isResolved = this._isResolved;
 		result._currentResolve = this._currentResolve;
@@ -65,7 +65,7 @@ export class InlayHintItem {
 		}
 		if (!this._isResolved) {
 			this._currentResolve = this._doResolve(token).finally(
-				() => (this._currentResolve = undefined)
+				() => (this._currentResolve = undefined),
 			);
 		}
 		await this._currentResolve;
@@ -74,7 +74,7 @@ export class InlayHintItem {
 	private async _doResolve(token: CancellationToken) {
 		try {
 			const newHint = await Promise.resolve(
-				this.provider.resolveInlayHint!(this.hint, token)
+				this.provider.resolveInlayHint!(this.hint, token),
 			);
 			this.hint.tooltip = newHint?.tooltip ?? this.hint.tooltip;
 			this.hint.label = newHint?.label ?? this.hint.label;
@@ -96,7 +96,7 @@ export class InlayHintsFragments {
 		registry: LanguageFeatureRegistry<InlayHintsProvider>,
 		model: ITextModel,
 		ranges: Range[],
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<InlayHintsFragments> {
 		const data: [InlayHintList, InlayHintsProvider][] = [];
 
@@ -109,7 +109,7 @@ export class InlayHintsFragments {
 						const result = await provider.provideInlayHints(
 							model,
 							range,
-							token
+							token,
 						);
 						if (
 							result?.hints.length ||
@@ -124,7 +124,7 @@ export class InlayHintsFragments {
 					} catch (err) {
 						onUnexpectedExternalError(err);
 					}
-				})
+				}),
 			);
 
 		await Promise.all(promises.flat());
@@ -145,7 +145,7 @@ export class InlayHintsFragments {
 	private constructor(
 		ranges: Range[],
 		data: [InlayHintList, InlayHintsProvider][],
-		model: ITextModel
+		model: ITextModel,
 	) {
 		this.ranges = ranges;
 		this.provider = new Set();
@@ -161,20 +161,20 @@ export class InlayHintsFragments {
 
 				const wordRange = InlayHintsFragments._getRangeAtPosition(
 					model,
-					position
+					position,
 				);
 				let range: Range;
 
 				if (wordRange.getStartPosition().isBefore(position)) {
 					range = Range.fromPositions(
 						wordRange.getStartPosition(),
-						position
+						position,
 					);
 					direction = "after";
 				} else {
 					range = Range.fromPositions(
 						position,
-						wordRange.getEndPosition()
+						wordRange.getEndPosition(),
 					);
 					direction = "before";
 				}
@@ -183,13 +183,13 @@ export class InlayHintsFragments {
 					new InlayHintItem(
 						hint,
 						new InlayHintAnchor(range, direction),
-						provider
-					)
+						provider,
+					),
 				);
 			}
 		}
 		this.items = items.sort((a, b) =>
-			Position.compare(a.hint.position, b.hint.position)
+			Position.compare(a.hint.position, b.hint.position),
 		);
 	}
 
@@ -199,7 +199,7 @@ export class InlayHintsFragments {
 
 	private static _getRangeAtPosition(
 		model: ITextModel,
-		position: IPosition
+		position: IPosition,
 	): Range {
 		const line = position.lineNumber;
 		const word = model.getWordAtPosition(position);

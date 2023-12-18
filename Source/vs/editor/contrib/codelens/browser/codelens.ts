@@ -11,16 +11,16 @@ import {
 import { DisposableStore } from "vs/base/common/lifecycle";
 import { assertType } from "vs/base/common/types";
 import { URI } from "vs/base/common/uri";
-import { ITextModel } from "vs/editor/common/model";
+import { LanguageFeatureRegistry } from "vs/editor/common/languageFeatureRegistry";
 import {
 	CodeLens,
 	CodeLensList,
 	CodeLensProvider,
 } from "vs/editor/common/languages";
+import { ITextModel } from "vs/editor/common/model";
+import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
 import { IModelService } from "vs/editor/common/services/model";
 import { CommandsRegistry } from "vs/platform/commands/common/commands";
-import { LanguageFeatureRegistry } from "vs/editor/common/languageFeatureRegistry";
-import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
 
 export interface CodeLensItem {
 	symbol: CodeLens;
@@ -51,7 +51,7 @@ export class CodeLensModel {
 export async function getCodeLensModel(
 	registry: LanguageFeatureRegistry<CodeLensProvider>,
 	model: ITextModel,
-	token: CancellationToken
+	token: CancellationToken,
 ): Promise<CodeLensModel> {
 	const provider = registry.ordered(model);
 	const providerRanks = new Map<CodeLensProvider, number>();
@@ -62,7 +62,7 @@ export async function getCodeLensModel(
 
 		try {
 			const list = await Promise.resolve(
-				provider.provideCodeLenses(model, token)
+				provider.provideCodeLenses(model, token),
 			);
 			if (list) {
 				result.add(list, provider);
@@ -103,7 +103,7 @@ export async function getCodeLensModel(
 
 CommandsRegistry.registerCommand(
 	"_executeCodeLensProvider",
-	function (accessor, ...args: [URI, number | undefined | null]) {
+	(accessor, ...args: [URI, number | undefined | null]) => {
 		let [uri, itemResolveCount] = args;
 		assertType(URI.isUri(uri));
 		assertType(typeof itemResolveCount === "number" || !itemResolveCount);
@@ -138,11 +138,11 @@ CommandsRegistry.registerCommand(
 								item.provider.resolveCodeLens(
 									model,
 									item.symbol,
-									CancellationToken.None
-								)
+									CancellationToken.None,
+								),
 							).then((symbol) =>
-								result.push(symbol || item.symbol)
-							)
+								result.push(symbol || item.symbol),
+							),
 						);
 					}
 				}
@@ -157,5 +157,5 @@ CommandsRegistry.registerCommand(
 				// dispose the results
 				setTimeout(() => disposables.dispose(), 100);
 			});
-	}
+	},
 );

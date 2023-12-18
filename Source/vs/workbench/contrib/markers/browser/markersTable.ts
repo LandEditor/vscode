@@ -3,50 +3,50 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
 import * as DOM from "vs/base/browser/dom";
-import { Event } from "vs/base/common/event";
+import { DomEmitter } from "vs/base/browser/event";
+import { ActionBar } from "vs/base/browser/ui/actionbar/actionbar";
+import { HighlightedLabel } from "vs/base/browser/ui/highlightedlabel/highlightedLabel";
 import {
 	ITableContextMenuEvent,
 	ITableEvent,
 	ITableRenderer,
 	ITableVirtualDelegate,
 } from "vs/base/browser/ui/table/table";
+import { IAction } from "vs/base/common/actions";
+import { Event } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
+import Severity from "vs/base/common/severity";
+import { isUndefinedOrNull } from "vs/base/common/types";
+import { Range } from "vs/editor/common/core/range";
+import { localize } from "vs/nls";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { ILabelService } from "vs/platform/label/common/label";
 import {
 	IOpenEvent,
 	IWorkbenchTableOptions,
 	WorkbenchTable,
 } from "vs/platform/list/browser/listService";
-import { HighlightedLabel } from "vs/base/browser/ui/highlightedlabel/highlightedLabel";
+import { unsupportedSchemas } from "vs/platform/markers/common/markerService";
+import { MarkerSeverity } from "vs/platform/markers/common/markers";
+import { Link } from "vs/platform/opener/browser/link";
+import { IOpenerService } from "vs/platform/opener/common/opener";
+import { SeverityIcon } from "vs/platform/severityIcon/browser/severityIcon";
+import { FilterOptions } from "vs/workbench/contrib/markers/browser/markersFilterOptions";
 import {
-	compareMarkersByUri,
 	Marker,
 	MarkerTableItem,
 	ResourceMarkers,
+	compareMarkersByUri,
 } from "vs/workbench/contrib/markers/browser/markersModel";
-import { MarkerSeverity } from "vs/platform/markers/common/markers";
-import { SeverityIcon } from "vs/platform/severityIcon/browser/severityIcon";
-import { ActionBar } from "vs/base/browser/ui/actionbar/actionbar";
-import { ILabelService } from "vs/platform/label/common/label";
-import { FilterOptions } from "vs/workbench/contrib/markers/browser/markersFilterOptions";
-import { Link } from "vs/platform/opener/browser/link";
-import { IOpenerService } from "vs/platform/opener/common/opener";
 import { MarkersViewModel } from "vs/workbench/contrib/markers/browser/markersTreeViewer";
-import { IAction } from "vs/base/common/actions";
+import { IProblemsWidget } from "vs/workbench/contrib/markers/browser/markersView";
 import {
 	QuickFixAction,
 	QuickFixActionViewItem,
 } from "vs/workbench/contrib/markers/browser/markersViewActions";
-import { DomEmitter } from "vs/base/browser/event";
 import Messages from "vs/workbench/contrib/markers/browser/messages";
-import { isUndefinedOrNull } from "vs/base/common/types";
-import { IProblemsWidget } from "vs/workbench/contrib/markers/browser/markersView";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import { Range } from "vs/editor/common/core/range";
-import { unsupportedSchemas } from "vs/platform/markers/common/markerService";
-import Severity from "vs/base/common/severity";
 
 const $ = DOM.$;
 
@@ -96,8 +96,8 @@ class MarkerSeverityColumnRenderer
 				action.id === QuickFixAction.ID
 					? this.instantiationService.createInstance(
 							QuickFixActionViewItem,
-							<QuickFixAction>action
-						)
+							<QuickFixAction>action,
+					  )
 					: undefined,
 			animated: false,
 		});
@@ -109,25 +109,25 @@ class MarkerSeverityColumnRenderer
 		element: MarkerTableItem,
 		index: number,
 		templateData: IMarkerIconColumnTemplateData,
-		height: number | undefined
+		height: number | undefined,
 	): void {
 		const toggleQuickFix = (enabled?: boolean) => {
 			if (!isUndefinedOrNull(enabled)) {
 				const container = DOM.findParentWithClass(
 					templateData.icon,
-					"monaco-table-td"
+					"monaco-table-td",
 				)!;
 				container.classList.toggle("quickFix", enabled);
 			}
 		};
 
 		templateData.icon.title = MarkerSeverity.toString(
-			element.marker.severity
+			element.marker.severity,
 		);
 		templateData.icon.className = `marker-icon ${Severity.toString(
-			MarkerSeverity.toSeverity(element.marker.severity)
+			MarkerSeverity.toSeverity(element.marker.severity),
 		)} codicon ${SeverityIcon.className(
-			MarkerSeverity.toSeverity(element.marker.severity)
+			MarkerSeverity.toSeverity(element.marker.severity),
 		)}`;
 
 		templateData.actionBar.clear();
@@ -141,7 +141,7 @@ class MarkerSeverityColumnRenderer
 			toggleQuickFix(viewModel.quickFixAction.enabled);
 
 			quickFixAction.onDidChange(({ enabled }) =>
-				toggleQuickFix(enabled)
+				toggleQuickFix(enabled),
 			);
 			quickFixAction.onShowQuickFixes(() => {
 				const quickFixActionViewItem = <QuickFixActionViewItem>(
@@ -181,7 +181,7 @@ class MarkerCodeColumnRenderer
 			codeColumn,
 			{ href: "", label: "" },
 			{},
-			this.openerService
+			this.openerService,
 		);
 
 		return { codeColumn, sourceLabel, codeLabel, codeLink };
@@ -191,7 +191,7 @@ class MarkerCodeColumnRenderer
 		element: MarkerTableItem,
 		index: number,
 		templateData: IMarkerCodeColumnTemplateData,
-		height: number | undefined
+		height: number | undefined,
 	): void {
 		templateData.codeColumn.classList.remove("code-label");
 		templateData.codeColumn.classList.remove("code-link");
@@ -202,26 +202,26 @@ class MarkerCodeColumnRenderer
 				templateData.codeColumn.title = `${element.marker.source} (${element.marker.code})`;
 				templateData.sourceLabel.set(
 					element.marker.source,
-					element.sourceMatches
+					element.sourceMatches,
 				);
 				templateData.codeLabel.set(
 					element.marker.code,
-					element.codeMatches
+					element.codeMatches,
 				);
 			} else {
 				templateData.codeColumn.classList.add("code-link");
 				templateData.codeColumn.title = `${element.marker.source} (${element.marker.code.value})`;
 				templateData.sourceLabel.set(
 					element.marker.source,
-					element.sourceMatches
+					element.sourceMatches,
 				);
 
 				const codeLinkLabel = new HighlightedLabel(
-					$(".code-link-label")
+					$(".code-link-label"),
 				);
 				codeLinkLabel.set(
 					element.marker.code.value,
-					element.codeMatches
+					element.codeMatches,
 				);
 
 				templateData.codeLink.link = {
@@ -251,7 +251,7 @@ class MarkerMessageColumnRenderer
 	readonly templateId: string = MarkerMessageColumnRenderer.TEMPLATE_ID;
 
 	renderTemplate(
-		container: HTMLElement
+		container: HTMLElement,
 	): IMarkerHighlightedLabelColumnTemplateData {
 		const columnElement = DOM.append(container, $(".message"));
 		const highlightedLabel = new HighlightedLabel(columnElement);
@@ -263,17 +263,17 @@ class MarkerMessageColumnRenderer
 		element: MarkerTableItem,
 		index: number,
 		templateData: IMarkerHighlightedLabelColumnTemplateData,
-		height: number | undefined
+		height: number | undefined,
 	): void {
 		templateData.columnElement.title = element.marker.message;
 		templateData.highlightedLabel.set(
 			element.marker.message,
-			element.messageMatches
+			element.messageMatches,
 		);
 	}
 
 	disposeTemplate(
-		templateData: IMarkerHighlightedLabelColumnTemplateData
+		templateData: IMarkerHighlightedLabelColumnTemplateData,
 	): void {}
 }
 
@@ -300,22 +300,22 @@ class MarkerFileColumnRenderer
 		element: MarkerTableItem,
 		index: number,
 		templateData: IMarkerFileColumnTemplateData,
-		height: number | undefined
+		height: number | undefined,
 	): void {
 		const positionLabel = Messages.MARKERS_PANEL_AT_LINE_COL_NUMBER(
 			element.marker.startLineNumber,
-			element.marker.startColumn
+			element.marker.startColumn,
 		);
 
 		templateData.columnElement.title = `${this.labelService.getUriLabel(
 			element.marker.resource,
-			{ relative: false }
+			{ relative: false },
 		)} ${positionLabel}`;
 		templateData.fileLabel.set(
 			this.labelService.getUriLabel(element.marker.resource, {
 				relative: true,
 			}),
-			element.fileMatches
+			element.fileMatches,
 		);
 		templateData.positionLabel.set(positionLabel, undefined);
 	}
@@ -335,7 +335,7 @@ class MarkerOwnerColumnRenderer
 	readonly templateId: string = MarkerOwnerColumnRenderer.TEMPLATE_ID;
 
 	renderTemplate(
-		container: HTMLElement
+		container: HTMLElement,
 	): IMarkerHighlightedLabelColumnTemplateData {
 		const columnElement = DOM.append(container, $(".owner"));
 		const highlightedLabel = new HighlightedLabel(columnElement);
@@ -346,17 +346,17 @@ class MarkerOwnerColumnRenderer
 		element: MarkerTableItem,
 		index: number,
 		templateData: IMarkerHighlightedLabelColumnTemplateData,
-		height: number | undefined
+		height: number | undefined,
 	): void {
 		templateData.columnElement.title = element.marker.owner;
 		templateData.highlightedLabel.set(
 			element.marker.owner,
-			element.ownerMatches
+			element.ownerMatches,
 		);
 	}
 
 	disposeTemplate(
-		templateData: IMarkerHighlightedLabelColumnTemplateData
+		templateData: IMarkerHighlightedLabelColumnTemplateData,
 	): void {}
 }
 
@@ -371,7 +371,7 @@ class MarkersTableVirtualDelegate implements ITableVirtualDelegate<any> {
 }
 
 export class MarkersTable extends Disposable implements IProblemsWidget {
-	private _itemCount: number = 0;
+	private _itemCount = 0;
 	private readonly table: WorkbenchTable<MarkerTableItem>;
 
 	constructor(
@@ -537,7 +537,7 @@ export class MarkersTable extends Disposable implements IProblemsWidget {
 
 	filterMarkers(
 		resourceMarkers: ResourceMarkers[],
-		filterOptions: FilterOptions
+		filterOptions: FilterOptions,
 	): void {
 		this.filterOptions = filterOptions;
 		this.reset(resourceMarkers);
@@ -621,33 +621,33 @@ export class MarkersTable extends Disposable implements IProblemsWidget {
 					const sourceMatches = marker.marker.source
 						? FilterOptions._filter(
 								this.filterOptions.textFilter.text,
-								marker.marker.source
-							) ?? undefined
+								marker.marker.source,
+						  ) ?? undefined
 						: undefined;
 					const codeMatches = marker.marker.code
 						? FilterOptions._filter(
 								this.filterOptions.textFilter.text,
 								typeof marker.marker.code === "string"
 									? marker.marker.code
-									: marker.marker.code.value
-							) ?? undefined
+									: marker.marker.code.value,
+						  ) ?? undefined
 						: undefined;
 					const messageMatches =
 						FilterOptions._messageFilter(
 							this.filterOptions.textFilter.text,
-							marker.marker.message
+							marker.marker.message,
 						) ?? undefined;
 					const fileMatches =
 						FilterOptions._messageFilter(
 							this.filterOptions.textFilter.text,
 							this.labelService.getUriLabel(marker.resource, {
 								relative: true,
-							})
+							}),
 						) ?? undefined;
 					const ownerMatches =
 						FilterOptions._messageFilter(
 							this.filterOptions.textFilter.text,
-							marker.marker.owner
+							marker.marker.owner,
 						) ?? undefined;
 
 					const matched =
@@ -667,8 +667,8 @@ export class MarkersTable extends Disposable implements IProblemsWidget {
 								codeMatches,
 								messageMatches,
 								fileMatches,
-								ownerMatches
-							)
+								ownerMatches,
+							),
 						);
 					}
 
@@ -685,7 +685,7 @@ export class MarkersTable extends Disposable implements IProblemsWidget {
 			items.sort((a, b) => {
 				let result = MarkerSeverity.compare(
 					a.marker.severity,
-					b.marker.severity
+					b.marker.severity,
 				);
 
 				if (result === 0) {
@@ -697,14 +697,14 @@ export class MarkersTable extends Disposable implements IProblemsWidget {
 				}
 
 				return result;
-			})
+			}),
 		);
 	}
 
 	revealMarkers(
 		activeResource: ResourceMarkers | null,
 		focus: boolean,
-		lastSelectedRelativeTop: number
+		lastSelectedRelativeTop: number,
 	): void {
 		if (activeResource) {
 			const activeResourceIndex =
@@ -715,7 +715,7 @@ export class MarkersTable extends Disposable implements IProblemsWidget {
 					const tableSelection = this.table.getSelection();
 					this.table.reveal(
 						tableSelection[0],
-						lastSelectedRelativeTop
+						lastSelectedRelativeTop,
 					);
 
 					if (focus) {
@@ -744,12 +744,12 @@ export class MarkersTable extends Disposable implements IProblemsWidget {
 		if (this.isVisible()) {
 			if (selection && selection.length > 0) {
 				this.table.setSelection(
-					selection.map((m) => this.findMarkerIndex(m))
+					selection.map((m) => this.findMarkerIndex(m)),
 				);
 
 				if (focus && focus.length > 0) {
 					this.table.setFocus(
-						focus.map((f) => this.findMarkerIndex(f))
+						focus.map((f) => this.findMarkerIndex(f)),
 					);
 				} else {
 					this.table.setFocus([this.findMarkerIndex(selection[0])]);

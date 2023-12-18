@@ -7,9 +7,9 @@ import { IDisposable, toDisposable } from "vs/base/common/lifecycle";
 import { ISocket } from "vs/base/parts/ipc/common/ipc.net";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import {
+	RemoteConnection,
 	RemoteConnectionOfType,
 	RemoteConnectionType,
-	RemoteConnection,
 } from "vs/platform/remote/common/remoteAuthorityResolver";
 
 export const IRemoteSocketFactoryService =
@@ -26,14 +26,14 @@ export interface IRemoteSocketFactoryService {
 	 */
 	register<T extends RemoteConnectionType>(
 		type: T,
-		factory: ISocketFactory<T>
+		factory: ISocketFactory<T>,
 	): IDisposable;
 
 	connect(
 		connectTo: RemoteConnection,
 		path: string,
 		query: string,
-		debugLabel: string
+		debugLabel: string,
 	): Promise<ISocket>;
 }
 
@@ -43,7 +43,7 @@ export interface ISocketFactory<T extends RemoteConnectionType> {
 		connectTo: RemoteConnectionOfType<T>,
 		path: string,
 		query: string,
-		debugLabel: string
+		debugLabel: string,
 	): Promise<ISocket>;
 }
 
@@ -56,7 +56,7 @@ export class RemoteSocketFactoryService implements IRemoteSocketFactoryService {
 
 	public register<T extends RemoteConnectionType>(
 		type: T,
-		factory: ISocketFactory<T>
+		factory: ISocketFactory<T>,
 	): IDisposable {
 		this.factories[type] ??= [];
 		this.factories[type]!.push(factory);
@@ -69,7 +69,7 @@ export class RemoteSocketFactoryService implements IRemoteSocketFactoryService {
 	}
 
 	private getSocketFactory<T extends RemoteConnectionType>(
-		messagePassing: RemoteConnectionOfType<T>
+		messagePassing: RemoteConnectionOfType<T>,
 	): ISocketFactory<T> | undefined {
 		const factories = (this.factories[messagePassing.type] ||
 			[]) as ISocketFactory<T>[];
@@ -80,7 +80,7 @@ export class RemoteSocketFactoryService implements IRemoteSocketFactoryService {
 		connectTo: RemoteConnection,
 		path: string,
 		query: string,
-		debugLabel: string
+		debugLabel: string,
 	): Promise<ISocket> {
 		const socketFactory = this.getSocketFactory(connectTo);
 		if (!socketFactory) {

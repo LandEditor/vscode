@@ -19,7 +19,7 @@ export interface IResolvableEditorModel extends IDisposable {
 }
 
 export function isResolvedEditorModel(
-	model: IDisposable | undefined | null
+	model: IDisposable | undefined | null,
 ): model is IResolvableEditorModel {
 	const candidate = model as IResolvableEditorModel | undefined | null;
 
@@ -137,7 +137,7 @@ export enum EditorActivation {
 	 * Otherwise, if focus moves into the editor, it will activate and restore
 	 * automatically.
 	 */
-	RESTORE,
+	RESTORE = 2,
 
 	/**
 	 * Preserve the current active editor.
@@ -146,19 +146,19 @@ export enum EditorActivation {
 	 * Otherwise, if focus moves into the editor, it will activate and restore
 	 * automatically.
 	 */
-	PRESERVE,
+	PRESERVE = 3,
 }
 
 export enum EditorResolution {
 	/**
 	 * Displays a picker and allows the user to decide which editor to use.
 	 */
-	PICK,
+	PICK = 0,
 
 	/**
 	 * Only exclusive editors are considered.
 	 */
-	EXCLUSIVE_ONLY,
+	EXCLUSIVE_ONLY = 1,
 }
 
 export enum EditorOpenSource {
@@ -166,13 +166,13 @@ export enum EditorOpenSource {
 	 * Default: the editor is opening via a programmatic call
 	 * to the editor service API.
 	 */
-	API,
+	API = 0,
 
 	/**
 	 * Indicates that a user action triggered the opening, e.g.
 	 * via mouse or keyboard use.
 	 */
-	USER,
+	USER = 1,
 }
 
 export interface IEditorOptions {
@@ -292,7 +292,7 @@ export interface ITextEditorSelection {
 	readonly endColumn?: number;
 }
 
-export const enum TextEditorSelectionRevealType {
+export enum TextEditorSelectionRevealType {
 	/**
 	 * Option to scroll vertically or horizontally as necessary and reveal a range centered vertically.
 	 */
@@ -315,7 +315,7 @@ export const enum TextEditorSelectionRevealType {
 	NearTopIfOutsideViewport = 3,
 }
 
-export const enum TextEditorSelectionSource {
+export enum TextEditorSelectionSource {
 	/**
 	 * Programmatic source indicates a selection change that
 	 * was not triggered by the user via keyboard or mouse

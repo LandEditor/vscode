@@ -8,7 +8,7 @@ export interface IClickTarget {
 	event: MouseEvent;
 }
 
-export const enum ClickTargetType {
+export enum ClickTargetType {
 	Container = 0,
 	ContributedTextItem = 1,
 	ContributedCommandItem = 2,

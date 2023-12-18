@@ -58,7 +58,7 @@ export class MainThreadWebviews
 	public addWebview(
 		handle: extHostProtocol.WebviewHandle,
 		webview: IOverlayWebview,
-		options: { serializeBuffersForPostMessage: boolean }
+		options: { serializeBuffersForPostMessage: boolean },
 	): void {
 		if (this._webviews.has(handle)) {
 			throw new Error("Webview already registered");
@@ -70,14 +70,14 @@ export class MainThreadWebviews
 
 	public $setHtml(
 		handle: extHostProtocol.WebviewHandle,
-		value: string
+		value: string,
 	): void {
 		this.tryGetWebview(handle)?.setHtml(value);
 	}
 
 	public $setOptions(
 		handle: extHostProtocol.WebviewHandle,
-		options: extHostProtocol.IWebviewContentOptions
+		options: extHostProtocol.IWebviewContentOptions,
 	): void {
 		const webview = this.tryGetWebview(handle);
 		if (webview) {
@@ -96,7 +96,7 @@ export class MainThreadWebviews
 		}
 		const { message, arrayBuffers } = deserializeWebviewMessage(
 			jsonMessage,
-			buffers
+			buffers,
 		);
 		return webview.postMessage(message, arrayBuffers);
 	}
@@ -104,45 +104,45 @@ export class MainThreadWebviews
 	private hookupWebviewEventDelegate(
 		handle: extHostProtocol.WebviewHandle,
 		webview: IOverlayWebview,
-		options: { serializeBuffersForPostMessage: boolean }
+		options: { serializeBuffersForPostMessage: boolean },
 	) {
 		const disposables = new DisposableStore();
 
 		disposables.add(
-			webview.onDidClickLink((uri) => this.onDidClickLink(handle, uri))
+			webview.onDidClickLink((uri) => this.onDidClickLink(handle, uri)),
 		);
 
 		disposables.add(
 			webview.onMessage((message) => {
 				const serialized = serializeWebviewMessage(
 					message.message,
-					options
+					options,
 				);
 				this._proxy.$onMessage(
 					handle,
 					serialized.message,
-					new SerializableObjectWithBuffers(serialized.buffers)
+					new SerializableObjectWithBuffers(serialized.buffers),
 				);
-			})
+			}),
 		);
 
 		disposables.add(
 			webview.onMissingCsp((extension: ExtensionIdentifier) =>
-				this._proxy.$onMissingCsp(handle, extension.value)
-			)
+				this._proxy.$onMissingCsp(handle, extension.value),
+			),
 		);
 
 		disposables.add(
 			webview.onDidDispose(() => {
 				disposables.dispose();
 				this._webviews.delete(handle);
-			})
+			}),
 		);
 	}
 
 	private onDidClickLink(
 		handle: extHostProtocol.WebviewHandle,
-		link: string
+		link: string,
 	): void {
 		const webview = this.getWebview(handle);
 		if (this.isSupportedLink(webview, URI.parse(link))) {
@@ -169,7 +169,7 @@ export class MainThreadWebviews
 		if (link.scheme === Schemas.command) {
 			if (Array.isArray(webview.contentOptions.enableCommandUris)) {
 				return webview.contentOptions.enableCommandUris.includes(
-					link.path
+					link.path,
 				);
 			}
 
@@ -180,7 +180,7 @@ export class MainThreadWebviews
 	}
 
 	private tryGetWebview(
-		handle: extHostProtocol.WebviewHandle
+		handle: extHostProtocol.WebviewHandle,
 	): IWebview | undefined {
 		return this._webviews.get(handle);
 	}
@@ -203,14 +203,14 @@ export class MainThreadWebviews
 			<body>${localize(
 				"errorMessage",
 				"An error occurred while loading view: {0}",
-				escape(viewType)
+				escape(viewType),
 			)}</body>
 		</html>`;
 	}
 }
 
 export function reviveWebviewExtension(
-	extensionData: extHostProtocol.WebviewExtensionDescription
+	extensionData: extHostProtocol.WebviewExtensionDescription,
 ): WebviewExtensionDescription {
 	return {
 		id: extensionData.id,
@@ -219,7 +219,7 @@ export function reviveWebviewExtension(
 }
 
 export function reviveWebviewContentOptions(
-	webviewOptions: extHostProtocol.IWebviewContentOptions
+	webviewOptions: extHostProtocol.IWebviewContentOptions,
 ): WebviewContentOptions {
 	return {
 		allowScripts: webviewOptions.enableScripts,

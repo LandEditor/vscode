@@ -3,54 +3,54 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nativeWatchdog from "native-watchdog";
 import * as net from "net";
 import * as minimist from "minimist";
-import * as performance from "vs/base/common/performance";
-import type { MessagePortMain } from "vs/base/parts/sandbox/node/electronTypes";
+import * as nativeWatchdog from "native-watchdog";
+import { ProcessTimeRunOnceScheduler } from "vs/base/common/async";
+import { VSBuffer } from "vs/base/common/buffer";
 import {
 	isCancellationError,
 	isSigPipeError,
 	onUnexpectedError,
 } from "vs/base/common/errors";
 import { Event } from "vs/base/common/event";
+import * as performance from "vs/base/common/performance";
+import { IURITransformer } from "vs/base/common/uriIpc";
+import { realpath } from "vs/base/node/extpath";
+import { Promises } from "vs/base/node/pfs";
 import { IMessagePassingProtocol } from "vs/base/parts/ipc/common/ipc";
 import {
+	BufferedEmitter,
 	PersistentProtocol,
 	ProtocolConstants,
-	BufferedEmitter,
 } from "vs/base/parts/ipc/common/ipc.net";
 import {
 	NodeSocket,
 	WebSocketNodeSocket,
 } from "vs/base/parts/ipc/node/ipc.net";
+import type { MessagePortMain } from "vs/base/parts/sandbox/node/electronTypes";
+import { boolean } from "vs/editor/common/config/editorOptions";
 import product from "vs/platform/product/common/product";
-import {
-	MessageType,
-	createMessageOfType,
-	isMessageOfType,
-	IExtHostSocketMessage,
-	IExtHostReadyMessage,
-	IExtHostReduceGraceTimeMessage,
-	ExtensionHostExitCode,
-	IExtensionHostInitData,
-} from "vs/workbench/services/extensions/common/extensionHostProtocol";
+import { IHostUtils } from "vs/workbench/api/common/extHostExtensionService";
 import {
 	ExtensionHostMain,
 	IExitFn,
 } from "vs/workbench/api/common/extensionHostMain";
-import { VSBuffer } from "vs/base/common/buffer";
-import { IURITransformer } from "vs/base/common/uriIpc";
-import { Promises } from "vs/base/node/pfs";
-import { realpath } from "vs/base/node/extpath";
-import { IHostUtils } from "vs/workbench/api/common/extHostExtensionService";
-import { ProcessTimeRunOnceScheduler } from "vs/base/common/async";
-import { boolean } from "vs/editor/common/config/editorOptions";
 import { createURITransformer } from "vs/workbench/api/node/uriTransformer";
 import {
 	ExtHostConnectionType,
 	readExtHostConnection,
 } from "vs/workbench/services/extensions/common/extensionHostEnv";
+import {
+	ExtensionHostExitCode,
+	IExtHostReadyMessage,
+	IExtHostReduceGraceTimeMessage,
+	IExtHostSocketMessage,
+	IExtensionHostInitData,
+	MessageType,
+	createMessageOfType,
+	isMessageOfType,
+} from "vs/workbench/services/extensions/common/extensionHostProtocol";
 
 import "vs/workbench/api/common/extHost.common.services";
 import "vs/workbench/api/node/extHost.node.services";
@@ -84,14 +84,14 @@ const args = minimist(process.argv.slice(2), {
 // https://github.com/electron/electron/issues/10905). To prevent this from
 // happening we essentially blocklist this module from getting loaded in any
 // extension by patching the node require() function.
-(function () {
+(() => {
 	const Module = globalThis._VSCODE_NODE_MODULES.module as any;
 	const originalLoad = Module._load;
 
 	Module._load = function (request: string) {
 		if (request === "natives") {
 			throw new Error(
-				'Either the extension or an NPM dependency is using the [unsupported "natives" node module](https://go.microsoft.com/fwlink/?linkid=871887).'
+				'Either the extension or an NPM dependency is using the [unsupported "natives" node module](https://go.microsoft.com/fwlink/?linkid=871887).',
 			);
 		}
 
@@ -103,24 +103,27 @@ const args = minimist(process.argv.slice(2), {
 const nativeExit: IExitFn = process.exit.bind(process);
 const nativeOn = process.on.bind(process);
 function patchProcess(allowExit: boolean) {
-	process.exit = function (code?: number) {
+	process.exit = (code?: number) => {
 		if (allowExit) {
 			nativeExit(code);
 		} else {
 			const err = new Error(
-				"An extension called process.exit() and this was prevented."
+				"An extension called process.exit() and this was prevented.",
 			);
 			console.warn(err.stack);
 		}
-	} as (code?: number) => never;
+	};
+	as (code?: number)
+	=> never
 
 	// override Electron's process.crash() method
-	process.crash = function () {
+	process.crash = () =>
+	{
 		const err = new Error(
-			"An extension called process.crash() and this was prevented."
+			"An extension called process.crash() and this was prevented.",
 		);
 		console.warn(err.stack);
-	};
+	}
 
 	// Set ELECTRON_RUN_AS_NODE environment variable for extensions that use
 	// child_process.spawn with process.execPath and expect to run as node process
@@ -128,23 +131,21 @@ function patchProcess(allowExit: boolean) {
 	// Refs https://github.com/microsoft/vscode/issues/151012#issuecomment-1156593228
 	process.env["ELECTRON_RUN_AS_NODE"] = "1";
 
-	process.on = <any>(
-		function (event: string, listener: (...args: any[]) => void) {
-			if (event === "uncaughtException") {
-				listener = function () {
-					try {
-						return listener.call(undefined, arguments);
-					} catch {
-						// DO NOT HANDLE NOR PRINT the error here because this can and will lead to
-						// more errors which will cause error handling to be reentrant and eventually
-						// overflowing the stack. Do not be sad, we do handle and annotate uncaught
-						// errors properly in 'extensionHostMain'
-					}
-				};
-			}
-			nativeOn(event, listener);
+	process.on = <any>((event: string, listener: (...args: any[]) => void) => {
+		if (event === "uncaughtException") {
+			listener = () => {
+				try {
+					return listener.call(undefined, arguments);
+				} catch {
+					// DO NOT HANDLE NOR PRINT the error here because this can and will lead to
+					// more errors which will cause error handling to be reentrant and eventually
+					// overflowing the stack. Do not be sad, we do handle and annotate uncaught
+					// errors properly in 'extensionHostMain'
+				}
+			};
 		}
-	);
+		nativeOn(event, listener);
+	});
 }
 
 interface IRendererConnection {
@@ -154,7 +155,7 @@ interface IRendererConnection {
 
 // This calls exit directly in case the initialization is not finished and we need to exit
 // Otherwise, if initialization completed we go to extensionHostMain.terminate()
-let onTerminate = function (reason: string) {
+let onTerminate = (reason: string) => {
 	nativeExit();
 };
 
@@ -167,7 +168,7 @@ function _createExtHostProtocol(): Promise<IMessagePassingProtocol> {
 				const port = ports[0];
 				const onMessage = new BufferedEmitter<VSBuffer>();
 				port.on("message", (e) =>
-					onMessage.fire(VSBuffer.wrap(e.data))
+					onMessage.fire(VSBuffer.wrap(e.data)),
 				);
 				port.on("close", () => {
 					onTerminate("renderer closed the MessagePort");
@@ -181,7 +182,7 @@ function _createExtHostProtocol(): Promise<IMessagePassingProtocol> {
 			};
 
 			process.parentPort.on("message", (e: Electron.MessageEvent) =>
-				withPorts(e.ports)
+				withPorts(e.ports),
 			);
 		});
 	} else if (extHostConnection.type === ExtHostConnectionType.Socket) {
@@ -198,18 +199,18 @@ function _createExtHostProtocol(): Promise<IMessagePassingProtocol> {
 				ProtocolConstants.ReconnectionShortGraceTime;
 			const disconnectRunner1 = new ProcessTimeRunOnceScheduler(
 				() => onTerminate("renderer disconnected for too long (1)"),
-				reconnectionGraceTime
+				reconnectionGraceTime,
 			);
 			const disconnectRunner2 = new ProcessTimeRunOnceScheduler(
 				() => onTerminate("renderer disconnected for too long (2)"),
-				reconnectionShortGraceTime
+				reconnectionShortGraceTime,
 			);
 
 			process.on(
 				"message",
 				(
 					msg: IExtHostSocketMessage | IExtHostReduceGraceTimeMessage,
-					handle: net.Socket
+					handle: net.Socket,
 				) => {
 					if (msg && msg.type === "VSCODE_EXTHOST_IPC_SOCKET") {
 						// Disable Nagle's algorithm. We also do this on the server process,
@@ -217,20 +218,20 @@ function _createExtHostProtocol(): Promise<IMessagePassingProtocol> {
 						handle.setNoDelay(true);
 
 						const initialDataChunk = VSBuffer.wrap(
-							Buffer.from(msg.initialDataChunk, "base64")
+							Buffer.from(msg.initialDataChunk, "base64"),
 						);
 						let socket: NodeSocket | WebSocketNodeSocket;
 						if (msg.skipWebSocketFrames) {
 							socket = new NodeSocket(handle, "extHost-socket");
 						} else {
 							const inflateBytes = VSBuffer.wrap(
-								Buffer.from(msg.inflateBytes, "base64")
+								Buffer.from(msg.inflateBytes, "base64"),
 							);
 							socket = new WebSocketNodeSocket(
 								new NodeSocket(handle, "extHost-socket"),
 								msg.permessageDeflate,
 								inflateBytes,
-								false
+								false,
 							);
 						}
 						if (protocol) {
@@ -239,7 +240,7 @@ function _createExtHostProtocol(): Promise<IMessagePassingProtocol> {
 							disconnectRunner2.cancel();
 							protocol.beginAcceptReconnection(
 								socket,
-								initialDataChunk
+								initialDataChunk,
 							);
 							protocol.endAcceptReconnection();
 							protocol.sendResume();
@@ -251,7 +252,7 @@ function _createExtHostProtocol(): Promise<IMessagePassingProtocol> {
 							});
 							protocol.sendResume();
 							protocol.onDidDispose(() =>
-								onTerminate("renderer disconnected")
+								onTerminate("renderer disconnected"),
 							);
 							resolve(protocol);
 
@@ -275,7 +276,7 @@ function _createExtHostProtocol(): Promise<IMessagePassingProtocol> {
 							disconnectRunner2.schedule();
 						}
 					}
-				}
+				},
 			);
 
 			// Now that we have managed to install a message listener, ask the other side to send us the socket
@@ -341,7 +342,7 @@ async function createExtHostProtocol(): Promise<IMessagePassingProtocol> {
 }
 
 function connectToRenderer(
-	protocol: IMessagePassingProtocol
+	protocol: IMessagePassingProtocol,
 ): Promise<IRendererConnection> {
 	return new Promise<IRendererConnection>((c) => {
 		// Listen init data message
@@ -363,7 +364,7 @@ function connectToRenderer(
 			if (initData.parentPid) {
 				// Kill oneself if one's parent dies. Much drama.
 				let epermErrors = 0;
-				setInterval(function () {
+				setInterval(() => {
 					try {
 						process.kill(initData.parentPid, 0); // throws an exception if the main process doesn't exist anymore.
 						epermErrors = 0;
@@ -375,12 +376,12 @@ function connectToRenderer(
 							epermErrors++;
 							if (epermErrors >= 3) {
 								onTerminate(
-									`parent process ${initData.parentPid} does not exist anymore (3 x EPERM): ${e.message} (code: ${e.code}) (errno: ${e.errno})`
+									`parent process ${initData.parentPid} does not exist anymore (3 x EPERM): ${e.message} (code: ${e.code}) (errno: ${e.errno})`,
 								);
 							}
 						} else {
 							onTerminate(
-								`parent process ${initData.parentPid} does not exist anymore: ${e.message} (code: ${e.code}) (errno: ${e.errno})`
+								`parent process ${initData.parentPid} does not exist anymore: ${e.message} (code: ${e.code}) (errno: ${e.errno})`,
 							);
 						}
 					}
@@ -425,7 +426,7 @@ async function startExtensionHostProcess(): Promise<void> {
 					unhandledPromises.splice(idx, 1);
 					if (!isCancellationError(e)) {
 						console.warn(
-							`rejected promise not handled within 1 second: ${e}`
+							`rejected promise not handled within 1 second: ${e}`,
 						);
 						if (e && e.stack) {
 							console.warn(`stack trace: ${e.stack}`);
@@ -447,7 +448,7 @@ async function startExtensionHostProcess(): Promise<void> {
 	});
 
 	// Print a console message when an exception isn't handled.
-	process.on("uncaughtException", function (err: Error) {
+	process.on("uncaughtException", (err: Error) => {
 		if (!isSigPipeError(err)) {
 			onUnexpectedError(err);
 		}
@@ -467,7 +468,7 @@ async function startExtensionHostProcess(): Promise<void> {
 			: undefined;
 	initData.environment.skipWorkspaceStorageLock = boolean(
 		args.skipWorkspaceStorageLock,
-		false
+		false,
 	);
 
 	// host abstraction
@@ -495,7 +496,7 @@ async function startExtensionHostProcess(): Promise<void> {
 		renderer.protocol,
 		initData,
 		hostUtils,
-		uriTransformer
+		uriTransformer,
 	);
 
 	// rewrite onTerminate-function to be a proper shutdown

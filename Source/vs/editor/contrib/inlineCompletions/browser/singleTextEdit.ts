@@ -22,14 +22,11 @@ import {
 } from "vs/editor/contrib/inlineCompletions/browser/utils";
 
 export class SingleTextEdit {
-	constructor(
-		public readonly range: Range,
-		public readonly text: string
-	) {}
+	constructor(public readonly range: Range, public readonly text: string) {}
 
 	removeCommonPrefix(
 		model: ITextModel,
-		validModelRange?: Range
+		validModelRange?: Range,
 	): SingleTextEdit {
 		const modelRange = validModelRange
 			? this.range.intersectRanges(validModelRange)
@@ -39,12 +36,12 @@ export class SingleTextEdit {
 		}
 		const valueToReplace = model.getValueInRange(
 			modelRange,
-			EndOfLinePreference.LF
+			EndOfLinePreference.LF,
 		);
 		const commonPrefixLen = commonPrefixLength(valueToReplace, this.text);
 		const start = addPositions(
 			this.range.getStartPosition(),
-			lengthOfText(valueToReplace.substring(0, commonPrefixLen))
+			lengthOfText(valueToReplace.substring(0, commonPrefixLen)),
 		);
 		const text = this.text.substring(commonPrefixLen);
 		const range = Range.fromPositions(start, this.range.getEndPosition());
@@ -67,7 +64,7 @@ export class SingleTextEdit {
 		model: ITextModel,
 		mode: "prefix" | "subword" | "subwordSmart",
 		cursorPosition?: Position,
-		previewSuffixLength = 0
+		previewSuffixLength = 0,
 	): GhostText | undefined {
 		let edit = this.removeCommonPrefix(model);
 
@@ -92,12 +89,12 @@ export class SingleTextEdit {
 			//                         ^^ suggestionAddedIndentationLength
 
 			const suggestionAddedIndentationLength = getLeadingWhitespace(
-				edit.text
+				edit.text,
 			).length;
 
 			const replacedIndentation = sourceLine.substring(
 				edit.range.startColumn - 1,
-				sourceIndentationLength
+				sourceIndentationLength,
 			);
 
 			const [startPosition, endPosition] = [
@@ -111,20 +108,20 @@ export class SingleTextEdit {
 					: endPosition;
 			const rangeThatDoesNotReplaceIndentation = Range.fromPositions(
 				newStartPosition,
-				endPosition
+				endPosition,
 			);
 
 			const suggestionWithoutIndentationChange = edit.text.startsWith(
-				replacedIndentation
+				replacedIndentation,
 			)
 				? // Adds more indentation without changing existing indentation: We can add ghost text for this
-					edit.text.substring(replacedIndentation.length)
+				  edit.text.substring(replacedIndentation.length)
 				: // Changes or removes existing indentation. Only add ghost text for the non-indentation part.
-					edit.text.substring(suggestionAddedIndentationLength);
+				  edit.text.substring(suggestionAddedIndentationLength);
 
 			edit = new SingleTextEdit(
 				rangeThatDoesNotReplaceIndentation,
-				suggestionWithoutIndentationChange
+				suggestionWithoutIndentationChange,
 			);
 		}
 
@@ -144,7 +141,7 @@ export class SingleTextEdit {
 
 		if (mode === "prefix") {
 			const filteredChanges = changes.filter(
-				(c) => c.originalLength === 0
+				(c) => c.originalLength === 0,
 			);
 			if (
 				filteredChanges.length > 1 ||
@@ -185,15 +182,15 @@ export class SingleTextEdit {
 			const modifiedEnd = c.modifiedStart + c.modifiedLength;
 			const nonPreviewTextEnd = Math.max(
 				c.modifiedStart,
-				Math.min(modifiedEnd, previewStartInCompletionText)
+				Math.min(modifiedEnd, previewStartInCompletionText),
 			);
 			const nonPreviewText = edit.text.substring(
 				c.modifiedStart,
-				nonPreviewTextEnd
+				nonPreviewTextEnd,
 			);
 			const italicText = edit.text.substring(
 				nonPreviewTextEnd,
-				Math.max(c.modifiedStart, modifiedEnd)
+				Math.max(c.modifiedStart, modifiedEnd),
 			);
 
 			if (nonPreviewText.length > 0) {
@@ -230,7 +227,7 @@ let lastRequest:
 	| undefined = undefined;
 function cachingDiff(
 	originalValue: string,
-	newValue: string
+	newValue: string,
 ): readonly IDiffChange[] | undefined {
 	if (
 		lastRequest?.originalValue === originalValue &&
@@ -281,7 +278,7 @@ function deletedCharacters(changes: readonly IDiffChange[]): number {
 function smartDiff(
 	originalValue: string,
 	newValue: string,
-	smartBracketMatching: boolean
+	smartBracketMatching: boolean,
 ): readonly IDiffChange[] | undefined {
 	if (originalValue.length > 5000 || newValue.length > 5000) {
 		// We don't want to work on strings that are too big
@@ -301,7 +298,7 @@ function smartDiff(
 
 	const maxCharCode = Math.max(
 		getMaxCharCode(originalValue),
-		getMaxCharCode(newValue)
+		getMaxCharCode(newValue),
 	);
 	function getUniqueCharCode(id: number): number {
 		if (id < 0) {
@@ -339,6 +336,6 @@ function smartDiff(
 
 	return new LcsDiff(
 		{ getElements: () => elements1 },
-		{ getElements: () => elements2 }
+		{ getElements: () => elements2 },
 	).ComputeDiff(false).changes;
 }

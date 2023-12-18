@@ -5,6 +5,15 @@
 
 import * as DOM from "vs/base/browser/dom";
 import { StandardKeyboardEvent } from "vs/base/browser/keyboardEvent";
+import { HoverPosition } from "vs/base/browser/ui/hover/hoverWidget";
+import {
+	IHoverDelegate,
+	IHoverDelegateOptions,
+} from "vs/base/browser/ui/iconLabel/iconHoverDelegate";
+import {
+	ITooltipMarkdownString,
+	setupCustomHover,
+} from "vs/base/browser/ui/iconLabel/iconLabelHover";
 import { SimpleIconLabel } from "vs/base/browser/ui/iconLabel/simpleIconLabel";
 import {
 	WorkbenchActionExecutedClassification,
@@ -16,14 +25,15 @@ import { stripIcons } from "vs/base/common/iconLabels";
 import { KeyCode } from "vs/base/common/keyCodes";
 import { Disposable, DisposableStore, dispose } from "vs/base/common/lifecycle";
 import { MarshalledId } from "vs/base/common/marshallingIds";
+import { ThemeColor } from "vs/base/common/themables";
 import { ICodeEditor } from "vs/editor/browser/editorBrowser";
 import { isThemeColor } from "vs/editor/common/editorCommon";
 import { ICommandService } from "vs/platform/commands/common/commands";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { INotificationService } from "vs/platform/notification/common/notification";
 import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import { IThemeService } from "vs/platform/theme/common/themeService";
-import { ThemeColor } from "vs/base/common/themables";
 import { INotebookCellActionContext } from "vs/workbench/contrib/notebook/browser/controller/coreActions";
 import {
 	CellFocusMode,
@@ -40,17 +50,7 @@ import {
 	CellStatusbarAlignment,
 	INotebookCellStatusBarItem,
 } from "vs/workbench/contrib/notebook/common/notebookCommon";
-import {
-	ITooltipMarkdownString,
-	setupCustomHover,
-} from "vs/base/browser/ui/iconLabel/iconLabelHover";
-import {
-	IHoverDelegate,
-	IHoverDelegateOptions,
-} from "vs/base/browser/ui/iconLabel/iconHoverDelegate";
 import { IHoverService } from "vs/workbench/services/hover/browser/hover";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { HoverPosition } from "vs/base/browser/ui/hover/hoverWidget";
 
 const $ = DOM.$;
 
@@ -63,11 +63,11 @@ export class CellEditorStatusBar extends CellContentPart {
 
 	private leftItems: CellStatusBarItem[] = [];
 	private rightItems: CellStatusBarItem[] = [];
-	private width: number = 0;
+	private width = 0;
 
 	private currentContext: INotebookCellActionContext | undefined;
 	protected readonly _onDidClick: Emitter<IClickTarget> = this._register(
-		new Emitter<IClickTarget>()
+		new Emitter<IClickTarget>(),
 	);
 	readonly onDidClick: Event<IClickTarget> = this._onDidClick.event;
 
@@ -110,7 +110,7 @@ export class CellEditorStatusBar extends CellContentPart {
 		this.itemsDisposable = this._register(new DisposableStore());
 
 		this.hoverDelegate = new (class implements IHoverDelegate {
-			private _lastHoverHideTime: number = 0;
+			private _lastHoverHideTime = 0;
 
 			readonly showHover = (options: IHoverDelegateOptions) => {
 				options.position = options.position ?? {};
@@ -156,8 +156,7 @@ export class CellEditorStatusBar extends CellContentPart {
 							type: ClickTargetType.Container,
 							event: e,
 						});
-					} else {
-						if (
+					} else if (
 							(e.target as HTMLElement).classList.contains(
 								"cell-status-item-has-command"
 							)
@@ -173,7 +172,6 @@ export class CellEditorStatusBar extends CellContentPart {
 								event: e,
 							});
 						}
-					}
 				}
 			)
 		);
@@ -196,7 +194,7 @@ export class CellEditorStatusBar extends CellContentPart {
 						(this.statusBarContainer.ownerDocument.activeElement &&
 							this.statusBarContainer.contains(
 								this.statusBarContainer.ownerDocument
-									.activeElement
+									.activeElement,
 							)))
 				) {
 					element.focusMode = CellFocusMode.Editor;
@@ -218,7 +216,7 @@ export class CellEditorStatusBar extends CellContentPart {
 			this.cellDisposables.add(
 				this._editor.onDidFocusEditorWidget(() => {
 					updateFocusModeForEditorEvent();
-				})
+				}),
 			);
 			this.cellDisposables.add(
 				this._editor.onDidBlurEditorWidget(() => {
@@ -232,13 +230,13 @@ export class CellEditorStatusBar extends CellContentPart {
 								.activeElement &&
 							this.statusBarContainer.contains(
 								this.statusBarContainer.ownerDocument
-									.activeElement
+									.activeElement,
 							)
 						)
 					) {
 						updateFocusModeForEditorEvent();
 					}
-				})
+				}),
 			);
 
 			// Mouse click handlers
@@ -254,15 +252,15 @@ export class CellEditorStatusBar extends CellContentPart {
 							e.event.clientY -
 								this._notebookEditor.notebookOptions.computeEditorStatusbarHeight(
 									this.currentCell.internalMetadata,
-									this.currentCell.uri
-								)
+									this.currentCell.uri,
+								),
 						);
 						if (target?.position) {
 							this._editor.setPosition(target.position);
 							this._editor.focus();
 						}
 					}
-				})
+				}),
 			);
 		}
 	}
@@ -273,8 +271,8 @@ export class CellEditorStatusBar extends CellContentPart {
 			"cell-statusbar-hidden",
 			this._notebookEditor.notebookOptions.computeEditorStatusbarHeight(
 				element.internalMetadata,
-				element.uri
-			) === 0
+				element.uri,
+			) === 0,
 		);
 
 		const layoutInfo = element.layoutInfo;
@@ -308,17 +306,17 @@ export class CellEditorStatusBar extends CellContentPart {
 				if (this.currentContext) {
 					this.updateInternalLayoutNow(this.currentContext.cell);
 				}
-			})
+			}),
 		);
 		this.itemsDisposable.add(
 			this.currentContext.cell.onDidChangeCellStatusBarItems(() =>
-				this.updateRenderedItems()
-			)
+				this.updateRenderedItems(),
+			),
 		);
 		this.itemsDisposable.add(
 			this.currentContext.notebookEditor.onDidChangeActiveCell(() =>
-				this.updateActiveCell()
-			)
+				this.updateActiveCell(),
+			),
 		);
 		this.updateInternalLayoutNow(this.currentContext.cell);
 		this.updateActiveCell();
@@ -331,7 +329,7 @@ export class CellEditorStatusBar extends CellContentPart {
 			this.currentContext?.cell;
 		this.statusBarContainer.classList.toggle(
 			"is-active-cell",
-			isActiveCell
+			isActiveCell,
 		);
 	}
 
@@ -343,7 +341,7 @@ export class CellEditorStatusBar extends CellContentPart {
 
 		const maxItemWidth = this.getMaxItemWidth();
 		const newLeftItems = items.filter(
-			(item) => item.alignment === CellStatusbarAlignment.Left
+			(item) => item.alignment === CellStatusbarAlignment.Left,
 		);
 		const newRightItems = items
 			.filter((item) => item.alignment === CellStatusbarAlignment.Right)
@@ -352,12 +350,12 @@ export class CellEditorStatusBar extends CellContentPart {
 		const updateItems = (
 			renderedItems: CellStatusBarItem[],
 			newItems: INotebookCellStatusBarItem[],
-			container: HTMLElement
+			container: HTMLElement,
 		) => {
 			if (renderedItems.length > newItems.length) {
 				const deleted = renderedItems.splice(
 					newItems.length,
-					renderedItems.length - newItems.length
+					renderedItems.length - newItems.length,
 				);
 				for (const deletedItem of deleted) {
 					container.removeChild(deletedItem.container);
@@ -376,7 +374,7 @@ export class CellEditorStatusBar extends CellContentPart {
 						this.hoverDelegate,
 						this._editor,
 						newLeftItem,
-						maxItemWidth
+						maxItemWidth,
 					);
 					renderedItems.push(item);
 					container.appendChild(item.container);
@@ -429,7 +427,7 @@ class CellStatusBarItem extends Disposable {
 		if (!this._currentItem || this._currentItem.text !== item.text) {
 			new SimpleIconLabel(this.container).text = item.text.replace(
 				/\n/g,
-				" "
+				" ",
 			);
 		}
 
@@ -450,7 +448,7 @@ class CellStatusBarItem extends Disposable {
 
 		this.container.classList.toggle(
 			"cell-status-item-show-when-active",
-			!!item.onlyShowWhenActive
+			!!item.onlyShowWhenActive,
 		);
 
 		if (typeof maxWidth === "number") {
@@ -478,14 +476,14 @@ class CellStatusBarItem extends Disposable {
 				setupCustomHover(
 					this._hoverDelegate,
 					this.container,
-					hoverContent
-				)
+					hoverContent,
+				),
 			);
 		}
 
 		this.container.classList.toggle(
 			"cell-status-item-has-command",
-			!!item.command
+			!!item.command,
 		);
 		if (item.command) {
 			this.container.tabIndex = 0;
@@ -496,8 +494,8 @@ class CellStatusBarItem extends Disposable {
 					DOM.EventType.CLICK,
 					(_e) => {
 						this.executeCommand();
-					}
-				)
+					},
+				),
 			);
 			this._itemDisposables.add(
 				DOM.addDisposableListener(
@@ -511,8 +509,8 @@ class CellStatusBarItem extends Disposable {
 						) {
 							this.executeCommand();
 						}
-					}
-				)
+					},
+				),
 			);
 		} else {
 			this.container.removeAttribute("tabIndex");

@@ -3,16 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
 import { localize } from "vs/nls";
-import { BINARY_DIFF_EDITOR_ID } from "vs/workbench/common/editor";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IStorageService } from "vs/platform/storage/common/storage";
 import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import { IThemeService } from "vs/platform/theme/common/themeService";
-import { SideBySideEditor } from "vs/workbench/browser/parts/editor/sideBySideEditor";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { BaseBinaryResourceEditor } from "vs/workbench/browser/parts/editor/binaryEditor";
-import { IStorageService } from "vs/platform/storage/common/storage";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
+import { SideBySideEditor } from "vs/workbench/browser/parts/editor/sideBySideEditor";
+import { BINARY_DIFF_EDITOR_ID } from "vs/workbench/common/editor";
 import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 
@@ -31,7 +31,7 @@ export class BinaryResourceDiffEditor extends SideBySideEditor {
 		@ITextResourceConfigurationService
 		textResourceConfigurationService: ITextResourceConfigurationService,
 		@IEditorService editorService: IEditorService,
-		@IEditorGroupsService editorGroupService: IEditorGroupsService
+		@IEditorGroupsService editorGroupService: IEditorGroupsService,
 	) {
 		super(
 			telemetryService,
@@ -41,7 +41,7 @@ export class BinaryResourceDiffEditor extends SideBySideEditor {
 			configurationService,
 			textResourceConfigurationService,
 			editorService,
-			editorGroupService
+			editorGroupService,
 		);
 	}
 
@@ -57,7 +57,7 @@ export class BinaryResourceDiffEditor extends SideBySideEditor {
 				"metadataDiff",
 				"{0} ↔ {1}",
 				secondary.getMetadata(),
-				primary.getMetadata()
+				primary.getMetadata(),
 			);
 		}
 

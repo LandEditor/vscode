@@ -67,7 +67,7 @@ export class CodeActionController
 
 	public static get(editor: ICodeEditor): CodeActionController | null {
 		return editor.getContribution<CodeActionController>(
-			CodeActionController.ID
+			CodeActionController.ID,
 		);
 	}
 
@@ -76,7 +76,7 @@ export class CodeActionController
 
 	private readonly _lightBulbWidget: Lazy<LightBulbWidget | null>;
 	private readonly _activeCodeActions = this._register(
-		new MutableDisposable<CodeActionSet>()
+		new MutableDisposable<CodeActionSet>(),
 	);
 	private _showDisabled = false;
 
@@ -153,7 +153,7 @@ export class CodeActionController
 	public showCodeActions(
 		_trigger: CodeActionTrigger,
 		actions: CodeActionSet,
-		at: IAnchor | IPosition
+		at: IAnchor | IPosition,
 	) {
 		return this.showCodeActionList(actions, at, {
 			includeDisabledActions: false,
@@ -169,7 +169,7 @@ export class CodeActionController
 		notAvailableMessage: string,
 		triggerAction: CodeActionTriggerSource,
 		filter?: CodeActionFilter,
-		autoApply?: CodeActionAutoApply
+		autoApply?: CodeActionAutoApply,
 	): void {
 		if (!this._editor.hasModel()) {
 			return;
@@ -193,14 +193,14 @@ export class CodeActionController
 	private async _applyCodeAction(
 		action: CodeActionItem,
 		retrigger: boolean,
-		preview: boolean
+		preview: boolean,
 	): Promise<void> {
 		try {
 			await this._instantiationService.invokeFunction(
 				applyCodeAction,
 				action,
 				ApplyCodeActionReason.FromCodeActions,
-				{ preview, editor: this._editor }
+				{ preview, editor: this._editor },
 			);
 		} finally {
 			if (retrigger) {
@@ -238,7 +238,7 @@ export class CodeActionController
 		this._lightBulbWidget.value?.update(
 			actions,
 			newState.trigger,
-			newState.position
+			newState.position,
 		);
 
 		if (newState.trigger.type === CodeActionTriggerType.Invoke) {
@@ -248,7 +248,7 @@ export class CodeActionController
 
 				const validActionToApply = this.tryGetValidActionToApply(
 					newState.trigger,
-					actions
+					actions,
 				);
 				if (validActionToApply) {
 					try {
@@ -256,7 +256,7 @@ export class CodeActionController
 						await this._applyCodeAction(
 							validActionToApply,
 							false,
-							false
+							false,
 						);
 					} finally {
 						actions.dispose();
@@ -269,12 +269,12 @@ export class CodeActionController
 					const invalidAction =
 						this.getInvalidActionThatWouldHaveBeenApplied(
 							newState.trigger,
-							actions
+							actions,
 						);
 					if (invalidAction && invalidAction.action.disabled) {
 						MessageController.get(this._editor)?.showMessage(
 							invalidAction.action.disabled,
-							newState.trigger.context.position
+							newState.trigger.context.position,
 						);
 						actions.dispose();
 						return;
@@ -290,7 +290,7 @@ export class CodeActionController
 				) {
 					MessageController.get(this._editor)?.showMessage(
 						newState.trigger.context.notAvailableMessage,
-						newState.trigger.context.position
+						newState.trigger.context.position,
 					);
 					this._activeCodeActions.value = actions;
 					actions.dispose();
@@ -316,7 +316,7 @@ export class CodeActionController
 
 	private getInvalidActionThatWouldHaveBeenApplied(
 		trigger: CodeActionTrigger,
-		actions: CodeActionSet
+		actions: CodeActionSet,
 	): CodeActionItem | undefined {
 		if (!actions.allActions.length) {
 			return undefined;
@@ -336,7 +336,7 @@ export class CodeActionController
 
 	private tryGetValidActionToApply(
 		trigger: CodeActionTrigger,
-		actions: CodeActionSet
+		actions: CodeActionSet,
 	): CodeActionItem | undefined {
 		if (!actions.validActions.length) {
 			return undefined;
@@ -362,7 +362,7 @@ export class CodeActionController
 	public async showCodeActionList(
 		actions: CodeActionSet,
 		at: IAnchor | IPosition,
-		options: IActionShowOptions
+		options: IActionShowOptions,
 	): Promise<void> {
 		const currentDecorations = this._editor.createDecorationsCollection();
 
@@ -394,7 +394,7 @@ export class CodeActionController
 			},
 			onHover: async (
 				action: CodeActionItem,
-				token: CancellationToken
+				token: CancellationToken,
 			) => {
 				if (token.isCancellationRequested) {
 					return;
@@ -427,8 +427,8 @@ export class CodeActionController
 							"Context: {0} at line {1} and column {2}.",
 							selectionText,
 							diagnostic.startLineNumber,
-							diagnostic.startColumn
-						)
+							diagnostic.startColumn,
+						),
 					);
 				} else {
 					currentDecorations.clear();
@@ -442,12 +442,12 @@ export class CodeActionController
 			toMenuItems(
 				actionsToShow,
 				this._shouldShowHeaders(),
-				this._resolver.getResolver()
+				this._resolver.getResolver(),
 			),
 			delegate,
 			anchor,
 			editorDom,
-			this._getActionBarActions(actions, at, options)
+			this._getActionBarActions(actions, at, options),
 		);
 	}
 
@@ -472,14 +472,14 @@ export class CodeActionController
 		const model = this._editor?.getModel();
 		return this._configurationService.getValue(
 			"editor.codeActionWidget.showHeaders",
-			{ resource: model?.uri }
+			{ resource: model?.uri },
 		);
 	}
 
 	private _getActionBarActions(
 		actions: CodeActionSet,
 		at: IAnchor | IPosition,
-		options: IActionShowOptions
+		options: IActionShowOptions,
 	): IAction[] {
 		if (options.fromLightbulb) {
 			return [];
@@ -495,9 +495,9 @@ export class CodeActionController
 				run: () =>
 					this._commandService.executeCommand(
 						command.id,
-						...(command.arguments ?? [])
+						...(command.arguments ?? []),
 					),
-			})
+			}),
 		);
 
 		if (
@@ -518,10 +518,10 @@ export class CodeActionController
 								return this.showCodeActionList(
 									actions,
 									at,
-									options
+									options,
 								);
 							},
-						}
+					  }
 					: {
 							id: "showMoreActions",
 							label: localize("showMoreActions", "Show Disabled"),
@@ -533,10 +533,10 @@ export class CodeActionController
 								return this.showCodeActionList(
 									actions,
 									at,
-									options
+									options,
 								);
 							},
-						}
+					  },
 			);
 		}
 
@@ -547,28 +547,28 @@ export class CodeActionController
 registerThemingParticipant((theme, collector) => {
 	const addBackgroundColorRule = (
 		selector: string,
-		color: Color | undefined
+		color: Color | undefined,
 	): void => {
 		if (color) {
 			collector.addRule(
-				`.monaco-editor ${selector} { background-color: ${color}; }`
+				`.monaco-editor ${selector} { background-color: ${color}; }`,
 			);
 		}
 	};
 
 	addBackgroundColorRule(
 		".quickfix-edit-highlight",
-		theme.getColor(editorFindMatchHighlight)
+		theme.getColor(editorFindMatchHighlight),
 	);
 	const findMatchHighlightBorder = theme.getColor(
-		editorFindMatchHighlightBorder
+		editorFindMatchHighlightBorder,
 	);
 
 	if (findMatchHighlightBorder) {
 		collector.addRule(
 			`.monaco-editor .quickfix-edit-highlight { border: 1px ${
 				isHighContrast(theme.type) ? "dotted" : "solid"
-			} ${findMatchHighlightBorder}; box-sizing: border-box; }`
+			} ${findMatchHighlightBorder}; box-sizing: border-box; }`,
 		);
 	}
 });

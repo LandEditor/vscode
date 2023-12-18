@@ -3,18 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ISharedProcessService } from "vs/platform/ipc/electron-sandbox/services";
+import { Event } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
 import { IChannel } from "vs/base/parts/ipc/common/ipc";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
+import { ISharedProcessService } from "vs/platform/ipc/electron-sandbox/services";
 import {
-	IUserDataSyncMachinesService,
 	IUserDataSyncMachine,
+	IUserDataSyncMachinesService,
 } from "vs/platform/userDataSync/common/userDataSyncMachines";
-import { Event } from "vs/base/common/event";
 
 class UserDataSyncMachinesService
 	extends Disposable
@@ -59,5 +59,5 @@ class UserDataSyncMachinesService
 registerSingleton(
 	IUserDataSyncMachinesService,
 	UserDataSyncMachinesService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

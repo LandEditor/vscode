@@ -3,8 +3,61 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { ActionsOrientation } from "vs/base/browser/ui/actionbar/actionbar";
+import { AnchorAlignment } from "vs/base/browser/ui/contextview/contextview";
+import { LayoutPriority } from "vs/base/browser/ui/grid/grid";
+import { HoverPosition } from "vs/base/browser/ui/hover/hoverWidget";
+import { mainWindow } from "vs/base/browser/window";
+import { Separator } from "vs/base/common/actions";
+import { assertIsDefined } from "vs/base/common/types";
 import "vs/css!./media/sidebarpart";
+import { localize } from "vs/nls";
+import {
+	Action2,
+	IMenuService,
+	registerAction2,
+} from "vs/platform/actions/common/actions";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { INotificationService } from "vs/platform/notification/common/notification";
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from "vs/platform/storage/common/storage";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { contrastBorder } from "vs/platform/theme/common/colorRegistry";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import { ToggleActivityBarVisibilityActionId } from "vs/workbench/browser/actions/layoutActions";
+import {
+	ActivityBarCompositeBar,
+	ActivitybarPart,
+} from "vs/workbench/browser/parts/activitybar/activitybarPart";
+import { IPaneCompositeBarOptions } from "vs/workbench/browser/parts/paneCompositeBar";
+import { AbstractPaneCompositePart } from "vs/workbench/browser/parts/paneCompositePart";
 import "vs/workbench/browser/parts/sidebar/sidebarActions";
+import {
+	ActiveViewletContext,
+	SidebarFocusContext,
+} from "vs/workbench/common/contextkeys";
+import {
+	ACTIVITY_BAR_BADGE_BACKGROUND,
+	ACTIVITY_BAR_BADGE_FOREGROUND,
+	PANEL_ACTIVE_TITLE_BORDER,
+	PANEL_ACTIVE_TITLE_FOREGROUND,
+	PANEL_DRAG_AND_DROP_BORDER,
+	PANEL_INACTIVE_TITLE_FOREGROUND,
+	SIDE_BAR_BACKGROUND,
+	SIDE_BAR_BORDER,
+	SIDE_BAR_DRAG_AND_DROP_BACKGROUND,
+	SIDE_BAR_FOREGROUND,
+	SIDE_BAR_TITLE_FOREGROUND,
+} from "vs/workbench/common/theme";
+import { IViewDescriptorService } from "vs/workbench/common/views";
+import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
 import {
 	ActivityBarPosition,
 	IWorkbenchLayoutService,
@@ -13,62 +66,9 @@ import {
 	Position as SideBarPosition,
 } from "vs/workbench/services/layout/browser/layoutService";
 import {
-	SidebarFocusContext,
-	ActiveViewletContext,
-} from "vs/workbench/common/contextkeys";
-import {
-	IStorageService,
-	StorageScope,
-	StorageTarget,
-} from "vs/platform/storage/common/storage";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import { contrastBorder } from "vs/platform/theme/common/colorRegistry";
-import {
-	SIDE_BAR_TITLE_FOREGROUND,
-	SIDE_BAR_BACKGROUND,
-	SIDE_BAR_FOREGROUND,
-	SIDE_BAR_BORDER,
-	SIDE_BAR_DRAG_AND_DROP_BACKGROUND,
-	PANEL_ACTIVE_TITLE_BORDER,
-	PANEL_ACTIVE_TITLE_FOREGROUND,
-	PANEL_INACTIVE_TITLE_FOREGROUND,
-	PANEL_DRAG_AND_DROP_BORDER,
-	ACTIVITY_BAR_BADGE_BACKGROUND,
-	ACTIVITY_BAR_BADGE_FOREGROUND,
-} from "vs/workbench/common/theme";
-import { INotificationService } from "vs/platform/notification/common/notification";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import { AnchorAlignment } from "vs/base/browser/ui/contextview/contextview";
-import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
-import { LayoutPriority } from "vs/base/browser/ui/grid/grid";
-import { assertIsDefined } from "vs/base/common/types";
-import { IViewDescriptorService } from "vs/workbench/common/views";
-import { AbstractPaneCompositePart } from "vs/workbench/browser/parts/paneCompositePart";
-import {
-	ActivityBarCompositeBar,
-	ActivitybarPart,
-} from "vs/workbench/browser/parts/activitybar/activitybarPart";
-import { ActionsOrientation } from "vs/base/browser/ui/actionbar/actionbar";
-import { HoverPosition } from "vs/base/browser/ui/hover/hoverWidget";
-import { IPaneCompositeBarOptions } from "vs/workbench/browser/parts/paneCompositeBar";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import {
-	Action2,
-	IMenuService,
-	registerAction2,
-} from "vs/platform/actions/common/actions";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import {
 	ILifecycleService,
 	LifecyclePhase,
 } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { Separator } from "vs/base/common/actions";
-import { ToggleActivityBarVisibilityActionId } from "vs/workbench/browser/actions/layoutActions";
-import { localize } from "vs/nls";
-import { mainWindow } from "vs/base/browser/window";
 
 export class SidebarPart extends AbstractPaneCompositePart {
 	static readonly activeViewletSettingsKey =
@@ -219,9 +219,9 @@ export class SidebarPart extends AbstractPaneCompositePart {
 			borderColor && !isPositionLeft ? "1px" : "";
 		container.style.borderLeftStyle =
 			borderColor && !isPositionLeft ? "solid" : "";
-		container.style.borderLeftColor = !isPositionLeft
-			? borderColor || ""
-			: "";
+		container.style.borderLeftColor = isPositionLeft
+			? ""
+			: borderColor || "";
 		container.style.outlineColor =
 			this.getColor(SIDE_BAR_DRAG_AND_DROP_BACKGROUND) ?? "";
 	}
@@ -230,7 +230,7 @@ export class SidebarPart extends AbstractPaneCompositePart {
 		width: number,
 		height: number,
 		top: number,
-		left: number
+		left: number,
 	): void {
 		if (!this.layoutService.isVisible(Parts.SIDEBAR_PART)) {
 			return;
@@ -251,7 +251,7 @@ export class SidebarPart extends AbstractPaneCompositePart {
 			this.getCompositeBarOptions(),
 			this.partId,
 			this,
-			false
+			false,
 		);
 	}
 
@@ -283,13 +283,13 @@ export class SidebarPart extends AbstractPaneCompositePart {
 				activeBackgroundColor: theme.getColor(SIDE_BAR_BACKGROUND),
 				inactiveBackgroundColor: theme.getColor(SIDE_BAR_BACKGROUND),
 				activeBorderBottomColor: theme.getColor(
-					PANEL_ACTIVE_TITLE_BORDER
+					PANEL_ACTIVE_TITLE_BORDER,
 				),
 				activeForegroundColor: theme.getColor(
-					PANEL_ACTIVE_TITLE_FOREGROUND
+					PANEL_ACTIVE_TITLE_FOREGROUND,
 				),
 				inactiveForegroundColor: theme.getColor(
-					PANEL_INACTIVE_TITLE_FOREGROUND
+					PANEL_INACTIVE_TITLE_FOREGROUND,
 				),
 				badgeBackground: theme.getColor(ACTIVITY_BAR_BADGE_BACKGROUND),
 				badgeForeground: theme.getColor(ACTIVITY_BAR_BADGE_FOREGROUND),
@@ -303,7 +303,7 @@ export class SidebarPart extends AbstractPaneCompositePart {
 		return (
 			this.layoutService.isVisible(Parts.TITLEBAR_PART, mainWindow) &&
 			this.configurationService.getValue(
-				LayoutSettings.ACTIVITY_BAR_LOCATION
+				LayoutSettings.ACTIVITY_BAR_LOCATION,
 			) === ActivityBarPosition.TOP
 		);
 	}
@@ -314,21 +314,21 @@ export class SidebarPart extends AbstractPaneCompositePart {
 		}
 		return (
 			this.configurationService.getValue(
-				LayoutSettings.ACTIVITY_BAR_LOCATION
+				LayoutSettings.ACTIVITY_BAR_LOCATION,
 			) !== ActivityBarPosition.HIDDEN
 		);
 	}
 
 	private rememberActivityBarVisiblePosition(): void {
 		const activityBarPosition = this.configurationService.getValue<string>(
-			LayoutSettings.ACTIVITY_BAR_LOCATION
+			LayoutSettings.ACTIVITY_BAR_LOCATION,
 		);
 		if (activityBarPosition !== ActivityBarPosition.HIDDEN) {
 			this.storageService.store(
 				LayoutSettings.ACTIVITY_BAR_LOCATION,
 				activityBarPosition,
 				StorageScope.PROFILE,
-				StorageTarget.USER
+				StorageTarget.USER,
 			);
 		}
 	}
@@ -336,7 +336,7 @@ export class SidebarPart extends AbstractPaneCompositePart {
 	private getRememberedActivityBarVisiblePosition(): ActivityBarPosition {
 		const activityBarPosition = this.storageService.get(
 			LayoutSettings.ACTIVITY_BAR_LOCATION,
-			StorageScope.PROFILE
+			StorageScope.PROFILE,
 		);
 		switch (activityBarPosition) {
 			case ActivityBarPosition.SIDE:
@@ -369,12 +369,12 @@ export class SidebarPart extends AbstractPaneCompositePart {
 	async focusActivityBar(): Promise<void> {
 		if (
 			this.configurationService.getValue(
-				LayoutSettings.ACTIVITY_BAR_LOCATION
+				LayoutSettings.ACTIVITY_BAR_LOCATION,
 			) === ActivityBarPosition.HIDDEN
 		) {
 			await this.configurationService.updateValue(
 				LayoutSettings.ACTIVITY_BAR_LOCATION,
-				this.getRememberedActivityBarVisiblePosition()
+				this.getRememberedActivityBarVisiblePosition(),
 			);
 			this.onDidChangeActivityBarLocation();
 		}
@@ -399,7 +399,7 @@ export class SidebarPart extends AbstractPaneCompositePart {
 							title: {
 								value: localize(
 									"toggleActivityBar",
-									"Toggle Activity Bar Visibility"
+									"Toggle Activity Bar Visibility",
 								),
 								original: "Toggle Activity Bar Visibility",
 							},
@@ -408,17 +408,17 @@ export class SidebarPart extends AbstractPaneCompositePart {
 					run(): Promise<void> {
 						const value =
 							that.configurationService.getValue(
-								LayoutSettings.ACTIVITY_BAR_LOCATION
+								LayoutSettings.ACTIVITY_BAR_LOCATION,
 							) === ActivityBarPosition.HIDDEN
 								? that.getRememberedActivityBarVisiblePosition()
 								: ActivityBarPosition.HIDDEN;
 						return that.configurationService.updateValue(
 							LayoutSettings.ACTIVITY_BAR_LOCATION,
-							value
+							value,
 						);
 					}
-				}
-			)
+				},
+			),
 		);
 	}
 

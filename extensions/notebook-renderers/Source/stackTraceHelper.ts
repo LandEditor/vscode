@@ -22,7 +22,7 @@ export function formatStackTrace(stack: string) {
 		(_s, prefix, num, suffix) => {
 			suffix = suffix.replace(/\u001b\[3\d+m/g, "\u001b[39m");
 			return `${prefix}${num}${suffix}\n`;
-		}
+		},
 	);
 
 	if (isIpythonStackTrace(cleaned)) {
@@ -74,13 +74,13 @@ function linkifyStack(stack: string) {
 				path: stripFormatting(
 					original.replace(
 						cellRegex,
-						"vscode-notebook-cell:?execution_count=$<executionCount>"
-					)
+						"vscode-notebook-cell:?execution_count=$<executionCount>",
+					),
 				),
 			};
 			lines[i] = original.replace(
 				cellRegex,
-				`$<prefix><a href=\'${fileOrCell.path}&line=$<lineNumber>\'>line $<lineNumber></a>`
+				`$<prefix><a href=\'${fileOrCell.path}&line=$<lineNumber>\'>line $<lineNumber></a>`,
 			);
 
 			continue;
@@ -90,13 +90,13 @@ function linkifyStack(stack: string) {
 				path: stripFormatting(
 					original.replace(
 						inputRegex,
-						"vscode-notebook-cell:?execution_count=$<executionCount>"
-					)
+						"vscode-notebook-cell:?execution_count=$<executionCount>",
+					),
 				),
 			};
 			lines[i] = original.replace(
 				inputRegex,
-				`Input <a href=\'${fileOrCell.path}>\'>$<cellLabel></a>$<postfix>`
+				`Input <a href=\'${fileOrCell.path}>\'>$<cellLabel></a>$<postfix>`,
 			);
 
 			continue;
@@ -112,7 +112,7 @@ function linkifyStack(stack: string) {
 					return fileOrCell?.kind === "file"
 						? `${prefix}<a href='${fileOrCell?.path}:${num}'>${num}</a>${suffix}`
 						: `${prefix}<a href='${fileOrCell?.path}&line=${num}'>${num}</a>${suffix}`;
-				}
+				},
 			);
 
 			continue;

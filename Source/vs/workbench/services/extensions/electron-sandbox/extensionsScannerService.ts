@@ -39,7 +39,7 @@ export class ExtensionsScannerService
 		environmentService: INativeEnvironmentService,
 		@IProductService productService: IProductService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@IInstantiationService instantiationService: IInstantiationService
+		@IInstantiationService instantiationService: IInstantiationService,
 	) {
 		super(
 			URI.file(environmentService.builtinExtensionsPath),
@@ -53,7 +53,7 @@ export class ExtensionsScannerService
 			environmentService,
 			productService,
 			uriIdentityService,
-			instantiationService
+			instantiationService,
 		);
 	}
 }
@@ -61,5 +61,5 @@ export class ExtensionsScannerService
 registerSingleton(
 	IExtensionsScannerService,
 	ExtensionsScannerService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

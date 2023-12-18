@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type * as vscode from "vscode";
-import { IDisposable } from "vs/base/common/lifecycle";
-import { ExtHostStorage } from "vs/workbench/api/common/extHostStorage";
-import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
 import { DeferredPromise, RunOnceScheduler } from "vs/base/common/async";
+import { IDisposable } from "vs/base/common/lifecycle";
+import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
+import { ExtHostStorage } from "vs/workbench/api/common/extHostStorage";
+import type * as vscode from "vscode";
 
 export class ExtensionMemento implements vscode.Memento {
 	protected readonly _id: string;
@@ -30,7 +30,7 @@ export class ExtensionMemento implements vscode.Memento {
 			.initializeExtensionStorage(
 				this._shared,
 				this._id,
-				Object.create(null)
+				Object.create(null),
 			)
 			.then((value) => {
 				this._value = value;
@@ -51,7 +51,7 @@ export class ExtensionMemento implements vscode.Memento {
 					await this._storage.setValue(
 						this._shared,
 						this._id,
-						this._value!
+						this._value!,
 					);
 					for (const value of records.values()) {
 						value.complete();
@@ -115,13 +115,13 @@ export class ExtensionGlobalMemento extends ExtensionMemento {
 	setKeysForSync(keys: string[]): void {
 		this._storage.registerExtensionStorageKeysToSync(
 			{ id: this._id, version: this._extension.version },
-			keys
+			keys,
 		);
 	}
 
 	constructor(
 		extensionDescription: IExtensionDescription,
-		storage: ExtHostStorage
+		storage: ExtHostStorage,
 	) {
 		super(extensionDescription.identifier.value, true, storage);
 		this._extension = extensionDescription;

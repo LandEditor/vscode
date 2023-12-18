@@ -19,5 +19,5 @@ vscodeGrammarUpdater.update(
 	grammarPath,
 	"./syntaxes/cshtml.tmLanguage.json",
 	(grammar) => patchGrammar(grammar),
-	"main"
+	"main",
 );

@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	createConnection,
 	BrowserMessageReader,
 	BrowserMessageWriter,
 	Disposable,
+	createConnection,
 } from "vscode-languageserver/browser";
 import { RuntimeEnvironment, startServer } from "../cssServer";
 

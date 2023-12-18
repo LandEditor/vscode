@@ -3,20 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
 import { Event } from "vs/base/common/event";
-import { basename, extname } from "vs/base/common/path";
-import { TernarySearchTree } from "vs/base/common/ternarySearchTree";
-import {
-	extname as resourceExtname,
-	basenameOrAuthority,
-	joinPath,
-	extUriBiasedIgnorePathCase,
-} from "vs/base/common/resources";
-import { URI, UriComponents } from "vs/base/common/uri";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { IEnvironmentService } from "vs/platform/environment/common/environment";
 import { Schemas } from "vs/base/common/network";
+import { basename, extname } from "vs/base/common/path";
+import {
+	basenameOrAuthority,
+	extUriBiasedIgnorePathCase,
+	extname as resourceExtname,
+	joinPath,
+} from "vs/base/common/resources";
+import { TernarySearchTree } from "vs/base/common/ternarySearchTree";
+import { URI, UriComponents } from "vs/base/common/uri";
+import { localize } from "vs/nls";
+import { IEnvironmentService } from "vs/platform/environment/common/environment";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 
 export const IWorkspaceContextService =
 	createDecorator<IWorkspaceContextService>("contextService");
@@ -77,7 +77,7 @@ export interface IWorkspaceContextService {
 		workspaceIdOrFolder:
 			| IWorkspaceIdentifier
 			| ISingleFolderWorkspaceIdentifier
-			| URI
+			| URI,
 	): boolean;
 
 	/**
@@ -139,7 +139,7 @@ export interface IWorkspaceIdentifier extends IBaseWorkspaceIdentifier {
 	configPath: URI;
 }
 
-export interface IEmptyWorkspaceIdentifier extends IBaseWorkspaceIdentifier {}
+export type IEmptyWorkspaceIdentifier = IBaseWorkspaceIdentifier;
 
 export type IAnyWorkspaceIdentifier =
 	| IWorkspaceIdentifier
@@ -147,7 +147,7 @@ export type IAnyWorkspaceIdentifier =
 	| IEmptyWorkspaceIdentifier;
 
 export function isSingleFolderWorkspaceIdentifier(
-	obj: unknown
+	obj: unknown,
 ): obj is ISingleFolderWorkspaceIdentifier {
 	const singleFolderIdentifier = obj as
 		| ISingleFolderWorkspaceIdentifier
@@ -160,7 +160,7 @@ export function isSingleFolderWorkspaceIdentifier(
 }
 
 export function isEmptyWorkspaceIdentifier(
-	obj: unknown
+	obj: unknown,
 ): obj is IEmptyWorkspaceIdentifier {
 	const emptyWorkspaceIdentifier = obj as
 		| IEmptyWorkspaceIdentifier
@@ -179,15 +179,15 @@ export const UNKNOWN_EMPTY_WINDOW_WORKSPACE: IEmptyWorkspaceIdentifier = {
 };
 
 export function toWorkspaceIdentifier(
-	workspace: IWorkspace
+	workspace: IWorkspace,
 ): IAnyWorkspaceIdentifier;
 export function toWorkspaceIdentifier(
 	backupPath: string | undefined,
-	isExtensionDevelopment: boolean
+	isExtensionDevelopment: boolean,
 ): IEmptyWorkspaceIdentifier;
 export function toWorkspaceIdentifier(
 	arg0: IWorkspace | string | undefined,
-	isExtensionDevelopment?: boolean
+	isExtensionDevelopment?: boolean,
 ): IAnyWorkspaceIdentifier {
 	// Empty workspace
 	if (typeof arg0 === "string" || typeof arg0 === "undefined") {
@@ -232,7 +232,7 @@ export function toWorkspaceIdentifier(
 }
 
 export function isWorkspaceIdentifier(
-	obj: unknown
+	obj: unknown,
 ): obj is IWorkspaceIdentifier {
 	const workspaceIdentifier = obj as IWorkspaceIdentifier | undefined;
 
@@ -254,27 +254,27 @@ export interface ISerializedWorkspaceIdentifier
 
 export function reviveIdentifier(identifier: undefined): undefined;
 export function reviveIdentifier(
-	identifier: ISerializedWorkspaceIdentifier
+	identifier: ISerializedWorkspaceIdentifier,
 ): IWorkspaceIdentifier;
 export function reviveIdentifier(
-	identifier: ISerializedSingleFolderWorkspaceIdentifier
+	identifier: ISerializedSingleFolderWorkspaceIdentifier,
 ): ISingleFolderWorkspaceIdentifier;
 export function reviveIdentifier(
-	identifier: IEmptyWorkspaceIdentifier
+	identifier: IEmptyWorkspaceIdentifier,
 ): IEmptyWorkspaceIdentifier;
 export function reviveIdentifier(
 	identifier:
 		| ISerializedWorkspaceIdentifier
 		| ISerializedSingleFolderWorkspaceIdentifier
 		| IEmptyWorkspaceIdentifier
-		| undefined
+		| undefined,
 ): IAnyWorkspaceIdentifier | undefined;
 export function reviveIdentifier(
 	identifier:
 		| ISerializedWorkspaceIdentifier
 		| ISerializedSingleFolderWorkspaceIdentifier
 		| IEmptyWorkspaceIdentifier
-		| undefined
+		| undefined,
 ): IAnyWorkspaceIdentifier | undefined {
 	// Single Folder
 	const singleFolderIdentifierCandidate = identifier as
@@ -306,10 +306,10 @@ export function reviveIdentifier(
 	return undefined;
 }
 
-export const enum WorkbenchState {
+export enum WorkbenchState {
 	EMPTY = 1,
-	FOLDER,
-	WORKSPACE,
+	FOLDER = 2,
+	WORKSPACE = 3,
 }
 
 export interface IWorkspaceFoldersWillChangeEvent {
@@ -401,7 +401,7 @@ export class Workspace implements IWorkspace {
 	private _foldersMap: TernarySearchTree<URI, WorkspaceFolder> =
 		TernarySearchTree.forUris<WorkspaceFolder>(
 			this._ignorePathCasing,
-			() => true
+			() => true,
 		);
 	private _folders!: WorkspaceFolder[];
 
@@ -410,7 +410,7 @@ export class Workspace implements IWorkspace {
 		folders: WorkspaceFolder[],
 		private _transient: boolean,
 		private _configuration: URI | null,
-		private _ignorePathCasing: (key: URI) => boolean
+		private _ignorePathCasing: (key: URI) => boolean,
 	) {
 		this.folders = folders;
 	}
@@ -459,7 +459,7 @@ export class Workspace implements IWorkspace {
 	private updateFoldersMap(): void {
 		this._foldersMap = TernarySearchTree.forUris<WorkspaceFolder>(
 			this._ignorePathCasing,
-			() => true
+			() => true,
 		);
 		for (const folder of this.folders) {
 			this._foldersMap.set(folder.uri, folder);
@@ -500,7 +500,7 @@ export class WorkspaceFolder implements IWorkspaceFolder {
 		 * - raw paths can be relative
 		 * - raw paths are not normalized
 		 */
-		readonly raw?: IRawFileWorkspaceFolder | IRawUriWorkspaceFolder
+		readonly raw?: IRawFileWorkspaceFolder | IRawUriWorkspaceFolder,
 	) {
 		this.uri = data.uri;
 		this.index = data.index;
@@ -519,7 +519,7 @@ export class WorkspaceFolder implements IWorkspaceFolder {
 export function toWorkspaceFolder(resource: URI): WorkspaceFolder {
 	return new WorkspaceFolder(
 		{ uri: resource, index: 0, name: basenameOrAuthority(resource) },
-		{ uri: resource.toString() }
+		{ uri: resource.toString() },
 	);
 }
 
@@ -535,11 +535,11 @@ export const UNTITLED_WORKSPACE_NAME = "workspace.json";
 
 export function isUntitledWorkspace(
 	path: URI,
-	environmentService: IEnvironmentService
+	environmentService: IEnvironmentService,
 ): boolean {
 	return extUriBiasedIgnorePathCase.isEqualOrParent(
 		path,
-		environmentService.untitledWorkspacesHome
+		environmentService.untitledWorkspacesHome,
 	);
 }
 
@@ -564,7 +564,7 @@ export function isStandaloneEditorWorkspace(workspace: IWorkspace): boolean {
 
 export function isSavedWorkspace(
 	path: URI,
-	environmentService: IEnvironmentService
+	environmentService: IEnvironmentService,
 ): boolean {
 	return (
 		!isUntitledWorkspace(path, environmentService) &&

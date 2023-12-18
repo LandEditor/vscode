@@ -3,8 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-"use strict";
-
 const path = require("path");
 const fs = require("fs");
 const https = require("https");
@@ -15,52 +13,58 @@ const minimatch = require("minimatch");
 // Please try and keep this list in alphabetical order! Thank you.
 const nonBuiltInLanguages = {
 	// { fileNames, extensions  }
-	"argdown": { extensions: ["ad", "adown", "argdown", "argdn"] },
-	"bicep": { extensions: ["bicep"] },
-	"elixir": { extensions: ["ex"] },
-	"elm": { extensions: ["elm"] },
-	"erb": { extensions: ["erb", "rhtml", "html.erb"] },
+	argdown: { extensions: ["ad", "adown", "argdown", "argdn"] },
+	bicep: { extensions: ["bicep"] },
+	elixir: { extensions: ["ex"] },
+	elm: { extensions: ["elm"] },
+	erb: { extensions: ["erb", "rhtml", "html.erb"] },
 	"github-issues": { extensions: ["github-issues"] },
-	"gradle": { extensions: ["gradle"] },
-	"godot": { extensions: ["gd", "godot", "tres", "tscn"] },
-	"haml": { extensions: ["haml"] },
-	"haskell": { extensions: ["hs"] },
-	"haxe": { extensions: ["hx"] },
-	"jinja": { extensions: ["jinja"] },
-	"kotlin": { extensions: ["kt"] },
-	"mustache": { extensions: ["mustache", "mst", "mu", "stache"] },
-	"nunjucks": {
+	gradle: { extensions: ["gradle"] },
+	godot: { extensions: ["gd", "godot", "tres", "tscn"] },
+	haml: { extensions: ["haml"] },
+	haskell: { extensions: ["hs"] },
+	haxe: { extensions: ["hx"] },
+	jinja: { extensions: ["jinja"] },
+	kotlin: { extensions: ["kt"] },
+	mustache: { extensions: ["mustache", "mst", "mu", "stache"] },
+	nunjucks: {
 		extensions: ["nunjucks", "nunjs", "nunj", "nj", "njk", "tmpl", "tpl"],
 	},
-	"ocaml": { extensions: ["ml", "mli", "mll", "mly", "eliom", "eliomi"] },
-	"puppet": { extensions: ["puppet"] },
-	"r": { extensions: ["r", "rhistory", "rprofile", "rt"] },
-	"rescript": { extensions: ["res", "resi"] },
-	"sass": { extensions: ["sass"] },
-	"stylus": { extensions: ["styl"] },
-	"terraform": { extensions: ["tf", "tfvars", "hcl"] },
-	"todo": { fileNames: ["todo"] },
-	"vala": { extensions: ["vala"] },
-	"vue": { extensions: ["vue"] },
+	ocaml: { extensions: ["ml", "mli", "mll", "mly", "eliom", "eliomi"] },
+	puppet: { extensions: ["puppet"] },
+	r: { extensions: ["r", "rhistory", "rprofile", "rt"] },
+	rescript: { extensions: ["res", "resi"] },
+	sass: { extensions: ["sass"] },
+	stylus: { extensions: ["styl"] },
+	terraform: { extensions: ["tf", "tfvars", "hcl"] },
+	todo: { fileNames: ["todo"] },
+	vala: { extensions: ["vala"] },
+	vue: { extensions: ["vue"] },
 };
 
 // list of languagesId that inherit the icon from another language
 const inheritIconFromLanguage = {
-	"jsonc": "json",
-	"jsonl": "json",
-	"postcss": "css",
+	jsonc: "json",
+	jsonl: "json",
+	postcss: "css",
 	"django-html": "html",
-	"blade": "php",
+	blade: "php",
 };
 
 const ignoreExtAssociation = {
-	"properties": true,
+	properties: true,
 };
 
 const FROM_DISK = true; // set to true to take content from a repo checked out next to the vscode repo
 
 let font, fontMappingsFile, fileAssociationFile, colorsFile;
-if (!FROM_DISK) {
+if (FROM_DISK) {
+	font = "../../../seti-ui/styles/_fonts/seti/seti.woff";
+	fontMappingsFile = "../../../seti-ui/styles/_fonts/seti.less";
+	fileAssociationFile =
+		"../../../seti-ui/styles/components/icons/mapping.less";
+	colorsFile = "../../../seti-ui/styles/ui-variables.less";
+} else {
 	font =
 		"https://raw.githubusercontent.com/jesseweed/seti-ui/master/styles/_fonts/seti/seti.woff";
 	fontMappingsFile =
@@ -69,19 +73,13 @@ if (!FROM_DISK) {
 		"https://raw.githubusercontent.com/jesseweed/seti-ui/master/styles/components/icons/mapping.less";
 	colorsFile =
 		"https://raw.githubusercontent.com/jesseweed/seti-ui/master/styles/ui-variables.less";
-} else {
-	font = "../../../seti-ui/styles/_fonts/seti/seti.woff";
-	fontMappingsFile = "../../../seti-ui/styles/_fonts/seti.less";
-	fileAssociationFile =
-		"../../../seti-ui/styles/components/icons/mapping.less";
-	colorsFile = "../../../seti-ui/styles/ui-variables.less";
 }
 
 function getCommitSha(repoId) {
 	const commitInfo =
 		"https://api.github.com/repos/" + repoId + "/commits/master";
 	return download(commitInfo).then(
-		function (content) {
+		(content) => {
 			try {
 				const lastCommit = JSON.parse(content);
 				return Promise.resolve({
@@ -93,10 +91,10 @@ function getCommitSha(repoId) {
 				return Promise.resolve(null);
 			}
 		},
-		function () {
+		() => {
 			console.error("Failed loading " + commitInfo);
 			return Promise.resolve(null);
-		}
+		},
 	);
 }
 
@@ -114,16 +112,16 @@ function download(source) {
 		};
 		let content = "";
 		https
-			.get(options, function (response) {
+			.get(options, (response) => {
 				response
-					.on("data", function (data) {
+					.on("data", (data) => {
 						content += data.toString();
 					})
-					.on("end", function () {
+					.on("end", () => {
 						c(content);
 					});
 			})
-			.on("error", function (err) {
+			.on("error", (err) => {
 				e(err.message);
 			});
 	});
@@ -131,7 +129,7 @@ function download(source) {
 
 function readFile(fileName) {
 	return new Promise((c, e) => {
-		fs.readFile(fileName, function (err, data) {
+		fs.readFile(fileName, (err, data) => {
 			if (err) {
 				e(err);
 			} else {
@@ -147,19 +145,19 @@ function downloadBinary(source, dest) {
 	}
 
 	return new Promise((c, e) => {
-		https.get(source, function (response) {
+		https.get(source, (response) => {
 			switch (response.statusCode) {
 				case 200: {
 					const file = fs.createWriteStream(dest);
 					response
-						.on("data", function (chunk) {
+						.on("data", (chunk) => {
 							file.write(chunk);
 						})
-						.on("end", function () {
+						.on("end", () => {
 							file.end();
 							c(null);
 						})
-						.on("error", function (err) {
+						.on("error", (err) => {
 							fs.unlink(dest);
 							e(err.message);
 						});
@@ -176,8 +174,8 @@ function downloadBinary(source, dest) {
 					e(
 						new Error(
 							"Server responded with status code " +
-								response.statusCode
-						)
+								response.statusCode,
+						),
 					);
 			}
 		});
@@ -197,7 +195,7 @@ function copyFile(fileName, dest) {
 		rd.on("error", handleError);
 		const wr = fs.createWriteStream(dest);
 		wr.on("error", handleError);
-		wr.on("close", function () {
+		wr.on("close", () => {
 			if (!cbCalled) {
 				c();
 				cbCalled = true;
@@ -211,7 +209,7 @@ function darkenColor(color) {
 	let res = "#";
 	for (let i = 1; i < 7; i += 2) {
 		const newVal = Math.round(
-			parseInt("0x" + color.substr(i, 2), 16) * 0.9
+			parseInt("0x" + color.substr(i, 2), 16) * 0.9,
 		);
 		const hex = newVal.toString(16);
 		if (hex.length === 1) {
@@ -249,22 +247,20 @@ function getLanguageMappings() {
 						const extensions = languages[k].extensions;
 						const mapping = {};
 						if (Array.isArray(extensions)) {
-							mapping.extensions = extensions.map(function (e) {
-								return e.substr(1).toLowerCase();
-							});
+							mapping.extensions = extensions.map((e) =>
+								e.substr(1).toLowerCase(),
+							);
 						}
 						const filenames = languages[k].filenames;
 						if (Array.isArray(filenames)) {
-							mapping.fileNames = filenames.map(function (f) {
-								return f.toLowerCase();
-							});
+							mapping.fileNames = filenames.map((f) =>
+								f.toLowerCase(),
+							);
 						}
 						const filenamePatterns = languages[k].filenamePatterns;
 						if (Array.isArray(filenamePatterns)) {
 							mapping.filenamePatterns = filenamePatterns.map(
-								function (f) {
-									return f.toLowerCase();
-								}
+								(f) => f.toLowerCase(),
 							);
 						}
 						const existing = langMappings[languageId];
@@ -278,7 +274,7 @@ function getLanguageMappings() {
 								mergeMapping(
 									mapping,
 									existing,
-									"filenamePatterns"
+									"filenamePatterns",
 								);
 								langMappings[languageId] = mapping;
 							} else {
@@ -287,7 +283,7 @@ function getLanguageMappings() {
 								mergeMapping(
 									existing,
 									mapping,
-									"filenamePatterns"
+									"filenamePatterns",
 								);
 							}
 						} else {
@@ -304,11 +300,9 @@ function getLanguageMappings() {
 	return langMappings;
 }
 
-exports.copyFont = function () {
-	return downloadBinary(font, "./icons/seti.woff");
-};
+exports.copyFont = () => downloadBinary(font, "./icons/seti.woff");
 
-exports.update = function () {
+exports.update = () => {
 	console.log("Reading from " + fontMappingsFile);
 	const def2Content = {};
 	const ext2Def = {};
@@ -363,7 +357,7 @@ exports.update = function () {
 			fonts: [
 				{
 					id: "seti",
-					src: [{ "path": "./seti.woff", "format": "woff" }],
+					src: [{ path: "./seti.woff", format: "woff" }],
 					weight: "normal",
 					style: "normal",
 					size: "150%",
@@ -392,14 +386,14 @@ exports.update = function () {
 
 	let match;
 
-	return download(fontMappingsFile).then(function (content) {
+	return download(fontMappingsFile).then((content) => {
 		const regex = /@([\w-]+):\s*'(\\E[0-9A-F]+)';/g;
 		const contents = {};
 		while ((match = regex.exec(content)) !== null) {
 			contents[match[1]] = match[2];
 		}
 
-		return download(fileAssociationFile).then(function (content) {
+		return download(fileAssociationFile).then((content) => {
 			const regex2 =
 				/\.icon-(?:set|partial)\(['"]([\w-\.+]+)['"],\s*['"]([\w-]+)['"],\s*(@[\w-]+)\)/g;
 			while ((match = regex2.exec(content)) !== null) {
@@ -430,7 +424,7 @@ exports.update = function () {
 			}
 			// replace extensions for languageId
 			const langMappings = getLanguageMappings();
-			for (let lang in langMappings) {
+			for (const lang in langMappings) {
 				const mappings = langMappings[lang];
 				const exts = mappings.extensions || [];
 				const fileNames = mappings.fileNames || [];
@@ -449,7 +443,7 @@ exports.update = function () {
 					i1 < filenamePatterns.length && !preferredDef;
 					i1++
 				) {
-					let pattern = filenamePatterns[i1];
+					const pattern = filenamePatterns[i1];
 					for (const name in fileName2Def) {
 						if (minimatch(name, pattern)) {
 							preferredDef = fileName2Def[name];
@@ -479,7 +473,7 @@ exports.update = function () {
 							}
 						}
 						for (let i2 = 0; i2 < filenamePatterns.length; i2++) {
-							let pattern = filenamePatterns[i2];
+							const pattern = filenamePatterns[i2];
 							// remove the filenamePatterns association, unless it is different from the preferred
 							for (const name in fileName2Def) {
 								if (
@@ -504,17 +498,17 @@ exports.update = function () {
 							lang +
 							": no icon for " +
 							superLang +
-							" defined"
+							" defined",
 					);
 				}
 			}
 
-			return download(colorsFile).then(function (content) {
+			return download(colorsFile).then((content) => {
 				const regex3 = /(@[\w-]+):\s*(#[0-9a-z]+)/g;
 				while ((match = regex3.exec(content)) !== null) {
 					colorId2Value[match[1]] = match[2];
 				}
-				return getCommitSha("jesseweed/seti-ui").then(function (info) {
+				return getCommitSha("jesseweed/seti-ui").then((info) => {
 					try {
 						writeFileIconContent(info);
 
@@ -528,7 +522,7 @@ exports.update = function () {
 						]["commitHash"] = info.commitSha;
 						fs.writeFileSync(
 							cgmanifestPath,
-							JSON.stringify(cgmanifestContent, null, "\t")
+							JSON.stringify(cgmanifestContent, null, "\t"),
 						);
 						console.log("updated " + cgmanifestPath);
 
@@ -537,7 +531,7 @@ exports.update = function () {
 								info.commitSha.substr(0, 7) +
 								" (" +
 								info.commitDate.substr(0, 10) +
-								")"
+								")",
 						);
 					} catch (e) {
 						console.error(e);

@@ -3,33 +3,33 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { equalsIgnoreCase } from "vs/base/common/strings";
-import {
-	IDebuggerContribution,
-	IDebugSession,
-	IConfigPresentation,
-} from "vs/workbench/contrib/debug/common/debug";
-import { URI as uri } from "vs/base/common/uri";
-import { isAbsolute } from "vs/base/common/path";
-import { deepClone } from "vs/base/common/objects";
+import { coalesce } from "vs/base/common/arrays";
+import { CancellationToken } from "vs/base/common/cancellation";
 import { Schemas } from "vs/base/common/network";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { ITextModel } from "vs/editor/common/model";
+import { deepClone } from "vs/base/common/objects";
+import { isAbsolute } from "vs/base/common/path";
+import { equalsIgnoreCase } from "vs/base/common/strings";
+import { URI as uri } from "vs/base/common/uri";
 import { Position } from "vs/editor/common/core/position";
 import { IRange, Range } from "vs/editor/common/core/range";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { coalesce } from "vs/base/common/arrays";
+import { ITextModel } from "vs/editor/common/model";
 import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import {
+	IConfigPresentation,
+	IDebugSession,
+	IDebuggerContribution,
+} from "vs/workbench/contrib/debug/common/debug";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 
 const _formatPIIRegexp = /{([^}]+)}/g;
 
 export function formatPII(
 	value: string,
 	excludePII: boolean,
-	args: { [key: string]: string } | undefined
+	args: { [key: string]: string } | undefined,
 ): string {
-	return value.replace(_formatPIIRegexp, function (match, group) {
+	return value.replace(_formatPIIRegexp, (match, group) => {
 		if (excludePII && group.length > 0 && group[0] !== "_") {
 			return match;
 		}
@@ -68,7 +68,7 @@ export function isSessionAttach(session: IDebugSession): boolean {
  * Returns undefined if there's none.
  */
 export function getExtensionHostDebugSession(
-	session: IDebugSession
+	session: IDebugSession,
 ): IDebugSession | void {
 	let type = session.configuration.type;
 	if (!type) {
@@ -99,7 +99,7 @@ export function isDebuggerMainContribution(dbg: IDebuggerContribution) {
 export function getExactExpressionStartAndEnd(
 	lineContent: string,
 	looseStart: number,
-	looseEnd: number
+	looseEnd: number,
 ): { start: number; end: number } {
 	let matchingExpression: string | undefined = undefined;
 	let startOffset = 0;
@@ -140,7 +140,7 @@ export function getExactExpressionStartAndEnd(
 		if (subExpressionResult) {
 			matchingExpression = matchingExpression.substring(
 				0,
-				subExpression.lastIndex
+				subExpression.lastIndex,
 			);
 		}
 	}
@@ -149,7 +149,7 @@ export function getExactExpressionStartAndEnd(
 		? {
 				start: startOffset,
 				end: startOffset + matchingExpression.length - 1,
-			}
+		  }
 		: { start: 0, end: 0 };
 }
 
@@ -157,12 +157,12 @@ export async function getEvaluatableExpressionAtPosition(
 	languageFeaturesService: ILanguageFeaturesService,
 	model: ITextModel,
 	position: Position,
-	token?: CancellationToken
+	token?: CancellationToken,
 ): Promise<{ range: IRange; matchingExpression: string } | null> {
 	if (languageFeaturesService.evaluatableExpressionProvider.has(model)) {
 		const supports =
 			languageFeaturesService.evaluatableExpressionProvider.ordered(
-				model
+				model,
 			);
 
 		const results = coalesce(
@@ -172,13 +172,13 @@ export async function getEvaluatableExpressionAtPosition(
 						return await support.provideEvaluatableExpression(
 							model,
 							position,
-							token ?? CancellationToken.None
+							token ?? CancellationToken.None,
 						);
 					} catch (err) {
 						return undefined;
 					}
-				})
-			)
+				}),
+			),
 		);
 
 		if (results.length > 0) {
@@ -189,7 +189,7 @@ export async function getEvaluatableExpressionAtPosition(
 				const lineContent = model.getLineContent(position.lineNumber);
 				matchingExpression = lineContent.substring(
 					range.startColumn - 1,
-					range.endColumn - 1
+					range.endColumn - 1,
 				);
 			}
 
@@ -201,7 +201,7 @@ export async function getEvaluatableExpressionAtPosition(
 		const { start, end } = getExactExpressionStartAndEnd(
 			lineContent,
 			position.column,
-			position.column
+			position.column,
 		);
 
 		// use regex to extract the sub-expression #9821
@@ -212,7 +212,7 @@ export async function getEvaluatableExpressionAtPosition(
 				position.lineNumber,
 				start,
 				position.lineNumber,
-				start + matchingExpression.length
+				start + matchingExpression.length,
 			),
 		};
 	}
@@ -236,16 +236,14 @@ function stringToUri(source: PathContainer): string | undefined {
 			source.sourceReference > 0
 		) {
 			// if there is a source reference, don't touch path
+		} else if (isUri(source.path)) {
+			return <string>(<unknown>uri.parse(source.path));
 		} else {
-			if (isUri(source.path)) {
-				return <string>(<unknown>uri.parse(source.path));
+			// assume path
+			if (isAbsolute(source.path)) {
+				return <string>(<unknown>uri.file(source.path));
 			} else {
-				// assume path
-				if (isAbsolute(source.path)) {
-					return <string>(<unknown>uri.file(source.path));
-				} else {
-					// leave relative path as is
-				}
+				// leave relative path as is
 			}
 		}
 	}
@@ -275,7 +273,7 @@ interface PathContainer {
 
 export function convertToDAPaths(
 	message: DebugProtocol.ProtocolMessage,
-	toUri: boolean
+	toUri: boolean,
 ): DebugProtocol.ProtocolMessage {
 	const fixPath = toUri ? stringToUri : uriToString;
 
@@ -292,7 +290,7 @@ export function convertToDAPaths(
 
 export function convertToVSCPaths(
 	message: DebugProtocol.ProtocolMessage,
-	toUri: boolean
+	toUri: boolean,
 ): DebugProtocol.ProtocolMessage {
 	const fixPath = toUri ? stringToUri : uriToString;
 
@@ -309,7 +307,7 @@ export function convertToVSCPaths(
 
 function convertPaths(
 	msg: DebugProtocol.ProtocolMessage,
-	fixSourcePath: (toDA: boolean, source: PathContainer | undefined) => void
+	fixSourcePath: (toDA: boolean, source: PathContainer | undefined) => void,
 ): void {
 	switch (msg.type) {
 		case "event": {
@@ -318,20 +316,20 @@ function convertPaths(
 				case "output":
 					fixSourcePath(
 						false,
-						(<DebugProtocol.OutputEvent>event).body.source
+						(<DebugProtocol.OutputEvent>event).body.source,
 					);
 					break;
 				case "loadedSource":
 					fixSourcePath(
 						false,
-						(<DebugProtocol.LoadedSourceEvent>event).body.source
+						(<DebugProtocol.LoadedSourceEvent>event).body.source,
 					);
 					break;
 				case "breakpoint":
 					fixSourcePath(
 						false,
 						(<DebugProtocol.BreakpointEvent>event).body.breakpoint
-							.source
+							.source,
 					);
 					break;
 				default:
@@ -347,7 +345,7 @@ function convertPaths(
 						true,
 						(<DebugProtocol.SetBreakpointsArguments>(
 							request.arguments
-						)).source
+						)).source,
 					);
 					break;
 				case "breakpointLocations":
@@ -355,27 +353,27 @@ function convertPaths(
 						true,
 						(<DebugProtocol.BreakpointLocationsArguments>(
 							request.arguments
-						)).source
+						)).source,
 					);
 					break;
 				case "source":
 					fixSourcePath(
 						true,
 						(<DebugProtocol.SourceArguments>request.arguments)
-							.source
+							.source,
 					);
 					break;
 				case "gotoTargets":
 					fixSourcePath(
 						true,
 						(<DebugProtocol.GotoTargetsArguments>request.arguments)
-							.source
+							.source,
 					);
 					break;
 				case "launchVSCode":
 					request.arguments.args.forEach(
 						(arg: PathContainer | undefined) =>
-							fixSourcePath(false, arg)
+							fixSourcePath(false, arg),
 					);
 					break;
 				default:
@@ -391,47 +389,44 @@ function convertPaths(
 						(<DebugProtocol.StackTraceResponse>(
 							response
 						)).body.stackFrames.forEach((frame) =>
-							fixSourcePath(false, frame.source)
+							fixSourcePath(false, frame.source),
 						);
 						break;
 					case "loadedSources":
 						(<DebugProtocol.LoadedSourcesResponse>(
 							response
 						)).body.sources.forEach((source) =>
-							fixSourcePath(false, source)
+							fixSourcePath(false, source),
 						);
 						break;
 					case "scopes":
 						(<DebugProtocol.ScopesResponse>(
 							response
 						)).body.scopes.forEach((scope) =>
-							fixSourcePath(false, scope.source)
+							fixSourcePath(false, scope.source),
 						);
 						break;
 					case "setFunctionBreakpoints":
 						(<DebugProtocol.SetFunctionBreakpointsResponse>(
 							response
 						)).body.breakpoints.forEach((bp) =>
-							fixSourcePath(false, bp.source)
+							fixSourcePath(false, bp.source),
 						);
 						break;
 					case "setBreakpoints":
 						(<DebugProtocol.SetBreakpointsResponse>(
 							response
 						)).body.breakpoints.forEach((bp) =>
-							fixSourcePath(false, bp.source)
+							fixSourcePath(false, bp.source),
 						);
 						break;
-					case "disassemble":
-						{
-							const di = <DebugProtocol.DisassembleResponse>(
-								response
-							);
-							di.body?.instructions.forEach((di) =>
-								fixSourcePath(false, di.location)
-							);
-						}
-						break;
+					case "disassemble": {
+						const di = <DebugProtocol.DisassembleResponse>response;
+						di.body?.instructions.forEach((di) =>
+							fixSourcePath(false, di.location),
+						);
+					}
+					break;
 					default:
 						break;
 				}
@@ -460,7 +455,7 @@ export function getVisibleAndSorted<
 				if (!second.presentation.group) {
 					return compareOrders(
 						first.presentation.order,
-						second.presentation.order
+						second.presentation.order,
 					);
 				}
 				return 1;
@@ -470,20 +465,20 @@ export function getVisibleAndSorted<
 			}
 			if (first.presentation.group !== second.presentation.group) {
 				return first.presentation.group.localeCompare(
-					second.presentation.group
+					second.presentation.group,
 				);
 			}
 
 			return compareOrders(
 				first.presentation.order,
-				second.presentation.order
+				second.presentation.order,
 			);
 		});
 }
 
 function compareOrders(
 	first: number | undefined,
-	second: number | undefined
+	second: number | undefined,
 ): number {
 	if (typeof first !== "number") {
 		if (typeof second !== "number") {
@@ -501,11 +496,11 @@ function compareOrders(
 
 export async function saveAllBeforeDebugStart(
 	configurationService: IConfigurationService,
-	editorService: IEditorService
+	editorService: IEditorService,
 ): Promise<void> {
 	const saveBeforeStartConfig: string = configurationService.getValue(
 		"debug.saveBeforeStart",
-		{ overrideIdentifier: editorService.activeTextEditorLanguageId }
+		{ overrideIdentifier: editorService.activeTextEditorLanguageId },
 	);
 	if (saveBeforeStartConfig !== "none") {
 		await editorService.saveAll();
@@ -528,10 +523,10 @@ export async function saveAllBeforeDebugStart(
 
 export const sourcesEqual = (
 	a: DebugProtocol.Source | undefined,
-	b: DebugProtocol.Source | undefined
+	b: DebugProtocol.Source | undefined,
 ): boolean =>
 	!a || !b
 		? a === b
 		: a.name === b.name &&
-			a.path === b.path &&
-			a.sourceReference === b.sourceReference;
+		  a.path === b.path &&
+		  a.sourceReference === b.sourceReference;

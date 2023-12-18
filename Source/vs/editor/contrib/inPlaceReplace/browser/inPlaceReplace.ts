@@ -10,17 +10,14 @@ import {
 } from "vs/base/common/async";
 import { onUnexpectedError } from "vs/base/common/errors";
 import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
-import {
-	CodeEditorStateFlag,
-	EditorState,
-} from "vs/editor/contrib/editorState/browser/editorState";
+import "vs/css!./inPlaceReplace";
 import { ICodeEditor } from "vs/editor/browser/editorBrowser";
 import {
 	EditorAction,
 	EditorContributionInstantiation,
+	ServicesAccessor,
 	registerEditorAction,
 	registerEditorContribution,
-	ServicesAccessor,
 } from "vs/editor/browser/editorExtensions";
 import { Range } from "vs/editor/common/core/range";
 import { Selection } from "vs/editor/common/core/selection";
@@ -29,20 +26,23 @@ import {
 	IEditorDecorationsCollection,
 } from "vs/editor/common/editorCommon";
 import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
-import { ModelDecorationOptions } from "vs/editor/common/model/textModel";
 import { IInplaceReplaceSupportResult } from "vs/editor/common/languages";
+import { ModelDecorationOptions } from "vs/editor/common/model/textModel";
 import { IEditorWorkerService } from "vs/editor/common/services/editorWorker";
+import {
+	CodeEditorStateFlag,
+	EditorState,
+} from "vs/editor/contrib/editorState/browser/editorState";
 import * as nls from "vs/nls";
 import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
 import { InPlaceReplaceCommand } from "./inPlaceReplaceCommand";
-import "vs/css!./inPlaceReplace";
 
 class InPlaceReplaceController implements IEditorContribution {
 	public static readonly ID = "editor.contrib.inPlaceReplaceController";
 
 	static get(editor: ICodeEditor): InPlaceReplaceController | null {
 		return editor.getContribution<InPlaceReplaceController>(
-			InPlaceReplaceController.ID
+			InPlaceReplaceController.ID,
 		);
 	}
 
@@ -59,7 +59,7 @@ class InPlaceReplaceController implements IEditorContribution {
 
 	constructor(
 		editor: ICodeEditor,
-		@IEditorWorkerService editorWorkerService: IEditorWorkerService
+		@IEditorWorkerService editorWorkerService: IEditorWorkerService,
 	) {
 		this.editor = editor;
 		this.editorWorkerService = editorWorkerService;
@@ -85,7 +85,7 @@ class InPlaceReplaceController implements IEditorContribution {
 
 		const state = new EditorState(
 			this.editor,
-			CodeEditorStateFlag.Value | CodeEditorStateFlag.Position
+			CodeEditorStateFlag.Value | CodeEditorStateFlag.Position,
 		);
 		const modelURI = model.uri;
 		if (!this.editorWorkerService.canNavigateValueSet(modelURI)) {
@@ -93,7 +93,7 @@ class InPlaceReplaceController implements IEditorContribution {
 		}
 
 		this.currentRequest = createCancelablePromise((token) =>
-			this.editorWorkerService.navigateValueSet(modelURI, selection!, up)
+			this.editorWorkerService.navigateValueSet(modelURI, selection!, up),
 		);
 
 		return this.currentRequest
@@ -127,7 +127,7 @@ class InPlaceReplaceController implements IEditorContribution {
 						selection!.startLineNumber,
 						selection!.startColumn,
 						selection!.endLineNumber,
-						selection!.endColumn + diff - 1
+						selection!.endColumn + diff - 1,
 					);
 				}
 
@@ -135,7 +135,7 @@ class InPlaceReplaceController implements IEditorContribution {
 				const command = new InPlaceReplaceCommand(
 					editRange,
 					selection!,
-					result.value
+					result.value,
 				);
 
 				this.editor.pushUndoStop();
@@ -167,7 +167,7 @@ class InPlaceReplaceUp extends EditorAction {
 			id: "editor.action.inPlaceReplace.up",
 			label: nls.localize(
 				"InPlaceReplaceAction.previous.label",
-				"Replace with Previous Value"
+				"Replace with Previous Value",
 			),
 			alias: "Replace with Previous Value",
 			precondition: EditorContextKeys.writable,
@@ -181,7 +181,7 @@ class InPlaceReplaceUp extends EditorAction {
 
 	public run(
 		accessor: ServicesAccessor,
-		editor: ICodeEditor
+		editor: ICodeEditor,
 	): Promise<void> | undefined {
 		const controller = InPlaceReplaceController.get(editor);
 		if (!controller) {
@@ -197,7 +197,7 @@ class InPlaceReplaceDown extends EditorAction {
 			id: "editor.action.inPlaceReplace.down",
 			label: nls.localize(
 				"InPlaceReplaceAction.next.label",
-				"Replace with Next Value"
+				"Replace with Next Value",
 			),
 			alias: "Replace with Next Value",
 			precondition: EditorContextKeys.writable,
@@ -211,7 +211,7 @@ class InPlaceReplaceDown extends EditorAction {
 
 	public run(
 		accessor: ServicesAccessor,
-		editor: ICodeEditor
+		editor: ICodeEditor,
 	): Promise<void> | undefined {
 		const controller = InPlaceReplaceController.get(editor);
 		if (!controller) {
@@ -224,7 +224,7 @@ class InPlaceReplaceDown extends EditorAction {
 registerEditorContribution(
 	InPlaceReplaceController.ID,
 	InPlaceReplaceController,
-	EditorContributionInstantiation.Lazy
+	EditorContributionInstantiation.Lazy,
 );
 registerEditorAction(InPlaceReplaceUp);
 registerEditorAction(InPlaceReplaceDown);

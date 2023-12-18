@@ -31,14 +31,14 @@ export default class LanguageProvider extends Disposable {
 		private readonly typingsStatus: TypingsStatus,
 		private readonly fileConfigurationManager: FileConfigurationManager,
 		private readonly onCompletionAccepted: (
-			item: vscode.CompletionItem
-		) => void
+			item: vscode.CompletionItem,
+		) => void,
 	) {
 		super();
 		vscode.workspace.onDidChangeConfiguration(
 			this.configurationChanged,
 			this,
-			this._disposables
+			this._disposables,
 		);
 		this.configurationChanged();
 
@@ -65,7 +65,7 @@ export default class LanguageProvider extends Disposable {
 
 		await Promise.all([
 			import("./languageFeatures/callHierarchy").then((provider) =>
-				this._register(provider.register(selector, this.client))
+				this._register(provider.register(selector, this.client)),
 			),
 			import("./languageFeatures/codeLens/implementationsCodeLens").then(
 				(provider) =>
@@ -74,9 +74,9 @@ export default class LanguageProvider extends Disposable {
 							selector,
 							this.description,
 							this.client,
-							cachedNavTreeResponse
-						)
-					)
+							cachedNavTreeResponse,
+						),
+					),
 			),
 			import("./languageFeatures/codeLens/referencesCodeLens").then(
 				(provider) =>
@@ -85,9 +85,9 @@ export default class LanguageProvider extends Disposable {
 							selector,
 							this.description,
 							this.client,
-							cachedNavTreeResponse
-						)
-					)
+							cachedNavTreeResponse,
+						),
+					),
 			),
 			import("./languageFeatures/completions").then((provider) =>
 				this._register(
@@ -99,33 +99,33 @@ export default class LanguageProvider extends Disposable {
 						this.fileConfigurationManager,
 						this.commandManager,
 						this.telemetryReporter,
-						this.onCompletionAccepted
-					)
-				)
+						this.onCompletionAccepted,
+					),
+				),
 			),
 			import("./languageFeatures/definitions").then((provider) =>
-				this._register(provider.register(selector, this.client))
+				this._register(provider.register(selector, this.client)),
 			),
 			import("./languageFeatures/directiveCommentCompletions").then(
 				(provider) =>
-					this._register(provider.register(selector, this.client))
+					this._register(provider.register(selector, this.client)),
 			),
 			import("./languageFeatures/documentHighlight").then((provider) =>
-				this._register(provider.register(selector, this.client))
+				this._register(provider.register(selector, this.client)),
 			),
 			import("./languageFeatures/documentSymbol").then((provider) =>
 				this._register(
 					provider.register(
 						selector,
 						this.client,
-						cachedNavTreeResponse
-					)
-				)
+						cachedNavTreeResponse,
+					),
+				),
 			),
 			import("./languageFeatures/fileReferences").then((provider) =>
 				this._register(
-					provider.register(this.client, this.commandManager)
-				)
+					provider.register(this.client, this.commandManager),
+				),
 			),
 			import("./languageFeatures/fixAll").then((provider) =>
 				this._register(
@@ -133,12 +133,12 @@ export default class LanguageProvider extends Disposable {
 						selector,
 						this.client,
 						this.fileConfigurationManager,
-						this.client.diagnosticsManager
-					)
-				)
+						this.client.diagnosticsManager,
+					),
+				),
 			),
 			import("./languageFeatures/folding").then((provider) =>
-				this._register(provider.register(selector, this.client))
+				this._register(provider.register(selector, this.client)),
 			),
 			import("./languageFeatures/formatting").then((provider) =>
 				this._register(
@@ -146,21 +146,21 @@ export default class LanguageProvider extends Disposable {
 						selector,
 						this.description,
 						this.client,
-						this.fileConfigurationManager
-					)
-				)
+						this.fileConfigurationManager,
+					),
+				),
 			),
 			import("./languageFeatures/hover").then((provider) =>
 				this._register(
 					provider.register(
 						selector,
 						this.client,
-						this.fileConfigurationManager
-					)
-				)
+						this.fileConfigurationManager,
+					),
+				),
 			),
 			import("./languageFeatures/implementations").then((provider) =>
-				this._register(provider.register(selector, this.client))
+				this._register(provider.register(selector, this.client)),
 			),
 			import("./languageFeatures/inlayHints").then((provider) =>
 				this._register(
@@ -169,9 +169,9 @@ export default class LanguageProvider extends Disposable {
 						this.description,
 						this.client,
 						this.fileConfigurationManager,
-						this.telemetryReporter
-					)
-				)
+						this.telemetryReporter,
+					),
+				),
 			),
 			import("./languageFeatures/jsDocCompletions").then((provider) =>
 				this._register(
@@ -179,16 +179,16 @@ export default class LanguageProvider extends Disposable {
 						selector,
 						this.description,
 						this.client,
-						this.fileConfigurationManager
-					)
-				)
+						this.fileConfigurationManager,
+					),
+				),
 			),
 			import("./languageFeatures/linkedEditing").then((provider) =>
-				this._register(provider.register(selector, this.client))
+				this._register(provider.register(selector, this.client)),
 			),
 			import("./languageFeatures/mappedCodeEditProvider").then(
 				(provider) =>
-					this._register(provider.register(selector, this.client))
+					this._register(provider.register(selector, this.client)),
 			),
 			import("./languageFeatures/organizeImports").then((provider) =>
 				this._register(
@@ -197,9 +197,9 @@ export default class LanguageProvider extends Disposable {
 						this.client,
 						this.commandManager,
 						this.fileConfigurationManager,
-						this.telemetryReporter
-					)
-				)
+						this.telemetryReporter,
+					),
+				),
 			),
 			import("./languageFeatures/quickFix").then((provider) =>
 				this._register(
@@ -209,9 +209,9 @@ export default class LanguageProvider extends Disposable {
 						this.fileConfigurationManager,
 						this.commandManager,
 						this.client.diagnosticsManager,
-						this.telemetryReporter
-					)
-				)
+						this.telemetryReporter,
+					),
+				),
 			),
 			import("./languageFeatures/refactor").then((provider) =>
 				this._register(
@@ -221,12 +221,12 @@ export default class LanguageProvider extends Disposable {
 						cachedNavTreeResponse,
 						this.fileConfigurationManager,
 						this.commandManager,
-						this.telemetryReporter
-					)
-				)
+						this.telemetryReporter,
+					),
+				),
 			),
 			import("./languageFeatures/references").then((provider) =>
-				this._register(provider.register(selector, this.client))
+				this._register(provider.register(selector, this.client)),
 			),
 			import("./languageFeatures/rename").then((provider) =>
 				this._register(
@@ -234,31 +234,31 @@ export default class LanguageProvider extends Disposable {
 						selector,
 						this.description,
 						this.client,
-						this.fileConfigurationManager
-					)
-				)
+						this.fileConfigurationManager,
+					),
+				),
 			),
 			import("./languageFeatures/semanticTokens").then((provider) =>
-				this._register(provider.register(selector, this.client))
+				this._register(provider.register(selector, this.client)),
 			),
 			import("./languageFeatures/signatureHelp").then((provider) =>
-				this._register(provider.register(selector, this.client))
+				this._register(provider.register(selector, this.client)),
 			),
 			import("./languageFeatures/smartSelect").then((provider) =>
-				this._register(provider.register(selector, this.client))
+				this._register(provider.register(selector, this.client)),
 			),
 			import("./languageFeatures/sourceDefinition").then((provider) =>
 				this._register(
-					provider.register(this.client, this.commandManager)
-				)
+					provider.register(this.client, this.commandManager),
+				),
 			),
 			import("./languageFeatures/tagClosing").then((provider) =>
 				this._register(
-					provider.register(selector, this.description, this.client)
-				)
+					provider.register(selector, this.description, this.client),
+				),
 			),
 			import("./languageFeatures/typeDefinitions").then((provider) =>
-				this._register(provider.register(selector, this.client))
+				this._register(provider.register(selector, this.client)),
 			),
 		]);
 	}
@@ -304,14 +304,14 @@ export default class LanguageProvider extends Disposable {
 	private updateValidate(value: boolean) {
 		this.client.diagnosticsManager.setValidate(
 			this._diagnosticLanguage,
-			value
+			value,
 		);
 	}
 
 	private updateSuggestionDiagnostics(value: boolean) {
 		this.client.diagnosticsManager.setEnableSuggestions(
 			this._diagnosticLanguage,
-			value
+			value,
 		);
 	}
 
@@ -329,13 +329,13 @@ export default class LanguageProvider extends Disposable {
 		diagnostics: (vscode.Diagnostic & {
 			reportUnnecessary: any;
 			reportDeprecated: any;
-		})[]
+		})[],
 	): void {
 		if (
 			diagnosticsKind !== DiagnosticKind.Syntax &&
 			!this.client.hasCapabilityForResource(
 				file,
-				ClientCapability.Semantic
+				ClientCapability.Semantic,
 			)
 		) {
 			return;
@@ -376,17 +376,17 @@ export default class LanguageProvider extends Disposable {
 					}
 				}
 				return true;
-			})
+			}),
 		);
 	}
 
 	public configFileDiagnosticsReceived(
 		file: vscode.Uri,
-		diagnostics: vscode.Diagnostic[]
+		diagnostics: vscode.Diagnostic[],
 	): void {
 		this.client.diagnosticsManager.configFileDiagnosticsReceived(
 			file,
-			diagnostics
+			diagnostics,
 		);
 	}
 

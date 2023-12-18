@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { isEqualOrParent, joinPath } from "vs/base/common/resources";
+import * as semver from "vs/base/common/semver/semver";
 import Severity from "vs/base/common/severity";
 import { URI } from "vs/base/common/uri";
 import * as nls from "vs/nls";
-import * as semver from "vs/base/common/semver/semver";
 import { IExtensionManifest } from "vs/platform/extensions/common/extensions";
 
 export interface IParsedVersion {
@@ -80,7 +80,7 @@ export function parseVersion(version: string): IParsedVersion | null {
 }
 
 export function normalizeVersion(
-	version: IParsedVersion | null
+	version: IParsedVersion | null,
 ): INormalizedVersion | null {
 	if (!version) {
 		return null;
@@ -126,7 +126,7 @@ export function normalizeVersion(
 export function isValidVersion(
 	_inputVersion: string | INormalizedVersion,
 	_inputDate: ProductDate,
-	_desiredVersion: string | INormalizedVersion
+	_desiredVersion: string | INormalizedVersion,
 ): boolean {
 	let version: INormalizedVersion | null;
 	if (typeof _inputVersion === "string") {
@@ -254,7 +254,7 @@ export function validateExtensionManifest(
 	productDate: ProductDate,
 	extensionLocation: URI,
 	extensionManifest: IExtensionManifest,
-	extensionIsBuiltin: boolean
+	extensionIsBuiltin: boolean,
 ): readonly [Severity, string][] {
 	const validations: [Severity, string][] = [];
 	if (
@@ -265,7 +265,7 @@ export function validateExtensionManifest(
 			Severity.Error,
 			nls.localize(
 				"extensionDescription.publisher",
-				"property publisher must be of type `string`."
+				"property publisher must be of type `string`.",
 			),
 		]);
 		return validations;
@@ -276,7 +276,7 @@ export function validateExtensionManifest(
 			nls.localize(
 				"extensionDescription.name",
 				"property `{0}` is mandatory and must be of type `string`",
-				"name"
+				"name",
 			),
 		]);
 		return validations;
@@ -287,7 +287,7 @@ export function validateExtensionManifest(
 			nls.localize(
 				"extensionDescription.version",
 				"property `{0}` is mandatory and must be of type `string`",
-				"version"
+				"version",
 			),
 		]);
 		return validations;
@@ -298,7 +298,7 @@ export function validateExtensionManifest(
 			nls.localize(
 				"extensionDescription.engines",
 				"property `{0}` is mandatory and must be of type `object`",
-				"engines"
+				"engines",
 			),
 		]);
 		return validations;
@@ -309,7 +309,7 @@ export function validateExtensionManifest(
 			nls.localize(
 				"extensionDescription.engines.vscode",
 				"property `{0}` is mandatory and must be of type `string`",
-				"engines.vscode"
+				"engines.vscode",
 			),
 		]);
 		return validations;
@@ -321,7 +321,7 @@ export function validateExtensionManifest(
 				nls.localize(
 					"extensionDescription.extensionDependencies",
 					"property `{0}` can be omitted or must be of type `string[]`",
-					"extensionDependencies"
+					"extensionDependencies",
 				),
 			]);
 			return validations;
@@ -334,7 +334,7 @@ export function validateExtensionManifest(
 				nls.localize(
 					"extensionDescription.activationEvents1",
 					"property `{0}` can be omitted or must be of type `string[]`",
-					"activationEvents"
+					"activationEvents",
 				),
 			]);
 			return validations;
@@ -350,7 +350,7 @@ export function validateExtensionManifest(
 					"property `{0}` should be omitted if the extension doesn't have a `{1}` or `{2}` property.",
 					"activationEvents",
 					"main",
-					"browser"
+					"browser",
 				),
 			]);
 			return validations;
@@ -363,7 +363,7 @@ export function validateExtensionManifest(
 				nls.localize(
 					"extensionDescription.extensionKind",
 					"property `{0}` can be defined only if property `main` is also defined.",
-					"extensionKind"
+					"extensionKind",
 				),
 			]);
 			// not a failure case
@@ -376,14 +376,14 @@ export function validateExtensionManifest(
 				nls.localize(
 					"extensionDescription.main1",
 					"property `{0}` can be omitted or must be of type `string`",
-					"main"
+					"main",
 				),
 			]);
 			return validations;
 		} else {
 			const mainLocation = joinPath(
 				extensionLocation,
-				extensionManifest.main
+				extensionManifest.main,
 			);
 			if (!isEqualOrParent(mainLocation, extensionLocation)) {
 				validations.push([
@@ -392,7 +392,7 @@ export function validateExtensionManifest(
 						"extensionDescription.main2",
 						"Expected `main` ({0}) to be included inside extension's folder ({1}). This might make the extension non-portable.",
 						mainLocation.path,
-						extensionLocation.path
+						extensionLocation.path,
 					),
 				]);
 				// not a failure case
@@ -406,14 +406,14 @@ export function validateExtensionManifest(
 				nls.localize(
 					"extensionDescription.browser1",
 					"property `{0}` can be omitted or must be of type `string`",
-					"browser"
+					"browser",
 				),
 			]);
 			return validations;
 		} else {
 			const browserLocation = joinPath(
 				extensionLocation,
-				extensionManifest.browser
+				extensionManifest.browser,
 			);
 			if (!isEqualOrParent(browserLocation, extensionLocation)) {
 				validations.push([
@@ -422,7 +422,7 @@ export function validateExtensionManifest(
 						"extensionDescription.browser2",
 						"Expected `browser` ({0}) to be included inside extension's folder ({1}). This might make the extension non-portable.",
 						browserLocation.path,
-						extensionLocation.path
+						extensionLocation.path,
 					),
 				]);
 				// not a failure case
@@ -435,7 +435,7 @@ export function validateExtensionManifest(
 			Severity.Error,
 			nls.localize(
 				"notSemver",
-				"Extension version is not semver compatible."
+				"Extension version is not semver compatible.",
 			),
 		]);
 		return validations;
@@ -447,7 +447,7 @@ export function validateExtensionManifest(
 		productDate,
 		extensionManifest,
 		extensionIsBuiltin,
-		notices
+		notices,
 	);
 	if (!isValid) {
 		for (const notice of notices) {
@@ -462,7 +462,7 @@ export function isValidExtensionVersion(
 	productDate: ProductDate,
 	extensionManifest: IExtensionManifest,
 	extensionIsBuiltin: boolean,
-	notices: string[]
+	notices: string[],
 ): boolean {
 	if (
 		extensionIsBuiltin ||
@@ -477,14 +477,14 @@ export function isValidExtensionVersion(
 		productVersion,
 		productDate,
 		extensionManifest.engines.vscode,
-		notices
+		notices,
 	);
 }
 
 export function isEngineValid(
 	engine: string,
 	version: string,
-	date: ProductDate
+	date: ProductDate,
 ): boolean {
 	// TODO@joao: discuss with alex '*' doesn't seem to be a valid engine version
 	return engine === "*" || isVersionValid(version, date, engine);
@@ -494,7 +494,7 @@ function isVersionValid(
 	currentVersion: string,
 	date: ProductDate,
 	requestedVersion: string,
-	notices: string[] = []
+	notices: string[] = [],
 ): boolean {
 	const desiredVersion = normalizeVersion(parseVersion(requestedVersion));
 	if (!desiredVersion) {
@@ -502,8 +502,8 @@ function isVersionValid(
 			nls.localize(
 				"versionSyntax",
 				"Could not parse `engines.vscode` value {0}. Please use, for example: ^1.22.0, ^1.22.x, etc.",
-				requestedVersion
-			)
+				requestedVersion,
+			),
 		);
 		return false;
 	}
@@ -518,8 +518,8 @@ function isVersionValid(
 				nls.localize(
 					"versionSpecificity1",
 					"Version specified in `engines.vscode` ({0}) is not specific enough. For vscode versions before 1.0.0, please define at a minimum the major and minor desired version. E.g. ^0.10.0, 0.10.x, 0.11.0, etc.",
-					requestedVersion
-				)
+					requestedVersion,
+				),
 			);
 			return false;
 		}
@@ -530,8 +530,8 @@ function isVersionValid(
 				nls.localize(
 					"versionSpecificity2",
 					"Version specified in `engines.vscode` ({0}) is not specific enough. For vscode versions after 1.0.0, please define at a minimum the major desired version. E.g. ^1.10.0, 1.10.x, 1.x.x, 2.x.x, etc.",
-					requestedVersion
-				)
+					requestedVersion,
+				),
 			);
 			return false;
 		}
@@ -543,8 +543,8 @@ function isVersionValid(
 				"versionMismatch",
 				"Extension is not compatible with Code {0}. Extension requires: {1}.",
 				currentVersion,
-				requestedVersion
-			)
+				requestedVersion,
+			),
 		);
 		return false;
 	}

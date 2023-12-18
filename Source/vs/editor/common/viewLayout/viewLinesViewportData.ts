@@ -55,7 +55,7 @@ export class ViewportData {
 		selections: Selection[],
 		partialData: IPartialViewLinesViewportData,
 		whitespaceViewportData: IViewWhitespaceViewportData[],
-		model: IViewModel
+		model: IViewModel,
 	) {
 		this.selections = selections;
 		this.startLineNumber = partialData.startLineNumber | 0;
@@ -70,14 +70,14 @@ export class ViewportData {
 			partialData.startLineNumber,
 			this._model.getLineMinColumn(partialData.startLineNumber),
 			partialData.endLineNumber,
-			this._model.getLineMaxColumn(partialData.endLineNumber)
+			this._model.getLineMaxColumn(partialData.endLineNumber),
 		);
 	}
 
 	public getViewLineRenderingData(lineNumber: number): ViewLineRenderingData {
 		return this._model.getViewportViewLineRenderingData(
 			this.visibleRange,
-			lineNumber
+			lineNumber,
 		);
 	}
 

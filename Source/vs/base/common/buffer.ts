@@ -39,7 +39,7 @@ export class VSBuffer {
 			actual = Buffer.from(
 				actual.buffer,
 				actual.byteOffset,
-				actual.byteLength
+				actual.byteLength,
 			);
 		}
 		return new VSBuffer(actual);
@@ -51,7 +51,7 @@ export class VSBuffer {
 	 */
 	static fromString(
 		source: string,
-		options?: { dontUseNodeBuffer?: boolean }
+		options?: { dontUseNodeBuffer?: boolean },
 	): VSBuffer {
 		const dontUseNodeBuffer = options?.dontUseNodeBuffer || false;
 		if (!dontUseNodeBuffer && hasBuffer) {
@@ -141,11 +141,11 @@ export class VSBuffer {
 	set(array: ArrayBufferView, offset?: number): void;
 	set(
 		array: VSBuffer | Uint8Array | ArrayBuffer | ArrayBufferView,
-		offset?: number
+		offset?: number,
 	): void;
 	set(
 		array: VSBuffer | Uint8Array | ArrayBuffer | ArrayBufferView,
-		offset?: number
+		offset?: number,
 	): void {
 		if (array instanceof VSBuffer) {
 			this.buffer.set(array.buffer, offset);
@@ -158,9 +158,9 @@ export class VSBuffer {
 				new Uint8Array(
 					array.buffer,
 					array.byteOffset,
-					array.byteLength
+					array.byteLength,
 				),
-				offset
+				offset,
 			);
 		} else {
 			throw new Error(`Unknown argument 'array'`);
@@ -195,7 +195,7 @@ export class VSBuffer {
 		return binaryIndexOf(
 			this.buffer,
 			subarray instanceof VSBuffer ? subarray.buffer : subarray,
-			offset
+			offset,
 		);
 	}
 }
@@ -207,7 +207,7 @@ export class VSBuffer {
 export function binaryIndexOf(
 	haystack: Uint8Array,
 	needle: Uint8Array,
-	offset = 0
+	offset = 0,
 ): number {
 	const needleLen = needle.byteLength;
 	const haystackLen = haystack.byteLength;
@@ -261,7 +261,7 @@ export function readUInt16LE(source: Uint8Array, offset: number): number {
 export function writeUInt16LE(
 	destination: Uint8Array,
 	value: number,
-	offset: number
+	offset: number,
 ): void {
 	destination[offset + 0] = value & 0b11111111;
 	value = value >>> 8;
@@ -280,7 +280,7 @@ export function readUInt32BE(source: Uint8Array, offset: number): number {
 export function writeUInt32BE(
 	destination: Uint8Array,
 	value: number,
-	offset: number
+	offset: number,
 ): void {
 	destination[offset + 3] = value;
 	value = value >>> 8;
@@ -303,7 +303,7 @@ export function readUInt32LE(source: Uint8Array, offset: number): number {
 export function writeUInt32LE(
 	destination: Uint8Array,
 	value: number,
-	offset: number
+	offset: number,
 ): void {
 	destination[offset + 0] = value & 0b11111111;
 	value = value >>> 8;
@@ -321,25 +321,23 @@ export function readUInt8(source: Uint8Array, offset: number): number {
 export function writeUInt8(
 	destination: Uint8Array,
 	value: number,
-	offset: number
+	offset: number,
 ): void {
 	destination[offset] = value;
 }
 
-export interface VSBufferReadable extends streams.Readable<VSBuffer> {}
+export type VSBufferReadable = streams.Readable<VSBuffer>;
 
-export interface VSBufferReadableStream
-	extends streams.ReadableStream<VSBuffer> {}
+export type VSBufferReadableStream = streams.ReadableStream<VSBuffer>;
 
-export interface VSBufferWriteableStream
-	extends streams.WriteableStream<VSBuffer> {}
+export type VSBufferWriteableStream = streams.WriteableStream<VSBuffer>;
 
-export interface VSBufferReadableBufferedStream
-	extends streams.ReadableBufferedStream<VSBuffer> {}
+export type VSBufferReadableBufferedStream =
+	streams.ReadableBufferedStream<VSBuffer>;
 
 export function readableToBuffer(readable: VSBufferReadable): VSBuffer {
 	return streams.consumeReadable<VSBuffer>(readable, (chunks) =>
-		VSBuffer.concat(chunks)
+		VSBuffer.concat(chunks),
 	);
 }
 
@@ -348,15 +346,15 @@ export function bufferToReadable(buffer: VSBuffer): VSBufferReadable {
 }
 
 export function streamToBuffer(
-	stream: streams.ReadableStream<VSBuffer>
+	stream: streams.ReadableStream<VSBuffer>,
 ): Promise<VSBuffer> {
 	return streams.consumeStream<VSBuffer>(stream, (chunks) =>
-		VSBuffer.concat(chunks)
+		VSBuffer.concat(chunks),
 	);
 }
 
 export async function bufferedStreamToBuffer(
-	bufferedStream: streams.ReadableBufferedStream<VSBuffer>
+	bufferedStream: streams.ReadableBufferedStream<VSBuffer>,
 ): Promise<VSBuffer> {
 	if (bufferedStream.ended) {
 		return VSBuffer.concat(bufferedStream.buffer);
@@ -372,15 +370,15 @@ export async function bufferedStreamToBuffer(
 }
 
 export function bufferToStream(
-	buffer: VSBuffer
+	buffer: VSBuffer,
 ): streams.ReadableStream<VSBuffer> {
 	return streams.toStream<VSBuffer>(buffer, (chunks) =>
-		VSBuffer.concat(chunks)
+		VSBuffer.concat(chunks),
 	);
 }
 
 export function streamToBufferReadableStream(
-	stream: streams.ReadableStreamEvents<Uint8Array | string>
+	stream: streams.ReadableStreamEvents<Uint8Array | string>,
 ): streams.ReadableStream<VSBuffer> {
 	return streams.transform<Uint8Array | string, VSBuffer>(
 		stream,
@@ -390,34 +388,34 @@ export function streamToBufferReadableStream(
 					? VSBuffer.fromString(data)
 					: VSBuffer.wrap(data),
 		},
-		(chunks) => VSBuffer.concat(chunks)
+		(chunks) => VSBuffer.concat(chunks),
 	);
 }
 
 export function newWriteableBufferStream(
-	options?: streams.WriteableStreamOptions
+	options?: streams.WriteableStreamOptions,
 ): streams.WriteableStream<VSBuffer> {
 	return streams.newWriteableStream<VSBuffer>(
 		(chunks) => VSBuffer.concat(chunks),
-		options
+		options,
 	);
 }
 
 export function prefixedBufferReadable(
 	prefix: VSBuffer,
-	readable: VSBufferReadable
+	readable: VSBufferReadable,
 ): VSBufferReadable {
 	return streams.prefixedReadable(prefix, readable, (chunks) =>
-		VSBuffer.concat(chunks)
+		VSBuffer.concat(chunks),
 	);
 }
 
 export function prefixedBufferStream(
 	prefix: VSBuffer,
-	stream: VSBufferReadableStream
+	stream: VSBufferReadableStream,
 ): VSBufferReadableStream {
 	return streams.prefixedStream(prefix, stream, (chunks) =>
-		VSBuffer.concat(chunks)
+		VSBuffer.concat(chunks),
 	);
 }
 
@@ -492,7 +490,7 @@ const base64UrlSafeAlphabet =
 export function encodeBase64(
 	{ buffer }: VSBuffer,
 	padded = true,
-	urlSafe = false
+	urlSafe = false,
 ) {
 	const dictionary = urlSafe ? base64UrlSafeAlphabet : base64Alphabet;
 	let output = "";

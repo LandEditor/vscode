@@ -34,7 +34,7 @@ suite("ExternalTerminalService", () => {
 				strictEqual(command, testShell, "shell should equal expected");
 				strictEqual(
 					args[args.length - 1],
-					mockConfig.terminal.external.windowsExec
+					mockConfig.terminal.external.windowsExec,
 				);
 				strictEqual(opts.cwd, testCwd);
 				done();
@@ -48,7 +48,7 @@ suite("ExternalTerminalService", () => {
 			mockSpawner,
 			mockConfig.terminal.external,
 			testShell,
-			testCwd
+			testCwd,
 		);
 	});
 
@@ -59,7 +59,7 @@ suite("ExternalTerminalService", () => {
 			spawn: (command: any, args: any, opts: any) => {
 				strictEqual(
 					args[args.length - 1],
-					WindowsExternalTerminalService.getDefaultTerminalWindows()
+					WindowsExternalTerminalService.getDefaultTerminalWindows(),
 				);
 				done();
 				return {
@@ -73,7 +73,7 @@ suite("ExternalTerminalService", () => {
 			mockSpawner,
 			mockConfig.terminal.external,
 			testShell,
-			testCwd
+			testCwd,
 		);
 	});
 
@@ -85,7 +85,7 @@ suite("ExternalTerminalService", () => {
 				strictEqual(
 					opts.cwd,
 					"C:/foo",
-					"cwd should be uppercase regardless of the case that's passed in"
+					"cwd should be uppercase regardless of the case that's passed in",
 				);
 				done();
 				return {
@@ -98,7 +98,7 @@ suite("ExternalTerminalService", () => {
 			mockSpawner,
 			mockConfig.terminal.external,
 			testShell,
-			testCwd
+			testCwd,
 		);
 	});
 
@@ -118,7 +118,7 @@ suite("ExternalTerminalService", () => {
 			mockSpawner,
 			{ windowsExec: "cmder" },
 			testShell,
-			testCwd
+			testCwd,
 		);
 	});
 
@@ -137,7 +137,7 @@ suite("ExternalTerminalService", () => {
 			mockSpawner,
 			mockConfig.terminal.external,
 			testShell,
-			testCwd
+			testCwd,
 		);
 	});
 
@@ -156,7 +156,7 @@ suite("ExternalTerminalService", () => {
 		testService.spawnTerminal(
 			mockSpawner,
 			mockConfig.terminal.external,
-			testCwd
+			testCwd,
 		);
 	});
 
@@ -191,7 +191,7 @@ suite("ExternalTerminalService", () => {
 		testService.spawnTerminal(
 			mockSpawner,
 			mockConfig.terminal.external,
-			testCwd
+			testCwd,
 		);
 	});
 
@@ -213,9 +213,9 @@ suite("ExternalTerminalService", () => {
 				testService.spawnTerminal(
 					mockSpawner,
 					mockConfig.terminal.external,
-					testCwd
+					testCwd,
 				);
-			}
+			},
 		);
 	});
 });

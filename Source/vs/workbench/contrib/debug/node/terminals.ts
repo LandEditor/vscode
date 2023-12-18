@@ -26,7 +26,7 @@ function spawnAsPromised(command: string, args: string[]): Promise<string> {
 }
 
 export async function hasChildProcesses(
-	processId: number | undefined
+	processId: number | undefined,
 ): Promise<boolean> {
 	if (processId) {
 		// if shell has at least one child process, assume that shell is busy
@@ -55,7 +55,7 @@ export async function hasChildProcesses(
 				},
 				(error) => {
 					return true;
-				}
+				},
 			);
 		}
 	}
@@ -63,10 +63,10 @@ export async function hasChildProcesses(
 	return Promise.resolve(true);
 }
 
-const enum ShellType {
-	cmd,
-	powershell,
-	bash,
+enum ShellType {
+	cmd = 0,
+	powershell = 1,
+	bash = 2,
 }
 
 export function prepareCommand(
@@ -74,7 +74,7 @@ export function prepareCommand(
 	args: string[],
 	argsCanBeInterpretedByShell: boolean,
 	cwd?: string,
-	env?: { [key: string]: string | null }
+	env?: { [key: string]: string | null },
 ): string {
 	shell = shell.trim().toLowerCase();
 

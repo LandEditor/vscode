@@ -5,7 +5,6 @@
 
 //@ts-check
 
-"use strict";
 const CopyPlugin = require("copy-webpack-plugin");
 const path = require("path");
 
@@ -54,16 +53,16 @@ module.exports = [
 							const normalizedFileName =
 								pathData.absoluteFilename.replace(
 									/[\\/]/g,
-									"/"
+									"/",
 								);
 							const match = normalizedFileName.match(
-								/typescript\/lib\/(.*)/
+								/typescript\/lib\/(.*)/,
 							);
 							if (match) {
 								return `typescript/${match[1]}`;
 							}
 							console.log(
-								`Did not find typescript/lib in ${normalizedFileName}`
+								`Did not find typescript/lib in ${normalizedFileName}`,
 							);
 							return "typescript/";
 						},
@@ -91,7 +90,7 @@ module.exports = [
 			libraryTarget: undefined,
 		},
 		externals: {
-			"perf_hooks": "commonjs perf_hooks",
+			perf_hooks: "commonjs perf_hooks",
 		},
 	}),
 ];

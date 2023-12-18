@@ -3,33 +3,33 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Codicon } from "vs/base/common/codicons";
+import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
 import { localize } from "vs/nls";
+import { ILocalizedString } from "vs/platform/action/common/action";
 import {
-	MenuId,
 	Action2,
+	MenuId,
 	registerAction2,
 } from "vs/platform/actions/common/actions";
-import { KeyMod, KeyCode } from "vs/base/common/keyCodes";
+import { CommandsRegistry } from "vs/platform/commands/common/commands";
+import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import {
-	KeybindingsRegistry,
-	KeybindingWeight,
 	IKeybindingRule,
+	KeybindingWeight,
+	KeybindingsRegistry,
 } from "vs/platform/keybinding/common/keybindingsRegistry";
+import { AnythingQuickAccessProviderRunOptions } from "vs/platform/quickinput/common/quickAccess";
 import {
 	IQuickInputService,
 	ItemActivation,
 } from "vs/platform/quickinput/common/quickInput";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { CommandsRegistry } from "vs/platform/commands/common/commands";
-import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
 import {
-	inQuickPickContext,
 	defaultQuickAccessContext,
 	getQuickNavigateHandler,
+	inQuickPickContext,
 } from "vs/workbench/browser/quickaccess";
-import { ILocalizedString } from "vs/platform/action/common/action";
-import { AnythingQuickAccessProviderRunOptions } from "vs/platform/quickinput/common/quickAccess";
-import { Codicon } from "vs/base/common/codicons";
 
 //#region Quick access management commands and keys
 
@@ -91,7 +91,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	weight: KeybindingWeight.WorkbenchContrib + 50,
 	handler: getQuickNavigateHandler(
 		quickAccessNavigateNextInFilePickerId,
-		true
+		true,
 	),
 	when: defaultQuickAccessContext,
 	primary: globalQuickAccessKeybinding.primary,
@@ -106,7 +106,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	weight: KeybindingWeight.WorkbenchContrib + 50,
 	handler: getQuickNavigateHandler(
 		quickAccessNavigatePreviousInFilePickerId,
-		false
+		false,
 	),
 	when: defaultQuickAccessContext,
 	primary: globalQuickAccessKeybinding.primary | KeyMod.Shift,
@@ -157,7 +157,7 @@ registerAction2(
 						{
 							name: "prefix",
 							schema: {
-								"type": "string",
+								type: "string",
 							},
 						},
 					],
@@ -180,10 +180,10 @@ registerAction2(
 					preserveValue:
 						typeof prefix ===
 						"string" /* preserve as is if provided */,
-				}
+				},
 			);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -210,7 +210,7 @@ registerAction2(
 				} as AnythingQuickAccessProviderRunOptions,
 			});
 		}
-	}
+	},
 );
 
 CommandsRegistry.registerCommand(
@@ -221,7 +221,7 @@ CommandsRegistry.registerCommand(
 		quickInputService.quickAccess.show("", {
 			itemActivation: ItemActivation.SECOND,
 		});
-	}
+	},
 );
 
 //#endregion
@@ -234,7 +234,7 @@ class BaseQuickAccessNavigateAction extends Action2 {
 		title: ILocalizedString,
 		private next: boolean,
 		private quickNavigate: boolean,
-		keybinding?: Omit<IKeybindingRule, "id">
+		keybinding?: Omit<IKeybindingRule, "id">,
 	) {
 		super({ id, title, f1: true, keybinding });
 	}
@@ -259,12 +259,12 @@ class QuickAccessNavigateNextAction extends BaseQuickAccessNavigateAction {
 			{
 				value: localize(
 					"quickNavigateNext",
-					"Navigate Next in Quick Open"
+					"Navigate Next in Quick Open",
 				),
 				original: "Navigate Next in Quick Open",
 			},
 			true,
-			true
+			true,
 		);
 	}
 }
@@ -276,12 +276,12 @@ class QuickAccessNavigatePreviousAction extends BaseQuickAccessNavigateAction {
 			{
 				value: localize(
 					"quickNavigatePrevious",
-					"Navigate Previous in Quick Open"
+					"Navigate Previous in Quick Open",
 				),
 				original: "Navigate Previous in Quick Open",
 			},
 			false,
-			true
+			true,
 		);
 	}
 }
@@ -301,7 +301,7 @@ class QuickAccessSelectNextAction extends BaseQuickAccessNavigateAction {
 				when: inQuickPickContext,
 				primary: 0,
 				mac: { primary: KeyMod.WinCtrl | KeyCode.KeyN },
-			}
+			},
 		);
 	}
 }
@@ -313,7 +313,7 @@ class QuickAccessSelectPreviousAction extends BaseQuickAccessNavigateAction {
 			{
 				value: localize(
 					"quickSelectPrevious",
-					"Select Previous in Quick Open"
+					"Select Previous in Quick Open",
 				),
 				original: "Select Previous in Quick Open",
 			},
@@ -324,7 +324,7 @@ class QuickAccessSelectPreviousAction extends BaseQuickAccessNavigateAction {
 				when: inQuickPickContext,
 				primary: 0,
 				mac: { primary: KeyMod.WinCtrl | KeyCode.KeyP },
-			}
+			},
 		);
 	}
 }

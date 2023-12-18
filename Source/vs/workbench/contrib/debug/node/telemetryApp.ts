@@ -12,7 +12,7 @@ const appender = new OneDataSystemAppender(
 	false,
 	process.argv[2],
 	JSON.parse(process.argv[3]),
-	process.argv[4]
+	process.argv[4],
 );
 process.once("exit", () => appender.flush());
 

@@ -14,10 +14,10 @@ import {
 	DidChangeProfilesEvent,
 	IUserDataProfile,
 	IUserDataProfilesService,
-	reviveProfile,
 	StoredProfileAssociations,
 	StoredUserDataProfile,
 	UserDataProfilesService,
+	reviveProfile,
 } from "vs/platform/userDataProfile/common/userDataProfile";
 
 type BroadcastedProfileChanges = UriDto<Omit<DidChangeProfilesEvent, "all">>;
@@ -32,32 +32,32 @@ export class BrowserUserDataProfilesService
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@IFileService fileService: IFileService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@ILogService logService: ILogService
+		@ILogService logService: ILogService,
 	) {
 		super(environmentService, fileService, uriIdentityService, logService);
 		this.changesBroadcastChannel = this._register(
 			new BroadcastDataChannel<BroadcastedProfileChanges>(
-				`${UserDataProfilesService.PROFILES_KEY}.changes`
-			)
+				`${UserDataProfilesService.PROFILES_KEY}.changes`,
+			),
 		);
 		this._register(
 			this.changesBroadcastChannel.onDidReceiveData((changes) => {
 				try {
 					this._profilesObject = undefined;
 					const added = changes.added.map((p) =>
-						reviveProfile(p, this.profilesHome.scheme)
+						reviveProfile(p, this.profilesHome.scheme),
 					);
 					const removed = changes.removed.map((p) =>
-						reviveProfile(p, this.profilesHome.scheme)
+						reviveProfile(p, this.profilesHome.scheme),
 					);
 					const updated = changes.updated.map((p) =>
-						reviveProfile(p, this.profilesHome.scheme)
+						reviveProfile(p, this.profilesHome.scheme),
 					);
 
 					this.updateTransientProfiles(
 						added.filter((a) => a.isTransient),
 						removed.filter((a) => a.isTransient),
-						updated.filter((a) => a.isTransient)
+						updated.filter((a) => a.isTransient),
 					);
 
 					this._onDidChangeProfiles.fire({
@@ -69,14 +69,14 @@ export class BrowserUserDataProfilesService
 				} catch (error) {
 					/* ignore */
 				}
-			})
+			}),
 		);
 	}
 
 	private updateTransientProfiles(
 		added: IUserDataProfile[],
 		removed: IUserDataProfile[],
-		updated: IUserDataProfile[]
+		updated: IUserDataProfile[],
 	): void {
 		if (added.length) {
 			this.transientProfilesObject.profiles.push(...added);
@@ -89,7 +89,7 @@ export class BrowserUserDataProfilesService
 					continue;
 				}
 				this.transientProfilesObject.profiles.push(
-					updated.find((p) => profile.id === p.id) ?? profile
+					updated.find((p) => profile.id === p.id) ?? profile,
 				);
 			}
 		}
@@ -98,7 +98,7 @@ export class BrowserUserDataProfilesService
 	protected override getStoredProfiles(): StoredUserDataProfile[] {
 		try {
 			const value = localStorage.getItem(
-				UserDataProfilesService.PROFILES_KEY
+				UserDataProfilesService.PROFILES_KEY,
 			);
 			if (value) {
 				return revive(JSON.parse(value));
@@ -113,18 +113,18 @@ export class BrowserUserDataProfilesService
 	protected override triggerProfilesChanges(
 		added: IUserDataProfile[],
 		removed: IUserDataProfile[],
-		updated: IUserDataProfile[]
+		updated: IUserDataProfile[],
 	) {
 		super.triggerProfilesChanges(added, removed, updated);
 		this.changesBroadcastChannel.postData({ added, removed, updated });
 	}
 
 	protected override saveStoredProfiles(
-		storedProfiles: StoredUserDataProfile[]
+		storedProfiles: StoredUserDataProfile[],
 	): void {
 		localStorage.setItem(
 			UserDataProfilesService.PROFILES_KEY,
-			JSON.stringify(storedProfiles)
+			JSON.stringify(storedProfiles),
 		);
 	}
 
@@ -132,7 +132,7 @@ export class BrowserUserDataProfilesService
 		const migrateKey = "profileAssociationsMigration";
 		try {
 			const value = localStorage.getItem(
-				UserDataProfilesService.PROFILE_ASSOCIATIONS_KEY
+				UserDataProfilesService.PROFILE_ASSOCIATIONS_KEY,
 			);
 			if (value) {
 				let associations: StoredProfileAssociations = JSON.parse(value);
@@ -152,11 +152,11 @@ export class BrowserUserDataProfilesService
 	}
 
 	protected override saveStoredProfileAssociations(
-		storedProfileAssociations: StoredProfileAssociations
+		storedProfileAssociations: StoredProfileAssociations,
 	): void {
 		localStorage.setItem(
 			UserDataProfilesService.PROFILE_ASSOCIATIONS_KEY,
-			JSON.stringify(storedProfileAssociations)
+			JSON.stringify(storedProfileAssociations),
 		);
 	}
 }

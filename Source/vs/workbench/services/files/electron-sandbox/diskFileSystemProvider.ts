@@ -3,41 +3,41 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { CancellationToken } from "vs/base/common/cancellation";
 import { Event } from "vs/base/common/event";
 import { isLinux } from "vs/base/common/platform";
-import {
-	FileSystemProviderCapabilities,
-	IFileDeleteOptions,
-	IStat,
-	FileType,
-	IFileReadStreamOptions,
-	IFileWriteOptions,
-	IFileOpenOptions,
-	IFileOverwriteOptions,
-	IFileSystemProviderWithFileReadWriteCapability,
-	IFileSystemProviderWithOpenReadWriteCloseCapability,
-	IFileSystemProviderWithFileReadStreamCapability,
-	IFileSystemProviderWithFileFolderCopyCapability,
-	IFileSystemProviderWithFileAtomicReadCapability,
-	IFileAtomicReadOptions,
-	IFileSystemProviderWithFileCloneCapability,
-	IFileChange,
-} from "vs/platform/files/common/files";
-import { AbstractDiskFileSystemProvider } from "vs/platform/files/common/diskFileSystemProvider";
-import { IMainProcessService } from "vs/platform/ipc/common/mainProcessService";
-import { CancellationToken } from "vs/base/common/cancellation";
 import { ReadableStreamEvents } from "vs/base/common/stream";
 import { URI } from "vs/base/common/uri";
+import { AbstractDiskFileSystemProvider } from "vs/platform/files/common/diskFileSystemProvider";
 import {
 	DiskFileSystemProviderClient,
 	LOCAL_FILE_SYSTEM_CHANNEL_NAME,
 } from "vs/platform/files/common/diskFileSystemProviderClient";
 import {
-	ILogMessage,
+	FileSystemProviderCapabilities,
+	FileType,
+	IFileAtomicReadOptions,
+	IFileChange,
+	IFileDeleteOptions,
+	IFileOpenOptions,
+	IFileOverwriteOptions,
+	IFileReadStreamOptions,
+	IFileSystemProviderWithFileAtomicReadCapability,
+	IFileSystemProviderWithFileCloneCapability,
+	IFileSystemProviderWithFileFolderCopyCapability,
+	IFileSystemProviderWithFileReadStreamCapability,
+	IFileSystemProviderWithFileReadWriteCapability,
+	IFileSystemProviderWithOpenReadWriteCloseCapability,
+	IFileWriteOptions,
+	IStat,
+} from "vs/platform/files/common/files";
+import {
 	AbstractUniversalWatcherClient,
+	ILogMessage,
 } from "vs/platform/files/common/watcher";
-import { UniversalWatcherClient } from "vs/workbench/services/files/electron-sandbox/watcherClient";
+import { IMainProcessService } from "vs/platform/ipc/common/mainProcessService";
 import { ILogService } from "vs/platform/log/common/log";
+import { UniversalWatcherClient } from "vs/workbench/services/files/electron-sandbox/watcherClient";
 import { IUtilityProcessWorkerWorkbenchService } from "vs/workbench/services/utilityProcess/electron-sandbox/utilityProcessWorkerWorkbenchService";
 
 /**
@@ -58,19 +58,18 @@ export class DiskFileSystemProvider
 	private readonly provider = this._register(
 		new DiskFileSystemProviderClient(
 			this.mainProcessService.getChannel(LOCAL_FILE_SYSTEM_CHANNEL_NAME),
-			{ pathCaseSensitive: isLinux, trash: true }
-		)
+			{ pathCaseSensitive: isLinux, trash: true },
+		),
 	);
 
 	constructor(
 		private readonly mainProcessService: IMainProcessService,
 		private readonly utilityProcessWorkerWorkbenchService: IUtilityProcessWorkerWorkbenchService,
-		logService: ILogService
+		logService: ILogService,
 	) {
 		super(logService, {
 			watcher: {
-				forceUniversal:
-					true /* send all requests to universal watcher process */,
+				forceUniversal: true /* send all requests to universal watcher process */,
 			},
 		});
 
@@ -80,10 +79,10 @@ export class DiskFileSystemProvider
 	private registerListeners(): void {
 		// Forward events from the embedded provider
 		this.provider.onDidChangeFile((changes) =>
-			this._onDidChangeFile.fire(changes)
+			this._onDidChangeFile.fire(changes),
 		);
 		this.provider.onDidWatchError((error) =>
-			this._onDidWatchError.fire(error)
+			this._onDidWatchError.fire(error),
 		);
 	}
 
@@ -115,7 +114,7 @@ export class DiskFileSystemProvider
 
 	readFile(
 		resource: URI,
-		opts?: IFileAtomicReadOptions
+		opts?: IFileAtomicReadOptions,
 	): Promise<Uint8Array> {
 		return this.provider.readFile(resource, opts);
 	}
@@ -123,7 +122,7 @@ export class DiskFileSystemProvider
 	readFileStream(
 		resource: URI,
 		opts: IFileReadStreamOptions,
-		token: CancellationToken
+		token: CancellationToken,
 	): ReadableStreamEvents<Uint8Array> {
 		return this.provider.readFileStream(resource, opts, token);
 	}
@@ -131,7 +130,7 @@ export class DiskFileSystemProvider
 	writeFile(
 		resource: URI,
 		content: Uint8Array,
-		opts: IFileWriteOptions
+		opts: IFileWriteOptions,
 	): Promise<void> {
 		return this.provider.writeFile(resource, content, opts);
 	}
@@ -149,7 +148,7 @@ export class DiskFileSystemProvider
 		pos: number,
 		data: Uint8Array,
 		offset: number,
-		length: number
+		length: number,
 	): Promise<number> {
 		return this.provider.read(fd, pos, data, offset, length);
 	}
@@ -159,7 +158,7 @@ export class DiskFileSystemProvider
 		pos: number,
 		data: Uint8Array,
 		offset: number,
-		length: number
+		length: number,
 	): Promise<number> {
 		return this.provider.write(fd, pos, data, offset, length);
 	}
@@ -199,13 +198,13 @@ export class DiskFileSystemProvider
 	protected createUniversalWatcher(
 		onChange: (changes: IFileChange[]) => void,
 		onLogMessage: (msg: ILogMessage) => void,
-		verboseLogging: boolean
+		verboseLogging: boolean,
 	): AbstractUniversalWatcherClient {
 		return new UniversalWatcherClient(
 			(changes) => onChange(changes),
 			(msg) => onLogMessage(msg),
 			verboseLogging,
-			this.utilityProcessWorkerWorkbenchService
+			this.utilityProcessWorkerWorkbenchService,
 		);
 	}
 

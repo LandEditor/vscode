@@ -5,43 +5,43 @@
 
 /* eslint-disable local/code-no-native-private */
 
-import { validateConstraint } from "vs/base/common/types";
-import { ICommandMetadata } from "vs/platform/commands/common/commands";
-import * as extHostTypes from "vs/workbench/api/common/extHostTypes";
-import * as extHostTypeConverter from "vs/workbench/api/common/extHostTypeConverters";
-import { cloneAndChange } from "vs/base/common/objects";
-import {
-	MainContext,
-	MainThreadCommandsShape,
-	ExtHostCommandsShape,
-	ICommandDto,
-	ICommandMetadataDto,
-	MainThreadTelemetryShape,
-} from "./extHost.protocol";
 import { isNonEmptyArray } from "vs/base/common/arrays";
-import * as languages from "vs/editor/common/languages";
-import type * as vscode from "vscode";
-import { ILogService } from "vs/platform/log/common/log";
-import { revive } from "vs/base/common/marshalling";
-import { IRange, Range } from "vs/editor/common/core/range";
-import { IPosition, Position } from "vs/editor/common/core/position";
-import { URI } from "vs/base/common/uri";
-import { DisposableStore, toDisposable } from "vs/base/common/lifecycle";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { IExtHostRpcService } from "vs/workbench/api/common/extHostRpcService";
-import { ISelection } from "vs/editor/common/core/selection";
-import { TestItemImpl } from "vs/workbench/api/common/extHostTestItem";
 import { VSBuffer } from "vs/base/common/buffer";
-import { SerializableObjectWithBuffers } from "vs/workbench/services/extensions/common/proxyIdentifier";
 import { toErrorMessage } from "vs/base/common/errorMessage";
+import { DisposableStore, toDisposable } from "vs/base/common/lifecycle";
+import { revive } from "vs/base/common/marshalling";
+import { cloneAndChange } from "vs/base/common/objects";
 import { StopWatch } from "vs/base/common/stopwatch";
+import { validateConstraint } from "vs/base/common/types";
+import { URI } from "vs/base/common/uri";
+import { generateUuid } from "vs/base/common/uuid";
+import { IPosition, Position } from "vs/editor/common/core/position";
+import { IRange, Range } from "vs/editor/common/core/range";
+import { ISelection } from "vs/editor/common/core/selection";
+import * as languages from "vs/editor/common/languages";
+import { ICommandMetadata } from "vs/platform/commands/common/commands";
 import {
 	ExtensionIdentifier,
 	IExtensionDescription,
 } from "vs/platform/extensions/common/extensions";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { ILogService } from "vs/platform/log/common/log";
 import { TelemetryTrustedValue } from "vs/platform/telemetry/common/telemetryUtils";
+import { IExtHostRpcService } from "vs/workbench/api/common/extHostRpcService";
 import { IExtHostTelemetry } from "vs/workbench/api/common/extHostTelemetry";
-import { generateUuid } from "vs/base/common/uuid";
+import { TestItemImpl } from "vs/workbench/api/common/extHostTestItem";
+import * as extHostTypeConverter from "vs/workbench/api/common/extHostTypeConverters";
+import * as extHostTypes from "vs/workbench/api/common/extHostTypes";
+import { SerializableObjectWithBuffers } from "vs/workbench/services/extensions/common/proxyIdentifier";
+import type * as vscode from "vscode";
+import {
+	ExtHostCommandsShape,
+	ICommandDto,
+	ICommandMetadataDto,
+	MainContext,
+	MainThreadCommandsShape,
+	MainThreadTelemetryShape,
+} from "./extHost.protocol";
 
 interface CommandHandler {
 	callback: Function;
@@ -53,7 +53,7 @@ interface CommandHandler {
 export interface ArgumentProcessor {
 	processArgument(
 		arg: any,
-		extensionId: ExtensionIdentifier | undefined
+		extensionId: ExtensionIdentifier | undefined,
 	): any;
 }
 
@@ -75,7 +75,7 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 	constructor(
 		@IExtHostRpcService extHostRpc: IExtHostRpcService,
 		@ILogService logService: ILogService,
-		@IExtHostTelemetry extHostTelemetry: IExtHostTelemetry
+		@IExtHostTelemetry extHostTelemetry: IExtHostTelemetry,
 	) {
 		this.#proxy = extHostRpc.getProxy(MainContext.MainThreadCommands);
 		this._logService = logService;
@@ -92,7 +92,7 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 					? candidate
 					: undefined;
 			},
-			logService
+			logService,
 		);
 		this._argumentProcessors = [
 			{
@@ -103,7 +103,7 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 			},
 			{
 				processArgument(arg) {
-					return cloneAndChange(arg, function (obj) {
+					return cloneAndChange(arg, (obj) => {
 						// Reverse of https://github.com/microsoft/vscode/blob/1f28c5fc681f4c01226460b6d1c7e91b8acb4a5b/src/vs/workbench/api/node/extHostCommands.ts#L112-L127
 						if (Range.isIRange(obj)) {
 							return extHostTypeConverter.Range.to(obj);
@@ -147,7 +147,7 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 								typeof apiArgs[i] === "object"
 									? JSON.stringify(apiArgs[i], null, "\t")
 									: apiArgs[i]
-							} `
+							} `,
 						);
 					}
 					return arg.convert(apiArgs[i]);
@@ -155,12 +155,12 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 
 				const internalResult = await this.executeCommand(
 					apiCommand.internalId,
-					...internalArgs
+					...internalArgs,
 				);
 				return apiCommand.result.convert(
 					internalResult,
 					apiArgs,
-					this.converter
+					this.converter,
 				);
 			},
 			undefined,
@@ -168,7 +168,7 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 				description: apiCommand.description,
 				args: apiCommand.args,
 				returns: apiCommand.result.description,
-			}
+			},
 		);
 
 		this._apiCommands.set(apiCommand.id, apiCommand);
@@ -185,7 +185,7 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 		callback: <T>(...args: any[]) => T | Thenable<T>,
 		thisArg?: any,
 		metadata?: ICommandMetadata,
-		extension?: IExtensionDescription
+		extension?: IExtensionDescription,
 	): extHostTypes.Disposable {
 		this._logService.trace("ExtHostCommands#registerCommand", id);
 
@@ -219,7 +219,7 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 	private async _doExecuteCommand<T>(
 		id: string,
 		args: any[],
-		retry: boolean
+		retry: boolean,
 	): Promise<T> {
 		if (this._commands.has(id)) {
 			// - We stay inside the extension host and support
@@ -231,7 +231,7 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 		} else {
 			// automagically convert some argument types
 			let hasBuffers = false;
-			const toArgs = cloneAndChange(args, function (value) {
+			const toArgs = cloneAndChange(args, (value) => {
 				if (value instanceof extHostTypes.Position) {
 					return extHostTypeConverter.Position.from(value);
 				} else if (value instanceof extHostTypes.Range) {
@@ -261,7 +261,7 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 					hasBuffers
 						? new SerializableObjectWithBuffers(toArgs)
 						: toArgs,
-					retry
+					retry,
 				);
 				return revive<any>(result);
 			} catch (e) {
@@ -283,7 +283,7 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 	private async _executeContributedCommand<T = unknown>(
 		id: string,
 		args: any[],
-		annotateError: boolean
+		annotateError: boolean,
 	): Promise<T> {
 		const command = this._commands.get(id);
 		if (!command) {
@@ -296,7 +296,7 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 					validateConstraint(args[i], metadata.args[i].constraint);
 				} catch (err) {
 					throw new Error(
-						`Running the contributed command: '${id}' failed. Illegal argument '${metadata.args[i].name}' - ${metadata.args[i].description}`
+						`Running the contributed command: '${id}' failed. Illegal argument '${metadata.args[i].name}' - ${metadata.args[i].description}`,
 					);
 				}
 			}
@@ -323,12 +323,12 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 			if (command.extension?.identifier) {
 				const reported = this.#extHostTelemetry.onExtensionError(
 					command.extension.identifier,
-					err
+					err,
 				);
 				this._logService.trace(
 					"forwarded error to extension?",
 					reported,
-					command.extension?.identifier
+					command.extension?.identifier,
 				);
 			}
 
@@ -348,7 +348,7 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 	private _reportTelemetry(
 		command: CommandHandler,
 		id: string,
-		duration: number
+		duration: number,
 	) {
 		if (!command.extension) {
 			return;
@@ -391,30 +391,30 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 	$executeContributedCommand(id: string, ...args: any[]): Promise<unknown> {
 		this._logService.trace(
 			"ExtHostCommands#$executeContributedCommand",
-			id
+			id,
 		);
 
 		const cmdHandler = this._commands.get(id);
-		if (!cmdHandler) {
-			return Promise.reject(
-				new Error(`Contributed command '${id}' does not exist.`)
-			);
-		} else {
+		if (cmdHandler) {
 			args = args.map((arg) =>
 				this._argumentProcessors.reduce(
 					(r, p) =>
 						p.processArgument(r, cmdHandler.extension?.identifier),
-					arg
-				)
+					arg,
+				),
 			);
 			return this._executeContributedCommand(id, args, true);
+		} else {
+			return Promise.reject(
+				new Error(`Contributed command '${id}' does not exist.`),
+			);
 		}
 	}
 
-	getCommands(filterUnderscoreCommands: boolean = false): Promise<string[]> {
+	getCommands(filterUnderscoreCommands = false): Promise<string[]> {
 		this._logService.trace(
 			"ExtHostCommands#getCommands",
-			filterUnderscoreCommands
+			filterUnderscoreCommands,
 		);
 
 		return this.#proxy.$getCommands().then((result) => {
@@ -440,7 +440,7 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 	}
 }
 
-export interface IExtHostCommands extends ExtHostCommands {}
+export type IExtHostCommands = ExtHostCommands;
 export const IExtHostCommands =
 	createDecorator<IExtHostCommands>("IExtHostCommands");
 
@@ -455,29 +455,29 @@ export class CommandsConverter
 	constructor(
 		private readonly _commands: ExtHostCommands,
 		private readonly _lookupApiCommand: (
-			id: string
+			id: string,
 		) => ApiCommand | undefined,
-		private readonly _logService: ILogService
+		private readonly _logService: ILogService,
 	) {
 		this._commands.registerCommand(
 			true,
 			this.delegatingCommandId,
 			this._executeConvertedCommand,
-			this
+			this,
 		);
 	}
 
 	toInternal(
 		command: vscode.Command,
-		disposables: DisposableStore
+		disposables: DisposableStore,
 	): ICommandDto;
 	toInternal(
 		command: vscode.Command | undefined,
-		disposables: DisposableStore
+		disposables: DisposableStore,
 	): ICommandDto | undefined;
 	toInternal(
 		command: vscode.Command | undefined,
-		disposables: DisposableStore
+		disposables: DisposableStore,
 	): ICommandDto | undefined {
 		if (!command) {
 			return undefined;
@@ -501,7 +501,7 @@ export class CommandsConverter
 			// API command with return-value can be converted inplace
 			result.id = apiCommand.internalId;
 			result.arguments = apiCommand.args.map((arg, i) =>
-				arg.convert(command.arguments && command.arguments[i])
+				arg.convert(command.arguments && command.arguments[i]),
 			);
 		} else if (isNonEmptyArray(command.arguments)) {
 			// we have a contributed command with arguments. that
@@ -513,7 +513,7 @@ export class CommandsConverter
 				toDisposable(() => {
 					this._cache.delete(id);
 					this._logService.trace("CommandsConverter#DISPOSE", id);
-				})
+				}),
 			);
 			result.$ident = id;
 
@@ -523,7 +523,7 @@ export class CommandsConverter
 			this._logService.trace(
 				"CommandsConverter#CREATE",
 				command.command,
-				id
+				id,
 			);
 		}
 
@@ -551,17 +551,17 @@ export class CommandsConverter
 		this._logService.trace(
 			"CommandsConverter#EXECUTE",
 			args[0],
-			actualCmd ? actualCmd.command : "MISSING"
+			actualCmd ? actualCmd.command : "MISSING",
 		);
 
 		if (!actualCmd) {
 			return Promise.reject(
-				`Actual command not found, wanted to execute ${args[0]}`
+				`Actual command not found, wanted to execute ${args[0]}`,
 			);
 		}
 		return this._commands.executeCommand(
 			actualCmd.command,
-			...(actualCmd.arguments || [])
+			...(actualCmd.arguments || []),
 		);
 	}
 }
@@ -571,7 +571,7 @@ export class ApiCommandArgument<V, O = V> {
 		"uri",
 		"Uri of a text document",
 		(v) => URI.isUri(v),
-		(v) => v
+		(v) => v,
 	);
 	static readonly Position = new ApiCommandArgument<
 		extHostTypes.Position,
@@ -580,13 +580,13 @@ export class ApiCommandArgument<V, O = V> {
 		"position",
 		"A position in a text document",
 		(v) => extHostTypes.Position.isPosition(v),
-		extHostTypeConverter.Position.from
+		extHostTypeConverter.Position.from,
 	);
 	static readonly Range = new ApiCommandArgument<extHostTypes.Range, IRange>(
 		"range",
 		"A range in a text document",
 		(v) => extHostTypes.Range.isRange(v),
-		extHostTypeConverter.Range.from
+		extHostTypeConverter.Range.from,
 	);
 	static readonly Selection = new ApiCommandArgument<
 		extHostTypes.Selection,
@@ -595,22 +595,22 @@ export class ApiCommandArgument<V, O = V> {
 		"selection",
 		"A selection in a text document",
 		(v) => extHostTypes.Selection.isSelection(v),
-		extHostTypeConverter.Selection.from
+		extHostTypeConverter.Selection.from,
 	);
 	static readonly Number = new ApiCommandArgument<number>(
 		"number",
 		"",
 		(v) => typeof v === "number",
-		(v) => v
+		(v) => v,
 	);
 	static readonly String = new ApiCommandArgument<string>(
 		"string",
 		"",
 		(v) => typeof v === "string",
-		(v) => v
+		(v) => v,
 	);
 	static readonly StringArray = ApiCommandArgument.Arr(
-		ApiCommandArgument.String
+		ApiCommandArgument.String,
 	);
 
 	static Arr<T, K = T>(element: ApiCommandArgument<T, K>) {
@@ -619,7 +619,7 @@ export class ApiCommandArgument<V, O = V> {
 			`Array of ${element.name}, ${element.description}`,
 			(v: unknown) =>
 				Array.isArray(v) && v.every((e) => element.validate(e)),
-			(v: T[]) => v.map((e) => element.convert(e))
+			(v: T[]) => v.map((e) => element.convert(e)),
 		);
 	}
 
@@ -627,26 +627,26 @@ export class ApiCommandArgument<V, O = V> {
 		"item",
 		"A call hierarchy item",
 		(v) => v instanceof extHostTypes.CallHierarchyItem,
-		extHostTypeConverter.CallHierarchyItem.from
+		extHostTypeConverter.CallHierarchyItem.from,
 	);
 	static readonly TypeHierarchyItem = new ApiCommandArgument(
 		"item",
 		"A type hierarchy item",
 		(v) => v instanceof extHostTypes.TypeHierarchyItem,
-		extHostTypeConverter.TypeHierarchyItem.from
+		extHostTypeConverter.TypeHierarchyItem.from,
 	);
 	static readonly TestItem = new ApiCommandArgument(
 		"testItem",
 		"A VS Code TestItem",
 		(v) => v instanceof TestItemImpl,
-		extHostTypeConverter.TestItem.from
+		extHostTypeConverter.TestItem.from,
 	);
 
 	constructor(
 		readonly name: string,
 		readonly description: string,
 		readonly validate: (v: V) => boolean,
-		readonly convert: (v: V) => O
+		readonly convert: (v: V) => O,
 	) {}
 
 	optional(): ApiCommandArgument<V | undefined | null, O | undefined | null> {
@@ -659,20 +659,20 @@ export class ApiCommandArgument<V, O = V> {
 				value === undefined
 					? undefined
 					: value === null
-						? null
-						: this.convert(value)
+					  ? null
+					  : this.convert(value),
 		);
 	}
 
 	with(
 		name: string | undefined,
-		description: string | undefined
+		description: string | undefined,
 	): ApiCommandArgument<V, O> {
 		return new ApiCommandArgument(
 			name ?? this.name,
 			description ?? this.description,
 			this.validate,
-			this.convert
+			this.convert,
 		);
 	}
 }
@@ -680,7 +680,7 @@ export class ApiCommandArgument<V, O = V> {
 export class ApiCommandResult<V, O = V> {
 	static readonly Void = new ApiCommandResult<void, void>(
 		"no result",
-		(v) => v
+		(v) => v,
 	);
 
 	constructor(
@@ -688,8 +688,8 @@ export class ApiCommandResult<V, O = V> {
 		readonly convert: (
 			v: V,
 			apiArgs: any[],
-			cmdConverter: CommandsConverter
-		) => O
+			cmdConverter: CommandsConverter,
+		) => O,
 	) {}
 }
 
@@ -699,6 +699,6 @@ export class ApiCommand {
 		readonly internalId: string,
 		readonly description: string,
 		readonly args: ApiCommandArgument<any, any>[],
-		readonly result: ApiCommandResult<any, any>
+		readonly result: ApiCommandResult<any, any>,
 	) {}
 }

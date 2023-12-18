@@ -17,7 +17,7 @@ export class FilterOptions {
 	constructor(
 		readonly filter: string,
 		showResolved: boolean,
-		showUnresolved: boolean
+		showUnresolved: boolean,
 	) {
 		filter = filter.trim();
 		this.showResolved = showResolved;

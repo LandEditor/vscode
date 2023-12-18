@@ -4,59 +4,59 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as dom from "vs/base/browser/dom";
-import { localize } from "vs/nls";
+import { StandardKeyboardEvent } from "vs/base/browser/keyboardEvent";
+import { StandardMouseEvent } from "vs/base/browser/mouseEvent";
+import { HoverPosition } from "vs/base/browser/ui/hover/hoverWidget";
 import {
-	IDisposable,
-	dispose,
+	IListRenderer,
+	IListVirtualDelegate,
+} from "vs/base/browser/ui/list/list";
+import {
+	IListAccessibilityProvider,
+	IListStyles,
+} from "vs/base/browser/ui/list/listWidget";
+import { IAsyncDataSource, ITreeNode } from "vs/base/browser/ui/tree/tree";
+import { Action } from "vs/base/common/actions";
+import { isNonEmptyArray } from "vs/base/common/arrays";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { Event } from "vs/base/common/event";
+import { KeyCode } from "vs/base/common/keyCodes";
+import {
 	Disposable,
 	DisposableStore,
+	IDisposable,
+	dispose,
 	toDisposable,
 } from "vs/base/common/lifecycle";
-import { Action } from "vs/base/common/actions";
-import {
-	IExtensionsWorkbenchService,
-	IExtension,
-} from "vs/workbench/contrib/extensions/common/extensions";
-import { Event } from "vs/base/common/event";
+import { localize } from "vs/nls";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import {
 	IListService,
 	WorkbenchAsyncDataTree,
 } from "vs/platform/list/browser/listService";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { IStyleOverride } from "vs/platform/theme/browser/defaultStyles";
 import {
-	registerThemingParticipant,
+	editorBackground,
+	foreground,
+	listFocusBackground,
+	listFocusForeground,
+} from "vs/platform/theme/common/colorRegistry";
+import {
 	IColorTheme,
 	ICssStyleCollector,
+	registerThemingParticipant,
 } from "vs/platform/theme/common/themeService";
-import { IAsyncDataSource, ITreeNode } from "vs/base/browser/ui/tree/tree";
-import {
-	IListVirtualDelegate,
-	IListRenderer,
-} from "vs/base/browser/ui/list/list";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { isNonEmptyArray } from "vs/base/common/arrays";
 import {
 	Delegate,
 	Renderer,
 } from "vs/workbench/contrib/extensions/browser/extensionsList";
-import {
-	listFocusForeground,
-	listFocusBackground,
-	foreground,
-	editorBackground,
-} from "vs/platform/theme/common/colorRegistry";
-import { StandardKeyboardEvent } from "vs/base/browser/keyboardEvent";
-import { StandardMouseEvent } from "vs/base/browser/mouseEvent";
-import { KeyCode } from "vs/base/common/keyCodes";
-import {
-	IListAccessibilityProvider,
-	IListStyles,
-} from "vs/base/browser/ui/list/listWidget";
-import { HoverPosition } from "vs/base/browser/ui/hover/hoverWidget";
-import { IStyleOverride } from "vs/platform/theme/browser/defaultStyles";
 import { getAriaLabelForExtension } from "vs/workbench/contrib/extensions/browser/extensionsViews";
+import {
+	IExtension,
+	IExtensionsWorkbenchService,
+} from "vs/workbench/contrib/extensions/common/extensions";
 
 export class ExtensionsGridView extends Disposable {
 	readonly element: HTMLElement;
@@ -95,14 +95,14 @@ export class ExtensionsGridView extends Disposable {
 	private renderExtension(extension: IExtension, index: number): void {
 		const extensionContainer = dom.append(
 			this.element,
-			dom.$(".extension-container")
+			dom.$(".extension-container"),
 		);
 		extensionContainer.style.height = `${this.delegate.getHeight()}px`;
 		extensionContainer.setAttribute("tabindex", "0");
 
 		const template = this.renderer.renderTemplate(extensionContainer);
 		this.disposableStore.add(
-			toDisposable(() => this.renderer.disposeTemplate(template))
+			toDisposable(() => this.renderer.disposeTemplate(template)),
 		);
 
 		const openExtensionAction =
@@ -128,23 +128,23 @@ export class ExtensionsGridView extends Disposable {
 				dom.EventType.CLICK,
 				(e: MouseEvent) =>
 					handleEvent(
-						new StandardMouseEvent(dom.getWindow(template.name), e)
-					)
-			)
+						new StandardMouseEvent(dom.getWindow(template.name), e),
+					),
+			),
 		);
 		this.disposableStore.add(
 			dom.addDisposableListener(
 				template.name,
 				dom.EventType.KEY_DOWN,
-				(e: KeyboardEvent) => handleEvent(new StandardKeyboardEvent(e))
-			)
+				(e: KeyboardEvent) => handleEvent(new StandardKeyboardEvent(e)),
+			),
 		);
 		this.disposableStore.add(
 			dom.addDisposableListener(
 				extensionContainer,
 				dom.EventType.KEY_DOWN,
-				(e: KeyboardEvent) => handleEvent(new StandardKeyboardEvent(e))
-			)
+				(e: KeyboardEvent) => handleEvent(new StandardKeyboardEvent(e)),
+			),
 		);
 
 		this.renderer.renderElement(extension, index, template);
@@ -242,7 +242,7 @@ class ExtensionRenderer
 	public renderElement(
 		node: ITreeNode<IExtensionData>,
 		index: number,
-		data: IExtensionTemplateData
+		data: IExtensionTemplateData,
 	): void {
 		const extension = node.element.extension;
 		data.extensionDisposables.push(
@@ -250,16 +250,16 @@ class ExtensionRenderer
 				data.icon,
 				"error",
 				() => (data.icon.src = extension.iconUrlFallback),
-				{ once: true }
-			)
+				{ once: true },
+			),
 		);
 		data.icon.src = extension.iconUrl;
 
-		if (!data.icon.complete) {
+		if (data.icon.complete) {
+			data.icon.style.visibility = "inherit";
+		} else {
 			data.icon.style.visibility = "hidden";
 			data.icon.onload = () => (data.icon.style.visibility = "inherit");
-		} else {
-			data.icon.style.visibility = "inherit";
 		}
 
 		data.name.textContent = extension.displayName;
@@ -270,7 +270,7 @@ class ExtensionRenderer
 
 	public disposeTemplate(templateData: IExtensionTemplateData): void {
 		templateData.extensionDisposables = dispose(
-			(<IExtensionTemplateData>templateData).extensionDisposables
+			(<IExtensionTemplateData>templateData).extensionDisposables,
 		);
 	}
 }
@@ -286,11 +286,11 @@ class UnknownExtensionRenderer
 	}
 
 	public renderTemplate(
-		container: HTMLElement
+		container: HTMLElement,
 	): IUnknownExtensionTemplateData {
 		const messageContainer = dom.append(
 			container,
-			dom.$("div.unknown-extension")
+			dom.$("div.unknown-extension"),
 		);
 		dom.append(messageContainer, dom.$("span.error-marker")).textContent =
 			localize("error", "Error");
@@ -304,7 +304,7 @@ class UnknownExtensionRenderer
 	public renderElement(
 		node: ITreeNode<IExtensionData>,
 		index: number,
-		data: IUnknownExtensionTemplateData
+		data: IUnknownExtensionTemplateData,
 	): void {
 		data.identifier.textContent = node.element.extension.identifier.id;
 	}
@@ -349,7 +349,7 @@ export class ExtensionsTree extends WorkbenchAsyncDataTree<
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IExtensionsWorkbenchService
-		extensionsWorkdbenchService: IExtensionsWorkbenchService
+		extensionsWorkdbenchService: IExtensionsWorkbenchService,
 	) {
 		const delegate = new VirualDelegate();
 		const dataSource = new AsyncDataSource();
@@ -381,7 +381,7 @@ export class ExtensionsTree extends WorkbenchAsyncDataTree<
 				>{
 					getAriaLabel(extensionData: IExtensionData): string {
 						return getAriaLabelForExtension(
-							extensionData.extension
+							extensionData.extension,
 						);
 					},
 					getWidgetAriaLabel(): string {
@@ -392,7 +392,7 @@ export class ExtensionsTree extends WorkbenchAsyncDataTree<
 			instantiationService,
 			contextKeyService,
 			listService,
-			configurationService
+			configurationService,
 		);
 
 		this.setInput(input);
@@ -402,10 +402,10 @@ export class ExtensionsTree extends WorkbenchAsyncDataTree<
 				if (dom.isKeyboardEvent(event.browserEvent)) {
 					extensionsWorkdbenchService.open(
 						event.elements[0].extension,
-						{ sideByside: false }
+						{ sideByside: false },
 					);
 				}
-			})
+			}),
 		);
 	}
 }
@@ -414,7 +414,7 @@ export class ExtensionData implements IExtensionData {
 	readonly extension: IExtension;
 	readonly parent: IExtensionData | null;
 	private readonly getChildrenExtensionIds: (
-		extension: IExtension
+		extension: IExtension,
 	) => string[];
 	private readonly childrenExtensionIds: string[];
 	private readonly extensionsWorkbenchService: IExtensionsWorkbenchService;
@@ -423,7 +423,7 @@ export class ExtensionData implements IExtensionData {
 		extension: IExtension,
 		parent: IExtensionData | null,
 		getChildrenExtensionIds: (extension: IExtension) => string[],
-		extensionsWorkbenchService: IExtensionsWorkbenchService
+		extensionsWorkbenchService: IExtensionsWorkbenchService,
 	) {
 		this.extension = extension;
 		this.parent = parent;
@@ -440,7 +440,7 @@ export class ExtensionData implements IExtensionData {
 		if (this.hasChildren) {
 			const result: IExtension[] = await getExtensions(
 				this.childrenExtensionIds,
-				this.extensionsWorkbenchService
+				this.extensionsWorkbenchService,
 			);
 			return result.map(
 				(extension) =>
@@ -448,8 +448,8 @@ export class ExtensionData implements IExtensionData {
 						extension,
 						this,
 						this.getChildrenExtensionIds,
-						this.extensionsWorkbenchService
-					)
+						this.extensionsWorkbenchService,
+					),
 			);
 		}
 		return null;
@@ -458,7 +458,7 @@ export class ExtensionData implements IExtensionData {
 
 export async function getExtensions(
 	extensions: string[],
-	extensionsWorkbenchService: IExtensionsWorkbenchService
+	extensionsWorkbenchService: IExtensionsWorkbenchService,
 ): Promise<IExtension[]> {
 	const localById = extensionsWorkbenchService.local.reduce((result, e) => {
 		result.set(e.identifier.id.toLowerCase(), e);
@@ -478,7 +478,7 @@ export async function getExtensions(
 	if (toQuery.length) {
 		const galleryResult = await extensionsWorkbenchService.getExtensions(
 			toQuery.map((id) => ({ id })),
-			CancellationToken.None
+			CancellationToken.None,
 		);
 		result.push(...galleryResult);
 	}
@@ -490,13 +490,13 @@ registerThemingParticipant(
 		const focusBackground = theme.getColor(listFocusBackground);
 		if (focusBackground) {
 			collector.addRule(
-				`.extensions-grid-view .extension-container:focus { background-color: ${focusBackground}; outline: none; }`
+				`.extensions-grid-view .extension-container:focus { background-color: ${focusBackground}; outline: none; }`,
 			);
 		}
 		const focusForeground = theme.getColor(listFocusForeground);
 		if (focusForeground) {
 			collector.addRule(
-				`.extensions-grid-view .extension-container:focus { color: ${focusForeground}; }`
+				`.extensions-grid-view .extension-container:focus { color: ${focusForeground}; }`,
 			);
 		}
 		const foregroundColor = theme.getColor(foreground);
@@ -506,14 +506,14 @@ registerThemingParticipant(
 				.transparent(0.9)
 				.makeOpaque(editorBackgroundColor);
 			collector.addRule(
-				`.extensions-grid-view .extension-container:not(.disabled) .author { color: ${authorForeground}; }`
+				`.extensions-grid-view .extension-container:not(.disabled) .author { color: ${authorForeground}; }`,
 			);
 			const disabledExtensionForeground = foregroundColor
 				.transparent(0.5)
 				.makeOpaque(editorBackgroundColor);
 			collector.addRule(
-				`.extensions-grid-view .extension-container.disabled { color: ${disabledExtensionForeground}; }`
+				`.extensions-grid-view .extension-container.disabled { color: ${disabledExtensionForeground}; }`,
 			);
 		}
-	}
+	},
 );

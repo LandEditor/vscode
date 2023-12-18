@@ -5,7 +5,7 @@
 
 import { LogOutputChannel } from "vscode";
 
-export const enum OperationKind {
+export enum OperationKind {
 	Add = "Add",
 	Apply = "Apply",
 	Blame = "Blame",
@@ -703,7 +703,7 @@ export class OperationManager implements IOperationManager {
 		}
 
 		this.logger.trace(
-			`Operation start: ${operation.kind} (blocking: ${operation.blocking}, readOnly: ${operation.readOnly}; retry: ${operation.retry}; showProgress: ${operation.showProgress})`
+			`Operation start: ${operation.kind} (blocking: ${operation.blocking}, readOnly: ${operation.readOnly}; retry: ${operation.retry}; showProgress: ${operation.showProgress})`,
 		);
 	}
 
@@ -717,7 +717,7 @@ export class OperationManager implements IOperationManager {
 		}
 
 		this.logger.trace(
-			`Operation end: ${operation.kind} (blocking: ${operation.blocking}, readOnly: ${operation.readOnly}; retry: ${operation.retry}; showProgress: ${operation.showProgress})`
+			`Operation end: ${operation.kind} (blocking: ${operation.blocking}, readOnly: ${operation.readOnly}; retry: ${operation.retry}; showProgress: ${operation.showProgress})`,
 		);
 	}
 

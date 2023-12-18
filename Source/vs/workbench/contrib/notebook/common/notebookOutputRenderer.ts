@@ -12,12 +12,12 @@ import {
 	IExtensionDescription,
 } from "vs/platform/extensions/common/extensions";
 import {
-	INotebookRendererInfo,
 	ContributedNotebookRendererEntrypoint,
+	INotebookRendererInfo,
+	INotebookStaticPreloadInfo,
+	NotebookRendererEntrypoint,
 	NotebookRendererMatch,
 	RendererMessagingSpec,
-	NotebookRendererEntrypoint,
-	INotebookStaticPreloadInfo as INotebookStaticPreloadInfo,
 } from "vs/workbench/contrib/notebook/common/notebookCommon";
 
 class DependencyList {
@@ -77,7 +77,7 @@ export class NotebookOutputRendererInfo implements INotebookRendererInfo {
 				extends: descriptor.entrypoint.extends,
 				path: joinPath(
 					this.extensionLocation,
-					descriptor.entrypoint.path
+					descriptor.entrypoint.path,
 				),
 			};
 		}
@@ -85,13 +85,13 @@ export class NotebookOutputRendererInfo implements INotebookRendererInfo {
 		this.displayName = descriptor.displayName;
 		this.mimeTypes = descriptor.mimeTypes;
 		this.mimeTypeGlobs = this.mimeTypes.map((pattern) =>
-			glob.parse(pattern)
+			glob.parse(pattern),
 		);
 		this.hardDependencies = new DependencyList(
-			descriptor.dependencies ?? Iterable.empty()
+			descriptor.dependencies ?? Iterable.empty(),
 		);
 		this.optionalDependencies = new DependencyList(
-			descriptor.optionalDependencies ?? Iterable.empty()
+			descriptor.optionalDependencies ?? Iterable.empty(),
 		);
 		this.messaging =
 			descriptor.requiresMessaging ?? RendererMessagingSpec.Never;
@@ -158,11 +158,11 @@ export class NotebookStaticPreloadInfo implements INotebookStaticPreloadInfo {
 
 		this.entrypoint = joinPath(
 			descriptor.extension.extensionLocation,
-			descriptor.entrypoint
+			descriptor.entrypoint,
 		);
 		this.extensionLocation = descriptor.extension.extensionLocation;
 		this.localResourceRoots = descriptor.localResourceRoots.map((root) =>
-			joinPath(descriptor.extension.extensionLocation, root)
+			joinPath(descriptor.extension.extensionLocation, root),
 		);
 	}
 }

@@ -21,9 +21,9 @@ import {
 import {
 	EditorAction,
 	EditorContributionInstantiation,
+	ServicesAccessor,
 	registerEditorAction,
 	registerEditorContribution,
-	ServicesAccessor,
 } from "vs/editor/browser/editorExtensions";
 import { EditorOption } from "vs/editor/common/config/editorOptions";
 import { IEditorContribution, ScrollType } from "vs/editor/common/editorCommon";
@@ -35,6 +35,7 @@ import {
 	MenuId,
 	SubmenuItemAction,
 } from "vs/platform/actions/common/actions";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
 import {
 	IContextMenuService,
@@ -42,7 +43,6 @@ import {
 } from "vs/platform/contextview/browser/contextView";
 import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
 	IWorkspaceContextService,
 	isStandaloneEditorWorkspace,
@@ -53,12 +53,12 @@ export class ContextMenuController implements IEditorContribution {
 
 	public static get(editor: ICodeEditor): ContextMenuController | null {
 		return editor.getContribution<ContextMenuController>(
-			ContextMenuController.ID
+			ContextMenuController.ID,
 		);
 	}
 
 	private readonly _toDispose = new DisposableStore();
-	private _contextMenuIsBeingShownCount: number = 0;
+	private _contextMenuIsBeingShownCount = 0;
 	private readonly _editor: ICodeEditor;
 
 	constructor(
@@ -202,7 +202,7 @@ export class ContextMenuController implements IEditorContribution {
 			this._editor.getModel(),
 			this._editor.isSimpleWidget
 				? MenuId.SimpleEditorContext
-				: MenuId.EditorContext
+				: MenuId.EditorContext,
 		);
 
 		// Show menu if we have actions to show
@@ -217,7 +217,7 @@ export class ContextMenuController implements IEditorContribution {
 		// get menu groups
 		const menu = this._menuService.createMenu(
 			menuId,
-			this._contextKeyService
+			this._contextKeyService,
 		);
 		const groups = menu.getActions({ arg: model.uri });
 		menu.dispose();
@@ -230,15 +230,15 @@ export class ContextMenuController implements IEditorContribution {
 				if (action instanceof SubmenuItemAction) {
 					const subActions = this._getMenuActions(
 						model,
-						action.item.submenu
+						action.item.submenu,
 					);
 					if (subActions.length > 0) {
 						result.push(
 							new SubmenuAction(
 								action.id,
 								action.label,
-								subActions
-							)
+								subActions,
+							),
 						);
 						addedItems++;
 					}
@@ -262,7 +262,7 @@ export class ContextMenuController implements IEditorContribution {
 
 	private _doShowContextMenu(
 		actions: IAction[],
-		event: IMouseEvent | null = null
+		event: IMouseEvent | null = null,
 	): void {
 		if (!this._editor.hasModel()) {
 			return;
@@ -281,17 +281,17 @@ export class ContextMenuController implements IEditorContribution {
 			// Ensure selection is visible
 			this._editor.revealPosition(
 				this._editor.getPosition(),
-				ScrollType.Immediate
+				ScrollType.Immediate,
 			);
 
 			this._editor.render();
 			const cursorCoords = this._editor.getScrolledVisiblePosition(
-				this._editor.getPosition()
+				this._editor.getPosition(),
 			);
 
 			// Translate to absolute editor position
 			const editorCoords = dom.getDomNodePagePosition(
-				this._editor.getDomNode()
+				this._editor.getDomNode(),
 			);
 			const posx = editorCoords.left + cursorCoords.left;
 			const posy =
@@ -358,7 +358,7 @@ export class ContextMenuController implements IEditorContribution {
 
 		if (
 			isStandaloneEditorWorkspace(
-				this._workspaceContextService.getWorkspace()
+				this._workspaceContextService.getWorkspace(),
 			)
 		) {
 			// can't update the configuration properly in the standalone editor
@@ -387,13 +387,13 @@ export class ContextMenuController implements IEditorContribution {
 		};
 		const createSubmenuAction = (
 			label: string,
-			actions: IAction[]
+			actions: IAction[],
 		): SubmenuAction => {
 			return new SubmenuAction(
 				`menu-action-${++lastId}`,
 				label,
 				actions,
-				undefined
+				undefined,
 			);
 		};
 		const createEnumAction = <T>(
@@ -401,7 +401,7 @@ export class ContextMenuController implements IEditorContribution {
 			enabled: boolean,
 			configName: string,
 			configuredValue: T,
-			options: { label: string; value: T }[]
+			options: { label: string; value: T }[],
 		): IAction => {
 			if (!enabled) {
 				return createAction({ label, enabled, run: () => {} });
@@ -418,7 +418,7 @@ export class ContextMenuController implements IEditorContribution {
 						label: option.label,
 						checked: configuredValue === option.value,
 						run: createRunner(option.value),
-					})
+					}),
 				);
 			}
 			return createSubmenuAction(label, actions);
@@ -432,27 +432,27 @@ export class ContextMenuController implements IEditorContribution {
 				run: () => {
 					this._configurationService.updateValue(
 						`editor.minimap.enabled`,
-						!minimapOptions.enabled
+						!minimapOptions.enabled,
 					);
 				},
-			})
+			}),
 		);
 		actions.push(new Separator());
 		actions.push(
 			createAction({
 				label: nls.localize(
 					"context.minimap.renderCharacters",
-					"Render Characters"
+					"Render Characters",
 				),
 				enabled: minimapOptions.enabled,
 				checked: minimapOptions.renderCharacters,
 				run: () => {
 					this._configurationService.updateValue(
 						`editor.minimap.renderCharacters`,
-						!minimapOptions.renderCharacters
+						!minimapOptions.renderCharacters,
 					);
 				},
-			})
+			}),
 		);
 		actions.push(
 			createEnumAction<"proportional" | "fill" | "fit">(
@@ -464,14 +464,14 @@ export class ContextMenuController implements IEditorContribution {
 					{
 						label: nls.localize(
 							"context.minimap.size.proportional",
-							"Proportional"
+							"Proportional",
 						),
 						value: "proportional",
 					},
 					{
 						label: nls.localize(
 							"context.minimap.size.fill",
-							"Fill"
+							"Fill",
 						),
 						value: "fill",
 					},
@@ -479,8 +479,8 @@ export class ContextMenuController implements IEditorContribution {
 						label: nls.localize("context.minimap.size.fit", "Fit"),
 						value: "fit",
 					},
-				]
-			)
+				],
+			),
 		);
 		actions.push(
 			createEnumAction<"always" | "mouseover">(
@@ -492,19 +492,19 @@ export class ContextMenuController implements IEditorContribution {
 					{
 						label: nls.localize(
 							"context.minimap.slider.mouseover",
-							"Mouse Over"
+							"Mouse Over",
 						),
 						value: "mouseover",
 					},
 					{
 						label: nls.localize(
 							"context.minimap.slider.always",
-							"Always"
+							"Always",
 						),
 						value: "always",
 					},
-				]
-			)
+				],
+			),
 		);
 
 		const useShadowDOM =
@@ -542,7 +542,7 @@ class ShowContextMenu extends EditorAction {
 			id: "editor.action.showContextMenu",
 			label: nls.localize(
 				"action.showContextMenu.label",
-				"Show Editor Context Menu"
+				"Show Editor Context Menu",
 			),
 			alias: "Show Editor Context Menu",
 			precondition: undefined,
@@ -562,6 +562,6 @@ class ShowContextMenu extends EditorAction {
 registerEditorContribution(
 	ContextMenuController.ID,
 	ContextMenuController,
-	EditorContributionInstantiation.BeforeFirstInteraction
+	EditorContributionInstantiation.BeforeFirstInteraction,
 );
 registerEditorAction(ShowContextMenu);

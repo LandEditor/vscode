@@ -3,28 +3,28 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter } from "vs/base/common/event";
 import { CancellationToken } from "vs/base/common/cancellation";
+import { Emitter } from "vs/base/common/event";
+import { revive } from "vs/base/common/marshalling";
 import { URI } from "vs/base/common/uri";
 import { ILogService } from "vs/platform/log/common/log";
 import {
+	ExtHostContext,
+	ExtHostTimelineShape,
 	MainContext,
 	MainThreadTimelineShape,
-	ExtHostTimelineShape,
-	ExtHostContext,
 } from "vs/workbench/api/common/extHost.protocol";
 import {
-	extHostNamedCustomer,
-	IExtHostContext,
-} from "vs/workbench/services/extensions/common/extHostCustomers";
-import {
+	ITimelineService,
+	Timeline,
 	TimelineChangeEvent,
 	TimelineOptions,
 	TimelineProviderDescriptor,
-	ITimelineService,
-	Timeline,
 } from "vs/workbench/contrib/timeline/common/timeline";
-import { revive } from "vs/base/common/marshalling";
+import {
+	IExtHostContext,
+	extHostNamedCustomer,
+} from "vs/workbench/services/extensions/common/extHostCustomers";
 
 @extHostNamedCustomer(MainContext.MainThreadTimeline)
 export class MainThreadTimeline implements MainThreadTimelineShape {
@@ -44,7 +44,7 @@ export class MainThreadTimeline implements MainThreadTimelineShape {
 
 	$registerTimelineProvider(provider: TimelineProviderDescriptor): void {
 		this.logService.trace(
-			`MainThreadTimeline#registerTimelineProvider: id=${provider.id}`
+			`MainThreadTimeline#registerTimelineProvider: id=${provider.id}`,
 		);
 
 		const proxy = this._proxy;
@@ -62,10 +62,10 @@ export class MainThreadTimeline implements MainThreadTimelineShape {
 			async provideTimeline(
 				uri: URI,
 				options: TimelineOptions,
-				token: CancellationToken
+				token: CancellationToken,
 			) {
 				return revive<Timeline>(
-					await proxy.$getTimeline(provider.id, uri, options, token)
+					await proxy.$getTimeline(provider.id, uri, options, token),
 				);
 			},
 			dispose() {
@@ -77,7 +77,7 @@ export class MainThreadTimeline implements MainThreadTimelineShape {
 
 	$unregisterTimelineProvider(id: string): void {
 		this.logService.trace(
-			`MainThreadTimeline#unregisterTimelineProvider: id=${id}`
+			`MainThreadTimeline#unregisterTimelineProvider: id=${id}`,
 		);
 
 		this._timelineService.unregisterTimelineProvider(id);
@@ -87,7 +87,7 @@ export class MainThreadTimeline implements MainThreadTimelineShape {
 		this.logService.trace(
 			`MainThreadTimeline#emitChangeEvent: id=${
 				e.id
-			}, uri=${e.uri?.toString(true)}`
+			}, uri=${e.uri?.toString(true)}`,
 		);
 
 		const emitter = this._providerEmitters.get(e.id!);

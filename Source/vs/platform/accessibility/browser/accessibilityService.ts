@@ -87,24 +87,24 @@ export class AccessibilityService
 				if (this._configMotionReduced === "auto") {
 					this._onDidChangeReducedMotion.fire();
 				}
-			})
+			}),
 		);
 
 		const updateRootClasses = () => {
 			const reduce = this.isMotionReduced();
 			this._layoutService.mainContainer.classList.toggle(
 				"reduce-motion",
-				reduce
+				reduce,
 			);
 			this._layoutService.mainContainer.classList.toggle(
 				"enable-motion",
-				!reduce
+				!reduce,
 			);
 		};
 
 		updateRootClasses();
 		this._register(
-			this.onDidChangeReducedMotion(() => updateRootClasses())
+			this.onDidChangeReducedMotion(() => updateRootClasses()),
 		);
 	}
 
@@ -114,7 +114,7 @@ export class AccessibilityService
 
 	isScreenReaderOptimized(): boolean {
 		const config = this._configurationService.getValue(
-			"editor.accessibilitySupport"
+			"editor.accessibilitySupport",
 		);
 		return (
 			config === "on" ||

@@ -1,4 +1,3 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -17,7 +16,7 @@ const commit = process.env["BUILD_SOURCEVERSION"];
 const credential = new identity_1.ClientSecretCredential(
 	process.env["AZURE_TENANT_ID"],
 	process.env["AZURE_CLIENT_ID"],
-	process.env["AZURE_CLIENT_SECRET"]
+	process.env["AZURE_CLIENT_SECRET"],
 );
 // optionally allow to pass in explicit base/maps to upload
 const [, , base, maps] = process.argv;
@@ -26,13 +25,15 @@ function src(base, maps = `${base}/**/*.map`) {
 		es.mapSync((f) => {
 			f.path = `${f.base}/core/${f.relative}`;
 			return f;
-		})
+		}),
 	);
 }
 function main() {
 	const sources = [];
 	// vscode client maps (default)
-	if (!base) {
+	if (base) {
+		sources.push(src(base, maps));
+	} else {
 		const vs = src("out-vscode-min"); // client source-maps only
 		sources.push(vs);
 		const productionDependencies = deps.getProductionDependencies(root);
@@ -42,27 +43,25 @@ function main() {
 		const nodeModules = vfs
 			.src(productionDependenciesSrc, { base: "." })
 			.pipe(
-				util.cleanNodeModules(path.join(root, "build", ".moduleignore"))
+				util.cleanNodeModules(
+					path.join(root, "build", ".moduleignore"),
+				),
 			)
 			.pipe(
 				util.cleanNodeModules(
 					path.join(
 						root,
 						"build",
-						`.moduleignore.${process.platform}`
-					)
-				)
+						`.moduleignore.${process.platform}`,
+					),
+				),
 			);
 		sources.push(nodeModules);
 		const extensionsOut = vfs.src(
 			[".build/extensions/**/*.js.map", "!**/node_modules/**"],
-			{ base: ".build" }
+			{ base: ".build" },
 		);
 		sources.push(extensionsOut);
-	}
-	// specific client base/maps
-	else {
-		sources.push(src(base, maps));
 	}
 	return new Promise((c, e) => {
 		es.merge(...sources)
@@ -70,7 +69,7 @@ function main() {
 				es.through(function (data) {
 					console.log("Uploading Sourcemap", data.relative); // debug
 					this.emit("data", data);
-				})
+				}),
 			)
 			.pipe(
 				azure.upload({
@@ -78,7 +77,7 @@ function main() {
 					credential,
 					container: "sourcemaps",
 					prefix: commit + "/",
-				})
+				}),
 			)
 			.on("end", () => c())
 			.on("error", (err) => e(err));

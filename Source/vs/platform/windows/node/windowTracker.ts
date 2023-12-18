@@ -31,13 +31,13 @@ export class ActiveWindowManager extends Disposable {
 
 		// remember last active window id upon events
 		const onActiveWindowChange = Event.latch(
-			Event.any(onDidOpenMainWindow, onDidFocusMainWindow)
+			Event.any(onDidOpenMainWindow, onDidFocusMainWindow),
 		);
 		onActiveWindowChange(this.setActiveWindow, this, this.disposables);
 
 		// resolve current active window
 		this.firstActiveWindowIdPromise = createCancelablePromise(() =>
-			getActiveWindowId()
+			getActiveWindowId(),
 		);
 		(async () => {
 			try {

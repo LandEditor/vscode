@@ -4,18 +4,18 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as DOM from "vs/base/browser/dom";
-import { Action, IAction } from "vs/base/common/actions";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import Messages from "vs/workbench/contrib/markers/browser/messages";
-import { Disposable } from "vs/base/common/lifecycle";
-import { Marker } from "vs/workbench/contrib/markers/browser/markersModel";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import { Event, Emitter } from "vs/base/common/event";
-import { Codicon } from "vs/base/common/codicons";
-import { ThemeIcon } from "vs/base/common/themables";
 import { ActionViewItem } from "vs/base/browser/ui/actionbar/actionViewItems";
-import { MarkersContextKeys } from "vs/workbench/contrib/markers/common/markers";
+import { Action, IAction } from "vs/base/common/actions";
+import { Codicon } from "vs/base/common/codicons";
+import { Emitter, Event } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
+import { ThemeIcon } from "vs/base/common/themables";
 import "vs/css!./markersViewActions";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
+import { Marker } from "vs/workbench/contrib/markers/browser/markersModel";
+import Messages from "vs/workbench/contrib/markers/browser/messages";
+import { MarkersContextKeys } from "vs/workbench/contrib/markers/common/markers";
 
 export interface IMarkersFiltersChangeEvent {
 	excludedFiles?: boolean;
@@ -42,7 +42,7 @@ export class MarkersFilters extends Disposable {
 
 	constructor(
 		options: IMarkersFiltersOptions,
-		private readonly contextKeyService: IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 	) {
 		super();
 
@@ -58,7 +58,7 @@ export class MarkersFilters extends Disposable {
 
 	private readonly _excludedFiles =
 		MarkersContextKeys.ShowExcludedFilesFilterContextKey.bindTo(
-			this.contextKeyService
+			this.contextKeyService,
 		);
 	get excludedFiles(): boolean {
 		return !!this._excludedFiles.get();
@@ -74,7 +74,7 @@ export class MarkersFilters extends Disposable {
 
 	private readonly _activeFile =
 		MarkersContextKeys.ShowActiveFileFilterContextKey.bindTo(
-			this.contextKeyService
+			this.contextKeyService,
 		);
 	get activeFile(): boolean {
 		return !!this._activeFile.get();
@@ -90,7 +90,7 @@ export class MarkersFilters extends Disposable {
 
 	private readonly _showWarnings =
 		MarkersContextKeys.ShowWarningsFilterContextKey.bindTo(
-			this.contextKeyService
+			this.contextKeyService,
 		);
 	get showWarnings(): boolean {
 		return !!this._showWarnings.get();
@@ -106,7 +106,7 @@ export class MarkersFilters extends Disposable {
 
 	private readonly _showErrors =
 		MarkersContextKeys.ShowErrorsFilterContextKey.bindTo(
-			this.contextKeyService
+			this.contextKeyService,
 		);
 	get showErrors(): boolean {
 		return !!this._showErrors.get();
@@ -122,7 +122,7 @@ export class MarkersFilters extends Disposable {
 
 	private readonly _showInfos =
 		MarkersContextKeys.ShowInfoFilterContextKey.bindTo(
-			this.contextKeyService
+			this.contextKeyService,
 		);
 	get showInfos(): boolean {
 		return !!this._showInfos.get();
@@ -168,7 +168,7 @@ export class QuickFixAction extends Action {
 			QuickFixAction.ID,
 			Messages.MARKERS_PANEL_ACTION_TOOLTIP_QUICKFIX,
 			QuickFixAction.CLASS,
-			false
+			false,
 		);
 	}
 

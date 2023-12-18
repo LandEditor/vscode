@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Codicon } from "vs/base/common/codicons";
+import { ThemeIcon } from "vs/base/common/themables";
 import { URI, UriComponents } from "vs/base/common/uri";
 import { localize } from "vs/nls";
 import {
@@ -11,11 +12,10 @@ import {
 	ITerminalProfile,
 	TerminalIcon,
 } from "vs/platform/terminal/common/terminal";
-import { ThemeIcon } from "vs/base/common/themables";
 
 export function createProfileSchemaEnums(
 	detectedProfiles: ITerminalProfile[],
-	extensionProfiles?: readonly IExtensionTerminalProfile[]
+	extensionProfiles?: readonly IExtensionTerminalProfile[],
 ): {
 	values: (string | null)[] | undefined;
 	markdownDescriptions: string[] | undefined;
@@ -25,7 +25,7 @@ export function createProfileSchemaEnums(
 			name: null,
 			description: localize(
 				"terminalAutomaticProfile",
-				"Automatically detect the default"
+				"Automatically detect the default",
 			),
 		},
 	];
@@ -35,7 +35,7 @@ export function createProfileSchemaEnums(
 				name: e.profileName,
 				description: createProfileDescription(e),
 			};
-		})
+		}),
 	);
 	if (extensionProfiles) {
 		result.push(
@@ -45,7 +45,7 @@ export function createProfileSchemaEnums(
 					description:
 						createExtensionProfileDescription(extensionProfile),
 				};
-			})
+			}),
 		);
 	}
 	return {
@@ -59,8 +59,8 @@ function createProfileDescription(profile: ITerminalProfile): string {
 		ThemeIcon.isThemeIcon(profile.icon)
 			? profile.icon.id
 			: profile.icon
-				? profile.icon
-				: Codicon.terminal.id
+			  ? profile.icon
+			  : Codicon.terminal.id
 	}) ${profile.profileName}\n- path: ${profile.path}`;
 	if (profile.args) {
 		if (typeof profile.args === "string") {
@@ -84,21 +84,21 @@ function createProfileDescription(profile: ITerminalProfile): string {
 }
 
 function createExtensionProfileDescription(
-	profile: IExtensionTerminalProfile
+	profile: IExtensionTerminalProfile,
 ): string {
 	const description = `$(${
 		ThemeIcon.isThemeIcon(profile.icon)
 			? profile.icon.id
 			: profile.icon
-				? profile.icon
-				: Codicon.terminal.id
+			  ? profile.icon
+			  : Codicon.terminal.id
 	}) ${profile.title}\n- extensionIdentifier: ${profile.extensionIdentifier}`;
 	return description;
 }
 
 export function terminalProfileArgsMatch(
 	args1: string | string[] | undefined,
-	args2: string | string[] | undefined
+	args2: string | string[] | undefined,
 ): boolean {
 	if (!args1 && !args2) {
 		return true;
@@ -120,7 +120,7 @@ export function terminalProfileArgsMatch(
 
 export function terminalIconsEqual(
 	a?: TerminalIcon,
-	b?: TerminalIcon
+	b?: TerminalIcon,
 ): boolean {
 	if (!a && !b) {
 		return true;

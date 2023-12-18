@@ -3,45 +3,45 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
-import { IAction } from "vs/base/common/actions";
-import { KeyCode } from "vs/base/common/keyCodes";
 import * as dom from "vs/base/browser/dom";
 import { StandardKeyboardEvent } from "vs/base/browser/keyboardEvent";
-import {
-	SelectBox,
-	ISelectOptionItem,
-} from "vs/base/browser/ui/selectBox/selectBox";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import {
-	IDebugService,
-	IDebugSession,
-	IDebugConfiguration,
-	IConfig,
-	ILaunch,
-	State,
-} from "vs/workbench/contrib/debug/common/debug";
-import { ThemeIcon } from "vs/base/common/themables";
-import {
-	selectBorder,
-	selectBackground,
-	asCssVariable,
-} from "vs/platform/theme/common/colorRegistry";
-import { IContextViewService } from "vs/platform/contextview/browser/contextView";
-import {
-	IWorkspaceContextService,
-	WorkbenchState,
-} from "vs/platform/workspace/common/workspace";
-import { IDisposable, dispose } from "vs/base/common/lifecycle";
-import { ADD_CONFIGURATION_ID } from "vs/workbench/contrib/debug/browser/debugCommands";
 import {
 	BaseActionViewItem,
 	SelectActionViewItem,
 } from "vs/base/browser/ui/actionbar/actionViewItems";
-import { debugStart } from "vs/workbench/contrib/debug/browser/debugIcons";
+import {
+	ISelectOptionItem,
+	SelectBox,
+} from "vs/base/browser/ui/selectBox/selectBox";
+import { IAction } from "vs/base/common/actions";
+import { KeyCode } from "vs/base/common/keyCodes";
+import { IDisposable, dispose } from "vs/base/common/lifecycle";
+import { ThemeIcon } from "vs/base/common/themables";
+import * as nls from "vs/nls";
+import { ICommandService } from "vs/platform/commands/common/commands";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IContextViewService } from "vs/platform/contextview/browser/contextView";
 import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import { defaultSelectBoxStyles } from "vs/platform/theme/browser/defaultStyles";
+import {
+	asCssVariable,
+	selectBackground,
+	selectBorder,
+} from "vs/platform/theme/common/colorRegistry";
+import {
+	IWorkspaceContextService,
+	WorkbenchState,
+} from "vs/platform/workspace/common/workspace";
+import { ADD_CONFIGURATION_ID } from "vs/workbench/contrib/debug/browser/debugCommands";
+import { debugStart } from "vs/workbench/contrib/debug/browser/debugIcons";
+import {
+	IConfig,
+	IDebugConfiguration,
+	IDebugService,
+	IDebugSession,
+	ILaunch,
+	State,
+} from "vs/workbench/contrib/debug/common/debug";
 
 const $ = dom.$;
 
@@ -101,14 +101,14 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 				if (e.affectsConfiguration("launch")) {
 					this.updateOptions();
 				}
-			})
+			}),
 		);
 		this.toDispose.push(
 			this.debugService
 				.getConfigurationManager()
 				.onDidSelectConfiguration(() => {
 					this.updateOptions();
-				})
+				}),
 		);
 	}
 
@@ -117,7 +117,7 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 		container.classList.add("start-debug-action-item");
 		this.start = dom.append(
 			container,
-			$(ThemeIcon.asCSSSelector(debugStart))
+			$(ThemeIcon.asCSSSelector(debugStart)),
 		);
 		const keybinding = this.keybindingService
 			.lookupKeybinding(this.action.id)
@@ -133,7 +133,7 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 				if (this.debugService.state !== State.Initializing) {
 					this.actionRunner.run(this.action, this.context);
 				}
-			})
+			}),
 		);
 
 		this.toDispose.push(
@@ -144,8 +144,8 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 					if (this.action.enabled && e.button === 0) {
 						this.start.classList.add("active");
 					}
-				}
-			)
+				},
+			),
 		);
 		this.toDispose.push(
 			dom.addDisposableListener(
@@ -153,8 +153,8 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 				dom.EventType.MOUSE_UP,
 				() => {
 					this.start.classList.remove("active");
-				}
-			)
+				},
+			),
 		);
 		this.toDispose.push(
 			dom.addDisposableListener(
@@ -162,8 +162,8 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 				dom.EventType.MOUSE_OUT,
 				() => {
 					this.start.classList.remove("active");
-				}
-			)
+				},
+			),
 		);
 
 		this.toDispose.push(
@@ -177,8 +177,8 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 						this.selectBox.focus();
 						event.stopPropagation();
 					}
-				}
-			)
+				},
+			),
 		);
 		this.toDispose.push(
 			this.selectBox.onDidSelect(async (e) => {
@@ -192,7 +192,7 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 					// Some select options should not remain selected https://github.com/microsoft/vscode/issues/31526
 					this.selectBox.select(this.selected);
 				}
-			})
+			}),
 		);
 
 		const selectBoxContainer = $(".configuration");
@@ -209,14 +209,14 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 						this.start.focus();
 						event.stopPropagation();
 					}
-				}
-			)
+				},
+			),
 		);
 		this.container.style.border = `1px solid ${asCssVariable(
-			selectBorder
+			selectBorder,
 		)}`;
 		selectBoxContainer.style.borderLeft = `1px solid ${asCssVariable(
-			selectBorder
+			selectBorder,
 		)}`;
 		this.container.style.backgroundColor = asCssVariable(selectBackground);
 
@@ -231,8 +231,8 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 
 		this.toDispose.push(
 			configManager.onDidChangeConfigurationProviders(
-				updateDynamicConfigs
-			)
+				updateDynamicConfigs,
+			),
 		);
 		updateDynamicConfigs();
 		this.updateOptions();
@@ -332,7 +332,7 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 							undefined,
 							name,
 							undefined,
-							{ type }
+							{ type },
 						);
 						return true;
 					},
@@ -362,7 +362,7 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 							picked.launch,
 							picked.config.name,
 							picked.config,
-							{ type: p.type }
+							{ type: p.type },
 						);
 						return true;
 					}
@@ -383,7 +383,7 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 					handler: async () => {
 						await this.commandService.executeCommand(
 							ADD_CONFIGURATION_ID,
-							l.uri.toString()
+							l.uri.toString(),
 						);
 						return false;
 					},
@@ -396,9 +396,9 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 					<ISelectOptionItem>{
 						text: data.label,
 						isDisabled: disabledIdxs.indexOf(index) !== -1,
-					}
+					},
 			),
-			this.selected
+			this.selected,
 		);
 	}
 }
@@ -457,7 +457,7 @@ export class FocusSessionActionViewItem extends SelectActionViewItem<IDebugSessi
 
 	protected override getActionContext(
 		_: string,
-		index: number
+		index: number,
 	): IDebugSession {
 		return this.getSessions()[index];
 	}
@@ -478,7 +478,7 @@ export class FocusSessionActionViewItem extends SelectActionViewItem<IDebugSessi
 		});
 		this.setOptions(
 			names.map((data) => <ISelectOptionItem>{ text: data }),
-			session ? sessions.indexOf(session) : undefined
+			session ? sessions.indexOf(session) : undefined,
 		);
 	}
 
@@ -490,7 +490,7 @@ export class FocusSessionActionViewItem extends SelectActionViewItem<IDebugSessi
 	protected getSessions(): ReadonlyArray<IDebugSession> {
 		const showSubSessions =
 			this.configurationService.getValue<IDebugConfiguration>(
-				"debug"
+				"debug",
 			).showSubSessionsInToolBar;
 		const sessions = this.debugService.getModel().getSessions();
 
@@ -500,11 +500,11 @@ export class FocusSessionActionViewItem extends SelectActionViewItem<IDebugSessi
 	}
 
 	protected mapFocusedSessionToSelected(
-		focusedSession: IDebugSession
+		focusedSession: IDebugSession,
 	): IDebugSession {
 		const showSubSessions =
 			this.configurationService.getValue<IDebugConfiguration>(
-				"debug"
+				"debug",
 			).showSubSessionsInToolBar;
 		while (focusedSession.parentSession && !showSubSessions) {
 			focusedSession = focusedSession.parentSession;

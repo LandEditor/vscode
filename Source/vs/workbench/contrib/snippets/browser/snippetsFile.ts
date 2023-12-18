@@ -3,28 +3,28 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { parse as jsonParse, getNodeType } from "vs/base/common/json";
-import { localize } from "vs/nls";
-import { extname, basename } from "vs/base/common/path";
+import { WindowIdleValue, getActiveWindow } from "vs/base/browser/dom";
+import { tail } from "vs/base/common/arrays";
+import { Iterable } from "vs/base/common/iterator";
+import { getNodeType, parse as jsonParse } from "vs/base/common/json";
+import { basename, extname } from "vs/base/common/path";
+import { relativePath } from "vs/base/common/resources";
+import { isObject } from "vs/base/common/types";
+import { URI } from "vs/base/common/uri";
 import {
-	SnippetParser,
-	Variable,
 	Placeholder,
+	SnippetParser,
 	Text,
+	Variable,
 } from "vs/editor/contrib/snippet/browser/snippetParser";
 import { KnownSnippetVariableNames } from "vs/editor/contrib/snippet/browser/snippetVariables";
-import { URI } from "vs/base/common/uri";
-import { IFileService } from "vs/platform/files/common/files";
+import { localize } from "vs/nls";
+import { IExtensionResourceLoaderService } from "vs/platform/extensionResourceLoader/common/extensionResourceLoader";
 import {
 	ExtensionIdentifier,
 	IExtensionDescription,
 } from "vs/platform/extensions/common/extensions";
-import { IExtensionResourceLoaderService } from "vs/platform/extensionResourceLoader/common/extensionResourceLoader";
-import { relativePath } from "vs/base/common/resources";
-import { isObject } from "vs/base/common/types";
-import { tail } from "vs/base/common/arrays";
-import { Iterable } from "vs/base/common/iterator";
-import { WindowIdleValue, getActiveWindow } from "vs/base/browser/dom";
+import { IFileService } from "vs/platform/files/common/files";
 
 class SnippetBodyInsights {
 	readonly codeSnippet: string;
@@ -81,7 +81,7 @@ class SnippetBodyInsights {
 					placeholders.set(marker.name, index);
 
 					const synthetic = new Placeholder(index).appendChild(
-						new Text(marker.name)
+						new Text(marker.name),
 					);
 					textmateSnippet.replace(marker, [synthetic]);
 					this.isBogous = true;
@@ -123,12 +123,12 @@ export class Snippet {
 		readonly source: string,
 		readonly snippetSource: SnippetSource,
 		readonly snippetIdentifier: string,
-		readonly extensionId?: ExtensionIdentifier
+		readonly extensionId?: ExtensionIdentifier,
 	) {
 		this.prefixLow = prefix.toLowerCase();
 		this._bodyInsights = new WindowIdleValue(
 			getActiveWindow(),
-			() => new SnippetBodyInsights(this.body)
+			() => new SnippetBodyInsights(this.body),
 		);
 	}
 
@@ -171,7 +171,7 @@ interface JsonSerializedSnippets {
 		| { [name: string]: JsonSerializedSnippet };
 }
 
-export const enum SnippetSource {
+export enum SnippetSource {
 	User = 1,
 	Workspace = 2,
 	Extension = 3,
@@ -190,7 +190,7 @@ export class SnippetFile {
 		public defaultScopes: string[] | undefined,
 		private readonly _extension: IExtensionDescription | undefined,
 		private readonly _fileService: IFileService,
-		private readonly _extensionResourceLoaderService: IExtensionResourceLoaderService
+		private readonly _extensionResourceLoaderService: IExtensionResourceLoaderService,
 	) {
 		this.isGlobalSnippets = extname(location.path) === ".code-snippets";
 		this.isUserSnippets = !this._extension;
@@ -238,7 +238,7 @@ export class SnippetFile {
 	private async _load(): Promise<string> {
 		if (this._extension) {
 			return this._extensionResourceLoaderService.readExtensionResource(
-				this.location
+				this.location,
 			);
 		} else {
 			const content = await this._fileService.readFile(this.location);
@@ -253,29 +253,29 @@ export class SnippetFile {
 					const data = <JsonSerializedSnippets>jsonParse(content);
 					if (getNodeType(data) === "object") {
 						for (const [name, scopeOrTemplate] of Object.entries(
-							data
+							data,
 						)) {
 							if (isJsonSerializedSnippet(scopeOrTemplate)) {
 								this._parseSnippet(
 									name,
 									scopeOrTemplate,
-									this.data
+									this.data,
 								);
 							} else {
 								for (const [name, template] of Object.entries(
-									scopeOrTemplate
+									scopeOrTemplate,
 								)) {
 									this._parseSnippet(
 										name,
 										template,
-										this.data
+										this.data,
 									);
 								}
 							}
 						}
 					}
 					return this;
-				}
+				},
 			);
 		}
 		return this._loadPromise;
@@ -289,7 +289,7 @@ export class SnippetFile {
 	private _parseSnippet(
 		name: string,
 		snippet: JsonSerializedSnippet,
-		bucket: Snippet[]
+		bucket: Snippet[],
 	): void {
 		let { isFileTemplate, prefix, body, description } = snippet;
 
@@ -328,14 +328,14 @@ export class SnippetFile {
 			// workspace -> only *.code-snippets files
 			source = localize(
 				"source.workspaceSnippetGlobal",
-				"Workspace Snippet"
+				"Workspace Snippet",
 			);
 		} else {
 			// user -> global (*.code-snippets) and language snippets
 			if (this.isGlobalSnippets) {
 				source = localize(
 					"source.userSnippetGlobal",
-					"Global User Snippet"
+					"Global User Snippet",
 				);
 			} else {
 				source = localize("source.userSnippet", "User Snippet");
@@ -356,11 +356,11 @@ export class SnippetFile {
 					this._extension
 						? `${relativePath(
 								this._extension.extensionLocation,
-								this.location
-							)}/${name}`
+								this.location,
+						  )}/${name}`
 						: `${basename(this.location.path)}/${name}`,
-					this._extension?.identifier
-				)
+					this._extension?.identifier,
+				),
 			);
 		}
 	}

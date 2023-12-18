@@ -36,7 +36,7 @@ export interface ILinkPartialRange {
  * must terminate at the end of line.
  */
 const linkSuffixRegexEol = new Lazy<RegExp>(() =>
-	generateLinkSuffixRegex(true)
+	generateLinkSuffixRegex(true),
 );
 /**
  * A regex that extracts the link suffix which contains line and column information.
@@ -183,7 +183,7 @@ export function getLinkSuffix(link: string): ILinkSuffix | null {
 }
 
 export function toLinkSuffix(
-	match: RegExpExecArray | null
+	match: RegExpExecArray | null,
 ): ILinkSuffix | null {
 	const groups = match?.groups;
 	if (!groups || match.length < 1) {
@@ -193,10 +193,10 @@ export function toLinkSuffix(
 		row: parseIntOptional(groups.row0 || groups.row1 || groups.row2),
 		col: parseIntOptional(groups.col0 || groups.col1 || groups.col2),
 		rowEnd: parseIntOptional(
-			groups.rowEnd0 || groups.rowEnd1 || groups.rowEnd2
+			groups.rowEnd0 || groups.rowEnd1 || groups.rowEnd2,
 		),
 		colEnd: parseIntOptional(
-			groups.colEnd0 || groups.colEnd1 || groups.colEnd2
+			groups.colEnd0 || groups.colEnd1 || groups.colEnd2,
 		),
 		suffix: { index: match.index, text: match[0] },
 	};
@@ -240,7 +240,7 @@ function binaryInsert(
 	list: IParsedLink[],
 	newItem: IParsedLink,
 	low: number,
-	high: number
+	high: number,
 ) {
 	if (list.length === 0) {
 		list.push(newItem);
@@ -285,7 +285,7 @@ function detectLinksViaSuffix(line: string): IParsedLink[] {
 	for (const suffix of suffixes) {
 		const beforeSuffix = line.substring(0, suffix.suffix.index);
 		const possiblePathMatch = beforeSuffix.match(
-			linkWithSuffixPathCharacters
+			linkWithSuffixPathCharacters,
 		);
 		if (
 			possiblePathMatch &&
@@ -405,7 +405,7 @@ function detectPathsNoSuffix(line: string, os: OperatingSystem): IParsedLink[] {
 		os === OperatingSystem.Windows
 			? winLocalLinkClause
 			: unixLocalLinkClause,
-		"g"
+		"g",
 	);
 	let match;
 	while ((match = regex.exec(line)) !== null) {

@@ -99,7 +99,7 @@ export enum UIKind {
 	Web = 2,
 }
 
-export const enum ExtensionHostExitCode {
+export enum ExtensionHostExitCode {
 	// nodejs uses codes 1-13 and exit codes >128 are signal exits
 	VersionMismatch = 55,
 	UnexpectedError = 81,
@@ -121,10 +121,10 @@ export interface IExtHostReduceGraceTimeMessage {
 	type: "VSCODE_EXTHOST_IPC_REDUCE_GRACE_TIME";
 }
 
-export const enum MessageType {
-	Initialized,
-	Ready,
-	Terminate,
+export enum MessageType {
+	Initialized = 0,
+	Ready = 1,
+	Terminate = 2,
 }
 
 export function createMessageOfType(type: MessageType): VSBuffer {
@@ -162,7 +162,7 @@ export function isMessageOfType(message: VSBuffer, type: MessageType): boolean {
 	}
 }
 
-export const enum NativeLogMarkers {
+export enum NativeLogMarkers {
 	Start = "START_NATIVE_LOG",
 	End = "END_NATIVE_LOG",
 }

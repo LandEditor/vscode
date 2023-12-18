@@ -1,4 +1,3 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -8,10 +7,10 @@ exports.shake = exports.toStringShakeLevel = exports.ShakeLevel = void 0;
 const fs = require("fs");
 const path = require("path");
 const TYPESCRIPT_LIB_FOLDER = path.dirname(
-	require.resolve("typescript/lib/lib.d.ts")
+	require.resolve("typescript/lib/lib.d.ts"),
 );
 var ShakeLevel;
-(function (ShakeLevel) {
+((ShakeLevel) => {
 	ShakeLevel[(ShakeLevel["Files"] = 0)] = "Files";
 	ShakeLevel[(ShakeLevel["InnerFile"] = 1)] = "InnerFile";
 	ShakeLevel[(ShakeLevel["ClassMembers"] = 2)] = "ClassMembers";
@@ -35,7 +34,7 @@ function printDiagnostics(options, diagnostics) {
 		}
 		if (diag.file && diag.start) {
 			const location = diag.file.getLineAndCharacterOfPosition(
-				diag.start
+				diag.start,
 			);
 			result += `:${location.line + 1}:${location.character}`;
 		}
@@ -83,13 +82,13 @@ function createTypeScriptLanguageService(ts, options) {
 	const RESOLVED_LIBS = processLibFiles(ts, options);
 	const compilerOptions = ts.convertCompilerOptionsFromJson(
 		options.compilerOptions,
-		options.sourcesRoot
+		options.sourcesRoot,
 	).options;
 	const host = new TypeScriptLanguageServiceHost(
 		ts,
 		RESOLVED_LIBS,
 		FILES,
-		compilerOptions
+		compilerOptions,
 	);
 	return ts.createLanguageService(host);
 }
@@ -127,7 +126,7 @@ function discoverAndReadFiles(ts, options) {
 		if (options.redirects[moduleId]) {
 			ts_filename = path.join(
 				options.sourcesRoot,
-				options.redirects[moduleId] + ".ts"
+				options.redirects[moduleId] + ".ts",
 			);
 		} else {
 			ts_filename = path.join(options.sourcesRoot, moduleId + ".ts");
@@ -144,7 +143,7 @@ function discoverAndReadFiles(ts, options) {
 			if (/(^\.\/)|(^\.\.\/)/.test(importedModuleId)) {
 				importedModuleId = path.join(
 					path.dirname(moduleId),
-					importedModuleId
+					importedModuleId,
 				);
 			}
 			enqueue(importedModuleId);
@@ -236,7 +235,7 @@ class TypeScriptLanguageServiceHost {
 //#endregion
 //#region Tree Shaking
 var NodeColor;
-(function (NodeColor) {
+((NodeColor) => {
 	NodeColor[(NodeColor["White"] = 0)] = "White";
 	NodeColor[(NodeColor["Gray"] = 1)] = "Gray";
 	NodeColor[(NodeColor["Black"] = 2)] = "Black";
@@ -291,7 +290,7 @@ function isVariableStatementWithSideEffects(ts, node) {
 			// TODO: assuming `createDecorator` and `refineServiceDecorator` calls are side-effect free
 			const isSideEffectFree =
 				/(createDecorator|refineServiceDecorator)/.test(
-					node.expression.getText()
+					node.expression.getText(),
 				);
 			if (!isSideEffectFree) {
 				hasSideEffects = true;
@@ -460,13 +459,13 @@ function markNodes(ts, languageService, options) {
 		) {
 			const references = languageService.getReferencesAtPosition(
 				node.getSourceFile().fileName,
-				node.name.pos + node.name.getLeadingTriviaWidth()
+				node.name.pos + node.name.getLeadingTriviaWidth(),
 			);
 			if (references) {
 				for (let i = 0, len = references.length; i < len; i++) {
 					const reference = references[i];
 					const referenceSourceFile = program.getSourceFile(
-						reference.fileName
+						reference.fileName,
 					);
 					if (!referenceSourceFile) {
 						continue;
@@ -476,7 +475,7 @@ function markNodes(ts, languageService, options) {
 						referenceSourceFile,
 						reference.textSpan.start,
 						false,
-						false
+						false,
 					);
 					if (
 						ts.isMethodDeclaration(referenceNode.parent) ||
@@ -519,7 +518,7 @@ function markNodes(ts, languageService, options) {
 	options.entryPoints.forEach((moduleId) => enqueueFile(moduleId + ".ts"));
 	// Add fake usage files
 	options.inlineEntryPoints.forEach((_, index) =>
-		enqueueFile(`inlineEntryPoint.${index}.ts`)
+		enqueueFile(`inlineEntryPoint.${index}.ts`),
 	);
 	let step = 0;
 	const checker = program.getTypeChecker();
@@ -530,10 +529,10 @@ function markNodes(ts, languageService, options) {
 			console.log(
 				`Treeshaking - ${Math.floor(
 					(100 * step) /
-						(step + black_queue.length + gray_queue.length)
+						(step + black_queue.length + gray_queue.length),
 				)}% - ${step}/${
 					step + black_queue.length + gray_queue.length
-				} (${black_queue.length}, ${gray_queue.length})`
+				} (${black_queue.length}, ${gray_queue.length})`,
 			);
 		}
 		if (black_queue.length === 0) {
@@ -569,12 +568,12 @@ function markNodes(ts, languageService, options) {
 					if (
 						importDeclarationNode &&
 						ts.isStringLiteral(
-							importDeclarationNode.moduleSpecifier
+							importDeclarationNode.moduleSpecifier,
 						)
 					) {
 						enqueueImport(
 							importDeclarationNode,
-							importDeclarationNode.moduleSpecifier.text
+							importDeclarationNode.moduleSpecifier.text,
 						);
 					}
 				}
@@ -602,7 +601,7 @@ function markNodes(ts, languageService, options) {
 								ts,
 								program,
 								checker,
-								declaration
+								declaration,
 							)
 						) {
 							enqueue_black(declaration.name);
@@ -618,7 +617,7 @@ function markNodes(ts, languageService, options) {
 								if (
 									ts.isConstructorDeclaration(member) ||
 									ts.isConstructSignatureDeclaration(
-										member
+										member,
 									) ||
 									ts.isIndexSignatureDeclaration(member) ||
 									ts.isCallSignatureDeclaration(member) ||
@@ -747,14 +746,14 @@ function generateResult(ts, languageService, shakeLevel) {
 								getColor(importNode) === 2 /* NodeColor.Black */
 							) {
 								survivingImports.push(
-									importNode.getFullText(sourceFile)
+									importNode.getFullText(sourceFile),
 								);
 							}
 						}
 						const leadingTriviaWidth = node.getLeadingTriviaWidth();
 						const leadingTrivia = sourceFile.text.substr(
 							node.pos,
-							leadingTriviaWidth
+							leadingTriviaWidth,
 						);
 						if (survivingImports.length > 0) {
 							if (
@@ -767,43 +766,39 @@ function generateResult(ts, languageService, shakeLevel) {
 									`${leadingTrivia}import ${
 										node.importClause.name.text
 									}, {${survivingImports.join(
-										","
+										",",
 									)} } from${node.moduleSpecifier.getFullText(
-										sourceFile
-									)};`
+										sourceFile,
+									)};`,
 								);
 							}
 							return write(
 								`${leadingTrivia}import {${survivingImports.join(
-									","
+									",",
 								)} } from${node.moduleSpecifier.getFullText(
-									sourceFile
-								)};`
+									sourceFile,
+								)};`,
 							);
-						} else {
-							if (
-								node.importClause &&
-								node.importClause.name &&
-								getColor(node.importClause) ===
-									2 /* NodeColor.Black */
-							) {
-								return write(
-									`${leadingTrivia}import ${
-										node.importClause.name.text
-									} from${node.moduleSpecifier.getFullText(
-										sourceFile
-									)};`
-								);
-							}
+						} else if (
+							node.importClause &&
+							node.importClause.name &&
+							getColor(node.importClause) ===
+								2 /* NodeColor.Black */
+						) {
+							return write(
+								`${leadingTrivia}import ${
+									node.importClause.name.text
+								} from${node.moduleSpecifier.getFullText(
+									sourceFile,
+								)};`,
+							);
 						}
 					}
-				} else {
-					if (
-						node.importClause &&
-						getColor(node.importClause) === 2 /* NodeColor.Black */
-					) {
-						return keep(node);
-					}
+				} else if (
+					node.importClause &&
+					getColor(node.importClause) === 2 /* NodeColor.Black */
+				) {
+					return keep(node);
 				}
 			}
 			if (ts.isExportDeclaration(node)) {
@@ -819,22 +814,22 @@ function generateResult(ts, languageService, shakeLevel) {
 							2 /* NodeColor.Black */
 						) {
 							survivingExports.push(
-								exportSpecifier.getFullText(sourceFile)
+								exportSpecifier.getFullText(sourceFile),
 							);
 						}
 					}
 					const leadingTriviaWidth = node.getLeadingTriviaWidth();
 					const leadingTrivia = sourceFile.text.substr(
 						node.pos,
-						leadingTriviaWidth
+						leadingTriviaWidth,
 					);
 					if (survivingExports.length > 0) {
 						return write(
 							`${leadingTrivia}export {${survivingExports.join(
-								","
+								",",
 							)} } from${node.moduleSpecifier.getFullText(
-								sourceFile
-							)};`
+								sourceFile,
+							)};`,
 						);
 					}
 				}
@@ -869,7 +864,10 @@ function generateResult(ts, languageService, shakeLevel) {
 			node.forEachChild(writeMarkedNodes);
 		}
 		if (getColor(sourceFile) !== 2 /* NodeColor.Black */) {
-			if (!nodeOrChildIsBlack(sourceFile)) {
+			if (nodeOrChildIsBlack(sourceFile)) {
+				sourceFile.forEachChild(writeMarkedNodes);
+				result += sourceFile.endOfFileToken.getFullText(sourceFile);
+			} else {
 				// none of the elements are reachable
 				if (isNeededSourceFile(sourceFile)) {
 					// this source file must be written, even if nothing is used from it
@@ -881,9 +879,6 @@ function generateResult(ts, languageService, shakeLevel) {
 					// don't write this file at all!
 					return;
 				}
-			} else {
-				sourceFile.forEachChild(writeMarkedNodes);
-				result += sourceFile.endOfFileToken.getFullText(sourceFile);
 			}
 		} else {
 			result = text;
@@ -898,7 +893,7 @@ function isLocalCodeExtendingOrInheritingFromDefaultLibSymbol(
 	ts,
 	program,
 	checker,
-	declaration
+	declaration,
 ) {
 	if (
 		!program.isSourceFileDefaultLibrary(declaration.getSourceFile()) &&
@@ -1013,7 +1008,7 @@ function getRealNodeSymbol(ts, checker, node) {
 		// assignment. This case and others are handled by the following code.
 		if (node.parent.kind === ts.SyntaxKind.ShorthandPropertyAssignment) {
 			symbol = checker.getShorthandAssignmentValueSymbol(
-				symbol.valueDeclaration
+				symbol.valueDeclaration,
 			);
 		}
 		// If the node is the name of a BindingElement within an ObjectBindingPattern instead of just returning the
@@ -1064,7 +1059,7 @@ function getRealNodeSymbol(ts, checker, node) {
 					element,
 					checker,
 					contextualType,
-					/*unionSymbolOk*/ false
+					/*unionSymbolOk*/ false,
 				);
 				if (propertySymbols) {
 					symbol = propertySymbols[0];
@@ -1093,7 +1088,7 @@ function getTokenAtPosition(
 	sourceFile,
 	position,
 	allowPositionInLeadingTrivia,
-	includeEndPosition
+	includeEndPosition,
 ) {
 	let current = sourceFile;
 	outer: while (true) {

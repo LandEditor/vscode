@@ -17,15 +17,15 @@ export interface IFindInputToggleOpts {
 
 const NLS_CASE_SENSITIVE_TOGGLE_LABEL = nls.localize(
 	"caseDescription",
-	"Match Case"
+	"Match Case",
 );
 const NLS_WHOLE_WORD_TOGGLE_LABEL = nls.localize(
 	"wordsDescription",
-	"Match Whole Word"
+	"Match Whole Word",
 );
 const NLS_REGEX_TOGGLE_LABEL = nls.localize(
 	"regexDescription",
-	"Use Regular Expression"
+	"Use Regular Expression",
 );
 
 export class CaseSensitiveToggle extends Toggle {

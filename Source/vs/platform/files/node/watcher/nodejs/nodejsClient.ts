@@ -6,8 +6,8 @@
 import { DisposableStore } from "vs/base/common/lifecycle";
 import { IFileChange } from "vs/platform/files/common/files";
 import {
-	ILogMessage,
 	AbstractNonRecursiveWatcherClient,
+	ILogMessage,
 	INonRecursiveWatcher,
 } from "vs/platform/files/common/watcher";
 import { NodeJSWatcher } from "vs/platform/files/node/watcher/nodejs/nodejsWatcher";
@@ -16,7 +16,7 @@ export class NodeJSWatcherClient extends AbstractNonRecursiveWatcherClient {
 	constructor(
 		onFileChanges: (changes: IFileChange[]) => void,
 		onLogMessage: (msg: ILogMessage) => void,
-		verboseLogging: boolean
+		verboseLogging: boolean,
 	) {
 		super(onFileChanges, onLogMessage, verboseLogging);
 
@@ -24,7 +24,7 @@ export class NodeJSWatcherClient extends AbstractNonRecursiveWatcherClient {
 	}
 
 	protected override createWatcher(
-		disposables: DisposableStore
+		disposables: DisposableStore,
 	): INonRecursiveWatcher {
 		return disposables.add(new NodeJSWatcher());
 	}

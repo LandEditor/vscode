@@ -3,7 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Emitter } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
+import { OS, OperatingSystem } from "vs/base/common/platform";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import { IKeyboardEvent } from "vs/platform/keybinding/common/keybinding";
+import {
+	DispatchConfig,
+	readKeyboardConfig,
+} from "vs/platform/keyboardLayout/common/keyboardConfig";
 import {
 	IKeyboardLayoutInfo,
 	IKeyboardLayoutService,
@@ -14,26 +26,14 @@ import {
 	IWindowsKeyboardLayoutInfo,
 	IWindowsKeyboardMapping,
 } from "vs/platform/keyboardLayout/common/keyboardLayout";
-import { Emitter } from "vs/base/common/event";
-import { OperatingSystem, OS } from "vs/base/common/platform";
 import {
 	CachedKeyboardMapper,
 	IKeyboardMapper,
 } from "vs/platform/keyboardLayout/common/keyboardMapper";
-import { WindowsKeyboardMapper } from "vs/workbench/services/keybinding/common/windowsKeyboardMapper";
 import { FallbackKeyboardMapper } from "vs/workbench/services/keybinding/common/fallbackKeyboardMapper";
 import { MacLinuxKeyboardMapper } from "vs/workbench/services/keybinding/common/macLinuxKeyboardMapper";
-import {
-	DispatchConfig,
-	readKeyboardConfig,
-} from "vs/platform/keyboardLayout/common/keyboardConfig";
-import { IKeyboardEvent } from "vs/platform/keybinding/common/keybinding";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { WindowsKeyboardMapper } from "vs/workbench/services/keybinding/common/windowsKeyboardMapper";
 import { INativeKeyboardLayoutService } from "vs/workbench/services/keybinding/electron-sandbox/nativeKeyboardLayoutService";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
 
 export class KeyboardLayoutService
 	extends Disposable
@@ -42,7 +42,7 @@ export class KeyboardLayoutService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeKeyboardLayout = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onDidChangeKeyboardLayout = this._onDidChangeKeyboardLayout.event;
 
@@ -99,8 +99,8 @@ export class KeyboardLayoutService
 				createKeyboardMapper(
 					this.getCurrentKeyboardLayout(),
 					this.getRawKeyboardMapping(),
-					config.mapAltGrToCtrlAlt
-				)
+					config.mapAltGrToCtrlAlt,
+				),
 			);
 		}
 		return this._keyboardMapper;
@@ -114,14 +114,14 @@ export class KeyboardLayoutService
 function createKeyboardMapper(
 	layoutInfo: IKeyboardLayoutInfo | null,
 	rawMapping: IKeyboardMapping | null,
-	mapAltGrToCtrlAlt: boolean
+	mapAltGrToCtrlAlt: boolean,
 ): IKeyboardMapper {
 	const _isUSStandard = isUSStandard(layoutInfo);
 	if (OS === OperatingSystem.Windows) {
 		return new WindowsKeyboardMapper(
 			_isUSStandard,
 			<IWindowsKeyboardMapping>rawMapping,
-			mapAltGrToCtrlAlt
+			mapAltGrToCtrlAlt,
 		);
 	}
 
@@ -142,7 +142,7 @@ function createKeyboardMapper(
 		_isUSStandard,
 		<IMacLinuxKeyboardMapping>rawMapping,
 		mapAltGrToCtrlAlt,
-		OS
+		OS,
 	);
 }
 
@@ -173,5 +173,5 @@ function isUSStandard(_kbInfo: IKeyboardLayoutInfo | null): boolean {
 registerSingleton(
 	IKeyboardLayoutService,
 	KeyboardLayoutService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

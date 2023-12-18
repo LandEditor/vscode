@@ -3,13 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-"use strict";
-
 import * as fs from "fs";
-import * as debug from "debug";
-import * as extract from "extract-zip";
 import * as path from "path";
 import { downloadArtifact } from "@electron/get";
+import * as debug from "debug";
+import * as extract from "extract-zip";
 
 const root = path.dirname(path.dirname(__dirname));
 
@@ -17,8 +15,8 @@ const d = debug("explorer-appx-fetcher");
 
 export async function downloadExplorerAppx(
 	outDir: string,
-	quality: string = "stable",
-	targetArch: string = "x64"
+	quality = "stable",
+	targetArch = "x64",
 ): Promise<void> {
 	const fileNamePrefix = quality === "insider" ? "code_insiders" : "code";
 	const fileName = `${fileNamePrefix}_explorer_${targetArch}.zip`;
@@ -56,7 +54,7 @@ async function main(outputDir?: string): Promise<void> {
 	}
 
 	const product = JSON.parse(
-		fs.readFileSync(path.join(root, "product.json"), "utf8")
+		fs.readFileSync(path.join(root, "product.json"), "utf8"),
 	);
 	await downloadExplorerAppx(outputDir, (product as any).quality, arch);
 }

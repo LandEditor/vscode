@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	ResponseError,
 	CancellationToken,
 	LSPErrorCodes,
+	ResponseError,
 } from "vscode-languageserver";
 import { RuntimeEnvironment } from "../htmlServer";
 
@@ -27,7 +27,7 @@ export function runSafe<T>(
 	func: () => Thenable<T>,
 	errorVal: T,
 	errorMessage: string,
-	token: CancellationToken
+	token: CancellationToken,
 ): Thenable<T | ResponseError<any>> {
 	return new Promise<T | ResponseError<any>>((resolve) => {
 		runtime.timer.setImmediate(() => {
@@ -47,7 +47,7 @@ export function runSafe<T>(
 				(e) => {
 					console.error(formatError(errorMessage, e));
 					resolve(errorVal);
-				}
+				},
 			);
 		});
 	});
@@ -56,6 +56,6 @@ export function runSafe<T>(
 function cancelValue<E>() {
 	return new ResponseError<E>(
 		LSPErrorCodes.RequestCancelled,
-		"Request cancelled"
+		"Request cancelled",
 	);
 }

@@ -23,7 +23,7 @@ enum CellOutputMimeTypes {
 
 export function createJupyterCellFromNotebookCell(
 	vscCell: NotebookCellData,
-	preferredLanguage: string | undefined
+	preferredLanguage: string | undefined,
 ): nbformat.IRawCell | nbformat.IMarkdownCell | nbformat.ICodeCell {
 	let cell: nbformat.IRawCell | nbformat.IMarkdownCell | nbformat.ICodeCell;
 	if (vscCell.kind === NotebookCellKind.Markup) {
@@ -73,7 +73,7 @@ export function getCellMetadata(cell: NotebookCell | NotebookCellData) {
 
 function createCodeCellFromNotebookCell(
 	cell: NotebookCellData,
-	preferredLanguage: string | undefined
+	preferredLanguage: string | undefined,
 ): nbformat.ICodeCell {
 	const cellMetadata = getCellMetadata(cell);
 	let metadata = cellMetadata?.metadata || {}; // This cannot be empty.
@@ -103,7 +103,7 @@ function createCodeCellFromNotebookCell(
 }
 
 function createRawCellFromNotebookCell(
-	cell: NotebookCellData
+	cell: NotebookCellData,
 ): nbformat.IRawCell {
 	const cellMetadata = getCellMetadata(cell);
 	const rawCell: any = {
@@ -161,7 +161,7 @@ function translateCellDisplayOutput(output: NotebookCellOutput): JupyterOutput {
 				data: output.items.reduce((prev: any, curr) => {
 					prev[curr.mime] = convertOutputMimeToJupyterOutput(
 						curr.mime,
-						curr.data as Uint8Array
+						curr.data as Uint8Array,
 					);
 					return prev;
 				}, {}),
@@ -175,7 +175,7 @@ function translateCellDisplayOutput(output: NotebookCellOutput): JupyterOutput {
 				data: output.items.reduce((prev: any, curr) => {
 					prev[curr.mime] = convertOutputMimeToJupyterOutput(
 						curr.mime,
-						curr.data as Uint8Array
+						curr.data as Uint8Array,
 					);
 					return prev;
 				}, {}),
@@ -193,7 +193,7 @@ function translateCellDisplayOutput(output: NotebookCellOutput): JupyterOutput {
 				data: output.items.reduce((prev: any, curr) => {
 					prev[curr.mime] = convertOutputMimeToJupyterOutput(
 						curr.mime,
-						curr.data as Uint8Array
+						curr.data as Uint8Array,
 					);
 					return prev;
 				}, {}),
@@ -205,12 +205,12 @@ function translateCellDisplayOutput(output: NotebookCellOutput): JupyterOutput {
 			const isError =
 				output.items.length === 1 &&
 				output.items.every(
-					(item) => item.mime === CellOutputMimeTypes.error
+					(item) => item.mime === CellOutputMimeTypes.error,
 				);
 			const isStream = output.items.every(
 				(item) =>
 					item.mime === CellOutputMimeTypes.stderr ||
-					item.mime === CellOutputMimeTypes.stdout
+					item.mime === CellOutputMimeTypes.stdout,
 			);
 
 			if (isError) {
@@ -250,7 +250,7 @@ function translateCellDisplayOutput(output: NotebookCellOutput): JupyterOutput {
 				unknownOutput.data = output.items.reduce((prev: any, curr) => {
 					prev[curr.mime] = convertOutputMimeToJupyterOutput(
 						curr.mime,
-						curr.data as Uint8Array
+						curr.data as Uint8Array,
 					);
 					return prev;
 				}, {});
@@ -320,7 +320,7 @@ function convertStreamOutput(output: NotebookCellOutput): JupyterOutput {
 		.filter(
 			(opit) =>
 				opit.mime === CellOutputMimeTypes.stderr ||
-				opit.mime === CellOutputMimeTypes.stdout
+				opit.mime === CellOutputMimeTypes.stdout,
 		)
 		.map((opit) => textDecoder.decode(opit.data))
 		.forEach((value) => {
@@ -379,8 +379,8 @@ function convertOutputMimeToJupyterOutput(mime: string, value: Uint8Array) {
 				return btoa(
 					value.reduce(
 						(s: string, b: number) => s + String.fromCharCode(b),
-						""
-					)
+						"",
+					),
 				);
 			}
 		} else if (mime.toLowerCase().includes("json")) {
@@ -399,7 +399,7 @@ function convertOutputMimeToJupyterOutput(mime: string, value: Uint8Array) {
 }
 
 export function createMarkdownCellFromNotebookCell(
-	cell: NotebookCellData
+	cell: NotebookCellData,
 ): nbformat.IMarkdownCell {
 	const cellMetadata = getCellMetadata(cell);
 	const markdownCell: any = {

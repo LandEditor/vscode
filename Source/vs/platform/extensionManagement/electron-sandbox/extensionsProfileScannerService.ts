@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ILogService } from "vs/platform/log/common/log";
-import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { URI } from "vs/base/common/uri";
+import { INativeEnvironmentService } from "vs/platform/environment/common/environment";
 import { AbstractExtensionsProfileScannerService } from "vs/platform/extensionManagement/common/extensionsProfileScannerService";
 import { IFileService } from "vs/platform/files/common/files";
-import { INativeEnvironmentService } from "vs/platform/environment/common/environment";
-import { URI } from "vs/base/common/uri";
+import { ILogService } from "vs/platform/log/common/log";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
 
 export class ExtensionsProfileScannerService extends AbstractExtensionsProfileScannerService {
 	constructor(
@@ -21,7 +21,7 @@ export class ExtensionsProfileScannerService extends AbstractExtensionsProfileSc
 		userDataProfilesService: IUserDataProfilesService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 		@ITelemetryService telemetryService: ITelemetryService,
-		@ILogService logService: ILogService
+		@ILogService logService: ILogService,
 	) {
 		super(
 			URI.file(environmentService.extensionsPath),
@@ -29,7 +29,7 @@ export class ExtensionsProfileScannerService extends AbstractExtensionsProfileSc
 			userDataProfilesService,
 			uriIdentityService,
 			telemetryService,
-			logService
+			logService,
 		);
 	}
 }

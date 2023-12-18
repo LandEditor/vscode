@@ -3,9 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import type { IBufferLine, Terminal } from "@xterm/xterm";
 import { URI } from "vs/base/common/uri";
+import {
+	ITerminalBackend,
+	ITerminalLogService,
+} from "vs/platform/terminal/common/terminal";
 import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
 import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import { ITerminalProcessManager } from "vs/workbench/contrib/terminal/common/terminal";
 import {
 	ITerminalLinkDetector,
 	ITerminalLinkResolver,
@@ -16,14 +22,8 @@ import {
 	convertLinkRangeToBuffer,
 	getXtermLineContent,
 } from "vs/workbench/contrib/terminalContrib/links/browser/terminalLinkHelpers";
-import type { IBufferLine, Terminal } from "@xterm/xterm";
-import { ITerminalProcessManager } from "vs/workbench/contrib/terminal/common/terminal";
-import {
-	ITerminalBackend,
-	ITerminalLogService,
-} from "vs/platform/terminal/common/terminal";
 
-const enum Constants {
+enum Constants {
 	/**
 	 * The max line length to try extract word links from.
 	 */
@@ -80,7 +80,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 	async detect(
 		lines: IBufferLine[],
 		startLine: number,
-		endLine: number
+		endLine: number,
 	): Promise<ITerminalSimpleLink[]> {
 		const links: ITerminalSimpleLink[] = [];
 
@@ -89,7 +89,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 			this.xterm.buffer.active,
 			startLine,
 			endLine,
-			this.xterm.cols
+			this.xterm.cols,
 		);
 		if (text === "" || text.length > Constants.MaxLineLength) {
 			return [];
@@ -97,7 +97,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 
 		this._logService.trace(
 			"terminalMultiLineLinkDetector#detect text",
-			text
+			text,
 		);
 
 		// Match against the fallback matchers which are mainly designed to catch paths with spaces
@@ -122,7 +122,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 
 			this._logService.trace(
 				"terminalMultiLineLinkDetector#detect candidate",
-				link
+				link,
 			);
 
 			// Scan up looking for the first line that could be a path
@@ -136,7 +136,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 					this.xterm.buffer.active,
 					index,
 					index,
-					this.xterm.cols
+					this.xterm.cols,
 				);
 				if (!text.match(/^\s*\d/)) {
 					possiblePath = text;
@@ -150,7 +150,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 			// Check if the first non-matching line is an absolute or relative link
 			const linkStat = await this._linkResolver.resolveLink(
 				this._processManager,
-				possiblePath
+				possiblePath,
 			);
 			if (linkStat) {
 				let type: TerminalBuiltinLinkType;
@@ -175,7 +175,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 						endColumn: 1 + text.length,
 						endLineNumber: 1,
 					},
-					startLine
+					startLine,
 				);
 
 				const simpleLink: ITerminalSimpleLink = {
@@ -191,7 +191,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 				};
 				this._logService.trace(
 					"terminalMultiLineLinkDetector#detect verified link",
-					simpleLink
+					simpleLink,
 				);
 				links.push(simpleLink);
 
@@ -221,7 +221,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 
 				this._logService.trace(
 					"terminalMultiLineLinkDetector#detect candidate",
-					link
+					link,
 				);
 
 				// Scan up looking for the first line that could be a path
@@ -235,7 +235,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 						this.xterm.buffer.active,
 						index,
 						index,
-						this.xterm.cols
+						this.xterm.cols,
 					);
 					const match = text.match(/\+\+\+ b\/(?<path>.+)/);
 					if (match) {
@@ -250,7 +250,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 				// Check if the first non-matching line is an absolute or relative link
 				const linkStat = await this._linkResolver.resolveLink(
 					this._processManager,
-					possiblePath
+					possiblePath,
 				);
 				if (linkStat) {
 					let type: TerminalBuiltinLinkType;
@@ -276,7 +276,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 							endColumn: 1 + link.length,
 							endLineNumber: 1,
 						},
-						startLine
+						startLine,
 					);
 
 					const simpleLink: ITerminalSimpleLink = {
@@ -293,7 +293,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 					};
 					this._logService.trace(
 						"terminalMultiLineLinkDetector#detect verified link",
-						simpleLink
+						simpleLink,
 					);
 					links.push(simpleLink);
 
@@ -312,7 +312,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 			if (
 				this._uriIdentityService.extUri.isEqualOrParent(
 					uri,
-					folders[i].uri
+					folders[i].uri,
 				)
 			) {
 				return true;

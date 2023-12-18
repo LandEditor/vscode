@@ -14,6 +14,6 @@ import { InlayHintsHover } from "vs/editor/contrib/inlayHints/browser/inlayHints
 registerEditorContribution(
 	InlayHintsController.ID,
 	InlayHintsController,
-	EditorContributionInstantiation.AfterFirstRender
+	EditorContributionInstantiation.AfterFirstRender,
 );
 HoverParticipantRegistry.register(InlayHintsHover);

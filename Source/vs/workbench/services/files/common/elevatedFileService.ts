@@ -3,20 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { URI } from "vs/base/common/uri";
 import {
 	VSBuffer,
 	VSBufferReadable,
 	VSBufferReadableStream,
 } from "vs/base/common/buffer";
+import { URI } from "vs/base/common/uri";
 import {
 	IFileStatWithMetadata,
 	IWriteFileOptions,
 } from "vs/platform/files/common/files";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 
 export const IElevatedFileService = createDecorator<IElevatedFileService>(
-	"elevatedFileService"
+	"elevatedFileService",
 );
 
 export interface IElevatedFileService {
@@ -34,6 +34,6 @@ export interface IElevatedFileService {
 	writeFileElevated(
 		resource: URI,
 		value: VSBuffer | VSBufferReadable | VSBufferReadableStream,
-		options?: IWriteFileOptions
+		options?: IWriteFileOptions,
 	): Promise<IFileStatWithMetadata>;
 }

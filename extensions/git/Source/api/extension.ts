@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Model } from "../model";
-import { GitExtension, Repository, API } from "./git";
-import { ApiRepository, ApiImpl } from "./api1";
 import { Event, EventEmitter } from "vscode";
+import { Model } from "../model";
+import { ApiImpl, ApiRepository } from "./api1";
+import { API, GitExtension, Repository } from "./git";
 
 export function deprecated(_target: any, key: string, descriptor: any): void {
 	if (typeof descriptor.value !== "function") {
@@ -21,7 +21,7 @@ export function deprecated(_target: any, key: string, descriptor: any): void {
 }
 
 export class GitExtensionImpl implements GitExtension {
-	enabled: boolean = false;
+	enabled = false;
 
 	private _onDidChangeEnablement = new EventEmitter<boolean>();
 	readonly onDidChangeEnablement: Event<boolean> =
@@ -69,7 +69,7 @@ export class GitExtensionImpl implements GitExtension {
 		}
 
 		return this._model.repositories.map(
-			(repository) => new ApiRepository(repository)
+			(repository) => new ApiRepository(repository),
 		);
 	}
 

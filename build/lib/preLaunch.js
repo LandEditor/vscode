@@ -1,4 +1,3 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -17,7 +16,7 @@ function runProcess(command, args = []) {
 			stdio: "inherit",
 			env: process.env,
 		});
-		child.on("exit", (err) => (!err ? resolve() : process.exit(err ?? 1)));
+		child.on("exit", (err) => (err ? process.exit(err ?? 1) : resolve()));
 		child.on("error", reject);
 	});
 }

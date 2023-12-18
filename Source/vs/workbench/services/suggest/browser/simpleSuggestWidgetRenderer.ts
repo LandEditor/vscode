@@ -5,16 +5,16 @@
 
 import { $, append, show } from "vs/base/browser/dom";
 import {
-	IconLabel,
 	IIconLabelValueOptions,
+	IconLabel,
 } from "vs/base/browser/ui/iconLabel/iconLabel";
 import { IListRenderer } from "vs/base/browser/ui/list/list";
-import { SimpleCompletionItem } from "vs/workbench/services/suggest/browser/simpleCompletionItem";
 import { Codicon } from "vs/base/common/codicons";
 import { Emitter, Event } from "vs/base/common/event";
 import { createMatches } from "vs/base/common/filters";
 import { DisposableStore } from "vs/base/common/lifecycle";
 import { ThemeIcon } from "vs/base/common/themables";
+import { SimpleCompletionItem } from "vs/workbench/services/suggest/browser/simpleCompletionItem";
 
 export function getAriaId(index: number): string {
 	return `simple-suggest-aria-id:${index}`;
@@ -139,7 +139,7 @@ export class SimpleSuggestWidgetItemRenderer
 	renderElement(
 		element: SimpleCompletionItem,
 		index: number,
-		data: ISimpleSuggestionTemplateData
+		data: ISimpleSuggestionTemplateData,
 	): void {
 		const { completion } = element;
 		data.root.id = getAriaId(index);
@@ -179,7 +179,9 @@ export class SimpleSuggestWidgetItemRenderer
 		data.iconContainer.className = "";
 		data.iconContainer.classList.add(
 			"suggest-icon",
-			...ThemeIcon.asClassNameArray(completion.icon || Codicon.symbolText)
+			...ThemeIcon.asClassNameArray(
+				completion.icon || Codicon.symbolText,
+			),
 		);
 		// }
 

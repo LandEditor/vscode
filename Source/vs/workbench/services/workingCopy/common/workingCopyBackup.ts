@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import {
 	VSBufferReadable,
 	VSBufferReadableStream,
 } from "vs/base/common/buffer";
 import { CancellationToken } from "vs/base/common/cancellation";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import {
 	IWorkingCopyBackupMeta,
 	IWorkingCopyIdentifier,
@@ -58,7 +58,7 @@ export interface IWorkingCopyBackupService {
 	 */
 	hasBackupSync(
 		identifier: IWorkingCopyIdentifier,
-		versionId?: number
+		versionId?: number,
 	): boolean;
 
 	/**
@@ -70,7 +70,7 @@ export interface IWorkingCopyBackupService {
 	 * Resolves the working copy backup for the given identifier if that exists.
 	 */
 	resolve<T extends IWorkingCopyBackupMeta>(
-		identifier: IWorkingCopyIdentifier
+		identifier: IWorkingCopyIdentifier,
 	): Promise<IResolvedWorkingCopyBackup<T> | undefined>;
 
 	/**
@@ -81,7 +81,7 @@ export interface IWorkingCopyBackupService {
 		content?: VSBufferReadable | VSBufferReadableStream,
 		versionId?: number,
 		meta?: IWorkingCopyBackupMeta,
-		token?: CancellationToken
+		token?: CancellationToken,
 	): Promise<void>;
 
 	/**
@@ -89,7 +89,7 @@ export interface IWorkingCopyBackupService {
 	 */
 	discardBackup(
 		identifier: IWorkingCopyIdentifier,
-		token?: CancellationToken
+		token?: CancellationToken,
 	): Promise<void>;
 
 	/**

@@ -21,7 +21,7 @@ import {
 export class BrowserRemoteResourceLoader extends Disposable {
 	constructor(
 		@IFileService fileService: IFileService,
-		private readonly provider: IRemoteResourceProvider
+		private readonly provider: IRemoteResourceProvider,
 	) {
 		super();
 
@@ -54,9 +54,9 @@ export class BrowserRemoteResourceLoader extends Disposable {
 				request.respondWith(
 					200,
 					content.value.buffer,
-					mime ? { "content-type": mime } : {}
+					mime ? { "content-type": mime } : {},
 				);
-			})
+			}),
 		);
 	}
 

@@ -3,20 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import parseStylesheet from "@emmetio/css-parser";
+import { Node, Rule, Stylesheet } from "EmmetFlatNode";
 import * as vscode from "vscode";
+import { getRootNode } from "./parseDocument";
 import {
-	getNodesInBetween,
 	getFlatNode,
 	getHtmlFlatNode,
-	sameNodes,
+	getNodesInBetween,
 	isStyleSheet,
-	validate,
-	offsetRangeToVsRange,
 	offsetRangeToSelection,
+	offsetRangeToVsRange,
+	sameNodes,
+	validate,
 } from "./util";
-import { Node, Stylesheet, Rule } from "EmmetFlatNode";
-import parseStylesheet from "@emmetio/css-parser";
-import { getRootNode } from "./parseDocument";
 
 let startCommentStylesheet: string;
 let endCommentStylesheet: string;
@@ -44,8 +44,8 @@ export function toggleComment(): Thenable<boolean> | undefined {
 					? toggleCommentStylesheet(
 							editor.document,
 							selection,
-							<Stylesheet>rootNode
-						)
+							<Stylesheet>rootNode,
+					  )
 					: toggleCommentHTML(editor.document, selection, rootNode!);
 				if (edits.length > 0) {
 					allEdits.push(edits);
@@ -74,7 +74,7 @@ export function toggleComment(): Thenable<boolean> | undefined {
 function toggleCommentHTML(
 	document: vscode.TextDocument,
 	selection: vscode.Selection,
-	rootNode: Node
+	rootNode: Node,
 ): vscode.TextEdit[] {
 	const selectionStart = selection.isReversed
 		? selection.active
@@ -90,13 +90,13 @@ function toggleCommentHTML(
 		documentText,
 		rootNode,
 		selectionStartOffset,
-		true
+		true,
 	);
 	const endNode = getHtmlFlatNode(
 		documentText,
 		rootNode,
 		selectionEndOffset,
-		true
+		true,
 	);
 
 	if (!startNode || !endNode) {
@@ -134,20 +134,20 @@ function toggleCommentHTML(
 			offsetRangeToVsRange(
 				document,
 				allNodes[0].start,
-				allNodes[0].start
+				allNodes[0].start,
 			),
-			startCommentHTML
-		)
+			startCommentHTML,
+		),
 	);
 	edits.push(
 		new vscode.TextEdit(
 			offsetRangeToVsRange(
 				document,
 				allNodes[allNodes.length - 1].end,
-				allNodes[allNodes.length - 1].end
+				allNodes[allNodes.length - 1].end,
 			),
-			endCommentHTML
-		)
+			endCommentHTML,
+		),
 	);
 
 	return edits;
@@ -155,7 +155,7 @@ function toggleCommentHTML(
 
 function getRangesToUnCommentHTML(
 	node: Node,
-	document: vscode.TextDocument
+	document: vscode.TextDocument,
 ): vscode.TextEdit[] {
 	let unCommentTextEdits: vscode.TextEdit[] = [];
 
@@ -166,20 +166,20 @@ function getRangesToUnCommentHTML(
 				offsetRangeToVsRange(
 					document,
 					node.start,
-					node.start + startCommentHTML.length
+					node.start + startCommentHTML.length,
 				),
-				""
-			)
+				"",
+			),
 		);
 		unCommentTextEdits.push(
 			new vscode.TextEdit(
 				offsetRangeToVsRange(
 					document,
 					node.end - endCommentHTML.length,
-					node.end
+					node.end,
 				),
-				""
-			)
+				"",
+			),
 		);
 		return unCommentTextEdits;
 	}
@@ -187,7 +187,7 @@ function getRangesToUnCommentHTML(
 	// All children of current node should be uncommented
 	node.children.forEach((childNode) => {
 		unCommentTextEdits = unCommentTextEdits.concat(
-			getRangesToUnCommentHTML(childNode, document)
+			getRangesToUnCommentHTML(childNode, document),
 		);
 	});
 
@@ -197,7 +197,7 @@ function getRangesToUnCommentHTML(
 function toggleCommentStylesheet(
 	document: vscode.TextDocument,
 	selection: vscode.Selection,
-	rootNode: Stylesheet
+	rootNode: Stylesheet,
 ): vscode.TextEdit[] {
 	const selectionStart = selection.isReversed
 		? selection.active
@@ -215,17 +215,17 @@ function toggleCommentStylesheet(
 		selectionStartOffset = adjustStartNodeCss(
 			startNode,
 			selectionStartOffset,
-			rootNode
+			rootNode,
 		);
 		selectionEndOffset = adjustEndNodeCss(
 			endNode,
 			selectionEndOffset,
-			rootNode
+			rootNode,
 		);
 		selection = offsetRangeToSelection(
 			document,
 			selectionStartOffset,
-			selectionEndOffset
+			selectionEndOffset,
 		);
 	} else if (startNode) {
 		selectionStartOffset = startNode.start;
@@ -233,7 +233,7 @@ function toggleCommentStylesheet(
 		selection = offsetRangeToSelection(
 			document,
 			selectionStartOffset,
-			selectionEndOffset
+			selectionEndOffset,
 		);
 	}
 
@@ -244,7 +244,7 @@ function toggleCommentStylesheet(
 		const commentRange = offsetRangeToVsRange(
 			document,
 			comment.start,
-			comment.end
+			comment.end,
 		);
 		if (selection.intersection(commentRange)) {
 			rangesToUnComment.push(commentRange);
@@ -253,20 +253,20 @@ function toggleCommentStylesheet(
 					offsetRangeToVsRange(
 						document,
 						comment.start,
-						comment.start + startCommentStylesheet.length
+						comment.start + startCommentStylesheet.length,
 					),
-					""
-				)
+					"",
+				),
 			);
 			edits.push(
 				new vscode.TextEdit(
 					offsetRangeToVsRange(
 						document,
 						comment.end - endCommentStylesheet.length,
-						comment.end
+						comment.end,
 					),
-					""
-				)
+					"",
+				),
 			);
 		}
 	});
@@ -278,11 +278,11 @@ function toggleCommentStylesheet(
 	return [
 		new vscode.TextEdit(
 			new vscode.Range(selection.start, selection.start),
-			startCommentStylesheet
+			startCommentStylesheet,
 		),
 		new vscode.TextEdit(
 			new vscode.Range(selection.end, selection.end),
-			endCommentStylesheet
+			endCommentStylesheet,
 		),
 	];
 }
@@ -307,7 +307,7 @@ function setupCommentSpacing() {
 function adjustStartNodeCss(
 	node: Node | undefined,
 	offset: number,
-	rootNode: Stylesheet
+	rootNode: Stylesheet,
 ): number {
 	for (const comment of rootNode.comments) {
 		if (comment.start <= offset && offset <= comment.end) {
@@ -343,7 +343,7 @@ function adjustStartNodeCss(
 function adjustEndNodeCss(
 	node: Node | undefined,
 	offset: number,
-	rootNode: Stylesheet
+	rootNode: Stylesheet,
 ): number {
 	for (const comment of rootNode.comments) {
 		if (comment.start <= offset && offset <= comment.end) {

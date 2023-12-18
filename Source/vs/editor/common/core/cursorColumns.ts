@@ -26,7 +26,7 @@ export class CursorColumns {
 	private static _nextVisibleColumn(
 		codePoint: number,
 		visibleColumn: number,
-		tabSize: number
+		tabSize: number,
 	): number {
 		if (codePoint === CharCode.Tab) {
 			return CursorColumns.nextRenderTabStop(visibleColumn, tabSize);
@@ -47,7 +47,7 @@ export class CursorColumns {
 	public static visibleColumnFromColumn(
 		lineContent: string,
 		column: number,
-		tabSize: number
+		tabSize: number,
 	): number {
 		const textLen = Math.min(column - 1, lineContent.length);
 		const text = lineContent.substring(0, textLen);
@@ -58,7 +58,7 @@ export class CursorColumns {
 			const codePoint = strings.getNextCodePoint(
 				text,
 				textLen,
-				iterator.offset
+				iterator.offset,
 			);
 			iterator.nextGraphemeLength();
 
@@ -75,11 +75,11 @@ export class CursorColumns {
 	public static toStatusbarColumn(
 		lineContent: string,
 		column: number,
-		tabSize: number
+		tabSize: number,
 	): number {
 		const text = lineContent.substring(
 			0,
-			Math.min(column - 1, lineContent.length)
+			Math.min(column - 1, lineContent.length),
 		);
 		const iterator = new strings.CodePointIterator(text);
 
@@ -104,7 +104,7 @@ export class CursorColumns {
 	public static columnFromVisibleColumn(
 		lineContent: string,
 		visibleColumn: number,
-		tabSize: number
+		tabSize: number,
 	): number {
 		if (visibleColumn <= 0) {
 			return 1;
@@ -119,14 +119,14 @@ export class CursorColumns {
 			const codePoint = strings.getNextCodePoint(
 				lineContent,
 				lineContentLength,
-				iterator.offset
+				iterator.offset,
 			);
 			iterator.nextGraphemeLength();
 
 			const afterVisibleColumn = this._nextVisibleColumn(
 				codePoint,
 				beforeVisibleColumn,
-				tabSize
+				tabSize,
 			);
 			const afterColumn = iterator.offset + 1;
 
@@ -154,7 +154,7 @@ export class CursorColumns {
 	 */
 	public static nextRenderTabStop(
 		visibleColumn: number,
-		tabSize: number
+		tabSize: number,
 	): number {
 		return visibleColumn + tabSize - (visibleColumn % tabSize);
 	}
@@ -165,7 +165,7 @@ export class CursorColumns {
 	 */
 	public static nextIndentTabStop(
 		visibleColumn: number,
-		indentSize: number
+		indentSize: number,
 	): number {
 		return visibleColumn + indentSize - (visibleColumn % indentSize);
 	}
@@ -184,7 +184,7 @@ export class CursorColumns {
 	 */
 	public static prevIndentTabStop(
 		column: number,
-		indentSize: number
+		indentSize: number,
 	): number {
 		return Math.max(0, column - 1 - ((column - 1) % indentSize));
 	}

@@ -4,28 +4,28 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Emitter } from "vs/base/common/event";
+import { delimiter, posix } from "vs/base/common/path";
 import { URI, UriComponents } from "vs/base/common/uri";
 import { IURITransformer } from "vs/base/common/uriIpc";
 import { IFileChange } from "vs/platform/files/common/files";
-import { ILogService } from "vs/platform/log/common/log";
-import { createURITransformer } from "vs/workbench/api/node/uriTransformer";
-import { RemoteAgentConnectionContext } from "vs/platform/remote/common/remoteAgentEnvironment";
+import { IRecursiveWatcherOptions } from "vs/platform/files/common/watcher";
 import { DiskFileSystemProvider } from "vs/platform/files/node/diskFileSystemProvider";
-import { posix, delimiter } from "vs/base/common/path";
-import { IServerEnvironmentService } from "vs/server/node/serverEnvironmentService";
 import {
 	AbstractDiskFileSystemProviderChannel,
 	AbstractSessionFileWatcher,
 	ISessionFileWatcher,
 } from "vs/platform/files/node/diskFileSystemProviderServer";
-import { IRecursiveWatcherOptions } from "vs/platform/files/common/watcher";
+import { ILogService } from "vs/platform/log/common/log";
+import { RemoteAgentConnectionContext } from "vs/platform/remote/common/remoteAgentEnvironment";
+import { IServerEnvironmentService } from "vs/server/node/serverEnvironmentService";
+import { createURITransformer } from "vs/workbench/api/node/uriTransformer";
 
 export class RemoteAgentFileSystemProviderChannel extends AbstractDiskFileSystemProviderChannel<RemoteAgentConnectionContext> {
 	private readonly uriTransformerCache = new Map<string, IURITransformer>();
 
 	constructor(
 		logService: ILogService,
-		private readonly environmentService: IServerEnvironmentService
+		private readonly environmentService: IServerEnvironmentService,
 	) {
 		super(new DiskFileSystemProvider(logService), logService);
 
@@ -33,7 +33,7 @@ export class RemoteAgentFileSystemProviderChannel extends AbstractDiskFileSystem
 	}
 
 	protected override getUriTransformer(
-		ctx: RemoteAgentConnectionContext
+		ctx: RemoteAgentConnectionContext,
 	): IURITransformer {
 		let transformer = this.uriTransformerCache.get(ctx.remoteAuthority);
 		if (!transformer) {
@@ -47,7 +47,7 @@ export class RemoteAgentFileSystemProviderChannel extends AbstractDiskFileSystem
 	protected override transformIncoming(
 		uriTransformer: IURITransformer,
 		_resource: UriComponents,
-		supportVSCodeResource = false
+		supportVSCodeResource = false,
 	): URI {
 		if (
 			supportVSCodeResource &&
@@ -55,7 +55,7 @@ export class RemoteAgentFileSystemProviderChannel extends AbstractDiskFileSystem
 			_resource.query
 		) {
 			const requestResourcePath = JSON.parse(
-				_resource.query
+				_resource.query,
 			).requestResourcePath;
 
 			return URI.from({ scheme: "file", path: requestResourcePath });
@@ -68,13 +68,13 @@ export class RemoteAgentFileSystemProviderChannel extends AbstractDiskFileSystem
 
 	protected createSessionFileWatcher(
 		uriTransformer: IURITransformer,
-		emitter: Emitter<IFileChange[] | string>
+		emitter: Emitter<IFileChange[] | string>,
 	): ISessionFileWatcher {
 		return new SessionFileWatcher(
 			uriTransformer,
 			emitter,
 			this.logService,
-			this.environmentService
+			this.environmentService,
 		);
 	}
 
@@ -86,13 +86,13 @@ class SessionFileWatcher extends AbstractSessionFileWatcher {
 		uriTransformer: IURITransformer,
 		sessionEmitter: Emitter<IFileChange[] | string>,
 		logService: ILogService,
-		environmentService: IServerEnvironmentService
+		environmentService: IServerEnvironmentService,
 	) {
 		super(uriTransformer, sessionEmitter, logService, environmentService);
 	}
 
 	protected override getRecursiveWatcherOptions(
-		environmentService: IServerEnvironmentService
+		environmentService: IServerEnvironmentService,
 	): IRecursiveWatcherOptions | undefined {
 		const fileWatcherPolling =
 			environmentService.args["file-watcher-polling"];
@@ -110,7 +110,7 @@ class SessionFileWatcher extends AbstractSessionFileWatcher {
 	}
 
 	protected override getExtraExcludes(
-		environmentService: IServerEnvironmentService
+		environmentService: IServerEnvironmentService,
 	): string[] | undefined {
 		if (environmentService.extensionsPath) {
 			// when opening the $HOME folder, we end up watching the extension folder

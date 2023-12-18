@@ -6,8 +6,8 @@
 import { spawn } from "child_process";
 import { promises as fs } from "fs";
 import * as path from "path";
-import * as byline from "byline";
 import { rgPath } from "@vscode/ripgrep";
+import * as byline from "byline";
 import * as Parser from "tree-sitter";
 const { typescript } = require("tree-sitter-typescript");
 const product = require("../../product.json");
@@ -16,7 +16,7 @@ const packageJson = require("../../package.json");
 type NlsString = { value: string; nlsKey: string };
 
 function isNlsString(
-	value: string | NlsString | undefined
+	value: string | NlsString | undefined,
 ): value is NlsString {
 	return value ? typeof value !== "string" : false;
 }
@@ -35,7 +35,7 @@ interface Category {
 }
 
 enum PolicyType {
-	StringEnum,
+	StringEnum = 0,
 }
 
 interface Policy {
@@ -50,7 +50,7 @@ function renderADMLString(
 	prefix: string,
 	moduleName: string,
 	nlsString: NlsString,
-	translations?: LanguageTranslations
+	translations?: LanguageTranslations,
 ): string {
 	let value: string | undefined;
 
@@ -76,18 +76,18 @@ abstract class BasePolicy implements Policy {
 		readonly category: Category,
 		readonly minimumVersion: string,
 		protected description: NlsString,
-		protected moduleName: string
+		protected moduleName: string,
 	) {}
 
 	protected renderADMLString(
 		nlsString: NlsString,
-		translations?: LanguageTranslations
+		translations?: LanguageTranslations,
 	): string {
 		return renderADMLString(
 			this.name,
 			this.moduleName,
 			nlsString,
-			translations
+			translations,
 		);
 	}
 
@@ -97,7 +97,7 @@ abstract class BasePolicy implements Policy {
 			`	<parentCategory ref="${this.category.name.nlsKey}" />`,
 			`	<supportedOn ref="Supported_${this.minimumVersion.replace(
 				/\./g,
-				"_"
+				"_",
 			)}" />`,
 			`	<elements>`,
 			...this.renderADMXElements(),
@@ -131,7 +131,7 @@ class BooleanPolicy extends BasePolicy {
 		minimumVersion: string,
 		description: NlsString,
 		moduleName: string,
-		settingNode: Parser.SyntaxNode
+		settingNode: Parser.SyntaxNode,
 	): BooleanPolicy | undefined {
 		const type = getStringProperty(settingNode, "type");
 
@@ -144,7 +144,7 @@ class BooleanPolicy extends BasePolicy {
 			category,
 			minimumVersion,
 			description,
-			moduleName
+			moduleName,
 		);
 	}
 
@@ -153,7 +153,7 @@ class BooleanPolicy extends BasePolicy {
 		category: Category,
 		minimumVersion: string,
 		description: NlsString,
-		moduleName: string
+		moduleName: string,
 	) {
 		super(
 			PolicyType.StringEnum,
@@ -161,7 +161,7 @@ class BooleanPolicy extends BasePolicy {
 			category,
 			minimumVersion,
 			description,
-			moduleName
+			moduleName,
 		);
 	}
 
@@ -185,7 +185,7 @@ class IntPolicy extends BasePolicy {
 		minimumVersion: string,
 		description: NlsString,
 		moduleName: string,
-		settingNode: Parser.SyntaxNode
+		settingNode: Parser.SyntaxNode,
 	): IntPolicy | undefined {
 		const type = getStringProperty(settingNode, "type");
 
@@ -205,7 +205,7 @@ class IntPolicy extends BasePolicy {
 			minimumVersion,
 			description,
 			moduleName,
-			defaultValue
+			defaultValue,
 		);
 	}
 
@@ -215,7 +215,7 @@ class IntPolicy extends BasePolicy {
 		minimumVersion: string,
 		description: NlsString,
 		moduleName: string,
-		protected readonly defaultValue: number
+		protected readonly defaultValue: number,
 	) {
 		super(
 			PolicyType.StringEnum,
@@ -223,7 +223,7 @@ class IntPolicy extends BasePolicy {
 			category,
 			minimumVersion,
 			description,
-			moduleName
+			moduleName,
 		);
 	}
 
@@ -246,7 +246,7 @@ class StringPolicy extends BasePolicy {
 		minimumVersion: string,
 		description: NlsString,
 		moduleName: string,
-		settingNode: Parser.SyntaxNode
+		settingNode: Parser.SyntaxNode,
 	): StringPolicy | undefined {
 		const type = getStringProperty(settingNode, "type");
 
@@ -259,7 +259,7 @@ class StringPolicy extends BasePolicy {
 			category,
 			minimumVersion,
 			description,
-			moduleName
+			moduleName,
 		);
 	}
 
@@ -268,7 +268,7 @@ class StringPolicy extends BasePolicy {
 		category: Category,
 		minimumVersion: string,
 		description: NlsString,
-		moduleName: string
+		moduleName: string,
 	) {
 		super(
 			PolicyType.StringEnum,
@@ -276,7 +276,7 @@ class StringPolicy extends BasePolicy {
 			category,
 			minimumVersion,
 			description,
-			moduleName
+			moduleName,
 		);
 	}
 
@@ -298,7 +298,7 @@ class StringEnumPolicy extends BasePolicy {
 		minimumVersion: string,
 		description: NlsString,
 		moduleName: string,
-		settingNode: Parser.SyntaxNode
+		settingNode: Parser.SyntaxNode,
 	): StringEnumPolicy | undefined {
 		const type = getStringProperty(settingNode, "type");
 
@@ -318,7 +318,7 @@ class StringEnumPolicy extends BasePolicy {
 
 		const enumDescriptions = getStringArrayProperty(
 			settingNode,
-			"enumDescriptions"
+			"enumDescriptions",
 		);
 
 		if (!enumDescriptions) {
@@ -334,7 +334,7 @@ class StringEnumPolicy extends BasePolicy {
 			description,
 			moduleName,
 			enum_,
-			enumDescriptions
+			enumDescriptions,
 		);
 	}
 
@@ -345,7 +345,7 @@ class StringEnumPolicy extends BasePolicy {
 		description: NlsString,
 		moduleName: string,
 		protected enum_: string[],
-		protected enumDescriptions: NlsString[]
+		protected enumDescriptions: NlsString[],
 	) {
 		super(
 			PolicyType.StringEnum,
@@ -353,7 +353,7 @@ class StringEnumPolicy extends BasePolicy {
 			category,
 			minimumVersion,
 			description,
-			moduleName
+			moduleName,
 		);
 	}
 
@@ -362,7 +362,7 @@ class StringEnumPolicy extends BasePolicy {
 			`<enum id="${this.name}" valueName="${this.name}">`,
 			...this.enum_.map(
 				(value, index) =>
-					`	<item displayName="$(string.${this.name}_${this.enumDescriptions[index].nlsKey})"><value><string>${value}</string></value></item>`
+					`	<item displayName="$(string.${this.name}_${this.enumDescriptions[index].nlsKey})"><value><string>${value}</string></value></item>`,
 			),
 			`</enum>`,
 		];
@@ -372,7 +372,7 @@ class StringEnumPolicy extends BasePolicy {
 		return [
 			...super.renderADMLStrings(translations),
 			...this.enumDescriptions.map((e) =>
-				this.renderADMLString(e, translations)
+				this.renderADMLString(e, translations),
 			),
 		];
 	}
@@ -456,7 +456,7 @@ const StringArrayQ: QType<(string | NlsString)[]> = {
 function getProperty<T>(
 	qtype: QType<T>,
 	node: Parser.SyntaxNode,
-	key: string
+	key: string,
 ): T | undefined {
 	const query = new Parser.Query(
 		typescript,
@@ -466,7 +466,7 @@ function getProperty<T>(
 				value: ${qtype.Q}
 			)
 			(#eq? @key ${key})
-		)`
+		)`,
 	);
 
 	return qtype.value(query.matches(node));
@@ -474,21 +474,21 @@ function getProperty<T>(
 
 function getIntProperty(
 	node: Parser.SyntaxNode,
-	key: string
+	key: string,
 ): number | undefined {
 	return getProperty(IntQ, node, key);
 }
 
 function getStringProperty(
 	node: Parser.SyntaxNode,
-	key: string
+	key: string,
 ): string | NlsString | undefined {
 	return getProperty(StringQ, node, key);
 }
 
 function getStringArrayProperty(
 	node: Parser.SyntaxNode,
-	key: string
+	key: string,
 ): (string | NlsString)[] | undefined {
 	return getProperty(StringArrayQ, node, key);
 }
@@ -501,7 +501,7 @@ function getPolicy(
 	configurationNode: Parser.SyntaxNode,
 	settingNode: Parser.SyntaxNode,
 	policyNode: Parser.SyntaxNode,
-	categories: Map<string, Category>
+	categories: Map<string, Category>,
 ): Policy {
 	const name = getStringProperty(policyNode, "name");
 
@@ -533,7 +533,7 @@ function getPolicy(
 		throw new Error(`Missing required 'minimumVersion' property.`);
 	} else if (isNlsString(minimumVersion)) {
 		throw new Error(
-			`Property 'minimumVersion' should be a literal string.`
+			`Property 'minimumVersion' should be a literal string.`,
 		);
 	}
 
@@ -556,7 +556,7 @@ function getPolicy(
 				minimumVersion,
 				description,
 				moduleName,
-				settingNode
+				settingNode,
 			))
 		) {
 			break;
@@ -589,14 +589,14 @@ function getPolicies(moduleName: string, node: Parser.SyntaxNode): Policy[] {
 				)) @configuration)
 			)
 		)
-	`
+	`,
 	);
 
 	const categories = new Map<string, Category>();
 
 	return query.matches(node).map((m) => {
 		const configurationNode = m.captures.filter(
-			(c) => c.name === "configuration"
+			(c) => c.name === "configuration",
 		)[0].node;
 		const settingNode = m.captures.filter((c) => c.name === "setting")[0]
 			.node;
@@ -607,7 +607,7 @@ function getPolicies(moduleName: string, node: Parser.SyntaxNode): Policy[] {
 			configurationNode,
 			settingNode,
 			policyNode,
-			categories
+			categories,
 		);
 	});
 }
@@ -635,7 +635,7 @@ function renderADMX(
 	regKey: string,
 	versions: string[],
 	categories: Category[],
-	policies: Policy[]
+	policies: Policy[],
 ) {
 	versions = versions.map((v) => v.replace(/\./g, "_"));
 
@@ -650,7 +650,7 @@ function renderADMX(
 			${versions
 				.map(
 					(v) =>
-						`<definition name="Supported_${v}" displayName="$(string.Supported_${v})" />`
+						`<definition name="Supported_${v}" displayName="$(string.Supported_${v})" />`,
 				)
 				.join(`\n			`)}
 		</definitions>
@@ -660,15 +660,12 @@ function renderADMX(
 		${categories
 			.map(
 				(c) =>
-					`<category displayName="$(string.Category_${c.name.nlsKey})" name="${c.name.nlsKey}"><parentCategory ref="Application" /></category>`
+					`<category displayName="$(string.Category_${c.name.nlsKey})" name="${c.name.nlsKey}"><parentCategory ref="Application" /></category>`,
 			)
 			.join(`\n		`)}
 	</categories>
 	<policies>
-		${policies
-			.map((p) => p.renderADMX(regKey))
-			.flat()
-			.join(`\n		`)}
+		${policies.flatMap((p) => p.renderADMX(regKey)).join(`\n		`)}
 	</policies>
 </policyDefinitions>
 `;
@@ -679,7 +676,7 @@ function renderADML(
 	versions: string[],
 	categories: Category[],
 	policies: Policy[],
-	translations?: LanguageTranslations
+	translations?: LanguageTranslations,
 ) {
 	return `<?xml version="1.0" encoding="utf-8"?>
 <policyDefinitionResources revision="1.0" schemaVersion="1.0">
@@ -692,19 +689,25 @@ function renderADML(
 				(v) =>
 					`<string id="Supported_${v.replace(
 						/\./g,
-						"_"
-					)}">${appName} &gt;= ${v}</string>`
+						"_",
+					)}">${appName} &gt;= ${v}</string>`,
 			)}
 			${categories.map((c) =>
-				renderADMLString("Category", c.moduleName, c.name, translations)
+				renderADMLString(
+					"Category",
+					c.moduleName,
+					c.name,
+					translations,
+				),
 			)}
 			${policies
-				.map((p) => p.renderADMLStrings(translations))
-				.flat()
+				.flatMap((p) => p.renderADMLStrings(translations))
 				.join(`\n			`)}
 		</stringTable>
 		<presentationTable>
-			${policies.map((p) => p.renderADMLPresentation()).join(`\n			`)}
+			${policies
+				.map((p) => p.renderADMLPresentation())
+				.join(`\n			`)}
 		</presentationTable>
 	</resources>
 </policyDefinitionResources>
@@ -734,7 +737,7 @@ function renderGP(policies: Policy[], translations: Translations) {
 					versions,
 					categories,
 					policies,
-					languageTranslations
+					languageTranslations,
 				),
 			})),
 		],
@@ -742,19 +745,19 @@ function renderGP(policies: Policy[], translations: Translations) {
 }
 
 const Languages = {
-	"fr": "fr-fr",
-	"it": "it-it",
-	"de": "de-de",
-	"es": "es-es",
-	"ru": "ru-ru",
+	fr: "fr-fr",
+	it: "it-it",
+	de: "de-de",
+	es: "es-es",
+	ru: "ru-ru",
 	"zh-hans": "zh-cn",
 	"zh-hant": "zh-tw",
-	"ja": "ja-jp",
-	"ko": "ko-kr",
-	"cs": "cs-cz",
+	ja: "ja-jp",
+	ko: "ko-kr",
+	cs: "cs-cz",
 	"pt-br": "pt-br",
-	"tr": "tr-tr",
-	"pl": "pl-pl",
+	tr: "tr-tr",
+	pl: "pl-pl",
 };
 
 type LanguageTranslations = {
@@ -770,7 +773,7 @@ type Version = [number, number, number];
 async function getSpecificNLS(
 	resourceUrlTemplate: string,
 	languageId: string,
-	version: Version
+	version: Version,
 ) {
 	const resource = {
 		publisher: "ms-ceintl",
@@ -781,13 +784,13 @@ async function getSpecificNLS(
 
 	const url = resourceUrlTemplate.replace(
 		/\{([^}]+)\}/g,
-		(_, key) => resource[key as keyof typeof resource]
+		(_, key) => resource[key as keyof typeof resource],
 	);
 	const res = await fetch(url);
 
 	if (res.status !== 200) {
 		throw new Error(
-			`[${res.status}] Error downloading language pack ${languageId}@${version}`
+			`[${res.status}] Error downloading language pack ${languageId}@${version}`,
 		);
 	}
 
@@ -814,12 +817,12 @@ function compareVersions(a: Version, b: Version): number {
 
 async function queryVersions(
 	serviceUrl: string,
-	languageId: string
+	languageId: string,
 ): Promise<Version[]> {
 	const res = await fetch(`${serviceUrl}/extensionquery`, {
 		method: "POST",
 		headers: {
-			"Accept": "application/json;api-version=3.0-preview.1",
+			Accept: "application/json;api-version=3.0-preview.1",
 			"Content-Type": "application/json",
 			"User-Agent": "VS Code Build",
 		},
@@ -840,7 +843,7 @@ async function queryVersions(
 
 	if (res.status !== 200) {
 		throw new Error(
-			`[${res.status}] Error querying for extension: ${languageId}`
+			`[${res.status}] Error querying for extension: ${languageId}`,
 		);
 	}
 
@@ -856,28 +859,28 @@ async function getNLS(
 	extensionGalleryServiceUrl: string,
 	resourceUrlTemplate: string,
 	languageId: string,
-	version: Version
+	version: Version,
 ) {
 	const versions = await queryVersions(
 		extensionGalleryServiceUrl,
-		languageId
+		languageId,
 	);
 	const nextMinor: Version = [version[0], version[1] + 1, 0];
 	const compatibleVersions = versions.filter(
-		(v) => compareVersions(v, nextMinor) < 0
+		(v) => compareVersions(v, nextMinor) < 0,
 	);
 	const latestCompatibleVersion = compatibleVersions.at(-1)!; // order is newest to oldest
 
 	if (!latestCompatibleVersion) {
 		throw new Error(
-			`No compatible language pack found for ${languageId} for version ${version}`
+			`No compatible language pack found for ${languageId} for version ${version}`,
 		);
 	}
 
 	return await getSpecificNLS(
 		resourceUrlTemplate,
 		languageId,
-		latestCompatibleVersion
+		latestCompatibleVersion,
 	);
 }
 
@@ -907,7 +910,7 @@ async function getTranslations(): Promise<Translations> {
 
 	if (!extensionGalleryServiceUrl) {
 		console.warn(
-			`Skipping policy localization: No 'extensionGallery.serviceUrl' found in 'product.json'.`
+			`Skipping policy localization: No 'extensionGallery.serviceUrl' found in 'product.json'.`,
 		);
 		return [];
 	}
@@ -916,7 +919,7 @@ async function getTranslations(): Promise<Translations> {
 
 	if (!resourceUrlTemplate) {
 		console.warn(
-			`Skipping policy localization: No 'resourceUrlTemplate' found in 'product.json'.`
+			`Skipping policy localization: No 'resourceUrlTemplate' found in 'product.json'.`,
 		);
 		return [];
 	}
@@ -930,12 +933,12 @@ async function getTranslations(): Promise<Translations> {
 				extensionGalleryServiceUrl,
 				resourceUrlTemplate,
 				languageId,
-				version
+				version,
 			).then((languageTranslations) => ({
 				languageId,
 				languageTranslations,
-			}))
-		)
+			})),
+		),
 	);
 }
 
@@ -952,7 +955,7 @@ async function main() {
 
 	await fs.writeFile(
 		path.join(root, `${product.win32RegValueName}.admx`),
-		admx.replace(/\r?\n/g, "\n")
+		admx.replace(/\r?\n/g, "\n"),
 	);
 
 	for (const { languageId, contents } of adml) {
@@ -960,12 +963,12 @@ async function main() {
 			root,
 			languageId === "en-us"
 				? "en-us"
-				: Languages[languageId as keyof typeof Languages]
+				: Languages[languageId as keyof typeof Languages],
 		);
 		await fs.mkdir(languagePath, { recursive: true });
 		await fs.writeFile(
 			path.join(languagePath, `${product.win32RegValueName}.adml`),
-			contents.replace(/\r?\n/g, "\n")
+			contents.replace(/\r?\n/g, "\n"),
 		);
 	}
 }

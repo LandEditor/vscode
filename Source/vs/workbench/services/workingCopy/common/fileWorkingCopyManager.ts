@@ -3,29 +3,46 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import { Emitter, Event } from "vs/base/common/event";
 import { Promises } from "vs/base/common/async";
 import { VSBufferReadableStream } from "vs/base/common/buffer";
 import { CancellationToken } from "vs/base/common/cancellation";
+import { Codicon } from "vs/base/common/codicons";
+import { Emitter, Event } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
+import { Schemas } from "vs/base/common/network";
 import {
-	toLocalResource,
-	joinPath,
-	isEqual,
 	basename,
 	dirname,
+	isEqual,
+	joinPath,
+	toLocalResource,
 } from "vs/base/common/resources";
 import { URI } from "vs/base/common/uri";
+import { localize } from "vs/nls";
 import {
-	IFileDialogService,
 	IDialogService,
+	IFileDialogService,
 } from "vs/platform/dialogs/common/dialogs";
 import { IFileService } from "vs/platform/files/common/files";
-import { ISaveOptions, SaveSourceRegistry } from "vs/workbench/common/editor";
-import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { IPathService } from "vs/workbench/services/path/common/pathService";
+import { ILabelService } from "vs/platform/label/common/label";
+import { ILogService } from "vs/platform/log/common/log";
+import { INotificationService } from "vs/platform/notification/common/notification";
+import { listErrorForeground } from "vs/platform/theme/common/colorRegistry";
 import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import { ISaveOptions, SaveSourceRegistry } from "vs/workbench/common/editor";
+import {
+	IDecorationData,
+	IDecorationsProvider,
+	IDecorationsService,
+} from "vs/workbench/services/decorations/common/decorations";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
+import { IElevatedFileService } from "vs/workbench/services/files/common/elevatedFileService";
+import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
+import { ILifecycleService } from "vs/workbench/services/lifecycle/common/lifecycle";
+import { IPathService } from "vs/workbench/services/path/common/pathService";
+import { IBaseFileWorkingCopyManager } from "vs/workbench/services/workingCopy/common/abstractFileWorkingCopyManager";
+import { IFileWorkingCopy } from "vs/workbench/services/workingCopy/common/fileWorkingCopy";
 import {
 	IStoredFileWorkingCopy,
 	IStoredFileWorkingCopyModel,
@@ -34,9 +51,9 @@ import {
 	StoredFileWorkingCopyState,
 } from "vs/workbench/services/workingCopy/common/storedFileWorkingCopy";
 import {
-	StoredFileWorkingCopyManager,
 	IStoredFileWorkingCopyManager,
 	IStoredFileWorkingCopyManagerResolveOptions,
+	StoredFileWorkingCopyManager,
 } from "vs/workbench/services/workingCopy/common/storedFileWorkingCopyManager";
 import {
 	IUntitledFileWorkingCopy,
@@ -51,27 +68,10 @@ import {
 	IUntitledFileWorkingCopyManager,
 	UntitledFileWorkingCopyManager,
 } from "vs/workbench/services/workingCopy/common/untitledFileWorkingCopyManager";
-import { IWorkingCopyFileService } from "vs/workbench/services/workingCopy/common/workingCopyFileService";
-import { IBaseFileWorkingCopyManager } from "vs/workbench/services/workingCopy/common/abstractFileWorkingCopyManager";
-import { IFileWorkingCopy } from "vs/workbench/services/workingCopy/common/fileWorkingCopy";
-import { ILabelService } from "vs/platform/label/common/label";
-import { ILogService } from "vs/platform/log/common/log";
-import { INotificationService } from "vs/platform/notification/common/notification";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { IElevatedFileService } from "vs/workbench/services/files/common/elevatedFileService";
-import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
-import { ILifecycleService } from "vs/workbench/services/lifecycle/common/lifecycle";
 import { IWorkingCopyBackupService } from "vs/workbench/services/workingCopy/common/workingCopyBackup";
 import { IWorkingCopyEditorService } from "vs/workbench/services/workingCopy/common/workingCopyEditorService";
+import { IWorkingCopyFileService } from "vs/workbench/services/workingCopy/common/workingCopyFileService";
 import { IWorkingCopyService } from "vs/workbench/services/workingCopy/common/workingCopyService";
-import { Schemas } from "vs/base/common/network";
-import {
-	IDecorationData,
-	IDecorationsProvider,
-	IDecorationsService,
-} from "vs/workbench/services/decorations/common/decorations";
-import { Codicon } from "vs/base/common/codicons";
-import { listErrorForeground } from "vs/platform/theme/common/colorRegistry";
 
 export interface IFileWorkingCopyManager<
 	S extends IStoredFileWorkingCopyModel,
@@ -107,7 +107,7 @@ export interface IFileWorkingCopyManager<
 	 */
 	resolve(
 		resource: URI,
-		options?: IStoredFileWorkingCopyManagerResolveOptions
+		options?: IStoredFileWorkingCopyManagerResolveOptions,
 	): Promise<IStoredFileWorkingCopy<S>>;
 
 	/**
@@ -116,7 +116,7 @@ export interface IFileWorkingCopyManager<
 	 * Note: Callers must `dispose` the working copy when no longer needed.
 	 */
 	resolve(
-		options?: INewUntitledFileWorkingCopyOptions
+		options?: INewUntitledFileWorkingCopyOptions,
 	): Promise<IUntitledFileWorkingCopy<U>>;
 
 	/**
@@ -127,7 +127,7 @@ export interface IFileWorkingCopyManager<
 	 * Note: Callers must `dispose` the working copy when no longer needed.
 	 */
 	resolve(
-		options?: INewUntitledFileWorkingCopyWithAssociatedResourceOptions
+		options?: INewUntitledFileWorkingCopyWithAssociatedResourceOptions,
 	): Promise<IUntitledFileWorkingCopy<U>>;
 
 	/**
@@ -138,7 +138,7 @@ export interface IFileWorkingCopyManager<
 	 * Note: Callers must `dispose` the working copy when no longer needed.
 	 */
 	resolve(
-		options?: INewOrExistingUntitledFileWorkingCopyOptions
+		options?: INewOrExistingUntitledFileWorkingCopyOptions,
 	): Promise<IUntitledFileWorkingCopy<U>>;
 
 	/**
@@ -166,12 +166,12 @@ export interface IFileWorkingCopyManager<
 	saveAs(
 		source: URI,
 		target: URI,
-		options?: ISaveOptions
+		options?: ISaveOptions,
 	): Promise<IStoredFileWorkingCopy<S> | undefined>;
 	saveAs(
 		source: URI,
 		target: undefined,
-		options?: IFileWorkingCopySaveAsOptions
+		options?: IFileWorkingCopySaveAsOptions,
 	): Promise<IStoredFileWorkingCopy<S> | undefined>;
 }
 
@@ -195,12 +195,12 @@ export class FileWorkingCopyManager<
 	private static readonly FILE_WORKING_COPY_SAVE_CREATE_SOURCE =
 		SaveSourceRegistry.registerSource(
 			"fileWorkingCopyCreate.source",
-			localize("fileWorkingCopyCreate.source", "File Created")
+			localize("fileWorkingCopyCreate.source", "File Created"),
 		);
 	private static readonly FILE_WORKING_COPY_SAVE_REPLACE_SOURCE =
 		SaveSourceRegistry.registerSource(
 			"fileWorkingCopyReplace.source",
-			localize("fileWorkingCopyReplace.source", "File Replaced")
+			localize("fileWorkingCopyReplace.source", "File Replaced"),
 		);
 
 	readonly stored: IStoredFileWorkingCopyManager<S>;
@@ -300,16 +300,16 @@ export class FileWorkingCopyManager<
 			new (class extends Disposable implements IDecorationsProvider {
 				readonly label = localize(
 					"fileWorkingCopyDecorations",
-					"File Working Copy Decorations"
+					"File Working Copy Decorations",
 				);
 
 				private readonly _onDidChange = this._register(
-					new Emitter<URI[]>()
+					new Emitter<URI[]>(),
 				);
 				readonly onDidChange = this._onDidChange.event;
 
 				constructor(
-					private readonly stored: IStoredFileWorkingCopyManager<S>
+					private readonly stored: IStoredFileWorkingCopyManager<S>,
 				) {
 					super();
 
@@ -323,12 +323,12 @@ export class FileWorkingCopyManager<
 							if (
 								workingCopy.isReadonly() ||
 								workingCopy.hasState(
-									StoredFileWorkingCopyState.ORPHAN
+									StoredFileWorkingCopyState.ORPHAN,
 								)
 							) {
 								this._onDidChange.fire([workingCopy.resource]);
 							}
-						})
+						}),
 					);
 
 					// Removals: once a stored working copy is no longer
@@ -337,20 +337,20 @@ export class FileWorkingCopyManager<
 					// have no way of updating the decoration anymore.
 					this._register(
 						this.stored.onDidRemove((workingCopyUri) =>
-							this._onDidChange.fire([workingCopyUri])
-						)
+							this._onDidChange.fire([workingCopyUri]),
+						),
 					);
 
 					// Changes
 					this._register(
 						this.stored.onDidChangeReadonly((workingCopy) =>
-							this._onDidChange.fire([workingCopy.resource])
-						)
+							this._onDidChange.fire([workingCopy.resource]),
+						),
 					);
 					this._register(
 						this.stored.onDidChangeOrphaned((workingCopy) =>
-							this._onDidChange.fire([workingCopy.resource])
-						)
+							this._onDidChange.fire([workingCopy.resource]),
+						),
 					);
 				}
 
@@ -362,7 +362,7 @@ export class FileWorkingCopyManager<
 
 					const isReadonly = workingCopy.isReadonly();
 					const isOrphaned = workingCopy.hasState(
-						StoredFileWorkingCopyState.ORPHAN
+						StoredFileWorkingCopyState.ORPHAN,
 					);
 
 					// Readonly + Orphaned
@@ -373,7 +373,7 @@ export class FileWorkingCopyManager<
 							strikethrough: true,
 							tooltip: localize(
 								"readonlyAndDeleted",
-								"Deleted, Read-only"
+								"Deleted, Read-only",
 							),
 						};
 					}
@@ -397,11 +397,11 @@ export class FileWorkingCopyManager<
 
 					return undefined;
 				}
-			})(this.stored)
+			})(this.stored),
 		);
 
 		this._register(
-			this.decorationsService.registerDecorationsProvider(provider)
+			this.decorationsService.registerDecorationsProvider(provider),
 		);
 	}
 
@@ -417,7 +417,7 @@ export class FileWorkingCopyManager<
 	}
 
 	get(
-		resource: URI
+		resource: URI,
 	): IUntitledFileWorkingCopy<U> | IStoredFileWorkingCopy<S> | undefined {
 		return this.stored.get(resource) ?? this.untitled.get(resource);
 	}
@@ -427,17 +427,17 @@ export class FileWorkingCopyManager<
 	//#region resolve
 
 	resolve(
-		options?: INewUntitledFileWorkingCopyOptions
+		options?: INewUntitledFileWorkingCopyOptions,
 	): Promise<IUntitledFileWorkingCopy<U>>;
 	resolve(
-		options?: INewUntitledFileWorkingCopyWithAssociatedResourceOptions
+		options?: INewUntitledFileWorkingCopyWithAssociatedResourceOptions,
 	): Promise<IUntitledFileWorkingCopy<U>>;
 	resolve(
-		options?: INewOrExistingUntitledFileWorkingCopyOptions
+		options?: INewOrExistingUntitledFileWorkingCopyOptions,
 	): Promise<IUntitledFileWorkingCopy<U>>;
 	resolve(
 		resource: URI,
-		options?: IStoredFileWorkingCopyResolveOptions
+		options?: IStoredFileWorkingCopyResolveOptions,
 	): Promise<IStoredFileWorkingCopy<S>>;
 	resolve(
 		arg1?:
@@ -445,7 +445,7 @@ export class FileWorkingCopyManager<
 			| INewUntitledFileWorkingCopyOptions
 			| INewUntitledFileWorkingCopyWithAssociatedResourceOptions
 			| INewOrExistingUntitledFileWorkingCopyOptions,
-		arg2?: IStoredFileWorkingCopyResolveOptions
+		arg2?: IStoredFileWorkingCopyResolveOptions,
 	): Promise<IUntitledFileWorkingCopy<U> | IStoredFileWorkingCopy<S>> {
 		if (URI.isUri(arg1)) {
 			// Untitled: via untitled manager
@@ -469,7 +469,7 @@ export class FileWorkingCopyManager<
 	async saveAs(
 		source: URI,
 		target?: URI,
-		options?: IFileWorkingCopySaveAsOptions
+		options?: IFileWorkingCopySaveAsOptions,
 	): Promise<IStoredFileWorkingCopy<S> | undefined> {
 		// Get to target resource
 		if (!target) {
@@ -482,9 +482,9 @@ export class FileWorkingCopyManager<
 			} else {
 				target = await this.fileDialogService.pickFileToSave(
 					await this.suggestSavePath(
-						options?.suggestedTarget ?? source
+						options?.suggestedTarget ?? source,
 					),
-					options?.availableFileSystems
+					options?.availableFileSystems,
 				);
 			}
 		}
@@ -496,10 +496,10 @@ export class FileWorkingCopyManager<
 		// Ensure target is not marked as readonly and prompt otherwise
 		if (this.filesConfigurationService.isReadonly(target)) {
 			const confirmed = await this.confirmMakeWriteable(target);
-			if (!confirmed) {
-				return;
-			} else {
+			if (confirmed) {
 				this.filesConfigurationService.updateReadonly(target, false);
+			} else {
+				return;
 			}
 		}
 
@@ -525,7 +525,7 @@ export class FileWorkingCopyManager<
 			// Move via working copy file service to enable participants
 			await this.workingCopyFileService.move(
 				[{ file: { source, target } }],
-				CancellationToken.None
+				CancellationToken.None,
 			);
 
 			// At this point we don't know whether we have a
@@ -543,7 +543,7 @@ export class FileWorkingCopyManager<
 
 	private async doSave(
 		resource: URI,
-		options?: ISaveOptions
+		options?: ISaveOptions,
 	): Promise<IStoredFileWorkingCopy<S> | undefined> {
 		// Save is only possible with stored file working copies,
 		// any other have to go via `saveAs` flow.
@@ -561,7 +561,7 @@ export class FileWorkingCopyManager<
 	private async doSaveAs(
 		source: URI,
 		target: URI,
-		options?: IFileWorkingCopySaveAsOptions
+		options?: IFileWorkingCopySaveAsOptions,
 	): Promise<IStoredFileWorkingCopy<S> | undefined> {
 		let sourceContents: VSBufferReadableStream;
 
@@ -570,7 +570,7 @@ export class FileWorkingCopyManager<
 		const sourceWorkingCopy = this.get(source);
 		if (sourceWorkingCopy?.isResolved()) {
 			sourceContents = await sourceWorkingCopy.model.snapshot(
-				CancellationToken.None
+				CancellationToken.None,
 			);
 		}
 
@@ -597,8 +597,8 @@ export class FileWorkingCopyManager<
 				toLocalResource(
 					sourceWorkingCopy.resource,
 					this.environmentService.remoteAuthority,
-					this.pathService.defaultUriScheme
-				)
+					this.pathService.defaultUriScheme,
+				),
 			)
 		) {
 			const overwrite = await this.confirmOverwrite(target);
@@ -610,7 +610,7 @@ export class FileWorkingCopyManager<
 		// Take over content from source to target
 		await targetStoredFileWorkingCopy.model?.update(
 			sourceContents,
-			CancellationToken.None
+			CancellationToken.None,
 		);
 
 		// Set source options depending on target exists or not
@@ -649,7 +649,7 @@ export class FileWorkingCopyManager<
 
 	private async doResolveSaveTarget(
 		source: URI,
-		target: URI
+		target: URI,
 	): Promise<{
 		targetFileExists: boolean;
 		targetStoredFileWorkingCopy: IStoredFileWorkingCopy<S>;
@@ -671,7 +671,7 @@ export class FileWorkingCopyManager<
 			if (!targetFileExists) {
 				await this.workingCopyFileService.create(
 					[{ resource: target }],
-					CancellationToken.None
+					CancellationToken.None,
 				);
 			}
 
@@ -700,20 +700,20 @@ export class FileWorkingCopyManager<
 			message: localize(
 				"confirmOverwrite",
 				"'{0}' already exists. Do you want to replace it?",
-				basename(resource)
+				basename(resource),
 			),
 			detail: localize(
 				"overwriteIrreversible",
 				"A file or folder with the name '{0}' already exists in the folder '{1}'. Replacing it will overwrite its current contents.",
 				basename(resource),
-				basename(dirname(resource))
+				basename(dirname(resource)),
 			),
 			primaryButton: localize(
 				{
 					key: "replaceButtonLabel",
 					comment: ["&& denotes a mnemonic"],
 				},
-				"&&Replace"
+				"&&Replace",
 			),
 		});
 
@@ -726,18 +726,18 @@ export class FileWorkingCopyManager<
 			message: localize(
 				"confirmMakeWriteable",
 				"'{0}' is marked as read-only. Do you want to save anyway?",
-				basename(resource)
+				basename(resource),
 			),
 			detail: localize(
 				"confirmMakeWriteableDetail",
-				"Paths can be configured as read-only via settings."
+				"Paths can be configured as read-only via settings.",
 			),
 			primaryButton: localize(
 				{
 					key: "makeWriteableButtonLabel",
 					comment: ["&& denotes a mnemonic"],
 				},
-				"&&Save Anyway"
+				"&&Save Anyway",
 			),
 		});
 
@@ -759,7 +759,7 @@ export class FileWorkingCopyManager<
 			return toLocalResource(
 				resource,
 				this.environmentService.remoteAuthority,
-				this.pathService.defaultUriScheme
+				this.pathService.defaultUriScheme,
 			);
 		}
 
@@ -771,7 +771,7 @@ export class FileWorkingCopyManager<
 			if (
 				await this.pathService.hasValidBasename(
 					candidatePath,
-					workingCopy.name
+					workingCopy.name,
 				)
 			) {
 				return candidatePath;

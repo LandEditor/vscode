@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { status } from "vs/base/browser/ui/aria/aria";
 import { CancellationToken } from "vs/base/common/cancellation";
 import { Event } from "vs/base/common/event";
 import { createSingleCallFunction } from "vs/base/common/functional";
@@ -13,6 +14,7 @@ import {
 	toDisposable,
 } from "vs/base/common/lifecycle";
 import { getCodeEditor, isDiffEditor } from "vs/editor/browser/editorBrowser";
+import { overviewRulerRangeHighlight } from "vs/editor/common/core/editorColorRegistry";
 import { IRange } from "vs/editor/common/core/range";
 import {
 	IDiffEditor,
@@ -24,7 +26,6 @@ import {
 	ITextModel,
 	OverviewRulerLane,
 } from "vs/editor/common/model";
-import { overviewRulerRangeHighlight } from "vs/editor/common/core/editorColorRegistry";
 import { IQuickAccessProvider } from "vs/platform/quickinput/common/quickAccess";
 import {
 	IKeyMods,
@@ -32,7 +33,6 @@ import {
 	IQuickPickItem,
 } from "vs/platform/quickinput/common/quickInput";
 import { themeColorFromId } from "vs/platform/theme/common/themeService";
-import { status } from "vs/base/browser/ui/aria/aria";
 
 interface IEditorLineDecoration {
 	readonly rangeHighlightId: string;
@@ -70,7 +70,7 @@ export abstract class AbstractEditorNavigationQuickAccessProvider
 
 	provide(
 		picker: IQuickPick<IQuickPickItem>,
-		token: CancellationToken
+		token: CancellationToken,
 	): IDisposable {
 		const disposables = new DisposableStore();
 
@@ -96,7 +96,7 @@ export abstract class AbstractEditorNavigationQuickAccessProvider
 
 				// Add new
 				pickerDisposable.value = this.doProvide(picker, token);
-			})
+			}),
 		);
 
 		return disposables;
@@ -104,7 +104,7 @@ export abstract class AbstractEditorNavigationQuickAccessProvider
 
 	private doProvide(
 		picker: IQuickPick<IQuickPickItem>,
-		token: CancellationToken
+		token: CancellationToken,
 	): IDisposable {
 		const disposables = new DisposableStore();
 
@@ -127,7 +127,7 @@ export abstract class AbstractEditorNavigationQuickAccessProvider
 					codeEditor.onDidChangeCursorPosition(() => {
 						lastKnownEditorViewState =
 							editor.saveViewState() ?? undefined;
-					})
+					}),
 				);
 
 				context.restoreViewState = () => {
@@ -141,8 +141,8 @@ export abstract class AbstractEditorNavigationQuickAccessProvider
 
 				disposables.add(
 					createSingleCallFunction(token.onCancellationRequested)(
-						() => context.restoreViewState?.()
-					)
+						() => context.restoreViewState?.(),
+					),
 				);
 			}
 
@@ -174,7 +174,7 @@ export abstract class AbstractEditorNavigationQuickAccessProvider
 	protected abstract provideWithTextEditor(
 		context: IQuickAccessTextEditorContext,
 		picker: IQuickPick<IQuickPickItem>,
-		token: CancellationToken
+		token: CancellationToken,
 	): IDisposable;
 
 	/**
@@ -182,7 +182,7 @@ export abstract class AbstractEditorNavigationQuickAccessProvider
 	 */
 	protected abstract provideWithoutTextEditor(
 		picker: IQuickPick<IQuickPickItem>,
-		token: CancellationToken
+		token: CancellationToken,
 	): IDisposable;
 
 	protected gotoLocation(
@@ -192,7 +192,7 @@ export abstract class AbstractEditorNavigationQuickAccessProvider
 			keyMods: IKeyMods;
 			forceSideBySide?: boolean;
 			preserveFocus?: boolean;
-		}
+		},
 	): void {
 		editor.setSelection(options.range);
 		editor.revealRangeInCenter(options.range, ScrollType.Smooth);
@@ -238,10 +238,10 @@ export abstract class AbstractEditorNavigationQuickAccessProvider
 			const deleteDecorations: string[] = [];
 			if (this.rangeHighlightDecorationId) {
 				deleteDecorations.push(
-					this.rangeHighlightDecorationId.overviewRulerDecorationId
+					this.rangeHighlightDecorationId.overviewRulerDecorationId,
 				);
 				deleteDecorations.push(
-					this.rangeHighlightDecorationId.rangeHighlightId
+					this.rangeHighlightDecorationId.rangeHighlightId,
 				);
 
 				this.rangeHighlightDecorationId = undefined;
@@ -266,7 +266,7 @@ export abstract class AbstractEditorNavigationQuickAccessProvider
 						description: "quick-access-range-highlight-overview",
 						overviewRuler: {
 							color: themeColorFromId(
-								overviewRulerRangeHighlight
+								overviewRulerRangeHighlight,
 							),
 							position: OverviewRulerLane.Full,
 						},
@@ -277,7 +277,7 @@ export abstract class AbstractEditorNavigationQuickAccessProvider
 			const [rangeHighlightId, overviewRulerDecorationId] =
 				changeAccessor.deltaDecorations(
 					deleteDecorations,
-					newDecorations
+					newDecorations,
 				);
 
 			this.rangeHighlightDecorationId = {
@@ -296,7 +296,7 @@ export abstract class AbstractEditorNavigationQuickAccessProvider
 						rangeHighlightDecorationId.overviewRulerDecorationId,
 						rangeHighlightDecorationId.rangeHighlightId,
 					],
-					[]
+					[],
 				);
 			});
 

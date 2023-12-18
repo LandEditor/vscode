@@ -10,8 +10,8 @@ import {
 	MainContext,
 	MainThreadAiEmbeddingVectorShape,
 } from "vs/workbench/api/common/extHost.protocol";
-import type { CancellationToken, EmbeddingVectorProvider } from "vscode";
 import { Disposable } from "vs/workbench/api/common/extHostTypes";
+import type { CancellationToken, EmbeddingVectorProvider } from "vscode";
 
 export class ExtHostAiEmbeddingVector implements ExtHostAiEmbeddingVectorShape {
 	private _AiEmbeddingVectorProviders: Map<number, EmbeddingVectorProvider> =
@@ -22,14 +22,14 @@ export class ExtHostAiEmbeddingVector implements ExtHostAiEmbeddingVectorShape {
 
 	constructor(mainContext: IMainContext) {
 		this._proxy = mainContext.getProxy(
-			MainContext.MainThreadAiEmbeddingVector
+			MainContext.MainThreadAiEmbeddingVector,
 		);
 	}
 
 	async $provideAiEmbeddingVector(
 		handle: number,
 		strings: string[],
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<number[][]> {
 		if (this._AiEmbeddingVectorProviders.size === 0) {
 			throw new Error("No embedding vector providers registered");
@@ -50,7 +50,7 @@ export class ExtHostAiEmbeddingVector implements ExtHostAiEmbeddingVectorShape {
 	registerEmbeddingVectorProvider(
 		extension: IExtensionDescription,
 		model: string,
-		provider: EmbeddingVectorProvider
+		provider: EmbeddingVectorProvider,
 	): Disposable {
 		const handle = this._nextHandle;
 		this._nextHandle++;

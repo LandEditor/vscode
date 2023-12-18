@@ -22,8 +22,8 @@ class FileReferencesCommand implements Command {
 		if (this.client.apiVersion.lt(FileReferencesCommand.minVersion)) {
 			vscode.window.showErrorMessage(
 				vscode.l10n.t(
-					"Find file references failed. Requires TypeScript 4.2+."
-				)
+					"Find file references failed. Requires TypeScript 4.2+.",
+				),
 			);
 			return;
 		}
@@ -32,8 +32,8 @@ class FileReferencesCommand implements Command {
 		if (!resource) {
 			vscode.window.showErrorMessage(
 				vscode.l10n.t(
-					"Find file references failed. No resource provided."
-				)
+					"Find file references failed. No resource provided.",
+				),
 			);
 			return;
 		}
@@ -42,8 +42,8 @@ class FileReferencesCommand implements Command {
 		if (!isSupportedLanguageMode(document)) {
 			vscode.window.showErrorMessage(
 				vscode.l10n.t(
-					"Find file references failed. Unsupported file type."
-				)
+					"Find file references failed. Unsupported file type.",
+				),
 			);
 			return;
 		}
@@ -51,7 +51,9 @@ class FileReferencesCommand implements Command {
 		const openedFiledPath = this.client.toOpenTsFilePath(document);
 		if (!openedFiledPath) {
 			vscode.window.showErrorMessage(
-				vscode.l10n.t("Find file references failed. Unknown file type.")
+				vscode.l10n.t(
+					"Find file references failed. Unknown file type.",
+				),
 			);
 			return;
 		}
@@ -67,7 +69,7 @@ class FileReferencesCommand implements Command {
 					{
 						file: openedFiledPath,
 					},
-					token
+					token,
 				);
 				if (response.type !== "response" || !response.body) {
 					return;
@@ -77,8 +79,8 @@ class FileReferencesCommand implements Command {
 					(reference) =>
 						typeConverters.Location.fromTextSpan(
 							this.client.toResource(reference.file),
-							reference
-						)
+							reference,
+						),
 				);
 
 				const config = vscode.workspace.getConfiguration("references");
@@ -91,29 +93,29 @@ class FileReferencesCommand implements Command {
 						"editor.action.showReferences",
 						resource,
 						new vscode.Position(0, 0),
-						locations
+						locations,
 					);
 				} finally {
 					await config.update(
 						"preferredLocation",
 						existingSetting?.workspaceFolderValue ??
-							existingSetting?.workspaceValue
+							existingSetting?.workspaceValue,
 					);
 				}
-			}
+			},
 		);
 	}
 }
 
 export function register(
 	client: ITypeScriptServiceClient,
-	commandManager: CommandManager
+	commandManager: CommandManager,
 ) {
 	function updateContext() {
 		vscode.commands.executeCommand(
 			"setContext",
 			FileReferencesCommand.context,
-			client.apiVersion.gte(FileReferencesCommand.minVersion)
+			client.apiVersion.gte(FileReferencesCommand.minVersion),
 		);
 	}
 	updateContext();

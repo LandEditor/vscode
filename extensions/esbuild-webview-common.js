@@ -62,7 +62,7 @@ async function tryBuild(options, didBuild) {
  * @param {string[]} args
  * @param {(outDir: string) => unknown} [didBuild]
  */
-module.exports.run = async function (config, args, didBuild) {
+module.exports.run = async (config, args, didBuild) => {
 	let outdir = config.outdir;
 	const outputRootIndex = args.indexOf("--outputRoot");
 	if (outputRootIndex >= 0) {
@@ -84,7 +84,7 @@ module.exports.run = async function (config, args, didBuild) {
 
 		const watcher = require("@parcel/watcher");
 		watcher.subscribe(config.srcDir, () =>
-			tryBuild(resolvedOptions, didBuild)
+			tryBuild(resolvedOptions, didBuild),
 		);
 	} else {
 		return build(resolvedOptions, didBuild).catch(() => process.exit(1));

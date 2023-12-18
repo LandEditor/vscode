@@ -21,7 +21,7 @@ export class DocumentStreamReader {
 	constructor(
 		document: TextDocument,
 		pos?: number,
-		limit?: [number, number]
+		limit?: [number, number],
 	) {
 		this.document = document;
 		this.start = this.pos = pos ? pos : 0;

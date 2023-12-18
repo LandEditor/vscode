@@ -3,11 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./share";
 import { CancellationTokenSource } from "vs/base/common/cancellation";
 import { Codicon } from "vs/base/common/codicons";
 import { MarkdownString } from "vs/base/common/htmlContent";
 import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
+import { DisposableStore } from "vs/base/common/lifecycle";
+import "vs/css!./share";
+import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
 import { localize } from "vs/nls";
 import {
 	Action2,
@@ -17,11 +19,11 @@ import {
 } from "vs/platform/actions/common/actions";
 import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
 import {
-	EditorResourceAccessor,
-	SideBySideEditor,
-} from "vs/workbench/common/editor";
+	Extensions as ConfigurationExtensions,
+	IConfigurationRegistry,
+} from "vs/platform/configuration/common/configurationRegistry";
+import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
 import { IDialogService } from "vs/platform/dialogs/common/dialogs";
 import {
 	InstantiationType,
@@ -31,31 +33,29 @@ import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation
 import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
 import { Severity } from "vs/platform/notification/common/notification";
 import { IOpenerService } from "vs/platform/opener/common/opener";
+import {
+	IProgressService,
+	ProgressLocation,
+} from "vs/platform/progress/common/progress";
 import { Registry } from "vs/platform/registry/common/platform";
 import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import { workbenchConfigurationNodeBase } from "vs/workbench/common/configuration";
 import { WorkspaceFolderCountContext } from "vs/workbench/common/contextkeys";
 import {
 	Extensions,
 	IWorkbenchContributionsRegistry,
 } from "vs/workbench/common/contributions";
 import {
+	EditorResourceAccessor,
+	SideBySideEditor,
+} from "vs/workbench/common/editor";
+import {
 	ShareProviderCountContext,
 	ShareService,
 } from "vs/workbench/contrib/share/browser/shareService";
 import { IShareService } from "vs/workbench/contrib/share/common/share";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import {
-	IProgressService,
-	ProgressLocation,
-} from "vs/platform/progress/common/progress";
-import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
-import {
-	IConfigurationRegistry,
-	Extensions as ConfigurationExtensions,
-} from "vs/platform/configuration/common/configurationRegistry";
-import { workbenchConfigurationNodeBase } from "vs/workbench/common/configuration";
-import { DisposableStore } from "vs/base/common/lifecycle";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 const targetMenus = [
 	MenuId.EditorContextShare,
@@ -130,7 +130,7 @@ class ShareWorkbenchContribution {
 							icon: Codicon.linkExternal,
 							precondition: ContextKeyExpr.and(
 								ShareProviderCountContext.notEqualsTo(0),
-								WorkspaceFolderCountContext.notEqualsTo(0)
+								WorkspaceFolderCountContext.notEqualsTo(0),
 							),
 							keybinding: {
 								weight: KeybindingWeight.WorkbenchContrib,
@@ -155,7 +155,7 @@ class ShareWorkbenchContribution {
 									{
 										supportSideBySide:
 											SideBySideEditor.PRIMARY,
-									}
+									},
 								)) ??
 							accessor
 								.get(IWorkspaceContextService)
@@ -176,14 +176,14 @@ class ShareWorkbenchContribution {
 								location: ProgressLocation.Window,
 								detail: localize(
 									"generating link",
-									"Generating link..."
+									"Generating link...",
 								),
 							},
 							async () =>
 								shareService.provideShare(
 									{ resourceUri, selection },
-									new CancellationTokenSource().token
-								)
+									new CancellationTokenSource().token,
+								),
 						);
 
 						if (result) {
@@ -196,19 +196,19 @@ class ShareWorkbenchContribution {
 								message: isResultText
 									? localize(
 											"shareTextSuccess",
-											"Copied text to clipboard!"
-										)
+											"Copied text to clipboard!",
+									  )
 									: localize(
 											"shareSuccess",
-											"Copied link to clipboard!"
-										),
+											"Copied link to clipboard!",
+									  ),
 								custom: {
 									icon: Codicon.check,
 									markdownDetails: [
 										{
 											markdown: new MarkdownString(
 												`<div aria-label='${uriText}'>${uriText}</div>`,
-												{ supportHtml: true }
+												{ supportHtml: true },
 											),
 											classes: [
 												isResultText
@@ -225,7 +225,7 @@ class ShareWorkbenchContribution {
 											{
 												label: localize(
 													"open link",
-													"Open Link"
+													"Open Link",
 												),
 												run: () => {
 													urlService.open(result, {
@@ -233,12 +233,12 @@ class ShareWorkbenchContribution {
 													});
 												},
 											},
-										],
+									  ],
 							});
 						}
 					}
-				}
-			)
+				},
+			),
 		);
 
 		const actions = this.shareService.getShareActions();
@@ -246,7 +246,7 @@ class ShareWorkbenchContribution {
 			for (const action of actions) {
 				// todo@joyceerhl avoid duplicates
 				this._disposables.add(
-					MenuRegistry.appendMenuItem(menuId, action)
+					MenuRegistry.appendMenuItem(menuId, action),
 				);
 			}
 		}
@@ -258,11 +258,11 @@ const workbenchContributionsRegistry =
 	Registry.as<IWorkbenchContributionsRegistry>(Extensions.Workbench);
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	ShareWorkbenchContribution,
-	LifecyclePhase.Eventually
+	LifecyclePhase.Eventually,
 );
 
 Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration
+	ConfigurationExtensions.Configuration,
 ).registerConfiguration({
 	...workbenchConfigurationNodeBase,
 	properties: {
@@ -274,7 +274,7 @@ Registry.as<IConfigurationRegistry>(
 				"experimental.share.enabled",
 				"Controls whether to render the Share action next to the command center when {0} is {1}.",
 				"`#window.commandCenter#`",
-				"`true`"
+				"`true`",
 			),
 			restricted: false,
 		},

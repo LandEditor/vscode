@@ -3,11 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { InlineChatController } from "vs/workbench/contrib/inlineChat/browser/inlineChatController";
-import {
-	CTX_INLINE_CHAT_FOCUSED,
-	CTX_INLINE_CHAT_RESPONSE_FOCUSED,
-} from "vs/workbench/contrib/inlineChat/common/inlineChat";
+import { Disposable } from "vs/base/common/lifecycle";
+import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
+import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
 import {
 	AccessibilityVerbositySettingId,
 	AccessibleViewProviderId,
@@ -16,10 +14,12 @@ import {
 	AccessibleViewType,
 	IAccessibleViewService,
 } from "vs/workbench/contrib/accessibility/browser/accessibleView";
-import { Disposable } from "vs/base/common/lifecycle";
-import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
-import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
 import { AccessibleViewAction } from "vs/workbench/contrib/accessibility/browser/accessibleViewActions";
+import { InlineChatController } from "vs/workbench/contrib/inlineChat/browser/inlineChatController";
+import {
+	CTX_INLINE_CHAT_FOCUSED,
+	CTX_INLINE_CHAT_RESPONSE_FOCUSED,
+} from "vs/workbench/contrib/inlineChat/common/inlineChat";
 
 export class InlineChatAccessibleViewContribution extends Disposable {
 	static ID: "inlineChatAccessibleViewContribution";
@@ -31,7 +31,7 @@ export class InlineChatAccessibleViewContribution extends Disposable {
 				"inlineChat",
 				(accessor) => {
 					const accessibleViewService = accessor.get(
-						IAccessibleViewService
+						IAccessibleViewService,
 					);
 					const codeEditorService = accessor.get(ICodeEditorService);
 
@@ -66,9 +66,9 @@ export class InlineChatAccessibleViewContribution extends Disposable {
 				},
 				ContextKeyExpr.or(
 					CTX_INLINE_CHAT_FOCUSED,
-					CTX_INLINE_CHAT_RESPONSE_FOCUSED
-				)
-			)
+					CTX_INLINE_CHAT_RESPONSE_FOCUSED,
+				),
+			),
 		);
 	}
 }

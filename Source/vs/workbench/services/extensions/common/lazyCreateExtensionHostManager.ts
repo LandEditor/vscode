@@ -87,26 +87,26 @@ export class LazyCreateExtensionHostManager
 
 	private _createActual(reason: string): ExtensionHostManager {
 		this._logService.info(
-			`Creating lazy extension host (${this.friendyName}). Reason: ${reason}`
+			`Creating lazy extension host (${this.friendyName}). Reason: ${reason}`,
 		);
 		this._actual = this._register(
 			this._instantiationService.createInstance(
 				ExtensionHostManager,
 				this._extensionHost,
 				[],
-				this._internalExtensionService
-			)
+				this._internalExtensionService,
+			),
 		);
 		this._register(
 			this._actual.onDidChangeResponsiveState((e) =>
-				this._onDidChangeResponsiveState.fire(e)
-			)
+				this._onDidChangeResponsiveState.fire(e),
+			),
 		);
 		return this._actual;
 	}
 
 	private async _getOrCreateActualAndStart(
-		reason: string
+		reason: string,
 	): Promise<ExtensionHostManager> {
 		if (this._actual) {
 			// already created/started
@@ -116,7 +116,7 @@ export class LazyCreateExtensionHostManager
 		await actual.start(
 			this._lazyStartExtensions!.versionId,
 			this._lazyStartExtensions!.allExtensions,
-			this._lazyStartExtensions!.myExtensions
+			this._lazyStartExtensions!.myExtensions,
 		);
 		return actual;
 	}
@@ -128,12 +128,12 @@ export class LazyCreateExtensionHostManager
 		}
 	}
 	public representsRunningLocation(
-		runningLocation: ExtensionRunningLocation
+		runningLocation: ExtensionRunningLocation,
 	): boolean {
 		return this._extensionHost.runningLocation.equals(runningLocation);
 	}
 	public async deltaExtensions(
-		extensionsDelta: IExtensionDescriptionDelta
+		extensionsDelta: IExtensionDescriptionDelta,
 	): Promise<void> {
 		await this._startCalled.wait();
 		if (this._actual) {
@@ -145,13 +145,13 @@ export class LazyCreateExtensionHostManager
 				`contains ${
 					extensionsDelta.myToAdd.length
 				} new extension(s) (installed or enabled): ${extensionsDelta.myToAdd.map(
-					(extId) => extId.value
-				)}`
+					(extId) => extId.value,
+				)}`,
 			);
 			await actual.start(
 				this._lazyStartExtensions!.versionId,
 				this._lazyStartExtensions!.allExtensions,
-				this._lazyStartExtensions!.myExtensions
+				this._lazyStartExtensions!.myExtensions,
 			);
 			return;
 		}
@@ -164,7 +164,7 @@ export class LazyCreateExtensionHostManager
 	}
 	public async activate(
 		extension: ExtensionIdentifier,
-		reason: ExtensionActivationReason
+		reason: ExtensionActivationReason,
 	): Promise<boolean> {
 		await this._startCalled.wait();
 		if (this._actual) {
@@ -174,14 +174,14 @@ export class LazyCreateExtensionHostManager
 	}
 	public async activateByEvent(
 		activationEvent: string,
-		activationKind: ActivationKind
+		activationKind: ActivationKind,
 	): Promise<void> {
 		if (activationKind === ActivationKind.Immediate) {
 			// this is an immediate request, so we cannot wait for start to be called
 			if (this._actual) {
 				return this._actual.activateByEvent(
 					activationEvent,
-					activationKind
+					activationKind,
 				);
 			}
 			return;
@@ -190,7 +190,7 @@ export class LazyCreateExtensionHostManager
 		if (this._actual) {
 			return this._actual.activateByEvent(
 				activationEvent,
-				activationKind
+				activationKind,
 			);
 		}
 	}
@@ -212,13 +212,13 @@ export class LazyCreateExtensionHostManager
 	}
 	public async resolveAuthority(
 		remoteAuthority: string,
-		resolveAttempt: number
+		resolveAttempt: number,
 	): Promise<IResolveAuthorityResult> {
 		await this._startCalled.wait();
 		if (this._actual) {
 			return this._actual.resolveAuthority(
 				remoteAuthority,
-				resolveAttempt
+				resolveAttempt,
 			);
 		}
 		return {
@@ -232,7 +232,7 @@ export class LazyCreateExtensionHostManager
 	}
 	public async getCanonicalURI(
 		remoteAuthority: string,
-		uri: URI
+		uri: URI,
 	): Promise<URI | null> {
 		await this._startCalled.wait();
 		if (this._actual) {
@@ -243,19 +243,19 @@ export class LazyCreateExtensionHostManager
 	public async start(
 		extensionRegistryVersionId: number,
 		allExtensions: IExtensionDescription[],
-		myExtensions: ExtensionIdentifier[]
+		myExtensions: ExtensionIdentifier[],
 	): Promise<void> {
 		if (myExtensions.length > 0) {
 			// there are actual extensions, so let's launch the extension host
 			const actual = this._createActual(
 				`contains ${
 					myExtensions.length
-				} extension(s): ${myExtensions.map((extId) => extId.value)}.`
+				} extension(s): ${myExtensions.map((extId) => extId.value)}.`,
 			);
 			const result = actual.start(
 				extensionRegistryVersionId,
 				allExtensions,
-				myExtensions
+				myExtensions,
 			);
 			this._startCalled.open();
 			return result;
@@ -264,7 +264,7 @@ export class LazyCreateExtensionHostManager
 		this._lazyStartExtensions = new ExtensionHostExtensions(
 			extensionRegistryVersionId,
 			allExtensions,
-			myExtensions
+			myExtensions,
 		);
 		this._startCalled.open();
 	}

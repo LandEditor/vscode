@@ -3,40 +3,40 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { Event } from "vs/base/common/event";
+import { DisposableStore } from "vs/base/common/lifecycle";
+import { URI } from "vs/base/common/uri";
+import { IDiffEditor, IEditor } from "vs/editor/common/editorCommon";
 import {
-	IResourceEditorInput,
 	IEditorOptions,
+	IResourceEditorInput,
 	IResourceEditorInputIdentifier,
 	ITextResourceEditorInput,
 } from "vs/platform/editor/common/editor";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import {
-	IEditorPane,
-	GroupIdentifier,
-	IUntitledTextResourceEditorInput,
-	IResourceDiffEditorInput,
-	ITextDiffEditorPane,
-	IEditorIdentifier,
-	ISaveOptions,
-	IRevertOptions,
 	EditorsOrder,
-	IVisibleEditorPane,
+	GroupIdentifier,
 	IEditorCloseEvent,
-	IUntypedEditorInput,
+	IEditorIdentifier,
+	IEditorPane,
 	IFindEditorOptions,
+	IResourceDiffEditorInput,
+	IRevertOptions,
+	ISaveOptions,
+	ITextDiffEditorPane,
+	IUntitledTextResourceEditorInput,
+	IUntypedEditorInput,
+	IVisibleEditorPane,
 } from "vs/workbench/common/editor";
+import { IGroupModelChangeEvent } from "vs/workbench/common/editor/editorGroupModel";
 import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import { Event } from "vs/base/common/event";
-import { IEditor, IDiffEditor } from "vs/editor/common/editorCommon";
 import {
 	ICloseEditorOptions,
 	IEditorGroup,
 	IEditorGroupsContainer,
 	isEditorGroup,
 } from "vs/workbench/services/editor/common/editorGroupsService";
-import { URI } from "vs/base/common/uri";
-import { IGroupModelChangeEvent } from "vs/workbench/common/editor/editorGroupModel";
-import { DisposableStore } from "vs/base/common/lifecycle";
 
 export const IEditorService = createDecorator<IEditorService>("editorService");
 
@@ -254,7 +254,7 @@ export interface IEditorService {
 	 */
 	getEditors(
 		order: EditorsOrder,
-		options?: { excludeSticky?: boolean }
+		options?: { excludeSticky?: boolean },
 	): readonly IEditorIdentifier[];
 
 	/**
@@ -276,7 +276,7 @@ export interface IEditorService {
 			| GroupIdentifier
 			| SIDE_GROUP_TYPE
 			| ACTIVE_GROUP_TYPE
-			| AUX_WINDOW_GROUP_TYPE
+			| AUX_WINDOW_GROUP_TYPE,
 	): Promise<IEditorPane | undefined>;
 	openEditor(
 		editor: ITextResourceEditorInput | IUntitledTextResourceEditorInput,
@@ -285,7 +285,7 @@ export interface IEditorService {
 			| GroupIdentifier
 			| SIDE_GROUP_TYPE
 			| ACTIVE_GROUP_TYPE
-			| AUX_WINDOW_GROUP_TYPE
+			| AUX_WINDOW_GROUP_TYPE,
 	): Promise<IEditorPane | undefined>;
 	openEditor(
 		editor: IResourceDiffEditorInput,
@@ -294,7 +294,7 @@ export interface IEditorService {
 			| GroupIdentifier
 			| SIDE_GROUP_TYPE
 			| ACTIVE_GROUP_TYPE
-			| AUX_WINDOW_GROUP_TYPE
+			| AUX_WINDOW_GROUP_TYPE,
 	): Promise<ITextDiffEditorPane | undefined>;
 	openEditor(
 		editor: IUntypedEditorInput,
@@ -303,7 +303,7 @@ export interface IEditorService {
 			| GroupIdentifier
 			| SIDE_GROUP_TYPE
 			| ACTIVE_GROUP_TYPE
-			| AUX_WINDOW_GROUP_TYPE
+			| AUX_WINDOW_GROUP_TYPE,
 	): Promise<IEditorPane | undefined>;
 
 	/**
@@ -326,7 +326,7 @@ export interface IEditorService {
 			| GroupIdentifier
 			| SIDE_GROUP_TYPE
 			| ACTIVE_GROUP_TYPE
-			| AUX_WINDOW_GROUP_TYPE
+			| AUX_WINDOW_GROUP_TYPE,
 	): Promise<IEditorPane | undefined>;
 
 	/**
@@ -348,7 +348,7 @@ export interface IEditorService {
 			| SIDE_GROUP_TYPE
 			| ACTIVE_GROUP_TYPE
 			| AUX_WINDOW_GROUP_TYPE,
-		options?: IOpenEditorsOptions
+		options?: IOpenEditorsOptions,
 	): Promise<readonly IEditorPane[]>;
 
 	/**
@@ -362,7 +362,7 @@ export interface IEditorService {
 	 */
 	replaceEditors(
 		replacements: IUntypedEditorReplacement[],
-		group: IEditorGroup | GroupIdentifier
+		group: IEditorGroup | GroupIdentifier,
 	): Promise<void>;
 
 	/**
@@ -385,7 +385,7 @@ export interface IEditorService {
 	 */
 	closeEditor(
 		editor: IEditorIdentifier,
-		options?: ICloseEditorOptions
+		options?: ICloseEditorOptions,
 	): Promise<void>;
 
 	/**
@@ -393,7 +393,7 @@ export interface IEditorService {
 	 */
 	closeEditors(
 		editors: readonly IEditorIdentifier[],
-		options?: ICloseEditorOptions
+		options?: ICloseEditorOptions,
 	): Promise<void>;
 
 	/**
@@ -407,11 +407,11 @@ export interface IEditorService {
 	 */
 	findEditors(
 		resource: URI,
-		options?: IFindEditorOptions
+		options?: IFindEditorOptions,
 	): readonly IEditorIdentifier[];
 	findEditors(
 		editor: IResourceEditorInputIdentifier,
-		options?: IFindEditorOptions
+		options?: IFindEditorOptions,
 	): readonly IEditorIdentifier[];
 
 	/**
@@ -419,7 +419,7 @@ export interface IEditorService {
 	 */
 	save(
 		editors: IEditorIdentifier | IEditorIdentifier[],
-		options?: ISaveEditorsOptions
+		options?: ISaveEditorsOptions,
 	): Promise<ISaveEditorsResult>;
 
 	/**
@@ -434,7 +434,7 @@ export interface IEditorService {
 	 */
 	revert(
 		editors: IEditorIdentifier | IEditorIdentifier[],
-		options?: IRevertOptions
+		options?: IRevertOptions,
 	): Promise<boolean>;
 
 	/**
@@ -451,6 +451,6 @@ export interface IEditorService {
 	 */
 	createScoped(
 		editorGroupsContainer: IEditorGroupsContainer | "main",
-		disposables: DisposableStore
+		disposables: DisposableStore,
 	): IEditorService;
 }

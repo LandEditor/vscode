@@ -71,7 +71,7 @@ abstract class AbstractUpdateService implements IUpdateService {
 	async checkForUpdates(explicit: boolean): Promise<void> {
 		this.logService.trace(
 			"update#checkForUpdates, state = ",
-			this.state.type
+			this.state.type,
 		);
 
 		if (this.state.type !== StateType.Idle) {
@@ -84,7 +84,7 @@ abstract class AbstractUpdateService implements IUpdateService {
 	async downloadUpdate(): Promise<void> {
 		this.logService.trace(
 			"update#downloadUpdate, state = ",
-			this.state.type
+			this.state.type,
 		);
 
 		if (this.state.type !== StateType.AvailableForDownload) {
@@ -115,7 +115,7 @@ abstract class AbstractUpdateService implements IUpdateService {
 	quitAndInstall(): Promise<void> {
 		this.logService.trace(
 			"update#quitAndInstall, state = ",
-			this.state.type
+			this.state.type,
 		);
 
 		if (this.state.type !== StateType.Ready) {
@@ -123,21 +123,21 @@ abstract class AbstractUpdateService implements IUpdateService {
 		}
 
 		this.logService.trace(
-			"update#quitAndInstall(): before lifecycle quit()"
+			"update#quitAndInstall(): before lifecycle quit()",
 		);
 
 		this.lifecycleMainService
 			.quit(true /* will restart */)
 			.then((vetod) => {
 				this.logService.trace(
-					`update#quitAndInstall(): after lifecycle quit() with veto: ${vetod}`
+					`update#quitAndInstall(): after lifecycle quit() with veto: ${vetod}`,
 				);
 				if (vetod) {
 					return;
 				}
 
 				this.logService.trace(
-					"update#quitAndInstall(): running raw#quitAndInstall()"
+					"update#quitAndInstall(): running raw#quitAndInstall()",
 				);
 				this.doQuitAndInstall();
 			});
@@ -205,7 +205,7 @@ export class SnapUpdateService extends AbstractUpdateService {
 						State.Ready({
 							version: "something",
 							productVersion: "something",
-						})
+						}),
 					);
 				} else {
 					this.telemetryService.publicLog2<
@@ -223,13 +223,13 @@ export class SnapUpdateService extends AbstractUpdateService {
 					UpdateNotAvailableClassification
 				>("update:notAvailable", { explicit: false });
 				this.setState(State.Idle(UpdateType.Snap, err.message || err));
-			}
+			},
 		);
 	}
 
 	protected override doQuitAndInstall(): void {
 		this.logService.trace(
-			"update#quitAndInstall(): running raw#quitAndInstall()"
+			"update#quitAndInstall(): running raw#quitAndInstall()",
 		);
 
 		// Allow 3 seconds for VS Code to close
@@ -243,8 +243,8 @@ export class SnapUpdateService extends AbstractUpdateService {
 	private async isUpdateAvailable(): Promise<boolean> {
 		const resolvedCurrentSnapPath = await new Promise<string>((c, e) =>
 			realpath(`${path.dirname(this.snap)}/current`, (err, r) =>
-				err ? e(err) : c(r)
-			)
+				err ? e(err) : c(r),
+			),
 		);
 		const currentRevision = path.basename(resolvedCurrentSnapPath);
 		return this.snapRevision !== currentRevision;
@@ -253,7 +253,7 @@ export class SnapUpdateService extends AbstractUpdateService {
 	isLatestVersion(): Promise<boolean | undefined> {
 		return this.isUpdateAvailable().then(undefined, (err) => {
 			this.logService.error(
-				"update#checkForSnapUpdate(): Could not get realpath of application."
+				"update#checkForSnapUpdate(): Could not get realpath of application.",
 			);
 			return undefined;
 		});

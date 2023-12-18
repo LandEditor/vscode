@@ -3,17 +3,28 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./outlinePane";
 import * as dom from "vs/base/browser/dom";
 import { ProgressBar } from "vs/base/browser/ui/progressbar/progressbar";
-import { TimeoutTimer } from "vs/base/common/async";
 import {
-	IDisposable,
-	toDisposable,
+	AbstractTreeViewState,
+	IAbstractTreeViewState,
+	TreeFindMode,
+} from "vs/base/browser/ui/tree/abstractTree";
+import { ITreeSorter } from "vs/base/browser/ui/tree/tree";
+import { TimeoutTimer } from "vs/base/common/async";
+import { CancellationTokenSource } from "vs/base/common/cancellation";
+import { Event } from "vs/base/common/event";
+import { FuzzyScore } from "vs/base/common/filters";
+import {
 	DisposableStore,
+	IDisposable,
 	MutableDisposable,
+	toDisposable,
 } from "vs/base/common/lifecycle";
 import { LRUCache } from "vs/base/common/map";
+import { basename } from "vs/base/common/resources";
+import { URI } from "vs/base/common/uri";
+import "vs/css!./outlinePane";
 import { localize } from "vs/nls";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
@@ -24,50 +35,39 @@ import { IContextMenuService } from "vs/platform/contextview/browser/contextView
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import { WorkbenchDataTree } from "vs/platform/list/browser/listService";
+import { IOpenerService } from "vs/platform/opener/common/opener";
 import { IStorageService } from "vs/platform/storage/common/storage";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { defaultProgressBarStyles } from "vs/platform/theme/browser/defaultStyles";
 import { IThemeService } from "vs/platform/theme/common/themeService";
 import { ViewPane } from "vs/workbench/browser/parts/views/viewPane";
 import { IViewletViewOptions } from "vs/workbench/browser/parts/views/viewsViewlet";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { FuzzyScore } from "vs/base/common/filters";
-import { basename } from "vs/base/common/resources";
+import {
+	EditorResourceAccessor,
+	IEditorPane,
+} from "vs/workbench/common/editor";
 import { IViewDescriptorService } from "vs/workbench/common/views";
-import { IOpenerService } from "vs/platform/opener/common/opener";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { OutlineViewState } from "./outlineViewState";
+import {
+	IOutlinePane,
+	OutlineSortOrder,
+	ctxAllCollapsed,
+	ctxFilterOnType,
+	ctxFollowsCursor,
+	ctxSortMode,
+} from "vs/workbench/contrib/outline/browser/outline";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 import {
 	IOutline,
 	IOutlineComparator,
 	IOutlineService,
 	OutlineTarget,
 } from "vs/workbench/services/outline/browser/outline";
-import {
-	EditorResourceAccessor,
-	IEditorPane,
-} from "vs/workbench/common/editor";
-import { CancellationTokenSource } from "vs/base/common/cancellation";
-import { Event } from "vs/base/common/event";
-import { ITreeSorter } from "vs/base/browser/ui/tree/tree";
-import {
-	AbstractTreeViewState,
-	IAbstractTreeViewState,
-	TreeFindMode,
-} from "vs/base/browser/ui/tree/abstractTree";
-import { URI } from "vs/base/common/uri";
-import {
-	ctxAllCollapsed,
-	ctxFilterOnType,
-	ctxFollowsCursor,
-	ctxSortMode,
-	IOutlinePane,
-	OutlineSortOrder,
-} from "vs/workbench/contrib/outline/browser/outline";
-import { defaultProgressBarStyles } from "vs/platform/theme/browser/defaultStyles";
+import { OutlineViewState } from "./outlineViewState";
 
 class OutlineTreeSorter<E> implements ITreeSorter<E> {
 	constructor(
 		private _comparator: IOutlineComparator<E>,
-		public order: OutlineSortOrder
+		public order: OutlineSortOrder,
 	) {}
 
 	compare(a: E, b: E): number {
@@ -182,7 +182,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 
 		this._progressBar = new ProgressBar(
 			progressContainer,
-			defaultProgressBarStyles
+			defaultProgressBarStyles,
 		);
 
 		this._treeContainer = dom.$(".outline-tree");
@@ -190,7 +190,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 			container,
 			progressContainer,
 			this._message,
-			this._treeContainer
+			this._treeContainer,
 		);
 
 		this._disposables.add(
@@ -203,18 +203,18 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 				} else if (!this._editorListener.value) {
 					const event = Event.any(
 						this._editorService.onDidActiveEditorChange,
-						this._outlineService.onDidChange
+						this._outlineService.onDidChange,
 					);
 					this._editorListener.value = event(() =>
 						this._handleEditorChanged(
-							this._editorService.activeEditorPane
-						)
+							this._editorService.activeEditorPane,
+						),
 					);
 					this._handleEditorChanged(
-						this._editorService.activeEditorPane
+						this._editorService.activeEditorPane,
 					);
 				}
-			})
+			}),
 		);
 	}
 
@@ -251,7 +251,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 			if (oldOutline && uri) {
 				this._treeStates.set(
 					`${oldOutline.outlineKind}/${uri}`,
-					this._tree.getViewState()
+					this._tree.getViewState(),
 				);
 				return true;
 			}
@@ -267,7 +267,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 			this._editorPaneDisposables.add(
 				pane.onDidChangeControl(() => {
 					this._handleEditorControlChanged(pane);
-				})
+				}),
 			);
 		}
 
@@ -275,7 +275,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 	}
 
 	private async _handleEditorControlChanged(
-		pane: IEditorPane | undefined
+		pane: IEditorPane | undefined,
 	): Promise<void> {
 		// persist state
 		const resource = EditorResourceAccessor.getOriginalUri(pane?.input);
@@ -291,8 +291,8 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 			return this._showMessage(
 				localize(
 					"no-editor",
-					"The active editor cannot provide outline information."
-				)
+					"The active editor cannot provide outline information.",
+				),
 			);
 		}
 
@@ -303,8 +303,8 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 					localize(
 						"loading",
 						"Loading document symbols for '{0}'...",
-						basename(resource)
-					)
+						basename(resource),
+					),
 				);
 			}, 100);
 		}
@@ -313,13 +313,13 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 
 		const cts = new CancellationTokenSource();
 		this._editorControlDisposables.add(
-			toDisposable(() => cts.dispose(true))
+			toDisposable(() => cts.dispose(true)),
 		);
 
 		const newOutline = await this._outlineService.createOutline(
 			pane,
 			OutlineTarget.OutlinePane,
-			cts.token
+			cts.token,
 		);
 		loadingMessage?.dispose();
 
@@ -337,7 +337,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 
 		const sorter = new OutlineTreeSorter(
 			newOutline.config.comparator,
-			this._outlineViewState.sortBy
+			this._outlineViewState.sortBy,
 		);
 
 		const tree = <
@@ -360,7 +360,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 					? TreeFindMode.Filter
 					: TreeFindMode.Highlight,
 				overrideStyles: { listBackground: this.getBackgroundColor() },
-			}
+			},
 		);
 
 		// update tree, listen to changes
@@ -371,25 +371,25 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 					localize(
 						"no-symbols",
 						"No symbols found in document '{0}'",
-						basename(resource)
-					)
+						basename(resource),
+					),
 				);
 				this._captureViewState(resource);
 				tree.setInput(undefined);
-			} else if (!tree.getInput()) {
-				// first: init tree
-				this._domNode.classList.remove("message");
-				const state = this._treeStates.get(
-					`${newOutline.outlineKind}/${newOutline.uri}`
-				);
-				tree.setInput(
-					newOutline,
-					state && AbstractTreeViewState.lift(state)
-				);
-			} else {
+			} else if (tree.getInput()) {
 				// update: refresh tree
 				this._domNode.classList.remove("message");
 				tree.updateChildren();
+			} else {
+				// first: init tree
+				this._domNode.classList.remove("message");
+				const state = this._treeStates.get(
+					`${newOutline.outlineKind}/${newOutline.uri}`,
+				);
+				tree.setInput(
+					newOutline,
+					state && AbstractTreeViewState.lift(state),
+				);
 			}
 		};
 		updateTree();
@@ -408,7 +408,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 						},
 					});
 				}
-			})
+			}),
 		);
 
 		// feature: filter on type - keep tree and menu in sync
@@ -416,16 +416,16 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 			tree.onDidChangeFindMode(
 				(mode) =>
 					(this._outlineViewState.filterOnType =
-						mode === TreeFindMode.Filter)
-			)
+						mode === TreeFindMode.Filter),
+			),
 		);
 
 		// feature: reveal outline selection in editor
 		// on change -> reveal/select defining range
 		this._editorControlDisposables.add(
 			tree.onDidOpen((e) =>
-				newOutline.reveal(e.element, e.editorOptions, e.sideBySide)
-			)
+				newOutline.reveal(e.element, e.editorOptions, e.sideBySide),
+			),
 		);
 		// feature: reveal editor selection in outline
 		const revealActiveElement = () => {
@@ -453,7 +453,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 		};
 		revealActiveElement();
 		this._editorControlDisposables.add(
-			newOutline.onDidChange(revealActiveElement)
+			newOutline.onDidChange(revealActiveElement),
 		);
 
 		// feature: update view when user state changes
@@ -477,8 +477,8 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 						sorter.order = this._outlineViewState.sortBy;
 						tree.resort();
 					}
-				}
-			)
+				},
+			),
 		);
 
 		// feature: expand all nodes when filtering (not when finding)
@@ -495,7 +495,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 					tree.setInput(tree.getInput()!, viewState);
 					viewState = undefined;
 				}
-			})
+			}),
 		);
 
 		// feature: update all-collapsed context key
@@ -504,15 +504,15 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 				tree
 					.getNode(null)
 					.children.every(
-						(node) => !node.collapsible || node.collapsed
-					)
+						(node) => !node.collapsible || node.collapsed,
+					),
 			);
 		};
 		this._editorControlDisposables.add(
-			tree.onDidChangeCollapseState(updateAllCollapsedCtx)
+			tree.onDidChangeCollapseState(updateAllCollapsedCtx),
 		);
 		this._editorControlDisposables.add(
-			tree.onDidChangeModel(updateAllCollapsedCtx)
+			tree.onDidChangeModel(updateAllCollapsedCtx),
 		);
 		updateAllCollapsedCtx();
 
@@ -523,7 +523,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 			toDisposable(() => {
 				tree.dispose();
 				this._tree = undefined;
-			})
+			}),
 		);
 	}
 }

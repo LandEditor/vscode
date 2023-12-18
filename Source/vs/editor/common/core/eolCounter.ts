@@ -5,7 +5,7 @@
 
 import { CharCode } from "vs/base/common/charCode";
 
-export const enum StringEOL {
+export enum StringEOL {
 	Unknown = 0,
 	Invalid = 3,
 	LF = 1,

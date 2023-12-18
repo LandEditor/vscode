@@ -44,9 +44,9 @@ import {
 	CONTEXT_PROVIDER_EXISTS,
 } from "vs/workbench/contrib/chat/common/chatContextKeys";
 import {
+	ChatAgentCopyKind,
 	IChatService,
 	IDocumentContext,
-	ChatAgentCopyKind,
 } from "vs/workbench/contrib/chat/common/chatService";
 import {
 	IChatResponseViewModel,
@@ -72,7 +72,7 @@ export interface IChatCodeBlockActionContext extends ICodeBlockActionContext {
 }
 
 export function isCodeBlockActionContext(
-	thing: unknown
+	thing: unknown,
 ): thing is ICodeBlockActionContext {
 	return (
 		typeof thing === "object" &&
@@ -90,7 +90,7 @@ function isResponseFiltered(context: ICodeBlockActionContext) {
 }
 
 function getUsedDocuments(
-	context: ICodeBlockActionContext
+	context: ICodeBlockActionContext,
 ): IDocumentContext[] | undefined {
 	return isResponseVM(context.element)
 		? context.element.usedContext?.documents
@@ -120,7 +120,7 @@ abstract class ChatCodeBlockAction extends Action2 {
 
 	abstract runWithContext(
 		accessor: ServicesAccessor,
-		context: ICodeBlockActionContext
+		context: ICodeBlockActionContext,
 	): any;
 }
 
@@ -133,7 +133,7 @@ export function registerChatCodeBlockActions() {
 					title: {
 						value: localize(
 							"interactive.copyCodeBlock.label",
-							"Copy"
+							"Copy",
 						),
 						original: "Copy",
 					},
@@ -177,7 +177,7 @@ export function registerChatCodeBlockActions() {
 					});
 				}
 			}
-		}
+		},
 	);
 
 	CopyAction?.addImplementation(50000, "chat-codeblock", (accessor) => {
@@ -207,7 +207,7 @@ export function registerChatCodeBlockActions() {
 					?.reduce(
 						(acc, selection) =>
 							acc + editorModel.getValueInRange(selection),
-						""
+						"",
 					) ?? "";
 		const totalCharacters = editorModel.getValueLength();
 
@@ -245,7 +245,7 @@ export function registerChatCodeBlockActions() {
 					title: {
 						value: localize(
 							"interactive.insertCodeBlock.label",
-							"Insert at Cursor"
+							"Insert at Cursor",
 						),
 						original: "Insert at Cursor",
 					},
@@ -261,7 +261,7 @@ export function registerChatCodeBlockActions() {
 					keybinding: {
 						when: ContextKeyExpr.and(
 							CONTEXT_IN_CHAT_SESSION,
-							CONTEXT_IN_CHAT_INPUT.negate()
+							CONTEXT_IN_CHAT_INPUT.negate(),
 						),
 						primary: KeyMod.CtrlCmd | KeyCode.Enter,
 						mac: { primary: KeyMod.WinCtrl | KeyCode.Enter },
@@ -272,7 +272,7 @@ export function registerChatCodeBlockActions() {
 
 			override async runWithContext(
 				accessor: ServicesAccessor,
-				context: ICodeBlockActionContext
+				context: ICodeBlockActionContext,
 			) {
 				const editorService = accessor.get(IEditorService);
 				const textFileService = accessor.get(ITextFileService);
@@ -289,7 +289,7 @@ export function registerChatCodeBlockActions() {
 					return this.handleNotebookEditor(
 						accessor,
 						editorService.activeEditorPane.getControl() as INotebookEditor,
-						context
+						context,
 					);
 				}
 
@@ -323,14 +323,14 @@ export function registerChatCodeBlockActions() {
 					accessor,
 					activeEditorControl,
 					activeModel,
-					context
+					context,
 				);
 			}
 
 			private async handleNotebookEditor(
 				accessor: ServicesAccessor,
 				notebookEditor: INotebookEditor,
-				context: ICodeBlockActionContext
+				context: ICodeBlockActionContext,
 			) {
 				if (!notebookEditor.hasModel()) {
 					return;
@@ -349,7 +349,7 @@ export function registerChatCodeBlockActions() {
 							accessor,
 							codeEditor,
 							textModel,
-							context
+							context,
 						);
 					}
 				}
@@ -364,7 +364,7 @@ export function registerChatCodeBlockActions() {
 					CellKind.Code,
 					"below",
 					context.code,
-					true
+					true,
 				);
 				this.notifyUserAction(accessor, context);
 			}
@@ -373,7 +373,7 @@ export function registerChatCodeBlockActions() {
 				accessor: ServicesAccessor,
 				codeEditor: ICodeEditor,
 				activeModel: ITextModel,
-				codeBlockActionContext: ICodeBlockActionContext
+				codeBlockActionContext: ICodeBlockActionContext,
 			) {
 				this.notifyUserAction(accessor, codeBlockActionContext);
 
@@ -412,7 +412,7 @@ export function registerChatCodeBlockActions() {
 					}
 
 					const usedDocuments = getUsedDocuments(
-						codeBlockActionContext
+						codeBlockActionContext,
 					);
 					if (usedDocuments) {
 						docRefs.push(usedDocuments);
@@ -425,7 +425,7 @@ export function registerChatCodeBlockActions() {
 						activeModel,
 						[codeBlockActionContext.code],
 						{ documents: docRefs },
-						cancellationTokenSource.token
+						cancellationTokenSource.token,
 					);
 				}
 
@@ -438,7 +438,7 @@ export function registerChatCodeBlockActions() {
 							activeModel.getLineCount(),
 							1,
 							activeModel.getLineCount(),
-							1
+							1,
 						);
 					await bulkEditService.apply([
 						new ResourceTextEdit(activeModel.uri, {
@@ -452,14 +452,14 @@ export function registerChatCodeBlockActions() {
 					.find(
 						(editor) =>
 							editor.getModel()?.uri.toString() ===
-							activeModel.uri.toString()
+							activeModel.uri.toString(),
 					)
 					?.focus();
 			}
 
 			private notifyUserAction(
 				accessor: ServicesAccessor,
-				context: ICodeBlockActionContext
+				context: ICodeBlockActionContext,
 			) {
 				if (isResponseVM(context.element)) {
 					const chatService = accessor.get(IChatService);
@@ -476,7 +476,7 @@ export function registerChatCodeBlockActions() {
 					});
 				}
 			}
-		}
+		},
 	);
 
 	registerAction2(
@@ -487,7 +487,7 @@ export function registerChatCodeBlockActions() {
 					title: {
 						value: localize(
 							"interactive.insertIntoNewFile.label",
-							"Insert into New File"
+							"Insert into New File",
 						),
 						original: "Insert into New File",
 					},
@@ -505,7 +505,7 @@ export function registerChatCodeBlockActions() {
 
 			override async runWithContext(
 				accessor: ServicesAccessor,
-				context: ICodeBlockActionContext
+				context: ICodeBlockActionContext,
 			) {
 				if (isResponseFiltered(context)) {
 					// When run from command palette
@@ -536,7 +536,7 @@ export function registerChatCodeBlockActions() {
 					});
 				}
 			}
-		}
+		},
 	);
 
 	const shellLangIds = ["powershell", "shellscript"];
@@ -548,7 +548,7 @@ export function registerChatCodeBlockActions() {
 					title: {
 						value: localize(
 							"interactive.runInTerminal.label",
-							"Insert into Terminal"
+							"Insert into Terminal",
 						),
 						original: "Insert into Terminal",
 					},
@@ -566,10 +566,10 @@ export function registerChatCodeBlockActions() {
 									...shellLangIds.map((e) =>
 										ContextKeyExpr.equals(
 											EditorContextKeys.languageId.key,
-											e
-										)
-									)
-								)
+											e,
+										),
+									),
+								),
 							),
 						},
 						{
@@ -581,9 +581,9 @@ export function registerChatCodeBlockActions() {
 								...shellLangIds.map((e) =>
 									ContextKeyExpr.notEquals(
 										EditorContextKeys.languageId.key,
-										e
-									)
-								)
+										e,
+									),
+								),
 							),
 						},
 						{
@@ -609,7 +609,7 @@ export function registerChatCodeBlockActions() {
 
 			override async runWithContext(
 				accessor: ServicesAccessor,
-				context: ICodeBlockActionContext
+				context: ICodeBlockActionContext,
 			) {
 				if (isResponseFiltered(context)) {
 					// When run from command palette
@@ -620,10 +620,10 @@ export function registerChatCodeBlockActions() {
 				const terminalService = accessor.get(ITerminalService);
 				const editorService = accessor.get(IEditorService);
 				const terminalEditorService = accessor.get(
-					ITerminalEditorService
+					ITerminalEditorService,
 				);
 				const terminalGroupService = accessor.get(
-					ITerminalGroupService
+					ITerminalGroupService,
 				);
 
 				let terminal =
@@ -641,7 +641,7 @@ export function registerChatCodeBlockActions() {
 				await terminal.focusWhenReady(true);
 				if (terminal.target === TerminalLocation.Editor) {
 					const existingEditors = editorService.findEditors(
-						terminal.resource
+						terminal.resource,
 					);
 					terminalEditorService.openEditor(terminal, {
 						viewColumn: existingEditors?.[0].groupId,
@@ -666,12 +666,12 @@ export function registerChatCodeBlockActions() {
 					});
 				}
 			}
-		}
+		},
 	);
 
 	function navigateCodeBlocks(
 		accessor: ServicesAccessor,
-		reverse?: boolean
+		reverse?: boolean,
 	): void {
 		const codeEditorService = accessor.get(ICodeEditorService);
 		const chatWidgetService = accessor.get(IChatWidgetService);
@@ -692,11 +692,11 @@ export function registerChatCodeBlockActions() {
 		const currentResponse = curCodeBlockInfo
 			? curCodeBlockInfo.element
 			: focusedResponse ??
-				widget.viewModel
+			  widget.viewModel
 					?.getItems()
 					.reverse()
 					.find((item): item is IChatResponseViewModel =>
-						isResponseVM(item)
+						isResponseVM(item),
 					);
 		if (!currentResponse) {
 			return;
@@ -709,10 +709,10 @@ export function registerChatCodeBlockActions() {
 			? (curCodeBlockInfo.codeBlockIndex +
 					(reverse ? -1 : 1) +
 					responseCodeblocks.length) %
-				responseCodeblocks.length
+			  responseCodeblocks.length
 			: reverse
-				? responseCodeblocks.length - 1
-				: 0;
+			  ? responseCodeblocks.length - 1
+			  : 0;
 
 		responseCodeblocks[focusIdx]?.focus();
 	}
@@ -725,7 +725,7 @@ export function registerChatCodeBlockActions() {
 					title: {
 						value: localize(
 							"interactive.nextCodeBlock.label",
-							"Next Code Block"
+							"Next Code Block",
 						),
 						original: "Next Code Block",
 					},
@@ -747,7 +747,7 @@ export function registerChatCodeBlockActions() {
 			run(accessor: ServicesAccessor, ...args: any[]) {
 				navigateCodeBlocks(accessor);
 			}
-		}
+		},
 	);
 
 	registerAction2(
@@ -758,7 +758,7 @@ export function registerChatCodeBlockActions() {
 					title: {
 						value: localize(
 							"interactive.previousCodeBlock.label",
-							"Previous Code Block"
+							"Previous Code Block",
 						),
 						original: "Previous Code Block",
 					},
@@ -780,13 +780,13 @@ export function registerChatCodeBlockActions() {
 			run(accessor: ServicesAccessor, ...args: any[]) {
 				navigateCodeBlocks(accessor, true);
 			}
-		}
+		},
 	);
 }
 
 function getContextFromEditor(
 	editor: ICodeEditor,
-	accessor: ServicesAccessor
+	accessor: ServicesAccessor,
 ): IChatCodeBlockActionContext | undefined {
 	const chatWidgetService = accessor.get(IChatWidgetService);
 	const model = editor.getModel();

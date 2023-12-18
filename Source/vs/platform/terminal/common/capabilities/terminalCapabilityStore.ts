@@ -20,20 +20,20 @@ export class TerminalCapabilityStore
 		new Map();
 
 	private readonly _onDidRemoveCapabilityType = this._register(
-		new Emitter<TerminalCapability>()
+		new Emitter<TerminalCapability>(),
 	);
 	readonly onDidRemoveCapabilityType = this._onDidRemoveCapabilityType.event;
 	private readonly _onDidAddCapabilityType = this._register(
-		new Emitter<TerminalCapability>()
+		new Emitter<TerminalCapability>(),
 	);
 	readonly onDidAddCapabilityType = this._onDidAddCapabilityType.event;
 
 	private readonly _onDidRemoveCapability = this._register(
-		new Emitter<TerminalCapabilityChangeEvent<any>>()
+		new Emitter<TerminalCapabilityChangeEvent<any>>(),
 	);
 	readonly onDidRemoveCapability = this._onDidRemoveCapability.event;
 	private readonly _onDidAddCapability = this._register(
-		new Emitter<TerminalCapabilityChangeEvent<any>>()
+		new Emitter<TerminalCapabilityChangeEvent<any>>(),
 	);
 	readonly onDidAddCapability = this._onDidAddCapability.event;
 
@@ -43,7 +43,7 @@ export class TerminalCapabilityStore
 
 	add<T extends TerminalCapability>(
 		capability: T,
-		impl: ITerminalCapabilityImplMap[T]
+		impl: ITerminalCapabilityImplMap[T],
 	) {
 		this._map.set(capability, impl);
 		this._onDidAddCapabilityType.fire(capability);
@@ -51,7 +51,7 @@ export class TerminalCapabilityStore
 	}
 
 	get<T extends TerminalCapability>(
-		capability: T
+		capability: T,
 	): ITerminalCapabilityImplMap[T] | undefined {
 		// HACK: This isn't totally safe since the Map key and value are not connected
 		return this._map.get(capability) as
@@ -81,20 +81,20 @@ export class TerminalCapabilityStoreMultiplexer
 	readonly _stores: ITerminalCapabilityStore[] = [];
 
 	private readonly _onDidRemoveCapabilityType = this._register(
-		new Emitter<TerminalCapability>()
+		new Emitter<TerminalCapability>(),
 	);
 	readonly onDidRemoveCapabilityType = this._onDidRemoveCapabilityType.event;
 	private readonly _onDidAddCapabilityType = this._register(
-		new Emitter<TerminalCapability>()
+		new Emitter<TerminalCapability>(),
 	);
 	readonly onDidAddCapabilityType = this._onDidAddCapabilityType.event;
 
 	private readonly _onDidRemoveCapability = this._register(
-		new Emitter<TerminalCapabilityChangeEvent<any>>()
+		new Emitter<TerminalCapabilityChangeEvent<any>>(),
 	);
 	readonly onDidRemoveCapability = this._onDidRemoveCapability.event;
 	private readonly _onDidAddCapability = this._register(
-		new Emitter<TerminalCapabilityChangeEvent<any>>()
+		new Emitter<TerminalCapabilityChangeEvent<any>>(),
 	);
 	readonly onDidAddCapability = this._onDidAddCapability.event;
 
@@ -122,7 +122,7 @@ export class TerminalCapabilityStoreMultiplexer
 	}
 
 	get<T extends TerminalCapability>(
-		capability: T
+		capability: T,
 	): ITerminalCapabilityImplMap[T] | undefined {
 		for (const store of this._stores) {
 			const c = store.get(capability);
@@ -144,21 +144,21 @@ export class TerminalCapabilityStoreMultiplexer
 		}
 		this._register(
 			store.onDidAddCapabilityType((e) =>
-				this._onDidAddCapabilityType.fire(e)
-			)
+				this._onDidAddCapabilityType.fire(e),
+			),
 		);
 		this._register(
-			store.onDidAddCapability((e) => this._onDidAddCapability.fire(e))
+			store.onDidAddCapability((e) => this._onDidAddCapability.fire(e)),
 		);
 		this._register(
 			store.onDidRemoveCapabilityType((e) =>
-				this._onDidRemoveCapabilityType.fire(e)
-			)
+				this._onDidRemoveCapabilityType.fire(e),
+			),
 		);
 		this._register(
 			store.onDidRemoveCapability((e) =>
-				this._onDidRemoveCapability.fire(e)
-			)
+				this._onDidRemoveCapability.fire(e),
+			),
 		);
 	}
 }

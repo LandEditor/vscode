@@ -6,8 +6,8 @@
 import { CancellationToken } from "vs/base/common/cancellation";
 import { Event } from "vs/base/common/event";
 import { MovedText } from "vs/editor/common/diff/linesDiffComputer";
-import { DetailedLineRangeMapping } from "./rangeMapping";
 import { ITextModel } from "vs/editor/common/model";
+import { DetailedLineRangeMapping } from "./rangeMapping";
 
 /**
  * A document diff provider computes the diff between two text models.
@@ -21,7 +21,7 @@ export interface IDocumentDiffProvider {
 		original: ITextModel,
 		modified: ITextModel,
 		options: IDocumentDiffProviderOptions,
-		cancellationToken: CancellationToken
+		cancellationToken: CancellationToken,
 	): Promise<IDocumentDiff>;
 
 	/**

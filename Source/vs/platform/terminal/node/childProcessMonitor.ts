@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { parse } from "vs/base/common/path";
 import { debounce, throttle } from "vs/base/common/decorators";
 import { Emitter } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
+import { parse } from "vs/base/common/path";
 import { ProcessItem } from "vs/base/common/processes";
 import { listProcesses } from "vs/base/node/ps";
 import { ILogService } from "vs/platform/log/common/log";
 
-const enum Constants {
+enum Constants {
 	/**
 	 * The amount of time to throttle checks when the process receives output.
 	 */
@@ -29,13 +29,13 @@ export const ignoreProcessNames: string[] = [];
  * calls into the monitor.
  */
 export class ChildProcessMonitor extends Disposable {
-	private _hasChildProcesses: boolean = false;
+	private _hasChildProcesses = false;
 	private set hasChildProcesses(value: boolean) {
 		if (this._hasChildProcesses !== value) {
 			this._hasChildProcesses = value;
 			this._logService.debug(
 				"ChildProcessMonitor: Has child processes changed",
-				value
+				value,
 			);
 			this._onDidChangeHasChildProcesses.fire(value);
 		}
@@ -48,7 +48,7 @@ export class ChildProcessMonitor extends Disposable {
 	}
 
 	private readonly _onDidChangeHasChildProcesses = this._register(
-		new Emitter<boolean>()
+		new Emitter<boolean>(),
 	);
 	/**
 	 * An event that fires when whether the process has child processes changes.
@@ -88,7 +88,7 @@ export class ChildProcessMonitor extends Disposable {
 		} catch (e) {
 			this._logService.debug(
 				"ChildProcessMonitor: Fetching process tree failed",
-				e
+				e,
 			);
 		}
 	}

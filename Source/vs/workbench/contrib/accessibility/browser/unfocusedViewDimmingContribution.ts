@@ -129,7 +129,7 @@ export class UnfocusedViewDimmingContribution
 			this._styleElement = createStyleSheet(
 				undefined,
 				undefined,
-				this._styleElementDisposables
+				this._styleElementDisposables,
 			);
 			this._styleElement.className = "accessibilityUnfocusedViewOpacity";
 		}

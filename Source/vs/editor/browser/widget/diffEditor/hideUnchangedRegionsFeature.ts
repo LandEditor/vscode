@@ -76,10 +76,10 @@ export class HideUnchangedRegionsFeature extends Disposable {
 		this,
 		(reader) => {
 			const m = this._editors.modifiedModel.read(reader);
-			return !m
-				? undefined
-				: new OutlineSource(this._languageFeaturesService, m);
-		}
+			return m
+				? new OutlineSource(this._languageFeaturesService, m)
+				: undefined;
+		},
 	);
 
 	public readonly viewZones: IObservable<{
@@ -388,7 +388,7 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 		h("div.top@top", {
 			title: localize(
 				"diff.hiddenLines.top",
-				"Click or drag to show more above"
+				"Click or drag to show more above",
 			),
 		}),
 		h("div.center@content", { style: { display: "flex" } }, [
@@ -408,16 +408,16 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 						{
 							title: localize(
 								"showUnchangedRegion",
-								"Show Unchanged Region"
+								"Show Unchanged Region",
 							),
 							role: "button",
 							onclick: () => {
 								this._unchangedRegion.showAll(undefined);
 							},
 						},
-						...renderLabelWithIcons("$(unfold)")
+						...renderLabelWithIcons("$(unfold)"),
 					),
-				]
+				],
 			),
 			h("div@others", {
 				style: {
@@ -441,9 +441,9 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 		private readonly _hide: boolean,
 		private readonly _modifiedOutlineSource: OutlineSource,
 		private readonly _revealModifiedHiddenLine: (
-			lineNumber: number
+			lineNumber: number,
 		) => void,
-		private readonly _options: DiffEditorOptions
+		private readonly _options: DiffEditorOptions,
 	) {
 		const root = h("div.diff-hidden-lines-widget");
 		super(_editor, _viewZone, root.root);
@@ -451,17 +451,17 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 
 		const layoutInfo = observableFromEvent(
 			this._editor.onDidLayoutChange,
-			() => this._editor.getLayoutInfo()
+			() => this._editor.getLayoutInfo(),
 		);
 
-		if (!this._hide) {
+		if (this._hide) {
+			reset(this._nodes.first);
+		} else {
 			this._register(
 				applyStyle(this._nodes.first, {
 					width: layoutInfo.map((l) => l.contentLeft),
-				})
+				}),
 			);
-		} else {
-			reset(this._nodes.first);
 		}
 
 		this._register(
@@ -469,62 +469,62 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 				const isFullyRevealed =
 					this._unchangedRegion.visibleLineCountTop.read(reader) +
 						this._unchangedRegion.visibleLineCountBottom.read(
-							reader
+							reader,
 						) ===
 					this._unchangedRegion.lineCount;
 
 				this._nodes.bottom.classList.toggle(
 					"canMoveTop",
-					!isFullyRevealed
+					!isFullyRevealed,
 				);
 				this._nodes.bottom.classList.toggle(
 					"canMoveBottom",
 					this._unchangedRegion.visibleLineCountBottom.read(reader) >
-						0
+						0,
 				);
 				this._nodes.top.classList.toggle(
 					"canMoveTop",
-					this._unchangedRegion.visibleLineCountTop.read(reader) > 0
+					this._unchangedRegion.visibleLineCountTop.read(reader) > 0,
 				);
 				this._nodes.top.classList.toggle(
 					"canMoveBottom",
-					!isFullyRevealed
+					!isFullyRevealed,
 				);
 				const isDragged = this._unchangedRegion.isDragged.read(reader);
 				const domNode = this._editor.getDomNode();
 				if (domNode) {
 					domNode.classList.toggle(
 						"draggingUnchangedRegion",
-						!!isDragged
+						!!isDragged,
 					);
 					if (isDragged === "top") {
 						domNode.classList.toggle(
 							"canMoveTop",
 							this._unchangedRegion.visibleLineCountTop.read(
-								reader
-							) > 0
+								reader,
+							) > 0,
 						);
 						domNode.classList.toggle(
 							"canMoveBottom",
-							!isFullyRevealed
+							!isFullyRevealed,
 						);
 					} else if (isDragged === "bottom") {
 						domNode.classList.toggle(
 							"canMoveTop",
-							!isFullyRevealed
+							!isFullyRevealed,
 						);
 						domNode.classList.toggle(
 							"canMoveBottom",
 							this._unchangedRegion.visibleLineCountBottom.read(
-								reader
-							) > 0
+								reader,
+							) > 0,
 						);
 					} else {
 						domNode.classList.toggle("canMoveTop", false);
 						domNode.classList.toggle("canMoveBottom", false);
 					}
 				}
-			})
+			}),
 		);
 
 		const editor = this._editor;
@@ -552,20 +552,20 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 						const delta = currentTop - startTop;
 						didMove = didMove || Math.abs(delta) > 2;
 						const lineDelta = Math.round(
-							delta / editor.getOption(EditorOption.lineHeight)
+							delta / editor.getOption(EditorOption.lineHeight),
 						);
 						const newVal = Math.max(
 							0,
 							Math.min(
 								cur + lineDelta,
-								this._unchangedRegion.getMaxVisibleLineCountTop()
-							)
+								this._unchangedRegion.getMaxVisibleLineCountTop(),
+							),
 						);
 						this._unchangedRegion.visibleLineCountTop.set(
 							newVal,
-							undefined
+							undefined,
 						);
-					}
+					},
 				);
 
 				const mouseUpListener = addDisposableListener(
@@ -575,20 +575,20 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 						if (!didMove) {
 							this._unchangedRegion.showMoreAbove(
 								this._options.hideUnchangedRegionsRevealLineCount.get(),
-								undefined
+								undefined,
 							);
 						}
 						this._nodes.top.classList.toggle("dragging", false);
 						this._nodes.root.classList.toggle("dragging", false);
 						this._unchangedRegion.isDragged.set(
 							undefined,
-							undefined
+							undefined,
 						);
 						mouseMoveListener.dispose();
 						mouseUpListener.dispose();
-					}
+					},
 				);
-			})
+			}),
 		);
 
 		this._register(
@@ -614,29 +614,29 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 						const delta = currentTop - startTop;
 						didMove = didMove || Math.abs(delta) > 2;
 						const lineDelta = Math.round(
-							delta / editor.getOption(EditorOption.lineHeight)
+							delta / editor.getOption(EditorOption.lineHeight),
 						);
 						const newVal = Math.max(
 							0,
 							Math.min(
 								cur - lineDelta,
-								this._unchangedRegion.getMaxVisibleLineCountBottom()
-							)
+								this._unchangedRegion.getMaxVisibleLineCountBottom(),
+							),
 						);
 						const top = editor.getTopForLineNumber(
-							this._unchangedRegionRange.endLineNumberExclusive
+							this._unchangedRegionRange.endLineNumberExclusive,
 						);
 						this._unchangedRegion.visibleLineCountBottom.set(
 							newVal,
-							undefined
+							undefined,
 						);
 						const top2 = editor.getTopForLineNumber(
-							this._unchangedRegionRange.endLineNumberExclusive
+							this._unchangedRegionRange.endLineNumberExclusive,
 						);
 						editor.setScrollTop(
-							editor.getScrollTop() + (top2 - top)
+							editor.getScrollTop() + (top2 - top),
 						);
-					}
+					},
 				);
 
 				const mouseUpListener = addDisposableListener(
@@ -645,34 +645,34 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 					(e) => {
 						this._unchangedRegion.isDragged.set(
 							undefined,
-							undefined
+							undefined,
 						);
 
 						if (!didMove) {
 							const top = editor.getTopForLineNumber(
 								this._unchangedRegionRange
-									.endLineNumberExclusive
+									.endLineNumberExclusive,
 							);
 
 							this._unchangedRegion.showMoreBelow(
 								this._options.hideUnchangedRegionsRevealLineCount.get(),
-								undefined
+								undefined,
 							);
 							const top2 = editor.getTopForLineNumber(
 								this._unchangedRegionRange
-									.endLineNumberExclusive
+									.endLineNumberExclusive,
 							);
 							editor.setScrollTop(
-								editor.getScrollTop() + (top2 - top)
+								editor.getScrollTop() + (top2 - top),
 							);
 						}
 						this._nodes.bottom.classList.toggle("dragging", false);
 						this._nodes.root.classList.toggle("dragging", false);
 						mouseMoveListener.dispose();
 						mouseUpListener.dispose();
-					}
+					},
 				);
-			})
+			}),
 		);
 
 		this._register(
@@ -686,17 +686,17 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 					const linesHiddenText = localize(
 						"hiddenLines",
 						"{0} hidden lines",
-						lineCount
+						lineCount,
 					);
 					const span = $(
 						"span",
 						{
 							title: localize(
 								"diff.hiddenLines.expandAll",
-								"Double click to unfold"
+								"Double click to unfold",
 							),
 						},
-						linesHiddenText
+						linesHiddenText,
 					);
 					span.addEventListener("dblclick", (e) => {
 						if (e.button !== 0) {
@@ -712,12 +712,12 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 					const items =
 						this._modifiedOutlineSource.getBreadcrumbItems(
 							range,
-							reader
+							reader,
 						);
 
 					if (items.length > 0) {
 						children.push(
-							$("span", undefined, "\u00a0\u00a0|\u00a0\u00a0")
+							$("span", undefined, "\u00a0\u00a0|\u00a0\u00a0"),
 						);
 
 						for (let i = 0; i < items.length; i++) {
@@ -738,12 +738,12 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 									...(i === items.length - 1
 										? []
 										: [renderIcon(Codicon.chevronRight)]),
-								]
+								],
 							).root;
 							children.push(divItem);
 							divItem.onclick = () => {
 								this._revealModifiedHiddenLine(
-									item.startLineNumber
+									item.startLineNumber,
 								);
 							};
 						}
@@ -751,7 +751,7 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 				}
 
 				reset(this._nodes.others, ...children);
-			})
+			}),
 		);
 	}
 }
@@ -759,7 +759,7 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 class OutlineSource extends Disposable {
 	private readonly _currentModel = observableValue<OutlineModel | undefined>(
 		this,
-		undefined
+		undefined,
 	);
 
 	constructor(
@@ -805,7 +805,7 @@ class OutlineSource extends Disposable {
 
 	public getBreadcrumbItems(
 		startRange: LineRange,
-		reader: IReader
+		reader: IReader,
 	): { name: string; kind: SymbolKind; startLineNumber: number }[] {
 		const m = this._currentModel.read(reader);
 		if (!m) {
@@ -816,15 +816,15 @@ class OutlineSource extends Disposable {
 			.filter(
 				(s) =>
 					startRange.contains(s.range.startLineNumber) &&
-					!startRange.contains(s.range.endLineNumber)
+					!startRange.contains(s.range.endLineNumber),
 			);
 		symbols.sort(
 			reverseOrder(
 				compareBy(
 					(s) => s.range.endLineNumber - s.range.startLineNumber,
-					numberComparator
-				)
-			)
+					numberComparator,
+				),
+			),
 		);
 		return symbols.map((s) => ({
 			name: s.name,

@@ -49,7 +49,7 @@ export function registerClearActions() {
 							group: "navigation",
 							order: 0,
 							when: ActiveEditorContext.isEqualTo(
-								ChatEditorInput.EditorID
+								ChatEditorInput.EditorID,
 							),
 						},
 					],
@@ -59,7 +59,7 @@ export function registerClearActions() {
 				announceChatCleared(accessor);
 				await clearChatEditor(accessor);
 			}
-		}
+		},
 	);
 
 	registerAction2(
@@ -99,13 +99,13 @@ export function registerClearActions() {
 				widget.clear();
 				widget.focusInput();
 			}
-		}
+		},
 	);
 }
 
 const getClearChatActionDescriptorForViewTitle = (
 	viewId: string,
-	providerId: string
+	providerId: string,
 ): Readonly<IAction2Options> & { viewId: string } => ({
 	viewId,
 	id: `workbench.action.chat.${providerId}.clear`,

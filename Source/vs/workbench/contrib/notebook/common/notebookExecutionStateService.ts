@@ -35,8 +35,8 @@ export interface ICellExecutionComplete {
 	lastRunSuccess?: boolean;
 }
 export enum NotebookExecutionType {
-	cell,
-	notebook,
+	cell = 0,
+	notebook = 1,
 }
 export interface ICellExecutionStateChangedEvent {
 	type: NotebookExecutionType.cell;
@@ -65,7 +65,7 @@ export interface IFailedCellInfo {
 
 export const INotebookExecutionStateService =
 	createDecorator<INotebookExecutionStateService>(
-		"INotebookExecutionStateService"
+		"INotebookExecutionStateService",
 	);
 
 export interface INotebookExecutionStateService {
@@ -79,12 +79,12 @@ export interface INotebookExecutionStateService {
 	forceCancelNotebookExecutions(notebookUri: URI): void;
 	getCellExecutionsForNotebook(notebook: URI): INotebookCellExecution[];
 	getCellExecutionsByHandleForNotebook(
-		notebook: URI
+		notebook: URI,
 	): Map<number, INotebookCellExecution> | undefined;
 	getCellExecution(cellUri: URI): INotebookCellExecution | undefined;
 	createCellExecution(
 		notebook: URI,
-		cellHandle: number
+		cellHandle: number,
 	): INotebookCellExecution;
 	getExecution(notebook: URI): INotebookExecution | undefined;
 	createExecution(notebook: URI): INotebookExecution;

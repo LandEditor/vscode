@@ -9,9 +9,9 @@ import { localize } from "vs/nls";
 import { ILogService } from "vs/platform/log/common/log";
 import { ITerminalCommandSelector } from "vs/platform/terminal/common/terminal";
 import {
-	ITerminalQuickFixService,
 	ITerminalQuickFixProvider,
 	ITerminalQuickFixProviderSelector,
+	ITerminalQuickFixService,
 } from "vs/workbench/contrib/terminalContrib/quickFix/browser/quickFix";
 import { isProposedApiEnabled } from "vs/workbench/services/extensions/common/extensions";
 import { ExtensionsRegistry } from "vs/workbench/services/extensions/common/extensionsRegistry";
@@ -49,7 +49,7 @@ export class TerminalQuickFixService implements ITerminalQuickFixService {
 								"terminalQuickFixProvider"
 							)
 						)
-						.map((c) => {
+						.flatMap((c) => {
 							if (!c.value) {
 								return [];
 							}
@@ -61,7 +61,6 @@ export class TerminalQuickFixService implements ITerminalQuickFixService {
 								};
 							});
 						})
-						.flat()
 				);
 			})
 		);
@@ -79,7 +78,7 @@ export class TerminalQuickFixService implements ITerminalQuickFixService {
 
 	registerQuickFixProvider(
 		id: string,
-		provider: ITerminalQuickFixProvider
+		provider: ITerminalQuickFixProvider,
 	): IDisposable {
 		// This is more complicated than it looks like it should be because we need to return an
 		// IDisposable synchronously but we must await ITerminalContributionService.quickFixes
@@ -116,7 +115,7 @@ const quickFixExtensionPoint = ExtensionsRegistry.registerExtensionPoint<
 	defaultExtensionKind: ["workspace"],
 	activationEventsGenerator: (
 		terminalQuickFixes: ITerminalCommandSelector[],
-		result: { push(item: string): void }
+		result: { push(item: string): void },
 	) => {
 		for (const quickFixContrib of terminalQuickFixes ?? []) {
 			result.push(`onTerminalQuickFixRequest:${quickFixContrib.id}`);
@@ -125,7 +124,7 @@ const quickFixExtensionPoint = ExtensionsRegistry.registerExtensionPoint<
 	jsonSchema: {
 		description: localize(
 			"vscode.extension.contributes.terminalQuickFixes",
-			"Contributes terminal quick fixes."
+			"Contributes terminal quick fixes.",
 		),
 		type: "array",
 		items: {
@@ -151,21 +150,21 @@ const quickFixExtensionPoint = ExtensionsRegistry.registerExtensionPoint<
 				id: {
 					description: localize(
 						"vscode.extension.contributes.terminalQuickFixes.id",
-						"The ID of the quick fix provider"
+						"The ID of the quick fix provider",
 					),
 					type: "string",
 				},
 				commandLineMatcher: {
 					description: localize(
 						"vscode.extension.contributes.terminalQuickFixes.commandLineMatcher",
-						"A regular expression or string to test the command line against"
+						"A regular expression or string to test the command line against",
 					),
 					type: "string",
 				},
 				outputMatcher: {
 					markdownDescription: localize(
 						"vscode.extension.contributes.terminalQuickFixes.outputMatcher",
-						"A regular expression or string to match a single line of the output against, which provides groups to be referenced in terminalCommand and uri.\n\nFor example:\n\n `lineMatcher: /git push --set-upstream origin (?<branchName>[^s]+)/;`\n\n`terminalCommand: 'git push --set-upstream origin ${group:branchName}';`\n"
+						"A regular expression or string to match a single line of the output against, which provides groups to be referenced in terminalCommand and uri.\n\nFor example:\n\n `lineMatcher: /git push --set-upstream origin (?<branchName>[^s]+)/;`\n\n`terminalCommand: 'git push --set-upstream origin ${group:branchName}';`\n",
 					),
 					type: "object",
 					required: ["lineMatcher", "anchor", "offset", "length"],
@@ -195,7 +194,7 @@ const quickFixExtensionPoint = ExtensionsRegistry.registerExtensionPoint<
 				commandExitResult: {
 					description: localize(
 						"vscode.extension.contributes.terminalQuickFixes.commandExitResult",
-						"The command exit result to match on"
+						"The command exit result to match on",
 					),
 					enum: ["success", "error"],
 					enumDescriptions: [
@@ -207,7 +206,7 @@ const quickFixExtensionPoint = ExtensionsRegistry.registerExtensionPoint<
 					description: localize(
 						"vscode.extension.contributes.terminalQuickFixes.kind",
 						"The kind of the resulting quick fix. This changes how the quick fix is presented. Defaults to {0}.",
-						'`"fix"`'
+						'`"fix"`',
 					),
 					enum: ["default", "explain"],
 					enumDescriptions: [

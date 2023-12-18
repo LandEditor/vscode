@@ -6,9 +6,9 @@
 import { Event } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
 import { IServerChannel } from "vs/base/parts/ipc/common/ipc";
+import { IServerTelemetryService } from "vs/platform/telemetry/common/serverTelemetryService";
 import { TelemetryLevel } from "vs/platform/telemetry/common/telemetry";
 import { ITelemetryAppender } from "vs/platform/telemetry/common/telemetryUtils";
-import { IServerTelemetryService } from "vs/platform/telemetry/common/serverTelemetryService";
 
 export class ServerTelemetryChannel
 	extends Disposable
@@ -16,7 +16,7 @@ export class ServerTelemetryChannel
 {
 	constructor(
 		private readonly telemetryService: IServerTelemetryService,
-		private readonly telemetryAppender: ITelemetryAppender | null
+		private readonly telemetryAppender: ITelemetryAppender | null,
 	) {
 		super();
 	}
@@ -26,7 +26,7 @@ export class ServerTelemetryChannel
 			case "updateTelemetryLevel": {
 				const { telemetryLevel } = arg;
 				return this.telemetryService.updateInjectedTelemetryLevel(
-					telemetryLevel
+					telemetryLevel,
 				);
 			}
 

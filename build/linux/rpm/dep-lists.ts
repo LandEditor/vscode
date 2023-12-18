@@ -17,7 +17,7 @@ export const additionalDeps = [
 ];
 
 export const referenceGeneratedDepsByArch = {
-	"x86_64": [
+	x86_64: [
 		"ca-certificates",
 		"ld-linux-x86-64.so.2()(64bit)",
 		"ld-linux-x86-64.so.2(GLIBC_2.2.5)(64bit)",
@@ -118,7 +118,7 @@ export const referenceGeneratedDepsByArch = {
 		"rtld(GNU_HASH)",
 		"xdg-utils",
 	],
-	"armv7hl": [
+	armv7hl: [
 		"ca-certificates",
 		"ld-linux-armhf.so.3",
 		"ld-linux-armhf.so.3(GLIBC_2.4)",
@@ -226,7 +226,7 @@ export const referenceGeneratedDepsByArch = {
 		"rtld(GNU_HASH)",
 		"xdg-utils",
 	],
-	"aarch64": [
+	aarch64: [
 		"ca-certificates",
 		"ld-linux-aarch64.so.1()(64bit)",
 		"ld-linux-aarch64.so.1(GLIBC_2.17)(64bit)",

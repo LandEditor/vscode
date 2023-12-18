@@ -8,8 +8,8 @@ import { BugIndicatingError } from "vs/base/common/errors";
 import { Event } from "vs/base/common/event";
 import { DisposableStore, IDisposable } from "vs/base/common/lifecycle";
 import {
-	derived,
 	IObservable,
+	derived,
 	observableFromEvent,
 	observableValue,
 } from "vs/base/common/observable";
@@ -100,7 +100,7 @@ export class TempFileMergeEditorModeFactory
 	) {}
 
 	async createInputModel(
-		args: MergeEditorArgs
+		args: MergeEditorArgs,
 	): Promise<IMergeEditorInputModel> {
 		const store = new DisposableStore();
 
@@ -124,7 +124,7 @@ export class TempFileMergeEditorModeFactory
 				languageId: result.object.textEditorModel.getLanguageId(),
 				onDidChange: Event.None,
 			},
-			tempResultUri
+			tempResultUri,
 		);
 		store.add(temporaryResultModel);
 
@@ -140,7 +140,7 @@ export class TempFileMergeEditorModeFactory
 			{
 				resetResult: true,
 			},
-			this._mergeEditorTelemetry
+			this._mergeEditorTelemetry,
 		);
 		store.add(model);
 
@@ -151,7 +151,7 @@ export class TempFileMergeEditorModeFactory
 			model,
 			store,
 			result.object,
-			args.result
+			args.result,
 		);
 	}
 }
@@ -162,19 +162,19 @@ class TempFileMergeEditorInputModel
 {
 	private readonly savedAltVersionId = observableValue(
 		this,
-		this.model.resultTextModel.getAlternativeVersionId()
+		this.model.resultTextModel.getAlternativeVersionId(),
 	);
 	private readonly altVersionId = observableFromEvent(
 		(e) => this.model.resultTextModel.onDidChangeContent(e),
 		() =>
-			/** @description getAlternativeVersionId */ this.model.resultTextModel.getAlternativeVersionId()
+			/** @description getAlternativeVersionId */ this.model.resultTextModel.getAlternativeVersionId(),
 	);
 
 	public readonly isDirty = derived(
 		this,
 		(reader) =>
 			this.altVersionId.read(reader) !==
-			this.savedAltVersionId.read(reader)
+			this.savedAltVersionId.read(reader),
 	);
 
 	private finished = false;
@@ -201,7 +201,7 @@ class TempFileMergeEditorInputModel
 		this.result.textEditorModel.setValue(value);
 		this.savedAltVersionId.set(
 			this.model.resultTextModel.getAlternativeVersionId(),
-			undefined
+			undefined,
 		);
 		await this.textFileService.save(this.result.textEditorModel.uri);
 		this.finished = true;
@@ -211,7 +211,7 @@ class TempFileMergeEditorInputModel
 		await this.textFileService.revert(this.model.resultTextModel.uri);
 		this.savedAltVersionId.set(
 			this.model.resultTextModel.getAlternativeVersionId(),
-			undefined
+			undefined,
 		);
 		this.finished = true;
 	}
@@ -221,7 +221,7 @@ class TempFileMergeEditorInputModel
 	}
 
 	public async confirmClose(
-		inputModels: TempFileMergeEditorInputModel[]
+		inputModels: TempFileMergeEditorInputModel[],
 	): Promise<ConfirmResult> {
 		assertFn(() => inputModels.some((m) => m === this));
 
@@ -234,16 +234,16 @@ class TempFileMergeEditorInputModel
 				? localize(
 						"messageN",
 						"Do you want keep the merge result of {0} files?",
-						inputModels.length
-					)
+						inputModels.length,
+				  )
 				: localize(
 						"message1",
 						"Do you want keep the merge result of {0}?",
-						basename(inputModels[0].model.resultTextModel.uri)
-					);
+						basename(inputModels[0].model.resultTextModel.uri),
+				  );
 
 			const hasUnhandledConflicts = inputModels.some((m) =>
-				m.model.hasUnhandledConflicts.get()
+				m.model.hasUnhandledConflicts.get(),
 			);
 
 			const buttons: IPromptButton<ConfirmResult>[] = [
@@ -254,21 +254,21 @@ class TempFileMergeEditorInputModel
 									key: "saveWithConflict",
 									comment: ["&& denotes a mnemonic"],
 								},
-								"&&Save With Conflicts"
-							)
+								"&&Save With Conflicts",
+						  )
 						: localize(
 								{
 									key: "save",
 									comment: ["&& denotes a mnemonic"],
 								},
-								"&&Save"
-							),
+								"&&Save",
+						  ),
 					run: () => ConfirmResult.SAVE,
 				},
 				{
 					label: localize(
 						{ key: "discard", comment: ["&& denotes a mnemonic"] },
-						"Do&&n't Save"
+						"Do&&n't Save",
 					),
 					run: () => ConfirmResult.DONT_SAVE,
 				},
@@ -282,21 +282,21 @@ class TempFileMergeEditorInputModel
 						? isMany
 							? localize(
 									"detailNConflicts",
-									"The files contain unhandled conflicts. The merge results will be lost if you don't save them."
-								)
+									"The files contain unhandled conflicts. The merge results will be lost if you don't save them.",
+							  )
 							: localize(
 									"detail1Conflicts",
-									"The file contains unhandled conflicts. The merge result will be lost if you don't save it."
-								)
+									"The file contains unhandled conflicts. The merge result will be lost if you don't save it.",
+							  )
 						: isMany
-							? localize(
+						  ? localize(
 									"detailN",
-									"The merge results will be lost if you don't save them."
-								)
-							: localize(
+									"The merge results will be lost if you don't save them.",
+							  )
+						  : localize(
 									"detail1",
-									"The merge result will be lost if you don't save it."
-								),
+									"The merge result will be lost if you don't save it.",
+							  ),
 					buttons,
 					cancelButton: {
 						run: () => ConfirmResult.CANCEL,
@@ -330,15 +330,15 @@ class TempFileMergeEditorInputModel
 			const { confirmed } = await this.dialogService.confirm({
 				message: localize(
 					"saveTempFile.message",
-					"Do you want to accept the merge result?"
+					"Do you want to accept the merge result?",
 				),
 				detail: localize(
 					"saveTempFile.detail",
-					"This will write the merge result to the original file and close the merge editor."
+					"This will write the merge result to the original file and close the merge editor.",
 				),
 				primaryButton: localize(
 					{ key: "acceptMerge", comment: ["&& denotes a mnemonic"] },
-					"&&Accept Merge"
+					"&&Accept Merge",
 				),
 			});
 
@@ -376,12 +376,12 @@ export class WorkspaceMergeEditorModeFactory
 			"merge-editor.source",
 			localize(
 				"merge-editor.source",
-				"Before Resolving Conflicts In Merge Editor"
-			)
+				"Before Resolving Conflicts In Merge Editor",
+			),
 		);
 
 	public async createInputModel(
-		args: MergeEditorArgs
+		args: MergeEditorArgs,
 	): Promise<IMergeEditorInputModel> {
 		const store = new DisposableStore();
 
@@ -394,7 +394,7 @@ export class WorkspaceMergeEditorModeFactory
 			}
 		};
 		modelListener.add(
-			this.textFileService.files.onDidCreate(handleDidCreate)
+			this.textFileService.files.onDidCreate(handleDidCreate),
 		);
 		this.textFileService.files.models.forEach(handleDidCreate);
 
@@ -418,7 +418,7 @@ export class WorkspaceMergeEditorModeFactory
 
 		const lines = resultTextFileModel.textEditorModel!.getLinesContent();
 		const hasConflictMarkers = lines.some((l) =>
-			l.startsWith(conflictMarkers.start)
+			l.startsWith(conflictMarkers.start),
 		);
 		const resetResult = hasConflictMarkers;
 
@@ -435,7 +435,7 @@ export class WorkspaceMergeEditorModeFactory
 			{
 				resetResult,
 			},
-			this._mergeEditorTelemetry
+			this._mergeEditorTelemetry,
 		);
 		store.add(model);
 
@@ -446,7 +446,7 @@ export class WorkspaceMergeEditorModeFactory
 			model,
 			store,
 			resultTextFileModel,
-			this._mergeEditorTelemetry
+			this._mergeEditorTelemetry,
 		);
 	}
 }
@@ -458,9 +458,9 @@ class WorkspaceMergeEditorInputModel
 	public readonly isDirty = observableFromEvent(
 		Event.any(
 			this.resultTextFileModel.onDidChangeDirty,
-			this.resultTextFileModel.onDidSaveError
+			this.resultTextFileModel.onDidSaveError,
 		),
-		() => /** @description isDirty */ this.resultTextFileModel.isDirty()
+		() => /** @description isDirty */ this.resultTextFileModel.isDirty(),
 	);
 
 	private reported = false;
@@ -561,25 +561,25 @@ class WorkspaceMergeEditorInputModel
 	}
 
 	async confirmClose(
-		inputModels: IMergeEditorInputModel[]
+		inputModels: IMergeEditorInputModel[],
 	): Promise<ConfirmResult> {
 		const isMany = inputModels.length > 1;
 		const someDirty = inputModels.some((m) => m.isDirty.get());
 		const someUnhandledConflicts = inputModels.some((m) =>
-			m.model.hasUnhandledConflicts.get()
+			m.model.hasUnhandledConflicts.get(),
 		);
 		if (someDirty) {
 			const message = isMany
 				? localize(
 						"workspace.messageN",
 						"Do you want to save the changes you made to {0} files?",
-						inputModels.length
-					)
+						inputModels.length,
+				  )
 				: localize(
 						"workspace.message1",
 						"Do you want to save the changes you made to {0}?",
-						basename(inputModels[0].resultUri)
-					);
+						basename(inputModels[0].resultUri),
+				  );
 			const { result } = await this._dialogService.prompt<ConfirmResult>({
 				type: Severity.Info,
 				message,
@@ -587,21 +587,21 @@ class WorkspaceMergeEditorInputModel
 					? isMany
 						? localize(
 								"workspace.detailN.unhandled",
-								"The files contain unhandled conflicts. Your changes will be lost if you don't save them."
-							)
+								"The files contain unhandled conflicts. Your changes will be lost if you don't save them.",
+						  )
 						: localize(
 								"workspace.detail1.unhandled",
-								"The file contains unhandled conflicts. Your changes will be lost if you don't save them."
-							)
+								"The file contains unhandled conflicts. Your changes will be lost if you don't save them.",
+						  )
 					: isMany
-						? localize(
+					  ? localize(
 								"workspace.detailN.handled",
-								"Your changes will be lost if you don't save them."
-							)
-						: localize(
+								"Your changes will be lost if you don't save them.",
+						  )
+					  : localize(
 								"workspace.detail1.handled",
-								"Your changes will be lost if you don't save them."
-							),
+								"Your changes will be lost if you don't save them.",
+						  ),
 				buttons: [
 					{
 						label: someUnhandledConflicts
@@ -610,15 +610,15 @@ class WorkspaceMergeEditorInputModel
 										key: "workspace.saveWithConflict",
 										comment: ["&& denotes a mnemonic"],
 									},
-									"&&Save with Conflicts"
-								)
+									"&&Save with Conflicts",
+							  )
 							: localize(
 									{
 										key: "workspace.save",
 										comment: ["&& denotes a mnemonic"],
 									},
-									"&&Save"
-								),
+									"&&Save",
+							  ),
 						run: () => ConfirmResult.SAVE,
 					},
 					{
@@ -627,7 +627,7 @@ class WorkspaceMergeEditorInputModel
 								key: "workspace.doNotSave",
 								comment: ["&& denotes a mnemonic"],
 							},
-							"Do&&n't Save"
+							"Do&&n't Save",
 						),
 						run: () => ConfirmResult.DONT_SAVE,
 					},
@@ -642,7 +642,7 @@ class WorkspaceMergeEditorInputModel
 			!this._storageService.getBoolean(
 				StorageCloseWithConflicts,
 				StorageScope.PROFILE,
-				false
+				false,
 			)
 		) {
 			const { confirmed, checkboxChecked } =
@@ -651,23 +651,23 @@ class WorkspaceMergeEditorInputModel
 						? localize(
 								"workspace.messageN.nonDirty",
 								"Do you want to close {0} merge editors?",
-								inputModels.length
-							)
+								inputModels.length,
+						  )
 						: localize(
 								"workspace.message1.nonDirty",
 								"Do you want to close the merge editor for {0}?",
-								basename(inputModels[0].resultUri)
-							),
+								basename(inputModels[0].resultUri),
+						  ),
 					detail: someUnhandledConflicts
 						? isMany
 							? localize(
 									"workspace.detailN.unhandled.nonDirty",
-									"The files contain unhandled conflicts."
-								)
+									"The files contain unhandled conflicts.",
+							  )
 							: localize(
 									"workspace.detail1.unhandled.nonDirty",
-									"The file contains unhandled conflicts."
-								)
+									"The file contains unhandled conflicts.",
+							  )
 						: undefined,
 					primaryButton: someUnhandledConflicts
 						? localize(
@@ -675,15 +675,15 @@ class WorkspaceMergeEditorInputModel
 									key: "workspace.closeWithConflicts",
 									comment: ["&& denotes a mnemonic"],
 								},
-								"&&Close with Conflicts"
-							)
+								"&&Close with Conflicts",
+						  )
 						: localize(
 								{
 									key: "workspace.close",
 									comment: ["&& denotes a mnemonic"],
 								},
-								"&&Close"
-							),
+								"&&Close",
+						  ),
 					checkbox: {
 						label: localize("noMoreWarn", "Do not ask me again"),
 					},
@@ -694,7 +694,7 @@ class WorkspaceMergeEditorInputModel
 					StorageCloseWithConflicts,
 					true,
 					StorageScope.PROFILE,
-					StorageTarget.USER
+					StorageTarget.USER,
 				);
 			}
 
@@ -711,7 +711,7 @@ class WorkspaceMergeEditorInputModel
 async function toInputData(
 	data: MergeEditorInputData,
 	textModelService: ITextModelService,
-	store: DisposableStore
+	store: DisposableStore,
 ): Promise<InputData> {
 	const ref = await textModelService.createModelReference(data.uri);
 	store.add(ref);

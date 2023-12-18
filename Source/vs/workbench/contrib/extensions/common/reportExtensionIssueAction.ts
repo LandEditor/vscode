@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
 import { Action } from "vs/base/common/actions";
+import * as nls from "vs/nls";
 import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
 import { IWorkbenchIssueService } from "vs/workbench/services/issue/common/issue";
 
@@ -13,7 +13,7 @@ export class ReportExtensionIssueAction extends Action {
 		"workbench.extensions.action.reportExtensionIssue";
 	private static readonly _label = nls.localize(
 		"reportExtensionIssue",
-		"Report Issue"
+		"Report Issue",
 	);
 
 	// TODO: Consider passing in IExtensionStatus or IExtensionHostProfile for additional data

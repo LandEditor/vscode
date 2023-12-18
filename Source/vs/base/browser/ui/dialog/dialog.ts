@@ -5,10 +5,10 @@
 
 import {
 	$,
-	addDisposableListener,
-	clearNode,
 	EventHelper,
 	EventType,
+	addDisposableListener,
+	clearNode,
 	getWindow,
 	hide,
 	isActiveElement,
@@ -22,18 +22,18 @@ import {
 	ButtonWithDescription,
 	IButtonStyles,
 } from "vs/base/browser/ui/button/button";
-import { ICheckboxStyles, Checkbox } from "vs/base/browser/ui/toggle/toggle";
 import {
 	IInputBoxStyles,
 	InputBox,
 } from "vs/base/browser/ui/inputbox/inputBox";
+import { Checkbox, ICheckboxStyles } from "vs/base/browser/ui/toggle/toggle";
 import { Action } from "vs/base/common/actions";
 import { Codicon } from "vs/base/common/codicons";
-import { ThemeIcon } from "vs/base/common/themables";
 import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
 import { mnemonicButtonLabel } from "vs/base/common/labels";
 import { Disposable } from "vs/base/common/lifecycle";
 import { isLinux, isMacintosh, isWindows } from "vs/base/common/platform";
+import { ThemeIcon } from "vs/base/common/themables";
 import "vs/css!./dialog";
 import * as nls from "vs/nls";
 
@@ -110,12 +110,12 @@ export class Dialog extends Disposable {
 		private container: HTMLElement,
 		private message: string,
 		buttons: string[] | undefined,
-		private readonly options: IDialogOptions
+		private readonly options: IDialogOptions,
 	) {
 		super();
 
 		this.modalElement = this.container.appendChild(
-			$(`.monaco-dialog-modal-block.dimmed`)
+			$(`.monaco-dialog-modal-block.dimmed`),
 		);
 		this.shadowElement = this.modalElement.appendChild($(".dialog-shadow"));
 		this.element = this.shadowElement.appendChild($(".monaco-dialog-box"));
@@ -127,41 +127,41 @@ export class Dialog extends Disposable {
 
 		if (Array.isArray(buttons) && buttons.length > 0) {
 			this.buttons = buttons;
-		} else if (!this.options.disableDefaultAction) {
-			this.buttons = [nls.localize("ok", "OK")];
-		} else {
+		} else if (this.options.disableDefaultAction) {
 			this.buttons = [];
+		} else {
+			this.buttons = [nls.localize("ok", "OK")];
 		}
 		const buttonsRowElement = this.element.appendChild(
-			$(".dialog-buttons-row")
+			$(".dialog-buttons-row"),
 		);
 		this.buttonsContainer = buttonsRowElement.appendChild(
-			$(".dialog-buttons")
+			$(".dialog-buttons"),
 		);
 
 		const messageRowElement = this.element.appendChild(
-			$(".dialog-message-row")
+			$(".dialog-message-row"),
 		);
 		this.iconElement = messageRowElement.appendChild(
-			$("#monaco-dialog-icon.dialog-icon")
+			$("#monaco-dialog-icon.dialog-icon"),
 		);
 		this.iconElement.setAttribute("aria-label", this.getIconAriaLabel());
 		this.messageContainer = messageRowElement.appendChild(
-			$(".dialog-message-container")
+			$(".dialog-message-container"),
 		);
 
 		if (this.options.detail || this.options.renderBody) {
 			const messageElement = this.messageContainer.appendChild(
-				$(".dialog-message")
+				$(".dialog-message"),
 			);
 			const messageTextElement = messageElement.appendChild(
-				$("#monaco-dialog-message-text.dialog-message-text")
+				$("#monaco-dialog-message-text.dialog-message-text"),
 			);
 			messageTextElement.innerText = this.message;
 		}
 
 		this.messageDetailElement = this.messageContainer.appendChild(
-			$("#monaco-dialog-message-detail.dialog-message-detail")
+			$("#monaco-dialog-message-detail.dialog-message-detail"),
 		);
 		if (this.options.detail || !this.options.renderBody) {
 			this.messageDetailElement.innerText = this.options.detail
@@ -173,7 +173,7 @@ export class Dialog extends Disposable {
 
 		if (this.options.renderBody) {
 			const customBody = this.messageContainer.appendChild(
-				$("#monaco-dialog-message-body.dialog-message-body")
+				$("#monaco-dialog-message-body.dialog-message-body"),
 			);
 			this.options.renderBody(customBody);
 
@@ -185,7 +185,7 @@ export class Dialog extends Disposable {
 		if (this.options.inputs) {
 			this.inputs = this.options.inputs.map((input) => {
 				const inputRowElement = this.messageContainer.appendChild(
-					$(".dialog-message-input")
+					$(".dialog-message-input"),
 				);
 
 				const inputBox = this._register(
@@ -193,7 +193,7 @@ export class Dialog extends Disposable {
 						placeholder: input.placeholder,
 						type: input.type ?? "text",
 						inputBoxStyles: options.inputBoxStyles,
-					})
+					}),
 				);
 
 				if (input.value) {
@@ -208,37 +208,37 @@ export class Dialog extends Disposable {
 
 		if (this.options.checkboxLabel) {
 			const checkboxRowElement = this.messageContainer.appendChild(
-				$(".dialog-checkbox-row")
+				$(".dialog-checkbox-row"),
 			);
 
 			const checkbox = (this.checkbox = this._register(
 				new Checkbox(
 					this.options.checkboxLabel,
 					!!this.options.checkboxChecked,
-					options.checkboxStyles
-				)
+					options.checkboxStyles,
+				),
 			));
 
 			checkboxRowElement.appendChild(checkbox.domNode);
 
 			const checkboxMessageElement = checkboxRowElement.appendChild(
-				$(".dialog-checkbox-message")
+				$(".dialog-checkbox-message"),
 			);
 			checkboxMessageElement.innerText = this.options.checkboxLabel;
 			this._register(
 				addDisposableListener(
 					checkboxMessageElement,
 					EventType.CLICK,
-					() => (checkbox.checked = !checkbox.checked)
-				)
+					() => (checkbox.checked = !checkbox.checked),
+				),
 			);
 		}
 
 		const toolbarRowElement = this.element.appendChild(
-			$(".dialog-toolbar-row")
+			$(".dialog-toolbar-row"),
 		);
 		this.toolbarContainer = toolbarRowElement.appendChild(
-			$(".dialog-toolbar")
+			$(".dialog-toolbar"),
 		);
 
 		this.applyStyles();
@@ -278,11 +278,11 @@ export class Dialog extends Disposable {
 			clearNode(this.buttonsContainer);
 
 			const buttonBar = (this.buttonBar = this._register(
-				new ButtonBar(this.buttonsContainer)
+				new ButtonBar(this.buttonsContainer),
 			));
 			const buttonMap = this.rearrangeButtons(
 				this.buttons,
-				this.options.cancelId
+				this.options.cancelId,
 			);
 
 			// Handle button clicks
@@ -294,18 +294,18 @@ export class Dialog extends Disposable {
 								title: true,
 								secondary: !primary,
 								...this.buttonStyles,
-							})
-						)
+							}),
+					  )
 					: this._register(
 							buttonBar.addButton({
 								title: true,
 								secondary: !primary,
 								...this.buttonStyles,
-							})
-						);
+							}),
+					  );
 				button.label = mnemonicButtonLabel(
 					buttonMap[index].label,
-					true
+					true,
 				);
 				if (button instanceof ButtonWithDescription) {
 					button.description =
@@ -327,7 +327,7 @@ export class Dialog extends Disposable {
 									? this.inputs.map((input) => input.value)
 									: undefined,
 						});
-					})
+					}),
 				);
 			});
 
@@ -354,7 +354,7 @@ export class Dialog extends Disposable {
 										buttonMap.find(
 											(button) =>
 												button.index !==
-												this.options.cancelId
+												this.options.cancelId,
 										)?.index ?? 0,
 									checkboxChecked: this.checkbox
 										? this.checkbox.checked
@@ -362,8 +362,8 @@ export class Dialog extends Disposable {
 									values:
 										this.inputs.length > 0
 											? this.inputs.map(
-													(input) => input.value
-												)
+													(input) => input.value,
+											  )
 											: undefined,
 								});
 							}
@@ -464,8 +464,8 @@ export class Dialog extends Disposable {
 							this.options.keyEventProcessor(evt);
 						}
 					},
-					true
-				)
+					true,
+				),
 			);
 
 			this._register(
@@ -488,8 +488,8 @@ export class Dialog extends Disposable {
 							});
 						}
 					},
-					true
-				)
+					true,
+				),
 			);
 
 			// Detect focus out
@@ -502,7 +502,7 @@ export class Dialog extends Disposable {
 							if (
 								!isAncestor(
 									e.relatedTarget as HTMLElement,
-									this.element
+									this.element,
 								)
 							) {
 								this.focusToReturn =
@@ -515,8 +515,8 @@ export class Dialog extends Disposable {
 							}
 						}
 					},
-					false
-				)
+					false,
+				),
 			);
 
 			const spinModifierClassName = "codicon-modifier-spin";
@@ -526,29 +526,31 @@ export class Dialog extends Disposable {
 				...ThemeIcon.asClassNameArray(Codicon.dialogWarning),
 				...ThemeIcon.asClassNameArray(Codicon.dialogInfo),
 				...ThemeIcon.asClassNameArray(Codicon.loading),
-				spinModifierClassName
+				spinModifierClassName,
 			);
 
 			if (this.options.icon) {
 				this.iconElement.classList.add(
-					...ThemeIcon.asClassNameArray(this.options.icon)
+					...ThemeIcon.asClassNameArray(this.options.icon),
 				);
 			} else {
 				switch (this.options.type) {
 					case "error":
 						this.iconElement.classList.add(
-							...ThemeIcon.asClassNameArray(Codicon.dialogError)
+							...ThemeIcon.asClassNameArray(Codicon.dialogError),
 						);
 						break;
 					case "warning":
 						this.iconElement.classList.add(
-							...ThemeIcon.asClassNameArray(Codicon.dialogWarning)
+							...ThemeIcon.asClassNameArray(
+								Codicon.dialogWarning,
+							),
 						);
 						break;
 					case "pending":
 						this.iconElement.classList.add(
 							...ThemeIcon.asClassNameArray(Codicon.loading),
-							spinModifierClassName
+							spinModifierClassName,
 						);
 						break;
 					case "none":
@@ -558,7 +560,7 @@ export class Dialog extends Disposable {
 					case "question":
 					default:
 						this.iconElement.classList.add(
-							...ThemeIcon.asClassNameArray(Codicon.dialogInfo)
+							...ThemeIcon.asClassNameArray(Codicon.dialogInfo),
 						);
 						break;
 				}
@@ -566,7 +568,7 @@ export class Dialog extends Disposable {
 
 			if (!this.options.disableCloseAction) {
 				const actionBar = this._register(
-					new ActionBar(this.toolbarContainer, {})
+					new ActionBar(this.toolbarContainer, {}),
 				);
 
 				const action = this._register(
@@ -582,8 +584,8 @@ export class Dialog extends Disposable {
 									? this.checkbox.checked
 									: undefined,
 							});
-						}
-					)
+						},
+					),
 				);
 
 				actionBar.push(action, { icon: true, label: false });
@@ -594,11 +596,11 @@ export class Dialog extends Disposable {
 			this.element.setAttribute("aria-modal", "true");
 			this.element.setAttribute(
 				"aria-labelledby",
-				"monaco-dialog-icon monaco-dialog-message-text"
+				"monaco-dialog-icon monaco-dialog-message-text",
 			);
 			this.element.setAttribute(
 				"aria-describedby",
-				"monaco-dialog-icon monaco-dialog-message-text monaco-dialog-message-detail monaco-dialog-message-body"
+				"monaco-dialog-icon monaco-dialog-message-text monaco-dialog-message-detail monaco-dialog-message-body",
 			);
 			show(this.element);
 
@@ -683,7 +685,7 @@ export class Dialog extends Disposable {
 
 	private rearrangeButtons(
 		buttons: Array<string>,
-		cancelId: number | undefined
+		cancelId: number | undefined,
 	): ButtonMapEntry[] {
 		// Maps each button to its current label and old index
 		// so that when we move them around it's not a problem

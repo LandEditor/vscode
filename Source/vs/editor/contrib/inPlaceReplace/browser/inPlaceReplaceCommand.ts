@@ -25,14 +25,14 @@ export class InPlaceReplaceCommand implements ICommand {
 
 	public getEditOperations(
 		model: ITextModel,
-		builder: IEditOperationBuilder
+		builder: IEditOperationBuilder,
 	): void {
 		builder.addTrackedEditOperation(this._editRange, this._text);
 	}
 
 	public computeCursorState(
 		model: ITextModel,
-		helper: ICursorStateComputerData
+		helper: ICursorStateComputerData,
 	): Selection {
 		const inverseEditOperations = helper.getInverseEditOperations();
 		const srcRange = inverseEditOperations[0].range;
@@ -43,7 +43,7 @@ export class InPlaceReplaceCommand implements ICommand {
 				srcRange.endLineNumber,
 				srcRange.endColumn - this._text.length,
 				srcRange.endLineNumber,
-				srcRange.endColumn
+				srcRange.endColumn,
 			);
 		}
 
@@ -51,10 +51,13 @@ export class InPlaceReplaceCommand implements ICommand {
 			srcRange.endLineNumber,
 			Math.min(
 				this._originalSelection.positionColumn,
-				srcRange.endColumn
+				srcRange.endColumn,
 			),
 			srcRange.endLineNumber,
-			Math.min(this._originalSelection.positionColumn, srcRange.endColumn)
+			Math.min(
+				this._originalSelection.positionColumn,
+				srcRange.endColumn,
+			),
 		);
 	}
 }

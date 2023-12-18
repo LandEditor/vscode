@@ -3,73 +3,73 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from "vs/base/common/uri";
+import { raceCancellation } from "vs/base/common/async";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { toErrorMessage } from "vs/base/common/errorMessage";
+import { isCancellationError } from "vs/base/common/errors";
 import { Emitter, Event } from "vs/base/common/event";
+import { IMarkdownString } from "vs/base/common/htmlContent";
+import { Iterable } from "vs/base/common/iterator";
+import {
+	DisposableStore,
+	IDisposable,
+	toDisposable,
+} from "vs/base/common/lifecycle";
+import { ResourceMap } from "vs/base/common/map";
+import { Schemas } from "vs/base/common/network";
+import { isEqual } from "vs/base/common/resources";
+import { URI } from "vs/base/common/uri";
+import {
+	IActiveCodeEditor,
+	ICodeEditor,
+} from "vs/editor/browser/editorBrowser";
 import {
 	ResourceEdit,
 	ResourceFileEdit,
 	ResourceTextEdit,
 } from "vs/editor/browser/services/bulkEditService";
 import {
+	EditOperation,
+	ISingleEditOperation,
+} from "vs/editor/common/core/editOperation";
+import { IRange, Range } from "vs/editor/common/core/range";
+import {
+	DetailedLineRangeMapping,
+	LineRangeMapping,
+} from "vs/editor/common/diff/rangeMapping";
+import {
 	IWorkspaceTextEdit,
 	TextEdit,
 	WorkspaceEdit,
 } from "vs/editor/common/languages";
+import { ILanguageService } from "vs/editor/common/languages/language";
 import {
 	IModelDecorationOptions,
 	IModelDeltaDecoration,
 	ITextModel,
 } from "vs/editor/common/model";
 import {
+	ModelDecorationOptions,
+	createTextBufferFactoryFromSnapshot,
+} from "vs/editor/common/model/textModel";
+import { IModelService } from "vs/editor/common/services/model";
+import { ITextModelService } from "vs/editor/common/services/resolverService";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { ILogService } from "vs/platform/log/common/log";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import {
 	EditMode,
-	IInlineChatSessionProvider,
-	IInlineChatSession,
 	IInlineChatBulkEditResponse,
 	IInlineChatEditResponse,
 	IInlineChatResponse,
 	IInlineChatService,
+	IInlineChatSession,
+	IInlineChatSessionProvider,
 	InlineChatResponseType,
 	InlineChatResponseTypes,
 } from "vs/workbench/contrib/inlineChat/common/inlineChat";
-import { IRange, Range } from "vs/editor/common/core/range";
-import {
-	IActiveCodeEditor,
-	ICodeEditor,
-} from "vs/editor/browser/editorBrowser";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { IModelService } from "vs/editor/common/services/model";
-import { ITextModelService } from "vs/editor/common/services/resolverService";
-import {
-	DisposableStore,
-	IDisposable,
-	toDisposable,
-} from "vs/base/common/lifecycle";
-import {
-	ModelDecorationOptions,
-	createTextBufferFactoryFromSnapshot,
-} from "vs/editor/common/model/textModel";
-import { ILogService } from "vs/platform/log/common/log";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { Iterable } from "vs/base/common/iterator";
-import { toErrorMessage } from "vs/base/common/errorMessage";
-import { isCancellationError } from "vs/base/common/errors";
-import {
-	EditOperation,
-	ISingleEditOperation,
-} from "vs/editor/common/core/editOperation";
-import { raceCancellation } from "vs/base/common/async";
-import {
-	DetailedLineRangeMapping,
-	LineRangeMapping,
-} from "vs/editor/common/diff/rangeMapping";
-import { IMarkdownString } from "vs/base/common/htmlContent";
-import { IUntitledTextEditorModel } from "vs/workbench/services/untitled/common/untitledTextEditorModel";
 import { ITextFileService } from "vs/workbench/services/textfile/common/textfiles";
-import { ILanguageService } from "vs/editor/common/languages/language";
-import { ResourceMap } from "vs/base/common/map";
-import { Schemas } from "vs/base/common/network";
-import { isEqual } from "vs/base/common/resources";
+import { IUntitledTextEditorModel } from "vs/workbench/services/untitled/common/untitledTextEditorModel";
 
 export type Recording = {
 	when: Date;
@@ -153,13 +153,10 @@ class SessionWholeRange {
 
 	private _decorationIds: string[] = [];
 
-	constructor(
-		private readonly _textModel: ITextModel,
-		wholeRange: IRange
-	) {
+	constructor(private readonly _textModel: ITextModel, wholeRange: IRange) {
 		this._decorationIds = _textModel.deltaDecorations(
 			[],
-			[{ range: wholeRange, options: SessionWholeRange._options }]
+			[{ range: wholeRange, options: SessionWholeRange._options }],
 		);
 	}
 
@@ -179,7 +176,7 @@ class SessionWholeRange {
 			});
 		}
 		this._decorationIds.push(
-			...this._textModel.deltaDecorations([], newDeco)
+			...this._textModel.deltaDecorations([], newDeco),
 		);
 		this._onDidChange.fire(this);
 	}
@@ -192,16 +189,16 @@ class SessionWholeRange {
 						modified.startLineNumber,
 						1,
 						modified.startLineNumber,
-						this._textModel.getLineLength(modified.startLineNumber)
-					)
+						this._textModel.getLineLength(modified.startLineNumber),
+				  )
 				: new Range(
 						modified.startLineNumber,
 						1,
 						modified.endLineNumberExclusive - 1,
 						this._textModel.getLineLength(
-							modified.endLineNumberExclusive - 1
-						)
-					);
+							modified.endLineNumberExclusive - 1,
+						),
+				  );
 
 			newDeco.push({
 				range: modifiedRange,
@@ -219,10 +216,10 @@ class SessionWholeRange {
 		for (const id of this._decorationIds) {
 			const range = this._textModel.getDecorationRange(id);
 			if (range) {
-				if (!result) {
-					result = range;
-				} else {
+				if (result) {
 					result = Range.plusRange(result, range);
+				} else {
+					result = range;
 				}
 			}
 		}
@@ -233,7 +230,7 @@ class SessionWholeRange {
 export class Session {
 	private _lastInput: SessionPrompt | undefined;
 	private _lastExpansionState: ExpansionState | undefined;
-	private _isUnstashed: boolean = false;
+	private _isUnstashed = false;
 	private readonly _exchange: SessionExchange[] = [];
 	private readonly _startTime = new Date();
 	private readonly _teldata: Partial<TelemetryData>;
@@ -248,7 +245,7 @@ export class Session {
 		readonly textModelN: ITextModel,
 		readonly provider: IInlineChatSessionProvider,
 		readonly session: IInlineChatSession,
-		readonly wholeRange: SessionWholeRange
+		readonly wholeRange: SessionWholeRange,
 	) {
 		this.textModelNAltVersion = textModelN.getAlternativeVersionId();
 		this._teldata = {
@@ -310,7 +307,7 @@ export class Session {
 
 	get hasChangedText(): boolean {
 		return !this.textModel0.equalsTextBuffer(
-			this.textModelN.getTextBuffer()
+			this.textModelN.getTextBuffer(),
 		);
 	}
 
@@ -327,7 +324,7 @@ export class Session {
 		}
 
 		return this.textModelN.getValueInRange(
-			new Range(startLine, 1, endLine, Number.MAX_VALUE)
+			new Range(startLine, 1, endLine, Number.MAX_VALUE),
 		);
 	}
 
@@ -363,7 +360,7 @@ export class Session {
 }
 
 export class SessionPrompt {
-	private _attempt: number = 0;
+	private _attempt = 0;
 
 	constructor(readonly value: string) {}
 
@@ -381,7 +378,7 @@ export class SessionPrompt {
 export class SessionExchange {
 	constructor(
 		readonly prompt: SessionPrompt,
-		readonly response: ReplyResponse | EmptyResponse | ErrorResponse
+		readonly response: ReplyResponse | EmptyResponse | ErrorResponse,
 	) {}
 }
 
@@ -539,7 +536,7 @@ export interface IInlineChatSessionService {
 	createSession(
 		editor: IActiveCodeEditor,
 		options: { editMode: EditMode; wholeRange?: IRange },
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<Session | undefined>;
 
 	getSession(editor: ICodeEditor, uri: URI): Session | undefined;
@@ -548,7 +545,7 @@ export interface IInlineChatSessionService {
 
 	registerSessionKeyComputer(
 		scheme: string,
-		value: ISessionKeyComputer
+		value: ISessionKeyComputer,
 	): IDisposable;
 
 	//
@@ -598,10 +595,10 @@ export class InlineChatSessionService implements IInlineChatSessionService {
 	async createSession(
 		editor: IActiveCodeEditor,
 		options: { editMode: EditMode; wholeRange?: Range },
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<Session | undefined> {
 		const provider = Iterable.first(
-			this._inlineChatService.getAllProvider()
+			this._inlineChatService.getAllProvider(),
 		);
 		if (!provider) {
 			this._logService.trace("[IE] NO provider found");
@@ -619,15 +616,15 @@ export class InlineChatSessionService implements IInlineChatSessionService {
 					provider.prepareInlineChatSession(
 						textModel,
 						selection,
-						token
-					)
+						token,
+					),
 				),
-				token
+				token,
 			);
 		} catch (error) {
 			this._logService.error(
 				"[IE] FAILED to prepare session",
-				provider.debugName
+				provider.debugName,
 			);
 			this._logService.error(error);
 			return undefined;
@@ -641,13 +638,13 @@ export class InlineChatSessionService implements IInlineChatSessionService {
 		this._logService.trace(
 			`[IE] creating NEW session for ${editor.getId()},  ${
 				provider.debugName
-			}`
+			}`,
 		);
 		const store = new DisposableStore();
 
 		// create: keep a reference to prevent disposal of the "actual" model
 		const refTextModelN = await this._textModelService.createModelReference(
-			textModel.uri
+			textModel.uri,
 		);
 		store.add(refTextModelN);
 
@@ -656,7 +653,7 @@ export class InlineChatSessionService implements IInlineChatSessionService {
 			createTextBufferFactoryFromSnapshot(textModel.createSnapshot()),
 			{ languageId: textModel.getLanguageId(), onDidChange: Event.None },
 			undefined,
-			true
+			true,
 		);
 		store.add(textModel0);
 
@@ -672,7 +669,7 @@ export class InlineChatSessionService implements IInlineChatSessionService {
 			wholeRange.startLineNumber,
 			1,
 			wholeRange.endLineNumber,
-			textModel.getLineMaxColumn(wholeRange.endLineNumber)
+			textModel.getLineMaxColumn(wholeRange.endLineNumber),
 		);
 
 		// install managed-marker for the decoration range
@@ -686,7 +683,7 @@ export class InlineChatSessionService implements IInlineChatSessionService {
 			textModel,
 			provider,
 			raw,
-			wholeRangeMgr
+			wholeRangeMgr,
 		);
 
 		// store: key -> session
@@ -710,7 +707,7 @@ export class InlineChatSessionService implements IInlineChatSessionService {
 				this._logService.trace(
 					`[IE] did RELEASED session for ${editor.getId()}, ${
 						session.provider.debugName
-					}`
+					}`,
 				);
 				break;
 			}
@@ -745,7 +742,7 @@ export class InlineChatSessionService implements IInlineChatSessionService {
 
 	registerSessionKeyComputer(
 		scheme: string,
-		value: ISessionKeyComputer
+		value: ISessionKeyComputer,
 	): IDisposable {
 		this._keyComputers.set(scheme, value);
 		return toDisposable(() => this._keyComputers.delete(scheme));

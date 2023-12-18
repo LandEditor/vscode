@@ -4,16 +4,16 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+	IMMUTABLE_CODE_TO_KEY_CODE,
 	KeyCode,
 	KeyCodeUtils,
-	IMMUTABLE_CODE_TO_KEY_CODE,
 	ScanCode,
 } from "vs/base/common/keyCodes";
 import {
-	SingleModifierChord,
 	Chord,
 	KeyCodeChord,
 	Keybinding,
+	SingleModifierChord,
 } from "vs/base/common/keybindings";
 import { OperatingSystem } from "vs/base/common/platform";
 import { BaseResolvedKeybinding } from "vs/platform/keybinding/common/baseResolvedKeybinding";
@@ -101,7 +101,7 @@ export class USLayoutResolvedKeybinding extends BaseResolvedKeybinding<KeyCodeCh
 	}
 
 	protected _getSingleModifierChordDispatch(
-		keybinding: KeyCodeChord
+		keybinding: KeyCodeChord,
 	): SingleModifierChord | null {
 		if (
 			keybinding.keyCode === KeyCode.Ctrl &&
@@ -266,16 +266,16 @@ export class USLayoutResolvedKeybinding extends BaseResolvedKeybinding<KeyCodeCh
 			chord.shiftKey,
 			chord.altKey,
 			chord.metaKey,
-			keyCode
+			keyCode,
 		);
 	}
 
 	public static resolveKeybinding(
 		keybinding: Keybinding,
-		os: OperatingSystem
+		os: OperatingSystem,
 	): USLayoutResolvedKeybinding[] {
 		const chords: KeyCodeChord[] = toEmptyArrayIfContainsNull(
-			keybinding.chords.map((chord) => this._toKeyCodeChord(chord))
+			keybinding.chords.map((chord) => this._toKeyCodeChord(chord)),
 		);
 		if (chords.length > 0) {
 			return [new USLayoutResolvedKeybinding(chords, os)];

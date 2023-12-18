@@ -6,7 +6,7 @@
 /**
  * Open ended enum at runtime
  */
-export const enum LanguageId {
+export enum LanguageId {
 	Null = 0,
 	PlainText = 1,
 }
@@ -14,7 +14,7 @@ export const enum LanguageId {
 /**
  * A font style. Values are 2^x such that a bit mask can be used.
  */
-export const enum FontStyle {
+export enum FontStyle {
 	NotSet = -1,
 	None = 0,
 	Italic = 1,
@@ -26,7 +26,7 @@ export const enum FontStyle {
 /**
  * Open ended enum at runtime
  */
-export const enum ColorId {
+export enum ColorId {
 	None = 0,
 	DefaultForeground = 1,
 	DefaultBackground = 2,
@@ -35,7 +35,7 @@ export const enum ColorId {
 /**
  * A standard token type.
  */
-export const enum StandardTokenType {
+export enum StandardTokenType {
 	Other = 0,
 	Comment = 1,
 	String = 2,
@@ -64,7 +64,7 @@ export const enum StandardTokenType {
  *  - b = background color (9 bits)
  *
  */
-export const enum MetadataConsts {
+export enum MetadataConsts {
 	LANGUAGEID_MASK = 0b00000000000000000000000011111111,
 	TOKEN_TYPE_MASK = 0b00000000000000000000001100000000,
 	BALANCED_BRACKETS_MASK = 0b00000000000000000000010000000000,
@@ -159,7 +159,7 @@ export class TokenMetadata {
 
 	public static getInlineStyleFromMetadata(
 		metadata: number,
-		colorMap: string[]
+		colorMap: string[],
 	): string {
 		const foreground = this.getForeground(metadata);
 		const fontStyle = this.getFontStyle(metadata);
@@ -185,7 +185,7 @@ export class TokenMetadata {
 	}
 
 	public static getPresentationFromMetadata(
-		metadata: number
+		metadata: number,
 	): ITokenPresentation {
 		const foreground = this.getForeground(metadata);
 		const fontStyle = this.getFontStyle(metadata);

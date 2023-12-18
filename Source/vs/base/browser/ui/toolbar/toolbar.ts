@@ -18,10 +18,10 @@ import {
 	SubmenuAction,
 } from "vs/base/common/actions";
 import { Codicon } from "vs/base/common/codicons";
-import { ThemeIcon } from "vs/base/common/themables";
 import { EventMultiplexer } from "vs/base/common/event";
 import { ResolvedKeybinding } from "vs/base/common/keybindings";
 import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
+import { ThemeIcon } from "vs/base/common/themables";
 import "vs/css!./toolbar";
 import * as nls from "vs/nls";
 
@@ -53,12 +53,12 @@ export class ToolBar extends Disposable {
 	private toggleMenuAction: ToggleMenuAction;
 	private toggleMenuActionViewItem: DropdownMenuActionViewItem | undefined;
 	private submenuActionViewItems: DropdownMenuActionViewItem[] = [];
-	private hasSecondaryActions: boolean = false;
+	private hasSecondaryActions = false;
 	private readonly lookupKeybindings: boolean;
 	private readonly element: HTMLElement;
 
 	private _onDidChangeDropdownVisibility = this._register(
-		new EventMultiplexer<boolean>()
+		new EventMultiplexer<boolean>(),
 	);
 	readonly onDidChangeDropdownVisibility =
 		this._onDidChangeDropdownVisibility.event;
@@ -69,7 +69,7 @@ export class ToolBar extends Disposable {
 		contextMenuProvider: IContextMenuProvider,
 		options: IToolBarOptions = {
 			orientation: ActionsOrientation.HORIZONTAL,
-		}
+		},
 	) {
 		super();
 
@@ -80,8 +80,8 @@ export class ToolBar extends Disposable {
 		this.toggleMenuAction = this._register(
 			new ToggleMenuAction(
 				() => this.toggleMenuActionViewItem?.show(),
-				options.toggleMenuTitle
-			)
+				options.toggleMenuTitle,
+			),
 		);
 
 		this.element = document.createElement("div");
@@ -109,7 +109,7 @@ export class ToolBar extends Disposable {
 									keybindingProvider:
 										this.options.getKeyBinding,
 									classNames: ThemeIcon.asClassNameArray(
-										options.moreIcon ?? Codicon.toolBarMore
+										options.moreIcon ?? Codicon.toolBarMore,
 									),
 									anchorAlignmentProvider:
 										this.options.anchorAlignmentProvider,
@@ -118,16 +118,16 @@ export class ToolBar extends Disposable {
 											.renderDropdownAsChildElement,
 									skipTelemetry: this.options.skipTelemetry,
 									isMenu: true,
-								}
+								},
 							);
 						this.toggleMenuActionViewItem.setActionContext(
-							this.actionBar.context
+							this.actionBar.context,
 						);
 						this.disposables.add(
 							this._onDidChangeDropdownVisibility.add(
 								this.toggleMenuActionViewItem
-									.onDidChangeVisibility
-							)
+									.onDidChangeVisibility,
+							),
 						);
 
 						return this.toggleMenuActionViewItem;
@@ -136,7 +136,7 @@ export class ToolBar extends Disposable {
 					if (options.actionViewItemProvider) {
 						const result = options.actionViewItemProvider(
 							action,
-							viewItemOptions
+							viewItemOptions,
 						);
 
 						if (result) {
@@ -160,14 +160,14 @@ export class ToolBar extends Disposable {
 								menuAsChild:
 									!!this.options.renderDropdownAsChildElement,
 								skipTelemetry: this.options.skipTelemetry,
-							}
+							},
 						);
 						result.setActionContext(this.actionBar.context);
 						this.submenuActionViewItems.push(result);
 						this.disposables.add(
 							this._onDidChangeDropdownVisibility.add(
-								result.onDidChangeVisibility
-							)
+								result.onDidChangeVisibility,
+							),
 						);
 
 						return result;
@@ -175,7 +175,7 @@ export class ToolBar extends Disposable {
 
 					return undefined;
 				},
-			})
+			}),
 		);
 	}
 
@@ -229,7 +229,7 @@ export class ToolBar extends Disposable {
 
 	setActions(
 		primaryActions: ReadonlyArray<IAction>,
-		secondaryActions?: ReadonlyArray<IAction>
+		secondaryActions?: ReadonlyArray<IAction>,
 	): void {
 		this.clear();
 

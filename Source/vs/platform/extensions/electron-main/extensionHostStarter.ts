@@ -3,26 +3,26 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Promises } from "vs/base/common/async";
 import { canceled } from "vs/base/common/errors";
+import { Event } from "vs/base/common/event";
 import { IDisposable } from "vs/base/common/lifecycle";
 import {
 	IExtensionHostProcessOptions,
 	IExtensionHostStarter,
 } from "vs/platform/extensions/common/extensionHostStarter";
-import { Event } from "vs/base/common/event";
-import { ILogService } from "vs/platform/log/common/log";
 import { ILifecycleMainService } from "vs/platform/lifecycle/electron-main/lifecycleMainService";
-import { Promises } from "vs/base/common/async";
+import { ILogService } from "vs/platform/log/common/log";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import { WindowUtilityProcess } from "vs/platform/utilityProcess/electron-main/utilityProcess";
 import { IWindowsMainService } from "vs/platform/windows/electron-main/windows";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 
 export class ExtensionHostStarter
 	implements IDisposable, IExtensionHostStarter
 {
 	readonly _serviceBrand: undefined;
 
-	private static _lastId: number = 0;
+	private static _lastId = 0;
 
 	private readonly _extHosts = new Map<string, WindowUtilityProcess>();
 	private _shutdown = false;
@@ -79,12 +79,12 @@ export class ExtensionHostStarter
 			this._logService,
 			this._windowsMainService,
 			this._telemetryService,
-			this._lifecycleMainService
+			this._lifecycleMainService,
 		);
 		this._extHosts.set(id, extHost);
 		extHost.onExit(({ pid, code, signal }) => {
 			this._logService.info(
-				`Extension host with pid ${pid} exited with code: ${code}, signal: ${signal}.`
+				`Extension host with pid ${pid} exited with code: ${code}, signal: ${signal}.`,
 			);
 			setTimeout(() => {
 				extHost.dispose();
@@ -100,7 +100,7 @@ export class ExtensionHostStarter
 				try {
 					process.kill(pid, 0); // will throw if the process doesn't exist anymore.
 					this._logService.error(
-						`Extension host with pid ${pid} still exists, forcefully killing it...`
+						`Extension host with pid ${pid} still exists, forcefully killing it...`,
 					);
 					process.kill(pid);
 				} catch (er) {
@@ -113,7 +113,7 @@ export class ExtensionHostStarter
 
 	async start(
 		id: string,
-		opts: IExtensionHostProcessOptions
+		opts: IExtensionHostProcessOptions,
 	): Promise<{ pid: number | undefined }> {
 		if (this._shutdown) {
 			throw canceled();

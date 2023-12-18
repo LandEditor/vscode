@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as dom from "vs/base/browser/dom";
-import { createFastDomNode, FastDomNode } from "vs/base/browser/fastDomNode";
+import { FastDomNode, createFastDomNode } from "vs/base/browser/fastDomNode";
 import { GlobalPointerMoveMonitor } from "vs/base/browser/globalPointerMoveMonitor";
 import { StandardWheelEvent } from "vs/base/browser/mouseEvent";
 import {
@@ -73,12 +73,12 @@ export abstract class AbstractScrollbar extends Widget {
 			new ScrollbarVisibilityController(
 				opts.visibility,
 				"visible scrollbar " + opts.extraScrollbarClassName,
-				"invisible scrollbar " + opts.extraScrollbarClassName
-			)
+				"invisible scrollbar " + opts.extraScrollbarClassName,
+			),
 		);
 		this._visibilityController.setIsNeeded(this._scrollbarState.isNeeded());
 		this._pointerMoveMonitor = this._register(
-			new GlobalPointerMoveMonitor()
+			new GlobalPointerMoveMonitor(),
 		);
 		this._shouldRender = true;
 		this.domNode = createFastDomNode(document.createElement("div"));
@@ -92,8 +92,8 @@ export abstract class AbstractScrollbar extends Widget {
 			dom.addDisposableListener(
 				this.domNode.domNode,
 				dom.EventType.POINTER_DOWN,
-				(e: PointerEvent) => this._domNodePointerDown(e)
-			)
+				(e: PointerEvent) => this._domNodePointerDown(e),
+			),
 		);
 	}
 
@@ -115,7 +115,7 @@ export abstract class AbstractScrollbar extends Widget {
 		top: number,
 		left: number,
 		width: number | undefined,
-		height: number | undefined
+		height: number | undefined,
 	): void {
 		this.slider = createFastDomNode(document.createElement("div"));
 		this.slider.setClassName("slider");
@@ -142,8 +142,8 @@ export abstract class AbstractScrollbar extends Widget {
 						e.preventDefault();
 						this._sliderPointerDown(e);
 					}
-				}
-			)
+				},
+			),
 		);
 
 		this.onclick(this.slider.domNode, (e) => {
@@ -158,7 +158,7 @@ export abstract class AbstractScrollbar extends Widget {
 	protected _onElementSize(visibleSize: number): boolean {
 		if (this._scrollbarState.setVisibleSize(visibleSize)) {
 			this._visibilityController.setIsNeeded(
-				this._scrollbarState.isNeeded()
+				this._scrollbarState.isNeeded(),
 			);
 			this._shouldRender = true;
 			if (!this._lazyRender) {
@@ -171,7 +171,7 @@ export abstract class AbstractScrollbar extends Widget {
 	protected _onElementScrollSize(elementScrollSize: number): boolean {
 		if (this._scrollbarState.setScrollSize(elementScrollSize)) {
 			this._visibilityController.setIsNeeded(
-				this._scrollbarState.isNeeded()
+				this._scrollbarState.isNeeded(),
 			);
 			this._shouldRender = true;
 			if (!this._lazyRender) {
@@ -184,7 +184,7 @@ export abstract class AbstractScrollbar extends Widget {
 	protected _onElementScrollPosition(elementScrollPosition: number): boolean {
 		if (this._scrollbarState.setScrollPosition(elementScrollPosition)) {
 			this._visibilityController.setIsNeeded(
-				this._scrollbarState.isNeeded()
+				this._scrollbarState.isNeeded(),
 			);
 			this._shouldRender = true;
 			if (!this._lazyRender) {
@@ -212,12 +212,12 @@ export abstract class AbstractScrollbar extends Widget {
 
 		this._renderDomNode(
 			this._scrollbarState.getRectangleLargeSize(),
-			this._scrollbarState.getRectangleSmallSize()
+			this._scrollbarState.getRectangleSmallSize(),
 		);
 		this._updateSlider(
 			this._scrollbarState.getSliderSize(),
 			this._scrollbarState.getArrowSize() +
-				this._scrollbarState.getSliderPosition()
+				this._scrollbarState.getSliderPosition(),
 		);
 	}
 	// ----------------- DOM events
@@ -261,7 +261,7 @@ export abstract class AbstractScrollbar extends Widget {
 			offsetY = e.offsetY;
 		} else {
 			const domNodePosition = dom.getDomNodePagePosition(
-				this.domNode.domNode
+				this.domNode.domNode,
 			);
 			offsetX = e.pageX - domNodePosition.left;
 			offsetY = e.pageY - domNodePosition.top;
@@ -271,11 +271,11 @@ export abstract class AbstractScrollbar extends Widget {
 		this._setDesiredScrollPositionNow(
 			this._scrollByPage
 				? this._scrollbarState.getDesiredScrollPositionFromOffsetPaged(
-						offset
-					)
+						offset,
+				  )
 				: this._scrollbarState.getDesiredScrollPositionFromOffset(
-						offset
-					)
+						offset,
+				  ),
 		);
 
 		if (e.button === 0) {
@@ -303,7 +303,8 @@ export abstract class AbstractScrollbar extends Widget {
 				const pointerOrthogonalPosition =
 					this._sliderOrthogonalPointerPosition(pointerMoveData);
 				const pointerOrthogonalDelta = Math.abs(
-					pointerOrthogonalPosition - initialPointerOrthogonalPosition
+					pointerOrthogonalPosition -
+						initialPointerOrthogonalPosition,
 				);
 
 				if (
@@ -312,7 +313,7 @@ export abstract class AbstractScrollbar extends Widget {
 				) {
 					// The pointer has wondered away from the scrollbar => reset dragging
 					this._setDesiredScrollPositionNow(
-						initialScrollbarState.getScrollPosition()
+						initialScrollbarState.getScrollPosition(),
 					);
 					return;
 				}
@@ -322,14 +323,14 @@ export abstract class AbstractScrollbar extends Widget {
 				const pointerDelta = pointerPosition - initialPointerPosition;
 				this._setDesiredScrollPositionNow(
 					initialScrollbarState.getDesiredScrollPositionFromDelta(
-						pointerDelta
-					)
+						pointerDelta,
+					),
 				);
 			},
 			() => {
 				this.slider.toggleClassName("active", false);
 				this._host.onDragEnd();
-			}
+			},
 		);
 
 		this._host.onDragStart();
@@ -359,27 +360,27 @@ export abstract class AbstractScrollbar extends Widget {
 
 	protected abstract _renderDomNode(
 		largeSize: number,
-		smallSize: number
+		smallSize: number,
 	): void;
 	protected abstract _updateSlider(
 		sliderSize: number,
-		sliderPosition: number
+		sliderPosition: number,
 	): void;
 
 	protected abstract _pointerDownRelativePosition(
 		offsetX: number,
-		offsetY: number
+		offsetY: number,
 	): number;
 	protected abstract _sliderPointerPosition(
-		e: ISimplifiedPointerEvent
+		e: ISimplifiedPointerEvent,
 	): number;
 	protected abstract _sliderOrthogonalPointerPosition(
-		e: ISimplifiedPointerEvent
+		e: ISimplifiedPointerEvent,
 	): number;
 	protected abstract _updateScrollbarSize(size: number): void;
 
 	public abstract writeScrollPosition(
 		target: INewScrollPosition,
-		scrollPosition: number
+		scrollPosition: number,
 	): void;
 }

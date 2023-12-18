@@ -5,13 +5,13 @@
 
 import type * as nbformat from "@jupyterlab/nbformat";
 import {
-	extensions,
 	NotebookCellData,
 	NotebookCellExecutionSummary,
 	NotebookCellKind,
 	NotebookCellOutput,
 	NotebookCellOutputItem,
 	NotebookData,
+	extensions,
 } from "vscode";
 import { CellMetadata, CellOutputMetadata } from "./common";
 
@@ -33,8 +33,8 @@ export function getPreferredLanguage(metadata?: nbformat.INotebookMetadata) {
 	const defaultLanguage = extensions.getExtension("ms-python.python")
 		? "python"
 		: extensions.getExtension("ms-dotnettools.dotnet-interactive-vscode")
-			? "csharp"
-			: "python";
+		  ? "csharp"
+		  : "python";
 
 	// Note, whatever language is returned here, when the user selects a kernel, the cells (of blank documents) get updated based on that kernel selection.
 	return translateKernelLanguageToMonaco(jupyterLanguage || defaultLanguage);
@@ -84,12 +84,12 @@ function isMimeTypeMatch(value: string, compareWith: string) {
 }
 
 function sortOutputItemsBasedOnDisplayOrder(
-	outputItems: NotebookCellOutputItem[]
+	outputItems: NotebookCellOutputItem[],
 ): NotebookCellOutputItem[] {
 	return outputItems
 		.map((item) => {
 			let index = orderOfMimeTypes.findIndex((mime) =>
-				isMimeTypeMatch(mime, item.mime)
+				isMimeTypeMatch(mime, item.mime),
 			);
 			// Sometimes we can have mime types with empty data, e.g. when using holoview we can have `application/vnd.holoviews_load.v0+json` with empty value.
 			// & in these cases we have HTML/JS and those take precedence.
@@ -104,7 +104,7 @@ function sortOutputItemsBasedOnDisplayOrder(
 			};
 		})
 		.sort(
-			(outputItemA, outputItemB) => outputItemA.index - outputItemB.index
+			(outputItemA, outputItemB) => outputItemA.index - outputItemB.index,
 		)
 		.map((item) => item.item);
 }
@@ -146,7 +146,7 @@ function concatMultilineString(str: string | string[], trim?: boolean): string {
 
 function convertJupyterOutputToBuffer(
 	mime: string,
-	value: unknown
+	value: unknown,
 ): NotebookCellOutputItem {
 	if (!value) {
 		return NotebookCellOutputItem.text("", mime);
@@ -173,11 +173,11 @@ function convertJupyterOutputToBuffer(
 			) {
 				return new NotebookCellOutputItem(
 					Buffer.from(value, "base64"),
-					mime
+					mime,
 				);
 			} else {
 				const data = Uint8Array.from(atob(value), (c) =>
-					c.charCodeAt(0)
+					c.charCodeAt(0),
 				);
 				return new NotebookCellOutputItem(data, mime);
 			}
@@ -218,7 +218,7 @@ function getNotebookCellMetadata(cell: nbformat.IBaseCell): {
 
 	if (cell["attachments"]) {
 		cellMetadata.attachments = JSON.parse(
-			JSON.stringify(cell["attachments"])
+			JSON.stringify(cell["attachments"]),
 		);
 	}
 	return cellMetadata;
@@ -254,7 +254,7 @@ function translateDisplayDataOutput(
 	output:
 		| nbformat.IDisplayData
 		| nbformat.IDisplayUpdate
-		| nbformat.IExecuteResult
+		| nbformat.IExecuteResult,
 ): NotebookCellOutput {
 	// Metadata could be as follows:
 	// We'll have metadata specific to each mime type as well as generic metadata.
@@ -283,7 +283,7 @@ function translateDisplayDataOutput(
 
 	return new NotebookCellOutput(
 		sortOutputItemsBasedOnDisplayOrder(items),
-		metadata
+		metadata,
 	);
 }
 
@@ -302,7 +302,7 @@ function translateErrorOutput(output?: nbformat.IError): NotebookCellOutput {
 				stack: (output?.traceback || []).join("\n"),
 			}),
 		],
-		{ ...getOutputMetadata(output), originalError: output }
+		{ ...getOutputMetadata(output), originalError: output },
 	);
 }
 
@@ -326,7 +326,7 @@ cellOutputMappers.set("error", translateErrorOutput);
 cellOutputMappers.set("stream", translateStreamOutput);
 
 export function jupyterCellOutputToCellOutput(
-	output: nbformat.IOutput
+	output: nbformat.IOutput,
 ): NotebookCellOutput {
 	/**
 	 * Stream, `application/x.notebook.stream`
@@ -362,24 +362,24 @@ export function jupyterCellOutputToCellOutput(
 }
 
 function createNotebookCellDataFromRawCell(
-	cell: nbformat.IRawCell
+	cell: nbformat.IRawCell,
 ): NotebookCellData {
 	const cellData = new NotebookCellData(
 		NotebookCellKind.Code,
 		concatMultilineString(cell.source),
-		"raw"
+		"raw",
 	);
 	cellData.outputs = [];
 	cellData.metadata = getNotebookCellMetadata(cell);
 	return cellData;
 }
 function createNotebookCellDataFromMarkdownCell(
-	cell: nbformat.IMarkdownCell
+	cell: nbformat.IMarkdownCell,
 ): NotebookCellData {
 	const cellData = new NotebookCellData(
 		NotebookCellKind.Markup,
 		concatMultilineString(cell.source),
-		"markdown"
+		"markdown",
 	);
 	cellData.outputs = [];
 	cellData.metadata = getNotebookCellMetadata(cell);
@@ -387,7 +387,7 @@ function createNotebookCellDataFromMarkdownCell(
 }
 function createNotebookCellDataFromCodeCell(
 	cell: nbformat.ICodeCell,
-	cellLanguage: string
+	cellLanguage: string,
 ): NotebookCellData {
 	const cellOutputs = Array.isArray(cell.outputs) ? cell.outputs : [];
 	const outputs = cellOutputs.map(jupyterCellOutputToCellOutput);
@@ -412,7 +412,7 @@ function createNotebookCellDataFromCodeCell(
 	const cellData = new NotebookCellData(
 		NotebookCellKind.Code,
 		source,
-		cellLanguageId
+		cellLanguageId,
 	);
 
 	cellData.outputs = outputs;
@@ -423,7 +423,7 @@ function createNotebookCellDataFromCodeCell(
 
 function createNotebookCellDataFromJupyterCell(
 	cellLanguage: string,
-	cell: nbformat.IBaseCell
+	cell: nbformat.IBaseCell,
 ): NotebookCellData | undefined {
 	switch (cell.cell_type) {
 		case "raw": {
@@ -431,13 +431,13 @@ function createNotebookCellDataFromJupyterCell(
 		}
 		case "markdown": {
 			return createNotebookCellDataFromMarkdownCell(
-				cell as nbformat.IMarkdownCell
+				cell as nbformat.IMarkdownCell,
 			);
 		}
 		case "code": {
 			return createNotebookCellDataFromCodeCell(
 				cell as nbformat.ICodeCell,
-				cellLanguage
+				cellLanguage,
 			);
 		}
 	}
@@ -450,7 +450,7 @@ function createNotebookCellDataFromJupyterCell(
  */
 export function jupyterNotebookModelToNotebookData(
 	notebookContent: Partial<nbformat.INotebookContent>,
-	preferredLanguage: string
+	preferredLanguage: string,
 ): NotebookData {
 	const notebookContentWithoutCells = { ...notebookContent, cells: [] };
 	if (!notebookContent.cells || notebookContent.cells.length === 0) {
@@ -459,7 +459,7 @@ export function jupyterNotebookModelToNotebookData(
 
 	const cells = notebookContent.cells
 		.map((cell) =>
-			createNotebookCellDataFromJupyterCell(preferredLanguage, cell)
+			createNotebookCellDataFromJupyterCell(preferredLanguage, cell),
 		)
 		.filter((item): item is NotebookCellData => !!item);
 

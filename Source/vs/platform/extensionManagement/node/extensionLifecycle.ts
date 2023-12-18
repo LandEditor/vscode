@@ -32,7 +32,7 @@ export class ExtensionsLifecycle extends Disposable {
 			this.logService.info(
 				extension.identifier.id,
 				extension.manifest.version,
-				`Running post uninstall script`
+				`Running post uninstall script`,
 			);
 			await this.processesLimiter.queue(async () => {
 				try {
@@ -41,18 +41,18 @@ export class ExtensionsLifecycle extends Disposable {
 						"uninstall",
 						script.args,
 						true,
-						extension
+						extension,
 					);
 					this.logService.info(
 						`Finished running post uninstall script`,
 						extension.identifier.id,
-						extension.manifest.version
+						extension.manifest.version,
 					);
 				} catch (error) {
 					this.logService.error(
 						"Failed to run post uninstall script",
 						extension.identifier.id,
-						extension.manifest.version
+						extension.manifest.version,
 					);
 					this.logService.error(error);
 				}
@@ -63,7 +63,7 @@ export class ExtensionsLifecycle extends Disposable {
 		} catch (error) {
 			this.logService.error(
 				"Error while removing extension storage path",
-				extension.identifier.id
+				extension.identifier.id,
 			);
 			this.logService.error(error);
 		}
@@ -71,7 +71,7 @@ export class ExtensionsLifecycle extends Disposable {
 
 	private parseScript(
 		extension: ILocalExtension,
-		type: string
+		type: string,
 	): { script: string; args: string[] } | null {
 		const scriptKey = `vscode:${type}`;
 		if (
@@ -87,7 +87,7 @@ export class ExtensionsLifecycle extends Disposable {
 				this.logService.warn(
 					extension.identifier.id,
 					extension.manifest.version,
-					`${scriptKey} should be a node script`
+					`${scriptKey} should be a node script`,
 				);
 				return null;
 			}
@@ -104,14 +104,14 @@ export class ExtensionsLifecycle extends Disposable {
 		lifecycleType: string,
 		args: string[],
 		timeout: boolean,
-		extension: ILocalExtension
+		extension: ILocalExtension,
 	): Promise<void> {
 		return new Promise<void>((c, e) => {
 			const extensionLifecycleProcess = this.start(
 				lifecycleHook,
 				lifecycleType,
 				args,
-				extension
+				extension,
 			);
 			let timeoutHandler: any;
 
@@ -139,9 +139,9 @@ export class ExtensionsLifecycle extends Disposable {
 					onexit(
 						code
 							? `post-${lifecycleType} process exited with code ${code}`
-							: undefined
+							: undefined,
 					);
-				}
+				},
 			);
 
 			if (timeout) {
@@ -159,7 +159,7 @@ export class ExtensionsLifecycle extends Disposable {
 		uninstallHook: string,
 		lifecycleType: string,
 		args: string[],
-		extension: ILocalExtension
+		extension: ILocalExtension,
 	): ChildProcess {
 		const opts = {
 			silent: true,
@@ -168,7 +168,7 @@ export class ExtensionsLifecycle extends Disposable {
 		const extensionUninstallProcess = fork(
 			uninstallHook,
 			[`--type=extension-post-${lifecycleType}`, ...args],
-			opts
+			opts,
 		);
 
 		// Catch all output coming from the process
@@ -178,11 +178,11 @@ export class ExtensionsLifecycle extends Disposable {
 
 		const onStdout = Event.fromNodeEventEmitter<string>(
 			extensionUninstallProcess.stdout!,
-			"data"
+			"data",
 		);
 		const onStderr = Event.fromNodeEventEmitter<string>(
 			extensionUninstallProcess.stderr!,
-			"data"
+			"data",
 		);
 
 		// Log output
@@ -191,16 +191,16 @@ export class ExtensionsLifecycle extends Disposable {
 				extension.identifier.id,
 				extension.manifest.version,
 				`post-${lifecycleType}`,
-				data
-			)
+				data,
+			),
 		);
 		onStderr((data) =>
 			this.logService.error(
 				extension.identifier.id,
 				extension.manifest.version,
 				`post-${lifecycleType}`,
-				data
-			)
+				data,
+			),
 		);
 
 		const onOutput = Event.any(
@@ -208,7 +208,7 @@ export class ExtensionsLifecycle extends Disposable {
 			Event.map(onStderr, (o) => ({
 				data: `%c${o}`,
 				format: ["color: red"],
-			}))
+			})),
 		);
 		// Debounce all output, so we can render it in the Chrome console as a group
 		const onDebouncedOutput = Event.debounce<Output>(
@@ -218,10 +218,10 @@ export class ExtensionsLifecycle extends Disposable {
 					? {
 							data: r.data + o.data,
 							format: [...r.format, ...o.format],
-						}
+					  }
 					: { data: o.data, format: o.format };
 			},
-			100
+			100,
 		);
 
 		// Print out output
@@ -238,7 +238,7 @@ export class ExtensionsLifecycle extends Disposable {
 		return join(
 			this.userDataProfilesService.defaultProfile.globalStorageHome
 				.fsPath,
-			extension.identifier.id.toLowerCase()
+			extension.identifier.id.toLowerCase(),
 		);
 	}
 }

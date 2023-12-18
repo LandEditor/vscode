@@ -5,11 +5,7 @@
 
 class Node<K, V> {
 	readonly forward: Node<K, V>[];
-	constructor(
-		readonly level: number,
-		readonly key: K,
-		public value: V
-	) {
+	constructor(readonly level: number, readonly key: K, public value: V) {
 		this.forward = [];
 	}
 }
@@ -24,9 +20,9 @@ export class SkipList<K, V> implements Map<K, V> {
 	readonly [Symbol.toStringTag] = "SkipList";
 
 	private _maxLevel: number;
-	private _level: number = 0;
+	private _level = 0;
 	private _header: Node<K, V>;
-	private _size: number = 0;
+	private _size = 0;
 
 	/**
 	 *
@@ -34,7 +30,7 @@ export class SkipList<K, V> implements Map<K, V> {
 	 */
 	constructor(
 		readonly comparator: (a: K, b: K) => number,
-		capacity: number = 2 ** 16
+		capacity: number = 2 ** 16,
 	) {
 		this._maxLevel = Math.max(1, Math.log2(capacity) | 0);
 		this._header = <any>new Node(this._maxLevel, NIL, NIL);
@@ -76,7 +72,7 @@ export class SkipList<K, V> implements Map<K, V> {
 
 	forEach(
 		callbackfn: (value: V, key: K, map: Map<K, V>) => void,
-		thisArg?: any
+		thisArg?: any,
 	): void {
 		let node = this._header.forward[0];
 		while (node) {
@@ -129,7 +125,7 @@ export class SkipList<K, V> implements Map<K, V> {
 	private static _search<K, V>(
 		list: SkipList<K, V>,
 		searchKey: K,
-		comparator: Comparator<K>
+		comparator: Comparator<K>,
 	) {
 		let x = list._header;
 		for (let i = list._level - 1; i >= 0; i--) {
@@ -151,7 +147,7 @@ export class SkipList<K, V> implements Map<K, V> {
 		list: SkipList<K, V>,
 		searchKey: K,
 		value: V,
-		comparator: Comparator<K>
+		comparator: Comparator<K>,
 	) {
 		const update: Node<K, V>[] = [];
 		let x = list._header;
@@ -187,10 +183,7 @@ export class SkipList<K, V> implements Map<K, V> {
 		}
 	}
 
-	private static _randomLevel(
-		list: SkipList<any, any>,
-		p: number = 0.5
-	): number {
+	private static _randomLevel(list: SkipList<any, any>, p = 0.5): number {
 		let lvl = 1;
 		while (Math.random() < p && lvl < list._maxLevel) {
 			lvl += 1;
@@ -201,7 +194,7 @@ export class SkipList<K, V> implements Map<K, V> {
 	private static _delete<K, V>(
 		list: SkipList<K, V>,
 		searchKey: K,
-		comparator: Comparator<K>
+		comparator: Comparator<K>,
 	) {
 		const update: Node<K, V>[] = [];
 		let x = list._header;

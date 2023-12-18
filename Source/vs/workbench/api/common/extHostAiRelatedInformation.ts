@@ -10,13 +10,13 @@ import {
 	MainContext,
 	MainThreadAiRelatedInformationShape,
 } from "vs/workbench/api/common/extHost.protocol";
+import { Disposable } from "vs/workbench/api/common/extHostTypes";
 import type {
 	CancellationToken,
 	RelatedInformationProvider,
-	RelatedInformationType,
 	RelatedInformationResult,
+	RelatedInformationType,
 } from "vscode";
-import { Disposable } from "vs/workbench/api/common/extHostTypes";
 
 export class ExtHostRelatedInformation
 	implements ExtHostAiRelatedInformationShape
@@ -31,14 +31,14 @@ export class ExtHostRelatedInformation
 
 	constructor(mainContext: IMainContext) {
 		this._proxy = mainContext.getProxy(
-			MainContext.MainThreadAiRelatedInformation
+			MainContext.MainThreadAiRelatedInformation,
 		);
 	}
 
 	async $provideAiRelatedInformation(
 		handle: number,
 		query: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<RelatedInformationResult[]> {
 		if (this._relatedInformationProviders.size === 0) {
 			throw new Error("No related information providers registered");
@@ -57,7 +57,7 @@ export class ExtHostRelatedInformation
 	getRelatedInformation(
 		extension: IExtensionDescription,
 		query: string,
-		types: RelatedInformationType[]
+		types: RelatedInformationType[],
 	): Promise<RelatedInformationResult[]> {
 		return this._proxy.$getAiRelatedInformation(query, types);
 	}
@@ -65,7 +65,7 @@ export class ExtHostRelatedInformation
 	registerRelatedInformationProvider(
 		extension: IExtensionDescription,
 		type: RelatedInformationType,
-		provider: RelatedInformationProvider
+		provider: RelatedInformationProvider,
 	): Disposable {
 		const handle = this._nextHandle;
 		this._nextHandle++;

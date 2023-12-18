@@ -3,28 +3,28 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from "vscode";
-import { API as GitAPI, Repository } from "./typings/git";
-import { getOctokit } from "./auth";
-import { TextEncoder } from "util";
 import { basename } from "path";
+import { TextEncoder } from "util";
 import { Octokit } from "@octokit/rest";
+import * as vscode from "vscode";
+import { getOctokit } from "./auth";
 import { isInCodespaces } from "./pushErrorHandler";
+import { API as GitAPI, Repository } from "./typings/git";
 
 function sanitizeRepositoryName(value: string): string {
 	return value.trim().replace(/[^a-z0-9_.]/gi, "-");
 }
 
 function getPick<T extends vscode.QuickPickItem>(
-	quickpick: vscode.QuickPick<T>
+	quickpick: vscode.QuickPick<T>,
 ): Promise<T | undefined> {
 	return Promise.race<T | undefined>([
 		new Promise<T>((c) =>
 			quickpick.onDidAccept(
 				() =>
 					quickpick.selectedItems.length > 0 &&
-					c(quickpick.selectedItems[0])
-			)
+					c(quickpick.selectedItems[0]),
+			),
 		),
 		new Promise<undefined>((c) => quickpick.onDidHide(() => c(undefined))),
 	]);
@@ -32,7 +32,7 @@ function getPick<T extends vscode.QuickPickItem>(
 
 export async function publishRepository(
 	gitAPI: GitAPI,
-	repository?: Repository
+	repository?: Repository,
 ): Promise<void> {
 	if (!vscode.workspace.workspaceFolders?.length) {
 		return;
@@ -96,9 +96,7 @@ export async function publishRepository(
 	const onDidChangeValue = async () => {
 		const sanitizedRepo = sanitizeRepositoryName(quickpick.value);
 
-		if (!sanitizedRepo) {
-			quickpick.items = [];
-		} else {
+		if (sanitizedRepo) {
 			quickpick.items = [
 				{
 					label: `$(repo) Publish to GitHub private repository`,
@@ -115,6 +113,8 @@ export async function publishRepository(
 					isPrivate: false,
 				},
 			];
+		} else {
+			quickpick.items = [];
 		}
 	};
 
@@ -166,7 +166,7 @@ export async function publishRepository(
 		if (shouldGenerateGitignore) {
 			quickpick = vscode.window.createQuickPick();
 			quickpick.placeholder = vscode.l10n.t(
-				"Select which files should be included in the repository."
+				"Select which files should be included in the repository.",
 			);
 			quickpick.canSelectMany = true;
 			quickpick.show();
@@ -186,10 +186,10 @@ export async function publishRepository(
 
 				const result = await Promise.race([
 					new Promise<readonly vscode.QuickPickItem[]>((c) =>
-						quickpick.onDidAccept(() => c(quickpick.selectedItems))
+						quickpick.onDidAccept(() => c(quickpick.selectedItems)),
 					),
 					new Promise<undefined>((c) =>
-						quickpick.onDidHide(() => c(undefined))
+						quickpick.onDidHide(() => c(undefined)),
 					),
 				]);
 
@@ -205,7 +205,7 @@ export async function publishRepository(
 					const encoder = new TextEncoder();
 					await vscode.workspace.fs.writeFile(
 						gitignore,
-						encoder.encode(raw)
+						encoder.encode(raw),
 					);
 				}
 			} finally {
@@ -239,7 +239,7 @@ export async function publishRepository(
 				createdGithubRepository =
 					await vscode.commands.executeCommand<CreateRepositoryResponseData>(
 						"github.codespaces.publish",
-						{ name: repo!, isPrivate }
+						{ name: repo!, isPrivate },
 					);
 			} else {
 				const res = await octokit.repos.createForAuthenticatedUser({
@@ -290,7 +290,7 @@ export async function publishRepository(
 			}
 
 			return createdGithubRepository;
-		}
+		},
 	);
 
 	if (!githubRepository) {
@@ -302,15 +302,15 @@ export async function publishRepository(
 		.showInformationMessage(
 			vscode.l10n.t(
 				'Successfully published the "{0}" repository to GitHub.',
-				`${owner}/${repo}`
+				`${owner}/${repo}`,
 			),
-			openOnGitHub
+			openOnGitHub,
 		)
 		.then((action) => {
 			if (action === openOnGitHub) {
 				vscode.commands.executeCommand(
 					"vscode.open",
-					vscode.Uri.parse(githubRepository.html_url)
+					vscode.Uri.parse(githubRepository.html_url),
 				);
 			}
 		});

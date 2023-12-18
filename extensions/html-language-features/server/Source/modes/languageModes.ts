@@ -5,13 +5,15 @@
 
 import { getCSSLanguageService } from "vscode-css-languageservice";
 import {
-	DocumentContext,
-	getLanguageService as getHTMLLanguageService,
-	IHTMLDataProvider,
 	ClientCapabilities,
+	DocumentContext,
+	IHTMLDataProvider,
+	getLanguageService as getHTMLLanguageService,
 } from "vscode-html-languageservice";
 import {
-	SelectionRange,
+	Color,
+	ColorInformation,
+	ColorPresentation,
 	CompletionItem,
 	CompletionList,
 	Definition,
@@ -24,26 +26,24 @@ import {
 	Location,
 	Position,
 	Range,
+	SelectionRange,
 	SignatureHelp,
 	SymbolInformation,
 	TextEdit,
-	Color,
-	ColorInformation,
-	ColorPresentation,
 	WorkspaceEdit,
 	WorkspaceFolder,
 } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 
 import {
-	getLanguageModelCache,
 	LanguageModelCache,
+	getLanguageModelCache,
 } from "../languageModelCache";
+import { FileSystemProvider } from "../requests";
 import { getCSSMode } from "./cssMode";
-import { getDocumentRegions, HTMLDocumentRegions } from "./embeddedSupport";
+import { HTMLDocumentRegions, getDocumentRegions } from "./embeddedSupport";
 import { getHTMLMode } from "./htmlMode";
 import { getJavaScriptMode } from "./javascriptMode";
-import { FileSystemProvider } from "../requests";
 
 export {
 	WorkspaceFolder,
@@ -126,81 +126,81 @@ export interface LanguageMode {
 	getId(): string;
 	getSelectionRange?: (
 		document: TextDocument,
-		position: Position
+		position: Position,
 	) => Promise<SelectionRange>;
 	doValidation?: (
 		document: TextDocument,
-		settings?: Settings
+		settings?: Settings,
 	) => Promise<Diagnostic[]>;
 	doComplete?: (
 		document: TextDocument,
 		position: Position,
 		documentContext: DocumentContext,
-		settings?: Settings
+		settings?: Settings,
 	) => Promise<CompletionList>;
 	doResolve?: (
 		document: TextDocument,
-		item: CompletionItem
+		item: CompletionItem,
 	) => Promise<CompletionItem>;
 	doHover?: (
 		document: TextDocument,
 		position: Position,
-		settings?: Settings
+		settings?: Settings,
 	) => Promise<Hover | null>;
 	doSignatureHelp?: (
 		document: TextDocument,
-		position: Position
+		position: Position,
 	) => Promise<SignatureHelp | null>;
 	doRename?: (
 		document: TextDocument,
 		position: Position,
-		newName: string
+		newName: string,
 	) => Promise<WorkspaceEdit | null>;
 	doLinkedEditing?: (
 		document: TextDocument,
-		position: Position
+		position: Position,
 	) => Promise<Range[] | null>;
 	findDocumentHighlight?: (
 		document: TextDocument,
-		position: Position
+		position: Position,
 	) => Promise<DocumentHighlight[]>;
 	findDocumentSymbols?: (
-		document: TextDocument
+		document: TextDocument,
 	) => Promise<SymbolInformation[]>;
 	findDocumentLinks?: (
 		document: TextDocument,
-		documentContext: DocumentContext
+		documentContext: DocumentContext,
 	) => Promise<DocumentLink[]>;
 	findDefinition?: (
 		document: TextDocument,
-		position: Position
+		position: Position,
 	) => Promise<Definition | null>;
 	findReferences?: (
 		document: TextDocument,
-		position: Position
+		position: Position,
 	) => Promise<Location[]>;
 	format?: (
 		document: TextDocument,
 		range: Range,
 		options: FormattingOptions,
-		settings?: Settings
+		settings?: Settings,
 	) => Promise<TextEdit[]>;
 	findDocumentColors?: (
-		document: TextDocument
+		document: TextDocument,
 	) => Promise<ColorInformation[]>;
 	getColorPresentations?: (
 		document: TextDocument,
 		color: Color,
-		range: Range
+		range: Range,
 	) => Promise<ColorPresentation[]>;
 	doAutoInsert?: (
 		document: TextDocument,
 		position: Position,
-		kind: "autoClose" | "autoQuote"
+		kind: "autoClose" | "autoQuote",
 	) => Promise<string | null>;
 	findMatchingTagPosition?: (
 		document: TextDocument,
-		position: Position
+		position: Position,
 	) => Promise<Position | null>;
 	getFoldingRanges?: (document: TextDocument) => Promise<FoldingRange[]>;
 	onDocumentRemoved(document: TextDocument): void;
@@ -213,7 +213,7 @@ export interface LanguageModes {
 	updateDataProviders(dataProviders: IHTMLDataProvider[]): void;
 	getModeAtPosition(
 		document: TextDocument,
-		position: Position
+		position: Position,
 	): LanguageMode | undefined;
 	getModesInRange(document: TextDocument, range: Range): LanguageModeRange[];
 	getAllModes(): LanguageMode[];
@@ -232,7 +232,7 @@ export function getLanguageModes(
 	supportedLanguages: { [languageId: string]: boolean },
 	workspace: Workspace,
 	clientCapabilities: ClientCapabilities,
-	requestService: FileSystemProvider
+	requestService: FileSystemProvider,
 ): LanguageModes {
 	const htmlLanguageService = getHTMLLanguageService({
 		clientCapabilities,
@@ -246,7 +246,7 @@ export function getLanguageModes(
 	const documentRegions = getLanguageModelCache<HTMLDocumentRegions>(
 		10,
 		60,
-		(document) => getDocumentRegions(htmlLanguageService, document)
+		(document) => getDocumentRegions(htmlLanguageService, document),
 	);
 
 	let modelCaches: LanguageModelCache<any>[] = [];
@@ -258,30 +258,30 @@ export function getLanguageModes(
 		modes["css"] = getCSSMode(
 			cssLanguageService,
 			documentRegions,
-			workspace
+			workspace,
 		);
 	}
 	if (supportedLanguages["javascript"]) {
 		modes["javascript"] = getJavaScriptMode(
 			documentRegions,
 			"javascript",
-			workspace
+			workspace,
 		);
 		modes["typescript"] = getJavaScriptMode(
 			documentRegions,
 			"typescript",
-			workspace
+			workspace,
 		);
 	}
 	return {
 		async updateDataProviders(
-			dataProviders: IHTMLDataProvider[]
+			dataProviders: IHTMLDataProvider[],
 		): Promise<void> {
 			htmlLanguageService.setDataProviders(true, dataProviders);
 		},
 		getModeAtPosition(
 			document: TextDocument,
-			position: Position
+			position: Position,
 		): LanguageMode | undefined {
 			const languageId = documentRegions
 				.get(document)
@@ -293,7 +293,7 @@ export function getLanguageModes(
 		},
 		getModesInRange(
 			document: TextDocument,
-			range: Range
+			range: Range,
 		): LanguageModeRange[] {
 			return documentRegions
 				.get(document)

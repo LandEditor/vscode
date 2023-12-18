@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-export const enum LinePartMetadata {
+export enum LinePartMetadata {
 	IS_WHITESPACE = 1,
 	PSEUDO_BEFORE = 2,
 	PSEUDO_AFTER = 4,
@@ -23,7 +23,7 @@ export class LinePart {
 		public readonly endIndex: number,
 		public readonly type: string,
 		public readonly metadata: number,
-		public readonly containsRTL: boolean
+		public readonly containsRTL: boolean,
 	) {}
 
 	public isWhitespace(): boolean {

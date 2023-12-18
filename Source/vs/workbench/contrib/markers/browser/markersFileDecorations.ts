@@ -3,35 +3,35 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	IWorkbenchContribution,
-	IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
-} from "vs/workbench/common/contributions";
-import {
-	IMarkerService,
-	IMarker,
-	MarkerSeverity,
-} from "vs/platform/markers/common/markers";
-import {
-	IDecorationsService,
-	IDecorationsProvider,
-	IDecorationData,
-} from "vs/workbench/services/decorations/common/decorations";
+import { Event } from "vs/base/common/event";
 import { IDisposable, dispose } from "vs/base/common/lifecycle";
 import { URI } from "vs/base/common/uri";
-import { Event } from "vs/base/common/event";
 import { localize } from "vs/nls";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import {
+	Extensions as ConfigurationExtensions,
+	IConfigurationRegistry,
+} from "vs/platform/configuration/common/configurationRegistry";
+import {
+	IMarker,
+	IMarkerService,
+	MarkerSeverity,
+} from "vs/platform/markers/common/markers";
 import { Registry } from "vs/platform/registry/common/platform";
 import {
 	listErrorForeground,
 	listWarningForeground,
 } from "vs/platform/theme/common/colorRegistry";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
-	IConfigurationRegistry,
-	Extensions as ConfigurationExtensions,
-} from "vs/platform/configuration/common/configurationRegistry";
+	Extensions as WorkbenchExtensions,
+	IWorkbenchContribution,
+	IWorkbenchContributionsRegistry,
+} from "vs/workbench/common/contributions";
+import {
+	IDecorationData,
+	IDecorationsProvider,
+	IDecorationsService,
+} from "vs/workbench/services/decorations/common/decorations";
 import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 class MarkersDecorationsProvider implements IDecorationsProvider {
@@ -67,8 +67,8 @@ class MarkersDecorationsProvider implements IDecorationsProvider {
 					: localize(
 							"tooltip.N",
 							"{0} problems in this file",
-							markers.length
-						),
+							markers.length,
+					  ),
 			letter: markers.length < 10 ? markers.length.toString() : "9+",
 			color:
 				first.severity === MarkerSeverity.Error
@@ -107,7 +107,7 @@ class MarkersFileDecorations implements IWorkbenchContribution {
 
 	private _updateEnablement(): void {
 		const problem = this._configurationService.getValue(
-			"problems.visibility"
+			"problems.visibility",
 		);
 		if (problem === undefined) {
 			return;
@@ -128,7 +128,7 @@ class MarkersFileDecorations implements IWorkbenchContribution {
 		this._enabled = shouldEnable as boolean;
 		if (this._enabled) {
 			const provider = new MarkersDecorationsProvider(
-				this._markerService
+				this._markerService,
 			);
 			this._provider =
 				this._decorationsService.registerDecorationsProvider(provider);
@@ -139,27 +139,27 @@ class MarkersFileDecorations implements IWorkbenchContribution {
 }
 
 Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration
+	ConfigurationExtensions.Configuration,
 ).registerConfiguration({
-	"id": "problems",
-	"order": 101,
-	"type": "object",
-	"properties": {
+	id: "problems",
+	order: 101,
+	type: "object",
+	properties: {
 		"problems.decorations.enabled": {
-			"markdownDescription": localize(
+			markdownDescription: localize(
 				"markers.showOnFile",
-				"Show Errors & Warnings on files and folder. Overwritten by `#problems.visibility#` when it is off."
+				"Show Errors & Warnings on files and folder. Overwritten by `#problems.visibility#` when it is off.",
 			),
-			"type": "boolean",
-			"default": true,
+			type: "boolean",
+			default: true,
 		},
 	},
 });
 
 // register file decorations
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	MarkersFileDecorations,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );

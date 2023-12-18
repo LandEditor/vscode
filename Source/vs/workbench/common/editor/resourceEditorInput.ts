@@ -3,14 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	Verbosity,
-	EditorInputWithPreferredResource,
-	EditorInputCapabilities,
-	IFileLimitedEditorInputOptions,
-} from "vs/workbench/common/editor";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
+import { IMarkdownString } from "vs/base/common/htmlContent";
+import { dirname, isEqual } from "vs/base/common/resources";
 import { URI } from "vs/base/common/uri";
+import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
+import { isConfigured } from "vs/platform/configuration/common/configuration";
 import {
 	ByteSize,
 	IFileReadLimits,
@@ -18,11 +15,14 @@ import {
 	getLargeFileConfirmationLimit,
 } from "vs/platform/files/common/files";
 import { ILabelService } from "vs/platform/label/common/label";
-import { dirname, isEqual } from "vs/base/common/resources";
+import {
+	EditorInputCapabilities,
+	EditorInputWithPreferredResource,
+	IFileLimitedEditorInputOptions,
+	Verbosity,
+} from "vs/workbench/common/editor";
+import { EditorInput } from "vs/workbench/common/editor/editorInput";
 import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
-import { IMarkdownString } from "vs/base/common/htmlContent";
-import { isConfigured } from "vs/platform/configuration/common/configuration";
-import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
 
 /**
  * The base class for all editor inputs that open resources.
@@ -75,18 +75,18 @@ export abstract class AbstractResourceEditorInput
 		// Clear our labels on certain label related events
 		this._register(
 			this.labelService.onDidChangeFormatters((e) =>
-				this.onLabelEvent(e.scheme)
-			)
+				this.onLabelEvent(e.scheme),
+			),
 		);
 		this._register(
 			this.fileService.onDidChangeFileSystemProviderRegistrations((e) =>
-				this.onLabelEvent(e.scheme)
-			)
+				this.onLabelEvent(e.scheme),
+			),
 		);
 		this._register(
 			this.fileService.onDidChangeFileSystemProviderCapabilities((e) =>
-				this.onLabelEvent(e.scheme)
-			)
+				this.onLabelEvent(e.scheme),
+			),
 		);
 	}
 
@@ -122,7 +122,7 @@ export abstract class AbstractResourceEditorInput
 	override getName(): string {
 		if (typeof this._name !== "string") {
 			this._name = this.labelService.getUriBasenameLabel(
-				this._preferredResource
+				this._preferredResource,
 			);
 		}
 
@@ -145,7 +145,7 @@ export abstract class AbstractResourceEditorInput
 	private get shortDescription(): string {
 		if (typeof this._shortDescription !== "string") {
 			this._shortDescription = this.labelService.getUriBasenameLabel(
-				dirname(this._preferredResource)
+				dirname(this._preferredResource),
 			);
 		}
 
@@ -157,7 +157,7 @@ export abstract class AbstractResourceEditorInput
 		if (typeof this._mediumDescription !== "string") {
 			this._mediumDescription = this.labelService.getUriLabel(
 				dirname(this._preferredResource),
-				{ relative: true }
+				{ relative: true },
 			);
 		}
 
@@ -168,7 +168,7 @@ export abstract class AbstractResourceEditorInput
 	private get longDescription(): string {
 		if (typeof this._longDescription !== "string") {
 			this._longDescription = this.labelService.getUriLabel(
-				dirname(this._preferredResource)
+				dirname(this._preferredResource),
 			);
 		}
 
@@ -189,7 +189,7 @@ export abstract class AbstractResourceEditorInput
 		if (typeof this._mediumTitle !== "string") {
 			this._mediumTitle = this.labelService.getUriLabel(
 				this._preferredResource,
-				{ relative: true }
+				{ relative: true },
 			);
 		}
 
@@ -200,7 +200,7 @@ export abstract class AbstractResourceEditorInput
 	private get longTitle(): string {
 		if (typeof this._longTitle !== "string") {
 			this._longTitle = this.labelService.getUriLabel(
-				this._preferredResource
+				this._preferredResource,
 			);
 		}
 
@@ -224,7 +224,7 @@ export abstract class AbstractResourceEditorInput
 	}
 
 	protected ensureLimits(
-		options?: IFileLimitedEditorInputOptions
+		options?: IFileLimitedEditorInputOptions,
 	): IFileReadLimits | undefined {
 		if (options?.limits) {
 			return options.limits; // respect passed in limits if any
@@ -242,7 +242,7 @@ export abstract class AbstractResourceEditorInput
 			this.textResourceConfigurationService.inspect<number>(
 				this.resource,
 				null,
-				"workbench.editorLargeFileConfirmation"
+				"workbench.editorLargeFileConfirmation",
 			);
 		if (isConfigured(configuredSizeLimitMb)) {
 			configuredSizeLimit = configuredSizeLimitMb.value * ByteSize.MB; // normalize to MB

@@ -22,7 +22,7 @@ export interface ITextModelService {
 	 * which should be disposed once not needed anymore.
 	 */
 	createModelReference(
-		resource: URI
+		resource: URI,
 	): Promise<IReference<IResolvedTextEditorModel>>;
 
 	/**
@@ -30,7 +30,7 @@ export interface ITextModelService {
 	 */
 	registerTextModelContentProvider(
 		scheme: string,
-		provider: ITextModelContentProvider
+		provider: ITextModelContentProvider,
 	): IDisposable;
 
 	/**
@@ -87,7 +87,7 @@ export interface IResolvedTextEditorModel extends ITextEditorModel {
 }
 
 export function isResolvedTextEditorModel(
-	model: ITextEditorModel
+	model: ITextEditorModel,
 ): model is IResolvedTextEditorModel {
 	const candidate = model as IResolvedTextEditorModel;
 

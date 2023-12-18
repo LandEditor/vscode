@@ -4,10 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 //@ts-check
-"use strict";
 
 // Simple module style to support node.js and browser environments
-(function (globalThis, factory) {
+((globalThis, factory) => {
 	// Node.js
 	if (typeof exports === "object") {
 		module.exports = factory();
@@ -18,7 +17,7 @@
 		// @ts-ignore
 		globalThis.MonacoBootstrap = factory();
 	}
-})(this, function () {
+})(this, () => {
 	const Module =
 		typeof require === "function" ? require("module") : undefined;
 	const path = typeof require === "function" ? require("path") : undefined;
@@ -56,7 +55,7 @@
 	function enableASARSupport() {
 		if (!path || !Module || typeof process === "undefined") {
 			console.warn(
-				"enableASARSupport() is only available in node.js environments"
+				"enableASARSupport() is only available in node.js environments",
 			);
 			return;
 		}
@@ -68,7 +67,7 @@
 		const originalResolveLookupPaths = Module._resolveLookupPaths;
 
 		// @ts-ignore
-		Module._resolveLookupPaths = function (request, parent) {
+		Module._resolveLookupPaths = (request, parent) => {
 			const paths = originalResolveLookupPaths(request, parent);
 			if (Array.isArray(paths)) {
 				for (let i = 0, len = paths.length; i < len; i++) {
@@ -115,7 +114,7 @@
 			uri = encodeURI(
 				`${config.scheme || "file"}://${
 					config.fallbackAuthority || ""
-				}${pathName}`
+				}${pathName}`,
 			);
 		}
 
@@ -150,7 +149,7 @@
 			 * @param {string} language
 			 * @param {(err: Error | undefined, result: string | undefined) => void} cb
 			 */
-			nlsConfig.loadBundle = function (bundle, language, cb) {
+			nlsConfig.loadBundle = (bundle, language, cb) => {
 				const result = bundles[bundle];
 				if (result) {
 					cb(undefined, result);
@@ -161,9 +160,9 @@
 				// @ts-ignore
 				safeReadNlsFile(
 					nlsConfig._resolvedLanguagePackCoreLocation,
-					`${bundle.replace(/\//g, "!")}.nls.json`
+					`${bundle.replace(/\//g, "!")}.nls.json`,
 				)
-					.then(function (content) {
+					.then((content) => {
 						const json = JSON.parse(content);
 						bundles[bundle] = json;
 
@@ -174,8 +173,8 @@
 							if (nlsConfig._corruptedFile) {
 								safeWriteNlsFile(
 									nlsConfig._corruptedFile,
-									"corrupted"
-								).catch(function (error) {
+									"corrupted",
+								).catch((error) => {
 									console.error(error);
 								});
 							}
@@ -197,8 +196,8 @@
 			typeof self === "object"
 				? self
 				: typeof global === "object"
-					? global
-					: {};
+				  ? global
+				  : {};
 
 		// @ts-ignore
 		return globals.vscode;

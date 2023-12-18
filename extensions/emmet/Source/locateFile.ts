@@ -6,8 +6,8 @@
 // Based on @sergeche's work on the emmet plugin for atom
 // TODO: Move to https://github.com/emmetio/file-utils
 
-import * as path from "path";
 import * as fs from "fs";
+import * as path from "path";
 
 const reAbsolutePosix = /^\/+/;
 const reAbsoluteWin32 = /^\\+/;

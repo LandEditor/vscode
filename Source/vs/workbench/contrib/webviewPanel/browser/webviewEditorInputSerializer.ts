@@ -76,7 +76,7 @@ export class WebviewEditorInputSerializer implements IEditorSerializer {
 
 	public deserialize(
 		_instantiationService: IInstantiationService,
-		serializedEditorInput: string
+		serializedEditorInput: string,
 	): WebviewInput {
 		const data = this.fromJson(JSON.parse(serializedEditorInput));
 		return this._webviewWorkbenchService.openRevivedWebview({
@@ -101,7 +101,7 @@ export class WebviewEditorInputSerializer implements IEditorSerializer {
 			...data,
 			extension: reviveWebviewExtensionDescription(
 				data.extensionId,
-				data.extensionLocation
+				data.extensionLocation,
 			),
 			iconPath: reviveIconPath(data.iconPath),
 			state: reviveState(data.state),
@@ -133,7 +133,7 @@ export class WebviewEditorInputSerializer implements IEditorSerializer {
 
 export function reviveWebviewExtensionDescription(
 	extensionId: string | undefined,
-	extensionLocation: UriComponents | undefined
+	extensionLocation: UriComponents | undefined,
 ): WebviewExtensionDescription | undefined {
 	if (!extensionId) {
 		return undefined;
@@ -182,18 +182,18 @@ function reviveState(state: unknown | undefined): undefined | string {
 }
 
 export function restoreWebviewOptions(
-	options: SerializedWebviewOptions
+	options: SerializedWebviewOptions,
 ): WebviewOptions {
 	return options;
 }
 
 export function restoreWebviewContentOptions(
-	options: SerializedWebviewOptions
+	options: SerializedWebviewOptions,
 ): WebviewContentOptions {
 	return {
 		...options,
 		localResourceRoots: options.localResourceRoots?.map((uri) =>
-			reviveUri(uri)
+			reviveUri(uri),
 		),
 	};
 }

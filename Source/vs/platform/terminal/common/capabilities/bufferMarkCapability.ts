@@ -3,16 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+// Importing types is safe in any layer
+// eslint-disable-next-line local/code-import-patterns
+import type { IMarker, Terminal } from "@xterm/headless";
 import { Emitter } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
 import {
 	IBufferMarkCapability,
-	TerminalCapability,
 	IMarkProperties,
+	TerminalCapability,
 } from "vs/platform/terminal/common/capabilities/capabilities";
-// Importing types is safe in any layer
-// eslint-disable-next-line local/code-import-patterns
-import type { IMarker, Terminal } from "@xterm/headless";
 
 /**
  * Manages "marks" in the buffer which are lines that are tracked when lines are added to or removed
@@ -28,7 +28,7 @@ export class BufferMarkCapability
 	private _anonymousMarkers: Map<number, IMarker> = new Map();
 
 	private readonly _onMarkAdded = this._register(
-		new Emitter<IMarkProperties>()
+		new Emitter<IMarkProperties>(),
 	);
 	readonly onMarkAdded = this._onMarkAdded.event;
 

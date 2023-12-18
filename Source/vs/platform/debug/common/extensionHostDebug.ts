@@ -50,6 +50,6 @@ export interface IExtensionHostDebugService {
 
 	openExtensionDevelopmentHostWindow(
 		args: string[],
-		debugRenderer: boolean
+		debugRenderer: boolean,
 	): Promise<IOpenExtensionWindowResult>;
 }

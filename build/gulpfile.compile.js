@@ -3,8 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-"use strict";
-
 const gulp = require("gulp");
 const util = require("./lib/util");
 const task = require("./lib/task");
@@ -17,14 +15,14 @@ function makeCompileBuildTask(disableMangle) {
 		util.buildWebNodePaths("out-build"),
 		compilation.compileApiProposalNamesTask,
 		compilation.compileTask("src", "out-build", true, { disableMangle }),
-		optimize.optimizeLoaderTask("out-build", "out-build", true)
+		optimize.optimizeLoaderTask("out-build", "out-build", true),
 	);
 }
 
 // Full compile, including nls and inline sources in sourcemaps, mangling, minification, for build
 const compileBuildTask = task.define(
 	"compile-build",
-	makeCompileBuildTask(false)
+	makeCompileBuildTask(false),
 );
 gulp.task(compileBuildTask);
 exports.compileBuildTask = compileBuildTask;
@@ -32,7 +30,7 @@ exports.compileBuildTask = compileBuildTask;
 // Full compile for PR ci, e.g no mangling
 const compileBuildTaskPullRequest = task.define(
 	"compile-build-pr",
-	makeCompileBuildTask(true)
+	makeCompileBuildTask(true),
 );
 gulp.task(compileBuildTaskPullRequest);
 exports.compileBuildTaskPullRequest = compileBuildTaskPullRequest;

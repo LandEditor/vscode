@@ -3,21 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as arrays from "vs/base/common/arrays";
 import "vs/css!./currentLineHighlight";
 import { DynamicViewOverlay } from "vs/editor/browser/view/dynamicViewOverlay";
+import { RenderingContext } from "vs/editor/browser/view/renderingContext";
+import { EditorOption } from "vs/editor/common/config/editorOptions";
 import {
 	editorLineHighlight,
 	editorLineHighlightBorder,
 } from "vs/editor/common/core/editorColorRegistry";
-import { RenderingContext } from "vs/editor/browser/view/renderingContext";
-import { ViewContext } from "vs/editor/common/viewModel/viewContext";
-import * as viewEvents from "vs/editor/common/viewEvents";
-import * as arrays from "vs/base/common/arrays";
-import { registerThemingParticipant } from "vs/platform/theme/common/themeService";
-import { Selection } from "vs/editor/common/core/selection";
-import { EditorOption } from "vs/editor/common/config/editorOptions";
-import { isHighContrast } from "vs/platform/theme/common/theme";
 import { Position } from "vs/editor/common/core/position";
+import { Selection } from "vs/editor/common/core/selection";
+import * as viewEvents from "vs/editor/common/viewEvents";
+import { ViewContext } from "vs/editor/common/viewModel/viewContext";
+import { isHighContrast } from "vs/platform/theme/common/theme";
+import { registerThemingParticipant } from "vs/platform/theme/common/themeService";
 
 export abstract class AbstractLineHighlightOverlay extends DynamicViewOverlay {
 	private readonly _context: ViewContext;
@@ -44,10 +44,10 @@ export abstract class AbstractLineHighlightOverlay extends DynamicViewOverlay {
 		const layoutInfo = options.get(EditorOption.layoutInfo);
 		this._lineHeight = options.get(EditorOption.lineHeight);
 		this._renderLineHighlight = options.get(
-			EditorOption.renderLineHighlight
+			EditorOption.renderLineHighlight,
 		);
 		this._renderLineHighlightOnlyWhenFocus = options.get(
-			EditorOption.renderLineHighlightOnlyWhenFocus
+			EditorOption.renderLineHighlightOnlyWhenFocus,
 		);
 		this._wordWrap = layoutInfo.isViewportWrapping;
 		this._contentLeft = layoutInfo.contentLeft;
@@ -91,21 +91,21 @@ export abstract class AbstractLineHighlightOverlay extends DynamicViewOverlay {
 
 	// --- begin event handlers
 	public override onThemeChanged(
-		e: viewEvents.ViewThemeChangedEvent
+		e: viewEvents.ViewThemeChangedEvent,
 	): boolean {
 		return this._readFromSelections();
 	}
 	public override onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent
+		e: viewEvents.ViewConfigurationChangedEvent,
 	): boolean {
 		const options = this._context.configuration.options;
 		const layoutInfo = options.get(EditorOption.layoutInfo);
 		this._lineHeight = options.get(EditorOption.lineHeight);
 		this._renderLineHighlight = options.get(
-			EditorOption.renderLineHighlight
+			EditorOption.renderLineHighlight,
 		);
 		this._renderLineHighlightOnlyWhenFocus = options.get(
-			EditorOption.renderLineHighlightOnlyWhenFocus
+			EditorOption.renderLineHighlightOnlyWhenFocus,
 		);
 		this._wordWrap = layoutInfo.isViewportWrapping;
 		this._contentLeft = layoutInfo.contentLeft;
@@ -113,7 +113,7 @@ export abstract class AbstractLineHighlightOverlay extends DynamicViewOverlay {
 		return true;
 	}
 	public override onCursorStateChanged(
-		e: viewEvents.ViewCursorStateChangedEvent
+		e: viewEvents.ViewCursorStateChangedEvent,
 	): boolean {
 		this._selections = e.selections;
 		return this._readFromSelections();
@@ -122,27 +122,27 @@ export abstract class AbstractLineHighlightOverlay extends DynamicViewOverlay {
 		return true;
 	}
 	public override onLinesDeleted(
-		e: viewEvents.ViewLinesDeletedEvent
+		e: viewEvents.ViewLinesDeletedEvent,
 	): boolean {
 		return true;
 	}
 	public override onLinesInserted(
-		e: viewEvents.ViewLinesInsertedEvent
+		e: viewEvents.ViewLinesInsertedEvent,
 	): boolean {
 		return true;
 	}
 	public override onScrollChanged(
-		e: viewEvents.ViewScrollChangedEvent
+		e: viewEvents.ViewScrollChangedEvent,
 	): boolean {
 		return e.scrollWidthChanged || e.scrollTopChanged;
 	}
 	public override onZonesChanged(
-		e: viewEvents.ViewZonesChangedEvent
+		e: viewEvents.ViewZonesChangedEvent,
 	): boolean {
 		return true;
 	}
 	public override onFocusChanged(
-		e: viewEvents.ViewFocusChangedEvent
+		e: viewEvents.ViewFocusChangedEvent,
 	): boolean {
 		if (!this._renderLineHighlightOnlyWhenFocus) {
 			return false;
@@ -180,29 +180,29 @@ export abstract class AbstractLineHighlightOverlay extends DynamicViewOverlay {
 					this._context.viewModel.coordinatesConverter;
 				const modelLineNumber =
 					coordinatesConverter.convertViewPositionToModelPosition(
-						new Position(cursorLineNumber, 1)
+						new Position(cursorLineNumber, 1),
 					).lineNumber;
 				const firstViewLineNumber =
 					coordinatesConverter.convertModelPositionToViewPosition(
-						new Position(modelLineNumber, 1)
+						new Position(modelLineNumber, 1),
 					).lineNumber;
 				const lastViewLineNumber =
 					coordinatesConverter.convertModelPositionToViewPosition(
 						new Position(
 							modelLineNumber,
 							this._context.viewModel.model.getLineMaxColumn(
-								modelLineNumber
-							)
-						)
+								modelLineNumber,
+							),
+						),
 					).lineNumber;
 
 				const firstLine = Math.max(
 					firstViewLineNumber,
-					visibleStartLineNumber
+					visibleStartLineNumber,
 				);
 				const lastLine = Math.min(
 					lastViewLineNumber,
-					visibleEndLineNumber
+					visibleEndLineNumber,
 				);
 				for (
 					let lineNumber = firstLine;
@@ -263,7 +263,7 @@ export abstract class AbstractLineHighlightOverlay extends DynamicViewOverlay {
 	protected abstract _shouldRenderOther(): boolean;
 	protected abstract _renderOne(
 		ctx: RenderingContext,
-		exact: boolean
+		exact: boolean,
 	): string;
 }
 
@@ -275,7 +275,7 @@ export class CurrentLineHighlightOverlay extends AbstractLineHighlightOverlay {
 			(exact ? " current-line-exact" : "");
 		return `<div class="${className}" style="width:${Math.max(
 			ctx.scrollWidth,
-			this._contentWidth
+			this._contentWidth,
 		)}px; height:${this._lineHeight}px;"></div>`;
 	}
 	protected _shouldRenderThis(): boolean {
@@ -309,10 +309,10 @@ registerThemingParticipant((theme, collector) => {
 	const lineHighlight = theme.getColor(editorLineHighlight);
 	if (lineHighlight) {
 		collector.addRule(
-			`.monaco-editor .view-overlays .current-line { background-color: ${lineHighlight}; }`
+			`.monaco-editor .view-overlays .current-line { background-color: ${lineHighlight}; }`,
 		);
 		collector.addRule(
-			`.monaco-editor .margin-view-overlays .current-line-margin { background-color: ${lineHighlight}; border: none; }`
+			`.monaco-editor .margin-view-overlays .current-line-margin { background-color: ${lineHighlight}; border: none; }`,
 		);
 	}
 	if (
@@ -323,17 +323,17 @@ registerThemingParticipant((theme, collector) => {
 		const lineHighlightBorder = theme.getColor(editorLineHighlightBorder);
 		if (lineHighlightBorder) {
 			collector.addRule(
-				`.monaco-editor .view-overlays .current-line-exact { border: 2px solid ${lineHighlightBorder}; }`
+				`.monaco-editor .view-overlays .current-line-exact { border: 2px solid ${lineHighlightBorder}; }`,
 			);
 			collector.addRule(
-				`.monaco-editor .margin-view-overlays .current-line-exact-margin { border: 2px solid ${lineHighlightBorder}; }`
+				`.monaco-editor .margin-view-overlays .current-line-exact-margin { border: 2px solid ${lineHighlightBorder}; }`,
 			);
 			if (isHighContrast(theme.type)) {
 				collector.addRule(
-					`.monaco-editor .view-overlays .current-line-exact { border-width: 1px; }`
+					`.monaco-editor .view-overlays .current-line-exact { border-width: 1px; }`,
 				);
 				collector.addRule(
-					`.monaco-editor .margin-view-overlays .current-line-exact-margin { border-width: 1px; }`
+					`.monaco-editor .margin-view-overlays .current-line-exact-margin { border-width: 1px; }`,
 				);
 			}
 		}

@@ -50,7 +50,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"notebook.cell.chat.accept",
-						"Make Request"
+						"Make Request",
 					),
 					original: "Make Request",
 				},
@@ -58,7 +58,7 @@ registerAction2(
 				keybinding: {
 					when: ContextKeyExpr.and(
 						CTX_NOTEBOOK_CELL_CHAT_FOCUSED,
-						CTX_INLINE_CHAT_FOCUSED
+						CTX_INLINE_CHAT_FOCUSED,
 					),
 					weight: KeybindingWeight.EditorCore + 7,
 					primary: KeyCode.Enter,
@@ -74,7 +74,7 @@ registerAction2(
 
 		async runWithContext(
 			accessor: ServicesAccessor,
-			context: INotebookCellActionContext
+			context: INotebookCellActionContext,
 		) {
 			const ctrl = NotebookCellChatController.get(context.cell);
 			if (!ctrl) {
@@ -83,7 +83,7 @@ registerAction2(
 
 			ctrl.acceptInput();
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -107,7 +107,7 @@ registerAction2(
 
 		async runWithContext(
 			accessor: ServicesAccessor,
-			context: INotebookCellActionContext
+			context: INotebookCellActionContext,
 		) {
 			const ctrl = NotebookCellChatController.get(context.cell);
 			if (!ctrl) {
@@ -116,7 +116,7 @@ registerAction2(
 
 			ctrl.cancelCurrentRequest(false);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -139,7 +139,7 @@ registerAction2(
 
 		async runWithContext(
 			accessor: ServicesAccessor,
-			context: INotebookCellActionContext
+			context: INotebookCellActionContext,
 		) {
 			const ctrl = NotebookCellChatController.get(context.cell);
 			if (!ctrl) {
@@ -148,7 +148,7 @@ registerAction2(
 
 			ctrl.dismiss(false);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -166,7 +166,7 @@ registerAction2(
 				keybinding: {
 					when: ContextKeyExpr.and(
 						CTX_NOTEBOOK_CELL_CHAT_FOCUSED,
-						CTX_INLINE_CHAT_FOCUSED
+						CTX_INLINE_CHAT_FOCUSED,
 					),
 					weight: KeybindingWeight.EditorContrib + 10,
 					primary: KeyMod.CtrlCmd | KeyCode.Enter,
@@ -177,7 +177,7 @@ registerAction2(
 						group: "inline",
 						order: 0,
 						when: CTX_INLINE_CHAT_RESPONSE_TYPES.notEqualsTo(
-							InlineChatResponseTypes.OnlyMessages
+							InlineChatResponseTypes.OnlyMessages,
 						),
 					},
 				],
@@ -186,7 +186,7 @@ registerAction2(
 
 		async runWithContext(
 			accessor: ServicesAccessor,
-			context: INotebookCellActionContext
+			context: INotebookCellActionContext,
 		) {
 			const ctrl = NotebookCellChatController.get(context.cell);
 			if (!ctrl) {
@@ -195,7 +195,7 @@ registerAction2(
 
 			ctrl.acceptSession();
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -209,7 +209,7 @@ registerAction2(
 					when: ContextKeyExpr.and(
 						CTX_NOTEBOOK_CELL_CHAT_FOCUSED,
 						CTX_INLINE_CHAT_FOCUSED,
-						NOTEBOOK_CELL_LIST_FOCUSED
+						NOTEBOOK_CELL_LIST_FOCUSED,
 					),
 					weight: KeybindingWeight.EditorContrib,
 					primary: KeyCode.Escape,
@@ -224,7 +224,7 @@ registerAction2(
 
 		async runWithContext(
 			accessor: ServicesAccessor,
-			context: INotebookCellActionContext
+			context: INotebookCellActionContext,
 		) {
 			const ctrl = NotebookCellChatController.get(context.cell);
 			if (!ctrl) {
@@ -234,7 +234,7 @@ registerAction2(
 			// todo discard
 			ctrl.dismiss(true);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -249,7 +249,7 @@ registerAction2(
 					group: "inline",
 					order: 1,
 					when: CTX_INLINE_CHAT_LAST_RESPONSE_TYPE.notEqualsTo(
-						undefined
+						undefined,
 					),
 				},
 			});
@@ -257,7 +257,7 @@ registerAction2(
 
 		async runWithContext(
 			accessor: ServicesAccessor,
-			context: INotebookCellActionContext
+			context: INotebookCellActionContext,
 		) {
 			const ctrl = NotebookCellChatController.get(context.cell);
 			if (!ctrl) {
@@ -266,7 +266,7 @@ registerAction2(
 
 			ctrl.feedbackLast(InlineChatResponseFeedbackKind.Helpful);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -281,7 +281,7 @@ registerAction2(
 					group: "inline",
 					order: 2,
 					when: CTX_INLINE_CHAT_LAST_RESPONSE_TYPE.notEqualsTo(
-						undefined
+						undefined,
 					),
 				},
 			});
@@ -289,7 +289,7 @@ registerAction2(
 
 		async runWithContext(
 			accessor: ServicesAccessor,
-			context: INotebookCellActionContext
+			context: INotebookCellActionContext,
 		) {
 			const ctrl = NotebookCellChatController.get(context.cell);
 			if (!ctrl) {
@@ -298,7 +298,7 @@ registerAction2(
 
 			ctrl.feedbackLast(InlineChatResponseFeedbackKind.Unhelpful);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -313,7 +313,7 @@ registerAction2(
 					group: "inline",
 					order: 3,
 					when: CTX_INLINE_CHAT_LAST_RESPONSE_TYPE.notEqualsTo(
-						undefined
+						undefined,
 					),
 				},
 			});
@@ -321,7 +321,7 @@ registerAction2(
 
 		async runWithContext(
 			accessor: ServicesAccessor,
-			context: INotebookCellActionContext
+			context: INotebookCellActionContext,
 		) {
 			const ctrl = NotebookCellChatController.get(context.cell);
 			if (!ctrl) {
@@ -330,7 +330,7 @@ registerAction2(
 
 			ctrl.feedbackLast(InlineChatResponseFeedbackKind.Bug);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -343,13 +343,13 @@ registerAction2(
 						"$(sparkle) " +
 						localize(
 							"notebookActions.menu.insertCodeCellWithChat",
-							"Generate"
+							"Generate",
 						),
 					original: "$(sparkle) Generate",
 				},
 				tooltip: localize(
 					"notebookActions.menu.insertCodeCellWithChat.tooltip",
-					"Generate Code Cell with Chat"
+					"Generate Code Cell with Chat",
 				),
 				menu: [
 					{
@@ -361,8 +361,8 @@ registerAction2(
 							CTX_INLINE_CHAT_HAS_PROVIDER,
 							ContextKeyExpr.equals(
 								`config.${NotebookSetting.cellChat}`,
-								true
-							)
+								true,
+							),
 						),
 					},
 					{
@@ -374,8 +374,8 @@ registerAction2(
 							CTX_INLINE_CHAT_HAS_PROVIDER,
 							ContextKeyExpr.equals(
 								`config.${NotebookSetting.cellChat}`,
-								true
-							)
+								true,
+							),
 						),
 					},
 				],
@@ -384,14 +384,14 @@ registerAction2(
 
 		async runWithContext(
 			accessor: ServicesAccessor,
-			context: INotebookCellActionContext
+			context: INotebookCellActionContext,
 		) {
 			const newCell = await insertNewCell(
 				accessor,
 				context,
 				CellKind.Code,
 				"below",
-				true
+				true,
 			);
 
 			if (!newCell) {
@@ -399,7 +399,7 @@ registerAction2(
 			}
 			await context.notebookEditor.focusNotebookCell(
 				newCell,
-				"container"
+				"container",
 			);
 			const ctrl = NotebookCellChatController.get(newCell);
 			if (!ctrl) {
@@ -407,5 +407,5 @@ registerAction2(
 			}
 			ctrl.show();
 		}
-	}
+	},
 );

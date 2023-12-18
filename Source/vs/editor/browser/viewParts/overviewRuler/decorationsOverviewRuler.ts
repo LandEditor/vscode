@@ -4,27 +4,27 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { FastDomNode, createFastDomNode } from "vs/base/browser/fastDomNode";
+import { equals } from "vs/base/common/arrays";
 import { Color } from "vs/base/common/color";
 import { IDisposable } from "vs/base/common/lifecycle";
-import { ViewPart } from "vs/editor/browser/view/viewPart";
-import { Position } from "vs/editor/common/core/position";
-import { IEditorConfiguration } from "vs/editor/common/config/editorConfiguration";
-import { TokenizationRegistry } from "vs/editor/common/languages";
-import {
-	editorCursorForeground,
-	editorOverviewRulerBorder,
-	editorOverviewRulerBackground,
-} from "vs/editor/common/core/editorColorRegistry";
 import {
 	RenderingContext,
 	RestrictedRenderingContext,
 } from "vs/editor/browser/view/renderingContext";
-import { ViewContext } from "vs/editor/common/viewModel/viewContext";
-import { EditorTheme } from "vs/editor/common/editorTheme";
-import * as viewEvents from "vs/editor/common/viewEvents";
+import { ViewPart } from "vs/editor/browser/view/viewPart";
+import { IEditorConfiguration } from "vs/editor/common/config/editorConfiguration";
 import { EditorOption } from "vs/editor/common/config/editorOptions";
+import {
+	editorCursorForeground,
+	editorOverviewRulerBackground,
+	editorOverviewRulerBorder,
+} from "vs/editor/common/core/editorColorRegistry";
+import { Position } from "vs/editor/common/core/position";
+import { EditorTheme } from "vs/editor/common/editorTheme";
+import { TokenizationRegistry } from "vs/editor/common/languages";
+import * as viewEvents from "vs/editor/common/viewEvents";
 import { OverviewRulerDecorationsGroup } from "vs/editor/common/viewModel";
-import { equals } from "vs/base/common/arrays";
+import { ViewContext } from "vs/editor/common/viewModel/viewContext";
 
 class Settings {
 	public readonly lineHeight: number;
@@ -100,7 +100,7 @@ class Settings {
 		const [x, w] = this._initLanes(
 			1,
 			this.canvasWidth,
-			this.overviewRulerLanes
+			this.overviewRulerLanes,
 		);
 		this.x = x;
 		this.w = w;
@@ -109,7 +109,7 @@ class Settings {
 	private _initLanes(
 		canvasLeftOffset: number,
 		canvasWidth: number,
-		laneCount: number
+		laneCount: number,
 	): [number[], number[]] {
 		const remainingWidth = canvasWidth - canvasLeftOffset;
 
@@ -221,18 +221,18 @@ class Settings {
 	}
 }
 
-const enum Constants {
+enum Constants {
 	MIN_DECORATION_HEIGHT = 6,
 }
 
-const enum OverviewRulerLane {
+enum OverviewRulerLane {
 	Left = 1,
 	Center = 2,
 	Right = 4,
 	Full = 7,
 }
 
-const enum ShouldRenderValue {
+enum ShouldRenderValue {
 	NotNeeded = 0,
 	Maybe = 1,
 	Needed = 2,
@@ -267,7 +267,7 @@ export class DecorationsOverviewRuler extends ViewPart {
 				if (e.changedColorMap) {
 					this._updateSettings(true);
 				}
-			}
+			},
 		);
 
 		this._cursorPositions = [];
@@ -281,7 +281,7 @@ export class DecorationsOverviewRuler extends ViewPart {
 	private _updateSettings(renderNow: boolean): boolean {
 		const newSettings = new Settings(
 			this._context.configuration,
-			this._context.theme
+			this._context.theme,
 		);
 		if (this._settings && this._settings.equals(newSettings)) {
 			// nothing to do
@@ -317,14 +317,14 @@ export class DecorationsOverviewRuler extends ViewPart {
 	}
 
 	public override onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent
+		e: viewEvents.ViewConfigurationChangedEvent,
 	): boolean {
 		return this._updateSettings(false)
 			? this._markRenderingIsNeeded()
 			: false;
 	}
 	public override onCursorStateChanged(
-		e: viewEvents.ViewCursorStateChangedEvent
+		e: viewEvents.ViewCursorStateChangedEvent,
 	): boolean {
 		this._cursorPositions = [];
 		for (let i = 0, len = e.selections.length; i < len; i++) {
@@ -334,7 +334,7 @@ export class DecorationsOverviewRuler extends ViewPart {
 		return this._markRenderingIsMaybeNeeded();
 	}
 	public override onDecorationsChanged(
-		e: viewEvents.ViewDecorationsChangedEvent
+		e: viewEvents.ViewDecorationsChangedEvent,
 	): boolean {
 		if (e.affectsOverviewRuler) {
 			return this._markRenderingIsMaybeNeeded();
@@ -345,17 +345,17 @@ export class DecorationsOverviewRuler extends ViewPart {
 		return this._markRenderingIsNeeded();
 	}
 	public override onScrollChanged(
-		e: viewEvents.ViewScrollChangedEvent
+		e: viewEvents.ViewScrollChangedEvent,
 	): boolean {
 		return e.scrollHeightChanged ? this._markRenderingIsNeeded() : false;
 	}
 	public override onZonesChanged(
-		e: viewEvents.ViewZonesChangedEvent
+		e: viewEvents.ViewZonesChangedEvent,
 	): boolean {
 		return this._markRenderingIsNeeded();
 	}
 	public override onThemeChanged(
-		e: viewEvents.ViewThemeChangedEvent
+		e: viewEvents.ViewThemeChangedEvent,
 	): boolean {
 		return this._updateSettings(false)
 			? this._markRenderingIsNeeded()
@@ -384,7 +384,7 @@ export class DecorationsOverviewRuler extends ViewPart {
 			this._domNode.setBackgroundColor(
 				backgroundColor
 					? Color.Format.CSS.formatHexA(backgroundColor)
-					: ""
+					: "",
 			);
 			this._domNode.setDisplay("none");
 			return;
@@ -392,7 +392,7 @@ export class DecorationsOverviewRuler extends ViewPart {
 
 		const decorations =
 			this._context.viewModel.getAllOverviewRulerDecorations(
-				this._context.theme
+				this._context.theme,
 			);
 		decorations.sort(OverviewRulerDecorationsGroup.compareByRenderingProps);
 
@@ -400,7 +400,7 @@ export class DecorationsOverviewRuler extends ViewPart {
 			this._actualShouldRender === ShouldRenderValue.Maybe &&
 			!OverviewRulerDecorationsGroup.equalsArr(
 				this._renderedDecorations,
-				decorations
+				decorations,
 			)
 		) {
 			this._actualShouldRender = ShouldRenderValue.Needed;
@@ -410,7 +410,7 @@ export class DecorationsOverviewRuler extends ViewPart {
 			!equals(
 				this._renderedCursorPositions,
 				this._cursorPositions,
-				(a, b) => a.lineNumber === b.lineNumber
+				(a, b) => a.lineNumber === b.lineNumber,
 			)
 		) {
 			this._actualShouldRender = ShouldRenderValue.Needed;
@@ -477,7 +477,7 @@ export class DecorationsOverviewRuler extends ViewPart {
 
 				let y1 =
 					(viewLayout.getVerticalOffsetForLineNumber(
-						startLineNumber
+						startLineNumber,
 					) *
 						heightRatio) |
 					0;
@@ -508,7 +508,7 @@ export class DecorationsOverviewRuler extends ViewPart {
 							x[prevLane],
 							prevY1,
 							w[prevLane],
-							prevY2 - prevY1
+							prevY2 - prevY1,
 						);
 					}
 					prevLane = lane;
@@ -525,7 +525,7 @@ export class DecorationsOverviewRuler extends ViewPart {
 				x[prevLane],
 				prevY1,
 				w[prevLane],
-				prevY2 - prevY1
+				prevY2 - prevY1,
 			);
 		}
 
@@ -544,7 +544,7 @@ export class DecorationsOverviewRuler extends ViewPart {
 
 				let yCenter =
 					(viewLayout.getVerticalOffsetForLineNumber(
-						cursor.lineNumber
+						cursor.lineNumber,
 					) *
 						heightRatio) |
 					0;
@@ -563,7 +563,7 @@ export class DecorationsOverviewRuler extends ViewPart {
 							cursorX,
 							prevY1,
 							cursorW,
-							prevY2 - prevY1
+							prevY2 - prevY1,
 						);
 					}
 					prevY1 = y1;

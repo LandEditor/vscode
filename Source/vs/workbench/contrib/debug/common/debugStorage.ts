@@ -3,29 +3,29 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Disposable } from "vs/base/common/lifecycle";
+import { observableValue } from "vs/base/common/observable";
 import { URI } from "vs/base/common/uri";
+import { ILogService } from "vs/platform/log/common/log";
 import {
-	StorageScope,
 	IStorageService,
+	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
 import {
-	ExceptionBreakpoint,
-	Expression,
-	Breakpoint,
-	FunctionBreakpoint,
-	DataBreakpoint,
-} from "vs/workbench/contrib/debug/common/debugModel";
-import {
+	IDebugModel,
 	IEvaluate,
 	IExpression,
-	IDebugModel,
 } from "vs/workbench/contrib/debug/common/debug";
+import {
+	Breakpoint,
+	DataBreakpoint,
+	ExceptionBreakpoint,
+	Expression,
+	FunctionBreakpoint,
+} from "vs/workbench/contrib/debug/common/debugModel";
 import { ITextFileService } from "vs/workbench/services/textfile/common/textfiles";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import { ILogService } from "vs/platform/log/common/log";
-import { observableValue } from "vs/base/common/observable";
-import { Disposable } from "vs/base/common/lifecycle";
 
 const DEBUG_BREAKPOINTS_KEY = "debug.breakpoint";
 const DEBUG_FUNCTION_BREAKPOINTS_KEY = "debug.functionbreakpoint";
@@ -39,19 +39,19 @@ export class DebugStorage extends Disposable {
 	public readonly breakpoints = observableValue(this, this.loadBreakpoints());
 	public readonly functionBreakpoints = observableValue(
 		this,
-		this.loadFunctionBreakpoints()
+		this.loadFunctionBreakpoints(),
 	);
 	public readonly exceptionBreakpoints = observableValue(
 		this,
-		this.loadExceptionBreakpoints()
+		this.loadExceptionBreakpoints(),
 	);
 	public readonly dataBreakpoints = observableValue(
 		this,
-		this.loadDataBreakpoints()
+		this.loadDataBreakpoints(),
 	);
 	public readonly watchExpressions = observableValue(
 		this,
-		this.loadWatchExpressions()
+		this.loadWatchExpressions(),
 	);
 
 	constructor(
@@ -106,7 +106,7 @@ export class DebugStorage extends Disposable {
 		return this.storageService.get(
 			DEBUG_UX_STATE_KEY,
 			StorageScope.WORKSPACE,
-			"default"
+			"default",
 		) as "simple" | "default";
 	}
 
@@ -115,7 +115,7 @@ export class DebugStorage extends Disposable {
 			DEBUG_UX_STATE_KEY,
 			value,
 			StorageScope.WORKSPACE,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 	}
 
@@ -126,13 +126,13 @@ export class DebugStorage extends Disposable {
 				this.storageService.get(
 					DEBUG_BREAKPOINTS_KEY,
 					StorageScope.WORKSPACE,
-					"[]"
-				)
+					"[]",
+				),
 			).map((breakpoint: any) => {
 				return new Breakpoint(
 					URI.parse(
 						breakpoint.uri.external ||
-							breakpoint.source.uri.external
+							breakpoint.source.uri.external,
 					),
 					breakpoint.lineNumber,
 					breakpoint.column,
@@ -144,7 +144,7 @@ export class DebugStorage extends Disposable {
 					this.textFileService,
 					this.uriIdentityService,
 					this.logService,
-					breakpoint.id
+					breakpoint.id,
 				);
 			});
 		} catch (e) {}
@@ -159,8 +159,8 @@ export class DebugStorage extends Disposable {
 				this.storageService.get(
 					DEBUG_FUNCTION_BREAKPOINTS_KEY,
 					StorageScope.WORKSPACE,
-					"[]"
-				)
+					"[]",
+				),
 			).map((fb: any) => {
 				return new FunctionBreakpoint(
 					fb.name,
@@ -168,7 +168,7 @@ export class DebugStorage extends Disposable {
 					fb.hitCondition,
 					fb.condition,
 					fb.logMessage,
-					fb.id
+					fb.id,
 				);
 			});
 		} catch (e) {}
@@ -183,8 +183,8 @@ export class DebugStorage extends Disposable {
 				this.storageService.get(
 					DEBUG_EXCEPTION_BREAKPOINTS_KEY,
 					StorageScope.WORKSPACE,
-					"[]"
-				)
+					"[]",
+				),
 			).map((exBreakpoint: any) => {
 				return new ExceptionBreakpoint(
 					exBreakpoint.filter,
@@ -194,7 +194,7 @@ export class DebugStorage extends Disposable {
 					exBreakpoint.condition,
 					exBreakpoint.description,
 					exBreakpoint.conditionDescription,
-					!!exBreakpoint.fallback
+					!!exBreakpoint.fallback,
 				);
 			});
 		} catch (e) {}
@@ -209,8 +209,8 @@ export class DebugStorage extends Disposable {
 				this.storageService.get(
 					DEBUG_DATA_BREAKPOINTS_KEY,
 					StorageScope.WORKSPACE,
-					"[]"
-				)
+					"[]",
+				),
 			).map((dbp: any) => {
 				return new DataBreakpoint(
 					dbp.description,
@@ -222,7 +222,7 @@ export class DebugStorage extends Disposable {
 					dbp.logMessage,
 					dbp.accessTypes,
 					dbp.accessType,
-					dbp.id
+					dbp.id,
 				);
 			});
 		} catch (e) {}
@@ -237,8 +237,8 @@ export class DebugStorage extends Disposable {
 				this.storageService.get(
 					DEBUG_WATCH_EXPRESSIONS_KEY,
 					StorageScope.WORKSPACE,
-					"[]"
-				)
+					"[]",
+				),
 			).map((watchStoredData: { name: string; id: string }) => {
 				return new Expression(watchStoredData.name, watchStoredData.id);
 			});
@@ -252,8 +252,8 @@ export class DebugStorage extends Disposable {
 			this.storageService.get(
 				DEBUG_CHOSEN_ENVIRONMENTS_KEY,
 				StorageScope.WORKSPACE,
-				"{}"
-			)
+				"{}",
+			),
 		);
 	}
 
@@ -262,7 +262,7 @@ export class DebugStorage extends Disposable {
 			DEBUG_CHOSEN_ENVIRONMENTS_KEY,
 			JSON.stringify(environments),
 			StorageScope.WORKSPACE,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 	}
 
@@ -274,15 +274,15 @@ export class DebugStorage extends Disposable {
 					watchExpressions.map((we) => ({
 						name: we.name,
 						id: we.getId(),
-					}))
+					})),
 				),
 				StorageScope.WORKSPACE,
-				StorageTarget.MACHINE
+				StorageTarget.MACHINE,
 			);
 		} else {
 			this.storageService.remove(
 				DEBUG_WATCH_EXPRESSIONS_KEY,
-				StorageScope.WORKSPACE
+				StorageScope.WORKSPACE,
 			);
 		}
 	}
@@ -294,12 +294,12 @@ export class DebugStorage extends Disposable {
 				DEBUG_BREAKPOINTS_KEY,
 				JSON.stringify(breakpoints),
 				StorageScope.WORKSPACE,
-				StorageTarget.MACHINE
+				StorageTarget.MACHINE,
 			);
 		} else {
 			this.storageService.remove(
 				DEBUG_BREAKPOINTS_KEY,
-				StorageScope.WORKSPACE
+				StorageScope.WORKSPACE,
 			);
 		}
 
@@ -309,12 +309,12 @@ export class DebugStorage extends Disposable {
 				DEBUG_FUNCTION_BREAKPOINTS_KEY,
 				JSON.stringify(functionBreakpoints),
 				StorageScope.WORKSPACE,
-				StorageTarget.MACHINE
+				StorageTarget.MACHINE,
 			);
 		} else {
 			this.storageService.remove(
 				DEBUG_FUNCTION_BREAKPOINTS_KEY,
-				StorageScope.WORKSPACE
+				StorageScope.WORKSPACE,
 			);
 		}
 
@@ -326,12 +326,12 @@ export class DebugStorage extends Disposable {
 				DEBUG_DATA_BREAKPOINTS_KEY,
 				JSON.stringify(dataBreakpoints),
 				StorageScope.WORKSPACE,
-				StorageTarget.MACHINE
+				StorageTarget.MACHINE,
 			);
 		} else {
 			this.storageService.remove(
 				DEBUG_DATA_BREAKPOINTS_KEY,
-				StorageScope.WORKSPACE
+				StorageScope.WORKSPACE,
 			);
 		}
 
@@ -341,12 +341,12 @@ export class DebugStorage extends Disposable {
 				DEBUG_EXCEPTION_BREAKPOINTS_KEY,
 				JSON.stringify(exceptionBreakpoints),
 				StorageScope.WORKSPACE,
-				StorageTarget.MACHINE
+				StorageTarget.MACHINE,
 			);
 		} else {
 			this.storageService.remove(
 				DEBUG_EXCEPTION_BREAKPOINTS_KEY,
-				StorageScope.WORKSPACE
+				StorageScope.WORKSPACE,
 			);
 		}
 	}

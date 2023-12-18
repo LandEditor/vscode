@@ -3,13 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Action } from "vs/base/common/actions";
+import { RunOnceScheduler } from "vs/base/common/async";
 import { Codicon } from "vs/base/common/codicons";
+import { MarkdownString } from "vs/base/common/htmlContent";
+import { Iterable } from "vs/base/common/iterator";
+import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
 import { ThemeIcon } from "vs/base/common/themables";
+import { URI } from "vs/base/common/uri";
 import {
 	IActiveCodeEditor,
 	ICodeEditor,
 	IEditorMouseEvent,
 } from "vs/editor/browser/editorBrowser";
+import { Range } from "vs/editor/common/core/range";
 import { IEditorContribution } from "vs/editor/common/editorCommon";
 import {
 	GlyphMarginLane,
@@ -19,50 +26,43 @@ import {
 } from "vs/editor/common/model";
 import { ModelDecorationOptions } from "vs/editor/common/model/textModel";
 import { localize } from "vs/nls";
-import { registerIcon } from "vs/platform/theme/common/iconRegistry";
-import { InlineChatController } from "vs/workbench/contrib/inlineChat/browser/inlineChatController";
 import {
-	IConfigurationService,
 	IConfigurationChangeEvent,
+	IConfigurationService,
 } from "vs/platform/configuration/common/configuration";
-import { DisposableStore, Disposable } from "vs/base/common/lifecycle";
-import { GutterActionsRegistry } from "vs/workbench/contrib/codeEditor/browser/editorLineNumberMenu";
-import { Action } from "vs/base/common/actions";
-import {
-	IInlineChatService,
-	ShowGutterIcon,
-} from "vs/workbench/contrib/inlineChat/common/inlineChat";
-import { RunOnceScheduler } from "vs/base/common/async";
-import { Iterable } from "vs/base/common/iterator";
-import { Range } from "vs/editor/common/core/range";
-import { IInlineChatSessionService } from "vs/workbench/contrib/inlineChat/browser/inlineChatSession";
-import { MarkdownString } from "vs/base/common/htmlContent";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
 import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { LOCALIZED_START_INLINE_CHAT_STRING } from "vs/workbench/contrib/inlineChat/browser/inlineChatActions";
+import { registerIcon } from "vs/platform/theme/common/iconRegistry";
+import { GutterActionsRegistry } from "vs/workbench/contrib/codeEditor/browser/editorLineNumberMenu";
 import {
 	IBreakpoint,
 	IDebugService,
 	IDebugSession,
 } from "vs/workbench/contrib/debug/common/debug";
+import { LOCALIZED_START_INLINE_CHAT_STRING } from "vs/workbench/contrib/inlineChat/browser/inlineChatActions";
+import { InlineChatController } from "vs/workbench/contrib/inlineChat/browser/inlineChatController";
+import { IInlineChatSessionService } from "vs/workbench/contrib/inlineChat/browser/inlineChatSession";
+import {
+	IInlineChatService,
+	ShowGutterIcon,
+} from "vs/workbench/contrib/inlineChat/common/inlineChat";
 import { IPreferencesService } from "vs/workbench/services/preferences/common/preferences";
-import { URI } from "vs/base/common/uri";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
 
 const GUTTER_INLINE_CHAT_OPAQUE_ICON = registerIcon(
 	"inline-chat-opaque",
 	Codicon.sparkle,
 	localize(
 		"startInlineChatOpaqueIcon",
-		"Icon which spawns the inline chat from the gutter. It is half opaque by default and becomes completely opaque on hover."
-	)
+		"Icon which spawns the inline chat from the gutter. It is half opaque by default and becomes completely opaque on hover.",
+	),
 );
 const GUTTER_INLINE_CHAT_TRANSPARENT_ICON = registerIcon(
 	"inline-chat-transparent",
 	Codicon.sparkle,
 	localize(
 		"startInlineChatTransparentIcon",
-		"Icon which spawns the inline chat from the gutter. It is transparent by default and becomes opaque on hover."
-	)
+		"Icon which spawns the inline chat from the gutter. It is transparent by default and becomes opaque on hover.",
+	),
 );
 
 export class InlineChatDecorationsContribution
@@ -72,8 +72,8 @@ export class InlineChatDecorationsContribution
 	private _currentBreakpoints: readonly IBreakpoint[] = [];
 	private _gutterDecorationID: string | undefined;
 	private _inlineChatKeybinding: string | undefined;
-	private _hasInlineChatSession: boolean = false;
-	private _hasActiveDebugSession: boolean = false;
+	private _hasInlineChatSession = false;
+	private _hasActiveDebugSession = false;
 	private _debugSessions: Set<IDebugSession> = new Set();
 	private readonly _localToDispose = new DisposableStore();
 	private readonly _gutterDecorationOpaque: IModelDecorationOptions;
@@ -172,14 +172,14 @@ export class InlineChatDecorationsContribution
 	}
 
 	private _registerGutterDecoration(
-		isTransparent: boolean
+		isTransparent: boolean,
 	): ModelDecorationOptions {
 		return ModelDecorationOptions.register({
 			description: "inline-chat-decoration",
 			glyphMarginClassName: ThemeIcon.asClassName(
 				isTransparent
 					? GUTTER_INLINE_CHAT_TRANSPARENT_ICON
-					: GUTTER_INLINE_CHAT_OPAQUE_ICON
+					: GUTTER_INLINE_CHAT_OPAQUE_ICON,
 			),
 			glyphMargin: { position: GlyphMarginLane.Left },
 			stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
@@ -200,9 +200,9 @@ export class InlineChatDecorationsContribution
 				? localize(
 						"runWithKeybinding",
 						"Start Inline Chat ({0})",
-						keybinding
-					)
-				: LOCALIZED_START_INLINE_CHAT_STRING
+						keybinding,
+				  )
+				: LOCALIZED_START_INLINE_CHAT_STRING,
 		);
 		this._gutterDecorationTransparent.glyphMarginHoverMessage =
 			hoverMessage;
@@ -230,24 +230,24 @@ export class InlineChatDecorationsContribution
 		const editor = this._editor;
 		const decorationUpdateScheduler = new RunOnceScheduler(
 			() => this._onSelectionOrContentChanged(editor),
-			100
+			100,
 		);
 		this._localToDispose.add(decorationUpdateScheduler);
 		this._localToDispose.add(
 			this._debugService.getModel().onDidChangeBreakpoints(() => {
 				this._updateCurrentBreakpoints(editor.getModel().uri);
 				decorationUpdateScheduler.schedule();
-			})
+			}),
 		);
 		this._localToDispose.add(
 			this._editor.onDidChangeCursorSelection(() =>
-				decorationUpdateScheduler.schedule()
-			)
+				decorationUpdateScheduler.schedule(),
+			),
 		);
 		this._localToDispose.add(
 			this._editor.onDidChangeModelContent(() =>
-				decorationUpdateScheduler.schedule()
-			)
+				decorationUpdateScheduler.schedule(),
+			),
 		);
 		this._localToDispose.add(
 			this._editor.onMouseDown(async (e: IEditorMouseEvent) => {
@@ -256,18 +256,18 @@ export class InlineChatDecorationsContribution
 					showGutterIconMode === ShowGutterIcon.Always
 						? InlineChatDecorationsContribution.GUTTER_ICON_OPAQUE_CLASSNAME
 						: showGutterIconMode === ShowGutterIcon.MouseOver
-							? InlineChatDecorationsContribution.GUTTER_ICON_TRANSPARENT_CLASSNAME
-							: undefined;
+						  ? InlineChatDecorationsContribution.GUTTER_ICON_TRANSPARENT_CLASSNAME
+						  : undefined;
 				if (
 					!gutterDecorationClassName ||
 					!e.target.element?.classList.contains(
-						gutterDecorationClassName
+						gutterDecorationClassName,
 					)
 				) {
 					return;
 				}
 				InlineChatController.get(this._editor)?.run();
-			})
+			}),
 		);
 		this._localToDispose.add({
 			dispose: () => {
@@ -287,7 +287,7 @@ export class InlineChatDecorationsContribution
 
 		let isEnabled = false;
 		const hasBreakpoint = this._currentBreakpoints.some(
-			(bp) => bp.lineNumber === startLineNumber
+			(bp) => bp.lineNumber === startLineNumber,
 		);
 		if (!hasBreakpoint) {
 			const selectionIsEmpty = selection.isEmpty();
@@ -315,12 +315,12 @@ export class InlineChatDecorationsContribution
 				this._addGutterDecoration(startLineNumber);
 			} else {
 				const decorationRange = model.getDecorationRange(
-					this._gutterDecorationID
+					this._gutterDecorationID,
 				);
 				if (decorationRange?.startLineNumber !== startLineNumber) {
 					this._updateGutterDecoration(
 						this._gutterDecorationID,
-						startLineNumber
+						startLineNumber,
 					);
 				}
 			}
@@ -331,7 +331,7 @@ export class InlineChatDecorationsContribution
 
 	private _showGutterIconMode(): ShowGutterIcon {
 		return this._configurationService.getValue<ShowGutterIcon>(
-			InlineChatDecorationsContribution.GUTTER_SETTING_ID
+			InlineChatDecorationsContribution.GUTTER_SETTING_ID,
 		);
 	}
 
@@ -350,9 +350,9 @@ export class InlineChatDecorationsContribution
 					new Range(lineNumber, 0, lineNumber, 0),
 					showGutterIconMode === ShowGutterIcon.Always
 						? this._gutterDecorationOpaque
-						: this._gutterDecorationTransparent
+						: this._gutterDecorationTransparent,
 				);
-			}
+			},
 		);
 	}
 
@@ -360,7 +360,7 @@ export class InlineChatDecorationsContribution
 		this._editor.changeDecorations(
 			(accessor: IModelDecorationsChangeAccessor) => {
 				accessor.removeDecoration(decorationId);
-			}
+			},
 		);
 		this._gutterDecorationID = undefined;
 	}
@@ -370,9 +370,9 @@ export class InlineChatDecorationsContribution
 			(accessor: IModelDecorationsChangeAccessor) => {
 				accessor.changeDecoration(
 					decorationId,
-					new Range(lineNumber, 0, lineNumber, 0)
+					new Range(lineNumber, 0, lineNumber, 0),
 				);
-			}
+			},
 		);
 	}
 
@@ -386,7 +386,7 @@ GutterActionsRegistry.registerGutterActionsGenerator(
 	({ lineNumber, editor, accessor }, result) => {
 		const inlineChatService = accessor.get(IInlineChatService);
 		const noProviders = Iterable.isEmpty(
-			inlineChatService.getAllProvider()
+			inlineChatService.getAllProvider(),
 		);
 		if (noProviders) {
 			return;
@@ -397,7 +397,7 @@ GutterActionsRegistry.registerGutterActionsGenerator(
 				"inlineChat.configureShowGutterIcon",
 				localize(
 					"configureShowGutterIcon",
-					"Configure Inline Chat Icon"
+					"Configure Inline Chat Icon",
 				),
 				undefined,
 				true,
@@ -405,8 +405,8 @@ GutterActionsRegistry.registerGutterActionsGenerator(
 					preferencesService.openUserSettings({
 						query: "inlineChat.showGutterIcon",
 					});
-				}
-			)
+				},
+			),
 		);
-	}
+	},
 );

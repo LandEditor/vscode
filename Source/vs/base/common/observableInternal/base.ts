@@ -64,7 +64,7 @@ export interface IObservable<T, TChange = unknown> {
 	map<TNew>(fn: (value: T, reader: IReader) => TNew): IObservable<TNew>;
 	map<TNew>(
 		owner: object,
-		fn: (value: T, reader: IReader) => TNew
+		fn: (value: T, reader: IReader) => TNew,
 	): IObservable<TNew>;
 
 	/**
@@ -72,7 +72,7 @@ export interface IObservable<T, TChange = unknown> {
 	 */
 	recomputeInitiallyAndOnChange(
 		store: DisposableStore,
-		handleValue?: (value: T) => void
+		handleValue?: (value: T) => void,
 	): IObservable<T>;
 
 	/**
@@ -137,7 +137,7 @@ export interface IObserver {
 	 */
 	handleChange<T, TChange>(
 		observable: IObservable<T, TChange>,
-		change: TChange
+		change: TChange,
 	): void;
 }
 
@@ -159,14 +159,14 @@ export interface ITransaction {
 	 */
 	updateObserver(
 		observer: IObserver,
-		observable: IObservable<any, any>
+		observable: IObservable<any, any>,
 	): void;
 }
 
 let _recomputeInitiallyAndOnChange: typeof recomputeInitiallyAndOnChange;
 
 export function _setRecomputeInitiallyAndOnChange(
-	recomputeInitiallyAndOnChange: typeof _recomputeInitiallyAndOnChange
+	recomputeInitiallyAndOnChange: typeof _recomputeInitiallyAndOnChange,
 ) {
 	_recomputeInitiallyAndOnChange = recomputeInitiallyAndOnChange;
 }
@@ -207,15 +207,15 @@ export abstract class ConvenientObservable<T, TChange>
 
 	/** @sealed */
 	public map<TNew>(
-		fn: (value: T, reader: IReader) => TNew
+		fn: (value: T, reader: IReader) => TNew,
 	): IObservable<TNew>;
 	public map<TNew>(
 		owner: object,
-		fn: (value: T, reader: IReader) => TNew
+		fn: (value: T, reader: IReader) => TNew,
 	): IObservable<TNew>;
 	public map<TNew>(
 		fnOrOwner: object | ((value: T, reader: IReader) => TNew),
-		fnOrUndefined?: (value: T, reader: IReader) => TNew
+		fnOrUndefined?: (value: T, reader: IReader) => TNew,
 	): IObservable<TNew> {
 		const owner =
 			fnOrUndefined === undefined ? undefined : (fnOrOwner as object);
@@ -246,13 +246,13 @@ export abstract class ConvenientObservable<T, TChange>
 					return undefined;
 				},
 			},
-			(reader) => fn(this.read(reader), reader)
+			(reader) => fn(this.read(reader), reader),
 		);
 	}
 
 	public recomputeInitiallyAndOnChange(
 		store: DisposableStore,
-		handleValue?: (value: T) => void
+		handleValue?: (value: T) => void,
 	): IObservable<T> {
 		store.add(_recomputeInitiallyAndOnChange!(this, handleValue));
 		return this;
@@ -294,7 +294,7 @@ export abstract class BaseObservable<
 
 export function transaction(
 	fn: (tx: ITransaction) => void,
-	getDebugName?: () => string
+	getDebugName?: () => string,
 ): void {
 	const tx = new TransactionImpl(fn, getDebugName);
 	try {
@@ -324,7 +324,7 @@ export function globalTransaction(fn: (tx: ITransaction) => void) {
 
 export async function asyncTransaction(
 	fn: (tx: ITransaction) => Promise<void>,
-	getDebugName?: () => string
+	getDebugName?: () => string,
 ): Promise<void> {
 	const tx = new TransactionImpl(fn, getDebugName);
 	try {
@@ -340,12 +340,12 @@ export async function asyncTransaction(
 export function subtransaction(
 	tx: ITransaction | undefined,
 	fn: (tx: ITransaction) => void,
-	getDebugName?: () => string
+	getDebugName?: () => string,
 ): void {
-	if (!tx) {
-		transaction(fn, getDebugName);
-	} else {
+	if (tx) {
 		fn(tx);
+	} else {
+		transaction(fn, getDebugName);
 	}
 }
 
@@ -356,7 +356,7 @@ export class TransactionImpl implements ITransaction {
 
 	constructor(
 		public readonly _fn: Function,
-		private readonly _getDebugName?: () => string
+		private readonly _getDebugName?: () => string,
 	) {
 		getLogger()?.handleBeginTransaction(this);
 	}
@@ -370,7 +370,7 @@ export class TransactionImpl implements ITransaction {
 
 	public updateObserver(
 		observer: IObserver,
-		observable: IObservable<any>
+		observable: IObservable<any>,
 	): void {
 		// When this gets called while finish is active, they will still get considered
 		this.updatingObservers!.push({ observer, observable });
@@ -399,7 +399,7 @@ export function getDebugName(
 	debugNameFn: DebugNameFn | undefined,
 	fn: Function | undefined,
 	owner: object | undefined,
-	self: object
+	self: object,
 ): string | undefined {
 	const cached = cachedDebugName.get(obj);
 	if (cached) {
@@ -423,7 +423,7 @@ function computeDebugName(
 	debugNameFn: DebugNameFn | undefined,
 	fn: Function | undefined,
 	owner: object | undefined,
-	self: object
+	self: object,
 ): string | undefined {
 	const cached = cachedDebugName.get(obj);
 	if (cached) {
@@ -510,15 +510,15 @@ export interface ISettableObservable<T, TChange = void>
  */
 export function observableValue<T, TChange = void>(
 	name: string,
-	initialValue: T
+	initialValue: T,
 ): ISettableObservable<T, TChange>;
 export function observableValue<T, TChange = void>(
 	owner: object,
-	initialValue: T
+	initialValue: T,
 ): ISettableObservable<T, TChange>;
 export function observableValue<T, TChange = void>(
 	nameOrOwner: string | object,
-	initialValue: T
+	initialValue: T,
 ): ISettableObservable<T, TChange> {
 	if (typeof nameOrOwner === "string") {
 		return new ObservableValue(undefined, nameOrOwner, initialValue);
@@ -543,7 +543,7 @@ export class ObservableValue<T, TChange = void>
 	constructor(
 		private readonly _owner: object | undefined,
 		private readonly _debugName: string | undefined,
-		initialValue: T
+		initialValue: T,
 	) {
 		super();
 		this._value = initialValue;
@@ -561,7 +561,7 @@ export class ObservableValue<T, TChange = void>
 		if (!tx) {
 			tx = _tx = new TransactionImpl(
 				() => {},
-				() => `Setting ${this.debugName}`
+				() => `Setting ${this.debugName}`,
 			);
 		}
 		try {
@@ -604,19 +604,19 @@ export function disposableObservableValue<
 	TChange = void,
 >(
 	nameOrOwner: string | object,
-	initialValue: T
+	initialValue: T,
 ): ISettableObservable<T, TChange> & IDisposable {
 	if (typeof nameOrOwner === "string") {
 		return new DisposableObservableValue(
 			undefined,
 			nameOrOwner,
-			initialValue
+			initialValue,
 		);
 	} else {
 		return new DisposableObservableValue(
 			nameOrOwner,
 			undefined,
-			initialValue
+			initialValue,
 		);
 	}
 }
@@ -659,6 +659,6 @@ export interface IChangeContext {
 	 * Returns if the given observable caused the change.
 	 */
 	didChange<T, TChange>(
-		observable: IObservable<T, TChange>
+		observable: IObservable<T, TChange>,
 	): this is { change: TChange };
 }

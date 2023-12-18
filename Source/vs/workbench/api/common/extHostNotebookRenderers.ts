@@ -24,17 +24,17 @@ export class ExtHostNotebookRenderers implements ExtHostNotebookRenderersShape {
 
 	constructor(
 		mainContext: IMainContext,
-		private readonly _extHostNotebook: ExtHostNotebookController
+		private readonly _extHostNotebook: ExtHostNotebookController,
 	) {
 		this.proxy = mainContext.getProxy(
-			MainContext.MainThreadNotebookRenderers
+			MainContext.MainThreadNotebookRenderers,
 		);
 	}
 
 	public $postRendererMessage(
 		editorId: string,
 		rendererId: string,
-		message: unknown
+		message: unknown,
 	): void {
 		const editor = this._extHostNotebook.getEditorById(editorId);
 		this._rendererMessageEmitters
@@ -44,15 +44,15 @@ export class ExtHostNotebookRenderers implements ExtHostNotebookRenderersShape {
 
 	public createRendererMessaging(
 		manifest: IExtensionDescription,
-		rendererId: string
+		rendererId: string,
 	): vscode.NotebookRendererMessaging {
 		if (
 			!manifest.contributes?.notebookRenderer?.some(
-				(r) => r.id === rendererId
+				(r) => r.id === rendererId,
 			)
 		) {
 			throw new Error(
-				`Extensions may only call createRendererMessaging() for renderers they contribute (got ${rendererId})`
+				`Extensions may only call createRendererMessaging() for renderers they contribute (got ${rendererId})`,
 			);
 		}
 
@@ -61,7 +61,7 @@ export class ExtHostNotebookRenderers implements ExtHostNotebookRenderersShape {
 				return this.getOrCreateEmitterFor(rendererId).event(
 					listener,
 					thisArg,
-					disposables
+					disposables,
 				);
 			},
 			postMessage: (message, editorOrAlias) => {
@@ -73,12 +73,12 @@ export class ExtHostNotebookRenderers implements ExtHostNotebookRenderersShape {
 				const extHostEditor =
 					editorOrAlias &&
 					ExtHostNotebookEditor.apiEditorsToExtHost.get(
-						editorOrAlias
+						editorOrAlias,
 					);
 				return this.proxy.$postMessage(
 					extHostEditor?.id,
 					rendererId,
-					message
+					message,
 				);
 			},
 		};

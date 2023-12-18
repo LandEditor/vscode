@@ -31,7 +31,7 @@ export class TrimTrailingWhitespaceCommand implements ICommand {
 
 	public getEditOperations(
 		model: ITextModel,
-		builder: IEditOperationBuilder
+		builder: IEditOperationBuilder,
 	): void {
 		const ops = trimTrailingWhitespace(model, this._cursors);
 		for (let i = 0, len = ops.length; i < len; i++) {
@@ -45,7 +45,7 @@ export class TrimTrailingWhitespaceCommand implements ICommand {
 
 	public computeCursorState(
 		model: ITextModel,
-		helper: ICursorStateComputerData
+		helper: ICursorStateComputerData,
 	): Selection {
 		return helper.getTrackedSelection(this._selectionId!);
 	}
@@ -56,7 +56,7 @@ export class TrimTrailingWhitespaceCommand implements ICommand {
  */
 export function trimTrailingWhitespace(
 	model: ITextModel,
-	cursors: Position[]
+	cursors: Position[],
 ): ISingleEditOperation[] {
 	// Sort cursors ascending
 	cursors.sort((a, b) => {
@@ -121,7 +121,7 @@ export function trimTrailingWhitespace(
 
 		fromColumn = Math.max(minEditColumn, fromColumn);
 		r[rLen++] = EditOperation.delete(
-			new Range(lineNumber, fromColumn, lineNumber, maxLineColumn)
+			new Range(lineNumber, fromColumn, lineNumber, maxLineColumn),
 		);
 	}
 

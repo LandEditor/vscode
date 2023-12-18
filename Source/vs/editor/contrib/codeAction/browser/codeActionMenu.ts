@@ -5,8 +5,8 @@
 
 import "vs/base/browser/ui/codicons/codiconStyles"; // The codicon symbol styles are defined here and must be loaded
 import { Codicon } from "vs/base/common/codicons";
-import { ThemeIcon } from "vs/base/common/themables";
 import { ResolvedKeybinding } from "vs/base/common/keybindings";
+import { ThemeIcon } from "vs/base/common/themables";
 import { CodeAction } from "vs/editor/common/languages";
 import {
 	CodeActionItem,
@@ -71,7 +71,7 @@ const codeActionGroups = Object.freeze<ActionGroup[]>([
 export function toMenuItems(
 	inputCodeActions: readonly CodeActionItem[],
 	showHeaders: boolean,
-	keybindingResolver: (action: CodeAction) => ResolvedKeybinding | undefined
+	keybindingResolver: (action: CodeAction) => ResolvedKeybinding | undefined,
 ): IActionListItem<CodeActionItem>[] {
 	if (!showHeaders) {
 		return inputCodeActions.map(
@@ -84,7 +84,7 @@ export function toMenuItems(
 					label: action.action.disabled || action.action.title,
 					canPreview: !!action.action.edit?.edits.length,
 				};
-			}
+			},
 		);
 	}
 
@@ -123,7 +123,7 @@ export function toMenuItems(
 								title: group.title,
 								kind: group.kind,
 								icon: Codicon.sparkle,
-							}
+						  }
 						: group,
 					label: action.action.title,
 					disabled: !!action.action.disabled,

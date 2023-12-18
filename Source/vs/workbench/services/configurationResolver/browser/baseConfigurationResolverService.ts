@@ -63,7 +63,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 		private readonly quickInputService: IQuickInputService,
 		private readonly labelService: ILabelService,
 		private readonly pathService: IPathService,
-		extensionService: IExtensionService
+		extensionService: IExtensionService,
 	) {
 		super(
 			{
@@ -80,11 +80,11 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 				},
 				getConfigurationValue: (
 					folderUri: uri | undefined,
-					suffix: string
+					suffix: string,
 				): string | undefined => {
 					return configurationService.getValue<string>(
 						suffix,
-						folderUri ? { resource: folderUri } : {}
+						folderUri ? { resource: folderUri } : {},
 					);
 				},
 				getAppRoot: (): string | undefined => {
@@ -103,7 +103,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 								Schemas.vscodeUserData,
 								this.pathService.defaultUriScheme,
 							],
-						}
+						},
 					);
 					if (!fileResource) {
 						return undefined;
@@ -122,14 +122,14 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 								Schemas.vscodeUserData,
 								this.pathService.defaultUriScheme,
 							],
-						}
+						},
 					);
 					if (!fileResource) {
 						return undefined;
 					}
 					const wsFolder =
 						workspaceContextService.getWorkspaceFolder(
-							fileResource
+							fileResource,
 						);
 					if (!wsFolder) {
 						return undefined;
@@ -182,7 +182,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 			},
 			labelService,
 			pathService.userHome().then((home) => home.path),
-			envVariablesPromise
+			envVariablesPromise,
 		);
 	}
 
@@ -191,7 +191,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 		config: any,
 		section?: string,
 		variables?: IStringDictionary<string>,
-		target?: ConfigurationTarget
+		target?: ConfigurationTarget,
 	): Promise<any> {
 		// resolve any non-interactive variables and any contributed variables
 		config = await this.resolveAnyAsync(folder, config);
@@ -202,7 +202,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 			config,
 			section,
 			variables,
-			target
+			target,
 		).then((mapping) => {
 			// finally substitute evaluated command variables (if there are any)
 			if (!mapping) {
@@ -211,7 +211,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 				return this.resolveAnyAsync(
 					folder,
 					config,
-					Object.fromEntries(mapping)
+					Object.fromEntries(mapping),
 				);
 			} else {
 				return config;
@@ -224,7 +224,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 		config: any,
 		section?: string,
 		variables?: IStringDictionary<string>,
-		target?: ConfigurationTarget
+		target?: ConfigurationTarget,
 	): Promise<Map<string, string> | undefined> {
 		// resolve any non-interactive variables and any contributed variables
 		const resolved = await this.resolveAnyMap(folder, config);
@@ -238,7 +238,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 			config,
 			variables,
 			section,
-			target
+			target,
 		).then((inputOrCommandMapping) => {
 			if (this.updateMapping(inputOrCommandMapping, allVariableMapping)) {
 				return allVariableMapping;
@@ -252,7 +252,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 	 */
 	private updateMapping(
 		newMapping: IStringDictionary<string> | undefined,
-		fullMapping: Map<string, string>
+		fullMapping: Map<string, string>,
 	): boolean {
 		if (!newMapping) {
 			return false;
@@ -276,7 +276,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 		configuration: any,
 		variableToCommandMap?: IStringDictionary<string>,
 		section?: string,
-		target?: ConfigurationTarget
+		target?: ConfigurationTarget,
 	): Promise<IStringDictionary<string> | undefined> {
 		if (!configuration) {
 			return Promise.resolve(undefined);
@@ -294,7 +294,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 				: {};
 			const result = this.configurationService.inspect(
 				section,
-				overrides
+				overrides,
 			);
 			if (
 				result &&
@@ -315,7 +315,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 			} else {
 				const valueResult = this.configurationService.getValue<any>(
 					section,
-					overrides
+					overrides,
 				);
 				if (valueResult) {
 					inputs = valueResult.inputs;
@@ -347,7 +347,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 							: undefined) || name;
 					result = await this.commandService.executeCommand(
 						commandId,
-						configuration
+						configuration,
 					);
 					if (
 						typeof result !== "string" &&
@@ -357,8 +357,8 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 							nls.localize(
 								"commandVariable.noStringType",
 								"Cannot substitute command variable '{0}' because command did not return a result of type string.",
-								commandId
-							)
+								commandId,
+							),
 						);
 					}
 					break;
@@ -392,7 +392,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 			while (
 				(matches =
 					BaseConfigurationResolverService.INPUT_OR_COMMAND_VARIABLES_PATTERN.exec(
-						object
+						object,
 					)) !== null
 			) {
 				if (matches.length === 4) {
@@ -428,7 +428,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 	 */
 	private showUserInput(
 		variable: string,
-		inputInfos: ConfiguredInput[]
+		inputInfos: ConfiguredInput[],
 	): Promise<string | undefined> {
 		if (!inputInfos) {
 			return Promise.reject(
@@ -437,9 +437,9 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 						"inputVariable.noInputSection",
 						"Variable '{0}' must be defined in an '{1}' section of the debug or task configuration.",
 						variable,
-						"input"
-					)
-				)
+						"input",
+					),
+				),
 			);
 		}
 
@@ -453,8 +453,8 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 						"Input variable '{0}' is of type '{1}' and must include '{2}'.",
 						variable,
 						info.type,
-						attrName
-					)
+						attrName,
+					),
 				);
 			};
 
@@ -517,7 +517,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 						if (value === info.default) {
 							item.description = nls.localize(
 								"inputVariable.defaultInputValue",
-								"(Default)"
+								"(Default)",
 							);
 							picks.unshift(item);
 						} else {
@@ -534,8 +534,8 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 							this.quickInputService.pick(
 								picks,
 								pickOptions,
-								undefined
-							)
+								undefined,
+							),
 						)
 						.then((resolvedInput) => {
 							if (resolvedInput) {
@@ -553,8 +553,8 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 						.queue(() =>
 							this.commandService.executeCommand<string>(
 								info.command,
-								info.args
-							)
+								info.args,
+							),
 						)
 						.then((result) => {
 							if (
@@ -568,8 +568,8 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 									"inputVariable.command.noStringType",
 									"Cannot substitute input variable '{0}' because command '{1}' did not return a result of type string.",
 									variable,
-									info.command
-								)
+									info.command,
+								),
 							);
 						});
 				}
@@ -579,8 +579,8 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 						nls.localize(
 							"inputVariable.unknownType",
 							"Input variable '{0}' can only be of type 'promptString', 'pickString', or 'command'.",
-							variable
-						)
+							variable,
+						),
 					);
 			}
 		}
@@ -589,9 +589,9 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 				nls.localize(
 					"inputVariable.undefinedVariable",
 					"Undefined input variable '{0}' encountered. Remove or define '{0}' to continue.",
-					variable
-				)
-			)
+					variable,
+				),
+			),
 		);
 	}
 }

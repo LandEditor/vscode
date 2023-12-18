@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
 import { CancellationToken } from "vs/base/common/cancellation";
 import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
 import { isEqual } from "vs/base/common/resources";
@@ -37,6 +36,7 @@ import {
 } from "vs/editor/contrib/codeAction/common/types";
 import { getDocumentFormattingEditsUntilResult } from "vs/editor/contrib/format/browser/format";
 import { SnippetController2 } from "vs/editor/contrib/snippet/browser/snippetController2";
+import { localize } from "vs/nls";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { ILogService } from "vs/platform/log/common/log";
@@ -44,9 +44,9 @@ import { IProgress, IProgressStep } from "vs/platform/progress/common/progress";
 import { Registry } from "vs/platform/registry/common/platform";
 import { IWorkspaceTrustManagementService } from "vs/platform/workspace/common/workspaceTrust";
 import {
+	Extensions as WorkbenchContributionsExtensions,
 	IWorkbenchContribution,
 	IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchContributionsExtensions,
 } from "vs/workbench/common/contributions";
 import { SaveReason } from "vs/workbench/common/editor";
 import { getNotebookEditorFromEditorPane } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
@@ -82,7 +82,7 @@ class FormatOnSaveParticipant implements IStoredFileWorkingCopySaveParticipant {
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
 		context: { reason: SaveReason },
 		progress: IProgress<IProgressStep>,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void> {
 		if (
 			!workingCopy.model ||
@@ -96,7 +96,7 @@ class FormatOnSaveParticipant implements IStoredFileWorkingCopySaveParticipant {
 		}
 
 		const enabled = this.configurationService.getValue<boolean>(
-			NotebookSetting.formatOnSave
+			NotebookSetting.formatOnSave,
 		);
 		if (!enabled) {
 			return undefined;
@@ -113,7 +113,7 @@ class FormatOnSaveParticipant implements IStoredFileWorkingCopySaveParticipant {
 				notebook.cells.map(async (cell) => {
 					const ref =
 						await this.textModelService.createModelReference(
-							cell.uri
+							cell.uri,
 						);
 					disposable.add(ref);
 
@@ -125,7 +125,7 @@ class FormatOnSaveParticipant implements IStoredFileWorkingCopySaveParticipant {
 							this.languageFeaturesService,
 							model,
 							model.getOptions(),
-							token
+							token,
 						);
 
 					const edits: ResourceTextEdit[] = [];
@@ -137,15 +137,15 @@ class FormatOnSaveParticipant implements IStoredFileWorkingCopySaveParticipant {
 									new ResourceTextEdit(
 										model.uri,
 										edit,
-										model.getVersionId()
-									)
-							)
+										model.getVersionId(),
+									),
+							),
 						);
 						return edits;
 					}
 
 					return [];
-				})
+				}),
 			);
 
 			await this.bulkEditService.apply(/* edit */ allCellEdits.flat(), {
@@ -174,17 +174,17 @@ class TrimWhitespaceParticipant
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
 		context: { reason: SaveReason },
 		progress: IProgress<IProgressStep>,
-		_token: CancellationToken
+		_token: CancellationToken,
 	): Promise<void> {
 		if (
 			this.configurationService.getValue<boolean>(
-				"files.trimTrailingWhitespace"
+				"files.trimTrailingWhitespace",
 			)
 		) {
 			await this.doTrimTrailingWhitespace(
 				workingCopy,
 				context.reason === SaveReason.AUTO,
-				progress
+				progress,
 			);
 		}
 	}
@@ -192,7 +192,7 @@ class TrimWhitespaceParticipant
 	private async doTrimTrailingWhitespace(
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
 		isAutoSaved: boolean,
-		progress: IProgress<IProgressStep>
+		progress: IProgress<IProgressStep>,
 	) {
 		if (
 			!workingCopy.model ||
@@ -216,7 +216,7 @@ class TrimWhitespaceParticipant
 
 					const ref =
 						await this.textModelService.createModelReference(
-							cell.uri
+							cell.uri,
 						);
 					disposable.add(ref);
 					const model = ref.object.textEditorModel;
@@ -231,7 +231,7 @@ class TrimWhitespaceParticipant
 							cursors = prevSelection.map((s) => s.getPosition()); // get initial cursor positions
 							const snippetsRange =
 								SnippetController2.get(
-									activeCellEditor
+									activeCellEditor,
 								)?.getSessionEnclosingRange();
 							if (snippetsRange) {
 								for (
@@ -243,8 +243,8 @@ class TrimWhitespaceParticipant
 									cursors.push(
 										new Position(
 											lineNumber,
-											model.getLineMaxColumn(lineNumber)
-										)
+											model.getLineMaxColumn(lineNumber),
+										),
 									);
 								}
 							}
@@ -261,10 +261,10 @@ class TrimWhitespaceParticipant
 							new ResourceTextEdit(
 								model.uri,
 								{ ...op, text: op.text || "" },
-								model.getVersionId()
-							)
+								model.getVersionId(),
+							),
 					);
-				})
+				}),
 			);
 
 			const filteredEdits = allCellEdits
@@ -273,7 +273,7 @@ class TrimWhitespaceParticipant
 			await this.bulkEditService.apply(filteredEdits, {
 				label: localize(
 					"trimNotebookWhitespace",
-					"Notebook Trim Trailing Whitespace"
+					"Notebook Trim Trailing Whitespace",
 				),
 				code: "undoredo.notebookTrimTrailingWhitespace",
 			});
@@ -298,17 +298,17 @@ class TrimFinalNewLinesParticipant
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
 		context: { reason: SaveReason },
 		progress: IProgress<IProgressStep>,
-		_token: CancellationToken
+		_token: CancellationToken,
 	): Promise<void> {
 		if (
 			this.configurationService.getValue<boolean>(
-				"files.trimFinalNewlines"
+				"files.trimFinalNewlines",
 			)
 		) {
 			await this.doTrimFinalNewLines(
 				workingCopy,
 				context.reason === SaveReason.AUTO,
-				progress
+				progress,
 			);
 		}
 	}
@@ -335,7 +335,7 @@ class TrimFinalNewLinesParticipant
 	private async doTrimFinalNewLines(
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
 		isAutoSaved: boolean,
-		progress: IProgress<IProgressStep>
+		progress: IProgress<IProgressStep>,
 	): Promise<void> {
 		if (
 			!workingCopy.model ||
@@ -367,7 +367,7 @@ class TrimFinalNewLinesParticipant
 						for (const sel of selections) {
 							cannotTouchLineNumber = Math.max(
 								cannotTouchLineNumber,
-								sel.selectionStartLineNumber
+								sel.selectionStartLineNumber,
 							);
 						}
 					}
@@ -377,15 +377,15 @@ class TrimFinalNewLinesParticipant
 						this.findLastNonEmptyLine(textBuffer);
 					const deleteFromLineNumber = Math.max(
 						lastNonEmptyLine + 1,
-						cannotTouchLineNumber + 1
+						cannotTouchLineNumber + 1,
 					);
 					const deletionRange = new Range(
 						deleteFromLineNumber,
 						1,
 						textBuffer.getLineCount(),
 						textBuffer.getLineLastNonWhitespaceColumn(
-							textBuffer.getLineCount()
-						)
+							textBuffer.getLineCount(),
+						),
 					);
 
 					if (deletionRange.isEmpty()) {
@@ -396,9 +396,9 @@ class TrimFinalNewLinesParticipant
 					return new ResourceTextEdit(
 						cell.uri,
 						{ range: deletionRange, text: "" },
-						cell.textModel?.getVersionId()
+						cell.textModel?.getVersionId(),
 					);
-				})
+				}),
 			);
 
 			const filteredEdits = allCellEdits
@@ -427,20 +427,20 @@ class FinalNewLineParticipant implements IStoredFileWorkingCopySaveParticipant {
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
 		context: { reason: SaveReason },
 		progress: IProgress<IProgressStep>,
-		_token: CancellationToken
+		_token: CancellationToken,
 	): Promise<void> {
 		// waiting on notebook-specific override before this feature can sync with 'files.insertFinalNewline'
 		// if (this.configurationService.getValue('files.insertFinalNewline')) {
 
 		if (
 			this.configurationService.getValue<boolean>(
-				NotebookSetting.insertFinalNewline
+				NotebookSetting.insertFinalNewline,
 			)
 		) {
 			await this.doInsertFinalNewLine(
 				workingCopy,
 				context.reason === SaveReason.AUTO,
-				progress
+				progress,
 			);
 		}
 	}
@@ -448,7 +448,7 @@ class FinalNewLineParticipant implements IStoredFileWorkingCopySaveParticipant {
 	private async doInsertFinalNewLine(
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
 		isAutoSaved: boolean,
-		progress: IProgress<IProgressStep>
+		progress: IProgress<IProgressStep>,
 	): Promise<void> {
 		if (
 			!workingCopy.model ||
@@ -477,7 +477,7 @@ class FinalNewLineParticipant implements IStoredFileWorkingCopySaveParticipant {
 					const lineCount = cell.textBuffer.getLineCount();
 					const lastLineIsEmptyOrWhitespace =
 						cell.textBuffer.getLineFirstNonWhitespaceColumn(
-							lineCount
+							lineCount,
 						) === 0;
 
 					if (!lineCount || lastLineIsEmptyOrWhitespace) {
@@ -491,17 +491,17 @@ class FinalNewLineParticipant implements IStoredFileWorkingCopySaveParticipant {
 								lineCount + 1,
 								cell.textBuffer.getLineLength(lineCount),
 								lineCount + 1,
-								cell.textBuffer.getLineLength(lineCount)
+								cell.textBuffer.getLineLength(lineCount),
 							),
 							text: cell.textBuffer.getEOL(),
 						},
-						cell.textModel?.getVersionId()
+						cell.textModel?.getVersionId(),
 					);
-				})
+				}),
 			);
 
 			const filteredEdits = allCellEdits.filter(
-				(edit) => edit !== undefined
+				(edit) => edit !== undefined,
 			) as ResourceEdit[];
 			await this.bulkEditService.apply(filteredEdits, {
 				label: localize("insertFinalNewLine", "Insert Final New Line"),
@@ -539,7 +539,7 @@ class CodeActionOnSaveParticipant
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
 		context: { reason: SaveReason },
 		progress: IProgress<IProgressStep>,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void> {
 		const nbDisposable = new DisposableStore();
 		const isTrusted =
@@ -585,17 +585,18 @@ class CodeActionOnSaveParticipant
 
 		const allCodeActions = this.createCodeActionsOnSave(settingItems);
 		const excludedActions = allCodeActions.filter(
-			(x) => setting[x.value] === "never" || setting[x.value] === false
+			(x) => setting[x.value] === "never" || setting[x.value] === false,
 		);
 		const includedActions = allCodeActions.filter(
-			(x) => setting[x.value] === saveTrigger || setting[x.value] === true
+			(x) =>
+				setting[x.value] === saveTrigger || setting[x.value] === true,
 		);
 
 		const editorCodeActionsOnSave = includedActions.filter(
-			(x) => !CodeActionKind.Notebook.contains(x)
+			(x) => !CodeActionKind.Notebook.contains(x),
 		);
 		const notebookCodeActionsOnSave = includedActions.filter((x) =>
-			CodeActionKind.Notebook.contains(x)
+			CodeActionKind.Notebook.contains(x),
 		);
 		if (
 			!editorCodeActionsOnSave.length &&
@@ -624,13 +625,13 @@ class CodeActionOnSaveParticipant
 		progress.report({
 			message: localize(
 				"notebookSaveParticipants.notebookCodeActions",
-				"Running 'Notebook' code actions"
+				"Running 'Notebook' code actions",
 			),
 		});
 		try {
 			const cell = notebookModel.cells[0];
 			const ref = await this.textModelService.createModelReference(
-				cell.uri
+				cell.uri,
 			);
 			nbDisposable.add(ref);
 
@@ -641,11 +642,11 @@ class CodeActionOnSaveParticipant
 				notebookCodeActionsOnSave,
 				excludedActions,
 				progress,
-				token
+				token,
 			);
 		} catch {
 			this.logService.error(
-				"Failed to apply notebook code action on save"
+				"Failed to apply notebook code action on save",
 			);
 		} finally {
 			progress.report({ increment: 100 });
@@ -657,7 +658,7 @@ class CodeActionOnSaveParticipant
 		progress.report({
 			message: localize(
 				"notebookSaveParticipants.cellCodeActions",
-				"Running 'Cell' code actions"
+				"Running 'Cell' code actions",
 			),
 		});
 		try {
@@ -665,7 +666,7 @@ class CodeActionOnSaveParticipant
 				notebookModel.cells.map(async (cell) => {
 					const ref =
 						await this.textModelService.createModelReference(
-							cell.uri
+							cell.uri,
 						);
 					disposable.add(ref);
 
@@ -676,9 +677,9 @@ class CodeActionOnSaveParticipant
 						editorCodeActionsOnSave,
 						excludedActions,
 						progress,
-						token
+						token,
 					);
-				})
+				}),
 			);
 		} catch {
 			this.logService.error("Failed to apply code action on save");
@@ -689,7 +690,7 @@ class CodeActionOnSaveParticipant
 	}
 
 	private createCodeActionsOnSave(
-		settingItems: readonly string[]
+		settingItems: readonly string[],
 	): CodeActionKind[] {
 		const kinds = settingItems.map((x) => new CodeActionKind(x));
 
@@ -697,7 +698,7 @@ class CodeActionOnSaveParticipant
 		return kinds.filter((kind) => {
 			return kinds.every(
 				(otherKind) =>
-					otherKind.equals(kind) || !otherKind.contains(kind)
+					otherKind.equals(kind) || !otherKind.contains(kind),
 			);
 		});
 	}
@@ -707,7 +708,7 @@ class CodeActionOnSaveParticipant
 		codeActionsOnSave: readonly CodeActionKind[],
 		excludes: readonly CodeActionKind[],
 		progress: IProgress<IProgressStep>,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void> {
 		const getActionProgress = new (class
 			implements IProgress<CodeActionProvider>
@@ -724,7 +725,7 @@ class CodeActionOnSaveParticipant
 						},
 						"Getting code actions from '{0}' ([configure]({1})).",
 						[...this._names].map((name) => `'${name}'`).join(", "),
-						"command:workbench.action.openSettings?%5B%22editor.codeActionsOnSave%22%5D"
+						"command:workbench.action.openSettings?%5B%22editor.codeActionsOnSave%22%5D",
 					),
 				});
 			}
@@ -745,7 +746,7 @@ class CodeActionOnSaveParticipant
 				codeActionKind,
 				excludes,
 				getActionProgress,
-				token
+				token,
 			);
 			if (token.isCancellationRequested) {
 				actionsToRun.dispose();
@@ -774,7 +775,7 @@ class CodeActionOnSaveParticipant
 					}
 					if (breakFlag) {
 						this.logService.warn(
-							"Failed to apply code action on save, applied to multiple resources."
+							"Failed to apply code action on save, applied to multiple resources.",
 						);
 						continue;
 					}
@@ -782,7 +783,7 @@ class CodeActionOnSaveParticipant
 						message: localize(
 							"codeAction.apply",
 							"Applying code action '{0}'.",
-							action.action.title
+							action.action.title,
 						),
 					});
 					await this.instantiationService.invokeFunction(
@@ -790,7 +791,7 @@ class CodeActionOnSaveParticipant
 						action,
 						ApplyCodeActionReason.OnSave,
 						{},
-						token
+						token,
 					);
 					if (token.isCancellationRequested) {
 						return;
@@ -809,7 +810,7 @@ class CodeActionOnSaveParticipant
 		codeActionKind: CodeActionKind,
 		excludes: readonly CodeActionKind[],
 		progress: IProgress<CodeActionProvider>,
-		token: CancellationToken
+		token: CancellationToken,
 	) {
 		return getCodeActions(
 			this.languageFeaturesService.codeActionProvider,
@@ -825,13 +826,13 @@ class CodeActionOnSaveParticipant
 				},
 			},
 			progress,
-			token
+			token,
 		);
 	}
 }
 
 function getActiveCellCodeEditor(
-	editorService: IEditorService
+	editorService: IEditorService,
 ): ICodeEditor | undefined {
 	const activePane = editorService.activeEditorPane;
 	const notebookEditor = getNotebookEditorFromEditorPane(activePane);
@@ -857,46 +858,46 @@ export class SaveParticipantsContribution
 		this._register(
 			this.workingCopyFileService.addSaveParticipant(
 				this.instantiationService.createInstance(
-					TrimWhitespaceParticipant
-				)
-			)
+					TrimWhitespaceParticipant,
+				),
+			),
 		);
 		this._register(
 			this.workingCopyFileService.addSaveParticipant(
 				this.instantiationService.createInstance(
-					CodeActionOnSaveParticipant
-				)
-			)
+					CodeActionOnSaveParticipant,
+				),
+			),
 		);
 		this._register(
 			this.workingCopyFileService.addSaveParticipant(
 				this.instantiationService.createInstance(
-					FormatOnSaveParticipant
-				)
-			)
+					FormatOnSaveParticipant,
+				),
+			),
 		);
 		this._register(
 			this.workingCopyFileService.addSaveParticipant(
 				this.instantiationService.createInstance(
-					FinalNewLineParticipant
-				)
-			)
+					FinalNewLineParticipant,
+				),
+			),
 		);
 		this._register(
 			this.workingCopyFileService.addSaveParticipant(
 				this.instantiationService.createInstance(
-					TrimFinalNewLinesParticipant
-				)
-			)
+					TrimFinalNewLinesParticipant,
+				),
+			),
 		);
 	}
 }
 
 const workbenchContributionsRegistry =
 	Registry.as<IWorkbenchContributionsRegistry>(
-		WorkbenchContributionsExtensions.Workbench
+		WorkbenchContributionsExtensions.Workbench,
 	);
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	SaveParticipantsContribution,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );

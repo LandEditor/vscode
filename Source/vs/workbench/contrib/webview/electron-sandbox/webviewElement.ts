@@ -36,7 +36,7 @@ import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/
 export class ElectronWebviewElement extends WebviewElement {
 	private readonly _webviewKeyboardHandler: WindowIgnoreMenuShortcutsManager;
 
-	private _findStarted: boolean = false;
+	private _findStarted = false;
 	private _cachedHtmlContent: string | undefined;
 
 	private readonly _webviewMainService: IWebviewManagerService;
@@ -126,7 +126,7 @@ export class ElectronWebviewElement extends WebviewElement {
 	}
 
 	protected override streamToBuffer(
-		stream: VSBufferReadableStream
+		stream: VSBufferReadableStream,
 	): Promise<ArrayBufferLike> {
 		// Join buffers from stream without using the Node.js backing pool.
 		// This lets us transfer the resulting buffer to the webview.
@@ -135,7 +135,7 @@ export class ElectronWebviewElement extends WebviewElement {
 			(buffers: readonly VSBuffer[]) => {
 				const totalLength = buffers.reduce(
 					(prev, curr) => prev + curr.byteLength,
-					0
+					0,
 				);
 				const ret = new ArrayBuffer(totalLength);
 				const view = new Uint8Array(ret);
@@ -145,7 +145,7 @@ export class ElectronWebviewElement extends WebviewElement {
 					offset += element.byteLength;
 				}
 				return ret;
-			}
+			},
 		);
 	}
 
@@ -161,9 +161,7 @@ export class ElectronWebviewElement extends WebviewElement {
 			return;
 		}
 
-		if (!this._findStarted) {
-			this.updateFind(value);
-		} else {
+		if (this._findStarted) {
 			// continuing the find, so set findNext to false
 			const options: FindInFrameOptions = {
 				forward: !previous,
@@ -174,8 +172,10 @@ export class ElectronWebviewElement extends WebviewElement {
 				{ windowId: this._nativeHostService.windowId },
 				this.id,
 				value,
-				options
+				options,
 			);
+		} else {
+			this.updateFind(value);
 		}
 	}
 
@@ -197,7 +197,7 @@ export class ElectronWebviewElement extends WebviewElement {
 				{ windowId: this._nativeHostService.windowId },
 				this.id,
 				value,
-				options
+				options,
 			);
 		});
 	}
@@ -213,7 +213,7 @@ export class ElectronWebviewElement extends WebviewElement {
 			this.id,
 			{
 				keepSelection,
-			}
+			},
 		);
 		this._onDidStopFind.fire();
 	}

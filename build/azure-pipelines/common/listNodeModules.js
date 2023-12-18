@@ -1,4 +1,3 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -28,12 +27,10 @@ function findNodeModulesFiles(location, inNodeModules, result) {
 			findNodeModulesFiles(
 				entryPath,
 				inNodeModules || entry === "node_modules",
-				result
+				result,
 			);
-		} else {
-			if (inNodeModules) {
-				result.push(entryPath.substr(1));
-			}
+		} else if (inNodeModules) {
+			result.push(entryPath.substr(1));
 		}
 	}
 }

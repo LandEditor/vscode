@@ -24,7 +24,7 @@ export async function getSurroundableSnippets(
 	snippetsService: ISnippetsService,
 	model: ITextModel,
 	position: Position,
-	includeDisabledSnippets: boolean
+	includeDisabledSnippets: boolean,
 ): Promise<Snippet[]> {
 	const { lineNumber, column } = position;
 	model.tokenization.tokenizeIfCheap(lineNumber);
@@ -51,7 +51,7 @@ export class SurroundWithSnippetEditorAction extends SnippetEditorAction {
 			...SurroundWithSnippetEditorAction.options,
 			precondition: ContextKeyExpr.and(
 				EditorContextKeys.writable,
-				EditorContextKeys.hasNonEmptySelection
+				EditorContextKeys.hasNonEmptySelection,
 			),
 			f1: true,
 		});
@@ -70,7 +70,7 @@ export class SurroundWithSnippetEditorAction extends SnippetEditorAction {
 			snippetsService,
 			editor.getModel(),
 			editor.getPosition(),
-			true
+			true,
 		);
 		if (!snippets.length) {
 			return;
@@ -78,7 +78,7 @@ export class SurroundWithSnippetEditorAction extends SnippetEditorAction {
 
 		const snippet = await instaService.invokeFunction(
 			pickSnippet,
-			snippets
+			snippets,
 		);
 		if (!snippet) {
 			return;

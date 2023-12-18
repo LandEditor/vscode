@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from "vs/base/common/uri";
 import { Event } from "vs/base/common/event";
+import { URI } from "vs/base/common/uri";
 import { ITextModel } from "vs/editor/common/model";
 import { IModelService } from "vs/editor/common/services/model";
 import {
@@ -30,7 +30,7 @@ registerActiveInstanceAction({
 	title: {
 		value: localize(
 			"workbench.action.terminal.showEnvironmentContributions",
-			"Show Environment Contributions"
+			"Show Environment Contributions",
 		),
 		original: "Show Environment Contributions",
 	},
@@ -40,7 +40,7 @@ registerActiveInstanceAction({
 			const scope = arg as EnvironmentVariableScope | undefined;
 			const instantiationService = accessor.get(IInstantiationService);
 			const outputProvider = instantiationService.createInstance(
-				EnvironmentCollectionProvider
+				EnvironmentCollectionProvider,
 			);
 			const editorService = accessor.get(IEditorService);
 			const timestamp = new Date().getTime();
@@ -53,7 +53,7 @@ registerActiveInstanceAction({
 					path: `Environment changes${scopeDesc}`,
 					fragment: describeEnvironmentChanges(collection, scope),
 					query: `environment-collection-${timestamp}`,
-				})
+				}),
 			);
 			if (textContent) {
 				await editorService.openEditor({
@@ -66,7 +66,7 @@ registerActiveInstanceAction({
 
 function describeEnvironmentChanges(
 	collection: IMergedEnvironmentVariableCollection,
-	scope: EnvironmentVariableScope | undefined
+	scope: EnvironmentVariableScope | undefined,
 ): string {
 	let content = `# ${localize("envChanges", "Terminal Environment Changes")}`;
 	const globalDescriptions = collection.getDescriptionMap(undefined);
@@ -84,8 +84,8 @@ function describeEnvironmentChanges(
 			const workspaceSuffix = globalDescription
 				? ` (${localize(
 						"ScopedEnvironmentContributionInfo",
-						"workspace"
-					)})`
+						"workspace",
+				  )})`
 				: "";
 			content += `\n${workspaceDescription}${workspaceSuffix}\n`;
 		}
@@ -97,7 +97,7 @@ function describeEnvironmentChanges(
 			content += `\n- \`${mutatorTypeLabel(
 				mutator.type,
 				mutator.value,
-				mutator.variable
+				mutator.variable,
 			)}\``;
 		}
 	}
@@ -106,7 +106,7 @@ function describeEnvironmentChanges(
 
 function filterScope(
 	mutator: IEnvironmentVariableMutator,
-	scope: EnvironmentVariableScope | undefined
+	scope: EnvironmentVariableScope | undefined,
 ): boolean {
 	if (!mutator.scope) {
 		return true;
@@ -125,7 +125,7 @@ function filterScope(
 function mutatorTypeLabel(
 	type: EnvironmentVariableMutatorType,
 	value: string,
-	variable: string
+	variable: string,
 ): string {
 	switch (type) {
 		case EnvironmentVariableMutatorType.Prepend:
@@ -160,7 +160,7 @@ class EnvironmentCollectionProvider implements ITextModelContentProvider {
 			resource.fragment,
 			{ languageId: "markdown", onDidChange: Event.None },
 			resource,
-			false
+			false,
 		);
 	}
 }

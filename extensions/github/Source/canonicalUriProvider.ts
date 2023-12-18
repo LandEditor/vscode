@@ -21,8 +21,8 @@ export class GitHubCanonicalUriProvider implements CanonicalUriProvider {
 	constructor(private gitApi: API) {
 		this.disposables.push(
 			...SUPPORTED_SCHEMES.map((scheme) =>
-				workspace.registerCanonicalUriProvider(scheme, this)
-			)
+				workspace.registerCanonicalUriProvider(scheme, this),
+			),
 		);
 	}
 
@@ -33,7 +33,7 @@ export class GitHubCanonicalUriProvider implements CanonicalUriProvider {
 	provideCanonicalUri(
 		uri: Uri,
 		options: CanonicalUriRequestOptions,
-		_token: CancellationToken
+		_token: CancellationToken,
 	): ProviderResult<Uri> {
 		if (options.targetScheme !== "https") {
 			return;
@@ -45,7 +45,7 @@ export class GitHubCanonicalUriProvider implements CanonicalUriProvider {
 				const remote = repository?.state.remotes
 					.find(
 						(remote) =>
-							remote.name === repository.state.HEAD?.remote
+							remote.name === repository.state.HEAD?.remote,
 					)
 					?.pushUrl?.replace(/^(git@[^\/:]+)(:)/i, "ssh://$1/");
 				if (remote) {

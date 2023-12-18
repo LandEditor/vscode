@@ -4,11 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Emitter } from "vs/base/common/event";
-import { ITerminalChildProcess } from "vs/platform/terminal/common/terminal";
 import {
-	TerminalCapability,
 	INaiveCwdDetectionCapability,
+	TerminalCapability,
 } from "vs/platform/terminal/common/capabilities/capabilities";
+import { ITerminalChildProcess } from "vs/platform/terminal/common/terminal";
 
 export class NaiveCwdDetectionCapability
 	implements INaiveCwdDetectionCapability

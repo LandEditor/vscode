@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as dom from "vs/base/browser/dom";
-import "vs/css!./findOptionsWidget";
 import {
 	CaseSensitiveToggle,
 	RegexToggle,
@@ -12,6 +11,7 @@ import {
 } from "vs/base/browser/ui/findinput/findInputToggles";
 import { Widget } from "vs/base/browser/ui/widget";
 import { RunOnceScheduler } from "vs/base/common/async";
+import "vs/css!./findOptionsWidget";
 import {
 	ICodeEditor,
 	IOverlayWidget,
@@ -43,7 +43,7 @@ export class FindOptionsWidget extends Widget implements IOverlayWidget {
 	constructor(
 		editor: ICodeEditor,
 		state: FindReplaceState,
-		keybindingService: IKeybindingService
+		keybindingService: IKeybindingService,
 	) {
 		super();
 
@@ -62,21 +62,21 @@ export class FindOptionsWidget extends Widget implements IOverlayWidget {
 		const toggleStyles = {
 			inputActiveOptionBorder: asCssVariable(inputActiveOptionBorder),
 			inputActiveOptionForeground: asCssVariable(
-				inputActiveOptionForeground
+				inputActiveOptionForeground,
 			),
 			inputActiveOptionBackground: asCssVariable(
-				inputActiveOptionBackground
+				inputActiveOptionBackground,
 			),
 		};
 
 		this.caseSensitive = this._register(
 			new CaseSensitiveToggle({
 				appendTitle: this._keybindingLabelFor(
-					FIND_IDS.ToggleCaseSensitiveCommand
+					FIND_IDS.ToggleCaseSensitiveCommand,
 				),
 				isChecked: this._state.matchCase,
 				...toggleStyles,
-			})
+			}),
 		);
 		this._domNode.appendChild(this.caseSensitive.domNode);
 		this._register(
@@ -85,19 +85,19 @@ export class FindOptionsWidget extends Widget implements IOverlayWidget {
 					{
 						matchCase: this.caseSensitive.checked,
 					},
-					false
+					false,
 				);
-			})
+			}),
 		);
 
 		this.wholeWords = this._register(
 			new WholeWordsToggle({
 				appendTitle: this._keybindingLabelFor(
-					FIND_IDS.ToggleWholeWordCommand
+					FIND_IDS.ToggleWholeWordCommand,
 				),
 				isChecked: this._state.wholeWord,
 				...toggleStyles,
-			})
+			}),
 		);
 		this._domNode.appendChild(this.wholeWords.domNode);
 		this._register(
@@ -106,19 +106,19 @@ export class FindOptionsWidget extends Widget implements IOverlayWidget {
 					{
 						wholeWord: this.wholeWords.checked,
 					},
-					false
+					false,
 				);
-			})
+			}),
 		);
 
 		this.regex = this._register(
 			new RegexToggle({
 				appendTitle: this._keybindingLabelFor(
-					FIND_IDS.ToggleRegexCommand
+					FIND_IDS.ToggleRegexCommand,
 				),
 				isChecked: this._state.isRegex,
 				...toggleStyles,
-			})
+			}),
 		);
 		this._domNode.appendChild(this.regex.domNode);
 		this._register(
@@ -127,9 +127,9 @@ export class FindOptionsWidget extends Widget implements IOverlayWidget {
 					{
 						isRegex: this.regex.checked,
 					},
-					false
+					false,
 				);
-			})
+			}),
 		);
 
 		this._editor.addOverlayWidget(this);
@@ -152,20 +152,20 @@ export class FindOptionsWidget extends Widget implements IOverlayWidget {
 				if (!this._state.isRevealed && somethingChanged) {
 					this._revealTemporarily();
 				}
-			})
+			}),
 		);
 
 		this._register(
 			dom.addDisposableListener(
 				this._domNode,
 				dom.EventType.MOUSE_LEAVE,
-				(e) => this._onMouseLeave()
-			)
+				(e) => this._onMouseLeave(),
+			),
 		);
 		this._register(
 			dom.addDisposableListener(this._domNode, "mouseover", (e) =>
-				this._onMouseOver()
-			)
+				this._onMouseOver(),
+			),
 		);
 	}
 
@@ -203,7 +203,7 @@ export class FindOptionsWidget extends Widget implements IOverlayWidget {
 	}
 
 	private _hideSoon = this._register(
-		new RunOnceScheduler(() => this._hide(), 2000)
+		new RunOnceScheduler(() => this._hide(), 2000),
 	);
 
 	private _revealTemporarily(): void {
@@ -219,7 +219,7 @@ export class FindOptionsWidget extends Widget implements IOverlayWidget {
 		this._hideSoon.cancel();
 	}
 
-	private _isVisible: boolean = false;
+	private _isVisible = false;
 
 	private _show(): void {
 		if (this._isVisible) {

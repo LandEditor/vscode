@@ -4,21 +4,21 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { alert } from "vs/base/browser/ui/aria/aria";
-import { localize } from "vs/nls";
-import {
-	INotificationViewItem,
-	INotificationsModel,
-	NotificationChangeType,
-	INotificationChangeEvent,
-	NotificationViewItemContentChangeKind,
-} from "vs/workbench/common/notifications";
-import { Disposable } from "vs/base/common/lifecycle";
 import { toErrorMessage } from "vs/base/common/errorMessage";
+import { Event } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
+import { localize } from "vs/nls";
 import {
 	NotificationPriority,
 	Severity,
 } from "vs/platform/notification/common/notification";
-import { Event } from "vs/base/common/event";
+import {
+	INotificationChangeEvent,
+	INotificationViewItem,
+	INotificationsModel,
+	NotificationChangeType,
+	NotificationViewItemContentChangeKind,
+} from "vs/workbench/common/notifications";
 
 export class NotificationsAlerts extends Disposable {
 	constructor(private readonly model: INotificationsModel) {
@@ -35,8 +35,8 @@ export class NotificationsAlerts extends Disposable {
 	private registerListeners(): void {
 		this._register(
 			this.model.onDidChangeNotification((e) =>
-				this.onDidChangeNotification(e)
-			)
+				this.onDidChangeNotification(e),
+			),
 		);
 	}
 
@@ -53,8 +53,8 @@ export class NotificationsAlerts extends Disposable {
 					console.error(
 						toErrorMessage(
 							e.item.message.linkedText.toString(),
-							true
-						)
+							true,
+						),
 					);
 				}
 			}
@@ -84,19 +84,19 @@ export class NotificationsAlerts extends Disposable {
 			alertText = localize(
 				"alertErrorMessage",
 				"Error: {0}",
-				notification.message.linkedText.toString()
+				notification.message.linkedText.toString(),
 			);
 		} else if (notification.severity === Severity.Warning) {
 			alertText = localize(
 				"alertWarningMessage",
 				"Warning: {0}",
-				notification.message.linkedText.toString()
+				notification.message.linkedText.toString(),
 			);
 		} else {
 			alertText = localize(
 				"alertInfoMessage",
 				"Info: {0}",
-				notification.message.linkedText.toString()
+				notification.message.linkedText.toString(),
 			);
 		}
 

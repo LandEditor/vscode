@@ -3,42 +3,42 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { RunOnceScheduler } from "vs/base/common/async";
 import {
+	Disposable,
 	IDisposable,
 	dispose,
-	Disposable,
 	toDisposable,
 } from "vs/base/common/lifecycle";
-import {
-	IWorkbenchContributionsRegistry,
-	IWorkbenchContribution,
-	Extensions as WorkbenchExtensions,
-} from "vs/workbench/common/contributions";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	IWindowsConfiguration,
-	IWindowSettings,
-} from "vs/platform/window/common/window";
-import { IHostService } from "vs/workbench/services/host/browser/host";
+import { isLinux, isMacintosh, isNative } from "vs/base/common/platform";
+import { isEqual } from "vs/base/common/resources";
+import { URI } from "vs/base/common/uri";
+import { localize } from "vs/nls";
 import {
 	ConfigurationTarget,
 	IConfigurationChangeEvent,
 	IConfigurationService,
 } from "vs/platform/configuration/common/configuration";
-import { localize } from "vs/nls";
+import { IDialogService } from "vs/platform/dialogs/common/dialogs";
+import { IProductService } from "vs/platform/product/common/productService";
+import { Registry } from "vs/platform/registry/common/platform";
+import {
+	IWindowSettings,
+	IWindowsConfiguration,
+} from "vs/platform/window/common/window";
 import {
 	IWorkspaceContextService,
 	WorkbenchState,
 } from "vs/platform/workspace/common/workspace";
-import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
-import { RunOnceScheduler } from "vs/base/common/async";
-import { URI } from "vs/base/common/uri";
-import { isEqual } from "vs/base/common/resources";
-import { isMacintosh, isNative, isLinux } from "vs/base/common/platform";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { IDialogService } from "vs/platform/dialogs/common/dialogs";
+import {
+	Extensions as WorkbenchExtensions,
+	IWorkbenchContribution,
+	IWorkbenchContributionsRegistry,
+} from "vs/workbench/common/contributions";
 import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { IProductService } from "vs/platform/product/common/productService";
+import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
+import { IHostService } from "vs/workbench/services/host/browser/host";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 interface IConfiguration extends IWindowsConfiguration {
 	update?: { mode?: string };
@@ -71,7 +71,7 @@ export class SettingsChangeRelauncher
 	];
 
 	private readonly titleBarStyle = new ChangeObserver<"native" | "custom">(
-		"string"
+		"string",
 	);
 	private readonly nativeTabs = new ChangeObserver("boolean");
 	private readonly nativeFullScreen = new ChangeObserver("boolean");
@@ -101,12 +101,12 @@ export class SettingsChangeRelauncher
 	}
 
 	private onConfigurationChange(
-		e: IConfigurationChangeEvent | undefined
+		e: IConfigurationChangeEvent | undefined,
 	): void {
 		if (
 			e &&
 			!SettingsChangeRelauncher.SETTINGS.some((key) =>
-				e.affectsConfiguration(key)
+				e.affectsConfiguration(key),
 			)
 		) {
 			return;
@@ -125,30 +125,30 @@ export class SettingsChangeRelauncher
 				(config.window.titleBarStyle === "native" ||
 					config.window.titleBarStyle === "custom") &&
 					this.titleBarStyle.handleChange(
-						config.window?.titleBarStyle
-					)
+						config.window?.titleBarStyle,
+					),
 			);
 
 			// macOS: Native tabs
 			processChanged(
 				isMacintosh &&
-					this.nativeTabs.handleChange(config.window?.nativeTabs)
+					this.nativeTabs.handleChange(config.window?.nativeTabs),
 			);
 
 			// macOS: Native fullscreen
 			processChanged(
 				isMacintosh &&
 					this.nativeFullScreen.handleChange(
-						config.window?.nativeFullScreen
-					)
+						config.window?.nativeFullScreen,
+					),
 			);
 
 			// macOS: Click through (accept first mouse)
 			processChanged(
 				isMacintosh &&
 					this.clickThroughInactive.handleChange(
-						config.window?.clickThroughInactive
-					)
+						config.window?.clickThroughInactive,
+					),
 			);
 
 			// Update mode
@@ -169,31 +169,31 @@ export class SettingsChangeRelauncher
 			// Workspace trust
 			processChanged(
 				this.workspaceTrustEnabled.handleChange(
-					config?.security?.workspace?.trust?.enabled
-				)
+					config?.security?.workspace?.trust?.enabled,
+				),
 			);
 
 			// UNC host access restrictions
 			processChanged(
 				this.restrictUNCAccess.handleChange(
-					config?.security?.restrictUNCAccess
-				)
+					config?.security?.restrictUNCAccess,
+				),
 			);
 		}
 
 		// Experiments
 		processChanged(
 			this.experimentsEnabled.handleChange(
-				config.workbench?.enableExperiments
-			)
+				config.workbench?.enableExperiments,
+			),
 		);
 
 		// Profiles
 		processChanged(
 			this.productService.quality !== "stable" &&
 				this.enablePPEExtensionsGallery.handleChange(
-					config._extensionsGallery?.enablePPE
-				)
+					config._extensionsGallery?.enablePPE,
+				),
 		);
 
 		// Notify only when changed from an event and the change
@@ -203,39 +203,39 @@ export class SettingsChangeRelauncher
 				isNative
 					? localize(
 							"relaunchSettingMessage",
-							"A setting has changed that requires a restart to take effect."
-						)
+							"A setting has changed that requires a restart to take effect.",
+					  )
 					: localize(
 							"relaunchSettingMessageWeb",
-							"A setting has changed that requires a reload to take effect."
-						),
+							"A setting has changed that requires a reload to take effect.",
+					  ),
 				isNative
 					? localize(
 							"relaunchSettingDetail",
 							"Press the restart button to restart {0} and enable the setting.",
-							this.productService.nameLong
-						)
+							this.productService.nameLong,
+					  )
 					: localize(
 							"relaunchSettingDetailWeb",
 							"Press the reload button to reload {0} and enable the setting.",
-							this.productService.nameLong
-						),
+							this.productService.nameLong,
+					  ),
 				isNative
 					? localize(
 							{
 								key: "restart",
 								comment: ["&& denotes a mnemonic"],
 							},
-							"&&Restart"
-						)
+							"&&Restart",
+					  )
 					: localize(
 							{
 								key: "restartWeb",
 								comment: ["&& denotes a mnemonic"],
 							},
-							"&&Reload"
-						),
-				() => this.hostService.restart()
+							"&&Reload",
+					  ),
+				() => this.hostService.restart(),
 			);
 		}
 	}
@@ -244,7 +244,7 @@ export class SettingsChangeRelauncher
 		message: string,
 		detail: string,
 		primaryButton: string,
-		confirmedFn: () => void
+		confirmedFn: () => void,
 	): Promise<void> {
 		if (this.hostService.hasFocus) {
 			const { confirmed } = await this.dialogService.confirm({
@@ -266,7 +266,7 @@ interface TypeNameToType {
 
 class ChangeObserver<T> {
 	static create<TTypeName extends "boolean" | "string">(
-		typeName: TTypeName
+		typeName: TTypeName,
 	): ChangeObserver<TypeNameToType[TTypeName]> {
 		return new ChangeObserver(typeName);
 	}
@@ -365,7 +365,7 @@ export class WorkspaceChangeExtHostRelauncher
 			if (!this.onDidChangeWorkspaceFoldersUnbind) {
 				this.onDidChangeWorkspaceFoldersUnbind =
 					this.contextService.onDidChangeWorkspaceFolders(() =>
-						this.onDidChangeWorkspaceFolders()
+						this.onDidChangeWorkspaceFolders(),
 					);
 			}
 		}
@@ -392,13 +392,13 @@ export class WorkspaceChangeExtHostRelauncher
 }
 
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 );
 workbenchRegistry.registerWorkbenchContribution(
 	SettingsChangeRelauncher,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );
 workbenchRegistry.registerWorkbenchContribution(
 	WorkspaceChangeExtHostRelauncher,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );

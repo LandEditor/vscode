@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from "vs/base/common/event";
 import { CancellationToken } from "vs/base/common/cancellation";
+import { Event } from "vs/base/common/event";
 import { URI } from "vs/base/common/uri";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import { SaveSource } from "vs/workbench/common/editor";
@@ -107,7 +107,7 @@ export interface IWorkingCopyHistoryService {
 	 */
 	addEntry(
 		descriptor: IWorkingCopyHistoryEntryDescriptor,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IWorkingCopyHistoryEntry | undefined>;
 
 	/**
@@ -116,7 +116,7 @@ export interface IWorkingCopyHistoryService {
 	updateEntry(
 		entry: IWorkingCopyHistoryEntry,
 		properties: { source: SaveSource },
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void>;
 
 	/**
@@ -124,7 +124,7 @@ export interface IWorkingCopyHistoryService {
 	 */
 	removeEntry(
 		entry: IWorkingCopyHistoryEntry,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<boolean>;
 
 	/**
@@ -140,7 +140,7 @@ export interface IWorkingCopyHistoryService {
 	 */
 	getEntries(
 		resource: URI,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<readonly IWorkingCopyHistoryEntry[]>;
 
 	/**

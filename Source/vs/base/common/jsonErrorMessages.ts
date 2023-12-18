@@ -16,12 +16,12 @@ export function getParseErrorMessage(errorCode: ParseErrorCode): string {
 		case ParseErrorCode.InvalidNumberFormat:
 			return localize(
 				"error.invalidNumberFormat",
-				"Invalid number format"
+				"Invalid number format",
 			);
 		case ParseErrorCode.PropertyNameExpected:
 			return localize(
 				"error.propertyNameExpected",
-				"Property name expected"
+				"Property name expected",
 			);
 		case ParseErrorCode.ValueExpected:
 			return localize("error.valueExpected", "Value expected");
@@ -32,12 +32,12 @@ export function getParseErrorMessage(errorCode: ParseErrorCode): string {
 		case ParseErrorCode.CloseBraceExpected:
 			return localize(
 				"error.closeBraceExpected",
-				"Closing brace expected"
+				"Closing brace expected",
 			);
 		case ParseErrorCode.CloseBracketExpected:
 			return localize(
 				"error.closeBracketExpected",
-				"Closing bracket expected"
+				"Closing bracket expected",
 			);
 		case ParseErrorCode.EndOfFileExpected:
 			return localize("error.endOfFileExpected", "End of file expected");

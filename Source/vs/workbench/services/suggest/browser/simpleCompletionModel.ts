@@ -3,16 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { SimpleCompletionItem } from "vs/workbench/services/suggest/browser/simpleCompletionItem";
 import { quickSelect } from "vs/base/common/arrays";
 import { CharCode } from "vs/base/common/charCode";
 import {
 	FuzzyScore,
-	fuzzyScore,
-	fuzzyScoreGracefulAggressive,
 	FuzzyScoreOptions,
 	FuzzyScorer,
+	fuzzyScore,
+	fuzzyScoreGracefulAggressive,
 } from "vs/base/common/filters";
+import { SimpleCompletionItem } from "vs/workbench/services/suggest/browser/simpleCompletionItem";
 
 export interface ISimpleCompletionStats {
 	pLabelLen: number;
@@ -21,11 +21,11 @@ export interface ISimpleCompletionStats {
 export class LineContext {
 	constructor(
 		readonly leadingLineContent: string,
-		readonly characterCountDelta: number
+		readonly characterCountDelta: number,
 	) {}
 }
 
-const enum Refilter {
+enum Refilter {
 	Nothing = 0,
 	All = 1,
 	Incr = 2,
@@ -47,7 +47,7 @@ export class SimpleCompletionModel {
 		private readonly _items: SimpleCompletionItem[],
 		private _lineContext: LineContext,
 		readonly replacementIndex: number,
-		readonly replacementLength: number
+		readonly replacementLength: number,
 	) {}
 
 	get items(): SimpleCompletionItem[] {
@@ -184,7 +184,7 @@ export class SimpleCompletionModel {
 						item.completion.label,
 						item.labelLow,
 						0,
-						this._fuzzyScoreOptions
+						this._fuzzyScoreOptions,
 					);
 					if (!match) {
 						continue; // NO match
@@ -210,8 +210,8 @@ export class SimpleCompletionModel {
 				? quickSelect(
 						labelLengths.length - 0.85,
 						labelLengths,
-						(a, b) => a - b
-					)
+						(a, b) => a - b,
+				  )
 				: 0,
 		};
 	}

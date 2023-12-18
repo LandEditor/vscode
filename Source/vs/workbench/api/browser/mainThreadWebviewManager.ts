@@ -7,24 +7,24 @@ import { Disposable } from "vs/base/common/lifecycle";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { MainThreadCustomEditors } from "vs/workbench/api/browser/mainThreadCustomEditors";
 import { MainThreadWebviewPanels } from "vs/workbench/api/browser/mainThreadWebviewPanels";
-import { MainThreadWebviews } from "vs/workbench/api/browser/mainThreadWebviews";
 import { MainThreadWebviewsViews } from "vs/workbench/api/browser/mainThreadWebviewViews";
+import { MainThreadWebviews } from "vs/workbench/api/browser/mainThreadWebviews";
 import * as extHostProtocol from "vs/workbench/api/common/extHost.protocol";
 import {
-	extHostCustomer,
 	IExtHostContext,
+	extHostCustomer,
 } from "../../services/extensions/common/extHostCustomers";
 
 @extHostCustomer
 export class MainThreadWebviewManager extends Disposable {
 	constructor(
 		context: IExtHostContext,
-		@IInstantiationService instantiationService: IInstantiationService
+		@IInstantiationService instantiationService: IInstantiationService,
 	) {
 		super();
 
 		const webviews = this._register(
-			instantiationService.createInstance(MainThreadWebviews, context)
+			instantiationService.createInstance(MainThreadWebviews, context),
 		);
 		context.set(extHostProtocol.MainContext.MainThreadWebviews, webviews);
 
@@ -32,12 +32,12 @@ export class MainThreadWebviewManager extends Disposable {
 			instantiationService.createInstance(
 				MainThreadWebviewPanels,
 				context,
-				webviews
-			)
+				webviews,
+			),
 		);
 		context.set(
 			extHostProtocol.MainContext.MainThreadWebviewPanels,
-			webviewPanels
+			webviewPanels,
 		);
 
 		const customEditors = this._register(
@@ -45,24 +45,24 @@ export class MainThreadWebviewManager extends Disposable {
 				MainThreadCustomEditors,
 				context,
 				webviews,
-				webviewPanels
-			)
+				webviewPanels,
+			),
 		);
 		context.set(
 			extHostProtocol.MainContext.MainThreadCustomEditors,
-			customEditors
+			customEditors,
 		);
 
 		const webviewViews = this._register(
 			instantiationService.createInstance(
 				MainThreadWebviewsViews,
 				context,
-				webviews
-			)
+				webviews,
+			),
 		);
 		context.set(
 			extHostProtocol.MainContext.MainThreadWebviewViews,
-			webviewViews
+			webviewViews,
 		);
 	}
 }

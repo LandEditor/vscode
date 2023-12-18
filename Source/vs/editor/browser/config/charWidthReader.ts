@@ -7,7 +7,7 @@ import { $window } from "vs/base/browser/window";
 import { applyFontInfo } from "vs/editor/browser/config/domFontInfo";
 import { BareFontInfo } from "vs/editor/common/config/fontInfo";
 
-export const enum CharWidthRequestType {
+export enum CharWidthRequestType {
 	Regular = 0,
 	Italic = 1,
 	Bold = 2,
@@ -109,7 +109,7 @@ class DomCharWidthReader {
 
 	private static _render(
 		testElement: HTMLElement,
-		request: CharWidthRequest
+		request: CharWidthRequest,
 	): void {
 		if (request.chr === " ") {
 			let htmlString = "\u00a0";
@@ -140,7 +140,7 @@ class DomCharWidthReader {
 
 export function readCharWidths(
 	bareFontInfo: BareFontInfo,
-	requests: CharWidthRequest[]
+	requests: CharWidthRequest[],
 ): void {
 	const reader = new DomCharWidthReader(bareFontInfo, requests);
 	reader.read();

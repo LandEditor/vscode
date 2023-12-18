@@ -3,23 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import { URI } from "vs/base/common/uri";
-import { assertIsDefined } from "vs/base/common/types";
-import { ITextEditorPane } from "vs/workbench/common/editor";
-import { applyTextEditorOptions } from "vs/workbench/common/editor/editorOptions";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import { ITextEditorOptions } from "vs/platform/editor/common/editor";
+import { Dimension } from "vs/base/browser/dom";
 import { isEqual } from "vs/base/common/resources";
-import { IEditorOptions as ICodeEditorOptions } from "vs/editor/common/config/editorOptions";
+import { assertIsDefined } from "vs/base/common/types";
+import { URI } from "vs/base/common/uri";
+import { ICodeEditor } from "vs/editor/browser/editorBrowser";
 import {
 	CodeEditorWidget,
 	ICodeEditorWidgetOptions,
 } from "vs/editor/browser/widget/codeEditorWidget";
+import { IEditorOptions as ICodeEditorOptions } from "vs/editor/common/config/editorOptions";
 import { IEditorViewState, ScrollType } from "vs/editor/common/editorCommon";
-import { ICodeEditor } from "vs/editor/browser/editorBrowser";
+import { localize } from "vs/nls";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { ITextEditorOptions } from "vs/platform/editor/common/editor";
 import { AbstractTextEditor } from "vs/workbench/browser/parts/editor/textEditor";
-import { Dimension } from "vs/base/browser/dom";
+import { ITextEditorPane } from "vs/workbench/common/editor";
+import { applyTextEditorOptions } from "vs/workbench/common/editor/editorOptions";
 import { IEditorGroup } from "vs/workbench/services/editor/common/editorGroupsService";
 
 /**
@@ -33,7 +33,7 @@ export abstract class AbstractTextCodeEditor<T extends IEditorViewState>
 
 	override get scopedContextKeyService(): IContextKeyService | undefined {
 		return this.editorControl?.invokeWithinContext((accessor) =>
-			accessor.get(IContextKeyService)
+			accessor.get(IContextKeyService),
 		);
 	}
 
@@ -47,15 +47,15 @@ export abstract class AbstractTextCodeEditor<T extends IEditorViewState>
 
 	protected createEditorControl(
 		parent: HTMLElement,
-		initialOptions: ICodeEditorOptions
+		initialOptions: ICodeEditorOptions,
 	): void {
 		this.editorControl = this._register(
 			this.instantiationService.createInstance(
 				CodeEditorWidget,
 				parent,
 				initialOptions,
-				this.getCodeEditorWidgetOptions()
-			)
+				this.getCodeEditorWidgetOptions(),
+			),
 		);
 	}
 
@@ -106,7 +106,7 @@ export abstract class AbstractTextCodeEditor<T extends IEditorViewState>
 			applyTextEditorOptions(
 				options,
 				assertIsDefined(this.editorControl),
-				ScrollType.Smooth
+				ScrollType.Smooth,
 			);
 		}
 	}
@@ -123,7 +123,7 @@ export abstract class AbstractTextCodeEditor<T extends IEditorViewState>
 
 	protected override setEditorVisible(
 		visible: boolean,
-		group: IEditorGroup | undefined
+		group: IEditorGroup | undefined,
 	): void {
 		super.setEditorVisible(visible, group);
 

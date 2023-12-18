@@ -3,26 +3,26 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./overlayWidgets";
+import * as dom from "vs/base/browser/dom";
 import { FastDomNode, createFastDomNode } from "vs/base/browser/fastDomNode";
+import "vs/css!./overlayWidgets";
 import {
 	IOverlayWidget,
 	IOverlayWidgetPositionCoordinates,
 	OverlayWidgetPositionPreference,
 } from "vs/editor/browser/editorBrowser";
 import {
+	RenderingContext,
+	RestrictedRenderingContext,
+} from "vs/editor/browser/view/renderingContext";
+import {
 	PartFingerprint,
 	PartFingerprints,
 	ViewPart,
 } from "vs/editor/browser/view/viewPart";
-import {
-	RenderingContext,
-	RestrictedRenderingContext,
-} from "vs/editor/browser/view/renderingContext";
-import { ViewContext } from "vs/editor/common/viewModel/viewContext";
-import * as viewEvents from "vs/editor/common/viewEvents";
 import { EditorOption } from "vs/editor/common/config/editorOptions";
-import * as dom from "vs/base/browser/dom";
+import * as viewEvents from "vs/editor/common/viewEvents";
+import { ViewContext } from "vs/editor/common/viewModel/viewContext";
 
 interface IWidgetData {
 	widget: IOverlayWidget;
@@ -69,14 +69,14 @@ export class ViewOverlayWidgets extends ViewPart {
 		this._domNode.setClassName("overlayWidgets");
 
 		this.overflowingOverlayWidgetsDomNode = createFastDomNode(
-			document.createElement("div")
+			document.createElement("div"),
 		);
 		PartFingerprints.write(
 			this.overflowingOverlayWidgetsDomNode,
-			PartFingerprint.OverflowingOverlayWidgets
+			PartFingerprint.OverflowingOverlayWidgets,
 		);
 		this.overflowingOverlayWidgetsDomNode.setClassName(
-			"overflowingOverlayWidgets"
+			"overflowingOverlayWidgets",
 		);
 	}
 
@@ -92,7 +92,7 @@ export class ViewOverlayWidgets extends ViewPart {
 	// ---- begin view event handlers
 
 	public override onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent
+		e: viewEvents.ViewConfigurationChangedEvent,
 	): boolean {
 		const options = this._context.configuration.options;
 		const layoutInfo = options.get(EditorOption.layoutInfo);
@@ -135,7 +135,7 @@ export class ViewOverlayWidgets extends ViewPart {
 		preference:
 			| OverlayWidgetPositionPreference
 			| IOverlayWidgetPositionCoordinates
-			| null
+			| null,
 	): boolean {
 		const widgetData = this._widgets[widget.getId()];
 		if (widgetData.preference === preference) {
@@ -191,7 +191,7 @@ export class ViewOverlayWidgets extends ViewPart {
 		) {
 			domNode.setTop(0);
 			domNode.setRight(
-				2 * this._verticalScrollbarWidth + this._minimapWidth
+				2 * this._verticalScrollbarWidth + this._minimapWidth,
 			);
 		} else if (
 			widgetData.preference ===
@@ -201,10 +201,10 @@ export class ViewOverlayWidgets extends ViewPart {
 			domNode.setTop(
 				this._editorHeight -
 					widgetHeight -
-					2 * this._horizontalScrollbarHeight
+					2 * this._horizontalScrollbarHeight,
 			);
 			domNode.setRight(
-				2 * this._verticalScrollbarWidth + this._minimapWidth
+				2 * this._verticalScrollbarWidth + this._minimapWidth,
 			);
 		} else if (
 			widgetData.preference === OverlayWidgetPositionPreference.TOP_CENTER
@@ -215,7 +215,7 @@ export class ViewOverlayWidgets extends ViewPart {
 			const { top, left } = widgetData.preference;
 			const fixedOverflowWidgets =
 				this._context.configuration.options.get(
-					EditorOption.fixedOverflowWidgets
+					EditorOption.fixedOverflowWidgets,
 				);
 			if (fixedOverflowWidgets && widgetData.widget.allowEditorOverflow) {
 				// top, left are computed relative to the editor and we need them relative to the page
@@ -233,7 +233,7 @@ export class ViewOverlayWidgets extends ViewPart {
 
 	public prepareRender(ctx: RenderingContext): void {
 		this._viewDomNodeRect = dom.getDomNodePagePosition(
-			this._viewDomNode.domNode
+			this._viewDomNode.domNode,
 		);
 	}
 

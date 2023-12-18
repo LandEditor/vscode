@@ -3,23 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { IStringDictionary } from "vs/base/common/collections";
+import { FormattingOptions } from "vs/base/common/jsonFormatter";
+import { URI } from "vs/base/common/uri";
+import { ITextModelService } from "vs/editor/common/services/resolverService";
+import {
+	ITextResourceConfigurationService,
+	ITextResourcePropertiesService,
+} from "vs/editor/common/services/textResourceConfiguration";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
 import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import {
 	IUserDataSyncUtilService,
 	getDefaultIgnoredSettings,
 } from "vs/platform/userDataSync/common/userDataSync";
-import { IStringDictionary } from "vs/base/common/collections";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { FormattingOptions } from "vs/base/common/jsonFormatter";
-import { URI } from "vs/base/common/uri";
-import { ITextModelService } from "vs/editor/common/services/resolverService";
-import {
-	ITextResourcePropertiesService,
-	ITextResourceConfigurationService,
-} from "vs/editor/common/services/textResourceConfiguration";
 
 class UserDataSyncUtilService implements IUserDataSyncUtilService {
 	declare readonly _serviceBrand: undefined;
@@ -39,7 +39,7 @@ class UserDataSyncUtilService implements IUserDataSyncUtilService {
 	}
 
 	async resolveUserBindings(
-		userBindings: string[]
+		userBindings: string[],
 	): Promise<IStringDictionary<string>> {
 		const keys: IStringDictionary<string> = {};
 		for (const userbinding of userBindings) {
@@ -65,11 +65,11 @@ class UserDataSyncUtilService implements IUserDataSyncUtilService {
 			eol: this.textResourcePropertiesService.getEOL(resource),
 			insertSpaces: !!this.textResourceConfigurationService.getValue(
 				resource,
-				"editor.insertSpaces"
+				"editor.insertSpaces",
 			),
 			tabSize: this.textResourceConfigurationService.getValue(
 				resource,
-				"editor.tabSize"
+				"editor.tabSize",
 			),
 		};
 	}
@@ -78,5 +78,5 @@ class UserDataSyncUtilService implements IUserDataSyncUtilService {
 registerSingleton(
 	IUserDataSyncUtilService,
 	UserDataSyncUtilService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

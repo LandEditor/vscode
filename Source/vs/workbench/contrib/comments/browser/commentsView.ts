@@ -3,54 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/panel";
-import * as nls from "vs/nls";
 import * as dom from "vs/base/browser/dom";
+import { ITreeElement } from "vs/base/browser/ui/tree/tree";
+import { Codicon } from "vs/base/common/codicons";
+import { Iterable } from "vs/base/common/iterator";
+import { IDisposable, MutableDisposable } from "vs/base/common/lifecycle";
 import { basename } from "vs/base/common/resources";
+import "vs/css!./media/panel";
 import { isCodeEditor, isDiffEditor } from "vs/editor/browser/editorBrowser";
-import {
-	IInstantiationService,
-	ServicesAccessor,
-} from "vs/platform/instantiation/common/instantiation";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import {
-	CommentNode,
-	CommentsModel,
-	ResourceWithCommentThreads,
-	ICommentThreadChangedEvent,
-} from "vs/workbench/contrib/comments/common/commentModel";
-import {
-	IWorkspaceCommentThreadsEvent,
-	ICommentService,
-} from "vs/workbench/contrib/comments/browser/commentService";
-import {
-	IEditorService,
-	ACTIVE_GROUP,
-	SIDE_GROUP,
-} from "vs/workbench/services/editor/common/editorService";
+import { Range } from "vs/editor/common/core/range";
+import { IEditor } from "vs/editor/common/editorCommon";
+import { CommentThreadState } from "vs/editor/common/languages";
+import { TextModel } from "vs/editor/common/model/textModel";
+import * as nls from "vs/nls";
+import { MenuId, registerAction2 } from "vs/platform/actions/common/actions";
 import { CommandsRegistry } from "vs/platform/commands/common/commands";
-import {
-	textLinkForeground,
-	textLinkActiveForeground,
-	focusBorder,
-	textPreformatForeground,
-} from "vs/platform/theme/common/colorRegistry";
-import { ResourceLabels } from "vs/workbench/browser/labels";
-import {
-	CommentsList,
-	COMMENTS_VIEW_ID,
-	COMMENTS_VIEW_TITLE,
-	Filter,
-} from "vs/workbench/contrib/comments/browser/commentsTreeViewer";
-import {
-	IViewPaneOptions,
-	ViewAction,
-	FilterViewPane,
-} from "vs/workbench/browser/parts/views/viewPane";
-import {
-	IViewDescriptorService,
-	IViewsService,
-} from "vs/workbench/common/views";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
 	ContextKeyExpr,
@@ -59,53 +26,86 @@ import {
 	RawContextKey,
 } from "vs/platform/contextkey/common/contextkey";
 import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
+import {
+	IInstantiationService,
+	ServicesAccessor,
+} from "vs/platform/instantiation/common/instantiation";
 import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import { IOpenerService } from "vs/platform/opener/common/opener";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import { MenuId, registerAction2 } from "vs/platform/actions/common/actions";
-import { Codicon } from "vs/base/common/codicons";
-import { IEditor } from "vs/editor/common/editorCommon";
-import { TextModel } from "vs/editor/common/model/textModel";
-import {
-	CommentsViewFilterFocusContextKey,
-	ICommentsView,
-} from "vs/workbench/contrib/comments/browser/comments";
-import {
-	CommentsFilters,
-	CommentsFiltersChangeEvent,
-} from "vs/workbench/contrib/comments/browser/commentsViewActions";
-import { Memento, MementoObject } from "vs/workbench/common/memento";
 import {
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import {
+	focusBorder,
+	textLinkActiveForeground,
+	textLinkForeground,
+	textPreformatForeground,
+} from "vs/platform/theme/common/colorRegistry";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import { registerNavigableContainer } from "vs/workbench/browser/actions/widgetNavigationCommands";
+import { ResourceLabels } from "vs/workbench/browser/labels";
+import {
+	FilterViewPane,
+	IViewPaneOptions,
+	ViewAction,
+} from "vs/workbench/browser/parts/views/viewPane";
+import { Memento, MementoObject } from "vs/workbench/common/memento";
+import {
+	IViewDescriptorService,
+	IViewsService,
+} from "vs/workbench/common/views";
+import {
+	ICommentService,
+	IWorkspaceCommentThreadsEvent,
+} from "vs/workbench/contrib/comments/browser/commentService";
+import {
+	CommentsViewFilterFocusContextKey,
+	ICommentsView,
+} from "vs/workbench/contrib/comments/browser/comments";
+import { CommentController } from "vs/workbench/contrib/comments/browser/commentsController";
 import { FilterOptions } from "vs/workbench/contrib/comments/browser/commentsFilterOptions";
+import {
+	COMMENTS_VIEW_ID,
+	COMMENTS_VIEW_TITLE,
+	CommentsList,
+	Filter,
+} from "vs/workbench/contrib/comments/browser/commentsTreeViewer";
+import {
+	CommentsFilters,
+	CommentsFiltersChangeEvent,
+} from "vs/workbench/contrib/comments/browser/commentsViewActions";
+import {
+	CommentNode,
+	CommentsModel,
+	ICommentThreadChangedEvent,
+	ResourceWithCommentThreads,
+} from "vs/workbench/contrib/comments/common/commentModel";
 import {
 	IActivityService,
 	NumberBadge,
 } from "vs/workbench/services/activity/common/activity";
-import { CommentThreadState } from "vs/editor/common/languages";
-import { IDisposable, MutableDisposable } from "vs/base/common/lifecycle";
-import { ITreeElement } from "vs/base/browser/ui/tree/tree";
-import { Iterable } from "vs/base/common/iterator";
-import { CommentController } from "vs/workbench/contrib/comments/browser/commentsController";
-import { Range } from "vs/editor/common/core/range";
-import { registerNavigableContainer } from "vs/workbench/browser/actions/widgetNavigationCommands";
+import {
+	ACTIVE_GROUP,
+	IEditorService,
+	SIDE_GROUP,
+} from "vs/workbench/services/editor/common/editorService";
 
 const CONTEXT_KEY_HAS_COMMENTS = new RawContextKey<boolean>(
 	"commentsView.hasComments",
-	false
+	false,
 );
 const CONTEXT_KEY_SOME_COMMENTS_EXPANDED = new RawContextKey<boolean>(
 	"commentsView.someCommentsExpanded",
-	false
+	false,
 );
 const VIEW_STORAGE_ID = "commentsViewState";
 
 function createResourceCommentsIterator(
-	model: CommentsModel
+	model: CommentsModel,
 ): Iterable<ITreeElement<ResourceWithCommentThreads | CommentNode>> {
 	return Iterable.map(model.resourceCommentThreads, (m) => {
 		const CommentNodeIt = Iterable.from(m.commentThreads);
@@ -121,14 +121,14 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 	private treeContainer!: HTMLElement;
 	private messageBoxContainer!: HTMLElement;
 	private commentsModel!: CommentsModel;
-	private totalComments: number = 0;
+	private totalComments = 0;
 	private totalUnresolved = 0;
 	private readonly hasCommentsContextKey: IContextKey<boolean>;
 	private readonly someCommentsExpandedContextKey: IContextKey<boolean>;
 	private readonly filter: Filter;
 	readonly filters: CommentsFilters;
 	private readonly activity = this._register(
-		new MutableDisposable<IDisposable>()
+		new MutableDisposable<IDisposable>(),
 	);
 
 	private currentHeight = 0;
@@ -235,7 +235,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 		const message = nls.localize(
 			"totalUnresolvedComments",
 			"{0} Unresolved Comments",
-			this.totalUnresolved
+			this.totalUnresolved,
 		);
 		this.activity.value = this.activityService.showViewActivity(this.id, {
 			badge: new NumberBadge(this.totalUnresolved, () => message),
@@ -266,7 +266,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 						this.focusFilter();
 					}
 				},
-			})
+			}),
 		);
 	}
 
@@ -293,7 +293,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 		this.filter.options = new FilterOptions(
 			this.filterWidget.getFilterText(),
 			this.filters.showResolved,
-			this.filters.showUnresolved
+			this.filters.showUnresolved,
 		);
 		this.tree?.filterComments();
 
@@ -306,11 +306,11 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 						"showing filtered results",
 						"Showing {0} of {1}",
 						filtered,
-						total
-					)
+						total,
+				  ),
 		);
 		this.filterWidget.checkMoreFilters(
-			!this.filters.showResolved || !this.filters.showUnresolved
+			!this.filters.showResolved || !this.filters.showUnresolved,
 		);
 	}
 
@@ -321,13 +321,13 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 
 		const domContainer = dom.append(
 			container,
-			dom.$(".comments-panel-container")
+			dom.$(".comments-panel-container"),
 		);
 
 		this.treeContainer = dom.append(domContainer, dom.$(".tree-container"));
 		this.treeContainer.classList.add(
 			"file-icon-themable-tree",
-			"show-file-icons"
+			"show-file-icons",
 		);
 		this.commentsModel = new CommentsModel();
 
@@ -338,28 +338,28 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 		this._register(
 			this.commentService.onDidSetAllCommentThreads(
 				this.onAllCommentsChanged,
-				this
-			)
+				this,
+			),
 		);
 		this._register(
 			this.commentService.onDidUpdateCommentThreads(
 				this.onCommentsUpdated,
-				this
-			)
+				this,
+			),
 		);
 		this._register(
 			this.commentService.onDidDeleteDataProvider(
 				this.onDataProviderDeleted,
-				this
-			)
+				this,
+			),
 		);
 
 		const styleElement = dom.createStyleSheet(container);
 		this.applyStyles(styleElement);
 		this._register(
 			this.themeService.onDidColorThemeChange((_) =>
-				this.applyStyles(styleElement)
-			)
+				this.applyStyles(styleElement),
+			),
 		);
 
 		this._register(
@@ -367,7 +367,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 				if (visible) {
 					this.refresh();
 				}
-			})
+			}),
 		);
 
 		this.renderComments();
@@ -398,28 +398,28 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 		const linkColor = theme.getColor(textLinkForeground);
 		if (linkColor) {
 			content.push(
-				`.comments-panel .comments-panel-container a { color: ${linkColor}; }`
+				`.comments-panel .comments-panel-container a { color: ${linkColor}; }`,
 			);
 		}
 
 		const linkActiveColor = theme.getColor(textLinkActiveForeground);
 		if (linkActiveColor) {
 			content.push(
-				`.comments-panel .comments-panel-container a:hover, a:active { color: ${linkActiveColor}; }`
+				`.comments-panel .comments-panel-container a:hover, a:active { color: ${linkActiveColor}; }`,
 			);
 		}
 
 		const focusColor = theme.getColor(focusBorder);
 		if (focusColor) {
 			content.push(
-				`.comments-panel .comments-panel-container a:focus { outline-color: ${focusColor}; }`
+				`.comments-panel .comments-panel-container a:focus { outline-color: ${focusColor}; }`,
 			);
 		}
 
 		const codeTextForegroundColor = theme.getColor(textPreformatForeground);
 		if (codeTextForegroundColor) {
 			content.push(
-				`.comments-panel .comments-panel-container .text code { color: ${codeTextForegroundColor}; }`
+				`.comments-panel .comments-panel-container .text code { color: ${codeTextForegroundColor}; }`,
 			);
 		}
 
@@ -429,12 +429,12 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 	private async renderComments(): Promise<void> {
 		this.treeContainer.classList.toggle(
 			"hidden",
-			!this.commentsModel.hasCommentThreads()
+			!this.commentsModel.hasCommentThreads(),
 		);
 		this.renderMessage();
 		await this.tree?.setChildren(
 			null,
-			createResourceCommentsIterator(this.commentsModel)
+			createResourceCommentsIterator(this.commentsModel),
 		);
 	}
 
@@ -464,7 +464,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 
 	protected layoutBodyContent(
 		height: number = this.currentHeight,
-		width: number = this.currentWidth
+		width: number = this.currentWidth,
 	): void {
 		if (this.messageBoxContainer) {
 			this.messageBoxContainer.style.height = `${height}px`;
@@ -477,7 +477,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 	private createMessageBox(parent: HTMLElement): void {
 		this.messageBoxContainer = dom.append(
 			parent,
-			dom.$(".message-box-container")
+			dom.$(".message-box-container"),
 		);
 		this.messageBoxContainer.setAttribute("tabIndex", "0");
 	}
@@ -486,13 +486,13 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 		this.messageBoxContainer.textContent = this.commentsModel.getMessage();
 		this.messageBoxContainer.classList.toggle(
 			"hidden",
-			this.commentsModel.hasCommentThreads()
+			this.commentsModel.hasCommentThreads(),
 		);
 	}
 
 	private createTree(): void {
 		this.treeLabels = this._register(
-			this.instantiationService.createInstance(ResourceLabels, this)
+			this.instantiationService.createInstance(ResourceLabels, this),
 		);
 		this.tree = this._register(
 			this.instantiationService.createInstance(
@@ -510,7 +510,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 							item:
 								| CommentsModel
 								| ResourceWithCommentThreads
-								| CommentNode
+								| CommentNode,
 						) => {
 							return undefined;
 						},
@@ -520,7 +520,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 							if (element instanceof CommentsModel) {
 								return nls.localize(
 									"rootCommentsLabel",
-									"Comments for current workspace"
+									"Comments for current workspace",
 								);
 							}
 							if (element instanceof ResourceWithCommentThreads) {
@@ -528,7 +528,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 									"resourceWithCommentThreadsLabel",
 									"Comments in {0}, full path {1}",
 									basename(element.resource),
-									element.resource.fsPath
+									element.resource.fsPath,
 								);
 							}
 							if (element instanceof CommentNode) {
@@ -542,7 +542,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 										basename(element.resource),
 										typeof element.comment.body === "string"
 											? element.comment.body
-											: element.comment.body.value
+											: element.comment.body.value,
 									);
 								} else {
 									return nls.localize(
@@ -552,7 +552,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 										basename(element.resource),
 										typeof element.comment.body === "string"
 											? element.comment.body
-											: element.comment.body.value
+											: element.comment.body.value,
 									);
 								}
 							}
@@ -562,8 +562,8 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 							return COMMENTS_VIEW_TITLE.value;
 						},
 					},
-				}
-			)
+				},
+			),
 		);
 
 		this._register(
@@ -572,20 +572,20 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 					e.element,
 					e.editorOptions.pinned,
 					e.editorOptions.preserveFocus,
-					e.sideBySide
+					e.sideBySide,
 				);
-			})
+			}),
 		);
 
 		this._register(
 			this.tree.onDidChangeModel(() => {
 				this.updateSomeCommentsExpanded();
-			})
+			}),
 		);
 		this._register(
 			this.tree.onDidChangeCollapseState(() => {
 				this.updateSomeCommentsExpanded();
-			})
+			}),
 		);
 	}
 
@@ -593,7 +593,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 		element: any,
 		pinned?: boolean,
 		preserveFocus?: boolean,
-		sideBySide?: boolean
+		sideBySide?: boolean,
 	): boolean {
 		if (!element) {
 			return false;
@@ -624,10 +624,10 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 			? [
 					activeEditor.getOriginalEditor(),
 					activeEditor.getModifiedEditor(),
-				]
+			  ]
 			: activeEditor
-				? [activeEditor]
-				: [];
+			  ? [activeEditor]
+			  : [];
 
 		for (const editor of currentActiveResources) {
 			const model = editor.getModel();
@@ -635,7 +635,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 				model instanceof TextModel &&
 				this.uriIdentityService.extUri.isEqual(
 					element.resource,
-					model.uri
+					model.uri,
 				)
 			) {
 				const threadToReveal =
@@ -652,7 +652,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 						threadToReveal,
 						commentToReveal,
 						true,
-						!preserveFocus
+						!preserveFocus,
 					);
 				}
 
@@ -679,7 +679,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 						selection: range ?? new Range(1, 1, 1, 1),
 					},
 				},
-				sideBySide ? SIDE_GROUP : ACTIVE_GROUP
+				sideBySide ? SIDE_GROUP : ACTIVE_GROUP,
 			)
 			.then((editor) => {
 				if (editor) {
@@ -690,7 +690,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 							threadToReveal,
 							commentToReveal.uniqueIdInThread,
 							true,
-							!preserveFocus
+							!preserveFocus,
 						);
 					}
 				}
@@ -705,18 +705,18 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 		}
 		if (this.isVisible()) {
 			this.hasCommentsContextKey.set(
-				this.commentsModel.hasCommentThreads()
+				this.commentsModel.hasCommentThreads(),
 			);
 
 			this.treeContainer.classList.toggle(
 				"hidden",
-				!this.commentsModel.hasCommentThreads()
+				!this.commentsModel.hasCommentThreads(),
 			);
 			this.cachedFilterStats = undefined;
 			this.renderMessage();
 			this.tree?.setChildren(
 				null,
-				createResourceCommentsIterator(this.commentsModel)
+				createResourceCommentsIterator(this.commentsModel),
 			);
 
 			if (
@@ -739,7 +739,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 		this.commentsModel.setCommentThreads(
 			e.ownerId,
 			e.ownerLabel,
-			e.commentThreads
+			e.commentThreads,
 		);
 		this.totalComments += e.commentThreads.length;
 
@@ -838,9 +838,9 @@ registerAction2(
 					when: ContextKeyExpr.and(
 						ContextKeyExpr.and(
 							ContextKeyExpr.equals("view", COMMENTS_VIEW_ID),
-							CONTEXT_KEY_HAS_COMMENTS
+							CONTEXT_KEY_HAS_COMMENTS,
 						),
-						CONTEXT_KEY_SOME_COMMENTS_EXPANDED
+						CONTEXT_KEY_SOME_COMMENTS_EXPANDED,
 					),
 					order: 100,
 				},
@@ -849,7 +849,7 @@ registerAction2(
 		runInView(_accessor: ServicesAccessor, view: CommentsPanel) {
 			view.collapseAll();
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -867,11 +867,11 @@ registerAction2(
 					when: ContextKeyExpr.and(
 						ContextKeyExpr.and(
 							ContextKeyExpr.equals("view", COMMENTS_VIEW_ID),
-							CONTEXT_KEY_HAS_COMMENTS
+							CONTEXT_KEY_HAS_COMMENTS,
 						),
 						ContextKeyExpr.not(
-							CONTEXT_KEY_SOME_COMMENTS_EXPANDED.key
-						)
+							CONTEXT_KEY_SOME_COMMENTS_EXPANDED.key,
+						),
 					),
 					order: 100,
 				},
@@ -880,5 +880,5 @@ registerAction2(
 		runInView(_accessor: ServicesAccessor, view: CommentsPanel) {
 			view.expandAll();
 		}
-	}
+	},
 );

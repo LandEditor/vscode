@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { ClientSecretCredential } from "@azure/identity";
 import * as es from "event-stream";
+import * as gzip from "gulp-gzip";
+import * as merge from "gulp-merge-json";
 import * as Vinyl from "vinyl";
 import * as vfs from "vinyl-fs";
-import * as merge from "gulp-merge-json";
-import * as gzip from "gulp-gzip";
-import { ClientSecretCredential } from "@azure/identity";
 import path = require("path");
 import { readFileSync } from "fs";
 const azure = require("gulp-azure-storage");
@@ -17,7 +17,7 @@ const commit = process.env["BUILD_SOURCEVERSION"];
 const credential = new ClientSecretCredential(
 	process.env["AZURE_TENANT_ID"]!,
 	process.env["AZURE_CLIENT_ID"]!,
-	process.env["AZURE_CLIENT_SECRET"]!
+	process.env["AZURE_CLIENT_SECRET"]!,
 );
 
 interface NlsMetadata {
@@ -40,7 +40,7 @@ function main(): Promise<void> {
 			}),
 			vfs.src(".build/extensions/**/package.nls.json", {
 				base: ".build/extensions",
-			})
+			}),
 		)
 			.pipe(
 				merge({
@@ -100,18 +100,18 @@ function main(): Promise<void> {
 						// Get extension id and use that as the key
 						const folderPath = path.join(
 							file.base,
-							file.relative.split("/")[0]
+							file.relative.split("/")[0],
 						);
 						const manifest = readFileSync(
 							path.join(folderPath, "package.json"),
-							"utf-8"
+							"utf-8",
 						);
 						const manifestJson = JSON.parse(manifest);
 						const key =
 							manifestJson.publisher + "." + manifestJson.name;
 						return { [key]: parsedJson };
 					},
-				})
+				}),
 			)
 			.pipe(gzip({ append: false }))
 			.pipe(vfs.dest("./nlsMetadata"))
@@ -120,10 +120,10 @@ function main(): Promise<void> {
 					console.log(`Uploading ${data.path}`);
 					// trigger artifact upload
 					console.log(
-						`##vso[artifact.upload containerfolder=nlsmetadata;artifactname=combined.nls.metadata.json]${data.path}`
+						`##vso[artifact.upload containerfolder=nlsmetadata;artifactname=combined.nls.metadata.json]${data.path}`,
 					);
 					this.emit("data", data);
-				})
+				}),
 			)
 			.pipe(
 				azure.upload({
@@ -135,7 +135,7 @@ function main(): Promise<void> {
 						contentEncoding: "gzip",
 						cacheControl: "max-age=31536000, public",
 					},
-				})
+				}),
 			)
 			.on("end", () => c())
 			.on("error", (err: any) => e(err));

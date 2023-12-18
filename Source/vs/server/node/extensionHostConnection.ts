@@ -5,35 +5,35 @@
 
 import * as cp from "child_process";
 import * as net from "net";
-import { getNLSConfiguration } from "vs/server/node/remoteLanguagePacks";
-import { FileAccess } from "vs/base/common/network";
-import { join, delimiter } from "vs/base/common/path";
 import { VSBuffer } from "vs/base/common/buffer";
 import { Emitter, Event } from "vs/base/common/event";
-import {
-	createRandomIPCHandle,
-	NodeSocket,
-	WebSocketNodeSocket,
-} from "vs/base/parts/ipc/node/ipc.net";
-import { getResolvedShellEnv } from "vs/platform/shell/node/shellEnv";
-import { ILogService } from "vs/platform/log/common/log";
-import { IRemoteExtensionHostStartParams } from "vs/platform/remote/common/remoteAgentConnection";
-import {
-	IExtHostReadyMessage,
-	IExtHostSocketMessage,
-	IExtHostReduceGraceTimeMessage,
-} from "vs/workbench/services/extensions/common/extensionHostProtocol";
-import { IServerEnvironmentService } from "vs/server/node/serverEnvironmentService";
+import { DisposableStore, toDisposable } from "vs/base/common/lifecycle";
+import { FileAccess } from "vs/base/common/network";
+import { delimiter, join } from "vs/base/common/path";
 import { IProcessEnvironment, isWindows } from "vs/base/common/platform";
 import { removeDangerousEnvVariables } from "vs/base/common/processes";
+import {
+	NodeSocket,
+	WebSocketNodeSocket,
+	createRandomIPCHandle,
+} from "vs/base/parts/ipc/node/ipc.net";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { ILogService } from "vs/platform/log/common/log";
+import { IRemoteExtensionHostStartParams } from "vs/platform/remote/common/remoteAgentConnection";
+import { getResolvedShellEnv } from "vs/platform/shell/node/shellEnv";
 import { IExtensionHostStatusService } from "vs/server/node/extensionHostStatusService";
-import { DisposableStore, toDisposable } from "vs/base/common/lifecycle";
+import { getNLSConfiguration } from "vs/server/node/remoteLanguagePacks";
+import { IServerEnvironmentService } from "vs/server/node/serverEnvironmentService";
 import {
 	IPCExtHostConnection,
-	writeExtHostConnection,
 	SocketExtHostConnection,
+	writeExtHostConnection,
 } from "vs/workbench/services/extensions/common/extensionHostEnv";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import {
+	IExtHostReadyMessage,
+	IExtHostReduceGraceTimeMessage,
+	IExtHostSocketMessage,
+} from "vs/workbench/services/extensions/common/extensionHostProtocol";
 
 export async function buildUserEnvironment(
 	startParamsEnv: { [key: string]: string | null } = {},
@@ -41,11 +41,11 @@ export async function buildUserEnvironment(
 	language: string,
 	environmentService: IServerEnvironmentService,
 	logService: ILogService,
-	configurationService: IConfigurationService
+	configurationService: IConfigurationService,
 ): Promise<IProcessEnvironment> {
 	const nlsConfig = await getNLSConfiguration(
 		language,
-		environmentService.userDataPath
+		environmentService.userDataPath,
 	);
 
 	let userShellEnv: typeof process.env = {};
@@ -55,12 +55,12 @@ export async function buildUserEnvironment(
 				configurationService,
 				logService,
 				environmentService.args,
-				process.env
+				process.env,
 			);
 		} catch (error) {
 			logService.error(
 				"ExtensionHostConnection#buildUserEnvironment resolving shell environment failed",
-				error
+				error,
 			);
 		}
 	}
@@ -95,7 +95,7 @@ export async function buildUserEnvironment(
 		env.BROWSER = join(
 			binFolder,
 			"helpers",
-			isWindows ? "browser.cmd" : "browser.sh"
+			isWindows ? "browser.cmd" : "browser.sh",
 		); // a command that opens a browser on the local machine
 	}
 
@@ -106,7 +106,7 @@ export async function buildUserEnvironment(
 class ConnectionData {
 	constructor(
 		public readonly socket: NodeSocket | WebSocketNodeSocket,
-		public readonly initialDataChunk: VSBuffer
+		public readonly initialDataChunk: VSBuffer,
 	) {}
 
 	public socketDrain(): Promise<void> {
@@ -131,7 +131,7 @@ class ConnectionData {
 		return {
 			type: "VSCODE_EXTHOST_IPC_SOCKET",
 			initialDataChunk: (<Buffer>this.initialDataChunk.buffer).toString(
-				"base64"
+				"base64",
 			),
 			skipWebSocketFrames: skipWebSocketFrames,
 			permessageDeflate: permessageDeflate,
@@ -176,7 +176,7 @@ export class ExtensionHostConnection {
 	private get _logPrefix(): string {
 		return `[${this._remoteAddress}][${this._reconnectionToken.substr(
 			0,
-			8
+			8,
 		)}][ExtensionHostConnection] `;
 	}
 
@@ -190,14 +190,14 @@ export class ExtensionHostConnection {
 
 	private async _pipeSockets(
 		extHostSocket: net.Socket,
-		connectionData: ConnectionData
+		connectionData: ConnectionData,
 	): Promise<void> {
 		const disposables = new DisposableStore();
 		disposables.add(connectionData.socket);
 		disposables.add(
 			toDisposable(() => {
 				extHostSocket.destroy();
-			})
+			}),
 		);
 
 		const stopAndCleanup = () => {
@@ -210,32 +210,32 @@ export class ExtensionHostConnection {
 		disposables.add(
 			Event.fromNodeEventEmitter<void>(
 				extHostSocket,
-				"end"
-			)(stopAndCleanup)
+				"end",
+			)(stopAndCleanup),
 		);
 		disposables.add(
 			Event.fromNodeEventEmitter<void>(
 				extHostSocket,
-				"close"
-			)(stopAndCleanup)
+				"close",
+			)(stopAndCleanup),
 		);
 		disposables.add(
 			Event.fromNodeEventEmitter<void>(
 				extHostSocket,
-				"error"
-			)(stopAndCleanup)
+				"error",
+			)(stopAndCleanup),
 		);
 
 		disposables.add(
-			connectionData.socket.onData((e) => extHostSocket.write(e.buffer))
+			connectionData.socket.onData((e) => extHostSocket.write(e.buffer)),
 		);
 		disposables.add(
 			Event.fromNodeEventEmitter<Buffer>(
 				extHostSocket,
-				"data"
+				"data",
 			)((e) => {
 				connectionData.socket.write(VSBuffer.wrap(e));
-			})
+			}),
 		);
 
 		if (connectionData.initialDataChunk.byteLength > 0) {
@@ -245,7 +245,7 @@ export class ExtensionHostConnection {
 
 	private async _sendSocketToExtensionHost(
 		extensionHostProcess: cp.ChildProcess,
-		connectionData: ConnectionData
+		connectionData: ConnectionData,
 	): Promise<void> {
 		// Make sure all outstanding writes have been drained before sending the socket
 		await connectionData.socketDrain();
@@ -272,7 +272,7 @@ export class ExtensionHostConnection {
 	public acceptReconnection(
 		remoteAddress: string,
 		_socket: NodeSocket | WebSocketNodeSocket,
-		initialDataChunk: VSBuffer
+		initialDataChunk: VSBuffer,
 	): void {
 		this._remoteAddress = remoteAddress;
 		this._log(`The client has reconnected.`);
@@ -286,7 +286,7 @@ export class ExtensionHostConnection {
 
 		this._sendSocketToExtensionHost(
 			this._extensionHostProcess,
-			connectionData
+			connectionData,
 		);
 	}
 
@@ -308,7 +308,7 @@ export class ExtensionHostConnection {
 	}
 
 	public async start(
-		startParams: IRemoteExtensionHostStartParams
+		startParams: IRemoteExtensionHostStartParams,
 	): Promise<void> {
 		try {
 			let execArgv: string[] = process.execArgv
@@ -328,7 +328,7 @@ export class ExtensionHostConnection {
 				startParams.language,
 				this._environmentService,
 				this._logService,
-				this._configurationService
+				this._configurationService,
 			);
 			removeDangerousEnvVariables(env);
 
@@ -361,7 +361,7 @@ export class ExtensionHostConnection {
 			this._extensionHostProcess = cp.fork(
 				FileAccess.asFileUri("bootstrap-fork").fsPath,
 				args,
-				opts
+				opts,
 			);
 			const pid = this._extensionHostProcess.pid;
 			this._log(`<${pid}> Launched Extension Host Process.`);
@@ -371,11 +371,11 @@ export class ExtensionHostConnection {
 			this._extensionHostProcess.stderr!.setEncoding("utf8");
 			const onStdout = Event.fromNodeEventEmitter<string>(
 				this._extensionHostProcess.stdout!,
-				"data"
+				"data",
 			);
 			const onStderr = Event.fromNodeEventEmitter<string>(
 				this._extensionHostProcess.stderr!,
-				"data"
+				"data",
 			);
 			onStdout((e) => this._log(`<${pid}> ${e}`));
 			onStderr((e) => this._log(`<${pid}><stderr> ${e}`));
@@ -392,13 +392,13 @@ export class ExtensionHostConnection {
 				(code: number, signal: string) => {
 					this._extensionHostStatusService.setExitInfo(
 						this._reconnectionToken,
-						{ code, signal }
+						{ code, signal },
 					);
 					this._log(
-						`<${pid}> Extension Host Process exited with code: ${code}, signal: ${signal}.`
+						`<${pid}> Extension Host Process exited with code: ${code}, signal: ${signal}.`,
 					);
 					this._cleanResources();
-				}
+				},
 			);
 
 			if (extHostNamedPipeServer) {
@@ -411,11 +411,11 @@ export class ExtensionHostConnection {
 					if (msg.type === "VSCODE_EXTHOST_IPC_READY") {
 						this._extensionHostProcess!.removeListener(
 							"message",
-							messageListener
+							messageListener,
 						);
 						this._sendSocketToExtensionHost(
 							this._extensionHostProcess!,
-							this._connectionData!
+							this._connectionData!,
 						);
 						this._connectionData = null;
 					}
@@ -444,17 +444,17 @@ export class ExtensionHostConnection {
 					namedPipeServer?.removeListener("error", reject);
 					resolve({ pipeName, namedPipeServer });
 				});
-			}
+			},
 		);
 	}
 }
 
 function readCaseInsensitive(
 	env: { [key: string]: string | undefined },
-	key: string
+	key: string,
 ): string | undefined {
 	const pathKeys = Object.keys(env).filter(
-		(k) => k.toLowerCase() === key.toLowerCase()
+		(k) => k.toLowerCase() === key.toLowerCase(),
 	);
 	const pathKey = pathKeys.length > 0 ? pathKeys[0] : key;
 	return env[pathKey];
@@ -463,10 +463,10 @@ function readCaseInsensitive(
 function setCaseInsensitive(
 	env: { [key: string]: unknown },
 	key: string,
-	value: string
+	value: string,
 ): void {
 	const pathKeys = Object.keys(env).filter(
-		(k) => k.toLowerCase() === key.toLowerCase()
+		(k) => k.toLowerCase() === key.toLowerCase(),
 	);
 	const pathKey = pathKeys.length > 0 ? pathKeys[0] : key;
 	env[pathKey] = value;

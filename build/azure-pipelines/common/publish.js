@@ -1,4 +1,3 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -30,7 +29,7 @@ class Temp {
 	tmpNameSync() {
 		const file = path.join(
 			os.tmpdir(),
-			crypto.randomBytes(20).toString("hex")
+			crypto.randomBytes(20).toString("hex"),
 		);
 		this._files.push(file);
 		return file;
@@ -68,20 +67,20 @@ class ProvisionService {
 			],
 		});
 		this.log(
-			`Provisioning ${fileName} (releaseId: ${releaseId}, fileId: ${fileId})...`
+			`Provisioning ${fileName} (releaseId: ${releaseId}, fileId: ${fileId})...`,
 		);
 		const res = await (0, retry_1.retry)(() =>
 			this.request(
 				"POST",
 				"/api/v2/ProvisionedFiles/CreateProvisionedFiles",
-				{ body }
-			)
+				{ body },
+			),
 		);
 		if (!res.IsSuccess) {
 			throw new Error(
 				`Failed to submit provisioning request: ${JSON.stringify(
-					res.ErrorDetails
-				)}`
+					res.ErrorDetails,
+				)}`,
 			);
 		}
 		this.log(`Successfully provisioned ${fileName}`);
@@ -97,7 +96,7 @@ class ProvisionService {
 		};
 		const res = await fetch(
 			`https://dsprovisionapi.microsoft.com${url}`,
-			opts
+			opts,
 		);
 		if (!res.ok || res.status < 200 || res.status >= 500) {
 			throw new Error(`Unexpected status code: ${res.status}`);
@@ -124,7 +123,7 @@ class ESRPClient {
 		tenantId,
 		clientId,
 		authCertSubjectName,
-		requestSigningCertSubjectName
+		requestSigningCertSubjectName,
 	) {
 		this.log = log;
 		this.tmp = tmp;
@@ -147,7 +146,7 @@ class ESRPClient {
 					StoreLocation: "LocalMachine",
 					StoreName: "My",
 				},
-			})
+			}),
 		);
 	}
 	async release(version, filePath) {
@@ -155,12 +154,12 @@ class ESRPClient {
 		const submitReleaseResult = await this.SubmitRelease(version, filePath);
 		if (submitReleaseResult.submissionResponse.statusCode !== "pass") {
 			throw new Error(
-				`Unexpected status code: ${submitReleaseResult.submissionResponse.statusCode}`
+				`Unexpected status code: ${submitReleaseResult.submissionResponse.statusCode}`,
 			);
 		}
 		const releaseId = submitReleaseResult.submissionResponse.operationId;
 		this.log(
-			`Successfully submitted release ${releaseId}. Polling for completion...`
+			`Successfully submitted release ${releaseId}. Polling for completion...`,
 		);
 		let details;
 		// Poll every 5 seconds, wait 60 minutes max -> poll 60/5*60=720 times
@@ -170,7 +169,7 @@ class ESRPClient {
 				break;
 			} else if (details.releaseDetails[0].statusCode !== "inprogress") {
 				throw new Error(
-					`Failed to submit release: ${JSON.stringify(details)}`
+					`Failed to submit release: ${JSON.stringify(details)}`,
 				);
 			}
 			await new Promise((c) => setTimeout(c, 5000));
@@ -178,8 +177,8 @@ class ESRPClient {
 		if (details.releaseDetails[0].statusCode !== "pass") {
 			throw new Error(
 				`Timed out waiting for release ${releaseId}: ${JSON.stringify(
-					details
-				)}`
+					details,
+				)}`,
 			);
 		}
 		const fileId = details.releaseDetails[0].fileDetails[0].publisherKey;
@@ -195,7 +194,7 @@ class ESRPClient {
 				Audience: "InternalLimited",
 				Intent: "distribution",
 				ContentType: "InstallPackage",
-			})
+			}),
 		);
 		const inputPath = this.tmp.tmpNameSync();
 		const size = fs.statSync(filePath).size;
@@ -218,7 +217,7 @@ class ESRPClient {
 						Version: version,
 						Description: path.basename(
 							filePath,
-							path.extname(filePath)
+							path.extname(filePath),
 						),
 					},
 					Owners: [
@@ -262,12 +261,12 @@ class ESRPClient {
 						DestinationLocationType: "AzureBlob",
 					},
 				],
-			})
+			}),
 		);
 		const outputPath = this.tmp.tmpNameSync();
 		cp.execSync(
 			`ESRPClient SubmitRelease -a ${this.authPath} -p ${policyPath} -i ${inputPath} -o ${outputPath}`,
-			{ stdio: "inherit" }
+			{ stdio: "inherit" },
 		);
 		const output = fs.readFileSync(outputPath, "utf8");
 		return JSON.parse(output);
@@ -279,12 +278,12 @@ class ESRPClient {
 			JSON.stringify({
 				Version: "1.0.0",
 				OperationIds: [releaseId],
-			})
+			}),
 		);
 		const outputPath = this.tmp.tmpNameSync();
 		cp.execSync(
 			`ESRPClient ReleaseDetails -a ${this.authPath} -i ${inputPath} -o ${outputPath}`,
-			{ stdio: "inherit" }
+			{ stdio: "inherit" },
 		);
 		const output = fs.readFileSync(outputPath, "utf8");
 		return JSON.parse(output);
@@ -301,7 +300,7 @@ async function releaseAndProvision(
 	provisionAADPassword,
 	version,
 	quality,
-	filePath
+	filePath,
 ) {
 	const fileName = `${quality}/${version}/${path.basename(filePath)}`;
 	const result = `${e("PRSS_CDN_URL")}/${fileName}`;
@@ -318,13 +317,13 @@ async function releaseAndProvision(
 		releaseTenantId,
 		releaseClientId,
 		releaseAuthCertSubjectName,
-		releaseRequestSigningCertSubjectName
+		releaseRequestSigningCertSubjectName,
 	);
 	const release = await esrpclient.release(version, filePath);
 	const credential = new identity_1.ClientSecretCredential(
 		provisionTenantId,
 		provisionAADUsername,
-		provisionAADPassword
+		provisionAADPassword,
 	);
 	const accessToken = await credential.getToken([
 		"https://microsoft.onmicrosoft.com/DS.Provisioning.WebApi/.default",
@@ -348,7 +347,7 @@ class State {
 			const previousStatePath = path.join(
 				pipelineWorkspacePath,
 				previousState.name,
-				previousState.name + ".txt"
+				previousState.name + ".txt",
 			);
 			fs.readFileSync(previousStatePath, "utf8")
 				.split(/\n/)
@@ -359,12 +358,12 @@ class State {
 		this.statePath = path.join(
 			pipelineWorkspacePath,
 			`artifacts_processed_${stageAttempt}`,
-			`artifacts_processed_${stageAttempt}.txt`
+			`artifacts_processed_${stageAttempt}.txt`,
 		);
 		fs.mkdirSync(path.dirname(this.statePath), { recursive: true });
 		fs.writeFileSync(
 			this.statePath,
-			[...this.set.values()].map((name) => `${name}\n`).join("")
+			[...this.set.values()].map((name) => `${name}\n`).join(""),
 		);
 	}
 	get size() {
@@ -386,11 +385,10 @@ const azdoFetchOptions = {
 		// Pretend we're a web browser to avoid download rate limits
 		"User-Agent":
 			"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Edg/119.0.0.0",
-		"Accept":
-			"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+		Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
 		"Accept-Encoding": "gzip, deflate, br",
 		"Accept-Language": "en-US,en;q=0.9",
-		"Referer": "https://dev.azure.com",
+		Referer: "https://dev.azure.com",
 		Authorization: `Bearer ${e("SYSTEM_ACCESSTOKEN")}`,
 	},
 };
@@ -400,7 +398,7 @@ async function requestAZDOAPI(path) {
 	try {
 		const res = await fetch(
 			`${e("BUILDS_API_URL")}${path}?api-version=6.0`,
-			{ ...azdoFetchOptions, signal: abortController.signal }
+			{ ...azdoFetchOptions, signal: abortController.signal },
 		);
 		if (!res.ok) {
 			throw new Error(`Unexpected status code: ${res.status}`);
@@ -413,7 +411,7 @@ async function requestAZDOAPI(path) {
 async function getPipelineArtifacts() {
 	const result = await requestAZDOAPI("artifacts");
 	return result.value.filter(
-		(a) => /^vscode_/.test(a.name) && !/sbom$/.test(a.name)
+		(a) => /^vscode_/.test(a.name) && !/sbom$/.test(a.name),
 	);
 }
 async function getPipelineTimeline() {
@@ -432,7 +430,7 @@ async function downloadArtifact(artifact, downloadPath) {
 		}
 		await (0, promises_1.pipeline)(
 			stream_1.Readable.fromWeb(res.body),
-			fs.createWriteStream(downloadPath)
+			fs.createWriteStream(downloadPath),
 		);
 	} finally {
 		clearTimeout(timeout);
@@ -485,21 +483,21 @@ function getPlatform(product, os, arch, type) {
 							return `win32-${arch}-user`;
 						default:
 							throw new Error(
-								`Unrecognized: ${product} ${os} ${arch} ${type}`
+								`Unrecognized: ${product} ${os} ${arch} ${type}`,
 							);
 					}
 				}
 				case "server":
 					if (arch === "arm64") {
 						throw new Error(
-							`Unrecognized: ${product} ${os} ${arch} ${type}`
+							`Unrecognized: ${product} ${os} ${arch} ${type}`,
 						);
 					}
 					return `server-win32-${arch}`;
 				case "web":
 					if (arch === "arm64") {
 						throw new Error(
-							`Unrecognized: ${product} ${os} ${arch} ${type}`
+							`Unrecognized: ${product} ${os} ${arch} ${type}`,
 						);
 					}
 					return `server-win32-${arch}-web`;
@@ -507,7 +505,7 @@ function getPlatform(product, os, arch, type) {
 					return `cli-win32-${arch}`;
 				default:
 					throw new Error(
-						`Unrecognized: ${product} ${os} ${arch} ${type}`
+						`Unrecognized: ${product} ${os} ${arch} ${type}`,
 					);
 			}
 		case "alpine":
@@ -520,7 +518,7 @@ function getPlatform(product, os, arch, type) {
 					return `cli-alpine-${arch}`;
 				default:
 					throw new Error(
-						`Unrecognized: ${product} ${os} ${arch} ${type}`
+						`Unrecognized: ${product} ${os} ${arch} ${type}`,
 					);
 			}
 		case "linux":
@@ -539,7 +537,7 @@ function getPlatform(product, os, arch, type) {
 								: `server-linux-${arch}-web`;
 						default:
 							throw new Error(
-								`Unrecognized: ${product} ${os} ${arch} ${type}`
+								`Unrecognized: ${product} ${os} ${arch} ${type}`,
 							);
 					}
 				case "deb-package":
@@ -550,7 +548,7 @@ function getPlatform(product, os, arch, type) {
 					return `cli-linux-${arch}`;
 				default:
 					throw new Error(
-						`Unrecognized: ${product} ${os} ${arch} ${type}`
+						`Unrecognized: ${product} ${os} ${arch} ${type}`,
 					);
 			}
 		case "darwin":
@@ -574,7 +572,7 @@ function getPlatform(product, os, arch, type) {
 					return `cli-darwin-${arch}`;
 				default:
 					throw new Error(
-						`Unrecognized: ${product} ${os} ${arch} ${type}`
+						`Unrecognized: ${product} ${os} ${arch} ${type}`,
 					);
 			}
 		default:
@@ -599,7 +597,7 @@ async function uploadAssetLegacy(log, quality, commit, filePath) {
 	const credential = new identity_1.ClientSecretCredential(
 		e("AZURE_TENANT_ID"),
 		e("AZURE_CLIENT_ID"),
-		e("AZURE_CLIENT_SECRET")
+		e("AZURE_CLIENT_SECRET"),
 	);
 	const blobServiceClient = new storage_blob_1.BlobServiceClient(
 		`https://vscode.blob.core.windows.net`,
@@ -609,7 +607,7 @@ async function uploadAssetLegacy(log, quality, commit, filePath) {
 				retryPolicyType: storage_blob_1.StorageRetryPolicyType.FIXED,
 				tryTimeoutInMs: 2 * 60 * 1000,
 			},
-		}
+		},
 	);
 	const containerClient = blobServiceClient.getContainerClient(quality);
 	const blobClient = containerClient.getBlockBlobClient(blobName);
@@ -623,7 +621,7 @@ async function uploadAssetLegacy(log, quality, commit, filePath) {
 	log(`Checking for blob in Azure...`);
 	if (await blobClient.exists()) {
 		log(
-			`Blob ${quality}, ${blobName} already exists, not publishing again.`
+			`Blob ${quality}, ${blobName} already exists, not publishing again.`,
 		);
 	} else {
 		log(`Uploading blobs to Azure storage...`);
@@ -636,7 +634,7 @@ async function processArtifact(artifact, artifactFilePath) {
 	const log = (...args) => console.log(`[${artifact.name}]`, ...args);
 	const match =
 		/^vscode_(?<product>[^_]+)_(?<os>[^_]+)_(?<arch>[^_]+)_(?<unprocessedType>[^_]+)$/.exec(
-			artifact.name
+			artifact.name,
 		);
 	if (!match) {
 		throw new Error(`Invalid artifact name: ${artifact.name}`);
@@ -666,7 +664,7 @@ async function processArtifact(artifact, artifactFilePath) {
 			e("PROVISION_AAD_PASSWORD"),
 			commit,
 			quality,
-			artifactFilePath
+			artifactFilePath,
 		),
 	]);
 	const asset = {
@@ -686,7 +684,7 @@ async function processArtifact(artifact, artifactFilePath) {
 		const aadCredentials = new identity_1.ClientSecretCredential(
 			e("AZURE_TENANT_ID"),
 			e("AZURE_CLIENT_ID"),
-			e("AZURE_CLIENT_SECRET")
+			e("AZURE_CLIENT_SECRET"),
 		);
 		const client = new cosmos_1.CosmosClient({
 			endpoint: e("AZURE_DOCUMENTDB_ENDPOINT"),
@@ -745,15 +743,15 @@ async function main() {
 					(r) =>
 						r.type === "Stage" &&
 						r.state === "completed" &&
-						stages.has(r.name)
+						stages.has(r.name),
 				)
-				.map((r) => r.name)
+				.map((r) => r.name),
 		);
 		const stagesInProgress = [...stages].filter(
-			(s) => !stagesCompleted.has(s)
+			(s) => !stagesCompleted.has(s),
 		);
 		const artifactsInProgress = artifacts.filter((a) =>
-			processing.has(a.name)
+			processing.has(a.name),
 		);
 		if (
 			stagesInProgress.length === 0 &&
@@ -765,11 +763,11 @@ async function main() {
 		} else if (artifactsInProgress.length > 0) {
 			console.log(
 				"Artifacts in progress:",
-				artifactsInProgress.map((a) => a.name).join(", ")
+				artifactsInProgress.map((a) => a.name).join(", "),
 			);
 		} else {
 			console.log(
-				`Waiting for a total of ${artifacts.length}, ${done.size} done, ${processing.size} in progress...`
+				`Waiting for a total of ${artifacts.length}, ${done.size} done, ${processing.size} in progress...`,
 			);
 		}
 		for (const artifact of artifacts) {
@@ -779,30 +777,30 @@ async function main() {
 			console.log(`[${artifact.name}] Found new artifact`);
 			const artifactZipPath = path.join(
 				e("AGENT_TEMPDIRECTORY"),
-				`${artifact.name}.zip`
+				`${artifact.name}.zip`,
 			);
 			await (0, retry_1.retry)(async (attempt) => {
 				const start = Date.now();
 				console.log(
-					`[${artifact.name}] Downloading (attempt ${attempt})...`
+					`[${artifact.name}] Downloading (attempt ${attempt})...`,
 				);
 				await downloadArtifact(artifact, artifactZipPath);
 				const archiveSize = fs.statSync(artifactZipPath).size;
 				const downloadDurationS = (Date.now() - start) / 1000;
 				const downloadSpeedKBS = Math.round(
-					archiveSize / 1024 / downloadDurationS
+					archiveSize / 1024 / downloadDurationS,
 				);
 				console.log(
 					`[${
 						artifact.name
 					}] Successfully downloaded after ${Math.floor(
-						downloadDurationS
-					)} seconds(${downloadSpeedKBS} KB/s).`
+						downloadDurationS,
+					)} seconds(${downloadSpeedKBS} KB/s).`,
 				);
 			});
 			const artifactFilePath = await unzip(
 				artifactZipPath,
-				e("AGENT_TEMPDIRECTORY")
+				e("AGENT_TEMPDIRECTORY"),
 			);
 			const artifactSize = fs.statSync(artifactFilePath).size;
 			if (
@@ -810,7 +808,7 @@ async function main() {
 				Number(artifact.resource.properties.artifactsize)
 			) {
 				console.log(
-					`[${artifact.name}] Artifact size mismatch.Expected ${artifact.resource.properties.artifactsize}. Actual ${artifactSize} `
+					`[${artifact.name}] Artifact size mismatch.Expected ${artifact.resource.properties.artifactsize}. Actual ${artifactSize} `,
 				);
 				throw new Error(`Artifact size mismatch.`);
 			}
@@ -826,8 +824,8 @@ async function main() {
 					} else {
 						reject(
 							new Error(
-								`[${artifact.name}] Worker stopped with exit code ${code}`
-							)
+								`[${artifact.name}] Worker stopped with exit code ${code}`,
+							),
 						);
 					}
 				});
@@ -839,7 +837,7 @@ async function main() {
 			});
 			operations.push({ name: artifact.name, operation });
 			resultPromise = Promise.allSettled(
-				operations.map((o) => o.operation)
+				operations.map((o) => o.operation),
 			);
 		}
 		await new Promise((c) => setTimeout(c, 10000));
@@ -847,15 +845,15 @@ async function main() {
 	console.log(
 		`Found all ${done.size + processing.size} artifacts, waiting for ${
 			processing.size
-		} artifacts to finish publishing...`
+		} artifacts to finish publishing...`,
 	);
 	const artifactsInProgress = operations.filter((o) =>
-		processing.has(o.name)
+		processing.has(o.name),
 	);
 	if (artifactsInProgress.length > 0) {
 		console.log(
 			"Artifacts in progress:",
-			artifactsInProgress.map((a) => a.name).join(", ")
+			artifactsInProgress.map((a) => a.name).join(", "),
 		);
 	}
 	const results = await resultPromise;
@@ -878,7 +876,7 @@ if (require.main === module) {
 		(err) => {
 			console.error(err);
 			process.exit(1);
-		}
+		},
 	);
 }
 //# sourceMappingURL=publish.js.map

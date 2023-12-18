@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/typeHierarchy";
 import { Dimension, isKeyboardEvent } from "vs/base/browser/dom";
 import {
 	Orientation,
@@ -18,6 +17,7 @@ import { Event } from "vs/base/common/event";
 import { FuzzyScore } from "vs/base/common/filters";
 import { DisposableStore, toDisposable } from "vs/base/common/lifecycle";
 import { URI } from "vs/base/common/uri";
+import "vs/css!./media/typeHierarchy";
 import { ICodeEditor } from "vs/editor/browser/editorBrowser";
 import { EmbeddedCodeEditorWidget } from "vs/editor/browser/widget/embeddedCodeEditorWidget";
 import { IEditorOptions } from "vs/editor/common/config/editorOptions";
@@ -26,9 +26,9 @@ import { IRange, Range } from "vs/editor/common/core/range";
 import { ScrollType } from "vs/editor/common/editorCommon";
 import {
 	IModelDecorationOptions,
-	TrackedRangeStickiness,
 	IModelDeltaDecoration,
 	OverviewRulerLane,
+	TrackedRangeStickiness,
 } from "vs/editor/common/model";
 import { ITextModelService } from "vs/editor/common/services/resolverService";
 import * as peekView from "vs/editor/contrib/peekView/browser/peekView";
@@ -59,7 +59,7 @@ import {
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 
 // Todo: copied from call hierarchy, to extract
-const enum State {
+enum State {
 	Loading = "loading",
 	Message = "message",
 	Data = "data",
@@ -71,7 +71,7 @@ class LayoutInfo {
 			"typeHierarchyPeekLayout",
 			JSON.stringify(info),
 			StorageScope.PROFILE,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 	}
 
@@ -79,7 +79,7 @@ class LayoutInfo {
 		const value = storageService.get(
 			"typeHierarchyPeekLayout",
 			StorageScope.PROFILE,
-			"{}"
+			"{}",
 		);
 		const defaultInfo: LayoutInfo = { ratio: 0.7, height: 17 };
 		try {
@@ -89,10 +89,7 @@ class LayoutInfo {
 		}
 	}
 
-	constructor(
-		public ratio: number,
-		public height: number
-	) {}
+	constructor(public ratio: number, public height: number) {}
 }
 
 class TypeHierarchyTree extends WorkbenchAsyncDataTree<
@@ -176,10 +173,10 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 				theme.getColor(peekView.peekViewTitleBackground) ||
 				Color.transparent,
 			primaryHeadingColor: theme.getColor(
-				peekView.peekViewTitleForeground
+				peekView.peekViewTitleForeground,
 			),
 			secondaryHeadingColor: theme.getColor(
-				peekView.peekViewTitleInfoForeground
+				peekView.peekViewTitleInfoForeground,
 			),
 		});
 	}
@@ -189,7 +186,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 
 		const menu = this._menuService.createMenu(
 			TypeHierarchyTreePeekWidget.TitleMenu,
-			this._contextKeyService
+			this._contextKeyService,
 		);
 		const updateToolbar = () => {
 			const actions: IAction[] = [];
@@ -248,7 +245,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 			editorContainer,
 			editorOptions,
 			{},
-			this.editor
+			this.editor,
 		);
 
 		// tree stuff
@@ -261,10 +258,10 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		> = {
 			sorter: new typeHTree.Sorter(),
 			accessibilityProvider: new typeHTree.AccessibilityProvider(
-				() => this._direction
+				() => this._direction,
 			),
 			identityProvider: new typeHTree.IdentityProvider(
-				() => this._direction
+				() => this._direction,
 			),
 			expandOnlyOnTwistieClick: true,
 			overrideStyles: {
@@ -279,9 +276,9 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 			[this._instantiationService.createInstance(typeHTree.TypeRenderer)],
 			this._instantiationService.createInstance(
 				typeHTree.DataSource,
-				() => this._direction
+				() => this._direction,
 			),
-			options
+			options,
 		);
 
 		// split stuff
@@ -300,7 +297,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 					}
 				},
 			},
-			Sizing.Distribute
+			Sizing.Distribute,
 		);
 
 		this._splitView.addView(
@@ -315,7 +312,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 					}
 				},
 			},
-			Sizing.Distribute
+			Sizing.Distribute,
 		);
 
 		this._disposables.add(
@@ -324,12 +321,12 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 					this._layoutInfo.ratio =
 						this._splitView.getViewSize(0) / this._dim.width;
 				}
-			})
+			}),
 		);
 
 		// update editor
 		this._disposables.add(
-			this._tree.onDidChangeFocus(this._updatePreview, this)
+			this._tree.onDidChangeFocus(this._updatePreview, this),
 		);
 
 		this._disposables.add(
@@ -347,7 +344,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 					resource: focus.item.uri,
 					options: { selection: target.range! },
 				});
-			})
+			}),
 		);
 
 		this._disposables.add(
@@ -366,7 +363,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 						},
 					});
 				}
-			})
+			}),
 		);
 
 		this._disposables.add(
@@ -383,7 +380,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 						},
 					});
 				}
-			})
+			}),
 		);
 	}
 
@@ -430,16 +427,16 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		};
 		if (loc.uri.toString() === previewUri.toString()) {
 			decorations.push({ range: loc.range, options });
-			fullRange = !fullRange
-				? loc.range
-				: Range.plusRange(loc.range, fullRange);
+			fullRange = fullRange
+				? Range.plusRange(loc.range, fullRange)
+				: loc.range;
 		}
 		if (fullRange) {
 			this._editor.revealRangeInCenter(fullRange, ScrollType.Immediate);
 			const decorationsCollection =
 				this._editor.createDecorationsCollection(decorations);
 			this._previewDisposable.add(
-				toDisposable(() => decorationsCollection.clear())
+				toDisposable(() => decorationsCollection.clear()),
 			);
 		}
 		this._previewDisposable.add(value);
@@ -450,13 +447,13 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 				? localize(
 						"supertypes",
 						"Supertypes of '{0}'",
-						element.model.root.name
-					)
+						element.model.root.name,
+				  )
 				: localize(
 						"subtypes",
 						"Subtypes of '{0}'",
-						element.model.root.name
-					);
+						element.model.root.name,
+				  );
 		this.setTitle(title);
 	}
 
@@ -492,13 +489,13 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 					? localize(
 							"empt.supertypes",
 							"No supertypes of '{0}'",
-							model.root.name
-						)
+							model.root.name,
+					  )
 					: localize(
 							"empt.subtypes",
 							"No subtypes of '{0}'",
-							model.root.name
-						)
+							model.root.name,
+					  ),
 			);
 		} else {
 			this._parent.dataset["state"] = State.Data;
@@ -523,7 +520,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		if (model && newDirection !== this._direction) {
 			this._treeViewStates.set(
 				this._direction,
-				this._tree.getViewState()
+				this._tree.getViewState(),
 			);
 			this._direction = newDirection;
 			await this.showModel(model);
@@ -534,11 +531,11 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		if (!this._isShowing) {
 			this.editor.revealLineInCenterIfOutsideViewport(
 				this._where.lineNumber,
-				ScrollType.Smooth
+				ScrollType.Smooth,
 			);
 			super.show(
 				Range.fromPositions(this._where),
-				this._layoutInfo.height
+				this._layoutInfo.height,
 			);
 		}
 	}

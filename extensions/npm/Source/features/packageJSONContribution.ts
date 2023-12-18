@@ -3,19 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Location } from "jsonc-parser";
+import { XHRRequest } from "request-light";
 import {
-	CompletionItemKind,
 	CompletionItem,
+	CompletionItemKind,
 	DocumentSelector,
-	SnippetString,
-	workspace,
 	MarkdownString,
+	SnippetString,
 	Uri,
 	l10n,
+	workspace,
 } from "vscode";
 import { IJSONContribution, ISuggestionsCollector } from "./jsonContributions";
-import { XHRRequest } from "request-light";
-import { Location } from "jsonc-parser";
 
 import * as cp from "child_process";
 import { dirname } from "path";
@@ -118,25 +118,25 @@ export class PackageJSONContribution implements IJSONContribution {
 
 	public constructor(
 		private xhr: XHRRequest,
-		private npmCommandPath: string | undefined
+		private npmCommandPath: string | undefined,
 	) {}
 
 	public collectDefaultSuggestions(
 		_resource: Uri,
-		result: ISuggestionsCollector
+		result: ISuggestionsCollector,
 	): Thenable<any> {
 		const defaultValue = {
-			"name": "${1:name}",
-			"description": "${2:description}",
-			"authors": "${3:author}",
-			"version": "${4:1.0.0}",
-			"main": "${5:pathToMain}",
-			"dependencies": {},
+			name: "${1:name}",
+			description: "${2:description}",
+			authors: "${3:author}",
+			version: "${4:1.0.0}",
+			main: "${5:pathToMain}",
+			dependencies: {},
 		};
 		const proposal = new CompletionItem(l10n.t("Default package.json"));
 		proposal.kind = CompletionItemKind.Module;
 		proposal.insertText = new SnippetString(
-			JSON.stringify(defaultValue, null, "\t")
+			JSON.stringify(defaultValue, null, "\t"),
 		);
 		result.add(proposal);
 		return Promise.resolve(null);
@@ -158,7 +158,7 @@ export class PackageJSONContribution implements IJSONContribution {
 		currentWord: string,
 		addValue: boolean,
 		isLast: boolean,
-		collector: ISuggestionsCollector
+		collector: ISuggestionsCollector,
 	): Thenable<any> | null {
 		if (!this.isEnabled()) {
 			return null;
@@ -178,7 +178,7 @@ export class PackageJSONContribution implements IJSONContribution {
 							currentWord,
 							addValue,
 							isLast,
-							collector
+							collector,
 						);
 					}
 					for (const scope of this.knownScopes) {
@@ -200,7 +200,7 @@ export class PackageJSONContribution implements IJSONContribution {
 				}
 
 				queryUrl = `https://registry.npmjs.org/-/v1/search?size=${LIMIT}&text=${encodeURIComponent(
-					currentWord
+					currentWord,
 				)}`;
 				return this.xhr({
 					url: queryUrl,
@@ -223,7 +223,7 @@ export class PackageJSONContribution implements IJSONContribution {
 											result.package,
 											addValue,
 											isLast,
-											collector
+											collector,
 										);
 									}
 								}
@@ -235,8 +235,8 @@ export class PackageJSONContribution implements IJSONContribution {
 							collector.error(
 								l10n.t(
 									"Request to the NPM repository failed: {0}",
-									success.responseText
-								)
+									success.responseText,
+								),
 							);
 							return 0;
 						}
@@ -246,16 +246,16 @@ export class PackageJSONContribution implements IJSONContribution {
 						collector.error(
 							l10n.t(
 								"Request to the NPM repository failed: {0}",
-								error.responseText
-							)
+								error.responseText,
+							),
 						);
 						return 0;
-					}
+					},
 				);
 			} else {
 				this.mostDependedOn.forEach((name) => {
 					const insertText = new SnippetString().appendText(
-						JSON.stringify(name)
+						JSON.stringify(name),
 					);
 					if (addValue) {
 						insertText
@@ -277,7 +277,7 @@ export class PackageJSONContribution implements IJSONContribution {
 					currentWord,
 					addValue,
 					isLast,
-					collector
+					collector,
 				);
 				collector.setAsIncomplete();
 				return Promise.resolve(null);
@@ -290,7 +290,7 @@ export class PackageJSONContribution implements IJSONContribution {
 		currentWord: string,
 		addValue: boolean,
 		isLast: boolean,
-		collector: ISuggestionsCollector
+		collector: ISuggestionsCollector,
 	): Thenable<any> {
 		const segments = currentWord.split("/");
 		if (segments.length === 2 && segments[0].length > 1) {
@@ -316,7 +316,7 @@ export class PackageJSONContribution implements IJSONContribution {
 									object.package,
 									addValue,
 									isLast,
-									collector
+									collector,
 								);
 							}
 						}
@@ -328,8 +328,8 @@ export class PackageJSONContribution implements IJSONContribution {
 					collector.error(
 						l10n.t(
 							"Request to the NPM repository failed: {0}",
-							success.responseText
-						)
+							success.responseText,
+						),
 					);
 				}
 				return null;
@@ -341,7 +341,7 @@ export class PackageJSONContribution implements IJSONContribution {
 	public async collectValueSuggestions(
 		resource: Uri,
 		location: Location,
-		result: ISuggestionsCollector
+		result: ISuggestionsCollector,
 	): Promise<any> {
 		if (!this.isEnabled()) {
 			return null;
@@ -362,7 +362,7 @@ export class PackageJSONContribution implements IJSONContribution {
 					proposal.kind = CompletionItemKind.Property;
 					proposal.insertText = name;
 					proposal.documentation = l10n.t(
-						"The currently latest version of the package"
+						"The currently latest version of the package",
 					);
 					result.add(proposal);
 
@@ -371,7 +371,7 @@ export class PackageJSONContribution implements IJSONContribution {
 					proposal.kind = CompletionItemKind.Property;
 					proposal.insertText = name;
 					proposal.documentation = l10n.t(
-						"Matches the most recent major version (1.x.x)"
+						"Matches the most recent major version (1.x.x)",
 					);
 					result.add(proposal);
 
@@ -380,7 +380,7 @@ export class PackageJSONContribution implements IJSONContribution {
 					proposal.kind = CompletionItemKind.Property;
 					proposal.insertText = name;
 					proposal.documentation = l10n.t(
-						"Matches the most recent minor version (1.2.x)"
+						"Matches the most recent minor version (1.2.x)",
 					);
 					result.add(proposal);
 				}
@@ -393,7 +393,7 @@ export class PackageJSONContribution implements IJSONContribution {
 		description: string | undefined,
 		version: string | undefined,
 		time: string | undefined,
-		homepage: string | undefined
+		homepage: string | undefined,
 	): MarkdownString {
 		const str = new MarkdownString();
 		if (description) {
@@ -406,9 +406,9 @@ export class PackageJSONContribution implements IJSONContribution {
 					? l10n.t(
 							"Latest version: {0} published {1}",
 							version,
-							fromNow(Date.parse(time), true, true)
-						)
-					: l10n.t("Latest version: {0}", version)
+							fromNow(Date.parse(time), true, true),
+					  )
+					: l10n.t("Latest version: {0}", version),
 			);
 		}
 		if (homepage) {
@@ -420,7 +420,7 @@ export class PackageJSONContribution implements IJSONContribution {
 
 	public resolveSuggestion(
 		resource: Uri | undefined,
-		item: CompletionItem
+		item: CompletionItem,
 	): Thenable<CompletionItem | null> | null {
 		if (item.kind === CompletionItemKind.Property && !item.documentation) {
 			let name = item.label;
@@ -434,7 +434,7 @@ export class PackageJSONContribution implements IJSONContribution {
 						info.description,
 						info.version,
 						info.time,
-						info.homepage
+						info.homepage,
 					);
 					return item;
 				}
@@ -464,7 +464,7 @@ export class PackageJSONContribution implements IJSONContribution {
 
 	private async fetchPackageInfo(
 		pack: string,
-		resource: Uri | undefined
+		resource: Uri | undefined,
 	): Promise<ViewPackageInfo | undefined> {
 		if (!this.isValidNPMName(pack)) {
 			return undefined; // avoid unnecessary lookups
@@ -482,7 +482,7 @@ export class PackageJSONContribution implements IJSONContribution {
 	private npmView(
 		npmCommandPath: string,
 		pack: string,
-		resource: Uri | undefined
+		resource: Uri | undefined,
 	): Promise<ViewPackageInfo | undefined> {
 		return new Promise((resolve, _reject) => {
 			const args = [
@@ -523,7 +523,7 @@ export class PackageJSONContribution implements IJSONContribution {
 	}
 
 	private async npmjsView(
-		pack: string
+		pack: string,
 	): Promise<ViewPackageInfo | undefined> {
 		const queryUrl =
 			"https://registry.npmjs.org/" + encodeURIComponent(pack);
@@ -551,7 +551,7 @@ export class PackageJSONContribution implements IJSONContribution {
 
 	public getInfoContribution(
 		resource: Uri,
-		location: Location
+		location: Location,
 	): Thenable<MarkdownString[] | null> | null {
 		if (!this.isEnabled()) {
 			return null;
@@ -571,7 +571,7 @@ export class PackageJSONContribution implements IJSONContribution {
 								info.description,
 								info.version,
 								info.time,
-								info.homepage
+								info.homepage,
 							),
 						];
 					}
@@ -586,12 +586,12 @@ export class PackageJSONContribution implements IJSONContribution {
 		pack: SearchPackageInfo,
 		addValue: boolean,
 		isLast: boolean,
-		collector: ISuggestionsCollector
+		collector: ISuggestionsCollector,
 	) {
 		if (pack && pack.name) {
 			const name = pack.name;
 			const insertText = new SnippetString().appendText(
-				JSON.stringify(name)
+				JSON.stringify(name),
 			);
 			if (addValue) {
 				insertText.appendText(': "');
@@ -613,7 +613,7 @@ export class PackageJSONContribution implements IJSONContribution {
 				pack.description,
 				pack.version,
 				undefined,
-				pack?.links?.homepage
+				pack?.links?.homepage,
 			);
 			collector.add(proposal);
 		}

@@ -4,19 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	CompletionItemProvider,
+	CancellationToken,
+	CompletionContext,
 	CompletionItem,
 	CompletionItemKind,
-	CancellationToken,
-	TextDocument,
+	CompletionItemProvider,
 	Position,
 	Range,
+	TextDocument,
 	TextEdit,
 	workspace,
-	CompletionContext,
 } from "vscode";
-import * as phpGlobals from "./phpGlobals";
 import * as phpGlobalFunctions from "./phpGlobalFunctions";
+import * as phpGlobals from "./phpGlobals";
 
 export default class PHPCompletionItemProvider
 	implements CompletionItemProvider
@@ -25,7 +25,7 @@ export default class PHPCompletionItemProvider
 		document: TextDocument,
 		position: Position,
 		_token: CancellationToken,
-		context: CompletionContext
+		context: CompletionContext,
 	): Promise<CompletionItem[]> {
 		const result: CompletionItem[] = [];
 
@@ -45,10 +45,10 @@ export default class PHPCompletionItemProvider
 		if (context.triggerCharacter === ">") {
 			const twoBeforeCursor = new Position(
 				position.line,
-				Math.max(0, position.character - 2)
+				Math.max(0, position.character - 2),
 			);
 			const previousTwoChars = document.getText(
-				new Range(twoBeforeCursor, position)
+				new Range(twoBeforeCursor, position),
 			);
 			if (previousTwoChars !== "->") {
 				return Promise.resolve(result);
@@ -56,11 +56,11 @@ export default class PHPCompletionItemProvider
 		}
 
 		const added: any = {};
-		const createNewProposal = function (
+		const createNewProposal = (
 			kind: CompletionItemKind,
 			name: string,
-			entry: phpGlobals.IEntry | null
-		): CompletionItem {
+			entry: phpGlobals.IEntry | null,
+		): CompletionItem => {
 			const proposal: CompletionItem = new CompletionItem(name);
 			proposal.kind = kind;
 			if (entry) {
@@ -85,21 +85,21 @@ export default class PHPCompletionItemProvider
 		if (matches("php") && range.start.character >= 2) {
 			const twoBeforePosition = new Position(
 				range.start.line,
-				range.start.character - 2
+				range.start.character - 2,
 			);
 			const beforeWord = document.getText(
-				new Range(twoBeforePosition, range.start)
+				new Range(twoBeforePosition, range.start),
 			);
 
 			if (beforeWord === "<?") {
 				const proposal = createNewProposal(
 					CompletionItemKind.Class,
 					"<?php",
-					null
+					null,
 				);
 				proposal.textEdit = new TextEdit(
 					new Range(twoBeforePosition, position),
-					"<?php"
+					"<?php",
 				);
 				result.push(proposal);
 				return Promise.resolve(result);
@@ -116,15 +116,15 @@ export default class PHPCompletionItemProvider
 					createNewProposal(
 						CompletionItemKind.Variable,
 						globalvariables,
-						phpGlobals.globalvariables[globalvariables]
-					)
+						phpGlobals.globalvariables[globalvariables],
+					),
 				);
 			}
 		}
 		for (const globalfunctions in phpGlobalFunctions.globalfunctions) {
 			if (
 				phpGlobalFunctions.globalfunctions.hasOwnProperty(
-					globalfunctions
+					globalfunctions,
 				) &&
 				matches(globalfunctions)
 			) {
@@ -133,15 +133,15 @@ export default class PHPCompletionItemProvider
 					createNewProposal(
 						CompletionItemKind.Function,
 						globalfunctions,
-						phpGlobalFunctions.globalfunctions[globalfunctions]
-					)
+						phpGlobalFunctions.globalfunctions[globalfunctions],
+					),
 				);
 			}
 		}
 		for (const compiletimeconstants in phpGlobals.compiletimeconstants) {
 			if (
 				phpGlobals.compiletimeconstants.hasOwnProperty(
-					compiletimeconstants
+					compiletimeconstants,
 				) &&
 				matches(compiletimeconstants)
 			) {
@@ -150,8 +150,8 @@ export default class PHPCompletionItemProvider
 					createNewProposal(
 						CompletionItemKind.Field,
 						compiletimeconstants,
-						phpGlobals.compiletimeconstants[compiletimeconstants]
-					)
+						phpGlobals.compiletimeconstants[compiletimeconstants],
+					),
 				);
 			}
 		}
@@ -165,8 +165,8 @@ export default class PHPCompletionItemProvider
 					createNewProposal(
 						CompletionItemKind.Keyword,
 						keywords,
-						phpGlobals.keywords[keywords]
-					)
+						phpGlobals.keywords[keywords],
+					),
 				);
 			}
 		}
@@ -184,8 +184,8 @@ export default class PHPCompletionItemProvider
 						createNewProposal(
 							CompletionItemKind.Variable,
 							word,
-							null
-						)
+							null,
+						),
 					);
 				}
 			}
@@ -198,7 +198,7 @@ export default class PHPCompletionItemProvider
 			if (!added[word2]) {
 				added[word2] = true;
 				result.push(
-					createNewProposal(CompletionItemKind.Function, word2, null)
+					createNewProposal(CompletionItemKind.Function, word2, null),
 				);
 			}
 		}

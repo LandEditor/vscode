@@ -31,11 +31,11 @@ class CustomDocumentStoreEntry {
 
 	constructor(
 		public readonly document: vscode.CustomDocument,
-		private readonly _storagePath: URI | undefined
+		private readonly _storagePath: URI | undefined,
 	) {}
 
 	private readonly _edits = new Cache<vscode.CustomDocumentEditEvent>(
-		"custom documents"
+		"custom documents",
 	);
 
 	private _backup?: vscode.CustomDocumentBackup;
@@ -96,7 +96,7 @@ class CustomDocumentStore {
 
 	public get(
 		viewType: string,
-		resource: vscode.Uri
+		resource: vscode.Uri,
 	): CustomDocumentStoreEntry | undefined {
 		return this._documents.get(this.key(viewType, resource));
 	}
@@ -104,12 +104,12 @@ class CustomDocumentStore {
 	public add(
 		viewType: string,
 		document: vscode.CustomDocument,
-		storagePath: URI | undefined
+		storagePath: URI | undefined,
 	): CustomDocumentStoreEntry {
 		const key = this.key(viewType, document.uri);
 		if (this._documents.has(key)) {
 			throw new Error(
-				`Document already exists for viewType:${viewType} resource:${document.uri}`
+				`Document already exists for viewType:${viewType} resource:${document.uri}`,
 			);
 		}
 		const entry = new CustomDocumentStoreEntry(document, storagePath);
@@ -127,9 +127,9 @@ class CustomDocumentStore {
 	}
 }
 
-const enum CustomEditorType {
-	Text,
-	Custom,
+enum CustomEditorType {
+	Text = 0,
+	Custom = 1,
 }
 
 type ProviderEntry =
@@ -150,7 +150,7 @@ class EditorProviderStore {
 	public addTextProvider(
 		viewType: string,
 		extension: IExtensionDescription,
-		provider: vscode.CustomTextEditorProvider
+		provider: vscode.CustomTextEditorProvider,
 	): vscode.Disposable {
 		return this.add(CustomEditorType.Text, viewType, extension, provider);
 	}
@@ -158,7 +158,7 @@ class EditorProviderStore {
 	public addCustomProvider(
 		viewType: string,
 		extension: IExtensionDescription,
-		provider: vscode.CustomReadonlyEditorProvider
+		provider: vscode.CustomReadonlyEditorProvider,
 	): vscode.Disposable {
 		return this.add(CustomEditorType.Custom, viewType, extension, provider);
 	}
@@ -173,11 +173,11 @@ class EditorProviderStore {
 		extension: IExtensionDescription,
 		provider:
 			| vscode.CustomTextEditorProvider
-			| vscode.CustomReadonlyEditorProvider
+			| vscode.CustomReadonlyEditorProvider,
 	): vscode.Disposable {
 		if (this._providers.has(viewType)) {
 			throw new Error(
-				`Provider for viewType:${viewType} already registered`
+				`Provider for viewType:${viewType} already registered`,
 			);
 		}
 		this._providers.set(viewType, {
@@ -186,7 +186,7 @@ class EditorProviderStore {
 			provider,
 		} as ProviderEntry);
 		return new extHostTypes.Disposable(() =>
-			this._providers.delete(viewType)
+			this._providers.delete(viewType),
 		);
 	}
 }
@@ -207,10 +207,10 @@ export class ExtHostCustomEditors
 			| IExtensionStoragePaths
 			| undefined,
 		private readonly _extHostWebview: ExtHostWebviews,
-		private readonly _extHostWebviewPanels: ExtHostWebviewPanels
+		private readonly _extHostWebviewPanels: ExtHostWebviewPanels,
 	) {
 		this._proxy = mainContext.getProxy(
-			extHostProtocol.MainContext.MainThreadCustomEditors
+			extHostProtocol.MainContext.MainThreadCustomEditors,
 		);
 	}
 
@@ -223,7 +223,7 @@ export class ExtHostCustomEditors
 		options: {
 			webviewOptions?: vscode.WebviewPanelOptions;
 			supportsMultipleEditorsPerDocument?: boolean;
-		}
+		},
 	): vscode.Disposable {
 		const disposables = new DisposableStore();
 		if (isCustomTextEditorProvider(provider)) {
@@ -231,8 +231,8 @@ export class ExtHostCustomEditors
 				this._editorProviders.addTextProvider(
 					viewType,
 					extension,
-					provider
-				)
+					provider,
+				),
 			);
 			this._proxy.$registerTextEditorProvider(
 				toExtensionData(extension),
@@ -241,15 +241,15 @@ export class ExtHostCustomEditors
 				{
 					supportsMove: !!provider.moveCustomTextEditor,
 				},
-				shouldSerializeBuffersForPostMessage(extension)
+				shouldSerializeBuffersForPostMessage(extension),
 			);
 		} else {
 			disposables.add(
 				this._editorProviders.addCustomProvider(
 					viewType,
 					extension,
-					provider
-				)
+					provider,
+				),
 			);
 
 			if (isCustomEditorProviderWithEditingCapability(provider)) {
@@ -257,7 +257,7 @@ export class ExtHostCustomEditors
 					provider.onDidChangeCustomDocument((e) => {
 						const entry = this.getCustomDocumentEntry(
 							viewType,
-							e.document.uri
+							e.document.uri,
 						);
 						if (isEditEvent(e)) {
 							const editId = entry.addEdit(e);
@@ -265,15 +265,15 @@ export class ExtHostCustomEditors
 								e.document.uri,
 								viewType,
 								editId,
-								e.label
+								e.label,
 							);
 						} else {
 							this._proxy.$onContentChange(
 								e.document.uri,
-								viewType
+								viewType,
 							);
 						}
-					})
+					}),
 				);
 			}
 
@@ -282,7 +282,7 @@ export class ExtHostCustomEditors
 				viewType,
 				options.webviewOptions || {},
 				!!options.supportsMultipleEditorsPerDocument,
-				shouldSerializeBuffersForPostMessage(extension)
+				shouldSerializeBuffersForPostMessage(extension),
 			);
 		}
 
@@ -290,7 +290,7 @@ export class ExtHostCustomEditors
 			disposables,
 			new extHostTypes.Disposable(() => {
 				this._proxy.$unregisterEditorProvider(viewType);
-			})
+			}),
 		);
 	}
 
@@ -299,7 +299,7 @@ export class ExtHostCustomEditors
 		viewType: string,
 		backupId: string | undefined,
 		untitledDocumentData: VSBuffer | undefined,
-		cancellation: CancellationToken
+		cancellation: CancellationToken,
 	) {
 		const entry = this._editorProviders.get(viewType);
 		if (!entry) {
@@ -314,7 +314,7 @@ export class ExtHostCustomEditors
 		const document = await entry.provider.openCustomDocument(
 			revivedResource,
 			{ backupId, untitledDocumentData: untitledDocumentData?.buffer },
-			cancellation
+			cancellation,
 		);
 
 		let storageRoot: URI | undefined;
@@ -330,14 +330,14 @@ export class ExtHostCustomEditors
 
 		return {
 			editable: isCustomEditorProviderWithEditingCapability(
-				entry.provider
+				entry.provider,
 			),
 		};
 	}
 
 	async $disposeCustomDocument(
 		resource: UriComponents,
-		viewType: string
+		viewType: string,
 	): Promise<void> {
 		const entry = this._editorProviders.get(viewType);
 		if (!entry) {
@@ -351,7 +351,7 @@ export class ExtHostCustomEditors
 		const revivedResource = URI.revive(resource);
 		const { document } = this.getCustomDocumentEntry(
 			viewType,
-			revivedResource
+			revivedResource,
 		);
 		this._documents.delete(viewType, document);
 		document.dispose();
@@ -368,7 +368,7 @@ export class ExtHostCustomEditors
 			active: boolean;
 		},
 		position: EditorGroupColumn,
-		cancellation: CancellationToken
+		cancellation: CancellationToken,
 	): Promise<void> {
 		const entry = this._editorProviders.get(viewType);
 		if (!entry) {
@@ -380,7 +380,7 @@ export class ExtHostCustomEditors
 		const webview = this._extHostWebview.createNewWebview(
 			handle,
 			initData.contentOptions,
-			entry.extension
+			entry.extension,
 		);
 		const panel = this._extHostWebviewPanels.createNewWebviewPanel(
 			handle,
@@ -389,7 +389,7 @@ export class ExtHostCustomEditors
 			viewColumn,
 			initData.options,
 			webview,
-			initData.active
+			initData.active,
 		);
 
 		const revivedResource = URI.revive(resource);
@@ -398,12 +398,12 @@ export class ExtHostCustomEditors
 			case CustomEditorType.Custom: {
 				const { document } = this.getCustomDocumentEntry(
 					viewType,
-					revivedResource
+					revivedResource,
 				);
 				return entry.provider.resolveCustomEditor(
 					document,
 					panel,
-					cancellation
+					cancellation,
 				);
 			}
 			case CustomEditorType.Text: {
@@ -412,7 +412,7 @@ export class ExtHostCustomEditors
 				return entry.provider.resolveCustomTextEditor(
 					document,
 					panel,
-					cancellation
+					cancellation,
 				);
 			}
 			default: {
@@ -424,11 +424,11 @@ export class ExtHostCustomEditors
 	$disposeEdits(
 		resourceComponents: UriComponents,
 		viewType: string,
-		editIds: number[]
+		editIds: number[],
 	): void {
 		const document = this.getCustomDocumentEntry(
 			viewType,
-			resourceComponents
+			resourceComponents,
 		);
 		document.disposeEdits(editIds);
 	}
@@ -436,7 +436,7 @@ export class ExtHostCustomEditors
 	async $onMoveCustomEditor(
 		handle: string,
 		newResourceComponents: UriComponents,
-		viewType: string
+		viewType: string,
 	): Promise<void> {
 		const entry = this._editorProviders.get(viewType);
 		if (!entry) {
@@ -465,7 +465,7 @@ export class ExtHostCustomEditors
 		resourceComponents: UriComponents,
 		viewType: string,
 		editId: number,
-		isDirty: boolean
+		isDirty: boolean,
 	): Promise<void> {
 		const entry = this.getCustomDocumentEntry(viewType, resourceComponents);
 		return entry.undo(editId, isDirty);
@@ -475,7 +475,7 @@ export class ExtHostCustomEditors
 		resourceComponents: UriComponents,
 		viewType: string,
 		editId: number,
-		isDirty: boolean
+		isDirty: boolean,
 	): Promise<void> {
 		const entry = this.getCustomDocumentEntry(viewType, resourceComponents);
 		return entry.redo(editId, isDirty);
@@ -484,7 +484,7 @@ export class ExtHostCustomEditors
 	async $revert(
 		resourceComponents: UriComponents,
 		viewType: string,
-		cancellation: CancellationToken
+		cancellation: CancellationToken,
 	): Promise<void> {
 		const entry = this.getCustomDocumentEntry(viewType, resourceComponents);
 		const provider = this.getCustomEditorProvider(viewType);
@@ -495,7 +495,7 @@ export class ExtHostCustomEditors
 	async $onSave(
 		resourceComponents: UriComponents,
 		viewType: string,
-		cancellation: CancellationToken
+		cancellation: CancellationToken,
 	): Promise<void> {
 		const entry = this.getCustomDocumentEntry(viewType, resourceComponents);
 		const provider = this.getCustomEditorProvider(viewType);
@@ -507,21 +507,21 @@ export class ExtHostCustomEditors
 		resourceComponents: UriComponents,
 		viewType: string,
 		targetResource: UriComponents,
-		cancellation: CancellationToken
+		cancellation: CancellationToken,
 	): Promise<void> {
 		const entry = this.getCustomDocumentEntry(viewType, resourceComponents);
 		const provider = this.getCustomEditorProvider(viewType);
 		return provider.saveCustomDocumentAs(
 			entry.document,
 			URI.revive(targetResource),
-			cancellation
+			cancellation,
 		);
 	}
 
 	async $backup(
 		resourceComponents: UriComponents,
 		viewType: string,
-		cancellation: CancellationToken
+		cancellation: CancellationToken,
 	): Promise<string> {
 		const entry = this.getCustomDocumentEntry(viewType, resourceComponents);
 		const provider = this.getCustomEditorProvider(viewType);
@@ -531,7 +531,7 @@ export class ExtHostCustomEditors
 			{
 				destination: entry.getNewBackupUri(),
 			},
-			cancellation
+			cancellation,
 		);
 		entry.updateBackup(backup);
 		return backup.id;
@@ -539,7 +539,7 @@ export class ExtHostCustomEditors
 
 	private getCustomDocumentEntry(
 		viewType: string,
-		resource: UriComponents
+		resource: UriComponents,
 	): CustomDocumentStoreEntry {
 		const entry = this._documents.get(viewType, URI.revive(resource));
 		if (!entry) {
@@ -549,7 +549,7 @@ export class ExtHostCustomEditors
 	}
 
 	private getCustomEditorProvider(
-		viewType: string
+		viewType: string,
 	): vscode.CustomEditorProvider {
 		const entry = this._editorProviders.get(viewType);
 		const provider = entry?.provider;
@@ -567,7 +567,7 @@ function isCustomEditorProviderWithEditingCapability(
 	provider:
 		| vscode.CustomTextEditorProvider
 		| vscode.CustomEditorProvider
-		| vscode.CustomReadonlyEditorProvider
+		| vscode.CustomReadonlyEditorProvider,
 ): provider is vscode.CustomEditorProvider {
 	return !!(provider as vscode.CustomEditorProvider)
 		.onDidChangeCustomDocument;
@@ -576,7 +576,7 @@ function isCustomEditorProviderWithEditingCapability(
 function isCustomTextEditorProvider(
 	provider:
 		| vscode.CustomReadonlyEditorProvider<vscode.CustomDocument>
-		| vscode.CustomTextEditorProvider
+		| vscode.CustomTextEditorProvider,
 ): provider is vscode.CustomTextEditorProvider {
 	return (
 		typeof (provider as vscode.CustomTextEditorProvider)
@@ -585,7 +585,7 @@ function isCustomTextEditorProvider(
 }
 
 function isEditEvent(
-	e: vscode.CustomDocumentContentChangeEvent | vscode.CustomDocumentEditEvent
+	e: vscode.CustomDocumentContentChangeEvent | vscode.CustomDocumentEditEvent,
 ): e is vscode.CustomDocumentEditEvent {
 	return (
 		typeof (e as vscode.CustomDocumentEditEvent).undo === "function" &&

@@ -3,30 +3,30 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	IAccessibilityService,
-	AccessibilitySupport,
-} from "vs/platform/accessibility/common/accessibility";
-import { isWindows, isLinux } from "vs/base/common/platform";
-import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { Registry } from "vs/platform/registry/common/platform";
+import { isLinux, isWindows } from "vs/base/common/platform";
 import { AccessibilityService } from "vs/platform/accessibility/browser/accessibilityService";
+import {
+	AccessibilitySupport,
+	IAccessibilityService,
+} from "vs/platform/accessibility/common/accessibility";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
+import { ILayoutService } from "vs/platform/layout/browser/layoutService";
+import { INativeHostService } from "vs/platform/native/common/native";
+import { Registry } from "vs/platform/registry/common/platform";
 import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { IJSONEditingService } from "vs/workbench/services/configuration/common/jsonEditing";
 import {
+	Extensions as WorkbenchExtensions,
 	IWorkbenchContribution,
 	IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "vs/workbench/common/contributions";
+import { IJSONEditingService } from "vs/workbench/services/configuration/common/jsonEditing";
+import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
 import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { INativeHostService } from "vs/platform/native/common/native";
-import { ILayoutService } from "vs/platform/layout/browser/layoutService";
 
 interface AccessibilityMetrics {
 	enabled: boolean;
@@ -77,7 +77,7 @@ export class NativeAccessibilityService
 				await this.nativeHostService.windowsGetStringRegKey(
 					"HKEY_CURRENT_USER",
 					"Control Panel\\Accessibility\\Keyboard Preference",
-					"On"
+					"On",
 				);
 			this.shouldAlwaysUnderlineAccessKeys =
 				windowsKeyboardAccessibility === "1";
@@ -87,7 +87,7 @@ export class NativeAccessibilityService
 	}
 
 	override setAccessibilitySupport(
-		accessibilitySupport: AccessibilitySupport
+		accessibilitySupport: AccessibilitySupport,
 	): void {
 		super.setAccessibilitySupport(accessibilitySupport);
 
@@ -107,7 +107,7 @@ export class NativeAccessibilityService
 registerSingleton(
 	IAccessibilityService,
 	NativeAccessibilityService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 
 // On linux we do not automatically detect that a screen reader is detected, thus we have to implicitly notify the renderer to enable accessibility when user configures it in settings
@@ -116,29 +116,29 @@ class LinuxAccessibilityContribution implements IWorkbenchContribution {
 		@IJSONEditingService jsonEditingService: IJSONEditingService,
 		@IAccessibilityService accessibilityService: IAccessibilityService,
 		@INativeWorkbenchEnvironmentService
-		environmentService: INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
 	) {
 		const forceRendererAccessibility = () => {
 			if (accessibilityService.isScreenReaderOptimized()) {
 				jsonEditingService.write(
 					environmentService.argvResource,
 					[{ path: ["force-renderer-accessibility"], value: true }],
-					true
+					true,
 				);
 			}
 		};
 		forceRendererAccessibility();
 		accessibilityService.onDidChangeScreenReaderOptimized(
-			forceRendererAccessibility
+			forceRendererAccessibility,
 		);
 	}
 }
 
 if (isLinux) {
 	Registry.as<IWorkbenchContributionsRegistry>(
-		WorkbenchExtensions.Workbench
+		WorkbenchExtensions.Workbench,
 	).registerWorkbenchContribution(
 		LinuxAccessibilityContribution,
-		LifecyclePhase.Ready
+		LifecyclePhase.Ready,
 	);
 }

@@ -3,29 +3,29 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { CodeWindow } from "vs/base/browser/window";
+import { Barrier } from "vs/base/common/async";
+import { DisposableStore } from "vs/base/common/lifecycle";
+import { mark } from "vs/base/common/performance";
+import { ISandboxGlobals } from "vs/base/parts/sandbox/electron-sandbox/globals";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IDialogService } from "vs/platform/dialogs/common/dialogs";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { IWorkbenchLayoutService } from "vs/workbench/services/layout/browser/layoutService";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { INativeHostService } from "vs/platform/native/common/native";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { IWindowsConfiguration } from "vs/platform/window/common/window";
+import { NativeWindow } from "vs/workbench/electron-sandbox/window";
 import {
 	AuxiliaryWindow,
 	BrowserAuxiliaryWindowService,
 	IAuxiliaryWindowService,
 } from "vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService";
-import { ISandboxGlobals } from "vs/base/parts/sandbox/electron-sandbox/globals";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IWindowsConfiguration } from "vs/platform/window/common/window";
-import { DisposableStore } from "vs/base/common/lifecycle";
-import { INativeHostService } from "vs/platform/native/common/native";
-import { IDialogService } from "vs/platform/dialogs/common/dialogs";
-import { CodeWindow } from "vs/base/browser/window";
-import { mark } from "vs/base/common/performance";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { NativeWindow } from "vs/workbench/electron-sandbox/window";
+import { IWorkbenchLayoutService } from "vs/workbench/services/layout/browser/layoutService";
 import { ShutdownReason } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { Barrier } from "vs/base/common/async";
 
 type NativeCodeWindow = CodeWindow & {
 	readonly vscode: ISandboxGlobals;
@@ -48,7 +48,7 @@ export class NativeAuxiliaryWindow extends AuxiliaryWindow {
 	}
 
 	protected override async confirmBeforeClose(
-		e: BeforeUnloadEvent
+		e: BeforeUnloadEvent,
 	): Promise<void> {
 		if (this.skipUnloadConfirmation) {
 			return;
@@ -58,7 +58,7 @@ export class NativeAuxiliaryWindow extends AuxiliaryWindow {
 
 		const confirmed = await this.instantiationService.invokeFunction(
 			(accessor) =>
-				NativeWindow.confirmOnShutdown(accessor, ShutdownReason.CLOSE)
+				NativeWindow.confirmOnShutdown(accessor, ShutdownReason.CLOSE),
 		);
 		if (confirmed) {
 			this.skipUnloadConfirmation = true;
@@ -89,12 +89,12 @@ export class NativeAuxiliaryWindowService extends BrowserAuxiliaryWindowService 
 	}
 
 	protected override async resolveWindowId(
-		auxiliaryWindow: NativeCodeWindow
+		auxiliaryWindow: NativeCodeWindow,
 	): Promise<number> {
 		mark("code/auxiliaryWindow/willResolveWindowId");
 		const windowId = await auxiliaryWindow.vscode.ipcRenderer.invoke(
 			"vscode:registerAuxiliaryWindow",
-			this.nativeHostService.windowId
+			this.nativeHostService.windowId,
 		);
 		mark("code/auxiliaryWindow/didResolveWindowId");
 
@@ -103,7 +103,7 @@ export class NativeAuxiliaryWindowService extends BrowserAuxiliaryWindowService 
 
 	protected override createContainer(
 		auxiliaryWindow: NativeCodeWindow,
-		disposables: DisposableStore
+		disposables: DisposableStore,
 	) {
 		// Zoom level
 		const windowConfig =
@@ -119,17 +119,12 @@ export class NativeAuxiliaryWindowService extends BrowserAuxiliaryWindowService 
 
 	protected override patchMethods(auxiliaryWindow: NativeCodeWindow): void {
 		super.patchMethods(auxiliaryWindow);
-
-		// Enable `window.focus()` to work in Electron by
-		// asking the main process to focus the window.
-		// https://github.com/electron/electron/issues/25578
-		const that = this;
 		const originalWindowFocus = auxiliaryWindow.focus.bind(auxiliaryWindow);
-		auxiliaryWindow.focus = function () {
+		auxiliaryWindow.focus = () => {
 			originalWindowFocus();
 
 			if (!auxiliaryWindow.document.hasFocus()) {
-				that.nativeHostService.focusWindow({
+				this.nativeHostService.focusWindow({
 					targetWindowId: auxiliaryWindow.vscodeWindowId,
 				});
 			}
@@ -139,7 +134,7 @@ export class NativeAuxiliaryWindowService extends BrowserAuxiliaryWindowService 
 	protected override createAuxiliaryWindow(
 		targetWindow: CodeWindow,
 		container: HTMLElement,
-		stylesHaveLoaded: Barrier
+		stylesHaveLoaded: Barrier,
 	): AuxiliaryWindow {
 		return new NativeAuxiliaryWindow(
 			targetWindow,
@@ -147,7 +142,7 @@ export class NativeAuxiliaryWindowService extends BrowserAuxiliaryWindowService 
 			stylesHaveLoaded,
 			this.configurationService,
 			this.nativeHostService,
-			this.instantiationService
+			this.instantiationService,
 		);
 	}
 }
@@ -155,5 +150,5 @@ export class NativeAuxiliaryWindowService extends BrowserAuxiliaryWindowService 
 registerSingleton(
 	IAuxiliaryWindowService,
 	NativeAuxiliaryWindowService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

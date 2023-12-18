@@ -3,20 +3,44 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import type {
+	ILink,
+	ILinkProvider,
+	IViewportRange,
+	Terminal,
+} from "@xterm/xterm";
 import { EventType } from "vs/base/browser/dom";
+import { RunOnceScheduler } from "vs/base/common/async";
 import { IMarkdownString, MarkdownString } from "vs/base/common/htmlContent";
 import {
 	DisposableStore,
-	dispose,
 	IDisposable,
+	dispose,
 	toDisposable,
 } from "vs/base/common/lifecycle";
-import { isMacintosh, OS } from "vs/base/common/platform";
+import { OS, isMacintosh } from "vs/base/common/platform";
 import { URI } from "vs/base/common/uri";
 import * as nls from "vs/nls";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { ITerminalCapabilityStore } from "vs/platform/terminal/common/capabilities/capabilities";
+import { ITerminalLogService } from "vs/platform/terminal/common/terminal";
 import { ITunnelService } from "vs/platform/tunnel/common/tunnel";
+import {
+	ITerminalExternalLinkProvider,
+	TerminalLinkQuickPickEvent,
+} from "vs/workbench/contrib/terminal/browser/terminal";
+import {
+	ILinkHoverTargetOptions,
+	TerminalHover,
+} from "vs/workbench/contrib/terminal/browser/widgets/terminalHoverWidget";
+import { TerminalWidgetManager } from "vs/workbench/contrib/terminal/browser/widgets/widgetManager";
+import { IXtermCore } from "vs/workbench/contrib/terminal/browser/xterm-private";
+import {
+	ITerminalConfiguration,
+	ITerminalProcessInfo,
+	TERMINAL_CONFIG_SECTION,
+} from "vs/workbench/contrib/terminal/common/terminal";
 import {
 	ITerminalLinkDetector,
 	ITerminalLinkOpener,
@@ -29,6 +53,7 @@ import {
 import { TerminalExternalLinkDetector } from "vs/workbench/contrib/terminalContrib/links/browser/terminalExternalLinkDetector";
 import { TerminalLink } from "vs/workbench/contrib/terminalContrib/links/browser/terminalLink";
 import { TerminalLinkDetectorAdapter } from "vs/workbench/contrib/terminalContrib/links/browser/terminalLinkDetectorAdapter";
+import { convertBufferRangeToViewport } from "vs/workbench/contrib/terminalContrib/links/browser/terminalLinkHelpers";
 import {
 	TerminalLocalFileLinkOpener,
 	TerminalLocalFolderInWorkspaceLinkOpener,
@@ -37,39 +62,14 @@ import {
 	TerminalUrlLinkOpener,
 } from "vs/workbench/contrib/terminalContrib/links/browser/terminalLinkOpeners";
 import { TerminalLocalLinkDetector } from "vs/workbench/contrib/terminalContrib/links/browser/terminalLocalLinkDetector";
+import { TerminalMultiLineLinkDetector } from "vs/workbench/contrib/terminalContrib/links/browser/terminalMultiLineLinkDetector";
 import { TerminalUriLinkDetector } from "vs/workbench/contrib/terminalContrib/links/browser/terminalUriLinkDetector";
 import { TerminalWordLinkDetector } from "vs/workbench/contrib/terminalContrib/links/browser/terminalWordLinkDetector";
-import {
-	ITerminalExternalLinkProvider,
-	TerminalLinkQuickPickEvent,
-} from "vs/workbench/contrib/terminal/browser/terminal";
-import {
-	ILinkHoverTargetOptions,
-	TerminalHover,
-} from "vs/workbench/contrib/terminal/browser/widgets/terminalHoverWidget";
-import { TerminalWidgetManager } from "vs/workbench/contrib/terminal/browser/widgets/widgetManager";
-import { IXtermCore } from "vs/workbench/contrib/terminal/browser/xterm-private";
-import { ITerminalCapabilityStore } from "vs/platform/terminal/common/capabilities/capabilities";
-import {
-	ITerminalConfiguration,
-	ITerminalProcessInfo,
-	TERMINAL_CONFIG_SECTION,
-} from "vs/workbench/contrib/terminal/common/terminal";
 import { IHoverAction } from "vs/workbench/services/hover/browser/hover";
-import type {
-	ILink,
-	ILinkProvider,
-	IViewportRange,
-	Terminal,
-} from "@xterm/xterm";
-import { convertBufferRangeToViewport } from "vs/workbench/contrib/terminalContrib/links/browser/terminalLinkHelpers";
-import { RunOnceScheduler } from "vs/base/common/async";
-import { ITerminalLogService } from "vs/platform/terminal/common/terminal";
-import { TerminalMultiLineLinkDetector } from "vs/workbench/contrib/terminalContrib/links/browser/terminalMultiLineLinkDetector";
 
 export type XtermLinkMatcherHandler = (
 	event: MouseEvent | undefined,
-	link: string
+	link: string,
 ) => Promise<void>;
 
 /**
@@ -98,7 +98,7 @@ export class TerminalLinkManager extends DisposableStore {
 	) {
 		super();
 
-		let enableFileLinks: boolean = true;
+		let enableFileLinks = true;
 		const enableFileLinksConfig =
 			this._configurationService.getValue<ITerminalConfiguration>(
 				TERMINAL_CONFIG_SECTION
@@ -257,13 +257,13 @@ export class TerminalLinkManager extends DisposableStore {
 	private _setupLinkDetector(
 		id: string,
 		detector: ITerminalLinkDetector,
-		isExternal: boolean = false
+		isExternal = false,
 	): ILinkProvider {
 		const detectorAdapter = this.add(
 			this._instantiationService.createInstance(
 				TerminalLinkDetectorAdapter,
-				detector
-			)
+				detector,
+			),
 		);
 		this.add(
 			detectorAdapter.onDidActivateLink((e) => {
@@ -284,7 +284,7 @@ export class TerminalLinkManager extends DisposableStore {
 				} else {
 					this._openLink(e.link);
 				}
-			})
+			}),
 		);
 		this.add(
 			detectorAdapter.onDidShowHover((e) =>
@@ -292,9 +292,9 @@ export class TerminalLinkManager extends DisposableStore {
 					e.link,
 					e.viewportRange,
 					e.modifierDownCallback,
-					e.modifierUpCallback
-				)
-			)
+					e.modifierUpCallback,
+				),
+			),
 		);
 		if (!isExternal) {
 			this._standardLinkProviders.set(id, detectorAdapter);
@@ -312,7 +312,7 @@ export class TerminalLinkManager extends DisposableStore {
 	}
 
 	async openRecentLink(
-		type: "localFile" | "url"
+		type: "localFile" | "url",
 	): Promise<ILink | undefined> {
 		let links;
 		let i = this._xterm.buffer.active.length;
@@ -348,7 +348,7 @@ export class TerminalLinkManager extends DisposableStore {
 			viewportLinksByLinePromises.push(this._getLinksForLine(i));
 		}
 		const viewportLinksByLine = await Promise.all(
-			viewportLinksByLinePromises
+			viewportLinksByLinePromises,
 		);
 
 		// Assemble viewport links
@@ -410,7 +410,7 @@ export class TerminalLinkManager extends DisposableStore {
 		> = Promise.all(aboveViewportLinksPromises).then(
 			async (aboveViewportLinks) => {
 				const belowViewportLinks = await Promise.all(
-					belowViewportLinksPromises
+					belowViewportLinksPromises,
 				);
 				const allResults: Required<
 					Pick<
@@ -441,13 +441,13 @@ export class TerminalLinkManager extends DisposableStore {
 						}
 						if (folderLinks?.length) {
 							allResults.folderLinks.push(
-								...folderLinks.reverse()
+								...folderLinks.reverse(),
 							);
 						}
 					}
 				}
 				return allResults;
-			}
+			},
 		);
 
 		return {
@@ -457,7 +457,7 @@ export class TerminalLinkManager extends DisposableStore {
 	}
 
 	private async _getLinksForLine(
-		y: number
+		y: number,
 	): Promise<IDetectedLinks | undefined> {
 		const unfilteredWordLinks = await this._getLinksForType(y, "word");
 		const webLinks = await this._getLinksForType(y, "url");
@@ -479,47 +479,43 @@ export class TerminalLinkManager extends DisposableStore {
 
 	protected async _getLinksForType(
 		y: number,
-		type: "word" | "url" | "localFile" | "localFolder"
+		type: "word" | "url" | "localFile" | "localFolder",
 	): Promise<ILink[] | undefined> {
 		switch (type) {
 			case "word":
-				return await new Promise<ILink[] | undefined>(
-					(r) =>
-						this._standardLinkProviders
-							.get(TerminalWordLinkDetector.id)
-							?.provideLinks(y, r)
+				return await new Promise<ILink[] | undefined>((r) =>
+					this._standardLinkProviders
+						.get(TerminalWordLinkDetector.id)
+						?.provideLinks(y, r),
 				);
 			case "url":
-				return await new Promise<ILink[] | undefined>(
-					(r) =>
-						this._standardLinkProviders
-							.get(TerminalUriLinkDetector.id)
-							?.provideLinks(y, r)
+				return await new Promise<ILink[] | undefined>((r) =>
+					this._standardLinkProviders
+						.get(TerminalUriLinkDetector.id)
+						?.provideLinks(y, r),
 				);
 			case "localFile": {
-				const links = await new Promise<ILink[] | undefined>(
-					(r) =>
-						this._standardLinkProviders
-							.get(TerminalLocalLinkDetector.id)
-							?.provideLinks(y, r)
+				const links = await new Promise<ILink[] | undefined>((r) =>
+					this._standardLinkProviders
+						.get(TerminalLocalLinkDetector.id)
+						?.provideLinks(y, r),
 				);
 				return links?.filter(
 					(link) =>
 						(link as TerminalLink).type ===
-						TerminalBuiltinLinkType.LocalFile
+						TerminalBuiltinLinkType.LocalFile,
 				);
 			}
 			case "localFolder": {
-				const links = await new Promise<ILink[] | undefined>(
-					(r) =>
-						this._standardLinkProviders
-							.get(TerminalLocalLinkDetector.id)
-							?.provideLinks(y, r)
+				const links = await new Promise<ILink[] | undefined>((r) =>
+					this._standardLinkProviders
+						.get(TerminalLocalLinkDetector.id)
+						?.provideLinks(y, r),
 				);
 				return links?.filter(
 					(link) =>
 						(link as TerminalLink).type ===
-						TerminalBuiltinLinkType.LocalFolderInWorkspace
+						TerminalBuiltinLinkType.LocalFolderInWorkspace,
 				);
 			}
 		}
@@ -529,7 +525,7 @@ export class TerminalLinkManager extends DisposableStore {
 		link: TerminalLink,
 		viewportRange: IViewportRange,
 		modifierDownCallback?: () => void,
-		modifierUpCallback?: () => void
+		modifierUpCallback?: () => void,
 	) {
 		if (!this._widgetManager) {
 			return;
@@ -557,7 +553,7 @@ export class TerminalLinkManager extends DisposableStore {
 			this._getLinkHoverString(link.text, link.label),
 			link.actions,
 			(text) => link.activate(undefined, text),
-			link
+			link,
 		);
 	}
 
@@ -566,7 +562,7 @@ export class TerminalLinkManager extends DisposableStore {
 		text: IMarkdownString,
 		actions: IHoverAction[] | undefined,
 		linkHandler: (url: string) => void,
-		link?: TerminalLink
+		link?: TerminalLink,
 	): IDisposable | undefined {
 		if (this._widgetManager) {
 			const widget = this._instantiationService.createInstance(
@@ -574,7 +570,7 @@ export class TerminalLinkManager extends DisposableStore {
 				targetOptions,
 				text,
 				actions,
-				linkHandler
+				linkHandler,
 			);
 			const attached = this._widgetManager.attachWidget(widget);
 			if (attached) {
@@ -597,7 +593,7 @@ export class TerminalLinkManager extends DisposableStore {
 	private _registerStandardLinkProviders(): void {
 		for (const p of this._standardLinkProviders.values()) {
 			this._linkProvidersDisposables.push(
-				this._xterm.registerLinkProvider(p)
+				this._xterm.registerLinkProvider(p),
 			);
 		}
 	}
@@ -605,7 +601,7 @@ export class TerminalLinkManager extends DisposableStore {
 	registerExternalLinkProvider(
 		provideLinks: OmitFirstArg<
 			ITerminalExternalLinkProvider["provideLinks"]
-		>
+		>,
 	): IDisposable {
 		// Clear and re-register the standard link providers so they are a lower priority than the new one
 		this._clearLinkProviders();
@@ -615,9 +611,9 @@ export class TerminalLinkManager extends DisposableStore {
 			new TerminalExternalLinkDetector(
 				detectorId,
 				this._xterm,
-				provideLinks
+				provideLinks,
 			),
-			true
+			true,
 		);
 		const newLinkProvider =
 			this._xterm.registerLinkProvider(wrappedLinkProvider);
@@ -638,7 +634,7 @@ export class TerminalLinkManager extends DisposableStore {
 
 	private _getLinkHoverString(
 		uri: string,
-		label: string | undefined
+		label: string | undefined,
 	): IMarkdownString {
 		const editorConf = this._configurationService.getValue<{
 			multiCursorModifier: "ctrlCmd" | "alt";
@@ -649,26 +645,24 @@ export class TerminalLinkManager extends DisposableStore {
 			if (isMacintosh) {
 				clickLabel = nls.localize(
 					"terminalLinkHandler.followLinkAlt.mac",
-					"option + click"
+					"option + click",
 				);
 			} else {
 				clickLabel = nls.localize(
 					"terminalLinkHandler.followLinkAlt",
-					"alt + click"
+					"alt + click",
 				);
 			}
+		} else if (isMacintosh) {
+			clickLabel = nls.localize(
+				"terminalLinkHandler.followLinkCmd",
+				"cmd + click",
+			);
 		} else {
-			if (isMacintosh) {
-				clickLabel = nls.localize(
-					"terminalLinkHandler.followLinkCmd",
-					"cmd + click"
-				);
-			} else {
-				clickLabel = nls.localize(
-					"terminalLinkHandler.followLinkCtrl",
-					"ctrl + click"
-				);
-			}
+			clickLabel = nls.localize(
+				"terminalLinkHandler.followLinkCtrl",
+				"ctrl + click",
+			);
 		}
 
 		let fallbackLabel = nls.localize("followLink", "Follow link");
@@ -676,7 +670,7 @@ export class TerminalLinkManager extends DisposableStore {
 			if (this._tunnelService.canTunnel(URI.parse(uri))) {
 				fallbackLabel = nls.localize(
 					"followForwardedLink",
-					"Follow link using forwarded port"
+					"Follow link using forwarded port",
 				);
 			}
 		} catch {

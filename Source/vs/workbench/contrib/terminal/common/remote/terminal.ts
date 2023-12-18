@@ -5,14 +5,14 @@
 
 import { UriComponents } from "vs/base/common/uri";
 import {
+	ISerializableEnvironmentDescriptionMap,
+	ISerializableEnvironmentVariableCollection,
+} from "vs/platform/terminal/common/environmentVariable";
+import {
 	IShellLaunchConfigDto,
 	ITerminalProcessOptions,
 } from "vs/platform/terminal/common/terminal";
 import { ICompleteTerminalConfiguration } from "vs/workbench/contrib/terminal/common/terminal";
-import {
-	ISerializableEnvironmentDescriptionMap as ISerializableEnvironmentDescriptionMap,
-	ISerializableEnvironmentVariableCollection,
-} from "vs/platform/terminal/common/environmentVariable";
 
 export const REMOTE_TERMINAL_CHANNEL_NAME = "remoteterminal";
 
@@ -51,7 +51,7 @@ export interface ICreateTerminalProcessResult {
 	resolvedShellLaunchConfig: IShellLaunchConfigDto;
 }
 
-export const enum RemoteTerminalChannelEvent {
+export enum RemoteTerminalChannelEvent {
 	OnPtyHostExitEvent = "$onPtyHostExitEvent",
 	OnPtyHostStartEvent = "$onPtyHostStartEvent",
 	OnPtyHostUnresponsiveEvent = "$onPtyHostUnresponsiveEvent",
@@ -67,7 +67,7 @@ export const enum RemoteTerminalChannelEvent {
 	OnDidChangeProperty = "$onDidChangeProperty",
 }
 
-export const enum RemoteTerminalChannelRequest {
+export enum RemoteTerminalChannelRequest {
 	RestartPtyHost = "$restartPtyHost",
 	CreateProcess = "$createProcess",
 	AttachToProcess = "$attachToProcess",

@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from "vscode";
-import { validate, getHtmlFlatNode, offsetRangeToSelection } from "./util";
-import { getRootNode } from "./parseDocument";
 import { HtmlNode as HtmlFlatNode } from "EmmetFlatNode";
+import * as vscode from "vscode";
+import { getRootNode } from "./parseDocument";
+import { getHtmlFlatNode, offsetRangeToSelection, validate } from "./util";
 
 export function matchTag() {
 	if (!validate(false) || !vscode.window.activeTextEditor) {
@@ -25,7 +25,7 @@ export function matchTag() {
 		const updatedSelection = getUpdatedSelections(
 			document,
 			rootNode,
-			selection.start
+			selection.start,
 		);
 		if (updatedSelection) {
 			updatedSelections.push(updatedSelection);
@@ -40,14 +40,14 @@ export function matchTag() {
 function getUpdatedSelections(
 	document: vscode.TextDocument,
 	rootNode: HtmlFlatNode,
-	position: vscode.Position
+	position: vscode.Position,
 ): vscode.Selection | undefined {
 	const offset = document.offsetAt(position);
 	const currentNode = getHtmlFlatNode(
 		document.getText(),
 		rootNode,
 		offset,
-		true
+		true,
 	);
 	if (!currentNode) {
 		return;

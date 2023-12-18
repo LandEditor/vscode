@@ -7,8 +7,8 @@ import * as vscode from "vscode";
 import { Disposable } from "./util/dispose";
 
 enum Trace {
-	Off,
-	Verbose,
+	Off = 0,
+	Verbose = 1,
 }
 
 namespace Trace {
@@ -36,7 +36,7 @@ export class VsCodeOutputLogger extends Disposable implements ILogger {
 
 	private get _outputChannel() {
 		this._outputChannelValue ??= this._register(
-			vscode.window.createOutputChannel("Markdown")
+			vscode.window.createOutputChannel("Markdown"),
 		);
 		return this._outputChannelValue;
 	}
@@ -47,7 +47,7 @@ export class VsCodeOutputLogger extends Disposable implements ILogger {
 		this._register(
 			vscode.workspace.onDidChangeConfiguration(() => {
 				this._updateConfiguration();
-			})
+			}),
 		);
 
 		this._updateConfiguration();
@@ -87,7 +87,7 @@ export class VsCodeOutputLogger extends Disposable implements ILogger {
 		return Trace.fromString(
 			vscode.workspace
 				.getConfiguration()
-				.get<string>("markdown.trace.extension", "off")
+				.get<string>("markdown.trace.extension", "off"),
 		);
 	}
 

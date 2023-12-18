@@ -11,13 +11,13 @@ const outDir = path.join(__dirname, "media");
 require("../esbuild-webview-common").run(
 	{
 		entryPoints: {
-			"index": path.join(srcDir, "index.ts"),
-			"codicon": path.join(
+			index: path.join(srcDir, "index.ts"),
+			codicon: path.join(
 				__dirname,
 				"node_modules",
 				"vscode-codicons",
 				"dist",
-				"codicon.css"
+				"codicon.css",
 			),
 		},
 		srcDir,
@@ -28,5 +28,5 @@ require("../esbuild-webview-common").run(
 			},
 		},
 	},
-	process.argv
+	process.argv,
 );

@@ -20,7 +20,7 @@ class Node<E> {
 export class LinkedList<E> {
 	private _first: Node<E> = Node.Undefined;
 	private _last: Node<E> = Node.Undefined;
-	private _size: number = 0;
+	private _size = 0;
 
 	get size(): number {
 		return this._size;

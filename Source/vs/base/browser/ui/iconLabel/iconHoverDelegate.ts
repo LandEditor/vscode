@@ -60,7 +60,7 @@ export interface IHoverDelegateOptions extends IUpdatableHoverOptions {
 export interface IHoverDelegate {
 	showHover(
 		options: IHoverDelegateOptions,
-		focus?: boolean
+		focus?: boolean,
 	): IHoverWidget | undefined;
 	onDidHideHover?: () => void;
 	delay: number;

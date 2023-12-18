@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import { URI } from "vs/base/common/uri";
+import { IndexedDB } from "vs/base/browser/indexedDB";
 import { VSBuffer } from "vs/base/common/buffer";
 import { CancellationToken } from "vs/base/common/cancellation";
 import { Event } from "vs/base/common/event";
@@ -14,26 +13,27 @@ import { basename, extname, normalize } from "vs/base/common/path";
 import { isLinux } from "vs/base/common/platform";
 import { extUri, extUriIgnorePathCase } from "vs/base/common/resources";
 import {
-	newWriteableStream,
 	ReadableStreamEvents,
+	newWriteableStream,
 } from "vs/base/common/stream";
+import { URI } from "vs/base/common/uri";
+import { localize } from "vs/nls";
+import { WebFileSystemAccess } from "vs/platform/files/browser/webFileSystemAccess";
 import {
-	createFileSystemProviderError,
-	IFileDeleteOptions,
-	IFileOverwriteOptions,
-	IFileReadStreamOptions,
 	FileSystemProviderCapabilities,
 	FileSystemProviderError,
 	FileSystemProviderErrorCode,
 	FileType,
-	IFileWriteOptions,
+	IFileDeleteOptions,
+	IFileOverwriteOptions,
+	IFileReadStreamOptions,
 	IFileSystemProviderWithFileReadStreamCapability,
 	IFileSystemProviderWithFileReadWriteCapability,
+	IFileWriteOptions,
 	IStat,
 	IWatchOptions,
+	createFileSystemProviderError,
 } from "vs/platform/files/common/files";
-import { WebFileSystemAccess } from "vs/platform/files/browser/webFileSystemAccess";
-import { IndexedDB } from "vs/base/browser/indexedDB";
 import { ILogService } from "vs/platform/log/common/log";
 
 export class HTMLFileSystemProvider
@@ -73,7 +73,7 @@ export class HTMLFileSystemProvider
 	constructor(
 		private indexedDB: IndexedDB | undefined,
 		private readonly store: string,
-		private logService: ILogService
+		private logService: ILogService,
 	) {}
 
 	//#region File Metadata Resolving
@@ -85,7 +85,7 @@ export class HTMLFileSystemProvider
 				throw this.createFileSystemProviderError(
 					resource,
 					"No such file or directory, stat",
-					FileSystemProviderErrorCode.FileNotFound
+					FileSystemProviderErrorCode.FileNotFound,
 				);
 			}
 
@@ -118,7 +118,7 @@ export class HTMLFileSystemProvider
 				throw this.createFileSystemProviderError(
 					resource,
 					"No such file or directory, readdir",
-					FileSystemProviderErrorCode.FileNotFound
+					FileSystemProviderErrorCode.FileNotFound,
 				);
 			}
 
@@ -146,7 +146,7 @@ export class HTMLFileSystemProvider
 	readFileStream(
 		resource: URI,
 		opts: IFileReadStreamOptions,
-		token: CancellationToken
+		token: CancellationToken,
 	): ReadableStreamEvents<Uint8Array> {
 		const stream = newWriteableStream<Uint8Array>(
 			(data) =>
@@ -156,7 +156,7 @@ export class HTMLFileSystemProvider
 				// for file upload to produce large buffers
 				// in-memory
 				highWaterMark: 10,
-			}
+			},
 		);
 
 		(async () => {
@@ -166,7 +166,7 @@ export class HTMLFileSystemProvider
 					throw this.createFileSystemProviderError(
 						resource,
 						"No such file or directory, readFile",
-						FileSystemProviderErrorCode.FileNotFound
+						FileSystemProviderErrorCode.FileNotFound,
 					);
 				}
 
@@ -230,7 +230,7 @@ export class HTMLFileSystemProvider
 				throw this.createFileSystemProviderError(
 					resource,
 					"No such file or directory, readFile",
-					FileSystemProviderErrorCode.FileNotFound
+					FileSystemProviderErrorCode.FileNotFound,
 				);
 			}
 
@@ -245,7 +245,7 @@ export class HTMLFileSystemProvider
 	async writeFile(
 		resource: URI,
 		content: Uint8Array,
-		opts: IFileWriteOptions
+		opts: IFileWriteOptions,
 	): Promise<void> {
 		try {
 			let handle = await this.getFileHandle(resource);
@@ -257,42 +257,40 @@ export class HTMLFileSystemProvider
 						throw this.createFileSystemProviderError(
 							resource,
 							"File already exists, writeFile",
-							FileSystemProviderErrorCode.FileExists
+							FileSystemProviderErrorCode.FileExists,
 						);
 					}
-				} else {
-					if (!opts.create) {
-						throw this.createFileSystemProviderError(
-							resource,
-							"No such file, writeFile",
-							FileSystemProviderErrorCode.FileNotFound
-						);
-					}
+				} else if (!opts.create) {
+					throw this.createFileSystemProviderError(
+						resource,
+						"No such file, writeFile",
+						FileSystemProviderErrorCode.FileNotFound,
+					);
 				}
 			}
 
 			// Create target as needed
 			if (!handle) {
 				const parent = await this.getDirectoryHandle(
-					this.extUri.dirname(resource)
+					this.extUri.dirname(resource),
 				);
 				if (!parent) {
 					throw this.createFileSystemProviderError(
 						resource,
 						"No such parent directory, writeFile",
-						FileSystemProviderErrorCode.FileNotFound
+						FileSystemProviderErrorCode.FileNotFound,
 					);
 				}
 
 				handle = await parent.getFileHandle(
 					this.extUri.basename(resource),
-					{ create: true }
+					{ create: true },
 				);
 				if (!handle) {
 					throw this.createFileSystemProviderError(
 						resource,
 						"Unable to create file , writeFile",
-						FileSystemProviderErrorCode.Unknown
+						FileSystemProviderErrorCode.Unknown,
 					);
 				}
 			}
@@ -313,13 +311,13 @@ export class HTMLFileSystemProvider
 	async mkdir(resource: URI): Promise<void> {
 		try {
 			const parent = await this.getDirectoryHandle(
-				this.extUri.dirname(resource)
+				this.extUri.dirname(resource),
 			);
 			if (!parent) {
 				throw this.createFileSystemProviderError(
 					resource,
 					"No such parent directory, mkdir",
-					FileSystemProviderErrorCode.FileNotFound
+					FileSystemProviderErrorCode.FileNotFound,
 				);
 			}
 
@@ -334,13 +332,13 @@ export class HTMLFileSystemProvider
 	async delete(resource: URI, opts: IFileDeleteOptions): Promise<void> {
 		try {
 			const parent = await this.getDirectoryHandle(
-				this.extUri.dirname(resource)
+				this.extUri.dirname(resource),
 			);
 			if (!parent) {
 				throw this.createFileSystemProviderError(
 					resource,
 					"No such parent directory, delete",
-					FileSystemProviderErrorCode.FileNotFound
+					FileSystemProviderErrorCode.FileNotFound,
 				);
 			}
 
@@ -355,7 +353,7 @@ export class HTMLFileSystemProvider
 	async rename(
 		from: URI,
 		to: URI,
-		opts: IFileOverwriteOptions
+		opts: IFileOverwriteOptions,
 	): Promise<void> {
 		try {
 			if (this.extUri.isEqual(from, to)) {
@@ -387,9 +385,9 @@ export class HTMLFileSystemProvider
 					from,
 					localize(
 						"fileSystemRenameError",
-						"Rename is only supported for files."
+						"Rename is only supported for files.",
 					),
-					FileSystemProviderErrorCode.Unavailable
+					FileSystemProviderErrorCode.Unavailable,
 				);
 			}
 		} catch (error) {
@@ -429,7 +427,7 @@ export class HTMLFileSystemProvider
 
 	private async registerHandle(
 		handle: FileSystemHandle,
-		map: Map<string, FileSystemHandle>
+		map: Map<string, FileSystemHandle>,
 	): Promise<URI> {
 		let handleId = `/${handle.name}`;
 
@@ -457,7 +455,7 @@ export class HTMLFileSystemProvider
 			await this.indexedDB?.runInTransaction(
 				this.store,
 				"readwrite",
-				(objectStore) => objectStore.put(handle, handleId)
+				(objectStore) => objectStore.put(handle, handleId),
 			);
 		} catch (error) {
 			this.logService.error(error);
@@ -473,7 +471,7 @@ export class HTMLFileSystemProvider
 		// Second: walk up parent directories and resolve handle if possible
 		if (!handle) {
 			const parent = await this.getDirectoryHandle(
-				this.extUri.dirname(resource)
+				this.extUri.dirname(resource),
 			);
 			if (parent) {
 				const name = extUri.basename(resource);
@@ -493,7 +491,7 @@ export class HTMLFileSystemProvider
 	}
 
 	private async getFileHandle(
-		resource: URI
+		resource: URI,
 	): Promise<FileSystemFileHandle | undefined> {
 		const handle = await this.doGetHandle(resource);
 		if (handle instanceof FileSystemFileHandle) {
@@ -501,7 +499,7 @@ export class HTMLFileSystemProvider
 		}
 
 		const parent = await this.getDirectoryHandle(
-			this.extUri.dirname(resource)
+			this.extUri.dirname(resource),
 		);
 
 		try {
@@ -512,7 +510,7 @@ export class HTMLFileSystemProvider
 	}
 
 	private async getDirectoryHandle(
-		resource: URI
+		resource: URI,
 	): Promise<FileSystemDirectoryHandle | undefined> {
 		const handle = await this.doGetHandle(resource);
 		if (handle instanceof FileSystemDirectoryHandle) {
@@ -534,7 +532,7 @@ export class HTMLFileSystemProvider
 	}
 
 	private async doGetHandle(
-		resource: URI
+		resource: URI,
 	): Promise<FileSystemHandle | undefined> {
 		// We store file system handles with the `handle.name`
 		// and as such require the resource to be on the root
@@ -555,7 +553,7 @@ export class HTMLFileSystemProvider
 		const persistedHandle = await this.indexedDB?.runInTransaction(
 			this.store,
 			"readonly",
-			(store) => store.get(handleId)
+			(store) => store.get(handleId),
 		);
 		if (WebFileSystemAccess.isFileSystemHandle(persistedHandle)) {
 			let hasPermissions =
@@ -577,7 +575,7 @@ export class HTMLFileSystemProvider
 					this._files.set(handleId, persistedHandle);
 				} else if (
 					WebFileSystemAccess.isFileSystemDirectoryHandle(
-						persistedHandle
+						persistedHandle,
 					)
 				) {
 					this._directories.set(handleId, persistedHandle);
@@ -591,7 +589,7 @@ export class HTMLFileSystemProvider
 		throw this.createFileSystemProviderError(
 			resource,
 			"No file system handle registered",
-			FileSystemProviderErrorCode.Unavailable
+			FileSystemProviderErrorCode.Unavailable,
 		);
 	}
 
@@ -607,8 +605,8 @@ export class HTMLFileSystemProvider
 			error = new Error(
 				localize(
 					"fileSystemNotAllowedError",
-					"Insufficient permissions. Please retry and allow the operation."
-				)
+					"Insufficient permissions. Please retry and allow the operation.",
+				),
 			);
 			code = FileSystemProviderErrorCode.Unavailable;
 		}
@@ -619,11 +617,11 @@ export class HTMLFileSystemProvider
 	private createFileSystemProviderError(
 		resource: URI,
 		msg: string,
-		code: FileSystemProviderErrorCode
+		code: FileSystemProviderErrorCode,
 	): FileSystemProviderError {
 		return createFileSystemProviderError(
 			new Error(`${msg} (${normalize(resource.path)})`),
-			code
+			code,
 		);
 	}
 }

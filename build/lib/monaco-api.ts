@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as fs from "fs";
-import type * as ts from "typescript";
 import * as path from "path";
-import * as fancyLog from "fancy-log";
 import * as ansiColors from "ansi-colors";
+import * as fancyLog from "fancy-log";
+import type * as ts from "typescript";
 
 const dtsv = "3";
 
@@ -34,7 +34,7 @@ type TSTopLevelDeclare = TSTopLevelDeclaration | ts.VariableStatement;
 
 function isDeclaration(
 	ts: typeof import("typescript"),
-	a: TSTopLevelDeclare
+	a: TSTopLevelDeclare,
 ): a is TSTopLevelDeclaration {
 	return (
 		a.kind === ts.SyntaxKind.InterfaceDeclaration ||
@@ -49,7 +49,7 @@ function isDeclaration(
 function visitTopLevelDeclarations(
 	ts: typeof import("typescript"),
 	sourceFile: ts.SourceFile,
-	visitor: (node: TSTopLevelDeclare) => boolean
+	visitor: (node: TSTopLevelDeclare) => boolean,
 ): void {
 	let stop = false;
 
@@ -80,7 +80,7 @@ function visitTopLevelDeclarations(
 
 function getAllTopLevelDeclarations(
 	ts: typeof import("typescript"),
-	sourceFile: ts.SourceFile
+	sourceFile: ts.SourceFile,
 ): TSTopLevelDeclare[] {
 	const all: TSTopLevelDeclare[] = [];
 	visitTopLevelDeclarations(ts, sourceFile, (node) => {
@@ -114,7 +114,7 @@ function getAllTopLevelDeclarations(
 function getTopLevelDeclaration(
 	ts: typeof import("typescript"),
 	sourceFile: ts.SourceFile,
-	typeName: string
+	typeName: string,
 ): TSTopLevelDeclare | null {
 	let result: TSTopLevelDeclare | null = null;
 	visitTopLevelDeclarations(ts, sourceFile, (node) => {
@@ -137,14 +137,14 @@ function getTopLevelDeclaration(
 
 function getNodeText(
 	sourceFile: ts.SourceFile,
-	node: { pos: number; end: number }
+	node: { pos: number; end: number },
 ): string {
 	return sourceFile.getFullText().substring(node.pos, node.end);
 }
 
 function hasModifier(
 	modifiers: readonly ts.ModifierLike[] | undefined,
-	kind: ts.SyntaxKind
+	kind: ts.SyntaxKind,
 ): boolean {
 	if (modifiers) {
 		for (let i = 0; i < modifiers.length; i++) {
@@ -159,12 +159,12 @@ function hasModifier(
 
 function isStatic(
 	ts: typeof import("typescript"),
-	member: ts.ClassElement | ts.TypeElement
+	member: ts.ClassElement | ts.TypeElement,
 ): boolean {
 	if (ts.canHaveModifiers(member)) {
 		return hasModifier(
 			ts.getModifiers(member),
-			ts.SyntaxKind.StaticKeyword
+			ts.SyntaxKind.StaticKeyword,
 		);
 	}
 	return false;
@@ -172,7 +172,7 @@ function isStatic(
 
 function isDefaultExport(
 	ts: typeof import("typescript"),
-	declaration: ts.InterfaceDeclaration | ts.ClassDeclaration
+	declaration: ts.InterfaceDeclaration | ts.ClassDeclaration,
 ): boolean {
 	return (
 		hasModifier(declaration.modifiers, ts.SyntaxKind.DefaultKeyword) &&
@@ -186,7 +186,7 @@ function getMassagedTopLevelDeclarationText(
 	declaration: TSTopLevelDeclare,
 	importName: string,
 	usage: string[],
-	enums: IEnumEntry[]
+	enums: IEnumEntry[],
 ): string {
 	let result = getNodeText(sourceFile, declaration);
 	if (
@@ -235,7 +235,7 @@ function getMassagedTopLevelDeclarationText(
 						usage.push(`a = ${staticTypeName}${memberAccess};`);
 					} else {
 						usage.push(
-							`a = (<${instanceTypeName}>b)${memberAccess};`
+							`a = (<${instanceTypeName}>b)${memberAccess};`,
 						);
 					}
 				}
@@ -271,7 +271,7 @@ function getMassagedTopLevelDeclarationText(
 function format(
 	ts: typeof import("typescript"),
 	text: string,
-	endl: string
+	endl: string,
 ): string {
 	const REALLY_FORMAT = false;
 
@@ -285,14 +285,14 @@ function format(
 		"file.ts",
 		text,
 		ts.ScriptTarget.Latest,
-		/*setParentPointers*/ true
+		/*setParentPointers*/ true,
 	);
 
 	// Get the formatting edits on the input sources
 	const edits = (<any>ts).formatting.formatDocument(
 		sourceFile,
 		getRuleProvider(tsfmt),
-		tsfmt
+		tsfmt,
 	);
 
 	// Apply the edits on the input code
@@ -417,7 +417,7 @@ function format(
 }
 
 function createReplacerFromDirectives(
-	directives: [RegExp, string][]
+	directives: [RegExp, string][],
 ): (str: string) => string {
 	return (str: string) => {
 		for (let i = 0; i < directives.length; i++) {
@@ -441,7 +441,7 @@ function createReplacer(data: string): (str: string) => string {
 
 		findStr = findStr.replace(
 			/[\-\\\{\}\*\+\?\|\^\$\.\,\[\]\(\)\#\s]/g,
-			"\\$&"
+			"\\$&",
 		);
 		findStr = "\\b" + findStr + "\\b";
 		directives.push([new RegExp(findStr, "g"), replaceStr]);
@@ -464,7 +464,7 @@ interface IEnumEntry {
 function generateDeclarationFile(
 	ts: typeof import("typescript"),
 	recipe: string,
-	sourceFileGetter: SourceFileGetter
+	sourceFileGetter: SourceFileGetter,
 ): ITempResult | null {
 	const endl = /\r\n/.test(recipe) ? "\r\n" : "\n";
 
@@ -485,8 +485,8 @@ function generateDeclarationFile(
 		usageImports.push(
 			`import * as ${importName} from './${moduleId.replace(
 				/\.d\.ts$/,
-				""
-			)}';`
+				"",
+			)}';`,
 		);
 		return importName;
 	};
@@ -528,7 +528,7 @@ function generateDeclarationFile(
 				const declaration = getTopLevelDeclaration(
 					ts,
 					sourceFile,
-					typeName
+					typeName,
 				);
 				if (!declaration) {
 					logErr(`While handling ${line}`);
@@ -544,9 +544,9 @@ function generateDeclarationFile(
 							declaration,
 							importName,
 							usage,
-							enums
-						)
-					)
+							enums,
+						),
+					),
 				);
 			});
 			return;
@@ -602,11 +602,11 @@ function generateDeclarationFile(
 								declaration,
 								importName,
 								usage,
-								enums
-							)
-						)
+								enums,
+							),
+						),
 					);
-				}
+				},
 			);
 			return;
 		}
@@ -619,13 +619,13 @@ function generateDeclarationFile(
 	}
 
 	if (version !== dtsv) {
-		if (!version) {
+		if (version) {
 			logErr(
-				`gulp watch restart required. 'monaco.d.ts.recipe' is written before versioning was introduced.`
+				`gulp watch restart required. 'monaco.d.ts.recipe' v${version} does not match runtime v${dtsv}.`,
 			);
 		} else {
 			logErr(
-				`gulp watch restart required. 'monaco.d.ts.recipe' v${version} does not match runtime v${dtsv}.`
+				`gulp watch restart required. 'monaco.d.ts.recipe' is written before versioning was introduced.`,
 			);
 		}
 		return null;
@@ -680,7 +680,7 @@ export interface IMonacoDeclarationResult {
 
 function _run(
 	ts: typeof import("typescript"),
-	sourceFileGetter: SourceFileGetter
+	sourceFileGetter: SourceFileGetter,
 ): IMonacoDeclarationResult | null {
 	const recipe = fs.readFileSync(RECIPE_PATH).toString();
 	const t = generateDeclarationFile(ts, recipe, sourceFileGetter);
@@ -721,7 +721,7 @@ export class FSProvider {
 class CacheEntry {
 	constructor(
 		public readonly sourceFile: ts.SourceFile,
-		public readonly mtime: number
+		public readonly mtime: number,
 	) {}
 }
 
@@ -778,9 +778,9 @@ export class DeclarationResolver {
 				this.ts.createSourceFile(
 					fileName,
 					fileContents,
-					this.ts.ScriptTarget.ES5
+					this.ts.ScriptTarget.ES5,
 				),
-				mtime
+				mtime,
 			);
 		}
 		const fileContents = this._fsProvider
@@ -790,19 +790,19 @@ export class DeclarationResolver {
 			"file.ts": fileContents,
 		};
 		const service = this.ts.createLanguageService(
-			new TypeScriptLanguageServiceHost(this.ts, {}, fileMap, {})
+			new TypeScriptLanguageServiceHost(this.ts, {}, fileMap, {}),
 		);
 		const text = service.getEmitOutput("file.ts", true, true).outputFiles[0]
 			.text;
 		return new CacheEntry(
 			this.ts.createSourceFile(fileName, text, this.ts.ScriptTarget.ES5),
-			mtime
+			mtime,
 		);
 	}
 }
 
 export function run3(
-	resolver: DeclarationResolver
+	resolver: DeclarationResolver,
 ): IMonacoDeclarationResult | null {
 	const sourceFileGetter = (moduleId: string) =>
 		resolver.getDeclarationSourceFile(moduleId);
@@ -826,7 +826,7 @@ class TypeScriptLanguageServiceHost implements ts.LanguageServiceHost {
 		ts: typeof import("typescript"),
 		libs: ILibMap,
 		files: IFileMap,
-		compilerOptions: ts.CompilerOptions
+		compilerOptions: ts.CompilerOptions,
 	) {
 		this._ts = ts;
 		this._libs = libs;

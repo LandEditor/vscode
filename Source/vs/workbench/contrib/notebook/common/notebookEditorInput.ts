@@ -3,48 +3,48 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { VSBuffer } from "vs/base/common/buffer";
+import { onUnexpectedError } from "vs/base/common/errors";
 import * as glob from "vs/base/common/glob";
+import { IMarkdownString } from "vs/base/common/htmlContent";
+import { IDisposable, IReference } from "vs/base/common/lifecycle";
+import { Schemas } from "vs/base/common/network";
+import { isEqual, joinPath } from "vs/base/common/resources";
+import { URI } from "vs/base/common/uri";
+import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
+import { localize } from "vs/nls";
+import { IFileDialogService } from "vs/platform/dialogs/common/dialogs";
+import { IResourceEditorInput } from "vs/platform/editor/common/editor";
+import { IFileService } from "vs/platform/files/common/files";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { ILabelService } from "vs/platform/label/common/label";
 import {
+	EditorInputCapabilities,
 	GroupIdentifier,
-	ISaveOptions,
+	IFileLimitedEditorInputOptions,
 	IMoveResult,
 	IRevertOptions,
-	EditorInputCapabilities,
-	Verbosity,
+	ISaveOptions,
 	IUntypedEditorInput,
-	IFileLimitedEditorInputOptions,
+	Verbosity,
 } from "vs/workbench/common/editor";
 import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import {
-	INotebookService,
-	SimpleNotebookProviderInfo,
-} from "vs/workbench/contrib/notebook/common/notebookService";
-import { URI } from "vs/base/common/uri";
-import { isEqual, joinPath } from "vs/base/common/resources";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IFileDialogService } from "vs/platform/dialogs/common/dialogs";
-import { INotebookEditorModelResolverService } from "vs/workbench/contrib/notebook/common/notebookEditorModelResolverService";
-import { IDisposable, IReference } from "vs/base/common/lifecycle";
+import { AbstractResourceEditorInput } from "vs/workbench/common/editor/resourceEditorInput";
 import {
 	CellEditType,
 	IResolvedNotebookEditorModel,
 } from "vs/workbench/contrib/notebook/common/notebookCommon";
-import { ILabelService } from "vs/platform/label/common/label";
-import { Schemas } from "vs/base/common/network";
-import { IFileService } from "vs/platform/files/common/files";
-import { AbstractResourceEditorInput } from "vs/workbench/common/editor/resourceEditorInput";
-import { IResourceEditorInput } from "vs/platform/editor/common/editor";
-import { onUnexpectedError } from "vs/base/common/errors";
-import { VSBuffer } from "vs/base/common/buffer";
-import { IWorkingCopyIdentifier } from "vs/workbench/services/workingCopy/common/workingCopy";
-import { NotebookProviderInfo } from "vs/workbench/contrib/notebook/common/notebookProvider";
+import { INotebookEditorModelResolverService } from "vs/workbench/contrib/notebook/common/notebookEditorModelResolverService";
 import { NotebookPerfMarks } from "vs/workbench/contrib/notebook/common/notebookPerformance";
-import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
-import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
-import { localize } from "vs/nls";
+import { NotebookProviderInfo } from "vs/workbench/contrib/notebook/common/notebookProvider";
+import {
+	INotebookService,
+	SimpleNotebookProviderInfo,
+} from "vs/workbench/contrib/notebook/common/notebookService";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { IMarkdownString } from "vs/base/common/htmlContent";
-import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
+import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
+import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
+import { IWorkingCopyIdentifier } from "vs/workbench/services/workingCopy/common/workingCopy";
 
 export interface NotebookEditorInputOptions {
 	startDirty?: boolean;
@@ -63,10 +63,11 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 		resource: URI,
 		preferredResource: URI | undefined,
 		viewType: string,
-		options: NotebookEditorInputOptions = {}
+		options: NotebookEditorInputOptions = {},
 	) {
-		const cacheId = `${resource.toString()}|${viewType}|${options
-			._workingCopy?.typeId}`;
+		const cacheId = `${resource.toString()}|${viewType}|${
+			options._workingCopy?.typeId
+		}`;
 		let editor = NotebookEditorInput.EditorCache[cacheId];
 
 		if (!editor) {
@@ -75,7 +76,7 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 				resource,
 				preferredResource,
 				viewType,
-				options
+				options,
 			);
 			NotebookEditorInput.EditorCache[cacheId] = editor;
 
@@ -94,7 +95,7 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 	private _editorModelReference: IReference<IResolvedNotebookEditorModel> | null =
 		null;
 	private _sideLoadedListener: IDisposable;
-	private _defaultDirtyState: boolean = false;
+	private _defaultDirtyState = false;
 
 	constructor(
 		resource: URI,
@@ -192,10 +193,8 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 			if (this._editorModelReference.object.isReadonly()) {
 				capabilities |= EditorInputCapabilities.Readonly;
 			}
-		} else {
-			if (this.filesConfigurationService.isReadonly(this.resource)) {
-				capabilities |= EditorInputCapabilities.Readonly;
-			}
+		} else if (this.filesConfigurationService.isReadonly(this.resource)) {
+			capabilities |= EditorInputCapabilities.Readonly;
 		}
 
 		if (!(capabilities & EditorInputCapabilities.Readonly)) {
@@ -243,13 +242,13 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 
 		// if a short auto save is configured, treat this as being saved
 		return this.filesConfigurationService.isShortAutoSaveDelayConfigured(
-			this
+			this,
 		);
 	}
 
 	override async save(
 		group: GroupIdentifier,
-		options?: ISaveOptions
+		options?: ISaveOptions,
 	): Promise<EditorInput | IUntypedEditorInput | undefined> {
 		if (this._editorModelReference) {
 			if (this.hasCapability(EditorInputCapabilities.Untitled)) {
@@ -266,14 +265,14 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 
 	override async saveAs(
 		group: GroupIdentifier,
-		options?: ISaveOptions
+		options?: ISaveOptions,
 	): Promise<IUntypedEditorInput | undefined> {
 		if (!this._editorModelReference) {
 			return undefined;
 		}
 
 		const provider = this._notebookService.getContributedNotebookType(
-			this.viewType
+			this.viewType,
 		);
 
 		if (!provider) {
@@ -281,12 +280,12 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 		}
 
 		const pathCandidate = this.hasCapability(
-			EditorInputCapabilities.Untitled
+			EditorInputCapabilities.Untitled,
 		)
 			? await this._suggestName(
 					provider,
-					this.labelService.getUriBasenameLabel(this.resource)
-				)
+					this.labelService.getUriBasenameLabel(this.resource),
+			  )
 			: this._editorModelReference.object.resource;
 		let target: URI | undefined;
 		if (this._editorModelReference.object.hasAssociatedFilePath()) {
@@ -294,7 +293,7 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 		} else {
 			target = await this._fileDialogService.pickFileToSave(
 				pathCandidate,
-				options?.availableFileSystems
+				options?.availableFileSystems,
 			);
 			if (!target) {
 				return undefined; // save cancelled
@@ -320,7 +319,7 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 				})
 				.join(", ");
 			throw new Error(
-				`File name ${target} is not supported by ${provider.providerDisplayName}.\n\nPlease make sure the file name matches following patterns:\n${patterns}`
+				`File name ${target} is not supported by ${provider.providerDisplayName}.\n\nPlease make sure the file name matches following patterns:\n${patterns}`,
 			);
 		}
 
@@ -329,7 +328,7 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 
 	private async _suggestName(
 		provider: NotebookProviderInfo,
-		suggestedFilename: string
+		suggestedFilename: string,
 	) {
 		// guess file extensions
 		const firstSelector = provider.selectors[0];
@@ -351,7 +350,7 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 				if (!suggestedFilename.endsWith(fileExt)) {
 					return joinPath(
 						await this._fileDialogService.defaultFilePath(),
-						suggestedFilename + "." + fileExt
+						suggestedFilename + "." + fileExt,
 					);
 				}
 			}
@@ -359,14 +358,14 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 
 		return joinPath(
 			await this._fileDialogService.defaultFilePath(),
-			suggestedFilename
+			suggestedFilename,
 		);
 	}
 
 	// called when users rename a notebook document
 	override async rename(
 		group: GroupIdentifier,
-		target: URI
+		target: URI,
 	): Promise<IMoveResult | undefined> {
 		if (this._editorModelReference) {
 			return {
@@ -379,7 +378,7 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 
 	override async revert(
 		_group: GroupIdentifier,
-		options?: IRevertOptions
+		options?: IRevertOptions,
 	): Promise<void> {
 		if (
 			this._editorModelReference &&
@@ -391,7 +390,7 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 
 	override async resolve(
 		_options?: IFileLimitedEditorInputOptions,
-		perf?: NotebookPerfMarks
+		perf?: NotebookPerfMarks,
 	): Promise<IResolvedNotebookEditorModel | null> {
 		if (!(await this._notebookService.canResolve(this.viewType))) {
 			return null;
@@ -403,11 +402,15 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 		// "other" loading anymore
 		this._sideLoadedListener.dispose();
 
-		if (!this._editorModelReference) {
+		if (this._editorModelReference) {
+			this._editorModelReference.object.load({
+				limits: this.ensureLimits(_options),
+			});
+		} else {
 			const ref = await this._notebookModelResolverService.resolve(
 				this.resource,
 				this.viewType,
-				this.ensureLimits(_options)
+				this.ensureLimits(_options),
 			);
 			if (this._editorModelReference) {
 				// Re-entrant, double resolve happened. Dispose the addition references and proceed
@@ -425,31 +428,27 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 			}
 			this._register(
 				this._editorModelReference.object.onDidChangeDirty(() =>
-					this._onDidChangeDirty.fire()
-				)
+					this._onDidChangeDirty.fire(),
+				),
 			);
 			this._register(
 				this._editorModelReference.object.onDidChangeReadonly(() =>
-					this._onDidChangeCapabilities.fire()
-				)
+					this._onDidChangeCapabilities.fire(),
+				),
 			);
 			this._register(
 				this._editorModelReference.object.onDidRevertUntitled(() =>
-					this.dispose()
-				)
+					this.dispose(),
+				),
 			);
 			if (this._editorModelReference.object.isDirty()) {
 				this._onDidChangeDirty.fire();
 			}
-		} else {
-			this._editorModelReference.object.load({
-				limits: this.ensureLimits(_options),
-			});
 		}
 
 		if (this.options._backupId) {
 			const info = await this._notebookService.withNotebookDataProvider(
-				this._editorModelReference.object.notebook.viewType
+				this._editorModelReference.object.notebook.viewType,
 			);
 			if (!(info instanceof SimpleNotebookProviderInfo)) {
 				throw new Error("CANNOT open file notebook with this provider");
@@ -457,8 +456,10 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 
 			const data = await info.serializer.dataToNotebook(
 				VSBuffer.fromString(
-					JSON.stringify({ __webview_backup: this.options._backupId })
-				)
+					JSON.stringify({
+						__webview_backup: this.options._backupId,
+					}),
+				),
 			);
 			this._editorModelReference.object.notebook.applyEdits(
 				[
@@ -474,7 +475,7 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 				undefined,
 				() => undefined,
 				undefined,
-				false
+				false,
 			);
 
 			if (this.options._workingCopy) {
@@ -515,14 +516,14 @@ export interface ICompositeNotebookEditorInput {
 }
 
 export function isCompositeNotebookEditorInput(
-	thing: unknown
+	thing: unknown,
 ): thing is ICompositeNotebookEditorInput {
 	return (
 		!!thing &&
 		typeof thing === "object" &&
 		Array.isArray((<ICompositeNotebookEditorInput>thing).editorInputs) &&
 		(<ICompositeNotebookEditorInput>thing).editorInputs.every(
-			(input) => input instanceof NotebookEditorInput
+			(input) => input instanceof NotebookEditorInput,
 		)
 	);
 }

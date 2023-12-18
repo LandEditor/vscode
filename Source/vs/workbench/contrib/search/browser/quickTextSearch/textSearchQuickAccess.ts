@@ -92,13 +92,13 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<IPickerQuic
 	private searchModel: SearchModel;
 
 	private _getTextQueryBuilderOptions(
-		charsPerLine: number
+		charsPerLine: number,
 	): ITextQueryBuilderOptions {
 		return {
 			...DEFAULT_TEXT_QUERY_BUILDER_OPTIONS,
 			...{
 				extraFileResources: this._instantiationService.invokeFunction(
-					getOutOfWorkspaceEditorResources
+					getOutOfWorkspaceEditorResources,
 				),
 				maxResults: this.configuration.maxResults ?? undefined,
 				isSmartCase: this.configuration.smartCase,
@@ -141,7 +141,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<IPickerQuic
 	override provide(
 		picker: IQuickPick<IPickerQuickAccessItem>,
 		token: CancellationToken,
-		runOptions?: IQuickAccessProviderRunOptions
+		runOptions?: IQuickAccessProviderRunOptions,
 	): IDisposable {
 		const disposables = new DisposableStore();
 		if (TEXT_SEARCH_QUICK_ACCESS_PREFIX.length < picker.value.length) {
@@ -153,13 +153,13 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<IPickerQuic
 		disposables.add(super.provide(picker, token, runOptions));
 		disposables.add(
 			picker.onDidHide(() =>
-				this.searchModel.searchResult.toggleHighlights(false)
-			)
+				this.searchModel.searchResult.toggleHighlights(false),
+			),
 		);
 		disposables.add(
 			picker.onDidAccept(() =>
-				this.searchModel.searchResult.toggleHighlights(false)
-			)
+				this.searchModel.searchResult.toggleHighlights(false),
+			),
 		);
 		return disposables;
 	}
@@ -192,7 +192,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<IPickerQuic
 
 	private doSearch(
 		contentPattern: string,
-		token: CancellationToken
+		token: CancellationToken,
 	):
 		| {
 				syncResults: FileMatch[];
@@ -213,7 +213,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<IPickerQuic
 		const query: ITextQuery = this.queryBuilder.text(
 			content,
 			folderResources.map((folder) => folder.uri),
-			this._getTextQueryBuilderOptions(charsPerLine)
+			this._getTextQueryBuilderOptions(charsPerLine),
 		);
 
 		const result = this.searchModel.search(query, undefined, token);
@@ -221,7 +221,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<IPickerQuic
 		const getAsyncResults = async () => {
 			await result.asyncResults;
 			const syncResultURIs = new ResourceSet(
-				result.syncResults.map((e) => e.resource)
+				result.syncResults.map((e) => e.resource),
 			);
 			return this.searchModel.searchResult
 				.matches()
@@ -235,7 +235,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<IPickerQuic
 
 	private moveToSearchViewlet(
 		model: SearchModel,
-		currentElem: RenderableMatch
+		currentElem: RenderableMatch,
 	) {
 		// this function takes this._searchModel.searchResult and moves it to the search viewlet's search model.
 		// then, this._searchModel will construct a new (empty) SearchResult, and the search viewlet's search result will be disposed.
@@ -255,7 +255,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<IPickerQuic
 
 	private _getPicksFromMatches(
 		matches: FileMatch[],
-		limit: number
+		limit: number,
 	): (IQuickPickSeparator | IPickerQuickAccessItem)[] {
 		matches = matches.sort(searchComparer);
 
@@ -272,13 +272,13 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<IPickerQuic
 				picks.push({
 					label: localize(
 						"QuickSearchSeeMoreFiles",
-						"See More Files"
+						"See More Files",
 					),
 					iconClass: ThemeIcon.asClassName(searchDetailsIcon),
 					accept: async () => {
 						this.moveToSearchViewlet(
 							this.searchModel,
-							matches[limit]
+							matches[limit],
 						);
 					},
 				});
@@ -290,7 +290,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<IPickerQuic
 			const label = basenameOrAuthority(fileMatch.resource);
 			const description = this._labelService.getUriLabel(
 				dirname(fileMatch.resource),
-				{ relative: true }
+				{ relative: true },
 			);
 
 			picks.push({
@@ -351,7 +351,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<IPickerQuic
 							keyMods,
 							selection: getEditorSelectionFromMatch(
 								element,
-								this.searchModel
+								this.searchModel,
 							),
 							preserveFocus: event.inBackground,
 							forcePinned: event.inBackground,
@@ -372,7 +372,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<IPickerQuic
 			range?: IRange;
 			forcePinned?: boolean;
 			forceOpenSideBySide?: boolean;
-		}
+		},
 	): Promise<void> {
 		const editorOptions = {
 			preserveFocus: options.preserveFocus,
@@ -396,14 +396,14 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<IPickerQuic
 				resource: fileMatch.resource,
 				options: editorOptions,
 			},
-			targetGroup
+			targetGroup,
 		);
 	}
 
 	protected _getPicks(
 		contentPattern: string,
 		disposables: DisposableStore,
-		token: CancellationToken
+		token: CancellationToken,
 	):
 		| Picks<IQuickPickItem>
 		| Promise<Picks<IQuickPickItem> | FastAndSlowPicks<IQuickPickItem>>
@@ -437,14 +437,14 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<IPickerQuic
 								{
 									label: localize(
 										"noAnythingResults",
-										"No matching results"
+										"No matching results",
 									),
 								},
-							]
+						  ]
 						: this._getPicksFromMatches(
 								asyncResults,
-								MAX_FILES_SHOWN - matches.length
-							)
+								MAX_FILES_SHOWN - matches.length,
+						  ),
 				)
 				.then((picks) => {
 					if (picks.length > 0) {

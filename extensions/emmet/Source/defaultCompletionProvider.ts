@@ -3,27 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from "vscode";
 import { Node, Stylesheet } from "EmmetFlatNode";
-import {
-	isValidLocationForEmmetAbbreviation,
-	getSyntaxFromArgs,
-} from "./abbreviationActions";
-import {
-	getEmmetHelper,
-	getMappingForIncludedLanguages,
-	parsePartialStylesheet,
-	getEmmetConfiguration,
-	getEmmetMode,
-	isStyleSheet,
-	getFlatNode,
-	allowedMimeTypesInScriptTag,
-	toLSTextDocument,
-	getHtmlFlatNode,
-	getEmbeddedCssNodeIfAny,
-} from "./util";
+import * as vscode from "vscode";
 import { Range as LSRange } from "vscode-languageserver-textdocument";
+import {
+	getSyntaxFromArgs,
+	isValidLocationForEmmetAbbreviation,
+} from "./abbreviationActions";
 import { getRootNode } from "./parseDocument";
+import {
+	allowedMimeTypesInScriptTag,
+	getEmbeddedCssNodeIfAny,
+	getEmmetConfiguration,
+	getEmmetHelper,
+	getEmmetMode,
+	getFlatNode,
+	getHtmlFlatNode,
+	getMappingForIncludedLanguages,
+	isStyleSheet,
+	parsePartialStylesheet,
+	toLSTextDocument,
+} from "./util";
 
 export class DefaultCompletionItemProvider
 	implements vscode.CompletionItemProvider
@@ -34,12 +34,12 @@ export class DefaultCompletionItemProvider
 		document: vscode.TextDocument,
 		position: vscode.Position,
 		_: vscode.CancellationToken,
-		context: vscode.CompletionContext
+		context: vscode.CompletionContext,
 	): Thenable<vscode.CompletionList | undefined> | undefined {
 		const completionResult = this.provideCompletionItemsInternal(
 			document,
 			position,
-			context
+			context,
 		);
 		if (!completionResult) {
 			this.lastCompletionType = undefined;
@@ -73,7 +73,7 @@ export class DefaultCompletionItemProvider
 	private provideCompletionItemsInternal(
 		document: vscode.TextDocument,
 		position: vscode.Position,
-		context: vscode.CompletionContext
+		context: vscode.CompletionContext,
 	): Thenable<vscode.CompletionList | undefined> | undefined {
 		const emmetConfig = vscode.workspace.getConfiguration("emmet");
 		const excludedLanguages = emmetConfig["excludeLanguages"]
@@ -92,7 +92,7 @@ export class DefaultCompletionItemProvider
 				? mappedLanguages[document.languageId]
 				: document.languageId,
 			mappedLanguages,
-			excludedLanguages
+			excludedLanguages,
 		);
 
 		if (
@@ -119,7 +119,7 @@ export class DefaultCompletionItemProvider
 			position.line,
 			0,
 			position.line,
-			position.character
+			position.character,
 		);
 		if (document.getText(lineRange).trimStart().startsWith("//")) {
 			return;
@@ -150,12 +150,12 @@ export class DefaultCompletionItemProvider
 					document.getText(),
 					emmetRootNode,
 					positionOffset,
-					false
+					false,
 				);
 				if (foundNode) {
 					if (foundNode.name === "script") {
 						const typeNode = foundNode.attributes.find(
-							(attr) => attr.name.toString() === "type"
+							(attr) => attr.name.toString() === "type",
 						);
 						if (typeNode) {
 							const typeAttrValue = typeNode.value.toString();
@@ -164,17 +164,17 @@ export class DefaultCompletionItemProvider
 								typeAttrValue === "text/javascript"
 							) {
 								if (
-									!getSyntaxFromArgs({
+									getSyntaxFromArgs({
 										language: "javascript",
 									})
 								) {
-									return;
-								} else {
 									validateLocation = false;
+								} else {
+									return;
 								}
 							} else if (
 								allowedMimeTypesInScriptTag.includes(
-									typeAttrValue
+									typeAttrValue,
 								)
 							) {
 								validateLocation = false;
@@ -187,7 +187,7 @@ export class DefaultCompletionItemProvider
 						validateLocation = false;
 					} else {
 						const styleNode = foundNode.attributes.find(
-							(attr) => attr.name.toString() === "style"
+							(attr) => attr.name.toString() === "style",
 						);
 						if (
 							styleNode &&
@@ -208,13 +208,13 @@ export class DefaultCompletionItemProvider
 		const extractAbbreviationResults = helper.extractAbbreviation(
 			lsDoc,
 			position,
-			expandOptions
+			expandOptions,
 		);
 		if (
 			!extractAbbreviationResults ||
 			!helper.isAbbreviationValid(
 				syntax,
-				extractAbbreviationResults.abbreviation
+				extractAbbreviationResults.abbreviation,
 			)
 		) {
 			return;
@@ -259,7 +259,7 @@ export class DefaultCompletionItemProvider
 			const embeddedCssNode = getEmbeddedCssNodeIfAny(
 				document,
 				flatNode,
-				position
+				position,
 			);
 			currentNode = getFlatNode(embeddedCssNode, offset, true);
 		}
@@ -272,7 +272,7 @@ export class DefaultCompletionItemProvider
 				currentNode,
 				syntax,
 				offset,
-				toRange(extractAbbreviationResults.abbreviationRange)
+				toRange(extractAbbreviationResults.abbreviationRange),
 			)
 		) {
 			return;
@@ -303,7 +303,7 @@ export class DefaultCompletionItemProvider
 				isNoisePromise = vscode.commands
 					.executeCommand<vscode.SymbolInformation[] | undefined>(
 						"vscode.executeDocumentSymbolProvider",
-						document.uri
+						document.uri,
 					)
 					.then((symbols) => {
 						return (
@@ -312,7 +312,7 @@ export class DefaultCompletionItemProvider
 								(x) =>
 									abbreviation === x.name ||
 									(abbreviation.startsWith(x.name + ".") &&
-										!/>|\*|\+/.test(abbreviation))
+										!/>|\*|\+/.test(abbreviation)),
 							)
 						);
 					});
@@ -330,7 +330,7 @@ export class DefaultCompletionItemProvider
 					toLSTextDocument(document),
 					position,
 					syntax,
-					config
+					config,
 				);
 
 				// https://github.com/microsoft/vscode/issues/86941
@@ -347,14 +347,14 @@ export class DefaultCompletionItemProvider
 						newItem.documentation = item.documentation;
 						newItem.detail = item.detail;
 						newItem.insertText = new vscode.SnippetString(
-							item.textEdit.newText
+							item.textEdit.newText,
 						);
 						const oldrange = item.textEdit.range;
 						newItem.range = new vscode.Range(
 							oldrange.start.line,
 							oldrange.start.character,
 							oldrange.end.line,
-							oldrange.end.character
+							oldrange.end.character,
 						);
 
 						newItem.filterText = item.filterText;
@@ -368,7 +368,7 @@ export class DefaultCompletionItemProvider
 				}
 
 				return new vscode.CompletionList(newItems, true);
-			}
+			},
 		);
 	}
 }
@@ -378,6 +378,6 @@ function toRange(lsRange: LSRange) {
 		lsRange.start.line,
 		lsRange.start.character,
 		lsRange.end.line,
-		lsRange.end.character
+		lsRange.end.character,
 	);
 }

@@ -13,21 +13,21 @@ import {
 } from "vs/base/browser/ui/list/list";
 import { Event } from "vs/base/common/event";
 
-export const enum TreeVisibility {
+export enum TreeVisibility {
 	/**
 	 * The tree node should be hidden.
 	 */
-	Hidden,
+	Hidden = 0,
 
 	/**
 	 * The tree node should be visible.
 	 */
-	Visible,
+	Visible = 1,
 
 	/**
 	 * The tree node should be visible if any of its descendants is visible.
 	 */
-	Recurse,
+	Recurse = 2,
 }
 
 /**
@@ -72,7 +72,7 @@ export interface ITreeFilter<T, TFilterData = void> {
 	 */
 	filter(
 		element: T,
-		parentVisibility: TreeVisibility
+		parentVisibility: TreeVisibility,
 	): TreeFilterResult<TFilterData>;
 }
 
@@ -88,18 +88,18 @@ export interface ITreeElement<T> {
 }
 
 export enum ObjectTreeElementCollapseState {
-	Expanded,
-	Collapsed,
+	Expanded = 0,
+	Collapsed = 1,
 
 	/**
 	 * If the element is already in the tree, preserve its current state. Else, expand it.
 	 */
-	PreserveOrExpanded,
+	PreserveOrExpanded = 2,
 
 	/**
 	 * If the element is already in the tree, preserve its current state. Else, collapse it.
 	 */
-	PreserveOrCollapsed,
+	PreserveOrCollapsed = 3,
 }
 
 export interface IObjectTreeElement<T> {
@@ -157,7 +157,7 @@ export interface ITreeModel<T, TFilterData, TRef> {
 	setCollapsed(
 		location: TRef,
 		collapsed?: boolean,
-		recursive?: boolean
+		recursive?: boolean,
 	): boolean;
 	expandTo(location: TRef): void;
 
@@ -177,10 +177,10 @@ export interface ITreeEvent<T> {
 }
 
 export enum TreeMouseEventTarget {
-	Unknown,
-	Twistie,
-	Element,
-	Filter,
+	Unknown = 0,
+	Twistie = 1,
+	Element = 2,
+	Filter = 3,
 }
 
 export interface ITreeMouseEvent<T> {
@@ -214,9 +214,9 @@ export interface IAsyncDataSource<TInput, T> {
 	getParent?(element: T): TInput | T;
 }
 
-export const enum TreeDragOverBubble {
-	Down,
-	Up,
+export enum TreeDragOverBubble {
+	Down = 0,
+	Up = 1,
 }
 
 export interface ITreeDragOverReaction extends IListDragOverReaction {
@@ -253,7 +253,7 @@ export interface ITreeDragAndDrop<T> extends IListDragAndDrop<T> {
 		data: IDragAndDropData,
 		targetElement: T | undefined,
 		targetIndex: number | undefined,
-		originalEvent: DragEvent
+		originalEvent: DragEvent,
 	): boolean | ITreeDragOverReaction;
 }
 

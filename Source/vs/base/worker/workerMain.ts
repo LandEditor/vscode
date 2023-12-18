@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-(function () {
+(() => {
 	interface IMonacoEnvironment {
 		baseUrl?: string;
 		createTrustedTypesPolicy<Options extends TrustedTypePolicyOptions>(
 			policyName: string,
-			policyOptions?: Options
+			policyOptions?: Options,
 		):
 			| undefined
 			| Pick<
@@ -27,7 +27,7 @@
 
 	function createTrustedTypesPolicy<Options extends TrustedTypePolicyOptions>(
 		policyName: string,
-		policyOptions?: Options
+		policyOptions?: Options,
 	):
 		| undefined
 		| Pick<
@@ -38,7 +38,7 @@
 			try {
 				return monacoEnvironment.createTrustedTypesPolicy(
 					policyName,
-					policyOptions
+					policyOptions,
 				);
 			} catch (err) {
 				console.warn(err);
@@ -71,8 +71,8 @@
 		try {
 			const func = trustedTypesPolicy
 				? globalThis.eval(
-						<any>trustedTypesPolicy.createScript("", "true")
-					) // CodeQL [SM01632] fetch + eval is used on the web worker instead of importScripts if possible because importScripts is synchronous and we observed deadlocks on Safari
+						<any>trustedTypesPolicy.createScript("", "true"),
+				  ) // CodeQL [SM01632] fetch + eval is used on the web worker instead of importScripts if possible because importScripts is synchronous and we observed deadlocks on Safari
 				: new Function("true"); // CodeQL [SM01632] fetch + eval is used on the web worker instead of importScripts if possible because importScripts is synchronous and we observed deadlocks on Safari
 			func.call(globalThis);
 			return true;
@@ -112,9 +112,9 @@
 							? globalThis.eval(
 									trustedTypesPolicy.createScript(
 										"",
-										text
-									) as unknown as string
-								) // CodeQL [SM01632] fetch + eval is used on the web worker instead of importScripts if possible because importScripts is synchronous and we observed deadlocks on Safari
+										text,
+									) as unknown as string,
+							  ) // CodeQL [SM01632] fetch + eval is used on the web worker instead of importScripts if possible because importScripts is synchronous and we observed deadlocks on Safari
 							: new Function(text); // CodeQL [SM01632] fetch + eval is used on the web worker instead of importScripts if possible because importScripts is synchronous and we observed deadlocks on Safari
 						func.call(globalThis);
 						resolve();
@@ -126,8 +126,8 @@
 			if (trustedTypesPolicy) {
 				importScripts(
 					trustedTypesPolicy.createScriptURL(
-						loaderSrc
-					) as unknown as string
+						loaderSrc,
+					) as unknown as string,
 				);
 			} else {
 				importScripts(loaderSrc as string);
@@ -148,13 +148,13 @@
 	function loadCode(moduleId: string) {
 		loadAMDLoader().then(() => {
 			configureAMDLoader();
-			require([moduleId], function (ws) {
-				setTimeout(function () {
+			require([moduleId], (ws) => {
+				setTimeout(() => {
 					const messageHandler = ws.create(
 						(msg: any, transfer?: Transferable[]) => {
 							(<any>globalThis).postMessage(msg, transfer);
 						},
-						null
+						null,
 					);
 
 					globalThis.onmessage = (e: MessageEvent) =>

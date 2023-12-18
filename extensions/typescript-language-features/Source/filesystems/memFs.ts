@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from "vscode";
 import { basename, dirname } from "path";
+import * as vscode from "vscode";
 
 export class MemFs implements vscode.FileSystemProvider {
 	private readonly root = new FsEntry(new Map(), 0, 0);
@@ -47,7 +47,7 @@ export class MemFs implements vscode.FileSystemProvider {
 	writeFile(
 		uri: vscode.Uri,
 		content: Uint8Array,
-		{ create, overwrite }: { create: boolean; overwrite: boolean }
+		{ create, overwrite }: { create: boolean; overwrite: boolean },
 	): void {
 		// console.log('writeFile', uri.toString());
 
@@ -58,16 +58,7 @@ export class MemFs implements vscode.FileSystemProvider {
 
 		const time = Date.now() / 1000;
 		const entry = dirContents.get(basename(uri.path));
-		if (!entry) {
-			if (create) {
-				dirContents.set(fileName, new FsEntry(content, time, time));
-				this._emitter.fire([
-					{ type: vscode.FileChangeType.Created, uri },
-				]);
-			} else {
-				throw vscode.FileSystemError.FileNotFound();
-			}
-		} else {
+		if (entry) {
 			if (overwrite) {
 				entry.mtime = time;
 				entry.data = content;
@@ -76,16 +67,21 @@ export class MemFs implements vscode.FileSystemProvider {
 				]);
 			} else {
 				throw vscode.FileSystemError.NoPermissions(
-					"overwrite option was not passed in"
+					"overwrite option was not passed in",
 				);
 			}
+		} else if (create) {
+			dirContents.set(fileName, new FsEntry(content, time, time));
+			this._emitter.fire([{ type: vscode.FileChangeType.Created, uri }]);
+		} else {
+			throw vscode.FileSystemError.FileNotFound();
 		}
 	}
 
 	rename(
 		_oldUri: vscode.Uri,
 		_newUri: vscode.Uri,
-		_options: { overwrite: boolean }
+		_options: { overwrite: boolean },
 	): void {
 		throw new Error("not implemented");
 	}
@@ -149,7 +145,7 @@ export class MemFs implements vscode.FileSystemProvider {
 
 	readonly onDidChangeFile: vscode.Event<vscode.FileChangeEvent[]> =
 		this._emitter.event;
-	private readonly watchers = new Map<string, Set<Symbol>>();
+	private readonly watchers = new Map<string, Set<symbol>>();
 
 	watch(resource: vscode.Uri): vscode.Disposable {
 		if (!this.watchers.has(resource.path)) {
@@ -181,7 +177,7 @@ class FsEntry {
 		if (this.type === vscode.FileType.Directory) {
 			return [...this.contents.values()].reduce(
 				(acc: number, entry: FsEntry) => acc + entry.size,
-				0
+				0,
 			);
 		} else {
 			return this.data.length;
@@ -191,7 +187,7 @@ class FsEntry {
 	constructor(
 		private _data: Uint8Array | Map<string, FsEntry>,
 		public ctime: number,
-		public mtime: number
+		public mtime: number,
 	) {}
 
 	get data() {

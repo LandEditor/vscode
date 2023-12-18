@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as es from "event-stream";
-import * as VinylFile from "vinyl";
-import * as log from "fancy-log";
-import * as ansiColors from "ansi-colors";
 import * as crypto from "crypto";
-import * as through2 from "through2";
 import { Stream } from "stream";
+import * as ansiColors from "ansi-colors";
+import * as es from "event-stream";
+import * as log from "fancy-log";
+import * as through2 from "through2";
+import * as VinylFile from "vinyl";
 
 export interface IFetchOptions {
 	base?: string;
@@ -20,7 +20,7 @@ export interface IFetchOptions {
 
 export function fetchUrls(
 	urls: string[] | string,
-	options: IFetchOptions
+	options: IFetchOptions,
 ): es.ThroughStream {
 	if (options === undefined) {
 		options = {};
@@ -43,9 +43,9 @@ export function fetchUrls(
 				},
 				(error) => {
 					cb(error);
-				}
+				},
 			);
-		})
+		}),
 	);
 }
 
@@ -53,7 +53,7 @@ export async function fetchUrl(
 	url: string,
 	options: IFetchOptions,
 	retries = 10,
-	retryDelay = 1000
+	retryDelay = 1000,
 ): Promise<VinylFile> {
 	const verbose =
 		!!options.verbose ??
@@ -65,7 +65,7 @@ export async function fetchUrl(
 			log(
 				`Start fetching ${ansiColors.magenta(url)}${
 					retries !== 10 ? ` (${10 - retries} retry)` : ""
-				}`
+				}`,
 			);
 			startTime = new Date().getTime();
 		}
@@ -81,8 +81,8 @@ export async function fetchUrl(
 					`Fetch completed: Status ${
 						response.status
 					}. Took ${ansiColors.magenta(
-						`${new Date().getTime() - startTime} ms`
-					)}`
+						`${new Date().getTime() - startTime} ms`,
+					)}`,
 				);
 			}
 			if (
@@ -99,30 +99,30 @@ export async function fetchUrl(
 					if (actualSHA256Checksum !== options.checksumSha256) {
 						throw new Error(
 							`Checksum mismatch for ${ansiColors.cyan(
-								url
+								url,
 							)} (expected ${
 								options.checksumSha256
-							}, actual ${actualSHA256Checksum}))`
+							}, actual ${actualSHA256Checksum}))`,
 						);
 					} else if (verbose) {
 						log(
 							`Verified SHA256 checksums match for ${ansiColors.cyan(
-								url
-							)}`
+								url,
+							)}`,
 						);
 					}
 				} else if (verbose) {
 					log(
 						`Skipping checksum verification for ${ansiColors.cyan(
-							url
-						)} because no expected checksum was provided`
+							url,
+						)} because no expected checksum was provided`,
 					);
 				}
 				if (verbose) {
 					log(
 						`Fetched response body buffer: ${ansiColors.magenta(
-							`${(contents as Buffer).byteLength} bytes`
-						)}`
+							`${(contents as Buffer).byteLength} bytes`,
+						)}`,
 					);
 				}
 				return new VinylFile({
@@ -133,7 +133,7 @@ export async function fetchUrl(
 				});
 			}
 			let err = `Request ${ansiColors.magenta(
-				url
+				url,
 			)} failed with status code: ${response.status}`;
 			if (response.status === 403) {
 				err += " (you may be rate limited)";
@@ -182,7 +182,7 @@ export interface IGitHubAssetOptions {
  */
 export function fetchGithub(
 	repo: string,
-	options: IGitHubAssetOptions
+	options: IGitHubAssetOptions,
 ): Stream {
 	return fetchUrls(
 		`/repos/${repo.replace(/^\/|\/$/g, "")}/releases/tags/v${
@@ -192,21 +192,21 @@ export function fetchGithub(
 			base: "https://api.github.com",
 			verbose: options.verbose,
 			nodeFetchOptions: { headers: ghApiHeaders },
-		}
+		},
 	).pipe(
-		through2.obj(async function (file, _enc, callback) {
+		through2.obj(async (file, _enc, callback) => {
 			const assetFilter =
 				typeof options.name === "string"
 					? (name: string) => name === options.name
 					: options.name;
 			const asset = JSON.parse(file.contents.toString()).assets.find(
-				(a: { name: string }) => assetFilter(a.name)
+				(a: { name: string }) => assetFilter(a.name),
 			);
 			if (!asset) {
 				return callback(
 					new Error(
-						`Could not find asset in release of ${repo} @ ${options.version}`
-					)
+						`Could not find asset in release of ${repo} @ ${options.version}`,
+					),
 				);
 			}
 			try {
@@ -216,11 +216,11 @@ export function fetchGithub(
 						nodeFetchOptions: { headers: ghDownloadHeaders },
 						verbose: options.verbose,
 						checksumSha256: options.checksumSha256,
-					})
+					}),
 				);
 			} catch (error) {
 				callback(error);
 			}
-		})
+		}),
 	);
 }

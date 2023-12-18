@@ -1,3 +1,4 @@
+import { VSBuffer } from "vs/base/common/buffer";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -7,8 +8,10 @@ import { doHash, hash, numberHash } from "vs/base/common/hash";
 import { IDisposable } from "vs/base/common/lifecycle";
 import { URI } from "vs/base/common/uri";
 import { IRequestHandler } from "vs/base/common/worker/simpleWorker";
+import { Range } from "vs/editor/common/core/range";
 import * as model from "vs/editor/common/model";
 import { PieceTreeTextBufferBuilder } from "vs/editor/common/model/pieceTreeTextBuffer/pieceTreeTextBufferBuilder";
+import { SearchParams } from "vs/editor/common/model/textModelSearch";
 import {
 	CellKind,
 	ICellDto2,
@@ -17,16 +20,13 @@ import {
 	IOutputDto,
 	NotebookCellInternalMetadata,
 	NotebookCellMetadata,
-	NotebookCellsChangedEventDto,
-	NotebookCellsChangeType,
 	NotebookCellTextModelSplice,
+	NotebookCellsChangeType,
+	NotebookCellsChangedEventDto,
 	NotebookData,
 	NotebookDocumentMetadata,
 } from "vs/workbench/contrib/notebook/common/notebookCommon";
-import { Range } from "vs/editor/common/core/range";
 import { INotebookWorkerHost } from "vs/workbench/contrib/notebook/common/services/notebookWorkerHost";
-import { VSBuffer } from "vs/base/common/buffer";
-import { SearchParams } from "vs/editor/common/model/textModelSearch";
 
 function bufferHash(buffer: VSBuffer): number {
 	let initialHashVal = numberHash(104579, 0);
@@ -47,11 +47,13 @@ class MirrorCell {
 
 		const builder = new PieceTreeTextBufferBuilder();
 		builder.acceptChunk(
-			Array.isArray(this._source) ? this._source.join("\n") : this._source
+			Array.isArray(this._source)
+				? this._source.join("\n")
+				: this._source,
 		);
 		const bufferFactory = builder.finish(true);
 		this._textBuffer = bufferFactory.create(
-			model.DefaultEndOfLine.LF
+			model.DefaultEndOfLine.LF,
 		).textBuffer;
 
 		return this._textBuffer;
@@ -75,7 +77,7 @@ class MirrorCell {
 		public cellKind: CellKind,
 		public outputs: IOutputDto[],
 		public metadata?: NotebookCellMetadata,
-		public internalMetadata?: NotebookCellInternalMetadata
+		public internalMetadata?: NotebookCellInternalMetadata,
 	) {}
 
 	getFullModelRange() {
@@ -84,7 +86,7 @@ class MirrorCell {
 			1,
 			1,
 			lineCount,
-			this.textBuffer.getLineLength(lineCount) + 1
+			this.textBuffer.getLineLength(lineCount) + 1,
 		);
 	}
 
@@ -92,7 +94,7 @@ class MirrorCell {
 		const fullRange = this.getFullModelRange();
 		return this.textBuffer.getValueInRange(
 			fullRange,
-			model.EndOfLinePreference.LF
+			model.EndOfLinePreference.LF,
 		);
 	}
 
@@ -136,7 +138,7 @@ class MirrorNotebookDocument {
 	constructor(
 		readonly uri: URI,
 		public cells: MirrorCell[],
-		public metadata: NotebookDocumentMetadata
+		public metadata: NotebookDocumentMetadata,
 	) {}
 
 	acceptModelChanged(event: NotebookCellsChangedEventDto) {
@@ -173,7 +175,7 @@ class MirrorNotebookDocument {
 	private _assertIndex(index: number): void {
 		if (index < 0 || index >= this.cells.length) {
 			throw new Error(
-				`Illegal index ${index}. Cells length: ${this.cells.length}`
+				`Illegal index ${index}. Cells length: ${this.cells.length}`,
 			);
 		}
 	}
@@ -188,7 +190,7 @@ class MirrorNotebookDocument {
 					cell.language,
 					cell.cellKind,
 					cell.outputs,
-					cell.metadata
+					cell.metadata,
 				);
 			});
 
@@ -241,16 +243,16 @@ export class NotebookEditorSimpleWorker
 						dto.language,
 						dto.cellKind,
 						dto.outputs,
-						dto.metadata
-					)
+						dto.metadata,
+					),
 			),
-			data.metadata
+			data.metadata,
 		);
 	}
 
 	public acceptModelChanged(
 		strURL: string,
-		event: NotebookCellsChangedEventDto
+		event: NotebookCellsChangedEventDto,
 	) {
 		const model = this._models[strURL];
 		model?.acceptModelChanged(event);
@@ -269,7 +271,7 @@ export class NotebookEditorSimpleWorker
 
 		const diff = new LcsDiff(
 			new CellSequence(original),
-			new CellSequence(modified)
+			new CellSequence(modified),
 		);
 		const diffResult = diff.ComputeDiff(false);
 
@@ -348,13 +350,13 @@ export class NotebookEditorSimpleWorker
 				1,
 				1,
 				maxLineCount,
-				cell.textBuffer.getLineLength(maxLineCount) + 1
+				cell.textBuffer.getLineLength(maxLineCount) + 1,
 			);
 			const searchParams = new SearchParams(
 				"import\\s*pandas|from\\s*pandas",
 				true,
 				false,
-				null
+				null,
 			);
 			const searchData = searchParams.parseSearchRequest();
 
@@ -366,7 +368,7 @@ export class NotebookEditorSimpleWorker
 				range,
 				searchData,
 				true,
-				1
+				1,
 			);
 			if (cellMatches.length > 0) {
 				return true;

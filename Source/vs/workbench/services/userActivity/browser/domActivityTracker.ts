@@ -26,8 +26,7 @@ const MIN_INTERVALS_WITHOUT_ACTIVITY = 2;
 
 const eventListenerOptions: AddEventListenerOptions = {
 	passive: true /** does not preventDefault() */,
-	capture:
-		true /** should dispatch first (before anyone stopPropagation()) */,
+	capture: true /** should dispatch first (before anyone stopPropagation()) */,
 };
 
 export class DomActivityTracker extends Disposable {
@@ -53,7 +52,7 @@ export class DomActivityTracker extends Disposable {
 				intervalTimer.cancelAndSet(
 					onInterval,
 					CHECK_INTERVAL,
-					targetWindow
+					targetWindow,
 				);
 			}
 
@@ -69,28 +68,28 @@ export class DomActivityTracker extends Disposable {
 							window.document,
 							"touchstart",
 							() => onActivity(window),
-							eventListenerOptions
-						)
+							eventListenerOptions,
+						),
 					);
 					disposables.add(
 						dom.addDisposableListener(
 							window.document,
 							"mousedown",
 							() => onActivity(window),
-							eventListenerOptions
-						)
+							eventListenerOptions,
+						),
 					);
 					disposables.add(
 						dom.addDisposableListener(
 							window.document,
 							"keydown",
 							() => onActivity(window),
-							eventListenerOptions
-						)
+							eventListenerOptions,
+						),
 					);
 				},
-				{ window: mainWindow, disposables: this._store }
-			)
+				{ window: mainWindow, disposables: this._store },
+			),
 		);
 
 		onActivity(mainWindow);

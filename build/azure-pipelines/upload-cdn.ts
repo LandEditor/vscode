@@ -3,20 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { ClientSecretCredential } from "@azure/identity";
 import * as es from "event-stream";
-import * as Vinyl from "vinyl";
-import * as vfs from "vinyl-fs";
 import * as filter from "gulp-filter";
 import * as gzip from "gulp-gzip";
 import * as mime from "mime";
-import { ClientSecretCredential } from "@azure/identity";
+import * as Vinyl from "vinyl";
+import * as vfs from "vinyl-fs";
 const azure = require("gulp-azure-storage");
 
 const commit = process.env["BUILD_SOURCEVERSION"];
 const credential = new ClientSecretCredential(
 	process.env["AZURE_TENANT_ID"]!,
 	process.env["AZURE_CLIENT_ID"]!,
-	process.env["AZURE_CLIENT_SECRET"]!
+	process.env["AZURE_CLIENT_SECRET"]!,
 );
 
 mime.define({
@@ -109,7 +109,7 @@ async function main(): Promise<void> {
 			console.log("Uploaded:", f.relative);
 			files.push(f.relative);
 			this.emit("data", f);
-		})
+		}),
 	);
 
 	console.log(`Uploading files to CDN...`); // debug

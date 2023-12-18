@@ -4,30 +4,30 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "vs/base/browser/ui/codicons/codiconStyles"; // The codicon symbol styles are defined here and must be loaded
-import "vs/editor/contrib/symbolIcons/browser/symbolIcons"; // The codicon symbol colors are defined here and must be loaded to get colors
-import { AbstractGotoSymbolQuickAccessProvider } from "vs/editor/contrib/quickAccess/browser/gotoSymbolQuickAccess";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	IQuickAccessRegistry,
-	Extensions,
-} from "vs/platform/quickinput/common/quickAccess";
-import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
-import { QuickOutlineNLS } from "vs/editor/common/standaloneStrings";
 import { Event } from "vs/base/common/event";
+import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
 import {
 	EditorAction,
 	registerEditorAction,
 } from "vs/editor/browser/editorExtensions";
+import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
 import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
-import { KeyMod, KeyCode } from "vs/base/common/keyCodes";
-import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
+import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
+import { QuickOutlineNLS } from "vs/editor/common/standaloneStrings";
+import { IOutlineModelService } from "vs/editor/contrib/documentSymbols/browser/outlineModel";
+import { AbstractGotoSymbolQuickAccessProvider } from "vs/editor/contrib/quickAccess/browser/gotoSymbolQuickAccess";
+import "vs/editor/contrib/symbolIcons/browser/symbolIcons"; // The codicon symbol colors are defined here and must be loaded to get colors
 import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
+import {
+	Extensions,
+	IQuickAccessRegistry,
+} from "vs/platform/quickinput/common/quickAccess";
 import {
 	IQuickInputService,
 	ItemActivation,
 } from "vs/platform/quickinput/common/quickInput";
-import { IOutlineModelService } from "vs/editor/contrib/documentSymbols/browser/outlineModel";
-import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
+import { Registry } from "vs/platform/registry/common/platform";
 
 export class StandaloneGotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccessProvider {
 	protected readonly onDidActiveTextEditorControlChange = Event.None;
@@ -79,7 +79,7 @@ export class GotoSymbolAction extends EditorAction {
 registerEditorAction(GotoSymbolAction);
 
 Registry.as<IQuickAccessRegistry>(
-	Extensions.Quickaccess
+	Extensions.Quickaccess,
 ).registerQuickAccessProvider({
 	ctor: StandaloneGotoSymbolQuickAccessProvider,
 	prefix: AbstractGotoSymbolQuickAccessProvider.PREFIX,

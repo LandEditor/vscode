@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from "vscode";
-import * as util from "util";
 import { randomUUID } from "crypto";
+import * as util from "util";
+import * as vscode from "vscode";
 
 const PATTERN = "listening on.* (https?://\\S+|[0-9]+)"; // matches "listening on port 3000" or "Now listening on: https://localhost:5001"
 const URI_PORT_FORMAT = "http://localhost:%s";
@@ -68,7 +68,7 @@ class ServerReadyDetector extends vscode.Disposable {
 	private regexp: RegExp;
 
 	static start(
-		session: vscode.DebugSession
+		session: vscode.DebugSession,
 	): ServerReadyDetector | undefined {
 		if (session.configuration.serverReadyAction) {
 			let detector = ServerReadyDetector.detectors.get(session);
@@ -117,7 +117,7 @@ class ServerReadyDetector extends vscode.Disposable {
 							return;
 						}
 					}
-				}
+				},
 			);
 		}
 	}
@@ -136,7 +136,7 @@ class ServerReadyDetector extends vscode.Disposable {
 
 		this.regexp = new RegExp(
 			session.configuration.serverReadyAction.pattern || PATTERN,
-			"i"
+			"i",
 		);
 	}
 
@@ -155,7 +155,7 @@ class ServerReadyDetector extends vscode.Disposable {
 			if (matches && matches.length >= 1) {
 				this.openExternalWithString(
 					this.session,
-					matches.length > 1 ? matches[1] : ""
+					matches.length > 1 ? matches[1] : "",
 				);
 				this.trigger.fire();
 				return true;
@@ -166,7 +166,7 @@ class ServerReadyDetector extends vscode.Disposable {
 
 	private openExternalWithString(
 		session: vscode.DebugSession,
-		captureString: string
+		captureString: string,
 	) {
 		const args: ServerReadyAction = session.configuration.serverReadyAction;
 
@@ -178,7 +178,7 @@ class ServerReadyDetector extends vscode.Disposable {
 			if (format.indexOf("%s") >= 0) {
 				const errMsg = vscode.l10n.t(
 					"Format uri ('{0}') uses a substitution placeholder but pattern did not capture anything.",
-					format
+					format,
 				);
 				vscode.window
 					.showErrorMessage(errMsg, { modal: true })
@@ -196,7 +196,7 @@ class ServerReadyDetector extends vscode.Disposable {
 			if (s.length !== 2) {
 				const errMsg = vscode.l10n.t(
 					"Format uri ('{0}') must contain exactly one substitution placeholder.",
-					format
+					format,
 				);
 				vscode.window
 					.showErrorMessage(errMsg, { modal: true })
@@ -211,7 +211,7 @@ class ServerReadyDetector extends vscode.Disposable {
 
 	private async openExternalWithUri(
 		session: vscode.DebugSession,
-		uri: string
+		uri: string,
 	) {
 		const args: ServerReadyAction = session.configuration.serverReadyAction;
 		switch (args.action || "openExternally") {
@@ -232,12 +232,12 @@ class ServerReadyDetector extends vscode.Disposable {
 					await this.startDebugSession(
 						session,
 						args.config.name,
-						args.config
+						args.config,
 					);
 				} else {
 					await this.startDebugSession(
 						session,
-						args.name || "unspecified"
+						args.name || "unspecified",
 					);
 				}
 				break;
@@ -251,7 +251,7 @@ class ServerReadyDetector extends vscode.Disposable {
 	private async debugWithBrowser(
 		type: string,
 		session: vscode.DebugSession,
-		uri: string
+		uri: string,
 	) {
 		const args = session.configuration
 			.serverReadyAction as ServerReadyAction;
@@ -265,7 +265,7 @@ class ServerReadyDetector extends vscode.Disposable {
 		const newSessionPromise = this.catchStartedDebugSession(
 			(session) =>
 				session.configuration._debugServerReadySessionId === trackerId,
-			cts.token
+			cts.token,
 		);
 
 		if (
@@ -273,7 +273,7 @@ class ServerReadyDetector extends vscode.Disposable {
 				type,
 				session,
 				uri,
-				trackerId
+				trackerId,
 			))
 		) {
 			cts.cancel();
@@ -300,7 +300,7 @@ class ServerReadyDetector extends vscode.Disposable {
 		type: string,
 		session: vscode.DebugSession,
 		uri: string,
-		trackerId?: string
+		trackerId?: string,
 	) {
 		return vscode.debug.startDebugging(session.workspaceFolder, {
 			type,
@@ -323,14 +323,14 @@ class ServerReadyDetector extends vscode.Disposable {
 	private async startDebugSession(
 		session: vscode.DebugSession,
 		name: string,
-		config?: vscode.DebugConfiguration
+		config?: vscode.DebugConfiguration,
 	) {
 		const args = session.configuration
 			.serverReadyAction as ServerReadyAction;
 		if (!args.killOnServerStop) {
 			await vscode.debug.startDebugging(
 				session.workspaceFolder,
-				config ?? name
+				config ?? name,
 			);
 			return;
 		}
@@ -338,13 +338,13 @@ class ServerReadyDetector extends vscode.Disposable {
 		const cts = new vscode.CancellationTokenSource();
 		const newSessionPromise = this.catchStartedDebugSession(
 			(x) => x.name === name,
-			cts.token
+			cts.token,
 		);
 
 		if (
 			!(await vscode.debug.startDebugging(
 				session.workspaceFolder,
-				config ?? name
+				config ?? name,
 			))
 		) {
 			cts.cancel();
@@ -369,7 +369,7 @@ class ServerReadyDetector extends vscode.Disposable {
 
 	private catchStartedDebugSession(
 		predicate: (session: vscode.DebugSession) => boolean,
-		cancellationToken: vscode.CancellationToken
+		cancellationToken: vscode.CancellationToken,
 	): Promise<vscode.DebugSession | undefined> {
 		return new Promise<vscode.DebugSession | undefined>((_resolve) => {
 			const done = (value?: vscode.DebugSession) => {
@@ -404,13 +404,13 @@ export function activate(context: vscode.ExtensionContext) {
 					ServerReadyDetector.startListeningTerminalData();
 				}
 			}
-		})
+		}),
 	);
 
 	context.subscriptions.push(
 		vscode.debug.onDidTerminateDebugSession((session) => {
 			ServerReadyDetector.stop(session);
-		})
+		}),
 	);
 
 	const trackers = new Set<string>();
@@ -419,7 +419,7 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.debug.registerDebugConfigurationProvider("*", {
 			resolveDebugConfigurationWithSubstitutedVariables(
 				_folder: vscode.WorkspaceFolder | undefined,
-				debugConfiguration: vscode.DebugConfiguration
+				debugConfiguration: vscode.DebugConfiguration,
 			) {
 				if (
 					debugConfiguration.type &&
@@ -432,7 +432,7 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 				return debugConfiguration;
 			},
-		})
+		}),
 	);
 }
 
@@ -457,7 +457,7 @@ function startTrackerForType(context: vscode.ExtensionContext, type: string) {
 									case "stdout":
 										if (m.body.output) {
 											detector.detectPattern(
-												m.body.output
+												m.body.output,
 											);
 										}
 										break;
@@ -486,7 +486,7 @@ function startTrackerForType(context: vscode.ExtensionContext, type: string) {
 								runInTerminalRequestSeq = undefined;
 								ServerReadyDetector.rememberShellPid(
 									session,
-									m.body.shellProcessId
+									m.body.shellProcessId,
 								);
 							}
 						},
@@ -494,6 +494,6 @@ function startTrackerForType(context: vscode.ExtensionContext, type: string) {
 				}
 				return undefined;
 			},
-		})
+		}),
 	);
 }

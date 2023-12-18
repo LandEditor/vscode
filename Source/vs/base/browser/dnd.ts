@@ -28,14 +28,14 @@ export class DelayedDragHandler extends Disposable {
 						this.timeout = null;
 					}, 800);
 				}
-			})
+			}),
 		);
 
 		["dragleave", "drop", "dragend"].forEach((type) => {
 			this._register(
 				addDisposableListener(container, type, () => {
 					this.clearDragTimeout();
-				})
+				}),
 			);
 		});
 	}
@@ -89,7 +89,7 @@ export function applyDragImage(
 	label: string | null,
 	clazz: string,
 	backgroundColor?: string | null,
-	foregroundColor?: string | null
+	foregroundColor?: string | null,
 ): void {
 	const dragImage = document.createElement("div");
 	dragImage.className = clazz;

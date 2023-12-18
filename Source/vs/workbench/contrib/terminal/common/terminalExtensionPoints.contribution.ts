@@ -15,5 +15,5 @@ import {
 registerSingleton(
 	ITerminalContributionService,
 	TerminalContributionService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

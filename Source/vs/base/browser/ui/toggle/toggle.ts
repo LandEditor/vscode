@@ -3,6 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import {
+	$,
+	EventType,
+	addDisposableListener,
+	isActiveElement,
+} from "vs/base/browser/dom";
 import { IKeyboardEvent } from "vs/base/browser/keyboardEvent";
 import {
 	BaseActionViewItem,
@@ -11,16 +17,10 @@ import {
 import { Widget } from "vs/base/browser/ui/widget";
 import { IAction } from "vs/base/common/actions";
 import { Codicon } from "vs/base/common/codicons";
-import { ThemeIcon } from "vs/base/common/themables";
 import { Emitter, Event } from "vs/base/common/event";
 import { KeyCode } from "vs/base/common/keyCodes";
+import { ThemeIcon } from "vs/base/common/themables";
 import "vs/css!./toggle";
-import {
-	isActiveElement,
-	$,
-	addDisposableListener,
-	EventType,
-} from "vs/base/browser/dom";
 
 export interface IToggleOpts extends IToggleStyles {
 	readonly actionClassName?: string;
@@ -54,7 +54,7 @@ export class ToggleActionViewItem extends BaseActionViewItem {
 	constructor(
 		context: any,
 		action: IAction,
-		options: IActionViewItemOptions
+		options: IActionViewItemOptions,
 	) {
 		super(context, action, options);
 
@@ -65,7 +65,7 @@ export class ToggleActionViewItem extends BaseActionViewItem {
 				title: (<IActionViewItemOptions>this.options).keybinding
 					? `${this._action.label} (${
 							(<IActionViewItemOptions>this.options).keybinding
-						})`
+					  })`
 					: this._action.label,
 				notFocusable: true,
 				inputActiveOptionBackground:
@@ -74,14 +74,14 @@ export class ToggleActionViewItem extends BaseActionViewItem {
 					options.toggleStyles?.inputActiveOptionBorder,
 				inputActiveOptionForeground:
 					options.toggleStyles?.inputActiveOptionForeground,
-			})
+			}),
 		);
 		this._register(
 			this.toggle.onChange(
 				() =>
 					(this._action.checked =
-						!!this.toggle && this.toggle.checked)
-			)
+						!!this.toggle && this.toggle.checked),
+			),
 		);
 	}
 
@@ -212,13 +212,13 @@ export class Toggle extends Widget {
 	setIcon(icon: ThemeIcon | undefined): void {
 		if (this._icon) {
 			this.domNode.classList.remove(
-				...ThemeIcon.asClassNameArray(this._icon)
+				...ThemeIcon.asClassNameArray(this._icon),
 			);
 		}
 		this._icon = icon;
 		if (this._icon) {
 			this.domNode.classList.add(
-				...ThemeIcon.asClassNameArray(this._icon)
+				...ThemeIcon.asClassNameArray(this._icon),
 			);
 		}
 	}
@@ -270,7 +270,7 @@ export class Checkbox extends Widget {
 	constructor(
 		private title: string,
 		private isChecked: boolean,
-		styles: ICheckboxStyles
+		styles: ICheckboxStyles,
 	) {
 		super();
 
@@ -292,7 +292,7 @@ export class Checkbox extends Widget {
 			this.checkbox.onChange((keyboard) => {
 				this.applyStyles();
 				this._onChange.fire(keyboard);
-			})
+			}),
 		);
 	}
 
@@ -341,7 +341,7 @@ export class CheckboxActionViewItem extends BaseActionViewItem {
 	constructor(
 		context: any,
 		action: IAction,
-		options: ICheckboxActionViewItemOptions
+		options: ICheckboxActionViewItemOptions,
 	) {
 		super(context, action, options);
 
@@ -349,8 +349,8 @@ export class CheckboxActionViewItem extends BaseActionViewItem {
 			new Checkbox(
 				this._action.label,
 				!!this._action.checked,
-				options.checkboxStyles
-			)
+				options.checkboxStyles,
+			),
 		);
 		this._register(this.toggle.onChange(() => this.onChange()));
 	}
@@ -364,7 +364,7 @@ export class CheckboxActionViewItem extends BaseActionViewItem {
 			this._action.label
 		) {
 			const label = this.element.appendChild(
-				$("span.checkbox-label", undefined, this._action.label)
+				$("span.checkbox-label", undefined, this._action.label),
 			);
 			this._register(
 				addDisposableListener(
@@ -375,8 +375,8 @@ export class CheckboxActionViewItem extends BaseActionViewItem {
 						e.stopPropagation();
 						e.preventDefault();
 						this.onChange();
-					}
-				)
+					},
+				),
 			);
 		}
 

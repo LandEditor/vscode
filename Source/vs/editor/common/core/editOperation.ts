@@ -29,14 +29,14 @@ export interface ISingleEditOperation {
 export class EditOperation {
 	public static insert(
 		position: Position,
-		text: string
+		text: string,
 	): ISingleEditOperation {
 		return {
 			range: new Range(
 				position.lineNumber,
 				position.column,
 				position.lineNumber,
-				position.column
+				position.column,
 			),
 			text: text,
 			forceMoveMarkers: true,
@@ -52,7 +52,7 @@ export class EditOperation {
 
 	public static replace(
 		range: Range,
-		text: string | null
+		text: string | null,
 	): ISingleEditOperation {
 		return {
 			range: range,
@@ -62,7 +62,7 @@ export class EditOperation {
 
 	public static replaceMove(
 		range: Range,
-		text: string | null
+		text: string | null,
 	): ISingleEditOperation {
 		return {
 			range: range,

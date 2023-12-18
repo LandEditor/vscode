@@ -19,8 +19,8 @@ const SettingsEditorIcon = registerIcon(
 	Codicon.settings,
 	nls.localize(
 		"settingsEditorLabelIcon",
-		"Icon of the settings editor label."
-	)
+		"Icon of the settings editor label.",
+	),
 );
 
 export class SettingsEditor2Input extends EditorInput {

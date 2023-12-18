@@ -4,36 +4,36 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Event } from "vs/base/common/event";
-import * as platform from "vs/base/common/platform";
+import { basename } from "vs/base/common/path";
 import * as performance from "vs/base/common/performance";
+import * as platform from "vs/base/common/platform";
+import { ProcessItem } from "vs/base/common/processes";
+import { joinPath } from "vs/base/common/resources";
 import { URI } from "vs/base/common/uri";
-import { createURITransformer } from "vs/workbench/api/node/uriTransformer";
-import {
-	IRemoteAgentEnvironmentDTO,
-	IGetEnvironmentDataArguments,
-	IGetExtensionHostExitInfoArguments,
-} from "vs/workbench/services/remote/common/remoteAgentEnvironmentChannel";
-import { IServerEnvironmentService } from "vs/server/node/serverEnvironmentService";
-import { IServerChannel } from "vs/base/parts/ipc/common/ipc";
 import { transformOutgoingURIs } from "vs/base/common/uriIpc";
 import { listProcesses } from "vs/base/node/ps";
+import { IServerChannel } from "vs/base/parts/ipc/common/ipc";
 import {
-	getMachineInfo,
-	collectWorkspaceStats,
-} from "vs/platform/diagnostics/node/diagnosticsService";
-import {
-	IDiagnosticInfoOptions,
 	IDiagnosticInfo,
+	IDiagnosticInfoOptions,
 } from "vs/platform/diagnostics/common/diagnostics";
-import { basename } from "vs/base/common/path";
-import { ProcessItem } from "vs/base/common/processes";
+import {
+	collectWorkspaceStats,
+	getMachineInfo,
+} from "vs/platform/diagnostics/node/diagnosticsService";
+import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
+import { IExtensionHostStatusService } from "vs/server/node/extensionHostStatusService";
 import {
 	ServerConnectionToken,
 	ServerConnectionTokenType,
 } from "vs/server/node/serverConnectionToken";
-import { IExtensionHostStatusService } from "vs/server/node/extensionHostStatusService";
-import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
-import { joinPath } from "vs/base/common/resources";
+import { IServerEnvironmentService } from "vs/server/node/serverEnvironmentService";
+import { createURITransformer } from "vs/workbench/api/node/uriTransformer";
+import {
+	IGetEnvironmentDataArguments,
+	IGetExtensionHostExitInfoArguments,
+	IRemoteAgentEnvironmentDTO,
+} from "vs/workbench/services/remote/common/remoteAgentEnvironmentChannel";
 
 export class RemoteAgentEnvironmentChannel implements IServerChannel {
 	private static _namePool = 1;
@@ -42,7 +42,7 @@ export class RemoteAgentEnvironmentChannel implements IServerChannel {
 		private readonly _connectionToken: ServerConnectionToken,
 		private readonly _environmentService: IServerEnvironmentService,
 		private readonly _userDataProfilesService: IUserDataProfilesService,
-		private readonly _extensionHostStatusService: IExtensionHostStatusService
+		private readonly _extensionHostStatusService: IExtensionHostStatusService,
 	) {}
 
 	async call(_: any, command: string, arg?: any): Promise<any> {
@@ -50,15 +50,15 @@ export class RemoteAgentEnvironmentChannel implements IServerChannel {
 			case "getEnvironmentData": {
 				const args = <IGetEnvironmentDataArguments>arg;
 				const uriTransformer = createURITransformer(
-					args.remoteAuthority
+					args.remoteAuthority,
 				);
 
 				let environmentData = await this._getEnvironmentData(
-					args.profile
+					args.profile,
 				);
 				environmentData = transformOutgoingURIs(
 					environmentData,
-					uriTransformer
+					uriTransformer,
 				);
 
 				return environmentData;
@@ -67,7 +67,7 @@ export class RemoteAgentEnvironmentChannel implements IServerChannel {
 			case "getExtensionHostExitInfo": {
 				const args = <IGetExtensionHostExitInfoArguments>arg;
 				return this._extensionHostStatusService.getExitInfo(
-					args.reconnectionToken
+					args.reconnectionToken,
 				);
 			}
 
@@ -89,7 +89,9 @@ export class RemoteAgentEnvironmentChannel implements IServerChannel {
 					const uriTransformer = createURITransformer("");
 					const folderPaths = options.folders
 						.map((folder) =>
-							URI.revive(uriTransformer.transformIncoming(folder))
+							URI.revive(
+								uriTransformer.transformIncoming(folder),
+							),
 						)
 						.filter((uri) => uri.scheme === "file");
 
@@ -124,12 +126,12 @@ export class RemoteAgentEnvironmentChannel implements IServerChannel {
 	}
 
 	private async _getEnvironmentData(
-		profile?: string
+		profile?: string,
 	): Promise<IRemoteAgentEnvironmentDTO> {
 		if (
 			profile &&
 			!this._userDataProfilesService.profiles.some(
-				(p) => p.id === profile
+				(p) => p.id === profile,
 			)
 		) {
 			await this._userDataProfilesService.createProfile(profile, profile);
@@ -145,7 +147,7 @@ export class RemoteAgentEnvironmentChannel implements IServerChannel {
 			logsPath: this._environmentService.logsHome,
 			extensionHostLogsPath: joinPath(
 				this._environmentService.logsHome,
-				`exthost${RemoteAgentEnvironmentChannel._namePool++}`
+				`exthost${RemoteAgentEnvironmentChannel._namePool++}`,
 			),
 			globalStorageHome:
 				this._userDataProfilesService.defaultProfile.globalStorageHome,
@@ -159,7 +161,7 @@ export class RemoteAgentEnvironmentChannel implements IServerChannel {
 			profiles: {
 				home: this._userDataProfilesService.profilesHome,
 				all: [...this._userDataProfilesService.profiles].map(
-					(profile) => ({ ...profile })
+					(profile) => ({ ...profile }),
 				),
 			},
 		};

@@ -259,7 +259,7 @@ export interface IAppCenterConfiguration {
 	readonly "win32-x64": string;
 	readonly "win32-arm64": string;
 	readonly "linux-x64": string;
-	readonly "darwin": string;
+	readonly darwin: string;
 	readonly "darwin-universal": string;
 	readonly "darwin-arm64": string;
 }

@@ -4,11 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as assert from "vs/base/common/assert";
-import * as vscode from "vscode";
 import { Emitter, Event } from "vs/base/common/event";
+import { Iterable } from "vs/base/common/iterator";
+import { Lazy } from "vs/base/common/lazy";
 import { dispose } from "vs/base/common/lifecycle";
+import { ResourceMap } from "vs/base/common/map";
+import { Schemas } from "vs/base/common/network";
 import { URI } from "vs/base/common/uri";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { ILogService } from "vs/platform/log/common/log";
 import {
 	ExtHostDocumentsAndEditorsShape,
 	IDocumentsAndEditorsDelta,
@@ -19,11 +23,7 @@ import { ExtHostDocumentData } from "vs/workbench/api/common/extHostDocumentData
 import { IExtHostRpcService } from "vs/workbench/api/common/extHostRpcService";
 import { ExtHostTextEditor } from "vs/workbench/api/common/extHostTextEditor";
 import * as typeConverters from "vs/workbench/api/common/extHostTypeConverters";
-import { ILogService } from "vs/platform/log/common/log";
-import { ResourceMap } from "vs/base/common/map";
-import { Schemas } from "vs/base/common/network";
-import { Iterable } from "vs/base/common/iterator";
-import { Lazy } from "vs/base/common/lazy";
+import * as vscode from "vscode";
 
 class Reference<T> {
 	private _count = 0;
@@ -90,7 +90,7 @@ export class ExtHostDocumentsAndEditors
 	}
 
 	acceptDocumentsAndEditorsDelta(
-		delta: IExtHostDocumentsAndEditorsDelta
+		delta: IExtHostDocumentsAndEditorsDelta,
 	): void {
 		const removedDocuments: ExtHostDocumentData[] = [];
 		const addedDocuments: ExtHostDocumentData[] = [];
@@ -120,7 +120,7 @@ export class ExtHostDocumentsAndEditors
 						resource.scheme !== Schemas.vscodeInteractiveInput
 					) {
 						throw new Error(
-							`document '${resource} already exists!'`
+							`document '${resource} already exists!'`,
 						);
 					}
 				}
@@ -128,7 +128,7 @@ export class ExtHostDocumentsAndEditors
 					ref = new Reference(
 						new ExtHostDocumentData(
 							this._extHostRpc.getProxy(
-								MainContext.MainThreadDocuments
+								MainContext.MainThreadDocuments,
 							),
 							resource,
 							data.lines,
@@ -136,8 +136,8 @@ export class ExtHostDocumentsAndEditors
 							data.versionId,
 							data.languageId,
 							data.isDirty,
-							data.notebook
-						)
+							data.notebook,
+						),
 					);
 					this._documents.set(resource, ref);
 					addedDocuments.push(ref.value);
@@ -162,29 +162,29 @@ export class ExtHostDocumentsAndEditors
 				const resource = URI.revive(data.documentUri);
 				assert.ok(
 					this._documents.has(resource),
-					`document '${resource}' does not exist`
+					`document '${resource}' does not exist`,
 				);
 				assert.ok(
 					!this._editors.has(data.id),
-					`editor '${data.id}' already exists!`
+					`editor '${data.id}' already exists!`,
 				);
 
 				const documentData = this._documents.get(resource)!.value;
 				const editor = new ExtHostTextEditor(
 					data.id,
 					this._extHostRpc.getProxy(
-						MainContext.MainThreadTextEditors
+						MainContext.MainThreadTextEditors,
 					),
 					this._logService,
 					new Lazy(() => documentData.document),
 					data.selections.map(typeConverters.Selection.to),
 					data.options,
 					data.visibleRanges.map((range) =>
-						typeConverters.Range.to(range)
+						typeConverters.Range.to(range),
 					),
 					typeof data.editorPosition === "number"
 						? typeConverters.ViewColumn.to(data.editorPosition)
-						: undefined
+						: undefined,
 				);
 				this._editors.set(data.id, editor);
 			}
@@ -194,7 +194,7 @@ export class ExtHostDocumentsAndEditors
 			assert.ok(
 				delta.newActiveEditor === null ||
 					this._editors.has(delta.newActiveEditor),
-				`active editor '${delta.newActiveEditor}' does not exist`
+				`active editor '${delta.newActiveEditor}' does not exist`,
 			);
 			this._activeEditorId = delta.newActiveEditor;
 		}
@@ -212,7 +212,7 @@ export class ExtHostDocumentsAndEditors
 
 		if (delta.removedEditors || delta.addedEditors) {
 			this._onDidChangeVisibleTextEditors.fire(
-				this.allEditors().map((editor) => editor.value)
+				this.allEditors().map((editor) => editor.value),
 			);
 		}
 		if (delta.newActiveEditor !== undefined) {
@@ -235,7 +235,7 @@ export class ExtHostDocumentsAndEditors
 	activeEditor(): vscode.TextEditor | undefined;
 	activeEditor(internal: true): ExtHostTextEditor | undefined;
 	activeEditor(
-		internal?: true
+		internal?: true,
 	): vscode.TextEditor | ExtHostTextEditor | undefined {
 		if (!this._activeEditorId) {
 			return undefined;
@@ -253,7 +253,6 @@ export class ExtHostDocumentsAndEditors
 	}
 }
 
-export interface IExtHostDocumentsAndEditors
-	extends ExtHostDocumentsAndEditors {}
+export type IExtHostDocumentsAndEditors = ExtHostDocumentsAndEditors;
 export const IExtHostDocumentsAndEditors =
 	createDecorator<IExtHostDocumentsAndEditors>("IExtHostDocumentsAndEditors");

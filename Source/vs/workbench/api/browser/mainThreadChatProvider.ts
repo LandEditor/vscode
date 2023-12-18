@@ -15,10 +15,10 @@ import {
 	MainThreadChatProviderShape,
 } from "vs/workbench/api/common/extHost.protocol";
 import {
-	IChatResponseProviderMetadata,
-	IChatResponseFragment,
-	IChatProviderService,
 	IChatMessage,
+	IChatProviderService,
+	IChatResponseFragment,
+	IChatResponseProviderMetadata,
 } from "vs/workbench/contrib/chat/common/chatProvider";
 import {
 	IExtHostContext,
@@ -52,7 +52,7 @@ export class MainThreadChatProvider implements MainThreadChatProviderShape {
 	$registerProvider(
 		handle: number,
 		identifier: string,
-		metadata: IChatResponseProviderMetadata
+		metadata: IChatResponseProviderMetadata,
 	): void {
 		const registration =
 			this._chatProviderService.registerChatResponseProvider(identifier, {
@@ -61,7 +61,7 @@ export class MainThreadChatProvider implements MainThreadChatProviderShape {
 					messages,
 					options,
 					progress,
-					token
+					token,
 				) => {
 					const requestId = (Math.random() * 1e6) | 0;
 					this._pendingProgress.set(requestId, progress);
@@ -71,7 +71,7 @@ export class MainThreadChatProvider implements MainThreadChatProviderShape {
 							requestId,
 							messages,
 							options,
-							token
+							token,
 						);
 					} finally {
 						this._pendingProgress.delete(requestId);
@@ -83,7 +83,7 @@ export class MainThreadChatProvider implements MainThreadChatProviderShape {
 
 	async $handleProgressChunk(
 		requestId: number,
-		chunk: IChatResponseFragment
+		chunk: IChatResponseFragment,
 	): Promise<void> {
 		this._pendingProgress.get(requestId)?.report(chunk);
 	}
@@ -93,7 +93,7 @@ export class MainThreadChatProvider implements MainThreadChatProviderShape {
 	}
 
 	async $prepareChatAccess(
-		providerId: string
+		providerId: string,
 	): Promise<IChatResponseProviderMetadata | undefined> {
 		return this._chatProviderService.lookupChatResponseProvider(providerId);
 	}
@@ -104,12 +104,12 @@ export class MainThreadChatProvider implements MainThreadChatProviderShape {
 		requestId: number,
 		messages: IChatMessage[],
 		options: {},
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<any> {
 		this._logService.debug(
 			"[CHAT] extension request STARTED",
 			extension.value,
-			requestId
+			requestId,
 		);
 
 		const task = this._chatProviderService.fetchChatResponse(
@@ -119,7 +119,7 @@ export class MainThreadChatProvider implements MainThreadChatProviderShape {
 			new Progress((value) => {
 				this._proxy.$handleResponseFragment(requestId, value);
 			}),
-			token
+			token,
 		);
 
 		task.catch((err) => {
@@ -127,13 +127,13 @@ export class MainThreadChatProvider implements MainThreadChatProviderShape {
 				"[CHAT] extension request ERRORED",
 				err,
 				extension.value,
-				requestId
+				requestId,
 			);
 		}).finally(() => {
 			this._logService.debug(
 				"[CHAT] extension request DONE",
 				extension.value,
-				requestId
+				requestId,
 			);
 		});
 

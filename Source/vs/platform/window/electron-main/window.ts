@@ -79,7 +79,7 @@ export interface ICodeWindow extends IBaseWindow {
 
 	load(
 		config: INativeWindowConfiguration,
-		options?: { isReload?: boolean }
+		options?: { isReload?: boolean },
 	): void;
 	reload(cli?: NativeParsedArgs): void;
 
@@ -99,7 +99,7 @@ export interface ICodeWindow extends IBaseWindow {
 	serializeWindowState(): IWindowState;
 }
 
-export const enum LoadReason {
+export enum LoadReason {
 	/**
 	 * The window is loaded for the first time.
 	 */
@@ -108,15 +108,15 @@ export const enum LoadReason {
 	/**
 	 * The window is loaded into a different workspace context.
 	 */
-	LOAD,
+	LOAD = 2,
 
 	/**
 	 * The window is reloaded.
 	 */
-	RELOAD,
+	RELOAD = 3,
 }
 
-export const enum UnloadReason {
+export enum UnloadReason {
 	/**
 	 * The window is closed.
 	 */
@@ -125,17 +125,17 @@ export const enum UnloadReason {
 	/**
 	 * All windows unload because the application quits.
 	 */
-	QUIT,
+	QUIT = 2,
 
 	/**
 	 * The window is reloaded.
 	 */
-	RELOAD,
+	RELOAD = 3,
 
 	/**
 	 * The window is loaded into a different workspace context.
 	 */
-	LOAD,
+	LOAD = 4,
 }
 
 export interface IWindowState {
@@ -147,21 +147,17 @@ export interface IWindowState {
 	readonly display?: number;
 }
 
-export const defaultWindowState = function (
-	mode = WindowMode.Normal
-): IWindowState {
-	return {
-		width: 1024,
-		height: 768,
-		mode,
-	};
-};
+export const defaultWindowState = (mode = WindowMode.Normal): IWindowState => ({
+	width: 1024,
+	height: 768,
+	mode,
+});
 
-export const enum WindowMode {
-	Maximized,
-	Normal,
-	Minimized, // not used anymore, but also cannot remove due to existing stored UI state (needs migration)
-	Fullscreen,
+export enum WindowMode {
+	Maximized = 0,
+	Normal = 1,
+	Minimized = 2, // not used anymore, but also cannot remove due to existing stored UI state (needs migration)
+	Fullscreen = 3,
 }
 
 export interface ILoadEvent {
@@ -172,7 +168,7 @@ export interface ILoadEvent {
 	readonly reason: LoadReason;
 }
 
-export const enum WindowError {
+export enum WindowError {
 	/**
 	 * Maps to the `unresponsive` event on a `BrowserWindow`.
 	 */

@@ -3,29 +3,29 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	MainThreadStatusBarShape,
-	MainContext,
-	ExtHostContext,
-	StatusBarItemDto,
-} from "../common/extHost.protocol";
-import { ThemeColor } from "vs/base/common/themables";
-import {
-	extHostNamedCustomer,
-	IExtHostContext,
-} from "vs/workbench/services/extensions/common/extHostCustomers";
+import { IMarkdownString } from "vs/base/common/htmlContent";
 import { DisposableStore, toDisposable } from "vs/base/common/lifecycle";
+import { ThemeColor } from "vs/base/common/themables";
 import { Command } from "vs/editor/common/languages";
 import { IAccessibilityInformation } from "vs/platform/accessibility/common/accessibility";
-import { IMarkdownString } from "vs/base/common/htmlContent";
 import {
 	IExtensionStatusBarItemService,
 	StatusBarUpdateKind,
 } from "vs/workbench/api/browser/statusBarExtensionPoint";
 import {
+	IExtHostContext,
+	extHostNamedCustomer,
+} from "vs/workbench/services/extensions/common/extHostCustomers";
+import {
 	IStatusbarEntry,
 	StatusbarAlignment,
 } from "vs/workbench/services/statusbar/browser/statusbar";
+import {
+	ExtHostContext,
+	MainContext,
+	MainThreadStatusBarShape,
+	StatusBarItemDto,
+} from "../common/extHost.protocol";
 
 @extHostNamedCustomer(MainContext.MainThreadStatusBar)
 export class MainThreadStatusBar implements MainThreadStatusBarShape {
@@ -98,7 +98,7 @@ export class MainThreadStatusBar implements MainThreadStatusBarShape {
 		backgroundColor: ThemeColor | undefined,
 		alignLeft: boolean,
 		priority: number | undefined,
-		accessibilityInformation: IAccessibilityInformation | undefined
+		accessibilityInformation: IAccessibilityInformation | undefined,
 	): void {
 		const kind = this.statusbarService.setOrUpdateEntry(
 			entryId,
@@ -112,11 +112,11 @@ export class MainThreadStatusBar implements MainThreadStatusBarShape {
 			backgroundColor,
 			alignLeft,
 			priority,
-			accessibilityInformation
+			accessibilityInformation,
 		);
 		if (kind === StatusBarUpdateKind.DidDefine) {
 			this._store.add(
-				toDisposable(() => this.statusbarService.unsetEntry(entryId))
+				toDisposable(() => this.statusbarService.unsetEntry(entryId)),
 			);
 		}
 	}

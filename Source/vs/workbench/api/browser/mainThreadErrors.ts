@@ -4,15 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+	ErrorNoTelemetry,
 	SerializedError,
 	onUnexpectedError,
-	ErrorNoTelemetry,
 } from "vs/base/common/errors";
-import { extHostNamedCustomer } from "vs/workbench/services/extensions/common/extHostCustomers";
 import {
 	MainContext,
 	MainThreadErrorsShape,
 } from "vs/workbench/api/common/extHost.protocol";
+import { extHostNamedCustomer } from "vs/workbench/services/extensions/common/extHostCustomers";
 
 @extHostNamedCustomer(MainContext.MainThreadErrors)
 export class MainThreadErrors implements MainThreadErrorsShape {

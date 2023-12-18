@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 //@ts-check
-"use strict";
 
 // Store the node.js require function in a variable
 // before loading our AMD loader to avoid issues
@@ -26,7 +25,7 @@ if (process.env["VSCODE_DEV"]) {
 		const overrides = require("../product.overrides.json");
 		globalThis._VSCODE_PRODUCT_JSON = Object.assign(
 			globalThis._VSCODE_PRODUCT_JSON,
-			overrides
+			overrides,
 		);
 	} catch (error) {
 		/* ignore */
@@ -59,15 +58,15 @@ if (process.env["ELECTRON_RUN_AS_NODE"] || process.versions["electron"]) {
 	loader.define(
 		"fs",
 		["original-fs"],
-		function (/** @type {import('fs')} */ originalFS) {
+		(/** @type {import('fs')} */ originalFS) => {
 			return originalFS; // replace the patched electron fs with the original node fs for all AMD code
-		}
+		},
 	);
 }
 
 // Pseudo NLS support
 if (nlsConfig && nlsConfig.pseudo) {
-	loader(["vs/nls"], function (/** @type {import('vs/nls')} */ nlsPlugin) {
+	loader(["vs/nls"], (/** @type {import('vs/nls')} */ nlsPlugin) => {
 		nlsPlugin.setPseudoTranslation(!!nlsConfig.pseudo);
 	});
 }
@@ -77,7 +76,7 @@ if (nlsConfig && nlsConfig.pseudo) {
  * @param {(value: any) => void=} onLoad
  * @param {(err: Error) => void=} onError
  */
-exports.load = function (entrypoint, onLoad, onError) {
+exports.load = (entrypoint, onLoad, onError) => {
 	if (!entrypoint) {
 		return;
 	}
@@ -92,12 +91,15 @@ exports.load = function (entrypoint, onLoad, onError) {
 		});
 	}
 
-	onLoad = onLoad || function () {};
-	onError =
-		onError ||
-		function (err) {
-			console.error(err);
-		};
+	onLoad = onLoad || ()
+	=>
+	{
+	}
+	onError = onError || err;
+	=>
+	{
+		console.error(err);
+	}
 
 	performance.mark("code/fork/willLoadCode");
 	loader([entrypoint], onLoad, onError);

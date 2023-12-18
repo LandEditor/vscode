@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { ProjectType, openProjectConfigForFile } from "../tsconfig";
 import TypeScriptServiceClientHost from "../typeScriptServiceClientHost";
 import { ActiveJsTsEditorTracker } from "../ui/activeJsTsEditorTracker";
 import { Lazy } from "../utils/lazy";
-import { openProjectConfigForFile, ProjectType } from "../tsconfig";
 import { Command } from "./commandManager";
 
 export class TypeScriptGoToProjectConfigCommand implements Command {
@@ -14,7 +14,7 @@ export class TypeScriptGoToProjectConfigCommand implements Command {
 
 	public constructor(
 		private readonly activeJsTsEditorTracker: ActiveJsTsEditorTracker,
-		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>
+		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>,
 	) {}
 
 	public execute() {
@@ -23,7 +23,7 @@ export class TypeScriptGoToProjectConfigCommand implements Command {
 			openProjectConfigForFile(
 				ProjectType.TypeScript,
 				this.lazyClientHost.value.serviceClient,
-				editor.document.uri
+				editor.document.uri,
 			);
 		}
 	}
@@ -34,7 +34,7 @@ export class JavaScriptGoToProjectConfigCommand implements Command {
 
 	public constructor(
 		private readonly activeJsTsEditorTracker: ActiveJsTsEditorTracker,
-		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>
+		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>,
 	) {}
 
 	public execute() {
@@ -43,7 +43,7 @@ export class JavaScriptGoToProjectConfigCommand implements Command {
 			openProjectConfigForFile(
 				ProjectType.JavaScript,
 				this.lazyClientHost.value.serviceClient,
-				editor.document.uri
+				editor.document.uri,
 			);
 		}
 	}

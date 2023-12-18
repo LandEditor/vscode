@@ -8,6 +8,10 @@ import * as nls from "vs/nls";
 import { registerAction2 } from "vs/platform/actions/common/actions";
 import { CommandsRegistry } from "vs/platform/commands/common/commands";
 import {
+	Extensions,
+	IConfigurationRegistry,
+} from "vs/platform/configuration/common/configurationRegistry";
+import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
@@ -25,13 +29,9 @@ import { SnippetCodeActions } from "vs/workbench/contrib/snippets/browser/snippe
 import { ISnippetsService } from "vs/workbench/contrib/snippets/browser/snippets";
 import { SnippetsService } from "vs/workbench/contrib/snippets/browser/snippetsService";
 import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
-import {
-	Extensions,
-	IConfigurationRegistry,
-} from "vs/platform/configuration/common/configurationRegistry";
 
-import "vs/workbench/contrib/snippets/browser/tabCompletion";
 import { editorConfigurationBaseNode } from "vs/editor/common/config/editorConfigurationSchema";
+import "vs/workbench/contrib/snippets/browser/tabCompletion";
 
 // service
 registerSingleton(ISnippetsService, SnippetsService, InstantiationType.Delayed);
@@ -40,7 +40,7 @@ registerSingleton(ISnippetsService, SnippetsService, InstantiationType.Delayed);
 registerAction2(InsertSnippetAction);
 CommandsRegistry.registerCommandAlias(
 	"editor.action.showSnippets",
-	"editor.action.insertSnippet"
+	"editor.action.insertSnippet",
 );
 registerAction2(SurroundWithSnippetEditorAction);
 registerAction2(ApplyFileSnippetAction);
@@ -48,26 +48,26 @@ registerAction2(ConfigureSnippetsAction);
 
 // workbench contribs
 const workbenchContribRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 );
 workbenchContribRegistry.registerWorkbenchContribution(
 	SnippetCodeActions,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );
 
 // config
 Registry.as<IConfigurationRegistry>(
-	Extensions.Configuration
+	Extensions.Configuration,
 ).registerConfiguration({
 	...editorConfigurationBaseNode,
-	"properties": {
+	properties: {
 		"editor.snippets.codeActions.enabled": {
-			"description": nls.localize(
+			description: nls.localize(
 				"editor.snippets.codeActions.enabled",
-				"Controls if surround-with-snippets or file template snippets show as Code Actions."
+				"Controls if surround-with-snippets or file template snippets show as Code Actions.",
 			),
-			"type": "boolean",
-			"default": true,
+			type: "boolean",
+			default: true,
 		},
 	},
 });
@@ -79,21 +79,21 @@ const snippetSchemaProperties: IJSONSchemaMap = {
 	prefix: {
 		description: nls.localize(
 			"snippetSchema.json.prefix",
-			"The prefix to use when selecting the snippet in intellisense"
+			"The prefix to use when selecting the snippet in intellisense",
 		),
 		type: ["string", "array"],
 	},
 	isFileTemplate: {
 		description: nls.localize(
 			"snippetSchema.json.isFileTemplate",
-			"The snippet is meant to populate or replace a whole file"
+			"The snippet is meant to populate or replace a whole file",
 		),
 		type: "boolean",
 	},
 	body: {
 		markdownDescription: nls.localize(
 			"snippetSchema.json.body",
-			"The snippet content. Use `$1`, `${1:defaultText}` to define cursor positions, use `$0` for the final cursor position. Insert variable values with `${varName}` and `${varName:defaultText}`, e.g. `This is file: $TM_FILENAME`."
+			"The snippet content. Use `$1`, `${1:defaultText}` to define cursor positions, use `$0` for the final cursor position. Insert variable values with `${varName}` and `${varName:defaultText}`, e.g. `This is file: $TM_FILENAME`.",
 		),
 		type: ["string", "array"],
 		items: {
@@ -103,7 +103,7 @@ const snippetSchemaProperties: IJSONSchemaMap = {
 	description: {
 		description: nls.localize(
 			"snippetSchema.json.description",
-			"The snippet description."
+			"The snippet description.",
 		),
 		type: ["string", "array"],
 	},
@@ -118,9 +118,9 @@ const languageScopeSchema: IJSONSchema = {
 			label: nls.localize("snippetSchema.json.default", "Empty snippet"),
 			body: {
 				"${1:snippetName}": {
-					"prefix": "${2:prefix}",
-					"body": "${3:snippet}",
-					"description": "${4:description}",
+					prefix: "${2:prefix}",
+					body: "${3:snippet}",
+					description: "${4:description}",
 				},
 			},
 		},
@@ -128,7 +128,7 @@ const languageScopeSchema: IJSONSchema = {
 	type: "object",
 	description: nls.localize(
 		"snippetSchema.json",
-		"User snippet configuration"
+		"User snippet configuration",
 	),
 	additionalProperties: {
 		type: "object",
@@ -148,10 +148,10 @@ const globalSchema: IJSONSchema = {
 			label: nls.localize("snippetSchema.json.default", "Empty snippet"),
 			body: {
 				"${1:snippetName}": {
-					"scope": "${2:scope}",
-					"prefix": "${3:prefix}",
-					"body": "${4:snippet}",
-					"description": "${5:description}",
+					scope: "${2:scope}",
+					prefix: "${3:prefix}",
+					body: "${4:snippet}",
+					description: "${5:description}",
 				},
 			},
 		},
@@ -159,7 +159,7 @@ const globalSchema: IJSONSchema = {
 	type: "object",
 	description: nls.localize(
 		"snippetSchema.json",
-		"User snippet configuration"
+		"User snippet configuration",
 	),
 	additionalProperties: {
 		type: "object",
@@ -169,7 +169,7 @@ const globalSchema: IJSONSchema = {
 			scope: {
 				description: nls.localize(
 					"snippetSchema.json.scope",
-					"A list of language names to which this snippet applies, e.g. 'typescript,javascript'."
+					"A list of language names to which this snippet applies, e.g. 'typescript,javascript'.",
 				),
 				type: "string",
 			},
@@ -179,7 +179,7 @@ const globalSchema: IJSONSchema = {
 };
 
 const reg = Registry.as<JSONContributionRegistry.IJSONContributionRegistry>(
-	JSONContributionRegistry.Extensions.JSONContribution
+	JSONContributionRegistry.Extensions.JSONContribution,
 );
 reg.registerSchema(languageScopeSchemaId, languageScopeSchema);
 reg.registerSchema(globalSchemaId, globalSchema);

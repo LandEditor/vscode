@@ -3,11 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { KeyCode } from "vs/base/common/keyCodes";
 import * as nls from "vs/nls";
+import {
+	Action2,
+	MenuId,
+	registerAction2,
+} from "vs/platform/actions/common/actions";
 import { ICommandHandler } from "vs/platform/commands/common/commands";
+import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
 import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
 import { WorkbenchListFocusContextKey } from "vs/platform/list/browser/listService";
 import { IViewsService } from "vs/workbench/common/views";
+import {
+	category,
+	getSearchView,
+} from "vs/workbench/contrib/search/browser/searchActionsBase";
 import {
 	searchClearIcon,
 	searchCollapseAllIcon,
@@ -17,8 +29,6 @@ import {
 	searchShowAsTree,
 	searchStopIcon,
 } from "vs/workbench/contrib/search/browser/searchIcons";
-import * as Constants from "vs/workbench/contrib/search/common/constants";
-import { ISearchHistoryService } from "vs/workbench/contrib/search/common/searchHistoryService";
 import {
 	FileMatch,
 	FolderMatch,
@@ -27,23 +37,13 @@ import {
 	Match,
 	SearchResult,
 } from "vs/workbench/contrib/search/browser/searchModel";
-import { VIEW_ID } from "vs/workbench/services/search/common/search";
-import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
-import {
-	Action2,
-	MenuId,
-	registerAction2,
-} from "vs/platform/actions/common/actions";
-import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
-import { KeyCode } from "vs/base/common/keyCodes";
+import * as Constants from "vs/workbench/contrib/search/common/constants";
 import {
 	SearchStateKey,
 	SearchUIState,
 } from "vs/workbench/contrib/search/common/search";
-import {
-	category,
-	getSearchView,
-} from "vs/workbench/contrib/search/browser/searchActionsBase";
+import { ISearchHistoryService } from "vs/workbench/contrib/search/common/searchHistoryService";
+import { VIEW_ID } from "vs/workbench/services/search/common/search";
 
 //#region Actions
 registerAction2(
@@ -54,7 +54,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"clearSearchHistoryLabel",
-						"Clear Search History"
+						"Clear Search History",
 					),
 					original: "Clear Search History",
 				},
@@ -66,7 +66,7 @@ registerAction2(
 		override async run(accessor: ServicesAccessor): Promise<any> {
 			clearHistoryCommand(accessor);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -77,7 +77,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"CancelSearchAction.label",
-						"Cancel Search"
+						"Cancel Search",
 					),
 					original: "Cancel Search",
 				},
@@ -85,13 +85,13 @@ registerAction2(
 				category,
 				f1: true,
 				precondition: SearchStateKey.isEqualTo(
-					SearchUIState.Idle
+					SearchUIState.Idle,
 				).negate(),
 				keybinding: {
 					weight: KeybindingWeight.WorkbenchContrib,
 					when: ContextKeyExpr.and(
 						Constants.SearchViewVisibleKey,
-						WorkbenchListFocusContextKey
+						WorkbenchListFocusContextKey,
 					),
 					primary: KeyCode.Escape,
 				},
@@ -102,7 +102,7 @@ registerAction2(
 						order: 0,
 						when: ContextKeyExpr.and(
 							ContextKeyExpr.equals("view", VIEW_ID),
-							SearchStateKey.isEqualTo(SearchUIState.SlowSearch)
+							SearchStateKey.isEqualTo(SearchUIState.SlowSearch),
 						),
 					},
 				],
@@ -111,7 +111,7 @@ registerAction2(
 		run(accessor: ServicesAccessor) {
 			return cancelSearch(accessor);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -135,8 +135,8 @@ registerAction2(
 						when: ContextKeyExpr.and(
 							ContextKeyExpr.equals("view", VIEW_ID),
 							SearchStateKey.isEqualTo(
-								SearchUIState.SlowSearch
-							).negate()
+								SearchUIState.SlowSearch,
+							).negate(),
 						),
 					},
 				],
@@ -145,7 +145,7 @@ registerAction2(
 		run(accessor: ServicesAccessor, ...args: any[]) {
 			return refreshSearch(accessor);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -156,7 +156,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"CollapseDeepestExpandedLevelAction.label",
-						"Collapse All"
+						"Collapse All",
 					),
 					original: "Collapse All",
 				},
@@ -165,7 +165,7 @@ registerAction2(
 				f1: true,
 				precondition: ContextKeyExpr.and(
 					Constants.HasSearchResults,
-					Constants.ViewHasSomeCollapsibleKey
+					Constants.ViewHasSomeCollapsibleKey,
 				),
 				menu: [
 					{
@@ -176,8 +176,8 @@ registerAction2(
 							ContextKeyExpr.equals("view", VIEW_ID),
 							ContextKeyExpr.or(
 								Constants.HasSearchResults.negate(),
-								Constants.ViewHasSomeCollapsibleKey
-							)
+								Constants.ViewHasSomeCollapsibleKey,
+							),
 						),
 					},
 				],
@@ -186,7 +186,7 @@ registerAction2(
 		run(accessor: ServicesAccessor, ...args: any[]) {
 			return collapseDeepestExpandedLevel(accessor);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -203,7 +203,7 @@ registerAction2(
 				f1: true,
 				precondition: ContextKeyExpr.and(
 					Constants.HasSearchResults,
-					Constants.ViewHasSomeCollapsibleKey.toNegated()
+					Constants.ViewHasSomeCollapsibleKey.toNegated(),
 				),
 				menu: [
 					{
@@ -213,7 +213,7 @@ registerAction2(
 						when: ContextKeyExpr.and(
 							ContextKeyExpr.equals("view", VIEW_ID),
 							Constants.HasSearchResults,
-							Constants.ViewHasSomeCollapsibleKey.toNegated()
+							Constants.ViewHasSomeCollapsibleKey.toNegated(),
 						),
 					},
 				],
@@ -222,7 +222,7 @@ registerAction2(
 		run(accessor: ServicesAccessor, ...args: any[]) {
 			return expandAll(accessor);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -233,7 +233,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"ClearSearchResultsAction.label",
-						"Clear Search Results"
+						"Clear Search Results",
 					),
 					original: "Clear Search Results",
 				},
@@ -244,7 +244,7 @@ registerAction2(
 					Constants.HasSearchResults,
 					Constants.ViewHasSearchPatternKey,
 					Constants.ViewHasReplacePatternKey,
-					Constants.ViewHasFilePatternKey
+					Constants.ViewHasFilePatternKey,
 				),
 				menu: [
 					{
@@ -259,7 +259,7 @@ registerAction2(
 		run(accessor: ServicesAccessor, ...args: any[]) {
 			return clearSearchResults(accessor);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -270,7 +270,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"ViewAsTreeAction.label",
-						"View as Tree"
+						"View as Tree",
 					),
 					original: "View as Tree",
 				},
@@ -279,7 +279,7 @@ registerAction2(
 				f1: true,
 				precondition: ContextKeyExpr.and(
 					Constants.HasSearchResults,
-					Constants.InTreeViewKey.toNegated()
+					Constants.InTreeViewKey.toNegated(),
 				),
 				menu: [
 					{
@@ -288,7 +288,7 @@ registerAction2(
 						order: 2,
 						when: ContextKeyExpr.and(
 							ContextKeyExpr.equals("view", VIEW_ID),
-							Constants.InTreeViewKey.toNegated()
+							Constants.InTreeViewKey.toNegated(),
 						),
 					},
 				],
@@ -300,7 +300,7 @@ registerAction2(
 				searchView.setTreeView(true);
 			}
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -311,7 +311,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"ViewAsListAction.label",
-						"View as List"
+						"View as List",
 					),
 					original: "View as List",
 				},
@@ -320,7 +320,7 @@ registerAction2(
 				f1: true,
 				precondition: ContextKeyExpr.and(
 					Constants.HasSearchResults,
-					Constants.InTreeViewKey
+					Constants.InTreeViewKey,
 				),
 				menu: [
 					{
@@ -329,7 +329,7 @@ registerAction2(
 						order: 2,
 						when: ContextKeyExpr.and(
 							ContextKeyExpr.equals("view", VIEW_ID),
-							Constants.InTreeViewKey
+							Constants.InTreeViewKey,
 						),
 					},
 				],
@@ -341,7 +341,7 @@ registerAction2(
 				searchView.setTreeView(false);
 			}
 		}
-	}
+	},
 );
 
 //#endregion

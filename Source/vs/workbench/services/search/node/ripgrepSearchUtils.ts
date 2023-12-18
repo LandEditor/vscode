@@ -25,14 +25,14 @@ export function createTextSearchResult(
 	uri: URI,
 	text: string,
 	range: searchExtTypes.Range | searchExtTypes.Range[],
-	previewOptions?: searchExtTypes.TextSearchPreviewOptions
+	previewOptions?: searchExtTypes.TextSearchPreviewOptions,
 ): searchExtTypes.TextSearchMatch {
 	const searchRange = mapArrayOrNot(range, rangeToSearchRange);
 
 	const internalResult = new TextSearchMatch(
 		text,
 		searchRange,
-		previewOptions
+		previewOptions,
 	);
 	const internalPreviewRange = internalResult.preview.matches;
 	return {
@@ -50,7 +50,7 @@ function rangeToSearchRange(range: searchExtTypes.Range): SearchRange {
 		range.start.line,
 		range.start.character,
 		range.end.line,
-		range.end.character
+		range.end.character,
 	);
 }
 
@@ -59,7 +59,7 @@ function searchRangeToRange(range: SearchRange): searchExtTypes.Range {
 		range.startLineNumber,
 		range.startColumn,
 		range.endLineNumber,
-		range.endColumn
+		range.endColumn,
 	);
 }
 

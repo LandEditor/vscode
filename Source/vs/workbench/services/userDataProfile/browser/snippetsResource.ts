@@ -53,11 +53,11 @@ export class SnippetsResourceInitializer
 		for (const key in snippetsContent.snippets) {
 			const resource = this.uriIdentityService.extUri.joinPath(
 				this.userDataProfileService.currentProfile.snippetsHome,
-				key
+				key,
 			);
 			await this.fileService.writeFile(
 				resource,
-				VSBuffer.fromString(snippetsContent.snippets[key])
+				VSBuffer.fromString(snippetsContent.snippets[key]),
 			);
 		}
 	}
@@ -72,7 +72,7 @@ export class SnippetsResource implements IProfileResource {
 
 	async getContent(
 		profile: IUserDataProfile,
-		excluded?: ResourceSet
+		excluded?: ResourceSet,
 	): Promise<string> {
 		const snippets = await this.getSnippets(profile, excluded);
 		return JSON.stringify({ snippets });
@@ -83,28 +83,28 @@ export class SnippetsResource implements IProfileResource {
 		for (const key in snippetsContent.snippets) {
 			const resource = this.uriIdentityService.extUri.joinPath(
 				profile.snippetsHome,
-				key
+				key,
 			);
 			await this.fileService.writeFile(
 				resource,
-				VSBuffer.fromString(snippetsContent.snippets[key])
+				VSBuffer.fromString(snippetsContent.snippets[key]),
 			);
 		}
 	}
 
 	private async getSnippets(
 		profile: IUserDataProfile,
-		excluded?: ResourceSet
+		excluded?: ResourceSet,
 	): Promise<IStringDictionary<string>> {
 		const snippets: IStringDictionary<string> = {};
 		const snippetsResources = await this.getSnippetsResources(
 			profile,
-			excluded
+			excluded,
 		);
 		for (const resource of snippetsResources) {
 			const key = this.uriIdentityService.extUri.relativePath(
 				profile.snippetsHome,
-				resource
+				resource,
 			)!;
 			const content = await this.fileService.readFile(resource);
 			snippets[key] = content.value.toString();
@@ -114,7 +114,7 @@ export class SnippetsResource implements IProfileResource {
 
 	async getSnippetsResources(
 		profile: IUserDataProfile,
-		excluded?: ResourceSet
+		excluded?: ResourceSet,
 	): Promise<URI[]> {
 		const snippets: URI[] = [];
 		let stat: IFileStat;
@@ -192,18 +192,18 @@ export class SnippetsResourceTreeItem implements IProfileResourceTreeItem {
 									"exclude",
 									"Select Snippet {0}",
 									this.uriIdentityService.extUri.basename(
-										resource
-									)
+										resource,
+									),
 								),
 							},
-						}
+					  }
 					: undefined,
 				command: {
 					id: API_OPEN_EDITOR_COMMAND_ID,
 					title: "",
 					arguments: [resource, undefined, undefined],
 				},
-			})
+			}),
 		);
 	}
 

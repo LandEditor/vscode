@@ -4,13 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { DocumentContext } from "vscode-css-languageservice";
-import { endsWith, startsWith } from "../utils/strings";
 import { WorkspaceFolder } from "vscode-languageserver";
 import { URI, Utils } from "vscode-uri";
+import { endsWith, startsWith } from "../utils/strings";
 
 export function getDocumentContext(
 	documentUri: string,
-	workspaceFolders: WorkspaceFolder[]
+	workspaceFolders: WorkspaceFolder[],
 ): DocumentContext {
 	function getRootFolder(): string | undefined {
 		for (const folder of workspaceFolders) {

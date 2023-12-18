@@ -8,9 +8,11 @@ import { DisposableStore } from "vs/base/common/lifecycle";
 import { URI, UriComponents } from "vs/base/common/uri";
 import { IOpenerService } from "vs/platform/opener/common/opener";
 import {
-	extHostNamedCustomer,
 	IExtHostContext,
+	extHostNamedCustomer,
 } from "vs/workbench/services/extensions/common/extHostCustomers";
+import { IHostService } from "vs/workbench/services/host/browser/host";
+import { IUserActivityService } from "vs/workbench/services/userActivity/common/userActivityService";
 import {
 	ExtHostContext,
 	ExtHostWindowShape,
@@ -18,8 +20,6 @@ import {
 	MainContext,
 	MainThreadWindowShape,
 } from "../common/extHost.protocol";
-import { IHostService } from "vs/workbench/services/host/browser/host";
-import { IUserActivityService } from "vs/workbench/services/userActivity/common/userActivityService";
 
 @extHostNamedCustomer(MainContext.MainThreadWindow)
 export class MainThreadWindow implements MainThreadWindowShape {
@@ -61,7 +61,7 @@ export class MainThreadWindow implements MainThreadWindowShape {
 	async $openUri(
 		uriComponents: UriComponents,
 		uriString: string | undefined,
-		options: IOpenUriOptions
+		options: IOpenUriOptions,
 	): Promise<boolean> {
 		const uri = URI.from(uriComponents);
 		let target: URI | string;
@@ -81,11 +81,11 @@ export class MainThreadWindow implements MainThreadWindowShape {
 
 	async $asExternalUri(
 		uriComponents: UriComponents,
-		options: IOpenUriOptions
+		options: IOpenUriOptions,
 	): Promise<UriComponents> {
 		const result = await this.openerService.resolveExternalUri(
 			URI.revive(uriComponents),
-			options
+			options,
 		);
 		return result.resolved;
 	}

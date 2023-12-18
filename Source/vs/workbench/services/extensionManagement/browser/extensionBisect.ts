@@ -4,16 +4,25 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { localize } from "vs/nls";
+import { Categories } from "vs/platform/action/common/actionCommonCategories";
+import {
+	Action2,
+	MenuId,
+	registerAction2,
+} from "vs/platform/actions/common/actions";
+import { ICommandService } from "vs/platform/commands/common/commands";
+import {
+	ContextKeyExpr,
+	IContextKeyService,
+	RawContextKey,
+} from "vs/platform/contextkey/common/contextkey";
+import { IDialogService } from "vs/platform/dialogs/common/dialogs";
 import {
 	IExtensionManagementService,
 	IGlobalExtensionEnablementService,
 	ILocalExtension,
 } from "vs/platform/extensionManagement/common/extensionManagement";
-import {
-	IStorageService,
-	StorageScope,
-	StorageTarget,
-} from "vs/platform/storage/common/storage";
+import { areSameExtensions } from "vs/platform/extensionManagement/common/extensionManagementUtil";
 import {
 	ExtensionType,
 	IExtension,
@@ -24,46 +33,37 @@ import {
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
 import {
+	ServicesAccessor,
+	createDecorator,
+} from "vs/platform/instantiation/common/instantiation";
+import { ILogService } from "vs/platform/log/common/log";
+import {
 	INotificationService,
 	IPromptChoice,
 	NotificationPriority,
 	Severity,
 } from "vs/platform/notification/common/notification";
-import { IHostService } from "vs/workbench/services/host/browser/host";
-import {
-	createDecorator,
-	ServicesAccessor,
-} from "vs/platform/instantiation/common/instantiation";
-import {
-	Action2,
-	MenuId,
-	registerAction2,
-} from "vs/platform/actions/common/actions";
-import {
-	ContextKeyExpr,
-	IContextKeyService,
-	RawContextKey,
-} from "vs/platform/contextkey/common/contextkey";
-import { IDialogService } from "vs/platform/dialogs/common/dialogs";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
+import { IProductService } from "vs/platform/product/common/productService";
 import { Registry } from "vs/platform/registry/common/platform";
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from "vs/platform/storage/common/storage";
 import {
 	Extensions,
 	IWorkbenchContributionsRegistry,
 } from "vs/workbench/common/contributions";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import { ILogService } from "vs/platform/log/common/log";
-import { IProductService } from "vs/platform/product/common/productService";
-import { IWorkbenchIssueService } from "vs/workbench/services/issue/common/issue";
 import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { areSameExtensions } from "vs/platform/extensionManagement/common/extensionManagementUtil";
-import { Categories } from "vs/platform/action/common/actionCommonCategories";
 import { IWorkbenchExtensionEnablementService } from "vs/workbench/services/extensionManagement/common/extensionManagement";
+import { IHostService } from "vs/workbench/services/host/browser/host";
+import { IWorkbenchIssueService } from "vs/workbench/services/issue/common/issue";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 // --- bisect service
 
 export const IExtensionBisectService = createDecorator<IExtensionBisectService>(
-	"IExtensionBisectService"
+	"IExtensionBisectService",
 );
 
 export interface IExtensionBisectService {
@@ -83,13 +83,13 @@ class BisectState {
 			return undefined;
 		}
 		try {
-			interface Raw extends BisectState {}
+			type Raw = BisectState;
 			const data: Raw = JSON.parse(raw);
 			return new BisectState(
 				data.extensions,
 				data.low,
 				data.high,
-				data.mid
+				data.mid,
 			);
 		} catch {
 			return undefined;
@@ -100,7 +100,7 @@ class BisectState {
 		readonly extensions: string[],
 		readonly low: number,
 		readonly high: number,
-		readonly mid: number = ((low + high) / 2) | 0
+		readonly mid: number = ((low + high) / 2) | 0,
 	) {}
 }
 
@@ -150,7 +150,7 @@ class ExtensionBisectService implements IExtensionBisectService {
 		if (
 			isResolverExtension(
 				extension.manifest,
-				this._envService.remoteAuthority
+				this._envService.remoteAuthority,
 			)
 		) {
 			// the current remote resolver extension cannot be disabled
@@ -168,7 +168,7 @@ class ExtensionBisectService implements IExtensionBisectService {
 		return (
 			Array.isArray(this._envService.enableExtensions) &&
 			this._envService.enableExtensions.some((id) =>
-				areSameExtensions({ id }, extension.identifier)
+				areSameExtensions({ id }, extension.identifier),
 			)
 		);
 	}
@@ -182,19 +182,19 @@ class ExtensionBisectService implements IExtensionBisectService {
 			extensionIds,
 			0,
 			extensionIds.length,
-			0
+			0,
 		);
 		this._storageService.store(
 			ExtensionBisectService._storageKey,
 			JSON.stringify(newState),
 			StorageScope.APPLICATION,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 		await this._storageService.flush();
 	}
 
 	async next(
-		seeingBad: boolean
+		seeingBad: boolean,
 	): Promise<{ id: string; bad: boolean } | undefined> {
 		if (!this._state) {
 			throw new Error("invalid state");
@@ -220,13 +220,13 @@ class ExtensionBisectService implements IExtensionBisectService {
 		const nextState = new BisectState(
 			this._state.extensions,
 			seeingBad ? this._state.low : this._state.mid,
-			seeingBad ? this._state.mid : this._state.high
+			seeingBad ? this._state.mid : this._state.high,
 		);
 		this._storageService.store(
 			ExtensionBisectService._storageKey,
 			JSON.stringify(nextState),
 			StorageScope.APPLICATION,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 		await this._storageService.flush();
 		return undefined;
@@ -235,7 +235,7 @@ class ExtensionBisectService implements IExtensionBisectService {
 	async reset(): Promise<void> {
 		this._storageService.remove(
 			ExtensionBisectService._storageKey,
-			StorageScope.APPLICATION
+			StorageScope.APPLICATION,
 		);
 		await this._storageService.flush();
 	}
@@ -244,7 +244,7 @@ class ExtensionBisectService implements IExtensionBisectService {
 registerSingleton(
 	IExtensionBisectService,
 	ExtensionBisectService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 
 // --- bisect UI
@@ -252,7 +252,7 @@ registerSingleton(
 class ExtensionBisectUi {
 	static ctxIsBisectActive = new RawContextKey<boolean>(
 		"isExtensionBisectActive",
-		false
+		false,
 	);
 
 	constructor(
@@ -277,7 +277,7 @@ class ExtensionBisectUi {
 			run: () =>
 				this._commandService.executeCommand(
 					"extension.bisect.next",
-					false
+					false,
 				),
 		};
 		const badPrompt: IPromptChoice = {
@@ -285,7 +285,7 @@ class ExtensionBisectUi {
 			run: () =>
 				this._commandService.executeCommand(
 					"extension.bisect.next",
-					true
+					true,
 				),
 		};
 		const stop: IPromptChoice = {
@@ -298,25 +298,25 @@ class ExtensionBisectUi {
 			this._extensionBisectService.disabledCount === 1
 				? localize(
 						"bisect.singular",
-						"Extension Bisect is active and has disabled 1 extension. Check if you can still reproduce the problem and proceed by selecting from these options."
-					)
+						"Extension Bisect is active and has disabled 1 extension. Check if you can still reproduce the problem and proceed by selecting from these options.",
+				  )
 				: localize(
 						"bisect.plural",
 						"Extension Bisect is active and has disabled {0} extensions. Check if you can still reproduce the problem and proceed by selecting from these options.",
-						this._extensionBisectService.disabledCount
-					);
+						this._extensionBisectService.disabledCount,
+				  );
 
 		this._notificationService.prompt(
 			Severity.Info,
 			message,
 			[goodPrompt, badPrompt, stop],
-			{ sticky: true, priority: NotificationPriority.URGENT }
+			{ sticky: true, priority: NotificationPriority.URGENT },
 		);
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench
+	Extensions.Workbench,
 ).registerWorkbenchContribution(ExtensionBisectUi, LifecyclePhase.Restored);
 
 registerAction2(
@@ -335,7 +335,7 @@ registerAction2(
 					id: MenuId.ViewContainerTitle,
 					when: ContextKeyExpr.equals(
 						"viewContainer",
-						"workbench.view.extensions"
+						"workbench.view.extensions",
 					),
 					group: "2_enablement",
 					order: 4,
@@ -347,10 +347,10 @@ registerAction2(
 			const dialogService = accessor.get(IDialogService);
 			const hostService = accessor.get(IHostService);
 			const extensionManagement = accessor.get(
-				IExtensionManagementService
+				IExtensionManagementService,
 			);
 			const extensionEnablementService = accessor.get(
-				IWorkbenchExtensionEnablementService
+				IWorkbenchExtensionEnablementService,
 			);
 			const extensionsBisect = accessor.get(IExtensionBisectService);
 
@@ -363,11 +363,11 @@ registerAction2(
 				detail: localize(
 					"detail.start",
 					"Extension Bisect will use binary search to find an extension that causes a problem. During the process the window reloads repeatedly (~{0} times). Each time you must confirm if you are still seeing problems.",
-					(2 + Math.log2(extensions.length)) | 0
+					(2 + Math.log2(extensions.length)) | 0,
 				),
 				primaryButton: localize(
 					{ key: "msg2", comment: ["&& denotes a mnemonic"] },
-					"&&Start Extension Bisect"
+					"&&Start Extension Bisect",
 				),
 			});
 
@@ -376,7 +376,7 @@ registerAction2(
 				hostService.reload();
 			}
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -396,14 +396,14 @@ registerAction2(
 
 		async run(
 			accessor: ServicesAccessor,
-			seeingBad: boolean | undefined
+			seeingBad: boolean | undefined,
 		): Promise<void> {
 			const dialogService = accessor.get(IDialogService);
 			const hostService = accessor.get(IHostService);
 			const bisectService = accessor.get(IExtensionBisectService);
 			const productService = accessor.get(IProductService);
 			const extensionEnablementService = accessor.get(
-				IGlobalExtensionEnablementService
+				IGlobalExtensionEnablementService,
 			);
 			const issueService = accessor.get(IWorkbenchIssueService);
 
@@ -413,7 +413,7 @@ registerAction2(
 			if (seeingBad === undefined) {
 				const goodBadStopCancel = await this._checkForBad(
 					dialogService,
-					bisectService
+					bisectService,
 				);
 				if (goodBadStopCancel === null) {
 					return;
@@ -438,8 +438,8 @@ registerAction2(
 					localize(
 						"done.detail2",
 						"Extension Bisect is done but no extension has been identified. This might be a problem with {0}.",
-						productService.nameShort
-					)
+						productService.nameShort,
+					),
 				);
 			} else {
 				// DONE and identified extension
@@ -448,18 +448,18 @@ registerAction2(
 					message: localize("done.msg", "Extension Bisect"),
 					primaryButton: localize(
 						{ key: "report", comment: ["&& denotes a mnemonic"] },
-						"&&Report Issue & Continue"
+						"&&Report Issue & Continue",
 					),
 					cancelButton: localize("continue", "Continue"),
 					detail: localize(
 						"done.detail",
 						"Extension Bisect is done and has identified {0} as the extension causing the problem.",
-						done.id
+						done.id,
 					),
 					checkbox: {
 						label: localize(
 							"done.disbale",
-							"Keep this extension disabled"
+							"Keep this extension disabled",
 						),
 						checked: true,
 					},
@@ -467,7 +467,7 @@ registerAction2(
 				if (res.checkboxChecked) {
 					await extensionEnablementService.disableExtension(
 						{ id: done.id },
-						undefined
+						undefined,
 					);
 				}
 				if (res.confirmed) {
@@ -480,7 +480,7 @@ registerAction2(
 
 		private async _checkForBad(
 			dialogService: IDialogService,
-			bisectService: IExtensionBisectService
+			bisectService: IExtensionBisectService,
 		): Promise<boolean | undefined | null> {
 			const { result } = await dialogService.prompt<
 				boolean | undefined | null
@@ -490,7 +490,7 @@ registerAction2(
 				detail: localize(
 					"bisect",
 					"Extension Bisect is active and has disabled {0} extensions. Check if you can still reproduce the problem and proceed by selecting from these options.",
-					bisectService.disabledCount
+					bisectService.disabledCount,
 				),
 				buttons: [
 					{
@@ -499,7 +499,7 @@ registerAction2(
 								key: "next.good",
 								comment: ["&& denotes a mnemonic"],
 							},
-							"I ca&&n't reproduce"
+							"I ca&&n't reproduce",
 						),
 						run: () => false, // good now
 					},
@@ -509,7 +509,7 @@ registerAction2(
 								key: "next.bad",
 								comment: ["&& denotes a mnemonic"],
 							},
-							"I can &&reproduce"
+							"I can &&reproduce",
 						),
 						run: () => true, // bad
 					},
@@ -519,7 +519,7 @@ registerAction2(
 								key: "next.stop",
 								comment: ["&& denotes a mnemonic"],
 							},
-							"&&Stop Bisect"
+							"&&Stop Bisect",
 						),
 						run: () => undefined, // stop
 					},
@@ -530,14 +530,14 @@ registerAction2(
 							key: "next.cancel",
 							comment: ["&& denotes a mnemonic"],
 						},
-						"&&Cancel Bisect"
+						"&&Cancel Bisect",
 					),
 					run: () => null, // cancel
 				},
 			});
 			return result;
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -561,5 +561,5 @@ registerAction2(
 			await extensionsBisect.reset();
 			hostService.reload();
 		}
-	}
+	},
 );

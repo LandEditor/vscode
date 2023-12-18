@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { OutputItem, RendererContext } from "vscode-notebook-renderer";
 import { Event } from "vscode";
+import { OutputItem, RendererContext } from "vscode-notebook-renderer";
 
 export interface IDisposable {
 	dispose(): void;
@@ -19,7 +19,7 @@ export interface HtmlRenderingHook {
 	postRender(
 		outputItem: OutputItem,
 		element: HTMLElement,
-		signal: AbortSignal
+		signal: AbortSignal,
 	): HTMLElement | undefined | Promise<HTMLElement | undefined>;
 }
 
@@ -33,7 +33,7 @@ export interface JavaScriptRenderingHook {
 		outputItem: OutputItem,
 		element: HTMLElement,
 		script: string,
-		signal: AbortSignal
+		signal: AbortSignal,
 	): string | undefined | Promise<string | undefined>;
 }
 

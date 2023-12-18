@@ -3,25 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IMessagePassingProtocol } from "vs/base/parts/ipc/common/ipc";
 import { VSBuffer } from "vs/base/common/buffer";
 import { Emitter } from "vs/base/common/event";
-import {
-	isMessageOfType,
-	MessageType,
-	createMessageOfType,
-	IExtensionHostInitData,
-} from "vs/workbench/services/extensions/common/extensionHostProtocol";
-import { ExtensionHostMain } from "vs/workbench/api/common/extensionHostMain";
-import { IHostUtils } from "vs/workbench/api/common/extHostExtensionService";
-import { NestedWorker } from "vs/workbench/services/extensions/worker/polyfillNestedWorker";
 import * as path from "vs/base/common/path";
 import * as performance from "vs/base/common/performance";
+import { IMessagePassingProtocol } from "vs/base/parts/ipc/common/ipc";
+import { IHostUtils } from "vs/workbench/api/common/extHostExtensionService";
+import { ExtensionHostMain } from "vs/workbench/api/common/extensionHostMain";
+import {
+	IExtensionHostInitData,
+	MessageType,
+	createMessageOfType,
+	isMessageOfType,
+} from "vs/workbench/services/extensions/common/extensionHostProtocol";
+import { NestedWorker } from "vs/workbench/services/extensions/worker/polyfillNestedWorker";
 
-import "vs/workbench/api/common/extHost.common.services";
-import "vs/workbench/api/worker/extHost.worker.services";
 import { FileAccess } from "vs/base/common/network";
 import { URI } from "vs/base/common/uri";
+import "vs/workbench/api/common/extHost.common.services";
+import "vs/workbench/api/worker/extHost.worker.services";
 
 //#region --- Define, capture, and override some globals
 
@@ -57,14 +57,14 @@ function shouldTransformUri(uri: string): boolean {
 
 const nativeFetch = fetch.bind(self);
 function patchFetching(asBrowserUri: (uri: URI) => Promise<URI>) {
-	self.fetch = async function (input, init) {
+	self.fetch = async (input, init) => {
 		if (input instanceof Request) {
 			// Request object - massage not supported
 			return nativeFetch(input, init);
 		}
 		if (shouldTransformUri(String(input))) {
 			input = (await asBrowserUri(URI.parse(String(input)))).toString(
-				true
+				true,
 			);
 		}
 		return nativeFetch(input, init);
@@ -76,7 +76,7 @@ function patchFetching(asBrowserUri: (uri: URI) => Promise<URI>) {
 			url: string | URL,
 			async?: boolean,
 			username?: string | null,
-			password?: string | null
+			password?: string | null,
 		): void {
 			(async () => {
 				if (shouldTransformUri(url.toString())) {
@@ -110,17 +110,17 @@ self.addEventListener = () =>
 if ((<any>self).Worker) {
 	// make sure new Worker(...) always uses blob: (to maintain current origin)
 	const _Worker = (<any>self).Worker;
-	Worker = <any>function (stringUrl: string | URL, options?: WorkerOptions) {
+	Worker = <any>(stringUrl: string | URL, options?: WorkerOptions) => {
 		if (/^file:/i.test(stringUrl.toString())) {
 			stringUrl = FileAccess.uriToBrowserUri(
-				URI.parse(stringUrl.toString())
+				URI.parse(stringUrl.toString()),
 			).toString(true);
 		} else if (/^vscode-remote:/i.test(stringUrl.toString())) {
 			// Supporting transformation of vscode-remote URIs requires an async call to the main thread,
 			// but we cannot do this call from within the embedded Worker, and the only way out would be
 			// to use templating instead of a function in the web api (`resourceUriProvider`)
 			throw new Error(
-				`Creating workers from remote extensions is currently not supported.`
+				`Creating workers from remote extensions is currently not supported.`,
 			);
 		}
 
@@ -129,19 +129,19 @@ if ((<any>self).Worker) {
 		// that logic of FileAccess.asBrowserUri had to be copied, see `asWorkerBrowserUrl` (below).
 		const bootstrapFnSource = function bootstrapFn(workerUrl: string) {
 			function asWorkerBrowserUrl(
-				url: string | URL | TrustedScriptURL
+				url: string | URL | TrustedScriptURL,
 			): any {
 				if (typeof url === "string" || url instanceof URL) {
 					return String(url).replace(
 						/^file:\/\//i,
-						"vscode-file://vscode-app"
+						"vscode-file://vscode-app",
 					);
 				}
 				return url;
 			}
 
 			const nativeFetch = fetch.bind(self);
-			self.fetch = function (input, init) {
+			self.fetch = (input, init) => {
 				if (input instanceof Request) {
 					// Request object - massage not supported
 					return nativeFetch(input, init);
@@ -154,14 +154,14 @@ if ((<any>self).Worker) {
 					url: string | URL,
 					async?: boolean,
 					username?: string | null,
-					password?: string | null
+					password?: string | null,
 				): void {
 					return super.open(
 						method,
 						asWorkerBrowserUrl(url),
 						async ?? true,
 						username,
-						password
+						password,
 					);
 				}
 			};
@@ -238,7 +238,7 @@ class ExtensionWorker {
 				if (!terminating) {
 					const data = vsbuf.buffer.buffer.slice(
 						vsbuf.buffer.byteOffset,
-						vsbuf.buffer.byteOffset + vsbuf.buffer.byteLength
+						vsbuf.buffer.byteOffset + vsbuf.buffer.byteLength,
 					);
 					channel.port1.postMessage(data, [data]);
 				}
@@ -252,7 +252,7 @@ interface IRendererConnection {
 	initData: IExtensionHostInitData;
 }
 function connectToRenderer(
-	protocol: IMessagePassingProtocol
+	protocol: IMessagePassingProtocol,
 ): Promise<IRendererConnection> {
 	return new Promise<IRendererConnection>((resolve) => {
 		const once = protocol.onMessage((raw) => {
@@ -298,7 +298,7 @@ export function create(): { onmessage: (message: any) => void } {
 					data.initData,
 					hostUtil,
 					null,
-					message.data
+					message.data,
 				);
 
 				patchFetching((uri) => extHostMain.asBrowserUri(uri));

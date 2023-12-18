@@ -21,8 +21,8 @@ export class LogLevelMonitor extends Disposable {
 			vscode.workspace.onDidChangeConfiguration(
 				this.onConfigurationChange,
 				this,
-				this._disposables
-			)
+				this._disposables,
+			),
 		);
 
 		if (this.shouldNotifyExtendedLogging()) {
@@ -32,14 +32,14 @@ export class LogLevelMonitor extends Disposable {
 
 	private onConfigurationChange(event: vscode.ConfigurationChangeEvent) {
 		const logLevelChanged = event.affectsConfiguration(
-			LogLevelMonitor.logLevelConfigKey
+			LogLevelMonitor.logLevelConfigKey,
 		);
 		if (!logLevelChanged) {
 			return;
 		}
 		this.context.globalState.update(
 			LogLevelMonitor.logLevelChangedStorageKey,
-			new Date()
+			new Date(),
 		);
 	}
 
@@ -47,7 +47,7 @@ export class LogLevelMonitor extends Disposable {
 		return TsServerLogLevel.fromString(
 			vscode.workspace
 				.getConfiguration()
-				.get<string>(LogLevelMonitor.logLevelConfigKey, "off")
+				.get<string>(LogLevelMonitor.logLevelConfigKey, "off"),
 		);
 	}
 
@@ -57,7 +57,7 @@ export class LogLevelMonitor extends Disposable {
 	 */
 	private get lastLogLevelChange(): Date | undefined {
 		const lastChange = this.context.globalState.get<string | undefined>(
-			LogLevelMonitor.logLevelChangedStorageKey
+			LogLevelMonitor.logLevelChangedStorageKey,
 		);
 
 		if (lastChange) {
@@ -72,7 +72,7 @@ export class LogLevelMonitor extends Disposable {
 	private get doNotPrompt(): boolean {
 		return (
 			this.context.globalState.get<boolean | undefined>(
-				LogLevelMonitor.doNotPromptLogLevelStorageKey
+				LogLevelMonitor.doNotPromptLogLevelStorageKey,
 			) || false
 		);
 	}
@@ -82,7 +82,7 @@ export class LogLevelMonitor extends Disposable {
 			? new Date(this.lastLogLevelChange).valueOf()
 			: 0;
 		const lastChangePlusOneWeek = new Date(
-			lastChangeMilliseconds + /* 7 days in milliseconds */ 86400000 * 7
+			lastChangeMilliseconds + /* 7 days in milliseconds */ 86400000 * 7,
 		);
 
 		if (
@@ -96,7 +96,7 @@ export class LogLevelMonitor extends Disposable {
 	}
 
 	private notifyExtendedLogging() {
-		const enum Choice {
+		enum Choice {
 			DisableLogging = 0,
 			DoNotShowAgain = 1,
 		}
@@ -107,7 +107,7 @@ export class LogLevelMonitor extends Disposable {
 		vscode.window
 			.showInformationMessage<Item>(
 				vscode.l10n.t(
-					"TS Server logging is currently enabled which may impact performance."
+					"TS Server logging is currently enabled which may impact performance.",
 				),
 				{
 					title: vscode.l10n.t("Disable logging"),
@@ -116,7 +116,7 @@ export class LogLevelMonitor extends Disposable {
 				{
 					title: vscode.l10n.t("Don't show again"),
 					choice: Choice.DoNotShowAgain,
-				}
+				},
 			)
 			.then((selection) => {
 				if (!selection) {
@@ -129,7 +129,7 @@ export class LogLevelMonitor extends Disposable {
 				} else if (selection.choice === Choice.DoNotShowAgain) {
 					return this.context.globalState.update(
 						LogLevelMonitor.doNotPromptLogLevelStorageKey,
-						true
+						true,
 					);
 				}
 				return;

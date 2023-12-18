@@ -3,23 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { URI } from "vs/base/common/uri";
 import { Range } from "vs/editor/common/core/range";
 import { Selection } from "vs/editor/common/core/selection";
+import {
+	IResourceUndoRedoElement,
+	UndoRedoElementType,
+} from "vs/platform/undoRedo/common/undoRedo";
+import { CellFocusMode } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
+import { BaseCellViewModel } from "vs/workbench/contrib/notebook/browser/viewModel/baseCellViewModel";
+import { ITextCellEditingDelegate } from "vs/workbench/contrib/notebook/common/model/cellEdit";
+import { NotebookCellTextModel } from "vs/workbench/contrib/notebook/common/model/notebookCellTextModel";
 import {
 	CellKind,
 	IOutputDto,
 	NotebookCellMetadata,
 	SelectionStateType,
 } from "vs/workbench/contrib/notebook/common/notebookCommon";
-import {
-	IResourceUndoRedoElement,
-	UndoRedoElementType,
-} from "vs/platform/undoRedo/common/undoRedo";
-import { URI } from "vs/base/common/uri";
-import { BaseCellViewModel } from "vs/workbench/contrib/notebook/browser/viewModel/baseCellViewModel";
-import { CellFocusMode } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
-import { NotebookCellTextModel } from "vs/workbench/contrib/notebook/common/model/notebookCellTextModel";
-import { ITextCellEditingDelegate } from "vs/workbench/contrib/notebook/common/model/cellEdit";
 
 export interface IViewCellEditingDelegate extends ITextCellEditingDelegate {
 	createCellViewModel?(cell: NotebookCellTextModel): BaseCellViewModel;
@@ -29,14 +29,14 @@ export interface IViewCellEditingDelegate extends ITextCellEditingDelegate {
 		language: string,
 		type: CellKind,
 		metadata: NotebookCellMetadata | undefined,
-		outputs: IOutputDto[]
+		outputs: IOutputDto[],
 	): BaseCellViewModel;
 }
 
 export class JoinCellEdit implements IResourceUndoRedoElement {
 	type: UndoRedoElementType.Resource = UndoRedoElementType.Resource;
-	label: string = "Join Cell";
-	code: string = "undoredo.notebooks.joinCell";
+	label = "Join Cell";
+	code = "undoredo.notebooks.joinCell";
 	private _deletedRawCell: NotebookCellTextModel;
 	constructor(
 		public resource: URI,
@@ -47,7 +47,7 @@ export class JoinCellEdit implements IResourceUndoRedoElement {
 		private inverseRange: Range,
 		private insertContent: string,
 		private removedCell: BaseCellViewModel,
-		private editingDelegate: IViewCellEditingDelegate
+		private editingDelegate: IViewCellEditingDelegate,
 	) {
 		this._deletedRawCell = this.removedCell.model;
 	}
@@ -58,7 +58,7 @@ export class JoinCellEdit implements IResourceUndoRedoElement {
 			!this.editingDelegate.createCellViewModel
 		) {
 			throw new Error(
-				"Notebook Insert Cell not implemented for Undo/Redo"
+				"Notebook Insert Cell not implemented for Undo/Redo",
 			);
 		}
 
@@ -71,7 +71,7 @@ export class JoinCellEdit implements IResourceUndoRedoElement {
 		this.cell.setSelections(this.selections);
 
 		const cell = this.editingDelegate.createCellViewModel(
-			this._deletedRawCell
+			this._deletedRawCell,
 		);
 		if (this.direction === "above") {
 			this.editingDelegate.insertCell(this.index, this._deletedRawCell, {
@@ -93,7 +93,7 @@ export class JoinCellEdit implements IResourceUndoRedoElement {
 	async redo(): Promise<void> {
 		if (!this.editingDelegate.deleteCell) {
 			throw new Error(
-				"Notebook Delete Cell not implemented for Undo/Redo"
+				"Notebook Delete Cell not implemented for Undo/Redo",
 			);
 		}
 

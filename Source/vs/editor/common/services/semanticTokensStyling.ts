@@ -3,16 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import {
-	DocumentSemanticTokensProvider,
 	DocumentRangeSemanticTokensProvider,
+	DocumentSemanticTokensProvider,
 } from "vs/editor/common/languages";
 import { SemanticTokensProviderStyling } from "vs/editor/common/services/semanticTokensProviderStyling";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 
 export const ISemanticTokensStylingService =
 	createDecorator<ISemanticTokensStylingService>(
-		"semanticTokensStylingService"
+		"semanticTokensStylingService",
 	);
 
 export type DocumentTokensProvider =

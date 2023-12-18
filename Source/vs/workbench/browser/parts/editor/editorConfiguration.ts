@@ -3,31 +3,31 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import { Registry } from "vs/platform/registry/common/platform";
-import { IWorkbenchContribution } from "vs/workbench/common/contributions";
+import { coalesce } from "vs/base/common/arrays";
+import { Event } from "vs/base/common/event";
+import { IJSONSchemaMap } from "vs/base/common/jsonSchema";
 import { Disposable } from "vs/base/common/lifecycle";
+import { localize } from "vs/nls";
 import {
-	IConfigurationRegistry,
+	ConfigurationScope,
 	Extensions as ConfigurationExtensions,
 	IConfigurationNode,
-	ConfigurationScope,
+	IConfigurationRegistry,
 } from "vs/platform/configuration/common/configurationRegistry";
+import {
+	ByteSize,
+	getLargeFileConfirmationLimit,
+} from "vs/platform/files/common/files";
+import { Registry } from "vs/platform/registry/common/platform";
 import { workbenchConfigurationNodeBase } from "vs/workbench/common/configuration";
+import { IWorkbenchContribution } from "vs/workbench/common/contributions";
 import {
 	IEditorResolverService,
 	RegisteredEditorInfo,
 	RegisteredEditorPriority,
 } from "vs/workbench/services/editor/common/editorResolverService";
-import { IJSONSchemaMap } from "vs/base/common/jsonSchema";
-import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
-import { coalesce } from "vs/base/common/arrays";
-import { Event } from "vs/base/common/event";
 import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import {
-	ByteSize,
-	getLargeFileConfirmationLimit,
-} from "vs/platform/files/common/files";
+import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
 
 export class DynamicEditorConfigurations
 	extends Disposable
@@ -76,7 +76,7 @@ export class DynamicEditorConfigurations
 
 	private readonly configurationRegistry =
 		Registry.as<IConfigurationRegistry>(
-			ConfigurationExtensions.Configuration
+			ConfigurationExtensions.Configuration,
 		);
 
 	private autoLockConfigurationNode: IConfigurationNode | undefined;
@@ -113,7 +113,7 @@ export class DynamicEditorConfigurations
 		// Registered editors (debounced to reduce perf overhead)
 		Event.debounce(
 			this.editorResolverService.onDidChangeEditorRegistrations,
-			(_, e) => e
+			(_, e) => e,
 		)(() => this.updateDynamicEditorConfigurations());
 	}
 
@@ -123,7 +123,7 @@ export class DynamicEditorConfigurations
 			...DynamicEditorConfigurations.AUTO_LOCK_EXTRA_EDITORS,
 		].filter(
 			(e) =>
-				!DynamicEditorConfigurations.AUTO_LOCK_REMOVE_EDITORS.has(e.id)
+				!DynamicEditorConfigurations.AUTO_LOCK_REMOVE_EDITORS.has(e.id),
 		);
 		const binaryEditorCandidates = this.editorResolverService
 			.getEditors()
@@ -137,7 +137,7 @@ export class DynamicEditorConfigurations
 				type: "boolean",
 				default:
 					DynamicEditorConfigurations.AUTO_LOCK_DEFAULT_ENABLED.has(
-						editor.id
+						editor.id,
 					),
 				description: editor.label,
 			};
@@ -148,7 +148,7 @@ export class DynamicEditorConfigurations
 		for (const editor of lockableEditors) {
 			defaultAutoLockGroupConfiguration[editor.id] =
 				DynamicEditorConfigurations.AUTO_LOCK_DEFAULT_ENABLED.has(
-					editor.id
+					editor.id,
 				);
 		}
 
@@ -161,7 +161,7 @@ export class DynamicEditorConfigurations
 					type: "object",
 					description: localize(
 						"workbench.editor.autoLockGroups",
-						"If an editor matching one of the listed types is opened as the first in an editor group and more than one group is open, the group is automatically locked. Locked groups will only be used for opening editors when explicitly chosen by a user gesture (for example drag and drop), but not by default. Consequently, the active editor in a locked group is less likely to be replaced accidentally with a different editor."
+						"If an editor matching one of the listed types is opened as the first in an editor group and more than one group is open, the group is automatically locked. Locked groups will only be used for opening editors when explicitly chosen by a user gesture (for example drag and drop), but not by default. Consequently, the active editor in a locked group is less likely to be replaced accidentally with a different editor.",
 					),
 					properties: autoLockGroupConfiguration,
 					default: defaultAutoLockGroupConfiguration,
@@ -183,7 +183,7 @@ export class DynamicEditorConfigurations
 					enum: [...binaryEditorCandidates, ""],
 					description: localize(
 						"workbench.editor.defaultBinaryEditor",
-						"The default editor for files detected as binary. If undefined, the user will be presented with a picker."
+						"The default editor for files detected as binary. If undefined, the user will be presented with a picker.",
 					),
 				},
 			},
@@ -199,7 +199,7 @@ export class DynamicEditorConfigurations
 					type: "object",
 					markdownDescription: localize(
 						"editor.editorAssociations",
-						'Configure [glob patterns](https://aka.ms/vscode-glob-patterns) to editors (for example `"*.hex": "hexEditor.hexedit"`). These have precedence over the default behavior.'
+						'Configure [glob patterns](https://aka.ms/vscode-glob-patterns) to editors (for example `"*.hex": "hexEditor.hexedit"`). These have precedence over the default behavior.',
 					),
 					patternProperties: {
 						".*": {
@@ -221,13 +221,13 @@ export class DynamicEditorConfigurations
 					type: "number",
 					default:
 						getLargeFileConfirmationLimit(
-							this.environmentService.remoteAuthority
+							this.environmentService.remoteAuthority,
 						) / ByteSize.MB,
 					minimum: 1,
 					scope: ConfigurationScope.RESOURCE,
 					markdownDescription: localize(
 						"editorLargeFileSizeConfirmation",
-						"Controls the minimum size of a file in MB before asking for confirmation when opening in the editor. Note that this setting may not apply to all editor types and environments."
+						"Controls the minimum size of a file in MB before asking for confirmation when opening in the editor. Note that this setting may not apply to all editor types and environments.",
 					),
 				},
 			},

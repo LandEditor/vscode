@@ -3,7 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import {
+	WorkbenchActionExecutedClassification,
+	WorkbenchActionExecutedEvent,
+} from "vs/base/common/actions";
+import { IJSONSchema } from "vs/base/common/jsonSchema";
+import { MarshalledId } from "vs/base/common/marshallingIds";
+import { isEqual } from "vs/base/common/resources";
+import { TypeConstraint } from "vs/base/common/types";
 import { URI, UriComponents } from "vs/base/common/uri";
+import { ICodeEditor } from "vs/editor/browser/editorBrowser";
 import { localize } from "vs/nls";
 import {
 	Action2,
@@ -14,13 +23,16 @@ import {
 import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
 import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
 import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { IEditorCommandsContext } from "vs/workbench/common/editor";
 import {
-	getNotebookEditorFromEditorPane,
 	IActiveNotebookEditor,
+	ICellOutputViewModel,
 	ICellViewModel,
 	cellRangeToViewCells,
-	ICellOutputViewModel,
+	getNotebookEditorFromEditorPane,
 } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
+import { INotebookEditorService } from "vs/workbench/contrib/notebook/browser/services/notebookEditorService";
 import {
 	INTERACTIVE_WINDOW_IS_ACTIVE_EDITOR,
 	NOTEBOOK_EDITOR_EDITABLE,
@@ -34,18 +46,6 @@ import {
 	isICellRange,
 } from "vs/workbench/contrib/notebook/common/notebookRange";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { IEditorCommandsContext } from "vs/workbench/common/editor";
-import { INotebookEditorService } from "vs/workbench/contrib/notebook/browser/services/notebookEditorService";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import {
-	WorkbenchActionExecutedClassification,
-	WorkbenchActionExecutedEvent,
-} from "vs/base/common/actions";
-import { TypeConstraint } from "vs/base/common/types";
-import { IJSONSchema } from "vs/base/common/jsonSchema";
-import { MarshalledId } from "vs/base/common/marshallingIds";
-import { ICodeEditor } from "vs/editor/browser/editorBrowser";
-import { isEqual } from "vs/base/common/resources";
 
 // Kernel Command
 export const SELECT_KERNEL_ID = "_notebook.selectKernel";
@@ -60,16 +60,16 @@ export const CELL_TITLE_OUTPUT_GROUP_ID = "inline/output";
 export const NOTEBOOK_EDITOR_WIDGET_ACTION_WEIGHT =
 	KeybindingWeight.EditorContrib; // smaller than Suggest Widget, etc
 
-export const enum CellToolbarOrder {
-	EditCell,
-	ExecuteAboveCells,
-	ExecuteCellAndBelow,
-	SaveCell,
-	SplitCell,
-	ClearCellOutput,
+export enum CellToolbarOrder {
+	EditCell = 0,
+	ExecuteAboveCells = 1,
+	ExecuteCellAndBelow = 2,
+	SaveCell = 3,
+	SplitCell = 4,
+	ClearCellOutput = 5,
 }
 
-export const enum CellOverflowToolbarGroups {
+export enum CellOverflowToolbarGroups {
 	Copy = "1_copy",
 	Insert = "2_insert",
 	Edit = "3_edit",
@@ -105,10 +105,10 @@ export interface INotebookOutputActionContext
 }
 
 export function getContextFromActiveEditor(
-	editorService: IEditorService
+	editorService: IEditorService,
 ): INotebookActionContext | undefined {
 	const editor = getNotebookEditorFromEditorPane(
-		editorService.activeEditorPane
+		editorService.activeEditorPane,
 	);
 	if (!editor || !editor.hasModel()) {
 		return;
@@ -130,7 +130,7 @@ function getWidgetFromUri(accessor: ServicesAccessor, uri: URI) {
 		.find(
 			(widget) =>
 				widget.hasModel() &&
-				widget.textModel.uri.toString() === uri.toString()
+				widget.textModel.uri.toString() === uri.toString(),
 		);
 
 	if (widget && widget.hasModel()) {
@@ -158,7 +158,7 @@ export function getContextFromUri(accessor: ServicesAccessor, context?: any) {
 
 export function findTargetCellEditor(
 	context: INotebookCellActionContext,
-	targetCell: ICellViewModel
+	targetCell: ICellViewModel,
 ) {
 	let foundEditor: ICodeEditor | undefined = undefined;
 	for (const [, codeEditor] of context.notebookEditor.codeEditors) {
@@ -179,7 +179,7 @@ export abstract class NotebookAction extends Action2 {
 				id: MenuId.CommandPalette,
 				when: ContextKeyExpr.or(
 					NOTEBOOK_IS_ACTIVE_EDITOR,
-					INTERACTIVE_WINDOW_IS_ACTIVE_EDITOR
+					INTERACTIVE_WINDOW_IS_ACTIVE_EDITOR,
 				),
 			};
 
@@ -212,7 +212,7 @@ export abstract class NotebookAction extends Action2 {
 			context = this.getEditorContextFromArgsOrActive(
 				accessor,
 				context,
-				...additionalArgs
+				...additionalArgs,
 			);
 			if (!context) {
 				return;
@@ -232,11 +232,11 @@ export abstract class NotebookAction extends Action2 {
 
 	abstract runWithContext(
 		accessor: ServicesAccessor,
-		context: INotebookActionContext
+		context: INotebookActionContext,
 	): Promise<void>;
 
 	private isNotebookActionContext(
-		context?: unknown
+		context?: unknown,
 	): context is INotebookActionContext {
 		return (
 			!!context && !!(context as INotebookActionContext).notebookEditor
@@ -285,11 +285,11 @@ export abstract class NotebookMultiCellAction extends Action2 {
 
 	abstract runWithContext(
 		accessor: ServicesAccessor,
-		context: INotebookCommandContext | INotebookCellToolbarActionContext
+		context: INotebookCommandContext | INotebookCellToolbarActionContext,
 	): Promise<void>;
 
 	private isCellToolbarContext(
-		context?: unknown
+		context?: unknown,
 	): context is INotebookCellToolbarActionContext {
 		return (
 			!!context &&
@@ -320,8 +320,8 @@ export abstract class NotebookMultiCellAction extends Action2 {
 		const from = isFromCellToolbar
 			? "cellToolbar"
 			: isFromEditorToolbar
-				? "editorToolbar"
-				: "other";
+			  ? "editorToolbar"
+			  : "other";
 		const telemetryService = accessor.get(ITelemetryService);
 
 		if (isFromCellToolbar) {
@@ -356,7 +356,7 @@ export abstract class NotebookMultiCellAction extends Action2 {
 				notebookEditor: editor,
 				selectedCells: cellRangeToViewCells(
 					editor,
-					editor.getSelections()
+					editor.getSelections(),
 				),
 			});
 		}
@@ -367,7 +367,7 @@ export abstract class NotebookCellAction<
 	T = INotebookCellActionContext,
 > extends NotebookAction {
 	protected isCellActionContext(
-		context?: unknown
+		context?: unknown,
 	): context is INotebookCellActionContext {
 		return (
 			!!context &&
@@ -405,7 +405,7 @@ export abstract class NotebookCellAction<
 		const contextFromArgs = this.getCellContextFromArgs(
 			accessor,
 			context,
-			...additionalArgs
+			...additionalArgs,
 		);
 
 		if (contextFromArgs) {
@@ -421,13 +421,13 @@ export abstract class NotebookCellAction<
 
 	abstract override runWithContext(
 		accessor: ServicesAccessor,
-		context: INotebookCellActionContext
+		context: INotebookCellActionContext,
 	): Promise<void>;
 }
 
 export const executeNotebookCondition = ContextKeyExpr.or(
 	ContextKeyExpr.greater(NOTEBOOK_KERNEL_COUNT.key, 0),
-	ContextKeyExpr.greater(NOTEBOOK_KERNEL_SOURCE_COUNT.key, 0)
+	ContextKeyExpr.greater(NOTEBOOK_KERNEL_SOURCE_COUNT.key, 0),
 );
 
 interface IMultiCellArgs {
@@ -465,7 +465,7 @@ function isMultiCellArgs(arg: unknown): arg is IMultiCellArgs {
 
 export function getEditorFromArgsOrActivePane(
 	accessor: ServicesAccessor,
-	context?: UriComponents
+	context?: UriComponents,
 ): IActiveNotebookEditor | undefined {
 	const editorFromUri = getContextFromUri(accessor, context)?.notebookEditor;
 
@@ -474,7 +474,7 @@ export function getEditorFromArgsOrActivePane(
 	}
 
 	const editor = getNotebookEditorFromEditorPane(
-		accessor.get(IEditorService).activeEditorPane
+		accessor.get(IEditorService).activeEditorPane,
 	);
 	if (!editor || !editor.hasModel()) {
 		return;
@@ -492,16 +492,16 @@ export function parseMultiCellExecutionArgs(
 	if (isMultiCellArgs(firstArg)) {
 		const editor = getEditorFromArgsOrActivePane(
 			accessor,
-			firstArg.document
+			firstArg.document,
 		);
 		if (!editor) {
 			return;
 		}
 
 		const ranges = firstArg.ranges;
-		const selectedCells = ranges
-			.map((range) => editor.getCellsInRange(range).slice(0))
-			.flat();
+		const selectedCells = ranges.flatMap((range) =>
+			editor.getCellsInRange(range).slice(0),
+		);
 		const autoReveal = firstArg.autoReveal;
 		return {
 			ui: false,
@@ -535,7 +535,7 @@ export function parseMultiCellExecutionArgs(
 				notebookEditor: context.notebookEditor,
 				selectedCells: context.selectedCells ?? [],
 				cell: context.cell,
-			}
+		  }
 		: undefined;
 }
 
@@ -551,33 +551,33 @@ export const cellExecutionArgs: ReadonlyArray<{
 		name: "options",
 		description: "The cell range options",
 		schema: {
-			"type": "object",
-			"required": ["ranges"],
-			"properties": {
-				"ranges": {
-					"type": "array",
+			type: "object",
+			required: ["ranges"],
+			properties: {
+				ranges: {
+					type: "array",
 					items: [
 						{
-							"type": "object",
-							"required": ["start", "end"],
-							"properties": {
-								"start": {
-									"type": "number",
+							type: "object",
+							required: ["start", "end"],
+							properties: {
+								start: {
+									type: "number",
 								},
-								"end": {
-									"type": "number",
+								end: {
+									type: "number",
 								},
 							},
 						},
 					],
 				},
-				"document": {
-					"type": "object",
-					"description": "The document uri",
+				document: {
+					type: "object",
+					description: "The document uri",
 				},
-				"autoReveal": {
-					"type": "boolean",
-					"description":
+				autoReveal: {
+					type: "boolean",
+					description:
 						"Whether the cell should be revealed into view automatically",
 				},
 			},

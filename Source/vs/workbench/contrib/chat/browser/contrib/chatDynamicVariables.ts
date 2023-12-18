@@ -97,7 +97,7 @@ export class ChatDynamicVariableModel
 			// Something went wrong
 			this.logService.warn(
 				"ChatDynamicVariableModel.setInputState called with invalid state: " +
-					JSON.stringify(s)
+					JSON.stringify(s),
 			);
 			return;
 		}
@@ -120,18 +120,18 @@ export class ChatDynamicVariableModel
 					<IDecorationOptions>{
 						range: r.range,
 						hoverMessage: this.getHoverForReference(r),
-					}
-			)
+					},
+			),
 		);
 	}
 
 	private getHoverForReference(
-		ref: IDynamicVariable
+		ref: IDynamicVariable,
 	): string | IMarkdownString {
 		const value = ref.data[0];
 		if (URI.isUri(value.value)) {
 			return new MarkdownString(
-				this.labelService.getUriLabel(value.value, { relative: true })
+				this.labelService.getUriLabel(value.value, { relative: true }),
 			);
 		} else {
 			return value.value.toString();
@@ -147,7 +147,7 @@ interface SelectAndInsertFileActionContext {
 }
 
 function isSelectAndInsertFileActionContext(
-	context: any
+	context: any,
 ): context is SelectAndInsertFileActionContext {
 	return "widget" in context && "range" in context;
 }
@@ -190,7 +190,7 @@ export class SelectAndInsertFileAction extends Action2 {
 			.resource as URI;
 		if (!textModelService.canHandleResource(resource)) {
 			logService.trace(
-				"SelectAndInsertFileAction: non-text resource selected"
+				"SelectAndInsertFileAction: non-text resource selected",
 			);
 			doCleanup();
 			return;
@@ -205,7 +205,7 @@ export class SelectAndInsertFileAction extends Action2 {
 		]);
 		if (!success) {
 			logService.trace(
-				`SelectAndInsertFileAction: failed to insert "${text}"`
+				`SelectAndInsertFileAction: failed to insert "${text}"`,
 			);
 			doCleanup();
 			return;
@@ -233,7 +233,7 @@ export interface IAddDynamicVariableContext {
 }
 
 function isAddDynamicVariableContext(
-	context: any
+	context: any,
 ): context is IAddDynamicVariableContext {
 	return (
 		"widget" in context && "range" in context && "variableData" in context

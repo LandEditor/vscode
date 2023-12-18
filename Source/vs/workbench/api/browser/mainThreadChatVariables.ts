@@ -48,10 +48,10 @@ export class MainThreadChatVariables implements MainThreadChatVariablesShape {
 					await this._proxy.$resolveVariable(
 						handle,
 						messageText,
-						token
-					)
+						token,
+					),
 				);
-			}
+			},
 		);
 		this._variables.set(handle, registration);
 	}

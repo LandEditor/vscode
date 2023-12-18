@@ -9,23 +9,23 @@ import {
 	compareIgnoreCase,
 	regExpLeadsToEndlessLoop,
 } from "vs/base/common/strings";
-import {
-	clearPlatformLanguageAssociations,
-	getLanguageIds,
-	registerPlatformLanguageAssociation,
-} from "vs/editor/common/services/languagesAssociations";
 import { URI } from "vs/base/common/uri";
-import { ILanguageIdCodec } from "vs/editor/common/languages";
 import { LanguageId } from "vs/editor/common/encodedTokenAttributes";
+import { ILanguageIdCodec } from "vs/editor/common/languages";
+import {
+	ILanguageExtensionPoint,
+	ILanguageIcon,
+	ILanguageNameIdPair,
+} from "vs/editor/common/languages/language";
 import {
 	ModesRegistry,
 	PLAINTEXT_LANGUAGE_ID,
 } from "vs/editor/common/languages/modesRegistry";
 import {
-	ILanguageExtensionPoint,
-	ILanguageNameIdPair,
-	ILanguageIcon,
-} from "vs/editor/common/languages/language";
+	clearPlatformLanguageAssociations,
+	getLanguageIds,
+	registerPlatformLanguageAssociation,
+} from "vs/editor/common/services/languagesAssociations";
 import {
 	Extensions,
 	IConfigurationRegistry,
@@ -83,7 +83,7 @@ export class LanguagesRegistry extends Disposable {
 	static instanceCount = 0;
 
 	private readonly _onDidChange: Emitter<void> = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	public readonly onDidChange: Event<void> = this._onDidChange.event;
 
@@ -112,7 +112,7 @@ export class LanguagesRegistry extends Disposable {
 			this._register(
 				ModesRegistry.onDidChangeLanguages((m) => {
 					this._initializeFromRegistry();
-				})
+				}),
 			);
 		}
 	}
@@ -168,7 +168,7 @@ export class LanguagesRegistry extends Disposable {
 		});
 
 		Registry.as<IConfigurationRegistry>(
-			Extensions.Configuration
+			Extensions.Configuration,
 		).registerOverrideIdentifiers(this.getRegisteredLanguageIds());
 
 		this._onDidChange.fire();
@@ -200,7 +200,7 @@ export class LanguagesRegistry extends Disposable {
 
 	private _mergeLanguage(
 		resolvedLanguage: IResolvedLanguage,
-		lang: ILanguageExtensionPoint
+		lang: ILanguageExtensionPoint,
 	): void {
 		const langId = lang.id;
 
@@ -220,7 +220,7 @@ export class LanguagesRegistry extends Disposable {
 			if (lang.configuration) {
 				// insert first as this appears to be the 'primary' language definition
 				resolvedLanguage.extensions = lang.extensions.concat(
-					resolvedLanguage.extensions
+					resolvedLanguage.extensions,
 				);
 			} else {
 				resolvedLanguage.extensions =
@@ -229,7 +229,7 @@ export class LanguagesRegistry extends Disposable {
 			for (const extension of lang.extensions) {
 				registerPlatformLanguageAssociation(
 					{ id: langId, mime: primaryMime, extension: extension },
-					this._warnOnOverwrite
+					this._warnOnOverwrite,
 				);
 			}
 		}
@@ -238,7 +238,7 @@ export class LanguagesRegistry extends Disposable {
 			for (const filename of lang.filenames) {
 				registerPlatformLanguageAssociation(
 					{ id: langId, mime: primaryMime, filename: filename },
-					this._warnOnOverwrite
+					this._warnOnOverwrite,
 				);
 				resolvedLanguage.filenames.push(filename);
 			}
@@ -252,7 +252,7 @@ export class LanguagesRegistry extends Disposable {
 						mime: primaryMime,
 						filepattern: filenamePattern,
 					},
-					this._warnOnOverwrite
+					this._warnOnOverwrite,
 				);
 			}
 		}
@@ -271,14 +271,14 @@ export class LanguagesRegistry extends Disposable {
 							mime: primaryMime,
 							firstline: firstLineRegex,
 						},
-						this._warnOnOverwrite
+						this._warnOnOverwrite,
 					);
 				}
 			} catch (err) {
 				// Most likely, the regex was bad
 				console.warn(
 					`[${lang.id}]: Invalid regular expression \`${firstLineRegexStr}\`: `,
-					err
+					err,
 				);
 			}
 		}
@@ -328,7 +328,7 @@ export class LanguagesRegistry extends Disposable {
 	}
 
 	public isRegisteredLanguageId(
-		languageId: string | null | undefined
+		languageId: string | null | undefined,
 	): boolean {
 		if (!languageId) {
 			return false;
@@ -351,7 +351,7 @@ export class LanguagesRegistry extends Disposable {
 			}
 		}
 		result.sort((a, b) =>
-			compareIgnoreCase(a.languageName, b.languageName)
+			compareIgnoreCase(a.languageName, b.languageName),
 		);
 		return result;
 	}
@@ -409,7 +409,7 @@ export class LanguagesRegistry extends Disposable {
 	}
 
 	public getLanguageIdByMimeType(
-		mimeType: string | null | undefined
+		mimeType: string | null | undefined,
 	): string | null {
 		if (!mimeType) {
 			return null;
@@ -422,7 +422,7 @@ export class LanguagesRegistry extends Disposable {
 
 	public guessLanguageIdByFilepathOrFirstLine(
 		resource: URI | null,
-		firstLine?: string
+		firstLine?: string,
 	): string[] {
 		if (!resource && !firstLine) {
 			return [];

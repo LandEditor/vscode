@@ -3,55 +3,55 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	Extensions as WorkbenchExtensions,
-	IWorkbenchContributionsRegistry,
-	IWorkbenchContribution,
-} from "vs/workbench/common/contributions";
+import { CancellationToken } from "vs/base/common/cancellation";
 import { Disposable, MutableDisposable } from "vs/base/common/lifecycle";
-import {
-	ContextKeyExpr,
-	IContextKeyService,
-	RawContextKey,
-} from "vs/platform/contextkey/common/contextkey";
-import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import {
-	AuthenticationSession,
-	IAuthenticationService,
-} from "vs/workbench/services/authentication/common/authentication";
+import { localize } from "vs/nls";
 import {
 	Action2,
 	MenuId,
 	registerAction2,
 } from "vs/platform/actions/common/actions";
+import { ICommandService } from "vs/platform/commands/common/commands";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
-	IActivityService,
-	NumberBadge,
-} from "vs/workbench/services/activity/common/activity";
-import { IProductService } from "vs/platform/product/common/productService";
+	ConfigurationScope,
+	Extensions as ConfigurationExtensions,
+	IConfigurationRegistry,
+} from "vs/platform/configuration/common/configurationRegistry";
+import {
+	ContextKeyExpr,
+	IContextKeyService,
+	RawContextKey,
+} from "vs/platform/contextkey/common/contextkey";
+import { IDialogService } from "vs/platform/dialogs/common/dialogs";
 import { IExtensionManagementService } from "vs/platform/extensionManagement/common/extensionManagement";
 import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
+import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+import { IProductService } from "vs/platform/product/common/productService";
+import { Registry } from "vs/platform/registry/common/platform";
+import { IRequestService, asText } from "vs/platform/request/common/request";
 import {
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
-import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
-import {
-	IConfigurationRegistry,
-	Extensions as ConfigurationExtensions,
-	ConfigurationScope,
-} from "vs/platform/configuration/common/configurationRegistry";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import { applicationConfigurationNodeBase } from "vs/workbench/common/configuration";
-import { localize } from "vs/nls";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IRequestService, asText } from "vs/platform/request/common/request";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { IDialogService } from "vs/platform/dialogs/common/dialogs";
+import {
+	Extensions as WorkbenchExtensions,
+	IWorkbenchContribution,
+	IWorkbenchContributionsRegistry,
+} from "vs/workbench/common/contributions";
+import {
+	IActivityService,
+	NumberBadge,
+} from "vs/workbench/services/activity/common/activity";
+import {
+	AuthenticationSession,
+	IAuthenticationService,
+} from "vs/workbench/services/authentication/common/authentication";
+import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 const configurationKey = "workbench.accounts.experimental.showEntitlements";
 
@@ -80,7 +80,7 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 	private isInitialized = false;
 	private contextKey = new RawContextKey<boolean>(
 		configurationKey,
-		true
+		true,
 	).bindTo(this.contextService);
 
 	constructor(
@@ -151,20 +151,20 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 					if (
 						ExtensionIdentifier.equals(
 							this.productService.gitHubEntitlement!.extensionId,
-							ext.identifier
+							ext.identifier,
 						)
 					) {
 						this.storageService.store(
 							configurationKey,
 							false,
 							StorageScope.APPLICATION,
-							StorageTarget.MACHINE
+							StorageTarget.MACHINE,
 						);
 						this.contextKey.set(false);
 						return;
 					}
 				}
-			})
+			}),
 		);
 
 		this._register(
@@ -183,7 +183,7 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 				) {
 					this.contextKey.set(false);
 				}
-			})
+			}),
 		);
 
 		this._register(
@@ -198,8 +198,8 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 							await this.authenticationService.getSessions(e.id);
 						this.onSessionChange(session[0]);
 					}
-				}
-			)
+				},
+			),
 		);
 	}
 
@@ -211,10 +211,10 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 				type: "GET",
 				url: this.productService.gitHubEntitlement!.entitlementUrl,
 				headers: {
-					"Authorization": `Bearer ${session.accessToken}`,
+					Authorization: `Bearer ${session.accessToken}`,
 				},
 			},
-			CancellationToken.None
+			CancellationToken.None,
 		);
 
 		if (context.res.statusCode && context.res.statusCode !== 200) {
@@ -253,14 +253,14 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 		const menuTitle = orgs
 			? this.productService.gitHubEntitlement!.command.title.replace(
 					"{{org}}",
-					orgs[orgs.length - 1]
-				)
+					orgs[orgs.length - 1],
+			  )
 			: this.productService.gitHubEntitlement!.command
 					.titleWithoutPlaceHolder;
 
 		const badge = new NumberBadge(1, () => menuTitle);
 		const accountsMenuBadgeDisposable = this._register(
-			new MutableDisposable()
+			new MutableDisposable(),
 		);
 		accountsMenuBadgeDisposable.value =
 			this.activityService.showAccountsActivity({ badge });
@@ -301,7 +301,7 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 					if (confirmation.confirmed) {
 						commandService.executeCommand(
 							productService.gitHubEntitlement!.command.action,
-							productService.gitHubEntitlement!.extensionId!
+							productService.gitHubEntitlement!.extensionId!,
 						);
 						telemetryService.publicLog2<
 							{ command: string },
@@ -325,27 +325,27 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 					accountsMenuBadgeDisposable.clear();
 					const contextKey = new RawContextKey<boolean>(
 						configurationKey,
-						true
+						true,
 					).bindTo(contextKeyService);
 					contextKey.set(false);
 					storageService.store(
 						configurationKey,
 						false,
 						StorageScope.APPLICATION,
-						StorageTarget.MACHINE
+						StorageTarget.MACHINE,
 					);
 				}
-			}
+			},
 		);
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(AccountsEntitlement, LifecyclePhase.Eventually);
 
 const configurationRegistry = Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration
+	ConfigurationExtensions.Configuration,
 );
 configurationRegistry.registerConfiguration({
 	...applicationConfigurationNodeBase,
@@ -357,7 +357,7 @@ configurationRegistry.registerConfiguration({
 			tags: ["experimental"],
 			description: localize(
 				"workbench.accounts.showEntitlements",
-				"When enabled, available entitlements for the account will be show in the accounts menu."
+				"When enabled, available entitlements for the account will be show in the accounts menu.",
 			),
 		},
 	},

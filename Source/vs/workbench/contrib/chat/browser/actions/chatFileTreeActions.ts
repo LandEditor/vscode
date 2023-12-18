@@ -6,7 +6,7 @@
 import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
 import { ServicesAccessor } from "vs/editor/browser/editorExtensions";
 import { localize } from "vs/nls";
-import { registerAction2, Action2 } from "vs/platform/actions/common/actions";
+import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
 import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
 import { CHAT_CATEGORY } from "vs/workbench/contrib/chat/browser/actions/chatActions";
 import { IChatWidgetService } from "vs/workbench/contrib/chat/browser/chat";
@@ -15,8 +15,8 @@ import {
 	CONTEXT_PROVIDER_EXISTS,
 } from "vs/workbench/contrib/chat/common/chatContextKeys";
 import {
-	isResponseVM,
 	IChatResponseViewModel,
+	isResponseVM,
 } from "vs/workbench/contrib/chat/common/chatViewModel";
 
 export function registerChatFileTreeActions() {
@@ -28,7 +28,7 @@ export function registerChatFileTreeActions() {
 					title: {
 						value: localize(
 							"interactive.nextFileTree.label",
-							"Next File Tree"
+							"Next File Tree",
 						),
 						original: "Next File Tree",
 					},
@@ -46,7 +46,7 @@ export function registerChatFileTreeActions() {
 			run(accessor: ServicesAccessor, ...args: any[]) {
 				navigateTrees(accessor, false);
 			}
-		}
+		},
 	);
 
 	registerAction2(
@@ -57,7 +57,7 @@ export function registerChatFileTreeActions() {
 					title: {
 						value: localize(
 							"interactive.previousFileTree.label",
-							"Previous File Tree"
+							"Previous File Tree",
 						),
 						original: "Previous File Tree",
 					},
@@ -75,7 +75,7 @@ export function registerChatFileTreeActions() {
 			run(accessor: ServicesAccessor, ...args: any[]) {
 				navigateTrees(accessor, true);
 			}
-		}
+		},
 	);
 }
 
@@ -108,10 +108,10 @@ function navigateTrees(accessor: ServicesAccessor, reverse: boolean) {
 		? (lastFocusedFileTree.treeIndex +
 				(reverse ? -1 : 1) +
 				responseFileTrees.length) %
-			responseFileTrees.length
+		  responseFileTrees.length
 		: reverse
-			? responseFileTrees.length - 1
-			: 0;
+		  ? responseFileTrees.length - 1
+		  : 0;
 
 	responseFileTrees[focusIdx]?.focus();
 }

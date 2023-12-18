@@ -40,7 +40,7 @@ export class InputLatencyContrib
 
 	private _setupListener(): void {
 		this._listener.value = Event.once(
-			this._editorService.onDidActiveEditorChange
+			this._editorService.onDidActiveEditorChange,
 		)(() => this._scheduler.schedule());
 	}
 

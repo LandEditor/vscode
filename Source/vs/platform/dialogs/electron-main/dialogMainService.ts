@@ -5,7 +5,6 @@
 
 import {
 	BrowserWindow,
-	dialog,
 	FileFilter,
 	MessageBoxOptions,
 	MessageBoxReturnValue,
@@ -13,14 +12,15 @@ import {
 	OpenDialogReturnValue,
 	SaveDialogOptions,
 	SaveDialogReturnValue,
+	dialog,
 } from "electron";
 import { Queue } from "vs/base/common/async";
 import { hash } from "vs/base/common/hash";
 import { mnemonicButtonLabel } from "vs/base/common/labels";
 import {
 	Disposable,
-	dispose,
 	IDisposable,
+	dispose,
 	toDisposable,
 } from "vs/base/common/lifecycle";
 import { normalizeNFC } from "vs/base/common/normalization";
@@ -44,32 +44,32 @@ export interface IDialogMainService {
 
 	pickFileFolder(
 		options: INativeOpenDialogOptions,
-		window?: BrowserWindow
+		window?: BrowserWindow,
 	): Promise<string[] | undefined>;
 	pickFolder(
 		options: INativeOpenDialogOptions,
-		window?: BrowserWindow
+		window?: BrowserWindow,
 	): Promise<string[] | undefined>;
 	pickFile(
 		options: INativeOpenDialogOptions,
-		window?: BrowserWindow
+		window?: BrowserWindow,
 	): Promise<string[] | undefined>;
 	pickWorkspace(
 		options: INativeOpenDialogOptions,
-		window?: BrowserWindow
+		window?: BrowserWindow,
 	): Promise<string[] | undefined>;
 
 	showMessageBox(
 		options: MessageBoxOptions,
-		window?: BrowserWindow
+		window?: BrowserWindow,
 	): Promise<MessageBoxReturnValue>;
 	showSaveDialog(
 		options: SaveDialogOptions,
-		window?: BrowserWindow
+		window?: BrowserWindow,
 	): Promise<SaveDialogReturnValue>;
 	showOpenDialog(
 		options: OpenDialogOptions,
-		window?: BrowserWindow
+		window?: BrowserWindow,
 	): Promise<OpenDialogReturnValue>;
 }
 
@@ -105,7 +105,7 @@ export class DialogMainService implements IDialogMainService {
 
 	pickFileFolder(
 		options: INativeOpenDialogOptions,
-		window?: BrowserWindow
+		window?: BrowserWindow,
 	): Promise<string[] | undefined> {
 		return this.doPick(
 			{
@@ -114,13 +114,13 @@ export class DialogMainService implements IDialogMainService {
 				pickFiles: true,
 				title: localize("open", "Open"),
 			},
-			window
+			window,
 		);
 	}
 
 	pickFolder(
 		options: INativeOpenDialogOptions,
-		window?: BrowserWindow
+		window?: BrowserWindow,
 	): Promise<string[] | undefined> {
 		return this.doPick(
 			{
@@ -128,13 +128,13 @@ export class DialogMainService implements IDialogMainService {
 				pickFolders: true,
 				title: localize("openFolder", "Open Folder"),
 			},
-			window
+			window,
 		);
 	}
 
 	pickFile(
 		options: INativeOpenDialogOptions,
-		window?: BrowserWindow
+		window?: BrowserWindow,
 	): Promise<string[] | undefined> {
 		return this.doPick(
 			{
@@ -142,35 +142,35 @@ export class DialogMainService implements IDialogMainService {
 				pickFiles: true,
 				title: localize("openFile", "Open File"),
 			},
-			window
+			window,
 		);
 	}
 
 	pickWorkspace(
 		options: INativeOpenDialogOptions,
-		window?: BrowserWindow
+		window?: BrowserWindow,
 	): Promise<string[] | undefined> {
 		const title = localize(
 			"openWorkspaceTitle",
-			"Open Workspace from File"
+			"Open Workspace from File",
 		);
 		const buttonLabel = mnemonicButtonLabel(
 			localize(
 				{ key: "openWorkspace", comment: ["&& denotes a mnemonic"] },
-				"&&Open"
-			)
+				"&&Open",
+			),
 		);
 		const filters = WORKSPACE_FILTER;
 
 		return this.doPick(
 			{ ...options, pickFiles: true, title, filters, buttonLabel },
-			window
+			window,
 		);
 	}
 
 	private async doPick(
 		options: IInternalNativeOpenDialogOptions,
-		window?: BrowserWindow
+		window?: BrowserWindow,
 	): Promise<string[] | undefined> {
 		// Ensure dialog options
 		const dialogOptions: OpenDialogOptions = {
@@ -212,7 +212,7 @@ export class DialogMainService implements IDialogMainService {
 		// Show Dialog
 		const result = await this.showOpenDialog(
 			dialogOptions,
-			(window || BrowserWindow.getFocusedWindow()) ?? undefined
+			(window || BrowserWindow.getFocusedWindow()) ?? undefined,
 		);
 		if (result && result.filePaths && result.filePaths.length > 0) {
 			return result.filePaths;
@@ -248,13 +248,13 @@ export class DialogMainService implements IDialogMainService {
 
 	showMessageBox(
 		rawOptions: MessageBoxOptions,
-		window?: BrowserWindow
+		window?: BrowserWindow,
 	): Promise<MessageBoxReturnValue> {
 		return this.getWindowDialogQueue<MessageBoxReturnValue>(window).queue(
 			async () => {
 				const { options, buttonIndeces } = massageMessageBoxOptions(
 					rawOptions,
-					this.productService
+					this.productService,
 				);
 
 				let result: MessageBoxReturnValue | undefined = undefined;
@@ -268,19 +268,19 @@ export class DialogMainService implements IDialogMainService {
 					response: buttonIndeces[result.response],
 					checkboxChecked: result.checkboxChecked,
 				};
-			}
+			},
 		);
 	}
 
 	async showSaveDialog(
 		options: SaveDialogOptions,
-		window?: BrowserWindow
+		window?: BrowserWindow,
 	): Promise<SaveDialogReturnValue> {
 		// Prevent duplicates of the same dialog queueing at the same time
 		const fileDialogLock = this.acquireFileDialogLock(options, window);
 		if (!fileDialogLock) {
 			this.logService.error(
-				"[DialogMainService]: file save dialog is already or will be showing for the window with the same configuration"
+				"[DialogMainService]: file save dialog is already or will be showing for the window with the same configuration",
 			);
 
 			return { canceled: true };
@@ -288,7 +288,7 @@ export class DialogMainService implements IDialogMainService {
 
 		try {
 			return await this.getWindowDialogQueue<SaveDialogReturnValue>(
-				window
+				window,
 			).queue(async () => {
 				let result: SaveDialogReturnValue;
 				if (window) {
@@ -322,7 +322,7 @@ export class DialogMainService implements IDialogMainService {
 
 	async showOpenDialog(
 		options: OpenDialogOptions,
-		window?: BrowserWindow
+		window?: BrowserWindow,
 	): Promise<OpenDialogReturnValue> {
 		// Ensure the path exists (if provided)
 		if (options.defaultPath) {
@@ -336,7 +336,7 @@ export class DialogMainService implements IDialogMainService {
 		const fileDialogLock = this.acquireFileDialogLock(options, window);
 		if (!fileDialogLock) {
 			this.logService.error(
-				"[DialogMainService]: file open dialog is already or will be showing for the window with the same configuration"
+				"[DialogMainService]: file open dialog is already or will be showing for the window with the same configuration",
 			);
 
 			return { canceled: true, filePaths: [] };
@@ -344,7 +344,7 @@ export class DialogMainService implements IDialogMainService {
 
 		try {
 			return await this.getWindowDialogQueue<OpenDialogReturnValue>(
-				window
+				window,
 			).queue(async () => {
 				let result: OpenDialogReturnValue;
 				if (window) {
@@ -364,7 +364,7 @@ export class DialogMainService implements IDialogMainService {
 
 	private acquireFileDialogLock(
 		options: SaveDialogOptions | OpenDialogOptions,
-		window?: BrowserWindow
+		window?: BrowserWindow,
 	): IDisposable | undefined {
 		// If no window is provided, allow as many dialogs as
 		// needed since we consider them not modal per window
@@ -381,7 +381,7 @@ export class DialogMainService implements IDialogMainService {
 
 		this.logService.trace(
 			"[DialogMainService]: request to acquire file dialog lock",
-			options
+			options,
 		);
 
 		let windowFileDialogLocks = this.windowFileDialogLocks.get(window.id);
@@ -397,7 +397,7 @@ export class DialogMainService implements IDialogMainService {
 
 		this.logService.trace(
 			"[DialogMainService]: new file dialog lock created",
-			options
+			options,
 		);
 
 		windowFileDialogLocks.add(optionsHash);
@@ -405,7 +405,7 @@ export class DialogMainService implements IDialogMainService {
 		return toDisposable(() => {
 			this.logService.trace(
 				"[DialogMainService]: file dialog lock disposed",
-				options
+				options,
 			);
 
 			windowFileDialogLocks?.delete(optionsHash);

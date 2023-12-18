@@ -12,12 +12,12 @@ import {
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import * as colorRegistry from "vs/platform/theme/common/colorRegistry";
 import { ColorScheme } from "vs/platform/theme/common/theme";
-import {
-	IWorkbenchThemeService,
-	IWorkbenchColorTheme,
-} from "vs/workbench/services/themes/common/workbenchThemeService";
 import { DEFAULT_FONT_FAMILY } from "vs/workbench/browser/style";
 import { WebviewStyles } from "vs/workbench/contrib/webview/browser/webview";
+import {
+	IWorkbenchColorTheme,
+	IWorkbenchThemeService,
+} from "vs/workbench/services/themes/common/workbenchThemeService";
 
 interface WebviewThemeData {
 	readonly activeTheme: string;
@@ -83,17 +83,14 @@ export class WebviewThemeDataProvider extends Disposable {
 			const exportedColors = colorRegistry
 				.getColorRegistry()
 				.getColors()
-				.reduce(
-					(colors, entry) => {
-						const color = theme.getColor(entry.id);
-						if (color) {
-							colors["vscode-" + entry.id.replace(".", "-")] =
-								color.toString();
-						}
-						return colors;
-					},
-					{} as { [key: string]: string }
-				);
+				.reduce((colors, entry) => {
+					const color = theme.getColor(entry.id);
+					if (color) {
+						colors["vscode-" + entry.id.replace(".", "-")] =
+							color.toString();
+					}
+					return colors;
+				}, {} as { [key: string]: string });
 
 			const styles = {
 				"vscode-font-family": DEFAULT_FONT_FAMILY,

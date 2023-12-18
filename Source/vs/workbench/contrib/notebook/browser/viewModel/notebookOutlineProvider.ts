@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { CancellationToken } from "vs/base/common/cancellation";
 import { Emitter, Event } from "vs/base/common/event";
 import {
 	DisposableStore,
@@ -11,6 +12,7 @@ import {
 } from "vs/base/common/lifecycle";
 import { isEqual } from "vs/base/common/resources";
 import { URI } from "vs/base/common/uri";
+import { IOutlineModelService } from "vs/editor/contrib/documentSymbols/browser/outlineModel";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { IMarkerService } from "vs/platform/markers/common/markers";
 import { IThemeService } from "vs/platform/theme/common/themeService";
@@ -19,6 +21,7 @@ import {
 	INotebookEditor,
 	INotebookViewCellsUpdateEvent,
 } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
+import { NotebookOutlineEntryFactory } from "vs/workbench/contrib/notebook/browser/viewModel/notebookOutlineEntryFactory";
 import { CellKind } from "vs/workbench/contrib/notebook/common/notebookCommon";
 import {
 	INotebookExecutionStateService,
@@ -30,9 +33,6 @@ import {
 	OutlineTarget,
 } from "vs/workbench/services/outline/browser/outline";
 import { OutlineEntry } from "./OutlineEntry";
-import { IOutlineModelService } from "vs/editor/contrib/documentSymbols/browser/outlineModel";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { NotebookOutlineEntryFactory } from "vs/workbench/contrib/notebook/browser/viewModel/notebookOutlineEntryFactory";
 
 export class NotebookCellOutlineProvider {
 	private readonly _dispoables = new DisposableStore();
@@ -149,8 +149,8 @@ export class NotebookCellOutlineProvider {
 					this._outlineEntryFactory.cacheSymbols(
 						cell,
 						this._outlineModelService,
-						cancelToken
-					)
+						cancelToken,
+					),
 				);
 			}
 			await Promise.allSettled(promises);
@@ -179,18 +179,18 @@ export class NotebookCellOutlineProvider {
 		let includeCodeCells = true;
 		if (this._target === OutlineTarget.OutlinePane) {
 			includeCodeCells = this._configurationService.getValue<boolean>(
-				"notebook.outline.showCodeCells"
+				"notebook.outline.showCodeCells",
 			);
 		} else if (this._target === OutlineTarget.Breadcrumbs) {
 			includeCodeCells = this._configurationService.getValue<boolean>(
-				"notebook.breadcrumbs.showCodeCells"
+				"notebook.breadcrumbs.showCodeCells",
 			);
 		}
 
 		const notebookCells = notebookEditorWidget
 			.getViewModel()
 			.viewCells.filter(
-				(cell) => cell.cellKind === CellKind.Markup || includeCodeCells
+				(cell) => cell.cellKind === CellKind.Markup || includeCodeCells,
 			);
 
 		const entries: OutlineEntry[] = [];
@@ -198,15 +198,15 @@ export class NotebookCellOutlineProvider {
 			entries.push(
 				...this._outlineEntryFactory.getOutlineEntries(
 					cell,
-					entries.length
-				)
+					entries.length,
+				),
 			);
 			// send an event whenever any of the cells change
 			this._entriesDisposables.add(
 				cell.model.onDidChangeContent(() => {
 					this._recomputeState();
 					this._onDidChange.fire({});
-				})
+				}),
 			);
 		}
 
@@ -258,14 +258,14 @@ export class NotebookCellOutlineProvider {
 				}
 			};
 			const problem = this._configurationService.getValue(
-				"problems.visibility"
+				"problems.visibility",
 			);
 			if (problem === undefined) {
 				return;
 			}
 
 			const config = this._configurationService.getValue(
-				OutlineConfigKeys.problemsEnabled
+				OutlineConfigKeys.problemsEnabled,
 			);
 
 			if (problem && config) {
@@ -280,7 +280,7 @@ export class NotebookCellOutlineProvider {
 							e.some((uri) =>
 								notebookEditorWidget
 									.getCellsInRange()
-									.some((cell) => isEqual(cell.uri, uri))
+									.some((cell) => isEqual(cell.uri, uri)),
 							)
 						) {
 							doUpdateMarker(false);
@@ -303,7 +303,7 @@ export class NotebookCellOutlineProvider {
 					updateMarkerUpdater();
 					this._onDidChange.fire({});
 				}
-			})
+			}),
 		);
 
 		this._recomputeActive();
@@ -321,7 +321,7 @@ export class NotebookCellOutlineProvider {
 				notebookEditorWidget.getLength() > 0
 			) {
 				const cell = notebookEditorWidget.cellAt(
-					notebookEditorWidget.getFocus().start
+					notebookEditorWidget.getFocus().start,
 				);
 				if (cell) {
 					for (const entry of this._entries) {

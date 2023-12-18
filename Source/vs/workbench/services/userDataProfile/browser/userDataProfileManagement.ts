@@ -21,8 +21,8 @@ import {
 	DidChangeProfilesEvent,
 	IUserDataProfile,
 	IUserDataProfileOptions,
-	IUserDataProfilesService,
 	IUserDataProfileUpdateOptions,
+	IUserDataProfilesService,
 } from "vs/platform/userDataProfile/common/userDataProfile";
 import {
 	IWorkspaceContextService,
@@ -114,15 +114,16 @@ export class UserDataProfileManagementService
 		if (
 			e.removed.some(
 				(profile) =>
-					profile.id === this.userDataProfileService.currentProfile.id
+					profile.id ===
+					this.userDataProfileService.currentProfile.id,
 			)
 		) {
 			this.changeCurrentProfile(
 				this.userDataProfilesService.defaultProfile,
 				localize(
 					"reload message when removed",
-					"The current profile has been removed. Please reload to switch back to default profile"
-				)
+					"The current profile has been removed. Please reload to switch back to default profile",
+				),
 			);
 			return;
 		}
@@ -134,15 +135,15 @@ export class UserDataProfileManagementService
 				this.userDataProfilesService.defaultProfile,
 				localize(
 					"reload message when removed",
-					"The current profile has been removed. Please reload to switch back to default profile"
-				)
+					"The current profile has been removed. Please reload to switch back to default profile",
+				),
 			);
 			return;
 		}
 	}
 
 	private async onDidChangeCurrentProfile(
-		e: DidChangeUserDataProfileEvent
+		e: DidChangeUserDataProfileEvent,
 	): Promise<void> {
 		if (e.previous.isTransient) {
 			await this.userDataProfilesService.cleanUpTransientProfiles();
@@ -151,12 +152,12 @@ export class UserDataProfileManagementService
 
 	async createAndEnterProfile(
 		name: string,
-		options?: IUserDataProfileOptions
+		options?: IUserDataProfileOptions,
 	): Promise<IUserDataProfile> {
 		const profile = await this.userDataProfilesService.createNamedProfile(
 			name,
 			options,
-			toWorkspaceIdentifier(this.workspaceContextService.getWorkspace())
+			toWorkspaceIdentifier(this.workspaceContextService.getWorkspace()),
 		);
 		await this.changeCurrentProfile(profile);
 		this.telemetryService.publicLog2<
@@ -170,8 +171,8 @@ export class UserDataProfileManagementService
 		const profile =
 			await this.userDataProfilesService.createTransientProfile(
 				toWorkspaceIdentifier(
-					this.workspaceContextService.getWorkspace()
-				)
+					this.workspaceContextService.getWorkspace(),
+				),
 			);
 		await this.changeCurrentProfile(profile);
 		this.telemetryService.publicLog2<
@@ -185,11 +186,11 @@ export class UserDataProfileManagementService
 
 	async updateProfile(
 		profile: IUserDataProfile,
-		updateOptions: IUserDataProfileUpdateOptions
+		updateOptions: IUserDataProfileUpdateOptions,
 	): Promise<void> {
 		if (
 			!this.userDataProfilesService.profiles.some(
-				(p) => p.id === profile.id
+				(p) => p.id === profile.id,
 			)
 		) {
 			throw new Error(`Profile ${profile.name} does not exist`);
@@ -198,13 +199,13 @@ export class UserDataProfileManagementService
 			throw new Error(
 				localize(
 					"cannotRenameDefaultProfile",
-					"Cannot rename the default profile"
-				)
+					"Cannot rename the default profile",
+				),
 			);
 		}
 		await this.userDataProfilesService.updateProfile(
 			profile,
-			updateOptions
+			updateOptions,
 		);
 		this.telemetryService.publicLog2<
 			ProfileManagementActionExecutedEvent,
@@ -215,7 +216,7 @@ export class UserDataProfileManagementService
 	async removeProfile(profile: IUserDataProfile): Promise<void> {
 		if (
 			!this.userDataProfilesService.profiles.some(
-				(p) => p.id === profile.id
+				(p) => p.id === profile.id,
 			)
 		) {
 			throw new Error(`Profile ${profile.name} does not exist`);
@@ -224,8 +225,8 @@ export class UserDataProfileManagementService
 			throw new Error(
 				localize(
 					"cannotDeleteDefaultProfile",
-					"Cannot delete the default profile"
-				)
+					"Cannot delete the default profile",
+				),
 			);
 		}
 		await this.userDataProfilesService.removeProfile(profile);
@@ -237,11 +238,11 @@ export class UserDataProfileManagementService
 
 	async switchProfile(profile: IUserDataProfile): Promise<void> {
 		const workspaceIdentifier = toWorkspaceIdentifier(
-			this.workspaceContextService.getWorkspace()
+			this.workspaceContextService.getWorkspace(),
 		);
 		if (
 			!this.userDataProfilesService.profiles.some(
-				(p) => p.id === profile.id
+				(p) => p.id === profile.id,
 			)
 		) {
 			throw new Error(`Profile ${profile.name} does not exist`);
@@ -251,7 +252,7 @@ export class UserDataProfileManagementService
 		}
 		await this.userDataProfilesService.setProfileForWorkspace(
 			workspaceIdentifier,
-			profile
+			profile,
 		);
 		await this.changeCurrentProfile(profile);
 		this.telemetryService.publicLog2<
@@ -268,7 +269,7 @@ export class UserDataProfileManagementService
 						type: "GET",
 						url: this.productService.profileTemplatesUrl,
 					},
-					CancellationToken.None
+					CancellationToken.None,
 				);
 				if (context.res.statusCode === 200) {
 					return (
@@ -277,7 +278,7 @@ export class UserDataProfileManagementService
 				} else {
 					this.logService.error(
 						"Could not get profile templates.",
-						context.res.statusCode
+						context.res.statusCode,
 					);
 				}
 			} catch (error) {
@@ -289,7 +290,7 @@ export class UserDataProfileManagementService
 
 	private async changeCurrentProfile(
 		profile: IUserDataProfile,
-		reloadMessage?: string
+		reloadMessage?: string,
 	): Promise<void> {
 		const isRemoteWindow = !!this.environmentService.remoteAuthority;
 
@@ -297,14 +298,14 @@ export class UserDataProfileManagementService
 			this.userDataProfileService.currentProfile.id !== profile.id ||
 			!equals(
 				this.userDataProfileService.currentProfile.useDefaultFlags,
-				profile.useDefaultFlags
+				profile.useDefaultFlags,
 			);
 
 		if (shouldRestartExtensionHosts) {
 			if (!isRemoteWindow) {
 				if (
 					!(await this.extensionService.stopExtensionHosts(
-						localize("switch profile", "Switching to a profile.")
+						localize("switch profile", "Switching to a profile."),
 					))
 				) {
 					// If extension host did not stop, do not switch profile
@@ -312,14 +313,14 @@ export class UserDataProfileManagementService
 						this.userDataProfilesService.profiles.some(
 							(p) =>
 								p.id ===
-								this.userDataProfileService.currentProfile.id
+								this.userDataProfileService.currentProfile.id,
 						)
 					) {
 						await this.userDataProfilesService.setProfileForWorkspace(
 							toWorkspaceIdentifier(
-								this.workspaceContextService.getWorkspace()
+								this.workspaceContextService.getWorkspace(),
 							),
-							this.userDataProfileService.currentProfile
+							this.userDataProfileService.currentProfile,
 						);
 					}
 					throw new CancellationError();
@@ -337,7 +338,7 @@ export class UserDataProfileManagementService
 						reloadMessage ??
 						localize(
 							"reload message",
-							"Switching a profile requires reloading VS Code."
+							"Switching a profile requires reloading VS Code.",
 						),
 					primaryButton: localize("reload button", "&&Reload"),
 				});
@@ -354,5 +355,5 @@ export class UserDataProfileManagementService
 registerSingleton(
 	IUserDataProfileManagementService,
 	UserDataProfileManagementService,
-	InstantiationType.Eager /* Eager because it updates the current window profile by listening to profiles changes */
+	InstantiationType.Eager /* Eager because it updates the current window profile by listening to profiles changes */,
 );

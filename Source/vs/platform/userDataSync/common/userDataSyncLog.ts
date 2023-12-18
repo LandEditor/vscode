@@ -25,20 +25,20 @@ export class UserDataSyncLogService
 
 	constructor(
 		@ILoggerService loggerService: ILoggerService,
-		@IEnvironmentService environmentService: IEnvironmentService
+		@IEnvironmentService environmentService: IEnvironmentService,
 	) {
 		super();
 		this.logger = this._register(
 			loggerService.createLogger(
 				joinPath(
 					environmentService.logsHome,
-					`${USER_DATA_SYNC_LOG_ID}.log`
+					`${USER_DATA_SYNC_LOG_ID}.log`,
 				),
 				{
 					id: USER_DATA_SYNC_LOG_ID,
 					name: localize("userDataSyncLog", "Settings Sync"),
-				}
-			)
+				},
+			),
 		);
 	}
 

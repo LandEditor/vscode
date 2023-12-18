@@ -54,8 +54,8 @@ export class UserDataSyncLocalStoreService
 					await this.cleanUpBackup(
 						this.getResourceBackupHome(
 							resource,
-							profile.isDefault ? undefined : profile.id
-						)
+							profile.isDefault ? undefined : profile.id,
+						),
 					);
 				} catch (error) {
 					this.logService.error(error);
@@ -66,7 +66,7 @@ export class UserDataSyncLocalStoreService
 		let stat: IFileStat;
 		try {
 			stat = await this.fileService.resolve(
-				this.environmentService.userDataSyncHome
+				this.environmentService.userDataSyncHome,
 			);
 		} catch (error) {
 			if (
@@ -83,13 +83,13 @@ export class UserDataSyncLocalStoreService
 				if (
 					child.isDirectory &&
 					!this.userDataProfilesService.profiles.some(
-						(profile) => profile.id === child.name
+						(profile) => profile.id === child.name,
 					)
 				) {
 					try {
 						this.logService.info(
 							"Deleting non existing profile from backup",
-							child.resource.path
+							child.resource.path,
 						);
 						await this.fileService.del(child.resource, {
 							recursive: true,
@@ -105,7 +105,7 @@ export class UserDataSyncLocalStoreService
 	async getAllResourceRefs(
 		resource: SyncResource,
 		collection?: string,
-		root?: URI
+		root?: URI,
 	): Promise<IResourceRefHandle[]> {
 		const folder = this.getResourceBackupHome(resource, collection, root);
 		try {
@@ -114,7 +114,7 @@ export class UserDataSyncLocalStoreService
 				const all = stat.children
 					.filter(
 						(stat) =>
-							stat.isFile && !stat.name.startsWith("lastSync")
+							stat.isFile && !stat.name.startsWith("lastSync"),
 					)
 					.sort()
 					.reverse();
@@ -138,12 +138,12 @@ export class UserDataSyncLocalStoreService
 		resourceKey: SyncResource,
 		ref: string,
 		collection?: string,
-		root?: URI
+		root?: URI,
 	): Promise<string | null> {
 		const folder = this.getResourceBackupHome(
 			resourceKey,
 			collection,
-			root
+			root,
 		);
 		const file = joinPath(folder, ref);
 		try {
@@ -160,21 +160,21 @@ export class UserDataSyncLocalStoreService
 		content: string,
 		cTime: Date,
 		collection?: string,
-		root?: URI
+		root?: URI,
 	): Promise<void> {
 		const folder = this.getResourceBackupHome(
 			resourceKey,
 			collection,
-			root
+			root,
 		);
 		const resource = joinPath(
 			folder,
-			`${toLocalISOString(cTime).replace(/-|:|\.\d+Z$/g, "")}.json`
+			`${toLocalISOString(cTime).replace(/-|:|\.\d+Z$/g, "")}.json`,
 		);
 		try {
 			await this.fileService.writeFile(
 				resource,
-				VSBuffer.fromString(content)
+				VSBuffer.fromString(content),
 			);
 		} catch (e) {
 			this.logService.error(e);
@@ -184,11 +184,11 @@ export class UserDataSyncLocalStoreService
 	private getResourceBackupHome(
 		resource: SyncResource,
 		collection?: string,
-		root: URI = this.environmentService.userDataSyncHome
+		root: URI = this.environmentService.userDataSyncHome,
 	): URI {
 		return joinPath(
 			root,
-			...(collection ? [collection, resource] : [resource])
+			...(collection ? [collection, resource] : [resource]),
 		);
 	}
 
@@ -207,7 +207,7 @@ export class UserDataSyncLocalStoreService
 					.filter(
 						(stat) =>
 							stat.isFile &&
-							/^\d{8}T\d{6}(\.json)?$/.test(stat.name)
+							/^\d{8}T\d{6}(\.json)?$/.test(stat.name),
 					)
 					.sort();
 				const backUpMaxAge =
@@ -216,11 +216,11 @@ export class UserDataSyncLocalStoreService
 					60 *
 					24 *
 					(this.configurationService.getValue<number>(
-						"sync.localBackupDuration"
+						"sync.localBackupDuration",
 					) || 30) /* Default 30 days */;
 				let toDelete = all.filter(
 					(stat) =>
-						Date.now() - this.getCreationTime(stat) > backUpMaxAge
+						Date.now() - this.getCreationTime(stat) > backUpMaxAge,
 				);
 				const remaining = all.length - toDelete.length;
 				if (remaining < 10) {
@@ -230,10 +230,10 @@ export class UserDataSyncLocalStoreService
 					toDelete.map(async (stat) => {
 						this.logService.info(
 							"Deleting from backup",
-							stat.resource.path
+							stat.resource.path,
 						);
 						await this.fileService.del(stat.resource);
-					})
+					}),
 				);
 			}
 		} catch (e) {
@@ -248,7 +248,7 @@ export class UserDataSyncLocalStoreService
 			parseInt(stat.name.substring(6, 8)),
 			parseInt(stat.name.substring(9, 11)),
 			parseInt(stat.name.substring(11, 13)),
-			parseInt(stat.name.substring(13, 15))
+			parseInt(stat.name.substring(13, 15)),
 		).getTime();
 	}
 }

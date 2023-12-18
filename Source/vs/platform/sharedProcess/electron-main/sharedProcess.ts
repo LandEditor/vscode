@@ -4,25 +4,25 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IpcMainEvent, MessagePortMain } from "electron";
-import { validatedIpcMain } from "vs/base/parts/ipc/electron-main/ipcMain";
 import { Barrier, DeferredPromise } from "vs/base/common/async";
 import { Disposable } from "vs/base/common/lifecycle";
+import { assertIsDefined } from "vs/base/common/types";
+import { validatedIpcMain } from "vs/base/parts/ipc/electron-main/ipcMain";
 import { IEnvironmentMainService } from "vs/platform/environment/electron-main/environmentMainService";
+import { parseSharedProcessDebugPort } from "vs/platform/environment/node/environmentService";
 import { ILifecycleMainService } from "vs/platform/lifecycle/electron-main/lifecycleMainService";
 import { ILogService } from "vs/platform/log/common/log";
-import { ISharedProcessConfiguration } from "vs/platform/sharedProcess/node/sharedProcess";
-import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
-import { IPolicyService } from "vs/platform/policy/common/policy";
 import { ILoggerMainService } from "vs/platform/log/electron-main/loggerService";
-import { UtilityProcess } from "vs/platform/utilityProcess/electron-main/utilityProcess";
-import { NullTelemetryService } from "vs/platform/telemetry/common/telemetryUtils";
-import { parseSharedProcessDebugPort } from "vs/platform/environment/node/environmentService";
-import { assertIsDefined } from "vs/base/common/types";
+import { IPolicyService } from "vs/platform/policy/common/policy";
 import {
 	SharedProcessChannelConnection,
-	SharedProcessRawConnection,
 	SharedProcessLifecycle,
+	SharedProcessRawConnection,
 } from "vs/platform/sharedProcess/common/sharedProcess";
+import { ISharedProcessConfiguration } from "vs/platform/sharedProcess/node/sharedProcess";
+import { NullTelemetryService } from "vs/platform/telemetry/common/telemetryUtils";
+import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
+import { UtilityProcess } from "vs/platform/utilityProcess/electron-main/utilityProcess";
 
 export class SharedProcess extends Disposable {
 	private readonly firstWindowConnectionBarrier = new Barrier();
@@ -56,8 +56,8 @@ export class SharedProcess extends Disposable {
 				this.onWindowConnection(
 					e,
 					nonce,
-					SharedProcessChannelConnection.response
-				)
+					SharedProcessChannelConnection.response,
+				),
 		);
 
 		// Shared process raw connections from workbench windows
@@ -67,25 +67,25 @@ export class SharedProcess extends Disposable {
 				this.onWindowConnection(
 					e,
 					nonce,
-					SharedProcessRawConnection.response
-				)
+					SharedProcessRawConnection.response,
+				),
 		);
 
 		// Lifecycle
 		this._register(
 			this.lifecycleMainService.onWillShutdown(() =>
-				this.onWillShutdown()
-			)
+				this.onWillShutdown(),
+			),
 		);
 	}
 
 	private async onWindowConnection(
 		e: IpcMainEvent,
 		nonce: string,
-		responseChannel: string
+		responseChannel: string,
 	): Promise<void> {
 		this.logService.trace(
-			`[SharedProcess] onWindowConnection for: ${responseChannel}`
+			`[SharedProcess] onWindowConnection for: ${responseChannel}`,
 		);
 
 		// release barrier if this is the first window connection
@@ -138,11 +138,11 @@ export class SharedProcess extends Disposable {
 				if (this.utilityProcess) {
 					this.utilityProcess.once(
 						SharedProcessLifecycle.initDone,
-						() => whenReady.complete()
+						() => whenReady.complete(),
 					);
 				} else {
 					validatedIpcMain.once(SharedProcessLifecycle.initDone, () =>
-						whenReady.complete()
+						whenReady.complete(),
 					);
 				}
 
@@ -169,11 +169,11 @@ export class SharedProcess extends Disposable {
 				if (this.utilityProcess) {
 					this.utilityProcess.once(
 						SharedProcessLifecycle.ipcReady,
-						() => sharedProcessIpcReady.complete()
+						() => sharedProcessIpcReady.complete(),
 					);
 				} else {
 					validatedIpcMain.once(SharedProcessLifecycle.ipcReady, () =>
-						sharedProcessIpcReady.complete()
+						sharedProcessIpcReady.complete(),
 					);
 				}
 
@@ -190,13 +190,13 @@ export class SharedProcess extends Disposable {
 			new UtilityProcess(
 				this.logService,
 				NullTelemetryService,
-				this.lifecycleMainService
-			)
+				this.lifecycleMainService,
+			),
 		);
 
 		const inspectParams = parseSharedProcessDebugPort(
 			this.environmentMainService.args,
-			this.environmentMainService.isBuilt
+			this.environmentMainService.isBuilt,
 		);
 		let execArgv: string[] | undefined = undefined;
 		if (inspectParams.port) {

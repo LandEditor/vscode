@@ -13,11 +13,11 @@ import { localize } from "vs/nls";
 
 const $ = dom.$;
 
-export const enum HoverPosition {
-	LEFT,
-	RIGHT,
-	BELOW,
-	ABOVE,
+export enum HoverPosition {
+	LEFT = 0,
+	RIGHT = 1,
+	BELOW = 2,
+	ABOVE = 3,
 }
 
 export class HoverWidget extends Disposable {
@@ -39,7 +39,7 @@ export class HoverWidget extends Disposable {
 		this.scrollbar = this._register(
 			new DomScrollableElement(this.contentsDomNode, {
 				consumeMouseWheelIfScrollbarIsNeeded: true,
-			})
+			}),
 		);
 		this.containerDomNode.appendChild(this.scrollbar.getDomNode());
 	}
@@ -58,7 +58,7 @@ export class HoverAction extends Disposable {
 			run: (target: HTMLElement) => void;
 			commandId: string;
 		},
-		keybindingLabel: string | null
+		keybindingLabel: string | null,
 	) {
 		return new HoverAction(parent, actionOptions, keybindingLabel);
 	}
@@ -74,7 +74,7 @@ export class HoverAction extends Disposable {
 			run: (target: HTMLElement) => void;
 			commandId: string;
 		},
-		keybindingLabel: string | null
+		keybindingLabel: string | null,
 	) {
 		super();
 
@@ -99,8 +99,8 @@ export class HoverAction extends Disposable {
 					e.stopPropagation();
 					e.preventDefault();
 					actionOptions.run(this.actionContainer);
-				}
-			)
+				},
+			),
 		);
 
 		this._register(
@@ -117,8 +117,8 @@ export class HoverAction extends Disposable {
 						e.preventDefault();
 						actionOptions.run(this.actionContainer);
 					}
-				}
-			)
+				},
+			),
 		);
 
 		this.setEnabled(true);
@@ -137,18 +137,18 @@ export class HoverAction extends Disposable {
 
 export function getHoverAccessibleViewHint(
 	shouldHaveHint?: boolean,
-	keybinding?: string | null
+	keybinding?: string | null,
 ): string | undefined {
 	return shouldHaveHint && keybinding
 		? localize(
 				"acessibleViewHint",
 				"Inspect this in the accessible view with {0}.",
-				keybinding
-			)
+				keybinding,
+		  )
 		: shouldHaveHint
-			? localize(
+		  ? localize(
 					"acessibleViewHintNoKbOpen",
-					"Inspect this in the accessible view via the command Open Accessible View which is currently not triggerable via keybinding."
-				)
-			: "";
+					"Inspect this in the accessible view via the command Open Accessible View which is currently not triggerable via keybinding.",
+			  )
+		  : "";
 }

@@ -11,8 +11,8 @@ import {
 import { CellContentPart } from "vs/workbench/contrib/notebook/browser/view/cellPart";
 import { NotebookCellChatController } from "vs/workbench/contrib/notebook/browser/view/cellParts/chat/cellChatController";
 
-import "vs/workbench/contrib/notebook/browser/view/cellParts/chat/cellChatActions";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import "vs/workbench/contrib/notebook/browser/view/cellParts/chat/cellChatActions";
 import { NotebookSetting } from "vs/workbench/contrib/notebook/common/notebookCommon";
 
 export class CellChatPart extends CellContentPart {
@@ -36,7 +36,7 @@ export class CellChatPart extends CellContentPart {
 	override didRenderCell(element: ICellViewModel): void {
 		this._controller?.dispose();
 		const enabled = this._configurationService.getValue<boolean>(
-			NotebookSetting.cellChat
+			NotebookSetting.cellChat,
 		);
 		if (enabled) {
 			this._controller = this._instantiationService.createInstance(
@@ -44,7 +44,7 @@ export class CellChatPart extends CellContentPart {
 				this._notebookEditor,
 				this,
 				element,
-				this._partContainer
+				this._partContainer,
 			);
 		}
 

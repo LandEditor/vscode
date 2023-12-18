@@ -3,9 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Codicon } from "vs/base/common/codicons";
 import { Schemas } from "vs/base/common/network";
+import { join } from "vs/base/common/path";
+import { ThemeIcon } from "vs/base/common/themables";
 import { URI } from "vs/base/common/uri";
 import { localize } from "vs/nls";
+import { IEditorOptions } from "vs/platform/editor/common/editor";
+import { areSameExtensions } from "vs/platform/extensionManagement/common/extensionManagementUtil";
+import { registerIcon } from "vs/platform/theme/common/iconRegistry";
 import {
 	EditorInputCapabilities,
 	IUntypedEditorInput,
@@ -15,20 +21,14 @@ import {
 	ExtensionEditorTab,
 	IExtension,
 } from "vs/workbench/contrib/extensions/common/extensions";
-import { areSameExtensions } from "vs/platform/extensionManagement/common/extensionManagementUtil";
-import { join } from "vs/base/common/path";
-import { IEditorOptions } from "vs/platform/editor/common/editor";
-import { ThemeIcon } from "vs/base/common/themables";
-import { Codicon } from "vs/base/common/codicons";
-import { registerIcon } from "vs/platform/theme/common/iconRegistry";
 
 const ExtensionEditorIcon = registerIcon(
 	"extensions-editor-label-icon",
 	Codicon.extensions,
 	localize(
 		"extensionsEditorLabelIcon",
-		"Icon of the extensions editor label."
-	)
+		"Icon of the extensions editor label.",
+	),
 );
 
 export interface IExtensionEditorOptions extends IEditorOptions {
@@ -71,7 +71,7 @@ export class ExtensionsInput extends EditorInput {
 		return localize(
 			"extensionsInputName",
 			"Extension: {0}",
-			this._extension.displayName
+			this._extension.displayName,
 		);
 	}
 
@@ -88,7 +88,7 @@ export class ExtensionsInput extends EditorInput {
 			other instanceof ExtensionsInput &&
 			areSameExtensions(
 				this._extension.identifier,
-				other._extension.identifier
+				other._extension.identifier,
 			)
 		);
 	}

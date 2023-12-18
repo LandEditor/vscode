@@ -37,7 +37,7 @@ export interface IRequestService {
 
 	request(
 		options: IRequestOptions,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IRequestContext>;
 
 	resolveProxy(url: string): Promise<string | undefined>;
@@ -82,7 +82,7 @@ export abstract class AbstractRequestService
 		this.logger = loggerService.createLogger("network", {
 			name: localize("request", "Network Requests"),
 			when: CONTEXT_LOG_LEVEL.isEqualTo(
-				LogLevelToString(LogLevel.Trace)
+				LogLevelToString(LogLevel.Trace),
 			).serialize(),
 		});
 	}
@@ -90,13 +90,13 @@ export abstract class AbstractRequestService
 	protected async logAndRequest(
 		stack: string,
 		options: IRequestOptions,
-		request: () => Promise<IRequestContext>
+		request: () => Promise<IRequestContext>,
 	): Promise<IRequestContext> {
 		const prefix = `${stack} #${++this.counter}: ${options.url}`;
 		this.logger.trace(
 			`${prefix} - begin`,
 			options.type,
-			new LoggableHeaders(options.headers ?? {})
+			new LoggableHeaders(options.headers ?? {}),
 		);
 		try {
 			const result = await request();
@@ -104,14 +104,14 @@ export abstract class AbstractRequestService
 				`${prefix} - end`,
 				options.type,
 				result.res.statusCode,
-				result.res.headers
+				result.res.headers,
 			);
 			return result;
 		} catch (error) {
 			this.logger.error(
 				`${prefix} - error`,
 				options.type,
-				getErrorMessage(error)
+				getErrorMessage(error),
 			);
 			throw error;
 		}
@@ -119,7 +119,7 @@ export abstract class AbstractRequestService
 
 	abstract request(
 		options: IRequestOptions,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IRequestContext>;
 	abstract resolveProxy(url: string): Promise<string | undefined>;
 	abstract loadCertificates(): Promise<string[]>;
@@ -147,7 +147,7 @@ export async function asText(context: IRequestContext): Promise<string | null> {
 }
 
 export async function asTextOrError(
-	context: IRequestContext
+	context: IRequestContext,
 ): Promise<string | null> {
 	if (!isSuccess(context)) {
 		throw new Error("Server returned " + context.res.statusCode);
@@ -156,7 +156,7 @@ export async function asTextOrError(
 }
 
 export async function asJson<T = {}>(
-	context: IRequestContext
+	context: IRequestContext,
 ): Promise<T | null> {
 	if (!isSuccess(context)) {
 		throw new Error("Server returned " + context.res.statusCode);
@@ -175,7 +175,7 @@ export async function asJson<T = {}>(
 }
 
 export function updateProxyConfigurationsScope(
-	scope: ConfigurationScope
+	scope: ConfigurationScope,
 ): void {
 	registerProxyConfigurations(scope);
 }
@@ -183,7 +183,7 @@ export function updateProxyConfigurationsScope(
 let proxyConfiguration: IConfigurationNode | undefined;
 function registerProxyConfigurations(scope: ConfigurationScope): void {
 	const configurationRegistry = Registry.as<IConfigurationRegistry>(
-		Extensions.Configuration
+		Extensions.Configuration,
 	);
 	const oldProxyConfiguration = proxyConfiguration;
 	proxyConfiguration = {
@@ -199,7 +199,7 @@ function registerProxyConfigurations(scope: ConfigurationScope): void {
 					"^(https?|socks|socks4a?|socks5h?)://([^:]*(:[^@]*)?@)?([^:]+|\\[[:0-9a-fA-F]+\\])(:\\d+)?/?$|^$",
 				markdownDescription: localize(
 					"proxy",
-					"The proxy setting to use. If not set, will be inherited from the `http_proxy` and `https_proxy` environment variables."
+					"The proxy setting to use. If not set, will be inherited from the `http_proxy` and `https_proxy` environment variables.",
 				),
 				restricted: true,
 			},
@@ -208,7 +208,7 @@ function registerProxyConfigurations(scope: ConfigurationScope): void {
 				default: true,
 				description: localize(
 					"strictSSL",
-					"Controls whether the proxy server certificate should be verified against the list of supplied CAs."
+					"Controls whether the proxy server certificate should be verified against the list of supplied CAs.",
 				),
 				restricted: true,
 			},
@@ -216,7 +216,7 @@ function registerProxyConfigurations(scope: ConfigurationScope): void {
 				type: "string",
 				markdownDescription: localize(
 					"proxyKerberosServicePrincipal",
-					"Overrides the principal service name for Kerberos authentication with the HTTP proxy. A default based on the proxy hostname is used when this is not set."
+					"Overrides the principal service name for Kerberos authentication with the HTTP proxy. A default based on the proxy hostname is used when this is not set.",
 				),
 				restricted: true,
 			},
@@ -225,7 +225,7 @@ function registerProxyConfigurations(scope: ConfigurationScope): void {
 				default: null,
 				markdownDescription: localize(
 					"proxyAuthorization",
-					"The value to send as the `Proxy-Authorization` header for every network request."
+					"The value to send as the `Proxy-Authorization` header for every network request.",
 				),
 				restricted: true,
 			},
@@ -235,25 +235,25 @@ function registerProxyConfigurations(scope: ConfigurationScope): void {
 				enumDescriptions: [
 					localize(
 						"proxySupportOff",
-						"Disable proxy support for extensions."
+						"Disable proxy support for extensions.",
 					),
 					localize(
 						"proxySupportOn",
-						"Enable proxy support for extensions."
+						"Enable proxy support for extensions.",
 					),
 					localize(
 						"proxySupportFallback",
-						"Enable proxy support for extensions, fall back to request options, when no proxy found."
+						"Enable proxy support for extensions, fall back to request options, when no proxy found.",
 					),
 					localize(
 						"proxySupportOverride",
-						"Enable proxy support for extensions, override request options."
+						"Enable proxy support for extensions, override request options.",
 					),
 				],
 				default: "override",
 				description: localize(
 					"proxySupport",
-					"Use the proxy support for extensions."
+					"Use the proxy support for extensions.",
 				),
 				restricted: true,
 			},
@@ -262,7 +262,7 @@ function registerProxyConfigurations(scope: ConfigurationScope): void {
 				default: true,
 				description: localize(
 					"systemCertificates",
-					"Controls whether CA certificates should be loaded from the OS. (On Windows and macOS, a reload of the window is required after turning this off.)"
+					"Controls whether CA certificates should be loaded from the OS. (On Windows and macOS, a reload of the window is required after turning this off.)",
 				),
 				restricted: true,
 			},
@@ -272,7 +272,7 @@ function registerProxyConfigurations(scope: ConfigurationScope): void {
 				default: false,
 				description: localize(
 					"systemCertificatesV2",
-					"Controls whether experimental loading of CA certificates from the OS should be enabled. This uses a more general approach than the default implemenation."
+					"Controls whether experimental loading of CA certificates from the OS should be enabled. This uses a more general approach than the default implemenation.",
 				),
 				restricted: true,
 			},

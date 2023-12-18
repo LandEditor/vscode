@@ -3,11 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import {
-	clearConfiguredLanguageAssociations,
-	registerConfiguredLanguageAssociation,
-} from "vs/editor/common/services/languagesAssociations";
 import { joinPath } from "vs/base/common/resources";
 import { URI } from "vs/base/common/uri";
 import {
@@ -15,12 +10,23 @@ import {
 	ILanguageService,
 } from "vs/editor/common/languages/language";
 import { LanguageService } from "vs/editor/common/services/languageService";
+import {
+	clearConfiguredLanguageAssociations,
+	registerConfiguredLanguageAssociation,
+} from "vs/editor/common/services/languagesAssociations";
+import { localize } from "vs/nls";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { IEnvironmentService } from "vs/platform/environment/common/environment";
+import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
 import {
 	FILES_ASSOCIATIONS_CONFIG,
 	IFilesConfiguration,
 } from "vs/platform/files/common/files";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import { ILogService } from "vs/platform/log/common/log";
 import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
 import {
 	ExtensionMessageCollector,
@@ -28,12 +34,6 @@ import {
 	IExtensionPoint,
 	IExtensionPointUser,
 } from "vs/workbench/services/extensions/common/extensionsRegistry";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
-import { ILogService } from "vs/platform/log/common/log";
 
 export interface IRawLanguageExtensionPoint {
 	id: string;
@@ -53,7 +53,7 @@ export const languagesExtPoint: IExtensionPoint<IRawLanguageExtensionPoint[]> =
 		jsonSchema: {
 			description: localize(
 				"vscode.extension.contributes.languages",
-				"Contributes language declarations."
+				"Contributes language declarations.",
 			),
 			type: "array",
 			items: {
@@ -72,14 +72,14 @@ export const languagesExtPoint: IExtensionPoint<IRawLanguageExtensionPoint[]> =
 					id: {
 						description: localize(
 							"vscode.extension.contributes.languages.id",
-							"ID of the language."
+							"ID of the language.",
 						),
 						type: "string",
 					},
 					aliases: {
 						description: localize(
 							"vscode.extension.contributes.languages.aliases",
-							"Name aliases for the language."
+							"Name aliases for the language.",
 						),
 						type: "array",
 						items: {
@@ -89,7 +89,7 @@ export const languagesExtPoint: IExtensionPoint<IRawLanguageExtensionPoint[]> =
 					extensions: {
 						description: localize(
 							"vscode.extension.contributes.languages.extensions",
-							"File extensions associated to the language."
+							"File extensions associated to the language.",
 						),
 						default: [".foo"],
 						type: "array",
@@ -100,7 +100,7 @@ export const languagesExtPoint: IExtensionPoint<IRawLanguageExtensionPoint[]> =
 					filenames: {
 						description: localize(
 							"vscode.extension.contributes.languages.filenames",
-							"File names associated to the language."
+							"File names associated to the language.",
 						),
 						type: "array",
 						items: {
@@ -110,7 +110,7 @@ export const languagesExtPoint: IExtensionPoint<IRawLanguageExtensionPoint[]> =
 					filenamePatterns: {
 						description: localize(
 							"vscode.extension.contributes.languages.filenamePatterns",
-							"File name glob patterns associated to the language."
+							"File name glob patterns associated to the language.",
 						),
 						type: "array",
 						items: {
@@ -120,7 +120,7 @@ export const languagesExtPoint: IExtensionPoint<IRawLanguageExtensionPoint[]> =
 					mimetypes: {
 						description: localize(
 							"vscode.extension.contributes.languages.mimetypes",
-							"Mime types associated to the language."
+							"Mime types associated to the language.",
 						),
 						type: "array",
 						items: {
@@ -130,14 +130,14 @@ export const languagesExtPoint: IExtensionPoint<IRawLanguageExtensionPoint[]> =
 					firstLine: {
 						description: localize(
 							"vscode.extension.contributes.languages.firstLine",
-							"A regular expression matching the first line of a file of the language."
+							"A regular expression matching the first line of a file of the language.",
 						),
 						type: "string",
 					},
 					configuration: {
 						description: localize(
 							"vscode.extension.contributes.languages.configuration",
-							"A relative path to a file containing configuration options for the language."
+							"A relative path to a file containing configuration options for the language.",
 						),
 						type: "string",
 						default: "./language-configuration.json",
@@ -146,20 +146,20 @@ export const languagesExtPoint: IExtensionPoint<IRawLanguageExtensionPoint[]> =
 						type: "object",
 						description: localize(
 							"vscode.extension.contributes.languages.icon",
-							"A icon to use as file icon, if no icon theme provides one for the language."
+							"A icon to use as file icon, if no icon theme provides one for the language.",
 						),
 						properties: {
 							light: {
 								description: localize(
 									"vscode.extension.contributes.languages.icon.light",
-									"Icon path when a light theme is used"
+									"Icon path when a light theme is used",
 								),
 								type: "string",
 							},
 							dark: {
 								description: localize(
 									"vscode.extension.contributes.languages.icon.dark",
-									"Icon path when a dark theme is used"
+									"Icon path when a dark theme is used",
 								),
 								type: "string",
 							},
@@ -302,7 +302,7 @@ export class WorkbenchLanguageService extends LanguageService {
 				const langId = configuration.files.associations[pattern];
 				if (typeof langId !== "string") {
 					this.logService.warn(
-						`Ignoring configured 'files.associations' for '${pattern}' because its type is not a string but '${typeof langId}'`
+						`Ignoring configured 'files.associations' for '${pattern}' because its type is not a string but '${typeof langId}'`,
 					);
 
 					return; // https://github.com/microsoft/vscode/issues/147284
@@ -335,15 +335,15 @@ function isUndefinedOrStringArray(value: string[]): boolean {
 function isValidLanguageExtensionPoint(
 	value: IRawLanguageExtensionPoint,
 	extension: IExtensionDescription,
-	collector: ExtensionMessageCollector
+	collector: ExtensionMessageCollector,
 ): boolean {
 	if (!value) {
 		collector.error(
 			localize(
 				"invalid.empty",
 				"Empty value for `contributes.{0}`",
-				languagesExtPoint.name
-			)
+				languagesExtPoint.name,
+			),
 		);
 		return false;
 	}
@@ -352,8 +352,8 @@ function isValidLanguageExtensionPoint(
 			localize(
 				"require.id",
 				"property `{0}` is mandatory and must be of type `string`",
-				"id"
-			)
+				"id",
+			),
 		);
 		return false;
 	}
@@ -362,8 +362,8 @@ function isValidLanguageExtensionPoint(
 			localize(
 				"opt.extensions",
 				"property `{0}` can be omitted and must be of type `string[]`",
-				"extensions"
-			)
+				"extensions",
+			),
 		);
 		return false;
 	}
@@ -372,8 +372,8 @@ function isValidLanguageExtensionPoint(
 			localize(
 				"opt.filenames",
 				"property `{0}` can be omitted and must be of type `string[]`",
-				"filenames"
-			)
+				"filenames",
+			),
 		);
 		return false;
 	}
@@ -385,8 +385,8 @@ function isValidLanguageExtensionPoint(
 			localize(
 				"opt.firstLine",
 				"property `{0}` can be omitted and must be of type `string`",
-				"firstLine"
-			)
+				"firstLine",
+			),
 		);
 		return false;
 	}
@@ -398,8 +398,8 @@ function isValidLanguageExtensionPoint(
 			localize(
 				"opt.configuration",
 				"property `{0}` can be omitted and must be of type `string`",
-				"configuration"
-			)
+				"configuration",
+			),
 		);
 		return false;
 	}
@@ -408,8 +408,8 @@ function isValidLanguageExtensionPoint(
 			localize(
 				"opt.aliases",
 				"property `{0}` can be omitted and must be of type `string[]`",
-				"aliases"
-			)
+				"aliases",
+			),
 		);
 		return false;
 	}
@@ -418,8 +418,8 @@ function isValidLanguageExtensionPoint(
 			localize(
 				"opt.mimetypes",
 				"property `{0}` can be omitted and must be of type `string[]`",
-				"mimetypes"
-			)
+				"mimetypes",
+			),
 		);
 		return false;
 	}
@@ -435,8 +435,8 @@ function isValidLanguageExtensionPoint(
 					"property `{0}` can be omitted and must be of type `object` with properties `{1}` and `{2}` of type `string`",
 					"icon",
 					"light",
-					"dark"
-				)
+					"dark",
+				),
 			);
 			return false;
 		}
@@ -447,5 +447,5 @@ function isValidLanguageExtensionPoint(
 registerSingleton(
 	ILanguageService,
 	WorkbenchLanguageService,
-	InstantiationType.Eager
+	InstantiationType.Eager,
 );

@@ -3,24 +3,31 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable, IDisposable, dispose } from "vs/base/common/lifecycle";
+import { RunOnceScheduler } from "vs/base/common/async";
+import { CancellationTokenSource } from "vs/base/common/cancellation";
 import * as errors from "vs/base/common/errors";
-import { ITextModel } from "vs/editor/common/model";
-import { IModelContentChangedEvent } from "vs/editor/common/textModelEvents";
+import { Disposable, IDisposable, dispose } from "vs/base/common/lifecycle";
+import { StopWatch } from "vs/base/common/stopwatch";
+import { registerEditorFeature } from "vs/editor/common/editorFeatures";
+import { LanguageFeatureRegistry } from "vs/editor/common/languageFeatureRegistry";
 import {
 	DocumentSemanticTokensProvider,
 	SemanticTokens,
 	SemanticTokensEdits,
 } from "vs/editor/common/languages";
+import { ITextModel } from "vs/editor/common/model";
+import {
+	IFeatureDebounceInformation,
+	ILanguageFeatureDebounceService,
+} from "vs/editor/common/services/languageFeatureDebounce";
+import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
 import { IModelService } from "vs/editor/common/services/model";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { RunOnceScheduler } from "vs/base/common/async";
-import { CancellationTokenSource } from "vs/base/common/cancellation";
-import { IThemeService } from "vs/platform/theme/common/themeService";
 import {
 	SemanticTokensProviderStyling,
 	toMultilineTokens2,
 } from "vs/editor/common/services/semanticTokensProviderStyling";
+import { ISemanticTokensStylingService } from "vs/editor/common/services/semanticTokensStyling";
+import { IModelContentChangedEvent } from "vs/editor/common/textModelEvents";
 import {
 	getDocumentSemanticTokens,
 	hasDocumentSemanticTokensProvider,
@@ -28,18 +35,11 @@ import {
 	isSemanticTokensEdits,
 } from "vs/editor/contrib/semanticTokens/common/getSemanticTokens";
 import {
-	IFeatureDebounceInformation,
-	ILanguageFeatureDebounceService,
-} from "vs/editor/common/services/languageFeatureDebounce";
-import { StopWatch } from "vs/base/common/stopwatch";
-import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
-import { LanguageFeatureRegistry } from "vs/editor/common/languageFeatureRegistry";
-import { ISemanticTokensStylingService } from "vs/editor/common/services/semanticTokensStyling";
-import { registerEditorFeature } from "vs/editor/common/editorFeatures";
-import {
 	SEMANTIC_HIGHLIGHTING_SETTING_ID,
 	isSemanticColoringEnabled,
 } from "vs/editor/contrib/semanticTokens/common/semanticTokensConfig";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IThemeService } from "vs/platform/theme/common/themeService";
 
 export class DocumentSemanticTokensFeature extends Disposable {
 	private readonly _watchers: Record<string, ModelSemanticColoring>;
@@ -53,7 +53,7 @@ export class DocumentSemanticTokensFeature extends Disposable {
 		@ILanguageFeatureDebounceService
 		languageFeatureDebounceService: ILanguageFeatureDebounceService,
 		@ILanguageFeaturesService
-		languageFeaturesService: ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super();
 		this._watchers = Object.create(null);
@@ -64,12 +64,12 @@ export class DocumentSemanticTokensFeature extends Disposable {
 				semanticTokensStylingService,
 				themeService,
 				languageFeatureDebounceService,
-				languageFeaturesService
+				languageFeaturesService,
 			);
 		};
 		const deregister = (
 			model: ITextModel,
-			modelSemanticColoring: ModelSemanticColoring
+			modelSemanticColoring: ModelSemanticColoring,
 		) => {
 			modelSemanticColoring.dispose();
 			delete this._watchers[model.uri.toString()];
@@ -81,16 +81,14 @@ export class DocumentSemanticTokensFeature extends Disposable {
 					isSemanticColoringEnabled(
 						model,
 						themeService,
-						configurationService
+						configurationService,
 					)
 				) {
 					if (!curr) {
 						register(model);
 					}
-				} else {
-					if (curr) {
-						deregister(model, curr);
-					}
+				} else if (curr) {
+					deregister(model, curr);
 				}
 			}
 		};
@@ -99,7 +97,7 @@ export class DocumentSemanticTokensFeature extends Disposable {
 				isSemanticColoringEnabled(
 					model,
 					themeService,
-					configurationService
+					configurationService,
 				)
 			) {
 				register(model);
@@ -111,12 +109,12 @@ export class DocumentSemanticTokensFeature extends Disposable {
 					isSemanticColoringEnabled(
 						model,
 						themeService,
-						configurationService
+						configurationService,
 					)
 				) {
 					register(model);
 				}
-			})
+			}),
 		);
 		this._register(
 			modelService.onModelRemoved((model) => {
@@ -124,17 +122,17 @@ export class DocumentSemanticTokensFeature extends Disposable {
 				if (curr) {
 					deregister(model, curr);
 				}
-			})
+			}),
 		);
 		this._register(
 			configurationService.onDidChangeConfiguration((e) => {
 				if (e.affectsConfiguration(SEMANTIC_HIGHLIGHTING_SETTING_ID)) {
 					handleSettingOrThemeChange();
 				}
-			})
+			}),
 		);
 		this._register(
-			themeService.onDidColorThemeChange(handleSettingOrThemeChange)
+			themeService.onDidColorThemeChange(handleSettingOrThemeChange),
 		);
 	}
 
@@ -322,7 +320,7 @@ class ModelSemanticColoring extends Disposable {
 			this._model,
 			lastProvider,
 			lastResultId,
-			cancellationTokenSource.token
+			cancellationTokenSource.token,
 		);
 		this._currentDocumentRequestCancellationTokenSource =
 			cancellationTokenSource;
@@ -340,14 +338,7 @@ class ModelSemanticColoring extends Disposable {
 				this._currentDocumentRequestCancellationTokenSource = null;
 				contentChangeListener.dispose();
 
-				if (!res) {
-					this._setDocumentSemanticTokens(
-						null,
-						null,
-						null,
-						pendingChanges
-					);
-				} else {
+				if (res) {
 					const { provider, tokens } = res;
 					const styling =
 						this._semanticTokensStylingService.getStyling(provider);
@@ -355,7 +346,14 @@ class ModelSemanticColoring extends Disposable {
 						provider,
 						tokens || null,
 						styling,
-						pendingChanges
+						pendingChanges,
+					);
+				} else {
+					this._setDocumentSemanticTokens(
+						null,
+						null,
+						null,
+						pendingChanges,
 					);
 				}
 			},
@@ -381,11 +379,11 @@ class ModelSemanticColoring extends Disposable {
 					// More changes occurred while the request was running
 					if (!this._fetchDocumentSemanticTokens.isScheduled()) {
 						this._fetchDocumentSemanticTokens.schedule(
-							this._debounceInformation.get(this._model)
+							this._debounceInformation.get(this._model),
 						);
 					}
 				}
-			}
+			},
 		);
 	}
 
@@ -394,13 +392,13 @@ class ModelSemanticColoring extends Disposable {
 		srcOffset: number,
 		dest: Uint32Array,
 		destOffset: number,
-		length: number
+		length: number,
 	): void {
 		// protect against overflows
 		length = Math.min(
 			length,
 			dest.length - destOffset,
-			src.length - srcOffset
+			src.length - srcOffset,
 		);
 		for (let i = 0; i < length; i++) {
 			dest[destOffset + i] = src[srcOffset + i];
@@ -411,7 +409,7 @@ class ModelSemanticColoring extends Disposable {
 		provider: DocumentSemanticTokensProvider | null,
 		tokens: SemanticTokens | SemanticTokensEdits | null,
 		styling: SemanticTokensProviderStyling | null,
-		pendingChanges: IModelContentChangedEvent[]
+		pendingChanges: IModelContentChangedEvent[],
 	): void {
 		const currentResponse = this._currentDocumentResponse;
 		const rescheduleIfNeeded = () => {
@@ -421,7 +419,7 @@ class ModelSemanticColoring extends Disposable {
 				!this._fetchDocumentSemanticTokens.isScheduled()
 			) {
 				this._fetchDocumentSemanticTokens.schedule(
-					this._debounceInformation.get(this._model)
+					this._debounceInformation.get(this._model),
 				);
 			}
 		};
@@ -480,7 +478,7 @@ class ModelSemanticColoring extends Disposable {
 							tokens.resultId,
 							i,
 							edit.start,
-							srcData.length
+							srcData.length,
 						);
 						// The edits are invalid and there's no way to recover
 						this._model.tokenization.setSemanticTokens(null, true);
@@ -495,7 +493,7 @@ class ModelSemanticColoring extends Disposable {
 							srcLastStart - copyCount,
 							destData,
 							destLastStart - copyCount,
-							copyCount
+							copyCount,
 						);
 						destLastStart -= copyCount;
 					}
@@ -506,7 +504,7 @@ class ModelSemanticColoring extends Disposable {
 							0,
 							destData,
 							destLastStart - edit.data.length,
-							edit.data.length
+							edit.data.length,
 						);
 						destLastStart -= edit.data.length;
 					}
@@ -520,7 +518,7 @@ class ModelSemanticColoring extends Disposable {
 						0,
 						destData,
 						0,
-						srcLastStart
+						srcLastStart,
 					);
 				}
 
@@ -535,13 +533,13 @@ class ModelSemanticColoring extends Disposable {
 			this._currentDocumentResponse = new SemanticTokensResponse(
 				provider,
 				tokens.resultId,
-				tokens.data
+				tokens.data,
 			);
 
 			const result = toMultilineTokens2(
 				tokens,
 				styling,
-				this._model.getLanguageId()
+				this._model.getLanguageId(),
 			);
 
 			// Adjust incoming semantic tokens
@@ -555,7 +553,7 @@ class ModelSemanticColoring extends Disposable {
 						for (const singleChange of change.changes) {
 							area.applyEdit(
 								singleChange.range,
-								singleChange.text
+								singleChange.text,
 							);
 						}
 					}
@@ -575,7 +573,7 @@ class SemanticTokensResponse {
 	constructor(
 		public readonly provider: DocumentSemanticTokensProvider,
 		public readonly resultId: string | undefined,
-		public readonly data: Uint32Array
+		public readonly data: Uint32Array,
 	) {}
 
 	public dispose(): void {

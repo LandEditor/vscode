@@ -110,17 +110,17 @@ export class BrowserClipboardService
 				this.layoutService.onDidAddContainer,
 				({ container, disposables }) => {
 					disposables.add(
-						addDisposableListener(container, "click", handler)
+						addDisposableListener(container, "click", handler),
 					);
 					disposables.add(
-						addDisposableListener(container, "keydown", handler)
+						addDisposableListener(container, "keydown", handler),
 					);
 				},
 				{
 					container: this.layoutService.mainContainer,
 					disposables: this._store,
-				}
-			)
+				},
+			),
 		);
 	}
 
@@ -162,7 +162,7 @@ export class BrowserClipboardService
 		const activeElement = activeDocument.activeElement;
 
 		const textArea: HTMLTextAreaElement = activeDocument.body.appendChild(
-			$("textarea", { "aria-hidden": true })
+			$("textarea", { "aria-hidden": true }),
 		);
 		textArea.style.height = "1px";
 		textArea.style.width = "1px";
@@ -246,8 +246,8 @@ export class BrowserClipboardService
 		return hash(
 			clipboardText.substring(
 				0,
-				BrowserClipboardService.MAX_RESOURCE_STATE_SOURCE_LENGTH
-			)
+				BrowserClipboardService.MAX_RESOURCE_STATE_SOURCE_LENGTH,
+			),
 		);
 	}
 

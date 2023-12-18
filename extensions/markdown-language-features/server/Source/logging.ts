@@ -38,14 +38,14 @@ export class LogFunctionLogger extends Disposable implements md.ILogger {
 
 	constructor(
 		private readonly _logFn: typeof console.log,
-		private readonly _config: ConfigurationManager
+		private readonly _config: ConfigurationManager,
 	) {
 		super();
 
 		this._register(
 			this._config.onDidChangeConfiguration(() => {
 				this._logLevel = LogFunctionLogger.readLogLevel(this._config);
-			})
+			}),
 		);
 
 		this._logLevel = LogFunctionLogger.readLogLevel(this._config);
@@ -74,8 +74,8 @@ export class LogFunctionLogger extends Disposable implements md.ILogger {
 
 		this.appendLine(
 			`[${this.toLevelLabel(
-				level
-			)} ${LogFunctionLogger.now()}] ${message}`
+				level,
+			)} ${LogFunctionLogger.now()}] ${message}`,
 		);
 		if (data) {
 			this.appendLine(LogFunctionLogger.data2String(data));

@@ -165,5 +165,5 @@ class NotebookBreakpoints extends Disposable implements IWorkbenchContribution {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(NotebookBreakpoints, LifecyclePhase.Restored);

@@ -35,7 +35,7 @@ export class MergeEditorOpenContentsFromJSON extends Action2 {
 			title: {
 				value: localize(
 					"merge.dev.openState",
-					"Open Merge Editor State from JSON"
+					"Open Merge Editor State from JSON",
 				),
 				original: "Open Merge Editor State from JSON",
 			},
@@ -49,7 +49,7 @@ export class MergeEditorOpenContentsFromJSON extends Action2 {
 		args?: {
 			data?: MergeEditorContents;
 			resultState?: "initial" | "current";
-		}
+		},
 	): Promise<void> {
 		const quickInputService = accessor.get(IQuickInputService);
 		const clipboardService = accessor.get(IClipboardService);
@@ -63,7 +63,9 @@ export class MergeEditorOpenContentsFromJSON extends Action2 {
 		}
 
 		let content: MergeEditorContents;
-		if (!args.data) {
+		if (args.data) {
+			content = args.data;
+		} else {
 			const result = await quickInputService.input({
 				prompt: localize("mergeEditor.enterJSON", "Enter JSON"),
 				value: await clipboardService.readText(),
@@ -80,9 +82,7 @@ export class MergeEditorOpenContentsFromJSON extends Action2 {
 							input2: "",
 							result: "",
 							languageId: "plaintext",
-						};
-		} else {
-			content = args.data;
+					  };
 		}
 
 		const targetDir = URI.joinPath(env.tmpDir, randomPath());
@@ -96,7 +96,7 @@ export class MergeEditorOpenContentsFromJSON extends Action2 {
 		const resultUri = URI.joinPath(targetDir, `/result${extension}`);
 		const initialResultUri = URI.joinPath(
 			targetDir,
-			`/initialResult${extension}`
+			`/initialResult${extension}`,
 		);
 
 		async function writeFile(uri: URI, content: string): Promise<void> {
@@ -105,7 +105,7 @@ export class MergeEditorOpenContentsFromJSON extends Action2 {
 
 		const shouldOpenInitial = await promptOpenInitial(
 			quickInputService,
-			args.resultState
+			args.resultState,
 		);
 
 		await Promise.all([
@@ -114,7 +114,9 @@ export class MergeEditorOpenContentsFromJSON extends Action2 {
 			writeFile(input2Uri, content.input2),
 			writeFile(
 				resultUri,
-				shouldOpenInitial ? content.initialResult || "" : content.result
+				shouldOpenInitial
+					? content.initialResult || ""
+					: content.result,
 			),
 			writeFile(initialResultUri, content.initialResult || ""),
 		]);
@@ -141,7 +143,7 @@ export class MergeEditorOpenContentsFromJSON extends Action2 {
 
 async function promptOpenInitial(
 	quickInputService: IQuickInputService,
-	resultStateOverride?: "initial" | "current"
+	resultStateOverride?: "initial" | "current",
 ) {
 	if (resultStateOverride) {
 		return resultStateOverride === "initial";
@@ -151,7 +153,7 @@ async function promptOpenInitial(
 			{ label: "result", result: false },
 			{ label: "initial result", result: true },
 		],
-		{ canPickMany: false }
+		{ canPickMany: false },
 	);
 	return result?.result;
 }
@@ -174,7 +176,7 @@ abstract class MergeEditorAction extends Action2 {
 
 	abstract runWithViewModel(
 		viewModel: MergeEditorViewModel,
-		accessor: ServicesAccessor
+		accessor: ServicesAccessor,
 	): void;
 }
 
@@ -186,7 +188,7 @@ export class OpenSelectionInTemporaryMergeEditor extends MergeEditorAction {
 			title: {
 				value: localize(
 					"merge.dev.openSelectionInTemporaryMergeEditor",
-					"Open Selection In Temporary Merge Editor"
+					"Open Selection In Temporary Merge Editor",
 				),
 				original: "Open Selection In Temporary Merge Editor",
 			},
@@ -197,7 +199,7 @@ export class OpenSelectionInTemporaryMergeEditor extends MergeEditorAction {
 
 	override async runWithViewModel(
 		viewModel: MergeEditorViewModel,
-		accessor: ServicesAccessor
+		accessor: ServicesAccessor,
 	) {
 		const rangesInBase = viewModel.selectionInBase.get()?.rangesInBase;
 		if (!rangesInBase || rangesInBase.length === 0) {
@@ -213,8 +215,8 @@ export class OpenSelectionInTemporaryMergeEditor extends MergeEditorAction {
 				viewModel.inputCodeEditorView1.editor
 					.getModel()!
 					.getValueInRange(
-						viewModel.model.translateBaseRangeToInput(1, r)
-					)
+						viewModel.model.translateBaseRangeToInput(1, r),
+					),
 			)
 			.join("\n");
 
@@ -223,8 +225,8 @@ export class OpenSelectionInTemporaryMergeEditor extends MergeEditorAction {
 				viewModel.inputCodeEditorView2.editor
 					.getModel()!
 					.getValueInRange(
-						viewModel.model.translateBaseRangeToInput(2, r)
-					)
+						viewModel.model.translateBaseRangeToInput(2, r),
+					),
 			)
 			.join("\n");
 
@@ -233,8 +235,8 @@ export class OpenSelectionInTemporaryMergeEditor extends MergeEditorAction {
 				viewModel.resultCodeEditorView.editor
 					.getModel()!
 					.getValueInRange(
-						viewModel.model.translateBaseRangeToResult(r)
-					)
+						viewModel.model.translateBaseRangeToResult(r),
+					),
 			)
 			.join("\n");
 

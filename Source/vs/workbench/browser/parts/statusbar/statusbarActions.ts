@@ -3,32 +3,28 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import { IStatusbarService } from "vs/workbench/services/statusbar/browser/statusbar";
+import { getActiveWindow } from "vs/base/browser/dom";
 import { Action } from "vs/base/common/actions";
-import {
-	Parts,
-	IWorkbenchLayoutService,
-} from "vs/workbench/services/layout/browser/layoutService";
 import { KeyCode } from "vs/base/common/keyCodes";
-import {
-	KeybindingsRegistry,
-	KeybindingWeight,
-} from "vs/platform/keybinding/common/keybindingsRegistry";
 import { ServicesAccessor } from "vs/editor/browser/editorExtensions";
-import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
+import { localize } from "vs/nls";
 import { Categories } from "vs/platform/action/common/actionCommonCategories";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
+import {
+	KeybindingWeight,
+	KeybindingsRegistry,
+} from "vs/platform/keybinding/common/keybindingsRegistry";
 import { StatusbarViewModel } from "vs/workbench/browser/parts/statusbar/statusbarModel";
 import { StatusBarFocused } from "vs/workbench/common/contextkeys";
-import { getActiveWindow } from "vs/base/browser/dom";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import {
+	IWorkbenchLayoutService,
+	Parts,
+} from "vs/workbench/services/layout/browser/layoutService";
+import { IStatusbarService } from "vs/workbench/services/statusbar/browser/statusbar";
 
 export class ToggleStatusbarEntryVisibilityAction extends Action {
-	constructor(
-		id: string,
-		label: string,
-		private model: StatusbarViewModel
-	) {
+	constructor(id: string, label: string, private model: StatusbarViewModel) {
 		super(id, label, undefined, true);
 
 		this.checked = !model.isHidden(id);
@@ -44,11 +40,7 @@ export class ToggleStatusbarEntryVisibilityAction extends Action {
 }
 
 export class HideStatusbarEntryAction extends Action {
-	constructor(
-		id: string,
-		name: string,
-		private model: StatusbarViewModel
-	) {
+	constructor(id: string, name: string, private model: StatusbarViewModel) {
 		super(id, localize("hide", "Hide '{0}'", name), undefined, true);
 	}
 

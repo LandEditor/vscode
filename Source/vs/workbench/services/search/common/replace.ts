@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as strings from "vs/base/common/strings";
-import { IPatternInfo } from "vs/workbench/services/search/common/search";
 import { CharCode } from "vs/base/common/charCode";
 import { buildReplaceStringWithCasePreserved } from "vs/base/common/search";
+import * as strings from "vs/base/common/strings";
+import { IPatternInfo } from "vs/workbench/services/search/common/search";
 
 export class ReplacePattern {
 	private _replacePattern: string;
-	private _hasParameters: boolean = false;
+	private _hasParameters = false;
 	private _regExp: RegExp;
 	private _caseOpsRegExp: RegExp;
 
@@ -35,7 +35,7 @@ export class ReplacePattern {
 					multiline: searchPatternInfo.isMultiline,
 					global: false,
 					unicode: true,
-				}
+				},
 			);
 		}
 
@@ -53,7 +53,7 @@ export class ReplacePattern {
 		}
 
 		this._caseOpsRegExp = new RegExp(
-			/([\s\S]*?)((?:\\[uUlL])+?|)(\$[0-9]+)([\s\S]*?)/g
+			/([\s\S]*?)((?:\\[uUlL])+?|)(\$[0-9]+)([\s\S]*?)/g,
 		);
 	}
 
@@ -81,14 +81,14 @@ export class ReplacePattern {
 				const replaceString = this.replaceWithCaseOperations(
 					text,
 					this._regExp,
-					this.buildReplaceString(match, preserveCase)
+					this.buildReplaceString(match, preserveCase),
 				);
 				if (match[0] === text) {
 					return replaceString;
 				}
 				return replaceString.substr(
 					match.index,
-					match[0].length - (text.length - replaceString.length)
+					match[0].length - (text.length - replaceString.length),
 				);
 			}
 			return this.buildReplaceString(match, preserveCase);
@@ -109,7 +109,7 @@ export class ReplacePattern {
 	private replaceWithCaseOperations(
 		text: string,
 		regex: RegExp,
-		replaceString: string
+		replaceString: string,
 	): string {
 		// Short-circuit the common path.
 		if (!/\\[uUlL]/.test(replaceString)) {
@@ -181,12 +181,12 @@ export class ReplacePattern {
 
 	public buildReplaceString(
 		matches: string[] | null,
-		preserveCase?: boolean
+		preserveCase?: boolean,
 	): string {
 		if (preserveCase) {
 			return buildReplaceStringWithCasePreserved(
 				matches,
-				this._replacePattern
+				this._replacePattern,
 			);
 		} else {
 			return this._replacePattern;
@@ -273,7 +273,7 @@ export class ReplacePattern {
 							!this.between(
 								nextChCode,
 								CharCode.Digit1,
-								CharCode.Digit9
+								CharCode.Digit9,
 							)
 						) {
 							break;
@@ -287,7 +287,7 @@ export class ReplacePattern {
 							!this.between(
 								charCode,
 								CharCode.Digit0,
-								CharCode.Digit9
+								CharCode.Digit9,
 							)
 						) {
 							this._hasParameters = true;
@@ -303,7 +303,7 @@ export class ReplacePattern {
 							!this.between(
 								charCode,
 								CharCode.Digit0,
-								CharCode.Digit9
+								CharCode.Digit9,
 							)
 						) {
 							this._hasParameters = true;

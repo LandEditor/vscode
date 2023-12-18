@@ -34,7 +34,7 @@ export interface RequestItem {
 
 export class RequestQueue {
 	private readonly queue: RequestItem[] = [];
-	private sequenceNumber: number = 0;
+	private sequenceNumber = 0;
 
 	public get length(): number {
 		return this.queue.length;

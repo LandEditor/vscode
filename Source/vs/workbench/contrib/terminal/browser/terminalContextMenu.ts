@@ -38,7 +38,7 @@ export class TerminalContextActionRunner extends ActionRunner {
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	protected override async runAction(
 		action: IAction,
-		context?: InstanceContext | InstanceContext[]
+		context?: InstanceContext | InstanceContext[],
 	): Promise<void> {
 		if (
 			Array.isArray(context) &&
@@ -59,7 +59,7 @@ export function openContextMenu(
 	contextInstances: SingleOrMany<ITerminalInstance> | undefined,
 	menu: IMenu,
 	contextMenuService: IContextMenuService,
-	extraActions?: IAction[]
+	extraActions?: IAction[],
 ): void {
 	const standardEvent = new StandardMouseEvent(targetWindow, event);
 
@@ -68,7 +68,7 @@ export function openContextMenu(
 	createAndFillInContextMenuActions(
 		menu,
 		{ shouldForwardArgs: true },
-		actions
+		actions,
 	);
 
 	if (extraActions) {

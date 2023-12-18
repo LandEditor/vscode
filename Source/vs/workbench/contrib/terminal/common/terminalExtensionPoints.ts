@@ -3,20 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as extensionsRegistry from "vs/workbench/services/extensions/common/extensionsRegistry";
-import { terminalContributionsDescriptor } from "vs/workbench/contrib/terminal/common/terminal";
+import { URI } from "vs/base/common/uri";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import {
 	IExtensionTerminalProfile,
 	ITerminalContributions,
 	ITerminalProfileContribution,
 } from "vs/platform/terminal/common/terminal";
-import { URI } from "vs/base/common/uri";
+import { terminalContributionsDescriptor } from "vs/workbench/contrib/terminal/common/terminal";
+import * as extensionsRegistry from "vs/workbench/services/extensions/common/extensionsRegistry";
 
 // terminal extension point
 const terminalsExtPoint =
 	extensionsRegistry.ExtensionsRegistry.registerExtensionPoint<ITerminalContributions>(
-		terminalContributionsDescriptor
+		terminalContributionsDescriptor,
 	);
 
 export interface ITerminalContributionService {
@@ -27,7 +27,7 @@ export interface ITerminalContributionService {
 
 export const ITerminalContributionService =
 	createDecorator<ITerminalContributionService>(
-		"terminalContributionsService"
+		"terminalContributionsService",
 	);
 
 export class TerminalContributionService
@@ -42,21 +42,19 @@ export class TerminalContributionService
 
 	constructor() {
 		terminalsExtPoint.setHandler((contributions) => {
-			this._terminalProfiles = contributions
-				.map((c) => {
-					return (
-						c.value?.profiles
-							?.filter((p) => hasValidTerminalIcon(p))
-							.map((e) => {
-								return {
-									...e,
-									extensionIdentifier:
-										c.description.identifier.value,
-								};
-							}) || []
-					);
-				})
-				.flat();
+			this._terminalProfiles = contributions.flatMap((c) => {
+				return (
+					c.value?.profiles
+						?.filter((p) => hasValidTerminalIcon(p))
+						.map((e) => {
+							return {
+								...e,
+								extensionIdentifier:
+									c.description.identifier.value,
+							};
+						}) || []
+				);
+			});
 		});
 	}
 }

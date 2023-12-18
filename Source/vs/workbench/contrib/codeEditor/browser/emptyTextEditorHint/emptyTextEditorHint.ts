@@ -3,62 +3,62 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./emptyTextEditorHint";
 import * as dom from "vs/base/browser/dom";
 import {
+	IContentActionHandler,
+	renderFormattedText,
+} from "vs/base/browser/formattedTextRenderer";
+import { status } from "vs/base/browser/ui/aria/aria";
+import { KeybindingLabel } from "vs/base/browser/ui/keybindingLabel/keybindingLabel";
+import {
+	WorkbenchActionExecutedClassification,
+	WorkbenchActionExecutedEvent,
+} from "vs/base/common/actions";
+import { Event } from "vs/base/common/event";
+import {
 	DisposableStore,
-	dispose,
 	IDisposable,
+	dispose,
 } from "vs/base/common/lifecycle";
+import { Schemas } from "vs/base/common/network";
+import { OS } from "vs/base/common/platform";
+import "vs/css!./emptyTextEditorHint";
 import {
 	ContentWidgetPositionPreference,
 	ICodeEditor,
 	IContentWidget,
 	IContentWidgetPosition,
 } from "vs/editor/browser/editorBrowser";
-import { localize } from "vs/nls";
-import { ChangeLanguageAction } from "vs/workbench/browser/parts/editor/editorStatus";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import { PLAINTEXT_LANGUAGE_ID } from "vs/editor/common/languages/modesRegistry";
-import { IEditorContribution } from "vs/editor/common/editorCommon";
-import { Schemas } from "vs/base/common/network";
-import { Event } from "vs/base/common/event";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import {
-	ConfigurationChangedEvent,
-	EditorOption,
-} from "vs/editor/common/config/editorOptions";
 import {
 	EditorContributionInstantiation,
 	registerEditorContribution,
 } from "vs/editor/browser/editorExtensions";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
 import {
-	IContentActionHandler,
-	renderFormattedText,
-} from "vs/base/browser/formattedTextRenderer";
-import { ApplyFileSnippetAction } from "vs/workbench/contrib/snippets/browser/commands/fileTemplateSnippets";
+	ConfigurationChangedEvent,
+	EditorOption,
+} from "vs/editor/common/config/editorOptions";
+import { IEditorContribution } from "vs/editor/common/editorCommon";
+import { PLAINTEXT_LANGUAGE_ID } from "vs/editor/common/languages/modesRegistry";
+import { localize } from "vs/nls";
+import { ICommandService } from "vs/platform/commands/common/commands";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { IProductService } from "vs/platform/product/common/productService";
+import { Registry } from "vs/platform/registry/common/platform";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { ChangeLanguageAction } from "vs/workbench/browser/parts/editor/editorStatus";
+import {
+	Extensions,
+	IConfigurationMigrationRegistry,
+} from "vs/workbench/common/configuration";
+import { AccessibilityVerbositySettingId } from "vs/workbench/contrib/accessibility/browser/accessibilityConfiguration";
 import { IInlineChatSessionService } from "vs/workbench/contrib/inlineChat/browser/inlineChatSession";
 import {
 	IInlineChatService,
 	IInlineChatSessionProvider,
 } from "vs/workbench/contrib/inlineChat/common/inlineChat";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import {
-	WorkbenchActionExecutedClassification,
-	WorkbenchActionExecutedEvent,
-} from "vs/base/common/actions";
-import { IProductService } from "vs/platform/product/common/productService";
-import { KeybindingLabel } from "vs/base/browser/ui/keybindingLabel/keybindingLabel";
-import { OS } from "vs/base/common/platform";
-import { status } from "vs/base/browser/ui/aria/aria";
-import { AccessibilityVerbositySettingId } from "vs/workbench/contrib/accessibility/browser/accessibilityConfiguration";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	Extensions,
-	IConfigurationMigrationRegistry,
-} from "vs/workbench/common/configuration";
+import { ApplyFileSnippetAction } from "vs/workbench/contrib/snippets/browser/commands/fileTemplateSnippets";
+import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
 import {
 	LOG_MODE_ID,
 	OUTPUT_MODE_ID,
@@ -69,7 +69,7 @@ const $ = dom.$;
 
 // TODO@joyceerhl remove this after a few iterations
 Registry.as<IConfigurationMigrationRegistry>(
-	Extensions.ConfigurationMigration
+	Extensions.ConfigurationMigration,
 ).registerConfigurationMigrations([
 	{
 		key: "workbench.editor.untitled.hint",
@@ -157,7 +157,7 @@ export class EmptyTextEditorHintContribution implements IEditorContribution {
 
 	protected _shouldRenderHint() {
 		const configValue = this.configurationService.getValue(
-			emptyTextEditorHintSetting
+			emptyTextEditorHintSetting,
 		);
 		if (configValue === "hidden") {
 			return false;
@@ -194,8 +194,8 @@ export class EmptyTextEditorHintContribution implements IEditorContribution {
 						d.options.beforeContentClassName ||
 						d.options.afterContentClassName ||
 						d.options.before?.content ||
-						d.options.after?.content
-				)
+						d.options.after?.content,
+				),
 		);
 		if (hasConflictingDecorations) {
 			return false;
@@ -223,7 +223,7 @@ export class EmptyTextEditorHintContribution implements IEditorContribution {
 				this.keybindingService,
 				this.inlineChatService,
 				this.telemetryService,
-				this.productService
+				this.productService,
 			);
 		} else if (!shouldRenderHint && this.textHintContentWidget) {
 			this.textHintContentWidget.dispose();
@@ -243,7 +243,7 @@ class EmptyTextEditorHintContentWidget implements IContentWidget {
 	private domNode: HTMLElement | undefined;
 	private toDispose: DisposableStore;
 	private isVisible = false;
-	private ariaLabel: string = "";
+	private ariaLabel = "";
 
 	constructor(
 		private readonly editor: ICodeEditor,
@@ -254,7 +254,7 @@ class EmptyTextEditorHintContentWidget implements IContentWidget {
 		private readonly keybindingService: IKeybindingService,
 		private readonly inlineChatService: IInlineChatService,
 		private readonly telemetryService: ITelemetryService,
-		private readonly productService: IProductService
+		private readonly productService: IProductService,
 	) {
 		this.toDispose = new DisposableStore();
 		this.toDispose.add(
@@ -263,13 +263,13 @@ class EmptyTextEditorHintContentWidget implements IContentWidget {
 					if (this.domNode && e.hasChanged(EditorOption.fontInfo)) {
 						this.editor.applyFontInfo(this.domNode);
 					}
-				}
-			)
+				},
+			),
 		);
 		const onDidFocusEditorText = Event.debounce(
 			this.editor.onDidFocusEditorText,
 			() => undefined,
-			500
+			500,
 		);
 		this.toDispose.add(
 			onDidFocusEditorText(() => {
@@ -278,12 +278,12 @@ class EmptyTextEditorHintContentWidget implements IContentWidget {
 					this.isVisible &&
 					this.ariaLabel &&
 					this.configurationService.getValue(
-						AccessibilityVerbositySettingId.EmptyEditorHint
+						AccessibilityVerbositySettingId.EmptyEditorHint,
 					)
 				) {
 					status(this.ariaLabel);
 				}
-			})
+			}),
 		);
 		this.editor.addContentWidget(this);
 	}
@@ -336,7 +336,7 @@ class EmptyTextEditorHintContentWidget implements IContentWidget {
 				"emptyHintText",
 				"Press {0} to ask {1} to do something. ",
 				keybindingHintLabel,
-				providerName
+				providerName,
 			);
 
 			const [before, after] = actionPart
@@ -371,7 +371,7 @@ class EmptyTextEditorHintContentWidget implements IContentWidget {
 
 			const typeToDismiss = localize(
 				"emptyHintTextDismiss",
-				"Start typing to dismiss."
+				"Start typing to dismiss.",
 			);
 			const textHint2 = $("span", undefined, typeToDismiss);
 			textHint2.style.fontStyle = "italic";
@@ -387,7 +387,7 @@ class EmptyTextEditorHintContentWidget implements IContentWidget {
 					],
 				},
 				"[[Ask {0} to do something]] or start typing to dismiss.",
-				providerName
+				providerName,
 			);
 			const rendered = renderFormattedText(hintMsg, {
 				actionHandler: hintHandler,
@@ -464,7 +464,7 @@ class EmptyTextEditorHintContentWidget implements IContentWidget {
 			});
 			const newEditorSelected = await this.commandService.executeCommand(
 				"welcome.showNewFileEntries",
-				{ from: "hint" }
+				{ from: "hint" },
 			);
 
 			// Close the active editor as long as it is untitled (swap the editors out)
@@ -475,7 +475,7 @@ class EmptyTextEditorHintContentWidget implements IContentWidget {
 			) {
 				this.editorGroupsService.activeGroup.closeEditor(
 					activeEditorInput,
-					{ preserveFocus: true }
+					{ preserveFocus: true },
 				);
 			}
 		};
@@ -483,7 +483,7 @@ class EmptyTextEditorHintContentWidget implements IContentWidget {
 		const dontShowOnClickOrTap = () => {
 			this.configurationService.updateValue(
 				emptyTextEditorHintSetting,
-				"hidden"
+				"hidden",
 			);
 			this.dispose();
 			this.editor.focus();
@@ -497,7 +497,7 @@ class EmptyTextEditorHintContentWidget implements IContentWidget {
 					"language refers to a programming language",
 				],
 			},
-			"[[Select a language]], or [[fill with template]], or [[open a different editor]] to get started.\nStart typing to dismiss or [[don't show]] this again."
+			"[[Select a language]], or [[fill with template]], or [[open a different editor]] to get started.\nStart typing to dismiss or [[don't show]] this again.",
 		);
 		const hintElement = renderFormattedText(hintMsg, {
 			actionHandler: hintHandler,
@@ -513,12 +513,12 @@ class EmptyTextEditorHintContentWidget implements IContentWidget {
 		];
 		const keybindingLabels = keybindingsLookup.map(
 			(id) =>
-				this.keybindingService.lookupKeybinding(id)?.getLabel() ?? id
+				this.keybindingService.lookupKeybinding(id)?.getLabel() ?? id,
 		);
 		const ariaLabel = localize(
 			"defaultHintAriaLabel",
 			"Execute {0} to select a language, execute {1} to fill with template, or execute {2} to open a different editor and get started. Start typing to dismiss.",
-			...keybindingLabels
+			...keybindingLabels,
 		);
 		for (const anchor of hintElement.querySelectorAll("a")) {
 			anchor.style.cursor = "pointer";
@@ -540,22 +540,22 @@ class EmptyTextEditorHintContentWidget implements IContentWidget {
 			const inlineChatProviders = [
 				...this.inlineChatService.getAllProvider(),
 			];
-			const { hintElement, ariaLabel } = !inlineChatProviders.length
-				? this._getHintDefault()
-				: this._getHintInlineChat(inlineChatProviders);
+			const { hintElement, ariaLabel } = inlineChatProviders.length
+				? this._getHintInlineChat(inlineChatProviders)
+				: this._getHintDefault();
 			this.domNode.append(hintElement);
 			this.ariaLabel = ariaLabel.concat(
 				localize(
 					"disableHint",
 					" Toggle {0} in settings to disable this hint.",
-					AccessibilityVerbositySettingId.EmptyEditorHint
-				)
+					AccessibilityVerbositySettingId.EmptyEditorHint,
+				),
 			);
 
 			this.toDispose.add(
 				dom.addDisposableListener(this.domNode, "click", () => {
 					this.editor.focus();
-				})
+				}),
 			);
 
 			this.editor.applyFontInfo(this.domNode);
@@ -580,5 +580,5 @@ class EmptyTextEditorHintContentWidget implements IContentWidget {
 registerEditorContribution(
 	EmptyTextEditorHintContribution.ID,
 	EmptyTextEditorHintContribution,
-	EditorContributionInstantiation.Eager
+	EditorContributionInstantiation.Eager,
 ); // eager because it needs to render a help message

@@ -3,53 +3,53 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { distinct } from "vs/base/common/arrays";
+import { Disposable } from "vs/base/common/lifecycle";
+import { Schemas } from "vs/base/common/network";
+import { basename, dirname } from "vs/base/common/path";
+import { isWindows } from "vs/base/common/platform";
 import { URI } from "vs/base/common/uri";
+import * as nls from "vs/nls";
 import {
+	IMenuItem,
 	MenuId,
 	MenuRegistry,
-	IMenuItem,
 } from "vs/platform/actions/common/actions";
-import {
-	ITerminalGroupService,
-	ITerminalService as IIntegratedTerminalService,
-} from "vs/workbench/contrib/terminal/browser/terminal";
-import { ResourceContextKey } from "vs/workbench/common/contextkeys";
-import { IFileService } from "vs/platform/files/common/files";
-import { IListService } from "vs/platform/list/browser/listService";
-import {
-	getMultiSelectedResources,
-	IExplorerService,
-} from "vs/workbench/contrib/files/browser/files";
 import { CommandsRegistry } from "vs/platform/commands/common/commands";
-import { Schemas } from "vs/base/common/network";
-import { distinct } from "vs/base/common/arrays";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteAgentService";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
-import {
-	IWorkbenchContribution,
-	IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
-} from "vs/workbench/common/contributions";
-import { Disposable } from "vs/base/common/lifecycle";
-import { isWindows } from "vs/base/common/platform";
-import { dirname, basename } from "vs/base/common/path";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { Registry } from "vs/platform/registry/common/platform";
 import {
 	IExternalTerminalConfiguration,
 	IExternalTerminalService,
 } from "vs/platform/externalTerminal/common/externalTerminal";
+import { IFileService } from "vs/platform/files/common/files";
+import { IListService } from "vs/platform/list/browser/listService";
+import { Registry } from "vs/platform/registry/common/platform";
 import { TerminalLocation } from "vs/platform/terminal/common/terminal";
+import { ResourceContextKey } from "vs/workbench/common/contextkeys";
+import {
+	Extensions as WorkbenchExtensions,
+	IWorkbenchContribution,
+	IWorkbenchContributionsRegistry,
+} from "vs/workbench/common/contributions";
+import {
+	IExplorerService,
+	getMultiSelectedResources,
+} from "vs/workbench/contrib/files/browser/files";
+import {
+	ITerminalGroupService,
+	ITerminalService as IIntegratedTerminalService,
+} from "vs/workbench/contrib/terminal/browser/terminal";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
+import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteAgentService";
 
 const OPEN_IN_TERMINAL_COMMAND_ID = "openInTerminal";
 const OPEN_IN_INTEGRATED_TERMINAL_COMMAND_ID = "openInIntegratedTerminal";
 
 function registerOpenTerminalCommand(
 	id: string,
-	explorerKind: "integrated" | "external"
+	explorerKind: "integrated" | "external",
 ) {
 	CommandsRegistry.registerCommand({
 		id: id,
@@ -58,7 +58,7 @@ function registerOpenTerminalCommand(
 			const editorService = accessor.get(IEditorService);
 			const fileService = accessor.get(IFileService);
 			const integratedTerminalService = accessor.get(
-				IIntegratedTerminalService
+				IIntegratedTerminalService,
 			);
 			const remoteAgentService = accessor.get(IRemoteAgentService);
 			const terminalGroupService = accessor.get(ITerminalGroupService);
@@ -66,7 +66,7 @@ function registerOpenTerminalCommand(
 				undefined;
 			try {
 				externalTerminalService = accessor.get(
-					IExternalTerminalService
+					IExternalTerminalService,
 				);
 			} catch {}
 
@@ -74,7 +74,7 @@ function registerOpenTerminalCommand(
 				resource,
 				accessor.get(IListService),
 				editorService,
-				accessor.get(IExplorerService)
+				accessor.get(IExplorerService),
 			);
 			return fileService
 				.resolveAll(resources.map((r) => ({ resource: r })))
@@ -87,7 +87,7 @@ function registerOpenTerminalCommand(
 						remoteAgentService.getConnection() ||
 						explorerKind === "integrated";
 					const targets = distinct(
-						stats.filter((data) => data.success)
+						stats.filter((data) => data.success),
 					);
 					if (useIntegratedTerminal) {
 						// TODO: Use uri for cwd in createterminal
@@ -123,7 +123,7 @@ function registerOpenTerminalCommand(
 									cwd.path === dirname(resource.path))
 							) {
 								integratedTerminalService.setActiveInstance(
-									instance
+									instance,
 								);
 								terminalGroupService.showPanel(true);
 							}
@@ -133,12 +133,12 @@ function registerOpenTerminalCommand(
 							targets.map(({ stat }) =>
 								stat!.isDirectory
 									? stat!.resource.fsPath
-									: dirname(stat!.resource.fsPath)
-							)
+									: dirname(stat!.resource.fsPath),
+							),
 						).forEach((cwd) => {
 							externalTerminalService!.openTerminal(
 								config.terminal.external,
-								cwd
+								cwd,
 							);
 						});
 					}
@@ -150,7 +150,7 @@ function registerOpenTerminalCommand(
 registerOpenTerminalCommand(OPEN_IN_TERMINAL_COMMAND_ID, "external");
 registerOpenTerminalCommand(
 	OPEN_IN_INTEGRATED_TERMINAL_COMMAND_ID,
-	"integrated"
+	"integrated",
 );
 
 export class ExternalTerminalContribution
@@ -255,15 +255,15 @@ export class ExternalTerminalContribution
 		if (this.isWindows()) {
 			this._openInTerminalMenuItem.command.title = nls.localize(
 				"scopedConsoleAction.wt",
-				"Open in Windows Terminal"
+				"Open in Windows Terminal",
 			);
 		}
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	ExternalTerminalContribution,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );

@@ -66,7 +66,7 @@ export class WebWorkerExtensionHost
 	public extensions: ExtensionHostExtensions | null = null;
 
 	private readonly _onDidExit = this._register(
-		new Emitter<[number, string | null]>()
+		new Emitter<[number, string | null]>(),
 	);
 	public readonly onExit: Event<[number, string | null]> =
 		this._onDidExit.event;
@@ -130,7 +130,7 @@ export class WebWorkerExtensionHost
 				const key = "webWorkerExtensionHostIframeStableOriginUUID";
 				let stableOriginUUID = this._storageService.get(
 					key,
-					StorageScope.WORKSPACE
+					StorageScope.WORKSPACE,
 				);
 				if (typeof stableOriginUUID === "undefined") {
 					stableOriginUUID = generateUuid();
@@ -138,12 +138,12 @@ export class WebWorkerExtensionHost
 						key,
 						stableOriginUUID,
 						StorageScope.WORKSPACE,
-						StorageTarget.MACHINE
+						StorageTarget.MACHINE,
 					);
 				}
 				const hash = await parentOriginHash(
 					mainWindow.origin,
-					stableOriginUUID
+					stableOriginUUID,
 				);
 				const baseUrl = webEndpointUrlTemplate
 					.replace("{{uuid}}", `v--${hash}`) // using `v--` as a marker to require `parentOrigin`/`salt` verification
@@ -151,7 +151,7 @@ export class WebWorkerExtensionHost
 					.replace("{{quality}}", quality);
 
 				const res = new URL(
-					`${baseUrl}/out/${iframeModulePath}${suffix}`
+					`${baseUrl}/out/${iframeModulePath}${suffix}`,
 				);
 				res.searchParams.set("parentOrigin", mainWindow.origin);
 				res.searchParams.set("salt", stableOriginUUID);
@@ -159,7 +159,7 @@ export class WebWorkerExtensionHost
 			}
 
 			console.warn(
-				`The web worker extension host is started in a same-origin iframe!`
+				`The web worker extension host is started in a same-origin iframe!`,
 			);
 		}
 
@@ -172,7 +172,7 @@ export class WebWorkerExtensionHost
 		if (!this._protocolPromise) {
 			this._protocolPromise = this._startInsideIframe();
 			this._protocolPromise.then(
-				(protocol) => (this._protocol = protocol)
+				(protocol) => (this._protocol = protocol),
 			);
 		}
 		return this._protocolPromise;
@@ -188,7 +188,7 @@ export class WebWorkerExtensionHost
 		iframe.setAttribute("sandbox", "allow-scripts allow-same-origin");
 		iframe.setAttribute(
 			"allow",
-			"usb; serial; hid; cross-origin-isolated;"
+			"usb; serial; hid; cross-origin-isolated;",
 		);
 		iframe.setAttribute("aria-hidden", "true");
 		iframe.style.display = "none";
@@ -196,7 +196,7 @@ export class WebWorkerExtensionHost
 		const vscodeWebWorkerExtHostId = generateUuid();
 		iframe.setAttribute(
 			"src",
-			`${webWorkerExtensionHostIframeSrc}&vscodeWebWorkerExtHostId=${vscodeWebWorkerExtHostId}`
+			`${webWorkerExtensionHostIframeSrc}&vscodeWebWorkerExtHostId=${vscodeWebWorkerExtHostId}`,
 		);
 
 		const barrier = new Barrier();
@@ -225,7 +225,7 @@ export class WebWorkerExtensionHost
 
 		startTimeout = setTimeout(() => {
 			console.warn(
-				`The Web Worker Extension Host did not start in 60s, that might be a problem.`
+				`The Web Worker Extension Host did not start in 60s, that might be a problem.`,
 			);
 		}, 60000);
 
@@ -248,7 +248,7 @@ export class WebWorkerExtensionHost
 					err.stack = stack;
 					return rejectBarrier(
 						ExtensionHostExitCode.UnexpectedError,
-						err
+						err,
 					);
 				}
 				const { data } = event.data;
@@ -257,11 +257,11 @@ export class WebWorkerExtensionHost
 					const err = new Error("UNEXPECTED message");
 					return rejectBarrier(
 						ExtensionHostExitCode.UnexpectedError,
-						err
+						err,
 					);
 				}
 				resolveBarrier(data);
-			})
+			}),
 		);
 
 		this._layoutService.mainContainer.appendChild(iframe);
@@ -281,7 +281,7 @@ export class WebWorkerExtensionHost
 		iframe.contentWindow!.postMessage(
 			{ type: "vscode.init", data: messagePorts },
 			"*",
-			[...messagePorts.values()]
+			[...messagePorts.values()],
 		);
 
 		port.onmessage = (event) => {
@@ -292,7 +292,7 @@ export class WebWorkerExtensionHost
 				return;
 			}
 			emitter.fire(
-				VSBuffer.wrap(new Uint8Array(data, 0, data.byteLength))
+				VSBuffer.wrap(new Uint8Array(data, 0, data.byteLength)),
 			);
 		};
 
@@ -301,7 +301,7 @@ export class WebWorkerExtensionHost
 			send: (vsbuf) => {
 				const data = vsbuf.buffer.buffer.slice(
 					vsbuf.buffer.byteOffset,
-					vsbuf.buffer.byteOffset + vsbuf.buffer.byteLength
+					vsbuf.buffer.byteOffset + vsbuf.buffer.byteLength,
 				);
 				port.postMessage(data, [data]);
 			},
@@ -311,7 +311,7 @@ export class WebWorkerExtensionHost
 	}
 
 	private async _performHandshake(
-		protocol: IMessagePassingProtocol
+		protocol: IMessagePassingProtocol,
 	): Promise<IMessagePassingProtocol> {
 		// extension host handshake happens below
 		// (1) <== wait for: Ready
@@ -320,24 +320,24 @@ export class WebWorkerExtensionHost
 
 		await Event.toPromise(
 			Event.filter(protocol.onMessage, (msg) =>
-				isMessageOfType(msg, MessageType.Ready)
-			)
+				isMessageOfType(msg, MessageType.Ready),
+			),
 		);
 		if (this._isTerminating) {
 			throw canceled();
 		}
 		protocol.send(
 			VSBuffer.fromString(
-				JSON.stringify(await this._createExtHostInitData())
-			)
+				JSON.stringify(await this._createExtHostInitData()),
+			),
 		);
 		if (this._isTerminating) {
 			throw canceled();
 		}
 		await Event.toPromise(
 			Event.filter(protocol.onMessage, (msg) =>
-				isMessageOfType(msg, MessageType.Initialized)
-			)
+				isMessageOfType(msg, MessageType.Initialized),
+			),
 		);
 		if (this._isTerminating) {
 			throw canceled();
@@ -379,7 +379,7 @@ export class WebWorkerExtensionHost
 				URI.parse(nlsBaseUrl),
 				this._productService.commit,
 				this._productService.version,
-				platform.Language.value()
+				platform.Language.value(),
 			);
 		}
 		return {
@@ -400,7 +400,7 @@ export class WebWorkerExtensionHost
 					this._environmentService.extHostTelemetryLogFile,
 				isExtensionTelemetryLoggingOnly: isLoggingOnly(
 					this._productService,
-					this._environmentService
+					this._environmentService,
 				),
 				extensionDevelopmentLocationURI:
 					this._environmentService.extensionDevelopmentLocationURI,
@@ -421,10 +421,10 @@ export class WebWorkerExtensionHost
 							configuration: workspace.configuration || undefined,
 							id: workspace.id,
 							name: this._labelService.getWorkspaceLabel(
-								workspace
+								workspace,
 							),
 							transient: workspace.transient,
-						},
+					  },
 			consoleForward: {
 				includeStack: false,
 				logNative: this._environmentService.debugRenderer,

@@ -4,23 +4,23 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Emitter, Event } from "vs/base/common/event";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { EditorsOrder, IEditorIdentifier } from "vs/workbench/common/editor";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import {
-	IWorkingCopy,
-	IWorkingCopyIdentifier,
-} from "vs/workbench/services/workingCopy/common/workingCopy";
 import {
 	Disposable,
 	IDisposable,
 	toDisposable,
 } from "vs/base/common/lifecycle";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { EditorsOrder, IEditorIdentifier } from "vs/workbench/common/editor";
+import { EditorInput } from "vs/workbench/common/editor/editorInput";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import {
+	IWorkingCopy,
+	IWorkingCopyIdentifier,
+} from "vs/workbench/services/workingCopy/common/workingCopy";
 
 export const IWorkingCopyEditorService =
 	createDecorator<IWorkingCopyEditorService>("workingCopyEditorService");
@@ -41,7 +41,7 @@ export interface IWorkingCopyEditorHandler {
 	 * Create an editor that is suitable of opening the provided working copy.
 	 */
 	createEditor(
-		workingCopy: IWorkingCopyIdentifier
+		workingCopy: IWorkingCopyIdentifier,
 	): EditorInput | Promise<EditorInput>;
 }
 
@@ -71,7 +71,7 @@ export class WorkingCopyEditorService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidRegisterHandler = this._register(
-		new Emitter<IWorkingCopyEditorHandler>()
+		new Emitter<IWorkingCopyEditorHandler>(),
 	);
 	readonly onDidRegisterHandler = this._onDidRegisterHandler.event;
 
@@ -93,7 +93,7 @@ export class WorkingCopyEditorService
 
 	findEditor(workingCopy: IWorkingCopy): IEditorIdentifier | undefined {
 		for (const editorIdentifier of this.editorService.getEditors(
-			EditorsOrder.MOST_RECENTLY_ACTIVE
+			EditorsOrder.MOST_RECENTLY_ACTIVE,
 		)) {
 			if (this.isOpen(workingCopy, editorIdentifier.editor)) {
 				return editorIdentifier;
@@ -118,5 +118,5 @@ export class WorkingCopyEditorService
 registerSingleton(
 	IWorkingCopyEditorService,
 	WorkingCopyEditorService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

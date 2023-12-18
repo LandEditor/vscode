@@ -22,12 +22,12 @@ import {
 } from "vs/workbench/contrib/webview/browser/webview";
 import {
 	DeserializedWebview,
-	restoreWebviewContentOptions,
-	restoreWebviewOptions,
-	reviveWebviewExtensionDescription,
 	SerializedWebview,
 	SerializedWebviewOptions,
 	WebviewEditorInputSerializer,
+	restoreWebviewContentOptions,
+	restoreWebviewOptions,
+	reviveWebviewExtensionDescription,
 } from "vs/workbench/contrib/webviewPanel/browser/webviewEditorInputSerializer";
 import { IWebviewWorkbenchService } from "vs/workbench/contrib/webviewPanel/browser/webviewWorkbenchService";
 import {
@@ -101,7 +101,7 @@ export class CustomEditorInputSerializer extends WebviewEditorInputSerializer {
 	}
 
 	protected override fromJson(
-		data: SerializedCustomEditor
+		data: SerializedCustomEditor,
 	): DeserializedCustomEditor {
 		return {
 			...super.fromJson(data),
@@ -112,7 +112,7 @@ export class CustomEditorInputSerializer extends WebviewEditorInputSerializer {
 
 	public override deserialize(
 		_instantiationService: IInstantiationService,
-		serializedEditorInput: string
+		serializedEditorInput: string,
 	): CustomEditorInput {
 		const data = this.fromJson(JSON.parse(serializedEditorInput));
 
@@ -121,7 +121,7 @@ export class CustomEditorInputSerializer extends WebviewEditorInputSerializer {
 			CustomEditorInput,
 			{ resource: data.editorResource, viewType: data.viewType },
 			webview,
-			{ startsDirty: data.dirty, backupId: data.backupId }
+			{ startsDirty: data.dirty, backupId: data.backupId },
 		);
 		if (typeof data.group === "number") {
 			customInput.updateGroup(data.group);
@@ -139,7 +139,7 @@ function reviveWebview(
 		webviewOptions: WebviewOptions;
 		contentOptions: WebviewContentOptions;
 		extension?: WebviewExtensionDescription;
-	}
+	},
 ) {
 	const webview = webviewService.createWebviewOverlay({
 		providedViewType: data.viewType,
@@ -221,29 +221,29 @@ export class ComplexCustomWorkingCopyEditorHandler
 	}
 
 	async createEditor(
-		workingCopy: IWorkingCopyIdentifier
+		workingCopy: IWorkingCopyIdentifier,
 	): Promise<EditorInput> {
 		const backup =
 			await this._workingCopyBackupService.resolve<CustomDocumentBackupData>(
-				workingCopy
+				workingCopy,
 			);
 		if (!backup?.meta) {
 			throw new Error(
-				`No backup found for custom editor: ${workingCopy.resource}`
+				`No backup found for custom editor: ${workingCopy.resource}`,
 			);
 		}
 
 		const backupData = backup.meta;
 		const extension = reviveWebviewExtensionDescription(
 			backupData.extension?.id,
-			backupData.extension?.location
+			backupData.extension?.location,
 		);
 		const webview = reviveWebview(this._webviewService, {
 			viewType: backupData.viewType,
 			origin: backupData.webview.origin,
 			webviewOptions: restoreWebviewOptions(backupData.webview.options),
 			contentOptions: restoreWebviewContentOptions(
-				backupData.webview.options
+				backupData.webview.options,
 			),
 			state: backupData.webview.state,
 			extension,
@@ -256,7 +256,7 @@ export class ComplexCustomWorkingCopyEditorHandler
 				viewType: backupData.viewType,
 			},
 			webview,
-			{ backupId: backupData.backupId }
+			{ backupId: backupData.backupId },
 		);
 		editor.updateGroup(0);
 		return editor;

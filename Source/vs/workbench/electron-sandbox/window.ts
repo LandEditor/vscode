@@ -3,176 +3,176 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import { URI } from "vs/base/common/uri";
-import { onUnexpectedError } from "vs/base/common/errors";
-import { equals } from "vs/base/common/objects";
+import { getZoomLevel, setFullscreen } from "vs/base/browser/browser";
 import {
-	EventType,
 	EventHelper,
-	addDisposableListener,
+	EventType,
 	ModifierKeyEmitter,
+	addDisposableListener,
 	getActiveElement,
-	hasWindow,
 	getWindow,
 	getWindowById,
 	getWindowId,
+	hasWindow,
 } from "vs/base/browser/dom";
+import { mainWindow } from "vs/base/browser/window";
 import {
 	Separator,
 	WorkbenchActionExecutedClassification,
 	WorkbenchActionExecutedEvent,
 } from "vs/base/common/actions";
-import { IFileService } from "vs/platform/files/common/files";
-import {
-	EditorResourceAccessor,
-	IUntitledTextResourceEditorInput,
-	SideBySideEditor,
-	pathsToEditors,
-	IResourceDiffEditorInput,
-	IUntypedEditorInput,
-	IEditorPane,
-	isResourceEditorInput,
-	IResourceMergeEditorInput,
-} from "vs/workbench/common/editor";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import {
-	WindowMinimumSize,
-	IOpenFileRequest,
-	IWindowsConfiguration,
-	getTitleBarStyle,
-	IAddFoldersRequest,
-	INativeRunActionInWindowRequest,
-	INativeRunKeybindingInWindowRequest,
-	INativeOpenFileRequest,
-} from "vs/platform/window/common/window";
-import { ITitleService } from "vs/workbench/services/title/browser/titleService";
-import { IWorkbenchThemeService } from "vs/workbench/services/themes/common/workbenchThemeService";
-import { applyZoom } from "vs/platform/window/electron-sandbox/window";
-import { setFullscreen, getZoomLevel } from "vs/base/browser/browser";
-import {
-	ICommandService,
-	CommandsRegistry,
-} from "vs/platform/commands/common/commands";
-import { IResourceEditorInput } from "vs/platform/editor/common/editor";
+import { coalesce } from "vs/base/common/arrays";
+import { RunOnceScheduler } from "vs/base/common/async";
+import { Codicon } from "vs/base/common/codicons";
+import { toErrorMessage } from "vs/base/common/errorMessage";
+import { onUnexpectedError } from "vs/base/common/errors";
+import { Event } from "vs/base/common/event";
+import { DisposableStore } from "vs/base/common/lifecycle";
+import { Schemas } from "vs/base/common/network";
+import { equals } from "vs/base/common/objects";
+import { posix } from "vs/base/common/path";
+import { isCI, isMacintosh, isWindows } from "vs/base/common/platform";
+import { dirname } from "vs/base/common/resources";
+import { assertIsDefined } from "vs/base/common/types";
+import { URI } from "vs/base/common/uri";
+import { AuthInfo } from "vs/base/parts/sandbox/electron-sandbox/electronTypes";
 import {
 	ipcRenderer,
 	process,
 } from "vs/base/parts/sandbox/electron-sandbox/globals";
-import { IWorkspaceEditingService } from "vs/workbench/services/workspaces/common/workspaceEditing";
+import { localize } from "vs/nls";
 import {
+	AccessibilitySupport,
+	IAccessibilityService,
+} from "vs/platform/accessibility/common/accessibility";
+import { ICommandAction } from "vs/platform/action/common/action";
+import { createAndFillInActionBarActions } from "vs/platform/actions/browser/menuEntryActionViewItem";
+import {
+	IMenu,
 	IMenuService,
 	MenuId,
-	IMenu,
 	MenuItemAction,
 	MenuRegistry,
 } from "vs/platform/actions/common/actions";
-import { ICommandAction } from "vs/platform/action/common/action";
-import { createAndFillInActionBarActions } from "vs/platform/actions/browser/menuEntryActionViewItem";
-import { RunOnceScheduler } from "vs/base/common/async";
-import { DisposableStore } from "vs/base/common/lifecycle";
 import {
-	LifecyclePhase,
-	ILifecycleService,
-	WillShutdownEvent,
-	ShutdownReason,
-	BeforeShutdownErrorEvent,
-	BeforeShutdownEvent,
-} from "vs/workbench/services/lifecycle/common/lifecycle";
-import { IWorkspaceFolderCreationData } from "vs/platform/workspaces/common/workspaces";
-import { IIntegrityService } from "vs/workbench/services/integrity/common/integrity";
-import { isWindows, isMacintosh, isCI } from "vs/base/common/platform";
-import { IProductService } from "vs/platform/product/common/productService";
+	CommandsRegistry,
+	ICommandService,
+} from "vs/platform/commands/common/commands";
+import {
+	ConfigurationTarget,
+	IConfigurationService,
+} from "vs/platform/configuration/common/configuration";
+import { IDialogService } from "vs/platform/dialogs/common/dialogs";
+import { IResourceEditorInput } from "vs/platform/editor/common/editor";
+import { IFileService } from "vs/platform/files/common/files";
+import {
+	IInstantiationService,
+	ServicesAccessor,
+} from "vs/platform/instantiation/common/instantiation";
+import { ISharedProcessService } from "vs/platform/ipc/electron-sandbox/services";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { ILabelService } from "vs/platform/label/common/label";
+import { ILogService } from "vs/platform/log/common/log";
+import { INativeHostService } from "vs/platform/native/common/native";
 import {
 	INotificationService,
 	NeverShowAgainScope,
 	NotificationPriority,
 	Severity,
 } from "vs/platform/notification/common/notification";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
+import { IOpenerService, OpenOptions } from "vs/platform/opener/common/opener";
+import { IProductService } from "vs/platform/product/common/productService";
 import {
-	IAccessibilityService,
-	AccessibilitySupport,
-} from "vs/platform/accessibility/common/accessibility";
+	IProgressService,
+	ProgressLocation,
+} from "vs/platform/progress/common/progress";
 import {
-	WorkbenchState,
-	IWorkspaceContextService,
-} from "vs/platform/workspace/common/workspace";
-import { coalesce } from "vs/base/common/arrays";
-import {
-	ConfigurationTarget,
-	IConfigurationService,
-} from "vs/platform/configuration/common/configuration";
+	IAddress,
+	IAddressProvider,
+} from "vs/platform/remote/common/remoteAgentConnection";
+import { IRemoteAuthorityResolverService } from "vs/platform/remote/common/remoteAuthorityResolver";
 import {
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
-import { assertIsDefined } from "vs/base/common/types";
-import { IOpenerService, OpenOptions } from "vs/platform/opener/common/opener";
-import { Schemas } from "vs/base/common/network";
-import { INativeHostService } from "vs/platform/native/common/native";
-import { posix } from "vs/base/common/path";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import {
 	ITunnelService,
 	extractLocalHostUriMetaDataForPortMapping,
 } from "vs/platform/tunnel/common/tunnel";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import {
+	IAddFoldersRequest,
+	INativeOpenFileRequest,
+	INativeRunActionInWindowRequest,
+	INativeRunKeybindingInWindowRequest,
+	IOpenFileRequest,
+	IWindowsConfiguration,
+	WindowMinimumSize,
+	getTitleBarStyle,
+} from "vs/platform/window/common/window";
+import { applyZoom } from "vs/platform/window/electron-sandbox/window";
+import {
+	IWorkspaceContextService,
+	WorkbenchState,
+} from "vs/platform/workspace/common/workspace";
+import { IWorkspaceFolderCreationData } from "vs/platform/workspaces/common/workspaces";
+import { whenEditorClosed } from "vs/workbench/browser/editor";
+import { BaseWindow } from "vs/workbench/browser/window";
+import {
+	EditorResourceAccessor,
+	IEditorPane,
+	IResourceDiffEditorInput,
+	IResourceMergeEditorInput,
+	IUntitledTextResourceEditorInput,
+	IUntypedEditorInput,
+	SideBySideEditor,
+	isResourceEditorInput,
+	pathsToEditors,
+} from "vs/workbench/common/editor";
+import { IBannerService } from "vs/workbench/services/banner/browser/bannerService";
+import { registerWindowDriver } from "vs/workbench/services/driver/electron-sandbox/driver";
+import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
+import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
+import { IIntegrityService } from "vs/workbench/services/integrity/common/integrity";
 import {
 	IWorkbenchLayoutService,
 	Parts,
-	positionFromString,
 	Position,
+	positionFromString,
 } from "vs/workbench/services/layout/browser/layoutService";
-import { IWorkingCopyService } from "vs/workbench/services/workingCopy/common/workingCopyService";
-import { WorkingCopyCapabilities } from "vs/workbench/services/workingCopy/common/workingCopy";
-import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
-import { Event } from "vs/base/common/event";
-import { IRemoteAuthorityResolverService } from "vs/platform/remote/common/remoteAuthorityResolver";
 import {
-	IAddressProvider,
-	IAddress,
-} from "vs/platform/remote/common/remoteAgentConnection";
-import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
-import { IDialogService } from "vs/platform/dialogs/common/dialogs";
-import { AuthInfo } from "vs/base/parts/sandbox/electron-sandbox/electronTypes";
-import { ILogService } from "vs/platform/log/common/log";
-import {
-	IInstantiationService,
-	ServicesAccessor,
-} from "vs/platform/instantiation/common/instantiation";
-import { whenEditorClosed } from "vs/workbench/browser/editor";
-import { ISharedProcessService } from "vs/platform/ipc/electron-sandbox/services";
-import {
-	IProgressService,
-	ProgressLocation,
-} from "vs/platform/progress/common/progress";
-import { toErrorMessage } from "vs/base/common/errorMessage";
-import { ILabelService } from "vs/platform/label/common/label";
-import { dirname } from "vs/base/common/resources";
-import { IBannerService } from "vs/workbench/services/banner/browser/bannerService";
-import { Codicon } from "vs/base/common/codicons";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+	BeforeShutdownErrorEvent,
+	BeforeShutdownEvent,
+	ILifecycleService,
+	LifecyclePhase,
+	ShutdownReason,
+	WillShutdownEvent,
+} from "vs/workbench/services/lifecycle/common/lifecycle";
 import { IPreferencesService } from "vs/workbench/services/preferences/common/preferences";
+import { IWorkbenchThemeService } from "vs/workbench/services/themes/common/workbenchThemeService";
+import { ITitleService } from "vs/workbench/services/title/browser/titleService";
 import { IUtilityProcessWorkerWorkbenchService } from "vs/workbench/services/utilityProcess/electron-sandbox/utilityProcessWorkerWorkbenchService";
-import { registerWindowDriver } from "vs/workbench/services/driver/electron-sandbox/driver";
-import { mainWindow } from "vs/base/browser/window";
-import { BaseWindow } from "vs/workbench/browser/window";
+import { WorkingCopyCapabilities } from "vs/workbench/services/workingCopy/common/workingCopy";
+import { IWorkingCopyService } from "vs/workbench/services/workingCopy/common/workingCopyService";
+import { IWorkspaceEditingService } from "vs/workbench/services/workspaces/common/workspaceEditing";
 
 export class NativeWindow extends BaseWindow {
 	private touchBarMenu: IMenu | undefined;
 	private readonly touchBarDisposables = this._register(
-		new DisposableStore()
+		new DisposableStore(),
 	);
 	private lastInstalledTouchedBar: ICommandAction[][] | undefined;
 
 	private readonly customTitleContextMenuDisposable = this._register(
-		new DisposableStore()
+		new DisposableStore(),
 	);
 
 	private readonly addFoldersScheduler = this._register(
-		new RunOnceScheduler(() => this.doAddFolders(), 100)
+		new RunOnceScheduler(() => this.doAddFolders(), 100),
 	);
 	private pendingFoldersToAdd: URI[] = [];
 
@@ -251,15 +251,15 @@ export class NativeWindow extends BaseWindow {
 		// Layout
 		this._register(
 			addDisposableListener(mainWindow, EventType.RESIZE, () =>
-				this.layoutService.layout()
-			)
+				this.layoutService.layout(),
+			),
 		);
 
 		// React to editor input changes
 		this._register(
 			this.editorService.onDidActiveEditorChange(() =>
-				this.updateTouchbarMenu()
-			)
+				this.updateTouchbarMenu(),
+			),
 		);
 
 		// Prevent opening a real URL inside the window
@@ -270,8 +270,8 @@ export class NativeWindow extends BaseWindow {
 					event,
 					(e: DragEvent) => {
 						EventHelper.stop(e);
-					}
-				)
+					},
+				),
 			);
 		}
 
@@ -280,7 +280,7 @@ export class NativeWindow extends BaseWindow {
 			"vscode:runAction",
 			async (
 				event: unknown,
-				request: INativeRunActionInWindowRequest
+				request: INativeRunActionInWindowRequest,
 			) => {
 				const args: unknown[] = request.args || [];
 
@@ -291,7 +291,7 @@ export class NativeWindow extends BaseWindow {
 					if (activeEditor) {
 						const resource = EditorResourceAccessor.getOriginalUri(
 							activeEditor,
-							{ supportSideBySide: SideBySideEditor.PRIMARY }
+							{ supportSideBySide: SideBySideEditor.PRIMARY },
 						);
 						if (resource) {
 							args.push(resource);
@@ -304,7 +304,7 @@ export class NativeWindow extends BaseWindow {
 				try {
 					await this.commandService.executeCommand(
 						request.id,
-						...args
+						...args,
 					);
 
 					this.telemetryService.publicLog2<
@@ -317,7 +317,7 @@ export class NativeWindow extends BaseWindow {
 				} catch (error) {
 					this.notificationService.error(error);
 				}
-			}
+			},
 		);
 
 		// Support runKeybinding event
@@ -328,10 +328,10 @@ export class NativeWindow extends BaseWindow {
 				if (activeElement) {
 					this.keybindingService.dispatchByUserSettingsLabel(
 						request.userSettingsLabel,
-						activeElement
+						activeElement,
 					);
 				}
-			}
+			},
 		);
 
 		// Error reporting from main
@@ -341,7 +341,7 @@ export class NativeWindow extends BaseWindow {
 				if (error) {
 					onUnexpectedError(JSON.parse(error));
 				}
-			}
+			},
 		);
 
 		// Support openFiles event for existing and new files
@@ -349,7 +349,7 @@ export class NativeWindow extends BaseWindow {
 			"vscode:openFiles",
 			(event: unknown, request: IOpenFileRequest) => {
 				this.onOpenFiles(request);
-			}
+			},
 		);
 
 		// Support addFolders event if we have a workspace opened
@@ -357,7 +357,7 @@ export class NativeWindow extends BaseWindow {
 			"vscode:addFolders",
 			(event: unknown, request: IAddFoldersRequest) => {
 				this.onAddFoldersRequest(request);
-			}
+			},
 		);
 
 		// Message support
@@ -365,7 +365,7 @@ export class NativeWindow extends BaseWindow {
 			"vscode:showInfoMessage",
 			(event: unknown, message: string) => {
 				this.notificationService.info(message);
-			}
+			},
 		);
 
 		// Shell Environment Issue Notifications
@@ -388,11 +388,11 @@ export class NativeWindow extends BaseWindow {
 						label: localize("learnMore", "Learn More"),
 						run: () =>
 							this.openerService.open(
-								"https://go.microsoft.com/fwlink/?linkid=2149667"
+								"https://go.microsoft.com/fwlink/?linkid=2149667",
 							),
 					},
 				]);
-			}
+			},
 		);
 
 		ipcRenderer.on(
@@ -403,22 +403,22 @@ export class NativeWindow extends BaseWindow {
 					localize(
 						"keychainWriteError",
 						"Writing login information to the keychain failed with error '{0}'.",
-						message
+						message,
 					),
 					[
 						{
 							label: localize(
 								"troubleshooting",
-								"Troubleshooting Guide"
+								"Troubleshooting Guide",
 							),
 							run: () =>
 								this.openerService.open(
-									"https://go.microsoft.com/fwlink/?linkid=2190713"
+									"https://go.microsoft.com/fwlink/?linkid=2190713",
 								),
 						},
-					]
+					],
 				);
-			}
+			},
 		);
 
 		ipcRenderer.on(
@@ -429,7 +429,7 @@ export class NativeWindow extends BaseWindow {
 					localize(
 						"runningTranslated",
 						"You are running an emulated version of {0}. For better performance download the native arm64 version of {0} build for your machine.",
-						this.productService.nameLong
+						this.productService.nameLong,
 					),
 					[
 						{
@@ -443,13 +443,13 @@ export class NativeWindow extends BaseWindow {
 								this.openerService.open(
 									quality === "stable"
 										? stableURL
-										: insidersURL
+										: insidersURL,
 								);
 							},
 						},
-					]
+					],
 				);
-			}
+			},
 		);
 
 		// Fullscreen Events
@@ -470,26 +470,26 @@ export class NativeWindow extends BaseWindow {
 					username?: string;
 					password?: string;
 					replyChannel: string;
-				}
+				},
 			) => {
 				const rememberCredentialsKey =
 					"window.rememberProxyCredentials";
 				const rememberCredentials = this.storageService.getBoolean(
 					rememberCredentialsKey,
-					StorageScope.APPLICATION
+					StorageScope.APPLICATION,
 				);
 				const result = await this.dialogService.input({
 					type: "warning",
 					message: localize(
 						"proxyAuthRequired",
-						"Proxy Authentication Required"
+						"Proxy Authentication Required",
 					),
 					primaryButton: localize(
 						{
 							key: "loginButton",
 							comment: ["&& denotes a mnemonic"],
 						},
-						"&&Log In"
+						"&&Log In",
 					),
 					inputs: [
 						{
@@ -505,12 +505,12 @@ export class NativeWindow extends BaseWindow {
 					detail: localize(
 						"proxyDetail",
 						"The proxy {0} requires a username and password.",
-						`${payload.authInfo.host}:${payload.authInfo.port}`
+						`${payload.authInfo.host}:${payload.authInfo.port}`,
 					),
 					checkbox: {
 						label: localize(
 							"rememberCredentials",
-							"Remember my credentials"
+							"Remember my credentials",
 						),
 						checked: rememberCredentials,
 					},
@@ -530,12 +530,12 @@ export class NativeWindow extends BaseWindow {
 							rememberCredentialsKey,
 							true,
 							StorageScope.APPLICATION,
-							StorageTarget.MACHINE
+							StorageTarget.MACHINE,
 						);
 					} else {
 						this.storageService.remove(
 							rememberCredentialsKey,
-							StorageScope.APPLICATION
+							StorageScope.APPLICATION,
 						);
 					}
 
@@ -547,7 +547,7 @@ export class NativeWindow extends BaseWindow {
 						remember: !!result.checkboxChecked,
 					});
 				}
-			}
+			},
 		);
 
 		// Accessibility support changed event
@@ -557,9 +557,9 @@ export class NativeWindow extends BaseWindow {
 				this.accessibilityService.setAccessibilitySupport(
 					accessibilitySupportEnabled
 						? AccessibilitySupport.Enabled
-						: AccessibilitySupport.Disabled
+						: AccessibilitySupport.Disabled,
 				);
-			}
+			},
 		);
 
 		// Allow to update security settings around allowed UNC Host
@@ -574,7 +574,7 @@ export class NativeWindow extends BaseWindow {
 
 				const configuredAllowedUncHosts =
 					this.configurationService.getValue<string[] | undefined>(
-						"security.allowedUNCHosts"
+						"security.allowedUNCHosts",
 					) ?? [];
 				if (Array.isArray(configuredAllowedUncHosts)) {
 					for (const configuredAllowedUncHost of configuredAllowedUncHosts) {
@@ -590,10 +590,10 @@ export class NativeWindow extends BaseWindow {
 					this.configurationService.updateValue(
 						"security.allowedUNCHosts",
 						[...allowedUncHosts.values()],
-						ConfigurationTarget.USER
+						ConfigurationTarget.USER,
 					);
 				}
-			}
+			},
 		);
 
 		// Allow to update security settings around protocol handlers
@@ -607,9 +607,9 @@ export class NativeWindow extends BaseWindow {
 				this.configurationService.updateValue(
 					setting,
 					false,
-					ConfigurationTarget.USER_LOCAL
+					ConfigurationTarget.USER_LOCAL,
 				);
-			}
+			},
 		);
 
 		// Zoom level changes
@@ -623,7 +623,7 @@ export class NativeWindow extends BaseWindow {
 				) {
 					this.updateTouchbarMenu();
 				}
-			})
+			}),
 		);
 
 		// Listen to visible editor changes (debounced in case a new editor opens immediately after)
@@ -635,8 +635,8 @@ export class NativeWindow extends BaseWindow {
 				undefined,
 				undefined,
 				undefined,
-				this._store
-			)(() => this.maybeCloseWindow())
+				this._store,
+			)(() => this.maybeCloseWindow()),
 		);
 
 		// Listen to editor closing (if we run with --wait)
@@ -644,7 +644,7 @@ export class NativeWindow extends BaseWindow {
 		if (filesToWait) {
 			this.trackClosedWaitFiles(
 				filesToWait.waitMarkerFileUri,
-				coalesce(filesToWait.paths.map((path) => path.fileUri))
+				coalesce(filesToWait.paths.map((path) => path.fileUri)),
 			);
 		}
 
@@ -652,20 +652,20 @@ export class NativeWindow extends BaseWindow {
 		if (isMacintosh) {
 			const updateRepresentedFilename = (
 				editorService: IEditorService,
-				targetWindowId: number | undefined
+				targetWindowId: number | undefined,
 			) => {
 				const file = EditorResourceAccessor.getOriginalUri(
 					editorService.activeEditor,
 					{
 						supportSideBySide: SideBySideEditor.PRIMARY,
 						filterByScheme: Schemas.file,
-					}
+					},
 				);
 
 				// Represented Filename
 				this.nativeHostService.setRepresentedFilename(
 					file?.fsPath ?? "",
-					{ targetWindowId }
+					{ targetWindowId },
 				);
 
 				// Custom title menu (main window only currently)
@@ -678,9 +678,9 @@ export class NativeWindow extends BaseWindow {
 				this.mainPartEditorService.onDidActiveEditorChange(() =>
 					updateRepresentedFilename(
 						this.mainPartEditorService,
-						undefined
-					)
-				)
+						undefined,
+					),
+				),
 			);
 
 			this._register(
@@ -692,12 +692,12 @@ export class NativeWindow extends BaseWindow {
 							auxiliaryEditorService.onDidActiveEditorChange(() =>
 								updateRepresentedFilename(
 									auxiliaryEditorService,
-									part.windowId
-								)
-							)
+									part.windowId,
+								),
+							),
 						);
-					}
-				)
+					},
+				),
 			);
 		}
 
@@ -715,8 +715,8 @@ export class NativeWindow extends BaseWindow {
 						const titlePart = assertIsDefined(
 							this.layoutService.getContainer(
 								targetWindow,
-								Parts.TITLEBAR_PART
-							)
+								Parts.TITLEBAR_PART,
+							),
 						);
 
 						disposables.add(
@@ -727,17 +727,17 @@ export class NativeWindow extends BaseWindow {
 									EventHelper.stop(e);
 
 									this.nativeHostService.handleTitleDoubleClick(
-										{ targetWindowId }
+										{ targetWindowId },
 									);
-								}
-							)
+								},
+							),
 						);
 					},
 					{
 						container: this.layoutService.mainContainer,
 						disposables: this._store,
-					}
-				)
+					},
+				),
 			);
 		}
 
@@ -752,14 +752,14 @@ export class NativeWindow extends BaseWindow {
 						WorkingCopyCapabilities.Untitled
 					) &&
 					this.filesConfigurationService.isShortAutoSaveDelayConfigured(
-						workingCopy.resource
+						workingCopy.resource,
 					)
 				) {
 					return; // do not indicate dirty of working copies that are auto saved after short delay
 				}
 
 				this.updateDocumentEdited(gotDirty ? true : undefined);
-			})
+			}),
 		);
 
 		this.updateDocumentEdited(undefined);
@@ -770,50 +770,50 @@ export class NativeWindow extends BaseWindow {
 				Event.map(
 					Event.filter(
 						this.nativeHostService.onDidMaximizeWindow,
-						(windowId) => !!hasWindow(windowId)
+						(windowId) => !!hasWindow(windowId),
 					),
-					(windowId) => ({ maximized: true, windowId })
+					(windowId) => ({ maximized: true, windowId }),
 				),
 				Event.map(
 					Event.filter(
 						this.nativeHostService.onDidUnmaximizeWindow,
-						(windowId) => !!hasWindow(windowId)
+						(windowId) => !!hasWindow(windowId),
 					),
-					(windowId) => ({ maximized: false, windowId })
-				)
+					(windowId) => ({ maximized: false, windowId }),
+				),
 			)((e) =>
 				this.layoutService.updateWindowMaximizedState(
 					getWindowById(e.windowId)!.window,
-					e.maximized
-				)
-			)
+					e.maximized,
+				),
+			),
 		);
 		this.layoutService.updateWindowMaximizedState(
 			mainWindow,
-			this.environmentService.window.maximized ?? false
+			this.environmentService.window.maximized ?? false,
 		);
 
 		// Detect panel position to determine minimum width
 		this._register(
 			this.layoutService.onDidChangePanelPosition((pos) =>
-				this.onDidChangePanelPosition(positionFromString(pos))
-			)
+				this.onDidChangePanelPosition(positionFromString(pos)),
+			),
 		);
 		this.onDidChangePanelPosition(this.layoutService.getPanelPosition());
 
 		// Lifecycle
 		this._register(
 			this.lifecycleService.onBeforeShutdown((e) =>
-				this.onBeforeShutdown(e)
-			)
+				this.onBeforeShutdown(e),
+			),
 		);
 		this._register(
 			this.lifecycleService.onBeforeShutdownError((e) =>
-				this.onBeforeShutdownError(e)
-			)
+				this.onBeforeShutdownError(e),
+			),
 		);
 		this._register(
-			this.lifecycleService.onWillShutdown((e) => this.onWillShutdown(e))
+			this.lifecycleService.onWillShutdown((e) => this.onWillShutdown(e)),
 		);
 	}
 
@@ -851,8 +851,8 @@ export class NativeWindow extends BaseWindow {
 									(accessor) =>
 										NativeWindow.confirmOnShutdown(
 											accessor,
-											actualReason
-										)
+											actualReason,
+										),
 								);
 						}
 
@@ -863,7 +863,7 @@ export class NativeWindow extends BaseWindow {
 
 						return !confirmed;
 					})(),
-					"veto.confirmBeforeClose"
+					"veto.confirmBeforeClose",
 				);
 			}
 		}
@@ -884,16 +884,16 @@ export class NativeWindow extends BaseWindow {
 					Event.any(
 						this.lifecycleService.onWillShutdown, // dismiss this dialog when we shutdown
 						this.lifecycleService.onShutdownVeto, // or when shutdown was vetoed
-						this.dialogService.onWillShowDialog // or when a dialog asks for input
-					)
+						this.dialogService.onWillShowDialog, // or when a dialog asks for input
+					),
 				);
-			}
+			},
 		);
 	}
 
 	static async confirmOnShutdown(
 		accessor: ServicesAccessor,
-		reason: ShutdownReason
+		reason: ShutdownReason,
 	): Promise<boolean> {
 		const dialogService = accessor.get(IDialogService);
 		const configurationService = accessor.get(IConfigurationService);
@@ -903,13 +903,13 @@ export class NativeWindow extends BaseWindow {
 				? isMacintosh
 					? localize(
 							"quitMessageMac",
-							"Are you sure you want to quit?"
-						)
+							"Are you sure you want to quit?",
+					  )
 					: localize("quitMessage", "Are you sure you want to exit?")
 				: localize(
 						"closeWindowMessage",
-						"Are you sure you want to close the window?"
-					);
+						"Are you sure you want to close the window?",
+				  );
 		const primaryButton =
 			reason === ShutdownReason.QUIT
 				? isMacintosh
@@ -918,22 +918,22 @@ export class NativeWindow extends BaseWindow {
 								key: "quitButtonLabel",
 								comment: ["&& denotes a mnemonic"],
 							},
-							"&&Quit"
-						)
+							"&&Quit",
+					  )
 					: localize(
 							{
 								key: "exitButtonLabel",
 								comment: ["&& denotes a mnemonic"],
 							},
-							"&&Exit"
-						)
+							"&&Exit",
+					  )
 				: localize(
 						{
 							key: "closeWindowButtonLabel",
 							comment: ["&& denotes a mnemonic"],
 						},
-						"&&Close Window"
-					);
+						"&&Close Window",
+				  );
 
 		const res = await dialogService.confirm({
 			message,
@@ -947,7 +947,7 @@ export class NativeWindow extends BaseWindow {
 		if (res.confirmed && res.checkboxChecked) {
 			await configurationService.updateValue(
 				"window.confirmBeforeClose",
-				"never"
+				"never",
 			);
 		}
 
@@ -960,7 +960,11 @@ export class NativeWindow extends BaseWindow {
 	}: BeforeShutdownErrorEvent): void {
 		this.dialogService.error(
 			this.toShutdownLabel(reason, true),
-			localize("shutdownErrorDetail", "Error: {0}", toErrorMessage(error))
+			localize(
+				"shutdownErrorDetail",
+				"Error: {0}",
+				toErrorMessage(error),
+			),
 		);
 	}
 
@@ -987,8 +991,8 @@ export class NativeWindow extends BaseWindow {
 									"The following operations are still running: \n{0}",
 									pendingJoiners
 										.map((joiner) => `- ${joiner.label}`)
-										.join("\n")
-								)
+										.join("\n"),
+							  )
 							: undefined,
 				},
 				() => {
@@ -996,14 +1000,14 @@ export class NativeWindow extends BaseWindow {
 				},
 				() => {
 					force();
-				}
+				},
 			);
 		}, 1200);
 		shutdownDialogScheduler.schedule();
 
 		// Dispose scheduler when we actually shutdown
 		Event.once(this.lifecycleService.onDidShutdown)(() =>
-			shutdownDialogScheduler.dispose()
+			shutdownDialogScheduler.dispose(),
 		);
 	}
 
@@ -1013,22 +1017,22 @@ export class NativeWindow extends BaseWindow {
 				case ShutdownReason.CLOSE:
 					return localize(
 						"shutdownErrorClose",
-						"An unexpected error prevented the window to close"
+						"An unexpected error prevented the window to close",
 					);
 				case ShutdownReason.QUIT:
 					return localize(
 						"shutdownErrorQuit",
-						"An unexpected error prevented the application to quit"
+						"An unexpected error prevented the application to quit",
 					);
 				case ShutdownReason.RELOAD:
 					return localize(
 						"shutdownErrorReload",
-						"An unexpected error prevented the window to reload"
+						"An unexpected error prevented the window to reload",
 					);
 				case ShutdownReason.LOAD:
 					return localize(
 						"shutdownErrorLoad",
-						"An unexpected error prevented to change the workspace"
+						"An unexpected error prevented to change the workspace",
 					);
 			}
 		}
@@ -1037,22 +1041,22 @@ export class NativeWindow extends BaseWindow {
 			case ShutdownReason.CLOSE:
 				return localize(
 					"shutdownTitleClose",
-					"Closing the window is taking a bit longer..."
+					"Closing the window is taking a bit longer...",
 				);
 			case ShutdownReason.QUIT:
 				return localize(
 					"shutdownTitleQuit",
-					"Quitting the application is taking a bit longer..."
+					"Quitting the application is taking a bit longer...",
 				);
 			case ShutdownReason.RELOAD:
 				return localize(
 					"shutdownTitleReload",
-					"Reloading the window is taking a bit longer..."
+					"Reloading the window is taking a bit longer...",
 				);
 			case ShutdownReason.LOAD:
 				return localize(
 					"shutdownTitleLoad",
-					"Changing the workspace is taking a bit longer..."
+					"Changing the workspace is taking a bit longer...",
 				);
 		}
 	}
@@ -1089,7 +1093,7 @@ export class NativeWindow extends BaseWindow {
 	}
 
 	private getWindowMinimumWidth(
-		panelPosition: Position = this.layoutService.getPanelPosition()
+		panelPosition: Position = this.layoutService.getPanelPosition(),
 	): number {
 		// if panel is on the side, then return the larger minwidth
 		const panelOnSide =
@@ -1175,28 +1179,28 @@ export class NativeWindow extends BaseWindow {
 			}
 
 			const path = URI.file(
-				segments.slice(0, pathOffset).join(posix.sep)
+				segments.slice(0, pathOffset).join(posix.sep),
 			);
 
 			let label: string;
-			if (!isFile) {
-				label = this.labelService.getUriBasenameLabel(dirname(path));
-			} else {
+			if (isFile) {
 				label = this.labelService.getUriBasenameLabel(path);
+			} else {
+				label = this.labelService.getUriBasenameLabel(dirname(path));
 			}
 
 			const commandId = `workbench.action.revealPathInFinder${i}`;
 			this.customTitleContextMenuDisposable.add(
 				CommandsRegistry.registerCommand(commandId, () =>
-					this.nativeHostService.showItemInFolder(path.fsPath)
-				)
+					this.nativeHostService.showItemInFolder(path.fsPath),
+				),
 			);
 			this.customTitleContextMenuDisposable.add(
 				MenuRegistry.appendMenuItem(MenuId.TitleBarTitleContext, {
 					command: { id: commandId, title: label || posix.sep },
 					order: -i,
 					group: "1_file",
-				})
+				}),
 			);
 		}
 	}
@@ -1230,16 +1234,12 @@ export class NativeWindow extends BaseWindow {
 	}
 
 	private patchMethods(): void {
-		// Enable `window.focus()` to work in Electron by
-		// asking the main process to focus the window.
-		// https://github.com/electron/electron/issues/25578
-		const that = this;
 		const originalWindowFocus = mainWindow.focus.bind(mainWindow);
-		mainWindow.focus = function () {
+		mainWindow.focus = () => {
 			originalWindowFocus();
 
 			if (!mainWindow.document.hasFocus()) {
-				that.nativeHostService.focusWindow({
+				this.nativeHostService.focusWindow({
 					targetWindowId: getWindowId(mainWindow),
 				});
 			}
@@ -1254,15 +1254,15 @@ export class NativeWindow extends BaseWindow {
 		) {
 			if (isCI) {
 				this.logService.error(
-					"Error: There is a dependency cycle in the AMD modules that needs to be resolved!"
+					"Error: There is a dependency cycle in the AMD modules that needs to be resolved!",
 				);
 				this.nativeHostService.exit(37); // running on a build machine, just exit without showing a dialog
 			} else {
 				this.dialogService.error(
 					localize(
 						"loaderCycle",
-						"There is a dependency cycle in the AMD modules that needs to be resolved!"
-					)
+						"There is a dependency cycle in the AMD modules that needs to be resolved!",
+					),
 				);
 				this.nativeHostService.openDevTools();
 			}
@@ -1285,8 +1285,8 @@ export class NativeWindow extends BaseWindow {
 					localize(
 						"runningAsRoot",
 						"It is not recommended to run {0} as root user.",
-						this.productService.nameShort
-					)
+						this.productService.nameShort,
+					),
 				);
 			}
 		})();
@@ -1297,13 +1297,13 @@ export class NativeWindow extends BaseWindow {
 			if (isMacintosh) {
 				// appRoot = /Applications/Visual Studio Code - Insiders.app/Contents/Resources/app
 				installLocationUri = dirname(
-					dirname(dirname(URI.file(this.environmentService.appRoot)))
+					dirname(dirname(URI.file(this.environmentService.appRoot))),
 				);
 			} else {
 				// appRoot = C:\Users\<name>\AppData\Local\Programs\Microsoft VS Code Insiders\resources\app
 				// appRoot = /usr/share/code-insiders/resources/app
 				installLocationUri = dirname(
-					dirname(URI.file(this.environmentService.appRoot))
+					dirname(URI.file(this.environmentService.appRoot)),
 				);
 			}
 
@@ -1311,7 +1311,7 @@ export class NativeWindow extends BaseWindow {
 				if (
 					this.uriIdentityService.extUri.isEqualOrParent(
 						folder.uri,
-						installLocationUri
+						installLocationUri,
 					)
 				) {
 					this.bannerService.show({
@@ -1319,7 +1319,7 @@ export class NativeWindow extends BaseWindow {
 						message: localize(
 							"appRootWarning.banner",
 							"Files you store within the installation folder ('{0}') may be OVERWRITTEN or DELETED IRREVERSIBLY without warning at update time.",
-							this.labelService.getUriLabel(installLocationUri)
+							this.labelService.getUriLabel(installLocationUri),
 						),
 						icon: Codicon.warning,
 					});
@@ -1343,7 +1343,7 @@ export class NativeWindow extends BaseWindow {
 					"macoseolmessage",
 					"{0} on {1} will soon stop receiving updates. Consider upgrading your macOS version.",
 					this.productService.nameLong,
-					eolReleases.get(majorVersion)
+					eolReleases.get(majorVersion),
 				);
 
 				this.notificationService.prompt(
@@ -1355,8 +1355,8 @@ export class NativeWindow extends BaseWindow {
 							run: () =>
 								this.openerService.open(
 									URI.parse(
-										"https://aka.ms/vscode-faq-old-macOS"
-									)
+										"https://aka.ms/vscode-faq-old-macOS",
+									),
 								),
 						},
 					],
@@ -1368,7 +1368,7 @@ export class NativeWindow extends BaseWindow {
 						},
 						priority: NotificationPriority.URGENT,
 						sticky: true,
-					}
+					},
 				);
 			}
 		}
@@ -1379,7 +1379,7 @@ export class NativeWindow extends BaseWindow {
 			{
 				title: localize(
 					"resolveShellEnvironment",
-					"Resolving shell environment..."
+					"Resolving shell environment...",
 				),
 				location: ProgressLocation.Window,
 				delay: 1600,
@@ -1388,8 +1388,8 @@ export class NativeWindow extends BaseWindow {
 			() => shellEnv,
 			() =>
 				this.openerService.open(
-					"https://go.microsoft.com/fwlink/?linkid=2149667"
-				)
+					"https://go.microsoft.com/fwlink/?linkid=2149667",
+				),
 		);
 	}
 
@@ -1401,7 +1401,7 @@ export class NativeWindow extends BaseWindow {
 			async exitApplication(): Promise<void> {
 				if (pendingQuit) {
 					that.logService.info(
-						"[driver] not handling exitApplication() due to pending quit() call"
+						"[driver] not handling exitApplication() due to pending quit() call",
 					);
 					return;
 				}
@@ -1424,7 +1424,7 @@ export class NativeWindow extends BaseWindow {
 					if (fileCandidate.scheme === Schemas.file) {
 						// if opening failed, and this is a file, we can still try to reveal it
 						await this.nativeHostService.showItemInFolder(
-							fileCandidate.fsPath
+							fileCandidate.fsPath,
 						);
 					}
 				}
@@ -1449,35 +1449,35 @@ export class NativeWindow extends BaseWindow {
 											async (): Promise<IAddress> => {
 												return (
 													await this.remoteAuthorityResolverService.resolveAuthority(
-														remoteAuthority
+														remoteAuthority,
 													)
 												).authority;
 											},
-									}
+								  }
 								: undefined;
 						let tunnel = await this.tunnelService.getExistingTunnel(
 							portMappingRequest.address,
-							portMappingRequest.port
+							portMappingRequest.port,
 						);
 						if (!tunnel || typeof tunnel === "string") {
 							tunnel = await this.tunnelService.openTunnel(
 								addressProvider,
 								portMappingRequest.address,
-								portMappingRequest.port
+								portMappingRequest.port,
 							);
 						}
 						if (tunnel && typeof tunnel !== "string") {
 							const constTunnel = tunnel;
 							const addressAsUri = URI.parse(
-								constTunnel.localAddress
+								constTunnel.localAddress,
 							);
 							const resolved = addressAsUri.scheme.startsWith(
-								uri.scheme
+								uri.scheme,
 							)
 								? addressAsUri
 								: uri.with({
 										authority: constTunnel.localAddress,
-									});
+								  });
 							return {
 								resolved,
 								dispose: () => constTunnel.dispose(),
@@ -1519,8 +1519,8 @@ export class NativeWindow extends BaseWindow {
 		const scheduler: RunOnceScheduler = this.touchBarDisposables.add(
 			new RunOnceScheduler(
 				() => this.doUpdateTouchbarMenu(scheduler),
-				300
-			)
+				300,
+			),
 		);
 		scheduler.schedule();
 	}
@@ -1532,11 +1532,11 @@ export class NativeWindow extends BaseWindow {
 				this.editorGroupService.activeGroup.scopedContextKeyService;
 			this.touchBarMenu = this.menuService.createMenu(
 				MenuId.TouchBarContext,
-				scopedContextKeyService
+				scopedContextKeyService,
 			);
 			this.touchBarDisposables.add(this.touchBarMenu);
 			this.touchBarDisposables.add(
-				this.touchBarMenu.onDidChange(() => scheduler.schedule())
+				this.touchBarMenu.onDidChange(() => scheduler.schedule()),
 			);
 		}
 
@@ -1546,7 +1546,7 @@ export class NativeWindow extends BaseWindow {
 			this.configurationService.getValue("keyboard.touchbar.enabled") ===
 			false;
 		const touchbarIgnored = this.configurationService.getValue(
-			"keyboard.touchbar.ignored"
+			"keyboard.touchbar.ignored",
 		);
 		const ignoredItems = Array.isArray(touchbarIgnored)
 			? touchbarIgnored
@@ -1594,7 +1594,7 @@ export class NativeWindow extends BaseWindow {
 	private onAddFoldersRequest(request: IAddFoldersRequest): void {
 		// Buffer all pending requests
 		this.pendingFoldersToAdd.push(
-			...request.foldersToAdd.map((folder) => URI.revive(folder))
+			...request.foldersToAdd.map((folder) => URI.revive(folder)),
 		);
 
 		// Delay the adding of folders a bit to buffer in case more requests are coming
@@ -1628,17 +1628,17 @@ export class NativeWindow extends BaseWindow {
 				mergeMode
 					? request.filesToMerge
 					: diffMode
-						? request.filesToDiff
-						: request.filesToOpenOrCreate,
+					  ? request.filesToDiff
+					  : request.filesToOpenOrCreate,
 				this.fileService,
-				this.logService
-			)
+				this.logService,
+			),
 		);
 		if (inputs.length) {
 			const openedEditorPanes = await this.openResources(
 				inputs,
 				diffMode,
-				mergeMode
+				mergeMode,
 			);
 
 			if (request.filesToWait) {
@@ -1654,13 +1654,13 @@ export class NativeWindow extends BaseWindow {
 						URI.revive(request.filesToWait.waitMarkerFileUri),
 						coalesce(
 							request.filesToWait.paths.map((path) =>
-								URI.revive(path.fileUri)
-							)
-						)
+								URI.revive(path.fileUri),
+							),
+						),
 					);
 				} else {
 					return this.fileService.del(
-						URI.revive(request.filesToWait.waitMarkerFileUri)
+						URI.revive(request.filesToWait.waitMarkerFileUri),
 					);
 				}
 			}
@@ -1669,11 +1669,11 @@ export class NativeWindow extends BaseWindow {
 
 	private async trackClosedWaitFiles(
 		waitMarkerFile: URI,
-		resourcesToWaitFor: URI[]
+		resourcesToWaitFor: URI[],
 	): Promise<void> {
 		// Wait for the resources to be closed in the text editor...
 		await this.instantiationService.invokeFunction((accessor) =>
-			whenEditorClosed(accessor, resourcesToWaitFor)
+			whenEditorClosed(accessor, resourcesToWaitFor),
 		);
 
 		// ...before deleting the wait marker file
@@ -1685,7 +1685,7 @@ export class NativeWindow extends BaseWindow {
 			IResourceEditorInput | IUntitledTextResourceEditorInput
 		>,
 		diffMode: boolean,
-		mergeMode: boolean
+		mergeMode: boolean,
 	): Promise<readonly IEditorPane[]> {
 		const editors: IUntypedEditorInput[] = [];
 

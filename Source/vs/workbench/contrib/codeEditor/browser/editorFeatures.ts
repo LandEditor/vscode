@@ -10,9 +10,9 @@ import { getEditorFeatures } from "vs/editor/common/editorFeatures";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { Registry } from "vs/platform/registry/common/platform";
 import {
+	Extensions,
 	IWorkbenchContribution,
 	IWorkbenchContributionsRegistry,
-	Extensions,
 } from "vs/workbench/common/contributions";
 import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
@@ -66,9 +66,9 @@ class EditorFeaturesInstantiator
 }
 
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench
+	Extensions.Workbench,
 );
 workbenchRegistry.registerWorkbenchContribution(
 	EditorFeaturesInstantiator,
-	LifecyclePhase.Ready
+	LifecyclePhase.Ready,
 );

@@ -3,22 +3,39 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { IDragAndDropData } from "vs/base/browser/dnd";
+import { ActionBar } from "vs/base/browser/ui/actionbar/actionbar";
+import { IHighlight } from "vs/base/browser/ui/highlightedlabel/highlightedLabel";
+import { IListVirtualDelegate } from "vs/base/browser/ui/list/list";
+import { ElementsDragAndDropData } from "vs/base/browser/ui/list/listView";
+import { IListAccessibilityProvider } from "vs/base/browser/ui/list/listWidget";
+import {
+	IAsyncDataSource,
+	ITreeContextMenuEvent,
+	ITreeDragAndDrop,
+	ITreeDragOverReaction,
+	ITreeMouseEvent,
+	ITreeNode,
+} from "vs/base/browser/ui/tree/tree";
+import { IAction } from "vs/base/common/actions";
 import { RunOnceScheduler } from "vs/base/common/async";
-import { IViewletViewOptions } from "vs/workbench/browser/parts/views/viewsViewlet";
+import { Codicon } from "vs/base/common/codicons";
+import { FuzzyScore } from "vs/base/common/filters";
+import { localize } from "vs/nls";
+import { createAndFillInContextMenuActions } from "vs/platform/actions/browser/menuEntryActionViewItem";
 import {
-	IDebugService,
-	IExpression,
-	CONTEXT_WATCH_EXPRESSIONS_FOCUSED,
-	WATCH_VIEW_ID,
-	CONTEXT_WATCH_EXPRESSIONS_EXIST,
-	CONTEXT_WATCH_ITEM_TYPE,
-	CONTEXT_VARIABLE_IS_READONLY,
-	CONTEXT_CAN_VIEW_MEMORY,
-} from "vs/workbench/contrib/debug/common/debug";
+	Action2,
+	IMenu,
+	IMenuService,
+	MenuId,
+	registerAction2,
+} from "vs/platform/actions/common/actions";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
-	Expression,
-	Variable,
-} from "vs/workbench/contrib/debug/common/debugModel";
+	ContextKeyExpr,
+	IContextKey,
+	IContextKeyService,
+} from "vs/platform/contextkey/common/contextkey";
 import {
 	IContextMenuService,
 	IContextViewService,
@@ -28,60 +45,43 @@ import {
 	ServicesAccessor,
 } from "vs/platform/instantiation/common/instantiation";
 import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { IAction } from "vs/base/common/actions";
+import { WorkbenchAsyncDataTree } from "vs/platform/list/browser/listService";
+import { IOpenerService } from "vs/platform/opener/common/opener";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { IThemeService } from "vs/platform/theme/common/themeService";
 import {
-	renderExpressionValue,
-	renderViewTree,
-	IInputBoxOptions,
+	ViewAction,
+	ViewPane,
+} from "vs/workbench/browser/parts/views/viewPane";
+import { IViewletViewOptions } from "vs/workbench/browser/parts/views/viewsViewlet";
+import { IViewDescriptorService } from "vs/workbench/common/views";
+import {
 	AbstractExpressionsRenderer,
 	IExpressionTemplateData,
+	IInputBoxOptions,
+	renderExpressionValue,
+	renderViewTree,
 } from "vs/workbench/contrib/debug/browser/baseDebugView";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
-	ViewPane,
-	ViewAction,
-} from "vs/workbench/browser/parts/views/viewPane";
-import { ActionBar } from "vs/base/browser/ui/actionbar/actionbar";
-import { IListVirtualDelegate } from "vs/base/browser/ui/list/list";
-import { IListAccessibilityProvider } from "vs/base/browser/ui/list/listWidget";
-import { WorkbenchAsyncDataTree } from "vs/platform/list/browser/listService";
-import {
-	IAsyncDataSource,
-	ITreeMouseEvent,
-	ITreeContextMenuEvent,
-	ITreeDragAndDrop,
-	ITreeDragOverReaction,
-	ITreeNode,
-} from "vs/base/browser/ui/tree/tree";
-import { IDragAndDropData } from "vs/base/browser/dnd";
-import { ElementsDragAndDropData } from "vs/base/browser/ui/list/listView";
-import { FuzzyScore } from "vs/base/common/filters";
-import { IHighlight } from "vs/base/browser/ui/highlightedlabel/highlightedLabel";
+	watchExpressionsAdd,
+	watchExpressionsRemoveAll,
+} from "vs/workbench/contrib/debug/browser/debugIcons";
+import { LinkDetector } from "vs/workbench/contrib/debug/browser/linkDetector";
 import { VariablesRenderer } from "vs/workbench/contrib/debug/browser/variablesView";
 import {
-	IContextKeyService,
-	ContextKeyExpr,
-	IContextKey,
-} from "vs/platform/contextkey/common/contextkey";
-import { IViewDescriptorService } from "vs/workbench/common/views";
-import { IOpenerService } from "vs/platform/opener/common/opener";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+	CONTEXT_CAN_VIEW_MEMORY,
+	CONTEXT_VARIABLE_IS_READONLY,
+	CONTEXT_WATCH_EXPRESSIONS_EXIST,
+	CONTEXT_WATCH_EXPRESSIONS_FOCUSED,
+	CONTEXT_WATCH_ITEM_TYPE,
+	IDebugService,
+	IExpression,
+	WATCH_VIEW_ID,
+} from "vs/workbench/contrib/debug/common/debug";
 import {
-	watchExpressionsRemoveAll,
-	watchExpressionsAdd,
-} from "vs/workbench/contrib/debug/browser/debugIcons";
-import {
-	registerAction2,
-	MenuId,
-	Action2,
-	IMenuService,
-	IMenu,
-} from "vs/platform/actions/common/actions";
-import { localize } from "vs/nls";
-import { Codicon } from "vs/base/common/codicons";
-import { createAndFillInContextMenuActions } from "vs/platform/actions/browser/menuEntryActionViewItem";
-import { LinkDetector } from "vs/workbench/contrib/debug/browser/linkDetector";
+	Expression,
+	Variable,
+} from "vs/workbench/contrib/debug/common/debugModel";
 
 const MAX_VALUE_RENDER_LENGTH_IN_VIEWLET = 1024;
 let ignoreViewUpdates = false;
@@ -154,7 +154,7 @@ export class WatchExpressionsView extends ViewPane {
 		const treeContainer = renderViewTree(container);
 
 		const expressionsRenderer = this.instantiationService.createInstance(
-			WatchExpressionsRenderer
+			WatchExpressionsRenderer,
 		);
 		const linkeDetector =
 			this.instantiationService.createInstance(LinkDetector);
@@ -173,7 +173,7 @@ export class WatchExpressionsView extends ViewPane {
 				expressionsRenderer,
 				this.instantiationService.createInstance(
 					VariablesRenderer,
-					linkeDetector
+					linkeDetector,
 				),
 			],
 			new WatchExpressionsDataSource(),
@@ -202,14 +202,14 @@ export class WatchExpressionsView extends ViewPane {
 				overrideStyles: {
 					listBackground: this.getBackgroundColor(),
 				},
-			}
+			},
 		);
 		this.tree.setInput(this.debugService);
 		CONTEXT_WATCH_EXPRESSIONS_FOCUSED.bindTo(this.tree.contextKeyService);
 
 		this._register(this.tree.onContextMenu((e) => this.onContextMenu(e)));
 		this._register(
-			this.tree.onMouseDblClick((e) => this.onMouseDblClick(e))
+			this.tree.onMouseDblClick((e) => this.onMouseDblClick(e)),
 		);
 		this._register(
 			this.debugService
@@ -217,11 +217,9 @@ export class WatchExpressionsView extends ViewPane {
 				.onDidChangeWatchExpressions(async (we) => {
 					this.watchExpressionsExist.set(
 						this.debugService.getModel().getWatchExpressions()
-							.length > 0
+							.length > 0,
 					);
-					if (!this.isBodyVisible()) {
-						this.needsRefresh = true;
-					} else {
+					if (this.isBodyVisible()) {
 						if (we && !we.name) {
 							// We are adding a new input box, no need to re-evaluate watch expressions
 							useCachedEvaluation = true;
@@ -231,8 +229,10 @@ export class WatchExpressionsView extends ViewPane {
 						if (we instanceof Expression) {
 							this.tree.reveal(we);
 						}
+					} else {
+						this.needsRefresh = true;
 					}
-				})
+				}),
 		);
 		this._register(
 			this.debugService.getViewModel().onDidFocusStackFrame(() => {
@@ -244,14 +244,14 @@ export class WatchExpressionsView extends ViewPane {
 				if (!this.watchExpressionsUpdatedScheduler.isScheduled()) {
 					this.watchExpressionsUpdatedScheduler.schedule();
 				}
-			})
+			}),
 		);
 		this._register(
 			this.debugService.getViewModel().onWillUpdateViews(() => {
 				if (!ignoreViewUpdates) {
 					this.tree.updateChildren();
 				}
-			})
+			}),
 		);
 
 		this._register(
@@ -259,7 +259,7 @@ export class WatchExpressionsView extends ViewPane {
 				if (visible && this.needsRefresh) {
 					this.watchExpressionsUpdatedScheduler.schedule();
 				}
-			})
+			}),
 		);
 		let horizontalScrolling: boolean | undefined;
 		this._register(
@@ -284,7 +284,7 @@ export class WatchExpressionsView extends ViewPane {
 					});
 					horizontalScrolling = undefined;
 				}
-			})
+			}),
 		);
 
 		this._register(
@@ -295,7 +295,7 @@ export class WatchExpressionsView extends ViewPane {
 						await this.tree.updateChildren(e, false, true);
 						await this.tree.expand(e);
 					}
-				})
+				}),
 		);
 	}
 
@@ -316,7 +316,7 @@ export class WatchExpressionsView extends ViewPane {
 	private onMouseDblClick(e: ITreeMouseEvent<IExpression>): void {
 		if (
 			(e.browserEvent.target as HTMLElement).className.indexOf(
-				"twistie"
+				"twistie",
 			) >= 0
 		) {
 			// Ignore double click events on twistie
@@ -349,8 +349,8 @@ export class WatchExpressionsView extends ViewPane {
 			element instanceof Expression
 				? "expression"
 				: element instanceof Variable
-					? "variable"
-					: undefined
+				  ? "variable"
+				  : undefined,
 		);
 		const actions: IAction[] = [];
 		const attributes =
@@ -359,12 +359,12 @@ export class WatchExpressionsView extends ViewPane {
 				: undefined;
 		this.variableReadonly.set(
 			(!!attributes && attributes.indexOf("readOnly") >= 0) ||
-				!!element?.presentationHint?.lazy
+				!!element?.presentationHint?.lazy,
 		);
 		createAndFillInContextMenuActions(
 			this.menu,
 			{ arg: element, shouldForwardArgs: true },
-			actions
+			actions,
 		);
 		this.contextMenuService.showContextMenu({
 			getAnchor: () => e.anchor,
@@ -373,8 +373,8 @@ export class WatchExpressionsView extends ViewPane {
 				element && selection.includes(element)
 					? selection
 					: element
-						? [element]
-						: [],
+					  ? [element]
+					  : [],
 		});
 	}
 }
@@ -406,7 +406,7 @@ class WatchExpressionsDataSource
 	}
 
 	getChildren(
-		element: IDebugService | IExpression
+		element: IDebugService | IExpression,
 	): Promise<Array<IExpression>> {
 		if (isDebugService(element)) {
 			const debugService = element as IDebugService;
@@ -421,11 +421,11 @@ class WatchExpressionsDataSource
 								.evaluate(
 									viewModel.focusedSession!,
 									viewModel.focusedStackFrame!,
-									"watch"
+									"watch",
 								)
 								.then(() => we)
-						: Promise.resolve(we)
-				)
+						: Promise.resolve(we),
+				),
 			);
 		}
 
@@ -453,7 +453,7 @@ class WatchExpressionsRenderer extends AbstractExpressionsRenderer {
 	public override renderElement(
 		node: ITreeNode<IExpression, FuzzyScore>,
 		index: number,
-		data: IExpressionTemplateData
+		data: IExpressionTemplateData,
 	): void {
 		super.renderExpressionElement(node.element, node, data);
 	}
@@ -461,7 +461,7 @@ class WatchExpressionsRenderer extends AbstractExpressionsRenderer {
 	protected renderExpression(
 		expression: IExpression,
 		data: IExpressionTemplateData,
-		highlights: IHighlight[]
+		highlights: IHighlight[],
 	): void {
 		const text =
 			typeof expression.value === "string"
@@ -488,7 +488,7 @@ class WatchExpressionsRenderer extends AbstractExpressionsRenderer {
 
 	protected getInputBoxOptions(
 		expression: IExpression,
-		settingValue: boolean
+		settingValue: boolean,
 	): IInputBoxOptions {
 		if (settingValue) {
 			return {
@@ -515,24 +515,24 @@ class WatchExpressionsRenderer extends AbstractExpressionsRenderer {
 			initialValue: expression.name ? expression.name : "",
 			ariaLabel: localize(
 				"watchExpressionInputAriaLabel",
-				"Type watch expression"
+				"Type watch expression",
 			),
 			placeholder: localize(
 				"watchExpressionPlaceholder",
-				"Expression to watch"
+				"Expression to watch",
 			),
 			onFinish: (value: string, success: boolean) => {
 				if (success && value) {
 					this.debugService.renameWatchExpression(
 						expression.getId(),
-						value
+						value,
 					);
 					ignoreViewUpdates = true;
 					this.debugService.getViewModel().updateViews();
 					ignoreViewUpdates = false;
 				} else if (!expression.name) {
 					this.debugService.removeWatchExpressions(
-						expression.getId()
+						expression.getId(),
 					);
 				}
 			},
@@ -541,15 +541,15 @@ class WatchExpressionsRenderer extends AbstractExpressionsRenderer {
 
 	protected override renderActionBar(
 		actionBar: ActionBar,
-		expression: IExpression
+		expression: IExpression,
 	) {
 		const contextKeyService = getContextForWatchExpressionMenu(
 			this.contextKeyService,
-			expression
+			expression,
 		);
 		const menu = this.menuService.createMenu(
 			MenuId.DebugWatchContext,
-			contextKeyService
+			contextKeyService,
 		);
 
 		const primary: IAction[] = [];
@@ -558,7 +558,7 @@ class WatchExpressionsRenderer extends AbstractExpressionsRenderer {
 			menu,
 			{ arg: context, shouldForwardArgs: false },
 			{ primary, secondary: [] },
-			"inline"
+			"inline",
 		);
 
 		actionBar.clear();
@@ -572,7 +572,7 @@ class WatchExpressionsRenderer extends AbstractExpressionsRenderer {
  */
 function getContextForWatchExpressionMenu(
 	parentContext: IContextKeyService,
-	expression: IExpression
+	expression: IExpression,
 ) {
 	return parentContext.createOverlay([
 		[CONTEXT_CAN_VIEW_MEMORY.key, expression.memoryReference !== undefined],
@@ -589,7 +589,7 @@ class WatchExpressionsAccessibilityProvider
 				comment: ["Debug is a noun in this context, not a verb."],
 				key: "watchAriaTreeLabel",
 			},
-			"Debug Watch Expressions"
+			"Debug Watch Expressions",
 		);
 	}
 
@@ -599,7 +599,7 @@ class WatchExpressionsAccessibilityProvider
 				"watchExpressionAriaLabel",
 				"{0}, value {1}",
 				(<Expression>element).name,
-				(<Expression>element).value
+				(<Expression>element).value,
 			);
 		}
 
@@ -608,7 +608,7 @@ class WatchExpressionsAccessibilityProvider
 			"watchVariableAriaLabel",
 			"{0}, value {1}",
 			(<Variable>element).name,
-			(<Variable>element).value
+			(<Variable>element).value,
 		);
 	}
 }
@@ -687,7 +687,7 @@ registerAction2(
 		runInView(_accessor: ServicesAccessor, view: WatchExpressionsView) {
 			view.collapseAll();
 		}
-	}
+	},
 );
 
 export const ADD_WATCH_ID = "workbench.debug.viewlet.action.addWatchExpression"; // Use old and long id for backwards compatibility
@@ -713,14 +713,14 @@ registerAction2(
 			const debugService = accessor.get(IDebugService);
 			debugService.addWatchExpression();
 		}
-	}
+	},
 );
 
 export const REMOVE_WATCH_EXPRESSIONS_COMMAND_ID =
 	"workbench.debug.viewlet.action.removeAllWatchExpressions";
 export const REMOVE_WATCH_EXPRESSIONS_LABEL = localize(
 	"removeAllWatchExpressions",
-	"Remove All Expressions"
+	"Remove All Expressions",
 );
 registerAction2(
 	class RemoveAllWatchExpressionsAction extends Action2 {
@@ -744,5 +744,5 @@ registerAction2(
 			const debugService = accessor.get(IDebugService);
 			debugService.removeWatchExpressions();
 		}
-	}
+	},
 );

@@ -3,17 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+// Importing types is safe in any layer
+// eslint-disable-next-line local/code-import-patterns
+import type { IMarker, Terminal } from "@xterm/headless";
 import { Emitter } from "vs/base/common/event";
 import { DisposableStore } from "vs/base/common/lifecycle";
 import {
 	IPartialCommandDetectionCapability,
 	TerminalCapability,
 } from "vs/platform/terminal/common/capabilities/capabilities";
-// Importing types is safe in any layer
-// eslint-disable-next-line local/code-import-patterns
-import type { IMarker, Terminal } from "@xterm/headless";
 
-const enum Constants {
+enum Constants {
 	/**
 	 * The minimum size of the prompt in which to assume the line is a command.
 	 */
@@ -54,8 +54,8 @@ export class PartialCommandDetectionCapability
 					}
 					// We don't want to override xterm.js' default behavior, just augment it
 					return false;
-				}
-			)
+				},
+			),
 		);
 	}
 

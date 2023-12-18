@@ -7,11 +7,17 @@ import { Schemas } from "vs/base/common/network";
 import { OperatingSystem } from "vs/base/common/platform";
 import { URI } from "vs/base/common/uri";
 import { ICommandService } from "vs/platform/commands/common/commands";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { ITextEditorSelection } from "vs/platform/editor/common/editor";
 import { IFileService } from "vs/platform/files/common/files";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { IOpenerService } from "vs/platform/opener/common/opener";
 import { IQuickInputService } from "vs/platform/quickinput/common/quickInput";
+import {
+	ITerminalCapabilityStore,
+	TerminalCapability,
+} from "vs/platform/terminal/common/capabilities/capabilities";
+import { ITerminalLogService } from "vs/platform/terminal/common/terminal";
 import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
 import {
 	ITerminalLinkOpener,
@@ -21,18 +27,12 @@ import {
 	osPathModule,
 	updateLinkWithRelativeCwd,
 } from "vs/workbench/contrib/terminalContrib/links/browser/terminalLinkHelpers";
-import {
-	ITerminalCapabilityStore,
-	TerminalCapability,
-} from "vs/platform/terminal/common/capabilities/capabilities";
+import { getLinkSuffix } from "vs/workbench/contrib/terminalContrib/links/browser/terminalLinkParsing";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
 import { IHostService } from "vs/workbench/services/host/browser/host";
 import { QueryBuilder } from "vs/workbench/services/search/common/queryBuilder";
 import { ISearchService } from "vs/workbench/services/search/common/search";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { getLinkSuffix } from "vs/workbench/contrib/terminalContrib/links/browser/terminalLinkParsing";
-import { ITerminalLogService } from "vs/platform/terminal/common/terminal";
 
 export class TerminalLocalFileLinkOpener implements ITerminalLinkOpener {
 	constructor(
@@ -56,7 +56,7 @@ export class TerminalLocalFileLinkOpener implements ITerminalLinkOpener {
 							startColumn: linkSuffix.col ?? 1,
 							endLineNumber: linkSuffix.rowEnd,
 							endColumn: linkSuffix.colEnd,
-						};
+					  };
 		}
 		await this._editorService.openEditor({
 			resource: link.uri,
@@ -75,7 +75,7 @@ export class TerminalLocalFolderInWorkspaceLinkOpener
 	async open(link: ITerminalSimpleLink): Promise<void> {
 		if (!link.uri) {
 			throw new Error(
-				"Tried to open folder in workspace link without a resolved URI"
+				"Tried to open folder in workspace link without a resolved URI",
 			);
 		}
 		await this._commandService.executeCommand("revealInExplorer", link.uri);
@@ -90,7 +90,7 @@ export class TerminalLocalFolderOutsideWorkspaceLinkOpener
 	async open(link: ITerminalSimpleLink): Promise<void> {
 		if (!link.uri) {
 			throw new Error(
-				"Tried to open folder in workspace link without a resolved URI"
+				"Tried to open folder in workspace link without a resolved URI",
 			);
 		}
 		this._hostService.openWindow([{ folderUri: link.uri }], {
@@ -165,7 +165,7 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
 					link.bufferRange.start.y,
 					text,
 					osPath,
-					this._logService
+					this._logService,
 				)?.[0] || text;
 		}
 
@@ -187,7 +187,7 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
 	}
 
 	private async _getExactMatch(
-		sanitizedLink: string
+		sanitizedLink: string,
 	): Promise<IResourceMatch | undefined> {
 		// Make the link relative to the cwd if it isn't absolute
 		const os = this._getOS();
@@ -237,8 +237,8 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
 					{
 						filePattern: sanitizedLink,
 						maxResults: 2,
-					}
-				)
+					},
+				),
 			);
 			if (results.results.length > 0) {
 				if (results.results.length === 1) {
@@ -257,12 +257,12 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
 								.folders,
 							{
 								filePattern: `**/${sanitizedLink}`,
-							}
-						)
+							},
+						),
 					);
 					// Find an exact match if it exists
 					const exactMatches = results.results.filter((e) =>
-						e.resource.toString().endsWith(sanitizedLink)
+						e.resource.toString().endsWith(sanitizedLink),
 					);
 					if (exactMatches.length === 1) {
 						resourceMatch = { uri: exactMatches[0].resource };
@@ -275,7 +275,7 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
 
 	private async _tryOpenExactLink(
 		text: string,
-		link: ITerminalSimpleLink
+		link: ITerminalSimpleLink,
 	): Promise<boolean> {
 		const sanitizedLink = text.replace(/:\d+(:\d+)?$/, "");
 		try {

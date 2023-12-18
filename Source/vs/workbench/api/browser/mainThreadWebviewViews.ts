@@ -7,6 +7,7 @@ import { CancellationToken } from "vs/base/common/cancellation";
 import { onUnexpectedError } from "vs/base/common/errors";
 import { Disposable, DisposableMap } from "vs/base/common/lifecycle";
 import { generateUuid } from "vs/base/common/uuid";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import {
 	MainThreadWebviews,
 	reviveWebviewExtension,
@@ -17,7 +18,6 @@ import {
 	IWebviewViewService,
 	WebviewView,
 } from "vs/workbench/contrib/webviewView/browser/webviewViewService";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import { IExtHostContext } from "vs/workbench/services/extensions/common/extHostCustomers";
 
 export class MainThreadWebviewsViews
@@ -27,10 +27,10 @@ export class MainThreadWebviewsViews
 	private readonly _proxy: extHostProtocol.ExtHostWebviewViewsShape;
 
 	private readonly _webviewViews = this._register(
-		new DisposableMap<string, WebviewView>()
+		new DisposableMap<string, WebviewView>(),
 	);
 	private readonly _webviewViewProviders = this._register(
-		new DisposableMap<string>()
+		new DisposableMap<string>(),
 	);
 
 	constructor(
@@ -50,7 +50,7 @@ export class MainThreadWebviewsViews
 
 	public $setWebviewViewTitle(
 		handle: extHostProtocol.WebviewHandle,
-		value: string | undefined
+		value: string | undefined,
 	): void {
 		const webviewView = this.getWebviewView(handle);
 		webviewView.title = value;
@@ -58,7 +58,7 @@ export class MainThreadWebviewsViews
 
 	public $setWebviewViewDescription(
 		handle: extHostProtocol.WebviewHandle,
-		value: string | undefined
+		value: string | undefined,
 	): void {
 		const webviewView = this.getWebviewView(handle);
 		webviewView.description = value;
@@ -66,7 +66,7 @@ export class MainThreadWebviewsViews
 
 	public $setWebviewViewBadge(
 		handle: string,
-		badge: IViewBadge | undefined
+		badge: IViewBadge | undefined,
 	): void {
 		const webviewView = this.getWebviewView(handle);
 		webviewView.badge = badge;
@@ -74,7 +74,7 @@ export class MainThreadWebviewsViews
 
 	public $show(
 		handle: extHostProtocol.WebviewHandle,
-		preserveFocus: boolean
+		preserveFocus: boolean,
 	): void {
 		const webviewView = this.getWebviewView(handle);
 		webviewView.show(preserveFocus);
@@ -86,7 +86,7 @@ export class MainThreadWebviewsViews
 		options: {
 			retainContextWhenHidden?: boolean;
 			serializeBuffersForPostMessage: boolean;
-		}
+		},
 	): void {
 		if (this._webviewViewProviders.has(viewType)) {
 			throw new Error(`View provider for ${viewType} already registered`);
@@ -97,7 +97,7 @@ export class MainThreadWebviewsViews
 		const registration = this._webviewViewService.register(viewType, {
 			resolve: async (
 				webviewView: WebviewView,
-				cancellation: CancellationToken
+				cancellation: CancellationToken,
 			) => {
 				const handle = generateUuid();
 
@@ -108,7 +108,7 @@ export class MainThreadWebviewsViews
 					{
 						serializeBuffersForPostMessage:
 							options.serializeBuffersForPostMessage,
-					}
+					},
 				);
 
 				let state = undefined;
@@ -119,7 +119,7 @@ export class MainThreadWebviewsViews
 						console.error(
 							"Could not load webview state",
 							e,
-							webviewView.webview.state
+							webviewView.webview.state,
 						);
 					}
 				}
@@ -133,7 +133,7 @@ export class MainThreadWebviewsViews
 				webviewView.onDidChangeVisibility((visible) => {
 					this._proxy.$onDidChangeWebviewViewVisibility(
 						handle,
-						visible
+						visible,
 					);
 				});
 
@@ -174,14 +174,14 @@ export class MainThreadWebviewsViews
 						viewType,
 						webviewView.title,
 						state,
-						cancellation
+						cancellation,
 					);
 				} catch (error) {
 					onUnexpectedError(error);
 					webviewView.webview.setHtml(
 						this.mainThreadWebviews.getWebviewResolvedFailedContent(
-							viewType
-						)
+							viewType,
+						),
 					);
 				}
 			},

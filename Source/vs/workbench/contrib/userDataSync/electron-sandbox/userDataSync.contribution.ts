@@ -3,60 +3,60 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Schemas } from "vs/base/common/network";
+import { localize, localize2 } from "vs/nls";
 import {
-	IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
-	IWorkbenchContribution,
-} from "vs/workbench/common/contributions";
-import {
-	IUserDataSyncUtilService,
-	SyncStatus,
-} from "vs/platform/userDataSync/common/userDataSync";
-import { Registry } from "vs/platform/registry/common/platform";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { ISharedProcessService } from "vs/platform/ipc/electron-sandbox/services";
-import { UserDataSycnUtilServiceChannel } from "vs/platform/userDataSync/common/userDataSyncIpc";
-import {
-	registerAction2,
 	Action2,
 	MenuId,
+	registerAction2,
 } from "vs/platform/actions/common/actions";
-import { localize, localize2 } from "vs/nls";
-import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
 import { IEnvironmentService } from "vs/platform/environment/common/environment";
 import { IFileService } from "vs/platform/files/common/files";
+import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+import { ISharedProcessService } from "vs/platform/ipc/electron-sandbox/services";
 import { INativeHostService } from "vs/platform/native/common/native";
 import {
 	INotificationService,
 	Severity,
 } from "vs/platform/notification/common/notification";
+import { Registry } from "vs/platform/registry/common/platform";
+import {
+	IUserDataSyncUtilService,
+	SyncStatus,
+} from "vs/platform/userDataSync/common/userDataSync";
+import { UserDataSycnUtilServiceChannel } from "vs/platform/userDataSync/common/userDataSyncIpc";
+import {
+	Extensions as WorkbenchExtensions,
+	IWorkbenchContribution,
+	IWorkbenchContributionsRegistry,
+} from "vs/workbench/common/contributions";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 import {
 	CONTEXT_SYNC_STATE,
 	DOWNLOAD_ACTIVITY_ACTION_DESCRIPTOR,
 	IUserDataSyncWorkbenchService,
 	SYNC_TITLE,
 } from "vs/workbench/services/userDataSync/common/userDataSync";
-import { Schemas } from "vs/base/common/network";
 
 class UserDataSyncServicesContribution implements IWorkbenchContribution {
 	constructor(
 		@IUserDataSyncUtilService
 		userDataSyncUtilService: IUserDataSyncUtilService,
-		@ISharedProcessService sharedProcessService: ISharedProcessService
+		@ISharedProcessService sharedProcessService: ISharedProcessService,
 	) {
 		sharedProcessService.registerChannel(
 			"userDataSyncUtil",
-			new UserDataSycnUtilServiceChannel(userDataSyncUtilService)
+			new UserDataSycnUtilServiceChannel(userDataSyncUtilService),
 		);
 	}
 }
 
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 );
 workbenchRegistry.registerWorkbenchContribution(
 	UserDataSyncServicesContribution,
-	LifecyclePhase.Starting
+	LifecyclePhase.Starting,
 );
 
 registerAction2(
@@ -66,13 +66,13 @@ registerAction2(
 				id: "workbench.userData.actions.openSyncBackupsFolder",
 				title: localize2(
 					"Open Backup folder",
-					"Open Local Backups Folder"
+					"Open Local Backups Folder",
 				),
 				category: SYNC_TITLE,
 				menu: {
 					id: MenuId.CommandPalette,
 					when: CONTEXT_SYNC_STATE.notEqualsTo(
-						SyncStatus.Uninitialized
+						SyncStatus.Uninitialized,
 					),
 				},
 			});
@@ -89,18 +89,18 @@ registerAction2(
 						? folderStat.children[0].resource
 						: syncHome;
 				return nativeHostService.showItemInFolder(
-					item.with({ scheme: Schemas.file }).fsPath
+					item.with({ scheme: Schemas.file }).fsPath,
 				);
 			} else {
 				notificationService.info(
 					localize(
 						"no backups",
-						"Local backups folder does not exist"
-					)
+						"Local backups folder does not exist",
+					),
 				);
 			}
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -111,7 +111,7 @@ registerAction2(
 
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const userDataSyncWorkbenchService = accessor.get(
-				IUserDataSyncWorkbenchService
+				IUserDataSyncWorkbenchService,
 			);
 			const notificationService = accessor.get(INotificationService);
 			const hostService = accessor.get(INativeHostService);
@@ -122,7 +122,7 @@ registerAction2(
 					Severity.Info,
 					localize(
 						"download sync activity complete",
-						"Successfully downloaded Settings Sync activity."
+						"Successfully downloaded Settings Sync activity.",
 					),
 					[
 						{
@@ -130,9 +130,9 @@ registerAction2(
 							run: () =>
 								hostService.showItemInFolder(folder.fsPath),
 						},
-					]
+					],
 				);
 			}
 		}
-	}
+	},
 );

@@ -3,18 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Disposable } from "vs/base/common/lifecycle";
+import { URI, UriComponents } from "vs/base/common/uri";
+import { IFileService } from "vs/platform/files/common/files";
+import { ILanguagePackService } from "vs/platform/languagePacks/common/languagePacks";
 import {
 	MainContext,
 	MainThreadLocalizationShape,
 } from "vs/workbench/api/common/extHost.protocol";
 import {
-	extHostNamedCustomer,
 	IExtHostContext,
+	extHostNamedCustomer,
 } from "vs/workbench/services/extensions/common/extHostCustomers";
-import { URI, UriComponents } from "vs/base/common/uri";
-import { IFileService } from "vs/platform/files/common/files";
-import { Disposable } from "vs/base/common/lifecycle";
-import { ILanguagePackService } from "vs/platform/languagePacks/common/languagePacks";
 
 @extHostNamedCustomer(MainContext.MainThreadLocalization)
 export class MainThreadLocalization
@@ -32,13 +32,13 @@ export class MainThreadLocalization
 
 	async $fetchBuiltInBundleUri(
 		id: string,
-		language: string
+		language: string,
 	): Promise<URI | undefined> {
 		try {
 			const uri =
 				await this.languagePackService.getBuiltInExtensionTranslationsUri(
 					id,
-					language
+					language,
 				);
 			return uri;
 		} catch (e) {
@@ -48,7 +48,7 @@ export class MainThreadLocalization
 
 	async $fetchBundleContents(uriComponents: UriComponents): Promise<string> {
 		const contents = await this.fileService.readFile(
-			URI.revive(uriComponents)
+			URI.revive(uriComponents),
 		);
 		return contents.value.toString();
 	}

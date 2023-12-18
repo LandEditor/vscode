@@ -14,7 +14,7 @@ export function parseTerminalUri(resource: URI): ITerminalIdentifier {
 	const [, workspaceId, instanceId] = resource.path.split("/");
 	if (!workspaceId || !Number.parseInt(instanceId)) {
 		throw new Error(
-			`Could not parse terminal uri for resource ${resource}`
+			`Could not parse terminal uri for resource ${resource}`,
 		);
 	}
 	return { workspaceId, instanceId: Number.parseInt(instanceId) };
@@ -23,7 +23,7 @@ export function parseTerminalUri(resource: URI): ITerminalIdentifier {
 export function getTerminalUri(
 	workspaceId: string,
 	instanceId: number,
-	title?: string
+	title?: string,
 ): URI {
 	return URI.from({
 		scheme: Schemas.vscodeTerminal,
@@ -42,10 +42,10 @@ export interface IPartialDragEvent {
 }
 
 export function getTerminalResourcesFromDragEvent(
-	event: IPartialDragEvent
+	event: IPartialDragEvent,
 ): URI[] | undefined {
 	const resources = event.dataTransfer?.getData(
-		TerminalDataTransfers.Terminals
+		TerminalDataTransfers.Terminals,
 	);
 	if (resources) {
 		const json = JSON.parse(resources);

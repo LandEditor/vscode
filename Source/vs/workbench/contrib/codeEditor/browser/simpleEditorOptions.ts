@@ -3,19 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IEditorOptions } from "vs/editor/common/config/editorOptions";
+import { EditorExtensionsRegistry } from "vs/editor/browser/editorExtensions";
 import { ICodeEditorWidgetOptions } from "vs/editor/browser/widget/codeEditorWidget";
+import { IEditorOptions } from "vs/editor/common/config/editorOptions";
 import { ContextMenuController } from "vs/editor/contrib/contextmenu/browser/contextmenu";
 import { SnippetController2 } from "vs/editor/contrib/snippet/browser/snippetController2";
 import { SuggestController } from "vs/editor/contrib/suggest/browser/suggestController";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { MenuPreventer } from "vs/workbench/contrib/codeEditor/browser/menuPreventer";
 import { SelectionClipboardContributionID } from "vs/workbench/contrib/codeEditor/browser/selectionClipboard";
 import { TabCompletionController } from "vs/workbench/contrib/snippets/browser/tabCompletion";
-import { EditorExtensionsRegistry } from "vs/editor/browser/editorExtensions";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 
 export function getSimpleEditorOptions(
-	configurationService: IConfigurationService
+	configurationService: IConfigurationService,
 ): IEditorOptions {
 	return {
 		wordWrap: "on",

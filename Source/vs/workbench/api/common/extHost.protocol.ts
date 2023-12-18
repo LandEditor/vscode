@@ -224,7 +224,7 @@ export interface IConfigurationInitData extends IConfigurationData {
 	configurationScopes: [string, ConfigurationScope | undefined][];
 }
 
-export interface IMainContext extends IRPCProtocol {}
+export type IMainContext = IRPCProtocol;
 
 // --- main thread
 
@@ -240,7 +240,7 @@ export interface MainThreadCommandsShape extends IDisposable {
 	$executeCommand(
 		id: string,
 		args: any[] | SerializableObjectWithBuffers<any[]>,
-		retry: boolean
+		retry: boolean,
 	): Promise<unknown | undefined>;
 	$getCommands(): Promise<string[]>;
 }
@@ -280,12 +280,12 @@ export interface MainThreadCommentsShape extends IDisposable {
 		handle: number,
 		id: string,
 		label: string,
-		extensionId: string
+		extensionId: string,
 	): void;
 	$unregisterCommentController(handle: number): void;
 	$updateCommentControllerFeatures(
 		handle: number,
-		features: CommentProviderFeatures
+		features: CommentProviderFeatures,
 	): void;
 	$createCommentThread(
 		handle: number,
@@ -294,14 +294,14 @@ export interface MainThreadCommentsShape extends IDisposable {
 		resource: UriComponents,
 		range: IRange | ICellRange | undefined,
 		extensionId: ExtensionIdentifier,
-		isTemplate: boolean
+		isTemplate: boolean,
 	): languages.CommentThread<IRange | ICellRange> | undefined;
 	$updateCommentThread(
 		handle: number,
 		commentThreadHandle: number,
 		threadId: string,
 		resource: UriComponents,
-		changes: CommentThreadChanges
+		changes: CommentThreadChanges,
 	): void;
 	$deleteCommentThread(handle: number, commentThreadHandle: number): void;
 	$updateCommentingRanges(handle: number): void;
@@ -316,13 +316,13 @@ export interface MainThreadAuthenticationShape extends IDisposable {
 	$registerAuthenticationProvider(
 		id: string,
 		label: string,
-		supportsMultipleAccounts: boolean
+		supportsMultipleAccounts: boolean,
 	): void;
 	$unregisterAuthenticationProvider(id: string): void;
 	$ensureProvider(id: string): Promise<void>;
 	$sendDidChangeSessions(
 		providerId: string,
-		event: AuthenticationSessionsChangeEvent
+		event: AuthenticationSessionsChangeEvent,
 	): void;
 	$getSession(
 		providerId: string,
@@ -333,13 +333,13 @@ export interface MainThreadAuthenticationShape extends IDisposable {
 			createIfNone?: boolean;
 			forceNewSession?: boolean | AuthenticationForceNewSessionOptions;
 			clearSessionPreference?: boolean;
-		}
+		},
 	): Promise<AuthenticationSession | undefined>;
 	$getSessions(
 		providerId: string,
 		scopes: readonly string[],
 		extensionId: string,
-		extensionName: string
+		extensionName: string,
 	): Promise<AuthenticationSession[]>;
 	$removeSession(providerId: string, sessionId: string): Promise<void>;
 }
@@ -349,7 +349,7 @@ export interface MainThreadSecretStateShape extends IDisposable {
 	$setPassword(
 		extensionId: string,
 		key: string,
-		value: string
+		value: string,
 	): Promise<void>;
 	$deletePassword(extensionId: string, key: string): Promise<void>;
 }
@@ -360,20 +360,20 @@ export interface MainThreadConfigurationShape extends IDisposable {
 		key: string,
 		value: any,
 		overrides: IConfigurationOverrides | undefined,
-		scopeToLanguage: boolean | undefined
+		scopeToLanguage: boolean | undefined,
 	): Promise<void>;
 	$removeConfigurationOption(
 		target: ConfigurationTarget | null,
 		key: string,
 		overrides: IConfigurationOverrides | undefined,
-		scopeToLanguage: boolean | undefined
+		scopeToLanguage: boolean | undefined,
 	): Promise<void>;
 }
 
 export interface MainThreadDiagnosticsShape extends IDisposable {
 	$changeMany(
 		owner: string,
-		entries: [UriComponents, IMarkerData[] | undefined][]
+		entries: [UriComponents, IMarkerData[] | undefined][],
 	): void;
 	$clear(owner: string): void;
 }
@@ -398,10 +398,10 @@ export interface MainThreadDialogSaveOptions {
 
 export interface MainThreadDiaglogsShape extends IDisposable {
 	$showOpenDialog(
-		options?: MainThreadDialogOpenOptions
+		options?: MainThreadDialogOpenOptions,
 	): Promise<UriComponents[] | undefined>;
 	$showSaveDialog(
-		options?: MainThreadDialogSaveOptions
+		options?: MainThreadDialogSaveOptions,
 	): Promise<UriComponents | undefined>;
 }
 
@@ -470,55 +470,55 @@ export interface MainThreadBulkEditsShape extends IDisposable {
 	$tryApplyWorkspaceEdit(
 		workspaceEditDto: IWorkspaceEditDto,
 		undoRedoGroupId?: number,
-		respectAutoSaveConfig?: boolean
+		respectAutoSaveConfig?: boolean,
 	): Promise<boolean>;
 }
 
 export interface MainThreadTextEditorsShape extends IDisposable {
 	$tryShowTextDocument(
 		resource: UriComponents,
-		options: ITextDocumentShowOptions
+		options: ITextDocumentShowOptions,
 	): Promise<string | undefined>;
 	$registerTextEditorDecorationType(
 		extensionId: ExtensionIdentifier,
 		key: string,
-		options: editorCommon.IDecorationRenderOptions
+		options: editorCommon.IDecorationRenderOptions,
 	): void;
 	$removeTextEditorDecorationType(key: string): void;
 	$tryShowEditor(id: string, position: EditorGroupColumn): Promise<void>;
 	$tryHideEditor(id: string): Promise<void>;
 	$trySetOptions(
 		id: string,
-		options: ITextEditorConfigurationUpdate
+		options: ITextEditorConfigurationUpdate,
 	): Promise<void>;
 	$trySetDecorations(
 		id: string,
 		key: string,
-		ranges: editorCommon.IDecorationOptions[]
+		ranges: editorCommon.IDecorationOptions[],
 	): Promise<void>;
 	$trySetDecorationsFast(
 		id: string,
 		key: string,
-		ranges: number[]
+		ranges: number[],
 	): Promise<void>;
 	$tryRevealRange(
 		id: string,
 		range: IRange,
-		revealType: TextEditorRevealType
+		revealType: TextEditorRevealType,
 	): Promise<void>;
 	$trySetSelections(id: string, selections: ISelection[]): Promise<void>;
 	$tryApplyEdits(
 		id: string,
 		modelVersionId: number,
 		edits: ISingleEditOperation[],
-		opts: IApplyEditsOptions
+		opts: IApplyEditsOptions,
 	): Promise<boolean>;
 	$tryInsertSnippet(
 		id: string,
 		modelVersionId: number,
 		template: string,
 		selections: readonly IRange[],
-		opts: IUndoStopOptions
+		opts: IUndoStopOptions,
 	): Promise<boolean>;
 	$getDiffInformation(id: string): Promise<IChange[]>;
 }
@@ -534,28 +534,28 @@ export interface MainThreadTreeViewsShape extends IDisposable {
 			hasHandleDrag: boolean;
 			hasHandleDrop: boolean;
 			manuallyManageCheckboxes: boolean;
-		}
+		},
 	): Promise<void>;
 	$refresh(
 		treeViewId: string,
-		itemsToRefresh?: { [treeItemHandle: string]: ITreeItem }
+		itemsToRefresh?: { [treeItemHandle: string]: ITreeItem },
 	): Promise<void>;
 	$reveal(
 		treeViewId: string,
 		itemInfo: { item: ITreeItem; parentChain: ITreeItem[] } | undefined,
-		options: IRevealOptions
+		options: IRevealOptions,
 	): Promise<void>;
 	$setMessage(treeViewId: string, message: string | IMarkdownString): void;
 	$setTitle(
 		treeViewId: string,
 		title: string,
-		description: string | undefined
+		description: string | undefined,
 	): void;
 	$setBadge(treeViewId: string, badge: IViewBadge | undefined): void;
 	$resolveDropFileData(
 		destinationViewId: string,
 		requestId: number,
-		dataItemId: string
+		dataItemId: string,
 	): Promise<VSBuffer>;
 	$disposeTree(treeViewId: string): Promise<void>;
 }
@@ -668,192 +668,192 @@ export interface MainThreadLanguageFeaturesShape extends IDisposable {
 	$registerDocumentSymbolProvider(
 		handle: number,
 		selector: IDocumentFilterDto[],
-		label: string
+		label: string,
 	): void;
 	$registerCodeLensSupport(
 		handle: number,
 		selector: IDocumentFilterDto[],
-		eventHandle: number | undefined
+		eventHandle: number | undefined,
 	): void;
 	$emitCodeLensEvent(eventHandle: number, event?: any): void;
 	$registerDefinitionSupport(
 		handle: number,
-		selector: IDocumentFilterDto[]
+		selector: IDocumentFilterDto[],
 	): void;
 	$registerDeclarationSupport(
 		handle: number,
-		selector: IDocumentFilterDto[]
+		selector: IDocumentFilterDto[],
 	): void;
 	$registerImplementationSupport(
 		handle: number,
-		selector: IDocumentFilterDto[]
+		selector: IDocumentFilterDto[],
 	): void;
 	$registerTypeDefinitionSupport(
 		handle: number,
-		selector: IDocumentFilterDto[]
+		selector: IDocumentFilterDto[],
 	): void;
 	$registerHoverProvider(
 		handle: number,
-		selector: IDocumentFilterDto[]
+		selector: IDocumentFilterDto[],
 	): void;
 	$registerEvaluatableExpressionProvider(
 		handle: number,
-		selector: IDocumentFilterDto[]
+		selector: IDocumentFilterDto[],
 	): void;
 	$registerInlineValuesProvider(
 		handle: number,
 		selector: IDocumentFilterDto[],
-		eventHandle: number | undefined
+		eventHandle: number | undefined,
 	): void;
 	$emitInlineValuesEvent(eventHandle: number, event?: any): void;
 	$registerDocumentHighlightProvider(
 		handle: number,
-		selector: IDocumentFilterDto[]
+		selector: IDocumentFilterDto[],
 	): void;
 	$registerMultiDocumentHighlightProvider(
 		handle: number,
-		selector: IDocumentFilterDto[]
+		selector: IDocumentFilterDto[],
 	): void;
 	$registerLinkedEditingRangeProvider(
 		handle: number,
-		selector: IDocumentFilterDto[]
+		selector: IDocumentFilterDto[],
 	): void;
 	$registerReferenceSupport(
 		handle: number,
-		selector: IDocumentFilterDto[]
+		selector: IDocumentFilterDto[],
 	): void;
 	$registerQuickFixSupport(
 		handle: number,
 		selector: IDocumentFilterDto[],
 		metadata: ICodeActionProviderMetadataDto,
 		displayName: string,
-		supportsResolve: boolean
+		supportsResolve: boolean,
 	): void;
 	$registerPasteEditProvider(
 		handle: number,
 		selector: IDocumentFilterDto[],
 		id: string,
-		metadata: IPasteEditProviderMetadataDto
+		metadata: IPasteEditProviderMetadataDto,
 	): void;
 	$registerDocumentFormattingSupport(
 		handle: number,
 		selector: IDocumentFilterDto[],
 		extensionId: ExtensionIdentifier,
-		displayName: string
+		displayName: string,
 	): void;
 	$registerRangeFormattingSupport(
 		handle: number,
 		selector: IDocumentFilterDto[],
 		extensionId: ExtensionIdentifier,
 		displayName: string,
-		supportRanges: boolean
+		supportRanges: boolean,
 	): void;
 	$registerOnTypeFormattingSupport(
 		handle: number,
 		selector: IDocumentFilterDto[],
 		autoFormatTriggerCharacters: string[],
-		extensionId: ExtensionIdentifier
+		extensionId: ExtensionIdentifier,
 	): void;
 	$registerNavigateTypeSupport(
 		handle: number,
-		supportsResolve: boolean
+		supportsResolve: boolean,
 	): void;
 	$registerRenameSupport(
 		handle: number,
 		selector: IDocumentFilterDto[],
-		supportsResolveInitialValues: boolean
+		supportsResolveInitialValues: boolean,
 	): void;
 	$registerDocumentSemanticTokensProvider(
 		handle: number,
 		selector: IDocumentFilterDto[],
 		legend: languages.SemanticTokensLegend,
-		eventHandle: number | undefined
+		eventHandle: number | undefined,
 	): void;
 	$emitDocumentSemanticTokensEvent(eventHandle: number): void;
 	$registerDocumentRangeSemanticTokensProvider(
 		handle: number,
 		selector: IDocumentFilterDto[],
-		legend: languages.SemanticTokensLegend
+		legend: languages.SemanticTokensLegend,
 	): void;
 	$registerCompletionsProvider(
 		handle: number,
 		selector: IDocumentFilterDto[],
 		triggerCharacters: string[],
 		supportsResolveDetails: boolean,
-		extensionId: ExtensionIdentifier
+		extensionId: ExtensionIdentifier,
 	): void;
 	$registerInlineCompletionsSupport(
 		handle: number,
 		selector: IDocumentFilterDto[],
 		supportsHandleDidShowCompletionItem: boolean,
 		extensionId: string,
-		yieldsToExtensionIds: string[]
+		yieldsToExtensionIds: string[],
 	): void;
 	$registerSignatureHelpProvider(
 		handle: number,
 		selector: IDocumentFilterDto[],
-		metadata: ISignatureHelpProviderMetadataDto
+		metadata: ISignatureHelpProviderMetadataDto,
 	): void;
 	$registerInlayHintsProvider(
 		handle: number,
 		selector: IDocumentFilterDto[],
 		supportsResolve: boolean,
 		eventHandle: number | undefined,
-		displayName: string | undefined
+		displayName: string | undefined,
 	): void;
 	$emitInlayHintsEvent(eventHandle: number): void;
 	$registerDocumentLinkProvider(
 		handle: number,
 		selector: IDocumentFilterDto[],
-		supportsResolve: boolean
+		supportsResolve: boolean,
 	): void;
 	$registerDocumentColorProvider(
 		handle: number,
-		selector: IDocumentFilterDto[]
+		selector: IDocumentFilterDto[],
 	): void;
 	$registerFoldingRangeProvider(
 		handle: number,
 		selector: IDocumentFilterDto[],
 		extensionId: ExtensionIdentifier,
-		eventHandle: number | undefined
+		eventHandle: number | undefined,
 	): void;
 	$emitFoldingRangeEvent(eventHandle: number, event?: any): void;
 	$registerSelectionRangeProvider(
 		handle: number,
-		selector: IDocumentFilterDto[]
+		selector: IDocumentFilterDto[],
 	): void;
 	$registerCallHierarchyProvider(
 		handle: number,
-		selector: IDocumentFilterDto[]
+		selector: IDocumentFilterDto[],
 	): void;
 	$registerTypeHierarchyProvider(
 		handle: number,
-		selector: IDocumentFilterDto[]
+		selector: IDocumentFilterDto[],
 	): void;
 	$registerDocumentOnDropEditProvider(
 		handle: number,
 		selector: IDocumentFilterDto[],
 		id: string | undefined,
-		metadata?: IDocumentDropEditProviderMetadata
+		metadata?: IDocumentDropEditProviderMetadata,
 	): void;
 	$resolvePasteFileData(
 		handle: number,
 		requestId: number,
-		dataId: string
+		dataId: string,
 	): Promise<VSBuffer>;
 	$resolveDocumentOnDropFileData(
 		handle: number,
 		requestId: number,
-		dataId: string
+		dataId: string,
 	): Promise<VSBuffer>;
 	$setLanguageConfiguration(
 		handle: number,
 		languageId: string,
-		configuration: ILanguageConfigurationDto
+		configuration: ILanguageConfigurationDto,
 	): void;
 	$registerMappedEditsProvider(
 		handle: number,
-		selector: IDocumentFilterDto[]
+		selector: IDocumentFilterDto[],
 	): void;
 }
 
@@ -861,7 +861,7 @@ export interface MainThreadLanguagesShape extends IDisposable {
 	$changeLanguage(resource: UriComponents, languageId: string): Promise<void>;
 	$tokensAtPosition(
 		resource: UriComponents,
-		position: IPosition
+		position: IPosition,
 	): Promise<undefined | { type: StandardTokenType; range: IRange }>;
 	$setLanguageStatus(handle: number, status: ILanguageStatus): void;
 	$removeLanguageStatus(handle: number): void;
@@ -883,7 +883,7 @@ export interface MainThreadMessageServiceShape extends IDisposable {
 			title: string;
 			isCloseAffordance: boolean;
 			handle: number;
-		}[]
+		}[],
 	): Promise<number | undefined>;
 }
 
@@ -892,12 +892,12 @@ export interface MainThreadOutputServiceShape extends IDisposable {
 		label: string,
 		file: UriComponents,
 		languageId: string | undefined,
-		extensionId: string
+		extensionId: string,
 	): Promise<string>;
 	$update(
 		channelId: string,
 		mode: OutputChannelUpdateMode,
-		till?: number
+		till?: number,
 	): Promise<void>;
 	$reveal(channelId: string, preserveFocus: boolean): Promise<void>;
 	$close(channelId: string): Promise<void>;
@@ -908,7 +908,7 @@ export interface MainThreadProgressShape extends IDisposable {
 	$startProgress(
 		handle: number,
 		options: IProgressOptions,
-		extensionId?: string
+		extensionId?: string,
 	): Promise<void>;
 	$progressReport(handle: number, message: IProgressStep): void;
 	$progressEnd(handle: number): void;
@@ -951,14 +951,14 @@ export interface TerminalLaunchConfig {
 export interface MainThreadTerminalServiceShape extends IDisposable {
 	$createTerminal(
 		extHostTerminalId: string,
-		config: TerminalLaunchConfig
+		config: TerminalLaunchConfig,
 	): Promise<void>;
 	$dispose(id: ExtHostTerminalIdentifier): void;
 	$hide(id: ExtHostTerminalIdentifier): void;
 	$sendText(
 		id: ExtHostTerminalIdentifier,
 		text: string,
-		shouldExecute: boolean
+		shouldExecute: boolean,
 	): void;
 	$show(id: ExtHostTerminalIdentifier, preserveFocus: boolean): void;
 	$registerProcessSupport(isSupported: boolean): void;
@@ -970,7 +970,7 @@ export interface MainThreadTerminalServiceShape extends IDisposable {
 		extensionIdentifier: string,
 		persistent: boolean,
 		collection: ISerializableEnvironmentVariableCollection | undefined,
-		descriptionMap: ISerializableEnvironmentDescriptionMap
+		descriptionMap: ISerializableEnvironmentDescriptionMap,
 	): void;
 
 	// Optional event toggles
@@ -987,11 +987,11 @@ export interface MainThreadTerminalServiceShape extends IDisposable {
 		terminalId: number,
 		pid: number,
 		cwd: string,
-		windowsPty: IProcessReadyWindowsPty | undefined
+		windowsPty: IProcessReadyWindowsPty | undefined,
 	): void;
 	$sendProcessProperty(
 		terminalId: number,
-		property: IProcessProperty<any>
+		property: IProcessProperty<any>,
 	): void;
 	$sendProcessExit(terminalId: number, exitCode: number | undefined): void;
 }
@@ -1094,17 +1094,17 @@ export interface MainThreadQuickOpenShape extends IDisposable {
 	$show(
 		instance: number,
 		options: quickInput.IPickOptions<TransferQuickPickItem>,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<number | number[] | undefined>;
 	$setItems(
 		instance: number,
-		items: TransferQuickPickItemOrSeparator[]
+		items: TransferQuickPickItemOrSeparator[],
 	): Promise<void>;
 	$setError(instance: number, error: Error): Promise<void>;
 	$input(
 		options: IInputBoxOptions | undefined,
 		validateInput: boolean,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<string | undefined>;
 	$createOrUpdate(params: TransferQuickInput): Promise<void>;
 	$dispose(id: number): Promise<void>;
@@ -1123,7 +1123,7 @@ export interface MainThreadStatusBarShape extends IDisposable {
 		backgroundColor: string | ThemeColor | undefined,
 		alignLeft: boolean,
 		priority: number | undefined,
-		accessibilityInformation: IAccessibilityInformation | undefined
+		accessibilityInformation: IAccessibilityInformation | undefined,
 	): void;
 	$disposeEntry(id: string): void;
 }
@@ -1146,16 +1146,16 @@ export interface ExtHostStatusBarShape {
 export interface MainThreadStorageShape extends IDisposable {
 	$initializeExtensionStorage(
 		shared: boolean,
-		extensionId: string
+		extensionId: string,
 	): Promise<string | undefined>;
 	$setValue(
 		shared: boolean,
 		extensionId: string,
-		value: object
+		value: object,
 	): Promise<void>;
 	$registerExtensionStorageKeysToSync(
 		extension: IExtensionIdWithVersion,
-		keys: string[]
+		keys: string[],
 	): void;
 }
 
@@ -1164,10 +1164,7 @@ export interface MainThreadTelemetryShape extends IDisposable {
 	$publicLog2<
 		E extends ClassifiedEvent<OmitMetadata<T>> = never,
 		T extends IGDPRProperty = never,
-	>(
-		eventName: string,
-		data?: StrictPropertyCheck<T, E>
-	): void;
+	>(eventName: string, data?: StrictPropertyCheck<T, E>): void;
 }
 
 export interface MainThreadEditorInsetsShape extends IDisposable {
@@ -1179,7 +1176,7 @@ export interface MainThreadEditorInsetsShape extends IDisposable {
 		height: number,
 		options: IWebviewContentOptions,
 		extensionId: ExtensionIdentifier,
-		extensionLocation: UriComponents
+		extensionLocation: UriComponents,
 	): Promise<void>;
 	$disposeEditorInset(handle: number): void;
 
@@ -1195,25 +1192,25 @@ export interface ExtHostEditorInsetsShape {
 
 //#region --- tabs model
 
-export const enum TabInputKind {
-	UnknownInput,
-	TextInput,
-	TextDiffInput,
-	TextMergeInput,
-	NotebookInput,
-	NotebookDiffInput,
-	CustomEditorInput,
-	WebviewEditorInput,
-	TerminalEditorInput,
-	InteractiveEditorInput,
-	ChatEditorInput,
+export enum TabInputKind {
+	UnknownInput = 0,
+	TextInput = 1,
+	TextDiffInput = 2,
+	TextMergeInput = 3,
+	NotebookInput = 4,
+	NotebookDiffInput = 5,
+	CustomEditorInput = 6,
+	WebviewEditorInput = 7,
+	TerminalEditorInput = 8,
+	InteractiveEditorInput = 9,
+	ChatEditorInput = 10,
 }
 
-export const enum TabModelOperationKind {
-	TAB_OPEN,
-	TAB_CLOSE,
-	TAB_UPDATE,
-	TAB_MOVE,
+export enum TabModelOperationKind {
+	TAB_OPEN = 0,
+	TAB_CLOSE = 1,
+	TAB_UPDATE = 2,
+	TAB_MOVE = 3,
 }
 
 export interface UnknownInputDto {
@@ -1297,7 +1294,7 @@ export interface MainThreadEditorTabsShape extends IDisposable {
 		tabId: string,
 		index: number,
 		viewColumn: EditorGroupColumn,
-		preserveFocus?: boolean
+		preserveFocus?: boolean,
 	): void;
 	$closeTab(tabIds: string[], preserveFocus?: boolean): Promise<boolean>;
 	$closeGroup(groupIds: number[], preservceFocus?: boolean): Promise<boolean>;
@@ -1360,8 +1357,8 @@ export interface WebviewExtensionDescription {
 }
 
 export enum WebviewEditorCapabilities {
-	Editable,
-	SupportsHotExit,
+	Editable = 0,
+	SupportsHotExit = 1,
 }
 
 export interface IWebviewPortMapping {
@@ -1386,7 +1383,7 @@ export interface CustomTextEditorCapabilities {
 	readonly supportsMove?: boolean;
 }
 
-export const enum WebviewMessageArrayBufferViewType {
+export enum WebviewMessageArrayBufferViewType {
 	Int8Array = 1,
 	Uint8Array = 2,
 	Uint8ClampedArray = 3,
@@ -1443,19 +1440,19 @@ export interface MainThreadWebviewPanelsShape extends IDisposable {
 		handle: WebviewHandle,
 		viewType: string,
 		initData: IWebviewInitData,
-		showOptions: WebviewPanelShowOptions
+		showOptions: WebviewPanelShowOptions,
 	): void;
 	$disposeWebview(handle: WebviewHandle): void;
 	$reveal(handle: WebviewHandle, showOptions: WebviewPanelShowOptions): void;
 	$setTitle(handle: WebviewHandle, value: string): void;
 	$setIconPath(
 		handle: WebviewHandle,
-		value: IWebviewIconPath | undefined
+		value: IWebviewIconPath | undefined,
 	): void;
 
 	$registerSerializer(
 		viewType: string,
-		options: { serializeBuffersForPostMessage: boolean }
+		options: { serializeBuffersForPostMessage: boolean },
 	): void;
 	$unregisterSerializer(viewType: string): void;
 }
@@ -1466,14 +1463,14 @@ export interface MainThreadCustomEditorsShape extends IDisposable {
 		viewType: string,
 		options: IWebviewPanelOptions,
 		capabilities: CustomTextEditorCapabilities,
-		serializeBuffersForPostMessage: boolean
+		serializeBuffersForPostMessage: boolean,
 	): void;
 	$registerCustomEditorProvider(
 		extension: WebviewExtensionDescription,
 		viewType: string,
 		options: IWebviewPanelOptions,
 		supportsMultipleEditorsPerDocument: boolean,
-		serializeBuffersForPostMessage: boolean
+		serializeBuffersForPostMessage: boolean,
 	): void;
 	$unregisterEditorProvider(viewType: string): void;
 
@@ -1481,7 +1478,7 @@ export interface MainThreadCustomEditorsShape extends IDisposable {
 		resource: UriComponents,
 		viewType: string,
 		editId: number,
-		label: string | undefined
+		label: string | undefined,
 	): void;
 	$onContentChange(resource: UriComponents, viewType: string): void;
 }
@@ -1493,21 +1490,21 @@ export interface MainThreadWebviewViewsShape extends IDisposable {
 		options: {
 			retainContextWhenHidden?: boolean;
 			serializeBuffersForPostMessage: boolean;
-		}
+		},
 	): void;
 	$unregisterWebviewViewProvider(viewType: string): void;
 
 	$setWebviewViewTitle(
 		handle: WebviewHandle,
-		value: string | undefined
+		value: string | undefined,
 	): void;
 	$setWebviewViewDescription(
 		handle: WebviewHandle,
-		value: string | undefined
+		value: string | undefined,
 	): void;
 	$setWebviewViewBadge(
 		handle: WebviewHandle,
-		badge: IViewBadge | undefined
+		badge: IViewBadge | undefined,
 	): void;
 
 	$show(handle: WebviewHandle, preserveFocus: boolean): void;
@@ -1525,14 +1522,14 @@ export interface ExtHostWebviewsShape {
 	$onMessage(
 		handle: WebviewHandle,
 		jsonSerializedMessage: string,
-		buffers: SerializableObjectWithBuffers<VSBuffer[]>
+		buffers: SerializableObjectWithBuffers<VSBuffer[]>,
 	): void;
 	$onMissingCsp(handle: WebviewHandle, extensionId: string): void;
 }
 
 export interface ExtHostWebviewPanelsShape {
 	$onDidChangeWebviewPanelViewStates(
-		newState: WebviewPanelViewStateData
+		newState: WebviewPanelViewStateData,
 	): void;
 	$onDidDisposeWebviewPanel(handle: WebviewHandle): Promise<void>;
 	$deserializeWebviewPanel(
@@ -1545,7 +1542,7 @@ export interface ExtHostWebviewPanelsShape {
 			panelOptions: IWebviewPanelOptions;
 			active: boolean;
 		},
-		position: EditorGroupColumn
+		position: EditorGroupColumn,
 	): Promise<void>;
 }
 
@@ -1561,65 +1558,65 @@ export interface ExtHostCustomEditorsShape {
 			active: boolean;
 		},
 		position: EditorGroupColumn,
-		cancellation: CancellationToken
+		cancellation: CancellationToken,
 	): Promise<void>;
 	$createCustomDocument(
 		resource: UriComponents,
 		viewType: string,
 		backupId: string | undefined,
 		untitledDocumentData: VSBuffer | undefined,
-		cancellation: CancellationToken
+		cancellation: CancellationToken,
 	): Promise<{ editable: boolean }>;
 	$disposeCustomDocument(
 		resource: UriComponents,
-		viewType: string
+		viewType: string,
 	): Promise<void>;
 
 	$undo(
 		resource: UriComponents,
 		viewType: string,
 		editId: number,
-		isDirty: boolean
+		isDirty: boolean,
 	): Promise<void>;
 	$redo(
 		resource: UriComponents,
 		viewType: string,
 		editId: number,
-		isDirty: boolean
+		isDirty: boolean,
 	): Promise<void>;
 	$revert(
 		resource: UriComponents,
 		viewType: string,
-		cancellation: CancellationToken
+		cancellation: CancellationToken,
 	): Promise<void>;
 	$disposeEdits(
 		resourceComponents: UriComponents,
 		viewType: string,
-		editIds: number[]
+		editIds: number[],
 	): void;
 
 	$onSave(
 		resource: UriComponents,
 		viewType: string,
-		cancellation: CancellationToken
+		cancellation: CancellationToken,
 	): Promise<void>;
 	$onSaveAs(
 		resource: UriComponents,
 		viewType: string,
 		targetResource: UriComponents,
-		cancellation: CancellationToken
+		cancellation: CancellationToken,
 	): Promise<void>;
 
 	$backup(
 		resource: UriComponents,
 		viewType: string,
-		cancellation: CancellationToken
+		cancellation: CancellationToken,
 	): Promise<string>;
 
 	$onMoveCustomEditor(
 		handle: WebviewHandle,
 		newResource: UriComponents,
-		viewType: string
+		viewType: string,
 	): Promise<void>;
 }
 
@@ -1629,12 +1626,12 @@ export interface ExtHostWebviewViewsShape {
 		viewType: string,
 		title: string | undefined,
 		state: any,
-		cancellation: CancellationToken
+		cancellation: CancellationToken,
 	): Promise<void>;
 
 	$onDidChangeWebviewViewVisibility(
 		webviewHandle: WebviewHandle,
-		visible: boolean
+		visible: boolean,
 	): void;
 
 	$disposeWebviewView(webviewHandle: WebviewHandle): void;
@@ -1689,18 +1686,18 @@ export interface MainThreadNotebookShape extends IDisposable {
 		extension: notebookCommon.NotebookExtensionDescription,
 		viewType: string,
 		options: notebookCommon.TransientOptions,
-		registration: notebookCommon.INotebookContributionData | undefined
+		registration: notebookCommon.INotebookContributionData | undefined,
 	): void;
 	$unregisterNotebookSerializer(handle: number): void;
 
 	$registerNotebookCellStatusBarItemProvider(
 		handle: number,
 		eventHandle: number | undefined,
-		viewType: string
+		viewType: string,
 	): Promise<void>;
 	$unregisterNotebookCellStatusBarItemProvider(
 		handle: number,
-		eventHandle: number | undefined
+		eventHandle: number | undefined,
 	): Promise<void>;
 	$emitCellStatusBarEvent(eventHandle: number): void;
 }
@@ -1709,12 +1706,12 @@ export interface MainThreadNotebookEditorsShape extends IDisposable {
 	$tryShowNotebookDocument(
 		uriComponents: UriComponents,
 		viewType: string,
-		options: INotebookDocumentShowOptions
+		options: INotebookDocumentShowOptions,
 	): Promise<string>;
 	$tryRevealRange(
 		id: string,
 		range: ICellRange,
-		revealType: NotebookEditorRevealType
+		revealType: NotebookEditorRevealType,
 	): Promise<void>;
 	$trySetSelections(id: string, range: ICellRange[]): void;
 }
@@ -1768,10 +1765,9 @@ export interface ICellExecuteOutputItemEditDto {
 	items: NotebookOutputItemDto[];
 }
 
-export interface ICellExecutionStateUpdateDto
-	extends ICellExecutionStateUpdate {}
+export type ICellExecutionStateUpdateDto = ICellExecutionStateUpdate;
 
-export interface ICellExecutionCompleteDto extends ICellExecutionComplete {}
+export type ICellExecutionCompleteDto = ICellExecutionComplete;
 
 export type ICellExecuteUpdateDto =
 	| ICellExecuteOutputEditDto
@@ -1782,7 +1778,7 @@ export interface MainThreadNotebookKernelsShape extends IDisposable {
 	$postMessage(
 		handle: number,
 		editorId: string | undefined,
-		message: any
+		message: any,
 	): Promise<boolean>;
 	$addKernel(handle: number, data: INotebookKernelDto2): Promise<void>;
 	$updateKernel(handle: number, data: Partial<INotebookKernelDto2>): void;
@@ -1790,46 +1786,46 @@ export interface MainThreadNotebookKernelsShape extends IDisposable {
 	$updateNotebookPriority(
 		handle: number,
 		uri: UriComponents,
-		value: number | undefined
+		value: number | undefined,
 	): void;
 
 	$createExecution(
 		handle: number,
 		controllerId: string,
 		uri: UriComponents,
-		cellHandle: number
+		cellHandle: number,
 	): void;
 	$updateExecution(
 		handle: number,
-		data: SerializableObjectWithBuffers<ICellExecuteUpdateDto[]>
+		data: SerializableObjectWithBuffers<ICellExecuteUpdateDto[]>,
 	): void;
 	$completeExecution(
 		handle: number,
-		data: SerializableObjectWithBuffers<ICellExecutionCompleteDto>
+		data: SerializableObjectWithBuffers<ICellExecutionCompleteDto>,
 	): void;
 
 	$createNotebookExecution(
 		handle: number,
 		controllerId: string,
-		uri: UriComponents
+		uri: UriComponents,
 	): void;
 	$beginNotebookExecution(handle: number): void;
 	$completeNotebookExecution(handle: number): void;
 
 	$addKernelDetectionTask(
 		handle: number,
-		notebookType: string
+		notebookType: string,
 	): Promise<void>;
 	$removeKernelDetectionTask(handle: number): void;
 
 	$addKernelSourceActionProvider(
 		handle: number,
 		eventHandle: number,
-		notebookType: string
+		notebookType: string,
 	): Promise<void>;
 	$removeKernelSourceActionProvider(
 		handle: number,
-		eventHandle: number
+		eventHandle: number,
 	): void;
 	$emitNotebookKernelSourceActionsChangeEvent(eventHandle: number): void;
 	$receiveVariable(requestId: string, variable: VariablesResult): void;
@@ -1840,17 +1836,17 @@ export interface MainThreadNotebookRenderersShape extends IDisposable {
 	$postMessage(
 		editorId: string | undefined,
 		rendererId: string,
-		message: unknown
+		message: unknown,
 	): Promise<boolean>;
 }
 
-export interface MainThreadInteractiveShape extends IDisposable {}
+export type MainThreadInteractiveShape = IDisposable;
 
 export interface MainThreadSpeechShape extends IDisposable {
 	$registerProvider(
 		handle: number,
 		identifier: string,
-		metadata: ISpeechProviderMetadata
+		metadata: ISpeechProviderMetadata,
 	): void;
 	$unregisterProvider(handle: number): void;
 
@@ -1866,16 +1862,16 @@ export interface MainThreadChatProviderShape extends IDisposable {
 	$registerProvider(
 		handle: number,
 		identifier: string,
-		metadata: IChatResponseProviderMetadata
+		metadata: IChatResponseProviderMetadata,
 	): void;
 	$unregisterProvider(handle: number): void;
 	$handleProgressChunk(
 		requestId: number,
-		chunk: IChatResponseFragment
+		chunk: IChatResponseFragment,
 	): Promise<void>;
 
 	$prepareChatAccess(
-		providerId: string
+		providerId: string,
 	): Promise<IChatResponseProviderMetadata | undefined>;
 	$fetchResponse(
 		extension: ExtensionIdentifier,
@@ -1883,7 +1879,7 @@ export interface MainThreadChatProviderShape extends IDisposable {
 		requestId: number,
 		messages: IChatMessage[],
 		options: {},
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<any>;
 }
 
@@ -1893,11 +1889,11 @@ export interface ExtHostChatProviderShape {
 		requestId: number,
 		messages: IChatMessage[],
 		options: { [name: string]: any },
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<any>;
 	$handleResponseFragment(
 		requestId: number,
-		chunk: IChatResponseFragment
+		chunk: IChatResponseFragment,
 	): Promise<void>;
 }
 
@@ -1910,22 +1906,22 @@ export interface MainThreadChatAgentsShape2 extends IDisposable {
 	$registerAgent(
 		handle: number,
 		name: string,
-		metadata: IExtensionChatAgentMetadata
+		metadata: IExtensionChatAgentMetadata,
 	): void;
 	$registerAgentCompletionsProvider(
 		handle: number,
-		triggerCharacters: string[]
+		triggerCharacters: string[],
 	): void;
 	$unregisterAgentCompletionsProvider(handle: number): void;
 	$updateAgent(
 		handle: number,
-		metadataUpdate: IExtensionChatAgentMetadata
+		metadataUpdate: IExtensionChatAgentMetadata,
 	): void;
 	$unregisterAgent(handle: number): void;
 	$handleProgressChunk(
 		requestId: string,
 		chunk: IChatProgressDto,
-		responsePartHandle?: number
+		responsePartHandle?: number,
 	): Promise<number | void>;
 }
 
@@ -1944,34 +1940,34 @@ export interface ExtHostChatAgentsShape2 {
 		requestId: string,
 		request: IChatAgentRequest,
 		context: { history: IChatMessage[] },
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IChatAgentResult | undefined>;
 	$provideSlashCommands(
 		handle: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IChatAgentCommand[]>;
 	$provideFollowups(
 		handle: number,
 		sessionId: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IChatFollowup[]>;
 	$acceptFeedback(
 		handle: number,
 		sessionId: string,
 		requestId: string,
 		vote: InteractiveSessionVoteDirection,
-		reportIssue?: boolean
+		reportIssue?: boolean,
 	): void;
 	$acceptAction(
 		handle: number,
 		sessionId: string,
 		requestId: string,
-		action: IChatUserActionEvent
+		action: IChatUserActionEvent,
 	): void;
 	$invokeCompletionProvider(
 		handle: number,
 		query: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IChatAgentCompletionItem[]>;
 	$releaseSession(sessionId: string): void;
 }
@@ -1985,7 +1981,7 @@ export interface ExtHostChatVariablesShape {
 	$resolveVariable(
 		handle: number,
 		messageText: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IChatRequestVariableValue[] | undefined>;
 }
 
@@ -1996,11 +1992,11 @@ export interface MainThreadInlineChatShape extends IDisposable {
 		debugName: string,
 		supportsFeedback: boolean,
 		supportsFollowups: boolean,
-		supportsIssueReporting: boolean
+		supportsIssueReporting: boolean,
 	): Promise<void>;
 	$handleProgressChunk(
 		requestId: string,
-		chunk: Dto<IInlineChatProgressItem>
+		chunk: Dto<IInlineChatProgressItem>,
 	): Promise<void>;
 	$unregisterInteractiveEditorProvider(handle: number): Promise<void>;
 }
@@ -2017,25 +2013,25 @@ export interface ExtHostInlineChatShape {
 		handle: number,
 		uri: UriComponents,
 		range: ISelection,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IInlineChatSession | undefined>;
 	$provideResponse(
 		handle: number,
 		session: IInlineChatSession,
 		request: IInlineChatRequest,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IInlineChatResponseDto | undefined>;
 	$provideFollowups(
 		handle: number,
 		sessionId: number,
 		responseId: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IChatReplyFollowup[] | undefined>;
 	$handleFeedback(
 		handle: number,
 		sessionId: number,
 		responseId: number,
-		kind: InlineChatResponseFeedbackKind
+		kind: InlineChatResponseFeedbackKind,
 	): void;
 	$releaseSession(handle: number, sessionId: number): void;
 }
@@ -2044,7 +2040,7 @@ export interface MainThreadUrlsShape extends IDisposable {
 	$registerUriHandler(
 		handle: number,
 		extensionId: ExtensionIdentifier,
-		extensionDisplayName: string
+		extensionDisplayName: string,
 	): Promise<void>;
 	$unregisterUriHandler(handle: number): Promise<void>;
 	$createAppUri(uri: UriComponents): Promise<UriComponents>;
@@ -2097,7 +2093,7 @@ export interface MainThreadChatShape extends IDisposable {
 	$acceptChatState(sessionId: number, state: any): Promise<void>;
 	$sendRequestToProvider(
 		providerId: string,
-		message: IChatDynamicRequest
+		message: IChatDynamicRequest,
 	): void;
 	$unregisterChatProvider(handle: number): Promise<void>;
 	$transferChatSession(sessionId: number, toWorkspace: UriComponents): void;
@@ -2106,15 +2102,15 @@ export interface MainThreadChatShape extends IDisposable {
 export interface ExtHostChatShape {
 	$prepareChat(
 		handle: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IChatDto | undefined>;
 	$provideWelcomeMessage(
 		handle: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<(string | IMarkdownString | IChatReplyFollowup[])[] | undefined>;
 	$provideSampleQuestions(
 		handle: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IChatReplyFollowup[] | undefined>;
 	$releaseSession(sessionId: number): void;
 }
@@ -2128,7 +2124,7 @@ export interface MainThreadUriOpenersShape extends IDisposable {
 		id: string,
 		schemes: readonly string[],
 		extensionId: ExtensionIdentifier,
-		label: string
+		label: string,
 	): Promise<void>;
 	$unregisterUriOpener(id: string): Promise<void>;
 }
@@ -2137,12 +2133,12 @@ export interface ExtHostUriOpenersShape {
 	$canOpenUri(
 		id: string,
 		uri: UriComponents,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<languages.ExternalUriOpenerPriority>;
 	$openUri(
 		id: string,
 		context: { resolvedUri: UriComponents; sourceUri: UriComponents },
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void>;
 }
 
@@ -2151,7 +2147,7 @@ export interface MainThreadProfileContentHandlersShape {
 		id: string,
 		name: string,
 		description: string | undefined,
-		extensionId: string
+		extensionId: string,
 	): Promise<void>;
 	$unregisterProfileContentHandler(id: string): Promise<void>;
 }
@@ -2161,12 +2157,12 @@ export interface ExtHostProfileContentHandlersShape {
 		id: string,
 		name: string,
 		content: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<UriDto<ISaveProfileResult> | null>;
 	$readProfile(
 		id: string,
 		idOrUri: string | UriComponents,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<string | null>;
 }
 
@@ -2180,35 +2176,35 @@ export interface MainThreadWorkspaceShape extends IDisposable {
 		includeFolder: UriComponents | null,
 		excludePatternOrDisregardExcludes: string | false | null,
 		maxResults: number | null,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<UriComponents[] | null>;
 	$startTextSearch(
 		query: search.IPatternInfo,
 		folder: UriComponents | null,
 		options: ITextQueryBuilderOptions,
 		requestId: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ITextSearchComplete | null>;
 	$checkExists(
 		folders: readonly UriComponents[],
 		includes: string[],
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<boolean>;
 	$save(
 		uri: UriComponents,
-		options: { saveAs: boolean }
+		options: { saveAs: boolean },
 	): Promise<UriComponents | undefined>;
 	$saveAll(includeUntitled?: boolean): Promise<boolean>;
 	$updateWorkspaceFolders(
 		extensionName: string,
 		index: number,
 		deleteCount: number,
-		workspaceFoldersToAdd: { uri: UriComponents; name?: string }[]
+		workspaceFoldersToAdd: { uri: UriComponents; name?: string }[],
 	): Promise<void>;
 	$resolveProxy(url: string): Promise<string | undefined>;
 	$loadCertificates(): Promise<string[]>;
 	$requestWorkspaceTrust(
-		options?: WorkspaceTrustRequestOptions
+		options?: WorkspaceTrustRequestOptions,
 	): Promise<boolean | undefined>;
 	$registerEditSessionIdentityProvider(handle: number, scheme: string): void;
 	$unregisterEditSessionIdentityProvider(handle: number): void;
@@ -2226,7 +2222,7 @@ export interface MainThreadFileSystemShape extends IDisposable {
 		handle: number,
 		scheme: string,
 		capabilities: files.FileSystemProviderCapabilities,
-		readonlyMessage?: IMarkdownString
+		readonlyMessage?: IMarkdownString,
 	): Promise<void>;
 	$unregisterProvider(handle: number): void;
 	$onFileSystemChange(handle: number, resource: IFileChangeDto[]): void;
@@ -2238,17 +2234,17 @@ export interface MainThreadFileSystemShape extends IDisposable {
 	$rename(
 		resource: UriComponents,
 		target: UriComponents,
-		opts: files.IFileOverwriteOptions
+		opts: files.IFileOverwriteOptions,
 	): Promise<void>;
 	$copy(
 		resource: UriComponents,
 		target: UriComponents,
-		opts: files.IFileOverwriteOptions
+		opts: files.IFileOverwriteOptions,
 	): Promise<void>;
 	$mkdir(resource: UriComponents): Promise<void>;
 	$delete(
 		resource: UriComponents,
-		opts: files.IFileDeleteOptions
+		opts: files.IFileDeleteOptions,
 	): Promise<void>;
 
 	$ensureActivation(scheme: string): Promise<void>;
@@ -2260,7 +2256,7 @@ export interface MainThreadFileSystemEventServiceShape extends IDisposable {
 		session: number,
 		resource: UriComponents,
 		opts: files.IWatchOptions,
-		correlate: boolean
+		correlate: boolean,
 	): void;
 	$unwatch(session: number): void;
 }
@@ -2268,7 +2264,7 @@ export interface MainThreadFileSystemEventServiceShape extends IDisposable {
 export interface MainThreadLabelServiceShape extends IDisposable {
 	$registerResourceLabelFormatter(
 		handle: number,
-		formatter: ResourceLabelFormatter
+		formatter: ResourceLabelFormatter,
 	): void;
 	$unregisterResourceLabelFormatter(handle: number): void;
 }
@@ -2280,12 +2276,12 @@ export interface MainThreadSearchShape extends IDisposable {
 	$handleFileMatch(
 		handle: number,
 		session: number,
-		data: UriComponents[]
+		data: UriComponents[],
 	): void;
 	$handleTextMatch(
 		handle: number,
 		session: number,
-		data: search.IRawFileMatch2[]
+		data: search.IRawFileMatch2[],
 	): void;
 	$handleTelemetry(eventName: string, data: any): void;
 }
@@ -2296,7 +2292,7 @@ export interface MainThreadShareShape extends IDisposable {
 		selector: IDocumentFilterDto[],
 		id: string,
 		label: string,
-		priority: number
+		priority: number,
 	): void;
 	$unregisterShareProvider(handle: number): void;
 }
@@ -2307,10 +2303,10 @@ export interface MainThreadTaskShape extends IDisposable {
 	$unregisterTaskProvider(handle: number): Promise<void>;
 	$fetchTasks(filter?: tasks.ITaskFilterDTO): Promise<tasks.ITaskDTO[]>;
 	$getTaskExecution(
-		value: tasks.ITaskHandleDTO | tasks.ITaskDTO
+		value: tasks.ITaskHandleDTO | tasks.ITaskDTO,
 	): Promise<tasks.ITaskExecutionDTO>;
 	$executeTask(
-		task: tasks.ITaskHandleDTO | tasks.ITaskDTO
+		task: tasks.ITaskHandleDTO | tasks.ITaskDTO,
 	): Promise<tasks.ITaskExecutionDTO>;
 	$terminateTask(id: string): Promise<void>;
 	$registerTaskSystem(scheme: string, info: tasks.ITaskSystemInfoDTO): void;
@@ -2318,17 +2314,17 @@ export interface MainThreadTaskShape extends IDisposable {
 	$registerSupportedExecutions(
 		custom?: boolean,
 		shell?: boolean,
-		process?: boolean
+		process?: boolean,
 	): Promise<void>;
 }
 
 export interface MainThreadExtensionServiceShape extends IDisposable {
 	$getExtension(
-		extensionId: string
+		extensionId: string,
 	): Promise<Dto<IExtensionDescription> | undefined>;
 	$activateExtension(
 		extensionId: ExtensionIdentifier,
-		reason: ExtensionActivationReason
+		reason: ExtensionActivationReason,
 	): Promise<void>;
 	$onWillActivateExtension(extensionId: ExtensionIdentifier): Promise<void>;
 	$onDidActivateExtension(
@@ -2336,16 +2332,16 @@ export interface MainThreadExtensionServiceShape extends IDisposable {
 		codeLoadingTime: number,
 		activateCallTime: number,
 		activateResolvedTime: number,
-		activationReason: ExtensionActivationReason
+		activationReason: ExtensionActivationReason,
 	): void;
 	$onExtensionActivationError(
 		extensionId: ExtensionIdentifier,
 		error: SerializedError,
-		missingExtensionDependency: MissingExtensionDependency | null
+		missingExtensionDependency: MissingExtensionDependency | null,
 	): Promise<void>;
 	$onExtensionRuntimeError(
 		extensionId: ExtensionIdentifier,
-		error: SerializedError
+		error: SerializedError,
 	): void;
 	$setPerformanceMarks(marks: performance.PerformanceMark[]): Promise<void>;
 	$asBrowserUri(uri: UriComponents): Promise<UriComponents>;
@@ -2431,7 +2427,7 @@ export interface MainThreadSCMShape extends IDisposable {
 		id: string,
 		label: string,
 		rootUri: UriComponents | undefined,
-		inputBoxDocumentUri: UriComponents
+		inputBoxDocumentUri: UriComponents,
 	): void;
 	$updateSourceControl(handle: number, features: SCMProviderFeatures): void;
 	$unregisterSourceControl(handle: number): void;
@@ -2444,45 +2440,45 @@ export interface MainThreadSCMShape extends IDisposable {
 			string /*label*/,
 			SCMGroupFeatures,
 		][],
-		splices: SCMRawResourceSplices[]
+		splices: SCMRawResourceSplices[],
 	): void;
 	$updateGroup(
 		sourceControlHandle: number,
 		handle: number,
-		features: SCMGroupFeatures
+		features: SCMGroupFeatures,
 	): void;
 	$updateGroupLabel(
 		sourceControlHandle: number,
 		handle: number,
-		label: string
+		label: string,
 	): void;
 	$unregisterGroup(sourceControlHandle: number, handle: number): void;
 
 	$spliceResourceStates(
 		sourceControlHandle: number,
-		splices: SCMRawResourceSplices[]
+		splices: SCMRawResourceSplices[],
 	): void;
 
 	$setInputBoxValue(sourceControlHandle: number, value: string): void;
 	$setInputBoxPlaceholder(
 		sourceControlHandle: number,
-		placeholder: string
+		placeholder: string,
 	): void;
 	$setInputBoxEnablement(sourceControlHandle: number, enabled: boolean): void;
 	$setInputBoxVisibility(sourceControlHandle: number, visible: boolean): void;
 	$showValidationMessage(
 		sourceControlHandle: number,
 		message: string | IMarkdownString,
-		type: InputValidationType
+		type: InputValidationType,
 	): void;
 	$setValidationProviderIsEnabled(
 		sourceControlHandle: number,
-		enabled: boolean
+		enabled: boolean,
 	): void;
 
 	$onDidChangeHistoryProviderCurrentHistoryItemGroup(
 		sourceControlHandle: number,
-		historyItemGroup: SCMHistoryItemGroupDto | undefined
+		historyItemGroup: SCMHistoryItemGroupDto | undefined,
 	): void;
 }
 
@@ -2491,7 +2487,7 @@ export interface MainThreadQuickDiffShape extends IDisposable {
 		handle: number,
 		selector: IDocumentFilterDto[],
 		label: string,
-		rootUri: UriComponents | undefined
+		rootUri: UriComponents | undefined,
 	): Promise<void>;
 	$unregisterQuickDiffProvider(handle: number): Promise<void>;
 }
@@ -2522,18 +2518,18 @@ export interface MainThreadDebugServiceShape extends IDisposable {
 	$sessionCached(sessionID: string): void;
 	$acceptDAMessage(
 		handle: number,
-		message: DebugProtocol.ProtocolMessage
+		message: DebugProtocol.ProtocolMessage,
 	): void;
 	$acceptDAError(
 		handle: number,
 		name: string,
 		message: string,
-		stack: string | undefined
+		stack: string | undefined,
 	): void;
 	$acceptDAExit(
 		handle: number,
 		code: number | undefined,
-		signal: string | undefined
+		signal: string | undefined,
 	): void;
 	$registerDebugConfigurationProvider(
 		type: string,
@@ -2541,29 +2537,29 @@ export interface MainThreadDebugServiceShape extends IDisposable {
 		hasProvideMethod: boolean,
 		hasResolveMethod: boolean,
 		hasResolve2Method: boolean,
-		handle: number
+		handle: number,
 	): Promise<void>;
 	$registerDebugAdapterDescriptorFactory(
 		type: string,
-		handle: number
+		handle: number,
 	): Promise<void>;
 	$unregisterDebugConfigurationProvider(handle: number): void;
 	$unregisterDebugAdapterDescriptorFactory(handle: number): void;
 	$startDebugging(
 		folder: UriComponents | undefined,
 		nameOrConfig: string | IDebugConfiguration,
-		options: IStartDebuggingOptions
+		options: IStartDebuggingOptions,
 	): Promise<boolean>;
 	$stopDebugging(sessionId: DebugSessionUUID | undefined): Promise<void>;
 	$setDebugSessionName(id: DebugSessionUUID, name: string): void;
 	$customDebugAdapterRequest(
 		id: DebugSessionUUID,
 		command: string,
-		args: any
+		args: any,
 	): Promise<any>;
 	$getDebugProtocolBreakpoint(
 		id: DebugSessionUUID,
-		breakpoinId: string
+		breakpoinId: string,
 	): Promise<DebugProtocol.Breakpoint | undefined>;
 	$appendDebugConsole(value: string): void;
 	$registerBreakpoints(
@@ -2571,12 +2567,12 @@ export interface MainThreadDebugServiceShape extends IDisposable {
 			| ISourceMultiBreakpointDto
 			| IFunctionBreakpointDto
 			| IDataBreakpointDto
-		>
+		>,
 	): Promise<void>;
 	$unregisterBreakpoints(
 		breakpointIds: string[],
 		functionBreakpointIds: string[],
-		dataBreakpointIds: string[]
+		dataBreakpointIds: string[],
 	): Promise<void>;
 }
 
@@ -2590,11 +2586,11 @@ export interface MainThreadWindowShape extends IDisposable {
 	$openUri(
 		uri: UriComponents,
 		uriString: string | undefined,
-		options: IOpenUriOptions
+		options: IOpenUriOptions,
 	): Promise<boolean>;
 	$asExternalUri(
 		uri: UriComponents,
-		options: IOpenUriOptions
+		options: IOpenUriOptions,
 	): Promise<UriComponents>;
 }
 
@@ -2612,7 +2608,7 @@ export interface PortAttributesSelector {
 export interface MainThreadTunnelServiceShape extends IDisposable {
 	$openTunnel(
 		tunnelOptions: TunnelOptions,
-		source: string | undefined
+		source: string | undefined,
 	): Promise<TunnelDto | undefined>;
 	$closeTunnel(remote: { host: string; port: number }): Promise<void>;
 	$getTunnels(): Promise<TunnelDescription[]>;
@@ -2623,7 +2619,7 @@ export interface MainThreadTunnelServiceShape extends IDisposable {
 	$setCandidatePortSource(source: CandidatePortSource): Promise<void>;
 	$registerPortsAttributesProvider(
 		selector: PortAttributesSelector,
-		providerHandle: number
+		providerHandle: number,
 	): Promise<void>;
 	$unregisterPortsAttributesProvider(providerHandle: number): Promise<void>;
 }
@@ -2664,7 +2660,7 @@ export interface ExtHostConfigurationShape {
 	$initializeConfiguration(data: IConfigurationInitData): void;
 	$acceptConfigurationChanged(
 		data: IConfigurationInitData,
-		change: IConfigurationChange
+		change: IConfigurationChange,
 	): void;
 }
 
@@ -2675,7 +2671,7 @@ export interface ExtHostDiagnosticsShape {
 export interface ExtHostDocumentContentProvidersShape {
 	$provideTextDocumentContent(
 		handle: number,
-		uri: UriComponents
+		uri: UriComponents,
 	): Promise<string | null | undefined>;
 }
 
@@ -2690,21 +2686,21 @@ export interface IModelAddedData {
 export interface ExtHostDocumentsShape {
 	$acceptModelLanguageChanged(
 		strURL: UriComponents,
-		newLanguageId: string
+		newLanguageId: string,
 	): void;
 	$acceptModelSaved(strURL: UriComponents): void;
 	$acceptDirtyStateChanged(strURL: UriComponents, isDirty: boolean): void;
 	$acceptModelChanged(
 		strURL: UriComponents,
 		e: IModelChangedEvent,
-		isDirty: boolean
+		isDirty: boolean,
 	): void;
 }
 
 export interface ExtHostDocumentSaveParticipantShape {
 	$participateInSave(
 		resource: UriComponents,
-		reason: SaveReason
+		reason: SaveReason,
 	): Promise<boolean[]>;
 }
 
@@ -2732,7 +2728,7 @@ export interface ISelectionChangeEvent {
 export interface ExtHostEditorsShape {
 	$acceptEditorPropertiesChanged(
 		id: string,
-		props: IEditorPropertiesChangeData
+		props: IEditorPropertiesChangeData,
 	): void;
 	$acceptEditorPositionData(data: ITextEditorPositionData): void;
 }
@@ -2773,7 +2769,7 @@ export interface CheckboxUpdate {
 export interface ExtHostTreeViewsShape {
 	$getChildren(
 		treeViewId: string,
-		treeItemHandle?: string
+		treeItemHandle?: string,
 	): Promise<ITreeItem[] | undefined>;
 	$handleDrop(
 		destinationViewId: string,
@@ -2783,67 +2779,67 @@ export interface ExtHostTreeViewsShape {
 		token: CancellationToken,
 		operationUuid?: string,
 		sourceViewId?: string,
-		sourceTreeItemHandles?: string[]
+		sourceTreeItemHandles?: string[],
 	): Promise<void>;
 	$handleDrag(
 		sourceViewId: string,
 		sourceTreeItemHandles: string[],
 		operationUuid: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<DataTransferDTO | undefined>;
 	$setExpanded(
 		treeViewId: string,
 		treeItemHandle: string,
-		expanded: boolean
+		expanded: boolean,
 	): void;
 	$setSelectionAndFocus(
 		treeViewId: string,
 		selectionHandles: string[],
-		focusHandle: string
+		focusHandle: string,
 	): void;
 	$setVisible(treeViewId: string, visible: boolean): void;
 	$changeCheckboxState(
 		treeViewId: string,
-		checkboxUpdates: CheckboxUpdate[]
+		checkboxUpdates: CheckboxUpdate[],
 	): void;
 	$hasResolve(treeViewId: string): Promise<boolean>;
 	$resolve(
 		treeViewId: string,
 		treeItemHandle: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ITreeItem | undefined>;
 }
 
 export interface ExtHostWorkspaceShape {
 	$initializeWorkspace(
 		workspace: IWorkspaceData | null,
-		trusted: boolean
+		trusted: boolean,
 	): void;
 	$acceptWorkspaceData(workspace: IWorkspaceData | null): void;
 	$handleTextSearchResult(
 		result: search.IRawFileMatch2,
-		requestId: number
+		requestId: number,
 	): void;
 	$onDidGrantWorkspaceTrust(): void;
 	$getEditSessionIdentifier(
 		folder: UriComponents,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<string | undefined>;
 	$provideEditSessionIdentityMatch(
 		folder: UriComponents,
 		identity1: string,
 		identity2: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<EditSessionIdentityMatch | undefined>;
 	$onWillCreateEditSessionIdentity(
 		folder: UriComponents,
 		token: CancellationToken,
-		timeout: number
+		timeout: number,
 	): Promise<void>;
 	$provideCanonicalUri(
 		uri: UriComponents,
 		targetScheme: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<UriComponents | undefined>;
 }
 
@@ -2855,83 +2851,83 @@ export interface ExtHostFileSystemShape {
 	$stat(handle: number, resource: UriComponents): Promise<files.IStat>;
 	$readdir(
 		handle: number,
-		resource: UriComponents
+		resource: UriComponents,
 	): Promise<[string, files.FileType][]>;
 	$readFile(handle: number, resource: UriComponents): Promise<VSBuffer>;
 	$writeFile(
 		handle: number,
 		resource: UriComponents,
 		content: VSBuffer,
-		opts: files.IFileWriteOptions
+		opts: files.IFileWriteOptions,
 	): Promise<void>;
 	$rename(
 		handle: number,
 		resource: UriComponents,
 		target: UriComponents,
-		opts: files.IFileOverwriteOptions
+		opts: files.IFileOverwriteOptions,
 	): Promise<void>;
 	$copy(
 		handle: number,
 		resource: UriComponents,
 		target: UriComponents,
-		opts: files.IFileOverwriteOptions
+		opts: files.IFileOverwriteOptions,
 	): Promise<void>;
 	$mkdir(handle: number, resource: UriComponents): Promise<void>;
 	$delete(
 		handle: number,
 		resource: UriComponents,
-		opts: files.IFileDeleteOptions
+		opts: files.IFileDeleteOptions,
 	): Promise<void>;
 	$watch(
 		handle: number,
 		session: number,
 		resource: UriComponents,
-		opts: files.IWatchOptions
+		opts: files.IWatchOptions,
 	): void;
 	$unwatch(handle: number, session: number): void;
 	$open(
 		handle: number,
 		resource: UriComponents,
-		opts: files.IFileOpenOptions
+		opts: files.IFileOpenOptions,
 	): Promise<number>;
 	$close(handle: number, fd: number): Promise<void>;
 	$read(
 		handle: number,
 		fd: number,
 		pos: number,
-		length: number
+		length: number,
 	): Promise<VSBuffer>;
 	$write(
 		handle: number,
 		fd: number,
 		pos: number,
-		data: VSBuffer
+		data: VSBuffer,
 	): Promise<number>;
 }
 
 export interface ExtHostLabelServiceShape {
 	$registerResourceLabelFormatter(
-		formatter: ResourceLabelFormatter
+		formatter: ResourceLabelFormatter,
 	): IDisposable;
 }
 
 export interface ExtHostAuthenticationShape {
 	$getSessions(
 		id: string,
-		scopes?: string[]
+		scopes?: string[],
 	): Promise<ReadonlyArray<AuthenticationSession>>;
 	$createSession(
 		id: string,
 		scopes: string[],
-		options: IAuthenticationCreateSessionOptions
+		options: IAuthenticationCreateSessionOptions,
 	): Promise<AuthenticationSession>;
 	$removeSession(id: string, sessionId: string): Promise<void>;
 	$onDidChangeAuthenticationSessions(
 		id: string,
-		label: string
+		label: string,
 	): Promise<void>;
 	$setProviders(
-		providers: AuthenticationProviderInformation[]
+		providers: AuthenticationProviderInformation[],
 	): Promise<void>;
 }
 
@@ -2939,18 +2935,18 @@ export interface ExtHostAiRelatedInformationShape {
 	$provideAiRelatedInformation(
 		handle: number,
 		query: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<RelatedInformationResult[]>;
 }
 
 export interface MainThreadAiRelatedInformationShape {
 	$getAiRelatedInformation(
 		query: string,
-		types: RelatedInformationType[]
+		types: RelatedInformationType[],
 	): Promise<RelatedInformationResult[]>;
 	$registerAiRelatedInformationProvider(
 		handle: number,
-		type: RelatedInformationType
+		type: RelatedInformationType,
 	): void;
 	$unregisterAiRelatedInformationProvider(handle: number): void;
 }
@@ -2959,7 +2955,7 @@ export interface ExtHostAiEmbeddingVectorShape {
 	$provideAiEmbeddingVector(
 		handle: number,
 		strings: string[],
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<number[][]>;
 }
 
@@ -2981,13 +2977,13 @@ export interface ExtHostSearchShape {
 		handle: number,
 		session: number,
 		query: search.IRawQuery,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<search.ISearchCompleteStats>;
 	$provideTextSearchResults(
 		handle: number,
 		session: number,
 		query: search.IRawTextQuery,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<search.ISearchCompleteStats>;
 	$clearCache(cacheKey: string): Promise<void>;
 }
@@ -2995,34 +2991,34 @@ export interface ExtHostSearchShape {
 export interface ExtHostExtensionServiceShape {
 	$resolveAuthority(
 		remoteAuthority: string,
-		resolveAttempt: number
+		resolveAttempt: number,
 	): Promise<Dto<IResolveAuthorityResult>>;
 	/**
 	 * Returns `null` if no resolver for `remoteAuthority` is found.
 	 */
 	$getCanonicalURI(
 		remoteAuthority: string,
-		uri: UriComponents
+		uri: UriComponents,
 	): Promise<UriComponents | null>;
 	$startExtensionHost(
-		extensionsDelta: IExtensionDescriptionDelta
+		extensionsDelta: IExtensionDescriptionDelta,
 	): Promise<void>;
 	$extensionTestsExecute(): Promise<number>;
 	$activateByEvent(
 		activationEvent: string,
-		activationKind: ActivationKind
+		activationKind: ActivationKind,
 	): Promise<void>;
 	$activate(
 		extensionId: ExtensionIdentifier,
-		reason: ExtensionActivationReason
+		reason: ExtensionActivationReason,
 	): Promise<boolean>;
 	$setRemoteEnvironment(env: { [key: string]: string | null }): Promise<void>;
 	$updateRemoteConnectionData(
-		connectionData: IRemoteConnectionData
+		connectionData: IRemoteConnectionData,
 	): Promise<void>;
 
 	$deltaExtensions(
-		extensionsDelta: IExtensionDescriptionDelta
+		extensionsDelta: IExtensionDescriptionDelta,
 	): Promise<void>;
 
 	$test_latency(n: number): Promise<number>;
@@ -3053,11 +3049,11 @@ export interface ExtHostFileSystemEventServiceShape {
 		operation: files.FileOperation,
 		files: readonly SourceTargetPair[],
 		timeout: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IWillRunFileOperationParticipation | undefined>;
 	$onDidRunFileOperation(
 		operation: files.FileOperation,
-		files: readonly SourceTargetPair[]
+		files: readonly SourceTargetPair[],
 	): void;
 }
 
@@ -3082,7 +3078,7 @@ export class IdObject {
 	}
 }
 
-export const enum ISuggestDataDtoField {
+export enum ISuggestDataDtoField {
 	label = "a",
 	kind = "b",
 	detail = "c",
@@ -3123,7 +3119,7 @@ export interface ISuggestDataDto {
 	x?: ChainedCacheId;
 }
 
-export const enum ISuggestResultDtoField {
+export enum ISuggestResultDtoField {
 	defaultRanges = "a",
 	completions = "b",
 	isIncomplete = "c",
@@ -3305,99 +3301,99 @@ export interface ExtHostLanguageFeaturesShape {
 	$provideDocumentSymbols(
 		handle: number,
 		resource: UriComponents,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<languages.DocumentSymbol[] | undefined>;
 	$provideCodeLenses(
 		handle: number,
 		resource: UriComponents,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ICodeLensListDto | undefined>;
 	$resolveCodeLens(
 		handle: number,
 		symbol: ICodeLensDto,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ICodeLensDto | undefined>;
 	$releaseCodeLenses(handle: number, id: number): void;
 	$provideDefinition(
 		handle: number,
 		resource: UriComponents,
 		position: IPosition,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ILocationLinkDto[]>;
 	$provideDeclaration(
 		handle: number,
 		resource: UriComponents,
 		position: IPosition,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ILocationLinkDto[]>;
 	$provideImplementation(
 		handle: number,
 		resource: UriComponents,
 		position: IPosition,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ILocationLinkDto[]>;
 	$provideTypeDefinition(
 		handle: number,
 		resource: UriComponents,
 		position: IPosition,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ILocationLinkDto[]>;
 	$provideHover(
 		handle: number,
 		resource: UriComponents,
 		position: IPosition,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<languages.Hover | undefined>;
 	$provideEvaluatableExpression(
 		handle: number,
 		resource: UriComponents,
 		position: IPosition,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<languages.EvaluatableExpression | undefined>;
 	$provideInlineValues(
 		handle: number,
 		resource: UriComponents,
 		range: IRange,
 		context: languages.InlineValueContext,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<languages.InlineValue[] | undefined>;
 	$provideDocumentHighlights(
 		handle: number,
 		resource: UriComponents,
 		position: IPosition,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<languages.DocumentHighlight[] | undefined>;
 	$provideMultiDocumentHighlights(
 		handle: number,
 		resource: UriComponents,
 		position: IPosition,
 		otherModels: UriComponents[],
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<Dto<languages.MultiDocumentHighlight[]> | undefined>;
 	$provideLinkedEditingRanges(
 		handle: number,
 		resource: UriComponents,
 		position: IPosition,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ILinkedEditingRangesDto | undefined>;
 	$provideReferences(
 		handle: number,
 		resource: UriComponents,
 		position: IPosition,
 		context: languages.ReferenceContext,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ILocationDto[] | undefined>;
 	$provideCodeActions(
 		handle: number,
 		resource: UriComponents,
 		rangeOrSelection: IRange | ISelection,
 		context: languages.CodeActionContext,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ICodeActionListDto | undefined>;
 	$resolveCodeAction(
 		handle: number,
 		id: ChainedCacheId,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<{ edit?: IWorkspaceEditDto; command?: ICommandDto }>;
 	$releaseCodeActions(handle: number, cacheId: number): void;
 	$prepareDocumentPaste(
@@ -3405,7 +3401,7 @@ export interface ExtHostLanguageFeaturesShape {
 		uri: UriComponents,
 		ranges: readonly IRange[],
 		dataTransfer: DataTransferDTO,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<DataTransferDTO | undefined>;
 	$providePasteEdits(
 		handle: number,
@@ -3413,27 +3409,27 @@ export interface ExtHostLanguageFeaturesShape {
 		uri: UriComponents,
 		ranges: IRange[],
 		dataTransfer: DataTransferDTO,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IPasteEditDto | undefined>;
 	$provideDocumentFormattingEdits(
 		handle: number,
 		resource: UriComponents,
 		options: languages.FormattingOptions,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ISingleEditOperation[] | undefined>;
 	$provideDocumentRangeFormattingEdits(
 		handle: number,
 		resource: UriComponents,
 		range: IRange,
 		options: languages.FormattingOptions,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ISingleEditOperation[] | undefined>;
 	$provideDocumentRangesFormattingEdits(
 		handle: number,
 		resource: UriComponents,
 		range: IRange[],
 		options: languages.FormattingOptions,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ISingleEditOperation[] | undefined>;
 	$provideOnTypeFormattingEdits(
 		handle: number,
@@ -3441,17 +3437,17 @@ export interface ExtHostLanguageFeaturesShape {
 		position: IPosition,
 		ch: string,
 		options: languages.FormattingOptions,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ISingleEditOperation[] | undefined>;
 	$provideWorkspaceSymbols(
 		handle: number,
 		search: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IWorkspaceSymbolsDto>;
 	$resolveWorkspaceSymbol(
 		handle: number,
 		symbol: IWorkspaceSymbolDto,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IWorkspaceSymbolDto | undefined>;
 	$releaseWorkspaceSymbols(handle: number, id: number): void;
 	$provideRenameEdits(
@@ -3459,41 +3455,41 @@ export interface ExtHostLanguageFeaturesShape {
 		resource: UriComponents,
 		position: IPosition,
 		newName: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<(IWorkspaceEditDto & { rejectReason?: string }) | undefined>;
 	$resolveRenameLocation(
 		handle: number,
 		resource: UriComponents,
 		position: IPosition,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<languages.RenameLocation | undefined>;
 	$provideDocumentSemanticTokens(
 		handle: number,
 		resource: UriComponents,
 		previousResultId: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<VSBuffer | null>;
 	$releaseDocumentSemanticTokens(
 		handle: number,
-		semanticColoringResultId: number
+		semanticColoringResultId: number,
 	): void;
 	$provideDocumentRangeSemanticTokens(
 		handle: number,
 		resource: UriComponents,
 		range: IRange,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<VSBuffer | null>;
 	$provideCompletionItems(
 		handle: number,
 		resource: UriComponents,
 		position: IPosition,
 		context: languages.CompletionContext,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ISuggestResultDto | undefined>;
 	$resolveCompletionItem(
 		handle: number,
 		id: ChainedCacheId,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ISuggestDataDto | undefined>;
 	$releaseCompletionItems(handle: number, id: number): void;
 	$provideInlineCompletions(
@@ -3501,19 +3497,19 @@ export interface ExtHostLanguageFeaturesShape {
 		resource: UriComponents,
 		position: IPosition,
 		context: languages.InlineCompletionContext,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IdentifiableInlineCompletions | undefined>;
 	$handleInlineCompletionDidShow(
 		handle: number,
 		pid: number,
 		idx: number,
-		updatedInsertText: string
+		updatedInsertText: string,
 	): void;
 	$handleInlineCompletionPartialAccept(
 		handle: number,
 		pid: number,
 		idx: number,
-		acceptedCharacters: number
+		acceptedCharacters: number,
 	): void;
 	$freeInlineCompletionsList(handle: number, pid: number): void;
 	$provideSignatureHelp(
@@ -3521,72 +3517,72 @@ export interface ExtHostLanguageFeaturesShape {
 		resource: UriComponents,
 		position: IPosition,
 		context: languages.SignatureHelpContext,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ISignatureHelpDto | undefined>;
 	$releaseSignatureHelp(handle: number, id: number): void;
 	$provideInlayHints(
 		handle: number,
 		resource: UriComponents,
 		range: IRange,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IInlayHintsDto | undefined>;
 	$resolveInlayHint(
 		handle: number,
 		id: ChainedCacheId,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IInlayHintDto | undefined>;
 	$releaseInlayHints(handle: number, id: number): void;
 	$provideDocumentLinks(
 		handle: number,
 		resource: UriComponents,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ILinksListDto | undefined>;
 	$resolveDocumentLink(
 		handle: number,
 		id: ChainedCacheId,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ILinkDto | undefined>;
 	$releaseDocumentLinks(handle: number, id: number): void;
 	$provideDocumentColors(
 		handle: number,
 		resource: UriComponents,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IRawColorInfo[]>;
 	$provideColorPresentations(
 		handle: number,
 		resource: UriComponents,
 		colorInfo: IRawColorInfo,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<languages.IColorPresentation[] | undefined>;
 	$provideFoldingRanges(
 		handle: number,
 		resource: UriComponents,
 		context: languages.FoldingContext,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<languages.FoldingRange[] | undefined>;
 	$provideSelectionRanges(
 		handle: number,
 		resource: UriComponents,
 		positions: IPosition[],
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<languages.SelectionRange[][]>;
 	$prepareCallHierarchy(
 		handle: number,
 		resource: UriComponents,
 		position: IPosition,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ICallHierarchyItemDto[] | undefined>;
 	$provideCallHierarchyIncomingCalls(
 		handle: number,
 		sessionId: string,
 		itemId: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IIncomingCallDto[] | undefined>;
 	$provideCallHierarchyOutgoingCalls(
 		handle: number,
 		sessionId: string,
 		itemId: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IOutgoingCallDto[] | undefined>;
 	$releaseCallHierarchy(handle: number, sessionId: string): void;
 	$setWordDefinitions(wordDefinitions: ILanguageWordDefinitionDto[]): void;
@@ -3594,19 +3590,19 @@ export interface ExtHostLanguageFeaturesShape {
 		handle: number,
 		resource: UriComponents,
 		position: IPosition,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ITypeHierarchyItemDto[] | undefined>;
 	$provideTypeHierarchySupertypes(
 		handle: number,
 		sessionId: string,
 		itemId: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ITypeHierarchyItemDto[] | undefined>;
 	$provideTypeHierarchySubtypes(
 		handle: number,
 		sessionId: string,
 		itemId: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ITypeHierarchyItemDto[] | undefined>;
 	$releaseTypeHierarchy(handle: number, sessionId: string): void;
 	$provideDocumentOnDropEdits(
@@ -3615,21 +3611,21 @@ export interface ExtHostLanguageFeaturesShape {
 		resource: UriComponents,
 		position: IPosition,
 		dataTransferDto: DataTransferDTO,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IDocumentOnDropEditDto | undefined>;
 	$provideMappedEdits(
 		handle: number,
 		document: UriComponents,
 		codeBlocks: string[],
 		context: IMappedEditsContextDto,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IWorkspaceEditDto | null>;
 }
 
 export interface ExtHostQuickOpenShape {
 	$onItemSelected(handle: number): void;
 	$validateInput(
-		input: string
+		input: string,
 	): Promise<
 		string | { content: string; severity: Severity } | null | undefined
 	>;
@@ -3641,7 +3637,7 @@ export interface ExtHostQuickOpenShape {
 	$onDidTriggerItemButton(
 		sessionId: number,
 		itemHandle: number,
-		buttonHandle: number
+		buttonHandle: number,
 	): void;
 	$onDidHide(sessionId: number): void;
 }
@@ -3650,7 +3646,7 @@ export interface ExtHostTelemetryShape {
 	$initializeTelemetryLevel(
 		level: TelemetryLevel,
 		supportsTelemetry: boolean,
-		productConfig?: { usage: boolean; error: boolean }
+		productConfig?: { usage: boolean; error: boolean },
 	): void;
 	$onDidChangeTelemetryLevel(level: TelemetryLevel): void;
 }
@@ -3707,13 +3703,13 @@ export interface ExtHostTerminalServiceShape {
 	$acceptTerminalClosed(
 		id: number,
 		exitCode: number | undefined,
-		exitReason: TerminalExitReason
+		exitReason: TerminalExitReason,
 	): void;
 	$acceptTerminalOpened(
 		id: number,
 		extHostTerminalId: string | undefined,
 		name: string,
-		shellLaunchConfig: IShellLaunchConfigDto
+		shellLaunchConfig: IShellLaunchConfigDto,
 	): void;
 	$acceptActiveTerminalChanged(id: number | null): void;
 	$acceptTerminalProcessId(id: number, processId: number): void;
@@ -3724,13 +3720,13 @@ export interface ExtHostTerminalServiceShape {
 	$acceptTerminalMaximumDimensions(
 		id: number,
 		cols: number,
-		rows: number
+		rows: number,
 	): void;
 	$acceptTerminalInteraction(id: number): void;
 	$acceptTerminalSelection(id: number, selection: string | undefined): void;
 	$startExtensionTerminal(
 		id: number,
-		initialDimensions: ITerminalDimensionsDto | undefined
+		initialDimensions: ITerminalDimensionsDto | undefined,
 	): Promise<ITerminalLaunchError | undefined>;
 	$acceptProcessAckDataEvent(id: number, charCount: number): void;
 	$acceptProcessInput(id: number, data: string): void;
@@ -3742,20 +3738,20 @@ export interface ExtHostTerminalServiceShape {
 	$provideLinks(id: number, line: string): Promise<ITerminalLinkDto[]>;
 	$activateLink(id: number, linkId: number): void;
 	$initEnvironmentVariableCollections(
-		collections: [string, ISerializableEnvironmentVariableCollection][]
+		collections: [string, ISerializableEnvironmentVariableCollection][],
 	): void;
 	$acceptDefaultProfile(
 		profile: ITerminalProfile,
-		automationProfile: ITerminalProfile
+		automationProfile: ITerminalProfile,
 	): void;
 	$createContributedProfileTerminal(
 		id: string,
-		options: ICreateContributedTerminalProfileOptions
+		options: ICreateContributedTerminalProfileOptions,
 	): Promise<void>;
 	$provideTerminalQuickFixes(
 		id: string,
 		matchResult: TerminalCommandMatchResultDto,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<SingleOrMany<TerminalQuickFix> | undefined>;
 }
 
@@ -3763,44 +3759,44 @@ export interface ExtHostSCMShape {
 	$provideOriginalResource(
 		sourceControlHandle: number,
 		uri: UriComponents,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<UriComponents | null>;
 	$onInputBoxValueChange(sourceControlHandle: number, value: string): void;
 	$executeResourceCommand(
 		sourceControlHandle: number,
 		groupHandle: number,
 		handle: number,
-		preserveFocus: boolean
+		preserveFocus: boolean,
 	): Promise<void>;
 	$validateInput(
 		sourceControlHandle: number,
 		value: string,
-		cursorPosition: number
+		cursorPosition: number,
 	): Promise<[string | IMarkdownString, number] | undefined>;
 	$setSelectedSourceControl(
-		selectedSourceControlHandle: number | undefined
+		selectedSourceControlHandle: number | undefined,
 	): Promise<void>;
 	$provideHistoryItems(
 		sourceControlHandle: number,
 		historyItemGroupId: string,
 		options: any,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<SCMHistoryItemDto[] | undefined>;
 	$provideHistoryItemChanges(
 		sourceControlHandle: number,
 		historyItemId: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<SCMHistoryItemChangeDto[] | undefined>;
 	$resolveHistoryItemGroupBase(
 		sourceControlHandle: number,
 		historyItemGroupId: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<SCMHistoryItemGroupDto | undefined>;
 	$resolveHistoryItemGroupCommonAncestor(
 		sourceControlHandle: number,
 		historyItemGroupId1: string,
 		historyItemGroupId2: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<{ id: string; ahead: number; behind: number } | undefined>;
 }
 
@@ -3808,7 +3804,7 @@ export interface ExtHostQuickDiffShape {
 	$provideOriginalResource(
 		sourceControlHandle: number,
 		uri: UriComponents,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<UriComponents | null>;
 }
 
@@ -3816,23 +3812,23 @@ export interface ExtHostShareShape {
 	$provideShare(
 		handle: number,
 		shareableItem: IShareableItemDto,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<UriComponents | string | undefined>;
 }
 
 export interface ExtHostTaskShape {
 	$provideTasks(
 		handle: number,
-		validTypes: { [key: string]: boolean }
+		validTypes: { [key: string]: boolean },
 	): Promise<tasks.ITaskSetDTO>;
 	$resolveTask(
 		handle: number,
-		taskDTO: tasks.ITaskDTO
+		taskDTO: tasks.ITaskDTO,
 	): Promise<tasks.ITaskDTO | undefined>;
 	$onDidStartTask(
 		execution: tasks.ITaskExecutionDTO,
 		terminalId: number,
-		resolvedDefinition: tasks.ITaskDefinitionDTO
+		resolvedDefinition: tasks.ITaskDefinitionDTO,
 	): void;
 	$onDidStartTaskProcess(value: tasks.ITaskProcessStartedDTO): void;
 	$onDidEndTaskProcess(value: tasks.ITaskProcessEndedDTO): void;
@@ -3842,13 +3838,13 @@ export interface ExtHostTaskShape {
 		toResolve: {
 			process?: { name: string; cwd?: string };
 			variables: string[];
-		}
+		},
 	): Promise<{ process?: string; variables: { [key: string]: string } }>;
 	$jsonTasksSupported(): Promise<boolean>;
 	$findExecutable(
 		command: string,
 		cwd?: string,
-		paths?: string[]
+		paths?: string[],
 	): Promise<string | undefined>;
 }
 
@@ -3933,52 +3929,52 @@ export interface IStackFrameFocusDto {
 export interface ExtHostDebugServiceShape {
 	$substituteVariables(
 		folder: UriComponents | undefined,
-		config: IConfig
+		config: IConfig,
 	): Promise<IConfig>;
 	$runInTerminal(
 		args: DebugProtocol.RunInTerminalRequestArguments,
-		sessionId: string
+		sessionId: string,
 	): Promise<number | undefined>;
 	$startDASession(handle: number, session: IDebugSessionDto): Promise<void>;
 	$stopDASession(handle: number): Promise<void>;
 	$sendDAMessage(
 		handle: number,
-		message: DebugProtocol.ProtocolMessage
+		message: DebugProtocol.ProtocolMessage,
 	): void;
 	$resolveDebugConfiguration(
 		handle: number,
 		folder: UriComponents | undefined,
 		debugConfiguration: IConfig,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IConfig | null | undefined>;
 	$resolveDebugConfigurationWithSubstitutedVariables(
 		handle: number,
 		folder: UriComponents | undefined,
 		debugConfiguration: IConfig,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IConfig | null | undefined>;
 	$provideDebugConfigurations(
 		handle: number,
 		folder: UriComponents | undefined,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IConfig[]>;
 	$provideDebugAdapter(
 		handle: number,
-		session: IDebugSessionDto
+		session: IDebugSessionDto,
 	): Promise<Dto<IAdapterDescriptor>>;
 	$acceptDebugSessionStarted(session: IDebugSessionDto): void;
 	$acceptDebugSessionTerminated(session: IDebugSessionDto): void;
 	$acceptDebugSessionActiveChanged(
-		session: IDebugSessionDto | undefined
+		session: IDebugSessionDto | undefined,
 	): void;
 	$acceptDebugSessionCustomEvent(session: IDebugSessionDto, event: any): void;
 	$acceptBreakpointsDelta(delta: IBreakpointsDeltaDto): void;
 	$acceptDebugSessionNameChanged(
 		session: IDebugSessionDto,
-		name: string
+		name: string,
 	): void;
 	$acceptStackFrameFocus(
-		focus: IThreadFocusDto | IStackFrameFocusDto | undefined
+		focus: IThreadFocusDto | IStackFrameFocusDto | undefined,
 	): void;
 }
 
@@ -3994,7 +3990,7 @@ export interface ExtHostDecorationsShape {
 	$provideDecorations(
 		handle: number,
 		requests: DecorationRequest[],
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<DecorationReply>;
 }
 
@@ -4028,28 +4024,28 @@ export interface ExtHostCommentsShape {
 	$createCommentThreadTemplate(
 		commentControllerHandle: number,
 		uriComponents: UriComponents,
-		range: IRange | undefined
+		range: IRange | undefined,
 	): Promise<void>;
 	$updateCommentThreadTemplate(
 		commentControllerHandle: number,
 		threadHandle: number,
-		range: IRange
+		range: IRange,
 	): Promise<void>;
 	$deleteCommentThread(
 		commentControllerHandle: number,
-		commentThreadHandle: number
+		commentThreadHandle: number,
 	): void;
 	$provideCommentingRanges(
 		commentControllerHandle: number,
 		uriComponents: UriComponents,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<{ ranges: IRange[]; fileComments: boolean } | undefined>;
 	$toggleReaction(
 		commentControllerHandle: number,
 		threadHandle: number,
 		uri: UriComponents,
 		comment: languages.Comment,
-		reaction: languages.CommentReaction
+		reaction: languages.CommentReaction,
 	): Promise<void>;
 }
 
@@ -4145,26 +4141,26 @@ export interface ExtHostNotebookShape
 		handle: number,
 		uri: UriComponents,
 		index: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<INotebookCellStatusBarListDto | undefined>;
 	$releaseNotebookCellStatusBarItems(id: number): void;
 
 	$dataToNotebook(
 		handle: number,
 		data: VSBuffer,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<SerializableObjectWithBuffers<NotebookDataDto>>;
 	$notebookToData(
 		handle: number,
 		data: SerializableObjectWithBuffers<NotebookDataDto>,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<VSBuffer>;
 	$saveNotebook(
 		handle: number,
 		uri: UriComponents,
 		versionId: number,
 		options: files.IWriteFileOptions,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<INotebookPartialFileStatsWithMetadata>;
 
 	$searchInNotebooks(
@@ -4172,7 +4168,7 @@ export interface ExtHostNotebookShape
 		textQuery: search.ITextQuery,
 		viewTypeFileTargets: NotebookPriorityInfo[],
 		otherViewTypeFileTargets: NotebookPriorityInfo[],
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<{ results: IRawClosedNotebookFileMatch[]; limitHit: boolean }>;
 }
 
@@ -4180,7 +4176,7 @@ export interface ExtHostNotebookDocumentSaveParticipantShape {
 	$participateInSave(
 		resource: UriComponents,
 		reason: SaveReason,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<boolean>;
 }
 
@@ -4188,13 +4184,13 @@ export interface ExtHostNotebookRenderersShape {
 	$postRendererMessage(
 		editorId: string,
 		rendererId: string,
-		message: unknown
+		message: unknown,
 	): void;
 }
 
 export interface ExtHostNotebookDocumentsAndEditorsShape {
 	$acceptDocumentAndEditorsDelta(
-		delta: SerializableObjectWithBuffers<INotebookDocumentsAndEditorsDelta>
+		delta: SerializableObjectWithBuffers<INotebookDocumentsAndEditorsDelta>,
 	): void;
 }
 
@@ -4228,7 +4224,7 @@ export type NotebookRawContentEventDto =
 	| notebookCommon.NotebookCellsChangeInternalMetadataEvent
 	// | notebookCommon.NotebookDocumentChangeMetadataEvent
 	| notebookCommon.NotebookCellContentChangeEvent;
-	// | notebookCommon.NotebookDocumentUnknownChangeEvent
+// | notebookCommon.NotebookDocumentUnknownChangeEvent
 
 export type NotebookCellsChangedEventDto = {
 	readonly rawEvents: NotebookRawContentEventDto[];
@@ -4240,11 +4236,11 @@ export interface ExtHostNotebookDocumentsShape {
 		uriComponents: UriComponents,
 		event: SerializableObjectWithBuffers<NotebookCellsChangedEventDto>,
 		isDirty: boolean,
-		newMetadata?: notebookCommon.NotebookDocumentMetadata
+		newMetadata?: notebookCommon.NotebookDocumentMetadata,
 	): void;
 	$acceptDirtyStateChanged(
 		uriComponents: UriComponents,
-		isDirty: boolean
+		isDirty: boolean,
 	): void;
 	$acceptModelSaved(uriComponents: UriComponents): void;
 }
@@ -4254,7 +4250,7 @@ export type INotebookEditorViewColumnInfo = Record<string, number>;
 export interface ExtHostNotebookEditorsShape {
 	$acceptEditorPropertiesChanged(
 		id: string,
-		data: INotebookEditorPropertiesChangeData
+		data: INotebookEditorPropertiesChangeData,
 	): void;
 	$acceptEditorViewColumns(data: INotebookEditorViewColumnInfo): void;
 }
@@ -4263,31 +4259,31 @@ export interface ExtHostNotebookKernelsShape {
 	$acceptNotebookAssociation(
 		handle: number,
 		uri: UriComponents,
-		value: boolean
+		value: boolean,
 	): void;
 	$executeCells(
 		handle: number,
 		uri: UriComponents,
-		handles: number[]
+		handles: number[],
 	): Promise<void>;
 	$cancelCells(
 		handle: number,
 		uri: UriComponents,
-		handles: number[]
+		handles: number[],
 	): Promise<void>;
 	$acceptKernelMessageFromRenderer(
 		handle: number,
 		editorId: string,
-		message: any
+		message: any,
 	): void;
 	$cellExecutionChanged(
 		uri: UriComponents,
 		cellHandle: number,
-		state: notebookCommon.NotebookCellExecutionState | undefined
+		state: notebookCommon.NotebookCellExecutionState | undefined,
 	): void;
 	$provideKernelSourceActions(
 		handle: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<notebookCommon.INotebookKernelSourceAction[]>;
 	$provideVariables(
 		handle: number,
@@ -4296,7 +4292,7 @@ export interface ExtHostNotebookKernelsShape {
 		variableName: string | undefined,
 		kind: "named" | "indexed",
 		start: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void>;
 }
 
@@ -4305,11 +4301,11 @@ export interface ExtHostInteractiveShape {
 		uri: UriComponents,
 		eol: string,
 		languageId: string,
-		notebookUri: UriComponents
+		notebookUri: UriComponents,
 	): void;
 	$willRemoveInteractiveDocument(
 		uri: UriComponents,
-		notebookUri: UriComponents
+		notebookUri: UriComponents,
 	): void;
 }
 
@@ -4321,12 +4317,12 @@ export interface ExtHostThemingShape {
 	$onColorThemeChange(themeType: string): void;
 }
 
-export interface MainThreadThemingShape extends IDisposable {}
+export type MainThreadThemingShape = IDisposable;
 
 export interface MainThreadLocalizationShape extends IDisposable {
 	$fetchBuiltInBundleUri(
 		id: string,
-		language: string
+		language: string,
 	): Promise<UriComponents | undefined>;
 	$fetchBundleContents(uriComponents: UriComponents): Promise<string>;
 }
@@ -4334,15 +4330,15 @@ export interface MainThreadLocalizationShape extends IDisposable {
 export interface ExtHostIssueReporterShape {
 	$getIssueReporterUri(
 		extensionId: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<UriComponents>;
 	$getIssueReporterData(
 		extensionId: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<string>;
 	$getIssueReporterTemplate(
 		extensionId: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<string>;
 }
 
@@ -4364,23 +4360,23 @@ export interface TunnelDto {
 export interface ExtHostTunnelServiceShape {
 	$forwardPort(
 		tunnelOptions: TunnelOptions,
-		tunnelCreationOptions: TunnelCreationOptions
+		tunnelCreationOptions: TunnelCreationOptions,
 	): Promise<TunnelDto | string | undefined>;
 	$closeTunnel(
 		remote: { host: string; port: number },
-		silent?: boolean
+		silent?: boolean,
 	): Promise<void>;
 	$onDidTunnelsChange(): Promise<void>;
 	$registerCandidateFinder(enable: boolean): Promise<void>;
 	$applyCandidateFilter(
-		candidates: CandidatePort[]
+		candidates: CandidatePort[],
 	): Promise<CandidatePort[]>;
 	$providePortAttributes(
 		handles: number[],
 		ports: number[],
 		pid: number | undefined,
 		commandline: string | undefined,
-		cancellationToken: CancellationToken
+		cancellationToken: CancellationToken,
 	): Promise<ProvidedPortAttributes[]>;
 }
 
@@ -4389,23 +4385,23 @@ export interface ExtHostTimelineShape {
 		source: string,
 		uri: UriComponents,
 		options: TimelineOptions,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<Dto<Timeline> | undefined>;
 }
 
-export const enum ExtHostTestingResource {
-	Workspace,
-	TextDocument,
+export enum ExtHostTestingResource {
+	Workspace = 0,
+	TextDocument = 1,
 }
 
 export interface ExtHostTestingShape {
 	$runControllerTests(
 		req: IStartControllerTests[],
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<{ error?: string }[]>;
 	$startContinuousRun(
 		req: ICallProfileRunHandler[],
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<{ error?: string }[]>;
 	$cancelExtensionTestRun(runId: string | undefined): void;
 	/** Handles a diff of tests, as a result of a subscribeToDiffs() call */
@@ -4418,7 +4414,7 @@ export interface ExtHostTestingShape {
 	$provideFileCoverage(
 		runId: string,
 		taskId: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IFileCoverage.Serialized[]>;
 	/**
 	 * Requests coverage details for the file index in coverage data for the run.
@@ -4428,20 +4424,20 @@ export interface ExtHostTestingShape {
 		runId: string,
 		taskId: string,
 		fileIndex: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<CoverageDetails.Serialized[]>;
 	/** Configures a test run config. */
 	$configureRunProfile(controllerId: string, configId: number): void;
 	/** Asks the controller to refresh its tests */
 	$refreshTests(
 		controllerId: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void>;
 	/** Ensures any pending test diffs are flushed */
 	$syncTests(): Promise<void>;
 	/** Sets the active test run profiles */
 	$setActiveRunProfiles(
-		profiles: Record</* controller id */ string, /* profile id */ number[]>
+		profiles: Record</* controller id */ string, /* profile id */ number[]>,
 	): void;
 }
 
@@ -4450,7 +4446,7 @@ export interface ExtHostLocalizationShape {
 	getBundle(extensionId: string): { [key: string]: string } | undefined;
 	getBundleUri(extensionId: string): URI | undefined;
 	initializeLocalizedMessages(
-		extension: IExtensionDescription
+		extension: IExtensionDescription,
 	): Promise<void>;
 }
 
@@ -4472,7 +4468,7 @@ export interface MainThreadTestingShape {
 	$registerTestController(
 		controllerId: string,
 		label: string,
-		canRefresh: boolean
+		canRefresh: boolean,
 	): void;
 	/** Updates the label of an existing test controller. */
 	$updateController(controllerId: string, patch: ITestControllerPatch): void;
@@ -4493,7 +4489,7 @@ export interface MainThreadTestingShape {
 	$updateTestRunConfig(
 		controllerId: string,
 		configId: number,
-		update: Partial<ITestRunProfile>
+		update: Partial<ITestRunProfile>,
 	): void;
 	/** Removes a previously-published test run config */
 	$removeTestProfile(controllerId: string, configId: number): void;
@@ -4503,7 +4499,7 @@ export interface MainThreadTestingShape {
 	/** Request by an extension to run tests. */
 	$runTests(
 		req: ResolvedTestRunRequest,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<string>;
 	/**
 	 * Adds tests to the run. The tests are given in descending depth. The first
@@ -4512,7 +4508,7 @@ export interface MainThreadTestingShape {
 	$addTestsToRun(
 		controllerId: string,
 		runId: string,
-		tests: ITestItem.Serialized[]
+		tests: ITestItem.Serialized[],
 	): void;
 	/** Updates the state of a test run in the given run. */
 	$updateTestStateInRun(
@@ -4520,14 +4516,14 @@ export interface MainThreadTestingShape {
 		taskId: string,
 		testId: string,
 		state: TestResultState,
-		duration?: number
+		duration?: number,
 	): void;
 	/** Appends a message to a test in the run. */
 	$appendTestMessagesInRun(
 		runId: string,
 		taskId: string,
 		testId: string,
-		messages: ITestMessage.Serialized[]
+		messages: ITestMessage.Serialized[],
 	): void;
 	/** Appends raw output to the test run.. */
 	$appendOutputToRun(
@@ -4535,13 +4531,13 @@ export interface MainThreadTestingShape {
 		taskId: string,
 		output: VSBuffer,
 		location?: ILocationDto,
-		testId?: string
+		testId?: string,
 	): void;
 	/** Triggered when coverage is added to test results. */
 	$signalCoverageAvailable(
 		runId: string,
 		taskId: string,
-		available: boolean
+		available: boolean,
 	): void;
 	/** Signals a task in a test run started. */
 	$startedTestRunTask(runId: string, task: ITestRunTask): void;
@@ -4560,23 +4556,23 @@ export interface MainThreadTestingShape {
 export const MainContext = {
 	MainThreadAuthentication:
 		createProxyIdentifier<MainThreadAuthenticationShape>(
-			"MainThreadAuthentication"
+			"MainThreadAuthentication",
 		),
 	MainThreadBulkEdits: createProxyIdentifier<MainThreadBulkEditsShape>(
-		"MainThreadBulkEdits"
+		"MainThreadBulkEdits",
 	),
 	MainThreadChatProvider: createProxyIdentifier<MainThreadChatProviderShape>(
-		"MainThreadChatProvider"
+		"MainThreadChatProvider",
 	),
 	MainThreadChatAgents2: createProxyIdentifier<MainThreadChatAgentsShape2>(
-		"MainThreadChatAgents2"
+		"MainThreadChatAgents2",
 	),
 	MainThreadChatVariables:
 		createProxyIdentifier<MainThreadChatVariablesShape>(
-			"MainThreadChatVariables"
+			"MainThreadChatVariables",
 		),
 	MainThreadClipboard: createProxyIdentifier<MainThreadClipboardShape>(
-		"MainThreadClipboard"
+		"MainThreadClipboard",
 	),
 	MainThreadCommands:
 		createProxyIdentifier<MainThreadCommandsShape>("MainThreadCommands"),
@@ -4584,124 +4580,124 @@ export const MainContext = {
 		createProxyIdentifier<MainThreadCommentsShape>("MainThreadComments"),
 	MainThreadConfiguration:
 		createProxyIdentifier<MainThreadConfigurationShape>(
-			"MainThreadConfiguration"
+			"MainThreadConfiguration",
 		),
 	MainThreadConsole:
 		createProxyIdentifier<MainThreadConsoleShape>("MainThreadConsole"),
 	MainThreadDebugService: createProxyIdentifier<MainThreadDebugServiceShape>(
-		"MainThreadDebugService"
+		"MainThreadDebugService",
 	),
 	MainThreadDecorations: createProxyIdentifier<MainThreadDecorationsShape>(
-		"MainThreadDecorations"
+		"MainThreadDecorations",
 	),
 	MainThreadDiagnostics: createProxyIdentifier<MainThreadDiagnosticsShape>(
-		"MainThreadDiagnostics"
+		"MainThreadDiagnostics",
 	),
 	MainThreadDialogs:
 		createProxyIdentifier<MainThreadDiaglogsShape>("MainThreadDiaglogs"),
 	MainThreadDocuments: createProxyIdentifier<MainThreadDocumentsShape>(
-		"MainThreadDocuments"
+		"MainThreadDocuments",
 	),
 	MainThreadDocumentContentProviders:
 		createProxyIdentifier<MainThreadDocumentContentProvidersShape>(
-			"MainThreadDocumentContentProviders"
+			"MainThreadDocumentContentProviders",
 		),
 	MainThreadTextEditors: createProxyIdentifier<MainThreadTextEditorsShape>(
-		"MainThreadTextEditors"
+		"MainThreadTextEditors",
 	),
 	MainThreadEditorInsets: createProxyIdentifier<MainThreadEditorInsetsShape>(
-		"MainThreadEditorInsets"
+		"MainThreadEditorInsets",
 	),
 	MainThreadEditorTabs: createProxyIdentifier<MainThreadEditorTabsShape>(
-		"MainThreadEditorTabs"
+		"MainThreadEditorTabs",
 	),
 	MainThreadErrors:
 		createProxyIdentifier<MainThreadErrorsShape>("MainThreadErrors"),
 	MainThreadTreeViews: createProxyIdentifier<MainThreadTreeViewsShape>(
-		"MainThreadTreeViews"
+		"MainThreadTreeViews",
 	),
 	MainThreadDownloadService:
 		createProxyIdentifier<MainThreadDownloadServiceShape>(
-			"MainThreadDownloadService"
+			"MainThreadDownloadService",
 		),
 	MainThreadLanguageFeatures:
 		createProxyIdentifier<MainThreadLanguageFeaturesShape>(
-			"MainThreadLanguageFeatures"
+			"MainThreadLanguageFeatures",
 		),
 	MainThreadLanguages: createProxyIdentifier<MainThreadLanguagesShape>(
-		"MainThreadLanguages"
+		"MainThreadLanguages",
 	),
 	MainThreadLogger:
 		createProxyIdentifier<MainThreadLoggerShape>("MainThreadLogger"),
 	MainThreadMessageService:
 		createProxyIdentifier<MainThreadMessageServiceShape>(
-			"MainThreadMessageService"
+			"MainThreadMessageService",
 		),
 	MainThreadOutputService:
 		createProxyIdentifier<MainThreadOutputServiceShape>(
-			"MainThreadOutputService"
+			"MainThreadOutputService",
 		),
 	MainThreadProgress:
 		createProxyIdentifier<MainThreadProgressShape>("MainThreadProgress"),
 	MainThreadQuickDiff: createProxyIdentifier<MainThreadQuickDiffShape>(
-		"MainThreadQuickDiff"
+		"MainThreadQuickDiff",
 	),
 	MainThreadQuickOpen: createProxyIdentifier<MainThreadQuickOpenShape>(
-		"MainThreadQuickOpen"
+		"MainThreadQuickOpen",
 	),
 	MainThreadStatusBar: createProxyIdentifier<MainThreadStatusBarShape>(
-		"MainThreadStatusBar"
+		"MainThreadStatusBar",
 	),
 	MainThreadSecretState: createProxyIdentifier<MainThreadSecretStateShape>(
-		"MainThreadSecretState"
+		"MainThreadSecretState",
 	),
 	MainThreadStorage:
 		createProxyIdentifier<MainThreadStorageShape>("MainThreadStorage"),
 	MainThreadSpeech: createProxyIdentifier<MainThreadSpeechShape>(
-		"MainThreadSpeechProvider"
+		"MainThreadSpeechProvider",
 	),
 	MainThreadTelemetry: createProxyIdentifier<MainThreadTelemetryShape>(
-		"MainThreadTelemetry"
+		"MainThreadTelemetry",
 	),
 	MainThreadTerminalService:
 		createProxyIdentifier<MainThreadTerminalServiceShape>(
-			"MainThreadTerminalService"
+			"MainThreadTerminalService",
 		),
 	MainThreadWebviews:
 		createProxyIdentifier<MainThreadWebviewsShape>("MainThreadWebviews"),
 	MainThreadWebviewPanels:
 		createProxyIdentifier<MainThreadWebviewPanelsShape>(
-			"MainThreadWebviewPanels"
+			"MainThreadWebviewPanels",
 		),
 	MainThreadWebviewViews: createProxyIdentifier<MainThreadWebviewViewsShape>(
-		"MainThreadWebviewViews"
+		"MainThreadWebviewViews",
 	),
 	MainThreadCustomEditors:
 		createProxyIdentifier<MainThreadCustomEditorsShape>(
-			"MainThreadCustomEditors"
+			"MainThreadCustomEditors",
 		),
 	MainThreadUrls:
 		createProxyIdentifier<MainThreadUrlsShape>("MainThreadUrls"),
 	MainThreadUriOpeners: createProxyIdentifier<MainThreadUriOpenersShape>(
-		"MainThreadUriOpeners"
+		"MainThreadUriOpeners",
 	),
 	MainThreadProfileContentHandlers:
 		createProxyIdentifier<MainThreadProfileContentHandlersShape>(
-			"MainThreadProfileContentHandlers"
+			"MainThreadProfileContentHandlers",
 		),
 	MainThreadWorkspace: createProxyIdentifier<MainThreadWorkspaceShape>(
-		"MainThreadWorkspace"
+		"MainThreadWorkspace",
 	),
 	MainThreadFileSystem: createProxyIdentifier<MainThreadFileSystemShape>(
-		"MainThreadFileSystem"
+		"MainThreadFileSystem",
 	),
 	MainThreadFileSystemEventService:
 		createProxyIdentifier<MainThreadFileSystemEventServiceShape>(
-			"MainThreadFileSystemEventService"
+			"MainThreadFileSystemEventService",
 		),
 	MainThreadExtensionService:
 		createProxyIdentifier<MainThreadExtensionServiceShape>(
-			"MainThreadExtensionService"
+			"MainThreadExtensionService",
 		),
 	MainThreadSCM: createProxyIdentifier<MainThreadSCMShape>("MainThreadSCM"),
 	MainThreadSearch:
@@ -4713,62 +4709,62 @@ export const MainContext = {
 	MainThreadWindow:
 		createProxyIdentifier<MainThreadWindowShape>("MainThreadWindow"),
 	MainThreadLabelService: createProxyIdentifier<MainThreadLabelServiceShape>(
-		"MainThreadLabelService"
+		"MainThreadLabelService",
 	),
 	MainThreadNotebook:
 		createProxyIdentifier<MainThreadNotebookShape>("MainThreadNotebook"),
 	MainThreadNotebookDocuments:
 		createProxyIdentifier<MainThreadNotebookDocumentsShape>(
-			"MainThreadNotebookDocumentsShape"
+			"MainThreadNotebookDocumentsShape",
 		),
 	MainThreadNotebookEditors:
 		createProxyIdentifier<MainThreadNotebookEditorsShape>(
-			"MainThreadNotebookEditorsShape"
+			"MainThreadNotebookEditorsShape",
 		),
 	MainThreadNotebookKernels:
 		createProxyIdentifier<MainThreadNotebookKernelsShape>(
-			"MainThreadNotebookKernels"
+			"MainThreadNotebookKernels",
 		),
 	MainThreadNotebookRenderers:
 		createProxyIdentifier<MainThreadNotebookRenderersShape>(
-			"MainThreadNotebookRenderers"
+			"MainThreadNotebookRenderers",
 		),
 	MainThreadInteractive: createProxyIdentifier<MainThreadInteractiveShape>(
-		"MainThreadInteractive"
+		"MainThreadInteractive",
 	),
 	MainThreadChat:
 		createProxyIdentifier<MainThreadChatShape>("MainThreadChat"),
 	MainThreadInlineChat: createProxyIdentifier<MainThreadInlineChatShape>(
-		"MainThreadInlineChatShape"
+		"MainThreadInlineChatShape",
 	),
 	MainThreadTheming:
 		createProxyIdentifier<MainThreadThemingShape>("MainThreadTheming"),
 	MainThreadTunnelService:
 		createProxyIdentifier<MainThreadTunnelServiceShape>(
-			"MainThreadTunnelService"
+			"MainThreadTunnelService",
 		),
 	MainThreadManagedSockets:
 		createProxyIdentifier<MainThreadManagedSocketsShape>(
-			"MainThreadManagedSockets"
+			"MainThreadManagedSockets",
 		),
 	MainThreadTimeline:
 		createProxyIdentifier<MainThreadTimelineShape>("MainThreadTimeline"),
 	MainThreadTesting:
 		createProxyIdentifier<MainThreadTestingShape>("MainThreadTesting"),
 	MainThreadLocalization: createProxyIdentifier<MainThreadLocalizationShape>(
-		"MainThreadLocalizationShape"
+		"MainThreadLocalizationShape",
 	),
 	MainThreadAiRelatedInformation:
 		createProxyIdentifier<MainThreadAiRelatedInformationShape>(
-			"MainThreadAiRelatedInformation"
+			"MainThreadAiRelatedInformation",
 		),
 	MainThreadAiEmbeddingVector:
 		createProxyIdentifier<MainThreadAiEmbeddingVectorShape>(
-			"MainThreadAiEmbeddingVector"
+			"MainThreadAiEmbeddingVector",
 		),
 	MainThreadIssueReporter:
 		createProxyIdentifier<MainThreadIssueReporterShape>(
-			"MainThreadIssueReporter"
+			"MainThreadIssueReporter",
 		),
 };
 
@@ -4776,28 +4772,28 @@ export const ExtHostContext = {
 	ExtHostCommands:
 		createProxyIdentifier<ExtHostCommandsShape>("ExtHostCommands"),
 	ExtHostConfiguration: createProxyIdentifier<ExtHostConfigurationShape>(
-		"ExtHostConfiguration"
+		"ExtHostConfiguration",
 	),
 	ExtHostDiagnostics:
 		createProxyIdentifier<ExtHostDiagnosticsShape>("ExtHostDiagnostics"),
 	ExtHostDebugService: createProxyIdentifier<ExtHostDebugServiceShape>(
-		"ExtHostDebugService"
+		"ExtHostDebugService",
 	),
 	ExtHostDecorations:
 		createProxyIdentifier<ExtHostDecorationsShape>("ExtHostDecorations"),
 	ExtHostDocumentsAndEditors:
 		createProxyIdentifier<ExtHostDocumentsAndEditorsShape>(
-			"ExtHostDocumentsAndEditors"
+			"ExtHostDocumentsAndEditors",
 		),
 	ExtHostDocuments:
 		createProxyIdentifier<ExtHostDocumentsShape>("ExtHostDocuments"),
 	ExtHostDocumentContentProviders:
 		createProxyIdentifier<ExtHostDocumentContentProvidersShape>(
-			"ExtHostDocumentContentProviders"
+			"ExtHostDocumentContentProviders",
 		),
 	ExtHostDocumentSaveParticipant:
 		createProxyIdentifier<ExtHostDocumentSaveParticipantShape>(
-			"ExtHostDocumentSaveParticipant"
+			"ExtHostDocumentSaveParticipant",
 		),
 	ExtHostEditors:
 		createProxyIdentifier<ExtHostEditorsShape>("ExtHostEditors"),
@@ -4806,17 +4802,17 @@ export const ExtHostContext = {
 	ExtHostFileSystem:
 		createProxyIdentifier<ExtHostFileSystemShape>("ExtHostFileSystem"),
 	ExtHostFileSystemInfo: createProxyIdentifier<ExtHostFileSystemInfoShape>(
-		"ExtHostFileSystemInfo"
+		"ExtHostFileSystemInfo",
 	),
 	ExtHostFileSystemEventService:
 		createProxyIdentifier<ExtHostFileSystemEventServiceShape>(
-			"ExtHostFileSystemEventService"
+			"ExtHostFileSystemEventService",
 		),
 	ExtHostLanguages:
 		createProxyIdentifier<ExtHostLanguagesShape>("ExtHostLanguages"),
 	ExtHostLanguageFeatures:
 		createProxyIdentifier<ExtHostLanguageFeaturesShape>(
-			"ExtHostLanguageFeatures"
+			"ExtHostLanguageFeatures",
 		),
 	ExtHostQuickOpen:
 		createProxyIdentifier<ExtHostQuickOpenShape>("ExtHostQuickOpen"),
@@ -4827,14 +4823,14 @@ export const ExtHostContext = {
 	ExtHostShare: createProxyIdentifier<ExtHostShareShape>("ExtHostShare"),
 	ExtHostExtensionService:
 		createProxyIdentifier<ExtHostExtensionServiceShape>(
-			"ExtHostExtensionService"
+			"ExtHostExtensionService",
 		),
 	ExtHostLogLevelServiceShape:
 		createProxyIdentifier<ExtHostLogLevelServiceShape>(
-			"ExtHostLogLevelServiceShape"
+			"ExtHostLogLevelServiceShape",
 		),
 	ExtHostTerminalService: createProxyIdentifier<ExtHostTerminalServiceShape>(
-		"ExtHostTerminalService"
+		"ExtHostTerminalService",
 	),
 	ExtHostSCM: createProxyIdentifier<ExtHostSCMShape>("ExtHostSCM"),
 	ExtHostSearch: createProxyIdentifier<ExtHostSearchShape>("ExtHostSearch"),
@@ -4845,16 +4841,16 @@ export const ExtHostContext = {
 	ExtHostWebviews:
 		createProxyIdentifier<ExtHostWebviewsShape>("ExtHostWebviews"),
 	ExtHostWebviewPanels: createProxyIdentifier<ExtHostWebviewPanelsShape>(
-		"ExtHostWebviewPanels"
+		"ExtHostWebviewPanels",
 	),
 	ExtHostCustomEditors: createProxyIdentifier<ExtHostCustomEditorsShape>(
-		"ExtHostCustomEditors"
+		"ExtHostCustomEditors",
 	),
 	ExtHostWebviewViews: createProxyIdentifier<ExtHostWebviewViewsShape>(
-		"ExtHostWebviewViews"
+		"ExtHostWebviewViews",
 	),
 	ExtHostEditorInsets: createProxyIdentifier<ExtHostEditorInsetsShape>(
-		"ExtHostEditorInsets"
+		"ExtHostEditorInsets",
 	),
 	ExtHostEditorTabs:
 		createProxyIdentifier<IExtHostEditorTabsShape>("ExtHostEditorTabs"),
@@ -4871,67 +4867,67 @@ export const ExtHostContext = {
 		createProxyIdentifier<ExtHostUriOpenersShape>("ExtHostUriOpeners"),
 	ExtHostProfileContentHandlers:
 		createProxyIdentifier<ExtHostProfileContentHandlersShape>(
-			"ExtHostProfileContentHandlers"
+			"ExtHostProfileContentHandlers",
 		),
 	ExtHostOutputService: createProxyIdentifier<ExtHostOutputServiceShape>(
-		"ExtHostOutputService"
+		"ExtHostOutputService",
 	),
 	ExtHostLabelService: createProxyIdentifier<ExtHostLabelServiceShape>(
-		"ExtHostLabelService"
+		"ExtHostLabelService",
 	),
 	ExtHostNotebook:
 		createProxyIdentifier<ExtHostNotebookShape>("ExtHostNotebook"),
 	ExtHostNotebookDocuments:
 		createProxyIdentifier<ExtHostNotebookDocumentsShape>(
-			"ExtHostNotebookDocuments"
+			"ExtHostNotebookDocuments",
 		),
 	ExtHostNotebookEditors: createProxyIdentifier<ExtHostNotebookEditorsShape>(
-		"ExtHostNotebookEditors"
+		"ExtHostNotebookEditors",
 	),
 	ExtHostNotebookKernels: createProxyIdentifier<ExtHostNotebookKernelsShape>(
-		"ExtHostNotebookKernels"
+		"ExtHostNotebookKernels",
 	),
 	ExtHostNotebookRenderers:
 		createProxyIdentifier<ExtHostNotebookRenderersShape>(
-			"ExtHostNotebookRenderers"
+			"ExtHostNotebookRenderers",
 		),
 	ExtHostNotebookDocumentSaveParticipant:
 		createProxyIdentifier<ExtHostNotebookDocumentSaveParticipantShape>(
-			"ExtHostNotebookDocumentSaveParticipant"
+			"ExtHostNotebookDocumentSaveParticipant",
 		),
 	ExtHostInteractive:
 		createProxyIdentifier<ExtHostInteractiveShape>("ExtHostInteractive"),
 	ExtHostInlineChat: createProxyIdentifier<ExtHostInlineChatShape>(
-		"ExtHostInlineChatShape"
+		"ExtHostInlineChatShape",
 	),
 	ExtHostChat: createProxyIdentifier<ExtHostChatShape>("ExtHostChat"),
 	ExtHostChatAgents2:
 		createProxyIdentifier<ExtHostChatAgentsShape2>("ExtHostChatAgents"),
 	ExtHostChatVariables: createProxyIdentifier<ExtHostChatVariablesShape>(
-		"ExtHostChatVariables"
+		"ExtHostChatVariables",
 	),
 	ExtHostChatProvider: createProxyIdentifier<ExtHostChatProviderShape>(
-		"ExtHostChatProvider"
+		"ExtHostChatProvider",
 	),
 	ExtHostSpeech: createProxyIdentifier<ExtHostSpeechShape>("ExtHostSpeech"),
 	ExtHostAiRelatedInformation:
 		createProxyIdentifier<ExtHostAiRelatedInformationShape>(
-			"ExtHostAiRelatedInformation"
+			"ExtHostAiRelatedInformation",
 		),
 	ExtHostAiEmbeddingVector:
 		createProxyIdentifier<ExtHostAiEmbeddingVectorShape>(
-			"ExtHostAiEmbeddingVector"
+			"ExtHostAiEmbeddingVector",
 		),
 	ExtHostTheming:
 		createProxyIdentifier<ExtHostThemingShape>("ExtHostTheming"),
 	ExtHostTunnelService: createProxyIdentifier<ExtHostTunnelServiceShape>(
-		"ExtHostTunnelService"
+		"ExtHostTunnelService",
 	),
 	ExtHostManagedSockets: createProxyIdentifier<ExtHostManagedSocketsShape>(
-		"ExtHostManagedSockets"
+		"ExtHostManagedSockets",
 	),
 	ExtHostAuthentication: createProxyIdentifier<ExtHostAuthenticationShape>(
-		"ExtHostAuthentication"
+		"ExtHostAuthentication",
 	),
 	ExtHostTimeline:
 		createProxyIdentifier<ExtHostTimelineShape>("ExtHostTimeline"),
@@ -4940,9 +4936,9 @@ export const ExtHostContext = {
 	ExtHostTelemetry:
 		createProxyIdentifier<ExtHostTelemetryShape>("ExtHostTelemetry"),
 	ExtHostLocalization: createProxyIdentifier<ExtHostLocalizationShape>(
-		"ExtHostLocalization"
+		"ExtHostLocalization",
 	),
 	ExtHostIssueReporter: createProxyIdentifier<ExtHostIssueReporterShape>(
-		"ExtHostIssueReporter"
+		"ExtHostIssueReporter",
 	),
 };

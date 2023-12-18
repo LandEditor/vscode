@@ -44,14 +44,14 @@ export class URLHandlerChannelClient implements IURLHandler {
 export class URLHandlerRouter implements IClientRouter<string> {
 	constructor(
 		private next: IClientRouter<string>,
-		private readonly logService: ILogService
+		private readonly logService: ILogService,
 	) {}
 
 	async routeCall(
 		hub: IConnectionHub<string>,
 		command: string,
 		arg?: any,
-		cancellationToken?: CancellationToken
+		cancellationToken?: CancellationToken,
 	): Promise<Client<string>> {
 		if (command !== "handleURL") {
 			throw new Error(`Call not found: ${command}`);
@@ -62,7 +62,7 @@ export class URLHandlerRouter implements IClientRouter<string> {
 
 			this.logService.trace(
 				"URLHandlerRouter#routeCall() with URI argument",
-				uri.toString(true)
+				uri.toString(true),
 			);
 
 			if (uri.query) {
@@ -73,14 +73,14 @@ export class URLHandlerRouter implements IClientRouter<string> {
 
 					this.logService.trace(
 						`URLHandlerRouter#routeCall(): found windowId query parameter with value "${windowId}"`,
-						uri.toString(true)
+						uri.toString(true),
 					);
 
 					const regex = new RegExp(`window:${windowId}`);
 					const connection = hub.connections.find((c) => {
 						this.logService.trace(
 							"URLHandlerRouter#routeCall(): testing connection",
-							c.ctx
+							c.ctx,
 						);
 
 						return regex.test(c.ctx);
@@ -88,26 +88,26 @@ export class URLHandlerRouter implements IClientRouter<string> {
 					if (connection) {
 						this.logService.trace(
 							"URLHandlerRouter#routeCall(): found a connection to route",
-							uri.toString(true)
+							uri.toString(true),
 						);
 
 						return connection;
 					} else {
 						this.logService.trace(
 							"URLHandlerRouter#routeCall(): did not find a connection to route",
-							uri.toString(true)
+							uri.toString(true),
 						);
 					}
 				} else {
 					this.logService.trace(
 						"URLHandlerRouter#routeCall(): did not find windowId query parameter",
-						uri.toString(true)
+						uri.toString(true),
 					);
 				}
 			}
 		} else {
 			this.logService.trace(
-				"URLHandlerRouter#routeCall() without URI argument"
+				"URLHandlerRouter#routeCall() without URI argument",
 			);
 		}
 
@@ -116,7 +116,7 @@ export class URLHandlerRouter implements IClientRouter<string> {
 
 	routeEvent(
 		_: IConnectionHub<string>,
-		event: string
+		event: string,
 	): Promise<Client<string>> {
 		throw new Error(`Event not found: ${event}`);
 	}

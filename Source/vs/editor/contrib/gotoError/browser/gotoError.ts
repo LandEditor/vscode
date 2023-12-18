@@ -13,10 +13,10 @@ import {
 	EditorCommand,
 	EditorContributionInstantiation,
 	IActionOptions,
+	ServicesAccessor,
 	registerEditorAction,
 	registerEditorCommand,
 	registerEditorContribution,
-	ServicesAccessor,
 } from "vs/editor/browser/editorExtensions";
 import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
 import { Position } from "vs/editor/common/core/position";
@@ -99,18 +99,18 @@ export class MarkerController implements IEditorContribution {
 			this._model.move(
 				true,
 				this._editor.getModel()!,
-				this._editor.getPosition()!
+				this._editor.getPosition()!,
 			);
 		}
 
 		this._widget = this._instantiationService.createInstance(
 			MarkerNavigationWidget,
-			this._editor
+			this._editor,
 		);
 		this._widget.onDidClose(
 			() => this.close(),
 			this,
-			this._sessionDispoables
+			this._sessionDispoables,
 		);
 		this._widgetVisible.set(true);
 
@@ -124,12 +124,12 @@ export class MarkerController implements IEditorContribution {
 					!this._model?.selected ||
 					!Range.containsPosition(
 						this._model?.selected.marker,
-						e.position
+						e.position,
 					)
 				) {
 					this._model?.resetIndex();
 				}
-			})
+			}),
 		);
 
 		// update markers
@@ -140,14 +140,14 @@ export class MarkerController implements IEditorContribution {
 				}
 				const info = this._model.find(
 					this._editor.getModel()!.uri,
-					this._widget!.position!
+					this._widget!.position!,
 				);
 				if (info) {
 					this._widget.updateMarker(info.marker);
 				} else {
 					this._widget.showStale();
 				}
-			})
+			}),
 		);
 
 		// open related
@@ -162,19 +162,19 @@ export class MarkerController implements IEditorContribution {
 							selection: Range.lift(related).collapseToStart(),
 						},
 					},
-					this._editor
+					this._editor,
 				);
 				this.close(false);
-			})
+			}),
 		);
 		this._sessionDispoables.add(
-			this._editor.onDidChangeModel(() => this._cleanUp())
+			this._editor.onDidChangeModel(() => this._cleanUp()),
 		);
 
 		return this._model;
 	}
 
-	close(focusEditor: boolean = true): void {
+	close(focusEditor = true): void {
 		this._cleanUp();
 		if (focusEditor) {
 			this._editor.focus();
@@ -188,13 +188,13 @@ export class MarkerController implements IEditorContribution {
 			model.move(
 				true,
 				this._editor.getModel(),
-				new Position(marker.startLineNumber, marker.startColumn)
+				new Position(marker.startLineNumber, marker.startColumn),
 			);
 			if (model.selected) {
 				this._widget!.showAtMarker(
 					model.selected.marker,
 					model.selected.index,
-					model.selected.total
+					model.selected.total,
 				);
 			}
 		}
@@ -203,12 +203,12 @@ export class MarkerController implements IEditorContribution {
 	async nagivate(next: boolean, multiFile: boolean) {
 		if (this._editor.hasModel()) {
 			const model = this._getOrCreateModel(
-				multiFile ? undefined : this._editor.getModel().uri
+				multiFile ? undefined : this._editor.getModel().uri,
 			);
 			model.move(
 				next,
 				this._editor.getModel(),
-				this._editor.getPosition()
+				this._editor.getPosition(),
 			);
 			if (!model.selected) {
 				return;
@@ -230,14 +230,14 @@ export class MarkerController implements IEditorContribution {
 							selection: model.selected.marker,
 						},
 					},
-					this._editor
+					this._editor,
 				);
 
 				if (otherEditor) {
 					MarkerController.get(otherEditor)?.close();
 					MarkerController.get(otherEditor)?.nagivate(
 						next,
-						multiFile
+						multiFile,
 					);
 				}
 			} else {
@@ -245,7 +245,7 @@ export class MarkerController implements IEditorContribution {
 				this._widget!.showAtMarker(
 					model.selected.marker,
 					model.selected.index,
-					model.selected.total
+					model.selected.total,
 				);
 			}
 		}
@@ -256,7 +256,7 @@ class MarkerNavigationAction extends EditorAction {
 	constructor(
 		private readonly _next: boolean,
 		private readonly _multiFile: boolean,
-		opts: IActionOptions
+		opts: IActionOptions,
 	) {
 		super(opts);
 	}
@@ -269,10 +269,10 @@ class MarkerNavigationAction extends EditorAction {
 }
 
 export class NextMarkerAction extends MarkerNavigationAction {
-	static ID: string = "editor.action.marker.next";
+	static ID = "editor.action.marker.next";
 	static LABEL: string = nls.localize(
 		"markerAction.next.label",
-		"Go to Next Problem (Error, Warning, Info)"
+		"Go to Next Problem (Error, Warning, Info)",
 	);
 	constructor() {
 		super(true, false, {
@@ -291,7 +291,10 @@ export class NextMarkerAction extends MarkerNavigationAction {
 				icon: registerIcon(
 					"marker-navigation-next",
 					Codicon.arrowDown,
-					nls.localize("nextMarkerIcon", "Icon for goto next marker.")
+					nls.localize(
+						"nextMarkerIcon",
+						"Icon for goto next marker.",
+					),
 				),
 				group: "navigation",
 				order: 1,
@@ -301,10 +304,10 @@ export class NextMarkerAction extends MarkerNavigationAction {
 }
 
 class PrevMarkerAction extends MarkerNavigationAction {
-	static ID: string = "editor.action.marker.prev";
+	static ID = "editor.action.marker.prev";
 	static LABEL: string = nls.localize(
 		"markerAction.previous.label",
-		"Go to Previous Problem (Error, Warning, Info)"
+		"Go to Previous Problem (Error, Warning, Info)",
 	);
 	constructor() {
 		super(false, false, {
@@ -325,8 +328,8 @@ class PrevMarkerAction extends MarkerNavigationAction {
 					Codicon.arrowUp,
 					nls.localize(
 						"previousMarkerIcon",
-						"Icon for goto previous marker."
-					)
+						"Icon for goto previous marker.",
+					),
 				),
 				group: "navigation",
 				order: 2,
@@ -341,7 +344,7 @@ class NextMarkerInFilesAction extends MarkerNavigationAction {
 			id: "editor.action.marker.nextInFiles",
 			label: nls.localize(
 				"markerAction.nextInFiles.label",
-				"Go to Next Problem in Files (Error, Warning, Info)"
+				"Go to Next Problem in Files (Error, Warning, Info)",
 			),
 			alias: "Go to Next Problem in Files (Error, Warning, Info)",
 			precondition: undefined,
@@ -357,7 +360,7 @@ class NextMarkerInFilesAction extends MarkerNavigationAction {
 						key: "miGotoNextProblem",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"Next &&Problem"
+					"Next &&Problem",
 				),
 				group: "6_problem_nav",
 				order: 1,
@@ -372,7 +375,7 @@ class PrevMarkerInFilesAction extends MarkerNavigationAction {
 			id: "editor.action.marker.prevInFiles",
 			label: nls.localize(
 				"markerAction.previousInFiles.label",
-				"Go to Previous Problem in Files (Error, Warning, Info)"
+				"Go to Previous Problem in Files (Error, Warning, Info)",
 			),
 			alias: "Go to Previous Problem in Files (Error, Warning, Info)",
 			precondition: undefined,
@@ -388,7 +391,7 @@ class PrevMarkerInFilesAction extends MarkerNavigationAction {
 						key: "miGotoPreviousProblem",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"Previous &&Problem"
+					"Previous &&Problem",
 				),
 				group: "6_problem_nav",
 				order: 2,
@@ -400,7 +403,7 @@ class PrevMarkerInFilesAction extends MarkerNavigationAction {
 registerEditorContribution(
 	MarkerController.ID,
 	MarkerController,
-	EditorContributionInstantiation.Lazy
+	EditorContributionInstantiation.Lazy,
 );
 registerEditorAction(NextMarkerAction);
 registerEditorAction(PrevMarkerAction);
@@ -409,11 +412,11 @@ registerEditorAction(PrevMarkerInFilesAction);
 
 const CONTEXT_MARKERS_NAVIGATION_VISIBLE = new RawContextKey<boolean>(
 	"markersNavigationVisible",
-	false
+	false,
 );
 
 const MarkerCommand = EditorCommand.bindToContribution<MarkerController>(
-	MarkerController.get
+	MarkerController.get,
 );
 
 registerEditorCommand(
@@ -427,5 +430,5 @@ registerEditorCommand(
 			primary: KeyCode.Escape,
 			secondary: [KeyMod.Shift | KeyCode.Escape],
 		},
-	})
+	}),
 );

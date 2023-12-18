@@ -18,7 +18,7 @@ type KeyEvent = {
 };
 
 export type FromWebviewMessage = {
-	"onmessage": { message: any; transfer?: ArrayBuffer[] };
+	onmessage: { message: any; transfer?: ArrayBuffer[] };
 	"did-click-link": { uri: string };
 	"did-scroll": { scrollYPercentage: number };
 	"did-focus": void;
@@ -63,9 +63,9 @@ interface UpdateContentEvent {
 }
 
 export type ToWebviewMessage = {
-	"focus": void;
-	"message": { message: any; transfer?: ArrayBuffer[] };
-	"execCommand": string;
+	focus: void;
+	message: { message: any; transfer?: ArrayBuffer[] };
+	execCommand: string;
 	"did-load-resource":
 		| { id: number; status: 401 | 404; path: string }
 		| {
@@ -92,9 +92,9 @@ export type ToWebviewMessage = {
 	"set-confirm-before-close": string;
 	"set-context-menu-visible": { visible: boolean };
 	"initial-scroll-position": number;
-	"content": UpdateContentEvent;
+	content: UpdateContentEvent;
 	"set-title": string | undefined;
-	"styles": {
+	styles: {
 		styles: WebviewStyles;
 		activeTheme: string;
 		themeId: string;
@@ -102,7 +102,7 @@ export type ToWebviewMessage = {
 		reduceMotion: boolean;
 		screenReader: boolean;
 	};
-	"find": { value: string; previous?: boolean };
+	find: { value: string; previous?: boolean };
 	"find-stop": { clearSelection?: boolean };
 };
 
@@ -110,11 +110,11 @@ export interface WebviewHostMessaging {
 	postMessage<K extends keyof FromWebviewMessage>(
 		channel: K,
 		data: FromWebviewMessage[K],
-		transfer?: []
+		transfer?: [],
 	): void;
 
 	onMessage<K extends keyof ToWebviewMessage>(
 		channel: K,
-		handler: (e: Event, data: ToWebviewMessage[K]) => void
+		handler: (e: Event, data: ToWebviewMessage[K]) => void,
 	): void;
 }

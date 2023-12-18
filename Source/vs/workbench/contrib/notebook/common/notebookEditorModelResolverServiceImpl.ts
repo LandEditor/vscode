@@ -3,8 +3,26 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { AsyncEmitter, Emitter, Event } from "vs/base/common/event";
+import {
+	DisposableStore,
+	IDisposable,
+	IReference,
+	ReferenceCollection,
+	combinedDisposable,
+	dispose,
+	toDisposable,
+} from "vs/base/common/lifecycle";
+import { ResourceMap } from "vs/base/common/map";
+import { Schemas } from "vs/base/common/network";
+import { assertIsDefined } from "vs/base/common/types";
 import { URI } from "vs/base/common/uri";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IFileReadLimits } from "vs/platform/files/common/files";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { ILogService } from "vs/platform/log/common/log";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
 import {
 	CellUri,
 	IResolvedNotebookEditorModel,
@@ -16,35 +34,17 @@ import {
 	SimpleNotebookEditorModel,
 } from "vs/workbench/contrib/notebook/common/notebookEditorModel";
 import {
-	combinedDisposable,
-	DisposableStore,
-	dispose,
-	IDisposable,
-	IReference,
-	ReferenceCollection,
-	toDisposable,
-} from "vs/base/common/lifecycle";
-import { INotebookService } from "vs/workbench/contrib/notebook/common/notebookService";
-import { ILogService } from "vs/platform/log/common/log";
-import { AsyncEmitter, Emitter, Event } from "vs/base/common/event";
-import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import {
 	INotebookConflictEvent,
 	INotebookEditorModelResolverService,
 	IUntitledNotebookResource,
 } from "vs/workbench/contrib/notebook/common/notebookEditorModelResolverService";
-import { ResourceMap } from "vs/base/common/map";
+import { NotebookProviderInfo } from "vs/workbench/contrib/notebook/common/notebookProvider";
+import { INotebookService } from "vs/workbench/contrib/notebook/common/notebookService";
+import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
 import {
 	FileWorkingCopyManager,
 	IFileWorkingCopyManager,
 } from "vs/workbench/services/workingCopy/common/fileWorkingCopyManager";
-import { Schemas } from "vs/base/common/network";
-import { NotebookProviderInfo } from "vs/workbench/contrib/notebook/common/notebookProvider";
-import { assertIsDefined } from "vs/base/common/types";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IFileReadLimits } from "vs/platform/files/common/files";
 
 class NotebookModelReferenceCollection extends ReferenceCollection<
 	Promise<IResolvedNotebookEditorModel>
@@ -100,7 +100,7 @@ class NotebookModelReferenceCollection extends ReferenceCollection<
 		key: string,
 		viewType: string,
 		hasAssociatedFilePath: boolean,
-		limits?: IFileReadLimits
+		limits?: IFileReadLimits,
 	): Promise<IResolvedNotebookEditorModel> {
 		// Untrack as being disposed
 		this.modelsToDispose.delete(key);
@@ -115,7 +115,7 @@ class NotebookModelReferenceCollection extends ReferenceCollection<
 			const factory = new NotebookFileWorkingCopyModelFactory(
 				viewType,
 				this._notebookService,
-				this._configurationService
+				this._configurationService,
 			);
 			workingCopyManager = <
 				IFileWorkingCopyManager<
@@ -127,12 +127,12 @@ class NotebookModelReferenceCollection extends ReferenceCollection<
 					FileWorkingCopyManager,
 					workingCopyTypeId,
 					factory,
-					factory
+					factory,
 				)
 			));
 			this._workingCopyManagers.set(
 				workingCopyTypeId,
-				workingCopyManager
+				workingCopyManager,
 			);
 		}
 		const model = this._instantiationService.createInstance(
@@ -140,7 +140,7 @@ class NotebookModelReferenceCollection extends ReferenceCollection<
 			uri,
 			hasAssociatedFilePath,
 			viewType,
-			workingCopyManager
+			workingCopyManager,
 		);
 		const result = await model.load({ limits });
 
@@ -153,7 +153,7 @@ class NotebookModelReferenceCollection extends ReferenceCollection<
 			result,
 			combinedDisposable(
 				result.onDidSave(() =>
-					this._onDidSaveNotebook.fire(result.resource)
+					this._onDidSaveNotebook.fire(result.resource),
 				),
 				result.onDidChangeDirty(() => {
 					const isDirty = result.isDirty();
@@ -170,15 +170,15 @@ class NotebookModelReferenceCollection extends ReferenceCollection<
 
 					this._onDidChangeDirty.fire(result);
 				}),
-				toDisposable(() => onDirtyAutoReference?.dispose())
-			)
+				toDisposable(() => onDirtyAutoReference?.dispose()),
+			),
 		);
 		return result;
 	}
 
 	protected destroyReferencedObject(
 		key: string,
-		object: Promise<IResolvedNotebookEditorModel>
+		object: Promise<IResolvedNotebookEditorModel>,
 	): void {
 		this.modelsToDispose.add(key);
 
@@ -253,60 +253,55 @@ export class NotebookModelResolverServiceImpl
 	async resolve(
 		resource: URI,
 		viewType?: string,
-		limits?: IFileReadLimits
+		limits?: IFileReadLimits,
 	): Promise<IReference<IResolvedNotebookEditorModel>>;
 	async resolve(
 		resource: IUntitledNotebookResource,
 		viewType: string,
-		limits?: IFileReadLimits
+		limits?: IFileReadLimits,
 	): Promise<IReference<IResolvedNotebookEditorModel>>;
 	async resolve(
 		arg0: URI | IUntitledNotebookResource,
 		viewType?: string,
-		limits?: IFileReadLimits
+		limits?: IFileReadLimits,
 	): Promise<IReference<IResolvedNotebookEditorModel>> {
 		let resource: URI;
 		let hasAssociatedFilePath = false;
 		if (URI.isUri(arg0)) {
 			resource = arg0;
-		} else {
-			if (!arg0.untitledResource) {
-				const info = this._notebookService.getContributedNotebookType(
-					assertIsDefined(viewType)
-				);
-				if (!info) {
-					throw new Error("UNKNOWN view type: " + viewType);
-				}
-
-				const suffix =
-					NotebookProviderInfo.possibleFileEnding(info.selectors) ??
-					"";
-				for (let counter = 1; ; counter++) {
-					const candidate = URI.from({
-						scheme: Schemas.untitled,
-						path: `Untitled-${counter}${suffix}`,
-						query: viewType,
-					});
-					if (
-						!this._notebookService.getNotebookTextModel(candidate)
-					) {
-						resource = candidate;
-						break;
-					}
-				}
-			} else if (arg0.untitledResource.scheme === Schemas.untitled) {
-				resource = arg0.untitledResource;
-			} else {
-				resource = arg0.untitledResource.with({
-					scheme: Schemas.untitled,
-				});
-				hasAssociatedFilePath = true;
+		} else if (!arg0.untitledResource) {
+			const info = this._notebookService.getContributedNotebookType(
+				assertIsDefined(viewType),
+			);
+			if (!info) {
+				throw new Error("UNKNOWN view type: " + viewType);
 			}
+
+			const suffix =
+				NotebookProviderInfo.possibleFileEnding(info.selectors) ?? "";
+			for (let counter = 1; ; counter++) {
+				const candidate = URI.from({
+					scheme: Schemas.untitled,
+					path: `Untitled-${counter}${suffix}`,
+					query: viewType,
+				});
+				if (!this._notebookService.getNotebookTextModel(candidate)) {
+					resource = candidate;
+					break;
+				}
+			}
+		} else if (arg0.untitledResource.scheme === Schemas.untitled) {
+			resource = arg0.untitledResource;
+		} else {
+			resource = arg0.untitledResource.with({
+				scheme: Schemas.untitled,
+			});
+			hasAssociatedFilePath = true;
 		}
 
 		if (resource.scheme === CellUri.scheme) {
 			throw new Error(
-				`CANNOT open a cell-uri as notebook. Tried with ${resource.toString()}`
+				`CANNOT open a cell-uri as notebook. Tried with ${resource.toString()}`,
 			);
 		}
 
@@ -322,7 +317,7 @@ export class NotebookModelResolverServiceImpl
 				const providers =
 					this._notebookService.getContributedNotebookTypes(resource);
 				const exclusiveProvider = providers.find(
-					(provider) => provider.exclusive
+					(provider) => provider.exclusive,
 				);
 				viewType = exclusiveProvider?.id || providers[0]?.id;
 			}
@@ -335,7 +330,7 @@ export class NotebookModelResolverServiceImpl
 		if (existingViewType && existingViewType !== viewType) {
 			await this._onWillFailWithConflict.fireAsync(
 				{ resource, viewType },
-				CancellationToken.None
+				CancellationToken.None,
 			);
 
 			// check again, listener should have done cleanup
@@ -343,7 +338,7 @@ export class NotebookModelResolverServiceImpl
 				this._notebookService.getNotebookTextModel(resource)?.viewType;
 			if (existingViewType2 && existingViewType2 !== viewType) {
 				throw new Error(
-					`A notebook with view type '${existingViewType2}' already exists for '${resource}', CANNOT create another notebook with view type ${viewType}`
+					`A notebook with view type '${existingViewType2}' already exists for '${resource}', CANNOT create another notebook with view type ${viewType}`,
 				);
 			}
 		}
@@ -352,7 +347,7 @@ export class NotebookModelResolverServiceImpl
 			resource.toString(),
 			viewType,
 			hasAssociatedFilePath,
-			limits
+			limits,
 		);
 		try {
 			const model = await reference.object;

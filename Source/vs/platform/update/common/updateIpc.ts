@@ -58,7 +58,7 @@ export class UpdateChannelClient implements IUpdateService {
 
 	constructor(private readonly channel: IChannel) {
 		this.channel.listen<State>("onStateChange")(
-			(state) => (this.state = state)
+			(state) => (this.state = state),
 		);
 		this.channel
 			.call<State>("_getInitialState")

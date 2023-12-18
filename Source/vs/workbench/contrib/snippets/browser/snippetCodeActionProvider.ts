@@ -21,8 +21,8 @@ import { IInstantiationService } from "vs/platform/instantiation/common/instanti
 import { IWorkbenchContribution } from "vs/workbench/common/contributions";
 import { ApplyFileSnippetAction } from "vs/workbench/contrib/snippets/browser/commands/fileTemplateSnippets";
 import {
-	getSurroundableSnippets,
 	SurroundWithSnippetEditorAction,
+	getSurroundableSnippets,
 } from "vs/workbench/contrib/snippets/browser/commands/surroundWithSnippet";
 import { Snippet } from "vs/workbench/contrib/snippets/browser/snippetsFile";
 import { ISnippetsService } from "./snippets";
@@ -45,7 +45,7 @@ class SurroundWithSnippetCodeActionProvider implements CodeActionProvider {
 
 	async provideCodeActions(
 		model: ITextModel,
-		range: Range | Selection
+		range: Range | Selection,
 	): Promise<CodeActionList | undefined> {
 		if (range.isEmpty()) {
 			return undefined;
@@ -58,7 +58,7 @@ class SurroundWithSnippetCodeActionProvider implements CodeActionProvider {
 			this._snippetService,
 			model,
 			position,
-			false
+			false,
 		);
 		if (!snippets.length) {
 			return undefined;
@@ -71,7 +71,7 @@ class SurroundWithSnippetCodeActionProvider implements CodeActionProvider {
 				SurroundWithSnippetCodeActionProvider._MAX_CODE_ACTIONS
 			) {
 				actions.push(
-					SurroundWithSnippetCodeActionProvider._overflowCommandCodeAction
+					SurroundWithSnippetCodeActionProvider._overflowCommandCodeAction,
 				);
 				break;
 			}
@@ -116,7 +116,7 @@ class FileTemplateCodeActionProvider implements CodeActionProvider {
 
 		const snippets = await this._snippetService.getSnippets(
 			model.getLanguageId(),
-			{ fileTemplateSnippets: true, includeNoPrefixSnippets: true }
+			{ fileTemplateSnippets: true, includeNoPrefixSnippets: true },
 		);
 		const actions: CodeAction[] = [];
 		for (const snippet of snippets) {
@@ -125,7 +125,7 @@ class FileTemplateCodeActionProvider implements CodeActionProvider {
 				FileTemplateCodeActionProvider._MAX_CODE_ACTIONS
 			) {
 				actions.push(
-					FileTemplateCodeActionProvider._overflowCommandCodeAction
+					FileTemplateCodeActionProvider._overflowCommandCodeAction,
 				);
 				break;
 			}
@@ -135,7 +135,7 @@ class FileTemplateCodeActionProvider implements CodeActionProvider {
 				edit: asWorkspaceEdit(
 					model,
 					model.getFullModelRange(),
-					snippet
+					snippet,
 				),
 			});
 		}
@@ -149,7 +149,7 @@ class FileTemplateCodeActionProvider implements CodeActionProvider {
 function asWorkspaceEdit(
 	model: ITextModel,
 	range: IRange,
-	snippet: Snippet
+	snippet: Snippet,
 ): WorkspaceEdit {
 	return {
 		edits: [
@@ -173,7 +173,7 @@ export class SnippetCodeActions implements IWorkbenchContribution {
 		@IInstantiationService instantiationService: IInstantiationService,
 		@ILanguageFeaturesService
 		languageFeaturesService: ILanguageFeaturesService,
-		@IConfigurationService configService: IConfigurationService
+		@IConfigurationService configService: IConfigurationService,
 	) {
 		const setting = "editor.snippets.codeActions.enabled";
 		const sessionStore = new DisposableStore();
@@ -184,17 +184,17 @@ export class SnippetCodeActions implements IWorkbenchContribution {
 					languageFeaturesService.codeActionProvider.register(
 						"*",
 						instantiationService.createInstance(
-							SurroundWithSnippetCodeActionProvider
-						)
-					)
+							SurroundWithSnippetCodeActionProvider,
+						),
+					),
 				);
 				sessionStore.add(
 					languageFeaturesService.codeActionProvider.register(
 						"*",
 						instantiationService.createInstance(
-							FileTemplateCodeActionProvider
-						)
-					)
+							FileTemplateCodeActionProvider,
+						),
+					),
 				);
 			}
 		};
@@ -202,8 +202,8 @@ export class SnippetCodeActions implements IWorkbenchContribution {
 		update();
 		this._store.add(
 			configService.onDidChangeConfiguration(
-				(e) => e.affectsConfiguration(setting) && update()
-			)
+				(e) => e.affectsConfiguration(setting) && update(),
+			),
 		);
 		this._store.add(sessionStore);
 	}

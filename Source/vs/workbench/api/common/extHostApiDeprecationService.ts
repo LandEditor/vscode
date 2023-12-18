@@ -15,13 +15,13 @@ export interface IExtHostApiDeprecationService {
 	report(
 		apiId: string,
 		extension: IExtensionDescription,
-		migrationSuggestion: string
+		migrationSuggestion: string,
 	): void;
 }
 
 export const IExtHostApiDeprecationService =
 	createDecorator<IExtHostApiDeprecationService>(
-		"IExtHostApiDeprecationService"
+		"IExtHostApiDeprecationService",
 	);
 
 export class ExtHostApiDeprecationService
@@ -44,7 +44,7 @@ export class ExtHostApiDeprecationService
 	public report(
 		apiId: string,
 		extension: IExtensionDescription,
-		migrationSuggestion: string
+		migrationSuggestion: string,
 	): void {
 		const key = this.getUsageKey(apiId, extension);
 		if (this._reportedUsages.has(key)) {
@@ -54,7 +54,7 @@ export class ExtHostApiDeprecationService
 
 		if (extension.isUnderDevelopment) {
 			this._extHostLogService.warn(
-				`[Deprecation Warning] '${apiId}' is deprecated. ${migrationSuggestion}`
+				`[Deprecation Warning] '${apiId}' is deprecated. ${migrationSuggestion}`,
 			);
 		}
 
@@ -87,7 +87,7 @@ export class ExtHostApiDeprecationService
 
 	private getUsageKey(
 		apiId: string,
-		extension: IExtensionDescription
+		extension: IExtensionDescription,
 	): string {
 		return `${apiId}-${extension.identifier.value}`;
 	}
@@ -100,9 +100,9 @@ export const NullApiDeprecationService = Object.freeze(
 		public report(
 			_apiId: string,
 			_extension: IExtensionDescription,
-			_warningMessage: string
+			_warningMessage: string,
 		): void {
 			// noop
 		}
-	})()
+	})(),
 );

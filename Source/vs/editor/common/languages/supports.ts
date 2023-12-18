@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { LineTokens } from "vs/editor/common/tokens/lineTokens";
 import { StandardTokenType } from "vs/editor/common/encodedTokenAttributes";
+import { LineTokens } from "vs/editor/common/tokens/lineTokens";
 
 export function createScopedLineTokens(
 	context: LineTokens,
-	offset: number
+	offset: number,
 ): ScopedLineTokens {
 	const tokenCount = context.getCount();
 	const tokenIndex = context.findTokenIndexAtOffset(offset);
@@ -36,7 +36,7 @@ export function createScopedLineTokens(
 		firstTokenIndex,
 		lastTokenIndex + 1,
 		context.getStartOffset(firstTokenIndex),
-		context.getEndOffset(lastTokenIndex)
+		context.getEndOffset(lastTokenIndex),
 	);
 }
 
@@ -56,7 +56,7 @@ export class ScopedLineTokens {
 		firstTokenIndex: number,
 		lastTokenIndex: number,
 		firstCharOffset: number,
-		lastCharOffset: number
+		lastCharOffset: number,
 	) {
 		this._actual = actual;
 		this.languageId = languageId;
@@ -70,7 +70,7 @@ export class ScopedLineTokens {
 		const actualLineContent = this._actual.getLineContent();
 		return actualLineContent.substring(
 			this.firstCharOffset,
-			this._lastCharOffset
+			this._lastCharOffset,
 		);
 	}
 
@@ -92,19 +92,19 @@ export class ScopedLineTokens {
 
 	public getStandardTokenType(tokenIndex: number): StandardTokenType {
 		return this._actual.getStandardTokenType(
-			tokenIndex + this._firstTokenIndex
+			tokenIndex + this._firstTokenIndex,
 		);
 	}
 }
 
-const enum IgnoreBracketsInTokens {
+enum IgnoreBracketsInTokens {
 	value = StandardTokenType.Comment |
 		StandardTokenType.String |
 		StandardTokenType.RegEx,
 }
 
 export function ignoreBracketsInToken(
-	standardTokenType: StandardTokenType
+	standardTokenType: StandardTokenType,
 ): boolean {
 	return (standardTokenType & IgnoreBracketsInTokens.value) !== 0;
 }

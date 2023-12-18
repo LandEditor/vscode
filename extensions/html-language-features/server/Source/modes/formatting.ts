@@ -3,18 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	LanguageModes,
-	Settings,
-	LanguageModeRange,
-	TextDocument,
-	Range,
-	TextEdit,
-	FormattingOptions,
-	Position,
-} from "./languageModes";
 import { pushAll } from "../utils/arrays";
 import { isEOL } from "../utils/strings";
+import {
+	FormattingOptions,
+	LanguageModeRange,
+	LanguageModes,
+	Position,
+	Range,
+	Settings,
+	TextDocument,
+	TextEdit,
+} from "./languageModes";
 
 export async function format(
 	languageModes: LanguageModes,
@@ -22,7 +22,7 @@ export async function format(
 	formatRange: Range,
 	formattingOptions: FormattingOptions,
 	settings: Settings | undefined,
-	enabledModes: { [mode: string]: boolean }
+	enabledModes: { [mode: string]: boolean },
 ) {
 	const result: TextEdit[] = [];
 
@@ -36,14 +36,14 @@ export async function format(
 	) {
 		// if selection ends after a new line, exclude that new line
 		const prevLineStart = document.offsetAt(
-			Position.create(endPos.line - 1, 0)
+			Position.create(endPos.line - 1, 0),
 		);
 		while (isEOL(content, endOffset - 1) && endOffset > prevLineStart) {
 			endOffset--;
 		}
 		formatRange = Range.create(
 			formatRange.start,
-			document.positionAt(endOffset)
+			document.positionAt(endOffset),
 		);
 	}
 
@@ -68,7 +68,7 @@ export async function format(
 				document,
 				Range.create(startPos, range.end),
 				formattingOptions,
-				settings
+				settings,
 			);
 			pushAll(result, edits);
 		}
@@ -87,7 +87,7 @@ export async function format(
 		document,
 		formatRange,
 		formattingOptions,
-		settings
+		settings,
 	);
 	let htmlFormattedContent = TextDocument.applyEdits(document, htmlEdits);
 	if (
@@ -102,7 +102,7 @@ export async function format(
 		document.uri + ".tmp",
 		document.languageId,
 		document.version,
-		htmlFormattedContent
+		htmlFormattedContent,
 	);
 	try {
 		// run embedded formatters on html formatted content: - formatters see correct initial indent
@@ -111,12 +111,12 @@ export async function format(
 		const newFormatRange = Range.create(
 			formatRange.start,
 			newDocument.positionAt(
-				htmlFormattedContent.length - afterFormatRangeLength
-			)
+				htmlFormattedContent.length - afterFormatRangeLength,
+			),
 		);
 		const embeddedRanges = languageModes.getModesInRange(
 			newDocument,
-			newFormatRange
+			newFormatRange,
 		);
 
 		const embeddedEdits: TextEdit[] = [];
@@ -133,7 +133,7 @@ export async function format(
 					newDocument,
 					r,
 					formattingOptions,
-					settings
+					settings,
 				);
 				for (const edit of edits) {
 					embeddedEdits.push(edit);
@@ -149,11 +149,11 @@ export async function format(
 		// apply all embedded format edits and create a single edit for all changes
 		const resultContent = TextDocument.applyEdits(
 			newDocument,
-			embeddedEdits
+			embeddedEdits,
 		);
 		const resultReplaceText = resultContent.substring(
 			document.offsetAt(formatRange.start),
-			resultContent.length - afterFormatRangeLength
+			resultContent.length - afterFormatRangeLength,
 		);
 
 		result.push(TextEdit.replace(formatRange, resultReplaceText));

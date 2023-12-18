@@ -10,13 +10,13 @@ import {
 	IDisposable,
 	toDisposable,
 } from "vs/base/common/lifecycle";
+import { ColorId } from "vs/editor/common/encodedTokenAttributes";
 import {
+	ILazyTokenizationSupport,
 	ITokenizationRegistry,
 	ITokenizationSupport,
 	ITokenizationSupportChangedEvent,
-	ILazyTokenizationSupport,
 } from "vs/editor/common/languages";
-import { ColorId } from "vs/editor/common/encodedTokenAttributes";
 
 export class TokenizationRegistry implements ITokenizationRegistry {
 	private readonly _tokenizationSupports = new Map<
@@ -48,7 +48,7 @@ export class TokenizationRegistry implements ITokenizationRegistry {
 
 	public register(
 		languageId: string,
-		support: ITokenizationSupport
+		support: ITokenizationSupport,
 	): IDisposable {
 		this._tokenizationSupports.set(languageId, support);
 		this.handleChange([languageId]);
@@ -67,13 +67,13 @@ export class TokenizationRegistry implements ITokenizationRegistry {
 
 	public registerFactory(
 		languageId: string,
-		factory: ILazyTokenizationSupport
+		factory: ILazyTokenizationSupport,
 	): IDisposable {
 		this._factories.get(languageId)?.dispose();
 		const myData = new TokenizationSupportFactoryData(
 			this,
 			languageId,
-			factory
+			factory,
 		);
 		this._factories.set(languageId, myData);
 		return toDisposable(() => {
@@ -87,7 +87,7 @@ export class TokenizationRegistry implements ITokenizationRegistry {
 	}
 
 	public async getOrCreate(
-		languageId: string
+		languageId: string,
 	): Promise<ITokenizationSupport | null> {
 		// check first if the support is already set
 		const tokenizationSupport = this.get(languageId);
@@ -144,9 +144,9 @@ export class TokenizationRegistry implements ITokenizationRegistry {
 }
 
 class TokenizationSupportFactoryData extends Disposable {
-	private _isDisposed: boolean = false;
+	private _isDisposed = false;
 	private _resolvePromise: Promise<void> | null = null;
-	private _isResolved: boolean = false;
+	private _isResolved = false;
 
 	public get isResolved(): boolean {
 		return this._isResolved;
@@ -155,7 +155,7 @@ class TokenizationSupportFactoryData extends Disposable {
 	constructor(
 		private readonly _registry: TokenizationRegistry,
 		private readonly _languageId: string,
-		private readonly _factory: ILazyTokenizationSupport
+		private readonly _factory: ILazyTokenizationSupport,
 	) {
 		super();
 	}

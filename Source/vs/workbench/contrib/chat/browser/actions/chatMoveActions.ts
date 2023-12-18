@@ -38,7 +38,7 @@ enum MoveToNewLocation {
 const getMoveToChatActionDescriptorForViewTitle = (
 	viewId: string,
 	providerId: string,
-	moveTo: MoveToNewLocation
+	moveTo: MoveToNewLocation,
 ): Readonly<IAction2Options> & { viewId: string } => ({
 	id: `workbench.action.chat.${providerId}.openIn${moveTo}`,
 	title: {
@@ -47,8 +47,8 @@ const getMoveToChatActionDescriptorForViewTitle = (
 				? localize("chat.openInEditor.label", "Open Session in Editor")
 				: localize(
 						"chat.openInNewWindow.label",
-						"Open Session in New Window"
-					),
+						"Open Session in New Window",
+				  ),
 		original:
 			moveTo === MoveToNewLocation.Editor
 				? "Open Session in Editor"
@@ -76,7 +76,7 @@ export function getMoveToNewWindowAction(viewId: string, providerId: string) {
 export function getMoveToAction(
 	viewId: string,
 	providerId: string,
-	moveTo: MoveToNewLocation
+	moveTo: MoveToNewLocation,
 ) {
 	return class MoveToAction extends ViewAction<ChatViewPane> {
 		constructor() {
@@ -84,8 +84,8 @@ export function getMoveToAction(
 				getMoveToChatActionDescriptorForViewTitle(
 					viewId,
 					providerId,
-					moveTo
-				)
+					moveTo,
+				),
 			);
 		}
 
@@ -109,7 +109,7 @@ export function getMoveToAction(
 				},
 				moveTo === MoveToNewLocation.Window
 					? AUX_WINDOW_GROUP
-					: ACTIVE_GROUP
+					: ACTIVE_GROUP,
 			);
 		}
 	};
@@ -124,7 +124,7 @@ export function registerMoveActions() {
 					title: {
 						value: localize(
 							"interactiveSession.openInEditor.label",
-							"Open Session in Editor"
+							"Open Session in Editor",
 						),
 						original: "Open Session in Editor",
 					},
@@ -137,7 +137,7 @@ export function registerMoveActions() {
 			async run(accessor: ServicesAccessor, ...args: any[]) {
 				executeMoveToAction(accessor, MoveToNewLocation.Editor);
 			}
-		}
+		},
 	);
 
 	registerAction2(
@@ -148,7 +148,7 @@ export function registerMoveActions() {
 					title: {
 						value: localize(
 							"interactiveSession.openInNewWindow.label",
-							"Open Session in New Window"
+							"Open Session in New Window",
 						),
 						original: "Open Session In New Window",
 					},
@@ -161,7 +161,7 @@ export function registerMoveActions() {
 			async run(accessor: ServicesAccessor, ...args: any[]) {
 				executeMoveToAction(accessor, MoveToNewLocation.Window);
 			}
-		}
+		},
 	);
 
 	registerAction2(
@@ -172,7 +172,7 @@ export function registerMoveActions() {
 					title: {
 						value: localize(
 							"interactiveSession.openInSidebar.label",
-							"Open Session in Side Bar"
+							"Open Session in Side Bar",
 						),
 						original: "Open Session in Side Bar",
 					},
@@ -184,7 +184,7 @@ export function registerMoveActions() {
 							id: MenuId.EditorTitle,
 							order: 0,
 							when: ActiveEditorContext.isEqualTo(
-								ChatEditorInput.EditorID
+								ChatEditorInput.EditorID,
 							),
 						},
 					],
@@ -194,13 +194,13 @@ export function registerMoveActions() {
 			async run(accessor: ServicesAccessor, ...args: any[]) {
 				return moveToSidebar(accessor);
 			}
-		}
+		},
 	);
 }
 
 async function executeMoveToAction(
 	accessor: ServicesAccessor,
-	moveTo: MoveToNewLocation
+	moveTo: MoveToNewLocation,
 ) {
 	const widgetService = accessor.get(IChatWidgetService);
 	const viewService = accessor.get(IViewsService);
@@ -221,7 +221,7 @@ async function executeMoveToAction(
 			},
 			moveTo === MoveToNewLocation.Window
 				? AUX_WINDOW_GROUP
-				: ACTIVE_GROUP
+				: ACTIVE_GROUP,
 		);
 		return;
 	}
@@ -233,7 +233,7 @@ async function executeMoveToAction(
 
 	const sessionId = viewModel.sessionId;
 	const view = (await viewService.openView(
-		widget.viewContext.viewId
+		widget.viewContext.viewId,
 	)) as ChatViewPane;
 	view.clear();
 
@@ -245,7 +245,7 @@ async function executeMoveToAction(
 				pinned: true,
 			},
 		},
-		moveTo === MoveToNewLocation.Window ? AUX_WINDOW_GROUP : ACTIVE_GROUP
+		moveTo === MoveToNewLocation.Window ? AUX_WINDOW_GROUP : ACTIVE_GROUP,
 	);
 }
 
@@ -266,7 +266,7 @@ async function moveToSidebar(accessor: ServicesAccessor): Promise<void> {
 			groupId: editorGroupService.activeGroup.id,
 		});
 		const viewId = chatContribService.getViewIdForProvider(
-			chatEditorInput.providerId
+			chatEditorInput.providerId,
 		);
 		const view = (await viewsService.openView(viewId)) as ChatViewPane;
 		view.loadSession(chatEditorInput.sessionId);

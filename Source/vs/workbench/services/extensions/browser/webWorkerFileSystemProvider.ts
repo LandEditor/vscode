@@ -3,21 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { NotSupportedError } from "vs/base/common/errors";
+import { Event } from "vs/base/common/event";
+import { Disposable, IDisposable } from "vs/base/common/lifecycle";
+import { URI } from "vs/base/common/uri";
 import {
 	FileSystemProviderCapabilities,
-	IStat,
+	FileSystemProviderErrorCode,
 	FileType,
 	IFileDeleteOptions,
 	IFileOverwriteOptions,
-	IFileWriteOptions,
-	FileSystemProviderErrorCode,
 	IFileSystemProviderWithFileReadWriteCapability,
+	IFileWriteOptions,
+	IStat,
 	createFileSystemProviderError,
 } from "vs/platform/files/common/files";
-import { Event } from "vs/base/common/event";
-import { IDisposable, Disposable } from "vs/base/common/lifecycle";
-import { URI } from "vs/base/common/uri";
-import { NotSupportedError } from "vs/base/common/errors";
 
 export class FetchFileSystemProvider
 	implements IFileSystemProviderWithFileReadWriteCapability
@@ -38,12 +38,12 @@ export class FetchFileSystemProvider
 			}
 			throw createFileSystemProviderError(
 				res.statusText,
-				FileSystemProviderErrorCode.Unknown
+				FileSystemProviderErrorCode.Unknown,
 			);
 		} catch (err) {
 			throw createFileSystemProviderError(
 				err,
-				FileSystemProviderErrorCode.Unknown
+				FileSystemProviderErrorCode.Unknown,
 			);
 		}
 	}
@@ -66,7 +66,7 @@ export class FetchFileSystemProvider
 	writeFile(
 		_resource: URI,
 		_content: Uint8Array,
-		_opts: IFileWriteOptions
+		_opts: IFileWriteOptions,
 	): Promise<void> {
 		throw new NotSupportedError();
 	}

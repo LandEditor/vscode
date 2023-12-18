@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 //@ts-check
-"use strict";
 
 // Setup current working directory in all our node & electron processes
 // - Windows: call `process.chdir()` to always set application folder as cwd
@@ -37,7 +36,7 @@ setupCurrentWorkingDirectory();
  *
  * @param {string} injectPath
  */
-exports.injectNodeModuleLookupPath = function (injectPath) {
+exports.injectNodeModuleLookupPath = (injectPath) => {
 	if (!injectPath) {
 		throw new Error("Missing injectPath");
 	}
@@ -51,7 +50,7 @@ exports.injectNodeModuleLookupPath = function (injectPath) {
 	const originalResolveLookupPaths = Module._resolveLookupPaths;
 
 	// @ts-ignore
-	Module._resolveLookupPaths = function (moduleName, parent) {
+	Module._resolveLookupPaths = (moduleName, parent) => {
 		const paths = originalResolveLookupPaths(moduleName, parent);
 		if (Array.isArray(paths)) {
 			for (let i = 0, len = paths.length; i < len; i++) {
@@ -66,7 +65,7 @@ exports.injectNodeModuleLookupPath = function (injectPath) {
 	};
 };
 
-exports.removeGlobalNodeModuleLookupPaths = function () {
+exports.removeGlobalNodeModuleLookupPaths = () => {
 	const Module = require("module");
 	// @ts-ignore
 	const globalPaths = Module.globalPaths;
@@ -75,7 +74,7 @@ exports.removeGlobalNodeModuleLookupPaths = function () {
 	const originalResolveLookupPaths = Module._resolveLookupPaths;
 
 	// @ts-ignore
-	Module._resolveLookupPaths = function (moduleName, parent) {
+	Module._resolveLookupPaths = (moduleName, parent) => {
 		const paths = originalResolveLookupPaths(moduleName, parent);
 		if (Array.isArray(paths)) {
 			let commonSuffixLength = 0;
@@ -98,7 +97,7 @@ exports.removeGlobalNodeModuleLookupPaths = function () {
  * @param {Partial<import('./vs/base/common/product').IProductConfiguration>} product
  * @returns {{ portableDataPath: string; isPortable: boolean; }}
  */
-exports.configurePortable = function (product) {
+exports.configurePortable = (product) => {
 	const fs = require("fs");
 	const path = require("path");
 
@@ -136,7 +135,7 @@ exports.configurePortable = function (product) {
 			product.portable || `${product.applicationName}-portable-data`;
 		return path.join(
 			path.dirname(getApplicationPath(path)),
-			portableDataName
+			portableDataName,
 		);
 	}
 

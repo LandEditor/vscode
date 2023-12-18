@@ -22,7 +22,7 @@ import {
 	IEditorFactoryRegistry,
 } from "vs/workbench/common/editor";
 import {
-	ComplexCustomWorkingCopyEditorHandler as ComplexCustomWorkingCopyEditorHandler,
+	ComplexCustomWorkingCopyEditorHandler,
 	CustomEditorInputSerializer,
 } from "vs/workbench/contrib/customEditor/browser/customEditorInputFactory";
 import { ICustomEditorService } from "vs/workbench/contrib/customEditor/common/customEditor";
@@ -34,30 +34,30 @@ import { CustomEditorService } from "./customEditors";
 registerSingleton(
 	ICustomEditorService,
 	CustomEditorService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 
 Registry.as<IEditorPaneRegistry>(
-	EditorExtensions.EditorPane
+	EditorExtensions.EditorPane,
 ).registerEditorPane(
 	EditorPaneDescriptor.create(
 		WebviewEditor,
 		WebviewEditor.ID,
-		"Webview Editor"
+		"Webview Editor",
 	),
-	[new SyncDescriptor(CustomEditorInput)]
+	[new SyncDescriptor(CustomEditorInput)],
 );
 
 Registry.as<IEditorFactoryRegistry>(
-	EditorExtensions.EditorFactory
+	EditorExtensions.EditorFactory,
 ).registerEditorSerializer(
 	CustomEditorInputSerializer.ID,
-	CustomEditorInputSerializer
+	CustomEditorInputSerializer,
 );
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	ComplexCustomWorkingCopyEditorHandler,
-	LifecyclePhase.Starting
+	LifecyclePhase.Starting,
 );

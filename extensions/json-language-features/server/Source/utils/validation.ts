@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { TextDocument } from "vscode-json-languageservice";
 import {
 	CancellationToken,
 	Connection,
@@ -13,9 +14,8 @@ import {
 	DocumentDiagnosticReportKind,
 	TextDocuments,
 } from "vscode-languageserver";
-import { TextDocument } from "vscode-json-languageservice";
-import { formatError, runSafeAsync } from "./runner";
 import { RuntimeEnvironment } from "../jsonServer";
+import { formatError, runSafeAsync } from "./runner";
 
 export type Validator = (textDocument: TextDocument) => Promise<Diagnostic[]>;
 export type DiagnosticsSupport = {
@@ -27,7 +27,7 @@ export function registerDiagnosticsPushSupport(
 	documents: TextDocuments<TextDocument>,
 	connection: Connection,
 	runtime: RuntimeEnvironment,
-	validate: Validator
+	validate: Validator,
 ): DiagnosticsSupport {
 	const pendingValidationRequests: { [uri: string]: Disposable } = {};
 	const validationDelayMs = 500;
@@ -41,7 +41,7 @@ export function registerDiagnosticsPushSupport(
 			triggerValidation(change.document);
 		},
 		undefined,
-		disposables
+		disposables,
 	);
 
 	// a document has closed: clear all diagnostics
@@ -54,7 +54,7 @@ export function registerDiagnosticsPushSupport(
 			});
 		},
 		undefined,
-		disposables
+		disposables,
 	);
 
 	function cleanPendingValidation(textDocument: TextDocument): void {
@@ -86,8 +86,8 @@ export function registerDiagnosticsPushSupport(
 						connection.console.error(
 							formatError(
 								`Error while validating ${textDocument.uri}`,
-								e
-							)
+								e,
+							),
 						);
 					}
 				}
@@ -114,10 +114,10 @@ export function registerDiagnosticsPullSupport(
 	documents: TextDocuments<TextDocument>,
 	connection: Connection,
 	runtime: RuntimeEnvironment,
-	validate: Validator
+	validate: Validator,
 ): DiagnosticsSupport {
 	function newDocumentDiagnosticReport(
-		diagnostics: Diagnostic[]
+		diagnostics: Diagnostic[],
 	): DocumentDiagnosticReport {
 		return {
 			kind: DocumentDiagnosticReportKind.Full,
@@ -133,16 +133,16 @@ export function registerDiagnosticsPullSupport(
 					const document = documents.get(params.textDocument.uri);
 					if (document) {
 						return newDocumentDiagnosticReport(
-							await validate(document)
+							await validate(document),
 						);
 					}
 					return newDocumentDiagnosticReport([]);
 				},
 				newDocumentDiagnosticReport([]),
 				`Error while computing diagnostics for ${params.textDocument.uri}`,
-				token
+				token,
 			);
-		}
+		},
 	);
 
 	function requestRefresh(): void {

@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-export const enum CommentCommandId {
+export enum CommentCommandId {
 	Add = "workbench.action.addComment",
 	NextThread = "editor.action.nextCommentThreadAction",
 	PreviousThread = "editor.action.previousCommentThreadAction",

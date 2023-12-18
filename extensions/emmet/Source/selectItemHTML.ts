@@ -3,28 +3,28 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { HtmlNode } from "EmmetFlatNode";
 import * as vscode from "vscode";
 import {
-	getDeepestFlatNode,
 	findNextWord,
 	findPrevWord,
+	getDeepestFlatNode,
 	getHtmlFlatNode,
 	offsetRangeToSelection,
 } from "./util";
-import { HtmlNode } from "EmmetFlatNode";
 
 export function nextItemHTML(
 	document: vscode.TextDocument,
 	selectionStart: vscode.Position,
 	selectionEnd: vscode.Position,
-	rootNode: HtmlNode
+	rootNode: HtmlNode,
 ): vscode.Selection | undefined {
 	const selectionEndOffset = document.offsetAt(selectionEnd);
 	let currentNode = getHtmlFlatNode(
 		document.getText(),
 		rootNode,
 		selectionEndOffset,
-		false
+		false,
 	);
 	let nextNode: HtmlNode | undefined = undefined;
 
@@ -49,7 +49,7 @@ export function nextItemHTML(
 				document,
 				selectionStartOffset,
 				selectionEndOffset,
-				currentNode
+				currentNode,
 			);
 			if (attrSelection) {
 				return attrSelection;
@@ -86,14 +86,14 @@ export function prevItemHTML(
 	document: vscode.TextDocument,
 	selectionStart: vscode.Position,
 	selectionEnd: vscode.Position,
-	rootNode: HtmlNode
+	rootNode: HtmlNode,
 ): vscode.Selection | undefined {
 	const selectionStartOffset = document.offsetAt(selectionStart);
 	let currentNode = getHtmlFlatNode(
 		document.getText(),
 		rootNode,
 		selectionStartOffset,
-		false
+		false,
 	);
 	let prevNode: HtmlNode | undefined = undefined;
 
@@ -131,7 +131,7 @@ export function prevItemHTML(
 				getDeepestFlatNode(
 					prevNode && prevNode.type !== "comment"
 						? prevNode
-						: oldOption
+						: oldOption,
 				)
 			);
 		}
@@ -160,7 +160,7 @@ export function prevItemHTML(
 		document,
 		selectionStartOffset,
 		selectionEndOffset,
-		prevNode
+		prevNode,
 	);
 	return attrSelection
 		? attrSelection
@@ -169,7 +169,7 @@ export function prevItemHTML(
 
 function getSelectionFromNode(
 	document: vscode.TextDocument,
-	node: HtmlNode
+	node: HtmlNode,
 ): vscode.Selection | undefined {
 	if (node && node.open) {
 		const selectionStart = node.open.start + 1;
@@ -183,7 +183,7 @@ function getNextAttribute(
 	document: vscode.TextDocument,
 	selectionStart: number,
 	selectionEnd: number,
-	node: HtmlNode
+	node: HtmlNode,
 ): vscode.Selection | undefined {
 	if (
 		!node.attributes ||
@@ -212,7 +212,7 @@ function getNextAttribute(
 			return offsetRangeToSelection(
 				document,
 				attr.value.start,
-				attr.value.end
+				attr.value.end,
 			);
 		}
 
@@ -233,7 +233,7 @@ function getNextAttribute(
 			const selectionEndCharacter =
 				document.positionAt(selectionEnd).character;
 			const attrValueStartCharacter = document.positionAt(
-				attr.value.start
+				attr.value.start,
 			).character;
 			pos = selectionEndCharacter - attrValueStartCharacter - 1;
 		}
@@ -255,7 +255,7 @@ function getNextAttribute(
 				return offsetRangeToSelection(
 					document,
 					newSelectionStart,
-					newSelectionEnd
+					newSelectionEnd,
 				);
 			}
 		}
@@ -268,7 +268,7 @@ function getPrevAttribute(
 	document: vscode.TextDocument,
 	selectionStart: number,
 	selectionEnd: number,
-	node: HtmlNode
+	node: HtmlNode,
 ): vscode.Selection | undefined {
 	if (
 		!node.attributes ||
@@ -302,7 +302,7 @@ function getPrevAttribute(
 			return offsetRangeToSelection(
 				document,
 				attr.value.start,
-				attr.value.end
+				attr.value.end,
 			);
 		}
 
@@ -310,7 +310,7 @@ function getPrevAttribute(
 		const selectionStartCharacter =
 			document.positionAt(selectionStart).character;
 		const attrValueStartCharacter = document.positionAt(
-			attr.value.start
+			attr.value.start,
 		).character;
 		const pos =
 			selectionStart > attr.value.end
@@ -318,7 +318,7 @@ function getPrevAttribute(
 				: selectionStartCharacter - attrValueStartCharacter;
 		const [newSelectionStartOffset, newSelectionEndOffset] = findPrevWord(
 			attr.value.toString(),
-			pos
+			pos,
 		);
 		if (
 			newSelectionStartOffset === undefined ||
@@ -333,7 +333,7 @@ function getPrevAttribute(
 			return offsetRangeToSelection(
 				document,
 				newSelectionStart,
-				newSelectionEnd
+				newSelectionEnd,
 			);
 		}
 	}

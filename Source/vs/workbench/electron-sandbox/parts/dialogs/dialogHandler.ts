@@ -3,21 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
 import { fromNow } from "vs/base/common/date";
 import { isLinuxSnap } from "vs/base/common/platform";
+import { process } from "vs/base/parts/sandbox/electron-sandbox/globals";
+import { localize } from "vs/nls";
 import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
 import {
 	AbstractDialogHandler,
+	IAsyncPromptResult,
 	IConfirmation,
 	IConfirmationResult,
 	IPrompt,
-	IAsyncPromptResult,
 } from "vs/platform/dialogs/common/dialogs";
 import { ILogService } from "vs/platform/log/common/log";
 import { INativeHostService } from "vs/platform/native/common/native";
 import { IProductService } from "vs/platform/product/common/productService";
-import { process } from "vs/base/parts/sandbox/electron-sandbox/globals";
 
 export class NativeDialogHandler extends AbstractDialogHandler {
 	constructor(
@@ -101,13 +101,13 @@ export class NativeDialogHandler extends AbstractDialogHandler {
 					? `${this.productService.date}${
 							useAgo
 								? " (" +
-									fromNow(
+								  fromNow(
 										new Date(this.productService.date),
-										true
-									) +
-									")"
+										true,
+								  ) +
+								  ")"
 								: ""
-						}`
+					  }`
 					: "Unknown",
 				process.versions["electron"],
 				process.versions["microsoft-build"],
@@ -116,7 +116,7 @@ export class NativeDialogHandler extends AbstractDialogHandler {
 				process.versions["v8"],
 				`${osProps.type} ${osProps.arch} ${osProps.release}${
 					isLinuxSnap ? " snap" : ""
-				}`
+				}`,
 			);
 		};
 
@@ -130,7 +130,7 @@ export class NativeDialogHandler extends AbstractDialogHandler {
 			buttons: [
 				localize(
 					{ key: "copy", comment: ["&& denotes a mnemonic"] },
-					"&&Copy"
+					"&&Copy",
 				),
 				localize("okButton", "OK"),
 			],

@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { IWorkspaceFolderCreationData } from "vs/platform/workspaces/common/workspaces";
 import { URI } from "vs/base/common/uri";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import { IWorkspaceIdentifier } from "vs/platform/workspace/common/workspace";
+import { IWorkspaceFolderCreationData } from "vs/platform/workspaces/common/workspaces";
 
 export const IWorkspaceEditingService =
 	createDecorator<IWorkspaceEditingService>("workspaceEditingService");
@@ -20,7 +20,7 @@ export interface IWorkspaceEditingService {
 	 */
 	addFolders(
 		folders: IWorkspaceFolderCreationData[],
-		donotNotifyError?: boolean
+		donotNotifyError?: boolean,
 	): Promise<void>;
 
 	/**
@@ -37,7 +37,7 @@ export interface IWorkspaceEditingService {
 		index: number,
 		deleteCount?: number,
 		foldersToAdd?: IWorkspaceFolderCreationData[],
-		donotNotifyError?: boolean
+		donotNotifyError?: boolean,
 	): Promise<void>;
 
 	/**
@@ -51,7 +51,7 @@ export interface IWorkspaceEditingService {
 	 */
 	createAndEnterWorkspace(
 		folders: IWorkspaceFolderCreationData[],
-		path?: URI
+		path?: URI,
 	): Promise<void>;
 
 	/**

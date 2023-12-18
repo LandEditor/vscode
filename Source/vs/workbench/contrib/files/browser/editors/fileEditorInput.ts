@@ -3,59 +3,59 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Event } from "vs/base/common/event";
+import { IMarkdownString } from "vs/base/common/htmlContent";
+import { DisposableStore, IReference, dispose } from "vs/base/common/lifecycle";
+import { Schemas } from "vs/base/common/network";
+import { isEqual } from "vs/base/common/resources";
 import { URI } from "vs/base/common/uri";
+import { createTextBufferFactory } from "vs/editor/common/model/textModel";
+import { ITextModelService } from "vs/editor/common/services/resolverService";
+import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
+import { ITextResourceEditorInput } from "vs/platform/editor/common/editor";
+import { IFileService } from "vs/platform/files/common/files";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { ILabelService } from "vs/platform/label/common/label";
 import {
-	IFileEditorInput,
-	Verbosity,
-	GroupIdentifier,
-	IMoveResult,
+	DEFAULT_EDITOR_ASSOCIATION,
 	EditorInputCapabilities,
+	GroupIdentifier,
 	IEditorDescriptor,
 	IEditorPane,
+	IFileEditorInput,
+	IFileEditorInputOptions,
+	IMoveResult,
 	IUntypedEditorInput,
-	DEFAULT_EDITOR_ASSOCIATION,
 	IUntypedFileEditorInput,
+	Verbosity,
 	findViewStateForEditor,
 	isResourceEditorInput,
-	IFileEditorInputOptions,
 } from "vs/workbench/common/editor";
+import { BinaryEditorModel } from "vs/workbench/common/editor/binaryEditorModel";
 import { EditorInput } from "vs/workbench/common/editor/editorInput";
 import { AbstractTextResourceEditorInput } from "vs/workbench/common/editor/textResourceEditorInput";
-import { ITextResourceEditorInput } from "vs/platform/editor/common/editor";
-import { BinaryEditorModel } from "vs/workbench/common/editor/binaryEditorModel";
-import { IFileService } from "vs/platform/files/common/files";
 import {
-	ITextFileService,
-	TextFileEditorModelState,
-	TextFileResolveReason,
-	TextFileOperationError,
-	TextFileOperationResult,
-	ITextFileEditorModel,
-	EncodingMode,
-} from "vs/workbench/services/textfile/common/textfiles";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IReference, dispose, DisposableStore } from "vs/base/common/lifecycle";
-import { ITextModelService } from "vs/editor/common/services/resolverService";
-import {
+	BINARY_FILE_EDITOR_ID,
 	FILE_EDITOR_INPUT_ID,
 	TEXT_FILE_EDITOR_ID,
-	BINARY_FILE_EDITOR_ID,
 } from "vs/workbench/contrib/files/common/files";
-import { ILabelService } from "vs/platform/label/common/label";
-import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { isEqual } from "vs/base/common/resources";
-import { Event } from "vs/base/common/event";
-import { Schemas } from "vs/base/common/network";
-import { createTextBufferFactory } from "vs/editor/common/model/textModel";
+import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
 import { IPathService } from "vs/workbench/services/path/common/pathService";
-import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
-import { IMarkdownString } from "vs/base/common/htmlContent";
+import {
+	EncodingMode,
+	ITextFileEditorModel,
+	ITextFileService,
+	TextFileEditorModelState,
+	TextFileOperationError,
+	TextFileOperationResult,
+	TextFileResolveReason,
+} from "vs/workbench/services/textfile/common/textfiles";
 
-const enum ForceOpenAs {
-	None,
-	Text,
-	Binary,
+enum ForceOpenAs {
+	None = 0,
+	Text = 1,
+	Binary = 2,
 }
 
 /**
@@ -80,14 +80,12 @@ export class FileEditorInput
 			if (this.model.isReadonly()) {
 				capabilities |= EditorInputCapabilities.Readonly;
 			}
-		} else {
-			if (this.fileService.hasProvider(this.resource)) {
-				if (this.filesConfigurationService.isReadonly(this.resource)) {
-					capabilities |= EditorInputCapabilities.Readonly;
-				}
-			} else {
-				capabilities |= EditorInputCapabilities.Untitled;
+		} else if (this.fileService.hasProvider(this.resource)) {
+			if (this.filesConfigurationService.isReadonly(this.resource)) {
+				capabilities |= EditorInputCapabilities.Readonly;
 			}
+		} else {
+			capabilities |= EditorInputCapabilities.Untitled;
 		}
 
 		if (!(capabilities & EditorInputCapabilities.Readonly)) {
@@ -195,19 +193,19 @@ export class FileEditorInput
 
 		// re-emit some events from the model
 		this.modelListeners.add(
-			model.onDidChangeDirty(() => this._onDidChangeDirty.fire())
+			model.onDidChangeDirty(() => this._onDidChangeDirty.fire()),
 		);
 		this.modelListeners.add(
 			model.onDidChangeReadonly(() =>
-				this._onDidChangeCapabilities.fire()
-			)
+				this._onDidChangeCapabilities.fire(),
+			),
 		);
 
 		// important: treat save errors as potential dirty change because
 		// a file that is in save conflict or error will report dirty even
 		// if auto save is turned on.
 		this.modelListeners.add(
-			model.onDidSaveError(() => this._onDidChangeDirty.fire())
+			model.onDidSaveError(() => this._onDidChangeDirty.fire()),
 		);
 
 		// remove model association once it gets disposed
@@ -215,7 +213,7 @@ export class FileEditorInput
 			Event.once(model.onWillDispose)(() => {
 				this.modelListeners.clear();
 				this.model = undefined;
-			})
+			}),
 		);
 	}
 
@@ -390,21 +388,21 @@ export class FileEditorInput
 	}
 
 	override prefersEditorPane<T extends IEditorDescriptor<IEditorPane>>(
-		editorPanes: T[]
+		editorPanes: T[],
 	): T | undefined {
 		if (this.forceOpenAs === ForceOpenAs.Binary) {
 			return editorPanes.find(
-				(editorPane) => editorPane.typeId === BINARY_FILE_EDITOR_ID
+				(editorPane) => editorPane.typeId === BINARY_FILE_EDITOR_ID,
 			);
 		}
 
 		return editorPanes.find(
-			(editorPane) => editorPane.typeId === TEXT_FILE_EDITOR_ID
+			(editorPane) => editorPane.typeId === TEXT_FILE_EDITOR_ID,
 		);
 	}
 
 	override resolve(
-		options?: IFileEditorInputOptions
+		options?: IFileEditorInputOptions,
 	): Promise<ITextFileEditorModel | BinaryEditorModel> {
 		// Resolve as binary
 		if (this.forceOpenAs === ForceOpenAs.Binary) {
@@ -416,7 +414,7 @@ export class FileEditorInput
 	}
 
 	private async doResolveAsText(
-		options?: IFileEditorInputOptions
+		options?: IFileEditorInputOptions,
 	): Promise<ITextFileEditorModel | BinaryEditorModel> {
 		try {
 			// Unset preferred contents after having applied it once
@@ -447,7 +445,7 @@ export class FileEditorInput
 			if (!this.cachedTextFileModelReference) {
 				this.cachedTextFileModelReference =
 					(await this.textModelService.createModelReference(
-						this.resource
+						this.resource,
 					)) as IReference<ITextFileEditorModel>;
 			}
 
@@ -479,7 +477,7 @@ export class FileEditorInput
 		const model = this.instantiationService.createInstance(
 			BinaryEditorModel,
 			this.preferredResource,
-			this.getName()
+			this.getName(),
 		);
 		await model.resolve();
 
@@ -492,7 +490,7 @@ export class FileEditorInput
 
 	override async rename(
 		group: GroupIdentifier,
-		target: URI
+		target: URI,
 	): Promise<IMoveResult> {
 		return {
 			editor: {
@@ -502,7 +500,7 @@ export class FileEditorInput
 					viewState: findViewStateForEditor(
 						this,
 						group,
-						this.editorService
+						this.editorService,
 					),
 				},
 			},
@@ -540,7 +538,7 @@ export class FileEditorInput
 				viewState: findViewStateForEditor(
 					this,
 					options.preserveViewState,
-					this.editorService
+					this.editorService,
 				),
 			};
 		}

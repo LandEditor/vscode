@@ -4,14 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { ILoggerService } from "vs/platform/log/common/log";
-import { RequestService } from "vs/platform/request/browser/requestService";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { IRequestService } from "vs/platform/request/common/request";
+import { ILoggerService } from "vs/platform/log/common/log";
 import { INativeHostService } from "vs/platform/native/common/native";
+import { RequestService } from "vs/platform/request/browser/requestService";
+import { IRequestService } from "vs/platform/request/common/request";
 
 export class NativeRequestService extends RequestService {
 	constructor(
@@ -34,5 +34,5 @@ export class NativeRequestService extends RequestService {
 registerSingleton(
 	IRequestService,
 	NativeRequestService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

@@ -12,7 +12,7 @@ import { TerminalSettingId } from "vs/platform/terminal/common/terminal";
 export async function shouldPasteTerminalText(
 	accessor: ServicesAccessor,
 	text: string,
-	bracketedPasteMode: boolean | undefined
+	bracketedPasteMode: boolean | undefined,
 ): Promise<boolean> {
 	const configurationService = accessor.get(IConfigurationService);
 	const dialogService = accessor.get(IDialogService);
@@ -40,8 +40,8 @@ export async function shouldPasteTerminalText(
 	}
 	const configValue = parseConfigValue(
 		configurationService.getValue(
-			TerminalSettingId.EnableMultiLinePasteWarning
-		)
+			TerminalSettingId.EnableMultiLinePasteWarning,
+		),
 	);
 
 	// Never show it
@@ -85,12 +85,12 @@ export async function shouldPasteTerminalText(
 		message: localize(
 			"confirmMoveTrashMessageFilesAndDirectories",
 			"Are you sure you want to paste {0} lines of text into the terminal?",
-			textForLines.length
+			textForLines.length,
 		),
 		detail,
 		primaryButton: localize(
 			{ key: "multiLinePasteButton", comment: ["&& denotes a mnemonic"] },
-			"&&Paste"
+			"&&Paste",
 		),
 		checkbox: {
 			label: localize("doNotAskAgain", "Do not ask me again"),
@@ -100,7 +100,7 @@ export async function shouldPasteTerminalText(
 	if (confirmed && checkboxChecked) {
 		await configurationService.updateValue(
 			TerminalSettingId.EnableMultiLinePasteWarning,
-			false
+			false,
 		);
 	}
 

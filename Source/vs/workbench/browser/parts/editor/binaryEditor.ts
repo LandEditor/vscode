@@ -3,24 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
 import { Emitter } from "vs/base/common/event";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import { BinaryEditorModel } from "vs/workbench/common/editor/binaryEditorModel";
+import { localize } from "vs/nls";
+import { IEditorOptions } from "vs/platform/editor/common/editor";
+import { ByteSize } from "vs/platform/files/common/files";
+import { IStorageService } from "vs/platform/storage/common/storage";
 import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import { IThemeService } from "vs/platform/theme/common/themeService";
-import { IStorageService } from "vs/platform/storage/common/storage";
-import { ByteSize } from "vs/platform/files/common/files";
-import { IEditorOptions } from "vs/platform/editor/common/editor";
 import {
 	EditorPlaceholder,
 	IEditorPlaceholderContents,
 } from "vs/workbench/browser/parts/editor/editorPlaceholder";
+import { BinaryEditorModel } from "vs/workbench/common/editor/binaryEditorModel";
+import { EditorInput } from "vs/workbench/common/editor/editorInput";
 
 export interface IOpenCallbacks {
 	openInternal: (
 		input: EditorInput,
-		options: IEditorOptions | undefined
+		options: IEditorOptions | undefined,
 	) => Promise<void>;
 }
 
@@ -41,7 +41,7 @@ export abstract class BaseBinaryResourceEditor extends EditorPlaceholder {
 		private readonly callbacks: IOpenCallbacks,
 		telemetryService: ITelemetryService,
 		themeService: IThemeService,
-		@IStorageService storageService: IStorageService
+		@IStorageService storageService: IStorageService,
 	) {
 		super(id, telemetryService, themeService, storageService);
 	}
@@ -54,7 +54,7 @@ export abstract class BaseBinaryResourceEditor extends EditorPlaceholder {
 
 	protected async getContents(
 		input: EditorInput,
-		options: IEditorOptions
+		options: IEditorOptions,
 	): Promise<IEditorPlaceholderContents> {
 		const model = await input.resolve(options);
 
@@ -66,14 +66,14 @@ export abstract class BaseBinaryResourceEditor extends EditorPlaceholder {
 		// Update metadata
 		const size = model.getSize();
 		this.handleMetadataChanged(
-			typeof size === "number" ? ByteSize.formatSize(size) : ""
+			typeof size === "number" ? ByteSize.formatSize(size) : "",
 		);
 
 		return {
 			icon: "$(warning)",
 			label: localize(
 				"binaryError",
-				"The file is not displayed in the text editor because it is either binary or uses an unsupported text encoding."
+				"The file is not displayed in the text editor because it is either binary or uses an unsupported text encoding.",
 			),
 			actions: [
 				{

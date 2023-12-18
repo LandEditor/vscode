@@ -6,8 +6,6 @@
 //@ts-check
 /** @typedef {import('webpack').Configuration} WebpackConfig **/
 
-"use strict";
-
 const path = require("path");
 const fs = require("fs");
 const merge = require("merge-options");
@@ -17,13 +15,13 @@ const { DefinePlugin, optimize } = require("webpack");
 
 const tsLoaderOptions = {
 	compilerOptions: {
-		"sourceMap": true,
+		sourceMap: true,
 	},
 	onlyCompileBundledFiles: true,
 };
 
 function withNodeDefaults(
-	/**@type WebpackConfig & { context: string }*/ extConfig
+	/**@type WebpackConfig & { context: string }*/ extConfig,
 ) {
 	const defaultConfig = {
 		mode: "none", // this leaves the source code as close as possible to the original (when packaging we set this to 'production')
@@ -62,7 +60,7 @@ function withNodeDefaults(
 							options: {
 								configFile: path.join(
 									extConfig.context,
-									"tsconfig.json"
+									"tsconfig.json",
 								),
 							},
 						},
@@ -71,7 +69,7 @@ function withNodeDefaults(
 			],
 		},
 		externals: {
-			"vscode": "commonjs vscode", // ignored because it doesn't exist,
+			vscode: "commonjs vscode", // ignored because it doesn't exist,
 			"applicationinsights-native-metrics":
 				"commonjs applicationinsights-native-metrics", // ignored because we don't ship native module
 			"@azure/functions-core": "commonjs azure/functions-core", // optioinal dependency of appinsights that we don't use
@@ -128,7 +126,7 @@ function nodePlugins(context) {
 
 function withBrowserDefaults(
 	/**@type WebpackConfig & { context: string }*/ extConfig,
-	/** @type AdditionalBrowserConfig */ additionalOptions = {}
+	/** @type AdditionalBrowserConfig */ additionalOptions = {},
 ) {
 	/** @type WebpackConfig */
 	const defaultConfig = {
@@ -138,8 +136,8 @@ function withBrowserDefaults(
 			mainFields: ["browser", "module", "main"],
 			extensions: [".ts", ".js"], // support ts-files and js-files
 			fallback: {
-				"path": require.resolve("path-browserify"),
-				"util": require.resolve("util"),
+				path: require.resolve("path-browserify"),
+				util: require.resolve("util"),
 			},
 		},
 		module: {
@@ -159,7 +157,7 @@ function withBrowserDefaults(
 									: {
 											configFile:
 												additionalOptions.configFile,
-										}),
+									  }),
 							},
 						},
 						{
@@ -168,7 +166,7 @@ function withBrowserDefaults(
 								configFile: path.join(
 									extConfig.context,
 									additionalOptions?.configFile ??
-										"tsconfig.json"
+										"tsconfig.json",
 								),
 							},
 						},
@@ -181,7 +179,7 @@ function withBrowserDefaults(
 			],
 		},
 		externals: {
-			"vscode": "commonjs vscode", // ignored because it doesn't exist,
+			vscode: "commonjs vscode", // ignored because it doesn't exist,
 			"applicationinsights-native-metrics":
 				"commonjs applicationinsights-native-metrics", // ignored because we don't ship native module
 			"@azure/functions-core": "commonjs azure/functions-core", // optioinal dependency of appinsights that we don't use

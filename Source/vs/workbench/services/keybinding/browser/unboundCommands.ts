@@ -3,20 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { isNonEmptyArray } from "vs/base/common/arrays";
+import { EditorExtensionsRegistry } from "vs/editor/browser/editorExtensions";
+import {
+	MenuId,
+	MenuRegistry,
+	isIMenuItem,
+} from "vs/platform/actions/common/actions";
 import {
 	CommandsRegistry,
 	ICommandMetadata,
 } from "vs/platform/commands/common/commands";
-import { isNonEmptyArray } from "vs/base/common/arrays";
-import { EditorExtensionsRegistry } from "vs/editor/browser/editorExtensions";
-import {
-	MenuRegistry,
-	MenuId,
-	isIMenuItem,
-} from "vs/platform/actions/common/actions";
 
 export function getAllUnboundCommands(
-	boundCommands: Map<string, boolean>
+	boundCommands: Map<string, boolean>,
 ): string[] {
 	const unboundCommands: string[] = [];
 	const seenMap: Map<string, boolean> = new Map<string, boolean>();

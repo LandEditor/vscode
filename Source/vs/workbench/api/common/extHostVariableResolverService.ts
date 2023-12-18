@@ -35,7 +35,7 @@ export interface IExtHostVariableResolverProvider {
 
 export const IExtHostVariableResolverProvider =
 	createDecorator<IExtHostVariableResolverProvider>(
-		"IExtHostVariableResolverProvider"
+		"IExtHostVariableResolverProvider",
 	);
 
 interface DynamicContext {
@@ -50,7 +50,7 @@ class ExtHostVariableResolverService extends AbstractVariableResolverService {
 		editorTabs: IExtHostEditorTabs,
 		configProvider: ExtHostConfigProvider,
 		context: DynamicContext,
-		homeDir: string | undefined
+		homeDir: string | undefined,
 	) {
 		function getActiveUri(): URI | undefined {
 			if (editorService) {
@@ -59,7 +59,7 @@ class ExtHostVariableResolverService extends AbstractVariableResolverService {
 					return activeEditor.document.uri;
 				}
 				const activeTab = editorTabs.tabGroups.all.find(
-					(group) => group.isActive
+					(group) => group.isActive,
 				)?.activeTab;
 				if (activeTab !== undefined) {
 					// Resolve a resource from the tab
@@ -84,7 +84,7 @@ class ExtHostVariableResolverService extends AbstractVariableResolverService {
 			{
 				getFolderUri: (folderName: string): URI | undefined => {
 					const found = context.folders.filter(
-						(f) => f.name === folderName
+						(f) => f.name === folderName,
 					);
 					if (found && found.length > 0) {
 						return found[0].uri;
@@ -96,7 +96,7 @@ class ExtHostVariableResolverService extends AbstractVariableResolverService {
 				},
 				getConfigurationValue: (
 					folderUri: URI | undefined,
-					section: string
+					section: string,
 				): string | undefined => {
 					return configProvider
 						.getConfiguration(undefined, folderUri)
@@ -133,7 +133,7 @@ class ExtHostVariableResolverService extends AbstractVariableResolverService {
 						const activeEditor = editorService.activeEditor();
 						if (activeEditor && !activeEditor.selection.isEmpty) {
 							return activeEditor.document.getText(
-								activeEditor.selection
+								activeEditor.selection,
 							);
 						}
 					}
@@ -154,7 +154,7 @@ class ExtHostVariableResolverService extends AbstractVariableResolverService {
 			},
 			undefined,
 			homeDir ? Promise.resolve(homeDir) : undefined,
-			Promise.resolve(process.env)
+			Promise.resolve(process.env),
 		);
 	}
 }
@@ -176,7 +176,7 @@ export class ExtHostVariableResolverProviderService
 			this.workspaceService.onDidChangeWorkspace(async (e) => {
 				dynamic.folders =
 					(await this.workspaceService.getWorkspaceFolders2()) || [];
-			})
+			}),
 		);
 
 		return new ExtHostVariableResolverService(
@@ -186,7 +186,7 @@ export class ExtHostVariableResolverProviderService
 			this.editorTabs,
 			configProvider,
 			dynamic,
-			this.homeDir()
+			this.homeDir(),
 		);
 	});
 

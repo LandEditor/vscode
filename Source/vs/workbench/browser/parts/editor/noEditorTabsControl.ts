@@ -3,18 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/singleeditortabscontrol";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import { EditorTabsControl } from "vs/workbench/browser/parts/editor/editorTabsControl";
 import { Dimension } from "vs/base/browser/dom";
+import "vs/css!./media/singleeditortabscontrol";
+import { EditorTabsControl } from "vs/workbench/browser/parts/editor/editorTabsControl";
 import { IEditorTitleControlDimensions } from "vs/workbench/browser/parts/editor/editorTitleControl";
 import { IToolbarActions } from "vs/workbench/common/editor";
+import { EditorInput } from "vs/workbench/common/editor/editorInput";
 
 export class NoEditorTabsControl extends EditorTabsControl {
 	private activeEditor: EditorInput | null = null;
 
 	protected prepareEditorActions(
-		editorActions: IToolbarActions
+		editorActions: IToolbarActions,
 	): IToolbarActions {
 		return {
 			primary: [],
@@ -57,7 +57,7 @@ export class NoEditorTabsControl extends EditorTabsControl {
 	moveEditor(
 		editor: EditorInput,
 		fromIndex: number,
-		targetIndex: number
+		targetIndex: number,
 	): void {}
 
 	pinEditor(editor: EditorInput): void {}

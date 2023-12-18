@@ -10,7 +10,7 @@ export const EMPTY_LINE_TOKENS = new Uint32Array(0).buffer;
 export class ContiguousTokensEditing {
 	public static deleteBeginning(
 		lineTokens: Uint32Array | ArrayBuffer | null,
-		toChIndex: number
+		toChIndex: number,
 	): Uint32Array | ArrayBuffer | null {
 		if (lineTokens === null || lineTokens === EMPTY_LINE_TOKENS) {
 			return lineTokens;
@@ -20,7 +20,7 @@ export class ContiguousTokensEditing {
 
 	public static deleteEnding(
 		lineTokens: Uint32Array | ArrayBuffer | null,
-		fromChIndex: number
+		fromChIndex: number,
 	): Uint32Array | ArrayBuffer | null {
 		if (lineTokens === null || lineTokens === EMPTY_LINE_TOKENS) {
 			return lineTokens;
@@ -31,14 +31,14 @@ export class ContiguousTokensEditing {
 		return ContiguousTokensEditing.delete(
 			lineTokens,
 			fromChIndex,
-			lineTextLength
+			lineTextLength,
 		);
 	}
 
 	public static delete(
 		lineTokens: Uint32Array | ArrayBuffer | null,
 		fromChIndex: number,
-		toChIndex: number
+		toChIndex: number,
 	): Uint32Array | ArrayBuffer | null {
 		if (
 			lineTokens === null ||
@@ -58,7 +58,7 @@ export class ContiguousTokensEditing {
 
 		const fromTokenIndex = LineTokens.findIndexInTokensArray(
 			tokens,
-			fromChIndex
+			fromChIndex,
 		);
 		const fromTokenStartOffset =
 			fromTokenIndex > 0 ? tokens[(fromTokenIndex - 1) << 1] : 0;
@@ -110,7 +110,7 @@ export class ContiguousTokensEditing {
 
 	public static append(
 		lineTokens: Uint32Array | ArrayBuffer | null,
-		_otherTokens: Uint32Array | ArrayBuffer | null
+		_otherTokens: Uint32Array | ArrayBuffer | null,
 	): Uint32Array | ArrayBuffer | null {
 		if (_otherTokens === EMPTY_LINE_TOKENS) {
 			return lineTokens;
@@ -143,7 +143,7 @@ export class ContiguousTokensEditing {
 	public static insert(
 		lineTokens: Uint32Array | ArrayBuffer | null,
 		chIndex: number,
-		textLength: number
+		textLength: number,
 	): Uint32Array | ArrayBuffer | null {
 		if (lineTokens === null || lineTokens === EMPTY_LINE_TOKENS) {
 			// nothing to do

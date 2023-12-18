@@ -49,7 +49,7 @@ class DeprecatedExtensionMigratorContribution {
 
 		await this.extensionsWorkbenchService.queryLocal();
 		const extension = this.extensionsWorkbenchService.installed.find(
-			(e) => e.identifier.id === bracketPairColorizerId
+			(e) => e.identifier.id === bracketPairColorizerId,
 		);
 		if (
 			!extension ||
@@ -61,7 +61,7 @@ class DeprecatedExtensionMigratorContribution {
 
 		const state = await this.getState();
 		const disablementLogEntry = state.disablementLog.some(
-			(d) => d.extensionId === bracketPairColorizerId
+			(d) => d.extensionId === bracketPairColorizerId,
 		);
 
 		if (disablementLogEntry) {
@@ -76,20 +76,20 @@ class DeprecatedExtensionMigratorContribution {
 
 		await this.extensionsWorkbenchService.setEnablement(
 			extension,
-			EnablementState.DisabledGlobally
+			EnablementState.DisabledGlobally,
 		);
 
 		const nativeBracketPairColorizationEnabledKey =
 			"editor.bracketPairColorization.enabled";
 		const bracketPairColorizationEnabled =
 			!!this.configurationService.inspect(
-				nativeBracketPairColorizationEnabledKey
+				nativeBracketPairColorizationEnabledKey,
 			).user;
 
 		this.notificationService.notify({
 			message: localize(
 				"bracketPairColorizer.notification",
-				"The extension 'Bracket pair Colorizer' got disabled because it was deprecated."
+				"The extension 'Bracket pair Colorizer' got disabled because it was deprecated.",
 			),
 			severity: Severity.Info,
 			actions: {
@@ -98,24 +98,25 @@ class DeprecatedExtensionMigratorContribution {
 						"",
 						localize(
 							"bracketPairColorizer.notification.action.uninstall",
-							"Uninstall Extension"
+							"Uninstall Extension",
 						),
 						undefined,
 						undefined,
 						() => {
 							this.extensionsWorkbenchService.uninstall(
-								extension
+								extension,
 							);
-						}
+						},
 					),
 				],
 				secondary: [
-					!bracketPairColorizationEnabled
-						? new Action(
+					bracketPairColorizationEnabled
+						? undefined
+						: new Action(
 								"",
 								localize(
 									"bracketPairColorizer.notification.action.enableNative",
-									"Enable Native Bracket Pair Colorization"
+									"Enable Native Bracket Pair Colorization",
 								),
 								undefined,
 								undefined,
@@ -123,24 +124,23 @@ class DeprecatedExtensionMigratorContribution {
 									this.configurationService.updateValue(
 										nativeBracketPairColorizationEnabledKey,
 										true,
-										ConfigurationTarget.USER
+										ConfigurationTarget.USER,
 									);
-								}
-							)
-						: undefined,
+								},
+						  ),
 					new Action(
 						"",
 						localize(
 							"bracketPairColorizer.notification.action.showMoreInfo",
-							"More Info"
+							"More Info",
 						),
 						undefined,
 						undefined,
 						() => {
 							this.openerService.open(
-								"https://github.com/microsoft/vscode/issues/155179"
+								"https://github.com/microsoft/vscode/issues/155179",
 							);
-						}
+						},
 					),
 				].filter(isDefined),
 			},
@@ -153,7 +153,7 @@ class DeprecatedExtensionMigratorContribution {
 		const jsonStr = await this.storageService.get(
 			this.storageKey,
 			StorageScope.APPLICATION,
-			""
+			"",
 		);
 		if (jsonStr === "") {
 			return { disablementLog: [] };
@@ -167,7 +167,7 @@ class DeprecatedExtensionMigratorContribution {
 			this.storageKey,
 			json,
 			StorageScope.APPLICATION,
-			StorageTarget.USER
+			StorageTarget.USER,
 		);
 	}
 }
@@ -180,8 +180,8 @@ interface State {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	DeprecatedExtensionMigratorContribution,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );

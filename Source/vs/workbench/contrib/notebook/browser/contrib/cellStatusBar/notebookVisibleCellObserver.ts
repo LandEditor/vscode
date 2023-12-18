@@ -20,12 +20,12 @@ export interface ICellVisibilityChangeEvent {
 
 export class NotebookVisibleCellObserver extends Disposable {
 	private readonly _onDidChangeVisibleCells = this._register(
-		new Emitter<ICellVisibilityChangeEvent>()
+		new Emitter<ICellVisibilityChangeEvent>(),
 	);
 	readonly onDidChangeVisibleCells = this._onDidChangeVisibleCells.event;
 
 	private readonly _viewModelDisposables = this._register(
-		new DisposableStore()
+		new DisposableStore(),
 	);
 
 	private _visibleCells: ICellViewModel[] = [];
@@ -40,11 +40,11 @@ export class NotebookVisibleCellObserver extends Disposable {
 		this._register(
 			this._notebookEditor.onDidChangeVisibleRanges(
 				this._updateVisibleCells,
-				this
-			)
+				this,
+			),
 		);
 		this._register(
-			this._notebookEditor.onDidChangeModel(this._onModelChange, this)
+			this._notebookEditor.onDidChangeModel(this._onModelChange, this),
 		);
 		this._updateVisibleCells();
 	}
@@ -54,8 +54,8 @@ export class NotebookVisibleCellObserver extends Disposable {
 		if (this._notebookEditor.hasModel()) {
 			this._viewModelDisposables.add(
 				this._notebookEditor.onDidChangeViewCells(() =>
-					this.updateEverything()
-				)
+					this.updateEverything(),
+				),
 			);
 		}
 
@@ -77,15 +77,15 @@ export class NotebookVisibleCellObserver extends Disposable {
 		}
 
 		const newVisibleCells = cellRangesToIndexes(
-			this._notebookEditor.visibleRanges
+			this._notebookEditor.visibleRanges,
 		)
 			.map((index) => this._notebookEditor.cellAt(index))
 			.filter(isDefined);
 		const newVisibleHandles = new Set(
-			newVisibleCells.map((cell) => cell.handle)
+			newVisibleCells.map((cell) => cell.handle),
 		);
 		const oldVisibleHandles = new Set(
-			this._visibleCells.map((cell) => cell.handle)
+			this._visibleCells.map((cell) => cell.handle),
 		);
 		const diff = diffSets(oldVisibleHandles, newVisibleHandles);
 

@@ -3,57 +3,57 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { VSBuffer } from "vs/base/common/buffer";
+import { Emitter } from "vs/base/common/event";
+import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
+import { Schemas } from "vs/base/common/network";
+import { joinPath } from "vs/base/common/resources";
+import { URI } from "vs/base/common/uri";
+import {
+	IFolderBackupInfo,
+	IWorkspaceBackupInfo,
+} from "vs/platform/backup/common/backup";
+import {
+	FileOperationError,
+	FileOperationResult,
+	IFileService,
+} from "vs/platform/files/common/files";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import {
-	IWorkspacesService,
-	IWorkspaceFolderCreationData,
-	IEnterWorkspaceResult,
-	IRecentlyOpened,
-	restoreRecentlyOpened,
-	IRecent,
-	isRecentFile,
-	isRecentFolder,
-	toStoreData,
-	IStoredWorkspaceFolder,
-	getStoredWorkspaceFolder,
-	IStoredWorkspace,
-	isRecentWorkspace,
-} from "vs/platform/workspaces/common/workspaces";
-import { URI } from "vs/base/common/uri";
-import { Emitter } from "vs/base/common/event";
+import { ILogService } from "vs/platform/log/common/log";
 import {
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
 import {
-	isTemporaryWorkspace,
 	IWorkspaceContextService,
 	IWorkspaceFoldersChangeEvent,
 	IWorkspaceIdentifier,
-	WorkbenchState,
 	WORKSPACE_EXTENSION,
+	WorkbenchState,
+	isTemporaryWorkspace,
 } from "vs/platform/workspace/common/workspace";
-import { ILogService } from "vs/platform/log/common/log";
-import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
-import { getWorkspaceIdentifier } from "vs/workbench/services/workspaces/browser/workspaces";
 import {
-	IFileService,
-	FileOperationError,
-	FileOperationResult,
-} from "vs/platform/files/common/files";
+	IEnterWorkspaceResult,
+	IRecent,
+	IRecentlyOpened,
+	IStoredWorkspace,
+	IStoredWorkspaceFolder,
+	IWorkspaceFolderCreationData,
+	IWorkspacesService,
+	getStoredWorkspaceFolder,
+	isRecentFile,
+	isRecentFolder,
+	isRecentWorkspace,
+	restoreRecentlyOpened,
+	toStoreData,
+} from "vs/platform/workspaces/common/workspaces";
 import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { joinPath } from "vs/base/common/resources";
-import { VSBuffer } from "vs/base/common/buffer";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import {
-	IWorkspaceBackupInfo,
-	IFolderBackupInfo,
-} from "vs/platform/backup/common/backup";
-import { Schemas } from "vs/base/common/network";
+import { getWorkspaceIdentifier } from "vs/workbench/services/workspaces/browser/workspaces";
 
 export class BrowserWorkspacesService
 	extends Disposable
@@ -64,7 +64,7 @@ export class BrowserWorkspacesService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onRecentlyOpenedChange = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onDidChangeRecentlyOpened = this._onRecentlyOpenedChange.event;
 
@@ -94,15 +94,15 @@ export class BrowserWorkspacesService
 			this.storageService.onDidChangeValue(
 				StorageScope.APPLICATION,
 				BrowserWorkspacesService.RECENTLY_OPENED_KEY,
-				this._register(new DisposableStore())
-			)(() => this._onRecentlyOpenedChange.fire())
+				this._register(new DisposableStore()),
+			)(() => this._onRecentlyOpenedChange.fire()),
 		);
 
 		// Workspace
 		this._register(
 			this.contextService.onDidChangeWorkspaceFolders((e) =>
-				this.onDidChangeWorkspaceFolders(e)
-			)
+				this.onDidChangeWorkspaceFolders(e),
+			),
 		);
 	}
 
@@ -147,12 +147,12 @@ export class BrowserWorkspacesService
 	async getRecentlyOpened(): Promise<IRecentlyOpened> {
 		const recentlyOpenedRaw = this.storageService.get(
 			BrowserWorkspacesService.RECENTLY_OPENED_KEY,
-			StorageScope.APPLICATION
+			StorageScope.APPLICATION,
 		);
 		if (recentlyOpenedRaw) {
 			const recentlyOpened = restoreRecentlyOpened(
 				JSON.parse(recentlyOpenedRaw),
-				this.logService
+				this.logService,
 			);
 			recentlyOpened.workspaces = recentlyOpened.workspaces.filter(
 				(recent) => {
@@ -164,7 +164,7 @@ export class BrowserWorkspacesService
 						isRecentFolder(recent) &&
 						recent.folderUri.scheme === Schemas.file &&
 						!isTemporaryWorkspace(
-							this.contextService.getWorkspace()
+							this.contextService.getWorkspace(),
 						)
 					) {
 						return false;
@@ -179,7 +179,7 @@ export class BrowserWorkspacesService
 					}
 
 					return true;
-				}
+				},
 			);
 
 			return recentlyOpened;
@@ -219,11 +219,11 @@ export class BrowserWorkspacesService
 
 	private doRemoveRecentlyOpened(
 		recentlyOpened: IRecentlyOpened,
-		paths: URI[]
+		paths: URI[],
 	): void {
 		recentlyOpened.files = recentlyOpened.files.filter((file) => {
 			return !paths.some(
-				(path) => path.toString() === file.fileUri.toString()
+				(path) => path.toString() === file.fileUri.toString(),
 			);
 		});
 
@@ -234,9 +234,9 @@ export class BrowserWorkspacesService
 						path.toString() ===
 						(isRecentFolder(workspace)
 							? workspace.folderUri.toString()
-							: workspace.workspace.configPath.toString())
+							: workspace.workspace.configPath.toString()),
 				);
-			}
+			},
 		);
 	}
 
@@ -245,14 +245,14 @@ export class BrowserWorkspacesService
 			BrowserWorkspacesService.RECENTLY_OPENED_KEY,
 			JSON.stringify(toStoreData(data)),
 			StorageScope.APPLICATION,
-			StorageTarget.USER
+			StorageTarget.USER,
 		);
 	}
 
 	async clearRecentlyOpened(): Promise<void> {
 		this.storageService.remove(
 			BrowserWorkspacesService.RECENTLY_OPENED_KEY,
-			StorageScope.APPLICATION
+			StorageScope.APPLICATION,
 		);
 	}
 
@@ -261,21 +261,21 @@ export class BrowserWorkspacesService
 	//#region Workspace Management
 
 	async enterWorkspace(
-		workspaceUri: URI
+		workspaceUri: URI,
 	): Promise<IEnterWorkspaceResult | undefined> {
 		return { workspace: await this.getWorkspaceIdentifier(workspaceUri) };
 	}
 
 	async createUntitledWorkspace(
 		folders?: IWorkspaceFolderCreationData[],
-		remoteAuthority?: string
+		remoteAuthority?: string,
 	): Promise<IWorkspaceIdentifier> {
 		const randomId = (
 			Date.now() + Math.round(Math.random() * 1000)
 		).toString();
 		const newUntitledWorkspacePath = joinPath(
 			this.environmentService.untitledWorkspacesHome,
-			`Untitled-${randomId}.${WORKSPACE_EXTENSION}`
+			`Untitled-${randomId}.${WORKSPACE_EXTENSION}`,
 		);
 
 		// Build array of workspace folders to store
@@ -288,8 +288,8 @@ export class BrowserWorkspacesService
 						true,
 						folder.name,
 						this.environmentService.untitledWorkspacesHome,
-						this.uriIdentityService.extUri
-					)
+						this.uriIdentityService.extUri,
+					),
 				);
 			}
 		}
@@ -301,14 +301,14 @@ export class BrowserWorkspacesService
 		};
 		await this.fileService.writeFile(
 			newUntitledWorkspacePath,
-			VSBuffer.fromString(JSON.stringify(storedWorkspace, null, "\t"))
+			VSBuffer.fromString(JSON.stringify(storedWorkspace, null, "\t")),
 		);
 
 		return this.getWorkspaceIdentifier(newUntitledWorkspacePath);
 	}
 
 	async deleteUntitledWorkspace(
-		workspace: IWorkspaceIdentifier
+		workspace: IWorkspaceIdentifier,
 	): Promise<void> {
 		try {
 			await this.fileService.del(workspace.configPath);
@@ -323,7 +323,7 @@ export class BrowserWorkspacesService
 	}
 
 	async getWorkspaceIdentifier(
-		workspaceUri: URI
+		workspaceUri: URI,
 	): Promise<IWorkspaceIdentifier> {
 		return getWorkspaceIdentifier(workspaceUri);
 	}
@@ -344,5 +344,5 @@ export class BrowserWorkspacesService
 registerSingleton(
 	IWorkspacesService,
 	BrowserWorkspacesService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

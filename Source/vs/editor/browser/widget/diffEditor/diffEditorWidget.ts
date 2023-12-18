@@ -41,10 +41,11 @@ import {
 import { AccessibleDiffViewer } from "vs/editor/browser/widget/diffEditor/components/accessibleDiffViewer";
 import { DiffEditorDecorations } from "vs/editor/browser/widget/diffEditor/components/diffEditorDecorations";
 import { DiffEditorSash } from "vs/editor/browser/widget/diffEditor/components/diffEditorSash";
-import { HideUnchangedRegionsFeature } from "vs/editor/browser/widget/diffEditor/features/hideUnchangedRegionsFeature";
 import { DiffEditorViewZones } from "vs/editor/browser/widget/diffEditor/components/diffEditorViewZones/diffEditorViewZones";
+import { HideUnchangedRegionsFeature } from "vs/editor/browser/widget/diffEditor/features/hideUnchangedRegionsFeature";
 import { MovedBlocksLinesFeature } from "vs/editor/browser/widget/diffEditor/features/movedBlocksLinesFeature";
 import { OverviewRulerFeature } from "vs/editor/browser/widget/diffEditor/features/overviewRulerFeature";
+import { RevertButtonsFeature } from "vs/editor/browser/widget/diffEditor/features/revertButtonsFeature";
 import {
 	CSSStyle,
 	ObservableElementSizeObserver,
@@ -83,15 +84,14 @@ import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
 import { IEditorProgressService } from "vs/platform/progress/common/progress";
-import { DelegatingEditor } from "./delegatingEditorImpl";
 import { DiffEditorEditors } from "./components/diffEditorEditors";
+import { DelegatingEditor } from "./delegatingEditorImpl";
 import { DiffEditorOptions } from "./diffEditorOptions";
 import {
 	DiffEditorViewModel,
 	DiffMapping,
 	DiffState,
 } from "./diffEditorViewModel";
-import { RevertButtonsFeature } from "vs/editor/browser/widget/diffEditor/features/revertButtonsFeature";
 
 export interface IDiffCodeEditorWidgetOptions {
 	originalEditor?: ICodeEditorWidgetOptions;
@@ -115,7 +115,7 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 						visibility: "hidden",
 					},
 				},
-				[$("span", {}, "No Changes")]
+				[$("span", {}, "No Changes")],
 			),
 			h("div.editor.original@original", {
 				style: { position: "absolute", height: "100%" },
@@ -126,14 +126,14 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 			h("div.accessibleDiffViewer@accessibleDiffViewer", {
 				style: { position: "absolute", height: "100%" },
 			}),
-		]
+		],
 	);
 	private readonly _diffModel = observableValue<
 		DiffEditorViewModel | undefined
 	>(this, undefined);
 	private _shouldDisposeDiffModel = false;
 	public readonly onDidChangeModel = Event.fromObservableLight(
-		this._diffModel
+		this._diffModel,
 	);
 
 	public get onDidContentSizeChange() {
@@ -141,11 +141,14 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 	}
 
 	private readonly _contextKeyService = this._register(
-		this._parentContextKeyService.createScoped(this._domElement)
+		this._parentContextKeyService.createScoped(this._domElement),
 	);
 	private readonly _instantiationService =
 		this._parentInstantiationService.createChild(
-			new ServiceCollection([IContextKeyService, this._contextKeyService])
+			new ServiceCollection([
+				IContextKeyService,
+				this._contextKeyService,
+			]),
 		);
 	private readonly _rootSizeObserver: ObservableElementSizeObserver;
 
@@ -158,7 +161,7 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 	private _accessibleDiffViewerVisible = derived(this, (reader) =>
 		this._options.onlyShowAccessibleDiffViewer.read(reader)
 			? true
-			: this._accessibleDiffViewerShouldBeVisible.read(reader)
+			: this._accessibleDiffViewerShouldBeVisible.read(reader),
 	);
 	private readonly _accessibleDiffViewer: IObservable<AccessibleDiffViewer>;
 	private readonly _options: DiffEditorOptions;
@@ -269,9 +272,8 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 		);
 
 		this._overviewRulerPart = derivedDisposable(this, (reader) =>
-			!this._options.renderOverviewRuler.read(reader)
-				? undefined
-				: this._instantiationService.createInstance(
+			this._options.renderOverviewRuler.read(reader)
+				? this._instantiationService.createInstance(
 						readHotReloadableExport(OverviewRulerFeature, reader),
 						this._editors,
 						this.elements.root,
@@ -279,15 +281,14 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 						this._rootSizeObserver.width,
 						this._rootSizeObserver.height,
 						this._layoutInfo.map((i) => i.modifiedEditor)
-					)
+					) : undefined
 		).recomputeInitiallyAndOnChange(this._store);
 
 		this._sash = derivedDisposable(this, (reader) => {
 			const showSash = this._options.renderSideBySide.read(reader);
 			this.elements.root.classList.toggle("side-by-side", showSash);
-			return !showSash
-				? undefined
-				: new DiffEditorSash(
+			return showSash
+				? new DiffEditorSash(
 						this._options,
 						this.elements.root,
 						{
@@ -300,7 +301,7 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 							),
 						},
 						this._boundarySashes
-					);
+					) : undefined;
 		}).recomputeInitiallyAndOnChange(this._store);
 
 		const unchangedRangesFeature = derivedDisposable(
@@ -548,13 +549,13 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 		instantiationService: IInstantiationService,
 		container: HTMLElement,
 		options: Readonly<IEditorConstructionOptions>,
-		editorWidgetOptions: ICodeEditorWidgetOptions
+		editorWidgetOptions: ICodeEditorWidgetOptions,
 	): CodeEditorWidget {
 		const editor = instantiationService.createInstance(
 			CodeEditorWidget,
 			container,
 			options,
-			editorWidgetOptions
+			editorWidgetOptions,
 		);
 		return editor;
 	}
@@ -585,7 +586,7 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 
 		this._editors.original.layout(
 			{ width: originalWidthWithoutMovedBlockLines, height },
-			true
+			true,
 		);
 		this._editors.modified.layout({ width: modifiedWidth, height }, true);
 
@@ -601,7 +602,7 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 		for (const desc of contributions) {
 			try {
 				this._register(
-					this._instantiationService.createInstance(desc.ctor, this)
+					this._instantiationService.createInstance(desc.ctor, this),
 				);
 			} catch (err) {
 				onUnexpectedError(err);
@@ -671,7 +672,7 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 		return this._instantiationService.createInstance(
 			DiffEditorViewModel,
 			model,
-			this._options
+			this._options,
 		);
 	}
 
@@ -681,7 +682,7 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 
 	override setModel(
 		model: IDiffEditorModel | null | IDiffEditorViewModel,
-		tx?: ITransaction
+		tx?: ITransaction,
 	): void {
 		if (!model && this._diffModel.get()) {
 			// Transitioning from a model to no-model
@@ -699,10 +700,10 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 				/** @description DiffEditorWidget.setModel */
 				observableFromEvent.batchEventsGlobally(tx, () => {
 					this._editors.original.setModel(
-						vm ? vm.model.model.original : null
+						vm ? vm.model.model.original : null,
 					);
 					this._editors.modified.setModel(
-						vm ? vm.model.model.modified : null
+						vm ? vm.model.model.modified : null,
 					);
 				});
 				const prevValue = this._diffModel.get();
@@ -711,7 +712,7 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 				this._shouldDisposeDiffModel = vm?.shouldDispose ?? false;
 				this._diffModel.set(
 					vm?.model as DiffEditorViewModel | undefined,
-					tx
+					tx,
 				);
 
 				if (shouldDispose) {
@@ -742,11 +743,11 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 		this._boundarySashes.set(sashes, undefined);
 	}
 
-	private readonly _diffValue = this._diffModel.map(
-		(m, r) => m?.diff.read(r)
+	private readonly _diffValue = this._diffModel.map((m, r) =>
+		m?.diff.read(r),
 	);
 	readonly onDidUpdateDiff: Event<void> = Event.fromObservableLight(
-		this._diffValue
+		this._diffValue,
 	);
 
 	get ignoreTrimWhitespace(): boolean {
@@ -801,7 +802,7 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 			{
 				range: diff.modified.toExclusiveRange(),
 				text: model.model.original.getValueInRange(
-					diff.original.toExclusiveRange()
+					diff.original.toExclusiveRange(),
 				),
 			},
 		]);
@@ -824,10 +825,10 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 
 	private _goTo(diff: DiffMapping): void {
 		this._editors.modified.setPosition(
-			new Position(diff.lineRangeMapping.modified.startLineNumber, 1)
+			new Position(diff.lineRangeMapping.modified.startLineNumber, 1),
 		);
 		this._editors.modified.revealRangeInCenter(
-			diff.lineRangeMapping.modified.toExclusiveRange()
+			diff.lineRangeMapping.modified.toExclusiveRange(),
 		);
 	}
 
@@ -845,7 +846,7 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 				diffs.find(
 					(d) =>
 						d.lineRangeMapping.modified.startLineNumber >
-						curLineNumber
+						curLineNumber,
 				) ?? diffs[0];
 		} else {
 			diff =
@@ -853,7 +854,7 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 					diffs,
 					(d) =>
 						d.lineRangeMapping.modified.startLineNumber <
-						curLineNumber
+						curLineNumber,
 				) ?? diffs[diffs.length - 1];
 		}
 		this._goTo(diff);
@@ -926,16 +927,16 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 				?.mappings.map((m) =>
 					isModifiedFocus
 						? m.lineRangeMapping.flip()
-						: m.lineRangeMapping
+						: m.lineRangeMapping,
 				);
 			if (mappings) {
 				const newRange1 = translatePosition(
 					sourceSelection.getStartPosition(),
-					mappings
+					mappings,
 				);
 				const newRange2 = translatePosition(
 					sourceSelection.getEndPosition(),
-					mappings
+					mappings,
 				);
 				destinationSelection = Range.plusRange(newRange1, newRange2);
 			}

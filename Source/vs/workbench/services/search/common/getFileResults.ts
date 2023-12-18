@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Range } from "vs/editor/common/core/range";
 import { ITextSearchResult } from "vs/workbench/services/search/common/search";
 import { TextSearchPreviewOptions } from "vs/workbench/services/search/common/searchExtTypes";
-import { Range } from "vs/editor/common/core/range";
 
 export const getFileResults = (
 	bytes: Uint8Array,
@@ -15,7 +15,7 @@ export const getFileResults = (
 		afterContext: number;
 		previewOptions: TextSearchPreviewOptions | undefined;
 		remainingResultQuota: number;
-	}
+	},
 ): ITextSearchResult[] => {
 	let text: string;
 	if (bytes[0] === 0xff && bytes[1] === 0xfe) {
@@ -52,7 +52,7 @@ export const getFileResults = (
 		const readLine = (lineNumber: number) =>
 			text.slice(
 				lineRanges[lineNumber].start,
-				lineRanges[lineNumber].end
+				lineRanges[lineNumber].end,
 			);
 
 		let prevLineEnd = 0;
@@ -90,7 +90,7 @@ export const getFileResults = (
 				for (
 					let contextLine = Math.max(
 						0,
-						startLine - options.beforeContext
+						startLine - options.beforeContext,
 					);
 					contextLine < startLine;
 					contextLine++
@@ -109,11 +109,11 @@ export const getFileResults = (
 				) {
 					offset = Math.max(
 						matchStartIndex - lineRanges[startLine].start - 20,
-						0
+						0,
 					);
 					previewLine = previewLine.substr(
 						offset,
-						options.previewOptions.charsPerLine
+						options.previewOptions.charsPerLine,
 					);
 				}
 				previewText += `${previewLine}\n`;
@@ -124,7 +124,9 @@ export const getFileResults = (
 				startLine,
 				matchStartIndex - lineRanges[startLine].start,
 				endLine,
-				matchStartIndex + matchedText.length - lineRanges[endLine].start
+				matchStartIndex +
+					matchedText.length -
+					lineRanges[endLine].start,
 			);
 			const previewRange = new Range(
 				0,
@@ -133,7 +135,7 @@ export const getFileResults = (
 				matchStartIndex +
 					matchedText.length -
 					lineRanges[endLine].start -
-					(endLine === startLine ? offset : 0)
+					(endLine === startLine ? offset : 0),
 			);
 
 			const match: ITextSearchResult = {
@@ -148,7 +150,7 @@ export const getFileResults = (
 					contextLine <=
 					Math.min(
 						endLine + options.afterContext,
-						lineRanges.length - 1
+						lineRanges.length - 1,
 					);
 					contextLine++
 				) {

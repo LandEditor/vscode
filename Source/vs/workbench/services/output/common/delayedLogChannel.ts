@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { URI } from "vs/base/common/uri";
 import {
 	ILogger,
 	ILoggerService,
-	log,
 	LogLevel,
+	log,
 } from "vs/platform/log/common/log";
-import { URI } from "vs/base/common/uri";
 
 export class DelayedLogChannel {
 	private readonly logger: ILogger;

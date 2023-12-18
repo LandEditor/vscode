@@ -3,23 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { mainWindow } from "vs/base/browser/window";
+import { Schemas } from "vs/base/common/network";
+import { IPath, posix, win32 } from "vs/base/common/path";
+import { OS, OperatingSystem, isWindows } from "vs/base/common/platform";
+import { URI } from "vs/base/common/uri";
+import { IFileService } from "vs/platform/files/common/files";
+import { ITerminalBackend } from "vs/platform/terminal/common/terminal";
+import { ITerminalProcessManager } from "vs/workbench/contrib/terminal/common/terminal";
 import {
 	ITerminalLinkResolver,
 	ResolvedLink,
 } from "vs/workbench/contrib/terminalContrib/links/browser/links";
 import {
-	removeLinkSuffix,
 	removeLinkQueryString,
+	removeLinkSuffix,
 	winDrivePrefix,
 } from "vs/workbench/contrib/terminalContrib/links/browser/terminalLinkParsing";
-import { URI } from "vs/base/common/uri";
-import { ITerminalProcessManager } from "vs/workbench/contrib/terminal/common/terminal";
-import { Schemas } from "vs/base/common/network";
-import { isWindows, OperatingSystem, OS } from "vs/base/common/platform";
-import { IFileService } from "vs/platform/files/common/files";
-import { IPath, posix, win32 } from "vs/base/common/path";
-import { ITerminalBackend } from "vs/platform/terminal/common/terminal";
-import { mainWindow } from "vs/base/browser/window";
 
 export class TerminalLinkResolver implements ITerminalLinkResolver {
 	declare _serviceBrand: undefined;
@@ -36,17 +36,17 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
 			"initialCwd" | "os" | "remoteAuthority" | "userHome"
 		> & { backend?: Pick<ITerminalBackend, "getWslPath"> },
 		link: string,
-		uri?: URI
+		uri?: URI,
 	): Promise<ResolvedLink> {
 		// Get the link cache
 		let cache = this._resolvedLinkCaches.get(
-			processManager.remoteAuthority ?? ""
+			processManager.remoteAuthority ?? "",
 		);
 		if (!cache) {
 			cache = new LinkCache();
 			this._resolvedLinkCaches.set(
 				processManager.remoteAuthority ?? "",
-				cache
+				cache,
 			);
 		}
 
@@ -90,7 +90,7 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
 		) {
 			linkUrl = await processManager.backend.getWslPath(
 				linkUrl,
-				"unix-to-win"
+				"unix-to-win",
 			);
 		}
 		// Skip preprocessing if it looks like a special Windows -> WSL link
@@ -106,7 +106,7 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
 				linkUrl,
 				processManager.initialCwd,
 				processManager.os,
-				processManager.userHome
+				processManager.userHome,
 			);
 			if (!preprocessedLink) {
 				cache.set(link, null);
@@ -148,7 +148,7 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
 		link: string,
 		initialCwd: string,
 		os: OperatingSystem | undefined,
-		userHome: string | undefined
+		userHome: string | undefined,
 	): string | null {
 		const osPath = this._getOsPath(os);
 		if (link.charAt(0) === "~") {
@@ -192,7 +192,7 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
 	}
 }
 
-const enum LinkCacheConstants {
+enum LinkCacheConstants {
 	/**
 	 * How long to cache links for in milliseconds, the TTL resets whenever a new value is set in
 	 * the cache.
@@ -211,7 +211,7 @@ class LinkCache {
 		}
 		this._cacheTilTimeout = mainWindow.setTimeout(
 			() => this._cache.clear(),
-			LinkCacheConstants.TTL
+			LinkCacheConstants.TTL,
 		);
 		this._cache.set(this._getKey(link), value);
 	}

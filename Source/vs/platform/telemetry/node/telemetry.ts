@@ -8,7 +8,7 @@ import { Promises } from "vs/base/node/pfs";
 
 export async function buildTelemetryMessage(
 	appRoot: string,
-	extensionsPath?: string
+	extensionsPath?: string,
 ): Promise<string> {
 	const mergedTelemetry = Object.create(null);
 
@@ -25,7 +25,7 @@ export async function buildTelemetryMessage(
 		for (const file of files) {
 			try {
 				const fileStat = await Promises.stat(
-					join(extensionsPath, file)
+					join(extensionsPath, file),
 				);
 				if (fileStat.isDirectory()) {
 					dirs.push(file);
@@ -48,7 +48,7 @@ export async function buildTelemetryMessage(
 		for (const folder of telemetryJsonFolders) {
 			const contents = (
 				await Promises.readFile(
-					join(extensionsPath, folder, "telemetry.json")
+					join(extensionsPath, folder, "telemetry.json"),
 				)
 			).toString();
 			mergeTelemetry(contents, folder);

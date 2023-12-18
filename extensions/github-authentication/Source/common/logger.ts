@@ -16,7 +16,7 @@ export class Log {
 				: "GitHub Enterprise";
 		this.output = vscode.window.createOutputChannel(
 			`${friendlyName} Authentication`,
-			{ log: true }
+			{ log: true },
 		);
 	}
 

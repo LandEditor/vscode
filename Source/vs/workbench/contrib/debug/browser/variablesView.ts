@@ -23,7 +23,7 @@ import { IAction } from "vs/base/common/actions";
 import { coalesce } from "vs/base/common/arrays";
 import { RunOnceScheduler, timeout } from "vs/base/common/async";
 import { Codicon } from "vs/base/common/codicons";
-import { createMatches, FuzzyScore } from "vs/base/common/filters";
+import { FuzzyScore, createMatches } from "vs/base/common/filters";
 import { DisposableStore } from "vs/base/common/lifecycle";
 import { localize } from "vs/nls";
 import { createAndFillInContextMenuActions } from "vs/platform/actions/browser/menuEntryActionViewItem";
@@ -96,10 +96,10 @@ import {
 import {
 	ErrorScope,
 	Expression,
-	getUriForDebugMemory,
 	Scope,
 	StackFrame,
 	Variable,
+	getUriForDebugMemory,
 } from "vs/workbench/contrib/debug/common/debugModel";
 import {
 	IEditorService,
@@ -216,7 +216,7 @@ export class VariablesView extends ViewPane {
 			[
 				this.instantiationService.createInstance(
 					VariablesRenderer,
-					linkeDetector
+					linkeDetector,
 				),
 				new ScopesRenderer(),
 				new ScopeErrorRenderer(),
@@ -234,11 +234,11 @@ export class VariablesView extends ViewPane {
 				overrideStyles: {
 					listBackground: this.getBackgroundColor(),
 				},
-			}
+			},
 		);
 
 		this.tree.setInput(
-			this.debugService.getViewModel().focusedStackFrame ?? null
+			this.debugService.getViewModel().focusedStackFrame ?? null,
 		);
 
 		CONTEXT_VARIABLES_FOCUSED.bindTo(this.tree.contextKeyService);
@@ -254,7 +254,7 @@ export class VariablesView extends ViewPane {
 				// Otherwise postpone the refresh until user stops stepping.
 				const timeout = sf.explicit ? 0 : undefined;
 				this.updateTreeScheduler.schedule(timeout);
-			})
+			}),
 		);
 		this._register(
 			this.debugService.getViewModel().onWillUpdateViews(() => {
@@ -265,14 +265,14 @@ export class VariablesView extends ViewPane {
 				}
 				forgetScopes = true;
 				this.tree.updateChildren();
-			})
+			}),
 		);
 		this._register(this.tree);
 		this._register(
-			this.tree.onMouseDblClick((e) => this.onMouseDblClick(e))
+			this.tree.onMouseDblClick((e) => this.onMouseDblClick(e)),
 		);
 		this._register(
-			this.tree.onContextMenu(async (e) => await this.onContextMenu(e))
+			this.tree.onContextMenu(async (e) => await this.onContextMenu(e)),
 		);
 
 		this._register(
@@ -280,7 +280,7 @@ export class VariablesView extends ViewPane {
 				if (visible && this.needsRefresh) {
 					this.updateTreeScheduler.schedule();
 				}
-			})
+			}),
 		);
 		let horizontalScrolling: boolean | undefined;
 		this._register(
@@ -299,7 +299,7 @@ export class VariablesView extends ViewPane {
 					});
 					horizontalScrolling = undefined;
 				}
-			})
+			}),
 		);
 		this._register(
 			this.debugService
@@ -309,13 +309,13 @@ export class VariablesView extends ViewPane {
 						await this.tree.updateChildren(e, false, true);
 						await this.tree.expand(e);
 					}
-				})
+				}),
 		);
 		this._register(
 			this.debugService.onDidEndSession(() => {
 				this.savedViewState.clear();
 				this.autoExpandedScopes.clear();
-			})
+			}),
 		);
 	}
 
@@ -349,7 +349,7 @@ export class VariablesView extends ViewPane {
 	}
 
 	private async onContextMenu(
-		e: ITreeContextMenuEvent<IExpression | IScope>
+		e: ITreeContextMenuEvent<IExpression | IScope>,
 	): Promise<void> {
 		const variable = e.element;
 		if (!(variable instanceof Variable) || !variable.value) {
@@ -361,7 +361,7 @@ export class VariablesView extends ViewPane {
 			this.menuService,
 			this.contextMenuService,
 			MenuId.DebugVariablesContext,
-			e
+			e,
 		);
 	}
 }
@@ -371,7 +371,7 @@ export async function openContextMenuForVariableTreeElement(
 	menuService: IMenuService,
 	contextMenuService: IContextMenuService,
 	menuId: MenuId,
-	e: ITreeContextMenuEvent<IExpression | IScope>
+	e: ITreeContextMenuEvent<IExpression | IScope>,
 ) {
 	const variable = e.element;
 	if (!(variable instanceof Variable) || !variable.value) {
@@ -383,10 +383,10 @@ export async function openContextMenuForVariableTreeElement(
 	try {
 		const contextKeyService = await getContextForVariableMenuWithDataAccess(
 			parentContextKeyService,
-			variable
+			variable,
 		);
 		const menu = toDispose.add(
-			menuService.createMenu(menuId, contextKeyService)
+			menuService.createMenu(menuId, contextKeyService),
 		);
 
 		const context: IVariablesContext = getVariablesContext(variable);
@@ -395,7 +395,7 @@ export async function openContextMenuForVariableTreeElement(
 			menu,
 			{ arg: context, shouldForwardArgs: false },
 			{ primary: [], secondary },
-			"inline"
+			"inline",
 		);
 		contextMenuService.showContextMenu({
 			getAnchor: () => e.anchor,
@@ -420,7 +420,7 @@ const getVariablesContext = (variable: Variable): IVariablesContext => ({
  */
 async function getContextForVariableMenuWithDataAccess(
 	parentContext: IContextKeyService,
-	variable: Variable
+	variable: Variable,
 ) {
 	const session = variable.getSession();
 	if (!session || !session.capabilities.supportsDataBreakpoints) {
@@ -430,17 +430,12 @@ async function getContextForVariableMenuWithDataAccess(
 	const contextKeys: [string, unknown][] = [];
 	dataBreakpointInfoResponse = await session.dataBreakpointInfo(
 		variable.name,
-		variable.parent.reference
+		variable.parent.reference,
 	);
 	const dataBreakpointId = dataBreakpointInfoResponse?.dataId;
 	const dataBreakpointAccessTypes = dataBreakpointInfoResponse?.accessTypes;
 
-	if (!dataBreakpointAccessTypes) {
-		contextKeys.push([
-			CONTEXT_BREAK_WHEN_VALUE_CHANGES_SUPPORTED.key,
-			!!dataBreakpointId,
-		]);
-	} else {
+	if (dataBreakpointAccessTypes) {
 		for (const accessType of dataBreakpointAccessTypes) {
 			switch (accessType) {
 				case "read":
@@ -463,6 +458,11 @@ async function getContextForVariableMenuWithDataAccess(
 					break;
 			}
 		}
+	} else {
+		contextKeys.push([
+			CONTEXT_BREAK_WHEN_VALUE_CHANGES_SUPPORTED.key,
+			!!dataBreakpointId,
+		]);
 	}
 
 	return getContextForVariableMenu(parentContext, variable, contextKeys);
@@ -474,7 +474,7 @@ async function getContextForVariableMenuWithDataAccess(
 function getContextForVariableMenu(
 	parentContext: IContextKeyService,
 	variable: Variable,
-	additionalContext: [string, unknown][] = []
+	additionalContext: [string, unknown][] = [],
 ) {
 	const session = variable.getSession();
 	const contextKeys: [string, unknown][] = [
@@ -520,7 +520,7 @@ class VariablesDataSource
 	}
 
 	getChildren(
-		element: IStackFrame | IExpression | IScope
+		element: IStackFrame | IExpression | IScope,
 	): Promise<(IExpression | IScope)[]> {
 		if (isStackFrame(element)) {
 			return element.getScopes();
@@ -572,11 +572,11 @@ class ScopesRenderer
 	renderElement(
 		element: ITreeNode<IScope, FuzzyScore>,
 		index: number,
-		templateData: IScopeTemplateData
+		templateData: IScopeTemplateData,
 	): void {
 		templateData.label.set(
 			element.element.name,
-			createMatches(element.filterData)
+			createMatches(element.filterData),
 		);
 	}
 
@@ -607,7 +607,7 @@ class ScopeErrorRenderer
 	renderElement(
 		element: ITreeNode<IScope, FuzzyScore>,
 		index: number,
-		templateData: IScopeErrorTemplateData
+		templateData: IScopeErrorTemplateData,
 	): void {
 		templateData.error.innerText = element.element.name;
 	}
@@ -638,21 +638,21 @@ export class VariablesRenderer extends AbstractExpressionsRenderer {
 	protected renderExpression(
 		expression: IExpression,
 		data: IExpressionTemplateData,
-		highlights: IHighlight[]
+		highlights: IHighlight[],
 	): void {
 		renderVariable(
 			expression as Variable,
 			data,
 			true,
 			highlights,
-			this.linkDetector
+			this.linkDetector,
 		);
 	}
 
 	public override renderElement(
 		node: ITreeNode<IExpression, FuzzyScore>,
 		index: number,
-		data: IExpressionTemplateData
+		data: IExpressionTemplateData,
 	): void {
 		super.renderExpressionElement(node.element, node, data);
 	}
@@ -663,7 +663,7 @@ export class VariablesRenderer extends AbstractExpressionsRenderer {
 			initialValue: expression.value,
 			ariaLabel: localize(
 				"variableValueAriaLabel",
-				"Type new variable value"
+				"Type new variable value",
 			),
 			validationOptions: {
 				validation: () =>
@@ -691,16 +691,16 @@ export class VariablesRenderer extends AbstractExpressionsRenderer {
 
 	protected override renderActionBar(
 		actionBar: ActionBar,
-		expression: IExpression
+		expression: IExpression,
 	) {
 		const variable = expression as Variable;
 		const contextKeyService = getContextForVariableMenu(
 			this.contextKeyService,
-			variable
+			variable,
 		);
 		const menu = this.menuService.createMenu(
 			MenuId.DebugVariablesContext,
-			contextKeyService
+			contextKeyService,
 		);
 
 		const primary: IAction[] = [];
@@ -709,7 +709,7 @@ export class VariablesRenderer extends AbstractExpressionsRenderer {
 			menu,
 			{ arg: context, shouldForwardArgs: false },
 			{ primary, secondary: [] },
-			"inline"
+			"inline",
 		);
 
 		actionBar.clear();
@@ -730,7 +730,7 @@ class VariablesAccessibilityProvider
 			return localize(
 				"variableScopeAriaLabel",
 				"Scope {0}",
-				element.name
+				element.name,
 			);
 		}
 		if (element instanceof Variable) {
@@ -743,7 +743,7 @@ class VariablesAccessibilityProvider
 				},
 				"{0}, value {1}",
 				element.name,
-				element.value
+				element.value,
 			);
 		}
 
@@ -768,7 +768,7 @@ CommandsRegistry.registerCommand({
 	handler: async (
 		accessor: ServicesAccessor,
 		arg: Variable | Expression | IVariablesContext,
-		ctx?: (Variable | Expression)[]
+		ctx?: (Variable | Expression)[],
 	) => {
 		const debugService = accessor.get(IDebugService);
 		const clipboardService = accessor.get(IClipboardService);
@@ -794,17 +794,17 @@ CommandsRegistry.registerCommand({
 		const toEvaluate = elements.map((element) =>
 			element instanceof Variable
 				? element.evaluateName || element.value
-				: element.name
+				: element.name,
 		);
 
 		try {
 			const evaluations = await Promise.all(
 				toEvaluate.map((expr) =>
-					session.evaluate(expr, stackFrame.frameId, evalContext)
-				)
+					session.evaluate(expr, stackFrame.frameId, evalContext),
+				),
 			);
 			const result = coalesce(evaluations).map(
-				(evaluation) => evaluation.body.result
+				(evaluation) => evaluation.body.result,
 			);
 			if (result.length) {
 				clipboardService.writeText(result.join("\n"));
@@ -826,7 +826,7 @@ CommandsRegistry.registerCommand({
 	handler: async (
 		accessor: ServicesAccessor,
 		arg: IVariablesContext | IExpression,
-		ctx?: (Variable | Expression)[]
+		ctx?: (Variable | Expression)[],
 	) => {
 		const debugService = accessor.get(IDebugService);
 		let sessionId: string;
@@ -860,7 +860,7 @@ CommandsRegistry.registerCommand({
 		const telemetryService = accessor.get(ITelemetryService);
 
 		const ext = await extensionService.getExtension(
-			HEX_EDITOR_EXTENSION_ID
+			HEX_EDITOR_EXTENSION_ID,
 		);
 		if (
 			ext ||
@@ -868,7 +868,7 @@ CommandsRegistry.registerCommand({
 				notifications,
 				progressService,
 				extensionService,
-				commandService
+				commandService,
 			))
 		) {
 			/* __GDPR__
@@ -890,7 +890,7 @@ CommandsRegistry.registerCommand({
 						override: HEX_EDITOR_EDITOR_ID,
 					},
 				},
-				SIDE_GROUP
+				SIDE_GROUP,
 			);
 		}
 	},
@@ -900,7 +900,7 @@ function tryInstallHexEditor(
 	notifications: INotificationService,
 	progressService: IProgressService,
 	extensionService: IExtensionService,
-	commandService: ICommandService
+	commandService: ICommandService,
 ) {
 	return new Promise<boolean>((resolve) => {
 		let installing = false;
@@ -909,7 +909,7 @@ function tryInstallHexEditor(
 			Severity.Info,
 			localize(
 				"viewMemory.prompt",
-				"Inspecting binary data requires the Hex Editor extension. Would you like to install it now?"
+				"Inspecting binary data requires the Hex Editor extension. Would you like to install it now?",
 			),
 			[
 				{
@@ -926,24 +926,24 @@ function tryInstallHexEditor(
 									location: ProgressLocation.Notification,
 									title: localize(
 										"viewMemory.install.progress",
-										"Installing the Hex Editor..."
+										"Installing the Hex Editor...",
 									),
 								},
 								async () => {
 									await commandService.executeCommand(
 										"workbench.extensions.installExtension",
-										HEX_EDITOR_EXTENSION_ID
+										HEX_EDITOR_EXTENSION_ID,
 									);
 									// it seems like the extension is not registered immediately on install --
 									// wait for it to appear before returning.
 									while (
 										!(await extensionService.getExtension(
-											HEX_EDITOR_EXTENSION_ID
+											HEX_EDITOR_EXTENSION_ID,
 										))
 									) {
 										await timeout(30);
 									}
-								}
+								},
 							);
 							resolve(true);
 						} catch (e) {
@@ -953,7 +953,7 @@ function tryInstallHexEditor(
 					},
 				},
 			],
-			{ sticky: true }
+			{ sticky: true },
 		);
 
 		handle.onDidClose((e) => {
@@ -975,7 +975,7 @@ CommandsRegistry.registerCommand({
 				dataBreakpointInfoResponse.dataId!,
 				!!dataBreakpointInfoResponse.canPersist,
 				dataBreakpointInfoResponse.accessTypes,
-				"write"
+				"write",
 			);
 		}
 	},
@@ -992,7 +992,7 @@ CommandsRegistry.registerCommand({
 				dataBreakpointInfoResponse.dataId!,
 				!!dataBreakpointInfoResponse.canPersist,
 				dataBreakpointInfoResponse.accessTypes,
-				"readWrite"
+				"readWrite",
 			);
 		}
 	},
@@ -1009,7 +1009,7 @@ CommandsRegistry.registerCommand({
 				dataBreakpointInfoResponse.dataId!,
 				!!dataBreakpointInfoResponse.canPersist,
 				dataBreakpointInfoResponse.accessTypes,
-				"read"
+				"read",
 			);
 		}
 	},
@@ -1053,5 +1053,5 @@ registerAction2(
 		runInView(_accessor: ServicesAccessor, view: VariablesView) {
 			view.collapseAll();
 		}
-	}
+	},
 );

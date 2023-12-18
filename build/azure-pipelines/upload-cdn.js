@@ -1,4 +1,3 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -16,7 +15,7 @@ const commit = process.env["BUILD_SOURCEVERSION"];
 const credential = new identity_1.ClientSecretCredential(
 	process.env["AZURE_TENANT_ID"],
 	process.env["AZURE_CLIENT_ID"],
-	process.env["AZURE_CLIENT_SECRET"]
+	process.env["AZURE_CLIENT_SECRET"],
 );
 mime.define({
 	"application/typescript": ["ts"],
@@ -101,7 +100,7 @@ async function main() {
 			console.log("Uploaded:", f.relative);
 			files.push(f.relative);
 			this.emit("data", f);
-		})
+		}),
 	);
 	console.log(`Uploading files to CDN...`); // debug
 	await wait(out);

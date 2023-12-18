@@ -21,9 +21,9 @@ import {
 registerSingleton(
 	IExternalUriOpenerService,
 	ExternalUriOpenerService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 
 Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration
+	ConfigurationExtensions.Configuration,
 ).registerConfiguration(externalUriOpenersConfigurationNode);

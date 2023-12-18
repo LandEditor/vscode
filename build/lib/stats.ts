@@ -3,29 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as ansiColors from "ansi-colors";
 import * as es from "event-stream";
 import * as fancyLog from "fancy-log";
-import * as ansiColors from "ansi-colors";
 import * as File from "vinyl";
 
 class Entry {
 	constructor(
 		readonly name: string,
 		public totalCount: number,
-		public totalSize: number
+		public totalSize: number,
 	) {}
 
 	toString(pretty?: boolean): string {
-		if (!pretty) {
-			if (this.totalCount === 1) {
-				return `${this.name}: ${this.totalSize} bytes`;
-			} else {
-				return `${this.name}: ${this.totalCount} files with ${this.totalSize} bytes`;
-			}
-		} else {
+		if (pretty) {
 			if (this.totalCount === 1) {
 				return `Stats for '${ansiColors.grey(this.name)}': ${Math.round(
-					this.totalSize / 1204
+					this.totalSize / 1204,
 				)}KB`;
 			} else {
 				const count =
@@ -34,9 +28,13 @@ class Entry {
 						: ansiColors.red(this.totalCount.toString());
 
 				return `Stats for '${ansiColors.grey(
-					this.name
+					this.name,
 				)}': ${count} files, ${Math.round(this.totalSize / 1204)}KB`;
 			}
+		} else if (this.totalCount === 1) {
+			return `${this.name}: ${this.totalSize} bytes`;
+		} else {
+			return `${this.name}: ${this.totalCount} files with ${this.totalSize} bytes`;
 		}
 	}
 }
@@ -45,7 +43,7 @@ const _entries = new Map<string, Entry>();
 
 export function createStatsStream(
 	group: string,
-	log?: boolean
+	log?: boolean,
 ): es.ThroughStream {
 	const entry = new Entry(group, 0, 0);
 	_entries.set(entry.name, entry);
@@ -70,8 +68,8 @@ export function createStatsStream(
 				if (entry.totalCount === 1) {
 					fancyLog(
 						`Stats for '${ansiColors.grey(
-							entry.name
-						)}': ${Math.round(entry.totalSize / 1204)}KB`
+							entry.name,
+						)}': ${Math.round(entry.totalSize / 1204)}KB`,
 					);
 				} else {
 					const count =
@@ -81,15 +79,15 @@ export function createStatsStream(
 
 					fancyLog(
 						`Stats for '${ansiColors.grey(
-							entry.name
+							entry.name,
 						)}': ${count} files, ${Math.round(
-							entry.totalSize / 1204
-						)}KB`
+							entry.totalSize / 1204,
+						)}KB`,
 					);
 				}
 			}
 
 			this.emit("end");
-		}
+		},
 	);
 }

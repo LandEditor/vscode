@@ -31,7 +31,7 @@ export class CommandManager {
 	private _registerCommand(
 		id: string,
 		impl: (...args: any[]) => void,
-		thisArg?: any
+		thisArg?: any,
 	) {
 		if (this._commands.has(id)) {
 			return;
@@ -39,7 +39,7 @@ export class CommandManager {
 
 		this._commands.set(
 			id,
-			vscode.commands.registerCommand(id, impl, thisArg)
+			vscode.commands.registerCommand(id, impl, thisArg),
 		);
 	}
 }

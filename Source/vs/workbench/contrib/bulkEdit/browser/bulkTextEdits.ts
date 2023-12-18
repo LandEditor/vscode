@@ -3,9 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { dispose, IDisposable, IReference } from "vs/base/common/lifecycle";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { IDisposable, IReference, dispose } from "vs/base/common/lifecycle";
+import { ResourceMap } from "vs/base/common/map";
 import { URI } from "vs/base/common/uri";
 import { ICodeEditor } from "vs/editor/browser/editorBrowser";
+import { ResourceTextEdit } from "vs/editor/browser/services/bulkEditService";
 import {
 	EditOperation,
 	ISingleEditOperation,
@@ -14,27 +17,24 @@ import { Range } from "vs/editor/common/core/range";
 import { Selection } from "vs/editor/common/core/selection";
 import { EndOfLineSequence, ITextModel } from "vs/editor/common/model";
 import {
-	ITextModelService,
-	IResolvedTextEditorModel,
-} from "vs/editor/common/services/resolverService";
-import { IProgress } from "vs/platform/progress/common/progress";
+	MultiModelEditStackElement,
+	SingleModelEditStackElement,
+} from "vs/editor/common/model/editStack";
 import { IEditorWorkerService } from "vs/editor/common/services/editorWorker";
+import { IModelService } from "vs/editor/common/services/model";
+import {
+	IResolvedTextEditorModel,
+	ITextModelService,
+} from "vs/editor/common/services/resolverService";
+import { SnippetController2 } from "vs/editor/contrib/snippet/browser/snippetController2";
+import { SnippetParser } from "vs/editor/contrib/snippet/browser/snippetParser";
+import { ISnippetEdit } from "vs/editor/contrib/snippet/browser/snippetSession";
+import { IProgress } from "vs/platform/progress/common/progress";
 import {
 	IUndoRedoService,
 	UndoRedoGroup,
 	UndoRedoSource,
 } from "vs/platform/undoRedo/common/undoRedo";
-import {
-	SingleModelEditStackElement,
-	MultiModelEditStackElement,
-} from "vs/editor/common/model/editStack";
-import { ResourceMap } from "vs/base/common/map";
-import { IModelService } from "vs/editor/common/services/model";
-import { ResourceTextEdit } from "vs/editor/browser/services/bulkEditService";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { SnippetController2 } from "vs/editor/contrib/snippet/browser/snippetController2";
-import { SnippetParser } from "vs/editor/contrib/snippet/browser/snippetParser";
-import { ISnippetEdit } from "vs/editor/contrib/snippet/browser/snippetSession";
 
 type ValidationResult = { canApply: true } | { canApply: false; reason: URI };
 
@@ -50,7 +50,7 @@ class ModelEditTask implements IDisposable {
 	protected _newEol: EndOfLineSequence | undefined;
 
 	constructor(
-		private readonly _modelReference: IReference<IResolvedTextEditorModel>
+		private readonly _modelReference: IReference<IResolvedTextEditorModel>,
 	) {
 		this.model = this._modelReference.object.textEditorModel;
 		this._edits = [];
@@ -94,10 +94,10 @@ class ModelEditTask implements IDisposable {
 
 		// create edit operation
 		let range: Range;
-		if (!textEdit.range) {
-			range = this.model.getFullModelRange();
-		} else {
+		if (textEdit.range) {
 			range = Range.lift(textEdit.range);
+		} else {
+			range = this.model.getFullModelRange();
 		}
 		this._edits.push({
 			...EditOperation.replaceMove(range, textEdit.text),
@@ -124,7 +124,7 @@ class ModelEditTask implements IDisposable {
 			this._edits = this._edits
 				.map(this._transformSnippetStringToInsertText, this) // no editor -> no snippet mode
 				.sort((a, b) =>
-					Range.compareRangesUsingStarts(a.range, b.range)
+					Range.compareRangesUsingStarts(a.range, b.range),
 				);
 			this.model.pushEditOperations(null, this._edits, () => null);
 		}
@@ -134,7 +134,7 @@ class ModelEditTask implements IDisposable {
 	}
 
 	protected _transformSnippetStringToInsertText(
-		edit: ISingleSnippetEditOperation
+		edit: ISingleSnippetEditOperation,
 	): ISingleSnippetEditOperation {
 		// transform a snippet edit (and only those) into a normal text edit
 		// for that we need to parse the snippet and get its actual text, e.g without placeholder
@@ -155,7 +155,7 @@ class EditorEditTask extends ModelEditTask {
 
 	constructor(
 		modelReference: IReference<IResolvedTextEditorModel>,
-		editor: ICodeEditor
+		editor: ICodeEditor,
 	) {
 		super(modelReference);
 		this._editor = editor;
@@ -200,7 +200,7 @@ class EditorEditTask extends ModelEditTask {
 				this._edits = this._edits
 					.map(this._transformSnippetStringToInsertText, this) // mixed edits (snippet and normal) -> no snippet mode
 					.sort((a, b) =>
-						Range.compareRangesUsingStarts(a.range, b.range)
+						Range.compareRangesUsingStarts(a.range, b.range),
 					);
 				this._editor.executeEdits("", this._edits);
 			}
@@ -258,7 +258,7 @@ export class BulkTextEdits {
 					if (model && model.getVersionId() !== edit.versionId) {
 						// model changed in the meantime
 						throw new Error(
-							`${model.uri.toString()} has changed in the meantime`
+							`${model.uri.toString()} has changed in the meantime`,
 						);
 					}
 				}
@@ -296,28 +296,28 @@ export class BulkTextEdits {
 
 					const makeGroupMoreMinimal = async (
 						start: number,
-						end: number
+						end: number,
 					) => {
 						const oldEdits = edits.slice(start, end);
 						const newEdits =
 							await this._editorWorker.computeMoreMinimalEdits(
 								ref.object.textEditorModel.uri,
 								oldEdits.map((e) => e.textEdit),
-								false
+								false,
 							);
-						if (!newEdits) {
-							oldEdits.forEach(task.addEdit, task);
-						} else {
+						if (newEdits) {
 							newEdits.forEach((edit) =>
 								task.addEdit(
 									new ResourceTextEdit(
 										ref.object.textEditorModel.uri,
 										edit,
 										undefined,
-										undefined
-									)
-								)
+										undefined,
+									),
+								),
 							);
+						} else {
+							oldEdits.forEach(task.addEdit, task);
 						}
 					};
 
@@ -365,7 +365,7 @@ export class BulkTextEdits {
 			const validation = this._validateTasks(tasks);
 			if (!validation.canApply) {
 				throw new Error(
-					`${validation.reason.toString()} has changed in the meantime`
+					`${validation.reason.toString()} has changed in the meantime`,
 				);
 			}
 			if (tasks.length === 1) {
@@ -377,12 +377,12 @@ export class BulkTextEdits {
 							this._label,
 							this._code,
 							task.model,
-							task.getBeforeCursorState()
+							task.getBeforeCursorState(),
 						);
 					this._undoRedoService.pushElement(
 						singleModelEditStackElement,
 						this._undoRedoGroup,
-						this._undoRedoSource
+						this._undoRedoSource,
 					);
 					task.apply();
 					singleModelEditStackElement.close();
@@ -401,14 +401,14 @@ export class BulkTextEdits {
 									this._label,
 									this._code,
 									t.model,
-									t.getBeforeCursorState()
-								)
-						)
+									t.getBeforeCursorState(),
+								),
+						),
 					);
 				this._undoRedoService.pushElement(
 					multiModelEditStackElement,
 					this._undoRedoGroup,
-					this._undoRedoSource
+					this._undoRedoSource,
 				);
 				for (const task of tasks) {
 					task.apply();

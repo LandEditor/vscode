@@ -3,20 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { CancellationToken } from "vs/base/common/cancellation";
 import {
 	CancelablePromise,
 	createCancelablePromise,
 	raceCancellablePromises,
 	timeout,
 } from "vs/base/common/async";
+import { CancellationToken } from "vs/base/common/cancellation";
 import { IDisposable } from "vs/base/common/lifecycle";
+import { StopWatch } from "vs/base/common/stopwatch";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { StopWatch } from "vs/base/common/stopwatch";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import { ILogService } from "vs/platform/log/common/log";
 
 export const IAiEmbeddingVectorService =
@@ -28,22 +28,22 @@ export interface IAiEmbeddingVectorService {
 	isEnabled(): boolean;
 	getEmbeddingVector(
 		str: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<number[]>;
 	getEmbeddingVector(
 		strings: string[],
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<number[][]>;
 	registerAiEmbeddingVectorProvider(
 		model: string,
-		provider: IAiEmbeddingVectorProvider
+		provider: IAiEmbeddingVectorProvider,
 	): IDisposable;
 }
 
 export interface IAiEmbeddingVectorProvider {
 	provideAiEmbeddingVector(
 		strings: string[],
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<number[][]>;
 }
 
@@ -62,7 +62,7 @@ export class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
 
 	registerAiEmbeddingVectorProvider(
 		model: string,
-		provider: IAiEmbeddingVectorProvider
+		provider: IAiEmbeddingVectorProvider,
 	): IDisposable {
 		this._providers.push(provider);
 		return {
@@ -77,15 +77,15 @@ export class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
 
 	getEmbeddingVector(
 		str: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<number[]>;
 	getEmbeddingVector(
 		strings: string[],
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<number[][]>;
 	async getEmbeddingVector(
 		strings: string | string[],
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<number[] | number[][]> {
 		if (this._providers.length === 0) {
 			throw new Error("No embedding vector providers registered");
@@ -107,7 +107,7 @@ export class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
 					try {
 						return await provider.provideAiEmbeddingVector(
 							Array.isArray(strings) ? strings : [strings],
-							t
+							t,
 						);
 					} catch (e) {
 						// logged in extension host
@@ -117,7 +117,7 @@ export class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
 					// as expected.
 					await timer;
 					throw new Error("Embedding vector provider timed out");
-				})
+				}),
 			);
 		}
 
@@ -129,7 +129,7 @@ export class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
 				});
 				await timer;
 				throw new Error("Embedding vector provider timed out");
-			})
+			}),
 		);
 
 		try {
@@ -144,7 +144,7 @@ export class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
 		} finally {
 			stopwatch.stop();
 			this.logService.trace(
-				`[AiEmbeddingVectorService]: getEmbeddingVector took ${stopwatch.elapsed()}ms`
+				`[AiEmbeddingVectorService]: getEmbeddingVector took ${stopwatch.elapsed()}ms`,
 			);
 		}
 	}
@@ -153,5 +153,5 @@ export class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
 registerSingleton(
 	IAiEmbeddingVectorService,
 	AiEmbeddingVectorService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

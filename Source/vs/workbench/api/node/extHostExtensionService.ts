@@ -3,21 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as performance from "vs/base/common/performance";
-import { createApiFactoryAndRegisterActors } from "vs/workbench/api/common/extHost.api.impl";
-import { RequireInterceptor } from "vs/workbench/api/common/extHostRequireInterceptor";
-import { ExtensionActivationTimesBuilder } from "vs/workbench/api/common/extHostExtensionActivator";
-import { connectProxyResolver } from "vs/workbench/api/node/proxyResolver";
-import { AbstractExtHostExtensionService } from "vs/workbench/api/common/extHostExtensionService";
-import { ExtHostDownloadService } from "vs/workbench/api/node/extHostDownloadService";
-import { URI } from "vs/base/common/uri";
 import { Schemas } from "vs/base/common/network";
+import * as performance from "vs/base/common/performance";
+import { URI } from "vs/base/common/uri";
+import { realpathSync } from "vs/base/node/extpath";
 import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
+import { createApiFactoryAndRegisterActors } from "vs/workbench/api/common/extHost.api.impl";
+import { ExtensionActivationTimesBuilder } from "vs/workbench/api/common/extHostExtensionActivator";
+import { AbstractExtHostExtensionService } from "vs/workbench/api/common/extHostExtensionService";
+import { RequireInterceptor } from "vs/workbench/api/common/extHostRequireInterceptor";
 import { ExtensionRuntime } from "vs/workbench/api/common/extHostTypes";
 import { CLIServer } from "vs/workbench/api/node/extHostCLIServer";
-import { realpathSync } from "vs/base/node/extpath";
 import { ExtHostConsoleForwarder } from "vs/workbench/api/node/extHostConsoleForwarder";
 import { ExtHostDiskFileSystemProvider } from "vs/workbench/api/node/extHostDiskFileSystemProvider";
+import { ExtHostDownloadService } from "vs/workbench/api/node/extHostDownloadService";
+import { connectProxyResolver } from "vs/workbench/api/node/proxyResolver";
 
 class NodeModuleRequireInterceptor extends RequireInterceptor {
 	protected _installInterceptor(): void {
@@ -27,7 +27,7 @@ class NodeModuleRequireInterceptor extends RequireInterceptor {
 		node_module._load = function load(
 			request: string,
 			parent: { filename: string },
-			isMain: boolean
+			isMain: boolean,
 		) {
 			request = applyAlternatives(request);
 			if (!that._factories.has(request)) {
@@ -39,19 +39,19 @@ class NodeModuleRequireInterceptor extends RequireInterceptor {
 					request,
 					URI.file(realpathSync(parent.filename)),
 					(request) =>
-						originalLoad.apply(this, [request, parent, isMain])
+						originalLoad.apply(this, [request, parent, isMain]),
 				);
 		};
 
 		const originalLookup = node_module._resolveLookupPaths;
 		node_module._resolveLookupPaths = (
 			request: string,
-			parent: unknown
+			parent: unknown,
 		) => {
 			return originalLookup.call(
 				this,
 				applyAlternatives(request),
-				parent
+				parent,
 			);
 		};
 
@@ -77,7 +77,7 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 
 		// initialize API and register actors
 		const extensionApiFactory = this._instaService.invokeFunction(
-			createApiFactoryAndRegisterActors
+			createApiFactoryAndRegisterActors,
 		);
 
 		// Register Download command
@@ -96,7 +96,7 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 		const interceptor = this._instaService.createInstance(
 			NodeModuleRequireInterceptor,
 			extensionApiFactory,
-			{ mine: this._myRegistry, all: this._globalRegistry }
+			{ mine: this._myRegistry, all: this._globalRegistry },
 		);
 		await interceptor.install();
 		performance.mark("code/extHost/didInitAPI");
@@ -110,13 +110,13 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 			this,
 			this._logService,
 			this._mainThreadTelemetryProxy,
-			this._initData
+			this._initData,
 		);
 		performance.mark("code/extHost/didInitProxyResolver");
 	}
 
 	protected _getEntryPoint(
-		extensionDescription: IExtensionDescription
+		extensionDescription: IExtensionDescription,
 	): string | undefined {
 		return extensionDescription.main;
 	}
@@ -124,36 +124,36 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 	protected async _loadCommonJSModule<T>(
 		extension: IExtensionDescription | null,
 		module: URI,
-		activationTimesBuilder: ExtensionActivationTimesBuilder
+		activationTimesBuilder: ExtensionActivationTimesBuilder,
 	): Promise<T> {
 		if (module.scheme !== Schemas.file) {
 			throw new Error(
-				`Cannot load URI: '${module}', must be of file-scheme`
+				`Cannot load URI: '${module}', must be of file-scheme`,
 			);
 		}
 		let r: T | null = null;
 		activationTimesBuilder.codeLoadingStart();
 		this._logService.trace(
-			`ExtensionService#loadCommonJSModule ${module.toString(true)}`
+			`ExtensionService#loadCommonJSModule ${module.toString(true)}`,
 		);
 		this._logService.flush();
 		const extensionId = extension?.identifier.value;
 		if (extension) {
 			await this._extHostLocalizationService.initializeLocalizedMessages(
-				extension
+				extension,
 			);
 		}
 		try {
 			if (extensionId) {
 				performance.mark(
-					`code/extHost/willLoadExtensionCode/${extensionId}`
+					`code/extHost/willLoadExtensionCode/${extensionId}`,
 				);
 			}
 			r = require.__$__nodeRequire<T>(module.fsPath);
 		} finally {
 			if (extensionId) {
 				performance.mark(
-					`code/extHost/didLoadExtensionCode/${extensionId}`
+					`code/extHost/didLoadExtensionCode/${extensionId}`,
 				);
 			}
 			activationTimesBuilder.codeLoadingStop();

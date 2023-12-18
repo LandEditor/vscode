@@ -3,14 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import {
-	IInstantiationService,
-	createDecorator,
-} from "vs/platform/instantiation/common/instantiation";
 import { CancellationToken } from "vs/base/common/cancellation";
 import { Emitter, Event } from "vs/base/common/event";
 import { IDisposable } from "vs/base/common/lifecycle";
@@ -30,6 +22,14 @@ import {
 	DiffAlgorithmName,
 	IEditorWorkerService,
 } from "vs/editor/common/services/editorWorker";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import {
+	IInstantiationService,
+	createDecorator,
+} from "vs/platform/instantiation/common/instantiation";
 import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 
 export const IDiffProviderFactoryService =
@@ -42,7 +42,7 @@ export interface IDocumentDiffFactoryOptions {
 export interface IDiffProviderFactoryService {
 	readonly _serviceBrand: undefined;
 	createDiffProvider(
-		options: IDocumentDiffFactoryOptions
+		options: IDocumentDiffFactoryOptions,
 	): IDocumentDiffProvider;
 }
 
@@ -57,11 +57,11 @@ export class WorkerBasedDiffProviderFactoryService
 	) {}
 
 	createDiffProvider(
-		options: IDocumentDiffFactoryOptions
+		options: IDocumentDiffFactoryOptions,
 	): IDocumentDiffProvider {
 		return this.instantiationService.createInstance(
 			WorkerBasedDocumentDiffProvider,
-			options
+			options,
 		);
 	}
 }
@@ -69,7 +69,7 @@ export class WorkerBasedDiffProviderFactoryService
 registerSingleton(
 	IDiffProviderFactoryService,
 	WorkerBasedDiffProviderFactoryService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 
 export class WorkerBasedDocumentDiffProvider
@@ -106,14 +106,14 @@ export class WorkerBasedDocumentDiffProvider
 		original: ITextModel,
 		modified: ITextModel,
 		options: IDocumentDiffProviderOptions,
-		cancellationToken: CancellationToken
+		cancellationToken: CancellationToken,
 	): Promise<IDocumentDiff> {
 		if (typeof this.diffAlgorithm !== "string") {
 			return this.diffAlgorithm.computeDiff(
 				original,
 				modified,
 				options,
-				cancellationToken
+				cancellationToken,
 			);
 		}
 
@@ -142,9 +142,9 @@ export class WorkerBasedDocumentDiffProvider
 						[
 							new RangeMapping(
 								original.getFullModelRange(),
-								modified.getFullModelRange()
+								modified.getFullModelRange(),
 							),
-						]
+						],
 					),
 				],
 				identical: false,
@@ -174,7 +174,7 @@ export class WorkerBasedDocumentDiffProvider
 			original.uri,
 			modified.uri,
 			options,
-			this.diffAlgorithm
+			this.diffAlgorithm,
 		);
 		const timeMs = sw.elapsed();
 
@@ -233,7 +233,7 @@ export class WorkerBasedDocumentDiffProvider
 		// max 10 items in cache
 		if (WorkerBasedDocumentDiffProvider.diffCache.size > 10) {
 			WorkerBasedDocumentDiffProvider.diffCache.delete(
-				WorkerBasedDocumentDiffProvider.diffCache.keys().next().value
+				WorkerBasedDocumentDiffProvider.diffCache.keys().next().value,
 			);
 		}
 
@@ -245,7 +245,7 @@ export class WorkerBasedDocumentDiffProvider
 	}
 
 	public setOptions(
-		newOptions: IWorkerBasedDocumentDiffProviderOptions
+		newOptions: IWorkerBasedDocumentDiffProviderOptions,
 	): void {
 		let didChange = false;
 		if (newOptions.diffAlgorithm) {
@@ -257,7 +257,7 @@ export class WorkerBasedDocumentDiffProvider
 				if (typeof newOptions.diffAlgorithm !== "string") {
 					this.diffAlgorithmOnDidChangeSubscription =
 						newOptions.diffAlgorithm.onDidChange(() =>
-							this.onDidChangeEventEmitter.fire()
+							this.onDidChangeEventEmitter.fire(),
 						);
 				}
 				didChange = true;

@@ -4,15 +4,17 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	reverseOrder,
 	compareBy,
 	numberComparator,
+	reverseOrder,
 } from "vs/base/common/arrays";
+import { Event } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
 import {
-	observableValue,
-	observableSignalFromEvent,
-	autorunWithStore,
 	IReader,
+	autorunWithStore,
+	observableSignalFromEvent,
+	observableValue,
 } from "vs/base/common/observable";
 import {
 	HideUnchangedRegionsFeature,
@@ -20,15 +22,13 @@ import {
 } from "vs/editor/browser/widget/diffEditor/features/hideUnchangedRegionsFeature";
 import { DisposableCancellationTokenSource } from "vs/editor/browser/widget/diffEditor/utils";
 import { LineRange } from "vs/editor/common/core/lineRange";
+import { SymbolKind } from "vs/editor/common/languages";
 import { ITextModel } from "vs/editor/common/model";
 import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
 import {
 	IOutlineModelService,
 	OutlineModel,
 } from "vs/editor/contrib/documentSymbols/browser/outlineModel";
-import { Disposable } from "vs/base/common/lifecycle";
-import { Event } from "vs/base/common/event";
-import { SymbolKind } from "vs/editor/common/languages";
 
 class DiffEditorBreadcrumbsSource
 	extends Disposable
@@ -36,7 +36,7 @@ class DiffEditorBreadcrumbsSource
 {
 	private readonly _currentModel = observableValue<OutlineModel | undefined>(
 		this,
-		undefined
+		undefined,
 	);
 
 	constructor(
@@ -83,7 +83,7 @@ class DiffEditorBreadcrumbsSource
 
 	public getBreadcrumbItems(
 		startRange: LineRange,
-		reader: IReader
+		reader: IReader,
 	): { name: string; kind: SymbolKind; startLineNumber: number }[] {
 		const m = this._currentModel.read(reader);
 		if (!m) {
@@ -94,15 +94,15 @@ class DiffEditorBreadcrumbsSource
 			.filter(
 				(s) =>
 					startRange.contains(s.range.startLineNumber) &&
-					!startRange.contains(s.range.endLineNumber)
+					!startRange.contains(s.range.endLineNumber),
 			);
 		symbols.sort(
 			reverseOrder(
 				compareBy(
 					(s) => s.range.endLineNumber - s.range.startLineNumber,
-					numberComparator
-				)
-			)
+					numberComparator,
+				),
+			),
 		);
 		return symbols.map((s) => ({
 			name: s.name,
@@ -116,7 +116,7 @@ HideUnchangedRegionsFeature.setBreadcrumbsSourceFactory(
 	(textModel, instantiationService) => {
 		return instantiationService.createInstance(
 			DiffEditorBreadcrumbsSource,
-			textModel
+			textModel,
 		);
-	}
+	},
 );

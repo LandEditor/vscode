@@ -39,7 +39,7 @@ function getLatestModuleVersion(moduleName) {
 					versions = [versions];
 				}
 				resolve(versions[versions.length - 1]);
-			}
+			},
 		);
 	});
 }
@@ -83,8 +83,8 @@ async function update() {
 			console.log(
 				`${path.join(
 					cwd,
-					"package.json"
-				)}: Updating\n  ${modulesWithVersion.join("\n  ")}`
+					"package.json",
+				)}: Updating\n  ${modulesWithVersion.join("\n  ")}`,
 			);
 			cp.execSync(`yarn add ${modulesWithVersion.join(" ")}`, { cwd });
 		}
@@ -104,8 +104,8 @@ async function update() {
 			console.log(
 				`${path.join(
 					cwd,
-					"package.json"
-				)}: Updating\n  ${backendOnlyModulesWithVersion.join("\n  ")}`
+					"package.json",
+				)}: Updating\n  ${backendOnlyModulesWithVersion.join("\n  ")}`,
 			);
 			cp.execSync(`yarn add ${backendOnlyModulesWithVersion.join(" ")}`, {
 				cwd,

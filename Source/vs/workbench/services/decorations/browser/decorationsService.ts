@@ -3,47 +3,47 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from "vs/base/common/uri";
-import { Emitter, DebounceEmitter, Event } from "vs/base/common/event";
 import {
-	IDecorationsService,
-	IDecoration,
-	IResourceDecorationChangeEvent,
-	IDecorationsProvider,
-	IDecorationData,
-} from "../common/decorations";
-import { TernarySearchTree } from "vs/base/common/ternarySearchTree";
+	asCSSPropertyValue,
+	createCSSRule,
+	createStyleSheet,
+	removeCSSRulesContainingSelector,
+} from "vs/base/browser/dom";
+import { asArray, distinct } from "vs/base/common/arrays";
+import { isThenable } from "vs/base/common/async";
+import { CancellationTokenSource } from "vs/base/common/cancellation";
+import { isCancellationError } from "vs/base/common/errors";
+import { DebounceEmitter, Emitter, Event } from "vs/base/common/event";
+import { hash } from "vs/base/common/hash";
 import {
+	DisposableStore,
 	IDisposable,
 	toDisposable,
-	DisposableStore,
 } from "vs/base/common/lifecycle";
-import { isThenable } from "vs/base/common/async";
 import { LinkedList } from "vs/base/common/linkedList";
-import {
-	createStyleSheet,
-	createCSSRule,
-	removeCSSRulesContainingSelector,
-	asCSSPropertyValue,
-} from "vs/base/browser/dom";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import { ThemeIcon } from "vs/base/common/themables";
 import { isFalsyOrWhitespace } from "vs/base/common/strings";
+import { TernarySearchTree } from "vs/base/common/ternarySearchTree";
+import { ThemeIcon } from "vs/base/common/themables";
+import { URI } from "vs/base/common/uri";
 import { localize } from "vs/nls";
-import { isCancellationError } from "vs/base/common/errors";
-import { CancellationTokenSource } from "vs/base/common/cancellation";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { hash } from "vs/base/common/hash";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import { asArray, distinct } from "vs/base/common/arrays";
 import {
-	asCssVariable,
 	ColorIdentifier,
+	asCssVariable,
 } from "vs/platform/theme/common/colorRegistry";
 import { getIconRegistry } from "vs/platform/theme/common/iconRegistry";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import {
+	IDecoration,
+	IDecorationData,
+	IDecorationsProvider,
+	IDecorationsService,
+	IResourceDecorationChangeEvent,
+} from "../common/decorations";
 
 class DecorationRule {
 	static keyOf(data: IDecorationData | IDecorationData[]): string {
@@ -67,12 +67,12 @@ class DecorationRule {
 	readonly iconBadgeClassName: string;
 	readonly bubbleBadgeClassName: string;
 
-	private _refCounter: number = 0;
+	private _refCounter = 0;
 
 	constructor(
 		readonly themeService: IThemeService,
 		data: IDecorationData | IDecorationData[],
-		key: string
+		key: string,
 	) {
 		this.data = data;
 		const suffix = hash(key).toString(36);
@@ -91,23 +91,23 @@ class DecorationRule {
 	}
 
 	appendCSSRules(element: HTMLStyleElement): void {
-		if (!Array.isArray(this.data)) {
-			this._appendForOne(this.data, element);
-		} else {
+		if (Array.isArray(this.data)) {
 			this._appendForMany(this.data, element);
+		} else {
+			this._appendForOne(this.data, element);
 		}
 	}
 
 	private _appendForOne(
 		data: IDecorationData,
-		element: HTMLStyleElement
+		element: HTMLStyleElement,
 	): void {
 		const { color, letter } = data;
 		// label
 		createCSSRule(
 			`.${this.itemColorClassName}`,
 			`color: ${getColor(color)};`,
-			element
+			element,
 		);
 		if (ThemeIcon.isThemeIcon(letter)) {
 			this._createIconCSSRule(letter, color, element);
@@ -115,21 +115,21 @@ class DecorationRule {
 			createCSSRule(
 				`.${this.itemBadgeClassName}::after`,
 				`content: "${letter}"; color: ${getColor(color)};`,
-				element
+				element,
 			);
 		}
 	}
 
 	private _appendForMany(
 		data: IDecorationData[],
-		element: HTMLStyleElement
+		element: HTMLStyleElement,
 	): void {
 		// label
 		const { color } = data[0];
 		createCSSRule(
 			`.${this.itemColorClassName}`,
 			`color: ${getColor(color)};`,
-			element
+			element,
 		);
 
 		// badge or icon
@@ -152,9 +152,9 @@ class DecorationRule {
 				createCSSRule(
 					`.${this.itemBadgeClassName}::after`,
 					`content: "${letters.join(", ")}"; color: ${getColor(
-						color
+						color,
 					)};`,
-					element
+					element,
 				);
 			}
 
@@ -163,9 +163,9 @@ class DecorationRule {
 			createCSSRule(
 				`.${this.bubbleBadgeClassName}::after`,
 				`content: "\uea71"; color: ${getColor(
-					color
+					color,
 				)}; font-family: codicon; font-size: 14px; margin-right: 14px; opacity: 0.4;`,
-				element
+				element,
 			);
 		}
 	}
@@ -173,7 +173,7 @@ class DecorationRule {
 	private _createIconCSSRule(
 		icon: ThemeIcon,
 		color: string | undefined,
-		element: HTMLStyleElement
+		element: HTMLStyleElement,
 	) {
 		const modifier = ThemeIcon.getModifier(icon);
 		if (modifier) {
@@ -197,9 +197,13 @@ class DecorationRule {
 			font-size: 16px;
 			margin-right: 14px;
 			font-weight: normal;
-			${modifier === "spin" ? "animation: codicon-spin 1.5s steps(30) infinite" : ""};
+			${
+				modifier === "spin"
+					? "animation: codicon-spin 1.5s steps(30) infinite"
+					: ""
+			};
 			`,
-			element
+			element,
 		);
 	}
 
@@ -216,7 +220,7 @@ class DecorationStyles {
 	private readonly _styleElement = createStyleSheet(
 		undefined,
 		undefined,
-		this._dispoables
+		this._dispoables,
 	);
 	private readonly _decorationRules = new Map<string, DecorationRule>();
 
@@ -248,7 +252,7 @@ class DecorationStyles {
 		let tooltip = distinct(
 			data
 				.filter((d) => !isFalsyOrWhitespace(d.tooltip))
-				.map((d) => d.tooltip)
+				.map((d) => d.tooltip),
 		).join(" • ");
 		const strikethrough = data.some((d) => d.strikethrough);
 
@@ -290,7 +294,7 @@ class FileDecorationChangeEvent implements IResourceDecorationChangeEvent {
 class DecorationDataRequest {
 	constructor(
 		readonly source: CancellationTokenSource,
-		readonly thenable: Promise<void>
+		readonly thenable: Promise<void>,
 	) {}
 }
 
@@ -321,16 +325,16 @@ export class DecorationsService implements IDecorationsService {
 
 	constructor(
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@IThemeService themeService: IThemeService
+		@IThemeService themeService: IThemeService,
 	) {
 		this._decorationStyles = new DecorationStyles(themeService);
 		this._data = TernarySearchTree.forUris((key) =>
-			uriIdentityService.extUri.ignorePathCasing(key)
+			uriIdentityService.extUri.ignorePathCasing(key),
 		);
 
 		this._onDidChangeDecorationsDelayed.event((event) => {
 			this._onDidChangeDecorations.fire(
-				new FileDecorationChangeEvent(event)
+				new FileDecorationChangeEvent(event),
 			);
 		});
 	}
@@ -365,15 +369,15 @@ export class DecorationsService implements IDecorationsService {
 		};
 
 		const listener = provider.onDidChange((uris) => {
-			if (!uris) {
-				// flush event -> drop all data, can affect everything
-				removeAll();
-			} else {
+			if (uris) {
 				// selective changes -> drop for resource, fetch again, send event
 				for (const uri of uris) {
 					const map = this._ensureEntry(uri);
 					this._fetchData(map, uri, provider);
 				}
+			} else {
+				// flush event -> drop all data, can affect everything
+				removeAll();
 			}
 		});
 
@@ -396,7 +400,7 @@ export class DecorationsService implements IDecorationsService {
 
 	getDecoration(uri: URI, includeChildren: boolean): IDecoration | undefined {
 		const all: IDecorationData[] = [];
-		let containsChildren: boolean = false;
+		let containsChildren = false;
 
 		const map = this._ensureEntry(uri);
 
@@ -438,7 +442,7 @@ export class DecorationsService implements IDecorationsService {
 	private _fetchData(
 		map: DecorationEntry,
 		uri: URI,
-		provider: IDecorationsProvider
+		provider: IDecorationsProvider,
 	): IDecorationData | null {
 		// check for pending request and cancel it
 		const pendingRequest = map.get(provider);
@@ -450,16 +454,12 @@ export class DecorationsService implements IDecorationsService {
 		const cts = new CancellationTokenSource();
 		const dataOrThenable = provider.provideDecorations(uri, cts.token);
 		if (
-			!isThenable<
+			isThenable<
 				| IDecorationData
 				| Promise<IDecorationData | undefined>
 				| undefined
 			>(dataOrThenable)
 		) {
-			// sync -> we have a result now
-			cts.dispose();
-			return this._keepItem(map, provider, uri, dataOrThenable);
-		} else {
 			// async -> we have a result soon
 			const request = new DecorationDataRequest(
 				cts,
@@ -479,11 +479,15 @@ export class DecorationsService implements IDecorationsService {
 					})
 					.finally(() => {
 						cts.dispose();
-					})
+					}),
 			);
 
 			map.set(provider, request);
 			return null;
+		} else {
+			// sync -> we have a result now
+			cts.dispose();
+			return this._keepItem(map, provider, uri, dataOrThenable);
 		}
 	}
 
@@ -491,7 +495,7 @@ export class DecorationsService implements IDecorationsService {
 		map: DecorationEntry,
 		provider: IDecorationsProvider,
 		uri: URI,
-		data: IDecorationData | undefined
+		data: IDecorationData | undefined,
 	): IDecorationData | null {
 		const deco = data ? data : null;
 		const old = map.get(provider);
@@ -507,5 +511,5 @@ export class DecorationsService implements IDecorationsService {
 registerSingleton(
 	IDecorationsService,
 	DecorationsService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

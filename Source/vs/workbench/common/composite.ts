@@ -45,4 +45,4 @@ export interface IComposite {
 /**
  * Marker interface for the composite control
  */
-export interface ICompositeControl {}
+export type ICompositeControl = {};

@@ -3,42 +3,42 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { delta } from "vs/base/common/arrays";
+import { Emitter } from "vs/base/common/event";
+import { compare } from "vs/base/common/strings";
+import { URI } from "vs/base/common/uri";
+import { IChannel } from "vs/base/parts/ipc/common/ipc";
 import {
-	ILocalExtension,
+	DidUninstallExtensionEvent,
 	IGalleryExtension,
+	ILocalExtension,
+	InstallExtensionEvent,
+	InstallExtensionInfo,
+	InstallExtensionResult,
 	InstallOptions,
 	InstallVSIXOptions,
-	UninstallOptions,
 	Metadata,
-	DidUninstallExtensionEvent,
-	InstallExtensionEvent,
-	InstallExtensionResult,
 	UninstallExtensionEvent,
-	InstallExtensionInfo,
+	UninstallOptions,
 } from "vs/platform/extensionManagement/common/extensionManagement";
-import { URI } from "vs/base/common/uri";
+import {
+	ExtensionEventResult,
+	ExtensionManagementChannelClient as BaseExtensionManagementChannelClient,
+} from "vs/platform/extensionManagement/common/extensionManagementIpc";
 import {
 	ExtensionIdentifier,
 	ExtensionType,
 	IExtensionIdentifier,
 } from "vs/platform/extensions/common/extensions";
-import {
-	ExtensionManagementChannelClient as BaseExtensionManagementChannelClient,
-	ExtensionEventResult,
-} from "vs/platform/extensionManagement/common/extensionManagementIpc";
-import { IChannel } from "vs/base/parts/ipc/common/ipc";
-import {
-	DidChangeUserDataProfileEvent,
-	IUserDataProfileService,
-} from "vs/workbench/services/userDataProfile/common/userDataProfile";
-import { Emitter } from "vs/base/common/event";
-import { delta } from "vs/base/common/arrays";
-import { compare } from "vs/base/common/strings";
 import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
 import {
 	DidChangeProfileEvent,
 	IProfileAwareExtensionManagementService,
 } from "vs/workbench/services/extensionManagement/common/extensionManagement";
+import {
+	DidChangeUserDataProfileEvent,
+	IUserDataProfileService,
+} from "vs/workbench/services/userDataProfile/common/userDataProfile";
 
 export abstract class ProfileAwareExtensionManagementChannelClient
 	extends BaseExtensionManagementChannelClient
@@ -48,14 +48,14 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 		new Emitter<{
 			readonly added: ILocalExtension[];
 			readonly removed: ILocalExtension[];
-		}>()
+		}>(),
 	);
 	readonly onDidChangeProfile = this._onDidChangeProfile.event;
 
 	constructor(
 		channel: IChannel,
 		protected readonly userDataProfileService: IUserDataProfileService,
-		protected readonly uriIdentityService: IUriIdentityService
+		protected readonly uriIdentityService: IUriIdentityService,
 	) {
 		super(channel);
 		this._register(
@@ -63,38 +63,38 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 				if (
 					!this.uriIdentityService.extUri.isEqual(
 						e.previous.extensionsResource,
-						e.profile.extensionsResource
+						e.profile.extensionsResource,
 					)
 				) {
 					e.join(this.whenProfileChanged(e));
 				}
-			})
+			}),
 		);
 	}
 
 	protected override fireEvent(
 		event: Emitter<InstallExtensionEvent>,
-		data: InstallExtensionEvent
+		data: InstallExtensionEvent,
 	): Promise<void>;
 	protected override fireEvent(
 		event: Emitter<readonly InstallExtensionResult[]>,
-		data: InstallExtensionResult[]
+		data: InstallExtensionResult[],
 	): Promise<void>;
 	protected override fireEvent(
 		event: Emitter<UninstallExtensionEvent>,
-		data: UninstallExtensionEvent
+		data: UninstallExtensionEvent,
 	): Promise<void>;
 	protected override fireEvent(
 		event: Emitter<DidUninstallExtensionEvent>,
-		data: DidUninstallExtensionEvent
+		data: DidUninstallExtensionEvent,
 	): Promise<void>;
 	protected override fireEvent(
 		event: Emitter<ExtensionEventResult>,
-		data: ExtensionEventResult
+		data: ExtensionEventResult,
 	): Promise<void>;
 	protected override fireEvent(
 		event: Emitter<ExtensionEventResult[]>,
-		data: ExtensionEventResult[]
+		data: ExtensionEventResult[],
 	): Promise<void>;
 	protected override async fireEvent(arg0: any, arg1: any): Promise<void> {
 		if (Array.isArray(arg1)) {
@@ -122,12 +122,12 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 
 	override async install(
 		vsix: URI,
-		installOptions?: InstallVSIXOptions
+		installOptions?: InstallVSIXOptions,
 	): Promise<ILocalExtension> {
 		installOptions = {
 			...installOptions,
 			profileLocation: await this.getProfileLocation(
-				installOptions?.profileLocation
+				installOptions?.profileLocation,
 			),
 		};
 		return super.install(vsix, installOptions);
@@ -135,29 +135,29 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 
 	override async installFromLocation(
 		location: URI,
-		profileLocation: URI
+		profileLocation: URI,
 	): Promise<ILocalExtension> {
 		return super.installFromLocation(
 			location,
-			await this.getProfileLocation(profileLocation)
+			await this.getProfileLocation(profileLocation),
 		);
 	}
 
 	override async installFromGallery(
 		extension: IGalleryExtension,
-		installOptions?: InstallOptions
+		installOptions?: InstallOptions,
 	): Promise<ILocalExtension> {
 		installOptions = {
 			...installOptions,
 			profileLocation: await this.getProfileLocation(
-				installOptions?.profileLocation
+				installOptions?.profileLocation,
 			),
 		};
 		return super.installFromGallery(extension, installOptions);
 	}
 
 	override async installGalleryExtensions(
-		extensions: InstallExtensionInfo[]
+		extensions: InstallExtensionInfo[],
 	): Promise<InstallExtensionResult[]> {
 		const infos: InstallExtensionInfo[] = [];
 		for (const extension of extensions) {
@@ -166,7 +166,7 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 				options: {
 					...extension.options,
 					profileLocation: await this.getProfileLocation(
-						extension.options?.profileLocation
+						extension.options?.profileLocation,
 					),
 				},
 			});
@@ -176,12 +176,12 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 
 	override async uninstall(
 		extension: ILocalExtension,
-		options?: UninstallOptions
+		options?: UninstallOptions,
 	): Promise<void> {
 		options = {
 			...options,
 			profileLocation: await this.getProfileLocation(
-				options?.profileLocation
+				options?.profileLocation,
 			),
 		};
 		return super.uninstall(extension, options);
@@ -189,60 +189,60 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 
 	override async getInstalled(
 		type: ExtensionType | null = null,
-		extensionsProfileResource?: URI
+		extensionsProfileResource?: URI,
 	): Promise<ILocalExtension[]> {
 		return super.getInstalled(
 			type,
-			await this.getProfileLocation(extensionsProfileResource)
+			await this.getProfileLocation(extensionsProfileResource),
 		);
 	}
 
 	override async updateMetadata(
 		local: ILocalExtension,
 		metadata: Partial<Metadata>,
-		extensionsProfileResource?: URI
+		extensionsProfileResource?: URI,
 	): Promise<ILocalExtension> {
 		return super.updateMetadata(
 			local,
 			metadata,
-			await this.getProfileLocation(extensionsProfileResource)
+			await this.getProfileLocation(extensionsProfileResource),
 		);
 	}
 
 	override async toggleAppliationScope(
 		local: ILocalExtension,
-		fromProfileLocation: URI
+		fromProfileLocation: URI,
 	): Promise<ILocalExtension> {
 		return super.toggleAppliationScope(
 			local,
-			await this.getProfileLocation(fromProfileLocation)
+			await this.getProfileLocation(fromProfileLocation),
 		);
 	}
 
 	override async copyExtensions(
 		fromProfileLocation: URI,
-		toProfileLocation: URI
+		toProfileLocation: URI,
 	): Promise<void> {
 		return super.copyExtensions(
 			await this.getProfileLocation(fromProfileLocation),
-			await this.getProfileLocation(toProfileLocation)
+			await this.getProfileLocation(toProfileLocation),
 		);
 	}
 
 	private async whenProfileChanged(
-		e: DidChangeUserDataProfileEvent
+		e: DidChangeUserDataProfileEvent,
 	): Promise<void> {
 		const previousProfileLocation = await this.getProfileLocation(
-			e.previous.extensionsResource
+			e.previous.extensionsResource,
 		);
 		const currentProfileLocation = await this.getProfileLocation(
-			e.profile.extensionsResource
+			e.profile.extensionsResource,
 		);
 
 		if (
 			this.uriIdentityService.extUri.isEqual(
 				previousProfileLocation,
-				currentProfileLocation
+				currentProfileLocation,
 			)
 		) {
 			return;
@@ -250,7 +250,7 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 
 		const eventData = await this.switchExtensionsProfile(
 			previousProfileLocation,
-			currentProfileLocation
+			currentProfileLocation,
 		);
 		this._onDidChangeProfile.fire(eventData);
 	}
@@ -258,28 +258,28 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 	protected async switchExtensionsProfile(
 		previousProfileLocation: URI,
 		currentProfileLocation: URI,
-		preserveExtensions?: ExtensionIdentifier[]
+		preserveExtensions?: ExtensionIdentifier[],
 	): Promise<DidChangeProfileEvent> {
 		const oldExtensions = await this.getInstalled(
 			ExtensionType.User,
-			previousProfileLocation
+			previousProfileLocation,
 		);
 		const newExtensions = await this.getInstalled(
 			ExtensionType.User,
-			currentProfileLocation
+			currentProfileLocation,
 		);
 		if (preserveExtensions?.length) {
 			const extensionsToInstall: IExtensionIdentifier[] = [];
 			for (const extension of oldExtensions) {
 				if (
 					preserveExtensions.some((id) =>
-						ExtensionIdentifier.equals(extension.identifier.id, id)
+						ExtensionIdentifier.equals(extension.identifier.id, id),
 					) &&
 					!newExtensions.some((e) =>
 						ExtensionIdentifier.equals(
 							e.identifier.id,
-							extension.identifier.id
-						)
+							extension.identifier.id,
+						),
 					)
 				) {
 					extensionsToInstall.push(extension.identifier);
@@ -289,7 +289,7 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 				await this.installExtensionsFromProfile(
 					extensionsToInstall,
 					previousProfileLocation,
-					currentProfileLocation
+					currentProfileLocation,
 				);
 			}
 		}
@@ -300,17 +300,17 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 				}`,
 				`${ExtensionIdentifier.toKey(b.identifier.id)}@${
 					b.manifest.version
-				}`
-			)
+				}`,
+			),
 		);
 	}
 
 	protected getProfileLocation(profileLocation: URI): Promise<URI>;
 	protected getProfileLocation(
-		profileLocation?: URI
+		profileLocation?: URI,
 	): Promise<URI | undefined>;
 	protected async getProfileLocation(
-		profileLocation?: URI
+		profileLocation?: URI,
 	): Promise<URI | undefined> {
 		return (
 			profileLocation ??
@@ -319,6 +319,6 @@ export abstract class ProfileAwareExtensionManagementChannelClient
 	}
 
 	protected abstract filterEvent(
-		e: ExtensionEventResult
+		e: ExtensionEventResult,
 	): boolean | Promise<boolean>;
 }

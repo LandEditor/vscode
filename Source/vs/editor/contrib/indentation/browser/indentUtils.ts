@@ -20,7 +20,7 @@ export function getSpaceCnt(str: string, tabSize: number) {
 export function generateIndent(
 	spacesCnt: number,
 	tabSize: number,
-	insertSpaces: boolean
+	insertSpaces: boolean,
 ) {
 	spacesCnt = spacesCnt < 0 ? 0 : spacesCnt;
 

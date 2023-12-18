@@ -3,33 +3,36 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { Registry } from "vs/platform/registry/common/platform";
 import {
+	Extensions as WorkbenchExtensions,
 	IWorkbenchContribution,
 	IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "vs/workbench/common/contributions";
-import { Registry } from "vs/platform/registry/common/platform";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
+import { StatusBarItemsExtensionPoint } from "vs/workbench/api/browser/statusBarExtensionPoint";
 // --- other interested parties
 import { JSONValidationExtensionPoint } from "vs/workbench/api/common/jsonValidationExtensionPoint";
+import { LanguageConfigurationFileHandler } from "vs/workbench/contrib/codeEditor/browser/languageConfigurationExtensionPoint";
 import { ColorExtensionPoint } from "vs/workbench/services/themes/common/colorExtensionPoint";
 import { IconExtensionPoint } from "vs/workbench/services/themes/common/iconExtensionPoint";
 import { TokenClassificationExtensionPoints } from "vs/workbench/services/themes/common/tokenClassificationExtensionPoint";
-import { LanguageConfigurationFileHandler } from "vs/workbench/contrib/codeEditor/browser/languageConfigurationExtensionPoint";
-import { StatusBarItemsExtensionPoint } from "vs/workbench/api/browser/statusBarExtensionPoint";
 
-// --- mainThread participants
-import "./mainThreadLocalization";
+import "./mainThreadAiEmbeddingVector";
+import "./mainThreadAiRelatedInformation";
+import "./mainThreadAuthentication";
 import "./mainThreadBulkEdits";
-import "./mainThreadChatProvider";
-import "./mainThreadChatAgents2";
-import "./mainThreadChatVariables";
-import "./mainThreadCodeInsets";
 import "./mainThreadCLICommands";
+import "./mainThreadChat";
+import "./mainThreadChatAgents2";
+import "./mainThreadChatProvider";
+import "./mainThreadChatVariables";
 import "./mainThreadClipboard";
+import "./mainThreadCodeInsets";
 import "./mainThreadCommands";
+import "./mainThreadComments";
 import "./mainThreadConfiguration";
 import "./mainThreadConsole";
 import "./mainThreadDebugService";
@@ -39,61 +42,58 @@ import "./mainThreadDialogs";
 import "./mainThreadDocumentContentProviders";
 import "./mainThreadDocuments";
 import "./mainThreadDocumentsAndEditors";
+import "./mainThreadDownloadService";
+import "./mainThreadEditSessionIdentityParticipant";
 import "./mainThreadEditor";
-import "./mainThreadEditors";
 import "./mainThreadEditorTabs";
+import "./mainThreadEditors";
 import "./mainThreadErrors";
 import "./mainThreadExtensionService";
 import "./mainThreadFileSystem";
 import "./mainThreadFileSystemEventService";
+import "./mainThreadInlineChat";
+import "./mainThreadInteractive";
+import "./mainThreadIssueReporter";
+import "./mainThreadLabelService";
 import "./mainThreadLanguageFeatures";
 import "./mainThreadLanguages";
+// --- mainThread participants
+import "./mainThreadLocalization";
 import "./mainThreadLogService";
-import "./mainThreadMessageService";
 import "./mainThreadManagedSockets";
+import "./mainThreadMessageService";
+import "./mainThreadNotebook";
+import "./mainThreadNotebookDocumentsAndEditors";
+import "./mainThreadNotebookKernels";
+import "./mainThreadNotebookRenderers";
+import "./mainThreadNotebookSaveParticipant";
 import "./mainThreadOutputService";
+import "./mainThreadProfilContentHandlers";
 import "./mainThreadProgress";
 import "./mainThreadQuickDiff";
 import "./mainThreadQuickOpen";
 import "./mainThreadRemoteConnectionData";
-import "./mainThreadSaveParticipant";
-import "./mainThreadSpeech";
-import "./mainThreadEditSessionIdentityParticipant";
 import "./mainThreadSCM";
+import "./mainThreadSaveParticipant";
 import "./mainThreadSearch";
-import "./mainThreadStatusBar";
-import "./mainThreadStorage";
-import "./mainThreadTelemetry";
-import "./mainThreadTerminalService";
-import "./mainThreadTheming";
-import "./mainThreadTreeViews";
-import "./mainThreadDownloadService";
-import "./mainThreadUrls";
-import "./mainThreadUriOpeners";
-import "./mainThreadWindow";
-import "./mainThreadWebviewManager";
-import "./mainThreadWorkspace";
-import "./mainThreadComments";
-import "./mainThreadNotebook";
-import "./mainThreadNotebookKernels";
-import "./mainThreadNotebookDocumentsAndEditors";
-import "./mainThreadNotebookRenderers";
-import "./mainThreadNotebookSaveParticipant";
-import "./mainThreadInteractive";
-import "./mainThreadInlineChat";
-import "./mainThreadChat";
-import "./mainThreadTask";
-import "./mainThreadLabelService";
-import "./mainThreadTunnelService";
-import "./mainThreadAuthentication";
-import "./mainThreadTimeline";
-import "./mainThreadTesting";
 import "./mainThreadSecretState";
 import "./mainThreadShare";
-import "./mainThreadProfilContentHandlers";
-import "./mainThreadAiRelatedInformation";
-import "./mainThreadAiEmbeddingVector";
-import "./mainThreadIssueReporter";
+import "./mainThreadSpeech";
+import "./mainThreadStatusBar";
+import "./mainThreadStorage";
+import "./mainThreadTask";
+import "./mainThreadTelemetry";
+import "./mainThreadTerminalService";
+import "./mainThreadTesting";
+import "./mainThreadTheming";
+import "./mainThreadTimeline";
+import "./mainThreadTreeViews";
+import "./mainThreadTunnelService";
+import "./mainThreadUriOpeners";
+import "./mainThreadUrls";
+import "./mainThreadWebviewManager";
+import "./mainThreadWindow";
+import "./mainThreadWorkspace";
 
 export class ExtensionPoints implements IWorkbenchContribution {
 	constructor(
@@ -115,5 +115,5 @@ export class ExtensionPoints implements IWorkbenchContribution {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(ExtensionPoints, LifecyclePhase.Starting);

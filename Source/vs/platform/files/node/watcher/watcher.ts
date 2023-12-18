@@ -3,17 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Promises } from "vs/base/common/async";
+import { Event } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
 import {
 	INonRecursiveWatchRequest,
 	IRecursiveWatchRequest,
-	IUniversalWatcher,
 	IUniversalWatchRequest,
+	IUniversalWatcher,
 } from "vs/platform/files/common/watcher";
-import { Event } from "vs/base/common/event";
-import { ParcelWatcher } from "vs/platform/files/node/watcher/parcel/parcelWatcher";
 import { NodeJSWatcher } from "vs/platform/files/node/watcher/nodejs/nodejsWatcher";
-import { Promises } from "vs/base/common/async";
+import { ParcelWatcher } from "vs/platform/files/node/watcher/parcel/parcelWatcher";
 
 export class UniversalWatcher extends Disposable implements IUniversalWatcher {
 	private readonly recursiveWatcher = this._register(new ParcelWatcher());
@@ -21,15 +21,15 @@ export class UniversalWatcher extends Disposable implements IUniversalWatcher {
 
 	readonly onDidChangeFile = Event.any(
 		this.recursiveWatcher.onDidChangeFile,
-		this.nonRecursiveWatcher.onDidChangeFile
+		this.nonRecursiveWatcher.onDidChangeFile,
 	);
 	readonly onDidLogMessage = Event.any(
 		this.recursiveWatcher.onDidLogMessage,
-		this.nonRecursiveWatcher.onDidLogMessage
+		this.nonRecursiveWatcher.onDidLogMessage,
 	);
 	readonly onDidError = Event.any(
 		this.recursiveWatcher.onDidError,
-		this.nonRecursiveWatcher.onDidError
+		this.nonRecursiveWatcher.onDidError,
 	);
 
 	async watch(requests: IUniversalWatchRequest[]): Promise<void> {

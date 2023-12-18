@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { IExtUri } from "vs/base/common/resources";
 import { URI } from "vs/base/common/uri";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { IExtUri } from "vs/base/common/resources";
 
 export const IUriIdentityService = createDecorator<IUriIdentityService>(
-	"IUriIdentityService"
+	"IUriIdentityService",
 );
 
 export interface IUriIdentityService {

@@ -32,21 +32,21 @@ export class DiffEditorDecorations extends Disposable {
 			DiffEditorViewModel | undefined
 		>,
 		private readonly _options: DiffEditorOptions,
-		widget: DiffEditorWidget
+		widget: DiffEditorWidget,
 	) {
 		super();
 
 		this._register(
 			applyObservableDecorations(
 				this._editors.original,
-				this._decorations.map((d) => d?.originalDecorations || [])
-			)
+				this._decorations.map((d) => d?.originalDecorations || []),
+			),
 		);
 		this._register(
 			applyObservableDecorations(
 				this._editors.modified,
-				this._decorations.map((d) => d?.modifiedDecorations || [])
-			)
+				this._decorations.map((d) => d?.modifiedDecorations || []),
+			),
 		);
 	}
 
@@ -105,7 +105,7 @@ export class DiffEditorDecorations extends Disposable {
 						// Don't show empty markers outside the line range
 						if (
 							m.lineRangeMapping.original.contains(
-								i.originalRange.startLineNumber
+								i.originalRange.startLineNumber,
 							)
 						) {
 							originalDecorations.push({
@@ -119,7 +119,7 @@ export class DiffEditorDecorations extends Disposable {
 						}
 						if (
 							m.lineRangeMapping.modified.contains(
-								i.modifiedRange.startLineNumber
+								i.modifiedRange.startLineNumber,
 							)
 						) {
 							modifiedDecorations.push({

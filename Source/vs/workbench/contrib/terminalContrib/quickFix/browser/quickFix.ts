@@ -3,18 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { Event } from "vs/base/common/event";
-import { IDisposable } from "vs/base/common/lifecycle";
 import { IAction } from "vs/base/common/actions";
 import { CancellationToken } from "vs/base/common/cancellation";
+import { Event } from "vs/base/common/event";
+import { IDisposable } from "vs/base/common/lifecycle";
 import { URI } from "vs/base/common/uri";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { ITerminalCommand } from "vs/platform/terminal/common/capabilities/capabilities";
 import {
 	ITerminalCommandSelector,
 	ITerminalOutputMatch,
 	ITerminalOutputMatcher,
 } from "vs/platform/terminal/common/terminal";
-import { ITerminalCommand } from "vs/platform/terminal/common/capabilities/capabilities";
 
 export const ITerminalQuickFixService =
 	createDecorator<ITerminalQuickFixService>("terminalQuickFixService");
@@ -27,7 +27,7 @@ export interface ITerminalQuickFixService {
 	providers: Map<string, ITerminalQuickFixProvider>;
 	registerQuickFixProvider(
 		id: string,
-		provider: ITerminalQuickFixProvider
+		provider: ITerminalQuickFixProvider,
 	): IDisposable;
 	registerCommandSelector(selector: ITerminalCommandSelector): void;
 }
@@ -42,7 +42,7 @@ export type TerminalQuickFixActionInternal =
 	| ITerminalQuickFixTerminalCommandAction
 	| ITerminalQuickFixOpenerAction;
 export type TerminalQuickFixCallback = (
-	matchResult: ITerminalCommandMatchResult
+	matchResult: ITerminalCommandMatchResult,
 ) =>
 	| TerminalQuickFixActionInternal[]
 	| TerminalQuickFixActionInternal
@@ -51,7 +51,7 @@ export type TerminalQuickFixCallbackExtension = (
 	terminalCommand: ITerminalCommand,
 	lines: string[] | undefined,
 	option: ITerminalQuickFixOptions,
-	token: CancellationToken
+	token: CancellationToken,
 ) => Promise<ITerminalQuickFix[] | ITerminalQuickFix | undefined>;
 
 export interface ITerminalQuickFixProvider {
@@ -65,7 +65,7 @@ export interface ITerminalQuickFixProvider {
 		terminalCommand: ITerminalCommand,
 		lines: string[] | undefined,
 		option: ITerminalQuickFixOptions,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ITerminalQuickFix[] | ITerminalQuickFix | undefined>;
 }
 

@@ -30,7 +30,7 @@ function disassembleKorean(code: number): Uint32Array | undefined {
 	getCodesFromArray(
 		code,
 		modernConsonants,
-		HangulRangeStartCode.InitialConsonant
+		HangulRangeStartCode.InitialConsonant,
 	);
 	if (codeBufferLength > 0) {
 		return codeBuffer.subarray(0, codeBufferLength);
@@ -46,7 +46,7 @@ function disassembleKorean(code: number): Uint32Array | undefined {
 	getCodesFromArray(
 		code,
 		modernFinalConsonants,
-		HangulRangeStartCode.FinalConsonant
+		HangulRangeStartCode.FinalConsonant,
 	);
 	if (codeBufferLength > 0) {
 		return codeBuffer.subarray(0, codeBufferLength);
@@ -56,7 +56,7 @@ function disassembleKorean(code: number): Uint32Array | undefined {
 	getCodesFromArray(
 		code,
 		compatibilityJamo,
-		HangulRangeStartCode.CompatibilityJamo
+		HangulRangeStartCode.CompatibilityJamo,
 	);
 	if (codeBufferLength) {
 		return codeBuffer.subarray(0, codeBufferLength);
@@ -87,7 +87,7 @@ function disassembleKorean(code: number): Uint32Array | undefined {
 			getCodesFromArray(
 				HangulRangeStartCode.InitialConsonant + initialConsonantIndex,
 				compatibilityJamo,
-				HangulRangeStartCode.CompatibilityJamo
+				HangulRangeStartCode.CompatibilityJamo,
 			);
 		}
 
@@ -104,7 +104,7 @@ function disassembleKorean(code: number): Uint32Array | undefined {
 					vowelIndex -
 					HangulRangeStartCode.CompatibilityJamo,
 				compatibilityJamo,
-				HangulRangeStartCode.CompatibilityJamo
+				HangulRangeStartCode.CompatibilityJamo,
 			);
 		}
 
@@ -113,7 +113,7 @@ function disassembleKorean(code: number): Uint32Array | undefined {
 				getCodesFromArray(
 					finalConsonantIndex,
 					modernFinalConsonants,
-					0
+					0,
 				);
 			} else if (
 				HangulRangeStartCode.FinalConsonant +
@@ -126,7 +126,7 @@ function disassembleKorean(code: number): Uint32Array | undefined {
 						finalConsonantIndex -
 						HangulRangeStartCode.CompatibilityJamo,
 					compatibilityJamo,
-					HangulRangeStartCode.CompatibilityJamo
+					HangulRangeStartCode.CompatibilityJamo,
 				);
 			}
 		}
@@ -141,7 +141,7 @@ function disassembleKorean(code: number): Uint32Array | undefined {
 function getCodesFromArray(
 	code: number,
 	array: ArrayLike<number>,
-	arrayStartIndex: number
+	arrayStartIndex: number,
 ): void {
 	// Verify the code is within the array's range
 	if (code >= arrayStartIndex && code < arrayStartIndex + array.length) {
@@ -165,14 +165,14 @@ function addCodesToBuffer(codes: number): void {
 	}
 }
 
-const enum HangulRangeStartCode {
+enum HangulRangeStartCode {
 	InitialConsonant = 0x1100,
 	Vowel = 0x1161,
 	FinalConsonant = 0x11a8,
 	CompatibilityJamo = 0x3131,
 }
 
-const enum AsciiCode {
+enum AsciiCode {
 	NUL = 0,
 	A = 65,
 	B = 66,
@@ -232,7 +232,7 @@ const enum AsciiCode {
  * Numbers that represent multiple ascii codes. These are precomputed at compile time to reduce
  * bundle and runtime overhead.
  */
-const enum AsciiCodeCombo {
+enum AsciiCodeCombo {
 	fa = (AsciiCode.a << 8) | AsciiCode.f,
 	fg = (AsciiCode.g << 8) | AsciiCode.f,
 	fq = (AsciiCode.q << 8) | AsciiCode.f,

@@ -9,7 +9,7 @@ import * as vscodeGrammarUpdater from "vscode-grammar-updater";
 function patchGrammar(grammar) {
 	let patchCount = 0;
 
-	let visit = function (rule, parent) {
+	const visit = (rule, parent) => {
 		if (rule.name === "source.js" || rule.name === "source.css") {
 			if (
 				parent.node[0].name !==
@@ -21,8 +21,8 @@ function patchGrammar(grammar) {
 				patchCount++;
 			}
 		}
-		for (let property in rule) {
-			let value = rule[property];
+		for (const property in rule) {
+			const value = rule[property];
 			if (typeof value === "object") {
 				visit(value, {
 					node: rule,
@@ -33,8 +33,8 @@ function patchGrammar(grammar) {
 		}
 	};
 
-	let repository = grammar.repository;
-	for (let key in repository) {
+	const repository = grammar.repository;
+	for (const key in repository) {
 		visit(repository[key], {
 			node: repository,
 			property: key,
@@ -43,7 +43,7 @@ function patchGrammar(grammar) {
 	}
 	if (patchCount !== 2) {
 		console.warn(
-			`Expected to patch 2 occurrences of source.js & source.css: Was ${patchCount}`
+			`Expected to patch 2 occurrences of source.js & source.css: Was ${patchCount}`,
 		);
 	}
 
@@ -56,5 +56,5 @@ vscodeGrammarUpdater.update(
 	tsGrammarRepo,
 	grammarPath,
 	"./syntaxes/html.tmLanguage.json",
-	(grammar) => patchGrammar(grammar)
+	(grammar) => patchGrammar(grammar),
 );

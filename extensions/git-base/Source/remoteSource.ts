@@ -4,31 +4,31 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	QuickPickItem,
-	window,
+	Disposable,
 	QuickPick,
+	QuickPickItem,
 	QuickPickItemKind,
 	l10n,
-	Disposable,
+	window,
 } from "vscode";
 import {
-	RemoteSourceProvider,
-	RemoteSource,
 	PickRemoteSourceOptions,
 	PickRemoteSourceResult,
+	RemoteSource,
 	RemoteSourceAction,
+	RemoteSourceProvider,
 } from "./api/git-base";
+import { debounce, throttle } from "./decorators";
 import { Model } from "./model";
-import { throttle, debounce } from "./decorators";
 
 async function getQuickPickResult<T extends QuickPickItem>(
-	quickpick: QuickPick<T>
+	quickpick: QuickPick<T>,
 ): Promise<T | undefined> {
 	const listeners: Disposable[] = [];
 	const result = await new Promise<T | undefined>((c) => {
 		listeners.push(
 			quickpick.onDidAccept(() => c(quickpick.selectedItems[0])),
-			quickpick.onDidHide(() => c(undefined))
+			quickpick.onDidHide(() => c(undefined)),
 		);
 		quickpick.show();
 	});
@@ -40,7 +40,7 @@ async function getQuickPickResult<T extends QuickPickItem>(
 
 class RemoteSourceProviderQuickPick implements Disposable {
 	private disposables: Disposable[] = [];
-	private isDisposed: boolean = false;
+	private isDisposed = false;
 
 	private quickpick:
 		| QuickPick<QuickPickItem & { remoteSource?: RemoteSource }>
@@ -61,14 +61,17 @@ class RemoteSourceProviderQuickPick implements Disposable {
 			this.disposables.push(this.quickpick);
 			this.quickpick.ignoreFocusOut = true;
 			this.disposables.push(
-				this.quickpick.onDidHide(() => this.dispose())
+				this.quickpick.onDidHide(() => this.dispose()),
 			);
 			if (this.provider.supportsQuery) {
 				this.quickpick.placeholder =
 					this.provider.placeholder ??
 					l10n.t("Repository name (type to search)");
 				this.disposables.push(
-					this.quickpick.onDidChangeValue(this.onDidChangeValue, this)
+					this.quickpick.onDidChangeValue(
+						this.onDidChangeValue,
+						this,
+					),
 				);
 			} else {
 				this.quickpick.placeholder =
@@ -149,7 +152,7 @@ class RemoteSourceProviderQuickPick implements Disposable {
 
 export async function getRemoteSourceActions(
 	model: Model,
-	url: string
+	url: string,
 ): Promise<RemoteSourceAction[]> {
 	const providers = model.getRemoteProviders();
 
@@ -166,15 +169,15 @@ export async function getRemoteSourceActions(
 
 export async function pickRemoteSource(
 	model: Model,
-	options: PickRemoteSourceOptions & { branch?: false | undefined }
+	options: PickRemoteSourceOptions & { branch?: false | undefined },
 ): Promise<string | undefined>;
 export async function pickRemoteSource(
 	model: Model,
-	options: PickRemoteSourceOptions & { branch: true }
+	options: PickRemoteSourceOptions & { branch: true },
 ): Promise<PickRemoteSourceResult | undefined>;
 export async function pickRemoteSource(
 	model: Model,
-	options: PickRemoteSourceOptions = {}
+	options: PickRemoteSourceOptions = {},
 ): Promise<string | PickRemoteSourceResult | undefined> {
 	const quickpick = window.createQuickPick<
 		QuickPickItem & { provider?: RemoteSourceProvider; url?: string }
@@ -191,17 +194,15 @@ export async function pickRemoteSource(
 		}
 	}
 
-	const remoteProviders = model
-		.getRemoteProviders()
-		.map((provider) => ({
-			label:
-				(provider.icon ? `$(${provider.icon}) ` : "") +
-				(options.providerLabel
-					? options.providerLabel(provider)
-					: provider.name),
-			alwaysShow: true,
-			provider,
-		}));
+	const remoteProviders = model.getRemoteProviders().map((provider) => ({
+		label:
+			(provider.icon ? `$(${provider.icon}) ` : "") +
+			(options.providerLabel
+				? options.providerLabel(provider)
+				: provider.name),
+		alwaysShow: true,
+		provider,
+	}));
 
 	const recentSources: (QuickPickItem & {
 		url?: string;
@@ -273,7 +274,7 @@ export async function pickRemoteSource(
 
 async function pickProviderSource(
 	provider: RemoteSourceProvider,
-	options: PickRemoteSourceOptions = {}
+	options: PickRemoteSourceOptions = {},
 ): Promise<string | PickRemoteSourceResult | undefined> {
 	const quickpick = new RemoteSourceProviderQuickPick(provider);
 	const remote = await quickpick.pick();

@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as path from "path";
 import * as fs from "fs";
+import * as path from "path";
 
 const root = path.dirname(path.dirname(__dirname));
 const yarnrcPath = path.join(root, "remote", ".yarnrc");
@@ -21,7 +21,7 @@ const nodePath = path.join(
 	"node",
 	`v${version}`,
 	`${platform}-${arch}`,
-	node
+	node,
 );
 
 console.log(nodePath);

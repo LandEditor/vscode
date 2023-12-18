@@ -3,24 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import { IWorkingCopyHistoryService } from "vs/workbench/services/workingCopy/common/workingCopyHistory";
+import { Schemas } from "vs/base/common/network";
+import { isMacintosh, isWindows } from "vs/base/common/platform";
 import { ServicesAccessor } from "vs/editor/browser/editorExtensions";
+import { localize } from "vs/nls";
 import {
-	registerAction2,
 	Action2,
 	MenuId,
+	registerAction2,
 } from "vs/platform/actions/common/actions";
+import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
+import { INativeHostService } from "vs/platform/native/common/native";
+import { ResourceContextKey } from "vs/workbench/common/contextkeys";
 import { LOCAL_HISTORY_MENU_CONTEXT_KEY } from "vs/workbench/contrib/localHistory/browser/localHistory";
 import {
-	findLocalHistoryEntry,
 	ITimelineCommandArgument,
+	findLocalHistoryEntry,
 } from "vs/workbench/contrib/localHistory/browser/localHistoryCommands";
-import { isMacintosh, isWindows } from "vs/base/common/platform";
-import { INativeHostService } from "vs/platform/native/common/native";
-import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
-import { Schemas } from "vs/base/common/network";
-import { ResourceContextKey } from "vs/workbench/common/contextkeys";
+import { IWorkingCopyHistoryService } from "vs/workbench/services/workingCopy/common/workingCopyHistory";
 
 //#region Delete
 
@@ -33,16 +33,13 @@ registerAction2(
 					value: isWindows
 						? localize("revealInWindows", "Reveal in File Explorer")
 						: isMacintosh
-							? localize("revealInMac", "Reveal in Finder")
-							: localize(
-									"openContainer",
-									"Open Containing Folder"
-								),
+						  ? localize("revealInMac", "Reveal in Finder")
+						  : localize("openContainer", "Open Containing Folder"),
 					original: isWindows
 						? "Reveal in File Explorer"
 						: isMacintosh
-							? "Reveal in Finder"
-							: "Open Containing Folder",
+						  ? "Reveal in Finder"
+						  : "Open Containing Folder",
 				},
 				menu: {
 					id: MenuId.TimelineItemContext,
@@ -50,31 +47,31 @@ registerAction2(
 					order: 1,
 					when: ContextKeyExpr.and(
 						LOCAL_HISTORY_MENU_CONTEXT_KEY,
-						ResourceContextKey.Scheme.isEqualTo(Schemas.file)
+						ResourceContextKey.Scheme.isEqualTo(Schemas.file),
 					),
 				},
 			});
 		}
 		async run(
 			accessor: ServicesAccessor,
-			item: ITimelineCommandArgument
+			item: ITimelineCommandArgument,
 		): Promise<void> {
 			const workingCopyHistoryService = accessor.get(
-				IWorkingCopyHistoryService
+				IWorkingCopyHistoryService,
 			);
 			const nativeHostService = accessor.get(INativeHostService);
 
 			const { entry } = await findLocalHistoryEntry(
 				workingCopyHistoryService,
-				item
+				item,
 			);
 			if (entry) {
 				await nativeHostService.showItemInFolder(
-					entry.location.with({ scheme: Schemas.file }).fsPath
+					entry.location.with({ scheme: Schemas.file }).fsPath,
 				);
 			}
 		}
-	}
+	},
 );
 
 //#endregion

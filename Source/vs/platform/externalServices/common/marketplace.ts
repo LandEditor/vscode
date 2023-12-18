@@ -26,7 +26,7 @@ export async function resolveMarketplaceHeaders(
 	configurationService: IConfigurationService,
 	fileService: IFileService,
 	storageService: IStorageService | undefined,
-	telemetryService: ITelemetryService
+	telemetryService: ITelemetryService,
 ): Promise<IHeaders> {
 	const headers: IHeaders = {
 		"X-Market-Client-Id": `VSCode ${version}`,
@@ -40,7 +40,7 @@ export async function resolveMarketplaceHeaders(
 		const serviceMachineId = await getServiceMachineId(
 			environmentService,
 			fileService,
-			storageService
+			storageService,
 		);
 		headers["X-Market-User-Id"] = serviceMachineId;
 		// Send machineId as VSCode-SessionId so we can correlate telemetry events across different services

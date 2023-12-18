@@ -3,53 +3,53 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	Extensions as WorkbenchExtensions,
-	IWorkbenchContributionsRegistry,
-	IWorkbenchContribution,
-} from "vs/workbench/common/contributions";
-import {
-	LifecyclePhase,
-	ILifecycleService,
-	StartupKind,
-} from "vs/workbench/services/lifecycle/common/lifecycle";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import {
-	IWorkspaceContextService,
-	WorkbenchState,
-} from "vs/platform/workspace/common/workspace";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { IWorkbenchThemeService } from "vs/workbench/services/themes/common/workbenchThemeService";
-import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { language } from "vs/base/common/platform";
+import { mainWindow } from "vs/base/browser/window";
+import { hash } from "vs/base/common/hash";
 import { Disposable } from "vs/base/common/lifecycle";
-import ErrorTelemetry from "vs/platform/telemetry/browser/errorTelemetry";
+import { Schemas } from "vs/base/common/network";
+import { language } from "vs/base/common/platform";
 import {
-	configurationTelemetry,
-	TelemetryTrustedValue,
-} from "vs/platform/telemetry/common/telemetryUtils";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import {
-	ITextFileService,
-	ITextFileSaveEvent,
-	ITextFileResolveEvent,
-} from "vs/workbench/services/textfile/common/textfiles";
-import {
-	extname,
 	basename,
+	extname,
 	isEqual,
 	isEqualOrParent,
 } from "vs/base/common/resources";
 import { URI } from "vs/base/common/uri";
-import { Schemas } from "vs/base/common/network";
 import { getMimeTypes } from "vs/editor/common/services/languagesAssociations";
-import { hash } from "vs/base/common/hash";
-import { IPaneCompositePartService } from "vs/workbench/services/panecomposite/browser/panecomposite";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { Registry } from "vs/platform/registry/common/platform";
+import ErrorTelemetry from "vs/platform/telemetry/browser/errorTelemetry";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import {
+	TelemetryTrustedValue,
+	configurationTelemetry,
+} from "vs/platform/telemetry/common/telemetryUtils";
+import {
+	IWorkspaceContextService,
+	WorkbenchState,
+} from "vs/platform/workspace/common/workspace";
+import {
+	Extensions as WorkbenchExtensions,
+	IWorkbenchContribution,
+	IWorkbenchContributionsRegistry,
+} from "vs/workbench/common/contributions";
 import { ViewContainerLocation } from "vs/workbench/common/views";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
+import {
+	ILifecycleService,
+	LifecyclePhase,
+	StartupKind,
+} from "vs/workbench/services/lifecycle/common/lifecycle";
+import { IPaneCompositePartService } from "vs/workbench/services/panecomposite/browser/panecomposite";
+import {
+	ITextFileResolveEvent,
+	ITextFileSaveEvent,
+	ITextFileService,
+} from "vs/workbench/services/textfile/common/textfiles";
+import { IWorkbenchThemeService } from "vs/workbench/services/themes/common/workbenchThemeService";
 import { IUserDataProfileService } from "vs/workbench/services/userDataProfile/common/userDataProfile";
-import { mainWindow } from "vs/base/browser/window";
 
 type TelemetryData = {
 	mimeType: TelemetryTrustedValue<string>;
@@ -368,7 +368,7 @@ export class TelemetryContribution
 		if (
 			isEqual(
 				resource,
-				this.userDataProfileService.currentProfile.settingsResource
+				this.userDataProfileService.currentProfile.settingsResource,
 			)
 		) {
 			return "global-settings";
@@ -378,7 +378,7 @@ export class TelemetryContribution
 		if (
 			isEqual(
 				resource,
-				this.userDataProfileService.currentProfile.keybindingsResource
+				this.userDataProfileService.currentProfile.keybindingsResource,
 			)
 		) {
 			return "keybindings";
@@ -388,7 +388,7 @@ export class TelemetryContribution
 		if (
 			isEqualOrParent(
 				resource,
-				this.userDataProfileService.currentProfile.snippetsHome
+				this.userDataProfileService.currentProfile.snippetsHome,
 			)
 		) {
 			return "snippets";
@@ -401,7 +401,7 @@ export class TelemetryContribution
 				const filename = basename(resource);
 				if (
 					TelemetryContribution.ALLOWLIST_WORKSPACE_JSON.indexOf(
-						filename
+						filename,
 					) > -1
 				) {
 					return `.vscode/${filename}`;
@@ -425,7 +425,7 @@ export class TelemetryContribution
 			resource.scheme === Schemas.file ? resource.fsPath : resource.path;
 		const telemetryData = {
 			mimeType: new TelemetryTrustedValue(
-				getMimeTypes(resource).join(", ")
+				getMimeTypes(resource).join(", "),
 			),
 			ext,
 			path: hash(path),
@@ -445,5 +445,5 @@ export class TelemetryContribution
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(TelemetryContribution, LifecyclePhase.Restored);

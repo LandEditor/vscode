@@ -4,52 +4,68 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
+import { Schemas } from "vs/base/common/network";
+import { isIOS, isWindows } from "vs/base/common/platform";
+import { URI } from "vs/base/common/uri";
 import "vs/css!./media/scrollbar";
+import "vs/css!./media/terminal";
 import "vs/css!./media/widgets";
 import "vs/css!./media/xterm";
-import "vs/css!./media/terminal";
 import * as nls from "vs/nls";
-import { URI } from "vs/base/common/uri";
+import { CONTEXT_ACCESSIBILITY_MODE_ENABLED } from "vs/platform/accessibility/common/accessibility";
 import { CommandsRegistry } from "vs/platform/commands/common/commands";
 import {
 	ContextKeyExpr,
 	ContextKeyExpression,
 } from "vs/platform/contextkey/common/contextkey";
 import {
-	KeybindingWeight,
-	KeybindingsRegistry,
-	IKeybindings,
-} from "vs/platform/keybinding/common/keybindingsRegistry";
-import { Registry } from "vs/platform/registry/common/platform";
-import { getQuickNavigateHandler } from "vs/workbench/browser/quickaccess";
-import {
-	Extensions as ViewContainerExtensions,
-	IViewContainersRegistry,
-	ViewContainerLocation,
-	IViewsRegistry,
-} from "vs/workbench/common/views";
-import {
 	Extensions as DragAndDropExtensions,
 	IDragAndDropContributionRegistry,
 	IDraggedResourceEditorInput,
 } from "vs/platform/dnd/browser/dnd";
-import {
-	registerTerminalActions,
-	terminalSendSequenceCommand,
-} from "vs/workbench/contrib/terminal/browser/terminalActions";
-import { TerminalViewPane } from "vs/workbench/contrib/terminal/browser/terminalView";
-import {
-	TERMINAL_VIEW_ID,
-	TerminalCommandId,
-	ITerminalProfileService,
-} from "vs/workbench/contrib/terminal/common/terminal";
-import { registerColors } from "vs/workbench/contrib/terminal/common/terminalColorRegistry";
-import { setupTerminalCommands } from "vs/workbench/contrib/terminal/browser/terminalCommands";
-import { TerminalService } from "vs/workbench/contrib/terminal/browser/terminalService";
+import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
+import {
+	IKeybindings,
+	KeybindingWeight,
+	KeybindingsRegistry,
+} from "vs/platform/keybinding/common/keybindingsRegistry";
+import {
+	Extensions as QuickAccessExtensions,
+	IQuickAccessRegistry,
+} from "vs/platform/quickinput/common/quickAccess";
+import { Registry } from "vs/platform/registry/common/platform";
+import {
+	ITerminalLogService,
+	TerminalSettingId,
+	WindowsShellType,
+} from "vs/platform/terminal/common/terminal";
+import { TerminalLogService } from "vs/platform/terminal/common/terminalLogService";
+import { registerTerminalPlatformConfiguration } from "vs/platform/terminal/common/terminalPlatformConfiguration";
+import {
+	EditorPaneDescriptor,
+	IEditorPaneRegistry,
+} from "vs/workbench/browser/editor";
+import { ViewPaneContainer } from "vs/workbench/browser/parts/views/viewPaneContainer";
+import { getQuickNavigateHandler } from "vs/workbench/browser/quickaccess";
+import {
+	Extensions as WorkbenchExtensions,
+	IWorkbenchContributionsRegistry,
+} from "vs/workbench/common/contributions";
+import {
+	EditorExtensions,
+	IEditorFactoryRegistry,
+} from "vs/workbench/common/editor";
+import {
+	Extensions as ViewContainerExtensions,
+	IViewContainersRegistry,
+	IViewsRegistry,
+	ViewContainerLocation,
+} from "vs/workbench/common/views";
+import { RemoteTerminalBackendContribution } from "vs/workbench/contrib/terminal/browser/remoteTerminalBackend";
 import {
 	ITerminalEditorService,
 	ITerminalGroupService,
@@ -58,85 +74,69 @@ import {
 	TerminalDataTransfers,
 	terminalEditorId,
 } from "vs/workbench/contrib/terminal/browser/terminal";
-import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
-import { ViewPaneContainer } from "vs/workbench/browser/parts/views/viewPaneContainer";
 import {
-	IQuickAccessRegistry,
-	Extensions as QuickAccessExtensions,
-} from "vs/platform/quickinput/common/quickAccess";
-import { TerminalQuickAccessProvider } from "vs/workbench/contrib/terminal/browser/terminalQuickAccess";
-import { registerTerminalConfiguration } from "vs/workbench/contrib/terminal/common/terminalConfiguration";
-import { CONTEXT_ACCESSIBILITY_MODE_ENABLED } from "vs/platform/accessibility/common/accessibility";
-import { terminalViewIcon } from "vs/workbench/contrib/terminal/browser/terminalIcons";
-import {
-	ITerminalLogService,
-	TerminalSettingId,
-	WindowsShellType,
-} from "vs/platform/terminal/common/terminal";
-import { isIOS, isWindows } from "vs/base/common/platform";
-import { setupTerminalMenus } from "vs/workbench/contrib/terminal/browser/terminalMenus";
-import { TerminalInstanceService } from "vs/workbench/contrib/terminal/browser/terminalInstanceService";
-import { registerTerminalPlatformConfiguration } from "vs/platform/terminal/common/terminalPlatformConfiguration";
-import {
-	EditorExtensions,
-	IEditorFactoryRegistry,
-} from "vs/workbench/common/editor";
-import {
-	EditorPaneDescriptor,
-	IEditorPaneRegistry,
-} from "vs/workbench/browser/editor";
+	registerTerminalActions,
+	terminalSendSequenceCommand,
+} from "vs/workbench/contrib/terminal/browser/terminalActions";
+import { setupTerminalCommands } from "vs/workbench/contrib/terminal/browser/terminalCommands";
 import { TerminalEditor } from "vs/workbench/contrib/terminal/browser/terminalEditor";
 import { TerminalEditorInput } from "vs/workbench/contrib/terminal/browser/terminalEditorInput";
-import { terminalStrings } from "vs/workbench/contrib/terminal/common/terminalStrings";
-import { TerminalEditorService } from "vs/workbench/contrib/terminal/browser/terminalEditorService";
 import { TerminalInputSerializer } from "vs/workbench/contrib/terminal/browser/terminalEditorSerializer";
+import { TerminalEditorService } from "vs/workbench/contrib/terminal/browser/terminalEditorService";
 import { TerminalGroupService } from "vs/workbench/contrib/terminal/browser/terminalGroupService";
-import {
-	TerminalContextKeys,
-	TerminalContextKeyStrings,
-} from "vs/workbench/contrib/terminal/common/terminalContextKey";
-import { TerminalProfileService } from "vs/workbench/contrib/terminal/browser/terminalProfileService";
-import {
-	IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
-} from "vs/workbench/common/contributions";
-import { RemoteTerminalBackendContribution } from "vs/workbench/contrib/terminal/browser/remoteTerminalBackend";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
+import { terminalViewIcon } from "vs/workbench/contrib/terminal/browser/terminalIcons";
+import { TerminalInstanceService } from "vs/workbench/contrib/terminal/browser/terminalInstanceService";
 import { TerminalMainContribution } from "vs/workbench/contrib/terminal/browser/terminalMainContribution";
-import { Schemas } from "vs/base/common/network";
-import { TerminalLogService } from "vs/platform/terminal/common/terminalLogService";
+import { setupTerminalMenus } from "vs/workbench/contrib/terminal/browser/terminalMenus";
+import { TerminalProfileService } from "vs/workbench/contrib/terminal/browser/terminalProfileService";
+import { TerminalQuickAccessProvider } from "vs/workbench/contrib/terminal/browser/terminalQuickAccess";
+import { TerminalService } from "vs/workbench/contrib/terminal/browser/terminalService";
+import { TerminalViewPane } from "vs/workbench/contrib/terminal/browser/terminalView";
+import {
+	ITerminalProfileService,
+	TERMINAL_VIEW_ID,
+	TerminalCommandId,
+} from "vs/workbench/contrib/terminal/common/terminal";
+import { registerColors } from "vs/workbench/contrib/terminal/common/terminalColorRegistry";
+import { registerTerminalConfiguration } from "vs/workbench/contrib/terminal/common/terminalConfiguration";
+import {
+	TerminalContextKeyStrings,
+	TerminalContextKeys,
+} from "vs/workbench/contrib/terminal/common/terminalContextKey";
+import { terminalStrings } from "vs/workbench/contrib/terminal/common/terminalStrings";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 // Register services
 registerSingleton(
 	ITerminalLogService,
 	TerminalLogService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 registerSingleton(ITerminalService, TerminalService, InstantiationType.Delayed);
 registerSingleton(
 	ITerminalEditorService,
 	TerminalEditorService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 registerSingleton(
 	ITerminalGroupService,
 	TerminalGroupService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 registerSingleton(
 	ITerminalInstanceService,
 	TerminalInstanceService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 registerSingleton(
 	ITerminalProfileService,
 	TerminalProfileService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 
 // Register quick accesses
 const quickAccessRegistry = Registry.as<IQuickAccessRegistry>(
-	QuickAccessExtensions.Quickaccess
+	QuickAccessExtensions.Quickaccess,
 );
 const inTerminalsPicker = "inTerminalPicker";
 quickAccessRegistry.registerQuickAccessProvider({
@@ -145,13 +145,13 @@ quickAccessRegistry.registerQuickAccessProvider({
 	contextKey: inTerminalsPicker,
 	placeholder: nls.localize(
 		"tasksQuickAccessPlaceholder",
-		"Type the name of a terminal to open."
+		"Type the name of a terminal to open.",
 	),
 	helpEntries: [
 		{
 			description: nls.localize(
 				"tasksQuickAccessHelp",
-				"Show All Opened Terminals"
+				"Show All Opened Terminals",
 			),
 			commandId: TerminalCommandId.QuickOpenTerm,
 		},
@@ -163,7 +163,7 @@ CommandsRegistry.registerCommand({
 	id: quickAccessNavigateNextInTerminalPickerId,
 	handler: getQuickNavigateHandler(
 		quickAccessNavigateNextInTerminalPickerId,
-		true
+		true,
 	),
 });
 const quickAccessNavigatePreviousInTerminalPickerId =
@@ -172,21 +172,21 @@ CommandsRegistry.registerCommand({
 	id: quickAccessNavigatePreviousInTerminalPickerId,
 	handler: getQuickNavigateHandler(
 		quickAccessNavigatePreviousInTerminalPickerId,
-		false
+		false,
 	),
 });
 
 // Register workbench contributions
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 );
 workbenchRegistry.registerWorkbenchContribution(
 	TerminalMainContribution,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );
 workbenchRegistry.registerWorkbenchContribution(
 	RemoteTerminalBackendContribution,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );
 
 // Register configurations
@@ -195,20 +195,20 @@ registerTerminalConfiguration();
 
 // Register editor/dnd contributions
 Registry.as<IEditorFactoryRegistry>(
-	EditorExtensions.EditorFactory
+	EditorExtensions.EditorFactory,
 ).registerEditorSerializer(TerminalEditorInput.ID, TerminalInputSerializer);
 Registry.as<IEditorPaneRegistry>(
-	EditorExtensions.EditorPane
+	EditorExtensions.EditorPane,
 ).registerEditorPane(
 	EditorPaneDescriptor.create(
 		TerminalEditor,
 		terminalEditorId,
-		terminalStrings.terminal
+		terminalStrings.terminal,
 	),
-	[new SyncDescriptor(TerminalEditorInput)]
+	[new SyncDescriptor(TerminalEditorInput)],
 );
 Registry.as<IDragAndDropContributionRegistry>(
-	DragAndDropExtensions.DragAndDropContribution
+	DragAndDropExtensions.DragAndDropContribution,
 ).register({
 	dataFormatKey: TerminalDataTransfers.Terminals,
 	getEditorInputs(data) {
@@ -225,14 +225,16 @@ Registry.as<IDragAndDropContributionRegistry>(
 	},
 	setData(resources, event) {
 		const terminalResources = resources.filter(
-			({ resource }) => resource.scheme === Schemas.vscodeTerminal
+			({ resource }) => resource.scheme === Schemas.vscodeTerminal,
 		);
 		if (terminalResources.length) {
 			event.dataTransfer?.setData(
 				TerminalDataTransfers.Terminals,
 				JSON.stringify(
-					terminalResources.map(({ resource }) => resource.toString())
-				)
+					terminalResources.map(({ resource }) =>
+						resource.toString(),
+					),
+				),
 			);
 		}
 	},
@@ -240,7 +242,7 @@ Registry.as<IDragAndDropContributionRegistry>(
 
 // Register views
 const VIEW_CONTAINER = Registry.as<IViewContainersRegistry>(
-	ViewContainerExtensions.ViewContainersRegistry
+	ViewContainerExtensions.ViewContainersRegistry,
 ).registerViewContainer(
 	{
 		id: TERMINAL_VIEW_ID,
@@ -255,10 +257,10 @@ const VIEW_CONTAINER = Registry.as<IViewContainersRegistry>(
 		order: 3,
 	},
 	ViewContainerLocation.Panel,
-	{ doNotRegisterOpenCommand: true, isDefault: true }
+	{ doNotRegisterOpenCommand: true, isDefault: true },
 );
 Registry.as<IViewsRegistry>(
-	ViewContainerExtensions.ViewsRegistry
+	ViewContainerExtensions.ViewsRegistry,
 ).registerViews(
 	[
 		{
@@ -275,7 +277,7 @@ Registry.as<IViewsRegistry>(
 						key: "miToggleIntegratedTerminal",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Terminal"
+					"&&Terminal",
 				),
 				keybindings: {
 					primary: KeyMod.CtrlCmd | KeyCode.Backquote,
@@ -285,7 +287,7 @@ Registry.as<IViewsRegistry>(
 			},
 		},
 	],
-	VIEW_CONTAINER
+	VIEW_CONTAINER,
 );
 
 // Register actions
@@ -293,7 +295,7 @@ registerTerminalActions();
 
 function registerSendSequenceKeybinding(
 	text: string,
-	rule: { when?: ContextKeyExpression } & IKeybindings
+	rule: { when?: ContextKeyExpression } & IKeybindings,
 ): void {
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: TerminalCommandId.SendSequence,
@@ -308,7 +310,7 @@ function registerSendSequenceKeybinding(
 	});
 }
 
-const enum Constants {
+enum Constants {
 	/** The text representation of `^<letter>` is `'A'.charCodeAt(0) + 1`. */
 	CtrlLetterOffset = 64,
 }
@@ -326,12 +328,12 @@ if (isWindows) {
 				TerminalContextKeys.focus,
 				ContextKeyExpr.equals(
 					TerminalContextKeyStrings.ShellType,
-					WindowsShellType.PowerShell
+					WindowsShellType.PowerShell,
 				),
-				CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate()
+				CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate(),
 			),
 			primary: KeyMod.CtrlCmd | KeyCode.KeyV,
-		}
+		},
 	);
 }
 
@@ -344,10 +346,10 @@ registerSendSequenceKeybinding("\x1b[24~a", {
 		TerminalContextKeys.focus,
 		ContextKeyExpr.equals(
 			TerminalContextKeyStrings.ShellType,
-			WindowsShellType.PowerShell
+			WindowsShellType.PowerShell,
 		),
 		TerminalContextKeys.terminalShellIntegrationEnabled,
-		CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate()
+		CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate(),
 	),
 	primary: KeyMod.CtrlCmd | KeyCode.Space,
 	mac: { primary: KeyMod.WinCtrl | KeyCode.Space },
@@ -358,10 +360,10 @@ registerSendSequenceKeybinding("\x1b[24~b", {
 		TerminalContextKeys.focus,
 		ContextKeyExpr.equals(
 			TerminalContextKeyStrings.ShellType,
-			WindowsShellType.PowerShell
+			WindowsShellType.PowerShell,
 		),
 		TerminalContextKeys.terminalShellIntegrationEnabled,
-		CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate()
+		CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate(),
 	),
 	primary: KeyMod.Alt | KeyCode.Space,
 });
@@ -371,10 +373,10 @@ registerSendSequenceKeybinding("\x1b[24~c", {
 		TerminalContextKeys.focus,
 		ContextKeyExpr.equals(
 			TerminalContextKeyStrings.ShellType,
-			WindowsShellType.PowerShell
+			WindowsShellType.PowerShell,
 		),
 		TerminalContextKeys.terminalShellIntegrationEnabled,
-		CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate()
+		CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate(),
 	),
 	primary: KeyMod.Shift | KeyCode.Enter,
 });
@@ -384,10 +386,10 @@ registerSendSequenceKeybinding("\x1b[24~d", {
 		TerminalContextKeys.focus,
 		ContextKeyExpr.equals(
 			TerminalContextKeyStrings.ShellType,
-			WindowsShellType.PowerShell
+			WindowsShellType.PowerShell,
 		),
 		TerminalContextKeys.terminalShellIntegrationEnabled,
-		CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate()
+		CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate(),
 	),
 	mac: { primary: KeyMod.Shift | KeyMod.CtrlCmd | KeyCode.RightArrow },
 });
@@ -397,14 +399,14 @@ registerSendSequenceKeybinding("\x1b[24~e", {
 		TerminalContextKeys.focus,
 		ContextKeyExpr.equals(
 			TerminalContextKeyStrings.ShellType,
-			WindowsShellType.PowerShell
+			WindowsShellType.PowerShell,
 		),
 		TerminalContextKeys.terminalShellIntegrationEnabled,
 		CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate(),
 		ContextKeyExpr.equals(
 			`config.${TerminalSettingId.ShellIntegrationSuggestEnabled}`,
-			true
-		)
+			true,
+		),
 	),
 	primary: KeyMod.CtrlCmd | KeyCode.Space,
 	mac: { primary: KeyMod.WinCtrl | KeyCode.Space },
@@ -417,8 +419,8 @@ registerSendSequenceKeybinding("\x1b[1;2H", {
 		TerminalContextKeys.focus,
 		ContextKeyExpr.equals(
 			TerminalContextKeyStrings.ShellType,
-			WindowsShellType.PowerShell
-		)
+			WindowsShellType.PowerShell,
+		),
 	),
 	mac: { primary: KeyMod.Shift | KeyMod.CtrlCmd | KeyCode.LeftArrow },
 });
@@ -427,7 +429,7 @@ registerSendSequenceKeybinding("\x1b[1;2H", {
 registerSendSequenceKeybinding("\x12", {
 	when: ContextKeyExpr.and(
 		TerminalContextKeys.focus,
-		CONTEXT_ACCESSIBILITY_MODE_ENABLED
+		CONTEXT_ACCESSIBILITY_MODE_ENABLED,
 	),
 	primary: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.KeyR,
 	mac: { primary: KeyMod.WinCtrl | KeyMod.Alt | KeyCode.KeyR },
@@ -448,7 +450,7 @@ if (isIOS) {
 			// ctrl+c
 			when: ContextKeyExpr.and(TerminalContextKeys.focus),
 			primary: KeyMod.WinCtrl | KeyCode.KeyC,
-		}
+		},
 	);
 }
 
@@ -458,7 +460,7 @@ registerSendSequenceKeybinding(
 	{
 		primary: KeyMod.CtrlCmd | KeyCode.Backspace,
 		mac: { primary: KeyMod.Alt | KeyCode.Backspace },
-	}
+	},
 );
 if (isWindows) {
 	// Delete word left: ctrl+h
@@ -470,11 +472,11 @@ if (isWindows) {
 				TerminalContextKeys.focus,
 				ContextKeyExpr.equals(
 					TerminalContextKeyStrings.ShellType,
-					WindowsShellType.CommandPrompt
-				)
+					WindowsShellType.CommandPrompt,
+				),
 			),
 			primary: KeyMod.CtrlCmd | KeyCode.Backspace,
-		}
+		},
 	);
 }
 // Delete word right: alt+d [27, 100]

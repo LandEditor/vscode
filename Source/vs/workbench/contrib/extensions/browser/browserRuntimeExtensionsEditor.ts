@@ -4,13 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Action } from "vs/base/common/actions";
-import { IExtensionHostProfile } from "vs/workbench/services/extensions/common/extensions";
 import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
 import {
 	AbstractRuntimeExtensionsEditor,
 	IRuntimeExtension,
 } from "vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor";
 import { ReportExtensionIssueAction } from "vs/workbench/contrib/extensions/common/reportExtensionIssueAction";
+import { IExtensionHostProfile } from "vs/workbench/services/extensions/common/extensions";
 
 export class RuntimeExtensionsEditor extends AbstractRuntimeExtensionsEditor {
 	protected _getProfileInfo(): IExtensionHostProfile | null {
@@ -18,24 +18,24 @@ export class RuntimeExtensionsEditor extends AbstractRuntimeExtensionsEditor {
 	}
 
 	protected _getUnresponsiveProfile(
-		extensionId: ExtensionIdentifier
+		extensionId: ExtensionIdentifier,
 	): IExtensionHostProfile | undefined {
 		return undefined;
 	}
 
 	protected _createSlowExtensionAction(
-		element: IRuntimeExtension
+		element: IRuntimeExtension,
 	): Action | null {
 		return null;
 	}
 
 	protected _createReportExtensionIssueAction(
-		element: IRuntimeExtension
+		element: IRuntimeExtension,
 	): Action | null {
 		if (element.marketplaceInfo) {
 			return this._instantiationService.createInstance(
 				ReportExtensionIssueAction,
-				element.description
+				element.description,
 			);
 		}
 		return null;

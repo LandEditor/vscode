@@ -3,20 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import type { ILink } from "@xterm/xterm";
 import { EventType } from "vs/base/browser/dom";
 import { Emitter, Event } from "vs/base/common/event";
+import { DisposableStore } from "vs/base/common/lifecycle";
 import { localize } from "vs/nls";
 import {
-	QuickPickItem,
 	IQuickInputService,
 	IQuickPickItem,
+	QuickPickItem,
 } from "vs/platform/quickinput/common/quickInput";
-import { IDetectedLinks } from "vs/workbench/contrib/terminalContrib/links/browser/terminalLinkManager";
-import { TerminalLinkQuickPickEvent } from "vs/workbench/contrib/terminal/browser/terminal";
-import type { ILink } from "@xterm/xterm";
-import { DisposableStore } from "vs/base/common/lifecycle";
-import { IAccessibleViewService } from "vs/workbench/contrib/accessibility/browser/accessibleView";
 import { AccessibleViewProviderId } from "vs/workbench/contrib/accessibility/browser/accessibilityConfiguration";
+import { IAccessibleViewService } from "vs/workbench/contrib/accessibility/browser/accessibleView";
+import { TerminalLinkQuickPickEvent } from "vs/workbench/contrib/terminal/browser/terminal";
+import { IDetectedLinks } from "vs/workbench/contrib/terminalContrib/links/browser/terminalLinkManager";
 
 export class TerminalLinkQuickpick extends DisposableStore {
 	private readonly _onDidRequestMoreLinks = this.add(new Emitter<void>());
@@ -69,7 +69,7 @@ export class TerminalLinkQuickpick extends DisposableStore {
 				type: "separator",
 				label: localize(
 					"terminal.integrated.localFolderLinks",
-					"Folder"
+					"Folder",
 				),
 			});
 			picks.push(...folderPicks);
@@ -79,7 +79,7 @@ export class TerminalLinkQuickpick extends DisposableStore {
 				type: "separator",
 				label: localize(
 					"terminal.integrated.searchLinks",
-					"Workspace Search"
+					"Workspace Search",
 				),
 			});
 			picks.push(...wordPicks);
@@ -92,7 +92,7 @@ export class TerminalLinkQuickpick extends DisposableStore {
 		pick.items = picks;
 		pick.placeholder = localize(
 			"terminal.integrated.openDetectedLink",
-			"Select the link to open, type to filter all links"
+			"Select the link to open, type to filter all links",
 		);
 		pick.sortByLabel = false;
 		pick.show();
@@ -116,8 +116,8 @@ export class TerminalLinkQuickpick extends DisposableStore {
 				const wordPicks = allLinks.wordLinks
 					? await this._generatePicks(
 							allLinks.wordLinks,
-							wordIgnoreLinks
-						)
+							wordIgnoreLinks,
+					  )
 					: undefined;
 				const filePicks = allLinks.fileLinks
 					? await this._generatePicks(allLinks.fileLinks)
@@ -141,7 +141,7 @@ export class TerminalLinkQuickpick extends DisposableStore {
 						type: "separator",
 						label: localize(
 							"terminal.integrated.localFileLinks",
-							"File"
+							"File",
 						),
 					});
 					picks.push(...filePicks);
@@ -151,7 +151,7 @@ export class TerminalLinkQuickpick extends DisposableStore {
 						type: "separator",
 						label: localize(
 							"terminal.integrated.localFolderLinks",
-							"Folder"
+							"Folder",
 						),
 					});
 					picks.push(...folderPicks);
@@ -161,13 +161,13 @@ export class TerminalLinkQuickpick extends DisposableStore {
 						type: "separator",
 						label: localize(
 							"terminal.integrated.searchLinks",
-							"Workspace Search"
+							"Workspace Search",
 						),
 					});
 					picks.push(...wordPicks);
 				}
 				pick.items = picks;
-			})
+			}),
 		);
 
 		return new Promise((r) => {
@@ -176,17 +176,17 @@ export class TerminalLinkQuickpick extends DisposableStore {
 					disposables.dispose();
 					if (pick.selectedItems.length === 0) {
 						this._accessibleViewService.showLastProvider(
-							AccessibleViewProviderId.Terminal
+							AccessibleViewProviderId.Terminal,
 						);
 					}
 					r();
-				})
+				}),
 			);
 			disposables.add(
 				Event.once(pick.onDidAccept)(() => {
 					accepted = true;
 					const event = new TerminalLinkQuickPickEvent(
-						EventType.CLICK
+						EventType.CLICK,
 					);
 					const activeItem = pick.activeItems?.[0];
 					if (activeItem && "link" in activeItem) {
@@ -194,7 +194,7 @@ export class TerminalLinkQuickpick extends DisposableStore {
 					}
 					disposables.dispose();
 					r();
-				})
+				}),
 			);
 		});
 	}
@@ -204,7 +204,7 @@ export class TerminalLinkQuickpick extends DisposableStore {
 	 */
 	private async _generatePicks(
 		links: ILink[],
-		ignoreLinks?: ILink[]
+		ignoreLinks?: ILink[],
 	): Promise<ITerminalLinkQuickPickItem[] | undefined> {
 		if (!links) {
 			return;

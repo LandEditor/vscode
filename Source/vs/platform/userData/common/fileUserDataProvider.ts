@@ -1,3 +1,4 @@
+import { CancellationToken } from "vs/base/common/cancellation";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -8,38 +9,37 @@ import {
 	IDisposable,
 	toDisposable,
 } from "vs/base/common/lifecycle";
-import {
-	IFileSystemProviderWithFileReadWriteCapability,
-	IFileChange,
-	IWatchOptions,
-	IStat,
-	IFileOverwriteOptions,
-	FileType,
-	IFileWriteOptions,
-	IFileDeleteOptions,
-	FileSystemProviderCapabilities,
-	IFileSystemProviderWithFileReadStreamCapability,
-	IFileReadStreamOptions,
-	IFileSystemProviderWithFileAtomicReadCapability,
-	hasFileFolderCopyCapability,
-	IFileSystemProviderWithOpenReadWriteCloseCapability,
-	IFileOpenOptions,
-	IFileSystemProviderWithFileAtomicWriteCapability,
-	IFileSystemProviderWithFileAtomicDeleteCapability,
-	IFileSystemProviderWithFileFolderCopyCapability,
-	IFileSystemProviderWithFileCloneCapability,
-	hasFileCloneCapability,
-	IFileAtomicReadOptions,
-	IFileAtomicOptions,
-} from "vs/platform/files/common/files";
-import { URI } from "vs/base/common/uri";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { ReadableStreamEvents } from "vs/base/common/stream";
-import { ILogService } from "vs/platform/log/common/log";
-import { TernarySearchTree } from "vs/base/common/ternarySearchTree";
-import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
 import { ResourceSet } from "vs/base/common/map";
+import { ReadableStreamEvents } from "vs/base/common/stream";
+import { TernarySearchTree } from "vs/base/common/ternarySearchTree";
+import { URI } from "vs/base/common/uri";
+import {
+	FileSystemProviderCapabilities,
+	FileType,
+	IFileAtomicOptions,
+	IFileAtomicReadOptions,
+	IFileChange,
+	IFileDeleteOptions,
+	IFileOpenOptions,
+	IFileOverwriteOptions,
+	IFileReadStreamOptions,
+	IFileSystemProviderWithFileAtomicDeleteCapability,
+	IFileSystemProviderWithFileAtomicReadCapability,
+	IFileSystemProviderWithFileAtomicWriteCapability,
+	IFileSystemProviderWithFileCloneCapability,
+	IFileSystemProviderWithFileFolderCopyCapability,
+	IFileSystemProviderWithFileReadStreamCapability,
+	IFileSystemProviderWithFileReadWriteCapability,
+	IFileSystemProviderWithOpenReadWriteCloseCapability,
+	IFileWriteOptions,
+	IStat,
+	IWatchOptions,
+	hasFileCloneCapability,
+	hasFileFolderCopyCapability,
+} from "vs/platform/files/common/files";
+import { ILogService } from "vs/platform/log/common/log";
 import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
 
 /**
  * This is a wrapper on top of the local filesystem provider which will
@@ -63,7 +63,7 @@ export class FileUserDataProvider
 		this.fileSystemProvider.onDidChangeCapabilities;
 
 	private readonly _onDidChangeFile = this._register(
-		new Emitter<readonly IFileChange[]>()
+		new Emitter<readonly IFileChange[]>(),
 	);
 	readonly onDidChangeFile = this._onDidChangeFile.event;
 
@@ -72,12 +72,12 @@ export class FileUserDataProvider
 			!(
 				this.capabilities &
 				FileSystemProviderCapabilities.PathCaseSensitive
-			)
+			),
 	);
 	private readonly atomicReadWriteResources = new ResourceSet((uri) =>
 		this.uriIdentityService.extUri.getComparisonKey(
-			this.toFileSystemResource(uri)
-		)
+			this.toFileSystemResource(uri),
+		),
 	);
 
 	constructor(
@@ -91,19 +91,19 @@ export class FileUserDataProvider
 		private readonly userDataScheme: string,
 		private readonly userDataProfilesService: IUserDataProfilesService,
 		private readonly uriIdentityService: IUriIdentityService,
-		private readonly logService: ILogService
+		private readonly logService: ILogService,
 	) {
 		super();
 		this.updateAtomicReadWritesResources();
 		this._register(
 			userDataProfilesService.onDidChangeProfiles(() =>
-				this.updateAtomicReadWritesResources()
-			)
+				this.updateAtomicReadWritesResources(),
+			),
 		);
 		this._register(
 			this.fileSystemProvider.onDidChangeFile((e) =>
-				this.handleFileChanges(e)
-			)
+				this.handleFileChanges(e),
+			),
 		);
 	}
 
@@ -120,7 +120,7 @@ export class FileUserDataProvider
 	open(resource: URI, opts: IFileOpenOptions): Promise<number> {
 		return this.fileSystemProvider.open(
 			this.toFileSystemResource(resource),
-			opts
+			opts,
 		);
 	}
 
@@ -133,7 +133,7 @@ export class FileUserDataProvider
 		pos: number,
 		data: Uint8Array,
 		offset: number,
-		length: number
+		length: number,
 	): Promise<number> {
 		return this.fileSystemProvider.read(fd, pos, data, offset, length);
 	}
@@ -143,7 +143,7 @@ export class FileUserDataProvider
 		pos: number,
 		data: Uint8Array,
 		offset: number,
-		length: number
+		length: number,
 	): Promise<number> {
 		return this.fileSystemProvider.write(fd, pos, data, offset, length);
 	}
@@ -152,7 +152,7 @@ export class FileUserDataProvider
 		this.watchResources.set(resource, resource);
 		const disposable = this.fileSystemProvider.watch(
 			this.toFileSystemResource(resource),
-			opts
+			opts,
 		);
 		return toDisposable(() => {
 			this.watchResources.delete(resource);
@@ -162,13 +162,13 @@ export class FileUserDataProvider
 
 	stat(resource: URI): Promise<IStat> {
 		return this.fileSystemProvider.stat(
-			this.toFileSystemResource(resource)
+			this.toFileSystemResource(resource),
 		);
 	}
 
 	mkdir(resource: URI): Promise<void> {
 		return this.fileSystemProvider.mkdir(
-			this.toFileSystemResource(resource)
+			this.toFileSystemResource(resource),
 		);
 	}
 
@@ -176,35 +176,35 @@ export class FileUserDataProvider
 		return this.fileSystemProvider.rename(
 			this.toFileSystemResource(from),
 			this.toFileSystemResource(to),
-			opts
+			opts,
 		);
 	}
 
 	readFile(
 		resource: URI,
-		opts?: IFileAtomicReadOptions
+		opts?: IFileAtomicReadOptions,
 	): Promise<Uint8Array> {
 		return this.fileSystemProvider.readFile(
 			this.toFileSystemResource(resource),
-			opts
+			opts,
 		);
 	}
 
 	readFileStream(
 		resource: URI,
 		opts: IFileReadStreamOptions,
-		token: CancellationToken
+		token: CancellationToken,
 	): ReadableStreamEvents<Uint8Array> {
 		return this.fileSystemProvider.readFileStream(
 			this.toFileSystemResource(resource),
 			opts,
-			token
+			token,
 		);
 	}
 
 	readdir(resource: URI): Promise<[string, FileType][]> {
 		return this.fileSystemProvider.readdir(
-			this.toFileSystemResource(resource)
+			this.toFileSystemResource(resource),
 		);
 	}
 
@@ -215,12 +215,12 @@ export class FileUserDataProvider
 	writeFile(
 		resource: URI,
 		content: Uint8Array,
-		opts: IFileWriteOptions
+		opts: IFileWriteOptions,
 	): Promise<void> {
 		return this.fileSystemProvider.writeFile(
 			this.toFileSystemResource(resource),
 			content,
-			opts
+			opts,
 		);
 	}
 
@@ -235,7 +235,7 @@ export class FileUserDataProvider
 	delete(resource: URI, opts: IFileDeleteOptions): Promise<void> {
 		return this.fileSystemProvider.delete(
 			this.toFileSystemResource(resource),
-			opts
+			opts,
 		);
 	}
 
@@ -244,7 +244,7 @@ export class FileUserDataProvider
 			return this.fileSystemProvider.copy(
 				this.toFileSystemResource(from),
 				this.toFileSystemResource(to),
-				opts
+				opts,
 			);
 		}
 		throw new Error("copy not supported");
@@ -254,7 +254,7 @@ export class FileUserDataProvider
 		if (hasFileCloneCapability(this.fileSystemProvider)) {
 			return this.fileSystemProvider.cloneFile(
 				this.toFileSystemResource(from),
-				this.toFileSystemResource(to)
+				this.toFileSystemResource(to),
 			);
 		}
 		throw new Error("clone not supported");

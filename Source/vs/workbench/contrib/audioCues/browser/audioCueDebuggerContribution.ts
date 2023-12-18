@@ -13,9 +13,9 @@ import {
 	observableFromEvent,
 } from "vs/base/common/observable";
 import {
-	IAudioCueService,
 	AudioCue,
 	AudioCueService,
+	IAudioCueService,
 } from "vs/platform/audioCues/browser/audioCueService";
 import { IWorkbenchContribution } from "vs/workbench/common/contributions";
 import {

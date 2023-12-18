@@ -63,6 +63,7 @@ import {
 } from "vs/workbench/contrib/chat/common/chatProvider";
 import { ChatRequestParser } from "vs/workbench/contrib/chat/common/chatRequestParser";
 import {
+	ChatAgentCopyKind,
 	IChat,
 	IChatCompleteResponse,
 	IChatDetail,
@@ -75,7 +76,6 @@ import {
 	IChatService,
 	IChatTransferredSessionData,
 	IChatUserActionEvent,
-	ChatAgentCopyKind,
 	InteractiveSessionVoteDirection,
 } from "vs/workbench/contrib/chat/common/chatService";
 import { IChatSlashCommandService } from "vs/workbench/contrib/chat/common/chatSlashCommands";
@@ -259,10 +259,10 @@ export class ChatService extends Disposable implements IChatService {
 	private readonly _providers = new Map<string, IChatProvider>();
 
 	private readonly _sessionModels = this._register(
-		new DisposableMap<string, ChatModel>()
+		new DisposableMap<string, ChatModel>(),
 	);
 	private readonly _pendingRequests = this._register(
-		new DisposableMap<string, CancellationTokenSource>()
+		new DisposableMap<string, CancellationTokenSource>(),
 	);
 	private readonly _persistedSessions: ISerializableChatsData;
 	private readonly _hasProvider: IContextKey<boolean>;
@@ -275,7 +275,7 @@ export class ChatService extends Disposable implements IChatService {
 	}
 
 	private readonly _onDidPerformUserAction = this._register(
-		new Emitter<IChatUserActionEvent>()
+		new Emitter<IChatUserActionEvent>(),
 	);
 	public readonly onDidPerformUserAction: Event<IChatUserActionEvent> =
 		this._onDidPerformUserAction.event;
@@ -285,7 +285,7 @@ export class ChatService extends Disposable implements IChatService {
 			agent: IChatAgentData;
 			slashCommand: IChatAgentCommand;
 			sessionId: string;
-		}>()
+		}>(),
 	);
 	public readonly onDidSubmitAgent = this._onDidSubmitAgent.event;
 
@@ -294,12 +294,12 @@ export class ChatService extends Disposable implements IChatService {
 			sessionId: string;
 			providerId: string;
 			reason: "initializationFailed" | "cleared";
-		}>()
+		}>(),
 	);
 	public readonly onDidDisposeSession = this._onDidDisposeSession.event;
 
 	private readonly _onDidRegisterProvider = this._register(
-		new Emitter<{ providerId: string }>()
+		new Emitter<{ providerId: string }>(),
 	);
 	public readonly onDidRegisterProvider = this._onDidRegisterProvider.event;
 
@@ -364,23 +364,23 @@ export class ChatService extends Disposable implements IChatService {
 
 	private saveState(): void {
 		let allSessions: (ChatModel | ISerializableChatData)[] = Array.from(
-			this._sessionModels.values()
+			this._sessionModels.values(),
 		).filter((session) => session.getRequests().length > 0);
 		allSessions = allSessions.concat(
 			Object.values(this._persistedSessions)
 				.filter(
-					(session) => !this._sessionModels.has(session.sessionId)
+					(session) => !this._sessionModels.has(session.sessionId),
 				)
-				.filter((session) => session.requests.length)
+				.filter((session) => session.requests.length),
 		);
 		allSessions.sort(
-			(a, b) => (b.creationDate ?? 0) - (a.creationDate ?? 0)
+			(a, b) => (b.creationDate ?? 0) - (a.creationDate ?? 0),
 		);
 		allSessions = allSessions.slice(0, maxPersistedSessions);
 		if (allSessions.length) {
 			this.trace(
 				"onWillSaveState",
-				`Persisting ${allSessions.length} sessions`
+				`Persisting ${allSessions.length} sessions`,
 			);
 		}
 
@@ -389,7 +389,7 @@ export class ChatService extends Disposable implements IChatService {
 		if (allSessions.length) {
 			this.trace(
 				"onWillSaveState",
-				`Persisting ${serialized.length} chars`
+				`Persisting ${serialized.length} chars`,
 			);
 		}
 
@@ -397,7 +397,7 @@ export class ChatService extends Disposable implements IChatService {
 			serializedChatKey,
 			serialized,
 			StorageScope.WORKSPACE,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 	}
 
@@ -435,7 +435,7 @@ export class ChatService extends Disposable implements IChatService {
 			});
 		} else if (action.action.kind === "command") {
 			const command = CommandsRegistry.getCommand(
-				action.action.command.commandId
+				action.action.command.commandId,
 			);
 			const commandId = command
 				? action.action.command.commandId
@@ -471,7 +471,7 @@ export class ChatService extends Disposable implements IChatService {
 	private deserializeChats(sessionData: string): ISerializableChatsData {
 		try {
 			const arrayOfSessions: ISerializableChatData[] = revive(
-				JSON.parse(sessionData)
+				JSON.parse(sessionData),
 			); // Revive serialized URIs in session data
 			if (!Array.isArray(arrayOfSessions)) {
 				throw new Error("Expected array");
@@ -503,8 +503,8 @@ export class ChatService extends Disposable implements IChatService {
 				"deserializeChats",
 				`Malformed session data: ${err}. [${sessionData.substring(
 					0,
-					20
-				)}${sessionData.length > 20 ? "..." : ""}]`
+					20,
+				)}${sessionData.length > 20 ? "..." : ""}]`,
 			);
 			return {};
 		}
@@ -514,7 +514,7 @@ export class ChatService extends Disposable implements IChatService {
 		const data: IChatTransfer[] = this.storageService.getObject(
 			globalChatKey,
 			StorageScope.PROFILE,
-			[]
+			[],
 		);
 		const workspaceUri =
 			this.workspaceContextService.getWorkspace().folders[0]?.uri;
@@ -529,20 +529,20 @@ export class ChatService extends Disposable implements IChatService {
 			(item) =>
 				URI.revive(item.toWorkspace).toString() === thisWorkspace &&
 				currentTime - item.timestampInMilliseconds <
-					SESSION_TRANSFER_EXPIRATION_IN_MILLISECONDS
+					SESSION_TRANSFER_EXPIRATION_IN_MILLISECONDS,
 		);
 		// Keep data that isn't for the current workspace and that hasn't expired yet
 		const filtered = data.filter(
 			(item) =>
 				URI.revive(item.toWorkspace).toString() !== thisWorkspace &&
 				currentTime - item.timestampInMilliseconds <
-					SESSION_TRANSFER_EXPIRATION_IN_MILLISECONDS
+					SESSION_TRANSFER_EXPIRATION_IN_MILLISECONDS,
 		);
 		this.storageService.store(
 			globalChatKey,
 			JSON.stringify(filtered),
 			StorageScope.PROFILE,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 		return transferred;
 	}
@@ -555,7 +555,7 @@ export class ChatService extends Disposable implements IChatService {
 	 */
 	getHistory(): IChatDetail[] {
 		const sessions = Object.values(this._persistedSessions).filter(
-			(session) => session.requests.length > 0
+			(session) => session.requests.length > 0,
 		);
 		sessions.sort((a, b) => (b.creationDate ?? 0) - (a.creationDate ?? 0));
 
@@ -586,13 +586,13 @@ export class ChatService extends Disposable implements IChatService {
 	private _startSession(
 		providerId: string,
 		someSessionHistory: ISerializableChatData | undefined,
-		token: CancellationToken
+		token: CancellationToken,
 	): ChatModel {
 		this.trace("_startSession", `providerId=${providerId}`);
 		const model = this.instantiationService.createInstance(
 			ChatModel,
 			providerId,
-			someSessionHistory
+			someSessionHistory,
 		);
 		this._sessionModels.set(model.sessionId, model);
 		this.initializeSession(model, token);
@@ -606,16 +606,16 @@ export class ChatService extends Disposable implements IChatService {
 
 	private async initializeSession(
 		model: ChatModel,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void> {
 		try {
 			this.trace(
 				"initializeSession",
-				`Initialize session ${model.sessionId}`
+				`Initialize session ${model.sessionId}`,
 			);
 			model.startInitialize();
 			await this.extensionService.activateByEvent(
-				`onInteractiveSession:${model.providerId}`
+				`onInteractiveSession:${model.providerId}`,
 			);
 
 			const provider = this._providers.get(model.providerId);
@@ -629,7 +629,7 @@ export class ChatService extends Disposable implements IChatService {
 			} catch (err) {
 				this.trace(
 					"initializeSession",
-					`Provider initializeSession threw: ${err}`
+					`Provider initializeSession threw: ${err}`,
 				);
 			}
 
@@ -649,9 +649,9 @@ export class ChatService extends Disposable implements IChatService {
 					welcomeMessage.map((item) =>
 						typeof item === "string"
 							? new MarkdownString(item)
-							: item
+							: item,
 					),
-					(await provider.provideSampleQuestions?.(token)) ?? []
+					(await provider.provideSampleQuestions?.(token)) ?? [],
 				);
 
 			model.initialize(session, welcomeModel);
@@ -674,7 +674,7 @@ export class ChatService extends Disposable implements IChatService {
 	getSessionId(sessionProviderId: number): string | undefined {
 		return Iterable.find(
 			this._sessionModels.values(),
-			(model) => model.session?.id === sessionProviderId
+			(model) => model.session?.id === sessionProviderId,
 		)?.sessionId;
 	}
 
@@ -697,29 +697,29 @@ export class ChatService extends Disposable implements IChatService {
 		return this._startSession(
 			sessionData.providerId,
 			sessionData,
-			CancellationToken.None
+			CancellationToken.None,
 		);
 	}
 
 	loadSessionFromContent(
-		data: ISerializableChatData
+		data: ISerializableChatData,
 	): IChatModel | undefined {
 		return this._startSession(
 			data.providerId,
 			data,
-			CancellationToken.None
+			CancellationToken.None,
 		);
 	}
 
 	async sendRequest(
 		sessionId: string,
-		request: string
+		request: string,
 	): Promise<{ responseCompletePromise: Promise<void> } | undefined> {
 		this.trace(
 			"sendRequest",
 			`sessionId: ${sessionId}, message: ${request.substring(0, 20)}${
 				request.length > 20 ? "[...]" : ""
-			}}`
+			}}`,
 		);
 		if (!request.trim()) {
 			this.trace("sendRequest", "Rejected empty message");
@@ -740,7 +740,7 @@ export class ChatService extends Disposable implements IChatService {
 		if (this._pendingRequests.has(sessionId)) {
 			this.trace(
 				"sendRequest",
-				`Session ${sessionId} already has a pending request`
+				`Session ${sessionId} already has a pending request`,
 			);
 			return;
 		}
@@ -751,7 +751,7 @@ export class ChatService extends Disposable implements IChatService {
 				model,
 				sessionId,
 				provider,
-				request
+				request,
 			),
 		};
 	}
@@ -760,7 +760,7 @@ export class ChatService extends Disposable implements IChatService {
 		model: ChatModel,
 		sessionId: string,
 		provider: IChatProvider,
-		message: string
+		message: string,
 	): Promise<void> {
 		const parsedRequest = await this.instantiationService
 			.createInstance(ChatRequestParser)
@@ -772,22 +772,22 @@ export class ChatService extends Disposable implements IChatService {
 				? undefined
 				: parsedRequest.parts.find(
 						(r): r is ChatRequestAgentPart =>
-							r instanceof ChatRequestAgentPart
-					);
+							r instanceof ChatRequestAgentPart,
+				  );
 		const agentSlashCommandPart =
 			"kind" in parsedRequest
 				? undefined
 				: parsedRequest.parts.find(
 						(r): r is ChatRequestAgentSubcommandPart =>
-							r instanceof ChatRequestAgentSubcommandPart
-					);
+							r instanceof ChatRequestAgentSubcommandPart,
+				  );
 		const commandPart =
 			"kind" in parsedRequest
 				? undefined
 				: parsedRequest.parts.find(
 						(r): r is ChatRequestSlashCommandPart =>
-							r instanceof ChatRequestSlashCommandPart
-					);
+							r instanceof ChatRequestSlashCommandPart,
+				  );
 
 		let gotProgress = false;
 		const requestType = commandPart ? "slashCommand" : "string";
@@ -814,14 +814,14 @@ export class ChatService extends Disposable implements IChatService {
 							typeof progress.content === "string"
 								? progress.content.length
 								: progress.content.value.length
-						} chars`
+						} chars`,
 					);
 				} else {
 					this.trace(
 						"sendRequest",
 						`Provider returned progress: ${JSON.stringify(
-							progress
-						)}`
+							progress,
+						)}`,
 					);
 				}
 
@@ -832,7 +832,7 @@ export class ChatService extends Disposable implements IChatService {
 			const listener = token.onCancellationRequested(() => {
 				this.trace(
 					"sendRequest",
-					`Request for session ${model.sessionId} was cancelled`
+					`Request for session ${model.sessionId} was cancelled`,
 				);
 				this.telemetryService.publicLog2<
 					ChatProviderInvokedEvent,
@@ -900,7 +900,7 @@ export class ChatService extends Disposable implements IChatService {
 							await this.chatVariablesService.resolveVariables(
 								parsedRequest,
 								model,
-								token
+								token,
 							);
 						requestProps.variables = varResult.variables;
 						requestProps.message = varResult.prompt;
@@ -911,7 +911,7 @@ export class ChatService extends Disposable implements IChatService {
 						requestProps,
 						progressCallback,
 						history,
-						token
+						token,
 					);
 					rawResponse = {
 						session: model.session!,
@@ -923,12 +923,12 @@ export class ChatService extends Disposable implements IChatService {
 						: this.chatAgentService.getFollowups(
 								agent.id,
 								sessionId,
-								CancellationToken.None
-							);
+								CancellationToken.None,
+						  );
 				} else if (
 					commandPart &&
 					this.chatSlashCommandService.hasCommand(
-						commandPart.slashCommand.command
+						commandPart.slashCommand.command,
 					)
 				) {
 					request = model.addRequest(parsedRequest);
@@ -953,17 +953,17 @@ export class ChatService extends Disposable implements IChatService {
 							commandPart.slashCommand.command,
 							message
 								.substring(
-									commandPart.slashCommand.command.length + 1
+									commandPart.slashCommand.command.length + 1,
 								)
 								.trimStart(),
 							new Progress<IChatProgress>((p) => {
 								progressCallback(p);
 							}),
 							history,
-							token
+							token,
 						);
 					agentOrCommandFollowups = Promise.resolve(
-						commandResult?.followUp
+						commandResult?.followUp,
 					);
 					rawResponse = { session: model.session! };
 				} else {
@@ -976,14 +976,14 @@ export class ChatService extends Disposable implements IChatService {
 					if (!rawResponse) {
 						this.trace(
 							"sendRequest",
-							`Provider returned no response for session ${model.sessionId}`
+							`Provider returned no response for session ${model.sessionId}`,
 						);
 						rawResponse = {
 							session: model.session!,
 							errorDetails: {
 								message: localize(
 									"emptyResponse",
-									"Provider returned null response"
+									"Provider returned null response",
 								),
 							},
 						};
@@ -992,10 +992,10 @@ export class ChatService extends Disposable implements IChatService {
 					const result = rawResponse.errorDetails?.responseIsFiltered
 						? "filtered"
 						: rawResponse.errorDetails && gotProgress
-							? "errorWithOutput"
-							: rawResponse.errorDetails
-								? "error"
-								: "success";
+						  ? "errorWithOutput"
+						  : rawResponse.errorDetails
+							  ? "error"
+							  : "success";
 					this.telemetryService.publicLog2<
 						ChatProviderInvokedEvent,
 						ChatProviderInvokedClassification
@@ -1014,7 +1014,7 @@ export class ChatService extends Disposable implements IChatService {
 					model.setResponse(request, rawResponse);
 					this.trace(
 						"sendRequest",
-						`Provider returned response for session ${model.sessionId}`
+						`Provider returned response for session ${model.sessionId}`,
 					);
 
 					// TODO refactor this or rethink the API https://github.com/microsoft/vscode-copilot/issues/593
@@ -1023,13 +1023,13 @@ export class ChatService extends Disposable implements IChatService {
 							model.setFollowups(request, followups);
 							model.completeResponse(
 								request,
-								rawResponse?.errorDetails
+								rawResponse?.errorDetails,
 							);
 						});
 					} else {
 						model.completeResponse(
 							request,
-							rawResponse?.errorDetails
+							rawResponse?.errorDetails,
 						);
 					}
 				}
@@ -1062,7 +1062,7 @@ export class ChatService extends Disposable implements IChatService {
 
 	async sendRequestToProvider(
 		sessionId: string,
-		message: IChatDynamicRequest
+		message: IChatDynamicRequest,
 	): Promise<{ responseCompletePromise: Promise<void> } | undefined> {
 		this.trace("sendRequestToProvider", `sessionId: ${sessionId}`);
 		return await this.sendRequest(sessionId, message.message);
@@ -1075,7 +1075,7 @@ export class ChatService extends Disposable implements IChatService {
 	async addCompleteRequest(
 		sessionId: string,
 		message: IParsedChatRequest | string,
-		response: IChatCompleteResponse
+		response: IChatCompleteResponse,
 	): Promise<void> {
 		this.trace("addCompleteRequest", `message: ${message}`);
 
@@ -1166,7 +1166,7 @@ export class ChatService extends Disposable implements IChatService {
 
 	public hasSessions(providerId: string): boolean {
 		return !!Object.values(this._persistedSessions).find(
-			(session) => session.providerId === providerId
+			(session) => session.providerId === providerId,
 		);
 	}
 
@@ -1181,22 +1181,22 @@ export class ChatService extends Disposable implements IChatService {
 
 	transferChatSession(
 		transferredSessionData: IChatTransferredSessionData,
-		toWorkspace: URI
+		toWorkspace: URI,
 	): void {
 		const model = Iterable.find(
 			this._sessionModels.values(),
-			(model) => model.sessionId === transferredSessionData.sessionId
+			(model) => model.sessionId === transferredSessionData.sessionId,
 		);
 		if (!model) {
 			throw new Error(
-				`Failed to transfer session. Unknown session ID: ${transferredSessionData.sessionId}`
+				`Failed to transfer session. Unknown session ID: ${transferredSessionData.sessionId}`,
 			);
 		}
 
 		const existingRaw: IChatTransfer[] = this.storageService.getObject(
 			globalChatKey,
 			StorageScope.PROFILE,
-			[]
+			[],
 		);
 		existingRaw.push({
 			chat: model.toJSON(),
@@ -1209,13 +1209,13 @@ export class ChatService extends Disposable implements IChatService {
 			globalChatKey,
 			JSON.stringify(existingRaw),
 			StorageScope.PROFILE,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 		this.trace(
 			"transferChatSession",
 			`Transferred session ${
 				model.sessionId
-			} to workspace ${toWorkspace.toString()}`
+			} to workspace ${toWorkspace.toString()}`,
 		);
 	}
 }

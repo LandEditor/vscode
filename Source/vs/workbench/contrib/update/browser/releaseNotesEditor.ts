@@ -3,26 +3,36 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/releasenoteseditor";
 import { CancellationToken } from "vs/base/common/cancellation";
 import { onUnexpectedError } from "vs/base/common/errors";
 import { escapeMarkdownSyntaxTokens } from "vs/base/common/htmlContent";
 import { KeybindingParser } from "vs/base/common/keybindingParser";
+import { DisposableStore } from "vs/base/common/lifecycle";
 import { escape } from "vs/base/common/strings";
 import { URI } from "vs/base/common/uri";
 import { generateUuid } from "vs/base/common/uuid";
+import "vs/css!./media/releasenoteseditor";
 import { TokenizationRegistry } from "vs/editor/common/languages";
-import { generateTokensCSSForColorMap } from "vs/editor/common/languages/supports/tokenization";
 import { ILanguageService } from "vs/editor/common/languages/language";
+import { generateTokensCSSForColorMap } from "vs/editor/common/languages/supports/tokenization";
 import * as nls from "vs/nls";
+import {
+	IConfigurationChangeEvent,
+	IConfigurationService,
+} from "vs/platform/configuration/common/configuration";
 import { IEnvironmentService } from "vs/platform/environment/common/environment";
 import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import { IOpenerService } from "vs/platform/opener/common/opener";
 import { IProductService } from "vs/platform/product/common/productService";
 import {
-	asTextOrError,
 	IRequestService,
+	asTextOrError,
 } from "vs/platform/request/common/request";
+import { TelemetryLevel } from "vs/platform/telemetry/common/telemetry";
+import {
+	getTelemetryLevel,
+	supportsTelemetry,
+} from "vs/platform/telemetry/common/telemetryUtils";
 import {
 	DEFAULT_MARKDOWN_STYLES,
 	renderMarkdownDocument,
@@ -35,16 +45,6 @@ import {
 	IEditorService,
 } from "vs/workbench/services/editor/common/editorService";
 import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
-import {
-	getTelemetryLevel,
-	supportsTelemetry,
-} from "vs/platform/telemetry/common/telemetryUtils";
-import {
-	IConfigurationChangeEvent,
-	IConfigurationService,
-} from "vs/platform/configuration/common/configuration";
-import { TelemetryLevel } from "vs/platform/telemetry/common/telemetry";
-import { DisposableStore } from "vs/base/common/lifecycle";
 
 export class ReleaseNotesManager {
 	private readonly _releaseNotesCache = new Map<string, Promise<string>>();
@@ -101,7 +101,7 @@ export class ReleaseNotesManager {
 		const title = nls.localize(
 			"releaseNotesInputName",
 			"Release Notes: {0}",
-			version
+			version,
 		);
 
 		const activeEditorPane = this._editorService.activeEditorPane;
@@ -113,7 +113,7 @@ export class ReleaseNotesManager {
 				activeEditorPane
 					? activeEditorPane.group
 					: this._editorGroupService.activeGroup,
-				false
+				false,
 			);
 		} else {
 			this._currentReleaseNotes =
@@ -133,11 +133,11 @@ export class ReleaseNotesManager {
 					},
 					"releaseNotes",
 					title,
-					{ group: ACTIVE_GROUP, preserveFocus: false }
+					{ group: ACTIVE_GROUP, preserveFocus: false },
 				);
 
 			this._currentReleaseNotes.webview.onDidClickLink((uri) =>
-				this.onDidClickLink(URI.parse(uri))
+				this.onDidClickLink(URI.parse(uri)),
 			);
 
 			const disposables = new DisposableStore();
@@ -146,17 +146,17 @@ export class ReleaseNotesManager {
 					if (e.message.type === "showReleaseNotes") {
 						this._configurationService.updateValue(
 							"update.showReleaseNotes",
-							e.message.value
+							e.message.value,
 						);
 					}
-				})
+				}),
 			);
 
 			disposables.add(
 				this._currentReleaseNotes.onWillDispose(() => {
 					disposables.dispose();
 					this._currentReleaseNotes = undefined;
-				})
+				}),
 			);
 
 			this._currentReleaseNotes.webview.setHtml(html);
@@ -212,8 +212,8 @@ export class ReleaseNotesManager {
 				const resolved = kb(match, binding);
 				return resolved
 					? `<code title="${binding}">${escapeMdHtml(
-							resolved
-						)}</code>`
+							resolved,
+					  )}</code>`
 					: resolved;
 			};
 
@@ -221,8 +221,8 @@ export class ReleaseNotesManager {
 				const resolved = kbstyle(match, binding);
 				return resolved
 					? `<code title="${binding}">${escapeMdHtml(
-							resolved
-						)}</code>`
+							resolved,
+					  )}</code>`
 					: resolved;
 			};
 
@@ -230,10 +230,10 @@ export class ReleaseNotesManager {
 				.replace(/`kb\(([a-z.\d\-]+)\)`/gi, kbCode)
 				.replace(/`kbstyle\(([^\)]+)\)`/gi, kbstyleCode)
 				.replace(/kb\(([a-z.\d\-]+)\)/gi, (match, binding) =>
-					escapeMarkdownSyntaxTokens(kb(match, binding))
+					escapeMarkdownSyntaxTokens(kb(match, binding)),
 				)
 				.replace(/kbstyle\(([^\)]+)\)/gi, (match, binding) =>
-					escapeMarkdownSyntaxTokens(kbstyle(match, binding))
+					escapeMarkdownSyntaxTokens(kbstyle(match, binding)),
 				);
 		};
 
@@ -243,8 +243,8 @@ export class ReleaseNotesManager {
 				text = await asTextOrError(
 					await this._requestService.request(
 						{ url },
-						CancellationToken.None
-					)
+						CancellationToken.None,
+					),
 				);
 			} catch {
 				throw new Error("Failed to fetch release notes");
@@ -268,7 +268,7 @@ export class ReleaseNotesManager {
 						this._releaseNotesCache.delete(version);
 						throw err;
 					}
-				})()
+				})(),
 			);
 		}
 
@@ -284,7 +284,7 @@ export class ReleaseNotesManager {
 	private async addGAParameters(
 		uri: URI,
 		origin: string,
-		experiment = "1"
+		experiment = "1",
 	): Promise<URI> {
 		if (
 			supportsTelemetry(this._productService, this._environmentService) &&
@@ -299,7 +299,7 @@ export class ReleaseNotesManager {
 					query: `${
 						uri.query ? uri.query + "&" : ""
 					}utm_source=VsCode&utm_medium=${encodeURIComponent(
-						origin
+						origin,
 					)}&utm_content=${encodeURIComponent(experiment)}`,
 				});
 			}
@@ -313,14 +313,14 @@ export class ReleaseNotesManager {
 			text,
 			this._extensionService,
 			this._languageService,
-			false
+			false,
 		);
 		const colorMap = TokenizationRegistry.getColorMap();
 		const css = colorMap ? generateTokensCSSForColorMap(colorMap) : "";
 		const showReleaseNotes = Boolean(
 			this._configurationService.getValue<boolean>(
-				"update.showReleaseNotes"
-			)
+				"update.showReleaseNotes",
+			),
 		);
 
 		return `<!DOCTYPE html>
@@ -353,7 +353,7 @@ export class ReleaseNotesManager {
 					label.htmlFor = 'showReleaseNotes';
 					label.textContent = '${nls.localize(
 						"showOnUpdate",
-						"Show release notes after an update"
+						"Show release notes after an update",
 					)}';
 					container.appendChild(label);
 
@@ -385,7 +385,7 @@ export class ReleaseNotesManager {
 	}
 
 	private onDidChangeActiveWebviewEditor(
-		input: WebviewInput | undefined
+		input: WebviewInput | undefined,
 	): void {
 		if (input && input === this._currentReleaseNotes) {
 			this.updateWebview();
@@ -397,7 +397,7 @@ export class ReleaseNotesManager {
 			this._currentReleaseNotes.webview.postMessage({
 				type: "showReleaseNotes",
 				value: this._configurationService.getValue<boolean>(
-					"update.showReleaseNotes"
+					"update.showReleaseNotes",
 				),
 			});
 		}

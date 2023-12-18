@@ -38,7 +38,7 @@ export class FilePolicyService
 	implements IPolicyService
 {
 	private readonly throttledDelayer = this._register(
-		new ThrottledDelayer(500)
+		new ThrottledDelayer(500),
 	);
 
 	constructor(
@@ -87,7 +87,7 @@ export class FilePolicyService
 			) {
 				this.logService.error(
 					`[FilePolicyService] Failed to read policies`,
-					error
+					error,
 				);
 			}
 		}

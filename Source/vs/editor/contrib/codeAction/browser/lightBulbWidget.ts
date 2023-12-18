@@ -32,9 +32,9 @@ import { ICommandService } from "vs/platform/commands/common/commands";
 import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 
 namespace LightBulbState {
-	export const enum Type {
-		Hidden,
-		Showing,
+	export enum Type {
+		Hidden = 0,
+		Showing = 1,
 	}
 
 	export const Hidden = { type: Type.Hidden } as const;
@@ -46,7 +46,7 @@ namespace LightBulbState {
 			public readonly actions: CodeActionSet,
 			public readonly trigger: CodeActionTrigger,
 			public readonly editorPosition: IPosition,
-			public readonly widgetPosition: IContentWidgetPosition
+			public readonly widgetPosition: IContentWidgetPosition,
 		) {}
 	}
 
@@ -66,7 +66,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 			readonly y: number;
 			readonly actions: CodeActionSet;
 			readonly trigger: CodeActionTrigger;
-		}>()
+		}>(),
 	);
 	public readonly onClick = this._onClick.event;
 
@@ -222,7 +222,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 	public update(
 		actions: CodeActionSet,
 		trigger: CodeActionTrigger,
-		atPosition: IPosition
+		atPosition: IPosition,
 	) {
 		if (actions.validActions.length <= 0) {
 			return this.hide();
@@ -269,7 +269,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 				return this.hide();
 			}
 			effectiveColumnNumber = /^\S\s*$/.test(
-				model.getLineContent(effectiveLineNumber)
+				model.getLineContent(effectiveLineNumber),
 			)
 				? 2
 				: 1;
@@ -340,19 +340,19 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 			this.title = nls.localize(
 				"codeActionAutoRun",
 				"Run: {0}",
-				this.state.actions.validActions[0].action.title
+				this.state.actions.validActions[0].action.title,
 			);
 		} else if (autoFix && this._preferredKbLabel) {
 			this.title = nls.localize(
 				"preferredcodeActionWithKb",
 				"Show Code Actions. Preferred Quick Fix Available ({0})",
-				this._preferredKbLabel
+				this._preferredKbLabel,
 			);
 		} else if (!autoFix && this._quickFixKbLabel) {
 			this.title = nls.localize(
 				"codeActionWithKb",
 				"Show Code Actions ({0})",
-				this._quickFixKbLabel
+				this._quickFixKbLabel,
 			);
 		} else if (!autoFix) {
 			this.title = nls.localize("codeAction", "Show Code Actions");

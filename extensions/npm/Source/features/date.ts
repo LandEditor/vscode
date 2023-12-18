@@ -25,7 +25,7 @@ export function fromNow(
 	date: number | Date,
 	appendAgoLabel?: boolean,
 	useFullTimeWords?: boolean,
-	disallowNow?: boolean
+	disallowNow?: boolean,
 ): string {
 	if (typeof date !== "number") {
 		date = date.getTime();
@@ -35,7 +35,7 @@ export function fromNow(
 	if (seconds < -30) {
 		return l10n.t(
 			"in {0}",
-			fromNow(new Date().getTime() + seconds * 1000, false)
+			fromNow(new Date().getTime() + seconds * 1000, false),
 		);
 	}
 
@@ -57,16 +57,14 @@ export function fromNow(
 					? l10n.t("{0} seconds ago", value)
 					: l10n.t("{0} secs ago", value);
 			}
+		} else if (value === 1) {
+			return useFullTimeWords
+				? l10n.t("{0} second", value)
+				: l10n.t("{0} sec", value);
 		} else {
-			if (value === 1) {
-				return useFullTimeWords
-					? l10n.t("{0} second", value)
-					: l10n.t("{0} sec", value);
-			} else {
-				return useFullTimeWords
-					? l10n.t("{0} seconds", value)
-					: l10n.t("{0} secs", value);
-			}
+			return useFullTimeWords
+				? l10n.t("{0} seconds", value)
+				: l10n.t("{0} secs", value);
 		}
 	}
 
@@ -82,16 +80,14 @@ export function fromNow(
 					? l10n.t("{0} minutes ago", value)
 					: l10n.t("{0} mins ago", value);
 			}
+		} else if (value === 1) {
+			return useFullTimeWords
+				? l10n.t("{0} minute", value)
+				: l10n.t("{0} min", value);
 		} else {
-			if (value === 1) {
-				return useFullTimeWords
-					? l10n.t("{0} minute", value)
-					: l10n.t("{0} min", value);
-			} else {
-				return useFullTimeWords
-					? l10n.t("{0} minutes", value)
-					: l10n.t("{0} mins", value);
-			}
+			return useFullTimeWords
+				? l10n.t("{0} minutes", value)
+				: l10n.t("{0} mins", value);
 		}
 	}
 
@@ -107,16 +103,14 @@ export function fromNow(
 					? l10n.t("{0} hours ago", value)
 					: l10n.t("{0} hrs ago", value);
 			}
+		} else if (value === 1) {
+			return useFullTimeWords
+				? l10n.t("{0} hour", value)
+				: l10n.t("{0} hr", value);
 		} else {
-			if (value === 1) {
-				return useFullTimeWords
-					? l10n.t("{0} hour", value)
-					: l10n.t("{0} hr", value);
-			} else {
-				return useFullTimeWords
-					? l10n.t("{0} hours", value)
-					: l10n.t("{0} hrs", value);
-			}
+			return useFullTimeWords
+				? l10n.t("{0} hours", value)
+				: l10n.t("{0} hrs", value);
 		}
 	}
 
@@ -145,16 +139,14 @@ export function fromNow(
 					? l10n.t("{0} weeks ago", value)
 					: l10n.t("{0} wks ago", value);
 			}
+		} else if (value === 1) {
+			return useFullTimeWords
+				? l10n.t("{0} week", value)
+				: l10n.t("{0} wk", value);
 		} else {
-			if (value === 1) {
-				return useFullTimeWords
-					? l10n.t("{0} week", value)
-					: l10n.t("{0} wk", value);
-			} else {
-				return useFullTimeWords
-					? l10n.t("{0} weeks", value)
-					: l10n.t("{0} wks", value);
-			}
+			return useFullTimeWords
+				? l10n.t("{0} weeks", value)
+				: l10n.t("{0} wks", value);
 		}
 	}
 
@@ -170,16 +162,14 @@ export function fromNow(
 					? l10n.t("{0} months ago", value)
 					: l10n.t("{0} mos ago", value);
 			}
+		} else if (value === 1) {
+			return useFullTimeWords
+				? l10n.t("{0} month", value)
+				: l10n.t("{0} mo", value);
 		} else {
-			if (value === 1) {
-				return useFullTimeWords
-					? l10n.t("{0} month", value)
-					: l10n.t("{0} mo", value);
-			} else {
-				return useFullTimeWords
-					? l10n.t("{0} months", value)
-					: l10n.t("{0} mos", value);
-			}
+			return useFullTimeWords
+				? l10n.t("{0} months", value)
+				: l10n.t("{0} mos", value);
 		}
 	}
 
@@ -194,15 +184,13 @@ export function fromNow(
 				? l10n.t("{0} years ago", value)
 				: l10n.t("{0} yrs ago", value);
 		}
+	} else if (value === 1) {
+		return useFullTimeWords
+			? l10n.t("{0} year", value)
+			: l10n.t("{0} yr", value);
 	} else {
-		if (value === 1) {
-			return useFullTimeWords
-				? l10n.t("{0} year", value)
-				: l10n.t("{0} yr", value);
-		} else {
-			return useFullTimeWords
-				? l10n.t("{0} years", value)
-				: l10n.t("{0} yrs", value);
-		}
+		return useFullTimeWords
+			? l10n.t("{0} years", value)
+			: l10n.t("{0} yrs", value);
 	}
 }

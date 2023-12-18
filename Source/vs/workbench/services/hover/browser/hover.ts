@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { IDisposable } from "vs/base/common/lifecycle";
-import { IMarkdownString } from "vs/base/common/htmlContent";
 import { HoverPosition } from "vs/base/browser/ui/hover/hoverWidget";
+import { IMarkdownString } from "vs/base/common/htmlContent";
+import { IDisposable } from "vs/base/common/lifecycle";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 
 export const IHoverService = createDecorator<IHoverService>("hoverService");
 
@@ -32,7 +32,7 @@ export interface IHoverService {
 	 */
 	showHover(
 		options: IHoverOptions,
-		focus?: boolean
+		focus?: boolean,
 	): IHoverWidget | undefined;
 
 	/**

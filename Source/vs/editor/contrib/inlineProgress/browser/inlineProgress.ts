@@ -48,7 +48,7 @@ class InlineProgressWidget extends Disposable implements IContentWidget {
 		private readonly editor: ICodeEditor,
 		private readonly range: Range,
 		title: string,
-		private readonly delegate: InlineProgressDelegate
+		private readonly delegate: InlineProgressDelegate,
 	) {
 		super();
 
@@ -68,7 +68,7 @@ class InlineProgressWidget extends Disposable implements IContentWidget {
 
 		iconElement.classList.add(
 			...ThemeIcon.asClassNameArray(Codicon.loading),
-			"codicon-modifier-spin"
+			"codicon-modifier-spin",
 		);
 
 		const updateSize = () => {
@@ -86,7 +86,7 @@ class InlineProgressWidget extends Disposable implements IContentWidget {
 				) {
 					updateSize();
 				}
-			})
+			}),
 		);
 
 		this._register(
@@ -95,8 +95,8 @@ class InlineProgressWidget extends Disposable implements IContentWidget {
 				dom.EventType.CLICK,
 				(e) => {
 					this.delegate.cancel();
-				}
-			)
+				},
+			),
 		);
 	}
 
@@ -154,7 +154,7 @@ export class InlineProgressManager extends Disposable {
 	public async showWhile<R>(
 		position: IPosition,
 		title: string,
-		promise: CancelablePromise<R>
+		promise: CancelablePromise<R>,
 	): Promise<R> {
 		const operationId = this._operationIdPool++;
 		this._currentOperation = operationId;
@@ -178,7 +178,7 @@ export class InlineProgressManager extends Disposable {
 						this._editor,
 						range,
 						title,
-						promise
+						promise,
 					);
 			}
 		}, this._showDelay);

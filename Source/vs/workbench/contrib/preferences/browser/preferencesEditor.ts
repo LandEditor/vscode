@@ -55,7 +55,7 @@ export class SettingsEditorContribution extends Disposable {
 			// in settings files or workspace files
 			const settingsModel =
 				await this.preferencesService.createPreferencesEditorModel(
-					model.uri
+					model.uri,
 				);
 			if (
 				settingsModel instanceof SettingsEditorModel &&
@@ -68,8 +68,8 @@ export class SettingsEditorContribution extends Disposable {
 							this.instantiationService.createInstance(
 								WorkspaceSettingsRenderer,
 								this.editor,
-								settingsModel
-							)
+								settingsModel,
+							),
 						);
 						break;
 					default:
@@ -77,8 +77,8 @@ export class SettingsEditorContribution extends Disposable {
 							this.instantiationService.createInstance(
 								UserSettingsRenderer,
 								this.editor,
-								settingsModel
-							)
+								settingsModel,
+							),
 						);
 						break;
 				}

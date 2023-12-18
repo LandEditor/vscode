@@ -5,12 +5,12 @@
 
 import { Disposable, ExtensionContext, Uri, l10n } from "vscode";
 import { LanguageClientOptions } from "vscode-languageclient";
-import {
-	startClient,
-	LanguageClientConstructor,
-	AsyncDisposable,
-} from "../htmlClient";
 import { LanguageClient } from "vscode-languageclient/browser";
+import {
+	AsyncDisposable,
+	LanguageClientConstructor,
+	startClient,
+} from "../htmlClient";
 
 declare const Worker: {
 	new (stringUrl: string): any;
@@ -25,7 +25,7 @@ let client: AsyncDisposable | undefined;
 export async function activate(context: ExtensionContext) {
 	const serverMain = Uri.joinPath(
 		context.extensionUri,
-		"server/dist/browser/htmlServerMain.js"
+		"server/dist/browser/htmlServerMain.js",
 	);
 	try {
 		const worker = new Worker(serverMain.toString());
@@ -34,7 +34,7 @@ export async function activate(context: ExtensionContext) {
 		const newLanguageClient: LanguageClientConstructor = (
 			id: string,
 			name: string,
-			clientOptions: LanguageClientOptions
+			clientOptions: LanguageClientOptions,
 		) => {
 			return new LanguageClient(id, name, clientOptions, worker);
 		};

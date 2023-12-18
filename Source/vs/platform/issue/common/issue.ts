@@ -22,10 +22,10 @@ export interface WindowData {
 	zoomLevel: number;
 }
 
-export const enum IssueType {
-	Bug,
-	PerformanceIssue,
-	FeatureRequest,
+export enum IssueType {
+	Bug = 0,
+	PerformanceIssue = 1,
+	FeatureRequest = 2,
 }
 
 export interface IssueReporterStyles extends WindowStyles {
@@ -141,7 +141,7 @@ export interface IIssueMainService {
 	$getIssueReporterTemplate(extensionId: string): Promise<string>;
 	$getReporterStatus(
 		extensionId: string,
-		extensionName: string
+		extensionName: string,
 	): Promise<boolean[]>;
 	$closeReporter(): Promise<void>;
 }

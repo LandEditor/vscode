@@ -3,19 +3,38 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Codicon } from "vs/base/common/codicons";
 import { localize } from "vs/nls";
+import { ILocalizedString } from "vs/platform/action/common/action";
+import {
+	ISubmenuItem,
+	MenuId,
+	MenuRegistry,
+} from "vs/platform/actions/common/actions";
+import {
+	CommandsRegistry,
+	ICommandHandler,
+} from "vs/platform/commands/common/commands";
+import {
+	Extensions as ConfigurationExtensions,
+	IConfigurationRegistry,
+} from "vs/platform/configuration/common/configurationRegistry";
+import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
 import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
 import { Registry } from "vs/platform/registry/common/platform";
+import { registerIcon } from "vs/platform/theme/common/iconRegistry";
+import { ResourceContextKey } from "vs/workbench/common/contextkeys";
 import {
-	IViewsRegistry,
-	IViewDescriptor,
 	Extensions as ViewExtensions,
+	IViewDescriptor,
+	IViewsRegistry,
 } from "vs/workbench/common/views";
 import { VIEW_CONTAINER } from "vs/workbench/contrib/files/browser/explorerViewlet";
+import { ExplorerFolderContext } from "vs/workbench/contrib/files/common/files";
 import {
 	ITimelineService,
 	TimelinePaneId,
@@ -25,35 +44,16 @@ import {
 	TimelineService,
 } from "vs/workbench/contrib/timeline/common/timelineService";
 import { TimelinePane } from "./timelinePane";
-import {
-	IConfigurationRegistry,
-	Extensions as ConfigurationExtensions,
-} from "vs/platform/configuration/common/configurationRegistry";
-import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
-import {
-	ISubmenuItem,
-	MenuId,
-	MenuRegistry,
-} from "vs/platform/actions/common/actions";
-import {
-	ICommandHandler,
-	CommandsRegistry,
-} from "vs/platform/commands/common/commands";
-import { ExplorerFolderContext } from "vs/workbench/contrib/files/common/files";
-import { ResourceContextKey } from "vs/workbench/common/contextkeys";
-import { Codicon } from "vs/base/common/codicons";
-import { registerIcon } from "vs/platform/theme/common/iconRegistry";
-import { ILocalizedString } from "vs/platform/action/common/action";
 
 const timelineViewIcon = registerIcon(
 	"timeline-view-icon",
 	Codicon.history,
-	localize("timelineViewIcon", "View icon of the timeline view.")
+	localize("timelineViewIcon", "View icon of the timeline view."),
 );
 const timelineOpenIcon = registerIcon(
 	"timeline-open",
 	Codicon.history,
-	localize("timelineOpenIcon", "Icon for the open timeline action.")
+	localize("timelineOpenIcon", "Icon for the open timeline action."),
 );
 
 export class TimelinePaneDescriptor implements IViewDescriptor {
@@ -74,7 +74,7 @@ export class TimelinePaneDescriptor implements IViewDescriptor {
 
 // Configuration
 const configurationRegistry = Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration
+	ConfigurationExtensions.Configuration,
 );
 configurationRegistry.registerConfiguration({
 	id: "timeline",
@@ -87,7 +87,7 @@ configurationRegistry.registerConfiguration({
 			default: null,
 			markdownDescription: localize(
 				"timeline.pageSize",
-				"The number of items to show in the Timeline view by default and when loading more items. Setting to `null` (the default) will automatically choose a page size based on the visible area of the Timeline view."
+				"The number of items to show in the Timeline view by default and when loading more items. Setting to `null` (the default) will automatically choose a page size based on the visible area of the Timeline view.",
 			),
 		},
 		"timeline.pageOnScroll": {
@@ -95,7 +95,7 @@ configurationRegistry.registerConfiguration({
 			default: false,
 			description: localize(
 				"timeline.pageOnScroll",
-				"Experimental. Controls whether the Timeline view will load the next page of items when you scroll to the end of the list."
+				"Experimental. Controls whether the Timeline view will load the next page of items when you scroll to the end of the list.",
 			),
 		},
 	},
@@ -103,7 +103,7 @@ configurationRegistry.registerConfiguration({
 
 Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).registerViews(
 	[new TimelinePaneDescriptor()],
-	VIEW_CONTAINER
+	VIEW_CONTAINER,
 );
 
 namespace OpenTimelineAction {
@@ -120,7 +120,7 @@ namespace OpenTimelineAction {
 
 CommandsRegistry.registerCommand(
 	OpenTimelineAction.ID,
-	OpenTimelineAction.handler()
+	OpenTimelineAction.handler(),
 );
 
 MenuRegistry.appendMenuItem(MenuId.ExplorerContext, {
@@ -134,14 +134,14 @@ MenuRegistry.appendMenuItem(MenuId.ExplorerContext, {
 	when: ContextKeyExpr.and(
 		ExplorerFolderContext.toNegated(),
 		ResourceContextKey.HasResource,
-		TimelineHasProviderContext
+		TimelineHasProviderContext,
 	),
 });
 
 const timelineFilter = registerIcon(
 	"timeline-filter",
 	Codicon.filter,
-	localize("timelineFilter", "Icon for the filter timeline action.")
+	localize("timelineFilter", "Icon for the filter timeline action."),
 );
 
 MenuRegistry.appendMenuItem(MenuId.TimelineTitle, <ISubmenuItem>{

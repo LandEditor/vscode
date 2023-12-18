@@ -36,7 +36,7 @@ class RegistryImpl implements IRegistry {
 		Assert.ok(Types.isObject(data));
 		Assert.ok(
 			!this.data.has(id),
-			"There is already an extension with this id"
+			"There is already an extension with this id",
 		);
 
 		this.data.set(id, data);

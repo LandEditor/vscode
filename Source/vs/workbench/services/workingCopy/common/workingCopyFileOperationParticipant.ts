@@ -4,20 +4,20 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { CancellationToken } from "vs/base/common/cancellation";
-import { ILogService } from "vs/platform/log/common/log";
 import {
-	IDisposable,
 	Disposable,
+	IDisposable,
 	toDisposable,
 } from "vs/base/common/lifecycle";
+import { LinkedList } from "vs/base/common/linkedList";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { FileOperation } from "vs/platform/files/common/files";
+import { ILogService } from "vs/platform/log/common/log";
 import {
+	IFileOperationUndoRedoInfo,
 	IWorkingCopyFileOperationParticipant,
 	SourceTargetPair,
-	IFileOperationUndoRedoInfo,
 } from "vs/workbench/services/workingCopy/common/workingCopyFileService";
-import { FileOperation } from "vs/platform/files/common/files";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { LinkedList } from "vs/base/common/linkedList";
 
 export class WorkingCopyFileOperationParticipant extends Disposable {
 	private readonly participants =
@@ -32,7 +32,7 @@ export class WorkingCopyFileOperationParticipant extends Disposable {
 	}
 
 	addFileOperationParticipant(
-		participant: IWorkingCopyFileOperationParticipant
+		participant: IWorkingCopyFileOperationParticipant,
 	): IDisposable {
 		const remove = this.participants.push(participant);
 
@@ -43,10 +43,10 @@ export class WorkingCopyFileOperationParticipant extends Disposable {
 		files: SourceTargetPair[],
 		operation: FileOperation,
 		undoInfo: IFileOperationUndoRedoInfo | undefined,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void> {
 		const timeout = this.configurationService.getValue<number>(
-			"files.participants.timeout"
+			"files.participants.timeout",
 		);
 		if (typeof timeout !== "number" || timeout <= 0) {
 			return; // disabled
@@ -60,7 +60,7 @@ export class WorkingCopyFileOperationParticipant extends Disposable {
 					operation,
 					undoInfo,
 					timeout,
-					token
+					token,
 				);
 			} catch (err) {
 				this.logService.warn(err);

@@ -5,9 +5,9 @@
 
 export type ValueCallback<T = unknown> = (value: T | Promise<T>) => void;
 
-const enum DeferredOutcome {
-	Resolved,
-	Rejected,
+enum DeferredOutcome {
+	Resolved = 0,
+	Rejected = 1,
 }
 
 /**

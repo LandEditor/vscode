@@ -4,13 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
+import { ClientSecretCredential } from "@azure/identity";
 import * as es from "event-stream";
 import * as Vinyl from "vinyl";
 import * as vfs from "vinyl-fs";
-import * as util from "../lib/util";
 // @ts-ignore
 import * as deps from "../lib/dependencies";
-import { ClientSecretCredential } from "@azure/identity";
+import * as util from "../lib/util";
 const azure = require("gulp-azure-storage");
 
 const root = path.dirname(path.dirname(__dirname));
@@ -18,7 +18,7 @@ const commit = process.env["BUILD_SOURCEVERSION"];
 const credential = new ClientSecretCredential(
 	process.env["AZURE_TENANT_ID"]!,
 	process.env["AZURE_CLIENT_ID"]!,
-	process.env["AZURE_CLIENT_SECRET"]!
+	process.env["AZURE_CLIENT_SECRET"]!,
 );
 
 // optionally allow to pass in explicit base/maps to upload
@@ -29,7 +29,7 @@ function src(base: string, maps = `${base}/**/*.map`) {
 		es.mapSync((f: Vinyl) => {
 			f.path = `${f.base}/core/${f.relative}`;
 			return f;
-		})
+		}),
 	);
 }
 
@@ -37,7 +37,9 @@ function main(): Promise<void> {
 	const sources: any[] = [];
 
 	// vscode client maps (default)
-	if (!base) {
+	if (base) {
+		sources.push(src(base, maps));
+	} else {
 		const vs = src("out-vscode-min"); // client source-maps only
 		sources.push(vs);
 
@@ -52,29 +54,26 @@ function main(): Promise<void> {
 		const nodeModules = vfs
 			.src(productionDependenciesSrc, { base: "." })
 			.pipe(
-				util.cleanNodeModules(path.join(root, "build", ".moduleignore"))
+				util.cleanNodeModules(
+					path.join(root, "build", ".moduleignore"),
+				),
 			)
 			.pipe(
 				util.cleanNodeModules(
 					path.join(
 						root,
 						"build",
-						`.moduleignore.${process.platform}`
-					)
-				)
+						`.moduleignore.${process.platform}`,
+					),
+				),
 			);
 		sources.push(nodeModules);
 
 		const extensionsOut = vfs.src(
 			[".build/extensions/**/*.js.map", "!**/node_modules/**"],
-			{ base: ".build" }
+			{ base: ".build" },
 		);
 		sources.push(extensionsOut);
-	}
-
-	// specific client base/maps
-	else {
-		sources.push(src(base, maps));
 	}
 
 	return new Promise((c, e) => {
@@ -83,7 +82,7 @@ function main(): Promise<void> {
 				es.through(function (data: Vinyl) {
 					console.log("Uploading Sourcemap", data.relative); // debug
 					this.emit("data", data);
-				})
+				}),
 			)
 			.pipe(
 				azure.upload({
@@ -91,7 +90,7 @@ function main(): Promise<void> {
 					credential,
 					container: "sourcemaps",
 					prefix: commit + "/",
-				})
+				}),
 			)
 			.on("end", () => c())
 			.on("error", (err: any) => e(err));

@@ -3,15 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { app, BrowserWindow } from "electron";
-import { validatedIpcMain } from "vs/base/parts/ipc/electron-main/ipcMain";
+import { BrowserWindow, app } from "electron";
 import { Barrier, Promises, timeout } from "vs/base/common/async";
 import { Emitter, Event } from "vs/base/common/event";
 import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
 import { isMacintosh, isWindows } from "vs/base/common/platform";
 import { cwd } from "vs/base/common/process";
 import { assertIsDefined } from "vs/base/common/types";
+import { validatedIpcMain } from "vs/base/parts/ipc/electron-main/ipcMain";
 import { NativeParsedArgs } from "vs/platform/environment/common/argv";
+import { IEnvironmentMainService } from "vs/platform/environment/electron-main/environmentMainService";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import { ILogService } from "vs/platform/log/common/log";
 import { IStateService } from "vs/platform/state/node/state";
@@ -24,10 +25,9 @@ import {
 	ISingleFolderWorkspaceIdentifier,
 	IWorkspaceIdentifier,
 } from "vs/platform/workspace/common/workspace";
-import { IEnvironmentMainService } from "vs/platform/environment/electron-main/environmentMainService";
 
 export const ILifecycleMainService = createDecorator<ILifecycleMainService>(
-	"lifecycleMainService"
+	"lifecycleMainService",
 );
 
 interface WindowLoadEvent {
@@ -50,7 +50,7 @@ interface WindowLoadEvent {
 	readonly reason: LoadReason;
 }
 
-export const enum ShutdownReason {
+export enum ShutdownReason {
 	/**
 	 * The application exits normally.
 	 */
@@ -61,7 +61,7 @@ export const enum ShutdownReason {
 	 * killed with an exit code (e.g. from integration
 	 * test run)
 	 */
-	KILL,
+	KILL = 2,
 }
 
 export interface ShutdownEvent {
@@ -148,7 +148,7 @@ export interface ILifecycleMainService {
 	 */
 	unload(
 		window: ICodeWindow,
-		reason: UnloadReason
+		reason: UnloadReason,
 	): Promise<boolean /* veto */>;
 
 	/**
@@ -187,7 +187,7 @@ export interface ILifecycleMainService {
 	when(phase: LifecycleMainPhase): Promise<void>;
 }
 
-export const enum LifecycleMainPhase {
+export enum LifecycleMainPhase {
 	/**
 	 * The first phase signals that we are about to startup.
 	 */
@@ -224,17 +224,17 @@ export class LifecycleMainService
 	readonly onBeforeShutdown = this._onBeforeShutdown.event;
 
 	private readonly _onWillShutdown = this._register(
-		new Emitter<ShutdownEvent>()
+		new Emitter<ShutdownEvent>(),
 	);
 	readonly onWillShutdown = this._onWillShutdown.event;
 
 	private readonly _onWillLoadWindow = this._register(
-		new Emitter<WindowLoadEvent>()
+		new Emitter<WindowLoadEvent>(),
 	);
 	readonly onWillLoadWindow = this._onWillLoadWindow.event;
 
 	private readonly _onBeforeCloseWindow = this._register(
-		new Emitter<ICodeWindow>()
+		new Emitter<ICodeWindow>(),
 	);
 	readonly onBeforeCloseWindow = this._onBeforeCloseWindow.event;
 
@@ -243,7 +243,7 @@ export class LifecycleMainService
 		return this._quitRequested;
 	}
 
-	private _wasRestarted: boolean = false;
+	private _wasRestarted = false;
 	get wasRestarted(): boolean {
 		return this._wasRestarted;
 	}
@@ -288,13 +288,13 @@ export class LifecycleMainService
 
 	private resolveRestarted(): void {
 		this._wasRestarted = !!this.stateService.getItem(
-			LifecycleMainService.QUIT_AND_RESTART_KEY
+			LifecycleMainService.QUIT_AND_RESTART_KEY,
 		);
 
 		if (this._wasRestarted) {
 			// remove the marker right after if found
 			this.stateService.removeItem(
-				LifecycleMainService.QUIT_AND_RESTART_KEY
+				LifecycleMainService.QUIT_AND_RESTART_KEY,
 			);
 		}
 	}
@@ -347,13 +347,13 @@ export class LifecycleMainService
 
 			// Start shutdown sequence
 			const shutdownPromise = this.fireOnWillShutdown(
-				ShutdownReason.QUIT
+				ShutdownReason.QUIT,
 			);
 
 			// Wait until shutdown is signaled to be complete
 			shutdownPromise.finally(() => {
 				this.trace(
-					"Lifecycle#app.on(will-quit) - after fireOnWillShutdown"
+					"Lifecycle#app.on(will-quit) - after fireOnWillShutdown",
 				);
 
 				// Resolve pending quit promise now without veto
@@ -366,7 +366,7 @@ export class LifecycleMainService
 				app.removeListener("before-quit", beforeQuitListener);
 				app.removeListener(
 					"window-all-closed",
-					windowAllClosedListener
+					windowAllClosedListener,
 				);
 
 				this.trace("Lifecycle#app.on(will-quit) - calling app.quit()");
@@ -393,9 +393,9 @@ export class LifecycleMainService
 				joiners.push(
 					promise.finally(() => {
 						logService.trace(
-							`Lifecycle#onWillShutdown - end '${id}'`
+							`Lifecycle#onWillShutdown - end '${id}'`,
 						);
-					})
+					}),
 				);
 			},
 		});
@@ -467,8 +467,8 @@ export class LifecycleMainService
 					window,
 					workspace: e.workspace,
 					reason: e.reason,
-				})
-			)
+				}),
+			),
 		);
 
 		// Window Before Closing: Main -> Renderer
@@ -496,7 +496,7 @@ export class LifecycleMainService
 
 				// Fire onBeforeCloseWindow before actually closing
 				this.trace(
-					`Lifecycle#onBeforeCloseWindow.fire() - window ID ${windowId}`
+					`Lifecycle#onBeforeCloseWindow.fire() - window ID ${windowId}`,
 				);
 				this._onBeforeCloseWindow.fire(window);
 
@@ -508,7 +508,7 @@ export class LifecycleMainService
 		// Window After Closing
 		win.on("closed", () => {
 			this.trace(
-				`Lifecycle#window.on('closed') - window ID ${window.id}`
+				`Lifecycle#window.on('closed') - window ID ${window.id}`,
 			);
 
 			// update window count
@@ -539,11 +539,11 @@ export class LifecycleMainService
 
 	unload(
 		window: ICodeWindow,
-		reason: UnloadReason
+		reason: UnloadReason,
 	): Promise<boolean /* veto */> {
 		// Ensure there is only 1 unload running at the same time
 		const pendingUnloadPromise = this.mapWindowIdToPendingUnload.get(
-			window.id
+			window.id,
 		);
 		if (pendingUnloadPromise) {
 			return pendingUnloadPromise;
@@ -560,7 +560,7 @@ export class LifecycleMainService
 
 	private async doUnload(
 		window: ICodeWindow,
-		reason: UnloadReason
+		reason: UnloadReason,
 	): Promise<boolean /* veto */> {
 		// Always allow to unload a window that is not yet ready
 		if (!window.isReady) {
@@ -575,11 +575,11 @@ export class LifecycleMainService
 			: reason;
 		const veto = await this.onBeforeUnloadWindowInRenderer(
 			window,
-			windowUnloadReason
+			windowUnloadReason,
 		);
 		if (veto) {
 			this.trace(
-				`Lifecycle#unload() - veto in renderer (window ID ${window.id})`
+				`Lifecycle#unload() - veto in renderer (window ID ${window.id})`,
 			);
 
 			return this.handleWindowUnloadVeto(veto);
@@ -615,7 +615,7 @@ export class LifecycleMainService
 
 	private onBeforeUnloadWindowInRenderer(
 		window: ICodeWindow,
-		reason: UnloadReason
+		reason: UnloadReason,
 	): Promise<boolean /* veto */> {
 		return new Promise<boolean>((resolve) => {
 			const oneTimeEventToken = this.oneTimeListenerTokenGenerator++;
@@ -640,7 +640,7 @@ export class LifecycleMainService
 
 	private onWillUnloadWindowInRenderer(
 		window: ICodeWindow,
-		reason: UnloadReason
+		reason: UnloadReason,
 	): Promise<void> {
 		return new Promise<void>((resolve) => {
 			const oneTimeEventToken = this.oneTimeListenerTokenGenerator++;
@@ -688,7 +688,7 @@ export class LifecycleMainService
 		if (willRestart) {
 			this.stateService.setItem(
 				LifecycleMainService.QUIT_AND_RESTART_KEY,
-				true
+				true,
 			);
 		}
 
@@ -781,7 +781,7 @@ export class LifecycleMainService
 							!window.webContents.isDestroyed()
 						) {
 							whenWindowClosed = new Promise((resolve) =>
-								window.once("closed", resolve)
+								window.once("closed", resolve),
 							);
 						} else {
 							whenWindowClosed = Promise.resolve();

@@ -3,29 +3,28 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as _fs from "fs";
-import * as _url from "url";
 import * as _cp from "child_process";
+import * as _fs from "fs";
 import * as _http from "http";
-import * as _os from "os";
+import * as _url from "url";
+import { dirname, extname, join, resolve } from "vs/base/common/path";
 import { cwd } from "vs/base/common/process";
-import { dirname, extname, resolve, join } from "vs/base/common/path";
+import { NativeParsedArgs } from "vs/platform/environment/common/argv";
 import {
-	parseArgs,
-	buildHelpMessage,
-	buildVersionMessage,
+	ErrorReporter,
 	OPTIONS,
 	OptionDescriptions,
-	ErrorReporter,
+	buildHelpMessage,
+	buildVersionMessage,
+	parseArgs,
 } from "vs/platform/environment/node/argv";
-import { NativeParsedArgs } from "vs/platform/environment/common/argv";
-import { createWaitMarkerFileSync } from "vs/platform/environment/node/wait";
-import { PipeCommand } from "vs/workbench/api/node/extHostCLIServer";
 import {
-	hasStdinWithoutTty,
 	getStdinFilePath,
+	hasStdinWithoutTty,
 	readFromStdin,
 } from "vs/platform/environment/node/stdin";
+import { createWaitMarkerFileSync } from "vs/platform/environment/node/wait";
+import { PipeCommand } from "vs/workbench/api/node/extHostCLIServer";
 
 /*
  * Implements a standalone CLI app that opens VS Code from a remote terminal.
@@ -43,8 +42,8 @@ interface ProductDescription {
 }
 
 interface RemoteParsedArgs extends NativeParsedArgs {
-	"gitCredential"?: string;
-	"openExternal"?: boolean;
+	gitCredential?: string;
+	openExternal?: boolean;
 }
 
 const isSupportedForCmd = (optionId: keyof RemoteParsedArgs) => {
@@ -100,11 +99,11 @@ const cliStdInFilePath = process.env["VSCODE_STDIN_FILE_PATH"] as string;
 
 export async function main(
 	desc: ProductDescription,
-	args: string[]
+	args: string[],
 ): Promise<void> {
 	if (!cliPipe && !cliCommand) {
 		console.log(
-			"Command is only available in WSL or inside a Visual Studio Code terminal."
+			"Command is only available in WSL or inside a Visual Studio Code terminal.",
 		);
 		return;
 	}
@@ -130,7 +129,7 @@ export async function main(
 	const errorReporter: ErrorReporter = {
 		onMultipleValues: (id: string, usedValue: string) => {
 			console.error(
-				`Option '${id}' can only be defined once. Using value ${usedValue}.`
+				`Option '${id}' can only be defined once. Using value ${usedValue}.`,
 			);
 		},
 		onEmptyValue: (id) => {
@@ -138,12 +137,12 @@ export async function main(
 		},
 		onUnknownOption: (id: string) => {
 			console.error(
-				`Ignoring option '${id}': not supported for ${desc.executableName}.`
+				`Ignoring option '${id}': not supported for ${desc.executableName}.`,
 			);
 		},
 		onDeprecatedOption: (deprecatedOption: string, message: string) => {
 			console.warn(
-				`Option '${deprecatedOption}' is deprecated: ${message}`
+				`Option '${deprecatedOption}' is deprecated: ${message}`,
 			);
 		},
 	};
@@ -161,8 +160,8 @@ export async function main(
 				desc.productName,
 				desc.executableName,
 				desc.version,
-				options
-			)
+				options,
+			),
 		);
 		return;
 	}
@@ -191,7 +190,7 @@ export async function main(
 				break;
 			default:
 				throw new Error(
-					"Error using --locate-shell-integration-path: Invalid shell type"
+					"Error using --locate-shell-integration-path: Invalid shell type",
 				);
 		}
 		console.log(
@@ -203,8 +202,8 @@ export async function main(
 				"terminal",
 				"browser",
 				"media",
-				file
-			)
+				file,
+			),
 		);
 		return;
 	}
@@ -256,7 +255,7 @@ export async function main(
 			console.log(`Reading from stdin via: ${stdinFilePath}`);
 		} catch (e) {
 			console.log(
-				`Failed to create file to read via stdin: ${e.toString()}`
+				`Failed to create file to read via stdin: ${e.toString()}`,
 			);
 		}
 	}
@@ -264,13 +263,13 @@ export async function main(
 	if (parsedArgs.extensionDevelopmentPath) {
 		parsedArgs.extensionDevelopmentPath =
 			parsedArgs.extensionDevelopmentPath.map((p) =>
-				mapFileUri(pathToURI(p).href)
+				mapFileUri(pathToURI(p).href),
 			);
 	}
 
 	if (parsedArgs.extensionTestsPath) {
 		parsedArgs.extensionTestsPath = mapFileUri(
-			pathToURI(parsedArgs["extensionTestsPath"]).href
+			pathToURI(parsedArgs["extensionTestsPath"]).href,
 		);
 	}
 
@@ -280,7 +279,7 @@ export async function main(
 		!crashReporterDirectory.match(/^([a-zA-Z]:[\\\/])/)
 	) {
 		console.log(
-			`The crash reporter directory '${crashReporterDirectory}' must be an absolute Windows path (e.g. c:/crashes)`
+			`The crash reporter directory '${crashReporterDirectory}' must be an absolute Windows path (e.g. c:/crashes)`,
 		);
 		return;
 	}
@@ -293,10 +292,10 @@ export async function main(
 		) {
 			const cmdLine: string[] = [];
 			parsedArgs["install-extension"]?.forEach((id) =>
-				cmdLine.push("--install-extension", id)
+				cmdLine.push("--install-extension", id),
 			);
 			parsedArgs["uninstall-extension"]?.forEach((id) =>
-				cmdLine.push("--uninstall-extension", id)
+				cmdLine.push("--uninstall-extension", id),
 			);
 			["list-extensions", "force", "show-versions", "category"].forEach(
 				(opt) => {
@@ -304,13 +303,13 @@ export async function main(
 					if (value !== undefined) {
 						cmdLine.push(`--${opt}=${value}`);
 					}
-				}
+				},
 			);
 
 			const cp = _cp.fork(
 				join(__dirname, "../../../server-main.js"),
 				cmdLine,
-				{ stdio: "inherit" }
+				{ stdio: "inherit" },
 			);
 			cp.on("error", (err) => console.log(err));
 			return;
@@ -341,8 +340,8 @@ export async function main(
 			if (verbose) {
 				console.log(
 					`Invoking: cmd.exe /C ${cliCommand} ${newCommandline.join(
-						" "
-					)} in ${processCwd}`
+						" ",
+					)} in ${processCwd}`,
 				);
 			}
 			_cp.spawn("cmd.exe", ["/C", cliCommand, ...newCommandline], {
@@ -357,8 +356,8 @@ export async function main(
 			if (verbose) {
 				console.log(
 					`Invoking: cd "${cliCwd}" && ELECTRON_RUN_AS_NODE=1 "${cliCommand}" "${newCommandline.join(
-						'" "'
-					)}"`
+						'" "',
+					)}"`,
 				);
 			}
 			if (runningInWSL2()) {
@@ -386,7 +385,7 @@ export async function main(
 				{
 					type: "status",
 				},
-				verbose
+				verbose,
 			)
 				.then((res: string) => {
 					console.log(res);
@@ -409,17 +408,17 @@ export async function main(
 						? {
 								showVersions: parsedArgs["show-versions"],
 								category: parsedArgs["category"],
-							}
+						  }
 						: undefined,
 					install: asExtensionIdOrVSIX(
-						parsedArgs["install-extension"]
+						parsedArgs["install-extension"],
 					),
 					uninstall: asExtensionIdOrVSIX(
-						parsedArgs["uninstall-extension"]
+						parsedArgs["uninstall-extension"],
 					),
 					force: parsedArgs["force"],
 				},
-				verbose
+				verbose,
 			)
 				.then((res: string) => {
 					console.log(res);
@@ -427,7 +426,7 @@ export async function main(
 				.catch((e) => {
 					console.error(
 						"Error when invoking the extension management command:",
-						e
+						e,
 					);
 				});
 			return;
@@ -456,7 +455,7 @@ export async function main(
 				waitMarkerFilePath,
 				remoteAuthority: remote,
 			},
-			verbose
+			verbose,
 		).catch((e) => {
 			console.error("Error when invoking the open command:", e);
 		});
@@ -505,7 +504,7 @@ function openInBrowser(args: string[], verbose: boolean) {
 				type: "openExternal",
 				uris,
 			},
-			verbose
+			verbose,
 		).catch((e) => {
 			console.error("Error when invoking the open external command:", e);
 		});
@@ -530,7 +529,7 @@ function sendToPipe(args: PipeCommand, verbose: boolean): Promise<any> {
 			method: "POST",
 			headers: {
 				"content-type": "application/json",
-				"accept": "application/json",
+				accept: "application/json",
 			},
 		};
 
@@ -538,7 +537,7 @@ function sendToPipe(args: PipeCommand, verbose: boolean): Promise<any> {
 			if (res.headers["content-type"] !== "application/json") {
 				reject(
 					"Error in response: Invalid content type: Expected 'application/json', is: " +
-						res.headers["content-type"]
+						res.headers["content-type"],
 				);
 				return;
 			}
@@ -561,7 +560,7 @@ function sendToPipe(args: PipeCommand, verbose: boolean): Promise<any> {
 				} catch (e) {
 					reject(
 						"Error in response: Unable to parse response as JSON: " +
-							content
+							content,
 					);
 				}
 			});
@@ -575,7 +574,7 @@ function sendToPipe(args: PipeCommand, verbose: boolean): Promise<any> {
 
 function asExtensionIdOrVSIX(inputs: string[] | undefined) {
 	return inputs?.map((input) =>
-		/\.vsix$/i.test(input) ? pathToURI(input).href : input
+		/\.vsix$/i.test(input) ? pathToURI(input).href : input,
 	);
 }
 
@@ -598,7 +597,7 @@ function translatePath(
 	input: string,
 	mapFileUri: (input: string) => string,
 	folderURIS: string[],
-	fileURIS: string[]
+	fileURIS: string[],
 ) {
 	const url = pathToURI(input);
 	const mappedUri = mapFileUri(url.href);
@@ -632,5 +631,5 @@ main({ productName, version, commit, executableName }, remainingArgs).then(
 	null,
 	(err) => {
 		console.error(err.message || err.stack || err);
-	}
+	},
 );

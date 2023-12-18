@@ -20,7 +20,7 @@ declare module "vscode" {
 			editor: TextEditor,
 			line: number,
 			height: number,
-			options?: WebviewOptions
+			options?: WebviewOptions,
 		): WebviewEditorInset;
 	}
 }

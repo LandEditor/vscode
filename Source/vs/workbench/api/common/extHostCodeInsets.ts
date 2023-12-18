@@ -9,9 +9,9 @@ import { IExtensionDescription } from "vs/platform/extensions/common/extensions"
 import { ExtHostTextEditor } from "vs/workbench/api/common/extHostTextEditor";
 import { ExtHostEditors } from "vs/workbench/api/common/extHostTextEditors";
 import {
+	WebviewRemoteInfo,
 	asWebviewUri,
 	webviewGenericCspSource,
-	WebviewRemoteInfo,
 } from "vs/workbench/contrib/webview/common/webview";
 import type * as vscode from "vscode";
 import {
@@ -34,7 +34,7 @@ export class ExtHostEditorInsets implements ExtHostEditorInsetsShape {
 	constructor(
 		private readonly _proxy: MainThreadEditorInsetsShape,
 		private readonly _editors: ExtHostEditors,
-		private readonly _remoteInfo: WebviewRemoteInfo
+		private readonly _remoteInfo: WebviewRemoteInfo,
 	) {
 		// dispose editor inset whenever the hosting editor goes away
 		this._disposables.add(
@@ -45,7 +45,7 @@ export class ExtHostEditorInsets implements ExtHostEditorInsetsShape {
 						value.inset.dispose(); // will remove from `this._insets`
 					}
 				}
-			})
+			}),
 		);
 	}
 
@@ -59,7 +59,7 @@ export class ExtHostEditorInsets implements ExtHostEditorInsetsShape {
 		line: number,
 		height: number,
 		options: vscode.WebviewOptions | undefined,
-		extension: IExtensionDescription
+		extension: IExtensionDescription,
 	): vscode.WebviewEditorInset {
 		let apiEditor: ExtHostTextEditor | undefined;
 		for (const candidate of this._editors.getVisibleTextEditors(true)) {
@@ -78,7 +78,7 @@ export class ExtHostEditorInsets implements ExtHostEditorInsetsShape {
 		const onDidDispose = new Emitter<void>();
 
 		const webview = new (class implements vscode.Webview {
-			private _html: string = "";
+			private _html = "";
 			private _options: vscode.WebviewOptions = Object.create(null);
 
 			asWebviewUri(resource: vscode.Uri): vscode.Uri {
@@ -144,7 +144,7 @@ export class ExtHostEditorInsets implements ExtHostEditorInsetsShape {
 			height,
 			options || {},
 			extension.identifier,
-			extension.extensionLocation
+			extension.extensionLocation,
 		);
 		this._insets.set(handle, { editor, inset, onDidReceiveMessage });
 

@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { exec } from "child_process";
+import { IPty, IPtyForkOptions, IWindowsPtyForkOptions, spawn } from "node-pty";
 import { timeout } from "vs/base/common/async";
 import { Emitter, Event } from "vs/base/common/event";
 import { Disposable, toDisposable } from "vs/base/common/lifecycle";
@@ -21,29 +22,28 @@ import { ILogService, LogLevel } from "vs/platform/log/common/log";
 import { IProductService } from "vs/platform/product/common/productService";
 import {
 	FlowControlConstants,
+	IProcessProperty,
+	IProcessPropertyMap,
+	IProcessReadyEvent,
+	IProcessReadyWindowsPty,
 	IShellLaunchConfig,
 	ITerminalChildProcess,
 	ITerminalLaunchError,
-	IProcessProperty,
-	IProcessPropertyMap as IProcessPropertyMap,
-	ProcessPropertyType,
-	TerminalShellType,
-	IProcessReadyEvent,
 	ITerminalProcessOptions,
 	PosixShellType,
-	IProcessReadyWindowsPty,
+	ProcessPropertyType,
+	TerminalShellType,
 } from "vs/platform/terminal/common/terminal";
 import { ChildProcessMonitor } from "vs/platform/terminal/node/childProcessMonitor";
 import {
+	IShellIntegrationConfigInjection,
 	findExecutable,
 	getShellIntegrationInjection,
 	getWindowsBuildNumber,
-	IShellIntegrationConfigInjection,
 } from "vs/platform/terminal/node/terminalEnvironment";
 import { WindowsShellHelper } from "vs/platform/terminal/node/windowsShellHelper";
-import { IPty, IPtyForkOptions, IWindowsPtyForkOptions, spawn } from "node-pty";
 
-const enum ShutdownConstants {
+enum ShutdownConstants {
 	/**
 	 * The amount of ms that must pass between data events after exit is queued before the actual
 	 * kill call is triggered. This data flush mechanism works around an [issue in node-pty][1]
@@ -62,7 +62,7 @@ const enum ShutdownConstants {
 	MaximumShutdownTime = 5000,
 }
 
-const enum Constants {
+enum Constants {
 	/**
 	 * The minimum duration between kill and spawn calls on Windows/conpty as a mitigation for a
 	 * hang issue. See:
@@ -130,7 +130,7 @@ export class TerminalProcess
 	private _exitMessage: string | undefined;
 	private _closeTimeout: any;
 	private _ptyProcess: IPty | undefined;
-	private _currentTitle: string = "";
+	private _currentTitle = "";
 	private _processStartupComplete: Promise<void> | undefined;
 	private _windowsShellHelper: WindowsShellHelper | undefined;
 	private _childProcessMonitor: ChildProcessMonitor | undefined;
@@ -141,8 +141,8 @@ export class TerminalProcess
 	private readonly _initialCwd: string;
 	private readonly _ptyOptions: IPtyForkOptions | IWindowsPtyForkOptions;
 
-	private _isPtyPaused: boolean = false;
-	private _unacknowledgedCharCount: number = 0;
+	private _isPtyPaused = false;
+	private _unacknowledgedCharCount = 0;
 	get exitMessage(): string | undefined {
 		return this._exitMessage;
 	}
@@ -162,11 +162,11 @@ export class TerminalProcess
 	private readonly _onProcessData = this._register(new Emitter<string>());
 	readonly onProcessData = this._onProcessData.event;
 	private readonly _onProcessReady = this._register(
-		new Emitter<IProcessReadyEvent>()
+		new Emitter<IProcessReadyEvent>(),
 	);
 	readonly onProcessReady = this._onProcessReady.event;
 	private readonly _onDidChangeProperty = this._register(
-		new Emitter<IProcessProperty<any>>()
+		new Emitter<IProcessProperty<any>>(),
 	);
 	readonly onDidChangeProperty = this._onDidChangeProperty.event;
 	private readonly _onProcessExit = this._register(new Emitter<number>());
@@ -286,7 +286,7 @@ export class TerminalProcess
 				this._options,
 				this._ptyOptions.env,
 				this._logService,
-				this._productService
+				this._productService,
 			);
 			if (injection) {
 				this._onDidChangeProperty.fire({
@@ -295,7 +295,7 @@ export class TerminalProcess
 				});
 				if (injection.envMixin) {
 					for (const [key, value] of Object.entries(
-						injection.envMixin
+						injection.envMixin,
 					)) {
 						this._ptyOptions.env ||= {};
 						this._ptyOptions.env[key] = value;
@@ -328,7 +328,7 @@ export class TerminalProcess
 			await this.setupPtyProcess(
 				this.shellLaunchConfig,
 				this._ptyOptions,
-				injection
+				injection,
 			);
 			if (injection?.newArgs) {
 				return { injectedArgs: injection.newArgs };
@@ -337,7 +337,7 @@ export class TerminalProcess
 		} catch (err) {
 			this._logService.trace(
 				"node-pty.node-pty.IPty#spawn native exception",
-				err
+				err,
 			);
 			return {
 				message: `A native exception occurred during launch (${err.message})`,
@@ -353,7 +353,7 @@ export class TerminalProcess
 					message: localize(
 						"launchFail.cwdNotDirectory",
 						'Starting directory (cwd) "{0}" is not a directory',
-						this._initialCwd.toString()
+						this._initialCwd.toString(),
 					),
 				};
 			}
@@ -363,7 +363,7 @@ export class TerminalProcess
 					message: localize(
 						"launchFail.cwdDoesNotExist",
 						'Starting directory (cwd) "{0}" does not exist',
-						this._initialCwd.toString()
+						this._initialCwd.toString(),
 					),
 				};
 			}
@@ -392,14 +392,14 @@ export class TerminalProcess
 			slc.executable!,
 			cwd,
 			envPaths,
-			this._executableEnv
+			this._executableEnv,
 		);
 		if (!executable) {
 			return {
 				message: localize(
 					"launchFail.executableDoesNotExist",
 					'Path to shell executable "{0}" does not exist',
-					slc.executable
+					slc.executable,
 				),
 			};
 		}
@@ -411,7 +411,7 @@ export class TerminalProcess
 					message: localize(
 						"launchFail.executableIsNotFileOrSymlink",
 						'Path to shell executable "{0}" is not a file or a symlink',
-						slc.executable
+						slc.executable,
 					),
 				};
 			}
@@ -431,7 +431,7 @@ export class TerminalProcess
 	private async setupPtyProcess(
 		shellLaunchConfig: IShellLaunchConfig,
 		options: IPtyForkOptions,
-		shellIntegrationInjection: IShellIntegrationConfigInjection | undefined
+		shellIntegrationInjection: IShellIntegrationConfigInjection | undefined,
 	): Promise<void> {
 		const args =
 			shellIntegrationInjection?.newArgs || shellLaunchConfig.args || [];
@@ -440,18 +440,18 @@ export class TerminalProcess
 			"node-pty.IPty#spawn",
 			shellLaunchConfig.executable,
 			args,
-			options
+			options,
 		);
 		const ptyProcess = spawn(shellLaunchConfig.executable!, args, options);
 		this._ptyProcess = ptyProcess;
 		this._childProcessMonitor = this._register(
-			new ChildProcessMonitor(ptyProcess.pid, this._logService)
+			new ChildProcessMonitor(ptyProcess.pid, this._logService),
 		);
 		this._childProcessMonitor.onDidChangeHasChildProcesses((value) =>
 			this._onDidChangeProperty.fire({
 				type: ProcessPropertyType.HasChildProcesses,
 				value,
-			})
+			}),
 		);
 		this._processStartupComplete = new Promise<void>((c) => {
 			this.onProcessReady(() => c());
@@ -465,7 +465,7 @@ export class TerminalProcess
 					FlowControlConstants.HighWatermarkChars
 			) {
 				this._logService.trace(
-					`Flow control: Pause (${this._unacknowledgedCharCount} > ${FlowControlConstants.HighWatermarkChars})`
+					`Flow control: Pause (${this._unacknowledgedCharCount} > ${FlowControlConstants.HighWatermarkChars})`,
 				);
 				this._isPtyPaused = true;
 				ptyProcess.pause();
@@ -507,7 +507,7 @@ export class TerminalProcess
 		if (this._logService.getLevel() === LogLevel.Trace) {
 			this._logService.trace(
 				"TerminalProcess#_queueProcessExit",
-				new Error().stack?.replace(/^Error/, "")
+				new Error().stack?.replace(/^Error/, ""),
 			);
 		}
 		if (this._closeTimeout) {
@@ -559,7 +559,7 @@ export class TerminalProcess
 			await timeout(
 				Constants.KillSpawnThrottleInterval -
 					(Date.now() - TerminalProcess._lastKillOrStart) +
-					Constants.KillSpawnSpacingDuration
+					Constants.KillSpawnSpacingDuration,
 			);
 		}
 		TerminalProcess._lastKillOrStart = Date.now();
@@ -594,7 +594,7 @@ export class TerminalProcess
 		if (this._logService.getLevel() === LogLevel.Trace) {
 			this._logService.trace(
 				"TerminalProcess#shutdown",
-				new Error().stack?.replace(/^Error/, "")
+				new Error().stack?.replace(/^Error/, ""),
 			);
 		}
 		// don't force immediate disposal of the terminal processes on Windows as an additional
@@ -602,17 +602,15 @@ export class TerminalProcess
 		// to become unresponsive, disconnecting all terminals across all windows.
 		if (immediate && !isWindows) {
 			this._kill();
-		} else {
-			if (!this._closeTimeout && !this._store.isDisposed) {
-				this._queueProcessExit();
-				// Allow a maximum amount of time for the process to exit, otherwise force kill it
-				setTimeout(() => {
-					if (this._closeTimeout && !this._store.isDisposed) {
-						this._closeTimeout = undefined;
-						this._kill();
-					}
-				}, ShutdownConstants.MaximumShutdownTime);
-			}
+		} else if (!this._closeTimeout && !this._store.isDisposed) {
+			this._queueProcessExit();
+			// Allow a maximum amount of time for the process to exit, otherwise force kill it
+			setTimeout(() => {
+				if (this._closeTimeout && !this._store.isDisposed) {
+					this._closeTimeout = undefined;
+					this._kill();
+				}
+			}, ShutdownConstants.MaximumShutdownTime);
 		}
 	}
 
@@ -629,7 +627,7 @@ export class TerminalProcess
 				isBinary: isBinary || false,
 				data: data.substr(
 					i * Constants.WriteMaxChunkSize,
-					Constants.WriteMaxChunkSize
+					Constants.WriteMaxChunkSize,
 				),
 			};
 			this._writeQueue.push(obj);
@@ -642,7 +640,7 @@ export class TerminalProcess
 	}
 
 	async refreshProperty<T extends ProcessPropertyType>(
-		type: T
+		type: T,
 	): Promise<IProcessPropertyMap[T]> {
 		switch (type) {
 			case ProcessPropertyType.Cwd: {
@@ -676,7 +674,7 @@ export class TerminalProcess
 
 	async updateProperty<T extends ProcessPropertyType>(
 		type: T,
-		value: IProcessPropertyMap[T]
+		value: IProcessPropertyMap[T],
 	): Promise<void> {
 		if (type === ProcessPropertyType.FixedDimensions) {
 			this._properties.fixedDimensions =
@@ -747,7 +745,7 @@ export class TerminalProcess
 			} catch (e) {
 				// Swallow error if the pty has already exited
 				this._logService.trace(
-					"node-pty.IPty#resize exception " + e.message
+					"node-pty.IPty#resize exception " + e.message,
 				);
 				if (
 					this._exitCode !== undefined &&
@@ -768,10 +766,10 @@ export class TerminalProcess
 		// Prevent lower than 0 to heal from errors
 		this._unacknowledgedCharCount = Math.max(
 			this._unacknowledgedCharCount - charCount,
-			0
+			0,
 		);
 		this._logService.trace(
-			`Flow control: Ack ${charCount} chars (unacknowledged: ${this._unacknowledgedCharCount})`
+			`Flow control: Ack ${charCount} chars (unacknowledged: ${this._unacknowledgedCharCount})`,
 		);
 		if (
 			this._isPtyPaused &&
@@ -779,7 +777,7 @@ export class TerminalProcess
 				FlowControlConstants.LowWatermarkChars
 		) {
 			this._logService.trace(
-				`Flow control: Resume (${this._unacknowledgedCharCount} < ${FlowControlConstants.LowWatermarkChars})`
+				`Flow control: Resume (${this._unacknowledgedCharCount} < ${FlowControlConstants.LowWatermarkChars})`,
 			);
 			this._ptyProcess?.resume();
 			this._isPtyPaused = false;
@@ -789,7 +787,7 @@ export class TerminalProcess
 	clearUnacknowledgedChars(): void {
 		this._unacknowledgedCharCount = 0;
 		this._logService.trace(
-			`Flow control: Cleared all unacknowledged chars, forcing resume`
+			`Flow control: Cleared all unacknowledged chars, forcing resume`,
 		);
 		if (this._isPtyPaused) {
 			this._ptyProcess?.resume();
@@ -824,19 +822,19 @@ export class TerminalProcess
 							resolve(
 								stdout.substring(
 									stdout.indexOf("/"),
-									stdout.length - 1
-								)
+									stdout.length - 1,
+								),
 							);
 						} else {
 							this._logService.error(
 								"lsof did not run successfully, it may not be on the $PATH?",
 								error,
 								stdout,
-								stderr
+								stderr,
 							);
 							resolve(this._initialCwd);
 						}
-					}
+					},
 				);
 			});
 		}
@@ -848,7 +846,7 @@ export class TerminalProcess
 			this._logService.trace("node-pty.IPty#pid");
 			try {
 				return await Promises.readlink(
-					`/proc/${this._ptyProcess.pid}/cwd`
+					`/proc/${this._ptyProcess.pid}/cwd`,
 				);
 			} catch (error) {
 				return this._initialCwd;
@@ -867,7 +865,7 @@ export class TerminalProcess
 							? "conpty"
 							: "winpty",
 					buildNumber: getWindowsBuildNumber(),
-				}
+			  }
 			: undefined;
 	}
 }
@@ -881,7 +879,7 @@ class DelayedResizer extends Disposable {
 	private _timeout: NodeJS.Timeout;
 
 	private readonly _onTrigger = this._register(
-		new Emitter<{ rows?: number; cols?: number }>()
+		new Emitter<{ rows?: number; cols?: number }>(),
 	);
 	get onTrigger(): Event<{ rows?: number; cols?: number }> {
 		return this._onTrigger.event;

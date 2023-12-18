@@ -71,7 +71,7 @@ export class ContributedExternalUriOpenersStore extends Disposable {
 	private add(
 		id: string,
 		extensionId: string,
-		options: { isCurrentlyRegistered: boolean }
+		options: { isCurrentlyRegistered: boolean },
 	): void {
 		const existing = this._openers.get(id);
 		if (existing) {
@@ -107,7 +107,7 @@ export class ContributedExternalUriOpenersStore extends Disposable {
 
 		for (const [id, entry] of this._openers) {
 			const extension = registeredExtensions.find(
-				(r) => r.identifier.value === entry.extensionId
+				(r) => r.identifier.value === entry.extensionId,
 			);
 			if (extension) {
 				if (!this._extensionService.canRemoveExtension(extension)) {

@@ -3,9 +3,26 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
+import { AppResourcePath, FileAccess } from "vs/base/common/network";
 import Severity from "vs/base/common/severity";
 import { URI } from "vs/base/common/uri";
+import { localize } from "vs/nls";
+import { IChecksumService } from "vs/platform/checksum/common/checksumService";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import {
+	INotificationService,
+	NotificationPriority,
+} from "vs/platform/notification/common/notification";
+import { IOpenerService } from "vs/platform/opener/common/opener";
+import { IProductService } from "vs/platform/product/common/productService";
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from "vs/platform/storage/common/storage";
 import {
 	ChecksumPair,
 	IIntegrityService,
@@ -15,23 +32,6 @@ import {
 	ILifecycleService,
 	LifecyclePhase,
 } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { IProductService } from "vs/platform/product/common/productService";
-import {
-	INotificationService,
-	NotificationPriority,
-} from "vs/platform/notification/common/notification";
-import {
-	IStorageService,
-	StorageScope,
-	StorageTarget,
-} from "vs/platform/storage/common/storage";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { IOpenerService } from "vs/platform/opener/common/opener";
-import { FileAccess, AppResourcePath } from "vs/base/common/network";
-import { IChecksumService } from "vs/platform/checksum/common/checksumService";
 
 interface IStorageData {
 	dontShowPrompt: boolean;
@@ -52,7 +52,7 @@ class IntegrityStorage {
 	private _read(): IStorageData | null {
 		const jsonValue = this.storageService.get(
 			IntegrityStorage.KEY,
-			StorageScope.APPLICATION
+			StorageScope.APPLICATION,
 		);
 		if (!jsonValue) {
 			return null;
@@ -74,7 +74,7 @@ class IntegrityStorage {
 			IntegrityStorage.KEY,
 			JSON.stringify(this.value),
 			StorageScope.APPLICATION,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 	}
 }
@@ -121,7 +121,7 @@ export class IntegrityService implements IIntegrityService {
 		const message = localize(
 			"integrity.prompt",
 			"Your {0} installation appears to be corrupt. Please reinstall.",
-			this.productService.nameShort
+			this.productService.nameShort,
 		);
 		if (checksumFailMoreInfoUrl) {
 			this.notificationService.prompt(
@@ -131,17 +131,17 @@ export class IntegrityService implements IIntegrityService {
 					{
 						label: localize(
 							"integrity.moreInformation",
-							"More Information"
+							"More Information",
 						),
 						run: () =>
 							this.openerService.open(
-								URI.parse(checksumFailMoreInfoUrl)
+								URI.parse(checksumFailMoreInfoUrl),
 							),
 					},
 					{
 						label: localize(
 							"integrity.dontShowAgain",
-							"Don't Show Again"
+							"Don't Show Again",
 						),
 						isSecondary: true,
 						run: () =>
@@ -154,7 +154,7 @@ export class IntegrityService implements IIntegrityService {
 				{
 					sticky: true,
 					priority: NotificationPriority.URGENT,
-				}
+				},
 			);
 		} else {
 			this.notificationService.notify({
@@ -178,9 +178,9 @@ export class IntegrityService implements IIntegrityService {
 			Object.keys(expectedChecksums).map((filename) =>
 				this._resolve(
 					<AppResourcePath>filename,
-					expectedChecksums[filename]
-				)
-			)
+					expectedChecksums[filename],
+				),
+			),
 		);
 
 		let isPure = true;
@@ -199,7 +199,7 @@ export class IntegrityService implements IIntegrityService {
 
 	private async _resolve(
 		filename: AppResourcePath,
-		expected: string
+		expected: string,
 	): Promise<ChecksumPair> {
 		const fileUri = FileAccess.asFileUri(filename);
 
@@ -209,7 +209,7 @@ export class IntegrityService implements IIntegrityService {
 			return IntegrityService._createChecksumPair(
 				fileUri,
 				checksum,
-				expected
+				expected,
 			);
 		} catch (error) {
 			return IntegrityService._createChecksumPair(fileUri, "", expected);
@@ -219,7 +219,7 @@ export class IntegrityService implements IIntegrityService {
 	private static _createChecksumPair(
 		uri: URI,
 		actual: string,
-		expected: string
+		expected: string,
 	): ChecksumPair {
 		return {
 			uri: uri,
@@ -233,5 +233,5 @@ export class IntegrityService implements IIntegrityService {
 registerSingleton(
 	IIntegrityService,
 	IntegrityService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

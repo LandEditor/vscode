@@ -75,7 +75,7 @@ export function parseVersion(version: string): IParsedVersion | null {
 }
 
 export function normalizeVersion(
-	version: IParsedVersion | null
+	version: IParsedVersion | null,
 ): INormalizedVersion | null {
 	if (!version) {
 		return null;

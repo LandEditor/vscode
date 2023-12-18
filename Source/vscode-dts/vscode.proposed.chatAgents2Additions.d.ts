@@ -56,7 +56,7 @@ declare module "vscode" {
 	export interface ChatAgentCompletionItemProvider {
 		provideCompletionItems(
 			query: string,
-			token: CancellationToken
+			token: CancellationToken,
 		): ProviderResult<ChatAgentCompletionItem[]>;
 	}
 
@@ -69,7 +69,7 @@ declare module "vscode" {
 
 		constructor(
 			label: string | CompletionItemLabel,
-			values: ChatVariableValue[]
+			values: ChatVariableValue[],
 		);
 	}
 
@@ -77,7 +77,7 @@ declare module "vscode" {
 		request: ChatAgentRequest,
 		context: ChatAgentContext,
 		progress: Progress<ChatAgentExtendedProgress>,
-		token: CancellationToken
+		token: CancellationToken,
 	) => ProviderResult<ChatAgentResult2>;
 
 	export namespace chat {
@@ -86,7 +86,7 @@ declare module "vscode" {
 		 */
 		export function createChatAgent(
 			name: string,
-			handler: ChatAgentExtendedHandler
+			handler: ChatAgentExtendedHandler,
 		): ChatAgent2;
 	}
 

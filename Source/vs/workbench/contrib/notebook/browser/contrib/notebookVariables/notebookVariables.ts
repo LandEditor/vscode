@@ -3,23 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
 import { Disposable, IDisposable } from "vs/base/common/lifecycle";
-import { IWorkbenchContribution } from "vs/workbench/common/contributions";
+import * as nls from "vs/nls";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
+import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
 import { Registry } from "vs/platform/registry/common/platform";
+import { IWorkbenchContribution } from "vs/workbench/common/contributions";
 import {
 	Extensions,
 	IViewContainersRegistry,
 	IViewsRegistry,
 } from "vs/workbench/common/views";
 import { VIEWLET_ID as debugContainerId } from "vs/workbench/contrib/debug/common/debug";
-import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
-import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
 import { NotebookVariablesView } from "vs/workbench/contrib/notebook/browser/contrib/notebookVariables/notebookVariablesView";
-import { NOTEBOOK_KERNEL } from "vs/workbench/contrib/notebook/common/notebookContextKeys";
 import { variablesViewIcon } from "vs/workbench/contrib/notebook/browser/notebookIcons";
+import { NOTEBOOK_KERNEL } from "vs/workbench/contrib/notebook/common/notebookContextKeys";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 
 export class NotebookVariables
 	extends Disposable
@@ -50,12 +50,12 @@ export class NotebookVariables
 
 	private initializeView() {
 		const debugViewContainer = Registry.as<IViewContainersRegistry>(
-			"workbench.registry.view.containers"
+			"workbench.registry.view.containers",
 		).get(debugContainerId);
 
 		if (debugViewContainer) {
 			const viewsRegistry = Registry.as<IViewsRegistry>(
-				Extensions.ViewsRegistry
+				Extensions.ViewsRegistry,
 			);
 			const viewDescriptor = {
 				id: "NOTEBOOK_VARIABLES",

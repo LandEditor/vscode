@@ -3,42 +3,42 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable, toDisposable } from "vs/base/common/lifecycle";
-import {
-	IExtensionManagementService,
-	IExtensionGalleryService,
-	InstallOperation,
-	InstallExtensionResult,
-} from "vs/platform/extensionManagement/common/extensionManagement";
-import {
-	IExtensionRecommendationsService,
-	ExtensionRecommendationReason,
-	IExtensionIgnoredRecommendationsService,
-} from "vs/workbench/services/extensionRecommendations/common/extensionRecommendations";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import { distinct, shuffle } from "vs/base/common/arrays";
+import { CancelablePromise, timeout } from "vs/base/common/async";
 import { Emitter, Event } from "vs/base/common/event";
+import { Disposable, toDisposable } from "vs/base/common/lifecycle";
+import { URI } from "vs/base/common/uri";
 import { IEnvironmentService } from "vs/platform/environment/common/environment";
 import {
-	LifecyclePhase,
-	ILifecycleService,
-} from "vs/workbench/services/lifecycle/common/lifecycle";
+	IExtensionGalleryService,
+	IExtensionManagementService,
+	InstallExtensionResult,
+	InstallOperation,
+} from "vs/platform/extensionManagement/common/extensionManagement";
+import { areSameExtensions } from "vs/platform/extensionManagement/common/extensionManagementUtil";
+import { IExtensionRecommendationNotificationService } from "vs/platform/extensionRecommendations/common/extensionRecommendations";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IRemoteExtensionsScannerService } from "vs/platform/remote/common/remoteExtensionsScanner";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { ConfigBasedRecommendations } from "vs/workbench/contrib/extensions/browser/configBasedRecommendations";
 import { ExeBasedRecommendations } from "vs/workbench/contrib/extensions/browser/exeBasedRecommendations";
-import { WorkspaceRecommendations } from "vs/workbench/contrib/extensions/browser/workspaceRecommendations";
+import { ExtensionRecommendation } from "vs/workbench/contrib/extensions/browser/extensionRecommendations";
 import { FileBasedRecommendations } from "vs/workbench/contrib/extensions/browser/fileBasedRecommendations";
 import { KeymapRecommendations } from "vs/workbench/contrib/extensions/browser/keymapRecommendations";
 import { LanguageRecommendations } from "vs/workbench/contrib/extensions/browser/languageRecommendations";
-import { ExtensionRecommendation } from "vs/workbench/contrib/extensions/browser/extensionRecommendations";
-import { ConfigBasedRecommendations } from "vs/workbench/contrib/extensions/browser/configBasedRecommendations";
-import { IExtensionRecommendationNotificationService } from "vs/platform/extensionRecommendations/common/extensionRecommendations";
-import { CancelablePromise, timeout } from "vs/base/common/async";
-import { URI } from "vs/base/common/uri";
-import { WebRecommendations } from "vs/workbench/contrib/extensions/browser/webRecommendations";
-import { IExtensionsWorkbenchService } from "vs/workbench/contrib/extensions/common/extensions";
-import { areSameExtensions } from "vs/platform/extensionManagement/common/extensionManagementUtil";
 import { RemoteRecommendations } from "vs/workbench/contrib/extensions/browser/remoteRecommendations";
-import { IRemoteExtensionsScannerService } from "vs/platform/remote/common/remoteExtensionsScanner";
+import { WebRecommendations } from "vs/workbench/contrib/extensions/browser/webRecommendations";
+import { WorkspaceRecommendations } from "vs/workbench/contrib/extensions/browser/workspaceRecommendations";
+import { IExtensionsWorkbenchService } from "vs/workbench/contrib/extensions/common/extensions";
+import {
+	ExtensionRecommendationReason,
+	IExtensionIgnoredRecommendationsService,
+	IExtensionRecommendationsService,
+} from "vs/workbench/services/extensionRecommendations/common/extensionRecommendations";
+import {
+	ILifecycleService,
+	LifecyclePhase,
+} from "vs/workbench/services/lifecycle/common/lifecycle";
 import { IUserDataInitializationService } from "vs/workbench/services/userData/browser/userDataInit";
 
 type IgnoreRecommendationClassification = {
@@ -173,8 +173,8 @@ export class ExtensionRecommendationsService
 				this.workspaceRecommendations.onDidChangeRecommendations,
 				this.configBasedRecommendations.onDidChangeRecommendations,
 				this.extensionRecommendationsManagementService
-					.onDidChangeIgnoredRecommendations
-			)(() => this._onDidChangeRecommendations.fire())
+					.onDidChangeIgnoredRecommendations,
+			)(() => this._onDidChangeRecommendations.fire()),
 		);
 		this._register(
 			this.extensionRecommendationsManagementService.onDidChangeGlobalIgnoredRecommendation(
@@ -194,12 +194,12 @@ export class ExtensionRecommendationsService
 								{
 									extensionId,
 									recommendationReason: reason.reasonId,
-								}
+								},
 							);
 						}
 					}
-				}
-			)
+				},
+			),
 		);
 
 		this.promptWorkspaceRecommendations();
@@ -261,10 +261,10 @@ export class ExtensionRecommendationsService
 		await this.configBasedRecommendations.activate();
 		return {
 			important: this.toExtensionRecommendations(
-				this.configBasedRecommendations.importantRecommendations
+				this.configBasedRecommendations.importantRecommendations,
 			),
 			others: this.toExtensionRecommendations(
-				this.configBasedRecommendations.otherRecommendations
+				this.configBasedRecommendations.otherRecommendations,
 			),
 		};
 	}
@@ -280,9 +280,9 @@ export class ExtensionRecommendationsService
 		];
 
 		const extensionIds = distinct(
-			recommendations.map((e) => e.extensionId)
+			recommendations.map((e) => e.extensionId),
 		).filter((extensionId) =>
-			this.isExtensionAllowedToBeRecommended(extensionId)
+			this.isExtensionAllowedToBeRecommended(extensionId),
 		);
 
 		shuffle(extensionIds, this.sessionSeed);
@@ -300,9 +300,9 @@ export class ExtensionRecommendationsService
 		];
 
 		const extensionIds = distinct(
-			recommendations.map((e) => e.extensionId)
+			recommendations.map((e) => e.extensionId),
 		).filter((extensionId) =>
-			this.isExtensionAllowedToBeRecommended(extensionId)
+			this.isExtensionAllowedToBeRecommended(extensionId),
 		);
 
 		shuffle(extensionIds, this.sessionSeed);
@@ -312,19 +312,19 @@ export class ExtensionRecommendationsService
 
 	getKeymapRecommendations(): string[] {
 		return this.toExtensionRecommendations(
-			this.keymapRecommendations.recommendations
+			this.keymapRecommendations.recommendations,
 		);
 	}
 
 	getLanguageRecommendations(): string[] {
 		return this.toExtensionRecommendations(
-			this.languageRecommendations.recommendations
+			this.languageRecommendations.recommendations,
 		);
 	}
 
 	getRemoteRecommendations(): string[] {
 		return this.toExtensionRecommendations(
-			this.remoteRecommendations.recommendations
+			this.remoteRecommendations.recommendations,
 		);
 	}
 
@@ -334,12 +334,12 @@ export class ExtensionRecommendationsService
 		}
 		await this.workspaceRecommendations.activate();
 		return this.toExtensionRecommendations(
-			this.workspaceRecommendations.recommendations
+			this.workspaceRecommendations.recommendations,
 		);
 	}
 
 	async getExeBasedRecommendations(
-		exe?: string
+		exe?: string,
 	): Promise<{ important: string[]; others: string[] }> {
 		await this.exeBasedRecommendations.activate();
 		const { important, others } = exe
@@ -348,7 +348,7 @@ export class ExtensionRecommendationsService
 					important:
 						this.exeBasedRecommendations.importantRecommendations,
 					others: this.exeBasedRecommendations.otherRecommendations,
-				};
+			  };
 		return {
 			important: this.toExtensionRecommendations(important),
 			others: this.toExtensionRecommendations(others),
@@ -357,12 +357,12 @@ export class ExtensionRecommendationsService
 
 	getFileBasedRecommendations(): string[] {
 		return this.toExtensionRecommendations(
-			this.fileBasedRecommendations.recommendations
+			this.fileBasedRecommendations.recommendations,
 		);
 	}
 
 	private onDidInstallExtensions(
-		results: readonly InstallExtensionResult[]
+		results: readonly InstallExtensionResult[],
 	): void {
 		for (const e of results) {
 			if (
@@ -389,7 +389,7 @@ export class ExtensionRecommendationsService
 						{
 							...e.source.telemetryData,
 							recommendationReason: recommendationReason.reasonId,
-						}
+						},
 					);
 				}
 			}
@@ -397,12 +397,12 @@ export class ExtensionRecommendationsService
 	}
 
 	private toExtensionRecommendations(
-		recommendations: ReadonlyArray<ExtensionRecommendation>
+		recommendations: ReadonlyArray<ExtensionRecommendation>,
 	): string[] {
 		const extensionIds = distinct(
-			recommendations.map((e) => e.extensionId)
+			recommendations.map((e) => e.extensionId),
 		).filter((extensionId) =>
-			this.isExtensionAllowedToBeRecommended(extensionId)
+			this.isExtensionAllowedToBeRecommended(extensionId),
 		);
 
 		return extensionIds;
@@ -410,7 +410,7 @@ export class ExtensionRecommendationsService
 
 	private isExtensionAllowedToBeRecommended(extensionId: string): boolean {
 		return !this.extensionRecommendationsManagementService.ignoredRecommendations.includes(
-			extensionId.toLowerCase()
+			extensionId.toLowerCase(),
 		);
 	}
 
@@ -424,20 +424,20 @@ export class ExtensionRecommendationsService
 					recommendation.whenNotInstalled.every((id) =>
 						installed.every(
 							(local) =>
-								!areSameExtensions(local.identifier, { id })
-						)
-					)
+								!areSameExtensions(local.identifier, { id }),
+						),
+					),
 			),
 		]
 			.map(({ extensionId }) => extensionId)
 			.filter((extensionId) =>
-				this.isExtensionAllowedToBeRecommended(extensionId)
+				this.isExtensionAllowedToBeRecommended(extensionId),
 			);
 
 		if (allowedRecommendations.length) {
 			await this._registerP(timeout(5000));
 			await this.extensionRecommendationNotificationService.promptWorkspaceRecommendations(
-				allowedRecommendations
+				allowedRecommendations,
 			);
 		}
 	}

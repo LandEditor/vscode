@@ -11,13 +11,13 @@ export function edit(
 	content: string,
 	originalPath: JSONPath,
 	value: any,
-	formattingOptions: FormattingOptions
+	formattingOptions: FormattingOptions,
 ): string {
 	const edit = setProperty(
 		content,
 		originalPath,
 		value,
-		formattingOptions
+		formattingOptions,
 	)[0];
 	if (edit) {
 		content =
@@ -31,7 +31,7 @@ export function edit(
 export function getLineStartOffset(
 	content: string,
 	eol: string,
-	atOffset: number
+	atOffset: number,
 ): number {
 	let lineStartingOffset = atOffset;
 	while (lineStartingOffset >= 0) {
@@ -56,7 +56,7 @@ export function getLineStartOffset(
 export function getLineEndOffset(
 	content: string,
 	eol: string,
-	atOffset: number
+	atOffset: number,
 ): number {
 	let lineEndOffset = atOffset;
 	while (lineEndOffset >= 0) {

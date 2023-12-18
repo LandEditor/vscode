@@ -27,9 +27,9 @@ import {
 } from "vs/platform/update/common/update";
 import {
 	AbstractUpdateService,
-	createUpdateURL,
 	UpdateErrorClassification,
 	UpdateNotAvailableClassification,
+	createUpdateURL,
 } from "vs/platform/update/electron-main/abstractUpdateService";
 
 export class DarwinUpdateService
@@ -42,20 +42,20 @@ export class DarwinUpdateService
 		return Event.fromNodeEventEmitter(
 			electron.autoUpdater,
 			"error",
-			(_, message) => message
+			(_, message) => message,
 		);
 	}
 	@memoize private get onRawUpdateNotAvailable(): Event<void> {
 		return Event.fromNodeEventEmitter<void>(
 			electron.autoUpdater,
-			"update-not-available"
+			"update-not-available",
 		);
 	}
 	@memoize private get onRawUpdateAvailable(): Event<IUpdate> {
 		return Event.fromNodeEventEmitter(
 			electron.autoUpdater,
 			"update-available",
-			(_, url, version) => ({ url, version, productVersion: version })
+			(_, url, version) => ({ url, version, productVersion: version }),
 		);
 	}
 	@memoize private get onRawUpdateDownloaded(): Event<IUpdate> {
@@ -67,7 +67,7 @@ export class DarwinUpdateService
 				version,
 				productVersion: version,
 				date,
-			})
+			}),
 		);
 	}
 
@@ -103,7 +103,7 @@ export class DarwinUpdateService
 		}
 
 		this.logService.trace(
-			"update#handleRelaunch(): running raw#quitAndInstall()"
+			"update#handleRelaunch(): running raw#quitAndInstall()",
 		);
 		this.doQuitAndInstall();
 
@@ -116,17 +116,17 @@ export class DarwinUpdateService
 		this.onRawUpdateAvailable(
 			this.onUpdateAvailable,
 			this,
-			this.disposables
+			this.disposables,
 		);
 		this.onRawUpdateDownloaded(
 			this.onUpdateDownloaded,
 			this,
-			this.disposables
+			this.disposables,
 		);
 		this.onRawUpdateNotAvailable(
 			this.onUpdateNotAvailable,
 			this,
-			this.disposables
+			this.disposables,
 		);
 	}
 
@@ -148,10 +148,10 @@ export class DarwinUpdateService
 
 	protected buildUpdateFeedUrl(quality: string): string | undefined {
 		let assetID: string;
-		if (!this.productService.darwinUniversalAssetId) {
-			assetID = process.arch === "x64" ? "darwin" : "darwin-arm64";
-		} else {
+		if (this.productService.darwinUniversalAssetId) {
 			assetID = this.productService.darwinUniversalAssetId;
+		} else {
+			assetID = process.arch === "x64" ? "darwin" : "darwin-arm64";
 		}
 		const url = createUpdateURL(assetID, quality, this.productService);
 		try {
@@ -192,7 +192,7 @@ export class DarwinUpdateService
 			comment: "This is used to know how often VS Code has successfully downloaded the update.";
 		};
 		this.telemetryService.publicLog2<
-			{ version: String },
+			{ version: string },
 			UpdateDownloadedClassification
 		>("update:downloaded", { version: update.version });
 
@@ -213,7 +213,7 @@ export class DarwinUpdateService
 
 	protected override doQuitAndInstall(): void {
 		this.logService.trace(
-			"update#quitAndInstall(): running raw#quitAndInstall()"
+			"update#quitAndInstall(): running raw#quitAndInstall()",
 		);
 		electron.autoUpdater.quitAndInstall();
 	}

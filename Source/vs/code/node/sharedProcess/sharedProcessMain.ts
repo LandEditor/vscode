@@ -4,36 +4,40 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { hostname, release } from "os";
-import {
-	MessagePortMain,
-	MessageEvent,
-} from "vs/base/parts/sandbox/node/electronTypes";
+import { firstOrDefault } from "vs/base/common/arrays";
 import { toErrorMessage } from "vs/base/common/errorMessage";
 import {
 	onUnexpectedError,
 	setUnexpectedErrorHandler,
 } from "vs/base/common/errors";
+import { Emitter } from "vs/base/common/event";
 import {
-	combinedDisposable,
 	Disposable,
 	DisposableStore,
+	combinedDisposable,
 	toDisposable,
 } from "vs/base/common/lifecycle";
 import { Schemas } from "vs/base/common/network";
+import { isLinux } from "vs/base/common/platform";
 import { URI } from "vs/base/common/uri";
-import { firstOrDefault } from "vs/base/common/arrays";
-import { Emitter } from "vs/base/common/event";
 import { ProxyChannel, StaticRouter } from "vs/base/parts/ipc/common/ipc";
 import {
 	IClientConnectionFilter,
 	Server as UtilityProcessMessagePortServer,
 	once,
 } from "vs/base/parts/ipc/node/ipc.mp";
+import {
+	MessageEvent,
+	MessagePortMain,
+} from "vs/base/parts/sandbox/node/electronTypes";
 import { CodeCacheCleaner } from "vs/code/node/sharedProcess/contrib/codeCacheCleaner";
+import { ExtensionsContributions } from "vs/code/node/sharedProcess/contrib/extensions";
 import { LanguagePackCachedDataCleaner } from "vs/code/node/sharedProcess/contrib/languagePackCachedDataCleaner";
 import { LocalizationsUpdater } from "vs/code/node/sharedProcess/contrib/localizationsUpdater";
 import { LogsDataCleaner } from "vs/code/node/sharedProcess/contrib/logsDataCleaner";
 import { UnusedWorkspaceStorageDataCleaner } from "vs/code/node/sharedProcess/contrib/storageDataCleaner";
+import { UserDataProfilesCleaner } from "vs/code/node/sharedProcess/contrib/userDataProfilesCleaner";
+import { localize } from "vs/nls";
 import { IChecksumService } from "vs/platform/checksum/common/checksumService";
 import { ChecksumService } from "vs/platform/checksum/node/checksumService";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
@@ -43,6 +47,7 @@ import { DiagnosticsService } from "vs/platform/diagnostics/node/diagnosticsServ
 import { IDownloadService } from "vs/platform/download/common/download";
 import { DownloadService } from "vs/platform/download/common/downloadService";
 import { INativeEnvironmentService } from "vs/platform/environment/common/environment";
+import { NativeEnvironmentService } from "vs/platform/environment/node/environmentService";
 import { GlobalExtensionEnablementService } from "vs/platform/extensionManagement/common/extensionEnablementService";
 import { ExtensionGalleryService } from "vs/platform/extensionManagement/common/extensionGalleryService";
 import {
@@ -52,20 +57,34 @@ import {
 	IGlobalExtensionEnablementService,
 } from "vs/platform/extensionManagement/common/extensionManagement";
 import {
-	ExtensionSignatureVerificationService,
-	IExtensionSignatureVerificationService,
-} from "vs/platform/extensionManagement/node/extensionSignatureVerificationService";
-import {
 	ExtensionManagementChannel,
 	ExtensionTipsChannel,
 } from "vs/platform/extensionManagement/common/extensionManagementIpc";
 import {
+	ExtensionStorageService,
+	IExtensionStorageService,
+} from "vs/platform/extensionManagement/common/extensionStorage";
+import { IExtensionsProfileScannerService } from "vs/platform/extensionManagement/common/extensionsProfileScannerService";
+import { IExtensionsScannerService } from "vs/platform/extensionManagement/common/extensionsScannerService";
+import {
 	ExtensionManagementService,
 	INativeServerExtensionManagementService,
 } from "vs/platform/extensionManagement/node/extensionManagementService";
+import {
+	ExtensionSignatureVerificationService,
+	IExtensionSignatureVerificationService,
+} from "vs/platform/extensionManagement/node/extensionSignatureVerificationService";
+import { ExtensionTipsService } from "vs/platform/extensionManagement/node/extensionTipsService";
+import { ExtensionsProfileScannerService } from "vs/platform/extensionManagement/node/extensionsProfileScannerService";
+import { ExtensionsScannerService } from "vs/platform/extensionManagement/node/extensionsScannerService";
 import { IExtensionRecommendationNotificationService } from "vs/platform/extensionRecommendations/common/extensionRecommendations";
-import { IFileService } from "vs/platform/files/common/files";
+import { ExtensionRecommendationNotificationServiceChannelClient } from "vs/platform/extensionRecommendations/common/extensionRecommendationsIpc";
+import {
+	DiskFileSystemProviderClient,
+	LOCAL_FILE_SYSTEM_CHANNEL_NAME,
+} from "vs/platform/files/common/diskFileSystemProviderClient";
 import { FileService } from "vs/platform/files/common/fileService";
+import { IFileService } from "vs/platform/files/common/files";
 import { DiskFileSystemProvider } from "vs/platform/files/node/diskFileSystemProvider";
 import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
 import {
@@ -74,19 +93,57 @@ import {
 } from "vs/platform/instantiation/common/instantiation";
 import { InstantiationService } from "vs/platform/instantiation/common/instantiationService";
 import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
+import {
+	IMainProcessService,
+	MainProcessService,
+} from "vs/platform/ipc/common/mainProcessService";
 import { ILanguagePackService } from "vs/platform/languagePacks/common/languagePacks";
 import { NativeLanguagePackService } from "vs/platform/languagePacks/node/languagePacks";
 import {
+	ISharedProcessLifecycleService,
+	SharedProcessLifecycleService,
+} from "vs/platform/lifecycle/node/sharedProcessLifecycleService";
+import {
 	ConsoleLogger,
-	ILoggerService,
 	ILogService,
+	ILoggerService,
 } from "vs/platform/log/common/log";
 import { LoggerChannelClient } from "vs/platform/log/common/logIpc";
+import { LogService } from "vs/platform/log/common/logService";
+import { INativeHostService } from "vs/platform/native/common/native";
+import { NativeHostService } from "vs/platform/native/common/nativeHostService";
+import {
+	IPolicyService,
+	NullPolicyService,
+} from "vs/platform/policy/common/policy";
+import { PolicyChannelClient } from "vs/platform/policy/common/policyIpc";
 import product from "vs/platform/product/common/product";
 import { IProductService } from "vs/platform/product/common/productService";
+import { IV8InspectProfilingService } from "vs/platform/profiling/common/profiling";
+import { InspectProfilingService as V8InspectProfilingService } from "vs/platform/profiling/node/profilingService";
+import { RemoteConnectionType } from "vs/platform/remote/common/remoteAuthorityResolver";
+import {
+	IRemoteSocketFactoryService,
+	RemoteSocketFactoryService,
+} from "vs/platform/remote/common/remoteSocketFactoryService";
+import {
+	ISharedProcessTunnelService,
+	ipcSharedProcessTunnelChannelName,
+} from "vs/platform/remote/common/sharedProcessTunnelService";
+import { nodeSocketFactory } from "vs/platform/remote/node/nodeSocketFactory";
+import { IRemoteTunnelService } from "vs/platform/remoteTunnel/common/remoteTunnel";
+import { RemoteTunnelService } from "vs/platform/remoteTunnel/node/remoteTunnelService";
 import { IRequestService } from "vs/platform/request/common/request";
+import { RequestChannelClient } from "vs/platform/request/common/requestIpc";
+import {
+	SharedProcessLifecycle,
+	SharedProcessRawConnection,
+} from "vs/platform/sharedProcess/common/sharedProcess";
 import { ISharedProcessConfiguration } from "vs/platform/sharedProcess/node/sharedProcess";
+import { ISignService } from "vs/platform/sign/common/sign";
+import { SignService } from "vs/platform/sign/node/signService";
 import { IStorageService } from "vs/platform/storage/common/storage";
+import { RemoteStorageService } from "vs/platform/storage/common/storageService";
 import { resolveCommonProperties } from "vs/platform/telemetry/common/commonProperties";
 import {
 	ICustomEndpointTelemetryService,
@@ -96,39 +153,46 @@ import { TelemetryAppenderChannel } from "vs/platform/telemetry/common/telemetry
 import { TelemetryLogAppender } from "vs/platform/telemetry/common/telemetryLogAppender";
 import { TelemetryService } from "vs/platform/telemetry/common/telemetryService";
 import {
-	supportsTelemetry,
 	ITelemetryAppender,
 	NullAppender,
 	NullTelemetryService,
 	getPiiPathsFromEnvironment,
 	isInternalTelemetry,
 	isLoggingOnly,
+	supportsTelemetry,
 } from "vs/platform/telemetry/common/telemetryUtils";
+import { OneDataSystemAppender } from "vs/platform/telemetry/node/1dsAppender";
 import { CustomEndpointTelemetryService } from "vs/platform/telemetry/node/customEndpointTelemetryService";
+import { ISharedTunnelsService } from "vs/platform/tunnel/common/tunnel";
+import { SharedProcessTunnelService } from "vs/platform/tunnel/node/sharedProcessTunnelService";
+import { SharedTunnelsService } from "vs/platform/tunnel/node/tunnelService";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import { UriIdentityService } from "vs/platform/uriIdentity/common/uriIdentityService";
+import { FileUserDataProvider } from "vs/platform/userData/common/fileUserDataProvider";
+import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
+import { UserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfileIpc";
+import { IUserDataProfileStorageService } from "vs/platform/userDataProfile/common/userDataProfileStorageService";
+import { NativeUserDataProfileStorageService } from "vs/platform/userDataProfile/node/userDataProfileStorageService";
 import {
-	ExtensionStorageService,
-	IExtensionStorageService,
-} from "vs/platform/extensionManagement/common/extensionStorage";
-import {
-	IgnoredExtensionsManagementService,
 	IIgnoredExtensionsManagementService,
+	IgnoredExtensionsManagementService,
 } from "vs/platform/userDataSync/common/ignoredExtensions";
 import {
+	IUserDataSyncEnablementService,
 	IUserDataSyncLocalStoreService,
 	IUserDataSyncLogService,
-	IUserDataSyncEnablementService,
+	IUserDataSyncResourceProviderService,
 	IUserDataSyncService,
 	IUserDataSyncStoreManagementService,
 	IUserDataSyncStoreService,
 	IUserDataSyncUtilService,
 	registerConfiguration as registerUserDataSyncConfiguration,
-	IUserDataSyncResourceProviderService,
 } from "vs/platform/userDataSync/common/userDataSync";
 import {
 	IUserDataSyncAccountService,
 	UserDataSyncAccountService,
 } from "vs/platform/userDataSync/common/userDataSyncAccount";
-import { UserDataSyncLocalStoreService } from "vs/platform/userDataSync/common/userDataSyncLocalStoreService";
+import { UserDataSyncEnablementService } from "vs/platform/userDataSync/common/userDataSyncEnablementService";
 import {
 	UserDataAutoSyncChannel,
 	UserDataSyncAccountServiceChannel,
@@ -136,96 +200,32 @@ import {
 	UserDataSyncStoreManagementServiceChannel,
 	UserDataSyncUtilServiceClient,
 } from "vs/platform/userDataSync/common/userDataSyncIpc";
+import { UserDataSyncLocalStoreService } from "vs/platform/userDataSync/common/userDataSyncLocalStoreService";
 import { UserDataSyncLogService } from "vs/platform/userDataSync/common/userDataSyncLog";
 import {
 	IUserDataSyncMachinesService,
 	UserDataSyncMachinesService,
 } from "vs/platform/userDataSync/common/userDataSyncMachines";
-import { UserDataSyncEnablementService } from "vs/platform/userDataSync/common/userDataSyncEnablementService";
+import { UserDataSyncResourceProviderService } from "vs/platform/userDataSync/common/userDataSyncResourceProvider";
 import { UserDataSyncService } from "vs/platform/userDataSync/common/userDataSyncService";
 import { UserDataSyncChannel } from "vs/platform/userDataSync/common/userDataSyncServiceIpc";
 import {
 	UserDataSyncStoreManagementService,
 	UserDataSyncStoreService,
 } from "vs/platform/userDataSync/common/userDataSyncStoreService";
-import { IUserDataProfileStorageService } from "vs/platform/userDataProfile/common/userDataProfileStorageService";
-import { NativeUserDataProfileStorageService } from "vs/platform/userDataProfile/node/userDataProfileStorageService";
-import { ActiveWindowManager } from "vs/platform/windows/node/windowTracker";
-import { ISignService } from "vs/platform/sign/common/sign";
-import { SignService } from "vs/platform/sign/node/signService";
-import { ISharedTunnelsService } from "vs/platform/tunnel/common/tunnel";
-import { SharedTunnelsService } from "vs/platform/tunnel/node/tunnelService";
-import {
-	ipcSharedProcessTunnelChannelName,
-	ISharedProcessTunnelService,
-} from "vs/platform/remote/common/sharedProcessTunnelService";
-import { SharedProcessTunnelService } from "vs/platform/tunnel/node/sharedProcessTunnelService";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import { UriIdentityService } from "vs/platform/uriIdentity/common/uriIdentityService";
-import { isLinux } from "vs/base/common/platform";
-import { FileUserDataProvider } from "vs/platform/userData/common/fileUserDataProvider";
-import {
-	DiskFileSystemProviderClient,
-	LOCAL_FILE_SYSTEM_CHANNEL_NAME,
-} from "vs/platform/files/common/diskFileSystemProviderClient";
-import { InspectProfilingService as V8InspectProfilingService } from "vs/platform/profiling/node/profilingService";
-import { IV8InspectProfilingService } from "vs/platform/profiling/common/profiling";
-import { IExtensionsScannerService } from "vs/platform/extensionManagement/common/extensionsScannerService";
-import { ExtensionsScannerService } from "vs/platform/extensionManagement/node/extensionsScannerService";
-import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
-import { IExtensionsProfileScannerService } from "vs/platform/extensionManagement/common/extensionsProfileScannerService";
-import { PolicyChannelClient } from "vs/platform/policy/common/policyIpc";
-import {
-	IPolicyService,
-	NullPolicyService,
-} from "vs/platform/policy/common/policy";
-import { UserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfileIpc";
-import { OneDataSystemAppender } from "vs/platform/telemetry/node/1dsAppender";
-import { UserDataProfilesCleaner } from "vs/code/node/sharedProcess/contrib/userDataProfilesCleaner";
-import { IRemoteTunnelService } from "vs/platform/remoteTunnel/common/remoteTunnel";
-import { UserDataSyncResourceProviderService } from "vs/platform/userDataSync/common/userDataSyncResourceProvider";
-import { ExtensionsContributions } from "vs/code/node/sharedProcess/contrib/extensions";
-import { localize } from "vs/nls";
-import { LogService } from "vs/platform/log/common/logService";
-import {
-	ISharedProcessLifecycleService,
-	SharedProcessLifecycleService,
-} from "vs/platform/lifecycle/node/sharedProcessLifecycleService";
-import { RemoteTunnelService } from "vs/platform/remoteTunnel/node/remoteTunnelService";
-import { ExtensionsProfileScannerService } from "vs/platform/extensionManagement/node/extensionsProfileScannerService";
-import { RequestChannelClient } from "vs/platform/request/common/requestIpc";
-import { ExtensionRecommendationNotificationServiceChannelClient } from "vs/platform/extensionRecommendations/common/extensionRecommendationsIpc";
-import { INativeHostService } from "vs/platform/native/common/native";
-import { NativeHostService } from "vs/platform/native/common/nativeHostService";
 import { UserDataAutoSyncService } from "vs/platform/userDataSync/node/userDataAutoSyncService";
-import { ExtensionTipsService } from "vs/platform/extensionManagement/node/extensionTipsService";
-import {
-	IMainProcessService,
-	MainProcessService,
-} from "vs/platform/ipc/common/mainProcessService";
-import { RemoteStorageService } from "vs/platform/storage/common/storageService";
-import {
-	IRemoteSocketFactoryService,
-	RemoteSocketFactoryService,
-} from "vs/platform/remote/common/remoteSocketFactoryService";
-import { RemoteConnectionType } from "vs/platform/remote/common/remoteAuthorityResolver";
-import { nodeSocketFactory } from "vs/platform/remote/node/nodeSocketFactory";
-import { NativeEnvironmentService } from "vs/platform/environment/node/environmentService";
-import {
-	SharedProcessRawConnection,
-	SharedProcessLifecycle,
-} from "vs/platform/sharedProcess/common/sharedProcess";
+import { ActiveWindowManager } from "vs/platform/windows/node/windowTracker";
 
 class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 	private readonly server = this._register(
-		new UtilityProcessMessagePortServer(this)
+		new UtilityProcessMessagePortServer(this),
 	);
 
 	private lifecycleService: SharedProcessLifecycleService | undefined =
 		undefined;
 
 	private readonly onDidWindowConnectRaw = this._register(
-		new Emitter<MessagePortMain>()
+		new Emitter<MessagePortMain>(),
 	);
 
 	constructor(private configuration: ISharedProcessConfiguration) {
@@ -260,13 +260,13 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			const logService = accessor.get(ILogService);
 			const telemetryService = accessor.get(ITelemetryService);
 			const userDataProfilesService = accessor.get(
-				IUserDataProfilesService
+				IUserDataProfilesService,
 			);
 
 			// Log info
 			logService.trace(
 				"sharedProcess configuration",
-				JSON.stringify(this.configuration)
+				JSON.stringify(this.configuration),
 			);
 
 			// Channels
@@ -281,9 +281,9 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 				userDataProfilesService.onDidChangeProfiles(() =>
 					this.reportProfilesInfo(
 						telemetryService,
-						userDataProfilesService
-					)
-				)
+						userDataProfilesService,
+					),
+				),
 			);
 		});
 
@@ -292,19 +292,19 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			combinedDisposable(
 				instantiationService.createInstance(
 					CodeCacheCleaner,
-					this.configuration.codeCachePath
+					this.configuration.codeCachePath,
 				),
 				instantiationService.createInstance(
-					LanguagePackCachedDataCleaner
+					LanguagePackCachedDataCleaner,
 				),
 				instantiationService.createInstance(
-					UnusedWorkspaceStorageDataCleaner
+					UnusedWorkspaceStorageDataCleaner,
 				),
 				instantiationService.createInstance(LogsDataCleaner),
 				instantiationService.createInstance(LocalizationsUpdater),
 				instantiationService.createInstance(ExtensionsContributions),
-				instantiationService.createInstance(UserDataProfilesCleaner)
-			)
+				instantiationService.createInstance(UserDataProfilesCleaner),
+			),
 		);
 	}
 
@@ -319,7 +319,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 		const mainRouter = new StaticRouter((ctx) => ctx === "main");
 		const mainProcessService = new MainProcessService(
 			this.server,
-			mainRouter
+			mainRouter,
 		);
 		services.set(IMainProcessService, mainProcessService);
 
@@ -327,15 +327,15 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 		const policyService = this.configuration.policiesData
 			? new PolicyChannelClient(
 					this.configuration.policiesData,
-					mainProcessService.getChannel("policy")
-				)
+					mainProcessService.getChannel("policy"),
+			  )
 			: new NullPolicyService();
 		services.set(IPolicyService, policyService);
 
 		// Environment
 		const environmentService = new NativeEnvironmentService(
 			this.configuration.args,
-			productService
+			productService,
 		);
 		services.set(INativeEnvironmentService, environmentService);
 
@@ -348,7 +348,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 				...loggerResource,
 				resource: URI.revive(loggerResource.resource),
 			})),
-			mainProcessService.getChannel("logger")
+			mainProcessService.getChannel("logger"),
 		);
 		services.set(ILoggerService, loggerService);
 
@@ -356,19 +356,19 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 		const logger = this._register(
 			loggerService.createLogger("sharedprocess", {
 				name: localize("sharedLog", "Shared"),
-			})
+			}),
 		);
 		const consoleLogger = this._register(
-			new ConsoleLogger(logger.getLevel())
+			new ConsoleLogger(logger.getLevel()),
 		);
 		const logService = this._register(
-			new LogService(logger, [consoleLogger])
+			new LogService(logger, [consoleLogger]),
 		);
 		services.set(ILogService, logService);
 
 		// Lifecycle
 		this.lifecycleService = this._register(
-			new SharedProcessLifecycleService(logService)
+			new SharedProcessLifecycleService(logService),
 		);
 		services.set(ISharedProcessLifecycleService, this.lifecycleService);
 
@@ -377,7 +377,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 		services.set(IFileService, fileService);
 
 		const diskFileSystemProvider = this._register(
-			new DiskFileSystemProvider(logService)
+			new DiskFileSystemProvider(logService),
 		);
 		fileService.registerProvider(Schemas.file, diskFileSystemProvider);
 
@@ -392,8 +392,8 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 				URI.revive(this.configuration.profiles.home).with({
 					scheme: environmentService.userRoamingDataHome.scheme,
 				}),
-				mainProcessService.getChannel("userDataProfiles")
-			)
+				mainProcessService.getChannel("userDataProfiles"),
+			),
 		);
 		services.set(IUserDataProfilesService, userDataProfilesService);
 
@@ -407,20 +407,20 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 				this._register(
 					new DiskFileSystemProviderClient(
 						mainProcessService.getChannel(
-							LOCAL_FILE_SYSTEM_CHANNEL_NAME
+							LOCAL_FILE_SYSTEM_CHANNEL_NAME,
 						),
-						{ pathCaseSensitive: isLinux }
-					)
+						{ pathCaseSensitive: isLinux },
+					),
 				),
 				Schemas.vscodeUserData,
 				userDataProfilesService,
 				uriIdentityService,
-				logService
-			)
+				logService,
+			),
 		);
 		fileService.registerProvider(
 			Schemas.vscodeUserData,
-			userDataFileSystemProvider
+			userDataFileSystemProvider,
 		);
 
 		// Configuration
@@ -429,8 +429,8 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 				userDataProfilesService.defaultProfile.settingsResource,
 				fileService,
 				policyService,
-				logService
-			)
+				logService,
+			),
 		);
 		services.set(IConfigurationService, configurationService);
 
@@ -442,7 +442,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 				currentProfile: userDataProfilesService.defaultProfile,
 			},
 			mainProcessService,
-			environmentService
+			environmentService,
 		);
 		services.set(IStorageService, storageService);
 		this._register(toDisposable(() => storageService.flush()));
@@ -455,7 +455,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 
 		// Request
 		const requestService = new RequestChannelClient(
-			mainProcessService.getChannel("request")
+			mainProcessService.getChannel("request"),
 		);
 		services.set(IRequestService, requestService);
 
@@ -465,8 +465,8 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			new SyncDescriptor(
 				ChecksumService,
 				undefined,
-				false /* proxied to other processes */
-			)
+				false /* proxied to other processes */,
+			),
 		);
 
 		// V8 Inspect profiler
@@ -475,38 +475,38 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			new SyncDescriptor(
 				V8InspectProfilingService,
 				undefined,
-				false /* proxied to other processes */
-			)
+				false /* proxied to other processes */,
+			),
 		);
 
 		// Native Host
 		const nativeHostService = new NativeHostService(
 			-1 /* we are not running in a browser window context */,
-			mainProcessService
+			mainProcessService,
 		) as INativeHostService;
 		services.set(INativeHostService, nativeHostService);
 
 		// Download
 		services.set(
 			IDownloadService,
-			new SyncDescriptor(DownloadService, undefined, true)
+			new SyncDescriptor(DownloadService, undefined, true),
 		);
 
 		// Extension recommendations
 		const activeWindowManager = this._register(
-			new ActiveWindowManager(nativeHostService)
+			new ActiveWindowManager(nativeHostService),
 		);
 		const activeWindowRouter = new StaticRouter((ctx) =>
-			activeWindowManager.getActiveClientId().then((id) => ctx === id)
+			activeWindowManager.getActiveClientId().then((id) => ctx === id),
 		);
 		services.set(
 			IExtensionRecommendationNotificationService,
 			new ExtensionRecommendationNotificationServiceChannelClient(
 				this.server.getChannel(
 					"extensionRecommendationNotification",
-					activeWindowRouter
-				)
-			)
+					activeWindowRouter,
+				),
+			),
 		);
 
 		// Telemetry
@@ -514,14 +514,14 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 		const appenders: ITelemetryAppender[] = [];
 		const internalTelemetry = isInternalTelemetry(
 			productService,
-			configurationService
+			configurationService,
 		);
 		if (supportsTelemetry(productService, environmentService)) {
 			const logAppender = new TelemetryLogAppender(
 				logService,
 				loggerService,
 				environmentService,
-				productService
+				productService,
 			);
 			appenders.push(logAppender);
 			if (
@@ -533,7 +533,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 					internalTelemetry,
 					"monacoworkbench",
 					null,
-					productService.aiConfig.ariaKey
+					productService.aiConfig.ariaKey,
 				);
 				this._register(toDisposable(() => collectorAppender.flush())); // Ensure the 1DS appender is disposed so that it flushes remaining data
 				appenders.push(collectorAppender);
@@ -550,13 +550,13 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 						productService.version,
 						this.configuration.machineId,
 						this.configuration.sqmId,
-						internalTelemetry
+						internalTelemetry,
 					),
 					sendErrorTelemetry: true,
 					piiPaths: getPiiPathsFromEnvironment(environmentService),
 				},
 				configurationService,
-				productService
+				productService,
 			);
 		} else {
 			telemetryService = NullTelemetryService;
@@ -566,7 +566,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 
 		this.server.registerChannel(
 			"telemetryAppender",
-			new TelemetryAppenderChannel(appenders)
+			new TelemetryAppenderChannel(appenders),
 		);
 		services.set(ITelemetryService, telemetryService);
 
@@ -578,39 +578,43 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 				logService,
 				loggerService,
 				environmentService,
-				productService
+				productService,
 			);
 		services.set(
 			ICustomEndpointTelemetryService,
-			customEndpointTelemetryService
+			customEndpointTelemetryService,
 		);
 
 		// Extension Management
 		services.set(
 			IExtensionsProfileScannerService,
-			new SyncDescriptor(ExtensionsProfileScannerService, undefined, true)
+			new SyncDescriptor(
+				ExtensionsProfileScannerService,
+				undefined,
+				true,
+			),
 		);
 		services.set(
 			IExtensionsScannerService,
-			new SyncDescriptor(ExtensionsScannerService, undefined, true)
+			new SyncDescriptor(ExtensionsScannerService, undefined, true),
 		);
 		services.set(
 			IExtensionSignatureVerificationService,
 			new SyncDescriptor(
 				ExtensionSignatureVerificationService,
 				undefined,
-				true
-			)
+				true,
+			),
 		);
 		services.set(
 			INativeServerExtensionManagementService,
-			new SyncDescriptor(ExtensionManagementService, undefined, true)
+			new SyncDescriptor(ExtensionManagementService, undefined, true),
 		);
 
 		// Extension Gallery
 		services.set(
 			IExtensionGalleryService,
-			new SyncDescriptor(ExtensionGalleryService, undefined, true)
+			new SyncDescriptor(ExtensionGalleryService, undefined, true),
 		);
 
 		// Extension Tips
@@ -619,8 +623,8 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			new SyncDescriptor(
 				ExtensionTipsService,
 				undefined,
-				false /* Eagerly scans and computes exe based recommendations */
-			)
+				false /* Eagerly scans and computes exe based recommendations */,
+			),
 		);
 
 		// Localizations
@@ -629,8 +633,8 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			new SyncDescriptor(
 				NativeLanguagePackService,
 				undefined,
-				false /* proxied to other processes */
-			)
+				false /* proxied to other processes */,
+			),
 		);
 
 		// Diagnostics
@@ -639,99 +643,99 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			new SyncDescriptor(
 				DiagnosticsService,
 				undefined,
-				false /* proxied to other processes */
-			)
+				false /* proxied to other processes */,
+			),
 		);
 
 		// Settings Sync
 		services.set(
 			IUserDataSyncAccountService,
-			new SyncDescriptor(UserDataSyncAccountService, undefined, true)
+			new SyncDescriptor(UserDataSyncAccountService, undefined, true),
 		);
 		services.set(
 			IUserDataSyncLogService,
-			new SyncDescriptor(UserDataSyncLogService, undefined, true)
+			new SyncDescriptor(UserDataSyncLogService, undefined, true),
 		);
 		services.set(
 			IUserDataSyncUtilService,
 			new UserDataSyncUtilServiceClient(
 				this.server.getChannel(
 					"userDataSyncUtil",
-					(client) => client.ctx !== "main"
-				)
-			)
+					(client) => client.ctx !== "main",
+				),
+			),
 		);
 		services.set(
 			IGlobalExtensionEnablementService,
 			new SyncDescriptor(
 				GlobalExtensionEnablementService,
 				undefined,
-				false /* Eagerly resets installed extensions */
-			)
+				false /* Eagerly resets installed extensions */,
+			),
 		);
 		services.set(
 			IIgnoredExtensionsManagementService,
 			new SyncDescriptor(
 				IgnoredExtensionsManagementService,
 				undefined,
-				true
-			)
+				true,
+			),
 		);
 		services.set(
 			IExtensionStorageService,
-			new SyncDescriptor(ExtensionStorageService)
+			new SyncDescriptor(ExtensionStorageService),
 		);
 		services.set(
 			IUserDataSyncStoreManagementService,
 			new SyncDescriptor(
 				UserDataSyncStoreManagementService,
 				undefined,
-				true
-			)
+				true,
+			),
 		);
 		services.set(
 			IUserDataSyncStoreService,
-			new SyncDescriptor(UserDataSyncStoreService, undefined, true)
+			new SyncDescriptor(UserDataSyncStoreService, undefined, true),
 		);
 		services.set(
 			IUserDataSyncMachinesService,
-			new SyncDescriptor(UserDataSyncMachinesService, undefined, true)
+			new SyncDescriptor(UserDataSyncMachinesService, undefined, true),
 		);
 		services.set(
 			IUserDataSyncLocalStoreService,
 			new SyncDescriptor(
 				UserDataSyncLocalStoreService,
 				undefined,
-				false /* Eagerly cleans up old backups */
-			)
+				false /* Eagerly cleans up old backups */,
+			),
 		);
 		services.set(
 			IUserDataSyncEnablementService,
-			new SyncDescriptor(UserDataSyncEnablementService, undefined, true)
+			new SyncDescriptor(UserDataSyncEnablementService, undefined, true),
 		);
 		services.set(
 			IUserDataSyncService,
 			new SyncDescriptor(
 				UserDataSyncService,
 				undefined,
-				false /* Initializes the Sync State */
-			)
+				false /* Initializes the Sync State */,
+			),
 		);
 		services.set(
 			IUserDataProfileStorageService,
 			new SyncDescriptor(
 				NativeUserDataProfileStorageService,
 				undefined,
-				true
-			)
+				true,
+			),
 		);
 		services.set(
 			IUserDataSyncResourceProviderService,
 			new SyncDescriptor(
 				UserDataSyncResourceProviderService,
 				undefined,
-				true
-			)
+				true,
+			),
 		);
 
 		// Signing
@@ -740,8 +744,8 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			new SyncDescriptor(
 				SignService,
 				undefined,
-				false /* proxied to other processes */
-			)
+				false /* proxied to other processes */,
+			),
 		);
 
 		// Tunnel
@@ -749,21 +753,21 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 		services.set(IRemoteSocketFactoryService, remoteSocketFactoryService);
 		remoteSocketFactoryService.register(
 			RemoteConnectionType.WebSocket,
-			nodeSocketFactory
+			nodeSocketFactory,
 		);
 		services.set(
 			ISharedTunnelsService,
-			new SyncDescriptor(SharedTunnelsService)
+			new SyncDescriptor(SharedTunnelsService),
 		);
 		services.set(
 			ISharedProcessTunnelService,
-			new SyncDescriptor(SharedProcessTunnelService)
+			new SyncDescriptor(SharedProcessTunnelService),
 		);
 
 		// Remote Tunnel
 		services.set(
 			IRemoteTunnelService,
-			new SyncDescriptor(RemoteTunnelService)
+			new SyncDescriptor(RemoteTunnelService),
 		);
 
 		return new InstantiationService(services);
@@ -775,127 +779,127 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 		// Extensions Management
 		const channel = new ExtensionManagementChannel(
 			accessor.get(IExtensionManagementService),
-			() => null
+			() => null,
 		);
 		this.server.registerChannel("extensions", channel);
 
 		// Language Packs
 		const languagePacksChannel = ProxyChannel.fromService(
 			accessor.get(ILanguagePackService),
-			disposables
+			disposables,
 		);
 		this.server.registerChannel("languagePacks", languagePacksChannel);
 
 		// Diagnostics
 		const diagnosticsChannel = ProxyChannel.fromService(
 			accessor.get(IDiagnosticsService),
-			disposables
+			disposables,
 		);
 		this.server.registerChannel("diagnostics", diagnosticsChannel);
 
 		// Extension Tips
 		const extensionTipsChannel = new ExtensionTipsChannel(
-			accessor.get(IExtensionTipsService)
+			accessor.get(IExtensionTipsService),
 		);
 		this.server.registerChannel(
 			"extensionTipsService",
-			extensionTipsChannel
+			extensionTipsChannel,
 		);
 
 		// Checksum
 		const checksumChannel = ProxyChannel.fromService(
 			accessor.get(IChecksumService),
-			disposables
+			disposables,
 		);
 		this.server.registerChannel("checksum", checksumChannel);
 
 		// Profiling
 		const profilingChannel = ProxyChannel.fromService(
 			accessor.get(IV8InspectProfilingService),
-			disposables
+			disposables,
 		);
 		this.server.registerChannel("v8InspectProfiling", profilingChannel);
 
 		// Settings Sync
 		const userDataSyncMachineChannel =
 			new UserDataSyncMachinesServiceChannel(
-				accessor.get(IUserDataSyncMachinesService)
+				accessor.get(IUserDataSyncMachinesService),
 			);
 		this.server.registerChannel(
 			"userDataSyncMachines",
-			userDataSyncMachineChannel
+			userDataSyncMachineChannel,
 		);
 
 		// Custom Endpoint Telemetry
 		const customEndpointTelemetryChannel = ProxyChannel.fromService(
 			accessor.get(ICustomEndpointTelemetryService),
-			disposables
+			disposables,
 		);
 		this.server.registerChannel(
 			"customEndpointTelemetry",
-			customEndpointTelemetryChannel
+			customEndpointTelemetryChannel,
 		);
 
 		const userDataSyncAccountChannel =
 			new UserDataSyncAccountServiceChannel(
-				accessor.get(IUserDataSyncAccountService)
+				accessor.get(IUserDataSyncAccountService),
 			);
 		this.server.registerChannel(
 			"userDataSyncAccount",
-			userDataSyncAccountChannel
+			userDataSyncAccountChannel,
 		);
 
 		const userDataSyncStoreManagementChannel =
 			new UserDataSyncStoreManagementServiceChannel(
-				accessor.get(IUserDataSyncStoreManagementService)
+				accessor.get(IUserDataSyncStoreManagementService),
 			);
 		this.server.registerChannel(
 			"userDataSyncStoreManagement",
-			userDataSyncStoreManagementChannel
+			userDataSyncStoreManagementChannel,
 		);
 
 		const userDataSyncChannel = new UserDataSyncChannel(
 			accessor.get(IUserDataSyncService),
 			accessor.get(IUserDataProfilesService),
-			accessor.get(ILogService)
+			accessor.get(ILogService),
 		);
 		this.server.registerChannel("userDataSync", userDataSyncChannel);
 
 		const userDataAutoSync = this._register(
 			accessor
 				.get(IInstantiationService)
-				.createInstance(UserDataAutoSyncService)
+				.createInstance(UserDataAutoSyncService),
 		);
 		const userDataAutoSyncChannel = new UserDataAutoSyncChannel(
-			userDataAutoSync
+			userDataAutoSync,
 		);
 		this.server.registerChannel(
 			"userDataAutoSync",
-			userDataAutoSyncChannel
+			userDataAutoSyncChannel,
 		);
 
 		this.server.registerChannel(
 			"IUserDataSyncResourceProviderService",
 			ProxyChannel.fromService(
 				accessor.get(IUserDataSyncResourceProviderService),
-				disposables
-			)
+				disposables,
+			),
 		);
 
 		// Tunnel
 		const sharedProcessTunnelChannel = ProxyChannel.fromService(
 			accessor.get(ISharedProcessTunnelService),
-			disposables
+			disposables,
 		);
 		this.server.registerChannel(
 			ipcSharedProcessTunnelChannelName,
-			sharedProcessTunnelChannel
+			sharedProcessTunnelChannel,
 		);
 
 		// Remote Tunnel
 		const remoteTunnelChannel = ProxyChannel.fromService(
 			accessor.get(IRemoteTunnelService),
-			disposables
+			disposables,
 		);
 		this.server.registerChannel("remoteTunnel", remoteTunnelChannel);
 	}
@@ -904,7 +908,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 		// Listen on global error events
 		process.on("uncaughtException", (error) => onUnexpectedError(error));
 		process.on("unhandledRejection", (reason: unknown) =>
-			onUnexpectedError(reason)
+			onUnexpectedError(reason),
 		);
 
 		// Install handler for unexpected errors
@@ -915,14 +919,14 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			}
 
 			logService.error(
-				`[uncaught exception in sharedProcess]: ${message}`
+				`[uncaught exception in sharedProcess]: ${message}`,
 			);
 		});
 	}
 
 	private reportProfilesInfo(
 		telemetryService: ITelemetryService,
-		userDataProfilesService: IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
 	): void {
 		type ProfilesInfoClassification = {
 			owner: "sandy081";
@@ -966,7 +970,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 }
 
 export async function main(
-	configuration: ISharedProcessConfiguration
+	configuration: ISharedProcessConfiguration,
 ): Promise<void> {
 	// create shared process and signal back to main that we are
 	// ready to accept message ports as client connections

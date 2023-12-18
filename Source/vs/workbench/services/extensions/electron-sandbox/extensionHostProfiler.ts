@@ -3,22 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { createSingleCallFunction } from "vs/base/common/functional";
+import { Schemas } from "vs/base/common/network";
 import { TernarySearchTree } from "vs/base/common/ternarySearchTree";
+import { URI } from "vs/base/common/uri";
+import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
+import {
+	IV8InspectProfilingService,
+	IV8Profile,
+	IV8ProfileNode,
+} from "vs/platform/profiling/common/profiling";
 import {
 	IExtensionHostProfile,
 	IExtensionService,
 	ProfileSegmentId,
 	ProfileSession,
 } from "vs/workbench/services/extensions/common/extensions";
-import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
-import { Schemas } from "vs/base/common/network";
-import { URI } from "vs/base/common/uri";
-import {
-	IV8InspectProfilingService,
-	IV8Profile,
-	IV8ProfileNode,
-} from "vs/platform/profiling/common/profiling";
-import { createSingleCallFunction } from "vs/base/common/functional";
 
 export class ExtensionHostProfiler {
 	constructor(
@@ -46,14 +46,14 @@ export class ExtensionHostProfiler {
 
 	private _distill(
 		profile: IV8Profile,
-		extensions: readonly IExtensionDescription[]
+		extensions: readonly IExtensionDescription[],
 	): IExtensionHostProfile {
 		const searchTree = TernarySearchTree.forUris<IExtensionDescription>();
 		for (const extension of extensions) {
 			if (extension.extensionLocation.scheme === Schemas.file) {
 				searchTree.set(
 					URI.file(extension.extensionLocation.fsPath),
-					extension
+					extension,
 				);
 			}
 		}
@@ -67,7 +67,7 @@ export class ExtensionHostProfiler {
 
 		function visit(
 			node: IV8ProfileNode,
-			segmentId: ProfileSegmentId | null
+			segmentId: ProfileSegmentId | null,
 		) {
 			if (!segmentId) {
 				switch (node.callFrame.functionName) {
@@ -87,7 +87,7 @@ export class ExtensionHostProfiler {
 				let extension: IExtensionDescription | undefined;
 				try {
 					extension = searchTree.findSubstr(
-						URI.parse(node.callFrame.url)
+						URI.parse(node.callFrame.url),
 					);
 				} catch {
 					// ignore
@@ -146,7 +146,7 @@ export class ExtensionHostProfiler {
 					const id = distilledIds[i];
 					segmentsToTime.set(
 						id,
-						(segmentsToTime.get(id) || 0) + distilledDeltas[i]
+						(segmentsToTime.get(id) || 0) + distilledDeltas[i],
 					);
 				}
 				return segmentsToTime;

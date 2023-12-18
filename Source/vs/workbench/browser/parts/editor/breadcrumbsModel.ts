@@ -30,10 +30,7 @@ import {
 } from "vs/workbench/services/outline/browser/outline";
 
 export class FileElement {
-	constructor(
-		readonly uri: URI,
-		readonly kind: FileKind
-	) {}
+	constructor(readonly uri: URI, readonly kind: FileKind) {}
 }
 
 type FileInfo = { path: FileElement[]; folder?: IWorkspaceFolder };
@@ -41,7 +38,7 @@ type FileInfo = { path: FileElement[]; folder?: IWorkspaceFolder };
 export class OutlineElement2 {
 	constructor(
 		readonly element: IOutline<any> | any,
-		readonly outline: IOutline<any>
+		readonly outline: IOutline<any>,
 	) {}
 }
 
@@ -144,8 +141,8 @@ export class BreadcrumbsModel {
 			result.push(
 				new OutlineElement2(
 					breadcrumbsElements[i],
-					this._currentOutline.value
-				)
+					this._currentOutline.value,
+				),
 			);
 		}
 
@@ -156,8 +153,8 @@ export class BreadcrumbsModel {
 			result.push(
 				new OutlineElement2(
 					this._currentOutline.value,
-					this._currentOutline.value
-				)
+					this._currentOutline.value,
+				),
 			);
 		}
 
@@ -185,8 +182,8 @@ export class BreadcrumbsModel {
 			info.path.unshift(
 				new FileElement(
 					uriPrefix,
-					info.path.length === 0 ? FileKind.FILE : FileKind.FOLDER
-				)
+					info.path.length === 0 ? FileKind.FILE : FileKind.FOLDER,
+				),
 			);
 			const prevPathLength = uriPrefix.path.length;
 			uriPrefix = dirname(uriPrefix);
@@ -201,7 +198,7 @@ export class BreadcrumbsModel {
 				WorkbenchState.WORKSPACE
 		) {
 			info.path.unshift(
-				new FileElement(info.folder.uri, FileKind.ROOT_FOLDER)
+				new FileElement(info.folder.uri, FileKind.ROOT_FOLDER),
 			);
 		}
 		return info;
@@ -230,7 +227,7 @@ export class BreadcrumbsModel {
 				this._onDidUpdate.fire(this);
 				if (outline) {
 					this._outlineDisposables.add(
-						outline.onDidChange(() => this._onDidUpdate.fire(this))
+						outline.onDidChange(() => this._onDidUpdate.fire(this)),
 					);
 				}
 			})

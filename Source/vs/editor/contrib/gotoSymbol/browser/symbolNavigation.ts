@@ -6,10 +6,10 @@
 import { Emitter, Event } from "vs/base/common/event";
 import { KeyCode } from "vs/base/common/keyCodes";
 import {
-	combinedDisposable,
 	DisposableStore,
-	dispose,
 	IDisposable,
+	combinedDisposable,
+	dispose,
 } from "vs/base/common/lifecycle";
 import { isEqual } from "vs/base/common/resources";
 import { ICodeEditor } from "vs/editor/browser/editorBrowser";
@@ -35,13 +35,13 @@ import {
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
 import {
-	createDecorator,
 	ServicesAccessor,
+	createDecorator,
 } from "vs/platform/instantiation/common/instantiation";
 import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import {
-	KeybindingsRegistry,
 	KeybindingWeight,
+	KeybindingsRegistry,
 } from "vs/platform/keybinding/common/keybindingsRegistry";
 import { INotificationService } from "vs/platform/notification/common/notification";
 
@@ -50,8 +50,8 @@ export const ctxHasSymbols = new RawContextKey(
 	false,
 	localize(
 		"hasSymbols",
-		"Whether there are symbol locations that can be navigated via keyboard-only."
-	)
+		"Whether there are symbol locations that can be navigated via keyboard-only.",
+	),
 );
 
 export const ISymbolNavigationService =
@@ -70,10 +70,10 @@ class SymbolNavigationService implements ISymbolNavigationService {
 	private readonly _ctxHasSymbols: IContextKey<boolean>;
 
 	private _currentModel?: ReferencesModel = undefined;
-	private _currentIdx: number = -1;
+	private _currentIdx = -1;
 	private _currentState?: IDisposable;
 	private _currentMessage?: IDisposable;
-	private _ignoreEditorChange: boolean = false;
+	private _ignoreEditorChange = false;
 
 	constructor(
 		@IContextKeyService contextKeyService: IContextKeyService,
@@ -123,8 +123,8 @@ class SymbolNavigationService implements ISymbolNavigationService {
 				return;
 			}
 
-			let seenUri: boolean = false;
-			let seenPosition: boolean = false;
+			let seenUri = false;
+			let seenPosition = false;
 			for (const reference of refModel.references) {
 				if (isEqual(reference.uri, model.uri)) {
 					seenUri = true;
@@ -168,7 +168,7 @@ class SymbolNavigationService implements ISymbolNavigationService {
 							TextEditorSelectionRevealType.NearTopIfOutsideViewport,
 					},
 				},
-				source
+				source,
 			)
 			.finally(() => {
 				this._ignoreEditorChange = false;
@@ -179,7 +179,7 @@ class SymbolNavigationService implements ISymbolNavigationService {
 		this._currentMessage?.dispose();
 
 		const kb = this._keybindingService.lookupKeybinding(
-			"editor.gotoNextSymbolFromResult"
+			"editor.gotoNextSymbolFromResult",
 		);
 		const message = kb
 			? localize(
@@ -187,14 +187,14 @@ class SymbolNavigationService implements ISymbolNavigationService {
 					"Symbol {0} of {1}, {2} for next",
 					this._currentIdx + 1,
 					this._currentModel!.references.length,
-					kb.getLabel()
-				)
+					kb.getLabel(),
+			  )
 			: localize(
 					"location",
 					"Symbol {0} of {1}",
 					this._currentIdx + 1,
-					this._currentModel!.references.length
-				);
+					this._currentModel!.references.length,
+			  );
 
 		this._currentMessage = this._notificationService.status(message);
 	}
@@ -203,7 +203,7 @@ class SymbolNavigationService implements ISymbolNavigationService {
 registerSingleton(
 	ISymbolNavigationService,
 	SymbolNavigationService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 
 registerEditorCommand(
@@ -221,11 +221,11 @@ registerEditorCommand(
 
 		runEditorCommand(
 			accessor: ServicesAccessor,
-			editor: ICodeEditor
+			editor: ICodeEditor,
 		): void | Promise<void> {
 			return accessor.get(ISymbolNavigationService).revealNext(editor);
 		}
-	})()
+	})(),
 );
 
 KeybindingsRegistry.registerCommandAndKeybindingRule({
@@ -269,12 +269,12 @@ class EditorState {
 			editor,
 			combinedDisposable(
 				editor.onDidChangeCursorPosition((_) =>
-					this._onDidChange.fire({ editor })
+					this._onDidChange.fire({ editor }),
 				),
 				editor.onDidChangeModelContent((_) =>
-					this._onDidChange.fire({ editor })
-				)
-			)
+					this._onDidChange.fire({ editor }),
+				),
+			),
 		);
 	}
 

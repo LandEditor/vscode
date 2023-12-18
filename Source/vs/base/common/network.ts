@@ -137,7 +137,7 @@ class RemoteAuthoritiesImpl {
 	} = Object.create(null);
 	private _preferredWebSchema: "http" | "https" = "http";
 	private _delegate: ((uri: URI) => URI) | null = null;
-	private _remoteResourcesPath: string = `/${Schemas.vscodeRemoteResource}`;
+	private _remoteResourcesPath = `/${Schemas.vscodeRemoteResource}`;
 
 	setPreferredWebSchema(schema: "http" | "https") {
 		this._preferredWebSchema = schema;
@@ -183,7 +183,7 @@ class RemoteAuthoritiesImpl {
 		let query = `path=${encodeURIComponent(uri.path)}`;
 		if (typeof connectionToken === "string") {
 			query += `&${connectionTokenQueryName}=${encodeURIComponent(
-				connectionToken
+				connectionToken,
 			)}`;
 		}
 		return URI.from({
@@ -325,7 +325,7 @@ class FileAccessImpl {
 
 	private toUri(
 		uriOrModule: URI | string,
-		moduleIdToUrl: { toUrl(moduleId: string): string }
+		moduleIdToUrl: { toUrl(moduleId: string): string },
 	): URI {
 		if (URI.isUri(uriOrModule)) {
 			return uriOrModule;
@@ -361,7 +361,7 @@ export namespace COI {
 	 * Extract desired headers from `vscode-coi` invocation
 	 */
 	export function getHeadersFromQuery(
-		url: string | URI | URL
+		url: string | URI | URL,
 	): Record<string, string> | undefined {
 		let params: URLSearchParams | undefined;
 		if (typeof url === "string") {
@@ -385,7 +385,7 @@ export namespace COI {
 	export function addSearchParam(
 		urlOrSearch: URLSearchParams | Record<string, string>,
 		coop: boolean,
-		coep: boolean
+		coep: boolean,
 	): void {
 		if (!(<any>globalThis).crossOriginIsolated) {
 			// depends on the current context being COI

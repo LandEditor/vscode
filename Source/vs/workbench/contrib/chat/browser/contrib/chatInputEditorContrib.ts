@@ -30,8 +30,8 @@ import { Registry } from "vs/platform/registry/common/platform";
 import { inputPlaceholderForeground } from "vs/platform/theme/common/colorRegistry";
 import { IThemeService } from "vs/platform/theme/common/themeService";
 import {
-	IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
+	IWorkbenchContributionsRegistry,
 } from "vs/workbench/common/contributions";
 import { SubmitAction } from "vs/workbench/contrib/chat/browser/actions/chatExecuteActions";
 import {
@@ -86,7 +86,7 @@ class InputEditorDecorations extends Disposable {
 	private readonly previouslyUsedAgents = new Set<string>();
 
 	private readonly viewModelDisposables = this._register(
-		new MutableDisposable()
+		new MutableDisposable(),
 	);
 
 	constructor(
@@ -148,17 +148,17 @@ class InputEditorDecorations extends Disposable {
 				) {
 					this.updateInputEditorDecorations();
 				}
-			}
+			},
 		);
 	}
 
 	private updateRegisteredDecorationTypes() {
 		this.codeEditorService.removeDecorationType(variableTextDecorationType);
 		this.codeEditorService.removeDecorationType(
-			dynamicVariableDecorationType
+			dynamicVariableDecorationType,
 		);
 		this.codeEditorService.removeDecorationType(
-			slashCommandTextDecorationType
+			slashCommandTextDecorationType,
 		);
 
 		const theme = this.themeService.getColorTheme();
@@ -171,7 +171,7 @@ class InputEditorDecorations extends Disposable {
 					.getColor(chatSlashCommandBackground)
 					?.toString(),
 				borderRadius: "3px",
-			}
+			},
 		);
 		this.codeEditorService.registerDecorationType(
 			decorationDescription,
@@ -182,7 +182,7 @@ class InputEditorDecorations extends Disposable {
 					.getColor(chatSlashCommandBackground)
 					?.toString(),
 				borderRadius: "3px",
-			}
+			},
 		);
 		this.codeEditorService.registerDecorationType(
 			decorationDescription,
@@ -193,7 +193,7 @@ class InputEditorDecorations extends Disposable {
 					.getColor(chatSlashCommandBackground)
 					?.toString(),
 				borderRadius: "3px",
-			}
+			},
 		);
 		this.updateInputEditorDecorations();
 	}
@@ -201,7 +201,7 @@ class InputEditorDecorations extends Disposable {
 	private getPlaceholderColor(): string | undefined {
 		const theme = this.themeService.getColorTheme();
 		const transparentForeground = theme.getColor(
-			inputPlaceholderForeground
+			inputPlaceholderForeground,
 		);
 		return transparentForeground?.toString();
 	}
@@ -237,7 +237,7 @@ class InputEditorDecorations extends Disposable {
 			this.widget.inputEditor.setDecorationsByType(
 				decorationDescription,
 				placeholderDecorationType,
-				decoration
+				decoration,
 			);
 			return;
 		}
@@ -250,19 +250,19 @@ class InputEditorDecorations extends Disposable {
 
 		let placeholderDecoration: IDecorationOptions[] | undefined;
 		const agentPart = parsedRequest.find(
-			(p): p is ChatRequestAgentPart => p instanceof ChatRequestAgentPart
+			(p): p is ChatRequestAgentPart => p instanceof ChatRequestAgentPart,
 		);
 		const agentSubcommandPart = parsedRequest.find(
 			(p): p is ChatRequestAgentSubcommandPart =>
-				p instanceof ChatRequestAgentSubcommandPart
+				p instanceof ChatRequestAgentSubcommandPart,
 		);
 		const slashCommandPart = parsedRequest.find(
 			(p): p is ChatRequestSlashCommandPart =>
-				p instanceof ChatRequestSlashCommandPart
+				p instanceof ChatRequestSlashCommandPart,
 		);
 
 		const exactlyOneSpaceAfterPart = (
-			part: IParsedChatRequestPart
+			part: IParsedChatRequestPart,
 		): boolean => {
 			const partIdx = parsedRequest.indexOf(part);
 			if (parsedRequest.length > partIdx + 2) {
@@ -283,7 +283,7 @@ class InputEditorDecorations extends Disposable {
 				(p) =>
 					(p instanceof ChatRequestTextPart &&
 						!p.text.trim().length) ||
-					p instanceof ChatRequestAgentPart
+					p instanceof ChatRequestAgentPart,
 			);
 		if (onlyAgentAndWhitespace) {
 			// Agent reference with no other text - show the placeholder
@@ -320,15 +320,15 @@ class InputEditorDecorations extends Disposable {
 					(p instanceof ChatRequestTextPart &&
 						!p.text.trim().length) ||
 					p instanceof ChatRequestAgentPart ||
-					p instanceof ChatRequestAgentSubcommandPart
+					p instanceof ChatRequestAgentSubcommandPart,
 			);
 		if (onlyAgentCommandAndWhitespace) {
 			// Agent reference and subcommand with no other text - show the placeholder
 			const isFollowupSlashCommand = this.previouslyUsedAgents.has(
 				agentAndCommandToKey(
 					agentPart.agent.id,
-					agentSubcommandPart.command.name
-				)
+					agentSubcommandPart.command.name,
+				),
 			);
 			const shouldRenderFollowupPlaceholder =
 				isFollowupSlashCommand &&
@@ -368,7 +368,7 @@ class InputEditorDecorations extends Disposable {
 				(p) =>
 					(p instanceof ChatRequestTextPart &&
 						!p.text.trim().length) ||
-					p instanceof ChatRequestSlashCommandPart
+					p instanceof ChatRequestSlashCommandPart,
 			);
 		if (onlySlashCommandAndWhitespace) {
 			// Command reference with no other text - show the placeholder
@@ -402,7 +402,7 @@ class InputEditorDecorations extends Disposable {
 		this.widget.inputEditor.setDecorationsByType(
 			decorationDescription,
 			placeholderDecorationType,
-			placeholderDecoration ?? []
+			placeholderDecoration ?? [],
 		);
 
 		const textDecorations: IDecorationOptions[] | undefined = [];
@@ -422,13 +422,13 @@ class InputEditorDecorations extends Disposable {
 		this.widget.inputEditor.setDecorationsByType(
 			decorationDescription,
 			slashCommandTextDecorationType,
-			textDecorations
+			textDecorations,
 		);
 
 		const varDecorations: IDecorationOptions[] = [];
 		const variableParts = parsedRequest.filter(
 			(p): p is ChatRequestVariablePart =>
-				p instanceof ChatRequestVariablePart
+				p instanceof ChatRequestVariablePart,
 		);
 		for (const variable of variableParts) {
 			varDecorations.push({ range: variable.editorRange });
@@ -437,7 +437,7 @@ class InputEditorDecorations extends Disposable {
 		this.widget.inputEditor.setDecorationsByType(
 			decorationDescription,
 			variableTextDecorationType,
-			varDecorations
+			varDecorations,
 		);
 	}
 }
@@ -463,7 +463,7 @@ class InputEditorSlashCommandMode extends Disposable {
 
 	private async repopulateAgentCommand(
 		agent: IChatAgentData,
-		slashCommand: IChatAgentCommand
+		slashCommand: IChatAgentCommand,
 	) {
 		if (slashCommand.shouldRepopulate) {
 			const value = `${chatAgentLeader}${agent.id} ${chatSubcommandLeader}${slashCommand.name} `;
@@ -580,10 +580,10 @@ class SlashCommandCompletions extends Disposable {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	SlashCommandCompletions,
-	LifecyclePhase.Eventually
+	LifecyclePhase.Eventually,
 );
 
 class AgentCompletions extends Disposable {
@@ -860,13 +860,13 @@ class AgentCompletions extends Disposable {
 	}
 }
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(AgentCompletions, LifecyclePhase.Eventually);
 
 class BuiltinDynamicCompletions extends Disposable {
 	private static readonly VariableNameDef = new RegExp(
 		`${chatVariableLeader}\\w*`,
-		"g"
+		"g",
 	); // MUST be using `g`-flag
 
 	constructor(
@@ -956,16 +956,16 @@ class BuiltinDynamicCompletions extends Disposable {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	BuiltinDynamicCompletions,
-	LifecyclePhase.Eventually
+	LifecyclePhase.Eventually,
 );
 
 function computeCompletionRanges(
 	model: ITextModel,
 	position: Position,
-	reg: RegExp
+	reg: RegExp,
 ):
 	| { insert: Range; replace: Range; varWord: IWordAtPosition | null }
 	| undefined {
@@ -973,7 +973,7 @@ function computeCompletionRanges(
 		position.column,
 		reg,
 		model.getLineContent(position.lineNumber),
-		0
+		0,
 	);
 	if (!varWord && model.getWordUntilPosition(position).word) {
 		// inside a "normal" word
@@ -982,21 +982,21 @@ function computeCompletionRanges(
 
 	let insert: Range;
 	let replace: Range;
-	if (!varWord) {
-		insert = replace = Range.fromPositions(position);
-	} else {
+	if (varWord) {
 		insert = new Range(
 			position.lineNumber,
 			varWord.startColumn,
 			position.lineNumber,
-			position.column
+			position.column,
 		);
 		replace = new Range(
 			position.lineNumber,
 			varWord.startColumn,
 			position.lineNumber,
-			varWord.endColumn
+			varWord.endColumn,
 		);
+	} else {
+		insert = replace = Range.fromPositions(position);
 	}
 
 	return { insert, replace, varWord };
@@ -1005,7 +1005,7 @@ function computeCompletionRanges(
 class VariableCompletions extends Disposable {
 	private static readonly VariableNameDef = new RegExp(
 		`${chatVariableLeader}\\w*`,
-		"g"
+		"g",
 	); // MUST be using `g`-flag
 
 	constructor(
@@ -1105,7 +1105,7 @@ class VariableCompletions extends Disposable {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(VariableCompletions, LifecyclePhase.Eventually);
 
 class ChatTokenDeleter extends Disposable {

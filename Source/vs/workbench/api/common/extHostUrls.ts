@@ -3,20 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type * as vscode from "vscode";
-import {
-	MainContext,
-	IMainContext,
-	ExtHostUrlsShape,
-	MainThreadUrlsShape,
-} from "./extHost.protocol";
-import { URI, UriComponents } from "vs/base/common/uri";
-import { toDisposable } from "vs/base/common/lifecycle";
 import { onUnexpectedError } from "vs/base/common/errors";
+import { toDisposable } from "vs/base/common/lifecycle";
+import { URI, UriComponents } from "vs/base/common/uri";
 import {
 	ExtensionIdentifierSet,
 	IExtensionDescription,
 } from "vs/platform/extensions/common/extensions";
+import type * as vscode from "vscode";
+import {
+	ExtHostUrlsShape,
+	IMainContext,
+	MainContext,
+	MainThreadUrlsShape,
+} from "./extHost.protocol";
 
 export class ExtHostUrls implements ExtHostUrlsShape {
 	private static HandlePool = 0;
@@ -31,12 +31,12 @@ export class ExtHostUrls implements ExtHostUrlsShape {
 
 	registerUriHandler(
 		extension: IExtensionDescription,
-		handler: vscode.UriHandler
+		handler: vscode.UriHandler,
 	): vscode.Disposable {
 		const extensionId = extension.identifier;
 		if (this.handles.has(extensionId)) {
 			throw new Error(
-				`Protocol handler already registered for extension ${extensionId}`
+				`Protocol handler already registered for extension ${extensionId}`,
 			);
 		}
 
@@ -46,7 +46,7 @@ export class ExtHostUrls implements ExtHostUrlsShape {
 		this._proxy.$registerUriHandler(
 			handle,
 			extensionId,
-			extension.displayName || extension.name
+			extension.displayName || extension.name,
 		);
 
 		return toDisposable(() => {

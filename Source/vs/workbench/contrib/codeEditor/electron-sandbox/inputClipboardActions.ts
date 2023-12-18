@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { KeybindingsRegistry } from "vs/platform/keybinding/common/keybindingsRegistry";
-import * as platform from "vs/base/common/platform";
-import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
 import { getActiveWindow } from "vs/base/browser/dom";
+import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
+import * as platform from "vs/base/common/platform";
+import { KeybindingsRegistry } from "vs/platform/keybinding/common/keybindingsRegistry";
 
 if (platform.isMacintosh) {
 	// On the mac, cmd+x, cmd+c and cmd+v do not result in cut / copy / paste

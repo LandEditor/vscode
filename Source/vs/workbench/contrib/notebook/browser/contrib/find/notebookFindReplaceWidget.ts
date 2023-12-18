@@ -4,6 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as dom from "vs/base/browser/dom";
+import { ActionBar } from "vs/base/browser/ui/actionbar/actionbar";
+import {
+	AnchorAlignment,
+	IContextViewProvider,
+} from "vs/base/browser/ui/contextview/contextview";
+import { DropdownMenuActionViewItem } from "vs/base/browser/ui/dropdown/dropdownActionViewItem";
 import {
 	FindInput,
 	IFindInputOptions,
@@ -11,43 +17,9 @@ import {
 import { ReplaceInput } from "vs/base/browser/ui/findinput/replaceInput";
 import { IMessage as InputBoxMessage } from "vs/base/browser/ui/inputbox/inputBox";
 import { ProgressBar } from "vs/base/browser/ui/progressbar/progressbar";
+import { ISashEvent, Orientation, Sash } from "vs/base/browser/ui/sash/sash";
+import { IToggleStyles } from "vs/base/browser/ui/toggle/toggle";
 import { Widget } from "vs/base/browser/ui/widget";
-import { Delayer } from "vs/base/common/async";
-import { KeyCode } from "vs/base/common/keyCodes";
-import "vs/css!./notebookFindReplaceWidget";
-import {
-	FindReplaceState,
-	FindReplaceStateChangedEvent,
-} from "vs/editor/contrib/find/browser/findState";
-import {
-	findNextMatchIcon,
-	findPreviousMatchIcon,
-	findReplaceAllIcon,
-	findReplaceIcon,
-	SimpleButton,
-} from "vs/editor/contrib/find/browser/findWidget";
-import * as nls from "vs/nls";
-import {
-	ContextScopedReplaceInput,
-	registerAndCreateHistoryNavigationContext,
-} from "vs/platform/history/browser/contextScopedHistoryWidget";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import {
-	IContextMenuService,
-	IContextViewService,
-} from "vs/platform/contextview/browser/contextView";
-import {
-	registerIcon,
-	widgetClose,
-} from "vs/platform/theme/common/iconRegistry";
-import { registerThemingParticipant } from "vs/platform/theme/common/themeService";
-import { ThemeIcon } from "vs/base/common/themables";
-import {
-	parseReplaceString,
-	ReplacePattern,
-} from "vs/editor/contrib/find/browser/replacePattern";
-import { Codicon } from "vs/base/common/codicons";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
 	Action,
 	ActionRunner,
@@ -55,80 +27,108 @@ import {
 	IActionRunner,
 	Separator,
 } from "vs/base/common/actions";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IMenu } from "vs/platform/actions/common/actions";
-import { createAndFillInActionBarActions } from "vs/platform/actions/browser/menuEntryActionViewItem";
-import {
-	AnchorAlignment,
-	IContextViewProvider,
-} from "vs/base/browser/ui/contextview/contextview";
-import { DropdownMenuActionViewItem } from "vs/base/browser/ui/dropdown/dropdownActionViewItem";
-import { ActionBar } from "vs/base/browser/ui/actionbar/actionbar";
-import { filterIcon } from "vs/workbench/contrib/extensions/browser/extensionsIcons";
-import { NotebookFindFilters } from "vs/workbench/contrib/notebook/browser/contrib/find/findFilters";
+import { Delayer } from "vs/base/common/async";
+import { Codicon } from "vs/base/common/codicons";
+import { KeyCode } from "vs/base/common/keyCodes";
+import { Disposable } from "vs/base/common/lifecycle";
 import { isSafari } from "vs/base/common/platform";
-import { ISashEvent, Orientation, Sash } from "vs/base/browser/ui/sash/sash";
-import { INotebookEditor } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
+import { ThemeIcon } from "vs/base/common/themables";
+import "vs/css!./notebookFindReplaceWidget";
+import {
+	FindReplaceState,
+	FindReplaceStateChangedEvent,
+} from "vs/editor/contrib/find/browser/findState";
+import {
+	SimpleButton,
+	findNextMatchIcon,
+	findPreviousMatchIcon,
+	findReplaceAllIcon,
+	findReplaceIcon,
+} from "vs/editor/contrib/find/browser/findWidget";
+import {
+	ReplacePattern,
+	parseReplaceString,
+} from "vs/editor/contrib/find/browser/replacePattern";
+import * as nls from "vs/nls";
+import { createAndFillInActionBarActions } from "vs/platform/actions/browser/menuEntryActionViewItem";
+import { IMenu } from "vs/platform/actions/common/actions";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import {
+	IContextMenuService,
+	IContextViewService,
+} from "vs/platform/contextview/browser/contextView";
+import {
+	ContextScopedReplaceInput,
+	registerAndCreateHistoryNavigationContext,
+} from "vs/platform/history/browser/contextScopedHistoryWidget";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import {
 	defaultInputBoxStyles,
 	defaultProgressBarStyles,
 	defaultToggleStyles,
 } from "vs/platform/theme/browser/defaultStyles";
-import { IToggleStyles } from "vs/base/browser/ui/toggle/toggle";
-import { Disposable } from "vs/base/common/lifecycle";
+import {
+	registerIcon,
+	widgetClose,
+} from "vs/platform/theme/common/iconRegistry";
+import { registerThemingParticipant } from "vs/platform/theme/common/themeService";
+import { filterIcon } from "vs/workbench/contrib/extensions/browser/extensionsIcons";
+import { NotebookFindFilters } from "vs/workbench/contrib/notebook/browser/contrib/find/findFilters";
+import { INotebookEditor } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
 import { NotebookSetting } from "vs/workbench/contrib/notebook/common/notebookCommon";
 
 const NLS_FIND_INPUT_LABEL = nls.localize("label.find", "Find");
 const NLS_FIND_INPUT_PLACEHOLDER = nls.localize("placeholder.find", "Find");
 const NLS_PREVIOUS_MATCH_BTN_LABEL = nls.localize(
 	"label.previousMatchButton",
-	"Previous Match"
+	"Previous Match",
 );
 // const NLS_FILTER_BTN_LABEL = nls.localize('label.findFilterButton', "Search in View");
 const NLS_NEXT_MATCH_BTN_LABEL = nls.localize(
 	"label.nextMatchButton",
-	"Next Match"
+	"Next Match",
 );
 const NLS_CLOSE_BTN_LABEL = nls.localize("label.closeButton", "Close");
 const NLS_TOGGLE_REPLACE_MODE_BTN_LABEL = nls.localize(
 	"label.toggleReplaceButton",
-	"Toggle Replace"
+	"Toggle Replace",
 );
 const NLS_REPLACE_INPUT_LABEL = nls.localize("label.replace", "Replace");
 const NLS_REPLACE_INPUT_PLACEHOLDER = nls.localize(
 	"placeholder.replace",
-	"Replace"
+	"Replace",
 );
 const NLS_REPLACE_BTN_LABEL = nls.localize("label.replaceButton", "Replace");
 const NLS_REPLACE_ALL_BTN_LABEL = nls.localize(
 	"label.replaceAllButton",
-	"Replace All"
+	"Replace All",
 );
 
 export const findFilterButton = registerIcon(
 	"find-filter",
 	Codicon.filter,
-	nls.localize("findFilterIcon", "Icon for Find Filter in find widget.")
+	nls.localize("findFilterIcon", "Icon for Find Filter in find widget."),
 );
 const NOTEBOOK_FIND_FILTERS = nls.localize(
 	"notebook.find.filter.filterAction",
-	"Find Filters"
+	"Find Filters",
 );
 const NOTEBOOK_FIND_IN_MARKUP_INPUT = nls.localize(
 	"notebook.find.filter.findInMarkupInput",
-	"Markdown Source"
+	"Markdown Source",
 );
 const NOTEBOOK_FIND_IN_MARKUP_PREVIEW = nls.localize(
 	"notebook.find.filter.findInMarkupPreview",
-	"Rendered Markdown"
+	"Rendered Markdown",
 );
 const NOTEBOOK_FIND_IN_CODE_INPUT = nls.localize(
 	"notebook.find.filter.findInCodeInput",
-	"Code Cell Source"
+	"Code Cell Source",
 );
 const NOTEBOOK_FIND_IN_CODE_OUTPUT = nls.localize(
 	"notebook.find.filter.findInCodeOutput",
-	"Code Cell Output"
+	"Code Cell Output",
 );
 
 const NOTEBOOK_FIND_WIDGET_INITIAL_WIDTH = 318;
@@ -138,7 +138,7 @@ class NotebookFindFilterActionViewItem extends DropdownMenuActionViewItem {
 		readonly filters: NotebookFindFilters,
 		action: IAction,
 		actionRunner: IActionRunner,
-		@IContextMenuService contextMenuService: IContextMenuService
+		@IContextMenuService contextMenuService: IContextMenuService,
 	) {
 		super(
 			action,
@@ -148,7 +148,7 @@ class NotebookFindFilterActionViewItem extends DropdownMenuActionViewItem {
 				actionRunner,
 				classNames: action.class,
 				anchorAlignmentProvider: () => AnchorAlignment.RIGHT,
-			}
+			},
 		);
 	}
 
@@ -236,7 +236,7 @@ export class NotebookFindInputFilterButton extends Disposable {
 		readonly contextMenuService: IContextMenuService,
 		readonly instantiationService: IInstantiationService,
 		options: IFindInputOptions,
-		tooltip: string = NOTEBOOK_FIND_FILTERS
+		tooltip: string = NOTEBOOK_FIND_FILTERS,
 	) {
 		super();
 		this._toggleStyles = options.toggleStyles;
@@ -244,7 +244,7 @@ export class NotebookFindInputFilterButton extends Disposable {
 		this._filtersAction = new Action(
 			"notebookFindFilterAction",
 			tooltip,
-			"notebook-filters " + ThemeIcon.asClassName(filterIcon)
+			"notebook-filters " + ThemeIcon.asClassName(filterIcon),
 		);
 		this._filtersAction.checked = false;
 		this._filterButtonContainer = dom.$(".find-filter-button");
@@ -288,12 +288,12 @@ export class NotebookFindInputFilterButton extends Disposable {
 							NotebookFindFilterActionViewItem,
 							this.filters,
 							action,
-							new ActionRunner()
+							new ActionRunner(),
 						);
 					}
 					return undefined;
 				},
-			})
+			}),
 		);
 		this._actionbar.push(this._filtersAction, { icon: true, label: false });
 	}
@@ -301,7 +301,7 @@ export class NotebookFindInputFilterButton extends Disposable {
 
 export class NotebookFindInput extends FindInput {
 	private _findFilter: NotebookFindInputFilterButton;
-	private _filterChecked: boolean = false;
+	private _filterChecked = false;
 
 	constructor(
 		readonly filters: NotebookFindFilters,
@@ -310,23 +310,23 @@ export class NotebookFindInput extends FindInput {
 		readonly instantiationService: IInstantiationService,
 		parent: HTMLElement | null,
 		contextViewProvider: IContextViewProvider,
-		options: IFindInputOptions
+		options: IFindInputOptions,
 	) {
 		super(parent, contextViewProvider, options);
 
 		this._register(
 			registerAndCreateHistoryNavigationContext(
 				contextKeyService,
-				this.inputBox
-			)
+				this.inputBox,
+			),
 		);
 		this._findFilter = this._register(
 			new NotebookFindInputFilterButton(
 				filters,
 				contextMenuService,
 				instantiationService,
-				options
-			)
+				options,
+			),
 		);
 
 		this.inputBox.paddingRight =
@@ -374,7 +374,7 @@ export class NotebookFindInput extends FindInput {
 			menu,
 			{ shouldForwardArgs: true },
 			result,
-			(g) => /^inline/.test(g)
+			(g) => /^inline/.test(g),
 		);
 
 		return result;
@@ -402,9 +402,9 @@ export abstract class SimpleFindReplaceWidget extends Widget {
 	private readonly _resizeSash: Sash;
 	private _resizeOriginalWidth = NOTEBOOK_FIND_WIDGET_INITIAL_WIDTH;
 
-	private _isVisible: boolean = false;
-	private _isReplaceVisible: boolean = false;
-	private foundMatch: boolean = false;
+	private _isVisible = false;
+	private _isReplaceVisible = false;
+	private foundMatch = false;
 
 	protected _progressBar!: ProgressBar;
 	protected _scopedContextKeyService: IContextKeyService;
@@ -809,7 +809,7 @@ export abstract class SimpleFindReplaceWidget extends Widget {
 			menu,
 			{ shouldForwardArgs: true },
 			result,
-			(g) => /^inline/.test(g)
+			(g) => /^inline/.test(g),
 		);
 
 		return result;
@@ -854,19 +854,19 @@ export abstract class SimpleFindReplaceWidget extends Widget {
 	private _updateButtons(): void {
 		this._findInput.setEnabled(this._isVisible);
 		this._replaceInput.setEnabled(
-			this._isVisible && this._isReplaceVisible
+			this._isVisible && this._isReplaceVisible,
 		);
 		const findInputIsNonEmpty = this._state.searchString.length > 0;
 		this._replaceBtn.setEnabled(
-			this._isVisible && this._isReplaceVisible && findInputIsNonEmpty
+			this._isVisible && this._isReplaceVisible && findInputIsNonEmpty,
 		);
 		this._replaceAllBtn.setEnabled(
-			this._isVisible && this._isReplaceVisible && findInputIsNonEmpty
+			this._isVisible && this._isReplaceVisible && findInputIsNonEmpty,
 		);
 
 		this._domNode.classList.toggle(
 			"replaceToggled",
-			this._isReplaceVisible
+			this._isReplaceVisible,
 		);
 		this._toggleReplaceBtn.setExpanded(this._isReplaceVisible);
 
@@ -942,7 +942,7 @@ export abstract class SimpleFindReplaceWidget extends Widget {
 		this._isReplaceVisible = true;
 		this._state.change(
 			{ isReplaceRevealed: this._isReplaceVisible },
-			false
+			false,
 		);
 		this._updateReplaceViewDisplay();
 

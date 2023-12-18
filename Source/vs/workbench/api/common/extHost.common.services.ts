@@ -7,152 +7,152 @@ import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
+import { ILoggerService } from "vs/platform/log/common/log";
 import {
-	IExtHostOutputService,
-	ExtHostOutputService,
-} from "vs/workbench/api/common/extHostOutput";
+	ExtHostApiDeprecationService,
+	IExtHostApiDeprecationService,
+} from "vs/workbench/api/common/extHostApiDeprecationService";
 import {
-	IExtHostWorkspace,
-	ExtHostWorkspace,
-} from "vs/workbench/api/common/extHostWorkspace";
-import {
-	IExtHostDecorations,
-	ExtHostDecorations,
-} from "vs/workbench/api/common/extHostDecorations";
-import {
-	IExtHostConfiguration,
-	ExtHostConfiguration,
-} from "vs/workbench/api/common/extHostConfiguration";
-import {
-	IExtHostCommands,
 	ExtHostCommands,
+	IExtHostCommands,
 } from "vs/workbench/api/common/extHostCommands";
 import {
-	IExtHostDocumentsAndEditors,
-	ExtHostDocumentsAndEditors,
-} from "vs/workbench/api/common/extHostDocumentsAndEditors";
-import {
-	IExtHostTerminalService,
-	WorkerExtHostTerminalService,
-} from "vs/workbench/api/common/extHostTerminalService";
-import {
-	IExtHostTask,
-	WorkerExtHostTask,
-} from "vs/workbench/api/common/extHostTask";
+	ExtHostConfiguration,
+	IExtHostConfiguration,
+} from "vs/workbench/api/common/extHostConfiguration";
 import {
 	IExtHostDebugService,
 	WorkerExtHostDebugService,
 } from "vs/workbench/api/common/extHostDebugService";
 import {
-	IExtHostSearch,
-	ExtHostSearch,
-} from "vs/workbench/api/common/extHostSearch";
+	ExtHostDecorations,
+	IExtHostDecorations,
+} from "vs/workbench/api/common/extHostDecorations";
 import {
-	IExtHostStorage,
-	ExtHostStorage,
-} from "vs/workbench/api/common/extHostStorage";
+	ExtHostDocumentsAndEditors,
+	IExtHostDocumentsAndEditors,
+} from "vs/workbench/api/common/extHostDocumentsAndEditors";
 import {
-	IExtHostTunnelService,
-	ExtHostTunnelService,
-} from "vs/workbench/api/common/extHostTunnelService";
+	ExtHostEditorTabs,
+	IExtHostEditorTabs,
+} from "vs/workbench/api/common/extHostEditorTabs";
 import {
-	IExtHostApiDeprecationService,
-	ExtHostApiDeprecationService,
-} from "vs/workbench/api/common/extHostApiDeprecationService";
-import {
-	IExtHostWindow,
-	ExtHostWindow,
-} from "vs/workbench/api/common/extHostWindow";
-import {
-	IExtHostConsumerFileSystem,
 	ExtHostConsumerFileSystem,
+	IExtHostConsumerFileSystem,
 } from "vs/workbench/api/common/extHostFileSystemConsumer";
 import {
-	IExtHostFileSystemInfo,
 	ExtHostFileSystemInfo,
+	IExtHostFileSystemInfo,
 } from "vs/workbench/api/common/extHostFileSystemInfo";
 import {
-	IExtHostSecretState,
+	ExtHostLocalizationService,
+	IExtHostLocalizationService,
+} from "vs/workbench/api/common/extHostLocalizationService";
+import { ExtHostLoggerService } from "vs/workbench/api/common/extHostLoggerService";
+import {
+	ExtHostManagedSockets,
+	IExtHostManagedSockets,
+} from "vs/workbench/api/common/extHostManagedSockets";
+import {
+	ExtHostOutputService,
+	IExtHostOutputService,
+} from "vs/workbench/api/common/extHostOutput";
+import {
+	ExtHostSearch,
+	IExtHostSearch,
+} from "vs/workbench/api/common/extHostSearch";
+import {
 	ExtHostSecretState,
+	IExtHostSecretState,
 } from "vs/workbench/api/common/extHostSecretState";
+import {
+	ExtHostStorage,
+	IExtHostStorage,
+} from "vs/workbench/api/common/extHostStorage";
+import {
+	IExtHostTask,
+	WorkerExtHostTask,
+} from "vs/workbench/api/common/extHostTask";
 import {
 	ExtHostTelemetry,
 	IExtHostTelemetry,
 } from "vs/workbench/api/common/extHostTelemetry";
 import {
-	ExtHostEditorTabs,
-	IExtHostEditorTabs,
-} from "vs/workbench/api/common/extHostEditorTabs";
-import { ExtHostLoggerService } from "vs/workbench/api/common/extHostLoggerService";
-import { ILoggerService } from "vs/platform/log/common/log";
+	IExtHostTerminalService,
+	WorkerExtHostTerminalService,
+} from "vs/workbench/api/common/extHostTerminalService";
+import {
+	ExtHostTunnelService,
+	IExtHostTunnelService,
+} from "vs/workbench/api/common/extHostTunnelService";
 import {
 	ExtHostVariableResolverProviderService,
 	IExtHostVariableResolverProvider,
 } from "vs/workbench/api/common/extHostVariableResolverService";
 import {
-	ExtHostLocalizationService,
-	IExtHostLocalizationService,
-} from "vs/workbench/api/common/extHostLocalizationService";
+	ExtHostWindow,
+	IExtHostWindow,
+} from "vs/workbench/api/common/extHostWindow";
 import {
-	ExtHostManagedSockets,
-	IExtHostManagedSockets,
-} from "vs/workbench/api/common/extHostManagedSockets";
+	ExtHostWorkspace,
+	IExtHostWorkspace,
+} from "vs/workbench/api/common/extHostWorkspace";
 
 registerSingleton(
 	IExtHostLocalizationService,
 	ExtHostLocalizationService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 registerSingleton(
 	ILoggerService,
 	ExtHostLoggerService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 registerSingleton(
 	IExtHostApiDeprecationService,
 	ExtHostApiDeprecationService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 registerSingleton(IExtHostCommands, ExtHostCommands, InstantiationType.Eager);
 registerSingleton(
 	IExtHostConfiguration,
 	ExtHostConfiguration,
-	InstantiationType.Eager
+	InstantiationType.Eager,
 );
 registerSingleton(
 	IExtHostConsumerFileSystem,
 	ExtHostConsumerFileSystem,
-	InstantiationType.Eager
+	InstantiationType.Eager,
 );
 registerSingleton(
 	IExtHostDebugService,
 	WorkerExtHostDebugService,
-	InstantiationType.Eager
+	InstantiationType.Eager,
 );
 registerSingleton(
 	IExtHostDecorations,
 	ExtHostDecorations,
-	InstantiationType.Eager
+	InstantiationType.Eager,
 );
 registerSingleton(
 	IExtHostDocumentsAndEditors,
 	ExtHostDocumentsAndEditors,
-	InstantiationType.Eager
+	InstantiationType.Eager,
 );
 registerSingleton(
 	IExtHostManagedSockets,
 	ExtHostManagedSockets,
-	InstantiationType.Eager
+	InstantiationType.Eager,
 );
 registerSingleton(
 	IExtHostFileSystemInfo,
 	ExtHostFileSystemInfo,
-	InstantiationType.Eager
+	InstantiationType.Eager,
 );
 registerSingleton(
 	IExtHostOutputService,
 	ExtHostOutputService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 registerSingleton(IExtHostSearch, ExtHostSearch, InstantiationType.Eager);
 registerSingleton(IExtHostStorage, ExtHostStorage, InstantiationType.Eager);
@@ -160,28 +160,28 @@ registerSingleton(IExtHostTask, WorkerExtHostTask, InstantiationType.Eager);
 registerSingleton(
 	IExtHostTerminalService,
 	WorkerExtHostTerminalService,
-	InstantiationType.Eager
+	InstantiationType.Eager,
 );
 registerSingleton(
 	IExtHostTunnelService,
 	ExtHostTunnelService,
-	InstantiationType.Eager
+	InstantiationType.Eager,
 );
 registerSingleton(IExtHostWindow, ExtHostWindow, InstantiationType.Eager);
 registerSingleton(IExtHostWorkspace, ExtHostWorkspace, InstantiationType.Eager);
 registerSingleton(
 	IExtHostSecretState,
 	ExtHostSecretState,
-	InstantiationType.Eager
+	InstantiationType.Eager,
 );
 registerSingleton(IExtHostTelemetry, ExtHostTelemetry, InstantiationType.Eager);
 registerSingleton(
 	IExtHostEditorTabs,
 	ExtHostEditorTabs,
-	InstantiationType.Eager
+	InstantiationType.Eager,
 );
 registerSingleton(
 	IExtHostVariableResolverProvider,
 	ExtHostVariableResolverProviderService,
-	InstantiationType.Eager
+	InstantiationType.Eager,
 );

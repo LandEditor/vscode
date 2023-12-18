@@ -4,47 +4,47 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Disposable } from "vs/base/common/lifecycle";
+import { LRUCache } from "vs/base/common/map";
+import {
+	AppResourcePath,
+	FileAccess,
+	Schemas,
+	nodeModulesAsarPath,
+	nodeModulesPath,
+} from "vs/base/common/network";
+import { isWeb } from "vs/base/common/platform";
+import { URI } from "vs/base/common/uri";
+import { SimpleWorkerClient } from "vs/base/common/worker/simpleWorker";
+import {
+	EditorWorkerClient,
+	EditorWorkerHost,
+} from "vs/editor/browser/services/editorWorkerService";
+import { ILanguageService } from "vs/editor/common/languages/language";
+import { ILanguageConfigurationService } from "vs/editor/common/languages/languageConfigurationRegistry";
+import { IModelService } from "vs/editor/common/services/model";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IDiagnosticsService } from "vs/platform/diagnostics/common/diagnostics";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import { ILogService } from "vs/platform/log/common/log";
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from "vs/platform/storage/common/storage";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
+import { LanguageDetectionSimpleWorker } from "vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorker";
 import {
 	ILanguageDetectionService,
 	ILanguageDetectionStats,
 	LanguageDetectionStatsClassification,
 	LanguageDetectionStatsId,
 } from "vs/workbench/services/languageDetection/common/languageDetectionWorkerService";
-import {
-	AppResourcePath,
-	FileAccess,
-	nodeModulesAsarPath,
-	nodeModulesPath,
-	Schemas,
-} from "vs/base/common/network";
-import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { ILanguageService } from "vs/editor/common/languages/language";
-import { URI } from "vs/base/common/uri";
-import { isWeb } from "vs/base/common/platform";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { LanguageDetectionSimpleWorker } from "vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorker";
-import { IModelService } from "vs/editor/common/services/model";
-import { SimpleWorkerClient } from "vs/base/common/worker/simpleWorker";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import {
-	EditorWorkerClient,
-	EditorWorkerHost,
-} from "vs/editor/browser/services/editorWorkerService";
-import { ILanguageConfigurationService } from "vs/editor/common/languages/languageConfigurationRegistry";
-import { IDiagnosticsService } from "vs/platform/diagnostics/common/diagnostics";
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import {
-	IStorageService,
-	StorageScope,
-	StorageTarget,
-} from "vs/platform/storage/common/storage";
-import { LRUCache } from "vs/base/common/map";
-import { ILogService } from "vs/platform/log/common/log";
 
 const TOP_LANG_COUNTS = 12;
 
@@ -75,12 +75,12 @@ export class LanguageDetectionService
 	private workspaceLanguageIds = new Set<string>();
 	private sessionOpenedLanguageIds = new Set<string>();
 	private historicalGlobalOpenedLanguageIds = new LRUCache<string, true>(
-		TOP_LANG_COUNTS
+		TOP_LANG_COUNTS,
 	);
 	private historicalWorkspaceOpenedLanguageIds = new LRUCache<string, true>(
-		TOP_LANG_COUNTS
+		TOP_LANG_COUNTS,
 	);
-	private dirtyBiases: boolean = true;
+	private dirtyBiases = true;
 	private langBiases: Record<string, number> = {};
 
 	constructor(
@@ -151,7 +151,7 @@ export class LanguageDetectionService
 		this.hasResolvedWorkspaceLanguageIds = true;
 		const fileExtensions =
 			await this._diagnosticsService.getWorkspaceFileExtensions(
-				this._workspaceContextService.getWorkspace()
+				this._workspaceContextService.getWorkspace(),
 			);
 
 		let count = 0;
@@ -174,7 +174,7 @@ export class LanguageDetectionService
 			!!languageId &&
 			this._configurationService.getValue<boolean>(
 				LanguageDetectionService.enablementSettingKey,
-				{ overrideIdentifier: languageId }
+				{ overrideIdentifier: languageId },
 			)
 		);
 	}
@@ -188,42 +188,42 @@ export class LanguageDetectionService
 
 		// Give different weight to the biases depending on relevance of source
 		this.sessionOpenedLanguageIds.forEach(
-			(lang) => (biases[lang] = (biases[lang] ?? 0) + 7)
+			(lang) => (biases[lang] = (biases[lang] ?? 0) + 7),
 		);
 
 		this.workspaceLanguageIds.forEach(
-			(lang) => (biases[lang] = (biases[lang] ?? 0) + 5)
+			(lang) => (biases[lang] = (biases[lang] ?? 0) + 5),
 		);
 
 		[...this.historicalWorkspaceOpenedLanguageIds.keys()].forEach(
-			(lang) => (biases[lang] = (biases[lang] ?? 0) + 3)
+			(lang) => (biases[lang] = (biases[lang] ?? 0) + 3),
 		);
 
 		[...this.historicalGlobalOpenedLanguageIds.keys()].forEach(
-			(lang) => (biases[lang] = (biases[lang] ?? 0) + 1)
+			(lang) => (biases[lang] = (biases[lang] ?? 0) + 1),
 		);
 
 		this._logService.trace(
 			"Session Languages:",
-			JSON.stringify([...this.sessionOpenedLanguageIds])
+			JSON.stringify([...this.sessionOpenedLanguageIds]),
 		);
 		this._logService.trace(
 			"Workspace Languages:",
-			JSON.stringify([...this.workspaceLanguageIds])
+			JSON.stringify([...this.workspaceLanguageIds]),
 		);
 		this._logService.trace(
 			"Historical Workspace Opened Languages:",
 			JSON.stringify([
 				...this.historicalWorkspaceOpenedLanguageIds.keys(),
-			])
+			]),
 		);
 		this._logService.trace(
 			"Historical Globally Opened Languages:",
-			JSON.stringify([...this.historicalGlobalOpenedLanguageIds.keys()])
+			JSON.stringify([...this.historicalGlobalOpenedLanguageIds.keys()]),
 		);
 		this._logService.trace(
 			"Computed Language Detection Biases:",
-			JSON.stringify(biases)
+			JSON.stringify(biases),
 		);
 		this.dirtyBiases = false;
 		this.langBiases = biases;
@@ -232,13 +232,13 @@ export class LanguageDetectionService
 
 	async detectLanguage(
 		resource: URI,
-		supportedLangs?: string[]
+		supportedLangs?: string[],
 	): Promise<string | undefined> {
 		const useHistory = this._configurationService.getValue<string[]>(
-			LanguageDetectionService.historyBasedEnablementConfig
+			LanguageDetectionService.historyBasedEnablementConfig,
 		);
 		const preferHistory = this._configurationService.getValue<boolean>(
-			LanguageDetectionService.preferHistoryConfig
+			LanguageDetectionService.preferHistoryConfig,
 		);
 		if (useHistory) {
 			await this.resolveWorkspaceLanguageIds();
@@ -248,7 +248,7 @@ export class LanguageDetectionService
 			resource,
 			biases,
 			preferHistory,
-			supportedLangs
+			supportedLangs,
 		);
 	}
 
@@ -261,11 +261,11 @@ export class LanguageDetectionService
 				storageService.get(
 					LanguageDetectionService.globalOpenedLanguagesStorageKey,
 					StorageScope.PROFILE,
-					"[]"
-				)
+					"[]",
+				),
 			);
 			this.historicalGlobalOpenedLanguageIds.fromJSON(
-				globalLangHistoryData
+				globalLangHistoryData,
 			);
 		} catch (e) {
 			console.error(e);
@@ -276,11 +276,11 @@ export class LanguageDetectionService
 				storageService.get(
 					LanguageDetectionService.workspaceOpenedLanguagesStorageKey,
 					StorageScope.WORKSPACE,
-					"[]"
-				)
+					"[]",
+				),
 			);
 			this.historicalWorkspaceOpenedLanguageIds.fromJSON(
-				workspaceLangHistoryData
+				workspaceLangHistoryData,
 			);
 		} catch (e) {
 			console.error(e);
@@ -298,31 +298,31 @@ export class LanguageDetectionService
 					this.sessionOpenedLanguageIds.add(activeLanguage);
 					this.historicalGlobalOpenedLanguageIds.set(
 						activeLanguage,
-						true
+						true,
 					);
 					this.historicalWorkspaceOpenedLanguageIds.set(
 						activeLanguage,
-						true
+						true,
 					);
 					storageService.store(
 						LanguageDetectionService.globalOpenedLanguagesStorageKey,
 						JSON.stringify(
-							this.historicalGlobalOpenedLanguageIds.toJSON()
+							this.historicalGlobalOpenedLanguageIds.toJSON(),
 						),
 						StorageScope.PROFILE,
-						StorageTarget.MACHINE
+						StorageTarget.MACHINE,
 					);
 					storageService.store(
 						LanguageDetectionService.workspaceOpenedLanguagesStorageKey,
 						JSON.stringify(
-							this.historicalWorkspaceOpenedLanguageIds.toJSON()
+							this.historicalWorkspaceOpenedLanguageIds.toJSON(),
 						),
 						StorageScope.WORKSPACE,
-						StorageTarget.MACHINE
+						StorageTarget.MACHINE,
 					);
 					this.dirtyBiases = true;
 				}
-			})
+			}),
 		);
 	}
 }
@@ -337,7 +337,7 @@ export class LanguageDetectionWorkerHost {
 		private _indexJsUri: string,
 		private _modelJsonUri: string,
 		private _weightsUri: string,
-		private _telemetryService: ITelemetryService
+		private _telemetryService: ITelemetryService,
 	) {}
 
 	async getIndexJsUri() {
@@ -355,7 +355,7 @@ export class LanguageDetectionWorkerHost {
 	async sendTelemetryEvent(
 		languages: string[],
 		confidences: number[],
-		timeSpent: number
+		timeSpent: number,
 	): Promise<void> {
 		type LanguageDetectionStats = {
 			languages: string;
@@ -406,13 +406,13 @@ export class LanguageDetectionWorkerClient extends EditorWorkerClient {
 		private readonly _modelJsonUri: string,
 		private readonly _weightsUri: string,
 		private readonly _regexpModelUri: string,
-		languageConfigurationService: ILanguageConfigurationService
+		languageConfigurationService: ILanguageConfigurationService,
 	) {
 		super(
 			modelService,
 			true,
 			"languageDetectionWorkerService",
-			languageConfigurationService
+			languageConfigurationService,
 		);
 	}
 
@@ -432,9 +432,9 @@ export class LanguageDetectionWorkerClient extends EditorWorkerClient {
 					>(
 						this._workerFactory,
 						"vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorker",
-						new EditorWorkerHost(this)
-					)
-				)
+						new EditorWorkerHost(this),
+					),
+				),
 			);
 		});
 
@@ -488,7 +488,7 @@ export class LanguageDetectionWorkerClient extends EditorWorkerClient {
 			return languageIdOrExt;
 		}
 		const guessed = this._guessLanguageIdByUri(
-			URI.file(`file.${languageIdOrExt}`)
+			URI.file(`file.${languageIdOrExt}`),
 		);
 		if (!guessed || guessed === "unknown") {
 			return undefined;
@@ -511,7 +511,7 @@ export class LanguageDetectionWorkerClient extends EditorWorkerClient {
 	async sendTelemetryEvent(
 		languages: string[],
 		confidences: number[],
-		timeSpent: number
+		timeSpent: number,
 	): Promise<void> {
 		this._telemetryService.publicLog2<
 			ILanguageDetectionStats,
@@ -527,7 +527,7 @@ export class LanguageDetectionWorkerClient extends EditorWorkerClient {
 		resource: URI,
 		langBiases: Record<string, number> | undefined,
 		preferHistory: boolean,
-		supportedLangs?: string[]
+		supportedLangs?: string[],
 	): Promise<string | undefined> {
 		const startTime = Date.now();
 		const quickGuess = this._guessLanguageIdByUri(resource);
@@ -536,13 +536,11 @@ export class LanguageDetectionWorkerClient extends EditorWorkerClient {
 		}
 
 		await this._withSyncedResources([resource]);
-		const modelId = await (
-			await this._getProxy()
-		).detectLanguage(
+		const modelId = await (await this._getProxy()).detectLanguage(
 			resource.toString(),
 			langBiases,
 			preferHistory,
-			supportedLangs
+			supportedLangs,
 		);
 		const languageId = this.getLanguageId(modelId);
 
@@ -585,5 +583,5 @@ export class LanguageDetectionWorkerClient extends EditorWorkerClient {
 registerSingleton(
 	ILanguageDetectionService,
 	LanguageDetectionService,
-	InstantiationType.Eager
+	InstantiationType.Eager,
 );

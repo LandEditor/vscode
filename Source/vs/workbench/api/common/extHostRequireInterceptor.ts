@@ -4,31 +4,31 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as performance from "vs/base/common/performance";
+import { escapeRegExpCharacters } from "vs/base/common/strings";
 import { URI } from "vs/base/common/uri";
+import { ExtensionIdentifierMap } from "vs/platform/extensions/common/extensions";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { ILogService } from "vs/platform/log/common/log";
 import {
-	MainThreadTelemetryShape,
+	IExtensionApiFactory,
+	IExtensionRegistries,
+} from "vs/workbench/api/common/extHost.api.impl";
+import {
 	MainContext,
+	MainThreadTelemetryShape,
 } from "vs/workbench/api/common/extHost.protocol";
 import {
 	ExtHostConfigProvider,
 	IExtHostConfiguration,
 } from "vs/workbench/api/common/extHostConfiguration";
-import { nullExtensionDescription } from "vs/workbench/services/extensions/common/extensions";
-import * as vscode from "vscode";
-import { ExtensionIdentifierMap } from "vs/platform/extensions/common/extensions";
-import {
-	IExtensionApiFactory,
-	IExtensionRegistries,
-} from "vs/workbench/api/common/extHost.api.impl";
-import { IExtHostRpcService } from "vs/workbench/api/common/extHostRpcService";
-import { IExtHostInitDataService } from "vs/workbench/api/common/extHostInitDataService";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import {
 	ExtensionPaths,
 	IExtHostExtensionService,
 } from "vs/workbench/api/common/extHostExtensionService";
-import { ILogService } from "vs/platform/log/common/log";
-import { escapeRegExpCharacters } from "vs/base/common/strings";
+import { IExtHostInitDataService } from "vs/workbench/api/common/extHostInitDataService";
+import { IExtHostRpcService } from "vs/workbench/api/common/extHostRpcService";
+import { nullExtensionDescription } from "vs/workbench/services/extensions/common/extensions";
+import * as vscode from "vscode";
 
 interface LoadFunction {
 	(request: string): any;
@@ -46,7 +46,7 @@ interface INodeModuleFactory extends Partial<IAlternativeModuleProvider> {
 export abstract class RequireInterceptor {
 	protected readonly _factories: Map<string, INodeModuleFactory>;
 	protected readonly _alternatives: ((
-		moduleName: string
+		moduleName: string,
 	) => string | undefined)[];
 
 	constructor(
@@ -82,19 +82,19 @@ export abstract class RequireInterceptor {
 				extensionPaths,
 				this._extensionRegistry,
 				configProvider,
-				this._logService
-			)
+				this._logService,
+			),
 		);
 		this.register(
-			this._instaService.createInstance(NodeModuleAliasingModuleFactory)
+			this._instaService.createInstance(NodeModuleAliasingModuleFactory),
 		);
 		if (this._initData.remote.isRemote) {
 			this.register(
 				this._instaService.createInstance(
 					OpenNodeModuleFactory,
 					extensionPaths,
-					this._initData.environment.appUriScheme
-				)
+					this._initData.environment.appUriScheme,
+				),
 			);
 		}
 	}
@@ -102,7 +102,7 @@ export abstract class RequireInterceptor {
 	protected abstract _installInterceptor(): void;
 
 	public register(
-		interceptor: INodeModuleFactory | IAlternativeModuleProvider
+		interceptor: INodeModuleFactory | IAlternativeModuleProvider,
 	): void {
 		if ("nodeModuleName" in interceptor) {
 			if (Array.isArray(interceptor.nodeModuleName)) {
@@ -176,7 +176,7 @@ class NodeModuleAliasingModuleFactory implements IAlternativeModuleProvider {
 		}
 
 		console.warn(
-			`${moduleName} as been renamed to ${dealiased}, please update your imports`
+			`${moduleName} as been renamed to ${dealiased}, please update your imports`,
 		);
 
 		return prefix + dealiased + suffix;
@@ -202,7 +202,7 @@ class VSCodeNodeModuleFactory implements INodeModuleFactory {
 		private readonly _extensionPaths: ExtensionPaths,
 		private readonly _extensionRegistry: IExtensionRegistries,
 		private readonly _configProvider: ExtHostConfigProvider,
-		private readonly _logService: ILogService
+		private readonly _logService: ILogService,
 	) {}
 
 	public load(_request: string, parent: URI): any {
@@ -214,7 +214,7 @@ class VSCodeNodeModuleFactory implements INodeModuleFactory {
 				apiImpl = this._apiFactory(
 					ext,
 					this._extensionRegistry,
-					this._configProvider
+					this._configProvider,
 				);
 				this._extApiImpl.set(ext.identifier, apiImpl);
 			}
@@ -226,15 +226,15 @@ class VSCodeNodeModuleFactory implements INodeModuleFactory {
 			let extensionPathsPretty = "";
 			this._extensionPaths.forEach(
 				(value, index) =>
-					(extensionPathsPretty += `\t${index} -> ${value.identifier.value}\n`)
+					(extensionPathsPretty += `\t${index} -> ${value.identifier.value}\n`),
 			);
 			this._logService.warn(
-				`Could not identify extension for 'vscode' require call from ${parent}. These are the extension path mappings: \n${extensionPathsPretty}`
+				`Could not identify extension for 'vscode' require call from ${parent}. These are the extension path mappings: \n${extensionPathsPretty}`,
 			);
 			this._defaultApiImpl = this._apiFactory(
 				nullExtensionDescription,
 				this._extensionRegistry,
-				this._configProvider
+				this._configProvider,
 			);
 		}
 		return this._defaultApiImpl;
@@ -269,13 +269,13 @@ class OpenNodeModuleFactory implements INodeModuleFactory {
 	constructor(
 		private readonly _extensionPaths: ExtensionPaths,
 		private readonly _appUriScheme: string,
-		@IExtHostRpcService rpcService: IExtHostRpcService
+		@IExtHostRpcService rpcService: IExtHostRpcService,
 	) {
 		this._mainThreadTelemetry = rpcService.getProxy(
-			MainContext.MainThreadTelemetry
+			MainContext.MainThreadTelemetry,
 		);
 		const mainThreadWindow = rpcService.getProxy(
-			MainContext.MainThreadWindow
+			MainContext.MainThreadWindow,
 		);
 
 		this._impl = (target, options) => {
@@ -312,7 +312,7 @@ class OpenNodeModuleFactory implements INodeModuleFactory {
 
 	private callOriginal(
 		target: string,
-		options: OpenOptions | undefined
+		options: OpenOptions | undefined,
 	): Thenable<any> {
 		this.sendNoForwardTelemetry();
 		return this._original!(target, options);

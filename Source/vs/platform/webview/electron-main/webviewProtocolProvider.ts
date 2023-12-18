@@ -30,12 +30,12 @@ export class WebviewProtocolProvider extends Disposable {
 
 	private handleWebviewRequest(
 		request: Electron.ProtocolRequest,
-		callback: (response: string | Electron.ProtocolResponse) => void
+		callback: (response: string | Electron.ProtocolResponse) => void,
 	) {
 		try {
 			const uri = URI.parse(request.url);
 			const entry = WebviewProtocolProvider.validWebviewFilePaths.get(
-				uri.path
+				uri.path,
 			);
 			if (typeof entry === "string") {
 				const relativeResourcePath: AppResourcePath = `vs/workbench/contrib/webview/browser/pre/${entry}`;
@@ -49,14 +49,16 @@ export class WebviewProtocolProvider extends Disposable {
 				});
 			} else {
 				return callback({
-					error: -10 /* ACCESS_DENIED - https://cs.chromium.org/chromium/src/net/base/net_error_list.h?l=32 */,
+					error:
+						-10 /* ACCESS_DENIED - https://cs.chromium.org/chromium/src/net/base/net_error_list.h?l=32 */,
 				});
 			}
 		} catch {
 			// noop
 		}
 		return callback({
-			error: -2 /* FAILED - https://cs.chromium.org/chromium/src/net/base/net_error_list.h?l=32 */,
+			error:
+				-2 /* FAILED - https://cs.chromium.org/chromium/src/net/base/net_error_list.h?l=32 */,
 		});
 	}
 }

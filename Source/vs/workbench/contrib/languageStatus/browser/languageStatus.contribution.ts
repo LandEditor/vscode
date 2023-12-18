@@ -3,25 +3,48 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/languageStatus";
 import * as dom from "vs/base/browser/dom";
+import { ActionBar } from "vs/base/browser/ui/actionbar/actionbar";
 import { renderLabelWithIcons } from "vs/base/browser/ui/iconLabel/iconLabels";
+import { Action } from "vs/base/common/actions";
+import { equals } from "vs/base/common/arrays";
+import { Codicon } from "vs/base/common/codicons";
+import { MarkdownString } from "vs/base/common/htmlContent";
 import {
 	Disposable,
 	DisposableStore,
 	dispose,
 	toDisposable,
 } from "vs/base/common/lifecycle";
+import { parseLinkedText } from "vs/base/common/linkedText";
 import Severity from "vs/base/common/severity";
-import { getCodeEditor, ICodeEditor } from "vs/editor/browser/editorBrowser";
-import { localize } from "vs/nls";
-import { Registry } from "vs/platform/registry/common/platform";
 import { ThemeIcon } from "vs/base/common/themables";
+import { URI } from "vs/base/common/uri";
+import "vs/css!./media/languageStatus";
+import { ICodeEditor, getCodeEditor } from "vs/editor/browser/editorBrowser";
+import { localize } from "vs/nls";
+import { IAccessibilityInformation } from "vs/platform/accessibility/common/accessibility";
+import { Categories } from "vs/platform/action/common/actionCommonCategories";
+import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
 import {
-	IWorkbenchContributionsRegistry,
+	IInstantiationService,
+	ServicesAccessor,
+} from "vs/platform/instantiation/common/instantiation";
+import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
+import { Link } from "vs/platform/opener/browser/link";
+import { IOpenerService } from "vs/platform/opener/common/opener";
+import { Registry } from "vs/platform/registry/common/platform";
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from "vs/platform/storage/common/storage";
+import {
 	Extensions as WorkbenchExtensions,
 	IWorkbenchContribution,
+	IWorkbenchContributionsRegistry,
 } from "vs/workbench/common/contributions";
+import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 import {
 	ILanguageStatus,
@@ -36,34 +59,11 @@ import {
 	StatusbarAlignment,
 	StatusbarEntryKind,
 } from "vs/workbench/services/statusbar/browser/statusbar";
-import { parseLinkedText } from "vs/base/common/linkedText";
-import { Link } from "vs/platform/opener/browser/link";
-import { IOpenerService } from "vs/platform/opener/common/opener";
-import { MarkdownString } from "vs/base/common/htmlContent";
-import { ActionBar } from "vs/base/browser/ui/actionbar/actionbar";
-import { Action } from "vs/base/common/actions";
-import { Codicon } from "vs/base/common/codicons";
-import {
-	IStorageService,
-	StorageScope,
-	StorageTarget,
-} from "vs/platform/storage/common/storage";
-import { equals } from "vs/base/common/arrays";
-import { URI } from "vs/base/common/uri";
-import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
-import {
-	IInstantiationService,
-	ServicesAccessor,
-} from "vs/platform/instantiation/common/instantiation";
-import { Categories } from "vs/platform/action/common/actionCommonCategories";
-import { IAccessibilityInformation } from "vs/platform/accessibility/common/accessibility";
-import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
-import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
 
 class LanguageStatusViewModel {
 	constructor(
 		readonly combined: readonly ILanguageStatus[],
-		readonly dedicated: readonly ILanguageStatus[]
+		readonly dedicated: readonly ILanguageStatus[],
 	) {}
 
 	isEqual(other: LanguageStatusViewModel) {
@@ -84,7 +84,7 @@ class StoredCounter {
 		return this._storageService.getNumber(
 			this._key,
 			StorageScope.PROFILE,
-			0
+			0,
 		);
 	}
 
@@ -94,7 +94,7 @@ class StoredCounter {
 			this._key,
 			n,
 			StorageScope.PROFILE,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 		return n;
 	}
@@ -107,7 +107,7 @@ class LanguageStatusContribution
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IEditorGroupsService editorGroupService: IEditorGroupsService,
-		@IEditorService editorService: IEditorService
+		@IEditorService editorService: IEditorService,
 	) {
 		super();
 
@@ -116,7 +116,7 @@ class LanguageStatusContribution
 			new ServiceCollection([
 				IEditorService,
 				editorService.createScoped("main", this._store),
-			])
+			]),
 		);
 		this._register(mainInstantiationService.createInstance(LanguageStatus));
 
@@ -125,10 +125,10 @@ class LanguageStatusContribution
 			editorGroupService.onDidCreateAuxiliaryEditorPart(
 				({ instantiationService, disposables }) => {
 					disposables.add(
-						instantiationService.createInstance(LanguageStatus)
+						instantiationService.createInstance(LanguageStatus),
 					);
-				}
-			)
+				},
+			),
 		);
 	}
 }
@@ -207,7 +207,7 @@ class LanguageStatus {
 		const raw = this._storageService.get(
 			LanguageStatus._keyDedicatedItems,
 			StorageScope.PROFILE,
-			"[]"
+			"[]",
 		);
 		try {
 			const ids = <string[]>JSON.parse(raw);
@@ -221,7 +221,7 @@ class LanguageStatus {
 		if (this._dedicated.size === 0) {
 			this._storageService.remove(
 				LanguageStatus._keyDedicatedItems,
-				StorageScope.PROFILE
+				StorageScope.PROFILE,
 			);
 		} else {
 			const raw = JSON.stringify(Array.from(this._dedicated.keys()));
@@ -229,7 +229,7 @@ class LanguageStatus {
 				LanguageStatus._keyDedicatedItems,
 				raw,
 				StorageScope.PROFILE,
-				StorageTarget.USER
+				StorageTarget.USER,
 			);
 		}
 	}
@@ -237,13 +237,13 @@ class LanguageStatus {
 	// --- language status model and UI
 
 	private _createViewModel(
-		editor: ICodeEditor | null
+		editor: ICodeEditor | null,
 	): LanguageStatusViewModel {
 		if (!editor?.hasModel()) {
 			return new LanguageStatusViewModel([], []);
 		}
 		const all = this._languageStatusService.getLanguageStatus(
-			editor.getModel()
+			editor.getModel(),
 		);
 		const combined: ILanguageStatus[] = [];
 		const dedicated: ILanguageStatus[] = [];
@@ -258,7 +258,7 @@ class LanguageStatus {
 
 	private _update(): void {
 		const editor = getCodeEditor(
-			this._editorService.activeTextEditorControl
+			this._editorService.activeTextEditorControl,
 		);
 		const model = this._createViewModel(editor);
 
@@ -273,7 +273,7 @@ class LanguageStatus {
 		editor?.onDidChangeModelLanguage(
 			this._update,
 			this,
-			this._renderDisposables
+			this._renderDisposables,
 		);
 
 		// combined status bar item is a single item which hover shows
@@ -297,11 +297,11 @@ class LanguageStatus {
 						status,
 						showSeverity,
 						isPinned,
-						this._renderDisposables
-					)
+						this._renderDisposables,
+					),
 				);
 				ariaLabels.push(
-					LanguageStatus._accessibilityInformation(status).label
+					LanguageStatus._accessibilityInformation(status).label,
 				);
 				isOneBusy = isOneBusy || (!isPinned && status.busy); // unpinned items contribute to the busy-indicator of the composite status item
 			}
@@ -310,13 +310,15 @@ class LanguageStatus {
 				ariaLabel: localize(
 					"langStatus.aria",
 					"Editor Language Status: {0}",
-					ariaLabels.join(", next: ")
+					ariaLabels.join(", next: "),
 				),
 				tooltip: element,
 				command: ShowTooltipCommand,
 				text: isOneBusy ? `${text}\u00A0\u00A0$(sync~spin)` : text,
 			};
-			if (!this._combinedEntry) {
+			if (this._combinedEntry) {
+				this._combinedEntry.update(props);
+			} else {
 				this._combinedEntry = this._statusBarService.addEntry(
 					props,
 					LanguageStatus._id,
@@ -325,10 +327,8 @@ class LanguageStatus {
 						id: "status.editor.mode",
 						alignment: StatusbarAlignment.LEFT,
 						compact: true,
-					}
+					},
 				);
-			} else {
-				this._combinedEntry.update(props);
 			}
 
 			// animate the status bar icon whenever language status changes, repeat animation
@@ -337,24 +337,27 @@ class LanguageStatus {
 				this._interactionCounter.value >= 3;
 			const targetWindow = dom.getWindow(editor?.getContainerDomNode());
 			const node = targetWindow.document.querySelector(
-				".monaco-workbench .statusbar DIV#status\\.languageStatus A>SPAN.codicon"
+				".monaco-workbench .statusbar DIV#status\\.languageStatus A>SPAN.codicon",
 			);
 			const container = targetWindow.document.querySelector(
-				".monaco-workbench .statusbar DIV#status\\.languageStatus"
+				".monaco-workbench .statusbar DIV#status\\.languageStatus",
 			);
 			if (node instanceof HTMLElement && container) {
 				const _wiggle = "wiggle";
 				const _flash = "flash";
-				if (!isOneBusy) {
+				if (isOneBusy) {
+					node.classList.remove(_wiggle);
+					container.classList.remove(_flash);
+				} else {
 					// wiggle icon when severe or "new"
 					node.classList.toggle(
 						_wiggle,
-						showSeverity || !userHasInteractedWithStatus
+						showSeverity || !userHasInteractedWithStatus,
 					);
 					this._renderDisposables.add(
 						dom.addDisposableListener(node, "animationend", (_e) =>
-							node.classList.remove(_wiggle)
-						)
+							node.classList.remove(_wiggle),
+						),
 					);
 					// flash background when severe
 					container.classList.toggle(_flash, showSeverity);
@@ -362,12 +365,9 @@ class LanguageStatus {
 						dom.addDisposableListener(
 							container,
 							"animationend",
-							(_e) => container.classList.remove(_flash)
-						)
+							(_e) => container.classList.remove(_flash),
+						),
 					);
-				} else {
-					node.classList.remove(_wiggle);
-					container.classList.remove(_flash);
 				}
 			}
 
@@ -375,7 +375,7 @@ class LanguageStatus {
 			//  use that as signal that the user has interacted/learned language status items work
 			if (!userHasInteractedWithStatus) {
 				const hoverTarget = targetWindow.document.querySelector(
-					".monaco-workbench .context-view"
+					".monaco-workbench .context-view",
 				);
 				if (hoverTarget instanceof HTMLElement) {
 					const observer = new MutationObserver(() => {
@@ -389,7 +389,7 @@ class LanguageStatus {
 						subtree: true,
 					});
 					this._renderDisposables.add(
-						toDisposable(() => observer.disconnect())
+						toDisposable(() => observer.disconnect()),
 					);
 				}
 			}
@@ -400,7 +400,10 @@ class LanguageStatus {
 		for (const status of model.dedicated) {
 			const props = LanguageStatus._asStatusbarEntry(status);
 			let entry = this._dedicatedEntries.get(status.id);
-			if (!entry) {
+			if (entry) {
+				entry.update(props);
+				this._dedicatedEntries.delete(status.id);
+			} else {
 				entry = this._statusBarService.addEntry(
 					props,
 					status.id,
@@ -408,11 +411,8 @@ class LanguageStatus {
 					{
 						id: "status.editor.mode",
 						alignment: StatusbarAlignment.RIGHT,
-					}
+					},
 				);
-			} else {
-				entry.update(props);
-				this._dedicatedEntries.delete(status.id);
 			}
 			newDedicatedEntries.set(status.id, entry);
 		}
@@ -424,7 +424,7 @@ class LanguageStatus {
 		status: ILanguageStatus,
 		showSeverity: boolean,
 		isPinned: boolean,
-		store: DisposableStore
+		store: DisposableStore,
 	): HTMLElement {
 		const parent = document.createElement("div");
 		parent.classList.add("hover-language-status");
@@ -433,7 +433,7 @@ class LanguageStatus {
 		severity.classList.add("severity", `sev${status.severity}`);
 		severity.classList.toggle("show", showSeverity);
 		const severityText = LanguageStatus._severityToSingleCodicon(
-			status.severity
+			status.severity,
 		);
 		dom.append(severity, ...renderLabelWithIcons(severityText));
 		parent.appendChild(severity);
@@ -457,8 +457,8 @@ class LanguageStatus {
 			...renderLabelWithIcons(
 				status.busy
 					? `$(sync~spin)\u00A0\u00A0${labelValue}`
-					: labelValue
-			)
+					: labelValue,
+			),
 		);
 		left.appendChild(label);
 
@@ -489,8 +489,8 @@ class LanguageStatus {
 						}).toString(),
 					},
 					undefined,
-					this._openerService
-				)
+					this._openerService,
+				),
 			);
 		}
 
@@ -498,23 +498,7 @@ class LanguageStatus {
 		const actionBar = new ActionBar(right, {});
 		store.add(actionBar);
 		let action: Action;
-		if (!isPinned) {
-			action = new Action(
-				"pin",
-				localize("pin", "Add to Status Bar"),
-				ThemeIcon.asClassName(Codicon.pin),
-				true,
-				() => {
-					this._dedicated.add(status.id);
-					this._statusBarService.updateEntryVisibility(
-						status.id,
-						true
-					);
-					this._update();
-					this._storeState();
-				}
-			);
-		} else {
+		if (isPinned) {
 			action = new Action(
 				"unpin",
 				localize("unpin", "Remove from Status Bar"),
@@ -524,11 +508,27 @@ class LanguageStatus {
 					this._dedicated.delete(status.id);
 					this._statusBarService.updateEntryVisibility(
 						status.id,
-						false
+						false,
 					);
 					this._update();
 					this._storeState();
-				}
+				},
+			);
+		} else {
+			action = new Action(
+				"pin",
+				localize("pin", "Add to Status Bar"),
+				ThemeIcon.asClassName(Codicon.pin),
+				true,
+				() => {
+					this._dedicated.add(status.id);
+					this._statusBarService.updateEntryVisibility(
+						status.id,
+						true,
+					);
+					this._update();
+					this._storeState();
+				},
 			);
 		}
 		actionBar.push(action, { icon: true, label: false });
@@ -562,7 +562,7 @@ class LanguageStatus {
 	private _renderTextPlus(
 		target: HTMLElement,
 		text: string,
-		store: DisposableStore
+		store: DisposableStore,
 	): void {
 		for (const node of parseLinkedText(text).nodes) {
 			if (typeof node === "string") {
@@ -570,14 +570,14 @@ class LanguageStatus {
 				dom.append(target, ...parts);
 			} else {
 				store.add(
-					new Link(target, node, undefined, this._openerService)
+					new Link(target, node, undefined, this._openerService),
 				);
 			}
 		}
 	}
 
 	private static _accessibilityInformation(
-		status: ILanguageStatus
+		status: ILanguageStatus,
 	): IAccessibilityInformation {
 		if (status.accessibilityInfo) {
 			return status.accessibilityInfo;
@@ -628,10 +628,10 @@ class LanguageStatus {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	LanguageStatusContribution,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );
 
 registerAction2(
@@ -642,7 +642,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"reset",
-						"Reset Language Status Interaction Counter"
+						"Reset Language Status Interaction Counter",
 					),
 					original: "Reset Language Status Interaction Counter",
 				},
@@ -656,5 +656,5 @@ registerAction2(
 				.get(IStorageService)
 				.remove("languageStatus.interactCount", StorageScope.PROFILE);
 		}
-	}
+	},
 );

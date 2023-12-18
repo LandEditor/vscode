@@ -23,7 +23,7 @@ export abstract class AbstractEditorCommandsQuickAccessProvider extends Abstract
 		keybindingService: IKeybindingService,
 		commandService: ICommandService,
 		telemetryService: ITelemetryService,
-		dialogService: IDialogService
+		dialogService: IDialogService,
 	) {
 		super(
 			options,
@@ -31,7 +31,7 @@ export abstract class AbstractEditorCommandsQuickAccessProvider extends Abstract
 			keybindingService,
 			commandService,
 			telemetryService,
-			dialogService
+			dialogService,
 		);
 	}
 

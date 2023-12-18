@@ -15,7 +15,7 @@ export class ExternalUriResolverContribution
 	constructor(
 		@IOpenerService _openerService: IOpenerService,
 		@IBrowserWorkbenchEnvironmentService
-		_workbenchEnvironmentService: IBrowserWorkbenchEnvironmentService
+		_workbenchEnvironmentService: IBrowserWorkbenchEnvironmentService,
 	) {
 		super();
 
@@ -35,7 +35,7 @@ export class ExternalUriResolverContribution
 							},
 						};
 					},
-				})
+				}),
 			);
 		}
 	}

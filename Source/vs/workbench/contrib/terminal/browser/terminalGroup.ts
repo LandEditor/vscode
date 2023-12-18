@@ -3,48 +3,48 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TERMINAL_VIEW_ID } from "vs/workbench/contrib/terminal/common/terminal";
-import { Event, Emitter } from "vs/base/common/event";
+import { getWindow } from "vs/base/browser/dom";
 import {
-	IDisposable,
+	IView,
+	Orientation,
+	Sizing,
+	SplitView,
+} from "vs/base/browser/ui/splitview/splitview";
+import { Emitter, Event } from "vs/base/common/event";
+import {
 	Disposable,
 	DisposableStore,
+	IDisposable,
 	dispose,
 	toDisposable,
 } from "vs/base/common/lifecycle";
-import {
-	SplitView,
-	Orientation,
-	IView,
-	Sizing,
-} from "vs/base/browser/ui/splitview/splitview";
-import {
-	IWorkbenchLayoutService,
-	Parts,
-	Position,
-} from "vs/workbench/services/layout/browser/layoutService";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import {
-	ITerminalInstance,
-	Direction,
-	ITerminalGroup,
-	ITerminalService,
-	ITerminalInstanceService,
-} from "vs/workbench/contrib/terminal/browser/terminal";
-import {
-	ViewContainerLocation,
-	IViewDescriptorService,
-} from "vs/workbench/common/views";
 import {
 	IShellLaunchConfig,
 	ITerminalTabLayoutInfoById,
 	TerminalLocation,
 } from "vs/platform/terminal/common/terminal";
-import { TerminalStatus } from "vs/workbench/contrib/terminal/browser/terminalStatusList";
 import { getPartByLocation } from "vs/workbench/browser/parts/views/viewsService";
-import { getWindow } from "vs/base/browser/dom";
+import {
+	IViewDescriptorService,
+	ViewContainerLocation,
+} from "vs/workbench/common/views";
+import {
+	Direction,
+	ITerminalGroup,
+	ITerminalInstance,
+	ITerminalInstanceService,
+	ITerminalService,
+} from "vs/workbench/contrib/terminal/browser/terminal";
+import { TerminalStatus } from "vs/workbench/contrib/terminal/browser/terminalStatusList";
+import { TERMINAL_VIEW_ID } from "vs/workbench/contrib/terminal/common/terminal";
+import {
+	IWorkbenchLayoutService,
+	Parts,
+	Position,
+} from "vs/workbench/services/layout/browser/layoutService";
 
-const enum Constants {
+enum Constants {
 	/**
 	 * The minimum size in pixels of a split pane.
 	 */
@@ -61,7 +61,7 @@ class SplitPaneContainer extends Disposable {
 	private _width: number;
 	private _splitView!: SplitView;
 	private readonly _splitViewDisposables = this._register(
-		new DisposableStore()
+		new DisposableStore(),
 	);
 	private _children: SplitPane[] = [];
 	private _terminalToPane: Map<ITerminalInstance, SplitPane> = new Map();
@@ -95,8 +95,8 @@ class SplitPaneContainer extends Disposable {
 		this._splitViewDisposables.clear();
 		this._splitViewDisposables.add(
 			this._splitView.onDidSashReset(() =>
-				this._splitView.distributeViewSizes()
-			)
+				this._splitView.distributeViewSizes(),
+			),
 		);
 	}
 
@@ -108,7 +108,7 @@ class SplitPaneContainer extends Disposable {
 		index: number,
 		direction: Direction,
 		amount: number,
-		part: Parts
+		part: Parts,
 	): void {
 		const isHorizontal =
 			direction === Direction.Left || direction === Direction.Right;
@@ -182,7 +182,7 @@ class SplitPaneContainer extends Disposable {
 			1 -
 			relativeSizes.reduce(
 				(totalValue, currentValue) => totalValue + currentValue,
-				0
+				0,
 			);
 		let totalSize = 0;
 		for (let i = 0; i < this._splitView.length; i++) {
@@ -208,7 +208,7 @@ class SplitPaneContainer extends Disposable {
 			instance,
 			this.orientation === Orientation.HORIZONTAL
 				? this._height
-				: this._width
+				: this._width,
 		);
 		child.orientation = this.orientation;
 		if (typeof index === "number") {
@@ -218,16 +218,16 @@ class SplitPaneContainer extends Disposable {
 		}
 		this._terminalToPane.set(
 			instance,
-			this._children[this._children.indexOf(child)]
+			this._children[this._children.indexOf(child)],
 		);
 
 		this._withDisabledLayout(() =>
-			this._splitView.addView(child, Sizing.Distribute, index)
+			this._splitView.addView(child, Sizing.Distribute, index),
 		);
 		this.layout(this._width, this._height);
 
 		this._onDidChange = Event.any(
-			...this._children.map((c) => c.onDidChange)
+			...this._children.map((c) => c.onDidChange),
 		);
 	}
 
@@ -305,7 +305,7 @@ class SplitPane implements IView {
 
 	constructor(
 		readonly instance: ITerminalInstance,
-		public orthogonalSize: number
+		public orthogonalSize: number,
 	) {
 		this.element = document.createElement("div");
 		this.element.className = "terminal-split-pane";
@@ -339,14 +339,14 @@ export class TerminalGroup extends Disposable implements ITerminalGroup {
 		ViewContainerLocation.Panel;
 	private _instanceDisposables: Map<number, IDisposable[]> = new Map();
 
-	private _activeInstanceIndex: number = -1;
+	private _activeInstanceIndex = -1;
 
 	get terminalInstances(): ITerminalInstance[] {
 		return this._terminalInstances;
 	}
 
 	private _initialRelativeSizes: number[] | undefined;
-	private _visible: boolean = false;
+	private _visible = false;
 
 	private readonly _onDidDisposeInstance: Emitter<ITerminalInstance> =
 		this._register(new Emitter<ITerminalInstance>());
@@ -359,19 +359,19 @@ export class TerminalGroup extends Disposable implements ITerminalGroup {
 	readonly onDidChangeInstanceCapability =
 		this._onDidChangeInstanceCapability.event;
 	private readonly _onDisposed: Emitter<ITerminalGroup> = this._register(
-		new Emitter<ITerminalGroup>()
+		new Emitter<ITerminalGroup>(),
 	);
 	readonly onDisposed = this._onDisposed.event;
 	private readonly _onInstancesChanged: Emitter<void> = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onInstancesChanged = this._onInstancesChanged.event;
 	private readonly _onDidChangeActiveInstance = this._register(
-		new Emitter<ITerminalInstance | undefined>()
+		new Emitter<ITerminalInstance | undefined>(),
 	);
 	readonly onDidChangeActiveInstance = this._onDidChangeActiveInstance.event;
 	private readonly _onPanelOrientationChanged = this._register(
-		new Emitter<Orientation>()
+		new Emitter<Orientation>(),
 	);
 	readonly onPanelOrientationChanged = this._onPanelOrientationChanged.event;
 
@@ -416,22 +416,22 @@ export class TerminalGroup extends Disposable implements ITerminalGroup {
 
 	addInstance(
 		shellLaunchConfigOrInstance: IShellLaunchConfig | ITerminalInstance,
-		parentTerminalId?: number
+		parentTerminalId?: number,
 	): void {
 		let instance: ITerminalInstance;
 		// if a parent terminal is provided, find it
 		// otherwise, parent is the active terminal
 		const parentIndex = parentTerminalId
 			? this._terminalInstances.findIndex(
-					(t) => t.instanceId === parentTerminalId
-				)
+					(t) => t.instanceId === parentTerminalId,
+			  )
 			: this._activeInstanceIndex;
 		if ("instanceId" in shellLaunchConfigOrInstance) {
 			instance = shellLaunchConfigOrInstance;
 		} else {
 			instance = this._terminalInstanceService.createInstance(
 				shellLaunchConfigOrInstance,
-				TerminalLocation.Panel
+				TerminalLocation.Panel,
 			);
 		}
 		if (this._terminalInstances.length === 0) {
@@ -466,7 +466,7 @@ export class TerminalGroup extends Disposable implements ITerminalGroup {
 		const instances = this.terminalInstances.filter(
 			(instance) =>
 				typeof instance.persistentProcessId === "number" &&
-				instance.shouldPersist
+				instance.shouldPersist,
 		);
 		const totalSize = instances
 			.map((t) => this._splitPaneContainer?.getPaneSize(t) || 0)
@@ -481,7 +481,7 @@ export class TerminalGroup extends Disposable implements ITerminalGroup {
 					relativeSize:
 						totalSize > 0
 							? this._splitPaneContainer!.getPaneSize(t) /
-								totalSize
+							  totalSize
 							: 0,
 					terminal: t.persistentProcessId || 0,
 				};
@@ -500,10 +500,10 @@ export class TerminalGroup extends Disposable implements ITerminalGroup {
 				this._onDidFocusInstance.fire(instance);
 			}),
 			instance.capabilities.onDidAddCapabilityType(() =>
-				this._onDidChangeInstanceCapability.fire(instance)
+				this._onDidChangeInstanceCapability.fire(instance),
 			),
 			instance.capabilities.onDidRemoveCapabilityType(() =>
-				this._onDidChangeInstanceCapability.fire(instance)
+				this._onDidChangeInstanceCapability.fire(instance),
 			),
 		]);
 	}
@@ -573,7 +573,7 @@ export class TerminalGroup extends Disposable implements ITerminalGroup {
 
 	private _setActiveInstance(instance: ITerminalInstance) {
 		this.setActiveInstanceByIndex(
-			this._getIndexFromId(instance.instanceId)
+			this._getIndexFromId(instance.instanceId),
 		);
 	}
 
@@ -586,7 +586,7 @@ export class TerminalGroup extends Disposable implements ITerminalGroup {
 		});
 		if (terminalIndex === -1) {
 			throw new Error(
-				`Terminal with ID ${terminalId} does not exist (has it already been disposed?)`
+				`Terminal with ID ${terminalId} does not exist (has it already been disposed?)`,
 			);
 		}
 		return terminalIndex;
@@ -620,7 +620,7 @@ export class TerminalGroup extends Disposable implements ITerminalGroup {
 			this._panelPosition = this._layoutService.getPanelPosition();
 			this._terminalLocation =
 				this._viewDescriptorService.getViewLocationById(
-					TERMINAL_VIEW_ID
+					TERMINAL_VIEW_ID,
 				)!;
 			const orientation =
 				this._terminalLocation === ViewContainerLocation.Panel &&
@@ -631,13 +631,13 @@ export class TerminalGroup extends Disposable implements ITerminalGroup {
 				this._instantiationService.createInstance(
 					SplitPaneContainer,
 					this._groupElement,
-					orientation
+					orientation,
 				);
 			this.terminalInstances.forEach((instance) =>
 				this._splitPaneContainer!.split(
 					instance,
-					this._activeInstanceIndex + 1
-				)
+					this._activeInstanceIndex + 1,
+				),
 			);
 		}
 	}
@@ -670,7 +670,7 @@ export class TerminalGroup extends Disposable implements ITerminalGroup {
 		if (
 			this._terminalService.configHelper.config.enableBell &&
 			instance.statusList.statuses.some(
-				(e) => e.id === TerminalStatus.Bell
+				(e) => e.id === TerminalStatus.Bell,
 			)
 		) {
 			return "*";
@@ -689,7 +689,7 @@ export class TerminalGroup extends Disposable implements ITerminalGroup {
 	split(shellLaunchConfig: IShellLaunchConfig): ITerminalInstance {
 		const instance = this._terminalInstanceService.createInstance(
 			shellLaunchConfig,
-			TerminalLocation.Panel
+			TerminalLocation.Panel,
 		);
 		this.addInstance(instance, shellLaunchConfig.parentTerminalId);
 		this._setActiveInstance(instance);
@@ -706,7 +706,7 @@ export class TerminalGroup extends Disposable implements ITerminalGroup {
 			const newPanelPosition = this._layoutService.getPanelPosition();
 			const newTerminalLocation =
 				this._viewDescriptorService.getViewLocationById(
-					TERMINAL_VIEW_ID
+					TERMINAL_VIEW_ID,
 				)!;
 			const terminalPositionChanged =
 				newPanelPosition !== this._panelPosition ||
@@ -721,7 +721,7 @@ export class TerminalGroup extends Disposable implements ITerminalGroup {
 				this._panelPosition = newPanelPosition;
 				this._terminalLocation = newTerminalLocation;
 				this._onPanelOrientationChanged.fire(
-					this._splitPaneContainer.orientation
+					this._splitPaneContainer.orientation,
 				);
 			}
 			this._splitPaneContainer.layout(width, height);
@@ -756,7 +756,7 @@ export class TerminalGroup extends Disposable implements ITerminalGroup {
 		const isHorizontal =
 			direction === Direction.Left || direction === Direction.Right;
 		const font = this._terminalService.configHelper.getFont(
-			getWindow(this._groupElement)
+			getWindow(this._groupElement),
 		);
 		// TODO: Support letter spacing and line height
 		const charSize = isHorizontal ? font.charWidth : font.charHeight;
@@ -765,7 +765,7 @@ export class TerminalGroup extends Disposable implements ITerminalGroup {
 				this._activeInstanceIndex,
 				direction,
 				charSize * Constants.ResizePartCellCount,
-				getPartByLocation(this._terminalLocation)
+				getPartByLocation(this._terminalLocation),
 			);
 		}
 	}

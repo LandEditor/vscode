@@ -5,9 +5,9 @@
 
 // @ts-check
 
-import * as path from "path";
 import { spawn } from "child_process";
 import { promises as fs } from "fs";
+import * as path from "path";
 
 const yarn = process.platform === "win32" ? "yarn.cmd" : "yarn";
 const rootDir = path.resolve(__dirname, "..", "..");
@@ -19,7 +19,7 @@ function runProcess(command: string, args: ReadonlyArray<string> = []) {
 			stdio: "inherit",
 			env: process.env,
 		});
-		child.on("exit", (err) => (!err ? resolve() : process.exit(err ?? 1)));
+		child.on("exit", (err) => (err ? process.exit(err ?? 1) : resolve()));
 		child.on("error", reject);
 	});
 }

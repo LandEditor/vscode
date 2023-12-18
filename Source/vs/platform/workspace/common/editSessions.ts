@@ -12,13 +12,13 @@ export interface IEditSessionIdentityProvider {
 	readonly scheme: string;
 	getEditSessionIdentifier(
 		workspaceFolder: IWorkspaceFolder,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<string | undefined>;
 	provideEditSessionIdentityMatch(
 		workspaceFolder: IWorkspaceFolder,
 		identity1: string,
 		identity2: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<EditSessionIdentityMatch | undefined>;
 }
 
@@ -29,31 +29,31 @@ export interface IEditSessionIdentityService {
 	readonly _serviceBrand: undefined;
 
 	registerEditSessionIdentityProvider(
-		provider: IEditSessionIdentityProvider
+		provider: IEditSessionIdentityProvider,
 	): IDisposable;
 	getEditSessionIdentifier(
 		workspaceFolder: IWorkspaceFolder,
-		cancellationToken: CancellationToken
+		cancellationToken: CancellationToken,
 	): Promise<string | undefined>;
 	provideEditSessionIdentityMatch(
 		workspaceFolder: IWorkspaceFolder,
 		identity1: string,
 		identity2: string,
-		cancellationToken: CancellationToken
+		cancellationToken: CancellationToken,
 	): Promise<EditSessionIdentityMatch | undefined>;
 	addEditSessionIdentityCreateParticipant(
-		participants: IEditSessionIdentityCreateParticipant
+		participants: IEditSessionIdentityCreateParticipant,
 	): IDisposable;
 	onWillCreateEditSessionIdentity(
 		workspaceFolder: IWorkspaceFolder,
-		cancellationToken: CancellationToken
+		cancellationToken: CancellationToken,
 	): Promise<void>;
 }
 
 export interface IEditSessionIdentityCreateParticipant {
 	participate(
 		workspaceFolder: IWorkspaceFolder,
-		cancellationToken: CancellationToken
+		cancellationToken: CancellationToken,
 	): Promise<void>;
 }
 

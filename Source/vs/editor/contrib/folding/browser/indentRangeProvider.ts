@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { CancellationToken } from "vs/base/common/cancellation";
-import { ITextModel } from "vs/editor/common/model";
-import { computeIndentLevel } from "vs/editor/common/model/utils";
 import { FoldingMarkers } from "vs/editor/common/languages/languageConfiguration";
 import { ILanguageConfigurationService } from "vs/editor/common/languages/languageConfigurationRegistry";
+import { ITextModel } from "vs/editor/common/model";
+import { computeIndentLevel } from "vs/editor/common/model/utils";
 import {
 	FoldingRegions,
 	MAX_LINE_NUMBER,
@@ -24,7 +24,7 @@ export class IndentRangeProvider implements RangeProvider {
 	constructor(
 		private readonly editorModel: ITextModel,
 		private readonly languageConfigurationService: ILanguageConfigurationService,
-		private readonly foldingRangesLimit: FoldingLimitReporter
+		private readonly foldingRangesLimit: FoldingLimitReporter,
 	) {}
 
 	dispose() {}
@@ -32,7 +32,7 @@ export class IndentRangeProvider implements RangeProvider {
 	compute(cancelationToken: CancellationToken): Promise<FoldingRegions> {
 		const foldingRules =
 			this.languageConfigurationService.getLanguageConfiguration(
-				this.editorModel.getLanguageId()
+				this.editorModel.getLanguageId(),
 			).foldingRules;
 		const offSide = foldingRules && !!foldingRules.offSide;
 		const markers = foldingRules && foldingRules.markers;
@@ -41,8 +41,8 @@ export class IndentRangeProvider implements RangeProvider {
 				this.editorModel,
 				offSide,
 				markers,
-				this.foldingRangesLimit
-			)
+				this.foldingRangesLimit,
+			),
 		);
 	}
 }
@@ -66,7 +66,7 @@ export class RangesCollector {
 	public insertFirst(
 		startLineNumber: number,
 		endLineNumber: number,
-		indent: number
+		indent: number,
 	) {
 		if (
 			startLineNumber > MAX_LINE_NUMBER ||
@@ -149,7 +149,7 @@ export function computeRanges(
 	model: ITextModel,
 	offSide: boolean,
 	markers?: FoldingMarkers,
-	foldingRangesLimit: FoldingLimitReporter = foldingRangesLimitDefault
+	foldingRangesLimit: FoldingLimitReporter = foldingRangesLimitDefault,
 ): FoldingRegions {
 	const tabSize = model.getOptions().tabSize;
 	const result = new RangesCollector(foldingRangesLimit);
@@ -157,7 +157,7 @@ export function computeRanges(
 	let pattern: RegExp | undefined = undefined;
 	if (markers) {
 		pattern = new RegExp(
-			`(${markers.start.source})|(?:${markers.end.source})`
+			`(${markers.start.source})|(?:${markers.end.source})`,
 		);
 	}
 

@@ -41,7 +41,7 @@ async function computePicks(
 	snippetService: ISnippetsService,
 	userDataProfileService: IUserDataProfileService,
 	languageService: ILanguageService,
-	labelService: ILabelService
+	labelService: ILabelService,
 ) {
 	const existing: ISnippetPick[] = [];
 	const future: ISnippetPick[] = [];
@@ -89,8 +89,8 @@ async function computePicks(
 						: nls.localize(
 								"global.1",
 								"({0})",
-								[...names].join(", ")
-							),
+								[...names].join(", "),
+						  ),
 			};
 			existing.push(snippet);
 
@@ -102,7 +102,7 @@ async function computePicks(
 				"detail.label",
 				"({0}) {1}",
 				source,
-				labelService.getUriLabel(file.location, { relative: true })
+				labelService.getUriLabel(file.location, { relative: true }),
 			);
 			const lastItem = added.get(basename(file.location));
 			if (lastItem) {
@@ -160,7 +160,7 @@ async function createSnippetFile(
 	quickInputService: IQuickInputService,
 	fileService: IFileService,
 	textFileService: ITextFileService,
-	opener: IOpenerService
+	opener: IOpenerService,
 ) {
 	function createSnippetUri(input: string) {
 		const filename =
@@ -182,7 +182,7 @@ async function createSnippetFile(
 				return nls.localize(
 					"bad_name2",
 					"'{0}' is not a valid file name",
-					input
+					input,
 				);
 			}
 			if (await fileService.exists(createSnippetUri(input))) {
@@ -221,7 +221,7 @@ async function createSnippetFile(
 			'\t// \t"description": "Log output to console"',
 			"\t// }",
 			"}",
-		].join("\n")
+		].join("\n"),
 	);
 
 	await opener.open(resource);
@@ -231,7 +231,7 @@ async function createSnippetFile(
 async function createLanguageSnippetFile(
 	pick: ISnippetPick,
 	fileService: IFileService,
-	textFileService: ITextFileService
+	textFileService: ITextFileService,
 ) {
 	if (await fileService.exists(pick.filepath)) {
 		return;
@@ -265,7 +265,7 @@ export class ConfigureSnippetsAction extends SnippetsAction {
 			title: {
 				value: nls.localize(
 					"openSnippet.label",
-					"Configure User Snippets"
+					"Configure User Snippets",
 				),
 				original: "Configure User Snippets",
 			},
@@ -276,7 +276,7 @@ export class ConfigureSnippetsAction extends SnippetsAction {
 						key: "miOpenSnippets",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"User &&Snippets"
+					"User &&Snippets",
 				),
 				original: "User Snippets",
 			},
@@ -311,7 +311,7 @@ export class ConfigureSnippetsAction extends SnippetsAction {
 			snippetService,
 			userDataProfileService,
 			languageService,
-			labelService
+			labelService,
 		);
 		const existing: QuickPickInput[] = picks.existing;
 
@@ -321,7 +321,7 @@ export class ConfigureSnippetsAction extends SnippetsAction {
 				scope: nls.localize("new.global_scope", "global"),
 				label: nls.localize(
 					"new.global",
-					"New Global Snippets file..."
+					"New Global Snippets file...",
 				),
 				uri: userDataProfileService.currentProfile.snippetsHome,
 			},
@@ -333,12 +333,12 @@ export class ConfigureSnippetsAction extends SnippetsAction {
 				scope: nls.localize(
 					"new.workspace_scope",
 					"{0} workspace",
-					folder.name
+					folder.name,
 				),
 				label: nls.localize(
 					"new.folder",
 					"New Snippets file for '{0}'...",
-					folder.name
+					folder.name,
 				),
 				uri: folder.toResource(".vscode"),
 			});
@@ -365,15 +365,15 @@ export class ConfigureSnippetsAction extends SnippetsAction {
 				existing,
 				globalSnippetPicks,
 				workspaceSnippetPicks,
-				picks.future
+				picks.future,
 			),
 			{
 				placeHolder: nls.localize(
 					"openSnippet.pickLanguage",
-					"Select Snippets File or Create Snippets"
+					"Select Snippets File or Create Snippets",
 				),
 				matchOnDescription: true,
-			}
+			},
 		);
 
 		if (globalSnippetPicks.indexOf(pick as SnippetPick) >= 0) {
@@ -383,7 +383,7 @@ export class ConfigureSnippetsAction extends SnippetsAction {
 				quickInputService,
 				fileService,
 				textFileService,
-				opener
+				opener,
 			);
 		} else if (workspaceSnippetPicks.indexOf(pick as SnippetPick) >= 0) {
 			return createSnippetFile(
@@ -392,14 +392,14 @@ export class ConfigureSnippetsAction extends SnippetsAction {
 				quickInputService,
 				fileService,
 				textFileService,
-				opener
+				opener,
 			);
 		} else if (ISnippetPick.is(pick)) {
 			if (pick.hint) {
 				await createLanguageSnippetFile(
 					pick,
 					fileService,
-					textFileService
+					textFileService,
 				);
 			}
 			return opener.open(pick.filepath);

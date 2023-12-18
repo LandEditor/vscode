@@ -25,7 +25,7 @@ class StatusBarViewItem extends MenuEntryActionViewItem {
 	protected override updateLabel() {
 		const kb = this._keybindingService.lookupKeybinding(
 			this._action.id,
-			this._contextKeyService
+			this._contextKeyService,
 		);
 		if (!kb) {
 			return super.updateLabel();
@@ -35,7 +35,7 @@ class StatusBarViewItem extends MenuEntryActionViewItem {
 				{ key: "content", comment: ["A label", "A keybinding"] },
 				"{0} ({1})",
 				this._action.label,
-				StatusBarViewItem.symbolPrintEnter(kb)
+				StatusBarViewItem.symbolPrintEnter(kb),
 			);
 		}
 	}
@@ -91,7 +91,7 @@ export class SuggestWidgetStatus {
 	show(): void {
 		const menu = this._menuService.createMenu(
 			this._menuId,
-			this._contextKeyService
+			this._contextKeyService,
 		);
 		const renderMenu = () => {
 			const left: IAction[] = [];

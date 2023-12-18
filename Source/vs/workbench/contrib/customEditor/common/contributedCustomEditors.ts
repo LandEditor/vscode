@@ -19,8 +19,8 @@ import {
 	CustomEditorInfo,
 } from "vs/workbench/contrib/customEditor/common/customEditor";
 import {
-	customEditorsExtensionPoint,
 	ICustomEditorsExtensionPoint,
+	customEditorsExtensionPoint,
 } from "vs/workbench/contrib/customEditor/common/extensionPoint";
 import { RegisteredEditorPriority } from "vs/workbench/services/editor/common/editorResolverService";
 import { IExtensionPointUser } from "vs/workbench/services/extensions/common/extensionsRegistry";
@@ -37,12 +37,12 @@ export class ContributedCustomEditors extends Disposable {
 
 		this._memento = new Memento(
 			ContributedCustomEditors.CUSTOM_EDITORS_STORAGE_ID,
-			storageService
+			storageService,
 		);
 
 		const mementoObject = this._memento.getMemento(
 			StorageScope.PROFILE,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 		for (const info of (mementoObject[
 			ContributedCustomEditors.CUSTOM_EDITORS_ENTRY_ID
@@ -61,7 +61,7 @@ export class ContributedCustomEditors extends Disposable {
 	private update(
 		extensions: readonly IExtensionPointUser<
 			ICustomEditorsExtensionPoint[]
-		>[]
+		>[],
 	) {
 		this._editors.clear();
 
@@ -74,23 +74,23 @@ export class ContributedCustomEditors extends Disposable {
 						providerDisplayName: extension.description.isBuiltin
 							? nls.localize(
 									"builtinProviderDisplayName",
-									"Built-in"
-								)
+									"Built-in",
+							  )
 							: extension.description.displayName ||
-								extension.description.identifier.value,
+							  extension.description.identifier.value,
 						selector: webviewEditorContribution.selector || [],
 						priority: getPriorityFromContribution(
 							webviewEditorContribution,
-							extension.description
+							extension.description,
 						),
-					})
+					}),
 				);
 			}
 		}
 
 		const mementoObject = this._memento.getMemento(
 			StorageScope.PROFILE,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 		mementoObject[ContributedCustomEditors.CUSTOM_EDITORS_ENTRY_ID] =
 			Array.from(this._editors.values());
@@ -109,14 +109,14 @@ export class ContributedCustomEditors extends Disposable {
 
 	public getContributedEditors(resource: URI): readonly CustomEditorInfo[] {
 		return Array.from(this._editors.values()).filter((customEditor) =>
-			customEditor.matches(resource)
+			customEditor.matches(resource),
 		);
 	}
 
 	private add(info: CustomEditorInfo): void {
 		if (this._editors.has(info.id)) {
 			console.error(
-				`Custom editor with id '${info.id}' already registered`
+				`Custom editor with id '${info.id}' already registered`,
 			);
 			return;
 		}
@@ -126,7 +126,7 @@ export class ContributedCustomEditors extends Disposable {
 
 function getPriorityFromContribution(
 	contribution: ICustomEditorsExtensionPoint,
-	extension: IExtensionDescription
+	extension: IExtensionDescription,
 ): RegisteredEditorPriority {
 	switch (contribution.priority) {
 		case RegisteredEditorPriority.default:

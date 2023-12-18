@@ -6,26 +6,26 @@ import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { ReplacePreviewContentProvider } from "vs/workbench/contrib/search/browser/replaceService";
 import { Registry } from "vs/platform/registry/common/platform";
 import {
-	IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
+	IWorkbenchContributionsRegistry,
 } from "vs/workbench/common/contributions";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { INotebookSearchService } from "vs/workbench/contrib/search/common/notebookSearch";
 import { NotebookSearchService } from "vs/workbench/contrib/search/browser/notebookSearchService";
+import { ReplacePreviewContentProvider } from "vs/workbench/contrib/search/browser/replaceService";
+import { INotebookSearchService } from "vs/workbench/contrib/search/common/notebookSearch";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 export function registerContributions(): void {
 	registerSingleton(
 		INotebookSearchService,
 		NotebookSearchService,
-		InstantiationType.Delayed
+		InstantiationType.Delayed,
 	);
 	Registry.as<IWorkbenchContributionsRegistry>(
-		WorkbenchExtensions.Workbench
+		WorkbenchExtensions.Workbench,
 	).registerWorkbenchContribution(
 		ReplacePreviewContentProvider,
-		LifecyclePhase.Starting
+		LifecyclePhase.Starting,
 	);
 }

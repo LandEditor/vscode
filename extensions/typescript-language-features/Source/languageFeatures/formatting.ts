@@ -22,14 +22,14 @@ class TypeScriptFormattingProvider
 {
 	public constructor(
 		private readonly client: ITypeScriptServiceClient,
-		private readonly formattingOptionsManager: FileConfigurationManager
+		private readonly formattingOptionsManager: FileConfigurationManager,
 	) {}
 
 	public async provideDocumentRangeFormattingEdits(
 		document: vscode.TextDocument,
 		range: vscode.Range,
 		options: vscode.FormattingOptions,
-		token: vscode.CancellationToken
+		token: vscode.CancellationToken,
 	): Promise<vscode.TextEdit[] | undefined> {
 		const file = this.client.toOpenTsFilePath(document);
 		if (!file) {
@@ -39,7 +39,7 @@ class TypeScriptFormattingProvider
 		await this.formattingOptionsManager.ensureConfigurationOptions(
 			document,
 			options,
-			token
+			token,
 		);
 
 		const args = typeConverters.Range.toFormattingRequestArgs(file, range);
@@ -56,7 +56,7 @@ class TypeScriptFormattingProvider
 		position: vscode.Position,
 		ch: string,
 		options: vscode.FormattingOptions,
-		token: vscode.CancellationToken
+		token: vscode.CancellationToken,
 	): Promise<vscode.TextEdit[]> {
 		const file = this.client.toOpenTsFilePath(document);
 		if (!file) {
@@ -66,13 +66,13 @@ class TypeScriptFormattingProvider
 		await this.formattingOptionsManager.ensureConfigurationOptions(
 			document,
 			options,
-			token
+			token,
 		);
 
 		const args: Proto.FormatOnKeyRequestArgs = {
 			...typeConverters.Position.toFileLocationRequestArgs(
 				file,
-				position
+				position,
 			),
 			key: ch,
 		};
@@ -114,14 +114,14 @@ export function register(
 	selector: DocumentSelector,
 	language: LanguageDescription,
 	client: ITypeScriptServiceClient,
-	fileConfigurationManager: FileConfigurationManager
+	fileConfigurationManager: FileConfigurationManager,
 ) {
 	return conditionalRegistration(
 		[requireGlobalConfiguration(language.id, "format.enable")],
 		() => {
 			const formattingProvider = new TypeScriptFormattingProvider(
 				client,
-				fileConfigurationManager
+				fileConfigurationManager,
 			);
 			return vscode.Disposable.from(
 				vscode.languages.registerOnTypeFormattingEditProvider(
@@ -129,13 +129,13 @@ export function register(
 					formattingProvider,
 					";",
 					"}",
-					"\n"
+					"\n",
 				),
 				vscode.languages.registerDocumentRangeFormattingEditProvider(
 					selector.syntax,
-					formattingProvider
-				)
+					formattingProvider,
+				),
 			);
-		}
+		},
 	);
 }

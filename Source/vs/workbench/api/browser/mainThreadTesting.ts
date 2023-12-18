@@ -164,7 +164,7 @@ export class MainThreadTesting
 	 */
 	$publishTestRunProfile(profile: ITestRunProfile): void {
 		const controller = this.testProviderRegistrations.get(
-			profile.controllerId
+			profile.controllerId,
 		);
 		if (controller) {
 			this.testProfiles.addProfile(controller.instance, profile);
@@ -177,7 +177,7 @@ export class MainThreadTesting
 	$updateTestRunConfig(
 		controllerId: string,
 		profileId: number,
-		update: Partial<ITestRunProfile>
+		update: Partial<ITestRunProfile>,
 	): void {
 		this.testProfiles.updateProfile(controllerId, profileId, update);
 	}
@@ -195,15 +195,15 @@ export class MainThreadTesting
 	$addTestsToRun(
 		controllerId: string,
 		runId: string,
-		tests: ITestItem.Serialized[]
+		tests: ITestItem.Serialized[],
 	): void {
 		this.withLiveRun(runId, (r) =>
 			r.addTestChainToRun(
 				controllerId,
 				tests.map((t) =>
-					ITestItem.deserialize(this.uriIdentityService, t)
-				)
-			)
+					ITestItem.deserialize(this.uriIdentityService, t),
+				),
+			),
 		);
 	}
 
@@ -213,7 +213,7 @@ export class MainThreadTesting
 	$signalCoverageAvailable(
 		runId: string,
 		taskId: string,
-		available: boolean
+		available: boolean,
 	): void {
 		this.withLiveRun(runId, (run) => {
 			const task = run.tasks.find((t) => t.id === taskId);
@@ -231,15 +231,15 @@ export class MainThreadTesting
 										.$provideFileCoverage(
 											runId,
 											taskId,
-											token
+											token,
 										)
 										.then((c) =>
 											c.map((u) =>
 												IFileCoverage.deserialize(
 													this.uriIdentityService,
-													u
-												)
-											)
+													u,
+												),
+											),
 										),
 								resolveFileCoverage: (i, token) =>
 									this.proxy
@@ -247,14 +247,14 @@ export class MainThreadTesting
 											runId,
 											taskId,
 											i,
-											token
+											token,
 										)
 										.then((d) =>
-											d.map(CoverageDetails.deserialize)
+											d.map(CoverageDetails.deserialize),
 										),
 							},
 							this.uriIdentityService,
-							token
+							token,
 						)
 				: undefined;
 
@@ -303,10 +303,10 @@ export class MainThreadTesting
 		taskId: string,
 		testId: string,
 		state: TestResultState,
-		duration?: number
+		duration?: number,
 	): void {
 		this.withLiveRun(runId, (r) =>
-			r.updateState(testId, taskId, state, duration)
+			r.updateState(testId, taskId, state, duration),
 		);
 	}
 
@@ -318,7 +318,7 @@ export class MainThreadTesting
 		taskId: string,
 		output: VSBuffer,
 		locationDto?: ILocationDto,
-		testId?: string
+		testId?: string,
 	): void {
 		const location = locationDto && {
 			uri: URI.revive(locationDto.uri),
@@ -326,7 +326,7 @@ export class MainThreadTesting
 		};
 
 		this.withLiveRun(runId, (r) =>
-			r.appendOutput(output, taskId, location, testId)
+			r.appendOutput(output, taskId, location, testId),
 		);
 	}
 
@@ -337,7 +337,7 @@ export class MainThreadTesting
 		runId: string,
 		taskId: string,
 		testId: string,
-		messages: ITestMessage.Serialized[]
+		messages: ITestMessage.Serialized[],
 	): void {
 		const r = this.resultService.getResult(runId);
 		if (r && r instanceof LiveTestResult) {
@@ -345,7 +345,7 @@ export class MainThreadTesting
 				r.appendMessage(
 					testId,
 					taskId,
-					ITestMessage.deserialize(this.uriIdentityService, message)
+					ITestMessage.deserialize(this.uriIdentityService, message),
 				);
 			}
 		}
@@ -357,12 +357,12 @@ export class MainThreadTesting
 	public $registerTestController(
 		controllerId: string,
 		labelStr: string,
-		canRefreshValue: boolean
+		canRefreshValue: boolean,
 	) {
 		const disposable = new DisposableStore();
 		const label = disposable.add(new MutableObservableValue(labelStr));
 		const canRefresh = disposable.add(
-			new MutableObservableValue(canRefreshValue)
+			new MutableObservableValue(canRefreshValue),
 		);
 		const controller: IMainThreadTestController = {
 			id: controllerId,
@@ -382,10 +382,10 @@ export class MainThreadTesting
 		};
 
 		disposable.add(
-			toDisposable(() => this.testProfiles.removeProfile(controllerId))
+			toDisposable(() => this.testProfiles.removeProfile(controllerId)),
 		);
 		disposable.add(
-			this.testService.registerTestController(controllerId, controller)
+			this.testService.registerTestController(controllerId, controller),
 		);
 
 		this.testProviderRegistrations.set(controllerId, {
@@ -401,7 +401,7 @@ export class MainThreadTesting
 	 */
 	public $updateController(
 		controllerId: string,
-		patch: ITestControllerPatch
+		patch: ITestControllerPatch,
 	) {
 		const controller = this.testProviderRegistrations.get(controllerId);
 		if (!controller) {
@@ -432,11 +432,11 @@ export class MainThreadTesting
 		this.proxy.$acceptDiff(
 			this.testService.collection
 				.getReviverDiff()
-				.map(TestsDiffOp.serialize)
+				.map(TestsDiffOp.serialize),
 		);
 		this.diffListener.value = this.testService.onDidProcessDiff(
 			this.proxy.$acceptDiff,
-			this.proxy
+			this.proxy,
 		);
 	}
 
@@ -452,17 +452,19 @@ export class MainThreadTesting
 	 */
 	public $publishDiff(
 		controllerId: string,
-		diff: TestsDiffOp.Serialized[]
+		diff: TestsDiffOp.Serialized[],
 	): void {
 		this.testService.publishDiff(
 			controllerId,
-			diff.map((d) => TestsDiffOp.deserialize(this.uriIdentityService, d))
+			diff.map((d) =>
+				TestsDiffOp.deserialize(this.uriIdentityService, d),
+			),
 		);
 	}
 
 	public async $runTests(
 		req: ResolvedTestRunRequest,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<string> {
 		const result = await this.testService.runResolvedTests(req, token);
 		return result.id;
@@ -478,7 +480,7 @@ export class MainThreadTesting
 
 	private withLiveRun<T>(
 		runId: string,
-		fn: (run: LiveTestResult) => T
+		fn: (run: LiveTestResult) => T,
 	): T | undefined {
 		const r = this.resultService.getResult(runId);
 		return r && r instanceof LiveTestResult ? fn(r) : undefined;

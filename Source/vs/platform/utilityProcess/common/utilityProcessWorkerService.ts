@@ -96,13 +96,13 @@ export interface IUtilityProcessWorkerService {
 	 * or not and whether the worker needs to be restarted.
 	 */
 	createWorker(
-		configuration: IUtilityProcessWorkerCreateConfiguration
+		configuration: IUtilityProcessWorkerCreateConfiguration,
 	): Promise<IOnDidTerminateUtilityrocessWorkerProcess>;
 
 	/**
 	 * Terminates the process for the provided configuration if any.
 	 */
 	disposeWorker(
-		configuration: IUtilityProcessWorkerConfiguration
+		configuration: IUtilityProcessWorkerConfiguration,
 	): Promise<void>;
 }

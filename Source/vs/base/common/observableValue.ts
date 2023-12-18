@@ -5,7 +5,6 @@
 
 import { Event } from "vs/base/common/event";
 //@ts-ignore
-import type { IObservable } from "vs/base/common/observable";
 
 /**
  * @deprecated Use {@link IObservable} instead.

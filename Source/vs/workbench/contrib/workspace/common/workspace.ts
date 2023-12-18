@@ -16,16 +16,16 @@ export const WorkspaceTrustContext = {
 		false,
 		localize(
 			"workspaceTrustEnabledCtx",
-			"Whether the workspace trust feature is enabled."
-		)
+			"Whether the workspace trust feature is enabled.",
+		),
 	),
 	IsTrusted: new RawContextKey<boolean>(
 		"isWorkspaceTrusted",
 		false,
 		localize(
 			"workspaceTrustedCtx",
-			"Whether the current workspace has been trusted by the user."
-		)
+			"Whether the current workspace has been trusted by the user.",
+		),
 	),
 };
 

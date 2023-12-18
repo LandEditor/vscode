@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter, Event } from "vs/base/common/event";
 import { addMatchMediaChangeListener } from "vs/base/browser/browser";
+import { mainWindow } from "vs/base/browser/window";
+import { Emitter, Event } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { Disposable } from "vs/base/common/lifecycle";
 import { IHostColorSchemeService } from "vs/workbench/services/themes/common/hostColorSchemeService";
-import { mainWindow } from "vs/base/browser/window";
 
 export class BrowserHostColorSchemeService
 	extends Disposable
@@ -20,7 +20,7 @@ export class BrowserHostColorSchemeService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidSchemeChangeEvent = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 
 	constructor() {
@@ -64,5 +64,5 @@ export class BrowserHostColorSchemeService
 registerSingleton(
 	IHostColorSchemeService,
 	BrowserHostColorSchemeService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

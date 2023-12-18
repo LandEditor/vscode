@@ -5,6 +5,7 @@
 
 import { assertFn, checkAdjacentItems } from "vs/base/common/assert";
 import { IReader } from "vs/base/common/observable";
+import { LineRange as DiffLineRange } from "vs/editor/common/core/lineRange";
 import { RangeMapping as DiffRangeMapping } from "vs/editor/common/diff/rangeMapping";
 import { ITextModel } from "vs/editor/common/model";
 import { IEditorWorkerService } from "vs/editor/common/services/editorWorker";
@@ -15,13 +16,12 @@ import {
 	RangeMapping,
 } from "vs/workbench/contrib/mergeEditor/browser/model/mapping";
 import { observableConfigValue } from "vs/workbench/contrib/mergeEditor/browser/utils";
-import { LineRange as DiffLineRange } from "vs/editor/common/core/lineRange";
 
 export interface IMergeDiffComputer {
 	computeDiff(
 		textModel1: ITextModel,
 		textModel2: ITextModel,
-		reader: IReader
+		reader: IReader,
 	): Promise<IMergeDiffComputerResult>;
 }
 
@@ -34,7 +34,7 @@ export class MergeDiffComputer implements IMergeDiffComputer {
 		"smart" | "experimental" | "legacy" | "advanced"
 	>("mergeEditor.diffAlgorithm", "advanced", this.configurationService).map(
 		(v) =>
-			v === "smart" ? "legacy" : v === "experimental" ? "advanced" : v
+			v === "smart" ? "legacy" : v === "experimental" ? "advanced" : v,
 	);
 
 	constructor(
@@ -47,7 +47,7 @@ export class MergeDiffComputer implements IMergeDiffComputer {
 	async computeDiff(
 		textModel1: ITextModel,
 		textModel2: ITextModel,
-		reader: IReader
+		reader: IReader,
 	): Promise<IMergeDiffComputerResult> {
 		const diffAlgorithm = this.mergeAlgorithm.read(reader);
 		const inputVersion = textModel1.getVersionId();
@@ -61,7 +61,7 @@ export class MergeDiffComputer implements IMergeDiffComputer {
 				maxComputationTimeMs: 0,
 				computeMoves: false,
 			},
-			diffAlgorithm
+			diffAlgorithm,
 		);
 
 		if (!result) {
@@ -79,8 +79,8 @@ export class MergeDiffComputer implements IMergeDiffComputer {
 					textModel1,
 					toLineRange(c.modified),
 					textModel2,
-					c.innerChanges?.map((ic) => toRangeMapping(ic))
-				)
+					c.innerChanges?.map((ic) => toRangeMapping(ic)),
+				),
 		);
 
 		const newInputVersion = textModel1.getVersionId();
@@ -114,7 +114,7 @@ export class MergeDiffComputer implements IMergeDiffComputer {
 						inputRangesValid =
 							map.inputRange.endColumn >=
 							inputTextModel.getLineMaxColumn(
-								map.inputRange.startLineNumber
+								map.inputRange.startLineNumber,
 							);
 					}
 					if (
@@ -138,7 +138,7 @@ export class MergeDiffComputer implements IMergeDiffComputer {
 						outputRangesValid =
 							map.outputRange.endColumn >=
 							outputTextModel.getLineMaxColumn(
-								map.outputRange.endLineNumber
+								map.outputRange.endLineNumber,
 							);
 					}
 					if (
@@ -170,7 +170,7 @@ export class MergeDiffComputer implements IMergeDiffComputer {
 							m1.inputRange.endLineNumberExclusive <
 								m2.inputRange.startLineNumber &&
 							m1.outputRange.endLineNumberExclusive <
-								m2.outputRange.startLineNumber
+								m2.outputRange.startLineNumber,
 					))
 			);
 		});

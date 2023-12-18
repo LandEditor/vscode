@@ -5,11 +5,11 @@
 
 import { Color } from "vs/base/common/color";
 import {
-	LanguageId,
-	FontStyle,
 	ColorId,
-	StandardTokenType,
+	FontStyle,
+	LanguageId,
 	MetadataConsts,
+	StandardTokenType,
 } from "vs/editor/common/encodedTokenAttributes";
 
 export interface ITokenThemeRule {
@@ -37,7 +37,7 @@ export class ParsedTokenThemeRule {
 		index: number,
 		fontStyle: number,
 		foreground: string | null,
-		background: string | null
+		background: string | null,
 	) {
 		this.token = token;
 		this.index = index;
@@ -51,7 +51,7 @@ export class ParsedTokenThemeRule {
  * Parse a raw theme into rules.
  */
 export function parseTokenTheme(
-	source: ITokenThemeRule[]
+	source: ITokenThemeRule[],
 ): ParsedTokenThemeRule[] {
 	if (!source || !Array.isArray(source)) {
 		return [];
@@ -100,7 +100,7 @@ export function parseTokenTheme(
 			i,
 			fontStyle,
 			foreground,
-			background
+			background,
 		);
 	}
 
@@ -112,7 +112,7 @@ export function parseTokenTheme(
  */
 function resolveParsedTokenThemeRules(
 	parsedThemeRules: ParsedTokenThemeRule[],
-	customTokenColors: string[]
+	customTokenColors: string[],
 ): TokenTheme {
 	// Sort rules lexicographically, and then by index if necessary
 	parsedThemeRules.sort((a, b) => {
@@ -152,7 +152,7 @@ function resolveParsedTokenThemeRules(
 	const defaults = new ThemeTrieElementRule(
 		defaultFontStyle,
 		foregroundColorId,
-		backgroundColorId
+		backgroundColorId,
 	);
 	const root = new ThemeTrieElement(defaults);
 	for (let i = 0, len = parsedThemeRules.length; i < len; i++) {
@@ -161,7 +161,7 @@ function resolveParsedTokenThemeRules(
 			rule.token,
 			rule.fontStyle,
 			colorMap.getId(rule.foreground),
-			colorMap.getId(rule.background)
+			colorMap.getId(rule.background),
 		);
 	}
 
@@ -208,17 +208,17 @@ export class ColorMap {
 export class TokenTheme {
 	public static createFromRawTokenTheme(
 		source: ITokenThemeRule[],
-		customTokenColors: string[]
+		customTokenColors: string[],
 	): TokenTheme {
 		return this.createFromParsedTokenTheme(
 			parseTokenTheme(source),
-			customTokenColors
+			customTokenColors,
 		);
 	}
 
 	public static createFromParsedTokenTheme(
 		source: ParsedTokenThemeRule[],
-		customTokenColors: string[]
+		customTokenColors: string[],
 	): TokenTheme {
 		return resolveParsedTokenThemeRules(source, customTokenColors);
 	}
@@ -307,7 +307,7 @@ export class ThemeTrieElementRule {
 	constructor(
 		fontStyle: FontStyle,
 		foreground: ColorId,
-		background: ColorId
+		background: ColorId,
 	) {
 		this._fontStyle = fontStyle;
 		this._foreground = foreground;
@@ -323,14 +323,14 @@ export class ThemeTrieElementRule {
 		return new ThemeTrieElementRule(
 			this._fontStyle,
 			this._foreground,
-			this._background
+			this._background,
 		);
 	}
 
 	public acceptOverwrite(
 		fontStyle: FontStyle,
 		foreground: ColorId,
-		background: ColorId
+		background: ColorId,
 	): void {
 		if (fontStyle !== FontStyle.NotSet) {
 			this._fontStyle = fontStyle;
@@ -360,7 +360,7 @@ export class ExternalThemeTrieElement {
 			| { [key: string]: ExternalThemeTrieElement } = new Map<
 			string,
 			ExternalThemeTrieElement
-		>()
+		>(),
 	) {
 		this.mainRule = mainRule;
 		if (children instanceof Map) {
@@ -424,7 +424,7 @@ export class ThemeTrieElement {
 		token: string,
 		fontStyle: FontStyle,
 		foreground: ColorId,
-		background: ColorId
+		background: ColorId,
 	): void {
 		if (token === "") {
 			// Merge into the main rule
@@ -454,7 +454,7 @@ export class ThemeTrieElement {
 }
 
 export function generateTokensCSSForColorMap(
-	colorMap: readonly Color[]
+	colorMap: readonly Color[],
 ): string {
 	const rules: string[] = [];
 	for (let i = 1, len = colorMap.length; i < len; i++) {
@@ -464,11 +464,11 @@ export function generateTokensCSSForColorMap(
 	rules.push(".mtki { font-style: italic; }");
 	rules.push(".mtkb { font-weight: bold; }");
 	rules.push(
-		".mtku { text-decoration: underline; text-underline-position: under; }"
+		".mtku { text-decoration: underline; text-underline-position: under; }",
 	);
 	rules.push(".mtks { text-decoration: line-through; }");
 	rules.push(
-		".mtks.mtku { text-decoration: underline line-through; text-underline-position: under; }"
+		".mtks.mtku { text-decoration: underline line-through; text-underline-position: under; }",
 	);
 	return rules.join("\n");
 }

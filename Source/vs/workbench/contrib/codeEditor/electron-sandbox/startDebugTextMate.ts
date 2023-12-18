@@ -3,24 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
-import { Range } from "vs/editor/common/core/range";
-import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
-import { Categories } from "vs/platform/action/common/actionCommonCategories";
-import { ITextMateTokenizationService } from "vs/workbench/services/textMate/browser/textMateTokenizationFeature";
-import { IModelService } from "vs/editor/common/services/model";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { joinPath } from "vs/base/common/resources";
+import { Constants } from "vs/base/common/uint";
 import { URI } from "vs/base/common/uri";
 import { generateUuid } from "vs/base/common/uuid";
 import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
+import { Range } from "vs/editor/common/core/range";
 import { ITextModel } from "vs/editor/common/model";
-import { Constants } from "vs/base/common/uint";
-import { IHostService } from "vs/workbench/services/host/browser/host";
-import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
-import { ILoggerService } from "vs/platform/log/common/log";
-import { joinPath } from "vs/base/common/resources";
+import { IModelService } from "vs/editor/common/services/model";
+import * as nls from "vs/nls";
+import { Categories } from "vs/platform/action/common/actionCommonCategories";
+import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
 import { IFileService } from "vs/platform/files/common/files";
 import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+import { ILoggerService } from "vs/platform/log/common/log";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
+import { IHostService } from "vs/workbench/services/host/browser/host";
+import { ITextMateTokenizationService } from "vs/workbench/services/textMate/browser/textMateTokenizationFeature";
 
 class StartDebugTextMate extends Action2 {
 	private static resource = URI.parse(`inmemory:///tm-log.txt`);
@@ -31,7 +31,7 @@ class StartDebugTextMate extends Action2 {
 			title: {
 				value: nls.localize(
 					"startDebugTextMate",
-					"Start Text Mate Syntax Grammar Logging"
+					"Start Text Mate Syntax Grammar Logging",
 				),
 				original: "Start Text Mate Syntax Grammar Logging",
 			},
@@ -56,7 +56,7 @@ class StartDebugTextMate extends Action2 {
 					lineCount,
 					Constants.MAX_SAFE_SMALL_INTEGER,
 					lineCount,
-					Constants.MAX_SAFE_SMALL_INTEGER
+					Constants.MAX_SAFE_SMALL_INTEGER,
 				),
 				text: str,
 			},
@@ -70,14 +70,14 @@ class StartDebugTextMate extends Action2 {
 		const codeEditorService = accessor.get(ICodeEditorService);
 		const hostService = accessor.get(IHostService);
 		const environmentService = accessor.get(
-			INativeWorkbenchEnvironmentService
+			INativeWorkbenchEnvironmentService,
 		);
 		const loggerService = accessor.get(ILoggerService);
 		const fileService = accessor.get(IFileService);
 
 		const pathInTemp = joinPath(
 			environmentService.tmpDir,
-			`vcode-tm-log-${generateUuid()}.txt`
+			`vcode-tm-log-${generateUuid()}.txt`,
 		);
 		await fileService.createFile(pathInTemp);
 		const logger = loggerService.createLogger(pathInTemp, {
@@ -124,7 +124,7 @@ class StartDebugTextMate extends Action2 {
 				logger.info(str);
 				logger.flush();
 			},
-			() => {}
+			() => {},
 		);
 	}
 }

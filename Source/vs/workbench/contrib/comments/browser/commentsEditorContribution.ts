@@ -15,48 +15,48 @@ import {
 	registerEditorContribution,
 } from "vs/editor/browser/editorExtensions";
 import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
+import { IRange, Range } from "vs/editor/common/core/range";
+import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
 import * as nls from "vs/nls";
+import { CONTEXT_ACCESSIBILITY_MODE_ENABLED } from "vs/platform/accessibility/common/accessibility";
+import { MenuId, MenuRegistry } from "vs/platform/actions/common/actions";
 import { CommandsRegistry } from "vs/platform/commands/common/commands";
+import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
 import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
 import {
-	KeybindingsRegistry,
 	KeybindingWeight,
+	KeybindingsRegistry,
 } from "vs/platform/keybinding/common/keybindingsRegistry";
-import { ICommentService } from "vs/workbench/contrib/comments/browser/commentService";
+import { INotificationService } from "vs/platform/notification/common/notification";
 import {
-	ctxCommentEditorFocused,
-	SimpleCommentEditor,
-} from "vs/workbench/contrib/comments/browser/simpleCommentEditor";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { MenuId, MenuRegistry } from "vs/platform/actions/common/actions";
-import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
+	AccessibleViewProviderId,
+	accessibilityHelpIsShown,
+	accessibleViewCurrentProviderId,
+} from "vs/workbench/contrib/accessibility/browser/accessibilityConfiguration";
+import { ICommentService } from "vs/workbench/contrib/comments/browser/commentService";
 import {
 	CommentController,
 	ID,
 } from "vs/workbench/contrib/comments/browser/commentsController";
-import { IRange, Range } from "vs/editor/common/core/range";
-import { INotificationService } from "vs/platform/notification/common/notification";
-import { CommentContextKeys } from "vs/workbench/contrib/comments/common/commentContextKeys";
-import { CONTEXT_ACCESSIBILITY_MODE_ENABLED } from "vs/platform/accessibility/common/accessibility";
-import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
 import {
-	accessibilityHelpIsShown,
-	accessibleViewCurrentProviderId,
-	AccessibleViewProviderId,
-} from "vs/workbench/contrib/accessibility/browser/accessibilityConfiguration";
+	SimpleCommentEditor,
+	ctxCommentEditorFocused,
+} from "vs/workbench/contrib/comments/browser/simpleCommentEditor";
 import { CommentCommandId } from "vs/workbench/contrib/comments/common/commentCommandIds";
+import { CommentContextKeys } from "vs/workbench/contrib/comments/common/commentContextKeys";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 
 registerEditorContribution(
 	ID,
 	CommentController,
-	EditorContributionInstantiation.AfterFirstRender
+	EditorContributionInstantiation.AfterFirstRender,
 );
 
 KeybindingsRegistry.registerCommandAndKeybindingRule({
 	id: CommentCommandId.NextThread,
 	handler: async (
 		accessor,
-		args?: { range: IRange; fileComment: boolean }
+		args?: { range: IRange; fileComment: boolean },
 	) => {
 		const activeEditor = getActiveEditor(accessor);
 		if (!activeEditor) {
@@ -77,7 +77,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	id: CommentCommandId.PreviousThread,
 	handler: async (
 		accessor,
-		args?: { range: IRange; fileComment: boolean }
+		args?: { range: IRange; fileComment: boolean },
 	) => {
 		const activeEditor = getActiveEditor(accessor);
 		if (!activeEditor) {
@@ -98,7 +98,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	id: CommentCommandId.NextRange,
 	handler: async (
 		accessor,
-		args?: { range: IRange; fileComment: boolean }
+		args?: { range: IRange; fileComment: boolean },
 	) => {
 		const activeEditor = getActiveEditor(accessor);
 		if (!activeEditor) {
@@ -119,14 +119,14 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			ContextKeyExpr.and(
 				accessibilityHelpIsShown,
 				accessibleViewCurrentProviderId.isEqualTo(
-					AccessibleViewProviderId.Comments
-				)
-			)
-		)
+					AccessibleViewProviderId.Comments,
+				),
+			),
+		),
 	),
 	primary: KeyChord(
 		KeyMod.CtrlCmd | KeyCode.KeyK,
-		KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.DownArrow
+		KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.DownArrow,
 	),
 	weight: KeybindingWeight.EditorContrib,
 });
@@ -136,7 +136,7 @@ MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 		id: CommentCommandId.NextRange,
 		title: nls.localize(
 			"comments.nextCommentingRange",
-			"Go to Next Commenting Range"
+			"Go to Next Commenting Range",
 		),
 		category: "Comments",
 	},
@@ -147,7 +147,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	id: CommentCommandId.PreviousRange,
 	handler: async (
 		accessor,
-		args?: { range: IRange; fileComment: boolean }
+		args?: { range: IRange; fileComment: boolean },
 	) => {
 		const activeEditor = getActiveEditor(accessor);
 		if (!activeEditor) {
@@ -168,14 +168,14 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			ContextKeyExpr.and(
 				accessibilityHelpIsShown,
 				accessibleViewCurrentProviderId.isEqualTo(
-					AccessibleViewProviderId.Comments
-				)
-			)
-		)
+					AccessibleViewProviderId.Comments,
+				),
+			),
+		),
 	),
 	primary: KeyChord(
 		KeyMod.CtrlCmd | KeyCode.KeyK,
-		KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.UpArrow
+		KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.UpArrow,
 	),
 	weight: KeybindingWeight.EditorContrib,
 });
@@ -185,7 +185,7 @@ MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 		id: CommentCommandId.PreviousRange,
 		title: nls.localize(
 			"comments.previousCommentingRange",
-			"Go to Previous Commenting Range"
+			"Go to Previous Commenting Range",
 		),
 		category: "Comments",
 	},
@@ -206,7 +206,7 @@ MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 		id: CommentCommandId.ToggleCommenting,
 		title: nls.localize(
 			"comments.toggleCommenting",
-			"Toggle Editor Commenting"
+			"Toggle Editor Commenting",
 		),
 		category: "Comments",
 	},
@@ -217,7 +217,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	id: CommentCommandId.Add,
 	handler: async (
 		accessor,
-		args?: { range: IRange; fileComment: boolean }
+		args?: { range: IRange; fileComment: boolean },
 	) => {
 		const activeEditor = getActiveEditor(accessor);
 		if (!activeEditor) {
@@ -234,11 +234,11 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 					args.range.startLineNumber,
 					args.range.startLineNumber,
 					args.range.endLineNumber,
-					args.range.endColumn
-				)
+					args.range.endColumn,
+			  )
 			: args?.fileComment
-				? undefined
-				: activeEditor.getSelection();
+			  ? undefined
+			  : activeEditor.getSelection();
 		const notificationService = accessor.get(INotificationService);
 		try {
 			await controller.addOrToggleCommentAtLine(position, undefined);
@@ -246,15 +246,15 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			notificationService.error(
 				nls.localize(
 					"comments.addCommand.error",
-					"The cursor must be within a commenting range to add a comment"
-				)
+					"The cursor must be within a commenting range to add a comment",
+				),
 			); // TODO: Once we have commands to go to next commenting range they should be included as buttons in the error.
 		}
 	},
 	weight: KeybindingWeight.EditorContrib,
 	primary: KeyChord(
 		KeyMod.CtrlCmd | KeyCode.KeyK,
-		KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.KeyC
+		KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.KeyC,
 	),
 });
 
@@ -263,7 +263,7 @@ MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 		id: CommentCommandId.Add,
 		title: nls.localize(
 			"comments.addCommand",
-			"Add Comment on Current Selection"
+			"Add Comment on Current Selection",
 		),
 		category: "Comments",
 	},
@@ -314,7 +314,7 @@ MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 		id: CommentCommandId.ExpandUnresolved,
 		title: nls.localize(
 			"comments.expandUnresolved",
-			"Expand Unresolved Comments"
+			"Expand Unresolved Comments",
 		),
 		category: "Comments",
 	},
@@ -353,7 +353,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 });
 
 export function getActiveEditor(
-	accessor: ServicesAccessor
+	accessor: ServicesAccessor,
 ): IActiveCodeEditor | null {
 	let activeTextEditorControl =
 		accessor.get(IEditorService).activeTextEditorControl;
@@ -379,7 +379,7 @@ export function getActiveEditor(
 }
 
 function getActiveController(
-	accessor: ServicesAccessor
+	accessor: ServicesAccessor,
 ): CommentController | undefined {
 	const activeEditor = getActiveEditor(accessor);
 	if (!activeEditor) {

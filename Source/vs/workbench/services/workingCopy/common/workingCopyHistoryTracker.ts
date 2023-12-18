@@ -3,21 +3,31 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import { URI } from "vs/base/common/uri";
 import { GlobalIdleValue, Limiter } from "vs/base/common/async";
 import { CancellationTokenSource } from "vs/base/common/cancellation";
 import { Disposable } from "vs/base/common/lifecycle";
 import { ResourceMap } from "vs/base/common/map";
+import { Schemas } from "vs/base/common/network";
+import { URI } from "vs/base/common/uri";
+import { localize } from "vs/nls";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import {
+	FileOperation,
+	FileOperationEvent,
+	IFileOperationEventWithMetadata,
+	IFileService,
+	IFileStatWithMetadata,
+} from "vs/platform/files/common/files";
 import { IUndoRedoService } from "vs/platform/undoRedo/common/undoRedo";
 import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
 import { IWorkbenchContribution } from "vs/workbench/common/contributions";
 import { SaveSource, SaveSourceRegistry } from "vs/workbench/common/editor";
+import { ResourceGlobMatcher } from "vs/workbench/common/resources";
 import { IPathService } from "vs/workbench/services/path/common/pathService";
 import {
-	isStoredFileWorkingCopySaveEvent,
 	IStoredFileWorkingCopyModel,
+	isStoredFileWorkingCopySaveEvent,
 } from "vs/workbench/services/workingCopy/common/storedFileWorkingCopy";
 import { IStoredFileWorkingCopySaveEvent } from "vs/workbench/services/workingCopy/common/storedFileWorkingCopyManager";
 import { IWorkingCopy } from "vs/workbench/services/workingCopy/common/workingCopy";
@@ -29,16 +39,6 @@ import {
 	IWorkingCopySaveEvent,
 	IWorkingCopyService,
 } from "vs/workbench/services/workingCopy/common/workingCopyService";
-import { Schemas } from "vs/base/common/network";
-import { ResourceGlobMatcher } from "vs/workbench/common/resources";
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
-import {
-	FileOperation,
-	FileOperationEvent,
-	IFileOperationEventWithMetadata,
-	IFileService,
-	IFileStatWithMetadata,
-} from "vs/platform/files/common/files";
 
 export class WorkingCopyHistoryTracker
 	extends Disposable
@@ -53,11 +53,11 @@ export class WorkingCopyHistoryTracker
 	private static readonly UNDO_REDO_SAVE_SOURCE =
 		SaveSourceRegistry.registerSource(
 			"undoRedo.source",
-			localize("undoRedo.source", "Undo / Redo")
+			localize("undoRedo.source", "Undo / Redo"),
 		);
 
 	private readonly limiter = this._register(
-		new Limiter(MAX_PARALLEL_HISTORY_IO_OPS)
+		new Limiter(MAX_PARALLEL_HISTORY_IO_OPS),
 	);
 
 	private readonly resourceExcludeMatcher = this._register(
@@ -67,31 +67,31 @@ export class WorkingCopyHistoryTracker
 					(root) =>
 						this.configurationService.getValue(
 							WorkingCopyHistoryTracker.SETTINGS.EXCLUDES,
-							{ resource: root }
+							{ resource: root },
 						),
 					(event) =>
 						event.affectsConfiguration(
-							WorkingCopyHistoryTracker.SETTINGS.EXCLUDES
+							WorkingCopyHistoryTracker.SETTINGS.EXCLUDES,
 						),
 					this.contextService,
-					this.configurationService
-				)
+					this.configurationService,
+				),
 			);
 
 			return matcher;
-		})
+		}),
 	);
 
 	private readonly pendingAddHistoryEntryOperations =
 		new ResourceMap<CancellationTokenSource>((resource) =>
-			this.uriIdentityService.extUri.getComparisonKey(resource)
+			this.uriIdentityService.extUri.getComparisonKey(resource),
 		);
 
 	private readonly workingCopyContentVersion = new ResourceMap<number>(
-		(resource) => this.uriIdentityService.extUri.getComparisonKey(resource)
+		(resource) => this.uriIdentityService.extUri.getComparisonKey(resource),
 	);
 	private readonly historyEntryContentVersion = new ResourceMap<number>(
-		(resource) => this.uriIdentityService.extUri.getComparisonKey(resource)
+		(resource) => this.uriIdentityService.extUri.getComparisonKey(resource),
 	);
 
 	constructor(
@@ -118,18 +118,18 @@ export class WorkingCopyHistoryTracker
 		// File Events
 		this._register(
 			this.fileService.onDidRunOperation((e) =>
-				this.onDidRunFileOperation(e)
-			)
+				this.onDidRunFileOperation(e),
+			),
 		);
 
 		// Working Copy Events
 		this._register(
 			this.workingCopyService.onDidChangeContent((workingCopy) =>
-				this.onDidChangeContent(workingCopy)
-			)
+				this.onDidChangeContent(workingCopy),
+			),
 		);
 		this._register(
-			this.workingCopyService.onDidSave((e) => this.onDidSave(e))
+			this.workingCopyService.onDidSave((e) => this.onDidSave(e)),
 		);
 	}
 
@@ -144,7 +144,7 @@ export class WorkingCopyHistoryTracker
 		// Move working copy history entries for this file move event
 		const resources = await this.workingCopyHistoryService.moveEntries(
 			source,
-			target
+			target,
 		);
 
 		// Make sure to track the content version of each entry that
@@ -162,7 +162,7 @@ export class WorkingCopyHistoryTracker
 		const contentVersionId = this.getContentVersion(workingCopy.resource);
 		this.workingCopyContentVersion.set(
 			workingCopy.resource,
-			contentVersionId + 1
+			contentVersionId + 1,
 		);
 	}
 
@@ -199,7 +199,7 @@ export class WorkingCopyHistoryTracker
 			}
 
 			const contentVersion = this.getContentVersion(
-				e.workingCopy.resource
+				e.workingCopy.resource,
 			);
 
 			// Figure out source of save operation if not provided already
@@ -215,13 +215,13 @@ export class WorkingCopyHistoryTracker
 					source,
 					timestamp: e.stat.mtime,
 				},
-				cts.token
+				cts.token,
 			);
 
 			// Remember content version as being added to history
 			this.historyEntryContentVersion.set(
 				e.workingCopy.resource,
-				contentVersion
+				contentVersion,
 			);
 
 			if (cts.token.isCancellationRequested) {
@@ -230,16 +230,16 @@ export class WorkingCopyHistoryTracker
 
 			// Finally remove from pending operations
 			this.pendingAddHistoryEntryOperations.delete(
-				e.workingCopy.resource
+				e.workingCopy.resource,
 			);
 		});
 	}
 
 	private resolveSourceFromUndoRedo(
-		e: IWorkingCopySaveEvent
+		e: IWorkingCopySaveEvent,
 	): SaveSource | undefined {
 		const lastStackElement = this.undoRedoService.getLastElement(
-			e.workingCopy.resource
+			e.workingCopy.resource,
 		);
 		if (lastStackElement) {
 			if (lastStackElement.code === "undoredo.textBufferEdit") {
@@ -250,7 +250,7 @@ export class WorkingCopyHistoryTracker
 		}
 
 		const allStackElements = this.undoRedoService.getElements(
-			e.workingCopy.resource
+			e.workingCopy.resource,
 		);
 		if (
 			allStackElements.future.length > 0 ||
@@ -263,7 +263,7 @@ export class WorkingCopyHistoryTracker
 	}
 
 	private shouldTrackHistoryFromSaveEvent(
-		e: IWorkingCopySaveEvent
+		e: IWorkingCopySaveEvent,
 	): e is IStoredFileWorkingCopySaveEvent<IStoredFileWorkingCopyModel> {
 		if (!isStoredFileWorkingCopySaveEvent(e)) {
 			return false; // only support working copies that are backed by stored files
@@ -273,7 +273,7 @@ export class WorkingCopyHistoryTracker
 	}
 
 	private shouldTrackHistoryFromFileOperationEvent(
-		e: FileOperationEvent
+		e: FileOperationEvent,
 	): e is IFileOperationEventWithMetadata {
 		if (!e.isOperation(FileOperation.MOVE)) {
 			return false; // only interested in move operations
@@ -284,7 +284,7 @@ export class WorkingCopyHistoryTracker
 
 	private shouldTrackHistory(
 		resource: URI,
-		stat: IFileStatWithMetadata
+		stat: IFileStatWithMetadata,
 	): boolean {
 		if (
 			resource.scheme !== this.pathService.defaultUriScheme && // track history for all workspace resources
@@ -298,7 +298,7 @@ export class WorkingCopyHistoryTracker
 			1024 *
 			this.configurationService.getValue<number>(
 				WorkingCopyHistoryTracker.SETTINGS.SIZE_LIMIT,
-				{ resource }
+				{ resource },
 			);
 		if (stat.size > configuredMaxFileSizeInBytes) {
 			return false; // only track files that are not too large
@@ -307,7 +307,7 @@ export class WorkingCopyHistoryTracker
 		if (
 			this.configurationService.getValue(
 				WorkingCopyHistoryTracker.SETTINGS.ENABLED,
-				{ resource }
+				{ resource },
 			) === false
 		) {
 			return false; // do not track when history is disabled

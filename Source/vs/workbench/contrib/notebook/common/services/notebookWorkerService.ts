@@ -10,7 +10,7 @@ import { INotebookDiffResult } from "vs/workbench/contrib/notebook/common/notebo
 export const ID_NOTEBOOK_EDITOR_WORKER_SERVICE = "notebookEditorWorkerService";
 export const INotebookEditorWorkerService =
 	createDecorator<INotebookEditorWorkerService>(
-		ID_NOTEBOOK_EDITOR_WORKER_SERVICE
+		ID_NOTEBOOK_EDITOR_WORKER_SERVICE,
 	);
 
 export interface INotebookEditorWorkerService {

@@ -24,7 +24,7 @@ export class ToggleTabFocusModeAction extends Action2 {
 							"Turn on/off use of tab key for moving focus around VS Code",
 						],
 					},
-					"Toggle Tab Key Moves Focus"
+					"Toggle Tab Key Moves Focus",
 				),
 				original: "Toggle Tab Key Moves Focus",
 			},
@@ -46,15 +46,15 @@ export class ToggleTabFocusModeAction extends Action2 {
 			alert(
 				nls.localize(
 					"toggle.tabMovesFocus.on",
-					"Pressing Tab will now move focus to the next focusable element"
-				)
+					"Pressing Tab will now move focus to the next focusable element",
+				),
 			);
 		} else {
 			alert(
 				nls.localize(
 					"toggle.tabMovesFocus.off",
-					"Pressing Tab will now insert the tab character"
-				)
+					"Pressing Tab will now insert the tab character",
+				),
 			);
 		}
 	}

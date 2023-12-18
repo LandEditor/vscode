@@ -53,12 +53,12 @@ class TypeScriptDocumentSymbolProvider
 {
 	public constructor(
 		private readonly client: ITypeScriptServiceClient,
-		private readonly cachedResponse: CachedResponse<Proto.NavTreeResponse>
+		private readonly cachedResponse: CachedResponse<Proto.NavTreeResponse>,
 	) {}
 
 	public async provideDocumentSymbols(
 		document: vscode.TextDocument,
-		token: vscode.CancellationToken
+		token: vscode.CancellationToken,
 	): Promise<vscode.DocumentSymbol[] | undefined> {
 		const file = this.client.toOpenTsFilePath(document);
 		if (!file) {
@@ -67,7 +67,7 @@ class TypeScriptDocumentSymbolProvider
 
 		const args: Proto.FileRequestArgs = { file };
 		const response = await this.cachedResponse.execute(document, () =>
-			this.client.execute("navtree", args, token)
+			this.client.execute("navtree", args, token),
 		);
 		if (response.type !== "response" || !response.body?.childItems) {
 			return undefined;
@@ -79,7 +79,7 @@ class TypeScriptDocumentSymbolProvider
 			TypeScriptDocumentSymbolProvider.convertNavTree(
 				document.uri,
 				result,
-				item
+				item,
 			);
 		}
 		return result;
@@ -88,7 +88,7 @@ class TypeScriptDocumentSymbolProvider
 	private static convertNavTree(
 		resource: vscode.Uri,
 		output: vscode.DocumentSymbol[],
-		item: Proto.NavigationTree
+		item: Proto.NavigationTree,
 	): boolean {
 		let shouldInclude =
 			TypeScriptDocumentSymbolProvider.shouldInclueEntry(item);
@@ -101,7 +101,7 @@ class TypeScriptDocumentSymbolProvider
 			const range = typeConverters.Range.fromTextSpan(span);
 			const symbolInfo = TypeScriptDocumentSymbolProvider.convertSymbol(
 				item,
-				range
+				range,
 			);
 
 			for (const child of children) {
@@ -109,15 +109,15 @@ class TypeScriptDocumentSymbolProvider
 					child.spans.some(
 						(span) =>
 							!!range.intersection(
-								typeConverters.Range.fromTextSpan(span)
-							)
+								typeConverters.Range.fromTextSpan(span),
+							),
 					)
 				) {
 					const includedChild =
 						TypeScriptDocumentSymbolProvider.convertNavTree(
 							resource,
 							symbolInfo.children,
-							child
+							child,
 						);
 					shouldInclude = shouldInclude || includedChild;
 					children.delete(child);
@@ -134,7 +134,7 @@ class TypeScriptDocumentSymbolProvider
 
 	private static convertSymbol(
 		item: Proto.NavigationTree,
-		range: vscode.Range
+		range: vscode.Range,
 	): vscode.DocumentSymbol {
 		const selectionRange = item.nameSpan
 			? typeConverters.Range.fromTextSpan(item.nameSpan)
@@ -155,7 +155,7 @@ class TypeScriptDocumentSymbolProvider
 			"",
 			getSymbolKind(item.kind),
 			range,
-			range.contains(selectionRange) ? selectionRange : range
+			range.contains(selectionRange) ? selectionRange : range,
 		);
 
 		const kindModifiers = parseKindModifier(item.kindModifiers);
@@ -167,7 +167,7 @@ class TypeScriptDocumentSymbolProvider
 	}
 
 	private static shouldInclueEntry(
-		item: Proto.NavigationTree | Proto.NavigationBarItem
+		item: Proto.NavigationTree | Proto.NavigationBarItem,
 	): boolean {
 		if (item.kind === PConst.Kind.alias) {
 			return false;
@@ -183,11 +183,11 @@ class TypeScriptDocumentSymbolProvider
 export function register(
 	selector: DocumentSelector,
 	client: ITypeScriptServiceClient,
-	cachedResponse: CachedResponse<Proto.NavTreeResponse>
+	cachedResponse: CachedResponse<Proto.NavTreeResponse>,
 ) {
 	return vscode.languages.registerDocumentSymbolProvider(
 		selector.syntax,
 		new TypeScriptDocumentSymbolProvider(client, cachedResponse),
-		{ label: "TypeScript" }
+		{ label: "TypeScript" },
 	);
 }

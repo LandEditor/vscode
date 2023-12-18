@@ -6,11 +6,11 @@
 import { Event } from "vs/base/common/event";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import {
-	IWindowOpenable,
-	IOpenWindowOptions,
 	IOpenEmptyWindowOptions,
+	IOpenWindowOptions,
 	IPoint,
 	IRectangle,
+	IWindowOpenable,
 } from "vs/platform/window/common/window";
 
 export const IHostService = createDecorator<IHostService>("hostService");
@@ -79,7 +79,7 @@ export interface IHostService {
 	 */
 	openWindow(
 		toOpen: IWindowOpenable[],
-		options?: IOpenWindowOptions
+		options?: IOpenWindowOptions,
 	): Promise<void>;
 
 	/**

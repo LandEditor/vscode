@@ -3,47 +3,47 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
-import { URI } from "vs/base/common/uri";
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
-import { isWindows, isMacintosh } from "vs/base/common/platform";
+import { KeyChord, KeyCode, KeyMod } from "vs/base/common/keyCodes";
 import { Schemas } from "vs/base/common/network";
-import { INativeHostService } from "vs/platform/native/common/native";
-import {
-	KeybindingsRegistry,
-	KeybindingWeight,
-} from "vs/platform/keybinding/common/keybindingsRegistry";
+import { isMacintosh, isWindows } from "vs/base/common/platform";
+import { URI } from "vs/base/common/uri";
 import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
-import { KeyMod, KeyCode, KeyChord } from "vs/base/common/keyCodes";
+import * as nls from "vs/nls";
+import { MenuId, MenuRegistry } from "vs/platform/actions/common/actions";
+import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
 import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
 import {
-	getMultiSelectedResources,
-	IExplorerService,
-} from "vs/workbench/contrib/files/browser/files";
+	KeybindingWeight,
+	KeybindingsRegistry,
+} from "vs/platform/keybinding/common/keybindingsRegistry";
 import { IListService } from "vs/platform/list/browser/listService";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { revealResourcesInOS } from "vs/workbench/contrib/files/electron-sandbox/fileCommands";
-import { MenuRegistry, MenuId } from "vs/platform/actions/common/actions";
+import { INativeHostService } from "vs/platform/native/common/native";
+import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
 import { ResourceContextKey } from "vs/workbench/common/contextkeys";
 import {
-	appendToCommandPalette,
+	EditorResourceAccessor,
+	SideBySideEditor,
+} from "vs/workbench/common/editor";
+import {
 	appendEditorTitleContextMenuItem,
+	appendToCommandPalette,
 } from "vs/workbench/contrib/files/browser/fileActions.contribution";
 import {
-	SideBySideEditor,
-	EditorResourceAccessor,
-} from "vs/workbench/common/editor";
-import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
+	IExplorerService,
+	getMultiSelectedResources,
+} from "vs/workbench/contrib/files/browser/files";
+import { revealResourcesInOS } from "vs/workbench/contrib/files/electron-sandbox/fileCommands";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 
 const REVEAL_IN_OS_COMMAND_ID = "revealFileInOS";
 const REVEAL_IN_OS_LABEL = isWindows
 	? nls.localize("revealInWindows", "Reveal in File Explorer")
 	: isMacintosh
-		? nls.localize("revealInMac", "Reveal in Finder")
-		: nls.localize("openContainer", "Open Containing Folder");
+	  ? nls.localize("revealInMac", "Reveal in Finder")
+	  : nls.localize("openContainer", "Open Containing Folder");
 const REVEAL_IN_OS_WHEN_CONTEXT = ContextKeyExpr.or(
 	ResourceContextKey.Scheme.isEqualTo(Schemas.file),
-	ResourceContextKey.Scheme.isEqualTo(Schemas.vscodeUserData)
+	ResourceContextKey.Scheme.isEqualTo(Schemas.vscodeUserData),
 );
 
 KeybindingsRegistry.registerCommandAndKeybindingRule({
@@ -59,12 +59,12 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			resource,
 			accessor.get(IListService),
 			accessor.get(IEditorService),
-			accessor.get(IExplorerService)
+			accessor.get(IExplorerService),
 		);
 		revealResourcesInOS(
 			resources,
 			accessor.get(INativeHostService),
-			accessor.get(IWorkspaceContextService)
+			accessor.get(IWorkspaceContextService),
 		);
 	},
 });
@@ -88,7 +88,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		revealResourcesInOS(
 			resources,
 			accessor.get(INativeHostService),
-			accessor.get(IWorkspaceContextService)
+			accessor.get(IWorkspaceContextService),
 		);
 	},
 });
@@ -98,7 +98,7 @@ appendEditorTitleContextMenuItem(
 	REVEAL_IN_OS_LABEL,
 	REVEAL_IN_OS_WHEN_CONTEXT,
 	"2_files",
-	0
+	0,
 );
 
 // Menu registration - open editors
@@ -143,10 +143,10 @@ appendToCommandPalette(
 			original: isWindows
 				? "Reveal in File Explorer"
 				: isMacintosh
-					? "Reveal in Finder"
-					: "Open Containing Folder",
+				  ? "Reveal in Finder"
+				  : "Open Containing Folder",
 		},
 		category: category,
 	},
-	REVEAL_IN_OS_WHEN_CONTEXT
+	REVEAL_IN_OS_WHEN_CONTEXT,
 );

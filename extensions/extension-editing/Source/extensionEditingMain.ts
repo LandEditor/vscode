@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from "vscode";
-import { PackageDocument } from "./packageDocumentHelper";
 import { ExtensionLinter } from "./extensionLinter";
+import { PackageDocument } from "./packageDocumentHelper";
 
 export function activate(context: vscode.ExtensionContext) {
 	//package.json suggestions
@@ -24,10 +24,10 @@ function registerPackageDocumentCompletions(): vscode.Disposable {
 			provideCompletionItems(document, position, token) {
 				return new PackageDocument(document).provideCompletionItems(
 					position,
-					token
+					token,
 				);
 			},
-		}
+		},
 	);
 }
 
@@ -39,9 +39,9 @@ function registerCodeActionsProvider(): vscode.Disposable {
 				return new PackageDocument(document).provideCodeActions(
 					range,
 					context,
-					token
+					token,
 				);
 			},
-		}
+		},
 	);
 }

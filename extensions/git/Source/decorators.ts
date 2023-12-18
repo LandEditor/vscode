@@ -6,7 +6,7 @@
 import { done } from "./util";
 
 function decorate(
-	decorator: (fn: Function, key: string) => Function
+	decorator: (fn: Function, key: string) => Function,
 ): Function {
 	return (_target: any, key: string, descriptor: any) => {
 		let fnKey: string | null = null;

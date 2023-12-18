@@ -5,11 +5,11 @@
 
 import * as vscode from "vscode";
 import { Command } from "../../commands/commandManager";
-import { nulToken } from "../../utils/cancellation";
+import { TelemetryReporter } from "../../logging/telemetry";
 import type * as Proto from "../../tsServer/protocol/protocol";
 import * as typeConverters from "../../typeConverters";
 import { ITypeScriptServiceClient } from "../../typescriptService";
-import { TelemetryReporter } from "../../logging/telemetry";
+import { nulToken } from "../../utils/cancellation";
 
 export class EditorChatFollowUp implements Command {
 	public static readonly ID = "_typescript.quickFix.editorChatReplacement2";
@@ -17,7 +17,7 @@ export class EditorChatFollowUp implements Command {
 
 	constructor(
 		private readonly client: ITypeScriptServiceClient,
-		private readonly telemetryReporter: TelemetryReporter
+		private readonly telemetryReporter: TelemetryReporter,
 	) {}
 
 	async execute({
@@ -59,23 +59,23 @@ export class EditorChatFollowUp implements Command {
 				? await findScopeEndLineFromNavTree(
 						this.client,
 						document,
-						expand.pos.line
-					)
+						expand.pos.line,
+				  )
 				: expand.kind === "refactor-info"
-					? await findEditScope(
+				  ? await findEditScope(
 							this.client,
 							document,
-							expand.refactor.edits.flatMap((e) => e.textChanges)
-						)
-					: expand.kind === "code-action"
-						? await findEditScope(
+							expand.refactor.edits.flatMap((e) => e.textChanges),
+					  )
+				  : expand.kind === "code-action"
+					  ? await findEditScope(
 								this.client,
 								document,
 								expand.action.changes.flatMap(
-									(c) => c.textChanges
-								)
-							)
-						: expand.range;
+									(c) => c.textChanges,
+								),
+						  )
+					  : expand.range;
 		await vscode.commands.executeCommand("vscode.editorChat.start", {
 			initialRange,
 			message,
@@ -106,7 +106,7 @@ export class CompositeCommand implements Command {
 		for (const command of commands) {
 			await vscode.commands.executeCommand(
 				command.command,
-				...(command.arguments ?? [])
+				...(command.arguments ?? []),
 			);
 		}
 	}
@@ -120,7 +120,7 @@ export type Expand =
 
 function findScopeEndLineFromNavTreeWorker(
 	startLine: number,
-	navigationTree: Proto.NavigationTree[]
+	navigationTree: Proto.NavigationTree[],
 ): vscode.Range | undefined {
 	for (const node of navigationTree) {
 		const range = typeConverters.Range.fromTextSpan(node.spans[0]);
@@ -133,7 +133,7 @@ function findScopeEndLineFromNavTreeWorker(
 		) {
 			return findScopeEndLineFromNavTreeWorker(
 				startLine,
-				node.childItems
+				node.childItems,
 			);
 		}
 	}
@@ -143,7 +143,7 @@ function findScopeEndLineFromNavTreeWorker(
 async function findScopeEndLineFromNavTree(
 	client: ITypeScriptServiceClient,
 	document: vscode.TextDocument,
-	startLine: number
+	startLine: number,
 ) {
 	const filepath = client.toOpenTsFilePath(document);
 	if (!filepath) {
@@ -152,21 +152,21 @@ async function findScopeEndLineFromNavTree(
 	const response = await client.execute(
 		"navtree",
 		{ file: filepath },
-		nulToken
+		nulToken,
 	);
 	if (response.type !== "response" || !response.body?.childItems) {
 		return;
 	}
 	return findScopeEndLineFromNavTreeWorker(
 		startLine,
-		response.body.childItems
+		response.body.childItems,
 	);
 }
 
 async function findEditScope(
 	client: ITypeScriptServiceClient,
 	document: vscode.TextDocument,
-	edits: Proto.CodeEdit[]
+	edits: Proto.CodeEdit[],
 ): Promise<vscode.Range> {
 	let first = typeConverters.Position.fromLocation(edits[0].start);
 	let firstEdit = edits[0];
@@ -195,7 +195,7 @@ async function findEditScope(
 	const expandEnd = await findScopeEndLineFromNavTree(
 		client,
 		document,
-		end.line
+		end.line,
 	);
 	return new vscode.Range(start, expandEnd?.end ?? end);
 }

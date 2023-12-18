@@ -3,33 +3,33 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { onDidChangeFullscreen, isFullscreen } from "vs/base/browser/browser";
+import { isFullscreen, onDidChangeFullscreen } from "vs/base/browser/browser";
 import * as dom from "vs/base/browser/dom";
+import { mainWindow } from "vs/base/browser/window";
 import { Color } from "vs/base/common/color";
 import { Event } from "vs/base/common/event";
 import { DisposableStore, MutableDisposable } from "vs/base/common/lifecycle";
+import * as perf from "vs/base/common/performance";
+import { assertIsDefined } from "vs/base/common/types";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
 	editorBackground,
 	foreground,
 } from "vs/platform/theme/common/colorRegistry";
 import {
-	getThemeTypeSelector,
 	IThemeService,
+	getThemeTypeSelector,
 } from "vs/platform/theme/common/themeService";
 import { DEFAULT_EDITOR_MIN_DIMENSIONS } from "vs/workbench/browser/parts/editor/editor";
 import * as themes from "vs/workbench/common/theme";
+import { ISplashStorageService } from "vs/workbench/contrib/splash/browser/splash";
+import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
 import {
 	IWorkbenchLayoutService,
 	Parts,
 	Position,
 } from "vs/workbench/services/layout/browser/layoutService";
-import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import * as perf from "vs/base/common/performance";
-import { assertIsDefined } from "vs/base/common/types";
-import { ISplashStorageService } from "vs/workbench/contrib/splash/browser/splash";
-import { mainWindow } from "vs/base/browser/window";
 import {
 	ILifecycleService,
 	LifecyclePhase,
@@ -108,7 +108,7 @@ export class PartsSplash {
 				foreground: theme.getColor(foreground)?.toString(),
 				background: Color.Format.CSS.formatHex(
 					theme.getColor(editorBackground) ||
-						themes.WORKBENCH_BACKGROUND(theme)
+						themes.WORKBENCH_BACKGROUND(theme),
 				),
 				editorBackground: theme.getColor(editorBackground)?.toString(),
 				titleBarBackground: theme
@@ -130,9 +130,8 @@ export class PartsSplash {
 					theme.getColor(themes.WINDOW_ACTIVE_BORDER)?.toString() ??
 					theme.getColor(themes.WINDOW_INACTIVE_BORDER)?.toString(),
 			},
-			layoutInfo: !this._shouldSaveLayoutInfo()
-				? undefined
-				: {
+			layoutInfo: this._shouldSaveLayoutInfo()
+				? {
 						sideBarSide:
 							this._layoutService.getSideBarPosition() ===
 							Position.RIGHT
@@ -141,58 +140,59 @@ export class PartsSplash {
 						editorPartMinWidth: DEFAULT_EDITOR_MIN_DIMENSIONS.width,
 						titleBarHeight: this._layoutService.isVisible(
 							Parts.TITLEBAR_PART,
-							mainWindow
+							mainWindow,
 						)
 							? dom.getTotalHeight(
 									assertIsDefined(
 										this._layoutService.getContainer(
 											mainWindow,
-											Parts.TITLEBAR_PART
-										)
-									)
-								)
+											Parts.TITLEBAR_PART,
+										),
+									),
+							  )
 							: 0,
 						activityBarWidth: this._layoutService.isVisible(
-							Parts.ACTIVITYBAR_PART
+							Parts.ACTIVITYBAR_PART,
 						)
 							? dom.getTotalWidth(
 									assertIsDefined(
 										this._layoutService.getContainer(
 											mainWindow,
-											Parts.ACTIVITYBAR_PART
-										)
-									)
-								)
+											Parts.ACTIVITYBAR_PART,
+										),
+									),
+							  )
 							: 0,
 						sideBarWidth: this._layoutService.isVisible(
-							Parts.SIDEBAR_PART
+							Parts.SIDEBAR_PART,
 						)
 							? dom.getTotalWidth(
 									assertIsDefined(
 										this._layoutService.getContainer(
 											mainWindow,
-											Parts.SIDEBAR_PART
-										)
-									)
-								)
+											Parts.SIDEBAR_PART,
+										),
+									),
+							  )
 							: 0,
 						statusBarHeight: this._layoutService.isVisible(
 							Parts.STATUSBAR_PART,
-							mainWindow
+							mainWindow,
 						)
 							? dom.getTotalHeight(
 									assertIsDefined(
 										this._layoutService.getContainer(
 											mainWindow,
-											Parts.STATUSBAR_PART
-										)
-									)
-								)
+											Parts.STATUSBAR_PART,
+										),
+									),
+							  )
 							: 0,
 						windowBorder: this._layoutService.hasMainWindowBorder(),
 						windowBorderRadius:
 							this._layoutService.getMainWindowBorderRadius(),
-					},
+				  }
+				: undefined,
 		});
 	}
 
@@ -206,7 +206,7 @@ export class PartsSplash {
 
 	private _removePartsSplash(): void {
 		const element = mainWindow.document.getElementById(
-			PartsSplash._splashElementId
+			PartsSplash._splashElementId,
 		);
 		if (element) {
 			element.style.display = "none";
@@ -215,7 +215,7 @@ export class PartsSplash {
 		// remove initial colors
 		const defaultStyles =
 			mainWindow.document.head.getElementsByClassName(
-				"initialShellColors"
+				"initialShellColors",
 			);
 		if (defaultStyles.length) {
 			mainWindow.document.head.removeChild(defaultStyles[0]);

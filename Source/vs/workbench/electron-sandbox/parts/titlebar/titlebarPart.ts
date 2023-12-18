@@ -3,62 +3,62 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from "vs/base/common/event";
 import { getZoomFactor, isWCOEnabled } from "vs/base/browser/browser";
 import {
 	$,
+	EventType,
 	addDisposableListener,
 	append,
-	EventType,
 	getWindow,
 	getWindowId,
 	hide,
 	show,
 } from "vs/base/browser/dom";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { mainWindow } from "vs/base/browser/window";
+import { Codicon } from "vs/base/common/codicons";
+import { Event } from "vs/base/common/event";
 import {
-	IConfigurationService,
-	IConfigurationChangeEvent,
-} from "vs/platform/configuration/common/configuration";
-import { IStorageService } from "vs/platform/storage/common/storage";
-import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
-import { IHostService } from "vs/workbench/services/host/browser/host";
-import {
-	isMacintosh,
-	isWindows,
-	isLinux,
-	isNative,
 	isBigSurOrNewer,
+	isLinux,
+	isMacintosh,
+	isNative,
+	isWindows,
 } from "vs/base/common/platform";
+import { ThemeIcon } from "vs/base/common/themables";
 import { IMenuService, MenuId } from "vs/platform/actions/common/actions";
 import {
-	BrowserTitlebarPart as BrowserTitlebarPart,
-	BrowserTitleService,
-	IAuxiliaryTitlebarPart,
-} from "vs/workbench/browser/parts/titlebar/titlebarPart";
+	IConfigurationChangeEvent,
+	IConfigurationService,
+} from "vs/platform/configuration/common/configuration";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
 import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import {
-	IWorkbenchLayoutService,
-	Parts,
-} from "vs/workbench/services/layout/browser/layoutService";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import { INativeHostService } from "vs/platform/native/common/native";
+import { IStorageService } from "vs/platform/storage/common/storage";
+import { IThemeService } from "vs/platform/theme/common/themeService";
 import {
 	getTitleBarStyle,
 	useWindowControlsOverlay,
 } from "vs/platform/window/common/window";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { Codicon } from "vs/base/common/codicons";
-import { ThemeIcon } from "vs/base/common/themables";
+import {
+	BrowserTitleService,
+	BrowserTitlebarPart,
+	IAuxiliaryTitlebarPart,
+} from "vs/workbench/browser/parts/titlebar/titlebarPart";
 import { NativeMenubarControl } from "vs/workbench/electron-sandbox/parts/titlebar/menubarControl";
-import { IHoverService } from "vs/workbench/services/hover/browser/hover";
 import {
 	IEditorGroupsContainer,
 	IEditorGroupsService,
 } from "vs/workbench/services/editor/common/editorGroupsService";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { mainWindow } from "vs/base/browser/window";
+import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
+import { IHostService } from "vs/workbench/services/host/browser/host";
+import { IHoverService } from "vs/workbench/services/hover/browser/hover";
+import {
+	IWorkbenchLayoutService,
+	Parts,
+} from "vs/workbench/services/layout/browser/layoutService";
 
 export class NativeTitlebarPart extends BrowserTitlebarPart {
 	//#region IView
@@ -158,7 +158,7 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 	}
 
 	protected override onConfigurationChanged(
-		event: IConfigurationChangeEvent
+		event: IConfigurationChangeEvent,
 	): void {
 		super.onConfigurationChanged(event);
 
@@ -171,7 +171,7 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 
 	private onUpdateAppIconDragBehavior(): void {
 		const setting = this.configurationService.getValue(
-			"window.doubleClickIconToClose"
+			"window.doubleClickIconToClose",
 		);
 		if (setting && this.appIcon) {
 			(this.appIcon.style as any)["-webkit-app-region"] = "no-drag";
@@ -190,8 +190,8 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 		if (this.customMenubar) {
 			this._register(
 				this.customMenubar.onFocusStateChange((e) =>
-					this.onMenubarFocusChanged(e)
-				)
+					this.onMenubarFocusChanged(e),
+				),
 			);
 		}
 	}
@@ -221,7 +221,7 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 			getTitleBarStyle(this.configurationService) === "native"
 		) {
 			this._register(
-				this.instantiationService.createInstance(NativeMenubarControl)
+				this.instantiationService.createInstance(NativeMenubarControl),
 			);
 		}
 
@@ -232,7 +232,7 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 			this._register(
 				addDisposableListener(this.appIcon, EventType.DBLCLICK, () => {
 					this.nativeHostService.closeWindow({ targetWindowId });
-				})
+				}),
 			);
 		}
 
@@ -248,19 +248,19 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 				this.primaryWindowControls,
 				$(
 					"div.window-icon.window-minimize" +
-						ThemeIcon.asCSSSelector(Codicon.chromeMinimize)
-				)
+						ThemeIcon.asCSSSelector(Codicon.chromeMinimize),
+				),
 			);
 			this._register(
 				addDisposableListener(minimizeIcon, EventType.CLICK, () => {
 					this.nativeHostService.minimizeWindow({ targetWindowId });
-				})
+				}),
 			);
 
 			// Restore
 			this.maxRestoreControl = append(
 				this.primaryWindowControls,
-				$("div.window-icon.window-max-restore")
+				$("div.window-icon.window-max-restore"),
 			);
 			this._register(
 				addDisposableListener(
@@ -280,8 +280,8 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 						return this.nativeHostService.maximizeWindow({
 							targetWindowId,
 						});
-					}
-				)
+					},
+				),
 			);
 
 			// Close
@@ -289,13 +289,13 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 				this.primaryWindowControls,
 				$(
 					"div.window-icon.window-close" +
-						ThemeIcon.asCSSSelector(Codicon.chromeClose)
-				)
+						ThemeIcon.asCSSSelector(Codicon.chromeClose),
+				),
 			);
 			this._register(
 				addDisposableListener(closeIcon, EventType.CLICK, () => {
 					this.nativeHostService.closeWindow({ targetWindowId });
-				})
+				}),
 			);
 
 			// Resizer
@@ -312,8 +312,8 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 						windowId: targetWindowId,
 						maximized:
 							this.layoutService.isWindowMaximized(targetWindow),
-					}
-				)
+					},
+				),
 			);
 		}
 
@@ -336,10 +336,10 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 								clientX: x / zoomFactor,
 								clientY: y / zoomFactor,
 							}),
-							MenuId.TitleBarContext
+							MenuId.TitleBarContext,
 						);
-					}
-				)
+					},
+				),
 			);
 		}
 
@@ -350,17 +350,17 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 		if (this.maxRestoreControl) {
 			if (maximized) {
 				this.maxRestoreControl.classList.remove(
-					...ThemeIcon.asClassNameArray(Codicon.chromeMaximize)
+					...ThemeIcon.asClassNameArray(Codicon.chromeMaximize),
 				);
 				this.maxRestoreControl.classList.add(
-					...ThemeIcon.asClassNameArray(Codicon.chromeRestore)
+					...ThemeIcon.asClassNameArray(Codicon.chromeRestore),
 				);
 			} else {
 				this.maxRestoreControl.classList.remove(
-					...ThemeIcon.asClassNameArray(Codicon.chromeRestore)
+					...ThemeIcon.asClassNameArray(Codicon.chromeRestore),
 				);
 				this.maxRestoreControl.classList.add(
-					...ThemeIcon.asClassNameArray(Codicon.chromeMaximize)
+					...ThemeIcon.asClassNameArray(Codicon.chromeMaximize),
 				);
 			}
 		}
@@ -441,7 +441,7 @@ export class MainNativeTitlebarPart extends NativeTitlebarPart {
 		@IEditorGroupsService editorGroupService: IEditorGroupsService,
 		@IEditorService editorService: IEditorService,
 		@IMenuService menuService: IMenuService,
-		@IKeybindingService keybindingService: IKeybindingService
+		@IKeybindingService keybindingService: IKeybindingService,
 	) {
 		super(
 			Parts.TITLEBAR_PART,
@@ -461,7 +461,7 @@ export class MainNativeTitlebarPart extends NativeTitlebarPart {
 			editorGroupService,
 			editorService,
 			menuService,
-			keybindingService
+			keybindingService,
 		);
 	}
 }
@@ -494,7 +494,7 @@ export class AuxiliaryNativeTitlebarPart
 		@IEditorGroupsService editorGroupService: IEditorGroupsService,
 		@IEditorService editorService: IEditorService,
 		@IMenuService menuService: IMenuService,
-		@IKeybindingService keybindingService: IKeybindingService
+		@IKeybindingService keybindingService: IKeybindingService,
 	) {
 		const id = AuxiliaryNativeTitlebarPart.COUNTER++;
 		super(
@@ -515,7 +515,7 @@ export class AuxiliaryNativeTitlebarPart
 			editorGroupService,
 			editorService,
 			menuService,
-			keybindingService
+			keybindingService,
 		);
 	}
 }
@@ -527,12 +527,12 @@ export class NativeTitleService extends BrowserTitleService {
 
 	protected override doCreateAuxiliaryTitlebarPart(
 		container: HTMLElement,
-		editorGroupsContainer: IEditorGroupsContainer
+		editorGroupsContainer: IEditorGroupsContainer,
 	): AuxiliaryNativeTitlebarPart {
 		return this.instantiationService.createInstance(
 			AuxiliaryNativeTitlebarPart,
 			container,
-			editorGroupsContainer
+			editorGroupsContainer,
 		);
 	}
 }

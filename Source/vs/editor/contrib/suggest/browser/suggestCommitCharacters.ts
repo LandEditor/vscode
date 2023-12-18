@@ -26,23 +26,23 @@ export class CommitCharacterController {
 		editor: ICodeEditor,
 		widget: SuggestWidget,
 		model: SuggestModel,
-		accept: (selected: ISelectedSuggestion) => any
+		accept: (selected: ISelectedSuggestion) => any,
 	) {
 		this._disposables.add(
 			model.onDidSuggest((e) => {
 				if (e.completionModel.items.length === 0) {
 					this.reset();
 				}
-			})
+			}),
 		);
 		this._disposables.add(
 			model.onDidCancel((e) => {
 				this.reset();
-			})
+			}),
 		);
 
 		this._disposables.add(
-			widget.onDidShow(() => this._onItem(widget.getFocusedItem()))
+			widget.onDidShow(() => this._onItem(widget.getFocusedItem())),
 		);
 		this._disposables.add(widget.onDidFocus(this._onItem, this));
 		this._disposables.add(widget.onDidHide(this.reset, this));
@@ -58,13 +58,13 @@ export class CommitCharacterController {
 					if (
 						this._active.acceptCharacters.has(ch) &&
 						editor.getOption(
-							EditorOption.acceptSuggestionOnCommitCharacter
+							EditorOption.acceptSuggestionOnCommitCharacter,
 						)
 					) {
 						accept(this._active.item);
 					}
 				}
-			})
+			}),
 		);
 	}
 

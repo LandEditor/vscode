@@ -3,28 +3,28 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Disposable } from "vs/base/common/lifecycle";
 import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
 import {
 	IDialogHandler,
 	IDialogResult,
 	IDialogService,
 } from "vs/platform/dialogs/common/dialogs";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import { ILayoutService } from "vs/platform/layout/browser/layoutService";
 import { ILogService } from "vs/platform/log/common/log";
 import { IProductService } from "vs/platform/product/common/productService";
 import { Registry } from "vs/platform/registry/common/platform";
+import { BrowserDialogHandler } from "vs/workbench/browser/parts/dialogs/dialogHandler";
 import {
+	Extensions as WorkbenchExtensions,
 	IWorkbenchContribution,
 	IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "vs/workbench/common/contributions";
-import { IDialogsModel, IDialogViewItem } from "vs/workbench/common/dialogs";
-import { BrowserDialogHandler } from "vs/workbench/browser/parts/dialogs/dialogHandler";
+import { IDialogViewItem, IDialogsModel } from "vs/workbench/common/dialogs";
 import { DialogService } from "vs/workbench/services/dialogs/common/dialogService";
 import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { Disposable } from "vs/base/common/lifecycle";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 
 export class DialogHandlerContribution
 	extends Disposable
@@ -97,9 +97,9 @@ export class DialogHandlerContribution
 }
 
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 );
 workbenchRegistry.registerWorkbenchContribution(
 	DialogHandlerContribution,
-	LifecyclePhase.Starting
+	LifecyclePhase.Starting,
 );

@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { INodeProcess } from "vs/base/common/platform";
 import {
 	IStorageService,
 	StorageScope,
@@ -14,7 +15,6 @@ import {
 	lastSessionDateStorageKey,
 } from "vs/platform/telemetry/common/telemetry";
 import { cleanRemoteAuthority } from "vs/platform/telemetry/common/telemetryUtils";
-import { INodeProcess } from "vs/base/common/platform";
 
 export function resolveWorkbenchCommonProperties(
 	storageService: IStorageService,
@@ -26,7 +26,7 @@ export function resolveWorkbenchCommonProperties(
 	sqmId: string,
 	isInternalTelemetry: boolean,
 	process: INodeProcess,
-	remoteAuthority?: string
+	remoteAuthority?: string,
 ): ICommonProperties {
 	const result = resolveCommonProperties(
 		release,
@@ -36,15 +36,15 @@ export function resolveWorkbenchCommonProperties(
 		version,
 		machineId,
 		sqmId,
-		isInternalTelemetry
+		isInternalTelemetry,
 	);
 	const firstSessionDate = storageService.get(
 		firstSessionDateStorageKey,
-		StorageScope.APPLICATION
+		StorageScope.APPLICATION,
 	)!;
 	const lastSessionDate = storageService.get(
 		lastSessionDateStorageKey,
-		StorageScope.APPLICATION
+		StorageScope.APPLICATION,
 	)!;
 
 	// __GDPR__COMMON__ "common.version.shell" : { "classification": "SystemMetaData", "purpose": "PerformanceAndHealth" }
@@ -56,7 +56,7 @@ export function resolveWorkbenchCommonProperties(
 	// __GDPR__COMMON__ "common.lastSessionDate" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
 	result["common.lastSessionDate"] = lastSessionDate || "";
 	// __GDPR__COMMON__ "common.isNewSession" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
-	result["common.isNewSession"] = !lastSessionDate ? "1" : "0";
+	result["common.isNewSession"] = lastSessionDate ? "0" : "1";
 	// __GDPR__COMMON__ "common.remoteAuthority" : { "classification": "SystemMetaData", "purpose": "PerformanceAndHealth" }
 	result["common.remoteAuthority"] = cleanRemoteAuthority(remoteAuthority);
 	// __GDPR__COMMON__ "common.cli" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }

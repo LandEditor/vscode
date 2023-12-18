@@ -10,7 +10,7 @@ import { ILifecycleMainService } from "vs/platform/lifecycle/electron-main/lifec
 import { ILogService } from "vs/platform/log/common/log";
 import { INativeHostMainService } from "vs/platform/native/electron-main/nativeHostMainService";
 import { IProductService } from "vs/platform/product/common/productService";
-import { asJson, IRequestService } from "vs/platform/request/common/request";
+import { IRequestService, asJson } from "vs/platform/request/common/request";
 import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import {
 	AvailableForDownload,
@@ -20,8 +20,8 @@ import {
 } from "vs/platform/update/common/update";
 import {
 	AbstractUpdateService,
-	createUpdateURL,
 	UpdateNotAvailableClassification,
+	createUpdateURL,
 } from "vs/platform/update/electron-main/abstractUpdateService";
 
 export class LinuxUpdateService extends AbstractUpdateService {
@@ -51,7 +51,7 @@ export class LinuxUpdateService extends AbstractUpdateService {
 		return createUpdateURL(
 			`linux-${process.arch}`,
 			quality,
-			this.productService
+			this.productService,
 		);
 	}
 
@@ -92,7 +92,7 @@ export class LinuxUpdateService extends AbstractUpdateService {
 	}
 
 	protected override async doDownloadUpdate(
-		state: AvailableForDownload
+		state: AvailableForDownload,
 	): Promise<void> {
 		// Use the download URL if available as we don't currently detect the package type that was
 		// installed and the website download page is more useful than the tarball generally.
@@ -102,12 +102,12 @@ export class LinuxUpdateService extends AbstractUpdateService {
 		) {
 			this.nativeHostMainService.openExternal(
 				undefined,
-				this.productService.downloadUrl
+				this.productService.downloadUrl,
 			);
 		} else if (state.update.url) {
 			this.nativeHostMainService.openExternal(
 				undefined,
-				state.update.url
+				state.update.url,
 			);
 		}
 

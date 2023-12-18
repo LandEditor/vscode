@@ -3,27 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { CancellationToken } from "vs/base/common/cancellation";
 import { Disposable } from "vs/base/common/lifecycle";
+import { IFeaturedExtension } from "vs/base/common/product";
+import { localize } from "vs/nls";
 import {
 	IExtensionGalleryService,
 	IExtensionManagementService,
 	IGalleryExtension,
 } from "vs/platform/extensionManagement/common/extensionManagement";
+import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import { IProductService } from "vs/platform/product/common/productService";
-import { IFeaturedExtension } from "vs/base/common/product";
-import { CancellationToken } from "vs/base/common/cancellation";
 import {
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
-import { localize } from "vs/nls";
-import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
 import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
 
 type FeaturedExtensionStorageData = {
@@ -43,10 +43,10 @@ export interface IFeaturedExtensionsService {
 	title: string;
 }
 
-const enum FeaturedExtensionMetadataType {
-	Title,
-	Description,
-	ImagePath,
+enum FeaturedExtensionMetadataType {
+	Title = 0,
+	Description = 1,
+	ImagePath = 2,
 }
 
 export class FeaturedExtensionsService
@@ -56,7 +56,7 @@ export class FeaturedExtensionsService
 	declare readonly _serviceBrand: undefined;
 
 	private ignoredExtensions: Set<string> = new Set<string>();
-	private _isInitialized: boolean = false;
+	private _isInitialized = false;
 
 	private static readonly STORAGE_KEY =
 		"workbench.welcomePage.extensionMetadata";
@@ -81,7 +81,7 @@ export class FeaturedExtensionsService
 
 		const featuredExtensions: IFeaturedExtension[] = [];
 		for (const extension of this.productService.featuredExtensions?.filter(
-			(e) => !this.ignoredExtensions.has(e.id)
+			(e) => !this.ignoredExtensions.has(e.id),
 		) ?? []) {
 			const resolvedExtension = await this.resolveExtension(extension);
 			if (resolvedExtension) {
@@ -108,7 +108,7 @@ export class FeaturedExtensionsService
 		for (const extension of featuredExtensions) {
 			if (
 				installed.some((e) =>
-					ExtensionIdentifier.equals(e.identifier.id, extension.id)
+					ExtensionIdentifier.equals(e.identifier.id, extension.id),
 				)
 			) {
 				this.ignoredExtensions.add(extension.id);
@@ -118,7 +118,7 @@ export class FeaturedExtensionsService
 					galleryExtension = (
 						await this.galleryService.getExtensions(
 							[{ id: extension.id }],
-							CancellationToken.None
+							CancellationToken.None,
 						)
 					)[0];
 				} catch (err) {
@@ -126,7 +126,7 @@ export class FeaturedExtensionsService
 				}
 				if (
 					!(await this.extensionManagementService.canInstall(
-						galleryExtension
+						galleryExtension,
 					))
 				) {
 					this.ignoredExtensions.add(extension.id);
@@ -137,25 +137,25 @@ export class FeaturedExtensionsService
 	}
 
 	private async resolveExtension(
-		productMetadata: IFeaturedExtension
+		productMetadata: IFeaturedExtension,
 	): Promise<IFeaturedExtension | undefined> {
 		const title =
 			productMetadata.title ??
 			(await this.getMetadata(
 				productMetadata.id,
-				FeaturedExtensionMetadataType.Title
+				FeaturedExtensionMetadataType.Title,
 			));
 		const description =
 			productMetadata.description ??
 			(await this.getMetadata(
 				productMetadata.id,
-				FeaturedExtensionMetadataType.Description
+				FeaturedExtensionMetadataType.Description,
 			));
 		const imagePath =
 			productMetadata.imagePath ??
 			(await this.getMetadata(
 				productMetadata.id,
-				FeaturedExtensionMetadataType.ImagePath
+				FeaturedExtensionMetadataType.ImagePath,
 			));
 
 		if (title && description && imagePath) {
@@ -171,7 +171,7 @@ export class FeaturedExtensionsService
 
 	private async getMetadata(
 		extensionId: string,
-		key: FeaturedExtensionMetadataType
+		key: FeaturedExtensionMetadataType,
 	): Promise<string | undefined> {
 		const storageMetadata = this.getStorageData(extensionId);
 		if (storageMetadata) {
@@ -194,11 +194,11 @@ export class FeaturedExtensionsService
 	}
 
 	private getStorageData(
-		extensionId: string
+		extensionId: string,
 	): FeaturedExtensionStorageData | undefined {
 		const metadata = this.storageService.get(
 			FeaturedExtensionsService.STORAGE_KEY + "." + extensionId,
-			StorageScope.APPLICATION
+			StorageScope.APPLICATION,
 		);
 		if (metadata) {
 			const value = JSON.parse(metadata) as FeaturedExtensionStorageData;
@@ -212,7 +212,7 @@ export class FeaturedExtensionsService
 
 	private async getGalleryMetadata(
 		extensionId: string,
-		key: FeaturedExtensionMetadataType
+		key: FeaturedExtensionMetadataType,
 	): Promise<string | undefined> {
 		const storageKey =
 			FeaturedExtensionsService.STORAGE_KEY + "." + extensionId;
@@ -224,7 +224,7 @@ export class FeaturedExtensionsService
 			galleryExtension = (
 				await this.galleryService.getExtensions(
 					[{ id: extensionId }],
-					CancellationToken.None
+					CancellationToken.None,
 				)
 			)[0];
 		} catch (err) {}
@@ -257,7 +257,7 @@ export class FeaturedExtensionsService
 				date: new Date().getTime(),
 			}),
 			StorageScope.APPLICATION,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 
 		return metadata;
@@ -267,5 +267,5 @@ export class FeaturedExtensionsService
 registerSingleton(
 	IFeaturedExtensionsService,
 	FeaturedExtensionsService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

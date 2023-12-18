@@ -3,17 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { getNodeFSRequestService } from "./nodeFs";
+import { TextDecoder } from "util";
 import { ExtensionContext, extensions, l10n } from "vscode";
-import { startClient, LanguageClientConstructor } from "../cssClient";
 import {
+	BaseLanguageClient,
+	LanguageClient,
+	LanguageClientOptions,
 	ServerOptions,
 	TransportKind,
-	LanguageClientOptions,
-	LanguageClient,
-	BaseLanguageClient,
 } from "vscode-languageclient/node";
-import { TextDecoder } from "util";
+import { LanguageClientConstructor, startClient } from "../cssClient";
+import { getNodeFSRequestService } from "./nodeFs";
 
 let client: BaseLanguageClient | undefined;
 
@@ -50,7 +50,7 @@ export async function activate(context: ExtensionContext) {
 	const newLanguageClient: LanguageClientConstructor = (
 		id: string,
 		name: string,
-		clientOptions: LanguageClientOptions
+		clientOptions: LanguageClientOptions,
 	) => {
 		return new LanguageClient(id, name, serverOptions, clientOptions);
 	};

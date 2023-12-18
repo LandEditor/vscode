@@ -15,34 +15,34 @@ import {
 	toDisposable,
 } from "vs/base/common/lifecycle";
 import {
-	newWriteableStream,
 	ReadableStreamEventPayload,
 	ReadableStreamEvents,
+	newWriteableStream,
 } from "vs/base/common/stream";
 import { URI } from "vs/base/common/uri";
 import { generateUuid } from "vs/base/common/uuid";
 import { IChannel } from "vs/base/parts/ipc/common/ipc";
 import {
-	createFileSystemProviderError,
+	FileSystemProviderCapabilities,
+	FileSystemProviderErrorCode,
+	FileType,
 	IFileAtomicReadOptions,
+	IFileChange,
 	IFileDeleteOptions,
 	IFileOpenOptions,
 	IFileOverwriteOptions,
 	IFileReadStreamOptions,
-	FileSystemProviderCapabilities,
-	FileSystemProviderErrorCode,
-	FileType,
-	IFileWriteOptions,
-	IFileChange,
+	IFileSystemProviderError,
 	IFileSystemProviderWithFileAtomicReadCapability,
 	IFileSystemProviderWithFileCloneCapability,
 	IFileSystemProviderWithFileFolderCopyCapability,
 	IFileSystemProviderWithFileReadStreamCapability,
 	IFileSystemProviderWithFileReadWriteCapability,
 	IFileSystemProviderWithOpenReadWriteCloseCapability,
+	IFileWriteOptions,
 	IStat,
 	IWatchOptions,
-	IFileSystemProviderError,
+	createFileSystemProviderError,
 } from "vs/platform/files/common/files";
 import { reviveFileChanges } from "vs/platform/files/common/watcher";
 
@@ -68,7 +68,7 @@ export class DiskFileSystemProviderClient
 		private readonly extraCapabilities: {
 			trash?: boolean;
 			pathCaseSensitive?: boolean;
-		}
+		},
 	) {
 		super();
 
@@ -124,7 +124,7 @@ export class DiskFileSystemProviderClient
 
 	async readFile(
 		resource: URI,
-		opts?: IFileAtomicReadOptions
+		opts?: IFileAtomicReadOptions,
 	): Promise<Uint8Array> {
 		const { buffer } = (await this.channel.call("readFile", [
 			resource,
@@ -137,11 +137,11 @@ export class DiskFileSystemProviderClient
 	readFileStream(
 		resource: URI,
 		opts: IFileReadStreamOptions,
-		token: CancellationToken
+		token: CancellationToken,
 	): ReadableStreamEvents<Uint8Array> {
 		const stream = newWriteableStream<Uint8Array>(
 			(data) =>
-				VSBuffer.concat(data.map((data) => VSBuffer.wrap(data))).buffer
+				VSBuffer.concat(data.map((data) => VSBuffer.wrap(data))).buffer,
 		);
 		const disposables = new DisposableStore();
 
@@ -149,7 +149,7 @@ export class DiskFileSystemProviderClient
 		disposables.add(
 			this.channel.listen<ReadableStreamEventPayload<VSBuffer>>(
 				"readFileStream",
-				[resource, opts]
+				[resource, opts],
 			)((dataOrErrorOrEnd) => {
 				// data
 				if (dataOrErrorOrEnd instanceof VSBuffer) {
@@ -179,7 +179,7 @@ export class DiskFileSystemProviderClient
 								errorCandidate.message ??
 									toErrorMessage(errorCandidate),
 								errorCandidate.code ??
-									FileSystemProviderErrorCode.Unknown
+									FileSystemProviderErrorCode.Unknown,
 							);
 						}
 
@@ -190,7 +190,7 @@ export class DiskFileSystemProviderClient
 					// Signal to the remote side that we no longer listen
 					disposables.dispose();
 				}
-			})
+			}),
 		);
 
 		// Support cancellation
@@ -205,7 +205,7 @@ export class DiskFileSystemProviderClient
 				// bubble through the remote side as event and allows to stop
 				// reading the file.
 				disposables.dispose();
-			})
+			}),
 		);
 
 		return stream;
@@ -214,7 +214,7 @@ export class DiskFileSystemProviderClient
 	writeFile(
 		resource: URI,
 		content: Uint8Array,
-		opts: IFileWriteOptions
+		opts: IFileWriteOptions,
 	): Promise<void> {
 		return this.channel.call("writeFile", [
 			resource,
@@ -236,11 +236,11 @@ export class DiskFileSystemProviderClient
 		pos: number,
 		data: Uint8Array,
 		offset: number,
-		length: number
+		length: number,
 	): Promise<number> {
 		const [bytes, bytesRead]: [VSBuffer, number] = await this.channel.call(
 			"read",
-			[fd, pos, length]
+			[fd, pos, length],
 		);
 
 		// copy back the data that was written into the buffer on the remote
@@ -257,7 +257,7 @@ export class DiskFileSystemProviderClient
 		pos: number,
 		data: Uint8Array,
 		offset: number,
-		length: number
+		length: number,
 	): Promise<number> {
 		return this.channel.call("write", [
 			fd,
@@ -283,7 +283,7 @@ export class DiskFileSystemProviderClient
 	rename(
 		resource: URI,
 		target: URI,
-		opts: IFileOverwriteOptions
+		opts: IFileOverwriteOptions,
 	): Promise<void> {
 		return this.channel.call("rename", [resource, target, opts]);
 	}
@@ -291,7 +291,7 @@ export class DiskFileSystemProviderClient
 	copy(
 		resource: URI,
 		target: URI,
-		opts: IFileOverwriteOptions
+		opts: IFileOverwriteOptions,
 	): Promise<void> {
 		return this.channel.call("copy", [resource, target, opts]);
 	}
@@ -309,7 +309,7 @@ export class DiskFileSystemProviderClient
 	//#region File Watching
 
 	private readonly _onDidChange = this._register(
-		new Emitter<readonly IFileChange[]>()
+		new Emitter<readonly IFileChange[]>(),
 	);
 	readonly onDidChangeFile = this._onDidChange.event;
 
@@ -339,7 +339,7 @@ export class DiskFileSystemProviderClient
 					const error = eventsOrError;
 					this._onDidWatchError.fire(error);
 				}
-			})
+			}),
 		);
 	}
 
@@ -351,7 +351,7 @@ export class DiskFileSystemProviderClient
 		this.channel.call("watch", [this.sessionId, req, resource, opts]);
 
 		return toDisposable(() =>
-			this.channel.call("unwatch", [this.sessionId, req])
+			this.channel.call("unwatch", [this.sessionId, req]),
 		);
 	}
 

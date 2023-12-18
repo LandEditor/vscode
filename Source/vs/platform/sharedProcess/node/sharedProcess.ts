@@ -4,14 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IStringDictionary } from "vs/base/common/collections";
+import { UriComponents, UriDto } from "vs/base/common/uri";
 import { NativeParsedArgs } from "vs/platform/environment/common/argv";
 import { ILoggerResource, LogLevel } from "vs/platform/log/common/log";
-import { IUserDataProfile } from "vs/platform/userDataProfile/common/userDataProfile";
 import {
 	PolicyDefinition,
 	PolicyValue,
 } from "vs/platform/policy/common/policy";
-import { UriComponents, UriDto } from "vs/base/common/uri";
+import { IUserDataProfile } from "vs/platform/userDataProfile/common/userDataProfile";
 
 export interface ISharedProcessConfiguration {
 	readonly machineId: string;

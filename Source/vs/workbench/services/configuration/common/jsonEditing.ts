@@ -3,25 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { JSONPath } from "vs/base/common/json";
 import { URI } from "vs/base/common/uri";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { JSONPath } from "vs/base/common/json";
 
 export const IJSONEditingService =
 	createDecorator<IJSONEditingService>("jsonEditingService");
 
-export const enum JSONEditingErrorCode {
+export enum JSONEditingErrorCode {
 	/**
 	 * Error when trying to write to a file that contains JSON errors.
 	 */
-	ERROR_INVALID_FILE,
+	ERROR_INVALID_FILE = 0,
 }
 
 export class JSONEditingError extends Error {
-	constructor(
-		message: string,
-		public code: JSONEditingErrorCode
-	) {
+	constructor(message: string, public code: JSONEditingErrorCode) {
 		super(message);
 	}
 }

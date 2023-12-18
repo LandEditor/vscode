@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 //@ts-check
-"use strict";
 
 const performance = require("./vs/base/common/performance");
 performance.mark("code/fork/start");
@@ -23,7 +22,7 @@ bootstrap.enableASARSupport();
 
 if (process.env["VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH"]) {
 	bootstrapNode.injectNodeModuleLookupPath(
-		process.env["VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH"]
+		process.env["VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH"],
 	);
 }
 
@@ -91,7 +90,7 @@ function pipeLoggingToParent() {
 		}
 
 		try {
-			const res = JSON.stringify(argsArray, function (key, value) {
+			const res = JSON.stringify(argsArray, (key, value) => {
 				// Objects get special treatment to prevent circles
 				if (isObject(value) || Array.isArray(value)) {
 					if (seen.indexOf(value) !== -1) {
@@ -161,10 +160,9 @@ function pipeLoggingToParent() {
 	function wrapConsoleMethod(method, severity) {
 		Object.defineProperty(console, method, {
 			set: () => {},
-			get: () =>
-				function () {
-					safeSendConsoleMessage(severity, safeToArray(arguments));
-				},
+			get: () => () => {
+				safeSendConsoleMessage(severity, safeToArray(arguments));
+			},
 		});
 	}
 
@@ -189,10 +187,10 @@ function pipeLoggingToParent() {
 			get:
 				() =>
 				(
-					/** @type {string | Buffer | Uint8Array} */ chunk,
-					/** @type {BufferEncoding | undefined} */ encoding,
-					/** @type {((err?: Error | undefined) => void) | undefined} */ callback
-				) => {
+				/** @type {string | Buffer | Uint8Array} */ chunk,
+				/** @type {BufferEncoding | undefined} */ encoding,
+				/** @type {((err?: Error | undefined) => void) | undefined} */ callback,
+			) => {
 					buf += chunk.toString(encoding);
 					const eol =
 						buf.length > MAX_STREAM_BUFFER_LENGTH
@@ -215,13 +213,13 @@ function pipeLoggingToParent() {
 		wrapConsoleMethod("warn", "warn");
 		wrapConsoleMethod("error", "error");
 	} else {
-		console.log = function () {
+		console.log = () => {
 			/* ignore */
 		};
-		console.warn = function () {
+		console.warn = () => {
 			/* ignore */
 		};
-		console.info = function () {
+		console.info = () => {
 			/* ignore */
 		};
 		wrapConsoleMethod("error", "error");
@@ -233,12 +231,12 @@ function pipeLoggingToParent() {
 
 function handleExceptions() {
 	// Handle uncaught exceptions
-	process.on("uncaughtException", function (err) {
+	process.on("uncaughtException", (err) => {
 		console.error("Uncaught Exception: ", err);
 	});
 
 	// Handle unhandled promise rejections
-	process.on("unhandledRejection", function (reason) {
+	process.on("unhandledRejection", (reason) => {
 		console.error("Unhandled Promise Rejection: ", reason);
 	});
 }
@@ -247,7 +245,7 @@ function terminateWhenParentTerminates() {
 	const parentPid = Number(process.env["VSCODE_PARENT_PID"]);
 
 	if (typeof parentPid === "number" && !isNaN(parentPid)) {
-		setInterval(function () {
+		setInterval(() => {
 			try {
 				process.kill(parentPid, 0); // throws an exception if the main process doesn't exist anymore.
 			} catch (e) {
@@ -271,7 +269,7 @@ function configureCrashReporter() {
 				// @ts-ignore
 				process["crashReporter"].addExtraParameter(
 					"processType",
-					crashReporterProcessType
+					crashReporterProcessType,
 				);
 			}
 		} catch (error) {

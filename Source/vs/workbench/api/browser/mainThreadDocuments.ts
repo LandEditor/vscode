@@ -4,28 +4,28 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { toErrorMessage } from "vs/base/common/errorMessage";
-import { IReference, dispose, Disposable } from "vs/base/common/lifecycle";
+import { ErrorNoTelemetry } from "vs/base/common/errors";
+import { Emitter, Event } from "vs/base/common/event";
+import { Disposable, IReference, dispose } from "vs/base/common/lifecycle";
+import { ResourceMap } from "vs/base/common/map";
 import { Schemas } from "vs/base/common/network";
+import { IExtUri, extUri, toLocalResource } from "vs/base/common/resources";
 import { URI, UriComponents } from "vs/base/common/uri";
 import { ITextModel, shouldSynchronizeModel } from "vs/editor/common/model";
 import { IModelService } from "vs/editor/common/services/model";
 import { ITextModelService } from "vs/editor/common/services/resolverService";
-import { IFileService, FileOperation } from "vs/platform/files/common/files";
+import { FileOperation, IFileService } from "vs/platform/files/common/files";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
 import {
 	ExtHostContext,
 	ExtHostDocumentsShape,
 	MainThreadDocumentsShape,
 } from "vs/workbench/api/common/extHost.protocol";
-import { ITextFileService } from "vs/workbench/services/textfile/common/textfiles";
 import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { toLocalResource, extUri, IExtUri } from "vs/base/common/resources";
-import { IWorkingCopyFileService } from "vs/workbench/services/workingCopy/common/workingCopyFileService";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import { Emitter, Event } from "vs/base/common/event";
-import { IPathService } from "vs/workbench/services/path/common/pathService";
-import { ResourceMap } from "vs/base/common/map";
 import { IExtHostContext } from "vs/workbench/services/extensions/common/extHostCustomers";
-import { ErrorNoTelemetry } from "vs/base/common/errors";
+import { IPathService } from "vs/workbench/services/path/common/pathService";
+import { ITextFileService } from "vs/workbench/services/textfile/common/textfiles";
+import { IWorkingCopyFileService } from "vs/workbench/services/workingCopy/common/workingCopyFileService";
 
 export class BoundModelReferenceCollection {
 	private _data = new Array<{ uri: URI; length: number; dispose(): void }>();
@@ -35,7 +35,7 @@ export class BoundModelReferenceCollection {
 		private readonly _extUri: IExtUri,
 		private readonly _maxAge: number = 1000 * 60 * 3, // auto-dispse by age
 		private readonly _maxLength: number = 1024 * 1024 * 80, // auto-dispose by total length
-		private readonly _maxSize: number = 50 // auto-dispose by number of references
+		private readonly _maxSize: number = 50, // auto-dispose by number of references
 	) {
 		//
 	}
@@ -54,7 +54,7 @@ export class BoundModelReferenceCollection {
 		}
 	}
 
-	add(uri: URI, ref: IReference<any>, length: number = 0): void {
+	add(uri: URI, ref: IReference<any>, length = 0): void {
 		// const length = ref.object.textEditorModel.getValueLength();
 		const dispose = () => {
 			const idx = this._data.indexOf(entry);
@@ -93,7 +93,7 @@ class ModelTracker extends Disposable {
 		private readonly _model: ITextModel,
 		private readonly _onIsCaughtUpWithContentChanges: Emitter<URI>,
 		private readonly _proxy: ExtHostDocumentsShape,
-		private readonly _textFileService: ITextFileService
+		private readonly _textFileService: ITextFileService,
 	) {
 		super();
 		this._knownVersionId = this._model.getVersionId();
@@ -103,12 +103,12 @@ class ModelTracker extends Disposable {
 				this._proxy.$acceptModelChanged(
 					this._model.uri,
 					e,
-					this._textFileService.isDirty(this._model.uri)
+					this._textFileService.isDirty(this._model.uri),
 				);
 				if (this.isCaughtUpWithContentChanges()) {
 					this._onIsCaughtUpWithContentChanges.fire(this._model.uri);
 				}
-			})
+			}),
 		);
 	}
 
@@ -122,7 +122,7 @@ export class MainThreadDocuments
 	implements MainThreadDocumentsShape
 {
 	private _onIsCaughtUpWithContentChanges = this._store.add(
-		new Emitter<URI>()
+		new Emitter<URI>(),
 	);
 	readonly onIsCaughtUpWithContentChanges =
 		this._onIsCaughtUpWithContentChanges.event;
@@ -222,8 +222,8 @@ export class MainThreadDocuments
 				model,
 				this._onIsCaughtUpWithContentChanges,
 				this._proxy,
-				this._textFileService
-			)
+				this._textFileService,
+			),
 		);
 	}
 
@@ -237,7 +237,7 @@ export class MainThreadDocuments
 		}
 		this._proxy.$acceptModelLanguageChanged(
 			model.uri,
-			model.getLanguageId()
+			model.getLanguageId(),
 		);
 	}
 
@@ -260,7 +260,7 @@ export class MainThreadDocuments
 		const inputUri = URI.revive(uriData);
 		if (!inputUri.scheme || !(inputUri.fsPath || inputUri.authority)) {
 			throw new ErrorNoTelemetry(
-				`Invalid uri. Scheme and authority or path must be set.`
+				`Invalid uri. Scheme and authority or path must be set.`,
 			);
 		}
 
@@ -283,24 +283,24 @@ export class MainThreadDocuments
 		} catch (err) {
 			throw new ErrorNoTelemetry(
 				`cannot open ${canonicalUri.toString()}. Detail: ${toErrorMessage(
-					err
-				)}`
+					err,
+				)}`,
 			);
 		}
 		if (!documentUri) {
 			throw new ErrorNoTelemetry(
-				`cannot open ${canonicalUri.toString()}`
+				`cannot open ${canonicalUri.toString()}`,
 			);
 		} else if (!extUri.isEqual(documentUri, canonicalUri)) {
 			throw new ErrorNoTelemetry(
-				`cannot open ${canonicalUri.toString()}. Detail: Actual document opened as ${documentUri.toString()}`
+				`cannot open ${canonicalUri.toString()}. Detail: Actual document opened as ${documentUri.toString()}`,
 			);
-		} else if (!this._modelTrackers.has(canonicalUri)) {
-			throw new ErrorNoTelemetry(
-				`cannot open ${canonicalUri.toString()}. Detail: Files above 50MB cannot be synchronized with extensions.`
-			);
-		} else {
+		} else if (this._modelTrackers.has(canonicalUri)) {
 			return canonicalUri;
+		} else {
+			throw new ErrorNoTelemetry(
+				`cannot open ${canonicalUri.toString()}. Detail: Files above 50MB cannot be synchronized with extensions.`,
+			);
 		}
 	}
 
@@ -311,7 +311,7 @@ export class MainThreadDocuments
 		return this._doCreateUntitled(
 			undefined,
 			options ? options.language : undefined,
-			options ? options.content : undefined
+			options ? options.content : undefined,
 		);
 	}
 
@@ -321,7 +321,7 @@ export class MainThreadDocuments
 		this._modelReferenceCollection.add(
 			uri,
 			ref,
-			ref.object.textEditorModel.getValueLength()
+			ref.object.textEditorModel.getValueLength(),
 		);
 		return ref.object.textEditorModel.uri;
 	}
@@ -330,7 +330,7 @@ export class MainThreadDocuments
 		const asLocalUri = toLocalResource(
 			uri,
 			this._environmentService.remoteAuthority,
-			this._pathService.defaultUriScheme
+			this._pathService.defaultUriScheme,
 		);
 		const exists = await this._fileService.exists(asLocalUri);
 		if (exists) {
@@ -338,14 +338,14 @@ export class MainThreadDocuments
 			return Promise.reject(new Error("file already exists"));
 		}
 		return await this._doCreateUntitled(
-			Boolean(uri.path) ? uri : undefined
+			Boolean(uri.path) ? uri : undefined,
 		);
 	}
 
 	private async _doCreateUntitled(
 		associatedResource?: URI,
 		languageId?: string,
-		initialValue?: string
+		initialValue?: string,
 	): Promise<URI> {
 		const model = this._textFileService.untitled.create({
 			associatedResource,
@@ -358,16 +358,16 @@ export class MainThreadDocuments
 		if (!this._modelTrackers.has(resource)) {
 			ref.dispose();
 			throw new Error(
-				`expected URI ${resource.toString()} to have come to LIFE`
+				`expected URI ${resource.toString()} to have come to LIFE`,
 			);
 		}
 		this._modelReferenceCollection.add(
 			resource,
 			ref,
-			ref.object.textEditorModel.getValueLength()
+			ref.object.textEditorModel.getValueLength(),
 		);
 		Event.once(model.onDidRevert)(() =>
-			this._modelReferenceCollection.remove(resource)
+			this._modelReferenceCollection.remove(resource),
 		);
 		this._proxy.$acceptDirtyStateChanged(resource, true); // mark as dirty
 		return resource;

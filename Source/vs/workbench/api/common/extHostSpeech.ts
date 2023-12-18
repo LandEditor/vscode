@@ -9,6 +9,7 @@ import {
 	IDisposable,
 	toDisposable,
 } from "vs/base/common/lifecycle";
+import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
 import {
 	ExtHostSpeechShape,
 	IMainContext,
@@ -16,7 +17,6 @@ import {
 	MainThreadSpeechShape,
 } from "vs/workbench/api/common/extHost.protocol";
 import type * as vscode from "vscode";
-import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
 
 export class ExtHostSpeech implements ExtHostSpeechShape {
 	private static ID_POOL = 1;
@@ -32,7 +32,7 @@ export class ExtHostSpeech implements ExtHostSpeechShape {
 
 	async $createSpeechToTextSession(
 		handle: number,
-		session: number
+		session: number,
 	): Promise<void> {
 		const provider = this.providers.get(handle);
 		if (!provider) {
@@ -45,7 +45,7 @@ export class ExtHostSpeech implements ExtHostSpeechShape {
 		this.sessions.set(session, cts);
 
 		const speechToTextSession = disposables.add(
-			provider.provideSpeechToTextSession(cts.token)
+			provider.provideSpeechToTextSession(cts.token),
 		);
 		disposables.add(
 			speechToTextSession.onDidChange((e) => {
@@ -54,11 +54,11 @@ export class ExtHostSpeech implements ExtHostSpeechShape {
 				}
 
 				this.proxy.$emitSpeechToTextEvent(session, e);
-			})
+			}),
 		);
 
 		disposables.add(
-			cts.token.onCancellationRequested(() => disposables.dispose())
+			cts.token.onCancellationRequested(() => disposables.dispose()),
 		);
 	}
 
@@ -70,7 +70,7 @@ export class ExtHostSpeech implements ExtHostSpeechShape {
 	registerProvider(
 		extension: ExtensionIdentifier,
 		identifier: string,
-		provider: vscode.SpeechProvider
+		provider: vscode.SpeechProvider,
 	): IDisposable {
 		const handle = ExtHostSpeech.ID_POOL++;
 

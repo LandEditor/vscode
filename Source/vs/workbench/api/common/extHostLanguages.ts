@@ -3,28 +3,28 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	MainContext,
-	MainThreadLanguagesShape,
-	IMainContext,
-	ExtHostLanguagesShape,
-} from "./extHost.protocol";
-import type * as vscode from "vscode";
+import { disposableTimeout } from "vs/base/common/async";
+import { DisposableStore, IDisposable } from "vs/base/common/lifecycle";
+import Severity from "vs/base/common/severity";
+import { IURITransformer } from "vs/base/common/uriIpc";
+import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
+import { CommandsConverter } from "vs/workbench/api/common/extHostCommands";
 import { ExtHostDocuments } from "vs/workbench/api/common/extHostDocuments";
 import * as typeConvert from "vs/workbench/api/common/extHostTypeConverters";
 import {
-	StandardTokenType,
-	Range,
-	Position,
 	LanguageStatusSeverity,
+	Position,
+	Range,
+	StandardTokenType,
 } from "vs/workbench/api/common/extHostTypes";
-import Severity from "vs/base/common/severity";
-import { disposableTimeout } from "vs/base/common/async";
-import { DisposableStore, IDisposable } from "vs/base/common/lifecycle";
-import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
-import { CommandsConverter } from "vs/workbench/api/common/extHostCommands";
-import { IURITransformer } from "vs/base/common/uriIpc";
 import { checkProposedApiEnabled } from "vs/workbench/services/extensions/common/extensions";
+import type * as vscode from "vscode";
+import {
+	ExtHostLanguagesShape,
+	IMainContext,
+	MainContext,
+	MainThreadLanguagesShape,
+} from "./extHost.protocol";
 
 export class ExtHostLanguages implements ExtHostLanguagesShape {
 	private readonly _proxy: MainThreadLanguagesShape;
@@ -35,7 +35,7 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
 		mainContext: IMainContext,
 		private readonly _documents: ExtHostDocuments,
 		private readonly _commands: CommandsConverter,
-		private readonly _uriTransformer: IURITransformer | undefined
+		private readonly _uriTransformer: IURITransformer | undefined,
 	) {
 		this._proxy = mainContext.getProxy(MainContext.MainThreadLanguages);
 	}
@@ -50,7 +50,7 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
 
 	async changeLanguage(
 		uri: vscode.Uri,
-		languageId: string
+		languageId: string,
 	): Promise<vscode.TextDocument> {
 		await this._proxy.$changeLanguage(uri, languageId);
 		const data = this._documents.getDocumentData(uri);
@@ -62,7 +62,7 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
 
 	async tokenAtPosition(
 		document: vscode.TextDocument,
-		position: vscode.Position
+		position: vscode.Position,
 	): Promise<vscode.TokenInformation> {
 		const versionNow = document.version;
 		const pos = typeConvert.Position.from(position);
@@ -75,7 +75,7 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
 					position.line,
 					position.character,
 					position.line,
-					position.character
+					position.character,
 				),
 		};
 		if (!info) {
@@ -97,13 +97,13 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
 		return result;
 	}
 
-	private _handlePool: number = 0;
+	private _handlePool = 0;
 	private _ids = new Set<string>();
 
 	createLanguageStatusItem(
 		extension: IExtensionDescription,
 		id: string,
-		selector: vscode.DocumentSelector
+		selector: vscode.DocumentSelector,
 	): vscode.LanguageStatusItem {
 		const handle = this._handlePool++;
 		const proxy = this._proxy;
@@ -113,7 +113,7 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
 		const fullyQualifiedId = `${extension.identifier.value}/${id}`;
 		if (ids.has(fullyQualifiedId)) {
 			throw new Error(
-				`LanguageStatusItem with id '${id}' ALREADY exists`
+				`LanguageStatusItem with id '${id}' ALREADY exists`,
 			);
 		}
 		ids.add(fullyQualifiedId);
@@ -136,7 +136,7 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
 
 			if (!ids.has(fullyQualifiedId)) {
 				console.warn(
-					`LanguageStatusItem (${id}) from ${extension.identifier.value} has been disposed and CANNOT be updated anymore`
+					`LanguageStatusItem (${id}) from ${extension.identifier.value} has been disposed and CANNOT be updated anymore`,
 				);
 				return; // disposed in the meantime
 			}
@@ -149,7 +149,7 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
 					source: extension.displayName ?? extension.name,
 					selector: typeConvert.DocumentSelector.from(
 						data.selector,
-						this._uriTransformer
+						this._uriTransformer,
 					),
 					label: data.text,
 					detail: data.detail ?? "",
@@ -157,13 +157,13 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
 						data.severity === LanguageStatusSeverity.Error
 							? Severity.Error
 							: data.severity === LanguageStatusSeverity.Warning
-								? Severity.Warning
-								: Severity.Info,
+							  ? Severity.Warning
+							  : Severity.Info,
 					command:
 						data.command &&
 						this._commands.toInternal(
 							data.command,
-							commandDisposables
+							commandDisposables,
 						),
 					accessibilityInfo: data.accessibilityInformation,
 					busy: data.busy,

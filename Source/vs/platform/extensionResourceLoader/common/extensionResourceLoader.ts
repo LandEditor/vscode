@@ -3,31 +3,31 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { RemoteAuthorities } from "vs/base/common/network";
 import { isWeb } from "vs/base/common/platform";
 import { format2 } from "vs/base/common/strings";
 import { URI } from "vs/base/common/uri";
 import { IHeaders } from "vs/base/parts/request/common/request";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { IEnvironmentService } from "vs/platform/environment/common/environment";
+import { TargetPlatform } from "vs/platform/extensions/common/extensions";
+import { getServiceMachineId } from "vs/platform/externalServices/common/serviceMachineId";
 import { IFileService } from "vs/platform/files/common/files";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import { IProductService } from "vs/platform/product/common/productService";
-import { getServiceMachineId } from "vs/platform/externalServices/common/serviceMachineId";
+import { getRemoteServerRootPath } from "vs/platform/remote/common/remoteHosts";
 import { IStorageService } from "vs/platform/storage/common/storage";
 import { TelemetryLevel } from "vs/platform/telemetry/common/telemetry";
 import {
 	getTelemetryLevel,
 	supportsTelemetry,
 } from "vs/platform/telemetry/common/telemetryUtils";
-import { RemoteAuthorities } from "vs/base/common/network";
-import { getRemoteServerRootPath } from "vs/platform/remote/common/remoteHosts";
-import { TargetPlatform } from "vs/platform/extensions/common/extensions";
 
 const WEB_EXTENSION_RESOURCE_END_POINT = "web-extension-resource";
 
 export const IExtensionResourceLoaderService =
 	createDecorator<IExtensionResourceLoaderService>(
-		"extensionResourceLoaderService"
+		"extensionResourceLoaderService",
 	);
 
 /**
@@ -61,13 +61,13 @@ export interface IExtensionResourceLoaderService {
 			version: string;
 			targetPlatform?: TargetPlatform;
 		},
-		path?: string
+		path?: string,
 	): URI | undefined;
 }
 
 export function migratePlatformSpecificExtensionGalleryResourceURL(
 	resource: URI,
-	targetPlatform: TargetPlatform
+	targetPlatform: TargetPlatform,
 ): URI | undefined {
 	if (resource.query !== `target=${targetPlatform}`) {
 		return undefined;
@@ -94,10 +94,10 @@ export abstract class AbstractExtensionResourceLoaderService
 		private readonly _storageService: IStorageService,
 		private readonly _productService: IProductService,
 		private readonly _environmentService: IEnvironmentService,
-		private readonly _configurationService: IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
 		this._webExtensionResourceEndPoint = `${getRemoteServerRootPath(
-			_productService
+			_productService,
 		)}/${WEB_EXTENSION_RESOURCE_END_POINT}/`;
 		if (_productService.extensionsGallery) {
 			this._extensionGalleryResourceUrlTemplate =
@@ -105,8 +105,8 @@ export abstract class AbstractExtensionResourceLoaderService
 			this._extensionGalleryAuthority = this
 				._extensionGalleryResourceUrlTemplate
 				? this._getExtensionGalleryAuthority(
-						URI.parse(this._extensionGalleryResourceUrlTemplate)
-					)
+						URI.parse(this._extensionGalleryResourceUrlTemplate),
+				  )
 				: undefined;
 		}
 	}
@@ -127,7 +127,7 @@ export abstract class AbstractExtensionResourceLoaderService
 			version: string;
 			targetPlatform?: TargetPlatform;
 		},
-		path?: string
+		path?: string,
 	): URI | undefined {
 		if (this._extensionGalleryResourceUrlTemplate) {
 			const uri = URI.parse(
@@ -142,12 +142,12 @@ export abstract class AbstractExtensionResourceLoaderService
 							? `${version}+${targetPlatform}`
 							: version,
 					path: "extension",
-				})
+				}),
 			);
 			return this._isWebExtensionResourceEndPoint(uri)
 				? uri.with({
 						scheme: RemoteAuthorities.getPreferredWebSchema(),
-					})
+				  })
 				: uri;
 		}
 		return undefined;
@@ -189,7 +189,7 @@ export abstract class AbstractExtensionResourceLoaderService
 			this._serviceMachineIdPromise = getServiceMachineId(
 				this._environmentService,
 				this._fileService,
-				this._storageService
+				this._storageService,
 			);
 		}
 		return this._serviceMachineIdPromise;

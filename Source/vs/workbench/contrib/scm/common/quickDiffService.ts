@@ -3,20 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from "vs/base/common/uri";
+import { Emitter } from "vs/base/common/event";
 import { Disposable, IDisposable } from "vs/base/common/lifecycle";
+import { isEqualOrParent } from "vs/base/common/resources";
+import { URI } from "vs/base/common/uri";
+import { score } from "vs/editor/common/languageSelector";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
 import {
 	IQuickDiffService,
 	QuickDiff,
 	QuickDiffProvider,
 } from "vs/workbench/contrib/scm/common/quickDiff";
-import { isEqualOrParent } from "vs/base/common/resources";
-import { score } from "vs/editor/common/languageSelector";
-import { Emitter } from "vs/base/common/event";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
 
 function createProviderComparer(
-	uri: URI
+	uri: URI,
 ): (a: QuickDiffProvider, b: QuickDiffProvider) => number {
 	return (a, b) => {
 		if (a.rootUri && !b.rootUri) {
@@ -47,7 +47,7 @@ export class QuickDiffService extends Disposable implements IQuickDiffService {
 
 	private quickDiffProviders: Set<QuickDiffProvider> = new Set();
 	private readonly _onDidChangeQuickDiffProviders = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onDidChangeQuickDiffProviders =
 		this._onDidChangeQuickDiffProviders.event;
@@ -84,8 +84,8 @@ export class QuickDiffService extends Disposable implements IQuickDiffService {
 
 	async getQuickDiffs(
 		uri: URI,
-		language: string = "",
-		isSynchronized: boolean = false
+		language = "",
+		isSynchronized = false,
 	): Promise<QuickDiff[]> {
 		const providers = Array.from(this.quickDiffProviders)
 			.filter(
@@ -93,8 +93,8 @@ export class QuickDiffService extends Disposable implements IQuickDiffService {
 					!provider.rootUri ||
 					this.uriIdentityService.extUri.isEqualOrParent(
 						uri,
-						provider.rootUri
-					)
+						provider.rootUri,
+					),
 			)
 			.sort(createProviderComparer(uri));
 
@@ -107,20 +107,20 @@ export class QuickDiffService extends Disposable implements IQuickDiffService {
 							language,
 							isSynchronized,
 							undefined,
-							undefined
-						)
+							undefined,
+					  )
 					: 10;
 				const diff: Partial<QuickDiff> = {
 					originalResource:
 						scoreValue > 0
 							? (await provider.getOriginalResource(uri)) ??
-								undefined
+							  undefined
 							: undefined,
 					label: provider.label,
 					isSCM: provider.isSCM,
 				};
 				return diff;
-			})
+			}),
 		);
 		return diffs.filter<QuickDiff>(this.isQuickDiff);
 	}

@@ -3,46 +3,46 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/actions";
-import { URI } from "vs/base/common/uri";
-import { localize } from "vs/nls";
-import { applyZoom } from "vs/platform/window/electron-sandbox/window";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import { getZoomLevel } from "vs/base/browser/browser";
-import { FileKind } from "vs/platform/files/common/files";
-import { IModelService } from "vs/editor/common/services/model";
-import { ILanguageService } from "vs/editor/common/languages/language";
-import {
-	IQuickInputService,
-	IQuickInputButton,
-	IQuickPickItem,
-} from "vs/platform/quickinput/common/quickInput";
-import { getIconClasses } from "vs/editor/common/services/getIconClasses";
-import { ICommandHandler } from "vs/platform/commands/common/commands";
-import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { INativeHostService } from "vs/platform/native/common/native";
+import { getActiveWindow } from "vs/base/browser/dom";
 import { Codicon } from "vs/base/common/codicons";
+import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
+import { isMacintosh } from "vs/base/common/platform";
 import { ThemeIcon } from "vs/base/common/themables";
-import {
-	isSingleFolderWorkspaceIdentifier,
-	isWorkspaceIdentifier,
-} from "vs/platform/workspace/common/workspace";
+import { URI } from "vs/base/common/uri";
+import "vs/css!./media/actions";
+import { ILanguageService } from "vs/editor/common/languages/language";
+import { getIconClasses } from "vs/editor/common/services/getIconClasses";
+import { IModelService } from "vs/editor/common/services/model";
+import { localize } from "vs/nls";
+import { Categories } from "vs/platform/action/common/actionCommonCategories";
 import {
 	Action2,
 	IAction2Options,
 	MenuId,
 } from "vs/platform/actions/common/actions";
-import { Categories } from "vs/platform/action/common/actionCommonCategories";
-import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
+import { ICommandHandler } from "vs/platform/commands/common/commands";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { FileKind } from "vs/platform/files/common/files";
+import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
-import { isMacintosh } from "vs/base/common/platform";
-import { getActiveWindow } from "vs/base/browser/dom";
+import { INativeHostService } from "vs/platform/native/common/native";
+import {
+	IQuickInputButton,
+	IQuickInputService,
+	IQuickPickItem,
+} from "vs/platform/quickinput/common/quickInput";
 import {
 	IOpenedAuxiliaryWindow,
 	IOpenedMainWindow,
 	isOpenedAuxiliaryWindow,
 } from "vs/platform/window/common/window";
+import { applyZoom } from "vs/platform/window/electron-sandbox/window";
+import {
+	isSingleFolderWorkspaceIdentifier,
+	isWorkspaceIdentifier,
+} from "vs/platform/workspace/common/workspace";
 
 export class CloseWindowAction extends Action2 {
 	static readonly ID = "workbench.action.closeWindow";
@@ -57,7 +57,7 @@ export class CloseWindowAction extends Action2 {
 						key: "miCloseWindow",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"Clos&&e Window"
+					"Clos&&e Window",
 				),
 				original: "Close Window",
 			},
@@ -103,7 +103,7 @@ abstract class BaseZoomAction extends Action2 {
 
 	protected async setConfiguredZoomLevel(
 		accessor: ServicesAccessor,
-		level: number
+		level: number,
 	): Promise<void> {
 		const configurationService = accessor.get(IConfigurationService);
 
@@ -118,7 +118,7 @@ abstract class BaseZoomAction extends Action2 {
 
 		await configurationService.updateValue(
 			BaseZoomAction.SETTING_KEY,
-			level
+			level,
 		);
 
 		applyZoom(level);
@@ -133,7 +133,7 @@ export class ZoomInAction extends BaseZoomAction {
 				value: localize("zoomIn", "Zoom In"),
 				mnemonicTitle: localize(
 					{ key: "miZoomIn", comment: ["&& denotes a mnemonic"] },
-					"&&Zoom In"
+					"&&Zoom In",
 				),
 				original: "Zoom In",
 			},
@@ -168,7 +168,7 @@ export class ZoomOutAction extends BaseZoomAction {
 				value: localize("zoomOut", "Zoom Out"),
 				mnemonicTitle: localize(
 					{ key: "miZoomOut", comment: ["&& denotes a mnemonic"] },
-					"&&Zoom Out"
+					"&&Zoom Out",
 				),
 				original: "Zoom Out",
 			},
@@ -207,7 +207,7 @@ export class ZoomResetAction extends BaseZoomAction {
 				value: localize("zoomReset", "Reset Zoom"),
 				mnemonicTitle: localize(
 					{ key: "miZoomReset", comment: ["&& denotes a mnemonic"] },
-					"&&Reset Zoom"
+					"&&Reset Zoom",
 				),
 				original: "Reset Zoom",
 			},
@@ -269,13 +269,13 @@ abstract class BaseSwitchWindow extends Action2 {
 		for (const window of windows) {
 			if (isOpenedAuxiliaryWindow(window)) {
 				let auxiliaryWindows = mapMainWindowToAuxiliaryWindows.get(
-					window.parentId
+					window.parentId,
 				);
 				if (!auxiliaryWindows) {
 					auxiliaryWindows = new Set<IOpenedAuxiliaryWindow>();
 					mapMainWindowToAuxiliaryWindows.set(
 						window.parentId,
-						auxiliaryWindows
+						auxiliaryWindows,
 					);
 				}
 				auxiliaryWindows.add(window);
@@ -291,7 +291,7 @@ abstract class BaseSwitchWindow extends Action2 {
 		const picks: Array<IWindowPickItem> = [];
 		for (const window of mainWindows) {
 			const auxiliaryWindows = mapMainWindowToAuxiliaryWindows.get(
-				window.id
+				window.id,
 			);
 			if (mapMainWindowToAuxiliaryWindows.size > 0) {
 				picks.push({
@@ -306,17 +306,17 @@ abstract class BaseSwitchWindow extends Action2 {
 			const resource = window.filename
 				? URI.file(window.filename)
 				: isSingleFolderWorkspaceIdentifier(window.workspace)
-					? window.workspace.uri
-					: isWorkspaceIdentifier(window.workspace)
-						? window.workspace.configPath
-						: undefined;
+				  ? window.workspace.uri
+				  : isWorkspaceIdentifier(window.workspace)
+					  ? window.workspace.configPath
+					  : undefined;
 			const fileKind = window.filename
 				? FileKind.FILE
 				: isSingleFolderWorkspaceIdentifier(window.workspace)
-					? FileKind.FOLDER
-					: isWorkspaceIdentifier(window.workspace)
-						? FileKind.ROOT_FOLDER
-						: FileKind.FILE;
+				  ? FileKind.FOLDER
+				  : isWorkspaceIdentifier(window.workspace)
+					  ? FileKind.ROOT_FOLDER
+					  : FileKind.FILE;
 			const pick: IWindowPickItem = {
 				windowId: window.id,
 				label: window.title,
@@ -324,14 +324,14 @@ abstract class BaseSwitchWindow extends Action2 {
 					? localize(
 							"windowDirtyAriaLabel",
 							"{0}, window with unsaved changes",
-							window.title
-						)
+							window.title,
+					  )
 					: window.title,
 				iconClasses: getIconClasses(
 					modelService,
 					languageService,
 					resource,
-					fileKind
+					fileKind,
 				),
 				description:
 					currentWindowId === window.id
@@ -357,7 +357,7 @@ abstract class BaseSwitchWindow extends Action2 {
 							auxiliaryWindow.filename
 								? URI.file(auxiliaryWindow.filename)
 								: undefined,
-							FileKind.FILE
+							FileKind.FILE,
 						),
 						description:
 							currentWindowId === auxiliaryWindow.id
@@ -372,11 +372,11 @@ abstract class BaseSwitchWindow extends Action2 {
 
 		const placeHolder = localize(
 			"switchWindowPlaceHolder",
-			"Select a window to switch to"
+			"Select a window to switch to",
 		);
 		const autoFocusIndex =
 			(picks.indexOf(
-				picks.filter((pick) => pick.windowId === currentWindowId)[0]
+				picks.filter((pick) => pick.windowId === currentWindowId)[0],
 			) +
 				1) %
 			picks.length;
@@ -388,9 +388,9 @@ abstract class BaseSwitchWindow extends Action2 {
 			quickNavigate: this.isQuickNavigate()
 				? {
 						keybindings: keybindingService.lookupKeybindings(
-							this.desc.id
+							this.desc.id,
 						),
-					}
+				  }
 				: undefined,
 			hideInput: this.isQuickNavigate(),
 			onDidTriggerItemButton: async (context) => {
@@ -455,9 +455,9 @@ function canRunNativeTabsHandler(accessor: ServicesAccessor): boolean {
 	return configurationService.getValue<unknown>("window.nativeTabs") === true;
 }
 
-export const NewWindowTabHandler: ICommandHandler = function (
-	accessor: ServicesAccessor
-) {
+export const NewWindowTabHandler: ICommandHandler = (
+	accessor: ServicesAccessor,
+) => {
 	if (!canRunNativeTabsHandler(accessor)) {
 		return;
 	}
@@ -465,9 +465,9 @@ export const NewWindowTabHandler: ICommandHandler = function (
 	return accessor.get(INativeHostService).newWindowTab();
 };
 
-export const ShowPreviousWindowTabHandler: ICommandHandler = function (
-	accessor: ServicesAccessor
-) {
+export const ShowPreviousWindowTabHandler: ICommandHandler = (
+	accessor: ServicesAccessor,
+) => {
 	if (!canRunNativeTabsHandler(accessor)) {
 		return;
 	}
@@ -475,9 +475,9 @@ export const ShowPreviousWindowTabHandler: ICommandHandler = function (
 	return accessor.get(INativeHostService).showPreviousWindowTab();
 };
 
-export const ShowNextWindowTabHandler: ICommandHandler = function (
-	accessor: ServicesAccessor
-) {
+export const ShowNextWindowTabHandler: ICommandHandler = (
+	accessor: ServicesAccessor,
+) => {
 	if (!canRunNativeTabsHandler(accessor)) {
 		return;
 	}
@@ -485,9 +485,9 @@ export const ShowNextWindowTabHandler: ICommandHandler = function (
 	return accessor.get(INativeHostService).showNextWindowTab();
 };
 
-export const MoveWindowTabToNewWindowHandler: ICommandHandler = function (
-	accessor: ServicesAccessor
-) {
+export const MoveWindowTabToNewWindowHandler: ICommandHandler = (
+	accessor: ServicesAccessor,
+) => {
 	if (!canRunNativeTabsHandler(accessor)) {
 		return;
 	}
@@ -495,9 +495,9 @@ export const MoveWindowTabToNewWindowHandler: ICommandHandler = function (
 	return accessor.get(INativeHostService).moveWindowTabToNewWindow();
 };
 
-export const MergeWindowTabsHandlerHandler: ICommandHandler = function (
-	accessor: ServicesAccessor
-) {
+export const MergeWindowTabsHandlerHandler: ICommandHandler = (
+	accessor: ServicesAccessor,
+) => {
 	if (!canRunNativeTabsHandler(accessor)) {
 		return;
 	}
@@ -505,9 +505,9 @@ export const MergeWindowTabsHandlerHandler: ICommandHandler = function (
 	return accessor.get(INativeHostService).mergeAllWindowTabs();
 };
 
-export const ToggleWindowTabsBarHandler: ICommandHandler = function (
-	accessor: ServicesAccessor
-) {
+export const ToggleWindowTabsBarHandler: ICommandHandler = (
+	accessor: ServicesAccessor,
+) => {
 	if (!canRunNativeTabsHandler(accessor)) {
 		return;
 	}

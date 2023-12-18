@@ -58,7 +58,7 @@ export interface IResolvedExternalUri extends IDisposable {
 export interface IOpener {
 	open(
 		resource: URI | string,
-		options?: OpenInternalOptions | OpenExternalOptions
+		options?: OpenInternalOptions | OpenExternalOptions,
 	): Promise<boolean>;
 }
 
@@ -66,7 +66,7 @@ export interface IExternalOpener {
 	openExternal(
 		href: string,
 		ctx: { sourceUri: URI; preferredOpenerId?: string },
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<boolean>;
 	dispose?(): void;
 }
@@ -74,14 +74,14 @@ export interface IExternalOpener {
 export interface IValidator {
 	shouldOpen(
 		resource: URI | string,
-		openOptions?: OpenOptions
+		openOptions?: OpenOptions,
 	): Promise<boolean>;
 }
 
 export interface IExternalUriResolver {
 	resolveExternalUri(
 		resource: URI,
-		options?: OpenOptions
+		options?: OpenOptions,
 	): Promise<{ resolved: URI; dispose(): void } | undefined>;
 }
 
@@ -123,7 +123,7 @@ export interface IOpenerService {
 	 */
 	open(
 		resource: URI | string,
-		options?: OpenInternalOptions | OpenExternalOptions
+		options?: OpenInternalOptions | OpenExternalOptions,
 	): Promise<boolean>;
 
 	/**
@@ -132,7 +132,7 @@ export interface IOpenerService {
 	 */
 	resolveExternalUri(
 		resource: URI,
-		options?: ResolveExternalUriOptions
+		options?: ResolveExternalUriOptions,
 	): Promise<IResolvedExternalUri>;
 }
 
@@ -149,7 +149,7 @@ export function withSelection(uri: URI, selection: ITextEditorSelection): URI {
 			selection.endLineNumber
 				? `-${selection.endLineNumber}${
 						selection.endColumn ? `,${selection.endColumn}` : ""
-					}`
+				  }`
 				: ""
 		}`,
 	});
@@ -171,7 +171,7 @@ export function extractSelection(uri: URI): {
 } {
 	let selection: ITextEditorSelection | undefined = undefined;
 	const match = /^L?(\d+)(?:,(\d+))?(-L?(\d+)(?:,(\d+))?)?/.exec(
-		uri.fragment
+		uri.fragment,
 	);
 	if (match) {
 		selection = {

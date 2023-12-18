@@ -141,7 +141,7 @@ export interface ILanguageService {
 	 */
 	guessLanguageIdByFilepathOrFirstLine(
 		resource: URI,
-		firstLine?: string
+		firstLine?: string,
 	): string | null;
 
 	/**
@@ -159,7 +159,7 @@ export interface ILanguageService {
 	 */
 	createByFilepathOrFirstLine(
 		resource: URI | null,
-		firstLine?: string
+		firstLine?: string,
 	): ILanguageSelection;
 
 	/**

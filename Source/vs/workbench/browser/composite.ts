@@ -3,28 +3,28 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IAction, IActionRunner, ActionRunner } from "vs/base/common/actions";
-import { Component } from "vs/workbench/common/component";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { IComposite, ICompositeControl } from "vs/workbench/common/composite";
-import { Event, Emitter } from "vs/base/common/event";
-import { IThemeService } from "vs/platform/theme/common/themeService";
+import {
+	Dimension,
+	IDomPosition,
+	focusWindow,
+	trackFocus,
+} from "vs/base/browser/dom";
+import { IActionViewItem } from "vs/base/browser/ui/actionbar/actionbar";
+import { IBoundarySashes } from "vs/base/browser/ui/sash/sash";
+import { ActionRunner, IAction, IActionRunner } from "vs/base/common/actions";
+import { Emitter, Event } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
+import { assertIsDefined } from "vs/base/common/types";
+import { MenuId } from "vs/platform/actions/common/actions";
 import {
 	IConstructorSignature,
 	IInstantiationService,
 } from "vs/platform/instantiation/common/instantiation";
-import {
-	trackFocus,
-	Dimension,
-	IDomPosition,
-	focusWindow,
-} from "vs/base/browser/dom";
 import { IStorageService } from "vs/platform/storage/common/storage";
-import { Disposable } from "vs/base/common/lifecycle";
-import { assertIsDefined } from "vs/base/common/types";
-import { IActionViewItem } from "vs/base/browser/ui/actionbar/actionbar";
-import { MenuId } from "vs/platform/actions/common/actions";
-import { IBoundarySashes } from "vs/base/browser/ui/sash/sash";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import { Component } from "vs/workbench/common/component";
+import { IComposite, ICompositeControl } from "vs/workbench/common/composite";
 
 /**
  * Composites are layed out in the sidebar and panel part of the workbench. At a time only one composite
@@ -77,25 +77,25 @@ export abstract class Composite extends Component implements IComposite {
 		const focusTracker = this._register(trackFocus(container));
 
 		const onDidFocus = (this._onDidFocus = this._register(
-			new Emitter<void>()
+			new Emitter<void>(),
 		));
 		this._register(
 			focusTracker.onDidFocus(() => {
 				this._hasFocus = true;
 
 				onDidFocus.fire();
-			})
+			}),
 		);
 
 		const onDidBlur = (this._onDidBlur = this._register(
-			new Emitter<void>()
+			new Emitter<void>(),
 		));
 		this._register(
 			focusTracker.onDidBlur(() => {
 				this._hasFocus = false;
 
 				onDidBlur.fire();
-			})
+			}),
 		);
 
 		return { onDidFocus, onDidBlur };
@@ -115,7 +115,7 @@ export abstract class Composite extends Component implements IComposite {
 		id: string,
 		telemetryService: ITelemetryService,
 		themeService: IThemeService,
-		storageService: IStorageService
+		storageService: IStorageService,
 	) {
 		super(id, themeService, storageService);
 
@@ -282,7 +282,7 @@ export abstract class CompositeDescriptor<T extends Composite> {
 		readonly name: string,
 		readonly cssClass?: string,
 		readonly order?: number,
-		readonly requestedIndex?: number
+		readonly requestedIndex?: number,
 	) {}
 
 	instantiate(instantiationService: IInstantiationService): T {
@@ -294,12 +294,12 @@ export abstract class CompositeRegistry<
 	T extends Composite,
 > extends Disposable {
 	private readonly _onDidRegister = this._register(
-		new Emitter<CompositeDescriptor<T>>()
+		new Emitter<CompositeDescriptor<T>>(),
 	);
 	readonly onDidRegister = this._onDidRegister.event;
 
 	private readonly _onDidDeregister = this._register(
-		new Emitter<CompositeDescriptor<T>>()
+		new Emitter<CompositeDescriptor<T>>(),
 	);
 	readonly onDidDeregister = this._onDidDeregister.event;
 

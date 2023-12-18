@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	ITextMateThemingRule,
-	IColorMap,
-} from "vs/workbench/services/themes/common/workbenchThemeService";
 import { Color } from "vs/base/common/color";
 import * as colorRegistry from "vs/platform/theme/common/colorRegistry";
+import {
+	IColorMap,
+	ITextMateThemingRule,
+} from "vs/workbench/services/themes/common/workbenchThemeService";
 
 import * as editorColorRegistry from "vs/editor/common/core/editorColorRegistry";
 
@@ -23,15 +23,13 @@ function addSettingMapping(settingId: string, colorId: string) {
 
 export function convertSettings(
 	oldSettings: ITextMateThemingRule[],
-	result: { textMateRules: ITextMateThemingRule[]; colors: IColorMap }
+	result: { textMateRules: ITextMateThemingRule[]; colors: IColorMap },
 ): void {
 	for (const rule of oldSettings) {
 		result.textMateRules.push(rule);
 		if (!rule.scope) {
 			const settings = rule.settings;
-			if (!settings) {
-				rule.settings = {};
-			} else {
+			if (settings) {
 				for (const settingKey in settings) {
 					const key = <keyof typeof settings>settingKey;
 					const mappings = settingToColorIdMapping[key];
@@ -52,6 +50,8 @@ export function convertSettings(
 						delete settings[key];
 					}
 				}
+			} else {
+				rule.settings = {};
 			}
 		}
 	}
@@ -63,7 +63,7 @@ addSettingMapping("selection", colorRegistry.editorSelectionBackground);
 addSettingMapping("inactiveSelection", colorRegistry.editorInactiveSelection);
 addSettingMapping(
 	"selectionHighlightColor",
-	colorRegistry.editorSelectionHighlight
+	colorRegistry.editorSelectionHighlight,
 );
 addSettingMapping("findMatchHighlight", colorRegistry.editorFindMatchHighlight);
 addSettingMapping("currentFindMatchHighlight", colorRegistry.editorFindMatch);
@@ -71,16 +71,16 @@ addSettingMapping("hoverHighlight", colorRegistry.editorHoverHighlight);
 addSettingMapping("wordHighlight", "editor.wordHighlightBackground"); // inlined to avoid editor/contrib dependenies
 addSettingMapping(
 	"wordHighlightStrong",
-	"editor.wordHighlightStrongBackground"
+	"editor.wordHighlightStrongBackground",
 );
 addSettingMapping("findRangeHighlight", colorRegistry.editorFindRangeHighlight);
 addSettingMapping(
 	"findMatchHighlight",
-	"peekViewResult.matchHighlightBackground"
+	"peekViewResult.matchHighlightBackground",
 );
 addSettingMapping(
 	"referenceHighlight",
-	"peekViewEditor.matchHighlightBackground"
+	"peekViewEditor.matchHighlightBackground",
 );
 addSettingMapping("lineHighlight", editorColorRegistry.editorLineHighlight);
 addSettingMapping("rangeHighlight", editorColorRegistry.editorRangeHighlight);

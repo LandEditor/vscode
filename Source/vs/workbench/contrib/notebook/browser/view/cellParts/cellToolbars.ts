@@ -11,10 +11,11 @@ import { Emitter, Event } from "vs/base/common/event";
 import { MarshalledId } from "vs/base/common/marshallingIds";
 import { ServicesAccessor } from "vs/editor/browser/editorExtensions";
 import {
+	MenuEntryActionViewItem,
 	createActionViewItem,
 	createAndFillInActionBarActions,
-	MenuEntryActionViewItem,
 } from "vs/platform/actions/browser/menuEntryActionViewItem";
+import { WorkbenchToolBar } from "vs/platform/actions/browser/toolbar";
 import {
 	IMenu,
 	IMenuService,
@@ -30,10 +31,9 @@ import {
 	ICellViewModel,
 	INotebookEditorDelegate,
 } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
-import { CodiconActionViewItem } from "vs/workbench/contrib/notebook/browser/view/cellParts/cellActionView";
 import { CellOverlayPart } from "vs/workbench/contrib/notebook/browser/view/cellPart";
+import { CodiconActionViewItem } from "vs/workbench/contrib/notebook/browser/view/cellParts/cellActionView";
 import { registerCellToolbarStickyScroll } from "vs/workbench/contrib/notebook/browser/view/cellParts/cellToolbarStickyScroll";
-import { WorkbenchToolBar } from "vs/platform/actions/browser/toolbar";
 
 export class BetweenCellToolbar extends CellOverlayPart {
 	private _betweenCellToolbar: ToolBar | undefined;
@@ -72,29 +72,29 @@ export class BetweenCellToolbar extends CellOverlayPart {
 								return this.instantiationService.createInstance(
 									CodiconActionViewItem,
 									action,
-									undefined
+									undefined,
 								);
 							} else {
 								return this.instantiationService.createInstance(
 									MenuEntryActionViewItem,
 									action,
-									undefined
+									undefined,
 								);
 							}
 						}
 
 						return undefined;
 					},
-				}
-			)
+				},
+			),
 		);
 
 		this._betweenCellToolbar = betweenCellToolbar;
 		const menu = this._register(
 			this.menuService.createMenu(
 				this._notebookEditor.creationOptions.menuIds.cellInsertToolbar,
-				this.contextKeyService
-			)
+				this.contextKeyService,
+			),
 		);
 		const updateActions = () => {
 			const actions = getCellToolbarActions(menu);
@@ -107,7 +107,7 @@ export class BetweenCellToolbar extends CellOverlayPart {
 				if (e.insertToolbarAlignment) {
 					updateActions();
 				}
-			})
+			}),
 		);
 
 		updateActions();
@@ -152,7 +152,7 @@ export class CellTitleToolbarPart extends CellOverlayPart {
 	private _model: CellTitleToolbarModel | undefined;
 	private _view: CellTitleToolbarView | undefined;
 	private readonly _onDidUpdateActions: Emitter<void> = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onDidUpdateActions: Event<void> = this._onDidUpdateActions.event;
 
@@ -191,13 +191,13 @@ export class CellTitleToolbarPart extends CellOverlayPart {
 		}
 
 		const titleMenu = this._register(
-			this.menuService.createMenu(this.toolbarId, this.contextKeyService)
+			this.menuService.createMenu(this.toolbarId, this.contextKeyService),
 		);
 		const deleteMenu = this._register(
 			this.menuService.createMenu(
 				this.deleteToolbarId,
-				this.contextKeyService
-			)
+				this.contextKeyService,
+			),
 		);
 		const actions = getCellToolbarActions(titleMenu);
 		const deleteActions = getCellToolbarActions(deleteMenu);
@@ -214,7 +214,7 @@ export class CellTitleToolbarPart extends CellOverlayPart {
 
 	private _initialize(
 		model: CellTitleToolbarModel,
-		element: ICellViewModel
+		element: ICellViewModel,
 	): CellTitleToolbarView {
 		if (this._view) {
 			return this._view;
@@ -228,12 +228,12 @@ export class CellTitleToolbarPart extends CellOverlayPart {
 					actionViewItemProvider: (action) => {
 						return createActionViewItem(
 							this.instantiationService,
-							action
+							action,
 						);
 					},
 					renderDropdownAsChildElement: true,
-				}
-			)
+				},
+			),
 		);
 
 		const deleteToolbar = this._register(
@@ -241,9 +241,9 @@ export class CellTitleToolbarPart extends CellOverlayPart {
 				createDeleteToolbar(
 					accessor,
 					this.toolbarContainer,
-					"cell-delete-toolbar"
-				)
-			)
+					"cell-delete-toolbar",
+				),
+			),
 		);
 		if (
 			model.deleteActions.primary.length !== 0 ||
@@ -251,7 +251,7 @@ export class CellTitleToolbarPart extends CellOverlayPart {
 		) {
 			deleteToolbar.setActions(
 				model.deleteActions.primary,
-				model.deleteActions.secondary
+				model.deleteActions.secondary,
 			);
 		}
 
@@ -259,7 +259,7 @@ export class CellTitleToolbarPart extends CellOverlayPart {
 		this.setupChangeListeners(
 			deleteToolbar,
 			model.deleteMenu,
-			model.deleteActions
+			model.deleteActions,
 		);
 
 		this._view = {
@@ -282,8 +282,8 @@ export class CellTitleToolbarPart extends CellOverlayPart {
 				this._notebookEditor,
 				element,
 				this.toolbarContainer,
-				{ extraOffset: 4, min: -14 }
-			)
+				{ extraOffset: 4, min: -14 },
+			),
 		);
 
 		this.updateContext(view, <INotebookCellActionContext>{
@@ -296,7 +296,7 @@ export class CellTitleToolbarPart extends CellOverlayPart {
 
 	private updateContext(
 		view: CellTitleToolbarView,
-		toolbarContext: INotebookCellActionContext
+		toolbarContext: INotebookCellActionContext,
 	) {
 		view.toolbar.context = toolbarContext;
 		view.deleteToolbar.context = toolbarContext;
@@ -305,7 +305,7 @@ export class CellTitleToolbarPart extends CellOverlayPart {
 	private setupChangeListeners(
 		toolbar: ToolBar,
 		menu: IMenu,
-		initActions: { primary: IAction[]; secondary: IAction[] }
+		initActions: { primary: IAction[]; secondary: IAction[] },
 	): void {
 		// #103926
 		let dropdownIsVisible = false;
@@ -322,7 +322,7 @@ export class CellTitleToolbarPart extends CellOverlayPart {
 
 				const actions = getCellToolbarActions(menu);
 				this.updateActions(toolbar, actions);
-			})
+			}),
 		);
 		this._rootClassDelegate.toggle("cell-toolbar-dropdown-active", false);
 		this._register(
@@ -330,7 +330,7 @@ export class CellTitleToolbarPart extends CellOverlayPart {
 				dropdownIsVisible = visible;
 				this._rootClassDelegate.toggle(
 					"cell-toolbar-dropdown-active",
-					visible
+					visible,
 				);
 
 				if (deferredUpdate && !visible) {
@@ -339,18 +339,18 @@ export class CellTitleToolbarPart extends CellOverlayPart {
 							deferredUpdate?.();
 						},
 						0,
-						this._store
+						this._store,
 					);
 
 					deferredUpdate = undefined;
 				}
-			})
+			}),
 		);
 	}
 
 	private updateActions(
 		toolbar: ToolBar,
-		actions: { primary: IAction[]; secondary: IAction[] }
+		actions: { primary: IAction[]; secondary: IAction[] },
 	) {
 		const hadFocus = DOM.isAncestorOfActiveElement(toolbar.getElement());
 		toolbar.setActions(actions.primary, actions.secondary);
@@ -380,7 +380,7 @@ function getCellToolbarActions(menu: IMenu): {
 		menu,
 		{ shouldForwardArgs: true },
 		result,
-		(g) => /^inline/.test(g)
+		(g) => /^inline/.test(g),
 	);
 
 	return result;
@@ -389,7 +389,7 @@ function getCellToolbarActions(menu: IMenu): {
 function createDeleteToolbar(
 	accessor: ServicesAccessor,
 	container: HTMLElement,
-	elementClass?: string
+	elementClass?: string,
 ): ToolBar {
 	const contextMenuService = accessor.get(IContextMenuService);
 	const keybindingService = accessor.get(IKeybindingService);

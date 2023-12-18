@@ -5,18 +5,18 @@
 
 import * as path from "path";
 import { ProgressLocation, Uri, commands, env, l10n, window } from "vscode";
-import { Log } from "./common/logger";
-import { Config } from "./config";
-import { UriEventHandler } from "./github";
-import { fetching } from "./node/fetch";
-import { LoopbackAuthServer } from "./node/authServer";
-import { promiseFromEvent } from "./common/utils";
 import { isHostedGitHubEnterprise } from "./common/env";
 import {
 	NETWORK_ERROR,
 	TIMED_OUT_ERROR,
 	USER_CANCELLATION_ERROR,
 } from "./common/errors";
+import { Log } from "./common/logger";
+import { promiseFromEvent } from "./common/utils";
+import { Config } from "./config";
+import { UriEventHandler } from "./github";
+import { LoopbackAuthServer } from "./node/authServer";
+import { fetching } from "./node/fetch";
 
 interface IGitHubDeviceCodeResponse {
 	device_code: string;
@@ -45,16 +45,16 @@ interface IFlowOptions {
 	readonly supportsNoClientSecret: boolean;
 }
 
-export const enum GitHubTarget {
-	DotCom,
-	Enterprise,
-	HostedEnterprise,
+export enum GitHubTarget {
+	DotCom = 0,
+	Enterprise = 1,
+	HostedEnterprise = 2,
 }
 
-export const enum ExtensionHost {
-	WebWorker,
-	Remote,
-	Local,
+export enum ExtensionHost {
+	WebWorker = 0,
+	Remote = 1,
+	Local = 2,
 }
 
 export interface IFlowQuery {
@@ -85,14 +85,14 @@ async function exchangeCodeForToken(
 	endpointUri: Uri,
 	redirectUri: Uri,
 	code: string,
-	enterpriseUri?: Uri
+	enterpriseUri?: Uri,
 ): Promise<string> {
 	logger.info("Exchanging code for token...");
 
 	const clientSecret = Config.gitHubClientSecret;
 	if (!clientSecret) {
 		throw new Error(
-			"No client secret configured for GitHub authentication."
+			"No client secret configured for GitHub authentication.",
 		);
 	}
 
@@ -172,7 +172,7 @@ const allFlows: IFlow[] = [
 						logger,
 						scopes,
 						nonce,
-						token
+						token,
 					);
 
 					const searchParams = new URLSearchParams([
@@ -193,7 +193,7 @@ const allFlows: IFlow[] = [
 								path: "/login/oauth/authorize",
 								query: searchParams.toString(),
 							})
-							.toString(true)
+							.toString(true),
 					);
 					await env.openExternal(uri);
 
@@ -202,12 +202,12 @@ const allFlows: IFlow[] = [
 					const proxyEndpoints:
 						| { [providerId: string]: string }
 						| undefined = await commands.executeCommand(
-						"workbench.getCodeExchangeProxyEndpoints"
+						"workbench.getCodeExchangeProxyEndpoints",
 					);
 					const endpointUrl = proxyEndpoints?.github
 						? Uri.parse(
-								`${proxyEndpoints.github}login/oauth/access_token`
-							)
+								`${proxyEndpoints.github}login/oauth/access_token`,
+						  )
 						: baseUri.with({ path: "/login/oauth/access_token" });
 
 					const accessToken = await exchangeCodeForToken(
@@ -215,10 +215,10 @@ const allFlows: IFlow[] = [
 						endpointUrl,
 						redirectUri,
 						code,
-						enterpriseUri
+						enterpriseUri,
 					);
 					return accessToken;
-				}
+				},
 			);
 		}
 	})(),
@@ -273,7 +273,7 @@ const allFlows: IFlow[] = [
 					});
 					const server = new LoopbackAuthServer(
 						path.join(__dirname, "../media"),
-						loginUrl.toString(true)
+						loginUrl.toString(true),
 					);
 					const port = await server.start();
 
@@ -282,23 +282,23 @@ const allFlows: IFlow[] = [
 						env.openExternal(
 							Uri.parse(
 								`http://127.0.0.1:${port}/signin?nonce=${encodeURIComponent(
-									server.nonce
-								)}`
-							)
+									server.nonce,
+								)}`,
+							),
 						);
 						const { code } = await Promise.race([
 							server.waitForOAuthResponse(),
 							new Promise<any>((_, reject) =>
 								setTimeout(
 									() => reject(TIMED_OUT_ERROR),
-									300_000
-								)
+									300_000,
+								),
 							), // 5min timeout
 							promiseFromEvent<any, any>(
 								token.onCancellationRequested,
 								(_, __, reject) => {
 									reject(USER_CANCELLATION_ERROR);
-								}
+								},
 							).promise,
 						]);
 						codeToExchange = code;
@@ -313,10 +313,10 @@ const allFlows: IFlow[] = [
 						baseUri.with({ path: "/login/oauth/access_token" }),
 						redirectUri,
 						codeToExchange,
-						enterpriseUri
+						enterpriseUri,
 					);
 					return accessToken;
-				}
+				},
 			);
 		}
 	})(),
@@ -349,7 +349,7 @@ const allFlows: IFlow[] = [
 			});
 			if (!result.ok) {
 				throw new Error(
-					`Failed to get one-time code: ${await result.text()}`
+					`Failed to get one-time code: ${await result.text()}`,
 				);
 			}
 
@@ -365,10 +365,10 @@ const allFlows: IFlow[] = [
 				{
 					modal: true,
 					detail: l10n.t(
-						"To finish authenticating, navigate to GitHub and paste in the above one-time code."
+						"To finish authenticating, navigate to GitHub and paste in the above one-time code.",
 					),
 				},
-				button
+				button,
 			);
 
 			if (modalResult !== button) {
@@ -378,7 +378,7 @@ const allFlows: IFlow[] = [
 			await env.clipboard.writeText(json.user_code);
 
 			const uriToOpen = await env.asExternalUri(
-				Uri.parse(json.verification_uri)
+				Uri.parse(json.verification_uri),
 			);
 			await env.openExternal(uriToOpen);
 
@@ -387,7 +387,7 @@ const allFlows: IFlow[] = [
 
 		private async waitForDeviceCodeAccessToken(
 			baseUri: Uri,
-			json: IGitHubDeviceCodeResponse
+			json: IGitHubDeviceCodeResponse,
 		): Promise<string> {
 			return await window.withProgress<string>(
 				{
@@ -413,7 +413,7 @@ const allFlows: IFlow[] = [
 					const attempts = 120 / json.interval;
 					for (let i = 0; i < attempts; i++) {
 						await new Promise((resolve) =>
-							setTimeout(resolve, json.interval * 1000)
+							setTimeout(resolve, json.interval * 1000),
 						);
 						if (token.isCancellationRequested) {
 							throw new Error(USER_CANCELLATION_ERROR);
@@ -427,7 +427,7 @@ const allFlows: IFlow[] = [
 									headers: {
 										Accept: "application/json",
 									},
-								}
+								},
 							);
 						} catch {
 							continue;
@@ -451,7 +451,7 @@ const allFlows: IFlow[] = [
 					}
 
 					throw new Error(TIMED_OUT_ERROR);
-				}
+				},
 			);
 		}
 	})(),
@@ -481,15 +481,15 @@ const allFlows: IFlow[] = [
 			const button = l10n.t("Continue to GitHub");
 			const modalResult = await window.showInformationMessage(
 				l10n.t(
-					"Continue to GitHub to create a Personal Access Token (PAT)"
+					"Continue to GitHub to create a Personal Access Token (PAT)",
 				),
 				{
 					modal: true,
 					detail: l10n.t(
-						"To finish authenticating, navigate to GitHub to create a PAT then paste the PAT into the input box."
+						"To finish authenticating, navigate to GitHub to create a PAT then paste the PAT into the input box.",
 					),
 				},
-				button
+				button,
 			);
 
 			if (modalResult !== button) {
@@ -503,7 +503,7 @@ const allFlows: IFlow[] = [
 					query: `description=${description}&scopes=${scopes
 						.split(" ")
 						.join(",")}`,
-				})
+				}),
 			);
 			await env.openExternal(uriToOpen);
 			const token = await window.showInputBox({
@@ -519,8 +519,8 @@ const allFlows: IFlow[] = [
 				!enterpriseUri || isHostedGitHubEnterprise(enterpriseUri)
 					? Uri.parse(`${baseUri.scheme}://api.${baseUri.authority}`)
 					: Uri.parse(
-							`${baseUri.scheme}://${baseUri.authority}/api/v3`
-						);
+							`${baseUri.scheme}://${baseUri.authority}/api/v3`,
+					  );
 
 			const tokenScopes = await this.getScopes(token, appUri, logger); // Example: ['repo', 'user']
 			const scopesList = scopes.split(" "); // Example: 'read:user repo user:email'
@@ -537,7 +537,7 @@ const allFlows: IFlow[] = [
 				})
 			) {
 				throw new Error(
-					`The provided token does not match the requested scopes: ${scopes}`
+					`The provided token does not match the requested scopes: ${scopes}`,
 				);
 			}
 
@@ -547,7 +547,7 @@ const allFlows: IFlow[] = [
 		private async getScopes(
 			token: string,
 			serverUri: Uri,
-			logger: Log
+			logger: Log,
 		): Promise<string[]> {
 			try {
 				logger.info("Getting token scopes...");
@@ -577,7 +577,7 @@ const allFlows: IFlow[] = [
 
 export function getFlows(query: IFlowQuery) {
 	return allFlows.filter((flow) => {
-		let useFlow: boolean = true;
+		let useFlow = true;
 		switch (query.target) {
 			case GitHubTarget.DotCom:
 				useFlow &&= flow.options.supportsGitHubDotCom;

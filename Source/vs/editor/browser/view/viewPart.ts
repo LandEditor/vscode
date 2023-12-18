@@ -8,8 +8,8 @@ import {
 	RenderingContext,
 	RestrictedRenderingContext,
 } from "vs/editor/browser/view/renderingContext";
-import { ViewContext } from "vs/editor/common/viewModel/viewContext";
 import { ViewEventHandler } from "vs/editor/common/viewEventHandler";
+import { ViewContext } from "vs/editor/common/viewModel/viewContext";
 
 export abstract class ViewPart extends ViewEventHandler {
 	_context: ViewContext;
@@ -29,23 +29,23 @@ export abstract class ViewPart extends ViewEventHandler {
 	public abstract render(ctx: RestrictedRenderingContext): void;
 }
 
-export const enum PartFingerprint {
-	None,
-	ContentWidgets,
-	OverflowingContentWidgets,
-	OverflowGuard,
-	OverlayWidgets,
-	OverflowingOverlayWidgets,
-	ScrollableElement,
-	TextArea,
-	ViewLines,
-	Minimap,
+export enum PartFingerprint {
+	None = 0,
+	ContentWidgets = 1,
+	OverflowingContentWidgets = 2,
+	OverflowGuard = 3,
+	OverlayWidgets = 4,
+	OverflowingOverlayWidgets = 5,
+	ScrollableElement = 6,
+	TextArea = 7,
+	ViewLines = 8,
+	Minimap = 9,
 }
 
 export class PartFingerprints {
 	public static write(
 		target: Element | FastDomNode<HTMLElement>,
-		partId: PartFingerprint
+		partId: PartFingerprint,
 	) {
 		target.setAttribute("data-mprt", String(partId));
 	}

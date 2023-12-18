@@ -3,25 +3,35 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
+import { getErrorMessage } from "vs/base/common/errors";
+import { Disposable } from "vs/base/common/lifecycle";
+import { Schemas } from "vs/base/common/network";
+import { isAbsolute, join } from "vs/base/common/path";
+import { isWindows } from "vs/base/common/platform";
+import { cwd } from "vs/base/common/process";
+import { URI } from "vs/base/common/uri";
 import {
-	ConsoleLogger,
-	getLogLevel,
-	ILoggerService,
-	ILogService,
-} from "vs/platform/log/common/log";
-import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
-import { ConfigurationService } from "vs/platform/configuration/common/configurationService";
+	addUNCHostToAllowlist,
+	disableUNCAccessRestrictions,
+} from "vs/base/node/unc";
+import { localize } from "vs/nls";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IRequestService } from "vs/platform/request/common/request";
-import { RequestService } from "vs/platform/request/node/requestService";
-import { NullTelemetryService } from "vs/platform/telemetry/common/telemetryUtils";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { ConfigurationService } from "vs/platform/configuration/common/configurationService";
+import { IDownloadService } from "vs/platform/download/common/download";
+import { DownloadService } from "vs/platform/download/common/downloadService";
+import {
+	OptionDescriptions,
+	buildHelpMessage,
+	buildVersionMessage,
+} from "vs/platform/environment/node/argv";
+import { ExtensionGalleryServiceWithNoStorageService } from "vs/platform/extensionManagement/common/extensionGalleryService";
 import {
 	IExtensionGalleryService,
 	InstallOptions,
 } from "vs/platform/extensionManagement/common/extensionManagement";
-import { ExtensionGalleryServiceWithNoStorageService } from "vs/platform/extensionManagement/common/extensionGalleryService";
+import { ExtensionManagementCLI } from "vs/platform/extensionManagement/common/extensionManagementCLI";
+import { IExtensionsProfileScannerService } from "vs/platform/extensionManagement/common/extensionsProfileScannerService";
+import { IExtensionsScannerService } from "vs/platform/extensionManagement/common/extensionsScannerService";
 import {
 	ExtensionManagementService,
 	INativeServerExtensionManagementService,
@@ -30,56 +40,46 @@ import {
 	ExtensionSignatureVerificationService,
 	IExtensionSignatureVerificationService,
 } from "vs/platform/extensionManagement/node/extensionSignatureVerificationService";
-import { InstantiationService } from "vs/platform/instantiation/common/instantiationService";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import product from "vs/platform/product/common/product";
-import { Disposable } from "vs/base/common/lifecycle";
+import { ExtensionsProfileScannerService } from "vs/platform/extensionManagement/node/extensionsProfileScannerService";
 import { FileService } from "vs/platform/files/common/fileService";
-import { DiskFileSystemProvider } from "vs/platform/files/node/diskFileSystemProvider";
-import { Schemas } from "vs/base/common/network";
 import { IFileService } from "vs/platform/files/common/files";
+import { DiskFileSystemProvider } from "vs/platform/files/node/diskFileSystemProvider";
+import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { InstantiationService } from "vs/platform/instantiation/common/instantiationService";
+import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
+import { ILanguagePackService } from "vs/platform/languagePacks/common/languagePacks";
+import { NativeLanguagePackService } from "vs/platform/languagePacks/node/languagePacks";
+import {
+	ConsoleLogger,
+	ILogService,
+	ILoggerService,
+	getLogLevel,
+} from "vs/platform/log/common/log";
+import { LogService } from "vs/platform/log/common/logService";
+import { LoggerService } from "vs/platform/log/node/loggerService";
+import { NullPolicyService } from "vs/platform/policy/common/policy";
+import product from "vs/platform/product/common/product";
 import { IProductService } from "vs/platform/product/common/productService";
+import { IRequestService } from "vs/platform/request/common/request";
+import { RequestService } from "vs/platform/request/node/requestService";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { NullTelemetryService } from "vs/platform/telemetry/common/telemetryUtils";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import { UriIdentityService } from "vs/platform/uriIdentity/common/uriIdentityService";
+import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
+import { ServerUserDataProfilesService } from "vs/platform/userDataProfile/node/userDataProfile";
+import { ExtensionsScannerService } from "vs/server/node/extensionsScannerService";
 import {
 	IServerEnvironmentService,
 	ServerEnvironmentService,
 	ServerParsedArgs,
 } from "vs/server/node/serverEnvironmentService";
-import { ExtensionManagementCLI } from "vs/platform/extensionManagement/common/extensionManagementCLI";
-import { ILanguagePackService } from "vs/platform/languagePacks/common/languagePacks";
-import { NativeLanguagePackService } from "vs/platform/languagePacks/node/languagePacks";
-import { getErrorMessage } from "vs/base/common/errors";
-import { URI } from "vs/base/common/uri";
-import { isAbsolute, join } from "vs/base/common/path";
-import { cwd } from "vs/base/common/process";
-import { DownloadService } from "vs/platform/download/common/downloadService";
-import { IDownloadService } from "vs/platform/download/common/download";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import { UriIdentityService } from "vs/platform/uriIdentity/common/uriIdentityService";
-import {
-	buildHelpMessage,
-	buildVersionMessage,
-	OptionDescriptions,
-} from "vs/platform/environment/node/argv";
-import { isWindows } from "vs/base/common/platform";
-import { IExtensionsScannerService } from "vs/platform/extensionManagement/common/extensionsScannerService";
-import { ExtensionsScannerService } from "vs/server/node/extensionsScannerService";
-import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
-import { IExtensionsProfileScannerService } from "vs/platform/extensionManagement/common/extensionsProfileScannerService";
-import { NullPolicyService } from "vs/platform/policy/common/policy";
-import { ServerUserDataProfilesService } from "vs/platform/userDataProfile/node/userDataProfile";
-import { ExtensionsProfileScannerService } from "vs/platform/extensionManagement/node/extensionsProfileScannerService";
-import { LogService } from "vs/platform/log/common/logService";
-import { LoggerService } from "vs/platform/log/node/loggerService";
-import { localize } from "vs/nls";
-import {
-	addUNCHostToAllowlist,
-	disableUNCAccessRestrictions,
-} from "vs/base/node/unc";
 
 class CliMain extends Disposable {
 	constructor(
 		private readonly args: ServerParsedArgs,
-		private readonly remoteDataFolder: string
+		private readonly remoteDataFolder: string,
 	) {
 		super();
 
@@ -101,15 +101,15 @@ class CliMain extends Disposable {
 			if (isWindows) {
 				if (
 					configurationService.getValue(
-						"security.restrictUNCAccess"
+						"security.restrictUNCAccess",
 					) === false
 				) {
 					disableUNCAccessRestrictions();
 				} else {
 					addUNCHostToAllowlist(
 						configurationService.getValue(
-							"security.allowedUNCHosts"
-						)
+							"security.allowedUNCHosts",
+						),
 					);
 				}
 			}
@@ -118,8 +118,8 @@ class CliMain extends Disposable {
 				await this.doRun(
 					instantiationService.createInstance(
 						ExtensionManagementCLI,
-						new ConsoleLogger(logService.getLevel(), false)
-					)
+						new ConsoleLogger(logService.getLevel(), false),
+					),
 				);
 			} catch (error) {
 				logService.error(error);
@@ -137,13 +137,13 @@ class CliMain extends Disposable {
 
 		const environmentService = new ServerEnvironmentService(
 			this.args,
-			productService
+			productService,
 		);
 		services.set(IServerEnvironmentService, environmentService);
 
 		const loggerService = new LoggerService(
 			getLogLevel(environmentService),
-			environmentService.logsHome
+			environmentService.logsHome,
 		);
 		services.set(ILoggerService, loggerService);
 
@@ -151,12 +151,12 @@ class CliMain extends Disposable {
 			this._register(
 				loggerService.createLogger("remoteCLI", {
 					name: localize("remotecli", "Remote CLI"),
-				})
-			)
+				}),
+			),
 		);
 		services.set(ILogService, logService);
 		logService.trace(
-			`Remote configuration data at ${this.remoteDataFolder}`
+			`Remote configuration data at ${this.remoteDataFolder}`,
 		);
 		logService.trace("process arguments:", this.args);
 
@@ -165,7 +165,7 @@ class CliMain extends Disposable {
 		services.set(IFileService, fileService);
 		fileService.registerProvider(
 			Schemas.file,
-			this._register(new DiskFileSystemProvider(logService))
+			this._register(new DiskFileSystemProvider(logService)),
 		);
 
 		const uriIdentityService = new UriIdentityService(fileService);
@@ -177,8 +177,8 @@ class CliMain extends Disposable {
 				uriIdentityService,
 				environmentService,
 				fileService,
-				logService
-			)
+				logService,
+			),
 		);
 		services.set(IUserDataProfilesService, userDataProfilesService);
 
@@ -188,8 +188,8 @@ class CliMain extends Disposable {
 				userDataProfilesService.defaultProfile.settingsResource,
 				fileService,
 				new NullPolicyService(),
-				logService
-			)
+				logService,
+			),
 		);
 		services.set(IConfigurationService, configurationService);
 
@@ -204,40 +204,40 @@ class CliMain extends Disposable {
 		services.set(ITelemetryService, NullTelemetryService);
 		services.set(
 			IExtensionGalleryService,
-			new SyncDescriptor(ExtensionGalleryServiceWithNoStorageService)
+			new SyncDescriptor(ExtensionGalleryServiceWithNoStorageService),
 		);
 		services.set(
 			IExtensionsProfileScannerService,
-			new SyncDescriptor(ExtensionsProfileScannerService)
+			new SyncDescriptor(ExtensionsProfileScannerService),
 		);
 		services.set(
 			IExtensionsScannerService,
-			new SyncDescriptor(ExtensionsScannerService)
+			new SyncDescriptor(ExtensionsScannerService),
 		);
 		services.set(
 			IExtensionSignatureVerificationService,
-			new SyncDescriptor(ExtensionSignatureVerificationService)
+			new SyncDescriptor(ExtensionSignatureVerificationService),
 		);
 		services.set(
 			INativeServerExtensionManagementService,
-			new SyncDescriptor(ExtensionManagementService)
+			new SyncDescriptor(ExtensionManagementService),
 		);
 		services.set(
 			ILanguagePackService,
-			new SyncDescriptor(NativeLanguagePackService)
+			new SyncDescriptor(NativeLanguagePackService),
 		);
 
 		return new InstantiationService(services);
 	}
 
 	private async doRun(
-		extensionManagementCLI: ExtensionManagementCLI
+		extensionManagementCLI: ExtensionManagementCLI,
 	): Promise<void> {
 		// List Extensions
 		if (this.args["list-extensions"]) {
 			return extensionManagementCLI.listExtensions(
 				!!this.args["show-versions"],
-				this.args["category"]
+				this.args["category"],
 			);
 		}
 
@@ -253,10 +253,10 @@ class CliMain extends Disposable {
 			return extensionManagementCLI.installExtensions(
 				this.asExtensionIdOrVSIX(this.args["install-extension"] || []),
 				this.asExtensionIdOrVSIX(
-					this.args["install-builtin-extension"] || []
+					this.args["install-builtin-extension"] || [],
 				),
 				installOptions,
-				!!this.args["force"]
+				!!this.args["force"],
 			);
 		}
 
@@ -264,14 +264,14 @@ class CliMain extends Disposable {
 		else if (this.args["uninstall-extension"]) {
 			return extensionManagementCLI.uninstallExtensions(
 				this.asExtensionIdOrVSIX(this.args["uninstall-extension"]),
-				!!this.args["force"]
+				!!this.args["force"],
 			);
 		}
 
 		// Locate Extension
 		else if (this.args["locate-extension"]) {
 			return extensionManagementCLI.locateExtension(
-				this.args["locate-extension"]
+				this.args["locate-extension"],
 			);
 		}
 	}
@@ -280,7 +280,7 @@ class CliMain extends Disposable {
 		return inputs.map((input) =>
 			/\.vsix$/i.test(input)
 				? URI.file(isAbsolute(input) ? input : join(cwd(), input))
-				: input
+				: input,
 		);
 	}
 }
@@ -292,7 +292,7 @@ function eventuallyExit(code: number): void {
 export async function run(
 	args: ServerParsedArgs,
 	REMOTE_DATA_FOLDER: string,
-	optionDescriptions: OptionDescriptions<ServerParsedArgs>
+	optionDescriptions: OptionDescriptions<ServerParsedArgs>,
 ): Promise<void> {
 	if (args.help) {
 		const executable =
@@ -303,8 +303,8 @@ export async function run(
 				executable,
 				product.version,
 				optionDescriptions,
-				{ noInputFiles: true, noPipe: true }
-			)
+				{ noInputFiles: true, noPipe: true },
+			),
 		);
 		return;
 	}

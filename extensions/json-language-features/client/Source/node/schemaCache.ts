@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { createHash } from "crypto";
 import { promises as fs } from "fs";
 import * as path from "path";
-import { createHash } from "crypto";
 import { Memento } from "vscode";
 
 interface CacheEntry {
@@ -25,7 +25,7 @@ export class JSONSchemaCache {
 
 	constructor(
 		private readonly schemaCacheLocation: string,
-		private readonly globalState: Memento
+		private readonly globalState: Memento,
 	) {
 		const infos = globalState.get<CacheInfo>(MEMENTO_KEY, {}) as CacheInfo;
 		const validated: CacheInfo = {};
@@ -57,13 +57,13 @@ export class JSONSchemaCache {
 	async putSchema(
 		schemaUri: string,
 		etag: string,
-		schemaContent: string
+		schemaContent: string,
 	): Promise<void> {
 		try {
 			const fileName = getCacheFileName(schemaUri);
 			await fs.writeFile(
 				path.join(this.schemaCacheLocation, fileName),
-				schemaContent
+				schemaContent,
 			);
 			const entry: CacheEntry = {
 				etag,
@@ -80,7 +80,7 @@ export class JSONSchemaCache {
 
 	async getSchemaIfUpdatedSince(
 		schemaUri: string,
-		expirationDurationInHours: number
+		expirationDurationInHours: number,
 	): Promise<string | undefined> {
 		const lastUpdatedInHours = this.getLastUpdatedInHours(schemaUri);
 		if (
@@ -90,7 +90,7 @@ export class JSONSchemaCache {
 			return this.loadSchemaFile(
 				schemaUri,
 				this.cacheInfo[schemaUri],
-				false
+				false,
 			);
 		}
 		return undefined;
@@ -99,7 +99,7 @@ export class JSONSchemaCache {
 	async getSchema(
 		schemaUri: string,
 		etag: string,
-		etagValid: boolean
+		etagValid: boolean,
 	): Promise<string | undefined> {
 		const cacheEntry = this.cacheInfo[schemaUri];
 		if (cacheEntry) {
@@ -115,11 +115,11 @@ export class JSONSchemaCache {
 	private async loadSchemaFile(
 		schemaUri: string,
 		cacheEntry: CacheEntry,
-		isUpdated: boolean
+		isUpdated: boolean,
 	): Promise<string | undefined> {
 		const cacheLocation = path.join(
 			this.schemaCacheLocation,
-			cacheEntry.fileName
+			cacheEntry.fileName,
 		);
 		try {
 			const content = (await fs.readFile(cacheLocation)).toString();
@@ -137,11 +137,11 @@ export class JSONSchemaCache {
 
 	private async deleteSchemaFile(
 		schemaUri: string,
-		cacheEntry: CacheEntry
+		cacheEntry: CacheEntry,
 	): Promise<void> {
 		const cacheLocation = path.join(
 			this.schemaCacheLocation,
-			cacheEntry.fileName
+			cacheEntry.fileName,
 		);
 		delete this.cacheInfo[schemaUri];
 		await this.updateMemento();

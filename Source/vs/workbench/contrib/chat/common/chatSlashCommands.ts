@@ -42,7 +42,7 @@ export type IChatSlashCallback = {
 		prompt: string,
 		progress: IProgress<IChatProgress>,
 		history: IChatMessage[],
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<{ followUp: IChatFollowup[] } | void>;
 };
 
@@ -57,14 +57,14 @@ export interface IChatSlashCommandService {
 	readonly onDidChangeCommands: Event<void>;
 	registerSlashCommand(
 		data: IChatSlashData,
-		command: IChatSlashCallback
+		command: IChatSlashCallback,
 	): IDisposable;
 	executeCommand(
 		id: string,
 		prompt: string,
 		progress: IProgress<IChatProgress>,
 		history: IChatMessage[],
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<{ followUp: IChatFollowup[] } | void>;
 	getCommands(): Array<IChatSlashData>;
 	hasCommand(id: string): boolean;
@@ -96,11 +96,11 @@ export class ChatSlashCommandService
 
 	registerSlashCommand(
 		data: IChatSlashData,
-		command: IChatSlashCallback
+		command: IChatSlashCallback,
 	): IDisposable {
 		if (this._commands.has(data.command)) {
 			throw new Error(
-				`Already registered a command with id ${data.command}}`
+				`Already registered a command with id ${data.command}}`,
 			);
 		}
 
@@ -127,7 +127,7 @@ export class ChatSlashCommandService
 		prompt: string,
 		progress: IProgress<IChatProgress>,
 		history: IChatMessage[],
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<{ followUp: IChatFollowup[] } | void> {
 		const data = this._commands.get(id);
 		if (!data) {

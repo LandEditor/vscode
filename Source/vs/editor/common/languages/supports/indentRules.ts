@@ -5,7 +5,7 @@
 
 import { IndentationRule } from "vs/editor/common/languages/languageConfiguration";
 
-export const enum IndentConsts {
+export enum IndentConsts {
 	INCREASE_MASK = 0b00000001,
 	DECREASE_MASK = 0b00000010,
 	INDENT_NEXTLINE_MASK = 0b00000100,
@@ -32,7 +32,7 @@ export class IndentRulesSupport {
 			if (
 				this._indentationRules.increaseIndentPattern &&
 				resetGlobalRegex(
-					this._indentationRules.increaseIndentPattern
+					this._indentationRules.increaseIndentPattern,
 				) &&
 				this._indentationRules.increaseIndentPattern.test(text)
 			) {

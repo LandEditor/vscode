@@ -3,7 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { DeferredPromise } from "vs/base/common/async";
+import { canceled } from "vs/base/common/errors";
+import { Disposable } from "vs/base/common/lifecycle";
 import { ILogService } from "vs/platform/log/common/log";
+import {
+	IAddress,
+	IAddressProvider,
+} from "vs/platform/remote/common/remoteAgentConnection";
 import {
 	ISharedProcessTunnel,
 	ISharedProcessTunnelService,
@@ -12,13 +19,6 @@ import {
 	ISharedTunnelsService,
 	RemoteTunnel,
 } from "vs/platform/tunnel/common/tunnel";
-import {
-	IAddress,
-	IAddressProvider,
-} from "vs/platform/remote/common/remoteAgentConnection";
-import { Disposable } from "vs/base/common/lifecycle";
-import { canceled } from "vs/base/common/errors";
-import { DeferredPromise } from "vs/base/common/async";
 
 class TunnelData extends Disposable implements IAddressProvider {
 	private _address: IAddress | null;
@@ -93,7 +93,7 @@ export class SharedProcessTunnelService
 		tunnelRemotePort: number,
 		tunnelLocalHost: string,
 		tunnelLocalPort: number | undefined,
-		elevateIfNeeded: boolean | undefined
+		elevateIfNeeded: boolean | undefined,
 	): Promise<ISharedProcessTunnel> {
 		const tunnelData = new TunnelData();
 
@@ -105,12 +105,12 @@ export class SharedProcessTunnelService
 				tunnelRemotePort,
 				tunnelLocalHost,
 				tunnelLocalPort,
-				elevateIfNeeded
-			)
+				elevateIfNeeded,
+			),
 		);
 		if (!tunnel || typeof tunnel === "string") {
 			this._logService.info(
-				`[SharedProcessTunnelService] Could not create a tunnel to ${tunnelRemoteHost}:${tunnelRemotePort} (remote).`
+				`[SharedProcessTunnelService] Could not create a tunnel to ${tunnelRemoteHost}:${tunnelRemotePort} (remote).`,
 			);
 			tunnelData.dispose();
 			throw new Error(`Could not create tunnel`);
@@ -128,7 +128,7 @@ export class SharedProcessTunnelService
 		this._tunnels.set(id, tunnelData);
 
 		this._logService.info(
-			`[SharedProcessTunnelService] Created tunnel ${id}: ${tunnel.localAddress} (local) to ${tunnelRemoteHost}:${tunnelRemotePort} (remote).`
+			`[SharedProcessTunnelService] Created tunnel ${id}: ${tunnel.localAddress} (local) to ${tunnelRemoteHost}:${tunnelRemotePort} (remote).`,
 		);
 		const result: ISharedProcessTunnel = {
 			tunnelLocalPort: tunnel.tunnelLocalPort,
@@ -149,7 +149,7 @@ export class SharedProcessTunnelService
 		const tunnel = this._tunnels.get(id);
 		if (tunnel) {
 			this._logService.info(
-				`[SharedProcessTunnelService] Disposing tunnel ${id}.`
+				`[SharedProcessTunnelService] Disposing tunnel ${id}.`,
 			);
 			this._tunnels.delete(id);
 			await tunnel.dispose();

@@ -3,30 +3,30 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { marked } from "vs/base/common/marked/marked";
+import { Schemas } from "vs/base/common/network";
+import { assertIsDefined } from "vs/base/common/types";
 import { URI } from "vs/base/common/uri";
+import { Range } from "vs/editor/common/core/range";
+import { ILanguageService } from "vs/editor/common/languages/language";
 import {
-	ITextModelService,
-	ITextModelContentProvider,
-} from "vs/editor/common/services/resolverService";
-import { IModelService } from "vs/editor/common/services/model";
-import {
-	ITextModel,
 	DefaultEndOfLine,
 	EndOfLinePreference,
 	ITextBufferFactory,
+	ITextModel,
 } from "vs/editor/common/model";
-import { ILanguageService } from "vs/editor/common/languages/language";
-import { IWorkbenchContribution } from "vs/workbench/common/contributions";
-import { marked } from "vs/base/common/marked/marked";
-import { Schemas } from "vs/base/common/network";
-import { Range } from "vs/editor/common/core/range";
 import { createTextBufferFactory } from "vs/editor/common/model/textModel";
-import { assertIsDefined } from "vs/base/common/types";
+import { IModelService } from "vs/editor/common/services/model";
+import {
+	ITextModelContentProvider,
+	ITextModelService,
+} from "vs/editor/common/services/resolverService";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IWorkbenchContribution } from "vs/workbench/common/contributions";
 
 export function requireToContent(
 	instantiationService: IInstantiationService,
-	resource: URI
+	resource: URI,
 ): Promise<string> {
 	if (!resource.query) {
 		throw new Error("Welcome: invalid resource");
@@ -70,7 +70,7 @@ export class WalkThroughSnippetContentProvider
 	}
 
 	private async textBufferFactoryFromResource(
-		resource: URI
+		resource: URI,
 	): Promise<ITextBufferFactory> {
 		let ongoing = this.loads.get(resource.toString());
 		if (!ongoing) {
@@ -84,7 +84,7 @@ export class WalkThroughSnippetContentProvider
 
 	public async provideTextContent(resource: URI): Promise<ITextModel> {
 		const factory = await this.textBufferFactoryFromResource(
-			resource.with({ fragment: "" })
+			resource.with({ fragment: "" }),
 		);
 		let codeEditorModel = this.modelService.getModel(resource);
 		if (!codeEditorModel) {
@@ -96,8 +96,8 @@ export class WalkThroughSnippetContentProvider
 				const languageId =
 					typeof lang === "string"
 						? this.languageService.getLanguageIdByLanguageName(
-								lang
-							) || ""
+								lang,
+						  ) || ""
 						: "";
 				const languageSelection =
 					this.languageService.createById(languageId);
@@ -105,7 +105,7 @@ export class WalkThroughSnippetContentProvider
 				const model = this.modelService.createModel(
 					code,
 					languageSelection,
-					resource.with({ fragment: `${i}.${lang}` })
+					resource.with({ fragment: `${i}.${lang}` }),
 				);
 				if (i === j) {
 					codeEditorModel = model;
@@ -118,11 +118,11 @@ export class WalkThroughSnippetContentProvider
 				1,
 				1,
 				lineCount,
-				textBuffer.getLineLength(lineCount) + 1
+				textBuffer.getLineLength(lineCount) + 1,
 			);
 			const markdown = textBuffer.getValueInRange(
 				range,
-				EndOfLinePreference.TextDefined
+				EndOfLinePreference.TextDefined,
 			);
 			marked(markdown, { renderer });
 		}

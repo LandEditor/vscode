@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TypeScriptRequests } from "../typescriptService";
 import TypeScriptServiceClientHost from "../typeScriptServiceClientHost";
+import { TypeScriptRequests } from "../typescriptService";
 import { nulToken } from "../utils/cancellation";
 import { Lazy } from "../utils/lazy";
 import { Command } from "./commandManager";
@@ -13,13 +13,13 @@ export class TSServerRequestCommand implements Command {
 	public readonly id = "typescript.tsserverRequest";
 
 	public constructor(
-		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>
+		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>,
 	) {}
 
 	public execute(
 		requestID: keyof TypeScriptRequests,
 		args?: any,
-		config?: any
+		config?: any,
 	) {
 		// A cancellation token cannot be passed through the command infrastructure
 		const token = nulToken;
@@ -47,7 +47,7 @@ export class TSServerRequestCommand implements Command {
 			requestID,
 			args,
 			token,
-			config
+			config,
 		);
 	}
 }

@@ -3,16 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
+import { Disposable } from "vs/base/common/lifecycle";
+import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
+import { INativeHostService } from "vs/platform/native/common/native";
 import { Registry } from "vs/platform/registry/common/platform";
 import {
 	Extensions as WorkbenchExtensions,
 	IWorkbenchContribution,
 	IWorkbenchContributionsRegistry,
 } from "vs/workbench/common/contributions";
-import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
-import { INativeHostService } from "vs/platform/native/common/native";
-import { Disposable } from "vs/base/common/lifecycle";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 class SleepResumeRepaintMinimap
 	extends Disposable
@@ -20,7 +20,7 @@ class SleepResumeRepaintMinimap
 {
 	constructor(
 		@ICodeEditorService codeEditorService: ICodeEditorService,
-		@INativeHostService nativeHostService: INativeHostService
+		@INativeHostService nativeHostService: INativeHostService,
 	) {
 		super();
 
@@ -29,14 +29,14 @@ class SleepResumeRepaintMinimap
 				codeEditorService
 					.listCodeEditors()
 					.forEach((editor) => editor.render(true));
-			})
+			}),
 		);
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	SleepResumeRepaintMinimap,
-	LifecyclePhase.Eventually
+	LifecyclePhase.Eventually,
 );

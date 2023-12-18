@@ -3,60 +3,60 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { BrowserFeatures } from "vs/base/browser/canIUse";
+import * as dom from "vs/base/browser/dom";
 import {
 	LayoutPriority,
 	Orientation,
 	Sizing,
 	SplitView,
 } from "vs/base/browser/ui/splitview/splitview";
-import { Disposable, dispose, IDisposable } from "vs/base/common/lifecycle";
+import { Action, IAction, Separator } from "vs/base/common/actions";
+import { Disposable, IDisposable, dispose } from "vs/base/common/lifecycle";
+import { isLinux, isMacintosh } from "vs/base/common/platform";
+import { localize } from "vs/nls";
+import {
+	IMenu,
+	IMenuService,
+	MenuId,
+} from "vs/platform/actions/common/actions";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import {
+	IContextKey,
+	IContextKeyService,
+} from "vs/platform/contextkey/common/contextkey";
+import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { INotificationService } from "vs/platform/notification/common/notification";
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from "vs/platform/storage/common/storage";
+import { TerminalSettingId } from "vs/platform/terminal/common/terminal";
 import {
 	ITerminalGroupService,
 	ITerminalInstance,
 	ITerminalService,
 	TerminalConnectionState,
 } from "vs/workbench/contrib/terminal/browser/terminal";
-import {
-	TerminalTabsListSizes,
-	TerminalTabList,
-} from "vs/workbench/contrib/terminal/browser/terminalTabsList";
-import { isLinux, isMacintosh } from "vs/base/common/platform";
-import * as dom from "vs/base/browser/dom";
-import { BrowserFeatures } from "vs/base/browser/canIUse";
-import { INotificationService } from "vs/platform/notification/common/notification";
-import { Action, IAction, Separator } from "vs/base/common/actions";
-import {
-	IMenu,
-	IMenuService,
-	MenuId,
-} from "vs/platform/actions/common/actions";
-import {
-	IContextKey,
-	IContextKeyService,
-} from "vs/platform/contextkey/common/contextkey";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { TerminalSettingId } from "vs/platform/terminal/common/terminal";
-import {
-	IStorageService,
-	StorageScope,
-	StorageTarget,
-} from "vs/platform/storage/common/storage";
-import { localize } from "vs/nls";
 import { openContextMenu } from "vs/workbench/contrib/terminal/browser/terminalContextMenu";
-import { TerminalStorageKeys } from "vs/workbench/contrib/terminal/common/terminalStorageKeys";
-import { TerminalContextKeys } from "vs/workbench/contrib/terminal/common/terminalContextKey";
+import {
+	TerminalTabList,
+	TerminalTabsListSizes,
+} from "vs/workbench/contrib/terminal/browser/terminalTabsList";
 import { getInstanceHoverInfo } from "vs/workbench/contrib/terminal/browser/terminalTooltip";
+import { TerminalContextKeys } from "vs/workbench/contrib/terminal/common/terminalContextKey";
+import { TerminalStorageKeys } from "vs/workbench/contrib/terminal/common/terminalStorageKeys";
 import { IHoverService } from "vs/workbench/services/hover/browser/hover";
 
 const $ = dom.$;
 
-const enum CssClass {
+enum CssClass {
 	ViewIsVertical = "terminal-side-view",
 }
 
-const enum WidthConstants {
+enum WidthConstants {
 	StatusIcon = 30,
 	SplitAnnotation = 30,
 }
@@ -79,7 +79,7 @@ export class TerminalTabbedView extends Disposable {
 	private _height: number | undefined;
 	private _width: number | undefined;
 
-	private _cancelContextMenu: boolean = false;
+	private _cancelContextMenu = false;
 	private _instanceMenu: IMenu;
 	private _tabsListMenu: IMenu;
 	private _tabsListEmptyMenu: IMenu;
@@ -263,21 +263,19 @@ export class TerminalTabbedView extends Disposable {
 				this._addSashListener();
 				this._splitView.resizeView(
 					this._tabTreeIndex,
-					this._getLastListWidth()
+					this._getLastListWidth(),
 				);
 				this.rerenderTabs();
 			}
-		} else {
-			if (
-				this._splitView.length === 2 &&
-				!this._terminalTabsMouseContextKey.get()
-			) {
-				this._splitView.removeView(this._tabTreeIndex);
-				if (this._plusButton) {
-					this._tabContainer.removeChild(this._plusButton);
-				}
-				this._removeSashListener();
+		} else if (
+			this._splitView.length === 2 &&
+			!this._terminalTabsMouseContextKey.get()
+		) {
+			this._splitView.removeView(this._tabTreeIndex);
+			if (this._plusButton) {
+				this._tabContainer.removeChild(this._plusButton);
 			}
+			this._removeSashListener();
 		}
 	}
 
@@ -288,7 +286,7 @@ export class TerminalTabbedView extends Disposable {
 				: TerminalStorageKeys.TabsListWidthHorizontal;
 		const storedValue = this._storageService.get(
 			widthKey,
-			StorageScope.PROFILE
+			StorageScope.PROFILE,
 		);
 
 		if (!storedValue || !parseInt(storedValue)) {
@@ -318,19 +316,19 @@ export class TerminalTabbedView extends Disposable {
 					return Math.max(
 						p,
 						ctx.measureText(c.title + (c.description || "")).width +
-							this._getAdditionalWidth(c)
+							this._getAdditionalWidth(c),
 					);
 				}, 0);
 			idealWidth = Math.ceil(
 				Math.max(
 					maxInstanceWidth,
-					TerminalTabsListSizes.WideViewMinimumWidth
-				)
+					TerminalTabsListSizes.WideViewMinimumWidth,
+				),
 			);
 		}
 		// If the size is already ideal, toggle to collapsed
 		const currentWidth = Math.ceil(
-			this._splitView.getViewSize(this._tabTreeIndex)
+			this._splitView.getViewSize(this._tabTreeIndex),
 		);
 		if (currentWidth === idealWidth) {
 			idealWidth = TerminalTabsListSizes.NarrowViewWidth;
@@ -385,16 +383,18 @@ export class TerminalTabbedView extends Disposable {
 			widthKey,
 			width,
 			StorageScope.PROFILE,
-			StorageTarget.USER
+			StorageTarget.USER,
 		);
 	}
 
 	private _setupSplitView(terminalOuterContainer: HTMLElement): void {
 		this._register(
-			this._splitView.onDidSashReset(() => this._handleOnDidSashReset())
+			this._splitView.onDidSashReset(() => this._handleOnDidSashReset()),
 		);
 		this._register(
-			this._splitView.onDidSashChange(() => this._handleOnDidSashChange())
+			this._splitView.onDidSashChange(() =>
+				this._handleOnDidSashChange(),
+			),
 		);
 
 		if (this._shouldShowTabs()) {
@@ -405,7 +405,7 @@ export class TerminalTabbedView extends Disposable {
 				element: terminalOuterContainer,
 				layout: (width) =>
 					this._terminalGroupService.groups.forEach((tab) =>
-						tab.layout(width, this._height || 0)
+						tab.layout(width, this._height || 0),
 					),
 				minimumSize: 120,
 				maximumSize: Number.POSITIVE_INFINITY,
@@ -413,7 +413,7 @@ export class TerminalTabbedView extends Disposable {
 				priority: LayoutPriority.High,
 			},
 			Sizing.Distribute,
-			this._terminalContainerIndex
+			this._terminalContainerIndex,
 		);
 
 		if (this._shouldShowTabs()) {
@@ -433,7 +433,7 @@ export class TerminalTabbedView extends Disposable {
 				priority: LayoutPriority.Low,
 			},
 			Sizing.Distribute,
-			this._tabTreeIndex
+			this._tabTreeIndex,
 		);
 		this.rerenderTabs();
 	}
@@ -452,7 +452,7 @@ export class TerminalTabbedView extends Disposable {
 					() => {
 						this.rerenderTabs();
 					},
-					100
+					100,
 				);
 			}),
 			this._splitView.sashes[0].onDidEnd((e) => {
@@ -483,7 +483,7 @@ export class TerminalTabbedView extends Disposable {
 		if (this._shouldShowTabs()) {
 			this._splitView.resizeView(
 				this._tabTreeIndex,
-				this._getLastListWidth()
+				this._getLastListWidth(),
 			);
 		}
 		this._updateHasText();
@@ -491,7 +491,7 @@ export class TerminalTabbedView extends Disposable {
 
 	private _attachEventListeners(
 		parentDomElement: HTMLElement,
-		terminalContainer: HTMLElement
+		terminalContainer: HTMLElement,
 	): void {
 		this._register(
 			dom.addDisposableListener(
@@ -501,8 +501,8 @@ export class TerminalTabbedView extends Disposable {
 					this._terminalTabsMouseContextKey.set(false);
 					this._refreshShowTabs();
 					event.stopPropagation();
-				}
-			)
+				},
+			),
 		);
 		this._register(
 			dom.addDisposableListener(
@@ -511,8 +511,8 @@ export class TerminalTabbedView extends Disposable {
 				async (event: MouseEvent) => {
 					this._terminalTabsMouseContextKey.set(true);
 					event.stopPropagation();
-				}
-			)
+				},
+			),
 		);
 		this._register(
 			dom.addDisposableListener(
@@ -555,7 +555,7 @@ export class TerminalTabbedView extends Disposable {
 									event,
 									terminal,
 									this._instanceMenu,
-									this._contextMenuService
+									this._contextMenuService,
 								);
 								return;
 							}
@@ -566,16 +566,14 @@ export class TerminalTabbedView extends Disposable {
 							) {
 								await terminal.copySelection();
 								terminal.clearSelection();
+							} else if (BrowserFeatures.clipboard.readText) {
+								terminal.paste();
 							} else {
-								if (BrowserFeatures.clipboard.readText) {
-									terminal.paste();
-								} else {
-									this._notificationService.info(
-										`This browser doesn't support the clipboard.readText API needed to trigger a paste, try ${
-											isMacintosh ? "⌘" : "Ctrl"
-										}+V instead.`
-									);
-								}
+								this._notificationService.info(
+									`This browser doesn't support the clipboard.readText API needed to trigger a paste, try ${
+										isMacintosh ? "⌘" : "Ctrl"
+									}+V instead.`,
+								);
 							}
 							// Clear selection after all click event bubbling is finished on Mac to prevent
 							// right-click selecting a word which is seemed cannot be disabled. There is a
@@ -589,8 +587,8 @@ export class TerminalTabbedView extends Disposable {
 							this._cancelContextMenu = true;
 						}
 					}
-				}
-			)
+				},
+			),
 		);
 		this._register(
 			dom.addDisposableListener(
@@ -610,14 +608,14 @@ export class TerminalTabbedView extends Disposable {
 							event,
 							this._terminalGroupService.activeInstance!,
 							this._instanceMenu,
-							this._contextMenuService
+							this._contextMenuService,
 						);
 					}
 					event.preventDefault();
 					event.stopImmediatePropagation();
 					this._cancelContextMenu = false;
-				}
-			)
+				},
+			),
 		);
 		this._register(
 			dom.addDisposableListener(
@@ -647,9 +645,9 @@ export class TerminalTabbedView extends Disposable {
 								selectedInstances.findIndex(
 									(e) =>
 										e.instanceId ===
-										focusedInstance.instanceId
+										focusedInstance.instanceId,
 								),
-								1
+								1,
 							);
 							selectedInstances.unshift(focusedInstance);
 						}
@@ -662,14 +660,14 @@ export class TerminalTabbedView extends Disposable {
 								? this._tabsListEmptyMenu
 								: this._tabsListMenu,
 							this._contextMenuService,
-							emptyList ? this._getTabActions() : undefined
+							emptyList ? this._getTabActions() : undefined,
 						);
 					}
 					event.preventDefault();
 					event.stopImmediatePropagation();
 					this._cancelContextMenu = false;
-				}
-			)
+				},
+			),
 		);
 		this._register(
 			dom.addDisposableListener(
@@ -678,10 +676,10 @@ export class TerminalTabbedView extends Disposable {
 				(event: KeyboardEvent) => {
 					terminalContainer.classList.toggle(
 						"alt-active",
-						!!event.altKey
+						!!event.altKey,
 					);
-				}
-			)
+				},
+			),
 		);
 		this._register(
 			dom.addDisposableListener(
@@ -690,10 +688,10 @@ export class TerminalTabbedView extends Disposable {
 				(event: KeyboardEvent) => {
 					terminalContainer.classList.toggle(
 						"alt-active",
-						!!event.altKey
+						!!event.altKey,
 					);
-				}
-			)
+				},
+			),
 		);
 		this._register(
 			dom.addDisposableListener(
@@ -704,8 +702,8 @@ export class TerminalTabbedView extends Disposable {
 						// Keep terminal open on escape
 						event.stopPropagation();
 					}
-				}
-			)
+				},
+			),
 		);
 		this._register(
 			dom.addDisposableListener(
@@ -713,8 +711,8 @@ export class TerminalTabbedView extends Disposable {
 				dom.EventType.FOCUS_IN,
 				() => {
 					this._terminalTabsFocusContextKey.set(true);
-				}
-			)
+				},
+			),
 		);
 		this._register(
 			dom.addDisposableListener(
@@ -722,8 +720,8 @@ export class TerminalTabbedView extends Disposable {
 				dom.EventType.FOCUS_OUT,
 				() => {
 					this._terminalTabsFocusContextKey.set(false);
-				}
-			)
+				},
+			),
 		);
 	}
 
@@ -740,10 +738,10 @@ export class TerminalTabbedView extends Disposable {
 						async () => {
 							this._configurationService.updateValue(
 								TerminalSettingId.TabsLocation,
-								"right"
+								"right",
 							);
-						}
-					)
+						},
+				  )
 				: new Action(
 						"moveLeft",
 						localize("moveTabsLeft", "Move Tabs Left"),
@@ -752,10 +750,10 @@ export class TerminalTabbedView extends Disposable {
 						async () => {
 							this._configurationService.updateValue(
 								TerminalSettingId.TabsLocation,
-								"left"
+								"left",
 							);
-						}
-					),
+						},
+				  ),
 			new Action(
 				"hideTabs",
 				localize("hideTabs", "Hide Tabs"),
@@ -764,9 +762,9 @@ export class TerminalTabbedView extends Disposable {
 				async () => {
 					this._configurationService.updateValue(
 						TerminalSettingId.TabsEnabled,
-						false
+						false,
 					);
-				}
+				},
 			),
 		];
 	}
@@ -812,7 +810,7 @@ export class TerminalTabbedView extends Disposable {
 					if (dom.isActiveElement(previousActiveElement)) {
 						this._focus();
 					}
-				})
+				}),
 			);
 		}
 	}
@@ -832,7 +830,7 @@ export class TerminalTabbedView extends Disposable {
 				target: this._terminalContainer,
 				trapFocus: true,
 			},
-			true
+			true,
 		);
 	}
 

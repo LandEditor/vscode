@@ -3,18 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
 import { Color } from "vs/base/common/color";
 import {
 	ContentWidgetPositionPreference,
 	ICodeEditor,
 	IContentWidgetPosition,
 } from "vs/editor/browser/editorBrowser";
+import { IEditorDecorationsCollection } from "vs/editor/common/editorCommon";
+import { CommentThreadState } from "vs/editor/common/languages";
 import {
 	IModelDecorationOptions,
 	OverviewRulerLane,
 } from "vs/editor/common/model";
 import { ModelDecorationOptions } from "vs/editor/common/model/textModel";
+import * as nls from "vs/nls";
 import {
 	darken,
 	editorBackground,
@@ -24,8 +26,6 @@ import {
 	registerColor,
 } from "vs/platform/theme/common/colorRegistry";
 import { themeColorFromId } from "vs/platform/theme/common/themeService";
-import { IEditorDecorationsCollection } from "vs/editor/common/editorCommon";
-import { CommentThreadState } from "vs/editor/common/languages";
 
 export const overviewRulerCommentingRangeForeground = registerColor(
 	"editorGutter.commentRangeForeground",
@@ -33,15 +33,15 @@ export const overviewRulerCommentingRangeForeground = registerColor(
 		dark: opaque(listInactiveSelectionBackground, editorBackground),
 		light: darken(
 			opaque(listInactiveSelectionBackground, editorBackground),
-			0.05
+			0.05,
 		),
 		hcDark: Color.white,
 		hcLight: Color.black,
 	},
 	nls.localize(
 		"editorGutterCommentRangeForeground",
-		"Editor gutter decoration color for commenting ranges. This color should be opaque."
-	)
+		"Editor gutter decoration color for commenting ranges. This color should be opaque.",
+	),
 );
 const overviewRulerCommentForeground = registerColor(
 	"editorOverviewRuler.commentForeground",
@@ -53,8 +53,8 @@ const overviewRulerCommentForeground = registerColor(
 	},
 	nls.localize(
 		"editorOverviewRuler.commentForeground",
-		"Editor overview ruler decoration color for resolved comments. This color should be opaque."
-	)
+		"Editor overview ruler decoration color for resolved comments. This color should be opaque.",
+	),
 );
 const overviewRulerCommentUnresolvedForeground = registerColor(
 	"editorOverviewRuler.commentUnresolvedForeground",
@@ -66,8 +66,8 @@ const overviewRulerCommentUnresolvedForeground = registerColor(
 	},
 	nls.localize(
 		"editorOverviewRuler.commentUnresolvedForeground",
-		"Editor overview ruler decoration color for unresolved comments. This color should be opaque."
-	)
+		"Editor overview ruler decoration color for unresolved comments. This color should be opaque.",
+	),
 );
 
 const editorGutterCommentGlyphForeground = registerColor(
@@ -80,8 +80,8 @@ const editorGutterCommentGlyphForeground = registerColor(
 	},
 	nls.localize(
 		"editorGutterCommentGlyphForeground",
-		"Editor gutter decoration color for commenting glyphs."
-	)
+		"Editor gutter decoration color for commenting glyphs.",
+	),
 );
 registerColor(
 	"editorGutter.commentUnresolvedGlyphForeground",
@@ -93,8 +93,8 @@ registerColor(
 	},
 	nls.localize(
 		"editorGutterCommentUnresolvedGlyphForeground",
-		"Editor gutter decoration color for commenting glyphs for unresolved comment threads."
-	)
+		"Editor gutter decoration color for commenting glyphs for unresolved comment threads.",
+	),
 );
 
 export class CommentGlyphWidget {
@@ -121,7 +121,7 @@ export class CommentGlyphWidget {
 				color: themeColorFromId(
 					unresolved
 						? overviewRulerCommentUnresolvedForeground
-						: overviewRulerCommentForeground
+						: overviewRulerCommentForeground,
 				),
 				position: OverviewRulerLane.Center,
 			},

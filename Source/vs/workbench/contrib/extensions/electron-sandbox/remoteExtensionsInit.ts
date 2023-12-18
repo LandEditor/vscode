@@ -16,8 +16,8 @@ import { ServiceCollection } from "vs/platform/instantiation/common/serviceColle
 import { ILogService } from "vs/platform/log/common/log";
 import { IRemoteAuthorityResolverService } from "vs/platform/remote/common/remoteAuthorityResolver";
 import {
-	IStorageService,
 	IS_NEW_KEY,
+	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
@@ -88,11 +88,11 @@ export class RemoteExtensionsInitializerContribution
 			!this.storageService.getBoolean(
 				newRemoteConnectionKey,
 				StorageScope.APPLICATION,
-				true
+				true,
 			)
 		) {
 			this.logService.trace(
-				`Skipping initializing remote extensions because the window with this remote authority was opened before.`
+				`Skipping initializing remote extensions because the window with this remote authority was opened before.`,
 			);
 			return;
 		}
@@ -100,12 +100,12 @@ export class RemoteExtensionsInitializerContribution
 			newRemoteConnectionKey,
 			false,
 			StorageScope.APPLICATION,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 		// Skip: Not a new workspace
 		if (!this.storageService.isNew(StorageScope.WORKSPACE)) {
 			this.logService.trace(
-				`Skipping initializing remote extensions because this workspace was opened before.`
+				`Skipping initializing remote extensions because this workspace was opened before.`,
 			);
 			return;
 		}
@@ -116,23 +116,24 @@ export class RemoteExtensionsInitializerContribution
 		// Skip: No account is provided to initialize
 		const resolvedAuthority =
 			await this.remoteAuthorityResolverService.resolveAuthority(
-				connection.remoteAuthority
+				connection.remoteAuthority,
 			);
 		if (!resolvedAuthority.options?.authenticationSession) {
 			return;
 		}
 
 		const sessions = await this.authenticationService.getSessions(
-			resolvedAuthority.options?.authenticationSession.providerId
+			resolvedAuthority.options?.authenticationSession.providerId,
 		);
 		const session = sessions.find(
-			(s) => s.id === resolvedAuthority.options?.authenticationSession?.id
+			(s) =>
+				s.id === resolvedAuthority.options?.authenticationSession?.id,
 		);
 		// Skip: Session is not found
 		if (!session) {
 			this.logService.info(
 				"Skipping initializing remote extensions because the account with given session id is not found",
-				resolvedAuthority.options.authenticationSession.id
+				resolvedAuthority.options.authenticationSession.id,
 			);
 			return;
 		}
@@ -140,21 +141,21 @@ export class RemoteExtensionsInitializerContribution
 		const userDataSyncStoreClient =
 			this.instantiationService.createInstance(
 				UserDataSyncStoreClient,
-				this.userDataSyncStoreManagementService.userDataSyncStore.url
+				this.userDataSyncStoreManagementService.userDataSyncStore.url,
 			);
 		userDataSyncStoreClient.setAuthToken(
 			session.accessToken,
-			resolvedAuthority.options.authenticationSession.providerId
+			resolvedAuthority.options.authenticationSession.providerId,
 		);
 		const userData = await userDataSyncStoreClient.readResource(
 			SyncResource.Extensions,
-			null
+			null,
 		);
 
 		const serviceCollection = new ServiceCollection();
 		serviceCollection.set(
 			IExtensionManagementService,
-			remoteExtensionManagementServer.extensionManagementService
+			remoteExtensionManagementServer.extensionManagementService,
 		);
 		const instantiationService =
 			this.instantiationService.createChild(serviceCollection);
@@ -196,12 +197,12 @@ class RemoteExtensionsInitializer extends AbstractExtensionsInitializer {
 	}
 
 	protected override async doInitialize(
-		remoteUserData: IRemoteUserData
+		remoteUserData: IRemoteUserData,
 	): Promise<void> {
 		const remoteExtensions = await this.parseExtensions(remoteUserData);
 		if (!remoteExtensions) {
 			this.logService.info(
-				"No synced extensions exist while initializing remote extensions."
+				"No synced extensions exist while initializing remote extensions.",
 			);
 			return;
 		}
@@ -209,7 +210,7 @@ class RemoteExtensionsInitializer extends AbstractExtensionsInitializer {
 			await this.extensionManagementService.getInstalled();
 		const { newExtensions } = this.generatePreview(
 			remoteExtensions,
-			installedExtensions
+			installedExtensions,
 		);
 		if (!newExtensions.length) {
 			this.logService.trace("No new remote extensions to install.");
@@ -221,7 +222,7 @@ class RemoteExtensionsInitializer extends AbstractExtensionsInitializer {
 			await this.extensionGalleryService.getExtensions(
 				newExtensions,
 				{ targetPlatform, compatible: true },
-				CancellationToken.None
+				CancellationToken.None,
 			);
 		if (extensionsToInstall.length) {
 			await Promise.allSettled(
@@ -229,16 +230,16 @@ class RemoteExtensionsInitializer extends AbstractExtensionsInitializer {
 					const manifest =
 						await this.extensionGalleryService.getManifest(
 							e,
-							CancellationToken.None
+							CancellationToken.None,
 						);
 					if (
 						manifest &&
 						this.extensionManifestPropertiesService.canExecuteOnWorkspace(
-							manifest
+							manifest,
 						)
 					) {
 						const syncedExtension = remoteExtensions.find((e) =>
-							areSameExtensions(e.identifier, e.identifier)
+							areSameExtensions(e.identifier, e.identifier),
 						);
 						await this.extensionManagementService.installFromGallery(
 							e,
@@ -246,10 +247,10 @@ class RemoteExtensionsInitializer extends AbstractExtensionsInitializer {
 								installPreReleaseVersion:
 									syncedExtension?.preRelease,
 								donotIncludePackAndDependencies: true,
-							}
+							},
 						);
 					}
-				})
+				}),
 			);
 		}
 	}

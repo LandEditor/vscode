@@ -27,7 +27,7 @@ import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegis
 registerEditorContribution(
 	CopyPasteController.ID,
 	CopyPasteController,
-	EditorContributionInstantiation.Eager
+	EditorContributionInstantiation.Eager,
 ); // eager because it listens to events on the container dom node of the editor
 
 registerEditorFeature(DefaultPasteProvidersFeature);
@@ -48,11 +48,11 @@ registerEditorCommand(
 		public override runEditorCommand(
 			_accessor: ServicesAccessor | null,
 			editor: ICodeEditor,
-			_args: any
+			_args: any,
 		) {
 			return CopyPasteController.get(editor)?.changePasteType();
 		}
-	})()
+	})(),
 );
 
 registerEditorAction(
@@ -71,11 +71,11 @@ registerEditorAction(
 							schema: {
 								type: "object",
 								properties: {
-									"id": {
+									id: {
 										type: "string",
 										description: nls.localize(
 											"pasteAs.id",
-											"The id of the paste edit to try applying. If not provided, the editor will show a picker."
+											"The id of the paste edit to try applying. If not provided, the editor will show a picker.",
 										),
 									},
 								},
@@ -89,10 +89,10 @@ registerEditorAction(
 		public override run(
 			_accessor: ServicesAccessor,
 			editor: ICodeEditor,
-			args: any
+			args: any,
 		) {
 			const id = typeof args?.id === "string" ? args.id : undefined;
 			return CopyPasteController.get(editor)?.pasteAs(id);
 		}
-	}
+	},
 );

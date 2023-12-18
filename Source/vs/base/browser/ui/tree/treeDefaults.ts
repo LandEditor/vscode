@@ -10,13 +10,13 @@ import * as nls from "vs/nls";
 export class CollapseAllAction<TInput, T, TFilterData = void> extends Action {
 	constructor(
 		private viewer: AsyncDataTree<TInput, T, TFilterData>,
-		enabled: boolean
+		enabled: boolean,
 	) {
 		super(
 			"vs.tree.collapse",
 			nls.localize("collapse all", "Collapse All"),
 			"collapse-all",
-			enabled
+			enabled,
 		);
 	}
 

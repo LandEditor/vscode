@@ -42,7 +42,7 @@ declare module "vscode" {
 		 */
 		resolveFileCoverage?(
 			coverage: T,
-			token: CancellationToken
+			token: CancellationToken,
 		): ProviderResult<T>;
 	}
 
@@ -106,7 +106,7 @@ declare module "vscode" {
 		 */
 		static fromDetails(
 			uri: Uri,
-			details: readonly DetailedCoverage[]
+			details: readonly DetailedCoverage[],
 		): FileCoverage;
 
 		/**
@@ -121,7 +121,7 @@ declare module "vscode" {
 			uri: Uri,
 			statementCoverage: CoveredCount,
 			branchCoverage?: CoveredCount,
-			functionCoverage?: CoveredCount
+			functionCoverage?: CoveredCount,
 		);
 	}
 
@@ -156,7 +156,7 @@ declare module "vscode" {
 		constructor(
 			executionCount: number,
 			location: Position | Range,
-			branches?: BranchCoverage[]
+			branches?: BranchCoverage[],
 		);
 	}
 
@@ -209,7 +209,7 @@ declare module "vscode" {
 		constructor(
 			name: string,
 			executionCount: number,
-			location: Position | Range
+			location: Position | Range,
 		);
 	}
 

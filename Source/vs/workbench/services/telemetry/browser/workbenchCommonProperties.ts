@@ -3,22 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Gesture } from "vs/base/browser/touch";
+import { mixin } from "vs/base/common/objects";
+import * as Platform from "vs/base/common/platform";
+import * as uuid from "vs/base/common/uuid";
 import {
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
-import * as Platform from "vs/base/common/platform";
-import * as uuid from "vs/base/common/uuid";
-import { cleanRemoteAuthority } from "vs/platform/telemetry/common/telemetryUtils";
-import { mixin } from "vs/base/common/objects";
 import {
 	ICommonProperties,
 	firstSessionDateStorageKey,
 	lastSessionDateStorageKey,
 	machineIdKey,
 } from "vs/platform/telemetry/common/telemetry";
-import { Gesture } from "vs/base/browser/touch";
+import { cleanRemoteAuthority } from "vs/platform/telemetry/common/telemetryUtils";
 
 /**
  * General function to help reduce the individuality of user agents
@@ -37,20 +37,22 @@ export function resolveWorkbenchCommonProperties(
 	remoteAuthority?: string,
 	productIdentifier?: string,
 	removeMachineId?: boolean,
-	resolveAdditionalProperties?: () => { [key: string]: any }
+	resolveAdditionalProperties?: () => { [key: string]: any },
 ): ICommonProperties {
 	const result: ICommonProperties = Object.create(null);
 	const firstSessionDate = storageService.get(
 		firstSessionDateStorageKey,
-		StorageScope.APPLICATION
+		StorageScope.APPLICATION,
 	)!;
 	const lastSessionDate = storageService.get(
 		lastSessionDateStorageKey,
-		StorageScope.APPLICATION
+		StorageScope.APPLICATION,
 	)!;
 
 	let machineId: string | undefined;
-	if (!removeMachineId) {
+	if (removeMachineId) {
+		machineId = `Redacted-${productIdentifier ?? "web"}`;
+	} else {
 		machineId = storageService.get(machineIdKey, StorageScope.APPLICATION);
 		if (!machineId) {
 			machineId = uuid.generateUuid();
@@ -58,11 +60,9 @@ export function resolveWorkbenchCommonProperties(
 				machineIdKey,
 				machineId,
 				StorageScope.APPLICATION,
-				StorageTarget.MACHINE
+				StorageTarget.MACHINE,
 			);
 		}
-	} else {
-		machineId = `Redacted-${productIdentifier ?? "web"}`;
 	}
 
 	/**
@@ -74,7 +74,7 @@ export function resolveWorkbenchCommonProperties(
 	// __GDPR__COMMON__ "common.lastSessionDate" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
 	result["common.lastSessionDate"] = lastSessionDate || "";
 	// __GDPR__COMMON__ "common.isNewSession" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
-	result["common.isNewSession"] = !lastSessionDate ? "1" : "0";
+	result["common.isNewSession"] = lastSessionDate ? "0" : "1";
 	// __GDPR__COMMON__ "common.remoteAuthority" : { "classification": "SystemMetaData", "purpose": "PerformanceAndHealth" }
 	result["common.remoteAuthority"] = cleanRemoteAuthority(remoteAuthority);
 
@@ -107,7 +107,7 @@ export function resolveWorkbenchCommonProperties(
 	const startTime = Date.now();
 	Object.defineProperties(result, {
 		// __GDPR__COMMON__ "timestamp" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
-		"timestamp": {
+		timestamp: {
 			get: () => new Date(),
 			enumerable: true,
 		},

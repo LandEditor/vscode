@@ -37,7 +37,7 @@ export class SortLinesCommand implements ICommand {
 
 	public getEditOperations(
 		model: ITextModel,
-		builder: IEditOperationBuilder
+		builder: IEditOperationBuilder,
 	): void {
 		const op = sortLines(model, this.selection, this.descending);
 		if (op) {
@@ -49,7 +49,7 @@ export class SortLinesCommand implements ICommand {
 
 	public computeCursorState(
 		model: ITextModel,
-		helper: ICursorStateComputerData
+		helper: ICursorStateComputerData,
 	): Selection {
 		return helper.getTrackedSelection(this.selectionId!);
 	}
@@ -57,7 +57,7 @@ export class SortLinesCommand implements ICommand {
 	public static canRun(
 		model: ITextModel | null,
 		selection: Selection,
-		descending: boolean
+		descending: boolean,
 	): boolean {
 		if (model === null) {
 			return false;
@@ -82,7 +82,7 @@ export class SortLinesCommand implements ICommand {
 function getSortData(
 	model: ITextModel,
 	selection: Selection,
-	descending: boolean
+	descending: boolean,
 ) {
 	const startLineNumber = selection.startLineNumber;
 	let endLineNumber = selection.endLineNumber;
@@ -129,7 +129,7 @@ function getSortData(
 function sortLines(
 	model: ITextModel,
 	selection: Selection,
-	descending: boolean
+	descending: boolean,
 ): ISingleEditOperation | null {
 	const data = getSortData(model, selection, descending);
 
@@ -142,8 +142,8 @@ function sortLines(
 			data.startLineNumber,
 			1,
 			data.endLineNumber,
-			model.getLineMaxColumn(data.endLineNumber)
+			model.getLineMaxColumn(data.endLineNumber),
 		),
-		data.after.join("\n")
+		data.after.join("\n"),
 	);
 }

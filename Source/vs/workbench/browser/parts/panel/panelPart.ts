@@ -3,55 +3,55 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/panelpart";
-import { localize } from "vs/nls";
+import { Dimension } from "vs/base/browser/dom";
+import { ActionsOrientation } from "vs/base/browser/ui/actionbar/actionbar";
+import { HoverPosition } from "vs/base/browser/ui/hover/hoverWidget";
 import {
 	IAction,
 	Separator,
 	SubmenuAction,
 	toAction,
 } from "vs/base/common/actions";
-import { ActionsOrientation } from "vs/base/browser/ui/actionbar/actionbar";
+import { assertIsDefined } from "vs/base/common/types";
+import "vs/css!./media/panelpart";
+import { localize } from "vs/nls";
+import { createAndFillInContextMenuActions } from "vs/platform/actions/browser/menuEntryActionViewItem";
+import { IMenuService, MenuId } from "vs/platform/actions/common/actions";
+import { ICommandService } from "vs/platform/commands/common/commands";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { INotificationService } from "vs/platform/notification/common/notification";
+import { IStorageService } from "vs/platform/storage/common/storage";
+import {
+	badgeBackground,
+	badgeForeground,
+	contrastBorder,
+} from "vs/platform/theme/common/colorRegistry";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import { IPaneCompositeBarOptions } from "vs/workbench/browser/parts/paneCompositeBar";
+import { AbstractPaneCompositePart } from "vs/workbench/browser/parts/paneCompositePart";
+import { TogglePanelAction } from "vs/workbench/browser/parts/panel/panelActions";
 import {
 	ActivePanelContext,
 	PanelFocusContext,
 } from "vs/workbench/common/contextkeys";
 import {
+	PANEL_ACTIVE_TITLE_BORDER,
+	PANEL_ACTIVE_TITLE_FOREGROUND,
+	PANEL_BACKGROUND,
+	PANEL_BORDER,
+	PANEL_DRAG_AND_DROP_BORDER,
+	PANEL_INACTIVE_TITLE_FOREGROUND,
+} from "vs/workbench/common/theme";
+import { IViewDescriptorService } from "vs/workbench/common/views";
+import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
+import {
 	IWorkbenchLayoutService,
 	Parts,
 	Position,
 } from "vs/workbench/services/layout/browser/layoutService";
-import { IStorageService } from "vs/platform/storage/common/storage";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { TogglePanelAction } from "vs/workbench/browser/parts/panel/panelActions";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import {
-	PANEL_BACKGROUND,
-	PANEL_BORDER,
-	PANEL_ACTIVE_TITLE_FOREGROUND,
-	PANEL_INACTIVE_TITLE_FOREGROUND,
-	PANEL_ACTIVE_TITLE_BORDER,
-	PANEL_DRAG_AND_DROP_BORDER,
-} from "vs/workbench/common/theme";
-import {
-	contrastBorder,
-	badgeBackground,
-	badgeForeground,
-} from "vs/platform/theme/common/colorRegistry";
-import { INotificationService } from "vs/platform/notification/common/notification";
-import { Dimension } from "vs/base/browser/dom";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import { assertIsDefined } from "vs/base/common/types";
-import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
-import { IViewDescriptorService } from "vs/workbench/common/views";
-import { HoverPosition } from "vs/base/browser/ui/hover/hoverWidget";
-import { IMenuService, MenuId } from "vs/platform/actions/common/actions";
-import { AbstractPaneCompositePart } from "vs/workbench/browser/parts/paneCompositePart";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import { createAndFillInContextMenuActions } from "vs/platform/actions/browser/menuEntryActionViewItem";
-import { IPaneCompositeBarOptions } from "vs/workbench/browser/parts/paneCompositeBar";
 
 export class PanelPart extends AbstractPaneCompositePart {
 	//#region IView
@@ -169,13 +169,13 @@ export class PanelPart extends AbstractPaneCompositePart {
 				activeBackgroundColor: theme.getColor(PANEL_BACKGROUND), // Background color for overflow action
 				inactiveBackgroundColor: theme.getColor(PANEL_BACKGROUND), // Background color for overflow action
 				activeBorderBottomColor: theme.getColor(
-					PANEL_ACTIVE_TITLE_BORDER
+					PANEL_ACTIVE_TITLE_BORDER,
 				),
 				activeForegroundColor: theme.getColor(
-					PANEL_ACTIVE_TITLE_FOREGROUND
+					PANEL_ACTIVE_TITLE_FOREGROUND,
 				),
 				inactiveForegroundColor: theme.getColor(
-					PANEL_INACTIVE_TITLE_FOREGROUND
+					PANEL_INACTIVE_TITLE_FOREGROUND,
 				),
 				badgeBackground: theme.getColor(badgeBackground),
 				badgeForeground: theme.getColor(badgeForeground),
@@ -187,23 +187,23 @@ export class PanelPart extends AbstractPaneCompositePart {
 	private fillExtraContextMenuActions(actions: IAction[]): void {
 		const panelPositionMenu = this.menuService.createMenu(
 			MenuId.PanelPositionMenu,
-			this.contextKeyService
+			this.contextKeyService,
 		);
 		const panelAlignMenu = this.menuService.createMenu(
 			MenuId.PanelAlignmentMenu,
-			this.contextKeyService
+			this.contextKeyService,
 		);
 		const positionActions: IAction[] = [];
 		const alignActions: IAction[] = [];
 		createAndFillInContextMenuActions(
 			panelPositionMenu,
 			{ shouldForwardArgs: true },
-			{ primary: [], secondary: positionActions }
+			{ primary: [], secondary: positionActions },
 		);
 		createAndFillInContextMenuActions(
 			panelAlignMenu,
 			{ shouldForwardArgs: true },
-			{ primary: [], secondary: alignActions }
+			{ primary: [], secondary: alignActions },
 		);
 		panelAlignMenu.dispose();
 		panelPositionMenu.dispose();
@@ -214,22 +214,22 @@ export class PanelPart extends AbstractPaneCompositePart {
 				new SubmenuAction(
 					"workbench.action.panel.position",
 					localize("panel position", "Panel Position"),
-					positionActions
+					positionActions,
 				),
 				new SubmenuAction(
 					"workbench.action.panel.align",
 					localize("align panel", "Align Panel"),
-					alignActions
+					alignActions,
 				),
 				toAction({
 					id: TogglePanelAction.ID,
 					label: localize("hidePanel", "Hide Panel"),
 					run: () =>
 						this.commandService.executeCommand(
-							TogglePanelAction.ID
+							TogglePanelAction.ID,
 						),
 				}),
-			]
+			],
 		);
 	}
 
@@ -237,7 +237,7 @@ export class PanelPart extends AbstractPaneCompositePart {
 		width: number,
 		height: number,
 		top: number,
-		left: number
+		left: number,
 	): void {
 		let dimensions: Dimension;
 		if (this.layoutService.getPanelPosition() === Position.RIGHT) {

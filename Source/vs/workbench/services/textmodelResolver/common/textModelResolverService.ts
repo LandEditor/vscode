@@ -3,40 +3,40 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from "vs/base/common/uri";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { ITextModel } from "vs/editor/common/model";
 import {
+	AsyncReferenceCollection,
+	Disposable,
 	IDisposable,
-	toDisposable,
 	IReference,
 	ReferenceCollection,
-	Disposable,
-	AsyncReferenceCollection,
+	toDisposable,
 } from "vs/base/common/lifecycle";
-import { IModelService } from "vs/editor/common/services/model";
-import { TextResourceEditorModel } from "vs/workbench/common/editor/textResourceEditorModel";
-import {
-	ITextFileService,
-	TextFileResolveReason,
-} from "vs/workbench/services/textfile/common/textfiles";
 import { Schemas } from "vs/base/common/network";
+import { URI } from "vs/base/common/uri";
+import { ITextModel } from "vs/editor/common/model";
+import { IModelService } from "vs/editor/common/services/model";
+import { ModelUndoRedoParticipant } from "vs/editor/common/services/modelUndoRedoParticipant";
 import {
-	ITextModelService,
-	ITextModelContentProvider,
-	ITextEditorModel,
 	IResolvedTextEditorModel,
+	ITextEditorModel,
+	ITextModelContentProvider,
+	ITextModelService,
 	isResolvedTextEditorModel,
 } from "vs/editor/common/services/resolverService";
-import { TextFileEditorModel } from "vs/workbench/services/textfile/common/textFileEditorModel";
 import { IFileService } from "vs/platform/files/common/files";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { IUndoRedoService } from "vs/platform/undoRedo/common/undoRedo";
-import { ModelUndoRedoParticipant } from "vs/editor/common/services/modelUndoRedoParticipant";
 import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import { TextResourceEditorModel } from "vs/workbench/common/editor/textResourceEditorModel";
+import { TextFileEditorModel } from "vs/workbench/services/textfile/common/textFileEditorModel";
+import {
+	ITextFileService,
+	TextFileResolveReason,
+} from "vs/workbench/services/textfile/common/textfiles";
 import { UntitledTextEditorModel } from "vs/workbench/services/untitled/common/untitledTextEditorModel";
 
 class ResourceModelCollection extends ReferenceCollection<
@@ -56,14 +56,14 @@ class ResourceModelCollection extends ReferenceCollection<
 	}
 
 	protected createReferencedObject(
-		key: string
+		key: string,
 	): Promise<IResolvedTextEditorModel> {
 		return this.doCreateReferencedObject(key);
 	}
 
 	private async doCreateReferencedObject(
 		key: string,
-		skipActivateProvider?: boolean
+		skipActivateProvider?: boolean,
 	): Promise<IResolvedTextEditorModel> {
 		// Untrack as being disposed
 		this.modelsToDispose.delete(key);
@@ -78,7 +78,7 @@ class ResourceModelCollection extends ReferenceCollection<
 
 			const model = this.instantiationService.createInstance(
 				TextResourceEditorModel,
-				resource
+				resource,
 			);
 			if (this.ensureResolvedModel(model, key)) {
 				return model;
@@ -111,7 +111,7 @@ class ResourceModelCollection extends ReferenceCollection<
 
 			const model = this.instantiationService.createInstance(
 				TextResourceEditorModel,
-				resource
+				resource,
 			);
 			if (this.ensureResolvedModel(model, key)) {
 				return model;
@@ -130,7 +130,7 @@ class ResourceModelCollection extends ReferenceCollection<
 
 	private ensureResolvedModel(
 		model: ITextEditorModel,
-		key: string
+		key: string,
 	): model is IResolvedTextEditorModel {
 		if (isResolvedTextEditorModel(model)) {
 			return true;
@@ -141,7 +141,7 @@ class ResourceModelCollection extends ReferenceCollection<
 
 	protected destroyReferencedObject(
 		key: string,
-		modelPromise: Promise<ITextEditorModel>
+		modelPromise: Promise<ITextEditorModel>,
 	): void {
 		// inMemory is bound to a different lifecycle
 		const resource = URI.parse(key);
@@ -189,7 +189,7 @@ class ResourceModelCollection extends ReferenceCollection<
 
 	registerTextModelContentProvider(
 		scheme: string,
-		provider: ITextModelContentProvider
+		provider: ITextModelContentProvider,
 	): IDisposable {
 		let providers = this.providers.get(scheme);
 		if (!providers) {
@@ -234,7 +234,7 @@ class ResourceModelCollection extends ReferenceCollection<
 		}
 
 		throw new Error(
-			`Unable to resolve text model content for resource ${key}`
+			`Unable to resolve text model content for resource ${key}`,
 		);
 	}
 }
@@ -255,7 +255,7 @@ export class TextModelResolverService
 		if (!this._resourceModelCollection) {
 			this._resourceModelCollection =
 				this.instantiationService.createInstance(
-					ResourceModelCollection
+					ResourceModelCollection,
 				);
 		}
 
@@ -268,7 +268,7 @@ export class TextModelResolverService
 	private get asyncModelCollection() {
 		if (!this._asyncModelCollection) {
 			this._asyncModelCollection = new AsyncReferenceCollection(
-				this.resourceModelCollection
+				this.resourceModelCollection,
 			);
 		}
 
@@ -296,7 +296,7 @@ export class TextModelResolverService
 	}
 
 	async createModelReference(
-		resource: URI
+		resource: URI,
 	): Promise<IReference<IResolvedTextEditorModel>> {
 		// From this moment on, only operate on the canonical resource
 		// to ensure we reduce the chance of resolving the same resource
@@ -308,11 +308,11 @@ export class TextModelResolverService
 
 	registerTextModelContentProvider(
 		scheme: string,
-		provider: ITextModelContentProvider
+		provider: ITextModelContentProvider,
 	): IDisposable {
 		return this.resourceModelCollection.registerTextModelContentProvider(
 			scheme,
-			provider
+			provider,
 		);
 	}
 
@@ -326,7 +326,7 @@ export class TextModelResolverService
 		}
 
 		return this.resourceModelCollection.hasTextModelContentProvider(
-			resource.scheme
+			resource.scheme,
 		);
 	}
 }
@@ -334,5 +334,5 @@ export class TextModelResolverService
 registerSingleton(
 	ITextModelService,
 	TextModelResolverService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

@@ -5,21 +5,21 @@
 
 import * as dom from "vs/base/browser/dom";
 import { FastDomNode, createFastDomNode } from "vs/base/browser/fastDomNode";
+import { MOUSE_CURSOR_TEXT_CSS_CLASS_NAME } from "vs/base/browser/ui/mouseCursor/mouseCursor";
 import * as strings from "vs/base/common/strings";
 import { applyFontInfo } from "vs/editor/browser/config/domFontInfo";
-import {
-	TextEditorCursorStyle,
-	EditorOption,
-} from "vs/editor/common/config/editorOptions";
-import { Position } from "vs/editor/common/core/position";
-import { Range } from "vs/editor/common/core/range";
 import {
 	RenderingContext,
 	RestrictedRenderingContext,
 } from "vs/editor/browser/view/renderingContext";
-import { ViewContext } from "vs/editor/common/viewModel/viewContext";
+import {
+	EditorOption,
+	TextEditorCursorStyle,
+} from "vs/editor/common/config/editorOptions";
+import { Position } from "vs/editor/common/core/position";
+import { Range } from "vs/editor/common/core/range";
 import * as viewEvents from "vs/editor/common/viewEvents";
-import { MOUSE_CURSOR_TEXT_CSS_CLASS_NAME } from "vs/base/browser/ui/mouseCursor/mouseCursor";
+import { ViewContext } from "vs/editor/common/viewModel/viewContext";
 
 export interface IViewCursorRenderData {
 	domNode: HTMLElement;
@@ -37,7 +37,7 @@ class ViewCursorRenderData {
 		public readonly width: number,
 		public readonly height: number,
 		public readonly textContent: string,
-		public readonly textContentClassName: string
+		public readonly textContentClassName: string,
 	) {}
 }
 
@@ -68,7 +68,7 @@ export class ViewCursor {
 			fontInfo.typicalHalfwidthCharacterWidth;
 		this._lineCursorWidth = Math.min(
 			options.get(EditorOption.cursorWidth),
-			this._typicalHalfwidthCharacterWidth
+			this._typicalHalfwidthCharacterWidth,
 		);
 
 		this._isVisible = true;
@@ -76,7 +76,7 @@ export class ViewCursor {
 		// Create the dom node
 		this._domNode = createFastDomNode(document.createElement("div"));
 		this._domNode.setClassName(
-			`cursor ${MOUSE_CURSOR_TEXT_CSS_CLASS_NAME}`
+			`cursor ${MOUSE_CURSOR_TEXT_CSS_CLASS_NAME}`,
 		);
 		this._domNode.setHeight(this._lineHeight);
 		this._domNode.setTop(0);
@@ -113,7 +113,7 @@ export class ViewCursor {
 	}
 
 	public onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent
+		e: viewEvents.ViewConfigurationChangedEvent,
 	): boolean {
 		const options = this._context.configuration.options;
 		const fontInfo = options.get(EditorOption.fontInfo);
@@ -124,7 +124,7 @@ export class ViewCursor {
 			fontInfo.typicalHalfwidthCharacterWidth;
 		this._lineCursorWidth = Math.min(
 			options.get(EditorOption.cursorWidth),
-			this._typicalHalfwidthCharacterWidth
+			this._typicalHalfwidthCharacterWidth,
 		);
 		applyFontInfo(this._domNode, fontInfo);
 
@@ -133,7 +133,7 @@ export class ViewCursor {
 
 	public onCursorPositionChanged(
 		position: Position,
-		pauseAnimation: boolean
+		pauseAnimation: boolean,
 	): boolean {
 		if (pauseAnimation) {
 			this._domNode.domNode.style.transitionProperty = "none";
@@ -153,7 +153,7 @@ export class ViewCursor {
 		const lineContent = this._context.viewModel.getLineContent(lineNumber);
 		const [startOffset, endOffset] = strings.getCharContainingOffset(
 			lineContent,
-			column - 1
+			column - 1,
 		);
 		return [
 			new Position(lineNumber, startOffset + 1),
@@ -181,7 +181,7 @@ export class ViewCursor {
 			if (this._cursorStyle === TextEditorCursorStyle.Line) {
 				width = dom.computeScreenAwareSize(
 					window,
-					this._lineCursorWidth > 0 ? this._lineCursorWidth : 2
+					this._lineCursorWidth > 0 ? this._lineCursorWidth : 2,
 				);
 				if (width > 2) {
 					textContent = nextGrapheme;
@@ -209,7 +209,7 @@ export class ViewCursor {
 				width,
 				this._lineHeight,
 				textContent,
-				textContentClassName
+				textContentClassName,
 			);
 		}
 
@@ -218,9 +218,9 @@ export class ViewCursor {
 				position.lineNumber,
 				position.column,
 				position.lineNumber,
-				position.column + nextGrapheme.length
+				position.column + nextGrapheme.length,
 			),
-			false
+			false,
 		);
 		if (
 			!visibleRangeForCharacter ||
@@ -244,8 +244,8 @@ export class ViewCursor {
 			nextGrapheme === "\t"
 				? this._typicalHalfwidthCharacterWidth
 				: range.width < 1
-					? this._typicalHalfwidthCharacterWidth
-					: range.width;
+				  ? this._typicalHalfwidthCharacterWidth
+				  : range.width;
 
 		if (this._cursorStyle === TextEditorCursorStyle.Block) {
 			textContent = nextGrapheme;
@@ -273,16 +273,16 @@ export class ViewCursor {
 			width,
 			height,
 			textContent,
-			textContentClassName
+			textContentClassName,
 		);
 	}
 
 	private _getTokenClassName(position: Position): string {
 		const lineData = this._context.viewModel.getViewLineData(
-			position.lineNumber
+			position.lineNumber,
 		);
 		const tokenIndex = lineData.tokens.findTokenIndexAtOffset(
-			position.column - 1
+			position.column - 1,
 		);
 		return lineData.tokens.getClassName(tokenIndex);
 	}
@@ -292,7 +292,7 @@ export class ViewCursor {
 	}
 
 	public render(
-		ctx: RestrictedRenderingContext
+		ctx: RestrictedRenderingContext,
 	): IViewCursorRenderData | null {
 		if (!this._renderData) {
 			this._domNode.setDisplay("none");
@@ -305,7 +305,7 @@ export class ViewCursor {
 		}
 
 		this._domNode.setClassName(
-			`cursor ${MOUSE_CURSOR_TEXT_CSS_CLASS_NAME} ${this._renderData.textContentClassName}`
+			`cursor ${MOUSE_CURSOR_TEXT_CSS_CLASS_NAME} ${this._renderData.textContentClassName}`,
 		);
 
 		this._domNode.setDisplay("block");

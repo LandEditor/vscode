@@ -89,10 +89,10 @@ export function registerChatExecuteActions() {
 				const chatService = accessor.get(IChatService);
 				if (context.widget.viewModel) {
 					chatService.cancelCurrentRequestForSession(
-						context.widget.viewModel.sessionId
+						context.widget.viewModel.sessionId,
 					);
 				}
 			}
-		}
+		},
 	);
 }

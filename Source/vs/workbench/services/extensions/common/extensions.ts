@@ -112,7 +112,7 @@ export interface IExtensionHostProfile {
 	getAggregatedTimes(): Map<ProfileSegmentId, number>;
 }
 
-export const enum ExtensionHostStartup {
+export enum ExtensionHostStartup {
 	/**
 	 * The extension host should be launched immediately and doesn't require a `$startExtensionHost` call.
 	 */
@@ -167,7 +167,7 @@ export class ExtensionHostExtensions {
 	constructor(
 		versionId: number,
 		allExtensions: readonly IExtensionDescription[],
-		myExtensions: ExtensionIdentifier[]
+		myExtensions: ExtensionIdentifier[],
 	) {
 		this._versionId = versionId;
 		this._allExtensions = allExtensions.slice(0);
@@ -182,7 +182,7 @@ export class ExtensionHostExtensions {
 			myExtensions: this._myExtensions,
 			activationEvents:
 				ImplicitActivationEvents.createActivationEventsMap(
-					this._allExtensions
+					this._allExtensions,
 				),
 		};
 	}
@@ -190,11 +190,11 @@ export class ExtensionHostExtensions {
 	public set(
 		versionId: number,
 		allExtensions: IExtensionDescription[],
-		myExtensions: ExtensionIdentifier[]
+		myExtensions: ExtensionIdentifier[],
 	): IExtensionDescriptionDelta {
 		if (this._versionId > versionId) {
 			throw new Error(
-				`ExtensionHostExtensions: invalid versionId ${versionId} (current: ${this._versionId})`
+				`ExtensionHostExtensions: invalid versionId ${versionId} (current: ${this._versionId})`,
 			);
 		}
 		const toRemove: ExtensionIdentifier[] = [];
@@ -203,12 +203,12 @@ export class ExtensionHostExtensions {
 		const myToAdd: ExtensionIdentifier[] = [];
 
 		const oldExtensionsMap = extensionDescriptionArrayToMap(
-			this._allExtensions
+			this._allExtensions,
 		);
 		const newExtensionsMap = extensionDescriptionArrayToMap(allExtensions);
 		const extensionsAreTheSame = (
 			a: IExtensionDescription,
-			b: IExtensionDescription
+			b: IExtensionDescription,
 		) => {
 			return (
 				a.extensionLocation.toString() ===
@@ -250,7 +250,7 @@ export class ExtensionHostExtensions {
 		}
 
 		const myOldExtensionsSet = new ExtensionIdentifierSet(
-			this._myExtensions
+			this._myExtensions,
 		);
 		const myNewExtensionsSet = new ExtensionIdentifierSet(myExtensions);
 		for (const oldExtensionId of this._myExtensions) {
@@ -279,7 +279,7 @@ export class ExtensionHostExtensions {
 	}
 
 	public delta(
-		extensionsDelta: IExtensionDescriptionDelta
+		extensionsDelta: IExtensionDescriptionDelta,
 	): IExtensionDescriptionDelta | null {
 		if (this._versionId >= extensionsDelta.versionId) {
 			// ignore older deltas
@@ -342,7 +342,7 @@ export class ExtensionHostExtensions {
 
 			const activationEvents =
 				ImplicitActivationEvents.readActivationEvents(
-					extensionDescription
+					extensionDescription,
 				);
 			for (const activationEvent of activationEvents) {
 				result.add(activationEvent);
@@ -354,7 +354,7 @@ export class ExtensionHostExtensions {
 }
 
 function extensionDescriptionArrayToMap(
-	extensions: IExtensionDescription[]
+	extensions: IExtensionDescription[],
 ): ExtensionIdentifierMap<IExtensionDescription> {
 	const result = new ExtensionIdentifierMap<IExtensionDescription>();
 	for (const extension of extensions) {
@@ -365,7 +365,7 @@ function extensionDescriptionArrayToMap(
 
 export function isProposedApiEnabled(
 	extension: IExtensionDescription,
-	proposal: ApiProposalName
+	proposal: ApiProposalName,
 ): boolean {
 	if (!extension.enabledApiProposals) {
 		return false;
@@ -375,7 +375,7 @@ export function isProposedApiEnabled(
 
 export function checkProposedApiEnabled(
 	extension: IExtensionDescription,
-	proposal: ApiProposalName
+	proposal: ApiProposalName,
 ): void {
 	if (!isProposedApiEnabled(extension, proposal)) {
 		throw new Error(
@@ -385,7 +385,7 @@ export function checkProposedApiEnabled(
 				extension.enabledApiProposals?.join(", ") ?? "[]"
 			} but NOT ${proposal}.\n The missing proposal MUST be added and you must start in extension development mode or use the following command line switch: --enable-proposed-api ${
 				extension.identifier.value
-			}`
+			}`,
 		);
 	}
 }
@@ -406,7 +406,7 @@ export class ActivationTimes {
 		public readonly codeLoadingTime: number,
 		public readonly activateCallTime: number,
 		public readonly activateResolvedTime: number,
-		public readonly activationReason: ExtensionActivationReason
+		public readonly activationReason: ExtensionActivationReason,
 	) {}
 }
 
@@ -434,7 +434,7 @@ export interface IResponsiveStateChangeEvent {
 	getInspectPort(tryEnableInspector: boolean): Promise<number>;
 }
 
-export const enum ActivationKind {
+export enum ActivationKind {
 	Normal = 0,
 	Immediate = 1,
 }
@@ -521,7 +521,7 @@ export interface IExtensionService {
 	 */
 	activateByEvent(
 		activationEvent: string,
-		activationKind?: ActivationKind
+		activationKind?: ActivationKind,
 	): Promise<void>;
 
 	/**
@@ -530,7 +530,7 @@ export interface IExtensionService {
 	 */
 	activateById(
 		extensionId: ExtensionIdentifier,
-		reason: ExtensionActivationReason
+		reason: ExtensionActivationReason,
 	): Promise<void>;
 
 	/**
@@ -569,9 +569,7 @@ export interface IExtensionService {
 	 */
 	readExtensionPointContributions<
 		T extends IExtensionContributions[keyof IExtensionContributions],
-	>(
-		extPoint: IExtensionPoint<T>
-	): Promise<ExtensionPointContribution<T>[]>;
+	>(extPoint: IExtensionPoint<T>): Promise<ExtensionPointContribution<T>[]>;
 
 	/**
 	 * Get information about extensions status.
@@ -583,7 +581,7 @@ export interface IExtensionService {
 	 */
 	getInspectPorts(
 		extensionHostKind: ExtensionHostKind,
-		tryEnableInspector: boolean
+		tryEnableInspector: boolean,
 	): Promise<number[]>;
 
 	/**
@@ -612,7 +610,7 @@ export interface IExtensionService {
 export interface IInternalExtensionService {
 	_activateById(
 		extensionId: ExtensionIdentifier,
-		reason: ExtensionActivationReason
+		reason: ExtensionActivationReason,
 	): Promise<void>;
 	_onWillActivateExtension(extensionId: ExtensionIdentifier): void;
 	_onDidActivateExtension(
@@ -620,15 +618,15 @@ export interface IInternalExtensionService {
 		codeLoadingTime: number,
 		activateCallTime: number,
 		activateResolvedTime: number,
-		activationReason: ExtensionActivationReason
+		activationReason: ExtensionActivationReason,
 	): void;
 	_onDidActivateExtensionError(
 		extensionId: ExtensionIdentifier,
-		error: Error
+		error: Error,
 	): void;
 	_onExtensionRuntimeError(
 		extensionId: ExtensionIdentifier,
-		err: Error
+		err: Error,
 	): void;
 }
 
@@ -637,7 +635,7 @@ export interface ProfileSession {
 }
 
 export function toExtension(
-	extensionDescription: IExtensionDescription
+	extensionDescription: IExtensionDescription,
 ): IExtension {
 	return {
 		type: extensionDescription.isBuiltin
@@ -649,7 +647,7 @@ export function toExtension(
 		identifier: {
 			id: getGalleryExtensionId(
 				extensionDescription.publisher,
-				extensionDescription.name
+				extensionDescription.name,
 			),
 			uuid: extensionDescription.uuid,
 		},
@@ -663,14 +661,14 @@ export function toExtension(
 
 export function toExtensionDescription(
 	extension: IExtension,
-	isUnderDevelopment?: boolean
+	isUnderDevelopment?: boolean,
 ): IExtensionDescription {
 	return {
 		identifier: new ExtensionIdentifier(
 			getExtensionId(
 				extension.manifest.publisher,
-				extension.manifest.name
-			)
+				extension.manifest.name,
+			),
 		),
 		isBuiltin: extension.type === ExtensionType.System,
 		isUserBuiltin:
@@ -698,7 +696,7 @@ export class NullExtensionService implements IExtensionService {
 	}
 	activateById(
 		extensionId: ExtensionIdentifier,
-		reason: ExtensionActivationReason
+		reason: ExtensionActivationReason,
 	): Promise<void> {
 		return Promise.resolve(undefined);
 	}
@@ -712,7 +710,7 @@ export class NullExtensionService implements IExtensionService {
 		return Promise.resolve(undefined);
 	}
 	readExtensionPointContributions<T>(
-		_extPoint: IExtensionPoint<T>
+		_extPoint: IExtensionPoint<T>,
 	): Promise<ExtensionPointContribution<T>[]> {
 		return Promise.resolve(Object.create(null));
 	}
@@ -721,7 +719,7 @@ export class NullExtensionService implements IExtensionService {
 	}
 	getInspectPorts(
 		_extensionHostKind: ExtensionHostKind,
-		_tryEnableInspector: boolean
+		_tryEnableInspector: boolean,
 	): Promise<number[]> {
 		return Promise.resolve([]);
 	}

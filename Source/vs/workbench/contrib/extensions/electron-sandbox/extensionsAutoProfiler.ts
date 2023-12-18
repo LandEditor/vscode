@@ -51,7 +51,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 
 	private _session: CancellationTokenSource | undefined;
 	private _unresponsiveListener: IDisposable | undefined;
-	private _perfBaseline: number = -1;
+	private _perfBaseline = -1;
 
 	constructor(
 		@IExtensionService
@@ -94,7 +94,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 	}
 
 	private async _onDidChangeResponsiveChange(
-		event: IResponsiveStateChangeEvent
+		event: IResponsiveStateChangeEvent,
 	): Promise<void> {
 		if (event.extensionHostKind !== ExtensionHostKind.LocalProcess) {
 			return;
@@ -110,7 +110,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 			// stop profiling when responsive again
 			this._session.cancel();
 			this._logService.info(
-				"UNRESPONSIVE extension host: received responsive event and cancelling profiling session"
+				"UNRESPONSIVE extension host: received responsive event and cancelling profiling session",
 			);
 		} else if (!event.isResponsive && !this._session) {
 			// start profiling if not yet profiling
@@ -130,7 +130,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 				return;
 			}
 			this._logService.info(
-				"UNRESPONSIVE extension host: starting to profile NOW"
+				"UNRESPONSIVE extension host: starting to profile NOW",
 			);
 
 			// wait 5 seconds or until responsive again
@@ -160,7 +160,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 		// send heavy samples iff enabled
 		if (
 			this._configService.getValue(
-				"application.experimental.rendererProfiling"
+				"application.experimental.rendererProfiling",
 			)
 		) {
 			const searchTree =
@@ -169,7 +169,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 				this._extensionService.extensions.map((e) => [
 					e.extensionLocation,
 					e,
-				])
+				]),
 			);
 
 			await this._profileAnalysisService.analyseBottomUp(
@@ -178,7 +178,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 					searchTree.findSubstr(URI.parse(url))?.identifier.value ??
 					"<<not-found>>",
 				this._perfBaseline,
-				false
+				false,
 			);
 		}
 
@@ -193,13 +193,13 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 
 		const data = await this._profileAnalysisService.analyseByLocation(
 			profile.data,
-			categories
+			categories,
 		);
 
 		//
-		let overall: number = 0;
-		let top: string = "";
-		let topAggregated: number = -1;
+		let overall = 0;
+		let top = "";
+		let topAggregated = -1;
 		for (const [category, aggregated] of data) {
 			overall += aggregated;
 			if (aggregated > topAggregated) {
@@ -221,16 +221,16 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 		// print message to log
 		const path = joinPath(
 			this._environmentServie.tmpDir,
-			`exthost-${Math.random().toString(16).slice(2, 8)}.cpuprofile`
+			`exthost-${Math.random().toString(16).slice(2, 8)}.cpuprofile`,
 		);
 		await this._fileService.writeFile(
 			path,
-			VSBuffer.fromString(JSON.stringify(profile.data))
+			VSBuffer.fromString(JSON.stringify(profile.data)),
 		);
 		this._logService.warn(
 			`UNRESPONSIVE extension host: '${top}' took ${topPercentage}% of ${
 				topAggregated / 1e3
-			}ms, saved PROFILE here: '${path}'`
+			}ms, saved PROFILE here: '${path}'`,
 		);
 
 		type UnresponsiveData = {
@@ -270,14 +270,14 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 		>("exthostunresponsive", {
 			sessionId,
 			duration: overall,
-			data: data.map((tuple) => tuple[0]).flat(),
+			data: data.flatMap((tuple) => tuple[0]),
 			id: ExtensionIdentifier.toKey(extension.identifier),
 		});
 
 		// add to running extensions view
 		this._extensionProfileService.setUnresponsiveProfile(
 			extension.identifier,
-			profile
+			profile,
 		);
 
 		// prompt: when really slow/greedy
@@ -288,7 +288,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 		const action = await this._instantiationService.invokeFunction(
 			createSlowExtensionAction,
 			extension,
-			profile
+			profile,
 		);
 
 		if (!action) {
@@ -308,7 +308,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 			localize(
 				"unresponsive-exthost",
 				"The extension '{0}' took a very long time to complete its last operation and it has prevented other extensions from running.",
-				extension.displayName || extension.name
+				extension.displayName || extension.name,
 			),
 			[
 				{
@@ -316,12 +316,12 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 					run: () =>
 						this._editorService.openEditor(
 							RuntimeExtensionsInput.instance,
-							{ pinned: true }
+							{ pinned: true },
 						),
 				},
 				action,
 			],
-			{ priority: NotificationPriority.SILENT }
+			{ priority: NotificationPriority.SILENT },
 		);
 	}
 }

@@ -4,25 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 
 //@ts-check
-(function () {
-	"use strict";
-
+(() => {
 	const bootstrapWindow = bootstrapWindowLib();
 
 	// Load issue reporter into window
 	bootstrapWindow.load(
 		["vs/code/electron-sandbox/issue/issueReporterMain"],
-		function (issueReporter, configuration) {
-			return issueReporter.startup(configuration);
-		},
+		(issueReporter, configuration) => issueReporter.startup(configuration),
 		{
-			configureDeveloperSettings: function () {
-				return {
-					forceEnableDeveloperKeybindings: true,
-					disallowReloadKeybinding: true,
-				};
-			},
-		}
+			configureDeveloperSettings: () => ({
+				forceEnableDeveloperKeybindings: true,
+				disallowReloadKeybinding: true,
+			}),
+		},
 	);
 
 	/**

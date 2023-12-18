@@ -4,33 +4,33 @@
  *--------------------------------------------------------------------------------------------*/
 
 export class FastDomNode<T extends HTMLElement> {
-	private _maxWidth: string = "";
-	private _width: string = "";
-	private _height: string = "";
-	private _top: string = "";
-	private _left: string = "";
-	private _bottom: string = "";
-	private _right: string = "";
-	private _paddingTop: string = "";
-	private _paddingLeft: string = "";
-	private _paddingBottom: string = "";
-	private _paddingRight: string = "";
-	private _fontFamily: string = "";
-	private _fontWeight: string = "";
-	private _fontSize: string = "";
-	private _fontStyle: string = "";
-	private _fontFeatureSettings: string = "";
-	private _fontVariationSettings: string = "";
-	private _textDecoration: string = "";
-	private _lineHeight: string = "";
-	private _letterSpacing: string = "";
-	private _className: string = "";
-	private _display: string = "";
-	private _position: string = "";
-	private _visibility: string = "";
-	private _color: string = "";
-	private _backgroundColor: string = "";
-	private _layerHint: boolean = false;
+	private _maxWidth = "";
+	private _width = "";
+	private _height = "";
+	private _top = "";
+	private _left = "";
+	private _bottom = "";
+	private _right = "";
+	private _paddingTop = "";
+	private _paddingLeft = "";
+	private _paddingBottom = "";
+	private _paddingRight = "";
+	private _fontFamily = "";
+	private _fontWeight = "";
+	private _fontSize = "";
+	private _fontStyle = "";
+	private _fontFeatureSettings = "";
+	private _fontVariationSettings = "";
+	private _textDecoration = "";
+	private _lineHeight = "";
+	private _letterSpacing = "";
+	private _className = "";
+	private _display = "";
+	private _position = "";
+	private _visibility = "";
+	private _color = "";
+	private _backgroundColor = "";
+	private _layerHint = false;
 	private _contain:
 		| "none"
 		| "strict"
@@ -39,7 +39,7 @@ export class FastDomNode<T extends HTMLElement> {
 		| "layout"
 		| "style"
 		| "paint" = "none";
-	private _boxShadow: string = "";
+	private _boxShadow = "";
 
 	constructor(public readonly domNode: T) {}
 
@@ -296,7 +296,7 @@ export class FastDomNode<T extends HTMLElement> {
 			| "size"
 			| "layout"
 			| "style"
-			| "paint"
+			| "paint",
 	): void {
 		if (this._contain === contain) {
 			return;
@@ -327,7 +327,7 @@ function numberAsPixels(value: number | string): string {
 }
 
 export function createFastDomNode<T extends HTMLElement>(
-	domNode: T
+	domNode: T,
 ): FastDomNode<T> {
 	return new FastDomNode(domNode);
 }

@@ -9,7 +9,7 @@ import { CursorColumns } from "vs/editor/common/core/cursorColumns";
 function _normalizeIndentationFromWhitespace(
 	str: string,
 	indentSize: number,
-	insertSpaces: boolean
+	insertSpaces: boolean,
 ): string {
 	let spacesCnt = 0;
 	for (let i = 0; i < str.length; i++) {
@@ -39,7 +39,7 @@ function _normalizeIndentationFromWhitespace(
 export function normalizeIndentation(
 	str: string,
 	indentSize: number,
-	insertSpaces: boolean
+	insertSpaces: boolean,
 ): string {
 	let firstNonWhitespaceIndex = strings.firstNonWhitespaceIndex(str);
 	if (firstNonWhitespaceIndex === -1) {
@@ -49,7 +49,7 @@ export function normalizeIndentation(
 		_normalizeIndentationFromWhitespace(
 			str.substring(0, firstNonWhitespaceIndex),
 			indentSize,
-			insertSpaces
+			insertSpaces,
 		) + str.substring(firstNonWhitespaceIndex)
 	);
 }

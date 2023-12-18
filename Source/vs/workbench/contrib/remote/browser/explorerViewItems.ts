@@ -3,19 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { ISelectOptionItem } from "vs/base/browser/ui/selectBox/selectBox";
+import { Disposable, DisposableMap } from "vs/base/common/lifecycle";
+import { isStringArray } from "vs/base/common/types";
 import * as nls from "vs/nls";
 import {
-	IRemoteExplorerService,
-	REMOTE_EXPLORER_TYPE_KEY,
-} from "vs/workbench/services/remote/common/remoteExplorerService";
-import { ISelectOptionItem } from "vs/base/browser/ui/selectBox/selectBox";
-import { IViewDescriptor } from "vs/workbench/common/views";
-import { isStringArray } from "vs/base/common/types";
-import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import {
-	IStorageService,
-	StorageScope,
-} from "vs/platform/storage/common/storage";
+	Action2,
+	MenuId,
+	MenuRegistry,
+	registerAction2,
+} from "vs/platform/actions/common/actions";
 import {
 	ContextKeyExpr,
 	IContextKey,
@@ -23,15 +20,18 @@ import {
 	RawContextKey,
 } from "vs/platform/contextkey/common/contextkey";
 import {
-	Action2,
-	MenuId,
-	MenuRegistry,
-	registerAction2,
-} from "vs/platform/actions/common/actions";
-import { VIEWLET_ID } from "vs/workbench/contrib/remote/browser/remoteExplorer";
+	IStorageService,
+	StorageScope,
+} from "vs/platform/storage/common/storage";
 import { getVirtualWorkspaceLocation } from "vs/platform/workspace/common/virtualWorkspace";
 import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
-import { Disposable, DisposableMap } from "vs/base/common/lifecycle";
+import { IViewDescriptor } from "vs/workbench/common/views";
+import { VIEWLET_ID } from "vs/workbench/contrib/remote/browser/remoteExplorer";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
+import {
+	IRemoteExplorerService,
+	REMOTE_EXPLORER_TYPE_KEY,
+} from "vs/workbench/services/remote/common/remoteExplorerService";
 
 interface IRemoteSelectItem extends ISelectOptionItem {
 	authority: string[];
@@ -41,7 +41,7 @@ interface IRemoteSelectItem extends ISelectOptionItem {
 
 export const SELECTED_REMOTE_IN_EXPLORER = new RawContextKey<string>(
 	"selectedRemoteInExplorer",
-	""
+	"",
 );
 
 export class SwitchRemoteViewItem extends Disposable {
@@ -93,21 +93,21 @@ export class SwitchRemoteViewItem extends Disposable {
 			let virtualWorkspace: string | undefined;
 			if (!remoteAuthority) {
 				virtualWorkspace = getVirtualWorkspaceLocation(
-					this.workspaceContextService.getWorkspace()
+					this.workspaceContextService.getWorkspace(),
 				)?.scheme;
 			}
 			isSetForConnection = true;
 			const explorerType: string[] | undefined = remoteAuthority
 				? [remoteAuthority.split("+")[0]]
 				: virtualWorkspace
-					? [virtualWorkspace]
-					: this.storageService
+				  ? [virtualWorkspace]
+				  : this.storageService
 							.get(
 								REMOTE_EXPLORER_TYPE_KEY,
-								StorageScope.WORKSPACE
+								StorageScope.WORKSPACE,
 							)
 							?.split(",") ??
-						this.storageService
+					  this.storageService
 							.get(REMOTE_EXPLORER_TYPE_KEY, StorageScope.PROFILE)
 							?.split(",");
 			if (explorerType !== undefined) {
@@ -126,7 +126,7 @@ export class SwitchRemoteViewItem extends Disposable {
 	}
 
 	private getAuthorityForExplorerType(
-		explorerType: string[]
+		explorerType: string[],
 	): string[] | undefined {
 		let authority: string[] | undefined;
 		for (const option of this.completedRemotes) {
@@ -187,7 +187,7 @@ export class SwitchRemoteViewItem extends Disposable {
 								id: `workbench.action.remoteExplorer.show.${authority[0]}`,
 								title: text,
 								toggled: SELECTED_REMOTE_IN_EXPLORER.isEqualTo(
-									authority[0]
+									authority[0],
 								),
 								menu: {
 									id: thisCapture.switchRemoteMenu,
@@ -197,7 +197,7 @@ export class SwitchRemoteViewItem extends Disposable {
 						async run(): Promise<void> {
 							thisCapture.select(authority);
 						}
-					}
+					},
 				);
 				this.completedRemotes.set(authority[0], {
 					text: text.value,

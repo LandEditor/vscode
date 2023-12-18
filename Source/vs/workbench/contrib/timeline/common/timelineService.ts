@@ -4,29 +4,29 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { CancellationTokenSource } from "vs/base/common/cancellation";
-import { Event, Emitter } from "vs/base/common/event";
+import { Emitter, Event } from "vs/base/common/event";
 import { IDisposable } from "vs/base/common/lifecycle";
 import { URI } from "vs/base/common/uri";
-import { ILogService } from "vs/platform/log/common/log";
-import {
-	ITimelineService,
-	TimelineChangeEvent,
-	TimelineOptions,
-	TimelineProvidersChangeEvent,
-	TimelineProvider,
-	TimelinePaneId,
-} from "./timeline";
-import { IViewsService } from "vs/workbench/common/views";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
 	IContextKey,
 	IContextKeyService,
 	RawContextKey,
 } from "vs/platform/contextkey/common/contextkey";
+import { ILogService } from "vs/platform/log/common/log";
+import { IViewsService } from "vs/workbench/common/views";
+import {
+	ITimelineService,
+	TimelineChangeEvent,
+	TimelineOptions,
+	TimelinePaneId,
+	TimelineProvider,
+	TimelineProvidersChangeEvent,
+} from "./timeline";
 
 export const TimelineHasProviderContext = new RawContextKey<boolean>(
 	"timelineHasProvider",
-	false
+	false,
 );
 
 export class TimelineService implements ITimelineService {
@@ -71,10 +71,10 @@ export class TimelineService implements ITimelineService {
 		id: string,
 		uri: URI,
 		options: TimelineOptions,
-		tokenSource: CancellationTokenSource
+		tokenSource: CancellationTokenSource,
 	) {
 		this.logService.trace(
-			`TimelineService#getTimeline(${id}): uri=${uri.toString()}`
+			`TimelineService#getTimeline(${id}): uri=${uri.toString()}`,
 		);
 
 		const provider = this.providers.get(id);
@@ -108,7 +108,7 @@ export class TimelineService implements ITimelineService {
 							b.source.localeCompare(a.source, undefined, {
 								numeric: true,
 								sensitivity: "base",
-							})
+							}),
 					);
 
 					return result;
@@ -122,7 +122,7 @@ export class TimelineService implements ITimelineService {
 
 	registerTimelineProvider(provider: TimelineProvider): IDisposable {
 		this.logService.trace(
-			`TimelineService#registerTimelineProvider: id=${provider.id}`
+			`TimelineService#registerTimelineProvider: id=${provider.id}`,
 		);
 
 		const id = provider.id;
@@ -144,7 +144,7 @@ export class TimelineService implements ITimelineService {
 		if (provider.onDidChange) {
 			this.providerSubscriptions.set(
 				id,
-				provider.onDidChange((e) => this._onDidChangeTimeline.fire(e))
+				provider.onDidChange((e) => this._onDidChangeTimeline.fire(e)),
 			);
 		}
 		this._onDidChangeProviders.fire({ added: [id] });
@@ -159,7 +159,7 @@ export class TimelineService implements ITimelineService {
 
 	unregisterTimelineProvider(id: string): void {
 		this.logService.trace(
-			`TimelineService#unregisterTimelineProvider: id=${id}`
+			`TimelineService#unregisterTimelineProvider: id=${id}`,
 		);
 
 		if (!this.providers.has(id)) {

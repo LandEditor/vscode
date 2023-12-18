@@ -5,29 +5,29 @@
 
 import { Emitter, Event } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
-import { IChannel, IServerChannel } from "vs/base/parts/ipc/common/ipc";
 import { URI, UriDto } from "vs/base/common/uri";
-import {
-	DidChangeProfilesEvent,
-	IUserDataProfile,
-	IUserDataProfileOptions,
-	IUserDataProfilesService,
-	IUserDataProfileUpdateOptions,
-	reviveProfile,
-} from "vs/platform/userDataProfile/common/userDataProfile";
-import { IAnyWorkspaceIdentifier } from "vs/platform/workspace/common/workspace";
 import {
 	IURITransformer,
 	transformIncomingURIs,
 	transformOutgoingURIs,
 } from "vs/base/common/uriIpc";
+import { IChannel, IServerChannel } from "vs/base/parts/ipc/common/ipc";
+import {
+	DidChangeProfilesEvent,
+	IUserDataProfile,
+	IUserDataProfileOptions,
+	IUserDataProfileUpdateOptions,
+	IUserDataProfilesService,
+	reviveProfile,
+} from "vs/platform/userDataProfile/common/userDataProfile";
+import { IAnyWorkspaceIdentifier } from "vs/platform/workspace/common/workspace";
 
 export class RemoteUserDataProfilesServiceChannel implements IServerChannel {
 	constructor(
 		private readonly service: IUserDataProfilesService,
 		private readonly getUriTransformer: (
-			requestContext: any
-		) => IURITransformer
+			requestContext: any,
+		) => IURITransformer,
 	) {}
 
 	listen(context: any, event: string): Event<any> {
@@ -40,16 +40,16 @@ export class RemoteUserDataProfilesServiceChannel implements IServerChannel {
 				>(this.service.onDidChangeProfiles, (e) => {
 					return {
 						all: e.all.map((p) =>
-							transformOutgoingURIs({ ...p }, uriTransformer)
+							transformOutgoingURIs({ ...p }, uriTransformer),
 						),
 						added: e.added.map((p) =>
-							transformOutgoingURIs({ ...p }, uriTransformer)
+							transformOutgoingURIs({ ...p }, uriTransformer),
 						),
 						removed: e.removed.map((p) =>
-							transformOutgoingURIs({ ...p }, uriTransformer)
+							transformOutgoingURIs({ ...p }, uriTransformer),
 						),
 						updated: e.updated.map((p) =>
-							transformOutgoingURIs({ ...p }, uriTransformer)
+							transformOutgoingURIs({ ...p }, uriTransformer),
 						),
 					};
 				});
@@ -64,14 +64,14 @@ export class RemoteUserDataProfilesServiceChannel implements IServerChannel {
 				const profile = await this.service.createProfile(
 					args[0],
 					args[1],
-					args[2]
+					args[2],
 				);
 				return transformOutgoingURIs({ ...profile }, uriTransformer);
 			}
 			case "updateProfile": {
 				let profile = reviveProfile(
 					transformIncomingURIs(args[0], uriTransformer),
-					this.service.profilesHome.scheme
+					this.service.profilesHome.scheme,
 				);
 				profile = await this.service.updateProfile(profile, args[1]);
 				return transformOutgoingURIs({ ...profile }, uriTransformer);
@@ -79,7 +79,7 @@ export class RemoteUserDataProfilesServiceChannel implements IServerChannel {
 			case "removeProfile": {
 				const profile = reviveProfile(
 					transformIncomingURIs(args[0], uriTransformer),
-					this.service.profilesHome.scheme
+					this.service.profilesHome.scheme,
 				);
 				return this.service.removeProfile(profile);
 			}
@@ -103,37 +103,37 @@ export class UserDataProfilesService
 	}
 
 	private readonly _onDidChangeProfiles = this._register(
-		new Emitter<DidChangeProfilesEvent>()
+		new Emitter<DidChangeProfilesEvent>(),
 	);
 	readonly onDidChangeProfiles = this._onDidChangeProfiles.event;
 
 	readonly onDidResetWorkspaces: Event<void>;
 
-	private enabled: boolean = true;
+	private enabled = true;
 
 	constructor(
 		profiles: readonly UriDto<IUserDataProfile>[],
 		readonly profilesHome: URI,
-		private readonly channel: IChannel
+		private readonly channel: IChannel,
 	) {
 		super();
 		this._profiles = profiles.map((profile) =>
-			reviveProfile(profile, this.profilesHome.scheme)
+			reviveProfile(profile, this.profilesHome.scheme),
 		);
 		this._register(
 			this.channel.listen<DidChangeProfilesEvent>("onDidChangeProfiles")(
 				(e) => {
 					const added = e.added.map((profile) =>
-						reviveProfile(profile, this.profilesHome.scheme)
+						reviveProfile(profile, this.profilesHome.scheme),
 					);
 					const removed = e.removed.map((profile) =>
-						reviveProfile(profile, this.profilesHome.scheme)
+						reviveProfile(profile, this.profilesHome.scheme),
 					);
 					const updated = e.updated.map((profile) =>
-						reviveProfile(profile, this.profilesHome.scheme)
+						reviveProfile(profile, this.profilesHome.scheme),
 					);
 					this._profiles = e.all.map((profile) =>
-						reviveProfile(profile, this.profilesHome.scheme)
+						reviveProfile(profile, this.profilesHome.scheme),
 					);
 					this._onDidChangeProfiles.fire({
 						added,
@@ -141,11 +141,11 @@ export class UserDataProfilesService
 						updated,
 						all: this.profiles,
 					});
-				}
-			)
+				},
+			),
 		);
 		this.onDidResetWorkspaces = this.channel.listen<void>(
-			"onDidResetWorkspaces"
+			"onDidResetWorkspaces",
 		);
 	}
 
@@ -160,11 +160,11 @@ export class UserDataProfilesService
 	async createNamedProfile(
 		name: string,
 		options?: IUserDataProfileOptions,
-		workspaceIdentifier?: IAnyWorkspaceIdentifier
+		workspaceIdentifier?: IAnyWorkspaceIdentifier,
 	): Promise<IUserDataProfile> {
 		const result = await this.channel.call<UriDto<IUserDataProfile>>(
 			"createNamedProfile",
-			[name, options, workspaceIdentifier]
+			[name, options, workspaceIdentifier],
 		);
 		return reviveProfile(result, this.profilesHome.scheme);
 	}
@@ -173,32 +173,32 @@ export class UserDataProfilesService
 		id: string,
 		name: string,
 		options?: IUserDataProfileOptions,
-		workspaceIdentifier?: IAnyWorkspaceIdentifier
+		workspaceIdentifier?: IAnyWorkspaceIdentifier,
 	): Promise<IUserDataProfile> {
 		const result = await this.channel.call<UriDto<IUserDataProfile>>(
 			"createProfile",
-			[id, name, options, workspaceIdentifier]
+			[id, name, options, workspaceIdentifier],
 		);
 		return reviveProfile(result, this.profilesHome.scheme);
 	}
 
 	async createTransientProfile(
-		workspaceIdentifier?: IAnyWorkspaceIdentifier
+		workspaceIdentifier?: IAnyWorkspaceIdentifier,
 	): Promise<IUserDataProfile> {
 		const result = await this.channel.call<UriDto<IUserDataProfile>>(
 			"createTransientProfile",
-			[workspaceIdentifier]
+			[workspaceIdentifier],
 		);
 		return reviveProfile(result, this.profilesHome.scheme);
 	}
 
 	async setProfileForWorkspace(
 		workspaceIdentifier: IAnyWorkspaceIdentifier,
-		profile: IUserDataProfile
+		profile: IUserDataProfile,
 	): Promise<void> {
 		await this.channel.call<UriDto<IUserDataProfile>>(
 			"setProfileForWorkspace",
-			[workspaceIdentifier, profile]
+			[workspaceIdentifier, profile],
 		);
 	}
 
@@ -208,11 +208,11 @@ export class UserDataProfilesService
 
 	async updateProfile(
 		profile: IUserDataProfile,
-		updateOptions: IUserDataProfileUpdateOptions
+		updateOptions: IUserDataProfileUpdateOptions,
 	): Promise<IUserDataProfile> {
 		const result = await this.channel.call<UriDto<IUserDataProfile>>(
 			"updateProfile",
-			[profile, updateOptions]
+			[profile, updateOptions],
 		);
 		return reviveProfile(result, this.profilesHome.scheme);
 	}

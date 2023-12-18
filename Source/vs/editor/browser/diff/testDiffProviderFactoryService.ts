@@ -4,7 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { CancellationToken } from "vs/base/common/cancellation";
+import { Event } from "vs/base/common/event";
 import { toDisposable } from "vs/base/common/lifecycle";
+import { IDiffProviderFactoryService } from "vs/editor/browser/widget/diffEditor/diffProviderFactoryService";
 import {
 	IDocumentDiff,
 	IDocumentDiffProvider,
@@ -12,8 +14,6 @@ import {
 } from "vs/editor/common/diff/documentDiffProvider";
 import { linesDiffComputers } from "vs/editor/common/diff/linesDiffComputers";
 import { ITextModel } from "vs/editor/common/model";
-import { Event } from "vs/base/common/event";
-import { IDiffProviderFactoryService } from "vs/editor/browser/widget/diffEditor/diffProviderFactoryService";
 
 export class TestDiffProviderFactoryService
 	implements IDiffProviderFactoryService
@@ -29,14 +29,14 @@ export class SyncDocumentDiffProvider implements IDocumentDiffProvider {
 		original: ITextModel,
 		modified: ITextModel,
 		options: IDocumentDiffProviderOptions,
-		cancellationToken: CancellationToken
+		cancellationToken: CancellationToken,
 	): Promise<IDocumentDiff> {
 		const result = linesDiffComputers
 			.getDefault()
 			.computeDiff(
 				original.getLinesContent(),
 				modified.getLinesContent(),
-				options
+				options,
 			);
 		return Promise.resolve({
 			changes: result.changes,

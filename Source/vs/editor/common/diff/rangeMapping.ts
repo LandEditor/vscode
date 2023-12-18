@@ -13,7 +13,7 @@ export class LineRangeMapping {
 	public static inverse(
 		mapping: readonly DetailedLineRangeMapping[],
 		originalLineCount: number,
-		modifiedLineCount: number
+		modifiedLineCount: number,
 	): DetailedLineRangeMapping[] {
 		const result: DetailedLineRangeMapping[] = [];
 		let lastOriginalEndLineNumber = 1;
@@ -23,13 +23,13 @@ export class LineRangeMapping {
 			const r = new DetailedLineRangeMapping(
 				new LineRange(
 					lastOriginalEndLineNumber,
-					m.original.startLineNumber
+					m.original.startLineNumber,
 				),
 				new LineRange(
 					lastModifiedEndLineNumber,
-					m.modified.startLineNumber
+					m.modified.startLineNumber,
 				),
-				undefined
+				undefined,
 			);
 			if (!r.modified.isEmpty) {
 				result.push(r);
@@ -40,7 +40,7 @@ export class LineRangeMapping {
 		const r = new DetailedLineRangeMapping(
 			new LineRange(lastOriginalEndLineNumber, originalLineCount + 1),
 			new LineRange(lastModifiedEndLineNumber, modifiedLineCount + 1),
-			undefined
+			undefined,
 		);
 		if (!r.modified.isEmpty) {
 			result.push(r);
@@ -74,7 +74,7 @@ export class LineRangeMapping {
 	public join(other: LineRangeMapping): LineRangeMapping {
 		return new LineRangeMapping(
 			this.original.join(other.original),
-			this.modified.join(other.modified)
+			this.modified.join(other.modified),
 		);
 	}
 
@@ -99,7 +99,7 @@ export class DetailedLineRangeMapping extends LineRangeMapping {
 	constructor(
 		originalRange: LineRange,
 		modifiedRange: LineRange,
-		innerChanges: RangeMapping[] | undefined
+		innerChanges: RangeMapping[] | undefined,
 	) {
 		super(originalRange, modifiedRange);
 		this.innerChanges = innerChanges;
@@ -109,7 +109,7 @@ export class DetailedLineRangeMapping extends LineRangeMapping {
 		return new DetailedLineRangeMapping(
 			this.modified,
 			this.original,
-			this.innerChanges?.map((c) => c.flip())
+			this.innerChanges?.map((c) => c.flip()),
 		);
 	}
 }

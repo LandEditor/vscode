@@ -3,36 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
+import { TerminateResponseCode } from "vs/base/common/processes";
 import * as semver from "vs/base/common/semver/semver";
-import {
-	IWorkspaceFolder,
-	IWorkspaceContextService,
-} from "vs/platform/workspace/common/workspace";
-import { ITaskSystem } from "vs/workbench/contrib/tasks/common/taskSystem";
-import { ExecutionEngine } from "vs/workbench/contrib/tasks/common/tasks";
-import * as TaskConfig from "../common/taskConfiguration";
-import { AbstractTaskService } from "vs/workbench/contrib/tasks/browser/abstractTaskService";
-import {
-	ITaskFilter,
-	ITaskService,
-} from "vs/workbench/contrib/tasks/common/taskService";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { TerminalTaskSystem } from "vs/workbench/contrib/tasks/browser/terminalTaskSystem";
+import { IModelService } from "vs/editor/common/services/model";
+import { ITextModelService } from "vs/editor/common/services/resolverService";
+import * as nls from "vs/nls";
+import { IAudioCueService } from "vs/platform/audioCues/browser/audioCueService";
+import { ICommandService } from "vs/platform/commands/common/commands";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
 import {
 	IConfirmationResult,
 	IDialogService,
 } from "vs/platform/dialogs/common/dialogs";
-import { TerminateResponseCode } from "vs/base/common/processes";
-import { IModelService } from "vs/editor/common/services/model";
-import { ITextModelService } from "vs/editor/common/services/resolverService";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
 import { IFileService } from "vs/platform/files/common/files";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { ILogService } from "vs/platform/log/common/log";
 import { IMarkerService } from "vs/platform/markers/common/markers";
 import { INotificationService } from "vs/platform/notification/common/notification";
@@ -41,33 +30,44 @@ import { IProgressService } from "vs/platform/progress/common/progress";
 import { IQuickInputService } from "vs/platform/quickinput/common/quickInput";
 import { IStorageService } from "vs/platform/storage/common/storage";
 import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { IThemeService } from "vs/platform/theme/common/themeService";
 import {
-	IViewsService,
+	IWorkspaceContextService,
+	IWorkspaceFolder,
+} from "vs/platform/workspace/common/workspace";
+import {
+	IWorkspaceTrustManagementService,
+	IWorkspaceTrustRequestService,
+} from "vs/platform/workspace/common/workspaceTrust";
+import {
 	IViewDescriptorService,
+	IViewsService,
 } from "vs/workbench/common/views";
-import { IOutputService } from "vs/workbench/services/output/common/output";
+import { AbstractTaskService } from "vs/workbench/contrib/tasks/browser/abstractTaskService";
+import { TerminalTaskSystem } from "vs/workbench/contrib/tasks/browser/terminalTaskSystem";
+import {
+	ITaskFilter,
+	ITaskService,
+} from "vs/workbench/contrib/tasks/common/taskService";
+import { ITaskSystem } from "vs/workbench/contrib/tasks/common/taskSystem";
+import { ExecutionEngine } from "vs/workbench/contrib/tasks/common/tasks";
 import {
 	ITerminalGroupService,
 	ITerminalService,
 } from "vs/workbench/contrib/terminal/browser/terminal";
+import { ITerminalProfileResolverService } from "vs/workbench/contrib/terminal/common/terminal";
 import { IConfigurationResolverService } from "vs/workbench/services/configurationResolver/common/configurationResolver";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
 import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
 import { ILifecycleService } from "vs/workbench/services/lifecycle/common/lifecycle";
+import { IOutputService } from "vs/workbench/services/output/common/output";
+import { IPaneCompositePartService } from "vs/workbench/services/panecomposite/browser/panecomposite";
 import { IPathService } from "vs/workbench/services/path/common/pathService";
 import { IPreferencesService } from "vs/workbench/services/preferences/common/preferences";
-import { ITextFileService } from "vs/workbench/services/textfile/common/textfiles";
-import {
-	IWorkspaceTrustManagementService,
-	IWorkspaceTrustRequestService,
-} from "vs/platform/workspace/common/workspaceTrust";
-import { ITerminalProfileResolverService } from "vs/workbench/contrib/terminal/common/terminal";
-import { IPaneCompositePartService } from "vs/workbench/services/panecomposite/browser/panecomposite";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteAgentService";
-import { IAudioCueService } from "vs/platform/audioCues/browser/audioCueService";
+import { ITextFileService } from "vs/workbench/services/textfile/common/textfiles";
+import * as TaskConfig from "../common/taskConfiguration";
 
 interface IWorkspaceFolderConfigurationResult {
 	workspaceFolder: IWorkspaceFolder;
@@ -119,7 +119,7 @@ export class TaskService extends AbstractTaskService {
 		@IThemeService themeService: IThemeService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
-		@IAudioCueService audioCueService: IAudioCueService
+		@IAudioCueService audioCueService: IAudioCueService,
 	) {
 		super(
 			configurationService,
@@ -157,12 +157,12 @@ export class TaskService extends AbstractTaskService {
 			themeService,
 			lifecycleService,
 			remoteAgentService,
-			instantiationService
+			instantiationService,
 		);
 		this._register(
 			lifecycleService.onBeforeShutdown((event) =>
-				event.veto(this.beforeShutdown(), "veto.tasks")
-			)
+				event.veto(this.beforeShutdown(), "veto.tasks"),
+			),
 		);
 	}
 
@@ -182,7 +182,7 @@ export class TaskService extends AbstractTaskService {
 	}
 
 	protected _computeLegacyConfiguration(
-		workspaceFolder: IWorkspaceFolder
+		workspaceFolder: IWorkspaceFolder,
 	): Promise<IWorkspaceFolderConfigurationResult> {
 		const { config, hasParseErrors } =
 			this._getConfiguration(workspaceFolder);
@@ -241,14 +241,14 @@ export class TaskService extends AbstractTaskService {
 			terminatePromise = this._dialogService.confirm({
 				message: nls.localize(
 					"TaskSystem.runningTask",
-					"There is a task running. Do you want to terminate it?"
+					"There is a task running. Do you want to terminate it?",
 				),
 				primaryButton: nls.localize(
 					{
 						key: "TaskSystem.terminateTask",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Terminate Task"
+					"&&Terminate Task",
 				),
 			});
 		}
@@ -282,14 +282,14 @@ export class TaskService extends AbstractTaskService {
 								.confirm({
 									message: nls.localize(
 										"TaskSystem.noProcess",
-										"The launched task doesn't exist anymore. If the task spawned background processes exiting VS Code might result in orphaned processes. To avoid this start the last background process with a wait flag."
+										"The launched task doesn't exist anymore. If the task spawned background processes exiting VS Code might result in orphaned processes. To avoid this start the last background process with a wait flag.",
 									),
 									primaryButton: nls.localize(
 										{
 											key: "TaskSystem.exitAnyways",
 											comment: ["&& denotes a mnemonic"],
 										},
-										"&&Exit Anyways"
+										"&&Exit Anyways",
 									),
 									type: "info",
 								})
@@ -299,7 +299,7 @@ export class TaskService extends AbstractTaskService {
 					},
 					(err) => {
 						return true; // veto
-					}
+					},
 				);
 			}
 

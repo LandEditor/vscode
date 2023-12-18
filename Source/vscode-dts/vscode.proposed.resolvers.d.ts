@@ -48,7 +48,7 @@ declare module "vscode" {
 
 		constructor(
 			makeConnection: () => Thenable<ManagedMessagePassing>,
-			connectionToken?: string
+			connectionToken?: string,
 		);
 	}
 
@@ -154,10 +154,10 @@ declare module "vscode" {
 	export class RemoteAuthorityResolverError extends Error {
 		static NotAvailable(
 			message?: string,
-			handled?: boolean
+			handled?: boolean,
 		): RemoteAuthorityResolverError;
 		static TemporarilyNotAvailable(
-			message?: string
+			message?: string,
 		): RemoteAuthorityResolverError;
 
 		constructor(message?: string);
@@ -178,7 +178,7 @@ declare module "vscode" {
 		spawn(
 			command: string,
 			args: string[],
-			options?: ExecServerSpawnOptions
+			options?: ExecServerSpawnOptions,
 		): Thenable<SpawnedCommand>;
 
 		/**
@@ -193,7 +193,7 @@ declare module "vscode" {
 		spawnRemoteServerConnector?(
 			command: string,
 			args: string[],
-			options?: ExecServerSpawnOptions
+			options?: ExecServerSpawnOptions,
 		): Thenable<RemoteServerConnector>;
 
 		/**
@@ -209,7 +209,7 @@ declare module "vscode" {
 			buildTarget: CliBuild,
 			command: string,
 			args: string[],
-			options?: ExecServerSpawnOptions
+			options?: ExecServerSpawnOptions,
 		): Thenable<ProcessExit>;
 
 		/**
@@ -235,7 +235,7 @@ declare module "vscode" {
 		 */
 		tcpConnect(
 			host: string,
-			port: number
+			port: number,
 		): Thenable<{ stream: WriteStream & ReadStream; done: Thenable<void> }>;
 
 		/**
@@ -355,7 +355,7 @@ declare module "vscode" {
 		 * will resolve after `stream.end()` is called once the write is complete.
 		 */
 		write(
-			path: string
+			path: string,
 		): Thenable<{ stream: WriteStream; done: Thenable<void> }>;
 
 		/**
@@ -367,7 +367,7 @@ declare module "vscode" {
 		 * have closed.
 		 */
 		connect(
-			path: string
+			path: string,
 		): Thenable<{ stream: WriteStream & ReadStream; done: Thenable<void> }>;
 
 		/**
@@ -416,7 +416,7 @@ declare module "vscode" {
 		 */
 		resolve(
 			authority: string,
-			context: RemoteAuthorityResolverContext
+			context: RemoteAuthorityResolverContext,
 		): ResolverResult | Thenable<ResolverResult>;
 
 		/**
@@ -428,7 +428,7 @@ declare module "vscode" {
 		 */
 		resolveExecServer?(
 			remoteAuthority: string,
-			context: RemoteAuthorityResolverContext
+			context: RemoteAuthorityResolverContext,
 		): ExecServer | Thenable<ExecServer>;
 
 		/**
@@ -448,7 +448,7 @@ declare module "vscode" {
 		 */
 		tunnelFactory?: (
 			tunnelOptions: TunnelOptions,
-			tunnelCreationOptions: TunnelCreationOptions
+			tunnelCreationOptions: TunnelCreationOptions,
 		) => Thenable<Tunnel> | undefined;
 
 		/**p
@@ -457,7 +457,7 @@ declare module "vscode" {
 		showCandidatePort?: (
 			host: string,
 			port: number,
-			detail: string
+			detail: string,
 		) => Thenable<boolean>;
 
 		/**
@@ -494,13 +494,13 @@ declare module "vscode" {
 	export namespace workspace {
 		export function registerRemoteAuthorityResolver(
 			authorityPrefix: string,
-			resolver: RemoteAuthorityResolver
+			resolver: RemoteAuthorityResolver,
 		): Disposable;
 		export function registerResourceLabelFormatter(
-			formatter: ResourceLabelFormatter
+			formatter: ResourceLabelFormatter,
 		): Disposable;
 		export function getRemoteExecServer(
-			authority: string
+			authority: string,
 		): Thenable<ExecServer | undefined>;
 	}
 

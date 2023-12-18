@@ -35,7 +35,7 @@ export interface IAuthenticationCreateSessionOptions {
 }
 
 export const IAuthenticationService = createDecorator<IAuthenticationService>(
-	"IAuthenticationService"
+	"IAuthenticationService",
 );
 
 export interface IAuthenticationService {
@@ -45,71 +45,71 @@ export interface IAuthenticationService {
 	getProviderIds(): string[];
 	registerAuthenticationProvider(
 		id: string,
-		provider: IAuthenticationProvider
+		provider: IAuthenticationProvider,
 	): void;
 	unregisterAuthenticationProvider(id: string): void;
 	isAccessAllowed(
 		providerId: string,
 		accountName: string,
-		extensionId: string
+		extensionId: string,
 	): boolean | undefined;
 	updateAllowedExtension(
 		providerId: string,
 		accountName: string,
 		extensionId: string,
 		extensionName: string,
-		isAllowed: boolean
+		isAllowed: boolean,
 	): void;
 	updateSessionPreference(
 		providerId: string,
 		extensionId: string,
-		session: AuthenticationSession
+		session: AuthenticationSession,
 	): void;
 	getSessionPreference(
 		providerId: string,
 		extensionId: string,
-		scopes: string[]
+		scopes: string[],
 	): string | undefined;
 	removeSessionPreference(
 		providerId: string,
 		extensionId: string,
-		scopes: string[]
+		scopes: string[],
 	): void;
 	showGetSessionPrompt(
 		providerId: string,
 		accountName: string,
 		extensionId: string,
-		extensionName: string
+		extensionName: string,
 	): Promise<boolean>;
 	selectSession(
 		providerId: string,
 		extensionId: string,
 		extensionName: string,
 		scopes: string[],
-		possibleSessions: readonly AuthenticationSession[]
+		possibleSessions: readonly AuthenticationSession[],
 	): Promise<AuthenticationSession>;
 	requestSessionAccess(
 		providerId: string,
 		extensionId: string,
 		extensionName: string,
 		scopes: string[],
-		possibleSessions: readonly AuthenticationSession[]
+		possibleSessions: readonly AuthenticationSession[],
 	): void;
 	completeSessionAccessRequest(
 		providerId: string,
 		extensionId: string,
 		extensionName: string,
-		scopes: string[]
+		scopes: string[],
 	): Promise<void>;
 	requestNewSession(
 		providerId: string,
 		scopes: string[],
 		extensionId: string,
-		extensionName: string
+		extensionName: string,
 	): Promise<void>;
 	sessionsUpdate(
 		providerId: string,
-		event: AuthenticationSessionsChangeEvent
+		event: AuthenticationSessionsChangeEvent,
 	): void;
 
 	readonly onDidRegisterAuthenticationProvider: Event<AuthenticationProviderInformation>;
@@ -130,25 +130,25 @@ export interface IAuthenticationService {
 	getSessions(
 		id: string,
 		scopes?: string[],
-		activateImmediate?: boolean
+		activateImmediate?: boolean,
 	): Promise<ReadonlyArray<AuthenticationSession>>;
 	getLabel(providerId: string): string;
 	supportsMultipleAccounts(providerId: string): boolean;
 	createSession(
 		providerId: string,
 		scopes: string[],
-		options?: IAuthenticationCreateSessionOptions
+		options?: IAuthenticationCreateSessionOptions,
 	): Promise<AuthenticationSession>;
 	removeSession(providerId: string, sessionId: string): Promise<void>;
 
 	manageTrustedExtensionsForAccount(
 		providerId: string,
-		accountName: string
+		accountName: string,
 	): Promise<void>;
 	removeAccountSessions(
 		providerId: string,
 		accountName: string,
-		sessions: AuthenticationSession[]
+		sessions: AuthenticationSession[],
 	): Promise<void>;
 }
 
@@ -164,12 +164,12 @@ export interface IAuthenticationProvider {
 	manageTrustedExtensions(accountName: string): void;
 	removeAccountSessions(
 		accountName: string,
-		sessions: AuthenticationSession[]
+		sessions: AuthenticationSession[],
 	): Promise<void>;
 	getSessions(scopes?: string[]): Promise<readonly AuthenticationSession[]>;
 	createSession(
 		scopes: string[],
-		options: IAuthenticationProviderCreateSessionOptions
+		options: IAuthenticationProviderCreateSessionOptions,
 	): Promise<AuthenticationSession>;
 	removeSession(sessionId: string): Promise<void>;
 }

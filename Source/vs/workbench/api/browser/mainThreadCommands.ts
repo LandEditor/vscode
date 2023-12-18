@@ -5,6 +5,7 @@
 
 import { DisposableMap, IDisposable } from "vs/base/common/lifecycle";
 import { revive } from "vs/base/common/marshalling";
+import { isString } from "vs/base/common/types";
 import {
 	CommandsRegistry,
 	ICommandMetadata,
@@ -25,7 +26,6 @@ import {
 	MainContext,
 	MainThreadCommandsShape,
 } from "../common/extHost.protocol";
-import { isString } from "vs/base/common/types";
 
 @extHostNamedCustomer(MainContext.MainThreadCommands)
 export class MainThreadCommands implements MainThreadCommandsShape {
@@ -80,7 +80,7 @@ export class MainThreadCommands implements MainThreadCommandsShape {
 					.then((result) => {
 						return revive(result);
 					});
-			})
+			}),
 		);
 	}
 
@@ -100,7 +100,7 @@ export class MainThreadCommands implements MainThreadCommandsShape {
 	async $executeCommand<T>(
 		id: string,
 		args: any[] | SerializableObjectWithBuffers<any[]>,
-		retry: boolean
+		retry: boolean,
 	): Promise<T | undefined> {
 		if (args instanceof SerializableObjectWithBuffers) {
 			args = args.value;
@@ -123,7 +123,7 @@ export class MainThreadCommands implements MainThreadCommandsShape {
 // --- command doc
 
 function _generateMarkdown(
-	description: string | Dto<ICommandMetadata> | ICommandMetadata
+	description: string | Dto<ICommandMetadata> | ICommandMetadata,
 ): string {
 	if (typeof description === "string") {
 		return description;
@@ -131,7 +131,7 @@ function _generateMarkdown(
 		const descriptionString = isString(description.description)
 			? description.description
 			: // Our docs website is in English, so keep the original here.
-				description.description.original;
+			  description.description.original;
 		const parts = [descriptionString];
 		parts.push("\n\n");
 		if (description.args) {

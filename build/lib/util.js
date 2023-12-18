@@ -1,4 +1,3 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -45,21 +44,21 @@ function incremental(streamProvider, initial, supportsCancellation) {
 	const output = es.through();
 	let state = "idle";
 	let buffer = Object.create(null);
-	const token = !supportsCancellation
-		? undefined
-		: { isCancellationRequested: () => Object.keys(buffer).length > 0 };
+	const token = supportsCancellation
+		? { isCancellationRequested: () => Object.keys(buffer).length > 0 }
+		: undefined;
 	const run = (input, isCancellable) => {
 		state = "running";
-		const stream = !supportsCancellation
-			? streamProvider()
-			: streamProvider(isCancellable ? token : NoCancellationToken);
+		const stream = supportsCancellation
+			? streamProvider(isCancellable ? token : NoCancellationToken)
+			: streamProvider();
 		input
 			.pipe(stream)
 			.pipe(
 				es.through(undefined, () => {
 					state = "idle";
 					eventuallyRun();
-				})
+				}),
 			)
 			.pipe(output);
 	};
@@ -98,7 +97,7 @@ function debounce(task, duration = 500) {
 					if (shouldRunAgain) {
 						eventuallyRun();
 					}
-				})
+				}),
 			)
 			.pipe(output);
 	};
@@ -178,7 +177,7 @@ function cleanNodeModules(rulePath) {
 	const input = es.through();
 	const output = es.merge(
 		input.pipe(_filter(["**", ...excludes])),
-		input.pipe(_filter(includes))
+		input.pipe(_filter(includes)),
 	);
 	return es.duplex(input, output);
 }
@@ -215,7 +214,7 @@ function loadSourcemaps() {
 			}
 			f.contents = Buffer.from(
 				contents.replace(/\/\/# sourceMappingURL=(.*)$/g, ""),
-				"utf8"
+				"utf8",
 			);
 			fs.readFile(
 				path.join(path.dirname(f.path), lastMatch[1]),
@@ -226,9 +225,9 @@ function loadSourcemaps() {
 					}
 					f.sourceMap = JSON.parse(contents);
 					cb(undefined, f);
-				}
+				},
 			);
-		})
+		}),
 	);
 	return es.duplex(input, output);
 }
@@ -240,10 +239,10 @@ function stripSourceMappingURL() {
 			const contents = f.contents.toString("utf8");
 			f.contents = Buffer.from(
 				contents.replace(/\n\/\/# sourceMappingURL=(.*)$/gm, ""),
-				"utf8"
+				"utf8",
 			);
 			return f;
-		})
+		}),
 	);
 	return es.duplex(input, output);
 }
@@ -267,11 +266,11 @@ function appendOwnPathSourceURL() {
 			f.contents = Buffer.concat([
 				f.contents,
 				Buffer.from(
-					`\n//# sourceURL=${(0, url_1.pathToFileURL)(f.path)}`
+					`\n//# sourceURL=${(0, url_1.pathToFileURL)(f.path)}`,
 				),
 			]);
 			return f;
-		})
+		}),
 	);
 	return es.duplex(input, output);
 }
@@ -285,10 +284,10 @@ function rewriteSourceMappingURL(sourceMappingURLBase) {
 				.dirname(f.relative)
 				.replace(/\\/g, "/")}/$1`;
 			f.contents = Buffer.from(
-				contents.replace(/\n\/\/# sourceMappingURL=(.*)$/gm, str)
+				contents.replace(/\n\/\/# sourceMappingURL=(.*)$/gm, str),
 			);
 			return f;
-		})
+		}),
 	);
 	return es.duplex(input, output);
 }
@@ -321,7 +320,7 @@ function _rreaddir(dirPath, prepend, result) {
 			_rreaddir(
 				path.join(dirPath, entry.name),
 				`${prepend}/${entry.name}`,
-				result
+				result,
 			);
 		} else {
 			result.push(`${prepend}/${entry.name}`);
@@ -366,7 +365,7 @@ function versionStringToNumber(versionStr) {
 	const match = versionStr.match(semverRegex);
 	if (!match) {
 		throw new Error(
-			"Version string is not properly formatted: " + versionStr
+			"Version string is not properly formatted: " + versionStr,
 		);
 	}
 	return (
@@ -394,15 +393,15 @@ function acquireWebNodePaths() {
 	const root = path.join(__dirname, "..", "..");
 	const webPackageJSON = path.join(root, "/remote/web", "package.json");
 	const webPackages = JSON.parse(
-		fs.readFileSync(webPackageJSON, "utf8")
+		fs.readFileSync(webPackageJSON, "utf8"),
 	).dependencies;
 	const distroWebPackageJson = path.join(
 		root,
-		".build/distro/npm/remote/web/package.json"
+		".build/distro/npm/remote/web/package.json",
 	);
 	if (fs.existsSync(distroWebPackageJson)) {
 		const distroWebPackages = JSON.parse(
-			fs.readFileSync(distroWebPackageJson, "utf8")
+			fs.readFileSync(distroWebPackageJson, "utf8"),
 		).dependencies;
 		Object.assign(webPackages, distroWebPackages);
 	}
@@ -412,7 +411,7 @@ function acquireWebNodePaths() {
 			root,
 			"node_modules",
 			key,
-			"package.json"
+			"package.json",
 		);
 		const packageData = JSON.parse(fs.readFileSync(packageJSON, "utf8"));
 		// Only cases where the browser is a string are handled
@@ -425,7 +424,7 @@ function acquireWebNodePaths() {
 			// TODO @lramos15 remove this when jschardet adds an entrypoint so we can warn on all packages w/out entrypoint
 			if (key !== "jschardet") {
 				console.warn(
-					`No entry point for ${key} assuming dist/${key}.min.js`
+					`No entry point for ${key} assuming dist/${key}.min.js`,
 				);
 			}
 			entryPoint = `dist/${key}.min.js`;
@@ -441,7 +440,7 @@ function acquireWebNodePaths() {
 			const minEntryPoint = entryPoint.replace(/\.js$/i, ".min.js");
 			if (
 				fs.existsSync(
-					path.join(root, "node_modules", key, minEntryPoint)
+					path.join(root, "node_modules", key, minEntryPoint),
 				)
 			) {
 				entryPoint = minEntryPoint;
@@ -468,7 +467,7 @@ function createExternalLoaderConfig(webEndpoint, commit, quality) {
 	}
 	webEndpoint = webEndpoint + `/${quality}/${commit}`;
 	const nodePaths = acquireWebNodePaths();
-	Object.keys(nodePaths).map(function (key, _) {
+	Object.keys(nodePaths).map((key, _) => {
 		nodePaths[key] = `../node_modules/${key}/${nodePaths[key]}`;
 	});
 	const externalLoaderConfig = {
@@ -496,12 +495,12 @@ function buildWebNodePaths(outDir) {
 			const fileContents = `${headerWithGeneratedFileWarning}\nself.webPackagePaths = ${JSON.stringify(
 				nodePaths,
 				null,
-				2
+				2,
 			)};`;
 			fs.writeFileSync(
 				path.join(outDirectory, "webPackagePaths.js"),
 				fileContents,
-				"utf8"
+				"utf8",
 			);
 			resolve();
 		});

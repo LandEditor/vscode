@@ -3,6 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { BroadcastDataChannel } from "vs/base/browser/broadcast";
+import { DBClosedError, IndexedDB } from "vs/base/browser/indexedDB";
 import { Throttler } from "vs/base/common/async";
 import { VSBuffer } from "vs/base/common/buffer";
 import { Emitter, Event } from "vs/base/common/event";
@@ -12,22 +14,20 @@ import { isString } from "vs/base/common/types";
 import { URI, UriDto } from "vs/base/common/uri";
 import { localize } from "vs/nls";
 import {
-	createFileSystemProviderError,
 	FileChangeType,
-	IFileDeleteOptions,
-	IFileOverwriteOptions,
 	FileSystemProviderCapabilities,
 	FileSystemProviderError,
 	FileSystemProviderErrorCode,
 	FileType,
-	IFileWriteOptions,
 	IFileChange,
+	IFileDeleteOptions,
+	IFileOverwriteOptions,
 	IFileSystemProviderWithFileReadWriteCapability,
+	IFileWriteOptions,
 	IStat,
 	IWatchOptions,
+	createFileSystemProviderError,
 } from "vs/platform/files/common/files";
-import { DBClosedError, IndexedDB } from "vs/base/browser/indexedDB";
-import { BroadcastDataChannel } from "vs/base/browser/broadcast";
 
 export type IndexedDBFileSystemProviderErrorDataClassification = {
 	owner: "sandy081";
@@ -58,23 +58,23 @@ export type IndexedDBFileSystemProviderErrorData = {
 // Standard FS Errors (expected to be thrown in production when invalid FS operations are requested)
 const ERR_FILE_NOT_FOUND = createFileSystemProviderError(
 	localize("fileNotExists", "File does not exist"),
-	FileSystemProviderErrorCode.FileNotFound
+	FileSystemProviderErrorCode.FileNotFound,
 );
 const ERR_FILE_IS_DIR = createFileSystemProviderError(
 	localize("fileIsDirectory", "File is Directory"),
-	FileSystemProviderErrorCode.FileIsADirectory
+	FileSystemProviderErrorCode.FileIsADirectory,
 );
 const ERR_FILE_NOT_DIR = createFileSystemProviderError(
 	localize("fileNotDirectory", "File is not a directory"),
-	FileSystemProviderErrorCode.FileNotADirectory
+	FileSystemProviderErrorCode.FileNotADirectory,
 );
 const ERR_DIR_NOT_EMPTY = createFileSystemProviderError(
 	localize("dirIsNotEmpty", "Directory is not empty"),
-	FileSystemProviderErrorCode.Unknown
+	FileSystemProviderErrorCode.Unknown,
 );
 const ERR_FILE_EXCEEDS_STORAGE_QUOTA = createFileSystemProviderError(
 	localize("fileExceedsStorageQuota", "File exceeds available storage quota"),
-	FileSystemProviderErrorCode.FileExceedsStorageQuota
+	FileSystemProviderErrorCode.FileExceedsStorageQuota,
 );
 
 // Arbitrary Internal Errors
@@ -83,9 +83,9 @@ const ERR_UNKNOWN_INTERNAL = (message: string) =>
 		localize(
 			"internal",
 			"Internal error occurred in IndexedDB File System Provider. ({0})",
-			message
+			message,
 		),
-		FileSystemProviderErrorCode.Unknown
+		FileSystemProviderErrorCode.Unknown,
 	);
 
 type DirEntry = [string, FileType];
@@ -120,7 +120,7 @@ class IndexedDBFileSystemNode {
 		if (this.entry.type !== FileType.Directory) {
 			throw ERR_UNKNOWN_INTERNAL(
 				"Internal error reading from IndexedDBFSNode -- expected directory at " +
-					this.entry.path
+					this.entry.path,
 			);
 		}
 		const next = this.entry.children.get(pathParts[0]);
@@ -136,7 +136,7 @@ class IndexedDBFileSystemNode {
 		if (toDelete.length === 0) {
 			if (this.entry.type !== FileType.Directory) {
 				throw ERR_UNKNOWN_INTERNAL(
-					`Internal error deleting from IndexedDBFSNode. Expected root entry to be directory`
+					`Internal error deleting from IndexedDBFSNode. Expected root entry to be directory`,
 				);
 			}
 			this.entry.children.clear();
@@ -148,12 +148,12 @@ class IndexedDBFileSystemNode {
 	private doDelete(pathParts: string[], originalPath: string): void {
 		if (pathParts.length === 0) {
 			throw ERR_UNKNOWN_INTERNAL(
-				`Internal error deleting from IndexedDBFSNode -- got no deletion path parts (encountered while deleting ${originalPath})`
+				`Internal error deleting from IndexedDBFSNode -- got no deletion path parts (encountered while deleting ${originalPath})`,
 			);
 		} else if (this.entry.type !== FileType.Directory) {
 			throw ERR_UNKNOWN_INTERNAL(
 				"Internal error deleting from IndexedDBFSNode -- expected directory at " +
-					this.entry.path
+					this.entry.path,
 			);
 		} else if (pathParts.length === 1) {
 			this.entry.children.delete(pathParts[0]);
@@ -164,7 +164,7 @@ class IndexedDBFileSystemNode {
 					"Internal error deleting from IndexedDBFSNode -- expected entry at " +
 						this.entry.path +
 						"/" +
-						next
+						next,
 				);
 			}
 			next.doDelete(pathParts.slice(1), originalPath);
@@ -173,27 +173,27 @@ class IndexedDBFileSystemNode {
 
 	add(
 		path: string,
-		entry: { type: "file"; size?: number } | { type: "dir" }
+		entry: { type: "file"; size?: number } | { type: "dir" },
 	) {
 		this.doAdd(
 			path.split("/").filter((p) => p.length),
 			entry,
-			path
+			path,
 		);
 	}
 
 	private doAdd(
 		pathParts: string[],
 		entry: { type: "file"; size?: number } | { type: "dir" },
-		originalPath: string
+		originalPath: string,
 	) {
 		if (pathParts.length === 0) {
 			throw ERR_UNKNOWN_INTERNAL(
-				`Internal error creating IndexedDBFSNode -- adding empty path (encountered while adding ${originalPath})`
+				`Internal error creating IndexedDBFSNode -- adding empty path (encountered while adding ${originalPath})`,
 			);
 		} else if (this.entry.type !== FileType.Directory) {
 			throw ERR_UNKNOWN_INTERNAL(
-				`Internal error creating IndexedDBFSNode -- parent is not a directory (encountered while adding ${originalPath})`
+				`Internal error creating IndexedDBFSNode -- parent is not a directory (encountered while adding ${originalPath})`,
 			);
 		} else if (pathParts.length === 1) {
 			const next = pathParts[0];
@@ -201,7 +201,7 @@ class IndexedDBFileSystemNode {
 			if (entry.type === "dir") {
 				if (existing?.entry.type === FileType.File) {
 					throw ERR_UNKNOWN_INTERNAL(
-						`Internal error creating IndexedDBFSNode -- overwriting file with directory: ${this.entry.path}/${next} (encountered while adding ${originalPath})`
+						`Internal error creating IndexedDBFSNode -- overwriting file with directory: ${this.entry.path}/${next} (encountered while adding ${originalPath})`,
 					);
 				}
 				this.entry.children.set(
@@ -211,12 +211,12 @@ class IndexedDBFileSystemNode {
 							type: FileType.Directory,
 							path: this.entry.path + "/" + next,
 							children: new Map(),
-						})
+						}),
 				);
 			} else {
 				if (existing?.entry.type === FileType.Directory) {
 					throw ERR_UNKNOWN_INTERNAL(
-						`Internal error creating IndexedDBFSNode -- overwriting directory with file: ${this.entry.path}/${next} (encountered while adding ${originalPath})`
+						`Internal error creating IndexedDBFSNode -- overwriting directory with file: ${this.entry.path}/${next} (encountered while adding ${originalPath})`,
 					);
 				}
 				this.entry.children.set(
@@ -225,7 +225,7 @@ class IndexedDBFileSystemNode {
 						type: FileType.File,
 						path: this.entry.path + "/" + next,
 						size: entry.size,
-					})
+					}),
 				);
 			}
 		} else if (pathParts.length > 1) {
@@ -240,7 +240,7 @@ class IndexedDBFileSystemNode {
 				this.entry.children.set(next, childNode);
 			} else if (childNode.type === FileType.File) {
 				throw ERR_UNKNOWN_INTERNAL(
-					`Internal error creating IndexedDBFSNode -- overwriting file entry with directory: ${this.entry.path}/${next} (encountered while adding ${originalPath})`
+					`Internal error creating IndexedDBFSNode -- overwriting file entry with directory: ${this.entry.path}/${next} (encountered while adding ${originalPath})`,
 				);
 			}
 			childNode.doAdd(pathParts.slice(1), entry, originalPath);
@@ -251,7 +251,7 @@ class IndexedDBFileSystemNode {
 		console.log(indentation + this.entry.path);
 		if (this.entry.type === FileType.Directory) {
 			this.entry.children.forEach((child) =>
-				child.print(indentation + " ")
+				child.print(indentation + " "),
 			);
 		}
 	}
@@ -272,13 +272,13 @@ export class IndexedDBFileSystemProvider
 		| BroadcastDataChannel<UriDto<IFileChange>[]>
 		| undefined;
 	private readonly _onDidChangeFile = this._register(
-		new Emitter<readonly IFileChange[]>()
+		new Emitter<readonly IFileChange[]>(),
 	);
 	readonly onDidChangeFile: Event<readonly IFileChange[]> =
 		this._onDidChangeFile.event;
 
 	private readonly _onReportError = this._register(
-		new Emitter<IndexedDBFileSystemProviderErrorData>()
+		new Emitter<IndexedDBFileSystemProviderErrorData>(),
 	);
 	readonly onReportError = this._onReportError.event;
 
@@ -291,7 +291,7 @@ export class IndexedDBFileSystemProvider
 		readonly scheme: string,
 		private indexedDB: IndexedDB,
 		private readonly store: string,
-		watchCrossWindowChanges: boolean
+		watchCrossWindowChanges: boolean,
 	) {
 		super();
 		this.writeManyThrottler = new Throttler();
@@ -299,8 +299,8 @@ export class IndexedDBFileSystemProvider
 		if (watchCrossWindowChanges) {
 			this.changesBroadcastChannel = this._register(
 				new BroadcastDataChannel<UriDto<IFileChange>[]>(
-					`vscode.indexedDB.${scheme}.changes`
-				)
+					`vscode.indexedDB.${scheme}.changes`,
+				),
 			);
 			this._register(
 				this.changesBroadcastChannel.onDidReceiveData((changes) => {
@@ -308,9 +308,9 @@ export class IndexedDBFileSystemProvider
 						changes.map((c) => ({
 							type: c.type,
 							resource: URI.revive(c.resource),
-						}))
+						})),
 					);
-				})
+				}),
 			);
 		}
 	}
@@ -385,7 +385,7 @@ export class IndexedDBFileSystemProvider
 			const result = await this.indexedDB.runInTransaction(
 				this.store,
 				"readonly",
-				(objectStore) => objectStore.get(resource.path)
+				(objectStore) => objectStore.get(resource.path),
 			);
 			if (result === undefined) {
 				throw ERR_FILE_NOT_FOUND;
@@ -394,11 +394,11 @@ export class IndexedDBFileSystemProvider
 				result instanceof Uint8Array
 					? result
 					: isString(result)
-						? VSBuffer.fromString(result).buffer
-						: undefined;
+					  ? VSBuffer.fromString(result).buffer
+					  : undefined;
 			if (buffer === undefined) {
 				throw ERR_UNKNOWN_INTERNAL(
-					`IndexedDB entry at "${resource.path}" in unexpected format`
+					`IndexedDB entry at "${resource.path}" in unexpected format`,
 				);
 			}
 
@@ -419,7 +419,7 @@ export class IndexedDBFileSystemProvider
 	async writeFile(
 		resource: URI,
 		content: Uint8Array,
-		opts: IFileWriteOptions
+		opts: IFileWriteOptions,
 	): Promise<void> {
 		try {
 			const existing = await this.stat(resource).catch(() => undefined);
@@ -436,7 +436,7 @@ export class IndexedDBFileSystemProvider
 	async rename(
 		from: URI,
 		to: URI,
-		opts: IFileOverwriteOptions
+		opts: IFileOverwriteOptions,
 	): Promise<void> {
 		const fileTree = await this.getFiletree();
 		const fromEntry = fileTree.read(from.path);
@@ -449,13 +449,13 @@ export class IndexedDBFileSystemProvider
 			if (!opts.overwrite) {
 				throw createFileSystemProviderError(
 					"file exists already",
-					FileSystemProviderErrorCode.FileExists
+					FileSystemProviderErrorCode.FileExists,
 				);
 			}
 			if (toEntry.type !== fromEntry.type) {
 				throw createFileSystemProviderError(
 					"Cannot rename files with different types",
-					FileSystemProviderErrorCode.Unknown
+					FileSystemProviderErrorCode.Unknown,
 				);
 			}
 			// delete the target file if exists
@@ -469,7 +469,7 @@ export class IndexedDBFileSystemProvider
 		const toTargetResource = (path: string): URI =>
 			this.extUri.joinPath(
 				to,
-				this.extUri.relativePath(from, from.with({ path })) || ""
+				this.extUri.relativePath(from, from.with({ path })) || "",
 			);
 
 		const sourceEntries = await this.tree(from);
@@ -491,16 +491,16 @@ export class IndexedDBFileSystemProvider
 				this.store,
 				"readonly",
 				(objectStore) =>
-					sourceFiles.map(([path]) => objectStore.get(path))
+					sourceFiles.map(([path]) => objectStore.get(path)),
 			);
 			for (let index = 0; index < sourceFiles.length; index++) {
 				const content =
 					sourceFilesContents[index] instanceof Uint8Array
 						? sourceFilesContents[index]
 						: isString(sourceFilesContents[index])
-							? VSBuffer.fromString(sourceFilesContents[index])
+						  ? VSBuffer.fromString(sourceFilesContents[index])
 									.buffer
-							: undefined;
+						  : undefined;
 				if (content) {
 					targetFiles.push([
 						toTargetResource(sourceFiles[index][0]),
@@ -549,7 +549,7 @@ export class IndexedDBFileSystemProvider
 			toDelete.map((path) => ({
 				resource: resource.with({ path }),
 				type: FileChangeType.DELETED,
-			}))
+			})),
 		);
 	}
 
@@ -589,7 +589,7 @@ export class IndexedDBFileSystemProvider
 				const result = await this.indexedDB.runInTransaction(
 					this.store,
 					"readonly",
-					(objectStore) => objectStore.getAllKeys()
+					(objectStore) => objectStore.getAllKeys(),
 				);
 				const keys = result.map((key) => key.toString());
 				keys.forEach((key) => rootNode.add(key, { type: "file" }));
@@ -601,7 +601,7 @@ export class IndexedDBFileSystemProvider
 
 	private async bulkWrite(files: [URI, Uint8Array][]): Promise<void> {
 		files.forEach(([resource, content]) =>
-			this.fileWriteBatch.push({ content, resource })
+			this.fileWriteBatch.push({ content, resource }),
 		);
 		await this.writeManyThrottler.queue(() => this.writeMany());
 
@@ -618,7 +618,7 @@ export class IndexedDBFileSystemProvider
 			files.map(([resource]) => ({
 				resource,
 				type: FileChangeType.UPDATED,
-			}))
+			})),
 		);
 	}
 
@@ -627,7 +627,7 @@ export class IndexedDBFileSystemProvider
 		if (this.fileWriteBatch.length) {
 			const fileBatch = this.fileWriteBatch.splice(
 				0,
-				this.fileWriteBatch.length
+				this.fileWriteBatch.length,
 			);
 			try {
 				await this.indexedDB.runInTransaction(
@@ -637,9 +637,9 @@ export class IndexedDBFileSystemProvider
 						fileBatch.map((entry) => {
 							return objectStore.put(
 								entry.content,
-								entry.resource.path
+								entry.resource.path,
 							);
-						})
+						}),
 				);
 			} catch (ex) {
 				if (
@@ -659,7 +659,7 @@ export class IndexedDBFileSystemProvider
 			await this.indexedDB.runInTransaction(
 				this.store,
 				"readwrite",
-				(objectStore) => keys.map((key) => objectStore.delete(key))
+				(objectStore) => keys.map((key) => objectStore.delete(key)),
 			);
 		}
 	}
@@ -668,7 +668,7 @@ export class IndexedDBFileSystemProvider
 		await this.indexedDB.runInTransaction(
 			this.store,
 			"readwrite",
-			(objectStore) => objectStore.clear()
+			(objectStore) => objectStore.clear(),
 		);
 	}
 

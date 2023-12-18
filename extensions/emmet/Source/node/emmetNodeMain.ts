@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from "vscode";
 import { homedir } from "os";
+import * as vscode from "vscode";
 
 import { activateEmmetExtension } from "../emmetCommon";
 import { setHomeDir } from "../util";
@@ -15,10 +15,10 @@ export function activate(context: vscode.ExtensionContext) {
 			"editor.emmet.action.updateImageSize",
 			() => {
 				return import("../updateImageSize").then((uis) =>
-					uis.updateImageSize()
+					uis.updateImageSize(),
 				);
-			}
-		)
+			},
+		),
 	);
 
 	setHomeDir(vscode.Uri.file(homedir()));

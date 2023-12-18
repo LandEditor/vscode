@@ -25,7 +25,7 @@ export function isMarkdownFile(document: vscode.TextDocument) {
 
 export function looksLikeMarkdownPath(resolvedHrefPath: vscode.Uri): boolean {
 	const doc = vscode.workspace.textDocuments.find(
-		(doc) => doc.uri.toString() === resolvedHrefPath.toString()
+		(doc) => doc.uri.toString() === resolvedHrefPath.toString(),
 	);
 	if (doc) {
 		return isMarkdownFile(doc);
@@ -46,6 +46,6 @@ export function looksLikeMarkdownPath(resolvedHrefPath: vscode.Uri): boolean {
 	}
 
 	return markdownFileExtensions.includes(
-		URI.Utils.extname(resolvedHrefPath).toLowerCase().replace(".", "")
+		URI.Utils.extname(resolvedHrefPath).toLowerCase().replace(".", ""),
 	);
 }

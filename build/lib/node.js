@@ -1,4 +1,3 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -19,7 +18,7 @@ const nodePath = path.join(
 	"node",
 	`v${version}`,
 	`${platform}-${arch}`,
-	node
+	node,
 );
 console.log(nodePath);
 //# sourceMappingURL=node.js.map

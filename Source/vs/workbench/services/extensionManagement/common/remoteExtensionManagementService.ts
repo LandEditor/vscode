@@ -3,19 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IChannel } from "vs/base/parts/ipc/common/ipc";
 import { URI } from "vs/base/common/uri";
+import { IChannel } from "vs/base/parts/ipc/common/ipc";
+import { ExtensionEventResult } from "vs/platform/extensionManagement/common/extensionManagementIpc";
+import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
 import {
 	DidChangeProfileEvent,
 	IProfileAwareExtensionManagementService,
 } from "vs/workbench/services/extensionManagement/common/extensionManagement";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import { IRemoteUserDataProfilesService } from "vs/workbench/services/userDataProfile/common/remoteUserDataProfiles";
 import { ProfileAwareExtensionManagementChannelClient } from "vs/workbench/services/extensionManagement/common/extensionManagementChannelClient";
+import { IRemoteUserDataProfilesService } from "vs/workbench/services/userDataProfile/common/remoteUserDataProfiles";
 import { IUserDataProfileService } from "vs/workbench/services/userDataProfile/common/userDataProfile";
-import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
-import { ExtensionEventResult } from "vs/platform/extensionManagement/common/extensionManagementIpc";
-import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
 
 export class RemoteExtensionManagementService
 	extends ProfileAwareExtensionManagementChannelClient
@@ -46,12 +46,12 @@ export class RemoteExtensionManagementService
 		}
 		const currentRemoteProfile =
 			await this.remoteUserDataProfilesService.getRemoteProfile(
-				this.userDataProfileService.currentProfile
+				this.userDataProfileService.currentProfile,
 			);
 		if (
 			this.uriIdentityService.extUri.isEqual(
 				currentRemoteProfile.extensionsResource,
-				e.profileLocation
+				e.profileLocation,
 			)
 		) {
 			return true;
@@ -61,10 +61,10 @@ export class RemoteExtensionManagementService
 
 	protected override getProfileLocation(profileLocation: URI): Promise<URI>;
 	protected override getProfileLocation(
-		profileLocation?: URI
+		profileLocation?: URI,
 	): Promise<URI | undefined>;
 	protected override async getProfileLocation(
-		profileLocation?: URI
+		profileLocation?: URI,
 	): Promise<URI | undefined> {
 		if (
 			!profileLocation &&
@@ -76,13 +76,13 @@ export class RemoteExtensionManagementService
 		let profile = this.userDataProfilesService.profiles.find((p) =>
 			this.uriIdentityService.extUri.isEqual(
 				p.extensionsResource,
-				profileLocation
-			)
+				profileLocation,
+			),
 		);
 		if (profile) {
 			profile =
 				await this.remoteUserDataProfilesService.getRemoteProfile(
-					profile
+					profile,
 				);
 		} else {
 			profile = (
@@ -90,8 +90,8 @@ export class RemoteExtensionManagementService
 			).find((p) =>
 				this.uriIdentityService.extUri.isEqual(
 					p.extensionsResource,
-					profileLocation
-				)
+					profileLocation,
+				),
 			);
 		}
 		return profile?.extensionsResource;
@@ -100,21 +100,21 @@ export class RemoteExtensionManagementService
 	protected override async switchExtensionsProfile(
 		previousProfileLocation: URI,
 		currentProfileLocation: URI,
-		preserveExtensions?: ExtensionIdentifier[]
+		preserveExtensions?: ExtensionIdentifier[],
 	): Promise<DidChangeProfileEvent> {
 		const remoteProfiles =
 			await this.remoteUserDataProfilesService.getRemoteProfiles();
 		const previousProfile = remoteProfiles.find((p) =>
 			this.uriIdentityService.extUri.isEqual(
 				p.extensionsResource,
-				previousProfileLocation
-			)
+				previousProfileLocation,
+			),
 		);
 		const currentProfile = remoteProfiles.find((p) =>
 			this.uriIdentityService.extUri.isEqual(
 				p.extensionsResource,
-				currentProfileLocation
-			)
+				currentProfileLocation,
+			),
 		);
 		if (previousProfile?.id === currentProfile?.id) {
 			return { added: [], removed: [] };
@@ -122,7 +122,7 @@ export class RemoteExtensionManagementService
 		return super.switchExtensionsProfile(
 			previousProfileLocation,
 			currentProfileLocation,
-			preserveExtensions
+			preserveExtensions,
 		);
 	}
 }

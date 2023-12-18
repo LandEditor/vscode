@@ -4,12 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as dom from "vs/base/browser/dom";
-import { Selection } from "vs/editor/common/core/selection";
-import { Range } from "vs/editor/common/core/range";
 import { FastDomNode, createFastDomNode } from "vs/base/browser/fastDomNode";
+import { IMouseWheelEvent } from "vs/base/browser/mouseEvent";
+import { inputLatency } from "vs/base/browser/performance";
+import { CodeWindow } from "vs/base/browser/window";
 import { BugIndicatingError, onUnexpectedError } from "vs/base/common/errors";
 import { IDisposable } from "vs/base/common/lifecycle";
 import { IPointerHandlerHelper } from "vs/editor/browser/controller/mouseHandler";
+import { PointerHandlerLastRenderData } from "vs/editor/browser/controller/mouseTarget";
 import { PointerHandler } from "vs/editor/browser/controller/pointerHandler";
 import {
 	IVisibleRangeProvider,
@@ -18,19 +20,22 @@ import {
 import {
 	IContentWidget,
 	IContentWidgetPosition,
-	IOverlayWidget,
-	IOverlayWidgetPosition,
-	IMouseTarget,
-	IViewZoneChangeAccessor,
 	IEditorAriaOptions,
 	IGlyphMarginWidget,
 	IGlyphMarginWidgetPosition,
+	IMouseTarget,
+	IOverlayWidget,
+	IOverlayWidgetPosition,
+	IViewZoneChangeAccessor,
 } from "vs/editor/browser/editorBrowser";
+import {
+	RenderingContext,
+	RestrictedRenderingContext,
+} from "vs/editor/browser/view/renderingContext";
 import {
 	ICommandDelegate,
 	ViewController,
 } from "vs/editor/browser/view/viewController";
-import { ViewUserInputEvents } from "vs/editor/browser/view/viewUserInputEvents";
 import {
 	ContentViewOverlays,
 	MarginViewOverlays,
@@ -40,6 +45,8 @@ import {
 	PartFingerprints,
 	ViewPart,
 } from "vs/editor/browser/view/viewPart";
+import { ViewUserInputEvents } from "vs/editor/browser/view/viewUserInputEvents";
+import { BlockDecorations } from "vs/editor/browser/viewParts/blockDecorations/blockDecorations";
 import { ViewContentWidgets } from "vs/editor/browser/viewParts/contentWidgets/contentWidgets";
 import {
 	CurrentLineHighlightOverlay,
@@ -47,6 +54,7 @@ import {
 } from "vs/editor/browser/viewParts/currentLineHighlight/currentLineHighlight";
 import { DecorationsOverlay } from "vs/editor/browser/viewParts/decorations/decorations";
 import { EditorScrollbar } from "vs/editor/browser/viewParts/editorScrollbar/editorScrollbar";
+import { GlyphMarginWidgets } from "vs/editor/browser/viewParts/glyphMargin/glyphMargin";
 import { IndentGuidesOverlay } from "vs/editor/browser/viewParts/indentGuides/indentGuides";
 import { LineNumbersOverlay } from "vs/editor/browser/viewParts/lineNumbers/lineNumbers";
 import { ViewLines } from "vs/editor/browser/viewParts/lines/viewLines";
@@ -62,32 +70,24 @@ import { ScrollDecorationViewPart } from "vs/editor/browser/viewParts/scrollDeco
 import { SelectionsOverlay } from "vs/editor/browser/viewParts/selections/selections";
 import { ViewCursors } from "vs/editor/browser/viewParts/viewCursors/viewCursors";
 import { ViewZones } from "vs/editor/browser/viewParts/viewZones/viewZones";
-import { Position } from "vs/editor/common/core/position";
-import { ScrollType } from "vs/editor/common/editorCommon";
+import { WhitespaceOverlay } from "vs/editor/browser/viewParts/whitespace/whitespace";
 import { IEditorConfiguration } from "vs/editor/common/config/editorConfiguration";
-import {
-	RenderingContext,
-	RestrictedRenderingContext,
-} from "vs/editor/browser/view/renderingContext";
-import { ViewContext } from "vs/editor/common/viewModel/viewContext";
+import { EditorOption } from "vs/editor/common/config/editorOptions";
+import { Position } from "vs/editor/common/core/position";
+import { Range } from "vs/editor/common/core/range";
+import { Selection } from "vs/editor/common/core/selection";
+import { ScrollType } from "vs/editor/common/editorCommon";
+import { GlyphMarginLane } from "vs/editor/common/model";
+import { ViewEventHandler } from "vs/editor/common/viewEventHandler";
 import * as viewEvents from "vs/editor/common/viewEvents";
 import { ViewportData } from "vs/editor/common/viewLayout/viewLinesViewportData";
-import { ViewEventHandler } from "vs/editor/common/viewEventHandler";
 import { IViewModel } from "vs/editor/common/viewModel";
-import {
-	getThemeTypeSelector,
-	IColorTheme,
-} from "vs/platform/theme/common/themeService";
-import { EditorOption } from "vs/editor/common/config/editorOptions";
-import { PointerHandlerLastRenderData } from "vs/editor/browser/controller/mouseTarget";
-import { BlockDecorations } from "vs/editor/browser/viewParts/blockDecorations/blockDecorations";
-import { inputLatency } from "vs/base/browser/performance";
-import { IMouseWheelEvent } from "vs/base/browser/mouseEvent";
-import { WhitespaceOverlay } from "vs/editor/browser/viewParts/whitespace/whitespace";
-import { GlyphMarginWidgets } from "vs/editor/browser/viewParts/glyphMargin/glyphMargin";
-import { GlyphMarginLane } from "vs/editor/common/model";
+import { ViewContext } from "vs/editor/common/viewModel/viewContext";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { CodeWindow } from "vs/base/browser/window";
+import {
+	IColorTheme,
+	getThemeTypeSelector,
+} from "vs/platform/theme/common/themeService";
 
 export interface IContentWidgetData {
 	widget: IContentWidget;
@@ -129,7 +129,7 @@ export class View extends ViewEventHandler {
 	private readonly _overflowGuardContainer: FastDomNode<HTMLElement>;
 
 	// Actual mutable state
-	private _shouldRecomputeGlyphMarginLanes: boolean = false;
+	private _shouldRecomputeGlyphMarginLanes = false;
 	private _renderAnimationFrame: IDisposable | null;
 
 	constructor(
@@ -357,7 +357,7 @@ export class View extends ViewEventHandler {
 					decoration.options.glyphMargin?.position ??
 					GlyphMarginLane.Left;
 				return { range: decoration.range, lane };
-			})
+			}),
 		);
 
 		// Add all glyph margin widgets
@@ -365,7 +365,7 @@ export class View extends ViewEventHandler {
 			this._glyphMarginWidgets.getWidgets().map((widget) => {
 				const range = model.validateRange(widget.preference.range);
 				return { range, lane: widget.preference.lane };
-			})
+			}),
 		);
 
 		// Sorted by their start position
@@ -379,7 +379,7 @@ export class View extends ViewEventHandler {
 				(!leftDecRange ||
 					Range.compareRangesUsingEnds(
 						leftDecRange,
-						decoration.range
+						decoration.range,
 					) < 0)
 			) {
 				// assign only if the range of `decoration` ends after, which means it has a higher chance to overlap with the other lane
@@ -391,7 +391,7 @@ export class View extends ViewEventHandler {
 				(!rightDecRange ||
 					Range.compareRangesUsingEnds(
 						rightDecRange,
-						decoration.range
+						decoration.range,
 					) < 0)
 			) {
 				// assign only if the range of `decoration` ends after, which means it has a higher chance to overlap with the other lane
@@ -444,7 +444,7 @@ export class View extends ViewEventHandler {
 					this._textAreaHandler.getLastRenderData();
 				return new PointerHandlerLastRenderData(
 					lastViewCursorsRenderData,
-					lastTextareaPosition
+					lastTextareaPosition,
 				);
 			},
 			renderNow: (): void => {
@@ -452,12 +452,12 @@ export class View extends ViewEventHandler {
 			},
 			shouldSuppressMouseDownOnViewZone: (viewZoneId: string) => {
 				return this._viewZones.shouldSuppressMouseDownOnViewZone(
-					viewZoneId
+					viewZoneId,
 				);
 			},
 			shouldSuppressMouseDownOnWidget: (widgetId: string) => {
 				return this._contentWidgets.shouldSuppressMouseDownOnWidget(
-					widgetId
+					widgetId,
 				);
 			},
 			getPositionFromDOMInfo: (spanNode: HTMLElement, offset: number) => {
@@ -468,7 +468,7 @@ export class View extends ViewEventHandler {
 			visibleRangeForPosition: (lineNumber: number, column: number) => {
 				this._flushAccumulatedAndRenderNow();
 				return this._viewLines.visibleRangeForPosition(
-					new Position(lineNumber, column)
+					new Position(lineNumber, column),
 				);
 			},
 
@@ -506,7 +506,7 @@ export class View extends ViewEventHandler {
 		const focused = this._textAreaHandler.isFocused() ? " focused" : "";
 		return (
 			this._context.configuration.options.get(
-				EditorOption.editorClassName
+				EditorOption.editorClassName,
 			) +
 			" " +
 			getThemeTypeSelector(this._context.theme.type) +
@@ -520,20 +520,20 @@ export class View extends ViewEventHandler {
 		this._scheduleRender();
 	}
 	public override onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent
+		e: viewEvents.ViewConfigurationChangedEvent,
 	): boolean {
 		this.domNode.setClassName(this._getEditorClassName());
 		this._applyLayout();
 		return false;
 	}
 	public override onCursorStateChanged(
-		e: viewEvents.ViewCursorStateChangedEvent
+		e: viewEvents.ViewCursorStateChangedEvent,
 	): boolean {
 		this._selections = e.selections;
 		return false;
 	}
 	public override onDecorationsChanged(
-		e: viewEvents.ViewDecorationsChangedEvent
+		e: viewEvents.ViewDecorationsChangedEvent,
 	): boolean {
 		if (e.affectsGlyphMargin) {
 			this._shouldRecomputeGlyphMarginLanes = true;
@@ -541,13 +541,13 @@ export class View extends ViewEventHandler {
 		return false;
 	}
 	public override onFocusChanged(
-		e: viewEvents.ViewFocusChangedEvent
+		e: viewEvents.ViewFocusChangedEvent,
 	): boolean {
 		this.domNode.setClassName(this._getEditorClassName());
 		return false;
 	}
 	public override onThemeChanged(
-		e: viewEvents.ViewThemeChangedEvent
+		e: viewEvents.ViewThemeChangedEvent,
 	): boolean {
 		this._context.theme.update(e.theme);
 		this.domNode.setClassName(this._getEditorClassName());
@@ -604,7 +604,7 @@ export class View extends ViewEventHandler {
 						},
 						prepareRender: (
 							viewParts: ViewPart[],
-							ctx: RenderingContext
+							ctx: RenderingContext,
 						) => {
 							if (this._store.isDisposed) {
 								throw new BugIndicatingError();
@@ -613,14 +613,14 @@ export class View extends ViewEventHandler {
 						},
 						render: (
 							viewParts: ViewPart[],
-							ctx: RestrictedRenderingContext
+							ctx: RestrictedRenderingContext,
 						) => {
 							if (this._store.isDisposed) {
 								throw new BugIndicatingError();
 							}
 							return rendering.render(viewParts, ctx);
 						},
-					}
+					},
 				);
 		}
 	}
@@ -653,7 +653,7 @@ export class View extends ViewEventHandler {
 				if (this._shouldRecomputeGlyphMarginLanes) {
 					this._shouldRecomputeGlyphMarginLanes = false;
 					this._context.configuration.setGlyphMarginDecorationLaneCount(
-						this._computeGlyphMarginLaneCount()
+						this._computeGlyphMarginLaneCount(),
 					);
 				}
 				inputLatency.onRenderStart();
@@ -675,14 +675,14 @@ export class View extends ViewEventHandler {
 				this._context.viewModel.setViewport(
 					partialViewportData.startLineNumber,
 					partialViewportData.endLineNumber,
-					partialViewportData.centeredLineNumber
+					partialViewportData.centeredLineNumber,
 				);
 
 				const viewportData = new ViewportData(
 					this._selections,
 					partialViewportData,
 					this._context.viewLayout.getWhitespaceViewportData(),
-					this._context.viewModel
+					this._context.viewModel,
 				);
 
 				if (this._contentWidgets.shouldRender()) {
@@ -703,13 +703,13 @@ export class View extends ViewEventHandler {
 					new RenderingContext(
 						this._context.viewLayout,
 						viewportData,
-						this._viewLines
+						this._viewLines,
 					),
 				];
 			},
 			prepareRender: (
 				viewPartsToRender: ViewPart[],
-				ctx: RenderingContext
+				ctx: RenderingContext,
 			) => {
 				for (const viewPart of viewPartsToRender) {
 					viewPart.prepareRender(ctx);
@@ -717,7 +717,7 @@ export class View extends ViewEventHandler {
 			},
 			render: (
 				viewPartsToRender: ViewPart[],
-				ctx: RestrictedRenderingContext
+				ctx: RestrictedRenderingContext,
 			) => {
 				for (const viewPart of viewPartsToRender) {
 					viewPart.render(ctx);
@@ -730,7 +730,7 @@ export class View extends ViewEventHandler {
 	// --- BEGIN CodeEditor helpers
 
 	public delegateVerticalScrollbarPointerDown(
-		browserEvent: PointerEvent
+		browserEvent: PointerEvent,
 	): void {
 		this._scrollbar.delegateVerticalScrollbarPointerDown(browserEvent);
 	}
@@ -748,14 +748,14 @@ export class View extends ViewEventHandler {
 				scrollTop: scrollPosition.scrollTop,
 				scrollLeft: scrollPosition.scrollLeft,
 			},
-			ScrollType.Immediate
+			ScrollType.Immediate,
 		);
 		this._context.viewModel.visibleLinesStabilized();
 	}
 
 	public getOffsetForColumn(
 		modelLineNumber: number,
-		modelColumn: number
+		modelColumn: number,
 	): number {
 		const modelPosition = this._context.viewModel.model.validatePosition({
 			lineNumber: modelLineNumber,
@@ -763,11 +763,11 @@ export class View extends ViewEventHandler {
 		});
 		const viewPosition =
 			this._context.viewModel.coordinatesConverter.convertModelPositionToViewPosition(
-				modelPosition
+				modelPosition,
 			);
 		this._flushAccumulatedAndRenderNow();
 		const visibleRange = this._viewLines.visibleRangeForPosition(
-			new Position(viewPosition.lineNumber, viewPosition.column)
+			new Position(viewPosition.lineNumber, viewPosition.column),
 		);
 		if (!visibleRange) {
 			return -1;
@@ -777,18 +777,18 @@ export class View extends ViewEventHandler {
 
 	public getTargetAtClientPoint(
 		clientX: number,
-		clientY: number
+		clientY: number,
 	): IMouseTarget | null {
 		const mouseTarget = this._pointerHandler.getTargetAtClientPoint(
 			clientX,
-			clientY
+			clientY,
 		);
 		if (!mouseTarget) {
 			return null;
 		}
 		return ViewUserInputEvents.convertViewToModelMouseTarget(
 			mouseTarget,
-			this._context.viewModel.coordinatesConverter
+			this._context.viewModel.coordinatesConverter,
 		);
 	}
 
@@ -797,7 +797,7 @@ export class View extends ViewEventHandler {
 	}
 
 	public change(
-		callback: (changeAccessor: IViewZoneChangeAccessor) => any
+		callback: (changeAccessor: IViewZoneChangeAccessor) => any,
 	): void {
 		this._viewZones.changeViewZones(callback);
 		this._scheduleRender();
@@ -850,7 +850,7 @@ export class View extends ViewEventHandler {
 			widgetData.position?.position ?? null,
 			widgetData.position?.secondaryPosition ?? null,
 			widgetData.position?.preference ?? null,
-			widgetData.position?.positionAffinity ?? null
+			widgetData.position?.positionAffinity ?? null,
 		);
 		this._scheduleRender();
 	}
@@ -872,7 +872,7 @@ export class View extends ViewEventHandler {
 			: null;
 		const shouldRender = this._overlayWidgets.setWidgetPosition(
 			widgetData.widget,
-			newPreference
+			newPreference,
 		);
 		if (shouldRender) {
 			this._scheduleRender();
@@ -894,7 +894,7 @@ export class View extends ViewEventHandler {
 		const newPreference = widgetData.position;
 		const shouldRender = this._glyphMarginWidgets.setWidgetPosition(
 			widgetData.widget,
-			newPreference
+			newPreference,
 		);
 		if (shouldRender) {
 			this._shouldRecomputeGlyphMarginLanes = true;
@@ -937,7 +937,7 @@ class EditorRenderingCoordinator {
 	private constructor() {}
 
 	scheduleCoordinatedRendering(
-		rendering: ICoordinatedRendering
+		rendering: ICoordinatedRendering,
 	): IDisposable {
 		this._coordinatedRenderings.push(rendering);
 		this._scheduleRender(rendering.window);
@@ -969,7 +969,11 @@ class EditorRenderingCoordinator {
 			};
 			this._animationFrameRunners.set(
 				window,
-				dom.runAtThisOrScheduleAtNextAnimationFrame(window, runner, 100)
+				dom.runAtThisOrScheduleAtNextAnimationFrame(
+					window,
+					runner,
+					100,
+				),
 			);
 		}
 	}

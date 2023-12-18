@@ -3,59 +3,59 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { RunOnceScheduler } from "vs/base/common/async";
+import { CancellationTokenSource } from "vs/base/common/cancellation";
 import { Event } from "vs/base/common/event";
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import { IExpression } from "vs/base/common/glob";
 import { DisposableStore } from "vs/base/common/lifecycle";
-import {
-	IFilesConfiguration,
-	ISortOrderConfiguration,
-	SortOrder,
-	LexicographicOptions,
-} from "vs/workbench/contrib/files/common/files";
-import {
-	ExplorerItem,
-	ExplorerModel,
-} from "vs/workbench/contrib/files/common/explorerModel";
+import { basename, dirname } from "vs/base/common/resources";
 import { URI } from "vs/base/common/uri";
-import {
-	FileOperationEvent,
-	FileOperation,
-	IFileService,
-	FileChangesEvent,
-	FileChangeType,
-	IResolveFileOptions,
-} from "vs/platform/files/common/files";
-import { dirname, basename } from "vs/base/common/resources";
-import {
-	IConfigurationService,
-	IConfigurationChangeEvent,
-} from "vs/platform/configuration/common/configuration";
-import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { IEditableData } from "vs/workbench/common/views";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
 import {
 	IBulkEditService,
 	ResourceFileEdit,
 } from "vs/editor/browser/services/bulkEditService";
-import { UndoRedoSource } from "vs/platform/undoRedo/common/undoRedo";
+import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
 import {
-	IExplorerView,
-	IExplorerService,
-} from "vs/workbench/contrib/files/browser/files";
+	IConfigurationChangeEvent,
+	IConfigurationService,
+} from "vs/platform/configuration/common/configuration";
 import {
+	FileChangeType,
+	FileChangesEvent,
+	FileOperation,
+	FileOperationEvent,
+	IFileService,
+	IResolveFileOptions,
+} from "vs/platform/files/common/files";
+import {
+	IProgressCompositeOptions,
+	IProgressNotificationOptions,
 	IProgressService,
 	ProgressLocation,
-	IProgressNotificationOptions,
-	IProgressCompositeOptions,
 } from "vs/platform/progress/common/progress";
-import { CancellationTokenSource } from "vs/base/common/cancellation";
-import { RunOnceScheduler } from "vs/base/common/async";
-import { IHostService } from "vs/workbench/services/host/browser/host";
-import { IExpression } from "vs/base/common/glob";
-import { ResourceGlobMatcher } from "vs/workbench/common/resources";
-import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
 import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { UndoRedoSource } from "vs/platform/undoRedo/common/undoRedo";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import { ResourceGlobMatcher } from "vs/workbench/common/resources";
+import { IEditableData } from "vs/workbench/common/views";
+import {
+	IExplorerService,
+	IExplorerView,
+} from "vs/workbench/contrib/files/browser/files";
+import {
+	ExplorerItem,
+	ExplorerModel,
+} from "vs/workbench/contrib/files/common/explorerModel";
+import {
+	IFilesConfiguration,
+	ISortOrderConfiguration,
+	LexicographicOptions,
+	SortOrder,
+} from "vs/workbench/contrib/files/common/files";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
+import { IHostService } from "vs/workbench/services/host/browser/host";
 
 export const UNDO_REDO_SOURCE = new UndoRedoSource();
 
@@ -230,14 +230,14 @@ export class ExplorerService implements IExplorerService {
 
 	getContext(
 		respectMultiSelection: boolean,
-		ignoreNestedChildren: boolean = false
+		ignoreNestedChildren = false,
 	): ExplorerItem[] {
 		if (!this.view) {
 			return [];
 		}
 
 		const items = new Set<ExplorerItem>(
-			this.view.getContext(respectMultiSelection)
+			this.view.getContext(respectMultiSelection),
 		);
 		items.forEach((item) => {
 			try {
@@ -270,7 +270,7 @@ export class ExplorerService implements IExplorerService {
 			progressLocation?:
 				| ProgressLocation.Explorer
 				| ProgressLocation.Window;
-		}
+		},
 	): Promise<void> {
 		const cancellationTokenSource = new CancellationTokenSource();
 		const promise = this.progressService.withProgress(
@@ -290,11 +290,11 @@ export class ExplorerService implements IExplorerService {
 					confirmBeforeUndo: options.confirmBeforeUndo,
 				});
 			},
-			() => cancellationTokenSource.cancel()
+			() => cancellationTokenSource.cancel(),
 		);
 		await this.progressService.withProgress(
 			{ location: ProgressLocation.Explorer, delay: 500 },
-			() => promise
+			() => promise,
 		);
 		cancellationTokenSource.dispose();
 	}
@@ -314,28 +314,28 @@ export class ExplorerService implements IExplorerService {
 			.filter((r) =>
 				this.uriIdentityService.extUri.isEqualOrParent(
 					resource,
-					r.resource
-				)
+					r.resource,
+				),
 			)
 			.sort(
 				(first, second) =>
-					second.resource.path.length - first.resource.path.length
+					second.resource.path.length - first.resource.path.length,
 			);
 		return parentRoots.length ? parentRoots[0] : null;
 	}
 
 	async setEditable(
 		stat: ExplorerItem,
-		data: IEditableData | null
+		data: IEditableData | null,
 	): Promise<void> {
 		if (!this.view) {
 			return;
 		}
 
-		if (!data) {
-			this.editable = undefined;
-		} else {
+		if (data) {
 			this.editable = { stat, data };
+		} else {
+			this.editable = undefined;
 		}
 		const isEditing = this.isEditable(stat);
 		try {
@@ -450,7 +450,7 @@ export class ExplorerService implements IExplorerService {
 		const previouslyCutItems = this.cutItems;
 		this.cutItems = cut ? items : undefined;
 		await this.clipboardService.writeResources(
-			items.map((s) => s.resource)
+			items.map((s) => s.resource),
 		);
 
 		this.view?.itemsCopied(items, cut, previouslyCutItems);
@@ -462,8 +462,8 @@ export class ExplorerService implements IExplorerService {
 			this.cutItems.some((i) =>
 				this.uriIdentityService.extUri.isEqual(
 					i.resource,
-					item.resource
-				)
+					item.resource,
+				),
 			)
 		);
 	}
@@ -519,7 +519,7 @@ export class ExplorerService implements IExplorerService {
 				this.filesConfigurationService,
 				stat,
 				undefined,
-				options.resolveTo
+				options.resolveTo,
 			);
 			// Update Input with disk Stat
 			ExplorerItem.mergeLocalWithDisk(modelStat, root);
@@ -535,7 +535,7 @@ export class ExplorerService implements IExplorerService {
 			}
 			await this.view.selectResource(
 				item ? item.resource : undefined,
-				reveal
+				reveal,
 			);
 		} catch (error) {
 			root.error = error;
@@ -586,7 +586,7 @@ export class ExplorerService implements IExplorerService {
 						if (!p.isDirectoryResolved) {
 							const stat = await this.fileService.resolve(
 								p.resource,
-								{ resolveMetadata }
+								{ resolveMetadata },
 							);
 							if (stat) {
 								const modelStat = ExplorerItem.create(
@@ -594,7 +594,7 @@ export class ExplorerService implements IExplorerService {
 									this.configurationService,
 									this.filesConfigurationService,
 									stat,
-									p.parent
+									p.parent,
 								);
 								ExplorerItem.mergeLocalWithDisk(modelStat, p);
 							}
@@ -605,14 +605,14 @@ export class ExplorerService implements IExplorerService {
 							this.configurationService,
 							this.filesConfigurationService,
 							addedElement,
-							p.parent
+							p.parent,
 						);
 						// Make sure to remove any previous version of the file if any
 						p.removeChild(childElement);
 						p.addChild(childElement);
 						// Refresh the Parent (View)
 						await this.view?.refresh(shouldDeepRefresh, p);
-					})
+					}),
 				);
 			}
 		}
@@ -628,7 +628,7 @@ export class ExplorerService implements IExplorerService {
 				modelElements.every((e) => !e.nestedParent) &&
 				this.uriIdentityService.extUri.isEqual(
 					oldParentResource,
-					newParentResource
+					newParentResource,
 				);
 
 			// Handle Rename
@@ -639,9 +639,9 @@ export class ExplorerService implements IExplorerService {
 						modelElement.rename(newElement);
 						await this.view?.refresh(
 							shouldDeepRefresh,
-							modelElement.parent
+							modelElement.parent,
 						);
-					})
+					}),
 				);
 			}
 
@@ -658,15 +658,15 @@ export class ExplorerService implements IExplorerService {
 							if (oldNestedParent) {
 								await this.view?.refresh(
 									false,
-									oldNestedParent
+									oldNestedParent,
 								);
 							}
 							await this.view?.refresh(false, oldParent);
 							await this.view?.refresh(
 								shouldDeepRefresh,
-								newParents[index]
+								newParents[index],
 							);
-						})
+						}),
 					);
 				}
 			}
@@ -690,7 +690,7 @@ export class ExplorerService implements IExplorerService {
 						// Refresh Parent (View)
 						await this.view?.refresh(shouldDeepRefresh, parent);
 					}
-				})
+				}),
 			);
 		}
 	}
@@ -698,7 +698,7 @@ export class ExplorerService implements IExplorerService {
 	// Check if an item matches a explorer.autoRevealExclude pattern
 	private shouldAutoRevealItem(
 		item: ExplorerItem | undefined,
-		ignore: boolean
+		ignore: boolean,
 	): boolean {
 		if (item === undefined || ignore) {
 			return true;
@@ -706,7 +706,7 @@ export class ExplorerService implements IExplorerService {
 		if (
 			this.revealExcludeMatcher.matches(
 				item.resource,
-				(name) => !!(item.parent && item.parent.getChild(name))
+				(name) => !!(item.parent && item.parent.getChild(name)),
 			)
 		) {
 			return false;
@@ -726,7 +726,7 @@ export class ExplorerService implements IExplorerService {
 	}
 
 	private async onConfigurationUpdated(
-		event: IConfigurationChangeEvent
+		event: IConfigurationChangeEvent,
 	): Promise<void> {
 		if (!event.affectsConfiguration("explorer")) {
 			return;
@@ -775,7 +775,7 @@ function doesFileEventAffect(
 	item: ExplorerItem,
 	view: IExplorerView,
 	events: FileChangesEvent[],
-	types: FileChangeType[]
+	types: FileChangeType[],
 ): boolean {
 	for (const [_name, child] of item.children) {
 		if (view.isItemVisible(child)) {

@@ -3,87 +3,87 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/breakpointWidget";
-import * as nls from "vs/nls";
-import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
-import {
-	SelectBox,
-	ISelectOptionItem,
-} from "vs/base/browser/ui/selectBox/selectBox";
-import * as lifecycle from "vs/base/common/lifecycle";
 import * as dom from "vs/base/browser/dom";
-import { Position, IPosition } from "vs/editor/common/core/position";
 import {
-	ICodeEditor,
+	ISelectOptionItem,
+	SelectBox,
+} from "vs/base/browser/ui/selectBox/selectBox";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { onUnexpectedError } from "vs/base/common/errors";
+import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
+import * as lifecycle from "vs/base/common/lifecycle";
+import { URI as uri } from "vs/base/common/uri";
+import "vs/css!./media/breakpointWidget";
+import {
 	IActiveCodeEditor,
+	ICodeEditor,
 } from "vs/editor/browser/editorBrowser";
-import { ZoneWidget } from "vs/editor/contrib/zoneWidget/browser/zoneWidget";
-import { IContextViewService } from "vs/platform/contextview/browser/contextView";
 import {
-	IDebugService,
-	IBreakpoint,
-	BreakpointWidgetContext as Context,
-	CONTEXT_BREAKPOINT_WIDGET_VISIBLE,
-	DEBUG_SCHEME,
-	CONTEXT_IN_BREAKPOINT_WIDGET,
-	IBreakpointUpdateData,
-	IBreakpointEditorContribution,
-	BREAKPOINT_EDITOR_CONTRIBUTION_ID,
-} from "vs/workbench/contrib/debug/common/debug";
-import {
-	IThemeService,
-	IColorTheme,
-} from "vs/platform/theme/common/themeService";
-import {
-	createDecorator,
-	IInstantiationService,
-} from "vs/platform/instantiation/common/instantiation";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import {
-	ServicesAccessor,
 	EditorCommand,
+	ServicesAccessor,
 	registerEditorCommand,
 } from "vs/editor/browser/editorExtensions";
-import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
-import { IModelService } from "vs/editor/common/services/model";
-import { URI as uri } from "vs/base/common/uri";
+import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
+import { CodeEditorWidget } from "vs/editor/browser/widget/codeEditorWidget";
 import {
-	CompletionList,
+	EditorOption,
+	IEditorOptions,
+} from "vs/editor/common/config/editorOptions";
+import { IPosition, Position } from "vs/editor/common/core/position";
+import { IRange, Range } from "vs/editor/common/core/range";
+import { IDecorationOptions } from "vs/editor/common/editorCommon";
+import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
+import {
 	CompletionContext,
 	CompletionItemKind,
+	CompletionList,
 } from "vs/editor/common/languages";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { ITextModel } from "vs/editor/common/model";
-import {
-	provideSuggestionItems,
-	CompletionOptions,
-} from "vs/editor/contrib/suggest/browser/suggest";
-import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
-import { editorForeground } from "vs/platform/theme/common/colorRegistry";
-import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
-import { IDecorationOptions } from "vs/editor/common/editorCommon";
-import { CodeEditorWidget } from "vs/editor/browser/widget/codeEditorWidget";
-import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
-import {
-	getSimpleEditorOptions,
-	getSimpleCodeEditorWidgetOptions,
-} from "vs/workbench/contrib/codeEditor/browser/simpleEditorOptions";
-import { IRange, Range } from "vs/editor/common/core/range";
-import { onUnexpectedError } from "vs/base/common/errors";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import {
-	IEditorOptions,
-	EditorOption,
-} from "vs/editor/common/config/editorOptions";
 import { PLAINTEXT_LANGUAGE_ID } from "vs/editor/common/languages/modesRegistry";
+import { ITextModel } from "vs/editor/common/model";
 import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
-import { defaultSelectBoxStyles } from "vs/platform/theme/browser/defaultStyles";
+import { IModelService } from "vs/editor/common/services/model";
+import {
+	CompletionOptions,
+	provideSuggestionItems,
+} from "vs/editor/contrib/suggest/browser/suggest";
+import { ZoneWidget } from "vs/editor/contrib/zoneWidget/browser/zoneWidget";
+import * as nls from "vs/nls";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { IContextViewService } from "vs/platform/contextview/browser/contextView";
+import {
+	IInstantiationService,
+	createDecorator,
+} from "vs/platform/instantiation/common/instantiation";
+import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
 import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
+import { defaultSelectBoxStyles } from "vs/platform/theme/browser/defaultStyles";
+import { editorForeground } from "vs/platform/theme/common/colorRegistry";
+import {
+	IColorTheme,
+	IThemeService,
+} from "vs/platform/theme/common/themeService";
+import {
+	getSimpleCodeEditorWidgetOptions,
+	getSimpleEditorOptions,
+} from "vs/workbench/contrib/codeEditor/browser/simpleEditorOptions";
+import {
+	BREAKPOINT_EDITOR_CONTRIBUTION_ID,
+	BreakpointWidgetContext as Context,
+	CONTEXT_BREAKPOINT_WIDGET_VISIBLE,
+	CONTEXT_IN_BREAKPOINT_WIDGET,
+	DEBUG_SCHEME,
+	IBreakpoint,
+	IBreakpointEditorContribution,
+	IBreakpointUpdateData,
+	IDebugService,
+} from "vs/workbench/contrib/debug/common/debug";
 
 const $ = dom.$;
 const IPrivateBreakpointWidgetService =
 	createDecorator<IPrivateBreakpointWidgetService>(
-		"privateBreakpointWidgetService"
+		"privateBreakpointWidgetService",
 	);
 interface IPrivateBreakpointWidgetService {
 	readonly _serviceBrand: undefined;
@@ -94,14 +94,14 @@ const DECORATION_KEY = "breakpointwidgetdecoration";
 function isPositionInCurlyBracketBlock(input: IActiveCodeEditor): boolean {
 	const model = input.getModel();
 	const bracketPairs = model.bracketPairs.getBracketPairsInRange(
-		Range.fromPositions(input.getPosition())
+		Range.fromPositions(input.getPosition()),
 	);
 	return bracketPairs.some((p) => p.openingBracketInfo.bracketText === "{");
 }
 
 function createDecorations(
 	theme: IColorTheme,
-	placeHolder: string
+	placeHolder: string,
 ): IDecorationOptions[] {
 	const transparentForeground = theme
 		.getColor(editorForeground)
@@ -244,21 +244,21 @@ export class BreakpointWidget
 					"breakpointWidgetLogMessagePlaceholder",
 					"Message to log when breakpoint is hit. Expressions within {} are interpolated. '{0}' to accept, '{1}' to cancel.",
 					acceptString,
-					closeString
+					closeString,
 				);
 			case Context.HIT_COUNT:
 				return nls.localize(
 					"breakpointWidgetHitCountPlaceholder",
 					"Break when hit count condition is met. '{0}' to accept, '{1}' to cancel.",
 					acceptString,
-					closeString
+					closeString,
 				);
 			default:
 				return nls.localize(
 					"breakpointWidgetExpressionPlaceholder",
 					"Break when expression evaluates to true. '{0}' to accept, '{1}' to cancel.",
 					acceptString,
-					closeString
+					closeString,
 				);
 		}
 	}
@@ -326,7 +326,7 @@ export class BreakpointWidget
 			this.context,
 			this.contextViewService,
 			defaultSelectBoxStyles,
-			{ ariaLabel: nls.localize("breakpointType", "Breakpoint Type") }
+			{ ariaLabel: nls.localize("breakpointType", "Breakpoint Type") },
 		);
 		this.selectContainer = $(".breakpoint-select-container");
 		selectBox.render(dom.append(container, this.selectContainer));
@@ -347,7 +347,7 @@ export class BreakpointWidget
 		this.toDispose.push(
 			this.input.getModel().onDidChangeContent(() => {
 				this.fitHeightToContent();
-			})
+			}),
 		);
 		this.input.setPosition({
 			lineNumber: 1,
@@ -359,7 +359,7 @@ export class BreakpointWidget
 
 	protected override _doLayout(
 		heightInPixel: number,
-		widthInPixel: number
+		widthInPixel: number,
 	): void {
 		this.heightInPx = heightInPixel;
 		this.input.layout({ height: heightInPixel, width: widthInPixel - 113 });
@@ -380,8 +380,8 @@ export class BreakpointWidget
 		const scopedInstatiationService = this.instantiationService.createChild(
 			new ServiceCollection(
 				[IContextKeyService, scopedContextKeyService],
-				[IPrivateBreakpointWidgetService, this]
-			)
+				[IPrivateBreakpointWidgetService, this],
+			),
 		);
 
 		const options = this.createEditorOptions();
@@ -391,7 +391,7 @@ export class BreakpointWidget
 				CodeEditorWidget,
 				container,
 				options,
-				codeEditorWidgetOptions
+				codeEditorWidgetOptions,
 			)
 		);
 		CONTEXT_IN_BREAKPOINT_WIDGET.bindTo(scopedContextKeyService).set(true);
@@ -399,7 +399,7 @@ export class BreakpointWidget
 			"",
 			null,
 			uri.parse(`${DEBUG_SCHEME}:${this.editor.getId()}:breakpointinput`),
-			true
+			true,
 		);
 		if (this.editor.hasModel()) {
 			model.setLanguage(this.editor.getModel().getLanguageId());
@@ -413,12 +413,12 @@ export class BreakpointWidget
 				? []
 				: createDecorations(
 						this.themeService.getColorTheme(),
-						this.placeholder
-					);
+						this.placeholder,
+				  );
 			this.input.setDecorationsByType(
 				"breakpoint-widget",
 				DECORATION_KEY,
-				decorations
+				decorations,
 			);
 		};
 		this.input.getModel().onDidChangeContent(() => setDecorations());
@@ -433,7 +433,7 @@ export class BreakpointWidget
 						model: ITextModel,
 						position: Position,
 						_context: CompletionContext,
-						token: CancellationToken
+						token: CancellationToken,
 					): Promise<CompletionList> => {
 						let suggestionsPromise: Promise<CompletionList>;
 						const underlyingModel = this.editor.getModel();
@@ -450,11 +450,11 @@ export class BreakpointWidget
 								new CompletionOptions(
 									undefined,
 									new Set<CompletionItemKind>().add(
-										CompletionItemKind.Snippet
-									)
+										CompletionItemKind.Snippet,
+									),
 								),
 								_context,
-								token
+								token,
 							).then((suggestions) => {
 								let overwriteBefore = 0;
 								if (this.context === Context.CONDITION) {
@@ -488,9 +488,9 @@ export class BreakpointWidget
 											Range.fromPositions(
 												position.delta(
 													0,
-													-overwriteBefore
+													-overwriteBefore,
 												),
-												position
+												position,
 											);
 										return s.completion;
 									}),
@@ -504,8 +504,8 @@ export class BreakpointWidget
 
 						return suggestionsPromise;
 					},
-				}
-			)
+				},
+			),
 		);
 
 		this.toDispose.push(
@@ -517,7 +517,7 @@ export class BreakpointWidget
 					this.input.updateOptions(this.createEditorOptions());
 					this.centerInputVertically();
 				}
-			})
+			}),
 		);
 	}
 
@@ -636,11 +636,11 @@ class CloseBreakpointWidgetCommand extends EditorCommand {
 	runEditorCommand(
 		accessor: ServicesAccessor,
 		editor: ICodeEditor,
-		args: any
+		args: any,
 	): void {
 		const debugContribution =
 			editor.getContribution<IBreakpointEditorContribution>(
-				BREAKPOINT_EDITOR_CONTRIBUTION_ID
+				BREAKPOINT_EDITOR_CONTRIBUTION_ID,
 			);
 		if (debugContribution) {
 			// if focus is in outer editor we need to use the debug contribution to close

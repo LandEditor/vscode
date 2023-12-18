@@ -33,7 +33,7 @@ export function merge(
 		machine: ReadonlyArray<string>;
 		unregistered: ReadonlyArray<string>;
 	},
-	logService: ILogService
+	logService: ILogService,
 ): IMergeResult {
 	if (!remoteStorage) {
 		return {
@@ -69,7 +69,7 @@ export function merge(
 				}, new Set<string>()),
 				removed: new Set<string>(),
 				updated: new Set<string>(),
-			};
+		  };
 	const baseToLocal = baseStorage
 		? compare(baseStorage, localStorage)
 		: {
@@ -79,7 +79,7 @@ export function merge(
 				}, new Set<string>()),
 				removed: new Set<string>(),
 				updated: new Set<string>(),
-			};
+		  };
 
 	const local: {
 		added: IStringDictionary<IStorageValue>;
@@ -125,7 +125,7 @@ export function merge(
 		const remoteValue = remoteStorage[key];
 		if (storageKeys.machine.includes(key)) {
 			logService.info(
-				`GlobalState: Skipped adding ${key} in local storage because it is declared as machine scoped.`
+				`GlobalState: Skipped adding ${key} in local storage because it is declared as machine scoped.`,
 			);
 			continue;
 		}
@@ -159,7 +159,7 @@ export function merge(
 		const remoteValue = remoteStorage[key];
 		if (storageKeys.machine.includes(key)) {
 			logService.info(
-				`GlobalState: Skipped updating ${key} in local storage because it is declared as machine scoped.`
+				`GlobalState: Skipped updating ${key} in local storage because it is declared as machine scoped.`,
 			);
 			continue;
 		}
@@ -178,7 +178,7 @@ export function merge(
 	for (const key of baseToRemote.removed.values()) {
 		if (storageKeys.machine.includes(key)) {
 			logService.trace(
-				`GlobalState: Skipped removing ${key} in local storage because it is declared as machine scoped.`
+				`GlobalState: Skipped removing ${key} in local storage because it is declared as machine scoped.`,
 			);
 			continue;
 		}
@@ -208,7 +208,7 @@ export function merge(
 
 function compare(
 	from: IStringDictionary<any>,
-	to: IStringDictionary<any>
+	to: IStringDictionary<any>,
 ): { added: Set<string>; removed: Set<string>; updated: Set<string> } {
 	const fromKeys = Object.keys(from);
 	const toKeys = Object.keys(to);

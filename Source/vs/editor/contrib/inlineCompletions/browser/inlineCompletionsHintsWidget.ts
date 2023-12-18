@@ -69,7 +69,7 @@ export class InlineCompletionsHintsWidget extends Disposable {
 		this.editor.onDidChangeConfiguration,
 		() =>
 			this.editor.getOption(EditorOption.inlineSuggest).showToolbar ===
-			"always"
+			"always",
 	);
 
 	private sessionPosition: Position | undefined = undefined;
@@ -98,8 +98,8 @@ export class InlineCompletionsHintsWidget extends Disposable {
 			ghostText.lineNumber,
 			Math.min(
 				firstColumn,
-				this.sessionPosition?.column ?? Number.MAX_SAFE_INTEGER
-			)
+				this.sessionPosition?.column ?? Number.MAX_SAFE_INTEGER,
+			),
 		);
 		this.sessionPosition = position;
 		return position;
@@ -166,15 +166,15 @@ export class InlineCompletionsHintsWidget extends Disposable {
 const inlineSuggestionHintsNextIcon = registerIcon(
 	"inline-suggestion-hints-next",
 	Codicon.chevronRight,
-	localize("parameterHintsNextIcon", "Icon for show next parameter hint.")
+	localize("parameterHintsNextIcon", "Icon for show next parameter hint."),
 );
 const inlineSuggestionHintsPreviousIcon = registerIcon(
 	"inline-suggestion-hints-previous",
 	Codicon.chevronLeft,
 	localize(
 		"parameterHintsPreviousIcon",
-		"Icon for show previous parameter hint."
-	)
+		"Icon for show previous parameter hint.",
+	),
 );
 
 export class InlineSuggestionHintsContentWidget
@@ -195,20 +195,20 @@ export class InlineSuggestionHintsContentWidget
 	private readonly nodes = h(
 		"div.inlineSuggestionsHints",
 		{ className: this.withBorder ? ".withBorder" : "" },
-		[h("div@toolBar")]
+		[h("div@toolBar")],
 	);
 
 	private createCommandAction(
 		commandId: string,
 		label: string,
-		iconClassName: string
+		iconClassName: string,
 	): Action {
 		const action = new Action(commandId, label, iconClassName, true, () =>
-			this._commandService.executeCommand(commandId)
+			this._commandService.executeCommand(commandId),
 		);
 		const kb = this.keybindingService.lookupKeybinding(
 			commandId,
-			this._contextKeyService
+			this._contextKeyService,
 		);
 		let tooltip = label;
 		if (kb) {
@@ -216,7 +216,7 @@ export class InlineSuggestionHintsContentWidget
 				{ key: "content", comment: ["A label", "A keybinding"] },
 				"{0} ({1})",
 				label,
-				kb.getLabel()
+				kb.getLabel(),
 			);
 		}
 		action.tooltip = tooltip;
@@ -226,18 +226,18 @@ export class InlineSuggestionHintsContentWidget
 	private readonly previousAction = this.createCommandAction(
 		showPreviousInlineSuggestionActionId,
 		localize("previous", "Previous"),
-		ThemeIcon.asClassName(inlineSuggestionHintsPreviousIcon)
+		ThemeIcon.asClassName(inlineSuggestionHintsPreviousIcon),
 	);
 	private readonly availableSuggestionCountAction = new Action(
 		"inlineSuggestionHints.availableSuggestionCount",
 		"",
 		undefined,
-		false
+		false,
 	);
 	private readonly nextAction = this.createCommandAction(
 		showNextInlineSuggestionActionId,
 		localize("next", "Next"),
-		ThemeIcon.asClassName(inlineSuggestionHintsNextIcon)
+		ThemeIcon.asClassName(inlineSuggestionHintsNextIcon),
 	);
 
 	private readonly toolBar: CustomizedMenuWorkbenchToolBar;
@@ -246,21 +246,21 @@ export class InlineSuggestionHintsContentWidget
 	private readonly inlineCompletionsActionsMenus = this._register(
 		this._menuService.createMenu(
 			MenuId.InlineCompletionsActions,
-			this._contextKeyService
-		)
+			this._contextKeyService,
+		),
 	);
 
 	private readonly clearAvailableSuggestionCountLabelDebounced =
 		this._register(
 			new RunOnceScheduler(() => {
 				this.availableSuggestionCountAction.label = "";
-			}, 100)
+			}, 100),
 		);
 
 	private readonly disableButtonsDebounced = this._register(
 		new RunOnceScheduler(() => {
 			this.previousAction.enabled = this.nextAction.enabled = false;
-		}, 100)
+		}, 100),
 	);
 
 	private lastCommands: Command[] = [];
@@ -448,7 +448,7 @@ class StatusBarViewItem extends MenuEntryActionViewItem {
 	protected override updateLabel() {
 		const kb = this._keybindingService.lookupKeybinding(
 			this._action.id,
-			this._contextKeyService
+			this._contextKeyService,
 		);
 		if (!kb) {
 			return super.updateLabel();
@@ -476,7 +476,7 @@ export class CustomizedMenuWorkbenchToolBar extends WorkbenchToolBar {
 	private readonly menu = this._store.add(
 		this.menuService.createMenu(this.menuId, this.contextKeyService, {
 			emitEventsForSubmenuChanges: true,
-		})
+		}),
 	);
 	private additionalActions: IAction[] = [];
 	private prependedPrimaryActions: IAction[] = [];
@@ -515,7 +515,7 @@ export class CustomizedMenuWorkbenchToolBar extends WorkbenchToolBar {
 			{ primary, secondary },
 			this.options2?.toolbarOptions?.primaryGroup,
 			this.options2?.toolbarOptions?.shouldInlineSubmenu,
-			this.options2?.toolbarOptions?.useSeparatorsInPrimaryActions
+			this.options2?.toolbarOptions?.useSeparatorsInPrimaryActions,
 		);
 
 		secondary.push(...this.additionalActions);

@@ -6,6 +6,7 @@
 import { ActionViewItem } from "vs/base/browser/ui/actionbar/actionViewItems";
 import { Action, IAction } from "vs/base/common/actions";
 import { Event } from "vs/base/common/event";
+import { ThemeIcon } from "vs/base/common/themables";
 import { localize } from "vs/nls";
 import {
 	Action2,
@@ -21,14 +22,13 @@ import {
 	IInstantiationService,
 	ServicesAccessor,
 } from "vs/platform/instantiation/common/instantiation";
-import { ThemeIcon } from "vs/base/common/themables";
 import {
 	NOTEBOOK_ACTIONS_CATEGORY,
 	SELECT_KERNEL_ID,
 } from "vs/workbench/contrib/notebook/browser/controller/coreActions";
 import {
-	getNotebookEditorFromEditorPane,
 	INotebookEditor,
+	getNotebookEditorFromEditorPane,
 } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
 import { selectKernelIcon } from "vs/workbench/contrib/notebook/browser/notebookIcons";
 import {
@@ -48,7 +48,7 @@ import { IEditorService } from "vs/workbench/services/editor/common/editorServic
 
 function getEditorFromContext(
 	editorService: IEditorService,
-	context?: KernelQuickPickContext
+	context?: KernelQuickPickContext,
 ): INotebookEditor | undefined {
 	let editor: INotebookEditor | undefined;
 	if (context !== undefined && "notebookEditorId" in context) {
@@ -58,14 +58,14 @@ function getEditorFromContext(
 				const notebookEditor =
 					getNotebookEditorFromEditorPane(editorPane);
 				return notebookEditor?.getId() === editorId;
-			}
+			},
 		);
 		editor = getNotebookEditorFromEditorPane(matchingEditor);
 	} else if (context !== undefined && "notebookEditor" in context) {
 		editor = context?.notebookEditor;
 	} else {
 		editor = getNotebookEditorFromEditorPane(
-			editorService.activeEditorPane
+			editorService.activeEditorPane,
 		);
 	}
 
@@ -81,7 +81,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"notebookActions.selectKernel",
-						"Select Notebook Kernel"
+						"Select Notebook Kernel",
 					),
 					original: "Select Notebook Kernel",
 				},
@@ -95,8 +95,8 @@ registerAction2(
 							NOTEBOOK_IS_ACTIVE_EDITOR,
 							ContextKeyExpr.notEquals(
 								"config.notebook.globalToolbar",
-								true
-							)
+								true,
+							),
 						),
 						group: "navigation",
 						order: -10,
@@ -105,7 +105,7 @@ registerAction2(
 						id: MenuId.NotebookToolbar,
 						when: ContextKeyExpr.equals(
 							"config.notebook.globalToolbar",
-							true
+							true,
 						),
 						group: "status",
 						order: -10,
@@ -120,24 +120,24 @@ registerAction2(
 				metadata: {
 					description: localize(
 						"notebookActions.selectKernel.args",
-						"Notebook Kernel Args"
+						"Notebook Kernel Args",
 					),
 					args: [
 						{
 							name: "kernelInfo",
 							description: "The kernel info",
 							schema: {
-								"type": "object",
-								"required": ["id", "extension"],
-								"properties": {
-									"id": {
-										"type": "string",
+								type: "object",
+								required: ["id", "extension"],
+								properties: {
+									id: {
+										type: "string",
 									},
-									"extension": {
-										"type": "string",
+									extension: {
+										type: "string",
 									},
-									"notebookEditorId": {
-										"type": "string",
+									notebookEditorId: {
+										type: "string",
 									},
 								},
 							},
@@ -149,7 +149,7 @@ registerAction2(
 
 		async run(
 			accessor: ServicesAccessor,
-			context?: KernelQuickPickContext
+			context?: KernelQuickPickContext,
 		): Promise<boolean> {
 			const instantiationService = accessor.get(IInstantiationService);
 			const editorService = accessor.get(IEditorService);
@@ -197,11 +197,11 @@ registerAction2(
 				? `${extensionId}/${controllerId}`
 				: undefined;
 			const strategy = instantiationService.createInstance(
-				KernelPickerMRUStrategy
+				KernelPickerMRUStrategy,
 			);
 			return strategy.showQuickPick(editor, wantedKernelId);
 		}
-	}
+	},
 );
 
 export class NotebooKernelActionViewItem extends ActionViewItem {
@@ -291,7 +291,7 @@ export class NotebooKernelActionViewItem extends ActionViewItem {
 			notebook,
 			this._action,
 			this._notebookKernelService,
-			this._notebookKernelHistoryService
+			this._notebookKernelHistoryService,
 		);
 
 		this.updateClass();

@@ -22,7 +22,7 @@ export class ChatAccessibilityService
 
 	private _pendingCueMap: Map<number, AudioCueScheduler> = new Map();
 
-	private _requestId: number = 0;
+	private _requestId = 0;
 
 	constructor(
 		@IAudioCueService private readonly _audioCueService: IAudioCueService,
@@ -39,14 +39,14 @@ export class ChatAccessibilityService
 		this._pendingCueMap.set(
 			this._requestId,
 			this._register(
-				this._instantiationService.createInstance(AudioCueScheduler)
-			)
+				this._instantiationService.createInstance(AudioCueScheduler),
+			),
 		);
 		return this._requestId;
 	}
 	acceptResponse(
 		response: IChatResponseViewModel | string | undefined,
-		requestId: number
+		requestId: number,
 	): void {
 		this._pendingCueMap.get(requestId)?.dispose();
 		this._pendingCueMap.delete(requestId);

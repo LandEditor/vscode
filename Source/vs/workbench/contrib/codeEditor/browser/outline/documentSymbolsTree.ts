@@ -3,21 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./documentSymbolsTree";
-import "vs/editor/contrib/symbolIcons/browser/symbolIcons"; // The codicon symbol colors are defined here and must be loaded to get colors
 import * as dom from "vs/base/browser/dom";
 import { HighlightedLabel } from "vs/base/browser/ui/highlightedlabel/highlightedLabel";
+import {
+	IIconLabelValueOptions,
+	IconLabel,
+} from "vs/base/browser/ui/iconLabel/iconLabel";
 import {
 	IIdentityProvider,
 	IKeyboardNavigationLabelProvider,
 	IListVirtualDelegate,
 } from "vs/base/browser/ui/list/list";
+import { IListAccessibilityProvider } from "vs/base/browser/ui/list/listWidget";
 import {
+	ITreeFilter,
 	ITreeNode,
 	ITreeRenderer,
-	ITreeFilter,
 } from "vs/base/browser/ui/tree/tree";
-import { createMatches, FuzzyScore } from "vs/base/common/filters";
+import { mainWindow } from "vs/base/browser/window";
+import { FuzzyScore, createMatches } from "vs/base/common/filters";
+import { ThemeIcon } from "vs/base/common/themables";
+import "vs/css!./documentSymbolsTree";
 import { Range } from "vs/editor/common/core/range";
 import {
 	SymbolKind,
@@ -26,31 +32,25 @@ import {
 	getAriaLabelForSymbol,
 	symbolKindNames,
 } from "vs/editor/common/languages";
+import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
 import {
 	OutlineElement,
 	OutlineGroup,
 	OutlineModel,
 } from "vs/editor/contrib/documentSymbols/browser/outlineModel";
+import "vs/editor/contrib/symbolIcons/browser/symbolIcons"; // The codicon symbol colors are defined here and must be loaded to get colors
 import { localize } from "vs/nls";
-import {
-	IconLabel,
-	IIconLabelValueOptions,
-} from "vs/base/browser/ui/iconLabel/iconLabel";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { MarkerSeverity } from "vs/platform/markers/common/markers";
-import { IThemeService } from "vs/platform/theme/common/themeService";
 import {
 	listErrorForeground,
 	listWarningForeground,
 } from "vs/platform/theme/common/colorRegistry";
-import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
-import { IListAccessibilityProvider } from "vs/base/browser/ui/list/listWidget";
+import { IThemeService } from "vs/platform/theme/common/themeService";
 import {
 	IOutlineComparator,
 	OutlineConfigKeys,
 } from "vs/workbench/services/outline/browser/outline";
-import { ThemeIcon } from "vs/base/common/themables";
-import { mainWindow } from "vs/base/browser/window";
 
 export type DocumentSymbolItem = OutlineGroup | OutlineElement;
 
@@ -82,7 +82,7 @@ export class DocumentSymbolAccessibilityProvider
 		} else {
 			return getAriaLabelForSymbol(
 				element.symbol.name,
-				element.symbol.kind
+				element.symbol.kind,
 			);
 		}
 	}
@@ -100,7 +100,7 @@ class DocumentSymbolGroupTemplate {
 	static readonly id = "DocumentSymbolGroupTemplate";
 	constructor(
 		readonly labelContainer: HTMLElement,
-		readonly label: HighlightedLabel
+		readonly label: HighlightedLabel,
 	) {}
 }
 
@@ -110,7 +110,7 @@ class DocumentSymbolTemplate {
 		readonly container: HTMLElement,
 		readonly iconLabel: IconLabel,
 		readonly iconClass: HTMLElement,
-		readonly decoration: HTMLElement
+		readonly decoration: HTMLElement,
 	) {}
 }
 
@@ -140,14 +140,14 @@ export class DocumentSymbolGroupRenderer
 		dom.append(container, labelContainer);
 		return new DocumentSymbolGroupTemplate(
 			labelContainer,
-			new HighlightedLabel(labelContainer)
+			new HighlightedLabel(labelContainer),
 		);
 	}
 
 	renderElement(
 		node: ITreeNode<OutlineGroup, FuzzyScore>,
 		_index: number,
-		template: DocumentSymbolGroupTemplate
+		template: DocumentSymbolGroupTemplate,
 	): void {
 		template.label.set(node.element.label, createMatches(node.filterData));
 	}
@@ -158,8 +158,7 @@ export class DocumentSymbolGroupRenderer
 }
 
 export class DocumentSymbolRenderer
-	implements
-		ITreeRenderer<OutlineElement, FuzzyScore, DocumentSymbolTemplate>
+	implements ITreeRenderer<OutlineElement, FuzzyScore, DocumentSymbolTemplate>
 {
 	readonly templateId: string = DocumentSymbolTemplate.id;
 
@@ -181,14 +180,14 @@ export class DocumentSymbolRenderer
 			container,
 			iconLabel,
 			iconClass,
-			decoration
+			decoration,
 		);
 	}
 
 	renderElement(
 		node: ITreeNode<OutlineElement, FuzzyScore>,
 		_index: number,
-		template: DocumentSymbolTemplate
+		template: DocumentSymbolTemplate,
 	): void {
 		const { element } = node;
 		const extraClasses = ["nowrap"];
@@ -200,7 +199,7 @@ export class DocumentSymbolRenderer
 				"title.template",
 				"{0} ({1})",
 				element.symbol.name,
-				symbolKindNames[element.symbol.kind]
+				symbolKindNames[element.symbol.kind],
 			),
 		};
 		if (this._configurationService.getValue(OutlineConfigKeys.icons)) {
@@ -210,8 +209,8 @@ export class DocumentSymbolRenderer
 				"outline-element-icon",
 				"inline",
 				...ThemeIcon.asClassNameArray(
-					SymbolKinds.toIcon(element.symbol.kind)
-				)
+					SymbolKinds.toIcon(element.symbol.kind),
+				),
 			);
 		}
 		if (element.symbol.tags.indexOf(SymbolTag.Deprecated) >= 0) {
@@ -221,7 +220,7 @@ export class DocumentSymbolRenderer
 		template.iconLabel.setLabel(
 			element.symbol.name,
 			element.symbol.detail,
-			options
+			options,
 		);
 
 		if (this._renderMarker) {
@@ -231,7 +230,7 @@ export class DocumentSymbolRenderer
 
 	private _renderMarkerInfo(
 		element: OutlineElement,
-		template: DocumentSymbolTemplate
+		template: DocumentSymbolTemplate,
 	): void {
 		if (!element.marker) {
 			dom.hide(template.decoration);
@@ -245,16 +244,16 @@ export class DocumentSymbolRenderer
 			.getColor(
 				topSev === MarkerSeverity.Error
 					? listErrorForeground
-					: listWarningForeground
+					: listWarningForeground,
 			);
 		const cssColor = color ? color.toString() : "inherit";
 
 		// color of the label
 		const problem = this._configurationService.getValue(
-			"problems.visibility"
+			"problems.visibility",
 		);
 		const configProblems = this._configurationService.getValue(
-			OutlineConfigKeys.problemsColors
+			OutlineConfigKeys.problemsColors,
 		);
 
 		if (!problem || !configProblems) {
@@ -262,7 +261,7 @@ export class DocumentSymbolRenderer
 		} else {
 			template.container.style.setProperty(
 				"--outline-element-color",
-				cssColor
+				cssColor,
 			);
 		}
 
@@ -272,7 +271,7 @@ export class DocumentSymbolRenderer
 		}
 
 		const configBadges = this._configurationService.getValue(
-			OutlineConfigKeys.problemsBadges
+			OutlineConfigKeys.problemsBadges,
 		);
 		if (!configBadges || !problem) {
 			dom.hide(template.decoration);
@@ -287,11 +286,11 @@ export class DocumentSymbolRenderer
 					: localize(
 							"N.problem",
 							"{0} problems in this element",
-							count
-						);
+							count,
+					  );
 			template.decoration.style.setProperty(
 				"--outline-element-color",
-				cssColor
+				cssColor,
 			);
 		} else {
 			dom.show(template.decoration);
@@ -299,11 +298,11 @@ export class DocumentSymbolRenderer
 			template.decoration.innerText = "\uea71";
 			template.decoration.title = localize(
 				"deep.problem",
-				"Contains elements with problems"
+				"Contains elements with problems",
 			);
 			template.decoration.style.setProperty(
 				"--outline-element-color",
-				cssColor
+				cssColor,
 			);
 		}
 	}
@@ -359,7 +358,7 @@ export class DocumentSymbolFilter implements ITreeFilter<DocumentSymbolItem> {
 		const configKey = `${this._prefix}.${configName}`;
 		return this._textResourceConfigService.getValue(
 			outline?.uri,
-			configKey
+			configKey,
 		);
 	}
 }
@@ -369,7 +368,7 @@ export class DocumentSymbolComparator
 {
 	private readonly _collator = new dom.WindowIdleValue<Intl.Collator>(
 		mainWindow,
-		() => new Intl.Collator(undefined, { numeric: true })
+		() => new Intl.Collator(undefined, { numeric: true }),
 	);
 
 	compareByPosition(a: DocumentSymbolItem, b: DocumentSymbolItem): number {
@@ -379,7 +378,7 @@ export class DocumentSymbolComparator
 			return (
 				Range.compareRangesUsingStarts(
 					a.symbol.range,
-					b.symbol.range
+					b.symbol.range,
 				) || this._collator.value.compare(a.symbol.name, b.symbol.name)
 			);
 		}

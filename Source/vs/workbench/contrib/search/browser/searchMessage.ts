@@ -3,23 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
 import * as dom from "vs/base/browser/dom";
 import { DisposableStore } from "vs/base/common/lifecycle";
 import { parseLinkedText } from "vs/base/common/linkedText";
+import { Schemas } from "vs/base/common/network";
 import Severity from "vs/base/common/severity";
+import { URI } from "vs/base/common/uri";
+import * as nls from "vs/nls";
+import { ICommandService } from "vs/platform/commands/common/commands";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { INotificationService } from "vs/platform/notification/common/notification";
+import { Link } from "vs/platform/opener/browser/link";
+import { IOpenerService } from "vs/platform/opener/common/opener";
 import { SeverityIcon } from "vs/platform/severityIcon/browser/severityIcon";
 import {
 	TextSearchCompleteMessage,
 	TextSearchCompleteMessageType,
 } from "vs/workbench/services/search/common/searchExtTypes";
-import { IOpenerService } from "vs/platform/opener/common/opener";
-import { Schemas } from "vs/base/common/network";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import { Link } from "vs/platform/opener/browser/link";
-import { URI } from "vs/base/common/uri";
 
 export const renderSearchMessage = (
 	message: TextSearchCompleteMessage,
@@ -28,7 +28,7 @@ export const renderSearchMessage = (
 	openerService: IOpenerService,
 	commandService: ICommandService,
 	disposableStore: DisposableStore,
-	triggerSearch: () => void
+	triggerSearch: () => void,
 ): HTMLElement => {
 	const div = dom.$("div.providerMessage");
 	const linkedText = parseLinkedText(message.text);
@@ -39,11 +39,11 @@ export const renderSearchMessage = (
 				SeverityIcon.className(
 					message.type === TextSearchCompleteMessageType.Information
 						? Severity.Info
-						: Severity.Warning
+						: Severity.Warning,
 				)
 					.split(" ")
-					.join(".")
-		)
+					.join("."),
+		),
 	);
 
 	for (const node of linkedText.nodes) {
@@ -58,34 +58,32 @@ export const renderSearchMessage = (
 					const parsed = URI.parse(href, true);
 					if (parsed.scheme === Schemas.command && message.trusted) {
 						const result = await commandService.executeCommand(
-							parsed.path
+							parsed.path,
 						);
 						if ((result as any)?.triggerSearch) {
 							triggerSearch();
 						}
 					} else if (parsed.scheme === Schemas.https) {
 						openerService.open(parsed);
+					} else if (
+						parsed.scheme === Schemas.command &&
+						!message.trusted
+					) {
+						notificationService.error(
+							nls.localize(
+								"unable to open trust",
+								"Unable to open command link from untrusted source: {0}",
+								href,
+							),
+						);
 					} else {
-						if (
-							parsed.scheme === Schemas.command &&
-							!message.trusted
-						) {
-							notificationService.error(
-								nls.localize(
-									"unable to open trust",
-									"Unable to open command link from untrusted source: {0}",
-									href
-								)
-							);
-						} else {
-							notificationService.error(
-								nls.localize(
-									"unable to open",
-									"Unable to open unknown link: {0}",
-									href
-								)
-							);
-						}
+						notificationService.error(
+							nls.localize(
+								"unable to open",
+								"Unable to open unknown link: {0}",
+								href,
+							),
+						);
 					}
 				},
 			});

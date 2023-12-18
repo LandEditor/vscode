@@ -26,7 +26,7 @@ export class TypeScriptVersionManager extends Disposable {
 	public constructor(
 		private configuration: TypeScriptServiceConfiguration,
 		private readonly versionProvider: ITypeScriptVersionProvider,
-		private readonly workspaceState: vscode.Memento
+		private readonly workspaceState: vscode.Memento,
 	) {
 		super();
 
@@ -43,10 +43,10 @@ export class TypeScriptVersionManager extends Disposable {
 					vscode.workspace.onDidGrantWorkspaceTrust(() => {
 						if (this.versionProvider.localVersion) {
 							this.updateActiveVersion(
-								this.versionProvider.localVersion
+								this.versionProvider.localVersion,
 							);
 						}
-					})
+					}),
 				);
 			}
 		}
@@ -59,12 +59,12 @@ export class TypeScriptVersionManager extends Disposable {
 	}
 
 	private readonly _onDidPickNewVersion = this._register(
-		new vscode.EventEmitter<void>()
+		new vscode.EventEmitter<void>(),
 	);
 	public readonly onDidPickNewVersion = this._onDidPickNewVersion.event;
 
 	public updateConfiguration(
-		nextConfiguration: TypeScriptServiceConfiguration
+		nextConfiguration: TypeScriptServiceConfiguration,
 	) {
 		const lastConfiguration = this.configuration;
 		this.configuration = nextConfiguration;
@@ -101,9 +101,9 @@ export class TypeScriptVersionManager extends Disposable {
 			],
 			{
 				placeHolder: vscode.l10n.t(
-					"Select the TypeScript version used for JavaScript and TypeScript language features"
+					"Select the TypeScript version used for JavaScript and TypeScript language features",
 				),
-			}
+			},
 		);
 
 		return selected?.run();
@@ -121,7 +121,7 @@ export class TypeScriptVersionManager extends Disposable {
 			run: async () => {
 				await this.workspaceState.update(
 					useWorkspaceTsdkStorageKey,
-					false
+					false,
 				);
 				this.updateActiveVersion(bundledVersion);
 			},
@@ -145,7 +145,7 @@ export class TypeScriptVersionManager extends Disposable {
 					if (trusted) {
 						await this.workspaceState.update(
 							useWorkspaceTsdkStorageKey,
-							true
+							true,
 						);
 						const tsConfig =
 							vscode.workspace.getConfiguration("typescript");
@@ -162,7 +162,7 @@ export class TypeScriptVersionManager extends Disposable {
 
 		if (workspaceVersion === undefined) {
 			throw new Error(
-				"Could not prompt to use workspace TypeScript version because no workspace version is specified"
+				"Could not prompt to use workspace TypeScript version because no workspace version is specified",
 			);
 		}
 
@@ -172,11 +172,11 @@ export class TypeScriptVersionManager extends Disposable {
 
 		const result = await vscode.window.showInformationMessage(
 			vscode.l10n.t(
-				"This workspace contains a TypeScript version. Would you like to use the workspace TypeScript version for TypeScript and JavaScript language features?"
+				"This workspace contains a TypeScript version. Would you like to use the workspace TypeScript version for TypeScript and JavaScript language features?",
 			),
 			allowIt,
 			dismissPrompt,
-			suppressPrompt
+			suppressPrompt,
 		);
 
 		if (result === allowIt) {
@@ -185,7 +185,7 @@ export class TypeScriptVersionManager extends Disposable {
 		} else if (result === suppressPrompt) {
 			await this.workspaceState.update(
 				suppressPromptWorkspaceTsdkStorageKey,
-				true
+				true,
 			);
 		}
 	}
@@ -201,19 +201,19 @@ export class TypeScriptVersionManager extends Disposable {
 	private get useWorkspaceTsdkSetting(): boolean {
 		return this.workspaceState.get<boolean>(
 			useWorkspaceTsdkStorageKey,
-			false
+			false,
 		);
 	}
 
 	private get suppressPromptWorkspaceTsdkSetting(): boolean {
 		return this.workspaceState.get<boolean>(
 			suppressPromptWorkspaceTsdkStorageKey,
-			false
+			false,
 		);
 	}
 
 	private isInPromptWorkspaceTsdkState(
-		configuration: TypeScriptServiceConfiguration
+		configuration: TypeScriptServiceConfiguration,
 	) {
 		return (
 			configuration.localTsdk !== null &&
@@ -229,7 +229,7 @@ const LearnMorePickItem: QuickPickItem = {
 	description: "",
 	run: () => {
 		vscode.env.openExternal(
-			vscode.Uri.parse("https://go.microsoft.com/fwlink/?linkid=839919")
+			vscode.Uri.parse("https://go.microsoft.com/fwlink/?linkid=839919"),
 		);
 	},
 };

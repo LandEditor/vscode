@@ -3,19 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
 import { Codicon } from "vs/base/common/codicons";
+import { localize } from "vs/nls";
 import { MenuId, registerAction2 } from "vs/platform/actions/common/actions";
-import { ViewAction } from "vs/workbench/browser/parts/views/viewPane";
 import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
 import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+import { ViewAction } from "vs/workbench/browser/parts/views/viewPane";
 import {
+	IOutlinePane,
+	OutlineSortOrder,
 	ctxAllCollapsed,
 	ctxFilterOnType,
 	ctxFollowsCursor,
 	ctxSortMode,
-	IOutlinePane,
-	OutlineSortOrder,
 } from "vs/workbench/contrib/outline/browser/outline";
 
 // --- commands
@@ -34,7 +34,7 @@ registerAction2(
 					group: "navigation",
 					when: ContextKeyExpr.and(
 						ContextKeyExpr.equals("view", IOutlinePane.Id),
-						ctxAllCollapsed.isEqualTo(false)
+						ctxAllCollapsed.isEqualTo(false),
 					),
 				},
 			});
@@ -42,7 +42,7 @@ registerAction2(
 		runInView(_accessor: ServicesAccessor, view: IOutlinePane) {
 			view.collapseAll();
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -59,7 +59,7 @@ registerAction2(
 					group: "navigation",
 					when: ContextKeyExpr.and(
 						ContextKeyExpr.equals("view", IOutlinePane.Id),
-						ctxAllCollapsed.isEqualTo(true)
+						ctxAllCollapsed.isEqualTo(true),
 					),
 				},
 			});
@@ -67,7 +67,7 @@ registerAction2(
 		runInView(_accessor: ServicesAccessor, view: IOutlinePane) {
 			view.expandAll();
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -91,7 +91,7 @@ registerAction2(
 			view.outlineViewState.followCursor =
 				!view.outlineViewState.followCursor;
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -115,7 +115,7 @@ registerAction2(
 			view.outlineViewState.filterOnType =
 				!view.outlineViewState.filterOnType;
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -138,7 +138,7 @@ registerAction2(
 		runInView(_accessor: ServicesAccessor, view: IOutlinePane) {
 			view.outlineViewState.sortBy = OutlineSortOrder.ByPosition;
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -161,7 +161,7 @@ registerAction2(
 		runInView(_accessor: ServicesAccessor, view: IOutlinePane) {
 			view.outlineViewState.sortBy = OutlineSortOrder.ByName;
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -184,5 +184,5 @@ registerAction2(
 		runInView(_accessor: ServicesAccessor, view: IOutlinePane) {
 			view.outlineViewState.sortBy = OutlineSortOrder.ByKind;
 		}
-	}
+	},
 );

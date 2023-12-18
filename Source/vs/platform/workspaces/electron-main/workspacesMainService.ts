@@ -5,8 +5,13 @@
 
 import { AddFirstParameterToFunctions } from "vs/base/common/types";
 import { URI } from "vs/base/common/uri";
+import {
+	IFolderBackupInfo,
+	IWorkspaceBackupInfo,
+} from "vs/platform/backup/common/backup";
 import { IBackupMainService } from "vs/platform/backup/electron-main/backup";
 import { IWindowsMainService } from "vs/platform/windows/electron-main/windows";
+import { IWorkspaceIdentifier } from "vs/platform/workspace/common/workspace";
 import {
 	IEnterWorkspaceResult,
 	IRecent,
@@ -14,13 +19,8 @@ import {
 	IWorkspaceFolderCreationData,
 	IWorkspacesService,
 } from "vs/platform/workspaces/common/workspaces";
-import { IWorkspaceIdentifier } from "vs/platform/workspace/common/workspace";
 import { IWorkspacesHistoryMainService } from "vs/platform/workspaces/electron-main/workspacesHistoryMainService";
 import { IWorkspacesManagementMainService } from "vs/platform/workspaces/electron-main/workspacesManagementMainService";
-import {
-	IWorkspaceBackupInfo,
-	IFolderBackupInfo,
-} from "vs/platform/backup/common/backup";
 
 export class WorkspacesMainService
 	implements
@@ -47,14 +47,14 @@ export class WorkspacesMainService
 
 	async enterWorkspace(
 		windowId: number,
-		path: URI
+		path: URI,
 	): Promise<IEnterWorkspaceResult | undefined> {
 		const window = this.windowsMainService.getWindowById(windowId);
 		if (window) {
 			return this.workspacesManagementMainService.enterWorkspace(
 				window,
 				this.windowsMainService.getWindows(),
-				path
+				path,
 			);
 		}
 
@@ -64,29 +64,29 @@ export class WorkspacesMainService
 	createUntitledWorkspace(
 		windowId: number,
 		folders?: IWorkspaceFolderCreationData[],
-		remoteAuthority?: string
+		remoteAuthority?: string,
 	): Promise<IWorkspaceIdentifier> {
 		return this.workspacesManagementMainService.createUntitledWorkspace(
 			folders,
-			remoteAuthority
+			remoteAuthority,
 		);
 	}
 
 	deleteUntitledWorkspace(
 		windowId: number,
-		workspace: IWorkspaceIdentifier
+		workspace: IWorkspaceIdentifier,
 	): Promise<void> {
 		return this.workspacesManagementMainService.deleteUntitledWorkspace(
-			workspace
+			workspace,
 		);
 	}
 
 	getWorkspaceIdentifier(
 		windowId: number,
-		workspacePath: URI
+		workspacePath: URI,
 	): Promise<IWorkspaceIdentifier> {
 		return this.workspacesManagementMainService.getWorkspaceIdentifier(
-			workspacePath
+			workspacePath,
 		);
 	}
 

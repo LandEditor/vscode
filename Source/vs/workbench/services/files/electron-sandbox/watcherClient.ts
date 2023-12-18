@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { DisposableStore, toDisposable } from "vs/base/common/lifecycle";
-import { getDelayedChannel, ProxyChannel } from "vs/base/parts/ipc/common/ipc";
+import { ProxyChannel, getDelayedChannel } from "vs/base/parts/ipc/common/ipc";
 import { IFileChange } from "vs/platform/files/common/files";
 import {
 	AbstractUniversalWatcherClient,
@@ -18,7 +18,7 @@ export class UniversalWatcherClient extends AbstractUniversalWatcherClient {
 		onFileChanges: (changes: IFileChange[]) => void,
 		onLogMessage: (msg: ILogMessage) => void,
 		verboseLogging: boolean,
-		private readonly utilityProcessWorkerWorkbenchService: IUtilityProcessWorkerWorkbenchService
+		private readonly utilityProcessWorkerWorkbenchService: IUtilityProcessWorkerWorkbenchService,
 	) {
 		super(onFileChanges, onLogMessage, verboseLogging);
 
@@ -26,7 +26,7 @@ export class UniversalWatcherClient extends AbstractUniversalWatcherClient {
 	}
 
 	protected override createWatcher(
-		disposables: DisposableStore
+		disposables: DisposableStore,
 	): IRecursiveWatcher {
 		const watcher = ProxyChannel.toService<IRecursiveWatcher>(
 			getDelayedChannel(
@@ -45,7 +45,7 @@ export class UniversalWatcherClient extends AbstractUniversalWatcherClient {
 								moduleId:
 									"vs/platform/files/node/watcher/watcherMain",
 								type: "fileWatcher",
-							}
+							},
 						);
 
 					// React on unexpected termination of the watcher process
@@ -55,18 +55,18 @@ export class UniversalWatcherClient extends AbstractUniversalWatcherClient {
 					onDidTerminate.then(({ reason }) => {
 						if (reason?.code === 0) {
 							this.trace(
-								`terminated by itself with code ${reason.code}, signal: ${reason.signal}`
+								`terminated by itself with code ${reason.code}, signal: ${reason.signal}`,
 							);
 						} else {
 							this.onError(
-								`terminated by itself unexpectedly with code ${reason?.code}, signal: ${reason?.signal}`
+								`terminated by itself unexpectedly with code ${reason?.code}, signal: ${reason?.signal}`,
 							);
 						}
 					});
 
 					return client.getChannel("watcher");
-				})()
-			)
+				})(),
+			),
 		);
 
 		// Looks like universal watcher needs an explicit stop

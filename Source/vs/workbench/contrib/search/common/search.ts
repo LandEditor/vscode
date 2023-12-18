@@ -3,33 +3,33 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { groupBy } from "vs/base/common/arrays";
+import { CancellationToken } from "vs/base/common/cancellation";
 import { onUnexpectedExternalError } from "vs/base/common/errors";
 import { IDisposable } from "vs/base/common/lifecycle";
+import { compare } from "vs/base/common/strings";
+import { isNumber } from "vs/base/common/types";
+import { URI } from "vs/base/common/uri";
+import { IRange, Range } from "vs/editor/common/core/range";
 import {
-	ISearchConfiguration,
-	ISearchConfigurationProperties,
-} from "vs/workbench/services/search/common/search";
-import {
-	SymbolKind,
 	Location,
 	ProviderResult,
+	SymbolKind,
 	SymbolTag,
 } from "vs/editor/common/languages";
+import { RawContextKey } from "vs/platform/contextkey/common/contextkey";
+import { IFileService } from "vs/platform/files/common/files";
+import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
 import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
-import { URI } from "vs/base/common/uri";
 import {
 	EditorResourceAccessor,
 	SideBySideEditor,
 } from "vs/workbench/common/editor";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import { IFileService } from "vs/platform/files/common/files";
-import { IRange, Range } from "vs/editor/common/core/range";
-import { isNumber } from "vs/base/common/types";
-import { RawContextKey } from "vs/platform/contextkey/common/contextkey";
-import { compare } from "vs/base/common/strings";
-import { groupBy } from "vs/base/common/arrays";
+import {
+	ISearchConfiguration,
+	ISearchConfigurationProperties,
+} from "vs/workbench/services/search/common/search";
 
 export interface IWorkspaceSymbol {
 	name: string;
@@ -42,11 +42,11 @@ export interface IWorkspaceSymbol {
 export interface IWorkspaceSymbolProvider {
 	provideWorkspaceSymbols(
 		search: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): ProviderResult<IWorkspaceSymbol[]>;
 	resolveWorkspaceSymbol?(
 		item: IWorkspaceSymbol,
-		token: CancellationToken
+		token: CancellationToken,
 	): ProviderResult<IWorkspaceSymbol>;
 }
 
@@ -80,13 +80,13 @@ export namespace WorkspaceSymbolProviderRegistry {
 export class WorkspaceSymbolItem {
 	constructor(
 		readonly symbol: IWorkspaceSymbol,
-		readonly provider: IWorkspaceSymbolProvider
+		readonly provider: IWorkspaceSymbolProvider,
 	) {}
 }
 
 export async function getWorkspaceSymbols(
 	query: string,
-	token: CancellationToken = CancellationToken.None
+	token: CancellationToken = CancellationToken.None,
 ): Promise<WorkspaceSymbolItem[]> {
 	const all: WorkspaceSymbolItem[] = [];
 
@@ -95,7 +95,7 @@ export async function getWorkspaceSymbols(
 			try {
 				const value = await provider.provideWorkspaceSymbols(
 					query,
-					token
+					token,
 				);
 				if (!value) {
 					return;
@@ -106,7 +106,7 @@ export async function getWorkspaceSymbols(
 			} catch (err) {
 				onUnexpectedExternalError(err);
 			}
-		}
+		},
 	);
 
 	await Promise.all(promises);
@@ -119,7 +119,7 @@ export async function getWorkspaceSymbols(
 
 	function compareItems(
 		a: WorkspaceSymbolItem,
-		b: WorkspaceSymbolItem
+		b: WorkspaceSymbolItem,
 	): number {
 		let res = compare(a.symbol.name, b.symbol.name);
 		if (res === 0) {
@@ -128,7 +128,7 @@ export async function getWorkspaceSymbols(
 		if (res === 0) {
 			res = compare(
 				a.symbol.location.uri.toString(),
-				b.symbol.location.uri.toString()
+				b.symbol.location.uri.toString(),
 			);
 		}
 		if (res === 0) {
@@ -136,12 +136,12 @@ export async function getWorkspaceSymbols(
 				if (
 					!Range.areIntersecting(
 						a.symbol.location.range,
-						b.symbol.location.range
+						b.symbol.location.range,
 					)
 				) {
 					res = Range.compareRangesUsingStarts(
 						a.symbol.location.range,
-						b.symbol.location.range
+						b.symbol.location.range,
 					);
 				}
 			} else if (
@@ -159,15 +159,13 @@ export async function getWorkspaceSymbols(
 		if (res === 0) {
 			res = compare(
 				a.symbol.containerName ?? "",
-				b.symbol.containerName ?? ""
+				b.symbol.containerName ?? "",
 			);
 		}
 		return res;
 	}
 
-	return groupBy(all, compareItems)
-		.map((group) => group[0])
-		.flat();
+	return groupBy(all, compareItems).flatMap((group) => group[0]);
 }
 
 export interface IWorkbenchSearchConfigurationProperties
@@ -189,7 +187,7 @@ export interface IWorkbenchSearchConfiguration extends ISearchConfiguration {
  * Helper to return all opened editors with resources not belonging to the currently opened workspace.
  */
 export function getOutOfWorkspaceEditorResources(
-	accessor: ServicesAccessor
+	accessor: ServicesAccessor,
 ): URI[] {
 	const editorService = accessor.get(IEditorService);
 	const contextService = accessor.get(IWorkspaceContextService);
@@ -199,13 +197,13 @@ export function getOutOfWorkspaceEditorResources(
 		.map((editor) =>
 			EditorResourceAccessor.getOriginalUri(editor, {
 				supportSideBySide: SideBySideEditor.PRIMARY,
-			})
+			}),
 		)
 		.filter(
 			(resource) =>
 				!!resource &&
 				!contextService.isInsideWorkspace(resource) &&
-				fileService.hasProvider(resource)
+				fileService.hasProvider(resource),
 		);
 
 	return resources as URI[];
@@ -221,7 +219,7 @@ export interface IFilterAndRange {
 
 export function extractRangeFromFilter(
 	filter: string,
-	unless?: string[]
+	unless?: string[],
 ): IFilterAndRange | undefined {
 	// Ignore when the unless character not the first character or is before the line colon pattern
 	if (
@@ -232,7 +230,7 @@ export function extractRangeFromFilter(
 				unlessCharPos === 0 ||
 				(unlessCharPos > 0 &&
 					!LINE_COLON_PATTERN.test(
-						filter.substring(unlessCharPos + 1)
+						filter.substring(unlessCharPos + 1),
 					))
 			);
 		})
@@ -291,14 +289,14 @@ export function extractRangeFromFilter(
 }
 
 export enum SearchUIState {
-	Idle,
-	Searching,
-	SlowSearch,
+	Idle = 0,
+	Searching = 1,
+	SlowSearch = 2,
 }
 
 export const SearchStateKey = new RawContextKey<SearchUIState>(
 	"searchState",
-	SearchUIState.Idle
+	SearchUIState.Idle,
 );
 
 export interface NotebookPriorityInfo {

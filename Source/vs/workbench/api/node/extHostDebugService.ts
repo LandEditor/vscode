@@ -76,7 +76,7 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 
 	protected override createDebugAdapter(
 		adapter: IAdapterDescriptor,
-		session: ExtHostDebugSession
+		session: ExtHostDebugSession,
 	): AbstractDebugAdapter | undefined {
 		switch (adapter.type) {
 			case "server":
@@ -91,17 +91,17 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 
 	protected override daExecutableFromPackage(
 		session: ExtHostDebugSession,
-		extensionRegistry: ExtensionDescriptionRegistry
+		extensionRegistry: ExtensionDescriptionRegistry,
 	): DebugAdapterExecutable | undefined {
 		const dae = ExecutableDebugAdapter.platformAdapterExecutable(
 			extensionRegistry.getAllExtensionDescriptions(),
-			session.type
+			session.type,
 		);
 		if (dae) {
 			return new DebugAdapterExecutable(
 				dae.command,
 				dae.args,
-				dae.options
+				dae.options,
 			);
 		}
 		return undefined;
@@ -113,7 +113,7 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 
 	public override async $runInTerminal(
 		args: DebugProtocol.RunInTerminalRequestArguments,
-		sessionId: string
+		sessionId: string,
 	): Promise<number | undefined> {
 		if (args.kind === "integrated") {
 			if (!this._terminalDisposedListener) {
@@ -121,7 +121,7 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 				this._terminalDisposedListener =
 					this._terminalService.onDidCloseTerminal((terminal) => {
 						this._integratedTerminalInstances.onTerminalClosed(
-							terminal
+							terminal,
 						);
 					});
 			}
@@ -138,13 +138,15 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 			const shellConfig = JSON.stringify({ shell, shellArgs });
 			let terminal = await this._integratedTerminalInstances.checkout(
 				shellConfig,
-				terminalName
+				terminalName,
 			);
 
 			let cwdForPrepareCommand: string | undefined;
 			let giveShellTimeToInitialize = false;
 
-			if (!terminal) {
+			if (terminal) {
+				cwdForPrepareCommand = args.cwd;
+			} else {
 				const options: vscode.TerminalOptions = {
 					shellPath: shell,
 					shellArgs: shellArgs,
@@ -158,11 +160,9 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 					{
 						isFeatureTerminal: true,
 						useShellEnvironment: true,
-					}
+					},
 				);
 				this._integratedTerminalInstances.insert(terminal, shellConfig);
-			} else {
-				cwdForPrepareCommand = args.cwd;
 			}
 
 			terminal.show(true);
@@ -172,26 +172,24 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 			if (giveShellTimeToInitialize) {
 				// give a new terminal some time to initialize the shell
 				await new Promise((resolve) => setTimeout(resolve, 1000));
-			} else {
+			} else if (
+				configProvider
+					.getConfiguration("debug.terminal")
+					.get<boolean>("clearBeforeReusing")
+			) {
+				// clear terminal before reusing it
 				if (
-					configProvider
-						.getConfiguration("debug.terminal")
-						.get<boolean>("clearBeforeReusing")
+					shell.indexOf("powershell") >= 0 ||
+					shell.indexOf("pwsh") >= 0 ||
+					shell.indexOf("cmd.exe") >= 0
 				) {
-					// clear terminal before reusing it
-					if (
-						shell.indexOf("powershell") >= 0 ||
-						shell.indexOf("pwsh") >= 0 ||
-						shell.indexOf("cmd.exe") >= 0
-					) {
-						terminal.sendText("cls");
-					} else if (shell.indexOf("bash") >= 0) {
-						terminal.sendText("clear");
-					} else if (platform.isWindows) {
-						terminal.sendText("cls");
-					} else {
-						terminal.sendText("clear");
-					}
+					terminal.sendText("cls");
+				} else if (shell.indexOf("bash") >= 0) {
+					terminal.sendText("clear");
+				} else if (platform.isWindows) {
+					terminal.sendText("cls");
+				} else {
+					terminal.sendText("clear");
 				}
 			}
 
@@ -200,7 +198,7 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 				args.args,
 				!!args.argsCanBeInterpretedByShell,
 				cwdForPrepareCommand,
-				args.env
+				args.env,
 			);
 			terminal.sendText(command);
 
@@ -216,7 +214,7 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 		} else if (args.kind === "external") {
 			return runInExternalTerminal(
 				args,
-				await this._configurationService.getConfigProvider()
+				await this._configurationService.getConfigProvider(),
 			);
 		}
 		return super.$runInTerminal(args, sessionId);
@@ -227,7 +225,7 @@ let externalTerminalService: IExternalTerminalService | undefined = undefined;
 
 function runInExternalTerminal(
 	args: DebugProtocol.RunInTerminalRequestArguments,
-	configProvider: ExtHostConfigProvider
+	configProvider: ExtHostConfigProvider,
 ): Promise<number | undefined> {
 	if (!externalTerminalService) {
 		if (platform.isWindows) {
@@ -238,7 +236,7 @@ function runInExternalTerminal(
 			externalTerminalService = new LinuxExternalTerminalService();
 		} else {
 			throw new Error(
-				"external terminals not supported on this platform"
+				"external terminals not supported on this platform",
 			);
 		}
 	}
@@ -248,7 +246,7 @@ function runInExternalTerminal(
 		args.cwd,
 		args.args,
 		args.env || {},
-		config.external || {}
+		config.external || {},
 	);
 }
 
@@ -295,7 +293,7 @@ class DebugTerminalCollection {
 
 				termInfo.lastUsedAt = now;
 				return terminal;
-			})
+			}),
 		);
 
 		return await firstParallel(promises, (t): t is vscode.Terminal => !!t);

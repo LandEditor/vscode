@@ -71,7 +71,7 @@ export class AccessibleNotificationService
 		}
 		const { audioCue, alertMessage } = this._events.get(event)!;
 		const audioCueValue = this._configurationService.getValue(
-			audioCue.settingsKey
+			audioCue.settingsKey,
 		);
 		if (
 			audioCueValue === "on" ||
@@ -80,13 +80,13 @@ export class AccessibleNotificationService
 		) {
 			this._logService.debug(
 				"AccessibleNotificationService playing sound: ",
-				audioCue.name
+				audioCue.name,
 			);
 			this._audioCueService.playAudioCue(audioCue);
 		} else {
 			this._logService.debug(
 				"AccessibleNotificationService alerting: ",
-				alertMessage
+				alertMessage,
 			);
 			this._accessibilityService.alert(alertMessage);
 		}
@@ -94,7 +94,7 @@ export class AccessibleNotificationService
 
 	private _notify(
 		event: AccessibleNotificationEvent,
-		userGesture?: boolean
+		userGesture?: boolean,
 	): void {
 		const { audioCue, alertMessage, alertSetting } =
 			this._events.get(event)!;
@@ -106,7 +106,7 @@ export class AccessibleNotificationService
 		if (this._shouldNotify(audioCueSetting, userGesture)) {
 			this._logService.debug(
 				"AccessibleNotificationService playing sound: ",
-				audioCue.name
+				audioCue.name,
 			);
 			// Play sound bypasses the usual audio cue checks IE screen reader optimized, auto, etc.
 			this._audioCueService.playSound(audioCue.sound.getSound(), true);
@@ -121,7 +121,7 @@ export class AccessibleNotificationService
 		if (this._shouldNotify(alertSettingValue, userGesture)) {
 			this._logService.debug(
 				"AccessibleNotificationService alerting: ",
-				alertMessage
+				alertMessage,
 			);
 			this._accessibilityService.alert(alertMessage);
 		}
@@ -129,7 +129,7 @@ export class AccessibleNotificationService
 
 	private _shouldNotify(
 		settingValue: NotificationSetting,
-		userGesture?: boolean
+		userGesture?: boolean,
 	): boolean {
 		return (
 			settingValue === "always" ||

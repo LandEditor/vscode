@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from "vscode";
-import { getHtmlFlatNode, validate } from "./util";
 import { HtmlNode as HtmlFlatNode } from "EmmetFlatNode";
+import * as vscode from "vscode";
 import { getRootNode } from "./parseDocument";
+import { getHtmlFlatNode, validate } from "./util";
 
 interface TagRange {
 	name: string;
@@ -14,7 +14,7 @@ interface TagRange {
 }
 
 export async function updateTag(
-	tagName: string | undefined
+	tagName: string | undefined,
 ): Promise<boolean | undefined> {
 	if (!validate(false) || !vscode.window.activeTextEditor) {
 		return;
@@ -30,14 +30,14 @@ export async function updateTag(
 	const rangesToUpdate = editor.selections.reduceRight<TagRange[]>(
 		(prev, selection) =>
 			prev.concat(getRangesToUpdate(document, selection, rootNode)),
-		[]
+		[],
 	);
 	if (!rangesToUpdate.length) {
 		return;
 	}
 	const firstTagName = rangesToUpdate[0].name;
 	const tagNamesAreEqual = rangesToUpdate.every(
-		(range) => range.name === firstTagName
+		(range) => range.name === firstTagName,
 	);
 
 	if (tagName === undefined) {
@@ -61,7 +61,7 @@ export async function updateTag(
 
 function getRangesFromNode(
 	node: HtmlFlatNode,
-	document: vscode.TextDocument
+	document: vscode.TextDocument,
 ): TagRange[] {
 	const ranges: TagRange[] = [];
 	if (node.open) {
@@ -70,7 +70,7 @@ function getRangesFromNode(
 			name: node.name,
 			range: new vscode.Range(
 				start.translate(0, 1),
-				start.translate(0, 1).translate(0, node.name.length)
+				start.translate(0, 1).translate(0, node.name.length),
 			),
 		});
 	}
@@ -81,7 +81,7 @@ function getRangesFromNode(
 			name: node.name,
 			range: new vscode.Range(
 				endTagStart.translate(0, 2),
-				end.translate(0, -1)
+				end.translate(0, -1),
 			),
 		});
 	}
@@ -91,7 +91,7 @@ function getRangesFromNode(
 function getRangesToUpdate(
 	document: vscode.TextDocument,
 	selection: vscode.Selection,
-	rootNode: HtmlFlatNode
+	rootNode: HtmlFlatNode,
 ): TagRange[] {
 	const documentText = document.getText();
 	const offset = document.offsetAt(selection.start);

@@ -3,26 +3,26 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
-import * as Types from "vs/base/common/types";
-import * as resources from "vs/base/common/resources";
 import { IJSONSchemaMap } from "vs/base/common/jsonSchema";
 import * as Objects from "vs/base/common/objects";
-import { UriComponents, URI } from "vs/base/common/uri";
+import * as resources from "vs/base/common/resources";
+import * as Types from "vs/base/common/types";
+import { URI, UriComponents } from "vs/base/common/uri";
+import * as nls from "vs/nls";
 
-import { ProblemMatcher } from "vs/workbench/contrib/tasks/common/problemMatcher";
-import {
-	IWorkspaceFolder,
-	IWorkspace,
-} from "vs/platform/workspace/common/workspace";
-import {
-	RawContextKey,
-	ContextKeyExpression,
-} from "vs/platform/contextkey/common/contextkey";
-import { TaskDefinitionRegistry } from "vs/workbench/contrib/tasks/common/taskDefinitionRegistry";
-import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
 import { ConfigurationTarget } from "vs/platform/configuration/common/configuration";
+import {
+	ContextKeyExpression,
+	RawContextKey,
+} from "vs/platform/contextkey/common/contextkey";
+import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
 import { TerminalExitReason } from "vs/platform/terminal/common/terminal";
+import {
+	IWorkspace,
+	IWorkspaceFolder,
+} from "vs/platform/workspace/common/workspace";
+import { ProblemMatcher } from "vs/workbench/contrib/tasks/common/problemMatcher";
+import { TaskDefinitionRegistry } from "vs/workbench/contrib/tasks/common/taskDefinitionRegistry";
 
 export const USER_TASKS_GROUP_KEY = "settings";
 
@@ -31,8 +31,8 @@ export const TASK_RUNNING_STATE = new RawContextKey<boolean>(
 	false,
 	nls.localize(
 		"tasks.taskRunningContext",
-		"Whether a task is currently running."
-	)
+		"Whether a task is currently running.",
+	),
 );
 export const TASKS_CATEGORY = {
 	value: nls.localize("tasksCategory", "Tasks"),
@@ -409,7 +409,7 @@ export namespace TaskGroup {
 	}
 
 	export function from(
-		value: string | TaskGroup | undefined
+		value: string | TaskGroup | undefined,
 	): TaskGroup | undefined {
 		if (value === undefined) {
 			return undefined;
@@ -429,18 +429,18 @@ export interface TaskGroup {
 	isDefault?: boolean | string;
 }
 
-export const enum TaskScope {
+export enum TaskScope {
 	Global = 1,
 	Workspace = 2,
 	Folder = 3,
 }
 
 export namespace TaskSourceKind {
-	export const Workspace: "workspace" = "workspace";
-	export const Extension: "extension" = "extension";
-	export const InMemory: "inMemory" = "inMemory";
-	export const WorkspaceFile: "workspaceFile" = "workspaceFile";
-	export const User: "user" = "user";
+	export const Workspace = "workspace" as const;
+	export const Extension = "extension" as const;
+	export const InMemory = "inMemory" as const;
+	export const WorkspaceFile = "workspaceFile" as const;
+	export const User = "user" as const;
 
 	export function toConfigurationTarget(kind: string): ConfigurationTarget {
 		switch (kind) {
@@ -525,7 +525,7 @@ export interface ITaskDependency {
 	task: string | KeyedTaskIdentifier | undefined;
 }
 
-export const enum DependsOrder {
+export enum DependsOrder {
 	parallel = "parallel",
 	sequence = "sequence",
 }
@@ -625,7 +625,7 @@ export abstract class CommonTask {
 	/**
 	 * The cached label.
 	 */
-	_label: string = "";
+	_label = "";
 
 	type?: string;
 
@@ -643,7 +643,7 @@ export abstract class CommonTask {
 		type: string | undefined,
 		runOptions: IRunOptions,
 		configurationProperties: IConfigurationProperties,
-		source: IBaseTaskSource
+		source: IBaseTaskSource,
 	) {
 		this._id = id;
 		if (label) {
@@ -704,7 +704,7 @@ export abstract class CommonTask {
 
 	public matches(
 		key: string | KeyedTaskIdentifier | undefined,
-		compareId: boolean = false
+		compareId = false,
 	): boolean {
 		if (key === undefined) {
 			return false;
@@ -782,7 +782,7 @@ export class CustomTask extends CommonTask {
 		command: ICommandConfiguration | undefined,
 		hasDefinedMatchers: boolean,
 		runOptions: IRunOptions,
-		configurationProperties: IConfigurationProperties
+		configurationProperties: IConfigurationProperties,
 	) {
 		super(
 			id,
@@ -790,7 +790,7 @@ export class CustomTask extends CommonTask {
 			undefined,
 			runOptions,
 			configurationProperties,
-			source
+			source,
 		);
 		this._source = source;
 		this.hasDefinedMatchers = hasDefinedMatchers;
@@ -808,7 +808,7 @@ export class CustomTask extends CommonTask {
 			this.command,
 			this.hasDefinedMatchers,
 			this.runOptions,
-			this.configurationProperties
+			this.configurationProperties,
 		);
 	}
 
@@ -819,9 +819,7 @@ export class CustomTask extends CommonTask {
 		return undefined;
 	}
 
-	public override getDefinition(
-		useSource: boolean = false
-	): KeyedTaskIdentifier {
+	public override getDefinition(useSource = false): KeyedTaskIdentifier {
 		if (useSource && this._source.customizes !== undefined) {
 			return this._source.customizes;
 		} else {
@@ -935,7 +933,7 @@ export class CustomTask extends CommonTask {
 			object.command,
 			object.hasDefinedMatchers,
 			object.runOptions,
-			object.configurationProperties
+			object.configurationProperties,
 		);
 	}
 }
@@ -960,7 +958,7 @@ export class ConfiguringTask extends CommonTask {
 		type: string | undefined,
 		configures: KeyedTaskIdentifier,
 		runOptions: IRunOptions,
-		configurationProperties: IConfigurationProperties
+		configurationProperties: IConfigurationProperties,
 	) {
 		super(id, label, type, runOptions, configurationProperties, source);
 		this._source = source;
@@ -1059,7 +1057,7 @@ export class ContributedTask extends CommonTask {
 		command: ICommandConfiguration,
 		hasDefinedMatchers: boolean,
 		runOptions: IRunOptions,
-		configurationProperties: IConfigurationProperties
+		configurationProperties: IConfigurationProperties,
 	) {
 		super(id, label, type, runOptions, configurationProperties, source);
 		this.defines = defines;
@@ -1079,7 +1077,7 @@ export class ContributedTask extends CommonTask {
 			this.command,
 			this.hasDefinedMatchers,
 			this.runOptions,
-			this.configurationProperties
+			this.configurationProperties,
 		);
 	}
 
@@ -1096,7 +1094,7 @@ export class ContributedTask extends CommonTask {
 		return workspaceFolder
 			? `${this._source.scope.toString()}|${workspaceFolder.uri.toString()}|${
 					this._id
-				}|${this.instance}`
+			  }|${this.instance}`
 			: `${this._source.scope.toString()}|${this._id}|${this.instance}`;
 	}
 
@@ -1145,7 +1143,7 @@ export class ContributedTask extends CommonTask {
 			object.command,
 			object.hasDefinedMatchers,
 			object.runOptions,
-			object.configurationProperties
+			object.configurationProperties,
 		);
 	}
 }
@@ -1166,7 +1164,7 @@ export class InMemoryTask extends CommonTask {
 		label: string,
 		type: string,
 		runOptions: IRunOptions,
-		configurationProperties: IConfigurationProperties
+		configurationProperties: IConfigurationProperties,
 	) {
 		super(id, label, type, runOptions, configurationProperties, source);
 		this._source = source;
@@ -1179,7 +1177,7 @@ export class InMemoryTask extends CommonTask {
 			this._label,
 			this.type,
 			this.runOptions,
-			this.configurationProperties
+			this.configurationProperties,
 		);
 	}
 
@@ -1206,7 +1204,7 @@ export class InMemoryTask extends CommonTask {
 			object._label,
 			object.type,
 			object.runOptions,
-			object.configurationProperties
+			object.configurationProperties,
 		);
 	}
 }
@@ -1227,7 +1225,7 @@ export namespace ExecutionEngine {
 	export const _default: ExecutionEngine = ExecutionEngine.Terminal;
 }
 
-export const enum JsonSchemaVersion {
+export enum JsonSchemaVersion {
 	V0_1_0 = 1,
 	V2_0_0 = 2,
 }
@@ -1256,7 +1254,7 @@ export class TaskSorter {
 
 	public compare(
 		a: Task | ConfiguringTask,
-		b: Task | ConfiguringTask
+		b: Task | ConfiguringTask,
 	): number {
 		const aw = a.getWorkspaceFolder();
 		const bw = b.getWorkspaceFolder();
@@ -1280,7 +1278,7 @@ export class TaskSorter {
 	}
 }
 
-export const enum TaskEventKind {
+export enum TaskEventKind {
 	DependsOnStarted = "dependsOnStarted",
 	AcquiredInput = "acquiredInput",
 	Start = "start",
@@ -1293,7 +1291,7 @@ export const enum TaskEventKind {
 	End = "end",
 }
 
-export const enum TaskRunType {
+export enum TaskRunType {
 	SingleRun = "singleRun",
 	Background = "background",
 }
@@ -1352,12 +1350,12 @@ export type ITaskEvent =
 	| ITaskStartedEvent
 	| ITaskGeneralEvent;
 
-export const enum TaskRunSource {
-	System,
-	User,
-	FolderOpen,
-	ConfigurationChange,
-	Reconnect,
+export enum TaskRunSource {
+	System = 0,
+	User = 1,
+	FolderOpen = 2,
+	ConfigurationChange = 3,
+	Reconnect = 4,
 }
 
 export namespace TaskEvent {
@@ -1376,7 +1374,7 @@ export namespace TaskEvent {
 	export function start(
 		task: Task,
 		terminalId: number,
-		resolvedVariables: Map<string, string>
+		resolvedVariables: Map<string, string>,
 	): ITaskStartedEvent {
 		return {
 			...common(task),
@@ -1389,7 +1387,7 @@ export namespace TaskEvent {
 	export function processStarted(
 		task: Task,
 		terminalId: number,
-		processId: number
+		processId: number,
 	): ITaskProcessStartedEvent {
 		return {
 			...common(task),
@@ -1401,7 +1399,7 @@ export namespace TaskEvent {
 	export function processEnded(
 		task: Task,
 		terminalId: number | undefined,
-		exitCode: number | undefined
+		exitCode: number | undefined,
 	): ITaskProcessEndedEvent {
 		return {
 			...common(task),
@@ -1414,7 +1412,7 @@ export namespace TaskEvent {
 	export function terminated(
 		task: Task,
 		terminalId: number,
-		exitReason: TerminalExitReason | undefined
+		exitReason: TerminalExitReason | undefined,
 	): ITaskTerminatedEvent {
 		return {
 			...common(task),
@@ -1432,7 +1430,7 @@ export namespace TaskEvent {
 			| TaskEventKind.Inactive
 			| TaskEventKind.End,
 		task: Task,
-		terminalId?: number
+		terminalId?: number,
 	): ITaskGeneralEvent {
 		return {
 			...common(task),
@@ -1449,7 +1447,7 @@ export namespace TaskEvent {
 export namespace KeyedTaskIdentifier {
 	function sortedStringify(literal: any): string {
 		const keys = Object.keys(literal).sort();
-		let result: string = "";
+		let result = "";
 		for (const key of keys) {
 			let stringified = literal[key];
 			if (stringified instanceof Object) {
@@ -1469,7 +1467,7 @@ export namespace KeyedTaskIdentifier {
 	}
 }
 
-export const enum TaskSettingId {
+export enum TaskSettingId {
 	AutoDetect = "task.autoDetect",
 	SaveBeforeRun = "task.saveBeforeRun",
 	ShowDecorations = "task.showDecorations",
@@ -1484,7 +1482,7 @@ export const enum TaskSettingId {
 	VerboseLogging = "task.verboseLogging",
 }
 
-export const enum TasksSchemaProperties {
+export enum TasksSchemaProperties {
 	Tasks = "tasks",
 	SuppressTaskName = "tasks.suppressTaskName",
 	Windows = "tasks.windows",
@@ -1498,7 +1496,7 @@ export const enum TasksSchemaProperties {
 export namespace TaskDefinition {
 	export function createTaskIdentifier(
 		external: ITaskIdentifier,
-		reporter: { error(message: string): void }
+		reporter: { error(message: string): void },
 	): KeyedTaskIdentifier | undefined {
 		const definition = TaskDefinitionRegistry.get(external.type);
 		if (definition === undefined) {
@@ -1541,8 +1539,8 @@ export namespace TaskDefinition {
 									"TaskDefinition.missingRequiredProperty",
 									"Error: the task identifier '{0}' is missing the required property '{1}'. The task identifier will be ignored.",
 									JSON.stringify(external, undefined, 0),
-									property
-								)
+									property,
+								),
 							);
 							return undefined;
 					}

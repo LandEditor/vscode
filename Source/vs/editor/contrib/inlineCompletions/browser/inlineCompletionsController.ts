@@ -54,7 +54,7 @@ export class InlineCompletionsController extends Disposable {
 
 	public static get(editor: ICodeEditor): InlineCompletionsController | null {
 		return editor.getContribution<InlineCompletionsController>(
-			InlineCompletionsController.ID
+			InlineCompletionsController.ID,
 		);
 	}
 
@@ -67,7 +67,7 @@ export class InlineCompletionsController extends Disposable {
 	>(this, -1);
 	private readonly _cursorPosition = observableValue<Position>(
 		this,
-		new Position(1, 1)
+		new Position(1, 1),
 	);
 	private readonly _suggestWidgetAdaptor = this._register(
 		new SuggestWidgetAdaptor(
@@ -84,12 +84,12 @@ export class InlineCompletionsController extends Disposable {
 					this.updateObservables(tx, VersionIdChangeReason.Other);
 					this.model.get()?.handleSuggestAccepted(item);
 				});
-			}
-		)
+			},
+		),
 	);
 	private readonly _enabled = observableFromEvent(
 		this.editor.onDidChangeConfiguration,
-		() => this.editor.getOption(EditorOption.inlineSuggest).enabled
+		() => this.editor.getOption(EditorOption.inlineSuggest).enabled,
 	);
 
 	private _ghostTextWidget = this._register(
@@ -97,33 +97,35 @@ export class InlineCompletionsController extends Disposable {
 			GhostTextWidget,
 			this.editor,
 			{
-				ghostText: this.model.map(
-					(v, reader) => /** ghostText */ v?.ghostText.read(reader)
+				ghostText: this.model.map((v, reader) =>
+					/** ghostText */ v?.ghostText.read(reader),
 				),
 				minReservedLineCount: constObservable(0),
 				targetTextModel: this.model.map((v) => v?.textModel),
-			}
-		)
+			},
+		),
 	);
 
 	private readonly _debounceValue = this._debounceService.for(
 		this._languageFeaturesService.inlineCompletionsProvider,
 		"InlineCompletionsDebounce",
-		{ min: 50, max: 50 }
+		{ min: 50, max: 50 },
 	);
 
 	private readonly _playAudioCueSignal = observableSignal(this);
 
 	private readonly _isReadonly = observableFromEvent(
 		this.editor.onDidChangeConfiguration,
-		() => this.editor.getOption(EditorOption.readOnly)
+		() => this.editor.getOption(EditorOption.readOnly),
 	);
 	private readonly _textModel = observableFromEvent(
 		this.editor.onDidChangeModel,
-		() => this.editor.getModel()
+		() => this.editor.getModel(),
 	);
 	private readonly _textModelIfWritable = derived((reader) =>
-		this._isReadonly.read(reader) ? undefined : this._textModel.read(reader)
+		this._isReadonly.read(reader)
+			? undefined
+			: this._textModel.read(reader),
 	);
 
 	constructor(
@@ -397,24 +399,24 @@ export class InlineCompletionsController extends Disposable {
 	private provideScreenReaderUpdate(content: string): void {
 		const accessibleViewShowing =
 			this._contextKeyService.getContextKeyValue<boolean>(
-				"accessibleViewIsShown"
+				"accessibleViewIsShown",
 			);
 		const accessibleViewKeybinding =
 			this._keybindingService.lookupKeybinding(
-				"editor.action.accessibleView"
+				"editor.action.accessibleView",
 			);
 		let hint: string | undefined;
 		if (
 			!accessibleViewShowing &&
 			accessibleViewKeybinding &&
 			this.editor.getOption(
-				EditorOption.inlineCompletionsAccessibilityVerbose
+				EditorOption.inlineCompletionsAccessibilityVerbose,
 			)
 		) {
 			hint = localize(
 				"showAccessibleViewHint",
 				"Inspect this in the accessible view ({0})",
-				accessibleViewKeybinding.getAriaLabel()
+				accessibleViewKeybinding.getAriaLabel(),
 			);
 		}
 		hint ? alert(content + ", " + hint) : alert(content);
@@ -427,17 +429,17 @@ export class InlineCompletionsController extends Disposable {
 	 */
 	private updateObservables(
 		tx: ITransaction,
-		changeReason: VersionIdChangeReason
+		changeReason: VersionIdChangeReason,
 	): void {
 		const newModel = this.editor.getModel();
 		this._textModelVersionId.set(
 			newModel?.getVersionId() ?? -1,
 			tx,
-			changeReason
+			changeReason,
 		);
 		this._cursorPosition.set(
 			this.editor.getPosition() ?? new Position(1, 1),
-			tx
+			tx,
 		);
 	}
 
@@ -446,8 +448,8 @@ export class InlineCompletionsController extends Disposable {
 		if (ghostText) {
 			return ghostText.parts.some((p) =>
 				range.containsPosition(
-					new Position(ghostText.lineNumber, p.column)
-				)
+					new Position(ghostText.lineNumber, p.column),
+				),
 			);
 		}
 		return false;

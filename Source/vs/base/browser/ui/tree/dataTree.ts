@@ -47,14 +47,14 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 		delegate: IListVirtualDelegate<T>,
 		renderers: ITreeRenderer<T, TFilterData, any>[],
 		private dataSource: IDataSource<TInput, T>,
-		options: IDataTreeOptions<T, TFilterData> = {}
+		options: IDataTreeOptions<T, TFilterData> = {},
 	) {
 		super(
 			user,
 			container,
 			delegate,
 			renderers,
-			options as IDataTreeOptions<T | null, TFilterData>
+			options as IDataTreeOptions<T | null, TFilterData>,
 		);
 		this.identityProvider = options.identityProvider;
 	}
@@ -67,12 +67,12 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 
 	setInput(
 		input: TInput | undefined,
-		viewState?: AbstractTreeViewState
+		viewState?: AbstractTreeViewState,
 	): void {
 		if (viewState && !this.identityProvider) {
 			throw new TreeError(
 				this.user,
-				"Can't restore tree view state without an identity provider"
+				"Can't restore tree view state without an identity provider",
 			);
 		}
 
@@ -144,7 +144,7 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 	resort(element: T | TInput = this.input!, recursive = true): void {
 		this.model.resort(
 			(element === this.input ? null : element) as T,
-			recursive
+			recursive,
 		);
 	}
 
@@ -164,7 +164,7 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 	private _refresh(
 		element: TInput | T,
 		isCollapsed?: (el: T) => boolean | undefined,
-		onDidCreateNode?: (node: ITreeNode<T, TFilterData>) => void
+		onDidCreateNode?: (node: ITreeNode<T, TFilterData>) => void,
 	): void {
 		let onDidDeleteNode:
 			| ((node: ITreeNode<T, TFilterData>) => void)
@@ -176,7 +176,7 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 			const outerOnDidCreateNode = onDidCreateNode;
 			onDidCreateNode = (node: ITreeNode<T, TFilterData>) => {
 				const id = this.identityProvider!.getId(
-					node.element
+					node.element,
 				).toString();
 
 				insertedElements.add(id);
@@ -187,7 +187,7 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 
 			onDidDeleteNode = (node: ITreeNode<T, TFilterData>) => {
 				const id = this.identityProvider!.getId(
-					node.element
+					node.element,
 				).toString();
 
 				if (!insertedElements.has(id)) {
@@ -199,19 +199,19 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 		this.model.setChildren(
 			(element === this.input ? null : element) as T,
 			this.iterate(element, isCollapsed).elements,
-			{ onDidCreateNode, onDidDeleteNode }
+			{ onDidCreateNode, onDidDeleteNode },
 		);
 	}
 
 	private iterate(
 		element: TInput | T,
-		isCollapsed?: (el: T) => boolean | undefined
+		isCollapsed?: (el: T) => boolean | undefined,
 	): { elements: Iterable<ITreeElement<T>>; size: number } {
 		const children = [...this.dataSource.getChildren(element)];
 		const elements = Iterable.map(children, (element) => {
 			const { elements: children, size } = this.iterate(
 				element,
-				isCollapsed
+				isCollapsed,
 			);
 			const collapsible = this.dataSource.hasChildren
 				? this.dataSource.hasChildren(element)
@@ -228,7 +228,7 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 	protected createModel(
 		user: string,
 		view: IList<ITreeNode<T, TFilterData>>,
-		options: IDataTreeOptions<T, TFilterData>
+		options: IDataTreeOptions<T, TFilterData>,
 	): ITreeModel<T | null, TFilterData, T | null> {
 		return new ObjectTreeModel(user, view, options);
 	}

@@ -3,16 +3,34 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { ThrottledDelayer } from "vs/base/common/async";
+import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
 import { DisposableStore } from "vs/base/common/lifecycle";
+import { Schemas } from "vs/base/common/network";
 import { getCodeEditor } from "vs/editor/browser/editorBrowser";
+import { ServicesAccessor } from "vs/editor/browser/editorExtensions";
+import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
+import { ILanguageService } from "vs/editor/common/languages/language";
 import { localize } from "vs/nls";
+import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
+import { INotificationService } from "vs/platform/notification/common/notification";
 import { Registry } from "vs/platform/registry/common/platform";
 import {
-	IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
 	IWorkbenchContribution,
+	IWorkbenchContributionsRegistry,
 } from "vs/workbench/common/contributions";
+import { NOTEBOOK_EDITOR_EDITABLE } from "vs/workbench/contrib/notebook/common/notebookContextKeys";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import {
+	ILanguageDetectionService,
+	LanguageDetectionHintConfig,
+	LanguageDetectionLanguageEventSource,
+} from "vs/workbench/services/languageDetection/common/languageDetectionWorkerService";
 import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 import {
 	IStatusbarEntry,
@@ -20,24 +38,6 @@ import {
 	IStatusbarService,
 	StatusbarAlignment,
 } from "vs/workbench/services/statusbar/browser/statusbar";
-import {
-	ILanguageDetectionService,
-	LanguageDetectionHintConfig,
-	LanguageDetectionLanguageEventSource,
-} from "vs/workbench/services/languageDetection/common/languageDetectionWorkerService";
-import { ThrottledDelayer } from "vs/base/common/async";
-import { ILanguageService } from "vs/editor/common/languages/language";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { ServicesAccessor } from "vs/editor/browser/editorExtensions";
-import { registerAction2, Action2 } from "vs/platform/actions/common/actions";
-import { INotificationService } from "vs/platform/notification/common/notification";
-import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
-import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
-import { NOTEBOOK_EDITOR_EDITABLE } from "vs/workbench/contrib/notebook/common/notebookContextKeys";
-import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
-import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
-import { Schemas } from "vs/base/common/network";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 
 const detectLanguageCommandId = "editor.detectLanguage";
 
@@ -86,7 +86,7 @@ class LanguageDetectionStatusContribution implements IWorkbenchContribution {
 
 	private async _doUpdate(): Promise<void> {
 		const editor = getCodeEditor(
-			this._editorService.activeTextEditorControl
+			this._editorService.activeTextEditorControl,
 		);
 
 		this._renderDisposables.clear();
@@ -95,19 +95,19 @@ class LanguageDetectionStatusContribution implements IWorkbenchContribution {
 		editor?.onDidChangeModelLanguage(
 			() => this._update(true),
 			this,
-			this._renderDisposables
+			this._renderDisposables,
 		);
 		editor?.onDidChangeModelContent(
 			() => this._update(false),
 			this,
-			this._renderDisposables
+			this._renderDisposables,
 		);
 		const editorModel = editor?.getModel();
 		const editorUri = editorModel?.uri;
 		const existingId = editorModel?.getLanguageId();
 		const enablementConfig =
 			this._configurationService.getValue<LanguageDetectionHintConfig>(
-				"workbench.editor.languageDetectionHints"
+				"workbench.editor.languageDetectionHints",
 			);
 		const enabled =
 			typeof enablementConfig === "object" &&
@@ -122,7 +122,7 @@ class LanguageDetectionStatusContribution implements IWorkbenchContribution {
 			const lang =
 				await this._languageDetectionService.detectLanguage(editorUri);
 			const skip: Record<string, string | undefined> = {
-				"jsonc": "json",
+				jsonc: "json",
 			};
 			const existing = editorModel.getLanguageId();
 			if (lang && lang !== existing && skip[existing] !== lang) {
@@ -131,10 +131,10 @@ class LanguageDetectionStatusContribution implements IWorkbenchContribution {
 				let tooltip = localize(
 					"status.autoDetectLanguage",
 					"Accept Detected Language: {0}",
-					detectedName
+					detectedName,
 				);
 				const keybinding = this._keybindingService.lookupKeybinding(
-					detectLanguageCommandId
+					detectLanguageCommandId,
 				);
 				const label = keybinding?.getLabel();
 				if (label) {
@@ -146,13 +146,15 @@ class LanguageDetectionStatusContribution implements IWorkbenchContribution {
 					ariaLabel: localize(
 						"langDetection.aria",
 						"Change to Detected Language: {0}",
-						lang
+						lang,
 					),
 					tooltip,
 					command: detectLanguageCommandId,
 					text: "$(lightbulb-autofix)",
 				};
-				if (!this._combinedEntry) {
+				if (this._combinedEntry) {
+					this._combinedEntry.update(props);
+				} else {
 					this._combinedEntry = this._statusBarService.addEntry(
 						props,
 						LanguageDetectionStatusContribution._id,
@@ -161,10 +163,8 @@ class LanguageDetectionStatusContribution implements IWorkbenchContribution {
 							id: "status.editor.mode",
 							alignment: StatusbarAlignment.RIGHT,
 							compact: true,
-						}
+						},
 					);
-				} else {
-					this._combinedEntry.update(props);
 				}
 			} else {
 				this._combinedEntry?.dispose();
@@ -175,10 +175,10 @@ class LanguageDetectionStatusContribution implements IWorkbenchContribution {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	LanguageDetectionStatusContribution,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );
 
 registerAction2(
@@ -189,14 +189,14 @@ registerAction2(
 				title: {
 					value: localize(
 						"detectlang",
-						"Detect Language from Content"
+						"Detect Language from Content",
 					),
 					original: "Detect Language from Content",
 				},
 				f1: true,
 				precondition: ContextKeyExpr.and(
 					NOTEBOOK_EDITOR_EDITABLE.toNegated(),
-					EditorContextKeys.editorTextFocus
+					EditorContextKeys.editorTextFocus,
 				),
 				keybinding: {
 					primary: KeyCode.KeyD | KeyMod.Alt | KeyMod.Shift,
@@ -208,7 +208,7 @@ registerAction2(
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const editorService = accessor.get(IEditorService);
 			const languageDetectionService = accessor.get(
-				ILanguageDetectionService
+				ILanguageDetectionService,
 			);
 			const editor = getCodeEditor(editorService.activeTextEditorControl);
 			const notificationService = accessor.get(INotificationService);
@@ -221,17 +221,17 @@ registerAction2(
 						.getModel()
 						?.setLanguage(
 							lang,
-							LanguageDetectionLanguageEventSource
+							LanguageDetectionLanguageEventSource,
 						);
 				} else {
 					notificationService.warn(
 						localize(
 							"noDetection",
-							"Unable to detect editor language"
-						)
+							"Unable to detect editor language",
+						),
 					);
 				}
 			}
 		}
-	}
+	},
 );

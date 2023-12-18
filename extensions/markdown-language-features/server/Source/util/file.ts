@@ -9,10 +9,10 @@ import { LsConfiguration } from "../config";
 
 export function looksLikeMarkdownPath(
 	config: LsConfiguration,
-	resolvedHrefPath: URI
+	resolvedHrefPath: URI,
 ) {
 	return config.markdownFileExtensions.includes(
-		Utils.extname(resolvedHrefPath).toLowerCase().replace(".", "")
+		Utils.extname(resolvedHrefPath).toLowerCase().replace(".", ""),
 	);
 }
 

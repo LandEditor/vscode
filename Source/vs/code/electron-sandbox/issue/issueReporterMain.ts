@@ -5,6 +5,7 @@
 
 import { safeInnerHtml } from "vs/base/browser/dom";
 import "vs/base/browser/ui/codicons/codiconStyles"; // make sure codicon css is loaded
+import { mainWindow } from "vs/base/browser/window";
 import { isLinux, isWindows } from "vs/base/common/platform";
 import BaseHtml from "vs/code/electron-sandbox/issue/issueReporterPage";
 import "vs/css!./media/issueReporter";
@@ -22,7 +23,6 @@ import {
 import { INativeHostService } from "vs/platform/native/common/native";
 import { NativeHostService } from "vs/platform/native/common/nativeHostService";
 import { IssueReporter } from "./issueReporterService";
-import { mainWindow } from "vs/base/browser/window";
 
 export function startup(configuration: IssueReporterWindowConfiguration) {
 	const platformClass = isWindows ? "windows" : isLinux ? "linux" : "mac";
@@ -34,7 +34,7 @@ export function startup(configuration: IssueReporterWindowConfiguration) {
 
 	const issueReporter = instantiationService.createInstance(
 		IssueReporter,
-		configuration
+		configuration,
 	);
 	issueReporter.render();
 	mainWindow.document.body.style.display = "block";
@@ -51,11 +51,11 @@ function initServices(windowId: number) {
 
 	services.set(
 		IMainProcessService,
-		new SyncDescriptor(ElectronIPCMainProcessService, [windowId])
+		new SyncDescriptor(ElectronIPCMainProcessService, [windowId]),
 	);
 	services.set(
 		INativeHostService,
-		new SyncDescriptor(NativeHostService, [windowId])
+		new SyncDescriptor(NativeHostService, [windowId]),
 	);
 
 	return new InstantiationService(services, true);

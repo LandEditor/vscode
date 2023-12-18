@@ -61,14 +61,14 @@ export class InteractiveHistoryService
 	}
 
 	replaceLast(uri: URI, value: string) {
-		if (!this._history.has(uri)) {
-			this._history.set(uri, new HistoryNavigator2<string>([value], 50));
-			return;
-		} else {
+		if (this._history.has(uri)) {
 			const history = this._history.get(uri);
 			if (history?.current() !== value) {
 				history?.replaceLast(value);
 			}
+		} else {
+			this._history.set(uri, new HistoryNavigator2<string>([value], 50));
+			return;
 		}
 	}
 

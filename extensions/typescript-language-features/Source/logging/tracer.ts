@@ -21,7 +21,7 @@ export default class Tracer extends Disposable {
 		serverId: string,
 		request: Proto.Request,
 		responseExpected: boolean,
-		queueLength: number
+		queueLength: number,
 	): void {
 		if (this.logger.logLevel === vscode.LogLevel.Trace) {
 			this.trace(
@@ -31,7 +31,7 @@ export default class Tracer extends Disposable {
 				}). Response expected: ${
 					responseExpected ? "yes" : "no"
 				}. Current queue length: ${queueLength}`,
-				request.arguments
+				request.arguments,
 			);
 		}
 	}
@@ -39,7 +39,7 @@ export default class Tracer extends Disposable {
 	public traceResponse(
 		serverId: string,
 		response: Proto.Response,
-		meta: RequestExecutionMetadata
+		meta: RequestExecutionMetadata,
 	): void {
 		if (this.logger.logLevel === vscode.LogLevel.Trace) {
 			this.trace(
@@ -49,9 +49,9 @@ export default class Tracer extends Disposable {
 				}). Request took ${
 					Date.now() - meta.queuingStartTime
 				} ms. Success: ${response.success} ${
-					!response.success ? ". Message: " + response.message : ""
+					response.success ? "" : ". Message: " + response.message
 				}`,
-				response.body
+				response.body,
 			);
 		}
 	}
@@ -60,14 +60,14 @@ export default class Tracer extends Disposable {
 		serverId: string,
 		command: string,
 		request_seq: number,
-		meta: RequestExecutionMetadata
+		meta: RequestExecutionMetadata,
 	): any {
 		if (this.logger.logLevel === vscode.LogLevel.Trace) {
 			this.trace(
 				serverId,
 				`Async response received: ${command} (${request_seq}). Request took ${
 					Date.now() - meta.queuingStartTime
-				} ms.`
+				} ms.`,
 			);
 		}
 	}
@@ -77,7 +77,7 @@ export default class Tracer extends Disposable {
 			this.trace(
 				serverId,
 				`Event received: ${event.event} (${event.seq}).`,
-				event.body
+				event.body,
 			);
 		}
 	}
@@ -85,7 +85,7 @@ export default class Tracer extends Disposable {
 	public trace(serverId: string, message: string, data?: unknown): void {
 		this.logger.trace(
 			`<${serverId}> ${message}`,
-			...(data ? [JSON.stringify(data, null, 4)] : [])
+			...(data ? [JSON.stringify(data, null, 4)] : []),
 		);
 	}
 }

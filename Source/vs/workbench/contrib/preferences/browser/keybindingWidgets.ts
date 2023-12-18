@@ -3,51 +3,51 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/keybindings";
-import * as nls from "vs/nls";
-import { OS } from "vs/base/common/platform";
-import {
-	Disposable,
-	toDisposable,
-	DisposableStore,
-} from "vs/base/common/lifecycle";
-import { Event, Emitter } from "vs/base/common/event";
-import { KeybindingLabel } from "vs/base/browser/ui/keybindingLabel/keybindingLabel";
-import { Widget } from "vs/base/browser/ui/widget";
-import { KeyCode } from "vs/base/common/keyCodes";
-import { ResolvedKeybinding } from "vs/base/common/keybindings";
 import * as dom from "vs/base/browser/dom";
-import * as aria from "vs/base/browser/ui/aria/aria";
+import { FastDomNode, createFastDomNode } from "vs/base/browser/fastDomNode";
 import {
 	IKeyboardEvent,
 	StandardKeyboardEvent,
 } from "vs/base/browser/keyboardEvent";
-import { FastDomNode, createFastDomNode } from "vs/base/browser/fastDomNode";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { IContextViewService } from "vs/platform/contextview/browser/contextView";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import * as aria from "vs/base/browser/ui/aria/aria";
+import { KeybindingLabel } from "vs/base/browser/ui/keybindingLabel/keybindingLabel";
+import { Widget } from "vs/base/browser/ui/widget";
+import { Promises, timeout } from "vs/base/common/async";
+import { Emitter, Event } from "vs/base/common/event";
+import { KeyCode } from "vs/base/common/keyCodes";
+import { ResolvedKeybinding } from "vs/base/common/keybindings";
+import {
+	Disposable,
+	DisposableStore,
+	toDisposable,
+} from "vs/base/common/lifecycle";
+import { OS } from "vs/base/common/platform";
+import "vs/css!./media/keybindings";
 import {
 	ICodeEditor,
 	IOverlayWidget,
 	IOverlayWidgetPosition,
 } from "vs/editor/browser/editorBrowser";
+import { ScrollType } from "vs/editor/common/editorCommon";
+import * as nls from "vs/nls";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { IContextViewService } from "vs/platform/contextview/browser/contextView";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import {
+	defaultInputBoxStyles,
+	defaultKeybindingLabelStyles,
+} from "vs/platform/theme/browser/defaultStyles";
 import {
 	asCssVariable,
 	editorWidgetBackground,
 	editorWidgetForeground,
 	widgetShadow,
 } from "vs/platform/theme/common/colorRegistry";
-import { ScrollType } from "vs/editor/common/editorCommon";
 import {
-	SearchWidget,
 	SearchOptions,
+	SearchWidget,
 } from "vs/workbench/contrib/preferences/browser/preferencesWidgets";
-import { Promises, timeout } from "vs/base/common/async";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import {
-	defaultInputBoxStyles,
-	defaultKeybindingLabelStyles,
-} from "vs/platform/theme/browser/defaultStyles";
 
 export interface KeybindingsSearchOptions extends SearchOptions {
 	recordEnter?: boolean;
@@ -61,7 +61,7 @@ export class KeybindingsSearchWidget extends SearchWidget {
 	private readonly recordDisposables = this._register(new DisposableStore());
 
 	private _onKeybinding = this._register(
-		new Emitter<ResolvedKeybinding[] | null>()
+		new Emitter<ResolvedKeybinding[] | null>(),
 	);
 	readonly onKeybinding: Event<ResolvedKeybinding[] | null> =
 		this._onKeybinding.event;
@@ -81,7 +81,7 @@ export class KeybindingsSearchWidget extends SearchWidget {
 		@IContextViewService contextViewService: IContextViewService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IKeybindingService keybindingService: IKeybindingService
+		@IKeybindingService keybindingService: IKeybindingService,
 	) {
 		super(
 			parent,
@@ -89,7 +89,7 @@ export class KeybindingsSearchWidget extends SearchWidget {
 			contextViewService,
 			instantiationService,
 			contextKeyService,
-			keybindingService
+			keybindingService,
 		);
 
 		this._register(toDisposable(() => this.stopRecordingKeys()));
@@ -109,15 +109,15 @@ export class KeybindingsSearchWidget extends SearchWidget {
 				this.inputBox.inputElement,
 				dom.EventType.KEY_DOWN,
 				(e: KeyboardEvent) =>
-					this._onKeyDown(new StandardKeyboardEvent(e))
-			)
+					this._onKeyDown(new StandardKeyboardEvent(e)),
+			),
 		);
 		this.recordDisposables.add(
 			dom.addDisposableListener(
 				this.inputBox.inputElement,
 				dom.EventType.BLUR,
-				() => this._onBlur.fire()
-			)
+				() => this._onBlur.fire(),
+			),
 		);
 		this.recordDisposables.add(
 			dom.addDisposableListener(
@@ -126,8 +126,8 @@ export class KeybindingsSearchWidget extends SearchWidget {
 				() => {
 					// Prevent other characters from showing up
 					this.setInputValue(this._inputValue);
-				}
-			)
+				},
+			),
 		);
 	}
 
@@ -207,7 +207,7 @@ export class DefineKeybindingWidget extends Widget {
 	private _showExistingKeybindingsNode: HTMLElement;
 
 	private _chords: ResolvedKeybinding[] | null = null;
-	private _isVisible: boolean = false;
+	private _isVisible = false;
 
 	private _onHide = this._register(new Emitter<void>());
 
@@ -215,7 +215,7 @@ export class DefineKeybindingWidget extends Widget {
 	onDidChange: Event<string> = this._onDidChange.event;
 
 	private _onShowExistingKeybindings = this._register(
-		new Emitter<string | null>()
+		new Emitter<string | null>(),
 	);
 	readonly onShowExistingKeybidings: Event<string | null> =
 		this._onShowExistingKeybindings.event;
@@ -319,12 +319,12 @@ export class DefineKeybindingWidget extends Widget {
 
 	layout(layout: dom.Dimension): void {
 		const top = Math.round(
-			(layout.height - DefineKeybindingWidget.HEIGHT) / 2
+			(layout.height - DefineKeybindingWidget.HEIGHT) / 2,
 		);
 		this._domNode.setTop(top);
 
 		const left = Math.round(
-			(layout.width - DefineKeybindingWidget.WIDTH) / 2
+			(layout.width - DefineKeybindingWidget.WIDTH) / 2,
 		);
 		this._domNode.setLeft(left);
 	}
@@ -337,13 +337,13 @@ export class DefineKeybindingWidget extends Widget {
 					? nls.localize(
 							"defineKeybinding.oneExists",
 							"1 existing command has this keybinding",
-							numberOfExisting
-						)
+							numberOfExisting,
+					  )
 					: nls.localize(
 							"defineKeybinding.existing",
 							"{0} existing commands have this keybinding",
-							numberOfExisting
-						);
+							numberOfExisting,
+					  );
 			dom.append(existingElement, document.createTextNode(text));
 			aria.alert(text);
 			this._showExistingKeybindingsNode.appendChild(existingElement);
@@ -355,7 +355,7 @@ export class DefineKeybindingWidget extends Widget {
 			};
 			existingElement.onclick = () => {
 				this._onShowExistingKeybindings.fire(
-					this.getUserSettingsLabel()
+					this.getUserSettingsLabel(),
 				);
 			};
 		}
@@ -369,7 +369,7 @@ export class DefineKeybindingWidget extends Widget {
 		const firstLabel = new KeybindingLabel(
 			this._outputNode,
 			OS,
-			defaultKeybindingLabelStyles
+			defaultKeybindingLabelStyles,
 		);
 		firstLabel.set(this._chords?.[0] ?? undefined);
 
@@ -377,13 +377,13 @@ export class DefineKeybindingWidget extends Widget {
 			for (let i = 1; i < this._chords.length; i++) {
 				this._outputNode.appendChild(
 					document.createTextNode(
-						nls.localize("defineKeybinding.chordsTo", "chord to")
-					)
+						nls.localize("defineKeybinding.chordsTo", "chord to"),
+					),
 				);
 				const chordLabel = new KeybindingLabel(
 					this._outputNode,
 					OS,
-					defaultKeybindingLabelStyles
+					defaultKeybindingLabelStyles,
 				);
 				chordLabel.set(this._chords[i]);
 			}
@@ -438,12 +438,12 @@ export class DefineKeybindingOverlayWidget
 
 	constructor(
 		private _editor: ICodeEditor,
-		@IInstantiationService instantiationService: IInstantiationService
+		@IInstantiationService instantiationService: IInstantiationService,
 	) {
 		super();
 
 		this._widget = this._register(
-			instantiationService.createInstance(DefineKeybindingWidget, null)
+			instantiationService.createInstance(DefineKeybindingWidget, null),
 		);
 		this._editor.addOverlayWidget(this);
 	}
@@ -471,12 +471,12 @@ export class DefineKeybindingOverlayWidget
 		if (this._editor.hasModel()) {
 			this._editor.revealPositionInCenterIfOutsideViewport(
 				this._editor.getPosition(),
-				ScrollType.Smooth
+				ScrollType.Smooth,
 			);
 		}
 		const layoutInfo = this._editor.getLayoutInfo();
 		this._widget.layout(
-			new dom.Dimension(layoutInfo.width, layoutInfo.height)
+			new dom.Dimension(layoutInfo.width, layoutInfo.height),
 		);
 		return this._widget.define();
 	}

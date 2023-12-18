@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IDisposable } from "vs/base/common/lifecycle";
-import { Event } from "vs/base/common/event";
-import { CancellationToken } from "vs/base/common/cancellation";
 import { VSBufferReadableStream } from "vs/base/common/buffer";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { Event } from "vs/base/common/event";
+import { IDisposable } from "vs/base/common/lifecycle";
 import { URI } from "vs/base/common/uri";
 import { IWorkingCopy } from "vs/workbench/services/workingCopy/common/workingCopy";
 
@@ -22,7 +22,7 @@ export interface IFileWorkingCopyModelFactory<M extends IFileWorkingCopyModel> {
 	createModel(
 		resource: URI,
 		contents: VSBufferReadableStream,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<M>;
 }
 
@@ -91,7 +91,7 @@ export interface IFileWorkingCopyModel extends IDisposable {
 	 */
 	update(
 		contents: VSBufferReadableStream,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void>;
 }
 

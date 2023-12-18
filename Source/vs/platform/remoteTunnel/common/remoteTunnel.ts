@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import { Event } from "vs/base/common/event";
 import { localize } from "vs/nls";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 
 export interface IRemoteTunnelSession {
 	readonly providerId: string;
@@ -15,7 +15,7 @@ export interface IRemoteTunnelSession {
 }
 
 export const IRemoteTunnelService = createDecorator<IRemoteTunnelService>(
-	"IRemoteTunnelService"
+	"IRemoteTunnelService",
 );
 export interface IRemoteTunnelService {
 	readonly _serviceBrand: undefined;
@@ -73,11 +73,11 @@ export namespace TunnelStates {
 		readonly onTokenFailed?: IRemoteTunnelSession;
 	}
 	export const disconnected = (
-		onTokenFailed?: IRemoteTunnelSession
+		onTokenFailed?: IRemoteTunnelSession,
 	): Disconnected => ({ type: "disconnected", onTokenFailed });
 	export const connected = (
 		info: ConnectionInfo,
-		serviceInstallFailed: boolean
+		serviceInstallFailed: boolean,
 	): Connected => ({ type: "connected", info, serviceInstallFailed });
 	export const connecting = (progress?: string): Connecting => ({
 		type: "connecting",

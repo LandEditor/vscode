@@ -3,43 +3,43 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/scm";
-import { localize } from "vs/nls";
-import { Event } from "vs/base/common/event";
+import { $, append } from "vs/base/browser/dom";
 import {
-	ViewPane,
-	IViewPaneOptions,
-} from "vs/workbench/browser/parts/views/viewPane";
-import { append, $ } from "vs/base/browser/dom";
-import {
-	IListVirtualDelegate,
 	IListContextMenuEvent,
 	IListEvent,
+	IListVirtualDelegate,
 } from "vs/base/browser/ui/list/list";
-import {
-	ISCMRepository,
-	ISCMViewService,
-} from "vs/workbench/contrib/scm/common/scm";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import { WorkbenchList } from "vs/platform/list/browser/listService";
+import { Orientation } from "vs/base/browser/ui/sash/sash";
+import { Event } from "vs/base/common/event";
+import { Iterable } from "vs/base/common/iterator";
+import { DisposableStore } from "vs/base/common/lifecycle";
+import "vs/css!./media/scm";
+import { localize } from "vs/nls";
+import { MenuId } from "vs/platform/actions/common/actions";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IViewDescriptorService } from "vs/workbench/common/views";
-import { SIDE_BAR_BACKGROUND } from "vs/workbench/common/theme";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { WorkbenchList } from "vs/platform/list/browser/listService";
 import { IOpenerService } from "vs/platform/opener/common/opener";
 import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import {
+	IViewPaneOptions,
+	ViewPane,
+} from "vs/workbench/browser/parts/views/viewPane";
+import { SIDE_BAR_BACKGROUND } from "vs/workbench/common/theme";
+import { IViewDescriptorService } from "vs/workbench/common/views";
 import { RepositoryRenderer } from "vs/workbench/contrib/scm/browser/scmRepositoryRenderer";
 import {
 	collectContextMenuActions,
 	getActionViewItemProvider,
 } from "vs/workbench/contrib/scm/browser/util";
-import { Orientation } from "vs/base/browser/ui/sash/sash";
-import { Iterable } from "vs/base/common/iterator";
-import { DisposableStore } from "vs/base/common/lifecycle";
-import { MenuId } from "vs/platform/actions/common/actions";
+import {
+	ISCMRepository,
+	ISCMViewService,
+} from "vs/workbench/contrib/scm/common/scm";
 
 class ListDelegate implements IListVirtualDelegate<ISCMRepository> {
 	getHeight(): number {
@@ -87,7 +87,7 @@ export class SCMRepositoriesViewPane extends ViewPane {
 
 		const listContainer = append(
 			container,
-			$(".scm-view.scm-repositories-view")
+			$(".scm-view.scm-repositories-view"),
 		);
 
 		const updateProviderCountVisibility = () => {
@@ -96,19 +96,19 @@ export class SCMRepositoriesViewPane extends ViewPane {
 			>("scm.providerCountBadge");
 			listContainer.classList.toggle(
 				"hide-provider-counts",
-				value === "hidden"
+				value === "hidden",
 			);
 			listContainer.classList.toggle(
 				"auto-provider-counts",
-				value === "auto"
+				value === "auto",
 			);
 		};
 		this._register(
 			Event.filter(
 				this.configurationService.onDidChangeConfiguration,
 				(e) => e.affectsConfiguration("scm.providerCountBadge"),
-				this.disposables
-			)(updateProviderCountVisibility)
+				this.disposables,
+			)(updateProviderCountVisibility),
 		);
 		updateProviderCountVisibility();
 
@@ -116,7 +116,7 @@ export class SCMRepositoriesViewPane extends ViewPane {
 		const renderer = this.instantiationService.createInstance(
 			RepositoryRenderer,
 			MenuId.SCMSourceControlInline,
-			getActionViewItemProvider(this.instantiationService)
+			getActionViewItemProvider(this.instantiationService),
 		);
 		const identityProvider = {
 			getId: (r: ISCMRepository) => r.provider.id,
@@ -142,26 +142,26 @@ export class SCMRepositoriesViewPane extends ViewPane {
 						return localize("scm", "Source Control Repositories");
 					},
 				},
-			}
+			},
 		) as WorkbenchList<ISCMRepository>;
 
 		this._register(this.list);
 		this._register(
-			this.list.onDidChangeSelection(this.onListSelectionChange, this)
+			this.list.onDidChangeSelection(this.onListSelectionChange, this),
 		);
 		this._register(this.list.onContextMenu(this.onListContextMenu, this));
 
 		this._register(
 			this.scmViewService.onDidChangeRepositories(
 				this.onDidChangeRepositories,
-				this
-			)
+				this,
+			),
 		);
 		this._register(
 			this.scmViewService.onDidChangeVisibleRepositories(
 				this.updateListSelection,
-				this
-			)
+				this,
+			),
 		);
 
 		if (this.orientation === Orientation.VERTICAL) {
@@ -170,7 +170,7 @@ export class SCMRepositoriesViewPane extends ViewPane {
 					if (e.affectsConfiguration("scm.repositories.visible")) {
 						this.updateBodySize();
 					}
-				})
+				}),
 			);
 		}
 
@@ -199,7 +199,7 @@ export class SCMRepositoriesViewPane extends ViewPane {
 		}
 
 		const visibleCount = this.configurationService.getValue<number>(
-			"scm.repositories.visible"
+			"scm.repositories.visible",
 		);
 		const empty = this.list.length === 0;
 		const size = Math.min(this.list.length, visibleCount) * 22;
@@ -209,8 +209,8 @@ export class SCMRepositoriesViewPane extends ViewPane {
 			visibleCount === 0
 				? Number.POSITIVE_INFINITY
 				: empty
-					? Number.POSITIVE_INFINITY
-					: size;
+				  ? Number.POSITIVE_INFINITY
+				  : size;
 	}
 
 	private onListContextMenu(e: IListContextMenuEvent<ISCMRepository>): void {
@@ -241,7 +241,7 @@ export class SCMRepositoriesViewPane extends ViewPane {
 	private updateListSelection(): void {
 		const oldSelection = this.list.getSelection();
 		const oldSet = new Set(
-			Iterable.map(oldSelection, (i) => this.list.element(i))
+			Iterable.map(oldSelection, (i) => this.list.element(i)),
 		);
 		const set = new Set(this.scmViewService.visibleRepositories);
 		const added = new Set(Iterable.filter(set, (r) => !oldSet.has(r)));
@@ -252,7 +252,7 @@ export class SCMRepositoriesViewPane extends ViewPane {
 		}
 
 		const selection = oldSelection.filter(
-			(i) => !removed.has(this.list.element(i))
+			(i) => !removed.has(this.list.element(i)),
 		);
 
 		for (let i = 0; i < this.list.length; i++) {

@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { spawn as _spawn } from "child_process";
-import { readdirSync, readFileSync } from "fs";
+import { readFileSync, readdirSync } from "fs";
 import { join } from "path";
 import url from "url";
 
@@ -27,8 +27,8 @@ async function main() {
 		try {
 			const packageJSON = JSON.parse(
 				readFileSync(
-					join("extensions", extension, "package.json")
-				).toString()
+					join("extensions", extension, "package.json"),
+				).toString(),
 			);
 			if (
 				!(

@@ -33,8 +33,8 @@ import {
 } from "vs/platform/actions/common/actions";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
-	IConfigurationRegistry,
 	Extensions as ConfigurationExtensions,
+	IConfigurationRegistry,
 } from "vs/platform/configuration/common/configurationRegistry";
 import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
 import {
@@ -79,8 +79,8 @@ import { EditorInput } from "vs/workbench/common/editor/editorInput";
 import { PANEL_BORDER } from "vs/workbench/common/theme";
 import { ResourceNotebookCellEdit } from "vs/workbench/contrib/bulkEdit/browser/bulkCellEdits";
 import {
-	InteractiveWindowSetting,
 	INTERACTIVE_INPUT_CURSOR_BOUNDARY,
+	InteractiveWindowSetting,
 } from "vs/workbench/contrib/interactive/browser/interactiveCommon";
 import {
 	IInteractiveDocumentService,
@@ -128,14 +128,14 @@ const interactiveWindowCategory: ILocalizedString = {
 };
 
 Registry.as<IEditorPaneRegistry>(
-	EditorExtensions.EditorPane
+	EditorExtensions.EditorPane,
 ).registerEditorPane(
 	EditorPaneDescriptor.create(
 		InteractiveEditor,
 		INTERACTIVE_WINDOW_EDITOR_ID,
-		"Interactive Window"
+		"Interactive Window",
 	),
-	[new SyncDescriptor(InteractiveEditorInput)]
+	[new SyncDescriptor(InteractiveEditorInput)],
 );
 
 export class InteractiveDocumentContribution
@@ -291,7 +291,7 @@ class InteractiveInputContentProvider implements ITextModelContentProvider {
 			"",
 			null,
 			resource,
-			false
+			false,
 		);
 		return result;
 	}
@@ -299,7 +299,7 @@ class InteractiveInputContentProvider implements ITextModelContentProvider {
 
 function createEditor(
 	resource: URI,
-	instantiationService: IInstantiationService
+	instantiationService: IInstantiationService,
 ): EditorInput {
 	const counter = /\/Interactive-(\d+)/.exec(resource.path);
 	const inputBoxPath =
@@ -313,7 +313,7 @@ function createEditor(
 	const editorInput = InteractiveEditorInput.create(
 		instantiationService,
 		resource,
-		inputUri
+		inputUri,
 	);
 
 	return editorInput;
@@ -362,7 +362,7 @@ class InteractiveWindowWorkingCopyEditorHandler
 	}
 
 	private _getViewType(
-		workingCopy: IWorkingCopyIdentifier
+		workingCopy: IWorkingCopyIdentifier,
 	): string | undefined {
 		return NotebookWorkingCopyTypeIdentifier.parse(workingCopy.typeId);
 	}
@@ -372,15 +372,15 @@ const workbenchContributionsRegistry =
 	Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	InteractiveDocumentContribution,
-	LifecyclePhase.Ready
+	LifecyclePhase.Ready,
 );
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	InteractiveInputContentProvider,
-	LifecyclePhase.Ready
+	LifecyclePhase.Ready,
 );
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	InteractiveWindowWorkingCopyEditorHandler,
-	LifecyclePhase.Ready
+	LifecyclePhase.Ready,
 );
 
 type interactiveEditorInputData = {
@@ -426,28 +426,28 @@ export class InteractiveEditorSerializer implements IEditorSerializer {
 			resource,
 			inputResource,
 			name,
-			language
+			language,
 		);
 		return input;
 	}
 }
 
 Registry.as<IEditorFactoryRegistry>(
-	EditorExtensions.EditorFactory
+	EditorExtensions.EditorFactory,
 ).registerEditorSerializer(
 	InteractiveEditorSerializer.ID,
-	InteractiveEditorSerializer
+	InteractiveEditorSerializer,
 );
 
 registerSingleton(
 	IInteractiveHistoryService,
 	InteractiveHistoryService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 registerSingleton(
 	IInteractiveDocumentService,
 	InteractiveDocumentService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 
 registerAction2(
@@ -458,7 +458,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"interactive.open",
-						"Open Interactive Window"
+						"Open Interactive Window",
 					),
 					original: "Open Interactive Window",
 				},
@@ -467,7 +467,7 @@ registerAction2(
 				metadata: {
 					description: localize(
 						"interactive.open",
-						"Open Interactive Window"
+						"Open Interactive Window",
 					),
 					args: [
 						{
@@ -476,11 +476,11 @@ registerAction2(
 							schema: {
 								type: "object",
 								properties: {
-									"viewColumn": {
+									viewColumn: {
 										type: "number",
 										default: -1,
 									},
-									"preserveFocus": {
+									preserveFocus: {
 										type: "boolean",
 										default: true,
 									},
@@ -514,7 +514,7 @@ registerAction2(
 				| { viewColumn?: number; preserveFocus?: boolean },
 			resource?: URI,
 			id?: string,
-			title?: string
+			title?: string,
 		): Promise<{
 			notebookUri: URI;
 			inputUri: URI;
@@ -531,7 +531,7 @@ registerAction2(
 				configurationService,
 				typeof showOptions === "number"
 					? showOptions
-					: showOptions?.viewColumn
+					: showOptions?.viewColumn,
 			);
 			const editorOptions = {
 				activation: EditorActivation.PRESERVE,
@@ -544,7 +544,7 @@ registerAction2(
 			if (resource && extname(resource) === ".interactive") {
 				logService.debug(
 					"Open interactive window from resource:",
-					resource.toString()
+					resource.toString(),
 				);
 				const resourceUri = URI.revive(resource);
 				const editors = editorService
@@ -553,12 +553,12 @@ registerAction2(
 						(id) =>
 							id.editor instanceof InteractiveEditorInput &&
 							id.editor.resource?.toString() ===
-								resourceUri.toString()
+								resourceUri.toString(),
 					);
 				if (editors.length) {
 					logService.debug(
 						"Find existing interactive window:",
-						resource.toString()
+						resource.toString(),
 					);
 					const editorInput = editors[0]
 						.editor as InteractiveEditorInput;
@@ -566,7 +566,7 @@ registerAction2(
 					const editor = await editorService.openEditor(
 						editorInput,
 						editorOptions,
-						currentGroup
+						currentGroup,
 					);
 					const editorControl = editor?.getControl() as
 						| {
@@ -592,7 +592,7 @@ registerAction2(
 				.forEach((editor) => {
 					if (editor.editor.resource) {
 						existingNotebookDocument.add(
-							editor.editor.resource.toString()
+							editor.editor.resource.toString(),
 						);
 					}
 				});
@@ -617,7 +617,7 @@ registerAction2(
 			logService.debug(
 				"Open new interactive window:",
 				notebookUri.toString(),
-				inputUri.toString()
+				inputUri.toString(),
 			);
 
 			if (id) {
@@ -626,7 +626,7 @@ registerAction2(
 					viewType: "interactive",
 				}).all;
 				const preferredKernel = allKernels.find(
-					(kernel) => kernel.id === id
+					(kernel) => kernel.id === id,
 				);
 				if (preferredKernel) {
 					kernelService.preselectKernelForNotebook(preferredKernel, {
@@ -643,7 +643,7 @@ registerAction2(
 			};
 			const editorPane = await editorService.openEditor(
 				editorInput,
-				group
+				group,
 			);
 			const editorControl = editorPane?.getControl() as
 				| {
@@ -654,7 +654,7 @@ registerAction2(
 			// Extensions must retain references to these URIs to manipulate the interactive editor
 			logService.debug(
 				"New interactive window opened. Notebook editor id",
-				editorControl?.notebookEditor?.getId()
+				editorControl?.notebookEditor?.getId(),
 			);
 			return {
 				notebookUri,
@@ -662,7 +662,7 @@ registerAction2(
 				notebookEditorId: editorControl?.notebookEditor?.getId(),
 			};
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -679,7 +679,7 @@ registerAction2(
 					// when: NOTEBOOK_CELL_LIST_FOCUSED,
 					when: ContextKeyExpr.equals(
 						"activeEditor",
-						"workbench.editor.interactive"
+						"workbench.editor.interactive",
 					),
 					primary: KeyMod.WinCtrl | KeyCode.Enter,
 					win: {
@@ -709,7 +709,7 @@ registerAction2(
 
 		async run(
 			accessor: ServicesAccessor,
-			context?: UriComponents
+			context?: UriComponents,
 		): Promise<void> {
 			const editorService = accessor.get(IEditorService);
 			const bulkEditService = accessor.get(IBulkEditService);
@@ -729,7 +729,7 @@ registerAction2(
 						(id) =>
 							id.editor instanceof InteractiveEditorInput &&
 							id.editor.resource?.toString() ===
-								resourceUri.toString()
+								resourceUri.toString(),
 					);
 				if (editors.length) {
 					const editorInput = editors[0]
@@ -737,7 +737,7 @@ registerAction2(
 					const currentGroup = editors[0].groupId;
 					const editor = await editorService.openEditor(
 						editorInput,
-						currentGroup
+						currentGroup,
 					);
 					editorControl = editor?.getControl() as
 						| {
@@ -786,7 +786,7 @@ registerAction2(
 							? {
 									inputCollapsed: false,
 									outputCollapsed: false,
-								}
+							  }
 							: undefined;
 
 					await bulkEditService.apply([
@@ -815,12 +815,12 @@ registerAction2(
 						editorControl.notebookEditor.getCellsInRange({
 							start: index,
 							end: index + 1,
-						})
+						}),
 					);
 
 					// update the selection and focus in the extension host model
 					const editor = notebookEditorService.getNotebookEditor(
-						editorControl.notebookEditor.getId()
+						editorControl.notebookEditor.getId(),
 					);
 					if (editor) {
 						editor.setSelections([range]);
@@ -829,7 +829,7 @@ registerAction2(
 				}
 			}
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -840,7 +840,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"interactive.input.clear",
-						"Clear the interactive window input editor contents"
+						"Clear the interactive window input editor contents",
 					),
 					original:
 						"Clear the interactive window input editor contents",
@@ -878,7 +878,7 @@ registerAction2(
 				}
 			}
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -889,7 +889,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"interactive.history.previous",
-						"Previous value in history"
+						"Previous value in history",
 					),
 					original: "Previous value in history",
 				},
@@ -899,11 +899,11 @@ registerAction2(
 					when: ContextKeyExpr.and(
 						ContextKeyExpr.equals(
 							"activeEditor",
-							"workbench.editor.interactive"
+							"workbench.editor.interactive",
 						),
 						INTERACTIVE_INPUT_CURSOR_BOUNDARY.notEqualsTo("bottom"),
 						INTERACTIVE_INPUT_CURSOR_BOUNDARY.notEqualsTo("none"),
-						SuggestContext.Visible.toNegated()
+						SuggestContext.Visible.toNegated(),
 					),
 					primary: KeyCode.UpArrow,
 					weight: KeybindingWeight.WorkbenchContrib,
@@ -932,7 +932,7 @@ registerAction2(
 
 				if (notebookDocument && textModel) {
 					const previousValue = historyService.getPreviousValue(
-						notebookDocument.uri
+						notebookDocument.uri,
 					);
 					if (previousValue) {
 						textModel.setValue(previousValue);
@@ -940,7 +940,7 @@ registerAction2(
 				}
 			}
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -951,7 +951,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"interactive.history.next",
-						"Next value in history"
+						"Next value in history",
 					),
 					original: "Next value in history",
 				},
@@ -961,11 +961,11 @@ registerAction2(
 					when: ContextKeyExpr.and(
 						ContextKeyExpr.equals(
 							"activeEditor",
-							"workbench.editor.interactive"
+							"workbench.editor.interactive",
 						),
 						INTERACTIVE_INPUT_CURSOR_BOUNDARY.notEqualsTo("top"),
 						INTERACTIVE_INPUT_CURSOR_BOUNDARY.notEqualsTo("none"),
-						SuggestContext.Visible.toNegated()
+						SuggestContext.Visible.toNegated(),
 					),
 					primary: KeyCode.DownArrow,
 					weight: KeybindingWeight.WorkbenchContrib,
@@ -994,7 +994,7 @@ registerAction2(
 
 				if (notebookDocument && textModel) {
 					const previousValue = historyService.getNextValue(
-						notebookDocument.uri
+						notebookDocument.uri,
 					);
 					if (previousValue) {
 						textModel.setValue(previousValue);
@@ -1002,7 +1002,7 @@ registerAction2(
 				}
 			}
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -1014,7 +1014,7 @@ registerAction2(
 				keybinding: {
 					when: ContextKeyExpr.equals(
 						"activeEditor",
-						"workbench.editor.interactive"
+						"workbench.editor.interactive",
 					),
 					primary: KeyMod.CtrlCmd | KeyCode.Home,
 					mac: { primary: KeyMod.CtrlCmd | KeyCode.UpArrow },
@@ -1049,7 +1049,7 @@ registerAction2(
 				});
 			}
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -1059,12 +1059,12 @@ registerAction2(
 				id: "interactive.scrollToBottom",
 				title: localize(
 					"interactiveScrollToBottom",
-					"Scroll to Bottom"
+					"Scroll to Bottom",
 				),
 				keybinding: {
 					when: ContextKeyExpr.equals(
 						"activeEditor",
-						"workbench.editor.interactive"
+						"workbench.editor.interactive",
 					),
 					primary: KeyMod.CtrlCmd | KeyCode.End,
 					mac: { primary: KeyMod.CtrlCmd | KeyCode.DownArrow },
@@ -1100,7 +1100,7 @@ registerAction2(
 				});
 			}
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -1111,7 +1111,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"interactive.input.focus",
-						"Focus Input Editor"
+						"Focus Input Editor",
 					),
 					original: "Focus Input Editor",
 				},
@@ -1143,7 +1143,7 @@ registerAction2(
 			} else {
 				// find and open the most recent interactive window
 				const openEditors = editorService.getEditors(
-					EditorsOrder.MOST_RECENTLY_ACTIVE
+					EditorsOrder.MOST_RECENTLY_ACTIVE,
 				);
 				const interactiveWindow = Iterable.find(
 					openEditors,
@@ -1152,7 +1152,7 @@ registerAction2(
 							identifier.editor.typeId ===
 							InteractiveEditorInput.ID
 						);
-					}
+					},
 				);
 				if (interactiveWindow) {
 					const editorInput =
@@ -1160,7 +1160,7 @@ registerAction2(
 					const currentGroup = interactiveWindow.groupId;
 					const editor = await editorService.openEditor(
 						editorInput,
-						currentGroup
+						currentGroup,
 					);
 					const editorControl = editor?.getControl() as
 						| {
@@ -1181,7 +1181,7 @@ registerAction2(
 				}
 			}
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -1192,7 +1192,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"interactive.history.focus",
-						"Focus History"
+						"Focus History",
 					),
 					original: "Focus History",
 				},
@@ -1201,12 +1201,12 @@ registerAction2(
 					id: MenuId.CommandPalette,
 					when: ContextKeyExpr.equals(
 						"activeEditor",
-						"workbench.editor.interactive"
+						"workbench.editor.interactive",
 					),
 				},
 				precondition: ContextKeyExpr.equals(
 					"activeEditor",
-					"workbench.editor.interactive"
+					"workbench.editor.interactive",
 				),
 			});
 		}
@@ -1230,7 +1230,7 @@ registerAction2(
 				editorControl.notebookEditor.focus();
 			}
 		}
-	}
+	},
 );
 
 registerColor(
@@ -1243,8 +1243,8 @@ registerColor(
 	},
 	localize(
 		"interactive.activeCodeBorder",
-		"The border color for the current interactive code cell when the editor has focus."
-	)
+		"The border color for the current interactive code cell when the editor has focus.",
+	),
 );
 
 registerColor(
@@ -1254,35 +1254,35 @@ registerColor(
 		dark: ifDefinedThenElse(
 			listInactiveSelectionBackground,
 			listInactiveSelectionBackground,
-			"#37373D"
+			"#37373D",
 		),
 		light: ifDefinedThenElse(
 			listInactiveSelectionBackground,
 			listInactiveSelectionBackground,
-			"#E4E6F1"
+			"#E4E6F1",
 		),
 		hcDark: PANEL_BORDER,
 		hcLight: PANEL_BORDER,
 	},
 	localize(
 		"interactive.inactiveCodeBorder",
-		"The border color for the current interactive code cell when the editor does not have focus."
-	)
+		"The border color for the current interactive code cell when the editor does not have focus.",
+	),
 );
 
 Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration
+	ConfigurationExtensions.Configuration,
 ).registerConfiguration({
 	id: "interactiveWindow",
 	order: 100,
 	type: "object",
-	"properties": {
+	properties: {
 		[InteractiveWindowSetting.interactiveWindowAlwaysScrollOnNewCell]: {
 			type: "boolean",
 			default: true,
 			markdownDescription: localize(
 				"interactiveWindow.alwaysScrollOnNewCell",
-				"Automatically scroll the interactive window to show the output of the last statement executed. If this value is false, the window will only scroll if the last cell was already the one scrolled to."
+				"Automatically scroll the interactive window to show the output of the last statement executed. If this value is false, the window will only scroll if the last cell was already the one scrolled to.",
 			),
 		},
 	},

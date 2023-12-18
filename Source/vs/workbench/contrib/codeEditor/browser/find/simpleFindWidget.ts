@@ -3,55 +3,55 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./simpleFindWidget";
-import * as nls from "vs/nls";
 import * as dom from "vs/base/browser/dom";
-import { FindInput } from "vs/base/browser/ui/findinput/findInput";
-import { Widget } from "vs/base/browser/ui/widget";
-import { Delayer } from "vs/base/common/async";
-import { KeyCode } from "vs/base/common/keyCodes";
-import {
-	FindReplaceState,
-	INewFindReplaceState,
-} from "vs/editor/contrib/find/browser/findState";
-import { IMessage as InputBoxMessage } from "vs/base/browser/ui/inputbox/inputBox";
-import {
-	SimpleButton,
-	findPreviousMatchIcon,
-	findNextMatchIcon,
-	NLS_NO_RESULTS,
-	NLS_MATCHES_LOCATION,
-} from "vs/editor/contrib/find/browser/findWidget";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import { IContextViewService } from "vs/platform/contextview/browser/contextView";
-import { ContextScopedFindInput } from "vs/platform/history/browser/contextScopedHistoryWidget";
-import { widgetClose } from "vs/platform/theme/common/iconRegistry";
-import { registerThemingParticipant } from "vs/platform/theme/common/themeService";
-import * as strings from "vs/base/common/strings";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { showHistoryKeybindingHint } from "vs/platform/history/browser/historyWidgetKeybindingHint";
 import { status } from "vs/base/browser/ui/aria/aria";
-import {
-	defaultInputBoxStyles,
-	defaultToggleStyles,
-} from "vs/platform/theme/browser/defaultStyles";
+import { FindInput } from "vs/base/browser/ui/findinput/findInput";
+import { IMessage as InputBoxMessage } from "vs/base/browser/ui/inputbox/inputBox";
 import {
 	ISashEvent,
 	IVerticalSashLayoutProvider,
 	Orientation,
 	Sash,
 } from "vs/base/browser/ui/sash/sash";
+import { Widget } from "vs/base/browser/ui/widget";
+import { Delayer } from "vs/base/common/async";
+import { KeyCode } from "vs/base/common/keyCodes";
+import * as strings from "vs/base/common/strings";
+import "vs/css!./simpleFindWidget";
+import {
+	FindReplaceState,
+	INewFindReplaceState,
+} from "vs/editor/contrib/find/browser/findState";
+import {
+	NLS_MATCHES_LOCATION,
+	NLS_NO_RESULTS,
+	SimpleButton,
+	findNextMatchIcon,
+	findPreviousMatchIcon,
+} from "vs/editor/contrib/find/browser/findWidget";
+import * as nls from "vs/nls";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { IContextViewService } from "vs/platform/contextview/browser/contextView";
+import { ContextScopedFindInput } from "vs/platform/history/browser/contextScopedHistoryWidget";
+import { showHistoryKeybindingHint } from "vs/platform/history/browser/historyWidgetKeybindingHint";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import {
+	defaultInputBoxStyles,
+	defaultToggleStyles,
+} from "vs/platform/theme/browser/defaultStyles";
 import { registerColor } from "vs/platform/theme/common/colorRegistry";
+import { widgetClose } from "vs/platform/theme/common/iconRegistry";
+import { registerThemingParticipant } from "vs/platform/theme/common/themeService";
 
 const NLS_FIND_INPUT_LABEL = nls.localize("label.find", "Find");
 const NLS_FIND_INPUT_PLACEHOLDER = nls.localize("placeholder.find", "Find");
 const NLS_PREVIOUS_MATCH_BTN_LABEL = nls.localize(
 	"label.previousMatchButton",
-	"Previous Match"
+	"Previous Match",
 );
 const NLS_NEXT_MATCH_BTN_LABEL = nls.localize(
 	"label.nextMatchButton",
-	"Next Match"
+	"Next Match",
 );
 const NLS_CLOSE_BTN_LABEL = nls.localize("label.closeButton", "Close");
 
@@ -89,9 +89,9 @@ export abstract class SimpleFindWidget
 	private readonly _matchesLimit: number;
 	private _matchesCount: HTMLElement | undefined;
 
-	private _isVisible: boolean = false;
-	private _foundMatch: boolean = false;
-	private _width: number = 0;
+	private _isVisible = false;
+	private _foundMatch = false;
+	private _width = 0;
 
 	readonly state: FindReplaceState = new FindReplaceState();
 
@@ -99,7 +99,7 @@ export abstract class SimpleFindWidget
 		options: IFindOptions,
 		contextViewService: IContextViewService,
 		contextKeyService: IContextKeyService,
-		private readonly _keybindingService: IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 	) {
 		super();
 
@@ -129,8 +129,8 @@ export abstract class SimpleFindWidget
 					appendCaseSensitiveLabel:
 						options.appendCaseSensitiveActionId
 							? this._getKeybinding(
-									options.appendCaseSensitiveActionId
-								)
+									options.appendCaseSensitiveActionId,
+							  )
 							: undefined,
 					appendRegexLabel: options.appendRegexActionId
 						? this._getKeybinding(options.appendRegexActionId)
@@ -143,8 +143,8 @@ export abstract class SimpleFindWidget
 					inputBoxStyles: defaultInputBoxStyles,
 					toggleStyles: defaultToggleStyles,
 				},
-				contextKeyService
-			)
+				contextKeyService,
+			),
 		);
 		// Find History with update delayer
 		this._updateHistoryDelayer = this._register(new Delayer<void>(500));
@@ -163,7 +163,7 @@ export abstract class SimpleFindWidget
 					this.focusFindBox();
 					this._delayedUpdateHistory();
 				}
-			})
+			}),
 		);
 
 		this._findInput.setRegex(!!this.state.isRegex);
@@ -178,9 +178,9 @@ export abstract class SimpleFindWidget
 						wholeWord: this._findInput.getWholeWords(),
 						matchCase: this._findInput.getCaseSensitive(),
 					},
-					true
+					true,
 				);
-			})
+			}),
 		);
 
 		this._register(
@@ -189,7 +189,7 @@ export abstract class SimpleFindWidget
 				this._findInput.setWholeWords(this.state.wholeWord);
 				this._findInput.setCaseSensitive(this.state.matchCase);
 				this.findFirst();
-			})
+			}),
 		);
 
 		this.prevBtn = this._register(
@@ -203,7 +203,7 @@ export abstract class SimpleFindWidget
 				onTrigger: () => {
 					this.find(true);
 				},
-			})
+			}),
 		);
 
 		this.nextBtn = this._register(
@@ -217,7 +217,7 @@ export abstract class SimpleFindWidget
 				onTrigger: () => {
 					this.find(false);
 				},
-			})
+			}),
 		);
 
 		const closeBtn = this._register(
@@ -231,7 +231,7 @@ export abstract class SimpleFindWidget
 				onTrigger: () => {
 					this.hide();
 				},
-			})
+			}),
 		);
 
 		this._innerDomNode = document.createElement("div");
@@ -256,30 +256,30 @@ export abstract class SimpleFindWidget
 
 		this._focusTracker = this._register(dom.trackFocus(this._innerDomNode));
 		this._register(
-			this._focusTracker.onDidFocus(this._onFocusTrackerFocus.bind(this))
+			this._focusTracker.onDidFocus(this._onFocusTrackerFocus.bind(this)),
 		);
 		this._register(
-			this._focusTracker.onDidBlur(this._onFocusTrackerBlur.bind(this))
+			this._focusTracker.onDidBlur(this._onFocusTrackerBlur.bind(this)),
 		);
 
 		this._findInputFocusTracker = this._register(
-			dom.trackFocus(this._findInput.domNode)
+			dom.trackFocus(this._findInput.domNode),
 		);
 		this._register(
 			this._findInputFocusTracker.onDidFocus(
-				this._onFindInputFocusTrackerFocus.bind(this)
-			)
+				this._onFindInputFocusTrackerFocus.bind(this),
+			),
 		);
 		this._register(
 			this._findInputFocusTracker.onDidBlur(
-				this._onFindInputFocusTrackerBlur.bind(this)
-			)
+				this._onFindInputFocusTrackerBlur.bind(this),
+			),
 		);
 
 		this._register(
 			dom.addDisposableListener(this._innerDomNode, "click", (event) => {
 				event.stopPropagation();
-			})
+			}),
 		);
 
 		if (options?.showResultCount) {
@@ -288,12 +288,12 @@ export abstract class SimpleFindWidget
 			this._matchesCount.className = "matchesCount";
 			this._findInput.domNode.insertAdjacentElement(
 				"afterend",
-				this._matchesCount
+				this._matchesCount,
 			);
 			this._register(
 				this._findInput.onDidChange(async () => {
 					await this.updateResultCount();
-				})
+				}),
 			);
 			this._register(
 				this._findInput.onDidOptionChange(async () => {
@@ -301,7 +301,7 @@ export abstract class SimpleFindWidget
 					await this.updateResultCount();
 					this.focusFindBox();
 					this._delayedUpdateHistory();
-				})
+				}),
 			);
 		}
 
@@ -324,14 +324,14 @@ export abstract class SimpleFindWidget
 				new Sash(this._innerDomNode, this, {
 					orientation: Orientation.VERTICAL,
 					size: 1,
-				})
+				}),
 			);
 			this._register(
 				resizeSash.onDidStart(() => {
 					originalWidth = parseFloat(
-						dom.getComputedStyle(this._domNode).width
+						dom.getComputedStyle(this._domNode).width,
 					);
-				})
+				}),
 			);
 
 			this._register(
@@ -341,20 +341,20 @@ export abstract class SimpleFindWidget
 						return;
 					}
 					this._domNode.style.width = `${width}px`;
-				})
+				}),
 			);
 
 			this._register(
 				resizeSash.onDidReset((e) => {
 					const currentWidth = parseFloat(
-						dom.getComputedStyle(this._domNode).width
+						dom.getComputedStyle(this._domNode).width,
 					);
 					if (currentWidth === _initialMinWidth) {
 						this._domNode.style.width = "100%";
 					} else {
 						this._domNode.style.width = `${_initialMinWidth}px`;
 					}
-				})
+				}),
 			);
 		}
 	}
@@ -427,7 +427,7 @@ export abstract class SimpleFindWidget
 		setTimeout(() => {
 			this._innerDomNode.classList.toggle(
 				"suppress-transition",
-				!animated
+				!animated,
 			);
 			this._innerDomNode.classList.add("visible", "visible-transition");
 			this._innerDomNode.setAttribute("aria-hidden", "false");
@@ -460,7 +460,7 @@ export abstract class SimpleFindWidget
 		if (this._isVisible) {
 			this._innerDomNode.classList.toggle(
 				"suppress-transition",
-				!animated
+				!animated,
 			);
 			this._innerDomNode.classList.remove("visible-transition");
 			this._innerDomNode.setAttribute("aria-hidden", "true");
@@ -471,10 +471,10 @@ export abstract class SimpleFindWidget
 					this.updateButtons(this._foundMatch);
 					this._innerDomNode.classList.remove(
 						"visible",
-						"suppress-transition"
+						"suppress-transition",
 					);
 				},
-				animated ? 200 : 0
+				animated ? 200 : 0,
 			);
 		}
 	}
@@ -496,7 +496,7 @@ export abstract class SimpleFindWidget
 			}
 			this._innerDomNode.classList.toggle(
 				"reduced-find-widget",
-				reducedFindWidget
+				reducedFindWidget,
 			);
 		}
 	}
@@ -558,7 +558,7 @@ export abstract class SimpleFindWidget
 			label = strings.format(
 				NLS_MATCHES_LOCATION,
 				matchesPosition,
-				matchesCount
+				matchesCount,
 			);
 		} else {
 			label = NLS_NO_RESULTS;
@@ -575,7 +575,7 @@ export abstract class SimpleFindWidget
 
 	private _announceSearchResults(
 		label: string,
-		searchString?: string
+		searchString?: string,
 	): string {
 		if (!searchString) {
 			return nls.localize("ariaSearchNoInput", "Enter search input");
@@ -587,15 +587,15 @@ export abstract class SimpleFindWidget
 						"ariaSearchNoResult",
 						"{0} found for '{1}'",
 						label,
-						searchString
-					);
+						searchString,
+				  );
 		}
 
 		return nls.localize(
 			"ariaSearchNoResultWithLineNumNoCurrentMatch",
 			"{0} found for '{1}'",
 			label,
-			searchString
+			searchString,
 		);
 	}
 }
@@ -610,13 +610,13 @@ export const simpleFindWidgetSashBorder = registerColor(
 	},
 	nls.localize(
 		"simpleFindWidget.sashBorder",
-		"Border color of the sash border."
-	)
+		"Border color of the sash border.",
+	),
 );
 
 registerThemingParticipant((theme, collector) => {
 	const resizeBorderBackground = theme.getColor(simpleFindWidgetSashBorder);
 	collector.addRule(
-		`.monaco-workbench .simple-find-part .monaco-sash { background-color: ${resizeBorderBackground}; border-color: ${resizeBorderBackground} }`
+		`.monaco-workbench .simple-find-part .monaco-sash { background-color: ${resizeBorderBackground}; border-color: ${resizeBorderBackground} }`,
 	);
 });

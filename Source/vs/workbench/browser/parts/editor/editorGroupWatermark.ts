@@ -3,24 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
-import { isMacintosh, isWeb, OS } from "vs/base/common/platform";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import {
-	IWorkspaceContextService,
-	WorkbenchState,
-} from "vs/platform/workspace/common/workspace";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { append, clearNode, $, h } from "vs/base/browser/dom";
+import { $, append, clearNode, h } from "vs/base/browser/dom";
 import { KeybindingLabel } from "vs/base/browser/ui/keybindingLabel/keybindingLabel";
+import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
+import { OS, isMacintosh, isWeb } from "vs/base/common/platform";
+import { localize } from "vs/nls";
 import { CommandsRegistry } from "vs/platform/commands/common/commands";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
 	ContextKeyExpr,
 	ContextKeyExpression,
 	IContextKeyService,
 } from "vs/platform/contextkey/common/contextkey";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import { defaultKeybindingLabelStyles } from "vs/platform/theme/browser/defaultStyles";
+import {
+	IWorkspaceContextService,
+	WorkbenchState,
+} from "vs/platform/workspace/common/workspace";
 
 interface WatermarkEntry {
 	readonly text: string;
@@ -68,7 +68,7 @@ const findInFiles: WatermarkEntry = {
 const toggleTerminal: WatermarkEntry = {
 	text: localize(
 		{ key: "watermark.toggleTerminal", comment: ["toggle is a verb here"] },
-		"Toggle Terminal"
+		"Toggle Terminal",
 	),
 	id: "workbench.action.terminal.toggleTerminal",
 	when: ContextKeyExpr.equals("terminalProcessSupported", true),
@@ -84,7 +84,7 @@ const toggleFullscreen: WatermarkEntry = {
 			key: "watermark.toggleFullscreen",
 			comment: ["toggle is a verb here"],
 		},
-		"Toggle Full Screen"
+		"Toggle Full Screen",
 	),
 	id: "workbench.action.toggleFullScreen",
 	when: ContextKeyExpr.equals("terminalProcessSupported", true).negate(),
@@ -117,9 +117,9 @@ const folderEntries = [
 export class EditorGroupWatermark extends Disposable {
 	private readonly shortcuts: HTMLElement;
 	private readonly transientDisposables = this._register(
-		new DisposableStore()
+		new DisposableStore(),
 	);
-	private enabled: boolean = false;
+	private enabled = false;
 	private workbenchState: WorkbenchState;
 
 	constructor(
@@ -155,7 +155,7 @@ export class EditorGroupWatermark extends Disposable {
 				if (e.affectsConfiguration("workbench.tips.enabled")) {
 					this.render();
 				}
-			})
+			}),
 		);
 
 		this._register(
@@ -166,7 +166,7 @@ export class EditorGroupWatermark extends Disposable {
 
 				this.workbenchState = workbenchState;
 				this.render();
-			})
+			}),
 		);
 
 		const allEntriesWhenClauses = [...noFolderEntries, ...folderEntries]
@@ -174,20 +174,20 @@ export class EditorGroupWatermark extends Disposable {
 			.map((entry) => entry.when!);
 		const allKeys = new Set<string>();
 		allEntriesWhenClauses.forEach((when) =>
-			when.keys().forEach((key) => allKeys.add(key))
+			when.keys().forEach((key) => allKeys.add(key)),
 		);
 		this._register(
 			this.contextKeyService.onDidChangeContext((e) => {
 				if (e.affectsSome(allKeys)) {
 					this.render();
 				}
-			})
+			}),
 		);
 	}
 
 	private render(): void {
 		const enabled = this.configurationService.getValue<boolean>(
-			"workbench.tips.enabled"
+			"workbench.tips.enabled",
 		);
 
 		if (enabled === this.enabled) {
@@ -207,11 +207,11 @@ export class EditorGroupWatermark extends Disposable {
 			.filter(
 				(entry) =>
 					!("when" in entry) ||
-					this.contextKeyService.contextMatchesRules(entry.when)
+					this.contextKeyService.contextMatchesRules(entry.when),
 			)
 			.filter(
 				(entry) =>
-					!("mac" in entry) || entry.mac === (isMacintosh && !isWeb)
+					!("mac" in entry) || entry.mac === (isMacintosh && !isWeb),
 			)
 			.filter((entry) => !!CommandsRegistry.getCommand(entry.id));
 
@@ -236,7 +236,7 @@ export class EditorGroupWatermark extends Disposable {
 
 		update();
 		this.transientDisposables.add(
-			this.keybindingService.onDidUpdateKeybindings(update)
+			this.keybindingService.onDidUpdateKeybindings(update),
 		);
 	}
 

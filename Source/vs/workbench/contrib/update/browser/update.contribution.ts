@@ -3,60 +3,60 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/platform/update/common/update.config.contribution";
+import { mnemonicButtonLabel } from "vs/base/common/labels";
+import { isWindows } from "vs/base/common/platform";
+import { URI } from "vs/base/common/uri";
 import { localize } from "vs/nls";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
-} from "vs/workbench/common/contributions";
 import { Categories } from "vs/platform/action/common/actionCommonCategories";
 import {
+	Action2,
 	MenuId,
 	registerAction2,
-	Action2,
 } from "vs/platform/actions/common/actions";
-import {
-	ProductContribution,
-	UpdateContribution,
-	CONTEXT_UPDATE_STATE,
-	SwitchProductQualityContribution,
-	RELEASE_NOTES_URL,
-	showReleaseNotesInEditor,
-	DOWNLOAD_URL,
-} from "vs/workbench/contrib/update/browser/update";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
-import product from "vs/platform/product/common/product";
-import { IUpdateService, StateType } from "vs/platform/update/common/update";
+import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
+import { IsWebContext } from "vs/platform/contextkey/common/contextkeys";
+import { IFileDialogService } from "vs/platform/dialogs/common/dialogs";
 import {
 	IInstantiationService,
 	ServicesAccessor,
 } from "vs/platform/instantiation/common/instantiation";
-import { isWindows } from "vs/base/common/platform";
-import { IFileDialogService } from "vs/platform/dialogs/common/dialogs";
-import { mnemonicButtonLabel } from "vs/base/common/labels";
-import { ShowCurrentReleaseNotesActionId } from "vs/workbench/contrib/update/common/update";
-import { IsWebContext } from "vs/platform/contextkey/common/contextkeys";
 import { IOpenerService } from "vs/platform/opener/common/opener";
+import product from "vs/platform/product/common/product";
 import { IProductService } from "vs/platform/product/common/productService";
-import { URI } from "vs/base/common/uri";
-import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
+import { Registry } from "vs/platform/registry/common/platform";
+import { IUpdateService, StateType } from "vs/platform/update/common/update";
+import "vs/platform/update/common/update.config.contribution";
+import {
+	Extensions as WorkbenchExtensions,
+	IWorkbenchContributionsRegistry,
+} from "vs/workbench/common/contributions";
+import {
+	CONTEXT_UPDATE_STATE,
+	DOWNLOAD_URL,
+	ProductContribution,
+	RELEASE_NOTES_URL,
+	SwitchProductQualityContribution,
+	UpdateContribution,
+	showReleaseNotesInEditor,
+} from "vs/workbench/contrib/update/browser/update";
+import { ShowCurrentReleaseNotesActionId } from "vs/workbench/contrib/update/common/update";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 const workbench = Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 );
 
 workbench.registerWorkbenchContribution(
 	ProductContribution,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );
 workbench.registerWorkbenchContribution(
 	UpdateContribution,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );
 workbench.registerWorkbenchContribution(
 	SwitchProductQualityContribution,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );
 
 // Release notes
@@ -72,7 +72,7 @@ export class ShowCurrentReleaseNotesAction extends Action2 {
 						key: "mshowReleaseNotes",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"Show &&Release Notes"
+					"Show &&Release Notes",
 				),
 				original: "Show Release Notes",
 			},
@@ -98,20 +98,20 @@ export class ShowCurrentReleaseNotesAction extends Action2 {
 		try {
 			await showReleaseNotesInEditor(
 				instantiationService,
-				productService.version
+				productService.version,
 			);
 		} catch (err) {
 			if (productService.releaseNotesUrl) {
 				await openerService.open(
-					URI.parse(productService.releaseNotesUrl)
+					URI.parse(productService.releaseNotesUrl),
 				);
 			} else {
 				throw new Error(
 					localize(
 						"update.noReleaseNotesOnline",
 						"This version of {0} does not have release notes online",
-						productService.nameLong
-					)
+						productService.nameLong,
+					),
 				);
 			}
 		}
@@ -153,7 +153,7 @@ class DownloadUpdateAction extends Action2 {
 			category: { value: product.nameShort, original: product.nameShort },
 			f1: true,
 			precondition: CONTEXT_UPDATE_STATE.isEqualTo(
-				StateType.AvailableForDownload
+				StateType.AvailableForDownload,
 			),
 		});
 	}
@@ -211,7 +211,7 @@ class DownloadAction extends Action2 {
 				value: localize(
 					"openDownloadPage",
 					"Download {0}",
-					product.nameLong
+					product.nameLong,
 				),
 				original: `Download ${product.downloadUrl}`,
 			},
@@ -271,8 +271,8 @@ if (isWindows) {
 							key: "updateButton",
 							comment: ["&& denotes a mnemonic"],
 						},
-						"&&Update"
-					)
+						"&&Update",
+					),
 				),
 			});
 

@@ -3,23 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IEditorGroup } from "vs/workbench/services/editor/common/editorGroupsService";
+import { Dimension } from "vs/base/browser/dom";
+import { Event } from "vs/base/common/event";
+import { URI } from "vs/base/common/uri";
 import {
-	createDecorator,
 	ServicesAccessor,
+	createDecorator,
 } from "vs/platform/instantiation/common/instantiation";
-import { NotebookEditorInput } from "vs/workbench/contrib/notebook/common/notebookEditorInput";
 import {
 	INotebookEditor,
 	INotebookEditorCreationOptions,
 } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
-import { Event } from "vs/base/common/event";
-import { Dimension } from "vs/base/browser/dom";
 import { NotebookEditorWidget } from "vs/workbench/contrib/notebook/browser/notebookEditorWidget";
-import { URI } from "vs/base/common/uri";
+import { NotebookEditorInput } from "vs/workbench/contrib/notebook/common/notebookEditorInput";
+import { IEditorGroup } from "vs/workbench/services/editor/common/editorGroupsService";
 
 export const INotebookEditorService = createDecorator<INotebookEditorService>(
-	"INotebookEditorWidgetService"
+	"INotebookEditorWidgetService",
 );
 
 export interface IBorrowValue<T> {
@@ -34,11 +34,11 @@ export interface INotebookEditorService {
 		group: IEditorGroup,
 		input: NotebookEditorInput,
 		creationOptions?: INotebookEditorCreationOptions,
-		dimension?: Dimension
+		dimension?: Dimension,
 	): IBorrowValue<INotebookEditor>;
 
 	retrieveExistingWidgetFromURI(
-		resource: URI
+		resource: URI,
 	): IBorrowValue<NotebookEditorWidget> | undefined;
 	retrieveAllExistingWidgets(): IBorrowValue<NotebookEditorWidget>[];
 	onDidAddNotebookEditor: Event<INotebookEditor>;

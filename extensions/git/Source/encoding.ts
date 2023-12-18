@@ -40,8 +40,8 @@ function detectEncodingByBOM(buffer: Buffer): string | null {
 const IGNORE_ENCODINGS = ["ascii", "utf-8", "utf-16", "utf-32"];
 
 const JSCHARDET_TO_ICONV_ENCODINGS: { [name: string]: string } = {
-	"ibm866": "cp866",
-	"big5": "cp950",
+	ibm866: "cp866",
+	big5: "cp950",
 };
 
 export function detectEncoding(buffer: Buffer): string | null {

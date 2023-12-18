@@ -3,36 +3,36 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { IReference, dispose } from "vs/base/common/lifecycle";
+import { isEqual, toLocalResource } from "vs/base/common/resources";
 import { URI } from "vs/base/common/uri";
+import { ITextModelService } from "vs/editor/common/services/resolverService";
+import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
+import { ITextEditorOptions } from "vs/platform/editor/common/editor";
+import { IFileService } from "vs/platform/files/common/files";
+import { ILabelService } from "vs/platform/label/common/label";
 import {
 	DEFAULT_EDITOR_ASSOCIATION,
-	findViewStateForEditor,
 	GroupIdentifier,
-	isUntitledResourceEditorInput,
 	IUntitledTextResourceEditorInput,
 	IUntypedEditorInput,
 	Verbosity,
+	findViewStateForEditor,
+	isUntitledResourceEditorInput,
 } from "vs/workbench/common/editor";
 import { EditorInput } from "vs/workbench/common/editor/editorInput";
 import { AbstractTextResourceEditorInput } from "vs/workbench/common/editor/textResourceEditorInput";
-import { IUntitledTextEditorModel } from "vs/workbench/services/untitled/common/untitledTextEditorModel";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
+import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
+import { IPathService } from "vs/workbench/services/path/common/pathService";
 import {
 	EncodingMode,
 	IEncodingSupport,
 	ILanguageSupport,
 	ITextFileService,
 } from "vs/workbench/services/textfile/common/textfiles";
-import { ILabelService } from "vs/platform/label/common/label";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { IFileService } from "vs/platform/files/common/files";
-import { isEqual, toLocalResource } from "vs/base/common/resources";
-import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { IPathService } from "vs/workbench/services/path/common/pathService";
-import { ITextEditorOptions } from "vs/platform/editor/common/editor";
-import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
-import { ITextModelService } from "vs/editor/common/services/resolverService";
-import { dispose, IReference } from "vs/base/common/lifecycle";
-import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
+import { IUntitledTextEditorModel } from "vs/workbench/services/untitled/common/untitledTextEditorModel";
 
 /**
  * An editor input to be used for untitled text buffers.
@@ -88,10 +88,10 @@ export class UntitledTextEditorInput
 	private registerModelListeners(model: IUntitledTextEditorModel): void {
 		// re-emit some events from the model
 		this._register(
-			model.onDidChangeDirty(() => this._onDidChangeDirty.fire())
+			model.onDidChangeDirty(() => this._onDidChangeDirty.fire()),
 		);
 		this._register(
-			model.onDidChangeName(() => this._onDidChangeLabel.fire())
+			model.onDidChangeName(() => this._onDidChangeLabel.fire()),
 		);
 
 		// a reverted untitled text editor model renders this input disposed
@@ -144,7 +144,7 @@ export class UntitledTextEditorInput
 
 	setEncoding(
 		encoding: string,
-		mode: EncodingMode /* ignored, we only have Encode */
+		mode: EncodingMode /* ignored, we only have Encode */,
 	): Promise<void> {
 		return this.model.setEncoding(encoding);
 	}
@@ -163,7 +163,7 @@ export class UntitledTextEditorInput
 				// Acquire a model reference
 				this.cachedUntitledTextEditorModelReference =
 					(await this.textModelService.createModelReference(
-						this.resource
+						this.resource,
 					)) as IReference<IUntitledTextEditorModel>;
 			})();
 		}
@@ -191,8 +191,8 @@ export class UntitledTextEditorInput
 				? toLocalResource(
 						this.model.resource,
 						this.environmentService.remoteAuthority,
-						this.pathService.defaultUriScheme
-					)
+						this.pathService.defaultUriScheme,
+				  )
 				: this.resource,
 			forceUntitled: true,
 			options: {
@@ -209,7 +209,7 @@ export class UntitledTextEditorInput
 			untypedInput.options.viewState = findViewStateForEditor(
 				this,
 				options.preserveViewState,
-				this.editorService
+				this.editorService,
 			);
 
 			if (

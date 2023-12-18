@@ -3,22 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as platform from "vs/base/common/platform";
+import { revive } from "vs/base/common/marshalling";
 import * as performance from "vs/base/common/performance";
+import * as platform from "vs/base/common/platform";
 import { URI, UriComponents, UriDto } from "vs/base/common/uri";
 import { IChannel } from "vs/base/parts/ipc/common/ipc";
-import { IRemoteAgentEnvironment } from "vs/platform/remote/common/remoteAgentEnvironment";
 import {
-	IDiagnosticInfoOptions,
 	IDiagnosticInfo,
+	IDiagnosticInfoOptions,
 } from "vs/platform/diagnostics/common/diagnostics";
+import { IRemoteAgentEnvironment } from "vs/platform/remote/common/remoteAgentEnvironment";
 import {
 	ITelemetryData,
 	TelemetryLevel,
 } from "vs/platform/telemetry/common/telemetry";
-import { IExtensionHostExitInfo } from "vs/workbench/services/remote/common/remoteAgentService";
-import { revive } from "vs/base/common/marshalling";
 import { IUserDataProfile } from "vs/platform/userDataProfile/common/userDataProfile";
+import { IExtensionHostExitInfo } from "vs/workbench/services/remote/common/remoteAgentService";
 
 export interface IGetEnvironmentDataArguments {
 	remoteAuthority: string;
@@ -55,7 +55,7 @@ export class RemoteExtensionEnvironmentChannelClient {
 	static async getEnvironmentData(
 		channel: IChannel,
 		remoteAuthority: string,
-		profile: string | undefined
+		profile: string | undefined,
 	): Promise<IRemoteAgentEnvironment> {
 		const args: IGetEnvironmentDataArguments = {
 			remoteAuthority,
@@ -64,7 +64,7 @@ export class RemoteExtensionEnvironmentChannelClient {
 
 		const data = await channel.call<IRemoteAgentEnvironmentDTO>(
 			"getEnvironmentData",
-			args
+			args,
 		);
 
 		return {
@@ -89,7 +89,7 @@ export class RemoteExtensionEnvironmentChannelClient {
 	static async getExtensionHostExitInfo(
 		channel: IChannel,
 		remoteAuthority: string,
-		reconnectionToken: string
+		reconnectionToken: string,
 	): Promise<IExtensionHostExitInfo | null> {
 		const args: IGetExtensionHostExitInfoArguments = {
 			remoteAuthority,
@@ -97,20 +97,20 @@ export class RemoteExtensionEnvironmentChannelClient {
 		};
 		return channel.call<IExtensionHostExitInfo | null>(
 			"getExtensionHostExitInfo",
-			args
+			args,
 		);
 	}
 
 	static getDiagnosticInfo(
 		channel: IChannel,
-		options: IDiagnosticInfoOptions
+		options: IDiagnosticInfoOptions,
 	): Promise<IDiagnosticInfo> {
 		return channel.call<IDiagnosticInfo>("getDiagnosticInfo", options);
 	}
 
 	static updateTelemetryLevel(
 		channel: IChannel,
-		telemetryLevel: TelemetryLevel
+		telemetryLevel: TelemetryLevel,
 	): Promise<void> {
 		return channel.call<void>("updateTelemetryLevel", { telemetryLevel });
 	}
@@ -118,7 +118,7 @@ export class RemoteExtensionEnvironmentChannelClient {
 	static logTelemetry(
 		channel: IChannel,
 		eventName: string,
-		data: ITelemetryData
+		data: ITelemetryData,
 	): Promise<void> {
 		return channel.call<void>("logTelemetry", { eventName, data });
 	}

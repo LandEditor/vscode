@@ -5,14 +5,14 @@
 
 import {
 	DisposableStore,
-	dispose,
 	IDisposable,
+	dispose,
 } from "vs/base/common/lifecycle";
 import { isEqual } from "vs/base/common/resources";
 import { URI } from "vs/base/common/uri";
+import { ILanguageService } from "vs/editor/common/languages/language";
 import { ITextModel } from "vs/editor/common/model";
 import { IModelService } from "vs/editor/common/services/model";
-import { ILanguageService } from "vs/editor/common/languages/language";
 import { ITextModelService } from "vs/editor/common/services/resolverService";
 import * as nls from "vs/nls";
 import {
@@ -35,21 +35,21 @@ import { IWorkbenchContribution } from "vs/workbench/common/contributions";
 import { EditorInputWithOptions } from "vs/workbench/common/editor";
 import { SideBySideEditorInput } from "vs/workbench/common/editor/sideBySideEditorInput";
 import {
-	RegisteredEditorPriority,
 	IEditorResolverService,
+	RegisteredEditorPriority,
 } from "vs/workbench/services/editor/common/editorResolverService";
-import { ITextEditorService } from "vs/workbench/services/textfile/common/textEditorService";
 import {
 	DEFAULT_SETTINGS_EDITOR_SETTING,
 	FOLDER_SETTINGS_PATH,
 	IPreferencesService,
 	USE_SPLIT_JSON_SETTING,
 } from "vs/workbench/services/preferences/common/preferences";
+import { ITextEditorService } from "vs/workbench/services/textfile/common/textEditorService";
 import { IUserDataProfileService } from "vs/workbench/services/userDataProfile/common/userDataProfile";
 
 const schemaRegistry =
 	Registry.as<JSONContributionRegistry.IJSONContributionRegistry>(
-		JSONContributionRegistry.Extensions.JSONContribution
+		JSONContributionRegistry.Extensions.JSONContribution,
 	);
 
 export class PreferencesContribution implements IWorkbenchContribution {
@@ -96,7 +96,7 @@ export class PreferencesContribution implements IWorkbenchContribution {
 		if (
 			!!this.configurationService.getValue(USE_SPLIT_JSON_SETTING) ||
 			!!this.configurationService.getValue(
-				DEFAULT_SETTINGS_EDITOR_SETTING
+				DEFAULT_SETTINGS_EDITOR_SETTING,
 			)
 		) {
 			this.editorOpeningListener =
@@ -106,7 +106,7 @@ export class PreferencesContribution implements IWorkbenchContribution {
 						id: SideBySideEditorInput.ID,
 						label: nls.localize(
 							"splitSettingsEditorLabel",
-							"Split Settings Editor"
+							"Split Settings Editor",
 						),
 						priority: RegisteredEditorPriority.builtin,
 					},
@@ -121,13 +121,13 @@ export class PreferencesContribution implements IWorkbenchContribution {
 								isEqual(
 									resource,
 									this.userDataProfileService.currentProfile
-										.settingsResource
+										.settingsResource,
 								)
 							) {
 								return {
 									editor: this.preferencesService.createSplitJsonEditorInput(
 										ConfigurationTarget.USER_LOCAL,
-										resource
+										resource,
 									),
 									options,
 								};
@@ -144,14 +144,14 @@ export class PreferencesContribution implements IWorkbenchContribution {
 									isEqual(
 										resource,
 										folders[0].toResource(
-											FOLDER_SETTINGS_PATH
-										)
+											FOLDER_SETTINGS_PATH,
+										),
 									)
 								) {
 									return {
 										editor: this.preferencesService.createSplitJsonEditorInput(
 											ConfigurationTarget.WORKSPACE,
-											resource
+											resource,
 										),
 										options,
 									};
@@ -168,14 +168,14 @@ export class PreferencesContribution implements IWorkbenchContribution {
 										isEqual(
 											resource,
 											folder.toResource(
-												FOLDER_SETTINGS_PATH
-											)
+												FOLDER_SETTINGS_PATH,
+											),
 										)
 									) {
 										return {
 											editor: this.preferencesService.createSplitJsonEditorInput(
 												ConfigurationTarget.WORKSPACE_FOLDER,
-												resource
+												resource,
 											),
 											options,
 										};
@@ -185,12 +185,12 @@ export class PreferencesContribution implements IWorkbenchContribution {
 
 							return {
 								editor: this.textEditorService.createTextEditor(
-									{ resource }
+									{ resource },
 								),
 								options,
 							};
 						},
-					}
+					},
 				);
 		}
 	}
@@ -200,7 +200,7 @@ export class PreferencesContribution implements IWorkbenchContribution {
 			"vscode",
 			{
 				provideTextContent: async (
-					uri: URI
+					uri: URI,
 				): Promise<ITextModel | null> => {
 					if (uri.scheme !== "vscode") {
 						return null;
@@ -210,7 +210,7 @@ export class PreferencesContribution implements IWorkbenchContribution {
 					}
 					return this.preferencesService.resolveModel(uri);
 				},
-			}
+			},
 		);
 	}
 
@@ -223,7 +223,7 @@ export class PreferencesContribution implements IWorkbenchContribution {
 		const model = this.modelService.createModel(
 			modelContent,
 			languageSelection,
-			uri
+			uri,
 		);
 		const disposables = new DisposableStore();
 		disposables.add(
@@ -235,7 +235,7 @@ export class PreferencesContribution implements IWorkbenchContribution {
 						];
 					model.setValue(JSON.stringify(schema));
 				}
-			})
+			}),
 		);
 		disposables.add(model.onWillDispose(() => disposables.dispose()));
 		return model;
@@ -250,36 +250,36 @@ export class PreferencesContribution implements IWorkbenchContribution {
 const registry = Registry.as<IConfigurationRegistry>(Extensions.Configuration);
 registry.registerConfiguration({
 	...workbenchConfigurationNodeBase,
-	"properties": {
+	properties: {
 		"workbench.settings.enableNaturalLanguageSearch": {
-			"type": "boolean",
-			"description": nls.localize(
+			type: "boolean",
+			description: nls.localize(
 				"enableNaturalLanguageSettingsSearch",
-				"Controls whether to enable the natural language search mode for settings. The natural language search is provided by a Microsoft online service."
+				"Controls whether to enable the natural language search mode for settings. The natural language search is provided by a Microsoft online service.",
 			),
-			"default": true,
-			"scope": ConfigurationScope.WINDOW,
-			"tags": ["usesOnlineServices"],
+			default: true,
+			scope: ConfigurationScope.WINDOW,
+			tags: ["usesOnlineServices"],
 		},
 		"workbench.settings.settingsSearchTocBehavior": {
-			"type": "string",
-			"enum": ["hide", "filter"],
-			"enumDescriptions": [
+			type: "string",
+			enum: ["hide", "filter"],
+			enumDescriptions: [
 				nls.localize(
 					"settingsSearchTocBehavior.hide",
-					"Hide the Table of Contents while searching."
+					"Hide the Table of Contents while searching.",
 				),
 				nls.localize(
 					"settingsSearchTocBehavior.filter",
-					"Filter the Table of Contents to just categories that have matching settings. Clicking on a category will filter the results to that category."
+					"Filter the Table of Contents to just categories that have matching settings. Clicking on a category will filter the results to that category.",
 				),
 			],
-			"description": nls.localize(
+			description: nls.localize(
 				"settingsSearchTocBehavior",
-				"Controls the behavior of the Settings editor Table of Contents while searching. If this setting is being changed in the Settings editor, the setting will take effect after the search query is modified."
+				"Controls the behavior of the Settings editor Table of Contents while searching. If this setting is being changed in the Settings editor, the setting will take effect after the search query is modified.",
 			),
-			"default": "filter",
-			"scope": ConfigurationScope.WINDOW,
+			default: "filter",
+			scope: ConfigurationScope.WINDOW,
 		},
 	},
 });

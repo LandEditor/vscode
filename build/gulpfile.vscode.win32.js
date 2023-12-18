@@ -3,8 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-"use strict";
-
 const gulp = require("gulp");
 const path = require("path");
 const fs = require("fs");
@@ -27,14 +25,14 @@ const issPath = path.join(__dirname, "win32", "code.iss");
 const innoSetupPath = path.join(
 	path.dirname(path.dirname(require.resolve("innosetup"))),
 	"bin",
-	"ISCC.exe"
+	"ISCC.exe",
 );
 const signWin32Path = path.join(
 	repoPath,
 	"build",
 	"azure-pipelines",
 	"common",
-	"sign-win32"
+	"sign-win32",
 );
 
 function packageInnoSetup(iss, options, cb) {
@@ -55,8 +53,8 @@ function packageInnoSetup(iss, options, cb) {
 	keys.forEach((key) =>
 		assert(
 			typeof definitions[key] === "string",
-			`Missing value for '${key}' in Inno Setup package step`
-		)
+			`Missing value for '${key}' in Inno Setup package step`,
+		),
 	);
 
 	const defs = keys.map((key) => `/d${key}=${definitions[key]}`);
@@ -98,16 +96,16 @@ function buildWin32Setup(arch, target) {
 
 		const originalProductJsonPath = path.join(
 			sourcePath,
-			"resources/app/product.json"
+			"resources/app/product.json",
 		);
 		const productJsonPath = path.join(outputPath, "product.json");
 		const productJson = JSON.parse(
-			fs.readFileSync(originalProductJsonPath, "utf8")
+			fs.readFileSync(originalProductJsonPath, "utf8"),
 		);
 		productJson["target"] = target;
 		fs.writeFileSync(
 			productJsonPath,
-			JSON.stringify(productJson, undefined, "\t")
+			JSON.stringify(productJson, undefined, "\t"),
 		);
 
 		const quality = product.quality || "dev";
@@ -128,14 +126,14 @@ function buildWin32Setup(arch, target) {
 			TunnelApplicationName: product.tunnelApplicationName,
 			ApplicationName: product.applicationName,
 			Arch: arch,
-			AppId: { "x64": x64AppId, "arm64": arm64AppId }[arch],
+			AppId: { x64: x64AppId, arm64: arm64AppId }[arch],
 			IncompatibleTargetAppId: {
-				"x64": product.win32x64AppId,
-				"arm64": product.win32arm64AppId,
+				x64: product.win32x64AppId,
+				arm64: product.win32arm64AppId,
 			}[arch],
 			AppUserId: product.win32AppUserModelId,
-			ArchitecturesAllowed: { "x64": "x64", "arm64": "arm64" }[arch],
-			ArchitecturesInstallIn64BitMode: { "x64": "x64", "arm64": "arm64" }[
+			ArchitecturesAllowed: { x64: "x64", arm64: "arm64" }[arch],
+			ArchitecturesInstallIn64BitMode: { x64: "x64", arm64: "arm64" }[
 				arch
 			],
 			SourceDir: sourcePath,
@@ -148,8 +146,9 @@ function buildWin32Setup(arch, target) {
 
 		if (quality === "insider") {
 			definitions["AppxPackage"] = `code_insiders_explorer_${arch}.appx`;
-			definitions["AppxPackageFullname"] =
-				`Microsoft.${product.win32RegValueName}_1.0.0.0_neutral__8wekyb3d8bbwe`;
+			definitions[
+				"AppxPackageFullname"
+			] = `Microsoft.${product.win32RegValueName}_1.0.0.0_neutral__8wekyb3d8bbwe`;
 		}
 
 		packageInnoSetup(issPath, { definitions }, cb);
@@ -165,8 +164,8 @@ function defineWin32SetupTasks(arch, target) {
 	gulp.task(
 		task.define(
 			`vscode-win32-${arch}-${target}-setup`,
-			task.series(cleanTask, buildWin32Setup(arch, target))
-		)
+			task.series(cleanTask, buildWin32Setup(arch, target)),
+		),
 	);
 }
 
@@ -203,9 +202,11 @@ gulp.task(
 		"vscode-win32-x64-inno-updater",
 		task.series(
 			copyInnoUpdater("x64"),
-			updateIcon(path.join(buildPath("x64"), "tools", "inno_updater.exe"))
-		)
-	)
+			updateIcon(
+				path.join(buildPath("x64"), "tools", "inno_updater.exe"),
+			),
+		),
+	),
 );
 gulp.task(
 	task.define(
@@ -213,8 +214,8 @@ gulp.task(
 		task.series(
 			copyInnoUpdater("arm64"),
 			updateIcon(
-				path.join(buildPath("arm64"), "tools", "inno_updater.exe")
-			)
-		)
-	)
+				path.join(buildPath("arm64"), "tools", "inno_updater.exe"),
+			),
+		),
+	),
 );

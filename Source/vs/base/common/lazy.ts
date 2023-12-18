@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 export class Lazy<T> {
-	private _didRun: boolean = false;
+	private _didRun = false;
 	private _value?: T;
 	private _error: Error | undefined;
 

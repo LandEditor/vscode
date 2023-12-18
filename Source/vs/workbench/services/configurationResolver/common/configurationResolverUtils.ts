@@ -1,9 +1,9 @@
+import { IJSONSchema } from "vs/base/common/jsonSchema";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as nls from "vs/nls";
-import { IJSONSchema } from "vs/base/common/jsonSchema";
 
 export function applyDeprecatedVariableMessage(schema: IJSONSchema) {
 	schema.pattern = schema.pattern || "^(?!.*\\$\\{(env|config|command)\\.)";
@@ -11,6 +11,6 @@ export function applyDeprecatedVariableMessage(schema: IJSONSchema) {
 		schema.patternErrorMessage ||
 		nls.localize(
 			"deprecatedVariables",
-			"'env.', 'config.' and 'command.' are deprecated, use 'env:', 'config:' and 'command:' instead."
+			"'env.', 'config.' and 'command.' are deprecated, use 'env:', 'config:' and 'command:' instead.",
 		);
 }

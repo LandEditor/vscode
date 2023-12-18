@@ -3,26 +3,26 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { memoize } from "vs/base/common/decorators";
+import { onUnexpectedError } from "vs/base/common/errors";
+import { parseLineAndColumnAware } from "vs/base/common/extpath";
 import { Schemas } from "vs/base/common/network";
 import { joinPath } from "vs/base/common/resources";
+import { isUndefined } from "vs/base/common/types";
 import { URI } from "vs/base/common/uri";
+import { ITextEditorOptions } from "vs/platform/editor/common/editor";
 import {
 	ExtensionKind,
 	IEnvironmentService,
 	IExtensionHostDebugParams,
 } from "vs/platform/environment/common/environment";
-import { IPath } from "vs/platform/window/common/window";
-import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { IWorkbenchConstructionOptions } from "vs/workbench/browser/web.api";
-import { IProductService } from "vs/platform/product/common/productService";
-import { memoize } from "vs/base/common/decorators";
-import { onUnexpectedError } from "vs/base/common/errors";
-import { parseLineAndColumnAware } from "vs/base/common/extpath";
-import { LogLevelToString } from "vs/platform/log/common/log";
-import { isUndefined } from "vs/base/common/types";
-import { refineServiceDecorator } from "vs/platform/instantiation/common/instantiation";
-import { ITextEditorOptions } from "vs/platform/editor/common/editor";
 import { EXTENSION_IDENTIFIER_WITH_LOG_REGEX } from "vs/platform/environment/common/environmentService";
+import { refineServiceDecorator } from "vs/platform/instantiation/common/instantiation";
+import { LogLevelToString } from "vs/platform/log/common/log";
+import { IProductService } from "vs/platform/product/common/productService";
+import { IPath } from "vs/platform/window/common/window";
+import { IWorkbenchConstructionOptions } from "vs/workbench/browser/web.api";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
 
 export const IBrowserWorkbenchEnvironmentService = refineServiceDecorator<
 	IEnvironmentService,
@@ -76,7 +76,7 @@ export class BrowserWorkbenchEnvironmentService
 			return logLevelFromPayload
 				.split(",")
 				.find(
-					(entry) => !EXTENSION_IDENTIFIER_WITH_LOG_REGEX.test(entry)
+					(entry) => !EXTENSION_IDENTIFIER_WITH_LOG_REGEX.test(entry),
 				);
 		}
 
@@ -104,14 +104,14 @@ export class BrowserWorkbenchEnvironmentService
 					([extension, logLevel]) => [
 						extension,
 						LogLevelToString(logLevel),
-					]
-				)
+					],
+			  )
 			: undefined;
 	}
 
 	get profDurationMarkers(): string[] | undefined {
 		const profDurationMarkersFromPayload = this.payload?.get(
-			"profDurationMarkers"
+			"profDurationMarkers",
 		);
 		if (profDurationMarkersFromPayload) {
 			const result: string[] = [];
@@ -305,20 +305,20 @@ export class BrowserWorkbenchEnvironmentService
 			"https://{{uuid}}.vscode-cdn.net/{{quality}}/{{commit}}/out/vs/workbench/contrib/webview/browser/pre/";
 
 		const webviewExternalEndpointCommit = this.payload?.get(
-			"webviewExternalEndpointCommit"
+			"webviewExternalEndpointCommit",
 		);
 		return endpoint
 			.replace(
 				"{{commit}}",
 				webviewExternalEndpointCommit ??
 					this.productService.commit ??
-					"ef65ac1ba57f57f2a3961bfe94aa20481caca4c6"
+					"ef65ac1ba57f57f2a3961bfe94aa20481caca4c6",
 			)
 			.replace(
 				"{{quality}}",
 				(webviewExternalEndpointCommit
 					? "insider"
-					: this.productService.quality) ?? "insider"
+					: this.productService.quality) ?? "insider",
 			);
 	}
 
@@ -370,7 +370,7 @@ export class BrowserWorkbenchEnvironmentService
 		private readonly workspaceId: string,
 		readonly logsHome: URI,
 		readonly options: IWorkbenchConstructionOptions,
-		private readonly productService: IProductService
+		private readonly productService: IProductService,
 	) {
 		if (
 			options.workspaceProvider &&
@@ -408,10 +408,9 @@ export class BrowserWorkbenchEnvironmentService
 								[];
 						}
 						extensionHostDebugEnvironment.extensionDevelopmentLocationURI.push(
-							URI.parse(value)
+							URI.parse(value),
 						);
-						extensionHostDebugEnvironment.isExtensionDevelopment =
-							true;
+						extensionHostDebugEnvironment.isExtensionDevelopment = true;
 						break;
 					case "extensionDevelopmentKind":
 						extensionHostDebugEnvironment.extensionDevelopmentKind =
@@ -475,7 +474,7 @@ export class BrowserWorkbenchEnvironmentService
 				// Support: --goto parameter to open on line/col
 				if (this.payload.has("gotoLineMode")) {
 					const pathColumnAware = parseLineAndColumnAware(
-						fileUri.path
+						fileUri.path,
 					);
 
 					return [
@@ -484,14 +483,14 @@ export class BrowserWorkbenchEnvironmentService
 								path: pathColumnAware.path,
 							}),
 							options: {
-								selection: !isUndefined(pathColumnAware.line)
-									? {
+								selection: isUndefined(pathColumnAware.line)
+									? undefined
+									: {
 											startLineNumber:
 												pathColumnAware.line,
 											startColumn:
 												pathColumnAware.column || 1,
-										}
-									: undefined,
+									  },
 							},
 						},
 					];

@@ -15,7 +15,7 @@ export function openContextMenu(
 	targetWindow: Window,
 	event: MouseEvent,
 	clipboardService: IClipboardService,
-	contextMenuService: IContextMenuService
+	contextMenuService: IContextMenuService,
 ): void {
 	const standardEvent = new StandardMouseEvent(targetWindow, event);
 
@@ -28,14 +28,14 @@ export function openContextMenu(
 			localize("undo", "Undo"),
 			undefined,
 			true,
-			async () => getActiveWindow().document.execCommand("undo")
+			async () => getActiveWindow().document.execCommand("undo"),
 		),
 		new Action(
 			"redo",
 			localize("redo", "Redo"),
 			undefined,
 			true,
-			async () => getActiveWindow().document.execCommand("redo")
+			async () => getActiveWindow().document.execCommand("redo"),
 		),
 		new Separator(),
 
@@ -45,14 +45,14 @@ export function openContextMenu(
 			localize("cut", "Cut"),
 			undefined,
 			true,
-			async () => getActiveWindow().document.execCommand("cut")
+			async () => getActiveWindow().document.execCommand("cut"),
 		),
 		new Action(
 			"editor.action.clipboardCopyAction",
 			localize("copy", "Copy"),
 			undefined,
 			true,
-			async () => getActiveWindow().document.execCommand("copy")
+			async () => getActiveWindow().document.execCommand("copy"),
 		),
 		new Action(
 			"editor.action.clipboardPasteAction",
@@ -77,17 +77,17 @@ export function openContextMenu(
 
 						element.value = `${element.value.substring(
 							0,
-							selectionStart
+							selectionStart,
 						)}${clipboardText}${element.value.substring(
 							selectionEnd,
-							element.value.length
+							element.value.length,
 						)}`;
 						element.selectionStart =
 							selectionStart + clipboardText.length;
 						element.selectionEnd = element.selectionStart;
 					}
 				}
-			}
+			},
 		),
 		new Separator(),
 
@@ -97,8 +97,8 @@ export function openContextMenu(
 			localize("selectAll", "Select All"),
 			undefined,
 			true,
-			async () => getActiveWindow().document.execCommand("selectAll")
-		)
+			async () => getActiveWindow().document.execCommand("selectAll"),
+		),
 	);
 
 	contextMenuService.showContextMenu({

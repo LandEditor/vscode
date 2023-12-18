@@ -22,7 +22,7 @@ export interface FormattedTextRenderOptions {
 
 export function renderText(
 	text: string,
-	options: FormattedTextRenderOptions = {}
+	options: FormattedTextRenderOptions = {},
 ): HTMLElement {
 	const element = createElement(options);
 	element.textContent = text;
@@ -31,20 +31,20 @@ export function renderText(
 
 export function renderFormattedText(
 	formattedText: string,
-	options: FormattedTextRenderOptions = {}
+	options: FormattedTextRenderOptions = {},
 ): HTMLElement {
 	const element = createElement(options);
 	_renderFormattedText(
 		element,
 		parseFormattedText(formattedText, !!options.renderCodeSegments),
 		options.actionHandler,
-		options.renderCodeSegments
+		options.renderCodeSegments,
 	);
 	return element;
 }
 
 export function createElement(
-	options: FormattedTextRenderOptions
+	options: FormattedTextRenderOptions,
 ): HTMLElement {
 	const tagName = options.inline ? "span" : "div";
 	const element = document.createElement(tagName);
@@ -82,16 +82,16 @@ class StringStream {
 	}
 }
 
-const enum FormatType {
-	Invalid,
-	Root,
-	Text,
-	Bold,
-	Italics,
-	Action,
-	ActionClose,
-	Code,
-	NewLine,
+enum FormatType {
+	Invalid = 0,
+	Root = 1,
+	Text = 2,
+	Bold = 3,
+	Italics = 4,
+	Action = 5,
+	ActionClose = 6,
+	Code = 7,
+	NewLine = 8,
 }
 
 interface IFormatParseTree {
@@ -105,7 +105,7 @@ function _renderFormattedText(
 	element: Node,
 	treeNode: IFormatParseTree,
 	actionHandler?: IContentActionHandler,
-	renderCodeSegments?: boolean
+	renderCodeSegments?: boolean,
 ) {
 	let child: Node | undefined;
 
@@ -122,7 +122,7 @@ function _renderFormattedText(
 		actionHandler.disposables.add(
 			DOM.addStandardDisposableListener(a, "click", (event) => {
 				actionHandler.callback(String(treeNode.index), event);
-			})
+			}),
 		);
 
 		child = a;
@@ -142,7 +142,7 @@ function _renderFormattedText(
 				child!,
 				nodeChild,
 				actionHandler,
-				renderCodeSegments
+				renderCodeSegments,
 			);
 		});
 	}
@@ -150,7 +150,7 @@ function _renderFormattedText(
 
 function parseFormattedText(
 	content: string,
-	parseCodeSegments: boolean
+	parseCodeSegments: boolean,
 ): IFormatParseTree {
 	const root: IFormatParseTree = {
 		type: FormatType.Root,
@@ -214,18 +214,16 @@ function parseFormattedText(
 			current.children!.push({
 				type: FormatType.NewLine,
 			});
+		} else if (current.type !== FormatType.Text) {
+			const textCurrent: IFormatParseTree = {
+				type: FormatType.Text,
+				content: next,
+			};
+			current.children!.push(textCurrent);
+			stack.push(current);
+			current = textCurrent;
 		} else {
-			if (current.type !== FormatType.Text) {
-				const textCurrent: IFormatParseTree = {
-					type: FormatType.Text,
-					content: next,
-				};
-				current.children!.push(textCurrent);
-				stack.push(current);
-				current = textCurrent;
-			} else {
-				current.content += next;
-			}
+			current.content += next;
 		}
 	}
 

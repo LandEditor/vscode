@@ -3,12 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Emitter, Event } from "vs/base/common/event";
 import {
 	DisposableStore,
-	dispose,
 	IDisposable,
+	dispose,
 } from "vs/base/common/lifecycle";
+import { ResourceMap } from "vs/base/common/map";
+import { Schemas } from "vs/base/common/network";
 import { URI } from "vs/base/common/uri";
+import { IFileService } from "vs/platform/files/common/files";
+import { ILabelService } from "vs/platform/label/common/label";
+import { ILogService } from "vs/platform/log/common/log";
+import {
+	BaseFileWorkingCopyManager,
+	IBaseFileWorkingCopyManager,
+} from "vs/workbench/services/workingCopy/common/abstractFileWorkingCopyManager";
 import {
 	IUntitledFileWorkingCopy,
 	IUntitledFileWorkingCopyInitialContents,
@@ -17,18 +27,8 @@ import {
 	IUntitledFileWorkingCopySaveDelegate,
 	UntitledFileWorkingCopy,
 } from "vs/workbench/services/workingCopy/common/untitledFileWorkingCopy";
-import { Event, Emitter } from "vs/base/common/event";
-import { Schemas } from "vs/base/common/network";
-import { IWorkingCopyService } from "vs/workbench/services/workingCopy/common/workingCopyService";
-import { ILabelService } from "vs/platform/label/common/label";
-import { ILogService } from "vs/platform/log/common/log";
 import { IWorkingCopyBackupService } from "vs/workbench/services/workingCopy/common/workingCopyBackup";
-import { IFileService } from "vs/platform/files/common/files";
-import {
-	BaseFileWorkingCopyManager,
-	IBaseFileWorkingCopyManager,
-} from "vs/workbench/services/workingCopy/common/abstractFileWorkingCopyManager";
-import { ResourceMap } from "vs/base/common/map";
+import { IWorkingCopyService } from "vs/workbench/services/workingCopy/common/workingCopyService";
 
 /**
  * The only one that should be dealing with `IUntitledFileWorkingCopy` and
@@ -54,7 +54,7 @@ export interface IUntitledFileWorkingCopyManager<
 	 * Note: Callers must `dispose` the working copy when no longer needed.
 	 */
 	resolve(
-		options?: INewUntitledFileWorkingCopyOptions
+		options?: INewUntitledFileWorkingCopyOptions,
 	): Promise<IUntitledFileWorkingCopy<M>>;
 
 	/**
@@ -65,7 +65,7 @@ export interface IUntitledFileWorkingCopyManager<
 	 * Note: Callers must `dispose` the working copy when no longer needed.
 	 */
 	resolve(
-		options?: INewUntitledFileWorkingCopyWithAssociatedResourceOptions
+		options?: INewUntitledFileWorkingCopyWithAssociatedResourceOptions,
 	): Promise<IUntitledFileWorkingCopy<M>>;
 
 	/**
@@ -76,7 +76,7 @@ export interface IUntitledFileWorkingCopyManager<
 	 * Note: Callers must `dispose` the working copy when no longer needed.
 	 */
 	resolve(
-		options?: INewOrExistingUntitledFileWorkingCopyOptions
+		options?: INewOrExistingUntitledFileWorkingCopyOptions,
 	): Promise<IUntitledFileWorkingCopy<M>>;
 }
 
@@ -138,12 +138,12 @@ export class UntitledFileWorkingCopyManager<
 	//#region Events
 
 	private readonly _onDidChangeDirty = this._register(
-		new Emitter<IUntitledFileWorkingCopy<M>>()
+		new Emitter<IUntitledFileWorkingCopy<M>>(),
 	);
 	readonly onDidChangeDirty = this._onDidChangeDirty.event;
 
 	private readonly _onWillDispose = this._register(
-		new Emitter<IUntitledFileWorkingCopy<M>>()
+		new Emitter<IUntitledFileWorkingCopy<M>>(),
 	);
 	readonly onWillDispose = this._onWillDispose.event;
 
@@ -170,16 +170,16 @@ export class UntitledFileWorkingCopyManager<
 	//#region Resolve
 
 	resolve(
-		options?: INewUntitledFileWorkingCopyOptions
+		options?: INewUntitledFileWorkingCopyOptions,
 	): Promise<IUntitledFileWorkingCopy<M>>;
 	resolve(
-		options?: INewUntitledFileWorkingCopyWithAssociatedResourceOptions
+		options?: INewUntitledFileWorkingCopyWithAssociatedResourceOptions,
 	): Promise<IUntitledFileWorkingCopy<M>>;
 	resolve(
-		options?: INewOrExistingUntitledFileWorkingCopyOptions
+		options?: INewOrExistingUntitledFileWorkingCopyOptions,
 	): Promise<IUntitledFileWorkingCopy<M>>;
 	async resolve(
-		options?: IInternalUntitledFileWorkingCopyOptions
+		options?: IInternalUntitledFileWorkingCopyOptions,
 	): Promise<IUntitledFileWorkingCopy<M>> {
 		const workingCopy = this.doCreateOrGet(options);
 		await workingCopy.resolve();
@@ -188,14 +188,14 @@ export class UntitledFileWorkingCopyManager<
 	}
 
 	private doCreateOrGet(
-		options: IInternalUntitledFileWorkingCopyOptions = Object.create(null)
+		options: IInternalUntitledFileWorkingCopyOptions = Object.create(null),
 	): IUntitledFileWorkingCopy<M> {
 		const massagedOptions = this.massageOptions(options);
 
 		// Return existing instance if asked for it
 		if (massagedOptions.untitledResource) {
 			const existingWorkingCopy = this.get(
-				massagedOptions.untitledResource
+				massagedOptions.untitledResource,
 			);
 			if (existingWorkingCopy) {
 				return existingWorkingCopy;
@@ -207,7 +207,7 @@ export class UntitledFileWorkingCopyManager<
 	}
 
 	private massageOptions(
-		options: IInternalUntitledFileWorkingCopyOptions
+		options: IInternalUntitledFileWorkingCopyOptions,
 	): IInternalUntitledFileWorkingCopyOptions {
 		const massagedOptions: IInternalUntitledFileWorkingCopyOptions =
 			Object.create(null);
@@ -239,7 +239,7 @@ export class UntitledFileWorkingCopyManager<
 	}
 
 	private doCreate(
-		options: IInternalUntitledFileWorkingCopyOptions
+		options: IInternalUntitledFileWorkingCopyOptions,
 	): IUntitledFileWorkingCopy<M> {
 		// Create a new untitled resource if none is provided
 		let untitledResource = options.untitledResource;
@@ -271,7 +271,7 @@ export class UntitledFileWorkingCopyManager<
 			this.saveDelegate,
 			this.workingCopyService,
 			this.workingCopyBackupService,
-			this.logService
+			this.logService,
 		);
 
 		// Register
@@ -281,25 +281,25 @@ export class UntitledFileWorkingCopyManager<
 	}
 
 	private registerWorkingCopy(
-		workingCopy: IUntitledFileWorkingCopy<M>
+		workingCopy: IUntitledFileWorkingCopy<M>,
 	): void {
 		// Install working copy listeners
 		const workingCopyListeners = new DisposableStore();
 		workingCopyListeners.add(
 			workingCopy.onDidChangeDirty(() =>
-				this._onDidChangeDirty.fire(workingCopy)
-			)
+				this._onDidChangeDirty.fire(workingCopy),
+			),
 		);
 		workingCopyListeners.add(
 			workingCopy.onWillDispose(() =>
-				this._onWillDispose.fire(workingCopy)
-			)
+				this._onWillDispose.fire(workingCopy),
+			),
 		);
 
 		// Keep for disposal
 		this.mapResourceToWorkingCopyListeners.set(
 			workingCopy.resource,
-			workingCopyListeners
+			workingCopyListeners,
 		);
 
 		// Add to cache

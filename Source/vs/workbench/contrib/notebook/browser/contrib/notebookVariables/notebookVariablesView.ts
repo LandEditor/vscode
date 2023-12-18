@@ -25,9 +25,9 @@ import {
 } from "vs/workbench/browser/parts/views/viewPane";
 import { IViewDescriptorService } from "vs/workbench/common/views";
 import {
+	INotebookVariableElement,
 	NotebookVariableAccessibilityProvider,
 	NotebookVariableRenderer,
-	INotebookVariableElement,
 	NotebookVariablesDelegate,
 } from "vs/workbench/contrib/notebook/browser/contrib/notebookVariables/notebookVariablesTree";
 import { getNotebookEditorFromEditorPane } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
@@ -47,7 +47,7 @@ export class NotebookVariablesView extends ViewPane {
 	static readonly ID = "notebookVariablesView";
 	static readonly TITLE: ILocalizedString = nls.localize2(
 		"notebook.notebookVariables",
-		"Notebook Variables"
+		"Notebook Variables",
 	);
 
 	private tree: WorkbenchObjectTree<INotebookVariableElement> | undefined;
@@ -122,7 +122,7 @@ export class NotebookVariablesView extends ViewPane {
 					accessibilityProvider:
 						new NotebookVariableAccessibilityProvider(),
 					setRowLineHeight: false,
-				}
+				},
 			)
 		);
 
@@ -143,7 +143,7 @@ export class NotebookVariablesView extends ViewPane {
 		) {
 			const notebookDocument =
 				getNotebookEditorFromEditorPane(
-					activeEditorPane
+					activeEditorPane,
 				)?.getViewModel()?.notebookDocument;
 			if (notebookDocument && notebookDocument !== this.activeNotebook) {
 				this.activeNotebook = notebookDocument;
@@ -153,7 +153,7 @@ export class NotebookVariablesView extends ViewPane {
 	}
 
 	private handleExecutionStateChange(
-		event: ICellExecutionStateChangedEvent | IExecutionStateChangedEvent
+		event: ICellExecutionStateChangedEvent | IExecutionStateChangedEvent,
 	) {
 		if (this.activeNotebook) {
 			// changed === undefined -> excecution ended
@@ -184,7 +184,7 @@ export class NotebookVariablesView extends ViewPane {
 				undefined,
 				"named",
 				0,
-				CancellationToken.None
+				CancellationToken.None,
 			);
 			const treeData = await variables
 				.map((variable) => {
@@ -199,7 +199,7 @@ export class NotebookVariablesView extends ViewPane {
 	private index = 0;
 
 	private createTreeItem(
-		variable: VariablesResult
+		variable: VariablesResult,
 	): IObjectTreeElement<INotebookVariableElement> {
 		let collapsed: boolean | undefined = undefined;
 		let children:

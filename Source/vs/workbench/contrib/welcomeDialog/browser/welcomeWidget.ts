@@ -3,39 +3,38 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/welcomeWidget";
+import { $, append, hide } from "vs/base/browser/dom";
+import { renderFormattedText } from "vs/base/browser/formattedTextRenderer";
+import { ActionBar } from "vs/base/browser/ui/actionbar/actionbar";
+import { ButtonBar } from "vs/base/browser/ui/button/button";
+import { renderLabelWithIcons } from "vs/base/browser/ui/iconLabel/iconLabels";
+import {
+	Action,
+	WorkbenchActionExecutedClassification,
+	WorkbenchActionExecutedEvent,
+} from "vs/base/common/actions";
+import { Codicon } from "vs/base/common/codicons";
+import { Color } from "vs/base/common/color";
+import { MarkdownString } from "vs/base/common/htmlContent";
+import { mnemonicButtonLabel } from "vs/base/common/labels";
 import { Disposable } from "vs/base/common/lifecycle";
+import { LinkedText, parseLinkedText } from "vs/base/common/linkedText";
+import { ThemeIcon } from "vs/base/common/themables";
+import "vs/css!./media/welcomeWidget";
 import {
 	ICodeEditor,
 	IOverlayWidget,
 	IOverlayWidgetPosition,
 	OverlayWidgetPositionPreference,
 } from "vs/editor/browser/editorBrowser";
-import { $, append, hide } from "vs/base/browser/dom";
-import { MarkdownString } from "vs/base/common/htmlContent";
 import { MarkdownRenderer } from "vs/editor/contrib/markdownRenderer/browser/markdownRenderer";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { ButtonBar } from "vs/base/browser/ui/button/button";
-import { mnemonicButtonLabel } from "vs/base/common/labels";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import { defaultButtonStyles } from "vs/platform/theme/browser/defaultStyles";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import {
-	Action,
-	WorkbenchActionExecutedClassification,
-	WorkbenchActionExecutedEvent,
-} from "vs/base/common/actions";
-import { ActionBar } from "vs/base/browser/ui/actionbar/actionbar";
 import { localize } from "vs/nls";
-import { ThemeIcon } from "vs/base/common/themables";
-import { Codicon } from "vs/base/common/codicons";
-import { LinkedText, parseLinkedText } from "vs/base/common/linkedText";
+import { ICommandService } from "vs/platform/commands/common/commands";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { Link } from "vs/platform/opener/browser/link";
-import { renderLabelWithIcons } from "vs/base/browser/ui/iconLabel/iconLabels";
-import { renderFormattedText } from "vs/base/browser/formattedTextRenderer";
 import { IOpenerService } from "vs/platform/opener/common/opener";
-import { registerThemingParticipant } from "vs/platform/theme/common/themeService";
-import { Color } from "vs/base/common/color";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { defaultButtonStyles } from "vs/platform/theme/browser/defaultStyles";
 import {
 	contrastBorder,
 	editorWidgetBackground,
@@ -43,6 +42,7 @@ import {
 	widgetBorder,
 	widgetShadow,
 } from "vs/platform/theme/common/colorRegistry";
+import { registerThemingParticipant } from "vs/platform/theme/common/themeService";
 
 export class WelcomeWidget extends Disposable implements IOverlayWidget {
 	private readonly _rootDomNode: HTMLElement;
@@ -56,7 +56,7 @@ export class WelcomeWidget extends Disposable implements IOverlayWidget {
 		private readonly instantiationService: IInstantiationService,
 		private readonly commandService: ICommandService,
 		private readonly telemetryService: ITelemetryService,
-		private readonly openerService: IOpenerService
+		private readonly openerService: IOpenerService,
 	) {
 		super();
 		this._rootDomNode = document.createElement("div");
@@ -68,7 +68,7 @@ export class WelcomeWidget extends Disposable implements IOverlayWidget {
 		hide(this._rootDomNode);
 
 		this.messageContainer = this.element.appendChild(
-			$(".dialog-message-container")
+			$(".dialog-message-container"),
 		);
 	}
 
@@ -89,7 +89,7 @@ export class WelcomeWidget extends Disposable implements IOverlayWidget {
 		title: string,
 		message: string,
 		buttonText: string,
-		buttonAction: string
+		buttonAction: string,
 	) {
 		if (!this._editor._getViewModel()) {
 			return;
@@ -111,7 +111,7 @@ export class WelcomeWidget extends Disposable implements IOverlayWidget {
 		title: string,
 		message: string,
 		buttonText: string,
-		buttonAction: string
+		buttonAction: string,
 	) {
 		const actionBar = this._register(new ActionBar(this.element, {}));
 
@@ -123,8 +123,8 @@ export class WelcomeWidget extends Disposable implements IOverlayWidget {
 				true,
 				async () => {
 					this._hide();
-				}
-			)
+				},
+			),
 		);
 		actionBar.push(action, { icon: true, label: false });
 
@@ -139,10 +139,10 @@ export class WelcomeWidget extends Disposable implements IOverlayWidget {
 		};
 
 		const titleElement = this.messageContainer.appendChild(
-			$("#monaco-dialog-message-detail.dialog-message-detail-title")
+			$("#monaco-dialog-message-detail.dialog-message-detail-title"),
 		);
 		const titleElementMdt = this.markdownRenderer.render(
-			renderBody(title, "zap")
+			renderBody(title, "zap"),
 		);
 		titleElement.appendChild(titleElementMdt.element);
 
@@ -151,14 +151,14 @@ export class WelcomeWidget extends Disposable implements IOverlayWidget {
 			message
 				.split("\n")
 				.filter((x) => x)
-				.map((text) => parseLinkedText(text))
+				.map((text) => parseLinkedText(text)),
 		);
 
 		const buttonsRowElement = this.messageContainer.appendChild(
-			$(".dialog-buttons-row")
+			$(".dialog-buttons-row"),
 		);
 		const buttonContainer = buttonsRowElement.appendChild(
-			$(".dialog-buttons")
+			$(".dialog-buttons"),
 		);
 
 		const buttonBar = this._register(new ButtonBar(buttonContainer));
@@ -167,14 +167,14 @@ export class WelcomeWidget extends Disposable implements IOverlayWidget {
 				title: true,
 				secondary: false,
 				...defaultButtonStyles,
-			})
+			}),
 		);
 		primaryButton.label = mnemonicButtonLabel(buttonText, true);
 
 		this._register(
 			primaryButton.onDidClick(async () => {
 				await this.executeCommand(buttonAction);
-			})
+			}),
 		);
 
 		buttonBar.buttons[0].focus();
@@ -182,7 +182,7 @@ export class WelcomeWidget extends Disposable implements IOverlayWidget {
 
 	private buildStepMarkdownDescription(
 		container: HTMLElement,
-		text: LinkedText[]
+		text: LinkedText[],
 	) {
 		for (const linkedText of text) {
 			const p = append(container, $("p"));
@@ -195,7 +195,7 @@ export class WelcomeWidget extends Disposable implements IOverlayWidget {
 								renderFormattedText(element, {
 									inline: true,
 									renderCodeSegments: true,
-								})
+								}),
 							);
 						} else {
 							p.appendChild(element);
@@ -219,7 +219,7 @@ export class WelcomeWidget extends Disposable implements IOverlayWidget {
 									allowCommands: true,
 								});
 							},
-						}
+						},
 					);
 					this._register(link);
 				}
@@ -242,7 +242,7 @@ export class WelcomeWidget extends Disposable implements IOverlayWidget {
 		};
 	}
 
-	private _isVisible: boolean = false;
+	private _isVisible = false;
 
 	private _show(): void {
 		if (this._isVisible) {
@@ -273,11 +273,11 @@ export class WelcomeWidget extends Disposable implements IOverlayWidget {
 registerThemingParticipant((theme, collector) => {
 	const addBackgroundColorRule = (
 		selector: string,
-		color: Color | undefined
+		color: Color | undefined,
 	): void => {
 		if (color) {
 			collector.addRule(
-				`.monaco-editor ${selector} { background-color: ${color}; }`
+				`.monaco-editor ${selector} { background-color: ${color}; }`,
 			);
 		}
 	};
@@ -288,14 +288,14 @@ registerThemingParticipant((theme, collector) => {
 	const widgetShadowColor = theme.getColor(widgetShadow);
 	if (widgetShadowColor) {
 		collector.addRule(
-			`.welcome-widget { box-shadow: 0 0 8px 2px ${widgetShadowColor}; }`
+			`.welcome-widget { box-shadow: 0 0 8px 2px ${widgetShadowColor}; }`,
 		);
 	}
 
 	const widgetBorderColor = theme.getColor(widgetBorder);
 	if (widgetBorderColor) {
 		collector.addRule(
-			`.welcome-widget { border-left: 1px solid ${widgetBorderColor}; border-right: 1px solid ${widgetBorderColor}; border-bottom: 1px solid ${widgetBorderColor}; }`
+			`.welcome-widget { border-left: 1px solid ${widgetBorderColor}; border-right: 1px solid ${widgetBorderColor}; border-bottom: 1px solid ${widgetBorderColor}; }`,
 		);
 	}
 

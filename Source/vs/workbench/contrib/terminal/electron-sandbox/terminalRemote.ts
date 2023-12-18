@@ -18,28 +18,28 @@ export function registerRemoteContributions() {
 		title: {
 			value: localize(
 				"workbench.action.terminal.newLocal",
-				"Create New Integrated Terminal (Local)"
+				"Create New Integrated Terminal (Local)",
 			),
 			original: "Create New Integrated Terminal (Local)",
 		},
 		run: async (c, accessor) => {
 			const historyService = accessor.get(IHistoryService);
 			const remoteAuthorityResolverService = accessor.get(
-				IRemoteAuthorityResolverService
+				IRemoteAuthorityResolverService,
 			);
 			const nativeEnvironmentService = accessor.get(
-				INativeEnvironmentService
+				INativeEnvironmentService,
 			);
 			let cwd: URI | undefined;
 			try {
 				const activeWorkspaceRootUri =
 					historyService.getLastActiveWorkspaceRoot(
-						Schemas.vscodeRemote
+						Schemas.vscodeRemote,
 					);
 				if (activeWorkspaceRootUri) {
 					const canonicalUri =
 						await remoteAuthorityResolverService.getCanonicalURI(
-							activeWorkspaceRootUri
+							activeWorkspaceRootUri,
 						);
 					if (canonicalUri.scheme === Schemas.file) {
 						cwd = canonicalUri;

@@ -82,7 +82,7 @@ export class NotebookKernelHistoryService
 				: undefined;
 		this._notebookLoggingService.debug(
 			"History",
-			`getMatchingKernels: ${allAvailableKernels.all.length} kernels available for ${notebook.uri.path}. Selected: ${allAvailableKernels.selected?.label}. Suggested: ${suggested?.label}`
+			`getMatchingKernels: ${allAvailableKernels.all.length} kernels available for ${notebook.uri.path}. Selected: ${allAvailableKernels.selected?.label}. Suggested: ${suggested?.label}`,
 		);
 		const mostRecentKernelIds = this._mostRecentKernelsMap[
 			notebook.viewType
@@ -91,12 +91,12 @@ export class NotebookKernelHistoryService
 			: [];
 		const all = mostRecentKernelIds
 			.map((kernelId) =>
-				allKernels.find((kernel) => kernel.id === kernelId)
+				allKernels.find((kernel) => kernel.id === kernelId),
 			)
 			.filter((kernel) => !!kernel) as INotebookKernel[];
 		this._notebookLoggingService.debug(
 			"History",
-			`mru: ${mostRecentKernelIds.length} kernels in history, ${all.length} registered already.`
+			`mru: ${mostRecentKernelIds.length} kernels in history, ${all.length} registered already.`,
 		);
 
 		return {
@@ -117,7 +117,7 @@ export class NotebookKernelHistoryService
 		if (recentKeynels.size > MAX_KERNELS_IN_HISTORY) {
 			const reserved = [...recentKeynels.entries()].slice(
 				0,
-				MAX_KERNELS_IN_HISTORY
+				MAX_KERNELS_IN_HISTORY,
 			);
 			recentKeynels.fromJSON(reserved);
 		}
@@ -137,12 +137,12 @@ export class NotebookKernelHistoryService
 				NotebookKernelHistoryService.STORAGE_KEY,
 				JSON.stringify(serialized),
 				StorageScope.WORKSPACE,
-				StorageTarget.USER
+				StorageTarget.USER,
 			);
 		} else {
 			this._storageService.remove(
 				NotebookKernelHistoryService.STORAGE_KEY,
-				StorageScope.WORKSPACE
+				StorageScope.WORKSPACE,
 			);
 		}
 	}
@@ -150,7 +150,7 @@ export class NotebookKernelHistoryService
 	private _loadState(): void {
 		const serialized = this._storageService.get(
 			NotebookKernelHistoryService.STORAGE_KEY,
-			StorageScope.WORKSPACE
+			StorageScope.WORKSPACE,
 		);
 		if (serialized) {
 			try {
@@ -167,7 +167,7 @@ export class NotebookKernelHistoryService
 		const result: ISerializedKernelsList = Object.create(null);
 
 		for (const [viewType, kernels] of Object.entries(
-			this._mostRecentKernelsMap
+			this._mostRecentKernelsMap,
 		)) {
 			result[viewType] = {
 				entries: [...kernels.values()],
@@ -206,7 +206,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"workbench.notebook.clearNotebookKernelsMRUCache",
-						"Clear Notebook Kernels MRU Cache"
+						"Clear Notebook Kernels MRU Cache",
 					),
 					original: "Clear Notebook Kernels MRU Cache",
 				},
@@ -217,9 +217,9 @@ registerAction2(
 
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const historyService = accessor.get(
-				INotebookKernelHistoryService
+				INotebookKernelHistoryService,
 			) as NotebookKernelHistoryService;
 			historyService._clear();
 		}
-	}
+	},
 );

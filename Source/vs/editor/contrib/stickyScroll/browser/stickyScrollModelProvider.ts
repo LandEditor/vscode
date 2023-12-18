@@ -3,38 +3,38 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import {
+	CancelablePromise,
+	Delayer,
+	createCancelablePromise,
+} from "vs/base/common/async";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { onUnexpectedError } from "vs/base/common/errors";
+import { Iterable } from "vs/base/common/iterator";
 import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
 import { ICodeEditor } from "vs/editor/browser/editorBrowser";
+import { LanguageFeatureRegistry } from "vs/editor/common/languageFeatureRegistry";
+import { ILanguageConfigurationService } from "vs/editor/common/languages/languageConfigurationRegistry";
+import { ITextModel } from "vs/editor/common/model";
+import { TextModel } from "vs/editor/common/model/textModel";
 import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
 import {
 	OutlineElement,
 	OutlineGroup,
 	OutlineModel,
 } from "vs/editor/contrib/documentSymbols/browser/outlineModel";
-import { CancellationToken } from "vs/base/common/cancellation";
-import {
-	CancelablePromise,
-	createCancelablePromise,
-	Delayer,
-} from "vs/base/common/async";
 import {
 	FoldingController,
 	RangesLimitReporter,
 } from "vs/editor/contrib/folding/browser/folding";
-import { ITextModel } from "vs/editor/common/model";
-import { SyntaxRangeProvider } from "vs/editor/contrib/folding/browser/syntaxRangeProvider";
-import { IndentRangeProvider } from "vs/editor/contrib/folding/browser/indentRangeProvider";
-import { ILanguageConfigurationService } from "vs/editor/common/languages/languageConfigurationRegistry";
 import { FoldingRegions } from "vs/editor/contrib/folding/browser/foldingRanges";
-import { onUnexpectedError } from "vs/base/common/errors";
-import { TextModel } from "vs/editor/common/model/textModel";
+import { IndentRangeProvider } from "vs/editor/contrib/folding/browser/indentRangeProvider";
+import { SyntaxRangeProvider } from "vs/editor/contrib/folding/browser/syntaxRangeProvider";
 import {
 	StickyElement,
 	StickyModel,
 	StickyRange,
 } from "vs/editor/contrib/stickyScroll/browser/stickyScrollElement";
-import { Iterable } from "vs/base/common/iterator";
-import { LanguageFeatureRegistry } from "vs/editor/common/languageFeatureRegistry";
 
 enum ModelProvider {
 	OUTLINE_MODEL = "outlineModel",
@@ -43,9 +43,9 @@ enum ModelProvider {
 }
 
 enum Status {
-	VALID,
-	INVALID,
-	CANCELED,
+	VALID = 0,
+	INVALID = 1,
+	CANCELED = 2,
 }
 
 export interface IStickyModelProvider {
@@ -59,7 +59,7 @@ export interface IStickyModelProvider {
 	update(
 		textModel: ITextModel,
 		textModelVersionId: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<StickyModel | null>;
 }
 
@@ -70,10 +70,10 @@ export class StickyModelProvider
 	private _modelProviders: IStickyModelCandidateProvider<any>[] = [];
 	private _modelPromise: CancelablePromise<any | null> | null = null;
 	private _updateScheduler: Delayer<StickyModel | null> = this._register(
-		new Delayer<StickyModel | null>(300)
+		new Delayer<StickyModel | null>(300),
 	);
 	private readonly _updateOperation: DisposableStore = this._register(
-		new DisposableStore()
+		new DisposableStore(),
 	);
 
 	constructor(
@@ -135,7 +135,7 @@ export class StickyModelProvider
 	public async update(
 		textModel: ITextModel,
 		textModelVersionId: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<StickyModel | null> {
 		this._updateOperation.clear();
 		this._updateOperation.add({
@@ -153,7 +153,7 @@ export class StickyModelProvider
 						modelProvider.computeStickyModel(
 							textModel,
 							textModelVersionId,
-							token
+							token,
 						);
 					this._modelPromise = modelPromise;
 					const status = await statusPromise;
@@ -192,7 +192,7 @@ interface IStickyModelCandidateProvider<T> {
 	computeStickyModel(
 		textmodel: ITextModel,
 		modelVersionId: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): {
 		statusPromise: Promise<Status> | Status;
 		modelPromise: CancelablePromise<T | null> | null;
@@ -220,7 +220,7 @@ abstract class StickyModelCandidateProvider<T>
 	public computeStickyModel(
 		textModel: ITextModel,
 		modelVersionId: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): {
 		statusPromise: Promise<Status> | Status;
 		modelPromise: CancelablePromise<T | null> | null;
@@ -229,7 +229,7 @@ abstract class StickyModelCandidateProvider<T>
 			return { statusPromise: this._invalid(), modelPromise: null };
 		}
 		const providerModelPromise = createCancelablePromise((token) =>
-			this.createModelFromProvider(textModel, modelVersionId, token)
+			this.createModelFromProvider(textModel, modelVersionId, token),
 		);
 
 		return {
@@ -245,7 +245,7 @@ abstract class StickyModelCandidateProvider<T>
 						textModel,
 						modelVersionId,
 						token,
-						providerModel
+						providerModel,
 					);
 					return Status.VALID;
 				})
@@ -287,7 +287,7 @@ abstract class StickyModelCandidateProvider<T>
 	protected abstract createModelFromProvider(
 		textModel: ITextModel,
 		textModelVersionId: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<T>;
 
 	/**
@@ -302,7 +302,7 @@ abstract class StickyModelCandidateProvider<T>
 		textModel: ITextModel,
 		textModelVersionId: number,
 		token: CancellationToken,
-		model: T
+		model: T,
 	): StickyModel;
 }
 
@@ -321,12 +321,12 @@ class StickyModelFromCandidateOutlineProvider extends StickyModelCandidateProvid
 	protected createModelFromProvider(
 		textModel: ITextModel,
 		modelVersionId: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<OutlineModel> {
 		return OutlineModel.create(
 			this._languageFeaturesService.documentSymbolProvider,
 			textModel,
-			token
+			token,
 		);
 	}
 
@@ -334,18 +334,18 @@ class StickyModelFromCandidateOutlineProvider extends StickyModelCandidateProvid
 		textModel: TextModel,
 		modelVersionId: number,
 		token: CancellationToken,
-		model: OutlineModel
+		model: OutlineModel,
 	): StickyModel {
 		const { stickyOutlineElement, providerID } =
 			this._stickyModelFromOutlineModel(
 				model,
-				this._stickyModel?.outlineProviderId
+				this._stickyModel?.outlineProviderId,
 			);
 		return new StickyModel(
 			textModel.uri,
 			modelVersionId,
 			stickyOutlineElement,
-			providerID
+			providerID,
 		);
 	}
 
@@ -355,7 +355,7 @@ class StickyModelFromCandidateOutlineProvider extends StickyModelCandidateProvid
 
 	private _stickyModelFromOutlineModel(
 		outlineModel: OutlineModel,
-		preferredProvider: string | undefined
+		preferredProvider: string | undefined,
 	): { stickyOutlineElement: StickyElement; providerID: string | undefined } {
 		let outlineElements: Map<string, OutlineElement>;
 		// When several possible outline providers
@@ -366,7 +366,7 @@ class StickyModelFromCandidateOutlineProvider extends StickyModelCandidateProvid
 			const provider = Iterable.find(
 				outlineModel.children.values(),
 				(outlineGroupOfModel) =>
-					outlineGroupOfModel.id === preferredProvider
+					outlineGroupOfModel.id === preferredProvider,
 			);
 			if (provider) {
 				outlineElements = provider.children;
@@ -400,27 +400,27 @@ class StickyModelFromCandidateOutlineProvider extends StickyModelCandidateProvid
 			(element1, element2) => {
 				const range1: StickyRange = new StickyRange(
 					element1.symbol.range.startLineNumber,
-					element1.symbol.range.endLineNumber
+					element1.symbol.range.endLineNumber,
 				);
 				const range2: StickyRange = new StickyRange(
 					element2.symbol.range.startLineNumber,
-					element2.symbol.range.endLineNumber
+					element2.symbol.range.endLineNumber,
 				);
 				return this._comparator(range1, range2);
-			}
+			},
 		);
 		for (const outlineElement of outlineElementsArray) {
 			stickyChildren.push(
 				this._stickyModelFromOutlineElement(
 					outlineElement,
-					outlineElement.symbol.selectionRange.startLineNumber
-				)
+					outlineElement.symbol.selectionRange.startLineNumber,
+				),
 			);
 		}
 		const stickyOutlineElement = new StickyElement(
 			undefined,
 			stickyChildren,
-			undefined
+			undefined,
 		);
 
 		return {
@@ -431,7 +431,7 @@ class StickyModelFromCandidateOutlineProvider extends StickyModelCandidateProvid
 
 	private _stickyModelFromOutlineElement(
 		outlineElement: OutlineElement,
-		previousStartLine: number
+		previousStartLine: number,
 	): StickyElement {
 		const children: StickyElement[] = [];
 		for (const child of outlineElement.children.values()) {
@@ -446,27 +446,27 @@ class StickyModelFromCandidateOutlineProvider extends StickyModelCandidateProvid
 					children.push(
 						this._stickyModelFromOutlineElement(
 							child,
-							child.symbol.selectionRange.startLineNumber
-						)
+							child.symbol.selectionRange.startLineNumber,
+						),
 					);
 				} else {
 					for (const subchild of child.children.values()) {
 						children.push(
 							this._stickyModelFromOutlineElement(
 								subchild,
-								child.symbol.selectionRange.startLineNumber
-							)
+								child.symbol.selectionRange.startLineNumber,
+							),
 						);
 					}
 				}
 			}
 		}
 		children.sort((child1, child2) =>
-			this._comparator(child1.range!, child2.range!)
+			this._comparator(child1.range!, child2.range!),
 		);
 		const range = new StickyRange(
 			outlineElement.symbol.selectionRange.startLineNumber,
-			outlineElement.symbol.range.endLineNumber
+			outlineElement.symbol.range.endLineNumber,
 		);
 		return new StickyElement(range, children, undefined);
 	}
@@ -480,7 +480,7 @@ class StickyModelFromCandidateOutlineProvider extends StickyModelCandidateProvid
 	}
 
 	private _findSumOfRangesOfGroup(
-		outline: OutlineGroup | OutlineElement
+		outline: OutlineGroup | OutlineElement,
 	): number {
 		let res = 0;
 		for (const child of outline.children.values()) {
@@ -510,14 +510,14 @@ abstract class StickyModelFromCandidateFoldingProvider extends StickyModelCandid
 		textModel: ITextModel,
 		modelVersionId: number,
 		token: CancellationToken,
-		model: FoldingRegions
+		model: FoldingRegions,
 	): StickyModel {
 		const foldingElement = this._fromFoldingRegions(model);
 		return new StickyModel(
 			textModel.uri,
 			modelVersionId,
 			foldingElement,
-			undefined
+			undefined,
 		);
 	}
 
@@ -533,7 +533,7 @@ abstract class StickyModelFromCandidateFoldingProvider extends StickyModelCandid
 		const stickyOutlineElement = new StickyElement(
 			undefined,
 			[],
-			undefined
+			undefined,
 		);
 
 		for (let i = 0; i < length; i++) {
@@ -552,10 +552,10 @@ abstract class StickyModelFromCandidateFoldingProvider extends StickyModelCandid
 			const child = new StickyElement(
 				new StickyRange(
 					foldingRegions.getStartLineNumber(i),
-					foldingRegions.getEndLineNumber(i) + 1
+					foldingRegions.getEndLineNumber(i) + 1,
 				),
 				[],
-				parentNode
+				parentNode,
 			);
 			parentNode.children.push(child);
 			orderedStickyElements.push(child);
@@ -580,12 +580,12 @@ class StickyModelFromCandidateIndentationFoldingProvider extends StickyModelFrom
 	protected createModelFromProvider(
 		textModel: TextModel,
 		modelVersionId: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<FoldingRegions> {
 		const provider = new IndentRangeProvider(
 			textModel,
 			this._languageConfigurationService,
-			this._foldingLimitReporter
+			this._foldingLimitReporter,
 		);
 		return provider.compute(token);
 	}
@@ -607,7 +607,7 @@ class StickyModelFromCandidateSyntaxFoldingProvider extends StickyModelFromCandi
 	protected override isProviderValid(textModel: TextModel): boolean {
 		const selectedProviders = FoldingController.getFoldingRangeProviders(
 			this._languageFeaturesService,
-			textModel
+			textModel,
 		);
 		return selectedProviders.length > 0;
 	}
@@ -615,11 +615,11 @@ class StickyModelFromCandidateSyntaxFoldingProvider extends StickyModelFromCandi
 	protected createModelFromProvider(
 		textModel: TextModel,
 		modelVersionId: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<FoldingRegions | null> {
 		const selectedProviders = FoldingController.getFoldingRangeProviders(
 			this._languageFeaturesService,
-			textModel
+			textModel,
 		);
 		const provider = new SyntaxRangeProvider(
 			textModel,
@@ -627,7 +627,7 @@ class StickyModelFromCandidateSyntaxFoldingProvider extends StickyModelFromCandi
 			() =>
 				this.createModelFromProvider(textModel, modelVersionId, token),
 			this._foldingLimitReporter,
-			undefined
+			undefined,
 		);
 		return provider.compute(token);
 	}

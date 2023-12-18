@@ -3,16 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./scrollDecoration";
 import { FastDomNode, createFastDomNode } from "vs/base/browser/fastDomNode";
-import { ViewPart } from "vs/editor/browser/view/viewPart";
+import "vs/css!./scrollDecoration";
 import {
 	RenderingContext,
 	RestrictedRenderingContext,
 } from "vs/editor/browser/view/renderingContext";
-import { ViewContext } from "vs/editor/common/viewModel/viewContext";
-import * as viewEvents from "vs/editor/common/viewEvents";
+import { ViewPart } from "vs/editor/browser/view/viewPart";
 import { EditorOption } from "vs/editor/common/config/editorOptions";
+import * as viewEvents from "vs/editor/common/viewEvents";
+import { ViewContext } from "vs/editor/common/viewModel/viewContext";
 
 export class ScrollDecorationViewPart extends ViewPart {
 	private readonly _domNode: FastDomNode<HTMLElement>;
@@ -71,7 +71,7 @@ export class ScrollDecorationViewPart extends ViewPart {
 	// --- begin event handlers
 
 	public override onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent
+		e: viewEvents.ViewConfigurationChangedEvent,
 	): boolean {
 		const options = this._context.configuration.options;
 		const scrollbar = options.get(EditorOption.scrollbar);
@@ -81,7 +81,7 @@ export class ScrollDecorationViewPart extends ViewPart {
 		return true;
 	}
 	public override onScrollChanged(
-		e: viewEvents.ViewScrollChangedEvent
+		e: viewEvents.ViewScrollChangedEvent,
 	): boolean {
 		this._scrollTop = e.scrollTop;
 		return this._updateShouldShow();

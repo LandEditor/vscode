@@ -1,4 +1,3 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -61,7 +60,7 @@ function createAsar(folderPath, unpackGlobs, destFilename) {
 			.insertFile(relativePath, shouldUnpack, { stat: stat }, {})
 			.then(
 				() => onFileInserted(),
-				() => onFileInserted()
+				() => onFileInserted(),
 			);
 	};
 	return es.through(
@@ -76,7 +75,7 @@ function createAsar(folderPath, unpackGlobs, destFilename) {
 			insertFile(
 				file.relative,
 				{ size: file.contents.length, mode: file.stat.mode },
-				shouldUnpack
+				shouldUnpack,
 			);
 			if (shouldUnpack) {
 				// The file goes outside of xx.asar, in a folder xx.asar.unpacked
@@ -87,7 +86,7 @@ function createAsar(folderPath, unpackGlobs, destFilename) {
 						path: path.join(destFilename + ".unpacked", relative),
 						stat: file.stat,
 						contents: file.contents,
-					})
+					}),
 				);
 			} else {
 				// The file goes inside of xx.asar
@@ -113,7 +112,7 @@ function createAsar(folderPath, unpackGlobs, destFilename) {
 						base: ".",
 						path: destFilename,
 						contents: contents,
-					})
+					}),
 				);
 				this.queue(null);
 			};
@@ -128,7 +127,7 @@ function createAsar(folderPath, unpackGlobs, destFilename) {
 					}
 				};
 			}
-		}
+		},
 	);
 }
 exports.createAsar = createAsar;

@@ -20,7 +20,7 @@ import type * as rendererApi from "vscode-notebook-renderer";
 // function. Imports are not allowed. This is stringified and injected into
 // the webview.
 
-declare module globalThis {
+declare namespace globalThis {
 	const acquireVsCodeApi: () => {
 		getState(): { [key: string]: unknown };
 		setState(data: { [key: string]: unknown }): void;
@@ -31,8 +31,8 @@ declare module globalThis {
 declare class ResizeObserver {
 	constructor(
 		onChange: (
-			entries: { target: HTMLElement; contentRect?: ClientRect }[]
-		) => void
+			entries: { target: HTMLElement; contentRect?: ClientRect }[],
+		) => void,
 	);
 	observe(element: Element): void;
 	disconnect(): void;
@@ -88,7 +88,7 @@ interface PreloadContext {
 
 declare function requestIdleCallback(
 	callback: (args: IdleDeadline) => void,
-	options?: { timeout: number }
+	options?: { timeout: number },
 ): number;
 declare function cancelIdleCallback(handle: number): void;
 
@@ -115,7 +115,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 
 	const runWhenIdle: (
 		callback: (idle: IdleDeadline) => void,
-		timeout?: number
+		timeout?: number,
 	) => IDisposable =
 		typeof requestIdleCallback !== "function" ||
 		typeof cancelIdleCallback !== "function"
@@ -131,7 +131,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 								timeRemaining() {
 									return Math.max(0, end - Date.now());
 								},
-							})
+							}),
 						);
 					});
 					let disposed = false;
@@ -143,11 +143,11 @@ async function webviewPreloads(ctx: PreloadContext) {
 							disposed = true;
 						},
 					};
-				}
+			  }
 			: (runner, timeout?) => {
 					const handle: number = requestIdleCallback(
 						runner,
-						typeof timeout === "number" ? { timeout } : undefined
+						typeof timeout === "number" ? { timeout } : undefined,
 					);
 					let disposed = false;
 					return {
@@ -159,7 +159,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 							cancelIdleCallback(handle);
 						},
 					};
-				};
+			  };
 
 	// check if an input element is focused within the output element
 	const checkOutputInputFocus = () => {
@@ -174,7 +174,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 		) {
 			postNotebookMessage<webviewMessages.IOutputInputFocusMessage>(
 				"outputInputFocus",
-				{ inputFocused: true }
+				{ inputFocused: true },
 			);
 
 			activeElement.addEventListener(
@@ -182,10 +182,10 @@ async function webviewPreloads(ctx: PreloadContext) {
 				() => {
 					postNotebookMessage<webviewMessages.IOutputInputFocusMessage>(
 						"outputInputFocus",
-						{ inputFocused: false }
+						{ inputFocused: false },
 					);
 				},
-				{ once: true }
+				{ once: true },
 			);
 		}
 	};
@@ -214,7 +214,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 					if (outputFocus) {
 						postNotebookMessage<webviewMessages.IOutputFocusMessage>(
 							"outputFocus",
-							outputFocus
+							outputFocus,
 						);
 					}
 
@@ -223,7 +223,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 					if (outputFocus) {
 						postNotebookMessage<webviewMessages.IOutputFocusMessage>(
 							"outputFocus",
-							outputFocus
+							outputFocus,
 						);
 					}
 					handleDataUrl(node.href, node.download);
@@ -233,7 +233,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 					if (!node.hash) {
 						postNotebookMessage<webviewMessages.IScrollToRevealMessage>(
 							"scroll-to-reveal",
-							{ scrollTop: 0 }
+							{ scrollTop: 0 },
 						);
 						return;
 					}
@@ -247,7 +247,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 					if (!scrollTarget) {
 						// Fallback to checking preview shadow doms
 						for (const preview of event.view.document.querySelectorAll(
-							".preview"
+							".preview",
 						)) {
 							scrollTarget =
 								preview.shadowRoot?.getElementById(targetId);
@@ -263,7 +263,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 							event.view.scrollY;
 						postNotebookMessage<webviewMessages.IScrollToRevealMessage>(
 							"scroll-to-reveal",
-							{ scrollTop }
+							{ scrollTop },
 						);
 						return;
 					}
@@ -273,12 +273,12 @@ async function webviewPreloads(ctx: PreloadContext) {
 						if (href.startsWith("command:") && outputFocus) {
 							postNotebookMessage<webviewMessages.IOutputFocusMessage>(
 								"outputFocus",
-								outputFocus
+								outputFocus,
 							);
 						}
 						postNotebookMessage<webviewMessages.IClickedLinkMessage>(
 							"clicked-link",
-							{ href }
+							{ href },
 						);
 					}
 				}
@@ -292,21 +292,21 @@ async function webviewPreloads(ctx: PreloadContext) {
 		if (outputFocus) {
 			postNotebookMessage<webviewMessages.IOutputFocusMessage>(
 				"outputFocus",
-				outputFocus
+				outputFocus,
 			);
 		}
 	};
 
 	const handleDataUrl = async (
 		data: string | ArrayBuffer | null,
-		downloadName: string
+		downloadName: string,
 	) => {
 		postNotebookMessage<webviewMessages.IClickedDataUrlMessage>(
 			"clicked-data-url",
 			{
 				data,
 				downloadName,
-			}
+			},
 		);
 	};
 
@@ -374,7 +374,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 		const module: KernelPreloadModule = await __import(url);
 		if (!module.activate) {
 			console.error(
-				`Notebook preload '${url}' was expected to be a module but it does not export an 'activate' function`
+				`Notebook preload '${url}' was expected to be a module but it does not export an 'activate' function`,
 			);
 			return;
 		}
@@ -390,7 +390,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 		updateHeight(
 			id: string,
 			height: number,
-			options: { init?: boolean; isOutput?: boolean }
+			options: { init?: boolean; isOutput?: boolean },
 		) {
 			if (!this.pending.size) {
 				setTimeout(() => {
@@ -423,7 +423,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				"dimension",
 				{
 					updates: Array.from(this.pending.values()),
-				}
+				},
 			);
 			this.pending.clear();
 		}
@@ -446,7 +446,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 					}
 
 					const observedElementInfo = this._observedElements.get(
-						entry.target
+						entry.target,
 					);
 					if (!observedElementInfo) {
 						continue;
@@ -466,7 +466,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 						// markup, update directly
 						this.updateHeight(
 							observedElementInfo,
-							entry.target.offsetHeight
+							entry.target.offsetHeight,
 						);
 						continue;
 					}
@@ -488,13 +488,13 @@ async function webviewPreloads(ctx: PreloadContext) {
 							}
 							this.updateHeight(
 								observedElementInfo,
-								entry.target.offsetHeight
+								entry.target.offsetHeight,
 							);
 						});
 					} else {
 						this.updateHeight(
 							observedElementInfo,
-							entry.target.offsetHeight
+							entry.target.offsetHeight,
 						);
 					}
 				}
@@ -503,7 +503,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 
 		private updateHeight(
 			observedElementInfo: IObservedElement,
-			offsetHeight: number
+			offsetHeight: number,
 		) {
 			if (observedElementInfo.lastKnownHeight !== offsetHeight) {
 				observedElementInfo.lastKnownHeight = offsetHeight;
@@ -512,7 +512,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 					offsetHeight,
 					{
 						isOutput: observedElementInfo.output,
-					}
+					},
 				);
 			}
 		}
@@ -521,7 +521,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			container: Element,
 			id: string,
 			output: boolean,
-			cellId: string
+			cellId: string,
 		) {
 			if (this._observedElements.has(container)) {
 				return;
@@ -606,7 +606,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			wheelDeltaX?: number;
 			wheelDeltaY?: number;
 			wheelDelta?: number;
-		}
+		},
 	) => {
 		if (event.defaultPrevented || scrollWillGoToParent(event)) {
 			return;
@@ -629,7 +629,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 
 	function focusFirstFocusableOrContainerInOutput(
 		cellOrOutputId: string,
-		alternateId?: string
+		alternateId?: string,
 	) {
 		const cellOutputContainer =
 			$window.document.getElementById(cellOrOutputId) ??
@@ -642,7 +642,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			}
 
 			let focusableElement = cellOutputContainer.querySelector(
-				'[tabindex="0"], [href], button, input, option, select, textarea'
+				'[tabindex="0"], [href], button, input, option, select, textarea',
 			) as HTMLElement | null;
 			if (!focusableElement) {
 				focusableElement = cellOutputContainer;
@@ -663,7 +663,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				{
 					cellId: cellId,
 					focusNext,
-				}
+				},
 			);
 		});
 
@@ -673,7 +673,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 	function _internalHighlightRange(
 		range: Range,
 		tagName = "mark",
-		attributes = {}
+		attributes = {},
 	) {
 		// derived from https://github.com/Treora/dom-highlight-range/blob/master/highlight-range.js
 
@@ -713,7 +713,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				(node) =>
 					range.intersectsNode(node)
 						? NodeFilter.FILTER_ACCEPT
-						: NodeFilter.FILTER_REJECT
+						: NodeFilter.FILTER_REJECT,
 			);
 
 			walker.currentNode = range.startContainer;
@@ -753,7 +753,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 		function wrapNodeInHighlight(
 			node: Text,
 			tagName: string,
-			attributes: any
+			attributes: any,
 		) {
 			const highlightElement = node.ownerDocument.createElement(tagName);
 			Object.keys(attributes).forEach((key) => {
@@ -781,7 +781,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			const highlightElement = wrapNodeInHighlight(
 				nodes[nodeIdx],
 				tagName,
-				attributes
+				attributes,
 			);
 			highlightElements.push(highlightElement);
 		}
@@ -791,14 +791,14 @@ async function webviewPreloads(ctx: PreloadContext) {
 			if (highlightElement.childNodes.length === 1) {
 				highlightElement.parentNode?.replaceChild(
 					highlightElement.firstChild!,
-					highlightElement
+					highlightElement,
 				);
 			} else {
 				// If the highlight somehow contains multiple nodes now, move them all.
 				while (highlightElement.firstChild) {
 					highlightElement.parentNode?.insertBefore(
 						highlightElement.firstChild,
-						highlightElement
+						highlightElement,
 					);
 				}
 				highlightElement.remove();
@@ -815,7 +815,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 
 		function _updateHighlight(
 			highlightElement: Element,
-			attributes: any = {}
+			attributes: any = {},
 		) {
 			Object.keys(attributes).forEach((key) => {
 				highlightElement.setAttribute(key, attributes[key]);
@@ -848,7 +848,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 		dispose: () => void;
 		update: (
 			color: string | undefined,
-			className: string | undefined
+			className: string | undefined,
 		) => void;
 	}
 
@@ -871,7 +871,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 		range: Range,
 		useCustom: boolean,
 		tagName = "mark",
-		attributes = {}
+		attributes = {},
 	): IHighlightResult {
 		if (useCustom) {
 			const ret = _internalHighlightRange(range, tagName, attributes);
@@ -880,15 +880,15 @@ async function webviewPreloads(ctx: PreloadContext) {
 				dispose: ret.remove,
 				update: (
 					color: string | undefined,
-					className: string | undefined
+					className: string | undefined,
 				) => {
 					if (className === undefined) {
 						ret.update({
-							"style": `background-color: ${color}`,
+							style: `background-color: ${color}`,
 						});
 					} else {
 						ret.update({
-							"class": className,
+							class: className,
 						});
 					}
 				},
@@ -916,7 +916,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 						$window.document.execCommand(
 							"removeFormat",
 							false,
-							undefined
+							undefined,
 						);
 						document.designMode = "Off";
 						$window.getSelection()?.removeAllRanges();
@@ -926,7 +926,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				},
 				update: (
 					color: string | undefined,
-					className: string | undefined
+					className: string | undefined,
 				) => {
 					selectRange(_range);
 					try {
@@ -934,12 +934,12 @@ async function webviewPreloads(ctx: PreloadContext) {
 						$window.document.execCommand(
 							"removeFormat",
 							false,
-							undefined
+							undefined,
 						);
 						$window.document.execCommand(
 							"hiliteColor",
 							false,
-							color
+							color,
 						);
 						document.designMode = "Off";
 						$window.getSelection()?.removeAllRanges();
@@ -952,7 +952,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 	}
 
 	function createEmitter<T>(
-		listenerChange: (listeners: Set<Listener<T>>) => void = () => undefined
+		listenerChange: (listeners: Set<Listener<T>>) => void = () => undefined,
 	): EmitterLike<T> {
 		const listeners = new Set<Listener<T>>();
 		return {
@@ -987,7 +987,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 	function showRenderError(
 		errorText: string,
 		outputNode: HTMLElement,
-		errors: readonly Error[]
+		errors: readonly Error[],
 	) {
 		outputNode.innerText = errorText;
 		const errList = document.createElement("ul");
@@ -1006,7 +1006,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			/*requestId*/ number,
 			{
 				resolve: (
-					x: webviewMessages.OutputItemEntry | undefined
+					x: webviewMessages.OutputItemEntry | undefined,
 				) => void;
 			}
 		>();
@@ -1018,20 +1018,20 @@ async function webviewPreloads(ctx: PreloadContext) {
 				| ((x: webviewMessages.OutputItemEntry | undefined) => void)
 				| undefined;
 			const p = new Promise<webviewMessages.OutputItemEntry | undefined>(
-				(r) => (resolve = r)
+				(r) => (resolve = r),
 			);
 			this._requests.set(requestId, { resolve: resolve! });
 
 			postNotebookMessage<webviewMessages.IGetOutputItemMessage>(
 				"getOutputItem",
-				{ requestId, outputId, mime }
+				{ requestId, outputId, mime },
 			);
 			return p;
 		}
 
 		resolveOutputItem(
 			requestId: number,
-			output: webviewMessages.OutputItemEntry | undefined
+			output: webviewMessages.OutputItemEntry | undefined,
 		) {
 			const request = this._requests.get(requestId);
 			if (!request) {
@@ -1061,14 +1061,14 @@ async function webviewPreloads(ctx: PreloadContext) {
 		metadata: unknown,
 		valueBytes: Uint8Array,
 		allOutputItemData: ReadonlyArray<{ readonly mime: string }>,
-		appended?: { valueBytes: Uint8Array; previousVersion: number }
+		appended?: { valueBytes: Uint8Array; previousVersion: number },
 	): ExtendedOutputItem {
 		function create(
 			id: string,
 			mime: string,
 			metadata: unknown,
 			valueBytes: Uint8Array,
-			appended?: { valueBytes: Uint8Array; previousVersion: number }
+			appended?: { valueBytes: Uint8Array; previousVersion: number },
 		): ExtendedOutputItem {
 			return Object.freeze<ExtendedOutputItem>({
 				id,
@@ -1102,7 +1102,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 					if (!hasWarnedAboutAllOutputItemsProposal) {
 						hasWarnedAboutAllOutputItemsProposal = true;
 						console.warn(
-							`'_allOutputItems' is proposed API. DO NOT ship an extension that depends on it!`
+							`'_allOutputItems' is proposed API. DO NOT ship an extension that depends on it!`,
 						);
 					}
 					return allOutputItemList;
@@ -1133,8 +1133,8 @@ async function webviewPreloads(ctx: PreloadContext) {
 											id,
 											item.mime,
 											metadata,
-											item.valueBytes
-										)
+											item.valueBytes,
+									  )
 									: undefined;
 							});
 						allOutputItemCache.set(mime, task);
@@ -1142,7 +1142,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 						return task;
 					},
 				});
-			})
+			}),
 		);
 
 		const item = create(id, mime, metadata, valueBytes, appended);
@@ -1192,10 +1192,10 @@ async function webviewPreloads(ctx: PreloadContext) {
 	}
 
 	const matchColor = $window.getComputedStyle(
-		$window.document.getElementById("_defaultColorPalatte")!
+		$window.document.getElementById("_defaultColorPalatte")!,
 	).color;
 	const currentMatchColor = $window.getComputedStyle(
-		$window.document.getElementById("_defaultColorPalatte")!
+		$window.document.getElementById("_defaultColorPalatte")!,
 	).backgroundColor;
 
 	class JSHighlighter implements IHighlighter {
@@ -1214,12 +1214,11 @@ async function webviewPreloads(ctx: PreloadContext) {
 					"mark",
 					match.isShadow
 						? {
-								"style":
-									"background-color: " + matchColor + ";",
-							}
+								style: "background-color: " + matchColor + ";",
+						  }
 						: {
-								"class": "find-match",
-							}
+								class: "find-match",
+						  },
 				);
 				match.highlightResult = ret;
 			}
@@ -1242,7 +1241,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			const highlightInfo = this._activeHighlightInfo.get(ownerID);
 			if (!highlightInfo) {
 				console.error(
-					"Modified current highlight match before adding highlight list."
+					"Modified current highlight match before adding highlight list.",
 				);
 				return;
 			}
@@ -1250,7 +1249,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				highlightInfo.matches[highlightInfo.currentMatchIndex];
 			oldMatch?.highlightResult?.update(
 				matchColor,
-				oldMatch.isShadow ? undefined : "find-match"
+				oldMatch.isShadow ? undefined : "find-match",
 			);
 
 			const match = highlightInfo.matches[index];
@@ -1264,11 +1263,11 @@ async function webviewPreloads(ctx: PreloadContext) {
 						.getBoundingClientRect().top;
 					const tempRange = document.createRange();
 					tempRange.selectNode(
-						match.highlightResult.range.startContainer
+						match.highlightResult.range.startContainer,
 					);
 
 					match.highlightResult.range.startContainer.parentElement?.scrollIntoView(
-						{ behavior: "auto", block: "end", inline: "nearest" }
+						{ behavior: "auto", block: "end", inline: "nearest" },
 					);
 
 					const rangeOffset = tempRange.getBoundingClientRect().top;
@@ -1281,7 +1280,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 
 				match.highlightResult?.update(
 					currentMatchColor,
-					match.isShadow ? undefined : "current-find-match"
+					match.isShadow ? undefined : "current-find-match",
 				);
 
 				$window.document.getSelection()?.removeAllRanges();
@@ -1300,7 +1299,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			if (oldMatch && oldMatch.highlightResult) {
 				oldMatch.highlightResult.update(
 					matchColor,
-					oldMatch.isShadow ? undefined : "find-match"
+					oldMatch.isShadow ? undefined : "find-match",
 				);
 			}
 		}
@@ -1329,7 +1328,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			CSS.highlights?.set(`find-highlight`, this._matchesHighlight);
 			CSS.highlights?.set(
 				`current-find-highlight`,
-				this._currentMatchesHighlight
+				this._currentMatchesHighlight,
 			);
 		}
 
@@ -1345,7 +1344,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				if (updateMatchesHighlight) {
 					for (let i = 0; i < highlightInfo.matches.length; i++) {
 						this._matchesHighlight.add(
-							highlightInfo.matches[i].originalRange
+							highlightInfo.matches[i].originalRange,
 						);
 					}
 				}
@@ -1356,7 +1355,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				) {
 					this._currentMatchesHighlight.add(
 						highlightInfo.matches[highlightInfo.currentMatchIndex]
-							.originalRange
+							.originalRange,
 					);
 				}
 			});
@@ -1379,7 +1378,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			const highlightInfo = this._activeHighlightInfo.get(ownerID);
 			if (!highlightInfo) {
 				console.error(
-					"Modified current highlight match before adding highlight list."
+					"Modified current highlight match before adding highlight list.",
 				);
 				return;
 			}
@@ -1394,7 +1393,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 						.getElementById(match.id)!
 						.getBoundingClientRect().top;
 					match.originalRange.startContainer.parentElement?.scrollIntoView(
-						{ behavior: "auto", block: "end", inline: "nearest" }
+						{ behavior: "auto", block: "end", inline: "nearest" },
 					);
 					const rangeOffset =
 						match.originalRange.getBoundingClientRect().top;
@@ -1473,18 +1472,18 @@ async function webviewPreloads(ctx: PreloadContext) {
 		// so we need to find the first common ancestor DOM element and find the positions of the old and new range relative to that.
 		const firstCommonAncestor = findFirstCommonAncestor(
 			lineRange.startContainer,
-			originalRange.startContainer
+			originalRange.startContainer,
 		);
 
 		const selectionOffset =
 			getSelectionOffsetRelativeTo(
 				firstCommonAncestor,
-				lineRange.startContainer
+				lineRange.startContainer,
 			) + lineRange.startOffset;
 		const textOffset =
 			getSelectionOffsetRelativeTo(
 				firstCommonAncestor,
-				originalRange.startContainer
+				originalRange.startContainer,
 			) + originalRange.startOffset;
 		return textOffset - selectionOffset;
 	}
@@ -1514,7 +1513,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 	// modified from https://stackoverflow.com/a/48812529/16253823
 	function getSelectionOffsetRelativeTo(
 		parentElement: Node,
-		currentNode: Node | null
+		currentNode: Node | null,
 	): number {
 		if (!currentNode) {
 			return 0;
@@ -1550,7 +1549,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			includeOutput: boolean;
 			shouldGetSearchPreviewInfo: boolean;
 			ownerID: string;
-		}
+		},
 	) => {
 		let find = true;
 		const matches: IFindMatch[] = [];
@@ -1574,7 +1573,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 					/* wrapAround*/ false,
 					/* wholeWord */ !!options.wholeWord,
 					/* searchInFrames*/ true,
-					false
+					false,
 				);
 
 				if (find) {
@@ -1711,8 +1710,8 @@ async function webviewPreloads(ctx: PreloadContext) {
 											searchPreviewInfo:
 												options.shouldGetSearchPreviewInfo
 													? extractSelectionLine(
-															selection
-														)
+															selection,
+													  )
 													: undefined,
 										});
 									}
@@ -1757,7 +1756,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 	const copyOutputImage = async (
 		outputId: string,
 		altOutputId: string,
-		retries = 5
+		retries = 5,
 	) => {
 		if (!$window.document.hasFocus() && retries > 0) {
 			// copyImage can be called from outside of the webview, which means this function may be running whilst the webview is gaining focus.
@@ -1800,7 +1799,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			} else {
 				console.error(
 					"Could not find image element to copy for output with id",
-					outputId
+					outputId,
 				);
 			}
 		} catch (e) {
@@ -1816,8 +1815,8 @@ async function webviewPreloads(ctx: PreloadContext) {
 				try {
 					await Promise.all(
 						event.data.cells.map((info) =>
-							viewModel.ensureMarkupCell(info)
-						)
+							viewModel.ensureMarkupCell(info),
+						),
 					);
 				} finally {
 					dimensionUpdater.updateImmediately();
@@ -1836,7 +1835,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 					event.data.id,
 					event.data.top,
 					event.data.content,
-					event.data.metadata
+					event.data.metadata,
 				);
 				break;
 
@@ -1921,7 +1920,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			case "copyImage": {
 				await copyOutputImage(
 					event.data.outputId,
-					event.data.altOutputId
+					event.data.altOutputId,
 				);
 				break;
 			}
@@ -1946,26 +1945,26 @@ async function webviewPreloads(ctx: PreloadContext) {
 			case "focus-output":
 				focusFirstFocusableOrContainerInOutput(
 					event.data.cellOrOutputId,
-					event.data.alternateId
+					event.data.alternateId,
 				);
 				break;
 			case "decorations": {
 				let outputContainer = $window.document.getElementById(
-					event.data.cellId
+					event.data.cellId,
 				);
 				if (!outputContainer) {
 					viewModel.ensureOutputCell(
 						event.data.cellId,
 						-100000,
-						true
+						true,
 					);
 					outputContainer = $window.document.getElementById(
-						event.data.cellId
+						event.data.cellId,
 					);
 				}
 				outputContainer?.classList.add(...event.data.addedClassNames);
 				outputContainer?.classList.remove(
-					...event.data.removedClassNames
+					...event.data.removedClassNames,
 				);
 				break;
 			}
@@ -1998,7 +1997,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			case "notebookOptions":
 				currentOptions = event.data.options;
 				viewModel.toggleDragDropEnabled(
-					currentOptions.dragAndDropEnabled
+					currentOptions.dragAndDropEnabled,
 				);
 				currentRenderOptions = event.data.renderOptions;
 				settingChange.fire(currentRenderOptions);
@@ -2020,14 +2019,14 @@ async function webviewPreloads(ctx: PreloadContext) {
 			case "findHighlightCurrent": {
 				_highlighter?.highlightCurrentMatch(
 					event.data.index,
-					event.data.ownerID
+					event.data.ownerID,
 				);
 				break;
 			}
 			case "findUnHighlightCurrent": {
 				_highlighter?.unHighlightCurrentMatch(
 					event.data.index,
-					event.data.ownerID
+					event.data.ownerID,
 				);
 				break;
 			}
@@ -2038,7 +2037,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			case "returnOutputItem": {
 				outputItemRequests.resolveOutputItem(
 					event.data.requestId,
-					event.data.output
+					event.data.output,
 				);
 			}
 		}
@@ -2060,7 +2059,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 		public async renderOutputItem(
 			item: rendererApi.OutputItem,
 			element: HTMLElement,
-			signal: AbortSignal
+			signal: AbortSignal,
 		): Promise<void> {
 			try {
 				await this.load();
@@ -2069,7 +2068,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 					showRenderError(
 						`Error loading renderer '${this.data.id}'`,
 						element,
-						e instanceof Error ? [e] : []
+						e instanceof Error ? [e] : [],
 					);
 				}
 				return;
@@ -2080,7 +2079,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 					showRenderError(
 						`Renderer '${this.data.id}' does not implement renderOutputItem`,
 						element,
-						[]
+						[],
 					);
 				}
 				return;
@@ -2105,7 +2104,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				showRenderError(
 					`Error rendering output item using '${this.data.id}'`,
 					element,
-					e instanceof Error ? [e] : []
+					e instanceof Error ? [e] : [],
 				);
 				this.postDebugMessage("Rendering output item failed", {
 					id: item.id,
@@ -2190,7 +2189,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 
 				const importStart = performance.now();
 				const module: RendererModule = await __import(
-					this.data.entrypoint.path
+					this.data.entrypoint.path,
 				);
 				this.postDebugMessage("Imported renderer", {
 					duration: `${performance.now() - importStart}ms`,
@@ -2206,7 +2205,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				});
 
 				const dependantRenderers = ctx.rendererData.filter(
-					(d) => d.entrypoint.extends === this.data.id
+					(d) => d.entrypoint.extends === this.data.id,
 				);
 
 				if (dependantRenderers.length) {
@@ -2223,7 +2222,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 						const renderer = renderers.getRenderer(d.id);
 						if (!renderer) {
 							throw new Error(
-								`Could not find extending renderer: ${d.id}`
+								`Could not find extending renderer: ${d.id}`,
 							);
 						}
 
@@ -2235,11 +2234,11 @@ async function webviewPreloads(ctx: PreloadContext) {
 							console.error(e);
 							this.postDebugMessage(
 								"Activating dependant renderer failed",
-								{ dependent: d.id, error: e + "" }
+								{ dependent: d.id, error: e + "" },
 							);
 							return undefined;
 						}
-					})
+					}),
 				);
 
 				return this._api;
@@ -2255,7 +2254,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				{
 					message: `[renderer ${this.data.id}] - ${msg}`,
 					data,
-				}
+				},
 			);
 		}
 	}
@@ -2297,7 +2296,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 		 */
 		public waitForAllCurrent() {
 			return Promise.all(
-				[...this.preloads.values()].map((p) => p.catch((err) => err))
+				[...this.preloads.values()].map((p) => p.catch((err) => err)),
 			);
 		}
 	})();
@@ -2314,23 +2313,23 @@ async function webviewPreloads(ctx: PreloadContext) {
 		 */
 		public enqueue(
 			outputId: string,
-			action: (cancelSignal: AbortSignal) => unknown
+			action: (cancelSignal: AbortSignal) => unknown,
 		) {
 			this.pendingOutputCreationRequest.get(outputId)?.dispose();
 			this.pendingOutputCreationRequest.delete(outputId);
 
 			const record = this.outputs.get(outputId);
-			if (!record) {
-				const controller = new AbortController();
-				this.outputs.set(outputId, {
-					abort: controller,
-					queue: new Promise((r) => r(action(controller.signal))),
-				});
-			} else {
+			if (record) {
 				record.queue = record.queue.then(async (r) => {
 					if (!record.abort.signal.aborted) {
 						await action(record.abort.signal);
 					}
+				});
+			} else {
+				const controller = new AbortController();
+				this.outputs.set(outputId, {
+					abort: controller,
+					queue: new Promise((r) => r(action(controller.signal))),
 				});
 			}
 		}
@@ -2340,7 +2339,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 
 		public enqueueIdle(
 			outputId: string,
-			action: (cancelSignal: AbortSignal) => unknown
+			action: (cancelSignal: AbortSignal) => unknown,
 		) {
 			this.pendingOutputCreationRequest.get(outputId)?.dispose();
 			outputRunner.pendingOutputCreationRequest.set(
@@ -2348,7 +2347,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				runWhenIdle(() => {
 					outputRunner.enqueue(outputId, action);
 					outputRunner.pendingOutputCreationRequest.delete(outputId);
-				})
+				}),
 			);
 		}
 
@@ -2397,7 +2396,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 
 		private rendererEqual(
 			a: webviewMessages.RendererMetadata,
-			b: webviewMessages.RendererMetadata
+			b: webviewMessages.RendererMetadata,
 		) {
 			if (
 				a.id !== b.id ||
@@ -2422,7 +2421,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 		}
 
 		public updateRendererData(
-			rendererData: readonly webviewMessages.RendererMetadata[]
+			rendererData: readonly webviewMessages.RendererMetadata[],
 		) {
 			const oldKeys = new Set(this._renderers.keys());
 			const newKeys = new Set(rendererData.map((d) => d.id));
@@ -2463,16 +2462,16 @@ async function webviewPreloads(ctx: PreloadContext) {
 			item: ExtendedOutputItem,
 			preferredRendererId: string | undefined,
 			element: HTMLElement,
-			signal: AbortSignal
+			signal: AbortSignal,
 		): Promise<void> {
 			const primaryRenderer = this.findRenderer(
 				preferredRendererId,
-				item
+				item,
 			);
 			if (!primaryRenderer) {
 				const errorMessage = (
 					$window.document.documentElement.style.getPropertyValue(
-						"--notebook-cell-renderer-not-found-error"
+						"--notebook-cell-renderer-not-found-error",
 					) || ""
 				).replace("$0", () => item.mime);
 				this.showRenderError(item, element, errorMessage);
@@ -2501,7 +2500,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				if (additionalItem) {
 					const renderer = this.findRenderer(
 						undefined,
-						additionalItem
+						additionalItem,
 					);
 					if (renderer) {
 						if (
@@ -2510,7 +2509,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 									additionalItem,
 									element,
 									renderer,
-									signal
+									signal,
 								)
 							).continue
 						) {
@@ -2523,7 +2522,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			// All renderers have failed and there is nothing left to fallback to
 			const errorMessage = (
 				$window.document.documentElement.style.getPropertyValue(
-					"--notebook-cell-renderer-fallbacks-exhausted"
+					"--notebook-cell-renderer-fallbacks-exhausted",
 				) || ""
 			).replace("$0", () => item.mime);
 			this.showRenderError(item, element, errorMessage);
@@ -2533,7 +2532,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			item: rendererApi.OutputItem,
 			element: HTMLElement,
 			renderer: Renderer,
-			signal: AbortSignal
+			signal: AbortSignal,
 		): Promise<{ continue: boolean }> {
 			try {
 				await renderer.renderOutputItem(item, element, signal);
@@ -2553,25 +2552,25 @@ async function webviewPreloads(ctx: PreloadContext) {
 
 		private findRenderer(
 			preferredRendererId: string | undefined,
-			info: rendererApi.OutputItem
+			info: rendererApi.OutputItem,
 		) {
 			let renderer: Renderer | undefined;
 
 			if (typeof preferredRendererId === "string") {
 				renderer = Array.from(this._renderers.values()).find(
-					(renderer) => renderer.data.id === preferredRendererId
+					(renderer) => renderer.data.id === preferredRendererId,
 				);
 			} else {
 				const renderers = Array.from(this._renderers.values()).filter(
 					(renderer) =>
 						renderer.data.mimeTypes.includes(info.mime) &&
-						!renderer.data.entrypoint.extends
+						!renderer.data.entrypoint.extends,
 				);
 
 				if (renderers.length) {
 					// De-prioritize built-in renderers
 					renderers.sort(
-						(a, b) => +a.data.isBuiltin - +b.data.isBuiltin
+						(a, b) => +a.data.isBuiltin - +b.data.isBuiltin,
 					);
 
 					// Use first renderer we find in sorted list
@@ -2584,7 +2583,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 		private showRenderError(
 			info: rendererApi.OutputItem,
 			element: HTMLElement,
-			errorMessage: string
+			errorMessage: string,
 		) {
 			const errorContainer = document.createElement("div");
 
@@ -2622,12 +2621,12 @@ async function webviewPreloads(ctx: PreloadContext) {
 		private async createMarkupCell(
 			init: webviewMessages.IMarkupCellInitialization,
 			top: number,
-			visible: boolean
+			visible: boolean,
 		): Promise<MarkupCell> {
 			const existing = this._markupCells.get(init.cellId);
 			if (existing) {
 				console.error(
-					`Trying to create markup that already exists: ${init.cellId}`
+					`Trying to create markup that already exists: ${init.cellId}`,
 				);
 				return existing;
 			}
@@ -2637,7 +2636,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				init.mime,
 				init.content,
 				top,
-				init.metadata
+				init.metadata,
 			);
 			cell.element.style.visibility = visible ? "" : "hidden";
 			this._markupCells.set(init.cellId, cell);
@@ -2647,7 +2646,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 		}
 
 		public async ensureMarkupCell(
-			info: webviewMessages.IMarkupCellInitialization
+			info: webviewMessages.IMarkupCellInitialization,
 		): Promise<void> {
 			let cell = this._markupCells.get(info.cellId);
 			if (cell) {
@@ -2657,7 +2656,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				cell = await this.createMarkupCell(
 					info,
 					info.offset,
-					info.visible
+					info.visible,
 				);
 			}
 		}
@@ -2674,7 +2673,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 		public async updateMarkupContent(
 			id: string,
 			newContent: string,
-			metadata: NotebookCellMetadata
+			metadata: NotebookCellMetadata,
 		): Promise<void> {
 			const cell = this.getExpectedMarkupCell(id);
 			await cell?.updateContentAndRender(newContent, metadata);
@@ -2684,7 +2683,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			id: string,
 			top: number,
 			newContent: string | undefined,
-			metadata: NotebookCellMetadata | undefined
+			metadata: NotebookCellMetadata | undefined,
 		): void {
 			const cell = this.getExpectedMarkupCell(id);
 			cell?.show(top, newContent, metadata);
@@ -2723,7 +2722,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 		}
 
 		public updateMarkupScrolls(
-			markupCells: readonly webviewMessages.IMarkupCellScrollTops[]
+			markupCells: readonly webviewMessages.IMarkupCellScrollTops[],
 		) {
 			for (const { id, top } of markupCells) {
 				const cell = this._markupCells.get(id);
@@ -2735,15 +2734,15 @@ async function webviewPreloads(ctx: PreloadContext) {
 
 		public async renderOutputCell(
 			data: webviewMessages.ICreationRequestMessage,
-			signal: AbortSignal
+			signal: AbortSignal,
 		): Promise<void> {
 			const preloadErrors = await Promise.all<undefined | Error>(
 				data.requiredPreloads.map((p) =>
 					kernelPreloads.waitFor(p.uri).then(
 						() => undefined,
-						(err) => err
-					)
-				)
+						(err) => err,
+					),
+				),
 			);
 			if (signal.aborted) {
 				return;
@@ -2752,7 +2751,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			const cellOutput = this.ensureOutputCell(
 				data.cellId,
 				data.cellTop,
-				false
+				false,
 			);
 			return cellOutput.renderOutputElement(data, preloadErrors, signal);
 		}
@@ -2760,7 +2759,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 		public ensureOutputCell(
 			cellId: string,
 			cellTop: number,
-			skipCellTopUpdateIfExist: boolean
+			skipCellTopUpdateIfExist: boolean,
 		): OutputCell {
 			let cell = this._outputCells.get(cellId);
 			const existed = !!cell;
@@ -2780,7 +2779,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 		public clearOutput(
 			cellId: string,
 			outputId: string,
-			rendererId: string | undefined
+			rendererId: string | undefined,
 		) {
 			const cell = this._outputCells.get(cellId);
 			cell?.clearOutput(outputId, rendererId);
@@ -2794,7 +2793,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 		public updateAndRerender(
 			cellId: string,
 			outputId: string,
-			content: webviewMessages.ICreationContent
+			content: webviewMessages.ICreationContent,
 		) {
 			const cell = this._outputCells.get(cellId);
 			cell?.updateContentAndRerender(outputId, content);
@@ -2808,14 +2807,14 @@ async function webviewPreloads(ctx: PreloadContext) {
 		public updateOutputHeight(
 			cellId: string,
 			outputId: string,
-			height: number
+			height: number,
 		) {
 			const cell = this._outputCells.get(cellId);
 			cell?.updateOutputHeight(outputId, height);
 		}
 
 		public updateOutputsScroll(
-			updates: webviewMessages.IContentWidgetTopRequest[]
+			updates: webviewMessages.IContentWidgetTopRequest[],
 		) {
 			for (const request of updates) {
 				const cell = this._outputCells.get(request.cellId);
@@ -2846,7 +2845,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 		}
 
 		public static requestHighlightCodeBlock(
-			root: HTMLElement | ShadowRoot
+			root: HTMLElement | ShadowRoot,
 		) {
 			const codeBlocks: Array<{
 				value: string;
@@ -2861,7 +2860,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 					codeBlocks.push({ value: el.textContent, lang: lang, id });
 					MarkdownCodeBlock.pendingCodeBlocksToHighlight.set(
 						id,
-						el as HTMLElement
+						el as HTMLElement,
 					);
 				}
 			}
@@ -2893,7 +2892,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			mime: string,
 			content: string,
 			top: number,
-			metadata: NotebookCellMetadata
+			metadata: NotebookCellMetadata,
 		) {
 			const self = this;
 			this.id = id;
@@ -2969,7 +2968,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 
 			this.updateContentAndRender(
 				this._content.value,
-				this._content.metadata
+				this._content.metadata,
 			).then(
 				() => {
 					if (!this._isDisposed) {
@@ -2977,12 +2976,12 @@ async function webviewPreloads(ctx: PreloadContext) {
 							this.element,
 							this.id,
 							false,
-							this.id
+							this.id,
 						);
 					}
 					resolve();
 				},
-				() => reject()
+				() => reject(),
 			);
 		}
 
@@ -2996,7 +2995,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			this.element.addEventListener("dblclick", () => {
 				postNotebookMessage<webviewMessages.IToggleMarkupPreviewMessage>(
 					"toggleMarkupPreview",
-					{ cellId: this.id }
+					{ cellId: this.id },
 				);
 			});
 
@@ -3009,7 +3008,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 						ctrlKey: e.ctrlKey,
 						metaKey: e.metaKey,
 						shiftKey: e.shiftKey,
-					}
+					},
 				);
 			});
 
@@ -3020,21 +3019,21 @@ async function webviewPreloads(ctx: PreloadContext) {
 						cellId: this.id,
 						clientX: e.clientX,
 						clientY: e.clientY,
-					}
+					},
 				);
 			});
 
 			this.element.addEventListener("mouseenter", () => {
 				postNotebookMessage<webviewMessages.IMouseEnterMarkupCellMessage>(
 					"mouseEnterMarkupCell",
-					{ cellId: this.id }
+					{ cellId: this.id },
 				);
 			});
 
 			this.element.addEventListener("mouseleave", () => {
 				postNotebookMessage<webviewMessages.IMouseLeaveMarkupCellMessage>(
 					"mouseLeaveMarkupCell",
-					{ cellId: this.id }
+					{ cellId: this.id },
 				);
 			});
 
@@ -3053,7 +3052,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 
 		public async updateContentAndRender(
 			newContent: string,
-			metadata: NotebookCellMetadata
+			metadata: NotebookCellMetadata,
 		): Promise<void> {
 			this._content = {
 				value: newContent,
@@ -3070,7 +3069,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 					this.outputItem,
 					undefined,
 					this.element,
-					this.renderTaskAbort.signal
+					this.renderTaskAbort.signal,
 				);
 			} finally {
 				if (this.renderTaskAbort === controller) {
@@ -3106,7 +3105,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 					cellId: this.id,
 					html: html.join(""),
 					codeBlocks,
-				}
+				},
 			);
 
 			dimensionUpdater.updateHeight(this.id, this.element.offsetHeight, {
@@ -3117,14 +3116,14 @@ async function webviewPreloads(ctx: PreloadContext) {
 		public show(
 			top: number,
 			newContent: string | undefined,
-			metadata: NotebookCellMetadata | undefined
+			metadata: NotebookCellMetadata | undefined,
 		): void {
 			this.element.style.visibility = "";
 			this.element.style.top = `${top}px`;
 			if (typeof newContent === "string" || metadata) {
 				this.updateContentAndRender(
 					newContent ?? this._content.value,
-					metadata ?? this._content.metadata
+					metadata ?? this._content.metadata,
 				);
 			} else {
 				this.updateMarkupDimensions();
@@ -3200,7 +3199,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 		}
 
 		private createOutputElement(
-			data: webviewMessages.ICreationRequestMessage
+			data: webviewMessages.ICreationRequestMessage,
 		): OutputElement {
 			let outputContainer = this.outputElements.get(data.outputId);
 			if (!outputContainer) {
@@ -3213,14 +3212,14 @@ async function webviewPreloads(ctx: PreloadContext) {
 				data.outputId,
 				data.outputOffset,
 				data.left,
-				data.cellId
+				data.cellId,
 			);
 		}
 
 		public async renderOutputElement(
 			data: webviewMessages.ICreationRequestMessage,
 			preloadErrors: ReadonlyArray<Error | undefined>,
-			signal: AbortSignal
+			signal: AbortSignal,
 		) {
 			const startTime = Date.now();
 			const outputElement /** outputNode */ =
@@ -3229,7 +3228,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				data.content,
 				data.rendererId,
 				preloadErrors,
-				signal
+				signal,
 			);
 
 			// don't hide until after this step so that the height is right
@@ -3244,7 +3243,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 						executionId: data.executionId,
 						duration: Date.now() - startTime,
 						rendererId: data.rendererId,
-					}
+					},
 				);
 			}
 		}
@@ -3270,7 +3269,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				outputContainer.element.offsetHeight,
 				{
 					isOutput: true,
-				}
+				},
 			);
 		}
 
@@ -3280,7 +3279,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 
 		public updateContentAndRerender(
 			outputId: string,
-			content: webviewMessages.ICreationContent
+			content: webviewMessages.ICreationContent,
 		) {
 			this.outputElements.get(outputId)?.updateContentAndRender(content);
 		}
@@ -3323,7 +3322,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			this.element.classList.add("output_container");
 			this.element.setAttribute(
 				"data-vscode-context",
-				JSON.stringify({ "preventDefaultContextMenuItems": true })
+				JSON.stringify({ preventDefaultContextMenuItems: true }),
 			);
 			this.element.style.position = "absolute";
 			this.element.style.overflow = "hidden";
@@ -3353,7 +3352,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			outputId: string,
 			outputOffset: number,
 			left: number,
-			cellId: string
+			cellId: string,
 		): OutputElement {
 			this.element.innerText = "";
 			this.element.style.maxHeight = "0px";
@@ -3366,7 +3365,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 		}
 
 		public updateContentAndRender(
-			content: webviewMessages.ICreationContent
+			content: webviewMessages.ICreationContent,
 		) {
 			this._outputNode?.updateAndRerender(content);
 		}
@@ -3383,7 +3382,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 
 	function postNotebookMessage<T extends webviewMessages.FromWebviewMessage>(
 		type: T["type"],
-		properties: Omit<T, "__vscode_notebook_message" | "type">
+		properties: Omit<T, "__vscode_notebook_message" | "type">,
 	) {
 		vscode.postMessage({
 			__vscode_notebook_message: true,
@@ -3405,7 +3404,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 		constructor(
 			private readonly outputId: string,
 			left: number,
-			public readonly cellId: string
+			public readonly cellId: string,
 		) {
 			this.element = document.createElement("div");
 			this.element.id = outputId;
@@ -3418,13 +3417,13 @@ async function webviewPreloads(ctx: PreloadContext) {
 			this.element.addEventListener("mouseenter", () => {
 				postNotebookMessage<webviewMessages.IMouseEnterMessage>(
 					"mouseenter",
-					{ id: outputId }
+					{ id: outputId },
 				);
 			});
 			this.element.addEventListener("mouseleave", () => {
 				postNotebookMessage<webviewMessages.IMouseLeaveMessage>(
 					"mouseleave",
-					{ id: outputId }
+					{ id: outputId },
 				);
 			});
 		}
@@ -3438,7 +3437,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			content: webviewMessages.ICreationContent,
 			preferredRendererId: string | undefined,
 			preloadErrors: ReadonlyArray<Error | undefined>,
-			signal?: AbortSignal
+			signal?: AbortSignal,
 		) {
 			this.renderTaskAbort?.abort();
 			this.renderTaskAbort = undefined;
@@ -3451,7 +3450,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				this.element.innerHTML = trustedHtml as string;
 			} else if (preloadErrors.some((e) => e instanceof Error)) {
 				const errors = preloadErrors.filter(
-					(e): e is Error => e instanceof Error
+					(e): e is Error => e instanceof Error,
 				);
 				showRenderError(`Error loading preloads`, this.element, errors);
 			} else {
@@ -3461,7 +3460,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 					content.metadata,
 					content.output.valueBytes,
 					content.allOutputs,
-					content.output.appended
+					content.output.appended,
 				);
 
 				const controller = new AbortController();
@@ -3475,7 +3474,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 						item,
 						preferredRendererId,
 						this.element,
-						controller.signal
+						controller.signal,
 					);
 				} finally {
 					if (this.renderTaskAbort === controller) {
@@ -3490,7 +3489,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 					this.element,
 					this.outputId,
 					true,
-					this.cellId
+					this.cellId,
 				);
 			}
 
@@ -3505,7 +3504,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 					{
 						isOutput: true,
 						init: true,
-					}
+					},
 				);
 
 				this.element.style.padding = `${ctx.style.outputNodePadding}px ${ctx.style.outputNodePadding}px ${ctx.style.outputNodePadding}px ${ctx.style.outputNodeLeftPadding}`;
@@ -3516,7 +3515,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 					{
 						isOutput: true,
 						init: true,
-					}
+					},
 				);
 			}
 
@@ -3532,7 +3531,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 					"renderedCellOutput",
 					{
 						codeBlocks,
-					}
+					},
 				);
 			}
 		}
@@ -3542,7 +3541,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				this.render(
 					content,
 					this._content.preferredRendererId,
-					this._content.preloadErrors
+					this._content.preloadErrors,
 				);
 			}
 		}
@@ -3577,7 +3576,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 						ctrlKey: e.ctrlKey,
 						altKey: e.altKey,
 						dragOffsetY: e.clientY,
-					}
+					},
 				);
 			});
 		}
@@ -3613,7 +3612,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				{
 					cellId: cellId,
 					dragOffsetY: e.clientY,
-				}
+				},
 			);
 
 			// Continuously send updates while dragging instead of relying on `updateDrag`.
@@ -3628,7 +3627,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 					{
 						cellId: cellId,
 						dragOffsetY: this.currentDrag.clientY,
-					}
+					},
 				);
 				$window.requestAnimationFrame(trySendDragUpdate);
 			};
@@ -3650,7 +3649,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				"cell-drag-end",
 				{
 					cellId: cellId,
-				}
+				},
 			);
 
 			if (this.dragOverlay) {
@@ -3670,7 +3669,7 @@ export function preloadsScriptStr(
 	renderers: readonly webviewMessages.RendererMetadata[],
 	preloads: readonly webviewMessages.StaticPreloadMetadata[],
 	isWorkspaceTrusted: boolean,
-	nonce: string
+	nonce: string,
 ) {
 	const ctx: PreloadContext = {
 		style: styleValues,
@@ -3686,6 +3685,8 @@ export function preloadsScriptStr(
 	return `
 		const __import = (x) => import(x);
 		(${webviewPreloads})(
-			JSON.parse(decodeURIComponent("${encodeURIComponent(JSON.stringify(ctx))}"))
+			JSON.parse(decodeURIComponent("${encodeURIComponent(
+				JSON.stringify(ctx),
+			)}"))
 		)\n//# sourceURL=notebookWebviewPreloads.js\n`;
 }

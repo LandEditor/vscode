@@ -66,7 +66,7 @@ export class EnvironmentMainService
 		return createStaticIPCHandle(
 			this.userDataPath,
 			"main",
-			this.productService.version
+			this.productService.version,
 		);
 	}
 

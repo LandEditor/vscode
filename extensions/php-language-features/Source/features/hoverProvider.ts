@@ -4,23 +4,23 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	HoverProvider,
-	Hover,
-	MarkedString,
-	TextDocument,
 	CancellationToken,
+	Hover,
+	HoverProvider,
+	MarkedString,
 	Position,
+	TextDocument,
 	workspace,
 } from "vscode";
-import { textToMarkedString } from "./utils/markedTextUtil";
-import * as phpGlobals from "./phpGlobals";
 import * as phpGlobalFunctions from "./phpGlobalFunctions";
+import * as phpGlobals from "./phpGlobals";
+import { textToMarkedString } from "./utils/markedTextUtil";
 
 export default class PHPHoverProvider implements HoverProvider {
 	public provideHover(
 		document: TextDocument,
 		position: Position,
-		_token: CancellationToken
+		_token: CancellationToken,
 	): Hover | undefined {
 		const enable = workspace
 			.getConfiguration("php")

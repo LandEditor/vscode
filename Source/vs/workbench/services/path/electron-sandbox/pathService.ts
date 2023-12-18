@@ -7,26 +7,26 @@ import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteAgentService";
+import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
 import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
 import {
-	IPathService,
 	AbstractPathService,
+	IPathService,
 } from "vs/workbench/services/path/common/pathService";
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteAgentService";
 
 export class NativePathService extends AbstractPathService {
 	constructor(
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
 		@INativeWorkbenchEnvironmentService
 		environmentService: INativeWorkbenchEnvironmentService,
-		@IWorkspaceContextService contextService: IWorkspaceContextService
+		@IWorkspaceContextService contextService: IWorkspaceContextService,
 	) {
 		super(
 			environmentService.userHome,
 			remoteAgentService,
 			environmentService,
-			contextService
+			contextService,
 		);
 	}
 }

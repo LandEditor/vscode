@@ -25,7 +25,7 @@ declare module "vscode" {
 		 * workspace trust request.
 		 */
 		export function requestWorkspaceTrust(
-			options?: WorkspaceTrustRequestOptions
+			options?: WorkspaceTrustRequestOptions,
 		): Thenable<boolean | undefined>;
 	}
 }

@@ -3,23 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { IListView } from "vs/base/browser/ui/list/listView";
+import { Event } from "vs/base/common/event";
 import { IDisposable } from "vs/base/common/lifecycle";
+import { ScrollEvent } from "vs/base/common/scrollable";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
 	CellFocusMode,
 	ICellViewModel,
 } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
 import { CodeCellViewModel } from "vs/workbench/contrib/notebook/browser/viewModel/codeCellViewModel";
+import { CellViewModel } from "vs/workbench/contrib/notebook/browser/viewModel/notebookViewModelImpl";
 import {
 	CellKind,
 	NotebookCellExecutionState,
 	NotebookSetting,
 } from "vs/workbench/contrib/notebook/common/notebookCommon";
 import { INotebookExecutionStateService } from "vs/workbench/contrib/notebook/common/notebookExecutionStateService";
-import { Event } from "vs/base/common/event";
-import { ScrollEvent } from "vs/base/common/scrollable";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IListView } from "vs/base/browser/ui/list/listView";
-import { CellViewModel } from "vs/workbench/contrib/notebook/browser/viewModel/notebookViewModelImpl";
 
 export class NotebookCellAnchor implements IDisposable {
 	private stopAnchoring = false;
@@ -29,14 +29,14 @@ export class NotebookCellAnchor implements IDisposable {
 	constructor(
 		private readonly notebookExecutionStateService: INotebookExecutionStateService,
 		private readonly configurationService: IConfigurationService,
-		private readonly scrollEvent: Event<ScrollEvent>
+		private readonly scrollEvent: Event<ScrollEvent>,
 	) {}
 
 	public shouldAnchor(
 		cellListView: IListView<CellViewModel>,
 		focusedIndex: number,
 		heightDelta: number,
-		executingCellUri: ICellViewModel
+		executingCellUri: ICellViewModel,
 	) {
 		if (
 			cellListView.element(focusedIndex).focusMode ===
@@ -56,11 +56,11 @@ export class NotebookCellAnchor implements IDisposable {
 			cellListView.renderHeight + cellListView.getScrollTop();
 		const focusStillVisible = viewBottom > newFocusBottom;
 		const anchorFocusedSetting = this.configurationService.getValue(
-			NotebookSetting.anchorToFocusedCell
+			NotebookSetting.anchorToFocusedCell,
 		);
 		const allowScrolling =
 			this.configurationService.getValue(
-				NotebookSetting.scrollToRevealCell
+				NotebookSetting.scrollToRevealCell,
 			) !== "none";
 		const growing = heightDelta > 0;
 		const autoAnchor =
@@ -85,7 +85,7 @@ export class NotebookCellAnchor implements IDisposable {
 		) {
 			const executionState =
 				this.notebookExecutionStateService.getCellExecution(
-					executingCell.uri
+					executingCell.uri,
 				);
 			if (
 				executionState &&

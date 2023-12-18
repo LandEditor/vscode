@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { defaultGenerator } from "vs/base/common/idGenerator";
-import { IFileQuery } from "vs/workbench/services/search/common/search";
 import { equals } from "vs/base/common/objects";
+import { IFileQuery } from "vs/workbench/services/search/common/search";
 
 enum LoadingPhase {
 	Created = 1,
@@ -53,7 +53,7 @@ export class FileQueryCacheState {
 		private cacheQuery: (cacheKey: string) => IFileQuery,
 		private loadFn: (query: IFileQuery) => Promise<any>,
 		private disposeFn: (cacheKey: string) => Promise<void>,
-		private previousCacheState: FileQueryCacheState | undefined
+		private previousCacheState: FileQueryCacheState | undefined,
 	) {
 		if (this.previousCacheState) {
 			const current = Object.assign({}, this.query, { cacheKey: null });

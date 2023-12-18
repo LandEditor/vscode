@@ -3,38 +3,38 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
-import * as resources from "vs/base/common/resources";
+import { Event } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
+import * as resources from "vs/base/common/resources";
+import { URI } from "vs/base/common/uri";
+import * as nls from "vs/nls";
+import { Action2 } from "vs/platform/actions/common/actions";
+import {
+	ConfigurationTarget,
+	IConfigurationService,
+} from "vs/platform/configuration/common/configuration";
+import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+import { ILogService } from "vs/platform/log/common/log";
+import {
+	IQuickInputService,
+	IQuickPickItem,
+} from "vs/platform/quickinput/common/quickInput";
+import { IWorkspaceTrustManagementService } from "vs/platform/workspace/common/workspaceTrust";
 import { IWorkbenchContribution } from "vs/workbench/common/contributions";
 import {
 	ITaskService,
 	IWorkspaceFolderTaskResult,
 } from "vs/workbench/contrib/tasks/common/taskService";
 import {
+	IWorkspaceTaskSource,
 	RunOnOptions,
+	TASKS_CATEGORY,
 	Task,
 	TaskRunSource,
 	TaskSource,
 	TaskSourceKind,
-	TASKS_CATEGORY,
 	WorkspaceFileTaskSource,
-	IWorkspaceTaskSource,
 } from "vs/workbench/contrib/tasks/common/tasks";
-import {
-	IQuickPickItem,
-	IQuickInputService,
-} from "vs/platform/quickinput/common/quickInput";
-import { Action2 } from "vs/platform/actions/common/actions";
-import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import { IWorkspaceTrustManagementService } from "vs/platform/workspace/common/workspaceTrust";
-import {
-	ConfigurationTarget,
-	IConfigurationService,
-} from "vs/platform/configuration/common/configuration";
-import { URI } from "vs/base/common/uri";
-import { Event } from "vs/base/common/event";
-import { ILogService } from "vs/platform/log/common/log";
 
 const ALLOW_AUTOMATIC_TASKS = "task.allowAutomaticTasks";
 
@@ -42,7 +42,7 @@ export class RunAutomaticTasks
 	extends Disposable
 	implements IWorkbenchContribution
 {
-	private _hasRunTasks: boolean = false;
+	private _hasRunTasks = false;
 	constructor(
 		@ITaskService private readonly _taskService: ITaskService,
 		@IConfigurationService
@@ -83,28 +83,28 @@ export class RunAutomaticTasks
 		// Wait until we have task system info (the extension host and workspace folders are available).
 		if (!this._taskService.hasTaskSystemInfo) {
 			this._logService.trace(
-				"RunAutomaticTasks: Awaiting task system info."
+				"RunAutomaticTasks: Awaiting task system info.",
 			);
 			await Event.toPromise(
-				Event.once(this._taskService.onDidChangeTaskSystemInfo)
+				Event.once(this._taskService.onDidChangeTaskSystemInfo),
 			);
 		}
 		const workspaceTasks = await this._taskService.getWorkspaceTasks(
-			TaskRunSource.FolderOpen
+			TaskRunSource.FolderOpen,
 		);
 		this._logService.trace(
-			`RunAutomaticTasks: Found ${workspaceTasks.size} automatic tasks`
+			`RunAutomaticTasks: Found ${workspaceTasks.size} automatic tasks`,
 		);
 		await this._runWithPermission(
 			this._taskService,
 			this._configurationService,
-			workspaceTasks
+			workspaceTasks,
 		);
 	}
 
 	private _runTasks(
 		taskService: ITaskService,
-		tasks: Array<Task | Promise<Task | undefined>>
+		tasks: Array<Task | Promise<Task | undefined>>,
 	) {
 		tasks.forEach((task) => {
 			if (task instanceof Promise) {
@@ -125,7 +125,7 @@ export class RunAutomaticTasks
 			case ConfigurationTarget.WORKSPACE_FOLDER: {
 				return resources.joinPath(
 					(<IWorkspaceTaskSource>source).config.workspaceFolder!.uri,
-					(<IWorkspaceTaskSource>source).config.file
+					(<IWorkspaceTaskSource>source).config.file,
 				);
 			}
 			case ConfigurationTarget.WORKSPACE: {
@@ -140,7 +140,7 @@ export class RunAutomaticTasks
 
 	private _findAutoTasks(
 		taskService: ITaskService,
-		workspaceTaskResult: Map<string, IWorkspaceFolderTaskResult>
+		workspaceTaskResult: Map<string, IWorkspaceFolderTaskResult>,
 	): {
 		tasks: Array<Task | Promise<Task | undefined>>;
 		taskNames: Array<string>;
@@ -166,7 +166,7 @@ export class RunAutomaticTasks
 				}
 				if (resultElement.configurations) {
 					for (const configuredTask of Object.values(
-						resultElement.configurations.byIdentifier
+						resultElement.configurations.byIdentifier,
 					)) {
 						if (
 							configuredTask.runOptions.runOn ===
@@ -178,10 +178,10 @@ export class RunAutomaticTasks
 										.getTask(
 											resultElement.workspaceFolder,
 											configuredTask._id,
-											true
+											true,
 										)
 										.then((task) => resolve(task));
-								})
+								}),
 							);
 							if (configuredTask._label) {
 								taskNames.push(configuredTask._label);
@@ -189,7 +189,7 @@ export class RunAutomaticTasks
 								taskNames.push(configuredTask.configures.task);
 							}
 							const location = this._getTaskSource(
-								configuredTask._source
+								configuredTask._source,
 							);
 							if (location) {
 								locations.set(location.fsPath, location);
@@ -205,11 +205,11 @@ export class RunAutomaticTasks
 	private async _runWithPermission(
 		taskService: ITaskService,
 		configurationService: IConfigurationService,
-		workspaceTaskResult: Map<string, IWorkspaceFolderTaskResult>
+		workspaceTaskResult: Map<string, IWorkspaceFolderTaskResult>,
 	) {
 		const { tasks, taskNames } = this._findAutoTasks(
 			taskService,
-			workspaceTaskResult
+			workspaceTaskResult,
 		);
 
 		if (taskNames.length === 0) {
@@ -226,7 +226,7 @@ export class ManageAutomaticTaskRunning extends Action2 {
 	public static readonly ID = "workbench.action.tasks.manageAutomaticRunning";
 	public static readonly LABEL = nls.localize(
 		"workbench.action.tasks.manageAutomaticRunning",
-		"Manage Automatic Tasks"
+		"Manage Automatic Tasks",
 	);
 
 	constructor() {
@@ -243,13 +243,13 @@ export class ManageAutomaticTaskRunning extends Action2 {
 		const allowItem: IQuickPickItem = {
 			label: nls.localize(
 				"workbench.action.tasks.allowAutomaticTasks",
-				"Allow Automatic Tasks"
+				"Allow Automatic Tasks",
 			),
 		};
 		const disallowItem: IQuickPickItem = {
 			label: nls.localize(
 				"workbench.action.tasks.disallowAutomaticTasks",
-				"Disallow Automatic Tasks"
+				"Disallow Automatic Tasks",
 			),
 		};
 		const value = await quickInputService.pick([allowItem, disallowItem], {
@@ -261,7 +261,7 @@ export class ManageAutomaticTaskRunning extends Action2 {
 		configurationService.updateValue(
 			ALLOW_AUTOMATIC_TASKS,
 			value === allowItem ? "on" : "off",
-			ConfigurationTarget.USER
+			ConfigurationTarget.USER,
 		);
 	}
 }

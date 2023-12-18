@@ -4,24 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 
 //@ts-check
-(function () {
-	"use strict";
-
+(() => {
 	const bootstrapWindow = bootstrapWindowLib();
 
 	// Load process explorer into window
 	bootstrapWindow.load(
 		["vs/code/electron-sandbox/processExplorer/processExplorerMain"],
-		function (processExplorer, configuration) {
-			return processExplorer.startup(configuration);
-		},
+		(processExplorer, configuration) =>
+			processExplorer.startup(configuration),
 		{
-			configureDeveloperSettings: function () {
-				return {
-					forceEnableDeveloperKeybindings: true,
-				};
-			},
-		}
+			configureDeveloperSettings: () => ({
+				forceEnableDeveloperKeybindings: true,
+			}),
+		},
 	);
 
 	/**

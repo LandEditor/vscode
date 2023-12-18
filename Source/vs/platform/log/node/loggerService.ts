@@ -21,14 +21,14 @@ export class LoggerService
 	protected doCreateLogger(
 		resource: URI,
 		logLevel: LogLevel,
-		options?: ILoggerOptions
+		options?: ILoggerOptions,
 	): ILogger {
 		return new SpdLogLogger(
 			generateUuid(),
 			resource.fsPath,
 			!options?.donotRotate,
 			!!options?.donotUseFormatters,
-			logLevel
+			logLevel,
 		);
 	}
 }

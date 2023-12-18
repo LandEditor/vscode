@@ -28,7 +28,7 @@ export class DragAndDropCommand implements ICommand {
 
 	public getEditOperations(
 		model: ITextModel,
-		builder: IEditOperationBuilder
+		builder: IEditOperationBuilder,
 	): void {
 		const text = model.getValueInRange(this.selection);
 		if (!this.copy) {
@@ -39,9 +39,9 @@ export class DragAndDropCommand implements ICommand {
 				this.targetPosition.lineNumber,
 				this.targetPosition.column,
 				this.targetPosition.lineNumber,
-				this.targetPosition.column
+				this.targetPosition.column,
 			),
-			text
+			text,
 		);
 
 		if (
@@ -71,9 +71,9 @@ export class DragAndDropCommand implements ICommand {
 					this.targetPosition.lineNumber,
 				this.selection.startLineNumber === this.selection.endLineNumber
 					? this.targetPosition.column +
-						this.selection.endColumn -
-						this.selection.startColumn
-					: this.selection.endColumn
+					  this.selection.endColumn -
+					  this.selection.startColumn
+					: this.selection.endColumn,
 			);
 			return;
 		}
@@ -88,9 +88,9 @@ export class DragAndDropCommand implements ICommand {
 				this.targetPosition.lineNumber,
 				this.selection.startLineNumber === this.selection.endLineNumber
 					? this.targetPosition.column +
-						this.selection.endColumn -
-						this.selection.startColumn
-					: this.selection.endColumn
+					  this.selection.endColumn -
+					  this.selection.startColumn
+					: this.selection.endColumn,
 			);
 			return;
 		}
@@ -105,9 +105,9 @@ export class DragAndDropCommand implements ICommand {
 					this.selection.startLineNumber,
 				this.selection.startLineNumber === this.selection.endLineNumber
 					? this.targetPosition.column +
-						this.selection.endColumn -
-						this.selection.startColumn
-					: this.selection.endColumn
+					  this.selection.endColumn -
+					  this.selection.startColumn
+					: this.selection.endColumn,
 			);
 			return;
 		}
@@ -121,15 +121,15 @@ export class DragAndDropCommand implements ICommand {
 					this.selection.startLineNumber,
 				this.selection.startLineNumber === this.selection.endLineNumber
 					? this.targetPosition.column -
-						this.selection.endColumn +
-						this.selection.startColumn
+					  this.selection.endColumn +
+					  this.selection.startColumn
 					: this.targetPosition.column -
-						this.selection.endColumn +
-						this.selection.startColumn,
+					  this.selection.endColumn +
+					  this.selection.startColumn,
 				this.targetPosition.lineNumber,
 				this.selection.startLineNumber === this.selection.endLineNumber
 					? this.targetPosition.column
-					: this.selection.endColumn
+					: this.selection.endColumn,
 			);
 		} else {
 			// The target position is before the selection's end position. Since the selection doesn't contain the target position, the selection is one-line and target position is before this selection.
@@ -141,14 +141,14 @@ export class DragAndDropCommand implements ICommand {
 				this.targetPosition.lineNumber,
 				this.targetPosition.column +
 					this.selection.endColumn -
-					this.selection.startColumn
+					this.selection.startColumn,
 			);
 		}
 	}
 
 	public computeCursorState(
 		model: ITextModel,
-		helper: ICursorStateComputerData
+		helper: ICursorStateComputerData,
 	): Selection {
 		return this.targetSelection!;
 	}

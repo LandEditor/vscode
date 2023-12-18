@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ConfigurationScope } from "vs/platform/configuration/common/configurationRegistry";
-import { URI } from "vs/base/common/uri";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { refineServiceDecorator } from "vs/platform/instantiation/common/instantiation";
 import { Event } from "vs/base/common/event";
 import { ResourceMap } from "vs/base/common/map";
+import { URI } from "vs/base/common/uri";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { ConfigurationScope } from "vs/platform/configuration/common/configurationRegistry";
+import { refineServiceDecorator } from "vs/platform/instantiation/common/instantiation";
 import { IAnyWorkspaceIdentifier } from "vs/platform/workspace/common/workspace";
 
 export const FOLDER_CONFIG_FOLDER_NAME = ".vscode";
@@ -64,13 +64,16 @@ export const TASKS_CONFIGURATION_KEY = "tasks";
 export const LAUNCH_CONFIGURATION_KEY = "launch";
 
 export const WORKSPACE_STANDALONE_CONFIGURATIONS = Object.create(null);
-WORKSPACE_STANDALONE_CONFIGURATIONS[TASKS_CONFIGURATION_KEY] =
-	`${FOLDER_CONFIG_FOLDER_NAME}/${TASKS_CONFIGURATION_KEY}.json`;
-WORKSPACE_STANDALONE_CONFIGURATIONS[LAUNCH_CONFIGURATION_KEY] =
-	`${FOLDER_CONFIG_FOLDER_NAME}/${LAUNCH_CONFIGURATION_KEY}.json`;
+WORKSPACE_STANDALONE_CONFIGURATIONS[
+	TASKS_CONFIGURATION_KEY
+] = `${FOLDER_CONFIG_FOLDER_NAME}/${TASKS_CONFIGURATION_KEY}.json`;
+WORKSPACE_STANDALONE_CONFIGURATIONS[
+	LAUNCH_CONFIGURATION_KEY
+] = `${FOLDER_CONFIG_FOLDER_NAME}/${LAUNCH_CONFIGURATION_KEY}.json`;
 export const USER_STANDALONE_CONFIGURATIONS = Object.create(null);
-USER_STANDALONE_CONFIGURATIONS[TASKS_CONFIGURATION_KEY] =
-	`${TASKS_CONFIGURATION_KEY}.json`;
+USER_STANDALONE_CONFIGURATIONS[
+	TASKS_CONFIGURATION_KEY
+] = `${TASKS_CONFIGURATION_KEY}.json`;
 
 export type ConfigurationKey = {
 	type: "defaults" | "user" | "workspaces" | "folder";

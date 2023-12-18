@@ -3,22 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IFileService } from "vs/platform/files/common/files";
-import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteAgentService";
-import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import { ILabelService } from "vs/platform/label/common/label";
-import { ILogService } from "vs/platform/log/common/log";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import {
-	IWorkingCopyHistoryModelOptions,
-	WorkingCopyHistoryService,
-} from "vs/workbench/services/workingCopy/common/workingCopyHistoryService";
+import { IFileService } from "vs/platform/files/common/files";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
+import { ILabelService } from "vs/platform/label/common/label";
+import { ILogService } from "vs/platform/log/common/log";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
+import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteAgentService";
 import { IWorkingCopyHistoryService } from "vs/workbench/services/workingCopy/common/workingCopyHistory";
+import {
+	IWorkingCopyHistoryModelOptions,
+	WorkingCopyHistoryService,
+} from "vs/workbench/services/workingCopy/common/workingCopyHistoryService";
 
 export class BrowserWorkingCopyHistoryService extends WorkingCopyHistoryService {
 	constructor(
@@ -29,7 +29,7 @@ export class BrowserWorkingCopyHistoryService extends WorkingCopyHistoryService 
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 		@ILabelService labelService: ILabelService,
 		@ILogService logService: ILogService,
-		@IConfigurationService configurationService: IConfigurationService
+		@IConfigurationService configurationService: IConfigurationService,
 	) {
 		super(
 			fileService,
@@ -38,14 +38,13 @@ export class BrowserWorkingCopyHistoryService extends WorkingCopyHistoryService 
 			uriIdentityService,
 			labelService,
 			logService,
-			configurationService
+			configurationService,
 		);
 	}
 
 	protected getModelOptions(): IWorkingCopyHistoryModelOptions {
 		return {
-			flushOnChange:
-				true /* because browsers support no long running shutdown */,
+			flushOnChange: true /* because browsers support no long running shutdown */,
 		};
 	}
 }
@@ -54,5 +53,5 @@ export class BrowserWorkingCopyHistoryService extends WorkingCopyHistoryService 
 registerSingleton(
 	IWorkingCopyHistoryService,
 	BrowserWorkingCopyHistoryService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

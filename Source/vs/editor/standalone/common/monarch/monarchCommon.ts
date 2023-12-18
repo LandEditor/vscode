@@ -14,7 +14,7 @@
  * Inside monarch we use fully typed definitions and compiled versions of the more abstract JSON descriptions.
  */
 
-export const enum MonarchBracket {
+export enum MonarchBracket {
 	None = 0,
 	Open = 1,
 	Close = -1,
@@ -52,13 +52,13 @@ export interface IBracket {
 export type FuzzyAction = IAction | string;
 
 export function isFuzzyActionArr(
-	what: FuzzyAction | FuzzyAction[]
+	what: FuzzyAction | FuzzyAction[],
 ): what is FuzzyAction[] {
 	return Array.isArray(what);
 }
 
 export function isFuzzyAction(
-	what: FuzzyAction | FuzzyAction[]
+	what: FuzzyAction | FuzzyAction[],
 ): what is FuzzyAction {
 	return !isFuzzyActionArr(what);
 }
@@ -87,7 +87,7 @@ export interface IAction {
 		id: string,
 		matches: string[],
 		state: string,
-		eos: boolean
+		eos: boolean,
 	) => FuzzyAction;
 
 	// or it is a declarative action with a token value and various other attributes
@@ -109,7 +109,7 @@ export interface IBranch {
 		id: string,
 		matches: string[],
 		state: string,
-		eos: boolean
+		eos: boolean,
 	) => boolean;
 }
 
@@ -167,13 +167,13 @@ export function substituteMatches(
 	str: string,
 	id: string,
 	matches: string[],
-	state: string
+	state: string,
 ): string {
 	const re = /\$((\$)|(#)|(\d\d?)|[sS](\d\d?)|@(\w+))/g;
 	let stateMatches: string[] | null = null;
 	return str.replace(
 		re,
-		function (full, sub?, dollar?, hash?, n?, s?, attr?, ofs?, total?) {
+		(full, sub?, dollar?, hash?, n?, s?, attr?, ofs?, total?) => {
 			if (!empty(dollar)) {
 				return "$"; // $$
 			}
@@ -195,7 +195,7 @@ export function substituteMatches(
 				return fixCase(lexer, stateMatches[s]); //$Sn
 			}
 			return "";
-		}
+		},
 	);
 }
 

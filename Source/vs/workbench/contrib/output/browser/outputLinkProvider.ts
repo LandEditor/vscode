@@ -3,26 +3,26 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from "vs/base/common/uri";
 import { RunOnceScheduler } from "vs/base/common/async";
-import { IModelService } from "vs/editor/common/services/model";
-import { ILink } from "vs/editor/common/languages";
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
-import {
-	OUTPUT_MODE_ID,
-	LOG_MODE_ID,
-} from "vs/workbench/services/output/common/output";
+import { IDisposable, dispose } from "vs/base/common/lifecycle";
+import { URI } from "vs/base/common/uri";
 import {
 	MonacoWebWorker,
 	createWebWorker,
 } from "vs/editor/browser/services/webWorker";
+import { ILink } from "vs/editor/common/languages";
+import { ILanguageConfigurationService } from "vs/editor/common/languages/languageConfigurationRegistry";
+import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
+import { IModelService } from "vs/editor/common/services/model";
+import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
 import {
 	ICreateData,
 	OutputLinkComputer,
 } from "vs/workbench/contrib/output/common/outputLinkComputer";
-import { IDisposable, dispose } from "vs/base/common/lifecycle";
-import { ILanguageConfigurationService } from "vs/editor/common/languages/languageConfigurationRegistry";
-import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
+import {
+	LOG_MODE_ID,
+	OUTPUT_MODE_ID,
+} from "vs/workbench/services/output/common/output";
 
 export class OutputLinkProvider {
 	private static readonly DISPOSE_WORKER_TIME = 3 * 60 * 1000; // dispose worker after 3 minutes of inactivity
@@ -51,7 +51,7 @@ export class OutputLinkProvider {
 
 	private registerListeners(): void {
 		this.contextService.onDidChangeWorkspaceFolders(() =>
-			this.updateLinkProviderWorker()
+			this.updateLinkProviderWorker(),
 		);
 	}
 
@@ -69,12 +69,12 @@ export class OutputLinkProvider {
 						{
 							provideLinks: async (model) => {
 								const links = await this.provideLinks(
-									model.uri
+									model.uri,
 								);
 
 								return links && { links };
 							},
-						}
+						},
 					);
 			}
 		} else {
@@ -105,7 +105,7 @@ export class OutputLinkProvider {
 						"vs/workbench/contrib/output/common/outputLinkComputer",
 					createData,
 					label: "outputLinkComputer",
-				}
+				},
 			);
 		}
 
@@ -114,7 +114,7 @@ export class OutputLinkProvider {
 
 	private async provideLinks(modelUri: URI): Promise<ILink[]> {
 		const linkComputer = await this.getOrCreateWorker().withSyncedResources(
-			[modelUri]
+			[modelUri],
 		);
 
 		return linkComputer.computeLinks(modelUri.toString());

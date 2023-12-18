@@ -3,76 +3,76 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import { IWindowOpenable } from "vs/platform/window/common/window";
-import { IDialogService } from "vs/platform/dialogs/common/dialogs";
-import {
-	MenuRegistry,
-	MenuId,
-	Action2,
-	registerAction2,
-	IAction2Options,
-} from "vs/platform/actions/common/actions";
+import { getActiveElement, getActiveWindow } from "vs/base/browser/dom";
+import { mainWindow } from "vs/base/browser/window";
+import { Codicon } from "vs/base/common/codicons";
 import { KeyChord, KeyCode, KeyMod } from "vs/base/common/keyCodes";
-import {
-	IsAuxiliaryWindowFocusedContext,
-	IsFullscreenContext,
-} from "vs/workbench/common/contextkeys";
-import {
-	IsMacNativeContext,
-	IsDevelopmentContext,
-	IsWebContext,
-	IsIOSContext,
-} from "vs/platform/contextkey/common/contextkeys";
+import { splitRecentLabel } from "vs/base/common/labels";
+import { ResourceMap } from "vs/base/common/map";
+import { isMacintosh, isWeb, isWindows } from "vs/base/common/platform";
+import { ThemeIcon } from "vs/base/common/themables";
+import { URI } from "vs/base/common/uri";
+import { ILanguageService } from "vs/editor/common/languages/language";
+import { getIconClasses } from "vs/editor/common/services/getIconClasses";
+import { IModelService } from "vs/editor/common/services/model";
+import { localize } from "vs/nls";
 import { Categories } from "vs/platform/action/common/actionCommonCategories";
 import {
-	KeybindingsRegistry,
-	KeybindingWeight,
-} from "vs/platform/keybinding/common/keybindingsRegistry";
-import {
-	IQuickInputButton,
-	IQuickInputService,
-	IQuickPickSeparator,
-	IKeyMods,
-	IQuickPickItem,
-} from "vs/platform/quickinput/common/quickInput";
-import {
-	IWorkspaceContextService,
-	IWorkspaceIdentifier,
-} from "vs/platform/workspace/common/workspace";
-import { ILabelService, Verbosity } from "vs/platform/label/common/label";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { IModelService } from "vs/editor/common/services/model";
-import { ILanguageService } from "vs/editor/common/languages/language";
-import {
-	IRecent,
-	isRecentFolder,
-	isRecentWorkspace,
-	IWorkspacesService,
-} from "vs/platform/workspaces/common/workspaces";
-import { URI } from "vs/base/common/uri";
-import { getIconClasses } from "vs/editor/common/services/getIconClasses";
-import { FileKind } from "vs/platform/files/common/files";
-import { splitRecentLabel } from "vs/base/common/labels";
-import { isMacintosh, isWeb, isWindows } from "vs/base/common/platform";
-import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
-import {
-	inQuickPickContext,
-	getQuickNavigateHandler,
-} from "vs/workbench/browser/quickaccess";
-import { IHostService } from "vs/workbench/services/host/browser/host";
-import { ResourceMap } from "vs/base/common/map";
-import { Codicon } from "vs/base/common/codicons";
-import { ThemeIcon } from "vs/base/common/themables";
-import { CommandsRegistry } from "vs/platform/commands/common/commands";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+	Action2,
+	IAction2Options,
+	MenuId,
+	MenuRegistry,
+	registerAction2,
+} from "vs/platform/actions/common/actions";
 import {
 	isFolderBackupInfo,
 	isWorkspaceBackupInfo,
 } from "vs/platform/backup/common/backup";
-import { getActiveElement, getActiveWindow } from "vs/base/browser/dom";
-import { mainWindow } from "vs/base/browser/window";
+import { CommandsRegistry } from "vs/platform/commands/common/commands";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
+import {
+	IsDevelopmentContext,
+	IsIOSContext,
+	IsMacNativeContext,
+	IsWebContext,
+} from "vs/platform/contextkey/common/contextkeys";
+import { IDialogService } from "vs/platform/dialogs/common/dialogs";
+import { FileKind } from "vs/platform/files/common/files";
+import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import {
+	KeybindingWeight,
+	KeybindingsRegistry,
+} from "vs/platform/keybinding/common/keybindingsRegistry";
+import { ILabelService, Verbosity } from "vs/platform/label/common/label";
+import {
+	IKeyMods,
+	IQuickInputButton,
+	IQuickInputService,
+	IQuickPickItem,
+	IQuickPickSeparator,
+} from "vs/platform/quickinput/common/quickInput";
+import { IWindowOpenable } from "vs/platform/window/common/window";
+import {
+	IWorkspaceContextService,
+	IWorkspaceIdentifier,
+} from "vs/platform/workspace/common/workspace";
+import {
+	IRecent,
+	IWorkspacesService,
+	isRecentFolder,
+	isRecentWorkspace,
+} from "vs/platform/workspaces/common/workspaces";
+import {
+	getQuickNavigateHandler,
+	inQuickPickContext,
+} from "vs/workbench/browser/quickaccess";
+import {
+	IsAuxiliaryWindowFocusedContext,
+	IsFullscreenContext,
+} from "vs/workbench/common/contextkeys";
+import { IHostService } from "vs/workbench/services/host/browser/host";
 
 export const inRecentFilesPickerContextKey = "inRecentFilesPicker";
 
@@ -93,7 +93,7 @@ abstract class BaseOpenRecentAction extends Action2 {
 			"dirty-workspace " + ThemeIcon.asClassName(Codicon.closeDirty),
 		tooltip: localize(
 			"dirtyRecentlyOpenedFolder",
-			"Folder With Unsaved Files"
+			"Folder With Unsaved Files",
 		),
 		alwaysVisible: true,
 	};
@@ -102,7 +102,7 @@ abstract class BaseOpenRecentAction extends Action2 {
 		...this.dirtyRecentlyOpenedFolder,
 		tooltip: localize(
 			"dirtyRecentlyOpenedWorkspace",
-			"Workspace With Unsaved Files"
+			"Workspace With Unsaved Files",
 		),
 	};
 
@@ -138,7 +138,7 @@ abstract class BaseOpenRecentAction extends Action2 {
 			} else {
 				dirtyWorkspaces.set(
 					dirtyWorkspace.workspace.configPath,
-					dirtyWorkspace.workspace
+					dirtyWorkspace.workspace,
 				);
 				hasWorkspaces = true;
 			}
@@ -153,7 +153,7 @@ abstract class BaseOpenRecentAction extends Action2 {
 			} else {
 				recentWorkspaces.set(
 					recent.workspace.configPath,
-					recent.workspace
+					recent.workspace,
 				);
 				hasWorkspaces = true;
 			}
@@ -172,8 +172,8 @@ abstract class BaseOpenRecentAction extends Action2 {
 					languageService,
 					labelService,
 					recent,
-					isDirty
-				)
+					isDirty,
+				),
 			);
 		}
 
@@ -189,13 +189,13 @@ abstract class BaseOpenRecentAction extends Action2 {
 						languageService,
 						labelService,
 						dirtyWorkspaceOrFolder,
-						true
-					)
+						true,
+					),
 				);
 			} else if (
 				isWorkspaceBackupInfo(dirtyWorkspaceOrFolder) &&
 				!recentWorkspaces.has(
-					dirtyWorkspaceOrFolder.workspace.configPath
+					dirtyWorkspaceOrFolder.workspace.configPath,
 				)
 			) {
 				workspacePicks.push(
@@ -204,8 +204,8 @@ abstract class BaseOpenRecentAction extends Action2 {
 						languageService,
 						labelService,
 						dirtyWorkspaceOrFolder,
-						true
-					)
+						true,
+					),
 				);
 			}
 		}
@@ -216,8 +216,8 @@ abstract class BaseOpenRecentAction extends Action2 {
 				languageService,
 				labelService,
 				p,
-				false
-			)
+				false,
+			),
 		);
 
 		// focus second entry if the first recent workspace is the current workspace
@@ -227,7 +227,7 @@ abstract class BaseOpenRecentAction extends Action2 {
 			contextService.isCurrentWorkspace(
 				isRecentWorkspace(firstEntry)
 					? firstEntry.workspace
-					: firstEntry.folderUri
+					: firstEntry.folderUri,
 			);
 
 		let keyMods: IKeyMods | undefined;
@@ -257,20 +257,20 @@ abstract class BaseOpenRecentAction extends Action2 {
 			placeHolder: isMacintosh
 				? localize(
 						"openRecentPlaceholderMac",
-						"Select to open (hold Cmd-key to force new window or Option-key for same window)"
-					)
+						"Select to open (hold Cmd-key to force new window or Option-key for same window)",
+				  )
 				: localize(
 						"openRecentPlaceholder",
-						"Select to open (hold Ctrl-key to force new window or Alt-key for same window)"
-					),
+						"Select to open (hold Ctrl-key to force new window or Alt-key for same window)",
+				  ),
 			matchOnDescription: true,
 			onKeyMods: (mods) => (keyMods = mods),
 			quickNavigate: this.isQuickNavigate()
 				? {
 						keybindings: keybindingService.lookupKeybindings(
-							this.desc.id
+							this.desc.id,
 						),
-					}
+				  }
 				: undefined,
 			hideInput: this.isQuickNavigate(),
 			onDidTriggerItemButton: async (context) => {
@@ -293,30 +293,30 @@ abstract class BaseOpenRecentAction extends Action2 {
 						title: isDirtyWorkspace
 							? localize(
 									"dirtyWorkspace",
-									"Workspace with Unsaved Files"
-								)
+									"Workspace with Unsaved Files",
+							  )
 							: localize(
 									"dirtyFolder",
-									"Folder with Unsaved Files"
-								),
+									"Folder with Unsaved Files",
+							  ),
 						message: isDirtyWorkspace
 							? localize(
 									"dirtyWorkspaceConfirm",
-									"Do you want to open the workspace to review the unsaved files?"
-								)
+									"Do you want to open the workspace to review the unsaved files?",
+							  )
 							: localize(
 									"dirtyFolderConfirm",
-									"Do you want to open the folder to review the unsaved files?"
-								),
+									"Do you want to open the folder to review the unsaved files?",
+							  ),
 						detail: isDirtyWorkspace
 							? localize(
 									"dirtyWorkspaceConfirmDetail",
-									"Workspaces with unsaved files cannot be removed until all unsaved files have been saved or reverted."
-								)
+									"Workspaces with unsaved files cannot be removed until all unsaved files have been saved or reverted.",
+							  )
 							: localize(
 									"dirtyFolderConfirmDetail",
-									"Folders with unsaved files cannot be removed until all unsaved files have been saved or reverted."
-								),
+									"Folders with unsaved files cannot be removed until all unsaved files have been saved or reverted.",
+							  ),
 					});
 
 					if (confirmed) {
@@ -344,7 +344,7 @@ abstract class BaseOpenRecentAction extends Action2 {
 		languageService: ILanguageService,
 		labelService: ILabelService,
 		recent: IRecent,
-		isDirty: boolean
+		isDirty: boolean,
 	): IRecentlyOpenedPick {
 		let openable: IWindowOpenable | undefined;
 		let iconClasses: string[];
@@ -359,7 +359,7 @@ abstract class BaseOpenRecentAction extends Action2 {
 				modelService,
 				languageService,
 				resource,
-				FileKind.FOLDER
+				FileKind.FOLDER,
 			);
 			openable = { folderUri: resource };
 			fullLabel =
@@ -376,7 +376,7 @@ abstract class BaseOpenRecentAction extends Action2 {
 				modelService,
 				languageService,
 				resource,
-				FileKind.ROOT_FOLDER
+				FileKind.ROOT_FOLDER,
 			);
 			openable = { workspaceUri: resource };
 			fullLabel =
@@ -394,7 +394,7 @@ abstract class BaseOpenRecentAction extends Action2 {
 				modelService,
 				languageService,
 				resource,
-				FileKind.FILE
+				FileKind.FILE,
 			);
 			openable = { fileUri: resource };
 			fullLabel = recent.label || labelService.getUriLabel(resource);
@@ -410,13 +410,13 @@ abstract class BaseOpenRecentAction extends Action2 {
 					? localize(
 							"recentDirtyWorkspaceAriaLabel",
 							"{0}, workspace with unsaved changes",
-							name
-						)
+							name,
+					  )
 					: localize(
 							"recentDirtyFolderAriaLabel",
 							"{0}, folder with unsaved changes",
-							name
-						)
+							name,
+					  )
 				: name,
 			description: parentPath,
 			buttons: isDirty
@@ -424,7 +424,7 @@ abstract class BaseOpenRecentAction extends Action2 {
 						isWorkspace
 							? this.dirtyRecentlyOpenedWorkspace
 							: this.dirtyRecentlyOpenedFolder,
-					]
+				  ]
 				: [this.removeFromRecentlyOpened],
 			openable,
 			resource,
@@ -443,7 +443,7 @@ export class OpenRecentAction extends BaseOpenRecentAction {
 				value: localize("openRecent", "Open Recent..."),
 				mnemonicTitle: localize(
 					{ key: "miMore", comment: ["&& denotes a mnemonic"] },
-					"&&More..."
+					"&&More...",
 				),
 				original: "Open Recent...",
 			},
@@ -496,7 +496,7 @@ class ToggleFullScreenAction extends Action2 {
 						key: "miToggleFullScreen",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Full Screen"
+					"&&Full Screen",
 				),
 				original: "Toggle Full Screen",
 			},
@@ -566,7 +566,7 @@ class ShowAboutDialogAction extends Action2 {
 				value: localize("about", "About"),
 				mnemonicTitle: localize(
 					{ key: "miAbout", comment: ["&& denotes a mnemonic"] },
-					"&&About"
+					"&&About",
 				),
 				original: "About",
 			},
@@ -596,7 +596,7 @@ class NewWindowAction extends Action2 {
 				value: localize("newWindow", "New Window"),
 				mnemonicTitle: localize(
 					{ key: "miNewWindow", comment: ["&& denotes a mnemonic"] },
-					"New &&Window"
+					"New &&Window",
 				),
 				original: "New Window",
 			},
@@ -607,12 +607,12 @@ class NewWindowAction extends Action2 {
 					? isWindows
 						? KeyChord(
 								KeyMod.CtrlCmd | KeyCode.KeyK,
-								KeyMod.Shift | KeyCode.KeyN
-							)
+								KeyMod.Shift | KeyCode.KeyN,
+						  )
 						: KeyMod.CtrlCmd |
-							KeyMod.Alt |
-							KeyMod.Shift |
-							KeyCode.KeyN
+						  KeyMod.Alt |
+						  KeyMod.Shift |
+						  KeyCode.KeyN
 					: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyN,
 				secondary: isWeb
 					? [KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyN]
@@ -640,7 +640,7 @@ class BlurAction extends Action2 {
 			title: {
 				value: localize(
 					"blur",
-					"Remove keyboard focus from focused element"
+					"Remove keyboard focus from focused element",
 				),
 				original: "Remove keyboard focus from focused element",
 			},
@@ -669,7 +669,7 @@ registerAction2(BlurAction);
 
 const recentFilesPickerContext = ContextKeyExpr.and(
 	inQuickPickContext,
-	ContextKeyExpr.has(inRecentFilesPickerContextKey)
+	ContextKeyExpr.has(inRecentFilesPickerContextKey),
 );
 
 const quickPickNavigateNextInRecentFilesPickerId =
@@ -679,7 +679,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	weight: KeybindingWeight.WorkbenchContrib + 50,
 	handler: getQuickNavigateHandler(
 		quickPickNavigateNextInRecentFilesPickerId,
-		true
+		true,
 	),
 	when: recentFilesPickerContext,
 	primary: KeyMod.CtrlCmd | KeyCode.KeyR,
@@ -693,7 +693,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	weight: KeybindingWeight.WorkbenchContrib + 50,
 	handler: getQuickNavigateHandler(
 		quickPickNavigatePreviousInRecentFilesPicker,
-		false
+		false,
 	),
 	when: recentFilesPickerContext,
 	primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyR,
@@ -710,9 +710,9 @@ CommandsRegistry.registerCommand(
 
 		return configurationService.updateValue(
 			"window.confirmBeforeClose",
-			setting === "never" ? "keyboardOnly" : "never"
+			setting === "never" ? "keyboardOnly" : "never",
 		);
-	}
+	},
 );
 
 // --- Menu Registration
@@ -724,7 +724,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarFileMenu, {
 		title: localize("miConfirmClose", "Confirm Before Close"),
 		toggled: ContextKeyExpr.notEquals(
 			"config.window.confirmBeforeClose",
-			"never"
+			"never",
 		),
 	},
 	order: 1,
@@ -734,7 +734,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarFileMenu, {
 MenuRegistry.appendMenuItem(MenuId.MenubarFileMenu, {
 	title: localize(
 		{ key: "miOpenRecent", comment: ["&& denotes a mnemonic"] },
-		"Open &&Recent"
+		"Open &&Recent",
 	),
 	submenu: MenuId.MenubarRecentMenu,
 	group: "2_open",

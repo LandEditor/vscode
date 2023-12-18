@@ -5,11 +5,11 @@
 
 import * as platform from "vs/base/common/platform";
 import {
-	EditorFontVariations,
-	EditorOptions,
-	EditorOption,
-	FindComputedEditorOptionValueById,
 	EDITOR_FONT_DEFAULTS,
+	EditorFontVariations,
+	EditorOption,
+	EditorOptions,
+	FindComputedEditorOptionValueById,
 } from "vs/editor/common/config/editorOptions";
 import { EditorZoom } from "vs/editor/common/config/editorZoom";
 
@@ -40,7 +40,7 @@ export class BareFontInfo {
 	public static createFromValidatedSettings(
 		options: IValidatedEditorOptions,
 		pixelRatio: number,
-		ignoreEditorZoom: boolean
+		ignoreEditorZoom: boolean,
 	): BareFontInfo {
 		const fontFamily = options.get(EditorOption.fontFamily);
 		const fontWeight = options.get(EditorOption.fontWeight);
@@ -58,7 +58,7 @@ export class BareFontInfo {
 			lineHeight,
 			letterSpacing,
 			pixelRatio,
-			ignoreEditorZoom
+			ignoreEditorZoom,
 		);
 	}
 
@@ -76,20 +76,20 @@ export class BareFontInfo {
 			letterSpacing?: number;
 		},
 		pixelRatio: number,
-		ignoreEditorZoom: boolean = false
+		ignoreEditorZoom = false,
 	): BareFontInfo {
 		const fontFamily = EditorOptions.fontFamily.validate(opts.fontFamily);
 		const fontWeight = EditorOptions.fontWeight.validate(opts.fontWeight);
 		const fontSize = EditorOptions.fontSize.validate(opts.fontSize);
 		const fontFeatureSettings = EditorOptions.fontLigatures2.validate(
-			opts.fontLigatures
+			opts.fontLigatures,
 		);
 		const fontVariationSettings = EditorOptions.fontVariations.validate(
-			opts.fontVariations
+			opts.fontVariations,
 		);
 		const lineHeight = EditorOptions.lineHeight.validate(opts.lineHeight);
 		const letterSpacing = EditorOptions.letterSpacing.validate(
-			opts.letterSpacing
+			opts.letterSpacing,
 		);
 		return BareFontInfo._create(
 			fontFamily,
@@ -100,7 +100,7 @@ export class BareFontInfo {
 			lineHeight,
 			letterSpacing,
 			pixelRatio,
-			ignoreEditorZoom
+			ignoreEditorZoom,
 		);
 	}
 
@@ -116,7 +116,7 @@ export class BareFontInfo {
 		lineHeight: number,
 		letterSpacing: number,
 		pixelRatio: number,
-		ignoreEditorZoom: boolean
+		ignoreEditorZoom: boolean,
 	): BareFontInfo {
 		if (lineHeight === 0) {
 			lineHeight = GOLDEN_LINE_HEIGHT_RATIO * fontSize;
@@ -261,7 +261,7 @@ export class FontInfo extends BareFontInfo {
 			wsmiddotWidth: number;
 			maxDigitWidth: number;
 		},
-		isTrusted: boolean
+		isTrusted: boolean,
 	) {
 		super(opts);
 		this.isTrusted = isTrusted;

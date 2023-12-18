@@ -16,18 +16,18 @@ import { ActiveJsTsEditorTracker } from "./activeJsTsEditorTracker";
 export default class ManagedFileContextManager extends Disposable {
 	private static readonly contextName = "typescript.isManagedFile";
 
-	private isInManagedFileContext: boolean = false;
+	private isInManagedFileContext = false;
 
 	public constructor(activeJsTsEditorTracker: ActiveJsTsEditorTracker) {
 		super();
 		activeJsTsEditorTracker.onDidChangeActiveJsTsEditor(
 			this.onDidChangeActiveTextEditor,
 			this,
-			this._disposables
+			this._disposables,
 		);
 
 		this.onDidChangeActiveTextEditor(
-			activeJsTsEditorTracker.activeJsTsEditor
+			activeJsTsEditorTracker.activeJsTsEditor,
 		);
 	}
 
@@ -47,7 +47,7 @@ export default class ManagedFileContextManager extends Disposable {
 		vscode.commands.executeCommand(
 			"setContext",
 			ManagedFileContextManager.contextName,
-			newValue
+			newValue,
 		);
 		this.isInManagedFileContext = newValue;
 	}

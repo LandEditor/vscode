@@ -78,16 +78,16 @@ class DoubleResourceMap<V> {
 
 		return Iterable.map(
 			Iterable.concat(...this._byOwner.values()),
-			(map) => map[1]
+			(map) => map[1],
 		);
 	}
 }
 
 class MarkerStats implements MarkerStatistics {
-	errors: number = 0;
-	infos: number = 0;
-	warnings: number = 0;
-	unknowns: number = 0;
+	errors = 0;
+	infos = 0;
+	warnings = 0;
+	unknowns = 0;
 
 	private readonly _data = new ResourceMap<MarkerStatistics>();
 	private readonly _service: IMarkerService;
@@ -209,7 +209,7 @@ export class MarkerService implements IMarkerService {
 	private static _toMarker(
 		owner: string,
 		resource: URI,
-		data: IMarkerData
+		data: IMarkerData,
 	): IMarker | undefined {
 		let {
 			code,
@@ -274,18 +274,18 @@ export class MarkerService implements IMarkerService {
 				const marker = MarkerService._toMarker(
 					owner,
 					resource,
-					markerData
+					markerData,
 				);
 				if (!marker) {
 					// filter bad markers
 					continue;
 				}
 				const array = groups.get(resource);
-				if (!array) {
+				if (array) {
+					array.push(marker);
+				} else {
 					groups.set(resource, [marker]);
 					changes.push(resource);
-				} else {
-					array.push(marker);
 				}
 			}
 
@@ -306,7 +306,7 @@ export class MarkerService implements IMarkerService {
 			resource?: URI;
 			severities?: number;
 			take?: number;
-		} = Object.create(null)
+		} = Object.create(null),
 	): IMarker[] {
 		let { owner, resource, severities, take } = filter;
 
@@ -317,9 +317,7 @@ export class MarkerService implements IMarkerService {
 		if (owner && resource) {
 			// exactly one owner AND resource
 			const data = this._data.get(resource, owner);
-			if (!data) {
-				return [];
-			} else {
+			if (data) {
 				const result: IMarker[] = [];
 				for (const marker of data) {
 					if (MarkerService._accept(marker, severities)) {
@@ -330,6 +328,8 @@ export class MarkerService implements IMarkerService {
 					}
 				}
 				return result;
+			} else {
+				return [];
 			}
 		} else if (!owner && !resource) {
 			// all

@@ -58,7 +58,7 @@ export class ConfigurationService
 		private readonly settingsResource: URI,
 		fileService: IFileService,
 		policyService: IPolicyService,
-		logService: ILogService
+		logService: ILogService,
 	) {
 		super();
 		this.defaultConfiguration = this._register(new DefaultConfiguration());
@@ -69,42 +69,42 @@ export class ConfigurationService
 						new PolicyConfiguration(
 							this.defaultConfiguration,
 							policyService,
-							logService
-						)
-					);
+							logService,
+						),
+				  );
 		this.userConfiguration = this._register(
 			new UserSettings(
 				this.settingsResource,
 				{},
 				extUriBiasedIgnorePathCase,
-				fileService
-			)
+				fileService,
+			),
 		);
 		this.configuration = new Configuration(
 			this.defaultConfiguration.configurationModel,
 			this.policyConfiguration.configurationModel,
 			new ConfigurationModel(),
-			new ConfigurationModel()
+			new ConfigurationModel(),
 		);
 
 		this.reloadConfigurationScheduler = this._register(
-			new RunOnceScheduler(() => this.reloadConfiguration(), 50)
+			new RunOnceScheduler(() => this.reloadConfiguration(), 50),
 		);
 		this._register(
 			this.defaultConfiguration.onDidChangeConfiguration(
 				({ defaults, properties }) =>
-					this.onDidDefaultConfigurationChange(defaults, properties)
-			)
+					this.onDidDefaultConfigurationChange(defaults, properties),
+			),
 		);
 		this._register(
 			this.policyConfiguration.onDidChangeConfiguration((model) =>
-				this.onDidPolicyConfigurationChange(model)
-			)
+				this.onDidPolicyConfigurationChange(model),
+			),
 		);
 		this._register(
 			this.userConfiguration.onDidChange(() =>
-				this.reloadConfigurationScheduler.schedule()
-			)
+				this.reloadConfigurationScheduler.schedule(),
+			),
 		);
 	}
 
@@ -118,7 +118,7 @@ export class ConfigurationService
 			defaultModel,
 			policyModel,
 			new ConfigurationModel(),
-			userModel
+			userModel,
 		);
 	}
 
@@ -135,8 +135,8 @@ export class ConfigurationService
 		const overrides = isConfigurationOverrides(arg1)
 			? arg1
 			: isConfigurationOverrides(arg2)
-				? arg2
-				: {};
+			  ? arg2
+			  : {};
 		return this.configuration.getValue(section, overrides, undefined);
 	}
 
@@ -144,24 +144,24 @@ export class ConfigurationService
 	updateValue(
 		key: string,
 		value: any,
-		overrides: IConfigurationOverrides
+		overrides: IConfigurationOverrides,
 	): Promise<void>;
 	updateValue(
 		key: string,
 		value: any,
-		target: ConfigurationTarget
+		target: ConfigurationTarget,
 	): Promise<void>;
 	updateValue(
 		key: string,
 		value: any,
 		overrides: IConfigurationOverrides,
-		target: ConfigurationTarget
+		target: ConfigurationTarget,
 	): Promise<void>;
 	updateValue(
 		key: string,
 		value: any,
 		arg3?: any,
-		arg4?: any
+		arg4?: any,
 	): Promise<void> {
 		return Promise.reject(new Error("not supported"));
 	}
@@ -186,35 +186,35 @@ export class ConfigurationService
 	}
 
 	private onDidChangeUserConfiguration(
-		userConfigurationModel: ConfigurationModel
+		userConfigurationModel: ConfigurationModel,
 	): void {
 		const previous = this.configuration.toData();
 		const change =
 			this.configuration.compareAndUpdateLocalUserConfiguration(
-				userConfigurationModel
+				userConfigurationModel,
 			);
 		this.trigger(change, previous, ConfigurationTarget.USER);
 	}
 
 	private onDidDefaultConfigurationChange(
 		defaultConfigurationModel: ConfigurationModel,
-		properties: string[]
+		properties: string[],
 	): void {
 		const previous = this.configuration.toData();
 		const change = this.configuration.compareAndUpdateDefaultConfiguration(
 			defaultConfigurationModel,
-			properties
+			properties,
 		);
 		this.trigger(change, previous, ConfigurationTarget.DEFAULT);
 	}
 
 	private onDidPolicyConfigurationChange(
-		policyConfiguration: ConfigurationModel
+		policyConfiguration: ConfigurationModel,
 	): void {
 		const previous = this.configuration.toData();
 		const change =
 			this.configuration.compareAndUpdatePolicyConfiguration(
-				policyConfiguration
+				policyConfiguration,
 			);
 		this.trigger(change, previous, ConfigurationTarget.DEFAULT);
 	}
@@ -222,12 +222,12 @@ export class ConfigurationService
 	private trigger(
 		configurationChange: IConfigurationChange,
 		previous: IConfigurationData,
-		source: ConfigurationTarget
+		source: ConfigurationTarget,
 	): void {
 		const event = new ConfigurationChangeEvent(
 			configurationChange,
 			{ data: previous },
-			this.configuration
+			this.configuration,
 		);
 		event.source = source;
 		event.sourceConfig = this.getTargetConfiguration(source);

@@ -48,9 +48,9 @@ import {
 } from "vs/platform/progress/common/progress";
 import { Registry } from "vs/platform/registry/common/platform";
 import {
+	Extensions as WorkbenchContributionsExtensions,
 	IWorkbenchContribution,
 	IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchContributionsExtensions,
 } from "vs/workbench/common/contributions";
 import { SaveReason } from "vs/workbench/common/editor";
 import { getModifiedRanges } from "vs/workbench/contrib/format/browser/formatModified";
@@ -73,7 +73,7 @@ export class TrimWhitespaceParticipant implements ITextFileSaveParticipant {
 
 	async participate(
 		model: ITextFileEditorModel,
-		env: { reason: SaveReason }
+		env: { reason: SaveReason },
 	): Promise<void> {
 		if (!model.textEditorModel) {
 			return;
@@ -87,14 +87,14 @@ export class TrimWhitespaceParticipant implements ITextFileSaveParticipant {
 		) {
 			this.doTrimTrailingWhitespace(
 				model.textEditorModel,
-				env.reason === SaveReason.AUTO
+				env.reason === SaveReason.AUTO,
 			);
 		}
 	}
 
 	private doTrimTrailingWhitespace(
 		model: ITextModel,
-		isAutoSaved: boolean
+		isAutoSaved: boolean,
 	): void {
 		let prevSelection: Selection[] = [];
 		let cursors: Position[] = [];
@@ -117,8 +117,8 @@ export class TrimWhitespaceParticipant implements ITextFileSaveParticipant {
 						cursors.push(
 							new Position(
 								lineNumber,
-								model.getLineMaxColumn(lineNumber)
-							)
+								model.getLineMaxColumn(lineNumber),
+							),
 						);
 					}
 				}
@@ -136,7 +136,7 @@ export class TrimWhitespaceParticipant implements ITextFileSaveParticipant {
 
 function findEditor(
 	model: ITextModel,
-	codeEditorService: ICodeEditorService
+	codeEditorService: ICodeEditorService,
 ): IActiveCodeEditor | null {
 	let candidate: IActiveCodeEditor | null = null;
 
@@ -167,7 +167,7 @@ export class FinalNewLineParticipant implements ITextFileSaveParticipant {
 
 	async participate(
 		model: ITextFileEditorModel,
-		_env: { reason: SaveReason }
+		_env: { reason: SaveReason },
 	): Promise<void> {
 		if (!model.textEditorModel) {
 			return;
@@ -196,7 +196,7 @@ export class FinalNewLineParticipant implements ITextFileSaveParticipant {
 		const edits = [
 			EditOperation.insert(
 				new Position(lineCount, model.getLineMaxColumn(lineCount)),
-				model.getEOL()
+				model.getEOL(),
 			),
 		];
 		const editor = findEditor(model, this.codeEditorService);
@@ -204,7 +204,7 @@ export class FinalNewLineParticipant implements ITextFileSaveParticipant {
 			editor.executeEdits(
 				"insertFinalNewLine",
 				edits,
-				editor.getSelections()
+				editor.getSelections(),
 			);
 		} else {
 			model.pushEditOperations([], edits, () => null);
@@ -224,7 +224,7 @@ export class TrimFinalNewLinesParticipant implements ITextFileSaveParticipant {
 
 	async participate(
 		model: ITextFileEditorModel,
-		env: { reason: SaveReason }
+		env: { reason: SaveReason },
 	): Promise<void> {
 		if (!model.textEditorModel) {
 			return;
@@ -238,7 +238,7 @@ export class TrimFinalNewLinesParticipant implements ITextFileSaveParticipant {
 		) {
 			this.doTrimFinalNewLines(
 				model.textEditorModel,
-				env.reason === SaveReason.AUTO
+				env.reason === SaveReason.AUTO,
 			);
 		}
 	}
@@ -289,15 +289,15 @@ export class TrimFinalNewLinesParticipant implements ITextFileSaveParticipant {
 		const lastNonEmptyLine = this.findLastNonEmptyLine(model);
 		const deleteFromLineNumber = Math.max(
 			lastNonEmptyLine + 1,
-			cannotTouchLineNumber + 1
+			cannotTouchLineNumber + 1,
 		);
 		const deletionRange = model.validateRange(
 			new Range(
 				deleteFromLineNumber,
 				1,
 				lineCount,
-				model.getLineMaxColumn(lineCount)
-			)
+				model.getLineMaxColumn(lineCount),
+			),
 		);
 
 		if (deletionRange.isEmpty()) {
@@ -307,7 +307,7 @@ export class TrimFinalNewLinesParticipant implements ITextFileSaveParticipant {
 		model.pushEditOperations(
 			prevSelection,
 			[EditOperation.delete(deletionRange)],
-			(_edits) => prevSelection
+			(_edits) => prevSelection,
 		);
 
 		editor?.setSelections(prevSelection);
@@ -330,7 +330,7 @@ class FormatOnSaveParticipant implements ITextFileSaveParticipant {
 		model: ITextFileEditorModel,
 		env: { reason: SaveReason },
 		progress: IProgress<IProgressStep>,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void> {
 		if (!model.textEditorModel) {
 			return;
@@ -361,14 +361,14 @@ class FormatOnSaveParticipant implements ITextFileSaveParticipant {
 					provider.displayName ||
 						(provider.extensionId && provider.extensionId.value) ||
 						"???",
-					"command:workbench.action.openSettings?%5B%22editor.formatOnSave%22%5D"
+					"command:workbench.action.openSettings?%5B%22editor.formatOnSave%22%5D",
 				),
 			});
 		});
 
 		const enabled = this.configurationService.getValue<boolean>(
 			"editor.formatOnSave",
-			overrides
+			overrides,
 		);
 		if (!enabled) {
 			return undefined;
@@ -387,14 +387,14 @@ class FormatOnSaveParticipant implements ITextFileSaveParticipant {
 				editorOrModel,
 				FormattingMode.Silent,
 				nestedProgress,
-				token
+				token,
 			);
 		} else {
 			const ranges = await this.instantiationService.invokeFunction(
 				getModifiedRanges,
 				isCodeEditor(editorOrModel)
 					? editorOrModel.getModel()
-					: editorOrModel
+					: editorOrModel,
 			);
 			if (ranges === null && mode === "modificationsIfAvailable") {
 				// no SCM, fallback to formatting the whole file iff wanted
@@ -403,7 +403,7 @@ class FormatOnSaveParticipant implements ITextFileSaveParticipant {
 					editorOrModel,
 					FormattingMode.Silent,
 					nestedProgress,
-					token
+					token,
 				);
 			} else if (ranges) {
 				// formatted modified ranges
@@ -414,7 +414,7 @@ class FormatOnSaveParticipant implements ITextFileSaveParticipant {
 					FormattingMode.Silent,
 					nestedProgress,
 					token,
-					false
+					false,
 				);
 			}
 		}
@@ -435,7 +435,7 @@ class CodeActionOnSaveParticipant implements ITextFileSaveParticipant {
 		model: ITextFileEditorModel,
 		env: { reason: SaveReason },
 		progress: IProgress<IProgressStep>,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void> {
 		if (!model.textEditorModel) {
 			return;
@@ -466,8 +466,8 @@ class CodeActionOnSaveParticipant implements ITextFileSaveParticipant {
 		const settingItems: string[] = Array.isArray(setting)
 			? setting
 			: Object.keys(setting).filter(
-					(x) => setting[x] && setting[x] !== "never"
-				);
+					(x) => setting[x] && setting[x] !== "never",
+			  );
 
 		const codeActionsOnSave = this.createCodeActionsOnSave(settingItems);
 
@@ -504,20 +504,20 @@ class CodeActionOnSaveParticipant implements ITextFileSaveParticipant {
 						setting[x.value] === "always" ||
 						((setting[x.value] === "explicit" ||
 							setting[x.value] === true) &&
-							env.reason === SaveReason.EXPLICIT)
-				);
+							env.reason === SaveReason.EXPLICIT),
+			  );
 
 		await this.applyOnSaveActions(
 			textEditorModel,
 			filteredSaveList,
 			excludedActions,
 			progress,
-			token
+			token,
 		);
 	}
 
 	private createCodeActionsOnSave(
-		settingItems: readonly string[]
+		settingItems: readonly string[],
 	): CodeActionKind[] {
 		const kinds = settingItems.map((x) => new CodeActionKind(x));
 
@@ -525,7 +525,7 @@ class CodeActionOnSaveParticipant implements ITextFileSaveParticipant {
 		return kinds.filter((kind) => {
 			return kinds.every(
 				(otherKind) =>
-					otherKind.equals(kind) || !otherKind.contains(kind)
+					otherKind.equals(kind) || !otherKind.contains(kind),
 			);
 		});
 	}
@@ -535,7 +535,7 @@ class CodeActionOnSaveParticipant implements ITextFileSaveParticipant {
 		codeActionsOnSave: readonly CodeActionKind[],
 		excludes: readonly CodeActionKind[],
 		progress: IProgress<IProgressStep>,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void> {
 		const getActionProgress = new (class
 			implements IProgress<CodeActionProvider>
@@ -552,7 +552,7 @@ class CodeActionOnSaveParticipant implements ITextFileSaveParticipant {
 						},
 						"Getting code actions from '{0}' ([configure]({1})).",
 						[...this._names].map((name) => `'${name}'`).join(", "),
-						"command:workbench.action.openSettings?%5B%22editor.codeActionsOnSave%22%5D"
+						"command:workbench.action.openSettings?%5B%22editor.codeActionsOnSave%22%5D",
 					),
 				});
 			}
@@ -573,7 +573,7 @@ class CodeActionOnSaveParticipant implements ITextFileSaveParticipant {
 				codeActionKind,
 				excludes,
 				getActionProgress,
-				token
+				token,
 			);
 			if (token.isCancellationRequested) {
 				actionsToRun.dispose();
@@ -586,7 +586,7 @@ class CodeActionOnSaveParticipant implements ITextFileSaveParticipant {
 						message: localize(
 							"codeAction.apply",
 							"Applying code action '{0}'.",
-							action.action.title
+							action.action.title,
 						),
 					});
 					await this.instantiationService.invokeFunction(
@@ -594,7 +594,7 @@ class CodeActionOnSaveParticipant implements ITextFileSaveParticipant {
 						action,
 						ApplyCodeActionReason.OnSave,
 						{},
-						token
+						token,
 					);
 					if (token.isCancellationRequested) {
 						return;
@@ -613,7 +613,7 @@ class CodeActionOnSaveParticipant implements ITextFileSaveParticipant {
 		codeActionKind: CodeActionKind,
 		excludes: readonly CodeActionKind[],
 		progress: IProgress<CodeActionProvider>,
-		token: CancellationToken
+		token: CancellationToken,
 	) {
 		return getCodeActions(
 			this.languageFeaturesService.codeActionProvider,
@@ -629,7 +629,7 @@ class CodeActionOnSaveParticipant implements ITextFileSaveParticipant {
 				},
 			},
 			progress,
-			token
+			token,
 		);
 	}
 }
@@ -652,46 +652,46 @@ export class SaveParticipantsContribution
 		this._register(
 			this.textFileService.files.addSaveParticipant(
 				this.instantiationService.createInstance(
-					TrimWhitespaceParticipant
-				)
-			)
+					TrimWhitespaceParticipant,
+				),
+			),
 		);
 		this._register(
 			this.textFileService.files.addSaveParticipant(
 				this.instantiationService.createInstance(
-					CodeActionOnSaveParticipant
-				)
-			)
+					CodeActionOnSaveParticipant,
+				),
+			),
 		);
 		this._register(
 			this.textFileService.files.addSaveParticipant(
 				this.instantiationService.createInstance(
-					FormatOnSaveParticipant
-				)
-			)
+					FormatOnSaveParticipant,
+				),
+			),
 		);
 		this._register(
 			this.textFileService.files.addSaveParticipant(
 				this.instantiationService.createInstance(
-					FinalNewLineParticipant
-				)
-			)
+					FinalNewLineParticipant,
+				),
+			),
 		);
 		this._register(
 			this.textFileService.files.addSaveParticipant(
 				this.instantiationService.createInstance(
-					TrimFinalNewLinesParticipant
-				)
-			)
+					TrimFinalNewLinesParticipant,
+				),
+			),
 		);
 	}
 }
 
 const workbenchContributionsRegistry =
 	Registry.as<IWorkbenchContributionsRegistry>(
-		WorkbenchContributionsExtensions.Workbench
+		WorkbenchContributionsExtensions.Workbench,
 	);
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	SaveParticipantsContribution,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );

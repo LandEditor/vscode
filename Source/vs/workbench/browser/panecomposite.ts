@@ -3,27 +3,29 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Dimension } from "vs/base/browser/dom";
+import { IActionViewItem } from "vs/base/browser/ui/actionbar/actionbar";
+import { IBoundarySashes } from "vs/base/browser/ui/sash/sash";
+import { IAction, Separator } from "vs/base/common/actions";
+import { URI } from "vs/base/common/uri";
+import { MenuId, SubmenuItemAction } from "vs/platform/actions/common/actions";
+import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
+import {
+	BrandedService,
+	IConstructorSignature,
+	IInstantiationService,
+} from "vs/platform/instantiation/common/instantiation";
 import { Registry } from "vs/platform/registry/common/platform";
+import { IStorageService } from "vs/platform/storage/common/storage";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
 import {
 	Composite,
 	CompositeDescriptor,
 	CompositeRegistry,
 } from "vs/workbench/browser/composite";
-import {
-	IConstructorSignature,
-	BrandedService,
-	IInstantiationService,
-} from "vs/platform/instantiation/common/instantiation";
-import { URI } from "vs/base/common/uri";
-import { Dimension } from "vs/base/browser/dom";
-import { IActionViewItem } from "vs/base/browser/ui/actionbar/actionbar";
-import { IAction, Separator } from "vs/base/common/actions";
-import { MenuId, SubmenuItemAction } from "vs/platform/actions/common/actions";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { IStorageService } from "vs/platform/storage/common/storage";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import { VIEWPANE_FILTER_ACTION } from "vs/workbench/browser/parts/views/viewPane";
 import {
 	ViewPaneContainer,
 	ViewsSubMenu,
@@ -31,8 +33,6 @@ import {
 import { IPaneComposite } from "vs/workbench/common/panecomposite";
 import { IView } from "vs/workbench/common/views";
 import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
-import { VIEWPANE_FILTER_ACTION } from "vs/workbench/browser/parts/views/viewPane";
-import { IBoundarySashes } from "vs/base/browser/ui/sash/sash";
 
 export abstract class PaneComposite
 	extends Composite
@@ -58,12 +58,12 @@ export abstract class PaneComposite
 	override create(parent: HTMLElement): void {
 		super.create(parent);
 		this.viewPaneContainer = this._register(
-			this.createViewPaneContainer(parent)
+			this.createViewPaneContainer(parent),
 		);
 		this._register(
 			this.viewPaneContainer.onTitleAreaUpdate(() =>
-				this.updateTitleArea()
-			)
+				this.updateTitleArea(),
+			),
 		);
 		this.viewPaneContainer.create(parent);
 	}
@@ -118,7 +118,7 @@ export abstract class PaneComposite
 		const result = [];
 		if (this.viewPaneContainer?.menuActions) {
 			result.push(
-				...this.viewPaneContainer.menuActions.getPrimaryActions()
+				...this.viewPaneContainer.menuActions.getPrimaryActions(),
 			);
 			if (this.viewPaneContainer.isViewMergedWithContainer()) {
 				const viewPane = this.viewPaneContainer.panes[0];
@@ -146,7 +146,7 @@ export abstract class PaneComposite
 		const viewsSubmenuActionIndex = menuActions.findIndex(
 			(action) =>
 				action instanceof SubmenuItemAction &&
-				action.item.submenu === ViewsSubMenu
+				action.item.submenu === ViewsSubMenu,
 		);
 		if (viewsSubmenuActionIndex !== -1) {
 			const viewsSubmenuAction = <SubmenuItemAction>(
@@ -189,7 +189,7 @@ export abstract class PaneComposite
 	}
 
 	protected abstract createViewPaneContainer(
-		parent: HTMLElement
+		parent: HTMLElement,
 	): ViewPaneContainer;
 }
 
@@ -204,7 +204,7 @@ export class PaneCompositeDescriptor extends CompositeDescriptor<PaneComposite> 
 		cssClass?: string,
 		order?: number,
 		requestedIndex?: number,
-		iconUrl?: URI
+		iconUrl?: URI,
 	): PaneCompositeDescriptor {
 		return new PaneCompositeDescriptor(
 			ctor as IConstructorSignature<PaneComposite>,
@@ -213,7 +213,7 @@ export class PaneCompositeDescriptor extends CompositeDescriptor<PaneComposite> 
 			cssClass,
 			order,
 			requestedIndex,
-			iconUrl
+			iconUrl,
 		);
 	}
 
@@ -224,7 +224,7 @@ export class PaneCompositeDescriptor extends CompositeDescriptor<PaneComposite> 
 		cssClass?: string,
 		order?: number,
 		requestedIndex?: number,
-		readonly iconUrl?: URI
+		readonly iconUrl?: URI,
 	) {
 		super(ctor, id, name, cssClass, order, requestedIndex);
 	}

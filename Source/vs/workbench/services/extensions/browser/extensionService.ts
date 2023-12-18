@@ -176,12 +176,12 @@ export class ExtensionService
 	}
 
 	protected async _scanSingleExtension(
-		extension: IExtension
+		extension: IExtension,
 	): Promise<IExtensionDescription | null> {
 		if (extension.location.scheme === Schemas.vscodeRemote) {
 			return this._remoteExtensionsScannerService.scanSingleExtension(
 				extension.location,
-				extension.type === ExtensionType.System
+				extension.type === ExtensionType.System,
 			);
 		}
 
@@ -189,7 +189,7 @@ export class ExtensionService
 			await this._webExtensionsScannerService.scanExistingExtension(
 				extension.location,
 				extension.type,
-				this._userDataProfileService.currentProfile.extensionsResource
+				this._userDataProfileService.currentProfile.extensionsResource,
 			);
 		if (scannedExtension) {
 			return toExtensionDescription(scannedExtension);
@@ -201,10 +201,10 @@ export class ExtensionService
 	private _initFetchFileSystem(): void {
 		const provider = new FetchFileSystemProvider();
 		this._register(
-			this._fileService.registerProvider(Schemas.http, provider)
+			this._fileService.registerProvider(Schemas.http, provider),
 		);
 		this._register(
-			this._fileService.registerProvider(Schemas.https, provider)
+			this._fileService.registerProvider(Schemas.https, provider),
 		);
 	}
 
@@ -218,28 +218,28 @@ export class ExtensionService
 					.scanSystemExtensions()
 					.then((extensions) =>
 						system.push(
-							...extensions.map((e) => toExtensionDescription(e))
-						)
+							...extensions.map((e) => toExtensionDescription(e)),
+						),
 					),
 				this._webExtensionsScannerService
 					.scanUserExtensions(
 						this._userDataProfileService.currentProfile
 							.extensionsResource,
-						{ skipInvalidExtensions: true }
+						{ skipInvalidExtensions: true },
 					)
 					.then((extensions) =>
 						user.push(
-							...extensions.map((e) => toExtensionDescription(e))
-						)
+							...extensions.map((e) => toExtensionDescription(e)),
+						),
 					),
 				this._webExtensionsScannerService
 					.scanExtensionsUnderDevelopment()
 					.then((extensions) =>
 						development.push(
 							...extensions.map((e) =>
-								toExtensionDescription(e, true)
-							)
-						)
+								toExtensionDescription(e, true),
+							),
+						),
 					),
 			]);
 		} catch (error) {
@@ -258,7 +258,7 @@ export class ExtensionService
 			localExtensions,
 			remoteExtensions,
 			/*hasLocalProcess*/ false,
-			/*allowRemoteExtensionsInLocalWebWorker*/ true
+			/*allowRemoteExtensionsInLocalWebWorker*/ true,
 		);
 	}
 
@@ -281,12 +281,12 @@ export class ExtensionService
 		} catch (err) {
 			if (RemoteAuthorityResolverError.isHandled(err)) {
 				console.log(
-					`Error handled: Not showing a notification for the error`
+					`Error handled: Not showing a notification for the error`,
 				);
 			}
 			this._remoteAuthorityResolverService._setResolvedAuthorityError(
 				remoteAuthority,
-				err
+				err,
 			);
 
 			// Proceed with the local extension host
@@ -296,10 +296,10 @@ export class ExtensionService
 		// set the resolved authority
 		this._remoteAuthorityResolverService._setResolvedAuthority(
 			resolverResult.authority,
-			resolverResult.options
+			resolverResult.options,
 		);
 		this._remoteExplorerService.setTunnelInformation(
-			resolverResult.tunnelInformation
+			resolverResult.tunnelInformation,
 		);
 
 		// monitor for breakage
@@ -308,7 +308,7 @@ export class ExtensionService
 			connection.onDidStateChange(async (e) => {
 				if (e.type === PersistentConnectionEventType.ConnectionLost) {
 					this._remoteAuthorityResolverService._clearResolvedAuthority(
-						remoteAuthority
+						remoteAuthority,
 					);
 				}
 			});
@@ -327,17 +327,17 @@ export class ExtensionService
 		if (typeof automatedWindow.codeAutomationExit === "function") {
 			automatedWindow.codeAutomationExit(
 				code,
-				await getLogs(this._fileService, this._environmentService)
+				await getLogs(this._fileService, this._environmentService),
 			);
 		}
 	}
 
 	protected async _resolveAuthority(
-		remoteAuthority: string
+		remoteAuthority: string,
 	): Promise<ResolverResult> {
 		return this._resolveAuthorityOnExtensionHosts(
 			ExtensionHostKind.LocalWebWorker,
-			remoteAuthority
+			remoteAuthority,
 		);
 	}
 }
@@ -363,7 +363,7 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
 	createExtensionHost(
 		runningLocations: ExtensionRunningLocationTracker,
 		runningLocation: ExtensionRunningLocation,
-		isInitialStart: boolean
+		isInitialStart: boolean,
 	): IExtensionHost | null {
 		switch (runningLocation.kind) {
 			case ExtensionHostKind.LocalProcess: {
@@ -380,8 +380,8 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
 					this._createLocalExtensionHostDataProvider(
 						runningLocations,
 						runningLocation,
-						isInitialStart
-					)
+						isInitialStart,
+					),
 				);
 			}
 			case ExtensionHostKind.Remote: {
@@ -393,8 +393,8 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
 						runningLocation,
 						this._createRemoteExtensionHostDataProvider(
 							runningLocations,
-							remoteAgentConnection.remoteAuthority
-						)
+							remoteAgentConnection.remoteAuthority,
+						),
 					);
 				}
 				return null;
@@ -405,7 +405,7 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
 	private _createLocalExtensionHostDataProvider(
 		runningLocations: ExtensionRunningLocationTracker,
 		desiredRunningLocation: ExtensionRunningLocation,
-		isInitialStart: boolean
+		isInitialStart: boolean,
 	): IWebWorkerExtensionHostDataProvider {
 		return {
 			getInitData: async (): Promise<IWebWorkerExtensionHostInitData> => {
@@ -416,24 +416,24 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
 						this._extensionEnablementService,
 						this._extensionsProposedApi,
 						await this._scanWebExtensions(),
-						/* ignore workspace trust */ true
+						/* ignore workspace trust */ true,
 					);
 					const runningLocation =
 						runningLocations.computeRunningLocation(
 							localExtensions,
 							[],
-							false
+							false,
 						);
 					const myExtensions = filterExtensionDescriptions(
 						localExtensions,
 						runningLocation,
 						(extRunningLocation) =>
-							desiredRunningLocation.equals(extRunningLocation)
+							desiredRunningLocation.equals(extRunningLocation),
 					);
 					const extensions = new ExtensionHostExtensions(
 						0,
 						localExtensions,
-						myExtensions.map((extension) => extension.identifier)
+						myExtensions.map((extension) => extension.identifier),
 					);
 					return { extensions };
 				} else {
@@ -443,12 +443,12 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
 					const myExtensions =
 						runningLocations.filterByRunningLocation(
 							snapshot.extensions,
-							desiredRunningLocation
+							desiredRunningLocation,
 						);
 					const extensions = new ExtensionHostExtensions(
 						snapshot.versionId,
 						snapshot.extensions,
-						myExtensions.map((extension) => extension.identifier)
+						myExtensions.map((extension) => extension.identifier),
 					);
 					return { extensions };
 				}
@@ -458,7 +458,7 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
 
 	private _createRemoteExtensionHostDataProvider(
 		runningLocations: ExtensionRunningLocationTracker,
-		remoteAuthority: string
+		remoteAuthority: string,
 	): IRemoteExtensionHostDataProvider {
 		return {
 			remoteAuthority: remoteAuthority,
@@ -470,24 +470,24 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
 					await this._remoteAgentService.getEnvironment();
 				if (!remoteEnv) {
 					throw new Error(
-						"Cannot provide init data for remote extension host!"
+						"Cannot provide init data for remote extension host!",
 					);
 				}
 
 				const myExtensions = runningLocations.filterByExtensionHostKind(
 					snapshot.extensions,
-					ExtensionHostKind.Remote
+					ExtensionHostKind.Remote,
 				);
 				const extensions = new ExtensionHostExtensions(
 					snapshot.versionId,
 					snapshot.extensions,
-					myExtensions.map((extension) => extension.identifier)
+					myExtensions.map((extension) => extension.identifier),
 				);
 
 				return {
 					connectionData:
 						this._remoteAuthorityResolverService.getConnectionData(
-							remoteAuthority
+							remoteAuthority,
 						),
 					pid: remoteEnv.pid,
 					appRoot: remoteEnv.appRoot,
@@ -511,22 +511,22 @@ export class BrowserExtensionHostKindPicker
 		extensionKinds: ExtensionKind[],
 		isInstalledLocally: boolean,
 		isInstalledRemotely: boolean,
-		preference: ExtensionRunningPreference
+		preference: ExtensionRunningPreference,
 	): ExtensionHostKind | null {
 		const result = BrowserExtensionHostKindPicker.pickRunningLocation(
 			extensionKinds,
 			isInstalledLocally,
 			isInstalledRemotely,
-			preference
+			preference,
 		);
 		this._logService.trace(
 			`pickRunningLocation for ${
 				extensionId.value
 			}, extension kinds: [${extensionKinds.join(
-				", "
+				", ",
 			)}], isInstalledLocally: ${isInstalledLocally}, isInstalledRemotely: ${isInstalledRemotely}, preference: ${extensionRunningPreferenceToString(
-				preference
-			)} => ${extensionHostKindToString(result)}`
+				preference,
+			)} => ${extensionHostKindToString(result)}`,
 		);
 		return result;
 	}
@@ -535,7 +535,7 @@ export class BrowserExtensionHostKindPicker
 		extensionKinds: ExtensionKind[],
 		isInstalledLocally: boolean,
 		isInstalledRemotely: boolean,
-		preference: ExtensionRunningPreference
+		preference: ExtensionRunningPreference,
 	): ExtensionHostKind | null {
 		const result: ExtensionHostKind[] = [];
 		let canRunRemotely = false;

@@ -13,10 +13,10 @@ export class CodeLineElement {
 	constructor(
 		readonly element: HTMLElement,
 		readonly line: number,
-		readonly codeElement?: HTMLElement
+		readonly codeElement?: HTMLElement,
 	) {
 		this._detailParentElements = Array.from(
-			getParentsWithTagName<HTMLDetailsElement>(element, "DETAILS")
+			getParentsWithTagName<HTMLDetailsElement>(element, "DETAILS"),
 		);
 	}
 
@@ -33,7 +33,7 @@ const getCodeLineElements = (() => {
 			cachedVersion = documentVersion;
 			cachedElements = [new CodeLineElement(document.body, -1)];
 			for (const element of document.getElementsByClassName(
-				codeLineClass
+				codeLineClass,
 			)) {
 				if (!(element instanceof HTMLElement)) {
 					continue;
@@ -55,8 +55,8 @@ const getCodeLineElements = (() => {
 						new CodeLineElement(
 							element.parentElement,
 							line,
-							element
-						)
+							element,
+						),
 					);
 				} else if (
 					element.tagName === "UL" ||
@@ -80,7 +80,7 @@ const getCodeLineElements = (() => {
  */
 export function getElementsForSourceLine(
 	targetLine: number,
-	documentVersion: number
+	documentVersion: number,
 ): { previous: CodeLineElement; next?: CodeLineElement } {
 	const lineNumber = Math.floor(targetLine);
 	const lines = getCodeLineElements(documentVersion);
@@ -101,10 +101,10 @@ export function getElementsForSourceLine(
  */
 export function getLineElementsAtPageOffset(
 	offset: number,
-	documentVersion: number
+	documentVersion: number,
 ): { previous: CodeLineElement; next?: CodeLineElement } {
 	const lines = getCodeLineElements(documentVersion).filter(
-		(x) => x.isVisible
+		(x) => x.isVisible,
 	);
 	const position = offset - window.scrollY;
 	let lo = -1;
@@ -161,7 +161,7 @@ function getElementBounds({ element }: CodeLineElement): {
 export function scrollToRevealSourceLine(
 	line: number,
 	documentVersion: number,
-	settingsManager: SettingsManager
+	settingsManager: SettingsManager,
 ) {
 	if (!settingsManager.settings?.scrollPreviewWithEditor) {
 		return;
@@ -197,11 +197,11 @@ export function scrollToRevealSourceLine(
 
 export function getEditorLineNumberForPageOffset(
 	offset: number,
-	documentVersion: number
+	documentVersion: number,
 ): number | null {
 	const { previous, next } = getLineElementsAtPageOffset(
 		offset,
-		documentVersion
+		documentVersion,
 	);
 	if (previous) {
 		if (previous.line < 0) {
@@ -231,7 +231,7 @@ export function getEditorLineNumberForPageOffset(
  */
 export function getLineElementForFragment(
 	fragment: string,
-	documentVersion: number
+	documentVersion: number,
 ): CodeLineElement | undefined {
 	return getCodeLineElements(documentVersion).find((element) => {
 		return element.element.id === fragment;
@@ -240,7 +240,7 @@ export function getLineElementForFragment(
 
 function* getParentsWithTagName<T extends HTMLElement>(
 	element: HTMLElement,
-	tagName: string
+	tagName: string,
 ): Iterable<T> {
 	for (
 		let parent = element.parentElement;

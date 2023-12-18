@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	ExtensionRecommendations,
-	ExtensionRecommendation,
-} from "vs/workbench/contrib/extensions/browser/extensionRecommendations";
-import { IProductService } from "vs/platform/product/common/productService";
-import { ExtensionRecommendationReason } from "vs/workbench/services/extensionRecommendations/common/extensionRecommendations";
 import { localize } from "vs/nls";
+import { IProductService } from "vs/platform/product/common/productService";
+import {
+	ExtensionRecommendation,
+	ExtensionRecommendations,
+} from "vs/workbench/contrib/extensions/browser/extensionRecommendations";
 import { IExtensionManagementServerService } from "vs/workbench/services/extensionManagement/common/extensionManagement";
+import { ExtensionRecommendationReason } from "vs/workbench/services/extensionRecommendations/common/extensionRecommendations";
 
 export class WebRecommendations extends ExtensionRecommendations {
 	private _recommendations: ExtensionRecommendation[] = [];
@@ -44,10 +44,10 @@ export class WebRecommendations extends ExtensionRecommendations {
 							reasonText: localize(
 								"reason",
 								"This extension is recommended for {0} for the Web",
-								this.productService.nameLong
+								this.productService.nameLong,
 							),
 						},
-					}
+					},
 			);
 		}
 	}

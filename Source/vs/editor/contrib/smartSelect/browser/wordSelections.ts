@@ -7,18 +7,18 @@ import { CharCode } from "vs/base/common/charCode";
 import { isLowerAsciiLetter, isUpperAsciiLetter } from "vs/base/common/strings";
 import { Position } from "vs/editor/common/core/position";
 import { Range } from "vs/editor/common/core/range";
-import { ITextModel } from "vs/editor/common/model";
 import {
 	SelectionRange,
 	SelectionRangeProvider,
 } from "vs/editor/common/languages";
+import { ITextModel } from "vs/editor/common/model";
 
 export class WordSelectionRangeProvider implements SelectionRangeProvider {
 	constructor(private readonly selectSubwords = true) {}
 
 	provideSelectionRanges(
 		model: ITextModel,
-		positions: Position[]
+		positions: Position[],
 	): SelectionRange[][] {
 		const result: SelectionRange[][] = [];
 		for (const position of positions) {
@@ -37,7 +37,7 @@ export class WordSelectionRangeProvider implements SelectionRangeProvider {
 	private _addInWordRanges(
 		bucket: SelectionRange[],
 		model: ITextModel,
-		pos: Position
+		pos: Position,
 	): void {
 		const obj = model.getWordAtPosition(pos);
 		if (!obj) {
@@ -48,7 +48,7 @@ export class WordSelectionRangeProvider implements SelectionRangeProvider {
 		const offset = pos.column - startColumn;
 		let start = offset;
 		let end = offset;
-		let lastCh: number = 0;
+		let lastCh = 0;
 
 		// LEFT anchor (start)
 		for (; start >= 0; start--) {
@@ -86,7 +86,7 @@ export class WordSelectionRangeProvider implements SelectionRangeProvider {
 					pos.lineNumber,
 					startColumn + start,
 					pos.lineNumber,
-					startColumn + end
+					startColumn + end,
 				),
 			});
 		}
@@ -95,7 +95,7 @@ export class WordSelectionRangeProvider implements SelectionRangeProvider {
 	private _addWordRanges(
 		bucket: SelectionRange[],
 		model: ITextModel,
-		pos: Position
+		pos: Position,
 	): void {
 		const word = model.getWordAtPosition(pos);
 		if (word) {
@@ -104,7 +104,7 @@ export class WordSelectionRangeProvider implements SelectionRangeProvider {
 					pos.lineNumber,
 					word.startColumn,
 					pos.lineNumber,
-					word.endColumn
+					word.endColumn,
 				),
 			});
 		}
@@ -113,7 +113,7 @@ export class WordSelectionRangeProvider implements SelectionRangeProvider {
 	private _addWhitespaceLine(
 		bucket: SelectionRange[],
 		model: ITextModel,
-		pos: Position
+		pos: Position,
 	): void {
 		if (
 			model.getLineLength(pos.lineNumber) > 0 &&
@@ -125,7 +125,7 @@ export class WordSelectionRangeProvider implements SelectionRangeProvider {
 					pos.lineNumber,
 					1,
 					pos.lineNumber,
-					model.getLineMaxColumn(pos.lineNumber)
+					model.getLineMaxColumn(pos.lineNumber),
 				),
 			});
 		}

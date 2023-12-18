@@ -3,8 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { CancellationToken } from "vs/base/common/cancellation";
+import { Disposable } from "vs/base/common/lifecycle";
+import { ResourceMap } from "vs/base/common/map";
+import { Position } from "vs/editor/common/core/position";
 import { USUAL_WORD_SEPARATORS } from "vs/editor/common/core/wordHelper";
-import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
+import { LanguageFilter } from "vs/editor/common/languageSelector";
 import {
 	DocumentHighlight,
 	DocumentHighlightKind,
@@ -12,11 +16,7 @@ import {
 	ProviderResult,
 } from "vs/editor/common/languages";
 import { ITextModel } from "vs/editor/common/model";
-import { Position } from "vs/editor/common/core/position";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { Disposable } from "vs/base/common/lifecycle";
-import { ResourceMap } from "vs/base/common/map";
-import { LanguageFilter } from "vs/editor/common/languageSelector";
+import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
 
 class TextualDocumentHighlightProvider
 	implements MultiDocumentHighlightProvider
@@ -27,7 +27,7 @@ class TextualDocumentHighlightProvider
 		primaryModel: ITextModel,
 		position: Position,
 		otherModels: ITextModel[],
-		token: CancellationToken
+		token: CancellationToken,
 	): ProviderResult<ResourceMap<DocumentHighlight[]>> {
 		const result = new ResourceMap<DocumentHighlight[]>();
 
@@ -50,7 +50,7 @@ class TextualDocumentHighlightProvider
 				false,
 				true,
 				USUAL_WORD_SEPARATORS,
-				false
+				false,
 			);
 			const highlights = matches.map((m) => ({
 				range: m.range,

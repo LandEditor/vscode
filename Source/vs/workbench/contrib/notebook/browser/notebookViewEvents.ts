@@ -50,7 +50,7 @@ export class NotebookLayoutChangedEvent {
 
 	constructor(
 		readonly source: NotebookLayoutChangeEvent,
-		readonly value: NotebookLayoutInfo
+		readonly value: NotebookLayoutInfo,
 	) {}
 }
 
@@ -65,7 +65,7 @@ export class NotebookCellStateChangedEvent {
 
 	constructor(
 		readonly source: CellViewModelStateChangeEvent,
-		readonly cell: NotebookCellTextModel
+		readonly cell: NotebookCellTextModel,
 	) {}
 }
 

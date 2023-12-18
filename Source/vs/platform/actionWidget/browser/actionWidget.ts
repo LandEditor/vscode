@@ -16,10 +16,10 @@ import {
 import "vs/css!./actionWidget";
 import { localize } from "vs/nls";
 import {
-	acceptSelectedActionCommand,
 	ActionList,
 	IActionListDelegate,
 	IActionListItem,
+	acceptSelectedActionCommand,
 	previewSelectedActionCommand,
 } from "vs/platform/actionWidget/browser/actionList";
 import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
@@ -33,9 +33,9 @@ import {
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
 import {
-	createDecorator,
 	IInstantiationService,
 	ServicesAccessor,
+	createDecorator,
 } from "vs/platform/instantiation/common/instantiation";
 import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
 import {
@@ -53,8 +53,8 @@ registerColor(
 	},
 	localize(
 		"actionBar.toggledBackground",
-		"Background color for toggled action items in action bar."
-	)
+		"Background color for toggled action items in action bar.",
+	),
 );
 
 const ActionWidgetContextKeys = {
@@ -63,13 +63,13 @@ const ActionWidgetContextKeys = {
 		false,
 		localize(
 			"codeActionMenuVisible",
-			"Whether the action widget list is visible"
-		)
+			"Whether the action widget list is visible",
+		),
 	),
 };
 
 export const IActionWidgetService = createDecorator<IActionWidgetService>(
-	"actionWidgetService"
+	"actionWidgetService",
 );
 
 export interface IActionWidgetService {
@@ -82,7 +82,7 @@ export interface IActionWidgetService {
 		delegate: IActionListDelegate<T>,
 		anchor: IAnchor,
 		container: HTMLElement | undefined,
-		actionBarActions?: readonly IAction[]
+		actionBarActions?: readonly IAction[],
 	): void;
 
 	hide(): void;
@@ -101,7 +101,7 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 	}
 
 	private readonly _list = this._register(
-		new MutableDisposable<ActionList<unknown>>()
+		new MutableDisposable<ActionList<unknown>>(),
 	);
 
 	constructor(
@@ -122,10 +122,10 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 		delegate: IActionListDelegate<T>,
 		anchor: IAnchor,
 		container: HTMLElement | undefined,
-		actionBarActions?: readonly IAction[]
+		actionBarActions?: readonly IAction[],
 	): void {
 		const visibleContext = ActionWidgetContextKeys.Visible.bindTo(
-			this._contextKeyService
+			this._contextKeyService,
 		);
 
 		const list = this._instantiationService.createInstance(
@@ -133,7 +133,7 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 			user,
 			supportsPreview,
 			items,
-			delegate
+			delegate,
 		);
 		this._contextViewService.showContextView(
 			{
@@ -143,7 +143,7 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 					return this._renderWidget(
 						container,
 						list,
-						actionBarActions ?? []
+						actionBarActions ?? [],
 					);
 				},
 				onHide: (didCancel) => {
@@ -152,7 +152,7 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 				},
 			},
 			container,
-			false
+			false,
 		);
 	}
 
@@ -180,7 +180,7 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 	private _renderWidget(
 		element: HTMLElement,
 		list: ActionList<unknown>,
-		actionBarActions: readonly IAction[]
+		actionBarActions: readonly IAction[],
 	): IDisposable {
 		const widget = document.createElement("div");
 		widget.classList.add("action-widget");
@@ -200,8 +200,8 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 		block.classList.add("context-view-block");
 		renderDisposables.add(
 			dom.addDisposableListener(block, dom.EventType.MOUSE_DOWN, (e) =>
-				e.stopPropagation()
-			)
+				e.stopPropagation(),
+			),
 		);
 
 		// Invisible div to block mouse interaction with the menu
@@ -214,15 +214,15 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 			dom.addDisposableListener(
 				pointerBlock,
 				dom.EventType.POINTER_MOVE,
-				() => pointerBlock.remove()
-			)
+				() => pointerBlock.remove(),
+			),
 		);
 		renderDisposables.add(
 			dom.addDisposableListener(
 				pointerBlock,
 				dom.EventType.MOUSE_DOWN,
-				() => pointerBlock.remove()
-			)
+				() => pointerBlock.remove(),
+			),
 		);
 
 		// Action bar
@@ -230,7 +230,7 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 		if (actionBarActions.length) {
 			const actionBar = this._createActionBar(
 				".action-widget-action-bar",
-				actionBarActions
+				actionBarActions,
 			);
 			if (actionBar) {
 				widget.appendChild(actionBar.getContainer().parentElement!);
@@ -250,7 +250,7 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 
 	private _createActionBar(
 		className: string,
-		actions: readonly IAction[]
+		actions: readonly IAction[],
 	): ActionBar | undefined {
 		if (!actions.length) {
 			return undefined;
@@ -270,7 +270,7 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 registerSingleton(
 	IActionWidgetService,
 	ActionWidgetService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 
 const weight = KeybindingWeight.EditorContrib + 1000;
@@ -283,7 +283,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"hideCodeActionWidget.title",
-						"Hide action widget"
+						"Hide action widget",
 					),
 					original: "Hide action widget",
 				},
@@ -299,7 +299,7 @@ registerAction2(
 		run(accessor: ServicesAccessor): void {
 			accessor.get(IActionWidgetService).hide();
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -310,7 +310,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"selectPrevCodeAction.title",
-						"Select previous action"
+						"Select previous action",
 					),
 					original: "Select previous action",
 				},
@@ -336,7 +336,7 @@ registerAction2(
 				widgetService.focusPrevious();
 			}
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -347,7 +347,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"selectNextCodeAction.title",
-						"Select next action"
+						"Select next action",
 					),
 					original: "Select next action",
 				},
@@ -373,7 +373,7 @@ registerAction2(
 				widgetService.focusNext();
 			}
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -384,7 +384,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"acceptSelected.title",
-						"Accept selected action"
+						"Accept selected action",
 					),
 					original: "Accept selected action",
 				},
@@ -403,7 +403,7 @@ registerAction2(
 				widgetService.acceptSelected();
 			}
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -414,7 +414,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"previewSelected.title",
-						"Preview selected action"
+						"Preview selected action",
 					),
 					original: "Preview selected action",
 				},
@@ -432,5 +432,5 @@ registerAction2(
 				widgetService.acceptSelected(true);
 			}
 		}
-	}
+	},
 );

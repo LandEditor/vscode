@@ -7,46 +7,46 @@ import * as DOM from "vs/base/browser/dom";
 import { CountBadge } from "vs/base/browser/ui/countBadge/countBadge";
 import { IListVirtualDelegate } from "vs/base/browser/ui/list/list";
 import { IListAccessibilityProvider } from "vs/base/browser/ui/list/listWidget";
+import { ICompressedTreeNode } from "vs/base/browser/ui/tree/compressedObjectTreeModel";
+import { ICompressibleTreeRenderer } from "vs/base/browser/ui/tree/objectTree";
 import { ITreeNode } from "vs/base/browser/ui/tree/tree";
 import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
 import * as paths from "vs/base/common/path";
-import * as nls from "vs/nls";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { FileKind } from "vs/platform/files/common/files";
-import { ILabelService } from "vs/platform/label/common/label";
-import { ISearchConfigurationProperties } from "vs/workbench/services/search/common/search";
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
-import { IResourceLabel, ResourceLabels } from "vs/workbench/browser/labels";
-import { SearchView } from "vs/workbench/contrib/search/browser/searchView";
-import {
-	FileMatch,
-	Match,
-	RenderableMatch,
-	SearchModel,
-	FolderMatch,
-	FolderMatchNoRoot,
-	FolderMatchWorkspaceRoot,
-	MatchInNotebook,
-} from "vs/workbench/contrib/search/browser/searchModel";
 import { isEqual } from "vs/base/common/resources";
-import { ICompressibleTreeRenderer } from "vs/base/browser/ui/tree/objectTree";
-import { ICompressedTreeNode } from "vs/base/browser/ui/tree/compressedObjectTreeModel";
-import { MenuId } from "vs/platform/actions/common/actions";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import * as nls from "vs/nls";
 import {
 	HiddenItemStrategy,
 	MenuWorkbenchToolBar,
 } from "vs/platform/actions/browser/toolbar";
-import { ISearchActionContext } from "vs/workbench/contrib/search/browser/searchActionsRemoveReplace";
+import { MenuId } from "vs/platform/actions/common/actions";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { FileKind } from "vs/platform/files/common/files";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
+import { ILabelService } from "vs/platform/label/common/label";
+import { defaultCountBadgeStyles } from "vs/platform/theme/browser/defaultStyles";
+import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import { IResourceLabel, ResourceLabels } from "vs/workbench/browser/labels";
+import { ISearchActionContext } from "vs/workbench/contrib/search/browser/searchActionsRemoveReplace";
 import {
-	IsEditableItemKey,
+	FileMatch,
+	FolderMatch,
+	FolderMatchNoRoot,
+	FolderMatchWorkspaceRoot,
+	Match,
+	MatchInNotebook,
+	RenderableMatch,
+	SearchModel,
+} from "vs/workbench/contrib/search/browser/searchModel";
+import { SearchView } from "vs/workbench/contrib/search/browser/searchView";
+import {
 	FileFocusKey,
 	FolderFocusKey,
+	IsEditableItemKey,
 	MatchFocusKey,
 } from "vs/workbench/contrib/search/common/constants";
-import { defaultCountBadgeStyles } from "vs/platform/theme/browser/defaultStyles";
+import { ISearchConfigurationProperties } from "vs/workbench/services/search/common/search";
 
 interface IFolderMatchTemplate {
 	label: IResourceLabel;
@@ -101,8 +101,7 @@ export class SearchDelegate implements IListVirtualDelegate<RenderableMatch> {
 }
 export class FolderMatchRenderer
 	extends Disposable
-	implements
-		ICompressibleTreeRenderer<FolderMatch, any, IFolderMatchTemplate>
+	implements ICompressibleTreeRenderer<FolderMatch, any, IFolderMatchTemplate>
 {
 	static readonly TEMPLATE_ID = "folderMatch";
 
@@ -126,7 +125,7 @@ export class FolderMatchRenderer
 		node: ITreeNode<ICompressedTreeNode<FolderMatch>, any>,
 		index: number,
 		templateData: IFolderMatchTemplate,
-		height: number | undefined
+		height: number | undefined,
 	): void {
 		const compressed = node.element;
 		const folder = compressed.elements[compressed.elements.length - 1];
@@ -142,13 +141,13 @@ export class FolderMatchRenderer
 				{
 					fileKind,
 					separator: this.labelService.getSeparator(
-						folder.resource.scheme
+						folder.resource.scheme,
 					),
-				}
+				},
 			);
 		} else {
 			templateData.label.setLabel(
-				nls.localize("searchFolderMatch.other.label", "Other files")
+				nls.localize("searchFolderMatch.other.label", "Other files"),
 			);
 		}
 
@@ -167,25 +166,25 @@ export class FolderMatchRenderer
 		const badge = new CountBadge(
 			DOM.append(folderMatchElement, DOM.$(".badge")),
 			{},
-			defaultCountBadgeStyles
+			defaultCountBadgeStyles,
 		);
 		const actionBarContainer = DOM.append(
 			folderMatchElement,
-			DOM.$(".actionBarContainer")
+			DOM.$(".actionBarContainer"),
 		);
 
 		const elementDisposables = new DisposableStore();
 		disposables.add(elementDisposables);
 
 		const contextKeyServiceMain = disposables.add(
-			this.contextKeyService.createScoped(container)
+			this.contextKeyService.createScoped(container),
 		);
 		MatchFocusKey.bindTo(contextKeyServiceMain).set(false);
 		FileFocusKey.bindTo(contextKeyServiceMain).set(false);
 		FolderFocusKey.bindTo(contextKeyServiceMain).set(true);
 
 		const instantiationService = this.instantiationService.createChild(
-			new ServiceCollection([IContextKeyService, contextKeyServiceMain])
+			new ServiceCollection([IContextKeyService, contextKeyServiceMain]),
 		);
 		const actions = disposables.add(
 			instantiationService.createInstance(
@@ -200,8 +199,8 @@ export class FolderMatchRenderer
 					toolbarOptions: {
 						primaryGroup: (g: string) => /^inline/.test(g),
 					},
-				}
-			)
+				},
+			),
 		);
 
 		return {
@@ -217,12 +216,12 @@ export class FolderMatchRenderer
 	renderElement(
 		node: ITreeNode<FolderMatch, any>,
 		index: number,
-		templateData: IFolderMatchTemplate
+		templateData: IFolderMatchTemplate,
 	): void {
 		const folderMatch = node.element;
 		if (folderMatch.resource) {
 			const workspaceFolder = this.contextService.getWorkspaceFolder(
-				folderMatch.resource
+				folderMatch.resource,
 			);
 			if (
 				workspaceFolder &&
@@ -240,20 +239,20 @@ export class FolderMatchRenderer
 			}
 		} else {
 			templateData.label.setLabel(
-				nls.localize("searchFolderMatch.other.label", "Other files")
+				nls.localize("searchFolderMatch.other.label", "Other files"),
 			);
 		}
 
 		IsEditableItemKey.bindTo(templateData.contextKeyService).set(
-			!folderMatch.hasOnlyReadOnlyMatches()
+			!folderMatch.hasOnlyReadOnlyMatches(),
 		);
 
 		templateData.elementDisposables.add(
 			folderMatch.onChange(() => {
 				IsEditableItemKey.bindTo(templateData.contextKeyService).set(
-					!folderMatch.hasOnlyReadOnlyMatches()
+					!folderMatch.hasOnlyReadOnlyMatches(),
 				);
-			})
+			}),
 		);
 
 		this.renderFolderDetails(folderMatch, templateData);
@@ -262,7 +261,7 @@ export class FolderMatchRenderer
 	disposeElement(
 		element: ITreeNode<RenderableMatch, any>,
 		index: number,
-		templateData: IFolderMatchTemplate
+		templateData: IFolderMatchTemplate,
 	): void {
 		templateData.elementDisposables.clear();
 	}
@@ -271,7 +270,7 @@ export class FolderMatchRenderer
 		node: ITreeNode<ICompressedTreeNode<FolderMatch>, any>,
 		index: number,
 		templateData: IFolderMatchTemplate,
-		height: number | undefined
+		height: number | undefined,
 	): void {
 		templateData.elementDisposables.clear();
 	}
@@ -282,14 +281,14 @@ export class FolderMatchRenderer
 
 	private renderFolderDetails(
 		folder: FolderMatch,
-		templateData: IFolderMatchTemplate
+		templateData: IFolderMatchTemplate,
 	) {
 		const count = folder.recursiveMatchCount();
 		templateData.badge.setCount(count);
 		templateData.badge.setTitleFormat(
 			count > 1
 				? nls.localize("searchFileMatches", "{0} files found", count)
-				: nls.localize("searchFileMatch", "{0} file found", count)
+				: nls.localize("searchFileMatch", "{0} file found", count),
 		);
 
 		templateData.actions.context = <ISearchActionContext>{
@@ -326,7 +325,7 @@ export class FileMatchRenderer
 		node: ITreeNode<ICompressedTreeNode<FileMatch>, any>,
 		index: number,
 		templateData: IFileMatchTemplate,
-		height: number | undefined
+		height: number | undefined,
 	): void {
 		throw new Error("Should never happen since node is incompressible.");
 	}
@@ -341,22 +340,22 @@ export class FileMatchRenderer
 		const badge = new CountBadge(
 			DOM.append(fileMatchElement, DOM.$(".badge")),
 			{},
-			defaultCountBadgeStyles
+			defaultCountBadgeStyles,
 		);
 		const actionBarContainer = DOM.append(
 			fileMatchElement,
-			DOM.$(".actionBarContainer")
+			DOM.$(".actionBarContainer"),
 		);
 
 		const contextKeyServiceMain = disposables.add(
-			this.contextKeyService.createScoped(container)
+			this.contextKeyService.createScoped(container),
 		);
 		MatchFocusKey.bindTo(contextKeyServiceMain).set(false);
 		FileFocusKey.bindTo(contextKeyServiceMain).set(true);
 		FolderFocusKey.bindTo(contextKeyServiceMain).set(false);
 
 		const instantiationService = this.instantiationService.createChild(
-			new ServiceCollection([IContextKeyService, contextKeyServiceMain])
+			new ServiceCollection([IContextKeyService, contextKeyServiceMain]),
 		);
 		const actions = disposables.add(
 			instantiationService.createInstance(
@@ -371,8 +370,8 @@ export class FileMatchRenderer
 					toolbarOptions: {
 						primaryGroup: (g: string) => /^inline/.test(g),
 					},
-				}
-			)
+				},
+			),
 		);
 
 		return {
@@ -389,17 +388,17 @@ export class FileMatchRenderer
 	renderElement(
 		node: ITreeNode<FileMatch, any>,
 		index: number,
-		templateData: IFileMatchTemplate
+		templateData: IFileMatchTemplate,
 	): void {
 		const fileMatch = node.element;
 		templateData.el.setAttribute(
 			"data-resource",
-			fileMatch.resource.toString()
+			fileMatch.resource.toString(),
 		);
 
 		const decorationConfig =
 			this.configurationService.getValue<ISearchConfigurationProperties>(
-				"search"
+				"search",
 			).decorations;
 		templateData.label.setFile(fileMatch.resource, {
 			hidePath:
@@ -416,7 +415,7 @@ export class FileMatchRenderer
 		templateData.badge.setTitleFormat(
 			count > 1
 				? nls.localize("searchMatches", "{0} matches found", count)
-				: nls.localize("searchMatch", "{0} match found", count)
+				: nls.localize("searchMatch", "{0} match found", count),
 		);
 
 		templateData.actions.context = <ISearchActionContext>{
@@ -425,22 +424,22 @@ export class FileMatchRenderer
 		};
 
 		IsEditableItemKey.bindTo(templateData.contextKeyService).set(
-			!fileMatch.hasOnlyReadOnlyMatches()
+			!fileMatch.hasOnlyReadOnlyMatches(),
 		);
 
 		templateData.elementDisposables.add(
 			fileMatch.onChange(() => {
 				IsEditableItemKey.bindTo(templateData.contextKeyService).set(
-					!fileMatch.hasOnlyReadOnlyMatches()
+					!fileMatch.hasOnlyReadOnlyMatches(),
 				);
-			})
+			}),
 		);
 
 		// when hidesExplorerArrows: true, then the file nodes should still have a twistie because it would otherwise
 		// be hard to tell whether the node is collapsed or expanded.
 		const twistieContainer =
 			templateData.el.parentElement?.parentElement?.querySelector(
-				".monaco-tl-twistie"
+				".monaco-tl-twistie",
 			);
 		twistieContainer?.classList.add("force-twistie");
 	}
@@ -448,7 +447,7 @@ export class FileMatchRenderer
 	disposeElement(
 		element: ITreeNode<RenderableMatch, any>,
 		index: number,
-		templateData: IFileMatchTemplate
+		templateData: IFileMatchTemplate,
 	): void {
 		templateData.elementDisposables.clear();
 	}
@@ -484,7 +483,7 @@ export class MatchRenderer
 		node: ITreeNode<ICompressedTreeNode<Match>, void>,
 		index: number,
 		templateData: IMatchTemplate,
-		height: number | undefined
+		height: number | undefined,
 	): void {
 		throw new Error("Should never happen since node is incompressible.");
 	}
@@ -500,20 +499,20 @@ export class MatchRenderer
 		const after = DOM.append(parent, DOM.$("span"));
 		const actionBarContainer = DOM.append(
 			container,
-			DOM.$("span.actionBarContainer")
+			DOM.$("span.actionBarContainer"),
 		);
 
 		const disposables = new DisposableStore();
 
 		const contextKeyServiceMain = disposables.add(
-			this.contextKeyService.createScoped(container)
+			this.contextKeyService.createScoped(container),
 		);
 		MatchFocusKey.bindTo(contextKeyServiceMain).set(true);
 		FileFocusKey.bindTo(contextKeyServiceMain).set(false);
 		FolderFocusKey.bindTo(contextKeyServiceMain).set(false);
 
 		const instantiationService = this.instantiationService.createChild(
-			new ServiceCollection([IContextKeyService, contextKeyServiceMain])
+			new ServiceCollection([IContextKeyService, contextKeyServiceMain]),
 		);
 		const actions = disposables.add(
 			instantiationService.createInstance(
@@ -528,8 +527,8 @@ export class MatchRenderer
 					toolbarOptions: {
 						primaryGroup: (g: string) => /^inline/.test(g),
 					},
-				}
-			)
+				},
+			),
 		);
 
 		return {
@@ -548,7 +547,7 @@ export class MatchRenderer
 	renderElement(
 		node: ITreeNode<Match, any>,
 		index: number,
-		templateData: IMatchTemplate
+		templateData: IMatchTemplate,
 	): void {
 		const match = node.element;
 		const preview = match.preview();
@@ -571,7 +570,7 @@ export class MatchRenderer
 			.substr(0, 999);
 
 		IsEditableItemKey.bindTo(templateData.contextKeyService).set(
-			!(match instanceof MatchInNotebook && match.isReadonly())
+			!(match instanceof MatchInNotebook && match.isReadonly()),
 		);
 
 		const numLines =
@@ -580,20 +579,20 @@ export class MatchRenderer
 
 		const showLineNumbers =
 			this.configurationService.getValue<ISearchConfigurationProperties>(
-				"search"
+				"search",
 			).showLineNumbers;
 		const lineNumberStr = showLineNumbers
 			? `${match.range().startLineNumber}:`
 			: "";
 		templateData.lineNumber.classList.toggle(
 			"show",
-			numLines > 0 || showLineNumbers
+			numLines > 0 || showLineNumbers,
 		);
 
 		templateData.lineNumber.textContent = lineNumberStr + extraLinesStr;
 		templateData.lineNumber.setAttribute(
 			"title",
-			this.getMatchTitle(match, showLineNumbers)
+			this.getMatchTitle(match, showLineNumbers),
 		);
 
 		templateData.actions.context = <ISearchActionContext>{
@@ -613,7 +612,7 @@ export class MatchRenderer
 
 		const lineNumStr = showLineNumbers
 			? nls.localize("lineNumStr", "From line {0}", startLine, numLines) +
-				" "
+			  " "
 			: "";
 
 		const numLinesStr =
@@ -647,13 +646,13 @@ export class SearchAccessibilityProvider
 						"folderMatchAriaLabel",
 						"{0} matches in folder root {1}, Search result",
 						count,
-						element.name()
-					)
+						element.name(),
+				  )
 				: nls.localize(
 						"otherFilesAriaLabel",
 						"{0} matches outside of the workspace, Search result",
-						count
-					);
+						count,
+				  );
 		}
 
 		if (element instanceof FileMatch) {
@@ -667,7 +666,7 @@ export class SearchAccessibilityProvider
 				"{0} matches in file {1} of folder {2}, Search result",
 				element.count(),
 				element.name(),
-				paths.dirname(path)
+				paths.dirname(path),
 			);
 		}
 
@@ -686,7 +685,7 @@ export class SearchAccessibilityProvider
 					matchText,
 					range.startColumn,
 					matchString,
-					match.replaceString
+					match.replaceString,
 				);
 			}
 
@@ -695,7 +694,7 @@ export class SearchAccessibilityProvider
 				"'{0}' at column {1} found {2}",
 				matchText,
 				range.startColumn,
-				matchString
+				matchString,
 			);
 		}
 		return null;

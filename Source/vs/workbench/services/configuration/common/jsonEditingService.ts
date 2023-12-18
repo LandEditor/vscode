@@ -3,33 +3,33 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
-import { URI } from "vs/base/common/uri";
+import { Queue } from "vs/base/common/async";
 import * as json from "vs/base/common/json";
 import { setProperty } from "vs/base/common/jsonEdit";
-import { Queue } from "vs/base/common/async";
 import { Edit } from "vs/base/common/jsonFormatter";
 import { IReference } from "vs/base/common/lifecycle";
+import { URI } from "vs/base/common/uri";
 import { EditOperation } from "vs/editor/common/core/editOperation";
 import { Range } from "vs/editor/common/core/range";
 import { Selection } from "vs/editor/common/core/selection";
-import { ITextFileService } from "vs/workbench/services/textfile/common/textfiles";
+import { ITextModel } from "vs/editor/common/model";
+import {
+	IResolvedTextEditorModel,
+	ITextModelService,
+} from "vs/editor/common/services/resolverService";
+import * as nls from "vs/nls";
 import { IFileService } from "vs/platform/files/common/files";
 import {
-	ITextModelService,
-	IResolvedTextEditorModel,
-} from "vs/editor/common/services/resolverService";
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
 import {
 	IJSONEditingService,
 	IJSONValue,
 	JSONEditingError,
 	JSONEditingErrorCode,
 } from "vs/workbench/services/configuration/common/jsonEditing";
-import { ITextModel } from "vs/editor/common/model";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
+import { ITextFileService } from "vs/workbench/services/textfile/common/textfiles";
 
 export class JSONEditingService implements IJSONEditingService {
 	public _serviceBrand: undefined;
@@ -47,13 +47,13 @@ export class JSONEditingService implements IJSONEditingService {
 
 	write(resource: URI, values: IJSONValue[]): Promise<void> {
 		return Promise.resolve(
-			this.queue.queue(() => this.doWriteConfiguration(resource, values))
+			this.queue.queue(() => this.doWriteConfiguration(resource, values)),
 		); // queue up writes to prevent race conditions
 	}
 
 	private async doWriteConfiguration(
 		resource: URI,
-		values: IJSONValue[]
+		values: IJSONValue[],
 	): Promise<void> {
 		const reference = await this.resolveAndValidate(resource, true);
 		try {
@@ -65,9 +65,9 @@ export class JSONEditingService implements IJSONEditingService {
 
 	private async writeToBuffer(
 		model: ITextModel,
-		values: IJSONValue[]
+		values: IJSONValue[],
 	): Promise<any> {
-		let hasEdits: boolean = false;
+		let hasEdits = false;
 		for (const value of values) {
 			const edit = this.getEdits(model, value)[0];
 			hasEdits = !!edit && this.applyEditsToBuffer(edit, model);
@@ -84,7 +84,7 @@ export class JSONEditingService implements IJSONEditingService {
 			startPosition.lineNumber,
 			startPosition.column,
 			endPosition.lineNumber,
-			endPosition.column
+			endPosition.column,
 		);
 		const currentText = model.getValueInRange(range);
 		if (edit.content !== currentText) {
@@ -97,11 +97,11 @@ export class JSONEditingService implements IJSONEditingService {
 						startPosition.lineNumber,
 						startPosition.column,
 						startPosition.lineNumber,
-						startPosition.column
+						startPosition.column,
 					),
 				],
 				[editOperation],
-				() => []
+				() => [],
 			);
 			return true;
 		}
@@ -110,7 +110,7 @@ export class JSONEditingService implements IJSONEditingService {
 
 	private getEdits(
 		model: ITextModel,
-		configurationValue: IJSONValue
+		configurationValue: IJSONValue,
 	): Edit[] {
 		const { tabSize, insertSpaces } = model.getOptions();
 		const eol = model.getEOL();
@@ -121,7 +121,7 @@ export class JSONEditingService implements IJSONEditingService {
 			const content = JSON.stringify(
 				value,
 				null,
-				insertSpaces ? " ".repeat(tabSize) : "\t"
+				insertSpaces ? " ".repeat(tabSize) : "\t",
 			);
 			return [
 				{
@@ -140,7 +140,7 @@ export class JSONEditingService implements IJSONEditingService {
 	}
 
 	private async resolveModelReference(
-		resource: URI
+		resource: URI,
 	): Promise<IReference<IResolvedTextEditorModel>> {
 		const exists = await this.fileService.exists(resource);
 		if (!exists) {
@@ -162,7 +162,7 @@ export class JSONEditingService implements IJSONEditingService {
 
 	private async resolveAndValidate(
 		resource: URI,
-		checkDirty: boolean
+		checkDirty: boolean,
 	): Promise<IReference<IResolvedTextEditorModel>> {
 		const reference = await this.resolveModelReference(resource);
 
@@ -171,7 +171,7 @@ export class JSONEditingService implements IJSONEditingService {
 		if (this.hasParseErrors(model)) {
 			reference.dispose();
 			return this.reject<IReference<IResolvedTextEditorModel>>(
-				JSONEditingErrorCode.ERROR_INVALID_FILE
+				JSONEditingErrorCode.ERROR_INVALID_FILE,
 			);
 		}
 
@@ -189,7 +189,7 @@ export class JSONEditingService implements IJSONEditingService {
 			case JSONEditingErrorCode.ERROR_INVALID_FILE: {
 				return nls.localize(
 					"errorInvalidFile",
-					"Unable to write into the file. Please open the file to correct errors/warnings in the file and try again."
+					"Unable to write into the file. Please open the file to correct errors/warnings in the file and try again.",
 				);
 			}
 		}
@@ -199,5 +199,5 @@ export class JSONEditingService implements IJSONEditingService {
 registerSingleton(
 	IJSONEditingService,
 	JSONEditingService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

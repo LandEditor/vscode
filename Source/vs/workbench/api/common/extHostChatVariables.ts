@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type * as vscode from "vscode";
 import { CancellationToken } from "vs/base/common/cancellation";
+import { onUnexpectedExternalError } from "vs/base/common/errors";
 import { IDisposable, toDisposable } from "vs/base/common/lifecycle";
 import {
 	ExtensionIdentifier,
@@ -16,12 +16,12 @@ import {
 	MainContext,
 	MainThreadChatVariablesShape,
 } from "vs/workbench/api/common/extHost.protocol";
+import { ChatVariable } from "vs/workbench/api/common/extHostTypeConverters";
 import {
 	IChatRequestVariableValue,
 	IChatVariableData,
 } from "vs/workbench/contrib/chat/common/chatVariables";
-import { onUnexpectedExternalError } from "vs/base/common/errors";
-import { ChatVariable } from "vs/workbench/api/common/extHostTypeConverters";
+import type * as vscode from "vscode";
 
 export class ExtHostChatVariables implements ExtHostChatVariablesShape {
 	private static _idPool = 0;
@@ -43,7 +43,7 @@ export class ExtHostChatVariables implements ExtHostChatVariablesShape {
 	async $resolveVariable(
 		handle: number,
 		messageText: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IChatRequestVariableValue[] | undefined> {
 		const item = this._resolver.get(handle);
 		if (!item) {
@@ -53,7 +53,7 @@ export class ExtHostChatVariables implements ExtHostChatVariablesShape {
 			const value = await item.resolver.resolve(
 				item.data.name,
 				{ message: messageText },
-				token
+				token,
 			);
 			if (value) {
 				return value.map(ChatVariable.from);
@@ -68,7 +68,7 @@ export class ExtHostChatVariables implements ExtHostChatVariablesShape {
 		extension: IExtensionDescription,
 		name: string,
 		description: string,
-		resolver: vscode.ChatVariableResolver
+		resolver: vscode.ChatVariableResolver,
 	): IDisposable {
 		const handle = ExtHostChatVariables._idPool++;
 		this._resolver.set(handle, {

@@ -3,25 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ProgressOptions } from "vscode";
 import {
-	MainThreadProgressShape,
-	ExtHostProgressShape,
-} from "./extHost.protocol";
-import { ProgressLocation } from "./extHostTypeConverters";
-import { Progress, IProgressStep } from "vs/platform/progress/common/progress";
-import { localize } from "vs/nls";
-import {
-	CancellationTokenSource,
 	CancellationToken,
+	CancellationTokenSource,
 } from "vs/base/common/cancellation";
 import { throttle } from "vs/base/common/decorators";
-import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
 import { onUnexpectedExternalError } from "vs/base/common/errors";
+import { localize } from "vs/nls";
+import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
+import { IProgressStep, Progress } from "vs/platform/progress/common/progress";
+import { ProgressOptions } from "vscode";
+import {
+	ExtHostProgressShape,
+	MainThreadProgressShape,
+} from "./extHost.protocol";
+import { ProgressLocation } from "./extHostTypeConverters";
 
 export class ExtHostProgress implements ExtHostProgressShape {
 	private _proxy: MainThreadProgressShape;
-	private _handles: number = 0;
+	private _handles = 0;
 	private _mapHandleToCancellationSource: Map<
 		number,
 		CancellationTokenSource
@@ -36,8 +36,8 @@ export class ExtHostProgress implements ExtHostProgressShape {
 		options: ProgressOptions,
 		task: (
 			progress: Progress<IProgressStep>,
-			token: CancellationToken
-		) => Thenable<R>
+			token: CancellationToken,
+		) => Thenable<R>,
 	): Promise<R> {
 		const handle = this._handles++;
 		const { title, location, cancellable } = options;
@@ -45,7 +45,7 @@ export class ExtHostProgress implements ExtHostProgressShape {
 			label: localize(
 				"extensionSource",
 				"{0} (Extension)",
-				extension.displayName || extension.name
+				extension.displayName || extension.name,
 			),
 			id: extension.identifier.value,
 		};
@@ -59,9 +59,9 @@ export class ExtHostProgress implements ExtHostProgressShape {
 					source,
 					cancellable,
 				},
-				!extension.isUnderDevelopment
-					? extension.identifier.value
-					: undefined
+				extension.isUnderDevelopment
+					? undefined
+					: extension.identifier.value,
 			)
 			.catch(onUnexpectedExternalError);
 		return this._withProgress(handle, task, !!cancellable);
@@ -71,9 +71,9 @@ export class ExtHostProgress implements ExtHostProgressShape {
 		handle: number,
 		task: (
 			progress: Progress<IProgressStep>,
-			token: CancellationToken
+			token: CancellationToken,
 		) => Thenable<R>,
-		cancellable: boolean
+		cancellable: boolean,
 	): Thenable<R> {
 		let source: CancellationTokenSource | undefined;
 		if (cancellable) {
@@ -92,7 +92,7 @@ export class ExtHostProgress implements ExtHostProgressShape {
 		try {
 			p = task(
 				new ProgressCallback(this._proxy, handle),
-				cancellable && source ? source.token : CancellationToken.None
+				cancellable && source ? source.token : CancellationToken.None,
 			);
 		} catch (err) {
 			progressEnd(handle);
@@ -101,7 +101,7 @@ export class ExtHostProgress implements ExtHostProgressShape {
 
 		p.then(
 			(result) => progressEnd(handle),
-			(err) => progressEnd(handle)
+			(err) => progressEnd(handle),
 		);
 		return p;
 	}
@@ -117,7 +117,7 @@ export class ExtHostProgress implements ExtHostProgressShape {
 
 function mergeProgress(
 	result: IProgressStep,
-	currentValue: IProgressStep
+	currentValue: IProgressStep,
 ): IProgressStep {
 	result.message = currentValue.message;
 	if (typeof currentValue.increment === "number") {
@@ -134,7 +134,7 @@ function mergeProgress(
 class ProgressCallback extends Progress<IProgressStep> {
 	constructor(
 		private _proxy: MainThreadProgressShape,
-		private _handle: number
+		private _handle: number,
 	) {
 		super((p) => this.throttledReport(p));
 	}
@@ -143,7 +143,7 @@ class ProgressCallback extends Progress<IProgressStep> {
 		100,
 		(result: IProgressStep, currentValue: IProgressStep) =>
 			mergeProgress(result, currentValue),
-		() => Object.create(null)
+		() => Object.create(null),
 	)
 	throttledReport(p: IProgressStep): void {
 		this._proxy.$progressReport(this._handle, p);

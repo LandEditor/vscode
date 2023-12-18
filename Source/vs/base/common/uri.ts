@@ -16,7 +16,7 @@ function _validateUri(ret: URI, _strict?: boolean): void {
 	// scheme, must be set
 	if (!ret.scheme && _strict) {
 		throw new Error(
-			`[UriError]: Scheme is missing: {scheme: "", authority: "${ret.authority}", path: "${ret.path}", query: "${ret.query}", fragment: "${ret.fragment}"}`
+			`[UriError]: Scheme is missing: {scheme: "", authority: "${ret.authority}", path: "${ret.path}", query: "${ret.query}", fragment: "${ret.fragment}"}`,
 		);
 	}
 
@@ -35,15 +35,13 @@ function _validateUri(ret: URI, _strict?: boolean): void {
 		if (ret.authority) {
 			if (!_singleSlashStart.test(ret.path)) {
 				throw new Error(
-					'[UriError]: If a URI contains an authority component, then the path component must either be empty or begin with a slash ("/") character'
+					'[UriError]: If a URI contains an authority component, then the path component must either be empty or begin with a slash ("/") character',
 				);
 			}
-		} else {
-			if (_doubleSlashStart.test(ret.path)) {
-				throw new Error(
-					'[UriError]: If a URI does not contain an authority component, then the path cannot begin with two slash characters ("//")'
-				);
-			}
+		} else if (_doubleSlashStart.test(ret.path)) {
+			throw new Error(
+				'[UriError]: If a URI does not contain an authority component, then the path cannot begin with two slash characters ("//")',
+			);
 		}
 	}
 }
@@ -155,7 +153,7 @@ export class URI implements UriComponents {
 		path?: string,
 		query?: string,
 		fragment?: string,
-		_strict?: boolean
+		_strict?: boolean,
 	);
 
 	/**
@@ -172,7 +170,7 @@ export class URI implements UriComponents {
 		path?: string,
 		query?: string,
 		fragment?: string,
-		_strict: boolean = false
+		_strict = false,
 	) {
 		if (typeof schemeOrData === "object") {
 			this.scheme = schemeOrData.scheme || _empty;
@@ -288,7 +286,7 @@ export class URI implements UriComponents {
 	 *
 	 * @param value A string which represents an URI (see `URI#toString`).
 	 */
-	static parse(value: string, _strict: boolean = false): URI {
+	static parse(value: string, _strict = false): URI {
 		const match = _regexp.exec(value);
 		if (!match) {
 			return new Uri(_empty, _empty, _empty, _empty, _empty);
@@ -299,7 +297,7 @@ export class URI implements UriComponents {
 			percentDecode(match[5] || _empty),
 			percentDecode(match[7] || _empty),
 			percentDecode(match[9] || _empty),
-			_strict
+			_strict,
 		);
 	}
 
@@ -364,7 +362,7 @@ export class URI implements UriComponents {
 			components.path,
 			components.query,
 			components.fragment,
-			strict
+			strict,
 		);
 		return result;
 	}
@@ -379,13 +377,13 @@ export class URI implements UriComponents {
 	static joinPath(uri: URI, ...pathFragment: string[]): URI {
 		if (!uri.path) {
 			throw new Error(
-				`[UriError]: cannot call joinPath on URI without path`
+				`[UriError]: cannot call joinPath on URI without path`,
 			);
 		}
 		let newPath: string;
 		if (isWindows && uri.scheme === "file") {
 			newPath = URI.file(
-				paths.win32.join(uriToFsPath(uri, true), ...pathFragment)
+				paths.win32.join(uriToFsPath(uri, true), ...pathFragment),
 			).path;
 		} else {
 			newPath = paths.posix.join(uri.path, ...pathFragment);
@@ -406,7 +404,7 @@ export class URI implements UriComponents {
 	 *
 	 * @param skipEncoding Do not encode the result, default is `false`
 	 */
-	toString(skipEncoding: boolean = false): string {
+	toString(skipEncoding = false): string {
 		return _asFormatted(this, skipEncoding);
 	}
 
@@ -428,10 +426,10 @@ export class URI implements UriComponents {
 	static revive(data: UriComponents | URI | undefined): URI | undefined;
 	static revive(data: UriComponents | URI | null): URI | null;
 	static revive(
-		data: UriComponents | URI | undefined | null
+		data: UriComponents | URI | undefined | null,
 	): URI | undefined | null;
 	static revive(
-		data: UriComponents | URI | undefined | null
+		data: UriComponents | URI | undefined | null,
 	): URI | undefined | null {
 		if (!data) {
 			return data;
@@ -495,15 +493,15 @@ class Uri extends URI {
 		return this._fsPath;
 	}
 
-	override toString(skipEncoding: boolean = false): string {
-		if (!skipEncoding) {
+	override toString(skipEncoding = false): string {
+		if (skipEncoding) {
+			// we don't cache that
+			return _asFormatted(this, true);
+		} else {
 			if (!this._formatted) {
 				this._formatted = _asFormatted(this, false);
 			}
 			return this._formatted;
-		} else {
-			// we don't cache that
-			return _asFormatted(this, true);
 		}
 	}
 
@@ -571,7 +569,7 @@ const encodeTable: { [ch: number]: string } = {
 function encodeURIComponentFast(
 	uriComponent: string,
 	isPath: boolean,
-	isAuthority: boolean
+	isAuthority: boolean,
 ): string {
 	let res: string | undefined = undefined;
 	let nativeEncodePos = -1;
@@ -596,7 +594,7 @@ function encodeURIComponentFast(
 			// check if we are delaying native encode
 			if (nativeEncodePos !== -1) {
 				res += encodeURIComponent(
-					uriComponent.substring(nativeEncodePos, pos)
+					uriComponent.substring(nativeEncodePos, pos),
 				);
 				nativeEncodePos = -1;
 			}
@@ -616,7 +614,7 @@ function encodeURIComponentFast(
 				// check if we are delaying native encode
 				if (nativeEncodePos !== -1) {
 					res += encodeURIComponent(
-						uriComponent.substring(nativeEncodePos, pos)
+						uriComponent.substring(nativeEncodePos, pos),
 					);
 					nativeEncodePos = -1;
 				}
@@ -646,10 +644,8 @@ function encodeURIComponentMinimal(path: string): string {
 				res = path.substr(0, pos);
 			}
 			res += encodeTable[code];
-		} else {
-			if (res !== undefined) {
-				res += path[pos];
-			}
+		} else if (res !== undefined) {
+			res += path[pos];
 		}
 	}
 	return res !== undefined ? res : path;
@@ -671,11 +667,11 @@ export function uriToFsPath(uri: URI, keepDriveLetterCasing: boolean): string {
 				uri.path.charCodeAt(1) <= CharCode.z)) &&
 		uri.path.charCodeAt(2) === CharCode.Colon
 	) {
-		if (!keepDriveLetterCasing) {
+		if (keepDriveLetterCasing) {
+			value = uri.path.substr(1);
+		} else {
 			// windows drive letter: file:///c:/far/boo
 			value = uri.path[1].toLowerCase() + uri.path.substr(2);
-		} else {
-			value = uri.path.substr(1);
 		}
 	} else {
 		// other path
@@ -691,9 +687,9 @@ export function uriToFsPath(uri: URI, keepDriveLetterCasing: boolean): string {
  * Create the external version of a uri
  */
 function _asFormatted(uri: URI, skipEncoding: boolean): string {
-	const encoder = !skipEncoding
-		? encodeURIComponentFast
-		: encodeURIComponentMinimal;
+	const encoder = skipEncoding
+		? encodeURIComponentMinimal
+		: encodeURIComponentFast;
 
 	let res = "";
 	let { scheme, authority, path, query, fragment } = uri;
@@ -758,9 +754,9 @@ function _asFormatted(uri: URI, skipEncoding: boolean): string {
 	}
 	if (fragment) {
 		res += "#";
-		res += !skipEncoding
-			? encodeURIComponentFast(fragment, false, false)
-			: fragment;
+		res += skipEncoding
+			? fragment
+			: encodeURIComponentFast(fragment, false, false);
 	}
 	return res;
 }
@@ -786,7 +782,7 @@ function percentDecode(str: string): string {
 		return str;
 	}
 	return str.replace(_rEncodedAsHex, (match) =>
-		decodeURIComponentGraceful(match)
+		decodeURIComponentGraceful(match),
 	);
 }
 

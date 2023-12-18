@@ -3,22 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { revive } from "vs/base/common/marshalling";
+import { URI, UriComponents } from "vs/base/common/uri";
 import {
+	AbstractLoggerService,
+	AbstractMessageLogger,
 	ILogger,
 	ILoggerOptions,
-	AbstractMessageLogger,
 	LogLevel,
-	AbstractLoggerService,
 } from "vs/platform/log/common/log";
 import {
-	MainThreadLoggerShape,
+	ExtHostLogLevelServiceShape,
 	MainContext,
-	ExtHostLogLevelServiceShape as ExtHostLogLevelServiceShape,
+	MainThreadLoggerShape,
 } from "vs/workbench/api/common/extHost.protocol";
 import { IExtHostInitDataService } from "vs/workbench/api/common/extHostInitDataService";
 import { IExtHostRpcService } from "vs/workbench/api/common/extHostRpcService";
-import { URI, UriComponents } from "vs/base/common/uri";
-import { revive } from "vs/base/common/marshalling";
 
 export class ExtHostLoggerService
 	extends AbstractLoggerService
@@ -29,12 +29,12 @@ export class ExtHostLoggerService
 
 	constructor(
 		@IExtHostRpcService rpc: IExtHostRpcService,
-		@IExtHostInitDataService initData: IExtHostInitDataService
+		@IExtHostInitDataService initData: IExtHostInitDataService,
 	) {
 		super(
 			initData.logLevel,
 			initData.logsLocation,
-			initData.loggers.map((logger) => revive(logger))
+			initData.loggers.map((logger) => revive(logger)),
 		);
 		this._proxy = rpc.getProxy(MainContext.MainThreadLogger);
 	}
@@ -55,21 +55,21 @@ export class ExtHostLoggerService
 	protected doCreateLogger(
 		resource: URI,
 		logLevel: LogLevel,
-		options?: ILoggerOptions
+		options?: ILoggerOptions,
 	): ILogger {
 		return new Logger(this._proxy, resource, logLevel, options);
 	}
 }
 
 class Logger extends AbstractMessageLogger {
-	private isLoggerCreated: boolean = false;
+	private isLoggerCreated = false;
 	private buffer: [LogLevel, string][] = [];
 
 	constructor(
 		private readonly proxy: MainThreadLoggerShape,
 		private readonly file: URI,
 		logLevel: LogLevel,
-		loggerOptions?: ILoggerOptions
+		loggerOptions?: ILoggerOptions,
 	) {
 		super(loggerOptions?.logLevel === "always");
 		this.setLevel(logLevel);

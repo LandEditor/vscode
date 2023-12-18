@@ -25,22 +25,22 @@ const ignoreUnusualLineTerminators = "ignoreUnusualLineTerminators";
 function writeIgnoreState(
 	codeEditorService: ICodeEditorService,
 	model: ITextModel,
-	state: boolean
+	state: boolean,
 ): void {
 	codeEditorService.setModelProperty(
 		model.uri,
 		ignoreUnusualLineTerminators,
-		state
+		state,
 	);
 }
 
 function readIgnoreState(
 	codeEditorService: ICodeEditorService,
-	model: ITextModel
+	model: ITextModel,
 ): boolean | undefined {
 	return codeEditorService.getModelProperty(
 		model.uri,
-		ignoreUnusualLineTerminators
+		ignoreUnusualLineTerminators,
 	);
 }
 
@@ -51,7 +51,7 @@ export class UnusualLineTerminatorsDetector
 	public static readonly ID = "editor.contrib.unusualLineTerminatorsDetector";
 
 	private _config: "auto" | "off" | "prompt";
-	private _isPresentingDialog: boolean = false;
+	private _isPresentingDialog = false;
 
 	constructor(
 		private readonly _editor: ICodeEditor,
@@ -133,27 +133,27 @@ export class UnusualLineTerminatorsDetector
 			result = await this._dialogService.confirm({
 				title: nls.localize(
 					"unusualLineTerminators.title",
-					"Unusual Line Terminators"
+					"Unusual Line Terminators",
 				),
 				message: nls.localize(
 					"unusualLineTerminators.message",
-					"Detected unusual line terminators"
+					"Detected unusual line terminators",
 				),
 				detail: nls.localize(
 					"unusualLineTerminators.detail",
 					"The file '{0}' contains one or more unusual line terminator characters, like Line Separator (LS) or Paragraph Separator (PS).\n\nIt is recommended to remove them from the file. This can be configured via `editor.unusualLineTerminators`.",
-					basename(model.uri)
+					basename(model.uri),
 				),
 				primaryButton: nls.localize(
 					{
 						key: "unusualLineTerminators.fix",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Remove Unusual Line Terminators"
+					"&&Remove Unusual Line Terminators",
 				),
 				cancelButton: nls.localize(
 					"unusualLineTerminators.ignore",
-					"Ignore"
+					"Ignore",
 				),
 			});
 		} finally {
@@ -173,5 +173,5 @@ export class UnusualLineTerminatorsDetector
 registerEditorContribution(
 	UnusualLineTerminatorsDetector.ID,
 	UnusualLineTerminatorsDetector,
-	EditorContributionInstantiation.AfterFirstRender
+	EditorContributionInstantiation.AfterFirstRender,
 );

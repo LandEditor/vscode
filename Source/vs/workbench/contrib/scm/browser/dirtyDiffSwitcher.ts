@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
-import { Action, IAction } from "vs/base/common/actions";
-import { IContextViewService } from "vs/platform/contextview/browser/contextView";
-import { ISelectOptionItem } from "vs/base/browser/ui/selectBox/selectBox";
 import { SelectActionViewItem } from "vs/base/browser/ui/actionbar/actionViewItems";
-import { defaultSelectBoxStyles } from "vs/platform/theme/browser/defaultStyles";
-import { IThemeService } from "vs/platform/theme/common/themeService";
+import { ISelectOptionItem } from "vs/base/browser/ui/selectBox/selectBox";
+import { Action, IAction } from "vs/base/common/actions";
 import { peekViewTitleBackground } from "vs/editor/contrib/peekView/browser/peekView";
+import * as nls from "vs/nls";
+import { IContextViewService } from "vs/platform/contextview/browser/contextView";
+import { defaultSelectBoxStyles } from "vs/platform/theme/browser/defaultStyles";
 import { editorBackground } from "vs/platform/theme/common/colorRegistry";
+import { IThemeService } from "vs/platform/theme/common/themeService";
 
 export interface IQuickDiffSelectItem extends ISelectOptionItem {
 	provider: string;
@@ -25,7 +25,7 @@ export class SwitchQuickDiffViewItem extends SelectActionViewItem<IQuickDiffSele
 		providers: string[],
 		selected: string,
 		@IContextViewService contextViewService: IContextViewService,
-		@IThemeService themeService: IThemeService
+		@IThemeService themeService: IThemeService,
 	) {
 		const items = providers.map((provider) => ({
 			provider,
@@ -50,21 +50,21 @@ export class SwitchQuickDiffViewItem extends SelectActionViewItem<IQuickDiffSele
 			startingSelection,
 			contextViewService,
 			styles,
-			{ ariaLabel: nls.localize("remotes", "Switch quick diff base") }
+			{ ariaLabel: nls.localize("remotes", "Switch quick diff base") },
 		);
 		this.optionsItems = items;
 	}
 
 	public setSelection(provider: string) {
 		const index = this.optionsItems.findIndex(
-			(item) => item.provider === provider
+			(item) => item.provider === provider,
 		);
 		this.select(index);
 	}
 
 	protected override getActionContext(
 		_: string,
-		index: number
+		index: number,
 	): IQuickDiffSelectItem {
 		return this.optionsItems[index];
 	}
@@ -79,17 +79,17 @@ export class SwitchQuickDiffBaseAction extends Action {
 	public static readonly ID = "quickDiff.base.switch";
 	public static readonly LABEL = nls.localize(
 		"quickDiff.base.switch",
-		"Switch Quick Diff Base"
+		"Switch Quick Diff Base",
 	);
 
 	constructor(
-		private readonly callback: (event?: IQuickDiffSelectItem) => void
+		private readonly callback: (event?: IQuickDiffSelectItem) => void,
 	) {
 		super(
 			SwitchQuickDiffBaseAction.ID,
 			SwitchQuickDiffBaseAction.LABEL,
 			undefined,
-			undefined
+			undefined,
 		);
 	}
 

@@ -3,36 +3,36 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IWorkingCopyBackupService } from "vs/workbench/services/workingCopy/common/workingCopyBackup";
+import { Promises } from "vs/base/common/async";
+import { CancellationTokenSource } from "vs/base/common/cancellation";
 import {
 	Disposable,
 	IDisposable,
 	toDisposable,
 } from "vs/base/common/lifecycle";
-import { IWorkingCopyService } from "vs/workbench/services/workingCopy/common/workingCopyService";
+import { ILogService } from "vs/platform/log/common/log";
+import { EditorsOrder } from "vs/workbench/common/editor";
+import { EditorInput } from "vs/workbench/common/editor/editorInput";
+import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
+import {
+	ILifecycleService,
+	InternalBeforeShutdownEvent,
+	LifecyclePhase,
+	ShutdownReason,
+} from "vs/workbench/services/lifecycle/common/lifecycle";
 import {
 	IWorkingCopy,
 	IWorkingCopyIdentifier,
 	WorkingCopyCapabilities,
 } from "vs/workbench/services/workingCopy/common/workingCopy";
-import { ILogService } from "vs/platform/log/common/log";
-import {
-	ShutdownReason,
-	ILifecycleService,
-	LifecyclePhase,
-	InternalBeforeShutdownEvent,
-} from "vs/workbench/services/lifecycle/common/lifecycle";
-import { CancellationTokenSource } from "vs/base/common/cancellation";
-import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
+import { IWorkingCopyBackupService } from "vs/workbench/services/workingCopy/common/workingCopyBackup";
 import {
 	IWorkingCopyEditorHandler,
 	IWorkingCopyEditorService,
 } from "vs/workbench/services/workingCopy/common/workingCopyEditorService";
-import { Promises } from "vs/base/common/async";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { EditorsOrder } from "vs/workbench/common/editor";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
+import { IWorkingCopyService } from "vs/workbench/services/workingCopy/common/workingCopyService";
 
 /**
  * The working copy backup tracker deals with:
@@ -50,7 +50,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 		protected readonly filesConfigurationService: IFilesConfigurationService,
 		private readonly workingCopyEditorService: IWorkingCopyEditorService,
 		protected readonly editorService: IEditorService,
-		private readonly editorGroupService: IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService,
 	) {
 		super();
 
@@ -67,23 +67,23 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 		// Working Copy events
 		this._register(
 			this.workingCopyService.onDidRegister((workingCopy) =>
-				this.onDidRegister(workingCopy)
-			)
+				this.onDidRegister(workingCopy),
+			),
 		);
 		this._register(
 			this.workingCopyService.onDidUnregister((workingCopy) =>
-				this.onDidUnregister(workingCopy)
-			)
+				this.onDidUnregister(workingCopy),
+			),
 		);
 		this._register(
 			this.workingCopyService.onDidChangeDirty((workingCopy) =>
-				this.onDidChangeDirty(workingCopy)
-			)
+				this.onDidChangeDirty(workingCopy),
+			),
 		);
 		this._register(
 			this.workingCopyService.onDidChangeContent((workingCopy) =>
-				this.onDidChangeContent(workingCopy)
-			)
+				this.onDidChangeContent(workingCopy),
+			),
 		);
 
 		// Lifecycle
@@ -91,24 +91,24 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 			this.lifecycleService.onBeforeShutdown((event) =>
 				(event as InternalBeforeShutdownEvent).finalVeto(
 					() => this.onFinalBeforeShutdown(event.reason),
-					"veto.backups"
-				)
-			)
+					"veto.backups",
+				),
+			),
 		);
 		this._register(
-			this.lifecycleService.onWillShutdown(() => this.onWillShutdown())
+			this.lifecycleService.onWillShutdown(() => this.onWillShutdown()),
 		);
 
 		// Once a handler registers, restore backups
 		this._register(
 			this.workingCopyEditorService.onDidRegisterHandler((handler) =>
-				this.restoreBackups(handler)
-			)
+				this.restoreBackups(handler),
+			),
 		);
 	}
 
 	protected abstract onFinalBeforeShutdown(
-		reason: ShutdownReason
+		reason: ShutdownReason,
 	): boolean | Promise<boolean>;
 
 	private onWillShutdown(): void {
@@ -161,7 +161,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 			this.logService.warn(
 				`[backup tracker] suspended, ignoring register event`,
 				workingCopy.resource.toString(),
-				workingCopy.typeId
+				workingCopy.typeId,
 			);
 			return;
 		}
@@ -180,7 +180,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 			this.logService.warn(
 				`[backup tracker] suspended, ignoring unregister event`,
 				workingCopy.resource.toString(),
-				workingCopy.typeId
+				workingCopy.typeId,
 			);
 			return;
 		}
@@ -194,7 +194,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 			this.logService.warn(
 				`[backup tracker] suspended, ignoring dirty change event`,
 				workingCopy.resource.toString(),
-				workingCopy.typeId
+				workingCopy.typeId,
 			);
 			return;
 		}
@@ -211,7 +211,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 		const contentVersionId = this.getContentVersion(workingCopy);
 		this.mapWorkingCopyToContentVersion.set(
 			workingCopy,
-			contentVersionId + 1
+			contentVersionId + 1,
 		);
 
 		// Check suspended
@@ -219,7 +219,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 			this.logService.warn(
 				`[backup tracker] suspended, ignoring content change event`,
 				workingCopy.resource.toString(),
-				workingCopy.typeId
+				workingCopy.typeId,
 			);
 			return;
 		}
@@ -240,7 +240,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 		this.logService.trace(
 			`[backup tracker] scheduling backup`,
 			workingCopy.resource.toString(),
-			workingCopy.typeId
+			workingCopy.typeId,
 		);
 
 		// Schedule new backup
@@ -259,7 +259,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 				this.logService.trace(
 					`[backup tracker] creating backup`,
 					workingCopy.resource.toString(),
-					workingCopy.typeId
+					workingCopy.typeId,
 				);
 
 				try {
@@ -272,7 +272,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 						this.logService.trace(
 							`[backup tracker] storing backup`,
 							workingCopy.resource.toString(),
-							workingCopy.typeId
+							workingCopy.typeId,
 						);
 
 						await this.workingCopyBackupService.backup(
@@ -280,7 +280,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 							backup.content,
 							this.getContentVersion(workingCopy),
 							backup.meta,
-							cts.token
+							cts.token,
 						);
 					}
 				} catch (error) {
@@ -301,7 +301,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 				this.logService.trace(
 					`[backup tracker] clearing pending backup creation`,
 					workingCopy.resource.toString(),
-					workingCopy.typeId
+					workingCopy.typeId,
 				);
 
 				cts.cancel();
@@ -324,7 +324,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 		} else {
 			backupScheduleDelay =
 				this.filesConfigurationService.isShortAutoSaveDelayConfigured(
-					workingCopy.resource
+					workingCopy.resource,
 				)
 					? "delayed"
 					: "default";
@@ -357,7 +357,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 				this.logService.trace(
 					`[backup tracker] clearing pending backup discard`,
 					workingCopy.resource.toString(),
-					workingCopy.typeId
+					workingCopy.typeId,
 				);
 
 				cts.cancel();
@@ -368,19 +368,19 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 
 	private async doDiscardBackup(
 		workingCopyIdentifier: IWorkingCopyIdentifier,
-		cts: CancellationTokenSource
+		cts: CancellationTokenSource,
 	) {
 		this.logService.trace(
 			`[backup tracker] discarding backup`,
 			workingCopyIdentifier.resource.toString(),
-			workingCopyIdentifier.typeId
+			workingCopyIdentifier.typeId,
 		);
 
 		// Discard backup
 		try {
 			await this.workingCopyBackupService.discardBackup(
 				workingCopyIdentifier,
-				cts.token
+				cts.token,
 			);
 		} catch (error) {
 			this.logService.error(error);
@@ -421,10 +421,10 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 
 	private doClearPendingBackupOperation(
 		workingCopyIdentifier: IWorkingCopyIdentifier,
-		options?: { cancel: boolean }
+		options?: { cancel: boolean },
 	): void {
 		const pendingBackupOperation = this.pendingBackupOperations.get(
-			workingCopyIdentifier
+			workingCopyIdentifier,
 		);
 		if (!pendingBackupOperation) {
 			return;
@@ -479,7 +479,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 	}
 
 	protected async restoreBackups(
-		handler: IWorkingCopyEditorHandler
+		handler: IWorkingCopyEditorHandler,
 	): Promise<void> {
 		// Wait for backups to be resolved
 		await this.whenReady;
@@ -502,11 +502,11 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 			// Collect already opened editors for backup
 			let hasOpenedEditorForBackup = false;
 			for (const { editor } of this.editorService.getEditors(
-				EditorsOrder.MOST_RECENTLY_ACTIVE
+				EditorsOrder.MOST_RECENTLY_ACTIVE,
 			)) {
 				const isUnrestoredBackupOpened = handler.isOpen(
 					unrestoredBackup,
-					editor
+					editor,
 				);
 				if (isUnrestoredBackupOpened) {
 					openedEditorsForBackups.add(editor);
@@ -518,7 +518,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 			// for the backup to show
 			if (!hasOpenedEditorForBackup) {
 				nonOpenedEditorsForBackups.add(
-					await handler.createEditor(unrestoredBackup)
+					await handler.createEditor(unrestoredBackup),
 				);
 			}
 
@@ -538,8 +538,8 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 							preserveFocus: true,
 							inactive: true,
 						},
-					})
-				)
+					}),
+				),
 			);
 
 			for (const nonOpenedEditorForBackup of nonOpenedEditorsForBackups) {
@@ -558,7 +558,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 				}
 
 				return openedEditorForBackup.resolve();
-			})
+			}),
 		);
 
 		// Finally, remove all handled backups from the list

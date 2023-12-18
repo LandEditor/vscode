@@ -8,19 +8,19 @@ import { INativeEnvironmentService } from "vs/platform/environment/common/enviro
 import { IFileService } from "vs/platform/files/common/files";
 import { refineServiceDecorator } from "vs/platform/instantiation/common/instantiation";
 import { ILogService } from "vs/platform/log/common/log";
+import { IStateService } from "vs/platform/state/node/state";
 import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
 import {
+	IUserDataProfile,
 	IUserDataProfilesService,
 	WillCreateProfileEvent,
 	WillRemoveProfileEvent,
-	IUserDataProfile,
 } from "vs/platform/userDataProfile/common/userDataProfile";
 import { UserDataProfilesService } from "vs/platform/userDataProfile/node/userDataProfile";
 import {
 	IAnyWorkspaceIdentifier,
 	IEmptyWorkspaceIdentifier,
 } from "vs/platform/workspace/common/workspace";
-import { IStateService } from "vs/platform/state/node/state";
 
 export const IUserDataProfilesMainService = refineServiceDecorator<
 	IUserDataProfilesService,
@@ -28,11 +28,11 @@ export const IUserDataProfilesMainService = refineServiceDecorator<
 >(IUserDataProfilesService);
 export interface IUserDataProfilesMainService extends IUserDataProfilesService {
 	getProfileForWorkspace(
-		workspaceIdentifier: IAnyWorkspaceIdentifier
+		workspaceIdentifier: IAnyWorkspaceIdentifier,
 	): IUserDataProfile | undefined;
 	unsetWorkspace(
 		workspaceIdentifier: IAnyWorkspaceIdentifier,
-		transient?: boolean
+		transient?: boolean,
 	): void;
 	getAssociatedEmptyWindows(): IEmptyWorkspaceIdentifier[];
 	readonly onWillCreateProfile: Event<WillCreateProfileEvent>;
@@ -49,14 +49,14 @@ export class UserDataProfilesMainService
 		@INativeEnvironmentService
 		environmentService: INativeEnvironmentService,
 		@IFileService fileService: IFileService,
-		@ILogService logService: ILogService
+		@ILogService logService: ILogService,
 	) {
 		super(
 			stateService,
 			uriIdentityService,
 			environmentService,
 			fileService,
-			logService
+			logService,
 		);
 	}
 

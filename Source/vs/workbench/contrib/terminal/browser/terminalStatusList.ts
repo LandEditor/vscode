@@ -3,10 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { mainWindow } from "vs/base/browser/window";
 import { Codicon } from "vs/base/common/codicons";
 import { Emitter, Event } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
 import Severity from "vs/base/common/severity";
+import { ThemeIcon } from "vs/base/common/themables";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { TerminalSettingId } from "vs/platform/terminal/common/terminal";
 import {
@@ -14,15 +16,13 @@ import {
 	listWarningForeground,
 } from "vs/platform/theme/common/colorRegistry";
 import { spinningLoading } from "vs/platform/theme/common/iconRegistry";
-import { ThemeIcon } from "vs/base/common/themables";
 import { ITerminalStatus } from "vs/workbench/contrib/terminal/common/terminal";
-import { mainWindow } from "vs/base/browser/window";
 
 /**
  * The set of _internal_ terminal statuses, other components building on the terminal should put
  * their statuses within their component.
  */
-export const enum TerminalStatus {
+export enum TerminalStatus {
 	Bell = "bell",
 	Disconnected = "disconnected",
 	RelaunchNeeded = "relaunch-needed",
@@ -61,19 +61,19 @@ export class TerminalStatusList
 	private readonly _statusTimeouts: Map<string, number> = new Map();
 
 	private readonly _onDidAddStatus = this._register(
-		new Emitter<ITerminalStatus>()
+		new Emitter<ITerminalStatus>(),
 	);
 	get onDidAddStatus(): Event<ITerminalStatus> {
 		return this._onDidAddStatus.event;
 	}
 	private readonly _onDidRemoveStatus = this._register(
-		new Emitter<ITerminalStatus>()
+		new Emitter<ITerminalStatus>(),
 	);
 	get onDidRemoveStatus(): Event<ITerminalStatus> {
 		return this._onDidRemoveStatus.event;
 	}
 	private readonly _onDidChangePrimaryStatus = this._register(
-		new Emitter<ITerminalStatus | undefined>()
+		new Emitter<ITerminalStatus | undefined>(),
 	);
 	get onDidChangePrimaryStatus(): Event<ITerminalStatus | undefined> {
 		return this._onDidChangePrimaryStatus.event;
@@ -112,7 +112,7 @@ export class TerminalStatusList
 		if (duration && duration > 0) {
 			const timeout = mainWindow.setTimeout(
 				() => this.remove(status),
-				duration
+				duration,
 			);
 			this._statusTimeouts.set(status.id, timeout);
 		}
@@ -163,7 +163,7 @@ export class TerminalStatusList
 			!status.icon ||
 			ThemeIcon.getModifier(status.icon) !== "spin" ||
 			this._configurationService.getValue(
-				TerminalSettingId.TabsEnableAnimation
+				TerminalSettingId.TabsEnableAnimation,
 			)
 		) {
 			return status;

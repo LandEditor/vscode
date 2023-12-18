@@ -5,12 +5,12 @@
 
 import * as path from "path";
 import * as vscode from "vscode";
-import type * as Proto from "../tsServer/protocol/protocol";
-import { API } from "../tsServer/api";
-import { ITypeScriptServiceClient } from "../typescriptService";
-import { Disposable } from "../utils/dispose";
 import * as fileSchemes from "../configuration/fileSchemes";
 import { isTypeScriptDocument } from "../configuration/languageIds";
+import { API } from "../tsServer/api";
+import type * as Proto from "../tsServer/protocol/protocol";
+import { ITypeScriptServiceClient } from "../typescriptService";
+import { Disposable } from "../utils/dispose";
 import { equals } from "../utils/objects";
 import { ResourceMap } from "../utils/resourceMap";
 
@@ -21,7 +21,7 @@ interface FileConfiguration {
 
 function areFileConfigurationsEqual(
 	a: FileConfiguration,
-	b: FileConfiguration
+	b: FileConfiguration,
 ): boolean {
 	return equals(a, b);
 }
@@ -33,7 +33,7 @@ export default class FileConfigurationManager extends Disposable {
 
 	public constructor(
 		private readonly client: ITypeScriptServiceClient,
-		onCaseInsensitiveFileSystem: boolean
+		onCaseInsensitiveFileSystem: boolean,
 	) {
 		super();
 		this.formatOptions = new ResourceMap(undefined, {
@@ -48,42 +48,42 @@ export default class FileConfigurationManager extends Disposable {
 				this.formatOptions.delete(textDocument.uri);
 			},
 			undefined,
-			this._disposables
+			this._disposables,
 		);
 	}
 
 	public async ensureConfigurationForDocument(
 		document: vscode.TextDocument,
-		token: vscode.CancellationToken
+		token: vscode.CancellationToken,
 	): Promise<void> {
 		const formattingOptions = this.getFormattingOptions(document);
 		if (formattingOptions) {
 			return this.ensureConfigurationOptions(
 				document,
 				formattingOptions,
-				token
+				token,
 			);
 		}
 	}
 
 	private getFormattingOptions(
-		document: vscode.TextDocument
+		document: vscode.TextDocument,
 	): vscode.FormattingOptions | undefined {
 		const editor = vscode.window.visibleTextEditors.find(
-			(editor) => editor.document.fileName === document.fileName
+			(editor) => editor.document.fileName === document.fileName,
 		);
 		return editor
 			? ({
 					tabSize: editor.options.tabSize,
 					insertSpaces: editor.options.insertSpaces,
-				} as vscode.FormattingOptions)
+			  } as vscode.FormattingOptions)
 			: undefined;
 	}
 
 	public async ensureConfigurationOptions(
 		document: vscode.TextDocument,
 		options: vscode.FormattingOptions,
-		token: vscode.CancellationToken
+		token: vscode.CancellationToken,
 	): Promise<void> {
 		const file = this.client.toOpenTsFilePath(document);
 		if (!file) {
@@ -111,7 +111,7 @@ export default class FileConfigurationManager extends Disposable {
 				const response = await this.client.execute(
 					"configure",
 					{ file, ...currentOptions },
-					token
+					token,
 				);
 				return response.type === "response"
 					? currentOptions
@@ -128,7 +128,7 @@ export default class FileConfigurationManager extends Disposable {
 
 	public async setGlobalConfigurationFromDocument(
 		document: vscode.TextDocument,
-		token: vscode.CancellationToken
+		token: vscode.CancellationToken,
 	): Promise<void> {
 		const formattingOptions = this.getFormattingOptions(document);
 		if (!formattingOptions) {
@@ -148,7 +148,7 @@ export default class FileConfigurationManager extends Disposable {
 
 	private getFileOptions(
 		document: vscode.TextDocument,
-		options: vscode.FormattingOptions
+		options: vscode.FormattingOptions,
 	): FileConfiguration {
 		return {
 			formatOptions: this.getFormatOptions(document, options),
@@ -158,13 +158,13 @@ export default class FileConfigurationManager extends Disposable {
 
 	private getFormatOptions(
 		document: vscode.TextDocument,
-		options: vscode.FormattingOptions
+		options: vscode.FormattingOptions,
 	): Proto.FormatCodeSettings {
 		const config = vscode.workspace.getConfiguration(
 			isTypeScriptDocument(document)
 				? "typescript.format"
 				: "javascript.format",
-			document.uri
+			document.uri,
 		);
 
 		return {
@@ -174,60 +174,60 @@ export default class FileConfigurationManager extends Disposable {
 			// We can use \n here since the editor normalizes later on to its line endings.
 			newLineCharacter: "\n",
 			insertSpaceAfterCommaDelimiter: config.get<boolean>(
-				"insertSpaceAfterCommaDelimiter"
+				"insertSpaceAfterCommaDelimiter",
 			),
 			insertSpaceAfterConstructor: config.get<boolean>(
-				"insertSpaceAfterConstructor"
+				"insertSpaceAfterConstructor",
 			),
 			insertSpaceAfterSemicolonInForStatements: config.get<boolean>(
-				"insertSpaceAfterSemicolonInForStatements"
+				"insertSpaceAfterSemicolonInForStatements",
 			),
 			insertSpaceBeforeAndAfterBinaryOperators: config.get<boolean>(
-				"insertSpaceBeforeAndAfterBinaryOperators"
+				"insertSpaceBeforeAndAfterBinaryOperators",
 			),
 			insertSpaceAfterKeywordsInControlFlowStatements:
 				config.get<boolean>(
-					"insertSpaceAfterKeywordsInControlFlowStatements"
+					"insertSpaceAfterKeywordsInControlFlowStatements",
 				),
 			insertSpaceAfterFunctionKeywordForAnonymousFunctions:
 				config.get<boolean>(
-					"insertSpaceAfterFunctionKeywordForAnonymousFunctions"
+					"insertSpaceAfterFunctionKeywordForAnonymousFunctions",
 				),
 			insertSpaceBeforeFunctionParenthesis: config.get<boolean>(
-				"insertSpaceBeforeFunctionParenthesis"
+				"insertSpaceBeforeFunctionParenthesis",
 			),
 			insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis:
 				config.get<boolean>(
-					"insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis"
+					"insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis",
 				),
 			insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets:
 				config.get<boolean>(
-					"insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets"
+					"insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets",
 				),
 			insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces:
 				config.get<boolean>(
-					"insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces"
+					"insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces",
 				),
 			insertSpaceAfterOpeningAndBeforeClosingEmptyBraces:
 				config.get<boolean>(
-					"insertSpaceAfterOpeningAndBeforeClosingEmptyBraces"
+					"insertSpaceAfterOpeningAndBeforeClosingEmptyBraces",
 				),
 			insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces:
 				config.get<boolean>(
-					"insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces"
+					"insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces",
 				),
 			insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces:
 				config.get<boolean>(
-					"insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces"
+					"insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces",
 				),
 			insertSpaceAfterTypeAssertion: config.get<boolean>(
-				"insertSpaceAfterTypeAssertion"
+				"insertSpaceAfterTypeAssertion",
 			),
 			placeOpenBraceOnNewLineForFunctions: config.get<boolean>(
-				"placeOpenBraceOnNewLineForFunctions"
+				"placeOpenBraceOnNewLineForFunctions",
 			),
 			placeOpenBraceOnNewLineForControlBlocks: config.get<boolean>(
-				"placeOpenBraceOnNewLineForControlBlocks"
+				"placeOpenBraceOnNewLineForControlBlocks",
 			),
 			semicolons: config.get<Proto.SemicolonPreference>("semicolons"),
 			indentSwitchCase: config.get<boolean>("indentSwitchCase"),
@@ -235,18 +235,18 @@ export default class FileConfigurationManager extends Disposable {
 	}
 
 	private getPreferences(
-		document: vscode.TextDocument
+		document: vscode.TextDocument,
 	): Proto.UserPreferences {
 		const config = vscode.workspace.getConfiguration(
 			isTypeScriptDocument(document) ? "typescript" : "javascript",
-			document
+			document,
 		);
 
 		const preferencesConfig = vscode.workspace.getConfiguration(
 			isTypeScriptDocument(document)
 				? "typescript.preferences"
 				: "javascript.preferences",
-			document
+			document,
 		);
 
 		const preferences: Proto.UserPreferences = {
@@ -263,46 +263,46 @@ export default class FileConfigurationManager extends Disposable {
 			providePrefixAndSuffixTextForRename:
 				preferencesConfig.get<boolean>(
 					"renameShorthandProperties",
-					true
+					true,
 				) === false
 					? false
 					: preferencesConfig.get<boolean>(
 							"useAliasesForRenames",
-							true
-						),
+							true,
+					  ),
 			allowRenameOfImportPath: true,
 			includeAutomaticOptionalChainCompletions: config.get<boolean>(
 				"suggest.includeAutomaticOptionalChainCompletions",
-				true
+				true,
 			),
 			provideRefactorNotApplicableReason: true,
 			generateReturnInDocTemplate: config.get<boolean>(
 				"suggest.jsdoc.generateReturns",
-				true
+				true,
 			),
 			includeCompletionsForImportStatements: config.get<boolean>(
 				"suggest.includeCompletionsForImportStatements",
-				true
+				true,
 			),
 			includeCompletionsWithSnippetText: true,
 			includeCompletionsWithClassMemberSnippets: config.get<boolean>(
 				"suggest.classMemberSnippets.enabled",
-				true
+				true,
 			),
 			includeCompletionsWithObjectLiteralMethodSnippets:
 				config.get<boolean>(
 					"suggest.objectLiteralMethodSnippets.enabled",
-					true
+					true,
 				),
 			autoImportFileExcludePatterns:
 				this.getAutoImportFileExcludePatternsPreference(
 					preferencesConfig,
-					vscode.workspace.getWorkspaceFolder(document.uri)?.uri
+					vscode.workspace.getWorkspaceFolder(document.uri)?.uri,
 				),
 			// @ts-expect-error until 5.3 #56090
 			preferTypeOnlyAutoImports: config.get<boolean>(
 				"preferTypeOnlyAutoImports",
-				false
+				false,
 			),
 			useLabelDetailsInCompletionEntries: true,
 			allowIncompleteCompletions: true,
@@ -330,7 +330,7 @@ export default class FileConfigurationManager extends Disposable {
 
 	private getAutoImportFileExcludePatternsPreference(
 		config: vscode.WorkspaceConfiguration,
-		workspaceFolder: vscode.Uri | undefined
+		workspaceFolder: vscode.Uri | undefined,
 	): string[] | undefined {
 		return (
 			workspaceFolder &&
@@ -341,10 +341,10 @@ export default class FileConfigurationManager extends Disposable {
 				return path.isAbsolute(p)
 					? p
 					: p.startsWith("*")
-						? "/" + slashNormalized
-						: isRelative
-							? vscode.Uri.joinPath(workspaceFolder, p).fsPath
-							: "/**/" + slashNormalized;
+					  ? "/" + slashNormalized
+					  : isRelative
+						  ? vscode.Uri.joinPath(workspaceFolder, p).fsPath
+						  : "/**/" + slashNormalized;
 			})
 		);
 	}
@@ -366,7 +366,7 @@ export class InlayHintSettingNames {
 }
 
 export function getInlayHintsPreferences(
-	config: vscode.WorkspaceConfiguration
+	config: vscode.WorkspaceConfiguration,
 ) {
 	return {
 		includeInlayParameterNameHints:
@@ -374,37 +374,37 @@ export function getInlayHintsPreferences(
 		includeInlayParameterNameHintsWhenArgumentMatchesName:
 			!config.get<boolean>(
 				InlayHintSettingNames.parameterNamesSuppressWhenArgumentMatchesName,
-				true
+				true,
 			),
 		includeInlayFunctionParameterTypeHints: config.get<boolean>(
 			InlayHintSettingNames.parameterNamesEnabled,
-			false
+			false,
 		),
 		includeInlayVariableTypeHints: config.get<boolean>(
 			InlayHintSettingNames.variableTypesEnabled,
-			false
+			false,
 		),
 		includeInlayVariableTypeHintsWhenTypeMatchesName: !config.get<boolean>(
 			InlayHintSettingNames.variableTypesSuppressWhenTypeMatchesName,
-			true
+			true,
 		),
 		includeInlayPropertyDeclarationTypeHints: config.get<boolean>(
 			InlayHintSettingNames.propertyDeclarationTypesEnabled,
-			false
+			false,
 		),
 		includeInlayFunctionLikeReturnTypeHints: config.get<boolean>(
 			InlayHintSettingNames.functionLikeReturnTypesEnabled,
-			false
+			false,
 		),
 		includeInlayEnumMemberValueHints: config.get<boolean>(
 			InlayHintSettingNames.enumMemberValuesEnabled,
-			false
+			false,
 		),
 	} as const;
 }
 
 function getInlayParameterNameHintsPreference(
-	config: vscode.WorkspaceConfiguration
+	config: vscode.WorkspaceConfiguration,
 ) {
 	switch (config.get<string>("inlayHints.parameterNames.enabled")) {
 		case "none":
@@ -419,7 +419,7 @@ function getInlayParameterNameHintsPreference(
 }
 
 function getImportModuleSpecifierPreference(
-	config: vscode.WorkspaceConfiguration
+	config: vscode.WorkspaceConfiguration,
 ) {
 	switch (config.get<string>("importModuleSpecifier")) {
 		case "project-relative":
@@ -434,7 +434,7 @@ function getImportModuleSpecifierPreference(
 }
 
 function getImportModuleSpecifierEndingPreference(
-	config: vscode.WorkspaceConfiguration
+	config: vscode.WorkspaceConfiguration,
 ) {
 	switch (config.get<string>("importModuleSpecifierEnding")) {
 		case "minimal":

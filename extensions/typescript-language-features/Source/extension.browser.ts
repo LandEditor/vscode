@@ -72,10 +72,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<Api> {
 			TypeScriptVersionSource.Bundled,
 			vscode.Uri.joinPath(
 				context.extensionUri,
-				"dist/browser/typescript/tsserver.web.js"
+				"dist/browser/typescript/tsserver.web.js",
 			).toString(),
-			API.fromSimpleString("5.3.2")
-		)
+			API.fromSimpleString("5.3.2"),
+		),
 	);
 
 	let experimentTelemetryReporter:
@@ -86,7 +86,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Api> {
 		const { aiKey } = packageInfo;
 		const vscTelemetryReporter = new VsCodeTelemetryReporter(aiKey);
 		experimentTelemetryReporter = new ExperimentationTelemetryReporter(
-			vscTelemetryReporter
+			vscTelemetryReporter,
 		);
 		context.subscriptions.push(experimentTelemetryReporter);
 	}
@@ -104,7 +104,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Api> {
 			versionProvider,
 			processFactory: new WorkerServerProcessFactory(
 				context.extensionUri,
-				logger
+				logger,
 			),
 			activeJsTsEditorTracker,
 			serviceConfigurationProvider:
@@ -114,14 +114,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<Api> {
 		},
 		(item) => {
 			onCompletionAccepted.fire(item);
-		}
+		},
 	);
 
 	registerBaseCommands(
 		commandManager,
 		lazyClientHost,
 		pluginManager,
-		activeJsTsEditorTracker
+		activeJsTsEditorTracker,
 	);
 
 	// context.subscriptions.push(task.register(lazyClientHost.map(x => x.serviceClient)));
@@ -137,8 +137,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<Api> {
 			activeJsTsEditorTracker,
 			async () => {
 				await startPreloadWorkspaceContentsIfNeeded(context, logger);
-			}
-		)
+			},
+		),
 	);
 	context.subscriptions.push(
 		vscode.workspace.registerFileSystemProvider(
@@ -147,8 +147,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<Api> {
 			{
 				isCaseSensitive: true,
 				isReadonly: false,
-			}
-		)
+			},
+		),
 	);
 	context.subscriptions.push(
 		vscode.workspace.registerFileSystemProvider(
@@ -157,8 +157,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<Api> {
 			{
 				isCaseSensitive: true,
 				isReadonly: false,
-			}
-		)
+			},
+		),
 	);
 
 	return getExtensionApi(onCompletionAccepted.event, pluginManager);
@@ -166,7 +166,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Api> {
 
 async function startPreloadWorkspaceContentsIfNeeded(
 	context: vscode.ExtensionContext,
-	logger: Logger
+	logger: Logger,
 ): Promise<void> {
 	if (!isWebAndHasSharedArrayBuffers()) {
 		return;
@@ -179,7 +179,7 @@ async function startPreloadWorkspaceContentsIfNeeded(
 		!workspaceUri.authority.startsWith("github")
 	) {
 		logger.info(
-			`Skipped loading workspace contents for repository ${workspaceUri?.toString()}`
+			`Skipped loading workspace contents for repository ${workspaceUri?.toString()}`,
 		);
 		return;
 	}
@@ -194,14 +194,14 @@ class RemoteWorkspaceContentsPreloader extends Disposable {
 
 	constructor(
 		private readonly workspaceUri: vscode.Uri,
-		private readonly logger: Logger
+		private readonly logger: Logger,
 	) {
 		super();
 
 		const fsWatcher = this._register(
 			vscode.workspace.createFileSystemWatcher(
-				new vscode.RelativePattern(workspaceUri, "*")
-			)
+				new vscode.RelativePattern(workspaceUri, "*"),
+			),
 		);
 		this._register(
 			fsWatcher.onDidChange((uri) => {
@@ -209,7 +209,7 @@ class RemoteWorkspaceContentsPreloader extends Disposable {
 					this._preload = undefined;
 					this.triggerPreload();
 				}
-			})
+			}),
 		);
 	}
 
@@ -223,18 +223,18 @@ class RemoteWorkspaceContentsPreloader extends Disposable {
 			const remoteHubApi = await RemoteRepositories.getApi();
 			if (await remoteHubApi.loadWorkspaceContents?.(this.workspaceUri)) {
 				this.logger.info(
-					`Successfully loaded workspace content for repository ${this.workspaceUri.toString()}`
+					`Successfully loaded workspace content for repository ${this.workspaceUri.toString()}`,
 				);
 			} else {
 				this.logger.info(
-					`Failed to load workspace content for repository ${this.workspaceUri.toString()}`
+					`Failed to load workspace content for repository ${this.workspaceUri.toString()}`,
 				);
 			}
 		} catch (error) {
 			this.logger.info(
 				`Loading workspace content for repository ${this.workspaceUri.toString()} failed: ${
 					error instanceof Error ? error.toString() : "Unknown reason"
-				}`
+				}`,
 			);
 			console.error(error);
 		}

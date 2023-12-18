@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { LinkDetector } from "vs/workbench/contrib/debug/browser/linkDetector";
-import { RGBA, Color } from "vs/base/common/color";
+import { Color, RGBA } from "vs/base/common/color";
 import { IThemeService } from "vs/platform/theme/common/themeService";
-import { ansiColorIdentifiers } from "vs/workbench/contrib/terminal/common/terminalColorRegistry";
 import { IWorkspaceFolder } from "vs/platform/workspace/common/workspace";
+import { LinkDetector } from "vs/workbench/contrib/debug/browser/linkDetector";
+import { ansiColorIdentifiers } from "vs/workbench/contrib/terminal/common/terminalColorRegistry";
 
 /**
  * @param text The content to stylize.
@@ -17,7 +17,7 @@ export function handleANSIOutput(
 	text: string,
 	linkDetector: LinkDetector,
 	themeService: IThemeService,
-	workspaceFolder: IWorkspaceFolder | undefined
+	workspaceFolder: IWorkspaceFolder | undefined,
 ): HTMLSpanElement {
 	const root: HTMLSpanElement = document.createElement("span");
 	const textLength: number = text.length;
@@ -26,12 +26,12 @@ export function handleANSIOutput(
 	let customFgColor: RGBA | undefined;
 	let customBgColor: RGBA | undefined;
 	let customUnderlineColor: RGBA | undefined;
-	let colorsInverted: boolean = false;
-	let currentPos: number = 0;
-	let buffer: string = "";
+	let colorsInverted = false;
+	let currentPos = 0;
+	let buffer = "";
 
 	while (currentPos < textLength) {
-		let sequenceFound: boolean = false;
+		let sequenceFound = false;
 
 		// Potentially an ANSI escape sequence.
 		// See http://ascii-table.com/ansi-escape-sequences.php & https://en.wikipedia.org/wiki/ANSI_escape_code
@@ -42,7 +42,7 @@ export function handleANSIOutput(
 			const startPos: number = currentPos;
 			currentPos += 2; // Ignore 'Esc[' as it's in every sequence.
 
-			let ansiSequence: string = "";
+			let ansiSequence = "";
 
 			while (currentPos < textLength) {
 				const char: string = text.charAt(currentPos);
@@ -67,7 +67,7 @@ export function handleANSIOutput(
 					workspaceFolder,
 					customFgColor,
 					customBgColor,
-					customUnderlineColor
+					customUnderlineColor,
 				);
 
 				buffer = "";
@@ -78,7 +78,7 @@ export function handleANSIOutput(
 				 */
 				if (
 					ansiSequence.match(
-						/^(?:[34][0-8]|9[0-7]|10[0-7]|[0-9]|2[1-5,7-9]|[34]9|5[8,9]|1[0-9])(?:;[349][0-7]|10[0-7]|[013]|[245]|[34]9)?(?:;[012]?[0-9]?[0-9])*;?m$/
+						/^(?:[34][0-8]|9[0-7]|10[0-7]|[0-9]|2[1-5,7-9]|[34]9|5[8,9]|1[0-9])(?:;[349][0-7]|10[0-7]|[013]|[245]|[34]9)?(?:;[012]?[0-9]?[0-9])*;?m$/,
 					)
 				) {
 					const styleCodes: number[] = ansiSequence
@@ -98,8 +98,8 @@ export function handleANSIOutput(
 							styleCodes[0] === 38
 								? "foreground"
 								: styleCodes[0] === 48
-									? "background"
-									: "underline";
+								  ? "background"
+								  : "underline";
 
 						if (styleCodes[1] === 5) {
 							set8BitColor(styleCodes, colorType);
@@ -133,7 +133,7 @@ export function handleANSIOutput(
 			workspaceFolder,
 			customFgColor,
 			customBgColor,
-			customUnderlineColor
+			customUnderlineColor,
 		);
 	}
 
@@ -150,7 +150,7 @@ export function handleANSIOutput(
 	 */
 	function changeColor(
 		colorType: "foreground" | "background" | "underline",
-		color?: RGBA | undefined
+		color?: RGBA | undefined,
 	): void {
 		if (colorType === "foreground") {
 			customFgColor = color;
@@ -160,7 +160,7 @@ export function handleANSIOutput(
 			customUnderlineColor = color;
 		}
 		styleNames = styleNames.filter(
-			(style) => style !== `code-${colorType}-colored`
+			(style) => style !== `code-${colorType}-colored`,
 		);
 		if (color !== undefined) {
 			styleNames.push(`code-${colorType}-colored`);
@@ -203,7 +203,7 @@ export function handleANSIOutput(
 				case 1: {
 					// bold
 					styleNames = styleNames.filter(
-						(style) => style !== `code-bold`
+						(style) => style !== `code-bold`,
 					);
 					styleNames.push("code-bold");
 					break;
@@ -211,7 +211,7 @@ export function handleANSIOutput(
 				case 2: {
 					// dim
 					styleNames = styleNames.filter(
-						(style) => style !== `code-dim`
+						(style) => style !== `code-dim`,
 					);
 					styleNames.push("code-dim");
 					break;
@@ -219,7 +219,7 @@ export function handleANSIOutput(
 				case 3: {
 					// italic
 					styleNames = styleNames.filter(
-						(style) => style !== `code-italic`
+						(style) => style !== `code-italic`,
 					);
 					styleNames.push("code-italic");
 					break;
@@ -229,7 +229,7 @@ export function handleANSIOutput(
 					styleNames = styleNames.filter(
 						(style) =>
 							style !== `code-underline` &&
-							style !== `code-double-underline`
+							style !== `code-double-underline`,
 					);
 					styleNames.push("code-underline");
 					break;
@@ -237,7 +237,7 @@ export function handleANSIOutput(
 				case 5: {
 					// blink
 					styleNames = styleNames.filter(
-						(style) => style !== `code-blink`
+						(style) => style !== `code-blink`,
 					);
 					styleNames.push("code-blink");
 					break;
@@ -245,7 +245,7 @@ export function handleANSIOutput(
 				case 6: {
 					// rapid blink
 					styleNames = styleNames.filter(
-						(style) => style !== `code-rapid-blink`
+						(style) => style !== `code-rapid-blink`,
 					);
 					styleNames.push("code-rapid-blink");
 					break;
@@ -261,7 +261,7 @@ export function handleANSIOutput(
 				case 8: {
 					// hidden
 					styleNames = styleNames.filter(
-						(style) => style !== `code-hidden`
+						(style) => style !== `code-hidden`,
 					);
 					styleNames.push("code-hidden");
 					break;
@@ -269,7 +269,7 @@ export function handleANSIOutput(
 				case 9: {
 					// strike-through/crossed-out
 					styleNames = styleNames.filter(
-						(style) => style !== `code-strike-through`
+						(style) => style !== `code-strike-through`,
 					);
 					styleNames.push("code-strike-through");
 					break;
@@ -277,7 +277,7 @@ export function handleANSIOutput(
 				case 10: {
 					// normal default font
 					styleNames = styleNames.filter(
-						(style) => !style.startsWith("code-font")
+						(style) => !style.startsWith("code-font"),
 					);
 					break;
 				}
@@ -293,7 +293,7 @@ export function handleANSIOutput(
 				case 20: {
 					// font codes (and 20 is 'blackletter' font code)
 					styleNames = styleNames.filter(
-						(style) => !style.startsWith("code-font")
+						(style) => !style.startsWith("code-font"),
 					);
 					styleNames.push(`code-font-${code - 10}`);
 					break;
@@ -303,7 +303,7 @@ export function handleANSIOutput(
 					styleNames = styleNames.filter(
 						(style) =>
 							style !== `code-underline` &&
-							style !== `code-double-underline`
+							style !== `code-double-underline`,
 					);
 					styleNames.push("code-double-underline");
 					break;
@@ -311,7 +311,8 @@ export function handleANSIOutput(
 				case 22: {
 					// normal intensity (bold off and dim off)
 					styleNames = styleNames.filter(
-						(style) => style !== `code-bold` && style !== `code-dim`
+						(style) =>
+							style !== `code-bold` && style !== `code-dim`,
 					);
 					break;
 				}
@@ -319,7 +320,7 @@ export function handleANSIOutput(
 					// Neither italic or blackletter (font 10)
 					styleNames = styleNames.filter(
 						(style) =>
-							style !== `code-italic` && style !== `code-font-10`
+							style !== `code-italic` && style !== `code-font-10`,
 					);
 					break;
 				}
@@ -328,7 +329,7 @@ export function handleANSIOutput(
 					styleNames = styleNames.filter(
 						(style) =>
 							style !== `code-underline` &&
-							style !== `code-double-underline`
+							style !== `code-double-underline`,
 					);
 					break;
 				}
@@ -337,7 +338,7 @@ export function handleANSIOutput(
 					styleNames = styleNames.filter(
 						(style) =>
 							style !== `code-blink` &&
-							style !== `code-rapid-blink`
+							style !== `code-rapid-blink`,
 					);
 					break;
 				}
@@ -352,21 +353,21 @@ export function handleANSIOutput(
 				case 28: {
 					// not hidden (reveal)
 					styleNames = styleNames.filter(
-						(style) => style !== `code-hidden`
+						(style) => style !== `code-hidden`,
 					);
 					break;
 				}
 				case 29: {
 					// not crossed-out
 					styleNames = styleNames.filter(
-						(style) => style !== `code-strike-through`
+						(style) => style !== `code-strike-through`,
 					);
 					break;
 				}
 				case 53: {
 					// overlined
 					styleNames = styleNames.filter(
-						(style) => style !== `code-overline`
+						(style) => style !== `code-overline`,
 					);
 					styleNames.push("code-overline");
 					break;
@@ -374,7 +375,7 @@ export function handleANSIOutput(
 				case 55: {
 					// not overlined
 					styleNames = styleNames.filter(
-						(style) => style !== `code-overline`
+						(style) => style !== `code-overline`,
 					);
 					break;
 				}
@@ -398,7 +399,7 @@ export function handleANSIOutput(
 					styleNames = styleNames.filter(
 						(style) =>
 							style !== `code-superscript` &&
-							style !== `code-subscript`
+							style !== `code-subscript`,
 					);
 					styleNames.push("code-superscript");
 					break;
@@ -408,7 +409,7 @@ export function handleANSIOutput(
 					styleNames = styleNames.filter(
 						(style) =>
 							style !== `code-superscript` &&
-							style !== `code-subscript`
+							style !== `code-subscript`,
 					);
 					styleNames.push("code-subscript");
 					break;
@@ -418,7 +419,7 @@ export function handleANSIOutput(
 					styleNames = styleNames.filter(
 						(style) =>
 							style !== `code-superscript` &&
-							style !== `code-subscript`
+							style !== `code-subscript`,
 					);
 					break;
 				}
@@ -441,7 +442,7 @@ export function handleANSIOutput(
 	 */
 	function set24BitColor(
 		styleCodes: number[],
-		colorType: "foreground" | "background" | "underline"
+		colorType: "foreground" | "background" | "underline",
 	): void {
 		if (
 			styleCodes.length >= 5 &&
@@ -455,7 +456,7 @@ export function handleANSIOutput(
 			const customColor = new RGBA(
 				styleCodes[2],
 				styleCodes[3],
-				styleCodes[4]
+				styleCodes[4],
 			);
 			changeColor(colorType, customColor);
 		}
@@ -472,7 +473,7 @@ export function handleANSIOutput(
 	 */
 	function set8BitColor(
 		styleCodes: number[],
-		colorType: "foreground" | "background" | "underline"
+		colorType: "foreground" | "background" | "underline",
 	): void {
 		let colorNumber = styleCodes[2];
 		const color = calcANSI8bitColor(colorNumber);
@@ -557,7 +558,7 @@ export function appendStylizedStringToContainer(
 	workspaceFolder: IWorkspaceFolder | undefined,
 	customTextColor?: RGBA,
 	customBackgroundColor?: RGBA,
-	customUnderlineColor?: RGBA
+	customUnderlineColor?: RGBA,
 ): void {
 	if (!root || !stringContent) {
 		return;
@@ -566,23 +567,23 @@ export function appendStylizedStringToContainer(
 	const container = linkDetector.linkify(
 		stringContent,
 		true,
-		workspaceFolder
+		workspaceFolder,
 	);
 
 	container.className = cssClasses.join(" ");
 	if (customTextColor) {
 		container.style.color = Color.Format.CSS.formatRGB(
-			new Color(customTextColor)
+			new Color(customTextColor),
 		);
 	}
 	if (customBackgroundColor) {
 		container.style.backgroundColor = Color.Format.CSS.formatRGB(
-			new Color(customBackgroundColor)
+			new Color(customBackgroundColor),
 		);
 	}
 	if (customUnderlineColor) {
 		container.style.textDecorationColor = Color.Format.CSS.formatRGB(
-			new Color(customUnderlineColor)
+			new Color(customUnderlineColor),
 		);
 	}
 	root.appendChild(container);

@@ -30,15 +30,15 @@ export class ExtensionHostDebugBroadcastChannel<TContext>
 		switch (command) {
 			case "close":
 				return Promise.resolve(
-					this._onCloseEmitter.fire({ sessionId: arg[0] })
+					this._onCloseEmitter.fire({ sessionId: arg[0] }),
 				);
 			case "reload":
 				return Promise.resolve(
-					this._onReloadEmitter.fire({ sessionId: arg[0] })
+					this._onReloadEmitter.fire({ sessionId: arg[0] }),
 				);
 			case "terminate":
 				return Promise.resolve(
-					this._onTerminateEmitter.fire({ sessionId: arg[0] })
+					this._onTerminateEmitter.fire({ sessionId: arg[0] }),
 				);
 			case "attach":
 				return Promise.resolve(
@@ -46,7 +46,7 @@ export class ExtensionHostDebugBroadcastChannel<TContext>
 						sessionId: arg[0],
 						port: arg[1],
 						subId: arg[2],
-					})
+					}),
 				);
 		}
 		throw new Error("Method not implemented.");
@@ -111,7 +111,7 @@ export class ExtensionHostDebugChannelClient
 
 	openExtensionDevelopmentHostWindow(
 		args: string[],
-		debugRenderer: boolean
+		debugRenderer: boolean,
 	): Promise<IOpenExtensionWindowResult> {
 		return this.channel.call("openExtensionDevelopmentHostWindow", [
 			args,

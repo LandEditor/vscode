@@ -54,7 +54,7 @@ class JSONContributionRegistry implements IJSONContributionRegistry {
 
 	public registerSchema(
 		uri: string,
-		unresolvedSchemaContent: IJSONSchema
+		unresolvedSchemaContent: IJSONSchema,
 	): void {
 		this.schemasById[normalizeId(uri)] = unresolvedSchemaContent;
 		this._onDidChangeSchema.fire(uri);

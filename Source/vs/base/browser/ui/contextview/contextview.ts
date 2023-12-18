@@ -17,10 +17,10 @@ import { Range } from "vs/base/common/range";
 import { OmitOptional } from "vs/base/common/types";
 import "vs/css!./contextview";
 
-export const enum ContextViewDOMPosition {
+export enum ContextViewDOMPosition {
 	ABSOLUTE = 1,
-	FIXED,
-	FIXED_SHADOW,
+	FIXED = 2,
+	FIXED_SHADOW = 3,
 }
 
 export interface IAnchor {
@@ -38,19 +38,19 @@ export function isAnchor(obj: unknown): obj is IAnchor | OmitOptional<IAnchor> {
 	);
 }
 
-export const enum AnchorAlignment {
-	LEFT,
-	RIGHT,
+export enum AnchorAlignment {
+	LEFT = 0,
+	RIGHT = 1,
 }
 
-export const enum AnchorPosition {
-	BELOW,
-	ABOVE,
+export enum AnchorPosition {
+	BELOW = 0,
+	ABOVE = 1,
 }
 
-export const enum AnchorAxisAlignment {
-	VERTICAL,
-	HORIZONTAL,
+export enum AnchorAxisAlignment {
+	VERTICAL = 0,
+	HORIZONTAL = 1,
 }
 
 export interface IDelegate {
@@ -90,14 +90,14 @@ export interface ISize {
 
 export interface IView extends IPosition, ISize {}
 
-export const enum LayoutAnchorPosition {
-	Before,
-	After,
+export enum LayoutAnchorPosition {
+	Before = 0,
+	After = 1,
 }
 
 export enum LayoutAnchorMode {
-	AVOID,
-	ALIGN,
+	AVOID = 0,
+	ALIGN = 1,
 }
 
 export interface ILayoutAnchor {
@@ -115,7 +115,7 @@ export interface ILayoutAnchor {
 export function layout(
 	viewportSize: number,
 	viewSize: number,
-	anchor: ILayoutAnchor
+	anchor: ILayoutAnchor,
 ): number {
 	const layoutAfterAnchorBoundary =
 		anchor.mode === LayoutAnchorMode.ALIGN
@@ -177,14 +177,14 @@ export class ContextView extends Disposable {
 		this.setContainer(container, domPosition);
 		this._register(
 			toDisposable(() =>
-				this.setContainer(null, ContextViewDOMPosition.ABSOLUTE)
-			)
+				this.setContainer(null, ContextViewDOMPosition.ABSOLUTE),
+			),
 		);
 	}
 
 	setContainer(
 		container: HTMLElement | null,
-		domPosition: ContextViewDOMPosition
+		domPosition: ContextViewDOMPosition,
 	): void {
 		this.useFixedPosition = domPosition !== ContextViewDOMPosition.ABSOLUTE;
 		const usedShadowDOM = this.useShadowDOM;
@@ -239,8 +239,8 @@ export class ContextView extends Disposable {
 						event,
 						(e) => {
 							this.onDOMEvent(e, false);
-						}
-					)
+						},
+					),
 				);
 			});
 
@@ -252,8 +252,8 @@ export class ContextView extends Disposable {
 						(e) => {
 							this.onDOMEvent(e, true);
 						},
-						true
-					)
+						true,
+					),
 				);
 			});
 
@@ -396,7 +396,7 @@ export class ContextView extends Disposable {
 				layout(
 					activeWindow.innerHeight,
 					viewSizeHeight,
-					verticalAnchor
+					verticalAnchor,
 				) + activeWindow.pageYOffset;
 
 			// if view intersects vertically with anchor,  we must avoid the anchor
@@ -406,7 +406,7 @@ export class ContextView extends Disposable {
 					{
 						start: verticalAnchor.offset,
 						end: verticalAnchor.offset + verticalAnchor.size,
-					}
+					},
 				)
 			) {
 				horizontalAnchor.mode = LayoutAnchorMode.AVOID;
@@ -415,7 +415,7 @@ export class ContextView extends Disposable {
 			left = layout(
 				activeWindow.innerWidth,
 				viewSizeWidth,
-				horizontalAnchor
+				horizontalAnchor,
 			);
 		} else {
 			const horizontalAnchor: ILayoutAnchor = {
@@ -439,7 +439,7 @@ export class ContextView extends Disposable {
 			left = layout(
 				activeWindow.innerWidth,
 				viewSizeWidth,
-				horizontalAnchor
+				horizontalAnchor,
 			);
 
 			// if view intersects horizontally with anchor, we must avoid the anchor
@@ -449,7 +449,7 @@ export class ContextView extends Disposable {
 					{
 						start: horizontalAnchor.offset,
 						end: horizontalAnchor.offset + horizontalAnchor.size,
-					}
+					},
 				)
 			) {
 				verticalAnchor.mode = LayoutAnchorMode.AVOID;
@@ -459,16 +459,16 @@ export class ContextView extends Disposable {
 				layout(
 					activeWindow.innerHeight,
 					viewSizeHeight,
-					verticalAnchor
+					verticalAnchor,
 				) + activeWindow.pageYOffset;
 		}
 
 		this.view.classList.remove("top", "bottom", "left", "right");
 		this.view.classList.add(
-			anchorPosition === AnchorPosition.BELOW ? "bottom" : "top"
+			anchorPosition === AnchorPosition.BELOW ? "bottom" : "top",
 		);
 		this.view.classList.add(
-			anchorAlignment === AnchorAlignment.LEFT ? "left" : "right"
+			anchorAlignment === AnchorAlignment.LEFT ? "left" : "right",
 		);
 		this.view.classList.toggle("fixed", this.useFixedPosition);
 
@@ -510,7 +510,7 @@ export class ContextView extends Disposable {
 			if (this.delegate.onDOMEvent) {
 				this.delegate.onDOMEvent(
 					e,
-					<HTMLElement>DOM.getWindow(e).document.activeElement
+					<HTMLElement>DOM.getWindow(e).document.activeElement,
 				);
 			} else if (
 				onCapture &&

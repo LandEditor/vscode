@@ -31,19 +31,19 @@ export interface IChatVariableResolver {
 		messageText: string,
 		arg: string | undefined,
 		model: IChatModel,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IChatRequestVariableValue[] | undefined>;
 }
 
 export const IChatVariablesService = createDecorator<IChatVariablesService>(
-	"IChatVariablesService"
+	"IChatVariablesService",
 );
 
 export interface IChatVariablesService {
 	_serviceBrand: undefined;
 	registerVariable(
 		data: IChatVariableData,
-		resolver: IChatVariableResolver
+		resolver: IChatVariableResolver,
 	): IDisposable;
 	hasVariable(name: string): boolean;
 	getVariables(): Iterable<Readonly<IChatVariableData>>;
@@ -55,7 +55,7 @@ export interface IChatVariablesService {
 	resolveVariables(
 		prompt: IParsedChatRequest,
 		model: IChatModel,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IChatVariableResolveResult>;
 }
 

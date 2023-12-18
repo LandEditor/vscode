@@ -3,25 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from "vs/base/common/uri";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { IFileService } from "vs/platform/files/common/files";
-import { IProductService } from "vs/platform/product/common/productService";
-import {
-	asTextOrError,
-	IRequestService,
-} from "vs/platform/request/common/request";
-import { IStorageService } from "vs/platform/storage/common/storage";
-import { IEnvironmentService } from "vs/platform/environment/common/environment";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { CancellationToken } from "vs/base/common/cancellation";
+import { URI } from "vs/base/common/uri";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IEnvironmentService } from "vs/platform/environment/common/environment";
 import {
 	AbstractExtensionResourceLoaderService,
 	IExtensionResourceLoaderService,
 } from "vs/platform/extensionResourceLoader/common/extensionResourceLoader";
+import { IFileService } from "vs/platform/files/common/files";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import { IProductService } from "vs/platform/product/common/productService";
+import {
+	IRequestService,
+	asTextOrError,
+} from "vs/platform/request/common/request";
+import { IStorageService } from "vs/platform/storage/common/storage";
 
 export class ExtensionResourceLoaderService extends AbstractExtensionResourceLoaderService {
 	constructor(
@@ -46,7 +46,7 @@ export class ExtensionResourceLoaderService extends AbstractExtensionResourceLoa
 			const headers = await this.getExtensionGalleryRequestHeaders();
 			const requestContext = await this._requestService.request(
 				{ url: uri.toString(), headers },
-				CancellationToken.None
+				CancellationToken.None,
 			);
 			return (await asTextOrError(requestContext)) || "";
 		}
@@ -58,5 +58,5 @@ export class ExtensionResourceLoaderService extends AbstractExtensionResourceLoa
 registerSingleton(
 	IExtensionResourceLoaderService,
 	ExtensionResourceLoaderService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

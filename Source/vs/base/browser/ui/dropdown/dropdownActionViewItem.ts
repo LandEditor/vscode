@@ -3,23 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
 import { IContextMenuProvider } from "vs/base/browser/contextmenu";
 import {
 	$,
+	EventType,
 	addDisposableListener,
 	append,
-	EventType,
 	h,
 } from "vs/base/browser/dom";
 import { StandardKeyboardEvent } from "vs/base/browser/keyboardEvent";
-import { IActionViewItemProvider } from "vs/base/browser/ui/actionbar/actionbar";
 import {
 	ActionViewItem,
 	BaseActionViewItem,
 	IActionViewItemOptions,
 	IBaseActionViewItemOptions,
 } from "vs/base/browser/ui/actionbar/actionViewItems";
+import { IActionViewItemProvider } from "vs/base/browser/ui/actionbar/actionbar";
 import { AnchorAlignment } from "vs/base/browser/ui/contextview/contextview";
 import {
 	DropdownMenu,
@@ -29,12 +28,13 @@ import {
 } from "vs/base/browser/ui/dropdown/dropdown";
 import { Action, IAction, IActionRunner } from "vs/base/common/actions";
 import { Codicon } from "vs/base/common/codicons";
-import { ThemeIcon } from "vs/base/common/themables";
 import { Emitter } from "vs/base/common/event";
 import { KeyCode } from "vs/base/common/keyCodes";
 import { ResolvedKeybinding } from "vs/base/common/keybindings";
 import { IDisposable } from "vs/base/common/lifecycle";
+import { ThemeIcon } from "vs/base/common/themables";
 import "vs/css!./dropdown";
+import * as nls from "vs/nls";
 
 export interface IKeybindingProvider {
 	(action: IAction): ResolvedKeybinding | undefined;
@@ -70,7 +70,7 @@ export class DropdownMenuActionViewItem extends BaseActionViewItem {
 		action: IAction,
 		menuActionsOrProvider: readonly IAction[] | IActionProvider,
 		contextMenuProvider: IContextMenuProvider,
-		options: IDropdownMenuActionViewItemOptions = Object.create(null)
+		options: IDropdownMenuActionViewItemOptions = Object.create(null),
 	) {
 		super(null, action, options);
 
@@ -87,7 +87,7 @@ export class DropdownMenuActionViewItem extends BaseActionViewItem {
 		this.actionItem = container;
 
 		const labelRenderer: ILabelRenderer = (
-			el: HTMLElement
+			el: HTMLElement,
 		): IDisposable | null => {
 			this.element = append(el, $("a.action-label"));
 
@@ -132,13 +132,13 @@ export class DropdownMenuActionViewItem extends BaseActionViewItem {
 		};
 
 		this.dropdownMenu = this._register(
-			new DropdownMenu(container, options)
+			new DropdownMenu(container, options),
 		);
 		this._register(
 			this.dropdownMenu.onDidChangeVisibility((visible) => {
 				this.element?.setAttribute("aria-expanded", `${visible}`);
 				this._onDidChangeVisibility.fire(visible);
-			})
+			}),
 		);
 
 		this.dropdownMenu.menuOptions = {
@@ -213,7 +213,7 @@ export class ActionWithDropdownActionViewItem extends ActionViewItem {
 		context: unknown,
 		action: IAction,
 		options: IActionWithDropdownActionViewItemOptions,
-		private readonly contextMenuProvider: IContextMenuProvider
+		private readonly contextMenuProvider: IContextMenuProvider,
 	) {
 		super(context, action, options);
 	}
@@ -241,7 +241,7 @@ export class ActionWithDropdownActionViewItem extends ActionViewItem {
 			]).root;
 			separator.classList.toggle(
 				"prominent",
-				menuActionClassNames.includes("prominent")
+				menuActionClassNames.includes("prominent"),
 			);
 			append(this.element, separator);
 
@@ -250,8 +250,8 @@ export class ActionWithDropdownActionViewItem extends ActionViewItem {
 					this._register(
 						new Action(
 							"dropdownAction",
-							nls.localize("moreActions", "More Actions...")
-						)
+							nls.localize("moreActions", "More Actions..."),
+						),
 					),
 					menuActionsProvider,
 					this.contextMenuProvider,
@@ -259,12 +259,12 @@ export class ActionWithDropdownActionViewItem extends ActionViewItem {
 						classNames: [
 							"dropdown",
 							...ThemeIcon.asClassNameArray(
-								Codicon.dropDownButton
+								Codicon.dropDownButton,
 							),
 							...menuActionClassNames,
 						],
-					}
-				)
+					},
+				),
 			);
 			this.dropdownMenuActionViewItem.render(this.element);
 
@@ -275,7 +275,7 @@ export class ActionWithDropdownActionViewItem extends ActionViewItem {
 						return;
 					}
 					const event = new StandardKeyboardEvent(e);
-					let handled: boolean = false;
+					let handled = false;
 					if (
 						this.dropdownMenuActionViewItem?.isFocused() &&
 						event.equals(KeyCode.LeftArrow)
@@ -295,7 +295,7 @@ export class ActionWithDropdownActionViewItem extends ActionViewItem {
 						event.preventDefault();
 						event.stopPropagation();
 					}
-				})
+				}),
 			);
 		}
 	}

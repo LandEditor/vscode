@@ -3,30 +3,30 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import product from "vs/platform/product/common/product";
-import { isMacintosh, isLinux, language, isWeb } from "vs/base/common/platform";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { IOpenerService } from "vs/platform/opener/common/opener";
+import { KeyChord, KeyCode, KeyMod } from "vs/base/common/keyCodes";
+import { isLinux, isMacintosh, isWeb, language } from "vs/base/common/platform";
 import { URI } from "vs/base/common/uri";
+import { localize } from "vs/nls";
+import { Categories } from "vs/platform/action/common/actionCommonCategories";
 import {
-	MenuId,
 	Action2,
+	MenuId,
 	registerAction2,
 } from "vs/platform/actions/common/actions";
-import { KeyChord, KeyMod, KeyCode } from "vs/base/common/keyCodes";
-import { IProductService } from "vs/platform/product/common/productService";
 import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
 import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
-import { Categories } from "vs/platform/action/common/actionCommonCategories";
+import { IOpenerService } from "vs/platform/opener/common/opener";
+import product from "vs/platform/product/common/product";
+import { IProductService } from "vs/platform/product/common/productService";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 
 class KeybindingsReferenceAction extends Action2 {
 	static readonly ID = "workbench.action.keybindingsReference";
 	static readonly AVAILABLE = !!(isLinux
 		? product.keyboardShortcutsUrlLinux
 		: isMacintosh
-			? product.keyboardShortcutsUrlMac
-			: product.keyboardShortcutsUrlWin);
+		  ? product.keyboardShortcutsUrlMac
+		  : product.keyboardShortcutsUrlWin);
 
 	constructor() {
 		super({
@@ -34,14 +34,14 @@ class KeybindingsReferenceAction extends Action2 {
 			title: {
 				value: localize(
 					"keybindingsReference",
-					"Keyboard Shortcuts Reference"
+					"Keyboard Shortcuts Reference",
 				),
 				mnemonicTitle: localize(
 					{
 						key: "miKeyboardShortcuts",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Keyboard Shortcuts Reference"
+					"&&Keyboard Shortcuts Reference",
 				),
 				original: "Keyboard Shortcuts Reference",
 			},
@@ -52,7 +52,7 @@ class KeybindingsReferenceAction extends Action2 {
 				when: null,
 				primary: KeyChord(
 					KeyMod.CtrlCmd | KeyCode.KeyK,
-					KeyMod.CtrlCmd | KeyCode.KeyR
+					KeyMod.CtrlCmd | KeyCode.KeyR,
 				),
 			},
 			menu: {
@@ -70,8 +70,8 @@ class KeybindingsReferenceAction extends Action2 {
 		const url = isLinux
 			? productService.keyboardShortcutsUrlLinux
 			: isMacintosh
-				? productService.keyboardShortcutsUrlMac
-				: productService.keyboardShortcutsUrlWin;
+			  ? productService.keyboardShortcutsUrlMac
+			  : productService.keyboardShortcutsUrlWin;
 		if (url) {
 			openerService.open(URI.parse(url));
 		}
@@ -92,7 +92,7 @@ class OpenIntroductoryVideosUrlAction extends Action2 {
 						key: "miVideoTutorials",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Video Tutorials"
+					"&&Video Tutorials",
 				),
 				original: "Video Tutorials",
 			},
@@ -130,7 +130,7 @@ class OpenTipsAndTricksUrlAction extends Action2 {
 						key: "miTipsAndTricks",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"Tips and Tri&&cks"
+					"Tips and Tri&&cks",
 				),
 				original: "Tips and Tricks",
 			},
@@ -170,7 +170,7 @@ class OpenDocumentationUrlAction extends Action2 {
 						key: "miDocumentation",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Documentation"
+					"&&Documentation",
 				),
 				original: "Documentation",
 			},
@@ -207,7 +207,7 @@ class OpenNewsletterSignupUrlAction extends Action2 {
 			title: {
 				value: localize(
 					"newsletterSignup",
-					"Signup for the VS Code Newsletter"
+					"Signup for the VS Code Newsletter",
 				),
 				original: "Signup for the VS Code Newsletter",
 			},
@@ -224,8 +224,8 @@ class OpenNewsletterSignupUrlAction extends Action2 {
 			URI.parse(
 				`${
 					productService.newsletterSignupUrl
-				}?machineId=${encodeURIComponent(telemetryService.machineId)}`
-			)
+				}?machineId=${encodeURIComponent(telemetryService.machineId)}`,
+			),
 		);
 	}
 }
@@ -241,7 +241,7 @@ class OpenYouTubeUrlAction extends Action2 {
 				value: localize("openYouTubeUrl", "Join Us on YouTube"),
 				mnemonicTitle: localize(
 					{ key: "miYouTube", comment: ["&& denotes a mnemonic"] },
-					"&&Join Us on YouTube"
+					"&&Join Us on YouTube",
 				),
 				original: "Join Us on YouTube",
 			},
@@ -276,7 +276,7 @@ class OpenRequestFeatureUrlAction extends Action2 {
 				value: localize("openUserVoiceUrl", "Search Feature Requests"),
 				mnemonicTitle: localize(
 					{ key: "miUserVoice", comment: ["&& denotes a mnemonic"] },
-					"&&Search Feature Requests"
+					"&&Search Feature Requests",
 				),
 				original: "Search Feature Requests",
 			},
@@ -313,7 +313,7 @@ class OpenLicenseUrlAction extends Action2 {
 				value: localize("openLicenseUrl", "View License"),
 				mnemonicTitle: localize(
 					{ key: "miLicense", comment: ["&& denotes a mnemonic"] },
-					"View &&License"
+					"View &&License",
 				),
 				original: "View License",
 			},
@@ -338,7 +338,7 @@ class OpenLicenseUrlAction extends Action2 {
 			if (language) {
 				const queryArgChar = url.indexOf("?") > 0 ? "&" : "?";
 				openerService.open(
-					URI.parse(`${url}${queryArgChar}lang=${language}`)
+					URI.parse(`${url}${queryArgChar}lang=${language}`),
 				);
 			} else {
 				openerService.open(URI.parse(url));
@@ -361,7 +361,7 @@ class OpenPrivacyStatementUrlAction extends Action2 {
 						key: "miPrivacyStatement",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"Privac&&y Statement"
+					"Privac&&y Statement",
 				),
 				original: "Privacy Statement",
 			},

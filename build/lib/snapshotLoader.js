@@ -1,10 +1,9 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 var snaps;
-(function (snaps) {
+((snaps) => {
 	const fs = require("fs");
 	const path = require("path");
 	const os = require("os");
@@ -13,7 +12,7 @@ var snaps;
 		__dirname,
 		`../../node_modules/.bin/${
 			process.platform === "win32" ? "mksnapshot.cmd" : "mksnapshot"
-		}`
+		}`,
 	);
 	const product = require("../../product.json");
 	const arch = (process.argv.join("").match(/--arch=(.*)/) || [])[1];
@@ -37,7 +36,7 @@ var snaps;
 	startupBlobFilepath = path.join(
 		__dirname,
 		"../../../",
-		startupBlobFilepath
+		startupBlobFilepath,
 	);
 	snapshotLoader(loaderFilepath, startupBlobFilepath);
 	function snapshotLoader(loaderFilepath, startupBlobFilepath) {
@@ -58,7 +57,7 @@ var snaps;
 		`;
 		const wrappedInputFilepath = path.join(
 			os.tmpdir(),
-			"wrapped-loader.js"
+			"wrapped-loader.js",
 		);
 		console.log(wrappedInputFilepath);
 		fs.writeFileSync(wrappedInputFilepath, wrappedInputFile);

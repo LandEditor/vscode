@@ -25,7 +25,7 @@ import {
 import { ILogService } from "vs/platform/log/common/log";
 import { INativeHostMainService } from "vs/platform/native/electron-main/nativeHostMainService";
 import { IProductService } from "vs/platform/product/common/productService";
-import { asJson, IRequestService } from "vs/platform/request/common/request";
+import { IRequestService, asJson } from "vs/platform/request/common/request";
 import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import {
 	AvailableForDownload,
@@ -37,9 +37,9 @@ import {
 } from "vs/platform/update/common/update";
 import {
 	AbstractUpdateService,
-	createUpdateURL,
 	UpdateErrorClassification,
 	UpdateNotAvailableClassification,
+	createUpdateURL,
 } from "vs/platform/update/electron-main/abstractUpdateService";
 
 async function pollUntil(fn: () => boolean, millis = 1000): Promise<void> {
@@ -57,7 +57,7 @@ let _updateType: UpdateType | undefined = undefined;
 function getUpdateType(): UpdateType {
 	if (typeof _updateType === "undefined") {
 		_updateType = fs.existsSync(
-			path.join(path.dirname(process.execPath), "unins000.exe")
+			path.join(path.dirname(process.execPath), "unins000.exe"),
 		)
 			? UpdateType.Setup
 			: UpdateType.Archive;
@@ -76,10 +76,10 @@ export class Win32UpdateService
 	get cachePath(): Promise<string> {
 		const result = path.join(
 			tmpdir(),
-			`vscode-${this.productService.quality}-${this.productService.target}-${process.arch}`
+			`vscode-${this.productService.quality}-${this.productService.target}-${process.arch}`,
 		);
 		return pfs.Promises.mkdir(result, { recursive: true }).then(
-			() => result
+			() => result,
 		);
 	}
 
@@ -118,7 +118,7 @@ export class Win32UpdateService
 		}
 
 		this.logService.trace(
-			"update#handleRelaunch(): running raw#quitAndInstall()"
+			"update#handleRelaunch(): running raw#quitAndInstall()",
 		);
 		this.doQuitAndInstall();
 
@@ -132,7 +132,7 @@ export class Win32UpdateService
 		) {
 			this.setState(State.Disabled(DisablementReason.RunningAsAdmin));
 			this.logService.info(
-				"update#ctor - updates are disabled due to running as Admin in user setup"
+				"update#ctor - updates are disabled due to running as Admin in user setup",
 			);
 			return;
 		}
@@ -194,7 +194,7 @@ export class Win32UpdateService
 								(exists) => {
 									if (exists) {
 										return Promise.resolve(
-											updatePackagePath
+											updatePackagePath,
 										);
 									}
 
@@ -205,38 +205,38 @@ export class Win32UpdateService
 									return this.requestService
 										.request(
 											{ url },
-											CancellationToken.None
+											CancellationToken.None,
 										)
 										.then((context) =>
 											this.fileService.writeFile(
 												URI.file(downloadPath),
-												context.stream
-											)
+												context.stream,
+											),
 										)
 										.then(
 											hash
 												? () =>
 														checksum(
 															downloadPath,
-															update.hash
+															update.hash,
 														)
-												: () => undefined
+												: () => undefined,
 										)
 										.then(() =>
 											pfs.Promises.rename(
 												downloadPath,
 												updatePackagePath,
-												false /* no retry */
-											)
+												false /* no retry */,
+											),
 										)
 										.then(() => updatePackagePath);
-								}
+								},
 							);
 						})
 						.then((packagePath) => {
 							const fastUpdatesEnabled =
 								this.configurationService.getValue(
-									"update.enableWindowsBackgroundUpdates"
+									"update.enableWindowsBackgroundUpdates",
 								);
 
 							this.availableUpdate = { packagePath };
@@ -269,12 +269,12 @@ export class Win32UpdateService
 	}
 
 	protected override async doDownloadUpdate(
-		state: AvailableForDownload
+		state: AvailableForDownload,
 	): Promise<void> {
 		if (state.update.url) {
 			this.nativeHostMainService.openExternal(
 				undefined,
-				state.update.url
+				state.update.url,
 			);
 		}
 		this.setState(State.Idle(getUpdateType()));
@@ -284,7 +284,7 @@ export class Win32UpdateService
 		const cachePath = await this.cachePath;
 		return path.join(
 			cachePath,
-			`CodeSetup-${this.productService.quality}-${version}.exe`
+			`CodeSetup-${this.productService.quality}-${version}.exe`,
 		);
 	}
 
@@ -292,7 +292,7 @@ export class Win32UpdateService
 		const filter = exceptVersion
 			? (one: string) =>
 					!new RegExp(
-						`${this.productService.quality}-${exceptVersion}\\.exe$`
+						`${this.productService.quality}-${exceptVersion}\\.exe$`,
 					).test(one)
 			: () => true;
 
@@ -329,12 +329,12 @@ export class Win32UpdateService
 
 		this.availableUpdate.updateFilePath = path.join(
 			cachePath,
-			`CodeSetup-${this.productService.quality}-${update.version}.flag`
+			`CodeSetup-${this.productService.quality}-${update.version}.flag`,
 		);
 
 		await pfs.Promises.writeFile(
 			this.availableUpdate.updateFilePath,
-			"flag"
+			"flag",
 		);
 		const child = spawn(
 			this.availableUpdate.packagePath,
@@ -349,7 +349,7 @@ export class Win32UpdateService
 				detached: true,
 				stdio: ["ignore", "ignore", "ignore"],
 				windowsVerbatimArguments: true,
-			}
+			},
 		);
 
 		child.once("exit", () => {
@@ -362,7 +362,7 @@ export class Win32UpdateService
 
 		// poll for mutex-ready
 		pollUntil(() => mutex.isActive(readyMutexName)).then(() =>
-			this.setState(State.Ready(update))
+			this.setState(State.Ready(update)),
 		);
 	}
 
@@ -372,7 +372,7 @@ export class Win32UpdateService
 		}
 
 		this.logService.trace(
-			"update#quitAndInstall(): running raw#quitAndInstall()"
+			"update#quitAndInstall(): running raw#quitAndInstall()",
 		);
 
 		if (this.availableUpdate.updateFilePath) {
@@ -388,7 +388,7 @@ export class Win32UpdateService
 				{
 					detached: true,
 					stdio: ["ignore", "ignore", "ignore"],
-				}
+				},
 			);
 		}
 	}
@@ -403,7 +403,7 @@ export class Win32UpdateService
 		}
 
 		const fastUpdatesEnabled = this.configurationService.getValue(
-			"update.enableWindowsBackgroundUpdates"
+			"update.enableWindowsBackgroundUpdates",
 		);
 		const update: IUpdate = {
 			version: "unknown",

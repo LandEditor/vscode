@@ -57,7 +57,7 @@ export class ApplyFileSnippetAction extends SnippetsAction {
 		const selection = await this._pick(
 			quickInputService,
 			langService,
-			snippets
+			snippets,
 		);
 		if (!selection) {
 			return;
@@ -77,7 +77,7 @@ export class ApplyFileSnippetAction extends SnippetsAction {
 				.getModel()
 				.setLanguage(
 					langService.createById(selection.langId),
-					ApplyFileSnippetAction.Id
+					ApplyFileSnippetAction.Id,
 				);
 
 			editor.focus();
@@ -87,7 +87,7 @@ export class ApplyFileSnippetAction extends SnippetsAction {
 	private async _pick(
 		quickInputService: IQuickInputService,
 		langService: ILanguageService,
-		snippets: Snippet[]
+		snippets: Snippet[],
 	) {
 		// spread snippet onto each language it supports
 		type SnippetAndLanguage = { langId: string; snippet: Snippet };

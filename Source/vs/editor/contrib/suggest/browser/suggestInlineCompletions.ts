@@ -35,8 +35,8 @@ import {
 	CompletionItem,
 	CompletionItemModel,
 	CompletionOptions,
-	provideSuggestionItems,
 	QuickSuggestionsOptions,
+	provideSuggestionItems,
 } from "vs/editor/contrib/suggest/browser/suggest";
 import { ISuggestMemoryService } from "vs/editor/contrib/suggest/browser/suggestMemory";
 import { SuggestModel } from "vs/editor/contrib/suggest/browser/suggestModel";
@@ -50,7 +50,7 @@ class SuggestInlineCompletion implements InlineCompletion {
 		readonly filterText: string,
 		readonly additionalTextEdits: ISingleEditOperation[] | undefined,
 		readonly command: Command | undefined,
-		readonly completion: CompletionItem
+		readonly completion: CompletionItem,
 	) {}
 }
 
@@ -95,7 +95,7 @@ class InlineCompletionResults
 					this.word.endColumn +
 					this.completionModel.lineContext.characterCountDelta,
 			},
-			items
+			items,
 		);
 		const first = Iterable.slice(items, selectedIndex);
 		const second = Iterable.slice(items, 0, selectedIndex);
@@ -113,7 +113,7 @@ class InlineCompletionResults
 				item.editStart.column,
 				item.editInsertEnd.lineNumber,
 				item.editInsertEnd.column +
-					this.completionModel.lineContext.characterCountDelta // end PLUS character delta
+					this.completionModel.lineContext.characterCountDelta, // end PLUS character delta
 			);
 			const insertText =
 				item.completion.insertTextRules &&
@@ -129,8 +129,8 @@ class InlineCompletionResults
 					item.filterTextLow ?? item.labelLow,
 					item.completion.additionalTextEdits,
 					item.completion.command,
-					item
-				)
+					item,
+				),
 			);
 
 			// resolve the first N suggestions eagerly
@@ -161,7 +161,7 @@ export class SuggestInlineCompletions
 		model: ITextModel,
 		position: Position,
 		context: InlineCompletionContext,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<InlineCompletionResults | undefined> {
 		if (context.selectedSuggestionInfo) {
 			return;
@@ -187,12 +187,12 @@ export class SuggestInlineCompletions
 
 		model.tokenization.tokenizeIfCheap(position.lineNumber);
 		const lineTokens = model.tokenization.getLineTokens(
-			position.lineNumber
+			position.lineNumber,
 		);
 		const tokenType = lineTokens.getStandardTokenType(
 			lineTokens.findTokenIndexAtOffset(
-				Math.max(position.column - 1 - 1, 0)
-			)
+				Math.max(position.column - 1 - 1, 0),
+			),
 		);
 		if (QuickSuggestionsOptions.valueFor(config, tokenType) !== "inline") {
 			// quick suggest is off (for this token)
@@ -209,7 +209,7 @@ export class SuggestInlineCompletions
 		if (!wordInfo?.word) {
 			triggerCharacterInfo = this._getTriggerCharacterInfo(
 				model,
-				position
+				position,
 			);
 		}
 
@@ -233,8 +233,8 @@ export class SuggestInlineCompletions
 				position.lineNumber,
 				1,
 				position.lineNumber,
-				position.column
-			)
+				position.column,
+			),
 		);
 		if (
 			!triggerCharacterInfo &&
@@ -245,7 +245,7 @@ export class SuggestInlineCompletions
 			// console.log(`REUSE with ${wordInfo.word}`);
 			const newLineContext = new LineContext(
 				leadingLineContents,
-				position.column - this._lastResult.word.endColumn
+				position.column - this._lastResult.word.endColumn,
 			);
 			this._lastResult.completionModel.lineContext = newLineContext;
 			this._lastResult.acquire();
@@ -259,13 +259,13 @@ export class SuggestInlineCompletions
 				new CompletionOptions(
 					undefined,
 					SuggestModel.createSuggestFilter(editor).itemKind,
-					triggerCharacterInfo?.providers
+					triggerCharacterInfo?.providers,
 				),
 				triggerCharacterInfo && {
 					triggerKind: CompletionTriggerKind.TriggerCharacter,
 					triggerCharacter: triggerCharacterInfo.ch,
 				},
-				token
+				token,
 			);
 
 			let clipboardText: string | undefined;
@@ -281,7 +281,7 @@ export class SuggestInlineCompletions
 				editor.getOption(EditorOption.suggest),
 				editor.getOption(EditorOption.snippetSuggestions),
 				{ boostFullMatch: false, firstMatchCanBeWeak: false },
-				clipboardText
+				clipboardText,
 			);
 			result = new InlineCompletionResults(
 				model,
@@ -289,7 +289,7 @@ export class SuggestInlineCompletions
 				wordInfo,
 				completionModel,
 				completions,
-				this._suggestMemoryService
+				this._suggestMemoryService,
 			);
 		}
 
@@ -299,7 +299,7 @@ export class SuggestInlineCompletions
 
 	handleItemDidShow(
 		_completions: InlineCompletionResults,
-		item: SuggestInlineCompletion
+		item: SuggestInlineCompletion,
 	): void {
 		item.completion.resolve(CancellationToken.None);
 	}
@@ -315,12 +315,12 @@ export class SuggestInlineCompletions
 					lineNumber: position.lineNumber,
 					column: position.column - 1,
 				},
-				position
-			)
+				position,
+			),
 		);
 		const providers = new Set<CompletionItemProvider>();
 		for (const provider of this._languageFeatureService.completionProvider.all(
-			model
+			model,
 		)) {
 			if (provider.triggerCharacters?.includes(ch)) {
 				providers.add(provider);

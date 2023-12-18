@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { ServicesAccessor } from "vs/editor/browser/editorExtensions";
 import { Categories } from "vs/platform/action/common/actionCommonCategories";
 import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
-import {
-	OpenLogsFolderAction,
-	OpenExtensionLogsFolderAction,
-} from "vs/workbench/contrib/logs/electron-sandbox/logsActions";
-import { ServicesAccessor } from "vs/editor/browser/editorExtensions";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import {
+	OpenExtensionLogsFolderAction,
+	OpenLogsFolderAction,
+} from "vs/workbench/contrib/logs/electron-sandbox/logsActions";
 
 registerAction2(
 	class extends Action2 {
@@ -28,11 +28,11 @@ registerAction2(
 				.createInstance(
 					OpenLogsFolderAction,
 					OpenLogsFolderAction.ID,
-					OpenLogsFolderAction.TITLE.value
+					OpenLogsFolderAction.TITLE.value,
 				)
 				.run();
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -51,9 +51,9 @@ registerAction2(
 				.createInstance(
 					OpenExtensionLogsFolderAction,
 					OpenExtensionLogsFolderAction.ID,
-					OpenExtensionLogsFolderAction.TITLE.value
+					OpenExtensionLogsFolderAction.TITLE.value,
 				)
 				.run();
 		}
-	}
+	},
 );

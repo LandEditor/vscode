@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { cpus } from "node:os";
+import * as threads from "node:worker_threads";
 import * as swc from "@swc/core";
 import * as ts from "typescript";
-import * as threads from "node:worker_threads";
 import * as Vinyl from "vinyl";
-import { cpus } from "node:os";
 
 interface TranspileReq {
 	readonly tsSrcs: string[];
@@ -21,7 +21,7 @@ interface TranspileRes {
 
 function transpile(
 	tsSrc: string,
-	options: ts.TranspileOptions
+	options: ts.TranspileOptions,
 ): { jsSrc: string; diag: ts.Diagnostic[] } {
 	const isAmd = /\n(import|export)/m.test(tsSrc);
 	if (!isAmd && options.compilerOptions?.module === ts.ModuleKind.AMD) {
@@ -70,7 +70,7 @@ class OutputFileNameOracle {
 			getOutputFileNames(
 				commandLine: ts.ParsedCommandLine,
 				inputFileName: string,
-				ignoreCase: boolean
+				ignoreCase: boolean,
 			): readonly string[];
 		};
 		this.getOutputFileName = (file) => {
@@ -90,7 +90,7 @@ class OutputFileNameOracle {
 				const outfile = (<InternalTsApi>ts).getOutputFileNames(
 					cmdLine,
 					file,
-					true
+					true,
 				)[0];
 				if (isDts) {
 					cmdLine.fileNames.pop();
@@ -142,7 +142,7 @@ class TranspileWorker {
 					diag.push(...diag);
 					continue;
 				}
-				const enum SuffixTypes {
+				enum SuffixTypes {
 					Dts = 5,
 					Ts = 3,
 					Unknown = 0,
@@ -150,8 +150,8 @@ class TranspileWorker {
 				const suffixLen = file.path.endsWith(".d.ts")
 					? SuffixTypes.Dts
 					: file.path.endsWith(".ts")
-						? SuffixTypes.Ts
-						: SuffixTypes.Unknown;
+					  ? SuffixTypes.Ts
+					  : SuffixTypes.Unknown;
 
 				// check if output of a DTS-files isn't just "empty" and iff so
 				// skip this file
@@ -167,7 +167,7 @@ class TranspileWorker {
 						path: outPath,
 						base: outBase,
 						contents: Buffer.from(jsSrc),
-					})
+					}),
 				);
 			}
 
@@ -227,12 +227,12 @@ export class TscTranspiler implements ITranspiler {
 		logFn: (topic: string, message: string) => void,
 		private readonly _onError: (err: any) => void,
 		configFilePath: string,
-		private readonly _cmdLine: ts.ParsedCommandLine
+		private readonly _cmdLine: ts.ParsedCommandLine,
 	) {
 		logFn("Transpile", `will use ${TscTranspiler.P} transpile worker`);
 		this._outputFileNames = new OutputFileNameOracle(
 			_cmdLine,
-			configFilePath
+			configFilePath,
 		);
 	}
 
@@ -270,8 +270,8 @@ export class TscTranspiler implements ITranspiler {
 			for (let i = 0; i < TscTranspiler.P; i++) {
 				this._workerPool.push(
 					new TranspileWorker((file) =>
-						this._outputFileNames.getOutputFileName(file)
-					)
+						this._outputFileNames.getOutputFileName(file),
+					),
 				);
 			}
 		}
@@ -337,12 +337,12 @@ export class SwcTranspiler implements ITranspiler {
 		private readonly _logFn: (topic: string, message: string) => void,
 		private readonly _onError: (err: any) => void,
 		configFilePath: string,
-		private readonly _cmdLine: ts.ParsedCommandLine
+		private readonly _cmdLine: ts.ParsedCommandLine,
 	) {
 		_logFn("Transpile", `will use SWC to transpile source files`);
 		this._outputFileNames = new OutputFileNameOracle(
 			_cmdLine,
-			configFilePath
+			configFilePath,
 		);
 	}
 
@@ -386,7 +386,7 @@ export class SwcTranspiler implements ITranspiler {
 
 					const outBase = this._cmdLine.options.outDir ?? file.base;
 					const outPath = this._outputFileNames.getOutputFileName(
-						file.path
+						file.path,
 					);
 
 					this.onOutfile!(
@@ -394,17 +394,17 @@ export class SwcTranspiler implements ITranspiler {
 							path: outPath,
 							base: outBase,
 							contents: Buffer.from(output.code),
-						})
+						}),
 					);
 
 					this._logFn(
 						"Transpile",
-						`swc took ${Date.now() - t1}ms for ${file.path}`
+						`swc took ${Date.now() - t1}ms for ${file.path}`,
 					);
 				})
 				.catch((err) => {
 					this._onError(err);
-				})
+				}),
 		);
 	}
 

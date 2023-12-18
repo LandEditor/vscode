@@ -5,10 +5,11 @@
 
 import { doHash } from "vs/base/common/hash";
 import { LRUCache } from "vs/base/common/map";
+import { matchesScheme } from "vs/base/common/network";
 import {
-	clamp,
 	MovingAverage,
 	SlidingWindowAverage,
+	clamp,
 } from "vs/base/common/numbers";
 import { LanguageFeatureRegistry } from "vs/editor/common/languageFeatureRegistry";
 import { ITextModel } from "vs/editor/common/model";
@@ -19,11 +20,10 @@ import {
 } from "vs/platform/instantiation/common/extensions";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import { ILogService } from "vs/platform/log/common/log";
-import { matchesScheme } from "vs/base/common/network";
 
 export const ILanguageFeatureDebounceService =
 	createDecorator<ILanguageFeatureDebounceService>(
-		"ILanguageFeatureDebounceService"
+		"ILanguageFeatureDebounceService",
 	);
 
 export interface ILanguageFeatureDebounceService {
@@ -32,7 +32,7 @@ export interface ILanguageFeatureDebounceService {
 	for(
 		feature: LanguageFeatureRegistry<object>,
 		debugName: string,
-		config?: { min?: number; max?: number; salt?: string }
+		config?: { min?: number; max?: number; salt?: string },
 	): IFeatureDebounceInformation;
 }
 
@@ -72,7 +72,7 @@ class NullDebounceInformation implements IFeatureDebounceInformation {
 class FeatureDebounceInformation implements IFeatureDebounceInformation {
 	private readonly _cache = new LRUCache<string, SlidingWindowAverage>(
 		50,
-		0.7
+		0.7,
 	);
 
 	constructor(
@@ -81,7 +81,7 @@ class FeatureDebounceInformation implements IFeatureDebounceInformation {
 		private readonly _registry: LanguageFeatureRegistry<object>,
 		private readonly _default: number,
 		private readonly _min: number,
-		private readonly _max: number
+		private readonly _max: number,
 	) {}
 
 	private _key(model: ITextModel): string {
@@ -91,7 +91,7 @@ class FeatureDebounceInformation implements IFeatureDebounceInformation {
 				.all(model)
 				.reduce(
 					(hashVal, obj) => doHash(IdentityHash.of(obj), hashVal),
-					0
+					0,
 				)
 		);
 	}
@@ -114,7 +114,7 @@ class FeatureDebounceInformation implements IFeatureDebounceInformation {
 			this._logService.trace(
 				`[DEBOUNCE: ${
 					this._name
-				}] for ${model.uri.toString()} is ${newValue}ms`
+				}] for ${model.uri.toString()} is ${newValue}ms`,
 			);
 		}
 		return newValue;
@@ -152,7 +152,7 @@ export class LanguageFeatureDebounceService
 	for(
 		feature: LanguageFeatureRegistry<object>,
 		name: string,
-		config?: { min?: number; max?: number; key?: string }
+		config?: { min?: number; max?: number; key?: string },
 	): IFeatureDebounceInformation {
 		const min = config?.min ?? 50;
 		const max = config?.max ?? min ** 2;
@@ -162,20 +162,20 @@ export class LanguageFeatureDebounceService
 		}`;
 		let info = this._data.get(key);
 		if (!info) {
-			if (!this._isDev) {
-				this._logService.debug(
-					`[DEBOUNCE: ${name}] is disabled in developed mode`
-				);
-				info = new NullDebounceInformation(min * 1.5);
-			} else {
+			if (this._isDev) {
 				info = new FeatureDebounceInformation(
 					this._logService,
 					name,
 					feature,
 					this._overallAverage() | 0 || min * 1.5, // default is overall default or derived from min-value
 					min,
-					max
+					max,
 				);
+			} else {
+				this._logService.debug(
+					`[DEBOUNCE: ${name}] is disabled in developed mode`,
+				);
+				info = new NullDebounceInformation(min * 1.5);
 			}
 			this._data.set(key, info);
 		}
@@ -195,5 +195,5 @@ export class LanguageFeatureDebounceService
 registerSingleton(
 	ILanguageFeatureDebounceService,
 	LanguageFeatureDebounceService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

@@ -3,7 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { getActiveElement } from "vs/base/browser/dom";
 import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
+import { Disposable } from "vs/base/common/lifecycle";
 import { extname, isEqual } from "vs/base/common/resources";
 import { URI } from "vs/base/common/uri";
 import { ServicesAccessor } from "vs/editor/browser/editorExtensions";
@@ -27,24 +29,24 @@ import {
 import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 import { Registry } from "vs/platform/registry/common/platform";
 import {
 	EditorPaneDescriptor,
 	IEditorPaneRegistry,
 } from "vs/workbench/browser/editor";
+import { ActiveEditorContext } from "vs/workbench/common/contextkeys";
 import {
 	Extensions as WorkbenchExtensions,
 	IWorkbenchContribution,
 	IWorkbenchContributionsRegistry,
 } from "vs/workbench/common/contributions";
 import {
-	IEditorSerializer,
-	IEditorFactoryRegistry,
-	EditorExtensions,
 	DEFAULT_EDITOR_ASSOCIATION,
+	EditorExtensions,
+	IEditorFactoryRegistry,
+	IEditorSerializer,
 } from "vs/workbench/common/editor";
-import { ActiveEditorContext } from "vs/workbench/common/contextkeys";
+import { EditorInput } from "vs/workbench/common/editor/editorInput";
 import { IViewsService } from "vs/workbench/common/views";
 import { getSearchView } from "vs/workbench/contrib/search/browser/searchActionsBase";
 import {
@@ -66,25 +68,23 @@ import {
 	toggleSearchEditorWholeWordCommand,
 } from "vs/workbench/contrib/searchEditor/browser/searchEditorActions";
 import {
-	getOrMakeSearchEditorInput,
+	SEARCH_EDITOR_EXT,
 	SearchConfiguration,
 	SearchEditorInput,
-	SEARCH_EDITOR_EXT,
+	getOrMakeSearchEditorInput,
 } from "vs/workbench/contrib/searchEditor/browser/searchEditorInput";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { VIEW_ID } from "vs/workbench/services/search/common/search";
 import {
-	RegisteredEditorPriority,
 	IEditorResolverService,
+	RegisteredEditorPriority,
 } from "vs/workbench/services/editor/common/editorResolverService";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
+import { VIEW_ID } from "vs/workbench/services/search/common/search";
+import { IWorkingCopyIdentifier } from "vs/workbench/services/workingCopy/common/workingCopy";
 import {
 	IWorkingCopyEditorHandler,
 	IWorkingCopyEditorService,
 } from "vs/workbench/services/workingCopy/common/workingCopyEditorService";
-import { Disposable } from "vs/base/common/lifecycle";
-import { IWorkingCopyIdentifier } from "vs/workbench/services/workingCopy/common/workingCopy";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import { getActiveElement } from "vs/base/browser/dom";
 
 const OpenInEditorCommandId = "search.action.openInEditor";
 const OpenNewEditorToSideCommandId = "search.action.openNewEditorToSide";
@@ -109,14 +109,14 @@ const SelectAllSearchEditorMatchesCommandId = "selectAllSearchEditorMatches";
 
 //#region Editor Descriptior
 Registry.as<IEditorPaneRegistry>(
-	EditorExtensions.EditorPane
+	EditorExtensions.EditorPane,
 ).registerEditorPane(
 	EditorPaneDescriptor.create(
 		SearchEditor,
 		SearchEditor.ID,
-		localize("searchEditor", "Search Editor")
+		localize("searchEditor", "Search Editor"),
 	),
-	[new SyncDescriptor(SearchEditorInput)]
+	[new SyncDescriptor(SearchEditorInput)],
 );
 //#endregion
 
@@ -124,7 +124,7 @@ Registry.as<IEditorPaneRegistry>(
 class SearchEditorContribution implements IWorkbenchContribution {
 	constructor(
 		@IEditorResolverService editorResolverService: IEditorResolverService,
-		@IInstantiationService instantiationService: IInstantiationService
+		@IInstantiationService instantiationService: IInstantiationService,
 	) {
 		editorResolverService.registerEditor(
 			"*" + SEARCH_EDITOR_EXT,
@@ -132,7 +132,7 @@ class SearchEditorContribution implements IWorkbenchContribution {
 				id: SearchEditorInput.ID,
 				label: localize(
 					"promptOpenWith.searchEditor.displayName",
-					"Search Editor"
+					"Search Editor",
 				),
 				detail: DEFAULT_EDITOR_ASSOCIATION.providerDisplayName,
 				priority: RegisteredEditorPriority.default,
@@ -147,11 +147,11 @@ class SearchEditorContribution implements IWorkbenchContribution {
 					return {
 						editor: instantiationService.invokeFunction(
 							getOrMakeSearchEditorInput,
-							{ from: "existingFile", fileUri: resource }
+							{ from: "existingFile", fileUri: resource },
 						),
 					};
 				},
-			}
+			},
 		);
 	}
 }
@@ -160,7 +160,7 @@ const workbenchContributionsRegistry =
 	Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	SearchEditorContribution,
-	LifecyclePhase.Starting
+	LifecyclePhase.Starting,
 );
 //#endregion
 
@@ -216,10 +216,10 @@ class SearchEditorInputSerializer implements IEditorSerializer {
 
 	deserialize(
 		instantiationService: IInstantiationService,
-		serializedEditorInput: string
+		serializedEditorInput: string,
 	): SearchEditorInput | undefined {
 		const { modelUri, dirty, config, matchRanges, backingUri } = JSON.parse(
-			serializedEditorInput
+			serializedEditorInput,
 		) as SerializedSearchEditor;
 		if (config && config.query !== undefined) {
 			if (modelUri) {
@@ -232,23 +232,21 @@ class SearchEditorInputSerializer implements IEditorSerializer {
 						backupOf: backingUri
 							? URI.parse(backingUri)
 							: undefined,
-					}
+					},
 				);
 				input.setDirty(dirty);
 				input.setMatchRanges(matchRanges);
 				return input;
+			} else if (backingUri) {
+				return instantiationService.invokeFunction(
+					getOrMakeSearchEditorInput,
+					{ from: "existingFile", fileUri: URI.parse(backingUri) },
+				);
 			} else {
-				if (backingUri) {
-					return instantiationService.invokeFunction(
-						getOrMakeSearchEditorInput,
-						{ from: "existingFile", fileUri: URI.parse(backingUri) }
-					);
-				} else {
-					return instantiationService.invokeFunction(
-						getOrMakeSearchEditorInput,
-						{ from: "rawData", resultsContents: "", config }
-					);
-				}
+				return instantiationService.invokeFunction(
+					getOrMakeSearchEditorInput,
+					{ from: "rawData", resultsContents: "", config },
+				);
 			}
 		}
 		return undefined;
@@ -256,7 +254,7 @@ class SearchEditorInputSerializer implements IEditorSerializer {
 }
 
 Registry.as<IEditorFactoryRegistry>(
-	EditorExtensions.EditorFactory
+	EditorExtensions.EditorFactory,
 ).registerEditorSerializer(SearchEditorInput.ID, SearchEditorInputSerializer);
 //#endregion
 
@@ -268,7 +266,7 @@ CommandsRegistry.registerCommand(
 		if (activeEditorPane instanceof SearchEditor) {
 			activeEditorPane.cleanState();
 		}
-	}
+	},
 );
 //#endregion
 
@@ -294,7 +292,7 @@ export type LegacySearchEditorArgs = Partial<{
 }>;
 
 const translateLegacyConfig = (
-	legacyConfig: LegacySearchEditorArgs & OpenSearchEditorArgs = {}
+	legacyConfig: LegacySearchEditorArgs & OpenSearchEditorArgs = {},
 ): OpenSearchEditorArgs => {
 	const config: OpenSearchEditorArgs = {};
 	const overrides: {
@@ -354,7 +352,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"searchEditor.deleteResultBlock",
-						"Delete File Results"
+						"Delete File Results",
 					),
 					original: "Delete File Results",
 				},
@@ -374,7 +372,7 @@ registerAction2(
 				.getContext(getActiveElement());
 			if (
 				contextService.getValue(
-					SearchEditorConstants.InSearchEditor.serialize()
+					SearchEditorConstants.InSearchEditor.serialize(),
 				)
 			) {
 				(
@@ -383,7 +381,7 @@ registerAction2(
 				).deleteResultBlock();
 			}
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -394,7 +392,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"search.openNewSearchEditor",
-						"New Search Editor"
+						"New Search Editor",
 					),
 					original: "New Search Editor",
 				},
@@ -405,16 +403,16 @@ registerAction2(
 		}
 		async run(
 			accessor: ServicesAccessor,
-			args: LegacySearchEditorArgs | OpenSearchEditorArgs
+			args: LegacySearchEditorArgs | OpenSearchEditorArgs,
 		) {
 			await accessor
 				.get(IInstantiationService)
 				.invokeFunction(
 					openNewSearchEditor,
-					translateLegacyConfig({ location: "new", ...args })
+					translateLegacyConfig({ location: "new", ...args }),
 				);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -425,7 +423,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"search.openSearchEditor",
-						"Open Search Editor"
+						"Open Search Editor",
 					),
 					original: "Open Search Editor",
 				},
@@ -436,16 +434,16 @@ registerAction2(
 		}
 		async run(
 			accessor: ServicesAccessor,
-			args: LegacySearchEditorArgs | OpenSearchEditorArgs
+			args: LegacySearchEditorArgs | OpenSearchEditorArgs,
 		) {
 			await accessor
 				.get(IInstantiationService)
 				.invokeFunction(
 					openNewSearchEditor,
-					translateLegacyConfig({ location: "reuse", ...args })
+					translateLegacyConfig({ location: "reuse", ...args }),
 				);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -456,7 +454,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"search.openNewEditorToSide",
-						"Open New Search Editor to the Side"
+						"Open New Search Editor to the Side",
 					),
 					original: "Open new Search Editor to the Side",
 				},
@@ -467,17 +465,17 @@ registerAction2(
 		}
 		async run(
 			accessor: ServicesAccessor,
-			args: LegacySearchEditorArgs | OpenSearchEditorArgs
+			args: LegacySearchEditorArgs | OpenSearchEditorArgs,
 		) {
 			await accessor
 				.get(IInstantiationService)
 				.invokeFunction(
 					openNewSearchEditor,
 					translateLegacyConfig(args),
-					true
+					true,
 				);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -488,7 +486,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"search.openResultsInEditor",
-						"Open Results in Editor"
+						"Open Results in Editor",
 					),
 					original: "Open Results in Editor",
 				},
@@ -498,7 +496,7 @@ registerAction2(
 					primary: KeyMod.Alt | KeyCode.Enter,
 					when: ContextKeyExpr.and(
 						SearchConstants.HasSearchResults,
-						SearchConstants.SearchViewFocusedKey
+						SearchConstants.SearchViewFocusedKey,
 					),
 					weight: KeybindingWeight.WorkbenchContrib,
 					mac: {
@@ -517,11 +515,11 @@ registerAction2(
 					searchView.searchResult,
 					searchView.searchIncludePattern.getValue(),
 					searchView.searchExcludePattern.getValue(),
-					searchView.searchIncludePattern.onlySearchInOpenEditors()
+					searchView.searchIncludePattern.onlySearchInOpenEditors(),
 				);
 			}
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -532,7 +530,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"search.rerunSearchInEditor",
-						"Search Again"
+						"Search Again",
 					),
 					original: "Search Again",
 				},
@@ -548,13 +546,13 @@ registerAction2(
 						id: MenuId.EditorTitle,
 						group: "navigation",
 						when: ActiveEditorContext.isEqualTo(
-							SearchEditorConstants.SearchEditorID
+							SearchEditorConstants.SearchEditorID,
 						),
 					},
 					{
 						id: MenuId.CommandPalette,
 						when: ActiveEditorContext.isEqualTo(
-							SearchEditorConstants.SearchEditorID
+							SearchEditorConstants.SearchEditorID,
 						),
 					},
 				],
@@ -569,7 +567,7 @@ registerAction2(
 				});
 			}
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -580,7 +578,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"search.action.focusQueryEditorWidget",
-						"Focus Search Editor Input"
+						"Focus Search Editor Input",
 					),
 					original: "Focus Search Editor Input",
 				},
@@ -602,7 +600,7 @@ registerAction2(
 				).focusSearchInput();
 			}
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -613,7 +611,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"search.action.focusFilesToInclude",
-						"Focus Search Editor Files to Include"
+						"Focus Search Editor Files to Include",
 					),
 					original: "Focus Search Editor Files to Include",
 				},
@@ -631,7 +629,7 @@ registerAction2(
 				).focusFilesToIncludeInput();
 			}
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -642,7 +640,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"search.action.focusFilesToExclude",
-						"Focus Search Editor Files to Exclude"
+						"Focus Search Editor Files to Exclude",
 					),
 					original: "Focus Search Editor Files to Exclude",
 				},
@@ -660,7 +658,7 @@ registerAction2(
 				).focusFilesToExcludeInput();
 			}
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -671,7 +669,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"searchEditor.action.toggleSearchEditorCaseSensitive",
-						"Toggle Match Case"
+						"Toggle Match Case",
 					),
 					original: "Toggle Match Case",
 				},
@@ -683,14 +681,14 @@ registerAction2(
 						weight: KeybindingWeight.WorkbenchContrib,
 						when: SearchConstants.SearchInputBoxFocusedKey,
 					},
-					ToggleCaseSensitiveKeybinding
+					ToggleCaseSensitiveKeybinding,
 				),
 			});
 		}
 		run(accessor: ServicesAccessor) {
 			toggleSearchEditorCaseSensitiveCommand(accessor);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -701,7 +699,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"searchEditor.action.toggleSearchEditorWholeWord",
-						"Toggle Match Whole Word"
+						"Toggle Match Whole Word",
 					),
 					original: "Toggle Match Whole Word",
 				},
@@ -713,14 +711,14 @@ registerAction2(
 						weight: KeybindingWeight.WorkbenchContrib,
 						when: SearchConstants.SearchInputBoxFocusedKey,
 					},
-					ToggleWholeWordKeybinding
+					ToggleWholeWordKeybinding,
 				),
 			});
 		}
 		run(accessor: ServicesAccessor) {
 			toggleSearchEditorWholeWordCommand(accessor);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -731,7 +729,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"searchEditor.action.toggleSearchEditorRegex",
-						"Toggle Use Regular Expression"
+						"Toggle Use Regular Expression",
 					),
 					original: 'Toggle Use Regular Expression"',
 				},
@@ -743,14 +741,14 @@ registerAction2(
 						weight: KeybindingWeight.WorkbenchContrib,
 						when: SearchConstants.SearchInputBoxFocusedKey,
 					},
-					ToggleRegexKeybinding
+					ToggleRegexKeybinding,
 				),
 			});
 		}
 		run(accessor: ServicesAccessor) {
 			toggleSearchEditorRegexCommand(accessor);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -761,7 +759,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"searchEditor.action.toggleSearchEditorContextLines",
-						"Toggle Context Lines"
+						"Toggle Context Lines",
 					),
 					original: 'Toggle Context Lines"',
 				},
@@ -780,7 +778,7 @@ registerAction2(
 		run(accessor: ServicesAccessor) {
 			toggleSearchEditorContextLinesCommand(accessor);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -792,7 +790,7 @@ registerAction2(
 					original: "Increase Context Lines",
 					value: localize(
 						"searchEditor.action.increaseSearchEditorContextLines",
-						"Increase Context Lines"
+						"Increase Context Lines",
 					),
 				},
 				category,
@@ -807,7 +805,7 @@ registerAction2(
 		run(accessor: ServicesAccessor) {
 			modifySearchEditorContextLinesCommand(accessor, true);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -819,7 +817,7 @@ registerAction2(
 					original: "Decrease Context Lines",
 					value: localize(
 						"searchEditor.action.decreaseSearchEditorContextLines",
-						"Decrease Context Lines"
+						"Decrease Context Lines",
 					),
 				},
 				category,
@@ -834,7 +832,7 @@ registerAction2(
 		run(accessor: ServicesAccessor) {
 			modifySearchEditorContextLinesCommand(accessor, false);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -846,7 +844,7 @@ registerAction2(
 					original: "Select All Matches",
 					value: localize(
 						"searchEditor.action.selectAllSearchEditorMatches",
-						"Select All Matches"
+						"Select All Matches",
 					),
 				},
 				category,
@@ -861,7 +859,7 @@ registerAction2(
 		run(accessor: ServicesAccessor) {
 			selectAllSearchEditorMatchesCommand(accessor);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -871,7 +869,7 @@ registerAction2(
 				id: "search.action.openNewEditorFromView",
 				title: localize(
 					"search.openNewEditor",
-					"Open New Search Editor"
+					"Open New Search Editor",
 				),
 				category,
 				icon: searchNewEditorIcon,
@@ -888,7 +886,7 @@ registerAction2(
 		run(accessor: ServicesAccessor, ...args: any[]) {
 			return openSearchEditor(accessor);
 		}
-	}
+	},
 );
 //#endregion
 
@@ -929,7 +927,7 @@ class SearchEditorWorkingCopyEditorHandler
 	createEditor(workingCopy: IWorkingCopyIdentifier): EditorInput {
 		const input = this.instantiationService.invokeFunction(
 			getOrMakeSearchEditorInput,
-			{ from: "model", modelUri: workingCopy.resource }
+			{ from: "model", modelUri: workingCopy.resource },
 		);
 		input.setDirty(true);
 
@@ -939,6 +937,6 @@ class SearchEditorWorkingCopyEditorHandler
 
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	SearchEditorWorkingCopyEditorHandler,
-	LifecyclePhase.Ready
+	LifecyclePhase.Ready,
 );
 //#endregion

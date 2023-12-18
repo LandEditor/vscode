@@ -4,26 +4,26 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as dom from "vs/base/browser/dom";
-import * as nls from "vs/nls";
-import { Disposable, IDisposable } from "vs/base/common/lifecycle";
-import * as languages from "vs/editor/common/languages";
-import { Emitter } from "vs/base/common/event";
-import { ICommentService } from "vs/workbench/contrib/comments/browser/commentService";
 import { StandardKeyboardEvent } from "vs/base/browser/keyboardEvent";
+import { Emitter } from "vs/base/common/event";
 import { KeyCode } from "vs/base/common/keyCodes";
-import { CommentNode } from "vs/workbench/contrib/comments/browser/commentNode";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { Disposable, IDisposable } from "vs/base/common/lifecycle";
 import { URI } from "vs/base/common/uri";
-import { ICommentThreadWidget } from "vs/workbench/contrib/comments/common/commentThreadWidget";
+import { IRange } from "vs/editor/common/core/range";
+import * as languages from "vs/editor/common/languages";
+import { ILanguageService } from "vs/editor/common/languages/language";
 import {
 	IMarkdownRendererOptions,
 	MarkdownRenderer,
 } from "vs/editor/contrib/markdownRenderer/browser/markdownRenderer";
+import * as nls from "vs/nls";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { IOpenerService } from "vs/platform/opener/common/opener";
-import { ILanguageService } from "vs/editor/common/languages/language";
-import { ICellRange } from "vs/workbench/contrib/notebook/common/notebookRange";
-import { IRange } from "vs/editor/common/core/range";
+import { CommentNode } from "vs/workbench/contrib/comments/browser/commentNode";
+import { ICommentService } from "vs/workbench/contrib/comments/browser/commentService";
 import { LayoutableEditor } from "vs/workbench/contrib/comments/browser/simpleCommentEditor";
+import { ICommentThreadWidget } from "vs/workbench/contrib/comments/common/commentThreadWidget";
+import { ICellRange } from "vs/workbench/contrib/notebook/common/notebookRange";
 
 export class CommentThreadBody<
 	T extends IRange | ICellRange = IRange,
@@ -93,7 +93,7 @@ export class CommentThreadBody<
 	display() {
 		this._commentsElement = dom.append(
 			this.container,
-			dom.$("div.comments-container")
+			dom.$("div.comments-container"),
 		);
 		this._commentsElement.setAttribute("role", "presentation");
 		this._commentsElement.tabIndex = 0;
@@ -113,7 +113,7 @@ export class CommentThreadBody<
 								.isEditing)
 					) {
 						const moveFocusWithinBounds = (
-							change: number
+							change: number,
 						): number => {
 							if (
 								this._focusedComment === undefined &&
@@ -130,18 +130,18 @@ export class CommentThreadBody<
 							const newIndex = this._focusedComment! + change;
 							return Math.min(
 								Math.max(0, newIndex),
-								this._commentElements.length - 1
+								this._commentElements.length - 1,
 							);
 						};
 
 						this._setFocusedComment(
 							event.equals(KeyCode.UpArrow)
 								? moveFocusWithinBounds(-1)
-								: moveFocusWithinBounds(1)
+								: moveFocusWithinBounds(1),
 						);
 					}
-				}
-			)
+				},
+			),
 		);
 
 		this._commentElements = [];
@@ -197,9 +197,7 @@ export class CommentThreadBody<
 		return pendingEdits;
 	}
 
-	getCommentCoords(
-		commentUniqueId: number
-	):
+	getCommentCoords(commentUniqueId: number):
 		| {
 				thread: dom.IDomNodePagePosition;
 				comment: dom.IDomNodePagePosition;
@@ -207,14 +205,14 @@ export class CommentThreadBody<
 		| undefined {
 		const matchedNode = this._commentElements.filter(
 			(commentNode) =>
-				commentNode.comment.uniqueIdInThread === commentUniqueId
+				commentNode.comment.uniqueIdInThread === commentUniqueId,
 		);
 		if (matchedNode && matchedNode.length) {
 			const commentThreadCoords = dom.getDomNodePagePosition(
-				this._commentElements[0].domNode
+				this._commentElements[0].domNode,
 			);
 			const commentCoords = dom.getDomNodePagePosition(
-				matchedNode[0].domNode
+				matchedNode[0].domNode,
 			);
 			return {
 				thread: commentThreadCoords,
@@ -227,7 +225,7 @@ export class CommentThreadBody<
 
 	updateCommentThread(
 		commentThread: languages.CommentThread<T>,
-		preserveFocus: boolean
+		preserveFocus: boolean,
 	) {
 		const oldCommentsLen = this._commentElements.length;
 		const newCommentsLen = commentThread.comments
@@ -240,8 +238,8 @@ export class CommentThreadBody<
 			const comment = this._commentElements[i].comment;
 			const newComment = commentThread.comments
 				? commentThread.comments.filter(
-						(c) => c.uniqueIdInThread === comment.uniqueIdInThread
-					)
+						(c) => c.uniqueIdInThread === comment.uniqueIdInThread,
+				  )
 				: [];
 
 			if (newComment.length) {
@@ -270,7 +268,7 @@ export class CommentThreadBody<
 			const oldCommentNode = this._commentElements.filter(
 				(commentNode) =>
 					commentNode.comment.uniqueIdInThread ===
-					currentComment.uniqueIdInThread
+					currentComment.uniqueIdInThread,
 			);
 			if (oldCommentNode.length) {
 				lastCommentElement = oldCommentNode[0].domNode;
@@ -282,7 +280,7 @@ export class CommentThreadBody<
 				if (lastCommentElement) {
 					this._commentsElement.insertBefore(
 						newElement.domNode,
-						lastCommentElement
+						lastCommentElement,
 					);
 					lastCommentElement = newElement.domNode;
 				} else {
@@ -302,7 +300,7 @@ export class CommentThreadBody<
 
 		if (newCommentsInEditMode.length) {
 			const lastIndex = this._commentElements.indexOf(
-				newCommentsInEditMode[newCommentsInEditMode.length - 1]
+				newCommentsInEditMode[newCommentsInEditMode.length - 1],
 			);
 			this._focusedComment = lastIndex;
 		}
@@ -322,14 +320,14 @@ export class CommentThreadBody<
 					this._commentThread.comments?.length,
 					this._commentThread.range.startLineNumber,
 					this._commentThread.range.endLineNumber,
-					this._commentThread.label
+					this._commentThread.label,
 				);
 			} else {
 				this._commentsElement.ariaLabel = nls.localize(
 					"commentThreadAria.document",
 					"Comment thread with {0} comments on the entire document. {1}.",
 					this._commentThread.comments?.length,
-					this._commentThread.label
+					this._commentThread.label,
 				);
 			}
 		} else {
@@ -337,7 +335,7 @@ export class CommentThreadBody<
 				"commentThreadAria",
 				"Comment thread with {0} comments. {1}.",
 				this._commentThread.comments?.length,
-				this._commentThread.label
+				this._commentThread.label,
 			);
 		}
 	}
@@ -352,7 +350,7 @@ export class CommentThreadBody<
 		} else {
 			this._focusedComment = Math.min(
 				value,
-				this._commentElements.length - 1
+				this._commentElements.length - 1,
 			);
 			this._commentElements[this._focusedComment].setFocus(true);
 		}
@@ -370,7 +368,7 @@ export class CommentThreadBody<
 			this.owner,
 			this.parentResourceUri,
 			this._parentCommentThreadWidget,
-			this._markdownRenderer
+			this._markdownRenderer,
 		) as unknown as CommentNode<T>;
 
 		this._register(newCommentNode);
@@ -381,10 +379,10 @@ export class CommentThreadBody<
 					this._commentElements.findIndex(
 						(commentNode) =>
 							commentNode.comment.uniqueIdInThread ===
-							clickedNode.comment.uniqueIdInThread
-					)
-				)
-			)
+							clickedNode.comment.uniqueIdInThread,
+					),
+				),
+			),
 		);
 
 		return newCommentNode;

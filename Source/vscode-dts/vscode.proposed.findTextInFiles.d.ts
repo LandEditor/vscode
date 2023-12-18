@@ -91,7 +91,7 @@ declare module "vscode" {
 		export function findTextInFiles(
 			query: TextSearchQuery,
 			callback: (result: TextSearchResult) => void,
-			token?: CancellationToken
+			token?: CancellationToken,
 		): Thenable<TextSearchComplete>;
 
 		/**
@@ -106,7 +106,7 @@ declare module "vscode" {
 			query: TextSearchQuery,
 			options: FindTextInFilesOptions,
 			callback: (result: TextSearchResult) => void,
-			token?: CancellationToken
+			token?: CancellationToken,
 		): Thenable<TextSearchComplete>;
 	}
 }

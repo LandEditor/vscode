@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { EditorModel } from "vs/workbench/common/editor/editorModel";
 import { IResolvableEditorModel } from "vs/platform/editor/common/editor";
+import { EditorModel } from "vs/workbench/common/editor/editorModel";
 
 /**
  * The base editor model for the diff editor. It is made up of two editor models, the original version
@@ -23,7 +23,7 @@ export class DiffEditorModel extends EditorModel {
 
 	constructor(
 		originalModel: IResolvableEditorModel | undefined,
-		modifiedModel: IResolvableEditorModel | undefined
+		modifiedModel: IResolvableEditorModel | undefined,
 	) {
 		super();
 

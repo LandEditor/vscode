@@ -28,13 +28,13 @@ export function registerBaseCommands(
 	commandManager: CommandManager,
 	lazyClientHost: Lazy<TypeScriptServiceClientHost>,
 	pluginManager: PluginManager,
-	activeJsTsEditorTracker: ActiveJsTsEditorTracker
+	activeJsTsEditorTracker: ActiveJsTsEditorTracker,
 ): void {
 	commandManager.register(
-		new ReloadTypeScriptProjectsCommand(lazyClientHost)
+		new ReloadTypeScriptProjectsCommand(lazyClientHost),
 	);
 	commandManager.register(
-		new ReloadJavaScriptProjectsCommand(lazyClientHost)
+		new ReloadJavaScriptProjectsCommand(lazyClientHost),
 	);
 	commandManager.register(new SelectTypeScriptVersionCommand(lazyClientHost));
 	commandManager.register(new OpenTsServerLogCommand(lazyClientHost));
@@ -42,14 +42,14 @@ export function registerBaseCommands(
 	commandManager.register(
 		new TypeScriptGoToProjectConfigCommand(
 			activeJsTsEditorTracker,
-			lazyClientHost
-		)
+			lazyClientHost,
+		),
 	);
 	commandManager.register(
 		new JavaScriptGoToProjectConfigCommand(
 			activeJsTsEditorTracker,
-			lazyClientHost
-		)
+			lazyClientHost,
+		),
 	);
 	commandManager.register(new ConfigurePluginCommand(pluginManager));
 	commandManager.register(new LearnMoreAboutRefactoringsCommand());

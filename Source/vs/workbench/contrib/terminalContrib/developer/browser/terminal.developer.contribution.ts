@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/developer";
+import type { Terminal } from "@xterm/xterm";
+import { getWindow } from "vs/base/browser/dom";
 import { VSBuffer } from "vs/base/common/buffer";
 import {
 	Disposable,
@@ -13,6 +14,7 @@ import {
 	dispose,
 } from "vs/base/common/lifecycle";
 import { URI } from "vs/base/common/uri";
+import "vs/css!./media/developer";
 import { localize } from "vs/nls";
 import { Categories } from "vs/platform/action/common/actionCommonCategories";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
@@ -20,6 +22,10 @@ import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
 import { IFileService } from "vs/platform/files/common/files";
 import { IOpenerService } from "vs/platform/opener/common/opener";
 import { IQuickInputService } from "vs/platform/quickinput/common/quickInput";
+import {
+	ITerminalCommand,
+	TerminalCapability,
+} from "vs/platform/terminal/common/capabilities/capabilities";
 import {
 	ITerminalLogService,
 	TerminalSettingId,
@@ -40,19 +46,13 @@ import {
 	TerminalCommandId,
 } from "vs/workbench/contrib/terminal/common/terminal";
 import { TerminalContextKeys } from "vs/workbench/contrib/terminal/common/terminalContextKey";
-import type { Terminal } from "@xterm/xterm";
-import {
-	ITerminalCommand,
-	TerminalCapability,
-} from "vs/platform/terminal/common/capabilities/capabilities";
-import { getWindow } from "vs/base/browser/dom";
 
 registerTerminalAction({
 	id: TerminalCommandId.ShowTextureAtlas,
 	title: {
 		value: localize(
 			"workbench.action.terminal.showTextureAtlas",
-			"Show Terminal Texture Atlas"
+			"Show Terminal Texture Atlas",
 		),
 		original: "Show Terminal Texture Atlas",
 	},
@@ -77,14 +77,14 @@ registerTerminalAction({
 		}
 		ctx.transferFromImageBitmap(bitmap);
 		const blob = await new Promise<Blob | null>((res) =>
-			canvas.toBlob(res)
+			canvas.toBlob(res),
 		);
 		if (!blob) {
 			return;
 		}
 		await fileService.writeFile(
 			fileUri,
-			VSBuffer.wrap(new Uint8Array(await blob.arrayBuffer()))
+			VSBuffer.wrap(new Uint8Array(await blob.arrayBuffer())),
 		);
 		openerService.open(fileUri);
 	},
@@ -95,7 +95,7 @@ registerTerminalAction({
 	title: {
 		value: localize(
 			"workbench.action.terminal.writeDataToTerminal",
-			"Write Data to Terminal"
+			"Write Data to Terminal",
 		),
 		original: "Write Data to Terminal",
 	},
@@ -107,7 +107,7 @@ registerTerminalAction({
 		await instance.processReady;
 		if (!instance.xterm) {
 			throw new Error(
-				"Cannot write data to terminal if xterm isn't initialized"
+				"Cannot write data to terminal if xterm isn't initialized",
 			);
 		}
 		const data = await quickInputService.input({
@@ -115,7 +115,7 @@ registerTerminalAction({
 			placeHolder: "Enter data, use \\x to escape",
 			prompt: localize(
 				"workbench.action.terminal.writeDataToTerminal.prompt",
-				"Enter data to write directly to the terminal, bypassing the pty"
+				"Enter data to write directly to the terminal, bypassing the pty",
 			),
 		});
 		if (!data) {
@@ -146,7 +146,7 @@ registerTerminalAction({
 	title: {
 		value: localize(
 			"workbench.action.terminal.restartPtyHost",
-			"Restart Pty Host"
+			"Restart Pty Host",
 		),
 		original: "Restart Pty Host",
 	},
@@ -160,7 +160,7 @@ registerTerminalAction({
 			unresponsiveBackends.length > 0 ? unresponsiveBackends : backends;
 		for (const backend of restartCandidates) {
 			logService.warn(
-				`Restarting pty host for authority "${backend.remoteAuthority}"`
+				`Restarting pty host for authority "${backend.remoteAuthority}"`,
 			);
 			backend.restartPtyHost();
 		}
@@ -171,7 +171,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 	static readonly ID = "terminal.devMode";
 	static get(instance: ITerminalInstance): DevModeContribution | null {
 		return instance.getContribution<DevModeContribution>(
-			DevModeContribution.ID
+			DevModeContribution.ID,
 		);
 	}
 
@@ -209,7 +209,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 		// Text area syncing
 		if (this._xterm?.raw.textarea) {
 			const font = this._terminalService.configHelper.getFont(
-				getWindow(this._xterm.raw.textarea)
+				getWindow(this._xterm.raw.textarea),
 			);
 			this._xterm.raw.textarea.style.fontFamily = font.fontFamily;
 			this._xterm.raw.textarea.style.fontSize = `${font.fontSize}px`;
@@ -217,7 +217,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 
 		// Sequence markers
 		const commandDetection = this._instance.capabilities.get(
-			TerminalCapability.CommandDetection
+			TerminalCapability.CommandDetection,
 		);
 		if (devMode) {
 			if (commandDetection) {
@@ -243,7 +243,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 										"xterm-sequence-decoration",
 										"top",
 										"left",
-										colorClass
+										colorClass,
 									);
 								});
 							}
@@ -262,7 +262,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 										"xterm-sequence-decoration",
 										"top",
 										"right",
-										colorClass
+										colorClass,
 									);
 								});
 							}
@@ -281,7 +281,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 										"xterm-sequence-decoration",
 										"bottom",
 										"left",
-										colorClass
+										colorClass,
 									);
 								});
 							}
@@ -299,7 +299,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 										"xterm-sequence-decoration",
 										"bottom",
 										"right",
-										colorClass
+										colorClass,
 									);
 								});
 							}
@@ -314,7 +314,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 							}
 							commandDecorations.delete(c);
 						}
-					})
+					}),
 				);
 			} else {
 				this._activeDevModeDisposables.value =

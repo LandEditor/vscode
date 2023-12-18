@@ -35,7 +35,7 @@ export interface IActionListDelegate<T> {
 	onSelect(action: T, preview?: boolean): void;
 	onHover?(
 		action: T,
-		cancellationToken: CancellationToken
+		cancellationToken: CancellationToken,
 	): Promise<{ canPreview: boolean } | void>;
 	onFocus?(action: T | undefined): void;
 }
@@ -57,7 +57,7 @@ interface IActionMenuTemplateData {
 	readonly keybinding: KeybindingLabel;
 }
 
-export const enum ActionListItemKind {
+export enum ActionListItemKind {
 	Action = "action",
 	Header = "header",
 }
@@ -86,7 +86,7 @@ class HeaderRenderer<T>
 	renderElement(
 		element: IActionListItem<T>,
 		_index: number,
-		templateData: IHeaderTemplateData
+		templateData: IHeaderTemplateData,
 	): void {
 		templateData.text.textContent = element.group?.title ?? "";
 	}
@@ -128,13 +128,13 @@ class ActionItemRenderer<T>
 	renderElement(
 		element: IActionListItem<T>,
 		_index: number,
-		data: IActionMenuTemplateData
+		data: IActionMenuTemplateData,
 	): void {
 		if (element.group?.icon) {
 			data.icon.className = ThemeIcon.asClassName(element.group.icon);
 			if (element.group.icon.color) {
 				data.icon.style.color = asCssVariable(
-					element.group.icon.color.id
+					element.group.icon.color.id,
 				);
 			}
 		} else {
@@ -171,7 +171,7 @@ class ActionItemRenderer<T>
 					},
 					"{0} to apply, {1} to preview",
 					actionTitle,
-					previewTitle
+					previewTitle,
 				);
 			} else {
 				data.container.title = localize(
@@ -182,7 +182,7 @@ class ActionItemRenderer<T>
 						],
 					},
 					"{0} to apply",
-					actionTitle
+					actionTitle,
 				);
 			}
 		} else {
@@ -208,7 +208,7 @@ class PreviewSelectedEvent extends UIEvent {
 }
 
 function getKeyboardNavigationLabel<T>(
-	item: IActionListItem<T>
+	item: IActionListItem<T>,
 ): string | undefined {
 	// Filter out header vs. action
 	if (item.kind === "action") {
@@ -340,7 +340,7 @@ export class ActionList<T> extends Disposable {
 	layout(minWidth: number): number {
 		// Updating list height, depending on how many separators and headers there are.
 		const numHeaders = this._allMenuItems.filter(
-			(item) => item.kind === "header"
+			(item) => item.kind === "header",
 		).length;
 		const itemsHeight = this._allMenuItems.length * this._actionLineHeight;
 		const heightWithHeaders =
@@ -357,7 +357,7 @@ export class ActionList<T> extends Disposable {
 			const itemWidths: number[] = this._allMenuItems.map(
 				(_, index): number => {
 					const element = this.domNode.ownerDocument.getElementById(
-						this._list.getElementID(index)
+						this._list.getElementID(index),
 					);
 					if (element) {
 						element.style.width = "auto";
@@ -366,7 +366,7 @@ export class ActionList<T> extends Disposable {
 						return width;
 					}
 					return 0;
-				}
+				},
 			);
 
 			// resize observer - can be used in the future since list widget supports dynamic height but not width
@@ -376,7 +376,7 @@ export class ActionList<T> extends Disposable {
 		const maxVhPrecentage = 0.7;
 		const height = Math.min(
 			heightWithHeaders,
-			this.domNode.ownerDocument.body.clientHeight * maxVhPrecentage
+			this.domNode.ownerDocument.body.clientHeight * maxVhPrecentage,
 		);
 		this._list.layout(height, maxWidth);
 
@@ -421,7 +421,7 @@ export class ActionList<T> extends Disposable {
 		if (element.item && this.focusCondition(element)) {
 			this._delegate.onSelect(
 				element.item,
-				e.browserEvent instanceof PreviewSelectedEvent
+				e.browserEvent instanceof PreviewSelectedEvent,
 			);
 		} else {
 			this._list.setSelection([]);
@@ -449,7 +449,7 @@ export class ActionList<T> extends Disposable {
 			) {
 				const result = await this._delegate.onHover(
 					element.item,
-					this.cts.token
+					this.cts.token,
 				);
 				element.canPreview = result ? result.canPreview : undefined;
 			}

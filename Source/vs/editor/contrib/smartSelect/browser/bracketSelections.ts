@@ -6,16 +6,16 @@
 import { LinkedList } from "vs/base/common/linkedList";
 import { Position } from "vs/editor/common/core/position";
 import { Range } from "vs/editor/common/core/range";
-import { ITextModel } from "vs/editor/common/model";
 import {
 	SelectionRange,
 	SelectionRangeProvider,
 } from "vs/editor/common/languages";
+import { ITextModel } from "vs/editor/common/model";
 
 export class BracketSelectionRangeProvider implements SelectionRangeProvider {
 	async provideSelectionRanges(
 		model: ITextModel,
-		positions: Position[]
+		positions: Position[],
 	): Promise<SelectionRange[][]> {
 		const result: SelectionRange[][] = [];
 
@@ -30,8 +30,8 @@ export class BracketSelectionRangeProvider implements SelectionRangeProvider {
 					0,
 					model,
 					position,
-					ranges
-				)
+					ranges,
+				),
 			);
 			await new Promise<void>((resolve) =>
 				BracketSelectionRangeProvider._bracketsLeftYield(
@@ -40,8 +40,8 @@ export class BracketSelectionRangeProvider implements SelectionRangeProvider {
 					model,
 					position,
 					ranges,
-					bucket
-				)
+					bucket,
+				),
 			);
 		}
 
@@ -56,7 +56,7 @@ export class BracketSelectionRangeProvider implements SelectionRangeProvider {
 		round: number,
 		model: ITextModel,
 		pos: Position,
-		ranges: Map<string, LinkedList<Range>>
+		ranges: Map<string, LinkedList<Range>>,
 	): void {
 		const counts = new Map<string, number>();
 		const t1 = Date.now();
@@ -82,8 +82,8 @@ export class BracketSelectionRangeProvider implements SelectionRangeProvider {
 						round + 1,
 						model,
 						pos,
-						ranges
-					)
+						ranges,
+					),
 				);
 				break;
 			}
@@ -118,7 +118,7 @@ export class BracketSelectionRangeProvider implements SelectionRangeProvider {
 		model: ITextModel,
 		pos: Position,
 		ranges: Map<string, LinkedList<Range>>,
-		bucket: SelectionRange[]
+		bucket: SelectionRange[],
 	): void {
 		const counts = new Map<string, number>();
 		const t1 = Date.now();
@@ -148,18 +148,12 @@ export class BracketSelectionRangeProvider implements SelectionRangeProvider {
 						model,
 						pos,
 						ranges,
-						bucket
-					)
+						bucket,
+					),
 				);
 				break;
 			}
-			if (!bracket.bracketInfo.isOpeningBracket) {
-				const key =
-					bracket.bracketInfo.getOpeningBrackets()[0].bracketText;
-				// wait for opening
-				const val = counts.has(key) ? counts.get(key)! : 0;
-				counts.set(key, val + 1);
-			} else {
+			if (bracket.bracketInfo.isOpeningBracket) {
 				const key = bracket.bracketInfo.bracketText;
 				// opening
 				let val = counts.has(key) ? counts.get(key)! : 0;
@@ -174,21 +168,27 @@ export class BracketSelectionRangeProvider implements SelectionRangeProvider {
 						}
 						const innerBracket = Range.fromPositions(
 							bracket.range.getEndPosition(),
-							closing!.getStartPosition()
+							closing!.getStartPosition(),
 						);
 						const outerBracket = Range.fromPositions(
 							bracket.range.getStartPosition(),
-							closing!.getEndPosition()
+							closing!.getEndPosition(),
 						);
 						bucket.push({ range: innerBracket });
 						bucket.push({ range: outerBracket });
 						BracketSelectionRangeProvider._addBracketLeading(
 							model,
 							outerBracket,
-							bucket
+							bucket,
 						);
 					}
 				}
+			} else {
+				const key =
+					bracket.bracketInfo.getOpeningBrackets()[0].bracketText;
+				// wait for opening
+				const val = counts.has(key) ? counts.get(key)! : 0;
+				counts.set(key, val + 1);
 			}
 			pos = bracket.range.getStartPosition();
 		}
@@ -197,7 +197,7 @@ export class BracketSelectionRangeProvider implements SelectionRangeProvider {
 	private static _addBracketLeading(
 		model: ITextModel,
 		bracket: Range,
-		bucket: SelectionRange[]
+		bucket: SelectionRange[],
 	): void {
 		if (bracket.startLineNumber === bracket.endLineNumber) {
 			return;
@@ -211,13 +211,13 @@ export class BracketSelectionRangeProvider implements SelectionRangeProvider {
 			bucket.push({
 				range: Range.fromPositions(
 					new Position(startLine, column),
-					bracket.getEndPosition()
+					bracket.getEndPosition(),
 				),
 			});
 			bucket.push({
 				range: Range.fromPositions(
 					new Position(startLine, 1),
-					bracket.getEndPosition()
+					bracket.getEndPosition(),
 				),
 			});
 		}
@@ -236,13 +236,13 @@ export class BracketSelectionRangeProvider implements SelectionRangeProvider {
 				bucket.push({
 					range: Range.fromPositions(
 						new Position(aboveLine, column),
-						bracket.getEndPosition()
+						bracket.getEndPosition(),
 					),
 				});
 				bucket.push({
 					range: Range.fromPositions(
 						new Position(aboveLine, 1),
-						bracket.getEndPosition()
+						bracket.getEndPosition(),
 					),
 				});
 			}

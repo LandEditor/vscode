@@ -1,4 +1,3 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -30,9 +29,9 @@ function fetchUrls(urls, options) {
 				},
 				(error) => {
 					cb(error);
-				}
+				},
 			);
-		})
+		}),
 	);
 }
 exports.fetchUrls = fetchUrls;
@@ -47,7 +46,7 @@ async function fetchUrl(url, options, retries = 10, retryDelay = 1000) {
 			log(
 				`Start fetching ${ansiColors.magenta(url)}${
 					retries !== 10 ? ` (${10 - retries} retry)` : ""
-				}`
+				}`,
 			);
 			startTime = new Date().getTime();
 		}
@@ -63,8 +62,8 @@ async function fetchUrl(url, options, retries = 10, retryDelay = 1000) {
 					`Fetch completed: Status ${
 						response.status
 					}. Took ${ansiColors.magenta(
-						`${new Date().getTime() - startTime} ms`
-					)}`
+						`${new Date().getTime() - startTime} ms`,
+					)}`,
 				);
 			}
 			if (
@@ -81,30 +80,30 @@ async function fetchUrl(url, options, retries = 10, retryDelay = 1000) {
 					if (actualSHA256Checksum !== options.checksumSha256) {
 						throw new Error(
 							`Checksum mismatch for ${ansiColors.cyan(
-								url
+								url,
 							)} (expected ${
 								options.checksumSha256
-							}, actual ${actualSHA256Checksum}))`
+							}, actual ${actualSHA256Checksum}))`,
 						);
 					} else if (verbose) {
 						log(
 							`Verified SHA256 checksums match for ${ansiColors.cyan(
-								url
-							)}`
+								url,
+							)}`,
 						);
 					}
 				} else if (verbose) {
 					log(
 						`Skipping checksum verification for ${ansiColors.cyan(
-							url
-						)} because no expected checksum was provided`
+							url,
+						)} because no expected checksum was provided`,
 					);
 				}
 				if (verbose) {
 					log(
 						`Fetched response body buffer: ${ansiColors.magenta(
-							`${contents.byteLength} bytes`
-						)}`
+							`${contents.byteLength} bytes`,
+						)}`,
 					);
 				}
 				return new VinylFile({
@@ -115,7 +114,7 @@ async function fetchUrl(url, options, retries = 10, retryDelay = 1000) {
 				});
 			}
 			let err = `Request ${ansiColors.magenta(
-				url
+				url,
 			)} failed with status code: ${response.status}`;
 			if (response.status === 403) {
 				err += " (you may be rate limited)";
@@ -163,21 +162,21 @@ function fetchGithub(repo, options) {
 			base: "https://api.github.com",
 			verbose: options.verbose,
 			nodeFetchOptions: { headers: ghApiHeaders },
-		}
+		},
 	).pipe(
-		through2.obj(async function (file, _enc, callback) {
+		through2.obj(async (file, _enc, callback) => {
 			const assetFilter =
 				typeof options.name === "string"
 					? (name) => name === options.name
 					: options.name;
 			const asset = JSON.parse(file.contents.toString()).assets.find(
-				(a) => assetFilter(a.name)
+				(a) => assetFilter(a.name),
 			);
 			if (!asset) {
 				return callback(
 					new Error(
-						`Could not find asset in release of ${repo} @ ${options.version}`
-					)
+						`Could not find asset in release of ${repo} @ ${options.version}`,
+					),
 				);
 			}
 			try {
@@ -187,12 +186,12 @@ function fetchGithub(repo, options) {
 						nodeFetchOptions: { headers: ghDownloadHeaders },
 						verbose: options.verbose,
 						checksumSha256: options.checksumSha256,
-					})
+					}),
 				);
 			} catch (error) {
 				callback(error);
 			}
-		})
+		}),
 	);
 }
 exports.fetchGithub = fetchGithub;

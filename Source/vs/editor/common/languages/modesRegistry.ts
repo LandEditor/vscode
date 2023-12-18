@@ -3,16 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
 import { Emitter, Event } from "vs/base/common/event";
-import { ILanguageExtensionPoint } from "vs/editor/common/languages/language";
-import { Registry } from "vs/platform/registry/common/platform";
 import { IDisposable } from "vs/base/common/lifecycle";
 import { Mimes } from "vs/base/common/mime";
+import { ILanguageExtensionPoint } from "vs/editor/common/languages/language";
+import * as nls from "vs/nls";
 import {
-	IConfigurationRegistry,
 	Extensions as ConfigurationExtensions,
+	IConfigurationRegistry,
 } from "vs/platform/configuration/common/configurationRegistry";
+import { Registry } from "vs/platform/registry/common/platform";
 
 // Define extension point ids
 export const Extensions = {
@@ -64,7 +64,7 @@ ModesRegistry.registerLanguage({
 });
 
 Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration
+	ConfigurationExtensions.Configuration,
 ).registerDefaultConfigurations([
 	{
 		overrides: {

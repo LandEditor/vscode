@@ -5,9 +5,8 @@
 
 import "vs/platform/update/common/update.config.contribution";
 
-import { app, dialog } from "electron";
 import { unlinkSync } from "fs";
-import { URI } from "vs/base/common/uri";
+import { app, dialog } from "electron";
 import { coalesce, distinct } from "vs/base/common/arrays";
 import { Promises } from "vs/base/common/async";
 import { toErrorMessage } from "vs/base/common/errorMessage";
@@ -15,33 +14,35 @@ import {
 	ExpectedError,
 	setUnexpectedErrorHandler,
 } from "vs/base/common/errors";
+import { Event } from "vs/base/common/event";
 import {
 	IPathWithLineAndColumn,
 	isValidBasename,
 	parseLineAndColumnAware,
 	sanitizeFilePath,
 } from "vs/base/common/extpath";
-import { Event } from "vs/base/common/event";
 import { getPathLabel } from "vs/base/common/labels";
+import { DisposableStore } from "vs/base/common/lifecycle";
 import { Schemas } from "vs/base/common/network";
 import { basename, resolve } from "vs/base/common/path";
 import { mark } from "vs/base/common/performance";
 import {
 	IProcessEnvironment,
+	OS,
 	isMacintosh,
 	isWindows,
-	OS,
 } from "vs/base/common/platform";
 import { cwd } from "vs/base/common/process";
 import { rtrim, trim } from "vs/base/common/strings";
+import { URI } from "vs/base/common/uri";
 import { Promises as FSPromises } from "vs/base/node/pfs";
 import { ProxyChannel } from "vs/base/parts/ipc/common/ipc";
 import { Client as NodeIPCClient } from "vs/base/parts/ipc/common/ipc.net";
 import {
-	connect as nodeIPCConnect,
-	serve as nodeIPCServe,
 	Server as NodeIPCServer,
 	XDG_RUNTIME_DIR,
+	connect as nodeIPCConnect,
+	serve as nodeIPCServe,
 } from "vs/base/parts/ipc/node/ipc.net";
 import { CodeApplication } from "vs/code/electron-main/app";
 import { localize } from "vs/nls";
@@ -49,6 +50,7 @@ import { IConfigurationService } from "vs/platform/configuration/common/configur
 import { ConfigurationService } from "vs/platform/configuration/common/configurationService";
 import { IDiagnosticsMainService } from "vs/platform/diagnostics/electron-main/diagnosticsMainService";
 import { DiagnosticsService } from "vs/platform/diagnostics/node/diagnosticsService";
+import { massageMessageBoxOptions } from "vs/platform/dialogs/common/dialogs";
 import { NativeParsedArgs } from "vs/platform/environment/common/argv";
 import {
 	EnvironmentMainService,
@@ -59,8 +61,8 @@ import {
 	parseMainProcessArgv,
 } from "vs/platform/environment/node/argvHelper";
 import { createWaitMarkerFileSync } from "vs/platform/environment/node/wait";
-import { IFileService } from "vs/platform/files/common/files";
 import { FileService } from "vs/platform/files/common/fileService";
+import { IFileService } from "vs/platform/files/common/files";
 import { DiskFileSystemProvider } from "vs/platform/files/node/diskFileSystemProvider";
 import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
 import {
@@ -77,50 +79,48 @@ import {
 import { BufferLogger } from "vs/platform/log/common/bufferLog";
 import {
 	ConsoleMainLogger,
-	getLogLevel,
-	ILoggerService,
 	ILogService,
+	ILoggerService,
+	getLogLevel,
 } from "vs/platform/log/common/log";
-import product from "vs/platform/product/common/product";
-import { IProductService } from "vs/platform/product/common/productService";
-import { IProtocolMainService } from "vs/platform/protocol/electron-main/protocol";
-import { ProtocolMainService } from "vs/platform/protocol/electron-main/protocolMainService";
-import { ITunnelService } from "vs/platform/tunnel/common/tunnel";
-import { TunnelService } from "vs/platform/tunnel/node/tunnelService";
-import { IRequestService } from "vs/platform/request/common/request";
-import { RequestMainService } from "vs/platform/request/electron-main/requestMainService";
-import { ISignService } from "vs/platform/sign/common/sign";
-import { SignService } from "vs/platform/sign/node/signService";
-import { IStateReadService, IStateService } from "vs/platform/state/node/state";
-import { NullTelemetryService } from "vs/platform/telemetry/common/telemetryUtils";
+import { LogService } from "vs/platform/log/common/logService";
 import {
-	IThemeMainService,
-	ThemeMainService,
-} from "vs/platform/theme/electron-main/themeMainService";
-import {
-	IUserDataProfilesMainService,
-	UserDataProfilesMainService,
-} from "vs/platform/userDataProfile/electron-main/userDataProfile";
+	ILoggerMainService,
+	LoggerMainService,
+} from "vs/platform/log/electron-main/loggerService";
+import { FilePolicyService } from "vs/platform/policy/common/filePolicyService";
 import {
 	IPolicyService,
 	NullPolicyService,
 } from "vs/platform/policy/common/policy";
 import { NativePolicyService } from "vs/platform/policy/node/nativePolicyService";
-import { FilePolicyService } from "vs/platform/policy/common/filePolicyService";
-import { DisposableStore } from "vs/base/common/lifecycle";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import { UriIdentityService } from "vs/platform/uriIdentity/common/uriIdentityService";
-import {
-	ILoggerMainService,
-	LoggerMainService,
-} from "vs/platform/log/electron-main/loggerService";
-import { LogService } from "vs/platform/log/common/logService";
-import { massageMessageBoxOptions } from "vs/platform/dialogs/common/dialogs";
+import product from "vs/platform/product/common/product";
+import { IProductService } from "vs/platform/product/common/productService";
+import { IProtocolMainService } from "vs/platform/protocol/electron-main/protocol";
+import { ProtocolMainService } from "vs/platform/protocol/electron-main/protocolMainService";
+import { IRequestService } from "vs/platform/request/common/request";
+import { RequestMainService } from "vs/platform/request/electron-main/requestMainService";
+import { ISignService } from "vs/platform/sign/common/sign";
+import { SignService } from "vs/platform/sign/node/signService";
+import { IStateReadService, IStateService } from "vs/platform/state/node/state";
 import {
 	SaveStrategy,
 	StateService,
 } from "vs/platform/state/node/stateService";
+import { NullTelemetryService } from "vs/platform/telemetry/common/telemetryUtils";
+import {
+	IThemeMainService,
+	ThemeMainService,
+} from "vs/platform/theme/electron-main/themeMainService";
+import { ITunnelService } from "vs/platform/tunnel/common/tunnel";
+import { TunnelService } from "vs/platform/tunnel/node/tunnelService";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import { UriIdentityService } from "vs/platform/uriIdentity/common/uriIdentityService";
 import { FileUserDataProvider } from "vs/platform/userData/common/fileUserDataProvider";
+import {
+	IUserDataProfilesMainService,
+	UserDataProfilesMainService,
+} from "vs/platform/userDataProfile/electron-main/userDataProfile";
 
 /**
  * The main VS Code entry point.
@@ -165,14 +165,14 @@ class CodeMain {
 					userDataProfilesMainService,
 					configurationService,
 					stateMainService,
-					productService
+					productService,
 				);
 			} catch (error) {
 				// Show a dialog for errors that can be resolved by the user
 				this.handleStartupDataDirError(
 					environmentMainService,
 					productService,
-					error
+					error,
 				);
 
 				throw error;
@@ -182,7 +182,7 @@ class CodeMain {
 			await instantiationService.invokeFunction(async (accessor) => {
 				const logService = accessor.get(ILogService);
 				const lifecycleMainService = accessor.get(
-					ILifecycleMainService
+					ILifecycleMainService,
 				);
 				const fileService = accessor.get(IFileService);
 				const loggerService = accessor.get(ILoggerService);
@@ -196,17 +196,17 @@ class CodeMain {
 					lifecycleMainService,
 					instantiationService,
 					productService,
-					true
+					true,
 				);
 
 				// Write a lockfile to indicate an instance is running
 				// (https://github.com/microsoft/vscode/issues/127861#issuecomment-877417451)
 				FSPromises.writeFile(
 					environmentMainService.mainLockfile,
-					String(process.pid)
+					String(process.pid),
 				).catch((err) => {
 					logService.warn(
-						`app#startup(): Error writing main lockfile: ${err.stack}`
+						`app#startup(): Error writing main lockfile: ${err.stack}`,
 					);
 				});
 
@@ -222,10 +222,10 @@ class CodeMain {
 					evt.join(
 						"instanceLockfile",
 						FSPromises.unlink(
-							environmentMainService.mainLockfile
+							environmentMainService.mainLockfile,
 						).catch(() => {
 							/* ignored */
-						})
+						}),
 					);
 				});
 
@@ -233,7 +233,7 @@ class CodeMain {
 					.createInstance(
 						CodeApplication,
 						mainProcessNodeIpcServer,
-						instanceEnvironment
+						instanceEnvironment,
 					)
 					.startup();
 			});
@@ -263,17 +263,17 @@ class CodeMain {
 		// Environment
 		const environmentMainService = new EnvironmentMainService(
 			this.resolveArgs(),
-			productService
+			productService,
 		);
 		const instanceEnvironment = this.patchEnvironment(
-			environmentMainService
+			environmentMainService,
 		); // Patch `process.env` with the instance's environment
 		services.set(IEnvironmentMainService, environmentMainService);
 
 		// Logger
 		const loggerService = new LoggerMainService(
 			getLogLevel(environmentMainService),
-			environmentMainService.logsHome
+			environmentMainService.logsHome,
 		);
 		services.set(ILoggerMainService, loggerService);
 
@@ -284,7 +284,7 @@ class CodeMain {
 		const logService = disposables.add(
 			new LogService(bufferLogger, [
 				new ConsoleMainLogger(loggerService.getLogLevel()),
-			])
+			]),
 		);
 		services.set(ILogService, logService);
 
@@ -303,7 +303,7 @@ class CodeMain {
 			SaveStrategy.DELAYED,
 			environmentMainService,
 			logService,
-			fileService
+			fileService,
 		);
 		services.set(IStateReadService, stateService);
 		services.set(IStateService, stateService);
@@ -314,7 +314,7 @@ class CodeMain {
 			uriIdentityService,
 			environmentMainService,
 			fileService,
-			logService
+			logService,
 		);
 		services.set(IUserDataProfilesMainService, userDataProfilesMainService);
 
@@ -328,8 +328,8 @@ class CodeMain {
 				Schemas.vscodeUserData,
 				userDataProfilesMainService,
 				uriIdentityService,
-				logService
-			)
+				logService,
+			),
 		);
 
 		// Policy
@@ -338,18 +338,18 @@ class CodeMain {
 				? disposables.add(
 						new NativePolicyService(
 							logService,
-							productService.win32RegValueName
-						)
-					)
+							productService.win32RegValueName,
+						),
+				  )
 				: environmentMainService.policyFile
-					? disposables.add(
+				  ? disposables.add(
 							new FilePolicyService(
 								environmentMainService.policyFile,
 								fileService,
-								logService
-							)
-						)
-					: new NullPolicyService();
+								logService,
+							),
+					  )
+				  : new NullPolicyService();
 		services.set(IPolicyService, policyService);
 
 		// Configuration
@@ -357,20 +357,20 @@ class CodeMain {
 			userDataProfilesMainService.defaultProfile.settingsResource,
 			fileService,
 			policyService,
-			logService
+			logService,
 		);
 		services.set(IConfigurationService, configurationService);
 
 		// Lifecycle
 		services.set(
 			ILifecycleMainService,
-			new SyncDescriptor(LifecycleMainService, undefined, false)
+			new SyncDescriptor(LifecycleMainService, undefined, false),
 		);
 
 		// Request
 		services.set(
 			IRequestService,
-			new SyncDescriptor(RequestMainService, undefined, true)
+			new SyncDescriptor(RequestMainService, undefined, true),
 		);
 
 		// Themes
@@ -382,8 +382,8 @@ class CodeMain {
 			new SyncDescriptor(
 				SignService,
 				undefined,
-				false /* proxied to other processes */
-			)
+				false /* proxied to other processes */,
+			),
 		);
 
 		// Tunnel
@@ -395,8 +395,8 @@ class CodeMain {
 			new ProtocolMainService(
 				environmentMainService,
 				userDataProfilesMainService,
-				logService
-			)
+				logService,
+			),
 		);
 
 		return [
@@ -412,7 +412,7 @@ class CodeMain {
 	}
 
 	private patchEnvironment(
-		environmentMainService: IEnvironmentMainService
+		environmentMainService: IEnvironmentMainService,
 	): IProcessEnvironment {
 		const instanceEnvironment: IProcessEnvironment = {
 			VSCODE_IPC_HOOK: environmentMainService.mainIPCHandle,
@@ -435,7 +435,7 @@ class CodeMain {
 		userDataProfilesMainService: UserDataProfilesMainService,
 		configurationService: ConfigurationService,
 		stateService: StateService,
-		productService: IProductService
+		productService: IProductService,
 	): Promise<void> {
 		await Promises.settled<unknown>([
 			// Environment service (paths)
@@ -447,7 +447,7 @@ class CodeMain {
 						scheme: Schemas.file,
 					}).fsPath,
 					userDataProfilesMainService.defaultProfile.globalStorageHome.with(
-						{ scheme: Schemas.file }
+						{ scheme: Schemas.file },
 					).fsPath,
 					environmentMainService.workspaceStorageHome.with({
 						scheme: Schemas.file,
@@ -459,8 +459,8 @@ class CodeMain {
 				].map((path) =>
 					path
 						? FSPromises.mkdir(path, { recursive: true })
-						: undefined
-				)
+						: undefined,
+				),
 			),
 
 			// State service
@@ -480,7 +480,7 @@ class CodeMain {
 		lifecycleMainService: ILifecycleMainService,
 		instantiationService: IInstantiationService,
 		productService: IProductService,
-		retry: boolean
+		retry: boolean,
 	): Promise<NodeIPCServer> {
 		// Try to setup a server for running. If that succeeds it means
 		// we are the first instance to startup. Otherwise it is likely
@@ -489,11 +489,11 @@ class CodeMain {
 		try {
 			mark("code/willStartMainServer");
 			mainProcessNodeIpcServer = await nodeIPCServe(
-				environmentMainService.mainIPCHandle
+				environmentMainService.mainIPCHandle,
 			);
 			mark("code/didStartMainServer");
 			Event.once(lifecycleMainService.onWillShutdown)(() =>
-				mainProcessNodeIpcServer.dispose()
+				mainProcessNodeIpcServer.dispose(),
 			);
 		} catch (error) {
 			// Handle unexpected errors (the only expected error is EADDRINUSE that
@@ -503,7 +503,7 @@ class CodeMain {
 				this.handleStartupDataDirError(
 					environmentMainService,
 					productService,
-					error
+					error,
 				);
 
 				// Any other runtime error is just printed to the console
@@ -515,7 +515,7 @@ class CodeMain {
 			try {
 				client = await nodeIPCConnect(
 					environmentMainService.mainIPCHandle,
-					"main"
+					"main",
 				);
 			} catch (error) {
 				// Handle unexpected connection errors by showing a dialog to the user
@@ -525,13 +525,13 @@ class CodeMain {
 							localize(
 								"secondInstanceAdmin",
 								"Another instance of {0} is already running as administrator.",
-								productService.nameShort
+								productService.nameShort,
 							),
 							localize(
 								"secondInstanceAdminDetail",
-								"Please close the other instance and try again."
+								"Please close the other instance and try again.",
 							),
-							productService
+							productService,
 						);
 					}
 
@@ -546,7 +546,7 @@ class CodeMain {
 				} catch (error) {
 					logService.warn(
 						"Could not delete obsolete instance handle",
-						error
+						error,
 					);
 
 					throw error;
@@ -558,7 +558,7 @@ class CodeMain {
 					lifecycleMainService,
 					instantiationService,
 					productService,
-					false
+					false,
 				);
 			}
 
@@ -588,13 +588,13 @@ class CodeMain {
 						localize(
 							"secondInstanceNoResponse",
 							"Another instance of {0} is running but not responding",
-							productService.nameShort
+							productService.nameShort,
 						),
 						localize(
 							"secondInstanceNoResponseDetail",
-							"Please close all other instances and try again."
+							"Please close all other instances and try again.",
 						),
-						productService
+						productService,
 					);
 				}, 10000);
 			}
@@ -602,12 +602,12 @@ class CodeMain {
 			const otherInstanceLaunchMainService =
 				ProxyChannel.toService<ILaunchMainService>(
 					client.getChannel("launch"),
-					{ disableMarshalling: true }
+					{ disableMarshalling: true },
 				);
 			const otherInstanceDiagnosticsMainService =
 				ProxyChannel.toService<IDiagnosticsMainService>(
 					client.getChannel("diagnostics"),
-					{ disableMarshalling: true }
+					{ disableMarshalling: true },
 				);
 
 			// Process Info
@@ -615,7 +615,7 @@ class CodeMain {
 				return instantiationService.invokeFunction(async () => {
 					const diagnosticsService = new DiagnosticsService(
 						NullTelemetryService,
-						productService
+						productService,
 					);
 					const mainDiagnostics =
 						await otherInstanceDiagnosticsMainService.getMainDiagnostics();
@@ -624,11 +624,11 @@ class CodeMain {
 							{
 								includeProcesses: true,
 								includeWorkspaceMetadata: true,
-							}
+							},
 						);
 					const diagnostics = await diagnosticsService.getDiagnostics(
 						mainDiagnostics,
-						remoteDiagnostics
+						remoteDiagnostics,
 					);
 					console.log(diagnostics);
 
@@ -640,7 +640,7 @@ class CodeMain {
 			if (isWindows) {
 				await this.windowsAllowSetForegroundWindow(
 					otherInstanceLaunchMainService,
-					logService
+					logService,
 				);
 			}
 
@@ -648,7 +648,7 @@ class CodeMain {
 			logService.trace("Sending env to running instance...");
 			await otherInstanceLaunchMainService.start(
 				environmentMainService.args,
-				process.env as IProcessEnvironment
+				process.env as IProcessEnvironment,
 			);
 
 			// Cleanup
@@ -660,7 +660,7 @@ class CodeMain {
 			}
 
 			throw new ExpectedError(
-				"Sent env to running instance. Terminating..."
+				"Sent env to running instance. Terminating...",
 			);
 		}
 
@@ -670,8 +670,8 @@ class CodeMain {
 				localize(
 					"statusWarning",
 					"Warning: The --status argument can only be used if {0} is already running. Please run it again after {0} has started.",
-					productService.nameShort
-				)
+					productService.nameShort,
+				),
 			);
 
 			throw new ExpectedError("Terminating...");
@@ -687,7 +687,7 @@ class CodeMain {
 	private handleStartupDataDirError(
 		environmentMainService: IEnvironmentMainService,
 		productService: IProductService,
-		error: NodeJS.ErrnoException
+		error: NodeJS.ErrnoException,
 	): void {
 		if (error.code === "EACCES" || error.code === "EPERM") {
 			const directories = coalesce([
@@ -698,21 +698,21 @@ class CodeMain {
 				getPathLabel(URI.file(folder), {
 					os: OS,
 					tildify: environmentMainService,
-				})
+				}),
 			);
 
 			this.showStartupWarningDialog(
 				localize(
 					"startupDataDirError",
-					"Unable to write program user data."
+					"Unable to write program user data.",
 				),
 				localize(
 					"startupUserDataAndExtensionsDirErrorDetail",
 					"{0}\n\nPlease make sure the following directories are writeable:\n\n{1}",
 					toErrorMessage(error),
-					directories.join("\n")
+					directories.join("\n"),
 				),
-				productService
+				productService,
 			);
 		}
 	}
@@ -720,7 +720,7 @@ class CodeMain {
 	private showStartupWarningDialog(
 		message: string,
 		detail: string,
-		productService: IProductService
+		productService: IProductService,
 	): void {
 		// use sync variant here because we likely exit after this method
 		// due to startup issues and otherwise the dialog seems to disappear
@@ -736,27 +736,27 @@ class CodeMain {
 								key: "close",
 								comment: ["&& denotes a mnemonic"],
 							},
-							"&&Close"
+							"&&Close",
 						),
 					],
 					message,
 					detail,
 				},
-				productService
-			).options
+				productService,
+			).options,
 		);
 	}
 
 	private async windowsAllowSetForegroundWindow(
 		launchMainService: ILaunchMainService,
-		logService: ILogService
+		logService: ILogService,
 	): Promise<void> {
 		if (isWindows) {
 			const processId = await launchMainService.getMainProcessId();
 
 			logService.trace(
 				"Sending some foreground love to the running instance:",
-				processId
+				processId,
 			);
 
 			try {
@@ -771,7 +771,7 @@ class CodeMain {
 
 	private quit(
 		accessor: ServicesAccessor,
-		reason?: ExpectedError | Error
+		reason?: ExpectedError | Error,
 	): void {
 		const logService = accessor.get(ILogService);
 		const lifecycleMainService = accessor.get(ILifecycleMainService);
@@ -817,7 +817,7 @@ class CodeMain {
 				addArg(
 					process.argv,
 					"--waitMarkerFilePath",
-					waitMarkerFilePath
+					waitMarkerFilePath,
 				);
 				args.waitMarkerFilePath = waitMarkerFilePath;
 			}
@@ -856,13 +856,13 @@ class CodeMain {
 			if (pathCandidate) {
 				pathCandidate = this.preparePath(
 					currentWorkingDir,
-					pathCandidate
+					pathCandidate,
 				);
 			}
 
 			const sanitizedFilePath = sanitizeFilePath(
 				pathCandidate,
-				currentWorkingDir
+				currentWorkingDir,
 			);
 
 			const filePathBasename = basename(sanitizedFilePath);
@@ -884,7 +884,7 @@ class CodeMain {
 
 		const caseInsensitive = isWindows || isMacintosh;
 		const distinctPaths = distinct(result, (path) =>
-			path && caseInsensitive ? path.toLowerCase() : path || ""
+			path && caseInsensitive ? path.toLowerCase() : path || "",
 		);
 
 		return coalesce(distinctPaths);

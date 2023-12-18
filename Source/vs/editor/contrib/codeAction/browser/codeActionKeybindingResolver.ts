@@ -41,7 +41,7 @@ export class CodeActionKeybindingResolver {
 	) {}
 
 	public getResolver(): (
-		action: CodeAction
+		action: CodeAction,
 	) => ResolvedKeybinding | undefined {
 		// Lazy since we may not actually ever read the value
 		const allCodeActionBindings = new Lazy<
@@ -52,8 +52,8 @@ export class CodeActionKeybindingResolver {
 				.filter(
 					(item) =>
 						CodeActionKeybindingResolver.codeActionCommands.indexOf(
-							item.command!
-						) >= 0
+							item.command!,
+						) >= 0,
 				)
 				.filter((item) => item.resolvedKeybinding)
 				.map((item): ResolveCodeActionKeybinding => {
@@ -76,14 +76,14 @@ export class CodeActionKeybindingResolver {
 							apply: CodeActionAutoApply.Never,
 						}),
 					};
-				})
+				}),
 		);
 
 		return (action) => {
 			if (action.kind) {
 				const binding = this.bestKeybindingForCodeAction(
 					action,
-					allCodeActionBindings.value
+					allCodeActionBindings.value,
 				);
 				return binding?.resolvedKeybinding;
 			}
@@ -93,7 +93,7 @@ export class CodeActionKeybindingResolver {
 
 	private bestKeybindingForCodeAction(
 		action: CodeAction,
-		candidates: readonly ResolveCodeActionKeybinding[]
+		candidates: readonly ResolveCodeActionKeybinding[],
 	): ResolveCodeActionKeybinding | undefined {
 		if (!action.kind) {
 			return undefined;
@@ -119,7 +119,7 @@ export class CodeActionKeybindingResolver {
 						? candidate
 						: currentBest;
 				},
-				undefined as ResolveCodeActionKeybinding | undefined
+				undefined as ResolveCodeActionKeybinding | undefined,
 			);
 	}
 }

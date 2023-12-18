@@ -16,11 +16,11 @@ import {
 	BeforeEditPositionMapper,
 	TextEditInfo,
 } from "./beforeEditPositionMapper";
-import { SmallImmutableSet } from "./smallImmutableSet";
-import { lengthIsZero, lengthLessThan } from "./length";
 import { concat23Trees, concat23TreesOfSameHeight } from "./concat23Trees";
+import { lengthIsZero, lengthLessThan } from "./length";
 import { NodeReader } from "./nodeReader";
-import { OpeningBracketId, Tokenizer, TokenKind } from "./tokenizer";
+import { SmallImmutableSet } from "./smallImmutableSet";
+import { OpeningBracketId, TokenKind, Tokenizer } from "./tokenizer";
 
 /**
  * Non incrementally built ASTs are immutable.
@@ -29,7 +29,7 @@ export function parseDocument(
 	tokenizer: Tokenizer,
 	edits: TextEditInfo[],
 	oldNode: AstNode | undefined,
-	createImmutableLists: boolean
+	createImmutableLists: boolean,
 ): AstNode {
 	const parser = new Parser(tokenizer, edits, oldNode, createImmutableLists);
 	return parser.parseDocument();
@@ -41,8 +41,8 @@ export function parseDocument(
 class Parser {
 	private readonly oldNodeReader?: NodeReader;
 	private readonly positionMapper: BeforeEditPositionMapper;
-	private _itemsConstructed: number = 0;
-	private _itemsFromCache: number = 0;
+	private _itemsConstructed = 0;
+	private _itemsFromCache = 0;
 
 	/**
 	 * Reports how many nodes were constructed in the last parse operation.
@@ -62,7 +62,7 @@ class Parser {
 		private readonly tokenizer: Tokenizer,
 		edits: TextEditInfo[],
 		oldNode: AstNode | undefined,
-		private readonly createImmutableLists: boolean
+		private readonly createImmutableLists: boolean,
 	) {
 		if (oldNode && createImmutableLists) {
 			throw new Error("Not supported");
@@ -86,7 +86,7 @@ class Parser {
 
 	private parseList(
 		openedBracketIds: SmallImmutableSet<OpeningBracketId>,
-		level: number
+		level: number,
 	): AstNode | null {
 		const items: AstNode[] = [];
 
@@ -121,12 +121,12 @@ class Parser {
 	}
 
 	private tryReadChildFromCache(
-		openedBracketIds: SmallImmutableSet<number>
+		openedBracketIds: SmallImmutableSet<number>,
 	): AstNode | undefined {
 		if (this.oldNodeReader) {
 			const maxCacheableLength =
 				this.positionMapper.getDistanceToNextChange(
-					this.tokenizer.offset
+					this.tokenizer.offset,
 				);
 			if (
 				maxCacheableLength === null ||
@@ -134,7 +134,7 @@ class Parser {
 			) {
 				const cachedNode = this.oldNodeReader.readLongestNodeAt(
 					this.positionMapper.getOffsetBeforeChange(
-						this.tokenizer.offset
+						this.tokenizer.offset,
 					),
 					(curNode) => {
 						// The edit could extend the ending token, thus we cannot re-use nodes that touch the edit.
@@ -150,7 +150,7 @@ class Parser {
 						const canBeReused =
 							curNode.canBeReused(openedBracketIds);
 						return canBeReused;
-					}
+					},
 				);
 
 				if (cachedNode) {
@@ -165,7 +165,7 @@ class Parser {
 
 	private parseChild(
 		openedBracketIds: SmallImmutableSet<number>,
-		level: number
+		level: number,
 	): AstNode {
 		this._itemsConstructed++;
 
@@ -175,7 +175,7 @@ class Parser {
 			case TokenKind.ClosingBracket:
 				return new InvalidBracketAstNode(
 					token.bracketIds,
-					token.length
+					token.length,
 				);
 
 			case TokenKind.Text:
@@ -201,13 +201,13 @@ class Parser {
 					return PairAstNode.create(
 						token.astNode as BracketAstNode,
 						child,
-						nextToken.astNode as BracketAstNode
+						nextToken.astNode as BracketAstNode,
 					);
 				} else {
 					return PairAstNode.create(
 						token.astNode as BracketAstNode,
 						child,
-						null
+						null,
 					);
 				}
 			}

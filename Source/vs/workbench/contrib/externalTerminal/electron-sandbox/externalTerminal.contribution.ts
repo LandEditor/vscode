@@ -3,35 +3,35 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
+import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
+import { Schemas } from "vs/base/common/network";
 import * as paths from "vs/base/common/path";
+import * as nls from "vs/nls";
+import { MenuId, MenuRegistry } from "vs/platform/actions/common/actions";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import {
+	ConfigurationScope,
+	Extensions,
+	IConfigurationRegistry,
+} from "vs/platform/configuration/common/configurationRegistry";
 import {
 	DEFAULT_TERMINAL_OSX,
 	IExternalTerminalSettings,
 } from "vs/platform/externalTerminal/common/externalTerminal";
-import { MenuId, MenuRegistry } from "vs/platform/actions/common/actions";
-import { KeyMod, KeyCode } from "vs/base/common/keyCodes";
-import { IHistoryService } from "vs/workbench/services/history/common/history";
+import { IExternalTerminalService } from "vs/platform/externalTerminal/electron-sandbox/externalTerminalService";
 import {
-	KeybindingsRegistry,
 	KeybindingWeight,
+	KeybindingsRegistry,
 } from "vs/platform/keybinding/common/keybindingsRegistry";
-import { Schemas } from "vs/base/common/network";
-import {
-	IConfigurationRegistry,
-	Extensions,
-	ConfigurationScope,
-} from "vs/platform/configuration/common/configurationRegistry";
 import { Registry } from "vs/platform/registry/common/platform";
+import { IRemoteAuthorityResolverService } from "vs/platform/remote/common/remoteAuthorityResolver";
 import {
+	Extensions as WorkbenchExtensions,
 	IWorkbenchContribution,
 	IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "vs/workbench/common/contributions";
-import { IExternalTerminalService } from "vs/platform/externalTerminal/electron-sandbox/externalTerminalService";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { TerminalContextKeys } from "vs/workbench/contrib/terminal/common/terminalContextKey";
-import { IRemoteAuthorityResolverService } from "vs/platform/remote/common/remoteAuthorityResolver";
+import { IHistoryService } from "vs/workbench/services/history/common/history";
 import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 const OPEN_NATIVE_CONSOLE_COMMAND_ID =
@@ -47,12 +47,12 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		const terminalService = accessor.get(IExternalTerminalService);
 		const configurationService = accessor.get(IConfigurationService);
 		const remoteAuthorityResolverService = accessor.get(
-			IRemoteAuthorityResolverService
+			IRemoteAuthorityResolverService,
 		);
 		const root = historyService.getLastActiveWorkspaceRoot();
 		const config =
 			configurationService.getValue<IExternalTerminalSettings>(
-				"terminal.external"
+				"terminal.external",
 			);
 
 		// It's a local workspace, open the root
@@ -79,7 +79,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		if (activeFile?.scheme === Schemas.file) {
 			terminalService.openTerminal(
 				config,
-				paths.dirname(activeFile.fsPath)
+				paths.dirname(activeFile.fsPath),
 			);
 			return;
 		}
@@ -87,7 +87,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			if (activeFile?.scheme === Schemas.vscodeRemote) {
 				const canonicalUri =
 					await remoteAuthorityResolverService.getCanonicalURI(
-						activeFile
+						activeFile,
 					);
 				if (canonicalUri.scheme === Schemas.file) {
 					terminalService.openTerminal(config, canonicalUri.fsPath);
@@ -107,7 +107,7 @@ MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 		title: {
 			value: nls.localize(
 				"globalConsoleAction",
-				"Open New External Terminal"
+				"Open New External Terminal",
 			),
 			original: "Open New External Terminal",
 		},
@@ -127,14 +127,14 @@ export class ExternalTerminalContribution implements IWorkbenchContribution {
 		const terminals =
 			await this._externalTerminalService.getDefaultTerminalForPlatforms();
 		const configurationRegistry = Registry.as<IConfigurationRegistry>(
-			Extensions.Configuration
+			Extensions.Configuration,
 		);
 		configurationRegistry.registerConfiguration({
 			id: "externalTerminal",
 			order: 100,
 			title: nls.localize(
 				"terminalConfigurationTitle",
-				"External Terminal"
+				"External Terminal",
 			),
 			type: "object",
 			properties: {
@@ -144,20 +144,20 @@ export class ExternalTerminalContribution implements IWorkbenchContribution {
 					enumDescriptions: [
 						nls.localize(
 							"terminal.explorerKind.integrated",
-							"Use VS Code's integrated terminal."
+							"Use VS Code's integrated terminal.",
 						),
 						nls.localize(
 							"terminal.explorerKind.external",
-							"Use the configured external terminal."
+							"Use the configured external terminal.",
 						),
 						nls.localize(
 							"terminal.explorerKind.both",
-							"Use the other two together."
+							"Use the other two together.",
 						),
 					],
 					description: nls.localize(
 						"explorer.openInTerminalKind",
-						"When opening a file from the Explorer in a terminal, determines what kind of terminal will be launched"
+						"When opening a file from the Explorer in a terminal, determines what kind of terminal will be launched",
 					),
 					default: "integrated",
 				},
@@ -167,20 +167,20 @@ export class ExternalTerminalContribution implements IWorkbenchContribution {
 					enumDescriptions: [
 						nls.localize(
 							"terminal.sourceControlRepositoriesKind.integrated",
-							"Use VS Code's integrated terminal."
+							"Use VS Code's integrated terminal.",
 						),
 						nls.localize(
 							"terminal.sourceControlRepositoriesKind.external",
-							"Use the configured external terminal."
+							"Use the configured external terminal.",
 						),
 						nls.localize(
 							"terminal.sourceControlRepositoriesKind.both",
-							"Use the other two together."
+							"Use the other two together.",
 						),
 					],
 					description: nls.localize(
 						"sourceControlRepositories.openInTerminalKind",
-						"When opening a repository from the Source Control Repositories view in a terminal, determines what kind of terminal will be launched"
+						"When opening a repository from the Source Control Repositories view in a terminal, determines what kind of terminal will be launched",
 					),
 					default: "integrated",
 				},
@@ -188,7 +188,7 @@ export class ExternalTerminalContribution implements IWorkbenchContribution {
 					type: "string",
 					description: nls.localize(
 						"terminal.external.windowsExec",
-						"Customizes which terminal to run on Windows."
+						"Customizes which terminal to run on Windows.",
 					),
 					default: terminals.windows,
 					scope: ConfigurationScope.APPLICATION,
@@ -197,7 +197,7 @@ export class ExternalTerminalContribution implements IWorkbenchContribution {
 					type: "string",
 					description: nls.localize(
 						"terminal.external.osxExec",
-						"Customizes which terminal application to run on macOS."
+						"Customizes which terminal application to run on macOS.",
 					),
 					default: DEFAULT_TERMINAL_OSX,
 					scope: ConfigurationScope.APPLICATION,
@@ -206,7 +206,7 @@ export class ExternalTerminalContribution implements IWorkbenchContribution {
 					type: "string",
 					description: nls.localize(
 						"terminal.external.linuxExec",
-						"Customizes which terminal to run on Linux."
+						"Customizes which terminal to run on Linux.",
 					),
 					default: terminals.linux,
 					scope: ConfigurationScope.APPLICATION,
@@ -218,9 +218,9 @@ export class ExternalTerminalContribution implements IWorkbenchContribution {
 
 // Register workbench contributions
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 );
 workbenchRegistry.registerWorkbenchContribution(
 	ExternalTerminalContribution,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );

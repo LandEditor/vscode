@@ -3,44 +3,44 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { KeyMod } from "vs/base/common/keyCodes";
+import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
 import { localize } from "vs/nls";
 import {
-	IQuickAccessRegistry,
-	Extensions,
-} from "vs/platform/quickinput/common/quickAccess";
-import { Registry } from "vs/platform/registry/common/platform";
-import { HelpQuickAccessProvider } from "vs/platform/quickinput/browser/helpQuickAccess";
-import {
-	ViewQuickAccessProvider,
-	OpenViewPickerAction,
-	QuickAccessViewPickerAction,
-} from "vs/workbench/contrib/quickaccess/browser/viewQuickAccess";
-import {
-	CommandsQuickAccessProvider,
-	ShowAllCommandsAction,
-	ClearCommandHistoryAction,
-} from "vs/workbench/contrib/quickaccess/browser/commandsQuickAccess";
-import {
-	MenuRegistry,
 	MenuId,
+	MenuRegistry,
 	registerAction2,
 } from "vs/platform/actions/common/actions";
-import { KeyMod } from "vs/base/common/keyCodes";
 import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
 import {
-	inQuickPickContext,
+	KeybindingWeight,
+	KeybindingsRegistry,
+} from "vs/platform/keybinding/common/keybindingsRegistry";
+import { HelpQuickAccessProvider } from "vs/platform/quickinput/browser/helpQuickAccess";
+import {
+	Extensions,
+	IQuickAccessRegistry,
+} from "vs/platform/quickinput/common/quickAccess";
+import { Registry } from "vs/platform/registry/common/platform";
+import {
 	getQuickNavigateHandler,
+	inQuickPickContext,
 } from "vs/workbench/browser/quickaccess";
 import {
-	KeybindingsRegistry,
-	KeybindingWeight,
-} from "vs/platform/keybinding/common/keybindingsRegistry";
-import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
+	ClearCommandHistoryAction,
+	CommandsQuickAccessProvider,
+	ShowAllCommandsAction,
+} from "vs/workbench/contrib/quickaccess/browser/commandsQuickAccess";
+import {
+	OpenViewPickerAction,
+	QuickAccessViewPickerAction,
+	ViewQuickAccessProvider,
+} from "vs/workbench/contrib/quickaccess/browser/viewQuickAccess";
 
 //#region Quick Access Proviers
 
 const quickAccessRegistry = Registry.as<IQuickAccessRegistry>(
-	Extensions.Quickaccess
+	Extensions.Quickaccess,
 );
 
 quickAccessRegistry.registerQuickAccessProvider({
@@ -49,13 +49,13 @@ quickAccessRegistry.registerQuickAccessProvider({
 	placeholder: localize(
 		"helpQuickAccessPlaceholder",
 		"Type '{0}' to get help on the actions you can take from here.",
-		HelpQuickAccessProvider.PREFIX
+		HelpQuickAccessProvider.PREFIX,
 	),
 	helpEntries: [
 		{
 			description: localize(
 				"helpQuickAccess",
-				"Show all Quick Access Providers"
+				"Show all Quick Access Providers",
 			),
 			commandCenterOrder: 70,
 			commandCenterLabel: localize("more", "More"),
@@ -69,7 +69,7 @@ quickAccessRegistry.registerQuickAccessProvider({
 	contextKey: "inViewsPicker",
 	placeholder: localize(
 		"viewQuickAccessPlaceholder",
-		"Type the name of a view, output channel or terminal to open."
+		"Type the name of a view, output channel or terminal to open.",
 	),
 	helpEntries: [
 		{
@@ -85,13 +85,13 @@ quickAccessRegistry.registerQuickAccessProvider({
 	contextKey: "inCommandsPicker",
 	placeholder: localize(
 		"commandsQuickAccessPlaceholder",
-		"Type the name of a command to run."
+		"Type the name of a command to run.",
 	),
 	helpEntries: [
 		{
 			description: localize(
 				"commandsQuickAccess",
-				"Show and Run Commands"
+				"Show and Run Commands",
 			),
 			commandId: ShowAllCommandsAction.ID,
 			commandCenterOrder: 20,
@@ -109,7 +109,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarViewMenu, {
 		id: ShowAllCommandsAction.ID,
 		title: localize(
 			{ key: "miCommandPalette", comment: ["&& denotes a mnemonic"] },
-			"&&Command Palette..."
+			"&&Command Palette...",
 		),
 	},
 	order: 1,
@@ -121,7 +121,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarHelpMenu, {
 		id: ShowAllCommandsAction.ID,
 		title: localize(
 			{ key: "miShowAllCommands", comment: ["&& denotes a mnemonic"] },
-			"Show All Commands"
+			"Show All Commands",
 		),
 	},
 	order: 2,
@@ -133,7 +133,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarViewMenu, {
 		id: OpenViewPickerAction.ID,
 		title: localize(
 			{ key: "miOpenView", comment: ["&& denotes a mnemonic"] },
-			"&&Open View..."
+			"&&Open View...",
 		),
 	},
 	order: 2,
@@ -145,7 +145,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarGoMenu, {
 		id: "workbench.action.gotoLine",
 		title: localize(
 			{ key: "miGotoLine", comment: ["&& denotes a mnemonic"] },
-			"Go to &&Line/Column..."
+			"Go to &&Line/Column...",
 		),
 	},
 	order: 1,
@@ -182,7 +182,7 @@ registerAction2(QuickAccessViewPickerAction);
 const inViewsPickerContextKey = "inViewsPicker";
 const inViewsPickerContext = ContextKeyExpr.and(
 	inQuickPickContext,
-	ContextKeyExpr.has(inViewsPickerContextKey)
+	ContextKeyExpr.has(inViewsPickerContextKey),
 );
 const viewPickerKeybinding = QuickAccessViewPickerAction.KEYBINDING;
 
@@ -193,7 +193,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	weight: KeybindingWeight.WorkbenchContrib + 50,
 	handler: getQuickNavigateHandler(
 		quickAccessNavigateNextInViewPickerId,
-		true
+		true,
 	),
 	when: inViewsPickerContext,
 	primary: viewPickerKeybinding.primary,
@@ -208,7 +208,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	weight: KeybindingWeight.WorkbenchContrib + 50,
 	handler: getQuickNavigateHandler(
 		quickAccessNavigatePreviousInViewPickerId,
-		false
+		false,
 	),
 	when: inViewsPickerContext,
 	primary: viewPickerKeybinding.primary | KeyMod.Shift,

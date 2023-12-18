@@ -3,14 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "./menuPreventer";
 import "./accessibility/accessibility";
 import "./diffEditorHelper";
 import "./editorFeatures";
+import "./editorLineNumberMenu";
 import "./editorSettingsMigration";
+import "./emptyTextEditorHint/emptyTextEditorHint";
+import "./inspectEditorTokens/inspectEditorTokens";
 import "./inspectKeybindings";
 import "./largeFileOptimizations";
-import "./inspectEditorTokens/inspectEditorTokens";
+import "./menuPreventer";
 import "./quickaccess/gotoLineQuickAccess";
 import "./quickaccess/gotoSymbolQuickAccess";
 import "./saveParticipants";
@@ -20,6 +22,4 @@ import "./toggleMultiCursorModifier";
 import "./toggleRenderControlCharacter";
 import "./toggleRenderWhitespace";
 import "./toggleWordWrap";
-import "./emptyTextEditorHint/emptyTextEditorHint";
 import "./workbenchReferenceSearch";
-import "./editorLineNumberMenu";

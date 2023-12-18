@@ -4,31 +4,31 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from "vscode";
+import { DocumentSelector } from "../configuration/documentSelector";
 import type * as Proto from "../tsServer/protocol/protocol";
+import * as typeConverters from "../typeConverters";
 import {
 	ClientCapability,
 	ITypeScriptServiceClient,
 	ServerType,
 } from "../typescriptService";
+import FileConfigurationManager from "./fileConfigurationManager";
 import {
 	conditionalRegistration,
 	requireSomeCapability,
 } from "./util/dependentRegistration";
-import { DocumentSelector } from "../configuration/documentSelector";
 import { documentationToMarkdown } from "./util/textRendering";
-import * as typeConverters from "../typeConverters";
-import FileConfigurationManager from "./fileConfigurationManager";
 
 class TypeScriptHoverProvider implements vscode.HoverProvider {
 	public constructor(
 		private readonly client: ITypeScriptServiceClient,
-		private readonly fileConfigurationManager: FileConfigurationManager
+		private readonly fileConfigurationManager: FileConfigurationManager,
 	) {}
 
 	public async provideHover(
 		document: vscode.TextDocument,
 		position: vscode.Position,
-		token: vscode.CancellationToken
+		token: vscode.CancellationToken,
 	): Promise<vscode.Hover | undefined> {
 		const filepath = this.client.toOpenTsFilePath(document);
 		if (!filepath) {
@@ -38,12 +38,12 @@ class TypeScriptHoverProvider implements vscode.HoverProvider {
 		const response = await this.client.interruptGetErr(async () => {
 			await this.fileConfigurationManager.ensureConfigurationForDocument(
 				document,
-				token
+				token,
 			);
 
 			const args = typeConverters.Position.toFileLocationRequestArgs(
 				filepath,
-				position
+				position,
 			);
 			return this.client.execute("quickinfo", args, token);
 		});
@@ -54,14 +54,14 @@ class TypeScriptHoverProvider implements vscode.HoverProvider {
 
 		return new vscode.Hover(
 			this.getContents(document.uri, response.body, response._serverType),
-			typeConverters.Range.fromTextSpan(response.body)
+			typeConverters.Range.fromTextSpan(response.body),
 		);
 	}
 
 	private getContents(
 		resource: vscode.Uri,
 		data: Proto.QuickInfoResponseBody,
-		source: ServerType | undefined
+		source: ServerType | undefined,
 	) {
 		const parts: vscode.MarkdownString[] = [];
 
@@ -72,7 +72,7 @@ class TypeScriptHoverProvider implements vscode.HoverProvider {
 				source === ServerType.Syntax &&
 				this.client.hasCapabilityForResource(
 					resource,
-					ClientCapability.Semantic
+					ClientCapability.Semantic,
 				)
 			) {
 				displayParts.push(
@@ -81,7 +81,7 @@ class TypeScriptHoverProvider implements vscode.HoverProvider {
 						comment: [
 							"Prefix displayed for hover entries while the server is still loading",
 						],
-					})
+					}),
 				);
 			}
 
@@ -89,15 +89,15 @@ class TypeScriptHoverProvider implements vscode.HoverProvider {
 			parts.push(
 				new vscode.MarkdownString().appendCodeblock(
 					displayParts.join(" "),
-					"typescript"
-				)
+					"typescript",
+				),
 			);
 		}
 		const md = documentationToMarkdown(
 			data.documentation,
 			data.tags,
 			this.client,
-			resource
+			resource,
 		);
 		parts.push(md);
 		return parts;
@@ -107,21 +107,21 @@ class TypeScriptHoverProvider implements vscode.HoverProvider {
 export function register(
 	selector: DocumentSelector,
 	client: ITypeScriptServiceClient,
-	fileConfigurationManager: FileConfigurationManager
+	fileConfigurationManager: FileConfigurationManager,
 ): vscode.Disposable {
 	return conditionalRegistration(
 		[
 			requireSomeCapability(
 				client,
 				ClientCapability.EnhancedSyntax,
-				ClientCapability.Semantic
+				ClientCapability.Semantic,
 			),
 		],
 		() => {
 			return vscode.languages.registerHoverProvider(
 				selector.syntax,
-				new TypeScriptHoverProvider(client, fileConfigurationManager)
+				new TypeScriptHoverProvider(client, fileConfigurationManager),
 			);
-		}
+		},
 	);
 }

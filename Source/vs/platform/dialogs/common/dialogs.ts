@@ -4,19 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Event } from "vs/base/common/event";
-import { ThemeIcon } from "vs/base/common/themables";
 import { IMarkdownString } from "vs/base/common/htmlContent";
+import { mnemonicButtonLabel } from "vs/base/common/labels";
+import { deepClone } from "vs/base/common/objects";
+import { isLinux, isMacintosh, isWindows } from "vs/base/common/platform";
 import { basename } from "vs/base/common/resources";
 import Severity from "vs/base/common/severity";
+import { ThemeIcon } from "vs/base/common/themables";
 import { URI } from "vs/base/common/uri";
+import { MessageBoxOptions } from "vs/base/parts/sandbox/common/electronTypes";
 import { localize } from "vs/nls";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { ITelemetryData } from "vs/platform/telemetry/common/telemetry";
-import { MessageBoxOptions } from "vs/base/parts/sandbox/common/electronTypes";
-import { mnemonicButtonLabel } from "vs/base/common/labels";
-import { isLinux, isMacintosh, isWindows } from "vs/base/common/platform";
 import { IProductService } from "vs/platform/product/common/productService";
-import { deepClone } from "vs/base/common/objects";
+import { ITelemetryData } from "vs/platform/telemetry/common/telemetry";
 
 export interface IDialogArgs {
 	readonly confirmArgs?: IConfirmDialogArgs;
@@ -304,8 +304,8 @@ export interface IDialogHandler {
 
 enum DialogKind {
 	Confirmation = 1,
-	Prompt,
-	Input,
+	Prompt = 2,
+	Input = 3,
 }
 
 export abstract class AbstractDialogHandler implements IDialogHandler {
@@ -323,16 +323,16 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
 
 	private getButtons(
 		dialog: IConfirmation,
-		kind: DialogKind.Confirmation
+		kind: DialogKind.Confirmation,
 	): string[];
 	private getButtons(
 		dialog: IPrompt<unknown>,
-		kind: DialogKind.Prompt
+		kind: DialogKind.Prompt,
 	): string[];
 	private getButtons(dialog: IInput, kind: DialogKind.Input): string[];
 	private getButtons(
 		dialog: IConfirmation | IInput | IPrompt<unknown>,
-		kind: DialogKind
+		kind: DialogKind,
 	): string[] {
 		// We put buttons in the order of "default" button first and "cancel"
 		// button last. There maybe later processing when presenting the buttons
@@ -353,8 +353,8 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
 								key: "yesButton",
 								comment: ["&& denotes a mnemonic"],
 							},
-							"&&Yes"
-						)
+							"&&Yes",
+						),
 					);
 				}
 
@@ -374,7 +374,7 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
 					promptDialog.buttons.length > 0
 				) {
 					buttons.push(
-						...promptDialog.buttons.map((button) => button.label)
+						...promptDialog.buttons.map((button) => button.label),
 					);
 				}
 
@@ -383,12 +383,10 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
 						buttons.push(localize("cancelButton", "Cancel"));
 					} else if (typeof promptDialog.cancelButton === "string") {
 						buttons.push(promptDialog.cancelButton);
+					} else if (promptDialog.cancelButton.label) {
+						buttons.push(promptDialog.cancelButton.label);
 					} else {
-						if (promptDialog.cancelButton.label) {
-							buttons.push(promptDialog.cancelButton.label);
-						} else {
-							buttons.push(localize("cancelButton", "Cancel"));
-						}
+						buttons.push(localize("cancelButton", "Cancel"));
 					}
 				}
 
@@ -399,8 +397,8 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
 								key: "okButton",
 								comment: ["&& denotes a mnemonic"],
 							},
-							"&&OK"
-						)
+							"&&OK",
+						),
 					);
 				}
 
@@ -418,8 +416,8 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
 								key: "okButton",
 								comment: ["&& denotes a mnemonic"],
 							},
-							"&&OK"
-						)
+							"&&OK",
+						),
 					);
 				}
 
@@ -437,7 +435,7 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
 	}
 
 	protected getDialogType(
-		type: Severity | DialogType | undefined
+		type: Severity | DialogType | undefined,
 	): DialogType | undefined {
 		if (typeof type === "string") {
 			return type;
@@ -447,10 +445,10 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
 			return type === Severity.Info
 				? "info"
 				: type === Severity.Error
-					? "error"
-					: type === Severity.Warning
-						? "warning"
-						: "none";
+				  ? "error"
+				  : type === Severity.Warning
+					  ? "warning"
+					  : "none";
 		}
 
 		return undefined;
@@ -459,7 +457,7 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
 	protected getPromptResult<T>(
 		prompt: IPrompt<T>,
 		buttonIndex: number,
-		checkboxChecked: boolean | undefined
+		checkboxChecked: boolean | undefined,
 	): IAsyncPromptResult<T> {
 		const promptButtons: IPromptBaseButton<T>[] = [
 			...(prompt.buttons ?? []),
@@ -521,7 +519,7 @@ export interface IDialogService {
 	 * from the provided `IPromptButton<T>` or `undefined`.
 	 */
 	prompt<T>(
-		prompt: IPromptWithCustomCancel<T>
+		prompt: IPromptWithCustomCancel<T>,
 	): Promise<IPromptResultWithCancel<T>>;
 	prompt<T>(prompt: IPromptWithDefaultCancel<T>): Promise<IPromptResult<T>>;
 	prompt<T>(prompt: IPrompt<T>): Promise<IPromptResult<T>>;
@@ -607,7 +605,7 @@ export interface IFileDialogService {
 	 */
 	pickFileToSave(
 		defaultUri: URI,
-		availableFileSystems?: string[]
+		availableFileSystems?: string[],
 	): Promise<URI | undefined>;
 
 	/**
@@ -626,7 +624,7 @@ export interface IFileDialogService {
 	 * Shows a confirm dialog for saving 1-N files.
 	 */
 	showSaveConfirm(
-		fileNamesOrResources: (string | URI)[]
+		fileNamesOrResources: (string | URI)[],
 	): Promise<ConfirmResult>;
 
 	/**
@@ -635,15 +633,15 @@ export interface IFileDialogService {
 	showOpenDialog(options: IOpenDialogOptions): Promise<URI[] | undefined>;
 }
 
-export const enum ConfirmResult {
-	SAVE,
-	DONT_SAVE,
-	CANCEL,
+export enum ConfirmResult {
+	SAVE = 0,
+	DONT_SAVE = 1,
+	CANCEL = 2,
 }
 
 const MAX_CONFIRM_FILES = 10;
 export function getFileNamesMessage(
-	fileNamesOrResources: readonly (string | URI)[]
+	fileNamesOrResources: readonly (string | URI)[],
 ): string {
 	const message: string[] = [];
 	message.push(
@@ -652,22 +650,22 @@ export function getFileNamesMessage(
 			.map((fileNameOrResource) =>
 				typeof fileNameOrResource === "string"
 					? fileNameOrResource
-					: basename(fileNameOrResource)
-			)
+					: basename(fileNameOrResource),
+			),
 	);
 
 	if (fileNamesOrResources.length > MAX_CONFIRM_FILES) {
 		if (fileNamesOrResources.length - MAX_CONFIRM_FILES === 1) {
 			message.push(
-				localize("moreFile", "...1 additional file not shown")
+				localize("moreFile", "...1 additional file not shown"),
 			);
 		} else {
 			message.push(
 				localize(
 					"moreFiles",
 					"...{0} additional files not shown",
-					fileNamesOrResources.length - MAX_CONFIRM_FILES
-				)
+					fileNamesOrResources.length - MAX_CONFIRM_FILES,
+				),
 			);
 		}
 	}
@@ -706,12 +704,12 @@ export interface IMassagedMessageBoxOptions {
  */
 export function massageMessageBoxOptions(
 	options: MessageBoxOptions,
-	productService: IProductService
+	productService: IProductService,
 ): IMassagedMessageBoxOptions {
 	const massagedOptions = deepClone(options);
 
 	let buttons = (massagedOptions.buttons ?? []).map((button) =>
-		mnemonicButtonLabel(button)
+		mnemonicButtonLabel(button),
 	);
 	let buttonIndeces = (options.buttons || []).map((button, index) => index);
 

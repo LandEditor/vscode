@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { FileSystemProvider } from "../requests";
 import { URI as Uri } from "vscode-uri";
+import { FileSystemProvider } from "../requests";
 
 import * as fs from "fs";
 import { FileType } from "vscode-css-languageservice";
@@ -72,7 +72,7 @@ export function getNodeFileFS(): FileSystemProvider {
 							} else {
 								return [stat.name, FileType.Unknown];
 							}
-						})
+						}),
 					);
 				});
 			});

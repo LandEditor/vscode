@@ -9,8 +9,8 @@ import { URI } from "vs/base/common/uri";
 import { IDownloadService } from "vs/platform/download/common/download";
 import { IFileService } from "vs/platform/files/common/files";
 import {
-	asTextOrError,
 	IRequestService,
+	asTextOrError,
 } from "vs/platform/request/common/request";
 
 export class DownloadService implements IDownloadService {
@@ -24,7 +24,7 @@ export class DownloadService implements IDownloadService {
 	async download(
 		resource: URI,
 		target: URI,
-		cancellationToken: CancellationToken = CancellationToken.None
+		cancellationToken: CancellationToken = CancellationToken.None,
 	): Promise<void> {
 		if (
 			resource.scheme === Schemas.file ||
@@ -37,14 +37,14 @@ export class DownloadService implements IDownloadService {
 		const options = { type: "GET", url: resource.toString(true) };
 		const context = await this.requestService.request(
 			options,
-			cancellationToken
+			cancellationToken,
 		);
 		if (context.res.statusCode === 200) {
 			await this.fileService.writeFile(target, context.stream);
 		} else {
 			const message = await asTextOrError(context);
 			throw new Error(
-				`Expected 200, got back ${context.res.statusCode} instead.\n\n${message}`
+				`Expected 200, got back ${context.res.statusCode} instead.\n\n${message}`,
 			);
 		}
 	}

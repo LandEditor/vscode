@@ -7,12 +7,12 @@
 
 import type * as vscode from "vscode";
 
-import { ExtHostSecretState } from "vs/workbench/api/common/extHostSecretState";
+import { Emitter, Event } from "vs/base/common/event";
 import {
 	ExtensionIdentifier,
 	IExtensionDescription,
 } from "vs/platform/extensions/common/extensions";
-import { Emitter, Event } from "vs/base/common/event";
+import { ExtHostSecretState } from "vs/workbench/api/common/extHostSecretState";
 
 export class ExtensionSecrets implements vscode.SecretStorage {
 	protected readonly _id: string;
@@ -24,7 +24,7 @@ export class ExtensionSecrets implements vscode.SecretStorage {
 
 	constructor(
 		extensionDescription: IExtensionDescription,
-		secretState: ExtHostSecretState
+		secretState: ExtHostSecretState,
 	) {
 		this._id = ExtensionIdentifier.toKey(extensionDescription.identifier);
 		this.#secretState = secretState;

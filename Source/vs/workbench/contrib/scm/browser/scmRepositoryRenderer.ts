@@ -3,34 +3,34 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/scm";
+import { $, append } from "vs/base/browser/dom";
+import { IActionViewItemProvider } from "vs/base/browser/ui/actionbar/actionbar";
+import { CountBadge } from "vs/base/browser/ui/countBadge/countBadge";
+import { IListRenderer } from "vs/base/browser/ui/list/list";
+import { ICompressibleTreeRenderer } from "vs/base/browser/ui/tree/objectTree";
+import { ITreeNode } from "vs/base/browser/ui/tree/tree";
+import { IAction } from "vs/base/common/actions";
+import { FuzzyScore } from "vs/base/common/filters";
 import {
-	IDisposable,
 	DisposableStore,
+	IDisposable,
 	combinedDisposable,
 	toDisposable,
 } from "vs/base/common/lifecycle";
-import { append, $ } from "vs/base/browser/dom";
+import "vs/css!./media/scm";
+import { WorkbenchToolBar } from "vs/platform/actions/browser/toolbar";
+import { IMenuService, MenuId } from "vs/platform/actions/common/actions";
+import { ICommandService } from "vs/platform/commands/common/commands";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { defaultCountBadgeStyles } from "vs/platform/theme/browser/defaultStyles";
 import {
 	ISCMRepository,
 	ISCMViewService,
 } from "vs/workbench/contrib/scm/common/scm";
-import { CountBadge } from "vs/base/browser/ui/countBadge/countBadge";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import { IAction } from "vs/base/common/actions";
-import { connectPrimaryMenu, isSCMRepository, StatusBarAction } from "./util";
-import { ITreeNode } from "vs/base/browser/ui/tree/tree";
-import { ICompressibleTreeRenderer } from "vs/base/browser/ui/tree/objectTree";
-import { FuzzyScore } from "vs/base/common/filters";
-import { IListRenderer } from "vs/base/browser/ui/list/list";
-import { IActionViewItemProvider } from "vs/base/browser/ui/actionbar/actionbar";
-import { defaultCountBadgeStyles } from "vs/platform/theme/browser/defaultStyles";
-import { WorkbenchToolBar } from "vs/platform/actions/browser/toolbar";
-import { IMenuService, MenuId } from "vs/platform/actions/common/actions";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { StatusBarAction, connectPrimaryMenu, isSCMRepository } from "./util";
 
 interface RepositoryTemplate {
 	readonly label: HTMLElement;
@@ -74,7 +74,7 @@ export class RepositoryRenderer
 		if (container.classList.contains("monaco-tl-contents")) {
 			(
 				container.parentElement!.parentElement!.querySelector(
-					".monaco-tl-twistie"
+					".monaco-tl-twistie",
 				)! as HTMLElement
 			).classList.add("force-twistie");
 		}
@@ -94,21 +94,21 @@ export class RepositoryRenderer
 			this.contextKeyService,
 			this.contextMenuService,
 			this.keybindingService,
-			this.telemetryService
+			this.telemetryService,
 		);
 		const countContainer = append(provider, $(".count"));
 		const count = new CountBadge(
 			countContainer,
 			{},
-			defaultCountBadgeStyles
+			defaultCountBadgeStyles,
 		);
 		const visibilityDisposable = toolBar.onDidChangeDropdownVisibility(
-			(e) => provider.classList.toggle("active", e)
+			(e) => provider.classList.toggle("active", e),
 		);
 
 		const templateDisposable = combinedDisposable(
 			visibilityDisposable,
-			toolBar
+			toolBar,
 		);
 
 		return {
@@ -127,7 +127,7 @@ export class RepositoryRenderer
 		arg: ISCMRepository | ITreeNode<ISCMRepository, FuzzyScore>,
 		index: number,
 		templateData: RepositoryTemplate,
-		height: number | undefined
+		height: number | undefined,
 	): void {
 		const repository = isSCMRepository(arg) ? arg : arg.element;
 
@@ -146,21 +146,21 @@ export class RepositoryRenderer
 		const updateToolbar = () => {
 			templateData.toolBar.setActions(
 				[...statusPrimaryActions, ...menuPrimaryActions],
-				menuSecondaryActions
+				menuSecondaryActions,
 			);
 		};
 
 		const onDidChangeProvider = () => {
 			const commands = repository.provider.statusBarCommands || [];
 			statusPrimaryActions = commands.map(
-				(c) => new StatusBarAction(c, this.commandService)
+				(c) => new StatusBarAction(c, this.commandService),
 			);
 			updateToolbar();
 
 			const count = repository.provider.count || 0;
 			templateData.countContainer.setAttribute(
 				"data-count",
-				String(count)
+				String(count),
 			);
 			templateData.count.setCount(count);
 		};
@@ -168,7 +168,7 @@ export class RepositoryRenderer
 		// TODO@joao TODO@lszomoru
 		let disposed = false;
 		templateData.elementDisposables.add(
-			toDisposable(() => (disposed = true))
+			toDisposable(() => (disposed = true)),
 		);
 		templateData.elementDisposables.add(
 			repository.provider.onDidChange(() => {
@@ -177,13 +177,13 @@ export class RepositoryRenderer
 				}
 
 				onDidChangeProvider();
-			})
+			}),
 		);
 
 		onDidChangeProvider();
 
 		const repositoryMenus = this.scmViewService.menus.getRepositoryMenus(
-			repository.provider
+			repository.provider,
 		);
 		const menu =
 			this.toolbarMenuId === MenuId.SCMTitle
@@ -194,7 +194,7 @@ export class RepositoryRenderer
 				menuPrimaryActions = primary;
 				menuSecondaryActions = secondary;
 				updateToolbar();
-			})
+			}),
 		);
 		templateData.toolBar.context = repository.provider;
 	}
@@ -206,7 +206,7 @@ export class RepositoryRenderer
 	disposeElement(
 		group: ISCMRepository | ITreeNode<ISCMRepository, FuzzyScore>,
 		index: number,
-		template: RepositoryTemplate
+		template: RepositoryTemplate,
 	): void {
 		template.elementDisposables.clear();
 	}

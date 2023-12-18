@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Emitter, Event } from "vs/base/common/event";
+import { DisposableStore } from "vs/base/common/lifecycle";
 import { IStorageDatabase } from "vs/base/parts/storage/common/storage";
 import {
 	InstantiationType,
@@ -11,27 +12,26 @@ import {
 } from "vs/platform/instantiation/common/extensions";
 import { ILogService } from "vs/platform/log/common/log";
 import {
+	IProfileStorageValueChangeEvent,
+	IStorageService,
+	StorageScope,
+	isProfileUsingDefaultStorage,
+} from "vs/platform/storage/common/storage";
+import { IUserDataProfile } from "vs/platform/userDataProfile/common/userDataProfile";
+import {
 	AbstractUserDataProfileStorageService,
 	IProfileStorageChanges,
 	IUserDataProfileStorageService,
 } from "vs/platform/userDataProfile/common/userDataProfileStorageService";
-import {
-	IProfileStorageValueChangeEvent,
-	isProfileUsingDefaultStorage,
-	IStorageService,
-	StorageScope,
-} from "vs/platform/storage/common/storage";
-import { IUserDataProfile } from "vs/platform/userDataProfile/common/userDataProfile";
 import { IndexedDBStorageDatabase } from "vs/workbench/services/storage/browser/storageService";
 import { IUserDataProfileService } from "vs/workbench/services/userDataProfile/common/userDataProfile";
-import { DisposableStore } from "vs/base/common/lifecycle";
 
 export class UserDataProfileStorageService
 	extends AbstractUserDataProfileStorageService
 	implements IUserDataProfileStorageService
 {
 	private readonly _onDidChange = this._register(
-		new Emitter<IProfileStorageChanges>()
+		new Emitter<IProfileStorageChanges>(),
 	);
 	readonly onDidChange: Event<IProfileStorageChanges> =
 		this._onDidChange.event;
@@ -70,7 +70,7 @@ export class UserDataProfileStorageService
 	}
 
 	private onDidChangeStorageValueInCurrentProfile(
-		e: IProfileStorageValueChangeEvent
+		e: IProfileStorageValueChangeEvent,
 	): void {
 		// Not broadcasting changes to other windows/tabs as it is not required in web
 		// Revisit if needed in future.
@@ -86,19 +86,19 @@ export class UserDataProfileStorageService
 	}
 
 	protected createStorageDatabase(
-		profile: IUserDataProfile
+		profile: IUserDataProfile,
 	): Promise<IStorageDatabase> {
 		return isProfileUsingDefaultStorage(profile)
 			? IndexedDBStorageDatabase.createApplicationStorage(this.logService)
 			: IndexedDBStorageDatabase.createProfileStorage(
 					profile,
-					this.logService
-				);
+					this.logService,
+			  );
 	}
 }
 
 registerSingleton(
 	IUserDataProfileStorageService,
 	UserDataProfileStorageService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

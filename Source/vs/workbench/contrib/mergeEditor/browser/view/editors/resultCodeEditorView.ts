@@ -10,10 +10,10 @@ import { CompareResult } from "vs/base/common/arrays";
 import { BugIndicatingError } from "vs/base/common/errors";
 import { toDisposable } from "vs/base/common/lifecycle";
 import {
+	IObservable,
 	autorun,
 	autorunWithStore,
 	derived,
-	IObservable,
 } from "vs/base/common/observable";
 import {
 	IModelDeltaDecoration,
@@ -40,8 +40,8 @@ import { MergeEditorViewModel } from "vs/workbench/contrib/mergeEditor/browser/v
 import { ctxIsMergeResultEditor } from "vs/workbench/contrib/mergeEditor/common/mergeEditor";
 import {
 	CodeEditorView,
-	createSelectionsAutorun,
 	TitleMenu,
+	createSelectionsAutorun,
 } from "./codeEditorView";
 
 export class ResultCodeEditorView extends CodeEditorView {
@@ -204,8 +204,8 @@ export class ResultCodeEditorView extends CodeEditorView {
 					? CompareResult.neitherLessOrGreaterThan
 					: LineRange.compareByStart(
 							baseRange.baseRange,
-							diff.inputRange
-						)
+							diff.inputRange,
+					  ),
 		);
 
 		const activeModifiedBaseRange =
@@ -250,7 +250,7 @@ export class ResultCodeEditorView extends CodeEditorView {
 
 				const range = model.getLineRangeInResult(
 					modifiedBaseRange.baseRange,
-					reader
+					reader,
 				);
 				result.push({
 					range: range.toInclusiveRangeOrEmpty(),
@@ -277,7 +277,7 @@ export class ResultCodeEditorView extends CodeEditorView {
 											? handledConflictMinimapOverViewRulerColor
 											: unhandledConflictMinimapOverViewRulerColor,
 									},
-								}
+							  }
 							: undefined,
 					},
 				});

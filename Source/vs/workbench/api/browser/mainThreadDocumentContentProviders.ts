@@ -3,19 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { CancellationTokenSource } from "vs/base/common/cancellation";
 import { onUnexpectedError } from "vs/base/common/errors";
-import { dispose, DisposableMap } from "vs/base/common/lifecycle";
+import { DisposableMap, dispose } from "vs/base/common/lifecycle";
 import { URI, UriComponents } from "vs/base/common/uri";
 import { EditOperation } from "vs/editor/common/core/editOperation";
 import { Range } from "vs/editor/common/core/range";
+import { ILanguageService } from "vs/editor/common/languages/language";
 import { ITextModel } from "vs/editor/common/model";
 import { IEditorWorkerService } from "vs/editor/common/services/editorWorker";
 import { IModelService } from "vs/editor/common/services/model";
-import { ILanguageService } from "vs/editor/common/languages/language";
 import { ITextModelService } from "vs/editor/common/services/resolverService";
 import {
-	extHostNamedCustomer,
 	IExtHostContext,
+	extHostNamedCustomer,
 } from "vs/workbench/services/extensions/common/extHostCustomers";
 import {
 	ExtHostContext,
@@ -23,7 +24,6 @@ import {
 	MainContext,
 	MainThreadDocumentContentProvidersShape,
 } from "../common/extHost.protocol";
-import { CancellationTokenSource } from "vs/base/common/cancellation";
 
 @extHostNamedCustomer(MainContext.MainThreadDocumentContentProviders)
 export class MainThreadDocumentContentProviders
@@ -61,7 +61,7 @@ export class MainThreadDocumentContentProviders
 				scheme,
 				{
 					provideTextContent: (
-						uri: URI
+						uri: URI,
 					): Promise<ITextModel | null> => {
 						return this._proxy
 							.$provideTextDocumentContent(handle, uri)
@@ -69,23 +69,23 @@ export class MainThreadDocumentContentProviders
 								if (typeof value === "string") {
 									const firstLineText = value.substr(
 										0,
-										1 + value.search(/\r?\n/)
+										1 + value.search(/\r?\n/),
 									);
 									const languageSelection =
 										this._languageService.createByFilepathOrFirstLine(
 											uri,
-											firstLineText
+											firstLineText,
 										);
 									return this._modelService.createModel(
 										value,
 										languageSelection,
-										uri
+										uri,
 									);
 								}
 								return null;
 							});
 					},
-				}
+				},
 			);
 		this._resourceContentProvider.set(handle, registration);
 	}
@@ -96,7 +96,7 @@ export class MainThreadDocumentContentProviders
 
 	async $onVirtualDocumentChange(
 		uri: UriComponents,
-		value: string
+		value: string,
 	): Promise<void> {
 		const model = this._modelService.getModel(URI.revive(uri));
 		if (!model) {
@@ -115,7 +115,7 @@ export class MainThreadDocumentContentProviders
 			const edits =
 				await this._editorWorkerService.computeMoreMinimalEdits(
 					model.uri,
-					[{ text: value, range: model.getFullModelRange() }]
+					[{ text: value, range: model.getFullModelRange() }],
 				);
 
 			// remove token
@@ -129,8 +129,11 @@ export class MainThreadDocumentContentProviders
 				// use the evil-edit as these models show in readonly-editor only
 				model.applyEdits(
 					edits.map((edit) =>
-						EditOperation.replace(Range.lift(edit.range), edit.text)
-					)
+						EditOperation.replace(
+							Range.lift(edit.range),
+							edit.text,
+						),
+					),
 				);
 			}
 		} catch (error) {

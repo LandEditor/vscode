@@ -3,81 +3,81 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Codicon } from "vs/base/common/codicons";
 import { localize } from "vs/nls";
-import { Registry } from "vs/platform/registry/common/platform";
 import {
-	MenuRegistry,
 	MenuId,
+	MenuRegistry,
 	registerAction2,
 } from "vs/platform/actions/common/actions";
-import {
-	IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
-	IWorkbenchContribution,
-} from "vs/workbench/common/contributions";
-import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
 import { CommandsRegistry } from "vs/platform/commands/common/commands";
-import {
-	ServicesAccessor,
-	IInstantiationService,
-} from "vs/platform/instantiation/common/instantiation";
-import {
-	EditorPaneDescriptor,
-	IEditorPaneRegistry,
-} from "vs/workbench/browser/editor";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
-import {
-	RuntimeExtensionsEditor,
-	StartExtensionHostProfileAction,
-	StopExtensionHostProfileAction,
-	CONTEXT_PROFILE_SESSION_STATE,
-	CONTEXT_EXTENSION_HOST_PROFILE_RECORDED,
-	SaveExtensionHostProfileAction,
-	IExtensionHostProfileService,
-} from "vs/workbench/contrib/extensions/electron-sandbox/runtimeExtensionsEditor";
-import { DebugExtensionHostAction } from "vs/workbench/contrib/extensions/electron-sandbox/debugExtensionHostAction";
-import {
-	IEditorSerializer,
-	IEditorFactoryRegistry,
-	EditorExtensions,
-} from "vs/workbench/common/editor";
-import { ActiveEditorContext } from "vs/workbench/common/contextkeys";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import { RuntimeExtensionsInput } from "vs/workbench/contrib/extensions/common/runtimeExtensionsInput";
 import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
-import {
-	CleanUpExtensionsFolderAction,
-	OpenExtensionsFolderAction,
-} from "vs/workbench/contrib/extensions/electron-sandbox/extensionsActions";
 import { IExtensionRecommendationNotificationService } from "vs/platform/extensionRecommendations/common/extensionRecommendations";
-import { ISharedProcessService } from "vs/platform/ipc/electron-sandbox/services";
 import { ExtensionRecommendationNotificationServiceChannel } from "vs/platform/extensionRecommendations/common/extensionRecommendationsIpc";
-import { Codicon } from "vs/base/common/codicons";
-import { RemoteExtensionsInitializerContribution } from "vs/workbench/contrib/extensions/electron-sandbox/remoteExtensionsInit";
+import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
+import {
+	IInstantiationService,
+	ServicesAccessor,
+} from "vs/platform/instantiation/common/instantiation";
+import { ISharedProcessService } from "vs/platform/ipc/electron-sandbox/services";
+import { Registry } from "vs/platform/registry/common/platform";
+import {
+	EditorPaneDescriptor,
+	IEditorPaneRegistry,
+} from "vs/workbench/browser/editor";
+import { ActiveEditorContext } from "vs/workbench/common/contextkeys";
+import {
+	Extensions as WorkbenchExtensions,
+	IWorkbenchContribution,
+	IWorkbenchContributionsRegistry,
+} from "vs/workbench/common/contributions";
+import {
+	EditorExtensions,
+	IEditorFactoryRegistry,
+	IEditorSerializer,
+} from "vs/workbench/common/editor";
+import { EditorInput } from "vs/workbench/common/editor/editorInput";
+import { RuntimeExtensionsInput } from "vs/workbench/contrib/extensions/common/runtimeExtensionsInput";
+import { DebugExtensionHostAction } from "vs/workbench/contrib/extensions/electron-sandbox/debugExtensionHostAction";
 import { ExtensionHostProfileService } from "vs/workbench/contrib/extensions/electron-sandbox/extensionProfileService";
+import {
+	CleanUpExtensionsFolderAction,
+	OpenExtensionsFolderAction,
+} from "vs/workbench/contrib/extensions/electron-sandbox/extensionsActions";
 import { ExtensionsAutoProfiler } from "vs/workbench/contrib/extensions/electron-sandbox/extensionsAutoProfiler";
+import { RemoteExtensionsInitializerContribution } from "vs/workbench/contrib/extensions/electron-sandbox/remoteExtensionsInit";
+import {
+	CONTEXT_EXTENSION_HOST_PROFILE_RECORDED,
+	CONTEXT_PROFILE_SESSION_STATE,
+	IExtensionHostProfileService,
+	RuntimeExtensionsEditor,
+	SaveExtensionHostProfileAction,
+	StartExtensionHostProfileAction,
+	StopExtensionHostProfileAction,
+} from "vs/workbench/contrib/extensions/electron-sandbox/runtimeExtensionsEditor";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 // Singletons
 registerSingleton(
 	IExtensionHostProfileService,
 	ExtensionHostProfileService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 
 // Running Extensions Editor
 Registry.as<IEditorPaneRegistry>(
-	EditorExtensions.EditorPane
+	EditorExtensions.EditorPane,
 ).registerEditorPane(
 	EditorPaneDescriptor.create(
 		RuntimeExtensionsEditor,
 		RuntimeExtensionsEditor.ID,
-		localize("runtimeExtension", "Running Extensions")
+		localize("runtimeExtension", "Running Extensions"),
 	),
-	[new SyncDescriptor(RuntimeExtensionsInput)]
+	[new SyncDescriptor(RuntimeExtensionsInput)],
 );
 
 class RuntimeExtensionsInputSerializer implements IEditorSerializer {
@@ -93,10 +93,10 @@ class RuntimeExtensionsInputSerializer implements IEditorSerializer {
 }
 
 Registry.as<IEditorFactoryRegistry>(
-	EditorExtensions.EditorFactory
+	EditorExtensions.EditorFactory,
 ).registerEditorSerializer(
 	RuntimeExtensionsInput.ID,
-	RuntimeExtensionsInputSerializer
+	RuntimeExtensionsInputSerializer,
 );
 
 // Global actions
@@ -105,13 +105,13 @@ class ExtensionsContributions implements IWorkbenchContribution {
 	constructor(
 		@IExtensionRecommendationNotificationService
 		extensionRecommendationNotificationService: IExtensionRecommendationNotificationService,
-		@ISharedProcessService sharedProcessService: ISharedProcessService
+		@ISharedProcessService sharedProcessService: ISharedProcessService,
 	) {
 		sharedProcessService.registerChannel(
 			"extensionRecommendationNotification",
 			new ExtensionRecommendationNotificationServiceChannel(
-				extensionRecommendationNotificationService
-			)
+				extensionRecommendationNotificationService,
+			),
 		);
 		registerAction2(OpenExtensionsFolderAction);
 		registerAction2(CleanUpExtensionsFolderAction);
@@ -119,19 +119,19 @@ class ExtensionsContributions implements IWorkbenchContribution {
 }
 
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 );
 workbenchRegistry.registerWorkbenchContribution(
 	ExtensionsContributions,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );
 workbenchRegistry.registerWorkbenchContribution(
 	ExtensionsAutoProfiler,
-	LifecyclePhase.Eventually
+	LifecyclePhase.Eventually,
 );
 workbenchRegistry.registerWorkbenchContribution(
 	RemoteExtensionsInitializerContribution,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );
 // Register Commands
 
@@ -140,7 +140,7 @@ CommandsRegistry.registerCommand(
 	(accessor: ServicesAccessor) => {
 		const instantiationService = accessor.get(IInstantiationService);
 		instantiationService.createInstance(DebugExtensionHostAction).run();
-	}
+	},
 );
 
 CommandsRegistry.registerCommand(
@@ -151,10 +151,10 @@ CommandsRegistry.registerCommand(
 			.createInstance(
 				StartExtensionHostProfileAction,
 				StartExtensionHostProfileAction.ID,
-				StartExtensionHostProfileAction.LABEL
+				StartExtensionHostProfileAction.LABEL,
 			)
 			.run();
-	}
+	},
 );
 
 CommandsRegistry.registerCommand(
@@ -165,10 +165,10 @@ CommandsRegistry.registerCommand(
 			.createInstance(
 				StopExtensionHostProfileAction,
 				StopExtensionHostProfileAction.ID,
-				StopExtensionHostProfileAction.LABEL
+				StopExtensionHostProfileAction.LABEL,
 			)
 			.run();
-	}
+	},
 );
 
 CommandsRegistry.registerCommand(
@@ -179,10 +179,10 @@ CommandsRegistry.registerCommand(
 			.createInstance(
 				SaveExtensionHostProfileAction,
 				SaveExtensionHostProfileAction.ID,
-				SaveExtensionHostProfileAction.LABEL
+				SaveExtensionHostProfileAction.LABEL,
 			)
 			.run();
-	}
+	},
 );
 
 // Running extensions
@@ -206,7 +206,7 @@ MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
 	group: "navigation",
 	when: ContextKeyExpr.and(
 		ActiveEditorContext.isEqualTo(RuntimeExtensionsEditor.ID),
-		CONTEXT_PROFILE_SESSION_STATE.notEqualsTo("running")
+		CONTEXT_PROFILE_SESSION_STATE.notEqualsTo("running"),
 	),
 });
 
@@ -219,7 +219,7 @@ MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
 	group: "navigation",
 	when: ContextKeyExpr.and(
 		ActiveEditorContext.isEqualTo(RuntimeExtensionsEditor.ID),
-		CONTEXT_PROFILE_SESSION_STATE.isEqualTo("running")
+		CONTEXT_PROFILE_SESSION_STATE.isEqualTo("running"),
 	),
 });
 
@@ -232,6 +232,6 @@ MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
 	},
 	group: "navigation",
 	when: ContextKeyExpr.and(
-		ActiveEditorContext.isEqualTo(RuntimeExtensionsEditor.ID)
+		ActiveEditorContext.isEqualTo(RuntimeExtensionsEditor.ID),
 	),
 });

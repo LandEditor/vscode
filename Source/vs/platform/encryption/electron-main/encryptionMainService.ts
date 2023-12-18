@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { safeStorage as safeStorageElectron, app } from "electron";
+import { app, safeStorage as safeStorageElectron } from "electron";
 import { isMacintosh, isWindows } from "vs/base/common/platform";
 import {
-	KnownStorageProvider,
 	IEncryptionMainService,
+	KnownStorageProvider,
 	PasswordStoreCLIOption,
 } from "vs/platform/encryption/common/encryptionService";
 import { ILogService } from "vs/platform/log/common/log";
@@ -53,7 +53,7 @@ export class EncryptionMainService implements IEncryptionMainService {
 			parsedValue = JSON.parse(value);
 			if (!parsedValue.data) {
 				throw new Error(
-					`[EncryptionMainService] Invalid encrypted value: ${value}`
+					`[EncryptionMainService] Invalid encrypted value: ${value}`,
 				);
 			}
 			const bufferToDecrypt = Buffer.from(parsedValue.data);
@@ -94,13 +94,13 @@ export class EncryptionMainService implements IEncryptionMainService {
 	async setUsePlainTextEncryption(): Promise<void> {
 		if (isWindows) {
 			throw new Error(
-				"Setting plain text encryption is not supported on Windows."
+				"Setting plain text encryption is not supported on Windows.",
 			);
 		}
 
 		if (isMacintosh) {
 			throw new Error(
-				"Setting plain text encryption is not supported on macOS."
+				"Setting plain text encryption is not supported on macOS.",
 			);
 		}
 

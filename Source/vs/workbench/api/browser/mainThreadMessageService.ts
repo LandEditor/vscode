@@ -3,25 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
-import Severity from "vs/base/common/severity";
 import { IAction, toAction } from "vs/base/common/actions";
-import {
-	MainThreadMessageServiceShape,
-	MainContext,
-	MainThreadMessageOptions,
-} from "../common/extHost.protocol";
-import {
-	extHostNamedCustomer,
-	IExtHostContext,
-} from "vs/workbench/services/extensions/common/extHostCustomers";
+import { Event } from "vs/base/common/event";
+import Severity from "vs/base/common/severity";
+import * as nls from "vs/nls";
+import { ICommandService } from "vs/platform/commands/common/commands";
 import {
 	IDialogService,
 	IPromptButton,
 } from "vs/platform/dialogs/common/dialogs";
 import { INotificationService } from "vs/platform/notification/common/notification";
-import { Event } from "vs/base/common/event";
-import { ICommandService } from "vs/platform/commands/common/commands";
+import {
+	IExtHostContext,
+	extHostNamedCustomer,
+} from "vs/workbench/services/extensions/common/extHostCustomers";
+import {
+	MainContext,
+	MainThreadMessageOptions,
+	MainThreadMessageServiceShape,
+} from "../common/extHost.protocol";
 
 @extHostNamedCustomer(MainContext.MainThreadMessageService)
 export class MainThreadMessageService implements MainThreadMessageServiceShape {
@@ -47,7 +47,7 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 			title: string;
 			isCloseAffordance: boolean;
 			handle: number;
-		}[]
+		}[],
 	): Promise<number | undefined> {
 		if (options.modal) {
 			return this._showModalMessage(
@@ -55,7 +55,7 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 				message,
 				options.detail,
 				commands,
-				options.useCustom
+				options.useCustom,
 			);
 		} else {
 			return this._showMessage(severity, message, commands, options);
@@ -70,7 +70,7 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 			isCloseAffordance: boolean;
 			handle: number;
 		}[],
-		options: MainThreadMessageOptions
+		options: MainThreadMessageOptions,
 	): Promise<number | undefined> {
 		return new Promise<number | undefined>((resolve) => {
 			const primaryActions: IAction[] = commands.map((command) =>
@@ -82,7 +82,7 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 						resolve(command.handle);
 						return Promise.resolve();
 					},
-				})
+				}),
 			);
 
 			let source: string | { label: string; id: string } | undefined;
@@ -91,7 +91,7 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 					label: nls.localize(
 						"extensionSource",
 						"{0} (Extension)",
-						options.source.label
+						options.source.label,
 					),
 					id: options.source.identifier.value,
 				};
@@ -108,15 +108,15 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 						id: options.source.identifier.value,
 						label: nls.localize(
 							"manageExtension",
-							"Manage Extension"
+							"Manage Extension",
 						),
 						run: () => {
 							return this._commandService.executeCommand(
 								"_extensions.manage",
-								options.source!.identifier.value
+								options.source!.identifier.value,
 							);
 						},
-					})
+					}),
 				);
 			}
 
@@ -147,7 +147,7 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 			isCloseAffordance: boolean;
 			handle: number;
 		}[],
-		useCustom?: boolean
+		useCustom?: boolean,
 	): Promise<number | undefined> {
 		const buttons: IPromptButton<number>[] = [];
 		let cancelButton: IPromptButton<number | undefined> | undefined =
@@ -176,7 +176,7 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 				cancelButton = {
 					label: nls.localize(
 						{ key: "ok", comment: ["&& denotes a mnemonic"] },
-						"&&OK"
+						"&&OK",
 					),
 					run: () => undefined,
 				};

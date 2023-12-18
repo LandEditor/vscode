@@ -3,17 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-"use strict";
-
 import { spawnSync } from "child_process";
 import path = require("path");
-import { getChromiumSysroot, getVSCodeSysroot } from "./debian/install-sysroot";
 import { generatePackageDeps as generatePackageDepsDebian } from "./debian/calculate-deps";
-import { generatePackageDeps as generatePackageDepsRpm } from "./rpm/calculate-deps";
 import { referenceGeneratedDepsByArch as debianGeneratedDeps } from "./debian/dep-lists";
-import { referenceGeneratedDepsByArch as rpmGeneratedDeps } from "./rpm/dep-lists";
+import { getChromiumSysroot, getVSCodeSysroot } from "./debian/install-sysroot";
 import { DebianArchString, isDebianArchString } from "./debian/types";
-import { isRpmArchString, RpmArchString } from "./rpm/types";
+import { generatePackageDeps as generatePackageDepsRpm } from "./rpm/calculate-deps";
+import { referenceGeneratedDepsByArch as rpmGeneratedDeps } from "./rpm/dep-lists";
+import { RpmArchString, isRpmArchString } from "./rpm/types";
 import product = require("../../product.json");
 
 // A flag that can easily be toggled.
@@ -40,7 +38,7 @@ export async function getDependencies(
 	packageType: "deb" | "rpm",
 	buildDir: string,
 	applicationName: string,
-	arch: string
+	arch: string,
 ): Promise<string[]> {
 	if (packageType === "deb") {
 		if (!isDebianArchString(arch)) {
@@ -56,7 +54,7 @@ export async function getDependencies(
 		buildDir,
 		"resources",
 		"app",
-		"node_modules.asar.unpacked"
+		"node_modules.asar.unpacked",
 	);
 	const findResult = spawnSync("find", [
 		nativeModulesPath,
@@ -84,14 +82,14 @@ export async function getDependencies(
 	let dependencies: Set<string>[];
 	if (packageType === "deb") {
 		const chromiumSysroot = await getChromiumSysroot(
-			arch as DebianArchString
+			arch as DebianArchString,
 		);
 		const vscodeSysroot = await getVSCodeSysroot(arch as DebianArchString);
 		dependencies = generatePackageDepsDebian(
 			files,
 			arch as DebianArchString,
 			chromiumSysroot,
-			vscodeSysroot
+			vscodeSysroot,
 		);
 	} else {
 		dependencies = generatePackageDepsRpm(files);
@@ -104,7 +102,7 @@ export async function getDependencies(
 	const sortedDependencies: string[] = Array.from(mergedDependencies)
 		.filter((dependency) => {
 			return !bundledDeps.some((bundledDep) =>
-				dependency.startsWith(bundledDep)
+				dependency.startsWith(bundledDep),
 			);
 		})
 		.sort();

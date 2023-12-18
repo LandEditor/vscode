@@ -4,12 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 import * as nls from "vs/nls";
 
-import { Registry } from "vs/platform/registry/common/platform";
+import { IJSONSchema } from "vs/base/common/jsonSchema";
 import {
 	Extensions as JSONExtensions,
 	IJSONContributionRegistry,
 } from "vs/platform/jsonschemas/common/jsonContributionRegistry";
-import { IJSONSchema } from "vs/base/common/jsonSchema";
+import { Registry } from "vs/platform/registry/common/platform";
 
 import { workbenchColorsSchemaId } from "vs/platform/theme/common/colorRegistry";
 import { tokenStylingSchemaId } from "vs/platform/theme/common/tokenClassificationRegistry";
@@ -139,14 +139,14 @@ const textmateColorSchema: IJSONSchema = {
 			type: "object",
 			description: nls.localize(
 				"schema.token.settings",
-				"Colors and styles for the token."
+				"Colors and styles for the token.",
 			),
 			properties: {
 				foreground: {
 					type: "string",
 					description: nls.localize(
 						"schema.token.foreground",
-						"Foreground color for the token."
+						"Foreground color for the token.",
 					),
 					format: "color-hex",
 					default: "#ff0000",
@@ -155,26 +155,26 @@ const textmateColorSchema: IJSONSchema = {
 					type: "string",
 					deprecationMessage: nls.localize(
 						"schema.token.background.warning",
-						"Token background colors are currently not supported."
+						"Token background colors are currently not supported.",
 					),
 				},
 				fontStyle: {
 					type: "string",
 					description: nls.localize(
 						"schema.token.fontStyle",
-						"Font style of the rule: 'italic', 'bold', 'underline', 'strikethrough' or a combination. The empty string unsets inherited settings."
+						"Font style of the rule: 'italic', 'bold', 'underline', 'strikethrough' or a combination. The empty string unsets inherited settings.",
 					),
 					pattern:
 						"^(\\s*\\b(italic|bold|underline|strikethrough))*\\s*$",
 					patternErrorMessage: nls.localize(
 						"schema.fontStyle.error",
-						"Font style must be 'italic', 'bold', 'underline', 'strikethrough' or a combination or the empty string."
+						"Font style must be 'italic', 'bold', 'underline', 'strikethrough' or a combination or the empty string.",
 					),
 					defaultSnippets: [
 						{
 							label: nls.localize(
 								"schema.token.fontStyle.none",
-								"None (clear inherited style)"
+								"None (clear inherited style)",
 							),
 							bodyText: '""',
 						},
@@ -222,13 +222,13 @@ const textmateColorSchema: IJSONSchema = {
 				type: "string",
 				description: nls.localize(
 					"schema.properties.name",
-					"Description of the rule."
+					"Description of the rule.",
 				),
 			},
 			scope: {
 				description: nls.localize(
 					"schema.properties.scope",
-					"Scope selector against which this rule matches."
+					"Scope selector against which this rule matches.",
 				),
 				anyOf: [
 					{
@@ -270,7 +270,7 @@ const colorThemeSchema: IJSONSchema = {
 		colors: {
 			description: nls.localize(
 				"schema.workbenchColors",
-				"Colors in the workbench"
+				"Colors in the workbench",
 			),
 			$ref: workbenchColorsSchemaId,
 			additionalProperties: false,
@@ -281,13 +281,13 @@ const colorThemeSchema: IJSONSchema = {
 					type: "string",
 					description: nls.localize(
 						"schema.tokenColors.path",
-						"Path to a tmTheme file (relative to the current file)."
+						"Path to a tmTheme file (relative to the current file).",
 					),
 				},
 				{
 					description: nls.localize(
 						"schema.colors",
-						"Colors for syntax highlighting"
+						"Colors for syntax highlighting",
 					),
 					$ref: textmateColorsSchemaId,
 				},
@@ -297,14 +297,14 @@ const colorThemeSchema: IJSONSchema = {
 			type: "boolean",
 			description: nls.localize(
 				"schema.supportsSemanticHighlighting",
-				"Whether semantic highlighting should be enabled for this theme."
+				"Whether semantic highlighting should be enabled for this theme.",
 			),
 		},
 		semanticTokenColors: {
 			type: "object",
 			description: nls.localize(
 				"schema.semanticTokenColors",
-				"Colors for semantic tokens"
+				"Colors for semantic tokens",
 			),
 			$ref: tokenStylingSchemaId,
 		},
@@ -313,7 +313,7 @@ const colorThemeSchema: IJSONSchema = {
 
 export function registerColorThemeSchemas() {
 	const schemaRegistry = Registry.as<IJSONContributionRegistry>(
-		JSONExtensions.JSONContribution
+		JSONExtensions.JSONContribution,
 	);
 	schemaRegistry.registerSchema(colorThemeSchemaId, colorThemeSchema);
 	schemaRegistry.registerSchema(textmateColorsSchemaId, textmateColorSchema);

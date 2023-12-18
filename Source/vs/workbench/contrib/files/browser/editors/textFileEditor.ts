@@ -3,72 +3,72 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
+import { IAction, toAction } from "vs/base/common/actions";
+import { CancellationToken } from "vs/base/common/cancellation";
 import { mark } from "vs/base/common/performance";
 import { assertIsDefined } from "vs/base/common/types";
-import { IPathService } from "vs/workbench/services/path/common/pathService";
-import { IAction, toAction } from "vs/base/common/actions";
+import { IEditorOptions as ICodeEditorOptions } from "vs/editor/common/config/editorOptions";
 import {
-	VIEWLET_ID,
-	TEXT_FILE_EDITOR_ID,
+	ICodeEditorViewState,
+	ScrollType,
+} from "vs/editor/common/editorCommon";
+import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
+import { localize } from "vs/nls";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import {
+	EditorActivation,
+	ITextEditorOptions,
+} from "vs/platform/editor/common/editor";
+import {
+	ByteSize,
+	FileChangesEvent,
+	FileOperation,
+	FileOperationError,
+	FileOperationEvent,
+	FileOperationResult,
+	IFileService,
+	TooLargeFileOperationError,
+} from "vs/platform/files/common/files";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IStorageService } from "vs/platform/storage/common/storage";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import { AbstractTextCodeEditor } from "vs/workbench/browser/parts/editor/textCodeEditor";
+import {
+	DEFAULT_EDITOR_ASSOCIATION,
+	IEditorOpenContext,
+	IFileEditorInputOptions,
+	createEditorOpenError,
+	createTooLargeFileError,
+	isTextEditorViewState,
+} from "vs/workbench/common/editor";
+import { BinaryEditorModel } from "vs/workbench/common/editor/binaryEditorModel";
+import { EditorInput } from "vs/workbench/common/editor/editorInput";
+import { applyTextEditorOptions } from "vs/workbench/common/editor/editorOptions";
+import { ViewContainerLocation } from "vs/workbench/common/views";
+import { FileEditorInput } from "vs/workbench/contrib/files/browser/editors/fileEditorInput";
+import { IExplorerService } from "vs/workbench/contrib/files/browser/files";
+import {
 	BINARY_TEXT_FILE_MODE,
+	TEXT_FILE_EDITOR_ID,
+	VIEWLET_ID,
 } from "vs/workbench/contrib/files/common/files";
+import {
+	IEditorGroup,
+	IEditorGroupsService,
+} from "vs/workbench/services/editor/common/editorGroupsService";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { IHostService } from "vs/workbench/services/host/browser/host";
+import { IPaneCompositePartService } from "vs/workbench/services/panecomposite/browser/panecomposite";
+import { IPathService } from "vs/workbench/services/path/common/pathService";
+import { IPreferencesService } from "vs/workbench/services/preferences/common/preferences";
 import {
 	ITextFileService,
 	TextFileOperationError,
 	TextFileOperationResult,
 } from "vs/workbench/services/textfile/common/textfiles";
-import { AbstractTextCodeEditor } from "vs/workbench/browser/parts/editor/textCodeEditor";
-import {
-	IEditorOpenContext,
-	isTextEditorViewState,
-	DEFAULT_EDITOR_ASSOCIATION,
-	createEditorOpenError,
-	IFileEditorInputOptions,
-	createTooLargeFileError,
-} from "vs/workbench/common/editor";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import { applyTextEditorOptions } from "vs/workbench/common/editor/editorOptions";
-import { BinaryEditorModel } from "vs/workbench/common/editor/binaryEditorModel";
-import { FileEditorInput } from "vs/workbench/contrib/files/browser/editors/fileEditorInput";
-import {
-	FileOperationError,
-	FileOperationResult,
-	FileChangesEvent,
-	IFileService,
-	FileOperationEvent,
-	FileOperation,
-	ByteSize,
-	TooLargeFileOperationError,
-} from "vs/platform/files/common/files";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
-import { IStorageService } from "vs/platform/storage/common/storage";
-import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import {
-	ICodeEditorViewState,
-	ScrollType,
-} from "vs/editor/common/editorCommon";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import {
-	IEditorGroup,
-	IEditorGroupsService,
-} from "vs/workbench/services/editor/common/editorGroupsService";
-import { CancellationToken } from "vs/base/common/cancellation";
-import {
-	EditorActivation,
-	ITextEditorOptions,
-} from "vs/platform/editor/common/editor";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import { IExplorerService } from "vs/workbench/contrib/files/browser/files";
-import { IPaneCompositePartService } from "vs/workbench/services/panecomposite/browser/panecomposite";
-import { ViewContainerLocation } from "vs/workbench/common/views";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IPreferencesService } from "vs/workbench/services/preferences/common/preferences";
-import { IHostService } from "vs/workbench/services/host/browser/host";
-import { IEditorOptions as ICodeEditorOptions } from "vs/editor/common/config/editorOptions";
 
 /**
  * An implementation of editor for file system resources.
@@ -135,7 +135,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 			this.moveEditorViewState(
 				e.resource,
 				e.target.resource,
-				this.uriIdentityService.extUri
+				this.uriIdentityService.extUri,
 			);
 		}
 	}
@@ -156,7 +156,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 		input: FileEditorInput,
 		options: IFileEditorInputOptions | undefined,
 		context: IEditorOpenContext,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void> {
 		mark("code/willSetInputToTextFileEditor");
 
@@ -190,7 +190,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 			if (!isTextEditorViewState(options?.viewState)) {
 				const editorViewState = this.loadEditorViewState(
 					input,
-					context
+					context,
 				);
 				if (editorViewState) {
 					if (options?.selection) {
@@ -212,7 +212,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 			// a resolved model might have more specific information about being
 			// readonly or not that the input did not have.
 			control.updateOptions(
-				this.getReadonlyConfiguration(textFileModel.isReadonly())
+				this.getReadonlyConfiguration(textFileModel.isReadonly()),
 			);
 
 			if (control.handleInitialized) {
@@ -228,7 +228,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 	protected async handleSetInputError(
 		error: Error,
 		input: FileEditorInput,
-		options: ITextEditorOptions | undefined
+		options: ITextEditorOptions | undefined,
 	): Promise<void> {
 		// Handle case where content appears to be binary
 		if (
@@ -252,10 +252,10 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 					run: async () => {
 						return this.hostService.openWindow(
 							[{ folderUri: input.resource }],
-							{ forceNewWindow: true }
+							{ forceNewWindow: true },
 						);
 					},
-				})
+				}),
 			);
 
 			if (
@@ -269,25 +269,25 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 							await this.paneCompositeService.openPaneComposite(
 								VIEWLET_ID,
 								ViewContainerLocation.Sidebar,
-								true
+								true,
 							);
 
 							return this.explorerService.select(
 								input.preferredResource,
-								true
+								true,
 							);
 						},
-					})
+					}),
 				);
 			}
 
 			throw createEditorOpenError(
 				localize(
 					"fileIsDirectory",
-					"The file is not displayed in the text editor because it is a directory."
+					"The file is not displayed in the text editor because it is a directory.",
 				),
 				actions,
-				{ forceMessage: true }
+				{ forceMessage: true },
 			);
 		}
 
@@ -302,12 +302,12 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 				message = localize(
 					"fileTooLargeForHeapErrorWithSize",
 					"The file is not displayed in the text editor because it is very large ({0}).",
-					ByteSize.formatSize(error.size)
+					ByteSize.formatSize(error.size),
 				);
 			} else {
 				message = localize(
 					"fileTooLargeForHeapErrorWithoutSize",
-					"The file is not displayed in the text editor because it is very large."
+					"The file is not displayed in the text editor because it is very large.",
 				);
 			}
 
@@ -316,7 +316,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 				input,
 				options,
 				message,
-				this.preferencesService
+				this.preferencesService,
 			);
 		}
 
@@ -330,9 +330,9 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 				new FileOperationError(
 					localize(
 						"unavailableResourceErrorEditorText",
-						"The editor could not be opened because the file was not found."
+						"The editor could not be opened because the file was not found.",
 					),
-					FileOperationResult.FILE_NOT_FOUND
+					FileOperationResult.FILE_NOT_FOUND,
 				),
 				[
 					toAction({
@@ -358,7 +358,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 					// a link to a file that does not exist to scaffold it quickly.
 
 					allowDialog: true,
-				}
+				},
 			);
 
 			throw fileNotFoundError;
@@ -370,7 +370,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 
 	private openAsBinary(
 		input: FileEditorInput,
-		options: ITextEditorOptions | undefined
+		options: ITextEditorOptions | undefined,
 	): void {
 		const defaultBinaryEditor = this.configurationService.getValue<
 			string | undefined
@@ -402,14 +402,14 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 				group,
 				defaultBinaryEditor,
 				input,
-				editorOptions
+				editorOptions,
 			);
 		} else {
 			this.doOpenAsBinaryInSameEditor(
 				group,
 				defaultBinaryEditor,
 				input,
-				editorOptions
+				editorOptions,
 			);
 		}
 	}
@@ -418,7 +418,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 		group: IEditorGroup,
 		editorId: string | undefined,
 		editor: FileEditorInput,
-		editorOptions: ITextEditorOptions
+		editorOptions: ITextEditorOptions,
 	): void {
 		this.editorService.replaceEditors(
 			[
@@ -430,7 +430,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 					},
 				},
 			],
-			group
+			group,
 		);
 	}
 
@@ -438,7 +438,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 		group: IEditorGroup,
 		editorId: string | undefined,
 		editor: FileEditorInput,
-		editorOptions: ITextEditorOptions
+		editorOptions: ITextEditorOptions,
 	): void {
 		// Open binary as text
 		if (editorId === DEFAULT_EDITOR_ASSOCIATION.id) {
@@ -465,7 +465,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 
 	protected override createEditorControl(
 		parent: HTMLElement,
-		initialOptions: ICodeEditorOptions
+		initialOptions: ICodeEditorOptions,
 	): void {
 		mark("code/willCreateTextFileEditorControl");
 

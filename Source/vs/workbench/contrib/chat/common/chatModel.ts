@@ -117,7 +117,7 @@ export class ChatRequestModel implements IChatRequestModel {
 
 	constructor(
 		public readonly session: ChatModel,
-		public readonly message: IParsedChatRequest
+		public readonly message: IParsedChatRequest,
 	) {
 		this._id = "request_" + ChatRequestModel.nextId++;
 	}
@@ -146,17 +146,17 @@ export class Response implements IResponse {
 					| IChatResponseProgressFileTreeData
 					| IChatContentInlineReference
 					| IChatAgentMarkdownContentWithVulnerability
-			  >
+			  >,
 	) {
 		this._responseParts = asArray(value).map((v) =>
 			isMarkdownString(v)
 				? ({
 						content: v,
 						kind: "markdownContent",
-					} satisfies IChatMarkdownContent)
+				  } satisfies IChatMarkdownContent)
 				: "kind" in v
-					? v
-					: { kind: "treeData", treeData: v }
+				  ? v
+				  : { kind: "treeData", treeData: v },
 		);
 
 		this._updateRepr(true);
@@ -173,7 +173,7 @@ export class Response implements IResponse {
 
 	updateContent(
 		progress: IChatProgressResponseContent | IChatContent,
-		quiet?: boolean
+		quiet?: boolean,
 	): void {
 		if (
 			progress.kind === "content" ||
@@ -212,7 +212,7 @@ export class Response implements IResponse {
 				this._responseParts[responsePartLength] = {
 					content: new MarkdownString(
 						lastResponsePart.content.value + progress.content.value,
-						{ isTrusted: { enabledCommands } }
+						{ isTrusted: { enabledCommands } },
 					),
 					kind: "markdownContent",
 				};
@@ -220,7 +220,7 @@ export class Response implements IResponse {
 				this._responseParts[responsePartLength] = {
 					content: new MarkdownString(
 						lastResponsePart.content.value + progress.content,
-						lastResponsePart.content
+						lastResponsePart.content,
 					),
 					kind: "markdownContent",
 				};
@@ -268,7 +268,7 @@ export class Response implements IResponse {
 					return basename(
 						"uri" in part.inlineReference
 							? part.inlineReference.uri
-							: part.inlineReference
+							: part.inlineReference,
 					);
 				} else if (part.kind === "asyncContent") {
 					return part.content;
@@ -374,18 +374,18 @@ export class ChatResponseModel
 		public readonly session: ChatModel,
 		agent: IChatAgentData | undefined,
 		public readonly requestId: string,
-		private _isComplete: boolean = false,
+		private _isComplete = false,
 		private _isCanceled = false,
 		private _vote?: InteractiveSessionVoteDirection,
 		private _errorDetails?: IChatResponseErrorDetails,
-		followups?: ReadonlyArray<IChatFollowup>
+		followups?: ReadonlyArray<IChatFollowup>,
 	) {
 		super();
 		this._agent = agent;
 		this._followups = followups ? [...followups] : undefined;
 		this._response = new Response(_response);
 		this._register(
-			this._response.onDidChangeValue(() => this._onDidChange.fire())
+			this._response.onDidChangeValue(() => this._onDidChange.fire()),
 		);
 		this._id = "response_" + ChatResponseModel.nextId++;
 	}
@@ -395,7 +395,7 @@ export class ChatResponseModel
 	 */
 	updateContent(
 		responsePart: IChatProgressResponseContent | IChatContent,
-		quiet?: boolean
+		quiet?: boolean,
 	) {
 		this._response.updateContent(responsePart, quiet);
 	}
@@ -407,7 +407,7 @@ export class ChatResponseModel
 		progress:
 			| IChatUsedContext
 			| IChatContentReference
-			| IChatProgressMessage
+			| IChatProgressMessage,
 	) {
 		if (progress.kind === "usedContext") {
 			this._usedContext = progress;
@@ -516,7 +516,7 @@ export interface ISerializableChatData extends IExportableChatData {
 }
 
 export function isExportableSessionData(
-	obj: unknown
+	obj: unknown,
 ): obj is IExportableChatData {
 	const data = obj as IExportableChatData;
 	return (
@@ -528,7 +528,7 @@ export function isExportableSessionData(
 }
 
 export function isSerializableSessionData(
-	obj: unknown
+	obj: unknown,
 ): obj is ISerializableChatData {
 	const data = obj as ISerializableChatData;
 	return (
@@ -538,7 +538,7 @@ export function isSerializableSessionData(
 		obj.requests.every(
 			(request: ISerializableChatRequestData) =>
 				!request.usedContext /* for backward compat allow missing usedContext */ ||
-				isIUsedContext(request.usedContext)
+				isIUsedContext(request.usedContext),
 		)
 	);
 }
@@ -570,9 +570,9 @@ export interface IChatInitEvent {
 }
 
 export enum ChatModelInitState {
-	Created,
-	Initializing,
-	Initialized,
+	Created = 0,
+	Initializing = 1,
+	Initialized = 2,
 }
 
 export class ChatModel extends Disposable implements IChatModel {
@@ -580,7 +580,7 @@ export class ChatModel extends Disposable implements IChatModel {
 	readonly onDidDispose = this._onDidDispose.event;
 
 	private readonly _onDidChange = this._register(
-		new Emitter<IChatChangeEvent>()
+		new Emitter<IChatChangeEvent>(),
 	);
 	readonly onDidChange = this._onDidChange.event;
 
@@ -703,19 +703,19 @@ export class ChatModel extends Disposable implements IChatModel {
 		const requests = obj.requests;
 		if (!Array.isArray(requests)) {
 			this.logService.error(
-				`Ignoring malformed session data: ${JSON.stringify(obj)}`
+				`Ignoring malformed session data: ${JSON.stringify(obj)}`,
 			);
 			return [];
 		}
 
 		if (obj.welcomeMessage) {
 			const content = obj.welcomeMessage.map((item) =>
-				typeof item === "string" ? new MarkdownString(item) : item
+				typeof item === "string" ? new MarkdownString(item) : item,
 			);
 			this._welcomeMessage = new ChatWelcomeMessageModel(
 				this,
 				content,
-				[]
+				[],
 			);
 		}
 
@@ -740,7 +740,7 @@ export class ChatModel extends Disposable implements IChatModel {
 						raw.isCanceled,
 						raw.vote,
 						raw.responseErrorDetails,
-						raw.followups
+						raw.followups,
 					);
 					if (raw.usedContext) {
 						// @ulugbekna: if this's a new vscode sessions, doc versions are incorrect anyway?
@@ -749,7 +749,7 @@ export class ChatModel extends Disposable implements IChatModel {
 
 					if (raw.contentReferences) {
 						raw.contentReferences.forEach((r) =>
-							request.response!.applyProgress(r)
+							request.response!.applyProgress(r),
 						);
 					}
 				}
@@ -772,7 +772,7 @@ export class ChatModel extends Disposable implements IChatModel {
 					endColumn: 1,
 					endLineNumber: 1,
 				},
-				message
+				message,
 			),
 		];
 		return {
@@ -786,7 +786,7 @@ export class ChatModel extends Disposable implements IChatModel {
 			throw new Error(
 				`ChatModel is in the wrong state for startInitialize: ${
 					ChatModelInitState[this.initState]
-				}`
+				}`,
 			);
 		}
 		this._initState = ChatModelInitState.Initializing;
@@ -800,14 +800,14 @@ export class ChatModel extends Disposable implements IChatModel {
 
 	initialize(
 		session: IChat,
-		welcomeMessage: ChatWelcomeMessageModel | undefined
+		welcomeMessage: ChatWelcomeMessageModel | undefined,
 	): void {
 		if (this.initState !== ChatModelInitState.Initializing) {
 			// Must call startInitialize before initialize, and only call it once
 			throw new Error(
 				`ChatModel is in the wrong state for initialize: ${
 					ChatModelInitState[this.initState]
-				}`
+				}`,
 			);
 		}
 
@@ -827,7 +827,7 @@ export class ChatModel extends Disposable implements IChatModel {
 			throw new Error(
 				`ChatModel is in the wrong state for setInitializationError: ${
 					ChatModelInitState[this.initState]
-				}`
+				}`,
 			);
 		}
 
@@ -846,7 +846,7 @@ export class ChatModel extends Disposable implements IChatModel {
 
 	addRequest(
 		message: IParsedChatRequest,
-		chatAgent?: IChatAgentData
+		chatAgent?: IChatAgentData,
 	): ChatRequestModel {
 		if (!this._session) {
 			throw new Error("addRequest: No session");
@@ -857,7 +857,7 @@ export class ChatModel extends Disposable implements IChatModel {
 			[],
 			this,
 			chatAgent,
-			request.id
+			request.id,
 		);
 
 		this._requests.push(request);
@@ -868,7 +868,7 @@ export class ChatModel extends Disposable implements IChatModel {
 	acceptResponseProgress(
 		request: ChatRequestModel,
 		progress: IChatProgress,
-		quiet?: boolean
+		quiet?: boolean,
 	): void {
 		if (!this._session) {
 			throw new Error("acceptResponseProgress: No session");
@@ -879,13 +879,13 @@ export class ChatModel extends Disposable implements IChatModel {
 				[],
 				this,
 				undefined,
-				request.id
+				request.id,
 			);
 		}
 
 		if (request.response.isComplete) {
 			throw new Error(
-				"acceptResponseProgress: Adding progress to a completed response"
+				"acceptResponseProgress: Adding progress to a completed response",
 			);
 		}
 
@@ -897,7 +897,7 @@ export class ChatModel extends Disposable implements IChatModel {
 					content: { value: progress.content },
 					vulnerabilities: progress.vulnerabilities,
 				},
-				quiet
+				quiet,
 			);
 		} else if (
 			progress.kind === "content" ||
@@ -921,7 +921,7 @@ export class ChatModel extends Disposable implements IChatModel {
 			}
 		} else {
 			this.logService.error(
-				`Couldn't handle progress: ${JSON.stringify(progress)}`
+				`Couldn't handle progress: ${JSON.stringify(progress)}`,
 			);
 		}
 	}
@@ -957,7 +957,7 @@ export class ChatModel extends Disposable implements IChatModel {
 				[],
 				this,
 				undefined,
-				request.id
+				request.id,
 			);
 		}
 
@@ -966,7 +966,7 @@ export class ChatModel extends Disposable implements IChatModel {
 
 	completeResponse(
 		request: ChatRequestModel,
-		errorDetails: IChatResponseErrorDetails | undefined
+		errorDetails: IChatResponseErrorDetails | undefined,
 	): void {
 		if (!request.response) {
 			throw new Error("Call setResponse before completeResponse");
@@ -977,7 +977,7 @@ export class ChatModel extends Disposable implements IChatModel {
 
 	setFollowups(
 		request: ChatRequestModel,
-		followups: IChatFollowup[] | undefined
+		followups: IChatFollowup[] | undefined,
 	): void {
 		if (!request.response) {
 			// Maybe something went wrong?
@@ -989,7 +989,7 @@ export class ChatModel extends Disposable implements IChatModel {
 
 	setResponseModel(
 		request: ChatRequestModel,
-		response: ChatResponseModel
+		response: ChatResponseModel,
 	): void {
 		request.response = response;
 		this._onDidChange.fire({ kind: "addResponse", response });
@@ -1023,7 +1023,7 @@ export class ChatModel extends Disposable implements IChatModel {
 								} else {
 									return item;
 								}
-							})
+						  })
 						: undefined,
 					responseErrorDetails: r.response?.errorDetails,
 					followups: r.response?.followups,
@@ -1033,7 +1033,7 @@ export class ChatModel extends Disposable implements IChatModel {
 						? {
 								id: r.response.agent.id,
 								metadata: r.response.agent.metadata,
-							}
+						  }
 						: undefined, // May actually be the full IChatAgent instance, just take the data props
 					slashCommand: r.response?.slashCommand,
 					usedContext: r.response?.usedContext,
@@ -1083,7 +1083,7 @@ export class ChatWelcomeMessageModel implements IChatWelcomeMessageModel {
 	constructor(
 		private readonly session: ChatModel,
 		public readonly content: IChatWelcomeMessageContent[],
-		public readonly sampleQuestions: IChatReplyFollowup[]
+		public readonly sampleQuestions: IChatReplyFollowup[],
 	) {
 		this._id = "welcome_" + ChatWelcomeMessageModel.nextId++;
 	}

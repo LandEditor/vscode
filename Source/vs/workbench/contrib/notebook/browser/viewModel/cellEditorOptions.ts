@@ -51,7 +51,7 @@ export class BaseCellEditorOptions
 		readonly notebookEditor: INotebookEditorDelegate,
 		readonly notebookOptions: NotebookOptions,
 		readonly configurationService: IConfigurationService,
-		readonly language: string
+		readonly language: string,
 	) {
 		super();
 		this._register(
@@ -62,7 +62,7 @@ export class BaseCellEditorOptions
 				) {
 					this._recomputeOptions();
 				}
-			})
+			}),
 		);
 
 		this._register(
@@ -74,7 +74,7 @@ export class BaseCellEditorOptions
 				) {
 					this._recomputeOptions();
 				}
-			})
+			}),
 		);
 
 		this._register(
@@ -85,19 +85,19 @@ export class BaseCellEditorOptions
 					this._localDisposableStore.add(
 						this.notebookEditor.onDidChangeOptions(() => {
 							this._recomputeOptions();
-						})
+						}),
 					);
 
 					this._recomputeOptions();
 				}
-			})
+			}),
 		);
 
 		if (this.notebookEditor.hasModel()) {
 			this._localDisposableStore.add(
 				this.notebookEditor.onDidChangeOptions(() => {
 					this._recomputeOptions();
-				})
+				}),
 			);
 		}
 
@@ -113,7 +113,7 @@ export class BaseCellEditorOptions
 		const editorOptions = deepClone(
 			this.configurationService.getValue<IEditorOptions>("editor", {
 				overrideIdentifier: this.language,
-			})
+			}),
 		);
 		const editorOptionsOverrideRaw =
 			this.notebookOptions.getDisplayOptions()

@@ -9,8 +9,8 @@ import { IModelService } from "vs/editor/common/services/model";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
 import {
-	TerminalCapability,
 	ITerminalCommand,
+	TerminalCapability,
 } from "vs/platform/terminal/common/capabilities/capabilities";
 import { ICurrentPartialCommand } from "vs/platform/terminal/common/capabilities/commandDetection/terminalCommand";
 import { TerminalSettingId } from "vs/platform/terminal/common/terminal";
@@ -62,36 +62,36 @@ export class TerminalAccessibleBufferProvider
 		@IModelService _modelService: IModelService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IContextKeyService _contextKeyService: IContextKeyService,
-		@ITerminalService _terminalService: ITerminalService
+		@ITerminalService _terminalService: ITerminalService,
 	) {
 		super();
 		this.options.customHelp = customHelp;
 		this.options.position = configurationService.getValue(
-			TerminalSettingId.AccessibleViewPreserveCursorPosition
+			TerminalSettingId.AccessibleViewPreserveCursorPosition,
 		)
 			? "initial-bottom"
 			: "bottom";
 		this.add(
 			this._instance.onDisposed(() =>
 				this._onDidRequestClearProvider.fire(
-					AccessibleViewProviderId.Terminal
-				)
-			)
+					AccessibleViewProviderId.Terminal,
+				),
+			),
 		);
 		this.add(
 			configurationService.onDidChangeConfiguration((e) => {
 				if (
 					e.affectsConfiguration(
-						TerminalSettingId.AccessibleViewPreserveCursorPosition
+						TerminalSettingId.AccessibleViewPreserveCursorPosition,
 					)
 				) {
 					this.options.position = configurationService.getValue(
-						TerminalSettingId.AccessibleViewPreserveCursorPosition
+						TerminalSettingId.AccessibleViewPreserveCursorPosition,
 					)
 						? "initial-bottom"
 						: "bottom";
 				}
-			})
+			}),
 		);
 		this._focusedInstance = _terminalService.activeInstance;
 		this.add(
@@ -102,11 +102,11 @@ export class TerminalAccessibleBufferProvider
 						_terminalService.activeInstance?.instanceId
 				) {
 					this._onDidRequestClearProvider.fire(
-						AccessibleViewProviderId.Terminal
+						AccessibleViewProviderId.Terminal,
 					);
 					this._focusedInstance = _terminalService.activeInstance;
 				}
-			})
+			}),
 		);
 	}
 
@@ -136,7 +136,7 @@ export class TerminalAccessibleBufferProvider
 
 	private _getCommandsWithEditorLine(): ICommandWithEditorLine[] | undefined {
 		const capability = this._instance.capabilities.get(
-			TerminalCapability.CommandDetection
+			TerminalCapability.CommandDetection,
 		);
 		const commands = capability?.commands;
 		const currentCommand = capability?.currentCommand;
@@ -160,7 +160,7 @@ export class TerminalAccessibleBufferProvider
 		return result;
 	}
 	private _getEditorLineForCommand(
-		command: ITerminalCommand | ICurrentPartialCommand
+		command: ITerminalCommand | ICurrentPartialCommand,
 	): number | undefined {
 		let line: number | undefined;
 		if ("marker" in command) {

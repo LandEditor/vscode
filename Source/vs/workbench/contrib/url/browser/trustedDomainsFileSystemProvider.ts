@@ -3,35 +3,35 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { VSBuffer } from "vs/base/common/buffer";
 import { Event } from "vs/base/common/event";
 import { parse } from "vs/base/common/json";
 import { IDisposable } from "vs/base/common/lifecycle";
+import { assertIsDefined } from "vs/base/common/types";
 import { URI } from "vs/base/common/uri";
 import {
-	IFileDeleteOptions,
-	IFileOverwriteOptions,
 	FileSystemProviderCapabilities,
 	FileType,
-	IFileWriteOptions,
+	IFileDeleteOptions,
+	IFileOverwriteOptions,
 	IFileService,
+	IFileSystemProviderWithFileReadWriteCapability,
+	IFileWriteOptions,
 	IStat,
 	IWatchOptions,
-	IFileSystemProviderWithFileReadWriteCapability,
 } from "vs/platform/files/common/files";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import {
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
 import { IWorkbenchContribution } from "vs/workbench/common/contributions";
-import { VSBuffer } from "vs/base/common/buffer";
 import {
-	readTrustedDomains,
 	TRUSTED_DOMAINS_CONTENT_STORAGE_KEY,
 	TRUSTED_DOMAINS_STORAGE_KEY,
+	readTrustedDomains,
 } from "vs/workbench/contrib/url/browser/trustedDomains";
-import { assertIsDefined } from "vs/base/common/types";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 
 const TRUSTED_DOMAINS_SCHEMA = "trustedDomains";
 
@@ -72,7 +72,7 @@ function computeTrustedDomainContent(
 	trustedDomains: string[],
 	userTrustedDomains: string[],
 	workspaceTrustedDomains: string[],
-	configuring?: string
+	configuring?: string,
 ) {
 	let content = CONFIG_HELP_TEXT_PRE;
 
@@ -140,7 +140,7 @@ export class TrustedDomainsFileSystemProvider
 	async readFile(resource: URI): Promise<Uint8Array> {
 		let trustedDomainsContent = this.storageService.get(
 			TRUSTED_DOMAINS_CONTENT_STORAGE_KEY,
-			StorageScope.APPLICATION
+			StorageScope.APPLICATION,
 		);
 
 		const configuring: string | undefined = resource.fragment;
@@ -168,7 +168,7 @@ export class TrustedDomainsFileSystemProvider
 				trustedDomains,
 				userDomains,
 				workspaceDomains,
-				configuring
+				configuring,
 			);
 		}
 
@@ -179,7 +179,7 @@ export class TrustedDomainsFileSystemProvider
 	writeFile(
 		resource: URI,
 		content: Uint8Array,
-		opts: IFileWriteOptions
+		opts: IFileWriteOptions,
 	): Promise<void> {
 		try {
 			const trustedDomainsContent = VSBuffer.wrap(content).toString();
@@ -189,13 +189,13 @@ export class TrustedDomainsFileSystemProvider
 				TRUSTED_DOMAINS_CONTENT_STORAGE_KEY,
 				trustedDomainsContent,
 				StorageScope.APPLICATION,
-				StorageTarget.USER
+				StorageTarget.USER,
 			);
 			this.storageService.store(
 				TRUSTED_DOMAINS_STORAGE_KEY,
 				JSON.stringify(trustedDomains) || "",
 				StorageScope.APPLICATION,
-				StorageTarget.USER
+				StorageTarget.USER,
 			);
 		} catch (err) {}
 

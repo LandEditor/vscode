@@ -3,42 +3,42 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Command } from "vs/editor/common/languages";
-import { UriComponents, URI } from "vs/base/common/uri";
-import { Event, Emitter } from "vs/base/common/event";
-import { ContextKeyExpression } from "vs/platform/contextkey/common/contextkey";
-import { localize } from "vs/nls";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { flatten } from "vs/base/common/arrays";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { Codicon } from "vs/base/common/codicons";
+import { VSDataTransfer } from "vs/base/common/dataTransfer";
+import { Emitter, Event } from "vs/base/common/event";
+import { IMarkdownString } from "vs/base/common/htmlContent";
 import {
-	IDisposable,
 	Disposable,
+	IDisposable,
 	toDisposable,
 } from "vs/base/common/lifecycle";
-import { ThemeIcon } from "vs/base/common/themables";
-import { getOrSet, SetMap } from "vs/base/common/map";
-import { Registry } from "vs/platform/registry/common/platform";
-import { IKeybindings } from "vs/platform/keybinding/common/keybindingsRegistry";
-import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
-import { flatten } from "vs/base/common/arrays";
-import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
-import { IProgressIndicator } from "vs/platform/progress/common/progress";
-import Severity from "vs/base/common/severity";
-import { IPaneComposite } from "vs/workbench/common/panecomposite";
-import { IAccessibilityInformation } from "vs/platform/accessibility/common/accessibility";
-import { IMarkdownString } from "vs/base/common/htmlContent";
+import { SetMap, getOrSet } from "vs/base/common/map";
 import { mixin } from "vs/base/common/objects";
-import { Codicon } from "vs/base/common/codicons";
-import { registerIcon } from "vs/platform/theme/common/iconRegistry";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { VSDataTransfer } from "vs/base/common/dataTransfer";
+import Severity from "vs/base/common/severity";
+import { ThemeIcon } from "vs/base/common/themables";
+import { URI, UriComponents } from "vs/base/common/uri";
+import { Command } from "vs/editor/common/languages";
+import { localize } from "vs/nls";
+import { IAccessibilityInformation } from "vs/platform/accessibility/common/accessibility";
 import { ILocalizedString } from "vs/platform/action/common/action";
+import { ContextKeyExpression } from "vs/platform/contextkey/common/contextkey";
+import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
+import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { IKeybindings } from "vs/platform/keybinding/common/keybindingsRegistry";
+import { IProgressIndicator } from "vs/platform/progress/common/progress";
+import { Registry } from "vs/platform/registry/common/platform";
+import { registerIcon } from "vs/platform/theme/common/iconRegistry";
+import { IPaneComposite } from "vs/workbench/common/panecomposite";
 
 export const VIEWS_LOG_ID = "views";
 export const VIEWS_LOG_NAME = localize("views log", "Views");
 export const defaultViewIcon = registerIcon(
 	"default-view-icon",
 	Codicon.window,
-	localize("defaultViewIcon", "Default view icon.")
+	localize("defaultViewIcon", "Default view icon."),
 );
 
 export namespace Extensions {
@@ -46,10 +46,10 @@ export namespace Extensions {
 	export const ViewsRegistry = "workbench.registry.view";
 }
 
-export const enum ViewContainerLocation {
-	Sidebar,
-	Panel,
-	AuxiliaryBar,
+export enum ViewContainerLocation {
+	Sidebar = 0,
+	Panel = 1,
+	AuxiliaryBar = 2,
 }
 
 export const ViewContainerLocations = [
@@ -59,7 +59,7 @@ export const ViewContainerLocations = [
 ];
 
 export function ViewContainerLocationToString(
-	viewContainerLocation: ViewContainerLocation
+	viewContainerLocation: ViewContainerLocation,
 ) {
 	switch (viewContainerLocation) {
 		case ViewContainerLocation.Sidebar:
@@ -176,7 +176,7 @@ export interface IViewContainersRegistry {
 	registerViewContainer(
 		viewContainerDescriptor: IViewContainerDescriptor,
 		location: ViewContainerLocation,
-		options?: { isDefault?: boolean; doNotRegisterOpenCommand?: boolean }
+		options?: { isDefault?: boolean; doNotRegisterOpenCommand?: boolean },
 	): ViewContainer;
 
 	/**
@@ -206,7 +206,7 @@ export interface IViewContainersRegistry {
 	 * Return the default view container from the given location
 	 */
 	getDefaultViewContainer(
-		location: ViewContainerLocation
+		location: ViewContainerLocation,
 	): ViewContainer | undefined;
 }
 
@@ -214,7 +214,7 @@ interface ViewOrderDelegate {
 	getOrder(group?: string): number | undefined;
 }
 
-export interface ViewContainer extends IViewContainerDescriptor {}
+export type ViewContainer = IViewContainerDescriptor;
 
 interface RelaxedViewContainer extends ViewContainer {
 	openCommandActionDescriptor?: OpenCommandActionDescriptor;
@@ -228,7 +228,7 @@ class ViewContainersRegistryImpl
 		new Emitter<{
 			viewContainer: ViewContainer;
 			viewContainerLocation: ViewContainerLocation;
-		}>()
+		}>(),
 	);
 	readonly onDidRegister: Event<{
 		viewContainer: ViewContainer;
@@ -239,7 +239,7 @@ class ViewContainersRegistryImpl
 		new Emitter<{
 			viewContainer: ViewContainer;
 			viewContainerLocation: ViewContainerLocation;
-		}>()
+		}>(),
 	);
 	readonly onDidDeregister: Event<{
 		viewContainer: ViewContainer;
@@ -259,7 +259,7 @@ class ViewContainersRegistryImpl
 	registerViewContainer(
 		viewContainerDescriptor: IViewContainerDescriptor,
 		viewContainerLocation: ViewContainerLocation,
-		options?: { isDefault?: boolean; doNotRegisterOpenCommand?: boolean }
+		options?: { isDefault?: boolean; doNotRegisterOpenCommand?: boolean },
 	): ViewContainer {
 		const existing = this.get(viewContainerDescriptor.id);
 		if (existing) {
@@ -272,11 +272,11 @@ class ViewContainersRegistryImpl
 				? undefined
 				: viewContainer.openCommandActionDescriptor ?? {
 						id: viewContainer.id,
-					};
+				  };
 		const viewContainers = getOrSet(
 			this.viewContainers,
 			viewContainerLocation,
-			[]
+			[],
 		);
 		viewContainers.push(viewContainer);
 		if (options?.isDefault) {
@@ -289,7 +289,7 @@ class ViewContainersRegistryImpl
 	deregisterViewContainer(viewContainer: ViewContainer): void {
 		for (const viewContainerLocation of this.viewContainers.keys()) {
 			const viewContainers = this.viewContainers.get(
-				viewContainerLocation
+				viewContainerLocation,
 			)!;
 			const index = viewContainers?.indexOf(viewContainer);
 			if (index !== -1) {
@@ -318,24 +318,24 @@ class ViewContainersRegistryImpl
 		return [...this.viewContainers.keys()].filter(
 			(location) =>
 				this.getViewContainers(location).filter(
-					(viewContainer) => viewContainer?.id === container.id
-				).length > 0
+					(viewContainer) => viewContainer?.id === container.id,
+				).length > 0,
 		)[0];
 	}
 
 	getDefaultViewContainer(
-		location: ViewContainerLocation
+		location: ViewContainerLocation,
 	): ViewContainer | undefined {
 		return this.defaultViewContainers.find(
 			(viewContainer) =>
-				this.getViewContainerLocation(viewContainer) === location
+				this.getViewContainerLocation(viewContainer) === location,
 		);
 	}
 }
 
 Registry.add(
 	Extensions.ViewContainersRegistry,
-	new ViewContainersRegistryImpl()
+	new ViewContainersRegistryImpl(),
 );
 
 export interface IViewDescriptor {
@@ -480,12 +480,12 @@ export interface IViewsRegistry {
 	registerViews(views: IViewDescriptor[], viewContainer: ViewContainer): void;
 
 	registerViews2(
-		views: { views: IViewDescriptor[]; viewContainer: ViewContainer }[]
+		views: { views: IViewDescriptor[]; viewContainer: ViewContainer }[],
 	): void;
 
 	deregisterViews(
 		views: IViewDescriptor[],
-		viewContainer: ViewContainer
+		viewContainer: ViewContainer,
 	): void;
 
 	moveViews(views: IViewDescriptor[], viewContainer: ViewContainer): void;
@@ -499,18 +499,18 @@ export interface IViewsRegistry {
 	readonly onDidChangeViewWelcomeContent: Event<string>;
 	registerViewWelcomeContent(
 		id: string,
-		viewContent: IViewContentDescriptor
+		viewContent: IViewContentDescriptor,
 	): IDisposable;
 	registerViewWelcomeContent2<TKey>(
 		id: string,
-		viewContentMap: Map<TKey, IViewContentDescriptor>
+		viewContentMap: Map<TKey, IViewContentDescriptor>,
 	): Map<TKey, IDisposable>;
 	getViewWelcomeContent(id: string): IViewContentDescriptor[];
 }
 
 function compareViewContentDescriptors(
 	a: IViewContentDescriptor,
-	b: IViewContentDescriptor
+	b: IViewContentDescriptor,
 ): number {
 	const aGroup = a.group ?? ViewContentGroups.More;
 	const bGroup = b.group ?? ViewContentGroups.More;
@@ -524,7 +524,7 @@ class ViewsRegistry extends Disposable implements IViewsRegistry {
 	private readonly _onViewsRegistered = this._register(
 		new Emitter<
 			{ views: IViewDescriptor[]; viewContainer: ViewContainer }[]
-		>()
+		>(),
 	);
 	readonly onViewsRegistered = this._onViewsRegistered.event;
 
@@ -535,7 +535,7 @@ class ViewsRegistry extends Disposable implements IViewsRegistry {
 		new Emitter<{
 			views: IViewDescriptor[];
 			viewContainer: ViewContainer;
-		}>()
+		}>(),
 	);
 	readonly onViewsDeregistered: Event<{
 		views: IViewDescriptor[];
@@ -551,7 +551,7 @@ class ViewsRegistry extends Disposable implements IViewsRegistry {
 			views: IViewDescriptor[];
 			from: ViewContainer;
 			to: ViewContainer;
-		}>()
+		}>(),
 	);
 	readonly onDidChangeContainer: Event<{
 		views: IViewDescriptor[];
@@ -573,23 +573,23 @@ class ViewsRegistry extends Disposable implements IViewsRegistry {
 
 	registerViews(
 		views: IViewDescriptor[],
-		viewContainer: ViewContainer
+		viewContainer: ViewContainer,
 	): void {
 		this.registerViews2([{ views, viewContainer }]);
 	}
 
 	registerViews2(
-		views: { views: IViewDescriptor[]; viewContainer: ViewContainer }[]
+		views: { views: IViewDescriptor[]; viewContainer: ViewContainer }[],
 	): void {
 		views.forEach(({ views, viewContainer }) =>
-			this.addViews(views, viewContainer)
+			this.addViews(views, viewContainer),
 		);
 		this._onViewsRegistered.fire(views);
 	}
 
 	deregisterViews(
 		viewDescriptors: IViewDescriptor[],
-		viewContainer: ViewContainer
+		viewContainer: ViewContainer,
 	): void {
 		const views = this.removeViews(viewDescriptors, viewContainer);
 		if (views.length) {
@@ -599,7 +599,7 @@ class ViewsRegistry extends Disposable implements IViewsRegistry {
 
 	moveViews(
 		viewsToMove: IViewDescriptor[],
-		viewContainer: ViewContainer
+		viewContainer: ViewContainer,
 	): void {
 		for (const container of this._views.keys()) {
 			if (container !== viewContainer) {
@@ -646,7 +646,7 @@ class ViewsRegistry extends Disposable implements IViewsRegistry {
 
 	registerViewWelcomeContent(
 		id: string,
-		viewContent: IViewContentDescriptor
+		viewContent: IViewContentDescriptor,
 	): IDisposable {
 		this._viewWelcomeContents.add(id, viewContent);
 		this._onDidChangeViewWelcomeContent.fire(id);
@@ -659,7 +659,7 @@ class ViewsRegistry extends Disposable implements IViewsRegistry {
 
 	registerViewWelcomeContent2<TKey>(
 		id: string,
-		viewContentMap: Map<TKey, IViewContentDescriptor>
+		viewContentMap: Map<TKey, IViewContentDescriptor>,
 	): Map<TKey, IDisposable> {
 		const disposables = new Map<TKey, IDisposable>();
 
@@ -671,7 +671,7 @@ class ViewsRegistry extends Disposable implements IViewsRegistry {
 				toDisposable(() => {
 					this._viewWelcomeContents.delete(id, content);
 					this._onDidChangeViewWelcomeContent.fire(id);
-				})
+				}),
 			);
 		}
 		this._onDidChangeViewWelcomeContent.fire(id);
@@ -682,14 +682,14 @@ class ViewsRegistry extends Disposable implements IViewsRegistry {
 	getViewWelcomeContent(id: string): IViewContentDescriptor[] {
 		const result: IViewContentDescriptor[] = [];
 		this._viewWelcomeContents.forEach(id, (descriptor) =>
-			result.push(descriptor)
+			result.push(descriptor),
 		);
 		return result.sort(compareViewContentDescriptors);
 	}
 
 	private addViews(
 		viewDescriptors: IViewDescriptor[],
-		viewContainer: ViewContainer
+		viewContainer: ViewContainer,
 	): void {
 		let views = this._views.get(viewContainer);
 		if (!views) {
@@ -703,8 +703,8 @@ class ViewsRegistry extends Disposable implements IViewsRegistry {
 					localize(
 						"duplicateId",
 						"A view with id '{0}' is already registered",
-						viewDescriptor.id
-					)
+						viewDescriptor.id,
+					),
 				);
 			}
 			views.push(viewDescriptor);
@@ -713,7 +713,7 @@ class ViewsRegistry extends Disposable implements IViewsRegistry {
 
 	private removeViews(
 		viewDescriptors: IViewDescriptor[],
-		viewContainer: ViewContainer
+		viewContainer: ViewContainer,
 	): IViewDescriptor[] {
 		const views = this._views.get(viewContainer);
 		if (!views) {
@@ -722,10 +722,10 @@ class ViewsRegistry extends Disposable implements IViewsRegistry {
 		const viewsToDeregister: IViewDescriptor[] = [];
 		const remaningViews: IViewDescriptor[] = [];
 		for (const view of views) {
-			if (!viewDescriptors.includes(view)) {
-				remaningViews.push(view);
-			} else {
+			if (viewDescriptors.includes(view)) {
 				viewsToDeregister.push(view);
+			} else {
+				remaningViews.push(view);
 			}
 		}
 		if (viewsToDeregister.length) {
@@ -735,7 +735,7 @@ class ViewsRegistry extends Disposable implements IViewsRegistry {
 				this._views.delete(viewContainer);
 				this._viewContainers.splice(
 					this._viewContainers.indexOf(viewContainer),
-					1
+					1,
 				);
 			}
 		}
@@ -772,14 +772,14 @@ export interface IViewsService {
 	isViewContainerVisible(id: string): boolean;
 	openViewContainer(
 		id: string,
-		focus?: boolean
+		focus?: boolean,
 	): Promise<IPaneComposite | null>;
 	closeViewContainer(id: string): void;
 	getVisibleViewContainer(
-		location: ViewContainerLocation
+		location: ViewContainerLocation,
 	): ViewContainer | null;
 	getActiveViewPaneContainerWithId(
-		viewContainerId: string
+		viewContainerId: string,
 	): IViewPaneContainer | null;
 	getFocusedViewName(): string;
 
@@ -795,7 +795,7 @@ export interface IViewsService {
 }
 
 export const IViewDescriptorService = createDecorator<IViewDescriptorService>(
-	"viewDescriptorService"
+	"viewDescriptorService",
 );
 
 export enum ViewVisibilityState {
@@ -820,18 +820,18 @@ export interface IViewDescriptorService {
 	}>;
 
 	getDefaultViewContainer(
-		location: ViewContainerLocation
+		location: ViewContainerLocation,
 	): ViewContainer | undefined;
 	getViewContainerById(id: string): ViewContainer | null;
 	isViewContainerRemovedPermanently(id: string): boolean;
 	getDefaultViewContainerLocation(
-		viewContainer: ViewContainer
+		viewContainer: ViewContainer,
 	): ViewContainerLocation | null;
 	getViewContainerLocation(
-		viewContainer: ViewContainer
+		viewContainer: ViewContainer,
 	): ViewContainerLocation | null;
 	getViewContainersByLocation(
-		location: ViewContainerLocation
+		location: ViewContainerLocation,
 	): ViewContainer[];
 	getViewContainerModel(viewContainer: ViewContainer): IViewContainerModel;
 
@@ -844,13 +844,13 @@ export interface IViewDescriptorService {
 		viewContainer: ViewContainer,
 		location: ViewContainerLocation,
 		requestedIndex?: number,
-		reason?: string
+		reason?: string,
 	): void;
 
 	getViewContainerBadgeEnablementState(id: string): boolean;
 	setViewContainerBadgeEnablementState(
 		id: string,
-		badgesEnabled: boolean
+		badgesEnabled: boolean,
 	): void;
 
 	// Views
@@ -868,7 +868,7 @@ export interface IViewDescriptorService {
 		views: IViewDescriptor[],
 		viewContainer: ViewContainer,
 		visibilityState?: ViewVisibilityState,
-		reason?: string
+		reason?: string,
 	): void;
 
 	readonly onDidChangeLocation: Event<{
@@ -879,7 +879,7 @@ export interface IViewDescriptorService {
 	moveViewToLocation(
 		view: IViewDescriptor,
 		location: ViewContainerLocation,
-		reason?: string
+		reason?: string,
 	): void;
 
 	reset(): void;
@@ -1051,11 +1051,11 @@ export class ResolvableTreeItem implements ITreeItem {
 	children?: ITreeItem[];
 	accessibilityInformation?: IAccessibilityInformation;
 	resolve: (token: CancellationToken) => Promise<void>;
-	private resolved: boolean = false;
-	private _hasResolve: boolean = false;
+	private resolved = false;
+	private _hasResolve = false;
 	constructor(
 		treeItem: ITreeItem,
-		resolve?: (token: CancellationToken) => Promise<ITreeItem | undefined>
+		resolve?: (token: CancellationToken) => Promise<ITreeItem | undefined>,
 	) {
 		mixin(this, treeItem);
 		this._hasResolve = !!resolve;
@@ -1106,8 +1106,8 @@ export class NoTreeViewError extends Error {
 			localize(
 				"treeView.notRegistered",
 				"No tree view with id '{0}' registered.",
-				treeViewId
-			)
+				treeViewId,
+			),
 		);
 	}
 	static is(err: Error): err is NoTreeViewError {
@@ -1127,7 +1127,7 @@ export interface ITreeViewDragAndDropController {
 	handleDrag(
 		sourceTreeItemHandles: string[],
 		operationUuid: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<VSDataTransfer | undefined>;
 	handleDrop(
 		elements: VSDataTransfer,
@@ -1135,13 +1135,13 @@ export interface ITreeViewDragAndDropController {
 		token: CancellationToken,
 		operationUuid?: string,
 		sourceTreeId?: string,
-		sourceTreeItemHandles?: string[]
+		sourceTreeItemHandles?: string[],
 	): Promise<void>;
 }
 
 export interface IEditableData {
 	validationMessage: (
-		value: string
+		value: string,
 	) => { content: string; severity: Severity } | null;
 	placeholder?: string | null;
 	startingValue?: string | null;

@@ -15,11 +15,11 @@ export abstract class PreviewStatusBarEntry extends Disposable {
 		id: string,
 		name: string,
 		alignment: vscode.StatusBarAlignment,
-		priority: number
+		priority: number,
 	) {
 		super();
 		this.entry = this._register(
-			vscode.window.createStatusBarItem(id, alignment, priority)
+			vscode.window.createStatusBarItem(id, alignment, priority),
 		);
 		this.entry.name = name;
 	}

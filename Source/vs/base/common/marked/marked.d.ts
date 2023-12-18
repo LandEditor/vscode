@@ -31,7 +31,7 @@ export function marked(src: string, options?: marked.MarkedOptions): string;
  */
 export function marked(
 	src: string,
-	callback: (error: any, parseResult: string) => void
+	callback: (error: any, parseResult: string) => void,
 ): void;
 
 /**
@@ -44,7 +44,7 @@ export function marked(
 export function marked(
 	src: string,
 	options: marked.MarkedOptions,
-	callback: (error: any, parseResult: string) => void
+	callback: (error: any, parseResult: string) => void,
 ): void;
 
 export class Lexer extends marked.Lexer {}
@@ -72,7 +72,7 @@ export namespace marked {
 	 */
 	function parse(
 		src: string,
-		callback: (error: any, parseResult: string) => void
+		callback: (error: any, parseResult: string) => void,
 	): string;
 
 	/**
@@ -86,7 +86,7 @@ export namespace marked {
 	function parse(
 		src: string,
 		options?: MarkedOptions,
-		callback?: (error: any, parseResult: string) => void
+		callback?: (error: any, parseResult: string) => void,
 	): string;
 
 	/**
@@ -125,7 +125,7 @@ export namespace marked {
 
 	function walkTokens(
 		tokens: Token[] | TokensList,
-		callback: (token: Token) => void
+		callback: (token: Token) => void,
 	): typeof marked;
 
 	/**
@@ -142,12 +142,12 @@ export namespace marked {
 		fences(this: Tokenizer & TokenizerThis, src: string): Tokens.Code | T;
 		heading(
 			this: Tokenizer & TokenizerThis,
-			src: string
+			src: string,
 		): Tokens.Heading | T;
 		hr(this: Tokenizer & TokenizerThis, src: string): Tokens.Hr | T;
 		blockquote(
 			this: Tokenizer & TokenizerThis,
-			src: string
+			src: string,
 		): Tokens.Blockquote | T;
 		list(this: Tokenizer & TokenizerThis, src: string): Tokens.List | T;
 		html(this: Tokenizer & TokenizerThis, src: string): Tokens.HTML | T;
@@ -155,50 +155,50 @@ export namespace marked {
 		table(this: Tokenizer & TokenizerThis, src: string): Tokens.Table | T;
 		lheading(
 			this: Tokenizer & TokenizerThis,
-			src: string
+			src: string,
 		): Tokens.Heading | T;
 		paragraph(
 			this: Tokenizer & TokenizerThis,
-			src: string
+			src: string,
 		): Tokens.Paragraph | T;
 		text(this: Tokenizer & TokenizerThis, src: string): Tokens.Text | T;
 		escape(this: Tokenizer & TokenizerThis, src: string): Tokens.Escape | T;
 		tag(this: Tokenizer & TokenizerThis, src: string): Tokens.Tag | T;
 		link(
 			this: Tokenizer & TokenizerThis,
-			src: string
+			src: string,
 		): Tokens.Image | Tokens.Link | T;
 		reflink(
 			this: Tokenizer & TokenizerThis,
 			src: string,
-			links: Tokens.Link[] | Tokens.Image[]
+			links: Tokens.Link[] | Tokens.Image[],
 		): Tokens.Link | Tokens.Image | Tokens.Text | T;
 		emStrong(
 			this: Tokenizer & TokenizerThis,
 			src: string,
 			maskedSrc: string,
-			prevChar: string
+			prevChar: string,
 		): Tokens.Em | Tokens.Strong | T;
 		codespan(
 			this: Tokenizer & TokenizerThis,
-			src: string
+			src: string,
 		): Tokens.Codespan | T;
 		br(this: Tokenizer & TokenizerThis, src: string): Tokens.Br | T;
 		del(this: Tokenizer & TokenizerThis, src: string): Tokens.Del | T;
 		autolink(
 			this: Tokenizer & TokenizerThis,
 			src: string,
-			mangle: (cap: string) => string
+			mangle: (cap: string) => string,
 		): Tokens.Link | T;
 		url(
 			this: Tokenizer & TokenizerThis,
 			src: string,
-			mangle: (cap: string) => string
+			mangle: (cap: string) => string,
 		): Tokens.Link | T;
 		inlineText(
 			this: Tokenizer & TokenizerThis,
 			src: string,
-			smartypants: (cap: string) => string
+			smartypants: (cap: string) => string,
 		): Tokens.Text | T;
 	}
 
@@ -213,7 +213,7 @@ export namespace marked {
 			this: Renderer | RendererThis,
 			code: string,
 			language: string | undefined,
-			isEscaped: boolean
+			isEscaped: boolean,
 		): string | T;
 		blockquote(this: Renderer | RendererThis, quote: string): string | T;
 		html(this: Renderer | RendererThis, html: string): string | T;
@@ -222,27 +222,27 @@ export namespace marked {
 			text: string,
 			level: 1 | 2 | 3 | 4 | 5 | 6,
 			raw: string,
-			slugger: Slugger
+			slugger: Slugger,
 		): string | T;
 		hr(this: Renderer | RendererThis): string | T;
 		list(
 			this: Renderer | RendererThis,
 			body: string,
 			ordered: boolean,
-			start: number
+			start: number,
 		): string | T;
 		listitem(
 			this: Renderer | RendererThis,
 			text: string,
 			task: boolean,
-			checked: boolean
+			checked: boolean,
 		): string | T;
 		checkbox(this: Renderer | RendererThis, checked: boolean): string | T;
 		paragraph(this: Renderer | RendererThis, text: string): string | T;
 		table(
 			this: Renderer | RendererThis,
 			header: string,
-			body: string
+			body: string,
 		): string | T;
 		tablerow(this: Renderer | RendererThis, content: string): string | T;
 		tablecell(
@@ -251,7 +251,7 @@ export namespace marked {
 			flags: {
 				header: boolean;
 				align: "center" | "left" | "right" | null;
-			}
+			},
 		): string | T;
 		strong(this: Renderer | RendererThis, text: string): string | T;
 		em(this: Renderer | RendererThis, text: string): string | T;
@@ -262,13 +262,13 @@ export namespace marked {
 			this: Renderer | RendererThis,
 			href: string | null,
 			title: string | null,
-			text: string
+			text: string,
 		): string | T;
 		image(
 			this: Renderer | RendererThis,
 			href: string | null,
 			title: string | null,
-			text: string
+			text: string,
 		): string | T;
 		text(this: Renderer | RendererThis, text: string): string | T;
 	}
@@ -299,7 +299,7 @@ export namespace marked {
 		slugger: Slugger;
 		static parse(
 			src: Token[] | TokensList,
-			options?: MarkedOptions
+			options?: MarkedOptions,
 		): string;
 		static parseInline(src: Token[], options?: MarkedOptions): string;
 		parse(src: Token[] | TokensList): string;
@@ -549,7 +549,7 @@ export namespace marked {
 		tokenizer: (
 			this: TokenizerThis,
 			src: string,
-			tokens: Token[] | TokensList
+			tokens: Token[] | TokensList,
 		) => Tokens.Generic | void;
 		childTokens?: string[] | undefined;
 	}
@@ -609,7 +609,7 @@ export namespace marked {
 		highlight?(
 			code: string,
 			lang: string,
-			callback?: (error: any, code?: string) => void
+			callback?: (error: any, code?: string) => void,
 		): string | void;
 
 		/**

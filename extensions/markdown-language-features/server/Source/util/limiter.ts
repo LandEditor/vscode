@@ -56,7 +56,7 @@ export class Limiter<T> {
 			promise.then(iLimitedTask.c, iLimitedTask.e);
 			promise.then(
 				() => this.consumed(),
-				() => this.consumed()
+				() => this.consumed(),
 			);
 		}
 	}

@@ -3,44 +3,44 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { diffSets } from "vs/base/common/collections";
+import { Emitter, Event } from "vs/base/common/event";
+import { Disposable, toDisposable } from "vs/base/common/lifecycle";
+import { BidirectionalMap, ResourceMap } from "vs/base/common/map";
+import { Schemas } from "vs/base/common/network";
+import { ThemeColor } from "vs/base/common/themables";
+import { URI } from "vs/base/common/uri";
 import {
-	IMarkerService,
+	overviewRulerError,
+	overviewRulerInfo,
+	overviewRulerWarning,
+} from "vs/editor/common/core/editorColorRegistry";
+import { Range } from "vs/editor/common/core/range";
+import {
+	IModelDecoration,
+	IModelDecorationMinimapOptions,
+	IModelDecorationOptions,
+	IModelDeltaDecoration,
+	ITextModel,
+	MinimapPosition,
+	OverviewRulerLane,
+	TrackedRangeStickiness,
+} from "vs/editor/common/model";
+import { ClassName } from "vs/editor/common/model/intervalTree";
+import { IMarkerDecorationsService } from "vs/editor/common/services/markerDecorations";
+import { IModelService } from "vs/editor/common/services/model";
+import {
 	IMarker,
+	IMarkerService,
 	MarkerSeverity,
 	MarkerTag,
 } from "vs/platform/markers/common/markers";
-import { Disposable, toDisposable } from "vs/base/common/lifecycle";
-import { URI } from "vs/base/common/uri";
 import {
-	IModelDeltaDecoration,
-	ITextModel,
-	IModelDecorationOptions,
-	TrackedRangeStickiness,
-	OverviewRulerLane,
-	IModelDecoration,
-	MinimapPosition,
-	IModelDecorationMinimapOptions,
-} from "vs/editor/common/model";
-import { ClassName } from "vs/editor/common/model/intervalTree";
-import { themeColorFromId } from "vs/platform/theme/common/themeService";
-import { ThemeColor } from "vs/base/common/themables";
-import {
-	overviewRulerWarning,
-	overviewRulerInfo,
-	overviewRulerError,
-} from "vs/editor/common/core/editorColorRegistry";
-import { IModelService } from "vs/editor/common/services/model";
-import { Range } from "vs/editor/common/core/range";
-import { IMarkerDecorationsService } from "vs/editor/common/services/markerDecorations";
-import { Schemas } from "vs/base/common/network";
-import { Emitter, Event } from "vs/base/common/event";
-import {
+	minimapError,
 	minimapInfo,
 	minimapWarning,
-	minimapError,
 } from "vs/platform/theme/common/colorRegistry";
-import { BidirectionalMap, ResourceMap } from "vs/base/common/map";
-import { diffSets } from "vs/base/common/collections";
+import { themeColorFromId } from "vs/platform/theme/common/themeService";
 
 export class MarkerDecorationsService
 	extends Disposable
@@ -49,7 +49,7 @@ export class MarkerDecorationsService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeMarker = this._register(
-		new Emitter<ITextModel>()
+		new Emitter<ITextModel>(),
 	);
 	readonly onDidChangeMarker: Event<ITextModel> =
 		this._onDidChangeMarker.event;
@@ -119,7 +119,7 @@ export class MarkerDecorationsService
 				?.read({ resource: model.uri })
 				.map((marker) => marker.owner)
 				.forEach((owner) =>
-					this._markerService.remove(owner, [model.uri])
+					this._markerService.remove(owner, [model.uri]),
 				);
 		}
 	}
@@ -148,7 +148,7 @@ class MarkerDecorations extends Disposable {
 			toDisposable(() => {
 				this.model.deltaDecorations([...this._map.values()], []);
 				this._map.clear();
-			})
+			}),
 		);
 	}
 
@@ -158,7 +158,7 @@ class MarkerDecorations extends Disposable {
 
 		const { added, removed } = diffSets(
 			new Set(this._map.keys()),
-			new Set(markers)
+			new Set(markers),
 		);
 
 		if (added.length === 0 && removed.length === 0) {
@@ -166,7 +166,7 @@ class MarkerDecorations extends Disposable {
 		}
 
 		const oldIds: string[] = removed.map(
-			(marker) => this._map.get(marker)!
+			(marker) => this._map.get(marker)!,
 		);
 		const newDecorations: IModelDeltaDecoration[] = added.map((marker) => {
 			return {
@@ -202,7 +202,7 @@ class MarkerDecorations extends Disposable {
 
 	private _createDecorationRange(
 		model: ITextModel,
-		rawMarker: IMarker
+		rawMarker: IMarker,
 	): Range {
 		let ret = Range.lift(rawMarker);
 
@@ -235,7 +235,7 @@ class MarkerDecorations extends Disposable {
 					ret.startLineNumber,
 					word.startColumn,
 					ret.endLineNumber,
-					word.endColumn
+					word.endColumn,
 				);
 			}
 		} else if (
@@ -244,14 +244,14 @@ class MarkerDecorations extends Disposable {
 			ret.startLineNumber === ret.endLineNumber
 		) {
 			const minColumn = model.getLineFirstNonWhitespaceColumn(
-				rawMarker.startLineNumber
+				rawMarker.startLineNumber,
 			);
 			if (minColumn < ret.endColumn) {
 				ret = new Range(
 					ret.startLineNumber,
 					minColumn,
 					ret.endLineNumber,
-					ret.endColumn
+					ret.endColumn,
 				);
 				rawMarker.startColumn = minColumn;
 			}

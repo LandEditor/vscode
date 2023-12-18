@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { AuthenticationSession, authentication, window } from "vscode";
 import { Agent, globalAgent } from "https";
+import { URL } from "url";
 import { graphql } from "@octokit/graphql/dist-types/types";
 import { Octokit } from "@octokit/rest";
 import { httpsOverHttp } from "tunnel";
-import { URL } from "url";
+import { AuthenticationSession, authentication, window } from "vscode";
 
 export class AuthenticationError extends Error {}
 
@@ -25,7 +25,7 @@ function getAgent(url: string | undefined = process.env.HTTPS_PROXY): Agent {
 		});
 	} catch (e) {
 		window.showErrorMessage(
-			`HTTPS_PROXY environment variable ignored: ${e.message}`
+			`HTTPS_PROXY environment variable ignored: ${e.message}`,
 		);
 		return globalAgent;
 	}
@@ -76,7 +76,7 @@ export async function getOctokitGraphql(): Promise<graphql> {
 
 			if (!session) {
 				throw new AuthenticationError(
-					"No GitHub authentication session available."
+					"No GitHub authentication session available.",
 				);
 			}
 

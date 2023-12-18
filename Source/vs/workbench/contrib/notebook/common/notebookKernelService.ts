@@ -74,11 +74,11 @@ export interface INotebookKernel {
 		variableName: string | undefined,
 		kind: "named" | "indexed",
 		start: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): AsyncIterableObject<VariablesResult>;
 }
 
-export const enum ProxyKernelState {
+export enum ProxyKernelState {
 	Disconnected = 1,
 	Connected = 2,
 	Initializing = 3,
@@ -118,7 +118,7 @@ export interface INotebookTextModelLike {
 }
 
 export const INotebookKernelService = createDecorator<INotebookKernelService>(
-	"INotebookKernelService"
+	"INotebookKernelService",
 );
 
 export interface INotebookKernelService {
@@ -132,14 +132,14 @@ export interface INotebookKernelService {
 	registerKernel(kernel: INotebookKernel): IDisposable;
 
 	getMatchingKernel(
-		notebook: INotebookTextModelLike
+		notebook: INotebookTextModelLike,
 	): INotebookKernelMatchResult;
 
 	/**
 	 * Returns the selected or only available kernel.
 	 */
 	getSelectedOrSuggestedKernel(
-		notebook: INotebookTextModelLike
+		notebook: INotebookTextModelLike,
 	): INotebookKernel | undefined;
 
 	/**
@@ -148,7 +148,7 @@ export interface INotebookKernelService {
 	 */
 	selectKernelForNotebook(
 		kernel: INotebookKernel,
-		notebook: INotebookTextModelLike
+		notebook: INotebookTextModelLike,
 	): void;
 
 	/**
@@ -156,7 +156,7 @@ export interface INotebookKernelService {
 	 */
 	preselectKernelForNotebook(
 		kernel: INotebookKernel,
-		notebook: INotebookTextModelLike
+		notebook: INotebookTextModelLike,
 	): void;
 
 	/**
@@ -165,16 +165,16 @@ export interface INotebookKernelService {
 	updateKernelNotebookAffinity(
 		kernel: INotebookKernel,
 		notebook: URI,
-		preference: number | undefined
+		preference: number | undefined,
 	): void;
 
 	//#region Kernel detection tasks
 	readonly onDidChangeKernelDetectionTasks: Event<string>;
 	registerNotebookKernelDetectionTask(
-		task: INotebookKernelDetectionTask
+		task: INotebookKernelDetectionTask,
 	): IDisposable;
 	getKernelDetectionTasks(
-		notebook: INotebookTextModelLike
+		notebook: INotebookTextModelLike,
 	): INotebookKernelDetectionTask[];
 	//#endregion
 
@@ -182,15 +182,15 @@ export interface INotebookKernelService {
 	readonly onDidChangeSourceActions: Event<INotebookSourceActionChangeEvent>;
 	getSourceActions(
 		notebook: INotebookTextModelLike,
-		contextKeyService: IContextKeyService | undefined
+		contextKeyService: IContextKeyService | undefined,
 	): ISourceAction[];
 	getRunningSourceActions(notebook: INotebookTextModelLike): ISourceAction[];
 	registerKernelSourceActionProvider(
 		viewType: string,
-		provider: IKernelSourceActionProvider
+		provider: IKernelSourceActionProvider,
 	): IDisposable;
 	getKernelSourceActions2(
-		notebook: INotebookTextModelLike
+		notebook: INotebookTextModelLike,
 	): Promise<INotebookKernelSourceAction[]>;
 	//#endregion
 
@@ -199,7 +199,7 @@ export interface INotebookKernelService {
 
 export const INotebookKernelHistoryService =
 	createDecorator<INotebookKernelHistoryService>(
-		"INotebookKernelHistoryService"
+		"INotebookKernelHistoryService",
 	);
 export interface INotebookKernelHistoryService {
 	_serviceBrand: undefined;

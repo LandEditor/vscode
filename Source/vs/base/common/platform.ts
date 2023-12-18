@@ -131,8 +131,8 @@ else if (typeof navigator === "object" && !isElectronRenderer) {
 		// how it's able to resolve the strings.
 		nls.localize(
 			{ key: "ensureLoaderPluginIsLoaded", comment: ["{Locked}"] },
-			"_"
-		)
+			"_",
+		),
 	);
 
 	_locale = configuredLocale || LANGUAGE_DEFAULT;
@@ -145,11 +145,11 @@ else {
 	console.error("Unable to resolve platform.");
 }
 
-export const enum Platform {
-	Web,
-	Mac,
-	Linux,
-	Windows,
+export enum Platform {
+	Web = 0,
+	Mac = 1,
+	Linux = 2,
+	Windows = 3,
 }
 export type PlatformName = "Web" | "Windows" | "Mac" | "Linux";
 
@@ -288,7 +288,7 @@ export const setTimeout0 = (() => {
 	return (callback: () => void) => setTimeout(callback);
 })();
 
-export const enum OperatingSystem {
+export enum OperatingSystem {
 	Windows = 1,
 	Macintosh = 2,
 	Linux = 3,
@@ -297,8 +297,8 @@ export const OS =
 	_isMacintosh || _isIOS
 		? OperatingSystem.Macintosh
 		: _isWindows
-			? OperatingSystem.Windows
-			: OperatingSystem.Linux;
+		  ? OperatingSystem.Windows
+		  : OperatingSystem.Linux;
 
 let _isLittleEndian = true;
 let _isLittleEndianComputed = false;

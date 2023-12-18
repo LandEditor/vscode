@@ -8,54 +8,54 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { alert } from "vs/base/browser/ui/aria/aria";
+import { IAction } from "vs/base/common/actions";
+import { Codicon } from "vs/base/common/codicons";
 import { Disposable } from "vs/base/common/lifecycle";
+import * as strings from "vs/base/common/strings";
+import { ThemeIcon } from "vs/base/common/themables";
 import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
+import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
+import { HoverController } from "vs/editor/contrib/hover/browser/hover";
+import { InlineCompletionContextKeys } from "vs/editor/contrib/inlineCompletions/browser/inlineCompletionContextKeys";
+import { InlineCompletionsController } from "vs/editor/contrib/inlineCompletions/browser/inlineCompletionsController";
 import { localize } from "vs/nls";
+import {
+	AccessibleNotificationEvent,
+	IAccessibleNotificationService,
+} from "vs/platform/accessibility/common/accessibility";
+import { ICommandService } from "vs/platform/commands/common/commands";
+import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
+import { IContextViewService } from "vs/platform/contextview/browser/contextView";
 import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import {
+	IListService,
+	WorkbenchList,
+} from "vs/platform/list/browser/listService";
+import { getNotificationFromContext } from "vs/workbench/browser/parts/notifications/notificationsCommands";
+import { NotificationFocusedContext } from "vs/workbench/common/contextkeys";
+import { INotificationViewItem } from "vs/workbench/common/notifications";
 import {
 	AccessibilityVerbositySettingId,
 	AccessibleViewProviderId,
 	accessibleViewIsShown,
 } from "vs/workbench/contrib/accessibility/browser/accessibilityConfiguration";
-import * as strings from "vs/base/common/strings";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import { HoverController } from "vs/editor/contrib/hover/browser/hover";
-import { IContextViewService } from "vs/platform/contextview/browser/contextView";
-import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
-import { getNotificationFromContext } from "vs/workbench/browser/parts/notifications/notificationsCommands";
 import {
-	IListService,
-	WorkbenchList,
-} from "vs/platform/list/browser/listService";
-import { NotificationFocusedContext } from "vs/workbench/common/contextkeys";
-import {
-	IAccessibleViewService,
-	IAccessibleViewOptions,
 	AccessibleViewType,
+	IAccessibleViewOptions,
+	IAccessibleViewService,
 } from "vs/workbench/contrib/accessibility/browser/accessibleView";
-import { IHoverService } from "vs/workbench/services/hover/browser/hover";
-import { alert } from "vs/base/browser/ui/aria/aria";
 import {
 	AccessibilityHelpAction,
 	AccessibleViewAction,
 } from "vs/workbench/contrib/accessibility/browser/accessibleViewActions";
-import { IAction } from "vs/base/common/actions";
-import { INotificationViewItem } from "vs/workbench/common/notifications";
-import { ThemeIcon } from "vs/base/common/themables";
-import { Codicon } from "vs/base/common/codicons";
-import { InlineCompletionsController } from "vs/editor/contrib/inlineCompletions/browser/inlineCompletionsController";
-import { InlineCompletionContextKeys } from "vs/editor/contrib/inlineCompletions/browser/inlineCompletionContextKeys";
-import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
-import {
-	AccessibleNotificationEvent,
-	IAccessibleNotificationService,
-} from "vs/platform/accessibility/common/accessibility";
+import { IHoverService } from "vs/workbench/services/hover/browser/hover";
 
 export function descriptionForCommand(
 	commandId: string,
 	msg: string,
 	noKbMsg: string,
-	keybindingService: IKeybindingService
+	keybindingService: IKeybindingService,
 ): string {
 	const kb = keybindingService.lookupKeybinding(commandId);
 	if (kb) {
@@ -78,7 +78,7 @@ export class HoverAccessibleViewContribution extends Disposable {
 				"hover",
 				(accessor) => {
 					const accessibleViewService = accessor.get(
-						IAccessibleViewService
+						IAccessibleViewService,
 					);
 					const codeEditorService = accessor.get(ICodeEditorService);
 					const editor =
@@ -86,7 +86,7 @@ export class HoverAccessibleViewContribution extends Disposable {
 						codeEditorService.getFocusedCodeEditor();
 					const editorHoverContent = editor
 						? HoverController.get(editor)?.getWidgetContent() ??
-							undefined
+						  undefined
 						: undefined;
 					if (!editor || !editorHoverContent) {
 						return false;
@@ -107,8 +107,8 @@ export class HoverAccessibleViewContribution extends Disposable {
 					});
 					return true;
 				},
-				EditorContextKeys.hoverFocused
-			)
+				EditorContextKeys.hoverFocused,
+			),
 		);
 		this._register(
 			AccessibleViewAction.addImplementation(
@@ -116,7 +116,7 @@ export class HoverAccessibleViewContribution extends Disposable {
 				"extension-hover",
 				(accessor) => {
 					const accessibleViewService = accessor.get(
-						IAccessibleViewService
+						IAccessibleViewService,
 					);
 					const contextViewService =
 						accessor.get(IContextViewService);
@@ -128,7 +128,7 @@ export class HoverAccessibleViewContribution extends Disposable {
 
 					if (
 						contextViewElement.classList.contains(
-							"accessible-view-container"
+							"accessible-view-container",
 						) ||
 						!extensionHoverContent
 					) {
@@ -148,8 +148,8 @@ export class HoverAccessibleViewContribution extends Disposable {
 						options: this._options,
 					});
 					return true;
-				}
-			)
+				},
+			),
 		);
 		this._register(
 			AccessibilityHelpAction.addImplementation(
@@ -161,8 +161,8 @@ export class HoverAccessibleViewContribution extends Disposable {
 						.showAccessibleViewHelp();
 					return true;
 				},
-				accessibleViewIsShown
-			)
+				accessibleViewIsShown,
+			),
 		);
 	}
 }
@@ -177,12 +177,12 @@ export class NotificationAccessibleViewContribution extends Disposable {
 				"notifications",
 				(accessor) => {
 					const accessibleViewService = accessor.get(
-						IAccessibleViewService
+						IAccessibleViewService,
 					);
 					const listService = accessor.get(IListService);
 					const commandService = accessor.get(ICommandService);
 					const accessibleNotificationService = accessor.get(
-						IAccessibleNotificationService
+						IAccessibleNotificationService,
 					);
 
 					function renderAccessibleView(): boolean {
@@ -205,7 +205,7 @@ export class NotificationAccessibleViewContribution extends Disposable {
 
 						function focusList(): void {
 							commandService.executeCommand(
-								"notifications.showList"
+								"notifications.showList",
 							);
 							if (list && notificationIndex !== undefined) {
 								list.domFocus();
@@ -220,7 +220,7 @@ export class NotificationAccessibleViewContribution extends Disposable {
 							return false;
 						}
 						notification.onDidClose(() =>
-							accessibleViewService.next()
+							accessibleViewService.next(),
 						);
 						accessibleViewService.show({
 							id: AccessibleViewProviderId.Notification,
@@ -230,13 +230,13 @@ export class NotificationAccessibleViewContribution extends Disposable {
 											"notification.accessibleViewSrc",
 											"{0} Source: {1}",
 											message,
-											notification.source
-										)
+											notification.source,
+									  )
 									: localize(
 											"notification.accessibleView",
 											"{0}",
-											message
-										);
+											message,
+									  );
 							},
 							onClose(): void {
 								focusList();
@@ -250,7 +250,7 @@ export class NotificationAccessibleViewContribution extends Disposable {
 								alertFocusChange(
 									notificationIndex,
 									length,
-									"next"
+									"next",
 								);
 								renderAccessibleView();
 							},
@@ -263,7 +263,7 @@ export class NotificationAccessibleViewContribution extends Disposable {
 								alertFocusChange(
 									notificationIndex,
 									length,
-									"previous"
+									"previous",
 								);
 								renderAccessibleView();
 							},
@@ -272,22 +272,22 @@ export class NotificationAccessibleViewContribution extends Disposable {
 							options: { type: AccessibleViewType.View },
 							actions: getActionsFromNotification(
 								notification,
-								accessibleNotificationService
+								accessibleNotificationService,
 							),
 						});
 						return true;
 					}
 					return renderAccessibleView();
 				},
-				NotificationFocusedContext
-			)
+				NotificationFocusedContext,
+			),
 		);
 	}
 }
 
 function getActionsFromNotification(
 	notification: INotificationViewItem,
-	accessibleNotificationService: IAccessibleNotificationService
+	accessibleNotificationService: IAccessibleNotificationService,
 ): IAction[] | undefined {
 	let actions = undefined;
 	if (notification.actions) {
@@ -310,7 +310,7 @@ function getActionsFromNotification(
 		}
 	}
 	const manageExtension = actions?.find((a) =>
-		a.label.includes("Manage Extension")
+		a.label.includes("Manage Extension"),
 	);
 	if (manageExtension) {
 		manageExtension.class = ThemeIcon.asClassName(Codicon.gear);
@@ -323,7 +323,7 @@ function getActionsFromNotification(
 			run: () => {
 				notification.close();
 				accessibleNotificationService.notify(
-					AccessibleNotificationEvent.Clear
+					AccessibleNotificationEvent.Clear,
 				);
 			},
 			enabled: true,
@@ -336,7 +336,7 @@ function getActionsFromNotification(
 export function alertFocusChange(
 	index: number | undefined,
 	length: number | undefined,
-	type: "next" | "previous"
+	type: "next" | "previous",
 ): void {
 	if (index === undefined || length === undefined) {
 		return;
@@ -364,7 +364,7 @@ export class InlineCompletionsAccessibleViewContribution extends Disposable {
 				"inline-completions",
 				(accessor) => {
 					const accessibleViewService = accessor.get(
-						IAccessibleViewService
+						IAccessibleViewService,
 					);
 					const codeEditorService = accessor.get(ICodeEditorService);
 					const show = () => {
@@ -376,14 +376,14 @@ export class InlineCompletionsAccessibleViewContribution extends Disposable {
 						}
 						const model =
 							InlineCompletionsController.get(
-								editor
+								editor,
 							)?.model.get();
 						const state = model?.state.get();
 						if (!model || !state) {
 							return false;
 						}
 						const lineText = model.textModel.getLineContent(
-							state.ghostText.lineNumber
+							state.ghostText.lineNumber,
 						);
 						const ghostText =
 							state.ghostText.renderForScreenReader(lineText);
@@ -416,11 +416,11 @@ export class InlineCompletionsAccessibleViewContribution extends Disposable {
 						return true;
 					};
 					ContextKeyExpr.and(
-						InlineCompletionContextKeys.inlineSuggestionVisible
+						InlineCompletionContextKeys.inlineSuggestionVisible,
 					);
 					return show();
-				}
-			)
+				},
+			),
 		);
 	}
 }

@@ -3,30 +3,30 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { distinct } from "vs/base/common/arrays";
+import { IStringDictionary } from "vs/base/common/collections";
 import { Emitter, Event } from "vs/base/common/event";
 import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
+import { isString } from "vs/base/common/types";
+import {
+	IExtensionManagementService,
+	IGalleryExtension,
+} from "vs/platform/extensionManagement/common/extensionManagement";
+import {
+	adoptToGalleryExtensionId,
+	areSameExtensions,
+	getExtensionId,
+} from "vs/platform/extensionManagement/common/extensionManagementUtil";
+import { IExtension } from "vs/platform/extensions/common/extensions";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { ILogService } from "vs/platform/log/common/log";
+import { IProductService } from "vs/platform/product/common/productService";
 import {
 	IProfileStorageValueChangeEvent,
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
-import {
-	adoptToGalleryExtensionId,
-	areSameExtensions,
-	getExtensionId,
-} from "vs/platform/extensionManagement/common/extensionManagementUtil";
-import { IProductService } from "vs/platform/product/common/productService";
-import { distinct } from "vs/base/common/arrays";
-import { ILogService } from "vs/platform/log/common/log";
-import { IExtension } from "vs/platform/extensions/common/extensions";
-import { isString } from "vs/base/common/types";
-import { IStringDictionary } from "vs/base/common/collections";
-import {
-	IExtensionManagementService,
-	IGalleryExtension,
-} from "vs/platform/extensionManagement/common/extensionManagement";
 
 export interface IExtensionIdWithVersion {
 	id: string;
@@ -41,25 +41,25 @@ export interface IExtensionStorageService {
 
 	getExtensionState(
 		extension: IExtension | IGalleryExtension | string,
-		global: boolean
+		global: boolean,
 	): IStringDictionary<any> | undefined;
 	getExtensionStateRaw(
 		extension: IExtension | IGalleryExtension | string,
-		global: boolean
+		global: boolean,
 	): string | undefined;
 	setExtensionState(
 		extension: IExtension | IGalleryExtension | string,
 		state: IStringDictionary<any> | undefined,
-		global: boolean
+		global: boolean,
 	): void;
 
 	readonly onDidChangeExtensionStorageToSync: Event<void>;
 	setKeysForSync(
 		extensionIdWithVersion: IExtensionIdWithVersion,
-		keys: string[]
+		keys: string[],
 	): void;
 	getKeysForSync(
-		extensionIdWithVersion: IExtensionIdWithVersion
+		extensionIdWithVersion: IExtensionIdWithVersion,
 	): string[] | undefined;
 
 	addToMigrationList(from: string, to: string): void;
@@ -94,7 +94,7 @@ export class ExtensionStorageService
 	/* TODO @sandy081: This has to be done across all profiles */
 	static async removeOutdatedExtensionVersions(
 		extensionManagementService: IExtensionManagementService,
-		storageService: IStorageService
+		storageService: IStorageService,
 	): Promise<void> {
 		const extensions = await extensionManagementService.getInstalled();
 		const extensionVersionsToRemove: string[] = [];
@@ -102,15 +102,15 @@ export class ExtensionStorageService
 			id,
 			versions,
 		] of ExtensionStorageService.readAllExtensionsWithKeysForSync(
-			storageService
+			storageService,
 		)) {
 			const extensionVersion = extensions.find((e) =>
-				areSameExtensions(e.identifier, { id })
+				areSameExtensions(e.identifier, { id }),
 			)?.manifest.version;
 			for (const version of versions) {
 				if (extensionVersion !== version) {
 					extensionVersionsToRemove.push(
-						ExtensionStorageService.toKey({ id, version })
+						ExtensionStorageService.toKey({ id, version }),
 					);
 				}
 			}
@@ -121,23 +121,23 @@ export class ExtensionStorageService
 	}
 
 	private static readAllExtensionsWithKeysForSync(
-		storageService: IStorageService
+		storageService: IStorageService,
 	): Map<string, string[]> {
 		const extensionsWithKeysForSync = new Map<string, string[]>();
 		const keys = storageService.keys(
 			StorageScope.PROFILE,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 		for (const key of keys) {
 			const extensionIdWithVersion = ExtensionStorageService.fromKey(key);
 			if (extensionIdWithVersion) {
 				let versions = extensionsWithKeysForSync.get(
-					extensionIdWithVersion.id.toLowerCase()
+					extensionIdWithVersion.id.toLowerCase(),
 				);
 				if (!versions) {
 					extensionsWithKeysForSync.set(
 						extensionIdWithVersion.id.toLowerCase(),
-						(versions = [])
+						(versions = []),
 					);
 				}
 				versions.push(extensionIdWithVersion.version);
@@ -147,7 +147,7 @@ export class ExtensionStorageService
 	}
 
 	private readonly _onDidChangeExtensionStorageToSync = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onDidChangeExtensionStorageToSync =
 		this._onDidChangeExtensionStorageToSync.event;
@@ -188,16 +188,16 @@ export class ExtensionStorageService
 				undefined
 			) {
 				this.extensionsWithKeysForSync.delete(
-					extensionIdWithVersion.id.toLowerCase()
+					extensionIdWithVersion.id.toLowerCase(),
 				);
 			} else {
 				let versions = this.extensionsWithKeysForSync.get(
-					extensionIdWithVersion.id.toLowerCase()
+					extensionIdWithVersion.id.toLowerCase(),
 				);
 				if (!versions) {
 					this.extensionsWithKeysForSync.set(
 						extensionIdWithVersion.id.toLowerCase(),
-						(versions = [])
+						(versions = []),
 					);
 				}
 				versions.push(extensionIdWithVersion.version);
@@ -208,7 +208,7 @@ export class ExtensionStorageService
 	}
 
 	private getExtensionId(
-		extension: IExtension | IGalleryExtension | string
+		extension: IExtension | IGalleryExtension | string,
 	): string {
 		if (isString(extension)) {
 			return extension;
@@ -224,7 +224,7 @@ export class ExtensionStorageService
 
 	getExtensionState(
 		extension: IExtension | IGalleryExtension | string,
-		global: boolean
+		global: boolean,
 	): IStringDictionary<any> | undefined {
 		const extensionId = this.getExtensionId(extension);
 		const jsonValue = this.getExtensionStateRaw(extension, global);
@@ -235,7 +235,7 @@ export class ExtensionStorageService
 				// Do not fail this call but log it for diagnostics
 				// https://github.com/microsoft/vscode/issues/132777
 				this.logService.error(
-					`[mainThreadStorage] unexpected error parsing storage contents (extensionId: ${extensionId}, global: ${global}): ${error}`
+					`[mainThreadStorage] unexpected error parsing storage contents (extensionId: ${extensionId}, global: ${global}): ${error}`,
 				);
 			}
 		}
@@ -245,12 +245,12 @@ export class ExtensionStorageService
 
 	getExtensionStateRaw(
 		extension: IExtension | IGalleryExtension | string,
-		global: boolean
+		global: boolean,
 	): string | undefined {
 		const extensionId = this.getExtensionId(extension);
 		const rawState = this.storageService.get(
 			extensionId,
-			global ? StorageScope.PROFILE : StorageScope.WORKSPACE
+			global ? StorageScope.PROFILE : StorageScope.WORKSPACE,
 		);
 
 		if (
@@ -261,7 +261,7 @@ export class ExtensionStorageService
 			this.logService.warn(
 				`[mainThreadStorage] large extension state detected (extensionId: ${extensionId}, global: ${global}): ${
 					rawState.length / 1024
-				}kb. Consider to use 'storageUri' or 'globalStorageUri' to store this data on disk instead.`
+				}kb. Consider to use 'storageUri' or 'globalStorageUri' to store this data on disk instead.`,
 			);
 		}
 
@@ -271,38 +271,38 @@ export class ExtensionStorageService
 	setExtensionState(
 		extension: IExtension | IGalleryExtension | string,
 		state: IStringDictionary<any> | undefined,
-		global: boolean
+		global: boolean,
 	): void {
 		const extensionId = this.getExtensionId(extension);
 		if (state === undefined) {
 			this.storageService.remove(
 				extensionId,
-				global ? StorageScope.PROFILE : StorageScope.WORKSPACE
+				global ? StorageScope.PROFILE : StorageScope.WORKSPACE,
 			);
 		} else {
 			this.storageService.store(
 				extensionId,
 				JSON.stringify(state),
 				global ? StorageScope.PROFILE : StorageScope.WORKSPACE,
-				StorageTarget.MACHINE /* Extension state is synced separately through extensions */
+				StorageTarget.MACHINE /* Extension state is synced separately through extensions */,
 			);
 		}
 	}
 
 	setKeysForSync(
 		extensionIdWithVersion: IExtensionIdWithVersion,
-		keys: string[]
+		keys: string[],
 	): void {
 		this.storageService.store(
 			ExtensionStorageService.toKey(extensionIdWithVersion),
 			JSON.stringify(keys),
 			StorageScope.PROFILE,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 	}
 
 	getKeysForSync(
-		extensionIdWithVersion: IExtensionIdWithVersion
+		extensionIdWithVersion: IExtensionIdWithVersion,
 	): string[] | undefined {
 		const extensionKeysForSyncFromProduct =
 			this.productService.extensionSyncedKeys?.[
@@ -310,7 +310,7 @@ export class ExtensionStorageService
 			];
 		const extensionKeysForSyncFromStorageValue = this.storageService.get(
 			ExtensionStorageService.toKey(extensionIdWithVersion),
-			StorageScope.PROFILE
+			StorageScope.PROFILE,
 		);
 		const extensionKeysForSyncFromStorage =
 			extensionKeysForSyncFromStorageValue
@@ -322,7 +322,7 @@ export class ExtensionStorageService
 			? distinct([
 					...extensionKeysForSyncFromStorage,
 					...extensionKeysForSyncFromProduct,
-				])
+			  ])
 			: extensionKeysForSyncFromStorage ||
 					extensionKeysForSyncFromProduct;
 	}
@@ -331,7 +331,7 @@ export class ExtensionStorageService
 		if (from !== to) {
 			// remove the duplicates
 			const migrationList: [string, string][] = this.migrationList.filter(
-				(entry) => !entry.includes(from) && !entry.includes(to)
+				(entry) => !entry.includes(from) && !entry.includes(to),
 			);
 			migrationList.push([from, to]);
 			this.migrationList = migrationList;
@@ -347,7 +347,7 @@ export class ExtensionStorageService
 		const value = this.storageService.get(
 			"extensionStorage.migrationList",
 			StorageScope.APPLICATION,
-			"[]"
+			"[]",
 		);
 		try {
 			const migrationList = JSON.parse(value);
@@ -366,12 +366,12 @@ export class ExtensionStorageService
 				"extensionStorage.migrationList",
 				JSON.stringify(migrationList),
 				StorageScope.APPLICATION,
-				StorageTarget.MACHINE
+				StorageTarget.MACHINE,
 			);
 		} else {
 			this.storageService.remove(
 				"extensionStorage.migrationList",
-				StorageScope.APPLICATION
+				StorageScope.APPLICATION,
 			);
 		}
 	}

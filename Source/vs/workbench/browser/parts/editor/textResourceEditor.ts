@@ -3,43 +3,43 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { CancellationToken } from "vs/base/common/cancellation";
 import { assertIsDefined } from "vs/base/common/types";
 import { ICodeEditor, IPasteEvent } from "vs/editor/browser/editorBrowser";
+import {
+	EditorOption,
+	IEditorOptions as ICodeEditorOptions,
+} from "vs/editor/common/config/editorOptions";
+import {
+	ICodeEditorViewState,
+	ScrollType,
+} from "vs/editor/common/editorCommon";
+import { ILanguageService } from "vs/editor/common/languages/language";
+import { PLAINTEXT_LANGUAGE_ID } from "vs/editor/common/languages/modesRegistry";
+import { ModelConstants } from "vs/editor/common/model";
+import { IModelService } from "vs/editor/common/services/model";
+import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
+import { ITextEditorOptions } from "vs/platform/editor/common/editor";
+import { IFileService } from "vs/platform/files/common/files";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IStorageService } from "vs/platform/storage/common/storage";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import { AbstractTextCodeEditor } from "vs/workbench/browser/parts/editor/textCodeEditor";
 import {
 	IEditorOpenContext,
 	isTextEditorViewState,
 } from "vs/workbench/common/editor";
 import { EditorInput } from "vs/workbench/common/editor/editorInput";
 import { applyTextEditorOptions } from "vs/workbench/common/editor/editorOptions";
+import { BaseTextEditorModel } from "vs/workbench/common/editor/textEditorModel";
 import {
 	AbstractTextResourceEditorInput,
 	TextResourceEditorInput,
 } from "vs/workbench/common/editor/textResourceEditorInput";
-import { BaseTextEditorModel } from "vs/workbench/common/editor/textEditorModel";
-import { UntitledTextEditorInput } from "vs/workbench/services/untitled/common/untitledTextEditorInput";
-import { AbstractTextCodeEditor } from "vs/workbench/browser/parts/editor/textCodeEditor";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { IStorageService } from "vs/platform/storage/common/storage";
-import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import {
-	ScrollType,
-	ICodeEditorViewState,
-} from "vs/editor/common/editorCommon";
 import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
-import { CancellationToken } from "vs/base/common/cancellation";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { IModelService } from "vs/editor/common/services/model";
-import { ILanguageService } from "vs/editor/common/languages/language";
-import { PLAINTEXT_LANGUAGE_ID } from "vs/editor/common/languages/modesRegistry";
-import {
-	EditorOption,
-	IEditorOptions as ICodeEditorOptions,
-} from "vs/editor/common/config/editorOptions";
-import { ModelConstants } from "vs/editor/common/model";
-import { ITextEditorOptions } from "vs/platform/editor/common/editor";
-import { IFileService } from "vs/platform/files/common/files";
+import { UntitledTextEditorInput } from "vs/workbench/services/untitled/common/untitledTextEditorInput";
 
 /**
  * An editor implementation that is capable of showing the contents of resource inputs. Uses
@@ -56,7 +56,7 @@ export abstract class AbstractTextResourceEditor extends AbstractTextCodeEditor<
 		@IThemeService themeService: IThemeService,
 		@IEditorGroupsService editorGroupService: IEditorGroupsService,
 		@IEditorService editorService: IEditorService,
-		@IFileService fileService: IFileService
+		@IFileService fileService: IFileService,
 	) {
 		super(
 			id,
@@ -67,7 +67,7 @@ export abstract class AbstractTextResourceEditor extends AbstractTextCodeEditor<
 			themeService,
 			editorService,
 			editorGroupService,
-			fileService
+			fileService,
 		);
 	}
 
@@ -75,7 +75,7 @@ export abstract class AbstractTextResourceEditor extends AbstractTextCodeEditor<
 		input: AbstractTextResourceEditorInput,
 		options: ITextEditorOptions | undefined,
 		context: IEditorOpenContext,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void> {
 		// Set input and resolve
 		await super.setInput(input, options, context, token);
@@ -119,7 +119,7 @@ export abstract class AbstractTextResourceEditor extends AbstractTextCodeEditor<
 		// a resolved model might have more specific information about being
 		// readonly or not that the input did not have.
 		control.updateOptions(
-			this.getReadonlyConfiguration(resolvedModel.isReadonly())
+			this.getReadonlyConfiguration(resolvedModel.isReadonly()),
 		);
 	}
 
@@ -141,7 +141,7 @@ export abstract class AbstractTextResourceEditor extends AbstractTextCodeEditor<
 					lineNumber: lastLine,
 					column: model.getLineMaxColumn(lastLine),
 				},
-				ScrollType.Smooth
+				ScrollType.Smooth,
 			);
 		}
 	}
@@ -193,7 +193,7 @@ export class TextResourceEditor extends AbstractTextResourceEditor {
 
 	protected override createEditorControl(
 		parent: HTMLElement,
-		configuration: ICodeEditorOptions
+		configuration: ICodeEditorOptions,
 	): void {
 		super.createEditorControl(parent, configuration);
 
@@ -202,7 +202,7 @@ export class TextResourceEditor extends AbstractTextResourceEditor {
 		const control = this.editorControl;
 		if (control) {
 			this._register(
-				control.onDidPaste((e) => this.onDidEditorPaste(e, control))
+				control.onDidPaste((e) => this.onDidEditorPaste(e, control)),
 			);
 		}
 	}
@@ -262,8 +262,8 @@ export class TextResourceEditor extends AbstractTextResourceEditor {
 						.getLineContent(1)
 						.substr(
 							0,
-							ModelConstants.FIRST_LINE_DETECTION_LENGTH_LIMIT
-						)
+							ModelConstants.FIRST_LINE_DETECTION_LENGTH_LIMIT,
+						),
 				) ?? undefined;
 			if (guess) {
 				candidateLanguage = { id: guess, source: "guess" };
@@ -283,14 +283,14 @@ export class TextResourceEditor extends AbstractTextResourceEditor {
 				this.input.model.setLanguageId(candidateLanguage.id);
 			} else {
 				textModel.setLanguage(
-					this.languageService.createById(candidateLanguage.id)
+					this.languageService.createById(candidateLanguage.id),
 				);
 			}
 
 			const opts = this.modelService.getCreationOptions(
 				textModel.getLanguageId(),
 				textModel.uri,
-				textModel.isForSimpleWidget
+				textModel.isForSimpleWidget,
 			);
 			textModel.detectIndentation(opts.insertSpaces, opts.tabSize);
 		}

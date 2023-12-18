@@ -21,7 +21,7 @@ export const recommendedDeps = [
 ];
 
 export const referenceGeneratedDepsByArch = {
-	"amd64": [
+	amd64: [
 		"ca-certificates",
 		"libasound2 (>= 1.0.17)",
 		"libatk-bridge2.0-0 (>= 2.5.3)",
@@ -60,7 +60,7 @@ export const referenceGeneratedDepsByArch = {
 		"xdg-utils (>= 1.0.2)",
 		"zlib1g (>= 1:1.2.3.4)",
 	],
-	"armhf": [
+	armhf: [
 		"ca-certificates",
 		"libasound2 (>= 1.0.17)",
 		"libatk-bridge2.0-0 (>= 2.5.3)",
@@ -102,7 +102,7 @@ export const referenceGeneratedDepsByArch = {
 		"libxrandr2",
 		"xdg-utils (>= 1.0.2)",
 	],
-	"arm64": [
+	arm64: [
 		"ca-certificates",
 		"libasound2 (>= 1.0.17)",
 		"libatk-bridge2.0-0 (>= 2.5.3)",

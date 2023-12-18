@@ -7,12 +7,12 @@ import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
 import { ICodeEditor } from "vs/editor/browser/editorBrowser";
 import {
 	EditorAction,
-	registerEditorAction,
 	ServicesAccessor,
+	registerEditorAction,
 } from "vs/editor/browser/editorExtensions";
 import { ReplaceCommand } from "vs/editor/common/commands/replaceCommand";
-import { MoveOperations } from "vs/editor/common/cursor/cursorMoveOperations";
 import { Range } from "vs/editor/common/core/range";
+import { MoveOperations } from "vs/editor/common/cursor/cursorMoveOperations";
 import { ICommand } from "vs/editor/common/editorCommon";
 import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
 import * as nls from "vs/nls";
@@ -71,31 +71,31 @@ class TransposeLettersAction extends EditorAction {
 					: MoveOperations.rightPosition(
 							model,
 							selection.getPosition().lineNumber,
-							selection.getPosition().column
-						);
+							selection.getPosition().column,
+					  );
 
 			const middlePosition = MoveOperations.leftPosition(
 				model,
-				endPosition
+				endPosition,
 			);
 			const beginPosition = MoveOperations.leftPosition(
 				model,
-				middlePosition
+				middlePosition,
 			);
 
 			const leftChar = model.getValueInRange(
-				Range.fromPositions(beginPosition, middlePosition)
+				Range.fromPositions(beginPosition, middlePosition),
 			);
 			const rightChar = model.getValueInRange(
-				Range.fromPositions(middlePosition, endPosition)
+				Range.fromPositions(middlePosition, endPosition),
 			);
 
 			const replaceRange = Range.fromPositions(
 				beginPosition,
-				endPosition
+				endPosition,
 			);
 			commands.push(
-				new ReplaceCommand(replaceRange, rightChar + leftChar)
+				new ReplaceCommand(replaceRange, rightChar + leftChar),
 			);
 		}
 

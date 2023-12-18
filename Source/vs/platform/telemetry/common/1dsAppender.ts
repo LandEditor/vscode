@@ -29,7 +29,7 @@ export interface IAppInsightsCore {
 	track(item: ITelemetryItem | IExtendedTelemetryItem): void;
 	unload(
 		isAsync: boolean,
-		unloadComplete: (unloadState: ITelemetryUnloadState) => void
+		unloadComplete: (unloadState: ITelemetryUnloadState) => void,
 	): void;
 }
 
@@ -39,7 +39,7 @@ const endpointHealthUrl = "https://mobile.events.data.microsoft.com/ping";
 async function getClient(
 	instrumentationKey: string,
 	addInternalFlag?: boolean,
-	xhrOverride?: IXHROverride
+	xhrOverride?: IXHROverride,
 ): Promise<IAppInsightsCore> {
 	const oneDs = await importAMDNodeModule<
 		typeof import("@microsoft/1ds-core-js")
@@ -106,7 +106,7 @@ export abstract class AbstractOneDataSystemAppender
 		private _eventPrefix: string,
 		private _defaultData: { [key: string]: any } | null,
 		iKeyOrClientFactory: string | (() => IAppInsightsCore), // allow factory function for testing
-		private _xhrOverride?: IXHROverride
+		private _xhrOverride?: IXHROverride,
 	) {
 		if (!this._defaultData) {
 			this._defaultData = {};
@@ -134,7 +134,7 @@ export abstract class AbstractOneDataSystemAppender
 			this._asyncAiCore = getClient(
 				this._aiCoreOrKey,
 				this._isInternalTelemetry,
-				this._xhrOverride
+				this._xhrOverride,
 			);
 		}
 
@@ -145,7 +145,7 @@ export abstract class AbstractOneDataSystemAppender
 			(err) => {
 				onUnexpectedError(err);
 				console.error(err);
-			}
+			},
 		);
 	}
 

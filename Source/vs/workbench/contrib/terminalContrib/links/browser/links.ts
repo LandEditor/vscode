@@ -4,20 +4,20 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IBufferLine, IBufferRange, Terminal } from "@xterm/xterm";
+import { Event } from "vs/base/common/event";
+import { IDisposable } from "vs/base/common/lifecycle";
 import { URI } from "vs/base/common/uri";
-import { IHoverAction } from "vs/workbench/services/hover/browser/hover";
+import { ITextEditorSelection } from "vs/platform/editor/common/editor";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { ITerminalBackend } from "vs/platform/terminal/common/terminal";
+import { ITerminalExternalLinkProvider } from "vs/workbench/contrib/terminal/browser/terminal";
 import { ITerminalProcessManager } from "vs/workbench/contrib/terminal/common/terminal";
 import { IParsedLink } from "vs/workbench/contrib/terminalContrib/links/browser/terminalLinkParsing";
-import { IDisposable } from "vs/base/common/lifecycle";
-import { ITerminalExternalLinkProvider } from "vs/workbench/contrib/terminal/browser/terminal";
-import { Event } from "vs/base/common/event";
-import { ITerminalBackend } from "vs/platform/terminal/common/terminal";
-import { ITextEditorSelection } from "vs/platform/editor/common/editor";
+import { IHoverAction } from "vs/workbench/services/hover/browser/hover";
 
 export const ITerminalLinkProviderService =
 	createDecorator<ITerminalLinkProviderService>(
-		"terminalLinkProviderService"
+		"terminalLinkProviderService",
 	);
 export interface ITerminalLinkProviderService {
 	readonly _serviceBrand: undefined;
@@ -38,7 +38,7 @@ export interface ITerminalLinkResolver {
 			"initialCwd" | "os" | "remoteAuthority" | "userHome"
 		> & { backend?: Pick<ITerminalBackend, "getWslPath"> },
 		link: string,
-		uri?: URI
+		uri?: URI,
 	): Promise<ResolvedLink>;
 }
 
@@ -70,7 +70,7 @@ export interface ITerminalLinkDetector {
 	detect(
 		lines: IBufferLine[],
 		startLine: number,
-		endLine: number
+		endLine: number,
 	): ITerminalSimpleLink[] | Promise<ITerminalSimpleLink[]>;
 }
 
@@ -128,7 +128,7 @@ export type TerminalLinkType =
 	| TerminalBuiltinLinkType
 	| ITerminalExternalLinkType;
 
-export const enum TerminalBuiltinLinkType {
+export enum TerminalBuiltinLinkType {
 	/**
 	 * The link is validated to be a file on the file system and will open an editor.
 	 */

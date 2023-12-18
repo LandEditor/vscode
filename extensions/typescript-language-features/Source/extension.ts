@@ -3,28 +3,28 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import VsCodeTelemetryReporter from "@vscode/extension-telemetry";
 import * as fs from "fs";
+import VsCodeTelemetryReporter from "@vscode/extension-telemetry";
 import * as vscode from "vscode";
 import { Api, getExtensionApi } from "./api";
 import { CommandManager } from "./commands/commandManager";
 import { registerBaseCommands } from "./commands/index";
+import { ElectronServiceConfigurationProvider } from "./configuration/configuration.electron";
 import {
 	ExperimentationTelemetryReporter,
 	IExperimentationTelemetryReporter,
 } from "./experimentTelemetryReporter";
 import { ExperimentationService } from "./experimentationService";
 import { createLazyClientHost, lazilyActivateClient } from "./lazyClientHost";
+import { Logger } from "./logging/logger";
 import { nodeRequestCancellerFactory } from "./tsServer/cancellation.electron";
 import { NodeLogDirectoryProvider } from "./tsServer/logDirectoryProvider.electron";
+import { PluginManager } from "./tsServer/plugins";
 import { ElectronServiceProcessFactory } from "./tsServer/serverProcess.electron";
 import { DiskTypeScriptVersionProvider } from "./tsServer/versionProvider.electron";
 import { ActiveJsTsEditorTracker } from "./ui/activeJsTsEditorTracker";
-import { ElectronServiceConfigurationProvider } from "./configuration/configuration.electron";
 import { onCaseInsensitiveFileSystem } from "./utils/fs.electron";
-import { Logger } from "./logging/logger";
 import { getPackageInfo } from "./utils/packageInfo";
-import { PluginManager } from "./tsServer/plugins";
 import * as temp from "./utils/temp.electron";
 
 export function activate(context: vscode.ExtensionContext): Api {
@@ -52,7 +52,7 @@ export function activate(context: vscode.ExtensionContext): Api {
 		const { name: id, version, aiKey } = packageInfo;
 		const vscTelemetryReporter = new VsCodeTelemetryReporter(aiKey);
 		experimentTelemetryReporter = new ExperimentationTelemetryReporter(
-			vscTelemetryReporter
+			vscTelemetryReporter,
 		);
 		context.subscriptions.push(experimentTelemetryReporter);
 
@@ -62,7 +62,7 @@ export function activate(context: vscode.ExtensionContext): Api {
 			experimentTelemetryReporter,
 			id,
 			version,
-			context.globalState
+			context.globalState,
 		);
 	}
 
@@ -86,19 +86,19 @@ export function activate(context: vscode.ExtensionContext): Api {
 		},
 		(item) => {
 			onCompletionAccepted.fire(item);
-		}
+		},
 	);
 
 	registerBaseCommands(
 		commandManager,
 		lazyClientHost,
 		pluginManager,
-		activeJsTsEditorTracker
+		activeJsTsEditorTracker,
 	);
 
 	import("./task/taskProvider").then((module) => {
 		context.subscriptions.push(
-			module.register(lazyClientHost.map((x) => x.serviceClient))
+			module.register(lazyClientHost.map((x) => x.serviceClient)),
 		);
 	});
 
@@ -110,8 +110,8 @@ export function activate(context: vscode.ExtensionContext): Api {
 		lazilyActivateClient(
 			lazyClientHost,
 			pluginManager,
-			activeJsTsEditorTracker
-		)
+			activeJsTsEditorTracker,
+		),
 	);
 
 	return getExtensionApi(onCompletionAccepted.event, pluginManager);

@@ -28,20 +28,20 @@ const documentationExtensionPointSchema =
 		type: "object",
 		description: nls.localize(
 			"contributes.documentation",
-			"Contributed documentation."
+			"Contributed documentation.",
 		),
 		properties: {
-			"refactoring": {
+			refactoring: {
 				type: "array",
 				description: nls.localize(
 					"contributes.documentation.refactorings",
-					"Contributed documentation for refactorings."
+					"Contributed documentation for refactorings.",
 				),
 				items: {
 					type: "object",
 					description: nls.localize(
 						"contributes.documentation.refactoring",
-						"Contributed documentation for refactoring."
+						"Contributed documentation for refactoring.",
 					),
 					required: [
 						DocumentationExtensionPointFields.title,
@@ -53,21 +53,21 @@ const documentationExtensionPointSchema =
 							type: "string",
 							description: nls.localize(
 								"contributes.documentation.refactoring.title",
-								"Label for the documentation used in the UI."
+								"Label for the documentation used in the UI.",
 							),
 						},
 						[DocumentationExtensionPointFields.when]: {
 							type: "string",
 							description: nls.localize(
 								"contributes.documentation.refactoring.when",
-								"When clause."
+								"When clause.",
 							),
 						},
 						[DocumentationExtensionPointFields.command]: {
 							type: "string",
 							description: nls.localize(
 								"contributes.documentation.refactoring.command",
-								"Command executed."
+								"Command executed.",
 							),
 						},
 					},

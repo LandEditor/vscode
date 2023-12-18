@@ -3,29 +3,29 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from "vs/base/common/uri";
 import { Event } from "vs/base/common/event";
-import {
-	IEditorMemento,
-	IEditorCloseEvent,
-	IEditorOpenContext,
-	EditorResourceAccessor,
-	SideBySideEditor,
-} from "vs/workbench/common/editor";
-import { EditorPane } from "vs/workbench/browser/parts/editor/editorPane";
-import { IStorageService } from "vs/platform/storage/common/storage";
+import { IDisposable, MutableDisposable } from "vs/base/common/lifecycle";
+import { IExtUri } from "vs/base/common/resources";
+import { URI } from "vs/base/common/uri";
+import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IStorageService } from "vs/platform/storage/common/storage";
 import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import { IThemeService } from "vs/platform/theme/common/themeService";
-import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
+import { EditorPane } from "vs/workbench/browser/parts/editor/editorPane";
 import {
-	IEditorGroupsService,
+	EditorResourceAccessor,
+	IEditorCloseEvent,
+	IEditorMemento,
+	IEditorOpenContext,
+	SideBySideEditor,
+} from "vs/workbench/common/editor";
+import { EditorInput } from "vs/workbench/common/editor/editorInput";
+import {
 	IEditorGroup,
+	IEditorGroupsService,
 } from "vs/workbench/services/editor/common/editorGroupsService";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { IExtUri } from "vs/base/common/resources";
-import { IDisposable, MutableDisposable } from "vs/base/common/lifecycle";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
 
 /**
  * Base class of editors that want to store and restore view state.
@@ -67,11 +67,11 @@ export abstract class AbstractEditorWithViewState<
 
 	protected override setEditorVisible(
 		visible: boolean,
-		group: IEditorGroup | undefined
+		group: IEditorGroup | undefined,
 	): void {
 		// Listen to close events to trigger `onWillCloseEditorInGroup`
 		this.groupListener.value = group?.onWillCloseEditor((e) =>
-			this.onWillCloseEditor(e)
+			this.onWillCloseEditor(e),
 		);
 
 		super.setEditorVisible(visible, group);
@@ -128,7 +128,7 @@ export abstract class AbstractEditorWithViewState<
 					Event.once(input.onWillDispose)(() => {
 						this.clearEditorViewState(resource, this.group);
 						this.editorViewStateDisposables?.delete(input);
-					})
+					}),
 				);
 			}
 		}
@@ -152,7 +152,7 @@ export abstract class AbstractEditorWithViewState<
 
 	private shouldRestoreEditorViewState(
 		input: EditorInput,
-		context?: IEditorOpenContext
+		context?: IEditorOpenContext,
 	): boolean {
 		// new editor: check with workbench.editor.restoreViewState setting
 		if (context?.newInGroup) {
@@ -160,7 +160,7 @@ export abstract class AbstractEditorWithViewState<
 				EditorResourceAccessor.getOriginalUri(input, {
 					supportSideBySide: SideBySideEditor.PRIMARY,
 				}),
-				"workbench.editor.restoreViewState"
+				"workbench.editor.restoreViewState",
 			) === false
 				? false
 				: true /* restore by default */;
@@ -199,7 +199,7 @@ export abstract class AbstractEditorWithViewState<
 
 	protected loadEditorViewState(
 		input: EditorInput | undefined,
-		context?: IEditorOpenContext
+		context?: IEditorOpenContext,
 	): T | undefined {
 		if (!input || !this.group) {
 			return undefined; // we need valid input
@@ -224,7 +224,7 @@ export abstract class AbstractEditorWithViewState<
 	protected moveEditorViewState(
 		source: URI,
 		target: URI,
-		comparer: IExtUri
+		comparer: IExtUri,
 	): void {
 		return this.viewState.moveEditorState(source, target, comparer);
 	}
@@ -281,7 +281,7 @@ export abstract class AbstractEditorWithViewState<
 	 * Asks to return the `URI` to associate with the view state.
 	 */
 	protected abstract toEditorViewStateResource(
-		input: EditorInput
+		input: EditorInput,
 	): URI | undefined;
 
 	//#endregion

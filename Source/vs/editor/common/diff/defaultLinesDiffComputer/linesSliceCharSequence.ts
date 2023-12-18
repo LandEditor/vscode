@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+	findFirstMonotonous,
 	findLastIdxMonotonous,
 	findLastMonotonous,
-	findFirstMonotonous,
 } from "vs/base/common/arraysFind";
 import { CharCode } from "vs/base/common/charCode";
 import { OffsetRange } from "vs/editor/common/core/offsetRange";
@@ -25,7 +25,7 @@ export class LinesSliceCharSequence implements ISequence {
 	constructor(
 		public readonly lines: string[],
 		lineRange: OffsetRange,
-		public readonly considerWhitespaceChanges: boolean
+		public readonly considerWhitespaceChanges: boolean,
 	) {
 		// This slice has to have lineRange.length many \n! (otherwise diffing against an empty slice will be problematic)
 		// (Unless it covers the entire document, in that case the other slice also has to cover the entire document ands it's okay)
@@ -35,7 +35,7 @@ export class LinesSliceCharSequence implements ISequence {
 		if (lineRange.start > 0 && lineRange.endExclusive >= lines.length) {
 			lineRange = new OffsetRange(
 				lineRange.start - 1,
-				lineRange.endExclusive
+				lineRange.endExclusive,
 			);
 			trimFirstLineFully = true;
 		}
@@ -105,10 +105,10 @@ export class LinesSliceCharSequence implements ISequence {
 		// 11  0   0   12  15  6   13  0   0   11
 
 		const prevCategory = getCategory(
-			length > 0 ? this.elements[length - 1] : -1
+			length > 0 ? this.elements[length - 1] : -1,
 		);
 		const nextCategory = getCategory(
-			length < this.elements.length ? this.elements[length] : -1
+			length < this.elements.length ? this.elements[length] : -1,
 		);
 
 		if (
@@ -148,21 +148,21 @@ export class LinesSliceCharSequence implements ISequence {
 
 		const i = findLastIdxMonotonous(
 			this.firstCharOffsetByLine,
-			(value) => value <= offset
+			(value) => value <= offset,
 		);
 		return new Position(
 			this.lineRange.start + i + 1,
 			offset -
 				this.firstCharOffsetByLine[i] +
 				this.additionalOffsetByLine[i] +
-				1
+				1,
 		);
 	}
 
 	public translateRange(range: OffsetRange): Range {
 		return Range.fromPositions(
 			this.translateOffset(range.start),
-			this.translateOffset(range.endExclusive)
+			this.translateOffset(range.endExclusive),
 		);
 	}
 
@@ -208,12 +208,12 @@ export class LinesSliceCharSequence implements ISequence {
 		const start =
 			findLastMonotonous(
 				this.firstCharOffsetByLine,
-				(x) => x <= range.start
+				(x) => x <= range.start,
 			) ?? 0;
 		const end =
 			findFirstMonotonous(
 				this.firstCharOffsetByLine,
-				(x) => range.endExclusive <= x
+				(x) => range.endExclusive <= x,
 			) ?? this.elements.length;
 		return new OffsetRange(start, end);
 	}
@@ -227,16 +227,16 @@ function isWordChar(charCode: number): boolean {
 	);
 }
 
-const enum CharBoundaryCategory {
-	WordLower,
-	WordUpper,
-	WordNumber,
-	End,
-	Other,
-	Separator,
-	Space,
-	LineBreakCR,
-	LineBreakLF,
+enum CharBoundaryCategory {
+	WordLower = 0,
+	WordUpper = 1,
+	WordNumber = 2,
+	End = 3,
+	Other = 4,
+	Separator = 5,
+	Space = 6,
+	LineBreakCR = 7,
+	LineBreakLF = 8,
 }
 
 const score: Record<CharBoundaryCategory, number> = {

@@ -56,7 +56,7 @@ export class CodeActionKind {
 	}
 }
 
-export const enum CodeActionAutoApply {
+export enum CodeActionAutoApply {
 	IfSingle = "ifSingle",
 	First = "first",
 	Never = "never",
@@ -86,7 +86,7 @@ export interface CodeActionFilter {
 
 export function mayIncludeActionsOfKind(
 	filter: CodeActionFilter,
-	providedKind: CodeActionKind
+	providedKind: CodeActionKind,
 ): boolean {
 	// A provided kind may be a subset or superset of our filtered kind.
 	if (filter.include && !filter.include.intersects(providedKind)) {
@@ -96,7 +96,7 @@ export function mayIncludeActionsOfKind(
 	if (filter.excludes) {
 		if (
 			filter.excludes.some((exclude) =>
-				excludesAction(providedKind, exclude, filter.include)
+				excludesAction(providedKind, exclude, filter.include),
 			)
 		) {
 			return false;
@@ -116,7 +116,7 @@ export function mayIncludeActionsOfKind(
 
 export function filtersAction(
 	filter: CodeActionFilter,
-	action: languages.CodeAction
+	action: languages.CodeAction,
 ): boolean {
 	const actionKind = action.kind
 		? new CodeActionKind(action.kind)
@@ -133,7 +133,7 @@ export function filtersAction(
 		if (
 			actionKind &&
 			filter.excludes.some((exclude) =>
-				excludesAction(actionKind, exclude, filter.include)
+				excludesAction(actionKind, exclude, filter.include),
 			)
 		) {
 			return false;
@@ -159,7 +159,7 @@ export function filtersAction(
 function excludesAction(
 	providedKind: CodeActionKind,
 	exclude: CodeActionKind,
-	include: CodeActionKind | undefined
+	include: CodeActionKind | undefined,
 ): boolean {
 	if (!exclude.contains(providedKind)) {
 		return false;
@@ -185,25 +185,25 @@ export interface CodeActionTrigger {
 export class CodeActionCommandArgs {
 	public static fromUser(
 		arg: any,
-		defaults: { kind: CodeActionKind; apply: CodeActionAutoApply }
+		defaults: { kind: CodeActionKind; apply: CodeActionAutoApply },
 	): CodeActionCommandArgs {
 		if (!arg || typeof arg !== "object") {
 			return new CodeActionCommandArgs(
 				defaults.kind,
 				defaults.apply,
-				false
+				false,
 			);
 		}
 		return new CodeActionCommandArgs(
 			CodeActionCommandArgs.getKindFromUser(arg, defaults.kind),
 			CodeActionCommandArgs.getApplyFromUser(arg, defaults.apply),
-			CodeActionCommandArgs.getPreferredUser(arg)
+			CodeActionCommandArgs.getPreferredUser(arg),
 		);
 	}
 
 	private static getApplyFromUser(
 		arg: any,
-		defaultAutoApply: CodeActionAutoApply
+		defaultAutoApply: CodeActionAutoApply,
 	) {
 		switch (typeof arg.apply === "string" ? arg.apply.toLowerCase() : "") {
 			case "first":
@@ -230,7 +230,7 @@ export class CodeActionCommandArgs {
 	private constructor(
 		public readonly kind: CodeActionKind,
 		public readonly apply: CodeActionAutoApply,
-		public readonly preferred: boolean
+		public readonly preferred: boolean,
 	) {}
 }
 
@@ -238,7 +238,7 @@ export class CodeActionItem {
 	constructor(
 		public readonly action: languages.CodeAction,
 		public readonly provider: languages.CodeActionProvider | undefined,
-		public highlightRange?: boolean
+		public highlightRange?: boolean,
 	) {}
 
 	async resolve(token: CancellationToken): Promise<this> {
@@ -247,7 +247,7 @@ export class CodeActionItem {
 			try {
 				action = await this.provider.resolveCodeAction(
 					this.action,
-					token
+					token,
 				);
 			} catch (err) {
 				onUnexpectedExternalError(err);

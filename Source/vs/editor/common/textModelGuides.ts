@@ -12,7 +12,7 @@ export interface IGuidesTextModelPart {
 	getActiveIndentGuide(
 		lineNumber: number,
 		minLineNumber: number,
-		maxLineNumber: number
+		maxLineNumber: number,
 	): IActiveIndentGuideInfo;
 
 	/**
@@ -20,7 +20,7 @@ export interface IGuidesTextModelPart {
 	 */
 	getLinesIndentGuides(
 		startLineNumber: number,
-		endLineNumber: number
+		endLineNumber: number,
 	): number[];
 
 	/**
@@ -32,7 +32,7 @@ export interface IGuidesTextModelPart {
 		startLineNumber: number,
 		endLineNumber: number,
 		activePosition: IPosition | null,
-		options: BracketGuideOptions
+		options: BracketGuideOptions,
 	): IndentGuide[][];
 }
 
@@ -43,9 +43,9 @@ export interface IActiveIndentGuideInfo {
 }
 
 export enum HorizontalGuidesState {
-	Disabled,
-	EnabledForActive,
-	Enabled,
+	Disabled = 0,
+	EnabledForActive = 1,
+	Enabled = 2,
 }
 
 export interface BracketGuideOptions {
@@ -68,7 +68,7 @@ export class IndentGuide {
 		 * If set (!= -1), only show this guide for wrapped lines that don't contain this model column, but are after it.
 		 */
 		public readonly forWrappedLinesAfterColumn: number | -1,
-		public readonly forWrappedLinesBeforeOrAtColumn: number | -1
+		public readonly forWrappedLinesBeforeOrAtColumn: number | -1,
 	) {
 		if ((visibleColumn !== -1) === (column !== -1)) {
 			throw new Error();
@@ -79,6 +79,6 @@ export class IndentGuide {
 export class IndentGuideHorizontalLine {
 	constructor(
 		public readonly top: boolean,
-		public readonly endColumn: number
+		public readonly endColumn: number,
 	) {}
 }

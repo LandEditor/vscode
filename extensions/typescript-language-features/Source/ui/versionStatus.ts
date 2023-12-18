@@ -19,8 +19,8 @@ export class VersionStatus extends Disposable {
 		this._statusItem = this._register(
 			vscode.languages.createLanguageStatusItem(
 				"typescript.version",
-				jsTsLanguageModes
-			)
+				jsTsLanguageModes,
+			),
 		);
 
 		this._statusItem.name = vscode.l10n.t("TypeScript Version");
@@ -28,8 +28,8 @@ export class VersionStatus extends Disposable {
 
 		this._register(
 			this._client.onTsServerStarted(({ version }) =>
-				this.onDidChangeTypeScriptVersion(version)
-			)
+				this.onDidChangeTypeScriptVersion(version),
+			),
 		);
 	}
 

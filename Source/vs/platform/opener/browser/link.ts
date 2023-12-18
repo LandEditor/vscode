@@ -5,9 +5,9 @@
 
 import {
 	$,
-	append,
 	EventHelper,
 	EventLike,
+	append,
 	clearNode,
 } from "vs/base/browser/dom";
 import { DomEmitter } from "vs/base/browser/event";
@@ -16,8 +16,8 @@ import { EventType as TouchEventType, Gesture } from "vs/base/browser/touch";
 import { Event } from "vs/base/common/event";
 import { KeyCode } from "vs/base/common/keyCodes";
 import { Disposable } from "vs/base/common/lifecycle";
-import { IOpenerService } from "vs/platform/opener/common/opener";
 import "vs/css!./link";
+import { IOpenerService } from "vs/platform/opener/common/opener";
 
 export interface ILinkDescriptor {
 	readonly label: string | HTMLElement;
@@ -33,7 +33,7 @@ export interface ILinkOptions {
 
 export class Link extends Disposable {
 	private el: HTMLAnchorElement;
-	private _enabled: boolean = true;
+	private _enabled = true;
 
 	get enabled(): boolean {
 		return this._enabled;
@@ -84,7 +84,7 @@ export class Link extends Disposable {
 		container: HTMLElement,
 		private _link: ILinkDescriptor,
 		options: ILinkOptions = {},
-		@IOpenerService openerService: IOpenerService
+		@IOpenerService openerService: IOpenerService,
 	) {
 		super();
 
@@ -97,8 +97,8 @@ export class Link extends Disposable {
 					href: _link.href,
 					title: _link.title,
 				},
-				_link.label
-			)
+				_link.label,
+			),
 		);
 
 		this.el.setAttribute("role", "button");
@@ -107,17 +107,17 @@ export class Link extends Disposable {
 		const onKeyPress = this._register(new DomEmitter(this.el, "keypress"));
 		const onEnterPress = Event.chain(onKeyPress.event, ($) =>
 			$.map((e) => new StandardKeyboardEvent(e)).filter(
-				(e) => e.keyCode === KeyCode.Enter
-			)
+				(e) => e.keyCode === KeyCode.Enter,
+			),
 		);
 		const onTap = this._register(
-			new DomEmitter(this.el, TouchEventType.Tap)
+			new DomEmitter(this.el, TouchEventType.Tap),
 		).event;
 		this._register(Gesture.addTarget(this.el));
 		const onOpen = Event.any<EventLike>(
 			onClickEmitter.event,
 			onEnterPress,
-			onTap
+			onTap,
 		);
 
 		this._register(
@@ -135,7 +135,7 @@ export class Link extends Disposable {
 						allowCommands: true,
 					});
 				}
-			})
+			}),
 		);
 
 		this.enabled = true;

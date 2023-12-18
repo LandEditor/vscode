@@ -23,12 +23,12 @@ const _bootstrapFnSource = function _bootstrapFn(workerUrl: string) {
 		// postMessage
 		// onmessage
 		Object.defineProperties(globalThis, {
-			"postMessage": {
+			postMessage: {
 				value(data: any, transferOrOptions?: any) {
 					port.postMessage(data, transferOrOptions);
 				},
 			},
-			"onmessage": {
+			onmessage: {
 				get() {
 					return port.onmessage;
 				},
@@ -44,7 +44,7 @@ const _bootstrapFnSource = function _bootstrapFn(workerUrl: string) {
 				new MessageEvent("message", {
 					data: msg.data,
 					ports: msg.ports ? [...msg.ports] : undefined,
-				})
+				}),
 			);
 		});
 
@@ -54,7 +54,7 @@ const _bootstrapFnSource = function _bootstrapFn(workerUrl: string) {
 		globalThis.Worker = <any>class {
 			constructor() {
 				throw new TypeError(
-					"Nested workers from within nested worker are NOT supported."
+					"Nested workers from within nested worker are NOT supported.",
 				);
 			}
 		};
@@ -78,7 +78,7 @@ export class NestedWorker extends EventTarget implements Worker {
 	constructor(
 		nativePostMessage: typeof postMessage,
 		stringOrUrl: string | URL,
-		options?: WorkerOptions
+		options?: WorkerOptions,
 	) {
 		super();
 
@@ -115,7 +115,7 @@ export class NestedWorker extends EventTarget implements Worker {
 
 		// worker-impl: events
 		Object.defineProperties(this, {
-			"onmessage": {
+			onmessage: {
 				get() {
 					return channel.port1.onmessage;
 				},
@@ -123,7 +123,7 @@ export class NestedWorker extends EventTarget implements Worker {
 					channel.port1.onmessage = value;
 				},
 			},
-			"onmessageerror": {
+			onmessageerror: {
 				get() {
 					return channel.port1.onmessageerror;
 				},

@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as ts from "typescript";
 import * as path from "path";
+import * as ts from "typescript";
 
 export class StaticLanguageServiceHost implements ts.LanguageServiceHost {
 	private readonly _cmdLine: ts.ParsedCommandLine;
@@ -21,7 +21,7 @@ export class StaticLanguageServiceHost implements ts.LanguageServiceHost {
 			parsed.config,
 			ts.sys,
 			path.dirname(projectPath),
-			existingOptions
+			existingOptions,
 		);
 		if (this._cmdLine.errors.length > 0) {
 			throw parsed.error;

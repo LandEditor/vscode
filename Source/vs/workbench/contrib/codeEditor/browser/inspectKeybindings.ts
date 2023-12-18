@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
 import { ICodeEditor } from "vs/editor/browser/editorBrowser";
 import { ServicesAccessor } from "vs/editor/browser/editorExtensions";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { localize } from "vs/nls";
 import { Categories } from "vs/platform/action/common/actionCommonCategories";
 import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 
 class InspectKeyMap extends Action2 {
 	constructor() {
@@ -18,7 +18,7 @@ class InspectKeyMap extends Action2 {
 			title: {
 				value: localize(
 					"workbench.action.inspectKeyMap",
-					"Inspect Key Mappings"
+					"Inspect Key Mappings",
 				),
 				original: "Inspect Key Mappings",
 			},
@@ -48,7 +48,7 @@ class InspectKeyMapJSON extends Action2 {
 			title: {
 				value: localize(
 					"workbench.action.inspectKeyMapJSON",
-					"Inspect Key Mappings (JSON)"
+					"Inspect Key Mappings (JSON)",
 				),
 				original: "Inspect Key Mappings (JSON)",
 			},

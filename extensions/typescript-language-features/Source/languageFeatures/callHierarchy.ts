@@ -29,7 +29,7 @@ class TypeScriptCallHierarchySupport implements vscode.CallHierarchyProvider {
 	public async prepareCallHierarchy(
 		document: vscode.TextDocument,
 		position: vscode.Position,
-		token: vscode.CancellationToken
+		token: vscode.CancellationToken,
 	): Promise<
 		vscode.CallHierarchyItem | vscode.CallHierarchyItem[] | undefined
 	> {
@@ -40,12 +40,12 @@ class TypeScriptCallHierarchySupport implements vscode.CallHierarchyProvider {
 
 		const args = typeConverters.Position.toFileLocationRequestArgs(
 			filepath,
-			position
+			position,
 		);
 		const response = await this.client.execute(
 			"prepareCallHierarchy",
 			args,
-			token
+			token,
 		);
 		if (response.type !== "response" || !response.body) {
 			return undefined;
@@ -58,7 +58,7 @@ class TypeScriptCallHierarchySupport implements vscode.CallHierarchyProvider {
 
 	public async provideCallHierarchyIncomingCalls(
 		item: vscode.CallHierarchyItem,
-		token: vscode.CancellationToken
+		token: vscode.CancellationToken,
 	): Promise<vscode.CallHierarchyIncomingCall[] | undefined> {
 		const filepath = this.client.toTsFilePath(item.uri);
 		if (!filepath) {
@@ -67,12 +67,12 @@ class TypeScriptCallHierarchySupport implements vscode.CallHierarchyProvider {
 
 		const args = typeConverters.Position.toFileLocationRequestArgs(
 			filepath,
-			item.selectionRange.start
+			item.selectionRange.start,
 		);
 		const response = await this.client.execute(
 			"provideCallHierarchyIncomingCalls",
 			args,
-			token
+			token,
 		);
 		if (response.type !== "response" || !response.body) {
 			return undefined;
@@ -83,7 +83,7 @@ class TypeScriptCallHierarchySupport implements vscode.CallHierarchyProvider {
 
 	public async provideCallHierarchyOutgoingCalls(
 		item: vscode.CallHierarchyItem,
-		token: vscode.CancellationToken
+		token: vscode.CancellationToken,
 	): Promise<vscode.CallHierarchyOutgoingCall[] | undefined> {
 		const filepath = this.client.toTsFilePath(item.uri);
 		if (!filepath) {
@@ -92,12 +92,12 @@ class TypeScriptCallHierarchySupport implements vscode.CallHierarchyProvider {
 
 		const args = typeConverters.Position.toFileLocationRequestArgs(
 			filepath,
-			item.selectionRange.start
+			item.selectionRange.start,
 		);
 		const response = await this.client.execute(
 			"provideCallHierarchyOutgoingCalls",
 			args,
-			token
+			token,
 		);
 		if (response.type !== "response" || !response.body) {
 			return undefined;
@@ -117,7 +117,7 @@ function isSourceFileItem(item: Proto.CallHierarchyItem) {
 }
 
 function fromProtocolCallHierarchyItem(
-	item: Proto.CallHierarchyItem
+	item: Proto.CallHierarchyItem,
 ): vscode.CallHierarchyItem {
 	const useFileName = isSourceFileItem(item);
 	const name = useFileName ? path.basename(item.file) : item.name;
@@ -130,7 +130,7 @@ function fromProtocolCallHierarchyItem(
 		detail,
 		vscode.Uri.file(item.file),
 		typeConverters.Range.fromTextSpan(item.span),
-		typeConverters.Range.fromTextSpan(item.selectionSpan)
+		typeConverters.Range.fromTextSpan(item.selectionSpan),
 	);
 
 	const kindModifiers = item.kindModifiers
@@ -143,40 +143,40 @@ function fromProtocolCallHierarchyItem(
 }
 
 function fromProtocolCallHierarchyIncomingCall(
-	item: Proto.CallHierarchyIncomingCall
+	item: Proto.CallHierarchyIncomingCall,
 ): vscode.CallHierarchyIncomingCall {
 	return new vscode.CallHierarchyIncomingCall(
 		fromProtocolCallHierarchyItem(item.from),
-		item.fromSpans.map(typeConverters.Range.fromTextSpan)
+		item.fromSpans.map(typeConverters.Range.fromTextSpan),
 	);
 }
 
 function fromProtocolCallHierarchyOutgoingCall(
-	item: Proto.CallHierarchyOutgoingCall
+	item: Proto.CallHierarchyOutgoingCall,
 ): vscode.CallHierarchyOutgoingCall {
 	return new vscode.CallHierarchyOutgoingCall(
 		fromProtocolCallHierarchyItem(item.to),
-		item.fromSpans.map(typeConverters.Range.fromTextSpan)
+		item.fromSpans.map(typeConverters.Range.fromTextSpan),
 	);
 }
 
 export function register(
 	selector: DocumentSelector,
-	client: ITypeScriptServiceClient
+	client: ITypeScriptServiceClient,
 ) {
 	return conditionalRegistration(
 		[
 			requireMinVersion(
 				client,
-				TypeScriptCallHierarchySupport.minVersion
+				TypeScriptCallHierarchySupport.minVersion,
 			),
 			requireSomeCapability(client, ClientCapability.Semantic),
 		],
 		() => {
 			return vscode.languages.registerCallHierarchyProvider(
 				selector.semantic,
-				new TypeScriptCallHierarchySupport(client)
+				new TypeScriptCallHierarchySupport(client),
 			);
-		}
+		},
 	);
 }

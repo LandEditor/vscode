@@ -31,22 +31,22 @@ export class TextChange {
 		public readonly oldPosition: number,
 		public readonly oldText: string,
 		public readonly newPosition: number,
-		public readonly newText: string
+		public readonly newText: string,
 	) {}
 
 	public toString(): string {
 		if (this.oldText.length === 0) {
 			return `(insert@${this.oldPosition} "${escapeNewLine(
-				this.newText
+				this.newText,
 			)}")`;
 		}
 		if (this.newText.length === 0) {
 			return `(delete@${this.oldPosition} "${escapeNewLine(
-				this.oldText
+				this.oldText,
 			)}")`;
 		}
 		return `(replace@${this.oldPosition} "${escapeNewLine(
-			this.oldText
+			this.oldText,
 		)}" with "${escapeNewLine(this.newText)}")`;
 	}
 
@@ -57,7 +57,7 @@ export class TextChange {
 	private static _writeString(
 		b: Uint8Array,
 		str: string,
-		offset: number
+		offset: number,
 	): number {
 		const len = str.length;
 		buffer.writeUInt32BE(b, len, offset);
@@ -97,7 +97,7 @@ export class TextChange {
 	public static read(
 		b: Uint8Array,
 		offset: number,
-		dest: TextChange[]
+		dest: TextChange[],
 	): number {
 		const oldPosition = buffer.readUInt32BE(b, offset);
 		offset += 4;
@@ -114,7 +114,7 @@ export class TextChange {
 
 export function compressConsecutiveTextChanges(
 	prevEdits: TextChange[] | null,
-	currEdits: TextChange[]
+	currEdits: TextChange[],
 ): TextChange[] {
 	if (prevEdits === null || prevEdits.length === 0) {
 		return currEdits;
@@ -185,7 +185,7 @@ class TextChangeCompressor {
 			if (currEdit.oldPosition < prevEdit.newPosition) {
 				const [e1, e2] = TextChangeCompressor._splitCurr(
 					currEdit,
-					prevEdit.newPosition - currEdit.oldPosition
+					prevEdit.newPosition - currEdit.oldPosition,
 				);
 				this._acceptCurr(e1);
 				currEdit = e2;
@@ -195,7 +195,7 @@ class TextChangeCompressor {
 			if (prevEdit.newPosition < currEdit.oldPosition) {
 				const [e1, e2] = TextChangeCompressor._splitPrev(
 					prevEdit,
-					currEdit.oldPosition - prevEdit.newPosition
+					currEdit.oldPosition - prevEdit.newPosition,
 				);
 				this._acceptPrev(e1);
 				prevEdit = e2;
@@ -215,7 +215,7 @@ class TextChangeCompressor {
 			} else if (currEdit.oldEnd < prevEdit.newEnd) {
 				const [e1, e2] = TextChangeCompressor._splitPrev(
 					prevEdit,
-					currEdit.oldLength
+					currEdit.oldLength,
 				);
 				mergePrev = e1;
 				mergeCurr = currEdit;
@@ -224,7 +224,7 @@ class TextChangeCompressor {
 			} else {
 				const [e1, e2] = TextChangeCompressor._splitCurr(
 					currEdit,
-					prevEdit.newLength
+					prevEdit.newLength,
 				);
 				mergePrev = prevEdit;
 				mergeCurr = e1;
@@ -236,7 +236,7 @@ class TextChangeCompressor {
 				mergePrev.oldPosition,
 				mergePrev.oldText,
 				mergeCurr.newPosition,
-				mergeCurr.newText
+				mergeCurr.newText,
 			);
 			this._prevDeltaOffset += mergePrev.newLength - mergePrev.oldLength;
 			this._currDeltaOffset += mergeCurr.newLength - mergeCurr.oldLength;
@@ -250,7 +250,7 @@ class TextChangeCompressor {
 	private _acceptCurr(currEdit: TextChange): void {
 		this._result[this._resultLen++] = TextChangeCompressor._rebaseCurr(
 			this._prevDeltaOffset,
-			currEdit
+			currEdit,
 		);
 		this._currDeltaOffset += currEdit.newLength - currEdit.oldLength;
 	}
@@ -262,7 +262,7 @@ class TextChangeCompressor {
 	private _acceptPrev(prevEdit: TextChange): void {
 		this._result[this._resultLen++] = TextChangeCompressor._rebasePrev(
 			this._currDeltaOffset,
-			prevEdit
+			prevEdit,
 		);
 		this._prevDeltaOffset += prevEdit.newLength - prevEdit.oldLength;
 	}
@@ -273,31 +273,31 @@ class TextChangeCompressor {
 
 	private static _rebaseCurr(
 		prevDeltaOffset: number,
-		currEdit: TextChange
+		currEdit: TextChange,
 	): TextChange {
 		return new TextChange(
 			currEdit.oldPosition - prevDeltaOffset,
 			currEdit.oldText,
 			currEdit.newPosition,
-			currEdit.newText
+			currEdit.newText,
 		);
 	}
 
 	private static _rebasePrev(
 		currDeltaOffset: number,
-		prevEdit: TextChange
+		prevEdit: TextChange,
 	): TextChange {
 		return new TextChange(
 			prevEdit.oldPosition,
 			prevEdit.oldText,
 			prevEdit.newPosition + currDeltaOffset,
-			prevEdit.newText
+			prevEdit.newText,
 		);
 	}
 
 	private static _splitPrev(
 		edit: TextChange,
-		offset: number
+		offset: number,
 	): [TextChange, TextChange] {
 		const preText = edit.newText.substr(0, offset);
 		const postText = edit.newText.substr(offset);
@@ -307,20 +307,20 @@ class TextChangeCompressor {
 				edit.oldPosition,
 				edit.oldText,
 				edit.newPosition,
-				preText
+				preText,
 			),
 			new TextChange(
 				edit.oldEnd,
 				"",
 				edit.newPosition + offset,
-				postText
+				postText,
 			),
 		];
 	}
 
 	private static _splitCurr(
 		edit: TextChange,
-		offset: number
+		offset: number,
 	): [TextChange, TextChange] {
 		const preText = edit.oldText.substr(0, offset);
 		const postText = edit.oldText.substr(offset);
@@ -330,13 +330,13 @@ class TextChangeCompressor {
 				edit.oldPosition,
 				preText,
 				edit.newPosition,
-				edit.newText
+				edit.newText,
 			),
 			new TextChange(
 				edit.oldPosition + offset,
 				postText,
 				edit.newEnd,
-				""
+				"",
 			),
 		];
 	}
@@ -359,7 +359,7 @@ class TextChangeCompressor {
 					prev.oldPosition,
 					prev.oldText + curr.oldText,
 					prev.newPosition,
-					prev.newText + curr.newText
+					prev.newText + curr.newText,
 				);
 			} else {
 				result[resultLen++] = prev;

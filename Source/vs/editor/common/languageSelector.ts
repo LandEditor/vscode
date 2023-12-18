@@ -7,8 +7,8 @@ import {
 	IRelativePattern,
 	match as matchGlobPattern,
 } from "vs/base/common/glob";
-import { URI } from "vs/base/common/uri";
 import { normalize } from "vs/base/common/path";
+import { URI } from "vs/base/common/uri";
 
 export interface LanguageFilter {
 	readonly language?: string;
@@ -38,7 +38,7 @@ export function score(
 	candidateLanguage: string,
 	candidateIsSynchronized: boolean,
 	candidateNotebookUri: URI | undefined,
-	candidateNotebookType: string | undefined
+	candidateNotebookType: string | undefined,
 ): number {
 	if (Array.isArray(selector)) {
 		// array -> take max individual value
@@ -50,7 +50,7 @@ export function score(
 				candidateLanguage,
 				candidateIsSynchronized,
 				candidateNotebookUri,
-				candidateNotebookType
+				candidateNotebookType,
 			);
 			if (value === 10) {
 				return value; // already at the highest

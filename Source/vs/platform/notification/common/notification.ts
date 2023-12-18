@@ -12,7 +12,7 @@ import { createDecorator } from "vs/platform/instantiation/common/instantiation"
 export import Severity = BaseSeverity;
 
 export const INotificationService = createDecorator<INotificationService>(
-	"notificationService"
+	"notificationService",
 );
 
 export type NotificationMessage = string | Error;
@@ -21,17 +21,17 @@ export enum NotificationPriority {
 	/**
 	 * Default priority: notification will be visible unless do not disturb mode is enabled.
 	 */
-	DEFAULT,
+	DEFAULT = 0,
 
 	/**
 	 * Silent priority: notification will only be visible from the notifications center.
 	 */
-	SILENT,
+	SILENT = 1,
 
 	/**
 	 * Urgent priority: notification will be visible even when do not disturb mode is enabled.
 	 */
-	URGENT,
+	URGENT = 2,
 }
 
 export interface INotificationProperties {
@@ -60,19 +60,19 @@ export enum NeverShowAgainScope {
 	/**
 	 * Will never show this notification on the current workspace again.
 	 */
-	WORKSPACE,
+	WORKSPACE = 0,
 
 	/**
 	 * Will never show this notification on any workspace of the same
 	 * profile again.
 	 */
-	PROFILE,
+	PROFILE = 1,
 
 	/**
 	 * Will never show this notification on any workspace across all
 	 * profiles again.
 	 */
-	APPLICATION,
+	APPLICATION = 2,
 }
 
 export interface INeverShowAgainOptions {
@@ -302,18 +302,18 @@ export enum NotificationsFilter {
 	/**
 	 * No filter is enabled.
 	 */
-	OFF,
+	OFF = 0,
 
 	/**
 	 * All notifications are configured as silent. See
 	 * `INotificationProperties.silent` for more info.
 	 */
-	SILENT,
+	SILENT = 1,
 
 	/**
 	 * All notifications are silent except error notifications.
 	 */
-	ERROR,
+	ERROR = 2,
 }
 
 /**
@@ -391,7 +391,7 @@ export interface INotificationService {
 		severity: Severity,
 		message: string,
 		choices: (IPromptChoice | IPromptChoiceWithMenu)[],
-		options?: IPromptOptions
+		options?: IPromptOptions,
 	): INotificationHandle;
 
 	/**
@@ -404,7 +404,7 @@ export interface INotificationService {
 	 */
 	status(
 		message: NotificationMessage,
-		options?: IStatusMessageOptions
+		options?: IStatusMessageOptions,
 	): IDisposable;
 }
 

@@ -3,40 +3,40 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Emitter, Event } from "vs/base/common/event";
+import { HistoryNavigator2 } from "vs/base/common/history";
+import { IMarkdownString } from "vs/base/common/htmlContent";
+import { Iterable } from "vs/base/common/iterator";
 import {
 	DisposableStore,
 	IDisposable,
 	toDisposable,
 } from "vs/base/common/lifecycle";
-import { Event, Emitter } from "vs/base/common/event";
-import {
-	ISCMService,
-	ISCMProvider,
-	ISCMInput,
-	ISCMRepository,
-	IInputValidator,
-	ISCMInputChangeEvent,
-	SCMInputChangeReason,
-	InputValidationType,
-	IInputValidation,
-	ISCMActionButtonDescriptor,
-} from "./scm";
-import { ILogService } from "vs/platform/log/common/log";
+import { ResourceMap } from "vs/base/common/map";
+import { URI } from "vs/base/common/uri";
 import {
 	IContextKey,
 	IContextKeyService,
 } from "vs/platform/contextkey/common/contextkey";
+import { ILogService } from "vs/platform/log/common/log";
 import {
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
-import { HistoryNavigator2 } from "vs/base/common/history";
-import { IMarkdownString } from "vs/base/common/htmlContent";
-import { ResourceMap } from "vs/base/common/map";
-import { URI } from "vs/base/common/uri";
-import { Iterable } from "vs/base/common/iterator";
 import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import {
+	IInputValidation,
+	IInputValidator,
+	ISCMActionButtonDescriptor,
+	ISCMInput,
+	ISCMInputChangeEvent,
+	ISCMProvider,
+	ISCMRepository,
+	ISCMService,
+	InputValidationType,
+	SCMInputChangeReason,
+} from "./scm";
 
 class SCMInput implements ISCMInput {
 	private _value = "";
@@ -116,7 +116,7 @@ class SCMInput implements ISCMInput {
 
 	showValidationMessage(
 		message: string | IMarkdownString,
-		type: InputValidationType
+		type: InputValidationType,
 	): void {
 		this._onDidChangeValidationMessage.fire({
 			message: message,
@@ -145,16 +145,16 @@ class SCMInput implements ISCMInput {
 		this._onDidChangeValidateInput.event;
 
 	private readonly historyNavigator: HistoryNavigator2<string>;
-	private didChangeHistory: boolean = false;
+	private didChangeHistory = false;
 
 	constructor(
 		readonly repository: ISCMRepository,
-		private readonly history: SCMInputHistory
+		private readonly history: SCMInputHistory,
 	) {
 		if (this.repository.provider.rootUri) {
 			this.historyNavigator = history.getHistory(
 				this.repository.provider.label,
-				this.repository.provider.rootUri
+				this.repository.provider.rootUri,
 			);
 			this.history.onWillSaveHistory((event) => {
 				if (this.historyNavigator.isAtEnd()) {
@@ -237,7 +237,7 @@ class SCMRepository implements ISCMRepository {
 		public readonly id: string,
 		public readonly provider: ISCMProvider,
 		private disposable: IDisposable,
-		inputHistory: SCMInputHistory
+		inputHistory: SCMInputHistory,
 	) {
 		this.input = new SCMInput(this, inputHistory);
 	}
@@ -275,7 +275,7 @@ class SCMInputHistory {
 	>();
 
 	private readonly _onWillSaveHistory = this.disposables.add(
-		new Emitter<WillSaveHistoryEvent>()
+		new Emitter<WillSaveHistoryEvent>(),
 	);
 	readonly onWillSaveHistory = this._onWillSaveHistory.event;
 
@@ -354,7 +354,7 @@ class SCMInputHistory {
 			"scm.history",
 			raw,
 			StorageScope.WORKSPACE,
-			StorageTarget.USER
+			StorageTarget.USER,
 		);
 	}
 
@@ -383,15 +383,15 @@ class SCMInputHistory {
 		const machineKeys = Iterable.filter(
 			this.storageService.keys(
 				StorageScope.APPLICATION,
-				StorageTarget.MACHINE
+				StorageTarget.MACHINE,
 			),
-			(key) => key.startsWith("scm/input:")
+			(key) => key.startsWith("scm/input:"),
 		);
 
 		for (const key of machineKeys) {
 			try {
 				const legacyHistory = JSON.parse(
-					this.storageService.get(key, StorageScope.APPLICATION, "")
+					this.storageService.get(key, StorageScope.APPLICATION, ""),
 				);
 				const match = /^scm\/input:([^:]+):(.+)$/.exec(key);
 
@@ -411,7 +411,7 @@ class SCMInputHistory {
 					const history = this.getHistory(providerLabel, rootUri);
 
 					for (const entry of Iterable.reverse(
-						legacyHistory.history as string[]
+						legacyHistory.history as string[],
 					)) {
 						history.prepend(entry);
 					}
@@ -488,7 +488,7 @@ export class SCMService implements ISCMService {
 			provider.id,
 			provider,
 			disposable,
-			this.inputHistory
+			this.inputHistory,
 		);
 		this._repositories.set(provider.id, repository);
 		this._onDidAddProvider.fire(repository);

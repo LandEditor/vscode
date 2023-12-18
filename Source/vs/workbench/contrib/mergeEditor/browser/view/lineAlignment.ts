@@ -27,17 +27,17 @@ export function getAlignments(m: ModifiedBaseRange): LineAlignment[] {
 	const equalRanges1 = toEqualRangeMappings(
 		m.input1Diffs.flatMap((d) => d.rangeMappings),
 		m.baseRange.toRange(),
-		m.input1Range.toRange()
+		m.input1Range.toRange(),
 	);
 	const equalRanges2 = toEqualRangeMappings(
 		m.input2Diffs.flatMap((d) => d.rangeMappings),
 		m.baseRange.toRange(),
-		m.input2Range.toRange()
+		m.input2Range.toRange(),
 	);
 
 	const commonRanges = splitUpCommonEqualRangeMappings(
 		equalRanges1,
-		equalRanges2
+		equalRanges2,
 	);
 
 	let result: LineAlignment[] = [];
@@ -66,8 +66,8 @@ export function getAlignments(m: ModifiedBaseRange): LineAlignment[] {
 				(r) =>
 					isFullSync(r) &&
 					r.some(
-						(v, idx) => v !== undefined && v === lineAlignment[idx]
-					)
+						(v, idx) => v !== undefined && v === lineAlignment[idx],
+					),
 			);
 			if (isNewFullSyncAlignment) {
 				// Remove half syncs
@@ -75,28 +75,26 @@ export function getAlignments(m: ModifiedBaseRange): LineAlignment[] {
 					(r) =>
 						!r.some(
 							(v, idx) =>
-								v !== undefined && v === lineAlignment[idx]
-						)
+								v !== undefined && v === lineAlignment[idx],
+						),
 				);
 			}
 			shouldAdd = isNewFullSyncAlignment;
 		} else {
 			const isNew = !result.some((r) =>
-				r.some((v, idx) => v !== undefined && v === lineAlignment[idx])
+				r.some((v, idx) => v !== undefined && v === lineAlignment[idx]),
 			);
 			shouldAdd = isNew;
 		}
 
 		if (shouldAdd) {
 			result.push(lineAlignment);
-		} else {
-			if (m.length.isGreaterThan(new LengthObj(1, 0))) {
-				result.push([
-					m.output1Pos ? m.output1Pos.lineNumber + 1 : undefined,
-					m.inputPos.lineNumber + 1,
-					m.output2Pos ? m.output2Pos.lineNumber + 1 : undefined,
-				]);
-			}
+		} else if (m.length.isGreaterThan(new LengthObj(1, 0))) {
+			result.push([
+				m.output1Pos ? m.output1Pos.lineNumber + 1 : undefined,
+				m.inputPos.lineNumber + 1,
+				m.output2Pos ? m.output2Pos.lineNumber + 1 : undefined,
+			]);
 		}
 	}
 
@@ -106,7 +104,7 @@ export function getAlignments(m: ModifiedBaseRange): LineAlignment[] {
 		m.input2Range.endLineNumberExclusive,
 	];
 	result = result.filter((r) =>
-		r.every((v, idx) => v !== finalLineAlignment[idx])
+		r.every((v, idx) => v !== finalLineAlignment[idx]),
 	);
 	result.push(finalLineAlignment);
 
@@ -114,17 +112,19 @@ export function getAlignments(m: ModifiedBaseRange): LineAlignment[] {
 		() =>
 			checkAdjacentItems(
 				result.map((r) => r[0]).filter(isDefined),
-				(a, b) => a < b
+				(a, b) => a < b,
 			) &&
 			checkAdjacentItems(
 				result.map((r) => r[1]).filter(isDefined),
-				(a, b) => a <= b
+				(a, b) => a <= b,
 			) &&
 			checkAdjacentItems(
 				result.map((r) => r[2]).filter(isDefined),
-				(a, b) => a < b
+				(a, b) => a < b,
 			) &&
-			result.every((alignment) => alignment.filter(isDefined).length >= 2)
+			result.every(
+				(alignment) => alignment.filter(isDefined).length >= 2,
+			),
 	);
 
 	return result;
@@ -139,7 +139,7 @@ interface CommonRangeMapping {
 function toEqualRangeMappings(
 	diffs: RangeMapping[],
 	inputRange: Range,
-	outputRange: Range
+	outputRange: Range,
 ): RangeMapping[] {
 	const result: RangeMapping[] = [];
 
@@ -150,17 +150,17 @@ function toEqualRangeMappings(
 		const equalRangeMapping = new RangeMapping(
 			Range.fromPositions(
 				equalRangeInputStart,
-				d.inputRange.getStartPosition()
+				d.inputRange.getStartPosition(),
 			),
 			Range.fromPositions(
 				equalRangeOutputStart,
-				d.outputRange.getStartPosition()
-			)
+				d.outputRange.getStartPosition(),
+			),
 		);
 		assertFn(() =>
 			lengthOfRange(equalRangeMapping.inputRange).equals(
-				lengthOfRange(equalRangeMapping.outputRange)
-			)
+				lengthOfRange(equalRangeMapping.outputRange),
+			),
 		);
 		if (!equalRangeMapping.inputRange.isEmpty()) {
 			result.push(equalRangeMapping);
@@ -172,12 +172,15 @@ function toEqualRangeMappings(
 
 	const equalRangeMapping = new RangeMapping(
 		Range.fromPositions(equalRangeInputStart, inputRange.getEndPosition()),
-		Range.fromPositions(equalRangeOutputStart, outputRange.getEndPosition())
+		Range.fromPositions(
+			equalRangeOutputStart,
+			outputRange.getEndPosition(),
+		),
 	);
 	assertFn(() =>
 		lengthOfRange(equalRangeMapping.inputRange).equals(
-			lengthOfRange(equalRangeMapping.outputRange)
-		)
+			lengthOfRange(equalRangeMapping.outputRange),
+		),
 	);
 	if (!equalRangeMapping.inputRange.isEmpty()) {
 		result.push(equalRangeMapping);
@@ -191,7 +194,7 @@ function toEqualRangeMappings(
  */
 function splitUpCommonEqualRangeMappings(
 	equalRangeMappings1: RangeMapping[],
-	equalRangeMappings2: RangeMapping[]
+	equalRangeMappings2: RangeMapping[],
 ): CommonRangeMapping[] {
 	const result: CommonRangeMapping[] = [];
 

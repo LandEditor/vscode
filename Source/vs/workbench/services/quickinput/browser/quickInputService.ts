@@ -3,34 +3,34 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ILayoutService } from "vs/platform/layout/browser/layoutService";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { QuickInputController } from "vs/platform/quickinput/browser/quickInputController";
-import { QuickInputService as BaseQuickInputService } from "vs/platform/quickinput/browser/quickInputService";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { IQuickInputService } from "vs/platform/quickinput/common/quickInput";
-import { InQuickPickContextKey } from "vs/workbench/browser/quickaccess";
-import { IHoverService } from "vs/workbench/services/hover/browser/hover";
 import {
 	IHoverDelegate,
 	IHoverDelegateOptions,
 	IHoverWidget,
 } from "vs/base/browser/ui/iconLabel/iconHoverDelegate";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { ILayoutService } from "vs/platform/layout/browser/layoutService";
+import { QuickInputController } from "vs/platform/quickinput/browser/quickInputController";
+import { QuickInputService as BaseQuickInputService } from "vs/platform/quickinput/browser/quickInputService";
+import { IQuickInputService } from "vs/platform/quickinput/common/quickInput";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import { InQuickPickContextKey } from "vs/workbench/browser/quickaccess";
+import { IHoverService } from "vs/workbench/services/hover/browser/hover";
 
 export class QuickInputService extends BaseQuickInputService {
 	private readonly hoverDelegate = new QuickInputHoverDelegate(
 		this.configurationService,
-		this.hoverService
+		this.hoverService,
 	);
 	private readonly inQuickInputContext = InQuickPickContextKey.bindTo(
-		this.contextKeyService
+		this.contextKeyService,
 	);
 
 	constructor(
@@ -63,7 +63,7 @@ export class QuickInputService extends BaseQuickInputService {
 		return super.createController(this.layoutService, {
 			ignoreFocusOut: () =>
 				!this.configurationService.getValue(
-					"workbench.quickOpen.closeOnFocusLost"
+					"workbench.quickOpen.closeOnFocusLost",
 				),
 			backKeybindingLabel: () =>
 				this.keybindingService
@@ -84,26 +84,26 @@ class QuickInputHoverDelegate implements IHoverDelegate {
 		}
 
 		return this.configurationService.getValue<number>(
-			"workbench.hover.delay"
+			"workbench.hover.delay",
 		);
 	}
 
 	constructor(
 		private readonly configurationService: IConfigurationService,
-		private readonly hoverService: IHoverService
+		private readonly hoverService: IHoverService,
 	) {}
 
 	showHover(
 		options: IHoverDelegateOptions,
-		focus?: boolean
+		focus?: boolean,
 	): IHoverWidget | undefined {
 		// Only show the hover hint if the content is of a decent size
 		const showHoverHint =
 			(options.content instanceof HTMLElement
 				? options.content.textContent ?? ""
 				: typeof options.content === "string"
-					? options.content
-					: options.content.value
+				  ? options.content
+				  : options.content.value
 			).length > 20;
 		return this.hoverService.showHover(
 			{
@@ -116,7 +116,7 @@ class QuickInputHoverDelegate implements IHoverDelegate {
 					skipFadeInAnimation: true,
 				},
 			},
-			focus
+			focus,
 		);
 	}
 
@@ -128,5 +128,5 @@ class QuickInputHoverDelegate implements IHoverDelegate {
 registerSingleton(
 	IQuickInputService,
 	QuickInputService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

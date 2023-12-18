@@ -3,35 +3,35 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from "vs/base/common/uri";
 import { IDisposable } from "vs/base/common/lifecycle";
-import { Registry } from "vs/platform/registry/common/platform";
+import { URI } from "vs/base/common/uri";
 import {
-	IConfigurationRegistry,
-	Extensions as ConfigurationExtensions,
+	ConfigurationTarget,
+	IConfigurationOverrides,
+	IConfigurationService,
+} from "vs/platform/configuration/common/configuration";
+import {
 	ConfigurationScope,
+	Extensions as ConfigurationExtensions,
+	IConfigurationRegistry,
 	getScopes,
 } from "vs/platform/configuration/common/configurationRegistry";
+import { IEnvironmentService } from "vs/platform/environment/common/environment";
+import { Registry } from "vs/platform/registry/common/platform";
 import {
 	IWorkspaceContextService,
 	WorkbenchState,
 } from "vs/platform/workspace/common/workspace";
 import {
-	MainThreadConfigurationShape,
-	MainContext,
-	ExtHostContext,
-	IConfigurationInitData,
-} from "../common/extHost.protocol";
-import {
-	extHostNamedCustomer,
 	IExtHostContext,
+	extHostNamedCustomer,
 } from "vs/workbench/services/extensions/common/extHostCustomers";
 import {
-	ConfigurationTarget,
-	IConfigurationService,
-	IConfigurationOverrides,
-} from "vs/platform/configuration/common/configuration";
-import { IEnvironmentService } from "vs/platform/environment/common/environment";
+	ExtHostContext,
+	IConfigurationInitData,
+	MainContext,
+	MainThreadConfigurationShape,
+} from "../common/extHost.protocol";
 
 @extHostNamedCustomer(MainContext.MainThreadConfiguration)
 export class MainThreadConfiguration implements MainThreadConfigurationShape {
@@ -84,7 +84,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 		key: string,
 		value: any,
 		overrides: IConfigurationOverrides | undefined,
-		scopeToLanguage: boolean | undefined
+		scopeToLanguage: boolean | undefined,
 	): Promise<void> {
 		overrides = {
 			resource: overrides?.resource
@@ -97,7 +97,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 			key,
 			value,
 			overrides,
-			scopeToLanguage
+			scopeToLanguage,
 		);
 	}
 
@@ -105,7 +105,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 		target: ConfigurationTarget | null,
 		key: string,
 		overrides: IConfigurationOverrides | undefined,
-		scopeToLanguage: boolean | undefined
+		scopeToLanguage: boolean | undefined,
 	): Promise<void> {
 		overrides = {
 			resource: overrides?.resource
@@ -118,7 +118,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 			key,
 			undefined,
 			overrides,
-			scopeToLanguage
+			scopeToLanguage,
 		);
 	}
 
@@ -127,7 +127,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 		key: string,
 		value: any,
 		overrides: IConfigurationOverrides,
-		scopeToLanguage: boolean | undefined
+		scopeToLanguage: boolean | undefined,
 	): Promise<void> {
 		target =
 			target !== null && target !== undefined
@@ -135,7 +135,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 				: this.deriveConfigurationTarget(key, overrides);
 		const configurationValue = this.configurationService.inspect(
 			key,
-			overrides
+			overrides,
 		);
 		switch (target) {
 			case ConfigurationTarget.MEMORY:
@@ -145,7 +145,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 					target,
 					configurationValue?.memory?.override,
 					overrides,
-					scopeToLanguage
+					scopeToLanguage,
 				);
 			case ConfigurationTarget.WORKSPACE_FOLDER:
 				return this._updateValue(
@@ -154,7 +154,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 					target,
 					configurationValue?.workspaceFolder?.override,
 					overrides,
-					scopeToLanguage
+					scopeToLanguage,
 				);
 			case ConfigurationTarget.WORKSPACE:
 				return this._updateValue(
@@ -163,7 +163,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 					target,
 					configurationValue?.workspace?.override,
 					overrides,
-					scopeToLanguage
+					scopeToLanguage,
 				);
 			case ConfigurationTarget.USER_REMOTE:
 				return this._updateValue(
@@ -172,7 +172,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 					target,
 					configurationValue?.userRemote?.override,
 					overrides,
-					scopeToLanguage
+					scopeToLanguage,
 				);
 			default:
 				return this._updateValue(
@@ -181,7 +181,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 					target,
 					configurationValue?.userLocal?.override,
 					overrides,
-					scopeToLanguage
+					scopeToLanguage,
 				);
 		}
 	}
@@ -192,29 +192,29 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 		configurationTarget: ConfigurationTarget,
 		overriddenValue: any | undefined,
 		overrides: IConfigurationOverrides,
-		scopeToLanguage: boolean | undefined
+		scopeToLanguage: boolean | undefined,
 	): Promise<void> {
 		overrides =
 			scopeToLanguage === true
 				? overrides
 				: scopeToLanguage === false
-					? { resource: overrides.resource }
-					: overrides.overrideIdentifier &&
+				  ? { resource: overrides.resource }
+				  : overrides.overrideIdentifier &&
 						  overriddenValue !== undefined
-						? overrides
-						: { resource: overrides.resource };
+					  ? overrides
+					  : { resource: overrides.resource };
 		return this.configurationService.updateValue(
 			key,
 			value,
 			overrides,
 			configurationTarget,
-			{ donotNotifyError: true }
+			{ donotNotifyError: true },
 		);
 	}
 
 	private deriveConfigurationTarget(
 		key: string,
-		overrides: IConfigurationOverrides
+		overrides: IConfigurationOverrides,
 	): ConfigurationTarget {
 		if (
 			overrides.resource &&
@@ -222,7 +222,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 				WorkbenchState.WORKSPACE
 		) {
 			const configurationProperties = Registry.as<IConfigurationRegistry>(
-				ConfigurationExtensions.Configuration
+				ConfigurationExtensions.Configuration,
 			).getConfigurationProperties();
 			if (
 				configurationProperties[key] &&

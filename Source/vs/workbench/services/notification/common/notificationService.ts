@@ -3,43 +3,43 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import {
-	INotificationService,
-	INotification,
-	INotificationHandle,
-	Severity,
-	NotificationMessage,
-	INotificationActions,
-	IPromptChoice,
-	IPromptOptions,
-	IStatusMessageOptions,
-	NoOpNotification,
-	NeverShowAgainScope,
-	NotificationsFilter,
-	INeverShowAgainOptions,
-} from "vs/platform/notification/common/notification";
-import {
-	NotificationsModel,
-	ChoiceAction,
-	NotificationChangeType,
-} from "vs/workbench/common/notifications";
+import { Action, IAction } from "vs/base/common/actions";
+import { Emitter, Event } from "vs/base/common/event";
 import {
 	Disposable,
 	DisposableStore,
 	IDisposable,
 } from "vs/base/common/lifecycle";
-import { Emitter, Event } from "vs/base/common/event";
+import { localize } from "vs/nls";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { IAction, Action } from "vs/base/common/actions";
+import {
+	INeverShowAgainOptions,
+	INotification,
+	INotificationActions,
+	INotificationHandle,
+	INotificationService,
+	IPromptChoice,
+	IPromptOptions,
+	IStatusMessageOptions,
+	NeverShowAgainScope,
+	NoOpNotification,
+	NotificationMessage,
+	NotificationsFilter,
+	Severity,
+} from "vs/platform/notification/common/notification";
 import {
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
+import {
+	ChoiceAction,
+	NotificationChangeType,
+	NotificationsModel,
+} from "vs/workbench/common/notifications";
 
 export class NotificationService
 	extends Disposable
@@ -50,17 +50,17 @@ export class NotificationService
 	readonly model = this._register(new NotificationsModel());
 
 	private readonly _onDidAddNotification = this._register(
-		new Emitter<INotification>()
+		new Emitter<INotification>(),
 	);
 	readonly onDidAddNotification = this._onDidAddNotification.event;
 
 	private readonly _onDidRemoveNotification = this._register(
-		new Emitter<INotification>()
+		new Emitter<INotification>(),
 	);
 	readonly onDidRemoveNotification = this._onDidRemoveNotification.event;
 
 	private readonly _onDidChangeDoNotDisturbMode = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onDidChangeDoNotDisturbMode =
 		this._onDidChangeDoNotDisturbMode.event;
@@ -89,7 +89,7 @@ export class NotificationService
 									? {
 											id: e.item.sourceId,
 											label: e.item.source,
-										}
+									  }
 									: e.item.source,
 							priority: e.item.priority,
 						};
@@ -105,7 +105,7 @@ export class NotificationService
 						break;
 					}
 				}
-			})
+			}),
 		);
 	}
 
@@ -116,7 +116,7 @@ export class NotificationService
 	private _doNotDisturbMode = this.storageService.getBoolean(
 		NotificationService.DND_SETTINGS_KEY,
 		StorageScope.APPLICATION,
-		false
+		false,
 	);
 
 	get doNotDisturbMode() {
@@ -132,7 +132,7 @@ export class NotificationService
 			NotificationService.DND_SETTINGS_KEY,
 			enabled,
 			StorageScope.APPLICATION,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 		this._doNotDisturbMode = enabled;
 
@@ -216,10 +216,10 @@ export class NotificationService
 							id,
 							true,
 							scope,
-							StorageTarget.USER
+							StorageTarget.USER,
 						);
-					}
-				)
+					},
+				),
 			);
 
 			// Insert as primary or secondary action
@@ -227,13 +227,13 @@ export class NotificationService
 				primary: notification.actions?.primary || [],
 				secondary: notification.actions?.secondary || [],
 			};
-			if (!notification.neverShowAgain.isSecondary) {
-				actions.primary = [neverShowAgainAction, ...actions.primary]; // action comes first
-			} else {
+			if (notification.neverShowAgain.isSecondary) {
 				actions.secondary = [
 					...actions.secondary,
 					neverShowAgainAction,
 				]; // actions comes last
+			} else {
+				actions.primary = [neverShowAgainAction, ...actions.primary]; // action comes first
 			}
 
 			notification.actions = actions;
@@ -265,7 +265,7 @@ export class NotificationService
 		severity: Severity,
 		message: string,
 		choices: IPromptChoice[],
-		options?: IPromptOptions
+		options?: IPromptOptions,
 	): INotificationHandle {
 		const toDispose = new DisposableStore();
 
@@ -287,16 +287,16 @@ export class NotificationService
 						id,
 						true,
 						scope,
-						StorageTarget.USER
+						StorageTarget.USER,
 					),
 				isSecondary: options.neverShowAgain.isSecondary,
 			};
 
 			// Insert as primary or secondary action
-			if (!options.neverShowAgain.isSecondary) {
-				choices = [neverShowAgainChoice, ...choices]; // action comes first
-			} else {
+			if (options.neverShowAgain.isSecondary) {
 				choices = [...choices, neverShowAgainChoice]; // actions comes last
+			} else {
+				choices = [neverShowAgainChoice, ...choices]; // action comes first
 			}
 		}
 
@@ -308,12 +308,12 @@ export class NotificationService
 		choices.forEach((choice, index) => {
 			const action = new ChoiceAction(
 				`workbench.dialog.choice.${index}`,
-				choice
+				choice,
 			);
-			if (!choice.isSecondary) {
-				primaryActions.push(action);
-			} else {
+			if (choice.isSecondary) {
 				secondaryActions.push(action);
+			} else {
+				primaryActions.push(action);
 			}
 
 			// React to action being clicked
@@ -325,7 +325,7 @@ export class NotificationService
 					if (!choice.keepOpen) {
 						handle.close();
 					}
-				})
+				}),
 			);
 
 			toDispose.add(action);
@@ -363,7 +363,7 @@ export class NotificationService
 
 	status(
 		message: NotificationMessage,
-		options?: IStatusMessageOptions
+		options?: IStatusMessageOptions,
 	): IDisposable {
 		return this.model.showStatusMessage(message, options);
 	}
@@ -372,5 +372,5 @@ export class NotificationService
 registerSingleton(
 	INotificationService,
 	NotificationService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

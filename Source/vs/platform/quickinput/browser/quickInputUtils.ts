@@ -5,23 +5,23 @@
 
 import * as dom from "vs/base/browser/dom";
 import { DomEmitter } from "vs/base/browser/event";
-import { Event } from "vs/base/common/event";
 import { StandardKeyboardEvent } from "vs/base/browser/keyboardEvent";
-import { Gesture, EventType as GestureEventType } from "vs/base/browser/touch";
+import { EventType as GestureEventType, Gesture } from "vs/base/browser/touch";
 import { renderLabelWithIcons } from "vs/base/browser/ui/iconLabel/iconLabels";
+import { Event } from "vs/base/common/event";
 import { IdGenerator } from "vs/base/common/idGenerator";
 import { KeyCode } from "vs/base/common/keyCodes";
+import { DisposableStore } from "vs/base/common/lifecycle";
 import { parseLinkedText } from "vs/base/common/linkedText";
 import { URI } from "vs/base/common/uri";
 import "vs/css!./media/quickInput";
 import { localize } from "vs/nls";
-import { DisposableStore } from "vs/base/common/lifecycle";
 
 const iconPathToClass: Record<string, string> = {};
 const iconClassGenerator = new IdGenerator("quick-input-button-icon-");
 
 export function getIconClass(
-	iconPath: { dark: URI; light?: URI } | undefined
+	iconPath: { dark: URI; light?: URI } | undefined,
 ): string | undefined {
 	if (!iconPath) {
 		return undefined;
@@ -35,11 +35,13 @@ export function getIconClass(
 		iconClass = iconClassGenerator.nextId();
 		dom.createCSSRule(
 			`.${iconClass}, .hc-light .${iconClass}`,
-			`background-image: ${dom.asCSSUrl(iconPath.light || iconPath.dark)}`
+			`background-image: ${dom.asCSSUrl(
+				iconPath.light || iconPath.dark,
+			)}`,
 		);
 		dom.createCSSRule(
 			`.vs-dark .${iconClass}, .hc-black .${iconClass}`,
-			`background-image: ${dom.asCSSUrl(iconPath.dark)}`
+			`background-image: ${dom.asCSSUrl(iconPath.dark)}`,
 		);
 		iconPathToClass[key] = iconClass;
 	}
@@ -53,7 +55,7 @@ export function renderQuickInputDescription(
 	actionHandler: {
 		callback: (content: string) => void;
 		disposables: DisposableStore;
-	}
+	},
 ) {
 	dom.reset(container);
 	const parsed = parseLinkedText(description);
@@ -68,7 +70,7 @@ export function renderQuickInputDescription(
 				title = localize(
 					"executeCommand",
 					"Click to execute command '{0}'",
-					node.href.substring("command:".length)
+					node.href.substring("command:".length),
 				);
 			} else if (!title) {
 				title = node.href;
@@ -77,7 +79,7 @@ export function renderQuickInputDescription(
 			const anchor = dom.$(
 				"a",
 				{ href: node.href, title, tabIndex: tabIndex++ },
-				node.label
+				node.label,
 			);
 			anchor.style.textDecoration = "underline";
 			const handleOpen = (e: unknown) => {
@@ -89,10 +91,10 @@ export function renderQuickInputDescription(
 			};
 
 			const onClick = actionHandler.disposables.add(
-				new DomEmitter(anchor, dom.EventType.CLICK)
+				new DomEmitter(anchor, dom.EventType.CLICK),
 			).event;
 			const onKeydown = actionHandler.disposables.add(
-				new DomEmitter(anchor, dom.EventType.KEY_DOWN)
+				new DomEmitter(anchor, dom.EventType.KEY_DOWN),
 			).event;
 			const onSpaceOrEnter = Event.chain(onKeydown, ($) =>
 				$.filter((e) => {
@@ -102,18 +104,18 @@ export function renderQuickInputDescription(
 						event.equals(KeyCode.Space) ||
 						event.equals(KeyCode.Enter)
 					);
-				})
+				}),
 			);
 
 			actionHandler.disposables.add(Gesture.addTarget(anchor));
 			const onTap = actionHandler.disposables.add(
-				new DomEmitter(anchor, GestureEventType.Tap)
+				new DomEmitter(anchor, GestureEventType.Tap),
 			).event;
 
 			Event.any(onClick, onTap, onSpaceOrEnter)(
 				handleOpen,
 				null,
-				actionHandler.disposables
+				actionHandler.disposables,
 			);
 			container.appendChild(anchor);
 		}

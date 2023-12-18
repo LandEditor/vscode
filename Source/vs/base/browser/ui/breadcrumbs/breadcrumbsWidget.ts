@@ -7,14 +7,14 @@ import * as dom from "vs/base/browser/dom";
 import { IMouseEvent } from "vs/base/browser/mouseEvent";
 import { DomScrollableElement } from "vs/base/browser/ui/scrollbar/scrollableElement";
 import { commonPrefixLength } from "vs/base/common/arrays";
-import { ThemeIcon } from "vs/base/common/themables";
 import { Emitter, Event } from "vs/base/common/event";
 import {
 	DisposableStore,
-	dispose,
 	IDisposable,
+	dispose,
 } from "vs/base/common/lifecycle";
 import { ScrollbarVisibility } from "vs/base/common/scrollable";
+import { ThemeIcon } from "vs/base/common/themables";
 import "vs/css!./breadcrumbsWidget";
 
 export abstract class BreadcrumbsItem {
@@ -58,9 +58,9 @@ export class BreadcrumbsWidget {
 	private readonly _freeNodes = new Array<HTMLDivElement>();
 	private readonly _separatorIcon: ThemeIcon;
 
-	private _enabled: boolean = true;
-	private _focusedItemIdx: number = -1;
-	private _selectedItemIdx: number = -1;
+	private _enabled = true;
+	private _focusedItemIdx = -1;
+	private _selectedItemIdx = -1;
 
 	private _pendingLayout: IDisposable | undefined;
 	private _dimension: dom.Dimension | undefined;
@@ -69,7 +69,7 @@ export class BreadcrumbsWidget {
 		container: HTMLElement,
 		horizontalScrollbarSize: number,
 		separatorIcon: ThemeIcon,
-		styles: IBreadcrumbsWidgetStyles
+		styles: IBreadcrumbsWidgetStyles,
 	) {
 		this._domNode = document.createElement("div");
 		this._domNode.className = "monaco-breadcrumbs";
@@ -86,8 +86,8 @@ export class BreadcrumbsWidget {
 		this._disposables.add(this._scrollable);
 		this._disposables.add(
 			dom.addStandardDisposableListener(this._domNode, "click", (e) =>
-				this._onClick(e)
-			)
+				this._onClick(e),
+			),
 		);
 		container.appendChild(this._scrollable.getDomNode());
 
@@ -97,10 +97,10 @@ export class BreadcrumbsWidget {
 		const focusTracker = dom.trackFocus(this._domNode);
 		this._disposables.add(focusTracker);
 		this._disposables.add(
-			focusTracker.onDidBlur((_) => this._onDidChangeFocus.fire(false))
+			focusTracker.onDidBlur((_) => this._onDidChangeFocus.fire(false)),
 		);
 		this._disposables.add(
-			focusTracker.onDidFocus((_) => this._onDidChangeFocus.fire(true))
+			focusTracker.onDidFocus((_) => this._onDidChangeFocus.fire(true)),
 		);
 	}
 
@@ -142,7 +142,7 @@ export class BreadcrumbsWidget {
 				this._domNode.style.width = `${dim.width}px`;
 				this._domNode.style.height = `${dim.height}px`;
 				disposables.add(this._updateScrollbar());
-			})
+			}),
 		);
 		return disposables;
 	}
@@ -160,7 +160,7 @@ export class BreadcrumbsWidget {
 
 	private _style(
 		styleElement: HTMLStyleElement,
-		style: IBreadcrumbsWidgetStyles
+		style: IBreadcrumbsWidgetStyles,
 	): void {
 		let content = "";
 		if (style.breadcrumbsBackground) {
@@ -311,19 +311,19 @@ export class BreadcrumbsWidget {
 		let removed: BreadcrumbsItem[] = [];
 		try {
 			prefix = commonPrefixLength(this._items, items, (a, b) =>
-				a.equals(b)
+				a.equals(b),
 			);
 			removed = this._items.splice(
 				prefix,
 				this._items.length - prefix,
-				...items.slice(prefix)
+				...items.slice(prefix),
 			);
 			this._render(prefix);
 			dispose(removed);
 			this._focus(-1, undefined);
 		} catch (e) {
 			const newError = new Error(
-				`BreadcrumbsItem#setItems: newItems: ${items.length}, prefix: ${prefix}, removed: ${removed.length}`
+				`BreadcrumbsItem#setItems: newItems: ${items.length}, prefix: ${prefix}, removed: ${removed.length}`,
 			);
 			newError.name = e.name;
 			newError.stack = e.stack;
@@ -374,7 +374,7 @@ export class BreadcrumbsWidget {
 
 	private _renderItem(
 		item: BreadcrumbsItem,
-		container: HTMLDivElement
+		container: HTMLDivElement,
 	): void {
 		dom.clearNode(container);
 		container.className = "";
@@ -388,7 +388,7 @@ export class BreadcrumbsWidget {
 		container.setAttribute("role", "listitem");
 		container.classList.add("monaco-breadcrumb-item");
 		const iconContainer = dom.$(
-			ThemeIcon.asCSSSelector(this._separatorIcon)
+			ThemeIcon.asCSSSelector(this._separatorIcon),
 		);
 		container.appendChild(iconContainer);
 	}

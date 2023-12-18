@@ -13,10 +13,10 @@ const IntRegex: RegExp = /^\d+$/;
 const PwshMsixRegex: RegExp = /^Microsoft.PowerShell_.*/;
 const PwshPreviewMsixRegex: RegExp = /^Microsoft.PowerShellPreview_.*/;
 
-const enum Arch {
-	x64,
-	x86,
-	ARM,
+enum Arch {
+	x64 = 0,
+	x86 = 1,
+	ARM = 2,
 }
 
 let processArch: Arch;
@@ -85,13 +85,13 @@ class PossiblePowerShellExe implements IPossiblePowerShellExe {
 	constructor(
 		public readonly exePath: string,
 		public readonly displayName: string,
-		private knownToExist?: boolean
+		private knownToExist?: boolean,
 	) {}
 
 	public async exists(): Promise<boolean> {
 		if (this.knownToExist === undefined) {
 			this.knownToExist = await pfs.SymlinkSupport.existsFile(
-				this.exePath
+				this.exePath,
 			);
 		}
 		return this.knownToExist;
@@ -139,10 +139,10 @@ async function findPSCoreWindowsInstallation({
 		return null;
 	}
 
-	let highestSeenVersion: number = -1;
+	let highestSeenVersion = -1;
 	let pwshExePath: string | null = null;
 	for (const item of await pfs.Promises.readdir(powerShellInstallBaseDir)) {
-		let currentVersion: number = -1;
+		let currentVersion = -1;
 		if (findPreview) {
 			// We are looking for something like "7-preview"
 
@@ -197,7 +197,7 @@ async function findPSCoreWindowsInstallation({
 	return new PossiblePowerShellExe(
 		pwshExePath,
 		`PowerShell${preview}${bitness}`,
-		true
+		true,
 	);
 }
 
@@ -213,7 +213,7 @@ async function findPSCoreMsix({
 	const msixAppDir = path.join(
 		process.env.LOCALAPPDATA,
 		"Microsoft",
-		"WindowsApps"
+		"WindowsApps",
 	);
 
 	if (!(await pfs.SymlinkSupport.existsDirectory(msixAppDir))) {
@@ -225,11 +225,11 @@ async function findPSCoreMsix({
 		? {
 				pwshMsixDirRegex: PwshPreviewMsixRegex,
 				pwshMsixName: "PowerShell Preview (Store)",
-			}
+		  }
 		: {
 				pwshMsixDirRegex: PwshMsixRegex,
 				pwshMsixName: "PowerShell (Store)",
-			};
+		  };
 
 	// We should find only one such application, so return on the first one
 	for (const subdir of await pfs.Promises.readdir(msixAppDir)) {
@@ -248,12 +248,12 @@ function findPSCoreDotnetGlobalTool(): IPossiblePowerShellExe {
 		os.homedir(),
 		".dotnet",
 		"tools",
-		"pwsh.exe"
+		"pwsh.exe",
 	);
 
 	return new PossiblePowerShellExe(
 		dotnetGlobalToolExePath,
-		".NET Core PowerShell Global Tool"
+		".NET Core PowerShell Global Tool",
 	);
 }
 
@@ -265,7 +265,7 @@ function findWinPS(): IPossiblePowerShellExe | null {
 			: "System32",
 		"WindowsPowerShell",
 		"v1.0",
-		"powershell.exe"
+		"powershell.exe",
 	);
 
 	return new PossiblePowerShellExe(winPSPath, "Windows PowerShell", true);

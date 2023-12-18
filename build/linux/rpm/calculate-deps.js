@@ -1,4 +1,3 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -20,7 +19,7 @@ function calculatePackageDeps(binaryPath) {
 	try {
 		if (!((0, fs_1.statSync)(binaryPath).mode & fs_1.constants.S_IXUSR)) {
 			throw new Error(
-				`Binary ${binaryPath} needs to have an executable bit set.`
+				`Binary ${binaryPath} needs to have an executable bit set.`,
 			);
 		}
 	} catch (e) {
@@ -29,15 +28,15 @@ function calculatePackageDeps(binaryPath) {
 	}
 	const findRequiresResult = (0, child_process_1.spawnSync)(
 		"/usr/lib/rpm/find-requires",
-		{ input: binaryPath + "\n" }
+		{ input: binaryPath + "\n" },
 	);
 	if (findRequiresResult.status !== 0) {
 		throw new Error(
-			`find-requires failed with exit code ${findRequiresResult.status}.\nstderr: ${findRequiresResult.stderr}`
+			`find-requires failed with exit code ${findRequiresResult.status}.\nstderr: ${findRequiresResult.stderr}`,
 		);
 	}
 	const requires = new Set(
-		findRequiresResult.stdout.toString("utf-8").trimEnd().split("\n")
+		findRequiresResult.stdout.toString("utf-8").trimEnd().split("\n"),
 	);
 	return requires;
 }

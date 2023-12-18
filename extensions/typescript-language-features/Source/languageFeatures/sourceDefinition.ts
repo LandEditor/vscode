@@ -22,8 +22,8 @@ class SourceDefinitionCommand implements Command {
 		if (this.client.apiVersion.lt(SourceDefinitionCommand.minVersion)) {
 			vscode.window.showErrorMessage(
 				vscode.l10n.t(
-					"Go to Source Definition failed. Requires TypeScript 4.7+."
-				)
+					"Go to Source Definition failed. Requires TypeScript 4.7+.",
+				),
 			);
 			return;
 		}
@@ -32,8 +32,8 @@ class SourceDefinitionCommand implements Command {
 		if (!activeEditor) {
 			vscode.window.showErrorMessage(
 				vscode.l10n.t(
-					"Go to Source Definition failed. No resource provided."
-				)
+					"Go to Source Definition failed. No resource provided.",
+				),
 			);
 			return;
 		}
@@ -43,8 +43,8 @@ class SourceDefinitionCommand implements Command {
 		if (!isSupportedLanguageMode(document)) {
 			vscode.window.showErrorMessage(
 				vscode.l10n.t(
-					"Go to Source Definition failed. Unsupported file type."
-				)
+					"Go to Source Definition failed. Unsupported file type.",
+				),
 			);
 			return;
 		}
@@ -53,8 +53,8 @@ class SourceDefinitionCommand implements Command {
 		if (!openedFiledPath) {
 			vscode.window.showErrorMessage(
 				vscode.l10n.t(
-					"Go to Source Definition failed. Unknown file type."
-				)
+					"Go to Source Definition failed. Unknown file type.",
+				),
 			);
 			return;
 		}
@@ -68,20 +68,20 @@ class SourceDefinitionCommand implements Command {
 				const position = activeEditor.selection.anchor;
 				const args = typeConverters.Position.toFileLocationRequestArgs(
 					openedFiledPath,
-					position
+					position,
 				);
 				const response = await this.client.execute(
 					"findSourceDefinition",
 					args,
-					token
+					token,
 				);
 				if (response.type === "response" && response.body) {
 					const locations: vscode.Location[] = response.body.map(
 						(reference) =>
 							typeConverters.Location.fromTextSpan(
 								this.client.toResource(reference.file),
-								reference
-							)
+								reference,
+							),
 					);
 
 					if (locations.length) {
@@ -94,14 +94,14 @@ class SourceDefinitionCommand implements Command {
 									},${
 										locations[0].range.start.character + 1
 									}`,
-								})
+								}),
 							);
 						} else {
 							vscode.commands.executeCommand(
 								"editor.action.showReferences",
 								resource,
 								position,
-								locations
+								locations,
 							);
 						}
 						return;
@@ -109,22 +109,22 @@ class SourceDefinitionCommand implements Command {
 				}
 
 				vscode.window.showErrorMessage(
-					vscode.l10n.t("No source definitions found.")
+					vscode.l10n.t("No source definitions found."),
 				);
-			}
+			},
 		);
 	}
 }
 
 export function register(
 	client: ITypeScriptServiceClient,
-	commandManager: CommandManager
+	commandManager: CommandManager,
 ) {
 	function updateContext() {
 		vscode.commands.executeCommand(
 			"setContext",
 			SourceDefinitionCommand.context,
-			client.apiVersion.gte(SourceDefinitionCommand.minVersion)
+			client.apiVersion.gte(SourceDefinitionCommand.minVersion),
 		);
 	}
 	updateContext();

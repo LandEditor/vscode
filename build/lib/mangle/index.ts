@@ -5,10 +5,10 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import { pathToFileURL } from "url";
 import { argv } from "process";
 import { Mapping, SourceMapGenerator } from "source-map";
 import * as ts from "typescript";
-import { pathToFileURL } from "url";
 import * as workerpool from "workerpool";
 import { StaticLanguageServiceHost } from "./staticLanguageServiceHost";
 const buildfile = require("../../../src/buildfile");
@@ -58,7 +58,7 @@ class ShortIdent {
 
 	private static _alphabet =
 		"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890$_".split(
-			""
+			"",
 		);
 
 	private _value = 0;
@@ -91,10 +91,10 @@ class ShortIdent {
 	}
 }
 
-const enum FieldType {
-	Public,
-	Protected,
-	Private,
+enum FieldType {
+	Public = 0,
+	Protected = 1,
+	Private = 2,
 }
 
 class ClassData {
@@ -107,7 +107,7 @@ class ClassData {
 
 	constructor(
 		readonly fileName: string,
-		readonly node: ts.ClassDeclaration | ts.ClassExpression
+		readonly node: ts.ClassDeclaration | ts.ClassExpression,
 	) {
 		// analyse all fields (properties and methods). Find usages of all protected and
 		// private ones and keep track of all public ones (to prevent naming collisions)
@@ -151,7 +151,7 @@ class ClassData {
 	}
 
 	private static _getMemberName(
-		node: ts.NamedDeclaration
+		node: ts.NamedDeclaration,
 	): string | undefined {
 		if (!node.name) {
 			return undefined;
@@ -186,7 +186,7 @@ class ClassData {
 
 	static makeImplicitPublicActuallyPublic(
 		data: ClassData,
-		reportViolation: (name: string, what: string, why: string) => void
+		reportViolation: (name: string, what: string, why: string) => void,
 	): void {
 		// TS-HACK
 		// A subtype can make an inherited protected field public. To prevent accidential
@@ -201,7 +201,7 @@ class ClassData {
 					const parentPos = parent.node
 						.getSourceFile()
 						.getLineAndCharacterOfPosition(
-							parent.fields.get(name)!.pos
+							parent.fields.get(name)!.pos,
 						);
 					const infoPos = data.node
 						.getSourceFile()
@@ -211,7 +211,7 @@ class ClassData {
 						`'${name}' from ${parent.fileName}:${
 							parentPos.line + 1
 						}`,
-						`${data.fileName}:${infoPos.line + 1}`
+						`${data.fileName}:${infoPos.line + 1}`,
 					);
 
 					parent.fields.get(name)!.type = FieldType.Public;
@@ -400,7 +400,7 @@ class DeclarationData {
 			| ts.EnumDeclaration
 			| ts.VariableDeclaration,
 		private readonly service: ts.LanguageService,
-		fileIdents: ShortIdent
+		fileIdents: ShortIdent,
 	) {
 		// Todo: generate replacement names based on usage count, with more used names getting shorter identifiers
 		this.replacementName = fileIdents.next();
@@ -411,7 +411,7 @@ class DeclarationData {
 			// If the const aliases any types, we need to rename those too
 			const definitionResult = this.service.getDefinitionAndBoundSpan(
 				this.fileName,
-				this.node.name.getStart()
+				this.node.name.getStart(),
 			);
 			if (
 				definitionResult?.definitions &&
@@ -482,10 +482,10 @@ export class Mangler {
 		private readonly config: {
 			readonly manglePrivateFields: boolean;
 			readonly mangleExports: boolean;
-		}
+		},
 	) {
 		this.service = ts.createLanguageService(
-			new StaticLanguageServiceHost(projectPath)
+			new StaticLanguageServiceHost(projectPath),
 		);
 
 		this.renameWorkerPool = workerpool.pool(
@@ -493,12 +493,12 @@ export class Mangler {
 			{
 				maxWorkers: 1,
 				minWorkers: "max",
-			}
+			},
 		);
 	}
 
 	async computeNewFileContents(
-		strictImplicitPublicHandling?: Set<string>
+		strictImplicitPublicHandling?: Set<string>,
 	): Promise<Map<string, MangleOutput>> {
 		// STEP:
 		// - Find all classes and their field info.
@@ -518,7 +518,7 @@ export class Mangler {
 					}
 					this.allClassDataByKey.set(
 						key,
-						new ClassData(node.getSourceFile().fileName, node)
+						new ClassData(node.getSourceFile().fileName, node),
 					);
 				}
 			}
@@ -540,7 +540,7 @@ export class Mangler {
 					(ts.isVariableDeclaration(node) &&
 						hasModifier(
 							node.parent.parent,
-							ts.SyntaxKind.ExportKeyword
+							ts.SyntaxKind.ExportKeyword,
 						) && // Variable statement is exported
 						ts.isSourceFile(node.parent.parent.parent))
 
@@ -564,8 +564,8 @@ export class Mangler {
 							node.getSourceFile().fileName,
 							node,
 							this.service,
-							fileIdents
-						)
+							fileIdents,
+						),
 					);
 				}
 			}
@@ -579,14 +579,14 @@ export class Mangler {
 			}
 		}
 		this.log(
-			`Done collecting. Classes: ${this.allClassDataByKey.size}. Exported symbols: ${this.allExportedSymbols.size}`
+			`Done collecting. Classes: ${this.allClassDataByKey.size}. Exported symbols: ${this.allExportedSymbols.size}`,
 		);
 
 		//  STEP: connect sub and super-types
 
 		const setupParents = (data: ClassData) => {
 			const extendsClause = data.node.heritageClauses?.find(
-				(h) => h.token === ts.SyntaxKind.ExtendsKeyword
+				(h) => h.token === ts.SyntaxKind.ExtendsKeyword,
 			);
 			if (!extendsClause) {
 				// no EXTENDS-clause
@@ -595,7 +595,7 @@ export class Mangler {
 
 			const info = this.service.getDefinitionAtPosition(
 				data.fileName,
-				extendsClause.types[0].expression.getEnd()
+				extendsClause.types[0].expression.getEnd(),
 			);
 			if (!info || info.length === 0) {
 				// throw new Error('SUPER type not found');
@@ -640,12 +640,12 @@ export class Mangler {
 					) {
 						violationsCauseFailure = true;
 					}
-				}
+				},
 			);
 		}
 		for (const [why, whys] of violations) {
 			this.log(
-				`WARN: ${why} became PUBLIC because of: ${whys.join(" , ")}`
+				`WARN: ${why} became PUBLIC because of: ${whys.join(" , ")}`,
 			);
 		}
 		if (violationsCauseFailure) {
@@ -669,10 +669,10 @@ export class Mangler {
 
 		const appendEdit = (fileName: string, edit: Edit) => {
 			const edits = editsByFile.get(fileName);
-			if (!edits) {
-				editsByFile.set(fileName, [edit]);
-			} else {
+			if (edits) {
 				edits.push(edit);
+			} else {
+				editsByFile.set(fileName, [edit]);
 			}
 		};
 		const appendRename = (newText: string, loc: ts.RenameLocation) => {
@@ -687,7 +687,7 @@ export class Mangler {
 		type RenameFn = (
 			projectName: string,
 			fileName: string,
-			pos: number
+			pos: number,
 		) => ts.RenameLocation[];
 
 		const renameResults: Array<
@@ -700,15 +700,15 @@ export class Mangler {
 		const queueRename = (
 			fileName: string,
 			pos: number,
-			newName: string
+			newName: string,
 		) => {
 			renameResults.push(
 				Promise.resolve(
 					this.renameWorkerPool.exec<RenameFn>(
 						"findRenameLocations",
-						[this.projectPath, fileName, pos]
-					)
-				).then((locations) => ({ newName, locations }))
+						[this.projectPath, fileName, pos],
+					),
+				).then((locations) => ({ newName, locations })),
 			);
 		};
 
@@ -719,7 +719,7 @@ export class Mangler {
 
 			fields: for (const [name, info] of data.fields) {
 				if (!ClassData._shouldMangle(info.type)) {
-					continue fields;
+					continue;
 				}
 
 				// TS-HACK: protected became public via 'some' child
@@ -741,10 +741,10 @@ export class Mangler {
 			if (
 				data.fileName.endsWith(".d.ts") ||
 				skippedExportMangledProjects.some((proj) =>
-					data.fileName.includes(proj)
+					data.fileName.includes(proj),
 				) ||
 				skippedExportMangledFiles.some((file) =>
-					data.fileName.endsWith(file + ".ts")
+					data.fileName.endsWith(file + ".ts"),
 				)
 			) {
 				continue;
@@ -789,13 +789,10 @@ export class Mangler {
 
 			let newFullText: string;
 			const edits = editsByFile.get(item.fileName);
-			if (!edits) {
-				// just copy
-				newFullText = item.getFullText();
-			} else {
+			if (edits) {
 				// source map generator
 				const relativeFileName = normalize(
-					path.relative(projectDir, item.fileName)
+					path.relative(projectDir, item.fileName),
 				);
 				const mappingsByLine = new Map<number, Mapping[]>();
 
@@ -816,7 +813,7 @@ export class Mangler {
 								"ERROR: Overlapping edit",
 								item.fileName,
 								edit.offset,
-								edits
+								edits,
 							);
 							throw new Error("OVERLAPPING edit");
 						} else {
@@ -860,7 +857,7 @@ export class Mangler {
 								line: pos.line + 1,
 								column: pos.character + edit.newText.length,
 							},
-						}
+						},
 					);
 				}
 
@@ -871,7 +868,7 @@ export class Mangler {
 				});
 				generator.setSourceContent(
 					relativeFileName,
-					item.getFullText()
+					item.getFullText(),
 				);
 				for (const [, mappings] of mappingsByLine) {
 					let lineDelta = 0;
@@ -889,6 +886,9 @@ export class Mangler {
 				}
 
 				newFullText = characters.join("");
+			} else {
+				// just copy
+				newFullText = item.getFullText();
 			}
 			result.set(item.fileName, {
 				out: newFullText,
@@ -929,7 +929,7 @@ async function _run() {
 	const projectPath = path.join(projectBase, "tsconfig.json");
 	const newProjectBase = path.join(
 		path.dirname(projectBase),
-		path.basename(projectBase) + "2"
+		path.basename(projectBase) + "2",
 	);
 
 	fs.cpSync(projectBase, newProjectBase, { recursive: true });
@@ -939,18 +939,18 @@ async function _run() {
 		manglePrivateFields: true,
 	});
 	for (const [fileName, contents] of await mangler.computeNewFileContents(
-		new Set(["saveState"])
+		new Set(["saveState"]),
 	)) {
 		const newFilePath = path.join(
 			newProjectBase,
-			path.relative(projectBase, fileName)
+			path.relative(projectBase, fileName),
 		);
 		await fs.promises.mkdir(path.dirname(newFilePath), { recursive: true });
 		await fs.promises.writeFile(newFilePath, contents.out);
 		if (contents.sourceMap) {
 			await fs.promises.writeFile(
 				newFilePath + ".map",
-				contents.sourceMap
+				contents.sourceMap,
 			);
 		}
 	}

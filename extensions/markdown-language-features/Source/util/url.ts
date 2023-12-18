@@ -11,7 +11,7 @@ import * as vscode from "vscode";
  */
 export function urlToUri(
 	url: string,
-	base: vscode.Uri
+	base: vscode.Uri,
 ): vscode.Uri | undefined {
 	try {
 		// `vscode.Uri.joinPath` cannot be used, since it understands

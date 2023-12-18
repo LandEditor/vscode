@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { beforeOrSame } from "../utils/positions";
 import {
-	SemanticTokenData,
-	Range,
-	TextDocument,
 	LanguageModes,
 	Position,
+	Range,
+	SemanticTokenData,
+	TextDocument,
 } from "./languageModes";
-import { beforeOrSame } from "../utils/positions";
 
 interface LegendMapping {
 	types: number[] | undefined;
@@ -21,12 +21,12 @@ export interface SemanticTokenProvider {
 	readonly legend: { types: string[]; modifiers: string[] };
 	getSemanticTokens(
 		document: TextDocument,
-		ranges?: Range[]
+		ranges?: Range[],
 	): Promise<number[]>;
 }
 
 export function newSemanticTokenProvider(
-	languageModes: LanguageModes
+	languageModes: LanguageModes,
 ): SemanticTokenProvider {
 	// combined legend across modes
 	const legend: { types: string[]; modifiers: string[] } = {
@@ -42,7 +42,7 @@ export function newSemanticTokenProvider(
 				types: createMapping(modeLegend.types, legend.types),
 				modifiers: createMapping(
 					modeLegend.modifiers,
-					legend.modifiers
+					legend.modifiers,
 				),
 			};
 		}
@@ -52,7 +52,7 @@ export function newSemanticTokenProvider(
 		legend,
 		async getSemanticTokens(
 			document: TextDocument,
-			ranges?: Range[]
+			ranges?: Range[],
 		): Promise<number[]> {
 			const allTokens: SemanticTokenData[] = [];
 			for (const mode of languageModes.getAllModesInDocument(document)) {
@@ -73,7 +73,7 @@ export function newSemanticTokenProvider(
 
 function createMapping(
 	origLegend: string[],
-	newLegend: string[]
+	newLegend: string[],
 ): number[] | undefined {
 	const mapping: number[] = [];
 	let needsMapping = false;
@@ -92,7 +92,7 @@ function createMapping(
 
 function applyTypesMapping(
 	tokens: SemanticTokenData[],
-	typesMapping: number[] | undefined
+	typesMapping: number[] | undefined,
 ): void {
 	if (typesMapping) {
 		for (const token of tokens) {
@@ -103,7 +103,7 @@ function applyTypesMapping(
 
 function applyModifiersMapping(
 	tokens: SemanticTokenData[],
-	modifiersMapping: number[] | undefined
+	modifiersMapping: number[] | undefined,
 ): void {
 	if (modifiersMapping) {
 		for (const token of tokens) {
@@ -127,24 +127,24 @@ function applyModifiersMapping(
 function encodeTokens(
 	tokens: SemanticTokenData[],
 	ranges: Range[] | undefined,
-	document: TextDocument
+	document: TextDocument,
 ): number[] {
 	const resultTokens = tokens.sort(
 		(d1, d2) =>
 			d1.start.line - d2.start.line ||
-			d1.start.character - d2.start.character
+			d1.start.character - d2.start.character,
 	);
 	if (ranges) {
 		ranges = ranges.sort(
 			(d1, d2) =>
 				d1.start.line - d2.start.line ||
-				d1.start.character - d2.start.character
+				d1.start.character - d2.start.character,
 		);
 	} else {
 		ranges = [
 			Range.create(
 				Position.create(0, 0),
-				Position.create(document.lineCount, 0)
+				Position.create(document.lineCount, 0),
 			),
 		];
 	}
@@ -168,7 +168,7 @@ function encodeTokens(
 			beforeOrSame(currRange.start, start) &&
 			beforeOrSame(
 				{ line: start.line, character: start.character + curr.length },
-				currRange.end
+				currRange.end,
 			)
 		) {
 			// token inside a range

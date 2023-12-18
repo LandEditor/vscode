@@ -61,7 +61,7 @@ export class CellExecutionPart extends CellContentPart {
 
 	private updateExecutionOrder(
 		internalMetadata: NotebookCellInternalMetadata,
-		forceClear = false
+		forceClear = false,
 	): void {
 		if (
 			this._notebookEditor.activeKernel?.implementsExecutionOrder ||
@@ -73,7 +73,7 @@ export class CellExecutionPart extends CellContentPart {
 				typeof internalMetadata.executionOrder !== "number" &&
 				!forceClear &&
 				!!this._notebookExecutionStateService.getCellExecution(
-					this.currentCell!.uri
+					this.currentCell!.uri,
 				)
 			) {
 				const renderingCell = this.currentCell;
@@ -82,12 +82,12 @@ export class CellExecutionPart extends CellContentPart {
 						if (this.currentCell === renderingCell) {
 							this.updateExecutionOrder(
 								this.currentCell!.internalMetadata,
-								true
+								true,
 							);
 						}
 					},
 					UPDATE_EXECUTION_ORDER_GRACE_PERIOD,
-					this.cellDisposables
+					this.cellDisposables,
 				);
 				return;
 			}
@@ -104,7 +104,7 @@ export class CellExecutionPart extends CellContentPart {
 
 	override updateState(
 		element: ICellViewModel,
-		e: CellViewModelStateChangeEvent
+		e: CellViewModelStateChangeEvent,
 	): void {
 		if (e.internalMetadataChanged) {
 			this.updateExecutionOrder(element.internalMetadata);

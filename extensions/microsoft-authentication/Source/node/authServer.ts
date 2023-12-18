@@ -1,12 +1,12 @@
+import { randomBytes } from "crypto";
+import * as fs from "fs";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as http from "http";
-import { URL } from "url";
-import * as fs from "fs";
 import * as path from "path";
-import { randomBytes } from "crypto";
+import { URL } from "url";
 
 function sendFile(res: http.ServerResponse, filepath: string) {
 	fs.readFile(filepath, (err, body) => {
@@ -95,7 +95,7 @@ export class LoopbackAuthServer implements ILoopbackServer {
 			reject: (reason: any) => void;
 		};
 		this._resultPromise = new Promise<IOAuthResult>(
-			(resolve, reject) => (deferred = { resolve, reject })
+			(resolve, reject) => (deferred = { resolve, reject }),
 		);
 
 		this._server = http.createServer((req, res) => {
@@ -108,7 +108,7 @@ export class LoopbackAuthServer implements ILoopbackServer {
 					if (receivedNonce !== this.nonce) {
 						res.writeHead(302, {
 							location: `/?error=${encodeURIComponent(
-								"Nonce does not match."
+								"Nonce does not match.",
 							)}`,
 						});
 						res.end();
@@ -133,7 +133,7 @@ export class LoopbackAuthServer implements ILoopbackServer {
 					if (this.state !== state) {
 						res.writeHead(302, {
 							location: `/?error=${encodeURIComponent(
-								"State does not match."
+								"State does not match.",
 							)}`,
 						});
 						res.end();
@@ -142,7 +142,7 @@ export class LoopbackAuthServer implements ILoopbackServer {
 					if (this.nonce !== nonce) {
 						res.writeHead(302, {
 							location: `/?error=${encodeURIComponent(
-								"Nonce does not match."
+								"Nonce does not match.",
 							)}`,
 						});
 						res.end();
@@ -161,7 +161,7 @@ export class LoopbackAuthServer implements ILoopbackServer {
 					// substring to get rid of leading '/'
 					sendFile(
 						res,
-						path.join(serveRoot, reqUrl.pathname.substring(1))
+						path.join(serveRoot, reqUrl.pathname.substring(1)),
 					);
 					break;
 			}

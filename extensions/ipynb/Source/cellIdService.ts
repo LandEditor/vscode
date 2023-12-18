@@ -3,18 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import type * as nbformat from "@jupyterlab/nbformat";
 import {
 	ExtensionContext,
 	NotebookDocument,
 	NotebookDocumentChangeEvent,
 	NotebookEdit,
-	workspace,
 	WorkspaceEdit,
+	workspace,
 } from "vscode";
-import { getCellMetadata } from "./serializers";
 import { CellMetadata } from "./common";
 import { getNotebookMetadata } from "./notebookSerializer";
-import type * as nbformat from "@jupyterlab/nbformat";
+import { getCellMetadata } from "./serializers";
 
 /**
  * Ensure all new cells in notebooks with nbformat >= 4.5 have an id.
@@ -24,7 +24,7 @@ export function ensureAllNewCellsHaveCellIds(context: ExtensionContext) {
 	workspace.onDidChangeNotebookDocument(
 		onDidChangeNotebookCells,
 		undefined,
-		context.subscriptions
+		context.subscriptions,
 	);
 }
 
@@ -64,7 +64,7 @@ function isCellIdRequired(
 	metadata: Pick<
 		Partial<nbformat.INotebookContent>,
 		"nbformat" | "nbformat_minor"
-	>
+	>,
 ) {
 	if ((metadata.nbformat || 0) >= 5) {
 		return true;

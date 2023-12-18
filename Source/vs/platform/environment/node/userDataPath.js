@@ -6,9 +6,7 @@
 /// <reference path="../../../../typings/require.d.ts" />
 
 //@ts-check
-(function () {
-	"use strict";
-
+(() => {
 	/**
 	 * @typedef {import('../../environment/common/argv').NativeParsedArgs} NativeParsedArgs
 	 *
@@ -81,14 +79,14 @@
 						const userProfile = process.env["USERPROFILE"];
 						if (typeof userProfile !== "string") {
 							throw new Error(
-								"Windows: Unexpected undefined %USERPROFILE% environment variable"
+								"Windows: Unexpected undefined %USERPROFILE% environment variable",
 							);
 						}
 
 						appDataPath = path.join(
 							userProfile,
 							"AppData",
-							"Roaming"
+							"Roaming",
 						);
 					}
 					break;
@@ -96,7 +94,7 @@
 					appDataPath = path.join(
 						os.homedir(),
 						"Library",
-						"Application Support"
+						"Application Support",
 					);
 					break;
 				case "linux":
@@ -117,11 +115,11 @@
 	}
 
 	if (typeof define === "function") {
-		define(["path", "os", "vs/base/common/process"], function (
+		define(["path", "os", "vs/base/common/process"], (
 			/** @type {typeof import('path')} */ path,
 			/** @type {typeof import('os')} */ os,
-			/** @type {typeof import("../../../base/common/process")} */ process
-		) {
+			/** @type {typeof import("../../../base/common/process")} */ process,
+		) => {
 			return factory(path, os, process.cwd()); // amd
 		});
 	} else if (
@@ -134,7 +132,7 @@
 		module.exports = factory(
 			path,
 			os,
-			process.env["VSCODE_CWD"] || process.cwd()
+			process.env["VSCODE_CWD"] || process.cwd(),
 		); // commonjs
 	} else {
 		throw new Error("Unknown context");

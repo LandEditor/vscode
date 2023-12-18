@@ -6,7 +6,6 @@
 import * as dom from "vs/base/browser/dom";
 import { IKeyboardEvent } from "vs/base/browser/keyboardEvent";
 import { IMouseEvent } from "vs/base/browser/mouseEvent";
-import { IToggleStyles, Toggle } from "vs/base/browser/ui/toggle/toggle";
 import { IContextViewProvider } from "vs/base/browser/ui/contextview/contextview";
 import { IFindInputToggleOpts } from "vs/base/browser/ui/findinput/findInputToggles";
 import {
@@ -15,6 +14,7 @@ import {
 	IInputValidator,
 	IMessage as InputBoxMessage,
 } from "vs/base/browser/ui/inputbox/inputBox";
+import { IToggleStyles, Toggle } from "vs/base/browser/ui/toggle/toggle";
 import { Widget } from "vs/base/browser/ui/widget";
 import { Codicon } from "vs/base/common/codicons";
 import { Emitter, Event } from "vs/base/common/event";
@@ -41,7 +41,7 @@ export interface IReplaceInputOptions {
 const NLS_DEFAULT_LABEL = nls.localize("defaultLabel", "input");
 const NLS_PRESERVE_CASE_LABEL = nls.localize(
 	"label.preserveCaseToggle",
-	"Preserve Case"
+	"Preserve Case",
 );
 
 class PreserveCaseToggle extends Toggle {
@@ -68,12 +68,12 @@ export class ReplaceInput extends Widget {
 	private fixFocusOnOptionClickEnabled = true;
 
 	private preserveCase: PreserveCaseToggle;
-	private cachedOptionsWidth: number = 0;
+	private cachedOptionsWidth = 0;
 	public domNode: HTMLElement;
 	public inputBox: HistoryInputBox;
 
 	private readonly _onDidOptionChange = this._register(
-		new Emitter<boolean>()
+		new Emitter<boolean>(),
 	);
 	public readonly onDidOptionChange: Event<boolean /* via keyboard */> =
 		this._onDidOptionChange.event;
@@ -91,7 +91,7 @@ export class ReplaceInput extends Widget {
 	public readonly onKeyUp: Event<IKeyboardEvent> = this._onKeyUp.event;
 
 	private _onPreserveCaseKeyDown = this._register(
-		new Emitter<IKeyboardEvent>()
+		new Emitter<IKeyboardEvent>(),
 	);
 	public readonly onPreserveCaseKeyDown: Event<IKeyboardEvent> =
 		this._onPreserveCaseKeyDown.event;
@@ -100,7 +100,7 @@ export class ReplaceInput extends Widget {
 		parent: HTMLElement | null,
 		contextViewProvider: IContextViewProvider | undefined,
 		private readonly _showOptionButtons: boolean,
-		options: IReplaceInputOptions
+		options: IReplaceInputOptions,
 	) {
 		super();
 		this.contextViewProvider = contextViewProvider;
@@ -130,7 +130,7 @@ export class ReplaceInput extends Widget {
 				flexibleWidth,
 				flexibleMaxHeight,
 				inputBoxStyles: options.inputBoxStyles,
-			})
+			}),
 		);
 
 		this.preserveCase = this._register(
@@ -138,7 +138,7 @@ export class ReplaceInput extends Widget {
 				appendTitle: appendPreserveCaseLabel,
 				isChecked: false,
 				...options.toggleStyles,
-			})
+			}),
 		);
 		this._register(
 			this.preserveCase.onChange((viaKeyboard) => {
@@ -147,12 +147,12 @@ export class ReplaceInput extends Widget {
 					this.inputBox.focus();
 				}
 				this.validate();
-			})
+			}),
 		);
 		this._register(
 			this.preserveCase.onKeyDown((e) => {
 				this._onPreserveCaseKeyDown.fire(e);
-			})
+			}),
 		);
 
 		if (this._showOptionButtons) {
@@ -170,10 +170,10 @@ export class ReplaceInput extends Widget {
 				event.equals(KeyCode.Escape)
 			) {
 				const index = indexes.indexOf(
-					<HTMLElement>this.domNode.ownerDocument.activeElement
+					<HTMLElement>this.domNode.ownerDocument.activeElement,
 				);
 				if (index >= 0) {
-					let newIndex: number = -1;
+					let newIndex = -1;
 					if (event.equals(KeyCode.RightArrow)) {
 						newIndex = (index + 1) % indexes.length;
 					} else if (event.equals(KeyCode.LeftArrow)) {
@@ -206,12 +206,12 @@ export class ReplaceInput extends Widget {
 		parent?.appendChild(this.domNode);
 
 		this.onkeydown(this.inputBox.inputElement, (e) =>
-			this._onKeyDown.fire(e)
+			this._onKeyDown.fire(e),
 		);
 		this.onkeyup(this.inputBox.inputElement, (e) => this._onKeyUp.fire(e));
 		this.oninput(this.inputBox.inputElement, (e) => this._onInput.fire());
 		this.onmousedown(this.inputBox.inputElement, (e) =>
-			this._onMouseDown.fire(e)
+			this._onMouseDown.fire(e),
 		);
 	}
 
@@ -281,14 +281,14 @@ export class ReplaceInput extends Widget {
 		this.preserveCase.focus();
 	}
 
-	private _lastHighlightFindOptions: number = 0;
+	private _lastHighlightFindOptions = 0;
 	public highlightFindOptions(): void {
 		this.domNode.classList.remove(
-			"highlight-" + this._lastHighlightFindOptions
+			"highlight-" + this._lastHighlightFindOptions,
 		);
 		this._lastHighlightFindOptions = 1 - this._lastHighlightFindOptions;
 		this.domNode.classList.add(
-			"highlight-" + this._lastHighlightFindOptions
+			"highlight-" + this._lastHighlightFindOptions,
 		);
 	}
 

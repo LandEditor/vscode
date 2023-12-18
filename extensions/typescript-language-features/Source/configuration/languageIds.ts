@@ -22,7 +22,7 @@ export function isSupportedLanguageMode(doc: vscode.TextDocument) {
 	return (
 		vscode.languages.match(
 			[typescript, typescriptreact, javascript, javascriptreact],
-			doc
+			doc,
 		) > 0
 	);
 }

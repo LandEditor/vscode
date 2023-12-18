@@ -5,6 +5,7 @@
 
 import * as dom from "vs/base/browser/dom";
 import { FastDomNode, createFastDomNode } from "vs/base/browser/fastDomNode";
+import { IMouseWheelEvent } from "vs/base/browser/mouseEvent";
 import {
 	IOverviewRulerLayoutInfo,
 	SmoothScrollableElement,
@@ -14,20 +15,19 @@ import {
 	ScrollableElementCreationOptions,
 } from "vs/base/browser/ui/scrollbar/scrollableElementOptions";
 import {
+	RenderingContext,
+	RestrictedRenderingContext,
+} from "vs/editor/browser/view/renderingContext";
+import {
 	PartFingerprint,
 	PartFingerprints,
 	ViewPart,
 } from "vs/editor/browser/view/viewPart";
-import { INewScrollPosition, ScrollType } from "vs/editor/common/editorCommon";
-import {
-	RenderingContext,
-	RestrictedRenderingContext,
-} from "vs/editor/browser/view/renderingContext";
-import { ViewContext } from "vs/editor/common/viewModel/viewContext";
-import * as viewEvents from "vs/editor/common/viewEvents";
-import { getThemeTypeSelector } from "vs/platform/theme/common/themeService";
 import { EditorOption } from "vs/editor/common/config/editorOptions";
-import { IMouseWheelEvent } from "vs/base/browser/mouseEvent";
+import { INewScrollPosition, ScrollType } from "vs/editor/common/editorCommon";
+import * as viewEvents from "vs/editor/common/viewEvents";
+import { ViewContext } from "vs/editor/common/viewModel/viewContext";
+import { getThemeTypeSelector } from "vs/platform/theme/common/themeService";
 
 export class EditorScrollbar extends ViewPart {
 	private readonly scrollbar: SmoothScrollableElement;
@@ -37,20 +37,20 @@ export class EditorScrollbar extends ViewPart {
 		context: ViewContext,
 		linesContent: FastDomNode<HTMLElement>,
 		viewDomNode: FastDomNode<HTMLElement>,
-		overflowGuardDomNode: FastDomNode<HTMLElement>
+		overflowGuardDomNode: FastDomNode<HTMLElement>,
 	) {
 		super(context);
 
 		const options = this._context.configuration.options;
 		const scrollbar = options.get(EditorOption.scrollbar);
 		const mouseWheelScrollSensitivity = options.get(
-			EditorOption.mouseWheelScrollSensitivity
+			EditorOption.mouseWheelScrollSensitivity,
 		);
 		const fastScrollSensitivity = options.get(
-			EditorOption.fastScrollSensitivity
+			EditorOption.fastScrollSensitivity,
 		);
 		const scrollPredominantAxis = options.get(
-			EditorOption.scrollPredominantAxis
+			EditorOption.scrollPredominantAxis,
 		);
 
 		const scrollbarOptions: ScrollableElementCreationOptions = {
@@ -83,12 +83,12 @@ export class EditorScrollbar extends ViewPart {
 			new SmoothScrollableElement(
 				linesContent.domNode,
 				scrollbarOptions,
-				this._context.viewLayout.getScrollable()
-			)
+				this._context.viewLayout.getScrollable(),
+			),
 		);
 		PartFingerprints.write(
 			this.scrollbar.getDomNode(),
-			PartFingerprint.ScrollableElement
+			PartFingerprint.ScrollableElement,
 		);
 
 		this.scrollbarDomNode = createFastDomNode(this.scrollbar.getDomNode());
@@ -102,7 +102,7 @@ export class EditorScrollbar extends ViewPart {
 		const onBrowserDesperateReveal = (
 			domNode: HTMLElement,
 			lookAtScrollTop: boolean,
-			lookAtScrollLeft: boolean
+			lookAtScrollLeft: boolean,
 		) => {
 			const newScrollPosition: INewScrollPosition = {};
 
@@ -128,7 +128,7 @@ export class EditorScrollbar extends ViewPart {
 
 			this._context.viewModel.viewLayout.setScrollPosition(
 				newScrollPosition,
-				ScrollType.Immediate
+				ScrollType.Immediate,
 			);
 		};
 
@@ -138,16 +138,16 @@ export class EditorScrollbar extends ViewPart {
 				viewDomNode.domNode,
 				"scroll",
 				(e: Event) =>
-					onBrowserDesperateReveal(viewDomNode.domNode, true, true)
-			)
+					onBrowserDesperateReveal(viewDomNode.domNode, true, true),
+			),
 		);
 		this._register(
 			dom.addDisposableListener(
 				linesContent.domNode,
 				"scroll",
 				(e: Event) =>
-					onBrowserDesperateReveal(linesContent.domNode, true, false)
-			)
+					onBrowserDesperateReveal(linesContent.domNode, true, false),
+			),
 		);
 		this._register(
 			dom.addDisposableListener(
@@ -157,9 +157,9 @@ export class EditorScrollbar extends ViewPart {
 					onBrowserDesperateReveal(
 						overflowGuardDomNode.domNode,
 						true,
-						false
-					)
-			)
+						false,
+					),
+			),
 		);
 		this._register(
 			dom.addDisposableListener(
@@ -169,9 +169,9 @@ export class EditorScrollbar extends ViewPart {
 					onBrowserDesperateReveal(
 						this.scrollbarDomNode.domNode,
 						true,
-						false
-					)
-			)
+						false,
+					),
+			),
 		);
 	}
 
@@ -189,7 +189,7 @@ export class EditorScrollbar extends ViewPart {
 		const side = minimap.side;
 		if (side === "right") {
 			this.scrollbarDomNode.setWidth(
-				layoutInfo.contentWidth + layoutInfo.minimap.minimapWidth
+				layoutInfo.contentWidth + layoutInfo.minimap.minimapWidth,
 			);
 		} else {
 			this.scrollbarDomNode.setWidth(layoutInfo.contentWidth);
@@ -206,7 +206,7 @@ export class EditorScrollbar extends ViewPart {
 	}
 
 	public delegateVerticalScrollbarPointerDown(
-		browserEvent: PointerEvent
+		browserEvent: PointerEvent,
 	): void {
 		this.scrollbar.delegateVerticalScrollbarPointerDown(browserEvent);
 	}
@@ -218,7 +218,7 @@ export class EditorScrollbar extends ViewPart {
 	// --- begin event handlers
 
 	public override onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent
+		e: viewEvents.ViewConfigurationChangedEvent,
 	): boolean {
 		if (
 			e.hasChanged(EditorOption.scrollbar) ||
@@ -228,13 +228,13 @@ export class EditorScrollbar extends ViewPart {
 			const options = this._context.configuration.options;
 			const scrollbar = options.get(EditorOption.scrollbar);
 			const mouseWheelScrollSensitivity = options.get(
-				EditorOption.mouseWheelScrollSensitivity
+				EditorOption.mouseWheelScrollSensitivity,
 			);
 			const fastScrollSensitivity = options.get(
-				EditorOption.fastScrollSensitivity
+				EditorOption.fastScrollSensitivity,
 			);
 			const scrollPredominantAxis = options.get(
-				EditorOption.scrollPredominantAxis
+				EditorOption.scrollPredominantAxis,
 			);
 			const newOpts: ScrollableElementChangeOptions = {
 				vertical: scrollbar.vertical,
@@ -255,17 +255,17 @@ export class EditorScrollbar extends ViewPart {
 		return true;
 	}
 	public override onScrollChanged(
-		e: viewEvents.ViewScrollChangedEvent
+		e: viewEvents.ViewScrollChangedEvent,
 	): boolean {
 		return true;
 	}
 	public override onThemeChanged(
-		e: viewEvents.ViewThemeChangedEvent
+		e: viewEvents.ViewThemeChangedEvent,
 	): boolean {
 		this.scrollbar.updateClassName(
 			"editor-scrollable" +
 				" " +
-				getThemeTypeSelector(this._context.theme.type)
+				getThemeTypeSelector(this._context.theme.type),
 		);
 		return true;
 	}

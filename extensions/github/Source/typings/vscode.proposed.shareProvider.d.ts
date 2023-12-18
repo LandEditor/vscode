@@ -22,14 +22,14 @@ declare module "vscode" {
 
 		provideShare(
 			item: ShareableItem,
-			token: CancellationToken
+			token: CancellationToken,
 		): ProviderResult<Uri>;
 	}
 
 	export namespace window {
 		export function registerShareProvider(
 			selector: DocumentSelector,
-			provider: ShareProvider
+			provider: ShareProvider,
 		): Disposable;
 	}
 }

@@ -15,7 +15,7 @@ export class ElectronWebviewService extends WebviewService {
 		const webview = this._instantiationService.createInstance(
 			ElectronWebviewElement,
 			initInfo,
-			this._webviewThemeDataProvider
+			this._webviewThemeDataProvider,
 		);
 		this.registerNewWebview(webview);
 		return webview;

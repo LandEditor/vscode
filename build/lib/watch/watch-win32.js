@@ -1,4 +1,3 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -24,7 +23,7 @@ function toChangeType(type) {
 function watch(root) {
 	const result = es.through();
 	let child = cp.spawn(watcherPath, [root]);
-	child.stdout.on("data", function (data) {
+	child.stdout.on("data", (data) => {
 		const lines = data.toString("utf8").split("\n");
 		for (let i = 0; i < lines.length; i++) {
 			const line = lines[i].trim();
@@ -49,20 +48,20 @@ function watch(root) {
 			result.emit("data", file);
 		}
 	});
-	child.stderr.on("data", function (data) {
+	child.stderr.on("data", (data) => {
 		result.emit("error", data);
 	});
-	child.on("exit", function (code) {
+	child.on("exit", (code) => {
 		result.emit("error", "Watcher died with code " + code);
 		child = null;
 	});
-	process.once("SIGTERM", function () {
+	process.once("SIGTERM", () => {
 		process.exit(0);
 	});
-	process.once("SIGTERM", function () {
+	process.once("SIGTERM", () => {
 		process.exit(0);
 	});
-	process.once("exit", function () {
+	process.once("exit", () => {
 		if (child) {
 			child.kill();
 		}
@@ -70,25 +69,25 @@ function watch(root) {
 	return result;
 }
 const cache = Object.create(null);
-module.exports = function (pattern, options) {
+module.exports = (pattern, options) => {
 	options = options || {};
 	const cwd = path.normalize(options.cwd || process.cwd());
 	let watcher = cache[cwd];
 	if (!watcher) {
 		watcher = cache[cwd] = watch(cwd);
 	}
-	const rebase = !options.base
-		? es.through()
-		: es.mapSync(function (f) {
+	const rebase = options.base
+		? es.mapSync((f) => {
 				f.base = options.base;
 				return f;
-			});
+		  })
+		: es.through();
 	return watcher
 		.pipe(filter(["**", "!.git{,/**}"])) // ignore all things git
 		.pipe(filter(pattern))
 		.pipe(
-			es.map(function (file, cb) {
-				fs.stat(file.path, function (err, stat) {
+			es.map((file, cb) => {
+				fs.stat(file.path, (err, stat) => {
 					if (err && err.code === "ENOENT") {
 						return cb(undefined, file);
 					}
@@ -98,7 +97,7 @@ module.exports = function (pattern, options) {
 					if (!stat.isFile()) {
 						return cb();
 					}
-					fs.readFile(file.path, function (err, contents) {
+					fs.readFile(file.path, (err, contents) => {
 						if (err && err.code === "ENOENT") {
 							return cb(undefined, file);
 						}
@@ -110,7 +109,7 @@ module.exports = function (pattern, options) {
 						cb(undefined, file);
 					});
 				});
-			})
+			}),
 		)
 		.pipe(rebase);
 };

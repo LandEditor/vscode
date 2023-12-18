@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
 import { IJSONSchema } from "vs/base/common/jsonSchema";
+import { localize } from "vs/nls";
 import { EXTENSION_IDENTIFIER_PATTERN } from "vs/platform/extensionManagement/common/extensionManagement";
 
 export const ExtensionsConfigurationSchemaId = "vscode://schemas/extensions";
@@ -20,14 +20,14 @@ export const ExtensionsConfigurationSchema: IJSONSchema = {
 			type: "array",
 			description: localize(
 				"app.extensions.json.recommendations",
-				"List of extensions which should be recommended for users of this workspace. The identifier of an extension is always '${publisher}.${name}'. For example: 'vscode.csharp'."
+				"List of extensions which should be recommended for users of this workspace. The identifier of an extension is always '${publisher}.${name}'. For example: 'vscode.csharp'.",
 			),
 			items: {
 				type: "string",
 				pattern: EXTENSION_IDENTIFIER_PATTERN,
 				errorMessage: localize(
 					"app.extension.identifier.errorMessage",
-					"Expected format '${publisher}.${name}'. Example: 'vscode.csharp'."
+					"Expected format '${publisher}.${name}'. Example: 'vscode.csharp'.",
 				),
 			},
 		},
@@ -35,14 +35,14 @@ export const ExtensionsConfigurationSchema: IJSONSchema = {
 			type: "array",
 			description: localize(
 				"app.extensions.json.unwantedRecommendations",
-				"List of extensions recommended by VS Code that should not be recommended for users of this workspace. The identifier of an extension is always '${publisher}.${name}'. For example: 'vscode.csharp'."
+				"List of extensions recommended by VS Code that should not be recommended for users of this workspace. The identifier of an extension is always '${publisher}.${name}'. For example: 'vscode.csharp'.",
 			),
 			items: {
 				type: "string",
 				pattern: EXTENSION_IDENTIFIER_PATTERN,
 				errorMessage: localize(
 					"app.extension.identifier.errorMessage",
-					"Expected format '${publisher}.${name}'. Example: 'vscode.csharp'."
+					"Expected format '${publisher}.${name}'. Example: 'vscode.csharp'.",
 				),
 			},
 		},

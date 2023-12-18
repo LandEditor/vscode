@@ -8,12 +8,12 @@ import {
 	BaseLanguageClient,
 	LanguageClientOptions,
 } from "vscode-languageclient";
+import { LanguageClient } from "vscode-languageclient/browser";
 import {
-	startClient,
 	LanguageClientConstructor,
 	SchemaRequestService,
+	startClient,
 } from "../jsonClient";
-import { LanguageClient } from "vscode-languageclient/browser";
 
 declare const Worker: {
 	new (stringUrl: string): any;
@@ -27,7 +27,7 @@ let client: BaseLanguageClient | undefined;
 export async function activate(context: ExtensionContext) {
 	const serverMain = Uri.joinPath(
 		context.extensionUri,
-		"server/dist/browser/jsonServerMain.js"
+		"server/dist/browser/jsonServerMain.js",
 	);
 	try {
 		const worker = new Worker(serverMain.toString());
@@ -36,18 +36,16 @@ export async function activate(context: ExtensionContext) {
 		const newLanguageClient: LanguageClientConstructor = (
 			id: string,
 			name: string,
-			clientOptions: LanguageClientOptions
+			clientOptions: LanguageClientOptions,
 		) => {
 			return new LanguageClient(id, name, clientOptions, worker);
 		};
 
 		const schemaRequests: SchemaRequestService = {
 			getContent(uri: string) {
-				return fetch(uri, { mode: "cors" }).then(function (
-					response: any
-				) {
-					return response.text();
-				});
+				return fetch(uri, { mode: "cors" }).then((response: any) =>
+					response.text(),
+				);
 			},
 		};
 

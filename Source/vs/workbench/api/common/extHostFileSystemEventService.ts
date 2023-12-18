@@ -3,35 +3,35 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { CancellationToken } from "vs/base/common/cancellation";
 import {
+	AsyncEmitter,
 	Emitter,
 	Event,
-	AsyncEmitter,
 	IWaitUntil,
 	IWaitUntilData,
 } from "vs/base/common/event";
 import { GLOBSTAR, GLOB_SPLIT, parse } from "vs/base/common/glob";
+import { Lazy } from "vs/base/common/lazy";
 import { URI } from "vs/base/common/uri";
+import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
+import { FileOperation } from "vs/platform/files/common/files";
+import { ILogService } from "vs/platform/log/common/log";
 import { ExtHostDocumentsAndEditors } from "vs/workbench/api/common/extHostDocumentsAndEditors";
+import { IExtHostWorkspace } from "vs/workbench/api/common/extHostWorkspace";
 import type * as vscode from "vscode";
 import {
 	ExtHostFileSystemEventServiceShape,
 	FileSystemEvents,
 	IMainContext,
-	SourceTargetPair,
-	IWorkspaceEditDto,
-	IWillRunFileOperationParticipation,
-	MainContext,
 	IRelativePatternDto,
+	IWillRunFileOperationParticipation,
+	IWorkspaceEditDto,
+	MainContext,
+	SourceTargetPair,
 } from "./extHost.protocol";
 import * as typeConverter from "./extHostTypeConverters";
 import { Disposable, WorkspaceEdit } from "./extHostTypes";
-import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
-import { FileOperation } from "vs/platform/files/common/files";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { ILogService } from "vs/platform/log/common/log";
-import { IExtHostWorkspace } from "vs/workbench/api/common/extHostWorkspace";
-import { Lazy } from "vs/base/common/lazy";
 
 export interface FileSystemWatcherCreateOptions {
 	readonly correlate: boolean;
@@ -71,7 +71,7 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
 		extension: IExtensionDescription,
 		dispatcher: Event<FileSystemEvents>,
 		globPattern: string | IRelativePatternDto,
-		options?: FileSystemWatcherCreateOptions
+		options?: FileSystemWatcherCreateOptions,
 	) {
 		this._config = 0;
 		if (options?.ignoreCreateEvents) {
@@ -157,12 +157,12 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
 				extension,
 				globPattern,
 				options,
-				options?.correlate
+				options?.correlate,
 			),
 			this._onDidCreate,
 			this._onDidChange,
 			this._onDidDelete,
-			subscription
+			subscription,
 		);
 	}
 
@@ -171,7 +171,7 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
 		extension: IExtensionDescription,
 		globPattern: string | IRelativePatternDto,
 		options: FileSystemWatcherCreateOptions | undefined,
-		correlate: boolean | undefined
+		correlate: boolean | undefined,
 	): Disposable {
 		const disposable = Disposable.from();
 
@@ -180,7 +180,7 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
 		}
 
 		const proxy = mainContext.getProxy(
-			MainContext.MainThreadFileSystemEventService
+			MainContext.MainThreadFileSystemEventService,
 		);
 
 		let recursive = false;
@@ -196,7 +196,7 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
 			this.session,
 			globPattern.baseUri,
 			{ recursive, excludes: options?.excludes ?? [] },
-			Boolean(correlate)
+			Boolean(correlate),
 		);
 
 		return Disposable.from({ dispose: () => proxy.$unwatch(this.session) });
@@ -230,21 +230,21 @@ class LazyRevivedFileSystemEvents implements FileSystemEvents {
 	readonly session = this._events.session;
 
 	private _created = new Lazy(
-		() => this._events.created.map(URI.revive) as URI[]
+		() => this._events.created.map(URI.revive) as URI[],
 	);
 	get created(): URI[] {
 		return this._created.value;
 	}
 
 	private _changed = new Lazy(
-		() => this._events.changed.map(URI.revive) as URI[]
+		() => this._events.changed.map(URI.revive) as URI[],
 	);
 	get changed(): URI[] {
 		return this._changed.value;
 	}
 
 	private _deleted = new Lazy(
-		() => this._events.deleted.map(URI.revive) as URI[]
+		() => this._events.deleted.map(URI.revive) as URI[],
 	);
 	get deleted(): URI[] {
 		return this._deleted.value;
@@ -276,7 +276,7 @@ export class ExtHostFileSystemEventService
 	constructor(
 		private readonly _mainContext: IMainContext,
 		private readonly _logService: ILogService,
-		private readonly _extHostDocumentsAndEditors: ExtHostDocumentsAndEditors
+		private readonly _extHostDocumentsAndEditors: ExtHostDocumentsAndEditors,
 	) {
 		//
 	}
@@ -287,7 +287,7 @@ export class ExtHostFileSystemEventService
 		workspace: IExtHostWorkspace,
 		extension: IExtensionDescription,
 		globPattern: vscode.GlobPattern,
-		options?: FileSystemWatcherCreateOptions
+		options?: FileSystemWatcherCreateOptions,
 	): vscode.FileSystemWatcher {
 		return new FileSystemWatcher(
 			this._mainContext,
@@ -295,7 +295,7 @@ export class ExtHostFileSystemEventService
 			extension,
 			this._onFileSystemEvent.event,
 			typeConverter.GlobPattern.from(globPattern),
-			options
+			options,
 		);
 	}
 
@@ -307,7 +307,7 @@ export class ExtHostFileSystemEventService
 
 	$onDidRunFileOperation(
 		operation: FileOperation,
-		files: SourceTargetPair[]
+		files: SourceTargetPair[],
 	): void {
 		switch (operation) {
 			case FileOperation.MOVE:
@@ -317,14 +317,14 @@ export class ExtHostFileSystemEventService
 							oldUri: URI.revive(f.source!),
 							newUri: URI.revive(f.target),
 						})),
-					})
+					}),
 				);
 				break;
 			case FileOperation.DELETE:
 				this._onDidDeleteFile.fire(
 					Object.freeze({
 						files: files.map((f) => URI.revive(f.target)),
-					})
+					}),
 				);
 				break;
 			case FileOperation.CREATE:
@@ -332,7 +332,7 @@ export class ExtHostFileSystemEventService
 				this._onDidCreateFile.fire(
 					Object.freeze({
 						files: files.map((f) => URI.revive(f.target)),
-					})
+					}),
 				);
 				break;
 			default:
@@ -341,30 +341,30 @@ export class ExtHostFileSystemEventService
 	}
 
 	getOnWillRenameFileEvent(
-		extension: IExtensionDescription
+		extension: IExtensionDescription,
 	): Event<vscode.FileWillRenameEvent> {
 		return this._createWillExecuteEvent(extension, this._onWillRenameFile);
 	}
 
 	getOnWillCreateFileEvent(
-		extension: IExtensionDescription
+		extension: IExtensionDescription,
 	): Event<vscode.FileWillCreateEvent> {
 		return this._createWillExecuteEvent(extension, this._onWillCreateFile);
 	}
 
 	getOnWillDeleteFileEvent(
-		extension: IExtensionDescription
+		extension: IExtensionDescription,
 	): Event<vscode.FileWillDeleteEvent> {
 		return this._createWillExecuteEvent(extension, this._onWillDeleteFile);
 	}
 
 	private _createWillExecuteEvent<E extends IWaitUntil>(
 		extension: IExtensionDescription,
-		emitter: AsyncEmitter<E>
+		emitter: AsyncEmitter<E>,
 	): Event<E> {
 		return (listener, thisArg, disposables) => {
 			const wrappedListener: IExtensionListener<E> = function wrapped(
-				e: E
+				e: E,
 			) {
 				listener.call(thisArg, e);
 			};
@@ -377,7 +377,7 @@ export class ExtHostFileSystemEventService
 		operation: FileOperation,
 		files: SourceTargetPair[],
 		timeout: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IWillRunFileOperationParticipation | undefined> {
 		switch (operation) {
 			case FileOperation.MOVE:
@@ -390,14 +390,14 @@ export class ExtHostFileSystemEventService
 						})),
 					},
 					timeout,
-					token
+					token,
 				);
 			case FileOperation.DELETE:
 				return await this._fireWillEvent(
 					this._onWillDeleteFile,
 					{ files: files.map((f) => URI.revive(f.target)) },
 					timeout,
-					token
+					token,
 				);
 			case FileOperation.CREATE:
 			case FileOperation.COPY:
@@ -405,7 +405,7 @@ export class ExtHostFileSystemEventService
 					this._onWillCreateFile,
 					{ files: files.map((f) => URI.revive(f.target)) },
 					timeout,
-					token
+					token,
 				);
 		}
 		return undefined;
@@ -415,7 +415,7 @@ export class ExtHostFileSystemEventService
 		emitter: AsyncEmitter<E>,
 		data: IWaitUntilData<E>,
 		timeout: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IWillRunFileOperationParticipation | undefined> {
 		const extensionNames = new Set<string>();
 		const edits: [IExtensionDescription, WorkspaceEdit][] = [];
@@ -436,17 +436,17 @@ export class ExtHostFileSystemEventService
 						(<IExtensionListener<E>>listener).extension
 							.displayName ??
 							(<IExtensionListener<E>>listener).extension
-								.identifier.value
+								.identifier.value,
 					);
 				}
 
 				if (Date.now() - now > timeout) {
 					this._logService.warn(
 						"SLOW file-participant",
-						(<IExtensionListener<E>>listener).extension.identifier
+						(<IExtensionListener<E>>listener).extension.identifier,
 					);
 				}
-			}
+			},
 		);
 
 		if (token.isCancellationRequested) {

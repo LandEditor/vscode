@@ -20,7 +20,7 @@ export interface IRangedGroup {
  */
 export function groupIntersect(
 	range: IRange,
-	groups: IRangedGroup[]
+	groups: IRangedGroup[],
 ): IRangedGroup[] {
 	const result: IRangedGroup[] = [];
 
@@ -114,7 +114,7 @@ export class RangeMap {
 		const before = groupIntersect({ start: 0, end: index }, this.groups);
 		const after = groupIntersect(
 			{ start: index + deleteCount, end: Number.POSITIVE_INFINITY },
-			this.groups
+			this.groups,
 		).map<IRangedGroup>((g) => ({
 			range: shift(g.range, diff),
 			size: g.size,
@@ -130,7 +130,7 @@ export class RangeMap {
 			this._paddingTop +
 			this.groups.reduce(
 				(t, g) => t + g.size * (g.range.end - g.range.start),
-				0
+				0,
 			);
 	}
 

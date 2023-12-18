@@ -3,47 +3,47 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
 import { RunOnceScheduler } from "vs/base/common/async";
 import { MarkdownString } from "vs/base/common/htmlContent";
+import { Node, parseTree } from "vs/base/common/json";
+import { KeybindingParser } from "vs/base/common/keybindingParser";
 import { Disposable, MutableDisposable } from "vs/base/common/lifecycle";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { Range } from "vs/editor/common/core/range";
-import {
-	registerEditorContribution,
-	EditorContributionInstantiation,
-} from "vs/editor/browser/editorExtensions";
-import { ICodeEditor } from "vs/editor/browser/editorBrowser";
-import { SnippetController2 } from "vs/editor/contrib/snippet/browser/snippetController2";
-import { SmartSnippetInserter } from "vs/workbench/contrib/preferences/common/smartSnippetInserter";
-import { DefineKeybindingOverlayWidget } from "vs/workbench/contrib/preferences/browser/keybindingWidgets";
-import { parseTree, Node } from "vs/base/common/json";
-import { WindowsNativeResolvedKeybinding } from "vs/workbench/services/keybinding/common/windowsKeyboardMapper";
-import { themeColorFromId } from "vs/platform/theme/common/themeService";
+import { isEqual } from "vs/base/common/resources";
 import { ThemeColor } from "vs/base/common/themables";
+import { assertIsDefined } from "vs/base/common/types";
+import { ICodeEditor } from "vs/editor/browser/editorBrowser";
 import {
-	overviewRulerInfo,
+	EditorContributionInstantiation,
+	registerEditorContribution,
+} from "vs/editor/browser/editorExtensions";
+import {
 	overviewRulerError,
+	overviewRulerInfo,
 } from "vs/editor/common/core/editorColorRegistry";
+import { Range } from "vs/editor/common/core/range";
 import {
 	IModelDeltaDecoration,
 	ITextModel,
-	TrackedRangeStickiness,
 	OverviewRulerLane,
+	TrackedRangeStickiness,
 } from "vs/editor/common/model";
-import { KeybindingParser } from "vs/base/common/keybindingParser";
-import { assertIsDefined } from "vs/base/common/types";
-import { isEqual } from "vs/base/common/resources";
-import { IUserDataProfileService } from "vs/workbench/services/userDataProfile/common/userDataProfile";
+import { SnippetController2 } from "vs/editor/contrib/snippet/browser/snippetController2";
+import * as nls from "vs/nls";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { themeColorFromId } from "vs/platform/theme/common/themeService";
+import { DefineKeybindingOverlayWidget } from "vs/workbench/contrib/preferences/browser/keybindingWidgets";
+import { SmartSnippetInserter } from "vs/workbench/contrib/preferences/common/smartSnippetInserter";
+import { WindowsNativeResolvedKeybinding } from "vs/workbench/services/keybinding/common/windowsKeyboardMapper";
 import {
 	DEFINE_KEYBINDING_EDITOR_CONTRIB_ID,
 	IDefineKeybindingEditorContribution,
 } from "vs/workbench/services/preferences/common/preferences";
+import { IUserDataProfileService } from "vs/workbench/services/userDataProfile/common/userDataProfile";
 
 const NLS_KB_LAYOUT_ERROR_MESSAGE = nls.localize(
 	"defineKeybinding.kbLayoutErrorMessage",
-	"You won't be able to produce this key combination under your current keyboard layout."
+	"You won't be able to produce this key combination under your current keyboard layout.",
 );
 
 class DefineKeybindingEditorContribution
@@ -51,7 +51,7 @@ class DefineKeybindingEditorContribution
 	implements IDefineKeybindingEditorContribution
 {
 	private _keybindingDecorationRenderer = this._register(
-		new MutableDisposable<KeybindingEditorDecorationsRenderer>()
+		new MutableDisposable<KeybindingEditorDecorationsRenderer>(),
 	);
 
 	private readonly _defineWidget: DefineKeybindingOverlayWidget;
@@ -78,13 +78,13 @@ class DefineKeybindingEditorContribution
 	private _update(): void {
 		this._keybindingDecorationRenderer.value = isInterestingEditorModel(
 			this._editor,
-			this._userDataProfileService
+			this._userDataProfileService,
 		)
 			? // Decorations are shown for the default keybindings.json **and** for the user keybindings.json
-				this._instantiationService.createInstance(
+			  this._instantiationService.createInstance(
 					KeybindingEditorDecorationsRenderer,
-					this._editor
-				)
+					this._editor,
+			  )
 			: undefined;
 	}
 
@@ -116,7 +116,7 @@ class DefineKeybindingEditorContribution
 
 			const smartInsertInfo = SmartSnippetInserter.insertSnippet(
 				this._editor.getModel(),
-				this._editor.getPosition()
+				this._editor.getPosition(),
 			);
 			snippetText =
 				smartInsertInfo.prepend + snippetText + smartInsertInfo.append;
@@ -184,7 +184,7 @@ export class KeybindingEditorDecorationsRenderer extends Disposable {
 
 	private _getDecorationForEntry(
 		model: ITextModel,
-		entry: Node
+		entry: Node,
 	): IModelDeltaDecoration | null {
 		if (!Array.isArray(entry.children)) {
 			return null;
@@ -230,7 +230,7 @@ export class KeybindingEditorDecorationsRenderer extends Disposable {
 					resolvedKeybinding.getLabel(),
 					usLabel,
 					model,
-					value
+					value,
 				);
 			}
 			if (/abnt_|oem_/.test(value.value)) {
@@ -239,7 +239,7 @@ export class KeybindingEditorDecorationsRenderer extends Disposable {
 					resolvedKeybinding.getLabel(),
 					usLabel,
 					model,
-					value
+					value,
 				);
 			}
 			const expectedUserSettingsLabel =
@@ -248,7 +248,7 @@ export class KeybindingEditorDecorationsRenderer extends Disposable {
 				typeof expectedUserSettingsLabel === "string" &&
 				!KeybindingEditorDecorationsRenderer._userSettingsFuzzyEquals(
 					value.value,
-					expectedUserSettingsLabel
+					expectedUserSettingsLabel,
 				)
 			) {
 				return this._createDecoration(
@@ -256,7 +256,7 @@ export class KeybindingEditorDecorationsRenderer extends Disposable {
 					resolvedKeybinding.getLabel(),
 					usLabel,
 					model,
-					value
+					value,
 				);
 			}
 			return null;
@@ -288,7 +288,7 @@ export class KeybindingEditorDecorationsRenderer extends Disposable {
 		uiLabel: string | null,
 		usLabel: string | null,
 		model: ITextModel,
-		keyNode: Node
+		keyNode: Node,
 	): IModelDeltaDecoration {
 		let msg: MarkdownString;
 		let className: string;
@@ -313,8 +313,8 @@ export class KeybindingEditorDecorationsRenderer extends Disposable {
 						},
 						"**{0}** for your current keyboard layout (**{1}** for US standard).",
 						uiLabel,
-						usLabel
-					)
+						usLabel,
+					),
 				);
 			} else {
 				msg = new MarkdownString(
@@ -327,8 +327,8 @@ export class KeybindingEditorDecorationsRenderer extends Disposable {
 							],
 						},
 						"**{0}** for your current keyboard layout.",
-						uiLabel
-					)
+						uiLabel,
+					),
 				);
 			}
 			className = "keybindingInfo";
@@ -337,13 +337,13 @@ export class KeybindingEditorDecorationsRenderer extends Disposable {
 
 		const startPosition = model.getPositionAt(keyNode.offset);
 		const endPosition = model.getPositionAt(
-			keyNode.offset + keyNode.length
+			keyNode.offset + keyNode.length,
 		);
 		const range = new Range(
 			startPosition.lineNumber,
 			startPosition.column,
 			endPosition.lineNumber,
-			endPosition.column
+			endPosition.column,
 		);
 
 		// icon + highlight + message decoration
@@ -365,7 +365,7 @@ export class KeybindingEditorDecorationsRenderer extends Disposable {
 
 function isInterestingEditorModel(
 	editor: ICodeEditor,
-	userDataProfileService: IUserDataProfileService
+	userDataProfileService: IUserDataProfileService,
 ): boolean {
 	const model = editor.getModel();
 	if (!model) {
@@ -373,12 +373,12 @@ function isInterestingEditorModel(
 	}
 	return isEqual(
 		model.uri,
-		userDataProfileService.currentProfile.keybindingsResource
+		userDataProfileService.currentProfile.keybindingsResource,
 	);
 }
 
 registerEditorContribution(
 	DEFINE_KEYBINDING_EDITOR_CONTRIB_ID,
 	DefineKeybindingEditorContribution,
-	EditorContributionInstantiation.AfterFirstRender
+	EditorContributionInstantiation.AfterFirstRender,
 );

@@ -3,19 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
 import "vs/css!./media/sidebarpart";
 import { localize } from "vs/nls";
+import { Categories } from "vs/platform/action/common/actionCommonCategories";
 import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
+import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
+import { ViewContainerLocation } from "vs/workbench/common/views";
 import {
 	IWorkbenchLayoutService,
 	Parts,
 } from "vs/workbench/services/layout/browser/layoutService";
-import { KeyMod, KeyCode } from "vs/base/common/keyCodes";
-import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
-import { Categories } from "vs/platform/action/common/actionCommonCategories";
 import { IPaneCompositePartService } from "vs/workbench/services/panecomposite/browser/panecomposite";
-import { ViewContainerLocation } from "vs/workbench/common/views";
 
 export class FocusSideBarAction extends Action2 {
 	constructor() {
@@ -47,7 +47,7 @@ export class FocusSideBarAction extends Action2 {
 
 		// Focus into active viewlet
 		const viewlet = paneCompositeService.getActivePaneComposite(
-			ViewContainerLocation.Sidebar
+			ViewContainerLocation.Sidebar,
 		);
 		viewlet?.focus();
 	}

@@ -13,7 +13,7 @@ import { createDecorator } from "vs/platform/instantiation/common/instantiation"
 
 export const IIgnoredExtensionsManagementService =
 	createDecorator<IIgnoredExtensionsManagementService>(
-		"IIgnoredExtensionsManagementService"
+		"IIgnoredExtensionsManagementService",
 	);
 export interface IIgnoredExtensionsManagementService {
 	readonly _serviceBrand: any;
@@ -24,11 +24,11 @@ export interface IIgnoredExtensionsManagementService {
 	hasToAlwaysSyncExtension(extensionId: string): boolean;
 	updateIgnoredExtensions(
 		ignoredExtensionId: string,
-		ignore: boolean
+		ignore: boolean,
 	): Promise<void>;
 	updateSynchronizedExtensions(
 		ignoredExtensionId: string,
-		sync: boolean
+		sync: boolean,
 	): Promise<void>;
 }
 
@@ -52,22 +52,22 @@ export class IgnoredExtensionsManagementService
 		const configuredIgnoredExtensions =
 			this.getConfiguredIgnoredExtensions();
 		return configuredIgnoredExtensions.includes(
-			`-${extensionId.toLowerCase()}`
+			`-${extensionId.toLowerCase()}`,
 		);
 	}
 
 	updateIgnoredExtensions(
 		ignoredExtensionId: string,
-		ignore: boolean
+		ignore: boolean,
 	): Promise<void> {
 		// first remove the extension completely from ignored extensions
 		let currentValue = [
 			...this.configurationService.getValue<string[]>(
-				"settingsSync.ignoredExtensions"
+				"settingsSync.ignoredExtensions",
 			),
 		].map((id) => id.toLowerCase());
 		currentValue = currentValue.filter(
-			(v) => v !== ignoredExtensionId && v !== `-${ignoredExtensionId}`
+			(v) => v !== ignoredExtensionId && v !== `-${ignoredExtensionId}`,
 		);
 
 		// Add only if ignored
@@ -78,22 +78,22 @@ export class IgnoredExtensionsManagementService
 		return this.configurationService.updateValue(
 			"settingsSync.ignoredExtensions",
 			currentValue.length ? currentValue : undefined,
-			ConfigurationTarget.USER
+			ConfigurationTarget.USER,
 		);
 	}
 
 	updateSynchronizedExtensions(
 		extensionId: string,
-		sync: boolean
+		sync: boolean,
 	): Promise<void> {
 		// first remove the extension completely from ignored extensions
 		let currentValue = [
 			...this.configurationService.getValue<string[]>(
-				"settingsSync.ignoredExtensions"
+				"settingsSync.ignoredExtensions",
 			),
 		].map((id) => id.toLowerCase());
 		currentValue = currentValue.filter(
-			(v) => v !== extensionId && v !== `-${extensionId}`
+			(v) => v !== extensionId && v !== `-${extensionId}`,
 		);
 
 		// Add only if synced
@@ -104,7 +104,7 @@ export class IgnoredExtensionsManagementService
 		return this.configurationService.updateValue(
 			"settingsSync.ignoredExtensions",
 			currentValue.length ? currentValue : undefined,
-			ConfigurationTarget.USER
+			ConfigurationTarget.USER,
 		);
 	}
 
@@ -113,7 +113,7 @@ export class IgnoredExtensionsManagementService
 			.filter((i) => i.isMachineScoped)
 			.map((i) => i.identifier.id.toLowerCase());
 		const value = this.getConfiguredIgnoredExtensions().map((id) =>
-			id.toLowerCase()
+			id.toLowerCase(),
 		);
 		const added: string[] = [],
 			removed: string[] = [];
@@ -128,27 +128,27 @@ export class IgnoredExtensionsManagementService
 		}
 		return distinct(
 			[...defaultIgnoredExtensions, ...added].filter(
-				(setting) => !removed.includes(setting)
-			)
+				(setting) => !removed.includes(setting),
+			),
 		);
 	}
 
 	private getConfiguredIgnoredExtensions(): ReadonlyArray<string> {
 		let userValue = this.configurationService.inspect<string[]>(
-			"settingsSync.ignoredExtensions"
+			"settingsSync.ignoredExtensions",
 		).userValue;
 		if (userValue !== undefined) {
 			return userValue;
 		}
 		userValue = this.configurationService.inspect<string[]>(
-			"sync.ignoredExtensions"
+			"sync.ignoredExtensions",
 		).userValue;
 		if (userValue !== undefined) {
 			return userValue;
 		}
 		return (
 			this.configurationService.getValue<string[]>(
-				"settingsSync.ignoredExtensions"
+				"settingsSync.ignoredExtensions",
 			) || []
 		).map((id) => id.toLowerCase());
 	}

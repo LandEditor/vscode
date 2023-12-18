@@ -17,15 +17,15 @@ import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import {
-	AccessibleViewProviderId,
 	AccessibilityVerbositySettingId,
+	AccessibleViewProviderId,
 } from "vs/workbench/contrib/accessibility/browser/accessibilityConfiguration";
 import { descriptionForCommand } from "vs/workbench/contrib/accessibility/browser/accessibilityContributions";
 import {
-	IAccessibleViewService,
+	AccessibleViewType,
 	IAccessibleContentProvider,
 	IAccessibleViewOptions,
-	AccessibleViewType,
+	IAccessibleViewService,
 } from "vs/workbench/contrib/accessibility/browser/accessibleView";
 import { AccessibilityHelpAction } from "vs/workbench/contrib/accessibility/browser/accessibleViewActions";
 import { CommentAccessibilityHelpNLS } from "vs/workbench/contrib/comments/browser/comments.contribution";
@@ -44,10 +44,10 @@ export class EditorAccessibilityHelpContribution extends Disposable {
 				async (accessor) => {
 					const codeEditorService = accessor.get(ICodeEditorService);
 					const accessibleViewService = accessor.get(
-						IAccessibleViewService
+						IAccessibleViewService,
 					);
 					const instantiationService = accessor.get(
-						IInstantiationService
+						IInstantiationService,
 					);
 					const commandService = accessor.get(ICommandService);
 					let codeEditor =
@@ -55,19 +55,19 @@ export class EditorAccessibilityHelpContribution extends Disposable {
 						codeEditorService.getFocusedCodeEditor();
 					if (!codeEditor) {
 						await commandService.executeCommand(
-							NEW_UNTITLED_FILE_COMMAND_ID
+							NEW_UNTITLED_FILE_COMMAND_ID,
 						);
 						codeEditor = codeEditorService.getActiveCodeEditor()!;
 					}
 					accessibleViewService.show(
 						instantiationService.createInstance(
 							EditorAccessibilityHelpProvider,
-							codeEditor
-						)
+							codeEditor,
+						),
 					);
 				},
-				EditorContextKeys.focus
-			)
+				EditorContextKeys.focus,
+			),
 		);
 	}
 }
@@ -102,15 +102,13 @@ class EditorAccessibilityHelpProvider implements IAccessibleContentProvider {
 			} else {
 				content.push(AccessibilityHelpNLS.editableDiffEditor);
 			}
+		} else if (options.get(EditorOption.readOnly)) {
+			content.push(AccessibilityHelpNLS.readonlyEditor);
 		} else {
-			if (options.get(EditorOption.readOnly)) {
-				content.push(AccessibilityHelpNLS.readonlyEditor);
-			} else {
-				content.push(AccessibilityHelpNLS.editableEditor);
-			}
+			content.push(AccessibilityHelpNLS.editableEditor);
 		}
 		const saveAudioCue = this._configurationService.getValue(
-			AudioCue.save.settingsKey
+			AudioCue.save.settingsKey,
 		);
 		switch (saveAudioCue) {
 			case "never":
@@ -124,7 +122,7 @@ class EditorAccessibilityHelpProvider implements IAccessibleContentProvider {
 				break;
 		}
 		const formatAudioCue = this._configurationService.getValue(
-			AudioCue.format.settingsKey
+			AudioCue.format.settingsKey,
 		);
 		switch (formatAudioCue) {
 			case "never":
@@ -141,7 +139,7 @@ class EditorAccessibilityHelpProvider implements IAccessibleContentProvider {
 		const commentCommandInfo = getCommentCommandInfo(
 			this._keybindingService,
 			this._contextKeyService,
-			this._editor
+			this._editor,
 		);
 		if (commentCommandInfo) {
 			content.push(commentCommandInfo);
@@ -153,8 +151,8 @@ class EditorAccessibilityHelpProvider implements IAccessibleContentProvider {
 					"editor.action.focusStickyScroll",
 					AccessibilityHelpNLS.stickScrollKb,
 					AccessibilityHelpNLS.stickScrollNoKb,
-					this._keybindingService
-				)
+					this._keybindingService,
+				),
 			);
 		}
 
@@ -164,8 +162,8 @@ class EditorAccessibilityHelpProvider implements IAccessibleContentProvider {
 					ToggleTabFocusModeAction.ID,
 					AccessibilityHelpNLS.tabFocusModeOnMsg,
 					AccessibilityHelpNLS.tabFocusModeOnMsgNoKb,
-					this._keybindingService
-				)
+					this._keybindingService,
+				),
 			);
 		} else {
 			content.push(
@@ -173,8 +171,8 @@ class EditorAccessibilityHelpProvider implements IAccessibleContentProvider {
 					ToggleTabFocusModeAction.ID,
 					AccessibilityHelpNLS.tabFocusModeOffMsg,
 					AccessibilityHelpNLS.tabFocusModeOffMsgNoKb,
-					this._keybindingService
-				)
+					this._keybindingService,
+				),
 			);
 		}
 		return content.join("\n\n");
@@ -184,12 +182,12 @@ class EditorAccessibilityHelpProvider implements IAccessibleContentProvider {
 export function getCommentCommandInfo(
 	keybindingService: IKeybindingService,
 	contextKeyService: IContextKeyService,
-	editor: ICodeEditor
+	editor: ICodeEditor,
 ): string | undefined {
 	const editorContext = contextKeyService.getContext(editor.getDomNode()!);
 	if (
 		editorContext.getValue<boolean>(
-			CommentContextKeys.activeEditorHasCommentingRange.key
+			CommentContextKeys.activeEditorHasCommentingRange.key,
 		)
 	) {
 		const commentCommandInfo: string[] = [];
@@ -199,40 +197,40 @@ export function getCommentCommandInfo(
 				CommentCommandId.Add,
 				CommentAccessibilityHelpNLS.addComment,
 				CommentAccessibilityHelpNLS.addCommentNoKb,
-				keybindingService
-			)
+				keybindingService,
+			),
 		);
 		commentCommandInfo.push(
 			descriptionForCommand(
 				CommentCommandId.NextThread,
 				CommentAccessibilityHelpNLS.nextCommentThreadKb,
 				CommentAccessibilityHelpNLS.nextCommentThreadNoKb,
-				keybindingService
-			)
+				keybindingService,
+			),
 		);
 		commentCommandInfo.push(
 			descriptionForCommand(
 				CommentCommandId.PreviousThread,
 				CommentAccessibilityHelpNLS.previousCommentThreadKb,
 				CommentAccessibilityHelpNLS.previousCommentThreadNoKb,
-				keybindingService
-			)
+				keybindingService,
+			),
 		);
 		commentCommandInfo.push(
 			descriptionForCommand(
 				CommentCommandId.NextRange,
 				CommentAccessibilityHelpNLS.nextRange,
 				CommentAccessibilityHelpNLS.nextRangeNoKb,
-				keybindingService
-			)
+				keybindingService,
+			),
 		);
 		commentCommandInfo.push(
 			descriptionForCommand(
 				CommentCommandId.PreviousRange,
 				CommentAccessibilityHelpNLS.previousRange,
 				CommentAccessibilityHelpNLS.previousRangeNoKb,
-				keybindingService
-			)
+				keybindingService,
+			),
 		);
 		return commentCommandInfo.join("\n");
 	}

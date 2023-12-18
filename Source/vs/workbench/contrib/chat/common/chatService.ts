@@ -179,12 +179,12 @@ export interface IChatProvider {
 	readonly iconUrl?: string;
 	prepareSession(token: CancellationToken): ProviderResult<IChat | undefined>;
 	provideWelcomeMessage?(
-		token: CancellationToken
+		token: CancellationToken,
 	): ProviderResult<
 		(string | IMarkdownString | IChatReplyFollowup[])[] | undefined
 	>;
 	provideSampleQuestions?(
-		token: CancellationToken
+		token: CancellationToken,
 	): ProviderResult<IChatReplyFollowup[] | undefined>;
 }
 
@@ -326,7 +326,7 @@ export interface IChatService {
 	getProviderInfos(): IChatProviderInfo[];
 	startSession(
 		providerId: string,
-		token: CancellationToken
+		token: CancellationToken,
 	): ChatModel | undefined;
 	getSession(sessionId: string): IChatModel | undefined;
 	getSessionId(sessionProviderId: number): string | undefined;
@@ -338,7 +338,7 @@ export interface IChatService {
 	 */
 	sendRequest(
 		sessionId: string,
-		message: string
+		message: string,
 	): Promise<{ responseCompletePromise: Promise<void> } | undefined>;
 	removeRequest(sessionid: string, requestId: string): Promise<void>;
 	cancelCurrentRequestForSession(sessionId: string): void;
@@ -346,11 +346,11 @@ export interface IChatService {
 	addCompleteRequest(
 		sessionId: string,
 		message: IParsedChatRequest | string,
-		response: IChatCompleteResponse
+		response: IChatCompleteResponse,
 	): void;
 	sendRequestToProvider(
 		sessionId: string,
-		message: IChatDynamicRequest
+		message: IChatDynamicRequest,
 	): void;
 	getHistory(): IChatDetail[];
 	removeHistoryEntry(sessionId: string): void;
@@ -365,6 +365,6 @@ export interface IChatService {
 
 	transferChatSession(
 		transferredSessionData: IChatTransferredSessionData,
-		toWorkspace: URI
+		toWorkspace: URI,
 	): void;
 }

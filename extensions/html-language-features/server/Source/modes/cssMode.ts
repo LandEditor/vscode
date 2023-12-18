@@ -4,40 +4,40 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+	LanguageService as CSSLanguageService,
+	Stylesheet,
+} from "vscode-css-languageservice";
+import {
 	LanguageModelCache,
 	getLanguageModelCache,
 } from "../languageModelCache";
+import { CSS_STYLE_RULE, HTMLDocumentRegions } from "./embeddedSupport";
 import {
-	Stylesheet,
-	LanguageService as CSSLanguageService,
-} from "vscode-css-languageservice";
-import {
-	LanguageMode,
-	Workspace,
 	Color,
-	TextDocument,
+	CompletionList,
+	Diagnostic,
+	DocumentContext,
+	LanguageMode,
 	Position,
 	Range,
-	CompletionList,
-	DocumentContext,
-	Diagnostic,
+	TextDocument,
+	Workspace,
 } from "./languageModes";
-import { HTMLDocumentRegions, CSS_STYLE_RULE } from "./embeddedSupport";
 
 export function getCSSMode(
 	cssLanguageService: CSSLanguageService,
 	documentRegions: LanguageModelCache<HTMLDocumentRegions>,
-	workspace: Workspace
+	workspace: Workspace,
 ): LanguageMode {
 	const embeddedCSSDocuments = getLanguageModelCache<TextDocument>(
 		10,
 		60,
-		(document) => documentRegions.get(document).getEmbeddedDocument("css")
+		(document) => documentRegions.get(document).getEmbeddedDocument("css"),
 	);
 	const cssStylesheets = getLanguageModelCache<Stylesheet>(
 		10,
 		60,
-		(document) => cssLanguageService.parseStylesheet(document)
+		(document) => cssLanguageService.parseStylesheet(document),
 	);
 
 	return {
@@ -46,20 +46,20 @@ export function getCSSMode(
 		},
 		async doValidation(
 			document: TextDocument,
-			settings = workspace.settings
+			settings = workspace.settings,
 		) {
 			const embedded = embeddedCSSDocuments.get(document);
 			return cssLanguageService.doValidation(
 				embedded,
 				cssStylesheets.get(embedded),
-				settings && settings.css
+				settings && settings.css,
 			) as Diagnostic[];
 		},
 		async doComplete(
 			document: TextDocument,
 			position: Position,
 			documentContext: DocumentContext,
-			_settings = workspace.settings
+			_settings = workspace.settings,
 		) {
 			const embedded = embeddedCSSDocuments.get(document);
 			const stylesheet = cssStylesheets.get(embedded);
@@ -69,32 +69,32 @@ export function getCSSMode(
 					position,
 					stylesheet,
 					documentContext,
-					_settings?.css?.completion
+					_settings?.css?.completion,
 				) || CompletionList.create()
 			);
 		},
 		async doHover(
 			document: TextDocument,
 			position: Position,
-			settings = workspace.settings
+			settings = workspace.settings,
 		) {
 			const embedded = embeddedCSSDocuments.get(document);
 			return cssLanguageService.doHover(
 				embedded,
 				position,
 				cssStylesheets.get(embedded),
-				settings?.css?.hover
+				settings?.css?.hover,
 			);
 		},
 		async findDocumentHighlight(
 			document: TextDocument,
-			position: Position
+			position: Position,
 		) {
 			const embedded = embeddedCSSDocuments.get(document);
 			return cssLanguageService.findDocumentHighlights(
 				embedded,
 				position,
-				cssStylesheets.get(embedded)
+				cssStylesheets.get(embedded),
 			);
 		},
 		async findDocumentSymbols(document: TextDocument) {
@@ -108,7 +108,7 @@ export function getCSSMode(
 			return cssLanguageService.findDefinition(
 				embedded,
 				position,
-				cssStylesheets.get(embedded)
+				cssStylesheets.get(embedded),
 			);
 		},
 		async findReferences(document: TextDocument, position: Position) {
@@ -116,27 +116,27 @@ export function getCSSMode(
 			return cssLanguageService.findReferences(
 				embedded,
 				position,
-				cssStylesheets.get(embedded)
+				cssStylesheets.get(embedded),
 			);
 		},
 		async findDocumentColors(document: TextDocument) {
 			const embedded = embeddedCSSDocuments.get(document);
 			return cssLanguageService.findDocumentColors(
 				embedded,
-				cssStylesheets.get(embedded)
+				cssStylesheets.get(embedded),
 			);
 		},
 		async getColorPresentations(
 			document: TextDocument,
 			color: Color,
-			range: Range
+			range: Range,
 		) {
 			const embedded = embeddedCSSDocuments.get(document);
 			return cssLanguageService.getColorPresentations(
 				embedded,
 				cssStylesheets.get(embedded),
 				color,
-				range
+				range,
 			);
 		},
 		async getFoldingRanges(document: TextDocument) {
@@ -148,7 +148,7 @@ export function getCSSMode(
 			return cssLanguageService.getSelectionRanges(
 				embedded,
 				[position],
-				cssStylesheets.get(embedded)
+				cssStylesheets.get(embedded),
 			)[0];
 		},
 		onDocumentRemoved(document: TextDocument) {

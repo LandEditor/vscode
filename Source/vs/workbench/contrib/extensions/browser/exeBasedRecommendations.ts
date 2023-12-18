@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { localize } from "vs/nls";
 import {
-	IExtensionTipsService,
 	IExecutableBasedExtensionTip,
+	IExtensionTipsService,
 } from "vs/platform/extensionManagement/common/extensionManagement";
 import {
-	ExtensionRecommendations,
 	ExtensionRecommendation,
+	ExtensionRecommendations,
 } from "vs/workbench/contrib/extensions/browser/extensionRecommendations";
-import { localize } from "vs/nls";
 import { ExtensionRecommendationReason } from "vs/workbench/services/extensionRecommendations/common/extensionRecommendations";
 
 export class ExeBasedRecommendations extends ExtensionRecommendations {
@@ -20,12 +20,12 @@ export class ExeBasedRecommendations extends ExtensionRecommendations {
 
 	get otherRecommendations(): ReadonlyArray<ExtensionRecommendation> {
 		return this._otherTips.map((tip) =>
-			this.toExtensionRecommendation(tip)
+			this.toExtensionRecommendation(tip),
 		);
 	}
 	get importantRecommendations(): ReadonlyArray<ExtensionRecommendation> {
 		return this._importantTips.map((tip) =>
-			this.toExtensionRecommendation(tip)
+			this.toExtensionRecommendation(tip),
 		);
 	}
 
@@ -86,14 +86,14 @@ export class ExeBasedRecommendations extends ExtensionRecommendations {
 		this._importantTips.forEach((tip) =>
 			importantExeBasedRecommendations.set(
 				tip.extensionId.toLowerCase(),
-				tip
-			)
+				tip,
+			),
 		);
 		return importantExeBasedRecommendations;
 	}
 
 	private toExtensionRecommendation(
-		tip: IExecutableBasedExtensionTip
+		tip: IExecutableBasedExtensionTip,
 	): ExtensionRecommendation {
 		return {
 			extensionId: tip.extensionId.toLowerCase(),
@@ -102,7 +102,7 @@ export class ExeBasedRecommendations extends ExtensionRecommendations {
 				reasonText: localize(
 					"exeBasedRecommendation",
 					"This extension is recommended because you have {0} installed.",
-					tip.exeFriendlyName
+					tip.exeFriendlyName,
 				),
 			},
 		};

@@ -42,7 +42,7 @@ export class TunnelService extends AbstractTunnelService {
 		localPort: number | undefined,
 		elevateIfNeeded: boolean,
 		privacy?: string,
-		protocol?: string
+		protocol?: string,
 	): Promise<RemoteTunnel | string | undefined> | undefined {
 		const existing = this.getTunnelFromMap(remoteHost, remotePort);
 		if (existing) {
@@ -58,7 +58,7 @@ export class TunnelService extends AbstractTunnelService {
 				localPort,
 				elevateIfNeeded,
 				privacy,
-				protocol
+				protocol,
 			);
 		}
 		return undefined;

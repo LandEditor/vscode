@@ -39,7 +39,7 @@ export namespace ThemeIcon {
 	export const iconNameCharacter = "[A-Za-z0-9~-]";
 
 	const ThemeIconIdRegex = new RegExp(
-		`^(${iconNameExpression})(${iconModifierExpression})?$`
+		`^(${iconNameExpression})(${iconModifierExpression})?$`,
 	);
 
 	export function asClassNameArray(icon: ThemeIcon): string[] {
@@ -74,7 +74,7 @@ export namespace ThemeIcon {
 	}
 
 	const _regexFromString = new RegExp(
-		`^\\$\\((${ThemeIcon.iconNameExpression}(?:${ThemeIcon.iconModifierExpression})?)\\)$`
+		`^\\$\\((${ThemeIcon.iconNameExpression}(?:${ThemeIcon.iconModifierExpression})?)\\)$`,
 	);
 
 	export function fromString(str: string): ThemeIcon | undefined {
@@ -92,7 +92,7 @@ export namespace ThemeIcon {
 
 	export function modify(
 		icon: ThemeIcon,
-		modifier: "disabled" | "spin" | undefined
+		modifier: "disabled" | "spin" | undefined,
 	): ThemeIcon {
 		let id = icon.id;
 		const tildeIndex = id.lastIndexOf("~");

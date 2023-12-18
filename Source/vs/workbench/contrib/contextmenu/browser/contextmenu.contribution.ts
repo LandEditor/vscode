@@ -8,9 +8,9 @@ import { IContextMenuService } from "vs/platform/contextview/browser/contextView
 import { ILayoutService } from "vs/platform/layout/browser/layoutService";
 import { Registry } from "vs/platform/registry/common/platform";
 import {
-	IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
 	IWorkbenchContribution,
+	IWorkbenchContributionsRegistry,
 } from "vs/workbench/common/contributions";
 import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
@@ -19,29 +19,29 @@ class ContextMenuContribution implements IWorkbenchContribution {
 
 	constructor(
 		@ILayoutService layoutService: ILayoutService,
-		@IContextMenuService contextMenuService: IContextMenuService
+		@IContextMenuService contextMenuService: IContextMenuService,
 	) {
 		const update = (visible: boolean) =>
 			layoutService.activeContainer.classList.toggle(
 				"context-menu-visible",
-				visible
+				visible,
 			);
 		contextMenuService.onDidShowContextMenu(
 			() => update(true),
 			null,
-			this.disposables
+			this.disposables,
 		);
 		contextMenuService.onDidHideContextMenu(
 			() => update(false),
 			null,
-			this.disposables
+			this.disposables,
 		);
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	ContextMenuContribution,
-	LifecyclePhase.Eventually
+	LifecyclePhase.Eventually,
 );

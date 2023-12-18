@@ -3,8 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-"use strict";
-
 const gulp = require("gulp");
 const path = require("path");
 const task = require("./lib/task");
@@ -35,13 +33,13 @@ BUILD_TARGETS.forEach((buildTarget) => {
 		path.dirname(root),
 		"scanbin",
 		`VSCode${dashed(platform)}${dashed(arch)}`,
-		"bin"
+		"bin",
 	);
 	const destinationPdb = path.join(
 		path.dirname(root),
 		"scanbin",
 		`VSCode${dashed(platform)}${dashed(arch)}`,
-		"pdb"
+		"pdb",
 	);
 
 	const tasks = [];
@@ -55,7 +53,7 @@ BUILD_TARGETS.forEach((buildTarget) => {
 			...config,
 			platform,
 			arch: arch === "armhf" ? "arm" : arch,
-		})
+		}),
 	);
 
 	// pdbs for windows
@@ -69,7 +67,7 @@ BUILD_TARGETS.forEach((buildTarget) => {
 					pdbs: true,
 				}),
 			util.rimraf(path.join(destinationExe, "d3dcompiler_47.dll")),
-			() => confirmPdbsExist(destinationExe, destinationPdb)
+			() => confirmPdbsExist(destinationExe, destinationPdb),
 		);
 	}
 
@@ -80,7 +78,7 @@ BUILD_TARGETS.forEach((buildTarget) => {
 				platform,
 				arch: arch === "armhf" ? "arm" : arch,
 				symbols: true,
-			})
+			}),
 		);
 	}
 
@@ -89,7 +87,7 @@ BUILD_TARGETS.forEach((buildTarget) => {
 
 	const setupSymbolsTask = task.define(
 		`vscode-symbols${dashed(platform)}${dashed(arch)}`,
-		task.series(...tasks)
+		task.series(...tasks),
 	);
 
 	gulp.task(setupSymbolsTask);
@@ -99,8 +97,7 @@ function nodeModules(destinationExe, destinationPdb, platform) {
 	const productionDependencies = deps.getProductionDependencies(root);
 	const dependenciesSrc = productionDependencies
 		.map((d) => path.relative(root, d.path))
-		.map((d) => [`${d}/**`, `!${d}/**/{test,tests}/**`])
-		.flat();
+		.flatMap((d) => [`${d}/**`, `!${d}/**/{test,tests}/**`]);
 
 	const exe = () => {
 		return gulp
@@ -113,7 +110,7 @@ function nodeModules(destinationExe, destinationPdb, platform) {
 					"!**/prebuilds/**/*.node",
 					// These are 3rd party modules that we should ignore
 					"!**/@parcel/watcher/**/*",
-				])
+				]),
 			)
 			.pipe(gulp.dest(destinationExe));
 	};
@@ -149,7 +146,7 @@ function confirmPdbsExist(destinationExe, destinationPdb) {
 			const pdb = `${file}.pdb`;
 			if (!existsSync(path.join(destinationPdb, pdb))) {
 				throw new Error(
-					`Missing pdb file for ${file}. Tried searching for ${pdb} in ${destinationPdb}.`
+					`Missing pdb file for ${file}. Tried searching for ${pdb} in ${destinationPdb}.`,
 				);
 			}
 		}

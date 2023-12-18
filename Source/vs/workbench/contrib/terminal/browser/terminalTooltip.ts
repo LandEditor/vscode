@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import { ITerminalInstance } from "vs/workbench/contrib/terminal/browser/terminal";
-import { TerminalCapability } from "vs/platform/terminal/common/capabilities/capabilities";
 import { asArray } from "vs/base/common/arrays";
-import { IHoverAction } from "vs/workbench/services/hover/browser/hover";
 import { MarkdownString } from "vs/base/common/htmlContent";
+import { localize } from "vs/nls";
+import { TerminalCapability } from "vs/platform/terminal/common/capabilities/capabilities";
+import { ITerminalInstance } from "vs/workbench/contrib/terminal/browser/terminal";
+import { IHoverAction } from "vs/workbench/services/hover/browser/hover";
 
 export function getInstanceHoverInfo(instance: ITerminalInstance): {
 	content: MarkdownString;
@@ -33,7 +33,7 @@ export function getInstanceHoverInfo(instance: ITerminalInstance): {
 			shellProcessString +
 			shellIntegrationString +
 			statusString,
-		{ supportThemeIcons: true }
+		{ supportThemeIcons: true },
 	);
 
 	return { content, actions };
@@ -41,7 +41,7 @@ export function getInstanceHoverInfo(instance: ITerminalInstance): {
 
 export function getShellIntegrationTooltip(
 	instance: ITerminalInstance,
-	markdown: boolean
+	markdown: boolean,
 ): string {
 	const shellIntegrationCapabilities: TerminalCapability[] = [];
 	if (instance.capabilities.has(TerminalCapability.CommandDetection)) {
@@ -56,33 +56,29 @@ export function getShellIntegrationTooltip(
 			markdown ? "\n\n---\n\n" : "\n\n"
 		}${localize(
 			"shellIntegration.enabled",
-			"Shell integration activated"
+			"Shell integration activated",
 		)}`;
-	} else {
-		if (instance.shellLaunchConfig.ignoreShellIntegration) {
-			shellIntegrationString += `${
-				markdown ? "\n\n---\n\n" : "\n\n"
-			}${localize(
-				"launchFailed.exitCodeOnlyShellIntegration",
-				"The terminal process failed to launch. Disabling shell integration with terminal.integrated.shellIntegration.enabled might help."
-			)}`;
-		} else {
-			if (instance.usedShellIntegrationInjection) {
-				shellIntegrationString += `${
-					markdown ? "\n\n---\n\n" : "\n\n"
-				}${localize(
-					"shellIntegration.activationFailed",
-					"Shell integration failed to activate"
-				)}`;
-			}
-		}
+	} else if (instance.shellLaunchConfig.ignoreShellIntegration) {
+		shellIntegrationString += `${
+			markdown ? "\n\n---\n\n" : "\n\n"
+		}${localize(
+			"launchFailed.exitCodeOnlyShellIntegration",
+			"The terminal process failed to launch. Disabling shell integration with terminal.integrated.shellIntegration.enabled might help.",
+		)}`;
+	} else if (instance.usedShellIntegrationInjection) {
+		shellIntegrationString += `${
+			markdown ? "\n\n---\n\n" : "\n\n"
+		}${localize(
+			"shellIntegration.activationFailed",
+			"Shell integration failed to activate",
+		)}`;
 	}
 	return shellIntegrationString;
 }
 
 export function getShellProcessTooltip(
 	instance: ITerminalInstance,
-	markdown: boolean
+	markdown: boolean,
 ): string {
 	const lines: string[] = [];
 
@@ -97,15 +93,15 @@ export function getShellProcessTooltip(
 				},
 				"Process ID ({0}): {1}",
 				"PID",
-				instance.processId
-			) + "\n"
+				instance.processId,
+			) + "\n",
 		);
 	}
 
 	if (instance.shellLaunchConfig.executable) {
 		let commandLine = instance.shellLaunchConfig.executable;
 		const args = asArray(
-			instance.injectedArgs || instance.shellLaunchConfig.args || []
+			instance.injectedArgs || instance.shellLaunchConfig.args || [],
 		)
 			.map((x) => `'${x}'`)
 			.join(" ");
@@ -117,8 +113,8 @@ export function getShellProcessTooltip(
 			localize(
 				"shellProcessTooltip.commandLine",
 				"Command line: {0}",
-				commandLine
-			)
+				commandLine,
+			),
 		);
 	}
 

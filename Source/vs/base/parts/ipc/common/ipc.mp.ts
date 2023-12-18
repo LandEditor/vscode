@@ -28,11 +28,11 @@ export interface MessageEvent {
 export interface MessagePort {
 	addEventListener(
 		type: "message",
-		listener: (this: MessagePort, e: MessageEvent) => unknown
+		listener: (this: MessagePort, e: MessageEvent) => unknown,
 	): void;
 	removeEventListener(
 		type: "message",
-		listener: (this: MessagePort, e: MessageEvent) => unknown
+		listener: (this: MessagePort, e: MessageEvent) => unknown,
 	): void;
 
 	postMessage(message: Uint8Array): void;
@@ -50,7 +50,7 @@ export class Protocol implements IMessagePassingProtocol {
 	readonly onMessage = Event.fromDOMEventEmitter<VSBuffer>(
 		this.port,
 		"message",
-		(e: MessageEvent) => VSBuffer.wrap(e.data)
+		(e: MessageEvent) => VSBuffer.wrap(e.data),
 	);
 
 	constructor(private port: MessagePort) {

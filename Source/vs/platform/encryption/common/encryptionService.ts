@@ -13,9 +13,9 @@ export interface IEncryptionService extends ICommonEncryptionService {
 }
 
 export const IEncryptionMainService = createDecorator<IEncryptionMainService>(
-	"encryptionMainService"
+	"encryptionMainService",
 );
-export interface IEncryptionMainService extends IEncryptionService {}
+export type IEncryptionMainService = IEncryptionService;
 
 export interface ICommonEncryptionService {
 	readonly _serviceBrand: undefined;
@@ -30,7 +30,7 @@ export interface ICommonEncryptionService {
 // The values provided to the `password-store` command line switch.
 // Notice that they are not the same as the values returned by
 // `getSelectedStorageBackend` in the `safeStorage` API.
-export const enum PasswordStoreCLIOption {
+export enum PasswordStoreCLIOption {
 	kwallet = "kwallet",
 	kwallet5 = "kwallet5",
 	gnome = "gnome",
@@ -40,7 +40,7 @@ export const enum PasswordStoreCLIOption {
 }
 
 // The values returned by `getSelectedStorageBackend` in the `safeStorage` API.
-export const enum KnownStorageProvider {
+export enum KnownStorageProvider {
 	unknown = "unknown",
 	basicText = "basic_text",
 

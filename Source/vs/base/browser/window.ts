@@ -10,7 +10,7 @@ export type CodeWindow = Window &
 
 export function ensureCodeWindow(
 	targetWindow: Window,
-	fallbackWindowId: number
+	fallbackWindowId: number,
 ): asserts targetWindow is CodeWindow {
 	const codeWindow = targetWindow as Partial<CodeWindow>;
 

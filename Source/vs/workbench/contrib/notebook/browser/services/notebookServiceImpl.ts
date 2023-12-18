@@ -3,10 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
+import { PixelRatio } from "vs/base/browser/browser";
 import { toAction } from "vs/base/common/actions";
 import { createErrorWithActions } from "vs/base/common/errorMessage";
-import { PixelRatio } from "vs/base/browser/browser";
 import { Emitter, Event } from "vs/base/common/event";
 import * as glob from "vs/base/common/glob";
 import { Iterable } from "vs/base/common/iterator";
@@ -24,6 +23,7 @@ import { URI } from "vs/base/common/uri";
 import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
 import { IEditorOptions } from "vs/editor/common/config/editorOptions";
 import { BareFontInfo } from "vs/editor/common/config/fontInfo";
+import { localize } from "vs/nls";
 import { IAccessibilityService } from "vs/platform/accessibility/common/accessibility";
 import {
 	ConfigurationTarget,
@@ -37,44 +37,46 @@ import {
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
 import { Memento, MementoObject } from "vs/workbench/common/memento";
+import { InstallRecommendedExtensionAction } from "vs/workbench/contrib/extensions/browser/extensionsActions";
+import { INotebookEditorOptions } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
 import {
 	INotebookEditorContribution,
 	notebookPreloadExtensionPoint,
 	notebookRendererExtensionPoint,
 	notebooksExtensionPoint,
 } from "vs/workbench/contrib/notebook/browser/notebookExtensionPoint";
-import { INotebookEditorOptions } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
-import { NotebookDiffEditorInput } from "vs/workbench/contrib/notebook/common/notebookDiffEditorInput";
+import { updateEditorTopPadding } from "vs/workbench/contrib/notebook/browser/notebookOptions";
 import { NotebookCellTextModel } from "vs/workbench/contrib/notebook/common/model/notebookCellTextModel";
 import { NotebookTextModel } from "vs/workbench/contrib/notebook/common/model/notebookTextModel";
 import {
 	ACCESSIBLE_NOTEBOOK_DISPLAY_ORDER,
 	CellUri,
-	NotebookSetting,
 	INotebookContributionData,
 	INotebookExclusiveDocumentFilter,
 	INotebookRendererInfo,
+	INotebookStaticPreloadInfo,
 	INotebookTextModel,
 	IOrderedMimeType,
 	IOutputDto,
 	MimeTypeDisplayOrder,
+	NOTEBOOK_DISPLAY_ORDER,
 	NotebookData,
 	NotebookEditorPriority,
+	NotebookExtensionDescription,
 	NotebookRendererMatch,
-	NOTEBOOK_DISPLAY_ORDER,
+	NotebookSetting,
 	RENDERER_EQUIVALENT_EXTENSIONS,
 	RENDERER_NOT_AVAILABLE,
 	TransientOptions,
-	NotebookExtensionDescription,
-	INotebookStaticPreloadInfo,
 } from "vs/workbench/contrib/notebook/common/notebookCommon";
+import { NotebookDiffEditorInput } from "vs/workbench/contrib/notebook/common/notebookDiffEditorInput";
 import { NotebookEditorInput } from "vs/workbench/contrib/notebook/common/notebookEditorInput";
 import { INotebookEditorModelResolverService } from "vs/workbench/contrib/notebook/common/notebookEditorModelResolverService";
-import { updateEditorTopPadding } from "vs/workbench/contrib/notebook/browser/notebookOptions";
 import {
 	NotebookOutputRendererInfo,
-	NotebookStaticPreloadInfo as NotebookStaticPreloadInfo,
+	NotebookStaticPreloadInfo,
 } from "vs/workbench/contrib/notebook/common/notebookOutputRenderer";
 import {
 	NotebookEditorDescriptor,
@@ -100,22 +102,20 @@ import {
 	isProposedApiEnabled,
 } from "vs/workbench/services/extensions/common/extensions";
 import { IExtensionPointUser } from "vs/workbench/services/extensions/common/extensionsRegistry";
-import { InstallRecommendedExtensionAction } from "vs/workbench/contrib/extensions/browser/extensionsActions";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
 
 export class NotebookProviderInfoStore extends Disposable {
 	private static readonly CUSTOM_EDITORS_STORAGE_ID = "notebookEditors";
 	private static readonly CUSTOM_EDITORS_ENTRY_ID = "editors";
 
 	private readonly _memento: Memento;
-	private _handled: boolean = false;
+	private _handled = false;
 
 	private readonly _contributedEditors = new Map<
 		string,
 		NotebookProviderInfo
 	>();
 	private readonly _contributedEditorDisposables = this._register(
-		new DisposableStore()
+		new DisposableStore(),
 	);
 
 	constructor(
@@ -182,7 +182,7 @@ export class NotebookProviderInfoStore extends Disposable {
 	private _setupHandler(
 		extensions: readonly IExtensionPointUser<
 			INotebookEditorContribution[]
-		>[]
+		>[],
 	) {
 		this._handled = true;
 		const builtins: NotebookProviderInfo[] = [
@@ -199,7 +199,7 @@ export class NotebookProviderInfoStore extends Disposable {
 			for (const notebookContribution of extension.value) {
 				if (!notebookContribution.type) {
 					extension.collector.error(
-						`Notebook does not specify type-property`
+						`Notebook does not specify type-property`,
 					);
 					continue;
 				}
@@ -212,7 +212,7 @@ export class NotebookProviderInfoStore extends Disposable {
 						extension.description.isBuiltin &&
 						builtins.find(
 							(builtin) =>
-								builtin.id === notebookContribution.type
+								builtin.id === notebookContribution.type,
 						)
 					) {
 						// we are registering an extension which is using the same view type which is already cached
@@ -221,7 +221,7 @@ export class NotebookProviderInfoStore extends Disposable {
 							?.dispose();
 					} else {
 						extension.collector.error(
-							`Notebook type '${notebookContribution.type}' already used`
+							`Notebook type '${notebookContribution.type}' already used`,
 						);
 						continue;
 					}
@@ -234,20 +234,20 @@ export class NotebookProviderInfoStore extends Disposable {
 						displayName: notebookContribution.displayName,
 						selectors: notebookContribution.selector || [],
 						priority: this._convertPriority(
-							notebookContribution.priority
+							notebookContribution.priority,
 						),
 						providerDisplayName:
 							extension.description.displayName ??
 							extension.description.identifier.value,
 						exclusive: false,
-					})
+					}),
 				);
 			}
 		}
 
 		const mementoObject = this._memento.getMemento(
 			StorageScope.PROFILE,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 		mementoObject[NotebookProviderInfoStore.CUSTOM_EDITORS_ENTRY_ID] =
 			Array.from(this._contributedEditors.values());
@@ -257,7 +257,7 @@ export class NotebookProviderInfoStore extends Disposable {
 	clearEditorCache() {
 		const mementoObject = this._memento.getMemento(
 			StorageScope.PROFILE,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 		mementoObject[NotebookProviderInfoStore.CUSTOM_EDITORS_ENTRY_ID] = [];
 		this._memento.saveMemento();
@@ -276,7 +276,7 @@ export class NotebookProviderInfoStore extends Disposable {
 	}
 
 	private _registerContributionPoint(
-		notebookProviderInfo: NotebookProviderInfo
+		notebookProviderInfo: NotebookProviderInfo,
 	): IDisposable {
 		const disposables = new DisposableStore();
 
@@ -295,7 +295,7 @@ export class NotebookProviderInfoStore extends Disposable {
 			const notebookEditorOptions = {
 				canHandleDiff: () =>
 					!!this._configurationService.getValue(
-						NotebookSetting.textDiffEditorPreview
+						NotebookSetting.textDiffEditorPreview,
 					) && !this._accessibilityService.isScreenReaderOptimized(),
 				canSupportResource: (resource: URI) =>
 					resource.scheme === Schemas.untitled ||
@@ -315,7 +315,7 @@ export class NotebookProviderInfoStore extends Disposable {
 				if (data) {
 					// resource is a notebook cell
 					notebookUri = this.uriIdentService.asCanonicalUri(
-						data.notebook
+						data.notebook,
 					);
 					preferredResource = data.notebook;
 					cellOptions = { resource, options };
@@ -337,7 +337,7 @@ export class NotebookProviderInfoStore extends Disposable {
 					this._instantiationService,
 					notebookUri,
 					preferredResource,
-					notebookProviderInfo.id
+					notebookProviderInfo.id,
 				);
 				return { editor, options: notebookOptions };
 			};
@@ -347,7 +347,7 @@ export class NotebookProviderInfoStore extends Disposable {
 					const ref =
 						await this._notebookEditorModelResolverService.resolve(
 							{ untitledResource: resource },
-							notebookProviderInfo.id
+							notebookProviderInfo.id,
 						);
 
 					// untitled notebooks are disposed when they get saved. we should not hold a reference
@@ -361,7 +361,7 @@ export class NotebookProviderInfoStore extends Disposable {
 							this._instantiationService,
 							ref.object.resource,
 							undefined,
-							notebookProviderInfo.id
+							notebookProviderInfo.id,
 						),
 						options,
 					};
@@ -375,7 +375,7 @@ export class NotebookProviderInfoStore extends Disposable {
 							label,
 							description,
 							original.resource!,
-							notebookProviderInfo.id
+							notebookProviderInfo.id,
 						),
 					};
 				};
@@ -396,12 +396,12 @@ export class NotebookProviderInfoStore extends Disposable {
 				this._configurationService.onDidChangeConfiguration((e) => {
 					if (
 						e.affectsConfiguration(
-							NotebookSetting.textDiffEditorPreview
+							NotebookSetting.textDiffEditorPreview,
 						)
 					) {
 						const canHandleDiff =
 							!!this._configurationService.getValue(
-								NotebookSetting.textDiffEditorPreview
+								NotebookSetting.textDiffEditorPreview,
 							) &&
 							!this._accessibilityService.isScreenReaderOptimized();
 						if (canHandleDiff) {
@@ -416,7 +416,7 @@ export class NotebookProviderInfoStore extends Disposable {
 								undefined;
 						}
 					}
-				})
+				}),
 			);
 
 			disposables.add(
@@ -424,7 +424,7 @@ export class NotebookProviderInfoStore extends Disposable {
 					() => {
 						const canHandleDiff =
 							!!this._configurationService.getValue(
-								NotebookSetting.textDiffEditorPreview
+								NotebookSetting.textDiffEditorPreview,
 							) &&
 							!this._accessibilityService.isScreenReaderOptimized();
 						if (canHandleDiff) {
@@ -438,8 +438,8 @@ export class NotebookProviderInfoStore extends Disposable {
 							notebookCellFactoryObject.createDiffEditorInput =
 								undefined;
 						}
-					}
-				)
+					},
+				),
 			);
 
 			// Register the notebook editor
@@ -448,8 +448,8 @@ export class NotebookProviderInfoStore extends Disposable {
 					globPattern,
 					notebookEditorInfo,
 					notebookEditorOptions,
-					notebookFactoryObject
-				)
+					notebookFactoryObject,
+				),
 			);
 			// Then register the schema handler as exclusive for that notebook
 			disposables.add(
@@ -460,8 +460,8 @@ export class NotebookProviderInfoStore extends Disposable {
 						priority: RegisteredEditorPriority.exclusive,
 					},
 					notebookEditorOptions,
-					notebookCellFactoryObject
-				)
+					notebookCellFactoryObject,
+				),
 			);
 		}
 
@@ -492,7 +492,7 @@ export class NotebookProviderInfoStore extends Disposable {
 
 		const mementoObject = this._memento.getMemento(
 			StorageScope.PROFILE,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 		mementoObject[NotebookProviderInfoStore.CUSTOM_EDITORS_ENTRY_ID] =
 			Array.from(this._contributedEditors.values());
@@ -502,7 +502,7 @@ export class NotebookProviderInfoStore extends Disposable {
 			toDisposable(() => {
 				const mementoObject = this._memento.getMemento(
 					StorageScope.PROFILE,
-					StorageTarget.MACHINE
+					StorageTarget.MACHINE,
 				);
 				mementoObject[
 					NotebookProviderInfoStore.CUSTOM_EDITORS_ENTRY_ID
@@ -510,7 +510,7 @@ export class NotebookProviderInfoStore extends Disposable {
 				this._memento.saveMemento();
 				editorRegistration?.dispose();
 				this._contributedEditors.delete(info.id);
-			})
+			}),
 		);
 	}
 
@@ -544,8 +544,8 @@ export class NotebookOutputRendererInfoStore {
 	}>(() =>
 		this.preferredMimetypeMemento.getMemento(
 			StorageScope.WORKSPACE,
-			StorageTarget.MACHINE
-		)
+			StorageTarget.MACHINE,
+		),
 	);
 
 	constructor(@IStorageService storageService: IStorageService) {
@@ -578,7 +578,7 @@ export class NotebookOutputRendererInfoStore {
 	setPreferred(
 		notebookProviderInfo: NotebookProviderInfo,
 		mimeType: string,
-		rendererId: string
+		rendererId: string,
 	) {
 		const mementoObj = this.preferredMimetype.value;
 		const forNotebook = mementoObj[notebookProviderInfo.id];
@@ -594,9 +594,9 @@ export class NotebookOutputRendererInfoStore {
 	findBestRenderers(
 		notebookProviderInfo: NotebookProviderInfo | undefined,
 		mimeType: string,
-		kernelProvides: readonly string[] | undefined
+		kernelProvides: readonly string[] | undefined,
 	): IOrderedMimeType[] {
-		const enum ReuseOrder {
+		enum ReuseOrder {
 			PreviouslySelected = 1 << 8,
 			SameExtensionAsNotebook = 2 << 8,
 			OtherRenderer = 3 << 8,
@@ -626,12 +626,12 @@ export class NotebookOutputRendererInfoStore {
 							? ReuseOrder.PreviouslySelected
 							: rendererExtId === notebookExtId ||
 								  RENDERER_EQUIVALENT_EXTENSIONS.get(
-										rendererExtId
+										rendererExtId,
 								  )?.has(notebookId!)
-								? ReuseOrder.SameExtensionAsNotebook
-								: renderer.isBuiltin
-									? ReuseOrder.BuiltIn
-									: ReuseOrder.OtherRenderer;
+							  ? ReuseOrder.SameExtensionAsNotebook
+							  : renderer.isBuiltin
+								  ? ReuseOrder.BuiltIn
+								  : ReuseOrder.OtherRenderer;
 					return {
 						ordered: {
 							mimeType,
@@ -664,10 +664,10 @@ class ModelData implements IDisposable {
 
 	constructor(
 		readonly model: NotebookTextModel,
-		onWillDispose: (model: INotebookTextModel) => void
+		onWillDispose: (model: INotebookTextModel) => void,
 	) {
 		this._modelEventListeners.add(
-			model.onWillDispose(() => onWillDispose(model))
+			model.onWillDispose(() => onWillDispose(model)),
 		);
 	}
 
@@ -693,8 +693,8 @@ export class NotebookService extends Disposable implements INotebookService {
 		if (!this._notebookProviderInfoStore) {
 			this._notebookProviderInfoStore = this._register(
 				this._instantiationService.createInstance(
-					NotebookProviderInfoStore
-				)
+					NotebookProviderInfoStore,
+				),
 			);
 		}
 
@@ -702,10 +702,10 @@ export class NotebookService extends Disposable implements INotebookService {
 	}
 	private readonly _notebookRenderersInfoStore =
 		this._instantiationService.createInstance(
-			NotebookOutputRendererInfoStore
+			NotebookOutputRendererInfoStore,
 		);
 	private readonly _onDidChangeOutputRenderers = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onDidChangeOutputRenderers =
 		this._onDidChangeOutputRenderers.event;
@@ -716,16 +716,16 @@ export class NotebookService extends Disposable implements INotebookService {
 	private readonly _models = new ResourceMap<ModelData>();
 
 	private readonly _onWillAddNotebookDocument = this._register(
-		new Emitter<NotebookTextModel>()
+		new Emitter<NotebookTextModel>(),
 	);
 	private readonly _onDidAddNotebookDocument = this._register(
-		new Emitter<NotebookTextModel>()
+		new Emitter<NotebookTextModel>(),
 	);
 	private readonly _onWillRemoveNotebookDocument = this._register(
-		new Emitter<NotebookTextModel>()
+		new Emitter<NotebookTextModel>(),
 	);
 	private readonly _onDidRemoveNotebookDocument = this._register(
-		new Emitter<NotebookTextModel>()
+		new Emitter<NotebookTextModel>(),
 	);
 
 	readonly onWillAddNotebookDocument = this._onWillAddNotebookDocument.event;
@@ -739,17 +739,17 @@ export class NotebookService extends Disposable implements INotebookService {
 	readonly onAddViewType = this._onAddViewType.event;
 
 	private readonly _onWillRemoveViewType = this._register(
-		new Emitter<string>()
+		new Emitter<string>(),
 	);
 	readonly onWillRemoveViewType = this._onWillRemoveViewType.event;
 
 	private readonly _onDidChangeEditorTypes = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	onDidChangeEditorTypes: Event<void> = this._onDidChangeEditorTypes.event;
 
 	private _cutItems: NotebookCellTextModel[] | undefined;
-	private _lastClipboardIsCopy: boolean = true;
+	private _lastClipboardIsCopy = true;
 
 	private _displayOrder!: MimeTypeDisplayOrder;
 
@@ -981,7 +981,7 @@ export class NotebookService extends Disposable implements INotebookService {
 
 		await this._extensionService.whenInstalledExtensionsRegistered();
 		await this._extensionService.activateByEvent(
-			`onNotebookSerializer:${viewType}`
+			`onNotebookSerializer:${viewType}`,
 		);
 
 		return this._notebookProviders.has(viewType);
@@ -989,7 +989,7 @@ export class NotebookService extends Disposable implements INotebookService {
 
 	registerContributedNotebookType(
 		viewType: string,
-		data: INotebookContributionData
+		data: INotebookContributionData,
 	): IDisposable {
 		const info = new NotebookProviderInfo({
 			extension: data.extension,
@@ -1014,11 +1014,11 @@ export class NotebookService extends Disposable implements INotebookService {
 
 	private _registerProviderData(
 		viewType: string,
-		data: SimpleNotebookProviderInfo
+		data: SimpleNotebookProviderInfo,
 	): IDisposable {
 		if (this._notebookProviders.has(viewType)) {
 			throw new Error(
-				`notebook provider for viewtype '${viewType}' already exists`
+				`notebook provider for viewtype '${viewType}' already exists`,
 			);
 		}
 		this._notebookProviders.set(viewType, data);
@@ -1032,7 +1032,7 @@ export class NotebookService extends Disposable implements INotebookService {
 	registerNotebookSerializer(
 		viewType: string,
 		extensionData: NotebookExtensionDescription,
-		serializer: INotebookSerializer
+		serializer: INotebookSerializer,
 	): IDisposable {
 		this.notebookProviderInfoStore
 			.get(viewType)
@@ -1041,12 +1041,12 @@ export class NotebookService extends Disposable implements INotebookService {
 		this._persistMementos();
 		return this._registerProviderData(
 			viewType,
-			new SimpleNotebookProviderInfo(viewType, serializer, extensionData)
+			new SimpleNotebookProviderInfo(viewType, serializer, extensionData),
 		);
 	}
 
 	async withNotebookDataProvider(
-		viewType: string
+		viewType: string,
 	): Promise<SimpleNotebookProviderInfo> {
 		const selected = this.notebookProviderInfoStore.get(viewType);
 		if (!selected) {
@@ -1059,30 +1059,30 @@ export class NotebookService extends Disposable implements INotebookService {
 							label: localize(
 								"notebookOpenInstallMissingViewType",
 								"Install extension for '{0}'",
-								viewType
+								viewType,
 							),
 							run: async () => {
 								await this._instantiationService
 									.createInstance(
 										InstallRecommendedExtensionAction,
-										knownProvider
+										knownProvider,
 									)
 									.run();
 							},
 						}),
-					]
+				  ]
 				: [];
 
 			throw createErrorWithActions(
 				`UNKNOWN notebook type '${viewType}'`,
-				actions
+				actions,
 			);
 		}
 		await this.canResolve(selected.id);
 		const result = this._notebookProviders.get(selected.id);
 		if (!result) {
 			throw new Error(
-				`NO provider registered for view type: '${selected.id}'`
+				`NO provider registered for view type: '${selected.id}'`,
 			);
 		}
 		return result;
@@ -1104,14 +1104,14 @@ export class NotebookService extends Disposable implements INotebookService {
 		viewType: string,
 		mimeType: string,
 		rendererId: string,
-		otherMimetypes: readonly string[]
+		otherMimetypes: readonly string[],
 	): void {
 		const info = this.notebookProviderInfoStore.get(viewType);
 		if (info) {
 			this._notebookRenderersInfoStore.setPreferred(
 				info,
 				mimeType,
-				rendererId
+				rendererId,
 			);
 		}
 
@@ -1122,7 +1122,7 @@ export class NotebookService extends Disposable implements INotebookService {
 		this._configurationService.updateValue(
 			NotebookSetting.displayOrder,
 			this._displayOrder.toArray(),
-			target
+			target,
 		);
 	}
 
@@ -1144,7 +1144,7 @@ export class NotebookService extends Disposable implements INotebookService {
 		viewType: string,
 		uri: URI,
 		data: NotebookData,
-		transientOptions: TransientOptions
+		transientOptions: TransientOptions,
 	): NotebookTextModel {
 		if (this._models.has(uri)) {
 			throw new Error(`notebook for ${uri} already exists`);
@@ -1155,11 +1155,14 @@ export class NotebookService extends Disposable implements INotebookService {
 			uri,
 			data.cells,
 			data.metadata,
-			transientOptions
+			transientOptions,
 		);
 		this._models.set(
 			uri,
-			new ModelData(notebookModel, this._onWillDisposeDocument.bind(this))
+			new ModelData(
+				notebookModel,
+				this._onWillDisposeDocument.bind(this),
+			),
 		);
 		this._onWillAddNotebookDocument.fire(notebookModel);
 		this._onDidAddNotebookDocument.fire(notebookModel);
@@ -1192,13 +1195,13 @@ export class NotebookService extends Disposable implements INotebookService {
 	getOutputMimeTypeInfo(
 		textModel: NotebookTextModel,
 		kernelProvides: readonly string[] | undefined,
-		output: IOutputDto
+		output: IOutputDto,
 	): readonly IOrderedMimeType[] {
 		const sorted = this._displayOrder.sort(
-			new Set<string>(output.outputs.map((op) => op.mime))
+			new Set<string>(output.outputs.map((op) => op.mime)),
 		);
 		const notebookProviderInfo = this.notebookProviderInfoStore.get(
-			textModel.viewType
+			textModel.viewType,
 		);
 
 		return sorted
@@ -1206,22 +1209,22 @@ export class NotebookService extends Disposable implements INotebookService {
 				this._notebookRenderersInfoStore.findBestRenderers(
 					notebookProviderInfo,
 					mimeType,
-					kernelProvides
-				)
+					kernelProvides,
+				),
 			)
 			.sort(
 				(a, b) =>
 					(a.rendererId === RENDERER_NOT_AVAILABLE ? 1 : 0) -
-					(b.rendererId === RENDERER_NOT_AVAILABLE ? 1 : 0)
+					(b.rendererId === RENDERER_NOT_AVAILABLE ? 1 : 0),
 			);
 	}
 
 	getContributedNotebookTypes(
-		resource?: URI
+		resource?: URI,
 	): readonly NotebookProviderInfo[] {
 		if (resource) {
 			return this.notebookProviderInfoStore.getContributedNotebook(
-				resource
+				resource,
 			);
 		}
 
@@ -1229,7 +1232,7 @@ export class NotebookService extends Disposable implements INotebookService {
 	}
 
 	getContributedNotebookType(
-		viewType: string
+		viewType: string,
 	): NotebookProviderInfo | undefined {
 		return this.notebookProviderInfoStore.get(viewType);
 	}

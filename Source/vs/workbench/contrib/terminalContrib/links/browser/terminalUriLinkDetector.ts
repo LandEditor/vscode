@@ -3,14 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import type { IBufferLine, Terminal } from "@xterm/xterm";
 import { Schemas } from "vs/base/common/network";
 import { URI } from "vs/base/common/uri";
 import {
 	ILinkComputerTarget,
 	LinkComputer,
 } from "vs/editor/common/languages/linkComputer";
+import {
+	ITerminalBackend,
+	ITerminalLogService,
+} from "vs/platform/terminal/common/terminal";
 import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
 import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import { ITerminalProcessManager } from "vs/workbench/contrib/terminal/common/terminal";
 import {
 	ITerminalLinkDetector,
 	ITerminalLinkResolver,
@@ -21,14 +27,8 @@ import {
 	convertLinkRangeToBuffer,
 	getXtermLineContent,
 } from "vs/workbench/contrib/terminalContrib/links/browser/terminalLinkHelpers";
-import { ITerminalProcessManager } from "vs/workbench/contrib/terminal/common/terminal";
-import type { IBufferLine, Terminal } from "@xterm/xterm";
-import {
-	ITerminalBackend,
-	ITerminalLogService,
-} from "vs/platform/terminal/common/terminal";
 
-const enum Constants {
+enum Constants {
 	/**
 	 * The maximum number of links in a line to resolve against the file system. This limit is put
 	 * in place to avoid sending excessive data when remote connections are in place.
@@ -59,28 +59,28 @@ export class TerminalUriLinkDetector implements ITerminalLinkDetector {
 	async detect(
 		lines: IBufferLine[],
 		startLine: number,
-		endLine: number
+		endLine: number,
 	): Promise<ITerminalSimpleLink[]> {
 		const links: ITerminalSimpleLink[] = [];
 
 		const linkComputerTarget = new TerminalLinkAdapter(
 			this.xterm,
 			startLine,
-			endLine
+			endLine,
 		);
 		const computedLinks = LinkComputer.computeLinks(linkComputerTarget);
 
 		let resolvedLinkCount = 0;
 		this._logService.trace(
 			"terminalUriLinkDetector#detect computedLinks",
-			computedLinks
+			computedLinks,
 		);
 		for (const computedLink of computedLinks) {
 			const bufferRange = convertLinkRangeToBuffer(
 				lines,
 				this.xterm.cols,
 				computedLink.range,
-				startLine
+				startLine,
 			);
 
 			// Check if the link is within the mouse position
@@ -128,13 +128,13 @@ export class TerminalUriLinkDetector implements ITerminalLinkDetector {
 			// Iterate over all candidates, pushing the candidate on the first that's verified
 			this._logService.trace(
 				"terminalUriLinkDetector#detect uriCandidates",
-				uriCandidates
+				uriCandidates,
 			);
 			for (const uriCandidate of uriCandidates) {
 				const linkStat = await this._linkResolver.resolveLink(
 					this._processManager,
 					text,
-					uriCandidate
+					uriCandidate,
 				);
 
 				// Create the link if validated
@@ -163,7 +163,7 @@ export class TerminalUriLinkDetector implements ITerminalLinkDetector {
 					};
 					this._logService.trace(
 						"terminalUriLinkDetector#detect verified link",
-						simpleLink
+						simpleLink,
 					);
 					links.push(simpleLink);
 					resolvedLinkCount++;
@@ -186,7 +186,7 @@ export class TerminalUriLinkDetector implements ITerminalLinkDetector {
 			if (
 				this._uriIdentityService.extUri.isEqualOrParent(
 					uri,
-					folders[i].uri
+					folders[i].uri,
 				)
 			) {
 				return true;
@@ -204,7 +204,7 @@ class TerminalLinkAdapter implements ILinkComputerTarget {
 	constructor(
 		private _xterm: Terminal,
 		private _lineStart: number,
-		private _lineEnd: number
+		private _lineEnd: number,
 	) {}
 
 	getLineCount(): number {
@@ -216,7 +216,7 @@ class TerminalLinkAdapter implements ILinkComputerTarget {
 			this._xterm.buffer.active,
 			this._lineStart,
 			this._lineEnd,
-			this._xterm.cols
+			this._xterm.cols,
 		);
 	}
 }

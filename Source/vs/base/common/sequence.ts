@@ -29,7 +29,7 @@ export class Sequence<T> implements ISequence<T>, ISpliceable<T> {
 	splice(
 		start: number,
 		deleteCount: number,
-		toInsert: readonly T[] = []
+		toInsert: readonly T[] = [],
 	): void {
 		this.elements.splice(start, deleteCount, ...toInsert);
 		this._onDidSplice.fire({ start, deleteCount, toInsert });

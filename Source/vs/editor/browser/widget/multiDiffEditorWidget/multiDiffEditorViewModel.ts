@@ -25,7 +25,7 @@ export class MultiDiffEditorViewModel extends Disposable {
 	private readonly _documents = observableFromEvent(
 		this._model.onDidChange,
 		/** @description MultiDiffEditorViewModel.documents */ () =>
-			this._model.documents
+			this._model.documents,
 	);
 
 	public readonly items = derivedWithStore<
@@ -35,9 +35,12 @@ export class MultiDiffEditorViewModel extends Disposable {
 			.read(reader)
 			.map((d) =>
 				store.add(
-					new DocumentDiffItemViewModel(d, this._instantiationService)
-				)
-			)
+					new DocumentDiffItemViewModel(
+						d,
+						this._instantiationService,
+					),
+				),
+			),
 	).recomputeInitiallyAndOnChange(this._store);
 
 	public readonly activeDiffItem = observableValue<
@@ -68,7 +71,7 @@ export class MultiDiffEditorViewModel extends Disposable {
 
 	constructor(
 		private readonly _model: IMultiDiffEditorModel,
-		private readonly _instantiationService: IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
 	}
@@ -80,12 +83,12 @@ export class DocumentDiffItemViewModel extends Disposable {
 
 	constructor(
 		public readonly entry: LazyPromise<IDocumentDiffItem>,
-		private readonly _instantiationService: IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
 
 		function updateOptions(
-			options: IDiffEditorOptions
+			options: IDiffEditorOptions,
 		): IDiffEditorOptions {
 			return {
 				...options,
@@ -96,15 +99,15 @@ export class DocumentDiffItemViewModel extends Disposable {
 		}
 
 		const options = new DiffEditorOptions(
-			updateOptions(this.entry.value!.options || {})
+			updateOptions(this.entry.value!.options || {}),
 		);
 		if (this.entry.value!.onOptionsDidChange) {
 			this._register(
 				this.entry.value!.onOptionsDidChange(() => {
 					options.updateOptions(
-						updateOptions(this.entry.value!.options || {})
+						updateOptions(this.entry.value!.options || {}),
 					);
-				})
+				}),
 			);
 		}
 
@@ -115,8 +118,8 @@ export class DocumentDiffItemViewModel extends Disposable {
 					original: entry.value!.original!,
 					modified: entry.value!.modified!,
 				},
-				options
-			)
+				options,
+			),
 		);
 	}
 }

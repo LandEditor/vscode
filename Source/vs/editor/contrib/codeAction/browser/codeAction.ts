@@ -54,7 +54,7 @@ export const fixAllCommandId = "editor.action.fixAll";
 class ManagedCodeActionSet extends Disposable implements CodeActionSet {
 	private static codeActionsPreferredComparator(
 		a: languages.CodeAction,
-		b: languages.CodeAction
+		b: languages.CodeAction,
 	): number {
 		if (a.isPreferred && !b.isPreferred) {
 			return -1;
@@ -67,7 +67,7 @@ class ManagedCodeActionSet extends Disposable implements CodeActionSet {
 
 	private static codeActionsComparator(
 		{ action: a }: CodeActionItem,
-		{ action: b }: CodeActionItem
+		{ action: b }: CodeActionItem,
 	): number {
 		if (a.isAI && !b.isAI) {
 			return 1;
@@ -91,17 +91,17 @@ class ManagedCodeActionSet extends Disposable implements CodeActionSet {
 	public constructor(
 		actions: readonly CodeActionItem[],
 		public readonly documentation: readonly languages.Command[],
-		disposables: DisposableStore
+		disposables: DisposableStore,
 	) {
 		super();
 
 		this._register(disposables);
 
 		this.allActions = [...actions].sort(
-			ManagedCodeActionSet.codeActionsComparator
+			ManagedCodeActionSet.codeActionsComparator,
 		);
 		this.validActions = this.allActions.filter(
-			({ action }) => !action.disabled
+			({ action }) => !action.disabled,
 		);
 	}
 
@@ -110,9 +110,9 @@ class ManagedCodeActionSet extends Disposable implements CodeActionSet {
 			({ action: fix }) =>
 				!!fix.kind &&
 				CodeActionKind.QuickFix.contains(
-					new CodeActionKind(fix.kind)
+					new CodeActionKind(fix.kind),
 				) &&
-				!!fix.isPreferred
+				!!fix.isPreferred,
 		);
 	}
 
@@ -136,7 +136,7 @@ export async function getCodeActions(
 	rangeOrSelection: Range | Selection,
 	trigger: CodeActionTrigger,
 	progress: IProgress<languages.CodeActionProvider>,
-	token: CancellationToken
+	token: CancellationToken,
 ): Promise<CodeActionSet> {
 	const filter = trigger.filter || {};
 	const notebookFilter: CodeActionFilter = {
@@ -156,7 +156,7 @@ export async function getCodeActions(
 	const providers = getCodeActionProviders(
 		registry,
 		model,
-		excludeNotebookCodeActions ? notebookFilter : filter
+		excludeNotebookCodeActions ? notebookFilter : filter,
 	);
 
 	const disposables = new DisposableStore();
@@ -167,7 +167,7 @@ export async function getCodeActions(
 				model,
 				rangeOrSelection,
 				codeActionContext,
-				cts.token
+				cts.token,
 			);
 			if (providedCodeActions) {
 				disposables.add(providedCodeActions);
@@ -178,16 +178,16 @@ export async function getCodeActions(
 			}
 
 			const filteredActions = (providedCodeActions?.actions || []).filter(
-				(action) => action && filtersAction(filter, action)
+				(action) => action && filtersAction(filter, action),
 			);
 			const documentation = getDocumentationFromProvider(
 				provider,
 				filteredActions,
-				filter.include
+				filter.include,
 			);
 			return {
 				actions: filteredActions.map(
-					(action) => new CodeActionItem(action, provider)
+					(action) => new CodeActionItem(action, provider),
 				),
 				documentation,
 			};
@@ -209,20 +209,20 @@ export async function getCodeActions(
 
 	try {
 		const actions = await Promise.all(promises);
-		const allActions = actions.map((x) => x.actions).flat();
+		const allActions = actions.flatMap((x) => x.actions);
 		const allDocumentation = [
 			...coalesce(actions.map((x) => x.documentation)),
 			...getAdditionalDocumentationForShowingActions(
 				registry,
 				model,
 				trigger,
-				allActions
+				allActions,
 			),
 		];
 		return new ManagedCodeActionSet(
 			allActions,
 			allDocumentation,
-			disposables
+			disposables,
 		);
 	} finally {
 		listener.dispose();
@@ -233,7 +233,7 @@ export async function getCodeActions(
 function getCodeActionProviders(
 	registry: LanguageFeatureRegistry<languages.CodeActionProvider>,
 	model: ITextModel,
-	filter: CodeActionFilter
+	filter: CodeActionFilter,
 ) {
 	return (
 		registry
@@ -245,7 +245,7 @@ function getCodeActionProviders(
 					return true;
 				}
 				return provider.providedCodeActionKinds.some((kind) =>
-					mayIncludeActionsOfKind(filter, new CodeActionKind(kind))
+					mayIncludeActionsOfKind(filter, new CodeActionKind(kind)),
 				);
 			})
 	);
@@ -255,7 +255,7 @@ function* getAdditionalDocumentationForShowingActions(
 	registry: LanguageFeatureRegistry<languages.CodeActionProvider>,
 	model: ITextModel,
 	trigger: CodeActionTrigger,
-	actionsToShow: readonly CodeActionItem[]
+	actionsToShow: readonly CodeActionItem[],
 ): Iterable<languages.Command> {
 	if (model && actionsToShow.length) {
 		for (const provider of registry.all(model)) {
@@ -265,7 +265,7 @@ function* getAdditionalDocumentationForShowingActions(
 						trigger: trigger.type,
 						only: trigger.filter?.include?.value,
 					},
-					actionsToShow.map((item) => item.action)
+					actionsToShow.map((item) => item.action),
 				);
 			}
 		}
@@ -275,7 +275,7 @@ function* getAdditionalDocumentationForShowingActions(
 function getDocumentationFromProvider(
 	provider: languages.CodeActionProvider,
 	providedCodeActions: readonly languages.CodeAction[],
-	only?: CodeActionKind
+	only?: CodeActionKind,
 ): languages.Command | undefined {
 	if (!provider.documentation) {
 		return undefined;
@@ -295,13 +295,13 @@ function getDocumentationFromProvider(
 			| undefined;
 		for (const entry of documentation) {
 			if (entry.kind.contains(only)) {
-				if (!currentBest) {
-					currentBest = entry;
-				} else {
+				if (currentBest) {
 					// Take best match
 					if (currentBest.kind.contains(entry.kind)) {
 						currentBest = entry;
 					}
+				} else {
+					currentBest = entry;
 				}
 			}
 		}
@@ -336,7 +336,7 @@ export async function applyCodeAction(
 	item: CodeActionItem,
 	codeActionReason: ApplyCodeActionReason,
 	options?: { readonly preview?: boolean; readonly editor?: ICodeEditor },
-	token: CancellationToken = CancellationToken.None
+	token: CancellationToken = CancellationToken.None,
 ): Promise<void> {
 	const bulkEditService = accessor.get(IBulkEditService);
 	const commandService = accessor.get(ICommandService);
@@ -409,7 +409,7 @@ export async function applyCodeAction(
 		try {
 			await commandService.executeCommand(
 				item.action.command.id,
-				...(item.action.command.arguments || [])
+				...(item.action.command.arguments || []),
 			);
 		} catch (err) {
 			const message = asMessage(err);
@@ -418,8 +418,8 @@ export async function applyCodeAction(
 					? message
 					: nls.localize(
 							"applyCodeActionFailed",
-							"An unknown error occurred while applying the code action"
-						)
+							"An unknown error occurred while applying the code action",
+					  ),
 			);
 		}
 	}
@@ -437,13 +437,13 @@ function asMessage(err: any): string | undefined {
 
 CommandsRegistry.registerCommand(
 	"_executeCodeActionProvider",
-	async function (
+	async (
 		accessor,
 		resource: URI,
 		rangeOrSelection: Range | Selection,
 		kind?: string,
-		itemResolveCount?: number
-	): Promise<ReadonlyArray<languages.CodeAction>> {
+		itemResolveCount?: number,
+	): Promise<ReadonlyArray<languages.CodeAction>> => {
 		if (!(resource instanceof URI)) {
 			throw illegalArgument();
 		}
@@ -455,12 +455,12 @@ CommandsRegistry.registerCommand(
 		}
 
 		const validatedRangeOrSelection = Selection.isISelection(
-			rangeOrSelection
+			rangeOrSelection,
 		)
 			? Selection.liftSelection(rangeOrSelection)
 			: Range.isIRange(rangeOrSelection)
-				? model.validateRange(rangeOrSelection)
-				: undefined;
+			  ? model.validateRange(rangeOrSelection)
+			  : undefined;
 
 		if (!validatedRangeOrSelection) {
 			throw illegalArgument();
@@ -478,17 +478,17 @@ CommandsRegistry.registerCommand(
 				filter: { includeSourceActions: true, include },
 			},
 			Progress.None,
-			CancellationToken.None
+			CancellationToken.None,
 		);
 
 		const resolving: Promise<any>[] = [];
 		const resolveCount = Math.min(
 			codeActionSet.validActions.length,
-			typeof itemResolveCount === "number" ? itemResolveCount : 0
+			typeof itemResolveCount === "number" ? itemResolveCount : 0,
 		);
 		for (let i = 0; i < resolveCount; i++) {
 			resolving.push(
-				codeActionSet.validActions[i].resolve(CancellationToken.None)
+				codeActionSet.validActions[i].resolve(CancellationToken.None),
 			);
 		}
 
@@ -498,5 +498,5 @@ CommandsRegistry.registerCommand(
 		} finally {
 			setTimeout(() => codeActionSet.dispose(), 100);
 		}
-	}
+	},
 );

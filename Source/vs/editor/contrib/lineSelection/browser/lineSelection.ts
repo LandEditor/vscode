@@ -7,11 +7,11 @@ import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
 import { ICodeEditor } from "vs/editor/browser/editorBrowser";
 import {
 	EditorAction,
-	registerEditorAction,
 	ServicesAccessor,
+	registerEditorAction,
 } from "vs/editor/browser/editorExtensions";
-import { CursorChangeReason } from "vs/editor/common/cursorEvents";
 import { CursorMoveCommands } from "vs/editor/common/cursor/cursorMoveCommands";
+import { CursorChangeReason } from "vs/editor/common/cursorEvents";
 import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
 import * as nls from "vs/nls";
 import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
@@ -34,7 +34,7 @@ export class ExpandLineSelectionAction extends EditorAction {
 	public run(
 		_accessor: ServicesAccessor,
 		editor: ICodeEditor,
-		args: any
+		args: any,
 	): void {
 		args = args || {};
 		if (!editor.hasModel()) {
@@ -47,8 +47,8 @@ export class ExpandLineSelectionAction extends EditorAction {
 			CursorChangeReason.Explicit,
 			CursorMoveCommands.expandLineSelection(
 				viewModel,
-				viewModel.getCursorStates()
-			)
+				viewModel.getCursorStates(),
+			),
 		);
 		viewModel.revealPrimaryCursor(args.source, true);
 	}

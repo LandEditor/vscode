@@ -36,7 +36,7 @@ export function renderLines(
 	source: LineSource,
 	options: RenderOptions,
 	decorations: InlineDecoration[],
-	domNode: HTMLElement
+	domNode: HTMLElement,
 ): RenderLinesResult {
 	applyFontInfo(domNode, options.fontInfo);
 
@@ -54,7 +54,7 @@ export function renderLines(
 			decorations,
 			lineNumber,
 			1,
-			Number.MAX_SAFE_INTEGER
+			Number.MAX_SAFE_INTEGER,
 		);
 
 		if (lineBreakData) {
@@ -63,7 +63,7 @@ export function renderLines(
 				const viewLineTokens = lineTokens.sliceAndInflate(
 					lastBreakOffset,
 					breakOffset,
-					0
+					0,
 				);
 				maxCharsPerLine = Math.max(
 					maxCharsPerLine,
@@ -73,14 +73,14 @@ export function renderLines(
 						LineDecoration.extractWrapped(
 							actualDecorations,
 							lastBreakOffset,
-							breakOffset
+							breakOffset,
 						),
 						hasCharChanges,
 						source.mightContainNonBasicASCII,
 						source.mightContainRTL,
 						options,
-						sb
-					)
+						sb,
+					),
 				);
 				renderedLineCount++;
 				lastBreakOffset = breakOffset;
@@ -98,8 +98,8 @@ export function renderLines(
 					source.mightContainNonBasicASCII,
 					source.mightContainRTL,
 					options,
-					sb
-				)
+					sb,
+				),
 			);
 			renderedLineCount++;
 		}
@@ -124,7 +124,7 @@ export class LineSource {
 		public readonly lineTokens: LineTokens[],
 		public readonly lineBreakData: (ModelLineProjectionData | null)[],
 		public readonly mightContainNonBasicASCII: boolean,
-		public readonly mightContainRTL: boolean
+		public readonly mightContainRTL: boolean,
 	) {}
 }
 
@@ -138,7 +138,7 @@ export class RenderOptions {
 			editor.getModel()?.getOptions().tabSize || 0,
 			fontInfo,
 			modifiedEditorOptions.get(
-				EditorOption.disableMonospaceOptimizations
+				EditorOption.disableMonospaceOptimizations,
 			),
 			fontInfo.typicalHalfwidthCharacterWidth,
 			modifiedEditorOptions.get(EditorOption.scrollBeyondLastColumn),
@@ -149,7 +149,7 @@ export class RenderOptions {
 			modifiedEditorOptions.get(EditorOption.stopRenderingLineAfter),
 			modifiedEditorOptions.get(EditorOption.renderWhitespace),
 			modifiedEditorOptions.get(EditorOption.renderControlCharacters),
-			modifiedEditorOptions.get(EditorOption.fontLigatures)
+			modifiedEditorOptions.get(EditorOption.fontLigatures),
 		);
 	}
 
@@ -164,7 +164,7 @@ export class RenderOptions {
 		public readonly stopRenderingLineAfter: number,
 		public readonly renderWhitespace: FindComputedEditorOptionValueById<EditorOption.renderWhitespace>,
 		public readonly renderControlCharacters: boolean,
-		public readonly fontLigatures: FindComputedEditorOptionValueById<EditorOption.fontLigatures>
+		public readonly fontLigatures: FindComputedEditorOptionValueById<EditorOption.fontLigatures>,
 	) {}
 }
 
@@ -182,7 +182,7 @@ function renderOriginalLine(
 	mightContainNonBasicASCII: boolean,
 	mightContainRTL: boolean,
 	options: RenderOptions,
-	sb: StringBuilder
+	sb: StringBuilder,
 ): number {
 	sb.appendString('<div class="view-line');
 	if (!hasCharChanges) {
@@ -196,12 +196,12 @@ function renderOriginalLine(
 	const lineContent = lineTokens.getLineContent();
 	const isBasicASCII = ViewLineRenderingData.isBasicASCII(
 		lineContent,
-		mightContainNonBasicASCII
+		mightContainNonBasicASCII,
 	);
 	const containsRTL = ViewLineRenderingData.containsRTL(
 		lineContent,
 		isBasicASCII,
-		mightContainRTL
+		mightContainRTL,
 	);
 	const output = renderViewLine(
 		new RenderLineInput(
@@ -224,14 +224,14 @@ function renderOriginalLine(
 			options.renderWhitespace,
 			options.renderControlCharacters,
 			options.fontLigatures !== EditorFontLigatures.OFF,
-			null // Send no selections, original line cannot be selected
+			null, // Send no selections, original line cannot be selected
 		),
-		sb
+		sb,
 	);
 
 	sb.appendString("</div>");
 
 	return output.characterMapping.getHorizontalOffset(
-		output.characterMapping.length
+		output.characterMapping.length,
 	);
 }

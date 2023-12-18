@@ -1,4 +1,3 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -16,7 +15,7 @@ try {
 	const dtsUri = `https://raw.githubusercontent.com/microsoft/vscode/${tag}/src/vscode-dts/vscode.d.ts`;
 	const outPath = path.resolve(
 		process.cwd(),
-		"DefinitelyTyped/types/vscode/index.d.ts"
+		"DefinitelyTyped/types/vscode/index.d.ts",
 	);
 	cp.execSync(`curl ${dtsUri} --output ${outPath}`);
 	updateDTSFile(outPath, tag);
@@ -49,7 +48,7 @@ function getNewFileContent(content, tag) {
 		` *--------------------------------------------------------------------------------------------*/`,
 	].join("\n");
 	return convertTabsToSpaces(
-		getNewFileHeader(tag) + content.slice(oldheader.length)
+		getNewFileHeader(tag) + content.slice(oldheader.length),
 	);
 }
 function getNewFileHeader(tag) {

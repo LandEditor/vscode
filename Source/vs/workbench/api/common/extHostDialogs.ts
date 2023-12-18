@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type * as vscode from "vscode";
 import { URI } from "vs/base/common/uri";
+import { IRelaxedExtensionDescription } from "vs/platform/extensions/common/extensions";
 import {
+	IMainContext,
 	MainContext,
 	MainThreadDiaglogsShape,
-	IMainContext,
 } from "vs/workbench/api/common/extHost.protocol";
 import { checkProposedApiEnabled } from "vs/workbench/services/extensions/common/extensions";
-import { IRelaxedExtensionDescription } from "vs/platform/extensions/common/extensions";
+import type * as vscode from "vscode";
 
 export class ExtHostDialogs {
 	private readonly _proxy: MainThreadDiaglogsShape;
@@ -22,7 +22,7 @@ export class ExtHostDialogs {
 
 	showOpenDialog(
 		extension: IRelaxedExtensionDescription,
-		options?: vscode.OpenDialogOptions
+		options?: vscode.OpenDialogOptions,
 	): Promise<URI[] | undefined> {
 		if (options?.allowUIResources) {
 			checkProposedApiEnabled(extension, "showLocal");
@@ -33,7 +33,7 @@ export class ExtHostDialogs {
 	}
 
 	showSaveDialog(
-		options?: vscode.SaveDialogOptions
+		options?: vscode.SaveDialogOptions,
 	): Promise<URI | undefined> {
 		return this._proxy.$showSaveDialog(options).then((filepath) => {
 			return filepath ? URI.revive(filepath) : undefined;

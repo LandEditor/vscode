@@ -39,18 +39,18 @@ export function load(
 	name: string,
 	req: AMDLoader.IRelativeRequire,
 	load: AMDLoader.IPluginLoadCallback,
-	config: AMDLoader.IConfigurationOptions
+	config: AMDLoader.IConfigurationOptions,
 ): void {
 	if (!name || name.length === 0) {
 		load({ localize, localize2, getConfiguredDefaultLocale });
 	} else {
 		req(
 			[name + ".nls", name + ".nls.keys"],
-			function (messages: string[], keys: string[]) {
+			(messages: string[], keys: string[]) => {
 				buildMap[name] = messages;
 				buildMapKeys[name] = keys;
 				load(messages);
-			}
+			},
 		);
 	}
 }
@@ -61,7 +61,7 @@ export function load(
 export function write(
 	pluginName: string,
 	moduleName: string,
-	write: AMDLoader.IPluginWriteCallback
+	write: AMDLoader.IPluginWriteCallback,
 ): void {
 	const entryPoint = write.getEntryPoint();
 
@@ -75,7 +75,7 @@ export function write(
 				entryPoint +
 				"'], function(nls, data) { return nls.create(\"" +
 				moduleName +
-				'", data); });'
+				'", data); });',
 		);
 	}
 }
@@ -88,7 +88,7 @@ export function writeFile(
 	moduleName: string,
 	req: AMDLoader.IRelativeRequire,
 	write: AMDLoader.IPluginWriteFileCallback,
-	config: AMDLoader.IConfigurationOptions
+	config: AMDLoader.IConfigurationOptions,
 ): void {
 	if (entryPoints.hasOwnProperty(moduleName)) {
 		const fileName = req.toUrl(moduleName + ".nls.js");
@@ -109,7 +109,7 @@ export function writeFile(
 				moduleName +
 				'.nls", ' +
 				JSON.stringify(data, null, "\t") +
-				");"
+				");",
 		);
 		write(fileName, contents.join("\r\n"));
 	}
@@ -128,7 +128,7 @@ export function finishBuild(write: AMDLoader.IPluginWriteFileCallback): void {
 				bundles: entryPoints,
 			},
 			null,
-			"\t"
-		)
+			"\t",
+		),
 	);
 }

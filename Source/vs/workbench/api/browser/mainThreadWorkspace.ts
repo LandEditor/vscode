@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { coalesce, firstOrDefault } from "vs/base/common/arrays";
 import {
 	CancellationToken,
 	CancellationTokenSource,
@@ -18,31 +19,38 @@ import { IInstantiationService } from "vs/platform/instantiation/common/instanti
 import { ILabelService } from "vs/platform/label/common/label";
 import { INotificationService } from "vs/platform/notification/common/notification";
 import { IRequestService } from "vs/platform/request/common/request";
-import {
-	WorkspaceTrustRequestOptions,
-	IWorkspaceTrustManagementService,
-	IWorkspaceTrustRequestService,
-} from "vs/platform/workspace/common/workspaceTrust";
+import { ICanonicalUriService } from "vs/platform/workspace/common/canonicalUri";
+import { IEditSessionIdentityService } from "vs/platform/workspace/common/editSessions";
 import {
 	IWorkspace,
 	IWorkspaceContextService,
 	WorkbenchState,
-	isUntitledWorkspace,
 	WorkspaceFolder,
+	isUntitledWorkspace,
 } from "vs/platform/workspace/common/workspace";
 import {
-	extHostNamedCustomer,
+	IWorkspaceTrustManagementService,
+	IWorkspaceTrustRequestService,
+	WorkspaceTrustRequestOptions,
+} from "vs/platform/workspace/common/workspaceTrust";
+import {
+	EditorResourceAccessor,
+	SaveReason,
+	SideBySideEditor,
+} from "vs/workbench/common/editor";
+import {
+	IEditorService,
+	ISaveEditorsResult,
+} from "vs/workbench/services/editor/common/editorService";
+import {
 	IExtHostContext,
+	extHostNamedCustomer,
 } from "vs/workbench/services/extensions/common/extHostCustomers";
 import { checkGlobFileExists } from "vs/workbench/services/extensions/common/workspaceContains";
 import {
 	ITextQueryBuilderOptions,
 	QueryBuilder,
 } from "vs/workbench/services/search/common/queryBuilder";
-import {
-	IEditorService,
-	ISaveEditorsResult,
-} from "vs/workbench/services/editor/common/editorService";
 import {
 	IFileMatch,
 	IPatternInfo,
@@ -58,14 +66,6 @@ import {
 	MainContext,
 	MainThreadWorkspaceShape,
 } from "../common/extHost.protocol";
-import { IEditSessionIdentityService } from "vs/platform/workspace/common/editSessions";
-import {
-	EditorResourceAccessor,
-	SaveReason,
-	SideBySideEditor,
-} from "vs/workbench/common/editor";
-import { coalesce, firstOrDefault } from "vs/base/common/arrays";
-import { ICanonicalUriService } from "vs/platform/workspace/common/canonicalUri";
 
 @extHostNamedCustomer(MainContext.MainThreadWorkspace)
 export class MainThreadWorkspace implements MainThreadWorkspaceShape {
@@ -158,7 +158,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 		extensionName: string,
 		index: number,
 		deleteCount: number,
-		foldersToAdd: { uri: UriComponents; name?: string }[]
+		foldersToAdd: { uri: UriComponents; name?: string }[],
 	): Promise<void> {
 		const workspaceFoldersToAdd = foldersToAdd.map((f) => ({
 			uri: URI.revive(f.uri),
@@ -170,23 +170,23 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 			this.getStatusMessage(
 				extensionName,
 				workspaceFoldersToAdd.length,
-				deleteCount
+				deleteCount,
 			),
-			{ hideAfter: 10 * 1000 /* 10s */ }
+			{ hideAfter: 10 * 1000 /* 10s */ },
 		);
 
 		return this._workspaceEditingService.updateFolders(
 			index,
 			deleteCount,
 			workspaceFoldersToAdd,
-			true
+			true,
 		);
 	}
 
 	private getStatusMessage(
 		extensionName: string,
 		addCount: number,
-		removeCount: number
+		removeCount: number,
 	): string {
 		let message: string;
 
@@ -199,14 +199,14 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 				message = localize(
 					"folderStatusMessageAddSingleFolder",
 					"Extension '{0}' added 1 folder to the workspace",
-					extensionName
+					extensionName,
 				);
 			} else {
 				message = localize(
 					"folderStatusMessageAddMultipleFolders",
 					"Extension '{0}' added {1} folders to the workspace",
 					extensionName,
-					addCount
+					addCount,
 				);
 			}
 		}
@@ -217,14 +217,14 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 				message = localize(
 					"folderStatusMessageRemoveSingleFolder",
 					"Extension '{0}' removed 1 folder from the workspace",
-					extensionName
+					extensionName,
 				);
 			} else {
 				message = localize(
 					"folderStatusMessageRemoveMultipleFolders",
 					"Extension '{0}' removed {1} folders from the workspace",
 					extensionName,
-					removeCount
+					removeCount,
 				);
 			}
 		}
@@ -234,7 +234,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 			message = localize(
 				"folderStatusChangeFolder",
 				"Extension '{0}' changed folders of the workspace",
-				extensionName
+				extensionName,
 			);
 		}
 
@@ -243,7 +243,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 
 	private _onDidChangeWorkspace(): void {
 		this._proxy.$acceptWorkspaceData(
-			this.getWorkspaceData(this._contextService.getWorkspace())
+			this.getWorkspaceData(this._contextService.getWorkspace()),
 		);
 	}
 
@@ -256,8 +256,8 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 			isUntitled: workspace.configuration
 				? isUntitledWorkspace(
 						workspace.configuration,
-						this._environmentService
-					)
+						this._environmentService,
+				  )
 				: false,
 			folders: workspace.folders,
 			id: workspace.id,
@@ -273,7 +273,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 		_includeFolder: UriComponents | null,
 		excludePatternOrDisregardExcludes: string | false | null,
 		maxResults: number | null,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<UriComponents[] | null> {
 		const includeFolder = URI.revive(_includeFolder);
 		const workspace = this._contextService.getWorkspace();
@@ -292,7 +292,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 						? excludePatternOrDisregardExcludes
 						: undefined,
 				_reason: "startFileSearch",
-			}
+			},
 		);
 
 		return this._searchService.fileSearch(query, token).then(
@@ -304,7 +304,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 					return Promise.reject(err);
 				}
 				return null;
-			}
+			},
 		);
 	}
 
@@ -313,7 +313,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 		_folder: UriComponents | null,
 		options: ITextQueryBuilderOptions,
 		requestId: number,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ITextSearchComplete | null> {
 		const folder = URI.revive(_folder);
 		const workspace = this._contextService.getWorkspace();
@@ -342,7 +342,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 					}
 
 					return null;
-				}
+				},
 			);
 
 		return search;
@@ -351,10 +351,10 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 	$checkExists(
 		folders: readonly UriComponents[],
 		includes: string[],
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<boolean> {
 		return this._instantiationService.invokeFunction((accessor) =>
-			checkGlobFileExists(accessor, folders, includes, token)
+			checkGlobFileExists(accessor, folders, includes, token),
 		);
 	}
 
@@ -362,7 +362,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 
 	async $save(
 		uriComponents: UriComponents,
-		options: { saveAs: boolean }
+		options: { saveAs: boolean },
 	): Promise<UriComponents | undefined> {
 		const uri = URI.revive(uriComponents);
 
@@ -389,8 +389,8 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 			result.editors.map((editor) =>
 				EditorResourceAccessor.getCanonicalUri(editor, {
 					supportSideBySide: SideBySideEditor.PRIMARY,
-				})
-			)
+				}),
+			),
 		);
 	}
 
@@ -411,10 +411,10 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 	// --- trust ---
 
 	$requestWorkspaceTrust(
-		options?: WorkspaceTrustRequestOptions
+		options?: WorkspaceTrustRequestOptions,
 	): Promise<boolean | undefined> {
 		return this._workspaceTrustRequestService.requestWorkspaceTrust(
-			options
+			options,
 		);
 	}
 
@@ -436,27 +436,27 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 					scheme: scheme,
 					getEditSessionIdentifier: async (
 						workspaceFolder: WorkspaceFolder,
-						token: CancellationToken
+						token: CancellationToken,
 					) => {
 						return this._proxy.$getEditSessionIdentifier(
 							workspaceFolder.uri,
-							token
+							token,
 						);
 					},
 					provideEditSessionIdentityMatch: async (
 						workspaceFolder: WorkspaceFolder,
 						identity1: string,
 						identity2: string,
-						token: CancellationToken
+						token: CancellationToken,
 					) => {
 						return this._proxy.$provideEditSessionIdentityMatch(
 							workspaceFolder.uri,
 							identity1,
 							identity2,
-							token
+							token,
 						);
 					},
-				}
+				},
 			);
 
 		this.registeredEditSessionProviders.set(handle, disposable);
@@ -479,12 +479,12 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 				provideCanonicalUri: async (
 					uri: UriComponents,
 					targetScheme: string,
-					token: CancellationToken
+					token: CancellationToken,
 				) => {
 					const result = await this._proxy.$provideCanonicalUri(
 						uri,
 						targetScheme,
-						token
+						token,
 					);
 					if (result) {
 						return URI.revive(result);

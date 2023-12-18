@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IStorageService } from "vs/platform/storage/common/storage";
-import { ILogService } from "vs/platform/log/common/log";
-import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
 import { IMainProcessService } from "vs/platform/ipc/common/mainProcessService";
+import { ILogService } from "vs/platform/log/common/log";
+import { IStorageService } from "vs/platform/storage/common/storage";
+import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
 import { RemoteUserDataProfileStorageService } from "vs/platform/userDataProfile/common/userDataProfileStorageService";
 
 export class NativeUserDataProfileStorageService extends RemoteUserDataProfileStorageService {
@@ -15,13 +15,13 @@ export class NativeUserDataProfileStorageService extends RemoteUserDataProfileSt
 		@IUserDataProfilesService
 		userDataProfilesService: IUserDataProfilesService,
 		@IStorageService storageService: IStorageService,
-		@ILogService logService: ILogService
+		@ILogService logService: ILogService,
 	) {
 		super(
 			mainProcessService,
 			userDataProfilesService,
 			storageService,
-			logService
+			logService,
 		);
 	}
 }

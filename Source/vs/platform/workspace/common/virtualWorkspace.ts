@@ -15,7 +15,7 @@ export function isVirtualResource(resource: URI) {
 }
 
 export function getVirtualWorkspaceLocation(
-	workspace: IWorkspace
+	workspace: IWorkspace,
 ): { scheme: string; authority: string } | undefined {
 	if (workspace.folders.length) {
 		return workspace.folders.every((f) => isVirtualResource(f.uri))
@@ -31,13 +31,13 @@ export function getVirtualWorkspaceLocation(
 }
 
 export function getVirtualWorkspaceScheme(
-	workspace: IWorkspace
+	workspace: IWorkspace,
 ): string | undefined {
 	return getVirtualWorkspaceLocation(workspace)?.scheme;
 }
 
 export function getVirtualWorkspaceAuthority(
-	workspace: IWorkspace
+	workspace: IWorkspace,
 ): string | undefined {
 	return getVirtualWorkspaceLocation(workspace)?.authority;
 }

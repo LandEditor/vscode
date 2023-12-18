@@ -58,7 +58,7 @@ export class LanguagePackCachedDataCleaner extends Disposable {
 
 	private async cleanUpLanguagePackCache(): Promise<void> {
 		this.logService.trace(
-			"[language pack cache cleanup]: Starting to clean up unused language packs."
+			"[language pack cache cleanup]: Starting to clean up unused language packs.",
 		);
 
 		try {
@@ -67,10 +67,10 @@ export class LanguagePackCachedDataCleaner extends Disposable {
 				await Promises.readFile(
 					join(
 						this.environmentService.userDataPath,
-						"languagepacks.json"
+						"languagepacks.json",
 					),
-					"utf8"
-				)
+					"utf8",
+				),
 			);
 			for (const locale of Object.keys(metaData)) {
 				const entry = metaData[locale];
@@ -88,13 +88,13 @@ export class LanguagePackCachedDataCleaner extends Disposable {
 			for (const entry of entries) {
 				if (installed[entry]) {
 					this.logService.trace(
-						`[language pack cache cleanup]: Skipping folder ${entry}. Language pack still in use.`
+						`[language pack cache cleanup]: Skipping folder ${entry}. Language pack still in use.`,
 					);
 					continue;
 				}
 
 				this.logService.trace(
-					`[language pack cache cleanup]: Removing unused language pack: ${entry}`
+					`[language pack cache cleanup]: Removing unused language pack: ${entry}`,
 				);
 
 				await Promises.rm(join(cacheDir, entry));
@@ -118,8 +118,8 @@ export class LanguagePackCachedDataCleaner extends Disposable {
 						this.logService.trace(
 							`[language pack cache cleanup]: Removing language pack cache folder: ${join(
 								packEntry,
-								entry
-							)}`
+								entry,
+							)}`,
 						);
 
 						await Promises.rm(candidate);

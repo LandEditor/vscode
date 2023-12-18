@@ -3,25 +3,29 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { throttle } from "vs/base/common/decorators";
+import { Disposable, IDisposable } from "vs/base/common/lifecycle";
+import { isEqual } from "vs/base/common/resources";
 import { URI } from "vs/base/common/uri";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	Extensions as WorkbenchExtensions,
-	IWorkbenchContributionsRegistry,
-} from "vs/workbench/common/contributions";
 import {
 	IMarkerListProvider,
-	MarkerList,
 	IMarkerNavigationService,
+	MarkerList,
 } from "vs/editor/contrib/gotoError/browser/markerNavigationService";
-import { CellUri } from "vs/workbench/contrib/notebook/common/notebookCommon";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
 	IMarkerService,
 	MarkerSeverity,
 } from "vs/platform/markers/common/markers";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { Disposable, IDisposable } from "vs/base/common/lifecycle";
+import { Registry } from "vs/platform/registry/common/platform";
+import {
+	editorErrorForeground,
+	editorWarningForeground,
+} from "vs/platform/theme/common/colorRegistry";
+import {
+	Extensions as WorkbenchExtensions,
+	IWorkbenchContributionsRegistry,
+} from "vs/workbench/common/contributions";
 import {
 	INotebookDeltaDecoration,
 	INotebookEditor,
@@ -29,12 +33,8 @@ import {
 	NotebookOverviewRulerLane,
 } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
 import { registerNotebookContribution } from "vs/workbench/contrib/notebook/browser/notebookEditorExtensions";
-import { throttle } from "vs/base/common/decorators";
-import {
-	editorErrorForeground,
-	editorWarningForeground,
-} from "vs/platform/theme/common/colorRegistry";
-import { isEqual } from "vs/base/common/resources";
+import { CellUri } from "vs/workbench/contrib/notebook/common/notebookCommon";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 class MarkerListProvider implements IMarkerListProvider {
 	private readonly _dispoables: IDisposable;
@@ -68,7 +68,7 @@ class MarkerListProvider implements IMarkerListProvider {
 				);
 			},
 			this._markerService,
-			this._configService
+			this._configService,
 		);
 	}
 }
@@ -77,7 +77,7 @@ class NotebookMarkerDecorationContribution
 	extends Disposable
 	implements INotebookEditorContribution
 {
-	static id: string = "workbench.notebook.markerDecoration";
+	static id = "workbench.notebook.markerDecoration";
 	private _markersOverviewRulerDecorations: string[] = [];
 	constructor(
 		private readonly _notebookEditor: INotebookEditor,
@@ -144,16 +144,16 @@ class NotebookMarkerDecorationContribution
 		this._markersOverviewRulerDecorations =
 			this._notebookEditor.deltaCellDecorations(
 				this._markersOverviewRulerDecorations,
-				cellDecorations
+				cellDecorations,
 			);
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(MarkerListProvider, LifecyclePhase.Ready);
 
 registerNotebookContribution(
 	NotebookMarkerDecorationContribution.id,
-	NotebookMarkerDecorationContribution
+	NotebookMarkerDecorationContribution,
 );

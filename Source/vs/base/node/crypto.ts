@@ -9,7 +9,7 @@ import { createSingleCallFunction } from "vs/base/common/functional";
 
 export async function checksum(
 	path: string,
-	sha1hash: string | undefined
+	sha1hash: string | undefined,
 ): Promise<void> {
 	const checksumPromise = new Promise<string | undefined>(
 		(resolve, reject) => {
@@ -27,16 +27,16 @@ export async function checksum(
 					} else {
 						resolve(result);
 					}
-				}
+				},
 			);
 
 			input.once("error", done);
 			input.once("end", done);
 			hash.once("error", done);
 			hash.once("data", (data: Buffer) =>
-				done(undefined, data.toString("hex"))
+				done(undefined, data.toString("hex")),
 			);
-		}
+		},
 	);
 
 	const hash = await checksumPromise;

@@ -14,9 +14,9 @@ import { renderLabelWithIcons } from "vs/base/browser/ui/iconLabel/iconLabels";
 import { hash } from "vs/base/common/hash";
 import { Disposable, IDisposable } from "vs/base/common/lifecycle";
 import {
+	IObservable,
 	autorun,
 	derived,
-	IObservable,
 	transaction,
 } from "vs/base/common/observable";
 import {
@@ -24,8 +24,8 @@ import {
 	IViewZoneChangeAccessor,
 } from "vs/editor/browser/editorBrowser";
 import {
-	EditorOption,
 	EDITOR_FONT_DEFAULTS,
+	EditorOption,
 } from "vs/editor/common/config/editorOptions";
 import { localize } from "vs/nls";
 import {
@@ -52,7 +52,7 @@ export class ConflictActionsFactory extends Disposable {
 				) {
 					this._updateLensStyle();
 				}
-			})
+			}),
 		);
 
 		this._styleClassName =
@@ -63,7 +63,7 @@ export class ConflictActionsFactory extends Disposable {
 				? this._editor.getContainerDomNode()
 				: undefined,
 			undefined,
-			this._store
+			this._store,
 		);
 
 		this._updateLensStyle();
@@ -72,7 +72,7 @@ export class ConflictActionsFactory extends Disposable {
 	private _updateLensStyle(): void {
 		const { codeLensHeight, fontSize } = this._getLayoutInfo();
 		const fontFamily = this._editor.getOption(
-			EditorOption.codeLensFontFamily
+			EditorOption.codeLensFontFamily,
 		);
 		const editorFontInfo = this._editor.getOption(EditorOption.fontInfo);
 
@@ -83,7 +83,7 @@ export class ConflictActionsFactory extends Disposable {
 		.${
 			this._styleClassName
 		} { line-height: ${codeLensHeight}px; font-size: ${fontSize}px; padding-right: ${Math.round(
-			fontSize * 0.5
+			fontSize * 0.5,
 		)}px; font-feature-settings: var(${fontFeaturesVar}) }
 		.monaco-workbench .${
 			this._styleClassName
@@ -100,7 +100,7 @@ export class ConflictActionsFactory extends Disposable {
 			.getContainerDomNode()
 			.style.setProperty(
 				fontFeaturesVar,
-				editorFontInfo.fontFeatureSettings
+				editorFontInfo.fontFeatureSettings,
 			);
 	}
 
@@ -108,7 +108,7 @@ export class ConflictActionsFactory extends Disposable {
 		const lineHeightFactor = Math.max(
 			1.3,
 			this._editor.getOption(EditorOption.lineHeight) /
-				this._editor.getOption(EditorOption.fontSize)
+				this._editor.getOption(EditorOption.fontSize),
 		);
 		let fontSize = this._editor.getOption(EditorOption.codeLensFontSize);
 		if (!fontSize || fontSize < 5) {
@@ -125,7 +125,7 @@ export class ConflictActionsFactory extends Disposable {
 		viewZoneChangeAccessor: IViewZoneChangeAccessor,
 		lineNumber: number,
 		items: IObservable<IContentWidgetAction[]>,
-		viewZoneIdsToCleanUp: string[]
+		viewZoneIdsToCleanUp: string[],
 	): IDisposable {
 		const layoutInfo = this._getLayoutInfo();
 		return new ActionsContentWidget(
@@ -135,7 +135,7 @@ export class ConflictActionsFactory extends Disposable {
 			layoutInfo.codeLensHeight + 2,
 			this._styleClassName,
 			items,
-			viewZoneIdsToCleanUp
+			viewZoneIdsToCleanUp,
 		);
 	}
 }
@@ -143,11 +143,11 @@ export class ConflictActionsFactory extends Disposable {
 export class ActionsSource {
 	constructor(
 		private readonly viewModel: MergeEditorViewModel,
-		private readonly modifiedBaseRange: ModifiedBaseRange
+		private readonly modifiedBaseRange: ModifiedBaseRange,
 	) {}
 
 	private getItemsInput(
-		inputNumber: 1 | 2
+		inputNumber: 1 | 2,
 	): IObservable<IContentWidgetAction[]> {
 		return derived((reader) => {
 			/** @description items */
@@ -203,23 +203,23 @@ export class ActionsSource {
 										state.withInputValue(
 											inputNumber,
 											true,
-											false
+											false,
 										),
 										inputNumber,
-										tx
+										tx,
 									);
 									model.telemetry.reportAcceptInvoked(
 										inputNumber,
-										state.includesInput(otherInputNumber)
+										state.includesInput(otherInputNumber),
 									);
 								});
 							},
 							localize(
 								"acceptTooltip",
 								"Accept {0} in the result document.",
-								inputData.title
-							)
-						)
+								inputData.title,
+							),
+						),
 					);
 
 					if (modifiedBaseRange.canBeCombined) {
@@ -227,8 +227,8 @@ export class ActionsSource {
 							? localize(
 									"acceptBoth0First",
 									"Accept Combination ({0} First)",
-									inputData.title
-								)
+									inputData.title,
+							  )
 							: localize("acceptBoth", "Accept Combination");
 
 						result.push(
@@ -241,28 +241,28 @@ export class ActionsSource {
 											ModifiedBaseRangeState.base
 												.withInputValue(
 													inputNumber,
-													true
+													true,
 												)
 												.withInputValue(
 													otherInputNumber,
 													true,
-													true
+													true,
 												),
 											true,
-											tx
+											tx,
 										);
 										model.telemetry.reportSmartCombinationInvoked(
 											state.includesInput(
-												otherInputNumber
-											)
+												otherInputNumber,
+											),
 										);
 									});
 								},
 								localize(
 									"acceptBothTooltip",
-									"Accept an automatic combination of both sides in the result document."
-								)
-							)
+									"Accept an automatic combination of both sides in the result document.",
+								),
+							),
 						);
 					}
 				} else {
@@ -276,23 +276,23 @@ export class ActionsSource {
 										state.withInputValue(
 											inputNumber,
 											true,
-											false
+											false,
 										),
 										inputNumber,
-										tx
+										tx,
 									);
 									model.telemetry.reportAcceptInvoked(
 										inputNumber,
-										state.includesInput(otherInputNumber)
+										state.includesInput(otherInputNumber),
 									);
 								});
 							},
 							localize(
 								"appendTooltip",
 								"Append {0} to the result document.",
-								inputData.title
-							)
-						)
+								inputData.title,
+							),
+						),
 					);
 
 					if (modifiedBaseRange.canBeCombined) {
@@ -301,7 +301,7 @@ export class ActionsSource {
 								localize(
 									"combine",
 									"Accept Combination",
-									inputData.title
+									inputData.title,
 								),
 								async () => {
 									transaction((tx) => {
@@ -310,23 +310,23 @@ export class ActionsSource {
 											state.withInputValue(
 												inputNumber,
 												true,
-												true
+												true,
 											),
 											inputNumber,
-											tx
+											tx,
 										);
 										model.telemetry.reportSmartCombinationInvoked(
 											state.includesInput(
-												otherInputNumber
-											)
+												otherInputNumber,
+											),
 										);
 									});
 								},
 								localize(
 									"acceptBothTooltip",
-									"Accept an automatic combination of both sides in the result document."
-								)
-							)
+									"Accept an automatic combination of both sides in the result document.",
+								),
+							),
 						);
 					}
 				}
@@ -345,15 +345,15 @@ export class ActionsSource {
 										modifiedBaseRange,
 										inputNumber,
 										true,
-										tx
+										tx,
 									);
 								});
 							},
 							localize(
 								"markAsHandledTooltip",
-								"Don't take this side of the conflict."
-							)
-						)
+								"Don't take this side of the conflict.",
+							),
+						),
 					);
 				}
 			}
@@ -378,7 +378,7 @@ export class ActionsSource {
 				text: localize("manualResolution", "Manual Resolution"),
 				tooltip: localize(
 					"manualResolutionTooltip",
-					"This conflict has been resolved manually."
+					"This conflict has been resolved manually.",
 				),
 			});
 		} else if (state.kind === ModifiedBaseRangeStateKind.base) {
@@ -386,7 +386,7 @@ export class ActionsSource {
 				text: localize("noChangesAccepted", "No Changes Accepted"),
 				tooltip: localize(
 					"noChangesAcceptedTooltip",
-					"The current resolution of this conflict equals the common ancestor of both the right and left changes."
+					"The current resolution of this conflict equals the common ancestor of both the right and left changes.",
 				),
 			});
 		} else {
@@ -419,20 +419,20 @@ export class ActionsSource {
 								modifiedBaseRange,
 								state.withInputValue(1, false),
 								true,
-								tx
+								tx,
 							);
 							model.telemetry.reportRemoveInvoked(
 								1,
-								state.includesInput(2)
+								state.includesInput(2),
 							);
 						});
 					},
 					localize(
 						"removeTooltip",
 						"Remove {0} from the result document.",
-						model.input1.title
-					)
-				)
+						model.input1.title,
+					),
+				),
 			);
 		}
 		if (state.includesInput2) {
@@ -445,20 +445,20 @@ export class ActionsSource {
 								modifiedBaseRange,
 								state.withInputValue(2, false),
 								true,
-								tx
+								tx,
 							);
 							model.telemetry.reportRemoveInvoked(
 								2,
-								state.includesInput(1)
+								state.includesInput(1),
 							);
 						});
 					},
 					localize(
 						"removeTooltip",
 						"Remove {0} from the result document.",
-						model.input2.title
-					)
-				)
+						model.input2.title,
+					),
+				),
 			);
 		}
 		if (
@@ -479,16 +479,16 @@ export class ActionsSource {
 								modifiedBaseRange,
 								ModifiedBaseRangeState.base,
 								true,
-								tx
+								tx,
 							);
 							model.telemetry.reportResetToBaseInvoked();
 						});
 					},
 					localize(
 						"resetToBaseTooltip",
-						"Reset this conflict to the common ancestor of both the right and left changes."
-					)
-				)
+						"Reset this conflict to the common ancestor of both the right and left changes.",
+					),
+				),
 			);
 		}
 
@@ -516,7 +516,7 @@ export class ActionsSource {
 function command(
 	title: string,
 	action: () => Promise<void>,
-	tooltip?: string
+	tooltip?: string,
 ): IContentWidgetAction {
 	return {
 		text: title,
@@ -542,14 +542,14 @@ class ActionsContentWidget extends FixedZoneWidget {
 
 		className: string,
 		items: IObservable<IContentWidgetAction[]>,
-		viewZoneIdsToCleanUp: string[]
+		viewZoneIdsToCleanUp: string[],
 	) {
 		super(
 			editor,
 			viewZoneAccessor,
 			afterLineNumber,
 			height,
-			viewZoneIdsToCleanUp
+			viewZoneIdsToCleanUp,
 		);
 
 		this.widgetDomNode.appendChild(this._domNode);
@@ -561,7 +561,7 @@ class ActionsContentWidget extends FixedZoneWidget {
 				/** @description update commands */
 				const i = items.read(reader);
 				this.setState(i);
-			})
+			}),
 		);
 	}
 
@@ -585,8 +585,8 @@ class ActionsContentWidget extends FixedZoneWidget {
 							role: "button",
 							onclick: () => item.action!(),
 						},
-						...title
-					)
+						...title,
+					),
 				);
 			} else {
 				children.push($("span", { title: item.tooltip }, ...title));

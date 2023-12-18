@@ -4,23 +4,23 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as fs from "fs";
-import * as path from "vs/base/common/path";
-import { URI } from "vs/base/common/uri";
-import { ExtensionStoragePaths as CommonExtensionStoragePaths } from "vs/workbench/api/common/extHostStoragePaths";
+import { IntervalTimer, timeout } from "vs/base/common/async";
 import { Disposable } from "vs/base/common/lifecycle";
 import { Schemas } from "vs/base/common/network";
-import { IntervalTimer, timeout } from "vs/base/common/async";
-import { ILogService } from "vs/platform/log/common/log";
+import * as path from "vs/base/common/path";
+import { URI } from "vs/base/common/uri";
 import { Promises } from "vs/base/node/pfs";
+import { ILogService } from "vs/platform/log/common/log";
+import { ExtensionStoragePaths as CommonExtensionStoragePaths } from "vs/workbench/api/common/extHostStoragePaths";
 
 export class ExtensionStoragePaths extends CommonExtensionStoragePaths {
 	private _workspaceStorageLock: Lock | null = null;
 
 	protected override async _getWorkspaceStorageURI(
-		storageName: string
+		storageName: string,
 	): Promise<URI> {
 		const workspaceStorageURI = await super._getWorkspaceStorageURI(
-			storageName
+			storageName,
 		);
 		if (workspaceStorageURI.scheme !== Schemas.file) {
 			return workspaceStorageURI;
@@ -28,7 +28,7 @@ export class ExtensionStoragePaths extends CommonExtensionStoragePaths {
 
 		if (this._environment.skipWorkspaceStorageLock) {
 			this._logService.info(
-				`Skipping acquiring lock for ${workspaceStorageURI.fsPath}.`
+				`Skipping acquiring lock for ${workspaceStorageURI.fsPath}.`,
 			);
 			return workspaceStorageURI;
 		}
@@ -43,8 +43,8 @@ export class ExtensionStoragePaths extends CommonExtensionStoragePaths {
 				workspaceStoragePath = /[/\\]$/.test(workspaceStorageBase)
 					? `${workspaceStorageBase.substr(
 							0,
-							workspaceStorageBase.length - 1
-						)}-${attempt}`
+							workspaceStorageBase.length - 1,
+					  )}-${attempt}`
 					: `${workspaceStorageBase}-${attempt}`;
 			}
 
@@ -54,7 +54,7 @@ export class ExtensionStoragePaths extends CommonExtensionStoragePaths {
 			const lock = await tryAcquireLock(
 				this._logService,
 				lockfile,
-				false
+				false,
 			);
 			if (lock) {
 				this._workspaceStorageLock = lock;
@@ -98,7 +98,7 @@ class Lock extends Disposable {
 
 	constructor(
 		private readonly logService: ILogService,
-		private readonly filename: string
+		private readonly filename: string,
 	) {
 		super();
 
@@ -108,7 +108,7 @@ class Lock extends Disposable {
 			if (!contents || contents.pid !== process.pid) {
 				// we don't hold the lock anymore ...
 				logService.info(
-					`Lock '${filename}': The lock was lost unexpectedly.`
+					`Lock '${filename}': The lock was lost unexpectedly.`,
 				);
 				this._timer.cancel();
 			}
@@ -130,7 +130,7 @@ class Lock extends Disposable {
 
 	public async setWillRelease(timeUntilReleaseMs: number): Promise<void> {
 		this.logService.info(
-			`Lock '${this.filename}': Marking the lockfile as scheduled to be released in ${timeUntilReleaseMs} ms.`
+			`Lock '${this.filename}': Marking the lockfile as scheduled to be released in ${timeUntilReleaseMs} ms.`,
 		);
 		try {
 			const contents: ILockfileContents = {
@@ -154,7 +154,7 @@ class Lock extends Disposable {
 async function tryAcquireLock(
 	logService: ILogService,
 	filename: string,
-	isSecondAttempt: boolean
+	isSecondAttempt: boolean,
 ): Promise<Lock | null> {
 	try {
 		const contents: ILockfileContents = {
@@ -174,12 +174,12 @@ async function tryAcquireLock(
 		// we didn't get the lock
 		if (isSecondAttempt) {
 			logService.info(
-				`Lock '${filename}': Could not acquire lock, giving up.`
+				`Lock '${filename}': Could not acquire lock, giving up.`,
 			);
 			return null;
 		}
 		logService.info(
-			`Lock '${filename}': Could not acquire lock, checking if the file is stale.`
+			`Lock '${filename}': Could not acquire lock, checking if the file is stale.`,
 		);
 		return checkStaleAndTryAcquireLock(logService, filename);
 	}
@@ -199,7 +199,7 @@ interface ILockfileContents {
  */
 async function readLockfileContents(
 	logService: ILogService,
-	filename: string
+	filename: string,
 ): Promise<ILockfileContents | null> {
 	let contents: Buffer;
 	try {
@@ -224,7 +224,7 @@ async function readLockfileContents(
  */
 async function readmtime(
 	logService: ILogService,
-	filename: string
+	filename: string,
 ): Promise<number> {
 	let stats: fs.Stats;
 	try {
@@ -248,12 +248,12 @@ function processExists(pid: number): boolean {
 
 async function checkStaleAndTryAcquireLock(
 	logService: ILogService,
-	filename: string
+	filename: string,
 ): Promise<Lock | null> {
 	const contents = await readLockfileContents(logService, filename);
 	if (!contents) {
 		logService.info(
-			`Lock '${filename}': Could not read pid of lock holder.`
+			`Lock '${filename}': Could not read pid of lock holder.`,
 		);
 		return tryDeleteAndAcquireLock(logService, filename);
 	}
@@ -263,11 +263,11 @@ async function checkStaleAndTryAcquireLock(
 		if (timeUntilRelease < 5000) {
 			if (timeUntilRelease > 0) {
 				logService.info(
-					`Lock '${filename}': The lockfile is scheduled to be released in ${timeUntilRelease} ms.`
+					`Lock '${filename}': The lockfile is scheduled to be released in ${timeUntilRelease} ms.`,
 				);
 			} else {
 				logService.info(
-					`Lock '${filename}': The lockfile is scheduled to have been released.`
+					`Lock '${filename}': The lockfile is scheduled to have been released.`,
 				);
 			}
 
@@ -287,7 +287,7 @@ async function checkStaleAndTryAcquireLock(
 
 	if (!processExists(contents.pid)) {
 		logService.info(
-			`Lock '${filename}': The pid ${contents.pid} appears to be gone.`
+			`Lock '${filename}': The pid ${contents.pid} appears to be gone.`,
 		);
 		return tryDeleteAndAcquireLock(logService, filename);
 	}
@@ -297,7 +297,7 @@ async function checkStaleAndTryAcquireLock(
 	if (elapsed1 <= STALE_LOCK_TIME) {
 		// the lock does not look stale
 		logService.info(
-			`Lock '${filename}': The lock does not look stale, elapsed: ${elapsed1} ms, giving up.`
+			`Lock '${filename}': The lock does not look stale, elapsed: ${elapsed1} ms, giving up.`,
 		);
 		return null;
 	}
@@ -306,7 +306,7 @@ async function checkStaleAndTryAcquireLock(
 	// let's give it a chance to update the mtime
 	// in case of a wake from sleep or something similar
 	logService.info(
-		`Lock '${filename}': The lock looks stale, waiting for 2s.`
+		`Lock '${filename}': The lock looks stale, waiting for 2s.`,
 	);
 	await timeout(2000);
 
@@ -315,21 +315,21 @@ async function checkStaleAndTryAcquireLock(
 	if (elapsed2 <= STALE_LOCK_TIME) {
 		// the lock does not look stale
 		logService.info(
-			`Lock '${filename}': The lock does not look stale, elapsed: ${elapsed2} ms, giving up.`
+			`Lock '${filename}': The lock does not look stale, elapsed: ${elapsed2} ms, giving up.`,
 		);
 		return null;
 	}
 
 	// the lock looks stale
 	logService.info(
-		`Lock '${filename}': The lock looks stale even after waiting for 2s.`
+		`Lock '${filename}': The lock looks stale even after waiting for 2s.`,
 	);
 	return tryDeleteAndAcquireLock(logService, filename);
 }
 
 async function tryDeleteAndAcquireLock(
 	logService: ILogService,
-	filename: string
+	filename: string,
 ): Promise<Lock | null> {
 	logService.info(`Lock '${filename}': Deleting a stale lock.`);
 	try {

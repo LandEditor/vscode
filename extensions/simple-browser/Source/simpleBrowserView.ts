@@ -16,13 +16,13 @@ export class SimpleBrowserView extends Disposable {
 	private static readonly title = vscode.l10n.t("Simple Browser");
 
 	private static getWebviewLocalResourceRoots(
-		extensionUri: vscode.Uri
+		extensionUri: vscode.Uri,
 	): readonly vscode.Uri[] {
 		return [vscode.Uri.joinPath(extensionUri, "media")];
 	}
 
 	private static getWebviewOptions(
-		extensionUri: vscode.Uri
+		extensionUri: vscode.Uri,
 	): vscode.WebviewOptions {
 		return {
 			enableScripts: true,
@@ -35,14 +35,14 @@ export class SimpleBrowserView extends Disposable {
 	private readonly _webviewPanel: vscode.WebviewPanel;
 
 	private readonly _onDidDispose = this._register(
-		new vscode.EventEmitter<void>()
+		new vscode.EventEmitter<void>(),
 	);
 	public readonly onDispose = this._onDidDispose.event;
 
 	public static create(
 		extensionUri: vscode.Uri,
 		url: string,
-		showOptions?: ShowOptions
+		showOptions?: ShowOptions,
 	): SimpleBrowserView {
 		const webview = vscode.window.createWebviewPanel(
 			SimpleBrowserView.viewType,
@@ -54,7 +54,7 @@ export class SimpleBrowserView extends Disposable {
 			{
 				retainContextWhenHidden: true,
 				...SimpleBrowserView.getWebviewOptions(extensionUri),
-			}
+			},
 		);
 		return new SimpleBrowserView(extensionUri, url, webview);
 	}
@@ -62,7 +62,7 @@ export class SimpleBrowserView extends Disposable {
 	public static restore(
 		extensionUri: vscode.Uri,
 		url: string,
-		webviewPanel: vscode.WebviewPanel
+		webviewPanel: vscode.WebviewPanel,
 	): SimpleBrowserView {
 		return new SimpleBrowserView(extensionUri, url, webviewPanel);
 	}
@@ -70,7 +70,7 @@ export class SimpleBrowserView extends Disposable {
 	private constructor(
 		private readonly extensionUri: vscode.Uri,
 		url: string,
-		webviewPanel: vscode.WebviewPanel
+		webviewPanel: vscode.WebviewPanel,
 	) {
 		super();
 
@@ -90,20 +90,20 @@ export class SimpleBrowserView extends Disposable {
 						}
 						break;
 				}
-			})
+			}),
 		);
 
 		this._register(
 			this._webviewPanel.onDidDispose(() => {
 				this.dispose();
-			})
+			}),
 		);
 
 		this._register(
 			vscode.workspace.onDidChangeConfiguration((e) => {
 				if (
 					e.affectsConfiguration(
-						"simpleBrowser.focusLockIndicator.enabled"
+						"simpleBrowser.focusLockIndicator.enabled",
 					)
 				) {
 					const configuration =
@@ -112,11 +112,11 @@ export class SimpleBrowserView extends Disposable {
 						type: "didChangeFocusLockIndicatorEnabled",
 						focusLockEnabled: configuration.get<boolean>(
 							"focusLockIndicator.enabled",
-							true
+							true,
 						),
 					});
 				}
-			})
+			}),
 		);
 
 		this.show(url);
@@ -160,9 +160,9 @@ export class SimpleBrowserView extends Disposable {
 						url: url,
 						focusLockEnabled: configuration.get<boolean>(
 							"focusLockIndicator.enabled",
-							true
+							true,
 						),
-					})
+					}),
 				)}">
 
 				<link rel="stylesheet" type="text/css" href="${mainCss}">
@@ -193,7 +193,9 @@ export class SimpleBrowserView extends Disposable {
 					</nav>
 				</header>
 				<div class="content">
-					<div class="iframe-focused-alert">${vscode.l10n.t("Focus Lock")}</div>
+					<div class="iframe-focused-alert">${vscode.l10n.t(
+						"Focus Lock",
+					)}</div>
 					<iframe sandbox="allow-scripts allow-forms allow-same-origin allow-downloads"></iframe>
 				</div>
 
@@ -204,7 +206,7 @@ export class SimpleBrowserView extends Disposable {
 
 	private extensionResourceUrl(...parts: string[]): vscode.Uri {
 		return this._webviewPanel.webview.asWebviewUri(
-			vscode.Uri.joinPath(this.extensionUri, ...parts)
+			vscode.Uri.joinPath(this.extensionUri, ...parts),
 		);
 	}
 }

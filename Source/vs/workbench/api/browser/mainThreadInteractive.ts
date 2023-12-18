@@ -11,11 +11,11 @@ import {
 	MainContext,
 	MainThreadInteractiveShape,
 } from "vs/workbench/api/common/extHost.protocol";
-import {
-	extHostNamedCustomer,
-	IExtHostContext,
-} from "vs/workbench/services/extensions/common/extHostCustomers";
 import { IInteractiveDocumentService } from "vs/workbench/contrib/interactive/browser/interactiveDocumentService";
+import {
+	IExtHostContext,
+	extHostNamedCustomer,
+} from "vs/workbench/services/extensions/common/extHostCustomers";
 
 @extHostNamedCustomer(MainContext.MainThreadInteractive)
 export class MainThreadInteractive implements MainThreadInteractiveShape {
@@ -26,10 +26,10 @@ export class MainThreadInteractive implements MainThreadInteractiveShape {
 	constructor(
 		extHostContext: IExtHostContext,
 		@IInteractiveDocumentService
-		interactiveDocumentService: IInteractiveDocumentService
+		interactiveDocumentService: IInteractiveDocumentService,
 	) {
 		this._proxy = extHostContext.getProxy(
-			ExtHostContext.ExtHostInteractive
+			ExtHostContext.ExtHostInteractive,
 		);
 
 		this._disposables.add(
@@ -38,18 +38,18 @@ export class MainThreadInteractive implements MainThreadInteractiveShape {
 					e.inputUri,
 					"\n",
 					PLAINTEXT_LANGUAGE_ID,
-					e.notebookUri
+					e.notebookUri,
 				);
-			})
+			}),
 		);
 
 		this._disposables.add(
 			interactiveDocumentService.onWillRemoveInteractiveDocument((e) => {
 				this._proxy.$willRemoveInteractiveDocument(
 					e.inputUri,
-					e.notebookUri
+					e.notebookUri,
 				);
-			})
+			}),
 		);
 	}
 

@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-const enum ChCode {
+enum ChCode {
 	BOM = 65279,
 
 	SPACE = 32,
@@ -18,7 +18,7 @@ const enum ChCode {
 	EXCLAMATION_MARK = 33,
 }
 
-const enum State {
+enum State {
 	ROOT_STATE = 0,
 	DICT_STATE = 1,
 	ARR_STATE = 2,
@@ -33,7 +33,7 @@ export function parse(content: string): any {
 function _parse(
 	content: string,
 	filename: string | null,
-	locationKeyName: string | null
+	locationKeyName: string | null,
 ): any {
 	const len = content.length;
 
@@ -149,12 +149,12 @@ function _parse(
 				msg +
 				" ~~~" +
 				content.substr(pos, 50) +
-				"~~~"
+				"~~~",
 		);
 	}
 
 	const dictState = {
-		enterDict: function () {
+		enterDict: () => {
 			if (curKey === null) {
 				return fail("missing <key>");
 			}
@@ -170,7 +170,7 @@ function _parse(
 			curKey = null;
 			pushState(State.DICT_STATE, newDict);
 		},
-		enterArray: function () {
+		enterArray: () => {
 			if (curKey === null) {
 				return fail("missing <key>");
 			}
@@ -182,7 +182,7 @@ function _parse(
 	};
 
 	const arrState = {
-		enterDict: function () {
+		enterDict: () => {
 			const newDict: { [key: string]: any } = {};
 			if (locationKeyName !== null) {
 				newDict[locationKeyName] = {
@@ -194,7 +194,7 @@ function _parse(
 			cur.push(newDict);
 			pushState(State.DICT_STATE, newDict);
 		},
-		enterArray: function () {
+		enterArray: () => {
 			const newArr: any[] = [];
 			cur.push(newArr);
 			pushState(State.ARR_STATE, newArr);
@@ -356,13 +356,13 @@ function _parse(
 
 	function escapeVal(str: string): string {
 		return str
-			.replace(/&#([0-9]+);/g, function (_: string, m0: string) {
-				return String.fromCodePoint(parseInt(m0, 10));
-			})
-			.replace(/&#x([0-9a-f]+);/g, function (_: string, m0: string) {
-				return String.fromCodePoint(parseInt(m0, 16));
-			})
-			.replace(/&amp;|&lt;|&gt;|&quot;|&apos;/g, function (_: string) {
+			.replace(/&#([0-9]+);/g, (_: string, m0: string) =>
+				String.fromCodePoint(parseInt(m0, 10)),
+			)
+			.replace(/&#x([0-9a-f]+);/g, (_: string, m0: string) =>
+				String.fromCodePoint(parseInt(m0, 16)),
+			)
+			.replace(/&amp;|&lt;|&gt;|&quot;|&apos;/g, (_: string) => {
 				switch (_) {
 					case "&amp;":
 						return "&";

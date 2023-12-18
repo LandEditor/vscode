@@ -19,7 +19,7 @@ const nonAsciiCharactersPattern = /[^\u0000-\u0080]/;
 function normalize(
 	str: string,
 	form: string,
-	normalizedCache: LRUCache<string, string>
+	normalizedCache: LRUCache<string, string>,
 ): string {
 	if (!str) {
 		return str;
@@ -43,11 +43,9 @@ function normalize(
 	return res;
 }
 
-export const removeAccents: (str: string) => string = (function () {
+export const removeAccents: (str: string) => string = (() => {
 	// transform into NFD form and remove accents
 	// see: https://stackoverflow.com/questions/990904/remove-accents-diacritics-in-a-string-in-javascript/37511463#37511463
 	const regex = /[\u0300-\u036f]/g;
-	return function (str: string) {
-		return normalizeNFD(str).replace(regex, "");
-	};
+	return (str: string) => normalizeNFD(str).replace(regex, "");
 })();

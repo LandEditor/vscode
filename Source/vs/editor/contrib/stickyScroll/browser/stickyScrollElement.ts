@@ -8,7 +8,7 @@ import { URI } from "vs/base/common/uri";
 export class StickyRange {
 	constructor(
 		public readonly startLineNumber: number,
-		public readonly endLineNumber: number
+		public readonly endLineNumber: number,
 	) {}
 }
 
@@ -25,7 +25,7 @@ export class StickyElement {
 		/**
 		 * Parent sticky outline element
 		 */
-		public readonly parent: StickyElement | undefined
+		public readonly parent: StickyElement | undefined,
 	) {}
 }
 
@@ -34,6 +34,6 @@ export class StickyModel {
 		readonly uri: URI,
 		readonly version: number,
 		readonly element: StickyElement | undefined,
-		readonly outlineProviderId: string | undefined
+		readonly outlineProviderId: string | undefined,
 	) {}
 }

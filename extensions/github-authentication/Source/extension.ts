@@ -8,7 +8,7 @@ import { GitHubAuthenticationProvider, UriEventHandler } from "./github";
 
 function initGHES(
 	context: vscode.ExtensionContext,
-	uriHandler: UriEventHandler
+	uriHandler: UriEventHandler,
 ) {
 	const settingValue = vscode.workspace
 		.getConfiguration()
@@ -25,8 +25,8 @@ function initGHES(
 		vscode.window.showErrorMessage(
 			vscode.l10n.t(
 				"GitHub Enterprise Server URI is not a valid URI: {0}",
-				e.message ?? e
-			)
+				e.message ?? e,
+			),
 		);
 		return;
 	}
@@ -34,7 +34,7 @@ function initGHES(
 	const githubEnterpriseAuthProvider = new GitHubAuthenticationProvider(
 		context,
 		uriHandler,
-		uri
+		uri,
 	);
 	context.subscriptions.push(githubEnterpriseAuthProvider);
 	return githubEnterpriseAuthProvider;
@@ -46,7 +46,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.window.registerUriHandler(uriHandler));
 
 	context.subscriptions.push(
-		new GitHubAuthenticationProvider(context, uriHandler)
+		new GitHubAuthenticationProvider(context, uriHandler),
 	);
 
 	let githubEnterpriseAuthProvider: GitHubAuthenticationProvider | undefined =
@@ -63,10 +63,10 @@ export function activate(context: vscode.ExtensionContext) {
 					githubEnterpriseAuthProvider?.dispose();
 					githubEnterpriseAuthProvider = initGHES(
 						context,
-						uriHandler
+						uriHandler,
 					);
 				}
 			}
-		})
+		}),
 	);
 }

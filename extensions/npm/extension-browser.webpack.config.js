@@ -5,8 +5,6 @@
 
 //@ts-check
 
-"use strict";
-
 const withBrowserDefaults = require("../shared.webpack.config").browser;
 
 const config = withBrowserDefaults({
@@ -19,7 +17,7 @@ const config = withBrowserDefaults({
 	},
 	resolve: {
 		fallback: {
-			"child_process": false,
+			child_process: false,
 		},
 	},
 });

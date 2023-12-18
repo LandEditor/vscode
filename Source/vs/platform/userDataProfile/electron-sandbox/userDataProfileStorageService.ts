@@ -4,17 +4,17 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	IUserDataProfileStorageService,
-	RemoteUserDataProfileStorageService,
-} from "vs/platform/userDataProfile/common/userDataProfileStorageService";
-import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { IStorageService } from "vs/platform/storage/common/storage";
-import { ILogService } from "vs/platform/log/common/log";
-import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
 import { IMainProcessService } from "vs/platform/ipc/common/mainProcessService";
+import { ILogService } from "vs/platform/log/common/log";
+import { IStorageService } from "vs/platform/storage/common/storage";
+import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
+import {
+	IUserDataProfileStorageService,
+	RemoteUserDataProfileStorageService,
+} from "vs/platform/userDataProfile/common/userDataProfileStorageService";
 
 export class NativeUserDataProfileStorageService extends RemoteUserDataProfileStorageService {
 	constructor(
@@ -22,13 +22,13 @@ export class NativeUserDataProfileStorageService extends RemoteUserDataProfileSt
 		@IUserDataProfilesService
 		userDataProfilesService: IUserDataProfilesService,
 		@IStorageService storageService: IStorageService,
-		@ILogService logService: ILogService
+		@ILogService logService: ILogService,
 	) {
 		super(
 			mainProcessService,
 			userDataProfilesService,
 			storageService,
-			logService
+			logService,
 		);
 	}
 }
@@ -36,5 +36,5 @@ export class NativeUserDataProfileStorageService extends RemoteUserDataProfileSt
 registerSingleton(
 	IUserDataProfileStorageService,
 	NativeUserDataProfileStorageService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

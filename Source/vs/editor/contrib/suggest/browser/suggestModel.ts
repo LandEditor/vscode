@@ -7,36 +7,43 @@ import { TimeoutTimer } from "vs/base/common/async";
 import { CancellationTokenSource } from "vs/base/common/cancellation";
 import { onUnexpectedError } from "vs/base/common/errors";
 import { Emitter, Event } from "vs/base/common/event";
+import { FuzzyScoreOptions } from "vs/base/common/filters";
 import {
 	DisposableStore,
-	dispose,
 	IDisposable,
+	dispose,
 } from "vs/base/common/lifecycle";
 import {
 	getLeadingWhitespace,
 	isHighSurrogate,
 	isLowSurrogate,
 } from "vs/base/common/strings";
+import { assertType } from "vs/base/common/types";
 import { ICodeEditor } from "vs/editor/browser/editorBrowser";
 import { EditorOption } from "vs/editor/common/config/editorOptions";
+import { IPosition, Position } from "vs/editor/common/core/position";
+import { Selection } from "vs/editor/common/core/selection";
+import { IWordAtPosition } from "vs/editor/common/core/wordHelper";
 import {
 	CursorChangeReason,
 	ICursorSelectionChangedEvent,
 } from "vs/editor/common/cursorEvents";
-import { IPosition, Position } from "vs/editor/common/core/position";
-import { Selection } from "vs/editor/common/core/selection";
-import { ITextModel } from "vs/editor/common/model";
 import {
 	CompletionContext,
 	CompletionItemKind,
 	CompletionItemProvider,
 	CompletionTriggerKind,
 } from "vs/editor/common/languages";
+import { ITextModel } from "vs/editor/common/model";
 import { IEditorWorkerService } from "vs/editor/common/services/editorWorker";
+import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
+import { InlineCompletionContextKeys } from "vs/editor/contrib/inlineCompletions/browser/inlineCompletionContextKeys";
+import { SnippetController2 } from "vs/editor/contrib/snippet/browser/snippetController2";
 import { WordDistance } from "vs/editor/contrib/suggest/browser/wordDistance";
 import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { IEnvironmentService } from "vs/platform/environment/common/environment";
 import { ILogService } from "vs/platform/log/common/log";
 import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import { CompletionModel } from "./completionModel";
@@ -44,18 +51,11 @@ import {
 	CompletionDurations,
 	CompletionItem,
 	CompletionOptions,
-	getSnippetSuggestSupport,
-	provideSuggestionItems,
 	QuickSuggestionsOptions,
 	SnippetSortOrder,
+	getSnippetSuggestSupport,
+	provideSuggestionItems,
 } from "./suggest";
-import { IWordAtPosition } from "vs/editor/common/core/wordHelper";
-import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
-import { FuzzyScoreOptions } from "vs/base/common/filters";
-import { assertType } from "vs/base/common/types";
-import { InlineCompletionContextKeys } from "vs/editor/contrib/inlineCompletions/browser/inlineCompletionContextKeys";
-import { SnippetController2 } from "vs/editor/contrib/snippet/browser/snippetController2";
-import { IEnvironmentService } from "vs/platform/environment/common/environment";
 
 export interface ICancelEvent {
 	readonly retrigger: boolean;
@@ -119,7 +119,7 @@ export class LineContext {
 	constructor(
 		model: ITextModel,
 		position: Position,
-		triggerOptions: SuggestTriggerOptions
+		triggerOptions: SuggestTriggerOptions,
 	) {
 		this.leadingLineContent = model
 			.getLineContent(position.lineNumber)
@@ -131,7 +131,7 @@ export class LineContext {
 	}
 }
 
-export const enum State {
+export enum State {
 	Idle = 0,
 	Manual = 1,
 	Auto = 2,
@@ -140,13 +140,13 @@ export const enum State {
 function canShowQuickSuggest(
 	editor: ICodeEditor,
 	contextKeyService: IContextKeyService,
-	configurationService: IConfigurationService
+	configurationService: IConfigurationService,
 ): boolean {
 	if (
 		!Boolean(
 			contextKeyService.getContextKeyValue(
-				InlineCompletionContextKeys.inlineSuggestionVisible.key
-			)
+				InlineCompletionContextKeys.inlineSuggestionVisible.key,
+			),
 		)
 	) {
 		// Allow if there is no inline suggestion.
@@ -164,11 +164,11 @@ function canShowQuickSuggest(
 function canShowSuggestOnTriggerCharacters(
 	editor: ICodeEditor,
 	contextKeyService: IContextKeyService,
-	configurationService: IConfigurationService
+	configurationService: IConfigurationService,
 ): boolean {
 	if (
 		!Boolean(
-			contextKeyService.getContextKeyValue("inlineSuggestionVisible")
+			contextKeyService.getContextKeyValue("inlineSuggestionVisible"),
 		)
 	) {
 		// Allow if there is no inline suggestion.
@@ -311,7 +311,7 @@ export class SuggestModel implements IDisposable {
 			Set<CompletionItemProvider>
 		>();
 		for (const support of this._languageFeaturesService.completionProvider.all(
-			this._editor.getModel()
+			this._editor.getModel(),
 		)) {
 			for (const ch of support.triggerCharacters || []) {
 				let set = supportsByTriggerCharacter.get(ch);
@@ -329,7 +329,7 @@ export class SuggestModel implements IDisposable {
 				!canShowSuggestOnTriggerCharacters(
 					this._editor,
 					this._contextKeyService,
-					this._configurationService
+					this._configurationService,
 				)
 			) {
 				return;
@@ -392,10 +392,10 @@ export class SuggestModel implements IDisposable {
 		};
 
 		this._triggerCharacterListener.add(
-			this._editor.onDidType(checkTriggerCharacter)
+			this._editor.onDidType(checkTriggerCharacter),
 		);
 		this._triggerCharacterListener.add(
-			this._editor.onDidCompositionEnd(() => checkTriggerCharacter())
+			this._editor.onDidCompositionEnd(() => checkTriggerCharacter()),
 		);
 	}
 
@@ -404,14 +404,14 @@ export class SuggestModel implements IDisposable {
 	get state(): State {
 		if (!this._triggerState) {
 			return State.Idle;
-		} else if (!this._triggerState.auto) {
-			return State.Manual;
-		} else {
+		} else if (this._triggerState.auto) {
 			return State.Auto;
+		} else {
+			return State.Manual;
 		}
 	}
 
-	cancel(retrigger: boolean = false): void {
+	cancel(retrigger = false): void {
 		if (this._triggerState !== undefined) {
 			this._triggerQuickSuggest.cancel();
 			this._requestToken?.cancel();
@@ -432,7 +432,7 @@ export class SuggestModel implements IDisposable {
 			if (
 				!this._editor.hasModel() ||
 				!this._languageFeaturesService.completionProvider.has(
-					this._editor.getModel()
+					this._editor.getModel(),
 				)
 			) {
 				this.cancel();
@@ -500,7 +500,7 @@ export class SuggestModel implements IDisposable {
 	private _doTriggerQuickSuggest(): void {
 		if (
 			QuickSuggestionsOptions.isAllOff(
-				this._editor.getOption(EditorOption.quickSuggestions)
+				this._editor.getOption(EditorOption.quickSuggestions),
 			)
 		) {
 			// not enabled
@@ -532,7 +532,7 @@ export class SuggestModel implements IDisposable {
 			const pos = this._editor.getPosition();
 			// validate enabled now
 			const config = this._editor.getOption(
-				EditorOption.quickSuggestions
+				EditorOption.quickSuggestions,
 			);
 			if (QuickSuggestionsOptions.isAllOff(config)) {
 				return;
@@ -542,12 +542,12 @@ export class SuggestModel implements IDisposable {
 				// Check the type of the token that triggered this
 				model.tokenization.tokenizeIfCheap(pos.lineNumber);
 				const lineTokens = model.tokenization.getLineTokens(
-					pos.lineNumber
+					pos.lineNumber,
 				);
 				const tokenType = lineTokens.getStandardTokenType(
 					lineTokens.findTokenIndexAtOffset(
-						Math.max(pos.column - 1 - 1, 0)
-					)
+						Math.max(pos.column - 1 - 1, 0),
+					),
 				);
 				if (
 					QuickSuggestionsOptions.valueFor(config, tokenType) !== "on"
@@ -560,7 +560,7 @@ export class SuggestModel implements IDisposable {
 				!canShowQuickSuggest(
 					this._editor,
 					this._contextKeyService,
-					this._configurationService
+					this._configurationService,
 				)
 			) {
 				// do not trigger quick suggestions if inline suggestions are shown
@@ -624,7 +624,7 @@ export class SuggestModel implements IDisposable {
 
 		// kind filter and snippet sort rules
 		const snippetSuggestions = this._editor.getOption(
-			EditorOption.snippetSuggestions
+			EditorOption.snippetSuggestions,
 		);
 		let snippetSortOrder = SnippetSortOrder.Inline;
 		switch (snippetSuggestions) {
@@ -647,11 +647,11 @@ export class SuggestModel implements IDisposable {
 			options.completionOptions?.kindFilter ?? itemKindFilter,
 			options.completionOptions?.providerFilter,
 			options.completionOptions?.providerItemsToReuse,
-			showDeprecated
+			showDeprecated,
 		);
 		const wordDistance = WordDistance.create(
 			this._editorWorkerService,
-			this._editor
+			this._editor,
 		);
 
 		const completions = provideSuggestionItems(
@@ -660,7 +660,7 @@ export class SuggestModel implements IDisposable {
 			this._editor.getPosition(),
 			completionOptions,
 			suggestCtx,
-			this._requestToken.token
+			this._requestToken.token,
 		);
 
 		Promise.all([completions, wordDistance])
@@ -691,12 +691,12 @@ export class SuggestModel implements IDisposable {
 				const ctx = new LineContext(
 					model,
 					this._editor.getPosition(),
-					options
+					options,
 				);
 				const fuzzySearchOptions = {
 					...FuzzyScoreOptions.default,
 					firstMatchCanBeWeak: !this._editor.getOption(
-						EditorOption.suggest
+						EditorOption.suggest,
 					).matchOnWordStartOnly,
 				};
 				this._completionModel = new CompletionModel(
@@ -710,7 +710,7 @@ export class SuggestModel implements IDisposable {
 					this._editor.getOption(EditorOption.suggest),
 					this._editor.getOption(EditorOption.snippetSuggestions),
 					fuzzySearchOptions,
-					clipboardText
+					clipboardText,
 				);
 
 				// store containers so that they can be disposed later
@@ -730,7 +730,7 @@ export class SuggestModel implements IDisposable {
 						if (item.isInvalid) {
 							this._logService.warn(
 								`[suggest] did IGNORE invalid completion item from ${item.provider._debugDisplayName}`,
-								item.completion
+								item.completion,
 							);
 						}
 					}
@@ -739,7 +739,7 @@ export class SuggestModel implements IDisposable {
 			.catch(onUnexpectedError);
 	}
 
-	private _telemetryGate: number = 0;
+	private _telemetryGate = 0;
 
 	private _reportDurationsTelemetry(durations: CompletionDurations): void {
 		if (this._telemetryGate++ % 230 !== 0) {
@@ -774,7 +774,7 @@ export class SuggestModel implements IDisposable {
 
 		// snippet setting
 		const snippetSuggestions = editor.getOption(
-			EditorOption.snippetSuggestions
+			EditorOption.snippetSuggestions,
 		);
 		if (snippetSuggestions === "none") {
 			result.add(CompletionItemKind.Snippet);
@@ -919,7 +919,7 @@ export class SuggestModel implements IDisposable {
 		) {
 			// started a new word while IntelliSense shows -> retrigger but reuse all items that we currently have
 			const shouldAutoTrigger = LineContext.shouldAutoTrigger(
-				this._editor
+				this._editor,
 			);
 			if (shouldAutoTrigger && this._context) {
 				// shouldAutoTrigger forces tokenization, which can cause pending cursor change events to be emitted, which can cause
@@ -978,7 +978,7 @@ export class SuggestModel implements IDisposable {
 
 			if (this._completionModel.items.length === 0) {
 				const shouldAutoTrigger = LineContext.shouldAutoTrigger(
-					this._editor
+					this._editor,
 				);
 				if (!this._context) {
 					// shouldAutoTrigger forces tokenization, which can cause pending cursor change events to be emitted, which can cause
@@ -1000,7 +1000,11 @@ export class SuggestModel implements IDisposable {
 					return;
 				}
 
-				if (!this._context.triggerOptions.auto) {
+				if (this._context.triggerOptions.auto) {
+					// nothing left
+					this.cancel();
+					return;
+				} else {
 					// freeze when IntelliSense was manually requested
 					this._completionModel.lineContext = oldLineContext;
 					isFrozen = this._completionModel.items.length > 0;
@@ -1011,10 +1015,6 @@ export class SuggestModel implements IDisposable {
 						this.cancel();
 						return;
 					}
-				} else {
-					// nothing left
-					this.cancel();
-					return;
 				}
 			}
 

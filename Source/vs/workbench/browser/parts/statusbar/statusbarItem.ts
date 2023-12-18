@@ -3,54 +3,54 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { toErrorMessage } from "vs/base/common/errorMessage";
-import { Disposable, MutableDisposable } from "vs/base/common/lifecycle";
-import { SimpleIconLabel } from "vs/base/browser/ui/iconLabel/simpleIconLabel";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import {
-	IStatusbarEntry,
-	ShowTooltipCommand,
-	StatusbarEntryKinds,
-} from "vs/workbench/services/statusbar/browser/statusbar";
-import {
-	WorkbenchActionExecutedEvent,
-	WorkbenchActionExecutedClassification,
-} from "vs/base/common/actions";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import { ThemeColor } from "vs/base/common/themables";
-import { isThemeColor } from "vs/editor/common/editorCommon";
-import {
-	addDisposableListener,
+	EventHelper,
 	EventType,
+	addDisposableListener,
+	append,
 	hide,
 	show,
-	append,
-	EventHelper,
 } from "vs/base/browser/dom";
-import { INotificationService } from "vs/platform/notification/common/notification";
-import { assertIsDefined } from "vs/base/common/types";
-import { Command } from "vs/editor/common/languages";
 import { StandardKeyboardEvent } from "vs/base/browser/keyboardEvent";
-import { KeyCode } from "vs/base/common/keyCodes";
-import {
-	renderIcon,
-	renderLabelWithIcons,
-} from "vs/base/browser/ui/iconLabel/iconLabels";
-import {
-	spinningLoading,
-	syncing,
-} from "vs/platform/theme/common/iconRegistry";
+import { EventType as TouchEventType, Gesture } from "vs/base/browser/touch";
+import { IHoverDelegate } from "vs/base/browser/ui/iconLabel/iconHoverDelegate";
 import {
 	ICustomHover,
 	setupCustomHover,
 } from "vs/base/browser/ui/iconLabel/iconLabelHover";
 import {
+	renderIcon,
+	renderLabelWithIcons,
+} from "vs/base/browser/ui/iconLabel/iconLabels";
+import { SimpleIconLabel } from "vs/base/browser/ui/iconLabel/simpleIconLabel";
+import {
+	WorkbenchActionExecutedClassification,
+	WorkbenchActionExecutedEvent,
+} from "vs/base/common/actions";
+import { toErrorMessage } from "vs/base/common/errorMessage";
+import {
 	isMarkdownString,
 	markdownStringEqual,
 } from "vs/base/common/htmlContent";
-import { IHoverDelegate } from "vs/base/browser/ui/iconLabel/iconHoverDelegate";
-import { Gesture, EventType as TouchEventType } from "vs/base/browser/touch";
+import { KeyCode } from "vs/base/common/keyCodes";
+import { Disposable, MutableDisposable } from "vs/base/common/lifecycle";
+import { ThemeColor } from "vs/base/common/themables";
+import { assertIsDefined } from "vs/base/common/types";
+import { isThemeColor } from "vs/editor/common/editorCommon";
+import { Command } from "vs/editor/common/languages";
+import { ICommandService } from "vs/platform/commands/common/commands";
+import { INotificationService } from "vs/platform/notification/common/notification";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import {
+	spinningLoading,
+	syncing,
+} from "vs/platform/theme/common/iconRegistry";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import {
+	IStatusbarEntry,
+	ShowTooltipCommand,
+	StatusbarEntryKinds,
+} from "vs/workbench/services/statusbar/browser/statusbar";
 
 export class StatusbarEntryItem extends Disposable {
 	private readonly label: StatusBarCodiconLabel;
@@ -58,20 +58,20 @@ export class StatusbarEntryItem extends Disposable {
 	private entry: IStatusbarEntry | undefined = undefined;
 
 	private readonly foregroundListener = this._register(
-		new MutableDisposable()
+		new MutableDisposable(),
 	);
 	private readonly backgroundListener = this._register(
-		new MutableDisposable()
+		new MutableDisposable(),
 	);
 
 	private readonly commandMouseListener = this._register(
-		new MutableDisposable()
+		new MutableDisposable(),
 	);
 	private readonly commandTouchListener = this._register(
-		new MutableDisposable()
+		new MutableDisposable(),
 	);
 	private readonly commandKeyboardListener = this._register(
-		new MutableDisposable()
+		new MutableDisposable(),
 	);
 	private readonly focusListener = this._register(new MutableDisposable());
 	private readonly focusOutListener = this._register(new MutableDisposable());
@@ -155,7 +155,7 @@ export class StatusbarEntryItem extends Disposable {
 				? {
 						markdown: entry.tooltip,
 						markdownNotSupportedFallback: undefined,
-					}
+				  }
 				: entry.tooltip;
 			if (this.hover) {
 				this.hover.update(hoverContents);
@@ -164,8 +164,8 @@ export class StatusbarEntryItem extends Disposable {
 					setupCustomHover(
 						this.hoverDelegate,
 						this.container,
-						hoverContents
-					)
+						hoverContents,
+					),
 				);
 			}
 			this.focusListener.value = addDisposableListener(
@@ -174,7 +174,7 @@ export class StatusbarEntryItem extends Disposable {
 				(e) => {
 					EventHelper.stop(e);
 					this.hover?.show(false);
-				}
+				},
 			);
 			this.focusOutListener.value = addDisposableListener(
 				this.labelContainer,
@@ -182,7 +182,7 @@ export class StatusbarEntryItem extends Disposable {
 				(e) => {
 					EventHelper.stop(e);
 					this.hover?.hide();
-				}
+				},
 			);
 		}
 
@@ -202,12 +202,12 @@ export class StatusbarEntryItem extends Disposable {
 				this.commandMouseListener.value = addDisposableListener(
 					this.labelContainer,
 					EventType.CLICK,
-					() => this.executeCommand(command)
+					() => this.executeCommand(command),
 				);
 				this.commandTouchListener.value = addDisposableListener(
 					this.labelContainer,
 					TouchEventType.Tap,
-					() => this.executeCommand(command)
+					() => this.executeCommand(command),
 				);
 				this.commandKeyboardListener.value = addDisposableListener(
 					this.labelContainer,
@@ -230,7 +230,7 @@ export class StatusbarEntryItem extends Disposable {
 
 							this.hover?.hide();
 						}
-					}
+					},
 				);
 
 				this.labelContainer.classList.remove("disabled");
@@ -264,7 +264,7 @@ export class StatusbarEntryItem extends Disposable {
 
 			this.container.classList.toggle(
 				"has-background-color",
-				hasBackgroundColor
+				hasBackgroundColor,
 			);
 		}
 
@@ -280,7 +280,7 @@ export class StatusbarEntryItem extends Disposable {
 		) {
 			this.container.classList.toggle(
 				"has-background-color",
-				hasBackgroundColor
+				hasBackgroundColor,
 			);
 			this.applyColor(this.container, entry.backgroundColor, true);
 		}
@@ -291,7 +291,7 @@ export class StatusbarEntryItem extends Disposable {
 
 	private isEqualTooltip(
 		{ tooltip }: IStatusbarEntry,
-		{ tooltip: otherTooltip }: IStatusbarEntry
+		{ tooltip: otherTooltip }: IStatusbarEntry,
 	) {
 		if (tooltip === undefined) {
 			return otherTooltip === undefined;
@@ -334,7 +334,7 @@ export class StatusbarEntryItem extends Disposable {
 	private applyColor(
 		container: HTMLElement,
 		color: string | ThemeColor | undefined,
-		isBackground?: boolean
+		isBackground?: boolean,
 	): void {
 		let colorResult: string | undefined = undefined;
 
@@ -360,7 +360,7 @@ export class StatusbarEntryItem extends Disposable {
 						} else {
 							container.style.color = colorValue ?? "";
 						}
-					}
+					},
 				);
 
 				if (isBackground) {
@@ -395,7 +395,7 @@ class StatusBarCodiconLabel extends SimpleIconLabel {
 		if (this.currentShowProgress !== showProgress) {
 			this.currentShowProgress = showProgress;
 			this.progressCodicon = renderIcon(
-				showProgress === "loading" ? spinningLoading : syncing
+				showProgress === "loading" ? spinningLoading : syncing,
 			);
 			this.text = this.currentText;
 		}

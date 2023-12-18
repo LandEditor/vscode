@@ -3,28 +3,28 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
-import { Disposable } from "vs/base/common/lifecycle";
-import { IWorkbenchContribution } from "vs/workbench/common/contributions";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import { IProductService } from "vs/platform/product/common/productService";
-import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
-import { IExtensionManagementService } from "vs/platform/extensionManagement/common/extensionManagement";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
-import { IWorkbenchExtensionEnablementService } from "vs/workbench/services/extensionManagement/common/extensionManagement";
-import {
-	IContextKeyService,
-	RawContextKey,
-} from "vs/platform/contextkey/common/contextkey";
 import {
 	WorkbenchActionExecutedClassification,
 	WorkbenchActionExecutedEvent,
 } from "vs/base/common/actions";
+import { Disposable } from "vs/base/common/lifecycle";
+import * as nls from "vs/nls";
+import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
+import { ICommandService } from "vs/platform/commands/common/commands";
+import {
+	IContextKeyService,
+	RawContextKey,
+} from "vs/platform/contextkey/common/contextkey";
+import { IExtensionManagementService } from "vs/platform/extensionManagement/common/extensionManagement";
+import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
+import { IProductService } from "vs/platform/product/common/productService";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { IWorkbenchContribution } from "vs/workbench/common/contributions";
+import { IWorkbenchExtensionEnablementService } from "vs/workbench/services/extensionManagement/common/extensionManagement";
 
 export const showStartEntryInWeb = new RawContextKey<boolean>(
 	"showRemoteStartEntryInWeb",
-	false
+	false,
 );
 export class RemoteStartEntry
 	extends Disposable
@@ -76,7 +76,7 @@ export class RemoteStartEntry
 						title: {
 							value: nls.localize(
 								"remote.showWebStartEntryActions",
-								"Show Remote Start Entry for web"
+								"Show Remote Start Entry for web",
 							),
 							original: "Show Remote Start Entry for web",
 						},
@@ -87,7 +87,7 @@ export class RemoteStartEntry
 				async run(): Promise<void> {
 					await startEntry.showWebRemoteStartActions();
 				}
-			}
+			},
 		);
 	}
 
@@ -99,7 +99,7 @@ export class RemoteStartEntry
 						if (
 							ExtensionIdentifier.equals(
 								this.remoteExtensionId,
-								ext.identifier.id
+								ext.identifier.id,
 							)
 						) {
 							if (
@@ -115,8 +115,8 @@ export class RemoteStartEntry
 							}
 						}
 					}
-				}
-			)
+				},
+			),
 		);
 	}
 
@@ -127,8 +127,8 @@ export class RemoteStartEntry
 		).find((value) =>
 			ExtensionIdentifier.equals(
 				value.identifier.id,
-				this.remoteExtensionId
-			)
+				this.remoteExtensionId,
+			),
 		);
 		if (installed) {
 			if (this.extensionEnablementService.isEnabled(installed)) {

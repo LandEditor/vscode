@@ -3,16 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { PerformanceMark } from "vs/base/common/performance";
-import type { UriComponents, URI } from "vs/base/common/uri";
-import type { IWebSocketFactory } from "vs/platform/remote/browser/browserSocketFactory";
-import type { IURLCallbackProvider } from "vs/workbench/services/url/browser/urlService";
-import type { LogLevel } from "vs/platform/log/common/log";
-import type { IUpdateProvider } from "vs/workbench/services/update/browser/updateService";
 import type { Event } from "vs/base/common/event";
+import type { PerformanceMark } from "vs/base/common/performance";
 import type { IProductConfiguration } from "vs/base/common/product";
-import type { ISecretStorageProvider } from "vs/platform/secrets/common/secrets";
-import type { TunnelProviderFeatures } from "vs/platform/tunnel/common/tunnel";
+import type { URI, UriComponents } from "vs/base/common/uri";
+import type { ITextEditorOptions } from "vs/platform/editor/common/editor";
+import type { LogLevel } from "vs/platform/log/common/log";
 import type {
 	IProgress,
 	IProgressCompositeOptions,
@@ -22,13 +18,17 @@ import type {
 	IProgressStep,
 	IProgressWindowOptions,
 } from "vs/platform/progress/common/progress";
-import type { ITextEditorOptions } from "vs/platform/editor/common/editor";
+import type { IWebSocketFactory } from "vs/platform/remote/browser/browserSocketFactory";
+import type { ISecretStorageProvider } from "vs/platform/secrets/common/secrets";
+import type { TunnelProviderFeatures } from "vs/platform/tunnel/common/tunnel";
 import type {
 	IFolderToOpen,
 	IWorkspaceToOpen,
 } from "vs/platform/window/common/window";
 import type { EditorGroupLayout } from "vs/workbench/services/editor/common/editorGroupsService";
 import type { IEmbedderTerminalOptions } from "vs/workbench/services/terminal/common/embedderTerminalService";
+import type { IUpdateProvider } from "vs/workbench/services/update/browser/updateService";
+import type { IURLCallbackProvider } from "vs/workbench/services/url/browser/urlService";
 
 /**
  * The `IWorkbench` interface is the API facade for web embedders
@@ -102,7 +102,7 @@ export interface IWorkbench {
 				| IProgressNotificationOptions
 				| IProgressWindowOptions
 				| IProgressCompositeOptions,
-			task: (progress: IProgress<IProgressStep>) => Promise<R>
+			task: (progress: IProgress<IProgressStep>) => Promise<R>,
 		): Promise<R>;
 
 		/**
@@ -412,7 +412,7 @@ export interface IWorkspaceProvider {
 	 */
 	open(
 		workspace: IWorkspace,
-		options?: { reuse?: boolean; payload?: object }
+		options?: { reuse?: boolean; payload?: object },
 	): Promise<boolean>;
 }
 
@@ -472,7 +472,7 @@ export interface ITunnelProvider {
 export interface ITunnelFactory {
 	(
 		tunnelOptions: ITunnelOptions,
-		tunnelCreationOptions: TunnelCreationOptions
+		tunnelCreationOptions: TunnelCreationOptions,
 	): Promise<ITunnel> | undefined;
 }
 
@@ -526,8 +526,8 @@ export interface IShowPortCandidate {
 }
 
 export enum Menu {
-	CommandPalette,
-	StatusBarWindowIndicatorMenu,
+	CommandPalette = 0,
+	StatusBarWindowIndicatorMenu = 1,
 }
 
 export interface ICommand {
@@ -786,7 +786,7 @@ export interface ISettingsSyncOptions {
 	 */
 	enablementHandler?(
 		enablement: boolean,
-		authenticationProvider: string
+		authenticationProvider: string,
 	): void;
 
 	/**
@@ -868,6 +868,6 @@ export interface IRemoteResourceRequest {
 	respondWith(
 		statusCode: number,
 		body: Uint8Array,
-		headers: Record<string, string>
+		headers: Record<string, string>,
 	): void;
 }

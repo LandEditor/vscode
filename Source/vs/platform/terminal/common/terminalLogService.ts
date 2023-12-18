@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from "vs/base/common/lifecycle";
 import { Event } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
+import { joinPath } from "vs/base/common/resources";
 import { localize } from "vs/nls";
+import { IEnvironmentService } from "vs/platform/environment/common/environment";
 import { ILogger, ILoggerService, LogLevel } from "vs/platform/log/common/log";
 import { ITerminalLogService } from "vs/platform/terminal/common/terminal";
 import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
-import { IEnvironmentService } from "vs/platform/environment/common/environment";
-import { joinPath } from "vs/base/common/resources";
 
 export class TerminalLogService
 	extends Disposable

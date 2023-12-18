@@ -12,9 +12,11 @@ import {
 } from "vs/base/common/lifecycle";
 import { LinkedList } from "vs/base/common/linkedList";
 import { Schemas } from "vs/base/common/network";
+import { isWeb } from "vs/base/common/platform";
+import { isEqualAuthority } from "vs/base/common/resources";
 import { URI } from "vs/base/common/uri";
-import { IPath } from "vs/platform/window/common/window";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IFileService } from "vs/platform/files/common/files";
 import {
 	InstantiationType,
 	registerSingleton,
@@ -24,39 +26,37 @@ import {
 	ResolverResult,
 } from "vs/platform/remote/common/remoteAuthorityResolver";
 import { getRemoteAuthority } from "vs/platform/remote/common/remoteHosts";
-import { isVirtualResource } from "vs/platform/workspace/common/virtualWorkspace";
 import {
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import { IPath } from "vs/platform/window/common/window";
+import { isVirtualResource } from "vs/platform/workspace/common/virtualWorkspace";
 import {
 	ISingleFolderWorkspaceIdentifier,
-	isSavedWorkspace,
-	isSingleFolderWorkspaceIdentifier,
-	isTemporaryWorkspace,
 	IWorkspace,
 	IWorkspaceContextService,
 	IWorkspaceFolder,
-	toWorkspaceIdentifier,
 	WorkbenchState,
+	isSavedWorkspace,
+	isSingleFolderWorkspaceIdentifier,
+	isTemporaryWorkspace,
+	toWorkspaceIdentifier,
 } from "vs/platform/workspace/common/workspace";
 import {
-	WorkspaceTrustRequestOptions,
-	IWorkspaceTrustManagementService,
+	IWorkspaceTrustEnablementService,
 	IWorkspaceTrustInfo,
-	IWorkspaceTrustUriInfo,
+	IWorkspaceTrustManagementService,
 	IWorkspaceTrustRequestService,
 	IWorkspaceTrustTransitionParticipant,
+	IWorkspaceTrustUriInfo,
+	WorkspaceTrustRequestOptions,
 	WorkspaceTrustUriResponse,
-	IWorkspaceTrustEnablementService,
 } from "vs/platform/workspace/common/workspaceTrust";
 import { Memento, MementoObject } from "vs/workbench/common/memento";
 import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import { isEqualAuthority } from "vs/base/common/resources";
-import { isWeb } from "vs/base/common/platform";
-import { IFileService } from "vs/platform/files/common/files";
 
 export const WORKSPACE_TRUST_ENABLED = "security.workspace.trust.enabled";
 export const WORKSPACE_TRUST_STARTUP_PROMPT =
@@ -74,7 +74,7 @@ export class CanonicalWorkspace implements IWorkspace {
 	constructor(
 		private readonly originalWorkspace: IWorkspace,
 		private readonly canonicalFolderUris: URI[],
-		private readonly canonicalConfiguration: URI | null | undefined
+		private readonly canonicalConfiguration: URI | null | undefined,
 	) {}
 
 	get folders(): IWorkspaceFolder[] {
@@ -144,7 +144,7 @@ export class WorkspaceTrustManagementService
 	readonly onDidChangeTrust = this._onDidChangeTrust.event;
 
 	private readonly _onDidChangeTrustedFolders = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onDidChangeTrustedFolders = this._onDidChangeTrustedFolders.event;
 
@@ -225,7 +225,7 @@ export class WorkspaceTrustManagementService
 				.then(async (result) => {
 					this._remoteAuthority = result;
 					await this.fileService.activateProvider(
-						Schemas.vscodeRemote
+						Schemas.vscodeRemote,
 					);
 					await this.updateWorkspaceTrust();
 				})
@@ -254,14 +254,14 @@ export class WorkspaceTrustManagementService
 	private registerListeners(): void {
 		this._register(
 			this.workspaceService.onDidChangeWorkspaceFolders(
-				async () => await this.updateWorkspaceTrust()
-			)
+				async () => await this.updateWorkspaceTrust(),
+			),
 		);
 		this._register(
 			this.storageService.onDidChangeValue(
 				StorageScope.APPLICATION,
 				this.storageKey,
-				this._register(new DisposableStore())
+				this._register(new DisposableStore()),
 			)(async () => {
 				/* This will only execute if storage was changed by a user action in a separate window */
 				if (
@@ -273,7 +273,7 @@ export class WorkspaceTrustManagementService
 
 					await this.updateWorkspaceTrust();
 				}
-			})
+			}),
 		);
 	}
 
@@ -318,15 +318,15 @@ export class WorkspaceTrustManagementService
 				.filter((f) => !!f.fileUri)
 				.map((f) => f.fileUri!);
 			const canonicalFilesToOpen = await Promise.all(
-				filesToOpenOrCreateUris.map((uri) => this.getCanonicalUri(uri))
+				filesToOpenOrCreateUris.map((uri) => this.getCanonicalUri(uri)),
 			);
 
 			this._canonicalStartupFiles.push(
 				...canonicalFilesToOpen.filter((uri) =>
 					this._canonicalStartupFiles.every(
-						(u) => !this.uriIdentityService.extUri.isEqual(uri, u)
-					)
-				)
+						(u) => !this.uriIdentityService.extUri.isEqual(uri, u),
+					),
+				),
 			);
 		}
 
@@ -335,7 +335,7 @@ export class WorkspaceTrustManagementService
 			.getWorkspace()
 			.folders.map((f) => f.uri);
 		const canonicalWorkspaceFolders = await Promise.all(
-			workspaceUris.map((uri) => this.getCanonicalUri(uri))
+			workspaceUris.map((uri) => this.getCanonicalUri(uri)),
 		);
 
 		let canonicalWorkspaceConfiguration =
@@ -344,25 +344,25 @@ export class WorkspaceTrustManagementService
 			canonicalWorkspaceConfiguration &&
 			isSavedWorkspace(
 				canonicalWorkspaceConfiguration,
-				this.environmentService
+				this.environmentService,
 			)
 		) {
 			canonicalWorkspaceConfiguration = await this.getCanonicalUri(
-				canonicalWorkspaceConfiguration
+				canonicalWorkspaceConfiguration,
 			);
 		}
 
 		this._canonicalWorkspace = new CanonicalWorkspace(
 			this.workspaceService.getWorkspace(),
 			canonicalWorkspaceFolders,
-			canonicalWorkspaceConfiguration
+			canonicalWorkspaceConfiguration,
 		);
 	}
 
 	private loadTrustInfo(): IWorkspaceTrustInfo {
 		const infoAsString = this.storageService.get(
 			this.storageKey,
-			StorageScope.APPLICATION
+			StorageScope.APPLICATION,
 		);
 
 		let result: IWorkspaceTrustInfo | undefined;
@@ -386,7 +386,7 @@ export class WorkspaceTrustManagementService
 			return { uri: URI.revive(info.uri), trusted: info.trusted };
 		});
 		result.uriTrustInfo = result.uriTrustInfo.filter(
-			(info) => info.trusted
+			(info) => info.trusted,
 		);
 
 		return result;
@@ -397,7 +397,7 @@ export class WorkspaceTrustManagementService
 			this.storageKey,
 			JSON.stringify(this._trustStateInfo),
 			StorageScope.APPLICATION,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 		this._onDidChangeTrustedFolders.fire();
 
@@ -406,7 +406,7 @@ export class WorkspaceTrustManagementService
 
 	private getWorkspaceUris(): URI[] {
 		const workspaceUris = this._canonicalWorkspace.folders.map(
-			(f) => f.uri
+			(f) => f.uri,
 		);
 		const workspaceConfiguration = this._canonicalWorkspace.configuration;
 		if (
@@ -452,7 +452,7 @@ export class WorkspaceTrustManagementService
 
 			// User setting
 			return !!this.configurationService.getValue(
-				WORKSPACE_TRUST_EMPTY_WINDOW
+				WORKSPACE_TRUST_EMPTY_WINDOW,
 			);
 		}
 
@@ -520,7 +520,7 @@ export class WorkspaceTrustManagementService
 			if (
 				this.uriIdentityService.extUri.isEqualOrParent(
 					uri,
-					trustInfo.uri
+					trustInfo.uri,
 				)
 			) {
 				const fsPath = trustInfo.uri.fsPath;
@@ -552,8 +552,8 @@ export class WorkspaceTrustManagementService
 					(trustInfo) =>
 						this.uriIdentityService.extUri.isEqual(
 							trustInfo.uri,
-							uri
-						)
+							uri,
+						),
 				);
 				if (!foundItem) {
 					this._trustStateInfo.uriTrustInfo.push({
@@ -569,8 +569,8 @@ export class WorkspaceTrustManagementService
 						(trustInfo) =>
 							!this.uriIdentityService.extUri.isEqual(
 								trustInfo.uri,
-								uri
-							)
+								uri,
+							),
 					);
 				if (
 					previousLength !== this._trustStateInfo.uriTrustInfo.length
@@ -619,7 +619,7 @@ export class WorkspaceTrustManagementService
 		return (
 			isEqualAuthority(
 				getRemoteAuthority(uri),
-				this._remoteAuthority.authority.authority
+				this._remoteAuthority.authority.authority,
 			) && !!this._remoteAuthority.options?.isTrusted
 		);
 	}
@@ -674,7 +674,7 @@ export class WorkspaceTrustManagementService
 
 		// All workspace uris are trusted automatically
 		const workspaceUris = this.getWorkspaceUris().filter(
-			(uri) => !this.isTrustedVirtualResource(uri)
+			(uri) => !this.isTrustedVirtualResource(uri),
 		);
 		if (workspaceUris.length === 0) {
 			return true;
@@ -685,7 +685,7 @@ export class WorkspaceTrustManagementService
 
 	canSetParentFolderTrust(): boolean {
 		const workspaceIdentifier = toWorkspaceIdentifier(
-			this._canonicalWorkspace
+			this._canonicalWorkspace,
 		);
 
 		if (!isSingleFolderWorkspaceIdentifier(workspaceIdentifier)) {
@@ -700,12 +700,12 @@ export class WorkspaceTrustManagementService
 		}
 
 		const parentFolder = this.uriIdentityService.extUri.dirname(
-			workspaceIdentifier.uri
+			workspaceIdentifier.uri,
 		);
 		if (
 			this.uriIdentityService.extUri.isEqual(
 				workspaceIdentifier.uri,
-				parentFolder
+				parentFolder,
 			)
 		) {
 			return false;
@@ -718,7 +718,7 @@ export class WorkspaceTrustManagementService
 		if (this.canSetParentFolderTrust()) {
 			const workspaceUri = (
 				toWorkspaceIdentifier(
-					this._canonicalWorkspace
+					this._canonicalWorkspace,
 				) as ISingleFolderWorkspaceIdentifier
 			).uri;
 			const parentFolder =
@@ -745,7 +745,7 @@ export class WorkspaceTrustManagementService
 
 		// All workspace uris are trusted automatically
 		const workspaceUris = this.getWorkspaceUris().filter(
-			(uri) => !this.isTrustedVirtualResource(uri)
+			(uri) => !this.isTrustedVirtualResource(uri),
 		);
 		if (workspaceUris.length === 0) {
 			return false;
@@ -759,7 +759,7 @@ export class WorkspaceTrustManagementService
 		// Trusted workspaces
 		// Can only untrusted in the single folder scenario
 		const workspaceIdentifier = toWorkspaceIdentifier(
-			this._canonicalWorkspace
+			this._canonicalWorkspace,
 		);
 		if (!isSingleFolderWorkspaceIdentifier(workspaceIdentifier)) {
 			return false;
@@ -779,7 +779,7 @@ export class WorkspaceTrustManagementService
 			!trustInfo.trusted ||
 			!this.uriIdentityService.extUri.isEqual(
 				workspaceIdentifier.uri,
-				trustInfo.uri
+				trustInfo.uri,
 			)
 		) {
 			return false;
@@ -788,7 +788,7 @@ export class WorkspaceTrustManagementService
 		// Check if the parent is also trusted
 		if (this.canSetParentFolderTrust()) {
 			const parentFolder = this.uriIdentityService.extUri.dirname(
-				workspaceIdentifier.uri
+				workspaceIdentifier.uri,
 			);
 			const parentPathTrustInfo = this.doGetUriTrustInfo(parentFolder);
 			if (parentPathTrustInfo.trusted) {
@@ -827,7 +827,7 @@ export class WorkspaceTrustManagementService
 	async setUrisTrust(uris: URI[], trusted: boolean): Promise<void> {
 		this.doSetUrisTrust(
 			await Promise.all(uris.map((uri) => this.getCanonicalUri(uri))),
-			trusted
+			trusted,
 		);
 	}
 
@@ -841,14 +841,14 @@ export class WorkspaceTrustManagementService
 			const canonicalUri = await this.getCanonicalUri(uri);
 			const cleanUri =
 				this.uriIdentityService.extUri.removeTrailingPathSeparator(
-					canonicalUri
+					canonicalUri,
 				);
 			let added = false;
 			for (const addedUri of this._trustStateInfo.uriTrustInfo) {
 				if (
 					this.uriIdentityService.extUri.isEqual(
 						addedUri.uri,
-						cleanUri
+						cleanUri,
 					)
 				) {
 					added = true;
@@ -870,10 +870,10 @@ export class WorkspaceTrustManagementService
 	}
 
 	addWorkspaceTrustTransitionParticipant(
-		participant: IWorkspaceTrustTransitionParticipant
+		participant: IWorkspaceTrustTransitionParticipant,
 	): IDisposable {
 		return this._trustTransitionManager.addWorkspaceTrustTransitionParticipant(
-			participant
+			participant,
 		);
 	}
 
@@ -888,22 +888,22 @@ export class WorkspaceTrustRequestService
 
 	private _openFilesTrustRequestPromise?: Promise<WorkspaceTrustUriResponse>;
 	private _openFilesTrustRequestResolver?: (
-		response: WorkspaceTrustUriResponse
+		response: WorkspaceTrustUriResponse,
 	) => void;
 
 	private _workspaceTrustRequestPromise?: Promise<boolean | undefined>;
 	private _workspaceTrustRequestResolver?: (
-		trusted: boolean | undefined
+		trusted: boolean | undefined,
 	) => void;
 
 	private readonly _onDidInitiateOpenFilesTrustRequest = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onDidInitiateOpenFilesTrustRequest =
 		this._onDidInitiateOpenFilesTrustRequest.event;
 
 	private readonly _onDidInitiateWorkspaceTrustRequest = this._register(
-		new Emitter<WorkspaceTrustRequestOptions | undefined>()
+		new Emitter<WorkspaceTrustRequestOptions | undefined>(),
 	);
 	readonly onDidInitiateWorkspaceTrustRequest =
 		this._onDidInitiateWorkspaceTrustRequest.event;
@@ -926,20 +926,20 @@ export class WorkspaceTrustRequestService
 
 	private get untrustedFilesSetting(): "prompt" | "open" | "newWindow" {
 		return this.configurationService.getValue(
-			WORKSPACE_TRUST_UNTRUSTED_FILES
+			WORKSPACE_TRUST_UNTRUSTED_FILES,
 		);
 	}
 
 	private set untrustedFilesSetting(value: "prompt" | "open" | "newWindow") {
 		this.configurationService.updateValue(
 			WORKSPACE_TRUST_UNTRUSTED_FILES,
-			value
+			value,
 		);
 	}
 
 	async completeOpenFilesTrustRequest(
 		result: WorkspaceTrustUriResponse,
-		saveResponse?: boolean
+		saveResponse?: boolean,
 	): Promise<void> {
 		if (!this._openFilesTrustRequestResolver) {
 			return;
@@ -947,8 +947,7 @@ export class WorkspaceTrustRequestService
 
 		// Set acceptsOutOfWorkspaceFiles
 		if (result === WorkspaceTrustUriResponse.Open) {
-			this.workspaceTrustManagementService.acceptsOutOfWorkspaceFiles =
-				true;
+			this.workspaceTrustManagementService.acceptsOutOfWorkspaceFiles = true;
 		}
 
 		// Save response
@@ -970,7 +969,7 @@ export class WorkspaceTrustRequestService
 	}
 
 	async requestOpenFilesTrust(
-		uris: URI[]
+		uris: URI[],
 	): Promise<WorkspaceTrustUriResponse> {
 		// If workspace is untrusted, there is no conflict
 		if (!this.workspaceTrustManagementService.isWorkspaceTrusted()) {
@@ -979,8 +978,8 @@ export class WorkspaceTrustRequestService
 
 		const openFilesTrustInfo = await Promise.all(
 			uris.map((uri) =>
-				this.workspaceTrustManagementService.getUriTrustInfo(uri)
-			)
+				this.workspaceTrustManagementService.getUriTrustInfo(uri),
+			),
 		);
 
 		// If all uris are trusted, there is no conflict
@@ -1009,13 +1008,13 @@ export class WorkspaceTrustRequestService
 		}
 
 		// Create/return a promise
-		if (!this._openFilesTrustRequestPromise) {
+		if (this._openFilesTrustRequestPromise) {
+			return this._openFilesTrustRequestPromise;
+		} else {
 			this._openFilesTrustRequestPromise =
 				new Promise<WorkspaceTrustUriResponse>((resolve) => {
 					this._openFilesTrustRequestResolver = resolve;
 				});
-		} else {
-			return this._openFilesTrustRequestPromise;
 		}
 
 		this._onDidInitiateOpenFilesTrustRequest.fire();
@@ -1030,7 +1029,7 @@ export class WorkspaceTrustRequestService
 		if (this._workspaceTrustRequestResolver) {
 			this._workspaceTrustRequestResolver(
 				trusted ??
-					this.workspaceTrustManagementService.isWorkspaceTrusted()
+					this.workspaceTrustManagementService.isWorkspaceTrusted(),
 			);
 
 			this._workspaceTrustRequestResolver = undefined;
@@ -1059,7 +1058,7 @@ export class WorkspaceTrustRequestService
 
 		// Register one-time event handler to resolve the promise when workspace trust changed
 		Event.once(this.workspaceTrustManagementService.onDidChangeTrust)(
-			(trusted) => this.resolveWorkspaceTrustRequest(trusted)
+			(trusted) => this.resolveWorkspaceTrustRequest(trusted),
 		);
 
 		// Update storage, transition workspace state
@@ -1067,7 +1066,7 @@ export class WorkspaceTrustRequestService
 	}
 
 	async requestWorkspaceTrust(
-		options?: WorkspaceTrustRequestOptions
+		options?: WorkspaceTrustRequestOptions,
 	): Promise<boolean | undefined> {
 		// Trusted workspace
 		if (this.workspaceTrustManagementService.isWorkspaceTrusted()) {
@@ -1075,14 +1074,14 @@ export class WorkspaceTrustRequestService
 		}
 
 		// Modal request
-		if (!this._workspaceTrustRequestPromise) {
+		if (this._workspaceTrustRequestPromise) {
+			// Return existing promise
+			return this._workspaceTrustRequestPromise;
+		} else {
 			// Create promise
 			this._workspaceTrustRequestPromise = new Promise((resolve) => {
 				this._workspaceTrustRequestResolver = resolve;
 			});
-		} else {
-			// Return existing promise
-			return this._workspaceTrustRequestPromise;
 		}
 
 		this._onDidInitiateWorkspaceTrustRequest.fire(options);
@@ -1108,7 +1107,7 @@ class WorkspaceTrustTransitionManager extends Disposable {
 		new LinkedList<IWorkspaceTrustTransitionParticipant>();
 
 	addWorkspaceTrustTransitionParticipant(
-		participant: IWorkspaceTrustTransitionParticipant
+		participant: IWorkspaceTrustTransitionParticipant,
 	): IDisposable {
 		const remove = this.participants.push(participant);
 		return toDisposable(() => remove());
@@ -1139,7 +1138,7 @@ class WorkspaceTrustMemento {
 			this._memento = new Memento("workspaceTrust", storageService);
 			this._mementoObject = this._memento.getMemento(
 				StorageScope.WORKSPACE,
-				StorageTarget.MACHINE
+				StorageTarget.MACHINE,
 			);
 		} else {
 			this._mementoObject = {};
@@ -1172,5 +1171,5 @@ class WorkspaceTrustMemento {
 registerSingleton(
 	IWorkspaceTrustRequestService,
 	WorkspaceTrustRequestService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

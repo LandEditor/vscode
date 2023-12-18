@@ -21,7 +21,7 @@ class NativeWindowDriver extends BrowserWindowDriver {
 		@IFileService fileService: IFileService,
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@ILifecycleService lifecycleService: ILifecycleService,
-		@ILogService logService: ILogService
+		@ILogService logService: ILogService,
 	) {
 		super(fileService, environmentService, lifecycleService, logService);
 	}
@@ -33,7 +33,7 @@ class NativeWindowDriver extends BrowserWindowDriver {
 
 export function registerWindowDriver(
 	instantiationService: IInstantiationService,
-	helper: INativeWindowDriverHelper
+	helper: INativeWindowDriverHelper,
 ): void {
 	Object.assign(mainWindow, {
 		driver: instantiationService.createInstance(NativeWindowDriver, helper),

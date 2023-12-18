@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TextDocument } from "vscode";
-import { Node as FlatNode } from "EmmetFlatNode";
-import parse from "@emmetio/html-matcher";
 import parseStylesheet from "@emmetio/css-parser";
+import parse from "@emmetio/html-matcher";
+import { Node as FlatNode } from "EmmetFlatNode";
+import { TextDocument } from "vscode";
 import { isStyleSheet } from "./util";
 
 type Pair<K, V> = {
@@ -19,7 +19,7 @@ const _parseCache = new Map<string, Pair<number, FlatNode> | undefined>();
 
 export function getRootNode(
 	document: TextDocument,
-	useCache: boolean
+	useCache: boolean,
 ): FlatNode {
 	const key = document.uri.toString();
 	const result = _parseCache.get(key);

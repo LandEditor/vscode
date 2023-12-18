@@ -3,36 +3,36 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { URI } from "vs/base/common/uri";
 import * as nls from "vs/nls";
-import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteAgentService";
-import {
-	IRemoteAuthorityResolverService,
-	RemoteConnectionType,
-	RemoteAuthorityResolverError,
-} from "vs/platform/remote/common/remoteAuthorityResolver";
-import { IProductService } from "vs/platform/product/common/productService";
-import { AbstractRemoteAgentService } from "vs/workbench/services/remote/common/abstractRemoteAgentService";
-import { ISignService } from "vs/platform/sign/common/sign";
 import { ILogService } from "vs/platform/log/common/log";
-import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
+import { INativeHostService } from "vs/platform/native/common/native";
 import {
 	INotificationService,
 	IPromptChoice,
 	Severity,
 } from "vs/platform/notification/common/notification";
+import { IOpenerService } from "vs/platform/opener/common/opener";
+import { IProductService } from "vs/platform/product/common/productService";
 import { Registry } from "vs/platform/registry/common/platform";
 import {
+	IRemoteAuthorityResolverService,
+	RemoteAuthorityResolverError,
+	RemoteConnectionType,
+} from "vs/platform/remote/common/remoteAuthorityResolver";
+import { IRemoteSocketFactoryService } from "vs/platform/remote/common/remoteSocketFactoryService";
+import { ISignService } from "vs/platform/sign/common/sign";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import {
+	Extensions,
 	IWorkbenchContribution,
 	IWorkbenchContributionsRegistry,
-	Extensions,
 } from "vs/workbench/common/contributions";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
 import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { INativeHostService } from "vs/platform/native/common/native";
-import { URI } from "vs/base/common/uri";
-import { IOpenerService } from "vs/platform/opener/common/opener";
+import { AbstractRemoteAgentService } from "vs/workbench/services/remote/common/abstractRemoteAgentService";
+import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteAgentService";
 import { IUserDataProfileService } from "vs/workbench/services/userDataProfile/common/userDataProfile";
-import { IRemoteSocketFactoryService } from "vs/platform/remote/common/remoteSocketFactoryService";
 
 export class RemoteAgentService
 	extends AbstractRemoteAgentService
@@ -49,7 +49,7 @@ export class RemoteAgentService
 		@IRemoteAuthorityResolverService
 		remoteAuthorityResolverService: IRemoteAuthorityResolverService,
 		@ISignService signService: ISignService,
-		@ILogService logService: ILogService
+		@ILogService logService: ILogService,
 	) {
 		super(
 			remoteSocketFactoryService,
@@ -58,7 +58,7 @@ export class RemoteAgentService
 			productService,
 			remoteAuthorityResolverService,
 			signService,
-			logService
+			logService,
 		);
 	}
 }
@@ -117,7 +117,7 @@ class RemoteConnectionFailureNotificationContribution
 		}
 		const connectionData =
 			this._remoteAuthorityResolverService.getConnectionData(
-				remoteAgentConnection.remoteAuthority
+				remoteAgentConnection.remoteAuthority,
 			);
 		if (
 			!connectionData ||
@@ -134,9 +134,9 @@ class RemoteConnectionFailureNotificationContribution
 }
 
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench
+	Extensions.Workbench,
 );
 workbenchRegistry.registerWorkbenchContribution(
 	RemoteConnectionFailureNotificationContribution,
-	LifecyclePhase.Ready
+	LifecyclePhase.Ready,
 );

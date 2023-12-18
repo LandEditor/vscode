@@ -3,27 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IProductService } from "vs/platform/product/common/productService";
 import { Action } from "vs/base/common/actions";
-import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
+import { VSBuffer } from "vs/base/common/buffer";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { joinPath } from "vs/base/common/resources";
 import { URI } from "vs/base/common/uri";
-import { IExtensionHostProfile } from "vs/workbench/services/extensions/common/extensions";
+import { IRequestContext } from "vs/base/parts/request/common/request";
+import { localize } from "vs/nls";
+import { IDialogService } from "vs/platform/dialogs/common/dialogs";
+import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
+import { IFileService } from "vs/platform/files/common/files";
 import {
 	IInstantiationService,
 	ServicesAccessor,
 } from "vs/platform/instantiation/common/instantiation";
-import { localize } from "vs/nls";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { IRequestService, asText } from "vs/platform/request/common/request";
-import { joinPath } from "vs/base/common/resources";
-import { IDialogService } from "vs/platform/dialogs/common/dialogs";
-import { IOpenerService } from "vs/platform/opener/common/opener";
 import { INativeHostService } from "vs/platform/native/common/native";
-import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
+import { IOpenerService } from "vs/platform/opener/common/opener";
+import { IProductService } from "vs/platform/product/common/productService";
 import { Utils } from "vs/platform/profiling/common/profiling";
-import { IFileService } from "vs/platform/files/common/files";
-import { VSBuffer } from "vs/base/common/buffer";
-import { IRequestContext } from "vs/base/parts/request/common/request";
+import { IRequestService, asText } from "vs/platform/request/common/request";
+import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
+import { IExtensionHostProfile } from "vs/workbench/services/extensions/common/extensions";
 
 abstract class RepoInfo {
 	abstract get base(): string;
@@ -55,7 +55,7 @@ abstract class RepoInfo {
 		) {
 			const base = URI.parse(desc.repository.url);
 			const match = /\/([^/]+)\/([^/]+)(\.git)?$/.exec(
-				desc.repository.url
+				desc.repository.url,
 			);
 			if (match) {
 				result = {
@@ -96,7 +96,7 @@ export class SlowExtensionAction extends Action {
 		const action = await this._instantiationService.invokeFunction(
 			createSlowExtensionAction,
 			this.extension,
-			this.profile
+			this.profile,
 		);
 		if (action) {
 			await action.run();
@@ -107,7 +107,7 @@ export class SlowExtensionAction extends Action {
 export async function createSlowExtensionAction(
 	accessor: ServicesAccessor,
 	extension: IExtensionDescription,
-	profile: IExtensionHostProfile
+	profile: IExtensionHostProfile,
 ): Promise<Action | undefined> {
 	const info = RepoInfo.fromExtension(extension);
 	if (!info) {
@@ -136,14 +136,14 @@ export async function createSlowExtensionAction(
 			ReportExtensionSlowAction,
 			extension,
 			info,
-			profile
+			profile,
 		);
 	} else {
 		return instaService.createInstance(
 			ShowExtensionSlowAction,
 			extension,
 			info,
-			profile
+			profile,
 		);
 	}
 }
@@ -169,15 +169,15 @@ class ReportExtensionSlowAction extends Action {
 		// rewrite pii (paths) and store on disk
 		const data = Utils.rewriteAbsolutePaths(
 			this.profile.data,
-			"pii_removed"
+			"pii_removed",
 		);
 		const path = joinPath(
 			this._environmentService.tmpDir,
-			`${this.extension.identifier.value}-unresponsive.cpuprofile.txt`
+			`${this.extension.identifier.value}-unresponsive.cpuprofile.txt`,
 		);
 		await this._fileService.writeFile(
 			path,
-			VSBuffer.fromString(JSON.stringify(data, undefined, 4))
+			VSBuffer.fromString(JSON.stringify(data, undefined, 4)),
 		);
 
 		// build issue
@@ -199,8 +199,8 @@ class ReportExtensionSlowAction extends Action {
 			localize(
 				"attach.msg",
 				"This is a reminder to make sure that you have not forgotten to attach '{0}' to the issue you have just created.",
-				path.fsPath
-			)
+				path.fsPath,
+			),
 		);
 	}
 }
@@ -223,15 +223,15 @@ class ShowExtensionSlowAction extends Action {
 		// rewrite pii (paths) and store on disk
 		const data = Utils.rewriteAbsolutePaths(
 			this.profile.data,
-			"pii_removed"
+			"pii_removed",
 		);
 		const path = joinPath(
 			this._environmentService.tmpDir,
-			`${this.extension.identifier.value}-unresponsive.cpuprofile.txt`
+			`${this.extension.identifier.value}-unresponsive.cpuprofile.txt`,
 		);
 		await this._fileService.writeFile(
 			path,
-			VSBuffer.fromString(JSON.stringify(data, undefined, 4))
+			VSBuffer.fromString(JSON.stringify(data, undefined, 4)),
 		);
 
 		// show issues
@@ -243,8 +243,8 @@ class ShowExtensionSlowAction extends Action {
 			localize(
 				"attach.msg2",
 				"This is a reminder to make sure that you have not forgotten to attach '{0}' to an existing performance issue.",
-				path.fsPath
-			)
+				path.fsPath,
+			),
 		);
 	}
 }

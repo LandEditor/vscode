@@ -3,44 +3,44 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from "vs/base/common/uri";
-import { Event } from "vs/base/common/event";
-import { IDisposable } from "vs/base/common/lifecycle";
-import {
-	ISaveOptions,
-	IRevertOptions,
-	SaveReason,
-} from "vs/workbench/common/editor";
-import { ReadableStream } from "vs/base/common/stream";
-import {
-	IBaseFileStatWithMetadata,
-	IFileStatWithMetadata,
-	IWriteFileOptions,
-	FileOperationError,
-	FileOperationResult,
-	IReadFileStreamOptions,
-	IFileReadLimits,
-} from "vs/platform/files/common/files";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { ITextEditorModel } from "vs/editor/common/services/resolverService";
-import {
-	ITextBufferFactory,
-	ITextModel,
-	ITextSnapshot,
-} from "vs/editor/common/model";
 import {
 	VSBuffer,
 	VSBufferReadable,
 	VSBufferReadableStream,
 } from "vs/base/common/buffer";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { Event } from "vs/base/common/event";
+import { IDisposable } from "vs/base/common/lifecycle";
+import { ReadableStream } from "vs/base/common/stream";
 import { areFunctions, isUndefinedOrNull } from "vs/base/common/types";
+import { URI } from "vs/base/common/uri";
+import {
+	ITextBufferFactory,
+	ITextModel,
+	ITextSnapshot,
+} from "vs/editor/common/model";
+import { ITextEditorModel } from "vs/editor/common/services/resolverService";
+import {
+	FileOperationError,
+	FileOperationResult,
+	IBaseFileStatWithMetadata,
+	IFileReadLimits,
+	IFileStatWithMetadata,
+	IReadFileStreamOptions,
+	IWriteFileOptions,
+} from "vs/platform/files/common/files";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { IProgress, IProgressStep } from "vs/platform/progress/common/progress";
+import {
+	IRevertOptions,
+	ISaveOptions,
+	SaveReason,
+} from "vs/workbench/common/editor";
+import { IUntitledTextEditorModelManager } from "vs/workbench/services/untitled/common/untitledTextEditorService";
 import {
 	IWorkingCopy,
 	IWorkingCopySaveEvent,
 } from "vs/workbench/services/workingCopy/common/workingCopy";
-import { IUntitledTextEditorModelManager } from "vs/workbench/services/untitled/common/untitledTextEditorService";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { IProgress, IProgressStep } from "vs/platform/progress/common/progress";
 import { IFileOperationUndoRedoInfo } from "vs/workbench/services/workingCopy/common/workingCopyFileService";
 
 export const ITextFileService =
@@ -82,7 +82,7 @@ export interface ITextFileService extends IDisposable {
 	 */
 	save(
 		resource: URI,
-		options?: ITextFileSaveOptions
+		options?: ITextFileSaveOptions,
 	): Promise<URI | undefined>;
 
 	/**
@@ -96,7 +96,7 @@ export interface ITextFileService extends IDisposable {
 	saveAs(
 		resource: URI,
 		targetResource?: URI,
-		options?: ITextFileSaveAsOptions
+		options?: ITextFileSaveAsOptions,
 	): Promise<URI | undefined>;
 
 	/**
@@ -112,7 +112,7 @@ export interface ITextFileService extends IDisposable {
 	 */
 	read(
 		resource: URI,
-		options?: IReadTextFileOptions
+		options?: IReadTextFileOptions,
 	): Promise<ITextFileContent>;
 
 	/**
@@ -120,7 +120,7 @@ export interface ITextFileService extends IDisposable {
 	 */
 	readStream(
 		resource: URI,
-		options?: IReadTextFileOptions
+		options?: IReadTextFileOptions,
 	): Promise<ITextFileStreamContent>;
 
 	/**
@@ -129,7 +129,7 @@ export interface ITextFileService extends IDisposable {
 	write(
 		resource: URI,
 		value: string | ITextSnapshot,
-		options?: IWriteTextFileOptions
+		options?: IWriteTextFileOptions,
 	): Promise<IFileStatWithMetadata>;
 
 	/**
@@ -142,7 +142,7 @@ export interface ITextFileService extends IDisposable {
 			value?: string | ITextSnapshot;
 			options?: { overwrite?: boolean };
 		}[],
-		undoInfo?: IFileOperationUndoRedoInfo
+		undoInfo?: IFileOperationUndoRedoInfo,
 	): Promise<readonly IFileStatWithMetadata[]>;
 
 	/**
@@ -153,27 +153,27 @@ export interface ITextFileService extends IDisposable {
 	getEncodedReadable(
 		resource: URI,
 		value: ITextSnapshot,
-		options?: IWriteTextFileOptions
+		options?: IWriteTextFileOptions,
 	): Promise<VSBufferReadable>;
 	getEncodedReadable(
 		resource: URI,
 		value: string,
-		options?: IWriteTextFileOptions
+		options?: IWriteTextFileOptions,
 	): Promise<VSBuffer>;
 	getEncodedReadable(
 		resource: URI,
 		value?: ITextSnapshot,
-		options?: IWriteTextFileOptions
+		options?: IWriteTextFileOptions,
 	): Promise<VSBufferReadable | undefined>;
 	getEncodedReadable(
 		resource: URI,
 		value?: string,
-		options?: IWriteTextFileOptions
+		options?: IWriteTextFileOptions,
 	): Promise<VSBuffer | undefined>;
 	getEncodedReadable(
 		resource: URI,
 		value?: string | ITextSnapshot,
-		options?: IWriteTextFileOptions
+		options?: IWriteTextFileOptions,
 	): Promise<VSBuffer | VSBufferReadable | undefined>;
 
 	/**
@@ -185,7 +185,7 @@ export interface ITextFileService extends IDisposable {
 	getDecodedStream(
 		resource: URI,
 		value: VSBufferReadableStream,
-		options?: IReadTextFileEncodingOptions
+		options?: IReadTextFileEncodingOptions,
 	): Promise<ReadableStream<string>>;
 }
 
@@ -225,18 +225,18 @@ export interface IWriteTextFileOptions extends IWriteFileOptions {
 	readonly writeElevated?: boolean;
 }
 
-export const enum TextFileOperationResult {
-	FILE_IS_BINARY,
+export enum TextFileOperationResult {
+	FILE_IS_BINARY = 0,
 }
 
 export class TextFileOperationError extends FileOperationError {
 	static isTextFileOperationError(
-		obj: unknown
+		obj: unknown,
 	): obj is TextFileOperationError {
 		return (
 			obj instanceof Error &&
 			!isUndefinedOrNull(
-				(obj as TextFileOperationError).textFileOperationResult
+				(obj as TextFileOperationError).textFileOperationResult,
 			)
 		);
 	}
@@ -246,7 +246,7 @@ export class TextFileOperationError extends FileOperationError {
 	constructor(
 		message: string,
 		public textFileOperationResult: TextFileOperationResult,
-		options?: IReadTextFileOptions & IWriteTextFileOptions
+		options?: IReadTextFileOptions & IWriteTextFileOptions,
 	) {
 		super(message, FileOperationResult.FILE_OTHER_ERROR);
 
@@ -258,7 +258,7 @@ export interface IResourceEncodings {
 	getPreferredReadEncoding(resource: URI): Promise<IResourceEncoding>;
 	getPreferredWriteEncoding(
 		resource: URI,
-		preferredEncoding?: string
+		preferredEncoding?: string,
 	): Promise<IResourceEncoding>;
 }
 
@@ -280,41 +280,41 @@ export interface ISaveErrorHandler {
 /**
  * States the text file editor model can be in.
  */
-export const enum TextFileEditorModelState {
+export enum TextFileEditorModelState {
 	/**
 	 * A model is saved.
 	 */
-	SAVED,
+	SAVED = 0,
 
 	/**
 	 * A model is dirty.
 	 */
-	DIRTY,
+	DIRTY = 1,
 
 	/**
 	 * A model is currently being saved but this operation has not completed yet.
 	 */
-	PENDING_SAVE,
+	PENDING_SAVE = 2,
 
 	/**
 	 * A model is in conflict mode when changes cannot be saved because the
 	 * underlying file has changed. Models in conflict mode are always dirty.
 	 */
-	CONFLICT,
+	CONFLICT = 3,
 
 	/**
 	 * A model is in orphan state when the underlying file has been deleted.
 	 */
-	ORPHAN,
+	ORPHAN = 4,
 
 	/**
 	 * Any error that happens during a save that is not causing the CONFLICT state.
 	 * Models in error mode are always dirty.
 	 */
-	ERROR,
+	ERROR = 5,
 }
 
-export const enum TextFileResolveReason {
+export enum TextFileResolveReason {
 	EDITOR = 1,
 	REFERENCE = 2,
 	OTHER = 3,
@@ -394,7 +394,7 @@ export interface ITextFileSaveParticipant {
 		model: ITextFileEditorModel,
 		context: { reason: SaveReason },
 		progress: IProgress<IProgressStep>,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void>;
 }
 
@@ -431,7 +431,7 @@ export interface ITextFileEditorModelManager {
 	 */
 	resolve(
 		resource: URI,
-		options?: ITextFileEditorModelResolveOrCreateOptions
+		options?: ITextFileEditorModelResolveOrCreateOptions,
 	): Promise<ITextFileEditorModel>;
 
 	/**
@@ -445,7 +445,7 @@ export interface ITextFileEditorModelManager {
 	runSaveParticipants(
 		model: ITextFileEditorModel,
 		context: { reason: SaveReason },
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void>;
 
 	/**
@@ -517,16 +517,16 @@ export interface ITextFileResolveOptions {
 	readonly limits?: IFileReadLimits;
 }
 
-export const enum EncodingMode {
+export enum EncodingMode {
 	/**
 	 * Instructs the encoding support to encode the object with the provided encoding
 	 */
-	Encode,
+	Encode = 0,
 
 	/**
 	 * Instructs the encoding support to decode the object with the provided encoding
 	 */
-	Decode,
+	Decode = 1,
 }
 
 export interface IEncodingSupport {
@@ -584,7 +584,7 @@ export interface ITextFileEditorModel
 }
 
 export function isTextFileEditorModel(
-	model: ITextEditorModel
+	model: ITextEditorModel,
 ): model is ITextFileEditorModel {
 	const candidate = model as ITextFileEditorModel;
 
@@ -594,7 +594,7 @@ export function isTextFileEditorModel(
 		candidate.save,
 		candidate.revert,
 		candidate.isDirty,
-		candidate.getLanguageId
+		candidate.getLanguageId,
 	);
 }
 
@@ -634,13 +634,13 @@ export function stringToSnapshot(value: string): ITextSnapshot {
 export function toBufferOrReadable(value: string): VSBuffer;
 export function toBufferOrReadable(value: ITextSnapshot): VSBufferReadable;
 export function toBufferOrReadable(
-	value: string | ITextSnapshot
+	value: string | ITextSnapshot,
 ): VSBuffer | VSBufferReadable;
 export function toBufferOrReadable(
-	value: string | ITextSnapshot | undefined
+	value: string | ITextSnapshot | undefined,
 ): VSBuffer | VSBufferReadable | undefined;
 export function toBufferOrReadable(
-	value: string | ITextSnapshot | undefined
+	value: string | ITextSnapshot | undefined,
 ): VSBuffer | VSBufferReadable | undefined {
 	if (typeof value === "undefined") {
 		return undefined;

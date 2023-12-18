@@ -87,7 +87,7 @@ export interface IMergedEnvironmentVariableCollection {
 	 * @param scope The scope to get the variable map for. If undefined, the global scope is used.
 	 */
 	getVariableMap(
-		scope: EnvironmentVariableScope | undefined
+		scope: EnvironmentVariableScope | undefined,
 	): Map<string, IExtensionOwnedEnvironmentVariableMutator[]>;
 	/**
 	 * Gets the description map for a given scope.
@@ -95,7 +95,7 @@ export interface IMergedEnvironmentVariableCollection {
 	 * global scope is returned.
 	 */
 	getDescriptionMap(
-		scope: EnvironmentVariableScope | undefined
+		scope: EnvironmentVariableScope | undefined,
 	): Map<string, string | undefined>;
 	/**
 	 * Applies this collection to a process environment.
@@ -105,7 +105,7 @@ export interface IMergedEnvironmentVariableCollection {
 	applyToProcessEnvironment(
 		env: IProcessEnvironment,
 		scope: EnvironmentVariableScope | undefined,
-		variableResolver?: VariableResolver
+		variableResolver?: VariableResolver,
 	): Promise<void>;
 
 	/**
@@ -114,6 +114,6 @@ export interface IMergedEnvironmentVariableCollection {
 	 */
 	diff(
 		other: IMergedEnvironmentVariableCollection,
-		scope: EnvironmentVariableScope | undefined
+		scope: EnvironmentVariableScope | undefined,
 	): IMergedEnvironmentVariableCollectionDiff | undefined;
 }

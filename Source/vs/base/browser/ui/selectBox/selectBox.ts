@@ -86,7 +86,7 @@ export class SelectBox extends Widget implements ISelectBoxDelegate {
 		selected: number,
 		contextViewProvider: IContextViewProvider,
 		styles: ISelectBoxStyles,
-		selectBoxOptions?: ISelectBoxOptions
+		selectBoxOptions?: ISelectBoxOptions,
 	) {
 		super();
 
@@ -96,7 +96,7 @@ export class SelectBox extends Widget implements ISelectBoxDelegate {
 				options,
 				selected,
 				styles,
-				selectBoxOptions
+				selectBoxOptions,
 			);
 		} else {
 			this.selectBoxDelegate = new SelectBoxList(
@@ -104,7 +104,7 @@ export class SelectBox extends Widget implements ISelectBoxDelegate {
 				selected,
 				contextViewProvider,
 				styles,
-				selectBoxOptions
+				selectBoxOptions,
 			);
 		}
 

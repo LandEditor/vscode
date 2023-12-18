@@ -4,17 +4,17 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Disposable } from "vs/base/common/lifecycle";
-import { Registry } from "vs/platform/registry/common/platform";
 import { ServicesAccessor } from "vs/editor/browser/editorExtensions";
 import { localize } from "vs/nls";
 import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { NotebookSetting } from "vs/workbench/contrib/notebook/common/notebookCommon";
-import { IWorkbenchAssignmentService } from "vs/workbench/services/assignment/common/assignmentService";
+import { Registry } from "vs/platform/registry/common/platform";
 import {
 	Extensions as WorkbenchExtensions,
 	IWorkbenchContributionsRegistry,
 } from "vs/workbench/common/contributions";
+import { NotebookSetting } from "vs/workbench/contrib/notebook/common/notebookCommon";
+import { IWorkbenchAssignmentService } from "vs/workbench/services/assignment/common/assignmentService";
 import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 export enum NotebookProfileType {
@@ -58,12 +58,12 @@ const profiles = {
 
 async function applyProfile(
 	configService: IConfigurationService,
-	profile: Record<string, any>
+	profile: Record<string, any>,
 ): Promise<void> {
 	const promises = [];
 	for (const settingKey in profile) {
 		promises.push(
-			configService.updateValue(settingKey, profile[settingKey])
+			configService.updateValue(settingKey, profile[settingKey]),
 		);
 	}
 
@@ -91,7 +91,7 @@ registerAction2(
 			const configService = accessor.get(IConfigurationService);
 			return applyProfile(configService, profiles[args.profile]);
 		}
-	}
+	},
 );
 
 function isSetProfileArgs(args: unknown): args is ISetProfileArgs {
@@ -167,5 +167,5 @@ const workbenchContributionsRegistry =
 	Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	NotebookProfileContribution,
-	LifecyclePhase.Ready
+	LifecyclePhase.Ready,
 );

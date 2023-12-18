@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { toUint8 } from "vs/base/common/uint";
 import { MinimapCharRenderer } from "vs/editor/browser/viewParts/minimap/minimapCharRenderer";
 import {
-	allCharCodes,
 	Constants,
+	allCharCodes,
 } from "vs/editor/browser/viewParts/minimap/minimapCharSheet";
 import { prebakedMiniMaps } from "vs/editor/browser/viewParts/minimap/minimapPreBaked";
-import { toUint8 } from "vs/base/common/uint";
 
 /**
  * Creates character renderers. It takes a 'scale' that determines how large
@@ -42,7 +42,7 @@ export class MinimapCharRendererFactory {
 		} else {
 			factory = MinimapCharRendererFactory.createFromSampleData(
 				MinimapCharRendererFactory.createSampleData(fontFamily).data,
-				scale
+				scale,
 			);
 		}
 
@@ -73,7 +73,7 @@ export class MinimapCharRendererFactory {
 			ctx.fillText(
 				String.fromCharCode(code),
 				x,
-				Constants.SAMPLED_CHAR_HEIGHT / 2
+				Constants.SAMPLED_CHAR_HEIGHT / 2,
 			);
 			x += Constants.SAMPLED_CHAR_WIDTH;
 		}
@@ -82,7 +82,7 @@ export class MinimapCharRendererFactory {
 			0,
 			0,
 			Constants.CHAR_COUNT * Constants.SAMPLED_CHAR_WIDTH,
-			Constants.SAMPLED_CHAR_HEIGHT
+			Constants.SAMPLED_CHAR_HEIGHT,
 		);
 	}
 
@@ -91,7 +91,7 @@ export class MinimapCharRendererFactory {
 	 */
 	public static createFromSampleData(
 		source: Uint8ClampedArray,
-		scale: number
+		scale: number,
 	): MinimapCharRenderer {
 		const expectedLength =
 			Constants.SAMPLED_CHAR_HEIGHT *
@@ -111,7 +111,7 @@ export class MinimapCharRendererFactory {
 		sourceOffset: number,
 		dest: Uint8ClampedArray,
 		destOffset: number,
-		scale: number
+		scale: number,
 	): number {
 		const width = Constants.BASE_CHAR_WIDTH * scale;
 		const height = Constants.BASE_CHAR_HEIGHT * scale;
@@ -175,7 +175,7 @@ export class MinimapCharRendererFactory {
 
 	private static _downsample(
 		data: Uint8ClampedArray,
-		scale: number
+		scale: number,
 	): Uint8ClampedArray {
 		const pixelsPerCharacter =
 			Constants.BASE_CHAR_HEIGHT *
@@ -196,8 +196,8 @@ export class MinimapCharRendererFactory {
 					sourceOffset,
 					result,
 					resultOffset,
-					scale
-				)
+					scale,
+				),
 			);
 			resultOffset += pixelsPerCharacter;
 			sourceOffset +=

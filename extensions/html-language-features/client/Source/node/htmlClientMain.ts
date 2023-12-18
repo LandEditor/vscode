@@ -3,22 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { getNodeFileFS } from "./nodeFs";
+import * as fs from "fs";
+import { TextDecoder } from "util";
+import TelemetryReporter from "@vscode/extension-telemetry";
 import { Disposable, ExtensionContext, l10n } from "vscode";
 import {
-	startClient,
-	LanguageClientConstructor,
-	AsyncDisposable,
-} from "../htmlClient";
-import {
+	LanguageClient,
+	LanguageClientOptions,
 	ServerOptions,
 	TransportKind,
-	LanguageClientOptions,
-	LanguageClient,
 } from "vscode-languageclient/node";
-import { TextDecoder } from "util";
-import * as fs from "fs";
-import TelemetryReporter from "@vscode/extension-telemetry";
+import {
+	AsyncDisposable,
+	LanguageClientConstructor,
+	startClient,
+} from "../htmlClient";
+import { getNodeFileFS } from "./nodeFs";
 
 let telemetry: TelemetryReporter | undefined;
 let client: AsyncDisposable | undefined;
@@ -55,7 +55,7 @@ export async function activate(context: ExtensionContext) {
 	const newLanguageClient: LanguageClientConstructor = (
 		id: string,
 		name: string,
-		clientOptions: LanguageClientOptions
+		clientOptions: LanguageClientOptions,
 	) => {
 		return new LanguageClient(id, name, serverOptions, clientOptions);
 	};

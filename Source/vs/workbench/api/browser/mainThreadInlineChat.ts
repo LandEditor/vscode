@@ -4,25 +4,25 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { DisposableMap } from "vs/base/common/lifecycle";
-import {
-	IInlineChatBulkEditResponse,
-	IInlineChatProgressItem,
-	IInlineChatResponse,
-	IInlineChatService,
-} from "vs/workbench/contrib/inlineChat/common/inlineChat";
+import { IProgress } from "vs/platform/progress/common/progress";
 import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
 import { reviveWorkspaceEditDto } from "vs/workbench/api/browser/mainThreadBulkEdits";
 import {
 	ExtHostContext,
 	ExtHostInlineChatShape,
 	MainContext,
-	MainThreadInlineChatShape as MainThreadInlineChatShape,
+	MainThreadInlineChatShape,
 } from "vs/workbench/api/common/extHost.protocol";
+import {
+	IInlineChatBulkEditResponse,
+	IInlineChatProgressItem,
+	IInlineChatResponse,
+	IInlineChatService,
+} from "vs/workbench/contrib/inlineChat/common/inlineChat";
 import {
 	IExtHostContext,
 	extHostNamedCustomer,
 } from "vs/workbench/services/extensions/common/extHostCustomers";
-import { IProgress } from "vs/platform/progress/common/progress";
 
 @extHostNamedCustomer(MainContext.MainThreadInlineChat)
 export class MainThreadInlineChat implements MainThreadInlineChatShape {
@@ -54,7 +54,7 @@ export class MainThreadInlineChat implements MainThreadInlineChatShape {
 		debugName: string,
 		supportsFeedback: boolean,
 		supportsFollowups: boolean,
-		supportIssueReporting: boolean
+		supportIssueReporting: boolean,
 	): Promise<void> {
 		const unreg = this._inlineChatService.addProvider({
 			debugName,
@@ -65,7 +65,7 @@ export class MainThreadInlineChat implements MainThreadInlineChatShape {
 					handle,
 					model.uri,
 					range,
-					token
+					token,
 				);
 				if (!session) {
 					return undefined;
@@ -84,13 +84,13 @@ export class MainThreadInlineChat implements MainThreadInlineChatShape {
 						handle,
 						item,
 						request,
-						token
+						token,
 					);
 					if (result?.type === "bulkEdit") {
 						(<IInlineChatBulkEditResponse>result).edits =
 							reviveWorkspaceEditDto(
 								result.edits,
-								this._uriIdentService
+								this._uriIdentService,
 							);
 					}
 					return <IInlineChatResponse | undefined>result;
@@ -98,26 +98,26 @@ export class MainThreadInlineChat implements MainThreadInlineChatShape {
 					this._progresses.delete(request.requestId);
 				}
 			},
-			provideFollowups: !supportsFollowups
-				? undefined
-				: async (session, response, token) => {
+			provideFollowups: supportsFollowups
+				? async (session, response, token) => {
 						return this._proxy.$provideFollowups(
 							handle,
 							session.id,
 							response.id,
-							token
+							token,
 						);
-					},
-			handleInlineChatResponseFeedback: !supportsFeedback
-				? undefined
-				: async (session, response, kind) => {
+				  }
+				: undefined,
+			handleInlineChatResponseFeedback: supportsFeedback
+				? async (session, response, kind) => {
 						this._proxy.$handleFeedback(
 							handle,
 							session.id,
 							response.id,
-							kind
+							kind,
 						);
-					},
+				  }
+				: undefined,
 		});
 
 		this._registrations.set(handle, unreg);
@@ -125,7 +125,7 @@ export class MainThreadInlineChat implements MainThreadInlineChatShape {
 
 	async $handleProgressChunk(
 		requestId: string,
-		chunk: IInlineChatProgressItem
+		chunk: IInlineChatProgressItem,
 	): Promise<void> {
 		await Promise.resolve(this._progresses.get(requestId)?.report(chunk));
 	}

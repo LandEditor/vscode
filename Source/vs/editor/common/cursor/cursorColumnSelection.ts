@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	CursorConfiguration,
-	ICursorSimpleModel,
-	SingleCursorState,
-	IColumnSelectData,
-	SelectionStartKind,
-} from "vs/editor/common/cursorCommon";
 import { Position } from "vs/editor/common/core/position";
 import { Range } from "vs/editor/common/core/range";
+import {
+	CursorConfiguration,
+	IColumnSelectData,
+	ICursorSimpleModel,
+	SelectionStartKind,
+	SingleCursorState,
+} from "vs/editor/common/cursorCommon";
 
 export class ColumnSelection {
 	public static columnSelect(
@@ -20,7 +20,7 @@ export class ColumnSelection {
 		fromLineNumber: number,
 		fromVisibleColumn: number,
 		toLineNumber: number,
-		toVisibleColumn: number
+		toVisibleColumn: number,
 	): IColumnSelectResult {
 		const lineCount = Math.abs(toLineNumber - fromLineNumber) + 1;
 		const reversed = fromLineNumber > toLineNumber;
@@ -37,20 +37,20 @@ export class ColumnSelection {
 			const startColumn = config.columnFromVisibleColumn(
 				model,
 				lineNumber,
-				fromVisibleColumn
+				fromVisibleColumn,
 			);
 			const endColumn = config.columnFromVisibleColumn(
 				model,
 				lineNumber,
-				toVisibleColumn
+				toVisibleColumn,
 			);
 			const visibleStartColumn = config.visibleColumnFromColumn(
 				model,
-				new Position(lineNumber, startColumn)
+				new Position(lineNumber, startColumn),
 			);
 			const visibleEndColumn = config.visibleColumnFromColumn(
 				model,
-				new Position(lineNumber, endColumn)
+				new Position(lineNumber, endColumn),
 			);
 
 			// console.log(`lineNumber: ${lineNumber}: visibleStartColumn: ${visibleStartColumn}, visibleEndColumn: ${visibleEndColumn}`);
@@ -79,8 +79,8 @@ export class ColumnSelection {
 					SelectionStartKind.Simple,
 					0,
 					new Position(lineNumber, endColumn),
-					0
-				)
+					0,
+				),
 			);
 		}
 
@@ -96,8 +96,8 @@ export class ColumnSelection {
 						SelectionStartKind.Simple,
 						0,
 						new Position(lineNumber, maxColumn),
-						0
-					)
+						0,
+					),
 				);
 			}
 		}
@@ -115,7 +115,7 @@ export class ColumnSelection {
 	public static columnSelectLeft(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
-		prevColumnSelectData: IColumnSelectData
+		prevColumnSelectData: IColumnSelectData,
 	): IColumnSelectResult {
 		let toViewVisualColumn = prevColumnSelectData.toViewVisualColumn;
 		if (toViewVisualColumn > 0) {
@@ -128,23 +128,23 @@ export class ColumnSelection {
 			prevColumnSelectData.fromViewLineNumber,
 			prevColumnSelectData.fromViewVisualColumn,
 			prevColumnSelectData.toViewLineNumber,
-			toViewVisualColumn
+			toViewVisualColumn,
 		);
 	}
 
 	public static columnSelectRight(
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
-		prevColumnSelectData: IColumnSelectData
+		prevColumnSelectData: IColumnSelectData,
 	): IColumnSelectResult {
 		let maxVisualViewColumn = 0;
 		const minViewLineNumber = Math.min(
 			prevColumnSelectData.fromViewLineNumber,
-			prevColumnSelectData.toViewLineNumber
+			prevColumnSelectData.toViewLineNumber,
 		);
 		const maxViewLineNumber = Math.max(
 			prevColumnSelectData.fromViewLineNumber,
-			prevColumnSelectData.toViewLineNumber
+			prevColumnSelectData.toViewLineNumber,
 		);
 		for (
 			let lineNumber = minViewLineNumber;
@@ -154,11 +154,11 @@ export class ColumnSelection {
 			const lineMaxViewColumn = model.getLineMaxColumn(lineNumber);
 			const lineMaxVisualViewColumn = config.visibleColumnFromColumn(
 				model,
-				new Position(lineNumber, lineMaxViewColumn)
+				new Position(lineNumber, lineMaxViewColumn),
 			);
 			maxVisualViewColumn = Math.max(
 				maxVisualViewColumn,
-				lineMaxVisualViewColumn
+				lineMaxVisualViewColumn,
 			);
 		}
 
@@ -173,7 +173,7 @@ export class ColumnSelection {
 			prevColumnSelectData.fromViewLineNumber,
 			prevColumnSelectData.fromViewVisualColumn,
 			prevColumnSelectData.toViewLineNumber,
-			toViewVisualColumn
+			toViewVisualColumn,
 		);
 	}
 
@@ -181,12 +181,12 @@ export class ColumnSelection {
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
 		prevColumnSelectData: IColumnSelectData,
-		isPaged: boolean
+		isPaged: boolean,
 	): IColumnSelectResult {
 		const linesCount = isPaged ? config.pageSize : 1;
 		const toViewLineNumber = Math.max(
 			1,
-			prevColumnSelectData.toViewLineNumber - linesCount
+			prevColumnSelectData.toViewLineNumber - linesCount,
 		);
 		return this.columnSelect(
 			config,
@@ -194,7 +194,7 @@ export class ColumnSelection {
 			prevColumnSelectData.fromViewLineNumber,
 			prevColumnSelectData.fromViewVisualColumn,
 			toViewLineNumber,
-			prevColumnSelectData.toViewVisualColumn
+			prevColumnSelectData.toViewVisualColumn,
 		);
 	}
 
@@ -202,12 +202,12 @@ export class ColumnSelection {
 		config: CursorConfiguration,
 		model: ICursorSimpleModel,
 		prevColumnSelectData: IColumnSelectData,
-		isPaged: boolean
+		isPaged: boolean,
 	): IColumnSelectResult {
 		const linesCount = isPaged ? config.pageSize : 1;
 		const toViewLineNumber = Math.min(
 			model.getLineCount(),
-			prevColumnSelectData.toViewLineNumber + linesCount
+			prevColumnSelectData.toViewLineNumber + linesCount,
 		);
 		return this.columnSelect(
 			config,
@@ -215,7 +215,7 @@ export class ColumnSelection {
 			prevColumnSelectData.fromViewLineNumber,
 			prevColumnSelectData.fromViewVisualColumn,
 			toViewLineNumber,
-			prevColumnSelectData.toViewVisualColumn
+			prevColumnSelectData.toViewVisualColumn,
 		);
 	}
 }

@@ -7,7 +7,7 @@
  * Helper to get the hostname of a possible UNC path.
  */
 export function getUNCHost(
-	maybeUNCPath: string | undefined | null
+	maybeUNCPath: string | undefined | null,
 ): string | undefined;
 
 /**

@@ -3,18 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from "vs/base/common/uri";
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
 import { sequence } from "vs/base/common/async";
 import { Schemas } from "vs/base/common/network";
+import { URI } from "vs/base/common/uri";
 import { INativeHostService } from "vs/platform/native/common/native";
+import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
 
 // Commands
 
 export function revealResourcesInOS(
 	resources: URI[],
 	nativeHostService: INativeHostService,
-	workspaceContextService: IWorkspaceContextService
+	workspaceContextService: IWorkspaceContextService,
 ): void {
 	if (resources.length) {
 		sequence(
@@ -24,10 +24,10 @@ export function revealResourcesInOS(
 					r.scheme === Schemas.vscodeUserData
 				) {
 					nativeHostService.showItemInFolder(
-						r.with({ scheme: Schemas.file }).fsPath
+						r.with({ scheme: Schemas.file }).fsPath,
 					);
 				}
-			})
+			}),
 		);
 	} else if (workspaceContextService.getWorkspace().folders.length) {
 		const uri = workspaceContextService.getWorkspace().folders[0].uri;

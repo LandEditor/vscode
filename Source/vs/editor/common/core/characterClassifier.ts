@@ -59,7 +59,7 @@ export class CharacterClassifier<T extends number> {
 	}
 }
 
-const enum Boolean {
+enum Boolean {
 	False = 0,
 	True = 1,
 }

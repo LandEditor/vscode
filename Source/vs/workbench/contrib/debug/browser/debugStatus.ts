@@ -3,21 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
 import { IDisposable, dispose } from "vs/base/common/lifecycle";
+import * as nls from "vs/nls";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IWorkbenchContribution } from "vs/workbench/common/contributions";
 import {
+	IDebugConfiguration,
 	IDebugService,
 	State,
-	IDebugConfiguration,
 } from "vs/workbench/contrib/debug/common/debug";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
 	IStatusbarEntry,
+	IStatusbarEntryAccessor,
 	IStatusbarService,
 	StatusbarAlignment,
-	IStatusbarEntryAccessor,
 } from "vs/workbench/services/statusbar/browser/statusbar";
-import { IWorkbenchContribution } from "vs/workbench/common/contributions";
 
 export class DebugStatusContribution implements IWorkbenchContribution {
 	private showInStatusBar!: "never" | "always" | "onFirstSessionStart";
@@ -102,7 +102,7 @@ export class DebugStatusContribution implements IWorkbenchContribution {
 			ariaLabel: nls.localize("debugTarget", "Debug: {0}", text),
 			tooltip: nls.localize(
 				"selectAndStartDebug",
-				"Select and start debug configuration"
+				"Select and start debug configuration",
 			),
 			command: "workbench.action.debug.selectandstart",
 		};

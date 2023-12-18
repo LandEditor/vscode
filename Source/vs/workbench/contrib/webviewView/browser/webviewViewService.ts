@@ -71,7 +71,7 @@ interface IWebviewViewResolver {
 	 */
 	resolve(
 		webviewView: WebviewView,
-		cancellation: CancellationToken
+		cancellation: CancellationToken,
 	): Promise<void>;
 }
 
@@ -98,7 +98,7 @@ export interface IWebviewViewService {
 	resolve(
 		viewType: string,
 		webview: WebviewView,
-		cancellation: CancellationToken
+		cancellation: CancellationToken,
 	): Promise<void>;
 }
 
@@ -116,7 +116,7 @@ export class WebviewViewService
 	>();
 
 	private readonly _onNewResolverRegistered = this._register(
-		new Emitter<{ readonly viewType: string }>()
+		new Emitter<{ readonly viewType: string }>(),
 	);
 	public readonly onNewResolverRegistered =
 		this._onNewResolverRegistered.event;
@@ -147,7 +147,7 @@ export class WebviewViewService
 	resolve(
 		viewType: string,
 		webview: WebviewView,
-		cancellation: CancellationToken
+		cancellation: CancellationToken,
 	): Promise<void> {
 		const resolver = this._resolvers.get(viewType);
 		if (!resolver) {

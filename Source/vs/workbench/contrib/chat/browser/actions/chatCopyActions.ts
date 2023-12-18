@@ -30,7 +30,7 @@ export function registerChatCopyActions() {
 					title: {
 						value: localize(
 							"interactive.copyAll.label",
-							"Copy All"
+							"Copy All",
 						),
 						original: "Copy All",
 					},
@@ -54,13 +54,13 @@ export function registerChatCopyActions() {
 						?.getItems()
 						.filter(
 							(
-								item
+								item,
 							): item is
 								| IChatRequestViewModel
 								| IChatResponseViewModel =>
 								isRequestVM(item) ||
 								(isResponseVM(item) &&
-									!item.errorDetails?.responseIsFiltered)
+									!item.errorDetails?.responseIsFiltered),
 						)
 						.map((item) => stringifyItem(item))
 						.join("\n\n");
@@ -69,7 +69,7 @@ export function registerChatCopyActions() {
 					}
 				}
 			}
-		}
+		},
 	);
 
 	registerAction2(
@@ -101,13 +101,13 @@ export function registerChatCopyActions() {
 				const text = stringifyItem(item, false);
 				clipboardService.writeText(text);
 			}
-		}
+		},
 	);
 }
 
 function stringifyItem(
 	item: IChatRequestViewModel | IChatResponseViewModel,
-	includeName = true
+	includeName = true,
 ): string {
 	if (isRequestVM(item)) {
 		return (includeName ? `${item.username}: ` : "") + item.messageText;

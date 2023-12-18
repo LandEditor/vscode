@@ -4,42 +4,42 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { sha1Hex } from "vs/base/browser/hash";
+import { Schemas } from "vs/base/common/network";
+import { splitLines } from "vs/base/common/strings";
+import { URI } from "vs/base/common/uri";
 import {
 	IFileService,
-	IFileStatResult,
 	IFileStat,
+	IFileStatResult,
 } from "vs/platform/files/common/files";
-import {
-	IWorkspaceContextService,
-	WorkbenchState,
-	IWorkspace,
-} from "vs/platform/workspace/common/workspace";
-import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import {
-	ITextFileService,
-	ITextFileContent,
-} from "vs/workbench/services/textfile/common/textfiles";
-import { URI } from "vs/base/common/uri";
-import { Schemas } from "vs/base/common/network";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
 import {
+	IWorkspace,
+	IWorkspaceContextService,
+	WorkbenchState,
+} from "vs/platform/workspace/common/workspace";
+import {
+	GradleDependencyCompactRegex,
+	GradleDependencyLooseRegex,
+	JavaLibrariesToLookFor,
+	MavenArtifactIdRegex,
+	MavenDependenciesRegex,
+	MavenDependencyRegex,
+	MavenGroupIdRegex,
+} from "vs/workbench/contrib/tags/common/javaWorkspaceTags";
+import {
 	IWorkspaceTagsService,
 	Tags,
 } from "vs/workbench/contrib/tags/common/workspaceTags";
 import { getHashedRemotesFromConfig } from "vs/workbench/contrib/tags/electron-sandbox/workspaceTags";
-import { splitLines } from "vs/base/common/strings";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
 import {
-	MavenArtifactIdRegex,
-	MavenDependenciesRegex,
-	MavenDependencyRegex,
-	GradleDependencyCompactRegex,
-	GradleDependencyLooseRegex,
-	MavenGroupIdRegex,
-	JavaLibrariesToLookFor,
-} from "vs/workbench/contrib/tags/common/javaWorkspaceTags";
+	ITextFileContent,
+	ITextFileService,
+} from "vs/workbench/services/textfile/common/textfiles";
 
 const MetaModulesToLookFor = [
 	// Azure packages
@@ -386,11 +386,11 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 
 	async getTelemetryWorkspaceId(
 		workspace: IWorkspace,
-		state: WorkbenchState
+		state: WorkbenchState,
 	): Promise<string | undefined> {
 		function createHash(uri: URI): Promise<string> {
 			return sha1Hex(
-				uri.scheme === Schemas.file ? uri.fsPath : uri.toString()
+				uri.scheme === Schemas.file ? uri.fsPath : uri.toString(),
 			);
 		}
 
@@ -413,7 +413,7 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 
 	getHashedRemotesFromUri(
 		workspaceUri: URI,
-		stripEndingDotGit: boolean = false
+		stripEndingDotGit = false,
 	): Promise<string[]> {
 		const path = workspaceUri.path;
 		const uri = workspaceUri.with({
@@ -429,9 +429,9 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 					(content) =>
 						getHashedRemotesFromConfig(
 							content.value,
-							stripEndingDotGit
+							stripEndingDotGit,
 						),
-					(err) => [] // ignore missing or binary file
+					(err) => [], // ignore missing or binary file
 				);
 		});
 	}
@@ -1047,7 +1047,7 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 
 		tags["workspace.id"] = await this.getTelemetryWorkspaceId(
 			workspace,
-			state
+			state,
 		);
 
 		const { filesToOpenOrCreate, filesToDiff, filesToMerge } =
@@ -1063,16 +1063,16 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 		tags["workspace.roots"] = isEmpty ? 0 : workspace.folders.length;
 		tags["workspace.empty"] = isEmpty;
 
-		const folders = !isEmpty
-			? workspace.folders.map((folder) => folder.uri)
-			: undefined;
+		const folders = isEmpty
+			? undefined
+			: workspace.folders.map((folder) => folder.uri);
 		if (!folders || !folders.length) {
 			return Promise.resolve(tags);
 		}
 
 		const aiGeneratedWorkspaces = URI.joinPath(
 			this.environmentService.workspaceStorageHome,
-			"aiGeneratedWorkspaces.json"
+			"aiGeneratedWorkspaces.json",
 		);
 		await this.fileService
 			.exists(aiGeneratedWorkspaces)
@@ -1080,14 +1080,14 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 				if (result) {
 					try {
 						const content = await this.fileService.readFile(
-							aiGeneratedWorkspaces
+							aiGeneratedWorkspaces,
 						);
 						const workspaces = JSON.parse(
-							content.value.toString()
+							content.value.toString(),
 						) as string[];
 						if (
 							workspaces.indexOf(
-								workspace.folders[0].uri.toString()
+								workspace.folders[0].uri.toString(),
 							) > -1
 						) {
 							tags["aiGenerated"] = true;
@@ -1104,13 +1104,13 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 				const names = (<IFileStat[]>[])
 					.concat(
 						...files.map((result) =>
-							result.success ? result.stat!.children || [] : []
-						)
+							result.success ? result.stat!.children || [] : [],
+						),
 					)
 					.map((c) => c.name);
 				const nameSet = names.reduce(
 					(s, n) => s.add(n.toLowerCase()),
-					new Set()
+					new Set(),
 				);
 
 				tags["workspace.grunt"] = nameSet.has("gruntfile.js");
@@ -1121,7 +1121,7 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 				tags["workspace.jsconfig"] = nameSet.has("jsconfig.json");
 				tags["workspace.config.xml"] = nameSet.has("config.xml");
 				tags["workspace.vsc.extension"] = nameSet.has(
-					"vsc-extension-quickstart.md"
+					"vsc-extension-quickstart.md",
 				);
 
 				tags["workspace.ASP5"] =
@@ -1129,7 +1129,7 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 					this.searchArray(names, /^.+\.cs$/i);
 				tags["workspace.sln"] = this.searchArray(
 					names,
-					/^.+\.sln$|^.+\.csproj$/i
+					/^.+\.sln$|^.+\.csproj$/i,
 				);
 				tags["workspace.unity"] =
 					nameSet.has("assets") &&
@@ -1151,19 +1151,19 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 					nameSet.has("gradlew.bat");
 
 				tags["workspace.yeoman.code.ext"] = nameSet.has(
-					"vsc-extension-quickstart.md"
+					"vsc-extension-quickstart.md",
 				);
 
 				tags["workspace.py.requirements"] =
 					nameSet.has("requirements.txt");
 				tags["workspace.py.requirements.star"] = this.searchArray(
 					names,
-					/^(.*)requirements(.*)\.txt$/i
+					/^(.*)requirements(.*)\.txt$/i,
 				);
 				tags["workspace.py.Pipfile"] = nameSet.has("pipfile");
 				tags["workspace.py.conda"] = this.searchArray(
 					names,
-					/^environment(\.yml$|\.yaml$)/i
+					/^environment(\.yml$|\.yaml$)/i,
 				);
 				tags["workspace.py.setup"] = nameSet.has("setup.py");
 				tags["workspace.py.manage"] = nameSet.has("manage.py");
@@ -1228,11 +1228,10 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 					filename: string,
 					fileService: IFileService,
 					textFileService: ITextFileService,
-					contentHandler: (content: ITextFileContent) => void
+					contentHandler: (content: ITextFileContent) => void,
 				): Promise<void>[] {
-					return !nameSet.has(filename)
-						? []
-						: (folders as URI[]).map((workspaceUri) => {
+					return nameSet.has(filename)
+						? (folders as URI[]).map((workspaceUri) => {
 								const uri = workspaceUri.with({
 									path: `${
 										workspaceUri.path !== "/"
@@ -1252,9 +1251,10 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 									},
 									(err) => {
 										// Ignore missing file
-									}
+									},
 								);
-							});
+						  })
+						: [];
 				}
 
 				function addPythonTags(packageName: string): void {
@@ -1270,7 +1270,7 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 
 					if (!tags["workspace.py.any-azure"]) {
 						tags["workspace.py.any-azure"] = /azure/i.test(
-							packageName
+							packageName,
 						);
 					}
 				}
@@ -1281,7 +1281,7 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 					this.textFileService,
 					(content) => {
 						const dependencies: string[] = splitLines(
-							content.value
+							content.value,
 						);
 						for (const dependency of dependencies) {
 							// Dependencies in requirements.txt can have 3 formats: `foo==3.1, foo>=3.1, foo`
@@ -1292,7 +1292,7 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 							).trim();
 							addPythonTags(packageName);
 						}
-					}
+					},
 				);
 
 				const pipfilePromises = getFilePromises(
@@ -1304,7 +1304,7 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 
 						// We're only interested in the '[packages]' section of the Pipfile
 						dependencies = dependencies.slice(
-							dependencies.indexOf("[packages]") + 1
+							dependencies.indexOf("[packages]") + 1,
 						);
 
 						for (const dependency of dependencies) {
@@ -1318,7 +1318,7 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 							const packageName = dependency.split("=")[0].trim();
 							addPythonTags(packageName);
 						}
-					}
+					},
 				);
 
 				const packageJsonPromises = getFilePromises(
@@ -1328,14 +1328,15 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 					(content) => {
 						try {
 							const packageJsonContents = JSON.parse(
-								content.value
+								content.value,
 							);
 							const dependencies = Object.keys(
-								packageJsonContents["dependencies"] || {}
+								packageJsonContents["dependencies"] || {},
 							).concat(
 								Object.keys(
-									packageJsonContents["devDependencies"] || {}
-								)
+									packageJsonContents["devDependencies"] ||
+										{},
+								),
 							);
 
 							for (const dependency of dependencies) {
@@ -1363,7 +1364,7 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 						} catch (e) {
 							// Ignore errors when resolving file or parsing file contents
 						}
-					}
+					},
 				);
 
 				const goModPromises = getFilePromises(
@@ -1373,15 +1374,15 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 					(content) => {
 						try {
 							const lines: string[] = splitLines(content.value);
-							let firstRequireBlockFound: boolean = false;
+							let firstRequireBlockFound = false;
 							for (let i = 0; i < lines.length; i++) {
 								const line: string = lines[i].trim();
 								if (line.startsWith("require (")) {
-									if (!firstRequireBlockFound) {
+									if (firstRequireBlockFound) {
+										break;
+									} else {
 										firstRequireBlockFound = true;
 										continue;
-									} else {
-										break;
 									}
 								}
 								if (line.startsWith(")")) {
@@ -1404,7 +1405,7 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 						} catch (e) {
 							// Ignore errors when resolving file or parsing file contents
 						}
-					}
+					},
 				);
 
 				const pomPromises = getFilePromises(
@@ -1422,23 +1423,23 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 								while (
 									(dependencyContent =
 										MavenDependencyRegex.exec(
-											dependenciesContent[1]
+											dependenciesContent[1],
 										))
 								) {
 									const groupIdContent =
 										MavenGroupIdRegex.exec(
-											dependencyContent[1]
+											dependencyContent[1],
 										);
 									const artifactIdContent =
 										MavenArtifactIdRegex.exec(
-											dependencyContent[1]
+											dependencyContent[1],
 										);
 									if (groupIdContent && artifactIdContent) {
 										this.tagJavaDependency(
 											groupIdContent[1],
 											artifactIdContent[1],
 											"workspace.pom.",
-											tags
+											tags,
 										);
 									}
 								}
@@ -1446,7 +1447,7 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 						} catch (e) {
 							// Ignore errors when resolving maven dependencies
 						}
-					}
+					},
 				);
 
 				const gradlePromises = getFilePromises(
@@ -1458,23 +1459,23 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 							this.processGradleDependencies(
 								content.value,
 								GradleDependencyLooseRegex,
-								tags
+								tags,
 							);
 							this.processGradleDependencies(
 								content.value,
 								GradleDependencyCompactRegex,
-								tags
+								tags,
 							);
 						} catch (e) {
 							// Ignore errors when resolving gradle dependencies
 						}
-					}
+					},
 				);
 
 				const androidPromises = folders.map((workspaceUri) => {
 					const manifest = URI.joinPath(
 						workspaceUri,
-						"/app/src/main/AndroidManifest.xml"
+						"/app/src/main/AndroidManifest.xml",
 					);
 					return this.fileService.exists(manifest).then(
 						(result) => {
@@ -1484,7 +1485,7 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 						},
 						(err) => {
 							// Ignore errors when resolving android
-						}
+						},
 					);
 				});
 
@@ -1503,7 +1504,7 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 	private processGradleDependencies(
 		content: string,
 		regex: RegExp,
-		tags: Tags
+		tags: Tags,
 	): void {
 		let dependencyContent;
 		while ((dependencyContent = regex.exec(content))) {
@@ -1514,7 +1515,7 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 					groupId,
 					artifactId,
 					"workspace.gradle.",
-					tags
+					tags,
 				);
 			}
 		}
@@ -1524,7 +1525,7 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 		groupId: string,
 		artifactId: string,
 		prefix: string,
-		tags: Tags
+		tags: Tags,
 	): void {
 		for (const javaLibrary of JavaLibrariesToLookFor) {
 			if (javaLibrary.predicate(groupId, artifactId)) {
@@ -1542,5 +1543,5 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 registerSingleton(
 	IWorkspaceTagsService,
 	WorkspaceTagsService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

@@ -3,31 +3,31 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ILogService } from "vs/platform/log/common/log";
-import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
+import { Disposable } from "vs/base/common/lifecycle";
+import { OS } from "vs/base/common/platform";
 import { URI } from "vs/base/common/uri";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { ILogService } from "vs/platform/log/common/log";
+import { IAddressProvider } from "vs/platform/remote/common/remoteAgentConnection";
+import { IRemoteAuthorityResolverService } from "vs/platform/remote/common/remoteAuthorityResolver";
+import { ISharedProcessTunnelService } from "vs/platform/remote/common/sharedProcessTunnelService";
 import {
-	ITunnelService,
 	AbstractTunnelService,
+	ITunnelProvider,
+	ITunnelService,
 	RemoteTunnel,
 	TunnelPrivacyId,
 	isPortPrivileged,
-	ITunnelProvider,
 	isTunnelProvider,
 } from "vs/platform/tunnel/common/tunnel";
-import { Disposable } from "vs/base/common/lifecycle";
-import { IAddressProvider } from "vs/platform/remote/common/remoteAgentConnection";
-import { ISharedProcessTunnelService } from "vs/platform/remote/common/sharedProcessTunnelService";
-import { ILifecycleService } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { IRemoteAuthorityResolverService } from "vs/platform/remote/common/remoteAuthorityResolver";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
 import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
-import { OS } from "vs/base/common/platform";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { ILifecycleService } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 class SharedProcessTunnel extends Disposable implements RemoteTunnel {
 	public readonly privacy = TunnelPrivacyId.Private;
@@ -99,7 +99,7 @@ export class TunnelService extends AbstractTunnelService {
 			port,
 			this.defaultTunnelHost,
 			OS,
-			this._nativeWorkbenchEnvironmentService.os.release
+			this._nativeWorkbenchEnvironmentService.os.release,
 		);
 	}
 
@@ -111,7 +111,7 @@ export class TunnelService extends AbstractTunnelService {
 		localPort: number | undefined,
 		elevateIfNeeded: boolean,
 		privacy?: string,
-		protocol?: string
+		protocol?: string,
 	): Promise<RemoteTunnel | string | undefined> | undefined {
 		const existing = this.getTunnelFromMap(remoteHost, remotePort);
 		if (existing) {
@@ -127,11 +127,11 @@ export class TunnelService extends AbstractTunnelService {
 				localPort,
 				elevateIfNeeded,
 				privacy,
-				protocol
+				protocol,
 			);
 		} else {
 			this.logService.trace(
-				`ForwardedPorts: (TunnelService) Creating tunnel without provider ${remoteHost}:${remotePort} on local port ${localPort}.`
+				`ForwardedPorts: (TunnelService) Creating tunnel without provider ${remoteHost}:${remotePort} on local port ${localPort}.`,
 			);
 
 			const tunnel = this._createSharedProcessTunnel(
@@ -140,10 +140,10 @@ export class TunnelService extends AbstractTunnelService {
 				remotePort,
 				localHost,
 				localPort,
-				elevateIfNeeded
+				elevateIfNeeded,
 			);
 			this.logService.trace(
-				"ForwardedPorts: (TunnelService) Tunnel created without provider."
+				"ForwardedPorts: (TunnelService) Tunnel created without provider.",
 			);
 			this.addTunnelToMap(remoteHost, remotePort, tunnel);
 			return tunnel;
@@ -156,7 +156,7 @@ export class TunnelService extends AbstractTunnelService {
 		tunnelRemotePort: number,
 		tunnelLocalHost: string,
 		tunnelLocalPort: number | undefined,
-		elevateIfNeeded: boolean | undefined
+		elevateIfNeeded: boolean | undefined,
 	): Promise<RemoteTunnel> {
 		const { id } = await this._sharedProcessTunnelService.createTunnel();
 		this._activeSharedProcessTunnels.add(id);
@@ -168,7 +168,7 @@ export class TunnelService extends AbstractTunnelService {
 			tunnelRemotePort,
 			tunnelLocalHost,
 			tunnelLocalPort,
-			elevateIfNeeded
+			elevateIfNeeded,
 		);
 		const tunnel = this._instantiationService.createInstance(
 			SharedProcessTunnel,
@@ -180,7 +180,7 @@ export class TunnelService extends AbstractTunnelService {
 			result.localAddress,
 			() => {
 				this._activeSharedProcessTunnels.delete(id);
-			}
+			},
 		);
 		return tunnel;
 	}

@@ -27,5 +27,5 @@ export function getNLSConfiguration(
 	userDataPath: string,
 	metaDataFile: string,
 	locale: string,
-	osLocale: string
+	osLocale: string,
 ): Promise<NLSConfiguration>;

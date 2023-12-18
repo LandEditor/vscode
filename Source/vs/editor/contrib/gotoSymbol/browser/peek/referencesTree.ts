@@ -19,7 +19,7 @@ import {
 	ITreeNode,
 	ITreeRenderer,
 } from "vs/base/browser/ui/tree/tree";
-import { createMatches, FuzzyScore, IMatch } from "vs/base/common/filters";
+import { FuzzyScore, IMatch, createMatches } from "vs/base/common/filters";
 import { Disposable } from "vs/base/common/lifecycle";
 import { basename, dirname } from "vs/base/common/resources";
 import { ITextModelService } from "vs/editor/common/services/resolverService";
@@ -46,7 +46,7 @@ export class DataSource
 	) {}
 
 	hasChildren(
-		element: ReferencesModel | FileReferences | TreeElement
+		element: ReferencesModel | FileReferences | TreeElement,
 	): boolean {
 		if (element instanceof ReferencesModel) {
 			return true;
@@ -58,7 +58,7 @@ export class DataSource
 	}
 
 	getChildren(
-		element: ReferencesModel | FileReferences | TreeElement
+		element: ReferencesModel | FileReferences | TreeElement,
 	): TreeElement[] | Promise<TreeElement[]> {
 		if (element instanceof ReferencesModel) {
 			return element.groups;
@@ -157,25 +157,24 @@ class FileReferencesTemplate extends Disposable {
 		this.file.setLabel(
 			this._labelService.getUriBasenameLabel(element.uri),
 			this._labelService.getUriLabel(parent, { relative: true }),
-			{ title: this._labelService.getUriLabel(element.uri), matches }
+			{ title: this._labelService.getUriLabel(element.uri), matches },
 		);
 		const len = element.children.length;
 		this.badge.setCount(len);
 		if (len > 1) {
 			this.badge.setTitleFormat(
-				localize("referencesCount", "{0} references", len)
+				localize("referencesCount", "{0} references", len),
 			);
 		} else {
 			this.badge.setTitleFormat(
-				localize("referenceCount", "{0} reference", len)
+				localize("referenceCount", "{0} reference", len),
 			);
 		}
 	}
 }
 
 export class FileReferencesRenderer
-	implements
-		ITreeRenderer<FileReferences, FuzzyScore, FileReferencesTemplate>
+	implements ITreeRenderer<FileReferences, FuzzyScore, FileReferencesTemplate>
 {
 	static readonly id = "FileReferencesRenderer";
 
@@ -189,13 +188,13 @@ export class FileReferencesRenderer
 	renderTemplate(container: HTMLElement): FileReferencesTemplate {
 		return this._instantiationService.createInstance(
 			FileReferencesTemplate,
-			container
+			container,
 		);
 	}
 	renderElement(
 		node: ITreeNode<FileReferences, FuzzyScore>,
 		index: number,
-		template: FileReferencesTemplate
+		template: FileReferencesTemplate,
 	): void {
 		template.set(node.element, createMatches(node.filterData));
 	}
@@ -223,7 +222,7 @@ class OneReferenceTemplate {
 			this.label.set(
 				`${basename(element.uri)}:${
 					element.range.startLineNumber + 1
-				}:${element.range.startColumn + 1}`
+				}:${element.range.startColumn + 1}`,
 			);
 		} else {
 			// render search match as highlight unless
@@ -253,7 +252,7 @@ export class OneReferenceRenderer
 	renderElement(
 		node: ITreeNode<OneReference, FuzzyScore>,
 		index: number,
-		templateData: OneReferenceTemplate
+		templateData: OneReferenceTemplate,
 	): void {
 		templateData.set(node.element, node.filterData);
 	}

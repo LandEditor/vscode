@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IDisposable } from "vs/base/common/lifecycle";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { ThemeIcon } from "vs/base/common/themables";
 import { Event } from "vs/base/common/event";
+import { IDisposable } from "vs/base/common/lifecycle";
+import { ThemeIcon } from "vs/base/common/themables";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import { ViewContainer } from "vs/workbench/common/views";
 
 export interface IActivity {
@@ -30,7 +30,7 @@ export interface IActivityService {
 	 */
 	showViewContainerActivity(
 		viewContainerId: string,
-		badge: IActivity
+		badge: IActivity,
 	): IDisposable;
 
 	/**
@@ -76,7 +76,7 @@ class BaseBadge implements IBadge {
 export class NumberBadge extends BaseBadge {
 	constructor(
 		readonly number: number,
-		descriptorFn: (num: number) => string
+		descriptorFn: (num: number) => string,
 	) {
 		super(descriptorFn);
 
@@ -89,10 +89,7 @@ export class NumberBadge extends BaseBadge {
 }
 
 export class IconBadge extends BaseBadge {
-	constructor(
-		readonly icon: ThemeIcon,
-		descriptorFn: () => string
-	) {
+	constructor(readonly icon: ThemeIcon, descriptorFn: () => string) {
 		super(descriptorFn);
 	}
 }

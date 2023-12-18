@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from "vs/base/common/lifecycle";
 import { Event } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
 import {
-	ILogger,
 	ILogService,
+	ILogger,
 	LogLevel,
 	MultiplexLogger,
 } from "vs/platform/log/common/log";
@@ -21,7 +21,7 @@ export class LogService extends Disposable implements ILogService {
 		super();
 		this.logger = new MultiplexLogger([primaryLogger, ...otherLoggers]);
 		this._register(
-			primaryLogger.onDidChangeLogLevel((level) => this.setLevel(level))
+			primaryLogger.onDidChangeLogLevel((level) => this.setLevel(level)),
 		);
 	}
 

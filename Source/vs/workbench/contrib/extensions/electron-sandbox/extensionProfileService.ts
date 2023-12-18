@@ -46,13 +46,13 @@ export class ExtensionHostProfileService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeState: Emitter<void> = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	public readonly onDidChangeState: Event<void> =
 		this._onDidChangeState.event;
 
 	private readonly _onDidChangeLastProfile: Emitter<void> = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	public readonly onDidChangeLastProfile: Event<void> =
 		this._onDidChangeLastProfile.event;
@@ -65,7 +65,7 @@ export class ExtensionHostProfileService
 
 	private profilingStatusBarIndicator: IStatusbarEntryAccessor | undefined;
 	private readonly profilingStatusBarIndicatorLabelUpdater = this._register(
-		new MutableDisposable()
+		new MutableDisposable(),
 	);
 
 	public get state() {
@@ -128,16 +128,16 @@ export class ExtensionHostProfileService
 				name: nls.localize("status.profiler", "Extension Profiler"),
 				text: nls.localize(
 					"profilingExtensionHost",
-					"Profiling Extension Host"
+					"Profiling Extension Host",
 				),
 				showProgress: true,
 				ariaLabel: nls.localize(
 					"profilingExtensionHost",
-					"Profiling Extension Host"
+					"Profiling Extension Host",
 				),
 				tooltip: nls.localize(
 					"selectAndStartDebug",
-					"Click to stop profiling."
+					"Click to stop profiling.",
 				),
 				command: "workbench.action.extensionHostProfiler.stop",
 			};
@@ -152,30 +152,28 @@ export class ExtensionHostProfileService
 							"profilingExtensionHostTime",
 							"Profiling Extension Host ({0} sec)",
 							Math.round(
-								(new Date().getTime() - timeStarted) / 1000
-							)
+								(new Date().getTime() - timeStarted) / 1000,
+							),
 						),
 					});
 				},
-				1000
+				1000,
 			);
 			this.profilingStatusBarIndicatorLabelUpdater.value = handle;
 
-			if (!this.profilingStatusBarIndicator) {
+			if (this.profilingStatusBarIndicator) {
+				this.profilingStatusBarIndicator.update(indicator);
+			} else {
 				this.profilingStatusBarIndicator =
 					this._statusbarService.addEntry(
 						indicator,
 						"status.profiler",
-						StatusbarAlignment.RIGHT
+						StatusbarAlignment.RIGHT,
 					);
-			} else {
-				this.profilingStatusBarIndicator.update(indicator);
 			}
-		} else {
-			if (this.profilingStatusBarIndicator) {
-				this.profilingStatusBarIndicator.dispose();
-				this.profilingStatusBarIndicator = undefined;
-			}
+		} else if (this.profilingStatusBarIndicator) {
+			this.profilingStatusBarIndicator.dispose();
+			this.profilingStatusBarIndicator = undefined;
 		}
 	}
 
@@ -186,7 +184,7 @@ export class ExtensionHostProfileService
 
 		const inspectPorts = await this._extensionService.getInspectPorts(
 			ExtensionHostKind.LocalProcess,
-			true
+			true,
 		);
 
 		if (inspectPorts.length === 0) {
@@ -197,11 +195,11 @@ export class ExtensionHostProfileService
 					detail: nls.localize(
 						"restart2",
 						"In order to profile extensions a restart is required. Do you want to restart '{0}' now?",
-						this._productService.nameLong
+						this._productService.nameLong,
 					),
 					primaryButton: nls.localize(
 						{ key: "restart3", comment: ["&& denotes a mnemonic"] },
-						"&&Restart"
+						"&&Restart",
 					),
 				})
 				.then((res) => {
@@ -216,7 +214,7 @@ export class ExtensionHostProfileService
 		if (inspectPorts.length > 1) {
 			// TODO
 			console.warn(
-				`There are multiple extension hosts available for profiling. Picking the first one...`
+				`There are multiple extension hosts available for profiling. Picking the first one...`,
 			);
 		}
 
@@ -233,7 +231,7 @@ export class ExtensionHostProfileService
 				(err) => {
 					onUnexpectedError(err);
 					this._setState(ProfileSessionState.None);
-				}
+				},
 			);
 	}
 
@@ -254,7 +252,7 @@ export class ExtensionHostProfileService
 			(err) => {
 				onUnexpectedError(err);
 				this._setState(ProfileSessionState.None);
-			}
+			},
 		);
 		this._profileSession = null;
 	}
@@ -265,14 +263,14 @@ export class ExtensionHostProfileService
 	}
 
 	getUnresponsiveProfile(
-		extensionId: ExtensionIdentifier
+		extensionId: ExtensionIdentifier,
 	): IExtensionHostProfile | undefined {
 		return this._unresponsiveProfiles.get(extensionId);
 	}
 
 	setUnresponsiveProfile(
 		extensionId: ExtensionIdentifier,
-		profile: IExtensionHostProfile
+		profile: IExtensionHostProfile,
 	): void {
 		this._unresponsiveProfiles.set(extensionId, profile);
 		this._setLastProfile(profile);

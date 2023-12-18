@@ -10,9 +10,9 @@ import { IServerChannel } from "vs/base/parts/ipc/common/ipc";
 import {
 	ILogger,
 	ILoggerOptions,
+	LogLevel,
 	isLogLevel,
 	log,
-	LogLevel,
 } from "vs/platform/log/common/log";
 import { ILoggerMainService } from "vs/platform/log/electron-main/loggerService";
 
@@ -53,17 +53,17 @@ export class LoggerChannel implements IServerChannel {
 					? this.loggerService.setLogLevel(arg[0])
 					: this.loggerService.setLogLevel(
 							URI.revive(arg[0]),
-							arg[1]
-						);
+							arg[1],
+					  );
 			case "setVisibility":
 				return this.loggerService.setVisibility(
 					URI.revive(arg[0]),
-					arg[1]
+					arg[1],
 				);
 			case "registerLogger":
 				return this.loggerService.registerLogger(
 					{ ...arg[0], resource: URI.revive(arg[0].resource) },
-					arg[1]
+					arg[1],
 				);
 			case "deregisterLogger":
 				return this.loggerService.deregisterLogger(URI.revive(arg[0]));
@@ -75,11 +75,11 @@ export class LoggerChannel implements IServerChannel {
 	private createLogger(
 		file: URI,
 		options: ILoggerOptions,
-		windowId: number | undefined
+		windowId: number | undefined,
 	): void {
 		this.loggers.set(
 			file,
-			this.loggerService.createLogger(file, options, windowId)
+			this.loggerService.createLogger(file, options, windowId),
 		);
 	}
 

@@ -7,8 +7,8 @@ import { ICodeEditor } from "vs/editor/browser/editorBrowser";
 import {
 	EditorAction,
 	IActionOptions,
-	registerEditorAction,
 	ServicesAccessor,
+	registerEditorAction,
 } from "vs/editor/browser/editorExtensions";
 import { ICommand } from "vs/editor/common/editorCommon";
 import { EditorContextKeys } from "vs/editor/common/editorContextKeys";

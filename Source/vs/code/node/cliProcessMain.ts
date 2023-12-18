@@ -18,6 +18,7 @@ import { isWindows } from "vs/base/common/platform";
 import { cwd } from "vs/base/common/process";
 import { URI } from "vs/base/common/uri";
 import { Promises } from "vs/base/node/pfs";
+import { localize } from "vs/nls";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { ConfigurationService } from "vs/platform/configuration/common/configurationService";
 import { IDownloadService } from "vs/platform/download/common/download";
@@ -30,10 +31,6 @@ import {
 	IExtensionGalleryService,
 	InstallOptions,
 } from "vs/platform/extensionManagement/common/extensionManagement";
-import {
-	ExtensionSignatureVerificationService,
-	IExtensionSignatureVerificationService,
-} from "vs/platform/extensionManagement/node/extensionSignatureVerificationService";
 import { ExtensionManagementCLI } from "vs/platform/extensionManagement/common/extensionManagementCLI";
 import { IExtensionsProfileScannerService } from "vs/platform/extensionManagement/common/extensionsProfileScannerService";
 import { IExtensionsScannerService } from "vs/platform/extensionManagement/common/extensionsScannerService";
@@ -41,9 +38,14 @@ import {
 	ExtensionManagementService,
 	INativeServerExtensionManagementService,
 } from "vs/platform/extensionManagement/node/extensionManagementService";
+import {
+	ExtensionSignatureVerificationService,
+	IExtensionSignatureVerificationService,
+} from "vs/platform/extensionManagement/node/extensionSignatureVerificationService";
+import { ExtensionsProfileScannerService } from "vs/platform/extensionManagement/node/extensionsProfileScannerService";
 import { ExtensionsScannerService } from "vs/platform/extensionManagement/node/extensionsScannerService";
-import { IFileService } from "vs/platform/files/common/files";
 import { FileService } from "vs/platform/files/common/fileService";
+import { IFileService } from "vs/platform/files/common/files";
 import { DiskFileSystemProvider } from "vs/platform/files/node/diskFileSystemProvider";
 import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
@@ -53,12 +55,14 @@ import { ILanguagePackService } from "vs/platform/languagePacks/common/languageP
 import { NativeLanguagePackService } from "vs/platform/languagePacks/node/languagePacks";
 import {
 	ConsoleLogger,
-	getLogLevel,
+	ILogService,
 	ILogger,
 	ILoggerService,
-	ILogService,
 	LogLevel,
+	getLogLevel,
 } from "vs/platform/log/common/log";
+import { LogService } from "vs/platform/log/common/logService";
+import { LoggerService } from "vs/platform/log/node/loggerService";
 import { FilePolicyService } from "vs/platform/policy/common/filePolicyService";
 import {
 	IPolicyService,
@@ -80,30 +84,26 @@ import {
 	TelemetryService,
 } from "vs/platform/telemetry/common/telemetryService";
 import {
-	supportsTelemetry,
+	ITelemetryAppender,
 	NullTelemetryService,
 	getPiiPathsFromEnvironment,
 	isInternalTelemetry,
-	ITelemetryAppender,
+	supportsTelemetry,
 } from "vs/platform/telemetry/common/telemetryUtils";
 import { OneDataSystemAppender } from "vs/platform/telemetry/node/1dsAppender";
 import { buildTelemetryMessage } from "vs/platform/telemetry/node/telemetry";
+import {
+	resolveMachineId,
+	resolveSqmId,
+} from "vs/platform/telemetry/node/telemetryUtils";
 import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
 import { UriIdentityService } from "vs/platform/uriIdentity/common/uriIdentityService";
+import { FileUserDataProvider } from "vs/platform/userData/common/fileUserDataProvider";
 import {
 	IUserDataProfile,
 	IUserDataProfilesService,
 } from "vs/platform/userDataProfile/common/userDataProfile";
 import { UserDataProfilesReadonlyService } from "vs/platform/userDataProfile/node/userDataProfile";
-import {
-	resolveMachineId,
-	resolveSqmId,
-} from "vs/platform/telemetry/node/telemetryUtils";
-import { ExtensionsProfileScannerService } from "vs/platform/extensionManagement/node/extensionsProfileScannerService";
-import { LogService } from "vs/platform/log/common/logService";
-import { LoggerService } from "vs/platform/log/node/loggerService";
-import { localize } from "vs/nls";
-import { FileUserDataProvider } from "vs/platform/userData/common/fileUserDataProvider";
 
 class CliMain extends Disposable {
 	constructor(private argv: NativeParsedArgs) {
@@ -126,7 +126,7 @@ class CliMain extends Disposable {
 			const fileService = accessor.get(IFileService);
 			const environmentService = accessor.get(INativeEnvironmentService);
 			const userDataProfilesService = accessor.get(
-				IUserDataProfilesService
+				IUserDataProfilesService,
 			);
 
 			// Log info
@@ -140,14 +140,14 @@ class CliMain extends Disposable {
 				environmentService,
 				fileService,
 				userDataProfilesService,
-				instantiationService
+				instantiationService,
 			);
 
 			// Flush the remaining data in AI adapter (with 1s timeout)
 			await Promise.all(
 				appenders.map((a) => {
 					raceTimeout(a.flush(), 1000);
-				})
+				}),
 			);
 			return;
 		});
@@ -165,7 +165,7 @@ class CliMain extends Disposable {
 		// Environment
 		const environmentService = new NativeEnvironmentService(
 			this.argv,
-			productService
+			productService,
 		);
 		services.set(INativeEnvironmentService, environmentService);
 
@@ -177,20 +177,20 @@ class CliMain extends Disposable {
 				}).fsPath,
 				environmentService.extensionsPath,
 			].map((path) =>
-				path ? Promises.mkdir(path, { recursive: true }) : undefined
-			)
+				path ? Promises.mkdir(path, { recursive: true }) : undefined,
+			),
 		);
 
 		// Logger
 		const loggerService = new LoggerService(
 			getLogLevel(environmentService),
-			environmentService.logsHome
+			environmentService.logsHome,
 		);
 		services.set(ILoggerService, loggerService);
 
 		// Log
 		const logger = this._register(
-			loggerService.createLogger("cli", { name: localize("cli", "CLI") })
+			loggerService.createLogger("cli", { name: localize("cli", "CLI") }),
 		);
 		const otherLoggers: ILogger[] = [];
 		if (loggerService.getLogLevel() === LogLevel.Trace) {
@@ -205,7 +205,7 @@ class CliMain extends Disposable {
 		services.set(IFileService, fileService);
 
 		const diskFileSystemProvider = this._register(
-			new DiskFileSystemProvider(logService)
+			new DiskFileSystemProvider(logService),
 		);
 		fileService.registerProvider(Schemas.file, diskFileSystemProvider);
 
@@ -218,14 +218,14 @@ class CliMain extends Disposable {
 			SaveStrategy.DELAYED,
 			environmentService,
 			logService,
-			fileService
+			fileService,
 		);
 		const userDataProfilesService = new UserDataProfilesReadonlyService(
 			stateService,
 			uriIdentityService,
 			environmentService,
 			fileService,
-			logService
+			logService,
 		);
 		services.set(IUserDataProfilesService, userDataProfilesService);
 
@@ -239,8 +239,8 @@ class CliMain extends Disposable {
 				Schemas.vscodeUserData,
 				userDataProfilesService,
 				uriIdentityService,
-				logService
-			)
+				logService,
+			),
 		);
 
 		// Policy
@@ -249,18 +249,18 @@ class CliMain extends Disposable {
 				? this._register(
 						new NativePolicyService(
 							logService,
-							productService.win32RegValueName
-						)
-					)
+							productService.win32RegValueName,
+						),
+				  )
 				: environmentService.policyFile
-					? this._register(
+				  ? this._register(
 							new FilePolicyService(
 								environmentService.policyFile,
 								fileService,
-								logService
-							)
-						)
-					: new NullPolicyService();
+								logService,
+							),
+					  )
+				  : new NullPolicyService();
 		services.set(IPolicyService, policyService);
 
 		// Configuration
@@ -269,8 +269,8 @@ class CliMain extends Disposable {
 				userDataProfilesService.defaultProfile.settingsResource,
 				fileService,
 				policyService,
-				logService
-			)
+				logService,
+			),
 		);
 		services.set(IConfigurationService, configurationService);
 
@@ -302,57 +302,61 @@ class CliMain extends Disposable {
 			configurationService,
 			environmentService,
 			logService,
-			loggerService
+			loggerService,
 		);
 		services.set(IRequestService, requestService);
 
 		// Download Service
 		services.set(
 			IDownloadService,
-			new SyncDescriptor(DownloadService, undefined, true)
+			new SyncDescriptor(DownloadService, undefined, true),
 		);
 
 		// Extensions
 		services.set(
 			IExtensionsProfileScannerService,
-			new SyncDescriptor(ExtensionsProfileScannerService, undefined, true)
+			new SyncDescriptor(
+				ExtensionsProfileScannerService,
+				undefined,
+				true,
+			),
 		);
 		services.set(
 			IExtensionsScannerService,
-			new SyncDescriptor(ExtensionsScannerService, undefined, true)
+			new SyncDescriptor(ExtensionsScannerService, undefined, true),
 		);
 		services.set(
 			IExtensionSignatureVerificationService,
 			new SyncDescriptor(
 				ExtensionSignatureVerificationService,
 				undefined,
-				true
-			)
+				true,
+			),
 		);
 		services.set(
 			INativeServerExtensionManagementService,
-			new SyncDescriptor(ExtensionManagementService, undefined, true)
+			new SyncDescriptor(ExtensionManagementService, undefined, true),
 		);
 		services.set(
 			IExtensionGalleryService,
 			new SyncDescriptor(
 				ExtensionGalleryServiceWithNoStorageService,
 				undefined,
-				true
-			)
+				true,
+			),
 		);
 
 		// Localizations
 		services.set(
 			ILanguagePackService,
-			new SyncDescriptor(NativeLanguagePackService, undefined, false)
+			new SyncDescriptor(NativeLanguagePackService, undefined, false),
 		);
 
 		// Telemetry
 		const appenders: ITelemetryAppender[] = [];
 		const isInternal = isInternalTelemetry(
 			productService,
-			configurationService
+			configurationService,
 		);
 		if (supportsTelemetry(productService, environmentService)) {
 			if (productService.aiConfig && productService.aiConfig.ariaKey) {
@@ -362,8 +366,8 @@ class CliMain extends Disposable {
 						isInternal,
 						"monacoworkbench",
 						null,
-						productService.aiConfig.ariaKey
-					)
+						productService.aiConfig.ariaKey,
+					),
 				);
 			}
 
@@ -378,14 +382,14 @@ class CliMain extends Disposable {
 					productService.version,
 					machineId,
 					sqmId,
-					isInternal
+					isInternal,
 				),
 				piiPaths: getPiiPathsFromEnvironment(environmentService),
 			};
 
 			services.set(
 				ITelemetryService,
-				new SyncDescriptor(TelemetryService, [config], false)
+				new SyncDescriptor(TelemetryService, [config], false),
 			);
 		} else {
 			services.set(ITelemetryService, NullTelemetryService);
@@ -412,7 +416,7 @@ class CliMain extends Disposable {
 			}
 		});
 		process.on("unhandledRejection", (reason: unknown) =>
-			onUnexpectedError(reason)
+			onUnexpectedError(reason),
 		);
 	}
 
@@ -420,16 +424,16 @@ class CliMain extends Disposable {
 		environmentService: INativeEnvironmentService,
 		fileService: IFileService,
 		userDataProfilesService: IUserDataProfilesService,
-		instantiationService: IInstantiationService
+		instantiationService: IInstantiationService,
 	): Promise<void> {
 		let profile: IUserDataProfile | undefined = undefined;
 		if (environmentService.args.profile) {
 			profile = userDataProfilesService.profiles.find(
-				(p) => p.name === environmentService.args.profile
+				(p) => p.name === environmentService.args.profile,
 			);
 			if (!profile) {
 				throw new Error(
-					`Profile '${environmentService.args.profile}' not found.`
+					`Profile '${environmentService.args.profile}' not found.`,
 				);
 			}
 		}
@@ -442,12 +446,12 @@ class CliMain extends Disposable {
 			return instantiationService
 				.createInstance(
 					ExtensionManagementCLI,
-					new ConsoleLogger(LogLevel.Info, false)
+					new ConsoleLogger(LogLevel.Info, false),
 				)
 				.listExtensions(
 					!!this.argv["show-versions"],
 					this.argv["category"],
-					profileLocation
+					profileLocation,
 				);
 		}
 
@@ -464,17 +468,17 @@ class CliMain extends Disposable {
 			return instantiationService
 				.createInstance(
 					ExtensionManagementCLI,
-					new ConsoleLogger(LogLevel.Info, false)
+					new ConsoleLogger(LogLevel.Info, false),
 				)
 				.installExtensions(
 					this.asExtensionIdOrVSIX(
-						this.argv["install-extension"] || []
+						this.argv["install-extension"] || [],
 					),
 					this.asExtensionIdOrVSIX(
-						this.argv["install-builtin-extension"] || []
+						this.argv["install-builtin-extension"] || [],
 					),
 					installOptions,
-					!!this.argv["force"]
+					!!this.argv["force"],
 				);
 		}
 
@@ -483,12 +487,12 @@ class CliMain extends Disposable {
 			return instantiationService
 				.createInstance(
 					ExtensionManagementCLI,
-					new ConsoleLogger(LogLevel.Info, false)
+					new ConsoleLogger(LogLevel.Info, false),
 				)
 				.uninstallExtensions(
 					this.asExtensionIdOrVSIX(this.argv["uninstall-extension"]),
 					!!this.argv["force"],
-					profileLocation
+					profileLocation,
 				);
 		}
 
@@ -497,7 +501,7 @@ class CliMain extends Disposable {
 			return instantiationService
 				.createInstance(
 					ExtensionManagementCLI,
-					new ConsoleLogger(LogLevel.Info, false)
+					new ConsoleLogger(LogLevel.Info, false),
 				)
 				.locateExtension(this.argv["locate-extension"]);
 		}
@@ -507,8 +511,8 @@ class CliMain extends Disposable {
 			console.log(
 				await buildTelemetryMessage(
 					environmentService.appRoot,
-					environmentService.extensionsPath
-				)
+					environmentService.extensionsPath,
+				),
 			);
 		}
 	}
@@ -517,7 +521,7 @@ class CliMain extends Disposable {
 		return inputs.map((input) =>
 			/\.vsix$/i.test(input)
 				? URI.file(isAbsolute(input) ? input : join(cwd(), input))
-				: input
+				: input,
 		);
 	}
 }

@@ -3,50 +3,50 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import { URI } from "vs/base/common/uri";
-import { distinct, deepClone } from "vs/base/common/objects";
+import { CancellationToken } from "vs/base/common/cancellation";
 import { Emitter, Event } from "vs/base/common/event";
-import { isObject, assertIsDefined } from "vs/base/common/types";
+import { IMarkdownString } from "vs/base/common/htmlContent";
 import { MutableDisposable } from "vs/base/common/lifecycle";
+import { deepClone, distinct } from "vs/base/common/objects";
+import { assertIsDefined, isObject } from "vs/base/common/types";
+import { URI } from "vs/base/common/uri";
 import { ICodeEditor } from "vs/editor/browser/editorBrowser";
-import {
-	IEditorOpenContext,
-	IEditorPaneSelection,
-	EditorPaneSelectionCompareResult,
-	EditorPaneSelectionChangeReason,
-	IEditorPaneWithSelection,
-	IEditorPaneSelectionChangeEvent,
-} from "vs/workbench/common/editor";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import { computeEditorAriaLabel } from "vs/workbench/browser/editor";
-import { AbstractEditorWithViewState } from "vs/workbench/browser/parts/editor/editorWithViewState";
-import { IEditorViewState } from "vs/editor/common/editorCommon";
+import { IEditorOptions as ICodeEditorOptions } from "vs/editor/common/config/editorOptions";
 import { Selection } from "vs/editor/common/core/selection";
-import { IStorageService } from "vs/platform/storage/common/storage";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { IThemeService } from "vs/platform/theme/common/themeService";
+import { ICursorPositionChangedEvent } from "vs/editor/common/cursorEvents";
+import { IEditorViewState } from "vs/editor/common/editorCommon";
 import {
 	ITextResourceConfigurationChangeEvent,
 	ITextResourceConfigurationService,
 } from "vs/editor/common/services/textResourceConfiguration";
-import { IEditorOptions as ICodeEditorOptions } from "vs/editor/common/config/editorOptions";
-import {
-	IEditorGroupsService,
-	IEditorGroup,
-} from "vs/workbench/services/editor/common/editorGroupsService";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { localize } from "vs/nls";
 import {
 	IEditorOptions,
 	ITextEditorOptions,
 	TextEditorSelectionRevealType,
 	TextEditorSelectionSource,
 } from "vs/platform/editor/common/editor";
-import { ICursorPositionChangedEvent } from "vs/editor/common/cursorEvents";
 import { IFileService } from "vs/platform/files/common/files";
-import { IMarkdownString } from "vs/base/common/htmlContent";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IStorageService } from "vs/platform/storage/common/storage";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import { computeEditorAriaLabel } from "vs/workbench/browser/editor";
+import { AbstractEditorWithViewState } from "vs/workbench/browser/parts/editor/editorWithViewState";
+import {
+	EditorPaneSelectionChangeReason,
+	EditorPaneSelectionCompareResult,
+	IEditorOpenContext,
+	IEditorPaneSelection,
+	IEditorPaneSelectionChangeEvent,
+	IEditorPaneWithSelection,
+} from "vs/workbench/common/editor";
+import { EditorInput } from "vs/workbench/common/editor/editorInput";
+import {
+	IEditorGroup,
+	IEditorGroupsService,
+} from "vs/workbench/services/editor/common/editorGroupsService";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 
 export interface IEditorConfiguration {
 	editor: object;
@@ -71,7 +71,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 	private static readonly VIEW_STATE_PREFERENCE_KEY = "textEditorViewState";
 
 	protected readonly _onDidChangeSelection = this._register(
-		new Emitter<IEditorPaneSelectionChangeEvent>()
+		new Emitter<IEditorPaneSelectionChangeEvent>(),
 	);
 	readonly onDidChangeSelection = this._onDidChangeSelection.event;
 
@@ -142,7 +142,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 	}
 
 	private handleConfigurationChangeEvent(
-		e: ITextResourceConfigurationChangeEvent
+		e: ITextResourceConfigurationChangeEvent,
 	): void {
 		const resource = this.getActiveResource();
 		if (!this.shouldHandleConfigurationChangeEvent(e, resource)) {
@@ -158,7 +158,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 
 	protected shouldHandleConfigurationChangeEvent(
 		e: ITextResourceConfigurationChangeEvent,
-		resource: URI | undefined
+		resource: URI | undefined,
 	): boolean {
 		return (
 			e.affectsConfiguration(resource, "editor") ||
@@ -174,17 +174,17 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 	}
 
 	protected computeConfiguration(
-		configuration: IEditorConfiguration
+		configuration: IEditorConfiguration,
 	): ICodeEditorOptions {
 		// Specific editor options always overwrite user configuration
 		const editorConfiguration: ICodeEditorOptions = isObject(
-			configuration.editor
+			configuration.editor,
 		)
 			? deepClone(configuration.editor)
 			: Object.create(null);
 		Object.assign(
 			editorConfiguration,
-			this.getConfigurationOverrides(configuration)
+			this.getConfigurationOverrides(configuration),
 		);
 
 		// ARIA label
@@ -199,8 +199,8 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 					this._input,
 					undefined,
 					this.group,
-					this.editorGroupService.count
-				)
+					this.editorGroupService.count,
+			  )
 			: localize("editor", "Editor");
 	}
 
@@ -227,7 +227,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 	}
 
 	protected getReadonlyConfiguration(
-		isReadonly: boolean | IMarkdownString | undefined
+		isReadonly: boolean | IMarkdownString | undefined,
 	): { readOnly: boolean; readOnlyMessage: IMarkdownString | undefined } {
 		return {
 			readOnly: !!isReadonly,
@@ -237,7 +237,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 	}
 
 	protected getConfigurationOverrides(
-		configuration: IEditorConfiguration
+		configuration: IEditorConfiguration,
 	): ICodeEditorOptions {
 		return {
 			overviewRulerLanes: 3,
@@ -256,9 +256,9 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 			parent,
 			this.computeConfiguration(
 				this.textResourceConfigurationService.getValue<IEditorConfiguration>(
-					this.getActiveResource()
-				)
-			)
+					this.getActiveResource(),
+				),
+			),
 		);
 
 		// Listeners
@@ -270,33 +270,33 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 		if (mainControl) {
 			this._register(
 				mainControl.onDidChangeModelLanguage(() =>
-					this.updateEditorConfiguration()
-				)
+					this.updateEditorConfiguration(),
+				),
 			);
 			this._register(
 				mainControl.onDidChangeModel(() =>
-					this.updateEditorConfiguration()
-				)
+					this.updateEditorConfiguration(),
+				),
 			);
 			this._register(
 				mainControl.onDidChangeCursorPosition((e) =>
 					this._onDidChangeSelection.fire({
 						reason: this.toEditorPaneSelectionChangeReason(e),
-					})
-				)
+					}),
+				),
 			);
 			this._register(
 				mainControl.onDidChangeModelContent(() =>
 					this._onDidChangeSelection.fire({
 						reason: EditorPaneSelectionChangeReason.EDIT,
-					})
-				)
+					}),
+				),
 			);
 		}
 	}
 
 	private toEditorPaneSelectionChangeReason(
-		e: ICursorPositionChangedEvent
+		e: ICursorPositionChangedEvent,
 	): EditorPaneSelectionChangeReason {
 		switch (e.source) {
 			case TextEditorSelectionSource.PROGRAMMATIC:
@@ -332,7 +332,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 	 */
 	protected abstract createEditorControl(
 		parent: HTMLElement,
-		initialOptions: ICodeEditorOptions
+		initialOptions: ICodeEditorOptions,
 	): void;
 
 	/**
@@ -340,7 +340,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 	 * whenever there is change to the options.
 	 */
 	protected abstract updateEditorControlOptions(
-		options: ICodeEditorOptions
+		options: ICodeEditorOptions,
 	): void;
 
 	/**
@@ -354,13 +354,13 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 		input: EditorInput,
 		options: ITextEditorOptions | undefined,
 		context: IEditorOpenContext,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void> {
 		await super.setInput(input, options, context, token);
 
 		// Update our listener for input capabilities
 		this.inputListener.value = input.onDidChangeCapabilities(() =>
-			this.onDidChangeInputCapabilities(input)
+			this.onDidChangeInputCapabilities(input),
 		);
 
 		// Update editor options after having set the input. We do this because there can be
@@ -381,7 +381,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 
 	protected override setEditorVisible(
 		visible: boolean,
-		group: IEditorGroup | undefined
+		group: IEditorGroup | undefined,
 	): void {
 		if (visible) {
 			this.consumePendingConfigurationChangeEvent();
@@ -391,19 +391,19 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 	}
 
 	protected override toEditorViewStateResource(
-		input: EditorInput
+		input: EditorInput,
 	): URI | undefined {
 		return input.resource;
 	}
 
 	private updateEditorConfiguration(
-		resource = this.getActiveResource()
+		resource = this.getActiveResource(),
 	): void {
 		let configuration: IEditorConfiguration | undefined = undefined;
 		if (resource) {
 			configuration =
 				this.textResourceConfigurationService.getValue<IEditorConfiguration>(
-					resource
+					resource,
 				);
 		}
 
@@ -420,7 +420,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 		if (this.lastAppliedEditorOptions) {
 			editorSettingsToApply = distinct(
 				this.lastAppliedEditorOptions,
-				editorSettingsToApply
+				editorSettingsToApply,
 			);
 		}
 
@@ -466,11 +466,11 @@ export class TextEditorPaneSelection implements IEditorPaneSelection {
 
 		const thisLineNumber = Math.min(
 			this.textSelection.selectionStartLineNumber,
-			this.textSelection.positionLineNumber
+			this.textSelection.positionLineNumber,
 		);
 		const otherLineNumber = Math.min(
 			other.textSelection.selectionStartLineNumber,
-			other.textSelection.positionLineNumber
+			other.textSelection.positionLineNumber,
 		);
 
 		if (thisLineNumber === otherLineNumber) {

@@ -3,50 +3,50 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
+import { LoaderStats, isESM } from "vs/base/common/amd";
+import { IDisposable, dispose } from "vs/base/common/lifecycle";
+import * as perf from "vs/base/common/performance";
+import { isWeb } from "vs/base/common/platform";
 import { URI } from "vs/base/common/uri";
-import { TextResourceEditorInput } from "vs/workbench/common/editor/textResourceEditorInput";
-import {
-	ITextModelService,
-	ITextModelContentProvider,
-} from "vs/editor/common/services/resolverService";
+import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
+import { ILanguageService } from "vs/editor/common/languages/language";
 import { ITextModel } from "vs/editor/common/model";
+import { IModelService } from "vs/editor/common/services/model";
+import {
+	ITextModelContentProvider,
+	ITextModelService,
+} from "vs/editor/common/services/resolverService";
+import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
+import { localize } from "vs/nls";
+import { ByteSize, IFileService } from "vs/platform/files/common/files";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { ILabelService } from "vs/platform/label/common/label";
+import { IProductService } from "vs/platform/product/common/productService";
+import { TextResourceEditorInput } from "vs/workbench/common/editor/textResourceEditorInput";
+import { writeTransientState } from "vs/workbench/contrib/codeEditor/browser/toggleWordWrap";
+import { ITerminalService } from "vs/workbench/contrib/terminal/browser/terminal";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
+import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
 import {
 	ILifecycleService,
 	LifecyclePhase,
 	StartupKindToString,
 } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { ILanguageService } from "vs/editor/common/languages/language";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IModelService } from "vs/editor/common/services/model";
-import { ITimerService } from "vs/workbench/services/timer/browser/timerService";
-import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
-import { IDisposable, dispose } from "vs/base/common/lifecycle";
-import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
-import { writeTransientState } from "vs/workbench/contrib/codeEditor/browser/toggleWordWrap";
-import { LoaderStats, isESM } from "vs/base/common/amd";
-import { IProductService } from "vs/platform/product/common/productService";
 import { ITextFileService } from "vs/workbench/services/textfile/common/textfiles";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { ByteSize, IFileService } from "vs/platform/files/common/files";
-import { ILabelService } from "vs/platform/label/common/label";
-import { isWeb } from "vs/base/common/platform";
-import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
-import { ITerminalService } from "vs/workbench/contrib/terminal/browser/terminal";
-import * as perf from "vs/base/common/performance";
-import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
+import { ITimerService } from "vs/workbench/services/timer/browser/timerService";
 
 export class PerfviewContrib {
 	private readonly _registration: IDisposable;
 
 	constructor(
 		@IInstantiationService instaService: IInstantiationService,
-		@ITextModelService textModelResolverService: ITextModelService
+		@ITextModelService textModelResolverService: ITextModelService,
 	) {
 		this._registration =
 			textModelResolverService.registerTextModelContentProvider(
 				"perf",
-				instaService.createInstance(PerfModelContentProvider)
+				instaService.createInstance(PerfModelContentProvider),
 			);
 	}
 
@@ -75,7 +75,7 @@ export class PerfviewInput extends TextResourceEditorInput {
 		@IFilesConfigurationService
 		filesConfigurationService: IFilesConfigurationService,
 		@ITextResourceConfigurationService
-		textResourceConfigurationService: ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
 	) {
 		super(
 			PerfviewInput.Uri,
@@ -89,7 +89,7 @@ export class PerfviewInput extends TextResourceEditorInput {
 			fileService,
 			labelService,
 			filesConfigurationService,
-			textResourceConfigurationService
+			textResourceConfigurationService,
 		);
 	}
 }
@@ -122,19 +122,19 @@ class PerfModelContentProvider implements ITextModelContentProvider {
 			this._modelDisposables.push(
 				langId.onDidChange((e) => {
 					this._model?.setLanguage(e);
-				})
+				}),
 			);
 			this._modelDisposables.push(
 				this._extensionService.onDidChangeExtensionsStatus(
 					this._updateModel,
-					this
-				)
+					this,
+				),
 			);
 
 			writeTransientState(
 				this._model,
 				{ wordWrapOverride: "off" },
-				this._editorService
+				this._editorService,
 			);
 		}
 		this._updateModel();
@@ -163,7 +163,7 @@ class PerfModelContentProvider implements ITextModelContentProvider {
 					this._timerService
 						.getPerformanceMarks()
 						.find((e) => e[0] === "renderer")?.[1]
-						.filter((e) => e.name.startsWith("code/terminal/"))
+						.filter((e) => e.name.startsWith("code/terminal/")),
 				);
 				md.blank();
 				this._addRawPerfMarks(md);
@@ -187,12 +187,12 @@ class PerfModelContentProvider implements ITextModelContentProvider {
 		md.li(
 			`${this._productService.nameShort}: ${
 				this._productService.version
-			} (${this._productService.commit || "0000000"})`
+			} (${this._productService.commit || "0000000"})`,
 		);
 		md.li(`OS: ${metrics.platform}(${metrics.release})`);
 		if (metrics.cpus) {
 			md.li(
-				`CPUs: ${metrics.cpus.model}(${metrics.cpus.count} x ${metrics.cpus.speed})`
+				`CPUs: ${metrics.cpus.model}(${metrics.cpus.count} x ${metrics.cpus.speed})`,
 			);
 		}
 		if (
@@ -201,8 +201,8 @@ class PerfModelContentProvider implements ITextModelContentProvider {
 		) {
 			md.li(
 				`Memory(System): ${(metrics.totalmem / ByteSize.GB).toFixed(
-					2
-				)} GB(${(metrics.freemem / ByteSize.GB).toFixed(2)}GB free)`
+					2,
+				)} GB(${(metrics.freemem / ByteSize.GB).toFixed(2)}GB free)`,
 			);
 		}
 		if (metrics.meminfo) {
@@ -213,7 +213,7 @@ class PerfModelContentProvider implements ITextModelContentProvider {
 					metrics.meminfo.privateBytes / ByteSize.KB
 				).toFixed(2)}MB private, ${(
 					metrics.meminfo.sharedBytes / ByteSize.KB
-				).toFixed(2)}MB shared)`
+				).toFixed(2)}MB shared)`,
 			);
 		}
 		md.li(`VM(likelihood): ${metrics.isVMLikelyhood}%`);
@@ -422,7 +422,7 @@ class PerfModelContentProvider implements ITextModelContentProvider {
 					"Event",
 					"By",
 				],
-				table
+				table,
 			);
 		}
 	}
@@ -430,7 +430,7 @@ class PerfModelContentProvider implements ITextModelContentProvider {
 	private _addPerfMarksTable(
 		name: string,
 		md: MarkdownBuilder,
-		marks: readonly perf.PerformanceMark[] | undefined
+		marks: readonly perf.PerformanceMark[] | undefined,
 	): void {
 		if (!marks) {
 			return;
@@ -538,7 +538,7 @@ class PerfModelContentProvider implements ITextModelContentProvider {
 }
 
 class MarkdownBuilder {
-	value: string = "";
+	value = "";
 
 	heading(level: number, value: string): this {
 		this.value += `${"#".repeat(level)} ${value}\n\n`;
@@ -557,7 +557,7 @@ class MarkdownBuilder {
 
 	table(
 		header: string[],
-		rows: Array<Array<{ toString(): string } | undefined>>
+		rows: Array<Array<{ toString(): string } | undefined>>,
 	) {
 		this.value += LoaderStats.toMarkdownTable(header, rows);
 	}

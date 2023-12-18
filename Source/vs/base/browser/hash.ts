@@ -19,7 +19,7 @@ export async function sha1Hex(str: string): Promise<string> {
 		}).buffer;
 		const hash = await globalThis.crypto.subtle.digest(
 			{ name: "sha-1" },
-			buffer
+			buffer,
 		);
 
 		return toHexString(hash);

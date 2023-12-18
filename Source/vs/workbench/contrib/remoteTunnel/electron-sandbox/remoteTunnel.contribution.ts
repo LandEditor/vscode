@@ -20,8 +20,8 @@ import {
 import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
 import { ICommandService } from "vs/platform/commands/common/commands";
 import {
-	Extensions as ConfigurationExtensions,
 	ConfigurationScope,
+	Extensions as ConfigurationExtensions,
 	IConfigurationRegistry,
 } from "vs/platform/configuration/common/configurationRegistry";
 import {
@@ -75,9 +75,9 @@ import {
 	isUntitledWorkspace,
 } from "vs/platform/workspace/common/workspace";
 import {
+	Extensions as WorkbenchExtensions,
 	IWorkbenchContribution,
 	IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "vs/workbench/common/contributions";
 import {
 	AuthenticationSession,
@@ -99,7 +99,7 @@ export const REMOTE_TUNNEL_CONNECTION_STATE_KEY = "remoteTunnelConnection";
 export const REMOTE_TUNNEL_CONNECTION_STATE =
 	new RawContextKey<CONTEXT_KEY_STATES>(
 		REMOTE_TUNNEL_CONNECTION_STATE_KEY,
-		"disconnected"
+		"disconnected",
 	);
 
 const REMOTE_TUNNEL_USED_STORAGE_KEY = "remoteTunnelServiceUsed";
@@ -143,27 +143,27 @@ enum RemoteTunnelCommandIds {
 namespace RemoteTunnelCommandLabels {
 	export const turnOn = localize(
 		"remoteTunnel.actions.turnOn",
-		"Turn on Remote Tunnel Access..."
+		"Turn on Remote Tunnel Access...",
 	);
 	export const turnOff = localize(
 		"remoteTunnel.actions.turnOff",
-		"Turn off Remote Tunnel Access..."
+		"Turn off Remote Tunnel Access...",
 	);
 	export const showLog = localize(
 		"remoteTunnel.actions.showLog",
-		"Show Remote Tunnel Service Log"
+		"Show Remote Tunnel Service Log",
 	);
 	export const configure = localize(
 		"remoteTunnel.actions.configure",
-		"Configure Tunnel Name..."
+		"Configure Tunnel Name...",
 	);
 	export const copyToClipboard = localize(
 		"remoteTunnel.actions.copyToClipboard",
-		"Copy Browser URI to Clipboard"
+		"Copy Browser URI to Clipboard",
 	);
 	export const learnMore = localize(
 		"remoteTunnel.actions.learnMore",
-		"Get Started with Tunnels"
+		"Get Started with Tunnels",
 	);
 }
 
@@ -265,21 +265,21 @@ export class RemoteTunnelWorkbenchContribution
 			if (
 				this.storageService.getBoolean(
 					REMOTE_TUNNEL_EXTENSION_RECOMMENDED_KEY,
-					StorageScope.APPLICATION
+					StorageScope.APPLICATION,
 				)
 			) {
 				return false;
 			}
 			if (
 				await this.extensionService.getExtension(
-					remoteExtension.extensionId
+					remoteExtension.extensionId,
 				)
 			) {
 				return false;
 			}
 			const usedOnHostMessage = this.storageService.get(
 				REMOTE_TUNNEL_USED_STORAGE_KEY,
-				StorageScope.APPLICATION
+				StorageScope.APPLICATION,
 			);
 			if (!usedOnHostMessage) {
 				return false;
@@ -327,7 +327,7 @@ export class RemoteTunnelWorkbenchContribution
 					},
 					"Tunnel '{0}' is avaiable for remote access. The {1} extension can be used to connect to it.",
 					usedOnHost,
-					remoteExtension.friendlyName
+					remoteExtension.friendlyName,
 				),
 				actions: {
 					primary: [
@@ -339,15 +339,15 @@ export class RemoteTunnelWorkbenchContribution
 							() => {
 								return this.commandService.executeCommand(
 									"workbench.extensions.action.showExtensionsWithIds",
-									[remoteExtension.extensionId]
+									[remoteExtension.extensionId],
 								);
-							}
+							},
 						),
 						new Action(
 							"doNotShowAgain",
 							localize(
 								"action.doNotShowAgain",
-								"Do not show again"
+								"Do not show again",
 							),
 							undefined,
 							true,
@@ -356,9 +356,9 @@ export class RemoteTunnelWorkbenchContribution
 									REMOTE_TUNNEL_EXTENSION_RECOMMENDED_KEY,
 									true,
 									StorageScope.APPLICATION,
-									StorageTarget.USER
+									StorageTarget.USER,
 								);
-							}
+							},
 						),
 					],
 				},
@@ -371,13 +371,13 @@ export class RemoteTunnelWorkbenchContribution
 				this.storageService.onDidChangeValue(
 					StorageScope.APPLICATION,
 					REMOTE_TUNNEL_USED_STORAGE_KEY,
-					disposables
+					disposables,
 				)(async () => {
 					const success = await recommed();
 					if (success) {
 						disposables.dispose();
 					}
-				})
+				}),
 			);
 		}
 	}
@@ -395,7 +395,7 @@ export class RemoteTunnelWorkbenchContribution
 		}
 
 		const doInitialStateDiscovery = async (
-			progress?: IProgress<IProgressStep>
+			progress?: IProgress<IProgressStep>,
 		) => {
 			const listener =
 				progress &&
@@ -418,7 +418,7 @@ export class RemoteTunnelWorkbenchContribution
 			const status = await this.remoteTunnelService.initialize(
 				mode.active && newSession
 					? { ...mode, session: newSession }
-					: INACTIVE_TUNNEL_MODE
+					: INACTIVE_TUNNEL_MODE,
 			);
 			listener?.dispose();
 
@@ -432,7 +432,7 @@ export class RemoteTunnelWorkbenchContribution
 		const hasUsed = this.storageService.getBoolean(
 			REMOTE_TUNNEL_HAS_USED_BEFORE,
 			StorageScope.APPLICATION,
-			false
+			false,
 		);
 
 		if (hasUsed) {
@@ -447,10 +447,10 @@ export class RemoteTunnelWorkbenchContribution
 							],
 						},
 						"[Looking for remote tunnel](command:{0})",
-						RemoteTunnelCommandIds.showLog
+						RemoteTunnelCommandIds.showLog,
 					),
 				},
-				doInitialStateDiscovery
+				doInitialStateDiscovery,
 			);
 		} else {
 			doInitialStateDiscovery(undefined);
@@ -462,7 +462,7 @@ export class RemoteTunnelWorkbenchContribution
 	}
 
 	private async startTunnel(
-		asService: boolean
+		asService: boolean,
 	): Promise<ConnectionInfo | undefined> {
 		if (this.connectionInfo) {
 			return this.connectionInfo;
@@ -472,7 +472,7 @@ export class RemoteTunnelWorkbenchContribution
 			REMOTE_TUNNEL_HAS_USED_BEFORE,
 			true,
 			StorageScope.APPLICATION,
-			StorageTarget.MACHINE
+			StorageTarget.MACHINE,
 		);
 
 		let tokenProblems = false;
@@ -482,7 +482,7 @@ export class RemoteTunnelWorkbenchContribution
 			const authenticationSession = await this.getAuthenticationSession();
 			if (authenticationSession === undefined) {
 				this.logger.info(
-					"No authentication session available, not starting tunnel"
+					"No authentication session available, not starting tunnel",
 				);
 				return undefined;
 			}
@@ -498,7 +498,7 @@ export class RemoteTunnelWorkbenchContribution
 							],
 						},
 						"[Starting remote tunnel](command:{0})",
-						RemoteTunnelCommandIds.showLog
+						RemoteTunnelCommandIds.showLog,
 					),
 				},
 				(progress: IProgress<IProgressStep>) => {
@@ -532,9 +532,9 @@ export class RemoteTunnelWorkbenchContribution
 																],
 															},
 															"Installation as a service failed, and we fell back to running the tunnel for this session. See the [error log](command:{0}) for details.",
-															RemoteTunnelCommandIds.showLog
+															RemoteTunnelCommandIds.showLog,
 														),
-													}
+													},
 												);
 											}
 											break;
@@ -546,10 +546,10 @@ export class RemoteTunnelWorkbenchContribution
 											s(undefined);
 											break;
 									}
-								}
+								},
 							);
 						const token = this.getPreferredTokenFromSession(
-							authenticationSession
+							authenticationSession,
 						);
 						const account: IRemoteTunnelSession = {
 							sessionId: authenticationSession.session.id,
@@ -580,7 +580,7 @@ export class RemoteTunnelWorkbenchContribution
 								}
 							});
 					});
-				}
+				},
 			);
 			if (result || !tokenProblems) {
 				return result;
@@ -599,7 +599,7 @@ export class RemoteTunnelWorkbenchContribution
 		quickpick.ok = false;
 		quickpick.placeholder = localize(
 			"accountPreference.placeholder",
-			"Sign in to an account to enable remote access"
+			"Sign in to an account to enable remote access",
 		);
 		quickpick.ignoreFocusOut = true;
 		quickpick.items = await this.createQuickpickItems(sessions);
@@ -616,13 +616,13 @@ export class RemoteTunnelWorkbenchContribution
 					const session =
 						await this.authenticationService.createSession(
 							selection.provider.id,
-							selection.provider.scopes
+							selection.provider.scopes,
 						);
 					resolve(
 						this.createExistingSessionItem(
 							session,
-							selection.provider.id
-						)
+							selection.provider.id,
+						),
 					);
 				} else if ("session" in selection) {
 					resolve(selection);
@@ -638,7 +638,7 @@ export class RemoteTunnelWorkbenchContribution
 
 	private createExistingSessionItem(
 		session: AuthenticationSession,
-		providerId: string
+		providerId: string,
 	): ExistingSessionItem {
 		return {
 			label: session.account.label,
@@ -649,7 +649,7 @@ export class RemoteTunnelWorkbenchContribution
 	}
 
 	private async createQuickpickItems(
-		sessions: ExistingSessionItem[]
+		sessions: ExistingSessionItem[],
 	): Promise<
 		(
 			| ExistingSessionItem
@@ -679,16 +679,16 @@ export class RemoteTunnelWorkbenchContribution
 
 		for (const authenticationProvider of await this.getAuthenticationProviders()) {
 			const signedInForProvider = sessions.some(
-				(account) => account.providerId === authenticationProvider.id
+				(account) => account.providerId === authenticationProvider.id,
 			);
 			if (
 				!signedInForProvider ||
 				this.authenticationService.supportsMultipleAccounts(
-					authenticationProvider.id
+					authenticationProvider.id,
 				)
 			) {
 				const providerName = this.authenticationService.getLabel(
-					authenticationProvider.id
+					authenticationProvider.id,
 				);
 				options.push({
 					label: localize(
@@ -699,7 +699,7 @@ export class RemoteTunnelWorkbenchContribution
 							],
 						},
 						"Sign in with {0}",
-						providerName
+						providerName,
 					),
 					provider: authenticationProvider,
 				});
@@ -721,14 +721,14 @@ export class RemoteTunnelWorkbenchContribution
 		for (const provider of authenticationProviders) {
 			const sessions = await this.authenticationService.getSessions(
 				provider.id,
-				provider.scopes
+				provider.scopes,
 			);
 
 			for (const session of sessions) {
 				if (!this.expiredSessions.has(session.id)) {
 					const item = this.createExistingSessionItem(
 						session,
-						provider.id
+						provider.id,
 					);
 					accounts.set(item.session.account.id, item);
 					if (
@@ -749,11 +749,11 @@ export class RemoteTunnelWorkbenchContribution
 	}
 
 	private async getSessionToken(
-		session: IRemoteTunnelSession | undefined
+		session: IRemoteTunnelSession | undefined,
 	): Promise<string | undefined> {
 		if (session) {
 			const sessionItem = (await this.getAllSessions()).find(
-				(s) => s.session.id === session.sessionId
+				(s) => s.session.id === session.sessionId,
 			);
 			if (sessionItem) {
 				return this.getPreferredTokenFromSession(sessionItem);
@@ -774,7 +774,7 @@ export class RemoteTunnelWorkbenchContribution
 		const authenticationProviders =
 			this.serverConfiguration.authenticationProviders;
 		const configuredAuthenticationProviders = Object.keys(
-			authenticationProviders
+			authenticationProviders,
 		).reduce<IAuthenticationProvider[]>((result, id) => {
 			result.push({ id, scopes: authenticationProviders[id].scopes });
 			return result;
@@ -786,8 +786,8 @@ export class RemoteTunnelWorkbenchContribution
 
 		return configuredAuthenticationProviders.filter(({ id }) =>
 			availableAuthenticationProviders.some(
-				(provider) => provider.id === id
-			)
+				(provider) => provider.id === id,
+			),
 		);
 	}
 
@@ -804,7 +804,7 @@ export class RemoteTunnelWorkbenchContribution
 							category: REMOTE_TUNNEL_CATEGORY,
 							precondition: ContextKeyExpr.equals(
 								REMOTE_TUNNEL_CONNECTION_STATE_KEY,
-								"disconnected"
+								"disconnected",
 							),
 							menu: [
 								{
@@ -815,7 +815,7 @@ export class RemoteTunnelWorkbenchContribution
 									group: "2_remoteTunnel",
 									when: ContextKeyExpr.equals(
 										REMOTE_TUNNEL_CONNECTION_STATE_KEY,
-										"disconnected"
+										"disconnected",
 									),
 								},
 							],
@@ -837,20 +837,20 @@ export class RemoteTunnelWorkbenchContribution
 						const didNotifyPreview = storageService.getBoolean(
 							REMOTE_TUNNEL_PROMPTED_PREVIEW_STORAGE_KEY,
 							StorageScope.APPLICATION,
-							false
+							false,
 						);
 						if (!didNotifyPreview) {
 							const { confirmed } = await dialogService.confirm({
 								message: localize(
 									"tunnel.preview",
-									'Remote Tunnels is currently in preview. Please report any problems using the "Help: Report Issue" command.'
+									'Remote Tunnels is currently in preview. Please report any problems using the "Help: Report Issue" command.',
 								),
 								primaryButton: localize(
 									{
 										key: "enable",
 										comment: ["&& denotes a mnemonic"],
 									},
-									"&&Enable"
+									"&&Enable",
 								),
 							});
 							if (!confirmed) {
@@ -861,7 +861,7 @@ export class RemoteTunnelWorkbenchContribution
 								REMOTE_TUNNEL_PROMPTED_PREVIEW_STORAGE_KEY,
 								true,
 								StorageScope.APPLICATION,
-								StorageTarget.USER
+								StorageTarget.USER,
 							);
 						}
 
@@ -871,30 +871,30 @@ export class RemoteTunnelWorkbenchContribution
 						>();
 						quickPick.placeholder = localize(
 							"tunnel.enable.placeholder",
-							"Select how you want to enable access"
+							"Select how you want to enable access",
 						);
 						quickPick.items = [
 							{
 								service: false,
 								label: localize(
 									"tunnel.enable.session",
-									"Turn on for this session"
+									"Turn on for this session",
 								),
 								description: localize(
 									"tunnel.enable.session.description",
 									"Run whenever {0} is open",
-									productService.nameShort
+									productService.nameShort,
 								),
 							},
 							{
 								service: true,
 								label: localize(
 									"tunnel.enable.service",
-									"Install as a service"
+									"Install as a service",
 								),
 								description: localize(
 									"tunnel.enable.service.description",
-									"Run whenever you're logged in"
+									"Run whenever you're logged in",
 								),
 							},
 						];
@@ -904,11 +904,13 @@ export class RemoteTunnelWorkbenchContribution
 						>((resolve) => {
 							disposables.add(
 								quickPick.onDidAccept(() =>
-									resolve(quickPick.selectedItems[0]?.service)
-								)
+									resolve(
+										quickPick.selectedItems[0]?.service,
+									),
+								),
 							);
 							disposables.add(
-								quickPick.onDidHide(() => resolve(undefined))
+								quickPick.onDidHide(() => resolve(undefined)),
 							);
 							quickPick.show();
 						});
@@ -920,7 +922,7 @@ export class RemoteTunnelWorkbenchContribution
 						}
 
 						const connectionInfo = await that.startTunnel(
-							/* installAsService= */ asService
+							/* installAsService= */ asService,
 						);
 
 						if (connectionInfo) {
@@ -948,7 +950,7 @@ export class RemoteTunnelWorkbenchContribution
 									RemoteTunnelCommandIds.configure,
 									RemoteTunnelCommandIds.turnOff,
 									remoteExtension.friendlyName,
-									"https://code.visualstudio.com/docs/remote/tunnels"
+									"https://code.visualstudio.com/docs/remote/tunnels",
 								),
 								actions: {
 									primary: [
@@ -956,20 +958,20 @@ export class RemoteTunnelWorkbenchContribution
 											"copyToClipboard",
 											localize(
 												"action.copyToClipboard",
-												"Copy Browser Link to Clipboard"
+												"Copy Browser Link to Clipboard",
 											),
 											undefined,
 											true,
 											() =>
 												clipboardService.writeText(
-													linkToOpen.toString(true)
-												)
+													linkToOpen.toString(true),
+												),
 										),
 										new Action(
 											"showExtension",
 											localize(
 												"action.showExtension",
-												"Show Extension"
+												"Show Extension",
 											),
 											undefined,
 											true,
@@ -978,9 +980,9 @@ export class RemoteTunnelWorkbenchContribution
 													"workbench.extensions.action.showExtensionsWithIds",
 													[
 														remoteExtension.extensionId,
-													]
+													],
 												);
-											}
+											},
 										),
 									],
 								},
@@ -993,23 +995,23 @@ export class RemoteTunnelWorkbenchContribution
 								REMOTE_TUNNEL_USED_STORAGE_KEY,
 								JSON.stringify(usedOnHostMessage),
 								StorageScope.APPLICATION,
-								StorageTarget.USER
+								StorageTarget.USER,
 							);
 						} else {
 							notificationService.notify({
 								severity: Severity.Info,
 								message: localize(
 									"progress.turnOn.failed",
-									"Unable to turn on the remote tunnel access. Check the Remote Tunnel Service log for details."
+									"Unable to turn on the remote tunnel access. Check the Remote Tunnel Service log for details.",
 								),
 							});
 							await commandService.executeCommand(
-								RemoteTunnelCommandIds.showLog
+								RemoteTunnelCommandIds.showLog,
 							);
 						}
 					}
-				}
-			)
+				},
+			),
 		);
 
 		this._register(
@@ -1020,7 +1022,7 @@ export class RemoteTunnelWorkbenchContribution
 							id: RemoteTunnelCommandIds.manage,
 							title: localize(
 								"remoteTunnel.actions.manage.on.v2",
-								"Remote Tunnel Access is On"
+								"Remote Tunnel Access is On",
 							),
 							category: REMOTE_TUNNEL_CATEGORY,
 							menu: [
@@ -1029,7 +1031,7 @@ export class RemoteTunnelWorkbenchContribution
 									group: "2_remoteTunnel",
 									when: ContextKeyExpr.equals(
 										REMOTE_TUNNEL_CONNECTION_STATE_KEY,
-										"connected"
+										"connected",
 									),
 								},
 							],
@@ -1039,8 +1041,8 @@ export class RemoteTunnelWorkbenchContribution
 					async run() {
 						that.showManageOptions();
 					}
-				}
-			)
+				},
+			),
 		);
 
 		this._register(
@@ -1051,7 +1053,7 @@ export class RemoteTunnelWorkbenchContribution
 							id: RemoteTunnelCommandIds.connecting,
 							title: localize(
 								"remoteTunnel.actions.manage.connecting",
-								"Remote Tunnel Access is Connecting"
+								"Remote Tunnel Access is Connecting",
 							),
 							category: REMOTE_TUNNEL_CATEGORY,
 							menu: [
@@ -1060,7 +1062,7 @@ export class RemoteTunnelWorkbenchContribution
 									group: "2_remoteTunnel",
 									when: ContextKeyExpr.equals(
 										REMOTE_TUNNEL_CONNECTION_STATE_KEY,
-										"connecting"
+										"connecting",
 									),
 								},
 							],
@@ -1070,8 +1072,8 @@ export class RemoteTunnelWorkbenchContribution
 					async run() {
 						that.showManageOptions();
 					}
-				}
-			)
+				},
+			),
 		);
 
 		this._register(
@@ -1084,14 +1086,14 @@ export class RemoteTunnelWorkbenchContribution
 							category: REMOTE_TUNNEL_CATEGORY,
 							precondition: ContextKeyExpr.notEquals(
 								REMOTE_TUNNEL_CONNECTION_STATE_KEY,
-								"disconnected"
+								"disconnected",
 							),
 							menu: [
 								{
 									id: MenuId.CommandPalette,
 									when: ContextKeyExpr.notEquals(
 										REMOTE_TUNNEL_CONNECTION_STATE_KEY,
-										""
+										"",
 									),
 								},
 							],
@@ -1102,12 +1104,12 @@ export class RemoteTunnelWorkbenchContribution
 						const message = that.connectionInfo?.isAttached
 							? localize(
 									"remoteTunnel.turnOffAttached.confirm",
-									"Do you want to turn off Remote Tunnel Access? This will also stop the service that was started externally."
-								)
+									"Do you want to turn off Remote Tunnel Access? This will also stop the service that was started externally.",
+							  )
 							: localize(
 									"remoteTunnel.turnOff.confirm",
-									"Do you want to turn off Remote Tunnel Access?"
-								);
+									"Do you want to turn off Remote Tunnel Access?",
+							  );
 
 						const { confirmed } = await that.dialogService.confirm({
 							message,
@@ -1116,8 +1118,8 @@ export class RemoteTunnelWorkbenchContribution
 							that.remoteTunnelService.stopTunnel();
 						}
 					}
-				}
-			)
+				},
+			),
 		);
 
 		this._register(
@@ -1133,7 +1135,7 @@ export class RemoteTunnelWorkbenchContribution
 									id: MenuId.CommandPalette,
 									when: ContextKeyExpr.notEquals(
 										REMOTE_TUNNEL_CONNECTION_STATE_KEY,
-										""
+										"",
 									),
 								},
 							],
@@ -1144,8 +1146,8 @@ export class RemoteTunnelWorkbenchContribution
 						const outputService = accessor.get(IOutputService);
 						outputService.showChannel(LOG_ID);
 					}
-				}
-			)
+				},
+			),
 		);
 
 		this._register(
@@ -1161,7 +1163,7 @@ export class RemoteTunnelWorkbenchContribution
 									id: MenuId.CommandPalette,
 									when: ContextKeyExpr.notEquals(
 										REMOTE_TUNNEL_CONNECTION_STATE_KEY,
-										""
+										"",
 									),
 								},
 							],
@@ -1175,8 +1177,8 @@ export class RemoteTunnelWorkbenchContribution
 							query: CONFIGURATION_KEY_PREFIX,
 						});
 					}
-				}
-			)
+				},
+			),
 		);
 
 		this._register(
@@ -1189,14 +1191,14 @@ export class RemoteTunnelWorkbenchContribution
 							category: REMOTE_TUNNEL_CATEGORY,
 							precondition: ContextKeyExpr.equals(
 								REMOTE_TUNNEL_CONNECTION_STATE_KEY,
-								"connected"
+								"connected",
 							),
 							menu: [
 								{
 									id: MenuId.CommandPalette,
 									when: ContextKeyExpr.equals(
 										REMOTE_TUNNEL_CONNECTION_STATE_KEY,
-										"connected"
+										"connected",
 									),
 								},
 							],
@@ -1208,15 +1210,15 @@ export class RemoteTunnelWorkbenchContribution
 							accessor.get(IClipboardService);
 						if (that.connectionInfo) {
 							const linkToOpen = that.getLinkToOpen(
-								that.connectionInfo
+								that.connectionInfo,
 							);
 							clipboardService.writeText(
-								linkToOpen.toString(true)
+								linkToOpen.toString(true),
 							);
 						}
 					}
-				}
-			)
+				},
+			),
 		);
 
 		this._register(
@@ -1234,11 +1236,11 @@ export class RemoteTunnelWorkbenchContribution
 					async run(accessor: ServicesAccessor) {
 						const openerService = accessor.get(IOpenerService);
 						await openerService.open(
-							"https://aka.ms/vscode-server-doc"
+							"https://aka.ms/vscode-server-doc",
 						);
 					}
-				}
-			)
+				},
+			),
 		);
 	}
 
@@ -1252,7 +1254,7 @@ export class RemoteTunnelWorkbenchContribution
 			workspace.configuration &&
 			!isUntitledWorkspace(
 				workspace.configuration,
-				this.environmentService
+				this.environmentService,
 			)
 		) {
 			resource = workspace.configuration;
@@ -1272,7 +1274,7 @@ export class RemoteTunnelWorkbenchContribution
 			const quickPick = this.quickInputService.createQuickPick();
 			quickPick.placeholder = localize(
 				"manage.placeholder",
-				"Select a command to invoke"
+				"Select a command to invoke",
 			);
 			disposables.add(quickPick);
 			const items: Array<QuickPickItem> = [];
@@ -1288,16 +1290,16 @@ export class RemoteTunnelWorkbenchContribution
 								comment: ["{0} is the tunnel name"],
 							},
 							"Remote Tunnel Access enabled for {0} (launched externally)",
-							this.connectionInfo.tunnelName
-						)
+							this.connectionInfo.tunnelName,
+					  )
 					: localize(
 							{
 								key: "manage.title.orunning",
 								comment: ["{0} is the tunnel name"],
 							},
 							"Remote Tunnel Access enabled for {0}",
-							this.connectionInfo.tunnelName
-						);
+							this.connectionInfo.tunnelName,
+					  );
 
 				items.push({
 					id: RemoteTunnelCommandIds.copyToClipboard,
@@ -1307,7 +1309,7 @@ export class RemoteTunnelWorkbenchContribution
 			} else {
 				quickPick.title = localize(
 					"manage.title.off",
-					"Remote Tunnel Access not enabled"
+					"Remote Tunnel Access not enabled",
 				);
 			}
 			items.push({
@@ -1336,17 +1338,17 @@ export class RemoteTunnelWorkbenchContribution
 						quickPick.selectedItems[0].id
 					) {
 						this.commandService.executeCommand(
-							quickPick.selectedItems[0].id
+							quickPick.selectedItems[0].id,
 						);
 					}
 					quickPick.hide();
-				})
+				}),
 			);
 			disposables.add(
 				quickPick.onDidHide(() => {
 					disposables.dispose();
 					c();
-				})
+				}),
 			);
 			quickPick.show();
 		});
@@ -1354,29 +1356,29 @@ export class RemoteTunnelWorkbenchContribution
 }
 
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 );
 workbenchRegistry.registerWorkbenchContribution(
 	RemoteTunnelWorkbenchContribution,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );
 
 Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration
+	ConfigurationExtensions.Configuration,
 ).registerConfiguration({
 	type: "object",
 	properties: {
 		[CONFIGURATION_KEY_HOST_NAME]: {
 			description: localize(
 				"remoteTunnelAccess.machineName",
-				"The name under which the remote tunnel access is registered. If not set, the host name is used."
+				"The name under which the remote tunnel access is registered. If not set, the host name is used.",
 			),
 			type: "string",
 			scope: ConfigurationScope.APPLICATION,
 			pattern: "^(\\w[\\w-]*)?$",
 			patternErrorMessage: localize(
 				"remoteTunnelAccess.machineNameRegex",
-				"The name must only consist of letters, numbers, underscore and dash. It must not start with a dash."
+				"The name must only consist of letters, numbers, underscore and dash. It must not start with a dash.",
 			),
 			maxLength: 20,
 			default: "",
@@ -1384,7 +1386,7 @@ Registry.as<IConfigurationRegistry>(
 		[CONFIGURATION_KEY_PREVENT_SLEEP]: {
 			description: localize(
 				"remoteTunnelAccess.preventSleep",
-				"Prevent this computer from sleeping when remote tunnel access is turned on."
+				"Prevent this computer from sleeping when remote tunnel access is turned on.",
 			),
 			type: "boolean",
 			scope: ConfigurationScope.APPLICATION,

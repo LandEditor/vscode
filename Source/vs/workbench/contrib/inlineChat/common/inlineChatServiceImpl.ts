@@ -3,17 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IDisposable, toDisposable } from "vs/base/common/lifecycle";
 import { Emitter } from "vs/base/common/event";
+import { IDisposable, toDisposable } from "vs/base/common/lifecycle";
 import { LinkedList } from "vs/base/common/linkedList";
 import {
 	IContextKey,
 	IContextKeyService,
 } from "vs/platform/contextkey/common/contextkey";
 import {
+	CTX_INLINE_CHAT_HAS_PROVIDER,
 	IInlineChatService,
 	IInlineChatSessionProvider,
-	CTX_INLINE_CHAT_HAS_PROVIDER,
 } from "./inlineChat";
 
 export class InlineChatServiceImpl implements IInlineChatService {

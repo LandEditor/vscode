@@ -9,19 +9,19 @@ import { BracketAstNode } from "./ast";
 import { toLength } from "./length";
 import {
 	DenseKeyProvider,
-	identityKeyProvider,
 	SmallImmutableSet,
+	identityKeyProvider,
 } from "./smallImmutableSet";
 import { OpeningBracketId, Token, TokenKind } from "./tokenizer";
 
 export class BracketTokens {
 	static createFromLanguage(
 		configuration: ResolvedLanguageConfiguration,
-		denseKeyProvider: DenseKeyProvider<string>
+		denseKeyProvider: DenseKeyProvider<string>,
 	): BracketTokens {
 		function getId(bracketInfo: BracketKind): OpeningBracketId {
 			return denseKeyProvider.getKey(
-				`${bracketInfo.languageId}:::${bracketInfo.bracketText}`
+				`${bracketInfo.languageId}:::${bracketInfo.bracketText}`,
 			);
 		}
 
@@ -32,7 +32,7 @@ export class BracketTokens {
 			const openingTextId = getId(openingBracket);
 			const bracketIds = SmallImmutableSet.getEmpty().add(
 				openingTextId,
-				identityKeyProvider
+				identityKeyProvider,
 			);
 			map.set(
 				openingBracket.bracketText,
@@ -41,8 +41,8 @@ export class BracketTokens {
 					TokenKind.OpeningBracket,
 					openingTextId,
 					bracketIds,
-					BracketAstNode.create(length, openingBracket, bracketIds)
-				)
+					BracketAstNode.create(length, openingBracket, bracketIds),
+				),
 			);
 		}
 
@@ -54,7 +54,7 @@ export class BracketTokens {
 			for (const bracket of closingBrackets) {
 				bracketIds = bracketIds.add(
 					getId(bracket),
-					identityKeyProvider
+					identityKeyProvider,
 				);
 			}
 			map.set(
@@ -64,8 +64,8 @@ export class BracketTokens {
 					TokenKind.ClosingBracket,
 					getId(closingBrackets[0]),
 					bracketIds,
-					BracketAstNode.create(length, closingBracket, bracketIds)
-				)
+					BracketAstNode.create(length, closingBracket, bracketIds),
+				),
 			);
 		}
 
@@ -105,7 +105,7 @@ export class BracketTokens {
 	}
 
 	findClosingTokenText(
-		openingBracketIds: SmallImmutableSet<OpeningBracketId>
+		openingBracketIds: SmallImmutableSet<OpeningBracketId>,
 	): string | undefined {
 		for (const [closingText, info] of this.map) {
 			if (
@@ -145,8 +145,8 @@ export class LanguageAgnosticBracketTokens {
 	constructor(
 		private readonly denseKeyProvider: DenseKeyProvider<string>,
 		private readonly getLanguageConfiguration: (
-			languageId: string
-		) => ResolvedLanguageConfiguration
+			languageId: string,
+		) => ResolvedLanguageConfiguration,
 	) {}
 
 	public didLanguageChange(languageId: string): boolean {
@@ -160,11 +160,11 @@ export class LanguageAgnosticBracketTokens {
 		if (!singleLanguageBracketTokens) {
 			singleLanguageBracketTokens = BracketTokens.createFromLanguage(
 				this.getLanguageConfiguration(languageId),
-				this.denseKeyProvider
+				this.denseKeyProvider,
 			);
 			this.languageIdToBracketTokens.set(
 				languageId,
-				singleLanguageBracketTokens
+				singleLanguageBracketTokens,
 			);
 		}
 		return singleLanguageBracketTokens;

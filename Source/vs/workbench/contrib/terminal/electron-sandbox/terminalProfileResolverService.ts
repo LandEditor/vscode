@@ -27,18 +27,18 @@ export class ElectronTerminalProfileResolverService extends BaseTerminalProfileR
 		terminalProfileService: ITerminalProfileService,
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
 		@ITerminalInstanceService
-		terminalInstanceService: ITerminalInstanceService
+		terminalInstanceService: ITerminalInstanceService,
 	) {
 		super(
 			{
 				getDefaultSystemShell: async (remoteAuthority, platform) => {
 					const backend =
 						await terminalInstanceService.getBackend(
-							remoteAuthority
+							remoteAuthority,
 						);
 					if (!backend) {
 						throw new ErrorNoTelemetry(
-							`Cannot get default system shell when there is no backend for remote authority '${remoteAuthority}'`
+							`Cannot get default system shell when there is no backend for remote authority '${remoteAuthority}'`,
 						);
 					}
 					return backend.getDefaultSystemShell(platform);
@@ -46,11 +46,11 @@ export class ElectronTerminalProfileResolverService extends BaseTerminalProfileR
 				getEnvironment: async (remoteAuthority) => {
 					const backend =
 						await terminalInstanceService.getBackend(
-							remoteAuthority
+							remoteAuthority,
 						);
 					if (!backend) {
 						throw new ErrorNoTelemetry(
-							`Cannot get environment when there is no backend for remote authority '${remoteAuthority}'`
+							`Cannot get environment when there is no backend for remote authority '${remoteAuthority}'`,
 						);
 					}
 					return backend.getEnvironment();
@@ -62,7 +62,7 @@ export class ElectronTerminalProfileResolverService extends BaseTerminalProfileR
 			logService,
 			terminalProfileService,
 			workspaceContextService,
-			remoteAgentService
+			remoteAgentService,
 		);
 	}
 }

@@ -3,55 +3,55 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	IAction,
-	IActionRunner,
-	ActionRunner,
-	WorkbenchActionExecutedEvent,
-	WorkbenchActionExecutedClassification,
-	Separator,
-	SubmenuAction,
-} from "vs/base/common/actions";
-import * as dom from "vs/base/browser/dom";
-import {
-	IContextMenuMenuDelegate,
-	IContextMenuService,
-	IContextViewService,
-} from "vs/platform/contextview/browser/contextView";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import { getZoomFactor } from "vs/base/browser/browser";
-import { unmnemonicLabel } from "vs/base/common/labels";
-import { INotificationService } from "vs/platform/notification/common/notification";
 import {
 	IContextMenuDelegate,
 	IContextMenuEvent,
 } from "vs/base/browser/contextmenu";
-import { createSingleCallFunction } from "vs/base/common/functional";
-import { IContextMenuItem } from "vs/base/parts/contextmenu/common/contextmenu";
-import { popup } from "vs/base/parts/contextmenu/electron-sandbox/contextmenu";
-import { getTitleBarStyle } from "vs/platform/window/common/window";
-import { isMacintosh, isWindows } from "vs/base/common/platform";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import {
-	ContextMenuMenuDelegate,
-	ContextMenuService as HTMLContextMenuService,
-} from "vs/platform/contextview/browser/contextMenuService";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { stripIcons } from "vs/base/common/iconLabels";
-import { coalesce } from "vs/base/common/arrays";
-import { Event, Emitter } from "vs/base/common/event";
+import * as dom from "vs/base/browser/dom";
 import {
 	AnchorAlignment,
 	AnchorAxisAlignment,
 	isAnchor,
 } from "vs/base/browser/ui/contextview/contextview";
-import { IMenuService } from "vs/platform/actions/common/actions";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import {
+	ActionRunner,
+	IAction,
+	IActionRunner,
+	Separator,
+	SubmenuAction,
+	WorkbenchActionExecutedClassification,
+	WorkbenchActionExecutedEvent,
+} from "vs/base/common/actions";
+import { coalesce } from "vs/base/common/arrays";
+import { Emitter, Event } from "vs/base/common/event";
+import { createSingleCallFunction } from "vs/base/common/functional";
+import { stripIcons } from "vs/base/common/iconLabels";
+import { unmnemonicLabel } from "vs/base/common/labels";
 import { Disposable } from "vs/base/common/lifecycle";
+import { isMacintosh, isWindows } from "vs/base/common/platform";
+import { IContextMenuItem } from "vs/base/parts/contextmenu/common/contextmenu";
+import { popup } from "vs/base/parts/contextmenu/electron-sandbox/contextmenu";
+import { IMenuService } from "vs/platform/actions/common/actions";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import {
+	ContextMenuMenuDelegate,
+	ContextMenuService as HTMLContextMenuService,
+} from "vs/platform/contextview/browser/contextMenuService";
+import {
+	IContextMenuMenuDelegate,
+	IContextMenuService,
+	IContextViewService,
+} from "vs/platform/contextview/browser/contextView";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { INotificationService } from "vs/platform/notification/common/notification";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { getTitleBarStyle } from "vs/platform/window/common/window";
 
 export class ContextMenuService implements IContextMenuService {
 	declare readonly _serviceBrand: undefined;
@@ -72,7 +72,7 @@ export class ContextMenuService implements IContextMenuService {
 		@IConfigurationService configurationService: IConfigurationService,
 		@IContextViewService contextViewService: IContextViewService,
 		@IMenuService menuService: IMenuService,
-		@IContextKeyService contextKeyService: IContextKeyService
+		@IContextKeyService contextKeyService: IContextKeyService,
 	) {
 		// Custom context menu: Linux/Windows if custom title is enabled
 		if (
@@ -85,7 +85,7 @@ export class ContextMenuService implements IContextMenuService {
 				contextViewService,
 				keybindingService,
 				menuService,
-				contextKeyService
+				contextKeyService,
 			);
 		}
 
@@ -96,7 +96,7 @@ export class ContextMenuService implements IContextMenuService {
 				telemetryService,
 				keybindingService,
 				menuService,
-				contextKeyService
+				contextKeyService,
 			);
 		}
 	}
@@ -106,7 +106,7 @@ export class ContextMenuService implements IContextMenuService {
 	}
 
 	showContextMenu(
-		delegate: IContextMenuDelegate | IContextMenuMenuDelegate
+		delegate: IContextMenuDelegate | IContextMenuMenuDelegate,
 	): void {
 		this.impl.showContextMenu(delegate);
 	}
@@ -119,12 +119,12 @@ class NativeContextMenuService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidShowContextMenu = this._store.add(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onDidShowContextMenu = this._onDidShowContextMenu.event;
 
 	private readonly _onDidHideContextMenu = this._store.add(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onDidHideContextMenu = this._onDidHideContextMenu.event;
 
@@ -142,12 +142,12 @@ class NativeContextMenuService
 	}
 
 	showContextMenu(
-		delegate: IContextMenuDelegate | IContextMenuMenuDelegate
+		delegate: IContextMenuDelegate | IContextMenuMenuDelegate,
 	): void {
 		delegate = ContextMenuMenuDelegate.transform(
 			delegate,
 			this.menuService,
-			this.contextKeyService
+			this.contextKeyService,
 		);
 
 		const actions = delegate.getActions();
@@ -208,14 +208,12 @@ class NativeContextMenuService
 							y += elementPosition.height;
 						}
 					}
+				} else if (delegate.anchorAlignment === AnchorAlignment.LEFT) {
+					x = elementPosition.left;
+					y = elementPosition.top + elementPosition.height;
 				} else {
-					if (delegate.anchorAlignment === AnchorAlignment.LEFT) {
-						x = elementPosition.left;
-						y = elementPosition.top + elementPosition.height;
-					} else {
-						x = elementPosition.left + elementPosition.width;
-						y = elementPosition.top + elementPosition.height;
-					}
+					x = elementPosition.left + elementPosition.width;
+					y = elementPosition.top + elementPosition.height;
 				}
 
 				// Shift macOS menus by a few pixels below elements
@@ -249,7 +247,7 @@ class NativeContextMenuService
 						? 0
 						: undefined,
 				},
-				() => onHide()
+				() => onHide(),
 			);
 
 			this._onDidShowContextMenu.fire();
@@ -260,7 +258,7 @@ class NativeContextMenuService
 		delegate: IContextMenuDelegate,
 		entries: readonly IAction[],
 		onHide: () => void,
-		submenuIds = new Set<string>()
+		submenuIds = new Set<string>(),
 	): IContextMenuItem[] {
 		const actionRunner = delegate.actionRunner || new ActionRunner();
 		return coalesce(
@@ -270,9 +268,9 @@ class NativeContextMenuService
 					entry,
 					actionRunner,
 					onHide,
-					submenuIds
-				)
-			)
+					submenuIds,
+				),
+			),
 		);
 	}
 
@@ -281,7 +279,7 @@ class NativeContextMenuService
 		entry: IAction,
 		actionRunner: IActionRunner,
 		onHide: () => void,
-		submenuIds: Set<string>
+		submenuIds: Set<string>,
 	): IContextMenuItem | undefined {
 		// Separator
 		if (entry instanceof Separator) {
@@ -301,7 +299,7 @@ class NativeContextMenuService
 					delegate,
 					entry.actions,
 					onHide,
-					new Set([...submenuIds, entry.id])
+					new Set([...submenuIds, entry.id]),
 				),
 			};
 		}
@@ -359,7 +357,7 @@ class NativeContextMenuService
 		actionRunner: IActionRunner,
 		actionToRun: IAction,
 		delegate: IContextMenuDelegate,
-		event: IContextMenuEvent
+		event: IContextMenuEvent,
 	): Promise<void> {
 		if (!delegate.skipTelemetry) {
 			this.telemetryService.publicLog2<
@@ -387,5 +385,5 @@ class NativeContextMenuService
 registerSingleton(
 	IContextMenuService,
 	ContextMenuService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

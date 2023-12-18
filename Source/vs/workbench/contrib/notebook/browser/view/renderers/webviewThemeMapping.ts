@@ -113,7 +113,7 @@ const constants: Readonly<WebviewStyles> = {
  * @deprecated
  */
 export const transformWebviewThemeVars = (
-	s: Readonly<WebviewStyles>
+	s: Readonly<WebviewStyles>,
 ): WebviewStyles => {
 	const result = { ...s, ...constants };
 	for (const [target, src] of mapping) {

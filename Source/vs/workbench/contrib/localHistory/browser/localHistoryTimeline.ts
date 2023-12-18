@@ -3,11 +3,30 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import { Emitter } from "vs/base/common/event";
 import { CancellationToken } from "vs/base/common/cancellation";
+import { Emitter } from "vs/base/common/event";
+import { MarkdownString } from "vs/base/common/htmlContent";
 import { Disposable, MutableDisposable } from "vs/base/common/lifecycle";
+import { Schemas } from "vs/base/common/network";
+import { URI } from "vs/base/common/uri";
+import { localize } from "vs/nls";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IFileService } from "vs/platform/files/common/files";
+import { getVirtualWorkspaceAuthority } from "vs/platform/workspace/common/virtualWorkspace";
+import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import { API_OPEN_DIFF_EDITOR_COMMAND_ID } from "vs/workbench/browser/parts/editor/editorCommands";
 import { IWorkbenchContribution } from "vs/workbench/common/contributions";
+import { SaveSourceRegistry } from "vs/workbench/common/editor";
+import {
+	LOCAL_HISTORY_ICON_ENTRY,
+	LOCAL_HISTORY_MENU_CONTEXT_VALUE,
+	getLocalHistoryDateFormatter,
+} from "vs/workbench/contrib/localHistory/browser/localHistory";
+import {
+	COMPARE_WITH_FILE_LABEL,
+	toDiffEditorArguments,
+} from "vs/workbench/contrib/localHistory/browser/localHistoryCommands";
+import { LocalHistoryFileSystemProvider } from "vs/workbench/contrib/localHistory/browser/localHistoryFileSystemProvider";
 import {
 	ITimelineService,
 	Timeline,
@@ -16,31 +35,12 @@ import {
 	TimelineOptions,
 	TimelineProvider,
 } from "vs/workbench/contrib/timeline/common/timeline";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
+import { IPathService } from "vs/workbench/services/path/common/pathService";
 import {
 	IWorkingCopyHistoryEntry,
 	IWorkingCopyHistoryService,
 } from "vs/workbench/services/workingCopy/common/workingCopyHistory";
-import { URI } from "vs/base/common/uri";
-import { IPathService } from "vs/workbench/services/path/common/pathService";
-import { API_OPEN_DIFF_EDITOR_COMMAND_ID } from "vs/workbench/browser/parts/editor/editorCommands";
-import { IFileService } from "vs/platform/files/common/files";
-import { LocalHistoryFileSystemProvider } from "vs/workbench/contrib/localHistory/browser/localHistoryFileSystemProvider";
-import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { SaveSourceRegistry } from "vs/workbench/common/editor";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import {
-	COMPARE_WITH_FILE_LABEL,
-	toDiffEditorArguments,
-} from "vs/workbench/contrib/localHistory/browser/localHistoryCommands";
-import { MarkdownString } from "vs/base/common/htmlContent";
-import {
-	getLocalHistoryDateFormatter,
-	LOCAL_HISTORY_ICON_ENTRY,
-	LOCAL_HISTORY_MENU_CONTEXT_VALUE,
-} from "vs/workbench/contrib/localHistory/browser/localHistory";
-import { Schemas } from "vs/base/common/network";
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
-import { getVirtualWorkspaceAuthority } from "vs/platform/workspace/common/virtualWorkspace";
 
 export class LocalHistoryTimeline
 	extends Disposable
@@ -58,12 +58,12 @@ export class LocalHistoryTimeline
 	readonly scheme = "*"; // we try to show local history for all schemes if possible
 
 	private readonly _onDidChange = this._register(
-		new Emitter<TimelineChangeEvent>()
+		new Emitter<TimelineChangeEvent>(),
 	);
 	readonly onDidChange = this._onDidChange.event;
 
 	private readonly timelineProviderDisposable = this._register(
-		new MutableDisposable()
+		new MutableDisposable(),
 	);
 
 	constructor(
@@ -93,15 +93,15 @@ export class LocalHistoryTimeline
 		this._register(
 			this.fileService.registerProvider(
 				LocalHistoryFileSystemProvider.SCHEMA,
-				new LocalHistoryFileSystemProvider(this.fileService)
-			)
+				new LocalHistoryFileSystemProvider(this.fileService),
+			),
 		);
 	}
 
 	private updateTimelineRegistration(): void {
 		if (
 			this.configurationService.getValue<boolean>(
-				LocalHistoryTimeline.LOCAL_HISTORY_ENABLED_SETTINGS_KEY
+				LocalHistoryTimeline.LOCAL_HISTORY_ENABLED_SETTINGS_KEY,
 			)
 		) {
 			this.timelineProviderDisposable.value =
@@ -115,37 +115,37 @@ export class LocalHistoryTimeline
 		// History changes
 		this._register(
 			this.workingCopyHistoryService.onDidAddEntry((e) =>
-				this.onDidChangeWorkingCopyHistoryEntry(e.entry)
-			)
+				this.onDidChangeWorkingCopyHistoryEntry(e.entry),
+			),
 		);
 		this._register(
 			this.workingCopyHistoryService.onDidChangeEntry((e) =>
-				this.onDidChangeWorkingCopyHistoryEntry(e.entry)
-			)
+				this.onDidChangeWorkingCopyHistoryEntry(e.entry),
+			),
 		);
 		this._register(
 			this.workingCopyHistoryService.onDidReplaceEntry((e) =>
-				this.onDidChangeWorkingCopyHistoryEntry(e.entry)
-			)
+				this.onDidChangeWorkingCopyHistoryEntry(e.entry),
+			),
 		);
 		this._register(
 			this.workingCopyHistoryService.onDidRemoveEntry((e) =>
-				this.onDidChangeWorkingCopyHistoryEntry(e.entry)
-			)
+				this.onDidChangeWorkingCopyHistoryEntry(e.entry),
+			),
 		);
 		this._register(
 			this.workingCopyHistoryService.onDidRemoveEntries(() =>
 				this.onDidChangeWorkingCopyHistoryEntry(
-					undefined /* all entries */
-				)
-			)
+					undefined /* all entries */,
+				),
+			),
 		);
 		this._register(
 			this.workingCopyHistoryService.onDidMoveEntries(() =>
 				this.onDidChangeWorkingCopyHistoryEntry(
-					undefined /* all entries */
-				)
-			)
+					undefined /* all entries */,
+				),
+			),
 		);
 
 		// Configuration changes
@@ -153,17 +153,17 @@ export class LocalHistoryTimeline
 			this.configurationService.onDidChangeConfiguration((e) => {
 				if (
 					e.affectsConfiguration(
-						LocalHistoryTimeline.LOCAL_HISTORY_ENABLED_SETTINGS_KEY
+						LocalHistoryTimeline.LOCAL_HISTORY_ENABLED_SETTINGS_KEY,
 					)
 				) {
 					this.updateTimelineRegistration();
 				}
-			})
+			}),
 		);
 	}
 
 	private onDidChangeWorkingCopyHistoryEntry(
-		entry: IWorkingCopyHistoryEntry | undefined
+		entry: IWorkingCopyHistoryEntry | undefined,
 	): void {
 		// Re-emit as timeline change event
 		this._onDidChange.fire({
@@ -176,7 +176,7 @@ export class LocalHistoryTimeline
 	async provideTimeline(
 		uri: URI,
 		options: TimelineOptions,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<Timeline> {
 		const items: TimelineItem[] = [];
 
@@ -189,7 +189,7 @@ export class LocalHistoryTimeline
 			// `vscode-local-history`: convert back to the associated resource
 			resource =
 				LocalHistoryFileSystemProvider.fromLocalHistoryFileSystem(
-					uri
+					uri,
 				).associatedResource;
 		} else if (
 			uri.scheme === this.pathService.defaultUriScheme ||
@@ -209,7 +209,7 @@ export class LocalHistoryTimeline
 				authority:
 					this.environmentService.remoteAuthority ??
 					getVirtualWorkspaceAuthority(
-						this.contextService.getWorkspace()
+						this.contextService.getWorkspace(),
 					),
 				path: uri.path,
 			});
@@ -219,7 +219,7 @@ export class LocalHistoryTimeline
 			// Retrieve from working copy history
 			const entries = await this.workingCopyHistoryService.getEntries(
 				resource,
-				token
+				token,
 			);
 
 			// Convert to timeline items
@@ -240,9 +240,9 @@ export class LocalHistoryTimeline
 			label: SaveSourceRegistry.getSourceLabel(entry.source),
 			tooltip: new MarkdownString(
 				`$(history) ${getLocalHistoryDateFormatter().format(
-					entry.timestamp
+					entry.timestamp,
 				)}\n\n${SaveSourceRegistry.getSourceLabel(entry.source)}`,
-				{ supportThemeIcons: true }
+				{ supportThemeIcons: true },
 			),
 			source: LocalHistoryTimeline.ID,
 			timestamp: entry.timestamp,
@@ -253,7 +253,7 @@ export class LocalHistoryTimeline
 				title: COMPARE_WITH_FILE_LABEL.value,
 				arguments: toDiffEditorArguments(
 					entry,
-					entry.workingCopy.resource
+					entry.workingCopy.resource,
 				),
 			},
 		};

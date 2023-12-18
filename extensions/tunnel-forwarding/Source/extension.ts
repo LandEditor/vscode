@@ -9,7 +9,7 @@ import * as vscode from "vscode";
 import { DeferredPromise } from "./deferredPromise";
 import { splitNewLines } from "./split";
 
-export const enum TunnelPrivacyId {
+export enum TunnelPrivacyId {
 	Private = "private",
 	Public = "public",
 }
@@ -28,8 +28,8 @@ const cliPath = process.env.VSCODE_FORWARDING_IS_DEV
 			process.platform === "darwin" ? "bin" : "../../bin",
 			vscode.env.appQuality === "stable"
 				? "code-tunnel"
-				: "code-tunnel-insiders"
-		) + (process.platform === "win32" ? ".exe" : "");
+				: "code-tunnel-insiders",
+	  ) + (process.platform === "win32" ? ".exe" : "");
 
 class Tunnel implements vscode.Tunnel {
 	private readonly disposeEmitter = new vscode.EventEmitter<void>();
@@ -38,13 +38,13 @@ class Tunnel implements vscode.Tunnel {
 
 	constructor(
 		public readonly remoteAddress: { port: number; host: string },
-		public readonly privacy: TunnelPrivacyId
+		public readonly privacy: TunnelPrivacyId,
 	) {}
 
 	public setPortFormat(formatString: string) {
 		this.localAddress = formatString.replace(
 			"{port}",
-			String(this.remoteAddress.port)
+			String(this.remoteAddress.port),
 		);
 	}
 
@@ -53,11 +53,11 @@ class Tunnel implements vscode.Tunnel {
 	}
 }
 
-const enum State {
-	Starting,
-	Active,
-	Inactive,
-	Error,
+enum State {
+	Starting = 0,
+	Active = 1,
+	Inactive = 2,
+	Error = 3,
 }
 
 type StateT =
@@ -85,17 +85,17 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand("tunnel-forwarding.showLog", () =>
-			logger.show()
+			logger.show(),
 		),
 		vscode.commands.registerCommand("tunnel-forwarding.restart", () =>
-			provider.restart()
+			provider.restart(),
 		),
 
 		provider.onDidStateChange((s) => {
 			vscode.commands.executeCommand(
 				"setContext",
 				"tunnelForwardingIsRunning",
-				s.state !== State.Inactive
+				s.state !== State.Inactive,
 			);
 		}),
 
@@ -115,7 +115,7 @@ export async function activate(context: vscode.ExtensionContext) {
 					},
 				],
 			},
-		})
+		}),
 	);
 }
 
@@ -146,7 +146,7 @@ class Logger {
 			vscode.commands.executeCommand(
 				"setContext",
 				"tunnelForwardingHasLog",
-				true
+				true,
 			);
 		}
 		this.outputChannel[logLevel](message, ...args);
@@ -173,17 +173,17 @@ class TunnelProvider implements vscode.TunnelProvider {
 
 	constructor(
 		private readonly logger: Logger,
-		private readonly context: vscode.ExtensionContext
+		private readonly context: vscode.ExtensionContext,
 	) {}
 
 	/** @inheritdoc */
 	public async provideTunnel(
-		tunnelOptions: vscode.TunnelOptions
+		tunnelOptions: vscode.TunnelOptions,
 	): Promise<vscode.Tunnel | undefined> {
 		if (tunnelOptions.privacy === TunnelPrivacyId.Public) {
 			if (
 				!(await this.consentPublicPort(
-					tunnelOptions.remoteAddress.port
+					tunnelOptions.remoteAddress.port,
 				))
 			) {
 				return;
@@ -193,7 +193,7 @@ class TunnelProvider implements vscode.TunnelProvider {
 		const tunnel = new Tunnel(
 			tunnelOptions.remoteAddress,
 			(tunnelOptions.privacy as TunnelPrivacyId) ||
-				TunnelPrivacyId.Private
+				TunnelPrivacyId.Private,
 		);
 
 		this.tunnels.add(tunnel);
@@ -246,11 +246,11 @@ class TunnelProvider implements vscode.TunnelProvider {
 		const r = await vscode.window.showWarningMessage(
 			vscode.l10n.t(
 				"You're about to create a publicly forwarded port. Anyone on the internet will be able to connect to the service listening on port {0}. You should only proceed if this service is secure and non-sensitive.",
-				portNumber
+				portNumber,
 			),
 			{ modal: true },
 			continueOpt,
-			dontShowAgain
+			dontShowAgain,
 		);
 		if (r === continueOpt) {
 			// continue
@@ -278,7 +278,7 @@ class TunnelProvider implements vscode.TunnelProvider {
 		) {
 			this.logger.log(
 				"info",
-				"[forwarding] no more ports, stopping forwarding CLI"
+				"[forwarding] no more ports, stopping forwarding CLI",
 			);
 			this.state.process.kill();
 			this.state = { state: State.Inactive };
@@ -302,7 +302,7 @@ class TunnelProvider implements vscode.TunnelProvider {
 		if (ports.length === 0 && !this.state.cleanupTimeout) {
 			this.state.cleanupTimeout = setTimeout(
 				() => this.killRunningProcess(),
-				CLEANUP_TIMEOUT
+				CLEANUP_TIMEOUT,
 			);
 		} else if (ports.length > 0 && this.state.cleanupTimeout) {
 			clearTimeout(this.state.cleanupTimeout);
@@ -316,7 +316,7 @@ class TunnelProvider implements vscode.TunnelProvider {
 			["user:email", "read:org"],
 			{
 				createIfNone: true,
-			}
+			},
 		);
 
 		const args = [
@@ -349,7 +349,7 @@ class TunnelProvider implements vscode.TunnelProvider {
 					args: ["command:tunnel-forwarding.showLog"],
 				}),
 			},
-			() => progressP.p
+			() => progressP.p,
 		);
 
 		let lastPortFormat: string | undefined;
@@ -373,7 +373,7 @@ class TunnelProvider implements vscode.TunnelProvider {
 		child.stdout
 			.pipe(splitNewLines())
 			.on("data", (line) =>
-				this.logger.log("info", `[forwarding] ${line}`)
+				this.logger.log("info", `[forwarding] ${line}`),
 			)
 			.resume();
 

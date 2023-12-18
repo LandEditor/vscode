@@ -3,9 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/editortabscontrol";
-import { localize } from "vs/nls";
-import { applyDragImage, DataTransfers } from "vs/base/browser/dnd";
+import { isFirefox } from "vs/base/browser/browser";
+import { DataTransfers, applyDragImage } from "vs/base/browser/dnd";
 import {
 	Dimension,
 	getActiveWindow,
@@ -18,17 +17,27 @@ import {
 	IActionViewItem,
 	prepareActions,
 } from "vs/base/browser/ui/actionbar/actionbar";
-import { IAction, ActionRunner } from "vs/base/common/actions";
+import { AnchorAlignment } from "vs/base/browser/ui/contextview/contextview";
+import { ActionRunner, IAction } from "vs/base/common/actions";
+import { isCancellationError } from "vs/base/common/errors";
 import { ResolvedKeybinding } from "vs/base/common/keybindings";
 import { DisposableStore, IDisposable } from "vs/base/common/lifecycle";
+import { isMacintosh } from "vs/base/common/platform";
+import { assertIsDefined } from "vs/base/common/types";
+import "vs/css!./media/editortabscontrol";
+import { DraggedTreeItemsIdentifier } from "vs/editor/common/services/treeViewsDnd";
+import { localize } from "vs/nls";
 import { createActionViewItem } from "vs/platform/actions/browser/menuEntryActionViewItem";
+import { WorkbenchToolBar } from "vs/platform/actions/browser/toolbar";
 import { MenuId } from "vs/platform/actions/common/actions";
 import {
-	IContextKeyService,
 	IContextKey,
+	IContextKeyService,
 } from "vs/platform/contextkey/common/contextkey";
 import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
+import { LocalSelectionTransfer } from "vs/platform/dnd/browser/dnd";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
 import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import { INotificationService } from "vs/platform/notification/common/notification";
 import { IQuickInputService } from "vs/platform/quickinput/common/quickInput";
@@ -43,55 +52,46 @@ import {
 	fillEditorsDragData,
 	isWindowDraggedOver,
 } from "vs/workbench/browser/dnd";
-import { EditorPane } from "vs/workbench/browser/parts/editor/editorPane";
 import {
-	IEditorGroupsView,
 	IEditorGroupView,
+	IEditorGroupsView,
 	IEditorPartsView,
 	IInternalEditorOpenOptions,
 } from "vs/workbench/browser/parts/editor/editor";
+import { EDITOR_CORE_NAVIGATION_COMMANDS } from "vs/workbench/browser/parts/editor/editorCommands";
+import { EditorPane } from "vs/workbench/browser/parts/editor/editorPane";
+import { IEditorTitleControlDimensions } from "vs/workbench/browser/parts/editor/editorTitleControl";
 import {
-	IEditorCommandsContext,
-	EditorResourceAccessor,
-	IEditorPartOptions,
-	SideBySideEditor,
-	EditorsOrder,
-	EditorInputCapabilities,
-	IToolbarActions,
-	GroupIdentifier,
-} from "vs/workbench/common/editor";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import {
-	ResourceContextKey,
+	ActiveEditorAvailableEditorIdsContext,
+	ActiveEditorCanSplitInGroupContext,
+	ActiveEditorFirstInGroupContext,
+	ActiveEditorGroupLockedContext,
+	ActiveEditorLastInGroupContext,
 	ActiveEditorPinnedContext,
 	ActiveEditorStickyContext,
-	ActiveEditorGroupLockedContext,
-	ActiveEditorCanSplitInGroupContext,
+	ResourceContextKey,
 	SideBySideEditorActiveContext,
-	ActiveEditorFirstInGroupContext,
-	ActiveEditorAvailableEditorIdsContext,
 	applyAvailableEditorIds,
-	ActiveEditorLastInGroupContext,
 } from "vs/workbench/common/contextkeys";
-import { AnchorAlignment } from "vs/base/browser/ui/contextview/contextview";
-import { assertIsDefined } from "vs/base/common/types";
-import { isFirefox } from "vs/base/browser/browser";
-import { isCancellationError } from "vs/base/common/errors";
-import { SideBySideEditorInput } from "vs/workbench/common/editor/sideBySideEditorInput";
-import { WorkbenchToolBar } from "vs/platform/actions/browser/toolbar";
-import { LocalSelectionTransfer } from "vs/platform/dnd/browser/dnd";
-import { DraggedTreeItemsIdentifier } from "vs/editor/common/services/treeViewsDnd";
-import { IEditorResolverService } from "vs/workbench/services/editor/common/editorResolverService";
-import { IEditorTitleControlDimensions } from "vs/workbench/browser/parts/editor/editorTitleControl";
+import {
+	EditorInputCapabilities,
+	EditorResourceAccessor,
+	EditorsOrder,
+	GroupIdentifier,
+	IEditorCommandsContext,
+	IEditorPartOptions,
+	IToolbarActions,
+	SideBySideEditor,
+} from "vs/workbench/common/editor";
 import { IReadonlyEditorGroupModel } from "vs/workbench/common/editor/editorGroupModel";
-import { EDITOR_CORE_NAVIGATION_COMMANDS } from "vs/workbench/browser/parts/editor/editorCommands";
+import { EditorInput } from "vs/workbench/common/editor/editorInput";
+import { SideBySideEditorInput } from "vs/workbench/common/editor/sideBySideEditorInput";
 import {
 	IAuxiliaryEditorPart,
 	MergeGroupMode,
 } from "vs/workbench/services/editor/common/editorGroupsService";
-import { isMacintosh } from "vs/base/common/platform";
+import { IEditorResolverService } from "vs/workbench/services/editor/common/editorResolverService";
 import { IHostService } from "vs/workbench/services/host/browser/host";
-import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
 
 export class EditorCommandsContextActionRunner extends ActionRunner {
 	constructor(private context: IEditorCommandsContext) {
@@ -100,7 +100,7 @@ export class EditorCommandsContextActionRunner extends ActionRunner {
 
 	override run(
 		action: IAction,
-		context?: { preserveFocus?: boolean }
+		context?: { preserveFocus?: boolean },
 	): Promise<void> {
 		// Even though we have a fixed context for editor commands,
 		// allow to preserve the context that is given to us in case
@@ -121,11 +121,11 @@ export class EditorCommandsContextActionRunner extends ActionRunner {
 export interface IEditorTabsControl extends IDisposable {
 	updateOptions(
 		oldOptions: IEditorPartOptions,
-		newOptions: IEditorPartOptions
+		newOptions: IEditorPartOptions,
 	): void;
 	openEditor(
 		editor: EditorInput,
-		options?: IInternalEditorOpenOptions
+		options?: IInternalEditorOpenOptions,
 	): boolean;
 	openEditors(editors: EditorInput[]): boolean;
 	beforeCloseEditor(editor: EditorInput): void;
@@ -135,7 +135,7 @@ export interface IEditorTabsControl extends IDisposable {
 		editor: EditorInput,
 		fromIndex: number,
 		targetIndex: number,
-		stickyStateChange: boolean
+		stickyStateChange: boolean,
 	): void;
 	pinEditor(editor: EditorInput): void;
 	stickEditor(editor: EditorInput): void;
@@ -166,10 +166,10 @@ export abstract class EditorTabsControl
 	protected editorActionsToolbarContainer: HTMLElement | undefined;
 	private editorActionsToolbar: WorkbenchToolBar | undefined;
 	private readonly editorActionsToolbarDisposables = this._register(
-		new DisposableStore()
+		new DisposableStore(),
 	);
 	private readonly editorActionsDisposables = this._register(
-		new DisposableStore()
+		new DisposableStore(),
 	);
 
 	private readonly contextMenuContextKeyService: IContextKeyService;
@@ -274,14 +274,14 @@ export abstract class EditorTabsControl
 
 	protected createEditorActionsToolBar(
 		parent: HTMLElement,
-		classes: string[]
+		classes: string[],
 	): void {
 		this.editorActionsToolbarContainer = document.createElement("div");
 		this.editorActionsToolbarContainer.classList.add(...classes);
 		parent.appendChild(this.editorActionsToolbarContainer);
 
 		this.handleEditorActionToolBarVisibility(
-			this.editorActionsToolbarContainer
+			this.editorActionsToolbarContainer,
 		);
 	}
 
@@ -318,11 +318,11 @@ export abstract class EditorTabsControl
 					orientation: ActionsOrientation.HORIZONTAL,
 					ariaLabel: localize(
 						"ariaLabelEditorActions",
-						"Editor actions"
+						"Editor actions",
 					),
 					getKeyBinding: (action) => this.getKeybinding(action),
 					actionRunner: this.editorActionsToolbarDisposables.add(
-						new EditorCommandsContextActionRunner(context)
+						new EditorCommandsContextActionRunner(context),
 					),
 					anchorAlignmentProvider: () => AnchorAlignment.RIGHT,
 					renderDropdownAsChildElement:
@@ -334,8 +334,8 @@ export abstract class EditorTabsControl
 						exempted: EDITOR_CORE_NAVIGATION_COMMANDS,
 					},
 					highlightToggledItems: true,
-				}
-			)
+				},
+			),
 		);
 
 		// Context
@@ -348,12 +348,12 @@ export abstract class EditorTabsControl
 				if (e.error && !isCancellationError(e.error)) {
 					this.notificationService.error(e.error);
 				}
-			})
+			}),
 		);
 	}
 
 	private actionViewItemProvider(
-		action: IAction
+		action: IAction,
 	): IActionViewItem | undefined {
 		const activeEditorPane = this.groupView.activeEditorPane;
 
@@ -380,24 +380,24 @@ export abstract class EditorTabsControl
 		this.editorActionsDisposables.clear();
 
 		const editorActions = this.groupView.createEditorActions(
-			this.editorActionsDisposables
+			this.editorActionsDisposables,
 		);
 		this.editorActionsDisposables.add(
-			editorActions.onDidChange(() => this.updateEditorActionsToolbar())
+			editorActions.onDidChange(() => this.updateEditorActionsToolbar()),
 		);
 
 		const editorActionsToolbar = assertIsDefined(this.editorActionsToolbar);
 		const { primary, secondary } = this.prepareEditorActions(
-			editorActions.actions
+			editorActions.actions,
 		);
 		editorActionsToolbar.setActions(
 			prepareActions(primary),
-			prepareActions(secondary)
+			prepareActions(secondary),
 		);
 	}
 
 	protected abstract prepareEditorActions(
-		editorActions: IToolbarActions
+		editorActions: IToolbarActions,
 	): IToolbarActions;
 	private getEditorPaneAwareContextKeyService(): IContextKeyService {
 		return (
@@ -425,7 +425,7 @@ export abstract class EditorTabsControl
 		// Set editor group as transfer
 		this.groupTransfer.setData(
 			[new DraggedEditorGroupIdentifier(this.groupView.id)],
-			DraggedEditorGroupIdentifier.prototype
+			DraggedEditorGroupIdentifier.prototype,
 		);
 		if (e.dataTransfer) {
 			e.dataTransfer.effectAllowed = "copyMove";
@@ -437,26 +437,24 @@ export abstract class EditorTabsControl
 			hasDataTransfer = this.doFillResourceDataTransfers(
 				this.groupView.getEditors(EditorsOrder.SEQUENTIAL),
 				e,
-				isNewWindowOperation
+				isNewWindowOperation,
 			);
 		}
 
 		// Otherwise only drag the active editor
-		else {
-			if (this.groupView.activeEditor) {
-				hasDataTransfer = this.doFillResourceDataTransfers(
-					[this.groupView.activeEditor],
-					e,
-					isNewWindowOperation
-				);
-			}
+		else if (this.groupView.activeEditor) {
+			hasDataTransfer = this.doFillResourceDataTransfers(
+				[this.groupView.activeEditor],
+				e,
+				isNewWindowOperation,
+			);
 		}
 
 		// Firefox: requires to set a text data transfer to get going
 		if (!hasDataTransfer && isFirefox) {
 			e.dataTransfer?.setData(
 				DataTransfers.TEXT,
-				String(this.groupView.label)
+				String(this.groupView.label),
 			);
 		}
 
@@ -471,7 +469,7 @@ export abstract class EditorTabsControl
 					"draggedEditorGroup",
 					"{0} (+{1})",
 					label,
-					this.groupView.count - 1
+					this.groupView.count - 1,
 				);
 			}
 
@@ -480,7 +478,7 @@ export abstract class EditorTabsControl
 				label,
 				"monaco-editor-group-drag-image",
 				this.getColor(listActiveSelectionBackground),
-				this.getColor(listActiveSelectionForeground)
+				this.getColor(listActiveSelectionForeground),
 			);
 		}
 
@@ -491,7 +489,7 @@ export abstract class EditorTabsControl
 		e: DragEvent,
 		previousDragEvent: DragEvent | undefined,
 		element: HTMLElement,
-		isNewWindowOperation: boolean
+		isNewWindowOperation: boolean,
 	): Promise<void> {
 		this.groupTransfer.clearData(DraggedEditorGroupIdentifier.prototype);
 
@@ -505,7 +503,7 @@ export abstract class EditorTabsControl
 
 		const auxiliaryEditorPart = await this.maybeCreateAuxiliaryEditorPartAt(
 			e,
-			element
+			element,
 		);
 		if (!auxiliaryEditorPart) {
 			return;
@@ -523,7 +521,7 @@ export abstract class EditorTabsControl
 
 	protected async maybeCreateAuxiliaryEditorPartAt(
 		e: DragEvent,
-		offsetElement: HTMLElement
+		offsetElement: HTMLElement,
 	): Promise<IAuxiliaryEditorPart | undefined> {
 		const { point, display } =
 			(await this.hostService.getCursorScreenPoint()) ?? {
@@ -578,7 +576,7 @@ export abstract class EditorTabsControl
 	protected isMoveOperation(
 		e: DragEvent,
 		sourceGroup: GroupIdentifier,
-		sourceEditor?: EditorInput
+		sourceEditor?: EditorInput,
 	): boolean {
 		if (sourceEditor?.hasCapability(EditorInputCapabilities.Singleton)) {
 			return true; // Singleton editors cannot be split
@@ -592,7 +590,7 @@ export abstract class EditorTabsControl
 	protected doFillResourceDataTransfers(
 		editors: readonly EditorInput[],
 		e: DragEvent,
-		disableStandardTransfer: boolean
+		disableStandardTransfer: boolean,
 	): boolean {
 		if (editors.length) {
 			this.instantiationService.invokeFunction(
@@ -602,7 +600,7 @@ export abstract class EditorTabsControl
 					groupId: this.groupView.id,
 				})),
 				e,
-				{ disableStandardTransfer }
+				{ disableStandardTransfer },
 			);
 
 			return true;
@@ -614,14 +612,14 @@ export abstract class EditorTabsControl
 	protected onTabContextMenu(
 		editor: EditorInput,
 		e: Event,
-		node: HTMLElement
+		node: HTMLElement,
 	): void {
 		// Update contexts based on editor picked and remember previous to restore
 		this.resourceContext.set(
 			EditorResourceAccessor.getOriginalUri(
 				editor,
-				{ supportSideBySide: SideBySideEditor.PRIMARY } ?? null
-			)
+				{ supportSideBySide: SideBySideEditor.PRIMARY } ?? null,
+			),
 		);
 		this.editorPinnedContext.set(this.tabsModel.isPinned(editor));
 		this.editorIsFirstContext.set(this.tabsModel.isFirst(editor));
@@ -629,15 +627,15 @@ export abstract class EditorTabsControl
 		this.editorStickyContext.set(this.tabsModel.isSticky(editor));
 		this.groupLockedContext.set(this.tabsModel.isLocked);
 		this.editorCanSplitInGroupContext.set(
-			editor.hasCapability(EditorInputCapabilities.CanSplitInGroup)
+			editor.hasCapability(EditorInputCapabilities.CanSplitInGroup),
 		);
 		this.sideBySideEditorContext.set(
-			editor.typeId === SideBySideEditorInput.ID
+			editor.typeId === SideBySideEditorInput.ID,
 		);
 		applyAvailableEditorIds(
 			this.editorAvailableEditorIds,
 			editor,
-			this.editorResolverService
+			this.editorResolverService,
 		);
 
 		// Find target anchor
@@ -662,7 +660,7 @@ export abstract class EditorTabsControl
 			getKeyBinding: (action) =>
 				this.keybindingService.lookupKeybinding(
 					action.id,
-					this.contextMenuContextKeyService
+					this.contextMenuContextKeyService,
 				),
 			onHide: () => this.groupsView.activeGroup.focus(), // restore focus to active group
 		});
@@ -671,7 +669,7 @@ export abstract class EditorTabsControl
 	protected getKeybinding(action: IAction): ResolvedKeybinding | undefined {
 		return this.keybindingService.lookupKeybinding(
 			action.id,
-			this.getEditorPaneAwareContextKeyService()
+			this.getEditorPaneAwareContextKeyService(),
 		);
 	}
 
@@ -690,13 +688,13 @@ export abstract class EditorTabsControl
 	protected updateTabHeight(): void {
 		this.parent.style.setProperty(
 			"--editor-group-tab-height",
-			`${this.tabHeight}px`
+			`${this.tabHeight}px`,
 		);
 	}
 
 	updateOptions(
 		oldOptions: IEditorPartOptions,
-		newOptions: IEditorPartOptions
+		newOptions: IEditorPartOptions,
 	): void {
 		// Update tab height
 		if (oldOptions.tabHeight !== newOptions.tabHeight) {
@@ -711,7 +709,7 @@ export abstract class EditorTabsControl
 		) {
 			if (this.editorActionsToolbarContainer) {
 				this.handleEditorActionToolBarVisibility(
-					this.editorActionsToolbarContainer
+					this.editorActionsToolbarContainer,
 				);
 				this.updateEditorActionsToolbar();
 			}
@@ -731,7 +729,7 @@ export abstract class EditorTabsControl
 	abstract moveEditor(
 		editor: EditorInput,
 		fromIndex: number,
-		targetIndex: number
+		targetIndex: number,
 	): void;
 
 	abstract pinEditor(editor: EditorInput): void;

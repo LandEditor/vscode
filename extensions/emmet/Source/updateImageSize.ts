@@ -5,27 +5,27 @@
 
 // Based on @sergeche's work on the emmet plugin for atom
 
-import { TextEditor, Position, window, TextEdit } from "vscode";
 import * as path from "path";
-import { getImageSize, ImageInfoWithScale } from "./imageSizeHelper";
+import parseStylesheet from "@emmetio/css-parser";
 import {
-	getFlatNode,
-	iterateCSSToken,
-	getCssPropertyFromRule,
-	isStyleSheet,
-	validate,
-	offsetRangeToVsRange,
-} from "./util";
-import {
-	HtmlNode,
-	CssToken,
-	HtmlToken,
 	Attribute,
+	CssToken,
+	HtmlNode,
+	HtmlToken,
 	Property,
 } from "EmmetFlatNode";
+import { Position, TextEdit, TextEditor, window } from "vscode";
+import { ImageInfoWithScale, getImageSize } from "./imageSizeHelper";
 import { locateFile } from "./locateFile";
-import parseStylesheet from "@emmetio/css-parser";
 import { getRootNode } from "./parseDocument";
+import {
+	getCssPropertyFromRule,
+	getFlatNode,
+	isStyleSheet,
+	iterateCSSToken,
+	offsetRangeToVsRange,
+	validate,
+} from "./util";
 
 /**
  * Updates size of context image in given editor
@@ -42,10 +42,10 @@ export function updateImageSize(): Promise<boolean> | undefined {
 			const position = selection.isReversed
 				? selection.active
 				: selection.anchor;
-			if (!isStyleSheet(editor.document.languageId)) {
-				return updateImageSizeHTML(editor, position);
-			} else {
+			if (isStyleSheet(editor.document.languageId)) {
 				return updateImageSizeCSSFile(editor, position);
+			} else {
+				return updateImageSizeHTML(editor, position);
 			}
 		});
 
@@ -65,7 +65,7 @@ export function updateImageSize(): Promise<boolean> | undefined {
  */
 function updateImageSizeHTML(
 	editor: TextEditor,
-	position: Position
+	position: Position,
 ): Promise<TextEdit[]> {
 	const imageNode = getImageHTMLNode(editor, position);
 
@@ -94,10 +94,10 @@ function updateImageSizeHTML(
 
 function updateImageSizeStyleTag(
 	editor: TextEditor,
-	position: Position
+	position: Position,
 ): Promise<TextEdit[]> {
 	const getPropertyInsiderStyleTag = (
-		editor: TextEditor
+		editor: TextEditor,
 	): Property | null => {
 		const document = editor.document;
 		const rootNode = getRootNode(document, true);
@@ -130,7 +130,7 @@ function updateImageSizeStyleTag(
 
 function updateImageSizeCSSFile(
 	editor: TextEditor,
-	position: Position
+	position: Position,
 ): Promise<TextEdit[]> {
 	return updateImageSizeCSS(editor, position, getImageCSSNode);
 }
@@ -141,7 +141,7 @@ function updateImageSizeCSSFile(
 function updateImageSizeCSS(
 	editor: TextEditor,
 	position: Position,
-	fetchNode: (editor: TextEditor, position: Position) => Property | null
+	fetchNode: (editor: TextEditor, position: Position) => Property | null,
 ): Promise<TextEdit[]> {
 	const node = fetchNode(editor, position);
 	const src = node && getImageSrcCSS(editor, node, position);
@@ -177,7 +177,7 @@ function updateImageSizeCSS(
  */
 function getImageHTMLNode(
 	editor: TextEditor,
-	position: Position
+	position: Position,
 ): HtmlNode | null {
 	const document = editor.document;
 	const rootNode = getRootNode(document, true);
@@ -193,7 +193,7 @@ function getImageHTMLNode(
  */
 function getImageCSSNode(
 	editor: TextEditor,
-	position: Position
+	position: Position,
 ): Property | null {
 	const document = editor.document;
 	const rootNode = getRootNode(document, true);
@@ -220,7 +220,7 @@ function getImageSrcHTML(node: HtmlNode): string | undefined {
 function getImageSrcCSS(
 	editor: TextEditor,
 	node: Property | undefined,
-	position: Position
+	position: Position,
 ): string | undefined {
 	if (!node) {
 		return;
@@ -246,7 +246,7 @@ function updateHTMLTag(
 	editor: TextEditor,
 	node: HtmlNode,
 	width: number,
-	height: number
+	height: number,
 ): TextEdit[] {
 	const document = editor.document;
 	const srcAttr = getAttribute(node, "src");
@@ -262,33 +262,33 @@ function updateHTMLTag(
 	const edits: TextEdit[] = [];
 	let textToAdd = "";
 
-	if (!widthAttr) {
-		textToAdd += ` width=${quote}${width}${quote}`;
-	} else {
+	if (widthAttr) {
 		edits.push(
 			new TextEdit(
 				offsetRangeToVsRange(
 					document,
 					widthAttr.value.start,
-					widthAttr.value.end
+					widthAttr.value.end,
 				),
-				String(width)
-			)
+				String(width),
+			),
 		);
-	}
-	if (!heightAttr) {
-		textToAdd += ` height=${quote}${height}${quote}`;
 	} else {
+		textToAdd += ` width=${quote}${width}${quote}`;
+	}
+	if (heightAttr) {
 		edits.push(
 			new TextEdit(
 				offsetRangeToVsRange(
 					document,
 					heightAttr.value.start,
-					heightAttr.value.end
+					heightAttr.value.end,
 				),
-				String(height)
-			)
+				String(height),
+			),
 		);
+	} else {
+		textToAdd += ` height=${quote}${height}${quote}`;
 	}
 	if (textToAdd) {
 		edits.push(
@@ -296,10 +296,10 @@ function updateHTMLTag(
 				offsetRangeToVsRange(
 					document,
 					endOfAttributes,
-					endOfAttributes
+					endOfAttributes,
 				),
-				textToAdd
-			)
+				textToAdd,
+			),
 		);
 	}
 
@@ -313,7 +313,7 @@ function updateCSSNode(
 	editor: TextEditor,
 	srcProp: Property,
 	width: number,
-	height: number
+	height: number,
 ): TextEdit[] {
 	const document = editor.document;
 	const rule = srcProp.parent;
@@ -329,46 +329,46 @@ function updateCSSNode(
 		edits.push(
 			new TextEdit(
 				offsetRangeToVsRange(document, srcProp.end, srcProp.end),
-				";"
-			)
+				";",
+			),
 		);
 	}
 
 	let textToAdd = "";
-	if (!widthProp) {
-		textToAdd += `${before}width${separator}${width}px;`;
-	} else {
+	if (widthProp) {
 		edits.push(
 			new TextEdit(
 				offsetRangeToVsRange(
 					document,
 					widthProp.valueToken.start,
-					widthProp.valueToken.end
+					widthProp.valueToken.end,
 				),
-				`${width}px`
-			)
+				`${width}px`,
+			),
 		);
-	}
-	if (!heightProp) {
-		textToAdd += `${before}height${separator}${height}px;`;
 	} else {
+		textToAdd += `${before}width${separator}${width}px;`;
+	}
+	if (heightProp) {
 		edits.push(
 			new TextEdit(
 				offsetRangeToVsRange(
 					document,
 					heightProp.valueToken.start,
-					heightProp.valueToken.end
+					heightProp.valueToken.end,
 				),
-				`${height}px`
-			)
+				`${height}px`,
+			),
 		);
+	} else {
+		textToAdd += `${before}height${separator}${height}px;`;
 	}
 	if (textToAdd) {
 		edits.push(
 			new TextEdit(
 				offsetRangeToVsRange(document, srcProp.end, srcProp.end),
-				textToAdd
-			)
+				textToAdd,
+			),
 		);
 	}
 
@@ -383,7 +383,7 @@ function getAttribute(node: HtmlNode, attrName: string): Attribute | undefined {
 	return (
 		node &&
 		node.attributes.find(
-			(attr) => attr.name.toString().toLowerCase() === attrName
+			(attr) => attr.name.toString().toLowerCase() === attrName,
 		)
 	);
 }
@@ -405,7 +405,7 @@ function getAttributeQuote(editor: TextEditor, attr: Attribute): string {
 function findUrlToken(
 	editor: TextEditor,
 	node: Property,
-	pos: Position
+	pos: Position,
 ): CssToken | undefined {
 	const offset = editor.document.offsetAt(pos);
 	for (let i = 0, il = (node as any).parsedValue.length, url; i < il; i++) {

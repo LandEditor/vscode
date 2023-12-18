@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from "vscode";
 import TelemetryReporter from "@vscode/extension-telemetry";
+import * as vscode from "vscode";
 import {
-	getExperimentationService,
 	IExperimentationService,
 	IExperimentationTelemetry,
 	TargetPopulation,
+	getExperimentationService,
 } from "vscode-tas-client";
 
 export class ExperimentationTelemetry implements IExperimentationTelemetry {
@@ -20,7 +20,7 @@ export class ExperimentationTelemetry implements IExperimentationTelemetry {
 
 	constructor(
 		private readonly context: vscode.ExtensionContext,
-		private baseReporter: TelemetryReporter
+		private baseReporter: TelemetryReporter,
 	) {}
 
 	private async createExperimentationService(): Promise<IExperimentationService> {
@@ -50,7 +50,7 @@ export class ExperimentationTelemetry implements IExperimentationTelemetry {
 			version,
 			targetPopulation,
 			this,
-			this.context.globalState
+			this.context.globalState,
 		);
 		await experimentationService.initialFetch;
 		return experimentationService;
@@ -62,7 +62,7 @@ export class ExperimentationTelemetry implements IExperimentationTelemetry {
 	async sendTelemetryEvent(
 		eventName: string,
 		properties?: Record<string, string>,
-		measurements?: Record<string, number>
+		measurements?: Record<string, number>,
 	) {
 		if (!this.experimentationServicePromise) {
 			this.experimentationServicePromise =
@@ -76,7 +76,7 @@ export class ExperimentationTelemetry implements IExperimentationTelemetry {
 				...this.sharedProperties,
 				...properties,
 			},
-			measurements
+			measurements,
 		);
 	}
 
@@ -86,7 +86,7 @@ export class ExperimentationTelemetry implements IExperimentationTelemetry {
 	async sendTelemetryErrorEvent(
 		eventName: string,
 		properties?: Record<string, string>,
-		_measurements?: Record<string, number>
+		_measurements?: Record<string, number>,
 	) {
 		if (!this.experimentationServicePromise) {
 			this.experimentationServicePromise =

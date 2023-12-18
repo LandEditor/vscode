@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Registry } from "vs/platform/registry/common/platform";
 import {
 	EditorSettingMigration,
 	ISettingsWriter,
 } from "vs/editor/browser/config/migrateOptions";
+import { Registry } from "vs/platform/registry/common/platform";
 import {
 	ConfigurationKeyValuePairs,
 	Extensions,
@@ -15,7 +15,7 @@ import {
 } from "vs/workbench/common/configuration";
 
 Registry.as<IConfigurationMigrationRegistry>(
-	Extensions.ConfigurationMigration
+	Extensions.ConfigurationMigration,
 ).registerConfigurationMigrations(
 	EditorSettingMigration.items.map((item) => ({
 		key: `editor.${item.key}`,
@@ -26,5 +26,5 @@ Registry.as<IConfigurationMigrationRegistry>(
 			item.migrate(value, (key) => accessor(`editor.${key}`), writer);
 			return configurationKeyValuePairs;
 		},
-	}))
+	})),
 );

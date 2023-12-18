@@ -39,16 +39,16 @@ export class UserDataSyncAccountService
 		return this._account;
 	}
 	private _onDidChangeAccount = this._register(
-		new Emitter<IUserDataSyncAccount | undefined>()
+		new Emitter<IUserDataSyncAccount | undefined>(),
 	);
 	readonly onDidChangeAccount = this._onDidChangeAccount.event;
 
 	private _onTokenFailed: Emitter<boolean> = this._register(
-		new Emitter<boolean>()
+		new Emitter<boolean>(),
 	);
 	readonly onTokenFailed: Event<boolean> = this._onTokenFailed.event;
 
-	private wasTokenFailed: boolean = false;
+	private wasTokenFailed = false;
 
 	constructor(
 		@IUserDataSyncStoreService
@@ -85,12 +85,12 @@ export class UserDataSyncAccountService
 	}
 
 	async updateAccount(
-		account: IUserDataSyncAccount | undefined
+		account: IUserDataSyncAccount | undefined,
 	): Promise<void> {
 		if (
 			account && this._account
 				? account.token !== this._account.token ||
-					account.authenticationProviderId !==
+				  account.authenticationProviderId !==
 						this._account.authenticationProviderId
 				: account !== this._account
 		) {
@@ -98,7 +98,7 @@ export class UserDataSyncAccountService
 			if (this._account) {
 				this.userDataSyncStoreService.setAuthToken(
 					this._account.token,
-					this._account.authenticationProviderId
+					this._account.authenticationProviderId,
 				);
 			}
 			this._onDidChangeAccount.fire(account);

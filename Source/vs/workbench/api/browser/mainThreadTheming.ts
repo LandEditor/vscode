@@ -3,18 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	MainContext,
-	ExtHostThemingShape,
-	ExtHostContext,
-	MainThreadThemingShape,
-} from "../common/extHost.protocol";
-import {
-	extHostNamedCustomer,
-	IExtHostContext,
-} from "vs/workbench/services/extensions/common/extHostCustomers";
 import { IDisposable } from "vs/base/common/lifecycle";
 import { IThemeService } from "vs/platform/theme/common/themeService";
+import {
+	IExtHostContext,
+	extHostNamedCustomer,
+} from "vs/workbench/services/extensions/common/extHostCustomers";
+import {
+	ExtHostContext,
+	ExtHostThemingShape,
+	MainContext,
+	MainThreadThemingShape,
+} from "../common/extHost.protocol";
 
 @extHostNamedCustomer(MainContext.MainThreadTheming)
 export class MainThreadTheming implements MainThreadThemingShape {
@@ -24,7 +24,7 @@ export class MainThreadTheming implements MainThreadThemingShape {
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IThemeService themeService: IThemeService
+		@IThemeService themeService: IThemeService,
 	) {
 		this._themeService = themeService;
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostTheming);
@@ -32,12 +32,12 @@ export class MainThreadTheming implements MainThreadThemingShape {
 		this._themeChangeListener = this._themeService.onDidColorThemeChange(
 			(e) => {
 				this._proxy.$onColorThemeChange(
-					this._themeService.getColorTheme().type
+					this._themeService.getColorTheme().type,
 				);
-			}
+			},
 		);
 		this._proxy.$onColorThemeChange(
-			this._themeService.getColorTheme().type
+			this._themeService.getColorTheme().type,
 		);
 	}
 

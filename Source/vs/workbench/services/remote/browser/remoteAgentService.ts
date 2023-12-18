@@ -4,28 +4,28 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as nls from "vs/nls";
-import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteAgentService";
+import { IDialogService } from "vs/platform/dialogs/common/dialogs";
+import { ILogService } from "vs/platform/log/common/log";
+import { Severity } from "vs/platform/notification/common/notification";
+import { IProductService } from "vs/platform/product/common/productService";
+import { Registry } from "vs/platform/registry/common/platform";
 import {
 	IRemoteAuthorityResolverService,
 	RemoteAuthorityResolverError,
 } from "vs/platform/remote/common/remoteAuthorityResolver";
-import { AbstractRemoteAgentService } from "vs/workbench/services/remote/common/abstractRemoteAgentService";
-import { IProductService } from "vs/platform/product/common/productService";
+import { IRemoteSocketFactoryService } from "vs/platform/remote/common/remoteSocketFactoryService";
 import { ISignService } from "vs/platform/sign/common/sign";
-import { ILogService } from "vs/platform/log/common/log";
-import { Severity } from "vs/platform/notification/common/notification";
-import { IDialogService } from "vs/platform/dialogs/common/dialogs";
-import { Registry } from "vs/platform/registry/common/platform";
 import {
+	Extensions,
 	IWorkbenchContribution,
 	IWorkbenchContributionsRegistry,
-	Extensions,
 } from "vs/workbench/common/contributions";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
 import { IHostService } from "vs/workbench/services/host/browser/host";
 import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
+import { AbstractRemoteAgentService } from "vs/workbench/services/remote/common/abstractRemoteAgentService";
+import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteAgentService";
 import { IUserDataProfileService } from "vs/workbench/services/userDataProfile/common/userDataProfile";
-import { IRemoteSocketFactoryService } from "vs/platform/remote/common/remoteSocketFactoryService";
 
 export class RemoteAgentService
 	extends AbstractRemoteAgentService
@@ -42,7 +42,7 @@ export class RemoteAgentService
 		@IRemoteAuthorityResolverService
 		remoteAuthorityResolverService: IRemoteAuthorityResolverService,
 		@ISignService signService: ISignService,
-		@ILogService logService: ILogService
+		@ILogService logService: ILogService,
 	) {
 		super(
 			remoteSocketFactoryService,
@@ -51,7 +51,7 @@ export class RemoteAgentService
 			productService,
 			remoteAuthorityResolverService,
 			signService,
-			logService
+			logService,
 		);
 	}
 }
@@ -77,18 +77,18 @@ class RemoteConnectionFailureNotificationContribution
 			type: Severity.Error,
 			message: nls.localize(
 				"connectionError",
-				"An unexpected error occurred that requires a reload of this page."
+				"An unexpected error occurred that requires a reload of this page.",
 			),
 			detail: nls.localize(
 				"connectionErrorDetail",
 				"The workbench failed to connect to the server (Error: {0})",
-				err ? err.message : ""
+				err ? err.message : "",
 			),
 			buttons: [
 				{
 					label: nls.localize(
 						{ key: "reload", comment: ["&& denotes a mnemonic"] },
-						"&&Reload"
+						"&&Reload",
 					),
 					run: () => this._hostService.reload(),
 				},
@@ -98,9 +98,9 @@ class RemoteConnectionFailureNotificationContribution
 }
 
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench
+	Extensions.Workbench,
 );
 workbenchRegistry.registerWorkbenchContribution(
 	RemoteConnectionFailureNotificationContribution,
-	LifecyclePhase.Ready
+	LifecyclePhase.Ready,
 );

@@ -5,7 +5,7 @@
 
 import { RawContextKey } from "vs/platform/contextkey/common/contextkey";
 
-export const enum MarkersViewMode {
+export enum MarkersViewMode {
 	Table = "table",
 	Tree = "tree",
 }
@@ -38,42 +38,42 @@ export namespace Markers {
 export namespace MarkersContextKeys {
 	export const MarkersViewModeContextKey = new RawContextKey<MarkersViewMode>(
 		"problemsViewMode",
-		MarkersViewMode.Tree
+		MarkersViewMode.Tree,
 	);
 	export const MarkersTreeVisibilityContextKey = new RawContextKey<boolean>(
 		"problemsVisibility",
-		false
+		false,
 	);
 	export const MarkerFocusContextKey = new RawContextKey<boolean>(
 		"problemFocus",
-		false
+		false,
 	);
 	export const MarkerViewFilterFocusContextKey = new RawContextKey<boolean>(
 		"problemsFilterFocus",
-		false
+		false,
 	);
 	export const RelatedInformationFocusContextKey = new RawContextKey<boolean>(
 		"relatedInformationFocus",
-		false
+		false,
 	);
 	export const ShowErrorsFilterContextKey = new RawContextKey<boolean>(
 		"problems.filter.errors",
-		true
+		true,
 	);
 	export const ShowWarningsFilterContextKey = new RawContextKey<boolean>(
 		"problems.filter.warnings",
-		true
+		true,
 	);
 	export const ShowInfoFilterContextKey = new RawContextKey<boolean>(
 		"problems.filter.info",
-		true
+		true,
 	);
 	export const ShowActiveFileFilterContextKey = new RawContextKey<boolean>(
 		"problems.filter.activeFile",
-		false
+		false,
 	);
 	export const ShowExcludedFilesFilterContextKey = new RawContextKey<boolean>(
 		"problems.filter.excludedFiles",
-		true
+		true,
 	);
 }

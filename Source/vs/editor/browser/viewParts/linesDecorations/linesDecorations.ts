@@ -4,14 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "vs/css!./linesDecorations";
+import { RenderingContext } from "vs/editor/browser/view/renderingContext";
 import {
 	DecorationToRender,
 	DedupOverlay,
 } from "vs/editor/browser/viewParts/glyphMargin/glyphMargin";
-import { RenderingContext } from "vs/editor/browser/view/renderingContext";
-import { ViewContext } from "vs/editor/common/viewModel/viewContext";
-import * as viewEvents from "vs/editor/common/viewEvents";
 import { EditorOption } from "vs/editor/common/config/editorOptions";
+import * as viewEvents from "vs/editor/common/viewEvents";
+import { ViewContext } from "vs/editor/common/viewModel/viewContext";
 
 export class LinesDecorationsOverlay extends DedupOverlay {
 	private readonly _context: ViewContext;
@@ -40,7 +40,7 @@ export class LinesDecorationsOverlay extends DedupOverlay {
 	// --- begin event handlers
 
 	public override onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent
+		e: viewEvents.ViewConfigurationChangedEvent,
 	): boolean {
 		const options = this._context.configuration.options;
 		const layoutInfo = options.get(EditorOption.layoutInfo);
@@ -49,7 +49,7 @@ export class LinesDecorationsOverlay extends DedupOverlay {
 		return true;
 	}
 	public override onDecorationsChanged(
-		e: viewEvents.ViewDecorationsChangedEvent
+		e: viewEvents.ViewDecorationsChangedEvent,
 	): boolean {
 		return true;
 	}
@@ -57,27 +57,27 @@ export class LinesDecorationsOverlay extends DedupOverlay {
 		return true;
 	}
 	public override onLinesChanged(
-		e: viewEvents.ViewLinesChangedEvent
+		e: viewEvents.ViewLinesChangedEvent,
 	): boolean {
 		return true;
 	}
 	public override onLinesDeleted(
-		e: viewEvents.ViewLinesDeletedEvent
+		e: viewEvents.ViewLinesDeletedEvent,
 	): boolean {
 		return true;
 	}
 	public override onLinesInserted(
-		e: viewEvents.ViewLinesInsertedEvent
+		e: viewEvents.ViewLinesInsertedEvent,
 	): boolean {
 		return true;
 	}
 	public override onScrollChanged(
-		e: viewEvents.ViewScrollChangedEvent
+		e: viewEvents.ViewScrollChangedEvent,
 	): boolean {
 		return e.scrollTopChanged;
 	}
 	public override onZonesChanged(
-		e: viewEvents.ViewZonesChangedEvent
+		e: viewEvents.ViewZonesChangedEvent,
 	): boolean {
 		return true;
 	}
@@ -98,7 +98,7 @@ export class LinesDecorationsOverlay extends DedupOverlay {
 					d.range.startLineNumber,
 					d.range.endLineNumber,
 					linesDecorationsClassName,
-					zIndex
+					zIndex,
 				);
 			}
 			const firstLineDecorationClassName =
@@ -108,7 +108,7 @@ export class LinesDecorationsOverlay extends DedupOverlay {
 					d.range.startLineNumber,
 					d.range.startLineNumber,
 					firstLineDecorationClassName,
-					zIndex
+					zIndex,
 				);
 			}
 		}
@@ -121,7 +121,7 @@ export class LinesDecorationsOverlay extends DedupOverlay {
 		const toRender = this._render(
 			visibleStartLineNumber,
 			visibleEndLineNumber,
-			this._getDecorations(ctx)
+			this._getDecorations(ctx),
 		);
 
 		const left = this._decorationsLeft.toString();

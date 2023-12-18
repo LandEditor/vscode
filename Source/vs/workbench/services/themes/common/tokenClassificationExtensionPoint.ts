@@ -5,14 +5,14 @@
 
 import * as nls from "vs/nls";
 import {
-	ExtensionsRegistry,
-	ExtensionMessageCollector,
-} from "vs/workbench/services/extensions/common/extensionsRegistry";
-import {
-	getTokenClassificationRegistry,
 	ITokenClassificationRegistry,
+	getTokenClassificationRegistry,
 	typeAndModifierIdPattern,
 } from "vs/platform/theme/common/tokenClassificationRegistry";
+import {
+	ExtensionMessageCollector,
+	ExtensionsRegistry,
+} from "vs/workbench/services/extensions/common/extensionsRegistry";
 
 interface ITokenTypeExtensionPoint {
 	id: string;
@@ -40,7 +40,7 @@ const tokenTypeExtPoint = ExtensionsRegistry.registerExtensionPoint<
 	jsonSchema: {
 		description: nls.localize(
 			"contributes.semanticTokenTypes",
-			"Contributes semantic token types."
+			"Contributes semantic token types.",
 		),
 		type: "array",
 		items: {
@@ -50,31 +50,31 @@ const tokenTypeExtPoint = ExtensionsRegistry.registerExtensionPoint<
 					type: "string",
 					description: nls.localize(
 						"contributes.semanticTokenTypes.id",
-						"The identifier of the semantic token type"
+						"The identifier of the semantic token type",
 					),
 					pattern: typeAndModifierIdPattern,
 					patternErrorMessage: nls.localize(
 						"contributes.semanticTokenTypes.id.format",
-						"Identifiers should be in the form letterOrDigit[_-letterOrDigit]*"
+						"Identifiers should be in the form letterOrDigit[_-letterOrDigit]*",
 					),
 				},
 				superType: {
 					type: "string",
 					description: nls.localize(
 						"contributes.semanticTokenTypes.superType",
-						"The super type of the semantic token type"
+						"The super type of the semantic token type",
 					),
 					pattern: typeAndModifierIdPattern,
 					patternErrorMessage: nls.localize(
 						"contributes.semanticTokenTypes.superType.format",
-						"Super types should be in the form letterOrDigit[_-letterOrDigit]*"
+						"Super types should be in the form letterOrDigit[_-letterOrDigit]*",
 					),
 				},
 				description: {
 					type: "string",
 					description: nls.localize(
 						"contributes.color.description",
-						"The description of the semantic token type"
+						"The description of the semantic token type",
 					),
 				},
 			},
@@ -89,7 +89,7 @@ const tokenModifierExtPoint = ExtensionsRegistry.registerExtensionPoint<
 	jsonSchema: {
 		description: nls.localize(
 			"contributes.semanticTokenModifiers",
-			"Contributes semantic token modifiers."
+			"Contributes semantic token modifiers.",
 		),
 		type: "array",
 		items: {
@@ -99,18 +99,18 @@ const tokenModifierExtPoint = ExtensionsRegistry.registerExtensionPoint<
 					type: "string",
 					description: nls.localize(
 						"contributes.semanticTokenModifiers.id",
-						"The identifier of the semantic token modifier"
+						"The identifier of the semantic token modifier",
 					),
 					pattern: typeAndModifierIdPattern,
 					patternErrorMessage: nls.localize(
 						"contributes.semanticTokenModifiers.id.format",
-						"Identifiers should be in the form letterOrDigit[_-letterOrDigit]*"
+						"Identifiers should be in the form letterOrDigit[_-letterOrDigit]*",
 					),
 				},
 				description: {
 					description: nls.localize(
 						"contributes.semanticTokenModifiers.description",
-						"The description of the semantic token modifier"
+						"The description of the semantic token modifier",
 					),
 				},
 			},
@@ -125,7 +125,7 @@ const tokenStyleDefaultsExtPoint = ExtensionsRegistry.registerExtensionPoint<
 	jsonSchema: {
 		description: nls.localize(
 			"contributes.semanticTokenScopes",
-			"Contributes semantic token scope maps."
+			"Contributes semantic token scope maps.",
 		),
 		type: "array",
 		items: {
@@ -134,14 +134,14 @@ const tokenStyleDefaultsExtPoint = ExtensionsRegistry.registerExtensionPoint<
 				language: {
 					description: nls.localize(
 						"contributes.semanticTokenScopes.languages",
-						"Lists the languge for which the defaults are."
+						"Lists the languge for which the defaults are.",
 					),
 					type: "string",
 				},
 				scopes: {
 					description: nls.localize(
 						"contributes.semanticTokenScopes.scopes",
-						"Maps a semantic token (described by semantic token selector) to one or more textMate scopes used to represent that token."
+						"Maps a semantic token (described by semantic token selector) to one or more textMate scopes used to represent that token.",
 					),
 					type: "object",
 					additionalProperties: {
@@ -163,7 +163,7 @@ export class TokenClassificationExtensionPoints {
 				| ITokenTypeExtensionPoint
 				| ITokenModifierExtensionPoint,
 			extensionPoint: string,
-			collector: ExtensionMessageCollector
+			collector: ExtensionMessageCollector,
 		): boolean {
 			if (
 				typeof contribution.id !== "string" ||
@@ -173,8 +173,8 @@ export class TokenClassificationExtensionPoints {
 					nls.localize(
 						"invalid.id",
 						"'configuration.{0}.id' must be defined and can not be empty",
-						extensionPoint
-					)
+						extensionPoint,
+					),
 				);
 				return false;
 			}
@@ -183,8 +183,8 @@ export class TokenClassificationExtensionPoints {
 					nls.localize(
 						"invalid.id.format",
 						"'configuration.{0}.id' must follow the pattern letterOrDigit[-_letterOrDigit]*",
-						extensionPoint
-					)
+						extensionPoint,
+					),
 				);
 				return false;
 			}
@@ -195,8 +195,8 @@ export class TokenClassificationExtensionPoints {
 					nls.localize(
 						"invalid.superType.format",
 						"'configuration.{0}.superType' must follow the pattern letterOrDigit[-_letterOrDigit]*",
-						extensionPoint
-					)
+						extensionPoint,
+					),
 				);
 				return false;
 			}
@@ -208,8 +208,8 @@ export class TokenClassificationExtensionPoints {
 					nls.localize(
 						"invalid.description",
 						"'configuration.{0}.description' must be defined and can not be empty",
-						extensionPoint
-					)
+						extensionPoint,
+					),
 				);
 				return false;
 			}
@@ -227,8 +227,8 @@ export class TokenClassificationExtensionPoints {
 					collector.error(
 						nls.localize(
 							"invalid.semanticTokenTypeConfiguration",
-							"'configuration.semanticTokenType' must be an array"
-						)
+							"'configuration.semanticTokenType' must be an array",
+						),
 					);
 					return;
 				}
@@ -237,13 +237,13 @@ export class TokenClassificationExtensionPoints {
 						validateTypeOrModifier(
 							contribution,
 							"semanticTokenType",
-							collector
+							collector,
 						)
 					) {
 						tokenClassificationRegistry.registerTokenType(
 							contribution.id,
 							contribution.description,
-							contribution.superType
+							contribution.superType,
 						);
 					}
 				}
@@ -254,7 +254,7 @@ export class TokenClassificationExtensionPoints {
 				);
 				for (const contribution of extensionValue) {
 					tokenClassificationRegistry.deregisterTokenType(
-						contribution.id
+						contribution.id,
 					);
 				}
 			}
@@ -270,8 +270,8 @@ export class TokenClassificationExtensionPoints {
 					collector.error(
 						nls.localize(
 							"invalid.semanticTokenModifierConfiguration",
-							"'configuration.semanticTokenModifier' must be an array"
-						)
+							"'configuration.semanticTokenModifier' must be an array",
+						),
 					);
 					return;
 				}
@@ -280,12 +280,12 @@ export class TokenClassificationExtensionPoints {
 						validateTypeOrModifier(
 							contribution,
 							"semanticTokenModifier",
-							collector
+							collector,
 						)
 					) {
 						tokenClassificationRegistry.registerTokenModifier(
 							contribution.id,
-							contribution.description
+							contribution.description,
 						);
 					}
 				}
@@ -296,7 +296,7 @@ export class TokenClassificationExtensionPoints {
 				);
 				for (const contribution of extensionValue) {
 					tokenClassificationRegistry.deregisterTokenModifier(
-						contribution.id
+						contribution.id,
 					);
 				}
 			}
@@ -312,8 +312,8 @@ export class TokenClassificationExtensionPoints {
 					collector.error(
 						nls.localize(
 							"invalid.semanticTokenScopes.configuration",
-							"'configuration.semanticTokenScopes' must be an array"
-						)
+							"'configuration.semanticTokenScopes' must be an array",
+						),
 					);
 					return;
 				}
@@ -325,8 +325,8 @@ export class TokenClassificationExtensionPoints {
 						collector.error(
 							nls.localize(
 								"invalid.semanticTokenScopes.language",
-								"'configuration.semanticTokenScopes.language' must be a string"
-							)
+								"'configuration.semanticTokenScopes.language' must be a string",
+							),
 						);
 						continue;
 					}
@@ -337,8 +337,8 @@ export class TokenClassificationExtensionPoints {
 						collector.error(
 							nls.localize(
 								"invalid.semanticTokenScopes.scopes",
-								"'configuration.semanticTokenScopes.scopes' must be defined as an object"
-							)
+								"'configuration.semanticTokenScopes.scopes' must be defined as an object",
+							),
 						);
 						continue;
 					}
@@ -351,8 +351,8 @@ export class TokenClassificationExtensionPoints {
 							collector.error(
 								nls.localize(
 									"invalid.semanticTokenScopes.scopes.value",
-									"'configuration.semanticTokenScopes.scopes' values must be an array of strings"
-								)
+									"'configuration.semanticTokenScopes.scopes' values must be an array of strings",
+								),
 							);
 							continue;
 						}
@@ -360,23 +360,23 @@ export class TokenClassificationExtensionPoints {
 							const selector =
 								tokenClassificationRegistry.parseTokenSelector(
 									selectorString,
-									contribution.language
+									contribution.language,
 								);
 							tokenClassificationRegistry.registerTokenStyleDefault(
 								selector,
 								{
 									scopesToProbe: tmScopes.map((s) =>
-										s.split(" ")
+										s.split(" "),
 									),
-								}
+								},
 							);
 						} catch (e) {
 							collector.error(
 								nls.localize(
 									"invalid.semanticTokenScopes.scopes.selector",
 									"configuration.semanticTokenScopes.scopes': Problems parsing selector {0}.",
-									selectorString
-								)
+									selectorString,
+								),
 							);
 							// invalid selector, ignore
 						}
@@ -394,15 +394,15 @@ export class TokenClassificationExtensionPoints {
 							const selector =
 								tokenClassificationRegistry.parseTokenSelector(
 									selectorString,
-									contribution.language
+									contribution.language,
 								);
 							tokenClassificationRegistry.registerTokenStyleDefault(
 								selector,
 								{
 									scopesToProbe: tmScopes.map((s) =>
-										s.split(" ")
+										s.split(" "),
 									),
-								}
+								},
 							);
 						} catch (e) {
 							// invalid selector, ignore

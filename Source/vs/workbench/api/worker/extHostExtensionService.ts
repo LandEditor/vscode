@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { timeout } from "vs/base/common/async";
+import { URI } from "vs/base/common/uri";
+import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
 import { createApiFactoryAndRegisterActors } from "vs/workbench/api/common/extHost.api.impl";
 import { ExtensionActivationTimesBuilder } from "vs/workbench/api/common/extHostExtensionActivator";
 import { AbstractExtHostExtensionService } from "vs/workbench/api/common/extHostExtensionService";
-import { URI } from "vs/base/common/uri";
 import { RequireInterceptor } from "vs/workbench/api/common/extHostRequireInterceptor";
-import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
 import { ExtensionRuntime } from "vs/workbench/api/common/extHostTypes";
-import { timeout } from "vs/base/common/async";
 import { ExtHostConsoleForwarder } from "vs/workbench/api/worker/extHostConsoleForwarder";
 
 class WorkerRequireInterceptor extends RequireInterceptor {
@@ -45,12 +45,12 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 
 		// initialize API and register actors
 		const apiFactory = this._instaService.invokeFunction(
-			createApiFactoryAndRegisterActors
+			createApiFactoryAndRegisterActors,
 		);
 		this._fakeModules = this._instaService.createInstance(
 			WorkerRequireInterceptor,
 			apiFactory,
-			{ mine: this._myRegistry, all: this._globalRegistry }
+			{ mine: this._myRegistry, all: this._globalRegistry },
 		);
 		await this._fakeModules.install();
 		performance.mark("code/extHost/didInitAPI");
@@ -59,7 +59,7 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 	}
 
 	protected _getEntryPoint(
-		extensionDescription: IExtensionDescription
+		extensionDescription: IExtensionDescription,
 	): string | undefined {
 		return extensionDescription.browser;
 	}
@@ -67,13 +67,13 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 	protected async _loadCommonJSModule<T extends object | undefined>(
 		extension: IExtensionDescription | null,
 		module: URI,
-		activationTimesBuilder: ExtensionActivationTimesBuilder
+		activationTimesBuilder: ExtensionActivationTimesBuilder,
 	): Promise<T> {
 		module = module.with({ path: ensureSuffix(module.path, ".js") });
 		const extensionId = extension?.identifier.value;
 		if (extensionId) {
 			performance.mark(
-				`code/extHost/willFetchExtensionCode/${extensionId}`
+				`code/extHost/willFetchExtensionCode/${extensionId}`,
 			);
 		}
 
@@ -81,12 +81,12 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 		// This needs to be done on the main thread due to a potential `resourceUriProvider` (workbench api)
 		// which is only available in the main thread
 		const browserUri = URI.revive(
-			await this._mainThreadExtensionsProxy.$asBrowserUri(module)
+			await this._mainThreadExtensionsProxy.$asBrowserUri(module),
 		);
 		const response = await fetch(browserUri.toString(true));
 		if (extensionId) {
 			performance.mark(
-				`code/extHost/didFetchExtensionCode/${extensionId}`
+				`code/extHost/didFetchExtensionCode/${extensionId}`,
 			);
 		}
 
@@ -106,7 +106,7 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 		} catch (err) {
 			if (extensionId) {
 				console.error(
-					`Loading code for extension ${extensionId} failed: ${err.message}`
+					`Loading code for extension ${extensionId} failed: ${err.message}`,
 				);
 			} else {
 				console.error(`Loading code failed: ${err.message}`);
@@ -118,7 +118,7 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 					typeof err.column === "number"
 						? ` column ${err.column}`
 						: ""
-				}`
+				}`,
 			);
 			console.error(err);
 			throw err;
@@ -126,7 +126,7 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 
 		if (extension) {
 			await this._extHostLocalizationService.initializeLocalizedMessages(
-				extension
+				extension,
 			);
 		}
 
@@ -145,7 +145,7 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 			activationTimesBuilder.codeLoadingStart();
 			if (extensionId) {
 				performance.mark(
-					`code/extHost/willLoadExtensionCode/${extensionId}`
+					`code/extHost/willLoadExtensionCode/${extensionId}`,
 				);
 			}
 			initFn(_module, _exports, _require);
@@ -155,7 +155,7 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 		} finally {
 			if (extensionId) {
 				performance.mark(
-					`code/extHost/didLoadExtensionCode/${extensionId}`
+					`code/extHost/didLoadExtensionCode/${extensionId}`,
 				);
 			}
 			activationTimesBuilder.codeLoadingStop();

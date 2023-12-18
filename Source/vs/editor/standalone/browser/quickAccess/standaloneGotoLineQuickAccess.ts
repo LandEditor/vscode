@@ -3,24 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { AbstractGotoLineQuickAccessProvider } from "vs/editor/contrib/quickAccess/browser/gotoLineQuickAccess";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	IQuickAccessRegistry,
-	Extensions,
-} from "vs/platform/quickinput/common/quickAccess";
-import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
-import { GoToLineNLS } from "vs/editor/common/standaloneStrings";
 import { Event } from "vs/base/common/event";
+import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
 import {
 	EditorAction,
-	registerEditorAction,
 	ServicesAccessor,
+	registerEditorAction,
 } from "vs/editor/browser/editorExtensions";
+import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
 import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
-import { KeyMod, KeyCode } from "vs/base/common/keyCodes";
+import { GoToLineNLS } from "vs/editor/common/standaloneStrings";
+import { AbstractGotoLineQuickAccessProvider } from "vs/editor/contrib/quickAccess/browser/gotoLineQuickAccess";
 import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
+import {
+	Extensions,
+	IQuickAccessRegistry,
+} from "vs/platform/quickinput/common/quickAccess";
 import { IQuickInputService } from "vs/platform/quickinput/common/quickInput";
+import { Registry } from "vs/platform/registry/common/platform";
 
 export class StandaloneGotoLineQuickAccessProvider extends AbstractGotoLineQuickAccessProvider {
 	protected readonly onDidActiveTextEditorControlChange = Event.None;
@@ -64,7 +64,7 @@ export class GotoLineAction extends EditorAction {
 registerEditorAction(GotoLineAction);
 
 Registry.as<IQuickAccessRegistry>(
-	Extensions.Quickaccess
+	Extensions.Quickaccess,
 ).registerQuickAccessProvider({
 	ctor: StandaloneGotoLineQuickAccessProvider,
 	prefix: StandaloneGotoLineQuickAccessProvider.PREFIX,

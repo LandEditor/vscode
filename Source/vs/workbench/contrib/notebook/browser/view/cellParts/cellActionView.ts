@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { renderLabelWithIcons } from "vs/base/browser/ui/iconLabel/iconLabels";
 import * as DOM from "vs/base/browser/dom";
+import { renderLabelWithIcons } from "vs/base/browser/ui/iconLabel/iconLabels";
 import { MenuEntryActionViewItem } from "vs/platform/actions/browser/menuEntryActionViewItem";
 
 export class CodiconActionViewItem extends MenuEntryActionViewItem {
@@ -12,7 +12,7 @@ export class CodiconActionViewItem extends MenuEntryActionViewItem {
 		if (this.options.label && this.label) {
 			DOM.reset(
 				this.label,
-				...renderLabelWithIcons(this._commandAction.label ?? "")
+				...renderLabelWithIcons(this._commandAction.label ?? ""),
 			);
 		}
 	}

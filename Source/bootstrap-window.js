@@ -6,12 +6,11 @@
 /// <reference path="typings/require.d.ts" />
 
 //@ts-check
-"use strict";
 
 /* eslint-disable no-restricted-globals */
 
 // Simple module style to support node.js and browser environments
-(function (globalThis, factory) {
+((globalThis, factory) => {
 	// Node.js
 	if (typeof exports === "object") {
 		module.exports = factory();
@@ -22,7 +21,7 @@
 		// @ts-ignore
 		globalThis.MonacoBootstrapWindow = factory();
 	}
-})(this, function () {
+})(this, () => {
 	const bootstrapLib = bootstrap();
 	const preloadGlobals = sandboxGlobals();
 	const safeProcess = preloadGlobals.process;
@@ -48,7 +47,7 @@
 		// Await window configuration from preload
 		const timeout = setTimeout(() => {
 			console.error(
-				`[resolve window config] Could not resolve window configuration within 10 seconds, but will continue to wait...`
+				`[resolve window config] Could not resolve window configuration within 10 seconds, but will continue to wait...`,
 			);
 		}, 10000);
 		performance.mark("code/willWaitForWindowConfig");
@@ -75,7 +74,7 @@
 						forceEnableDeveloperKeybindings: false,
 						disallowReloadKeybinding: false,
 						removeDeveloperKeybindingsAfterLoad: false,
-					};
+				  };
 		const isDev = !!safeProcess.env["VSCODE_DEV"];
 		const enableDeveloperKeybindings =
 			isDev || forceEnableDeveloperKeybindings;
@@ -127,7 +126,7 @@
 					}
 					throw new Error(`Invalid script url: ${value}`);
 				},
-			}
+			},
 		);
 
 		// Teach the loader the location of the node modules we use in renderers
@@ -139,7 +138,7 @@
 		loaderConfig.paths = {
 			"vscode-textmate": `${baseNodeModulesPath}/vscode-textmate/release/main.js`,
 			"vscode-oniguruma": `${baseNodeModulesPath}/vscode-oniguruma/release/main.js`,
-			"vsda": `${baseNodeModulesPath}/vsda/index.js`,
+			vsda: `${baseNodeModulesPath}/vsda/index.js`,
 			"@xterm/xterm": `${baseNodeModulesPath}/@xterm/xterm/lib/xterm.js`,
 			"@xterm/addon-canvas": `${baseNodeModulesPath}/@xterm/addon-canvas/lib/addon-canvas.js`,
 			"@xterm/addon-image": `${baseNodeModulesPath}/@xterm/addon-image/lib/addon-image.js`,
@@ -148,7 +147,7 @@
 			"@xterm/addon-unicode11": `${baseNodeModulesPath}/@xterm/addon-unicode11/lib/addon-unicode11.js`,
 			"@xterm/addon-webgl": `${baseNodeModulesPath}/@xterm/addon-webgl/lib/addon-webgl.js`,
 			"@vscode/iconv-lite-umd": `${baseNodeModulesPath}/@vscode/iconv-lite-umd/lib/iconv-lite-umd.js`,
-			"jschardet": `${baseNodeModulesPath}/jschardet/dist/jschardet.min.js`,
+			jschardet: `${baseNodeModulesPath}/jschardet/dist/jschardet.min.js`,
 			"@vscode/vscode-languagedetection": `${baseNodeModulesPath}/@vscode/vscode-languagedetection/dist/lib/index.js`,
 			"vscode-regexp-languagedetection": `${baseNodeModulesPath}/vscode-regexp-languagedetection/dist/index.js`,
 			"tas-client-umd": `${baseNodeModulesPath}/tas-client-umd/lib/tas-client-umd.js`,
@@ -164,7 +163,7 @@
 
 		// Handle pseudo NLS
 		if (nlsConfig.pseudo) {
-			require(["vs/nls"], function (nlsPlugin) {
+			require(["vs/nls"], (nlsPlugin) => {
 				nlsPlugin.setPseudoTranslation(nlsConfig.pseudo);
 			});
 		}
@@ -180,7 +179,7 @@
 				// Callback only after process environment is resolved
 				const callbackResult = resultCallback(
 					firstModule,
-					configuration
+					configuration,
 				);
 				if (callbackResult instanceof Promise) {
 					await callbackResult;
@@ -209,15 +208,14 @@
 			/**
 			 * @param {KeyboardEvent} e
 			 */
-			function (e) {
-				return [
+			(e) =>
+				[
 					e.ctrlKey ? "ctrl-" : "",
 					e.metaKey ? "meta-" : "",
 					e.altKey ? "alt-" : "",
 					e.shiftKey ? "shift-" : "",
 					e.keyCode,
 				].join("");
-			};
 
 		// Devtools & reload support
 		const TOGGLE_DEV_TOOLS_KB =
@@ -227,7 +225,7 @@
 			safeProcess.platform === "darwin" ? "meta-82" : "ctrl-82"; // mac: Cmd-R, rest: Ctrl-R
 
 		/** @type {((e: KeyboardEvent) => void) | undefined} */
-		let listener = function (e) {
+		let listener = (e) => {
 			const key = extractKey(e);
 			if (
 				key === TOGGLE_DEV_TOOLS_KB ||
@@ -241,7 +239,7 @@
 
 		window.addEventListener("keydown", listener);
 
-		return function () {
+		return () => {
 			if (listener) {
 				window.removeEventListener("keydown", listener);
 				listener = undefined;

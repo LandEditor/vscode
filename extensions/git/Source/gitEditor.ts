@@ -26,7 +26,7 @@ export class GitEditor implements IIPCHandler, ITerminalEnvironmentProvider {
 		this.env = {
 			GIT_EDITOR: `"${path.join(
 				__dirname,
-				ipc ? "git-editor.sh" : "git-editor-empty.sh"
+				ipc ? "git-editor.sh" : "git-editor-empty.sh",
 			)}"`,
 			VSCODE_GIT_EDITOR_NODE: process.execPath,
 			VSCODE_GIT_EDITOR_EXTRA_ARGS:
@@ -51,13 +51,13 @@ export class GitEditor implements IIPCHandler, ITerminalEnvironmentProvider {
 							tabs.closed.some(
 								(t) =>
 									t.input instanceof TabInputText &&
-									t.input.uri.toString() === uri.toString()
+									t.input.uri.toString() === uri.toString(),
 							)
 						) {
 							onDidClose.dispose();
 							return c(true);
 						}
-					}
+					},
 				);
 			});
 		}

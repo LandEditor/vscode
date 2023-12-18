@@ -30,7 +30,7 @@ export interface GitUriOptions {
 export function toGitUri(
 	uri: Uri,
 	ref: string,
-	options: GitUriOptions = {}
+	options: GitUriOptions = {},
 ): Uri {
 	const params: GitUriParams = {
 		path: uri.fsPath,

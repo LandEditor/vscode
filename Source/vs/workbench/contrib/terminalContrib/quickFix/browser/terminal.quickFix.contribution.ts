@@ -3,9 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/terminalQuickFix";
+import type { Terminal as RawXtermTerminal } from "@xterm/xterm";
 import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
 import { DisposableStore } from "vs/base/common/lifecycle";
+import "vs/css!./media/terminalQuickFix";
 import { localize } from "vs/nls";
 import {
 	InstantiationType,
@@ -39,13 +40,12 @@ import {
 	pwshUnixCommandNotFoundError,
 } from "vs/workbench/contrib/terminalContrib/quickFix/browser/terminalQuickFixBuiltinActions";
 import { TerminalQuickFixService } from "vs/workbench/contrib/terminalContrib/quickFix/browser/terminalQuickFixService";
-import type { Terminal as RawXtermTerminal } from "@xterm/xterm";
 
 // Services
 registerSingleton(
 	ITerminalQuickFixService,
 	TerminalQuickFixService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 
 // Contributions
@@ -56,10 +56,10 @@ class TerminalQuickFixContribution
 	static readonly ID = "quickFix";
 
 	static get(
-		instance: ITerminalInstance
+		instance: ITerminalInstance,
 	): TerminalQuickFixContribution | null {
 		return instance.getContribution<TerminalQuickFixContribution>(
-			TerminalQuickFixContribution.ID
+			TerminalQuickFixContribution.ID,
 		);
 	}
 
@@ -83,15 +83,15 @@ class TerminalQuickFixContribution
 		this._addon = this._instantiationService.createInstance(
 			TerminalQuickFixAddon,
 			undefined,
-			this._instance.capabilities
+			this._instance.capabilities,
 		);
 		xterm.raw.loadAddon(this._addon);
 
 		// Hook up listeners
 		this.add(
 			this._addon.onDidRequestRerunCommand((e) =>
-				this._instance.runCommand(e.command, e.shouldExecute || false)
-			)
+				this._instance.runCommand(e.command, e.shouldExecute || false),
+			),
 		);
 
 		// Register quick fixes
@@ -99,7 +99,7 @@ class TerminalQuickFixContribution
 			gitTwoDashes(),
 			gitPull(),
 			freePort((port: string, command: string) =>
-				this._instance.freePortKillProcess(port, command)
+				this._instance.freePortKillProcess(port, command),
 			),
 			gitSimilar(),
 			gitPushSetUpstream(),
@@ -113,7 +113,7 @@ class TerminalQuickFixContribution
 }
 registerTerminalContribution(
 	TerminalQuickFixContribution.ID,
-	TerminalQuickFixContribution
+	TerminalQuickFixContribution,
 );
 
 // Actions
@@ -122,7 +122,7 @@ registerActiveInstanceAction({
 	title: {
 		value: localize(
 			"workbench.action.terminal.showQuickFixes",
-			"Show Terminal Quick Fixes"
+			"Show Terminal Quick Fixes",
 		),
 		original: "Show Terminal Quick Fixes",
 	},

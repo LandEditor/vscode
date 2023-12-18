@@ -3,8 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./standaloneQuickInput";
+import { CancellationToken } from "vs/base/common/cancellation";
 import { Event } from "vs/base/common/event";
+import { createSingleCallFunction } from "vs/base/common/functional";
+import "vs/css!./standaloneQuickInput";
 import {
 	ICodeEditor,
 	IOverlayWidget,
@@ -15,32 +17,30 @@ import {
 	EditorContributionInstantiation,
 	registerEditorContribution,
 } from "vs/editor/browser/editorExtensions";
-import { IEditorContribution } from "vs/editor/common/editorCommon";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import {
-	IQuickInputService,
-	IQuickInputButton,
-	IQuickPickItem,
-	IQuickPick,
-	IInputBox,
-	IQuickNavigateConfiguration,
-	IPickOptions,
-	QuickPickInput,
-	IInputOptions,
-	IQuickWidget,
-} from "vs/platform/quickinput/common/quickInput";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import { EditorScopedLayoutService } from "vs/editor/standalone/browser/standaloneLayoutService";
 import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
+import { IEditorContribution } from "vs/editor/common/editorCommon";
+import { EditorScopedLayoutService } from "vs/editor/standalone/browser/standaloneLayoutService";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import {
-	QuickInputController,
 	IQuickInputControllerHost,
+	QuickInputController,
 } from "vs/platform/quickinput/browser/quickInputController";
 import { QuickInputService } from "vs/platform/quickinput/browser/quickInputService";
-import { createSingleCallFunction } from "vs/base/common/functional";
 import { IQuickAccessController } from "vs/platform/quickinput/common/quickAccess";
+import {
+	IInputBox,
+	IInputOptions,
+	IPickOptions,
+	IQuickInputButton,
+	IQuickInputService,
+	IQuickNavigateConfiguration,
+	IQuickPick,
+	IQuickPickItem,
+	IQuickWidget,
+	QuickPickInput,
+} from "vs/platform/quickinput/common/quickInput";
+import { IThemeService } from "vs/platform/theme/common/themeService";
 
 class EditorScopedQuickInputService extends QuickInputService {
 	private host: IQuickInputControllerHost | undefined = undefined;
@@ -50,7 +50,7 @@ class EditorScopedQuickInputService extends QuickInputService {
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IThemeService themeService: IThemeService,
-		@ICodeEditorService codeEditorService: ICodeEditorService
+		@ICodeEditorService codeEditorService: ICodeEditorService,
 	) {
 		super(
 			instantiationService,
@@ -58,8 +58,8 @@ class EditorScopedQuickInputService extends QuickInputService {
 			themeService,
 			new EditorScopedLayoutService(
 				editor.getContainerDomNode(),
-				codeEditorService
-			)
+				codeEditorService,
+			),
 		);
 
 		// Use the passed in code editor as host for the quick input widget
@@ -136,7 +136,7 @@ export class StandaloneQuickInputService implements IQuickInputService {
 		const editor = this.codeEditorService.getFocusedCodeEditor();
 		if (!editor) {
 			throw new Error(
-				"Quick input service needs a focused editor to work."
+				"Quick input service needs a focused editor to work.",
 			);
 		}
 
@@ -147,7 +147,7 @@ export class StandaloneQuickInputService implements IQuickInputService {
 			const newQuickInputService = (quickInputService =
 				this.instantiationService.createInstance(
 					EditorScopedQuickInputService,
-					editor
+					editor,
 				));
 			this.mapEditorToService.set(editor, quickInputService);
 
@@ -185,7 +185,7 @@ export class StandaloneQuickInputService implements IQuickInputService {
 	pick<T extends IQuickPickItem, O extends IPickOptions<T>>(
 		picks: Promise<QuickPickInput<T>[]> | QuickPickInput<T>[],
 		options: O = <O>{},
-		token: CancellationToken = CancellationToken.None
+		token: CancellationToken = CancellationToken.None,
 	): Promise<(O extends { canPickMany: true } ? T[] : T) | undefined> {
 		return (
 			this.activeService as unknown as QuickInputController
@@ -195,7 +195,7 @@ export class StandaloneQuickInputService implements IQuickInputService {
 
 	input(
 		options?: IInputOptions | undefined,
-		token?: CancellationToken | undefined
+		token?: CancellationToken | undefined,
 	): Promise<string | undefined> {
 		return this.activeService.input(options, token);
 	}
@@ -222,7 +222,7 @@ export class StandaloneQuickInputService implements IQuickInputService {
 
 	navigate(
 		next: boolean,
-		quickNavigate?: IQuickNavigateConfiguration | undefined
+		quickNavigate?: IQuickNavigateConfiguration | undefined,
 	): void {
 		return this.activeService.navigate(next, quickNavigate);
 	}
@@ -245,7 +245,7 @@ export class QuickInputEditorContribution implements IEditorContribution {
 
 	static get(editor: ICodeEditor): QuickInputEditorContribution | null {
 		return editor.getContribution<QuickInputEditorContribution>(
-			QuickInputEditorContribution.ID
+			QuickInputEditorContribution.ID,
 		);
 	}
 
@@ -289,5 +289,5 @@ export class QuickInputEditorWidget implements IOverlayWidget {
 registerEditorContribution(
 	QuickInputEditorContribution.ID,
 	QuickInputEditorContribution,
-	EditorContributionInstantiation.Lazy
+	EditorContributionInstantiation.Lazy,
 );

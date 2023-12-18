@@ -5,8 +5,8 @@
 
 import { isValidBasename } from "vs/base/common/extpath";
 import { Schemas } from "vs/base/common/network";
-import { IPath, win32, posix } from "vs/base/common/path";
-import { OperatingSystem, OS } from "vs/base/common/platform";
+import { IPath, posix, win32 } from "vs/base/common/path";
+import { OS, OperatingSystem } from "vs/base/common/platform";
 import { basename } from "vs/base/common/resources";
 import { URI } from "vs/base/common/uri";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
@@ -72,7 +72,7 @@ export interface IPathService {
 	hasValidBasename(
 		resource: URI,
 		os: OperatingSystem,
-		basename?: string
+		basename?: string,
 	): boolean;
 
 	/**
@@ -119,17 +119,17 @@ export abstract class AbstractPathService implements IPathService {
 	hasValidBasename(
 		resource: URI,
 		os: OperatingSystem,
-		basename?: string
+		basename?: string,
 	): boolean;
 	hasValidBasename(
 		resource: URI,
 		arg2?: string | OperatingSystem,
-		basename?: string
+		basename?: string,
 	): boolean | Promise<boolean> {
 		// async version
 		if (typeof arg2 === "string" || typeof arg2 === "undefined") {
 			return this.resolveOS.then((os) =>
-				this.doHasValidBasename(resource, os, arg2)
+				this.doHasValidBasename(resource, os, arg2),
 			);
 		}
 
@@ -140,7 +140,7 @@ export abstract class AbstractPathService implements IPathService {
 	private doHasValidBasename(
 		resource: URI,
 		os: OperatingSystem,
-		name?: string
+		name?: string,
 	): boolean {
 		// Our `isValidBasename` method only works with our
 		// standard schemes for files on disk, either locally
@@ -151,7 +151,7 @@ export abstract class AbstractPathService implements IPathService {
 		) {
 			return isValidBasename(
 				name ?? basename(resource),
-				os === OperatingSystem.Windows
+				os === OperatingSystem.Windows,
 			);
 		}
 
@@ -161,20 +161,20 @@ export abstract class AbstractPathService implements IPathService {
 	get defaultUriScheme(): string {
 		return AbstractPathService.findDefaultUriScheme(
 			this.environmentService,
-			this.contextService
+			this.contextService,
 		);
 	}
 
 	static findDefaultUriScheme(
 		environmentService: IWorkbenchEnvironmentService,
-		contextService: IWorkspaceContextService
+		contextService: IWorkspaceContextService,
 	): string {
 		if (environmentService.remoteAuthority) {
 			return Schemas.vscodeRemote;
 		}
 
 		const virtualWorkspace = getVirtualWorkspaceScheme(
-			contextService.getWorkspace()
+			contextService.getWorkspace(),
 		);
 		if (virtualWorkspace) {
 			return virtualWorkspace;

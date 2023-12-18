@@ -3,32 +3,32 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import type { ISearchOptions } from "@xterm/addon-search";
 import * as dom from "vs/base/browser/dom";
-import { SimpleFindWidget } from "vs/workbench/contrib/codeEditor/browser/find/simpleFindWidget";
+import { Event } from "vs/base/common/event";
+import { IDisposable } from "vs/base/common/lifecycle";
+import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import {
+	IContextKey,
+	IContextKeyService,
+} from "vs/platform/contextkey/common/contextkey";
 import {
 	IContextMenuService,
 	IContextViewService,
 } from "vs/platform/contextview/browser/contextView";
-import {
-	IContextKeyService,
-	IContextKey,
-} from "vs/platform/contextkey/common/contextkey";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import { SimpleFindWidget } from "vs/workbench/contrib/codeEditor/browser/find/simpleFindWidget";
 import {
 	IDetachedTerminalInstance,
 	ITerminalInstance,
 	IXtermTerminal,
 	XtermTerminalConstants,
 } from "vs/workbench/contrib/terminal/browser/terminal";
-import { TerminalContextKeys } from "vs/workbench/contrib/terminal/common/terminalContextKey";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { Event } from "vs/base/common/event";
-import type { ISearchOptions } from "@xterm/addon-search";
 import { TerminalCommandId } from "vs/workbench/contrib/terminal/common/terminal";
-import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
+import { TerminalContextKeys } from "vs/workbench/contrib/terminal/common/terminalContextKey";
 import { openContextMenu } from "vs/workbench/contrib/terminalContrib/find/browser/textInputContextMenu";
-import { IDisposable } from "vs/base/common/lifecycle";
 
 const TERMINAL_FIND_WIDGET_INITIAL_WIDTH = 419;
 
@@ -177,8 +177,8 @@ export class TerminalFindWidget extends SimpleFindWidget {
 				this.updateButtons(foundMatch);
 				this._register(
 					Event.once(xterm.onDidChangeSelection)(() =>
-						xterm.clearActiveSearchDecoration()
-					)
+						xterm.clearActiveSearchDecoration(),
+					),
 				);
 			});
 		}
@@ -267,13 +267,13 @@ export class TerminalFindWidget extends SimpleFindWidget {
 	private async _findNextWithEvent(
 		xterm: IXtermTerminal,
 		term: string,
-		options: ISearchOptions
+		options: ISearchOptions,
 	): Promise<boolean> {
 		return xterm.findNext(term, options).then((foundMatch) => {
 			this._register(
 				Event.once(xterm.onDidChangeSelection)(() =>
-					xterm.clearActiveSearchDecoration()
-				)
+					xterm.clearActiveSearchDecoration(),
+				),
 			);
 			return foundMatch;
 		});
@@ -282,13 +282,13 @@ export class TerminalFindWidget extends SimpleFindWidget {
 	private async _findPreviousWithEvent(
 		xterm: IXtermTerminal,
 		term: string,
-		options: ISearchOptions
+		options: ISearchOptions,
 	): Promise<boolean> {
 		return xterm.findPrevious(term, options).then((foundMatch) => {
 			this._register(
 				Event.once(xterm.onDidChangeSelection)(() =>
-					xterm.clearActiveSearchDecoration()
-				)
+					xterm.clearActiveSearchDecoration(),
+				),
 			);
 			return foundMatch;
 		});

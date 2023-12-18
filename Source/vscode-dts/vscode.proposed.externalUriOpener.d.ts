@@ -71,7 +71,7 @@ declare module "vscode" {
 		 */
 		canOpenExternalUri(
 			uri: Uri,
-			token: CancellationToken
+			token: CancellationToken,
 		): ExternalUriOpenerPriority | Thenable<ExternalUriOpenerPriority>;
 
 		/**
@@ -94,7 +94,7 @@ declare module "vscode" {
 		openExternalUri(
 			resolvedUri: Uri,
 			ctx: OpenExternalUriContext,
-			token: CancellationToken
+			token: CancellationToken,
 		): Thenable<void> | void;
 	}
 
@@ -146,7 +146,7 @@ declare module "vscode" {
 		export function registerExternalUriOpener(
 			id: string,
 			opener: ExternalUriOpener,
-			metadata: ExternalUriOpenerMetadata
+			metadata: ExternalUriOpenerMetadata,
 		): Disposable;
 	}
 
@@ -168,7 +168,7 @@ declare module "vscode" {
 	namespace env {
 		export function openExternal(
 			target: Uri,
-			options?: OpenExternalOptions
+			options?: OpenExternalOptions,
 		): Thenable<boolean>;
 	}
 }

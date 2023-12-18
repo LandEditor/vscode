@@ -3,7 +3,7 @@ declare namespace NodeJS {
 	interface ReadWriteStream {
 		compose<T extends NodeJS.ReadableStream>(
 			stream: T | ComposeFnParam | Iterable<T> | AsyncIterable<T>,
-			options?: { signal: AbortSignal }
+			options?: { signal: AbortSignal },
 		): T;
 	}
 }

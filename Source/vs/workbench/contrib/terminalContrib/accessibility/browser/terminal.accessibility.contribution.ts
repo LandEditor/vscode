@@ -3,6 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import type { Terminal } from "@xterm/xterm";
+import { Event } from "vs/base/common/event";
 import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
 import {
 	Disposable,
@@ -10,9 +12,11 @@ import {
 	IDisposable,
 	MutableDisposable,
 } from "vs/base/common/lifecycle";
+import { Position } from "vs/editor/common/core/position";
 import { localize } from "vs/nls";
 import { CONTEXT_ACCESSIBILITY_MODE_ENABLED } from "vs/platform/accessibility/common/accessibility";
 import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
 	ContextKeyExpr,
 	IContextKeyService,
@@ -26,6 +30,8 @@ import {
 	ITerminalCommand,
 	TerminalCapability,
 } from "vs/platform/terminal/common/capabilities/capabilities";
+import { ICurrentPartialCommand } from "vs/platform/terminal/common/capabilities/commandDetection/terminalCommand";
+import { TerminalSettingId } from "vs/platform/terminal/common/terminal";
 import {
 	AccessibleViewProviderId,
 	accessibleViewCurrentProviderId,
@@ -55,17 +61,11 @@ import {
 import { TerminalContextKeys } from "vs/workbench/contrib/terminal/common/terminalContextKey";
 import { BufferContentTracker } from "vs/workbench/contrib/terminalContrib/accessibility/browser/bufferContentTracker";
 import { TerminalAccessibilityHelpProvider } from "vs/workbench/contrib/terminalContrib/accessibility/browser/terminalAccessibilityHelp";
-import { TextAreaSyncAddon } from "vs/workbench/contrib/terminalContrib/accessibility/browser/textAreaSyncAddon";
-import type { Terminal } from "@xterm/xterm";
-import { Position } from "vs/editor/common/core/position";
 import {
 	ICommandWithEditorLine,
 	TerminalAccessibleBufferProvider,
 } from "vs/workbench/contrib/terminalContrib/accessibility/browser/terminalAccessibleBufferProvider";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { TerminalSettingId } from "vs/platform/terminal/common/terminal";
-import { Event } from "vs/base/common/event";
-import { ICurrentPartialCommand } from "vs/platform/terminal/common/capabilities/commandDetection/terminalCommand";
+import { TextAreaSyncAddon } from "vs/workbench/contrib/terminalContrib/accessibility/browser/textAreaSyncAddon";
 
 class TextAreaSyncContribution
 	extends DisposableStore
@@ -74,7 +74,7 @@ class TextAreaSyncContribution
 	static readonly ID = "terminal.textAreaSync";
 	static get(instance: ITerminalInstance): TextAreaSyncContribution | null {
 		return instance.getContribution<TextAreaSyncContribution>(
-			TextAreaSyncContribution.ID
+			TextAreaSyncContribution.ID,
 		);
 	}
 	private _addon: TextAreaSyncAddon | undefined;
@@ -94,8 +94,8 @@ class TextAreaSyncContribution
 		this._addon = this.add(
 			this._instantiationService.createInstance(
 				TextAreaSyncAddon,
-				this._instance.capabilities
-			)
+				this._instance.capabilities,
+			),
 		);
 		xterm.raw.loadAddon(this._addon);
 		this._addon.activate(xterm.raw);
@@ -103,7 +103,7 @@ class TextAreaSyncContribution
 }
 registerTerminalContribution(
 	TextAreaSyncContribution.ID,
-	TextAreaSyncContribution
+	TextAreaSyncContribution,
 );
 
 export class TerminalAccessibleViewContribution
@@ -112,10 +112,10 @@ export class TerminalAccessibleViewContribution
 {
 	static readonly ID = "terminal.accessibleBufferProvider";
 	static get(
-		instance: ITerminalInstance
+		instance: ITerminalInstance,
 	): TerminalAccessibleViewContribution | null {
 		return instance.getContribution<TerminalAccessibleViewContribution>(
-			TerminalAccessibleViewContribution.ID
+			TerminalAccessibleViewContribution.ID,
 		);
 	}
 	private _bufferTracker: BufferContentTracker | undefined;
@@ -194,7 +194,7 @@ export class TerminalAccessibleViewContribution
 	xtermReady(xterm: IXtermTerminal & { raw: Terminal }): void {
 		const addon = this._instantiationService.createInstance(
 			TextAreaSyncAddon,
-			this._instance.capabilities
+			this._instance.capabilities,
 		);
 		xterm.raw.loadAddon(addon);
 		addon.activate(xterm.raw);
@@ -210,7 +210,7 @@ export class TerminalAccessibleViewContribution
 				) {
 					this.show();
 				}
-			})
+			}),
 		);
 
 		const onRequestUpdateEditor = Event.latch(this._xterm.raw.onScroll);
@@ -222,21 +222,21 @@ export class TerminalAccessibleViewContribution
 				if (this._isTerminalAccessibleViewOpen()) {
 					this.show();
 				}
-			})
+			}),
 		);
 	}
 
 	private _updateCommandExecutedListener(): void {
 		if (
 			!this._instance.capabilities.has(
-				TerminalCapability.CommandDetection
+				TerminalCapability.CommandDetection,
 			)
 		) {
 			return;
 		}
 		if (
 			!this._configurationService.getValue(
-				TerminalSettingId.AccessibleViewFocusOnCommandExecution
+				TerminalSettingId.AccessibleViewFocusOnCommandExecution,
 			)
 		) {
 			this._onDidRunCommand.clear();
@@ -246,21 +246,21 @@ export class TerminalAccessibleViewContribution
 		}
 
 		const capability = this._instance.capabilities.get(
-			TerminalCapability.CommandDetection
+			TerminalCapability.CommandDetection,
 		)!;
 		this._onDidRunCommand.value = this._register(
 			capability.onCommandExecuted(() => {
 				if (this._instance.hasFocus) {
 					this.show();
 				}
-			})
+			}),
 		);
 	}
 
 	private _isTerminalAccessibleViewOpen(): boolean {
 		return (
 			accessibleViewCurrentProviderId.getValue(
-				this._contextKeyService
+				this._contextKeyService,
 			) === AccessibleViewProviderId.Terminal
 		);
 	}
@@ -273,8 +273,8 @@ export class TerminalAccessibleViewContribution
 			this._bufferTracker = this._register(
 				this._instantiationService.createInstance(
 					BufferContentTracker,
-					this._xterm
-				)
+					this._xterm,
+				),
 			);
 		}
 		if (!this._bufferProvider) {
@@ -288,25 +288,25 @@ export class TerminalAccessibleViewContribution
 							this._instantiationService.createInstance(
 								TerminalAccessibilityHelpProvider,
 								this._instance,
-								this._xterm!
-							)
+								this._xterm!,
+							),
 						).provideContent();
-					}
-				)
+					},
+				),
 			);
 		}
 		const position = this._configurationService.getValue(
-			TerminalSettingId.AccessibleViewPreserveCursorPosition
+			TerminalSettingId.AccessibleViewPreserveCursorPosition,
 		)
 			? this._accessibleViewService.getPosition(
-					AccessibleViewProviderId.Terminal
-				)
+					AccessibleViewProviderId.Terminal,
+			  )
 			: undefined;
 		this._accessibleViewService.show(this._bufferProvider, position);
 	}
 	navigateToCommand(type: NavigationType): void {
 		const currentLine = this._accessibleViewService.getPosition(
-			AccessibleViewProviderId.Terminal
+			AccessibleViewProviderId.Terminal,
 		)?.lineNumber;
 		const commands = this._getCommandsWithEditorLine();
 		if (!commands?.length || !currentLine) {
@@ -326,13 +326,13 @@ export class TerminalAccessibleViewContribution
 		}
 		this._accessibleViewService.setPosition(
 			new Position(filteredCommands[0].lineNumber, 1),
-			true
+			true,
 		);
 	}
 
 	private _getCommandsWithEditorLine(): ICommandWithEditorLine[] | undefined {
 		const capability = this._instance.capabilities.get(
-			TerminalCapability.CommandDetection
+			TerminalCapability.CommandDetection,
 		);
 		const commands = capability?.commands;
 		const currentCommand = capability?.currentCommand;
@@ -357,7 +357,7 @@ export class TerminalAccessibleViewContribution
 	}
 
 	private _getEditorLineForCommand(
-		command: ITerminalCommand | ICurrentPartialCommand
+		command: ITerminalCommand | ICurrentPartialCommand,
 	): number | undefined {
 		if (!this._bufferTracker) {
 			return;
@@ -380,7 +380,7 @@ export class TerminalAccessibleViewContribution
 }
 registerTerminalContribution(
 	TerminalAccessibleViewContribution.ID,
-	TerminalAccessibleViewContribution
+	TerminalAccessibleViewContribution,
 );
 
 export class TerminalAccessibilityHelpContribution extends Disposable {
@@ -394,11 +394,11 @@ export class TerminalAccessibilityHelpContribution extends Disposable {
 				"terminal",
 				async (accessor) => {
 					const instantiationService = accessor.get(
-						IInstantiationService
+						IInstantiationService,
 					);
 					const terminalService = accessor.get(ITerminalService);
 					const accessibleViewService = accessor.get(
-						IAccessibleViewService
+						IAccessibleViewService,
 					);
 					const instance =
 						await terminalService.getActiveOrCreateInstance();
@@ -411,8 +411,8 @@ export class TerminalAccessibilityHelpContribution extends Disposable {
 						instantiationService.createInstance(
 							TerminalAccessibilityHelpProvider,
 							instance,
-							terminal
-						)
+							terminal,
+						),
 					);
 				},
 				ContextKeyExpr.or(
@@ -421,17 +421,17 @@ export class TerminalAccessibilityHelpContribution extends Disposable {
 						accessibleViewIsShown,
 						ContextKeyExpr.equals(
 							accessibleViewCurrentProviderId.key,
-							AccessibleViewProviderId.Terminal
-						)
-					)
-				)
-			)
+							AccessibleViewProviderId.Terminal,
+						),
+					),
+				),
+			),
 		);
 	}
 }
 registerTerminalContribution(
 	TerminalAccessibilityHelpContribution.ID,
-	TerminalAccessibilityHelpContribution
+	TerminalAccessibilityHelpContribution,
 );
 
 class FocusAccessibleBufferAction extends Action2 {
@@ -441,13 +441,13 @@ class FocusAccessibleBufferAction extends Action2 {
 			title: {
 				value: localize(
 					"workbench.action.terminal.focusAccessibleBuffer",
-					"Focus Accessible Terminal View"
+					"Focus Accessible Terminal View",
 				),
 				original: "Focus Accessible Terminal View",
 			},
 			precondition: ContextKeyExpr.or(
 				TerminalContextKeys.processSupported,
-				TerminalContextKeys.terminalHasBeenCreated
+				TerminalContextKeys.terminalHasBeenCreated,
 			),
 			keybinding: [
 				{
@@ -460,7 +460,7 @@ class FocusAccessibleBufferAction extends Action2 {
 					weight: KeybindingWeight.WorkbenchContrib,
 					when: ContextKeyExpr.and(
 						CONTEXT_ACCESSIBILITY_MODE_ENABLED,
-						TerminalContextKeys.focus
+						TerminalContextKeys.focus,
 					),
 				},
 			],
@@ -485,7 +485,7 @@ registerTerminalAction({
 	title: {
 		value: localize(
 			"workbench.action.terminal.accessibleBufferGoToNextCommand",
-			"Accessible Buffer Go to Next Command"
+			"Accessible Buffer Go to Next Command",
 		),
 		original: "Accessible Buffer Go to Next Command",
 	},
@@ -496,9 +496,9 @@ registerTerminalAction({
 			accessibleViewIsShown,
 			ContextKeyExpr.equals(
 				accessibleViewCurrentProviderId.key,
-				AccessibleViewProviderId.Terminal
-			)
-		)
+				AccessibleViewProviderId.Terminal,
+			),
+		),
 	),
 	keybinding: [
 		{
@@ -508,9 +508,9 @@ registerTerminalAction({
 					accessibleViewIsShown,
 					ContextKeyExpr.equals(
 						accessibleViewCurrentProviderId.key,
-						AccessibleViewProviderId.Terminal
-					)
-				)
+						AccessibleViewProviderId.Terminal,
+					),
+				),
 			),
 			weight: KeybindingWeight.WorkbenchContrib + 2,
 		},
@@ -521,7 +521,7 @@ registerTerminalAction({
 			return;
 		}
 		await TerminalAccessibleViewContribution.get(
-			instance
+			instance,
 		)?.navigateToCommand(NavigationType.Next);
 	},
 });
@@ -531,22 +531,22 @@ registerTerminalAction({
 	title: {
 		value: localize(
 			"workbench.action.terminal.accessibleBufferGoToPreviousCommand",
-			"Accessible Buffer Go to Previous Command"
+			"Accessible Buffer Go to Previous Command",
 		),
 		original: "Accessible Buffer Go to Previous Command",
 	},
 	precondition: ContextKeyExpr.and(
 		ContextKeyExpr.or(
 			TerminalContextKeys.processSupported,
-			TerminalContextKeys.terminalHasBeenCreated
+			TerminalContextKeys.terminalHasBeenCreated,
 		),
 		ContextKeyExpr.and(
 			accessibleViewIsShown,
 			ContextKeyExpr.equals(
 				accessibleViewCurrentProviderId.key,
-				AccessibleViewProviderId.Terminal
-			)
-		)
+				AccessibleViewProviderId.Terminal,
+			),
+		),
 	),
 	keybinding: [
 		{
@@ -556,9 +556,9 @@ registerTerminalAction({
 					accessibleViewIsShown,
 					ContextKeyExpr.equals(
 						accessibleViewCurrentProviderId.key,
-						AccessibleViewProviderId.Terminal
-					)
-				)
+						AccessibleViewProviderId.Terminal,
+					),
+				),
 			),
 			weight: KeybindingWeight.WorkbenchContrib + 2,
 		},
@@ -569,7 +569,7 @@ registerTerminalAction({
 			return;
 		}
 		await TerminalAccessibleViewContribution.get(
-			instance
+			instance,
 		)?.navigateToCommand(NavigationType.Previous);
 	},
 });

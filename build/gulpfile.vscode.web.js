@@ -3,8 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-"use strict";
-
 const gulp = require("gulp");
 const path = require("path");
 const es = require("event-stream");
@@ -102,8 +100,8 @@ const createVSCodeWebProductConfigurationPatcher = (product) => {
 				() =>
 					productConfiguration.substr(
 						1,
-						productConfiguration.length - 2
-					) /* without { and }*/
+						productConfiguration.length - 2,
+					) /* without { and }*/,
 			);
 		}
 
@@ -124,19 +122,19 @@ const createVSCodeWebBuiltinExtensionsPatcher = (extensionsRoot) => {
 		// (2) Patch builtin extensions
 		if (
 			path.endsWith(
-				"vs/workbench/services/extensionManagement/browser/builtinExtensionsScannerService.js"
+				"vs/workbench/services/extensionManagement/browser/builtinExtensionsScannerService.js",
 			)
 		) {
 			const builtinExtensions = JSON.stringify(
-				extensions.scanBuiltinExtensions(extensionsRoot)
+				extensions.scanBuiltinExtensions(extensionsRoot),
 			);
 			return content.replace(
 				"/*BUILD->INSERT_BUILTIN_EXTENSIONS*/",
 				() =>
 					builtinExtensions.substr(
 						1,
-						builtinExtensions.length - 2
-					) /* without [ and ]*/
+						builtinExtensions.length - 2,
+					) /* without [ and ]*/,
 			);
 		}
 
@@ -169,7 +167,7 @@ const combineContentPatchers = (...patchers) => {
 const createVSCodeWebFileContentMapper = (extensionsRoot, product) => {
 	return combineContentPatchers(
 		createVSCodeWebProductConfigurationPatcher(product),
-		createVSCodeWebBuiltinExtensionsPatcher(extensionsRoot)
+		createVSCodeWebBuiltinExtensionsPatcher(extensionsRoot),
 	);
 };
 exports.createVSCodeWebFileContentMapper = createVSCodeWebFileContentMapper;
@@ -189,17 +187,17 @@ const optimizeVSCodeWebTask = task.define(
 				externalLoaderInfo: util.createExternalLoaderConfig(
 					product.webEndpointUrl,
 					commit,
-					quality
+					quality,
 				),
 				inlineAmdImages: true,
 				bundleInfo: undefined,
 				fileContentMapper: createVSCodeWebFileContentMapper(
 					".build/web/extensions",
-					product
+					product,
 				),
 			},
-		})
-	)
+		}),
+	),
 );
 
 const minifyVSCodeWebTask = task.define(
@@ -209,9 +207,9 @@ const minifyVSCodeWebTask = task.define(
 		util.rimraf("out-vscode-web-min"),
 		optimize.minifyTask(
 			"out-vscode-web",
-			`https://ticino.blob.core.windows.net/sourcemaps/${commit}/core`
-		)
-	)
+			`https://ticino.blob.core.windows.net/sourcemaps/${commit}/core`,
+		),
+	),
 );
 gulp.task(minifyVSCodeWebTask);
 
@@ -222,12 +220,12 @@ function packageTask(sourceFolderName, destinationFolderName) {
 		const json = require("gulp-json-editor");
 
 		const src = gulp.src(sourceFolderName + "/**", { base: "." }).pipe(
-			rename(function (path) {
+			rename((path) => {
 				path.dirname = path.dirname.replace(
 					new RegExp("^" + sourceFolderName),
-					"out"
+					"out",
 				);
-			})
+			}),
 		);
 
 		const extensions = gulp.src(".build/web/extensions/**", {
@@ -252,12 +250,11 @@ function packageTask(sourceFolderName, destinationFolderName) {
 		const productionDependencies = getProductionDependencies(WEB_FOLDER);
 		const dependenciesSrc = productionDependencies
 			.map((d) => path.relative(REPO_ROOT, d.path))
-			.map((d) => [
+			.flatMap((d) => [
 				`${d}/**`,
 				`!${d}/**/{test,tests}/**`,
 				`!${d}/.bin/**`,
-			])
-			.flat();
+			]);
 
 		const deps = gulp
 			.src(dependenciesSrc, { base: "remote/web", dot: true })
@@ -276,7 +273,7 @@ function packageTask(sourceFolderName, destinationFolderName) {
 			}),
 			gulp.src("resources/server/code-512.png", {
 				base: "resources/server",
-			})
+			}),
 		);
 
 		const all = es.merge(
@@ -286,7 +283,7 @@ function packageTask(sourceFolderName, destinationFolderName) {
 			deps,
 			favicon,
 			manifest,
-			pwaicons
+			pwaicons,
 		);
 
 		const result = all
@@ -302,22 +299,22 @@ const compileWebExtensionsBuildTask = task.define(
 	task.series(
 		task.define(
 			"clean-web-extensions-build",
-			util.rimraf(".build/web/extensions")
+			util.rimraf(".build/web/extensions"),
 		),
 		task.define("bundle-web-extensions-build", () =>
 			extensions
 				.packageLocalExtensionsStream(true, false)
-				.pipe(gulp.dest(".build/web"))
+				.pipe(gulp.dest(".build/web")),
 		),
 		task.define("bundle-marketplace-web-extensions-build", () =>
 			extensions
 				.packageMarketplaceExtensionsStream(true)
-				.pipe(gulp.dest(".build/web"))
+				.pipe(gulp.dest(".build/web")),
 		),
 		task.define("bundle-web-extension-media-build", () =>
-			extensions.buildExtensionMedia(false, ".build/web/extensions")
-		)
-	)
+			extensions.buildExtensionMedia(false, ".build/web/extensions"),
+		),
+	),
 );
 gulp.task(compileWebExtensionsBuildTask);
 
@@ -333,14 +330,14 @@ const dashed = (/** @type {string} */ str) => (str ? `-${str}` : ``);
 			compileWebExtensionsBuildTask,
 			minified ? minifyVSCodeWebTask : optimizeVSCodeWebTask,
 			util.rimraf(path.join(BUILD_ROOT, destinationFolderName)),
-			packageTask(sourceFolderName, destinationFolderName)
-		)
+			packageTask(sourceFolderName, destinationFolderName),
+		),
 	);
 	gulp.task(vscodeWebTaskCI);
 
 	const vscodeWebTask = task.define(
 		`vscode-web${dashed(minified)}`,
-		task.series(compileBuildTask, vscodeWebTaskCI)
+		task.series(compileBuildTask, vscodeWebTaskCI),
 	);
 	gulp.task(vscodeWebTask);
 });

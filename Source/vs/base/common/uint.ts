@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-export const enum Constants {
+export enum Constants {
 	/**
 	 * MAX SMI (SMall Integer) as defined in v8.
 	 * one bit is lost for boxing/unboxing flag.

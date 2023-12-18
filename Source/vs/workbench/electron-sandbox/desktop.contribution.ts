@@ -3,71 +3,71 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Registry } from "vs/platform/registry/common/platform";
+import { ModifierKeyEmitter } from "vs/base/browser/dom";
+import { IJSONSchema } from "vs/base/common/jsonSchema";
+import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
+import { isLinux, isMacintosh, isWindows } from "vs/base/common/platform";
 import { localize } from "vs/nls";
 import {
-	MenuRegistry,
 	MenuId,
+	MenuRegistry,
 	registerAction2,
 } from "vs/platform/actions/common/actions";
+import { CommandsRegistry } from "vs/platform/commands/common/commands";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
-	IConfigurationRegistry,
-	Extensions as ConfigurationExtensions,
 	ConfigurationScope,
+	Extensions as ConfigurationExtensions,
+	IConfigurationRegistry,
 } from "vs/platform/configuration/common/configurationRegistry";
-import { KeyMod, KeyCode } from "vs/base/common/keyCodes";
-import { isLinux, isMacintosh, isWindows } from "vs/base/common/platform";
+import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
+import { IsMacContext } from "vs/platform/contextkey/common/contextkeys";
+import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+import {
+	Extensions as JSONExtensions,
+	IJSONContributionRegistry,
+} from "vs/platform/jsonschemas/common/jsonContributionRegistry";
+import {
+	KeybindingWeight,
+	KeybindingsRegistry,
+} from "vs/platform/keybinding/common/keybindingsRegistry";
+import { INativeHostService } from "vs/platform/native/common/native";
+import { Registry } from "vs/platform/registry/common/platform";
+import { TELEMETRY_SETTING_ID } from "vs/platform/telemetry/common/telemetry";
+import {
+	applicationConfigurationNodeBase,
+	securityConfigurationNodeBase,
+} from "vs/workbench/common/configuration";
+import {
+	EditorsVisibleContext,
+	SingleEditorGroupsContext,
+} from "vs/workbench/common/contextkeys";
 import {
 	ConfigureRuntimeArgumentsAction,
-	ToggleDevToolsAction,
-	ReloadWindowWithExtensionsDisabledAction,
 	OpenUserDataFolderAction,
+	ReloadWindowWithExtensionsDisabledAction,
+	ToggleDevToolsAction,
 } from "vs/workbench/electron-sandbox/actions/developerActions";
-import {
-	ZoomResetAction,
-	ZoomOutAction,
-	ZoomInAction,
-	CloseWindowAction,
-	SwitchWindowAction,
-	QuickSwitchWindowAction,
-	NewWindowTabHandler,
-	ShowPreviousWindowTabHandler,
-	ShowNextWindowTabHandler,
-	MoveWindowTabToNewWindowHandler,
-	MergeWindowTabsHandlerHandler,
-	ToggleWindowTabsBarHandler,
-} from "vs/workbench/electron-sandbox/actions/windowActions";
-import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
-import {
-	KeybindingsRegistry,
-	KeybindingWeight,
-} from "vs/platform/keybinding/common/keybindingsRegistry";
-import { CommandsRegistry } from "vs/platform/commands/common/commands";
-import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import { IsMacContext } from "vs/platform/contextkey/common/contextkeys";
-import { INativeHostService } from "vs/platform/native/common/native";
-import {
-	IJSONContributionRegistry,
-	Extensions as JSONExtensions,
-} from "vs/platform/jsonschemas/common/jsonContributionRegistry";
-import { IJSONSchema } from "vs/base/common/jsonSchema";
 import {
 	InstallShellScriptAction,
 	UninstallShellScriptAction,
 } from "vs/workbench/electron-sandbox/actions/installActions";
 import {
-	EditorsVisibleContext,
-	SingleEditorGroupsContext,
-} from "vs/workbench/common/contextkeys";
-import { TELEMETRY_SETTING_ID } from "vs/platform/telemetry/common/telemetry";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { ShutdownReason } from "vs/workbench/services/lifecycle/common/lifecycle";
+	CloseWindowAction,
+	MergeWindowTabsHandlerHandler,
+	MoveWindowTabToNewWindowHandler,
+	NewWindowTabHandler,
+	QuickSwitchWindowAction,
+	ShowNextWindowTabHandler,
+	ShowPreviousWindowTabHandler,
+	SwitchWindowAction,
+	ToggleWindowTabsBarHandler,
+	ZoomInAction,
+	ZoomOutAction,
+	ZoomResetAction,
+} from "vs/workbench/electron-sandbox/actions/windowActions";
 import { NativeWindow } from "vs/workbench/electron-sandbox/window";
-import { ModifierKeyEmitter } from "vs/base/browser/dom";
-import {
-	applicationConfigurationNodeBase,
-	securityConfigurationNodeBase,
-} from "vs/workbench/common/configuration";
+import { ShutdownReason } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 // Actions
 (function registerActions(): void {
@@ -91,7 +91,7 @@ import {
 			weight: KeybindingWeight.WorkbenchContrib,
 			when: ContextKeyExpr.and(
 				EditorsVisibleContext.toNegated(),
-				SingleEditorGroupsContext
+				SingleEditorGroupsContext,
 			),
 			primary: KeyMod.CtrlCmd | KeyCode.KeyW,
 		});
@@ -121,7 +121,7 @@ import {
 			) {
 				const confirmed = await NativeWindow.confirmOnShutdown(
 					accessor,
-					ShutdownReason.QUIT
+					ShutdownReason.QUIT,
 				);
 				if (!confirmed) {
 					return; // quit prevented by user
@@ -152,7 +152,7 @@ import {
 				title: {
 					value: localize(
 						"showPreviousTab",
-						"Show Previous Window Tab"
+						"Show Previous Window Tab",
 					),
 					original: "Show Previous Window Tab",
 				},
@@ -163,7 +163,7 @@ import {
 				title: {
 					value: localize(
 						"showNextWindowTab",
-						"Show Next Window Tab"
+						"Show Next Window Tab",
 					),
 					original: "Show Next Window Tab",
 				},
@@ -174,7 +174,7 @@ import {
 				title: {
 					value: localize(
 						"moveWindowTabToNewWindow",
-						"Move Window Tab to New Window"
+						"Move Window Tab to New Window",
 					),
 					original: "Move Window Tab to New Window",
 				},
@@ -193,7 +193,7 @@ import {
 				title: {
 					value: localize(
 						"toggleWindowTabsBar",
-						"Toggle Window Tabs Bar"
+						"Toggle Window Tabs Bar",
 					),
 					original: "Toggle Window Tabs Bar",
 				},
@@ -224,7 +224,7 @@ import {
 			id: "workbench.action.quit",
 			title: localize(
 				{ key: "miExit", comment: ["&& denotes a mnemonic"] },
-				"E&&xit"
+				"E&&xit",
 			),
 		},
 		order: 1,
@@ -235,23 +235,23 @@ import {
 // Configuration
 (function registerConfiguration(): void {
 	const registry = Registry.as<IConfigurationRegistry>(
-		ConfigurationExtensions.Configuration
+		ConfigurationExtensions.Configuration,
 	);
 
 	// Application
 	registry.registerConfiguration({
 		...applicationConfigurationNodeBase,
-		"properties": {
+		properties: {
 			"application.shellEnvironmentResolutionTimeout": {
-				"type": "number",
-				"default": 10,
-				"minimum": 1,
-				"maximum": 120,
-				"included": !isWindows,
-				"scope": ConfigurationScope.APPLICATION,
-				"markdownDescription": localize(
+				type: "number",
+				default: 10,
+				minimum: 1,
+				maximum: 120,
+				included: !isWindows,
+				scope: ConfigurationScope.APPLICATION,
+				markdownDescription: localize(
 					"application.shellEnvironmentResolutionTimeout",
-					"Controls the timeout in seconds before giving up resolving the shell environment when the application is not already launched from a terminal. See our [documentation](https://go.microsoft.com/fwlink/?linkid=2149667) for more information."
+					"Controls the timeout in seconds before giving up resolving the shell environment when the application is not already launched from a terminal. See our [documentation](https://go.microsoft.com/fwlink/?linkid=2149667) for more information.",
 				),
 			},
 		},
@@ -259,218 +259,218 @@ import {
 
 	// Window
 	registry.registerConfiguration({
-		"id": "window",
-		"order": 8,
-		"title": localize("windowConfigurationTitle", "Window"),
-		"type": "object",
-		"properties": {
+		id: "window",
+		order: 8,
+		title: localize("windowConfigurationTitle", "Window"),
+		type: "object",
+		properties: {
 			"window.confirmSaveUntitledWorkspace": {
-				"type": "boolean",
-				"default": true,
-				"description": localize(
+				type: "boolean",
+				default: true,
+				description: localize(
 					"confirmSaveUntitledWorkspace",
-					"Controls whether a confirmation dialog shows asking to save or discard an opened untitled workspace in the window when switching to another workspace. Disabling the confirmation dialog will always discard the untitled workspace."
+					"Controls whether a confirmation dialog shows asking to save or discard an opened untitled workspace in the window when switching to another workspace. Disabling the confirmation dialog will always discard the untitled workspace.",
 				),
 			},
 			"window.openWithoutArgumentsInNewWindow": {
-				"type": "string",
-				"enum": ["on", "off"],
-				"enumDescriptions": [
+				type: "string",
+				enum: ["on", "off"],
+				enumDescriptions: [
 					localize(
 						"window.openWithoutArgumentsInNewWindow.on",
-						"Open a new empty window."
+						"Open a new empty window.",
 					),
 					localize(
 						"window.openWithoutArgumentsInNewWindow.off",
-						"Focus the last active running instance."
+						"Focus the last active running instance.",
 					),
 				],
-				"default": isMacintosh ? "off" : "on",
-				"scope": ConfigurationScope.APPLICATION,
-				"markdownDescription": localize(
+				default: isMacintosh ? "off" : "on",
+				scope: ConfigurationScope.APPLICATION,
+				markdownDescription: localize(
 					"openWithoutArgumentsInNewWindow",
-					"Controls whether a new empty window should open when starting a second instance without arguments or if the last running instance should get focus.\nNote that there can still be cases where this setting is ignored (e.g. when using the `--new-window` or `--reuse-window` command line option)."
+					"Controls whether a new empty window should open when starting a second instance without arguments or if the last running instance should get focus.\nNote that there can still be cases where this setting is ignored (e.g. when using the `--new-window` or `--reuse-window` command line option).",
 				),
 			},
 			"window.restoreWindows": {
-				"type": "string",
-				"enum": ["preserve", "all", "folders", "one", "none"],
-				"enumDescriptions": [
+				type: "string",
+				enum: ["preserve", "all", "folders", "one", "none"],
+				enumDescriptions: [
 					localize(
 						"window.reopenFolders.preserve",
-						"Always reopen all windows. If a folder or workspace is opened (e.g. from the command line) it opens as a new window unless it was opened before. If files are opened they will open in one of the restored windows."
+						"Always reopen all windows. If a folder or workspace is opened (e.g. from the command line) it opens as a new window unless it was opened before. If files are opened they will open in one of the restored windows.",
 					),
 					localize(
 						"window.reopenFolders.all",
-						"Reopen all windows unless a folder, workspace or file is opened (e.g. from the command line)."
+						"Reopen all windows unless a folder, workspace or file is opened (e.g. from the command line).",
 					),
 					localize(
 						"window.reopenFolders.folders",
-						"Reopen all windows that had folders or workspaces opened unless a folder, workspace or file is opened (e.g. from the command line)."
+						"Reopen all windows that had folders or workspaces opened unless a folder, workspace or file is opened (e.g. from the command line).",
 					),
 					localize(
 						"window.reopenFolders.one",
-						"Reopen the last active window unless a folder, workspace or file is opened (e.g. from the command line)."
+						"Reopen the last active window unless a folder, workspace or file is opened (e.g. from the command line).",
 					),
 					localize(
 						"window.reopenFolders.none",
-						"Never reopen a window. Unless a folder or workspace is opened (e.g. from the command line), an empty window will appear."
+						"Never reopen a window. Unless a folder or workspace is opened (e.g. from the command line), an empty window will appear.",
 					),
 				],
-				"default": "all",
-				"scope": ConfigurationScope.APPLICATION,
-				"description": localize(
+				default: "all",
+				scope: ConfigurationScope.APPLICATION,
+				description: localize(
 					"restoreWindows",
-					"Controls how windows are being reopened after starting for the first time. This setting has no effect when the application is already running."
+					"Controls how windows are being reopened after starting for the first time. This setting has no effect when the application is already running.",
 				),
 			},
 			"window.restoreFullscreen": {
-				"type": "boolean",
-				"default": false,
-				"scope": ConfigurationScope.APPLICATION,
-				"description": localize(
+				type: "boolean",
+				default: false,
+				scope: ConfigurationScope.APPLICATION,
+				description: localize(
 					"restoreFullscreen",
-					"Controls whether a window should restore to full screen mode if it was exited in full screen mode."
+					"Controls whether a window should restore to full screen mode if it was exited in full screen mode.",
 				),
 			},
 			"window.zoomLevel": {
-				"type": "number",
-				"default": 0,
-				"minimum": -5,
-				"description": localize(
+				type: "number",
+				default: 0,
+				minimum: -5,
+				description: localize(
 					"zoomLevel",
-					"Adjust the zoom level of the window. The original size is 0 and each increment above (e.g. 1) or below (e.g. -1) represents zooming 20% larger or smaller. You can also enter decimals to adjust the zoom level with a finer granularity."
+					"Adjust the zoom level of the window. The original size is 0 and each increment above (e.g. 1) or below (e.g. -1) represents zooming 20% larger or smaller. You can also enter decimals to adjust the zoom level with a finer granularity.",
 				),
 				ignoreSync: true,
 				tags: ["accessibility"],
 			},
 			"window.newWindowDimensions": {
-				"type": "string",
-				"enum": [
+				type: "string",
+				enum: [
 					"default",
 					"inherit",
 					"offset",
 					"maximized",
 					"fullscreen",
 				],
-				"enumDescriptions": [
+				enumDescriptions: [
 					localize(
 						"window.newWindowDimensions.default",
-						"Open new windows in the center of the screen."
+						"Open new windows in the center of the screen.",
 					),
 					localize(
 						"window.newWindowDimensions.inherit",
-						"Open new windows with same dimension as last active one."
+						"Open new windows with same dimension as last active one.",
 					),
 					localize(
 						"window.newWindowDimensions.offset",
-						"Open new windows with same dimension as last active one with an offset position."
+						"Open new windows with same dimension as last active one with an offset position.",
 					),
 					localize(
 						"window.newWindowDimensions.maximized",
-						"Open new windows maximized."
+						"Open new windows maximized.",
 					),
 					localize(
 						"window.newWindowDimensions.fullscreen",
-						"Open new windows in full screen mode."
+						"Open new windows in full screen mode.",
 					),
 				],
-				"default": "default",
-				"scope": ConfigurationScope.APPLICATION,
-				"description": localize(
+				default: "default",
+				scope: ConfigurationScope.APPLICATION,
+				description: localize(
 					"newWindowDimensions",
-					"Controls the dimensions of opening a new window when at least one window is already opened. Note that this setting does not have an impact on the first window that is opened. The first window will always restore the size and location as you left it before closing."
+					"Controls the dimensions of opening a new window when at least one window is already opened. Note that this setting does not have an impact on the first window that is opened. The first window will always restore the size and location as you left it before closing.",
 				),
 			},
 			"window.closeWhenEmpty": {
-				"type": "boolean",
-				"default": false,
-				"description": localize(
+				type: "boolean",
+				default: false,
+				description: localize(
 					"closeWhenEmpty",
-					"Controls whether closing the last editor should also close the window. This setting only applies for windows that do not show folders."
+					"Controls whether closing the last editor should also close the window. This setting only applies for windows that do not show folders.",
 				),
 			},
 			"window.doubleClickIconToClose": {
-				"type": "boolean",
-				"default": false,
-				"scope": ConfigurationScope.APPLICATION,
-				"markdownDescription": localize(
+				type: "boolean",
+				default: false,
+				scope: ConfigurationScope.APPLICATION,
+				markdownDescription: localize(
 					"window.doubleClickIconToClose",
-					"If enabled, this setting will close the window when the application icon in the title bar is double-clicked. The window will not be able to be dragged by the icon. This setting is effective only if `#window.titleBarStyle#` is set to `custom`."
+					"If enabled, this setting will close the window when the application icon in the title bar is double-clicked. The window will not be able to be dragged by the icon. This setting is effective only if `#window.titleBarStyle#` is set to `custom`.",
 				),
 			},
 			"window.titleBarStyle": {
-				"type": "string",
-				"enum": ["native", "custom"],
-				"default": isLinux ? "native" : "custom",
-				"scope": ConfigurationScope.APPLICATION,
-				"description": localize(
+				type: "string",
+				enum: ["native", "custom"],
+				default: isLinux ? "native" : "custom",
+				scope: ConfigurationScope.APPLICATION,
+				description: localize(
 					"titleBarStyle",
-					"Adjust the appearance of the window title bar to be native by the OS or custom. On Linux and Windows, this setting also affects the application and context menu appearances. Changes require a full restart to apply."
+					"Adjust the appearance of the window title bar to be native by the OS or custom. On Linux and Windows, this setting also affects the application and context menu appearances. Changes require a full restart to apply.",
 				),
 			},
 			"window.dialogStyle": {
-				"type": "string",
-				"enum": ["native", "custom"],
-				"default": "native",
-				"scope": ConfigurationScope.APPLICATION,
-				"description": localize(
+				type: "string",
+				enum: ["native", "custom"],
+				default: "native",
+				scope: ConfigurationScope.APPLICATION,
+				description: localize(
 					"dialogStyle",
-					"Adjust the appearance of dialog windows."
+					"Adjust the appearance of dialog windows.",
 				),
 			},
 			"window.nativeTabs": {
-				"type": "boolean",
-				"default": false,
-				"scope": ConfigurationScope.APPLICATION,
-				"description": localize(
+				type: "boolean",
+				default: false,
+				scope: ConfigurationScope.APPLICATION,
+				description: localize(
 					"window.nativeTabs",
-					"Enables macOS Sierra window tabs. Note that changes require a full restart to apply and that native tabs will disable a custom title bar style if configured."
+					"Enables macOS Sierra window tabs. Note that changes require a full restart to apply and that native tabs will disable a custom title bar style if configured.",
 				),
-				"included": isMacintosh,
+				included: isMacintosh,
 			},
 			"window.nativeFullScreen": {
-				"type": "boolean",
-				"default": true,
-				"description": localize(
+				type: "boolean",
+				default: true,
+				description: localize(
 					"window.nativeFullScreen",
-					"Controls if native full-screen should be used on macOS. Disable this option to prevent macOS from creating a new space when going full-screen."
+					"Controls if native full-screen should be used on macOS. Disable this option to prevent macOS from creating a new space when going full-screen.",
 				),
-				"scope": ConfigurationScope.APPLICATION,
-				"included": isMacintosh,
+				scope: ConfigurationScope.APPLICATION,
+				included: isMacintosh,
 			},
 			"window.clickThroughInactive": {
-				"type": "boolean",
-				"default": true,
-				"scope": ConfigurationScope.APPLICATION,
-				"description": localize(
+				type: "boolean",
+				default: true,
+				scope: ConfigurationScope.APPLICATION,
+				description: localize(
 					"window.clickThroughInactive",
-					"If enabled, clicking on an inactive window will both activate the window and trigger the element under the mouse if it is clickable. If disabled, clicking anywhere on an inactive window will activate it only and a second click is required on the element."
+					"If enabled, clicking on an inactive window will both activate the window and trigger the element under the mouse if it is clickable. If disabled, clicking anywhere on an inactive window will activate it only and a second click is required on the element.",
 				),
-				"included": isMacintosh,
+				included: isMacintosh,
 			},
 		},
 	});
 
 	// Telemetry
 	registry.registerConfiguration({
-		"id": "telemetry",
-		"order": 110,
+		id: "telemetry",
+		order: 110,
 		title: localize("telemetryConfigurationTitle", "Telemetry"),
-		"type": "object",
-		"properties": {
+		type: "object",
+		properties: {
 			"telemetry.enableCrashReporter": {
-				"type": "boolean",
-				"description": localize(
+				type: "boolean",
+				description: localize(
 					"telemetry.enableCrashReporting",
-					"Enable crash reports to be collected. This helps us improve stability. \nThis option requires restart to take effect."
+					"Enable crash reports to be collected. This helps us improve stability. \nThis option requires restart to take effect.",
 				),
-				"default": true,
-				"tags": ["usesOnlineServices", "telemetry"],
-				"markdownDeprecationMessage": localize(
+				default: true,
+				tags: ["usesOnlineServices", "telemetry"],
+				markdownDeprecationMessage: localize(
 					"enableCrashReporterDeprecated",
 					"If this setting is false, no telemetry will be sent regardless of the new setting's value. Deprecated due to being combined into the {0} setting.",
-					`\`#${TELEMETRY_SETTING_ID}#\``
+					`\`#${TELEMETRY_SETTING_ID}#\``,
 				),
 			},
 		},
@@ -478,31 +478,31 @@ import {
 
 	// Keybinding
 	registry.registerConfiguration({
-		"id": "keyboard",
-		"order": 15,
-		"type": "object",
-		"title": localize("keyboardConfigurationTitle", "Keyboard"),
-		"properties": {
+		id: "keyboard",
+		order: 15,
+		type: "object",
+		title: localize("keyboardConfigurationTitle", "Keyboard"),
+		properties: {
 			"keyboard.touchbar.enabled": {
-				"type": "boolean",
-				"default": true,
-				"description": localize(
+				type: "boolean",
+				default: true,
+				description: localize(
 					"touchbar.enabled",
-					"Enables the macOS touchbar buttons on the keyboard if available."
+					"Enables the macOS touchbar buttons on the keyboard if available.",
 				),
-				"included": isMacintosh,
+				included: isMacintosh,
 			},
 			"keyboard.touchbar.ignored": {
-				"type": "array",
-				"items": {
-					"type": "string",
+				type: "array",
+				items: {
+					type: "string",
 				},
-				"default": [],
-				"markdownDescription": localize(
+				default: [],
+				markdownDescription: localize(
 					"touchbar.ignored",
-					"A set of identifiers for entries in the touchbar that should not show up (for example `workbench.action.navigateBack`)."
+					"A set of identifiers for entries in the touchbar that should not show up (for example `workbench.action.navigateBack`).",
 				),
-				"included": isMacintosh,
+				included: isMacintosh,
 			},
 		},
 	});
@@ -510,24 +510,24 @@ import {
 	// Security
 	registry.registerConfiguration({
 		...securityConfigurationNodeBase,
-		"properties": {
+		properties: {
 			"security.promptForLocalFileProtocolHandling": {
-				"type": "boolean",
-				"default": true,
-				"markdownDescription": localize(
+				type: "boolean",
+				default: true,
+				markdownDescription: localize(
 					"security.promptForLocalFileProtocolHandling",
-					"If enabled, a dialog will ask for confirmation whenever a local file or workspace is about to open through a protocol handler."
+					"If enabled, a dialog will ask for confirmation whenever a local file or workspace is about to open through a protocol handler.",
 				),
-				"scope": ConfigurationScope.MACHINE,
+				scope: ConfigurationScope.MACHINE,
 			},
 			"security.promptForRemoteFileProtocolHandling": {
-				"type": "boolean",
-				"default": true,
-				"markdownDescription": localize(
+				type: "boolean",
+				default: true,
+				markdownDescription: localize(
 					"security.promptForRemoteFileProtocolHandling",
-					"If enabled, a dialog will ask for confirmation whenever a remote file or workspace is about to open through a protocol handler."
+					"If enabled, a dialog will ask for confirmation whenever a remote file or workspace is about to open through a protocol handler.",
 				),
-				"scope": ConfigurationScope.MACHINE,
+				scope: ConfigurationScope.MACHINE,
 			},
 		},
 	});
@@ -537,7 +537,7 @@ import {
 (function registerJSONSchemas(): void {
 	const argvDefinitionFileSchemaId = "vscode://schemas/argv";
 	const jsonRegistry = Registry.as<IJSONContributionRegistry>(
-		JSONExtensions.JSONContribution
+		JSONExtensions.JSONContribution,
 	);
 	const schema: IJSONSchema = {
 		id: argvDefinitionFileSchemaId,
@@ -551,42 +551,42 @@ import {
 				type: "string",
 				description: localize(
 					"argv.locale",
-					"The display Language to use. Picking a different language requires the associated language pack to be installed."
+					"The display Language to use. Picking a different language requires the associated language pack to be installed.",
 				),
 			},
 			"disable-hardware-acceleration": {
 				type: "boolean",
 				description: localize(
 					"argv.disableHardwareAcceleration",
-					"Disables hardware acceleration. ONLY change this option if you encounter graphic issues."
+					"Disables hardware acceleration. ONLY change this option if you encounter graphic issues.",
 				),
 			},
 			"force-color-profile": {
 				type: "string",
 				markdownDescription: localize(
 					"argv.forceColorProfile",
-					"Allows to override the color profile to use. If you experience colors appear badly, try to set this to `srgb` and restart."
+					"Allows to override the color profile to use. If you experience colors appear badly, try to set this to `srgb` and restart.",
 				),
 			},
 			"enable-crash-reporter": {
 				type: "boolean",
 				markdownDescription: localize(
 					"argv.enableCrashReporter",
-					"Allows to disable crash reporting, should restart the app if the value is changed."
+					"Allows to disable crash reporting, should restart the app if the value is changed.",
 				),
 			},
 			"crash-reporter-id": {
 				type: "string",
 				markdownDescription: localize(
 					"argv.crashReporterId",
-					"Unique id used for correlating crash reports sent from this app instance."
+					"Unique id used for correlating crash reports sent from this app instance.",
 				),
 			},
 			"enable-proposed-api": {
 				type: "array",
 				description: localize(
 					"argv.enebleProposedApi",
-					"Enable proposed APIs for a list of extension ids (such as `vscode.git`). Proposed APIs are unstable and subject to breaking without warning at any time. This should only be set for extension development and testing purposes."
+					"Enable proposed APIs for a list of extension ids (such as `vscode.git`). Proposed APIs are unstable and subject to breaking without warning at any time. This should only be set for extension development and testing purposes.",
 				),
 				items: {
 					type: "string",
@@ -596,21 +596,21 @@ import {
 				type: ["string", "array"],
 				description: localize(
 					"argv.logLevel",
-					"Log level to use. Default is 'info'. Allowed values are 'error', 'warn', 'info', 'debug', 'trace', 'off'."
+					"Log level to use. Default is 'info'. Allowed values are 'error', 'warn', 'info', 'debug', 'trace', 'off'.",
 				),
 			},
 			"disable-chromium-sandbox": {
 				type: "boolean",
 				description: localize(
 					"argv.disableChromiumSandbox",
-					"Disables the Chromium sandbox. This is useful when running VS Code as elevated on Linux and running under Applocker on Windows."
+					"Disables the Chromium sandbox. This is useful when running VS Code as elevated on Linux and running under Applocker on Windows.",
 				),
 			},
 			"use-inmemory-secretstorage": {
 				type: "boolean",
 				description: localize(
 					"argv.useInMemorySecretStorage",
-					"Ensures that an in-memory store will be used for secret storage instead of using the OS's credential store. This is often used when running VS Code extension tests or when you're experiencing difficulties with the credential store."
+					"Ensures that an in-memory store will be used for secret storage instead of using the OS's credential store. This is often used when running VS Code extension tests or when you're experiencing difficulties with the credential store.",
 				),
 			},
 		},
@@ -620,14 +620,14 @@ import {
 			type: "boolean",
 			description: localize(
 				"argv.force-renderer-accessibility",
-				"Forces the renderer to be accessible. ONLY change this if you are using a screen reader on Linux. On other platforms the renderer will automatically be accessible. This flag is automatically set if you have editor.accessibilitySupport: on."
+				"Forces the renderer to be accessible. ONLY change this if you are using a screen reader on Linux. On other platforms the renderer will automatically be accessible. This flag is automatically set if you have editor.accessibilitySupport: on.",
 			),
 		};
 		schema.properties!["password-store"] = {
 			type: "string",
 			description: localize(
 				"argv.passwordStore",
-				"Configures the backend used to store secrets on Linux. This argument is ignored on Windows & macOS."
+				"Configures the backend used to store secrets on Linux. This argument is ignored on Windows & macOS.",
 			),
 		};
 	}

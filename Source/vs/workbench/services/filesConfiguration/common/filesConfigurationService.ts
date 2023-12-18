@@ -3,57 +3,57 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { GlobalIdleValue } from "vs/base/common/async";
+import { IStringDictionary } from "vs/base/common/collections";
+import { Emitter, Event } from "vs/base/common/event";
+import { IMarkdownString } from "vs/base/common/htmlContent";
+import { Disposable } from "vs/base/common/lifecycle";
+import { LRUCache, ResourceMap } from "vs/base/common/map";
+import { equals } from "vs/base/common/objects";
+import { isWeb } from "vs/base/common/platform";
+import { URI } from "vs/base/common/uri";
+import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
 import { localize } from "vs/nls";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import {
+	IContextKeyService,
+	RawContextKey,
+} from "vs/platform/contextkey/common/contextkey";
+import { IEnvironmentService } from "vs/platform/environment/common/environment";
+import {
+	AutoSaveConfiguration,
+	FILES_READONLY_EXCLUDE_CONFIG,
+	FILES_READONLY_INCLUDE_CONFIG,
+	HotExitConfiguration,
+	IBaseFileStat,
+	IFileService,
+	IFileStatWithMetadata,
+	IFilesConfiguration,
+	IFilesConfigurationNode,
+	hasReadonlyCapability,
+} from "vs/platform/files/common/files";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { Event, Emitter } from "vs/base/common/event";
-import { Disposable } from "vs/base/common/lifecycle";
-import {
-	RawContextKey,
-	IContextKeyService,
-} from "vs/platform/contextkey/common/contextkey";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import {
-	IFilesConfiguration,
-	AutoSaveConfiguration,
-	HotExitConfiguration,
-	FILES_READONLY_INCLUDE_CONFIG,
-	FILES_READONLY_EXCLUDE_CONFIG,
-	IFileStatWithMetadata,
-	IFileService,
-	IBaseFileStat,
-	hasReadonlyCapability,
-	IFilesConfigurationNode,
-} from "vs/platform/files/common/files";
-import { equals } from "vs/base/common/objects";
-import { URI } from "vs/base/common/uri";
-import { isWeb } from "vs/base/common/platform";
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
-import { ResourceGlobMatcher } from "vs/workbench/common/resources";
-import { GlobalIdleValue } from "vs/base/common/async";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import { IEnvironmentService } from "vs/platform/environment/common/environment";
-import { LRUCache, ResourceMap } from "vs/base/common/map";
-import { IMarkdownString } from "vs/base/common/htmlContent";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import {
-	EditorResourceAccessor,
-	SideBySideEditor,
-} from "vs/workbench/common/editor";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import {
 	IMarkerService,
 	MarkerSeverity,
 } from "vs/platform/markers/common/markers";
-import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
-import { IStringDictionary } from "vs/base/common/collections";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import {
+	EditorResourceAccessor,
+	SideBySideEditor,
+} from "vs/workbench/common/editor";
+import { EditorInput } from "vs/workbench/common/editor/editorInput";
+import { ResourceGlobMatcher } from "vs/workbench/common/resources";
 
 export const AutoSaveAfterShortDelayContext = new RawContextKey<boolean>(
 	"autoSaveAfterShortDelayContext",
 	false,
-	true
+	true,
 );
 
 export interface IAutoSaveConfiguration {
@@ -72,18 +72,18 @@ interface ICachedAutoSaveConfiguration extends IAutoSaveConfiguration {
 	isShortAutoSaveDelay?: boolean;
 }
 
-export const enum AutoSaveMode {
-	OFF,
-	AFTER_SHORT_DELAY,
-	AFTER_LONG_DELAY,
-	ON_FOCUS_CHANGE,
-	ON_WINDOW_CHANGE,
+export enum AutoSaveMode {
+	OFF = 0,
+	AFTER_SHORT_DELAY = 1,
+	AFTER_LONG_DELAY = 2,
+	ON_FOCUS_CHANGE = 3,
+	ON_WINDOW_CHANGE = 4,
 }
 
-export const enum AutoSaveDisabledReason {
+export enum AutoSaveDisabledReason {
 	SETTINGS = 1,
-	OUT_OF_WORKSPACE,
-	ERRORS,
+	OUT_OF_WORKSPACE = 2,
+	ERRORS = 3,
 }
 
 export type IAutoSaveMode = IEnabledAutoSaveMode | IDisabledAutoSaveMode;
@@ -112,15 +112,15 @@ export interface IFilesConfigurationService {
 	readonly onDidChangeAutoSaveConfiguration: Event<void>;
 
 	getAutoSaveConfiguration(
-		resourceOrEditor: EditorInput | URI | undefined
+		resourceOrEditor: EditorInput | URI | undefined,
 	): IAutoSaveConfiguration;
 
 	isShortAutoSaveDelayConfigured(
-		resourceOrEditor: EditorInput | URI | undefined
+		resourceOrEditor: EditorInput | URI | undefined,
 	): boolean;
 
 	getAutoSaveMode(
-		resourceOrEditor: EditorInput | URI | undefined
+		resourceOrEditor: EditorInput | URI | undefined,
 	): IAutoSaveMode;
 
 	toggleAutoSave(): Promise<void>;
@@ -135,7 +135,7 @@ export interface IFilesConfigurationService {
 
 	updateReadonly(
 		resource: URI,
-		readonly: true | false | "toggle" | "reset"
+		readonly: true | false | "toggle" | "reset",
 	): Promise<void>;
 
 	//#endregion
@@ -164,7 +164,7 @@ export class FilesConfigurationService
 		providerReadonly: {
 			value: localize(
 				"providerReadonly",
-				"Editor is read-only because the file system of the file is read-only."
+				"Editor is read-only because the file system of the file is read-only.",
 			),
 			isTrusted: true,
 		},
@@ -178,7 +178,7 @@ export class FilesConfigurationService
 					],
 				},
 				"Editor is read-only because the file was set read-only in this session. [Click here](command:{0}) to set writeable.",
-				"workbench.action.files.setActiveEditorWriteableInSession"
+				"workbench.action.files.setActiveEditorWriteableInSession",
 			),
 			isTrusted: true,
 		},
@@ -193,8 +193,8 @@ export class FilesConfigurationService
 				},
 				"Editor is read-only because the file was set read-only via settings. [Click here](command:{0}) to configure.",
 				`workbench.action.openSettings?${encodeURIComponent(
-					'["files.readonly"]'
-				)}`
+					'["files.readonly"]',
+				)}`,
 			),
 			isTrusted: true,
 		},
@@ -208,27 +208,27 @@ export class FilesConfigurationService
 					],
 				},
 				"Editor is read-only because of file permissions. [Click here](command:{0}) to set writeable anyway.",
-				"workbench.action.files.setActiveEditorWriteableInSession"
+				"workbench.action.files.setActiveEditorWriteableInSession",
 			),
 			isTrusted: true,
 		},
 		fileReadonly: {
 			value: localize(
 				"fileReadonly",
-				"Editor is read-only because the file is read-only."
+				"Editor is read-only because the file is read-only.",
 			),
 			isTrusted: true,
 		},
 	};
 
 	private readonly _onDidChangeAutoSaveConfiguration = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onDidChangeAutoSaveConfiguration =
 		this._onDidChangeAutoSaveConfiguration.event;
 
 	private readonly _onDidChangeFilesAssociation = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onDidChangeFilesAssociation =
 		this._onDidChangeFilesAssociation.event;
@@ -250,18 +250,18 @@ export class FilesConfigurationService
 
 	private readonly readonlyIncludeMatcher = this._register(
 		new GlobalIdleValue(() =>
-			this.createReadonlyMatcher(FILES_READONLY_INCLUDE_CONFIG)
-		)
+			this.createReadonlyMatcher(FILES_READONLY_INCLUDE_CONFIG),
+		),
 	);
 	private readonly readonlyExcludeMatcher = this._register(
 		new GlobalIdleValue(() =>
-			this.createReadonlyMatcher(FILES_READONLY_EXCLUDE_CONFIG)
-		)
+			this.createReadonlyMatcher(FILES_READONLY_EXCLUDE_CONFIG),
+		),
 	);
 	private configuredReadonlyFromPermissions: boolean | undefined;
 
 	private readonly sessionReadonlyOverrides = new ResourceMap<boolean>(
-		(resource) => this.uriIdentityService.extUri.getComparisonKey(resource)
+		(resource) => this.uriIdentityService.extUri.getComparisonKey(resource),
 	);
 
 	constructor(
@@ -304,12 +304,12 @@ export class FilesConfigurationService
 					this.configurationService.getValue(config, { resource }),
 				(event) => event.affectsConfiguration(config),
 				this.contextService,
-				this.configurationService
-			)
+				this.configurationService,
+			),
 		);
 
 		this._register(
-			matcher.onExpressionChange(() => this._onDidChangeReadonly.fire())
+			matcher.onExpressionChange(() => this._onDidChangeReadonly.fire()),
 		);
 
 		return matcher;
@@ -339,11 +339,11 @@ export class FilesConfigurationService
 		if (
 			this.uriIdentityService.extUri.isEqualOrParent(
 				resource,
-				this.environmentService.userRoamingDataHome
+				this.environmentService.userRoamingDataHome,
 			) ||
 			this.uriIdentityService.extUri.isEqual(
 				resource,
-				this.contextService.getWorkspace().configuration ?? undefined
+				this.contextService.getWorkspace().configuration ?? undefined,
 			)
 		) {
 			return false; // explicitly exclude some paths from readonly that we need for configuration
@@ -351,9 +351,10 @@ export class FilesConfigurationService
 
 		// configured glob patterns win over stat information
 		if (this.readonlyIncludeMatcher.value.matches(resource)) {
-			return !this.readonlyExcludeMatcher.value.matches(resource)
-				? FilesConfigurationService.READONLY_MESSAGES.configuredReadonly
-				: false;
+			return this.readonlyExcludeMatcher.value.matches(resource)
+				? false
+				: FilesConfigurationService.READONLY_MESSAGES
+						.configuredReadonly;
 		}
 
 		// check if file is locked and configured to treat as readonly
@@ -371,7 +372,7 @@ export class FilesConfigurationService
 
 	async updateReadonly(
 		resource: URI,
-		readonly: true | false | "toggle" | "reset"
+		readonly: true | false | "toggle" | "reset",
 	): Promise<void> {
 		if (readonly === "toggle") {
 			let stat: IFileStatWithMetadata | undefined = undefined;
@@ -402,16 +403,16 @@ export class FilesConfigurationService
 				if (e.affectsConfiguration("files")) {
 					this.onFilesConfigurationChange(
 						this.configurationService.getValue<IFilesConfiguration>(),
-						true
+						true,
 					);
 				}
-			})
+			}),
 		);
 	}
 
 	protected onFilesConfigurationChange(
 		configuration: IFilesConfiguration,
-		fromEvent: boolean
+		fromEvent: boolean,
 	): void {
 		// Auto Save
 		this.currentGlobalAutoSaveConfiguration =
@@ -419,7 +420,7 @@ export class FilesConfigurationService
 		this.autoSaveConfigurationCache.clear();
 		this.autoSaveAfterShortDelayContext.set(
 			this.getAutoSaveMode(undefined).mode ===
-				AutoSaveMode.AFTER_SHORT_DELAY
+				AutoSaveMode.AFTER_SHORT_DELAY,
 		);
 		if (fromEvent) {
 			this._onDidChangeAutoSaveConfiguration.fire();
@@ -449,7 +450,7 @@ export class FilesConfigurationService
 
 		// Readonly
 		const readonlyFromPermissions = Boolean(
-			configuration?.files?.readonlyFromPermissions
+			configuration?.files?.readonlyFromPermissions,
 		);
 		if (
 			readonlyFromPermissions !==
@@ -463,7 +464,7 @@ export class FilesConfigurationService
 	}
 
 	getAutoSaveConfiguration(
-		resourceOrEditor: EditorInput | URI | undefined
+		resourceOrEditor: EditorInput | URI | undefined,
 	): ICachedAutoSaveConfiguration {
 		const resource = this.toResource(resourceOrEditor);
 		if (resource) {
@@ -475,12 +476,12 @@ export class FilesConfigurationService
 						resource,
 						this.textResourceConfigurationService.getValue<IFilesConfigurationNode>(
 							resource,
-							"files"
-						)
+							"files",
+						),
 					);
 				this.autoSaveConfigurationCache.set(
 					resource,
-					resourceAutoSaveConfiguration
+					resourceAutoSaveConfiguration,
 				);
 			}
 
@@ -492,7 +493,7 @@ export class FilesConfigurationService
 
 	private computeAutoSaveConfiguration(
 		resource: URI | undefined,
-		filesConfiguration: IFilesConfigurationNode
+		filesConfiguration: IFilesConfigurationNode,
 	): ICachedAutoSaveConfiguration {
 		let autoSave:
 			| "afterDelay"
@@ -557,7 +558,7 @@ export class FilesConfigurationService
 	}
 
 	private toResource(
-		resourceOrEditor: EditorInput | URI | undefined
+		resourceOrEditor: EditorInput | URI | undefined,
 	): URI | undefined {
 		if (resourceOrEditor instanceof EditorInput) {
 			return EditorResourceAccessor.getOriginalUri(resourceOrEditor, {
@@ -569,7 +570,7 @@ export class FilesConfigurationService
 	}
 
 	isShortAutoSaveDelayConfigured(
-		resourceOrEditor: EditorInput | URI | undefined
+		resourceOrEditor: EditorInput | URI | undefined,
 	): boolean {
 		return (
 			this.getAutoSaveConfiguration(resourceOrEditor)
@@ -578,7 +579,7 @@ export class FilesConfigurationService
 	}
 
 	getAutoSaveMode(
-		resourceOrEditor: EditorInput | URI | undefined
+		resourceOrEditor: EditorInput | URI | undefined,
 	): IAutoSaveMode {
 		const resource = this.toResource(resourceOrEditor);
 		const autoSaveConfiguration = this.getAutoSaveConfiguration(resource);
@@ -660,7 +661,7 @@ export class FilesConfigurationService
 
 		return this.configurationService.updateValue(
 			"files.autoSave",
-			newAutoSaveValue
+			newAutoSaveValue,
 		);
 	}
 
@@ -691,5 +692,5 @@ export class FilesConfigurationService
 registerSingleton(
 	IFilesConfigurationService,
 	FilesConfigurationService,
-	InstantiationType.Eager
+	InstantiationType.Eager,
 );

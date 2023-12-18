@@ -9,9 +9,9 @@ import { URI, UriComponents } from "vs/base/common/uri";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { EditorActivation } from "vs/platform/editor/common/editor";
 import {
-	getNotebookEditorFromEditorPane,
 	INotebookEditor,
 	INotebookEditorOptions,
+	getNotebookEditorFromEditorPane,
 } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
 import { INotebookEditorService } from "vs/workbench/contrib/notebook/browser/services/notebookEditorService";
 import { ICellRange } from "vs/workbench/contrib/notebook/common/notebookRange";
@@ -34,7 +34,7 @@ import {
 class MainThreadNotebook {
 	constructor(
 		readonly editor: INotebookEditor,
-		readonly disposables: DisposableStore
+		readonly disposables: DisposableStore,
 	) {}
 
 	dispose() {
@@ -96,7 +96,7 @@ export class MainThreadNotebookEditors
 					this._proxy.$acceptEditorPropertiesChanged(editor.getId(), {
 						visibleRanges: { ranges: editor.visibleRanges },
 					});
-				})
+				}),
 			);
 
 			editorDisposables.add(
@@ -104,7 +104,7 @@ export class MainThreadNotebookEditors
 					this._proxy.$acceptEditorPropertiesChanged(editor.getId(), {
 						selections: { selections: editor.getSelections() },
 					});
-				})
+				}),
 			);
 
 			const wrapper = new MainThreadNotebook(editor, editorDisposables);
@@ -126,7 +126,7 @@ export class MainThreadNotebookEditors
 			if (candidate && this._mainThreadEditors.has(candidate.getId())) {
 				result[candidate.getId()] = editorGroupToColumn(
 					this._editorGroupService,
-					editorPane.group
+					editorPane.group,
 				);
 			}
 		}
@@ -139,7 +139,7 @@ export class MainThreadNotebookEditors
 	async $tryShowNotebookDocument(
 		resource: UriComponents,
 		viewType: string,
-		options: INotebookDocumentShowOptions
+		options: INotebookDocumentShowOptions,
 	): Promise<string> {
 		const editorOptions: INotebookEditorOptions = {
 			cellSelections: options.selections,
@@ -159,8 +159,8 @@ export class MainThreadNotebookEditors
 			columnToEditorGroup(
 				this._editorGroupService,
 				this._configurationService,
-				options.position
-			)
+				options.position,
+			),
 		);
 		const notebookEditor = getNotebookEditorFromEditorPane(editorPane);
 
@@ -169,8 +169,8 @@ export class MainThreadNotebookEditors
 		} else {
 			throw new Error(
 				`Notebook Editor creation failure for document ${JSON.stringify(
-					resource
-				)}`
+					resource,
+				)}`,
 			);
 		}
 	}
@@ -178,7 +178,7 @@ export class MainThreadNotebookEditors
 	async $tryRevealRange(
 		id: string,
 		range: ICellRange,
-		revealType: NotebookEditorRevealType
+		revealType: NotebookEditorRevealType,
 	): Promise<void> {
 		const editor = this._notebookEditorService.getNotebookEditor(id);
 		if (!editor) {

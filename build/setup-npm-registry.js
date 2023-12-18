@@ -3,8 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-"use strict";
-
 const fs = require("fs").promises;
 const path = require("path");
 
@@ -34,7 +32,7 @@ async function main(url, dir) {
 
 	for await (const file of getYarnLockFiles(root)) {
 		console.log(
-			`Enabling custom NPM registry: ${path.relative(root, file)}`
+			`Enabling custom NPM registry: ${path.relative(root, file)}`,
 		);
 		await setup(url, file);
 	}

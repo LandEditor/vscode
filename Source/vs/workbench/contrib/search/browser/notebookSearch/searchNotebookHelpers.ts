@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { URI } from "vs/base/common/uri";
+import { Range } from "vs/editor/common/core/range";
 import { FindMatch } from "vs/editor/common/model";
 import {
-	IFileMatch,
-	ITextSearchMatch,
-	TextSearchMatch,
-} from "vs/workbench/services/search/common/search";
-import { Range } from "vs/editor/common/core/range";
+	CellWebviewFindMatch,
+	ICellViewModel,
+} from "vs/workbench/contrib/notebook/browser/notebookBrowser";
 import {
 	INotebookCellMatchNoModel,
 	INotebookFileMatchNoModel,
@@ -17,10 +17,10 @@ import {
 	rawCellPrefix,
 } from "vs/workbench/contrib/search/common/searchNotebookHelpers";
 import {
-	CellWebviewFindMatch,
-	ICellViewModel,
-} from "vs/workbench/contrib/notebook/browser/notebookBrowser";
-import { URI } from "vs/base/common/uri";
+	IFileMatch,
+	ITextSearchMatch,
+	TextSearchMatch,
+} from "vs/workbench/services/search/common/search";
 
 export type INotebookCellMatch =
 	| INotebookCellMatchWithModel
@@ -46,7 +46,7 @@ export interface INotebookCellMatchWithModel
 }
 
 export function isINotebookFileMatchWithModel(
-	object: any
+	object: any,
 ): object is INotebookFileMatchWithModel {
 	return (
 		"cellResults" in object &&
@@ -56,23 +56,23 @@ export function isINotebookFileMatchWithModel(
 }
 
 export function isINotebookCellMatchWithModel(
-	object: any
+	object: any,
 ): object is INotebookCellMatchWithModel {
 	return "cell" in object;
 }
 
 export function contentMatchesToTextSearchMatches(
 	contentMatches: FindMatch[],
-	cell: ICellViewModel
+	cell: ICellViewModel,
 ): ITextSearchMatch[] {
 	return genericCellMatchesToTextSearchMatches(
 		contentMatches,
-		cell.textBuffer
+		cell.textBuffer,
 	);
 }
 
 export function webviewMatchesToTextSearchMatches(
-	webviewMatches: CellWebviewFindMatch[]
+	webviewMatches: CellWebviewFindMatch[],
 ): ITextSearchMatch[] {
 	return webviewMatches
 		.map((rawMatch) =>
@@ -83,12 +83,12 @@ export function webviewMatchesToTextSearchMatches(
 							0,
 							rawMatch.searchPreviewInfo.range.start,
 							0,
-							rawMatch.searchPreviewInfo.range.end
+							rawMatch.searchPreviewInfo.range.end,
 						),
 						undefined,
-						rawMatch.index
-					)
-				: undefined
+						rawMatch.index,
+				  )
+				: undefined,
 		)
 		.filter((e): e is ITextSearchMatch => !!e);
 }

@@ -3,22 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import { Event } from "vs/base/common/event";
+import { DisposableStore } from "vs/base/common/lifecycle";
+import { ExtUri, IExtUri, normalizePath } from "vs/base/common/resources";
+import { SkipList } from "vs/base/common/skipList";
 import { URI } from "vs/base/common/uri";
+import {
+	FileSystemProviderCapabilities,
+	IFileService,
+	IFileSystemProviderCapabilitiesChangeEvent,
+	IFileSystemProviderRegistrationEvent,
+} from "vs/platform/files/common/files";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import {
-	IFileService,
-	FileSystemProviderCapabilities,
-	IFileSystemProviderCapabilitiesChangeEvent,
-	IFileSystemProviderRegistrationEvent,
-} from "vs/platform/files/common/files";
-import { ExtUri, IExtUri, normalizePath } from "vs/base/common/resources";
-import { SkipList } from "vs/base/common/skipList";
-import { Event } from "vs/base/common/event";
-import { DisposableStore } from "vs/base/common/lifecycle";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
 
 class Entry {
 	static _clock = 0;
@@ -135,5 +135,5 @@ export class UriIdentityService implements IUriIdentityService {
 registerSingleton(
 	IUriIdentityService,
 	UriIdentityService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

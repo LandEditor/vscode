@@ -3,25 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { CancellationToken } from "vs/base/common/cancellation";
+import { IDisposable } from "vs/base/common/lifecycle";
+import { isObject } from "vs/base/common/types";
+import { URI } from "vs/base/common/uri";
 import { ICodeEditor } from "vs/editor/browser/editorBrowser";
 import {
+	IWorkspaceFileEdit,
+	IWorkspaceTextEdit,
 	TextEdit,
 	WorkspaceEdit,
 	WorkspaceEditMetadata,
-	IWorkspaceFileEdit,
 	WorkspaceFileEditOptions,
-	IWorkspaceTextEdit,
 } from "vs/editor/common/languages";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import { IProgress, IProgressStep } from "vs/platform/progress/common/progress";
-import { IDisposable } from "vs/base/common/lifecycle";
-import { URI } from "vs/base/common/uri";
-import { isObject } from "vs/base/common/types";
 import { UndoRedoSource } from "vs/platform/undoRedo/common/undoRedo";
-import { CancellationToken } from "vs/base/common/cancellation";
 
 export const IBulkEditService = createDecorator<IBulkEditService>(
-	"IWorkspaceEditService"
+	"IWorkspaceEditService",
 );
 
 export class ResourceEdit {
@@ -64,7 +64,7 @@ export class ResourceTextEdit
 				edit.resource,
 				edit.textEdit,
 				edit.versionId,
-				edit.metadata
+				edit.metadata,
 			);
 		}
 	}
@@ -73,7 +73,7 @@ export class ResourceTextEdit
 		readonly resource: URI,
 		readonly textEdit: TextEdit & { insertAsSnippet?: boolean },
 		readonly versionId: number | undefined = undefined,
-		metadata?: WorkspaceEditMetadata
+		metadata?: WorkspaceEditMetadata,
 	) {
 		super(metadata);
 	}
@@ -103,7 +103,7 @@ export class ResourceFileEdit
 				edit.oldResource,
 				edit.newResource,
 				edit.options,
-				edit.metadata
+				edit.metadata,
 			);
 		}
 	}
@@ -112,7 +112,7 @@ export class ResourceFileEdit
 		readonly oldResource: URI | undefined,
 		readonly newResource: URI | undefined,
 		readonly options: WorkspaceFileEditOptions = {},
-		metadata?: WorkspaceEditMetadata
+		metadata?: WorkspaceEditMetadata,
 	) {
 		super(metadata);
 	}
@@ -139,7 +139,7 @@ export interface IBulkEditResult {
 
 export type IBulkEditPreviewHandler = (
 	edits: ResourceEdit[],
-	options?: IBulkEditOptions
+	options?: IBulkEditOptions,
 ) => Promise<ResourceEdit[]>;
 
 export interface IBulkEditService {
@@ -151,6 +151,6 @@ export interface IBulkEditService {
 
 	apply(
 		edit: ResourceEdit[] | WorkspaceEdit,
-		options?: IBulkEditOptions
+		options?: IBulkEditOptions,
 	): Promise<IBulkEditResult>;
 }

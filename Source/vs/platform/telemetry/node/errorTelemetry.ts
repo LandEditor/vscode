@@ -30,7 +30,7 @@ export default class ErrorTelemetry extends BaseErrorTelemetry {
 							unhandledPromises.splice(idx, 1);
 							if (!isCancellationError(e)) {
 								console.warn(
-									`rejected promise not handled within 1 second: ${e}`
+									`rejected promise not handled within 1 second: ${e}`,
 								);
 								if (e.stack) {
 									console.warn(`stack trace: ${e.stack}`);
@@ -42,7 +42,7 @@ export default class ErrorTelemetry extends BaseErrorTelemetry {
 						});
 					}
 				}, 1000);
-			}
+			},
 		);
 
 		process.on("rejectionHandled", (promise: Promise<any>) => {
@@ -61,7 +61,7 @@ export default class ErrorTelemetry extends BaseErrorTelemetry {
 				}
 
 				onUnexpectedError(err);
-			}
+			},
 		);
 	}
 }

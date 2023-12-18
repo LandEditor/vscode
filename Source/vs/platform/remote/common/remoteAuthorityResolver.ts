@@ -10,12 +10,12 @@ import { createDecorator } from "vs/platform/instantiation/common/instantiation"
 
 export const IRemoteAuthorityResolverService =
 	createDecorator<IRemoteAuthorityResolverService>(
-		"remoteAuthorityResolverService"
+		"remoteAuthorityResolverService",
 	);
 
-export const enum RemoteConnectionType {
-	WebSocket,
-	Managed,
+export enum RemoteConnectionType {
+	WebSocket = 0,
+	Managed = 1,
 }
 
 export class ManagedRemoteConnection {
@@ -31,10 +31,7 @@ export class ManagedRemoteConnection {
 export class WebSocketRemoteConnection {
 	public readonly type = RemoteConnectionType.WebSocket;
 
-	constructor(
-		public readonly host: string,
-		public readonly port: number
-	) {}
+	constructor(public readonly host: string, public readonly port: number) {}
 
 	public toString(): string {
 		return `WebSocket(${this.host}:${this.port})`;
@@ -116,7 +113,7 @@ export class RemoteAuthorityResolverError extends ErrorNoTelemetry {
 	}
 
 	public static isNoResolverFound(
-		err: any
+		err: any,
 	): err is RemoteAuthorityResolverError {
 		return (
 			err instanceof RemoteAuthorityResolverError &&
@@ -144,7 +141,7 @@ export class RemoteAuthorityResolverError extends ErrorNoTelemetry {
 	constructor(
 		message?: string,
 		code: RemoteAuthorityResolverErrorCode = RemoteAuthorityResolverErrorCode.Unknown,
-		detail?: any
+		detail?: any,
 	) {
 		super(message);
 
@@ -181,12 +178,12 @@ export interface IRemoteAuthorityResolverService {
 	_clearResolvedAuthority(authority: string): void;
 	_setResolvedAuthority(
 		resolvedAuthority: ResolvedAuthority,
-		resolvedOptions?: ResolvedOptions
+		resolvedOptions?: ResolvedOptions,
 	): void;
 	_setResolvedAuthorityError(authority: string, err: any): void;
 	_setAuthorityConnectionToken(
 		authority: string,
-		connectionToken: string
+		connectionToken: string,
 	): void;
 	_setCanonicalURIProvider(provider: (uri: URI) => Promise<URI>): void;
 }

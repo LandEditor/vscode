@@ -3,31 +3,31 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	IBuiltinExtensionsScannerService,
-	ExtensionType,
-	IExtensionManifest,
-	TargetPlatform,
-	IExtension,
-} from "vs/platform/extensions/common/extensions";
-import { isWeb, Language } from "vs/base/common/platform";
-import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { getGalleryExtensionId } from "vs/platform/extensionManagement/common/extensionManagementUtil";
-import { builtinExtensionsPath, FileAccess } from "vs/base/common/network";
+import { mainWindow } from "vs/base/browser/window";
+import { FileAccess, builtinExtensionsPath } from "vs/base/common/network";
+import { Language, isWeb } from "vs/base/common/platform";
 import { URI } from "vs/base/common/uri";
-import { IExtensionResourceLoaderService } from "vs/platform/extensionResourceLoader/common/extensionResourceLoader";
-import { IProductService } from "vs/platform/product/common/productService";
+import { getGalleryExtensionId } from "vs/platform/extensionManagement/common/extensionManagementUtil";
 import {
 	ITranslations,
 	localizeManifest,
 } from "vs/platform/extensionManagement/common/extensionNls";
+import { IExtensionResourceLoaderService } from "vs/platform/extensionResourceLoader/common/extensionResourceLoader";
+import {
+	ExtensionType,
+	IBuiltinExtensionsScannerService,
+	IExtension,
+	IExtensionManifest,
+	TargetPlatform,
+} from "vs/platform/extensions/common/extensions";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
 import { ILogService } from "vs/platform/log/common/log";
-import { mainWindow } from "vs/base/browser/window";
+import { IProductService } from "vs/platform/product/common/productService";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
 
 interface IBundledExtension {
 	extensionPath: string;
@@ -155,13 +155,13 @@ export class BuiltinExtensionsScannerService
 	private async localizeManifest(
 		extensionId: string,
 		manifest: IExtensionManifest,
-		fallbackTranslations: ITranslations
+		fallbackTranslations: ITranslations,
 	): Promise<IExtensionManifest> {
 		if (!this.nlsUrl) {
 			return localizeManifest(
 				this.logService,
 				manifest,
-				fallbackTranslations
+				fallbackTranslations,
 			);
 		}
 		// the `package` endpoint returns the translations in a key-value format similar to the package.nls.json file.
@@ -169,21 +169,21 @@ export class BuiltinExtensionsScannerService
 		try {
 			const res =
 				await this.extensionResourceLoaderService.readExtensionResource(
-					uri
+					uri,
 				);
 			const json = JSON.parse(res.toString());
 			return localizeManifest(
 				this.logService,
 				manifest,
 				json,
-				fallbackTranslations
+				fallbackTranslations,
 			);
 		} catch (e) {
 			this.logService.error(e);
 			return localizeManifest(
 				this.logService,
 				manifest,
-				fallbackTranslations
+				fallbackTranslations,
 			);
 		}
 	}
@@ -192,5 +192,5 @@ export class BuiltinExtensionsScannerService
 registerSingleton(
 	IBuiltinExtensionsScannerService,
 	BuiltinExtensionsScannerService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

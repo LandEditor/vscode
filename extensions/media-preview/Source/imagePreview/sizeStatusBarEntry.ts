@@ -12,7 +12,7 @@ export class SizeStatusBarEntry extends PreviewStatusBarEntry {
 			"status.imagePreview.size",
 			vscode.l10n.t("Image Size"),
 			vscode.StatusBarAlignment.Right,
-			101 /* to the left of editor status (100) */
+			101 /* to the left of editor status (100) */,
 		);
 	}
 

@@ -71,7 +71,7 @@ export interface ITextAreaInputHost {
 	deduceModelPosition(
 		viewAnchorPosition: Position,
 		deltaOffset: number,
-		lineFeedCnt: number
+		lineFeedCnt: number,
 	): Position;
 }
 
@@ -195,13 +195,13 @@ export class TextAreaInput extends Disposable {
 	public readonly onType: Event<ITypeData> = this._onType.event;
 
 	private _onCompositionStart = this._register(
-		new Emitter<ICompositionStartEvent>()
+		new Emitter<ICompositionStartEvent>(),
 	);
 	public readonly onCompositionStart: Event<ICompositionStartEvent> =
 		this._onCompositionStart.event;
 
 	private _onCompositionUpdate = this._register(
-		new Emitter<ICompositionData>()
+		new Emitter<ICompositionData>(),
 	);
 	public readonly onCompositionUpdate: Event<ICompositionData> =
 		this._onCompositionUpdate.event;
@@ -211,7 +211,7 @@ export class TextAreaInput extends Disposable {
 		this._onCompositionEnd.event;
 
 	private _onSelectionChangeRequest = this._register(
-		new Emitter<Selection>()
+		new Emitter<Selection>(),
 	);
 	public readonly onSelectionChangeRequest: Event<Selection> =
 		this._onSelectionChangeRequest.event;
@@ -627,7 +627,7 @@ export class TextAreaInput extends Disposable {
 		this._hasFocus = true;
 		this._textAreaState = TextAreaState.readFromTextArea(
 			this._textArea,
-			null
+			null,
 		);
 	}
 
@@ -715,7 +715,7 @@ export class TextAreaInput extends Disposable {
 					this._host.deduceModelPosition(
 						_newSelectionStartPosition[0]!,
 						_newSelectionStartPosition[1],
-						_newSelectionStartPosition[2]
+						_newSelectionStartPosition[2],
 					);
 
 				const _newSelectionEndPosition =
@@ -723,18 +723,18 @@ export class TextAreaInput extends Disposable {
 				const newSelectionEndPosition = this._host.deduceModelPosition(
 					_newSelectionEndPosition[0]!,
 					_newSelectionEndPosition[1],
-					_newSelectionEndPosition[2]
+					_newSelectionEndPosition[2],
 				);
 
 				const newSelection = new Selection(
 					newSelectionStartPosition.lineNumber,
 					newSelectionStartPosition.column,
 					newSelectionEndPosition.lineNumber,
-					newSelectionEndPosition.column
+					newSelectionEndPosition.column,
 				);
 
 				this._onSelectionChangeRequest.fire(newSelection);
-			}
+			},
 		);
 	}
 
@@ -792,7 +792,7 @@ export class TextAreaInput extends Disposable {
 
 	private _setAndWriteTextAreaState(
 		reason: string,
-		textAreaState: TextAreaState
+		textAreaState: TextAreaState,
 	): void {
 		if (!this._hasFocus) {
 			textAreaState = textAreaState.collapseSelection();
@@ -815,7 +815,7 @@ export class TextAreaInput extends Disposable {
 		this._logService.trace(`writeTextAreaState(reason: ${reason})`);
 		this._setAndWriteTextAreaState(
 			reason,
-			this._host.getScreenReaderContent()
+			this._host.getScreenReaderContent(),
 		);
 	}
 
@@ -833,7 +833,7 @@ export class TextAreaInput extends Disposable {
 			this._browser.isFirefox
 				? dataToCopy.text.replace(/\r\n/g, "\n")
 				: dataToCopy.text,
-			storedMetadata
+			storedMetadata,
 		);
 
 		e.preventDefault();
@@ -842,7 +842,7 @@ export class TextAreaInput extends Disposable {
 				e.clipboardData,
 				dataToCopy.text,
 				dataToCopy.html,
-				storedMetadata
+				storedMetadata,
 			);
 		}
 	}
@@ -850,7 +850,7 @@ export class TextAreaInput extends Disposable {
 
 export const ClipboardEventUtils = {
 	getTextData(
-		clipboardData: DataTransfer
+		clipboardData: DataTransfer,
 	): [string, ClipboardStoredMetadata | null] {
 		const text = clipboardData.getData(Mimes.text);
 		let metadata: ClipboardStoredMetadata | null = null;
@@ -874,7 +874,7 @@ export const ClipboardEventUtils = {
 			// no textual data pasted, generate text from file names
 			const files: File[] = Array.prototype.slice.call(
 				clipboardData.files,
-				0
+				0,
 			);
 			return [files.map((file) => file.name).join("\n"), null];
 		}
@@ -886,7 +886,7 @@ export const ClipboardEventUtils = {
 		clipboardData: DataTransfer,
 		text: string,
 		html: string | null | undefined,
-		metadata: ClipboardStoredMetadata
+		metadata: ClipboardStoredMetadata,
 	): void {
 		clipboardData.setData(Mimes.text, text);
 		if (typeof html === "string") {
@@ -901,42 +901,43 @@ export class TextAreaWrapper
 	implements ICompleteTextAreaWrapper
 {
 	public readonly onKeyDown = this._register(
-		new DomEmitter(this._actual, "keydown")
+		new DomEmitter(this._actual, "keydown"),
 	).event;
 	public readonly onKeyPress = this._register(
-		new DomEmitter(this._actual, "keypress")
+		new DomEmitter(this._actual, "keypress"),
 	).event;
 	public readonly onKeyUp = this._register(
-		new DomEmitter(this._actual, "keyup")
+		new DomEmitter(this._actual, "keyup"),
 	).event;
 	public readonly onCompositionStart = this._register(
-		new DomEmitter(this._actual, "compositionstart")
+		new DomEmitter(this._actual, "compositionstart"),
 	).event;
 	public readonly onCompositionUpdate = this._register(
-		new DomEmitter(this._actual, "compositionupdate")
+		new DomEmitter(this._actual, "compositionupdate"),
 	).event;
 	public readonly onCompositionEnd = this._register(
-		new DomEmitter(this._actual, "compositionend")
+		new DomEmitter(this._actual, "compositionend"),
 	).event;
 	public readonly onBeforeInput = this._register(
-		new DomEmitter(this._actual, "beforeinput")
+		new DomEmitter(this._actual, "beforeinput"),
 	).event;
 	public readonly onInput = <Event<InputEvent>>(
 		this._register(new DomEmitter(this._actual, "input")).event
 	);
-	public readonly onCut = this._register(new DomEmitter(this._actual, "cut"))
-		.event;
+	public readonly onCut = this._register(
+		new DomEmitter(this._actual, "cut"),
+	).event;
 	public readonly onCopy = this._register(
-		new DomEmitter(this._actual, "copy")
+		new DomEmitter(this._actual, "copy"),
 	).event;
 	public readonly onPaste = this._register(
-		new DomEmitter(this._actual, "paste")
+		new DomEmitter(this._actual, "paste"),
 	).event;
 	public readonly onFocus = this._register(
-		new DomEmitter(this._actual, "focus")
+		new DomEmitter(this._actual, "focus"),
 	).event;
 	public readonly onBlur = this._register(
-		new DomEmitter(this._actual, "blur")
+		new DomEmitter(this._actual, "blur"),
 	).event;
 
 	public get ownerDocument(): Document {
@@ -961,8 +962,8 @@ export class TextAreaWrapper
 			dom.addDisposableListener(
 				this._actual,
 				TextAreaSyntethicEvents.Tap,
-				() => this._onSyntheticTap.fire()
-			)
+				() => this._onSyntheticTap.fire(),
+			),
 		);
 	}
 
@@ -1020,7 +1021,7 @@ export class TextAreaWrapper
 	public setSelectionRange(
 		reason: string,
 		selectionStart: number,
-		selectionEnd: number
+		selectionEnd: number,
 	): void {
 		const textArea = this._actual;
 

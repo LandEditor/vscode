@@ -15,14 +15,14 @@ import {
 } from "vs/platform/telemetry/common/gdprTypings";
 import {
 	ITelemetryService,
-	TelemetryLevel,
 	TELEMETRY_OLD_SETTING_ID,
 	TELEMETRY_SETTING_ID,
+	TelemetryLevel,
 } from "vs/platform/telemetry/common/telemetry";
 import { supportsTelemetry } from "vs/platform/telemetry/common/telemetryUtils";
 import {
-	extHostNamedCustomer,
 	IExtHostContext,
+	extHostNamedCustomer,
 } from "vs/workbench/services/extensions/common/extHostCustomers";
 import {
 	ExtHostContext,

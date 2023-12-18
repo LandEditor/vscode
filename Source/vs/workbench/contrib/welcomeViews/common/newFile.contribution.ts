@@ -3,19 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { KeyMod, KeyCode } from "vs/base/common/keyCodes";
+import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
 import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
 import { assertIsDefined } from "vs/base/common/types";
 import { localize } from "vs/nls";
 import { ILocalizedString } from "vs/platform/action/common/action";
 import {
 	Action2,
+	IMenu,
 	IMenuService,
 	MenuId,
-	registerAction2,
-	IMenu,
-	MenuRegistry,
 	MenuItemAction,
+	MenuRegistry,
+	registerAction2,
 } from "vs/platform/actions/common/actions";
 import { ICommandService } from "vs/platform/commands/common/commands";
 import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
@@ -70,7 +70,7 @@ registerAction2(
 		async run(accessor: ServicesAccessor): Promise<boolean> {
 			return assertIsDefined(NewFileTemplatesManager.Instance).run();
 		}
-	}
+	},
 );
 
 type NewFileItem = {
@@ -152,7 +152,7 @@ class NewFileTemplatesManager extends Disposable {
 		qp.title = localize("newFileTitle", "New File...");
 		qp.placeholder = localize(
 			"newFilePlaceholder",
-			"Select File Type or Enter File Name..."
+			"Select File Type or Enter File Name...",
 		);
 		qp.sortByLabel = false;
 		qp.matchOnDetail = true;
@@ -160,8 +160,8 @@ class NewFileTemplatesManager extends Disposable {
 
 		const sortCategories = (a: NewFileItem, b: NewFileItem): number => {
 			const categoryPriority: Record<string, number> = {
-				"file": 1,
-				"notebook": 2,
+				file: 1,
+				notebook: 2,
 			};
 			if (categoryPriority[a.group] && categoryPriority[b.group]) {
 				if (categoryPriority[a.group] !== categoryPriority[b.group]) {
@@ -186,8 +186,8 @@ class NewFileTemplatesManager extends Disposable {
 		};
 
 		const displayCategory: Record<string, string> = {
-			"file": localize("file", "File"),
-			"notebook": localize("notebook", "Notebook"),
+			file: localize("file", "File"),
+			notebook: localize("notebook", "Notebook"),
 		};
 
 		const refreshQp = (entries: NewFileItem[]) => {
@@ -202,7 +202,7 @@ class NewFileTemplatesManager extends Disposable {
 					const command = entry.commandID;
 					const keybinding = this.keybindingService.lookupKeybinding(
 						command || "",
-						this.contextKeyService
+						this.contextKeyService,
 					);
 					if (lastSeparator !== entry.group) {
 						items.push({
@@ -222,10 +222,10 @@ class NewFileTemplatesManager extends Disposable {
 										iconClass: "codicon codicon-gear",
 										tooltip: localize(
 											"change keybinding",
-											"Configure Keybinding"
+											"Configure Keybinding",
 										),
 									},
-								]
+							  ]
 							: [],
 						detail: "",
 						description: entry.from,
@@ -236,7 +236,7 @@ class NewFileTemplatesManager extends Disposable {
 		refreshQp(entries);
 
 		disposables.add(
-			this.menu.onDidChange(() => refreshQp(this.allEntries()))
+			this.menu.onDidChange(() => refreshQp(this.allEntries())),
 		);
 
 		disposables.add(
@@ -255,13 +255,13 @@ class NewFileTemplatesManager extends Disposable {
 					title: localize(
 						"miNewFileWithName",
 						"Create New File ({0})",
-						val
+						val,
 					),
 					group: "file",
 					from: builtInSource,
 				};
 				refreshQp([currentTextEntry, ...entries]);
-			})
+			}),
 		);
 
 		disposables.add(
@@ -274,10 +274,10 @@ class NewFileTemplatesManager extends Disposable {
 				if (selected) {
 					await this.commandService.executeCommand(
 						selected.commandID,
-						selected.commandArgs
+						selected.commandArgs,
 					);
 				}
-			})
+			}),
 		);
 
 		disposables.add(
@@ -285,7 +285,7 @@ class NewFileTemplatesManager extends Disposable {
 				qp.dispose();
 				disposables.dispose();
 				resolveResult(false);
-			})
+			}),
 		);
 
 		disposables.add(
@@ -293,10 +293,10 @@ class NewFileTemplatesManager extends Disposable {
 				qp.hide();
 				this.commandService.executeCommand(
 					"workbench.action.openGlobalKeybindings",
-					(e.item as IQuickPickItem & NewFileItem).commandID
+					(e.item as IQuickPickItem & NewFileItem).commandID,
 				);
 				resolveResult(false);
-			})
+			}),
 		);
 
 		qp.show();
@@ -306,10 +306,10 @@ class NewFileTemplatesManager extends Disposable {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench
+	WorkbenchExtensions.Workbench,
 ).registerWorkbenchContribution(
 	NewFileTemplatesManager,
-	LifecyclePhase.Restored
+	LifecyclePhase.Restored,
 );
 
 MenuRegistry.appendMenuItem(MenuId.NewFile, {

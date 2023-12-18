@@ -4,14 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IExtensionHostDebugService } from "vs/platform/debug/common/extensionHostDebug";
-import { registerMainProcessRemoteService } from "vs/platform/ipc/electron-sandbox/services";
 import {
-	ExtensionHostDebugChannelClient,
 	ExtensionHostDebugBroadcastChannel,
+	ExtensionHostDebugChannelClient,
 } from "vs/platform/debug/common/extensionHostDebugIpc";
+import { registerMainProcessRemoteService } from "vs/platform/ipc/electron-sandbox/services";
 
 registerMainProcessRemoteService(
 	IExtensionHostDebugService,
 	ExtensionHostDebugBroadcastChannel.ChannelName,
-	{ channelClientCtor: ExtensionHostDebugChannelClient }
+	{ channelClientCtor: ExtensionHostDebugChannelClient },
 );

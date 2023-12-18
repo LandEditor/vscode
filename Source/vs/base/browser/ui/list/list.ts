@@ -24,13 +24,13 @@ export interface IListRenderer<T, TTemplateData> {
 		element: T,
 		index: number,
 		templateData: TTemplateData,
-		height: number | undefined
+		height: number | undefined,
 	): void;
 	disposeElement?(
 		element: T,
 		index: number,
 		templateData: TTemplateData,
-		height: number | undefined
+		height: number | undefined,
 	): void;
 	disposeTemplate(templateData: TTemplateData): void;
 }
@@ -87,7 +87,7 @@ export interface IKeyboardNavigationLabelProvider<T> {
 	 * an element always match.
 	 */
 	getKeyboardNavigationLabel(
-		element: T
+		element: T,
 	):
 		| { toString(): string | undefined }
 		| { toString(): string | undefined }[]
@@ -98,9 +98,9 @@ export interface IKeyboardNavigationDelegate {
 	mightProducePrintableCharacter(event: IKeyboardEvent): boolean;
 }
 
-export const enum ListDragOverEffect {
-	Copy,
-	Move,
+export enum ListDragOverEffect {
+	Copy = 0,
+	Move = 1,
 }
 
 export interface IListDragOverReaction {
@@ -130,19 +130,19 @@ export interface IListDragAndDrop<T> extends IDisposable {
 		data: IDragAndDropData,
 		targetElement: T | undefined,
 		targetIndex: number | undefined,
-		originalEvent: DragEvent
+		originalEvent: DragEvent,
 	): boolean | IListDragOverReaction;
 	onDragLeave?(
 		data: IDragAndDropData,
 		targetElement: T | undefined,
 		targetIndex: number | undefined,
-		originalEvent: DragEvent
+		originalEvent: DragEvent,
 	): void;
 	drop(
 		data: IDragAndDropData,
 		targetElement: T | undefined,
 		targetIndex: number | undefined,
-		originalEvent: DragEvent
+		originalEvent: DragEvent,
 	): void;
 	onDragEnd?(originalEvent: DragEvent): void;
 }

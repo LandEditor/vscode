@@ -3,21 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
-import { IJSONSchema, IJSONSchemaMap } from "vs/base/common/jsonSchema";
 import { IStringDictionary } from "vs/base/common/collections";
-import * as Types from "vs/base/common/types";
+import { IJSONSchema, IJSONSchemaMap } from "vs/base/common/jsonSchema";
 import * as Objects from "vs/base/common/objects";
+import * as Types from "vs/base/common/types";
+import * as nls from "vs/nls";
 
 import {
-	ExtensionsRegistry,
 	ExtensionMessageCollector,
+	ExtensionsRegistry,
 } from "vs/workbench/services/extensions/common/extensionsRegistry";
 
-import * as Tasks from "vs/workbench/contrib/tasks/common/tasks";
-import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
-import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
 import { Emitter, Event } from "vs/base/common/event";
+import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
+import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
+import * as Tasks from "vs/workbench/contrib/tasks/common/tasks";
 
 const taskDefinitionSchema: IJSONSchema = {
 	type: "object",
@@ -27,7 +27,7 @@ const taskDefinitionSchema: IJSONSchema = {
 			type: "string",
 			description: nls.localize(
 				"TaskDefinition.description",
-				"The actual task type. Please note that types starting with a '$' are reserved for internal usage."
+				"The actual task type. Please note that types starting with a '$' are reserved for internal usage.",
 			),
 		},
 		required: {
@@ -40,7 +40,7 @@ const taskDefinitionSchema: IJSONSchema = {
 			type: "object",
 			description: nls.localize(
 				"TaskDefinition.properties",
-				"Additional properties of the task type"
+				"Additional properties of the task type",
 			),
 			additionalProperties: {
 				$ref: "http://json-schema.org/draft-07/schema#",
@@ -50,7 +50,7 @@ const taskDefinitionSchema: IJSONSchema = {
 			type: "string",
 			markdownDescription: nls.localize(
 				"TaskDefinition.when",
-				"Condition which must be true to enable this type of task. Consider using `shellExecutionSupported`, `processExecutionSupported`, and `customExecutionSupported` as appropriate for this task definition. See the [API documentation](https://code.visualstudio.com/api/extension-guides/task-provider#when-clause) for more information."
+				"Condition which must be true to enable this type of task. Consider using `shellExecutionSupported`, `processExecutionSupported`, and `customExecutionSupported` as appropriate for this task definition. See the [API documentation](https://code.visualstudio.com/api/extension-guides/task-provider#when-clause) for more information.",
 			),
 			default: "",
 		},
@@ -68,7 +68,7 @@ namespace Configuration {
 	export function from(
 		value: ITaskDefinition,
 		extensionId: ExtensionIdentifier,
-		messageCollector: ExtensionMessageCollector
+		messageCollector: ExtensionMessageCollector,
 	): Tasks.ITaskDefinition | undefined {
 		if (!value) {
 			return undefined;
@@ -78,8 +78,8 @@ namespace Configuration {
 			messageCollector.error(
 				nls.localize(
 					"TaskTypeConfiguration.noType",
-					"The task type configuration is missing the required 'taskType' property"
-				)
+					"The task type configuration is missing the required 'taskType' property",
+				),
 			);
 			return undefined;
 		}
@@ -111,7 +111,7 @@ const taskDefinitionsExtPoint = ExtensionsRegistry.registerExtensionPoint<
 	extensionPoint: "taskDefinitions",
 	activationEventsGenerator: (
 		contributions: Configuration.ITaskDefinition[],
-		result: { push(item: string): void }
+		result: { push(item: string): void },
 	) => {
 		for (const task of contributions) {
 			if (task.type) {
@@ -122,7 +122,7 @@ const taskDefinitionsExtPoint = ExtensionsRegistry.registerExtensionPoint<
 	jsonSchema: {
 		description: nls.localize(
 			"TaskDefinitionExtPoint",
-			"Contributes task kinds"
+			"Contributes task kinds",
 		),
 		type: "array",
 		items: taskDefinitionSchema,
@@ -169,7 +169,7 @@ class TaskDefinitionRegistryImpl implements ITaskDefinitionRegistry {
 							const type = Configuration.from(
 								taskType,
 								extension.description.identifier,
-								extension.collector
+								extension.collector,
 							);
 							if (type) {
 								this.taskTypes[type.taskType] = type;
@@ -210,7 +210,7 @@ class TaskDefinitionRegistryImpl implements ITaskDefinitionRegistry {
 				}
 				if (definition.properties !== undefined) {
 					schema.properties = Objects.deepClone(
-						definition.properties
+						definition.properties,
 					);
 				} else {
 					schema.properties = Object.create(null);

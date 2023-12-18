@@ -3,22 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from "vs/base/common/uri";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { IFileService } from "vs/platform/files/common/files";
 import { FileAccess, Schemas } from "vs/base/common/network";
-import { IProductService } from "vs/platform/product/common/productService";
-import { IStorageService } from "vs/platform/storage/common/storage";
-import { IEnvironmentService } from "vs/platform/environment/common/environment";
-import { ILogService } from "vs/platform/log/common/log";
+import { URI } from "vs/base/common/uri";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IEnvironmentService } from "vs/platform/environment/common/environment";
 import {
 	AbstractExtensionResourceLoaderService,
 	IExtensionResourceLoaderService,
 } from "vs/platform/extensionResourceLoader/common/extensionResourceLoader";
+import { IFileService } from "vs/platform/files/common/files";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import { ILogService } from "vs/platform/log/common/log";
+import { IProductService } from "vs/platform/product/common/productService";
+import { IStorageService } from "vs/platform/storage/common/storage";
 
 class ExtensionResourceLoaderService extends AbstractExtensionResourceLoaderService {
 	declare readonly _serviceBrand: undefined;
@@ -65,7 +65,7 @@ class ExtensionResourceLoaderService extends AbstractExtensionResourceLoaderServ
 			this._logService.info(
 				`Request to '${uri.toString(true)}' failed with status code ${
 					response.status
-				}`
+				}`,
 			);
 			throw new Error(response.statusText);
 		}
@@ -76,5 +76,5 @@ class ExtensionResourceLoaderService extends AbstractExtensionResourceLoaderServ
 registerSingleton(
 	IExtensionResourceLoaderService,
 	ExtensionResourceLoaderService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

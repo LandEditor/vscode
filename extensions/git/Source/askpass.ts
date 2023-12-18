@@ -3,20 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	window,
-	InputBoxOptions,
-	Uri,
-	Disposable,
-	workspace,
-	QuickPickOptions,
-	l10n,
-} from "vscode";
-import { IDisposable, EmptyDisposable, toDisposable } from "./util";
 import * as path from "path";
+import {
+	Disposable,
+	InputBoxOptions,
+	QuickPickOptions,
+	Uri,
+	l10n,
+	window,
+	workspace,
+} from "vscode";
+import { Credentials, CredentialsProvider } from "./api/git";
 import { IIPCHandler, IIPCServer } from "./ipc/ipcServer";
-import { CredentialsProvider, Credentials } from "./api/git";
 import { ITerminalEnvironmentProvider } from "./terminal";
+import { EmptyDisposable, IDisposable, toDisposable } from "./util";
 
 export class Askpass implements IIPCHandler, ITerminalEnvironmentProvider {
 	private env: { [key: string]: string };
@@ -36,7 +36,7 @@ export class Askpass implements IIPCHandler, ITerminalEnvironmentProvider {
 			// GIT_ASKPASS
 			GIT_ASKPASS: path.join(
 				__dirname,
-				this.ipc ? "askpass.sh" : "askpass-empty.sh"
+				this.ipc ? "askpass.sh" : "askpass-empty.sh",
 			),
 			// VSCODE_GIT_ASKPASS
 			VSCODE_GIT_ASKPASS_NODE: process.execPath,
@@ -52,7 +52,7 @@ export class Askpass implements IIPCHandler, ITerminalEnvironmentProvider {
 			// SSH_ASKPASS
 			SSH_ASKPASS: path.join(
 				__dirname,
-				this.ipc ? "ssh-askpass.sh" : "ssh-askpass-empty.sh"
+				this.ipc ? "ssh-askpass.sh" : "ssh-askpass-empty.sh",
 			),
 			SSH_ASKPASS_REQUIRE: "force",
 		};
@@ -67,7 +67,7 @@ export class Askpass implements IIPCHandler, ITerminalEnvironmentProvider {
 					host?: string;
 					file?: string;
 					fingerprint?: string;
-			  }
+			  },
 	): Promise<string> {
 		const config = workspace.getConfiguration("git", null);
 		const enabled = config.get<boolean>("enabled");
@@ -86,7 +86,7 @@ export class Askpass implements IIPCHandler, ITerminalEnvironmentProvider {
 			payload.request,
 			payload.host,
 			payload.file,
-			payload.fingerprint
+			payload.fingerprint,
 		);
 	}
 
@@ -130,7 +130,7 @@ export class Askpass implements IIPCHandler, ITerminalEnvironmentProvider {
 		request: string,
 		host?: string,
 		file?: string,
-		fingerprint?: string
+		fingerprint?: string,
 	): Promise<string> {
 		// passphrase
 		if (/passphrase/i.test(request)) {
@@ -149,12 +149,12 @@ export class Askpass implements IIPCHandler, ITerminalEnvironmentProvider {
 			canPickMany: false,
 			ignoreFocusOut: true,
 			placeHolder: l10n.t(
-				"Are you sure you want to continue connecting?"
+				"Are you sure you want to continue connecting?",
 			),
 			title: l10n.t(
 				'"{0}" has fingerprint "{1}"',
 				host ?? "",
-				fingerprint ?? ""
+				fingerprint ?? "",
 			),
 		};
 		const items = [l10n.t("yes"), l10n.t("no")];

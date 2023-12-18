@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import type * as WindowsProcessTreeType from "@vscode/windows-process-tree";
 import { timeout } from "vs/base/common/async";
 import { debounce } from "vs/base/common/decorators";
 import { Emitter, Event } from "vs/base/common/event";
@@ -12,7 +13,6 @@ import {
 	TerminalShellType,
 	WindowsShellType,
 } from "vs/platform/terminal/common/terminal";
-import type * as WindowsProcessTreeType from "@vscode/windows-process-tree";
 
 export interface IWindowsShellHelper extends IDisposable {
 	readonly onShellNameChanged: Event<string>;
@@ -46,7 +46,7 @@ export class WindowsShellHelper
 	get shellType(): TerminalShellType | undefined {
 		return this._shellType;
 	}
-	private _shellTitle: string = "";
+	private _shellTitle = "";
 	get shellTitle(): string {
 		return this._shellTitle;
 	}
@@ -66,7 +66,7 @@ export class WindowsShellHelper
 
 		if (!isWindows) {
 			throw new Error(
-				`WindowsShellHelper cannot be instantiated on ${platform}`
+				`WindowsShellHelper cannot be instantiated on ${platform}`,
 			);
 		}
 

@@ -36,7 +36,7 @@ export class QuickAccessController
 	implements IQuickAccessController
 {
 	private readonly registry = Registry.as<IQuickAccessRegistry>(
-		Extensions.Quickaccess
+		Extensions.Quickaccess,
 	);
 	private readonly mapProviderToDescriptor = new Map<
 		IQuickAccessProviderDescriptor,
@@ -67,7 +67,7 @@ export class QuickAccessController
 
 	pick(
 		value = "",
-		options?: IQuickAccessOptions
+		options?: IQuickAccessOptions,
 	): Promise<IQuickPickItem[] | undefined> {
 		return this.doShowOrPick(value, true, options);
 	}
@@ -79,17 +79,17 @@ export class QuickAccessController
 	private doShowOrPick(
 		value: string,
 		pick: true,
-		options?: IQuickAccessOptions
+		options?: IQuickAccessOptions,
 	): Promise<IQuickPickItem[] | undefined>;
 	private doShowOrPick(
 		value: string,
 		pick: false,
-		options?: IQuickAccessOptions
+		options?: IQuickAccessOptions,
 	): void;
 	private doShowOrPick(
 		value: string,
 		pick: boolean,
-		options?: IQuickAccessOptions
+		options?: IQuickAccessOptions,
 	): Promise<IQuickPickItem[] | undefined> | void {
 		// Find provider for the value to show
 		const [provider, descriptor] = this.getOrInstantiateProvider(value);
@@ -112,7 +112,7 @@ export class QuickAccessController
 			this.adjustValueSelection(
 				visibleQuickAccess.picker,
 				descriptor,
-				options
+				options,
 			);
 
 			return;
@@ -131,7 +131,7 @@ export class QuickAccessController
 			) {
 				const newValueCandidateWithoutPrefix =
 					visibleQuickAccess.value.substr(
-						visibleDescriptor.prefix.length
+						visibleDescriptor.prefix.length,
 					);
 				if (newValueCandidateWithoutPrefix) {
 					newValue = `${descriptor.prefix}${newValueCandidateWithoutPrefix}`;
@@ -157,7 +157,7 @@ export class QuickAccessController
 		// and adjust the filtering to exclude the prefix from filtering
 		const disposables = new DisposableStore();
 		const picker = disposables.add(
-			this.quickInputService.createQuickPick()
+			this.quickInputService.createQuickPick(),
 		);
 		picker.value = value;
 		this.adjustValueSelection(picker, descriptor, options);
@@ -186,7 +186,7 @@ export class QuickAccessController
 				Event.once(picker.onWillAccept)((e) => {
 					e.veto();
 					picker.hide();
-				})
+				}),
 			);
 		}
 
@@ -197,8 +197,8 @@ export class QuickAccessController
 				provider,
 				descriptor,
 				value,
-				options?.providerOptions
-			)
+				options?.providerOptions,
+			),
 		);
 
 		// Ask provider to fill the picker as needed if we have one
@@ -207,7 +207,7 @@ export class QuickAccessController
 		const cts = disposables.add(new CancellationTokenSource());
 		if (provider) {
 			disposables.add(
-				provider.provide(picker, cts.token, options?.providerOptions)
+				provider.provide(picker, cts.token, options?.providerOptions),
 			);
 		}
 
@@ -239,7 +239,7 @@ export class QuickAccessController
 	private adjustValueSelection(
 		picker: IQuickPick<IQuickPickItem>,
 		descriptor?: IQuickAccessProviderDescriptor,
-		options?: IQuickAccessOptions
+		options?: IQuickAccessOptions,
 	): void {
 		let valueSelection: [number, number];
 
@@ -264,7 +264,7 @@ export class QuickAccessController
 		provider: IQuickAccessProvider | undefined,
 		descriptor: IQuickAccessProviderDescriptor | undefined,
 		value: string,
-		providerOptions?: IQuickAccessProviderRunOptions
+		providerOptions?: IQuickAccessProviderRunOptions,
 	): IDisposable {
 		const disposables = new DisposableStore();
 
@@ -279,7 +279,7 @@ export class QuickAccessController
 				if (visibleQuickAccess === this.visibleQuickAccess) {
 					this.visibleQuickAccess = undefined;
 				}
-			})
+			}),
 		);
 
 		// Whenever the value changes, check if the provider has
@@ -297,7 +297,7 @@ export class QuickAccessController
 				} else {
 					visibleQuickAccess.value = value; // remember the value in our visible one
 				}
-			})
+			}),
 		);
 
 		// Remember picker input for future use when accepting
@@ -305,7 +305,7 @@ export class QuickAccessController
 			disposables.add(
 				picker.onDidAccept(() => {
 					this.lastAcceptedPickerValues.set(descriptor, picker.value);
-				})
+				}),
 			);
 		}
 
@@ -313,7 +313,7 @@ export class QuickAccessController
 	}
 
 	private getOrInstantiateProvider(
-		value: string
+		value: string,
 	): [
 		IQuickAccessProvider | undefined,
 		IQuickAccessProviderDescriptor | undefined,
@@ -326,7 +326,7 @@ export class QuickAccessController
 		let provider = this.mapProviderToDescriptor.get(providerDescriptor);
 		if (!provider) {
 			provider = this.instantiationService.createInstance(
-				providerDescriptor.ctor
+				providerDescriptor.ctor,
 			);
 			this.mapProviderToDescriptor.set(providerDescriptor, provider);
 		}

@@ -34,13 +34,13 @@ import { IEnvironmentService } from "vs/platform/environment/common/environment"
 import { IExtensionResourceLoaderService } from "vs/platform/extensionResourceLoader/common/extensionResourceLoader";
 import { INotificationService } from "vs/platform/notification/common/notification";
 import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { TextMateWorkerTokenizerController } from "vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController";
 import {
 	ICreateData,
 	ITextMateWorkerHost,
 	StateDeltas,
 	TextMateTokenizationWorker,
 } from "vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateTokenizationWorker.worker";
-import { TextMateWorkerTokenizerController } from "vs/workbench/services/textMate/browser/backgroundTokenization/textMateWorkerTokenizerController";
 import { IValidGrammarDefinition } from "vs/workbench/services/textMate/common/TMScopeRegistry";
 import type { IRawTheme } from "vscode-textmate";
 
@@ -92,7 +92,7 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 	public createBackgroundTokenizer(
 		textModel: ITextModel,
 		tokenStore: IBackgroundTokenizationStore,
-		maxTokenizationLineLength: IObservable<number>
+		maxTokenizationLineLength: IObservable<number>,
 	): IBackgroundTokenizer | undefined {
 		// fallback to default sync background tokenizer
 		if (!this._shouldTokenizeAsync() || textModel.isTooLargeForSyncing()) {
@@ -121,24 +121,24 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 								this._languageService.languageIdCodec,
 								tokenStore,
 								this._configurationService,
-								maxTokenizationLineLength
+								maxTokenizationLineLength,
 							);
 						controllerContainer.controller = controller;
 						this._workerTokenizerControllers.set(
 							controller.controllerId,
-							controller
+							controller,
 						);
 						return toDisposable(() => {
 							controllerContainer.controller = undefined;
 							this._workerTokenizerControllers.delete(
-								controller.controllerId
+								controller.controllerId,
 							);
 							controller.dispose();
 						});
-					})
+					}),
 				);
 				return controllerContainer;
-			}
+			},
 		);
 
 		return {
@@ -156,7 +156,7 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 				) {
 					container.controller.requestTokens(
 						startLineNumber,
-						endLineNumberExclusive
+						endLineNumberExclusive,
 					);
 				}
 			},
@@ -166,8 +166,7 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 				) {
 					return;
 				}
-				ThreadedBackgroundTokenizerFactory._reportedMismatchingTokens =
-					true;
+				ThreadedBackgroundTokenizerFactory._reportedMismatchingTokens = true;
 
 				this._notificationService.error({
 					message:
@@ -188,7 +187,7 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 	}
 
 	public setGrammarDefinitions(
-		grammarDefinitions: IValidGrammarDefinition[]
+		grammarDefinitions: IValidGrammarDefinition[],
 	): void {
 		this._grammarDefinitions = grammarDefinitions;
 		this._disposeWorker();
@@ -204,7 +203,7 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 		) {
 			this._workerProxy.acceptTheme(
 				this._currentTheme,
-				this._currentTokenColorMap
+				this._currentTokenColorMap,
 			);
 		}
 	}
@@ -246,14 +245,14 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 			readFile: async (_resource: UriComponents): Promise<string> => {
 				const resource = URI.revive(_resource);
 				return this._extensionResourceLoaderService.readExtensionResource(
-					resource
+					resource,
 				);
 			},
 			setTokensAndStates: async (
 				controllerId: number,
 				versionId: number,
 				tokens: Uint8Array,
-				lineEndStateDeltas: StateDeltas[]
+				lineEndStateDeltas: StateDeltas[],
 			): Promise<void> => {
 				const controller =
 					this._workerTokenizerControllers.get(controllerId);
@@ -265,7 +264,7 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 						controllerId,
 						versionId,
 						tokens,
-						lineEndStateDeltas
+						lineEndStateDeltas,
 					);
 				}
 			},
@@ -274,14 +273,14 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 				languageId: string,
 				sourceExtensionId: string | undefined,
 				lineLength: number,
-				isRandomSample: boolean
+				isRandomSample: boolean,
 			): void => {
 				this._reportTokenizationTime(
 					timeMs,
 					languageId,
 					sourceExtensionId,
 					lineLength,
-					isRandomSample
+					isRandomSample,
 				);
 			},
 		};
@@ -295,7 +294,7 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 					moduleId:
 						"vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateTokenizationWorker.worker",
 					host,
-				}
+				},
 			));
 		const proxy = await worker.getProxy();
 
@@ -307,7 +306,7 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 		if (this._currentTheme && this._currentTokenColorMap) {
 			this._workerProxy.acceptTheme(
 				this._currentTheme,
-				this._currentTokenColorMap
+				this._currentTokenColorMap,
 			);
 		}
 		return proxy;
@@ -330,7 +329,7 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 
 function keepAliveWhenAttached(
 	textModel: ITextModel,
-	factory: () => IDisposable
+	factory: () => IDisposable,
 ): IDisposable {
 	const disposableStore = new DisposableStore();
 	const subStore = disposableStore.add(new DisposableStore());
@@ -347,7 +346,7 @@ function keepAliveWhenAttached(
 	disposableStore.add(
 		textModel.onDidChangeAttached(() => {
 			checkAttached();
-		})
+		}),
 	);
 	return disposableStore;
 }

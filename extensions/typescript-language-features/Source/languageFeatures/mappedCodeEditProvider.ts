@@ -4,15 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from "vscode";
+import { DocumentSelector } from "../configuration/documentSelector";
 import { API } from "../tsServer/api";
 import { FileSpan } from "../tsServer/protocol/protocol";
+import { Range, WorkspaceEdit } from "../typeConverters";
 import { ITypeScriptServiceClient } from "../typescriptService";
 import {
 	conditionalRegistration,
 	requireMinVersion,
 } from "./util/dependentRegistration";
-import { Range, WorkspaceEdit } from "../typeConverters";
-import { DocumentSelector } from "../configuration/documentSelector";
 
 class TsMappedEditsProvider implements vscode.MappedEditsProvider {
 	constructor(private readonly client: ITypeScriptServiceClient) {}
@@ -21,7 +21,7 @@ class TsMappedEditsProvider implements vscode.MappedEditsProvider {
 		document: vscode.TextDocument,
 		codeBlocks: string[],
 		context: vscode.MappedEditsContext,
-		token: vscode.CancellationToken
+		token: vscode.CancellationToken,
 	): Promise<vscode.WorkspaceEdit | undefined> {
 		if (!this.isEnabled()) {
 			return;
@@ -43,7 +43,7 @@ class TsMappedEditsProvider implements vscode.MappedEditsProvider {
 							return documents.flatMap(
 								(contextItem): FileSpan[] => {
 									const file = this.client.toTsFilePath(
-										contextItem.uri
+										contextItem.uri,
 									);
 									if (!file) {
 										return [];
@@ -52,15 +52,15 @@ class TsMappedEditsProvider implements vscode.MappedEditsProvider {
 										(range): FileSpan => ({
 											file,
 											...Range.toTextSpan(range),
-										})
+										}),
 									);
-								}
+								},
 							);
 						}),
 					},
 				],
 			},
-			token
+			token,
 		);
 		if (response.type !== "response" || !response.body) {
 			return;
@@ -78,7 +78,7 @@ class TsMappedEditsProvider implements vscode.MappedEditsProvider {
 
 export function register(
 	selector: DocumentSelector,
-	client: ITypeScriptServiceClient
+	client: ITypeScriptServiceClient,
 ) {
 	return conditionalRegistration(
 		[requireMinVersion(client, API.v540)],
@@ -86,8 +86,8 @@ export function register(
 			const provider = new TsMappedEditsProvider(client);
 			return vscode.chat.registerMappedEditsProvider(
 				selector.semantic,
-				provider
+				provider,
 			);
-		}
+		},
 	);
 }

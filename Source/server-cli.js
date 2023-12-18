@@ -17,7 +17,7 @@ if (process.env["VSCODE_DEV"]) {
 		process.env["VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH"] ||
 		path.join(__dirname, "..", "remote", "node_modules");
 	require("./bootstrap-node").injectNodeModuleLookupPath(
-		process.env["VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH"]
+		process.env["VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH"],
 	);
 } else {
 	delete process.env["VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH"];

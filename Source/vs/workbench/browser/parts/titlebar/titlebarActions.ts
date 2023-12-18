@@ -3,34 +3,34 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { IAction } from "vs/base/common/actions";
 import { localize } from "vs/nls";
+import {
+	Action2,
+	MenuId,
+	registerAction2,
+} from "vs/platform/actions/common/actions";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
 import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
 import {
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
-import { LayoutSettings } from "vs/workbench/services/layout/browser/layoutService";
-import {
-	Action2,
-	MenuId,
-	registerAction2,
-} from "vs/platform/actions/common/actions";
-import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
 import {
 	ACCOUNTS_ACTIVITY_ID,
 	GLOBAL_ACTIVITY_ID,
 } from "vs/workbench/common/activity";
-import { IAction } from "vs/base/common/actions";
 import { IsAuxiliaryWindowFocusedContext } from "vs/workbench/common/contextkeys";
+import { LayoutSettings } from "vs/workbench/services/layout/browser/layoutService";
 
 class ToggleConfigAction extends Action2 {
 	constructor(
 		private readonly section: string,
 		title: string,
 		order: number,
-		mainWindowOnly: boolean
+		mainWindowOnly: boolean,
 	) {
 		super({
 			id: `toggle.${section}`,
@@ -70,10 +70,10 @@ registerAction2(
 				LayoutSettings.COMMAND_CENTER,
 				localize("toggle.commandCenter", "Command Center"),
 				1,
-				false
+				false,
 			);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -83,10 +83,10 @@ registerAction2(
 				"workbench.layoutControl.enabled",
 				localize("toggle.layout", "Layout Controls"),
 				2,
-				true
+				true,
 			);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -96,12 +96,12 @@ registerAction2(
 			const titleBarContextCondition = ContextKeyExpr.and(
 				ContextKeyExpr.equals(
 					`config.workbench.editor.showTabs`,
-					"none"
+					"none",
 				).negate(),
 				ContextKeyExpr.equals(
 					`config.${ToggleEditorActions.settingsID}`,
-					"default"
-				)
+					"default",
+				),
 			)?.negate();
 
 			super({
@@ -109,7 +109,7 @@ registerAction2(
 				title: localize("toggle.editorActions", "Editor Actions"),
 				toggled: ContextKeyExpr.equals(
 					`config.${ToggleEditorActions.settingsID}`,
-					"hidden"
+					"hidden",
 				).negate(),
 				menu: [
 					{
@@ -132,18 +132,18 @@ registerAction2(
 			const storageService = accessor.get(IStorageService);
 
 			const location = configService.getValue<string>(
-				ToggleEditorActions.settingsID
+				ToggleEditorActions.settingsID,
 			);
 			if (location === "hidden") {
 				const showTabs = configService.getValue<string>(
-					LayoutSettings.EDITOR_TABS_MODE
+					LayoutSettings.EDITOR_TABS_MODE,
 				);
 
 				// If tabs are visible, then set the editor actions to be in the title bar
 				if (showTabs !== "none") {
 					configService.updateValue(
 						ToggleEditorActions.settingsID,
-						"titleBar"
+						"titleBar",
 					);
 				}
 
@@ -151,34 +151,34 @@ registerAction2(
 				else {
 					const storedValue = storageService.get(
 						ToggleEditorActions.settingsID,
-						StorageScope.PROFILE
+						StorageScope.PROFILE,
 					);
 					configService.updateValue(
 						ToggleEditorActions.settingsID,
-						storedValue ?? "default"
+						storedValue ?? "default",
 					);
 				}
 
 				storageService.remove(
 					ToggleEditorActions.settingsID,
-					StorageScope.PROFILE
+					StorageScope.PROFILE,
 				);
 			}
 			// Store the current value (titleBar or default) in the storage service for later to restore
 			else {
 				configService.updateValue(
 					ToggleEditorActions.settingsID,
-					"hidden"
+					"hidden",
 				);
 				storageService.store(
 					ToggleEditorActions.settingsID,
 					location,
 					StorageScope.PROFILE,
-					StorageTarget.USER
+					StorageTarget.USER,
 				);
 			}
 		}
-	}
+	},
 );
 
 export const ACCOUNTS_ACTIVITY_TILE_ACTION: IAction = {
@@ -187,7 +187,7 @@ export const ACCOUNTS_ACTIVITY_TILE_ACTION: IAction = {
 	tooltip: localize("accounts", "Accounts"),
 	class: undefined,
 	enabled: true,
-	run: function (): void {},
+	run: (): void => {},
 };
 
 export const GLOBAL_ACTIVITY_TITLE_ACTION: IAction = {
@@ -196,5 +196,5 @@ export const GLOBAL_ACTIVITY_TITLE_ACTION: IAction = {
 	tooltip: localize("manage", "Manage"),
 	class: undefined,
 	enabled: true,
-	run: function (): void {},
+	run: (): void => {},
 };

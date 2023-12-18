@@ -49,15 +49,15 @@ export function getWorkspaceIdentifier(configPath: URI): IWorkspaceIdentifier {
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 export function getSingleFolderWorkspaceIdentifier(
-	folderUri: URI
+	folderUri: URI,
 ): ISingleFolderWorkspaceIdentifier | undefined;
 export function getSingleFolderWorkspaceIdentifier(
 	folderUri: URI,
-	folderStat: Stats
+	folderStat: Stats,
 ): ISingleFolderWorkspaceIdentifier;
 export function getSingleFolderWorkspaceIdentifier(
 	folderUri: URI,
-	folderStat?: Stats
+	folderStat?: Stats,
 ): ISingleFolderWorkspaceIdentifier | undefined {
 	function getFolderId(): string | undefined {
 		// Remote: produce a hash from the entire URI

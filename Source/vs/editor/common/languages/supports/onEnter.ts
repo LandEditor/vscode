@@ -5,13 +5,13 @@
 
 import { onUnexpectedError } from "vs/base/common/errors";
 import * as strings from "vs/base/common/strings";
+import { EditorAutoIndentStrategy } from "vs/editor/common/config/editorOptions";
 import {
 	CharacterPair,
 	EnterAction,
 	IndentAction,
 	OnEnterRule,
 } from "vs/editor/common/languages/languageConfiguration";
-import { EditorAutoIndentStrategy } from "vs/editor/common/config/editorOptions";
 
 export interface IOnEnterSupportOptions {
 	brackets?: CharacterPair[];
@@ -40,10 +40,10 @@ export class OnEnterSupport {
 		this._brackets = [];
 		opts.brackets.forEach((bracket) => {
 			const openRegExp = OnEnterSupport._createOpenBracketRegExp(
-				bracket[0]
+				bracket[0],
 			);
 			const closeRegExp = OnEnterSupport._createCloseBracketRegExp(
-				bracket[1]
+				bracket[1],
 			);
 			if (openRegExp && closeRegExp) {
 				this._brackets.push({
@@ -61,7 +61,7 @@ export class OnEnterSupport {
 		autoIndent: EditorAutoIndentStrategy,
 		previousLineText: string,
 		beforeEnterText: string,
-		afterEnterText: string
+		afterEnterText: string,
 	): EnterAction | null {
 		// (1): `regExpRules`
 		if (autoIndent >= EditorAutoIndentStrategy.Advanced) {

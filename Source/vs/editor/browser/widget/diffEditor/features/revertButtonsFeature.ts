@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { addDisposableListener, h, EventType } from "vs/base/browser/dom";
+import { EventType, addDisposableListener, h } from "vs/base/browser/dom";
 import { renderIcon } from "vs/base/browser/ui/iconLabel/iconLabels";
 import { Codicon } from "vs/base/common/codicons";
 import { Disposable, toDisposable } from "vs/base/common/lifecycle";
@@ -33,7 +33,7 @@ export class RevertButtonsFeature extends Disposable {
 			DiffEditorViewModel | undefined
 		>,
 		private readonly _options: DiffEditorOptions,
-		private readonly _widget: DiffEditorWidget
+		private readonly _widget: DiffEditorWidget,
 	) {
 		super();
 
@@ -53,13 +53,13 @@ export class RevertButtonsFeature extends Disposable {
 			}
 
 			const lineRanges = new LineRangeSet(
-				selections.map((s) => LineRange.fromRangeInclusive(s))
+				selections.map((s) => LineRange.fromRangeInclusive(s)),
 			);
 
 			const mappings = diff.mappings.filter(
 				(m) =>
 					m.lineRangeMapping.innerChanges &&
-					lineRanges.intersects(m.lineRangeMapping.modified)
+					lineRanges.intersects(m.lineRangeMapping.modified),
 			);
 
 			const result = mappings.map((mapping) => ({
@@ -67,8 +67,8 @@ export class RevertButtonsFeature extends Disposable {
 				rangeMappings: mapping.lineRangeMapping.innerChanges!.filter(
 					(c) =>
 						selections.some((s) =>
-							Range.areIntersecting(c.modifiedRange, s)
-						)
+							Range.areIntersecting(c.modifiedRange, s),
+						),
 				),
 			}));
 			if (
@@ -108,13 +108,12 @@ export class RevertButtonsFeature extends Disposable {
 
 					const btn = store.add(
 						new RevertButton(
-							selections[
-								selections.length - 1
-							].positionLineNumber,
+							selections[selections.length - 1]
+								.positionLineNumber,
 							this._widget,
 							selectedDiffs_.flatMap((d) => d.rangeMappings),
-							true
-						)
+							true,
+						),
 					);
 					this._editors.modified.addGlyphMarginWidget(btn);
 					glyphWidgetsModified.push(btn);
@@ -133,8 +132,8 @@ export class RevertButtonsFeature extends Disposable {
 								m.lineRangeMapping.modified.startLineNumber,
 								this._widget,
 								m.lineRangeMapping.innerChanges,
-								false
-							)
+								false,
+							),
 						);
 						this._editors.modified.addGlyphMarginWidget(btn);
 						glyphWidgetsModified.push(btn);
@@ -146,9 +145,9 @@ export class RevertButtonsFeature extends Disposable {
 						for (const w of glyphWidgetsModified) {
 							this._editors.modified.removeGlyphMarginWidget(w);
 						}
-					})
+					}),
 				);
-			})
+			}),
 		);
 	}
 }
@@ -169,14 +168,14 @@ export class RevertButton extends Disposable implements IGlyphMarginWidget {
 				? localize("revertSelectedChanges", "Revert Selected Changes")
 				: localize("revertChange", "Revert Change"),
 		},
-		[renderIcon(Codicon.arrowRight)]
+		[renderIcon(Codicon.arrowRight)],
 	).root;
 
 	constructor(
 		private readonly _lineNumber: number,
 		private readonly _widget: DiffEditorWidget,
 		private readonly _diffs: RangeMapping[],
-		private readonly _selection: boolean
+		private readonly _selection: boolean,
 	) {
 		super();
 
@@ -187,14 +186,14 @@ export class RevertButton extends Disposable implements IGlyphMarginWidget {
 					e.stopPropagation();
 					e.preventDefault();
 				}
-			})
+			}),
 		);
 
 		this._register(
 			addDisposableListener(this._domNode, EventType.MOUSE_UP, (e) => {
 				e.stopPropagation();
 				e.preventDefault();
-			})
+			}),
 		);
 
 		this._register(
@@ -202,7 +201,7 @@ export class RevertButton extends Disposable implements IGlyphMarginWidget {
 				this._widget.revertRangeMappings(this._diffs);
 				e.stopPropagation();
 				e.preventDefault();
-			})
+			}),
 		);
 	}
 

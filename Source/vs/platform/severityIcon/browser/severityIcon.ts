@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/severityIcon";
 import { Codicon } from "vs/base/common/codicons";
-import { ThemeIcon } from "vs/base/common/themables";
 import Severity from "vs/base/common/severity";
+import { ThemeIcon } from "vs/base/common/themables";
+import "vs/css!./media/severityIcon";
 
 export namespace SeverityIcon {
 	export function className(severity: Severity): string {

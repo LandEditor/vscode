@@ -15,7 +15,7 @@ import { LineRange } from "./lineRange";
 export class LineRangeEdit {
 	constructor(
 		public readonly range: LineRange,
-		public readonly newLines: string[]
+		public readonly newLines: string[],
 	) {}
 
 	public equals(other: LineRangeEdit): boolean {
@@ -33,7 +33,7 @@ export class LineRangeEdit {
 export class RangeEdit {
 	constructor(
 		public readonly range: Range,
-		public readonly newText: string
+		public readonly newText: string,
 	) {}
 
 	public equals(other: RangeEdit): boolean {
@@ -55,7 +55,7 @@ export class LineEdits {
 						e.range.startLineNumber,
 						1,
 						e.range.endLineNumberExclusive,
-						1
+						1,
 					),
 					text: e.newLines.map((s) => s + "\n").join(""),
 				};
@@ -67,7 +67,7 @@ export class LineEdits {
 						1,
 						1,
 						modelLineCount,
-						Number.MAX_SAFE_INTEGER
+						Number.MAX_SAFE_INTEGER,
 					),
 					text: e.newLines.join("\n"),
 				};
@@ -78,7 +78,7 @@ export class LineEdits {
 					e.range.startLineNumber - 1,
 					Number.MAX_SAFE_INTEGER,
 					modelLineCount,
-					Number.MAX_SAFE_INTEGER
+					Number.MAX_SAFE_INTEGER,
 				),
 				text: e.newLines.map((s) => "\n" + s).join(""),
 			};

@@ -3,10 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { BrowserFeatures } from "vs/base/browser/canIUse";
 import * as dom from "vs/base/browser/dom";
 import { IActionViewItem } from "vs/base/browser/ui/actionbar/actionbar";
 import { IAction } from "vs/base/common/actions";
 import { CancellationToken } from "vs/base/common/cancellation";
+import { isLinux, isMacintosh } from "vs/base/common/platform";
 import { DropdownWithPrimaryActionViewItem } from "vs/platform/actions/browser/dropdownWithPrimaryActionViewItem";
 import {
 	IMenu,
@@ -18,6 +20,7 @@ import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
 import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
 import { IEditorOptions } from "vs/platform/editor/common/editor";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { INotificationService } from "vs/platform/notification/common/notification";
 import { IStorageService } from "vs/platform/storage/common/storage";
 import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
 import { IThemeService } from "vs/platform/theme/common/themeService";
@@ -28,6 +31,7 @@ import {
 	ITerminalService,
 	terminalEditorId,
 } from "vs/workbench/contrib/terminal/browser/terminal";
+import { openContextMenu } from "vs/workbench/contrib/terminal/browser/terminalContextMenu";
 import { TerminalEditorInput } from "vs/workbench/contrib/terminal/browser/terminalEditorInput";
 import { getTerminalActionBarArgs } from "vs/workbench/contrib/terminal/browser/terminalMenus";
 import {
@@ -36,10 +40,6 @@ import {
 	TerminalCommandId,
 } from "vs/workbench/contrib/terminal/common/terminal";
 import { IEditorGroup } from "vs/workbench/services/editor/common/editorGroupsService";
-import { isLinux, isMacintosh } from "vs/base/common/platform";
-import { BrowserFeatures } from "vs/base/browser/canIUse";
-import { INotificationService } from "vs/platform/notification/common/notification";
-import { openContextMenu } from "vs/workbench/contrib/terminal/browser/terminalContextMenu";
 import { ACTIVE_GROUP } from "vs/workbench/services/editor/common/editorService";
 import {
 	IWorkbenchLayoutService,
@@ -58,7 +58,7 @@ export class TerminalEditor extends EditorPane {
 
 	private readonly _instanceMenu: IMenu;
 
-	private _cancelContextMenu: boolean = false;
+	private _cancelContextMenu = false;
 
 	constructor(
 		@ITelemetryService telemetryService: ITelemetryService,
@@ -101,13 +101,13 @@ export class TerminalEditor extends EditorPane {
 		newInput: TerminalEditorInput,
 		options: IEditorOptions | undefined,
 		context: IEditorOpenContext,
-		token: CancellationToken
+		token: CancellationToken,
 	) {
 		this._editorInput?.terminalInstance?.detachFromElement();
 		this._editorInput = newInput;
 		await super.setInput(newInput, options, context, token);
 		this._editorInput.terminalInstance?.attachToElement(
-			this._overflowGuardElement!
+			this._overflowGuardElement!,
 		);
 		if (this._lastDimension) {
 			this.layout(this._lastDimension);
@@ -116,8 +116,8 @@ export class TerminalEditor extends EditorPane {
 			this.isVisible() &&
 				this._workbenchLayoutService.isVisible(
 					Parts.EDITOR_PART,
-					dom.getWindow(this._editorInstanceElement)
-				)
+					dom.getWindow(this._editorInstanceElement),
+				),
 		);
 		if (this._editorInput.terminalInstance) {
 			// since the editor does not monitor focus changes, for ex. between the terminal
@@ -125,11 +125,11 @@ export class TerminalEditor extends EditorPane {
 			// when focus changes between them.
 			this._register(
 				this._editorInput.terminalInstance.onDidFocus(() =>
-					this._setActiveInstance()
-				)
+					this._setActiveInstance(),
+				),
 			);
 			this._editorInput.setCopyLaunchConfig(
-				this._editorInput.terminalInstance.shellLaunchConfig
+				this._editorInput.terminalInstance.shellLaunchConfig,
 			);
 		}
 	}
@@ -151,7 +151,7 @@ export class TerminalEditor extends EditorPane {
 			return;
 		}
 		this._terminalEditorService.setActiveInstance(
-			this._editorInput.terminalInstance
+			this._editorInput.terminalInstance,
 		);
 	}
 
@@ -165,7 +165,7 @@ export class TerminalEditor extends EditorPane {
 	protected createEditor(parent: HTMLElement): void {
 		this._editorInstanceElement = parent;
 		this._overflowGuardElement = dom.$(
-			".terminal-overflow-guard.terminal-editor"
+			".terminal-overflow-guard.terminal-editor",
 		);
 		this._editorInstanceElement.appendChild(this._overflowGuardElement);
 		this._registerListeners();
@@ -219,7 +219,7 @@ export class TerminalEditor extends EditorPane {
 									event,
 									this._editorInput?.terminalInstance,
 									this._instanceMenu,
-									this._contextMenuService
+									this._contextMenuService,
 								);
 								return;
 							}
@@ -230,16 +230,14 @@ export class TerminalEditor extends EditorPane {
 							) {
 								await terminal.copySelection();
 								terminal.clearSelection();
+							} else if (BrowserFeatures.clipboard.readText) {
+								terminal.paste();
 							} else {
-								if (BrowserFeatures.clipboard.readText) {
-									terminal.paste();
-								} else {
-									this._notificationService.info(
-										`This browser doesn't support the clipboard.readText API needed to trigger a paste, try ${
-											isMacintosh ? "⌘" : "Ctrl"
-										}+V instead.`
-									);
-								}
+								this._notificationService.info(
+									`This browser doesn't support the clipboard.readText API needed to trigger a paste, try ${
+										isMacintosh ? "⌘" : "Ctrl"
+									}+V instead.`,
+								);
 							}
 							// Clear selection after all click event bubbling is finished on Mac to prevent
 							// right-click selecting a word which is seemed cannot be disabled. There is a
@@ -253,8 +251,8 @@ export class TerminalEditor extends EditorPane {
 							this._cancelContextMenu = true;
 						}
 					}
-				}
-			)
+				},
+			),
 		);
 		this._register(
 			dom.addDisposableListener(
@@ -280,15 +278,15 @@ export class TerminalEditor extends EditorPane {
 								event,
 								this._editorInput?.terminalInstance,
 								this._instanceMenu,
-								this._contextMenuService
+								this._contextMenuService,
 							);
 						}
 						event.preventDefault();
 						event.stopImmediatePropagation();
 						this._cancelContextMenu = false;
 					}
-				}
-			)
+				},
+			),
 		);
 	}
 
@@ -307,8 +305,8 @@ export class TerminalEditor extends EditorPane {
 			visible &&
 				this._workbenchLayoutService.isVisible(
 					Parts.EDITOR_PART,
-					dom.getWindow(this._editorInstanceElement)
-				)
+					dom.getWindow(this._editorInstanceElement),
+				),
 		);
 	}
 
@@ -323,7 +321,7 @@ export class TerminalEditor extends EditorPane {
 						this._getDefaultProfileName(),
 						this._terminalProfileService.contributedProfiles,
 						this._terminalService,
-						this._dropdownMenu
+						this._dropdownMenu,
 					);
 					const button = this._instantiationService.createInstance(
 						DropdownWithPrimaryActionViewItem,
@@ -332,7 +330,7 @@ export class TerminalEditor extends EditorPane {
 						actions.dropdownMenuActions,
 						actions.className,
 						this._contextMenuService,
-						{}
+						{},
 					);
 					return button;
 				}

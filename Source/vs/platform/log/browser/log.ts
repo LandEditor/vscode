@@ -32,7 +32,7 @@ export interface ILogFile {
  */
 export async function getLogs(
 	fileService: IFileService,
-	environmentService: IEnvironmentService
+	environmentService: IEnvironmentService,
 ): Promise<ILogFile[]> {
 	const result: ILogFile[] = [];
 
@@ -40,7 +40,7 @@ export async function getLogs(
 		fileService,
 		result,
 		environmentService.logsHome,
-		environmentService.logsHome
+		environmentService.logsHome,
 	);
 
 	return result;
@@ -50,7 +50,7 @@ async function doGetLogs(
 	fileService: IFileService,
 	logs: ILogFile[],
 	curFolder: URI,
-	logsHome: URI
+	logsHome: URI,
 ): Promise<void> {
 	const stat = await fileService.resolve(curFolder);
 
@@ -104,7 +104,7 @@ export class ConsoleLogInAutomationLogger
 				log: (level, args) =>
 					this.consoleLog(logLevelToString(level), args),
 			},
-			logLevel
+			logLevel,
 		);
 	}
 

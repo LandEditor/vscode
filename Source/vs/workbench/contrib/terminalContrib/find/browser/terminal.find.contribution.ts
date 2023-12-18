@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import type { Terminal as RawXtermTerminal } from "@xterm/xterm";
 import { IDimension } from "vs/base/browser/dom";
 import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
 import { Lazy } from "vs/base/common/lazy";
@@ -33,7 +34,6 @@ import {
 } from "vs/workbench/contrib/terminal/common/terminal";
 import { TerminalContextKeys } from "vs/workbench/contrib/terminal/common/terminalContextKey";
 import { TerminalFindWidget } from "vs/workbench/contrib/terminalContrib/find/browser/terminalFindWidget";
-import type { Terminal as RawXtermTerminal } from "@xterm/xterm";
 
 class TerminalFindContribution
 	extends Disposable
@@ -48,10 +48,10 @@ class TerminalFindContribution
 	static activeFindWidget?: TerminalFindContribution;
 
 	static get(
-		instance: ITerminalInstance | IDetachedTerminalInstance
+		instance: ITerminalInstance | IDetachedTerminalInstance,
 	): TerminalFindContribution | null {
 		return instance.getContribution<TerminalFindContribution>(
-			TerminalFindContribution.ID
+			TerminalFindContribution.ID,
 		);
 	}
 
@@ -69,14 +69,14 @@ class TerminalFindContribution
 		processManager: ITerminalProcessManager | ITerminalProcessInfo,
 		widgetManager: TerminalWidgetManager,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@ITerminalService terminalService: ITerminalService
+		@ITerminalService terminalService: ITerminalService,
 	) {
 		super();
 
 		this._findWidget = new Lazy(() => {
 			const findWidget = instantiationService.createInstance(
 				TerminalFindWidget,
-				this._instance
+				this._instance,
 			);
 
 			// Track focus and set state so we can force the scroll bar to be visible
@@ -94,7 +94,7 @@ class TerminalFindContribution
 
 			if (!this._instance.domElement) {
 				throw new Error(
-					"FindWidget expected terminal DOM to be initialized"
+					"FindWidget expected terminal DOM to be initialized",
 				);
 			}
 
@@ -109,7 +109,7 @@ class TerminalFindContribution
 
 	layout(
 		_xterm: IXtermTerminal & { raw: RawXtermTerminal },
-		dimension: IDimension
+		dimension: IDimension,
 	): void {
 		this._lastLayoutDimensions = dimension;
 		this._findWidget.rawValue?.layout(dimension.width);
@@ -117,9 +117,9 @@ class TerminalFindContribution
 
 	xtermReady(xterm: IXtermTerminal & { raw: RawXtermTerminal }): void {
 		this._register(
-			xterm.onDidChangeFindResults(
-				() => this._findWidget.rawValue?.updateResultCount()
-			)
+			xterm.onDidChangeFindResults(() =>
+				this._findWidget.rawValue?.updateResultCount(),
+			),
 		);
 	}
 
@@ -134,7 +134,7 @@ class TerminalFindContribution
 registerTerminalContribution(
 	TerminalFindContribution.ID,
 	TerminalFindContribution,
-	true
+	true,
 );
 
 registerActiveXtermAction({
@@ -147,13 +147,13 @@ registerActiveXtermAction({
 		primary: KeyMod.CtrlCmd | KeyCode.KeyF,
 		when: ContextKeyExpr.or(
 			TerminalContextKeys.findFocus,
-			TerminalContextKeys.focusInAny
+			TerminalContextKeys.focusInAny,
 		),
 		weight: KeybindingWeight.WorkbenchContrib,
 	},
 	precondition: ContextKeyExpr.or(
 		TerminalContextKeys.processSupported,
-		TerminalContextKeys.terminalHasBeenCreated
+		TerminalContextKeys.terminalHasBeenCreated,
 	),
 	run: (_xterm, _accessor, activeInstance) => {
 		const contr =
@@ -174,13 +174,13 @@ registerActiveXtermAction({
 		secondary: [KeyMod.Shift | KeyCode.Escape],
 		when: ContextKeyExpr.and(
 			TerminalContextKeys.focusInAny,
-			TerminalContextKeys.findVisible
+			TerminalContextKeys.findVisible,
 		),
 		weight: KeybindingWeight.WorkbenchContrib,
 	},
 	precondition: ContextKeyExpr.or(
 		TerminalContextKeys.processSupported,
-		TerminalContextKeys.terminalHasBeenCreated
+		TerminalContextKeys.terminalHasBeenCreated,
 	),
 	run: (_xterm, _accessor, activeInstance) => {
 		const contr =
@@ -195,7 +195,7 @@ registerActiveXtermAction({
 	title: {
 		value: localize(
 			"workbench.action.terminal.toggleFindRegex",
-			"Toggle Find Using Regex"
+			"Toggle Find Using Regex",
 		),
 		original: "Toggle Find Using Regex",
 	},
@@ -204,13 +204,13 @@ registerActiveXtermAction({
 		mac: { primary: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.KeyR },
 		when: ContextKeyExpr.or(
 			TerminalContextKeys.focusInAny,
-			TerminalContextKeys.findFocus
+			TerminalContextKeys.findFocus,
 		),
 		weight: KeybindingWeight.WorkbenchContrib,
 	},
 	precondition: ContextKeyExpr.or(
 		TerminalContextKeys.processSupported,
-		TerminalContextKeys.terminalHasBeenCreated
+		TerminalContextKeys.terminalHasBeenCreated,
 	),
 	run: (_xterm, _accessor, activeInstance) => {
 		const contr =
@@ -226,7 +226,7 @@ registerActiveXtermAction({
 	title: {
 		value: localize(
 			"workbench.action.terminal.toggleFindWholeWord",
-			"Toggle Find Using Whole Word"
+			"Toggle Find Using Whole Word",
 		),
 		original: "Toggle Find Using Whole Word",
 	},
@@ -235,13 +235,13 @@ registerActiveXtermAction({
 		mac: { primary: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.KeyW },
 		when: ContextKeyExpr.or(
 			TerminalContextKeys.focusInAny,
-			TerminalContextKeys.findFocus
+			TerminalContextKeys.findFocus,
 		),
 		weight: KeybindingWeight.WorkbenchContrib,
 	},
 	precondition: ContextKeyExpr.or(
 		TerminalContextKeys.processSupported,
-		TerminalContextKeys.terminalHasBeenCreated
+		TerminalContextKeys.terminalHasBeenCreated,
 	),
 	run: (_xterm, _accessor, activeInstance) => {
 		const contr =
@@ -257,7 +257,7 @@ registerActiveXtermAction({
 	title: {
 		value: localize(
 			"workbench.action.terminal.toggleFindCaseSensitive",
-			"Toggle Find Using Case Sensitive"
+			"Toggle Find Using Case Sensitive",
 		),
 		original: "Toggle Find Using Case Sensitive",
 	},
@@ -266,13 +266,13 @@ registerActiveXtermAction({
 		mac: { primary: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.KeyC },
 		when: ContextKeyExpr.or(
 			TerminalContextKeys.focusInAny,
-			TerminalContextKeys.findFocus
+			TerminalContextKeys.findFocus,
 		),
 		weight: KeybindingWeight.WorkbenchContrib,
 	},
 	precondition: ContextKeyExpr.or(
 		TerminalContextKeys.processSupported,
-		TerminalContextKeys.terminalHasBeenCreated
+		TerminalContextKeys.terminalHasBeenCreated,
 	),
 	run: (_xterm, _accessor, activeInstance) => {
 		const contr =
@@ -298,7 +298,7 @@ registerActiveXtermAction({
 			},
 			when: ContextKeyExpr.or(
 				TerminalContextKeys.focusInAny,
-				TerminalContextKeys.findFocus
+				TerminalContextKeys.findFocus,
 			),
 			weight: KeybindingWeight.WorkbenchContrib,
 		},
@@ -310,7 +310,7 @@ registerActiveXtermAction({
 	],
 	precondition: ContextKeyExpr.or(
 		TerminalContextKeys.processSupported,
-		TerminalContextKeys.terminalHasBeenCreated
+		TerminalContextKeys.terminalHasBeenCreated,
 	),
 	run: (_xterm, _accessor, activeInstance) => {
 		const contr =
@@ -329,7 +329,7 @@ registerActiveXtermAction({
 	title: {
 		value: localize(
 			"workbench.action.terminal.findPrevious",
-			"Find Previous"
+			"Find Previous",
 		),
 		original: "Find Previous",
 	},
@@ -342,7 +342,7 @@ registerActiveXtermAction({
 			},
 			when: ContextKeyExpr.or(
 				TerminalContextKeys.focusInAny,
-				TerminalContextKeys.findFocus
+				TerminalContextKeys.findFocus,
 			),
 			weight: KeybindingWeight.WorkbenchContrib,
 		},
@@ -354,7 +354,7 @@ registerActiveXtermAction({
 	],
 	precondition: ContextKeyExpr.or(
 		TerminalContextKeys.processSupported,
-		TerminalContextKeys.terminalHasBeenCreated
+		TerminalContextKeys.terminalHasBeenCreated,
 	),
 	run: (_xterm, _accessor, activeInstance) => {
 		const contr =
@@ -374,7 +374,7 @@ registerActiveInstanceAction({
 	title: {
 		value: localize(
 			"workbench.action.terminal.searchWorkspace",
-			"Search Workspace"
+			"Search Workspace",
 		),
 		original: "Search Workspace",
 	},
@@ -384,7 +384,7 @@ registerActiveInstanceAction({
 			when: ContextKeyExpr.and(
 				TerminalContextKeys.processSupported,
 				TerminalContextKeys.focus,
-				TerminalContextKeys.textSelected
+				TerminalContextKeys.textSelected,
 			),
 			weight: KeybindingWeight.WorkbenchContrib + 50,
 		},

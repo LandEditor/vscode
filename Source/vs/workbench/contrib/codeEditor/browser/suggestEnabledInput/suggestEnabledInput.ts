@@ -3,30 +3,45 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./suggestEnabledInput";
 import { $, Dimension, append } from "vs/base/browser/dom";
+import { IHistoryNavigationWidget } from "vs/base/browser/history";
 import { Widget } from "vs/base/browser/ui/widget";
 import { Emitter, Event } from "vs/base/common/event";
+import { HistoryNavigator } from "vs/base/common/history";
 import { KeyCode } from "vs/base/common/keyCodes";
 import { mixin } from "vs/base/common/objects";
 import { isMacintosh } from "vs/base/common/platform";
 import { URI as uri } from "vs/base/common/uri";
+import "vs/css!./suggestEnabledInput";
+import { IEditorConstructionOptions } from "vs/editor/browser/config/editorConfiguration";
+import { EditorExtensionsRegistry } from "vs/editor/browser/editorExtensions";
 import { CodeEditorWidget } from "vs/editor/browser/widget/codeEditorWidget";
 import { IEditorOptions } from "vs/editor/common/config/editorOptions";
 import { EditOperation } from "vs/editor/common/core/editOperation";
 import { Position } from "vs/editor/common/core/position";
 import { Range } from "vs/editor/common/core/range";
-import { ITextModel } from "vs/editor/common/model";
+import {
+	ensureValidWordDefinition,
+	getWordAtText,
+} from "vs/editor/common/core/wordHelper";
 import * as languages from "vs/editor/common/languages";
+import { ITextModel } from "vs/editor/common/model";
+import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
 import { IModelService } from "vs/editor/common/services/model";
 import { ContextMenuController } from "vs/editor/contrib/contextmenu/browser/contextmenu";
 import { SnippetController2 } from "vs/editor/contrib/snippet/browser/snippetController2";
 import { SuggestController } from "vs/editor/contrib/suggest/browser/suggestController";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
 	IContextKey,
 	IContextKeyService,
 } from "vs/platform/contextkey/common/contextkey";
+import {
+	IHistoryNavigationContext,
+	registerAndCreateHistoryNavigationContext,
+} from "vs/platform/history/browser/contextScopedHistoryWidget";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
 import {
 	ColorIdentifier,
 	asCssVariable,
@@ -39,25 +54,10 @@ import {
 	selectionBackground,
 } from "vs/platform/theme/common/colorRegistry";
 import { registerThemingParticipant } from "vs/platform/theme/common/themeService";
-import { MenuPreventer } from "vs/workbench/contrib/codeEditor/browser/menuPreventer";
-import { getSimpleEditorOptions } from "vs/workbench/contrib/codeEditor/browser/simpleEditorOptions";
-import { SelectionClipboardContributionID } from "vs/workbench/contrib/codeEditor/browser/selectionClipboard";
-import { EditorExtensionsRegistry } from "vs/editor/browser/editorExtensions";
 import { DEFAULT_FONT_FAMILY } from "vs/workbench/browser/style";
-import { HistoryNavigator } from "vs/base/common/history";
-import {
-	registerAndCreateHistoryNavigationContext,
-	IHistoryNavigationContext,
-} from "vs/platform/history/browser/contextScopedHistoryWidget";
-import { IHistoryNavigationWidget } from "vs/base/browser/history";
-import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
-import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
-import { IEditorConstructionOptions } from "vs/editor/browser/config/editorConfiguration";
-import {
-	ensureValidWordDefinition,
-	getWordAtText,
-} from "vs/editor/common/core/wordHelper";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { MenuPreventer } from "vs/workbench/contrib/codeEditor/browser/menuPreventer";
+import { SelectionClipboardContributionID } from "vs/workbench/contrib/codeEditor/browser/selectionClipboard";
+import { getSimpleEditorOptions } from "vs/workbench/contrib/codeEditor/browser/simpleEditorOptions";
 
 export interface SuggestResultsProvider {
 	/**
@@ -66,7 +66,7 @@ export interface SuggestResultsProvider {
 	 * @param query the full text of the input.
 	 */
 	provideResults: (
-		query: string
+		query: string,
 	) => ((Partial<languages.CompletionItem> & { label: string }) | string)[];
 
 	/**
@@ -170,7 +170,7 @@ export class SuggestEnabledInput extends Widget {
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@ILanguageFeaturesService
 		languageFeaturesService: ILanguageFeaturesService,
-		@IConfigurationService configurationService: IConfigurationService
+		@IConfigurationService configurationService: IConfigurationService,
 	) {
 		super();
 
@@ -181,13 +181,13 @@ export class SuggestEnabledInput extends Widget {
 			$(
 				".suggest-input-placeholder",
 				undefined,
-				options.placeholderText || ""
-			)
+				options.placeholderText || "",
+			),
 		);
 
 		const editorOptions: IEditorConstructionOptions = mixin(
 			getSimpleEditorOptions(configurationService),
-			getSuggestEnabledInputOptions(ariaLabel)
+			getSuggestEnabledInputOptions(ariaLabel),
 		);
 		editorOptions.overflowWidgetsDomNode = options.overflowWidgetsDomNode;
 
@@ -199,8 +199,8 @@ export class SuggestEnabledInput extends Widget {
 					new ServiceCollection([
 						IContextKeyService,
 						scopedContextKeyService,
-					])
-				)
+					]),
+			  )
 			: defaultInstantiationService;
 
 		this.inputWidget = this._register(
@@ -218,8 +218,8 @@ export class SuggestEnabledInput extends Widget {
 							SelectionClipboardContributionID,
 						]),
 					isSimpleWidget: true,
-				}
-			)
+				},
+			),
 		);
 
 		this._register(
@@ -239,14 +239,16 @@ export class SuggestEnabledInput extends Widget {
 						cursorBlinking,
 					});
 				}
-			})
+			}),
 		);
 
 		this._register(
-			this.inputWidget.onDidFocusEditorText(() => this._onDidFocus.fire())
+			this.inputWidget.onDidFocusEditorText(() =>
+				this._onDidFocus.fire(),
+			),
 		);
 		this._register(
-			this.inputWidget.onDidBlurEditorText(() => this._onDidBlur.fire())
+			this.inputWidget.onDidBlurEditorText(() => this._onDidBlur.fire()),
 		);
 
 		const scopeHandle = uri.parse(resourceHandle);
@@ -255,7 +257,7 @@ export class SuggestEnabledInput extends Widget {
 		this.inputWidget.setModel(this.inputModel);
 
 		this._register(
-			this.inputWidget.onDidPaste(() => this.setValue(this.getValue()))
+			this.inputWidget.onDidPaste(() => this.setValue(this.getValue())),
 		); // setter cleanses
 
 		this._register(
@@ -264,7 +266,7 @@ export class SuggestEnabledInput extends Widget {
 					options.focusContextKey.set(true);
 				}
 				this.stylingContainer.classList.add("synthetic-focus");
-			})
+			}),
 		);
 		this._register(
 			this.inputWidget.onDidBlurEditorText(() => {
@@ -272,24 +274,24 @@ export class SuggestEnabledInput extends Widget {
 					options.focusContextKey.set(false);
 				}
 				this.stylingContainer.classList.remove("synthetic-focus");
-			})
+			}),
 		);
 
 		this._register(
 			Event.chain(this.inputWidget.onKeyDown, ($) =>
-				$.filter((e) => e.keyCode === KeyCode.Enter)
+				$.filter((e) => e.keyCode === KeyCode.Enter),
 			)((e) => {
 				e.preventDefault(); /** Do nothing. Enter causes new line which is not expected. */
-			}, this)
+			}, this),
 		);
 		this._register(
 			Event.chain(this.inputWidget.onKeyDown, ($) =>
 				$.filter(
 					(e) =>
 						e.keyCode === KeyCode.DownArrow &&
-						(isMacintosh ? e.metaKey : e.ctrlKey)
-				)
-			)(() => this._onShouldFocusResults.fire(), this)
+						(isMacintosh ? e.metaKey : e.ctrlKey),
+				),
+			)(() => this._onShouldFocusResults.fire(), this),
 		);
 
 		let preexistingContent = this.getValue();
@@ -306,7 +308,7 @@ export class SuggestEnabledInput extends Widget {
 					}
 					this._onInputDidChange.fire(undefined);
 					preexistingContent = content;
-				})
+				}),
 			);
 		}
 
@@ -336,7 +338,7 @@ export class SuggestEnabledInput extends Widget {
 					provideCompletionItems: (
 						model: ITextModel,
 						position: Position,
-						_context: languages.CompletionContext
+						_context: languages.CompletionContext,
 					) => {
 						const query = model.getValue();
 
@@ -349,7 +351,7 @@ export class SuggestEnabledInput extends Widget {
 								position.column,
 								validatedSuggestProvider.wordDefinition,
 								query,
-								0
+								0,
 							);
 							alreadyTypedCount = wordAtText?.word.length ?? 0;
 							zeroIndexedWordStart = wordAtText
@@ -368,7 +370,7 @@ export class SuggestEnabledInput extends Widget {
 							!validatedSuggestProvider.alwaysShowSuggestions &&
 							alreadyTypedCount > 0 &&
 							validatedSuggestProvider.triggerCharacters?.indexOf(
-								query[zeroIndexedWordStart]
+								query[zeroIndexedWordStart],
 							) === -1
 						) {
 							return { suggestions: [] };
@@ -395,13 +397,13 @@ export class SuggestEnabledInput extends Widget {
 										range: Range.fromPositions(
 											position.delta(
 												0,
-												-alreadyTypedCount
+												-alreadyTypedCount,
 											),
-											position
+											position,
 										),
 										sortText:
 											validatedSuggestProvider.sortKey(
-												label
+												label,
 											),
 										kind: languages.CompletionItemKind
 											.Keyword,
@@ -410,15 +412,15 @@ export class SuggestEnabledInput extends Widget {
 								}),
 						};
 					},
-				}
-			)
+				},
+			),
 		);
 
 		this.style(options.styleOverrides || {});
 	}
 
 	protected getScopedContextKeyService(
-		_contextKeyService: IContextKeyService
+		_contextKeyService: IContextKeyService,
 	): IContextKeyService | undefined {
 		return undefined;
 	}
@@ -443,28 +445,28 @@ export class SuggestEnabledInput extends Widget {
 
 	private style(styleOverrides: ISuggestEnabledInputStyleOverrides): void {
 		this.stylingContainer.style.backgroundColor = asCssVariable(
-			styleOverrides.inputBackground ?? inputBackground
+			styleOverrides.inputBackground ?? inputBackground,
 		);
 		this.stylingContainer.style.color = asCssVariable(
-			styleOverrides.inputForeground ?? inputForeground
+			styleOverrides.inputForeground ?? inputForeground,
 		);
 		this.placeholderText.style.color = asCssVariable(
 			styleOverrides.inputPlaceholderForeground ??
-				inputPlaceholderForeground
+				inputPlaceholderForeground,
 		);
 		this.stylingContainer.style.borderWidth = "1px";
 		this.stylingContainer.style.borderStyle = "solid";
 		this.stylingContainer.style.borderColor = asCssVariableWithDefault(
 			styleOverrides.inputBorder ?? inputBorder,
-			"transparent"
+			"transparent",
 		);
 
 		const cursor = this.stylingContainer.getElementsByClassName(
-			"cursor"
+			"cursor",
 		)[0] as HTMLDivElement;
 		if (cursor) {
 			cursor.style.backgroundColor = asCssVariable(
-				styleOverrides.inputForeground ?? inputForeground
+				styleOverrides.inputForeground ?? inputForeground,
 			);
 		}
 	}
@@ -488,7 +490,7 @@ export class SuggestEnabledInput extends Widget {
 
 	private selectAll(): void {
 		this.inputWidget.setSelection(
-			new Range(1, 1, 1, this.getValue().length + 1)
+			new Range(1, 1, 1, this.getValue().length + 1),
 		);
 	}
 }
@@ -524,7 +526,7 @@ export class SuggestEnabledInputWithHistory
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@ILanguageFeaturesService
 		languageFeaturesService: ILanguageFeaturesService,
-		@IConfigurationService configurationService: IConfigurationService
+		@IConfigurationService configurationService: IConfigurationService,
 	) {
 		super(
 			id,
@@ -537,7 +539,7 @@ export class SuggestEnabledInputWithHistory
 			modelService,
 			contextKeyService,
 			languageFeaturesService,
-			configurationService
+			configurationService,
 		);
 		this.history = new HistoryNavigator<string>(history, 100);
 	}
@@ -617,7 +619,7 @@ export class ContextScopedSuggestEnabledInputWithHistory extends SuggestEnabledI
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@ILanguageFeaturesService
 		languageFeaturesService: ILanguageFeaturesService,
-		@IConfigurationService configurationService: IConfigurationService
+		@IConfigurationService configurationService: IConfigurationService,
 	) {
 		super(
 			options,
@@ -625,7 +627,7 @@ export class ContextScopedSuggestEnabledInputWithHistory extends SuggestEnabledI
 			modelService,
 			contextKeyService,
 			languageFeaturesService,
-			configurationService
+			configurationService,
 		);
 
 		const {
@@ -639,30 +641,30 @@ export class ContextScopedSuggestEnabledInputWithHistory extends SuggestEnabledI
 				const lastLineCol = viewModel.getLineLength(lastLineNumber) + 1;
 				const viewPosition =
 					viewModel.coordinatesConverter.convertModelPositionToViewPosition(
-						position
+						position,
 					);
 				historyNavigationBackwardsEnablement.set(
-					viewPosition.lineNumber === 1 && viewPosition.column === 1
+					viewPosition.lineNumber === 1 && viewPosition.column === 1,
 				);
 				historyNavigationForwardsEnablement.set(
 					viewPosition.lineNumber === lastLineNumber &&
-						viewPosition.column === lastLineCol
+						viewPosition.column === lastLineCol,
 				);
-			})
+			}),
 		);
 	}
 
 	protected override getScopedContextKeyService(
-		contextKeyService: IContextKeyService
+		contextKeyService: IContextKeyService,
 	) {
 		const scopedContextKeyService = this._register(
-			contextKeyService.createScoped(this.element)
+			contextKeyService.createScoped(this.element),
 		);
 		this.historyContext = this._register(
 			registerAndCreateHistoryNavigationContext(
 				scopedContextKeyService,
-				this
-			)
+				this,
+			),
 		);
 
 		return scopedContextKeyService;
@@ -679,8 +681,8 @@ registerThemingParticipant((theme, collector) => {
 		if (inputBackgroundColor) {
 			collector.addRule(
 				`.suggest-input-container .monaco-editor .selected-text { background-color: ${inputBackgroundColor.transparent(
-					0.4
-				)}; }`
+					0.4,
+				)}; }`,
 			);
 		}
 
@@ -688,25 +690,25 @@ registerThemingParticipant((theme, collector) => {
 		const inputForegroundColor = theme.getColor(inputForeground);
 		if (inputForegroundColor) {
 			collector.addRule(
-				`.suggest-input-container .monaco-editor .view-line span.inline-selected-text { color: ${inputForegroundColor}; }`
+				`.suggest-input-container .monaco-editor .view-line span.inline-selected-text { color: ${inputForegroundColor}; }`,
 			);
 		}
 
 		const backgroundColor = theme.getColor(inputBackground);
 		if (backgroundColor) {
 			collector.addRule(
-				`.suggest-input-container .monaco-editor-background { background-color: ${backgroundColor}; } `
+				`.suggest-input-container .monaco-editor-background { background-color: ${backgroundColor}; } `,
 			);
 		}
 		collector.addRule(
-			`.suggest-input-container .monaco-editor .focused .selected-text { background-color: ${selectionBackgroundColor}; }`
+			`.suggest-input-container .monaco-editor .focused .selected-text { background-color: ${selectionBackgroundColor}; }`,
 		);
 	} else {
 		// Use editor selection color if theme has not set a selection background color
 		collector.addRule(
 			`.suggest-input-container .monaco-editor .focused .selected-text { background-color: ${theme.getColor(
-				editorSelectionBackground
-			)}; }`
+				editorSelectionBackground,
+			)}; }`,
 		);
 	}
 });

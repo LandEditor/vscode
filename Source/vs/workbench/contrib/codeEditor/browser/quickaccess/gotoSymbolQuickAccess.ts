@@ -3,67 +3,67 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import {
-	IKeyMods,
-	IQuickPickSeparator,
-	IQuickInputService,
-	IQuickPick,
-	ItemActivation,
-} from "vs/platform/quickinput/common/quickInput";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { IRange } from "vs/editor/common/core/range";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	IQuickAccessRegistry,
-	Extensions as QuickaccessExtensions,
-} from "vs/platform/quickinput/common/quickAccess";
-import {
-	AbstractGotoSymbolQuickAccessProvider,
-	IGotoSymbolQuickPickItem,
-} from "vs/editor/contrib/quickAccess/browser/gotoSymbolQuickAccess";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IWorkbenchEditorConfiguration } from "vs/workbench/common/editor";
-import { ITextModel } from "vs/editor/common/model";
-import {
-	DisposableStore,
-	IDisposable,
-	toDisposable,
-	Disposable,
-	MutableDisposable,
-} from "vs/base/common/lifecycle";
 import { timeout } from "vs/base/common/async";
 import {
 	CancellationToken,
 	CancellationTokenSource,
 } from "vs/base/common/cancellation";
-import {
-	registerAction2,
-	Action2,
-	MenuId,
-} from "vs/platform/actions/common/actions";
-import { KeyMod, KeyCode } from "vs/base/common/keyCodes";
-import { prepareQuery } from "vs/base/common/fuzzyScorer";
-import { SymbolKind } from "vs/editor/common/languages";
-import { fuzzyScore, createMatches } from "vs/base/common/filters";
 import { onUnexpectedError } from "vs/base/common/errors";
-import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
+import { createMatches, fuzzyScore } from "vs/base/common/filters";
+import { prepareQuery } from "vs/base/common/fuzzyScorer";
+import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
+import {
+	Disposable,
+	DisposableStore,
+	IDisposable,
+	MutableDisposable,
+	toDisposable,
+} from "vs/base/common/lifecycle";
+import { isCompositeEditor } from "vs/editor/browser/editorBrowser";
+import { IRange } from "vs/editor/common/core/range";
+import { SymbolKind } from "vs/editor/common/languages";
+import { ITextModel } from "vs/editor/common/model";
+import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
+import { IOutlineModelService } from "vs/editor/contrib/documentSymbols/browser/outlineModel";
 import { IQuickAccessTextEditorContext } from "vs/editor/contrib/quickAccess/browser/editorNavigationQuickAccess";
 import {
-	IOutlineService,
-	OutlineTarget,
-} from "vs/workbench/services/outline/browser/outline";
-import { isCompositeEditor } from "vs/editor/browser/editorBrowser";
-import { ITextEditorOptions } from "vs/platform/editor/common/editor";
-import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
-import { IOutlineModelService } from "vs/editor/contrib/documentSymbols/browser/outlineModel";
-import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
+	AbstractGotoSymbolQuickAccessProvider,
+	IGotoSymbolQuickPickItem,
+} from "vs/editor/contrib/quickAccess/browser/gotoSymbolQuickAccess";
+import { localize } from "vs/nls";
+import {
+	Action2,
+	MenuId,
+	registerAction2,
+} from "vs/platform/actions/common/actions";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
+import { ITextEditorOptions } from "vs/platform/editor/common/editor";
+import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
+import {
+	Extensions as QuickaccessExtensions,
+	IQuickAccessRegistry,
+} from "vs/platform/quickinput/common/quickAccess";
+import {
+	IKeyMods,
+	IQuickInputService,
+	IQuickPick,
+	IQuickPickSeparator,
+	ItemActivation,
+} from "vs/platform/quickinput/common/quickInput";
+import { Registry } from "vs/platform/registry/common/platform";
+import { IWorkbenchEditorConfiguration } from "vs/workbench/common/editor";
 import {
 	accessibilityHelpIsShown,
 	accessibleViewIsShown,
 } from "vs/workbench/contrib/accessibility/browser/accessibilityConfiguration";
+import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import {
+	IOutlineService,
+	OutlineTarget,
+} from "vs/workbench/services/outline/browser/outline";
 
 export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccessProvider {
 	protected readonly onDidActiveTextEditorControlChange =
@@ -122,7 +122,7 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 			keyMods: IKeyMods;
 			forceSideBySide?: boolean;
 			preserveFocus?: boolean;
-		}
+		},
 	): void {
 		// Check for sideBySide use
 		if (
@@ -144,7 +144,7 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 
 			this.editorGroupService.sideGroup.openEditor(
 				this.editorService.activeEditor,
-				editorOptions
+				editorOptions,
 			);
 		}
 
@@ -165,7 +165,7 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 		filter: string,
 		options: { extraContainerLabel?: string },
 		disposables: DisposableStore,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<Array<IGotoSymbolQuickPickItem | IQuickPickSeparator>> {
 		// If the registry does not know the model, we wait for as long as
 		// the registry knows it. This helps in cases where a language
@@ -184,14 +184,14 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 			this.getDocumentSymbols(model, token),
 			prepareQuery(filter),
 			options,
-			token
+			token,
 		);
 	}
 
 	//#endregion
 
 	protected override provideWithoutTextEditor(
-		picker: IQuickPick<IGotoSymbolQuickPickItem>
+		picker: IQuickPick<IGotoSymbolQuickPickItem>,
 	): IDisposable {
 		if (this.canPickWithOutlineService()) {
 			return this.doGetOutlinePicks(picker);
@@ -202,13 +202,13 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 	private canPickWithOutlineService(): boolean {
 		return this.editorService.activeEditorPane
 			? this.outlineService.canCreateOutline(
-					this.editorService.activeEditorPane
-				)
+					this.editorService.activeEditorPane,
+			  )
 			: false;
 	}
 
 	private doGetOutlinePicks(
-		picker: IQuickPick<IGotoSymbolQuickPickItem>
+		picker: IQuickPick<IGotoSymbolQuickPickItem>,
 	): IDisposable {
 		const pane = this.editorService.activeEditorPane;
 		if (!pane) {
@@ -240,7 +240,7 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 						if (picker.selectedItems.length === 0) {
 							viewState.dispose();
 						}
-					})
+					}),
 				);
 
 				const entries =
@@ -257,7 +257,7 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 							ariaLabel: entry.ariaLabel,
 							iconClasses: entry.iconClasses,
 						};
-					}
+					},
 				);
 
 				disposables.add(
@@ -268,10 +268,10 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 							outline.reveal(
 								entries[entry.index].element,
 								{},
-								false
+								false,
 							);
 						}
-					})
+					}),
 				);
 
 				const updatePickerItems = () => {
@@ -289,7 +289,7 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 							item.label,
 							item.label.toLowerCase(),
 							0,
-							{ firstMatchCanBeWeak: true, boostFullMatch: true }
+							{ firstMatchCanBeWeak: true, boostFullMatch: true },
 						);
 						if (!score) {
 							return false;
@@ -319,12 +319,12 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 						const [entry] = picker.activeItems;
 						if (entry && entries[entry.index]) {
 							previewDisposable.value = outline.preview(
-								entries[entry.index].element
+								entries[entry.index].element,
 							);
 						} else {
 							previewDisposable.clear();
 						}
-					})
+					}),
 				);
 			})
 			.catch((err) => {
@@ -352,7 +352,7 @@ class GotoSymbolAction extends Action2 {
 						key: "miGotoSymbolInEditor",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"Go to &&Symbol in Editor..."
+					"Go to &&Symbol in Editor...",
 				),
 				original: "Go to Symbol in Editor...",
 			},
@@ -360,7 +360,7 @@ class GotoSymbolAction extends Action2 {
 			keybinding: {
 				when: ContextKeyExpr.and(
 					accessibleViewIsShown.negate(),
-					accessibilityHelpIsShown.negate()
+					accessibilityHelpIsShown.negate(),
 				),
 				weight: KeybindingWeight.WorkbenchContrib,
 				primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyO,
@@ -387,20 +387,20 @@ class GotoSymbolAction extends Action2 {
 registerAction2(GotoSymbolAction);
 
 Registry.as<IQuickAccessRegistry>(
-	QuickaccessExtensions.Quickaccess
+	QuickaccessExtensions.Quickaccess,
 ).registerQuickAccessProvider({
 	ctor: GotoSymbolQuickAccessProvider,
 	prefix: AbstractGotoSymbolQuickAccessProvider.PREFIX,
 	contextKey: "inFileSymbolsPicker",
 	placeholder: localize(
 		"gotoSymbolQuickAccessPlaceholder",
-		"Type the name of a symbol to go to."
+		"Type the name of a symbol to go to.",
 	),
 	helpEntries: [
 		{
 			description: localize(
 				"gotoSymbolQuickAccess",
-				"Go to Symbol in Editor"
+				"Go to Symbol in Editor",
 			),
 			prefix: AbstractGotoSymbolQuickAccessProvider.PREFIX,
 			commandId: GotoSymbolAction.ID,
@@ -409,7 +409,7 @@ Registry.as<IQuickAccessRegistry>(
 		{
 			description: localize(
 				"gotoSymbolByCategoryQuickAccess",
-				"Go to Symbol in Editor by Category"
+				"Go to Symbol in Editor by Category",
 			),
 			prefix: AbstractGotoSymbolQuickAccessProvider.PREFIX_BY_CATEGORY,
 		},

@@ -3,28 +3,28 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { isActiveElement } from "vs/base/browser/dom";
+import { List } from "vs/base/browser/ui/list/listWidget";
+import { AsyncDataTree } from "vs/base/browser/ui/tree/asyncDataTree";
+import { coalesce } from "vs/base/common/arrays";
 import { URI } from "vs/base/common/uri";
+import { ResourceFileEdit } from "vs/editor/browser/services/bulkEditService";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import { IListService } from "vs/platform/list/browser/listService";
-import {
-	OpenEditor,
-	ISortOrderConfiguration,
-} from "vs/workbench/contrib/files/common/files";
+import { ProgressLocation } from "vs/platform/progress/common/progress";
 import {
 	EditorResourceAccessor,
-	SideBySideEditor,
 	IEditorIdentifier,
+	SideBySideEditor,
 } from "vs/workbench/common/editor";
-import { List } from "vs/base/browser/ui/list/listWidget";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { ExplorerItem } from "vs/workbench/contrib/files/common/explorerModel";
-import { coalesce } from "vs/base/common/arrays";
-import { AsyncDataTree } from "vs/base/browser/ui/tree/asyncDataTree";
-import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
 import { IEditableData } from "vs/workbench/common/views";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { ResourceFileEdit } from "vs/editor/browser/services/bulkEditService";
-import { ProgressLocation } from "vs/platform/progress/common/progress";
-import { isActiveElement } from "vs/base/browser/dom";
+import { ExplorerItem } from "vs/workbench/contrib/files/common/explorerModel";
+import {
+	ISortOrderConfiguration,
+	OpenEditor,
+} from "vs/workbench/contrib/files/common/files";
+import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 
 export interface IExplorerService {
 	readonly _serviceBrand: undefined;
@@ -33,7 +33,7 @@ export interface IExplorerService {
 
 	getContext(
 		respectMultiSelection: boolean,
-		ignoreNestedChildren?: boolean
+		ignoreNestedChildren?: boolean,
 	): ExplorerItem[];
 	hasViewFocus(): boolean;
 	setEditable(stat: ExplorerItem, data: IEditableData | null): Promise<void>;
@@ -55,7 +55,7 @@ export interface IExplorerService {
 			progressLocation?:
 				| ProgressLocation.Explorer
 				| ProgressLocation.Window;
-		}
+		},
 	): Promise<void>;
 
 	/**
@@ -76,13 +76,13 @@ export interface IExplorerView {
 	refresh(recursive: boolean, item?: ExplorerItem): Promise<void>;
 	selectResource(
 		resource: URI | undefined,
-		reveal?: boolean | string
+		reveal?: boolean | string,
 	): Promise<void>;
 	setTreeInput(): Promise<void>;
 	itemsCopied(
 		tats: ExplorerItem[],
 		cut: boolean,
-		previousCut: ExplorerItem[] | undefined
+		previousCut: ExplorerItem[] | undefined,
 	): void;
 	setEditable(stat: ExplorerItem, isEditing: boolean): Promise<void>;
 	isItemVisible(item: ExplorerItem): boolean;
@@ -118,7 +118,7 @@ function getFocus(listService: IListService): unknown | undefined {
 export function getResourceForCommand(
 	resource: URI | object | undefined,
 	listService: IListService,
-	editorService: IEditorService
+	editorService: IEditorService,
 ): URI | undefined {
 	if (URI.isUri(resource)) {
 		return resource;
@@ -140,7 +140,7 @@ export function getMultiSelectedResources(
 	resource: URI | object | undefined,
 	listService: IListService,
 	editorService: IEditorService,
-	explorerService: IExplorerService
+	explorerService: IExplorerService,
 ): Array<URI> {
 	const list = listService.lastFocusedList;
 	const element = list?.getHTMLElement();
@@ -163,7 +163,7 @@ export function getMultiSelectedResources(
 				list
 					.getSelectedElements()
 					.filter((s) => s instanceof OpenEditor)
-					.map((oe: OpenEditor) => oe.getResource())
+					.map((oe: OpenEditor) => oe.getResource()),
 			);
 			const focusedElements = list.getFocusedElements();
 			const focus = focusedElements.length
@@ -191,7 +191,7 @@ export function getMultiSelectedResources(
 
 export function getOpenEditorsViewMultiSelection(
 	listService: IListService,
-	editorGroupService: IEditorGroupsService
+	editorGroupService: IEditorGroupsService,
 ): Array<IEditorIdentifier> | undefined {
 	const list = listService.lastFocusedList;
 	const element = list?.getHTMLElement();
@@ -201,7 +201,7 @@ export function getOpenEditorsViewMultiSelection(
 			const selection = coalesce(
 				list
 					.getSelectedElements()
-					.filter((s) => s instanceof OpenEditor)
+					.filter((s) => s instanceof OpenEditor),
 			);
 			const focusedElements = list.getFocusedElements();
 			const focus = focusedElements.length

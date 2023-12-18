@@ -9,7 +9,7 @@ import * as PConst from "../../tsServer/protocol/protocol.const";
 
 export function snippetForFunctionCall(
 	item: { insertText?: string | vscode.SnippetString; label: string },
-	displayParts: ReadonlyArray<Proto.SymbolDisplayPart>
+	displayParts: ReadonlyArray<Proto.SymbolDisplayPart>,
 ): { snippet: vscode.SnippetString; parameterCount: number } {
 	if (item.insertText && typeof item.insertText !== "string") {
 		return { snippet: item.insertText, parameterCount: 0 };
@@ -35,7 +35,7 @@ export function snippetForFunctionCall(
 function appendJoinedPlaceholders(
 	snippet: vscode.SnippetString,
 	parts: ReadonlyArray<Proto.SymbolDisplayPart>,
-	joiner: string
+	joiner: string,
 ) {
 	for (let i = 0; i < parts.length; ++i) {
 		const paramterPart = parts[i];
@@ -52,7 +52,7 @@ interface ParamterListParts {
 }
 
 function getParameterListParts(
-	displayParts: ReadonlyArray<Proto.SymbolDisplayPart>
+	displayParts: ReadonlyArray<Proto.SymbolDisplayPart>,
 ): ParamterListParts {
 	const parts: Proto.SymbolDisplayPart[] = [];
 	let isInMethod = false;

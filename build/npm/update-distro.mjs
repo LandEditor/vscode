@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { execSync } from "child_process";
-import { join, resolve } from "path";
 import { readFileSync, writeFileSync } from "fs";
+import { join, resolve } from "path";
 import { fileURLToPath } from "url";
 
 const rootPath = resolve(
@@ -12,7 +12,7 @@ const rootPath = resolve(
 	"..",
 	"..",
 	"..",
-	".."
+	"..",
 );
 const vscodePath = join(rootPath, "vscode");
 const distroPath = join(rootPath, "vscode-distro");

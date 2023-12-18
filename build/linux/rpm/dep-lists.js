@@ -1,4 +1,3 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -18,7 +17,7 @@ exports.additionalDeps = [
 	"xdg-utils", // OS integration
 ];
 exports.referenceGeneratedDepsByArch = {
-	"x86_64": [
+	x86_64: [
 		"ca-certificates",
 		"ld-linux-x86-64.so.2()(64bit)",
 		"ld-linux-x86-64.so.2(GLIBC_2.2.5)(64bit)",
@@ -119,7 +118,7 @@ exports.referenceGeneratedDepsByArch = {
 		"rtld(GNU_HASH)",
 		"xdg-utils",
 	],
-	"armv7hl": [
+	armv7hl: [
 		"ca-certificates",
 		"ld-linux-armhf.so.3",
 		"ld-linux-armhf.so.3(GLIBC_2.4)",
@@ -227,7 +226,7 @@ exports.referenceGeneratedDepsByArch = {
 		"rtld(GNU_HASH)",
 		"xdg-utils",
 	],
-	"aarch64": [
+	aarch64: [
 		"ca-certificates",
 		"ld-linux-aarch64.so.1()(64bit)",
 		"ld-linux-aarch64.so.1(GLIBC_2.17)(64bit)",

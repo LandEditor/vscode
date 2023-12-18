@@ -29,8 +29,7 @@ export class WebUserDataSyncEnablementService
 		}
 		if (this.enabled === undefined) {
 			this.enabled =
-				this.workbenchEnvironmentService.options?.settingsSyncOptions
-					?.enabled;
+				this.workbenchEnvironmentService.options?.settingsSyncOptions?.enabled;
 		}
 		if (this.enabled === undefined) {
 			this.enabled = super.isEnabled();
@@ -49,7 +48,7 @@ export class WebUserDataSyncEnablementService
 	}
 
 	override getResourceSyncStateVersion(
-		resource: SyncResource
+		resource: SyncResource,
 	): string | undefined {
 		return resource === SyncResource.Extensions
 			? this.workbenchEnvironmentService.options?.settingsSyncOptions
@@ -66,5 +65,5 @@ export class WebUserDataSyncEnablementService
 registerSingleton(
 	IUserDataSyncEnablementService,
 	WebUserDataSyncEnablementService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { app, Event as ElectronEvent } from "electron";
+import { Event as ElectronEvent, app } from "electron";
 import { disposableTimeout } from "vs/base/common/async";
 import { Event } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
@@ -36,14 +36,14 @@ export class ElectronURLListener extends Disposable {
 		windowsMainService: IWindowsMainService,
 		environmentMainService: IEnvironmentMainService,
 		productService: IProductService,
-		private readonly logService: ILogService
+		private readonly logService: ILogService,
 	) {
 		super();
 
 		if (initialProtocolUrls) {
 			logService.trace(
 				"ElectronURLListener initialUrisToHandle:",
-				initialProtocolUrls.map((url) => url.originalUrl)
+				initialProtocolUrls.map((url) => url.originalUrl),
 			);
 
 			// the initial set of URIs we need to handle once the window is ready
@@ -59,7 +59,7 @@ export class ElectronURLListener extends Disposable {
 			app.setAsDefaultProtocolClient(
 				productService.urlProtocol,
 				process.execPath,
-				windowsParameters
+				windowsParameters,
 			);
 		}
 
@@ -68,13 +68,13 @@ export class ElectronURLListener extends Disposable {
 			Event.fromNodeEventEmitter(
 				app,
 				"open-url",
-				(event: ElectronEvent, url: string) => ({ event, url })
+				(event: ElectronEvent, url: string) => ({ event, url }),
 			),
 			({ event, url }) => {
 				event.preventDefault(); // always prevent default and return the url as string
 
 				return url;
-			}
+			},
 		);
 
 		this._register(
@@ -85,7 +85,7 @@ export class ElectronURLListener extends Disposable {
 				}
 
 				this.urlService.open(uri, { originalUrl: url });
-			})
+			}),
 		);
 
 		// Send initial links to the window once it has loaded
@@ -95,19 +95,19 @@ export class ElectronURLListener extends Disposable {
 
 		if (isWindowReady) {
 			logService.trace(
-				"ElectronURLListener: window is ready to handle URLs"
+				"ElectronURLListener: window is ready to handle URLs",
 			);
 
 			this.flush();
 		} else {
 			logService.trace(
-				"ElectronURLListener: waiting for window to be ready to handle URLs..."
+				"ElectronURLListener: waiting for window to be ready to handle URLs...",
 			);
 
 			this._register(
 				Event.once(windowsMainService.onDidSignalReadyWindow)(() =>
-					this.flush()
-				)
+					this.flush(),
+				),
 			);
 		}
 	}
@@ -123,7 +123,7 @@ export class ElectronURLListener extends Disposable {
 	private async flush(): Promise<void> {
 		if (this.retryCount++ > 10) {
 			this.logService.trace(
-				"ElectronURLListener#flush(): giving up after 10 retries"
+				"ElectronURLListener#flush(): giving up after 10 retries",
 			);
 
 			return;
@@ -140,12 +140,12 @@ export class ElectronURLListener extends Disposable {
 			if (handled) {
 				this.logService.trace(
 					"ElectronURLListener#flush(): URL was handled",
-					obj.originalUrl
+					obj.originalUrl,
 				);
 			} else {
 				this.logService.trace(
 					"ElectronURLListener#flush(): URL was not yet handled",
-					obj.originalUrl
+					obj.originalUrl,
 				);
 
 				uris.push(obj);

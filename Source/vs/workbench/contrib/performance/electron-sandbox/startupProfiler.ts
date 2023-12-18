@@ -3,25 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IWorkbenchContribution } from "vs/workbench/common/contributions";
-import { localize } from "vs/nls";
-import { dirname, basename } from "vs/base/common/resources";
+import { basename, dirname } from "vs/base/common/resources";
+import { URI } from "vs/base/common/uri";
 import { ITextModelService } from "vs/editor/common/services/resolverService";
+import { localize } from "vs/nls";
+import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
 import { IDialogService } from "vs/platform/dialogs/common/dialogs";
+import { IFileService } from "vs/platform/files/common/files";
+import { ILabelService } from "vs/platform/label/common/label";
+import { INativeHostService } from "vs/platform/native/common/native";
+import { IOpenerService } from "vs/platform/opener/common/opener";
+import { IProductService } from "vs/platform/product/common/productService";
+import { IWorkbenchContribution } from "vs/workbench/common/contributions";
+import { PerfviewInput } from "vs/workbench/contrib/performance/browser/perfviewEditor";
 import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
+import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
 import {
 	ILifecycleService,
 	LifecyclePhase,
 } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { PerfviewInput } from "vs/workbench/contrib/performance/browser/perfviewEditor";
-import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
-import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
-import { URI } from "vs/base/common/uri";
-import { IOpenerService } from "vs/platform/opener/common/opener";
-import { INativeHostService } from "vs/platform/native/common/native";
-import { IProductService } from "vs/platform/product/common/productService";
-import { IFileService } from "vs/platform/files/common/files";
-import { ILabelService } from "vs/platform/label/common/label";
 
 export class StartupProfiler implements IWorkbenchContribution {
 	constructor(
@@ -55,7 +55,7 @@ export class StartupProfiler implements IWorkbenchContribution {
 			return;
 		}
 		const profileFilenamePrefix = URI.file(
-			this._environmentService.args["prof-startup-prefix"]
+			this._environmentService.args["prof-startup-prefix"],
 		);
 
 		const dir = dirname(profileFilenamePrefix);
@@ -68,7 +68,7 @@ export class StartupProfiler implements IWorkbenchContribution {
 			.then(() =>
 				this._fileService.del(profileFilenamePrefix, {
 					recursive: true,
-				})
+				}),
 			) // (1) delete the file to tell the main process to stop profiling
 			.then(
 				() =>
@@ -86,12 +86,12 @@ export class StartupProfiler implements IWorkbenchContribution {
 								});
 						};
 						check();
-					})
+					}),
 			)
 			.then(() =>
 				this._fileService.del(profileFilenamePrefix, {
 					recursive: true,
-				})
+				}),
 			); // (3) finally delete the file again
 
 		markerFile
@@ -100,8 +100,8 @@ export class StartupProfiler implements IWorkbenchContribution {
 					return (
 						stat.children
 							? stat.children.filter((value) =>
-									value.resource.path.includes(prefix)
-								)
+									value.resource.path.includes(prefix),
+							  )
 							: []
 					).map((stat) => stat.resource);
 				});
@@ -110,7 +110,7 @@ export class StartupProfiler implements IWorkbenchContribution {
 				const profileFiles = files.reduce(
 					(prev, cur) =>
 						`${prev}${this._labelService.getUriLabel(cur)}\n`,
-					"\n"
+					"\n",
 				);
 
 				return this._dialogService
@@ -118,19 +118,19 @@ export class StartupProfiler implements IWorkbenchContribution {
 						type: "info",
 						message: localize(
 							"prof.message",
-							"Successfully created profiles."
+							"Successfully created profiles.",
 						),
 						detail: localize(
 							"prof.detail",
 							"Please create an issue and manually attach the following files:\n{0}",
-							profileFiles
+							profileFiles,
 						),
 						primaryButton: localize(
 							{
 								key: "prof.restartAndFileIssue",
 								comment: ["&& denotes a mnemonic"],
 							},
-							"&&Create Issue and Restart"
+							"&&Create Issue and Restart",
 						),
 						cancelButton: localize("prof.restart", "Restart"),
 					})
@@ -138,10 +138,10 @@ export class StartupProfiler implements IWorkbenchContribution {
 						if (res.confirmed) {
 							Promise.all<any>([
 								this._nativeHostService.showItemInFolder(
-									files[0].fsPath
+									files[0].fsPath,
 								),
 								this._createPerfIssue(
-									files.map((file) => basename(file))
+									files.map((file) => basename(file)),
 								),
 							]).then(() => {
 								// keep window stable until restart is selected
@@ -150,12 +150,12 @@ export class StartupProfiler implements IWorkbenchContribution {
 										type: "info",
 										message: localize(
 											"prof.thanks",
-											"Thanks for helping us."
+											"Thanks for helping us.",
 										),
 										detail: localize(
 											"prof.detail.restart",
 											"A final restart is required to continue to use '{0}'. Again, thank you for your contribution.",
-											this._productService.nameLong
+											this._productService.nameLong,
 										),
 										primaryButton: localize(
 											{
@@ -164,7 +164,7 @@ export class StartupProfiler implements IWorkbenchContribution {
 													"&& denotes a mnemonic",
 												],
 											},
-											"&&Restart"
+											"&&Restart",
 										),
 									})
 									.then((res) => {
@@ -191,11 +191,11 @@ export class StartupProfiler implements IWorkbenchContribution {
 		}
 
 		const ref = await this._textModelResolverService.createModelReference(
-			PerfviewInput.Uri
+			PerfviewInput.Uri,
 		);
 		try {
 			await this._clipboardService.writeText(
-				ref.object.textEditorModel.getValue()
+				ref.object.textEditorModel.getValue(),
 			);
 		} finally {
 			ref.dispose();
@@ -213,8 +213,10 @@ export class StartupProfiler implements IWorkbenchContribution {
 
 		this._openerService.open(
 			URI.parse(
-				`${baseUrl}${queryStringPrefix}body=${encodeURIComponent(body)}`
-			)
+				`${baseUrl}${queryStringPrefix}body=${encodeURIComponent(
+					body,
+				)}`,
+			),
 		);
 	}
 }

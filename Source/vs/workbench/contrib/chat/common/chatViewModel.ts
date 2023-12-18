@@ -45,7 +45,7 @@ export function isResponseVM(item: unknown): item is IChatResponseViewModel {
 }
 
 export function isWelcomeVM(
-	item: unknown
+	item: unknown,
 ): item is IChatWelcomeMessageViewModel {
 	return !!item && typeof item === "object" && "content" in item;
 }
@@ -153,7 +153,7 @@ export class ChatViewModel extends Disposable implements IChatViewModel {
 	readonly onDidDisposeModel = this._onDidDisposeModel.event;
 
 	private readonly _onDidChange = this._register(
-		new Emitter<IChatViewModelChangeEvent>()
+		new Emitter<IChatViewModelChangeEvent>(),
 	);
 	readonly onDidChange = this._onDidChange.event;
 
@@ -254,10 +254,10 @@ export class ChatViewModel extends Disposable implements IChatViewModel {
 	private onAddResponse(responseModel: IChatResponseModel) {
 		const response = this.instantiationService.createInstance(
 			ChatResponseViewModel,
-			responseModel
+			responseModel,
 		);
 		this._register(
-			response.onDidChange(() => this._onDidChange.fire(null))
+			response.onDidChange(() => this._onDidChange.fire(null)),
 		);
 		this._items.push(response);
 	}
@@ -278,7 +278,7 @@ export class ChatViewModel extends Disposable implements IChatViewModel {
 		this._items
 			.filter(
 				(item): item is ChatResponseViewModel =>
-					item instanceof ChatResponseViewModel
+					item instanceof ChatResponseViewModel,
 			)
 			.forEach((item: ChatResponseViewModel) => item.dispose());
 	}
@@ -393,13 +393,13 @@ export class ChatResponseViewModel
 
 	get replyFollowups() {
 		return this._model.followups?.filter(
-			(f): f is IChatReplyFollowup => f.kind === "reply"
+			(f): f is IChatReplyFollowup => f.kind === "reply",
 		);
 	}
 
 	get commandFollowups() {
 		return this._model.followups?.filter(
-			(f): f is IChatResponseCommandFollowup => f.kind === "command"
+			(f): f is IChatResponseCommandFollowup => f.kind === "command",
 		);
 	}
 
@@ -432,7 +432,7 @@ export class ChatResponseViewModel
 		this._usedReferencesExpanded = v;
 	}
 
-	private _vulnerabilitiesListExpanded: boolean = false;
+	private _vulnerabilitiesListExpanded = false;
 	get vulnerabilitiesListExpanded(): boolean {
 		return this._vulnerabilitiesListExpanded;
 	}

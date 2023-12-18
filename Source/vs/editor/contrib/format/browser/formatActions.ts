@@ -15,9 +15,9 @@ import { ICodeEditor } from "vs/editor/browser/editorBrowser";
 import {
 	EditorAction,
 	EditorContributionInstantiation,
+	ServicesAccessor,
 	registerEditorAction,
 	registerEditorContribution,
-	ServicesAccessor,
 } from "vs/editor/browser/editorExtensions";
 import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
 import { EditorOption } from "vs/editor/common/config/editorOptions";
@@ -28,9 +28,9 @@ import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
 import { IEditorWorkerService } from "vs/editor/common/services/editorWorker";
 import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
 import {
+	FormattingMode,
 	formatDocumentRangesWithSelectedProvider,
 	formatDocumentWithSelectedProvider,
-	FormattingMode,
 	getOnTypeFormattingEdits,
 } from "vs/editor/contrib/format/browser/format";
 import { FormattingEdit } from "vs/editor/contrib/format/browser/formattingEdit";
@@ -110,7 +110,7 @@ export class FormatOnType implements IEditorContribution {
 		// no support
 		const [support] =
 			this._languageFeaturesService.onTypeFormattingEditProvider.ordered(
-				model
+				model,
 			);
 		if (!support || !support.autoFormatTriggerCharacters) {
 			return;
@@ -127,7 +127,7 @@ export class FormatOnType implements IEditorContribution {
 				if (triggerChars.has(lastCharCode)) {
 					this._trigger(String.fromCharCode(lastCharCode));
 				}
-			})
+			}),
 		);
 	}
 
@@ -177,7 +177,7 @@ export class FormatOnType implements IEditorContribution {
 			position,
 			ch,
 			model.getFormattingOptions(),
-			cts.token
+			cts.token,
 		)
 			.then((edits) => {
 				if (cts.token.isCancellationRequested) {
@@ -186,7 +186,7 @@ export class FormatOnType implements IEditorContribution {
 				if (isNonEmptyArray(edits)) {
 					this._accessibleNotificationService.notify(
 						AccessibleNotificationEvent.Format,
-						false
+						false,
 					);
 					FormattingEdit.execute(this._editor, edits, true);
 				}
@@ -247,14 +247,14 @@ class FormatOnPaste implements IEditorContribution {
 		// no formatter
 		if (
 			!this._languageFeaturesService.documentRangeFormattingEditProvider.has(
-				this.editor.getModel()
+				this.editor.getModel(),
 			)
 		) {
 			return;
 		}
 
 		this._callOnModel.add(
-			this.editor.onDidPaste(({ range }) => this._trigger(range))
+			this.editor.onDidPaste(({ range }) => this._trigger(range)),
 		);
 	}
 
@@ -273,7 +273,7 @@ class FormatOnPaste implements IEditorContribution {
 				FormattingMode.Silent,
 				Progress.None,
 				CancellationToken.None,
-				false
+				false,
 			)
 			.catch(onUnexpectedError);
 	}
@@ -288,7 +288,7 @@ class FormatDocumentAction extends EditorAction {
 			precondition: ContextKeyExpr.and(
 				EditorContextKeys.notInCompositeEditor,
 				EditorContextKeys.writable,
-				EditorContextKeys.hasDocumentFormattingProvider
+				EditorContextKeys.hasDocumentFormattingProvider,
 			),
 			kbOpts: {
 				kbExpr: EditorContextKeys.editorTextFocus,
@@ -316,9 +316,9 @@ class FormatDocumentAction extends EditorAction {
 					FormattingMode.Explicit,
 					Progress.None,
 					CancellationToken.None,
-					true
+					true,
 				),
-				250
+				250,
 			);
 		}
 	}
@@ -332,13 +332,13 @@ class FormatSelectionAction extends EditorAction {
 			alias: "Format Selection",
 			precondition: ContextKeyExpr.and(
 				EditorContextKeys.writable,
-				EditorContextKeys.hasDocumentSelectionFormattingProvider
+				EditorContextKeys.hasDocumentSelectionFormattingProvider,
 			),
 			kbOpts: {
 				kbExpr: EditorContextKeys.editorTextFocus,
 				primary: KeyChord(
 					KeyMod.CtrlCmd | KeyCode.KeyK,
-					KeyMod.CtrlCmd | KeyCode.KeyF
+					KeyMod.CtrlCmd | KeyCode.KeyF,
 				),
 				weight: KeybindingWeight.EditorContrib,
 			},
@@ -363,8 +363,8 @@ class FormatSelectionAction extends EditorAction {
 						range.startLineNumber,
 						1,
 						range.startLineNumber,
-						model.getLineMaxColumn(range.startLineNumber)
-					)
+						model.getLineMaxColumn(range.startLineNumber),
+				  )
 				: range;
 		});
 
@@ -377,9 +377,9 @@ class FormatSelectionAction extends EditorAction {
 				FormattingMode.Explicit,
 				Progress.None,
 				CancellationToken.None,
-				true
+				true,
 			),
-			250
+			250,
 		);
 	}
 }
@@ -387,12 +387,12 @@ class FormatSelectionAction extends EditorAction {
 registerEditorContribution(
 	FormatOnType.ID,
 	FormatOnType,
-	EditorContributionInstantiation.BeforeFirstInteraction
+	EditorContributionInstantiation.BeforeFirstInteraction,
 );
 registerEditorContribution(
 	FormatOnPaste.ID,
 	FormatOnPaste,
-	EditorContributionInstantiation.BeforeFirstInteraction
+	EditorContributionInstantiation.BeforeFirstInteraction,
 );
 registerEditorAction(FormatDocumentAction);
 registerEditorAction(FormatSelectionAction);

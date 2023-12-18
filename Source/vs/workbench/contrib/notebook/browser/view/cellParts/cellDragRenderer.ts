@@ -23,7 +23,7 @@ class EditorTextRenderer {
 			createHTML(input) {
 				return input;
 			},
-		}
+		},
 	);
 
 	getRichText(editor: ICodeEditor, modelRange: Range): HTMLElement | null {
@@ -59,7 +59,7 @@ class EditorTextRenderer {
 		const linesHtml = this.getRichTextLinesAsHtml(
 			model,
 			modelRange,
-			colorMap
+			colorMap,
 		);
 		element.innerHTML = linesHtml as string;
 		return element;
@@ -68,7 +68,7 @@ class EditorTextRenderer {
 	private getRichTextLinesAsHtml(
 		model: ITextModel,
 		modelRange: Range,
-		colorMap: string[]
+		colorMap: string[],
 	): string | TrustedHTML {
 		const startLineNumber = modelRange.startLineNumber;
 		const startColumn = modelRange.startColumn;
@@ -103,7 +103,7 @@ class EditorTextRenderer {
 					startOffset,
 					endOffset,
 					tabSize,
-					platform.isWindows
+					platform.isWindows,
 				);
 			}
 		}
@@ -127,7 +127,7 @@ export class CodeCellDragImageRenderer {
 	getDragImage(
 		templateData: BaseCellRenderTemplate,
 		editor: ICodeEditor,
-		type: "code" | "markdown"
+		type: "code" | "markdown",
 	): HTMLElement {
 		let dragImage = this.getDragImageImpl(templateData, editor, type);
 		if (!dragImage) {
@@ -142,19 +142,19 @@ export class CodeCellDragImageRenderer {
 	private getDragImageImpl(
 		templateData: BaseCellRenderTemplate,
 		editor: ICodeEditor,
-		type: "code" | "markdown"
+		type: "code" | "markdown",
 	): HTMLElement | null {
 		const dragImageContainer = templateData.container.cloneNode(
-			true
+			true,
 		) as HTMLElement;
 		dragImageContainer.classList.forEach((c) =>
-			dragImageContainer.classList.remove(c)
+			dragImageContainer.classList.remove(c),
 		);
 		dragImageContainer.classList.add(
 			"cell-drag-image",
 			"monaco-list-row",
 			"focused",
-			`${type}-cell-row`
+			`${type}-cell-row`,
 		);
 
 		const editorContainer: HTMLElement | null =
@@ -165,7 +165,7 @@ export class CodeCellDragImageRenderer {
 
 		const richEditorText = new EditorTextRenderer().getRichText(
 			editor,
-			new Range(1, 1, 1, 1000)
+			new Range(1, 1, 1, 1000),
 		);
 		if (!richEditorText) {
 			return null;

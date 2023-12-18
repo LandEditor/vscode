@@ -7,8 +7,8 @@ import { StopWatch } from "vs/base/common/stopwatch";
 import { ICodeEditor } from "vs/editor/browser/editorBrowser";
 import {
 	EditorAction,
-	registerEditorAction,
 	ServicesAccessor,
+	registerEditorAction,
 } from "vs/editor/browser/editorExtensions";
 import * as nls from "vs/nls";
 
@@ -18,7 +18,7 @@ class ForceRetokenizeAction extends EditorAction {
 			id: "editor.action.forceRetokenize",
 			label: nls.localize(
 				"forceRetokenize",
-				"Developer: Force Retokenize"
+				"Developer: Force Retokenize",
 			),
 			alias: "Developer: Force Retokenize",
 			precondition: undefined,

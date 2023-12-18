@@ -3,19 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { matchesFuzzy } from "vs/base/common/filters";
-import { splitGlobAware } from "vs/base/common/glob";
 import {
 	ITreeFilter,
-	TreeVisibility,
 	TreeFilterResult,
+	TreeVisibility,
 } from "vs/base/browser/ui/tree/tree";
+import { matchesFuzzy } from "vs/base/common/filters";
+import { splitGlobAware } from "vs/base/common/glob";
 import { IReplElement } from "vs/workbench/contrib/debug/common/debug";
-import {
-	ReplEvaluationResult,
-	ReplEvaluationInput,
-} from "vs/workbench/contrib/debug/common/replModel";
 import { Variable } from "vs/workbench/contrib/debug/common/debugModel";
+import {
+	ReplEvaluationInput,
+	ReplEvaluationResult,
+} from "vs/workbench/contrib/debug/common/replModel";
 
 type ParsedQuery = {
 	type: "include" | "exclude";
@@ -49,7 +49,7 @@ export class ReplFilter implements ITreeFilter<IReplElement> {
 
 	filter(
 		element: IReplElement,
-		parentVisibility: TreeVisibility
+		parentVisibility: TreeVisibility,
 	): TreeFilterResult<void> {
 		if (
 			element instanceof ReplEvaluationInput ||
@@ -80,7 +80,7 @@ export class ReplFilter implements ITreeFilter<IReplElement> {
 		return includeQueryPresent
 			? includeQueryMatched
 			: typeof parentVisibility !== "undefined"
-				? parentVisibility
-				: TreeVisibility.Visible;
+			  ? parentVisibility
+			  : TreeVisibility.Visible;
 	}
 }

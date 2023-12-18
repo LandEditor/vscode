@@ -38,10 +38,10 @@ export class CodeCacheCleaner extends Disposable {
 	}
 
 	private async cleanUpCodeCaches(
-		currentCodeCachePath: string
+		currentCodeCachePath: string,
 	): Promise<void> {
 		this.logService.trace(
-			"[code cache cleanup]: Starting to clean up old code cache folders."
+			"[code cache cleanup]: Starting to clean up old code cache folders.",
 		);
 
 		try {
@@ -62,7 +62,7 @@ export class CodeCacheCleaner extends Disposable {
 					// Delete cache folder if old enough
 					const codeCacheEntryPath = join(
 						codeCacheRootPath,
-						codeCache
+						codeCache,
 					);
 					const codeCacheEntryStat =
 						await Promises.stat(codeCacheEntryPath);
@@ -72,12 +72,12 @@ export class CodeCacheCleaner extends Disposable {
 							this._DataMaxAge
 					) {
 						this.logService.trace(
-							`[code cache cleanup]: Removing code cache folder ${codeCache}.`
+							`[code cache cleanup]: Removing code cache folder ${codeCache}.`,
 						);
 
 						return Promises.rm(codeCacheEntryPath);
 					}
-				})
+				}),
 			);
 		} catch (error) {
 			onUnexpectedError(error);

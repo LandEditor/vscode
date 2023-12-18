@@ -4,15 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	window,
-	workspace,
 	Disposable,
-	TextDocument,
 	Position,
 	SnippetString,
+	TextDocument,
 	TextDocumentChangeEvent,
 	TextDocumentChangeReason,
 	TextDocumentContentChangeEvent,
+	window,
+	workspace,
 } from "vscode";
 import { Runtime } from "./htmlClient";
 import { LanguageParticipants } from "./languageParticipants";
@@ -21,22 +21,22 @@ export function activateAutoInsertion(
 	provider: (
 		kind: "autoQuote" | "autoClose",
 		document: TextDocument,
-		position: Position
+		position: Position,
 	) => Thenable<string>,
 	languageParticipants: LanguageParticipants,
-	runtime: Runtime
+	runtime: Runtime,
 ): Disposable {
 	const disposables: Disposable[] = [];
 	workspace.onDidChangeTextDocument(
 		onDidChangeTextDocument,
 		null,
-		disposables
+		disposables,
 	);
 
 	let anyIsEnabled = false;
 	const isEnabled = {
-		"autoQuote": false,
-		"autoClose": false,
+		autoQuote: false,
+		autoClose: false,
 	};
 	updateEnabledState();
 	window.onDidChangeActiveTextEditor(updateEnabledState, null, disposables);
@@ -61,7 +61,7 @@ export function activateAutoInsertion(
 		}
 		const configurations = workspace.getConfiguration(
 			undefined,
-			document.uri
+			document.uri,
 		);
 		isEnabled["autoQuote"] =
 			configurations.get<boolean>("html.autoCreateQuotes") ?? false;
@@ -112,14 +112,14 @@ export function activateAutoInsertion(
 	function doAutoInsert(
 		kind: "autoQuote" | "autoClose",
 		document: TextDocument,
-		lastChange: TextDocumentContentChangeEvent
+		lastChange: TextDocumentContentChangeEvent,
 	) {
 		const rangeStart = lastChange.range.start;
 		const version = document.version;
 		timeout = runtime.timer.setTimeout(() => {
 			const position = new Position(
 				rangeStart.line,
-				rangeStart.character + lastChange.text.length
+				rangeStart.character + lastChange.text.length,
 			);
 			provider(kind, document, position).then((text) => {
 				if (text && isEnabled[kind]) {
@@ -134,17 +134,17 @@ export function activateAutoInsertion(
 							if (
 								selections.length &&
 								selections.some((s) =>
-									s.active.isEqual(position)
+									s.active.isEqual(position),
 								)
 							) {
 								activeEditor.insertSnippet(
 									new SnippetString(text),
-									selections.map((s) => s.active)
+									selections.map((s) => s.active),
 								);
 							} else {
 								activeEditor.insertSnippet(
 									new SnippetString(text),
-									position
+									position,
 								);
 							}
 						}

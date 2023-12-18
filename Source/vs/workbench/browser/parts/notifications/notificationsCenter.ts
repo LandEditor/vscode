@@ -3,52 +3,52 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/notificationsCenter";
-import "vs/css!./media/notificationsActions";
-import {
-	NOTIFICATIONS_CENTER_HEADER_FOREGROUND,
-	NOTIFICATIONS_CENTER_HEADER_BACKGROUND,
-	NOTIFICATIONS_CENTER_BORDER,
-} from "vs/workbench/common/theme";
-import { IThemeService, Themable } from "vs/platform/theme/common/themeService";
-import {
-	INotificationsModel,
-	INotificationChangeEvent,
-	NotificationChangeType,
-	NotificationViewItemContentChangeKind,
-} from "vs/workbench/common/notifications";
-import {
-	IWorkbenchLayoutService,
-	Parts,
-} from "vs/workbench/services/layout/browser/layoutService";
-import { Emitter } from "vs/base/common/event";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import {
-	INotificationsCenterController,
-	NotificationActionRunner,
-} from "vs/workbench/browser/parts/notifications/notificationsCommands";
-import { NotificationsList } from "vs/workbench/browser/parts/notifications/notificationsList";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { Dimension, isAncestorOfActiveElement } from "vs/base/browser/dom";
-import { widgetShadow } from "vs/platform/theme/common/colorRegistry";
-import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
-import { localize } from "vs/nls";
 import { ActionBar } from "vs/base/browser/ui/actionbar/actionbar";
+import { mainWindow } from "vs/base/browser/window";
+import { IAction } from "vs/base/common/actions";
+import { Emitter } from "vs/base/common/event";
+import { assertAllDefined, assertIsDefined } from "vs/base/common/types";
+import "vs/css!./media/notificationsActions";
+import "vs/css!./media/notificationsCenter";
+import { localize } from "vs/nls";
+import {
+	AccessibleNotificationEvent,
+	IAccessibleNotificationService,
+} from "vs/platform/accessibility/common/accessibility";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { INotificationService } from "vs/platform/notification/common/notification";
+import { widgetShadow } from "vs/platform/theme/common/colorRegistry";
+import { IThemeService, Themable } from "vs/platform/theme/common/themeService";
 import {
 	ClearAllNotificationsAction,
 	HideNotificationsCenterAction,
 	ToggleDoNotDisturbAction,
 } from "vs/workbench/browser/parts/notifications/notificationsActions";
-import { IAction } from "vs/base/common/actions";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { assertAllDefined, assertIsDefined } from "vs/base/common/types";
-import { NotificationsCenterVisibleContext } from "vs/workbench/common/contextkeys";
-import { INotificationService } from "vs/platform/notification/common/notification";
 import {
-	AccessibleNotificationEvent,
-	IAccessibleNotificationService,
-} from "vs/platform/accessibility/common/accessibility";
-import { mainWindow } from "vs/base/browser/window";
+	INotificationsCenterController,
+	NotificationActionRunner,
+} from "vs/workbench/browser/parts/notifications/notificationsCommands";
+import { NotificationsList } from "vs/workbench/browser/parts/notifications/notificationsList";
+import { NotificationsCenterVisibleContext } from "vs/workbench/common/contextkeys";
+import {
+	INotificationChangeEvent,
+	INotificationsModel,
+	NotificationChangeType,
+	NotificationViewItemContentChangeKind,
+} from "vs/workbench/common/notifications";
+import {
+	NOTIFICATIONS_CENTER_BORDER,
+	NOTIFICATIONS_CENTER_HEADER_BACKGROUND,
+	NOTIFICATIONS_CENTER_HEADER_FOREGROUND,
+} from "vs/workbench/common/theme";
+import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
+import {
+	IWorkbenchLayoutService,
+	Parts,
+} from "vs/workbench/services/layout/browser/layoutService";
 
 export class NotificationsCenter
 	extends Themable
@@ -57,7 +57,7 @@ export class NotificationsCenter
 	private static readonly MAX_DIMENSIONS = new Dimension(450, 400);
 
 	private readonly _onDidChangeVisibility = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onDidChangeVisibility = this._onDidChangeVisibility.event;
 
@@ -102,18 +102,18 @@ export class NotificationsCenter
 	private registerListeners(): void {
 		this._register(
 			this.model.onDidChangeNotification((e) =>
-				this.onDidChangeNotification(e)
-			)
+				this.onDidChangeNotification(e),
+			),
 		);
 		this._register(
 			this.layoutService.onDidLayoutMainContainer((dimension) =>
-				this.layout(Dimension.lift(dimension))
-			)
+				this.layout(Dimension.lift(dimension)),
+			),
 		);
 		this._register(
 			this.notificationService.onDidChangeDoNotDisturbMode(() =>
-				this.onDidChangeDoNotDisturbMode()
-			)
+				this.onDidChangeDoNotDisturbMode(),
+			),
 		);
 	}
 
@@ -150,7 +150,7 @@ export class NotificationsCenter
 		const [notificationsList, notificationsCenterContainer] =
 			assertAllDefined(
 				this.notificationsList,
-				this.notificationsCenterContainer
+				this.notificationsCenterContainer,
 			);
 		this._isVisible = true;
 		notificationsCenterContainer.classList.add("visible");
@@ -163,7 +163,7 @@ export class NotificationsCenter
 		notificationsList.updateNotificationsList(
 			0,
 			0,
-			this.model.notifications
+			this.model.notifications,
 		);
 
 		// Focus first
@@ -174,7 +174,7 @@ export class NotificationsCenter
 
 		// Mark as visible
 		this.model.notifications.forEach((notification) =>
-			notification.updateVisibility(true)
+			notification.updateVisibility(true),
 		);
 
 		// Context Key
@@ -187,22 +187,22 @@ export class NotificationsCenter
 	private updateTitle(): void {
 		const [notificationsCenterTitle, clearAllAction] = assertAllDefined(
 			this.notificationsCenterTitle,
-			this.clearAllAction
+			this.clearAllAction,
 		);
 
 		if (this.model.notifications.length === 0) {
 			notificationsCenterTitle.textContent = localize(
 				"notificationsEmpty",
-				"No new notifications"
+				"No new notifications",
 			);
 			clearAllAction.enabled = false;
 		} else {
 			notificationsCenterTitle.textContent = localize(
 				"notifications",
-				"Notifications"
+				"Notifications",
 			);
 			clearAllAction.enabled = this.model.notifications.some(
-				(notification) => !notification.hasProgress
+				(notification) => !notification.hasProgress,
 			);
 		}
 	}
@@ -215,19 +215,19 @@ export class NotificationsCenter
 		// Header
 		this.notificationsCenterHeader = document.createElement("div");
 		this.notificationsCenterHeader.classList.add(
-			"notifications-center-header"
+			"notifications-center-header",
 		);
 		this.notificationsCenterContainer.appendChild(
-			this.notificationsCenterHeader
+			this.notificationsCenterHeader,
 		);
 
 		// Header Title
 		this.notificationsCenterTitle = document.createElement("span");
 		this.notificationsCenterTitle.classList.add(
-			"notifications-center-header-title"
+			"notifications-center-header-title",
 		);
 		this.notificationsCenterHeader.appendChild(
-			this.notificationsCenterTitle
+			this.notificationsCenterTitle,
 		);
 
 		// Header Toolbar
@@ -236,25 +236,25 @@ export class NotificationsCenter
 		this.notificationsCenterHeader.appendChild(toolbarContainer);
 
 		const actionRunner = this._register(
-			this.instantiationService.createInstance(NotificationActionRunner)
+			this.instantiationService.createInstance(NotificationActionRunner),
 		);
 
 		const notificationsToolBar = this._register(
 			new ActionBar(toolbarContainer, {
 				ariaLabel: localize(
 					"notificationsToolbar",
-					"Notification Center Actions"
+					"Notification Center Actions",
 				),
 				actionRunner,
-			})
+			}),
 		);
 
 		this.clearAllAction = this._register(
 			this.instantiationService.createInstance(
 				ClearAllNotificationsAction,
 				ClearAllNotificationsAction.ID,
-				ClearAllNotificationsAction.LABEL
-			)
+				ClearAllNotificationsAction.LABEL,
+			),
 		);
 		notificationsToolBar.push(this.clearAllAction, {
 			icon: true,
@@ -266,8 +266,8 @@ export class NotificationsCenter
 			this.instantiationService.createInstance(
 				ToggleDoNotDisturbAction,
 				ToggleDoNotDisturbAction.ID,
-				ToggleDoNotDisturbAction.LABEL
-			)
+				ToggleDoNotDisturbAction.LABEL,
+			),
 		);
 		notificationsToolBar.push(this.toggleDoNotDisturbAction, {
 			icon: true,
@@ -279,8 +279,8 @@ export class NotificationsCenter
 			this.instantiationService.createInstance(
 				HideNotificationsCenterAction,
 				HideNotificationsCenterAction.ID,
-				HideNotificationsCenterAction.LABEL
-			)
+				HideNotificationsCenterAction.LABEL,
+			),
 		);
 		notificationsToolBar.push(hideAllAction, {
 			icon: true,
@@ -295,9 +295,9 @@ export class NotificationsCenter
 			{
 				widgetAriaLabel: localize(
 					"notificationsCenterWidgetAriaLabel",
-					"Notifications Center"
+					"Notifications Center",
 				),
-			}
+			},
 		);
 		this.container.appendChild(this.notificationsCenterContainer);
 	}
@@ -319,7 +319,7 @@ export class NotificationsCenter
 		const [notificationsList, notificationsCenterContainer] =
 			assertAllDefined(
 				this.notificationsList,
-				this.notificationsCenterContainer
+				this.notificationsCenterContainer,
 			);
 		switch (e.kind) {
 			case NotificationChangeType.ADD:
@@ -349,7 +349,7 @@ export class NotificationsCenter
 				break;
 			case NotificationChangeType.REMOVE:
 				focusEditor = isAncestorOfActiveElement(
-					notificationsCenterContainer
+					notificationsCenterContainer,
 				);
 				notificationsList.updateNotificationsList(e.index, 1);
 				e.item.updateVisibility(false);
@@ -380,7 +380,7 @@ export class NotificationsCenter
 		}
 
 		const focusEditor = isAncestorOfActiveElement(
-			this.notificationsCenterContainer
+			this.notificationsCenterContainer,
 		);
 
 		// Hide
@@ -390,7 +390,7 @@ export class NotificationsCenter
 
 		// Mark as hidden
 		this.model.notifications.forEach((notification) =>
-			notification.updateVisibility(false)
+			notification.updateVisibility(false),
 		);
 
 		// Context Key
@@ -420,12 +420,12 @@ export class NotificationsCenter
 				: "";
 
 			const headerForeground = this.getColor(
-				NOTIFICATIONS_CENTER_HEADER_FOREGROUND
+				NOTIFICATIONS_CENTER_HEADER_FOREGROUND,
 			);
 			this.notificationsCenterHeader.style.color = headerForeground ?? "";
 
 			const headerBackground = this.getColor(
-				NOTIFICATIONS_CENTER_HEADER_BACKGROUND
+				NOTIFICATIONS_CENTER_HEADER_BACKGROUND,
 			);
 			this.notificationsCenterHeader.style.background =
 				headerBackground ?? "";
@@ -453,7 +453,7 @@ export class NotificationsCenter
 				if (
 					this.layoutService.isVisible(
 						Parts.STATUSBAR_PART,
-						mainWindow
+						mainWindow,
 					)
 				) {
 					availableHeight -= 22; // adjust for status bar
@@ -462,7 +462,7 @@ export class NotificationsCenter
 				if (
 					this.layoutService.isVisible(
 						Parts.TITLEBAR_PART,
-						mainWindow
+						mainWindow,
 					)
 				) {
 					availableHeight -= 22; // adjust for title bar
@@ -475,7 +475,7 @@ export class NotificationsCenter
 			const notificationsList = assertIsDefined(this.notificationsList);
 			notificationsList.layout(
 				Math.min(maxWidth, availableWidth),
-				Math.min(maxHeight, availableHeight)
+				Math.min(maxHeight, availableHeight),
 			);
 		}
 	}
@@ -492,7 +492,7 @@ export class NotificationsCenter
 				notification.close();
 			}
 			this.accessibleNotificationService.notify(
-				AccessibleNotificationEvent.Clear
+				AccessibleNotificationEvent.Clear,
 			);
 		}
 	}

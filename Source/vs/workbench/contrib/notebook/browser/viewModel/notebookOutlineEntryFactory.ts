@@ -5,6 +5,8 @@
 
 import { renderMarkdownAsPlaintext } from "vs/base/browser/markdownRenderer";
 import { CancellationToken } from "vs/base/common/cancellation";
+import { IRange } from "vs/editor/common/core/range";
+import { SymbolKind } from "vs/editor/common/languages";
 import {
 	IOutlineModelService,
 	OutlineModelService,
@@ -12,11 +14,9 @@ import {
 import { localize } from "vs/nls";
 import { ICellViewModel } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
 import { getMarkdownHeadersInCell } from "vs/workbench/contrib/notebook/browser/viewModel/foldingModel";
-import { OutlineEntry } from "./OutlineEntry";
 import { CellKind } from "vs/workbench/contrib/notebook/common/notebookCommon";
 import { INotebookExecutionStateService } from "vs/workbench/contrib/notebook/common/notebookExecutionStateService";
-import { IRange } from "vs/editor/common/core/range";
-import { SymbolKind } from "vs/editor/common/languages";
+import { OutlineEntry } from "./OutlineEntry";
 
 type entryDesc = {
 	name: string;
@@ -29,12 +29,12 @@ export class NotebookOutlineEntryFactory {
 	private cellOutlineEntryCache: Record<string, entryDesc[]> = {};
 
 	constructor(
-		private readonly executionStateService: INotebookExecutionStateService
+		private readonly executionStateService: INotebookExecutionStateService,
 	) {}
 
 	public getOutlineEntries(
 		cell: ICellViewModel,
-		index: number
+		index: number,
 	): OutlineEntry[] {
 		const entries: OutlineEntry[] = [];
 
@@ -49,11 +49,11 @@ export class NotebookOutlineEntryFactory {
 		if (isMarkdown) {
 			const fullContent = cell.getText().substring(0, 10000);
 			for (const { depth, text } of getMarkdownHeadersInCell(
-				fullContent
+				fullContent,
 			)) {
 				hasHeader = true;
 				entries.push(
-					new OutlineEntry(index++, depth, cell, text, false, false)
+					new OutlineEntry(index++, depth, cell, text, false, false),
 				);
 			}
 
@@ -71,8 +71,8 @@ export class NotebookOutlineEntryFactory {
 							cell,
 							text,
 							false,
-							false
-						)
+							false,
+						),
 					);
 				}
 			}
@@ -100,8 +100,8 @@ export class NotebookOutlineEntryFactory {
 								false,
 								false,
 								cached.range,
-								cached.kind
-							)
+								cached.kind,
+							),
 						);
 					});
 				}
@@ -124,8 +124,8 @@ export class NotebookOutlineEntryFactory {
 						cell,
 						preview,
 						!!exeState,
-						exeState ? exeState.isPaused : false
-					)
+						exeState ? exeState.isPaused : false,
+					),
 				);
 			}
 		}
@@ -136,16 +136,16 @@ export class NotebookOutlineEntryFactory {
 	public async cacheSymbols(
 		cell: ICellViewModel,
 		outlineModelService: IOutlineModelService,
-		cancelToken: CancellationToken
+		cancelToken: CancellationToken,
 	) {
 		const textModel = await cell.resolveTextModel();
 		const outlineModel = await outlineModelService.getOrCreate(
 			textModel,
-			cancelToken
+			cancelToken,
 		);
 		const entries = createOutlineEntries(
 			outlineModel.getTopLevelSymbols(),
-			7
+			7,
 		);
 		this.cellOutlineEntryCache[textModel.id] = entries;
 	}
@@ -156,7 +156,7 @@ type documentSymbol = ReturnType<outlineModel["getTopLevelSymbols"]>[number];
 
 function createOutlineEntries(
 	symbols: documentSymbol[],
-	level: number
+	level: number,
 ): entryDesc[] {
 	const entries: entryDesc[] = [];
 	symbols.forEach((symbol) => {
@@ -177,7 +177,7 @@ function getCellFirstNonEmptyLine(cell: ICellViewModel) {
 	const textBuffer = cell.textBuffer;
 	for (let i = 0; i < textBuffer.getLineCount(); i++) {
 		const firstNonWhitespace = textBuffer.getLineFirstNonWhitespaceColumn(
-			i + 1
+			i + 1,
 		);
 		const lineLength = textBuffer.getLineLength(i + 1);
 		if (firstNonWhitespace < lineLength) {

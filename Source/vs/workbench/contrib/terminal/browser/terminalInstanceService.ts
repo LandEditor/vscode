@@ -3,15 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Emitter, Event } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
+import { URI } from "vs/base/common/uri";
 import {
-	ITerminalInstance,
-	ITerminalInstanceService,
-} from "vs/workbench/contrib/terminal/browser/terminal";
+	IContextKey,
+	IContextKeyService,
+} from "vs/platform/contextkey/common/contextkey";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { Disposable } from "vs/base/common/lifecycle";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { Registry } from "vs/platform/registry/common/platform";
 import {
 	IShellLaunchConfig,
 	ITerminalBackend,
@@ -20,17 +24,13 @@ import {
 	TerminalExtensions,
 	TerminalLocation,
 } from "vs/platform/terminal/common/terminal";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { TerminalInstance } from "vs/workbench/contrib/terminal/browser/terminalInstance";
 import {
-	IContextKey,
-	IContextKeyService,
-} from "vs/platform/contextkey/common/contextkey";
+	ITerminalInstance,
+	ITerminalInstanceService,
+} from "vs/workbench/contrib/terminal/browser/terminal";
 import { TerminalConfigHelper } from "vs/workbench/contrib/terminal/browser/terminalConfigHelper";
-import { URI } from "vs/base/common/uri";
-import { Emitter, Event } from "vs/base/common/event";
+import { TerminalInstance } from "vs/workbench/contrib/terminal/browser/terminalInstance";
 import { TerminalContextKeys } from "vs/workbench/contrib/terminal/common/terminalContextKey";
-import { Registry } from "vs/platform/registry/common/platform";
 import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
 
 export class TerminalInstanceService
@@ -47,7 +47,7 @@ export class TerminalInstanceService
 	>();
 
 	private readonly _onDidCreateInstance = this._register(
-		new Emitter<ITerminalInstance>()
+		new Emitter<ITerminalInstance>(),
 	);
 	get onDidCreateInstance(): Event<ITerminalInstance> {
 		return this._onDidCreateInstance.event;
@@ -86,15 +86,15 @@ export class TerminalInstanceService
 
 	createInstance(
 		profile: ITerminalProfile,
-		target: TerminalLocation
+		target: TerminalLocation,
 	): ITerminalInstance;
 	createInstance(
 		shellLaunchConfig: IShellLaunchConfig,
-		target: TerminalLocation
+		target: TerminalLocation,
 	): ITerminalInstance;
 	createInstance(
 		config: IShellLaunchConfig | ITerminalProfile,
-		target: TerminalLocation
+		target: TerminalLocation,
 	): ITerminalInstance {
 		const shellLaunchConfig =
 			this.convertProfileToShellLaunchConfig(config);
@@ -103,7 +103,7 @@ export class TerminalInstanceService
 			this._terminalShellTypeContextKey,
 			this._terminalInRunCommandPicker,
 			this._configHelper,
-			shellLaunchConfig
+			shellLaunchConfig,
 		);
 		instance.target = target;
 		this._onDidCreateInstance.fire(instance);
@@ -112,7 +112,7 @@ export class TerminalInstanceService
 
 	convertProfileToShellLaunchConfig(
 		shellLaunchConfigOrProfile?: IShellLaunchConfig | ITerminalProfile,
-		cwd?: string | URI
+		cwd?: string | URI,
 	): IShellLaunchConfig {
 		// Profile was provided
 		if (
@@ -147,16 +147,16 @@ export class TerminalInstanceService
 	}
 
 	async getBackend(
-		remoteAuthority?: string
+		remoteAuthority?: string,
 	): Promise<ITerminalBackend | undefined> {
 		let backend = Registry.as<ITerminalBackendRegistry>(
-			TerminalExtensions.Backend
+			TerminalExtensions.Backend,
 		).getTerminalBackend(remoteAuthority);
 		if (!backend) {
 			// Ensure backend is initialized and try again
 			await this._backendRegistration.get(remoteAuthority)?.promise;
 			backend = Registry.as<ITerminalBackendRegistry>(
-				TerminalExtensions.Backend
+				TerminalExtensions.Backend,
 			).getTerminalBackend(remoteAuthority);
 		}
 		return backend;
@@ -164,7 +164,7 @@ export class TerminalInstanceService
 
 	getRegisteredBackends(): IterableIterator<ITerminalBackend> {
 		return Registry.as<ITerminalBackendRegistry>(
-			TerminalExtensions.Backend
+			TerminalExtensions.Backend,
 		).backends.values();
 	}
 
@@ -176,5 +176,5 @@ export class TerminalInstanceService
 registerSingleton(
 	ITerminalInstanceService,
 	TerminalInstanceService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

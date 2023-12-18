@@ -6,7 +6,7 @@
 import { Event } from "vs/base/common/event";
 import { IJSONSchema } from "vs/base/common/jsonSchema";
 import { KeyCode } from "vs/base/common/keyCodes";
-import { ResolvedKeybinding, Keybinding } from "vs/base/common/keybindings";
+import { Keybinding, ResolvedKeybinding } from "vs/base/common/keybindings";
 import {
 	IContextKeyService,
 	IContextKeyServiceTarget,
@@ -69,12 +69,12 @@ export interface IKeybindingService {
 	 */
 	softDispatch(
 		keyboardEvent: IKeyboardEvent,
-		target: IContextKeyServiceTarget
+		target: IContextKeyServiceTarget,
 	): ResolutionResult;
 
 	dispatchByUserSettingsLabel(
 		userSettingsLabel: string,
-		target: IContextKeyServiceTarget
+		target: IContextKeyServiceTarget,
 	): void;
 
 	/**
@@ -89,7 +89,7 @@ export interface IKeybindingService {
 	 */
 	lookupKeybinding(
 		commandId: string,
-		context?: IContextKeyService
+		context?: IContextKeyService,
 	): ResolvedKeybinding | undefined;
 
 	getDefaultKeybindingsContent(): string;
@@ -107,7 +107,7 @@ export interface IKeybindingService {
 	mightProducePrintableCharacter(event: IKeyboardEvent): boolean;
 
 	registerSchemaContribution(
-		contribution: KeybindingsSchemaContribution
+		contribution: KeybindingsSchemaContribution,
 	): void;
 
 	toggleLogging(): boolean;

@@ -3,20 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IFileService } from "vs/platform/files/common/files";
-import { URI } from "vs/base/common/uri";
-import { IModelService } from "vs/editor/common/services/model";
-import { ResourceMap } from "vs/base/common/map";
-import { DisposableStore } from "vs/base/common/lifecycle";
 import { Emitter, Event } from "vs/base/common/event";
-import { ITextModel } from "vs/editor/common/model";
+import { DisposableStore } from "vs/base/common/lifecycle";
+import { ResourceMap } from "vs/base/common/map";
+import { URI } from "vs/base/common/uri";
 import {
 	ResourceEdit,
 	ResourceFileEdit,
 	ResourceTextEdit,
 } from "vs/editor/browser/services/bulkEditService";
-import { ResourceNotebookCellEdit } from "vs/workbench/contrib/bulkEdit/browser/bulkCellEdits";
+import { ITextModel } from "vs/editor/common/model";
+import { IModelService } from "vs/editor/common/services/model";
+import { IFileService } from "vs/platform/files/common/files";
 import { ILogService } from "vs/platform/log/common/log";
+import { ResourceNotebookCellEdit } from "vs/workbench/contrib/bulkEdit/browser/bulkCellEdits";
 
 export class ConflictDetector {
 	private readonly _conflicts = new ResourceMap<boolean>();
@@ -29,7 +29,7 @@ export class ConflictDetector {
 		edits: ResourceEdit[],
 		@IFileService fileService: IFileService,
 		@IModelService modelService: IModelService,
-		@ILogService logService: ILogService
+		@ILogService logService: ILogService,
 	) {
 		const _workspaceEditResources = new ResourceMap<boolean>();
 
@@ -69,7 +69,7 @@ export class ConflictDetector {
 						break;
 					}
 				}
-			})
+			}),
 		);
 
 		// listen to model changes...?
@@ -82,7 +82,7 @@ export class ConflictDetector {
 		};
 		for (const model of modelService.getModels()) {
 			this._disposables.add(
-				model.onDidChangeContent(() => onDidChangeModel(model))
+				model.onDidChangeContent(() => onDidChangeModel(model)),
 			);
 		}
 	}

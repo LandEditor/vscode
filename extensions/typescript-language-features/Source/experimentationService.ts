@@ -8,9 +8,7 @@ import * as tas from "vscode-tas-client";
 
 import { IExperimentationTelemetryReporter } from "./experimentTelemetryReporter";
 
-interface ExperimentTypes {
-	// None for now.
-}
+type ExperimentTypes = {};
 
 export class ExperimentationService {
 	private readonly _experimentationServicePromise: Promise<tas.IExperimentationService>;
@@ -20,20 +18,20 @@ export class ExperimentationService {
 		telemetryReporter: IExperimentationTelemetryReporter,
 		id: string,
 		version: string,
-		globalState: vscode.Memento
+		globalState: vscode.Memento,
 	) {
 		this._telemetryReporter = telemetryReporter;
 		this._experimentationServicePromise = createTasExperimentationService(
 			this._telemetryReporter,
 			id,
 			version,
-			globalState
+			globalState,
 		);
 	}
 
 	public async getTreatmentVariable<K extends keyof ExperimentTypes>(
 		name: K,
-		defaultValue: ExperimentTypes[K]
+		defaultValue: ExperimentTypes[K],
 	): Promise<ExperimentTypes[K]> {
 		const experimentationService =
 			await this._experimentationServicePromise;
@@ -42,7 +40,7 @@ export class ExperimentationService {
 				experimentationService.getTreatmentVariableAsync(
 					"vscode",
 					name,
-					/*checkCache*/ true
+					/*checkCache*/ true,
 				) as Promise<ExperimentTypes[K]>;
 			return treatmentVariable;
 		} catch {
@@ -55,7 +53,7 @@ export async function createTasExperimentationService(
 	reporter: IExperimentationTelemetryReporter,
 	id: string,
 	version: string,
-	globalState: vscode.Memento
+	globalState: vscode.Memento,
 ): Promise<tas.IExperimentationService> {
 	let targetPopulation: tas.TargetPopulation;
 	switch (vscode.env.uriScheme) {
@@ -81,7 +79,7 @@ export async function createTasExperimentationService(
 		version,
 		targetPopulation,
 		reporter,
-		globalState
+		globalState,
 	);
 	await experimentationService.initialFetch;
 	return experimentationService;

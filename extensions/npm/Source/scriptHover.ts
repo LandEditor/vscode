@@ -6,17 +6,17 @@
 import { dirname } from "path";
 import {
 	CancellationToken,
-	commands,
 	ExtensionContext,
 	Hover,
 	HoverProvider,
 	MarkdownString,
-	l10n,
 	Position,
 	ProviderResult,
-	tasks,
 	TextDocument,
 	Uri,
+	commands,
+	l10n,
+	tasks,
 	workspace,
 } from "vscode";
 import { INpmScriptInfo, readScripts } from "./readScripts";
@@ -43,20 +43,20 @@ export class NpmScriptHoverProvider implements HoverProvider {
 			commands.registerCommand(
 				"npm.runScriptFromHover",
 				this.runScriptFromHover,
-				this
-			)
+				this,
+			),
 		);
 		context.subscriptions.push(
 			commands.registerCommand(
 				"npm.debugScriptFromHover",
 				this.debugScriptFromHover,
-				this
-			)
+				this,
+			),
 		);
 		context.subscriptions.push(
 			workspace.onDidChangeTextDocument((e) => {
 				invalidateHoverScriptsCache(e.document);
-			})
+			}),
 		);
 
 		const isEnabled = () =>
@@ -67,14 +67,14 @@ export class NpmScriptHoverProvider implements HoverProvider {
 				if (e.affectsConfiguration("npm.scriptHover")) {
 					this.enabled = isEnabled();
 				}
-			})
+			}),
 		);
 	}
 
 	public provideHover(
 		document: TextDocument,
 		position: Position,
-		_token: CancellationToken
+		_token: CancellationToken,
 	): ProviderResult<Hover> {
 		if (!this.enabled) {
 			return;
@@ -92,10 +92,10 @@ export class NpmScriptHoverProvider implements HoverProvider {
 				const contents: MarkdownString = new MarkdownString();
 				contents.isTrusted = true;
 				contents.appendMarkdown(
-					this.createRunScriptMarkdown(name, document.uri)
+					this.createRunScriptMarkdown(name, document.uri),
 				);
 				contents.appendMarkdown(
-					this.createDebugScriptMarkdown(name, document.uri)
+					this.createDebugScriptMarkdown(name, document.uri),
 				);
 				hover = new Hover(contents);
 			}
@@ -112,13 +112,13 @@ export class NpmScriptHoverProvider implements HoverProvider {
 			l10n.t("Run Script"),
 			"npm.runScriptFromHover",
 			args,
-			l10n.t("Run the script as a task")
+			l10n.t("Run the script as a task"),
 		);
 	}
 
 	private createDebugScriptMarkdown(
 		script: string,
-		documentUri: Uri
+		documentUri: Uri,
 	): string {
 		const args = {
 			documentUri: documentUri,
@@ -129,7 +129,7 @@ export class NpmScriptHoverProvider implements HoverProvider {
 			"npm.debugScriptFromHover",
 			args,
 			l10n.t("Runs the script under the debugger"),
-			"|"
+			"|",
 		);
 	}
 
@@ -138,7 +138,7 @@ export class NpmScriptHoverProvider implements HoverProvider {
 		cmd: string,
 		args: any,
 		tooltip: string,
-		separator?: string
+		separator?: string,
 	): string {
 		const encodedArgs = encodeURIComponent(JSON.stringify(args));
 		let prefix = "";
@@ -158,7 +158,7 @@ export class NpmScriptHoverProvider implements HoverProvider {
 				script,
 				["run", script],
 				folder,
-				documentUri
+				documentUri,
 			);
 			await tasks.executeTask(task);
 		}
@@ -173,7 +173,7 @@ export class NpmScriptHoverProvider implements HoverProvider {
 				this.context,
 				script,
 				dirname(documentUri.fsPath),
-				folder
+				folder,
 			);
 		}
 	}

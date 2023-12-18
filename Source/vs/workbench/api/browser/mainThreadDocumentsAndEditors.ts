@@ -3,28 +3,28 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { diffMaps, diffSets } from "vs/base/common/collections";
 import { Event } from "vs/base/common/event";
 import {
-	combinedDisposable,
-	DisposableStore,
 	DisposableMap,
+	DisposableStore,
+	combinedDisposable,
 } from "vs/base/common/lifecycle";
 import {
+	IActiveCodeEditor,
 	ICodeEditor,
 	isCodeEditor,
 	isDiffEditor,
-	IActiveCodeEditor,
 } from "vs/editor/browser/editorBrowser";
 import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
 import { IEditor } from "vs/editor/common/editorCommon";
 import { ITextModel, shouldSynchronizeModel } from "vs/editor/common/model";
 import { IModelService } from "vs/editor/common/services/model";
 import { ITextModelService } from "vs/editor/common/services/resolverService";
+import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { IFileService } from "vs/platform/files/common/files";
-import {
-	extHostCustomer,
-	IExtHostContext,
-} from "vs/workbench/services/extensions/common/extHostCustomers";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
 import { MainThreadDocuments } from "vs/workbench/api/browser/mainThreadDocuments";
 import { MainThreadTextEditor } from "vs/workbench/api/browser/mainThreadEditor";
 import { MainThreadTextEditors } from "vs/workbench/api/browser/mainThreadEditors";
@@ -38,22 +38,22 @@ import {
 } from "vs/workbench/api/common/extHost.protocol";
 import { AbstractTextEditor } from "vs/workbench/browser/parts/editor/textEditor";
 import { IEditorPane } from "vs/workbench/common/editor";
+import { ViewContainerLocation } from "vs/workbench/common/views";
 import {
 	EditorGroupColumn,
 	editorGroupToColumn,
 } from "vs/workbench/services/editor/common/editorGroupColumn";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
-import { ITextFileService } from "vs/workbench/services/textfile/common/textfiles";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { IWorkingCopyFileService } from "vs/workbench/services/workingCopy/common/workingCopyFileService";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
-import { IPathService } from "vs/workbench/services/path/common/pathService";
-import { diffSets, diffMaps } from "vs/base/common/collections";
+import {
+	IExtHostContext,
+	extHostCustomer,
+} from "vs/workbench/services/extensions/common/extHostCustomers";
 import { IPaneCompositePartService } from "vs/workbench/services/panecomposite/browser/panecomposite";
-import { ViewContainerLocation } from "vs/workbench/common/views";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IPathService } from "vs/workbench/services/path/common/pathService";
+import { ITextFileService } from "vs/workbench/services/textfile/common/textfiles";
+import { IWorkingCopyFileService } from "vs/workbench/services/workingCopy/common/workingCopyFileService";
 
 class TextEditorSnapshot {
 	readonly id: string;
@@ -72,7 +72,7 @@ class DocumentAndEditorStateDelta {
 		readonly removedEditors: TextEditorSnapshot[],
 		readonly addedEditors: TextEditorSnapshot[],
 		readonly oldActiveEditor: string | null | undefined,
-		readonly newActiveEditor: string | null | undefined
+		readonly newActiveEditor: string | null | undefined,
 	) {
 		this.isEmpty =
 			this.removedDocuments.length === 0 &&
@@ -104,7 +104,7 @@ class DocumentAndEditorStateDelta {
 class DocumentAndEditorState {
 	static compute(
 		before: DocumentAndEditorState | undefined,
-		after: DocumentAndEditorState
+		after: DocumentAndEditorState,
 	): DocumentAndEditorStateDelta {
 		if (!before) {
 			return new DocumentAndEditorStateDelta(
@@ -113,7 +113,7 @@ class DocumentAndEditorState {
 				[],
 				[...after.textEditors.values()],
 				undefined,
-				after.activeEditor
+				after.activeEditor,
 			);
 		}
 		const documentDelta = diffSets(before.documents, after.documents);
@@ -133,22 +133,22 @@ class DocumentAndEditorState {
 			editorDelta.removed,
 			editorDelta.added,
 			oldActiveEditor,
-			newActiveEditor
+			newActiveEditor,
 		);
 	}
 
 	constructor(
 		readonly documents: Set<ITextModel>,
 		readonly textEditors: Map<string, TextEditorSnapshot>,
-		readonly activeEditor: string | null | undefined
+		readonly activeEditor: string | null | undefined,
 	) {
 		//
 	}
 }
 
-const enum ActiveEditorOrder {
-	Editor,
-	Panel,
+enum ActiveEditorOrder {
+	Editor = 0,
+	Panel = 1,
 }
 
 class MainThreadDocumentAndEditorStateComputer {
@@ -236,8 +236,8 @@ class MainThreadDocumentAndEditorStateComputer {
 			combinedDisposable(
 				e.onDidChangeModel(() => this._updateState()),
 				e.onDidFocusEditorText(() => this._updateState()),
-				e.onDidFocusEditorWidget(() => this._updateState(e))
-			)
+				e.onDidFocusEditorWidget(() => this._updateState(e)),
+			),
 		);
 		this._updateState();
 	}
@@ -266,7 +266,7 @@ class MainThreadDocumentAndEditorStateComputer {
 		this._currentState = new DocumentAndEditorState(
 			this._currentState.documents.add(model),
 			this._currentState.textEditors,
-			this._currentState.activeEditor
+			this._currentState.activeEditor,
 		);
 
 		this._onDidChangeState(
@@ -276,8 +276,8 @@ class MainThreadDocumentAndEditorStateComputer {
 				[],
 				[],
 				undefined,
-				undefined
-			)
+				undefined,
+			),
 		);
 	}
 
@@ -349,11 +349,11 @@ class MainThreadDocumentAndEditorStateComputer {
 		const newState = new DocumentAndEditorState(
 			models,
 			editors,
-			activeEditor
+			activeEditor,
 		);
 		const delta = DocumentAndEditorState.compute(
 			this._currentState,
-			newState
+			newState,
 		);
 		if (!delta.isEmpty) {
 			this._currentState = newState;
@@ -363,7 +363,7 @@ class MainThreadDocumentAndEditorStateComputer {
 
 	private _getActiveEditorFromPanel(): IEditor | undefined {
 		const panel = this._paneCompositeService.getActivePaneComposite(
-			ViewContainerLocation.Panel
+			ViewContainerLocation.Panel,
 		);
 		if (panel instanceof AbstractTextEditor) {
 			const control = panel.getControl();
@@ -485,7 +485,7 @@ export class MainThreadDocumentsAndEditors {
 				{ onGainedFocus() {}, onLostFocus() {} },
 				this._mainThreadDocuments,
 				this._modelService,
-				this._clipboardService
+				this._clipboardService,
 			);
 
 			this._textEditors.set(apiEditor.id, mainThreadEditor);
@@ -519,13 +519,13 @@ export class MainThreadDocumentsAndEditors {
 		if (delta.addedDocuments.length > 0) {
 			empty = false;
 			extHostDelta.addedDocuments = delta.addedDocuments.map((m) =>
-				this._toModelAddData(m)
+				this._toModelAddData(m),
 			);
 		}
 		if (delta.addedEditors.length > 0) {
 			empty = false;
 			extHostDelta.addedEditors = addedEditors.map((e) =>
-				this._toTextEditorAddData(e)
+				this._toTextEditorAddData(e),
 			);
 		}
 
@@ -536,20 +536,20 @@ export class MainThreadDocumentsAndEditors {
 			// second update dependent document/editor states
 			removedDocuments.forEach(
 				this._mainThreadDocuments.handleModelRemoved,
-				this._mainThreadDocuments
+				this._mainThreadDocuments,
 			);
 			delta.addedDocuments.forEach(
 				this._mainThreadDocuments.handleModelAdded,
-				this._mainThreadDocuments
+				this._mainThreadDocuments,
 			);
 
 			removedEditors.forEach(
 				this._mainThreadEditors.handleTextEditorRemoved,
-				this._mainThreadEditors
+				this._mainThreadEditors,
 			);
 			addedEditors.forEach(
 				this._mainThreadEditors.handleTextEditorAdded,
-				this._mainThreadEditors
+				this._mainThreadEditors,
 			);
 		}
 	}
@@ -566,7 +566,7 @@ export class MainThreadDocumentsAndEditors {
 	}
 
 	private _toTextEditorAddData(
-		textEditor: MainThreadTextEditor
+		textEditor: MainThreadTextEditor,
 	): ITextEditorAddData {
 		const props = textEditor.getProperties();
 		return {
@@ -580,13 +580,13 @@ export class MainThreadDocumentsAndEditors {
 	}
 
 	private _findEditorPosition(
-		editor: MainThreadTextEditor
+		editor: MainThreadTextEditor,
 	): EditorGroupColumn | undefined {
 		for (const editorPane of this._editorService.visibleEditorPanes) {
 			if (editor.matches(editorPane)) {
 				return editorGroupToColumn(
 					this._editorGroupService,
-					editorPane.group
+					editorPane.group,
 				);
 			}
 		}

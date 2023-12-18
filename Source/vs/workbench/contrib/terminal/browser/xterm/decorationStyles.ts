@@ -8,9 +8,9 @@ import { Delayer } from "vs/base/common/async";
 import { fromNow } from "vs/base/common/date";
 import { MarkdownString } from "vs/base/common/htmlContent";
 import {
-	combinedDisposable,
 	Disposable,
 	IDisposable,
+	combinedDisposable,
 } from "vs/base/common/lifecycle";
 import { localize } from "vs/nls";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
@@ -19,12 +19,12 @@ import { ITerminalCommand } from "vs/platform/terminal/common/capabilities/capab
 import { TerminalSettingId } from "vs/platform/terminal/common/terminal";
 import { IHoverService } from "vs/workbench/services/hover/browser/hover";
 
-const enum DecorationStyles {
+enum DecorationStyles {
 	DefaultDimension = 16,
 	MarginLeft = -17,
 }
 
-export const enum DecorationSelector {
+export enum DecorationSelector {
 	CommandDecoration = "terminal-command-decoration",
 	Hide = "hide",
 	ErrorColor = "error",
@@ -38,7 +38,7 @@ export const enum DecorationSelector {
 
 export class TerminalDecorationHoverManager extends Disposable {
 	private _hoverDelayer: Delayer<void>;
-	private _contextMenuVisible: boolean = false;
+	private _contextMenuVisible = false;
 
 	constructor(
 		@IHoverService private readonly _hoverService: IHoverService,
@@ -69,7 +69,7 @@ export class TerminalDecorationHoverManager extends Disposable {
 	createHover(
 		element: HTMLElement,
 		command: ITerminalCommand | undefined,
-		hoverMessage?: string
+		hoverMessage?: string,
 	): IDisposable {
 		return combinedDisposable(
 			dom.addDisposableListener(
@@ -82,7 +82,7 @@ export class TerminalDecorationHoverManager extends Disposable {
 					this._hoverDelayer.trigger(() => {
 						let hoverContent = `${localize(
 							"terminalPromptContextMenu",
-							"Show Command Actions"
+							"Show Command Actions",
 						)}`;
 						hoverContent += "\n\n---\n\n";
 						if (!command) {
@@ -108,21 +108,21 @@ export class TerminalDecorationHoverManager extends Disposable {
 								hoverContent += localize(
 									"terminalPromptCommandFailed",
 									"Command executed {0} and failed",
-									fromNow(command.timestamp, true)
+									fromNow(command.timestamp, true),
 								);
 							} else {
 								hoverContent += localize(
 									"terminalPromptCommandFailedWithExitCode",
 									"Command executed {0} and failed (Exit Code {1})",
 									fromNow(command.timestamp, true),
-									command.exitCode
+									command.exitCode,
 								);
 							}
 						} else {
 							hoverContent += localize(
 								"terminalPromptCommandSuccess",
 								"Command executed {0}",
-								fromNow(command.timestamp, true)
+								fromNow(command.timestamp, true),
 							);
 						}
 						this._hoverService.showHover({
@@ -130,33 +130,33 @@ export class TerminalDecorationHoverManager extends Disposable {
 							target: element,
 						});
 					});
-				}
+				},
 			),
 			dom.addDisposableListener(element, dom.EventType.MOUSE_LEAVE, () =>
-				this.hideHover()
+				this.hideHover(),
 			),
 			dom.addDisposableListener(element, dom.EventType.MOUSE_OUT, () =>
-				this.hideHover()
-			)
+				this.hideHover(),
+			),
 		);
 	}
 }
 
 export function updateLayout(
 	configurationService: IConfigurationService,
-	element?: HTMLElement
+	element?: HTMLElement,
 ): void {
 	if (!element) {
 		return;
 	}
 	const fontSize = configurationService.inspect(
-		TerminalSettingId.FontSize
+		TerminalSettingId.FontSize,
 	).value;
 	const defaultFontSize = configurationService.inspect(
-		TerminalSettingId.FontSize
+		TerminalSettingId.FontSize,
 	).defaultValue;
 	const lineHeight = configurationService.inspect(
-		TerminalSettingId.LineHeight
+		TerminalSettingId.LineHeight,
 	).value;
 	if (
 		typeof fontSize === "number" &&

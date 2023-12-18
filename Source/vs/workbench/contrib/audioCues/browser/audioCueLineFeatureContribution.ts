@@ -51,12 +51,12 @@ export class AudioCueLineFeatureContribution
 		this.instantiationService.createInstance(
 			MarkerLineFeature,
 			AudioCue.error,
-			MarkerSeverity.Error
+			MarkerSeverity.Error,
 		),
 		this.instantiationService.createInstance(
 			MarkerLineFeature,
 			AudioCue.warning,
-			MarkerSeverity.Warning
+			MarkerSeverity.Warning,
 		),
 		this.instantiationService.createInstance(FoldedAreaLineFeature),
 		this.instantiationService.createInstance(BreakpointLineFeature),
@@ -67,8 +67,8 @@ export class AudioCueLineFeatureContribution
 		IObservable<boolean>
 	>((cue) =>
 		observableFromEvent(this.audioCueService.onEnabledChanged(cue), () =>
-			this.audioCueService.isEnabled(cue)
-		)
+			this.audioCueService.isEnabled(cue),
+		),
 	);
 
 	constructor(
@@ -130,7 +130,7 @@ export class AudioCueLineFeatureContribution
 	private registerAudioCuesForEditor(
 		editor: ICodeEditor,
 		editorModel: ITextModel,
-		store: DisposableStore
+		store: DisposableStore,
 	): void {
 		const curPosition = observableFromEvent(
 			editor.onDidChangeCursorPosition,
@@ -145,27 +145,27 @@ export class AudioCueLineFeatureContribution
 					return undefined;
 				}
 				return editor.getPosition();
-			}
+			},
 		);
 		const debouncedPosition = debouncedObservable(
 			curPosition,
 			this._configurationService.getValue(
-				"audioCues.debouncePositionChanges"
+				"audioCues.debouncePositionChanges",
 			)
 				? 300
 				: 0,
-			store
+			store,
 		);
 		const isTyping = wasEventTriggeredRecently(
 			editorModel.onDidChangeContent.bind(editorModel),
 			1000,
-			store
+			store,
 		);
 
 		const featureStates = this.features.map((feature) => {
 			const lineFeatureState = feature.getObservableState(
 				editor,
-				editorModel
+				editorModel,
 			);
 			const isFeaturePresent = derivedOpts(
 				{ debugName: `isPresentInLine:${feature.audioCue.name}` },
@@ -180,7 +180,7 @@ export class AudioCueLineFeatureContribution
 						return false;
 					}
 					return lineFeatureState.read(reader).isPresent(position);
-				}
+				},
 			);
 			return derivedOpts(
 				{
@@ -189,8 +189,8 @@ export class AudioCueLineFeatureContribution
 				(reader) =>
 					feature.debounceWhileTyping && isTyping.read(reader)
 						? (debouncedPosition.read(reader),
-							isFeaturePresent.get())
-						: isFeaturePresent.read(reader)
+						  isFeaturePresent.get())
+						: isFeaturePresent.read(reader),
 			);
 		});
 
@@ -200,7 +200,7 @@ export class AudioCueLineFeatureContribution
 				this.features.map((feature, idx) => [
 					feature,
 					featureStates[idx].read(reader),
-				])
+				]),
 			),
 		}));
 
@@ -211,13 +211,13 @@ export class AudioCueLineFeatureContribution
 					(feature) =>
 						newValue?.featureStates.get(feature) &&
 						(!lastValue?.featureStates?.get(feature) ||
-							newValue.lineNumber !== lastValue.lineNumber)
+							newValue.lineNumber !== lastValue.lineNumber),
 				);
 
 				this.audioCueService.playAudioCues(
-					newFeatures.map((f) => f.audioCue)
+					newFeatures.map((f) => f.audioCue),
 				);
-			})
+			}),
 		);
 	}
 }
@@ -227,7 +227,7 @@ interface LineFeature {
 	debounceWhileTyping?: boolean;
 	getObservableState(
 		editor: ICodeEditor,
-		model: ITextModel
+		model: ITextModel,
 	): IObservable<LineFeatureState>;
 }
 
@@ -237,7 +237,7 @@ interface LineFeatureState {
 
 class MarkerLineFeature implements LineFeature {
 	public readonly debounceWhileTyping = true;
-	private _previousLine: number = 0;
+	private _previousLine = 0;
 	constructor(
 		public readonly audioCue: AudioCue,
 		private readonly severity: MarkerSeverity,
@@ -246,11 +246,11 @@ class MarkerLineFeature implements LineFeature {
 
 	getObservableState(
 		editor: ICodeEditor,
-		model: ITextModel
+		model: ITextModel,
 	): IObservable<LineFeatureState> {
 		return observableFromEvent<LineFeatureState>(
 			Event.filter(this.markerService.onMarkerChanged, (changedUris) =>
-				changedUris.some((u) => u.toString() === model.uri.toString())
+				changedUris.some((u) => u.toString() === model.uri.toString()),
 			),
 			() => /** @description this.markerService.onMarkerChanged */ ({
 				isPresent: (position) => {
@@ -274,7 +274,7 @@ class MarkerLineFeature implements LineFeature {
 						});
 					return hasMarker;
 				},
-			})
+			}),
 		);
 	}
 }
@@ -284,7 +284,7 @@ class FoldedAreaLineFeature implements LineFeature {
 
 	getObservableState(
 		editor: ICodeEditor,
-		model: ITextModel
+		model: ITextModel,
 	): IObservable<LineFeatureState> {
 		const foldingController = FoldingController.get(editor);
 		if (!foldingController) {
@@ -294,17 +294,17 @@ class FoldedAreaLineFeature implements LineFeature {
 		}
 
 		const foldingModel = observableFromPromise(
-			foldingController.getFoldingModel() ?? Promise.resolve(undefined)
+			foldingController.getFoldingModel() ?? Promise.resolve(undefined),
 		);
 		return foldingModel.map<LineFeatureState>((v) => ({
 			isPresent: (position) => {
 				const regionAtLine = v.value?.getRegionAtLine(
-					position.lineNumber
+					position.lineNumber,
 				);
-				const hasFolding = !regionAtLine
-					? false
-					: regionAtLine.isCollapsed &&
-						regionAtLine.startLineNumber === position.lineNumber;
+				const hasFolding = regionAtLine
+					? regionAtLine.isCollapsed &&
+					  regionAtLine.startLineNumber === position.lineNumber
+					: false;
 				return hasFolding;
 			},
 		}));
@@ -318,7 +318,7 @@ class BreakpointLineFeature implements LineFeature {
 
 	getObservableState(
 		editor: ICodeEditor,
-		model: ITextModel
+		model: ITextModel,
 	): IObservable<LineFeatureState> {
 		return observableFromEvent<LineFeatureState>(
 			this.debugService.getModel().onDidChangeBreakpoints,
@@ -333,7 +333,7 @@ class BreakpointLineFeature implements LineFeature {
 					const hasBreakpoints = breakpoints.length > 0;
 					return hasBreakpoints;
 				},
-			})
+			}),
 		);
 	}
 }

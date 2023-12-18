@@ -4,19 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { KeyCode } from "vs/base/common/keyCodes";
+import { ICodeEditor } from "vs/editor/browser/editorBrowser";
 import {
 	EditorAction2,
 	ServicesAccessor,
 } from "vs/editor/browser/editorExtensions";
+import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
+import { StickyScrollController } from "vs/editor/contrib/stickyScroll/browser/stickyScrollController";
 import { localize } from "vs/nls";
 import { Categories } from "vs/platform/action/common/actionCommonCategories";
 import { Action2, MenuId } from "vs/platform/actions/common/actions";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
 import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
-import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
-import { ICodeEditor } from "vs/editor/browser/editorBrowser";
-import { StickyScrollController } from "vs/editor/contrib/stickyScroll/browser/stickyScrollController";
+import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
 
 export class ToggleStickyScroll extends Action2 {
 	constructor() {
@@ -29,7 +29,7 @@ export class ToggleStickyScroll extends Action2 {
 						key: "mitoggleStickyScroll",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Toggle Sticky Scroll"
+					"&&Toggle Sticky Scroll",
 				),
 				original: "Toggle Sticky Scroll",
 			},
@@ -37,7 +37,7 @@ export class ToggleStickyScroll extends Action2 {
 			toggled: {
 				condition: ContextKeyExpr.equals(
 					"config.editor.stickyScroll.enabled",
-					true
+					true,
 				),
 				title: localize("stickyScroll", "Sticky Scroll"),
 				mnemonicTitle: localize(
@@ -45,7 +45,7 @@ export class ToggleStickyScroll extends Action2 {
 						key: "miStickyScroll",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Sticky Scroll"
+					"&&Sticky Scroll",
 				),
 			},
 			menu: [
@@ -63,11 +63,11 @@ export class ToggleStickyScroll extends Action2 {
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const configurationService = accessor.get(IConfigurationService);
 		const newValue = !configurationService.getValue(
-			"editor.stickyScroll.enabled"
+			"editor.stickyScroll.enabled",
 		);
 		return configurationService.updateValue(
 			"editor.stickyScroll.enabled",
-			newValue
+			newValue,
 		);
 	}
 }
@@ -85,13 +85,13 @@ export class FocusStickyScroll extends EditorAction2 {
 						key: "mifocusStickyScroll",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Focus Sticky Scroll"
+					"&&Focus Sticky Scroll",
 				),
 				original: "Focus Sticky Scroll",
 			},
 			precondition: ContextKeyExpr.and(
 				ContextKeyExpr.has("config.editor.stickyScroll.enabled"),
-				EditorContextKeys.stickyScrollVisible
+				EditorContextKeys.stickyScrollVisible,
 			),
 			menu: [{ id: MenuId.CommandPalette }],
 		});
@@ -109,7 +109,7 @@ export class SelectNextStickyScrollLine extends EditorAction2 {
 			title: {
 				value: localize(
 					"selectNextStickyScrollLine.title",
-					"Select next sticky scroll line"
+					"Select next sticky scroll line",
 				),
 				original: "Select next sticky scroll line",
 			},
@@ -133,7 +133,7 @@ export class SelectPreviousStickyScrollLine extends EditorAction2 {
 			title: {
 				value: localize(
 					"selectPreviousStickyScrollLine.title",
-					"Select previous sticky scroll line"
+					"Select previous sticky scroll line",
 				),
 				original: "Select previous sticky scroll line",
 			},
@@ -157,7 +157,7 @@ export class GoToStickyScrollLine extends EditorAction2 {
 			title: {
 				value: localize(
 					"goToFocusedStickyScrollLine.title",
-					"Go to focused sticky scroll line"
+					"Go to focused sticky scroll line",
 				),
 				original: "Go to focused sticky scroll line",
 			},

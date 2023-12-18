@@ -10,7 +10,7 @@ import { CellContentPart } from "vs/workbench/contrib/notebook/browser/view/cell
 export class CollapsedCellInput extends CellContentPart {
 	constructor(
 		private readonly notebookEditor: INotebookEditor,
-		cellInputCollapsedContainer: HTMLElement
+		cellInputCollapsedContainer: HTMLElement,
 	) {
 		super();
 
@@ -28,8 +28,8 @@ export class CollapsedCellInput extends CellContentPart {
 					} else {
 						this.currentCell.isOutputCollapsed = false;
 					}
-				}
-			)
+				},
+			),
 		);
 
 		this._register(
@@ -51,8 +51,8 @@ export class CollapsedCellInput extends CellContentPart {
 						// clicked on the expand icon
 						this.currentCell.isInputCollapsed = false;
 					}
-				}
-			)
+				},
+			),
 		);
 	}
 }

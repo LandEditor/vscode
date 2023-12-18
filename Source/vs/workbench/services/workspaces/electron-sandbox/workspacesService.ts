@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IWorkspacesService } from "vs/platform/workspaces/common/workspaces";
-import { IMainProcessService } from "vs/platform/ipc/common/mainProcessService";
+import { ProxyChannel } from "vs/base/parts/ipc/common/ipc";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { ProxyChannel } from "vs/base/parts/ipc/common/ipc";
+import { IMainProcessService } from "vs/platform/ipc/common/mainProcessService";
 import { INativeHostService } from "vs/platform/native/common/native";
+import { IWorkspacesService } from "vs/platform/workspaces/common/workspaces";
 
 // @ts-ignore: interface is implemented via proxy
 export class NativeWorkspacesService implements IWorkspacesService {
@@ -18,11 +18,11 @@ export class NativeWorkspacesService implements IWorkspacesService {
 
 	constructor(
 		@IMainProcessService mainProcessService: IMainProcessService,
-		@INativeHostService nativeHostService: INativeHostService
+		@INativeHostService nativeHostService: INativeHostService,
 	) {
 		return ProxyChannel.toService<IWorkspacesService>(
 			mainProcessService.getChannel("workspaces"),
-			{ context: nativeHostService.windowId }
+			{ context: nativeHostService.windowId },
 		);
 	}
 }
@@ -30,5 +30,5 @@ export class NativeWorkspacesService implements IWorkspacesService {
 registerSingleton(
 	IWorkspacesService,
 	NativeWorkspacesService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

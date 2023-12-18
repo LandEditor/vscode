@@ -1,4 +1,3 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -6,7 +5,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.graph = exports.strings = exports.collections = void 0;
 var collections;
-(function (collections) {
+((collections) => {
 	const hasOwnProperty = Object.prototype.hasOwnProperty;
 	function lookup(collection, key) {
 		if (hasOwnProperty.call(collection, key)) {
@@ -45,14 +44,14 @@ var collections;
 	collections.contains = contains;
 })(collections || (exports.collections = collections = {}));
 var strings;
-(function (strings) {
+((strings) => {
 	/**
 	 * The empty string. The one and only.
 	 */
 	strings.empty = "";
 	strings.eolUnix = "\r\n";
 	function format(value, ...rest) {
-		return value.replace(/({\d+})/g, function (match) {
+		return value.replace(/({\d+})/g, (match) => {
 			const index = Number(match.substring(1, match.length - 1));
 			return String(rest[index]) || match;
 		});
@@ -60,7 +59,7 @@ var strings;
 	strings.format = format;
 })(strings || (exports.strings = strings = {}));
 var graph;
-(function (graph) {
+((graph) => {
 	function newNode(data) {
 		return {
 			data: data,
@@ -92,7 +91,7 @@ var graph;
 			callback(node.data);
 			const nodes = inwards ? node.outgoing : node.incoming;
 			collections.forEach(nodes, (entry) =>
-				this._traverse(entry.value, inwards, seen, callback)
+				this._traverse(entry.value, inwards, seen, callback),
 			);
 		}
 		inertEdge(from, to) {

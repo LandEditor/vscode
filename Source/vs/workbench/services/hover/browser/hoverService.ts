@@ -3,47 +3,47 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/hover";
 import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { registerThemingParticipant } from "vs/platform/theme/common/themeService";
-import { editorHoverBorder } from "vs/platform/theme/common/colorRegistry";
-import {
-	IHoverService,
-	IHoverOptions,
-	IHoverWidget,
-} from "vs/workbench/services/hover/browser/hover";
-import {
-	IContextMenuService,
-	IContextViewService,
-} from "vs/platform/contextview/browser/contextView";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { HoverWidget } from "vs/workbench/services/hover/browser/hoverWidget";
+	EventType,
+	addDisposableListener,
+	getActiveElement,
+	getWindow,
+	isAncestor,
+	isAncestorOfActiveElement,
+} from "vs/base/browser/dom";
+import { StandardKeyboardEvent } from "vs/base/browser/keyboardEvent";
 import {
 	IContextViewProvider,
 	IDelegate,
 } from "vs/base/browser/ui/contextview/contextview";
+import { mainWindow } from "vs/base/browser/window";
 import {
 	DisposableStore,
 	IDisposable,
 	toDisposable,
 } from "vs/base/common/lifecycle";
-import {
-	addDisposableListener,
-	EventType,
-	getActiveElement,
-	isAncestorOfActiveElement,
-	isAncestor,
-	getWindow,
-} from "vs/base/browser/dom";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { StandardKeyboardEvent } from "vs/base/browser/keyboardEvent";
-import { ResultKind } from "vs/platform/keybinding/common/keybindingResolver";
+import "vs/css!./media/hover";
 import { IAccessibilityService } from "vs/platform/accessibility/common/accessibility";
+import {
+	IContextMenuService,
+	IContextViewService,
+} from "vs/platform/contextview/browser/contextView";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { ResultKind } from "vs/platform/keybinding/common/keybindingResolver";
 import { ILayoutService } from "vs/platform/layout/browser/layoutService";
-import { mainWindow } from "vs/base/browser/window";
+import { editorHoverBorder } from "vs/platform/theme/common/colorRegistry";
+import { registerThemingParticipant } from "vs/platform/theme/common/themeService";
+import {
+	IHoverOptions,
+	IHoverService,
+	IHoverWidget,
+} from "vs/workbench/services/hover/browser/hover";
+import { HoverWidget } from "vs/workbench/services/hover/browser/hoverWidget";
 
 export class HoverService implements IHoverService {
 	declare readonly _serviceBrand: undefined;
@@ -72,7 +72,7 @@ export class HoverService implements IHoverService {
 	showHover(
 		options: IHoverOptions,
 		focus?: boolean,
-		skipLastFocusedUpdate?: boolean
+		skipLastFocusedUpdate?: boolean,
 	): IHoverWidget | undefined {
 		if (
 			getHoverOptionsIdentity(this._currentHoverOptions) ===
@@ -104,7 +104,7 @@ export class HoverService implements IHoverService {
 		const hoverDisposables = new DisposableStore();
 		const hover = this._instantiationService.createInstance(
 			HoverWidget,
-			options
+			options,
 		);
 		if (options.persistence?.sticky) {
 			hover.isLocked = true;
@@ -132,13 +132,13 @@ export class HoverService implements IHoverService {
 					? options.target
 					: options.target.targetElements[0];
 			options.container = this._layoutService.getContainer(
-				getWindow(targetElement)
+				getWindow(targetElement),
 			);
 		}
 		const provider = this._contextViewService as IContextViewProvider;
 		provider.showContextView(
 			new HoverContextViewDelegate(hover, focus),
-			options.container
+			options.container,
 		);
 		hover.onRequestLayout(() => provider.layout());
 		if (options.persistence?.sticky) {
@@ -152,23 +152,23 @@ export class HoverService implements IHoverService {
 						) {
 							this.doHideHover();
 						}
-					}
-				)
+					},
+				),
 			);
 		} else {
 			if ("targetElements" in options.target) {
 				for (const element of options.target.targetElements) {
 					hoverDisposables.add(
 						addDisposableListener(element, EventType.CLICK, () =>
-							this.hideHover()
-						)
+							this.hideHover(),
+						),
 					);
 				}
 			} else {
 				hoverDisposables.add(
 					addDisposableListener(options.target, EventType.CLICK, () =>
-						this.hideHover()
-					)
+						this.hideHover(),
+					),
 				);
 			}
 			const focusedElement = getActiveElement();
@@ -183,9 +183,9 @@ export class HoverService implements IHoverService {
 							this._keyDown(
 								e,
 								hover,
-								!!options.persistence?.hideOnKeyDown
-							)
-					)
+								!!options.persistence?.hideOnKeyDown,
+							),
+					),
 				);
 				hoverDisposables.add(
 					addDisposableListener(
@@ -195,23 +195,23 @@ export class HoverService implements IHoverService {
 							this._keyDown(
 								e,
 								hover,
-								!!options.persistence?.hideOnKeyDown
-							)
-					)
+								!!options.persistence?.hideOnKeyDown,
+							),
+					),
 				);
 				hoverDisposables.add(
 					addDisposableListener(
 						focusedElement,
 						EventType.KEY_UP,
-						(e) => this._keyUp(e, hover)
-					)
+						(e) => this._keyUp(e, hover),
+					),
 				);
 				hoverDisposables.add(
 					addDisposableListener(
 						focusedElementDocument,
 						EventType.KEY_UP,
-						(e) => this._keyUp(e, hover)
-					)
+						(e) => this._keyUp(e, hover),
+					),
 				);
 			}
 		}
@@ -219,7 +219,7 @@ export class HoverService implements IHoverService {
 		if ("IntersectionObserver" in mainWindow) {
 			const observer = new IntersectionObserver(
 				(e) => this._intersectionChange(e, hover),
-				{ threshold: 0 }
+				{ threshold: 0 },
 			);
 			const firstTargetElement =
 				"targetElements" in options.target
@@ -249,7 +249,7 @@ export class HoverService implements IHoverService {
 
 	private _intersectionChange(
 		entries: IntersectionObserverEntry[],
-		hover: IDisposable
+		hover: IDisposable,
 	): void {
 		const entry = entries[entries.length - 1];
 		if (!entry.isIntersecting) {
@@ -267,7 +267,7 @@ export class HoverService implements IHoverService {
 	private _keyDown(
 		e: KeyboardEvent,
 		hover: HoverWidget,
-		hideOnKeyDown: boolean
+		hideOnKeyDown: boolean,
 	) {
 		if (e.key === "Alt") {
 			hover.isLocked = true;
@@ -306,7 +306,7 @@ export class HoverService implements IHoverService {
 }
 
 function getHoverOptionsIdentity(
-	options: IHoverOptions | undefined
+	options: IHoverOptions | undefined,
 ): IHoverOptions | number | string | undefined {
 	if (options === undefined) {
 		return undefined;
@@ -321,7 +321,7 @@ class HoverContextViewDelegate implements IDelegate {
 
 	constructor(
 		private readonly _hover: HoverWidget,
-		private readonly _focus: boolean = false
+		private readonly _focus: boolean = false,
 	) {}
 
 	render(container: HTMLElement) {
@@ -351,13 +351,13 @@ registerThemingParticipant((theme, collector) => {
 	if (hoverBorder) {
 		collector.addRule(
 			`.monaco-workbench .workbench-hover .hover-row:not(:first-child):not(:empty) { border-top: 1px solid ${hoverBorder.transparent(
-				0.5
-			)}; }`
+				0.5,
+			)}; }`,
 		);
 		collector.addRule(
 			`.monaco-workbench .workbench-hover hr { border-top: 1px solid ${hoverBorder.transparent(
-				0.5
-			)}; }`
+				0.5,
+			)}; }`,
 		);
 	}
 });

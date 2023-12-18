@@ -17,7 +17,7 @@ declare module "vscode" {
 			messages: ChatMessage[],
 			options: { [name: string]: any },
 			progress: Progress<ChatResponseFragment>,
-			token: CancellationToken
+			token: CancellationToken,
 		): Thenable<any>;
 	}
 
@@ -42,7 +42,7 @@ declare module "vscode" {
 		export function registerChatResponseProvider(
 			id: string,
 			provider: ChatResponseProvider,
-			metadata: ChatResponseProviderMetadata
+			metadata: ChatResponseProviderMetadata,
 		): Disposable;
 	}
 }

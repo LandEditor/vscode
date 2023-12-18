@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { LegacyLinesDiffComputer } from "vs/editor/common/diff/legacyLinesDiffComputer";
 import { DefaultLinesDiffComputer } from "vs/editor/common/diff/defaultLinesDiffComputer/defaultLinesDiffComputer";
+import { LegacyLinesDiffComputer } from "vs/editor/common/diff/legacyLinesDiffComputer";
 import { ILinesDiffComputer } from "vs/editor/common/diff/linesDiffComputer";
 
 export const linesDiffComputers = {

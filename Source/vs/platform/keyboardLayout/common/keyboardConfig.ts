@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { OS, OperatingSystem } from "vs/base/common/platform";
 import * as nls from "vs/nls";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { OS, OperatingSystem } from "vs/base/common/platform";
 import {
 	ConfigurationScope,
 	Extensions as ConfigExtensions,
@@ -14,9 +14,9 @@ import {
 } from "vs/platform/configuration/common/configurationRegistry";
 import { Registry } from "vs/platform/registry/common/platform";
 
-export const enum DispatchConfig {
-	Code,
-	KeyCode,
+export enum DispatchConfig {
+	Code = 0,
+	KeyCode = 1,
 }
 
 export interface IKeyboardConfig {
@@ -25,7 +25,7 @@ export interface IKeyboardConfig {
 }
 
 export function readKeyboardConfig(
-	configurationService: IConfigurationService
+	configurationService: IConfigurationService,
 ): IKeyboardConfig {
 	const keyboard = configurationService.getValue<
 		{ dispatch: any; mapAltGrToCtrlAlt: any } | undefined
@@ -39,14 +39,14 @@ export function readKeyboardConfig(
 }
 
 const configurationRegistry = Registry.as<IConfigurationRegistry>(
-	ConfigExtensions.Configuration
+	ConfigExtensions.Configuration,
 );
 const keyboardConfiguration: IConfigurationNode = {
-	"id": "keyboard",
-	"order": 15,
-	"type": "object",
-	"title": nls.localize("keyboardConfigurationTitle", "Keyboard"),
-	"properties": {
+	id: "keyboard",
+	order: 15,
+	type: "object",
+	title: nls.localize("keyboardConfigurationTitle", "Keyboard"),
+	properties: {
 		"keyboard.dispatch": {
 			scope: ConfigurationScope.APPLICATION,
 			type: "string",
@@ -54,7 +54,7 @@ const keyboardConfiguration: IConfigurationNode = {
 			default: "code",
 			markdownDescription: nls.localize(
 				"dispatch",
-				"Controls the dispatching logic for key presses to use either `code` (recommended) or `keyCode`."
+				"Controls the dispatching logic for key presses to use either `code` (recommended) or `keyCode`.",
 			),
 			included:
 				OS === OperatingSystem.Macintosh ||
@@ -66,7 +66,7 @@ const keyboardConfiguration: IConfigurationNode = {
 			default: false,
 			markdownDescription: nls.localize(
 				"mapAltGrToCtrlAlt",
-				"Controls if the AltGraph+ modifier should be treated as Ctrl+Alt+."
+				"Controls if the AltGraph+ modifier should be treated as Ctrl+Alt+.",
 			),
 			included: OS === OperatingSystem.Windows,
 		},

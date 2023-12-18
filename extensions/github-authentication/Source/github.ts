@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from "vscode";
 import TelemetryReporter from "@vscode/extension-telemetry";
-import { Keychain } from "./common/keychain";
-import { GitHubServer, IGitHubServer } from "./githubServer";
-import { PromiseAdapter, arrayEquals, promiseFromEvent } from "./common/utils";
-import { ExperimentationTelemetry } from "./common/experimentationService";
-import { Log } from "./common/logger";
-import { crypto } from "./node/crypto";
+import * as vscode from "vscode";
 import { TIMED_OUT_ERROR, USER_CANCELLATION_ERROR } from "./common/errors";
+import { ExperimentationTelemetry } from "./common/experimentationService";
+import { Keychain } from "./common/keychain";
+import { Log } from "./common/logger";
+import { PromiseAdapter, arrayEquals, promiseFromEvent } from "./common/utils";
+import { GitHubServer, IGitHubServer } from "./githubServer";
+import { crypto } from "./node/crypto";
 
 interface SessionData {
 	id: string;
@@ -47,7 +47,7 @@ export class UriEventHandler
 		logger: Log,
 		scopes: string,
 		nonce: string,
-		token: vscode.CancellationToken
+		token: vscode.CancellationToken,
 	) {
 		const existingNonces = this._pendingNonces.get(scopes) || [];
 		this._pendingNonces.set(scopes, [...existingNonces, nonce]);
@@ -56,7 +56,7 @@ export class UriEventHandler
 		if (!codeExchangePromise) {
 			codeExchangePromise = promiseFromEvent(
 				this.event,
-				this.handleEvent(logger, scopes)
+				this.handleEvent(logger, scopes),
 			);
 			this._codeExchangePromises.set(scopes, codeExchangePromise);
 		}
@@ -65,13 +65,13 @@ export class UriEventHandler
 			return await Promise.race([
 				codeExchangePromise.promise,
 				new Promise<string>((_, reject) =>
-					setTimeout(() => reject(TIMED_OUT_ERROR), 300_000)
+					setTimeout(() => reject(TIMED_OUT_ERROR), 300_000),
 				), // 5min timeout
 				promiseFromEvent<void, string>(
 					token.onCancellationRequested,
 					(_, __, reject) => {
 						reject(USER_CANCELLATION_ERROR);
-					}
+					},
 				).promise,
 			]);
 		} finally {
@@ -83,7 +83,7 @@ export class UriEventHandler
 
 	private handleEvent: (
 		logger: Log,
-		scopes: string
+		scopes: string,
 	) => PromiseAdapter<vscode.Uri, string> =
 		(logger: Log, scopes) => (uri, resolve, reject) => {
 			const query = new URLSearchParams(uri.query);
@@ -106,7 +106,7 @@ export class UriEventHandler
 				// In this scenario we should just return and wait for the next UriHandler event
 				// to run as we are probably still waiting on the user to hit 'Continue'
 				logger.info(
-					"Nonce not found in accepted nonces. Skipping this execution..."
+					"Nonce not found in accepted nonces. Skipping this execution...",
 				);
 				return;
 			}
@@ -132,7 +132,7 @@ export class GitHubAuthenticationProvider
 	constructor(
 		private readonly context: vscode.ExtensionContext,
 		uriHandler: UriEventHandler,
-		ghesUri?: vscode.Uri
+		ghesUri?: vscode.Uri,
 	) {
 		const { aiKey } = context.extension.packageJSON as {
 			name: string;
@@ -141,7 +141,7 @@ export class GitHubAuthenticationProvider
 		};
 		this._telemetryReporter = new ExperimentationTelemetry(
 			context,
-			new TelemetryReporter(aiKey)
+			new TelemetryReporter(aiKey),
 		);
 
 		const type = ghesUri
@@ -155,7 +155,7 @@ export class GitHubAuthenticationProvider
 			type === AuthProviderType.github
 				? `${type}.auth`
 				: `${ghesUri?.authority}${ghesUri?.path}.ghes.auth`,
-			this._logger
+			this._logger,
 		);
 
 		this._githubServer = new GitHubServer(
@@ -163,7 +163,7 @@ export class GitHubAuthenticationProvider
 			this._telemetryReporter,
 			uriHandler,
 			context.extension.extensionKind,
-			ghesUri
+			ghesUri,
 		);
 
 		// Contains the current state of the sessions we have available.
@@ -171,7 +171,7 @@ export class GitHubAuthenticationProvider
 			// fire telemetry after a second to allow the workbench to focus on loading
 			setTimeout(
 				() => sessions.forEach((s) => this.afterSessionLoad(s)),
-				1000
+				1000,
 			);
 			return sessions;
 		});
@@ -182,9 +182,9 @@ export class GitHubAuthenticationProvider
 				type,
 				this._githubServer.friendlyName,
 				this,
-				{ supportsMultipleAccounts: false }
+				{ supportsMultipleAccounts: false },
 			),
-			this.context.secrets.onDidChange(() => this.checkForUpdates())
+			this.context.secrets.onDidChange(() => this.checkForUpdates()),
 		);
 	}
 
@@ -197,32 +197,32 @@ export class GitHubAuthenticationProvider
 	}
 
 	async getSessions(
-		scopes?: string[]
+		scopes?: string[],
 	): Promise<vscode.AuthenticationSession[]> {
 		// For GitHub scope list, order doesn't matter so we immediately sort the scopes
 		const sortedScopes = scopes?.sort() || [];
 		this._logger.info(
 			`Getting sessions for ${
 				sortedScopes.length ? sortedScopes.join(",") : "all scopes"
-			}...`
+			}...`,
 		);
 		const sessions = await this._sessionsPromise;
 		const finalSessions = sortedScopes.length
 			? sessions.filter((session) =>
-					arrayEquals([...session.scopes].sort(), sortedScopes)
-				)
+					arrayEquals([...session.scopes].sort(), sortedScopes),
+			  )
 			: sessions;
 
 		this._logger.info(
 			`Got ${finalSessions.length} sessions for ${
 				sortedScopes?.join(",") ?? "all scopes"
-			}...`
+			}...`,
 		);
 		return finalSessions;
 	}
 
 	private async afterSessionLoad(
-		session: vscode.AuthenticationSession
+		session: vscode.AuthenticationSession,
 	): Promise<void> {
 		// We only want to fire a telemetry if we haven't seen this account yet in this session.
 		if (!this._accountsSeen.has(session.account.id)) {
@@ -241,7 +241,7 @@ export class GitHubAuthenticationProvider
 
 		storedSessions.forEach((session) => {
 			const matchesExisting = previousSessions.some(
-				(s) => s.id === session.id
+				(s) => s.id === session.id,
 			);
 			// Another window added a session to the keychain, add it to our state as well
 			if (!matchesExisting) {
@@ -252,12 +252,12 @@ export class GitHubAuthenticationProvider
 
 		previousSessions.forEach((session) => {
 			const matchesExisting = storedSessions.some(
-				(s) => s.id === session.id
+				(s) => s.id === session.id,
 			);
 			// Another window has logged out, remove from our state
 			if (!matchesExisting) {
 				this._logger.info(
-					"Removing session no longer found in keychain"
+					"Removing session no longer found in keychain",
 				);
 				removed.push(session);
 			}
@@ -302,10 +302,10 @@ export class GitHubAuthenticationProvider
 				if (!session.account) {
 					try {
 						userInfo = await this._githubServer.getUserInfo(
-							session.accessToken
+							session.accessToken,
 						);
 						this._logger.info(
-							`Verified session with the following scopes: ${scopesStr}`
+							`Verified session with the following scopes: ${scopesStr}`,
 						);
 					} catch (e) {
 						// Remove sessions that return unauthorized response
@@ -316,7 +316,7 @@ export class GitHubAuthenticationProvider
 				}
 
 				this._logger.trace(
-					`Read the following session from the keychain with the following scopes: ${scopesStr}`
+					`Read the following session from the keychain with the following scopes: ${scopesStr}`,
 				);
 				scopesSeen.add(scopesStr);
 				return {
@@ -324,8 +324,8 @@ export class GitHubAuthenticationProvider
 					account: {
 						label: session.account
 							? session.account.label ??
-								session.account.displayName ??
-								"<unknown>"
+							  session.account.displayName ??
+							  "<unknown>"
 							: userInfo?.accountName ?? "<unknown>",
 						id: session.account?.id ?? userInfo?.id ?? "<unknown>",
 					},
@@ -334,7 +334,7 @@ export class GitHubAuthenticationProvider
 					scopes: session.scopes,
 					accessToken: session.accessToken,
 				};
-			}
+			},
 		);
 
 		const verifiedSessions = (await Promise.allSettled(sessionPromises))
@@ -345,7 +345,7 @@ export class GitHubAuthenticationProvider
 						p as PromiseFulfilledResult<
 							vscode.AuthenticationSession | undefined
 						>
-					).value
+					).value,
 			)
 			.filter(<T>(p?: T): p is T => Boolean(p));
 
@@ -358,7 +358,7 @@ export class GitHubAuthenticationProvider
 	}
 
 	private async storeSessions(
-		sessions: vscode.AuthenticationSession[]
+		sessions: vscode.AuthenticationSession[],
 	): Promise<void> {
 		this._logger.info(`Storing ${sessions.length} sessions...`);
 		this._sessionsPromise = Promise.resolve(sessions);
@@ -367,7 +367,7 @@ export class GitHubAuthenticationProvider
 	}
 
 	public async createSession(
-		scopes: string[]
+		scopes: string[],
 	): Promise<vscode.AuthenticationSession> {
 		try {
 			// For GitHub scope list, order doesn't matter so we use a sorted scope to determine
@@ -394,7 +394,7 @@ export class GitHubAuthenticationProvider
 			const sessionIndex = sessions.findIndex(
 				(s) =>
 					s.id === session.id ||
-					arrayEquals([...s.scopes].sort(), sortedScopes)
+					arrayEquals([...s.scopes].sort(), sortedScopes),
 			);
 			if (sessionIndex > -1) {
 				sessions.splice(sessionIndex, 1, session);
@@ -428,7 +428,7 @@ export class GitHubAuthenticationProvider
 			this._telemetryReporter?.sendTelemetryEvent("loginFailed");
 
 			vscode.window.showErrorMessage(
-				vscode.l10n.t("Sign in failed: {0}", `${e}`)
+				vscode.l10n.t("Sign in failed: {0}", `${e}`),
 			);
 			this._logger.error(e);
 			throw e;
@@ -437,7 +437,7 @@ export class GitHubAuthenticationProvider
 
 	private async tokenToSession(
 		token: string,
-		scopes: string[]
+		scopes: string[],
 	): Promise<vscode.AuthenticationSession> {
 		const userInfo = await this._githubServer.getUserInfo(token);
 		return {
@@ -461,7 +461,7 @@ export class GitHubAuthenticationProvider
 
 			const sessions = await this._sessionsPromise;
 			const sessionIndex = sessions.findIndex(
-				(session) => session.id === id
+				(session) => session.id === id,
 			);
 			if (sessionIndex > -1) {
 				const session = sessions[sessionIndex];
@@ -485,7 +485,7 @@ export class GitHubAuthenticationProvider
 			this._telemetryReporter?.sendTelemetryEvent("logoutFailed");
 
 			vscode.window.showErrorMessage(
-				vscode.l10n.t("Sign out failed: {0}", `${e}`)
+				vscode.l10n.t("Sign out failed: {0}", `${e}`),
 			);
 			this._logger.error(e);
 			throw e;

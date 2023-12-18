@@ -3,22 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IExtensionsWorkbenchService } from "vs/workbench/contrib/extensions/common/extensions";
-import { IWorkbenchContribution } from "vs/workbench/common/contributions";
-import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
-import { CommandsRegistry } from "vs/platform/commands/common/commands";
-import { MenuRegistry, MenuId } from "vs/platform/actions/common/actions";
+import { Action } from "vs/base/common/actions";
+import { Promises } from "vs/base/common/async";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { Disposable } from "vs/base/common/lifecycle";
 import { localize } from "vs/nls";
+import { MenuId, MenuRegistry } from "vs/platform/actions/common/actions";
+import { CommandsRegistry } from "vs/platform/commands/common/commands";
 import { areSameExtensions } from "vs/platform/extensionManagement/common/extensionManagementUtil";
 import {
 	INotificationService,
 	Severity,
 } from "vs/platform/notification/common/notification";
-import { Action } from "vs/base/common/actions";
+import { IWorkbenchContribution } from "vs/workbench/common/contributions";
+import { IExtensionsWorkbenchService } from "vs/workbench/contrib/extensions/common/extensions";
+import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
 import { IHostService } from "vs/workbench/services/host/browser/host";
-import { Disposable } from "vs/base/common/lifecycle";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { Promises } from "vs/base/common/async";
 
 export class ExtensionDependencyChecker
 	extends Disposable
@@ -55,8 +55,8 @@ export class ExtensionDependencyChecker
 			await this.extensionsWorkbenchService.queryLocal();
 		return allMissingDependencies.filter((id) =>
 			localExtensions.every(
-				(l) => !areSameExtensions(l.identifier, { id })
-			)
+				(l) => !areSameExtensions(l.identifier, { id }),
+			),
 		);
 	}
 
@@ -87,19 +87,19 @@ export class ExtensionDependencyChecker
 			const extensions =
 				await this.extensionsWorkbenchService.getExtensions(
 					missingDependencies.map((id) => ({ id })),
-					CancellationToken.None
+					CancellationToken.None,
 				);
 			if (extensions.length) {
 				await Promises.settled(
 					extensions.map((extension) =>
-						this.extensionsWorkbenchService.install(extension)
-					)
+						this.extensionsWorkbenchService.install(extension),
+					),
 				);
 				this.notificationService.notify({
 					severity: Severity.Info,
 					message: localize(
 						"finished installing missing deps",
-						"Finished installing missing dependencies. Please reload the window now."
+						"Finished installing missing dependencies. Please reload the window now.",
 					),
 					actions: {
 						primary: [
@@ -108,7 +108,7 @@ export class ExtensionDependencyChecker
 								localize("reload", "Reload Window"),
 								"",
 								true,
-								() => this.hostService.reload()
+								() => this.hostService.reload(),
 							),
 						],
 					},
@@ -118,8 +118,8 @@ export class ExtensionDependencyChecker
 			this.notificationService.info(
 				localize(
 					"no missing deps",
-					"There are no missing dependencies to install."
-				)
+					"There are no missing dependencies to install.",
+				),
 			);
 		}
 	}

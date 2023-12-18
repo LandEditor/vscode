@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
 import { Codicon } from "vs/base/common/codicons";
+import { localize } from "vs/nls";
 import { registerIcon } from "vs/platform/theme/common/iconRegistry";
 
 export const gettingStartedUncheckedCodicon = registerIcon(
@@ -12,14 +12,14 @@ export const gettingStartedUncheckedCodicon = registerIcon(
 	Codicon.circleLargeOutline,
 	localize(
 		"gettingStartedUnchecked",
-		"Used to represent walkthrough steps which have not been completed"
-	)
+		"Used to represent walkthrough steps which have not been completed",
+	),
 );
 export const gettingStartedCheckedCodicon = registerIcon(
 	"getting-started-step-checked",
 	Codicon.passFilled,
 	localize(
 		"gettingStartedChecked",
-		"Used to represent walkthrough steps which have been completed"
-	)
+		"Used to represent walkthrough steps which have been completed",
+	),
 );

@@ -3,22 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Client as MessagePortClient } from "vs/base/parts/ipc/common/ipc.mp";
+import { Barrier, timeout } from "vs/base/common/async";
+import { Disposable } from "vs/base/common/lifecycle";
+import { mark } from "vs/base/common/performance";
 import {
 	IChannel,
 	IServerChannel,
 	getDelayedChannel,
 } from "vs/base/parts/ipc/common/ipc";
-import { ILogService } from "vs/platform/log/common/log";
-import { Disposable } from "vs/base/common/lifecycle";
+import { Client as MessagePortClient } from "vs/base/parts/ipc/common/ipc.mp";
+import { acquirePort } from "vs/base/parts/ipc/electron-sandbox/ipc.mp";
 import { ISharedProcessService } from "vs/platform/ipc/electron-sandbox/services";
+import { ILogService } from "vs/platform/log/common/log";
 import {
 	SharedProcessChannelConnection,
 	SharedProcessRawConnection,
 } from "vs/platform/sharedProcess/common/sharedProcess";
-import { mark } from "vs/base/common/performance";
-import { Barrier, timeout } from "vs/base/common/async";
-import { acquirePort } from "vs/base/parts/ipc/electron-sandbox/ipc.mp";
 
 export class SharedProcessService
 	extends Disposable
@@ -54,19 +54,19 @@ export class SharedProcessService
 		// Acquire a message port connected to the shared process
 		mark("code/willConnectSharedProcess");
 		this.logService.trace(
-			"Renderer->SharedProcess#connect: before acquirePort"
+			"Renderer->SharedProcess#connect: before acquirePort",
 		);
 		const port = await acquirePort(
 			SharedProcessChannelConnection.request,
-			SharedProcessChannelConnection.response
+			SharedProcessChannelConnection.response,
 		);
 		mark("code/didConnectSharedProcess");
 		this.logService.trace(
-			"Renderer->SharedProcess#connect: connection established"
+			"Renderer->SharedProcess#connect: connection established",
 		);
 
 		return this._register(
-			new MessagePortClient(port, `window:${this.windowId}`)
+			new MessagePortClient(port, `window:${this.windowId}`),
 		);
 	}
 
@@ -79,17 +79,17 @@ export class SharedProcessService
 	getChannel(channelName: string): IChannel {
 		return getDelayedChannel(
 			this.withSharedProcessConnection.then((connection) =>
-				connection.getChannel(channelName)
-			)
+				connection.getChannel(channelName),
+			),
 		);
 	}
 
 	registerChannel(
 		channelName: string,
-		channel: IServerChannel<string>
+		channel: IServerChannel<string>,
 	): void {
 		this.withSharedProcessConnection.then((connection) =>
-			connection.registerChannel(channelName, channel)
+			connection.registerChannel(channelName, channel),
 		);
 	}
 
@@ -99,14 +99,14 @@ export class SharedProcessService
 
 		// Create a new port to the shared process
 		this.logService.trace(
-			"Renderer->SharedProcess#createRawConnection: before acquirePort"
+			"Renderer->SharedProcess#createRawConnection: before acquirePort",
 		);
 		const port = await acquirePort(
 			SharedProcessRawConnection.request,
-			SharedProcessRawConnection.response
+			SharedProcessRawConnection.response,
 		);
 		this.logService.trace(
-			"Renderer->SharedProcess#createRawConnection: connection established"
+			"Renderer->SharedProcess#createRawConnection: connection established",
 		);
 
 		return port;

@@ -24,20 +24,20 @@ import {
 	StrictPropertyCheck,
 } from "vs/platform/telemetry/common/gdprTypings";
 import {
+	ICommonProperties,
 	ITelemetryData,
 	ITelemetryService,
-	TelemetryConfiguration,
-	TelemetryLevel,
 	TELEMETRY_CRASH_REPORTER_SETTING_ID,
 	TELEMETRY_OLD_SETTING_ID,
 	TELEMETRY_SECTION_ID,
 	TELEMETRY_SETTING_ID,
-	ICommonProperties,
+	TelemetryConfiguration,
+	TelemetryLevel,
 } from "vs/platform/telemetry/common/telemetry";
 import {
+	ITelemetryAppender,
 	cleanData,
 	getTelemetryLevel,
-	ITelemetryAppender,
 } from "vs/platform/telemetry/common/telemetryUtils";
 
 export interface ITelemetryServiceConfig {
@@ -144,8 +144,8 @@ export class TelemetryService implements ITelemetryService {
 			const maxCollectableTelemetryLevel = collectableTelemetry.usage
 				? TelemetryLevel.USAGE
 				: collectableTelemetry.error
-					? TelemetryLevel.ERROR
-					: TelemetryLevel.NONE;
+				  ? TelemetryLevel.ERROR
+				  : TelemetryLevel.NONE;
 			level = Math.min(level, maxCollectableTelemetryLevel);
 		}
 
@@ -167,7 +167,7 @@ export class TelemetryService implements ITelemetryService {
 	private _log(
 		eventName: string,
 		eventLevel: TelemetryLevel,
-		data?: ITelemetryData
+		data?: ITelemetryData,
 	) {
 		// don't send events when the user is optout
 		if (this._telemetryLevel < eventLevel) {
@@ -219,37 +219,37 @@ function getTelemetryLevelSettingDescription(): string {
 	const telemetryText = localize(
 		"telemetry.telemetryLevelMd",
 		"Controls {0} telemetry, first-party extension telemetry, and participating third-party extension telemetry. Some third party extensions might not respect this setting. Consult the specific extension's documentation to be sure. Telemetry helps us better understand how {0} is performing, where improvements need to be made, and how features are being used.",
-		product.nameLong
+		product.nameLong,
 	);
-	const externalLinksStatement = !product.privacyStatementUrl
+	const externalLinksStatement = product.privacyStatementUrl
 		? localize(
-				"telemetry.docsStatement",
-				"Read more about the [data we collect]({0}).",
-				"https://aka.ms/vscode-telemetry"
-			)
-		: localize(
 				"telemetry.docsAndPrivacyStatement",
 				"Read more about the [data we collect]({0}) and our [privacy statement]({1}).",
 				"https://aka.ms/vscode-telemetry",
-				product.privacyStatementUrl
-			);
-	const restartString = !isWeb
-		? localize(
+				product.privacyStatementUrl,
+		  )
+		: localize(
+				"telemetry.docsStatement",
+				"Read more about the [data we collect]({0}).",
+				"https://aka.ms/vscode-telemetry",
+		  );
+	const restartString = isWeb
+		? ""
+		: localize(
 				"telemetry.restart",
-				"A full restart of the application is necessary for crash reporting changes to take effect."
-			)
-		: "";
+				"A full restart of the application is necessary for crash reporting changes to take effect.",
+		  );
 
 	const crashReportsHeader = localize(
 		"telemetry.crashReports",
-		"Crash Reports"
+		"Crash Reports",
 	);
 	const errorsHeader = localize("telemetry.errors", "Error Telemetry");
 	const usageHeader = localize("telemetry.usage", "Usage Data");
 
 	const telemetryTableDescription = localize(
 		"telemetry.telemetryLevel.tableDescription",
-		"The following table outlines the data sent with each setting:"
+		"The following table outlines the data sent with each setting:",
 	);
 	const telemetryTable = `
 |       | ${crashReportsHeader} | ${errorsHeader} | ${usageHeader} |
@@ -262,7 +262,7 @@ function getTelemetryLevelSettingDescription(): string {
 
 	const deprecatedSettingNote = localize(
 		"telemetry.telemetryLevel.deprecated",
-		"****Note:*** If this setting is 'off', no telemetry will be sent regardless of other telemetry settings. If this setting is set to anything except 'off' and telemetry is disabled with deprecated settings, no telemetry will be sent.*"
+		"****Note:*** If this setting is 'off', no telemetry will be sent regardless of other telemetry settings. If this setting is set to anything except 'off' and telemetry is disabled with deprecated settings, no telemetry will be sent.*",
 	);
 	const telemetryDescription = `
 ${telemetryText} ${externalLinksStatement} ${restartString}
@@ -281,80 +281,80 @@ ${deprecatedSettingNote}
 }
 
 Registry.as<IConfigurationRegistry>(
-	Extensions.Configuration
+	Extensions.Configuration,
 ).registerConfiguration({
-	"id": TELEMETRY_SECTION_ID,
-	"order": 1,
-	"type": "object",
-	"title": localize("telemetryConfigurationTitle", "Telemetry"),
-	"properties": {
+	id: TELEMETRY_SECTION_ID,
+	order: 1,
+	type: "object",
+	title: localize("telemetryConfigurationTitle", "Telemetry"),
+	properties: {
 		[TELEMETRY_SETTING_ID]: {
-			"type": "string",
-			"enum": [
+			type: "string",
+			enum: [
 				TelemetryConfiguration.ON,
 				TelemetryConfiguration.ERROR,
 				TelemetryConfiguration.CRASH,
 				TelemetryConfiguration.OFF,
 			],
-			"enumDescriptions": [
+			enumDescriptions: [
 				localize(
 					"telemetry.telemetryLevel.default",
-					"Sends usage data, errors, and crash reports."
+					"Sends usage data, errors, and crash reports.",
 				),
 				localize(
 					"telemetry.telemetryLevel.error",
-					"Sends general error telemetry and crash reports."
+					"Sends general error telemetry and crash reports.",
 				),
 				localize(
 					"telemetry.telemetryLevel.crash",
-					"Sends OS level crash reports."
+					"Sends OS level crash reports.",
 				),
 				localize(
 					"telemetry.telemetryLevel.off",
-					"Disables all product telemetry."
+					"Disables all product telemetry.",
 				),
 			],
-			"markdownDescription": getTelemetryLevelSettingDescription(),
-			"default": TelemetryConfiguration.ON,
-			"restricted": true,
-			"scope": ConfigurationScope.APPLICATION,
-			"tags": ["usesOnlineServices", "telemetry"],
+			markdownDescription: getTelemetryLevelSettingDescription(),
+			default: TelemetryConfiguration.ON,
+			restricted: true,
+			scope: ConfigurationScope.APPLICATION,
+			tags: ["usesOnlineServices", "telemetry"],
 		},
 	},
 });
 
 // Deprecated telemetry setting
 Registry.as<IConfigurationRegistry>(
-	Extensions.Configuration
+	Extensions.Configuration,
 ).registerConfiguration({
-	"id": TELEMETRY_SECTION_ID,
-	"order": 110,
-	"type": "object",
-	"title": localize("telemetryConfigurationTitle", "Telemetry"),
-	"properties": {
+	id: TELEMETRY_SECTION_ID,
+	order: 110,
+	type: "object",
+	title: localize("telemetryConfigurationTitle", "Telemetry"),
+	properties: {
 		[TELEMETRY_OLD_SETTING_ID]: {
-			"type": "boolean",
-			"markdownDescription": !product.privacyStatementUrl
+			type: "boolean",
+			markdownDescription: product.privacyStatementUrl
 				? localize(
-						"telemetry.enableTelemetry",
-						"Enable diagnostic data to be collected. This helps us to better understand how {0} is performing and where improvements need to be made.",
-						product.nameLong
-					)
-				: localize(
 						"telemetry.enableTelemetryMd",
 						"Enable diagnostic data to be collected. This helps us to better understand how {0} is performing and where improvements need to be made. [Read more]({1}) about what we collect and our privacy statement.",
 						product.nameLong,
-						product.privacyStatementUrl
-					),
-			"default": true,
-			"restricted": true,
-			"markdownDeprecationMessage": localize(
+						product.privacyStatementUrl,
+				  )
+				: localize(
+						"telemetry.enableTelemetry",
+						"Enable diagnostic data to be collected. This helps us to better understand how {0} is performing and where improvements need to be made.",
+						product.nameLong,
+				  ),
+			default: true,
+			restricted: true,
+			markdownDeprecationMessage: localize(
 				"enableTelemetryDeprecated",
 				"If this setting is false, no telemetry will be sent regardless of the new setting's value. Deprecated in favor of the {0} setting.",
-				`\`#${TELEMETRY_SETTING_ID}#\``
+				`\`#${TELEMETRY_SETTING_ID}#\``,
 			),
-			"scope": ConfigurationScope.APPLICATION,
-			"tags": ["usesOnlineServices", "telemetry"],
+			scope: ConfigurationScope.APPLICATION,
+			tags: ["usesOnlineServices", "telemetry"],
 		},
 	},
 });

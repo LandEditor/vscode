@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { binarySearch } from "vs/base/common/arrays";
-import { errorHandler, ErrorNoTelemetry } from "vs/base/common/errors";
+import { ErrorNoTelemetry, errorHandler } from "vs/base/common/errors";
 import { DisposableStore, toDisposable } from "vs/base/common/lifecycle";
 import { safeStringify } from "vs/base/common/objects";
 import { FileOperationError } from "vs/platform/files/common/files";
@@ -90,14 +90,14 @@ export default abstract class BaseErrorTelemetry {
 
 	constructor(
 		telemetryService: ITelemetryService,
-		flushDelay = BaseErrorTelemetry.ERROR_FLUSH_TIMEOUT
+		flushDelay = BaseErrorTelemetry.ERROR_FLUSH_TIMEOUT,
 	) {
 		this._telemetryService = telemetryService;
 		this._flushDelay = flushDelay;
 
 		// (1) check for unexpected but handled errors
 		const unbind = errorHandler.addListener((err) =>
-			this._onErrorEvent(err)
+			this._onErrorEvent(err),
 		);
 		this._disposables.add(toDisposable(unbind));
 

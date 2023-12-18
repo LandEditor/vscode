@@ -34,7 +34,7 @@ export interface IProgressService {
 			| IProgressWindowOptions
 			| IProgressCompositeOptions,
 		task: (progress: IProgress<IProgressStep>) => Promise<R>,
-		onDidCancel?: (choice?: number) => void
+		onDidCancel?: (choice?: number) => void,
 	): Promise<R>;
 }
 
@@ -52,7 +52,7 @@ export interface IProgressIndicator {
 	showWhile(promise: Promise<unknown>, delay?: number): Promise<void>;
 }
 
-export const enum ProgressLocation {
+export enum ProgressLocation {
 	Explorer = 1,
 	Scm = 3,
 	Extensions = 5,
@@ -151,10 +151,10 @@ export class AsyncProgress<T> implements IProgress<T> {
 	constructor(private callback: (data: T) => unknown) {}
 
 	report(item: T) {
-		if (!this._asyncQueue) {
-			this._asyncQueue = [item];
-		} else {
+		if (this._asyncQueue) {
 			this._asyncQueue.push(item);
+		} else {
+			this._asyncQueue = [item];
 		}
 		this._processAsyncQueue();
 	}
@@ -220,7 +220,7 @@ export class UnmanagedProgress extends Disposable {
 			| IProgressNotificationOptions
 			| IProgressWindowOptions
 			| IProgressCompositeOptions,
-		@IProgressService progressService: IProgressService
+		@IProgressService progressService: IProgressService,
 	) {
 		super();
 		progressService.withProgress(options, (reporter) => {
@@ -247,7 +247,7 @@ export class UnmanagedProgress extends Disposable {
 export class LongRunningOperation extends Disposable {
 	private currentOperationId = 0;
 	private readonly currentOperationDisposables = this._register(
-		new DisposableStore()
+		new DisposableStore(),
 	);
 	private currentProgressRunner: IProgressRunner | undefined;
 	private currentProgressTimeout: any;
@@ -270,17 +270,17 @@ export class LongRunningOperation extends Disposable {
 		}, progressDelay);
 
 		this.currentOperationDisposables.add(
-			toDisposable(() => clearTimeout(this.currentProgressTimeout))
+			toDisposable(() => clearTimeout(this.currentProgressTimeout)),
 		);
 		this.currentOperationDisposables.add(
-			toDisposable(() => newOperationToken.cancel())
+			toDisposable(() => newOperationToken.cancel()),
 		);
 		this.currentOperationDisposables.add(
 			toDisposable(() =>
 				this.currentProgressRunner
 					? this.currentProgressRunner.done()
-					: undefined
-			)
+					: undefined,
+			),
 		);
 
 		return {
@@ -303,7 +303,7 @@ export class LongRunningOperation extends Disposable {
 }
 
 export const IEditorProgressService = createDecorator<IEditorProgressService>(
-	"editorProgressService"
+	"editorProgressService",
 );
 
 /**

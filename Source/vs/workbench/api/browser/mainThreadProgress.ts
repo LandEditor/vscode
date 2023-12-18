@@ -3,38 +3,38 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Action } from "vs/base/common/actions";
+import { localize } from "vs/nls";
+import { ICommandService } from "vs/platform/commands/common/commands";
 import {
 	IProgress,
+	IProgressNotificationOptions,
+	IProgressOptions,
 	IProgressService,
 	IProgressStep,
 	ProgressLocation,
-	IProgressOptions,
-	IProgressNotificationOptions,
 } from "vs/platform/progress/common/progress";
 import {
-	MainThreadProgressShape,
-	MainContext,
-	ExtHostProgressShape,
-	ExtHostContext,
-} from "../common/extHost.protocol";
-import {
-	extHostNamedCustomer,
 	IExtHostContext,
+	extHostNamedCustomer,
 } from "vs/workbench/services/extensions/common/extHostCustomers";
-import { Action } from "vs/base/common/actions";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import { localize } from "vs/nls";
+import {
+	ExtHostContext,
+	ExtHostProgressShape,
+	MainContext,
+	MainThreadProgressShape,
+} from "../common/extHost.protocol";
 
 class ManageExtensionAction extends Action {
 	constructor(
 		extensionId: string,
 		label: string,
-		commandService: ICommandService
+		commandService: ICommandService,
 	) {
 		super(extensionId, label, undefined, true, () => {
 			return commandService.executeCommand(
 				"_extensions.manage",
-				extensionId
+				extensionId,
 			);
 		});
 	}
@@ -66,7 +66,7 @@ export class MainThreadProgress implements MainThreadProgressShape {
 	async $startProgress(
 		handle: number,
 		options: IProgressOptions,
-		extensionId?: string
+		extensionId?: string,
 	): Promise<void> {
 		const task = this._createTask(handle);
 
@@ -78,7 +78,7 @@ export class MainThreadProgress implements MainThreadProgressShape {
 					new ManageExtensionAction(
 						extensionId,
 						localize("manageExtension", "Manage Extension"),
-						this._commandService
+						this._commandService,
 					),
 				],
 			};
@@ -87,7 +87,7 @@ export class MainThreadProgress implements MainThreadProgressShape {
 		}
 
 		this._progressService.withProgress(options, task, () =>
-			this._proxy.$acceptProgressCanceled(handle)
+			this._proxy.$acceptProgressCanceled(handle),
 		);
 	}
 

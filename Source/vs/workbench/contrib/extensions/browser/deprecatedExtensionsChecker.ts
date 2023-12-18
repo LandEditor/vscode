@@ -3,8 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IExtensionsWorkbenchService } from "vs/workbench/contrib/extensions/common/extensions";
-import { IWorkbenchContribution } from "vs/workbench/common/contributions";
+import { distinct } from "vs/base/common/arrays";
+import { Disposable } from "vs/base/common/lifecycle";
+import { localize } from "vs/nls";
+import { IExtensionManagementService } from "vs/platform/extensionManagement/common/extensionManagement";
+import { areSameExtensions } from "vs/platform/extensionManagement/common/extensionManagementUtil";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import {
 	INotificationService,
 	Severity,
@@ -14,13 +18,9 @@ import {
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
-import { localize } from "vs/nls";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IWorkbenchContribution } from "vs/workbench/common/contributions";
 import { SearchExtensionsAction } from "vs/workbench/contrib/extensions/browser/extensionsActions";
-import { distinct } from "vs/base/common/arrays";
-import { Disposable } from "vs/base/common/lifecycle";
-import { IExtensionManagementService } from "vs/platform/extensionManagement/common/extensionManagement";
-import { areSameExtensions } from "vs/platform/extensionManagement/common/extensionManagementUtil";
+import { IExtensionsWorkbenchService } from "vs/workbench/contrib/extensions/common/extensions";
 
 export class DeprecatedExtensionsChecker
 	extends Disposable
@@ -67,7 +67,7 @@ export class DeprecatedExtensionsChecker
 			this.storageService.getBoolean(
 				"extensionsAssistant/doNotCheckDeprecated",
 				StorageScope.PROFILE,
-				false
+				false,
 			)
 		) {
 			return;
@@ -78,26 +78,26 @@ export class DeprecatedExtensionsChecker
 			.filter((e) => !!e.deprecationInfo)
 			.filter(
 				(e) =>
-					!previouslyNotified.includes(e.identifier.id.toLowerCase())
+					!previouslyNotified.includes(e.identifier.id.toLowerCase()),
 			);
 		if (toNotify.length) {
 			this.notificationService.prompt(
 				Severity.Warning,
 				localize(
 					"deprecated extensions",
-					"You have deprecated extensions installed. We recommend to review them and migrate to alternatives."
+					"You have deprecated extensions installed. We recommend to review them and migrate to alternatives.",
 				),
 				[
 					{
 						label: localize(
 							"showDeprecated",
-							"Show Deprecated Extensions"
+							"Show Deprecated Extensions",
 						),
 						run: async () => {
 							this.setNotifiedDeprecatedExtensions(
 								toNotify.map((e) =>
-									e.identifier.id.toLowerCase()
-								)
+									e.identifier.id.toLowerCase(),
+								),
 							);
 							const action =
 								this.instantiationService.createInstance(
@@ -105,9 +105,9 @@ export class DeprecatedExtensionsChecker
 									toNotify
 										.map(
 											(extension) =>
-												`@id:${extension.identifier.id}`
+												`@id:${extension.identifier.id}`,
 										)
-										.join(" ")
+										.join(" "),
 								);
 							try {
 								await action.run();
@@ -124,10 +124,10 @@ export class DeprecatedExtensionsChecker
 								"extensionsAssistant/doNotCheckDeprecated",
 								true,
 								StorageScope.PROFILE,
-								StorageTarget.USER
+								StorageTarget.USER,
 							),
 					},
-				]
+				],
 			);
 		}
 	}
@@ -137,8 +137,8 @@ export class DeprecatedExtensionsChecker
 			this.storageService.get(
 				"extensionsAssistant/deprecated",
 				StorageScope.PROFILE,
-				"[]"
-			)
+				"[]",
+			),
 		);
 	}
 
@@ -149,10 +149,10 @@ export class DeprecatedExtensionsChecker
 				distinct([
 					...this.getNotifiedDeprecatedExtensions(),
 					...notified,
-				])
+				]),
 			),
 			StorageScope.PROFILE,
-			StorageTarget.USER
+			StorageTarget.USER,
 		);
 	}
 }

@@ -7,7 +7,7 @@ import { onUnexpectedError } from "vs/base/common/errors";
 import { Emitter, Event } from "vs/base/common/event";
 import { IMatch } from "vs/base/common/filters";
 import { defaultGenerator } from "vs/base/common/idGenerator";
-import { dispose, IDisposable, IReference } from "vs/base/common/lifecycle";
+import { IDisposable, IReference, dispose } from "vs/base/common/lifecycle";
 import { ResourceMap } from "vs/base/common/map";
 import { basename, extUri } from "vs/base/common/resources";
 import * as strings from "vs/base/common/strings";
@@ -31,7 +31,7 @@ export class OneReference {
 		readonly isProviderFirst: boolean,
 		readonly parent: FileReferences,
 		readonly link: LocationLink,
-		private _rangeCallback: (ref: OneReference) => void
+		private _rangeCallback: (ref: OneReference) => void,
 	) {}
 
 	get uri() {
@@ -50,15 +50,7 @@ export class OneReference {
 	get ariaMessage(): string {
 		const preview = this.parent.getPreview(this)?.preview(this.range);
 
-		if (!preview) {
-			return localize(
-				"aria.oneReference",
-				"in {0} on line {1} at column {2}",
-				basename(this.uri),
-				this.range.startLineNumber,
-				this.range.startColumn
-			);
-		} else {
+		if (preview) {
 			return localize(
 				{
 					key: "aria.oneReference.preview",
@@ -70,7 +62,15 @@ export class OneReference {
 				preview.value,
 				basename(this.uri),
 				this.range.startLineNumber,
-				this.range.startColumn
+				this.range.startColumn,
+			);
+		} else {
+			return localize(
+				"aria.oneReference",
+				"in {0} on line {1} at column {2}",
+				basename(this.uri),
+				this.range.startLineNumber,
+				this.range.startColumn,
 			);
 		}
 	}
@@ -78,7 +78,7 @@ export class OneReference {
 
 export class FilePreview implements IDisposable {
 	constructor(
-		private readonly _modelReference: IReference<ITextEditorModel>
+		private readonly _modelReference: IReference<ITextEditorModel>,
 	) {}
 
 	dispose(): void {
@@ -87,7 +87,7 @@ export class FilePreview implements IDisposable {
 
 	preview(
 		range: IRange,
-		n: number = 8
+		n = 8,
 	): { value: string; highlight: IMatch } | undefined {
 		const model = this._modelReference.object.textEditorModel;
 
@@ -105,13 +105,13 @@ export class FilePreview implements IDisposable {
 			startLineNumber,
 			word.startColumn,
 			startLineNumber,
-			startColumn
+			startColumn,
 		);
 		const afterRange = new Range(
 			endLineNumber,
 			endColumn,
 			endLineNumber,
-			Constants.MAX_SAFE_SMALL_INTEGER
+			Constants.MAX_SAFE_SMALL_INTEGER,
 		);
 
 		const before = model.getValueInRange(beforeRange).replace(/^\s+/, "");
@@ -133,10 +133,7 @@ export class FileReferences implements IDisposable {
 
 	private _previews = new ResourceMap<FilePreview>();
 
-	constructor(
-		readonly parent: ReferencesModel,
-		readonly uri: URI
-	) {}
+	constructor(readonly parent: ReferencesModel, readonly uri: URI) {}
 
 	dispose(): void {
 		dispose(this._previews.values());
@@ -154,7 +151,7 @@ export class FileReferences implements IDisposable {
 				"aria.fileReferences.1",
 				"1 symbol in {0}, full path {1}",
 				basename(this.uri),
-				this.uri.fsPath
+				this.uri.fsPath,
 			);
 		} else {
 			return localize(
@@ -162,13 +159,13 @@ export class FileReferences implements IDisposable {
 				"{0} symbols in {1}, full path {2}",
 				len,
 				basename(this.uri),
-				this.uri.fsPath
+				this.uri.fsPath,
 			);
 		}
 	}
 
 	async resolve(
-		textModelResolverService: ITextModelService
+		textModelResolverService: ITextModelService,
 	): Promise<FileReferences> {
 		if (this._previews.size !== 0) {
 			return this;
@@ -179,7 +176,7 @@ export class FileReferences implements IDisposable {
 			}
 			try {
 				const ref = await textModelResolverService.createModelReference(
-					child.uri
+					child.uri,
 				);
 				this._previews.set(child.uri, new FilePreview(ref));
 			} catch (err) {
@@ -222,14 +219,14 @@ export class ReferencesModel implements IDisposable {
 				current.children.length === 0 ||
 				ReferencesModel._compareReferences(
 					link,
-					current.children[current.children.length - 1]
+					current.children[current.children.length - 1],
 				) !== 0
 			) {
 				const oneRef = new OneReference(
 					providersFirst === link,
 					current,
 					link,
-					(ref) => this._onDidChangeReferenceRange.fire(ref)
+					(ref) => this._onDidChangeReferenceRange.fire(ref),
 				);
 				this.references.push(oneRef);
 				current.children.push(oneRef);
@@ -262,28 +259,28 @@ export class ReferencesModel implements IDisposable {
 			return localize(
 				"aria.result.1",
 				"Found 1 symbol in {0}",
-				this.references[0].uri.fsPath
+				this.references[0].uri.fsPath,
 			);
 		} else if (this.groups.length === 1) {
 			return localize(
 				"aria.result.n1",
 				"Found {0} symbols in {1}",
 				this.references.length,
-				this.groups[0].uri.fsPath
+				this.groups[0].uri.fsPath,
 			);
 		} else {
 			return localize(
 				"aria.result.nm",
 				"Found {0} symbols in {1} files",
 				this.references.length,
-				this.groups.length
+				this.groups.length,
 			);
 		}
 	}
 
 	nextOrPreviousReference(
 		reference: OneReference,
-		next: boolean
+		next: boolean,
 	): OneReference {
 		const { parent } = reference;
 
@@ -319,7 +316,7 @@ export class ReferencesModel implements IDisposable {
 
 	nearestReference(
 		resource: URI,
-		position: Position
+		position: Position,
 	): OneReference | undefined {
 		const nearest = this.references
 			.map((ref, idx) => {
@@ -327,11 +324,11 @@ export class ReferencesModel implements IDisposable {
 					idx,
 					prefixLen: strings.commonPrefixLength(
 						ref.uri.toString(),
-						resource.toString()
+						resource.toString(),
 					),
 					offsetDist:
 						Math.abs(
-							ref.range.startLineNumber - position.lineNumber
+							ref.range.startLineNumber - position.lineNumber,
 						) *
 							100 +
 						Math.abs(ref.range.startColumn - position.column),

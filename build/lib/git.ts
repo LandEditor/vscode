@@ -1,9 +1,9 @@
+import * as fs from "fs";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import * as fs from "fs";
 
 /**
  * Returns the sha1 commit version of a repository or undefined in case of failure.

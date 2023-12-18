@@ -33,9 +33,9 @@ import {
 import {
 	IRemoteUserData,
 	IResourceRefHandle,
-	IUserDataSyncLocalStoreService,
 	IUserDataSyncConfiguration,
 	IUserDataSyncEnablementService,
+	IUserDataSyncLocalStoreService,
 	IUserDataSyncLogService,
 	IUserDataSyncStoreService,
 	IUserDataSynchroniser,
@@ -94,7 +94,7 @@ export class WorkspaceStateSynchroniser
 	extends AbstractSynchroniser
 	implements IUserDataSynchroniser
 {
-	protected override version: number = 1;
+	protected override version = 1;
 
 	constructor(
 		profile: IUserDataProfile,
@@ -134,7 +134,7 @@ export class WorkspaceStateSynchroniser
 		const cancellationTokenSource = new CancellationTokenSource();
 		const folders =
 			await this.workspaceIdentityService.getWorkspaceStateFolders(
-				cancellationTokenSource.token
+				cancellationTokenSource.token,
 			);
 		if (!folders.length) {
 			return;
@@ -145,7 +145,7 @@ export class WorkspaceStateSynchroniser
 
 		const keys = this.storageService.keys(
 			StorageScope.WORKSPACE,
-			StorageTarget.USER
+			StorageTarget.USER,
 		);
 		if (!keys.length) {
 			return;
@@ -166,14 +166,14 @@ export class WorkspaceStateSynchroniser
 		};
 		await this.editSessionsStorageService.write(
 			"workspaceState",
-			stringify(content)
+			stringify(content),
 		);
 	}
 
 	override async apply(): Promise<ISyncResourcePreview | null> {
 		const payload =
 			this.editSessionsStorageService.lastReadResources.get(
-				"editSessions"
+				"editSessions",
 			)?.content;
 		const workspaceStateId = payload
 			? (JSON.parse(payload) as EditSession).workspaceStateId
@@ -181,7 +181,7 @@ export class WorkspaceStateSynchroniser
 
 		const resource = await this.editSessionsStorageService.read(
 			"workspaceState",
-			workspaceStateId
+			workspaceStateId,
 		);
 		if (!resource) {
 			return null;
@@ -190,7 +190,7 @@ export class WorkspaceStateSynchroniser
 		const remoteWorkspaceState: IWorkspaceState = parse(resource.content);
 		if (!remoteWorkspaceState) {
 			this.logService.info(
-				"Skipping initializing workspace state because remote workspace state does not exist."
+				"Skipping initializing workspace state because remote workspace state does not exist.",
 			);
 			return null;
 		}
@@ -199,11 +199,11 @@ export class WorkspaceStateSynchroniser
 		const cancellationTokenSource = new CancellationTokenSource();
 		const replaceUris = await this.workspaceIdentityService.matches(
 			remoteWorkspaceState.folders,
-			cancellationTokenSource.token
+			cancellationTokenSource.token,
 		);
 		if (!replaceUris) {
 			this.logService.info(
-				"Skipping initializing workspace state because remote workspace state does not match current workspace."
+				"Skipping initializing workspace state because remote workspace state does not match current workspace.",
 			);
 			return null;
 		}
@@ -249,7 +249,7 @@ export class WorkspaceStateSynchroniser
 		remoteUserData: IRemoteUserData,
 		lastSyncUserData: IRemoteUserData | null,
 		result: [IResourcePreview, IAcceptResult][],
-		force: boolean
+		force: boolean,
 	): Promise<void> {
 		throw new Error("Method not implemented.");
 	}
@@ -258,13 +258,13 @@ export class WorkspaceStateSynchroniser
 		lastSyncUserData: IRemoteUserData | null,
 		isRemoteDataFromCurrentMachine: boolean,
 		userDataSyncConfiguration: IUserDataSyncConfiguration,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IResourcePreview[]> {
 		return [];
 	}
 	protected override getMergeResult(
 		resourcePreview: IResourcePreview,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IMergeResult> {
 		throw new Error("Method not implemented.");
 	}
@@ -272,12 +272,12 @@ export class WorkspaceStateSynchroniser
 		resourcePreview: IResourcePreview,
 		resource: URI,
 		content: string | null | undefined,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<IAcceptResult> {
 		throw new Error("Method not implemented.");
 	}
 	protected override async hasRemoteChanged(
-		lastSyncUserData: IRemoteUserData
+		lastSyncUserData: IRemoteUserData,
 	): Promise<boolean> {
 		return true;
 	}

@@ -7,8 +7,8 @@ import { splitLines } from "vs/base/common/strings";
 import { URI } from "vs/base/common/uri";
 import { Position } from "vs/editor/common/core/position";
 import { IRange } from "vs/editor/common/core/range";
-import { IModelContentChange } from "vs/editor/common/textModelEvents";
 import { PrefixSumComputer } from "vs/editor/common/model/prefixSumComputer";
+import { IModelContentChange } from "vs/editor/common/textModelEvents";
 
 export interface IModelChangedEvent {
 	/**
@@ -82,9 +82,9 @@ export class MirrorTextModel implements IMirrorTextModel {
 			this._acceptInsertText(
 				new Position(
 					change.range.startLineNumber,
-					change.range.startColumn
+					change.range.startColumn,
 				),
-				change.text
+				change.text,
 			);
 		}
 
@@ -113,7 +113,7 @@ export class MirrorTextModel implements IMirrorTextModel {
 			// update prefix sum
 			this._lineStarts.setValue(
 				lineIndex,
-				this._lines[lineIndex].length + this._eol.length
+				this._lines[lineIndex].length + this._eol.length,
 			);
 		}
 	}
@@ -129,11 +129,11 @@ export class MirrorTextModel implements IMirrorTextModel {
 				range.startLineNumber - 1,
 				this._lines[range.startLineNumber - 1].substring(
 					0,
-					range.startColumn - 1
+					range.startColumn - 1,
 				) +
 					this._lines[range.startLineNumber - 1].substring(
-						range.endColumn - 1
-					)
+						range.endColumn - 1,
+					),
 			);
 			return;
 		}
@@ -143,23 +143,23 @@ export class MirrorTextModel implements IMirrorTextModel {
 			range.startLineNumber - 1,
 			this._lines[range.startLineNumber - 1].substring(
 				0,
-				range.startColumn - 1
+				range.startColumn - 1,
 			) +
 				this._lines[range.endLineNumber - 1].substring(
-					range.endColumn - 1
-				)
+					range.endColumn - 1,
+				),
 		);
 
 		// Delete middle lines
 		this._lines.splice(
 			range.startLineNumber,
-			range.endLineNumber - range.startLineNumber
+			range.endLineNumber - range.startLineNumber,
 		);
 		if (this._lineStarts) {
 			// update prefix sum
 			this._lineStarts.removeValues(
 				range.startLineNumber,
-				range.endLineNumber - range.startLineNumber
+				range.endLineNumber - range.startLineNumber,
 			);
 		}
 	}
@@ -176,12 +176,12 @@ export class MirrorTextModel implements IMirrorTextModel {
 				position.lineNumber - 1,
 				this._lines[position.lineNumber - 1].substring(
 					0,
-					position.column - 1
+					position.column - 1,
 				) +
 					insertLines[0] +
 					this._lines[position.lineNumber - 1].substring(
-						position.column - 1
-					)
+						position.column - 1,
+					),
 			);
 			return;
 		}
@@ -196,8 +196,8 @@ export class MirrorTextModel implements IMirrorTextModel {
 			position.lineNumber - 1,
 			this._lines[position.lineNumber - 1].substring(
 				0,
-				position.column - 1
-			) + insertLines[0]
+				position.column - 1,
+			) + insertLines[0],
 		);
 
 		// Insert new lines & store lengths

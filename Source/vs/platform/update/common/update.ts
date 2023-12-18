@@ -31,7 +31,7 @@ export interface IUpdate {
  * Downloaded: There is an update ready to be installed in the background (win32).
  */
 
-export const enum StateType {
+export enum StateType {
 	Uninitialized = "uninitialized",
 	Idle = "idle",
 	Disabled = "disabled",
@@ -43,19 +43,19 @@ export const enum StateType {
 	Ready = "ready",
 }
 
-export const enum UpdateType {
-	Setup,
-	Archive,
-	Snap,
+export enum UpdateType {
+	Setup = 0,
+	Archive = 1,
+	Snap = 2,
 }
 
-export const enum DisablementReason {
-	NotBuilt,
-	DisabledByEnvironment,
-	ManuallyDisabled,
-	MissingConfiguration,
-	InvalidConfiguration,
-	RunningAsAdmin,
+export enum DisablementReason {
+	NotBuilt = 0,
+	DisabledByEnvironment = 1,
+	ManuallyDisabled = 2,
+	MissingConfiguration = 3,
+	InvalidConfiguration = 4,
+	RunningAsAdmin = 5,
 }
 
 export type Uninitialized = { type: StateType.Uninitialized };

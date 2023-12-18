@@ -46,7 +46,7 @@ export class ProxyIdentifier<T> {
 const identifiers: ProxyIdentifier<any>[] = [];
 
 export function createProxyIdentifier<T>(
-	identifier: string
+	identifier: string,
 ): ProxyIdentifier<T> {
 	const result = new ProxyIdentifier<T>(identifier);
 	identifiers[result.nid] = result;
@@ -59,14 +59,14 @@ export function createProxyIdentifier<T>(
 export type Dto<T> = T extends { toJSON(): infer U }
 	? U
 	: T extends VSBuffer // VSBuffer is understood by rpc-logic
-		? T
-		: T extends CancellationToken // CancellationToken is understood by rpc-logic
-			? T
-			: T extends Function // functions are dropped during JSON-stringify
-				? never
-				: T extends object // recurse
-					? { [k in keyof T]: Dto<T[k]> }
-					: T;
+	  ? T
+	  : T extends CancellationToken // CancellationToken is understood by rpc-logic
+		  ? T
+		  : T extends Function // functions are dropped during JSON-stringify
+			  ? never
+			  : T extends object // recurse
+				  ? { [k in keyof T]: Dto<T[k]> }
+				  : T;
 
 export type Proxied<T> = {
 	[K in keyof T]: T[K] extends (...args: infer A) => infer R

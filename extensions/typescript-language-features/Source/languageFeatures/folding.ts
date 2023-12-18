@@ -16,7 +16,7 @@ class TypeScriptFoldingProvider implements vscode.FoldingRangeProvider {
 	async provideFoldingRanges(
 		document: vscode.TextDocument,
 		_context: vscode.FoldingContext,
-		token: vscode.CancellationToken
+		token: vscode.CancellationToken,
 	): Promise<vscode.FoldingRange[] | undefined> {
 		const file = this.client.toOpenTsFilePath(document);
 		if (!file) {
@@ -27,7 +27,7 @@ class TypeScriptFoldingProvider implements vscode.FoldingRangeProvider {
 		const response = await this.client.execute(
 			"getOutliningSpans",
 			args,
-			token
+			token,
 		);
 		if (response.type !== "response" || !response.body) {
 			return;
@@ -35,14 +35,14 @@ class TypeScriptFoldingProvider implements vscode.FoldingRangeProvider {
 
 		return coalesce(
 			response.body.map((span) =>
-				this.convertOutliningSpan(span, document)
-			)
+				this.convertOutliningSpan(span, document),
+			),
 		);
 	}
 
 	private convertOutliningSpan(
 		span: Proto.OutliningSpan,
-		document: vscode.TextDocument
+		document: vscode.TextDocument,
 	): vscode.FoldingRange | undefined {
 		const range = typeConverters.Range.fromTextSpan(span.textSpan);
 		const kind = TypeScriptFoldingProvider.getFoldingRangeKind(span);
@@ -64,16 +64,16 @@ class TypeScriptFoldingProvider implements vscode.FoldingRangeProvider {
 
 	private adjustFoldingEnd(
 		range: vscode.Range,
-		document: vscode.TextDocument
+		document: vscode.TextDocument,
 	) {
 		// workaround for #47240
 		if (range.end.character > 0) {
 			const foldEndCharacter = document.getText(
-				new vscode.Range(range.end.translate(0, -1), range.end)
+				new vscode.Range(range.end.translate(0, -1), range.end),
 			);
 			if (
 				TypeScriptFoldingProvider.foldEndPairCharacters.includes(
-					foldEndCharacter
+					foldEndCharacter,
 				)
 			) {
 				return Math.max(range.end.line - 1, range.start.line);
@@ -84,7 +84,7 @@ class TypeScriptFoldingProvider implements vscode.FoldingRangeProvider {
 	}
 
 	private static getFoldingRangeKind(
-		span: Proto.OutliningSpan
+		span: Proto.OutliningSpan,
 	): vscode.FoldingRangeKind | undefined {
 		switch (span.kind) {
 			case "comment":
@@ -102,10 +102,10 @@ class TypeScriptFoldingProvider implements vscode.FoldingRangeProvider {
 
 export function register(
 	selector: DocumentSelector,
-	client: ITypeScriptServiceClient
+	client: ITypeScriptServiceClient,
 ): vscode.Disposable {
 	return vscode.languages.registerFoldingRangeProvider(
 		selector.syntax,
-		new TypeScriptFoldingProvider(client)
+		new TypeScriptFoldingProvider(client),
 	);
 }

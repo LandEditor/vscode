@@ -33,7 +33,7 @@ export class RangeUtil {
 		startOffset: number,
 		endElement: Node,
 		endOffset: number,
-		endNode: HTMLElement
+		endNode: HTMLElement,
 	): DOMRectList | null {
 		const range = this._createRange();
 		try {
@@ -50,7 +50,7 @@ export class RangeUtil {
 	}
 
 	private static _mergeAdjacentRanges(
-		ranges: FloatHorizontalRange[]
+		ranges: FloatHorizontalRange[],
 	): FloatHorizontalRange[] {
 		if (ranges.length === 1) {
 			// There is nothing to merge
@@ -73,7 +73,7 @@ export class RangeUtil {
 			) {
 				prev.width = Math.max(
 					prev.width,
-					range.left + range.width - prev.left
+					range.left + range.width - prev.left,
 				);
 			} else {
 				result[resultLen++] = prev;
@@ -89,7 +89,7 @@ export class RangeUtil {
 	private static _createHorizontalRangesFromClientRects(
 		clientRects: DOMRectList | null,
 		clientRectDeltaLeft: number,
-		clientRectScale: number
+		clientRectScale: number,
 	): FloatHorizontalRange[] | null {
 		if (!clientRects || clientRects.length === 0) {
 			return null;
@@ -104,9 +104,9 @@ export class RangeUtil {
 			result[i] = new FloatHorizontalRange(
 				Math.max(
 					0,
-					(clientRect.left - clientRectDeltaLeft) / clientRectScale
+					(clientRect.left - clientRectDeltaLeft) / clientRectScale,
 				),
-				clientRect.width / clientRectScale
+				clientRect.width / clientRectScale,
 			);
 		}
 
@@ -119,7 +119,7 @@ export class RangeUtil {
 		startOffset: number,
 		endChildIndex: number,
 		endOffset: number,
-		context: DomReadingContext
+		context: DomReadingContext,
 	): FloatHorizontalRange[] | null {
 		// Panic check
 		const min = 0;
@@ -144,7 +144,7 @@ export class RangeUtil {
 			return this._createHorizontalRangesFromClientRects(
 				clientRects,
 				context.clientRectDeltaLeft,
-				context.clientRectScale
+				context.clientRectScale,
 			);
 		}
 
@@ -178,11 +178,11 @@ export class RangeUtil {
 
 		startOffset = Math.min(
 			startElement.textContent!.length,
-			Math.max(0, startOffset)
+			Math.max(0, startOffset),
 		);
 		endOffset = Math.min(
 			endElement.textContent!.length,
-			Math.max(0, endOffset)
+			Math.max(0, endOffset),
 		);
 
 		const clientRects = this._readClientRects(
@@ -190,13 +190,13 @@ export class RangeUtil {
 			startOffset,
 			endElement,
 			endOffset,
-			context.endNode
+			context.endNode,
 		);
 		context.markDidDomLayout();
 		return this._createHorizontalRangesFromClientRects(
 			clientRects,
 			context.clientRectDeltaLeft,
-			context.clientRectScale
+			context.clientRectScale,
 		);
 	}
 }

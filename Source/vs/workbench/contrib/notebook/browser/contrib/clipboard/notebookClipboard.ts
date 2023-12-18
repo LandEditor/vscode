@@ -3,36 +3,53 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
+import { getActiveElement, getWindow } from "vs/base/browser/dom";
+import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
 import { Disposable } from "vs/base/common/lifecycle";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	Extensions as WorkbenchExtensions,
-	IWorkbenchContributionsRegistry,
-} from "vs/workbench/common/contributions";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import {
-	NOTEBOOK_CELL_EDITABLE,
-	NOTEBOOK_EDITOR_EDITABLE,
-	NOTEBOOK_EDITOR_FOCUSED,
-} from "vs/workbench/contrib/notebook/common/notebookContextKeys";
-import {
-	cellRangeToViewCells,
-	expandCellRangesWithHiddenCells,
-	getNotebookEditorFromEditorPane,
-	ICellViewModel,
-	INotebookEditor,
-} from "vs/workbench/contrib/notebook/browser/notebookBrowser";
+import * as platform from "vs/base/common/platform";
+import { RedoCommand, UndoCommand } from "vs/editor/browser/editorExtensions";
 import {
 	CopyAction,
 	CutAction,
 	PasteAction,
 } from "vs/editor/contrib/clipboard/browser/clipboard";
-import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
+import { localize } from "vs/nls";
+import { Categories } from "vs/platform/action/common/actionCommonCategories";
 import {
-	cloneNotebookCellTextModel,
+	Action2,
+	MenuId,
+	registerAction2,
+} from "vs/platform/actions/common/actions";
+import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
+import { ICommandService } from "vs/platform/commands/common/commands";
+import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
+import { InputFocusedContextKey } from "vs/platform/contextkey/common/contextkeys";
+import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
+import { ILogService } from "vs/platform/log/common/log";
+import { Registry } from "vs/platform/registry/common/platform";
+import {
+	Extensions as WorkbenchExtensions,
+	IWorkbenchContributionsRegistry,
+} from "vs/workbench/common/contributions";
+import {
+	CellOverflowToolbarGroups,
+	INotebookActionContext,
+	INotebookCellActionContext,
+	NOTEBOOK_EDITOR_WIDGET_ACTION_WEIGHT,
+	NotebookAction,
+	NotebookCellAction,
+} from "vs/workbench/contrib/notebook/browser/controller/coreActions";
+import {
+	ICellViewModel,
+	INotebookEditor,
+	cellRangeToViewCells,
+	expandCellRangesWithHiddenCells,
+	getNotebookEditorFromEditorPane,
+} from "vs/workbench/contrib/notebook/browser/notebookBrowser";
+import {
 	NotebookCellTextModel,
+	cloneNotebookCellTextModel,
 } from "vs/workbench/contrib/notebook/common/model/notebookCellTextModel";
 import {
 	CellEditType,
@@ -40,35 +57,18 @@ import {
 	ISelectionState,
 	SelectionStateType,
 } from "vs/workbench/contrib/notebook/common/notebookCommon";
+import {
+	NOTEBOOK_CELL_EDITABLE,
+	NOTEBOOK_EDITOR_EDITABLE,
+	NOTEBOOK_EDITOR_FOCUSED,
+} from "vs/workbench/contrib/notebook/common/notebookContextKeys";
 import { INotebookService } from "vs/workbench/contrib/notebook/common/notebookService";
-import * as platform from "vs/base/common/platform";
-import {
-	Action2,
-	MenuId,
-	registerAction2,
-} from "vs/platform/actions/common/actions";
-import {
-	CellOverflowToolbarGroups,
-	INotebookActionContext,
-	INotebookCellActionContext,
-	NotebookAction,
-	NotebookCellAction,
-	NOTEBOOK_EDITOR_WIDGET_ACTION_WEIGHT,
-} from "vs/workbench/contrib/notebook/browser/controller/coreActions";
-import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
-import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
-import { InputFocusedContextKey } from "vs/platform/contextkey/common/contextkeys";
-import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
-import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import { RedoCommand, UndoCommand } from "vs/editor/browser/editorExtensions";
 import { IWebview } from "vs/workbench/contrib/webview/browser/webview";
-import { Categories } from "vs/platform/action/common/actionCommonCategories";
-import { ILogService } from "vs/platform/log/common/log";
-import { ICommandService } from "vs/platform/commands/common/commands";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 import { showWindowLogActionId } from "vs/workbench/services/log/common/logConstants";
-import { getActiveElement, getWindow } from "vs/base/browser/dom";
 
-let _logging: boolean = false;
+let _logging = false;
 function toggleLogging() {
 	_logging = !_logging;
 }
@@ -80,17 +80,17 @@ function _log(loggerService: ILogService, str: string) {
 }
 
 function getFocusedWebviewDelegate(
-	accessor: ServicesAccessor
+	accessor: ServicesAccessor,
 ): IWebview | undefined {
 	const loggerService = accessor.get(ILogService);
 	const editorService = accessor.get(IEditorService);
 	const editor = getNotebookEditorFromEditorPane(
-		editorService.activeEditorPane
+		editorService.activeEditorPane,
 	);
 	if (!editor) {
 		_log(
 			loggerService,
-			"[Revive Webview] No notebook editor found for active editor pane, bypass"
+			"[Revive Webview] No notebook editor found for active editor pane, bypass",
 		);
 		return;
 	}
@@ -98,7 +98,7 @@ function getFocusedWebviewDelegate(
 	if (!editor.hasEditorFocus()) {
 		_log(
 			loggerService,
-			"[Revive Webview] Notebook editor is not focused, bypass"
+			"[Revive Webview] Notebook editor is not focused, bypass",
 		);
 		return;
 	}
@@ -106,7 +106,7 @@ function getFocusedWebviewDelegate(
 	if (!editor.hasWebviewFocus()) {
 		_log(
 			loggerService,
-			"[Revive Webview] Notebook editor backlayer webview is not focused, bypass"
+			"[Revive Webview] Notebook editor backlayer webview is not focused, bypass",
 		);
 		return;
 	}
@@ -114,14 +114,14 @@ function getFocusedWebviewDelegate(
 	const webview = editor.getInnerWebview();
 	_log(
 		loggerService,
-		"[Revive Webview] Notebook editor backlayer webview is focused"
+		"[Revive Webview] Notebook editor backlayer webview is focused",
 	);
 	return webview;
 }
 
 function withWebview(
 	accessor: ServicesAccessor,
-	f: (webviewe: IWebview) => void
+	f: (webviewe: IWebview) => void,
 ) {
 	const webview = getFocusedWebviewDelegate(accessor);
 	if (webview) {
@@ -159,7 +159,7 @@ export function runPasteCells(
 	pasteCells: {
 		items: NotebookCellTextModel[];
 		isCopy: boolean;
-	}
+	},
 ): boolean {
 	if (!editor.hasModel()) {
 		return false;
@@ -187,7 +187,7 @@ export function runPasteCells(
 					index: newFocusIndex,
 					count: 0,
 					cells: pasteCells.items.map((cell) =>
-						cloneNotebookCellTextModel(cell)
+						cloneNotebookCellTextModel(cell),
 					),
 				},
 			],
@@ -204,7 +204,7 @@ export function runPasteCells(
 				],
 			}),
 			undefined,
-			true
+			true,
 		);
 	} else {
 		if (editor.getLength() !== 0) {
@@ -218,7 +218,7 @@ export function runPasteCells(
 					index: 0,
 					count: 0,
 					cells: pasteCells.items.map((cell) =>
-						cloneNotebookCellTextModel(cell)
+						cloneNotebookCellTextModel(cell),
 					),
 				},
 			],
@@ -230,7 +230,7 @@ export function runPasteCells(
 				selections: [{ start: 1, end: pasteCells.items.length + 1 }],
 			}),
 			undefined,
-			true
+			true,
 		);
 	}
 
@@ -240,7 +240,7 @@ export function runPasteCells(
 export function runCopyCells(
 	accessor: ServicesAccessor,
 	editor: INotebookEditor,
-	targetCell: ICellViewModel | undefined
+	targetCell: ICellViewModel | undefined,
 ): boolean {
 	if (!editor.hasModel()) {
 		return false;
@@ -260,7 +260,7 @@ export function runCopyCells(
 		const containingSelection = selections.find(
 			(selection) =>
 				selection.start <= targetCellIndex &&
-				targetCellIndex < selection.end
+				targetCellIndex < selection.end,
 		);
 
 		if (!containingSelection) {
@@ -272,7 +272,7 @@ export function runCopyCells(
 
 	const selectionRanges = expandCellRangesWithHiddenCells(
 		editor,
-		editor.getSelections()
+		editor.getSelections(),
 	);
 	const selectedCells = cellRangeToViewCells(editor, selectionRanges);
 
@@ -281,11 +281,11 @@ export function runCopyCells(
 	}
 
 	clipboardService.writeText(
-		selectedCells.map((cell) => cell.getText()).join("\n")
+		selectedCells.map((cell) => cell.getText()).join("\n"),
 	);
 	notebookService.setToCopy(
 		selectedCells.map((cell) => cell.model),
-		true
+		true,
 	);
 
 	return true;
@@ -293,7 +293,7 @@ export function runCopyCells(
 export function runCutCells(
 	accessor: ServicesAccessor,
 	editor: INotebookEditor,
-	targetCell: ICellViewModel | undefined
+	targetCell: ICellViewModel | undefined,
 ): boolean {
 	if (!editor.hasModel() || editor.isReadOnly) {
 		return false;
@@ -310,7 +310,7 @@ export function runCutCells(
 		const containingSelection = selections.find(
 			(selection) =>
 				selection.start <= targetCellIndex &&
-				targetCellIndex < selection.end
+				targetCellIndex < selection.end,
 		);
 
 		if (!containingSelection) {
@@ -324,7 +324,7 @@ export function runCutCells(
 			const newSelections = selections.map((selection) =>
 				selection.end <= targetCellIndex
 					? selection
-					: { start: selection.start - 1, end: selection.end - 1 }
+					: { start: selection.start - 1, end: selection.end - 1 },
 			);
 
 			textModel.applyEdits(
@@ -348,7 +348,7 @@ export function runCutCells(
 					selections: newSelections,
 				}),
 				undefined,
-				true
+				true,
 			);
 
 			notebookService.setToCopy([targetCell.model], false);
@@ -359,7 +359,7 @@ export function runCutCells(
 	const focus = editor.getFocus();
 	const containingSelection = selections.find(
 		(selection) =>
-			selection.start <= focus.start && focus.end <= selection.end
+			selection.start <= focus.start && focus.end <= selection.end,
 	);
 
 	if (!containingSelection) {
@@ -373,7 +373,7 @@ export function runCutCells(
 		const newSelections = selections.map((selection) =>
 			selection.end <= focus.start
 				? selection
-				: { start: selection.start - 1, end: selection.end - 1 }
+				: { start: selection.start - 1, end: selection.end - 1 },
 		);
 		textModel.applyEdits(
 			[
@@ -396,7 +396,7 @@ export function runCutCells(
 				selections: newSelections,
 			}),
 			undefined,
-			true
+			true,
 		);
 
 		notebookService.setToCopy([targetCell.model], false);
@@ -405,7 +405,7 @@ export function runCutCells(
 
 	const selectionRanges = expandCellRangesWithHiddenCells(
 		editor,
-		editor.getSelections()
+		editor.getSelections(),
 	);
 	const selectedCells = cellRangeToViewCells(editor, selectionRanges);
 
@@ -414,7 +414,7 @@ export function runCutCells(
 	}
 
 	clipboardService.writeText(
-		selectedCells.map((cell) => cell.getText()).join("\n")
+		selectedCells.map((cell) => cell.getText()).join("\n"),
 	);
 	const edits: ICellEditOperation[] = selectionRanges.map((range) => ({
 		editType: CellEditType.Replace,
@@ -458,11 +458,11 @@ export function runCutCells(
 			};
 		},
 		undefined,
-		true
+		true,
 	);
 	notebookService.setToCopy(
 		selectedCells.map((cell) => cell.model),
-		false
+		false,
 	);
 
 	return true;
@@ -515,7 +515,7 @@ export class NotebookClipboardContribution extends Disposable {
 
 	private _getContext() {
 		const editor = getNotebookEditorFromEditorPane(
-			this._editorService.activeEditorPane
+			this._editorService.activeEditorPane,
 		);
 		const activeCell = editor?.getActiveCell();
 
@@ -568,12 +568,12 @@ export class NotebookClipboardContribution extends Disposable {
 		if (
 			activeElement &&
 			["input", "textarea"].indexOf(
-				activeElement.tagName.toLowerCase()
+				activeElement.tagName.toLowerCase(),
 			) >= 0
 		) {
 			_log(
 				loggerService,
-				"[NotebookEditor] focus is on input or textarea element, bypass"
+				"[NotebookEditor] focus is on input or textarea element, bypass",
 			);
 			return false;
 		}
@@ -582,7 +582,7 @@ export class NotebookClipboardContribution extends Disposable {
 		if (!editor) {
 			_log(
 				loggerService,
-				"[NotebookEditor] no active notebook editor, bypass"
+				"[NotebookEditor] no active notebook editor, bypass",
 			);
 			return false;
 		}
@@ -590,14 +590,14 @@ export class NotebookClipboardContribution extends Disposable {
 		if (this._focusInsideEmebedMonaco(editor)) {
 			_log(
 				loggerService,
-				"[NotebookEditor] focus is on embed monaco editor, bypass"
+				"[NotebookEditor] focus is on embed monaco editor, bypass",
 			);
 			return false;
 		}
 
 		_log(
 			loggerService,
-			"[NotebookEditor] run copy actions on notebook model"
+			"[NotebookEditor] run copy actions on notebook model",
 		);
 		return runCopyCells(accessor, editor, undefined);
 	}
@@ -607,7 +607,7 @@ export class NotebookClipboardContribution extends Disposable {
 		if (
 			activeElement &&
 			["input", "textarea"].indexOf(
-				activeElement.tagName.toLowerCase()
+				activeElement.tagName.toLowerCase(),
 			) >= 0
 		) {
 			return false;
@@ -634,7 +634,7 @@ export class NotebookClipboardContribution extends Disposable {
 		if (
 			activeElement &&
 			["input", "textarea"].indexOf(
-				activeElement.tagName.toLowerCase()
+				activeElement.tagName.toLowerCase(),
 			) >= 0
 		) {
 			return false;
@@ -653,7 +653,7 @@ const workbenchContributionsRegistry =
 	Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	NotebookClipboardContribution,
-	LifecyclePhase.Ready
+	LifecyclePhase.Ready,
 );
 
 const COPY_CELL_COMMAND_ID = "notebook.cell.copy";
@@ -682,20 +682,20 @@ registerAction2(
 							},
 							when: ContextKeyExpr.and(
 								NOTEBOOK_EDITOR_FOCUSED,
-								ContextKeyExpr.not(InputFocusedContextKey)
+								ContextKeyExpr.not(InputFocusedContextKey),
 							),
 							weight: KeybindingWeight.WorkbenchContrib,
-						},
+					  },
 			});
 		}
 
 		async runWithContext(
 			accessor: ServicesAccessor,
-			context: INotebookCellActionContext
+			context: INotebookCellActionContext,
 		) {
 			runCopyCells(accessor, context.notebookEditor, context.cell);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -709,7 +709,7 @@ registerAction2(
 					when: ContextKeyExpr.and(
 						NOTEBOOK_EDITOR_FOCUSED,
 						NOTEBOOK_EDITOR_EDITABLE,
-						NOTEBOOK_CELL_EDITABLE
+						NOTEBOOK_CELL_EDITABLE,
 					),
 					group: CellOverflowToolbarGroups.Copy,
 				},
@@ -718,7 +718,7 @@ registerAction2(
 					: {
 							when: ContextKeyExpr.and(
 								NOTEBOOK_EDITOR_FOCUSED,
-								ContextKeyExpr.not(InputFocusedContextKey)
+								ContextKeyExpr.not(InputFocusedContextKey),
 							),
 							primary: KeyMod.CtrlCmd | KeyCode.KeyX,
 							win: {
@@ -726,17 +726,17 @@ registerAction2(
 								secondary: [KeyMod.Shift | KeyCode.Delete],
 							},
 							weight: KeybindingWeight.WorkbenchContrib,
-						},
+					  },
 			});
 		}
 
 		async runWithContext(
 			accessor: ServicesAccessor,
-			context: INotebookCellActionContext
+			context: INotebookCellActionContext,
 		) {
 			runCutCells(accessor, context.notebookEditor, context.cell);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -749,7 +749,7 @@ registerAction2(
 					id: MenuId.NotebookCellTitle,
 					when: ContextKeyExpr.and(
 						NOTEBOOK_EDITOR_FOCUSED,
-						NOTEBOOK_EDITOR_EDITABLE
+						NOTEBOOK_EDITOR_EDITABLE,
 					),
 					group: CellOverflowToolbarGroups.Copy,
 				},
@@ -758,7 +758,7 @@ registerAction2(
 					: {
 							when: ContextKeyExpr.and(
 								NOTEBOOK_EDITOR_FOCUSED,
-								ContextKeyExpr.not(InputFocusedContextKey)
+								ContextKeyExpr.not(InputFocusedContextKey),
 							),
 							primary: KeyMod.CtrlCmd | KeyCode.KeyV,
 							win: {
@@ -770,13 +770,13 @@ registerAction2(
 								secondary: [KeyMod.Shift | KeyCode.Insert],
 							},
 							weight: KeybindingWeight.EditorContrib,
-						},
+					  },
 			});
 		}
 
 		async runWithContext(
 			accessor: ServicesAccessor,
-			context: INotebookActionContext
+			context: INotebookActionContext,
 		) {
 			const notebookService =
 				accessor.get<INotebookService>(INotebookService);
@@ -795,7 +795,7 @@ registerAction2(
 
 			runPasteCells(context.notebookEditor, context.cell, pasteCells);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -805,12 +805,12 @@ registerAction2(
 				id: PASTE_CELL_ABOVE_COMMAND_ID,
 				title: localize(
 					"notebookActions.pasteAbove",
-					"Paste Cell Above"
+					"Paste Cell Above",
 				),
 				keybinding: {
 					when: ContextKeyExpr.and(
 						NOTEBOOK_EDITOR_FOCUSED,
-						ContextKeyExpr.not(InputFocusedContextKey)
+						ContextKeyExpr.not(InputFocusedContextKey),
 					),
 					primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyV,
 					weight: NOTEBOOK_EDITOR_WIDGET_ACTION_WEIGHT,
@@ -820,7 +820,7 @@ registerAction2(
 
 		async runWithContext(
 			accessor: ServicesAccessor,
-			context: INotebookCellActionContext
+			context: INotebookCellActionContext,
 		) {
 			const notebookService =
 				accessor.get<INotebookService>(INotebookService);
@@ -843,7 +843,7 @@ registerAction2(
 			};
 
 			const currCellIndex = context.notebookEditor.getCellIndex(
-				context.cell
+				context.cell,
 			);
 			const newFocusIndex = currCellIndex;
 			textModel.applyEdits(
@@ -853,7 +853,7 @@ registerAction2(
 						index: currCellIndex,
 						count: 0,
 						cells: pasteCells.items.map((cell) =>
-							cloneNotebookCellTextModel(cell)
+							cloneNotebookCellTextModel(cell),
 						),
 					},
 				],
@@ -870,10 +870,10 @@ registerAction2(
 					],
 				}),
 				undefined,
-				true
+				true,
 			);
 		}
-	}
+	},
 );
 
 registerAction2(
@@ -884,7 +884,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"toggleNotebookClipboardLog",
-						"Toggle Notebook Clipboard Troubleshooting"
+						"Toggle Notebook Clipboard Troubleshooting",
 					),
 					original: "Toggle Notebook Clipboard Troubleshooting",
 				},
@@ -900,5 +900,5 @@ registerAction2(
 				commandService.executeCommand(showWindowLogActionId);
 			}
 		}
-	}
+	},
 );

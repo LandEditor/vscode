@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import type { IDecoration, ITerminalAddon, Terminal } from "@xterm/xterm";
 import * as dom from "vs/base/browser/dom";
 import { IAction, Separator } from "vs/base/common/actions";
 import { Emitter } from "vs/base/common/event";
@@ -59,7 +60,6 @@ import {
 	TERMINAL_COMMAND_DECORATION_SUCCESS_BACKGROUND_COLOR,
 } from "vs/workbench/contrib/terminal/common/terminalColorRegistry";
 import { ILifecycleService } from "vs/workbench/services/lifecycle/common/lifecycle";
-import type { IDecoration, ITerminalAddon, Terminal } from "@xterm/xterm";
 
 interface IDisposableDecoration {
 	decoration: IDecoration;
@@ -79,7 +79,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 	private _terminalDecorationHoverService: TerminalDecorationHoverManager;
 
 	private readonly _onDidRequestRunCommand = this._register(
-		new Emitter<{ command: ITerminalCommand; copyAsHtml?: boolean }>()
+		new Emitter<{ command: ITerminalCommand; copyAsHtml?: boolean }>(),
 	);
 	readonly onDidRequestRunCommand = this._onDidRequestRunCommand.event;
 
@@ -168,7 +168,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 			case TerminalCapability.BufferMarkDetection:
 				disposables = [
 					capability.onMarkAdded((mark) =>
-						this.registerMarkDecoration(mark)
+						this.registerMarkDecoration(mark),
 					),
 				];
 				break;
@@ -195,7 +195,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 
 	private _updateDecorationVisibility(): void {
 		const showDecorations = this._configurationService.getValue(
-			TerminalSettingId.ShellIntegrationDecorationsEnabled
+			TerminalSettingId.ShellIntegrationDecorationsEnabled,
 		);
 		this._showGutterDecorations =
 			showDecorations === "both" || showDecorations === "gutter";
@@ -207,7 +207,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 			this._updateGutterDecorationVisibility();
 		}
 		const currentCommand = this._capabilities.get(
-			TerminalCapability.CommandDetection
+			TerminalCapability.CommandDetection,
 		)?.executingCommandObject;
 		if (currentCommand) {
 			this.registerCommandDecoration(currentCommand, true);
@@ -225,19 +225,19 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 	private _updateGutterDecorationVisibility(): void {
 		const commandDecorationElements =
 			this._terminal?.element?.querySelectorAll(
-				DecorationSelector.CommandDecoration
+				DecorationSelector.CommandDecoration,
 			);
 		if (commandDecorationElements) {
 			for (const commandDecorationElement of commandDecorationElements) {
 				this._updateCommandDecorationVisibility(
-					commandDecorationElement
+					commandDecorationElement,
 				);
 			}
 		}
 	}
 
 	private _updateCommandDecorationVisibility(
-		commandDecorationElement: Element
+		commandDecorationElement: Element,
 	): void {
 		if (this._showGutterDecorations) {
 			commandDecorationElement.classList.remove(DecorationSelector.Hide);
@@ -249,12 +249,12 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 	public refreshLayouts(): void {
 		updateLayout(
 			this._configurationService,
-			this._placeholderDecoration?.element
+			this._placeholderDecoration?.element,
 		);
 		for (const decoration of this._decorations) {
 			updateLayout(
 				this._configurationService,
-				decoration[1].decoration.element
+				decoration[1].decoration.element,
 			);
 		}
 	}
@@ -279,7 +279,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 			this._updateClasses(
 				decoration.decoration.element,
 				decoration.exitCode,
-				decoration.markProperties
+				decoration.markProperties,
 			);
 		}
 	}
@@ -307,19 +307,19 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 	private _attachToCommandCapability(): void {
 		if (this._capabilities.has(TerminalCapability.CommandDetection)) {
 			this._getCommandDetectionListeners(
-				this._capabilities.get(TerminalCapability.CommandDetection)!
+				this._capabilities.get(TerminalCapability.CommandDetection)!,
 			);
 		}
 	}
 
 	private _getCommandDetectionListeners(
-		capability: ICommandDetectionCapability
+		capability: ICommandDetectionCapability,
 	): IDisposable[] {
 		if (
 			this._capabilityDisposables.has(TerminalCapability.CommandDetection)
 		) {
 			const disposables = this._capabilityDisposables.get(
-				TerminalCapability.CommandDetection
+				TerminalCapability.CommandDetection,
 			)!;
 			dispose(disposables);
 			this._capabilityDisposables.delete(capability.type);
@@ -329,13 +329,13 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 		if (capability.executingCommandObject?.marker) {
 			this.registerCommandDecoration(
 				capability.executingCommandObject,
-				true
+				true,
 			);
 		}
 		commandDetectionListeners.push(
 			capability.onCommandStarted((command) =>
-				this.registerCommandDecoration(command, true)
-			)
+				this.registerCommandDecoration(command, true),
+			),
 		);
 		// Command finished
 		for (const command of capability.commands) {
@@ -346,10 +346,10 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 				this.registerCommandDecoration(command);
 				if (command.exitCode) {
 					this._audioCueService.playAudioCue(
-						AudioCue.terminalCommandFailed
+						AudioCue.terminalCommandFailed,
 					);
 				}
-			})
+			}),
 		);
 		// Command invalidated
 		commandDetectionListeners.push(
@@ -364,7 +364,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 						}
 					}
 				}
-			})
+			}),
 		);
 		// Current command invalidated
 		commandDetectionListeners.push(
@@ -374,7 +374,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 					CommandInvalidationReason.NoProblemsReported
 				) {
 					const lastDecoration = Array.from(
-						this._decorations.entries()
+						this._decorations.entries(),
 					)[this._decorations.size - 1];
 					lastDecoration?.[1].decoration.dispose();
 				} else if (
@@ -382,7 +382,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 				) {
 					this._clearPlaceholder();
 				}
-			})
+			}),
 		);
 		return commandDetectionListeners;
 	}
@@ -395,7 +395,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 	registerCommandDecoration(
 		command?: ITerminalCommand,
 		beforeCommandExecution?: boolean,
-		markProperties?: IMarkProperties
+		markProperties?: IMarkProperties,
 	): IDecoration | undefined {
 		if (
 			!this._terminal ||
@@ -409,8 +409,8 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 		if (!marker) {
 			throw new Error(
 				`cannot add a decoration for a command ${JSON.stringify(
-					command
-				)} with no marker`
+					command,
+				)} with no marker`,
 			);
 		}
 		this._clearPlaceholder();
@@ -435,14 +435,14 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 			}
 			if (!this._decorations.get(decoration.marker.id)) {
 				decoration.onDispose(() =>
-					this._decorations.delete(decoration.marker.id)
+					this._decorations.delete(decoration.marker.id),
 				);
 				this._decorations.set(decoration.marker.id, {
 					decoration,
 					disposables: this._createDisposables(
 						element,
 						command,
-						markProperties
+						markProperties,
 					),
 					exitCode: command?.exitCode,
 					markProperties: command?.markProperties,
@@ -457,7 +457,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 				this._updateClasses(
 					element,
 					command?.exitCode,
-					command?.markProperties || markProperties
+					command?.markProperties || markProperties,
 				);
 			}
 		});
@@ -467,7 +467,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 	private _createDisposables(
 		element: HTMLElement,
 		command?: ITerminalCommand,
-		markProperties?: IMarkProperties
+		markProperties?: IMarkProperties,
 	): IDisposable[] {
 		if (command?.exitCode === undefined && !command?.markProperties) {
 			return [];
@@ -476,7 +476,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 				this._terminalDecorationHoverService.createHover(
 					element,
 					command || markProperties,
-					markProperties?.hoverMessage
+					markProperties?.hoverMessage,
 				),
 			];
 		}
@@ -489,7 +489,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 	private _updateClasses(
 		element?: HTMLElement,
 		exitCode?: number,
-		markProperties?: IMarkProperties
+		markProperties?: IMarkProperties,
 	): void {
 		if (!element) {
 			return;
@@ -500,13 +500,13 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 		element.classList.add(
 			DecorationSelector.CommandDecoration,
 			DecorationSelector.Codicon,
-			DecorationSelector.XtermDecoration
+			DecorationSelector.XtermDecoration,
 		);
 
 		if (markProperties) {
 			element.classList.add(
 				DecorationSelector.DefaultColor,
-				...ThemeIcon.asClassNameArray(terminalDecorationMark)
+				...ThemeIcon.asClassNameArray(terminalDecorationMark),
 			);
 			if (!markProperties.hoverMessage) {
 				//disable the mouse pointer
@@ -518,19 +518,19 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 			if (exitCode === undefined) {
 				element.classList.add(
 					DecorationSelector.DefaultColor,
-					DecorationSelector.Default
+					DecorationSelector.Default,
 				);
 				element.classList.add(
-					...ThemeIcon.asClassNameArray(terminalDecorationIncomplete)
+					...ThemeIcon.asClassNameArray(terminalDecorationIncomplete),
 				);
 			} else if (exitCode) {
 				element.classList.add(DecorationSelector.ErrorColor);
 				element.classList.add(
-					...ThemeIcon.asClassNameArray(terminalDecorationError)
+					...ThemeIcon.asClassNameArray(terminalDecorationError),
 				);
 			} else {
 				element.classList.add(
-					...ThemeIcon.asClassNameArray(terminalDecorationSuccess)
+					...ThemeIcon.asClassNameArray(terminalDecorationSuccess),
 				);
 			}
 		}
@@ -538,7 +538,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 
 	private _createContextMenu(
 		element: HTMLElement,
-		command: ITerminalCommand
+		command: ITerminalCommand,
 	): IDisposable[] {
 		// When the xterm Decoration gets disposed of, its element gets removed from the dom
 		// along with its listeners
@@ -548,7 +548,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 				dom.EventType.MOUSE_DOWN,
 				async (e) => {
 					e.stopImmediatePropagation();
-				}
+				},
 			),
 			dom.addDisposableListener(
 				element,
@@ -561,7 +561,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 						getAnchor: () => element,
 						getActions: () => actions,
 					});
-				}
+				},
 			),
 			dom.addDisposableListener(
 				element,
@@ -574,14 +574,14 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 						getAnchor: () => element,
 						getActions: () => actions,
 					});
-				}
+				},
 			),
 		];
 	}
 	private _getContextMenuActions(): IAction[] {
 		const label = localize(
 			"workbench.action.terminal.toggleVisibility",
-			"Toggle Visibility"
+			"Toggle Visibility",
 		);
 		return [
 			{
@@ -598,7 +598,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 	}
 
 	private async _getCommandActions(
-		command: ITerminalCommand
+		command: ITerminalCommand,
 	): Promise<IAction[]> {
 		const actions: IAction[] = [];
 		if (command.command !== "") {
@@ -620,7 +620,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 								localize(
 									"rerun",
 									"Do you want to run the command: {0}",
-									command.command
+									command.command,
 								),
 								[
 									{
@@ -631,7 +631,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 										label: localize("no", "No"),
 										run: () => r(false),
 									},
-								]
+								],
 							);
 						});
 						if (!shouldRun) {
@@ -656,7 +656,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 		if (command.hasOutput()) {
 			const labelCopyCommandAndOutput = localize(
 				"terminal.copyCommandAndOutput",
-				"Copy Command and Output"
+				"Copy Command and Output",
 			);
 			actions.push({
 				class: undefined,
@@ -672,7 +672,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 								command.command !== ""
 									? command.command + "\n"
 									: ""
-							}${output}`
+							}${output}`,
 						);
 					}
 				},
@@ -693,7 +693,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 			});
 			const labelHtml = localize(
 				"terminal.copyOutputAsHtml",
-				"Copy Output as HTML"
+				"Copy Output as HTML",
 			);
 			actions.push({
 				class: undefined,
@@ -713,7 +713,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 		}
 		const labelRunRecent = localize(
 			"workbench.action.terminal.runRecentCommand",
-			"Run Recent Command"
+			"Run Recent Command",
 		);
 		actions.push({
 			class: undefined,
@@ -723,12 +723,12 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 			enabled: true,
 			run: () =>
 				this._commandService.executeCommand(
-					"workbench.action.terminal.runRecentCommand"
+					"workbench.action.terminal.runRecentCommand",
 				),
 		});
 		const labelGoToRecent = localize(
 			"workbench.action.terminal.goToRecentDirectory",
-			"Go To Recent Directory"
+			"Go To Recent Directory",
 		);
 		actions.push({
 			class: undefined,
@@ -738,7 +738,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 			enabled: true,
 			run: () =>
 				this._commandService.executeCommand(
-					"workbench.action.terminal.goToRecentDirectory"
+					"workbench.action.terminal.goToRecentDirectory",
 				),
 		});
 
@@ -746,7 +746,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 
 		const labelAbout = localize(
 			"terminal.learnShellIntegration",
-			"Learn About Shell Integration"
+			"Learn About Shell Integration",
 		);
 		actions.push({
 			class: undefined,
@@ -756,7 +756,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 			enabled: true,
 			run: () =>
 				this._openerService.open(
-					"https://code.visualstudio.com/docs/terminal/shell-integration"
+					"https://code.visualstudio.com/docs/terminal/shell-integration",
 				),
 		});
 		return actions;
@@ -769,7 +769,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 		quickPick.canSelectMany = true;
 		quickPick.title = localize("toggleVisibility", "Toggle visibility");
 		const configValue = this._configurationService.getValue(
-			TerminalSettingId.ShellIntegrationDecorationsEnabled
+			TerminalSettingId.ShellIntegrationDecorationsEnabled,
 		);
 		const gutterIcon: IQuickPickItem = {
 			label: localize("gutter", "Gutter command decorations"),
@@ -778,7 +778,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 		const overviewRulerIcon: IQuickPickItem = {
 			label: localize(
 				"overviewRuler",
-				"Overview ruler command decorations"
+				"Overview ruler command decorations",
 			),
 			picked: configValue !== "never" && configValue !== "gutter",
 		};
@@ -807,7 +807,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 			}
 			await this._configurationService.updateValue(
 				TerminalSettingId.ShellIntegrationDecorationsEnabled,
-				newValue
+				newValue,
 			);
 		});
 		quickPick.ok = false;
@@ -815,7 +815,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 	}
 
 	private _getDecorationCssColor(
-		decorationOrCommand?: IDisposableDecoration | ITerminalCommand
+		decorationOrCommand?: IDisposableDecoration | ITerminalCommand,
 	): string | undefined {
 		let colorId: string;
 		if (decorationOrCommand?.exitCode === undefined) {

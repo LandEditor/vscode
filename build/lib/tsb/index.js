@@ -1,4 +1,3 @@
-"use strict";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -25,9 +24,7 @@ class EmptyDuplex extends stream_1.Duplex {
 	}
 }
 function createNullCompiler() {
-	const result = function () {
-		return new EmptyDuplex();
-	};
+	const result = () => new EmptyDuplex();
 	result.src = () => new EmptyDuplex();
 	return result;
 }
@@ -36,7 +33,7 @@ function create(
 	projectPath,
 	existingOptions,
 	config,
-	onError = _defaultOnError
+	onError = _defaultOnError,
 ) {
 	function printDiagnostic(diag) {
 		if (diag instanceof Error) {
@@ -45,7 +42,7 @@ function create(
 			onError(ts.flattenDiagnosticMessageText(diag.messageText, "\n"));
 		} else {
 			const lineAndCh = diag.file.getLineAndCharacterOfPosition(
-				diag.start
+				diag.start,
 			);
 			onError(
 				utils_1.strings.format(
@@ -53,8 +50,8 @@ function create(
 					diag.file.fileName,
 					lineAndCh.line + 1,
 					lineAndCh.character + 1,
-					ts.flattenDiagnosticMessageText(diag.messageText, "\n")
-				)
+					ts.flattenDiagnosticMessageText(diag.messageText, "\n"),
+				),
 			);
 		}
 	}
@@ -67,7 +64,7 @@ function create(
 		parsed.config,
 		ts.sys,
 		(0, path_1.dirname)(projectPath),
-		existingOptions
+		existingOptions,
 	);
 	if (cmdLine.errors.length > 0) {
 		cmdLine.errors.forEach(printDiagnostic);
@@ -95,7 +92,7 @@ function create(
 					.build((file) => this.queue(file), printDiagnostic, token)
 					.catch((e) => console.error(e))
 					.then(() => this.queue(null));
-			}
+			},
 		);
 	}
 	// TRANSPILE ONLY stream doing just TS to JS conversion
@@ -126,30 +123,30 @@ function create(
 					this.queue(null);
 					transpiler.onOutfile = undefined;
 				});
-			}
+			},
 		);
 	}
 	let result;
 	if (config.transpileOnly) {
-		const transpiler = !config.transpileWithSwc
-			? new transpiler_1.TscTranspiler(
+		const transpiler = config.transpileWithSwc
+			? new transpiler_1.SwcTranspiler(
 					logFn,
 					printDiagnostic,
 					projectPath,
-					cmdLine
-				)
-			: new transpiler_1.SwcTranspiler(
+					cmdLine,
+			  )
+			: new transpiler_1.TscTranspiler(
 					logFn,
 					printDiagnostic,
 					projectPath,
-					cmdLine
-				);
+					cmdLine,
+			  );
 		result = () => createTranspileStream(transpiler);
 	} else {
 		const _builder = builder.createTypeScriptBuilder(
 			{ logFn },
 			projectPath,
-			cmdLine
+			cmdLine,
 		);
 		result = (token) => createCompileStream(_builder, token);
 	}
@@ -174,7 +171,7 @@ function create(
 							base:
 								(opts && opts.base) ||
 								(0, path_1.dirname)(projectPath),
-						})
+						}),
 					);
 				}
 				if (_pos >= _fileNames.length) {

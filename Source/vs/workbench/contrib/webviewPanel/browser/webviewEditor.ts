@@ -51,9 +51,9 @@ export const CONTEXT_ACTIVE_WEBVIEW_PANEL_ID = new RawContextKey<string>(
 		type: "string",
 		description: nls.localize(
 			"context.activeWebviewId",
-			"The viewType of the currently active webview panel."
+			"The viewType of the currently active webview panel.",
 		),
-	}
+	},
 );
 
 export class WebviewEditor extends EditorPane {
@@ -65,10 +65,10 @@ export class WebviewEditor extends EditorPane {
 	private _isDisposed = false;
 
 	private readonly _webviewVisibleDisposables = this._register(
-		new DisposableStore()
+		new DisposableStore(),
 	);
 	private readonly _onFocusWindowHandler = this._register(
-		new MutableDisposable()
+		new MutableDisposable(),
 	);
 
 	private readonly _onDidFocusWebview = this._register(new Emitter<void>());
@@ -77,7 +77,7 @@ export class WebviewEditor extends EditorPane {
 	}
 
 	private readonly _scopedContextKeyService = this._register(
-		new MutableDisposable<IScopedContextKeyService>()
+		new MutableDisposable<IScopedContextKeyService>(),
 	);
 
 	constructor(
@@ -165,7 +165,7 @@ export class WebviewEditor extends EditorPane {
 
 	protected override setEditorVisible(
 		visible: boolean,
-		group: IEditorGroup | undefined
+		group: IEditorGroup | undefined,
 	): void {
 		this._visible = visible;
 		if (this.input instanceof WebviewInput && this.webview) {
@@ -191,7 +191,7 @@ export class WebviewEditor extends EditorPane {
 		input: EditorInput,
 		options: IEditorOptions,
 		context: IEditorOpenContext,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void> {
 		if (this.input && input.matches(this.input)) {
 			return;
@@ -230,7 +230,7 @@ export class WebviewEditor extends EditorPane {
 		if (this._element) {
 			this._element.setAttribute(
 				"aria-flowto",
-				input.webview.container.id
+				input.webview.container.id,
 			);
 			DOM.setParentFlowTo(input.webview.container, this._element);
 		}
@@ -243,12 +243,12 @@ export class WebviewEditor extends EditorPane {
 				input.webview.container,
 				{
 					containsGroup: (group) => this.group?.id === group.id,
-				}
-			)
+				},
+			),
 		);
 
 		this._webviewVisibleDisposables.add(
-			new WebviewWindowDragMonitor(() => this.webview)
+			new WebviewWindowDragMonitor(() => this.webview),
 		);
 
 		this.synchronizeWebviewContainerDimensions(input.webview);
@@ -257,19 +257,19 @@ export class WebviewEditor extends EditorPane {
 
 	private synchronizeWebviewContainerDimensions(
 		webview: IOverlayWebview,
-		dimension?: DOM.Dimension
+		dimension?: DOM.Dimension,
 	) {
 		if (!this._element?.isConnected) {
 			return;
 		}
 		const rootContainer = this._workbenchLayoutService.getContainer(
 			$window,
-			Parts.EDITOR_PART
+			Parts.EDITOR_PART,
 		);
 		webview.layoutWebviewOverElement(
 			this._element.parentElement!,
 			dimension,
-			rootContainer
+			rootContainer,
 		);
 	}
 
@@ -281,8 +281,8 @@ export class WebviewEditor extends EditorPane {
 		store.add(webviewContentFocusTracker);
 		store.add(
 			webviewContentFocusTracker.onDidFocus(() =>
-				this._onDidFocusWebview.fire()
-			)
+				this._onDidFocusWebview.fire(),
+			),
 		);
 
 		// Track focus in webview element

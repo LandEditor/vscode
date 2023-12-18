@@ -28,7 +28,7 @@ export class TerminalAutoResponder extends Disposable {
 		proc: ITerminalChildProcess,
 		matchWord: string,
 		response: string,
-		logService: ILogService
+		logService: ILogService,
 	) {
 		super();
 
@@ -47,7 +47,7 @@ export class TerminalAutoResponder extends Disposable {
 					// Auto reply and reset
 					if (this._pointer === matchWord.length) {
 						logService.debug(
-							`Auto reply match: "${matchWord}", response: "${response}"`
+							`Auto reply match: "${matchWord}", response: "${response}"`,
 						);
 						proc.input(response);
 						this._throttled = true;
@@ -55,7 +55,7 @@ export class TerminalAutoResponder extends Disposable {
 						this._reset();
 					}
 				}
-			})
+			}),
 		);
 	}
 

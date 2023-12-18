@@ -3,52 +3,51 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Emitter, Event } from "vs/base/common/event";
+import { hash } from "vs/base/common/hash";
+import { IMarkdownString } from "vs/base/common/htmlContent";
+import { getCodiconAriaLabel } from "vs/base/common/iconLabels";
+import { Iterable } from "vs/base/common/iterator";
 import { IJSONSchema } from "vs/base/common/jsonSchema";
 import {
 	DisposableStore,
 	IDisposable,
 	toDisposable,
 } from "vs/base/common/lifecycle";
-import { localize } from "vs/nls";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { isProposedApiEnabled } from "vs/workbench/services/extensions/common/extensions";
-import { ExtensionsRegistry } from "vs/workbench/services/extensions/common/extensionsRegistry";
-import {
-	IStatusbarService,
-	StatusbarAlignment as MainThreadStatusBarAlignment,
-	IStatusbarEntryAccessor,
-	IStatusbarEntry,
-	StatusbarAlignment,
-	IStatusbarEntryPriority,
-	StatusbarEntryKind,
-} from "vs/workbench/services/statusbar/browser/statusbar";
 import { ThemeColor } from "vs/base/common/themables";
 import { Command } from "vs/editor/common/languages";
+import { localize } from "vs/nls";
 import {
 	IAccessibilityInformation,
 	isAccessibilityInformation,
 } from "vs/platform/accessibility/common/accessibility";
-import { IMarkdownString } from "vs/base/common/htmlContent";
-import { getCodiconAriaLabel } from "vs/base/common/iconLabels";
-import { hash } from "vs/base/common/hash";
-import { Event, Emitter } from "vs/base/common/event";
+import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { Iterable } from "vs/base/common/iterator";
-import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import { asStatusBarItemIdentifier } from "vs/workbench/api/common/extHostTypes";
 import {
 	STATUS_BAR_ERROR_ITEM_BACKGROUND,
 	STATUS_BAR_WARNING_ITEM_BACKGROUND,
 } from "vs/workbench/common/theme";
+import { isProposedApiEnabled } from "vs/workbench/services/extensions/common/extensions";
+import { ExtensionsRegistry } from "vs/workbench/services/extensions/common/extensionsRegistry";
+import {
+	IStatusbarEntry,
+	IStatusbarEntryAccessor,
+	IStatusbarEntryPriority,
+	IStatusbarService,
+	StatusbarAlignment,
+	StatusbarEntryKind,
+} from "vs/workbench/services/statusbar/browser/statusbar";
 
 // --- service
 
 export const IExtensionStatusBarItemService =
 	createDecorator<IExtensionStatusBarItemService>(
-		"IExtensionStatusBarItemService"
+		"IExtensionStatusBarItemService",
 	);
 
 export interface IExtensionStatusBarItemChangeEvent {
@@ -65,9 +64,9 @@ export type ExtensionStatusBarEntry = [
 	},
 ];
 
-export const enum StatusBarUpdateKind {
-	DidDefine,
-	DidUpdate,
+export enum StatusBarUpdateKind {
+	DidDefine = 0,
+	DidUpdate = 1,
 }
 
 export interface IExtensionStatusBarItemService {
@@ -87,7 +86,7 @@ export interface IExtensionStatusBarItemService {
 		backgroundColor: ThemeColor | undefined,
 		alignLeft: boolean,
 		priority: number | undefined,
-		accessibilityInformation: IAccessibilityInformation | undefined
+		accessibilityInformation: IAccessibilityInformation | undefined,
 	): StatusBarUpdateKind;
 
 	unsetEntry(id: string): void;
@@ -136,7 +135,7 @@ class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
 		backgroundColor: ThemeColor | undefined,
 		alignLeft: boolean,
 		priority: number | undefined,
-		accessibilityInformation: IAccessibilityInformation | undefined
+		accessibilityInformation: IAccessibilityInformation | undefined,
 	): StatusBarUpdateKind {
 		// if there are icons in the text use the tooltip for the aria label
 		let ariaLabel: string;
@@ -192,7 +191,12 @@ class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
 		}
 
 		// Create new entry if not existing
-		if (!existingEntry) {
+		if (existingEntry) {
+			// Otherwise update
+			existingEntry.accessor.update(entry);
+			existingEntry.entry = entry;
+			return StatusBarUpdateKind.DidUpdate;
+		} else {
 			let entryPriority: number | IStatusbarEntryPriority;
 			if (typeof extensionId === "string") {
 				// We cannot enforce unique priorities across all extensions, so we
@@ -212,7 +216,7 @@ class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
 				entry,
 				id,
 				alignment,
-				entryPriority
+				entryPriority,
 			);
 			this._entries.set(entryId, {
 				accessor,
@@ -230,11 +234,6 @@ class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
 				added: [entryId, { entry, alignment, priority }],
 			});
 			return StatusBarUpdateKind.DidDefine;
-		} else {
-			// Otherwise update
-			existingEntry.accessor.update(entry);
-			existingEntry.entry = entry;
-			return StatusBarUpdateKind.DidUpdate;
 		}
 	}
 
@@ -260,7 +259,7 @@ class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
 registerSingleton(
 	IExtensionStatusBarItemService,
 	ExtensionStatusBarItemService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );
 
 // --- extension point and reading of it
@@ -277,7 +276,7 @@ interface IUserFriendlyStatusItemEntry {
 }
 
 function isUserFriendlyStatusItemEntry(
-	candidate: any
+	candidate: any,
 ): candidate is IUserFriendlyStatusItemEntry {
 	const obj = candidate as IUserFriendlyStatusItemEntry;
 	return (
@@ -302,21 +301,21 @@ const statusBarItemSchema: IJSONSchema = {
 			type: "string",
 			markdownDescription: localize(
 				"id",
-				"The identifier of the status bar entry. Must be unique within the extension. The same value must be used when calling the `vscode.window.createStatusBarItem(id, ...)`-API"
+				"The identifier of the status bar entry. Must be unique within the extension. The same value must be used when calling the `vscode.window.createStatusBarItem(id, ...)`-API",
 			),
 		},
 		name: {
 			type: "string",
 			description: localize(
 				"name",
-				"The name of the entry, like 'Python Language Indicator', 'Git Status' etc. Try to keep the length of the name short, yet descriptive enough that users can understand what the status bar item is about."
+				"The name of the entry, like 'Python Language Indicator', 'Git Status' etc. Try to keep the length of the name short, yet descriptive enough that users can understand what the status bar item is about.",
 			),
 		},
 		text: {
 			type: "string",
 			description: localize(
 				"text",
-				"The text to show for the entry. You can embed icons in the text by leveraging the `$(<name>)`-syntax, like 'Hello $(globe)!'"
+				"The text to show for the entry. You can embed icons in the text by leveraging the `$(<name>)`-syntax, like 'Hello $(globe)!'",
 			),
 		},
 		tooltip: {
@@ -327,7 +326,7 @@ const statusBarItemSchema: IJSONSchema = {
 			type: "string",
 			description: localize(
 				"command",
-				"The command to execute when the status bar entry is clicked."
+				"The command to execute when the status bar entry is clicked.",
 			),
 		},
 		alignment: {
@@ -335,35 +334,35 @@ const statusBarItemSchema: IJSONSchema = {
 			enum: ["left", "right"],
 			description: localize(
 				"alignment",
-				"The alignment of the status bar entry."
+				"The alignment of the status bar entry.",
 			),
 		},
 		priority: {
 			type: "number",
 			description: localize(
 				"priority",
-				"The priority of the status bar entry. Higher value means the item should be shown more to the left."
+				"The priority of the status bar entry. Higher value means the item should be shown more to the left.",
 			),
 		},
 		accessibilityInformation: {
 			type: "object",
 			description: localize(
 				"accessibilityInformation",
-				"Defines the role and aria label to be used when the status bar entry is focused."
+				"Defines the role and aria label to be used when the status bar entry is focused.",
 			),
 			properties: {
 				role: {
 					type: "string",
 					description: localize(
 						"accessibilityInformation.role",
-						"The role of the status bar entry which defines how a screen reader interacts with it. More about aria roles can be found here https://w3c.github.io/aria/#widget_roles"
+						"The role of the status bar entry which defines how a screen reader interacts with it. More about aria roles can be found here https://w3c.github.io/aria/#widget_roles",
 					),
 				},
 				label: {
 					type: "string",
 					description: localize(
 						"accessibilityInformation.label",
-						"The aria label of the status bar entry. Defaults to the entry's text."
+						"The aria label of the status bar entry. Defaults to the entry's text.",
 					),
 				},
 			},
@@ -374,7 +373,7 @@ const statusBarItemSchema: IJSONSchema = {
 const statusBarItemsSchema: IJSONSchema = {
 	description: localize(
 		"vscode.extension.contributes.statusBarItems",
-		"Contributes items to the status bar."
+		"Contributes items to the status bar.",
 	),
 	oneOf: [
 		statusBarItemSchema,

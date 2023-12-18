@@ -3,144 +3,141 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
-import { URI } from "vs/base/common/uri";
+import { Queue } from "vs/base/common/async";
+import { ErrorNoTelemetry } from "vs/base/common/errors";
 import * as json from "vs/base/common/json";
 import { setProperty } from "vs/base/common/jsonEdit";
-import { Queue } from "vs/base/common/async";
 import { Edit, FormattingOptions } from "vs/base/common/jsonFormatter";
-import { Registry } from "vs/platform/registry/common/platform";
+import { IReference } from "vs/base/common/lifecycle";
+import { URI } from "vs/base/common/uri";
+import { EditOperation } from "vs/editor/common/core/editOperation";
+import { Range } from "vs/editor/common/core/range";
+import { Selection } from "vs/editor/common/core/selection";
+import { ITextModel } from "vs/editor/common/model";
 import {
-	IWorkspaceContextService,
-	WorkbenchState,
-} from "vs/platform/workspace/common/workspace";
-import { ITextFileService } from "vs/workbench/services/textfile/common/textfiles";
+	IResolvedTextEditorModel,
+	ITextModelService,
+} from "vs/editor/common/services/resolverService";
+import * as nls from "vs/nls";
 import {
 	IConfigurationUpdateOptions,
 	IConfigurationUpdateOverrides,
 } from "vs/platform/configuration/common/configuration";
 import {
-	FOLDER_SETTINGS_PATH,
-	WORKSPACE_STANDALONE_CONFIGURATIONS,
-	TASKS_CONFIGURATION_KEY,
-	LAUNCH_CONFIGURATION_KEY,
-	USER_STANDALONE_CONFIGURATIONS,
-	TASKS_DEFAULT,
-	FOLDER_SCOPES,
-	IWorkbenchConfigurationService,
-} from "vs/workbench/services/configuration/common/configuration";
+	ConfigurationScope,
+	Extensions as ConfigurationExtensions,
+	IConfigurationRegistry,
+	OVERRIDE_PROPERTY_REGEX,
+	keyFromOverrideIdentifiers,
+} from "vs/platform/configuration/common/configurationRegistry";
 import {
 	FileOperationError,
 	FileOperationResult,
 	IFileService,
 } from "vs/platform/files/common/files";
 import {
-	IResolvedTextEditorModel,
-	ITextModelService,
-} from "vs/editor/common/services/resolverService";
-import {
-	IConfigurationRegistry,
-	Extensions as ConfigurationExtensions,
-	ConfigurationScope,
-	keyFromOverrideIdentifiers,
-	OVERRIDE_PROPERTY_REGEX,
-} from "vs/platform/configuration/common/configurationRegistry";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import {
 	INotificationService,
 	Severity,
 } from "vs/platform/notification/common/notification";
+import { Registry } from "vs/platform/registry/common/platform";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
+import {
+	IWorkspaceContextService,
+	WorkbenchState,
+} from "vs/platform/workspace/common/workspace";
+import {
+	FOLDER_SCOPES,
+	FOLDER_SETTINGS_PATH,
+	IWorkbenchConfigurationService,
+	LAUNCH_CONFIGURATION_KEY,
+	TASKS_CONFIGURATION_KEY,
+	TASKS_DEFAULT,
+	USER_STANDALONE_CONFIGURATIONS,
+	WORKSPACE_STANDALONE_CONFIGURATIONS,
+} from "vs/workbench/services/configuration/common/configuration";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 import {
 	IOpenSettingsOptions,
 	IPreferencesService,
 } from "vs/workbench/services/preferences/common/preferences";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import { ITextModel } from "vs/editor/common/model";
-import { IReference } from "vs/base/common/lifecycle";
-import { Range } from "vs/editor/common/core/range";
-import { EditOperation } from "vs/editor/common/core/editOperation";
-import { Selection } from "vs/editor/common/core/selection";
+import { ITextFileService } from "vs/workbench/services/textfile/common/textfiles";
 import { IUserDataProfileService } from "vs/workbench/services/userDataProfile/common/userDataProfile";
-import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
-import { ErrorNoTelemetry } from "vs/base/common/errors";
 
-export const enum ConfigurationEditingErrorCode {
+export enum ConfigurationEditingErrorCode {
 	/**
 	 * Error when trying to write a configuration key that is not registered.
 	 */
-	ERROR_UNKNOWN_KEY,
+	ERROR_UNKNOWN_KEY = 0,
 
 	/**
 	 * Error when trying to write an application setting into workspace settings.
 	 */
-	ERROR_INVALID_WORKSPACE_CONFIGURATION_APPLICATION,
+	ERROR_INVALID_WORKSPACE_CONFIGURATION_APPLICATION = 1,
 
 	/**
 	 * Error when trying to write a machne setting into workspace settings.
 	 */
-	ERROR_INVALID_WORKSPACE_CONFIGURATION_MACHINE,
+	ERROR_INVALID_WORKSPACE_CONFIGURATION_MACHINE = 2,
 
 	/**
 	 * Error when trying to write an invalid folder configuration key to folder settings.
 	 */
-	ERROR_INVALID_FOLDER_CONFIGURATION,
+	ERROR_INVALID_FOLDER_CONFIGURATION = 3,
 
 	/**
 	 * Error when trying to write to user target but not supported for provided key.
 	 */
-	ERROR_INVALID_USER_TARGET,
+	ERROR_INVALID_USER_TARGET = 4,
 
 	/**
 	 * Error when trying to write to user target but not supported for provided key.
 	 */
-	ERROR_INVALID_WORKSPACE_TARGET,
+	ERROR_INVALID_WORKSPACE_TARGET = 5,
 
 	/**
 	 * Error when trying to write a configuration key to folder target
 	 */
-	ERROR_INVALID_FOLDER_TARGET,
+	ERROR_INVALID_FOLDER_TARGET = 6,
 
 	/**
 	 * Error when trying to write to language specific setting but not supported for preovided key
 	 */
-	ERROR_INVALID_RESOURCE_LANGUAGE_CONFIGURATION,
+	ERROR_INVALID_RESOURCE_LANGUAGE_CONFIGURATION = 7,
 
 	/**
 	 * Error when trying to write to the workspace configuration without having a workspace opened.
 	 */
-	ERROR_NO_WORKSPACE_OPENED,
+	ERROR_NO_WORKSPACE_OPENED = 8,
 
 	/**
 	 * Error when trying to write and save to the configuration file while it is dirty in the editor.
 	 */
-	ERROR_CONFIGURATION_FILE_DIRTY,
+	ERROR_CONFIGURATION_FILE_DIRTY = 9,
 
 	/**
 	 * Error when trying to write and save to the configuration file while it is not the latest in the disk.
 	 */
-	ERROR_CONFIGURATION_FILE_MODIFIED_SINCE,
+	ERROR_CONFIGURATION_FILE_MODIFIED_SINCE = 10,
 
 	/**
 	 * Error when trying to write to a configuration file that contains JSON errors.
 	 */
-	ERROR_INVALID_CONFIGURATION,
+	ERROR_INVALID_CONFIGURATION = 11,
 
 	/**
 	 * Error when trying to write a policy configuration
 	 */
-	ERROR_POLICY_CONFIGURATION,
+	ERROR_POLICY_CONFIGURATION = 12,
 
 	/**
 	 * Internal Error.
 	 */
-	ERROR_INTERNAL,
+	ERROR_INTERNAL = 13,
 }
 
 export class ConfigurationEditingError extends ErrorNoTelemetry {
-	constructor(
-		message: string,
-		public code: ConfigurationEditingErrorCode
-	) {
+	constructor(message: string, public code: ConfigurationEditingErrorCode) {
 		super(message);
 	}
 }
@@ -158,11 +155,11 @@ export interface IConfigurationEditingOptions
 	scopes?: IConfigurationUpdateOverrides;
 }
 
-export const enum EditableConfigurationTarget {
+export enum EditableConfigurationTarget {
 	USER_LOCAL = 1,
-	USER_REMOTE,
-	WORKSPACE,
-	WORKSPACE_FOLDER,
+	USER_REMOTE = 2,
+	WORKSPACE = 3,
+	WORKSPACE_FOLDER = 4,
 }
 
 interface IConfigurationEditOperation extends IConfigurationValue {
@@ -205,12 +202,12 @@ export class ConfigurationEditing {
 	async writeConfiguration(
 		target: EditableConfigurationTarget,
 		value: IConfigurationValue,
-		options: IConfigurationEditingOptions = {}
+		options: IConfigurationEditingOptions = {},
 	): Promise<void> {
 		const operation = this.getConfigurationEditOperation(
 			target,
 			value,
-			options.scopes || {}
+			options.scopes || {},
 		);
 		// queue up writes to prevent race conditions
 		return this.queue.queue(async () => {
@@ -227,25 +224,25 @@ export class ConfigurationEditing {
 
 	private async doWriteConfiguration(
 		operation: IConfigurationEditOperation,
-		options: IConfigurationEditingOptions
+		options: IConfigurationEditingOptions,
 	): Promise<void> {
 		await this.validate(
 			operation.target,
 			operation,
 			!options.handleDirtyFile,
-			options.scopes || {}
+			options.scopes || {},
 		);
 		const resource: URI = operation.resource!;
 		const reference = await this.resolveModelReference(resource);
 		try {
 			const formattingOptions = this.getFormattingOptions(
-				reference.object.textEditorModel
+				reference.object.textEditorModel,
 			);
 			await this.updateConfiguration(
 				operation,
 				reference.object.textEditorModel,
 				formattingOptions,
-				options
+				options,
 			);
 		} finally {
 			reference.dispose();
@@ -256,13 +253,13 @@ export class ConfigurationEditing {
 		operation: IConfigurationEditOperation,
 		model: ITextModel,
 		formattingOptions: FormattingOptions,
-		options: IConfigurationEditingOptions
+		options: IConfigurationEditingOptions,
 	): Promise<void> {
 		if (this.hasParseErrors(model.getValue(), operation)) {
 			throw this.toConfigurationEditingError(
 				ConfigurationEditingErrorCode.ERROR_INVALID_CONFIGURATION,
 				operation.target,
-				operation
+				operation,
 			);
 		}
 
@@ -283,7 +280,7 @@ export class ConfigurationEditing {
 		const edit = this.getEdits(
 			operation,
 			model.getValue(),
-			formattingOptions
+			formattingOptions,
 		)[0];
 		if (edit && this.applyEditsToBuffer(edit, model)) {
 			await this.save(model, operation);
@@ -292,7 +289,7 @@ export class ConfigurationEditing {
 
 	private async save(
 		model: ITextModel,
-		operation: IConfigurationEditOperation
+		operation: IConfigurationEditOperation,
 	): Promise<void> {
 		try {
 			await this.textFileService.save(model.uri, {
@@ -306,7 +303,7 @@ export class ConfigurationEditing {
 				throw this.toConfigurationEditingError(
 					ConfigurationEditingErrorCode.ERROR_CONFIGURATION_FILE_MODIFIED_SINCE,
 					operation.target,
-					operation
+					operation,
 				);
 			}
 			throw new ConfigurationEditingError(
@@ -314,9 +311,9 @@ export class ConfigurationEditing {
 					"fsError",
 					"Error while writing to {0}. {1}",
 					this.stringifyTarget(operation.target),
-					error.message
+					error.message,
 				),
-				ConfigurationEditingErrorCode.ERROR_INTERNAL
+				ConfigurationEditingErrorCode.ERROR_INTERNAL,
 			);
 		}
 	}
@@ -328,7 +325,7 @@ export class ConfigurationEditing {
 			startPosition.lineNumber,
 			startPosition.column,
 			endPosition.lineNumber,
-			endPosition.column
+			endPosition.column,
 		);
 		const currentText = model.getValueInRange(range);
 		if (edit.content !== currentText) {
@@ -341,11 +338,11 @@ export class ConfigurationEditing {
 						startPosition.lineNumber,
 						startPosition.column,
 						startPosition.lineNumber,
-						startPosition.column
+						startPosition.column,
 					),
 				],
 				[editOperation],
-				() => []
+				() => [],
 			);
 			return true;
 		}
@@ -355,14 +352,14 @@ export class ConfigurationEditing {
 	private getEdits(
 		{ value, jsonPath }: IConfigurationEditOperation,
 		modelContent: string,
-		formattingOptions: FormattingOptions
+		formattingOptions: FormattingOptions,
 	): Edit[] {
 		if (jsonPath.length) {
 			return setProperty(
 				modelContent,
 				jsonPath,
 				value,
-				formattingOptions
+				formattingOptions,
 			);
 		}
 
@@ -372,7 +369,7 @@ export class ConfigurationEditing {
 			null,
 			formattingOptions.insertSpaces && formattingOptions.tabSize
 				? " ".repeat(formattingOptions.tabSize)
-				: "\t"
+				: "\t",
 		);
 		return [
 			{
@@ -392,7 +389,7 @@ export class ConfigurationEditing {
 	private async onError(
 		error: ConfigurationEditingError,
 		operation: IConfigurationEditOperation,
-		scopes: IConfigurationUpdateOverrides | undefined
+		scopes: IConfigurationUpdateOverrides | undefined,
 	): Promise<void> {
 		switch (error.code) {
 			case ConfigurationEditingErrorCode.ERROR_INVALID_CONFIGURATION:
@@ -413,22 +410,22 @@ export class ConfigurationEditing {
 
 	private onInvalidConfigurationError(
 		error: ConfigurationEditingError,
-		operation: IConfigurationEditOperation
+		operation: IConfigurationEditOperation,
 	): void {
 		const openStandAloneConfigurationActionLabel =
 			operation.workspaceStandAloneConfigurationKey ===
 			TASKS_CONFIGURATION_KEY
 				? nls.localize(
 						"openTasksConfiguration",
-						"Open Tasks Configuration"
-					)
+						"Open Tasks Configuration",
+				  )
 				: operation.workspaceStandAloneConfigurationKey ===
 					  LAUNCH_CONFIGURATION_KEY
-					? nls.localize(
+				  ? nls.localize(
 							"openLaunchConfiguration",
-							"Open Launch Configuration"
-						)
-					: null;
+							"Open Launch Configuration",
+					  )
+				  : null;
 		if (openStandAloneConfigurationActionLabel) {
 			this.notificationService.prompt(Severity.Error, error.message, [
 				{
@@ -449,22 +446,22 @@ export class ConfigurationEditing {
 	private onConfigurationFileDirtyError(
 		error: ConfigurationEditingError,
 		operation: IConfigurationEditOperation,
-		scopes: IConfigurationUpdateOverrides | undefined
+		scopes: IConfigurationUpdateOverrides | undefined,
 	): void {
 		const openStandAloneConfigurationActionLabel =
 			operation.workspaceStandAloneConfigurationKey ===
 			TASKS_CONFIGURATION_KEY
 				? nls.localize(
 						"openTasksConfiguration",
-						"Open Tasks Configuration"
-					)
+						"Open Tasks Configuration",
+				  )
 				: operation.workspaceStandAloneConfigurationKey ===
 					  LAUNCH_CONFIGURATION_KEY
-					? nls.localize(
+				  ? nls.localize(
 							"openLaunchConfiguration",
-							"Open Launch Configuration"
-						)
-					: null;
+							"Open Launch Configuration",
+					  )
+				  : null;
 		if (openStandAloneConfigurationActionLabel) {
 			this.notificationService.prompt(Severity.Error, error.message, [
 				{
@@ -479,7 +476,7 @@ export class ConfigurationEditing {
 							<IConfigurationEditingOptions>{
 								handleDirtyFile: "save",
 								scopes,
-							}
+							},
 						);
 					},
 				},
@@ -499,7 +496,7 @@ export class ConfigurationEditing {
 							<IConfigurationEditingOptions>{
 								handleDirtyFile: "save",
 								scopes,
-							}
+							},
 						),
 				},
 				{
@@ -526,7 +523,7 @@ export class ConfigurationEditing {
 				if (operation.resource) {
 					const workspaceFolder =
 						this.contextService.getWorkspaceFolder(
-							operation.resource
+							operation.resource,
 						);
 					if (workspaceFolder) {
 						this.preferencesService.openFolderSettings({
@@ -546,7 +543,7 @@ export class ConfigurationEditing {
 	private toConfigurationEditingError(
 		code: ConfigurationEditingErrorCode,
 		target: EditableConfigurationTarget,
-		operation: IConfigurationEditOperation
+		operation: IConfigurationEditOperation,
 	): ConfigurationEditingError {
 		const message = this.toErrorMessage(code, target, operation);
 		return new ConfigurationEditingError(message, code);
@@ -555,7 +552,7 @@ export class ConfigurationEditing {
 	private toErrorMessage(
 		error: ConfigurationEditingErrorCode,
 		target: EditableConfigurationTarget,
-		operation: IConfigurationEditOperation
+		operation: IConfigurationEditOperation,
 	): string {
 		switch (error) {
 			// API constraints
@@ -563,61 +560,61 @@ export class ConfigurationEditing {
 				return nls.localize(
 					"errorPolicyConfiguration",
 					"Unable to write {0} because it is configured in system policy.",
-					operation.key
+					operation.key,
 				);
 			case ConfigurationEditingErrorCode.ERROR_UNKNOWN_KEY:
 				return nls.localize(
 					"errorUnknownKey",
 					"Unable to write to {0} because {1} is not a registered configuration.",
 					this.stringifyTarget(target),
-					operation.key
+					operation.key,
 				);
 			case ConfigurationEditingErrorCode.ERROR_INVALID_WORKSPACE_CONFIGURATION_APPLICATION:
 				return nls.localize(
 					"errorInvalidWorkspaceConfigurationApplication",
 					"Unable to write {0} to Workspace Settings. This setting can be written only into User settings.",
-					operation.key
+					operation.key,
 				);
 			case ConfigurationEditingErrorCode.ERROR_INVALID_WORKSPACE_CONFIGURATION_MACHINE:
 				return nls.localize(
 					"errorInvalidWorkspaceConfigurationMachine",
 					"Unable to write {0} to Workspace Settings. This setting can be written only into User settings.",
-					operation.key
+					operation.key,
 				);
 			case ConfigurationEditingErrorCode.ERROR_INVALID_FOLDER_CONFIGURATION:
 				return nls.localize(
 					"errorInvalidFolderConfiguration",
 					"Unable to write to Folder Settings because {0} does not support the folder resource scope.",
-					operation.key
+					operation.key,
 				);
 			case ConfigurationEditingErrorCode.ERROR_INVALID_USER_TARGET:
 				return nls.localize(
 					"errorInvalidUserTarget",
 					"Unable to write to User Settings because {0} does not support for global scope.",
-					operation.key
+					operation.key,
 				);
 			case ConfigurationEditingErrorCode.ERROR_INVALID_WORKSPACE_TARGET:
 				return nls.localize(
 					"errorInvalidWorkspaceTarget",
 					"Unable to write to Workspace Settings because {0} does not support for workspace scope in a multi folder workspace.",
-					operation.key
+					operation.key,
 				);
 			case ConfigurationEditingErrorCode.ERROR_INVALID_FOLDER_TARGET:
 				return nls.localize(
 					"errorInvalidFolderTarget",
-					"Unable to write to Folder Settings because no resource is provided."
+					"Unable to write to Folder Settings because no resource is provided.",
 				);
 			case ConfigurationEditingErrorCode.ERROR_INVALID_RESOURCE_LANGUAGE_CONFIGURATION:
 				return nls.localize(
 					"errorInvalidResourceLanguageConfiguration",
 					"Unable to write to Language Settings because {0} is not a resource language setting.",
-					operation.key
+					operation.key,
 				);
 			case ConfigurationEditingErrorCode.ERROR_NO_WORKSPACE_OPENED:
 				return nls.localize(
 					"errorNoWorkspaceOpened",
 					"Unable to write to {0} because no workspace is opened. Please open a workspace first and try again.",
-					this.stringifyTarget(target)
+					this.stringifyTarget(target),
 				);
 
 			// User issues
@@ -628,7 +625,7 @@ export class ConfigurationEditing {
 				) {
 					return nls.localize(
 						"errorInvalidTaskConfiguration",
-						"Unable to write into the tasks configuration file. Please open it to correct errors/warnings in it and try again."
+						"Unable to write into the tasks configuration file. Please open it to correct errors/warnings in it and try again.",
 					);
 				}
 				if (
@@ -637,31 +634,31 @@ export class ConfigurationEditing {
 				) {
 					return nls.localize(
 						"errorInvalidLaunchConfiguration",
-						"Unable to write into the launch configuration file. Please open it to correct errors/warnings in it and try again."
+						"Unable to write into the launch configuration file. Please open it to correct errors/warnings in it and try again.",
 					);
 				}
 				switch (target) {
 					case EditableConfigurationTarget.USER_LOCAL:
 						return nls.localize(
 							"errorInvalidConfiguration",
-							"Unable to write into user settings. Please open the user settings to correct errors/warnings in it and try again."
+							"Unable to write into user settings. Please open the user settings to correct errors/warnings in it and try again.",
 						);
 					case EditableConfigurationTarget.USER_REMOTE:
 						return nls.localize(
 							"errorInvalidRemoteConfiguration",
-							"Unable to write into remote user settings. Please open the remote user settings to correct errors/warnings in it and try again."
+							"Unable to write into remote user settings. Please open the remote user settings to correct errors/warnings in it and try again.",
 						);
 					case EditableConfigurationTarget.WORKSPACE:
 						return nls.localize(
 							"errorInvalidConfigurationWorkspace",
-							"Unable to write into workspace settings. Please open the workspace settings to correct errors/warnings in the file and try again."
+							"Unable to write into workspace settings. Please open the workspace settings to correct errors/warnings in the file and try again.",
 						);
 					case EditableConfigurationTarget.WORKSPACE_FOLDER: {
-						let workspaceFolderName: string = "<<unknown>>";
+						let workspaceFolderName = "<<unknown>>";
 						if (operation.resource) {
 							const folder =
 								this.contextService.getWorkspaceFolder(
-									operation.resource
+									operation.resource,
 								);
 							if (folder) {
 								workspaceFolderName = folder.name;
@@ -670,7 +667,7 @@ export class ConfigurationEditing {
 						return nls.localize(
 							"errorInvalidConfigurationFolder",
 							"Unable to write into folder settings. Please open the '{0}' folder settings to correct errors/warnings in it and try again.",
-							workspaceFolderName
+							workspaceFolderName,
 						);
 					}
 					default:
@@ -684,7 +681,7 @@ export class ConfigurationEditing {
 				) {
 					return nls.localize(
 						"errorTasksConfigurationFileDirty",
-						"Unable to write into tasks configuration file because the file has unsaved changes. Please save it first and then try again."
+						"Unable to write into tasks configuration file because the file has unsaved changes. Please save it first and then try again.",
 					);
 				}
 				if (
@@ -693,31 +690,31 @@ export class ConfigurationEditing {
 				) {
 					return nls.localize(
 						"errorLaunchConfigurationFileDirty",
-						"Unable to write into launch configuration file because the file has unsaved changes. Please save it first and then try again."
+						"Unable to write into launch configuration file because the file has unsaved changes. Please save it first and then try again.",
 					);
 				}
 				switch (target) {
 					case EditableConfigurationTarget.USER_LOCAL:
 						return nls.localize(
 							"errorConfigurationFileDirty",
-							"Unable to write into user settings because the file has unsaved changes. Please save the user settings file first and then try again."
+							"Unable to write into user settings because the file has unsaved changes. Please save the user settings file first and then try again.",
 						);
 					case EditableConfigurationTarget.USER_REMOTE:
 						return nls.localize(
 							"errorRemoteConfigurationFileDirty",
-							"Unable to write into remote user settings because the file has unsaved changes. Please save the remote user settings file first and then try again."
+							"Unable to write into remote user settings because the file has unsaved changes. Please save the remote user settings file first and then try again.",
 						);
 					case EditableConfigurationTarget.WORKSPACE:
 						return nls.localize(
 							"errorConfigurationFileDirtyWorkspace",
-							"Unable to write into workspace settings because the file has unsaved changes. Please save the workspace settings file first and then try again."
+							"Unable to write into workspace settings because the file has unsaved changes. Please save the workspace settings file first and then try again.",
 						);
 					case EditableConfigurationTarget.WORKSPACE_FOLDER: {
-						let workspaceFolderName: string = "<<unknown>>";
+						let workspaceFolderName = "<<unknown>>";
 						if (operation.resource) {
 							const folder =
 								this.contextService.getWorkspaceFolder(
-									operation.resource
+									operation.resource,
 								);
 							if (folder) {
 								workspaceFolderName = folder.name;
@@ -726,7 +723,7 @@ export class ConfigurationEditing {
 						return nls.localize(
 							"errorConfigurationFileDirtyFolder",
 							"Unable to write into folder settings because the file has unsaved changes. Please save the '{0}' folder settings file first and then try again.",
-							workspaceFolderName
+							workspaceFolderName,
 						);
 					}
 					default:
@@ -740,7 +737,7 @@ export class ConfigurationEditing {
 				) {
 					return nls.localize(
 						"errorTasksConfigurationFileModifiedSince",
-						"Unable to write into tasks configuration file because the content of the file is newer."
+						"Unable to write into tasks configuration file because the content of the file is newer.",
 					);
 				}
 				if (
@@ -749,36 +746,36 @@ export class ConfigurationEditing {
 				) {
 					return nls.localize(
 						"errorLaunchConfigurationFileModifiedSince",
-						"Unable to write into launch configuration file because the content of the file is newer."
+						"Unable to write into launch configuration file because the content of the file is newer.",
 					);
 				}
 				switch (target) {
 					case EditableConfigurationTarget.USER_LOCAL:
 						return nls.localize(
 							"errorConfigurationFileModifiedSince",
-							"Unable to write into user settings because the content of the file is newer."
+							"Unable to write into user settings because the content of the file is newer.",
 						);
 					case EditableConfigurationTarget.USER_REMOTE:
 						return nls.localize(
 							"errorRemoteConfigurationFileModifiedSince",
-							"Unable to write into remote user settings because the content of the file is newer."
+							"Unable to write into remote user settings because the content of the file is newer.",
 						);
 					case EditableConfigurationTarget.WORKSPACE:
 						return nls.localize(
 							"errorConfigurationFileModifiedSinceWorkspace",
-							"Unable to write into workspace settings because the content of the file is newer."
+							"Unable to write into workspace settings because the content of the file is newer.",
 						);
 					case EditableConfigurationTarget.WORKSPACE_FOLDER:
 						return nls.localize(
 							"errorConfigurationFileModifiedSinceFolder",
-							"Unable to write into folder settings because the content of the file is newer."
+							"Unable to write into folder settings because the content of the file is newer.",
 						);
 				}
 			case ConfigurationEditingErrorCode.ERROR_INTERNAL:
 				return nls.localize(
 					"errorUnknown",
 					"Unable to write to {0} because of an internal error.",
-					this.stringifyTarget(target)
+					this.stringifyTarget(target),
 				);
 		}
 	}
@@ -804,7 +801,7 @@ export class ConfigurationEditing {
 		const configurationValue: string = basename.substr(
 			0,
 			basename.length -
-				this.uriIdentityService.extUri.extname(resource).length
+				this.uriIdentityService.extUri.extname(resource).length,
 		);
 		switch (configurationValue) {
 			case TASKS_CONFIGURATION_KEY:
@@ -815,14 +812,14 @@ export class ConfigurationEditing {
 	}
 
 	private async resolveModelReference(
-		resource: URI
+		resource: URI,
 	): Promise<IReference<IResolvedTextEditorModel>> {
 		const exists = await this.fileService.exists(resource);
 		if (!exists) {
 			await this.textFileService.write(
 				resource,
 				this.defaultResourceValue(resource),
-				{ encoding: "utf8" }
+				{ encoding: "utf8" },
 			);
 		}
 		return this.textModelResolverService.createModelReference(resource);
@@ -830,7 +827,7 @@ export class ConfigurationEditing {
 
 	private hasParseErrors(
 		content: string,
-		operation: IConfigurationEditOperation
+		operation: IConfigurationEditOperation,
 	): boolean {
 		// If we write to a workspace standalone file and replace the entire contents (no key provided)
 		// we can return here because any parse errors can safely be ignored since all contents are replaced
@@ -849,7 +846,7 @@ export class ConfigurationEditing {
 		target: EditableConfigurationTarget,
 		operation: IConfigurationEditOperation,
 		checkDirty: boolean,
-		overrides: IConfigurationUpdateOverrides
+		overrides: IConfigurationUpdateOverrides,
 	): Promise<void> {
 		if (
 			this.configurationService.inspect(operation.key).policyValue !==
@@ -858,12 +855,12 @@ export class ConfigurationEditing {
 			throw this.toConfigurationEditingError(
 				ConfigurationEditingErrorCode.ERROR_POLICY_CONFIGURATION,
 				target,
-				operation
+				operation,
 			);
 		}
 
 		const configurationProperties = Registry.as<IConfigurationRegistry>(
-			ConfigurationExtensions.Configuration
+			ConfigurationExtensions.Configuration,
 		).getConfigurationProperties();
 		const configurationScope =
 			configurationProperties[operation.key]?.scope;
@@ -884,7 +881,7 @@ export class ConfigurationEditing {
 				throw this.toConfigurationEditingError(
 					ConfigurationEditingErrorCode.ERROR_UNKNOWN_KEY,
 					target,
-					operation
+					operation,
 				);
 			}
 		}
@@ -900,7 +897,7 @@ export class ConfigurationEditing {
 				throw this.toConfigurationEditingError(
 					ConfigurationEditingErrorCode.ERROR_INVALID_USER_TARGET,
 					target,
-					operation
+					operation,
 				);
 			}
 		}
@@ -914,7 +911,7 @@ export class ConfigurationEditing {
 			throw this.toConfigurationEditingError(
 				ConfigurationEditingErrorCode.ERROR_NO_WORKSPACE_OPENED,
 				target,
-				operation
+				operation,
 			);
 		}
 
@@ -927,14 +924,14 @@ export class ConfigurationEditing {
 					throw this.toConfigurationEditingError(
 						ConfigurationEditingErrorCode.ERROR_INVALID_WORKSPACE_CONFIGURATION_APPLICATION,
 						target,
-						operation
+						operation,
 					);
 				}
 				if (configurationScope === ConfigurationScope.MACHINE) {
 					throw this.toConfigurationEditingError(
 						ConfigurationEditingErrorCode.ERROR_INVALID_WORKSPACE_CONFIGURATION_MACHINE,
 						target,
-						operation
+						operation,
 					);
 				}
 			}
@@ -945,7 +942,7 @@ export class ConfigurationEditing {
 				throw this.toConfigurationEditingError(
 					ConfigurationEditingErrorCode.ERROR_INVALID_FOLDER_TARGET,
 					target,
-					operation
+					operation,
 				);
 			}
 
@@ -960,7 +957,7 @@ export class ConfigurationEditing {
 					throw this.toConfigurationEditingError(
 						ConfigurationEditingErrorCode.ERROR_INVALID_FOLDER_CONFIGURATION,
 						target,
-						operation
+						operation,
 					);
 				}
 			}
@@ -973,7 +970,7 @@ export class ConfigurationEditing {
 				throw this.toConfigurationEditingError(
 					ConfigurationEditingErrorCode.ERROR_INVALID_RESOURCE_LANGUAGE_CONFIGURATION,
 					target,
-					operation
+					operation,
 				);
 			}
 		}
@@ -982,7 +979,7 @@ export class ConfigurationEditing {
 			throw this.toConfigurationEditingError(
 				ConfigurationEditingErrorCode.ERROR_INVALID_FOLDER_TARGET,
 				target,
-				operation
+				operation,
 			);
 		}
 
@@ -990,7 +987,7 @@ export class ConfigurationEditing {
 			throw this.toConfigurationEditingError(
 				ConfigurationEditingErrorCode.ERROR_CONFIGURATION_FILE_DIRTY,
 				target,
-				operation
+				operation,
 			);
 		}
 	}
@@ -998,7 +995,7 @@ export class ConfigurationEditing {
 	private getConfigurationEditOperation(
 		target: EditableConfigurationTarget,
 		config: IConfigurationValue,
-		overrides: IConfigurationUpdateOverrides
+		overrides: IConfigurationUpdateOverrides,
 	): IConfigurationEditOperation {
 		// Check for standalone workspace configurations
 		if (config.key) {
@@ -1007,7 +1004,7 @@ export class ConfigurationEditing {
 					? USER_STANDALONE_CONFIGURATIONS
 					: WORKSPACE_STANDALONE_CONFIGURATIONS;
 			const standaloneConfigurationKeys = Object.keys(
-				standaloneConfigurationMap
+				standaloneConfigurationMap,
 			);
 			for (const key of standaloneConfigurationKeys) {
 				const resource = this.getConfigurationFileResource(
@@ -1015,13 +1012,13 @@ export class ConfigurationEditing {
 					key,
 					standaloneConfigurationMap[key],
 					overrides.resource,
-					undefined
+					undefined,
 				);
 
 				// Check for prefix
 				if (config.key === key) {
 					const jsonPath = this.isWorkspaceConfigurationResource(
-						resource
+						resource,
 					)
 						? [key]
 						: [];
@@ -1039,7 +1036,7 @@ export class ConfigurationEditing {
 				const keyPrefix = `${key}.`;
 				if (config.key.indexOf(keyPrefix) === 0) {
 					const jsonPath = this.isWorkspaceConfigurationResource(
-						resource
+						resource,
 					)
 						? [key, config.key.substr(keyPrefix.length)]
 						: [config.key.substr(keyPrefix.length)];
@@ -1057,7 +1054,7 @@ export class ConfigurationEditing {
 
 		const key = config.key;
 		const configurationProperties = Registry.as<IConfigurationRegistry>(
-			ConfigurationExtensions.Configuration
+			ConfigurationExtensions.Configuration,
 		).getConfigurationProperties();
 		const configurationScope = configurationProperties[key]?.scope;
 		let jsonPath = overrides.overrideIdentifiers?.length
@@ -1077,7 +1074,7 @@ export class ConfigurationEditing {
 						key,
 						"",
 						null,
-						configurationScope
+						configurationScope,
 					) ?? undefined,
 				target,
 			};
@@ -1088,7 +1085,7 @@ export class ConfigurationEditing {
 			key,
 			FOLDER_SETTINGS_PATH,
 			overrides.resource,
-			configurationScope
+			configurationScope,
 		);
 		if (this.isWorkspaceConfigurationResource(resource)) {
 			jsonPath = ["settings", ...jsonPath];
@@ -1116,7 +1113,7 @@ export class ConfigurationEditing {
 		key: string,
 		relativePath: string,
 		resource: URI | null | undefined,
-		scope: ConfigurationScope | undefined
+		scope: ConfigurationScope | undefined,
 	): URI | null {
 		if (target === EditableConfigurationTarget.USER_LOCAL) {
 			if (key === TASKS_CONFIGURATION_KEY) {
@@ -1125,7 +1122,7 @@ export class ConfigurationEditing {
 				if (
 					!this.userDataProfileService.currentProfile.isDefault &&
 					this.configurationService.isSettingAppliedForAllProfiles(
-						key
+						key,
 					)
 				) {
 					return this.userDataProfilesService.defaultProfile

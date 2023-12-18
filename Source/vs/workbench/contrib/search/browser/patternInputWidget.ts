@@ -5,21 +5,21 @@
 
 import * as dom from "vs/base/browser/dom";
 import { IKeyboardEvent } from "vs/base/browser/keyboardEvent";
-import { Toggle } from "vs/base/browser/ui/toggle/toggle";
 import { IContextViewProvider } from "vs/base/browser/ui/contextview/contextview";
 import {
 	HistoryInputBox,
 	IInputBoxStyles,
 } from "vs/base/browser/ui/inputbox/inputBox";
+import { Toggle } from "vs/base/browser/ui/toggle/toggle";
 import { Widget } from "vs/base/browser/ui/widget";
 import { Codicon } from "vs/base/common/codicons";
 import { Emitter, Event as CommonEvent } from "vs/base/common/event";
 import { KeyCode } from "vs/base/common/keyCodes";
 import * as nls from "vs/nls";
-import { ContextScopedHistoryInputBox } from "vs/platform/history/browser/contextScopedHistoryWidget";
-import { showHistoryKeybindingHint } from "vs/platform/history/browser/historyWidgetKeybindingHint";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { ContextScopedHistoryInputBox } from "vs/platform/history/browser/contextScopedHistoryWidget";
+import { showHistoryKeybindingHint } from "vs/platform/history/browser/historyWidgetKeybindingHint";
 import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import { defaultToggleStyles } from "vs/platform/theme/browser/defaultStyles";
 
@@ -34,7 +34,7 @@ export interface IOptions {
 }
 
 export class PatternInputWidget extends Widget {
-	static OPTION_CHANGE: string = "optionChange";
+	static OPTION_CHANGE = "optionChange";
 
 	inputFocusTracker!: dom.IFocusTracker;
 
@@ -163,15 +163,15 @@ export class PatternInputWidget extends Widget {
 					showHistoryKeybindingHint(this.keybindingService),
 				inputBoxStyles: options.inputBoxStyles,
 			},
-			this.contextKeyService
+			this.contextKeyService,
 		);
 		this._register(
-			this.inputBox.onDidChange(() => this._onSubmit.fire(true))
+			this.inputBox.onDidChange(() => this._onSubmit.fire(true)),
 		);
 
 		this.inputFocusTracker = dom.trackFocus(this.inputBox.inputElement);
 		this.onkeyup(this.inputBox.inputElement, (keyboardEvent) =>
-			this.onInputKeyUp(keyboardEvent)
+			this.onInputKeyUp(keyboardEvent),
 		);
 
 		const controls = document.createElement("div");
@@ -199,7 +199,7 @@ export class PatternInputWidget extends Widget {
 
 export class IncludePatternInputWidget extends PatternInputWidget {
 	private _onChangeSearchInEditorsBoxEmitter = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	onChangeSearchInEditorsBox = this._onChangeSearchInEditorsBoxEmitter.event;
 
@@ -209,7 +209,7 @@ export class IncludePatternInputWidget extends PatternInputWidget {
 		options: IOptions,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IKeybindingService keybindingService: IKeybindingService
+		@IKeybindingService keybindingService: IKeybindingService,
 	) {
 		super(
 			parent,
@@ -217,7 +217,7 @@ export class IncludePatternInputWidget extends PatternInputWidget {
 			options,
 			contextKeyService,
 			configurationService,
-			keybindingService
+			keybindingService,
 		);
 	}
 
@@ -247,11 +247,11 @@ export class IncludePatternInputWidget extends PatternInputWidget {
 				icon: Codicon.book,
 				title: nls.localize(
 					"onlySearchInOpenEditors",
-					"Search only in Open Editors"
+					"Search only in Open Editors",
 				),
 				isChecked: false,
 				...defaultToggleStyles,
-			})
+			}),
 		);
 		this._register(
 			this.useSearchInEditorsBox.onChange((viaKeyboard) => {
@@ -259,7 +259,7 @@ export class IncludePatternInputWidget extends PatternInputWidget {
 				if (!viaKeyboard) {
 					this.inputBox.focus();
 				}
-			})
+			}),
 		);
 		controlsDiv.appendChild(this.useSearchInEditorsBox.domNode);
 		super.renderSubcontrols(controlsDiv);
@@ -276,7 +276,7 @@ export class ExcludePatternInputWidget extends PatternInputWidget {
 		options: IOptions,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IKeybindingService keybindingService: IKeybindingService
+		@IKeybindingService keybindingService: IKeybindingService,
 	) {
 		super(
 			parent,
@@ -284,7 +284,7 @@ export class ExcludePatternInputWidget extends PatternInputWidget {
 			options,
 			contextKeyService,
 			configurationService,
-			keybindingService
+			keybindingService,
 		);
 	}
 
@@ -318,11 +318,11 @@ export class ExcludePatternInputWidget extends PatternInputWidget {
 				actionClassName: "useExcludesAndIgnoreFiles",
 				title: nls.localize(
 					"useExcludesAndIgnoreFilesDescription",
-					"Use Exclude Settings and Ignore Files"
+					"Use Exclude Settings and Ignore Files",
 				),
 				isChecked: true,
 				...defaultToggleStyles,
-			})
+			}),
 		);
 		this._register(
 			this.useExcludesAndIgnoreFilesBox.onChange((viaKeyboard) => {
@@ -330,7 +330,7 @@ export class ExcludePatternInputWidget extends PatternInputWidget {
 				if (!viaKeyboard) {
 					this.inputBox.focus();
 				}
-			})
+			}),
 		);
 
 		controlsDiv.appendChild(this.useExcludesAndIgnoreFilesBox.domNode);

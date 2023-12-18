@@ -3,22 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Schemas } from "vs/base/common/network";
+import { URI } from "vs/base/common/uri";
+import { IChannel } from "vs/base/parts/ipc/common/ipc";
+import {
+	IConfigBasedExtensionTip,
+	IExecutableBasedExtensionTip,
+	IExtensionTipsService,
+} from "vs/platform/extensionManagement/common/extensionManagement";
+import { ExtensionTipsService } from "vs/platform/extensionManagement/common/extensionTipsService";
+import { IFileService } from "vs/platform/files/common/files";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
 import { ISharedProcessService } from "vs/platform/ipc/electron-sandbox/services";
-import { IChannel } from "vs/base/parts/ipc/common/ipc";
-import {
-	IExtensionTipsService,
-	IExecutableBasedExtensionTip,
-	IConfigBasedExtensionTip,
-} from "vs/platform/extensionManagement/common/extensionManagement";
-import { URI } from "vs/base/common/uri";
-import { ExtensionTipsService } from "vs/platform/extensionManagement/common/extensionTipsService";
-import { IFileService } from "vs/platform/files/common/files";
 import { IProductService } from "vs/platform/product/common/productService";
-import { Schemas } from "vs/base/common/network";
 
 class NativeExtensionTipsService
 	extends ExtensionTipsService
@@ -29,19 +29,19 @@ class NativeExtensionTipsService
 	constructor(
 		@IFileService fileService: IFileService,
 		@IProductService productService: IProductService,
-		@ISharedProcessService sharedProcessService: ISharedProcessService
+		@ISharedProcessService sharedProcessService: ISharedProcessService,
 	) {
 		super(fileService, productService);
 		this.channel = sharedProcessService.getChannel("extensionTipsService");
 	}
 
 	override getConfigBasedTips(
-		folder: URI
+		folder: URI,
 	): Promise<IConfigBasedExtensionTip[]> {
 		if (folder.scheme === Schemas.file) {
 			return this.channel.call<IConfigBasedExtensionTip[]>(
 				"getConfigBasedTips",
-				[folder]
+				[folder],
 			);
 		}
 		return super.getConfigBasedTips(folder);
@@ -51,7 +51,7 @@ class NativeExtensionTipsService
 		IExecutableBasedExtensionTip[]
 	> {
 		return this.channel.call<IExecutableBasedExtensionTip[]>(
-			"getImportantExecutableBasedTips"
+			"getImportantExecutableBasedTips",
 		);
 	}
 
@@ -59,7 +59,7 @@ class NativeExtensionTipsService
 		IExecutableBasedExtensionTip[]
 	> {
 		return this.channel.call<IExecutableBasedExtensionTip[]>(
-			"getOtherExecutableBasedTips"
+			"getOtherExecutableBasedTips",
 		);
 	}
 }
@@ -67,5 +67,5 @@ class NativeExtensionTipsService
 registerSingleton(
 	IExtensionTipsService,
 	NativeExtensionTipsService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

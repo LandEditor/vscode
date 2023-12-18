@@ -16,7 +16,7 @@ import {
 export const makeRawSocketHeaders = (
 	path: string,
 	query: string,
-	deubgLabel: string
+	deubgLabel: string,
 ) => {
 	// https://tools.ietf.org/html/rfc6455#section-4
 	const buffer = new Uint8Array(16);
@@ -49,10 +49,10 @@ export async function connectManagedSocket<T extends ManagedSocket>(
 	path: string,
 	query: string,
 	debugLabel: string,
-	half: RemoteSocketHalf
+	half: RemoteSocketHalf,
 ): Promise<T> {
 	socket.write(
-		VSBuffer.fromString(makeRawSocketHeaders(path, query, debugLabel))
+		VSBuffer.fromString(makeRawSocketHeaders(path, query, debugLabel)),
 	);
 
 	const d = new DisposableStore();
@@ -61,13 +61,13 @@ export async function connectManagedSocket<T extends ManagedSocket>(
 			let dataSoFar: VSBuffer | undefined;
 			d.add(
 				socket.onData((d_1) => {
-					if (!dataSoFar) {
-						dataSoFar = d_1;
-					} else {
+					if (dataSoFar) {
 						dataSoFar = VSBuffer.concat(
 							[dataSoFar, d_1],
-							dataSoFar.byteLength + d_1.byteLength
+							dataSoFar.byteLength + d_1.byteLength,
 						);
+					} else {
+						dataSoFar = d_1;
 					}
 
 					const index = dataSoFar.indexOf(socketRawEndHeaderSequence);
@@ -82,18 +82,18 @@ export async function connectManagedSocket<T extends ManagedSocket>(
 					socket.pauseData();
 
 					const rest = dataSoFar.slice(
-						index + socketRawEndHeaderSequence.byteLength
+						index + socketRawEndHeaderSequence.byteLength,
 					);
 					if (rest.byteLength) {
 						half.onData.fire(rest);
 					}
-				})
+				}),
 			);
 
 			d.add(
 				socket.onClose((err) =>
-					reject(err ?? new Error("socket closed"))
-				)
+					reject(err ?? new Error("socket closed")),
+				),
 			);
 			d.add(socket.onEnd(() => reject(new Error("socket ended"))));
 		});
@@ -107,7 +107,7 @@ export async function connectManagedSocket<T extends ManagedSocket>(
 
 export abstract class ManagedSocket extends Disposable implements ISocket {
 	private readonly pausableDataEmitter = this._register(
-		new PauseableEmitter<VSBuffer>()
+		new PauseableEmitter<VSBuffer>(),
 	);
 
 	public onData: Event<VSBuffer> = (...args) => {
@@ -126,13 +126,13 @@ export abstract class ManagedSocket extends Disposable implements ISocket {
 
 	protected constructor(
 		private readonly debugLabel: string,
-		half: RemoteSocketHalf
+		half: RemoteSocketHalf,
 	) {
 		super();
 
 		this._register(half.onData);
 		this._register(
-			half.onData.event((data) => this.pausableDataEmitter.fire(data))
+			half.onData.event((data) => this.pausableDataEmitter.fire(data)),
 		);
 
 		this.onClose = this._register(half.onClose).event;

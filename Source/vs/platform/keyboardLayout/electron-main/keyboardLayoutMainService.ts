@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as nativeKeymap from "native-keymap";
-import * as platform from "vs/base/common/platform";
 import { Emitter } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
+import * as platform from "vs/base/common/platform";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import {
 	IKeyboardLayoutData,
@@ -20,8 +20,7 @@ import {
 export const IKeyboardLayoutMainService =
 	createDecorator<IKeyboardLayoutMainService>("keyboardLayoutMainService");
 
-export interface IKeyboardLayoutMainService
-	extends INativeKeyboardLayoutService {}
+export type IKeyboardLayoutMainService = INativeKeyboardLayoutService;
 
 export class KeyboardLayoutMainService
 	extends Disposable
@@ -30,7 +29,7 @@ export class KeyboardLayoutMainService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeKeyboardLayout = this._register(
-		new Emitter<IKeyboardLayoutData>()
+		new Emitter<IKeyboardLayoutData>(),
 	);
 	readonly onDidChangeKeyboardLayout = this._onDidChangeKeyboardLayout.event;
 
@@ -82,7 +81,7 @@ export class KeyboardLayoutMainService
 }
 
 function readKeyboardLayoutData(
-	nativeKeymapMod: typeof nativeKeymap
+	nativeKeymapMod: typeof nativeKeymap,
 ): IKeyboardLayoutData {
 	const keyboardMapping = nativeKeymapMod.getKeyMap();
 	const keyboardLayoutInfo = nativeKeymapMod.getCurrentKeyboardLayout();

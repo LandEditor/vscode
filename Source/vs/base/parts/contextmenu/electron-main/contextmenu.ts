@@ -4,13 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IpcMainEvent, Menu, MenuItem } from "electron";
-import { validatedIpcMain } from "vs/base/parts/ipc/electron-main/ipcMain";
 import {
 	CONTEXT_MENU_CHANNEL,
 	CONTEXT_MENU_CLOSE_CHANNEL,
 	IPopupOptions,
 	ISerializableContextMenuItem,
 } from "vs/base/parts/contextmenu/common/contextmenu";
+import { validatedIpcMain } from "vs/base/parts/ipc/electron-main/ipcMain";
 
 export function registerContextMenuListener(): void {
 	validatedIpcMain.on(
@@ -20,7 +20,7 @@ export function registerContextMenuListener(): void {
 			contextMenuId: number,
 			items: ISerializableContextMenuItem[],
 			onClickChannel: string,
-			options?: IPopupOptions
+			options?: IPopupOptions,
 		) => {
 			const menu = createMenu(event, onClickChannel, items);
 
@@ -35,19 +35,19 @@ export function registerContextMenuListener(): void {
 					if (menu) {
 						event.sender.send(
 							CONTEXT_MENU_CLOSE_CHANNEL,
-							contextMenuId
+							contextMenuId,
 						);
 					}
 				},
 			});
-		}
+		},
 	);
 }
 
 function createMenu(
 	event: IpcMainEvent,
 	onClickChannel: string,
-	items: ISerializableContextMenuItem[]
+	items: ISerializableContextMenuItem[],
 ): Menu {
 	const menu = new Menu();
 
@@ -82,7 +82,7 @@ function createMenu(
 					event.sender.send(
 						onClickChannel,
 						item.id,
-						contextmenuEvent
+						contextmenuEvent,
 					),
 			});
 		}

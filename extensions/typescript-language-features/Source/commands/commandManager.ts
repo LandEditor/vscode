@@ -28,8 +28,8 @@ export class CommandManager {
 				vscode.commands.registerCommand(
 					command.id,
 					command.execute,
-					command
-				)
+					command,
+				),
 			);
 		}
 		return command;

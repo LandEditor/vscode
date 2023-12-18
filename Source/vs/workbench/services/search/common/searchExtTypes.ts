@@ -8,10 +8,7 @@ import { URI } from "vs/base/common/uri";
 import { IProgress } from "vs/platform/progress/common/progress";
 
 export class Position {
-	constructor(
-		readonly line: number,
-		readonly character: number
-	) {}
+	constructor(readonly line: number, readonly character: number) {}
 
 	isBefore(other: Position): boolean {
 		return false;
@@ -54,7 +51,7 @@ export class Range {
 		startLine: number,
 		startCol: number,
 		endLine: number,
-		endCol: number
+		endCol: number,
 	) {
 		this.start = new Position(startLine, startCol);
 		this.end = new Position(endLine, endCol);
@@ -416,7 +413,7 @@ export interface FileSearchProvider {
 	provideFileSearchResults(
 		query: FileSearchQuery,
 		options: FileSearchOptions,
-		token: CancellationToken
+		token: CancellationToken,
 	): ProviderResult<URI[]>;
 }
 
@@ -435,7 +432,7 @@ export interface TextSearchProvider {
 		query: TextSearchQuery,
 		options: TextSearchOptions,
 		progress: IProgress<TextSearchResult>,
-		token: CancellationToken
+		token: CancellationToken,
 	): ProviderResult<TextSearchComplete>;
 }
 

@@ -3,53 +3,53 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	IAsyncDataSource,
-	ITreeRenderer,
-	ITreeNode,
-	ITreeSorter,
-} from "vs/base/browser/ui/tree/tree";
-import { ITextModelService } from "vs/editor/common/services/resolverService";
-import { FuzzyScore, createMatches } from "vs/base/common/filters";
-import { IResourceLabel, ResourceLabels } from "vs/workbench/browser/labels";
+import * as dom from "vs/base/browser/dom";
+import { AriaRole } from "vs/base/browser/ui/aria/aria";
 import {
 	HighlightedLabel,
 	IHighlight,
 } from "vs/base/browser/ui/highlightedlabel/highlightedLabel";
+import { IconLabel } from "vs/base/browser/ui/iconLabel/iconLabel";
 import {
 	IIdentityProvider,
-	IListVirtualDelegate,
 	IKeyboardNavigationLabelProvider,
+	IListVirtualDelegate,
 } from "vs/base/browser/ui/list/list";
-import { Range } from "vs/editor/common/core/range";
-import * as dom from "vs/base/browser/dom";
-import { ITextModel } from "vs/editor/common/model";
-import { IDisposable, DisposableStore } from "vs/base/common/lifecycle";
-import { TextModel } from "vs/editor/common/model/textModel";
+import type { IListAccessibilityProvider } from "vs/base/browser/ui/list/listWidget";
 import {
-	BulkFileOperations,
+	IAsyncDataSource,
+	ITreeNode,
+	ITreeRenderer,
+	ITreeSorter,
+} from "vs/base/browser/ui/tree/tree";
+import { FuzzyScore, createMatches } from "vs/base/common/filters";
+import { DisposableStore, IDisposable } from "vs/base/common/lifecycle";
+import { basename } from "vs/base/common/resources";
+import { compare } from "vs/base/common/strings";
+import { ThemeIcon } from "vs/base/common/themables";
+import { URI } from "vs/base/common/uri";
+import { ResourceFileEdit } from "vs/editor/browser/services/bulkEditService";
+import { Range } from "vs/editor/common/core/range";
+import { ILanguageService } from "vs/editor/common/languages/language";
+import { ILanguageConfigurationService } from "vs/editor/common/languages/languageConfigurationRegistry";
+import { PLAINTEXT_LANGUAGE_ID } from "vs/editor/common/languages/modesRegistry";
+import { ITextModel } from "vs/editor/common/model";
+import { TextModel } from "vs/editor/common/model/textModel";
+import { ITextModelService } from "vs/editor/common/services/resolverService";
+import { SnippetParser } from "vs/editor/contrib/snippet/browser/snippetParser";
+import { localize } from "vs/nls";
+import { FileKind } from "vs/platform/files/common/files";
+import { ILabelService } from "vs/platform/label/common/label";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import { IUndoRedoService } from "vs/platform/undoRedo/common/undoRedo";
+import { IResourceLabel, ResourceLabels } from "vs/workbench/browser/labels";
+import {
+	BulkCategory,
 	BulkFileOperation,
 	BulkFileOperationType,
+	BulkFileOperations,
 	BulkTextEdit,
-	BulkCategory,
 } from "vs/workbench/contrib/bulkEdit/browser/preview/bulkEditPreview";
-import { FileKind } from "vs/platform/files/common/files";
-import { localize } from "vs/nls";
-import { ILabelService } from "vs/platform/label/common/label";
-import type { IListAccessibilityProvider } from "vs/base/browser/ui/list/listWidget";
-import { IconLabel } from "vs/base/browser/ui/iconLabel/iconLabel";
-import { basename } from "vs/base/common/resources";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import { ThemeIcon } from "vs/base/common/themables";
-import { compare } from "vs/base/common/strings";
-import { URI } from "vs/base/common/uri";
-import { IUndoRedoService } from "vs/platform/undoRedo/common/undoRedo";
-import { ResourceFileEdit } from "vs/editor/browser/services/bulkEditService";
-import { ILanguageConfigurationService } from "vs/editor/common/languages/languageConfigurationRegistry";
-import { ILanguageService } from "vs/editor/common/languages/language";
-import { PLAINTEXT_LANGUAGE_ID } from "vs/editor/common/languages/modesRegistry";
-import { SnippetParser } from "vs/editor/contrib/snippet/browser/snippetParser";
-import { AriaRole } from "vs/base/browser/ui/aria/aria";
 
 // --- VIEW MODEL
 
@@ -61,7 +61,7 @@ export interface ICheckable {
 export class CategoryElement implements ICheckable {
 	constructor(
 		readonly parent: BulkFileOperations,
-		readonly category: BulkCategory
+		readonly category: BulkCategory,
 	) {}
 
 	isChecked(): boolean {
@@ -88,7 +88,7 @@ export class CategoryElement implements ICheckable {
 export class FileElement implements ICheckable {
 	constructor(
 		readonly parent: CategoryElement | BulkFileOperations,
-		readonly edit: BulkFileOperation
+		readonly edit: BulkFileOperation,
 	) {}
 
 	isChecked(): boolean {
@@ -102,7 +102,7 @@ export class FileElement implements ICheckable {
 		// only text edit children -> reflect children state
 		if (this.edit.type === BulkFileOperationType.TextEdit) {
 			checked = !this.edit.textEdits.every(
-				(edit) => !model.checked.isChecked(edit.textEdit)
+				(edit) => !model.checked.isChecked(edit.textEdit),
 			);
 		}
 
@@ -194,7 +194,7 @@ export class TextEditElement implements ICheckable {
 		readonly prefix: string,
 		readonly selecting: string,
 		readonly inserting: string,
-		readonly suffix: string
+		readonly suffix: string,
 	) {}
 
 	isChecked(): boolean {
@@ -220,7 +220,7 @@ export class TextEditElement implements ICheckable {
 				if (edit instanceof ResourceFileEdit) {
 					(<BulkFileOperations>model).checked.updateChecked(
 						edit,
-						value
+						value,
 					);
 				}
 			}
@@ -239,7 +239,7 @@ export type BulkEditElement = CategoryElement | FileElement | TextEditElement;
 export class BulkEditDataSource
 	implements IAsyncDataSource<BulkFileOperations, BulkEditElement>
 {
-	public groupByFile: boolean = true;
+	public groupByFile = true;
 
 	constructor(
 		@ITextModelService
@@ -261,24 +261,24 @@ export class BulkEditDataSource
 	}
 
 	async getChildren(
-		element: BulkFileOperations | BulkEditElement
+		element: BulkFileOperations | BulkEditElement,
 	): Promise<BulkEditElement[]> {
 		// root -> file/text edits
 		if (element instanceof BulkFileOperations) {
 			return this.groupByFile
 				? element.fileOperations.map(
-						(op) => new FileElement(element, op)
-					)
+						(op) => new FileElement(element, op),
+				  )
 				: element.categories.map(
-						(cat) => new CategoryElement(element, cat)
-					);
+						(cat) => new CategoryElement(element, cat),
+				  );
 		}
 
 		// category
 		if (element instanceof CategoryElement) {
 			return Array.from(
 				element.category.fileOperations,
-				(op) => new FileElement(element, op)
+				(op) => new FileElement(element, op),
 			);
 		}
 
@@ -292,7 +292,7 @@ export class BulkEditDataSource
 			let textModelDisposable: IDisposable;
 			try {
 				const ref = await this._textModelService.createModelReference(
-					element.edit.uri
+					element.edit.uri,
 				);
 				textModel = ref.object.textEditorModel;
 				textModelDisposable = ref;
@@ -304,25 +304,25 @@ export class BulkEditDataSource
 					null,
 					this._undoRedoService,
 					this._languageService,
-					this._languageConfigurationService
+					this._languageConfigurationService,
 				);
 				textModelDisposable = textModel;
 			}
 
 			const result = element.edit.textEdits.map((edit, idx) => {
 				const range = textModel.validateRange(
-					edit.textEdit.textEdit.range
+					edit.textEdit.textEdit.range,
 				);
 
 				//prefix-math
 				const startTokens = textModel.tokenization.getLineTokens(
-					range.startLineNumber
+					range.startLineNumber,
 				);
 				let prefixLen = 23; // default value for the no tokens/grammar case
 				for (
 					let idx =
 						startTokens.findTokenIndexAtOffset(
-							range.startColumn - 1
+							range.startColumn - 1,
 						) - 1;
 					prefixLen < 50 && idx >= 0;
 					idx--
@@ -333,12 +333,12 @@ export class BulkEditDataSource
 
 				//suffix-math
 				const endTokens = textModel.tokenization.getLineTokens(
-					range.endLineNumber
+					range.endLineNumber,
 				);
 				let suffixLen = 0;
 				for (
 					let idx = endTokens.findTokenIndexAtOffset(
-						range.endColumn - 1
+						range.endColumn - 1,
 					);
 					suffixLen < 50 && idx < endTokens.getCount();
 					idx++
@@ -357,23 +357,23 @@ export class BulkEditDataSource
 							range.startLineNumber,
 							range.startColumn - prefixLen,
 							range.startLineNumber,
-							range.startColumn
-						)
+							range.startColumn,
+						),
 					),
 					textModel.getValueInRange(range),
-					!edit.textEdit.textEdit.insertAsSnippet
-						? edit.textEdit.textEdit.text
-						: SnippetParser.asInsertText(
-								edit.textEdit.textEdit.text
-							),
+					edit.textEdit.textEdit.insertAsSnippet
+						? SnippetParser.asInsertText(
+								edit.textEdit.textEdit.text,
+						  )
+						: edit.textEdit.textEdit.text,
 					textModel.getValueInRange(
 						new Range(
 							range.endLineNumber,
 							range.endColumn,
 							range.endLineNumber,
-							range.endColumn + suffixLen
-						)
-					)
+							range.endColumn + suffixLen,
+						),
+					),
 				);
 			});
 
@@ -394,7 +394,7 @@ export class BulkEditSorter implements ITreeSorter<BulkEditElement> {
 		if (a instanceof TextEditElement && b instanceof TextEditElement) {
 			return Range.compareRangesUsingStarts(
 				a.edit.textEdit.textEdit.range,
-				b.edit.textEdit.textEdit.range
+				b.edit.textEdit.textEdit.range,
 			);
 		}
 
@@ -432,7 +432,7 @@ export class BulkEditAccessibilityProvider
 						}),
 						this._labelService.getUriLabel(element.edit.newUri, {
 							relative: true,
-						})
+						}),
 					);
 				} else if (element.edit.type & BulkFileOperationType.Create) {
 					return localize(
@@ -440,7 +440,7 @@ export class BulkEditAccessibilityProvider
 						"Creating {0}, also making text edits",
 						this._labelService.getUriLabel(element.edit.uri, {
 							relative: true,
-						})
+						}),
 					);
 				} else if (element.edit.type & BulkFileOperationType.Delete) {
 					return localize(
@@ -448,7 +448,7 @@ export class BulkEditAccessibilityProvider
 						"Deleting {0}, also making text edits",
 						this._labelService.getUriLabel(element.edit.uri, {
 							relative: true,
-						})
+						}),
 					);
 				} else {
 					return localize(
@@ -456,41 +456,39 @@ export class BulkEditAccessibilityProvider
 						"{0}, making text edits",
 						this._labelService.getUriLabel(element.edit.uri, {
 							relative: true,
-						})
-					);
-				}
-			} else {
-				if (
-					element.edit.type & BulkFileOperationType.Rename &&
-					element.edit.newUri
-				) {
-					return localize(
-						"aria.rename",
-						"Renaming {0} to {1}",
-						this._labelService.getUriLabel(element.edit.uri, {
-							relative: true,
 						}),
-						this._labelService.getUriLabel(element.edit.newUri, {
-							relative: true,
-						})
-					);
-				} else if (element.edit.type & BulkFileOperationType.Create) {
-					return localize(
-						"aria.create",
-						"Creating {0}",
-						this._labelService.getUriLabel(element.edit.uri, {
-							relative: true,
-						})
-					);
-				} else if (element.edit.type & BulkFileOperationType.Delete) {
-					return localize(
-						"aria.delete",
-						"Deleting {0}",
-						this._labelService.getUriLabel(element.edit.uri, {
-							relative: true,
-						})
 					);
 				}
+			} else if (
+				element.edit.type & BulkFileOperationType.Rename &&
+				element.edit.newUri
+			) {
+				return localize(
+					"aria.rename",
+					"Renaming {0} to {1}",
+					this._labelService.getUriLabel(element.edit.uri, {
+						relative: true,
+					}),
+					this._labelService.getUriLabel(element.edit.newUri, {
+						relative: true,
+					}),
+				);
+			} else if (element.edit.type & BulkFileOperationType.Create) {
+				return localize(
+					"aria.create",
+					"Creating {0}",
+					this._labelService.getUriLabel(element.edit.uri, {
+						relative: true,
+					}),
+				);
+			} else if (element.edit.type & BulkFileOperationType.Delete) {
+				return localize(
+					"aria.delete",
+					"Deleting {0}",
+					this._labelService.getUriLabel(element.edit.uri, {
+						relative: true,
+					}),
+				);
 			}
 		}
 
@@ -502,7 +500,7 @@ export class BulkEditAccessibilityProvider
 					"line {0}, replacing {1} with {2}",
 					element.edit.textEdit.textEdit.range.startLineNumber,
 					element.selecting,
-					element.inserting
+					element.inserting,
 				);
 			} else if (
 				element.selecting.length > 0 &&
@@ -513,7 +511,7 @@ export class BulkEditAccessibilityProvider
 					"aria.del",
 					"line {0}, removing {1}",
 					element.edit.textEdit.textEdit.range.startLineNumber,
-					element.selecting
+					element.selecting,
 				);
 			} else if (
 				element.selecting.length === 0 &&
@@ -524,7 +522,7 @@ export class BulkEditAccessibilityProvider
 					"aria.insert",
 					"line {0}, inserting {1}",
 					element.edit.textEdit.textEdit.range.startLineNumber,
-					element.selecting
+					element.selecting,
 				);
 			}
 		}
@@ -585,7 +583,7 @@ export class CategoryElementRenderer
 	renderElement(
 		node: ITreeNode<CategoryElement, FuzzyScore>,
 		_index: number,
-		template: CategoryElementTemplate
+		template: CategoryElementTemplate,
 	): void {
 		template.icon.style.setProperty("--background-dark", null);
 		template.icon.style.setProperty("--background-light", null);
@@ -609,22 +607,22 @@ export class CategoryElementRenderer
 			template.icon.className = "uri-icon";
 			template.icon.style.setProperty(
 				"--background-dark",
-				dom.asCSSUrl(metadata.iconPath)
+				dom.asCSSUrl(metadata.iconPath),
 			);
 			template.icon.style.setProperty(
 				"--background-light",
-				dom.asCSSUrl(metadata.iconPath)
+				dom.asCSSUrl(metadata.iconPath),
 			);
 		} else if (metadata.iconPath) {
 			// background-image
 			template.icon.className = "uri-icon";
 			template.icon.style.setProperty(
 				"--background-dark",
-				dom.asCSSUrl(metadata.iconPath.dark)
+				dom.asCSSUrl(metadata.iconPath.dark),
 			);
 			template.icon.style.setProperty(
 				"--background-light",
-				dom.asCSSUrl(metadata.iconPath.light)
+				dom.asCSSUrl(metadata.iconPath.light),
 			);
 		}
 
@@ -680,7 +678,7 @@ class FileElementTemplate {
 		this._localDisposables.add(
 			dom.addDisposableListener(this._checkbox, "change", () => {
 				element.setChecked(this._checkbox.checked);
-			})
+			}),
 		);
 
 		if (
@@ -699,12 +697,12 @@ class FileElementTemplate {
 						}),
 						this._labelService.getUriLabel(element.edit.newUri, {
 							relative: true,
-						})
+						}),
 					),
 				},
 				{
 					fileDecorations: { colors: true, badges: false },
-				}
+				},
 			);
 
 			this._details.innerText = localize("detail.rename", "(renaming)");
@@ -719,7 +717,7 @@ class FileElementTemplate {
 			if (element.edit.type & BulkFileOperationType.Create) {
 				this._details.innerText = localize(
 					"detail.create",
-					"(creating)"
+					"(creating)",
 				);
 			} else if (element.edit.type & BulkFileOperationType.Delete) {
 				this._details.innerText = localize("detail.del", "(deleting)");
@@ -748,14 +746,14 @@ export class FileElementRenderer
 		return new FileElementTemplate(
 			container,
 			this._resourceLabels,
-			this._labelService
+			this._labelService,
 		);
 	}
 
 	renderElement(
 		node: ITreeNode<FileElement, FuzzyScore>,
 		_index: number,
-		template: FileElementTemplate
+		template: FileElementTemplate,
 	): void {
 		template.set(node.element, node.filterData);
 	}
@@ -803,7 +801,7 @@ class TextEditElementTemplate {
 			dom.addDisposableListener(this._checkbox, "change", (e) => {
 				element.setChecked(this._checkbox.checked);
 				e.preventDefault();
-			})
+			}),
 		);
 		if (element.parent.isChecked()) {
 			this._checkbox.checked = element.isChecked();
@@ -837,16 +835,14 @@ class TextEditElementTemplate {
 				"title",
 				"{0} - {1}",
 				metadata.label,
-				metadata.description
+				metadata.description,
 			);
 		} else if (metadata) {
 			title = metadata.label;
 		}
 
 		const iconPath = metadata?.iconPath;
-		if (!iconPath) {
-			this._icon.style.display = "none";
-		} else {
+		if (iconPath) {
 			this._icon.style.display = "block";
 
 			this._icon.style.setProperty("--background-dark", null);
@@ -869,24 +865,26 @@ class TextEditElementTemplate {
 				this._icon.className = "uri-icon";
 				this._icon.style.setProperty(
 					"--background-dark",
-					dom.asCSSUrl(iconPath)
+					dom.asCSSUrl(iconPath),
 				);
 				this._icon.style.setProperty(
 					"--background-light",
-					dom.asCSSUrl(iconPath)
+					dom.asCSSUrl(iconPath),
 				);
 			} else {
 				// background-image
 				this._icon.className = "uri-icon";
 				this._icon.style.setProperty(
 					"--background-dark",
-					dom.asCSSUrl(iconPath.dark)
+					dom.asCSSUrl(iconPath.dark),
 				);
 				this._icon.style.setProperty(
 					"--background-light",
-					dom.asCSSUrl(iconPath.light)
+					dom.asCSSUrl(iconPath.light),
 				);
 			}
+		} else {
+			this._icon.style.display = "none";
 		}
 
 		this._label.set(value, [selectHighlight, insertHighlight], title, true);
@@ -911,7 +909,7 @@ export class TextEditElementRenderer
 	renderElement(
 		{ element }: ITreeNode<TextEditElement, FuzzyScore>,
 		_index: number,
-		template: TextEditElementTemplate
+		template: TextEditElementTemplate,
 	): void {
 		template.set(element);
 	}

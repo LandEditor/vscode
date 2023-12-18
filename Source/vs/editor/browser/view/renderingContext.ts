@@ -11,7 +11,7 @@ import { IViewLayout, ViewModelDecoration } from "vs/editor/common/viewModel";
 export interface IViewLines {
 	linesVisibleRangesForRange(
 		range: Range,
-		includeNewLines: boolean
+		includeNewLines: boolean,
 	): LineVisibleRanges[] | null;
 	visibleRangeForPosition(position: Position): HorizontalPosition | null;
 }
@@ -58,21 +58,21 @@ export abstract class RestrictedRenderingContext {
 
 	public getVerticalOffsetForLineNumber(
 		lineNumber: number,
-		includeViewZones?: boolean
+		includeViewZones?: boolean,
 	): number {
 		return this._viewLayout.getVerticalOffsetForLineNumber(
 			lineNumber,
-			includeViewZones
+			includeViewZones,
 		);
 	}
 
 	public getVerticalOffsetAfterLineNumber(
 		lineNumber: number,
-		includeViewZones?: boolean
+		includeViewZones?: boolean,
 	): number {
 		return this._viewLayout.getVerticalOffsetAfterLineNumber(
 			lineNumber,
-			includeViewZones
+			includeViewZones,
 		);
 	}
 
@@ -89,7 +89,7 @@ export class RenderingContext extends RestrictedRenderingContext {
 	constructor(
 		viewLayout: IViewLayout,
 		viewportData: ViewportData,
-		viewLines: IViewLines
+		viewLines: IViewLines,
 	) {
 		super(viewLayout, viewportData);
 		this._viewLines = viewLines;
@@ -97,16 +97,16 @@ export class RenderingContext extends RestrictedRenderingContext {
 
 	public linesVisibleRangesForRange(
 		range: Range,
-		includeNewLines: boolean
+		includeNewLines: boolean,
 	): LineVisibleRanges[] | null {
 		return this._viewLines.linesVisibleRangesForRange(
 			range,
-			includeNewLines
+			includeNewLines,
 		);
 	}
 
 	public visibleRangeForPosition(
-		position: Position
+		position: Position,
 	): HorizontalPosition | null {
 		return this._viewLines.visibleRangeForPosition(position);
 	}
@@ -117,7 +117,7 @@ export class LineVisibleRanges {
 	 * Returns the element with the smallest `lineNumber`.
 	 */
 	public static firstLine(
-		ranges: LineVisibleRanges[] | null
+		ranges: LineVisibleRanges[] | null,
 	): LineVisibleRanges | null {
 		if (!ranges) {
 			return null;
@@ -135,7 +135,7 @@ export class LineVisibleRanges {
 	 * Returns the element with the largest `lineNumber`.
 	 */
 	public static lastLine(
-		ranges: LineVisibleRanges[] | null
+		ranges: LineVisibleRanges[] | null,
 	): LineVisibleRanges | null {
 		if (!ranges) {
 			return null;
@@ -156,7 +156,7 @@ export class LineVisibleRanges {
 		/**
 		 * Indicates if the requested range does not end in this line, but continues on the next line.
 		 */
-		public readonly continuesOnNextLine: boolean
+		public readonly continuesOnNextLine: boolean,
 	) {}
 }
 
@@ -202,7 +202,7 @@ export class FloatHorizontalRange {
 
 	public static compare(
 		a: FloatHorizontalRange,
-		b: FloatHorizontalRange
+		b: FloatHorizontalRange,
 	): number {
 		return a.left - b.left;
 	}
@@ -226,6 +226,6 @@ export class HorizontalPosition {
 export class VisibleRanges {
 	constructor(
 		public readonly outsideRenderedLine: boolean,
-		public readonly ranges: FloatHorizontalRange[]
+		public readonly ranges: FloatHorizontalRange[],
 	) {}
 }

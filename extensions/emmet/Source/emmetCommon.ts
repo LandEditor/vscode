@@ -4,37 +4,37 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from "vscode";
-import { DefaultCompletionItemProvider } from "./defaultCompletionProvider";
 import {
 	expandEmmetAbbreviation,
 	wrapWithAbbreviation,
 } from "./abbreviationActions";
-import { removeTag } from "./removeTag";
-import { updateTag } from "./updateTag";
-import { matchTag } from "./matchTag";
-import { balanceOut, balanceIn } from "./balance";
-import { splitJoinTag } from "./splitJoinTag";
-import { mergeLines } from "./mergeLines";
-import { toggleComment } from "./toggleComment";
+import { balanceIn, balanceOut } from "./balance";
+import { DefaultCompletionItemProvider } from "./defaultCompletionProvider";
 import { fetchEditPoint } from "./editPoint";
-import { fetchSelectItem } from "./selectItem";
 import { evaluateMathExpression } from "./evaluateMathExpression";
 import { incrementDecrement } from "./incrementDecrement";
-import {
-	LANGUAGE_MODES,
-	getMappingForIncludedLanguages,
-	updateEmmetExtensionsPath,
-	migrateEmmetExtensionsPath,
-	getPathBaseName,
-	getSyntaxes,
-	getEmmetMode,
-} from "./util";
-import { reflectCssValue } from "./reflectCssValue";
+import { matchTag } from "./matchTag";
+import { mergeLines } from "./mergeLines";
 import {
 	addFileToParseCache,
 	clearParseCache,
 	removeFileFromParseCache,
 } from "./parseDocument";
+import { reflectCssValue } from "./reflectCssValue";
+import { removeTag } from "./removeTag";
+import { fetchSelectItem } from "./selectItem";
+import { splitJoinTag } from "./splitJoinTag";
+import { toggleComment } from "./toggleComment";
+import { updateTag } from "./updateTag";
+import {
+	LANGUAGE_MODES,
+	getEmmetMode,
+	getMappingForIncludedLanguages,
+	getPathBaseName,
+	getSyntaxes,
+	migrateEmmetExtensionsPath,
+	updateEmmetExtensionsPath,
+} from "./util";
 
 export function activateEmmetExtension(context: vscode.ExtensionContext) {
 	migrateEmmetExtensionsPath();
@@ -46,20 +46,20 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			"editor.emmet.action.wrapWithAbbreviation",
 			(args) => {
 				wrapWithAbbreviation(args);
-			}
-		)
+			},
+		),
 	);
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand("emmet.expandAbbreviation", (args) => {
 			expandEmmetAbbreviation(args);
-		})
+		}),
 	);
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand("editor.emmet.action.removeTag", () => {
 			return removeTag();
-		})
+		}),
 	);
 
 	context.subscriptions.push(
@@ -70,14 +70,14 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 					return updateTag(inputTag);
 				}
 				return updateTag(undefined);
-			}
-		)
+			},
+		),
 	);
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand("editor.emmet.action.matchTag", () => {
 			matchTag();
-		})
+		}),
 	);
 
 	context.subscriptions.push(
@@ -85,14 +85,14 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			"editor.emmet.action.balanceOut",
 			() => {
 				balanceOut();
-			}
-		)
+			},
+		),
 	);
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand("editor.emmet.action.balanceIn", () => {
 			balanceIn();
-		})
+		}),
 	);
 
 	context.subscriptions.push(
@@ -100,8 +100,8 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			"editor.emmet.action.splitJoinTag",
 			() => {
 				return splitJoinTag();
-			}
-		)
+			},
+		),
 	);
 
 	context.subscriptions.push(
@@ -109,8 +109,8 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			"editor.emmet.action.mergeLines",
 			() => {
 				mergeLines();
-			}
-		)
+			},
+		),
 	);
 
 	context.subscriptions.push(
@@ -118,8 +118,8 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			"editor.emmet.action.toggleComment",
 			() => {
 				toggleComment();
-			}
-		)
+			},
+		),
 	);
 
 	context.subscriptions.push(
@@ -127,8 +127,8 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			"editor.emmet.action.nextEditPoint",
 			() => {
 				fetchEditPoint("next");
-			}
-		)
+			},
+		),
 	);
 
 	context.subscriptions.push(
@@ -136,8 +136,8 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			"editor.emmet.action.prevEditPoint",
 			() => {
 				fetchEditPoint("prev");
-			}
-		)
+			},
+		),
 	);
 
 	context.subscriptions.push(
@@ -145,8 +145,8 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			"editor.emmet.action.selectNextItem",
 			() => {
 				fetchSelectItem("next");
-			}
-		)
+			},
+		),
 	);
 
 	context.subscriptions.push(
@@ -154,8 +154,8 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			"editor.emmet.action.selectPrevItem",
 			() => {
 				fetchSelectItem("prev");
-			}
-		)
+			},
+		),
 	);
 
 	context.subscriptions.push(
@@ -163,8 +163,8 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			"editor.emmet.action.evaluateMathExpression",
 			() => {
 				evaluateMathExpression();
-			}
-		)
+			},
+		),
 	);
 
 	context.subscriptions.push(
@@ -172,8 +172,8 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			"editor.emmet.action.incrementNumberByOneTenth",
 			() => {
 				return incrementDecrement(0.1);
-			}
-		)
+			},
+		),
 	);
 
 	context.subscriptions.push(
@@ -181,8 +181,8 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			"editor.emmet.action.incrementNumberByOne",
 			() => {
 				return incrementDecrement(1);
-			}
-		)
+			},
+		),
 	);
 
 	context.subscriptions.push(
@@ -190,8 +190,8 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			"editor.emmet.action.incrementNumberByTen",
 			() => {
 				return incrementDecrement(10);
-			}
-		)
+			},
+		),
 	);
 
 	context.subscriptions.push(
@@ -199,8 +199,8 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			"editor.emmet.action.decrementNumberByOneTenth",
 			() => {
 				return incrementDecrement(-0.1);
-			}
-		)
+			},
+		),
 	);
 
 	context.subscriptions.push(
@@ -208,8 +208,8 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			"editor.emmet.action.decrementNumberByOne",
 			() => {
 				return incrementDecrement(-1);
-			}
-		)
+			},
+		),
 	);
 
 	context.subscriptions.push(
@@ -217,8 +217,8 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			"editor.emmet.action.decrementNumberByTen",
 			() => {
 				return incrementDecrement(-10);
-			}
-		)
+			},
+		),
 	);
 
 	context.subscriptions.push(
@@ -226,8 +226,8 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			"editor.emmet.action.reflectCSSValue",
 			() => {
 				return reflectCssValue();
-			}
-		)
+			},
+		),
 	);
 
 	context.subscriptions.push(
@@ -236,10 +236,10 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			() => {
 				vscode.commands.executeCommand(
 					"workbench.action.quickOpen",
-					">Emmet: "
+					">Emmet: ",
 				);
-			}
-		)
+			},
+		),
 	);
 
 	context.subscriptions.push(
@@ -253,7 +253,7 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			if (e.affectsConfiguration("emmet.extensionsPath")) {
 				updateEmmetExtensionsPath();
 			}
-		})
+		}),
 	);
 
 	context.subscriptions.push(
@@ -265,7 +265,7 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			) {
 				updateEmmetExtensionsPath(true);
 			}
-		})
+		}),
 	);
 
 	context.subscriptions.push(
@@ -278,7 +278,7 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			) {
 				addFileToParseCache(e);
 			}
-		})
+		}),
 	);
 
 	context.subscriptions.push(
@@ -291,7 +291,7 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
 			) {
 				removeFileFromParseCache(e);
 			}
-		})
+		}),
 	);
 }
 
@@ -313,7 +313,7 @@ function refreshCompletionProviders(_: vscode.ExtensionContext) {
 			document: vscode.TextDocument,
 			position: vscode.Position,
 			_: vscode.InlineCompletionContext,
-			token: vscode.CancellationToken
+			token: vscode.CancellationToken,
 		) {
 			const items = await completionProvider.provideCompletionItems(
 				document,
@@ -322,7 +322,7 @@ function refreshCompletionProviders(_: vscode.ExtensionContext) {
 				{
 					triggerCharacter: undefined,
 					triggerKind: vscode.CompletionTriggerKind.Invoke,
-				}
+				},
 			);
 			if (!items) {
 				return undefined;
@@ -366,7 +366,7 @@ function refreshCompletionProviders(_: vscode.ExtensionContext) {
 			const inlineCompletionsProvider =
 				vscode.languages.registerInlineCompletionItemProvider(
 					{ language, scheme: "*" },
-					inlineCompletionProvider
+					inlineCompletionProvider,
 				);
 			completionProviderDisposables.push(inlineCompletionsProvider);
 		}
@@ -375,13 +375,13 @@ function refreshCompletionProviders(_: vscode.ExtensionContext) {
 			vscode.languages.registerCompletionItemProvider(
 				{ language, scheme: "*" },
 				completionProvider,
-				...LANGUAGE_MODES[includedLanguages[language]]
+				...LANGUAGE_MODES[includedLanguages[language]],
 			);
 		completionProviderDisposables.push(explicitProvider);
 
 		languageMappingForCompletionProviders.set(
 			language,
-			includedLanguages[language]
+			includedLanguages[language],
 		);
 	});
 
@@ -391,7 +391,7 @@ function refreshCompletionProviders(_: vscode.ExtensionContext) {
 				const inlineCompletionsProvider =
 					vscode.languages.registerInlineCompletionItemProvider(
 						{ language, scheme: "*" },
-						inlineCompletionProvider
+						inlineCompletionProvider,
 					);
 				completionProviderDisposables.push(inlineCompletionsProvider);
 			}
@@ -400,7 +400,7 @@ function refreshCompletionProviders(_: vscode.ExtensionContext) {
 				vscode.languages.registerCompletionItemProvider(
 					{ language, scheme: "*" },
 					completionProvider,
-					...LANGUAGE_MODES[language]
+					...LANGUAGE_MODES[language],
 				);
 			completionProviderDisposables.push(explicitProvider);
 

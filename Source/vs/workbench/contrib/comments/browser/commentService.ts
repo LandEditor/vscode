@@ -3,49 +3,49 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	CommentThreadChangedEvent,
-	CommentInfo,
-	Comment,
-	CommentReaction,
-	CommentingRanges,
-	CommentThread,
-	CommentOptions,
-	PendingCommentThread,
-} from "vs/editor/common/languages";
-import {
-	createDecorator,
-	IInstantiationService,
-} from "vs/platform/instantiation/common/instantiation";
-import { Event, Emitter } from "vs/base/common/event";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { Emitter, Event } from "vs/base/common/event";
 import {
 	Disposable,
 	DisposableStore,
 	IDisposable,
 } from "vs/base/common/lifecycle";
 import { URI, UriComponents } from "vs/base/common/uri";
-import { Range, IRange } from "vs/editor/common/core/range";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { ICommentThreadChangedEvent } from "vs/workbench/contrib/comments/common/commentModel";
-import { CommentMenus } from "vs/workbench/contrib/comments/browser/commentMenus";
-import { ICellRange } from "vs/workbench/contrib/notebook/common/notebookRange";
-import { IWorkbenchLayoutService } from "vs/workbench/services/layout/browser/layoutService";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IRange, Range } from "vs/editor/common/core/range";
 import {
-	COMMENTS_SECTION,
-	ICommentsConfiguration,
-} from "vs/workbench/contrib/comments/common/commentsConfiguration";
+	Comment,
+	CommentInfo,
+	CommentOptions,
+	CommentReaction,
+	CommentThread,
+	CommentThreadChangedEvent,
+	CommentingRanges,
+	PendingCommentThread,
+} from "vs/editor/common/languages";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import {
 	IContextKey,
 	IContextKeyService,
 } from "vs/platform/contextkey/common/contextkey";
 import {
+	IInstantiationService,
+	createDecorator,
+} from "vs/platform/instantiation/common/instantiation";
+import { ILogService } from "vs/platform/log/common/log";
+import {
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
+import { CommentMenus } from "vs/workbench/contrib/comments/browser/commentMenus";
 import { CommentContextKeys } from "vs/workbench/contrib/comments/common/commentContextKeys";
-import { ILogService } from "vs/platform/log/common/log";
+import { ICommentThreadChangedEvent } from "vs/workbench/contrib/comments/common/commentModel";
+import {
+	COMMENTS_SECTION,
+	ICommentsConfiguration,
+} from "vs/workbench/contrib/comments/common/commentsConfiguration";
+import { ICellRange } from "vs/workbench/contrib/notebook/common/notebookRange";
+import { IWorkbenchLayoutService } from "vs/workbench/services/layout/browser/layoutService";
 
 export const ICommentService =
 	createDecorator<ICommentService>("commentService");
@@ -90,11 +90,11 @@ export interface ICommentController {
 	contextValue?: string;
 	createCommentThreadTemplate(
 		resource: UriComponents,
-		range: IRange | undefined
+		range: IRange | undefined,
 	): Promise<void>;
 	updateCommentThreadTemplate(
 		threadHandle: number,
-		range: IRange
+		range: IRange,
 	): Promise<void>;
 	deleteCommentThreadMain(commentThreadId: string): void;
 	toggleReaction(
@@ -102,15 +102,15 @@ export interface ICommentController {
 		thread: CommentThread,
 		comment: Comment,
 		reaction: CommentReaction,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void>;
 	getDocumentComments(
 		resource: URI,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<ICommentInfo>;
 	getNotebookComments(
 		resource: URI,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<INotebookCommentInfo>;
 }
 
@@ -138,38 +138,38 @@ export interface ICommentService {
 	setDocumentComments(resource: URI, commentInfos: ICommentInfo[]): void;
 	setWorkspaceComments(
 		owner: string,
-		commentsByResource: CommentThread<IRange | ICellRange>[]
+		commentsByResource: CommentThread<IRange | ICellRange>[],
 	): void;
 	removeWorkspaceComments(owner: string): void;
 	registerCommentController(
 		owner: string,
-		commentControl: ICommentController
+		commentControl: ICommentController,
 	): void;
 	unregisterCommentController(owner?: string): void;
 	getCommentController(owner: string): ICommentController | undefined;
 	createCommentThreadTemplate(
 		owner: string,
 		resource: URI,
-		range: Range | undefined
+		range: Range | undefined,
 	): Promise<void>;
 	updateCommentThreadTemplate(
 		owner: string,
 		threadHandle: number,
-		range: Range
+		range: Range,
 	): Promise<void>;
 	getCommentMenus(owner: string): CommentMenus;
 	updateComments(
 		ownerId: string,
-		event: CommentThreadChangedEvent<IRange>
+		event: CommentThreadChangedEvent<IRange>,
 	): void;
 	updateNotebookComments(
 		ownerId: string,
-		event: CommentThreadChangedEvent<ICellRange>
+		event: CommentThreadChangedEvent<ICellRange>,
 	): void;
 	disposeCommentThread(ownerId: string, threadId: string): void;
 	getDocumentComments(resource: URI): Promise<(ICommentInfo | null)[]>;
 	getNotebookComments(
-		resource: URI
+		resource: URI,
 	): Promise<(INotebookCommentInfo | null)[]>;
 	updateCommentingRanges(ownerId: string): void;
 	hasReactionHandler(owner: string): boolean;
@@ -178,17 +178,17 @@ export interface ICommentService {
 		resource: URI,
 		thread: CommentThread<IRange | ICellRange>,
 		comment: Comment,
-		reaction: CommentReaction
+		reaction: CommentReaction,
 	): Promise<void>;
 	setActiveCommentThread(
-		commentThread: CommentThread<IRange | ICellRange> | null
+		commentThread: CommentThread<IRange | ICellRange> | null,
 	): void;
 	setCurrentCommentThread(
-		commentThread: CommentThread<IRange | ICellRange> | undefined
+		commentThread: CommentThread<IRange | ICellRange> | undefined,
 	): void;
 	enableCommenting(enable: boolean): void;
 	registerContinueOnCommentProvider(
-		provider: IContinueOnCommentProvider
+		provider: IContinueOnCommentProvider,
 	): IDisposable;
 	removeContinueOnComment(pendingComment: {
 		range: IRange | undefined;
@@ -204,7 +204,7 @@ export class CommentService extends Disposable implements ICommentService {
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidSetDataProvider: Emitter<void> = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onDidSetDataProvider: Event<void> =
 		this._onDidSetDataProvider.event;
@@ -240,19 +240,19 @@ export class CommentService extends Disposable implements ICommentService {
 		this._onDidUpdateCommentingRanges.event;
 
 	private readonly _onDidChangeActiveCommentThread = this._register(
-		new Emitter<CommentThread | null>()
+		new Emitter<CommentThread | null>(),
 	);
 	readonly onDidChangeActiveCommentThread =
 		this._onDidChangeActiveCommentThread.event;
 
 	private readonly _onDidChangeCurrentCommentThread = this._register(
-		new Emitter<CommentThread | undefined>()
+		new Emitter<CommentThread | undefined>(),
 	);
 	readonly onDidChangeCurrentCommentThread =
 		this._onDidChangeCurrentCommentThread.event;
 
 	private readonly _onDidChangeCommentingEnabled = this._register(
-		new Emitter<boolean>()
+		new Emitter<boolean>(),
 	);
 	readonly onDidChangeCommentingEnabled =
 		this._onDidChangeCommentingEnabled.event;
@@ -264,7 +264,7 @@ export class CommentService extends Disposable implements ICommentService {
 		new Emitter<{
 			range: Range;
 			commentingRangesInfo: CommentingRanges;
-		}>()
+		}>(),
 	);
 	readonly onDidChangeActiveCommentingRange: Event<{
 		range: Range;
@@ -273,7 +273,7 @@ export class CommentService extends Disposable implements ICommentService {
 
 	private _commentControls = new Map<string, ICommentController>();
 	private _commentMenus = new Map<string, CommentMenus>();
-	private _isCommentingEnabled: boolean = true;
+	private _isCommentingEnabled = true;
 	private _workspaceHasCommenting: IContextKey<boolean>;
 
 	private _continueOnComments = new Map<string, PendingCommentThread[]>(); // owner -> PendingCommentThread[]
@@ -365,7 +365,7 @@ export class CommentService extends Disposable implements ICommentService {
 				if (e.affectsConfiguration("comments.visible")) {
 					this.enableCommenting(this._defaultCommentingEnablement);
 				}
-			})
+			}),
 		);
 	}
 
@@ -379,7 +379,7 @@ export class CommentService extends Disposable implements ICommentService {
 				} else {
 					this.enableCommenting(preZenModeValue);
 				}
-			})
+			}),
 		);
 	}
 
@@ -425,7 +425,7 @@ export class CommentService extends Disposable implements ICommentService {
 
 	setWorkspaceComments(
 		owner: string,
-		commentsByResource: CommentThread[]
+		commentsByResource: CommentThread[],
 	): void {
 		if (commentsByResource.length) {
 			this._workspaceHasCommenting.set(true);
@@ -453,7 +453,7 @@ export class CommentService extends Disposable implements ICommentService {
 
 	registerCommentController(
 		owner: string,
-		commentControl: ICommentController
+		commentControl: ICommentController,
 	): void {
 		this._commentControls.set(owner, commentControl);
 		this._onDidSetDataProvider.fire();
@@ -475,7 +475,7 @@ export class CommentService extends Disposable implements ICommentService {
 	async createCommentThreadTemplate(
 		owner: string,
 		resource: URI,
-		range: Range | undefined
+		range: Range | undefined,
 	): Promise<void> {
 		const commentController = this._commentControls.get(owner);
 
@@ -489,7 +489,7 @@ export class CommentService extends Disposable implements ICommentService {
 	async updateCommentThreadTemplate(
 		owner: string,
 		threadHandle: number,
-		range: Range
+		range: Range,
 	) {
 		const commentController = this._commentControls.get(owner);
 
@@ -499,7 +499,7 @@ export class CommentService extends Disposable implements ICommentService {
 
 		await commentController.updateCommentThreadTemplate(
 			threadHandle,
-			range
+			range,
 		);
 	}
 
@@ -520,7 +520,7 @@ export class CommentService extends Disposable implements ICommentService {
 
 	updateComments(
 		ownerId: string,
-		event: CommentThreadChangedEvent<IRange>
+		event: CommentThreadChangedEvent<IRange>,
 	): void {
 		const control = this._commentControls.get(ownerId);
 		if (control) {
@@ -534,12 +534,12 @@ export class CommentService extends Disposable implements ICommentService {
 
 	updateNotebookComments(
 		ownerId: string,
-		event: CommentThreadChangedEvent<ICellRange>
+		event: CommentThreadChangedEvent<ICellRange>,
 	): void {
 		const evt: INotebookCommentThreadChangedEvent = Object.assign(
 			{},
 			event,
-			{ owner: ownerId }
+			{ owner: ownerId },
 		);
 		this._onDidUpdateNotebookCommentThreads.fire(evt);
 	}
@@ -554,7 +554,7 @@ export class CommentService extends Disposable implements ICommentService {
 		resource: URI,
 		thread: CommentThread,
 		comment: Comment,
-		reaction: CommentReaction
+		reaction: CommentReaction,
 	): Promise<void> {
 		const commentController = this._commentControls.get(owner);
 
@@ -564,7 +564,7 @@ export class CommentService extends Disposable implements ICommentService {
 				thread,
 				comment,
 				reaction,
-				CancellationToken.None
+				CancellationToken.None,
 			);
 		} else {
 			throw new Error("Not supported");
@@ -604,19 +604,19 @@ export class CommentService extends Disposable implements ICommentService {
 							}
 						}
 						const pendingComments = this._continueOnComments.get(
-							documentComments.owner
+							documentComments.owner,
 						);
 						documentComments.pendingCommentThreads =
 							pendingComments?.filter(
 								(pendingComment) =>
 									pendingComment.uri.toString() ===
-									resource.toString()
+									resource.toString(),
 							);
 						return documentComments;
 					})
 					.catch((_) => {
 						return null;
-					})
+					}),
 			);
 		}
 
@@ -624,7 +624,7 @@ export class CommentService extends Disposable implements ICommentService {
 	}
 
 	async getNotebookComments(
-		resource: URI
+		resource: URI,
 	): Promise<(INotebookCommentInfo | null)[]> {
 		const commentControlResult: Promise<INotebookCommentInfo | null>[] = [];
 
@@ -634,7 +634,7 @@ export class CommentService extends Disposable implements ICommentService {
 					.getNotebookComments(resource, CancellationToken.None)
 					.catch((_) => {
 						return null;
-					})
+					}),
 			);
 		});
 
@@ -642,7 +642,7 @@ export class CommentService extends Disposable implements ICommentService {
 	}
 
 	registerContinueOnCommentProvider(
-		provider: IContinueOnCommentProvider
+		provider: IContinueOnCommentProvider,
 	): IDisposable {
 		this._continueOnCommentProviders.add(provider);
 		return {
@@ -660,13 +660,13 @@ export class CommentService extends Disposable implements ICommentService {
 		this.logService.debug(
 			`Comments: URIs of continue on comments to add to storage ${commentsToSave
 				.map((thread) => thread.uri.toString())
-				.join(", ")}.`
+				.join(", ")}.`,
 		);
 		this.storageService.store(
 			CONTINUE_ON_COMMENTS,
 			commentsToSave,
 			StorageScope.WORKSPACE,
-			StorageTarget.USER
+			StorageTarget.USER,
 		);
 	}
 
@@ -677,7 +677,7 @@ export class CommentService extends Disposable implements ICommentService {
 		isReply?: boolean;
 	}): PendingCommentThread | undefined {
 		const pendingComments = this._continueOnComments.get(
-			pendingComment.owner
+			pendingComment.owner,
 		);
 		if (pendingComments) {
 			const commentIndex = pendingComments.findIndex(
@@ -685,7 +685,7 @@ export class CommentService extends Disposable implements ICommentService {
 					comment.uri.toString() === pendingComment.uri.toString() &&
 					Range.equalsRange(comment.range, pendingComment.range) &&
 					(pendingComment.isReply === undefined ||
-						comment.isReply === pendingComment.isReply)
+						comment.isReply === pendingComment.isReply),
 			);
 			if (commentIndex > -1) {
 				return pendingComments.splice(commentIndex, 1)[0];
@@ -696,14 +696,11 @@ export class CommentService extends Disposable implements ICommentService {
 
 	private _addContinueOnComments(
 		pendingComments: PendingCommentThread[],
-		map: Map<string, PendingCommentThread[]>
+		map: Map<string, PendingCommentThread[]>,
 	): Set<string> {
 		const changedOwners = new Set<string>();
 		for (const pendingComment of pendingComments) {
-			if (!map.has(pendingComment.owner)) {
-				map.set(pendingComment.owner, [pendingComment]);
-				changedOwners.add(pendingComment.owner);
-			} else {
+			if (map.has(pendingComment.owner)) {
 				const commentsForOwner = map.get(pendingComment.owner)!;
 				if (
 					commentsForOwner.every(
@@ -712,13 +709,16 @@ export class CommentService extends Disposable implements ICommentService {
 								pendingComment.uri.toString() ||
 							!Range.equalsRange(
 								comment.range,
-								pendingComment.range
-							)
+								pendingComment.range,
+							),
 					)
 				) {
 					commentsForOwner.push(pendingComment);
 					changedOwners.add(pendingComment.owner);
 				}
+			} else {
+				map.set(pendingComment.owner, [pendingComment]);
+				changedOwners.add(pendingComment.owner);
 			}
 		}
 		return changedOwners;

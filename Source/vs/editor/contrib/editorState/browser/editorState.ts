@@ -3,22 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import {
+	CancellationToken,
+	CancellationTokenSource,
+} from "vs/base/common/cancellation";
+import { DisposableStore, IDisposable } from "vs/base/common/lifecycle";
 import * as strings from "vs/base/common/strings";
 import {
-	ICodeEditor,
 	IActiveCodeEditor,
+	ICodeEditor,
 } from "vs/editor/browser/editorBrowser";
 import { Position } from "vs/editor/common/core/position";
-import { Range, IRange } from "vs/editor/common/core/range";
-import {
-	CancellationTokenSource,
-	CancellationToken,
-} from "vs/base/common/cancellation";
-import { IDisposable, DisposableStore } from "vs/base/common/lifecycle";
+import { IRange, Range } from "vs/editor/common/core/range";
 import { ITextModel } from "vs/editor/common/model";
 import { EditorKeybindingCancellationTokenSource } from "vs/editor/contrib/editorState/browser/keybindingCancellation";
 
-export const enum CodeEditorStateFlag {
+export enum CodeEditorStateFlag {
 	Value = 1,
 	Selection = 2,
 	Position = 4,
@@ -43,8 +43,8 @@ export class EditorState {
 				? strings.format(
 						"{0}#{1}",
 						model.uri.toString(),
-						model.getVersionId()
-					)
+						model.getVersionId(),
+				  )
 				: null;
 		} else {
 			this.modelVersionId = null;
@@ -124,7 +124,7 @@ export class EditorStateCancellationTokenSource
 		editor: IActiveCodeEditor,
 		flags: CodeEditorStateFlag,
 		range?: IRange,
-		parent?: CancellationToken
+		parent?: CancellationToken,
 	) {
 		super(editor, parent);
 
@@ -134,7 +134,7 @@ export class EditorStateCancellationTokenSource
 					if (!range || !Range.containsPosition(range, e.position)) {
 						this.cancel();
 					}
-				})
+				}),
 			);
 		}
 		if (flags & CodeEditorStateFlag.Selection) {
@@ -143,7 +143,7 @@ export class EditorStateCancellationTokenSource
 					if (!range || !Range.containsRange(range, e.selection)) {
 						this.cancel();
 					}
-				})
+				}),
 			);
 		}
 		if (flags & CodeEditorStateFlag.Scroll) {
@@ -152,7 +152,7 @@ export class EditorStateCancellationTokenSource
 		if (flags & CodeEditorStateFlag.Value) {
 			this._listener.add(editor.onDidChangeModel((_) => this.cancel()));
 			this._listener.add(
-				editor.onDidChangeModelContent((_) => this.cancel())
+				editor.onDidChangeModelContent((_) => this.cancel()),
 			);
 		}
 	}

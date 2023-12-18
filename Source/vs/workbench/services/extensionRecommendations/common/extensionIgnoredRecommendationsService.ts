@@ -31,7 +31,7 @@ export class ExtensionIgnoredRecommendationsService
 	declare readonly _serviceBrand: undefined;
 
 	private _onDidChangeIgnoredRecommendations = this._register(
-		new Emitter<void>()
+		new Emitter<void>(),
 	);
 	readonly onDidChangeIgnoredRecommendations =
 		this._onDidChangeIgnoredRecommendations.event;
@@ -42,7 +42,7 @@ export class ExtensionIgnoredRecommendationsService
 		return [...this._globalIgnoredRecommendations];
 	}
 	private _onDidChangeGlobalIgnoredRecommendation = this._register(
-		new Emitter<IgnoredRecommendationChangeNotification>()
+		new Emitter<IgnoredRecommendationChangeNotification>(),
 	);
 	readonly onDidChangeGlobalIgnoredRecommendation =
 		this._onDidChangeGlobalIgnoredRecommendation.event;
@@ -86,14 +86,14 @@ export class ExtensionIgnoredRecommendationsService
 					this.ignoredWorkspaceRecommendations =
 						await this.workspaceExtensionsConfigService.getUnwantedRecommendations();
 					this._onDidChangeIgnoredRecommendations.fire();
-				}
-			)
+				},
+			),
 		);
 	}
 
 	toggleGlobalIgnoredRecommendation(
 		extensionId: string,
-		shouldIgnore: boolean
+		shouldIgnore: boolean,
 	): void {
 		extensionId = extensionId.toLowerCase();
 		const ignored =
@@ -105,10 +105,10 @@ export class ExtensionIgnoredRecommendationsService
 		this._globalIgnoredRecommendations = shouldIgnore
 			? [...this._globalIgnoredRecommendations, extensionId]
 			: this._globalIgnoredRecommendations.filter(
-					(id) => id !== extensionId
-				);
+					(id) => id !== extensionId,
+			  );
 		this.storeCachedIgnoredRecommendations(
-			this._globalIgnoredRecommendations
+			this._globalIgnoredRecommendations,
 		);
 		this._onDidChangeGlobalIgnoredRecommendation.fire({
 			extensionId,
@@ -119,7 +119,7 @@ export class ExtensionIgnoredRecommendationsService
 
 	private getCachedIgnoredRecommendations(): string[] {
 		const ignoredRecommendations: string[] = JSON.parse(
-			this.ignoredRecommendationsValue
+			this.ignoredRecommendationsValue,
 		);
 		return ignoredRecommendations.map((e) => e.toLowerCase());
 	}
@@ -137,10 +137,10 @@ export class ExtensionIgnoredRecommendationsService
 	}
 
 	private storeCachedIgnoredRecommendations(
-		ignoredRecommendations: string[]
+		ignoredRecommendations: string[],
 	): void {
 		this.ignoredRecommendationsValue = JSON.stringify(
-			ignoredRecommendations
+			ignoredRecommendations,
 		);
 	}
 
@@ -154,13 +154,11 @@ export class ExtensionIgnoredRecommendationsService
 		return this._ignoredRecommendationsValue;
 	}
 
-	private set ignoredRecommendationsValue(
-		ignoredRecommendationsValue: string
-	) {
+	private set ignoredRecommendationsValue(ignoredRecommendationsValue: string) {
 		if (this.ignoredRecommendationsValue !== ignoredRecommendationsValue) {
 			this._ignoredRecommendationsValue = ignoredRecommendationsValue;
 			this.setStoredIgnoredRecommendationsValue(
-				ignoredRecommendationsValue
+				ignoredRecommendationsValue,
 			);
 		}
 	}
@@ -169,7 +167,7 @@ export class ExtensionIgnoredRecommendationsService
 		return this.storageService.get(
 			ignoredRecommendationsStorageKey,
 			StorageScope.PROFILE,
-			"[]"
+			"[]",
 		);
 	}
 
@@ -178,7 +176,7 @@ export class ExtensionIgnoredRecommendationsService
 			ignoredRecommendationsStorageKey,
 			value,
 			StorageScope.PROFILE,
-			StorageTarget.USER
+			StorageTarget.USER,
 		);
 	}
 }
@@ -186,5 +184,5 @@ export class ExtensionIgnoredRecommendationsService
 registerSingleton(
 	IExtensionIgnoredRecommendationsService,
 	ExtensionIgnoredRecommendationsService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

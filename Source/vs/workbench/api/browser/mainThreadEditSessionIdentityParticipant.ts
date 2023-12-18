@@ -3,24 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { raceCancellationError } from "vs/base/common/async";
 import { CancellationToken } from "vs/base/common/cancellation";
+import { IDisposable } from "vs/base/common/lifecycle";
 import { localize } from "vs/nls";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import {
-	extHostCustomer,
-	IExtHostContext,
-} from "vs/workbench/services/extensions/common/extHostCustomers";
-import { IDisposable } from "vs/base/common/lifecycle";
-import { raceCancellationError } from "vs/base/common/async";
 import {
 	IEditSessionIdentityCreateParticipant,
 	IEditSessionIdentityService,
 } from "vs/platform/workspace/common/editSessions";
+import { WorkspaceFolder } from "vs/platform/workspace/common/workspace";
 import {
 	ExtHostContext,
 	ExtHostWorkspaceShape,
 } from "vs/workbench/api/common/extHost.protocol";
-import { WorkspaceFolder } from "vs/platform/workspace/common/workspace";
+import {
+	IExtHostContext,
+	extHostCustomer,
+} from "vs/workbench/services/extensions/common/extHostCustomers";
 
 class ExtHostEditSessionIdentityCreateParticipant
 	implements IEditSessionIdentityCreateParticipant
@@ -34,7 +34,7 @@ class ExtHostEditSessionIdentityCreateParticipant
 
 	async participate(
 		workspaceFolder: WorkspaceFolder,
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<void> {
 		const p = new Promise<any>((resolve, reject) => {
 			setTimeout(
@@ -43,17 +43,17 @@ class ExtHostEditSessionIdentityCreateParticipant
 						new Error(
 							localize(
 								"timeout.onWillCreateEditSessionIdentity",
-								"Aborted onWillCreateEditSessionIdentity-event after 10000ms"
-							)
-						)
+								"Aborted onWillCreateEditSessionIdentity-event after 10000ms",
+							),
+						),
 					),
-				this.timeout
+				this.timeout,
 			);
 			this._proxy
 				.$onWillCreateEditSessionIdentity(
 					workspaceFolder.uri,
 					token,
-					this.timeout
+					this.timeout,
 				)
 				.then(resolve, reject);
 		});

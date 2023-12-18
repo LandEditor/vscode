@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as dom from "vs/base/browser/dom";
 import { GlobalPointerMoveMonitor } from "vs/base/browser/globalPointerMoveMonitor";
 import { Widget } from "vs/base/browser/ui/widget";
 import { TimeoutTimer } from "vs/base/common/async";
 import { ThemeIcon } from "vs/base/common/themables";
-import * as dom from "vs/base/browser/dom";
 
 /**
  * The arrow image size.
@@ -79,28 +79,28 @@ export class ScrollbarArrow extends Widget {
 		}
 
 		this._pointerMoveMonitor = this._register(
-			new GlobalPointerMoveMonitor()
+			new GlobalPointerMoveMonitor(),
 		);
 		this._register(
 			dom.addStandardDisposableListener(
 				this.bgDomNode,
 				dom.EventType.POINTER_DOWN,
-				(e) => this._arrowPointerDown(e)
-			)
+				(e) => this._arrowPointerDown(e),
+			),
 		);
 		this._register(
 			dom.addStandardDisposableListener(
 				this.domNode,
 				dom.EventType.POINTER_DOWN,
-				(e) => this._arrowPointerDown(e)
-			)
+				(e) => this._arrowPointerDown(e),
+			),
 		);
 
 		this._pointerdownRepeatTimer = this._register(
-			new dom.WindowIntervalTimer()
+			new dom.WindowIntervalTimer(),
 		);
 		this._pointerdownScheduleRepeatTimer = this._register(
-			new TimeoutTimer()
+			new TimeoutTimer(),
 		);
 	}
 
@@ -112,7 +112,7 @@ export class ScrollbarArrow extends Widget {
 			this._pointerdownRepeatTimer.cancelAndSet(
 				() => this._onActivate(),
 				1000 / 24,
-				dom.getWindow(e)
+				dom.getWindow(e),
 			);
 		};
 
@@ -120,7 +120,7 @@ export class ScrollbarArrow extends Widget {
 		this._pointerdownRepeatTimer.cancel();
 		this._pointerdownScheduleRepeatTimer.cancelAndSet(
 			scheduleRepeater,
-			200
+			200,
 		);
 
 		this._pointerMoveMonitor.startMonitoring(
@@ -133,7 +133,7 @@ export class ScrollbarArrow extends Widget {
 			() => {
 				this._pointerdownRepeatTimer.cancel();
 				this._pointerdownScheduleRepeatTimer.cancel();
-			}
+			},
 		);
 
 		e.preventDefault();

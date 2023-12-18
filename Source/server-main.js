@@ -88,7 +88,7 @@ async function start() {
 					const server = await mod.createServer(address);
 					_remoteExtensionHostAgentServer = server;
 					return server;
-				}
+				},
 			);
 		}
 		return _remoteExtensionHostAgentServerPromise;
@@ -105,7 +105,7 @@ async function start() {
 		) {
 			if (hasStdinWithoutTty()) {
 				console.log(
-					"To accept the license terms, start the server with --accept-server-license-terms"
+					"To accept the license terms, start the server with --accept-server-license-terms",
 				);
 				process.exit(1);
 			}
@@ -160,9 +160,9 @@ async function start() {
 				host,
 				port: await parsePort(
 					host,
-					sanitizeStringArg(parsedArgs["port"])
+					sanitizeStringArg(parsedArgs["port"]),
 				),
-			};
+		  };
 	server.listen(nodeListenOptions, async () => {
 		let output =
 			Array.isArray(product.serverGreeting) &&
@@ -175,8 +175,8 @@ async function start() {
 			parsedArgs["print-ip-address"]
 		) {
 			const ifaces = os.networkInterfaces();
-			Object.keys(ifaces).forEach(function (ifname) {
-				ifaces[ifname]?.forEach(function (iface) {
+			Object.keys(ifaces).forEach((ifname) => {
+				ifaces[ifname]?.forEach((iface) => {
 					if (!iface.internal && iface.family === "IPv4") {
 						output += `IP Address: ${iface.address}\n`;
 					}
@@ -251,12 +251,12 @@ async function parsePort(host, strPort) {
 			}
 			// Remote-SSH extension relies on this exact port error message, treat as an API
 			console.warn(
-				`--port: Could not find free port in range: ${range.start} - ${range.end} (inclusive).`
+				`--port: Could not find free port in range: ${range.start} - ${range.end} (inclusive).`,
 			);
 			process.exit(1);
 		} else {
 			console.warn(
-				`--port "${strPort}" is not a valid number or range. Ranges must be in the form 'from-to' with 'from' an integer larger than 0 and not larger than 'end'.`
+				`--port "${strPort}" is not a valid number or range. Ranges must be in the form 'from-to' with 'from' an integer larger than 0 and not larger than 'end'.`,
 			);
 			process.exit(1);
 		}
@@ -332,7 +332,7 @@ function loadCode() {
 				process.env["VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH"] ||
 				path.join(__dirname, "..", "remote", "node_modules");
 			require("./bootstrap-node").injectNodeModuleLookupPath(
-				process.env["VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH"]
+				process.env["VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH"],
 			);
 		} else {
 			delete process.env["VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH"];
@@ -340,7 +340,7 @@ function loadCode() {
 		require("./bootstrap-amd").load(
 			"vs/server/node/server.main",
 			resolve,
-			reject
+			reject,
 		);
 	});
 }
@@ -364,7 +364,7 @@ function prompt(question) {
 		output: process.stdout,
 	});
 	return new Promise((resolve, reject) => {
-		rl.question(question + " ", async function (data) {
+		rl.question(question + " ", async (data) => {
 			rl.close();
 			const str = data.toString().trim().toLowerCase();
 			if (str === "" || str === "y" || str === "yes") {
@@ -373,7 +373,7 @@ function prompt(question) {
 				resolve(false);
 			} else {
 				process.stdout.write(
-					"\nInvalid Response. Answer either yes (y, yes) or no (n, no)\n"
+					"\nInvalid Response. Answer either yes (y, yes) or no (n, no)\n",
 				);
 				resolve(await prompt(question));
 			}

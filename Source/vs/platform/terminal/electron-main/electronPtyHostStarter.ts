@@ -3,6 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { IpcMainEvent } from "electron";
+import { Emitter } from "vs/base/common/event";
+import {
+	Disposable,
+	DisposableStore,
+	toDisposable,
+} from "vs/base/common/lifecycle";
+import { Schemas } from "vs/base/common/network";
+import { deepClone } from "vs/base/common/objects";
+import { Client as MessagePortClient } from "vs/base/parts/ipc/electron-main/ipc.mp";
+import { validatedIpcMain } from "vs/base/parts/ipc/electron-main/ipcMain";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { IEnvironmentMainService } from "vs/platform/environment/electron-main/environmentMainService";
 import { parsePtyHostDebugPort } from "vs/platform/environment/node/environmentService";
 import { ILifecycleMainService } from "vs/platform/lifecycle/electron-main/lifecycleMainService";
@@ -17,18 +29,6 @@ import {
 	IPtyHostStarter,
 } from "vs/platform/terminal/node/ptyHost";
 import { UtilityProcess } from "vs/platform/utilityProcess/electron-main/utilityProcess";
-import { Client as MessagePortClient } from "vs/base/parts/ipc/electron-main/ipc.mp";
-import { IpcMainEvent } from "electron";
-import { validatedIpcMain } from "vs/base/parts/ipc/electron-main/ipcMain";
-import {
-	Disposable,
-	DisposableStore,
-	toDisposable,
-} from "vs/base/common/lifecycle";
-import { Emitter } from "vs/base/common/event";
-import { deepClone } from "vs/base/common/objects";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { Schemas } from "vs/base/common/network";
 
 export class ElectronPtyHostStarter
 	extends Disposable
@@ -73,12 +73,12 @@ export class ElectronPtyHostStarter
 		this.utilityProcess = new UtilityProcess(
 			this._logService,
 			NullTelemetryService,
-			this._lifecycleMainService
+			this._lifecycleMainService,
 		);
 
 		const inspectParams = parsePtyHostDebugPort(
 			this._environmentMainService.args,
-			this._environmentMainService.isBuilt
+			this._environmentMainService.isBuilt,
 		);
 		const execArgv = inspectParams.port
 			? [
@@ -86,7 +86,7 @@ export class ElectronPtyHostStarter
 					`--inspect${inspectParams.break ? "-brk" : ""}=${
 						inspectParams.port
 					}`,
-				]
+			  ]
 			: undefined;
 
 		this.utilityProcess.start({
@@ -112,7 +112,7 @@ export class ElectronPtyHostStarter
 				this.utilityProcess?.kill();
 				this.utilityProcess?.dispose();
 				this.utilityProcess = undefined;
-			})
+			}),
 		);
 
 		return {
@@ -130,23 +130,23 @@ export class ElectronPtyHostStarter
 			VSCODE_PIPE_LOGGING: "true",
 			VSCODE_VERBOSE_LOGGING: "true", // transmit console logs from server to client,
 			VSCODE_RECONNECT_GRACE_TIME: String(
-				this._reconnectConstants.graceTime
+				this._reconnectConstants.graceTime,
 			),
 			VSCODE_RECONNECT_SHORT_GRACE_TIME: String(
-				this._reconnectConstants.shortGraceTime
+				this._reconnectConstants.shortGraceTime,
 			),
 			VSCODE_RECONNECT_SCROLLBACK: String(
-				this._reconnectConstants.scrollback
+				this._reconnectConstants.scrollback,
 			),
 		};
 		const simulatedLatency = this._configurationService.getValue(
-			TerminalSettingId.DeveloperPtyHostLatency
+			TerminalSettingId.DeveloperPtyHostLatency,
 		);
 		if (simulatedLatency && typeof simulatedLatency === "number") {
 			config.VSCODE_LATENCY = String(simulatedLatency);
 		}
 		const startupDelay = this._configurationService.getValue(
-			TerminalSettingId.DeveloperPtyHostStartupDelay
+			TerminalSettingId.DeveloperPtyHostStartupDelay,
 		);
 		if (startupDelay && typeof startupDelay === "number") {
 			config.VSCODE_STARTUP_DELAY = String(startupDelay);
@@ -173,7 +173,7 @@ export class ElectronPtyHostStarter
 		e.sender.postMessage(
 			"vscode:createPtyHostMessageChannelResult",
 			nonce,
-			[port]
+			[port],
 		);
 	}
 }

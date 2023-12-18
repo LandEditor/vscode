@@ -7,10 +7,10 @@ import { coalesce } from "vs/base/common/arrays";
 import { CancellationToken } from "vs/base/common/cancellation";
 import { IDisposable, toDisposable } from "vs/base/common/lifecycle";
 import {
-	ItemActivation,
 	IQuickNavigateConfiguration,
 	IQuickPick,
 	IQuickPickItem,
+	ItemActivation,
 } from "vs/platform/quickinput/common/quickInput";
 import { Registry } from "vs/platform/registry/common/platform";
 
@@ -68,7 +68,7 @@ export interface IQuickAccessController {
 	 */
 	pick(
 		value?: string,
-		options?: IQuickAccessOptions
+		options?: IQuickAccessOptions,
 	): Promise<IQuickPickItem[] | undefined>;
 }
 
@@ -113,7 +113,7 @@ export interface IQuickAccessProvider {
 	provide(
 		picker: IQuickPick<IQuickPickItem>,
 		token: CancellationToken,
-		options?: IQuickAccessProviderRunOptions
+		options?: IQuickAccessProviderRunOptions,
 	): IDisposable;
 }
 
@@ -191,7 +191,7 @@ export interface IQuickAccessRegistry {
 	 * Registers a quick access provider to the platform.
 	 */
 	registerQuickAccessProvider(
-		provider: IQuickAccessProviderDescriptor
+		provider: IQuickAccessProviderDescriptor,
 	): IDisposable;
 
 	/**
@@ -203,7 +203,7 @@ export interface IQuickAccessRegistry {
 	 * Get a specific quick access provider for a given prefix.
 	 */
 	getQuickAccessProvider(
-		prefix: string
+		prefix: string,
 	): IQuickAccessProviderDescriptor | undefined;
 }
 
@@ -213,7 +213,7 @@ export class QuickAccessRegistry implements IQuickAccessRegistry {
 		undefined;
 
 	registerQuickAccessProvider(
-		provider: IQuickAccessProviderDescriptor
+		provider: IQuickAccessProviderDescriptor,
 	): IDisposable {
 		// Extract the default provider when no prefix is present
 		if (provider.prefix.length === 0) {
@@ -226,7 +226,7 @@ export class QuickAccessRegistry implements IQuickAccessRegistry {
 		// prefixes take priority: 'ext' vs 'ext install' - the latter should win
 		this.providers.sort(
 			(providerA, providerB) =>
-				providerB.prefix.length - providerA.prefix.length
+				providerB.prefix.length - providerA.prefix.length,
 		);
 
 		return toDisposable(() => {
@@ -243,12 +243,12 @@ export class QuickAccessRegistry implements IQuickAccessRegistry {
 	}
 
 	getQuickAccessProvider(
-		prefix: string
+		prefix: string,
 	): IQuickAccessProviderDescriptor | undefined {
 		const result = prefix
 			? this.providers.find((provider) =>
-					prefix.startsWith(provider.prefix)
-				) || undefined
+					prefix.startsWith(provider.prefix),
+			  ) || undefined
 			: undefined;
 
 		return result || this.defaultProvider;

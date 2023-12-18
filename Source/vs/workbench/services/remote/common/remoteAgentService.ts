@@ -3,23 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import {
-	RemoteAgentConnectionContext,
-	IRemoteAgentEnvironment,
-} from "vs/platform/remote/common/remoteAgentEnvironment";
+import { timeout } from "vs/base/common/async";
+import { Event } from "vs/base/common/event";
 import { IChannel, IServerChannel } from "vs/base/parts/ipc/common/ipc";
 import {
-	IDiagnosticInfoOptions,
 	IDiagnosticInfo,
+	IDiagnosticInfoOptions,
 } from "vs/platform/diagnostics/common/diagnostics";
-import { Event } from "vs/base/common/event";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import { PersistentConnectionEvent } from "vs/platform/remote/common/remoteAgentConnection";
+import {
+	IRemoteAgentEnvironment,
+	RemoteAgentConnectionContext,
+} from "vs/platform/remote/common/remoteAgentEnvironment";
 import {
 	ITelemetryData,
 	TelemetryLevel,
 } from "vs/platform/telemetry/common/telemetry";
-import { timeout } from "vs/base/common/async";
 
 export const IRemoteAgentService =
 	createDecorator<IRemoteAgentService>("remoteAgentService");
@@ -40,7 +40,7 @@ export interface IRemoteAgentService {
 	 * Get exit information for a remote extension host.
 	 */
 	getExtensionHostExitInfo(
-		reconnectionToken: string
+		reconnectionToken: string,
 	): Promise<IExtensionHostExitInfo | null>;
 
 	/**
@@ -50,7 +50,7 @@ export interface IRemoteAgentService {
 	getRoundTripTime(): Promise<number | undefined>;
 
 	getDiagnosticInfo(
-		options: IDiagnosticInfoOptions
+		options: IDiagnosticInfoOptions,
 	): Promise<IDiagnosticInfo | undefined>;
 	updateTelemetryLevel(telemetryLevel: TelemetryLevel): Promise<void>;
 	logTelemetry(eventName: string, data?: ITelemetryData): Promise<void>;
@@ -72,11 +72,11 @@ export interface IRemoteAgentConnection {
 	getChannel<T extends IChannel>(channelName: string): T;
 	withChannel<T extends IChannel, R>(
 		channelName: string,
-		callback: (channel: T) => Promise<R>
+		callback: (channel: T) => Promise<R>,
 	): Promise<R>;
 	registerChannel<T extends IServerChannel<RemoteAgentConnectionContext>>(
 		channelName: string,
-		channel: T
+		channel: T,
 	): void;
 	getInitialConnectionTimeMs(): Promise<number>;
 }
@@ -110,7 +110,7 @@ export const remoteConnectionLatencyMeasurer = new (class {
 	}
 
 	async measure(
-		remoteAgentService: IRemoteAgentService
+		remoteAgentService: IRemoteAgentService,
 	): Promise<IRemoteConnectionLatencyMeasurement | undefined> {
 		let currentLatency = Infinity;
 
@@ -123,7 +123,7 @@ export const remoteConnectionLatencyMeasurer = new (class {
 
 			currentLatency = Math.min(
 				currentLatency,
-				rtt / 2 /* we want just one way, not round trip time */
+				rtt / 2 /* we want just one way, not round trip time */,
 			);
 			await timeout(this.sampleDelay);
 		}

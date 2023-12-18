@@ -3,30 +3,30 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { distinct } from "vs/base/common/arrays";
+import { ResourceMap } from "vs/base/common/map";
 import { equals } from "vs/base/common/objects";
+import { isBoolean } from "vs/base/common/types";
+import { URI } from "vs/base/common/uri";
 import {
-	toValuesTree,
+	IConfigurationChange,
 	IConfigurationModel,
 	IConfigurationOverrides,
 	IConfigurationValue,
-	IConfigurationChange,
+	toValuesTree,
 } from "vs/platform/configuration/common/configuration";
 import {
 	Configuration as BaseConfiguration,
-	ConfigurationModelParser,
 	ConfigurationModel,
+	ConfigurationModelParser,
 	ConfigurationParseOptions,
 } from "vs/platform/configuration/common/configurationModels";
-import { IStoredWorkspaceFolder } from "vs/platform/workspaces/common/workspaces";
 import { Workspace } from "vs/platform/workspace/common/workspace";
-import { ResourceMap } from "vs/base/common/map";
-import { URI } from "vs/base/common/uri";
-import { isBoolean } from "vs/base/common/types";
-import { distinct } from "vs/base/common/arrays";
+import { IStoredWorkspaceFolder } from "vs/platform/workspaces/common/workspaces";
 
 export class WorkspaceConfigurationModelParser extends ConfigurationModelParser {
 	private _folders: IStoredWorkspaceFolder[] = [];
-	private _transient: boolean = false;
+	private _transient = false;
 	private _settingsModelParser: ConfigurationModelParser;
 	private _launchModel: ConfigurationModel;
 	private _tasksModel: ConfigurationModel;
@@ -59,7 +59,7 @@ export class WorkspaceConfigurationModelParser extends ConfigurationModelParser 
 	}
 
 	reparseWorkspaceSettings(
-		configurationParseOptions: ConfigurationParseOptions
+		configurationParseOptions: ConfigurationParseOptions,
 	): void {
 		this._settingsModelParser.reparse(configurationParseOptions);
 	}
@@ -70,13 +70,13 @@ export class WorkspaceConfigurationModelParser extends ConfigurationModelParser 
 
 	protected override doParseRaw(
 		raw: any,
-		configurationParseOptions?: ConfigurationParseOptions
+		configurationParseOptions?: ConfigurationParseOptions,
 	): IConfigurationModel {
 		this._folders = (raw["folders"] || []) as IStoredWorkspaceFolder[];
 		this._transient = isBoolean(raw["transient"]) && raw["transient"];
 		this._settingsModelParser.parseRaw(
 			raw["settings"],
-			configurationParseOptions
+			configurationParseOptions,
 		);
 		this._launchModel = this.createConfigurationModelFrom(raw, "launch");
 		this._tasksModel = this.createConfigurationModelFrom(raw, "tasks");
@@ -85,14 +85,14 @@ export class WorkspaceConfigurationModelParser extends ConfigurationModelParser 
 
 	private createConfigurationModelFrom(
 		raw: any,
-		key: string
+		key: string,
 	): ConfigurationModel {
 		const data = raw[key];
 		if (data) {
 			const contents = toValuesTree(data, (message) =>
 				console.error(
-					`Conflict in settings file ${this._name}: ${message}`
-				)
+					`Conflict in settings file ${this._name}: ${message}`,
+				),
 			);
 			const scopedContents = Object.create(null);
 			scopedContents[key] = contents;
@@ -104,19 +104,18 @@ export class WorkspaceConfigurationModelParser extends ConfigurationModelParser 
 }
 
 export class StandaloneConfigurationModelParser extends ConfigurationModelParser {
-	constructor(
-		name: string,
-		private readonly scope: string
-	) {
+	constructor(name: string, private readonly scope: string) {
 		super(name);
 	}
 
 	protected override doParseRaw(
 		raw: any,
-		configurationParseOptions?: ConfigurationParseOptions
+		configurationParseOptions?: ConfigurationParseOptions,
 	): IConfigurationModel {
 		const contents = toValuesTree(raw, (message) =>
-			console.error(`Conflict in settings file ${this._name}: ${message}`)
+			console.error(
+				`Conflict in settings file ${this._name}: ${message}`,
+			),
 		);
 		const scopedContents = Object.create(null);
 		scopedContents[this.scope] = contents;
@@ -136,7 +135,7 @@ export class Configuration extends BaseConfiguration {
 		folders: ResourceMap<ConfigurationModel>,
 		memoryConfiguration: ConfigurationModel,
 		memoryConfigurationByResource: ResourceMap<ConfigurationModel>,
-		private readonly _workspace?: Workspace
+		private readonly _workspace?: Workspace,
 	) {
 		super(
 			defaults,
@@ -147,20 +146,20 @@ export class Configuration extends BaseConfiguration {
 			workspaceConfiguration,
 			folders,
 			memoryConfiguration,
-			memoryConfigurationByResource
+			memoryConfigurationByResource,
 		);
 	}
 
 	override getValue(
 		key: string | undefined,
-		overrides: IConfigurationOverrides = {}
+		overrides: IConfigurationOverrides = {},
 	): any {
 		return super.getValue(key, overrides, this._workspace);
 	}
 
 	override inspect<C>(
 		key: string,
-		overrides: IConfigurationOverrides = {}
+		overrides: IConfigurationOverrides = {},
 	): IConfigurationValue<C> {
 		return super.inspect(key, overrides, this._workspace);
 	}
@@ -175,7 +174,7 @@ export class Configuration extends BaseConfiguration {
 	}
 
 	override compareAndDeleteFolderConfiguration(
-		folder: URI
+		folder: URI,
 	): IConfigurationChange {
 		if (
 			this._workspace &&
@@ -192,7 +191,7 @@ export class Configuration extends BaseConfiguration {
 		const compare = (
 			fromKeys: string[],
 			toKeys: string[],
-			overrideIdentifier?: string
+			overrideIdentifier?: string,
 		): string[] => {
 			const keys: string[] = [];
 			keys.push(...toKeys.filter((key) => fromKeys.indexOf(key) === -1));
@@ -207,7 +206,7 @@ export class Configuration extends BaseConfiguration {
 					if (
 						!equals(
 							this.getValue(key, { overrideIdentifier }),
-							other.getValue(key, { overrideIdentifier })
+							other.getValue(key, { overrideIdentifier }),
 						)
 					) {
 						return true;
@@ -225,11 +224,11 @@ export class Configuration extends BaseConfiguration {
 									other.getValue(key, {
 										resource: folder.uri,
 										overrideIdentifier,
-									})
-								)
+									}),
+								),
 						)
 					);
-				})
+				}),
 			);
 			return keys;
 		};
@@ -243,7 +242,7 @@ export class Configuration extends BaseConfiguration {
 			const keys = compare(
 				this.getAllKeysForOverrideIdentifier(overrideIdentifier),
 				other.getAllKeysForOverrideIdentifier(overrideIdentifier),
-				overrideIdentifier
+				overrideIdentifier,
 			);
 			if (keys.length) {
 				overrides.push([overrideIdentifier, keys]);

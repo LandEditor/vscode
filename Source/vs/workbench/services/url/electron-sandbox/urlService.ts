@@ -3,25 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	IURLService,
-	IURLHandler,
-	IOpenURLOptions,
-} from "vs/platform/url/common/url";
-import { URI, UriComponents } from "vs/base/common/uri";
-import { IMainProcessService } from "vs/platform/ipc/common/mainProcessService";
-import { URLHandlerChannel } from "vs/platform/url/common/urlIpc";
-import { IOpenerService, IOpener } from "vs/platform/opener/common/opener";
 import { matchesScheme } from "vs/base/common/network";
-import { IProductService } from "vs/platform/product/common/productService";
+import { URI, UriComponents } from "vs/base/common/uri";
+import { ProxyChannel } from "vs/base/parts/ipc/common/ipc";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
-import { ProxyChannel } from "vs/base/parts/ipc/common/ipc";
-import { INativeHostService } from "vs/platform/native/common/native";
-import { NativeURLService } from "vs/platform/url/common/urlService";
+import { IMainProcessService } from "vs/platform/ipc/common/mainProcessService";
 import { ILogService } from "vs/platform/log/common/log";
+import { INativeHostService } from "vs/platform/native/common/native";
+import { IOpener, IOpenerService } from "vs/platform/opener/common/opener";
+import { IProductService } from "vs/platform/product/common/productService";
+import {
+	IOpenURLOptions,
+	IURLHandler,
+	IURLService,
+} from "vs/platform/url/common/url";
+import { URLHandlerChannel } from "vs/platform/url/common/urlIpc";
+import { NativeURLService } from "vs/platform/url/common/urlService";
 
 export interface IRelayOpenURLOptions extends IOpenURLOptions {
 	openToSide?: boolean;
@@ -59,13 +59,13 @@ export class RelayURLService
 		const uri = super.create(options);
 
 		let query = uri.query;
-		if (!query) {
-			query = `windowId=${encodeURIComponent(
-				this.nativeHostService.windowId
+		if (query) {
+			query += `&windowId=${encodeURIComponent(
+				this.nativeHostService.windowId,
 			)}`;
 		} else {
-			query += `&windowId=${encodeURIComponent(
-				this.nativeHostService.windowId
+			query = `windowId=${encodeURIComponent(
+				this.nativeHostService.windowId,
 			)}`;
 		}
 
@@ -74,7 +74,7 @@ export class RelayURLService
 
 	override async open(
 		resource: URI | string,
-		options?: IRelayOpenURLOptions
+		options?: IRelayOpenURLOptions,
 	): Promise<boolean> {
 		if (!matchesScheme(resource, this.productService.urlProtocol)) {
 			return false;
@@ -92,7 +92,7 @@ export class RelayURLService
 		if (result) {
 			this.logService.trace(
 				"URLService#handleURL(): handled",
-				uri.toString(true)
+				uri.toString(true),
 			);
 
 			await this.nativeHostService.focusWindow({
@@ -102,7 +102,7 @@ export class RelayURLService
 		} else {
 			this.logService.trace(
 				"URLService#handleURL(): not handled",
-				uri.toString(true)
+				uri.toString(true),
 			);
 		}
 

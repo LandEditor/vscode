@@ -3,38 +3,38 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { VSBuffer } from "vs/base/common/buffer";
+import { CancellationTokenSource } from "vs/base/common/cancellation";
 import { Emitter, Event } from "vs/base/common/event";
-import { IServerChannel } from "vs/base/parts/ipc/common/ipc";
-import { DiskFileSystemProvider } from "vs/platform/files/node/diskFileSystemProvider";
 import {
 	Disposable,
-	dispose,
 	IDisposable,
+	dispose,
 	toDisposable,
 } from "vs/base/common/lifecycle";
-import { ILogService } from "vs/platform/log/common/log";
-import { IURITransformer } from "vs/base/common/uriIpc";
-import { URI, UriComponents } from "vs/base/common/uri";
-import { VSBuffer } from "vs/base/common/buffer";
 import {
 	ReadableStreamEventPayload,
 	listenStream,
 } from "vs/base/common/stream";
+import { URI, UriComponents } from "vs/base/common/uri";
+import { IURITransformer } from "vs/base/common/uriIpc";
+import { IServerChannel } from "vs/base/parts/ipc/common/ipc";
+import { IEnvironmentService } from "vs/platform/environment/common/environment";
 import {
-	IStat,
-	IFileReadStreamOptions,
-	IFileWriteOptions,
-	IFileOpenOptions,
-	IFileDeleteOptions,
-	IFileOverwriteOptions,
-	IFileChange,
-	IWatchOptions,
 	FileType,
 	IFileAtomicReadOptions,
+	IFileChange,
+	IFileDeleteOptions,
+	IFileOpenOptions,
+	IFileOverwriteOptions,
+	IFileReadStreamOptions,
+	IFileWriteOptions,
+	IStat,
+	IWatchOptions,
 } from "vs/platform/files/common/files";
-import { CancellationTokenSource } from "vs/base/common/cancellation";
 import { IRecursiveWatcherOptions } from "vs/platform/files/common/watcher";
-import { IEnvironmentService } from "vs/platform/environment/common/environment";
+import { DiskFileSystemProvider } from "vs/platform/files/node/diskFileSystemProvider";
+import { ILogService } from "vs/platform/log/common/log";
 
 export interface ISessionFileWatcher extends IDisposable {
 	watch(req: number, resource: URI, opts: IWatchOptions): IDisposable;
@@ -49,7 +49,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 {
 	constructor(
 		protected readonly provider: DiskFileSystemProvider,
-		protected readonly logService: ILogService
+		protected readonly logService: ILogService,
 	) {
 		super();
 	}
@@ -90,7 +90,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 					arg[0],
 					arg[1],
 					arg[2],
-					arg[3]
+					arg[3],
 				);
 			case "unwatch":
 				return this.unwatch(arg[0], arg[1]);
@@ -117,19 +117,19 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 	protected abstract transformIncoming(
 		uriTransformer: IURITransformer,
 		_resource: UriComponents,
-		supportVSCodeResource?: boolean
+		supportVSCodeResource?: boolean,
 	): URI;
 
 	//#region File Metadata Resolving
 
 	private stat(
 		uriTransformer: IURITransformer,
-		_resource: UriComponents
+		_resource: UriComponents,
 	): Promise<IStat> {
 		const resource = this.transformIncoming(
 			uriTransformer,
 			_resource,
-			true
+			true,
 		);
 
 		return this.provider.stat(resource);
@@ -137,7 +137,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 
 	private readdir(
 		uriTransformer: IURITransformer,
-		_resource: UriComponents
+		_resource: UriComponents,
 	): Promise<[string, FileType][]> {
 		const resource = this.transformIncoming(uriTransformer, _resource);
 
@@ -151,12 +151,12 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 	private async readFile(
 		uriTransformer: IURITransformer,
 		_resource: UriComponents,
-		opts?: IFileAtomicReadOptions
+		opts?: IFileAtomicReadOptions,
 	): Promise<VSBuffer> {
 		const resource = this.transformIncoming(
 			uriTransformer,
 			_resource,
-			true
+			true,
 		);
 		const buffer = await this.provider.readFile(resource, opts);
 
@@ -166,12 +166,12 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 	private onReadFileStream(
 		uriTransformer: IURITransformer,
 		_resource: URI,
-		opts: IFileReadStreamOptions
+		opts: IFileReadStreamOptions,
 	): Event<ReadableStreamEventPayload<VSBuffer>> {
 		const resource = this.transformIncoming(
 			uriTransformer,
 			_resource,
-			true
+			true,
 		);
 		const cts = new CancellationTokenSource();
 
@@ -186,7 +186,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 		const fileStream = this.provider.readFileStream(
 			resource,
 			opts,
-			cts.token
+			cts.token,
 		);
 		listenStream(fileStream, {
 			onData: (chunk) => emitter.fire(VSBuffer.wrap(chunk)),
@@ -208,7 +208,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 		uriTransformer: IURITransformer,
 		_resource: UriComponents,
 		content: VSBuffer,
-		opts: IFileWriteOptions
+		opts: IFileWriteOptions,
 	): Promise<void> {
 		const resource = this.transformIncoming(uriTransformer, _resource);
 
@@ -218,12 +218,12 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 	private open(
 		uriTransformer: IURITransformer,
 		_resource: UriComponents,
-		opts: IFileOpenOptions
+		opts: IFileOpenOptions,
 	): Promise<number> {
 		const resource = this.transformIncoming(
 			uriTransformer,
 			_resource,
-			true
+			true,
 		);
 
 		return this.provider.open(resource, opts);
@@ -236,7 +236,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 	private async read(
 		fd: number,
 		pos: number,
-		length: number
+		length: number,
 	): Promise<[VSBuffer, number]> {
 		const buffer = VSBuffer.alloc(length);
 		const bufferOffset = 0; // offset is 0 because we create a buffer to read into for each call
@@ -245,7 +245,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 			pos,
 			buffer.buffer,
 			bufferOffset,
-			length
+			length,
 		);
 
 		return [buffer, bytesRead];
@@ -256,7 +256,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 		pos: number,
 		data: VSBuffer,
 		offset: number,
-		length: number
+		length: number,
 	): Promise<number> {
 		return this.provider.write(fd, pos, data.buffer, offset, length);
 	}
@@ -267,7 +267,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 
 	private mkdir(
 		uriTransformer: IURITransformer,
-		_resource: UriComponents
+		_resource: UriComponents,
 	): Promise<void> {
 		const resource = this.transformIncoming(uriTransformer, _resource);
 
@@ -277,7 +277,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 	protected delete(
 		uriTransformer: IURITransformer,
 		_resource: UriComponents,
-		opts: IFileDeleteOptions
+		opts: IFileDeleteOptions,
 	): Promise<void> {
 		const resource = this.transformIncoming(uriTransformer, _resource);
 
@@ -288,7 +288,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 		uriTransformer: IURITransformer,
 		_source: UriComponents,
 		_target: UriComponents,
-		opts: IFileOverwriteOptions
+		opts: IFileOverwriteOptions,
 	): Promise<void> {
 		const source = this.transformIncoming(uriTransformer, _source);
 		const target = this.transformIncoming(uriTransformer, _target);
@@ -300,7 +300,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 		uriTransformer: IURITransformer,
 		_source: UriComponents,
 		_target: UriComponents,
-		opts: IFileOverwriteOptions
+		opts: IFileOverwriteOptions,
 	): Promise<void> {
 		const source = this.transformIncoming(uriTransformer, _source);
 		const target = this.transformIncoming(uriTransformer, _target);
@@ -315,7 +315,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 	private cloneFile(
 		uriTransformer: IURITransformer,
 		_source: UriComponents,
-		_target: UriComponents
+		_target: UriComponents,
 	): Promise<void> {
 		const source = this.transformIncoming(uriTransformer, _source);
 		const target = this.transformIncoming(uriTransformer, _target);
@@ -338,7 +338,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 
 	private onFileChange(
 		uriTransformer: IURITransformer,
-		sessionId: string
+		sessionId: string,
 	): Event<IFileChange[] | string> {
 		// We want a specific emitter for the given session so that events
 		// from the one session do not end up on the other session. As such
@@ -348,7 +348,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 			onWillAddFirstListener: () => {
 				this.sessionToWatcher.set(
 					sessionId,
-					this.createSessionFileWatcher(uriTransformer, emitter)
+					this.createSessionFileWatcher(uriTransformer, emitter),
 				);
 			},
 			onDidRemoveLastListener: () => {
@@ -365,7 +365,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 		sessionId: string,
 		req: number,
 		_resource: UriComponents,
-		opts: IWatchOptions
+		opts: IWatchOptions,
 	): Promise<void> {
 		const watcher = this.sessionToWatcher.get(sessionId);
 		if (watcher) {
@@ -386,7 +386,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T>
 
 	protected abstract createSessionFileWatcher(
 		uriTransformer: IURITransformer,
-		emitter: Emitter<IFileChange[] | string>
+		emitter: Emitter<IFileChange[] | string>,
 	): ISessionFileWatcher;
 
 	//#endregion
@@ -424,17 +424,17 @@ export abstract class AbstractSessionFileWatcher
 		new DiskFileSystemProvider(this.logService, {
 			watcher: {
 				recursive: this.getRecursiveWatcherOptions(
-					this.environmentService
+					this.environmentService,
 				),
 			},
-		})
+		}),
 	);
 
 	constructor(
 		private readonly uriTransformer: IURITransformer,
 		sessionEmitter: Emitter<IFileChange[] | string>,
 		private readonly logService: ILogService,
-		private readonly environmentService: IEnvironmentService
+		private readonly environmentService: IEnvironmentService,
 	) {
 		super();
 
@@ -442,10 +442,10 @@ export abstract class AbstractSessionFileWatcher
 	}
 
 	private registerListeners(
-		sessionEmitter: Emitter<IFileChange[] | string>
+		sessionEmitter: Emitter<IFileChange[] | string>,
 	): void {
 		const localChangeEmitter = this._register(
-			new Emitter<readonly IFileChange[]>()
+			new Emitter<readonly IFileChange[]>(),
 		);
 
 		this._register(
@@ -453,35 +453,35 @@ export abstract class AbstractSessionFileWatcher
 				sessionEmitter.fire(
 					events.map((e) => ({
 						resource: this.uriTransformer.transformOutgoingURI(
-							e.resource
+							e.resource,
 						),
 						type: e.type,
 						cId: e.cId,
-					}))
+					})),
 				);
-			})
+			}),
 		);
 
 		this._register(
 			this.fileWatcher.onDidChangeFile((events) =>
-				localChangeEmitter.fire(events)
-			)
+				localChangeEmitter.fire(events),
+			),
 		);
 		this._register(
 			this.fileWatcher.onDidWatchError((error) =>
-				sessionEmitter.fire(error)
-			)
+				sessionEmitter.fire(error),
+			),
 		);
 	}
 
 	protected getRecursiveWatcherOptions(
-		environmentService: IEnvironmentService
+		environmentService: IEnvironmentService,
 	): IRecursiveWatcherOptions | undefined {
 		return undefined; // subclasses can override
 	}
 
 	protected getExtraExcludes(
-		environmentService: IEnvironmentService
+		environmentService: IEnvironmentService,
 	): string[] | undefined {
 		return undefined; // subclasses can override
 	}

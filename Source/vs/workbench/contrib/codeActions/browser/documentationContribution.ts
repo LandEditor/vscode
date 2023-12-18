@@ -77,14 +77,14 @@ export class CodeActionDocumentationContribution
 		_model: ITextModel,
 		_range: Range | Selection,
 		context: languages.CodeActionContext,
-		_token: CancellationToken
+		_token: CancellationToken,
 	): Promise<languages.CodeActionList> {
 		return this.emptyCodeActionsList;
 	}
 
 	public _getAdditionalMenuItems(
 		context: languages.CodeActionContext,
-		actions: readonly languages.CodeAction[]
+		actions: readonly languages.CodeAction[],
 	): languages.Command[] {
 		if (context.only !== CodeActionKind.Refactor.value) {
 			if (
@@ -92,8 +92,8 @@ export class CodeActionDocumentationContribution
 					(action) =>
 						action.kind &&
 						CodeActionKind.Refactor.contains(
-							new CodeActionKind(action.kind)
-						)
+							new CodeActionKind(action.kind),
+						),
 				)
 			) {
 				return [];
@@ -102,7 +102,7 @@ export class CodeActionDocumentationContribution
 
 		return this.contributions
 			.filter((contribution) =>
-				this.contextKeyService.contextMatchesRules(contribution.when)
+				this.contextKeyService.contextMatchesRules(contribution.when),
 			)
 			.map((contribution) => {
 				return {

@@ -10,11 +10,11 @@ import {
 	MainContext,
 	MainThreadNotebookRenderersShape,
 } from "vs/workbench/api/common/extHost.protocol";
-import {
-	extHostNamedCustomer,
-	IExtHostContext,
-} from "vs/workbench/services/extensions/common/extHostCustomers";
 import { INotebookRendererMessagingService } from "vs/workbench/contrib/notebook/common/notebookRendererMessagingService";
+import {
+	IExtHostContext,
+	extHostNamedCustomer,
+} from "vs/workbench/services/extensions/common/extHostCustomers";
 
 @extHostNamedCustomer(MainContext.MainThreadNotebookRenderers)
 export class MainThreadNotebookRenderers
@@ -46,7 +46,7 @@ export class MainThreadNotebookRenderers
 	$postMessage(
 		editorId: string | undefined,
 		rendererId: string,
-		message: unknown
+		message: unknown,
 	): Promise<boolean> {
 		return this.messaging.receiveMessage(editorId, rendererId, message);
 	}

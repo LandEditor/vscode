@@ -3,30 +3,30 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { DisposableStore, IDisposable } from "vs/base/common/lifecycle";
 import { localize } from "vs/nls";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { ILayoutService } from "vs/platform/layout/browser/layoutService";
 import {
 	ColorTransformType,
 	asCssVariable,
 	asCssVariableName,
 	registerColor,
 } from "vs/platform/theme/common/colorRegistry";
+import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
 import { IWorkbenchContribution } from "vs/workbench/common/contributions";
 import {
-	IDebugService,
-	State,
-	IDebugSession,
-	IDebugConfiguration,
-} from "vs/workbench/contrib/debug/common/debug";
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
-import {
-	STATUS_BAR_FOREGROUND,
-	STATUS_BAR_BORDER,
 	COMMAND_CENTER_BACKGROUND,
+	STATUS_BAR_BORDER,
+	STATUS_BAR_FOREGROUND,
 } from "vs/workbench/common/theme";
-import { DisposableStore, IDisposable } from "vs/base/common/lifecycle";
+import {
+	IDebugConfiguration,
+	IDebugService,
+	IDebugSession,
+	State,
+} from "vs/workbench/contrib/debug/common/debug";
 import { IStatusbarService } from "vs/workbench/services/statusbar/browser/statusbar";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { ILayoutService } from "vs/platform/layout/browser/layoutService";
 
 // colors for theming
 
@@ -40,8 +40,8 @@ export const STATUS_BAR_DEBUGGING_BACKGROUND = registerColor(
 	},
 	localize(
 		"statusBarDebuggingBackground",
-		"Status bar background color when a program is being debugged. The status bar is shown in the bottom of the window"
-	)
+		"Status bar background color when a program is being debugged. The status bar is shown in the bottom of the window",
+	),
 );
 
 export const STATUS_BAR_DEBUGGING_FOREGROUND = registerColor(
@@ -54,8 +54,8 @@ export const STATUS_BAR_DEBUGGING_FOREGROUND = registerColor(
 	},
 	localize(
 		"statusBarDebuggingForeground",
-		"Status bar foreground color when a program is being debugged. The status bar is shown in the bottom of the window"
-	)
+		"Status bar foreground color when a program is being debugged. The status bar is shown in the bottom of the window",
+	),
 );
 
 export const STATUS_BAR_DEBUGGING_BORDER = registerColor(
@@ -68,8 +68,8 @@ export const STATUS_BAR_DEBUGGING_BORDER = registerColor(
 	},
 	localize(
 		"statusBarDebuggingBorder",
-		"Status bar border color separating to the sidebar and editor when a program is being debugged. The status bar is shown in the bottom of the window"
-	)
+		"Status bar border color separating to the sidebar and editor when a program is being debugged. The status bar is shown in the bottom of the window",
+	),
 );
 
 export const COMMAND_CENTER_DEBUGGING_BACKGROUND = registerColor(
@@ -98,9 +98,9 @@ export const COMMAND_CENTER_DEBUGGING_BACKGROUND = registerColor(
 	},
 	localize(
 		"commandCenter-activeBackground",
-		"Command center background color when a program is being debugged"
+		"Command center background color when a program is being debugged",
 	),
-	true
+	true,
 );
 
 export class StatusBarColorProvider implements IWorkbenchContribution {
@@ -156,12 +156,12 @@ export class StatusBarColorProvider implements IWorkbenchContribution {
 			this.configurationService.getValue<IDebugConfiguration>("debug");
 		const isInDebugMode = isStatusbarInDebugMode(
 			this.debugService.state,
-			this.debugService.getModel().getSessions()
+			this.debugService.getModel().getSessions(),
 		);
-		if (!debugConfig.enableStatusBarColor) {
-			this.enabled = false;
-		} else {
+		if (debugConfig.enableStatusBarColor) {
 			this.enabled = isInDebugMode;
+		} else {
+			this.enabled = false;
 		}
 
 		const isInCommandCenter =
@@ -170,7 +170,7 @@ export class StatusBarColorProvider implements IWorkbenchContribution {
 			asCssVariableName(COMMAND_CENTER_BACKGROUND),
 			isInCommandCenter && isInDebugMode
 				? asCssVariable(COMMAND_CENTER_DEBUGGING_BACKGROUND)
-				: ""
+				: "",
 		);
 	}
 
@@ -182,13 +182,13 @@ export class StatusBarColorProvider implements IWorkbenchContribution {
 
 export function isStatusbarInDebugMode(
 	state: State,
-	sessions: IDebugSession[]
+	sessions: IDebugSession[],
 ): boolean {
 	if (
 		state === State.Inactive ||
 		state === State.Initializing ||
 		sessions.every(
-			(s) => s.suppressDebugStatusbar || s.configuration?.noDebug
+			(s) => s.suppressDebugStatusbar || s.configuration?.noDebug,
 		)
 	) {
 		return false;

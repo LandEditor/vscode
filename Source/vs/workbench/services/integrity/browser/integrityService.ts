@@ -4,13 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	IIntegrityService,
-	IntegrityTestResult,
-} from "vs/workbench/services/integrity/common/integrity";
-import {
 	InstantiationType,
 	registerSingleton,
 } from "vs/platform/instantiation/common/extensions";
+import {
+	IIntegrityService,
+	IntegrityTestResult,
+} from "vs/workbench/services/integrity/common/integrity";
 
 export class IntegrityService implements IIntegrityService {
 	declare readonly _serviceBrand: undefined;
@@ -23,5 +23,5 @@ export class IntegrityService implements IIntegrityService {
 registerSingleton(
 	IIntegrityService,
 	IntegrityService,
-	InstantiationType.Delayed
+	InstantiationType.Delayed,
 );

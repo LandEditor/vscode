@@ -35,11 +35,11 @@ export class MovingAverage {
 }
 
 export class SlidingWindowAverage {
-	private _n: number = 0;
+	private _n = 0;
 	private _val = 0;
 
 	private readonly _values: number[] = [];
-	private _index: number = 0;
+	private _index = 0;
 	private _sum = 0;
 
 	constructor(size: number) {

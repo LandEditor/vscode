@@ -6,9 +6,7 @@
 /// <reference path="../../../typings/require.d.ts" />
 
 //@ts-check
-(function () {
-	"use strict";
-
+(() => {
 	/**
 	 * @param {typeof import('path')} path
 	 * @param {typeof import('fs')} fs
@@ -41,8 +39,8 @@
 		function mkdirp(dir) {
 			return new Promise((c, e) =>
 				fs.mkdir(dir, { recursive: true }, (err) =>
-					err && err.code !== "EEXIST" ? e(err) : c(dir)
-				)
+					err && err.code !== "EEXIST" ? e(err) : c(dir),
+				),
 			);
 		}
 
@@ -55,8 +53,8 @@
 				fs.rm(
 					location,
 					{ recursive: true, force: true, maxRetries: 3 },
-					(err) => (err ? e(err) : c())
-				)
+					(err) => (err ? e(err) : c()),
+				),
 			);
 		}
 
@@ -67,8 +65,8 @@
 		function readFile(file) {
 			return new Promise((c, e) =>
 				fs.readFile(file, "utf8", (err, data) =>
-					err ? e(err) : c(data)
-				)
+					err ? e(err) : c(data),
+				),
 			);
 		}
 
@@ -80,8 +78,8 @@
 		function writeFile(file, content) {
 			return new Promise((c, e) =>
 				fs.writeFile(file, content, "utf8", (err) =>
-					err ? e(err) : c()
-				)
+					err ? e(err) : c(),
+				),
 			);
 		}
 
@@ -121,7 +119,7 @@
 			} catch (err) {
 				console.error(
 					"Resolving language pack configuration failed.",
-					err
+					err,
 				);
 			}
 			return undefined;
@@ -140,9 +138,9 @@
 			userDataPath,
 			metaDataFile,
 			locale,
-			osLocale
+			osLocale,
 		) {
-			const defaultResult = function (locale) {
+			const defaultResult = (locale) => {
 				perf.mark("code/didGenerateNls");
 				return Promise.resolve({
 					locale,
@@ -196,7 +194,7 @@
 						}
 						const resolvedLocale = resolveLanguagePackLocale(
 							configs,
-							locale
+							locale,
 						);
 						if (!resolvedLocale) {
 							return defaultResult(initialLocale);
@@ -221,16 +219,16 @@
 							const cacheRoot = path.join(
 								userDataPath,
 								"clp",
-								packId
+								packId,
 							);
 							const coreLocation = path.join(cacheRoot, commit);
 							const translationsConfigFile = path.join(
 								cacheRoot,
-								"tcf.json"
+								"tcf.json",
 							);
 							const corruptedFile = path.join(
 								cacheRoot,
-								"corrupted.info"
+								"corrupted.info",
 							);
 							const result = {
 								locale: initialLocale,
@@ -256,10 +254,10 @@
 											if (fileExists) {
 												// We don't wait for this. No big harm if we can't touch
 												touch(coreLocation).catch(
-													() => {}
+													() => {},
 												);
 												perf.mark(
-													"code/didGenerateNls"
+													"code/didGenerateNls",
 												);
 												return result;
 											}
@@ -272,13 +270,13 @@
 												})
 												.then((values) => {
 													const metadata = JSON.parse(
-														values[0]
+														values[0],
 													);
 													const packData = JSON.parse(
-														values[1]
+														values[1],
 													).contents;
 													const bundles = Object.keys(
-														metadata.bundles
+														metadata.bundles,
 													);
 													const writes = [];
 													for (const bundle of bundles) {
@@ -333,7 +331,7 @@
 																			];
 																	}
 																	targetStrings.push(
-																		translatedMessage
+																		translatedMessage,
 																	);
 																}
 															} else {
@@ -349,47 +347,47 @@
 																	coreLocation,
 																	bundle.replace(
 																		/\//g,
-																		"!"
+																		"!",
 																	) +
-																		".nls.json"
+																		".nls.json",
 																),
 																JSON.stringify(
-																	target
-																)
-															)
+																	target,
+																),
+															),
 														);
 													}
 													writes.push(
 														writeFile(
 															translationsConfigFile,
 															JSON.stringify(
-																packConfig.translations
-															)
-														)
+																packConfig.translations,
+															),
+														),
 													);
 													return Promise.all(writes);
 												})
 												.then(() => {
 													perf.mark(
-														"code/didGenerateNls"
+														"code/didGenerateNls",
 													);
 													return result;
 												})
 												.catch((err) => {
 													console.error(
 														"Generating translation files failed.",
-														err
+														err,
 													);
 													return defaultResult(
-														locale
+														locale,
 													);
 												});
-										}
+										},
 									);
 								});
 							});
 						});
-					}
+					},
 				);
 			} catch (err) {
 				console.error("Generating translation files failed.", err);
@@ -404,13 +402,11 @@
 
 	if (typeof define === "function") {
 		// amd
-		define(["path", "fs", "vs/base/common/performance"], function (
+		define(["path", "fs", "vs/base/common/performance"], (
 			/** @type {typeof import('path')} */ path,
 			/** @type {typeof import('fs')} */ fs,
-			/** @type {typeof import('../common/performance')} */ perf
-		) {
-			return factory(path, fs, perf);
-		});
+			/** @type {typeof import('../common/performance')} */ perf,
+		) => factory(path, fs, perf));
 	} else if (
 		typeof module === "object" &&
 		typeof module.exports === "object"

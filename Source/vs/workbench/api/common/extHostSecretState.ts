@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Emitter } from "vs/base/common/event";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import {
 	ExtHostSecretStateShape,
 	MainContext,
 	MainThreadSecretStateShape,
 } from "vs/workbench/api/common/extHost.protocol";
-import { Emitter } from "vs/base/common/event";
 import { IExtHostRpcService } from "vs/workbench/api/common/extHostRpcService";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 
 export class ExtHostSecretState implements ExtHostSecretStateShape {
 	private _proxy: MainThreadSecretStateShape;
@@ -44,7 +44,7 @@ export class ExtHostSecretState implements ExtHostSecretStateShape {
 	}
 }
 
-export interface IExtHostSecretState extends ExtHostSecretState {}
+export type IExtHostSecretState = ExtHostSecretState;
 export const IExtHostSecretState = createDecorator<IExtHostSecretState>(
-	"IExtHostSecretState"
+	"IExtHostSecretState",
 );

@@ -25,8 +25,8 @@ import {
 	ILogMessage,
 	INonRecursiveWatchRequest,
 	IRecursiveWatcherOptions,
-	isRecursiveWatchRequest,
 	IUniversalWatchRequest,
+	isRecursiveWatchRequest,
 	reviveFileChanges,
 } from "vs/platform/files/common/watcher";
 import { ILogService, LogLevel } from "vs/platform/log/common/log";
@@ -61,13 +61,13 @@ export abstract class AbstractDiskFileSystemProvider
 {
 	constructor(
 		protected readonly logService: ILogService,
-		private readonly options?: IDiskFileSystemProviderOptions
+		private readonly options?: IDiskFileSystemProviderOptions,
 	) {
 		super();
 	}
 
 	protected readonly _onDidChangeFile = this._register(
-		new Emitter<readonly IFileChange[]>()
+		new Emitter<readonly IFileChange[]>(),
 	);
 	readonly onDidChangeFile = this._onDidChangeFile.event;
 
@@ -88,7 +88,7 @@ export abstract class AbstractDiskFileSystemProvider
 
 	private readonly universalPathsToWatch: IUniversalWatchRequest[] = [];
 	private readonly universalWatchRequestDelayer = this._register(
-		new ThrottledDelayer<void>(0)
+		new ThrottledDelayer<void>(0),
 	);
 
 	private watchUniversal(resource: URI, opts: IWatchOptions): IDisposable {
@@ -132,17 +132,17 @@ export abstract class AbstractDiskFileSystemProvider
 					(changes) =>
 						this._onDidChangeFile.fire(reviveFileChanges(changes)),
 					(msg) => this.onWatcherLogMessage(msg),
-					this.logService.getLevel() === LogLevel.Trace
-				)
+					this.logService.getLevel() === LogLevel.Trace,
+				),
 			);
 
 			// Apply log levels dynamically
 			this._register(
 				this.logService.onDidChangeLogLevel(() => {
 					this.universalWatcher?.setVerboseLogging(
-						this.logService.getLevel() === LogLevel.Trace
+						this.logService.getLevel() === LogLevel.Trace,
 					);
-				})
+				}),
 			);
 		}
 
@@ -175,7 +175,7 @@ export abstract class AbstractDiskFileSystemProvider
 	protected abstract createUniversalWatcher(
 		onChange: (changes: IFileChange[]) => void,
 		onLogMessage: (msg: ILogMessage) => void,
-		verboseLogging: boolean
+		verboseLogging: boolean,
 	): AbstractUniversalWatcherClient;
 
 	//#endregion
@@ -186,7 +186,7 @@ export abstract class AbstractDiskFileSystemProvider
 
 	private readonly nonRecursivePathsToWatch: INonRecursiveWatchRequest[] = [];
 	private readonly nonRecursiveWatchRequestDelayer = this._register(
-		new ThrottledDelayer<void>(0)
+		new ThrottledDelayer<void>(0),
 	);
 
 	private watchNonRecursive(resource: URI, opts: IWatchOptions): IDisposable {
@@ -230,17 +230,17 @@ export abstract class AbstractDiskFileSystemProvider
 					(changes) =>
 						this._onDidChangeFile.fire(reviveFileChanges(changes)),
 					(msg) => this.onWatcherLogMessage(msg),
-					this.logService.getLevel() === LogLevel.Trace
-				)
+					this.logService.getLevel() === LogLevel.Trace,
+				),
 			);
 
 			// Apply log levels dynamically
 			this._register(
 				this.logService.onDidChangeLogLevel(() => {
 					this.nonRecursiveWatcher?.setVerboseLogging(
-						this.logService.getLevel() === LogLevel.Trace
+						this.logService.getLevel() === LogLevel.Trace,
 					);
-				})
+				}),
 			);
 		}
 
@@ -251,7 +251,7 @@ export abstract class AbstractDiskFileSystemProvider
 	protected abstract createNonRecursiveWatcher(
 		onChange: (changes: IFileChange[]) => void,
 		onLogMessage: (msg: ILogMessage) => void,
-		verboseLogging: boolean
+		verboseLogging: boolean,
 	): AbstractNonRecursiveWatcherClient;
 
 	//#endregion

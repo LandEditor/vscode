@@ -37,7 +37,7 @@ export interface ISharedProcessTunnelService {
 		tunnelRemotePort: number,
 		tunnelLocalHost: string,
 		tunnelLocalPort: number | undefined,
-		elevateIfNeeded: boolean | undefined
+		elevateIfNeeded: boolean | undefined,
 	): Promise<ISharedProcessTunnel>;
 	/**
 	 * Set the remote address info for a previously created tunnel.

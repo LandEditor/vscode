@@ -5,29 +5,29 @@
 
 import { getLanguageModelCache } from "../languageModelCache";
 import {
-	LanguageService as HTMLLanguageService,
-	HTMLDocument,
 	DocumentContext,
+	FoldingRange,
 	FormattingOptions,
+	HTMLDocument,
 	HTMLFormatConfiguration,
-	SelectionRange,
-	TextDocument,
+	LanguageMode,
+	LanguageService as HTMLLanguageService,
 	Position,
 	Range,
-	FoldingRange,
-	LanguageMode,
-	Workspace,
+	SelectionRange,
 	Settings,
+	TextDocument,
+	Workspace,
 } from "./languageModes";
 
 export function getHTMLMode(
 	htmlLanguageService: HTMLLanguageService,
-	workspace: Workspace
+	workspace: Workspace,
 ): LanguageMode {
 	const htmlDocuments = getLanguageModelCache<HTMLDocument>(
 		10,
 		60,
-		(document) => htmlLanguageService.parseHTMLDocument(document)
+		(document) => htmlLanguageService.parseHTMLDocument(document),
 	);
 	return {
 		getId() {
@@ -35,7 +35,7 @@ export function getHTMLMode(
 		},
 		async getSelectionRange(
 			document: TextDocument,
-			position: Position
+			position: Position,
 		): Promise<SelectionRange> {
 			return htmlLanguageService.getSelectionRanges(document, [
 				position,
@@ -45,7 +45,7 @@ export function getHTMLMode(
 			document: TextDocument,
 			position: Position,
 			documentContext: DocumentContext,
-			settings = workspace.settings
+			settings = workspace.settings,
 		) {
 			const htmlSettings = settings?.html;
 			const options = merge(htmlSettings?.suggest, {});
@@ -61,56 +61,56 @@ export function getHTMLMode(
 				position,
 				htmlDocument,
 				documentContext,
-				options
+				options,
 			);
 			return completionList;
 		},
 		async doHover(
 			document: TextDocument,
 			position: Position,
-			settings?: Settings
+			settings?: Settings,
 		) {
 			return htmlLanguageService.doHover(
 				document,
 				position,
 				htmlDocuments.get(document),
-				settings?.html?.hover
+				settings?.html?.hover,
 			);
 		},
 		async findDocumentHighlight(
 			document: TextDocument,
-			position: Position
+			position: Position,
 		) {
 			return htmlLanguageService.findDocumentHighlights(
 				document,
 				position,
-				htmlDocuments.get(document)
+				htmlDocuments.get(document),
 			);
 		},
 		async findDocumentLinks(
 			document: TextDocument,
-			documentContext: DocumentContext
+			documentContext: DocumentContext,
 		) {
 			return htmlLanguageService.findDocumentLinks(
 				document,
-				documentContext
+				documentContext,
 			);
 		},
 		async findDocumentSymbols(document: TextDocument) {
 			return htmlLanguageService.findDocumentSymbols(
 				document,
-				htmlDocuments.get(document)
+				htmlDocuments.get(document),
 			);
 		},
 		async format(
 			document: TextDocument,
 			range: Range,
 			formatParams: FormattingOptions,
-			settings = workspace.settings
+			settings = workspace.settings,
 		) {
 			const formatSettings: HTMLFormatConfiguration = merge(
 				settings?.html?.format,
-				{}
+				{},
 			);
 			if (formatSettings.contentUnformatted) {
 				formatSettings.contentUnformatted =
@@ -122,7 +122,7 @@ export function getHTMLMode(
 			return htmlLanguageService.format(document, range, formatSettings);
 		},
 		async getFoldingRanges(
-			document: TextDocument
+			document: TextDocument,
 		): Promise<FoldingRange[]> {
 			return htmlLanguageService.getFoldingRanges(document);
 		},
@@ -130,7 +130,7 @@ export function getHTMLMode(
 			document: TextDocument,
 			position: Position,
 			kind: "autoQuote" | "autoClose",
-			settings = workspace.settings
+			settings = workspace.settings,
 		) {
 			const offset = document.offsetAt(position);
 			const text = document.getText();
@@ -146,7 +146,7 @@ export function getHTMLMode(
 						document,
 						position,
 						htmlDocuments.get(document),
-						options
+						options,
 					);
 				}
 			} else if (kind === "autoClose") {
@@ -154,7 +154,7 @@ export function getHTMLMode(
 					return htmlLanguageService.doTagComplete(
 						document,
 						position,
-						htmlDocuments.get(document)
+						htmlDocuments.get(document),
 					);
 				}
 			}
@@ -163,14 +163,14 @@ export function getHTMLMode(
 		async doRename(
 			document: TextDocument,
 			position: Position,
-			newName: string
+			newName: string,
 		) {
 			const htmlDocument = htmlDocuments.get(document);
 			return htmlLanguageService.doRename(
 				document,
 				position,
 				newName,
-				htmlDocument
+				htmlDocument,
 			);
 		},
 		async onDocumentRemoved(document: TextDocument) {
@@ -178,13 +178,13 @@ export function getHTMLMode(
 		},
 		async findMatchingTagPosition(
 			document: TextDocument,
-			position: Position
+			position: Position,
 		) {
 			const htmlDocument = htmlDocuments.get(document);
 			return htmlLanguageService.findMatchingTagPosition(
 				document,
 				position,
-				htmlDocument
+				htmlDocument,
 			);
 		},
 		async doLinkedEditing(document: TextDocument, position: Position) {
@@ -192,7 +192,7 @@ export function getHTMLMode(
 			return htmlLanguageService.findLinkedEditingRanges(
 				document,
 				position,
-				htmlDocument
+				htmlDocument,
 			);
 		},
 		dispose() {

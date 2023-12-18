@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { DocumentSelector } from "vscode-languageclient";
 import { Event, EventEmitter, extensions } from "vscode";
+import { DocumentSelector } from "vscode-languageclient";
 
 /**
  * HTML language participant contribution.

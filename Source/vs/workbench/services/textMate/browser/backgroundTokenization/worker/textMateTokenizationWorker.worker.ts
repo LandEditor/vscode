@@ -24,7 +24,7 @@ import { TextMateWorkerTokenizer } from "./textMateWorkerTokenizer";
  */
 export function create(
 	ctx: IWorkerContext<ITextMateWorkerHost>,
-	createData: ICreateData
+	createData: ICreateData,
 ): TextMateTokenizationWorker {
 	return new TextMateTokenizationWorker(ctx, createData);
 }
@@ -35,14 +35,14 @@ export interface ITextMateWorkerHost {
 		controllerId: number,
 		versionId: number,
 		tokens: Uint8Array,
-		lineEndStateDeltas: StateDeltas[]
+		lineEndStateDeltas: StateDeltas[],
 	): Promise<void>;
 	reportTokenizationTime(
 		timeMs: number,
 		languageId: string,
 		sourceExtensionId: string | undefined,
 		lineLength: number,
-		isRandomSample: boolean
+		isRandomSample: boolean,
 	): void;
 }
 
@@ -82,7 +82,7 @@ export class TextMateTokenizationWorker {
 
 	constructor(
 		ctx: IWorkerContext<ITextMateWorkerHost>,
-		private readonly _createData: ICreateData
+		private readonly _createData: ICreateData,
 	) {
 		this._host = ctx.host;
 		const grammarDefinitions =
@@ -100,13 +100,13 @@ export class TextMateTokenizationWorker {
 							def.unbalancedBracketSelectors,
 						sourceExtensionId: def.sourceExtensionId,
 					};
-				}
+				},
 			);
 		this._grammarFactory = this._loadTMGrammarFactory(grammarDefinitions);
 	}
 
 	private async _loadTMGrammarFactory(
-		grammarDefinitions: IValidGrammarDefinition[]
+		grammarDefinitions: IValidGrammarDefinition[],
 	): Promise<TMGrammarFactory> {
 		const uri = this._createData.textmateMainUri;
 		const vscodeTextmate = await import(uri);
@@ -135,7 +135,7 @@ export class TextMateTokenizationWorker {
 			},
 			grammarDefinitions,
 			vscodeTextmate,
-			onigLib
+			onigLib,
 		);
 	}
 
@@ -154,7 +154,7 @@ export class TextMateTokenizationWorker {
 				{
 					async getOrCreateGrammar(
 						languageId: string,
-						encodedLanguageId: LanguageId
+						encodedLanguageId: LanguageId,
 					): Promise<ICreateGrammarResult | null> {
 						const grammarFactory = await that._grammarFactory;
 						if (!grammarFactory) {
@@ -164,7 +164,7 @@ export class TextMateTokenizationWorker {
 							that._grammarCache[encodedLanguageId] =
 								grammarFactory.createGrammar(
 									languageId,
-									encodedLanguageId
+									encodedLanguageId,
 								);
 						}
 						return that._grammarCache[encodedLanguageId];
@@ -172,13 +172,13 @@ export class TextMateTokenizationWorker {
 					setTokensAndStates(
 						versionId: number,
 						tokens: Uint8Array,
-						stateDeltas: StateDeltas[]
+						stateDeltas: StateDeltas[],
 					): void {
 						that._host.setTokensAndStates(
 							data.controllerId,
 							versionId,
 							tokens,
-							stateDeltas
+							stateDeltas,
 						);
 					},
 					reportTokenizationTime(
@@ -186,27 +186,27 @@ export class TextMateTokenizationWorker {
 						languageId: string,
 						sourceExtensionId: string | undefined,
 						lineLength: number,
-						isRandomSample: boolean
+						isRandomSample: boolean,
 					): void {
 						that._host.reportTokenizationTime(
 							timeMs,
 							languageId,
 							sourceExtensionId,
 							lineLength,
-							isRandomSample
+							isRandomSample,
 						);
 					},
 				},
 				data.languageId,
 				data.encodedLanguageId,
-				data.maxTokenizationLineLength
-			)
+				data.maxTokenizationLineLength,
+			),
 		);
 	}
 
 	public acceptModelChanged(
 		controllerId: number,
-		e: IModelChangedEvent
+		e: IModelChangedEvent,
 	): void {
 		this._models.get(controllerId)!.onEvents(e);
 	}
@@ -214,7 +214,7 @@ export class TextMateTokenizationWorker {
 	public retokenize(
 		controllerId: number,
 		startLineNumber: number,
-		endLineNumberExclusive: number
+		endLineNumberExclusive: number,
 	): void {
 		this._models
 			.get(controllerId)!
@@ -224,7 +224,7 @@ export class TextMateTokenizationWorker {
 	public acceptModelLanguageChanged(
 		controllerId: number,
 		newLanguageId: string,
-		newEncodedLanguageId: LanguageId
+		newEncodedLanguageId: LanguageId,
 	): void {
 		this._models
 			.get(controllerId)!
@@ -241,7 +241,7 @@ export class TextMateTokenizationWorker {
 
 	public async acceptTheme(
 		theme: IRawTheme,
-		colorMap: string[]
+		colorMap: string[],
 	): Promise<void> {
 		const grammarFactory = await this._grammarFactory;
 		grammarFactory?.setTheme(theme, colorMap);
@@ -249,7 +249,7 @@ export class TextMateTokenizationWorker {
 
 	public acceptMaxTokenizationLineLength(
 		controllerId: number,
-		value: number
+		value: number,
 	): void {
 		this._models.get(controllerId)!.acceptMaxTokenizationLineLength(value);
 	}

@@ -27,7 +27,7 @@ class NotebookViewportContribution
 	extends Disposable
 	implements INotebookEditorContribution
 {
-	static id: string = "workbench.notebook.viewportWarmup";
+	static id = "workbench.notebook.viewportWarmup";
 	private readonly _warmupViewport: RunOnceScheduler;
 	private readonly _warmupDocument: RunOnceScheduler | null = null;
 
@@ -123,7 +123,7 @@ class NotebookViewportContribution
 		for (const output of outputs.slice(0, outputDisplayLimit)) {
 			const [mimeTypes, pick] = output.resolveMimeTypes(
 				this._notebookEditor.textModel!,
-				undefined
+				undefined,
 			);
 			if (
 				!mimeTypes.find((mimeType) => mimeType.isTrusted) ||
@@ -143,7 +143,7 @@ class NotebookViewportContribution
 			}
 
 			const renderer = this._notebookService.getRendererInfo(
-				pickedMimeTypeRenderer.rendererId
+				pickedMimeTypeRenderer.rendererId,
 			);
 
 			if (!renderer) {
@@ -163,5 +163,5 @@ class NotebookViewportContribution
 
 registerNotebookContribution(
 	NotebookViewportContribution.id,
-	NotebookViewportContribution
+	NotebookViewportContribution,
 );

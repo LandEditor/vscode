@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event, Emitter } from "vs/base/common/event";
+import { Emitter, Event } from "vs/base/common/event";
 import { patternsEquals } from "vs/base/common/glob";
 import { Disposable } from "vs/base/common/lifecycle";
 import { isLinux } from "vs/base/common/platform";
@@ -29,12 +29,12 @@ export interface INodeJSWatcherInstance {
 
 export class NodeJSWatcher extends Disposable implements INonRecursiveWatcher {
 	private readonly _onDidChangeFile = this._register(
-		new Emitter<IFileChange[]>()
+		new Emitter<IFileChange[]>(),
 	);
 	readonly onDidChangeFile = this._onDidChangeFile.event;
 
 	private readonly _onDidLogMessage = this._register(
-		new Emitter<ILogMessage>()
+		new Emitter<ILogMessage>(),
 	);
 	readonly onDidLogMessage = this._onDidLogMessage.event;
 
@@ -70,12 +70,12 @@ export class NodeJSWatcher extends Disposable implements INonRecursiveWatcher {
 						normalizedRequest.path === request.path &&
 						patternsEquals(
 							normalizedRequest.excludes,
-							request.excludes
+							request.excludes,
 						) &&
 						patternsEquals(
 							normalizedRequest.includes,
-							request.includes
-						)
+							request.includes,
+						),
 				);
 			})
 			.map(({ request }) => request.path);
@@ -99,15 +99,15 @@ export class NodeJSWatcher extends Disposable implements INonRecursiveWatcher {
 								typeof request.correlationId === "number"
 									? request.correlationId
 									: "<none>"
-							})`
+							})`,
 					)
-					.join(",")}`
+					.join(",")}`,
 			);
 		}
 
 		if (pathsToStopWatching.length) {
 			this.trace(
-				`Request to stop watching: ${pathsToStopWatching.join(",")}`
+				`Request to stop watching: ${pathsToStopWatching.join(",")}`,
 			);
 		}
 
@@ -128,7 +128,7 @@ export class NodeJSWatcher extends Disposable implements INonRecursiveWatcher {
 			request,
 			(changes) => this._onDidChangeFile.fire(changes),
 			(msg) => this._onDidLogMessage.fire(msg),
-			this.verboseLogging
+			this.verboseLogging,
 		);
 
 		// Remember as watcher instance
@@ -154,7 +154,7 @@ export class NodeJSWatcher extends Disposable implements INonRecursiveWatcher {
 	}
 
 	private normalizeRequests(
-		requests: INonRecursiveWatchRequest[]
+		requests: INonRecursiveWatchRequest[],
 	): INonRecursiveWatchRequest[] {
 		const mapCorrelationtoRequests = new Map<
 			number | undefined /* correlation */,
@@ -166,7 +166,7 @@ export class NodeJSWatcher extends Disposable implements INonRecursiveWatcher {
 			const path = isLinux ? request.path : request.path.toLowerCase(); // adjust for case sensitivity
 
 			let requestsForCorrelation = mapCorrelationtoRequests.get(
-				request.correlationId
+				request.correlationId,
 			);
 			if (!requestsForCorrelation) {
 				requestsForCorrelation = new Map<
@@ -175,16 +175,16 @@ export class NodeJSWatcher extends Disposable implements INonRecursiveWatcher {
 				>();
 				mapCorrelationtoRequests.set(
 					request.correlationId,
-					requestsForCorrelation
+					requestsForCorrelation,
 				);
 			}
 
 			requestsForCorrelation.set(path, request);
 		}
 
-		return Array.from(mapCorrelationtoRequests.values())
-			.map((requests) => Array.from(requests.values()))
-			.flat();
+		return Array.from(mapCorrelationtoRequests.values()).flatMap(
+			(requests) => Array.from(requests.values()),
+		);
 	}
 
 	async setVerboseLogging(enabled: boolean): Promise<void> {
@@ -206,7 +206,7 @@ export class NodeJSWatcher extends Disposable implements INonRecursiveWatcher {
 
 	private toMessage(
 		message: string,
-		watcher?: INodeJSWatcherInstance
+		watcher?: INodeJSWatcherInstance,
 	): string {
 		return watcher
 			? `[File Watcher (node.js)] ${message} (path: ${watcher.request.path})`

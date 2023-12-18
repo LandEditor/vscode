@@ -6,9 +6,9 @@
 import * as vscode from "vscode";
 import { TelemetryReporter } from "../logging/telemetry";
 import {
+	ProjectType,
 	isImplicitProjectConfigFile,
 	openOrCreateConfig,
-	ProjectType,
 } from "../tsconfig";
 import { ITypeScriptServiceClient } from "../typescriptService";
 
@@ -25,7 +25,7 @@ class ExcludeHintItem {
 		this._item = vscode.window.createStatusBarItem(
 			"status.typescript.exclude",
 			vscode.StatusBarAlignment.Right,
-			98 /* to the right of typescript version status (99) */
+			98 /* to the right of typescript version status (99) */,
 		);
 		this._item.name = vscode.l10n.t("TypeScript: Configure Excludes");
 		this._item.command = "js.projectStatus.command";
@@ -44,16 +44,16 @@ class ExcludeHintItem {
 			message: largeRoots
 				? vscode.l10n.t(
 						"To enable project-wide JavaScript/TypeScript language features, exclude folders with many files, like: {0}",
-						largeRoots
-					)
+						largeRoots,
+				  )
 				: vscode.l10n.t(
-						"To enable project-wide JavaScript/TypeScript language features, exclude large folders with source files that you do not work on."
-					),
+						"To enable project-wide JavaScript/TypeScript language features, exclude large folders with source files that you do not work on.",
+				  ),
 		};
 		this._item.tooltip = this._currentHint.message;
 		this._item.text = vscode.l10n.t("Configure Excludes");
 		this._item.tooltip = vscode.l10n.t(
-			"To enable project-wide JavaScript/TypeScript language features, exclude large folders with source files that you do not work on."
+			"To enable project-wide JavaScript/TypeScript language features, exclude large folders with source files that you do not work on.",
 		);
 		this._item.color = "#A5DF3B";
 		this._item.show();
@@ -71,7 +71,7 @@ class ExcludeHintItem {
 
 function createLargeProjectMonitorFromTypeScript(
 	item: ExcludeHintItem,
-	client: ITypeScriptServiceClient
+	client: ITypeScriptServiceClient,
 ): vscode.Disposable {
 	interface LargeProjectMessageItem extends vscode.MessageItem {
 		index: number;
@@ -91,7 +91,7 @@ function createLargeProjectMonitorFromTypeScript(
 						{
 							title: vscode.l10n.t("Configure Excludes"),
 							index: 0,
-						}
+						},
 					)
 					.then((selected) => {
 						if (selected && selected.index === 0) {
@@ -105,15 +105,11 @@ function createLargeProjectMonitorFromTypeScript(
 
 function onConfigureExcludesSelected(
 	client: ITypeScriptServiceClient,
-	configFileName: string
+	configFileName: string,
 ) {
-	if (!isImplicitProjectConfigFile(configFileName)) {
-		vscode.workspace
-			.openTextDocument(configFileName)
-			.then(vscode.window.showTextDocument);
-	} else {
+	if (isImplicitProjectConfigFile(configFileName)) {
 		const root = client.getWorkspaceRootForResource(
-			vscode.Uri.file(configFileName)
+			vscode.Uri.file(configFileName),
 		);
 		if (root) {
 			openOrCreateConfig(
@@ -122,9 +118,13 @@ function onConfigureExcludesSelected(
 					? ProjectType.TypeScript
 					: ProjectType.JavaScript,
 				root,
-				client.configuration
+				client.configuration,
 			);
 		}
+	} else {
+		vscode.workspace
+			.openTextDocument(configFileName)
+			.then(vscode.window.showTextDocument);
 	}
 }
 
@@ -139,7 +139,7 @@ export function create(client: ITypeScriptServiceClient): vscode.Disposable {
 			}
 			const { message } = item.getCurrentHint();
 			return vscode.window.showInformationMessage(message);
-		})
+		}),
 	);
 
 	toDispose.push(createLargeProjectMonitorFromTypeScript(item, client));

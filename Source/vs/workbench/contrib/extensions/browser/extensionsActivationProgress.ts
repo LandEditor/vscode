@@ -3,17 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IWorkbenchContribution } from "vs/workbench/common/contributions";
-import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
+import { DeferredPromise, timeout } from "vs/base/common/async";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { IDisposable } from "vs/base/common/lifecycle";
+import { localize } from "vs/nls";
+import { ILogService } from "vs/platform/log/common/log";
 import {
 	IProgressService,
 	ProgressLocation,
 } from "vs/platform/progress/common/progress";
-import { localize } from "vs/nls";
-import { IDisposable } from "vs/base/common/lifecycle";
-import { DeferredPromise, timeout } from "vs/base/common/async";
-import { ILogService } from "vs/platform/log/common/log";
-import { CancellationToken } from "vs/base/common/cancellation";
+import { IWorkbenchContribution } from "vs/workbench/common/contributions";
+import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
 
 export class ExtensionActivationProgress implements IWorkbenchContribution {
 	private readonly _listener: IDisposable;
@@ -21,7 +21,7 @@ export class ExtensionActivationProgress implements IWorkbenchContribution {
 	constructor(
 		@IExtensionService extensionService: IExtensionService,
 		@IProgressService progressService: IProgressService,
-		@ILogService logService: ILogService
+		@ILogService logService: ILogService,
 	) {
 		const options = {
 			location: ProgressLocation.Window,
