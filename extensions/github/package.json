@@ -179,14 +179,14 @@
     "watch": "gulp watch-extension:github"
   },
   "dependencies": {
-    "@octokit/graphql": "5.0.5",
-    "@octokit/graphql-schema": "14.4.0",
-    "@octokit/rest": "19.0.4",
+    "@octokit/graphql": "7.0.2",
+    "@octokit/graphql-schema": "14.45.1",
+    "@octokit/rest": "20.0.2",
     "tunnel": "^0.0.6",
-    "@vscode/extension-telemetry": "^0.9.0"
+    "@vscode/extension-telemetry": "^0.9.1"
   },
   "devDependencies": {
-    "@types/node": "18.x"
+    "@types/node": "20.x"
   },
   "repository": {
     "type": "git",
