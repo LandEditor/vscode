@@ -29,10 +29,7 @@ pub struct DownloadCache {
 
 impl DownloadCache {
 	pub fn new(path: PathBuf) -> DownloadCache {
-		DownloadCache {
-			state: PersistedState::new(path.join("lru.json")),
-			path,
-		}
+		DownloadCache { state: PersistedState::new(path.join("lru.json")), path }
 	}
 
 	/// Gets the download cache path. Names of cache entries can be formed by

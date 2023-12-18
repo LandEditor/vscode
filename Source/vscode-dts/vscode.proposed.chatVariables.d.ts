@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	export interface InteractiveRequest {
 		variables: Record<string, ChatVariableValue[]>;
 	}
@@ -12,7 +11,7 @@ declare module 'vscode' {
 	export enum ChatVariableLevel {
 		Short = 1,
 		Medium = 2,
-		Full = 3
+		Full = 3,
 	}
 
 	export interface ChatVariableValue {
@@ -30,10 +29,18 @@ declare module 'vscode' {
 	}
 
 	export interface ChatVariableResolver {
-		resolve(name: string, context: ChatVariableContext, token: CancellationToken): ProviderResult<ChatVariableValue[]>;
+		resolve(
+			name: string,
+			context: ChatVariableContext,
+			token: CancellationToken
+		): ProviderResult<ChatVariableValue[]>;
 	}
 
 	export namespace chat {
-		export function registerVariable(name: string, description: string, resolver: ChatVariableResolver): Disposable;
+		export function registerVariable(
+			name: string,
+			description: string,
+			resolver: ChatVariableResolver
+		): Disposable;
 	}
 }

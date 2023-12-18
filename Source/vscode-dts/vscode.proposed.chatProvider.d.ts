@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	export interface ChatResponseFragment {
 		index: number;
 		part: string;
@@ -14,7 +13,12 @@ declare module 'vscode' {
 	 * Represents a large language model that accepts ChatML messages and produces a streaming response
 	 */
 	export interface ChatResponseProvider {
-		provideChatResponse(messages: ChatMessage[], options: { [name: string]: any }, progress: Progress<ChatResponseFragment>, token: CancellationToken): Thenable<any>;
+		provideChatResponse(
+			messages: ChatMessage[],
+			options: { [name: string]: any },
+			progress: Progress<ChatResponseFragment>,
+			token: CancellationToken
+		): Thenable<any>;
 	}
 
 	export interface ChatResponseProviderMetadata {
@@ -27,7 +31,6 @@ declare module 'vscode' {
 	}
 
 	export namespace chat {
-
 		/**
 		 * Register a LLM as chat response provider to the editor.
 		 *
@@ -36,7 +39,10 @@ declare module 'vscode' {
 		 * @param provider
 		 * @param metadata
 		 */
-		export function registerChatResponseProvider(id: string, provider: ChatResponseProvider, metadata: ChatResponseProviderMetadata): Disposable;
+		export function registerChatResponseProvider(
+			id: string,
+			provider: ChatResponseProvider,
+			metadata: ChatResponseProviderMetadata
+		): Disposable;
 	}
-
 }

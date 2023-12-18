@@ -1,17 +1,25 @@
 {
 	"name": "restructuredtext",
 	"displayName": "%displayName%",
-	"description": "%description%",
 	"version": "1.0.0",
-	"publisher": "vscode",
-	"license": "MIT",
-	"engines": {
-		"vscode": "*"
+	"description": "%description%",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/microsoft/vscode.git"
 	},
+	"license": "MIT",
+	"publisher": "vscode",
 	"scripts": {
 		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin trond-snekvik/vscode-rst syntaxes/rst.tmLanguage.json ./syntaxes/rst.tmLanguage.json"
 	},
 	"contributes": {
+		"grammars": [
+			{
+				"language": "restructuredtext",
+				"scopeName": "source.rst",
+				"path": "./syntaxes/rst.tmLanguage.json"
+			}
+		],
 		"languages": [
 			{
 				"id": "restructuredtext",
@@ -23,17 +31,9 @@
 					".rst"
 				]
 			}
-		],
-		"grammars": [
-			{
-				"language": "restructuredtext",
-				"scopeName": "source.rst",
-				"path": "./syntaxes/rst.tmLanguage.json"
-			}
 		]
 	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/microsoft/vscode.git"
+	"engines": {
+		"vscode": "*"
 	}
 }
