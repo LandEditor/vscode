@@ -3,14 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IEditorConfiguration } from 'vs/editor/common/config/editorConfiguration';
-import { ViewEventHandler } from 'vs/editor/common/viewEventHandler';
-import { IViewLayout, IViewModel } from 'vs/editor/common/viewModel';
-import { IColorTheme } from 'vs/platform/theme/common/themeService';
-import { EditorTheme } from 'vs/editor/common/editorTheme';
+import { IEditorConfiguration } from "vs/editor/common/config/editorConfiguration";
+import { ViewEventHandler } from "vs/editor/common/viewEventHandler";
+import { IViewLayout, IViewModel } from "vs/editor/common/viewModel";
+import { IColorTheme } from "vs/platform/theme/common/themeService";
+import { EditorTheme } from "vs/editor/common/editorTheme";
 
 export class ViewContext {
-
 	public readonly configuration: IEditorConfiguration;
 	public readonly viewModel: IViewModel;
 	public readonly viewLayout: IViewLayout;

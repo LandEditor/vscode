@@ -301,10 +301,7 @@ fn make_socket_rpc(
 		server_bridges,
 		port_forwarding,
 		platform,
-		http: Arc::new(FallbackSimpleHttp::new(
-			ReqwestSimpleHttp::new(),
-			http_delegated,
-		)),
+		http: Arc::new(FallbackSimpleHttp::new(ReqwestSimpleHttp::new(), http_delegated)),
 		http_requests,
 	});
 
@@ -318,22 +315,14 @@ fn make_socket_rpc(
 		ensure_auth(&c.auth_state)?;
 		handle_stat(p.path)
 	});
-	rpc.register_duplex(
-		"fs_read",
-		1,
-		move |mut streams, p: FsSinglePathRequest, c| async move {
-			ensure_auth(&c.auth_state)?;
-			handle_fs_read(streams.remove(0), p.path).await
-		},
-	);
-	rpc.register_duplex(
-		"fs_write",
-		1,
-		move |mut streams, p: FsSinglePathRequest, c| async move {
-			ensure_auth(&c.auth_state)?;
-			handle_fs_write(streams.remove(0), p.path).await
-		},
-	);
+	rpc.register_duplex("fs_read", 1, move |mut streams, p: FsSinglePathRequest, c| async move {
+		ensure_auth(&c.auth_state)?;
+		handle_fs_read(streams.remove(0), p.path).await
+	});
+	rpc.register_duplex("fs_write", 1, move |mut streams, p: FsSinglePathRequest, c| async move {
+		ensure_auth(&c.auth_state)?;
+		handle_fs_write(streams.remove(0), p.path).await
+	});
 	rpc.register_duplex(
 		"fs_connect",
 		1,
@@ -342,14 +331,10 @@ fn make_socket_rpc(
 			handle_fs_connect(streams.remove(0), p.path).await
 		},
 	);
-	rpc.register_duplex(
-		"net_connect",
-		1,
-		move |mut streams, n: NetConnectRequest, c| async move {
-			ensure_auth(&c.auth_state)?;
-			handle_net_connect(streams.remove(0), n).await
-		},
-	);
+	rpc.register_duplex("net_connect", 1, move |mut streams, n: NetConnectRequest, c| async move {
+		ensure_auth(&c.auth_state)?;
+		handle_net_connect(streams.remove(0), n).await
+	});
 	rpc.register_async("fs_rm", move |p: FsSinglePathRequest, c| async move {
 		ensure_auth(&c.auth_state)?;
 		handle_fs_remove(p.path).await
@@ -417,21 +402,10 @@ fn make_socket_rpc(
 		)
 		.await
 	});
-	rpc.register_duplex(
-		"spawn_cli",
-		3,
-		|mut streams, p: SpawnParams, c| async move {
-			ensure_auth(&c.auth_state)?;
-			handle_spawn_cli(
-				&c.log,
-				p,
-				streams.remove(0),
-				streams.remove(0),
-				streams.remove(0),
-			)
-			.await
-		},
-	);
+	rpc.register_duplex("spawn_cli", 3, |mut streams, p: SpawnParams, c| async move {
+		ensure_auth(&c.auth_state)?;
+		handle_spawn_cli(&c.log, p, streams.remove(0), streams.remove(0), streams.remove(0)).await
+	});
 	rpc.register_sync("httpheaders", |p: HttpHeadersParams, c| {
 		if let Some(req) = c.http_requests.lock().unwrap().get(&p.req_id) {
 			trace!(c.log, "got {} response for req {}", p.status_code, p.req_id);
@@ -454,10 +428,7 @@ fn make_socket_rpc(
 		}
 		Ok(EmptyObject {})
 	});
-	rpc.register_sync(
-		"version",
-		|_: EmptyObject, _| Ok(VersionResponse::default()),
-	);
+	rpc.register_sync("version", |_: EmptyObject, _| Ok(VersionResponse::default()));
 
 	rpc.build(log)
 }
@@ -519,10 +490,7 @@ async fn process_socket(
 				handle_socket_read(&log, readhalf, exit_barrier, &socket_tx, rx_counter, &rpc).await
 			{
 				debug!(log, "closing socket reader: {}", e);
-				socket_tx
-					.send(SocketSignal::CloseWith(CloseReason(format!("{}", e))))
-					.await
-					.ok();
+				socket_tx.send(SocketSignal::CloseWith(CloseReason(format!("{}", e)))).await.ok();
 			}
 
 			let ctx = rpc.context();
@@ -534,9 +502,7 @@ async fn process_socket(
 
 			ctx.dispose().await;
 
-			let _ = socket_tx
-				.send(SocketSignal::CloseWith(CloseReason("eof".to_string())))
-				.await;
+			let _ = socket_tx.send(SocketSignal::CloseWith(CloseReason("eof".to_string()))).await;
 		});
 	}
 
@@ -587,10 +553,7 @@ async fn process_socket(
 		}
 	}
 
-	SocketStats {
-		tx: tx_counter,
-		rx: rx_counter.load(Ordering::Acquire),
-	}
+	SocketStats { tx: tx_counter, rx: rx_counter.load(Ordering::Acquire) }
 }
 
 async fn send_version(tx: &mpsc::Sender<SocketSignal>) {
@@ -696,9 +659,7 @@ async fn handle_serve(
 	};
 
 	let resolved = if params.use_local_download {
-		params_raw
-			.resolve(&c.log, Arc::new(c.http.delegated()))
-			.await
+		params_raw.resolve(&c.log, Arc::new(c.http.delegated())).await
 	} else {
 		params_raw.resolve(&c.log, c.http.clone()).await
 	}?;
@@ -707,9 +668,7 @@ async fn handle_serve(
 	let server = match &*server_ref {
 		Some(o) => o.clone(),
 		None => {
-			let install_log = c.log.tee(ServerOutputSink {
-				tx: c.socket_tx.clone(),
-			});
+			let install_log = c.log.tee(ServerOutputSink { tx: c.socket_tx.clone() });
 
 			macro_rules! do_setup {
 				($sb:expr) => {
@@ -809,11 +768,8 @@ fn handle_server_message(
 }
 
 fn handle_prune(paths: &LauncherPaths) -> Result<Vec<String>, AnyError> {
-	prune_stopped_servers(paths).map(|v| {
-		v.iter()
-			.map(|p| p.server_dir.display().to_string())
-			.collect()
-	})
+	prune_stopped_servers(paths)
+		.map(|v| v.iter().map(|p| p.server_dir.display().to_string()).collect())
 }
 
 async fn handle_update(
@@ -823,10 +779,7 @@ async fn handle_update(
 	params: &UpdateParams,
 ) -> Result<UpdateResult, AnyError> {
 	if matches!(is_integrated_cli(), Ok(true)) || did_update.load(Ordering::SeqCst) {
-		return Ok(UpdateResult {
-			up_to_date: true,
-			did_update: false,
-		});
+		return Ok(UpdateResult { up_to_date: true, did_update: false });
 	}
 
 	let update_service = UpdateService::new(log.clone(), http.clone());
@@ -837,16 +790,10 @@ async fn handle_update(
 	let _ = updater.cleanup_old_update();
 
 	if !params.do_update || up_to_date {
-		return Ok(UpdateResult {
-			up_to_date,
-			did_update: false,
-		});
+		return Ok(UpdateResult { up_to_date, did_update: false });
 	}
 
-	if did_update
-		.compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
-		.is_err()
-	{
+	if did_update.compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst).is_err() {
 		return Ok(UpdateResult {
 			up_to_date: true,
 			did_update: true, // well, another thread did, but same difference...
@@ -855,20 +802,13 @@ async fn handle_update(
 
 	info!(log, "Updating CLI to {}", latest_release);
 
-	updater
-		.do_update(&latest_release, SilentCopyProgress())
-		.await?;
+	updater.do_update(&latest_release, SilentCopyProgress()).await?;
 
-	Ok(UpdateResult {
-		up_to_date: true,
-		did_update: true,
-	})
+	Ok(UpdateResult { up_to_date: true, did_update: true })
 }
 
 fn handle_get_hostname() -> Result<GetHostnameResponse, AnyError> {
-	Ok(GetHostnameResponse {
-		value: gethostname::gethostname().to_string_lossy().into_owned(),
-	})
+	Ok(GetHostnameResponse { value: gethostname::gethostname().to_string_lossy().into_owned() })
 }
 
 fn handle_stat(path: String) -> Result<FsStatResponse, AnyError> {
@@ -882,25 +822,17 @@ fn handle_stat(path: String) -> Result<FsStatResponse, AnyError> {
 }
 
 async fn handle_fs_read(mut out: DuplexStream, path: String) -> Result<EmptyObject, AnyError> {
-	let mut f = tokio::fs::File::open(path)
-		.await
-		.map_err(|e| wrap(e, "file not found"))?;
+	let mut f = tokio::fs::File::open(path).await.map_err(|e| wrap(e, "file not found"))?;
 
-	tokio::io::copy(&mut f, &mut out)
-		.await
-		.map_err(|e| wrap(e, "error reading file"))?;
+	tokio::io::copy(&mut f, &mut out).await.map_err(|e| wrap(e, "error reading file"))?;
 
 	Ok(EmptyObject {})
 }
 
 async fn handle_fs_write(mut input: DuplexStream, path: String) -> Result<EmptyObject, AnyError> {
-	let mut f = tokio::fs::File::create(path)
-		.await
-		.map_err(|e| wrap(e, "file not found"))?;
+	let mut f = tokio::fs::File::create(path).await.map_err(|e| wrap(e, "file not found"))?;
 
-	tokio::io::copy(&mut input, &mut f)
-		.await
-		.map_err(|e| wrap(e, "error writing file"))?;
+	tokio::io::copy(&mut input, &mut f).await.map_err(|e| wrap(e, "error writing file"))?;
 
 	Ok(EmptyObject {})
 }
@@ -935,9 +867,7 @@ async fn handle_fs_connect(
 }
 
 async fn handle_fs_remove(path: String) -> Result<EmptyObject, AnyError> {
-	tokio::fs::remove_dir_all(path)
-		.await
-		.map_err(|e| wrap(e, "error removing directory"))?;
+	tokio::fs::remove_dir_all(path).await.map_err(|e| wrap(e, "error removing directory"))?;
 	Ok(EmptyObject {})
 }
 
@@ -966,9 +896,7 @@ fn handle_fs_readdir(path: String) -> Result<FsReadDirResponse, AnyError> {
 }
 
 fn handle_sys_kill(pid: u32) -> Result<SysKillResponse, AnyError> {
-	Ok(SysKillResponse {
-		success: kill_pid(pid),
-	})
+	Ok(SysKillResponse { success: kill_pid(pid) })
 }
 
 fn handle_get_env() -> Result<GetEnvResponse, AnyError> {
@@ -1028,9 +956,7 @@ async fn handle_forward(
 	port_forwarding: &Option<PortForwarding>,
 	params: ForwardParams,
 ) -> Result<ForwardResult, AnyError> {
-	let port_forwarding = port_forwarding
-		.as_ref()
-		.ok_or(CodeError::PortForwardingNotAvailable)?;
+	let port_forwarding = port_forwarding.as_ref().ok_or(CodeError::PortForwardingNotAvailable)?;
 	info!(log, "Forwarding port {}", params.port);
 	let uri = port_forwarding.forward(params.port).await?;
 	Ok(ForwardResult { uri })
@@ -1041,9 +967,7 @@ async fn handle_unforward(
 	port_forwarding: &Option<PortForwarding>,
 	params: UnforwardParams,
 ) -> Result<EmptyObject, AnyError> {
-	let port_forwarding = port_forwarding
-		.as_ref()
-		.ok_or(CodeError::PortForwardingNotAvailable)?;
+	let port_forwarding = port_forwarding.as_ref().ok_or(CodeError::PortForwardingNotAvailable)?;
 	info!(log, "Unforwarding port {}", params.port);
 	port_forwarding.unforward(params.port).await?;
 	Ok(EmptyObject {})
@@ -1065,10 +989,8 @@ async fn handle_call_server_http(
 
 	let rw = get_socket_rw_stream(socket).await?;
 
-	let (mut request_sender, connection) = Builder::new()
-		.handshake(rw)
-		.await
-		.map_err(|e| wrap(e, "error establishing connection"))?;
+	let (mut request_sender, connection) =
+		Builder::new().handshake(rw).await.map_err(|e| wrap(e, "error establishing connection"))?;
 
 	// start the connection processing; it's shut down when the sender is dropped
 	tokio::spawn(connection);
@@ -1085,10 +1007,8 @@ async fn handle_call_server_http(
 		.body(Body::from(params.body.unwrap_or_default()))
 		.map_err(|e| wrap(e, "invalid request"))?;
 
-	let response = request_sender
-		.send_request(request)
-		.await
-		.map_err(|e| wrap(e, "error sending request"))?;
+	let response =
+		request_sender.send_request(request).await.map_err(|e| wrap(e, "error sending request"))?;
 
 	Ok(CallServerHttpResult {
 		status: response.status().as_u16(),
@@ -1128,9 +1048,7 @@ async fn handle_acquire_cli(
 	};
 
 	let cli = download_cli_into_cache(&paths.cli_cache, &release, &update_service).await?;
-	let file = tokio::fs::File::open(cli)
-		.await
-		.map_err(|e| wrap(e, "error opening cli file"))?;
+	let file = tokio::fs::File::open(cli).await.map_err(|e| wrap(e, "error opening cli file"))?;
 
 	handle_spawn::<_, DuplexStream>(log, params.spawn, Some(file), None, None).await
 }
@@ -1146,10 +1064,7 @@ where
 	Stdin: AsyncRead + Unpin + Send + 'static,
 	StdoutAndErr: AsyncWrite + Unpin + Send + 'static,
 {
-	debug!(
-		log,
-		"requested to spawn {} with args {:?}", params.command, params.args
-	);
+	debug!(log, "requested to spawn {} with args {:?}", params.command, params.args);
 
 	macro_rules! pipe_if {
 		($e: expr) => {
@@ -1198,10 +1113,7 @@ async fn handle_spawn_cli(
 	mut protocol_out: DuplexStream,
 	mut log_out: DuplexStream,
 ) -> Result<SpawnResult, AnyError> {
-	debug!(
-		log,
-		"requested to spawn cli {} with args {:?}", params.command, params.args
-	);
+	debug!(log, "requested to spawn cli {} with args {:?}", params.command, params.args);
 
 	let mut p = new_tokio_command(&params.command);
 	p.args(&params.args);
@@ -1274,20 +1186,11 @@ async fn wait_for_process_exit(
 	};
 
 	let r = match r {
-		Ok(e) => SpawnResult {
-			message: e.to_string(),
-			exit_code: e.code().unwrap_or(-1),
-		},
-		Err(e) => SpawnResult {
-			message: e.to_string(),
-			exit_code: -1,
-		},
+		Ok(e) => SpawnResult { message: e.to_string(), exit_code: e.code().unwrap_or(-1) },
+		Err(e) => SpawnResult { message: e.to_string(), exit_code: -1 },
 	};
 
-	debug!(
-		log,
-		"spawned cli {} exited with code {}", command, r.exit_code
-	);
+	debug!(log, "spawned cli {} exited with code {}", command, r.exit_code);
 
 	Ok(r)
 }
@@ -1340,9 +1243,7 @@ async fn do_challenge_response_flow(
 	let _: EmptyObject = caller
 		.call(
 			METHOD_CHALLENGE_VERIFY,
-			ChallengeVerifyParams {
-				response: sign_challenge(&challenge.challenge),
-			},
+			ChallengeVerifyParams { response: sign_challenge(&challenge.challenge) },
 		)
 		.await
 		.unwrap()

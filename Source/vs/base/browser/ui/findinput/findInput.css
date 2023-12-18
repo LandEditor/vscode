@@ -20,7 +20,7 @@
 }
 
 .vs .monaco-findInput.disabled {
-	background-color: #E1E1E1;
+	background-color: #e1e1e1;
 }
 
 /* Theming */
@@ -40,31 +40,47 @@
 }
 
 .hc-black .monaco-findInput.highlight-0 .controls,
-.vs-dark  .monaco-findInput.highlight-0 .controls {
+.vs-dark .monaco-findInput.highlight-0 .controls {
 	animation: monaco-findInput-highlight-dark-0 100ms linear 0s;
 }
 
 .hc-black .monaco-findInput.highlight-1 .controls,
-.vs-dark  .monaco-findInput.highlight-1 .controls {
+.vs-dark .monaco-findInput.highlight-1 .controls {
 	animation: monaco-findInput-highlight-dark-1 100ms linear 0s;
 }
 
 @keyframes monaco-findInput-highlight-0 {
-	0% { background: rgba(253, 255, 0, 0.8); }
-	100% { background: transparent; }
+	0% {
+		background: rgba(253, 255, 0, 0.8);
+	}
+	100% {
+		background: transparent;
+	}
 }
 @keyframes monaco-findInput-highlight-1 {
-	0% { background: rgba(253, 255, 0, 0.8); }
+	0% {
+		background: rgba(253, 255, 0, 0.8);
+	}
 	/* Made intentionally different such that the CSS minifier does not collapse the two animations into a single one*/
-	99% { background: transparent; }
+	99% {
+		background: transparent;
+	}
 }
 
 @keyframes monaco-findInput-highlight-dark-0 {
-	0% { background: rgba(255, 255, 255, 0.44); }
-	100% { background: transparent; }
+	0% {
+		background: rgba(255, 255, 255, 0.44);
+	}
+	100% {
+		background: transparent;
+	}
 }
 @keyframes monaco-findInput-highlight-dark-1 {
-	0% { background: rgba(255, 255, 255, 0.44); }
+	0% {
+		background: rgba(255, 255, 255, 0.44);
+	}
 	/* Made intentionally different such that the CSS minifier does not collapse the two animations into a single one*/
-	99% { background: transparent; }
+	99% {
+		background: transparent;
+	}
 }

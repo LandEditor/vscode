@@ -3,29 +3,38 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ThrottledDelayer } from 'vs/base/common/async';
-import { VSBuffer } from 'vs/base/common/buffer';
-import { Disposable } from 'vs/base/common/lifecycle';
-import { isUndefined, isUndefinedOrNull } from 'vs/base/common/types';
-import { URI } from 'vs/base/common/uri';
-import { IEnvironmentService } from 'vs/platform/environment/common/environment';
-import { FileOperationError, FileOperationResult, IFileService } from 'vs/platform/files/common/files';
-import { ILogService } from 'vs/platform/log/common/log';
-import { IStateReadService, IStateService } from 'vs/platform/state/node/state';
+import { ThrottledDelayer } from "vs/base/common/async";
+import { VSBuffer } from "vs/base/common/buffer";
+import { Disposable } from "vs/base/common/lifecycle";
+import { isUndefined, isUndefinedOrNull } from "vs/base/common/types";
+import { URI } from "vs/base/common/uri";
+import { IEnvironmentService } from "vs/platform/environment/common/environment";
+import {
+	FileOperationError,
+	FileOperationResult,
+	IFileService,
+} from "vs/platform/files/common/files";
+import { ILogService } from "vs/platform/log/common/log";
+import { IStateReadService, IStateService } from "vs/platform/state/node/state";
 
 type StorageDatabase = { [key: string]: unknown };
 
 export const enum SaveStrategy {
 	IMMEDIATE,
-	DELAYED
+	DELAYED,
 }
 
 export class FileStorage extends Disposable {
-
 	private storage: StorageDatabase = Object.create(null);
-	private lastSavedStorageContents = '';
+	private lastSavedStorageContents = "";
 
-	private readonly flushDelayer = this._register(new ThrottledDelayer<void>(this.saveStrategy === SaveStrategy.IMMEDIATE ? 0 : 100 /* buffer saves over a short time */));
+	private readonly flushDelayer = this._register(
+		new ThrottledDelayer<void>(
+			this.saveStrategy === SaveStrategy.IMMEDIATE
+				? 0
+				: 100 /* buffer saves over a short time */
+		)
+	);
 
 	private initializing: Promise<void> | undefined = undefined;
 	private closing: Promise<void> | undefined = undefined;
@@ -34,7 +43,7 @@ export class FileStorage extends Disposable {
 		private readonly storagePath: URI,
 		private readonly saveStrategy: SaveStrategy,
 		private readonly logService: ILogService,
-		private readonly fileService: IFileService,
+		private readonly fileService: IFileService
 	) {
 		super();
 	}
@@ -49,10 +58,15 @@ export class FileStorage extends Disposable {
 
 	private async doInit(): Promise<void> {
 		try {
-			this.lastSavedStorageContents = (await this.fileService.readFile(this.storagePath)).value.toString();
+			this.lastSavedStorageContents = (
+				await this.fileService.readFile(this.storagePath)
+			).value.toString();
 			this.storage = JSON.parse(this.lastSavedStorageContents);
 		} catch (error) {
-			if ((<FileOperationError>error).fileOperationResult !== FileOperationResult.FILE_NOT_FOUND) {
+			if (
+				(<FileOperationError>error).fileOperationResult !==
+				FileOperationResult.FILE_NOT_FOUND
+			) {
 				this.logService.error(error);
 			}
 		}
@@ -69,15 +83,22 @@ export class FileStorage extends Disposable {
 		return res as T;
 	}
 
-	setItem(key: string, data?: object | string | number | boolean | undefined | null): void {
+	setItem(
+		key: string,
+		data?: object | string | number | boolean | undefined | null
+	): void {
 		this.setItems([{ key, data }]);
 	}
 
-	setItems(items: readonly { key: string; data?: object | string | number | boolean | undefined | null }[]): void {
+	setItems(
+		items: readonly {
+			key: string;
+			data?: object | string | number | boolean | undefined | null;
+		}[]
+	): void {
 		let save = false;
 
 		for (const { key, data } of items) {
-
 			// Shortcut for data that did not change
 			if (this.storage[key] === data) {
 				continue;
@@ -104,7 +125,6 @@ export class FileStorage extends Disposable {
 	}
 
 	removeItem(key: string): void {
-
 		// Only update if the key is actually present (not undefined)
 		if (!isUndefined(this.storage[key])) {
 			this.storage[key] = undefined;
@@ -136,7 +156,11 @@ export class FileStorage extends Disposable {
 
 		// Write to disk
 		try {
-			await this.fileService.writeFile(this.storagePath, VSBuffer.fromString(serializedDatabase), { atomic: { postfix: '.vsctmp' } });
+			await this.fileService.writeFile(
+				this.storagePath,
+				VSBuffer.fromString(serializedDatabase),
+				{ atomic: { postfix: ".vsctmp" } }
+			);
 			this.lastSavedStorageContents = serializedDatabase;
 		} catch (error) {
 			this.logService.error(error);
@@ -145,15 +169,20 @@ export class FileStorage extends Disposable {
 
 	async close(): Promise<void> {
 		if (!this.closing) {
-			this.closing = this.flushDelayer.trigger(() => this.doSave(), 0 /* as soon as possible */);
+			this.closing = this.flushDelayer.trigger(
+				() => this.doSave(),
+				0 /* as soon as possible */
+			);
 		}
 
 		return this.closing;
 	}
 }
 
-export class StateReadonlyService extends Disposable implements IStateReadService {
-
+export class StateReadonlyService
+	extends Disposable
+	implements IStateReadService
+{
 	declare readonly _serviceBrand: undefined;
 
 	protected readonly fileStorage: FileStorage;
@@ -166,7 +195,14 @@ export class StateReadonlyService extends Disposable implements IStateReadServic
 	) {
 		super();
 
-		this.fileStorage = this._register(new FileStorage(environmentService.stateResource, saveStrategy, logService, fileService));
+		this.fileStorage = this._register(
+			new FileStorage(
+				environmentService.stateResource,
+				saveStrategy,
+				logService,
+				fileService
+			)
+		);
 	}
 
 	async init(): Promise<void> {
@@ -180,15 +216,25 @@ export class StateReadonlyService extends Disposable implements IStateReadServic
 	}
 }
 
-export class StateService extends StateReadonlyService implements IStateService {
-
+export class StateService
+	extends StateReadonlyService
+	implements IStateService
+{
 	declare readonly _serviceBrand: undefined;
 
-	setItem(key: string, data?: object | string | number | boolean | undefined | null): void {
+	setItem(
+		key: string,
+		data?: object | string | number | boolean | undefined | null
+	): void {
 		this.fileStorage.setItem(key, data);
 	}
 
-	setItems(items: readonly { key: string; data?: object | string | number | boolean | undefined | null }[]): void {
+	setItems(
+		items: readonly {
+			key: string;
+			data?: object | string | number | boolean | undefined | null;
+		}[]
+	): void {
 		this.fileStorage.setItems(items);
 	}
 

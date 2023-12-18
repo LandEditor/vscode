@@ -3,51 +3,54 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from 'vs/nls';
-import { ICommandAction } from 'vs/platform/action/common/action';
-import { Categories } from 'vs/platform/action/common/actionCommonCategories';
-import { MenuId, MenuRegistry } from 'vs/platform/actions/common/actions';
-import { CommandsRegistry, ICommandMetadata } from 'vs/platform/commands/common/commands';
-import { IssueReporterData } from 'vs/platform/issue/common/issue';
-import { IProductService } from 'vs/platform/product/common/productService';
-import { IWorkbenchContribution } from 'vs/workbench/common/contributions';
-import { IWorkbenchIssueService } from 'vs/workbench/services/issue/common/issue';
+import { localize } from "vs/nls";
+import { ICommandAction } from "vs/platform/action/common/action";
+import { Categories } from "vs/platform/action/common/actionCommonCategories";
+import { MenuId, MenuRegistry } from "vs/platform/actions/common/actions";
+import {
+	CommandsRegistry,
+	ICommandMetadata,
+} from "vs/platform/commands/common/commands";
+import { IssueReporterData } from "vs/platform/issue/common/issue";
+import { IProductService } from "vs/platform/product/common/productService";
+import { IWorkbenchContribution } from "vs/workbench/common/contributions";
+import { IWorkbenchIssueService } from "vs/workbench/services/issue/common/issue";
 
-const OpenIssueReporterActionId = 'workbench.action.openIssueReporter';
-const OpenIssueReporterApiId = 'vscode.openIssueReporter';
+const OpenIssueReporterActionId = "workbench.action.openIssueReporter";
+const OpenIssueReporterApiId = "vscode.openIssueReporter";
 
 const OpenIssueReporterCommandMetadata: ICommandMetadata = {
-	description: 'Open the issue reporter and optionally prefill part of the form.',
+	description:
+		"Open the issue reporter and optionally prefill part of the form.",
 	args: [
 		{
-			name: 'options',
-			description: 'Data to use to prefill the issue reporter with.',
+			name: "options",
+			description: "Data to use to prefill the issue reporter with.",
 			isOptional: true,
 			schema: {
 				oneOf: [
 					{
-						type: 'string',
-						description: 'The extension id to preselect.'
+						type: "string",
+						description: "The extension id to preselect.",
 					},
 					{
-						type: 'object',
+						type: "object",
 						properties: {
 							extensionId: {
-								type: 'string'
+								type: "string",
 							},
 							issueTitle: {
-								type: 'string'
+								type: "string",
 							},
 							issueBody: {
-								type: 'string'
-							}
-						}
-
-					}
-				]
-			}
+								type: "string",
+							},
+						},
+					},
+				],
+			},
 		},
-	]
+	],
 };
 
 interface OpenIssueReporterArgs {
@@ -58,18 +61,19 @@ interface OpenIssueReporterArgs {
 }
 
 export class BaseIssueContribution implements IWorkbenchContribution {
-	constructor(
-		@IProductService productService: IProductService
-	) {
+	constructor(@IProductService productService: IProductService) {
 		if (!productService.reportIssueUrl) {
 			return;
 		}
 
 		CommandsRegistry.registerCommand({
 			id: OpenIssueReporterActionId,
-			handler: function (accessor, args?: string | [string] | OpenIssueReporterArgs) {
+			handler: function (
+				accessor,
+				args?: string | [string] | OpenIssueReporterArgs
+			) {
 				const data: Partial<IssueReporterData> =
-					typeof args === 'string'
+					typeof args === "string"
 						? { extensionId: args }
 						: Array.isArray(args)
 							? { extensionId: args[0] }
@@ -77,14 +81,17 @@ export class BaseIssueContribution implements IWorkbenchContribution {
 
 				return accessor.get(IWorkbenchIssueService).openReporter(data);
 			},
-			metadata: OpenIssueReporterCommandMetadata
+			metadata: OpenIssueReporterCommandMetadata,
 		});
 
 		CommandsRegistry.registerCommand({
 			id: OpenIssueReporterApiId,
-			handler: function (accessor, args?: string | [string] | OpenIssueReporterArgs) {
+			handler: function (
+				accessor,
+				args?: string | [string] | OpenIssueReporterArgs
+			) {
 				const data: Partial<IssueReporterData> =
-					typeof args === 'string'
+					typeof args === "string"
 						? { extensionId: args }
 						: Array.isArray(args)
 							? { extensionId: args[0] }
@@ -92,27 +99,46 @@ export class BaseIssueContribution implements IWorkbenchContribution {
 
 				return accessor.get(IWorkbenchIssueService).openReporter(data);
 			},
-			metadata: OpenIssueReporterCommandMetadata
+			metadata: OpenIssueReporterCommandMetadata,
 		});
 
 		const reportIssue: ICommandAction = {
 			id: OpenIssueReporterActionId,
 			title: {
-				value: localize({ key: 'reportIssueInEnglish', comment: ['Translate this to "Report Issue in English" in all languages please!'] }, "Report Issue..."),
-				original: 'Report Issue...'
+				value: localize(
+					{
+						key: "reportIssueInEnglish",
+						comment: [
+							'Translate this to "Report Issue in English" in all languages please!',
+						],
+					},
+					"Report Issue..."
+				),
+				original: "Report Issue...",
 			},
-			category: Categories.Help
+			category: Categories.Help,
 		};
 
-		MenuRegistry.appendMenuItem(MenuId.CommandPalette, { command: reportIssue });
+		MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
+			command: reportIssue,
+		});
 
 		MenuRegistry.appendMenuItem(MenuId.MenubarHelpMenu, {
-			group: '3_feedback',
+			group: "3_feedback",
 			command: {
 				id: OpenIssueReporterActionId,
-				title: localize({ key: 'miReportIssue', comment: ['&& denotes a mnemonic', 'Translate this to "Report Issue in English" in all languages please!'] }, "Report &&Issue")
+				title: localize(
+					{
+						key: "miReportIssue",
+						comment: [
+							"&& denotes a mnemonic",
+							'Translate this to "Report Issue in English" in all languages please!',
+						],
+					},
+					"Report &&Issue"
+				),
 			},
-			order: 3
+			order: 3,
 		});
 	}
 }

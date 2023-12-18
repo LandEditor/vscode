@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken } from 'vs/base/common/cancellation';
-import { Event } from 'vs/base/common/event';
-import { MovedText } from 'vs/editor/common/diff/linesDiffComputer';
-import { DetailedLineRangeMapping } from './rangeMapping';
-import { ITextModel } from 'vs/editor/common/model';
+import { CancellationToken } from "vs/base/common/cancellation";
+import { Event } from "vs/base/common/event";
+import { MovedText } from "vs/editor/common/diff/linesDiffComputer";
+import { DetailedLineRangeMapping } from "./rangeMapping";
+import { ITextModel } from "vs/editor/common/model";
 
 /**
  * A document diff provider computes the diff between two text models.
@@ -17,7 +17,12 @@ export interface IDocumentDiffProvider {
 	/**
 	 * Computes the diff between the text models `original` and `modified`.
 	 */
-	computeDiff(original: ITextModel, modified: ITextModel, options: IDocumentDiffProviderOptions, cancellationToken: CancellationToken): Promise<IDocumentDiff>;
+	computeDiff(
+		original: ITextModel,
+		modified: ITextModel,
+		options: IDocumentDiffProviderOptions,
+		cancellationToken: CancellationToken
+	): Promise<IDocumentDiff>;
 
 	/**
 	 * Is fired when settings of the diff algorithm change that could alter the result of the diffing computation.

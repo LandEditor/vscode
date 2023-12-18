@@ -17,9 +17,7 @@ use zip::{self, ZipArchive};
 /// If so, it's an indication we should skip that segment when extracting.
 fn should_skip_first_segment(archive: &mut ZipArchive<File>) -> bool {
 	let first_name = {
-		let file = archive
-			.by_index_raw(0)
-			.expect("expected not to have an empty archive");
+		let file = archive.by_index_raw(0).expect("expected not to have an empty archive");
 
 		let path = file
 			.enclosed_name()
@@ -57,9 +55,8 @@ where
 	let skip_segments_no = usize::from(should_skip_first_segment(&mut archive));
 	for i in 0..archive.len() {
 		reporter.report_progress(i as u64, archive.len() as u64);
-		let mut file = archive
-			.by_index(i)
-			.map_err(|e| wrap(e, format!("could not open zip entry {}", i)))?;
+		let mut file =
+			archive.by_index(i).map_err(|e| wrap(e, format!("could not open zip entry {}", i)))?;
 
 		let outpath: PathBuf = match file.enclosed_name() {
 			Some(path) => {
@@ -97,10 +94,7 @@ where
 			if matches!(file.unix_mode(), Some(mode) if mode & S_IFLINK_32 == S_IFLINK_32) {
 				let mut link_to = Vec::new();
 				file.read_to_end(&mut link_to).map_err(|e| {
-					wrap(
-						e,
-						format!("could not read symlink linkpath {}", outpath.display()),
-					)
+					wrap(e, format!("could not read symlink linkpath {}", outpath.display()))
 				})?;
 
 				let link_path = PathBuf::from(std::ffi::OsString::from_vec(link_to));
@@ -138,12 +132,8 @@ fn apply_permissions(file: &ZipFile, outpath: &Path) -> Result<(), WrappedError>
 	use std::os::unix::fs::PermissionsExt;
 
 	if let Some(mode) = file.unix_mode() {
-		fs::set_permissions(outpath, fs::Permissions::from_mode(mode)).map_err(|e| {
-			wrap(
-				e,
-				format!("error setting permissions on {}", outpath.display()),
-			)
-		})?;
+		fs::set_permissions(outpath, fs::Permissions::from_mode(mode))
+			.map_err(|e| wrap(e, format!("error setting permissions on {}", outpath.display())))?;
 	}
 
 	Ok(())

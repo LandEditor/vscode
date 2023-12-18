@@ -58,12 +58,7 @@ impl ServerMessageSink {
 		id: u16,
 		tx: ServerMessageDestination,
 	) -> Self {
-		Self {
-			tx: Some(tx),
-			id,
-			multiplexer,
-			flate: None,
-		}
+		Self { tx: Some(tx), id, multiplexer, flate: None }
 	}
 
 	pub fn new_compressed(
@@ -75,9 +70,10 @@ impl ServerMessageSink {
 			tx: Some(tx),
 			id,
 			multiplexer,
-			flate: Some(FlateStream::new(CompressFlateAlgorithm(
-				flate2::Compress::new(flate2::Compression::new(2), false),
-			))),
+			flate: Some(FlateStream::new(CompressFlateAlgorithm(flate2::Compress::new(
+				flate2::Compression::new(2),
+				false,
+			)))),
 		}
 	}
 
@@ -154,9 +150,7 @@ impl ClientMessageDecoder {
 
 	pub fn new_compressed() -> Self {
 		ClientMessageDecoder {
-			dec: Some(FlateStream::new(DecompressFlateAlgorithm(
-				flate2::Decompress::new(false),
-			))),
+			dec: Some(FlateStream::new(DecompressFlateAlgorithm(flate2::Decompress::new(false)))),
 		}
 	}
 
@@ -235,10 +229,7 @@ where
 	A: FlateAlgorithm,
 {
 	pub fn new(alg: A) -> Self {
-		Self {
-			flate: alg,
-			output: vec![0; 4096],
-		}
+		Self { flate: alg, output: vec![0; 4096] }
 	}
 
 	pub fn process(&mut self, contents: &[u8]) -> std::io::Result<&[u8]> {
@@ -248,10 +239,7 @@ where
 			let in_before = self.flate.total_in();
 			let out_before = self.flate.total_out();
 
-			match self
-				.flate
-				.process(&contents[in_offset..], &mut self.output[out_offset..])
-			{
+			match self.flate.process(&contents[in_offset..], &mut self.output[out_offset..]) {
 				Ok(flate2::Status::Ok | flate2::Status::BufError) => {
 					let processed_len = in_offset + (self.flate.total_in() - in_before) as usize;
 					let output_len = out_offset + (self.flate.total_out() - out_before) as usize;
@@ -318,9 +306,7 @@ mod tests {
 		let mut dec = ClientMessageDecoder::new_compressed();
 		let mut len = 0;
 		for b in TEST_191501_BUFS {
-			let b = general_purpose::STANDARD
-				.decode(b)
-				.expect("expected no decode error");
+			let b = general_purpose::STANDARD.decode(b).expect("expected no decode error");
 			let s = dec.decode(&b).expect("expected no decompress error");
 			len += s.len();
 		}

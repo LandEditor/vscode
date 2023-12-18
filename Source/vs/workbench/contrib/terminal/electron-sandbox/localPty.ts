@@ -3,12 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter } from 'vs/base/common/event';
-import { Disposable } from 'vs/base/common/lifecycle';
-import { IProcessDataEvent, ITerminalChildProcess, ITerminalLaunchError, IProcessProperty, IProcessPropertyMap, ProcessPropertyType, IProcessReadyEvent, IPtyService } from 'vs/platform/terminal/common/terminal';
-import { URI } from 'vs/base/common/uri';
-import { IPtyHostProcessReplayEvent, ISerializedCommandDetectionCapability } from 'vs/platform/terminal/common/capabilities/capabilities';
-import { mark } from 'vs/base/common/performance';
+import { Emitter } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
+import {
+	IProcessDataEvent,
+	ITerminalChildProcess,
+	ITerminalLaunchError,
+	IProcessProperty,
+	IProcessPropertyMap,
+	ProcessPropertyType,
+	IProcessReadyEvent,
+	IPtyService,
+} from "vs/platform/terminal/common/terminal";
+import { URI } from "vs/base/common/uri";
+import {
+	IPtyHostProcessReplayEvent,
+	ISerializedCommandDetectionCapability,
+} from "vs/platform/terminal/common/capabilities/capabilities";
+import { mark } from "vs/base/common/performance";
 
 /**
  * Responsible for establishing and maintaining a connection with an existing terminal process
@@ -16,32 +28,47 @@ import { mark } from 'vs/base/common/performance';
  */
 export class LocalPty extends Disposable implements ITerminalChildProcess {
 	private readonly _properties: IProcessPropertyMap = {
-		cwd: '',
-		initialCwd: '',
+		cwd: "",
+		initialCwd: "",
 		fixedDimensions: { cols: undefined, rows: undefined },
-		title: '',
+		title: "",
 		shellType: undefined,
 		hasChildProcesses: true,
 		resolvedShellLaunchConfig: {},
 		overrideDimensions: undefined,
 		failedShellIntegrationActivation: false,
-		usedShellIntegrationInjection: undefined
+		usedShellIntegrationInjection: undefined,
 	};
-	private readonly _lastDimensions: { cols: number; rows: number } = { cols: -1, rows: -1 };
+	private readonly _lastDimensions: { cols: number; rows: number } = {
+		cols: -1,
+		rows: -1,
+	};
 
 	private _inReplay = false;
 
-	private readonly _onProcessData = this._register(new Emitter<IProcessDataEvent | string>());
+	private readonly _onProcessData = this._register(
+		new Emitter<IProcessDataEvent | string>()
+	);
 	readonly onProcessData = this._onProcessData.event;
-	private readonly _onProcessReplayComplete = this._register(new Emitter<void>());
+	private readonly _onProcessReplayComplete = this._register(
+		new Emitter<void>()
+	);
 	readonly onProcessReplayComplete = this._onProcessReplayComplete.event;
-	private readonly _onProcessReady = this._register(new Emitter<IProcessReadyEvent>());
+	private readonly _onProcessReady = this._register(
+		new Emitter<IProcessReadyEvent>()
+	);
 	readonly onProcessReady = this._onProcessReady.event;
-	private readonly _onDidChangeProperty = this._register(new Emitter<IProcessProperty<any>>());
+	private readonly _onDidChangeProperty = this._register(
+		new Emitter<IProcessProperty<any>>()
+	);
 	readonly onDidChangeProperty = this._onDidChangeProperty.event;
-	private readonly _onProcessExit = this._register(new Emitter<number | undefined>());
+	private readonly _onProcessExit = this._register(
+		new Emitter<number | undefined>()
+	);
 	readonly onProcessExit = this._onProcessExit.event;
-	private readonly _onRestoreCommands = this._register(new Emitter<ISerializedCommandDetectionCapability>());
+	private readonly _onRestoreCommands = this._register(
+		new Emitter<ISerializedCommandDetectionCapability>()
+	);
 	readonly onRestoreCommands = this._onRestoreCommands.event;
 
 	constructor(
@@ -52,7 +79,9 @@ export class LocalPty extends Disposable implements ITerminalChildProcess {
 		super();
 	}
 
-	start(): Promise<ITerminalLaunchError | { injectedArgs: string[] } | undefined> {
+	start(): Promise<
+		ITerminalLaunchError | { injectedArgs: string[] } | undefined
+	> {
 		return this._proxy.start(this.id);
 	}
 	detach(forcePersist?: boolean): Promise<void> {
@@ -74,7 +103,11 @@ export class LocalPty extends Disposable implements ITerminalChildProcess {
 		this._proxy.input(this.id, data);
 	}
 	resize(cols: number, rows: number): void {
-		if (this._inReplay || this._lastDimensions.cols === cols && this._lastDimensions.rows === rows) {
+		if (
+			this._inReplay ||
+			(this._lastDimensions.cols === cols &&
+				this._lastDimensions.rows === rows)
+		) {
 			return;
 		}
 		this._lastDimensions.cols = cols;
@@ -84,9 +117,13 @@ export class LocalPty extends Disposable implements ITerminalChildProcess {
 	async clearBuffer(): Promise<void> {
 		this._proxy.clearBuffer?.(this.id);
 	}
-	freePortKillProcess(port: string): Promise<{ port: string; processId: string }> {
+	freePortKillProcess(
+		port: string
+	): Promise<{ port: string; processId: string }> {
 		if (!this._proxy.freePortKillProcess) {
-			throw new Error('freePortKillProcess does not exist on the local pty service');
+			throw new Error(
+				"freePortKillProcess does not exist on the local pty service"
+			);
 		}
 		return this._proxy.freePortKillProcess(port);
 	}
@@ -96,10 +133,15 @@ export class LocalPty extends Disposable implements ITerminalChildProcess {
 	async getCwd(): Promise<string> {
 		return this._properties.cwd || this._properties.initialCwd;
 	}
-	async refreshProperty<T extends ProcessPropertyType>(type: T): Promise<IProcessPropertyMap[T]> {
+	async refreshProperty<T extends ProcessPropertyType>(
+		type: T
+	): Promise<IProcessPropertyMap[T]> {
 		return this._proxy.refreshProperty(this.id, type);
 	}
-	async updateProperty<T extends ProcessPropertyType>(type: T, value: IProcessPropertyMap[T]): Promise<void> {
+	async updateProperty<T extends ProcessPropertyType>(
+		type: T,
+		value: IProcessPropertyMap[T]
+	): Promise<void> {
 		return this._proxy.updateProperty(this.id, type, value);
 	}
 	acknowledgeDataEvent(charCount: number): void {
@@ -108,7 +150,7 @@ export class LocalPty extends Disposable implements ITerminalChildProcess {
 		}
 		this._proxy.acknowledgeDataEvent(this.id, charCount);
 	}
-	setUnicodeVersion(version: '6' | '11'): Promise<void> {
+	setUnicodeVersion(version: "6" | "11"): Promise<void> {
 		return this._proxy.setUnicodeVersion(this.id, version);
 	}
 
@@ -130,7 +172,7 @@ export class LocalPty extends Disposable implements ITerminalChildProcess {
 				this._properties.initialCwd = value;
 				break;
 			case ProcessPropertyType.ResolvedShellLaunchConfig:
-				if (value.cwd && typeof value.cwd !== 'string') {
+				if (value.cwd && typeof value.cwd !== "string") {
 					value.cwd = URI.revive(value.cwd);
 				}
 		}
@@ -144,9 +186,19 @@ export class LocalPty extends Disposable implements ITerminalChildProcess {
 			for (const innerEvent of e.events) {
 				if (innerEvent.cols !== 0 || innerEvent.rows !== 0) {
 					// never override with 0x0 as that is a marker for an unknown initial size
-					this._onDidChangeProperty.fire({ type: ProcessPropertyType.OverrideDimensions, value: { cols: innerEvent.cols, rows: innerEvent.rows, forceExactSize: true } });
+					this._onDidChangeProperty.fire({
+						type: ProcessPropertyType.OverrideDimensions,
+						value: {
+							cols: innerEvent.cols,
+							rows: innerEvent.rows,
+							forceExactSize: true,
+						},
+					});
 				}
-				const e: IProcessDataEvent = { data: innerEvent.data, trackCommit: true };
+				const e: IProcessDataEvent = {
+					data: innerEvent.data,
+					trackCommit: true,
+				};
 				this._onProcessData.fire(e);
 				await e.writePromise;
 			}
@@ -159,7 +211,10 @@ export class LocalPty extends Disposable implements ITerminalChildProcess {
 		}
 
 		// remove size override
-		this._onDidChangeProperty.fire({ type: ProcessPropertyType.OverrideDimensions, value: undefined });
+		this._onDidChangeProperty.fire({
+			type: ProcessPropertyType.OverrideDimensions,
+			value: undefined,
+		});
 
 		mark(`code/terminal/didHandleReplay/${this.id}`);
 		this._onProcessReplayComplete.fire();

@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { FastDomNode } from 'vs/base/browser/fastDomNode';
-import { TimeoutTimer } from 'vs/base/common/async';
-import { Disposable } from 'vs/base/common/lifecycle';
-import { ScrollbarVisibility } from 'vs/base/common/scrollable';
+import { FastDomNode } from "vs/base/browser/fastDomNode";
+import { TimeoutTimer } from "vs/base/common/async";
+import { Disposable } from "vs/base/common/lifecycle";
+import { ScrollbarVisibility } from "vs/base/common/scrollable";
 
 export class ScrollbarVisibilityController extends Disposable {
 	private _visibility: ScrollbarVisibility;
@@ -19,7 +19,11 @@ export class ScrollbarVisibilityController extends Disposable {
 	private _isVisible: boolean;
 	private _revealTimer: TimeoutTimer;
 
-	constructor(visibility: ScrollbarVisibility, visibleClassName: string, invisibleClassName: string) {
+	constructor(
+		visibility: ScrollbarVisibility,
+		visibleClassName: string,
+		invisibleClassName: string
+	) {
 		super();
 		this._visibility = visibility;
 		this._visibleClassName = visibleClassName;
@@ -81,7 +85,6 @@ export class ScrollbarVisibilityController extends Disposable {
 	}
 
 	public ensureVisibility(): void {
-
 		if (!this._isNeeded) {
 			// Nothing to be rendered
 			this._hide(false);
@@ -113,6 +116,8 @@ export class ScrollbarVisibilityController extends Disposable {
 			return;
 		}
 		this._isVisible = false;
-		this._domNode?.setClassName(this._invisibleClassName + (withFadeAway ? ' fade' : ''));
+		this._domNode?.setClassName(
+			this._invisibleClassName + (withFadeAway ? " fade" : "")
+		);
 	}
 }

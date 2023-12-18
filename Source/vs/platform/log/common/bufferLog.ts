@@ -3,7 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { AbstractMessageLogger, DEFAULT_LOG_LEVEL, ILogger, log, LogLevel } from 'vs/platform/log/common/log';
+import {
+	AbstractMessageLogger,
+	DEFAULT_LOG_LEVEL,
+	ILogger,
+	log,
+	LogLevel,
+} from "vs/platform/log/common/log";
 
 interface ILog {
 	level: LogLevel;
@@ -11,7 +17,6 @@ interface ILog {
 }
 
 export class BufferLogger extends AbstractMessageLogger {
-
 	declare readonly _serviceBrand: undefined;
 	private buffer: ILog[] = [];
 	private _logger: ILogger | undefined = undefined;
@@ -19,9 +24,11 @@ export class BufferLogger extends AbstractMessageLogger {
 	constructor(logLevel: LogLevel = DEFAULT_LOG_LEVEL) {
 		super();
 		this.setLevel(logLevel);
-		this._register(this.onDidChangeLogLevel(level => {
-			this._logger?.setLevel(level);
-		}));
+		this._register(
+			this.onDidChangeLogLevel((level) => {
+				this._logger?.setLevel(level);
+			})
+		);
 	}
 
 	set logger(logger: ILogger) {

@@ -21,9 +21,7 @@ fn should_skip_first_segment(file: &fs::File) -> Result<bool, WrappedError> {
 
 	let tar = GzDecoder::new(file);
 	let mut archive = Archive::new(tar);
-	let mut entries = archive
-		.entries()
-		.map_err(|e| wrap(e, "error opening archive"))?;
+	let mut entries = archive.entries().map_err(|e| wrap(e, "error opening archive"))?;
 
 	let first_name = {
 		let file = entries
@@ -33,10 +31,7 @@ fn should_skip_first_segment(file: &fs::File) -> Result<bool, WrappedError> {
 
 		let path = file.path().expect("expected to have path");
 
-		path.iter()
-			.next()
-			.expect("expected to have non-empty name")
-			.to_owned()
+		path.iter().next().expect("expected to have non-empty name").to_owned()
 	};
 
 	let mut had_multiple = false;
@@ -65,9 +60,7 @@ where
 	let skip_first = should_skip_first_segment(&tar_gz)?;
 
 	// reset since skip logic read the tar already:
-	tar_gz
-		.rewind()
-		.map_err(|e| wrap(e, "error resetting seek position"))?;
+	tar_gz.rewind().map_err(|e| wrap(e, "error resetting seek position"))?;
 
 	let tar = GzDecoder::new(tar_gz);
 	let mut archive = Archive::new(tar);
@@ -77,9 +70,7 @@ where
 		.map_err(|e| wrap(e, format!("error opening archive {}", path.display())))?
 		.filter_map(|e| e.ok())
 		.map(|mut entry| {
-			let entry_path = entry
-				.path()
-				.map_err(|e| wrap(e, "error reading entry path"))?;
+			let entry_path = entry.path().map_err(|e| wrap(e, "error reading entry path"))?;
 
 			let path = parent_path.join(if skip_first {
 				entry_path.iter().skip(1).collect::<PathBuf>()

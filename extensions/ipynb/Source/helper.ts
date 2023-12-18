@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 export function deepClone<T>(obj: T): T {
-	if (!obj || typeof obj !== 'object') {
+	if (!obj || typeof obj !== "object") {
 		return obj;
 	}
 	if (obj instanceof RegExp) {
@@ -13,7 +13,7 @@ export function deepClone<T>(obj: T): T {
 	}
 	const result: any = Array.isArray(obj) ? [] : {};
 	Object.keys(<any>obj).forEach((key: string) => {
-		if ((<any>obj)[key] && typeof (<any>obj)[key] === 'object') {
+		if ((<any>obj)[key] && typeof (<any>obj)[key] === "object") {
 			result[key] = deepClone((<any>obj)[key]);
 		} else {
 			result[key] = (<any>obj)[key];
@@ -27,16 +27,21 @@ export function objectEquals(one: any, other: any) {
 	if (one === other) {
 		return true;
 	}
-	if (one === null || one === undefined || other === null || other === undefined) {
+	if (
+		one === null ||
+		one === undefined ||
+		other === null ||
+		other === undefined
+	) {
 		return false;
 	}
 	if (typeof one !== typeof other) {
 		return false;
 	}
-	if (typeof one !== 'object') {
+	if (typeof one !== "object") {
 		return false;
 	}
-	if ((Array.isArray(one)) !== (Array.isArray(other))) {
+	if (Array.isArray(one) !== Array.isArray(other)) {
 		return false;
 	}
 
@@ -82,11 +87,12 @@ export function objectEquals(one: any, other: any) {
  * Pulled from https://github.com/microsoft/vscode/blob/3059063b805ed0ac10a6d9539e213386bfcfb852/extensions/markdown-language-features/src/util/async.ts
  */
 export class Delayer<T> {
-
 	public defaultDelay: number;
 	private _timeout: any; // Timer
 	private _cancelTimeout: Promise<T | null> | null;
-	private _onSuccess: ((value: T | PromiseLike<T> | undefined) => void) | null;
+	private _onSuccess:
+		| ((value: T | PromiseLike<T> | undefined) => void)
+		| null;
 	private _task: ITask<T> | null;
 
 	constructor(defaultDelay: number) {
@@ -101,7 +107,10 @@ export class Delayer<T> {
 		this._doCancelTimeout();
 	}
 
-	public trigger(task: ITask<T>, delay: number = this.defaultDelay): Promise<T | null> {
+	public trigger(
+		task: ITask<T>,
+		delay: number = this.defaultDelay
+	): Promise<T | null> {
 		this._task = task;
 		if (delay >= 0) {
 			this._doCancelTimeout();
@@ -120,10 +129,13 @@ export class Delayer<T> {
 		}
 
 		if (delay >= 0 || this._timeout === null) {
-			this._timeout = setTimeout(() => {
-				this._timeout = null;
-				this._onSuccess?.(undefined);
-			}, delay >= 0 ? delay : this.defaultDelay);
+			this._timeout = setTimeout(
+				() => {
+					this._timeout = null;
+					this._onSuccess?.(undefined);
+				},
+				delay >= 0 ? delay : this.defaultDelay
+			);
 		}
 
 		return this._cancelTimeout;

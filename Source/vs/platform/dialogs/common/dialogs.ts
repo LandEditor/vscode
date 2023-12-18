@@ -3,20 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from 'vs/base/common/event';
-import { ThemeIcon } from 'vs/base/common/themables';
-import { IMarkdownString } from 'vs/base/common/htmlContent';
-import { basename } from 'vs/base/common/resources';
-import Severity from 'vs/base/common/severity';
-import { URI } from 'vs/base/common/uri';
-import { localize } from 'vs/nls';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { ITelemetryData } from 'vs/platform/telemetry/common/telemetry';
-import { MessageBoxOptions } from 'vs/base/parts/sandbox/common/electronTypes';
-import { mnemonicButtonLabel } from 'vs/base/common/labels';
-import { isLinux, isMacintosh, isWindows } from 'vs/base/common/platform';
-import { IProductService } from 'vs/platform/product/common/productService';
-import { deepClone } from 'vs/base/common/objects';
+import { Event } from "vs/base/common/event";
+import { ThemeIcon } from "vs/base/common/themables";
+import { IMarkdownString } from "vs/base/common/htmlContent";
+import { basename } from "vs/base/common/resources";
+import Severity from "vs/base/common/severity";
+import { URI } from "vs/base/common/uri";
+import { localize } from "vs/nls";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { ITelemetryData } from "vs/platform/telemetry/common/telemetry";
+import { MessageBoxOptions } from "vs/base/parts/sandbox/common/electronTypes";
+import { mnemonicButtonLabel } from "vs/base/common/labels";
+import { isLinux, isMacintosh, isWindows } from "vs/base/common/platform";
+import { IProductService } from "vs/platform/product/common/productService";
+import { deepClone } from "vs/base/common/objects";
 
 export interface IDialogArgs {
 	readonly confirmArgs?: IConfirmDialogArgs;
@@ -44,7 +44,6 @@ export interface IConfirmDialogArgs {
 }
 
 export interface IConfirmation extends IBaseDialogOptions {
-
 	/**
 	 * If not provided, defaults to `Yes`.
 	 */
@@ -57,7 +56,6 @@ export interface IConfirmation extends IBaseDialogOptions {
 }
 
 export interface IConfirmationResult extends ICheckboxResult {
-
 	/**
 	 * Will be true if the dialog was confirmed with the primary button pressed.
 	 */
@@ -78,13 +76,12 @@ export interface IInput extends IConfirmation {
 }
 
 export interface IInputElement {
-	readonly type?: 'text' | 'password';
+	readonly type?: "text" | "password";
 	readonly value?: string;
 	readonly placeholder?: string;
 }
 
 export interface IInputResult extends IConfirmationResult {
-
 	/**
 	 * Values for the input fields as provided by the user or `undefined` if none.
 	 */
@@ -96,7 +93,6 @@ export interface IPromptDialogArgs {
 }
 
 export interface IPromptBaseButton<T> {
-
 	/**
 	 * @returns the result of the prompt button will be returned
 	 * as result from the `prompt()` call.
@@ -109,7 +105,6 @@ export interface IPromptButton<T> extends IPromptBaseButton<T> {
 }
 
 export interface IPromptCancelButton<T> extends IPromptBaseButton<T> {
-
 	/**
 	 * The cancel button to show in the prompt. Defaults to
 	 * `Cancel` if not provided.
@@ -118,7 +113,6 @@ export interface IPromptCancelButton<T> extends IPromptBaseButton<T> {
 }
 
 export interface IPrompt<T> extends IBaseDialogOptions {
-
 	/**
 	 * The buttons to show in the prompt. Defaults to `OK`
 	 * if no buttons or cancel button is provided.
@@ -141,7 +135,6 @@ export interface IPromptWithDefaultCancel<T> extends IPrompt<T> {
 }
 
 export interface IPromptResult<T> extends ICheckboxResult {
-
 	/**
 	 * The result of the `IPromptButton` that was pressed or `undefined` if none.
 	 */
@@ -153,7 +146,6 @@ export interface IPromptResultWithCancel<T> extends IPromptResult<T> {
 }
 
 export interface IAsyncPromptResult<T> extends ICheckboxResult {
-
 	/**
 	 * The result of the `IPromptButton` that was pressed or `undefined` if none.
 	 */
@@ -164,9 +156,12 @@ export interface IAsyncPromptResultWithCancel<T> extends IAsyncPromptResult<T> {
 	readonly result: Promise<T>;
 }
 
-export type IDialogResult = IConfirmationResult | IInputResult | IAsyncPromptResult<unknown>;
+export type IDialogResult =
+	| IConfirmationResult
+	| IInputResult
+	| IAsyncPromptResult<unknown>;
 
-export type DialogType = 'none' | 'info' | 'error' | 'question' | 'warning';
+export type DialogType = "none" | "info" | "error" | "question" | "warning";
 
 export interface ICheckbox {
 	readonly label: string;
@@ -174,7 +169,6 @@ export interface ICheckbox {
 }
 
 export interface ICheckboxResult {
-
 	/**
 	 * This will only be defined if the confirmation was created
 	 * with the checkbox option defined.
@@ -196,7 +190,6 @@ export interface FileFilter {
 }
 
 export interface ISaveDialogOptions {
-
 	/**
 	 * A human-readable string for the dialog title
 	 */
@@ -226,7 +219,6 @@ export interface ISaveDialogOptions {
 }
 
 export interface IOpenDialogOptions {
-
 	/**
 	 * A human-readable string for the dialog title
 	 */
@@ -270,7 +262,7 @@ export interface IOpenDialogOptions {
 	availableFileSystems?: readonly string[];
 }
 
-export const IDialogService = createDecorator<IDialogService>('dialogService');
+export const IDialogService = createDecorator<IDialogService>("dialogService");
 
 export interface ICustomDialogOptions {
 	readonly buttonDetails?: string[];
@@ -289,7 +281,6 @@ export interface ICustomDialogMarkdown {
  * A handler to bring up modal dialogs.
  */
 export interface IDialogHandler {
-
 	/**
 	 * Ask the user for confirmation with a modal dialog.
 	 */
@@ -314,11 +305,10 @@ export interface IDialogHandler {
 enum DialogKind {
 	Confirmation = 1,
 	Prompt,
-	Input
+	Input,
 }
 
 export abstract class AbstractDialogHandler implements IDialogHandler {
-
 	protected getConfirmationButtons(dialog: IConfirmation): string[] {
 		return this.getButtons(dialog, DialogKind.Confirmation);
 	}
@@ -331,11 +321,19 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
 		return this.getButtons(dialog, DialogKind.Input);
 	}
 
-	private getButtons(dialog: IConfirmation, kind: DialogKind.Confirmation): string[];
-	private getButtons(dialog: IPrompt<unknown>, kind: DialogKind.Prompt): string[];
+	private getButtons(
+		dialog: IConfirmation,
+		kind: DialogKind.Confirmation
+	): string[];
+	private getButtons(
+		dialog: IPrompt<unknown>,
+		kind: DialogKind.Prompt
+	): string[];
 	private getButtons(dialog: IInput, kind: DialogKind.Input): string[];
-	private getButtons(dialog: IConfirmation | IInput | IPrompt<unknown>, kind: DialogKind): string[] {
-
+	private getButtons(
+		dialog: IConfirmation | IInput | IPrompt<unknown>,
+		kind: DialogKind
+	): string[] {
 		// We put buttons in the order of "default" button first and "cancel"
 		// button last. There maybe later processing when presenting the buttons
 		// based on OS standards.
@@ -349,13 +347,21 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
 				if (confirmationDialog.primaryButton) {
 					buttons.push(confirmationDialog.primaryButton);
 				} else {
-					buttons.push(localize({ key: 'yesButton', comment: ['&& denotes a mnemonic'] }, "&&Yes"));
+					buttons.push(
+						localize(
+							{
+								key: "yesButton",
+								comment: ["&& denotes a mnemonic"],
+							},
+							"&&Yes"
+						)
+					);
 				}
 
 				if (confirmationDialog.cancelButton) {
 					buttons.push(confirmationDialog.cancelButton);
 				} else {
-					buttons.push(localize('cancelButton', "Cancel"));
+					buttons.push(localize("cancelButton", "Cancel"));
 				}
 
 				break;
@@ -363,26 +369,39 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
 			case DialogKind.Prompt: {
 				const promptDialog = dialog as IPrompt<unknown>;
 
-				if (Array.isArray(promptDialog.buttons) && promptDialog.buttons.length > 0) {
-					buttons.push(...promptDialog.buttons.map(button => button.label));
+				if (
+					Array.isArray(promptDialog.buttons) &&
+					promptDialog.buttons.length > 0
+				) {
+					buttons.push(
+						...promptDialog.buttons.map((button) => button.label)
+					);
 				}
 
 				if (promptDialog.cancelButton) {
 					if (promptDialog.cancelButton === true) {
-						buttons.push(localize('cancelButton', "Cancel"));
-					} else if (typeof promptDialog.cancelButton === 'string') {
+						buttons.push(localize("cancelButton", "Cancel"));
+					} else if (typeof promptDialog.cancelButton === "string") {
 						buttons.push(promptDialog.cancelButton);
 					} else {
 						if (promptDialog.cancelButton.label) {
 							buttons.push(promptDialog.cancelButton.label);
 						} else {
-							buttons.push(localize('cancelButton', "Cancel"));
+							buttons.push(localize("cancelButton", "Cancel"));
 						}
 					}
 				}
 
 				if (buttons.length === 0) {
-					buttons.push(localize({ key: 'okButton', comment: ['&& denotes a mnemonic'] }, "&&OK"));
+					buttons.push(
+						localize(
+							{
+								key: "okButton",
+								comment: ["&& denotes a mnemonic"],
+							},
+							"&&OK"
+						)
+					);
 				}
 
 				break;
@@ -393,13 +412,21 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
 				if (inputDialog.primaryButton) {
 					buttons.push(inputDialog.primaryButton);
 				} else {
-					buttons.push(localize({ key: 'okButton', comment: ['&& denotes a mnemonic'] }, "&&OK"));
+					buttons.push(
+						localize(
+							{
+								key: "okButton",
+								comment: ["&& denotes a mnemonic"],
+							},
+							"&&OK"
+						)
+					);
 				}
 
 				if (inputDialog.cancelButton) {
 					buttons.push(inputDialog.cancelButton);
 				} else {
-					buttons.push(localize('cancelButton', "Cancel"));
+					buttons.push(localize("cancelButton", "Cancel"));
 				}
 
 				break;
@@ -409,21 +436,39 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
 		return buttons;
 	}
 
-	protected getDialogType(type: Severity | DialogType | undefined): DialogType | undefined {
-		if (typeof type === 'string') {
+	protected getDialogType(
+		type: Severity | DialogType | undefined
+	): DialogType | undefined {
+		if (typeof type === "string") {
 			return type;
 		}
 
-		if (typeof type === 'number') {
-			return (type === Severity.Info) ? 'info' : (type === Severity.Error) ? 'error' : (type === Severity.Warning) ? 'warning' : 'none';
+		if (typeof type === "number") {
+			return type === Severity.Info
+				? "info"
+				: type === Severity.Error
+					? "error"
+					: type === Severity.Warning
+						? "warning"
+						: "none";
 		}
 
 		return undefined;
 	}
 
-	protected getPromptResult<T>(prompt: IPrompt<T>, buttonIndex: number, checkboxChecked: boolean | undefined): IAsyncPromptResult<T> {
-		const promptButtons: IPromptBaseButton<T>[] = [...(prompt.buttons ?? [])];
-		if (prompt.cancelButton && typeof prompt.cancelButton !== 'string' && typeof prompt.cancelButton !== 'boolean') {
+	protected getPromptResult<T>(
+		prompt: IPrompt<T>,
+		buttonIndex: number,
+		checkboxChecked: boolean | undefined
+	): IAsyncPromptResult<T> {
+		const promptButtons: IPromptBaseButton<T>[] = [
+			...(prompt.buttons ?? []),
+		];
+		if (
+			prompt.cancelButton &&
+			typeof prompt.cancelButton !== "string" &&
+			typeof prompt.cancelButton !== "boolean"
+		) {
 			promptButtons.push(prompt.cancelButton);
 		}
 
@@ -448,7 +493,6 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
  * the user for input.
  */
 export interface IDialogService {
-
 	readonly _serviceBrand: undefined;
 
 	/**
@@ -476,7 +520,9 @@ export interface IDialogService {
 	 * @returns a promise that resolves to the `T` result
 	 * from the provided `IPromptButton<T>` or `undefined`.
 	 */
-	prompt<T>(prompt: IPromptWithCustomCancel<T>): Promise<IPromptResultWithCancel<T>>;
+	prompt<T>(
+		prompt: IPromptWithCustomCancel<T>
+	): Promise<IPromptResultWithCancel<T>>;
 	prompt<T>(prompt: IPromptWithDefaultCancel<T>): Promise<IPromptResult<T>>;
 	prompt<T>(prompt: IPrompt<T>): Promise<IPromptResult<T>>;
 
@@ -506,13 +552,13 @@ export interface IDialogService {
 	about(): Promise<void>;
 }
 
-export const IFileDialogService = createDecorator<IFileDialogService>('fileDialogService');
+export const IFileDialogService =
+	createDecorator<IFileDialogService>("fileDialogService");
 
 /**
  * A service to bring up file dialogs.
  */
 export interface IFileDialogService {
-
 	readonly _serviceBrand: undefined;
 
 	/**
@@ -559,7 +605,10 @@ export interface IFileDialogService {
 	/**
 	 * Shows a save file dialog and save the file at the chosen file URI.
 	 */
-	pickFileToSave(defaultUri: URI, availableFileSystems?: string[]): Promise<URI | undefined>;
+	pickFileToSave(
+		defaultUri: URI,
+		availableFileSystems?: string[]
+	): Promise<URI | undefined>;
 
 	/**
 	 * The preferred folder path to open the dialog at.
@@ -576,7 +625,9 @@ export interface IFileDialogService {
 	/**
 	 * Shows a confirm dialog for saving 1-N files.
 	 */
-	showSaveConfirm(fileNamesOrResources: (string | URI)[]): Promise<ConfirmResult>;
+	showSaveConfirm(
+		fileNamesOrResources: (string | URI)[]
+	): Promise<ConfirmResult>;
 
 	/**
 	 * Shows a open file dialog and returns the chosen file URI.
@@ -587,24 +638,42 @@ export interface IFileDialogService {
 export const enum ConfirmResult {
 	SAVE,
 	DONT_SAVE,
-	CANCEL
+	CANCEL,
 }
 
 const MAX_CONFIRM_FILES = 10;
-export function getFileNamesMessage(fileNamesOrResources: readonly (string | URI)[]): string {
+export function getFileNamesMessage(
+	fileNamesOrResources: readonly (string | URI)[]
+): string {
 	const message: string[] = [];
-	message.push(...fileNamesOrResources.slice(0, MAX_CONFIRM_FILES).map(fileNameOrResource => typeof fileNameOrResource === 'string' ? fileNameOrResource : basename(fileNameOrResource)));
+	message.push(
+		...fileNamesOrResources
+			.slice(0, MAX_CONFIRM_FILES)
+			.map((fileNameOrResource) =>
+				typeof fileNameOrResource === "string"
+					? fileNameOrResource
+					: basename(fileNameOrResource)
+			)
+	);
 
 	if (fileNamesOrResources.length > MAX_CONFIRM_FILES) {
 		if (fileNamesOrResources.length - MAX_CONFIRM_FILES === 1) {
-			message.push(localize('moreFile', "...1 additional file not shown"));
+			message.push(
+				localize("moreFile", "...1 additional file not shown")
+			);
 		} else {
-			message.push(localize('moreFiles', "...{0} additional files not shown", fileNamesOrResources.length - MAX_CONFIRM_FILES));
+			message.push(
+				localize(
+					"moreFiles",
+					"...{0} additional files not shown",
+					fileNamesOrResources.length - MAX_CONFIRM_FILES
+				)
+			);
 		}
 	}
 
-	message.push('');
-	return message.join('\n');
+	message.push("");
+	return message.join("\n");
 }
 
 export interface INativeOpenDialogOptions {
@@ -617,7 +686,6 @@ export interface INativeOpenDialogOptions {
 }
 
 export interface IMassagedMessageBoxOptions {
-
 	/**
 	 * OS massaged message box options.
 	 */
@@ -636,10 +704,15 @@ export interface IMassagedMessageBoxOptions {
  * are using properties that are consistent across all platforms and
  * specific to the platform where necessary.
  */
-export function massageMessageBoxOptions(options: MessageBoxOptions, productService: IProductService): IMassagedMessageBoxOptions {
+export function massageMessageBoxOptions(
+	options: MessageBoxOptions,
+	productService: IProductService
+): IMassagedMessageBoxOptions {
 	const massagedOptions = deepClone(options);
 
-	let buttons = (massagedOptions.buttons ?? []).map(button => mnemonicButtonLabel(button));
+	let buttons = (massagedOptions.buttons ?? []).map((button) =>
+		mnemonicButtonLabel(button)
+	);
 	let buttonIndeces = (options.buttons || []).map((button, index) => index);
 
 	let defaultId = 0; // by default the first button is default button
@@ -647,10 +720,10 @@ export function massageMessageBoxOptions(options: MessageBoxOptions, productServ
 
 	// Apply HIG per OS when more than one button is used
 	if (buttons.length > 1) {
-		const cancelButton = typeof cancelId === 'number' ? buttons[cancelId] : undefined;
+		const cancelButton =
+			typeof cancelId === "number" ? buttons[cancelId] : undefined;
 
 		if (isLinux || isMacintosh) {
-
 			// Linux: the GNOME HIG (https://developer.gnome.org/hig/patterns/feedback/dialogs.html?highlight=dialog)
 			// recommend the following:
 			// "Always ensure that the cancel button appears first, before the affirmative button. In left-to-right
@@ -672,7 +745,11 @@ export function massageMessageBoxOptions(options: MessageBoxOptions, productServ
 			// button in the same way as we do on Linux. This will not have any impact on newer macOS versions where
 			// shuffling is done for us.
 
-			if (typeof cancelButton === 'string' && buttons.length > 1 && cancelId !== 1) {
+			if (
+				typeof cancelButton === "string" &&
+				buttons.length > 1 &&
+				cancelId !== 1
+			) {
 				buttons.splice(cancelId, 1);
 				buttons.splice(1, 0, cancelButton);
 
@@ -688,12 +765,11 @@ export function massageMessageBoxOptions(options: MessageBoxOptions, productServ
 				buttonIndeces = buttonIndeces.reverse();
 
 				defaultId = buttons.length - 1;
-				if (typeof cancelButton === 'string') {
+				if (typeof cancelButton === "string") {
 					cancelId = defaultId - 1;
 				}
 			}
 		} else if (isWindows) {
-
 			// Windows: the HIG (https://learn.microsoft.com/en-us/windows/win32/uxguide/win-dialog-box)
 			// recommend the following:
 			// "One of the following sets of concise commands: Yes/No, Yes/No/Cancel, [Do it]/Cancel,
@@ -702,7 +778,11 @@ export function massageMessageBoxOptions(options: MessageBoxOptions, productServ
 			// Electron APIs do not reorder buttons for us, so we ensure the position of the cancel button
 			// (if provided) that matches the HIG
 
-			if (typeof cancelButton === 'string' && buttons.length > 1 && cancelId !== buttons.length - 1 /* last action */) {
+			if (
+				typeof cancelButton === "string" &&
+				buttons.length > 1 &&
+				cancelId !== buttons.length - 1 /* last action */
+			) {
 				buttons.splice(cancelId, 1);
 				buttons.push(cancelButton);
 
@@ -723,6 +803,6 @@ export function massageMessageBoxOptions(options: MessageBoxOptions, productServ
 
 	return {
 		options: massagedOptions,
-		buttonIndeces
+		buttonIndeces,
 	};
 }

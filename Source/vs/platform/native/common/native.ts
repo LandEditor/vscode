@@ -3,16 +3,33 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { VSBuffer } from 'vs/base/common/buffer';
-import { Event } from 'vs/base/common/event';
-import { URI } from 'vs/base/common/uri';
-import { MessageBoxOptions, MessageBoxReturnValue, OpenDevToolsOptions, OpenDialogOptions, OpenDialogReturnValue, SaveDialogOptions, SaveDialogReturnValue } from 'vs/base/parts/sandbox/common/electronTypes';
-import { ISerializableCommandAction } from 'vs/platform/action/common/action';
-import { INativeOpenDialogOptions } from 'vs/platform/dialogs/common/dialogs';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { IV8Profile } from 'vs/platform/profiling/common/profiling';
-import { IPartsSplash } from 'vs/platform/theme/common/themeService';
-import { IColorScheme, IOpenedAuxiliaryWindow, IOpenedMainWindow, IOpenEmptyWindowOptions, IOpenWindowOptions, IPoint, IRectangle, IWindowOpenable } from 'vs/platform/window/common/window';
+import { VSBuffer } from "vs/base/common/buffer";
+import { Event } from "vs/base/common/event";
+import { URI } from "vs/base/common/uri";
+import {
+	MessageBoxOptions,
+	MessageBoxReturnValue,
+	OpenDevToolsOptions,
+	OpenDialogOptions,
+	OpenDialogReturnValue,
+	SaveDialogOptions,
+	SaveDialogReturnValue,
+} from "vs/base/parts/sandbox/common/electronTypes";
+import { ISerializableCommandAction } from "vs/platform/action/common/action";
+import { INativeOpenDialogOptions } from "vs/platform/dialogs/common/dialogs";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { IV8Profile } from "vs/platform/profiling/common/profiling";
+import { IPartsSplash } from "vs/platform/theme/common/themeService";
+import {
+	IColorScheme,
+	IOpenedAuxiliaryWindow,
+	IOpenedMainWindow,
+	IOpenEmptyWindowOptions,
+	IOpenWindowOptions,
+	IPoint,
+	IRectangle,
+	IWindowOpenable,
+} from "vs/platform/window/common/window";
 
 export interface ICPUProperties {
 	model: string;
@@ -38,7 +55,6 @@ export interface INativeOptions {
 }
 
 export interface ICommonNativeHostService {
-
 	readonly _serviceBrand: undefined;
 
 	// Properties
@@ -62,40 +78,69 @@ export interface ICommonNativeHostService {
 
 	readonly onDidChangeColorScheme: Event<IColorScheme>;
 
-	readonly onDidChangePassword: Event<{ readonly service: string; readonly account: string }>;
+	readonly onDidChangePassword: Event<{
+		readonly service: string;
+		readonly account: string;
+	}>;
 
-	readonly onDidTriggerWindowSystemContextMenu: Event<{ readonly windowId: number; readonly x: number; readonly y: number }>;
+	readonly onDidTriggerWindowSystemContextMenu: Event<{
+		readonly windowId: number;
+		readonly x: number;
+		readonly y: number;
+	}>;
 
 	// Window
-	getWindows(options: { includeAuxiliaryWindows: true }): Promise<Array<IOpenedMainWindow | IOpenedAuxiliaryWindow>>;
-	getWindows(options: { includeAuxiliaryWindows: false }): Promise<Array<IOpenedMainWindow>>;
+	getWindows(options: {
+		includeAuxiliaryWindows: true;
+	}): Promise<Array<IOpenedMainWindow | IOpenedAuxiliaryWindow>>;
+	getWindows(options: {
+		includeAuxiliaryWindows: false;
+	}): Promise<Array<IOpenedMainWindow>>;
 	getWindowCount(): Promise<number>;
 	getActiveWindowId(): Promise<number | undefined>;
 
 	openWindow(options?: IOpenEmptyWindowOptions): Promise<void>;
-	openWindow(toOpen: IWindowOpenable[], options?: IOpenWindowOptions): Promise<void>;
+	openWindow(
+		toOpen: IWindowOpenable[],
+		options?: IOpenWindowOptions
+	): Promise<void>;
 
 	toggleFullScreen(options?: INativeOptions): Promise<void>;
 
 	handleTitleDoubleClick(options?: INativeOptions): Promise<void>;
 
-	getCursorScreenPoint(): Promise<{ readonly point: IPoint; readonly display: IRectangle }>;
+	getCursorScreenPoint(): Promise<{
+		readonly point: IPoint;
+		readonly display: IRectangle;
+	}>;
 
 	isMaximized(options?: INativeOptions): Promise<boolean>;
 	maximizeWindow(options?: INativeOptions): Promise<void>;
 	unmaximizeWindow(options?: INativeOptions): Promise<void>;
 	minimizeWindow(options?: INativeOptions): Promise<void>;
 	moveWindowTop(options?: INativeOptions): Promise<void>;
-	positionWindow(position: IRectangle, options?: INativeOptions): Promise<void>;
+	positionWindow(
+		position: IRectangle,
+		options?: INativeOptions
+	): Promise<void>;
 
 	/**
 	 * Only supported on Windows and macOS. Updates the window controls to match the title bar size.
 	 *
 	 * @param options `backgroundColor` and `foregroundColor` are only supported on Windows
 	 */
-	updateWindowControls(options: INativeOptions & { height?: number; backgroundColor?: string; foregroundColor?: string }): Promise<void>;
+	updateWindowControls(
+		options: INativeOptions & {
+			height?: number;
+			backgroundColor?: string;
+			foregroundColor?: string;
+		}
+	): Promise<void>;
 
-	setMinimumSize(width: number | undefined, height: number | undefined): Promise<void>;
+	setMinimumSize(
+		width: number | undefined,
+		height: number | undefined
+	): Promise<void>;
 
 	saveWindowSplash(splash: IPartsSplash): Promise<void>;
 
@@ -121,13 +166,20 @@ export interface ICommonNativeHostService {
 
 	// OS
 	showItemInFolder(path: string): Promise<void>;
-	setRepresentedFilename(path: string, options?: INativeOptions): Promise<void>;
+	setRepresentedFilename(
+		path: string,
+		options?: INativeOptions
+	): Promise<void>;
 	setDocumentEdited(edited: boolean, options?: INativeOptions): Promise<void>;
 	openExternal(url: string): Promise<boolean>;
 	moveItemToTrash(fullPath: string): Promise<void>;
 
 	isAdmin(): Promise<boolean>;
-	writeElevated(source: URI, target: URI, options?: { unlock?: boolean }): Promise<void>;
+	writeElevated(
+		source: URI,
+		target: URI,
+		options?: { unlock?: boolean }
+	): Promise<void>;
 	isRunningUnderARM64Translation(): Promise<boolean>;
 
 	getOSProperties(): Promise<IOSProperties>;
@@ -142,13 +194,23 @@ export interface ICommonNativeHostService {
 	killProcess(pid: number, code: string): Promise<void>;
 
 	// Clipboard
-	readClipboardText(type?: 'selection' | 'clipboard'): Promise<string>;
-	writeClipboardText(text: string, type?: 'selection' | 'clipboard'): Promise<void>;
+	readClipboardText(type?: "selection" | "clipboard"): Promise<string>;
+	writeClipboardText(
+		text: string,
+		type?: "selection" | "clipboard"
+	): Promise<void>;
 	readClipboardFindText(): Promise<string>;
 	writeClipboardFindText(text: string): Promise<void>;
-	writeClipboardBuffer(format: string, buffer: VSBuffer, type?: 'selection' | 'clipboard'): Promise<void>;
+	writeClipboardBuffer(
+		format: string,
+		buffer: VSBuffer,
+		type?: "selection" | "clipboard"
+	): Promise<void>;
 	readClipboardBuffer(format: string): Promise<VSBuffer>;
-	hasClipboard(format: string, type?: 'selection' | 'clipboard'): Promise<boolean>;
+	hasClipboard(
+		format: string,
+		type?: "selection" | "clipboard"
+	): Promise<boolean>;
 
 	// macOS Touchbar
 	newWindowTab(): Promise<void>;
@@ -165,7 +227,10 @@ export interface ICommonNativeHostService {
 
 	// Lifecycle
 	notifyReady(): Promise<void>;
-	relaunch(options?: { addArgs?: string[]; removeArgs?: string[] }): Promise<void>;
+	relaunch(options?: {
+		addArgs?: string[];
+		removeArgs?: string[];
+	}): Promise<void>;
 	reload(options?: { disableExtensions?: boolean }): Promise<void>;
 	closeWindow(options?: INativeOptions): Promise<void>;
 	quit(): Promise<void>;
@@ -181,13 +246,28 @@ export interface ICommonNativeHostService {
 	// Connectivity
 	resolveProxy(url: string): Promise<string | undefined>;
 	loadCertificates(): Promise<string[]>;
-	findFreePort(startPort: number, giveUpAfter: number, timeout: number, stride?: number): Promise<number>;
+	findFreePort(
+		startPort: number,
+		giveUpAfter: number,
+		timeout: number,
+		stride?: number
+	): Promise<number>;
 
 	// Registry (windows only)
-	windowsGetStringRegKey(hive: 'HKEY_CURRENT_USER' | 'HKEY_LOCAL_MACHINE' | 'HKEY_CLASSES_ROOT' | 'HKEY_USERS' | 'HKEY_CURRENT_CONFIG', path: string, name: string): Promise<string | undefined>;
+	windowsGetStringRegKey(
+		hive:
+			| "HKEY_CURRENT_USER"
+			| "HKEY_LOCAL_MACHINE"
+			| "HKEY_CLASSES_ROOT"
+			| "HKEY_USERS"
+			| "HKEY_CURRENT_CONFIG",
+		path: string,
+		name: string
+	): Promise<string | undefined>;
 }
 
-export const INativeHostService = createDecorator<INativeHostService>('nativeHostService');
+export const INativeHostService =
+	createDecorator<INativeHostService>("nativeHostService");
 
 /**
  * A set of methods specific to a native host, i.e. unsupported in web
@@ -196,4 +276,4 @@ export const INativeHostService = createDecorator<INativeHostService>('nativeHos
  * @see {@link IHostService} for methods that can be used in native and web
  * hosts.
  */
-export interface INativeHostService extends ICommonNativeHostService { }
+export interface INativeHostService extends ICommonNativeHostService {}

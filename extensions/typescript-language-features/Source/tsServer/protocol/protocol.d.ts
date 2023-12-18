@@ -2,16 +2,15 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import * as ts from 'typescript/lib/tsserverlibrary';
+import * as ts from "typescript/lib/tsserverlibrary";
 export = ts.server.protocol;
 
-
 declare enum ServerType {
-	Syntax = 'syntax',
-	Semantic = 'semantic',
+	Syntax = "syntax",
+	Semantic = "semantic",
 }
 
-declare module 'typescript/lib/tsserverlibrary' {
+declare module "typescript/lib/tsserverlibrary" {
 	namespace server.protocol {
 		type TextInsertion = ts.TextInsertion;
 		type ScriptElementKind = ts.ScriptElementKind;
@@ -25,7 +24,7 @@ declare module 'typescript/lib/tsserverlibrary' {
 			mappings: MapCodeRequestDocumentMapping[];
 
 			/// Edits to apply to the current workspace before performing the mapping.
-			updates?: FileCodeEdits[]
+			updates?: FileCodeEdits[];
 		}
 
 		export interface MapCodeRequestDocumentMapping {
@@ -48,14 +47,12 @@ declare module 'typescript/lib/tsserverlibrary' {
 		}
 
 		export interface MapCodeRequest extends Request {
-			command: 'mapCode',
+			command: "mapCode";
 			arguments: MapCodeRequestArgs;
 		}
 
 		export interface MapCodeResponse extends Response {
-			body: FileCodeEdits[]
+			body: FileCodeEdits[];
 		}
 	}
 }
-
-

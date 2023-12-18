@@ -3,22 +3,34 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Verbosity, EditorInputWithPreferredResource, EditorInputCapabilities, IFileLimitedEditorInputOptions } from 'vs/workbench/common/editor';
-import { EditorInput } from 'vs/workbench/common/editor/editorInput';
-import { URI } from 'vs/base/common/uri';
-import { ByteSize, IFileReadLimits, IFileService, getLargeFileConfirmationLimit } from 'vs/platform/files/common/files';
-import { ILabelService } from 'vs/platform/label/common/label';
-import { dirname, isEqual } from 'vs/base/common/resources';
-import { IFilesConfigurationService } from 'vs/workbench/services/filesConfiguration/common/filesConfigurationService';
-import { IMarkdownString } from 'vs/base/common/htmlContent';
-import { isConfigured } from 'vs/platform/configuration/common/configuration';
-import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration';
+import {
+	Verbosity,
+	EditorInputWithPreferredResource,
+	EditorInputCapabilities,
+	IFileLimitedEditorInputOptions,
+} from "vs/workbench/common/editor";
+import { EditorInput } from "vs/workbench/common/editor/editorInput";
+import { URI } from "vs/base/common/uri";
+import {
+	ByteSize,
+	IFileReadLimits,
+	IFileService,
+	getLargeFileConfirmationLimit,
+} from "vs/platform/files/common/files";
+import { ILabelService } from "vs/platform/label/common/label";
+import { dirname, isEqual } from "vs/base/common/resources";
+import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
+import { IMarkdownString } from "vs/base/common/htmlContent";
+import { isConfigured } from "vs/platform/configuration/common/configuration";
+import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
 
 /**
  * The base class for all editor inputs that open resources.
  */
-export abstract class AbstractResourceEditorInput extends EditorInput implements EditorInputWithPreferredResource {
-
+export abstract class AbstractResourceEditorInput
+	extends EditorInput
+	implements EditorInputWithPreferredResource
+{
 	override get capabilities(): EditorInputCapabilities {
 		let capabilities = EditorInputCapabilities.CanSplitInGroup;
 
@@ -38,15 +50,19 @@ export abstract class AbstractResourceEditorInput extends EditorInput implements
 	}
 
 	private _preferredResource: URI;
-	get preferredResource(): URI { return this._preferredResource; }
+	get preferredResource(): URI {
+		return this._preferredResource;
+	}
 
 	constructor(
 		readonly resource: URI,
 		preferredResource: URI | undefined,
 		@ILabelService protected readonly labelService: ILabelService,
 		@IFileService protected readonly fileService: IFileService,
-		@IFilesConfigurationService protected readonly filesConfigurationService: IFilesConfigurationService,
-		@ITextResourceConfigurationService protected readonly textResourceConfigurationService: ITextResourceConfigurationService
+		@IFilesConfigurationService
+		protected readonly filesConfigurationService: IFilesConfigurationService,
+		@ITextResourceConfigurationService
+		protected readonly textResourceConfigurationService: ITextResourceConfigurationService
 	) {
 		super();
 
@@ -56,11 +72,22 @@ export abstract class AbstractResourceEditorInput extends EditorInput implements
 	}
 
 	private registerListeners(): void {
-
 		// Clear our labels on certain label related events
-		this._register(this.labelService.onDidChangeFormatters(e => this.onLabelEvent(e.scheme)));
-		this._register(this.fileService.onDidChangeFileSystemProviderRegistrations(e => this.onLabelEvent(e.scheme)));
-		this._register(this.fileService.onDidChangeFileSystemProviderCapabilities(e => this.onLabelEvent(e.scheme)));
+		this._register(
+			this.labelService.onDidChangeFormatters((e) =>
+				this.onLabelEvent(e.scheme)
+			)
+		);
+		this._register(
+			this.fileService.onDidChangeFileSystemProviderRegistrations((e) =>
+				this.onLabelEvent(e.scheme)
+			)
+		);
+		this._register(
+			this.fileService.onDidChangeFileSystemProviderCapabilities((e) =>
+				this.onLabelEvent(e.scheme)
+			)
+		);
 	}
 
 	private onLabelEvent(scheme: string): void {
@@ -70,7 +97,6 @@ export abstract class AbstractResourceEditorInput extends EditorInput implements
 	}
 
 	private updateLabel(): void {
-
 		// Clear any cached labels from before
 		this._name = undefined;
 		this._shortDescription = undefined;
@@ -94,8 +120,10 @@ export abstract class AbstractResourceEditorInput extends EditorInput implements
 
 	private _name: string | undefined = undefined;
 	override getName(): string {
-		if (typeof this._name !== 'string') {
-			this._name = this.labelService.getUriBasenameLabel(this._preferredResource);
+		if (typeof this._name !== "string") {
+			this._name = this.labelService.getUriBasenameLabel(
+				this._preferredResource
+			);
 		}
 
 		return this._name;
@@ -115,8 +143,10 @@ export abstract class AbstractResourceEditorInput extends EditorInput implements
 
 	private _shortDescription: string | undefined = undefined;
 	private get shortDescription(): string {
-		if (typeof this._shortDescription !== 'string') {
-			this._shortDescription = this.labelService.getUriBasenameLabel(dirname(this._preferredResource));
+		if (typeof this._shortDescription !== "string") {
+			this._shortDescription = this.labelService.getUriBasenameLabel(
+				dirname(this._preferredResource)
+			);
 		}
 
 		return this._shortDescription;
@@ -124,8 +154,11 @@ export abstract class AbstractResourceEditorInput extends EditorInput implements
 
 	private _mediumDescription: string | undefined = undefined;
 	private get mediumDescription(): string {
-		if (typeof this._mediumDescription !== 'string') {
-			this._mediumDescription = this.labelService.getUriLabel(dirname(this._preferredResource), { relative: true });
+		if (typeof this._mediumDescription !== "string") {
+			this._mediumDescription = this.labelService.getUriLabel(
+				dirname(this._preferredResource),
+				{ relative: true }
+			);
 		}
 
 		return this._mediumDescription;
@@ -133,8 +166,10 @@ export abstract class AbstractResourceEditorInput extends EditorInput implements
 
 	private _longDescription: string | undefined = undefined;
 	private get longDescription(): string {
-		if (typeof this._longDescription !== 'string') {
-			this._longDescription = this.labelService.getUriLabel(dirname(this._preferredResource));
+		if (typeof this._longDescription !== "string") {
+			this._longDescription = this.labelService.getUriLabel(
+				dirname(this._preferredResource)
+			);
 		}
 
 		return this._longDescription;
@@ -142,7 +177,7 @@ export abstract class AbstractResourceEditorInput extends EditorInput implements
 
 	private _shortTitle: string | undefined = undefined;
 	private get shortTitle(): string {
-		if (typeof this._shortTitle !== 'string') {
+		if (typeof this._shortTitle !== "string") {
 			this._shortTitle = this.getName();
 		}
 
@@ -151,8 +186,11 @@ export abstract class AbstractResourceEditorInput extends EditorInput implements
 
 	private _mediumTitle: string | undefined = undefined;
 	private get mediumTitle(): string {
-		if (typeof this._mediumTitle !== 'string') {
-			this._mediumTitle = this.labelService.getUriLabel(this._preferredResource, { relative: true });
+		if (typeof this._mediumTitle !== "string") {
+			this._mediumTitle = this.labelService.getUriLabel(
+				this._preferredResource,
+				{ relative: true }
+			);
 		}
 
 		return this._mediumTitle;
@@ -160,8 +198,10 @@ export abstract class AbstractResourceEditorInput extends EditorInput implements
 
 	private _longTitle: string | undefined = undefined;
 	private get longTitle(): string {
-		if (typeof this._longTitle !== 'string') {
-			this._longTitle = this.labelService.getUriLabel(this._preferredResource);
+		if (typeof this._longTitle !== "string") {
+			this._longTitle = this.labelService.getUriLabel(
+				this._preferredResource
+			);
 		}
 
 		return this._longTitle;
@@ -183,7 +223,9 @@ export abstract class AbstractResourceEditorInput extends EditorInput implements
 		return this.filesConfigurationService.isReadonly(this.resource);
 	}
 
-	protected ensureLimits(options?: IFileLimitedEditorInputOptions): IFileReadLimits | undefined {
+	protected ensureLimits(
+		options?: IFileLimitedEditorInputOptions
+	): IFileReadLimits | undefined {
 		if (options?.limits) {
 			return options.limits; // respect passed in limits if any
 		}
@@ -196,13 +238,18 @@ export abstract class AbstractResourceEditorInput extends EditorInput implements
 		const defaultSizeLimit = getLargeFileConfirmationLimit(this.resource);
 		let configuredSizeLimit: number | undefined = undefined;
 
-		const configuredSizeLimitMb = this.textResourceConfigurationService.inspect<number>(this.resource, null, 'workbench.editorLargeFileConfirmation');
+		const configuredSizeLimitMb =
+			this.textResourceConfigurationService.inspect<number>(
+				this.resource,
+				null,
+				"workbench.editorLargeFileConfirmation"
+			);
 		if (isConfigured(configuredSizeLimitMb)) {
 			configuredSizeLimit = configuredSizeLimitMb.value * ByteSize.MB; // normalize to MB
 		}
 
 		return {
-			size: configuredSizeLimit ?? defaultSizeLimit
+			size: configuredSizeLimit ?? defaultSizeLimit,
 		};
 	}
 }

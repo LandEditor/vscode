@@ -11,7 +11,10 @@
 	overflow-y: hidden;
 }
 
-.monaco-workbench .notebookOverlay.notebook-editor .simple-fr-find-part-wrapper .matchesCount {
+.monaco-workbench
+	.notebookOverlay.notebook-editor
+	.simple-fr-find-part-wrapper
+	.matchesCount {
 	text-align: center;
 	text-overflow: ellipsis;
 	overflow: hidden;

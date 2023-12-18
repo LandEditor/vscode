@@ -3,23 +3,39 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as dom from 'vs/base/browser/dom';
-import { Button } from 'vs/base/browser/ui/button/button';
-import { toAction } from 'vs/base/common/actions';
-import { CancellationToken } from 'vs/base/common/cancellation';
-import { Event } from 'vs/base/common/event';
-import { Disposable, MutableDisposable, toDisposable } from 'vs/base/common/lifecycle';
-import 'vs/css!./postEditWidget';
-import { ContentWidgetPositionPreference, ICodeEditor, IContentWidget, IContentWidgetPosition } from 'vs/editor/browser/editorBrowser';
-import { IBulkEditResult, IBulkEditService, ResourceTextEdit } from 'vs/editor/browser/services/bulkEditService';
-import { Range } from 'vs/editor/common/core/range';
-import { WorkspaceEdit } from 'vs/editor/common/languages';
-import { TrackedRangeStickiness } from 'vs/editor/common/model';
-import { IContextKey, IContextKeyService, RawContextKey } from 'vs/platform/contextkey/common/contextkey';
-import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
-
+import * as dom from "vs/base/browser/dom";
+import { Button } from "vs/base/browser/ui/button/button";
+import { toAction } from "vs/base/common/actions";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { Event } from "vs/base/common/event";
+import {
+	Disposable,
+	MutableDisposable,
+	toDisposable,
+} from "vs/base/common/lifecycle";
+import "vs/css!./postEditWidget";
+import {
+	ContentWidgetPositionPreference,
+	ICodeEditor,
+	IContentWidget,
+	IContentWidgetPosition,
+} from "vs/editor/browser/editorBrowser";
+import {
+	IBulkEditResult,
+	IBulkEditService,
+	ResourceTextEdit,
+} from "vs/editor/browser/services/bulkEditService";
+import { Range } from "vs/editor/common/core/range";
+import { WorkspaceEdit } from "vs/editor/common/languages";
+import { TrackedRangeStickiness } from "vs/editor/common/model";
+import {
+	IContextKey,
+	IContextKeyService,
+	RawContextKey,
+} from "vs/platform/contextkey/common/contextkey";
+import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 
 interface EditSet {
 	readonly activeEditIndex: number;
@@ -36,7 +52,7 @@ interface ShowCommand {
 }
 
 class PostEditWidget extends Disposable implements IContentWidget {
-	private static readonly baseId = 'editor.widget.postEditWidget';
+	private static readonly baseId = "editor.widget.postEditWidget";
 
 	readonly allowEditorOverflow = true;
 	readonly suppressMouseDown = true;
@@ -54,9 +70,11 @@ class PostEditWidget extends Disposable implements IContentWidget {
 		private readonly range: Range,
 		private readonly edits: EditSet,
 		private readonly onSelectNewEdit: (editIndex: number) => void,
-		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
+		@IContextMenuService
+		private readonly _contextMenuService: IContextMenuService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService
 	) {
 		super();
 
@@ -69,37 +87,55 @@ class PostEditWidget extends Disposable implements IContentWidget {
 		this.editor.addContentWidget(this);
 		this.editor.layoutContentWidget(this);
 
-		this._register(toDisposable((() => this.editor.removeContentWidget(this))));
+		this._register(
+			toDisposable(() => this.editor.removeContentWidget(this))
+		);
 
-		this._register(this.editor.onDidChangeCursorPosition(e => {
-			if (!range.containsPosition(e.position)) {
-				this.dispose();
-			}
-		}));
+		this._register(
+			this.editor.onDidChangeCursorPosition((e) => {
+				if (!range.containsPosition(e.position)) {
+					this.dispose();
+				}
+			})
+		);
 
-		this._register(Event.runAndSubscribe(_keybindingService.onDidUpdateKeybindings, () => {
-			this._updateButtonTitle();
-		}));
+		this._register(
+			Event.runAndSubscribe(
+				_keybindingService.onDidUpdateKeybindings,
+				() => {
+					this._updateButtonTitle();
+				}
+			)
+		);
 	}
 
 	private _updateButtonTitle() {
-		const binding = this._keybindingService.lookupKeybinding(this.showCommand.id)?.getLabel();
-		this.button.element.title = this.showCommand.label + (binding ? ` (${binding})` : '');
+		const binding = this._keybindingService
+			.lookupKeybinding(this.showCommand.id)
+			?.getLabel();
+		this.button.element.title =
+			this.showCommand.label + (binding ? ` (${binding})` : "");
 	}
 
 	private create(): void {
-		this.domNode = dom.$('.post-edit-widget');
+		this.domNode = dom.$(".post-edit-widget");
 
-		this.button = this._register(new Button(this.domNode, {
-			supportIcons: true,
-		}));
-		this.button.label = '$(insert)';
+		this.button = this._register(
+			new Button(this.domNode, {
+				supportIcons: true,
+			})
+		);
+		this.button.label = "$(insert)";
 
-		this._register(dom.addDisposableListener(this.domNode, dom.EventType.CLICK, () => this.showSelector()));
+		this._register(
+			dom.addDisposableListener(this.domNode, dom.EventType.CLICK, () =>
+				this.showSelector()
+			)
+		);
 	}
 
 	getId(): string {
-		return PostEditWidget.baseId + '.' + this.typeId;
+		return PostEditWidget.baseId + "." + this.typeId;
 	}
 
 	getDomNode(): HTMLElement {
@@ -109,7 +145,7 @@ class PostEditWidget extends Disposable implements IContentWidget {
 	getPosition(): IContentWidgetPosition | null {
 		return {
 			position: this.range.getEndPosition(),
-			preference: [ContentWidgetPositionPreference.BELOW]
+			preference: [ContentWidgetPositionPreference.BELOW],
 		};
 	}
 
@@ -120,42 +156,53 @@ class PostEditWidget extends Disposable implements IContentWidget {
 				return { x: pos.left + pos.width, y: pos.top + pos.height };
 			},
 			getActions: () => {
-				return this.edits.allEdits.map((edit, i) => toAction({
-					id: '',
-					label: edit.label,
-					checked: i === this.edits.activeEditIndex,
-					run: () => {
-						if (i !== this.edits.activeEditIndex) {
-							return this.onSelectNewEdit(i);
-						}
-					},
-				}));
-			}
+				return this.edits.allEdits.map((edit, i) =>
+					toAction({
+						id: "",
+						label: edit.label,
+						checked: i === this.edits.activeEditIndex,
+						run: () => {
+							if (i !== this.edits.activeEditIndex) {
+								return this.onSelectNewEdit(i);
+							}
+						},
+					})
+				);
+			},
 		});
 	}
 }
 
 export class PostEditWidgetManager extends Disposable {
-
-	private readonly _currentWidget = this._register(new MutableDisposable<PostEditWidget>());
+	private readonly _currentWidget = this._register(
+		new MutableDisposable<PostEditWidget>()
+	);
 
 	constructor(
 		private readonly _id: string,
 		private readonly _editor: ICodeEditor,
 		private readonly _visibleContext: RawContextKey<boolean>,
 		private readonly _showCommand: ShowCommand,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IBulkEditService private readonly _bulkEditService: IBulkEditService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IBulkEditService private readonly _bulkEditService: IBulkEditService
 	) {
 		super();
 
-		this._register(Event.any(
-			_editor.onDidChangeModel,
-			_editor.onDidChangeModelContent,
-		)(() => this.clear()));
+		this._register(
+			Event.any(
+				_editor.onDidChangeModel,
+				_editor.onDidChangeModelContent
+			)(() => this.clear())
+		);
 	}
 
-	public async applyEditAndShowIfNeeded(ranges: readonly Range[], edits: EditSet, canShowWidget: boolean, token: CancellationToken) {
+	public async applyEditAndShowIfNeeded(
+		ranges: readonly Range[],
+		edits: EditSet,
+		canShowWidget: boolean,
+		token: CancellationToken
+	) {
 		const model = this._editor.getModel();
 		if (!model || !ranges.length) {
 			return;
@@ -167,59 +214,117 @@ export class PostEditWidgetManager extends Disposable {
 		}
 
 		let insertTextEdit: ResourceTextEdit[] = [];
-		if (typeof edit.insertText === 'string' ? edit.insertText === '' : edit.insertText.snippet === '') {
+		if (
+			typeof edit.insertText === "string"
+				? edit.insertText === ""
+				: edit.insertText.snippet === ""
+		) {
 			insertTextEdit = [];
 		} else {
-			insertTextEdit = ranges.map(range => new ResourceTextEdit(model.uri,
-				typeof edit.insertText === 'string'
-					? { range, text: edit.insertText, insertAsSnippet: false }
-					: { range, text: edit.insertText.snippet, insertAsSnippet: true }
-			));
+			insertTextEdit = ranges.map(
+				(range) =>
+					new ResourceTextEdit(
+						model.uri,
+						typeof edit.insertText === "string"
+							? {
+									range,
+									text: edit.insertText,
+									insertAsSnippet: false,
+								}
+							: {
+									range,
+									text: edit.insertText.snippet,
+									insertAsSnippet: true,
+								}
+					)
+			);
 		}
 
 		const allEdits = [
 			...insertTextEdit,
-			...(edit.additionalEdit?.edits ?? [])
+			...(edit.additionalEdit?.edits ?? []),
 		];
 
 		const combinedWorkspaceEdit: WorkspaceEdit = {
-			edits: allEdits
+			edits: allEdits,
 		};
 
 		// Use a decoration to track edits around the trigger range
 		const primaryRange = ranges[0];
-		const editTrackingDecoration = model.deltaDecorations([], [{
-			range: primaryRange,
-			options: { description: 'paste-line-suffix', stickiness: TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges }
-		}]);
+		const editTrackingDecoration = model.deltaDecorations(
+			[],
+			[
+				{
+					range: primaryRange,
+					options: {
+						description: "paste-line-suffix",
+						stickiness:
+							TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges,
+					},
+				},
+			]
+		);
 
 		let editResult: IBulkEditResult;
 		let editRange: Range | null;
 		try {
-			editResult = await this._bulkEditService.apply(combinedWorkspaceEdit, { editor: this._editor, token });
+			editResult = await this._bulkEditService.apply(
+				combinedWorkspaceEdit,
+				{ editor: this._editor, token }
+			);
 			editRange = model.getDecorationRange(editTrackingDecoration[0]);
 		} finally {
 			model.deltaDecorations(editTrackingDecoration, []);
 		}
 
-		if (canShowWidget && editResult.isApplied && edits.allEdits.length > 1) {
-			this.show(editRange ?? primaryRange, edits, async (newEditIndex) => {
-				const model = this._editor.getModel();
-				if (!model) {
-					return;
-				}
+		if (
+			canShowWidget &&
+			editResult.isApplied &&
+			edits.allEdits.length > 1
+		) {
+			this.show(
+				editRange ?? primaryRange,
+				edits,
+				async (newEditIndex) => {
+					const model = this._editor.getModel();
+					if (!model) {
+						return;
+					}
 
-				await model.undo();
-				this.applyEditAndShowIfNeeded(ranges, { activeEditIndex: newEditIndex, allEdits: edits.allEdits }, canShowWidget, token);
-			});
+					await model.undo();
+					this.applyEditAndShowIfNeeded(
+						ranges,
+						{
+							activeEditIndex: newEditIndex,
+							allEdits: edits.allEdits,
+						},
+						canShowWidget,
+						token
+					);
+				}
+			);
 		}
 	}
 
-	public show(range: Range, edits: EditSet, onDidSelectEdit: (newIndex: number) => void) {
+	public show(
+		range: Range,
+		edits: EditSet,
+		onDidSelectEdit: (newIndex: number) => void
+	) {
 		this.clear();
 
 		if (this._editor.hasModel()) {
-			this._currentWidget.value = this._instantiationService.createInstance(PostEditWidget, this._id, this._editor, this._visibleContext, this._showCommand, range, edits, onDidSelectEdit);
+			this._currentWidget.value =
+				this._instantiationService.createInstance(
+					PostEditWidget,
+					this._id,
+					this._editor,
+					this._visibleContext,
+					this._showCommand,
+					range,
+					edits,
+					onDidSelectEdit
+				);
 		}
 	}
 

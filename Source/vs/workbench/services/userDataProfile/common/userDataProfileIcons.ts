@@ -3,14 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Codicon } from 'vs/base/common/codicons';
-import { localize } from 'vs/nls';
-import { registerIcon } from 'vs/platform/theme/common/iconRegistry';
+import { Codicon } from "vs/base/common/codicons";
+import { localize } from "vs/nls";
+import { registerIcon } from "vs/platform/theme/common/iconRegistry";
 
-export const DEFAULT_ICON = registerIcon('settings-view-bar-icon', Codicon.settingsGear, localize('settingsViewBarIcon', "Settings icon in the view bar."));
+export const DEFAULT_ICON = registerIcon(
+	"settings-view-bar-icon",
+	Codicon.settingsGear,
+	localize("settingsViewBarIcon", "Settings icon in the view bar.")
+);
 
 export const ICONS = [
-
 	/* Default */
 	DEFAULT_ICON,
 
@@ -92,5 +95,4 @@ export const ICONS = [
 	Codicon.archive,
 	Codicon.mic,
 	Codicon.jersey,
-
 ];

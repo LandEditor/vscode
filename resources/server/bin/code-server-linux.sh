@@ -4,7 +4,10 @@
 #
 
 case "$1" in
-	--inspect*) INSPECT="$1"; shift;;
+	--inspect*)
+		INSPECT="$1"
+		shift
+		;;
 esac
 
 ROOT="$(dirname "$(dirname "$(readlink -f "$0")")")"

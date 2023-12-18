@@ -30,10 +30,7 @@ pub struct LaunchdService {
 
 impl LaunchdService {
 	pub fn new(log: log::Logger, paths: &LauncherPaths) -> Self {
-		Self {
-			log,
-			log_file: paths.service_log_file(),
-		}
+		Self { log, log_file: paths.service_log_file() }
 	}
 }
 
@@ -94,10 +91,7 @@ impl ServiceManager for LaunchdService {
 
 		capture_command_and_check_status(
 			"launchctl",
-			&[
-				"unload",
-				service_file.as_os_str().to_string_lossy().as_ref(),
-			],
+			&["unload", service_file.as_os_str().to_string_lossy().as_ref()],
 		)
 		.await?;
 

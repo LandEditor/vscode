@@ -33,7 +33,10 @@
 	outline: 0 !important;
 }
 
-.monaco-workbench .menubar:not(.compact) > .menubar-menu-button:focus .menubar-menu-title {
+.monaco-workbench
+	.menubar:not(.compact)
+	> .menubar-menu-button:focus
+	.menubar-menu-title {
 	outline-width: 1px;
 	outline-style: solid;
 	outline-offset: -1px;
@@ -97,7 +100,9 @@
 	justify-content: center;
 }
 
-.menubar:not(.compact) .menubar-menu-button:first-child .toolbar-toggle-more::before,
+.menubar:not(.compact)
+	.menubar-menu-button:first-child
+	.toolbar-toggle-more::before,
 .menubar.compact .toolbar-toggle-more::before {
 	content: "\eb94" !important;
 }
@@ -105,7 +110,7 @@
 /* Match behavior of outline for activity bar icons */
 .menubar.compact > .menubar-menu-button.open .menubar-menu-title,
 .menubar.compact > .menubar-menu-button:focus .menubar-menu-title,
-.menubar.compact > .menubar-menu-button:hover .menubar-menu-title{
+.menubar.compact > .menubar-menu-button:hover .menubar-menu-title {
 	outline-width: 1px !important;
 	outline-offset: -8px !important;
 }

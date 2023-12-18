@@ -3,25 +3,37 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as objects from 'vs/base/common/objects';
-import { ICodeEditor, IDiffEditorConstructionOptions } from 'vs/editor/browser/editorBrowser';
-import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService';
-import { CodeEditorWidget, ICodeEditorWidgetOptions } from 'vs/editor/browser/widget/codeEditorWidget';
-import { DiffEditorWidget, IDiffCodeEditorWidgetOptions } from 'vs/editor/browser/widget/diffEditor/diffEditorWidget';
-import { ConfigurationChangedEvent, IDiffEditorOptions, IEditorOptions } from 'vs/editor/common/config/editorOptions';
-import { ILanguageConfigurationService } from 'vs/editor/common/languages/languageConfigurationRegistry';
-import { ILanguageFeaturesService } from 'vs/editor/common/services/languageFeatures';
-import { IAccessibilityService } from 'vs/platform/accessibility/common/accessibility';
-import { IAudioCueService } from 'vs/platform/audioCues/browser/audioCueService';
-import { ICommandService } from 'vs/platform/commands/common/commands';
-import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { INotificationService } from 'vs/platform/notification/common/notification';
-import { IEditorProgressService } from 'vs/platform/progress/common/progress';
-import { IThemeService } from 'vs/platform/theme/common/themeService';
+import * as objects from "vs/base/common/objects";
+import {
+	ICodeEditor,
+	IDiffEditorConstructionOptions,
+} from "vs/editor/browser/editorBrowser";
+import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
+import {
+	CodeEditorWidget,
+	ICodeEditorWidgetOptions,
+} from "vs/editor/browser/widget/codeEditorWidget";
+import {
+	DiffEditorWidget,
+	IDiffCodeEditorWidgetOptions,
+} from "vs/editor/browser/widget/diffEditor/diffEditorWidget";
+import {
+	ConfigurationChangedEvent,
+	IDiffEditorOptions,
+	IEditorOptions,
+} from "vs/editor/common/config/editorOptions";
+import { ILanguageConfigurationService } from "vs/editor/common/languages/languageConfigurationRegistry";
+import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
+import { IAccessibilityService } from "vs/platform/accessibility/common/accessibility";
+import { IAudioCueService } from "vs/platform/audioCues/browser/audioCueService";
+import { ICommandService } from "vs/platform/commands/common/commands";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { INotificationService } from "vs/platform/notification/common/notification";
+import { IEditorProgressService } from "vs/platform/progress/common/progress";
+import { IThemeService } from "vs/platform/theme/common/themeService";
 
 export class EmbeddedCodeEditorWidget extends CodeEditorWidget {
-
 	private readonly _parentEditor: ICodeEditor;
 	private readonly _overwriteOptions: IEditorOptions;
 
@@ -37,10 +49,29 @@ export class EmbeddedCodeEditorWidget extends CodeEditorWidget {
 		@IThemeService themeService: IThemeService,
 		@INotificationService notificationService: INotificationService,
 		@IAccessibilityService accessibilityService: IAccessibilityService,
-		@ILanguageConfigurationService languageConfigurationService: ILanguageConfigurationService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageConfigurationService
+		languageConfigurationService: ILanguageConfigurationService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService
 	) {
-		super(domElement, { ...parentEditor.getRawOptions(), overflowWidgetsDomNode: parentEditor.getOverflowWidgetsDomNode() }, codeEditorWidgetOptions, instantiationService, codeEditorService, commandService, contextKeyService, themeService, notificationService, accessibilityService, languageConfigurationService, languageFeaturesService);
+		super(
+			domElement,
+			{
+				...parentEditor.getRawOptions(),
+				overflowWidgetsDomNode:
+					parentEditor.getOverflowWidgetsDomNode(),
+			},
+			codeEditorWidgetOptions,
+			instantiationService,
+			codeEditorService,
+			commandService,
+			contextKeyService,
+			themeService,
+			notificationService,
+			accessibilityService,
+			languageConfigurationService,
+			languageFeaturesService
+		);
 
 		this._parentEditor = parentEditor;
 		this._overwriteOptions = options;
@@ -48,7 +79,12 @@ export class EmbeddedCodeEditorWidget extends CodeEditorWidget {
 		// Overwrite parent's options
 		super.updateOptions(this._overwriteOptions);
 
-		this._register(parentEditor.onDidChangeConfiguration((e: ConfigurationChangedEvent) => this._onParentConfigurationChanged(e)));
+		this._register(
+			parentEditor.onDidChangeConfiguration(
+				(e: ConfigurationChangedEvent) =>
+					this._onParentConfigurationChanged(e)
+			)
+		);
 	}
 
 	getParentEditor(): ICodeEditor {
@@ -67,7 +103,6 @@ export class EmbeddedCodeEditorWidget extends CodeEditorWidget {
 }
 
 export class EmbeddedDiffEditorWidget extends DiffEditorWidget {
-
 	private readonly _parentEditor: ICodeEditor;
 	private readonly _overwriteOptions: IDiffEditorOptions;
 
@@ -80,9 +115,18 @@ export class EmbeddedDiffEditorWidget extends DiffEditorWidget {
 		@IInstantiationService instantiationService: IInstantiationService,
 		@ICodeEditorService codeEditorService: ICodeEditorService,
 		@IAudioCueService audioCueService: IAudioCueService,
-		@IEditorProgressService editorProgressService: IEditorProgressService,
+		@IEditorProgressService editorProgressService: IEditorProgressService
 	) {
-		super(domElement, parentEditor.getRawOptions(), codeEditorWidgetOptions, contextKeyService, instantiationService, codeEditorService, audioCueService, editorProgressService);
+		super(
+			domElement,
+			parentEditor.getRawOptions(),
+			codeEditorWidgetOptions,
+			contextKeyService,
+			instantiationService,
+			codeEditorService,
+			audioCueService,
+			editorProgressService
+		);
 
 		this._parentEditor = parentEditor;
 		this._overwriteOptions = options;
@@ -90,7 +134,11 @@ export class EmbeddedDiffEditorWidget extends DiffEditorWidget {
 		// Overwrite parent's options
 		super.updateOptions(this._overwriteOptions);
 
-		this._register(parentEditor.onDidChangeConfiguration(e => this._onParentConfigurationChanged(e)));
+		this._register(
+			parentEditor.onDidChangeConfiguration((e) =>
+				this._onParentConfigurationChanged(e)
+			)
+		);
 	}
 
 	getParentEditor(): ICodeEditor {

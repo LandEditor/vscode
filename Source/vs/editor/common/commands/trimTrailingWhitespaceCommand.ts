@@ -3,16 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as strings from 'vs/base/common/strings';
-import { EditOperation, ISingleEditOperation } from 'vs/editor/common/core/editOperation';
-import { Position } from 'vs/editor/common/core/position';
-import { Range } from 'vs/editor/common/core/range';
-import { Selection } from 'vs/editor/common/core/selection';
-import { ICommand, ICursorStateComputerData, IEditOperationBuilder } from 'vs/editor/common/editorCommon';
-import { ITextModel } from 'vs/editor/common/model';
+import * as strings from "vs/base/common/strings";
+import {
+	EditOperation,
+	ISingleEditOperation,
+} from "vs/editor/common/core/editOperation";
+import { Position } from "vs/editor/common/core/position";
+import { Range } from "vs/editor/common/core/range";
+import { Selection } from "vs/editor/common/core/selection";
+import {
+	ICommand,
+	ICursorStateComputerData,
+	IEditOperationBuilder,
+} from "vs/editor/common/editorCommon";
+import { ITextModel } from "vs/editor/common/model";
 
 export class TrimTrailingWhitespaceCommand implements ICommand {
-
 	private readonly _selection: Selection;
 	private _selectionId: string | null;
 	private readonly _cursors: Position[];
@@ -23,7 +29,10 @@ export class TrimTrailingWhitespaceCommand implements ICommand {
 		this._selectionId = null;
 	}
 
-	public getEditOperations(model: ITextModel, builder: IEditOperationBuilder): void {
+	public getEditOperations(
+		model: ITextModel,
+		builder: IEditOperationBuilder
+	): void {
 		const ops = trimTrailingWhitespace(model, this._cursors);
 		for (let i = 0, len = ops.length; i < len; i++) {
 			const op = ops[i];
@@ -34,7 +43,10 @@ export class TrimTrailingWhitespaceCommand implements ICommand {
 		this._selectionId = builder.trackSelection(this._selection);
 	}
 
-	public computeCursorState(model: ITextModel, helper: ICursorStateComputerData): Selection {
+	public computeCursorState(
+		model: ITextModel,
+		helper: ICursorStateComputerData
+	): Selection {
 		return helper.getTrackedSelection(this._selectionId!);
 	}
 }
@@ -42,7 +54,10 @@ export class TrimTrailingWhitespaceCommand implements ICommand {
 /**
  * Generate commands for trimming trailing whitespace on a model and ignore lines on which cursors are sitting.
  */
-export function trimTrailingWhitespace(model: ITextModel, cursors: Position[]): ISingleEditOperation[] {
+export function trimTrailingWhitespace(
+	model: ITextModel,
+	cursors: Position[]
+): ISingleEditOperation[] {
 	// Sort cursors ascending
 	cursors.sort((a, b) => {
 		if (a.lineNumber === b.lineNumber) {
@@ -64,12 +79,19 @@ export function trimTrailingWhitespace(model: ITextModel, cursors: Position[]): 
 	let cursorIndex = 0;
 	const cursorLen = cursors.length;
 
-	for (let lineNumber = 1, lineCount = model.getLineCount(); lineNumber <= lineCount; lineNumber++) {
+	for (
+		let lineNumber = 1, lineCount = model.getLineCount();
+		lineNumber <= lineCount;
+		lineNumber++
+	) {
 		const lineContent = model.getLineContent(lineNumber);
 		const maxLineColumn = lineContent.length + 1;
 		let minEditColumn = 0;
 
-		if (cursorIndex < cursorLen && cursors[cursorIndex].lineNumber === lineNumber) {
+		if (
+			cursorIndex < cursorLen &&
+			cursors[cursorIndex].lineNumber === lineNumber
+		) {
 			minEditColumn = cursors[cursorIndex].column;
 			cursorIndex++;
 			if (minEditColumn === maxLineColumn) {
@@ -82,7 +104,8 @@ export function trimTrailingWhitespace(model: ITextModel, cursors: Position[]): 
 			continue;
 		}
 
-		const lastNonWhitespaceIndex = strings.lastNonWhitespaceIndex(lineContent);
+		const lastNonWhitespaceIndex =
+			strings.lastNonWhitespaceIndex(lineContent);
 
 		let fromColumn = 0;
 		if (lastNonWhitespaceIndex === -1) {
@@ -97,10 +120,9 @@ export function trimTrailingWhitespace(model: ITextModel, cursors: Position[]): 
 		}
 
 		fromColumn = Math.max(minEditColumn, fromColumn);
-		r[rLen++] = EditOperation.delete(new Range(
-			lineNumber, fromColumn,
-			lineNumber, maxLineColumn
-		));
+		r[rLen++] = EditOperation.delete(
+			new Range(lineNumber, fromColumn, lineNumber, maxLineColumn)
+		);
 	}
 
 	return r;

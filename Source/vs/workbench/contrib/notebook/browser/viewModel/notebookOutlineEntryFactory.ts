@@ -3,17 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { renderMarkdownAsPlaintext } from 'vs/base/browser/markdownRenderer';
-import { CancellationToken } from 'vs/base/common/cancellation';
-import { IOutlineModelService, OutlineModelService } from 'vs/editor/contrib/documentSymbols/browser/outlineModel';
-import { localize } from 'vs/nls';
-import { ICellViewModel } from 'vs/workbench/contrib/notebook/browser/notebookBrowser';
-import { getMarkdownHeadersInCell } from 'vs/workbench/contrib/notebook/browser/viewModel/foldingModel';
-import { OutlineEntry } from './OutlineEntry';
-import { CellKind } from 'vs/workbench/contrib/notebook/common/notebookCommon';
-import { INotebookExecutionStateService } from 'vs/workbench/contrib/notebook/common/notebookExecutionStateService';
-import { IRange } from 'vs/editor/common/core/range';
-import { SymbolKind } from 'vs/editor/common/languages';
+import { renderMarkdownAsPlaintext } from "vs/base/browser/markdownRenderer";
+import { CancellationToken } from "vs/base/common/cancellation";
+import {
+	IOutlineModelService,
+	OutlineModelService,
+} from "vs/editor/contrib/documentSymbols/browser/outlineModel";
+import { localize } from "vs/nls";
+import { ICellViewModel } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
+import { getMarkdownHeadersInCell } from "vs/workbench/contrib/notebook/browser/viewModel/foldingModel";
+import { OutlineEntry } from "./OutlineEntry";
+import { CellKind } from "vs/workbench/contrib/notebook/common/notebookCommon";
+import { INotebookExecutionStateService } from "vs/workbench/contrib/notebook/common/notebookExecutionStateService";
+import { IRange } from "vs/editor/common/core/range";
+import { SymbolKind } from "vs/editor/common/languages";
 
 type entryDesc = {
 	name: string;
@@ -23,14 +26,16 @@ type entryDesc = {
 };
 
 export class NotebookOutlineEntryFactory {
-
 	private cellOutlineEntryCache: Record<string, entryDesc[]> = {};
 
 	constructor(
 		private readonly executionStateService: INotebookExecutionStateService
-	) { }
+	) {}
 
-	public getOutlineEntries(cell: ICellViewModel, index: number): OutlineEntry[] {
+	public getOutlineEntries(
+		cell: ICellViewModel,
+		index: number
+	): OutlineEntry[] {
 		const entries: OutlineEntry[] = [];
 
 		const isMarkdown = cell.cellKind === CellKind.Markup;
@@ -43,9 +48,13 @@ export class NotebookOutlineEntryFactory {
 
 		if (isMarkdown) {
 			const fullContent = cell.getText().substring(0, 10000);
-			for (const { depth, text } of getMarkdownHeadersInCell(fullContent)) {
+			for (const { depth, text } of getMarkdownHeadersInCell(
+				fullContent
+			)) {
 				hasHeader = true;
-				entries.push(new OutlineEntry(index++, depth, cell, text, false, false));
+				entries.push(
+					new OutlineEntry(index++, depth, cell, text, false, false)
+				);
 			}
 
 			if (!hasHeader) {
@@ -55,7 +64,16 @@ export class NotebookOutlineEntryFactory {
 					hasHeader = true;
 					const level = parseInt(match[1]);
 					const text = match[2].trim();
-					entries.push(new OutlineEntry(index++, level, cell, text, false, false));
+					entries.push(
+						new OutlineEntry(
+							index++,
+							level,
+							cell,
+							text,
+							false,
+							false
+						)
+					);
 				}
 			}
 
@@ -66,47 +84,88 @@ export class NotebookOutlineEntryFactory {
 
 		if (!hasHeader) {
 			if (!isMarkdown && cell.model.textModel) {
-				const cachedEntries = this.cellOutlineEntryCache[cell.model.textModel.id];
+				const cachedEntries =
+					this.cellOutlineEntryCache[cell.model.textModel.id];
 
 				// Gathering symbols from the model is an async operation, but this provider is syncronous.
 				// So symbols need to be precached before this function is called to get the full list.
 				if (cachedEntries) {
 					cachedEntries.forEach((cached) => {
-						entries.push(new OutlineEntry(index++, cached.level, cell, cached.name, false, false, cached.range, cached.kind));
+						entries.push(
+							new OutlineEntry(
+								index++,
+								cached.level,
+								cell,
+								cached.name,
+								false,
+								false,
+								cached.range,
+								cached.kind
+							)
+						);
 					});
 				}
 			}
 
-			const exeState = !isMarkdown && this.executionStateService.getCellExecution(cell.uri);
+			const exeState =
+				!isMarkdown &&
+				this.executionStateService.getCellExecution(cell.uri);
 			if (entries.length === 0) {
 				let preview = content.trim();
 				if (preview.length === 0) {
 					// empty or just whitespace
-					preview = localize('empty', "empty cell");
+					preview = localize("empty", "empty cell");
 				}
 
-				entries.push(new OutlineEntry(index++, 7, cell, preview, !!exeState, exeState ? exeState.isPaused : false));
+				entries.push(
+					new OutlineEntry(
+						index++,
+						7,
+						cell,
+						preview,
+						!!exeState,
+						exeState ? exeState.isPaused : false
+					)
+				);
 			}
 		}
 
 		return entries;
 	}
 
-	public async cacheSymbols(cell: ICellViewModel, outlineModelService: IOutlineModelService, cancelToken: CancellationToken) {
+	public async cacheSymbols(
+		cell: ICellViewModel,
+		outlineModelService: IOutlineModelService,
+		cancelToken: CancellationToken
+	) {
 		const textModel = await cell.resolveTextModel();
-		const outlineModel = await outlineModelService.getOrCreate(textModel, cancelToken);
-		const entries = createOutlineEntries(outlineModel.getTopLevelSymbols(), 7);
+		const outlineModel = await outlineModelService.getOrCreate(
+			textModel,
+			cancelToken
+		);
+		const entries = createOutlineEntries(
+			outlineModel.getTopLevelSymbols(),
+			7
+		);
 		this.cellOutlineEntryCache[textModel.id] = entries;
 	}
 }
 
-type outlineModel = Awaited<ReturnType<OutlineModelService['getOrCreate']>>;
-type documentSymbol = ReturnType<outlineModel['getTopLevelSymbols']>[number];
+type outlineModel = Awaited<ReturnType<OutlineModelService["getOrCreate"]>>;
+type documentSymbol = ReturnType<outlineModel["getTopLevelSymbols"]>[number];
 
-function createOutlineEntries(symbols: documentSymbol[], level: number): entryDesc[] {
+function createOutlineEntries(
+	symbols: documentSymbol[],
+	level: number
+): entryDesc[] {
 	const entries: entryDesc[] = [];
-	symbols.forEach(symbol => {
-		entries.push({ name: symbol.name, range: symbol.range, level, kind: symbol.kind });
+	symbols.forEach((symbol) => {
+		entries.push({
+			name: symbol.name,
+			range: symbol.range,
+			level,
+			kind: symbol.kind,
+		});
 		if (symbol.children) {
 			entries.push(...createOutlineEntries(symbol.children, level + 1));
 		}
@@ -117,7 +176,9 @@ function createOutlineEntries(symbols: documentSymbol[], level: number): entryDe
 function getCellFirstNonEmptyLine(cell: ICellViewModel) {
 	const textBuffer = cell.textBuffer;
 	for (let i = 0; i < textBuffer.getLineCount(); i++) {
-		const firstNonWhitespace = textBuffer.getLineFirstNonWhitespaceColumn(i + 1);
+		const firstNonWhitespace = textBuffer.getLineFirstNonWhitespaceColumn(
+			i + 1
+		);
 		const lineLength = textBuffer.getLineLength(i + 1);
 		if (firstNonWhitespace < lineLength) {
 			return textBuffer.getLineContent(i + 1);

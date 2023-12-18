@@ -3,28 +3,52 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IActivityService, IActivity } from 'vs/workbench/services/activity/common/activity';
-import { IDisposable, Disposable, toDisposable } from 'vs/base/common/lifecycle';
-import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
-import { IViewDescriptorService, ViewContainer } from 'vs/workbench/common/views';
-import { GLOBAL_ACTIVITY_ID, ACCOUNTS_ACTIVITY_ID } from 'vs/workbench/common/activity';
-import { Emitter, Event } from 'vs/base/common/event';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { isUndefined } from 'vs/base/common/types';
+import {
+	IActivityService,
+	IActivity,
+} from "vs/workbench/services/activity/common/activity";
+import {
+	IDisposable,
+	Disposable,
+	toDisposable,
+} from "vs/base/common/lifecycle";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import {
+	IViewDescriptorService,
+	ViewContainer,
+} from "vs/workbench/common/views";
+import {
+	GLOBAL_ACTIVITY_ID,
+	ACCOUNTS_ACTIVITY_ID,
+} from "vs/workbench/common/activity";
+import { Emitter, Event } from "vs/base/common/event";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { isUndefined } from "vs/base/common/types";
 
 class ViewContainerActivityByView extends Disposable {
-
 	private activity: IActivity | undefined = undefined;
 	private activityDisposable: IDisposable = Disposable.None;
 
 	constructor(
 		private readonly viewId: string,
-		@IViewDescriptorService private readonly viewDescriptorService: IViewDescriptorService,
-		@IActivityService private readonly activityService: IActivityService,
+		@IViewDescriptorService
+		private readonly viewDescriptorService: IViewDescriptorService,
+		@IActivityService private readonly activityService: IActivityService
 	) {
 		super();
-		this._register(Event.filter(this.viewDescriptorService.onDidChangeContainer, e => e.views.some(view => view.id === viewId))(() => this.update()));
-		this._register(Event.filter(this.viewDescriptorService.onDidChangeLocation, e => e.views.some(view => view.id === viewId))(() => this.update()));
+		this._register(
+			Event.filter(this.viewDescriptorService.onDidChangeContainer, (e) =>
+				e.views.some((view) => view.id === viewId)
+			)(() => this.update())
+		);
+		this._register(
+			Event.filter(this.viewDescriptorService.onDidChangeLocation, (e) =>
+				e.views.some((view) => view.id === viewId)
+			)(() => this.update())
+		);
 	}
 
 	setActivity(activity: IActivity): void {
@@ -39,9 +63,15 @@ class ViewContainerActivityByView extends Disposable {
 
 	private update(): void {
 		this.activityDisposable.dispose();
-		const container = this.viewDescriptorService.getViewContainerByViewId(this.viewId);
+		const container = this.viewDescriptorService.getViewContainerByViewId(
+			this.viewId
+		);
 		if (container && this.activity) {
-			this.activityDisposable = this.activityService.showViewContainerActivity(container.id, this.activity);
+			this.activityDisposable =
+				this.activityService.showViewContainerActivity(
+					container.id,
+					this.activity
+				);
 		}
 	}
 
@@ -57,26 +87,33 @@ interface IViewActivity {
 }
 
 export class ActivityService extends Disposable implements IActivityService {
-
 	public _serviceBrand: undefined;
 
 	private readonly viewActivities = new Map<string, IViewActivity>();
 
-	private readonly _onDidChangeActivity = this._register(new Emitter<string | ViewContainer>());
+	private readonly _onDidChangeActivity = this._register(
+		new Emitter<string | ViewContainer>()
+	);
 	readonly onDidChangeActivity = this._onDidChangeActivity.event;
 
 	private readonly viewContainerActivities = new Map<string, IActivity[]>();
 	private readonly globalActivities = new Map<string, IActivity[]>();
 
 	constructor(
-		@IViewDescriptorService private readonly viewDescriptorService: IViewDescriptorService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IViewDescriptorService
+		private readonly viewDescriptorService: IViewDescriptorService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
 	) {
 		super();
 	}
 
-	showViewContainerActivity(viewContainerId: string, activity: IActivity): IDisposable {
-		const viewContainer = this.viewDescriptorService.getViewContainerById(viewContainerId);
+	showViewContainerActivity(
+		viewContainerId: string,
+		activity: IActivity
+	): IDisposable {
+		const viewContainer =
+			this.viewDescriptorService.getViewContainerById(viewContainerId);
 		if (viewContainer) {
 			let activities = this.viewContainerActivities.get(viewContainerId);
 			if (!activities) {
@@ -87,7 +124,10 @@ export class ActivityService extends Disposable implements IActivityService {
 				if (i === activities.length || isUndefined(activity.priority)) {
 					activities.push(activity);
 					break;
-				} else if (isUndefined(activities[i].priority) || activities[i].priority! <= activity.priority) {
+				} else if (
+					isUndefined(activities[i].priority) ||
+					activities[i].priority! <= activity.priority
+				) {
 					activities.splice(i, 0, activity);
 					break;
 				}
@@ -105,7 +145,8 @@ export class ActivityService extends Disposable implements IActivityService {
 	}
 
 	getViewContainerActivities(viewContainerId: string): IActivity[] {
-		const viewContainer = this.viewDescriptorService.getViewContainerById(viewContainerId);
+		const viewContainer =
+			this.viewDescriptorService.getViewContainerById(viewContainerId);
 		if (viewContainer) {
 			return this.viewContainerActivities.get(viewContainerId) ?? [];
 		}
@@ -120,7 +161,10 @@ export class ActivityService extends Disposable implements IActivityService {
 		} else {
 			maybeItem = {
 				id: 1,
-				activity: this.instantiationService.createInstance(ViewContainerActivityByView, viewId)
+				activity: this.instantiationService.createInstance(
+					ViewContainerActivityByView,
+					viewId
+				),
 			};
 
 			this.viewActivities.set(viewId, maybeItem);

@@ -3,19 +3,29 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ok } from 'vs/base/common/assert';
-import { Schemas } from 'vs/base/common/network';
-import { regExpLeadsToEndlessLoop } from 'vs/base/common/strings';
-import { URI } from 'vs/base/common/uri';
-import { MirrorTextModel } from 'vs/editor/common/model/mirrorTextModel';
-import { ensureValidWordDefinition, getWordAtText } from 'vs/editor/common/core/wordHelper';
-import { MainThreadDocumentsShape } from 'vs/workbench/api/common/extHost.protocol';
-import { EndOfLine, Position, Range } from 'vs/workbench/api/common/extHostTypes';
-import type * as vscode from 'vscode';
-import { equals } from 'vs/base/common/arrays';
+import { ok } from "vs/base/common/assert";
+import { Schemas } from "vs/base/common/network";
+import { regExpLeadsToEndlessLoop } from "vs/base/common/strings";
+import { URI } from "vs/base/common/uri";
+import { MirrorTextModel } from "vs/editor/common/model/mirrorTextModel";
+import {
+	ensureValidWordDefinition,
+	getWordAtText,
+} from "vs/editor/common/core/wordHelper";
+import { MainThreadDocumentsShape } from "vs/workbench/api/common/extHost.protocol";
+import {
+	EndOfLine,
+	Position,
+	Range,
+} from "vs/workbench/api/common/extHostTypes";
+import type * as vscode from "vscode";
+import { equals } from "vs/base/common/arrays";
 
 const _languageId2WordDefinition = new Map<string, RegExp>();
-export function setWordDefinitionFor(languageId: string, wordDefinition: RegExp | undefined): void {
+export function setWordDefinitionFor(
+	languageId: string,
+	wordDefinition: RegExp | undefined
+): void {
 	if (!wordDefinition) {
 		_languageId2WordDefinition.delete(languageId);
 	} else {
@@ -28,13 +38,15 @@ function getWordDefinitionFor(languageId: string): RegExp | undefined {
 }
 
 export class ExtHostDocumentData extends MirrorTextModel {
-
 	private _document?: vscode.TextDocument;
 	private _isDisposed: boolean = false;
 
 	constructor(
 		private readonly _proxy: MainThreadDocumentsShape,
-		uri: URI, lines: string[], eol: string, versionId: number,
+		uri: URI,
+		lines: string[],
+		eol: string,
+		versionId: number,
 		private _languageId: string,
 		private _isDirty: boolean,
 		public readonly notebook?: vscode.NotebookDocument | undefined
@@ -60,23 +72,57 @@ export class ExtHostDocumentData extends MirrorTextModel {
 		if (!this._document) {
 			const that = this;
 			this._document = {
-				get uri() { return that._uri; },
-				get fileName() { return that._uri.fsPath; },
-				get isUntitled() { return that._uri.scheme === Schemas.untitled; },
-				get languageId() { return that._languageId; },
-				get version() { return that._versionId; },
-				get isClosed() { return that._isDisposed; },
-				get isDirty() { return that._isDirty; },
-				save() { return that._save(); },
-				getText(range?) { return range ? that._getTextInRange(range) : that.getText(); },
-				get eol() { return that._eol === '\n' ? EndOfLine.LF : EndOfLine.CRLF; },
-				get lineCount() { return that._lines.length; },
-				lineAt(lineOrPos: number | vscode.Position) { return that._lineAt(lineOrPos); },
-				offsetAt(pos) { return that._offsetAt(pos); },
-				positionAt(offset) { return that._positionAt(offset); },
-				validateRange(ran) { return that._validateRange(ran); },
-				validatePosition(pos) { return that._validatePosition(pos); },
-				getWordRangeAtPosition(pos, regexp?) { return that._getWordRangeAtPosition(pos, regexp); },
+				get uri() {
+					return that._uri;
+				},
+				get fileName() {
+					return that._uri.fsPath;
+				},
+				get isUntitled() {
+					return that._uri.scheme === Schemas.untitled;
+				},
+				get languageId() {
+					return that._languageId;
+				},
+				get version() {
+					return that._versionId;
+				},
+				get isClosed() {
+					return that._isDisposed;
+				},
+				get isDirty() {
+					return that._isDirty;
+				},
+				save() {
+					return that._save();
+				},
+				getText(range?) {
+					return range ? that._getTextInRange(range) : that.getText();
+				},
+				get eol() {
+					return that._eol === "\n" ? EndOfLine.LF : EndOfLine.CRLF;
+				},
+				get lineCount() {
+					return that._lines.length;
+				},
+				lineAt(lineOrPos: number | vscode.Position) {
+					return that._lineAt(lineOrPos);
+				},
+				offsetAt(pos) {
+					return that._offsetAt(pos);
+				},
+				positionAt(offset) {
+					return that._positionAt(offset);
+				},
+				validateRange(ran) {
+					return that._validateRange(ran);
+				},
+				validatePosition(pos) {
+					return that._validatePosition(pos);
+				},
+				getWordRangeAtPosition(pos, regexp?) {
+					return that._getWordRangeAtPosition(pos, regexp);
+				},
 			};
 		}
 		return Object.freeze(this._document);
@@ -94,7 +140,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
 
 	private _save(): Promise<boolean> {
 		if (this._isDisposed) {
-			return Promise.reject(new Error('Document has been closed'));
+			return Promise.reject(new Error("Document has been closed"));
 		}
 		return this._proxy.$trySaveDocument(this._uri);
 	}
@@ -103,11 +149,14 @@ export class ExtHostDocumentData extends MirrorTextModel {
 		const range = this._validateRange(_range);
 
 		if (range.isEmpty) {
-			return '';
+			return "";
 		}
 
 		if (range.isSingleLine) {
-			return this._lines[range.start.line].substring(range.start.character, range.end.character);
+			return this._lines[range.start.line].substring(
+				range.start.character,
+				range.end.character
+			);
 		}
 
 		const lineEnding = this._eol,
@@ -115,35 +164,50 @@ export class ExtHostDocumentData extends MirrorTextModel {
 			endLineIndex = range.end.line,
 			resultLines: string[] = [];
 
-		resultLines.push(this._lines[startLineIndex].substring(range.start.character));
+		resultLines.push(
+			this._lines[startLineIndex].substring(range.start.character)
+		);
 		for (let i = startLineIndex + 1; i < endLineIndex; i++) {
 			resultLines.push(this._lines[i]);
 		}
-		resultLines.push(this._lines[endLineIndex].substring(0, range.end.character));
+		resultLines.push(
+			this._lines[endLineIndex].substring(0, range.end.character)
+		);
 
 		return resultLines.join(lineEnding);
 	}
 
 	private _lineAt(lineOrPosition: number | vscode.Position): vscode.TextLine {
-
 		let line: number | undefined;
 		if (lineOrPosition instanceof Position) {
 			line = lineOrPosition.line;
-		} else if (typeof lineOrPosition === 'number') {
+		} else if (typeof lineOrPosition === "number") {
 			line = lineOrPosition;
 		}
 
-		if (typeof line !== 'number' || line < 0 || line >= this._lines.length || Math.floor(line) !== line) {
-			throw new Error('Illegal value for `line`');
+		if (
+			typeof line !== "number" ||
+			line < 0 ||
+			line >= this._lines.length ||
+			Math.floor(line) !== line
+		) {
+			throw new Error("Illegal value for `line`");
 		}
 
-		return new ExtHostDocumentLine(line, this._lines[line], line === this._lines.length - 1);
+		return new ExtHostDocumentLine(
+			line,
+			this._lines[line],
+			line === this._lines.length - 1
+		);
 	}
 
 	private _offsetAt(position: vscode.Position): number {
 		position = this._validatePosition(position);
 		this._ensureLineStarts();
-		return this._lineStarts!.getPrefixSum(position.line - 1) + position.character;
+		return (
+			this._lineStarts!.getPrefixSum(position.line - 1) +
+			position.character
+		);
 	}
 
 	private _positionAt(offset: number): vscode.Position {
@@ -163,7 +227,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
 
 	private _validateRange(range: vscode.Range): vscode.Range {
 		if (!(range instanceof Range)) {
-			throw new Error('Invalid argument');
+			throw new Error("Invalid argument");
 		}
 
 		const start = this._validatePosition(range.start);
@@ -177,7 +241,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
 
 	private _validatePosition(position: vscode.Position): vscode.Position {
 		if (!(position instanceof Position)) {
-			throw new Error('Invalid argument');
+			throw new Error("Invalid argument");
 		}
 
 		if (this._lines.length === 0) {
@@ -191,19 +255,16 @@ export class ExtHostDocumentData extends MirrorTextModel {
 			line = 0;
 			character = 0;
 			hasChanged = true;
-		}
-		else if (line >= this._lines.length) {
+		} else if (line >= this._lines.length) {
 			line = this._lines.length - 1;
 			character = this._lines[line].length;
 			hasChanged = true;
-		}
-		else {
+		} else {
 			const maxCharacter = this._lines[line].length;
 			if (character < 0) {
 				character = 0;
 				hasChanged = true;
-			}
-			else if (character > maxCharacter) {
+			} else if (character > maxCharacter) {
 				character = maxCharacter;
 				hasChanged = true;
 			}
@@ -215,16 +276,20 @@ export class ExtHostDocumentData extends MirrorTextModel {
 		return new Position(line, character);
 	}
 
-	private _getWordRangeAtPosition(_position: vscode.Position, regexp?: RegExp): vscode.Range | undefined {
+	private _getWordRangeAtPosition(
+		_position: vscode.Position,
+		regexp?: RegExp
+	): vscode.Range | undefined {
 		const position = this._validatePosition(_position);
 
 		if (!regexp) {
 			// use default when custom-regexp isn't provided
 			regexp = getWordDefinitionFor(this._languageId);
-
 		} else if (regExpLeadsToEndlessLoop(regexp)) {
 			// use default when custom-regexp is bad
-			throw new Error(`[getWordRangeAtPosition]: ignoring custom regexp '${regexp.source}' because it matches the empty string.`);
+			throw new Error(
+				`[getWordRangeAtPosition]: ignoring custom regexp '${regexp.source}' because it matches the empty string.`
+			);
 		}
 
 		const wordAtText = getWordAtText(
@@ -235,14 +300,18 @@ export class ExtHostDocumentData extends MirrorTextModel {
 		);
 
 		if (wordAtText) {
-			return new Range(position.line, wordAtText.startColumn - 1, position.line, wordAtText.endColumn - 1);
+			return new Range(
+				position.line,
+				wordAtText.startColumn - 1,
+				position.line,
+				wordAtText.endColumn - 1
+			);
 		}
 		return undefined;
 	}
 }
 
 export class ExtHostDocumentLine implements vscode.TextLine {
-
 	private readonly _line: number;
 	private readonly _text: string;
 	private readonly _isLastLine: boolean;
