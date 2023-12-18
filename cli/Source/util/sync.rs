@@ -112,7 +112,11 @@ pub struct ConcatReceivable<T: Send, A: Receivable<T>, B: Receivable<T>> {
 
 impl<T: Send, A: Receivable<T>, B: Receivable<T>> ConcatReceivable<T, A, B> {
 	pub fn new(left: A, right: B) -> Self {
-		Self { left: Some(left), right, _marker: PhantomData }
+		Self {
+			left: Some(left),
+			right,
+			_marker: PhantomData,
+		}
 	}
 }
 
@@ -142,7 +146,11 @@ pub struct MergedReceivable<T: Send, A: Receivable<T>, B: Receivable<T>> {
 
 impl<T: Send, A: Receivable<T>, B: Receivable<T>> MergedReceivable<T, A, B> {
 	pub fn new(left: A, right: B) -> Self {
-		Self { left: Some(left), right: Some(right), _marker: PhantomData }
+		Self {
+			left: Some(left),
+			right: Some(right),
+			_marker: PhantomData,
+		}
 	}
 }
 

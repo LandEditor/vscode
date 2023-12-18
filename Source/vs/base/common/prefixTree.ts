@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Iterable } from "vs/base/common/iterator";
+import { Iterable } from 'vs/base/common/iterator';
 
-const unset = Symbol("unset");
+const unset = Symbol('unset');
 
 export interface IPrefixTreeNode<T> {
 	/** Possible children of the node. */
@@ -37,26 +37,18 @@ export class WellDefinedPrefixTree<V> {
 	 * @param onNode - called for each node as we descend to the insertion point,
 	 * including the insertion point itself.
 	 */
-	insert(
-		key: Iterable<string>,
-		value: V,
-		onNode?: (n: IPrefixTreeNode<V>) => void
-	): void {
-		this.opNode(key, (n) => (n._value = value), onNode);
+	insert(key: Iterable<string>, value: V, onNode?: (n: IPrefixTreeNode<V>) => void): void {
+		this.opNode(key, n => n._value = value, onNode);
 	}
 
 	/** Mutates a value in the prefix tree. */
 	mutate(key: Iterable<string>, mutate: (value?: V) => V): void {
-		this.opNode(
-			key,
-			(n) =>
-				(n._value = mutate(n._value === unset ? undefined : n._value))
-		);
+		this.opNode(key, n => n._value = mutate(n._value === unset ? undefined : n._value));
 	}
 
 	/** Deletes a node from the prefix tree, returning the value it contained. */
 	delete(key: Iterable<string>): V | undefined {
-		const path = [{ part: "", node: this.root }];
+		const path = [{ part: '', node: this.root }];
 		let i = 0;
 		for (const part of key) {
 			const node = path[i].node.children?.get(part);
@@ -77,10 +69,7 @@ export class WellDefinedPrefixTree<V> {
 		for (; i > 0; i--) {
 			const parent = path[i - 1];
 			parent.node.children!.delete(path[i].part);
-			if (
-				parent.node.children!.size > 0 ||
-				parent.node._value !== unset
-			) {
+			if (parent.node.children!.size > 0 || parent.node._value !== unset) {
 				break;
 			}
 		}
@@ -151,11 +140,7 @@ export class WellDefinedPrefixTree<V> {
 		return node._value !== unset;
 	}
 
-	private opNode(
-		key: Iterable<string>,
-		fn: (node: Node<V>) => void,
-		onDescend?: (node: Node<V>) => void
-	): void {
+	private opNode(key: Iterable<string>, fn: (node: Node<V>) => void, onDescend?: (node: Node<V>) => void): void {
 		let node = this.root;
 		for (const part of key) {
 			if (!node.children) {
@@ -197,7 +182,7 @@ export class WellDefinedPrefixTree<V> {
 	}
 }
 
-class Node<T> implements IPrefixTreeNode<T> {
+class Node<T> implements IPrefixTreeNode<T>  {
 	public children?: Map<string, Node<T>>;
 
 	public get value() {

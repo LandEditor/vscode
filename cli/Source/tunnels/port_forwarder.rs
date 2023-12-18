@@ -31,12 +31,18 @@ pub struct PortForwardingProcessor {
 impl PortForwardingProcessor {
 	pub fn new() -> Self {
 		let (tx, rx) = mpsc::channel(8);
-		Self { tx, rx, forwarded: HashSet::new() }
+		Self {
+			tx,
+			rx,
+			forwarded: HashSet::new(),
+		}
 	}
 
 	/// Gets a handle that can be passed off to consumers of port forwarding.
 	pub fn handle(&self) -> PortForwarding {
-		PortForwarding { tx: self.tx.clone() }
+		PortForwarding {
+			tx: self.tx.clone(),
+		}
 	}
 
 	/// Receives port forwarding requests. Consumers MUST call `process()`

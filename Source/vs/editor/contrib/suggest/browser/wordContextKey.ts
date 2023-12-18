@@ -3,17 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IDisposable } from "vs/base/common/lifecycle";
-import { ICodeEditor } from "vs/editor/browser/editorBrowser";
-import { EditorOption } from "vs/editor/common/config/editorOptions";
-import {
-	IContextKey,
-	IContextKeyService,
-	RawContextKey,
-} from "vs/platform/contextkey/common/contextkey";
+import { IDisposable } from 'vs/base/common/lifecycle';
+import { ICodeEditor } from 'vs/editor/browser/editorBrowser';
+import { EditorOption } from 'vs/editor/common/config/editorOptions';
+import { IContextKey, IContextKeyService, RawContextKey } from 'vs/platform/contextkey/common/contextkey';
 
 export class WordContextKey {
-	static readonly AtEnd = new RawContextKey<boolean>("atEndOfWord", false);
+
+	static readonly AtEnd = new RawContextKey<boolean>('atEndOfWord', false);
 
 	private readonly _ckAtEnd: IContextKey<boolean>;
 	private readonly _configListener: IDisposable;
@@ -23,12 +20,11 @@ export class WordContextKey {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IContextKeyService contextKeyService: IContextKeyService
+		@IContextKeyService contextKeyService: IContextKeyService,
 	) {
+
 		this._ckAtEnd = WordContextKey.AtEnd.bindTo(contextKeyService);
-		this._configListener = this._editor.onDidChangeConfiguration(
-			(e) => e.hasChanged(EditorOption.tabCompletion) && this._update()
-		);
+		this._configListener = this._editor.onDidChangeConfiguration(e => e.hasChanged(EditorOption.tabCompletion) && this._update());
 		this._update();
 	}
 
@@ -40,8 +36,7 @@ export class WordContextKey {
 
 	private _update(): void {
 		// only update this when tab completions are enabled
-		const enabled =
-			this._editor.getOption(EditorOption.tabCompletion) === "on";
+		const enabled = this._editor.getOption(EditorOption.tabCompletion) === 'on';
 		if (this._enabled === enabled) {
 			return;
 		}
@@ -55,20 +50,16 @@ export class WordContextKey {
 				}
 				const model = this._editor.getModel();
 				const selection = this._editor.getSelection();
-				const word = model.getWordAtPosition(
-					selection.getStartPosition()
-				);
+				const word = model.getWordAtPosition(selection.getStartPosition());
 				if (!word) {
 					this._ckAtEnd.set(false);
 					return;
 				}
-				this._ckAtEnd.set(
-					word.endColumn === selection.getStartPosition().column
-				);
+				this._ckAtEnd.set(word.endColumn === selection.getStartPosition().column);
 			};
-			this._selectionListener =
-				this._editor.onDidChangeCursorSelection(checkForWordEnd);
+			this._selectionListener = this._editor.onDidChangeCursorSelection(checkForWordEnd);
 			checkForWordEnd();
+
 		} else if (this._selectionListener) {
 			this._ckAtEnd.reset();
 			this._selectionListener.dispose();

@@ -3,31 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI, UriComponents } from "vs/base/common/uri";
-import { ILanguageService } from "vs/editor/common/languages/language";
-import { IModelService } from "vs/editor/common/services/model";
-import {
-	MainThreadLanguagesShape,
-	MainContext,
-	ExtHostContext,
-	ExtHostLanguagesShape,
-} from "../common/extHost.protocol";
-import {
-	extHostNamedCustomer,
-	IExtHostContext,
-} from "vs/workbench/services/extensions/common/extHostCustomers";
-import { IPosition } from "vs/editor/common/core/position";
-import { IRange, Range } from "vs/editor/common/core/range";
-import { StandardTokenType } from "vs/editor/common/encodedTokenAttributes";
-import { ITextModelService } from "vs/editor/common/services/resolverService";
-import {
-	ILanguageStatus,
-	ILanguageStatusService,
-} from "vs/workbench/services/languageStatus/common/languageStatusService";
-import { DisposableMap, DisposableStore } from "vs/base/common/lifecycle";
+import { URI, UriComponents } from 'vs/base/common/uri';
+import { ILanguageService } from 'vs/editor/common/languages/language';
+import { IModelService } from 'vs/editor/common/services/model';
+import { MainThreadLanguagesShape, MainContext, ExtHostContext, ExtHostLanguagesShape } from '../common/extHost.protocol';
+import { extHostNamedCustomer, IExtHostContext } from 'vs/workbench/services/extensions/common/extHostCustomers';
+import { IPosition } from 'vs/editor/common/core/position';
+import { IRange, Range } from 'vs/editor/common/core/range';
+import { StandardTokenType } from 'vs/editor/common/encodedTokenAttributes';
+import { ITextModelService } from 'vs/editor/common/services/resolverService';
+import { ILanguageStatus, ILanguageStatusService } from 'vs/workbench/services/languageStatus/common/languageStatusService';
+import { DisposableMap, DisposableStore } from 'vs/base/common/lifecycle';
 
 @extHostNamedCustomer(MainContext.MainThreadLanguages)
 export class MainThreadLanguages implements MainThreadLanguagesShape {
+
 	private readonly _disposables = new DisposableStore();
 	private readonly _proxy: ExtHostLanguagesShape;
 
@@ -38,21 +28,14 @@ export class MainThreadLanguages implements MainThreadLanguagesShape {
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@IModelService private readonly _modelService: IModelService,
 		@ITextModelService private _resolverService: ITextModelService,
-		@ILanguageStatusService
-		private readonly _languageStatusService: ILanguageStatusService
+		@ILanguageStatusService private readonly _languageStatusService: ILanguageStatusService,
 	) {
 		this._proxy = _extHostContext.getProxy(ExtHostContext.ExtHostLanguages);
 
-		this._proxy.$acceptLanguageIds(
-			_languageService.getRegisteredLanguageIds()
-		);
-		this._disposables.add(
-			_languageService.onDidChange((_) => {
-				this._proxy.$acceptLanguageIds(
-					_languageService.getRegisteredLanguageIds()
-				);
-			})
-		);
+		this._proxy.$acceptLanguageIds(_languageService.getRegisteredLanguageIds());
+		this._disposables.add(_languageService.onDidChange(_ => {
+			this._proxy.$acceptLanguageIds(_languageService.getRegisteredLanguageIds());
+		}));
 	}
 
 	dispose(): void {
@@ -60,31 +43,22 @@ export class MainThreadLanguages implements MainThreadLanguagesShape {
 		this._status.dispose();
 	}
 
-	async $changeLanguage(
-		resource: UriComponents,
-		languageId: string
-	): Promise<void> {
+	async $changeLanguage(resource: UriComponents, languageId: string): Promise<void> {
+
 		if (!this._languageService.isRegisteredLanguageId(languageId)) {
-			return Promise.reject(
-				new Error(`Unknown language id: ${languageId}`)
-			);
+			return Promise.reject(new Error(`Unknown language id: ${languageId}`));
 		}
 
 		const uri = URI.revive(resource);
 		const ref = await this._resolverService.createModelReference(uri);
 		try {
-			ref.object.textEditorModel.setLanguage(
-				this._languageService.createById(languageId)
-			);
+			ref.object.textEditorModel.setLanguage(this._languageService.createById(languageId));
 		} finally {
 			ref.dispose();
 		}
 	}
 
-	async $tokensAtPosition(
-		resource: UriComponents,
-		position: IPosition
-	): Promise<undefined | { type: StandardTokenType; range: IRange }> {
+	async $tokensAtPosition(resource: UriComponents, position: IPosition): Promise<undefined | { type: StandardTokenType; range: IRange }> {
 		const uri = URI.revive(resource);
 		const model = this._modelService.getModel(uri);
 		if (!model) {
@@ -95,12 +69,7 @@ export class MainThreadLanguages implements MainThreadLanguagesShape {
 		const idx = tokens.findTokenIndexAtOffset(position.column - 1);
 		return {
 			type: tokens.getStandardTokenType(idx),
-			range: new Range(
-				position.lineNumber,
-				1 + tokens.getStartOffset(idx),
-				position.lineNumber,
-				1 + tokens.getEndOffset(idx)
-			),
+			range: new Range(position.lineNumber, 1 + tokens.getStartOffset(idx), position.lineNumber, 1 + tokens.getEndOffset(idx))
 		};
 	}
 

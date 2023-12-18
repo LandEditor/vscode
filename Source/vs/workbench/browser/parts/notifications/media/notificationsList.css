@@ -35,20 +35,14 @@
 
 /** Notification: Main Row */
 
-.monaco-workbench
-	.notifications-list-container
-	.notification-list-item
-	> .notification-list-item-main-row {
+.monaco-workbench .notifications-list-container .notification-list-item > .notification-list-item-main-row {
 	display: flex;
 	flex-grow: 1;
 }
 
 /** Notification: Icon */
 
-.monaco-workbench
-	.notifications-list-container
-	.notification-list-item
-	.notification-list-item-icon {
+.monaco-workbench .notifications-list-container .notification-list-item .notification-list-item-icon {
 	display: flex;
 	align-items: center;
 	flex: 0 0 16px;
@@ -62,10 +56,7 @@
 
 /** Notification: Message */
 
-.monaco-workbench
-	.notifications-list-container
-	.notification-list-item
-	.notification-list-item-message {
+.monaco-workbench .notifications-list-container .notification-list-item .notification-list-item-message {
 	line-height: 22px;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -74,88 +65,51 @@
 	-webkit-user-select: text;
 }
 
-.monaco-workbench
-	.notifications-list-container
-	.notification-list-item
-	.notification-list-item-message
-	a {
+.monaco-workbench .notifications-list-container .notification-list-item .notification-list-item-message a {
 	color: var(--vscode-notificationLink-foreground);
 }
 
-.monaco-workbench
-	.notifications-list-container
-	.notification-list-item
-	.notification-list-item-message
-	a:focus {
+.monaco-workbench .notifications-list-container .notification-list-item .notification-list-item-message a:focus {
 	outline-width: 1px;
 	outline-style: solid;
 	outline-color: var(--vscode-focusBorder);
 }
 
-.monaco-workbench
-	.notifications-list-container
-	.notification-list-item.expanded
-	.notification-list-item-message {
+.monaco-workbench .notifications-list-container .notification-list-item.expanded .notification-list-item-message {
 	white-space: normal;
 	word-wrap: break-word; /* never overflow long words, but break to next line */
 }
 
 /** Notification: Toolbar Container */
 
-.monaco-workbench
-	.notifications-list-container
-	.notification-list-item
-	.notification-list-item-toolbar-container {
+.monaco-workbench .notifications-list-container .notification-list-item .notification-list-item-toolbar-container {
 	display: none;
 	height: 22px;
 }
 
-.monaco-workbench
-	.notifications-list-container
-	.monaco-list:focus-within
-	.notification-list-item
-	.notification-list-item-toolbar-container,
-.monaco-workbench
-	.notifications-list-container
-	.notification-list-item:hover
-	.notification-list-item-toolbar-container,
-.monaco-workbench
-	.notifications-list-container
-	.monaco-list-row.focused
-	.notification-list-item
-	.notification-list-item-toolbar-container,
-.monaco-workbench
-	.notifications-list-container
-	.notification-list-item.expanded
-	.notification-list-item-toolbar-container {
+.monaco-workbench .notifications-list-container .monaco-list:focus-within .notification-list-item .notification-list-item-toolbar-container,
+.monaco-workbench .notifications-list-container .notification-list-item:hover .notification-list-item-toolbar-container,
+.monaco-workbench .notifications-list-container .monaco-list-row.focused .notification-list-item .notification-list-item-toolbar-container,
+.monaco-workbench .notifications-list-container .notification-list-item.expanded .notification-list-item-toolbar-container {
 	display: block;
 }
 
 /** Notification: Details Row */
 
-.monaco-workbench
-	.notifications-list-container
-	.notification-list-item
-	> .notification-list-item-details-row {
+.monaco-workbench .notifications-list-container .notification-list-item > .notification-list-item-details-row {
 	display: none;
 	align-items: center;
 	padding-left: 5px;
 	overflow: hidden; /* details row should never overflow */
 }
 
-.monaco-workbench
-	.notifications-list-container
-	.notification-list-item.expanded
-	> .notification-list-item-details-row {
+.monaco-workbench .notifications-list-container .notification-list-item.expanded > .notification-list-item-details-row {
 	display: flex;
 }
 
 /** Notification: Source */
 
-.monaco-workbench
-	.notifications-list-container
-	.notification-list-item
-	.notification-list-item-source {
+.monaco-workbench .notifications-list-container .notification-list-item .notification-list-item-source {
 	flex: 1;
 	font-size: 12px;
 	overflow: hidden; /* always give away space to buttons container */
@@ -164,54 +118,31 @@
 
 /** Notification: Buttons */
 
-.monaco-workbench
-	.notifications-list-container
-	.notification-list-item
-	.notification-list-item-buttons-container {
+.monaco-workbench .notifications-list-container .notification-list-item .notification-list-item-buttons-container {
 	display: flex;
 	overflow: hidden;
 }
 
-.monaco-workbench
-	.notifications-list-container
-	.notification-list-item
-	.notification-list-item-buttons-container
-	> .monaco-button-dropdown,
-.monaco-workbench
-	.notifications-list-container
-	.notification-list-item
-	.notification-list-item-buttons-container
-	> .monaco-button {
+.monaco-workbench .notifications-list-container .notification-list-item .notification-list-item-buttons-container > .monaco-button-dropdown,
+.monaco-workbench .notifications-list-container .notification-list-item .notification-list-item-buttons-container > .monaco-button {
 	margin: 4px 5px; /* allows button focus outline to be visible */
 }
 
-.monaco-workbench
-	.notifications-list-container
-	.notification-list-item
-	.notification-list-item-buttons-container
-	.monaco-button {
+.monaco-workbench .notifications-list-container .notification-list-item .notification-list-item-buttons-container .monaco-button {
 	outline-offset: 2px !important;
 }
 
-.monaco-workbench
-	.notifications-list-container
-	.notification-list-item
-	.notification-list-item-buttons-container
-	.monaco-text-button {
+.monaco-workbench .notifications-list-container .notification-list-item .notification-list-item-buttons-container .monaco-text-button {
 	width: fit-content;
 	padding: 4px 10px;
-	display: inline-block; /* to enable ellipsis in text overflow */
+	display: inline-block;	/* to enable ellipsis in text overflow */
 	font-size: 12px;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
-.monaco-workbench
-	.notifications-list-container
-	.notification-list-item
-	.notification-list-item-buttons-container
-	.monaco-dropdown-button {
-	padding: 5px;
+.monaco-workbench .notifications-list-container .notification-list-item .notification-list-item-buttons-container .monaco-dropdown-button {
+	padding: 5px
 }
 
 /** Notification: Progress */

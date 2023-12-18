@@ -3,131 +3,95 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
+import { localize } from 'vs/nls';
 
 /**
  * An object holding strings shared by multiple parts of the terminal
  */
 export const terminalStrings = {
-	terminal: localize("terminal", "Terminal"),
-	new: localize("terminal.new", "New Terminal"),
-	doNotShowAgain: localize("doNotShowAgain", "Do Not Show Again"),
-	currentSessionCategory: localize(
-		"currentSessionCategory",
-		"current session"
-	),
-	previousSessionCategory: localize(
-		"previousSessionCategory",
-		"previous session"
-	),
-	typeTask: localize("task", "Task"),
-	typeLocal: localize("local", "Local"),
+	terminal: localize('terminal', "Terminal"),
+	new: localize('terminal.new', "New Terminal"),
+	doNotShowAgain: localize('doNotShowAgain', 'Do Not Show Again'),
+	currentSessionCategory: localize('currentSessionCategory', 'current session'),
+	previousSessionCategory: localize('previousSessionCategory', 'previous session'),
+	typeTask: localize('task', "Task"),
+	typeLocal: localize('local', "Local"),
 	actionCategory: {
-		value: localize("terminalCategory", "Terminal"),
-		original: "Terminal",
+		value: localize('terminalCategory', "Terminal"),
+		original: 'Terminal'
 	},
 	focus: {
-		value: localize("workbench.action.terminal.focus", "Focus Terminal"),
-		original: "Focus Terminal",
+		value: localize('workbench.action.terminal.focus', "Focus Terminal"),
+		original: 'Focus Terminal'
 	},
 	focusAndHideAccessibleBuffer: {
-		value: localize(
-			"workbench.action.terminal.focusAndHideAccessibleBuffer",
-			"Focus Terminal and Hide Accessible Buffer"
-		),
-		original: "Focus Terminal and Hide Accessible Buffer",
+		value: localize('workbench.action.terminal.focusAndHideAccessibleBuffer', "Focus Terminal and Hide Accessible Buffer"),
+		original: 'Focus Terminal and Hide Accessible Buffer'
 	},
 	kill: {
-		value: localize("killTerminal", "Kill Terminal"),
-		original: "Kill Terminal",
-		short: localize("killTerminal.short", "Kill"),
+		value: localize('killTerminal', "Kill Terminal"),
+		original: 'Kill Terminal',
+		short: localize('killTerminal.short', "Kill"),
 	},
 	moveToEditor: {
-		value: localize("moveToEditor", "Move Terminal into Editor Area"),
-		original: "Move Terminal into Editor Area",
+		value: localize('moveToEditor', "Move Terminal into Editor Area"),
+		original: 'Move Terminal into Editor Area',
 	},
 	moveToTerminalPanel: {
-		value: localize(
-			"workbench.action.terminal.moveToTerminalPanel",
-			"Move Terminal into Panel"
-		),
-		original: "Move Terminal into Panel",
+		value: localize('workbench.action.terminal.moveToTerminalPanel', "Move Terminal into Panel"),
+		original: 'Move Terminal into Panel'
 	},
 	changeIcon: {
-		value: localize(
-			"workbench.action.terminal.changeIcon",
-			"Change Icon..."
-		),
-		original: "Change Icon...",
+		value: localize('workbench.action.terminal.changeIcon', "Change Icon..."),
+		original: 'Change Icon...'
 	},
 	changeColor: {
-		value: localize(
-			"workbench.action.terminal.changeColor",
-			"Change Color..."
-		),
-		original: "Change Color...",
+		value: localize('workbench.action.terminal.changeColor', "Change Color..."),
+		original: 'Change Color...'
 	},
 	split: {
-		value: localize("splitTerminal", "Split Terminal"),
-		original: "Split Terminal",
-		short: localize("splitTerminal.short", "Split"),
+		value: localize('splitTerminal', "Split Terminal"),
+		original: 'Split Terminal',
+		short: localize('splitTerminal.short', "Split"),
 	},
 	unsplit: {
-		value: localize("unsplitTerminal", "Unsplit Terminal"),
-		original: "Unsplit Terminal",
+		value: localize('unsplitTerminal', "Unsplit Terminal"),
+		original: 'Unsplit Terminal'
 	},
 	rename: {
-		value: localize("workbench.action.terminal.rename", "Rename..."),
-		original: "Rename...",
+		value: localize('workbench.action.terminal.rename', "Rename..."),
+		original: 'Rename...'
 	},
 	toggleSizeToContentWidth: {
-		value: localize(
-			"workbench.action.terminal.sizeToContentWidthInstance",
-			"Toggle Size to Content Width"
-		),
-		original: "Toggle Size to Content Width",
+		value: localize('workbench.action.terminal.sizeToContentWidthInstance', "Toggle Size to Content Width"),
+		original: 'Toggle Size to Content Width'
 	},
 	focusHover: {
-		value: localize("workbench.action.terminal.focusHover", "Focus Hover"),
-		original: "Focus Hover",
+		value: localize('workbench.action.terminal.focusHover', "Focus Hover"),
+		original: 'Focus Hover'
 	},
 	sendSequence: {
-		value: localize(
-			"workbench.action.terminal.sendSequence",
-			"Send Custom Sequence To Terminal"
-		),
-		original: "Send Custom Sequence To Terminal",
+		value: localize('workbench.action.terminal.sendSequence', "Send Custom Sequence To Terminal"),
+		original: 'Send Custom Sequence To Terminal'
 	},
 	newWithCwd: {
-		value: localize(
-			"workbench.action.terminal.newWithCwd",
-			"Create New Terminal Starting in a Custom Working Directory"
-		),
-		original: "Create New Terminal Starting in a Custom Working Directory",
+		value: localize('workbench.action.terminal.newWithCwd', "Create New Terminal Starting in a Custom Working Directory"),
+		original: 'Create New Terminal Starting in a Custom Working Directory'
 	},
 	renameWithArgs: {
-		value: localize(
-			"workbench.action.terminal.renameWithArg",
-			"Rename the Currently Active Terminal"
-		),
-		original: "Rename the Currently Active Terminal",
+		value: localize('workbench.action.terminal.renameWithArg', "Rename the Currently Active Terminal"),
+		original: 'Rename the Currently Active Terminal'
 	},
 	stickyScroll: {
-		value: localize("stickyScroll", "Sticky Scroll"),
-		original: "Sticky Scroll",
+		value: localize('stickyScroll', "Sticky Scroll"),
+		original: 'Sticky Scroll'
 	},
 	scrollToPreviousCommand: {
-		value: localize(
-			"workbench.action.terminal.scrollToPreviousCommand",
-			"Scroll To Previous Command"
-		),
-		original: "Scroll To Previous Command",
+		value: localize('workbench.action.terminal.scrollToPreviousCommand', "Scroll To Previous Command"),
+		original: 'Scroll To Previous Command'
 	},
 	scrollToNextCommand: {
-		value: localize(
-			"workbench.action.terminal.scrollToNextCommand",
-			"Scroll To Next Command"
-		),
-		original: "Scroll To Next Command",
-	},
+		value: localize('workbench.action.terminal.scrollToNextCommand', "Scroll To Next Command"),
+		original: 'Scroll To Next Command'
+	}
 };

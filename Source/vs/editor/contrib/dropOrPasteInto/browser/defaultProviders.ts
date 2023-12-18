@@ -3,86 +3,50 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { coalesce } from "vs/base/common/arrays";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { IReadonlyVSDataTransfer, UriList } from "vs/base/common/dataTransfer";
-import { Disposable } from "vs/base/common/lifecycle";
-import { Mimes } from "vs/base/common/mime";
-import { Schemas } from "vs/base/common/network";
-import { relativePath } from "vs/base/common/resources";
-import { URI } from "vs/base/common/uri";
-import { IPosition } from "vs/editor/common/core/position";
-import { IRange } from "vs/editor/common/core/range";
-import {
-	DocumentOnDropEdit,
-	DocumentOnDropEditProvider,
-	DocumentPasteEdit,
-	DocumentPasteEditProvider,
-} from "vs/editor/common/languages";
-import { ITextModel } from "vs/editor/common/model";
-import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
-import { localize } from "vs/nls";
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import { coalesce } from 'vs/base/common/arrays';
+import { CancellationToken } from 'vs/base/common/cancellation';
+import { IReadonlyVSDataTransfer, UriList } from 'vs/base/common/dataTransfer';
+import { Disposable } from 'vs/base/common/lifecycle';
+import { Mimes } from 'vs/base/common/mime';
+import { Schemas } from 'vs/base/common/network';
+import { relativePath } from 'vs/base/common/resources';
+import { URI } from 'vs/base/common/uri';
+import { IPosition } from 'vs/editor/common/core/position';
+import { IRange } from 'vs/editor/common/core/range';
+import { DocumentOnDropEdit, DocumentOnDropEditProvider, DocumentPasteEdit, DocumentPasteEditProvider } from 'vs/editor/common/languages';
+import { ITextModel } from 'vs/editor/common/model';
+import { ILanguageFeaturesService } from 'vs/editor/common/services/languageFeatures';
+import { localize } from 'vs/nls';
+import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
 
-const builtInLabel = localize("builtIn", "Built-in");
+const builtInLabel = localize('builtIn', 'Built-in');
 
-abstract class SimplePasteAndDropProvider
-	implements DocumentOnDropEditProvider, DocumentPasteEditProvider
-{
+abstract class SimplePasteAndDropProvider implements DocumentOnDropEditProvider, DocumentPasteEditProvider {
+
 	abstract readonly id: string;
 	abstract readonly dropMimeTypes: readonly string[] | undefined;
 	abstract readonly pasteMimeTypes: readonly string[];
 
-	async provideDocumentPasteEdits(
-		_model: ITextModel,
-		_ranges: readonly IRange[],
-		dataTransfer: IReadonlyVSDataTransfer,
-		token: CancellationToken
-	): Promise<DocumentPasteEdit | undefined> {
+	async provideDocumentPasteEdits(_model: ITextModel, _ranges: readonly IRange[], dataTransfer: IReadonlyVSDataTransfer, token: CancellationToken): Promise<DocumentPasteEdit | undefined> {
 		const edit = await this.getEdit(dataTransfer, token);
-		return edit
-			? {
-					insertText: edit.insertText,
-					label: edit.label,
-					detail: edit.detail,
-					handledMimeType: edit.handledMimeType,
-					yieldTo: edit.yieldTo,
-				}
-			: undefined;
+		return edit ? { insertText: edit.insertText, label: edit.label, detail: edit.detail, handledMimeType: edit.handledMimeType, yieldTo: edit.yieldTo } : undefined;
 	}
 
-	async provideDocumentOnDropEdits(
-		_model: ITextModel,
-		_position: IPosition,
-		dataTransfer: IReadonlyVSDataTransfer,
-		token: CancellationToken
-	): Promise<DocumentOnDropEdit | undefined> {
+	async provideDocumentOnDropEdits(_model: ITextModel, _position: IPosition, dataTransfer: IReadonlyVSDataTransfer, token: CancellationToken): Promise<DocumentOnDropEdit | undefined> {
 		const edit = await this.getEdit(dataTransfer, token);
-		return edit
-			? {
-					insertText: edit.insertText,
-					label: edit.label,
-					handledMimeType: edit.handledMimeType,
-					yieldTo: edit.yieldTo,
-				}
-			: undefined;
+		return edit ? { insertText: edit.insertText, label: edit.label, handledMimeType: edit.handledMimeType, yieldTo: edit.yieldTo } : undefined;
 	}
 
-	protected abstract getEdit(
-		dataTransfer: IReadonlyVSDataTransfer,
-		token: CancellationToken
-	): Promise<DocumentPasteEdit | undefined>;
+	protected abstract getEdit(dataTransfer: IReadonlyVSDataTransfer, token: CancellationToken): Promise<DocumentPasteEdit | undefined>;
 }
 
 class DefaultTextProvider extends SimplePasteAndDropProvider {
-	readonly id = "text";
+
+	readonly id = 'text';
 	readonly dropMimeTypes = [Mimes.text];
 	readonly pasteMimeTypes = [Mimes.text];
 
-	protected async getEdit(
-		dataTransfer: IReadonlyVSDataTransfer,
-		_token: CancellationToken
-	): Promise<DocumentPasteEdit | undefined> {
+	protected async getEdit(dataTransfer: IReadonlyVSDataTransfer, _token: CancellationToken): Promise<DocumentPasteEdit | undefined> {
 		const textEntry = dataTransfer.get(Mimes.text);
 		if (!textEntry) {
 			return;
@@ -97,22 +61,20 @@ class DefaultTextProvider extends SimplePasteAndDropProvider {
 		const insertText = await textEntry.asString();
 		return {
 			handledMimeType: Mimes.text,
-			label: localize("text.label", "Insert Plain Text"),
+			label: localize('text.label', "Insert Plain Text"),
 			detail: builtInLabel,
-			insertText,
+			insertText
 		};
 	}
 }
 
 class PathProvider extends SimplePasteAndDropProvider {
-	readonly id = "uri";
+
+	readonly id = 'uri';
 	readonly dropMimeTypes = [Mimes.uriList];
 	readonly pasteMimeTypes = [Mimes.uriList];
 
-	protected async getEdit(
-		dataTransfer: IReadonlyVSDataTransfer,
-		token: CancellationToken
-	): Promise<DocumentPasteEdit | undefined> {
+	protected async getEdit(dataTransfer: IReadonlyVSDataTransfer, token: CancellationToken): Promise<DocumentPasteEdit | undefined> {
 		const entries = await extractUriList(dataTransfer);
 		if (!entries.length || token.isCancellationRequested) {
 			return;
@@ -128,30 +90,19 @@ class PathProvider extends SimplePasteAndDropProvider {
 					return originalText;
 				}
 			})
-			.join(" ");
+			.join(' ');
 
 		let label: string;
 		if (uriCount > 0) {
 			// Dropping at least one generic uri (such as https) so use most generic label
-			label =
-				entries.length > 1
-					? localize(
-							"defaultDropProvider.uriList.uris",
-							"Insert Uris"
-						)
-					: localize("defaultDropProvider.uriList.uri", "Insert Uri");
+			label = entries.length > 1
+				? localize('defaultDropProvider.uriList.uris', "Insert Uris")
+				: localize('defaultDropProvider.uriList.uri', "Insert Uri");
 		} else {
 			// All the paths are file paths
-			label =
-				entries.length > 1
-					? localize(
-							"defaultDropProvider.uriList.paths",
-							"Insert Paths"
-						)
-					: localize(
-							"defaultDropProvider.uriList.path",
-							"Insert Path"
-						);
+			label = entries.length > 1
+				? localize('defaultDropProvider.uriList.paths', "Insert Paths")
+				: localize('defaultDropProvider.uriList.path', "Insert Path");
 		}
 
 		return {
@@ -164,33 +115,27 @@ class PathProvider extends SimplePasteAndDropProvider {
 }
 
 class RelativePathProvider extends SimplePasteAndDropProvider {
-	readonly id = "relativePath";
+
+	readonly id = 'relativePath';
 	readonly dropMimeTypes = [Mimes.uriList];
 	readonly pasteMimeTypes = [Mimes.uriList];
 
 	constructor(
-		@IWorkspaceContextService
-		private readonly _workspaceContextService: IWorkspaceContextService
+		@IWorkspaceContextService private readonly _workspaceContextService: IWorkspaceContextService
 	) {
 		super();
 	}
 
-	protected async getEdit(
-		dataTransfer: IReadonlyVSDataTransfer,
-		token: CancellationToken
-	): Promise<DocumentPasteEdit | undefined> {
+	protected async getEdit(dataTransfer: IReadonlyVSDataTransfer, token: CancellationToken): Promise<DocumentPasteEdit | undefined> {
 		const entries = await extractUriList(dataTransfer);
 		if (!entries.length || token.isCancellationRequested) {
 			return;
 		}
 
-		const relativeUris = coalesce(
-			entries.map(({ uri }) => {
-				const root =
-					this._workspaceContextService.getWorkspaceFolder(uri);
-				return root ? relativePath(root.uri, uri) : undefined;
-			})
-		);
+		const relativeUris = coalesce(entries.map(({ uri }) => {
+			const root = this._workspaceContextService.getWorkspaceFolder(uri);
+			return root ? relativePath(root.uri, uri) : undefined;
+		}));
 
 		if (!relativeUris.length) {
 			return;
@@ -198,25 +143,16 @@ class RelativePathProvider extends SimplePasteAndDropProvider {
 
 		return {
 			handledMimeType: Mimes.uriList,
-			insertText: relativeUris.join(" "),
-			label:
-				entries.length > 1
-					? localize(
-							"defaultDropProvider.uriList.relativePaths",
-							"Insert Relative Paths"
-						)
-					: localize(
-							"defaultDropProvider.uriList.relativePath",
-							"Insert Relative Path"
-						),
+			insertText: relativeUris.join(' '),
+			label: entries.length > 1
+				? localize('defaultDropProvider.uriList.relativePaths', "Insert Relative Paths")
+				: localize('defaultDropProvider.uriList.relativePath', "Insert Relative Path"),
 			detail: builtInLabel,
 		};
 	}
 }
 
-async function extractUriList(
-	dataTransfer: IReadonlyVSDataTransfer
-): Promise<{ readonly uri: URI; readonly originalText: string }[]> {
+async function extractUriList(dataTransfer: IReadonlyVSDataTransfer): Promise<{ readonly uri: URI; readonly originalText: string }[]> {
 	const urlListEntry = dataTransfer.get(Mimes.uriList);
 	if (!urlListEntry) {
 		return [];
@@ -236,60 +172,26 @@ async function extractUriList(
 
 export class DefaultDropProvidersFeature extends Disposable {
 	constructor(
-		@ILanguageFeaturesService
-		languageFeaturesService: ILanguageFeaturesService,
-		@IWorkspaceContextService
-		workspaceContextService: IWorkspaceContextService
+		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@IWorkspaceContextService workspaceContextService: IWorkspaceContextService,
 	) {
 		super();
 
-		this._register(
-			languageFeaturesService.documentOnDropEditProvider.register(
-				"*",
-				new DefaultTextProvider()
-			)
-		);
-		this._register(
-			languageFeaturesService.documentOnDropEditProvider.register(
-				"*",
-				new PathProvider()
-			)
-		);
-		this._register(
-			languageFeaturesService.documentOnDropEditProvider.register(
-				"*",
-				new RelativePathProvider(workspaceContextService)
-			)
-		);
+		this._register(languageFeaturesService.documentOnDropEditProvider.register('*', new DefaultTextProvider()));
+		this._register(languageFeaturesService.documentOnDropEditProvider.register('*', new PathProvider()));
+		this._register(languageFeaturesService.documentOnDropEditProvider.register('*', new RelativePathProvider(workspaceContextService)));
 	}
 }
 
 export class DefaultPasteProvidersFeature extends Disposable {
 	constructor(
-		@ILanguageFeaturesService
-		languageFeaturesService: ILanguageFeaturesService,
-		@IWorkspaceContextService
-		workspaceContextService: IWorkspaceContextService
+		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@IWorkspaceContextService workspaceContextService: IWorkspaceContextService,
 	) {
 		super();
 
-		this._register(
-			languageFeaturesService.documentPasteEditProvider.register(
-				"*",
-				new DefaultTextProvider()
-			)
-		);
-		this._register(
-			languageFeaturesService.documentPasteEditProvider.register(
-				"*",
-				new PathProvider()
-			)
-		);
-		this._register(
-			languageFeaturesService.documentPasteEditProvider.register(
-				"*",
-				new RelativePathProvider(workspaceContextService)
-			)
-		);
+		this._register(languageFeaturesService.documentPasteEditProvider.register('*', new DefaultTextProvider()));
+		this._register(languageFeaturesService.documentPasteEditProvider.register('*', new PathProvider()));
+		this._register(languageFeaturesService.documentPasteEditProvider.register('*', new RelativePathProvider(workspaceContextService)));
 	}
 }

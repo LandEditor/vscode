@@ -3,27 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from "vscode";
-import { DocumentSelector } from "../configuration/documentSelector";
-import { LanguageDescription } from "../configuration/languageDescription";
-import type * as Proto from "../tsServer/protocol/protocol";
-import * as typeConverters from "../typeConverters";
-import { ITypeScriptServiceClient } from "../typescriptService";
-import FileConfigurationManager from "./fileConfigurationManager";
-import {
-	conditionalRegistration,
-	requireGlobalConfiguration,
-} from "./util/dependentRegistration";
+import * as vscode from 'vscode';
+import { DocumentSelector } from '../configuration/documentSelector';
+import { LanguageDescription } from '../configuration/languageDescription';
+import type * as Proto from '../tsServer/protocol/protocol';
+import * as typeConverters from '../typeConverters';
+import { ITypeScriptServiceClient } from '../typescriptService';
+import FileConfigurationManager from './fileConfigurationManager';
+import { conditionalRegistration, requireGlobalConfiguration } from './util/dependentRegistration';
 
-class TypeScriptFormattingProvider
-	implements
-		vscode.DocumentRangeFormattingEditProvider,
-		vscode.OnTypeFormattingEditProvider
-{
+class TypeScriptFormattingProvider implements vscode.DocumentRangeFormattingEditProvider, vscode.OnTypeFormattingEditProvider {
 	public constructor(
 		private readonly client: ITypeScriptServiceClient,
 		private readonly formattingOptionsManager: FileConfigurationManager
-	) {}
+	) { }
 
 	public async provideDocumentRangeFormattingEdits(
 		document: vscode.TextDocument,
@@ -36,15 +29,11 @@ class TypeScriptFormattingProvider
 			return undefined;
 		}
 
-		await this.formattingOptionsManager.ensureConfigurationOptions(
-			document,
-			options,
-			token
-		);
+		await this.formattingOptionsManager.ensureConfigurationOptions(document, options, token);
 
 		const args = typeConverters.Range.toFormattingRequestArgs(file, range);
-		const response = await this.client.execute("format", args, token);
-		if (response.type !== "response" || !response.body) {
+		const response = await this.client.execute('format', args, token);
+		if (response.type !== 'response' || !response.body) {
 			return undefined;
 		}
 
@@ -63,21 +52,14 @@ class TypeScriptFormattingProvider
 			return [];
 		}
 
-		await this.formattingOptionsManager.ensureConfigurationOptions(
-			document,
-			options,
-			token
-		);
+		await this.formattingOptionsManager.ensureConfigurationOptions(document, options, token);
 
 		const args: Proto.FormatOnKeyRequestArgs = {
-			...typeConverters.Position.toFileLocationRequestArgs(
-				file,
-				position
-			),
-			key: ch,
+			...typeConverters.Position.toFileLocationRequestArgs(file, position),
+			key: ch
 		};
-		const response = await this.client.execute("formatonkey", args, token);
-		if (response.type !== "response" || !response.body) {
+		const response = await this.client.execute('formatonkey', args, token);
+		if (response.type !== 'response' || !response.body) {
 			return [];
 		}
 
@@ -88,18 +70,11 @@ class TypeScriptFormattingProvider
 			// Work around for https://github.com/microsoft/TypeScript/issues/6700.
 			// Check if we have an edit at the beginning of the line which only removes white spaces and leaves
 			// an empty line. Drop those edits
-			if (
-				range.start.character === 0 &&
-				range.start.line === range.end.line &&
-				textEdit.newText === ""
-			) {
+			if (range.start.character === 0 && range.start.line === range.end.line && textEdit.newText === '') {
 				const lText = document.lineAt(range.start.line).text;
 				// If the edit leaves something on the line keep the edit (note that the end character is exclusive).
 				// Keep it also if it removes something else than whitespace
-				if (
-					lText.trim().length > 0 ||
-					lText.length > range.end.character
-				) {
+				if (lText.trim().length > 0 || lText.length > range.end.character) {
 					result.push(textEdit);
 				}
 			} else {
@@ -116,26 +91,13 @@ export function register(
 	client: ITypeScriptServiceClient,
 	fileConfigurationManager: FileConfigurationManager
 ) {
-	return conditionalRegistration(
-		[requireGlobalConfiguration(language.id, "format.enable")],
-		() => {
-			const formattingProvider = new TypeScriptFormattingProvider(
-				client,
-				fileConfigurationManager
-			);
-			return vscode.Disposable.from(
-				vscode.languages.registerOnTypeFormattingEditProvider(
-					selector.syntax,
-					formattingProvider,
-					";",
-					"}",
-					"\n"
-				),
-				vscode.languages.registerDocumentRangeFormattingEditProvider(
-					selector.syntax,
-					formattingProvider
-				)
-			);
-		}
-	);
+	return conditionalRegistration([
+		requireGlobalConfiguration(language.id, 'format.enable'),
+	], () => {
+		const formattingProvider = new TypeScriptFormattingProvider(client, fileConfigurationManager);
+		return vscode.Disposable.from(
+			vscode.languages.registerOnTypeFormattingEditProvider(selector.syntax, formattingProvider, ';', '}', '\n'),
+			vscode.languages.registerDocumentRangeFormattingEditProvider(selector.syntax, formattingProvider),
+		);
+	});
 }

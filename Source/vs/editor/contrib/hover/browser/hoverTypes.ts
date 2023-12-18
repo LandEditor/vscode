@@ -3,21 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Dimension } from "vs/base/browser/dom";
-import { AsyncIterableObject } from "vs/base/common/async";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { IDisposable } from "vs/base/common/lifecycle";
-import {
-	ICodeEditor,
-	IEditorMouseEvent,
-} from "vs/editor/browser/editorBrowser";
-import { Position } from "vs/editor/common/core/position";
-import { Range } from "vs/editor/common/core/range";
-import { IModelDecoration } from "vs/editor/common/model";
-import {
-	BrandedService,
-	IConstructorSignature,
-} from "vs/platform/instantiation/common/instantiation";
+import { Dimension } from 'vs/base/browser/dom';
+import { AsyncIterableObject } from 'vs/base/common/async';
+import { CancellationToken } from 'vs/base/common/cancellation';
+import { IDisposable } from 'vs/base/common/lifecycle';
+import { ICodeEditor, IEditorMouseEvent } from 'vs/editor/browser/editorBrowser';
+import { Position } from 'vs/editor/common/core/position';
+import { Range } from 'vs/editor/common/core/range';
+import { IModelDecoration } from 'vs/editor/common/model';
+import { BrandedService, IConstructorSignature } from 'vs/platform/instantiation/common/instantiation';
 
 export interface IHoverPart {
 	/**
@@ -46,7 +40,7 @@ export interface IHoverPart {
 
 export const enum HoverAnchorType {
 	Range = 1,
-	ForeignElement = 2,
+	ForeignElement = 2
 }
 
 export class HoverRangeAnchor {
@@ -55,22 +49,14 @@ export class HoverRangeAnchor {
 		public readonly priority: number,
 		public readonly range: Range,
 		public readonly initialMousePosX: number | undefined,
-		public readonly initialMousePosY: number | undefined
-	) {}
-	public equals(other: HoverAnchor) {
-		return (
-			other.type === HoverAnchorType.Range &&
-			this.range.equalsRange(other.range)
-		);
+		public readonly initialMousePosY: number | undefined,
+	) {
 	}
-	public canAdoptVisibleHover(
-		lastAnchor: HoverAnchor,
-		showAtPosition: Position
-	): boolean {
-		return (
-			lastAnchor.type === HoverAnchorType.Range &&
-			showAtPosition.lineNumber === this.range.startLineNumber
-		);
+	public equals(other: HoverAnchor) {
+		return (other.type === HoverAnchorType.Range && this.range.equalsRange(other.range));
+	}
+	public canAdoptVisibleHover(lastAnchor: HoverAnchor, showAtPosition: Position): boolean {
+		return (lastAnchor.type === HoverAnchorType.Range && showAtPosition.lineNumber === this.range.startLineNumber);
 	}
 }
 
@@ -83,33 +69,20 @@ export class HoverForeignElementAnchor {
 		public readonly initialMousePosX: number | undefined,
 		public readonly initialMousePosY: number | undefined,
 		public readonly supportsMarkerHover: boolean | undefined
-	) {}
-	public equals(other: HoverAnchor) {
-		return (
-			other.type === HoverAnchorType.ForeignElement &&
-			this.owner === other.owner
-		);
+	) {
 	}
-	public canAdoptVisibleHover(
-		lastAnchor: HoverAnchor,
-		showAtPosition: Position
-	): boolean {
-		return (
-			lastAnchor.type === HoverAnchorType.ForeignElement &&
-			this.owner === lastAnchor.owner
-		);
+	public equals(other: HoverAnchor) {
+		return (other.type === HoverAnchorType.ForeignElement && this.owner === other.owner);
+	}
+	public canAdoptVisibleHover(lastAnchor: HoverAnchor, showAtPosition: Position): boolean {
+		return (lastAnchor.type === HoverAnchorType.ForeignElement && this.owner === lastAnchor.owner);
 	}
 }
 
 export type HoverAnchor = HoverRangeAnchor | HoverForeignElementAnchor;
 
 export interface IEditorHoverStatusBar {
-	addAction(actionOptions: {
-		label: string;
-		iconClass?: string;
-		run: (target: HTMLElement) => void;
-		commandId: string;
-	}): IEditorHoverAction;
+	addAction(actionOptions: { label: string; iconClass?: string; run: (target: HTMLElement) => void; commandId: string }): IEditorHoverAction;
 	append(element: HTMLElement): HTMLElement;
 }
 
@@ -152,36 +125,23 @@ export interface IEditorHoverParticipant<T extends IHoverPart = IHoverPart> {
 	readonly hoverOrdinal: number;
 	suggestHoverAnchor?(mouseEvent: IEditorMouseEvent): HoverAnchor | null;
 	computeSync(anchor: HoverAnchor, lineDecorations: IModelDecoration[]): T[];
-	computeAsync?(
-		anchor: HoverAnchor,
-		lineDecorations: IModelDecoration[],
-		token: CancellationToken
-	): AsyncIterableObject<T>;
+	computeAsync?(anchor: HoverAnchor, lineDecorations: IModelDecoration[], token: CancellationToken): AsyncIterableObject<T>;
 	createLoadingMessage?(anchor: HoverAnchor): T | null;
-	renderHoverParts(
-		context: IEditorHoverRenderContext,
-		hoverParts: T[]
-	): IDisposable;
+	renderHoverParts(context: IEditorHoverRenderContext, hoverParts: T[]): IDisposable;
 }
 
-export type IEditorHoverParticipantCtor = IConstructorSignature<
-	IEditorHoverParticipant,
-	[ICodeEditor]
->;
+export type IEditorHoverParticipantCtor = IConstructorSignature<IEditorHoverParticipant, [ICodeEditor]>;
 
-export const HoverParticipantRegistry = new (class HoverParticipantRegistry {
+export const HoverParticipantRegistry = (new class HoverParticipantRegistry {
+
 	_participants: IEditorHoverParticipantCtor[] = [];
 
-	public register<Services extends BrandedService[]>(ctor: {
-		new (
-			editor: ICodeEditor,
-			...services: Services
-		): IEditorHoverParticipant;
-	}): void {
+	public register<Services extends BrandedService[]>(ctor: { new(editor: ICodeEditor, ...services: Services): IEditorHoverParticipant }): void {
 		this._participants.push(ctor as IEditorHoverParticipantCtor);
 	}
 
 	public getAll(): IEditorHoverParticipantCtor[] {
 		return this._participants;
 	}
-})();
+
+}());

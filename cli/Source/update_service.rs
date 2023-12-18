@@ -96,7 +96,13 @@ impl UpdateService {
 		let res = response.json::<UpdateServerVersion>().await?;
 		debug!(self.log, "Resolved version {} to {}", version, res.version);
 
-		Ok(Release { target, platform, quality, name: res.name, commit: res.version })
+		Ok(Release {
+			target,
+			platform,
+			quality,
+			name: res.name,
+			commit: res.version,
+		})
 	}
 
 	/// Gets the latest commit for the target of the given quality.
@@ -130,7 +136,13 @@ impl UpdateService {
 		let res = response.json::<UpdateServerVersion>().await?;
 		debug!(self.log, "Resolved quality {} to {}", quality, res.version);
 
-		Ok(Release { target, platform, quality, name: res.name, commit: res.version })
+		Ok(Release {
+			target,
+			platform,
+			quality,
+			name: res.name,
+			commit: res.version,
+		})
 	}
 
 	/// Gets the download stream for the release.
@@ -257,9 +269,17 @@ impl Platform {
 	}
 
 	pub fn env_default() -> Option<Platform> {
-		if cfg!(all(target_os = "linux", target_arch = "x86_64", target_env = "musl")) {
+		if cfg!(all(
+			target_os = "linux",
+			target_arch = "x86_64",
+			target_env = "musl"
+		)) {
 			Some(Platform::LinuxAlpineX64)
-		} else if cfg!(all(target_os = "linux", target_arch = "aarch64", target_env = "musl")) {
+		} else if cfg!(all(
+			target_os = "linux",
+			target_arch = "aarch64",
+			target_env = "musl"
+		)) {
 			Some(Platform::LinuxAlpineARM64)
 		} else if cfg!(all(target_os = "linux", target_arch = "x86_64")) {
 			Some(Platform::LinuxX64)

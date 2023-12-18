@@ -3,23 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ThrottledDelayer } from "vs/base/common/async";
-import { Event } from "vs/base/common/event";
-import { Iterable } from "vs/base/common/iterator";
-import { isObject } from "vs/base/common/types";
-import { URI } from "vs/base/common/uri";
-import {
-	FileOperationError,
-	FileOperationResult,
-	IFileService,
-} from "vs/platform/files/common/files";
-import { ILogService } from "vs/platform/log/common/log";
-import {
-	AbstractPolicyService,
-	IPolicyService,
-	PolicyName,
-	PolicyValue,
-} from "vs/platform/policy/common/policy";
+import { ThrottledDelayer } from 'vs/base/common/async';
+import { Event } from 'vs/base/common/event';
+import { Iterable } from 'vs/base/common/iterator';
+import { isObject } from 'vs/base/common/types';
+import { URI } from 'vs/base/common/uri';
+import { FileOperationError, FileOperationResult, IFileService } from 'vs/platform/files/common/files';
+import { ILogService } from 'vs/platform/log/common/log';
+import { AbstractPolicyService, IPolicyService, PolicyName, PolicyValue } from 'vs/platform/policy/common/policy';
 
 function keysDiff<T>(a: Map<string, T>, b: Map<string, T>): string[] {
 	const result: string[] = [];
@@ -33,13 +24,9 @@ function keysDiff<T>(a: Map<string, T>, b: Map<string, T>): string[] {
 	return result;
 }
 
-export class FilePolicyService
-	extends AbstractPolicyService
-	implements IPolicyService
-{
-	private readonly throttledDelayer = this._register(
-		new ThrottledDelayer(500)
-	);
+export class FilePolicyService extends AbstractPolicyService implements IPolicyService {
+
+	private readonly throttledDelayer = this._register(new ThrottledDelayer(500));
 
 	constructor(
 		private readonly file: URI,
@@ -48,16 +35,9 @@ export class FilePolicyService
 	) {
 		super();
 
-		const onDidChangePolicyFile = Event.filter(
-			fileService.onDidFilesChange,
-			(e) => e.affects(file)
-		);
+		const onDidChangePolicyFile = Event.filter(fileService.onDidFilesChange, e => e.affects(file));
 		this._register(fileService.watch(file));
-		this._register(
-			onDidChangePolicyFile(() =>
-				this.throttledDelayer.trigger(() => this.refresh())
-			)
-		);
+		this._register(onDidChangePolicyFile(() => this.throttledDelayer.trigger(() => this.refresh())));
 	}
 
 	protected async _updatePolicyDefinitions(): Promise<void> {
@@ -72,7 +52,7 @@ export class FilePolicyService
 			const raw = JSON.parse(content.value.toString());
 
 			if (!isObject(raw)) {
-				throw new Error("Policy file isn't a JSON object");
+				throw new Error('Policy file isn\'t a JSON object');
 			}
 
 			for (const key of Object.keys(raw)) {
@@ -81,14 +61,8 @@ export class FilePolicyService
 				}
 			}
 		} catch (error) {
-			if (
-				(<FileOperationError>error).fileOperationResult !==
-				FileOperationResult.FILE_NOT_FOUND
-			) {
-				this.logService.error(
-					`[FilePolicyService] Failed to read policies`,
-					error
-				);
+			if ((<FileOperationError>error).fileOperationResult !== FileOperationResult.FILE_NOT_FOUND) {
+				this.logService.error(`[FilePolicyService] Failed to read policies`, error);
 			}
 		}
 

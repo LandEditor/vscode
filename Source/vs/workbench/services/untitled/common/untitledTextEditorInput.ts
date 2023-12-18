@@ -3,45 +3,30 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from "vs/base/common/uri";
-import {
-	DEFAULT_EDITOR_ASSOCIATION,
-	findViewStateForEditor,
-	GroupIdentifier,
-	isUntitledResourceEditorInput,
-	IUntitledTextResourceEditorInput,
-	IUntypedEditorInput,
-	Verbosity,
-} from "vs/workbench/common/editor";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import { AbstractTextResourceEditorInput } from "vs/workbench/common/editor/textResourceEditorInput";
-import { IUntitledTextEditorModel } from "vs/workbench/services/untitled/common/untitledTextEditorModel";
-import {
-	EncodingMode,
-	IEncodingSupport,
-	ILanguageSupport,
-	ITextFileService,
-} from "vs/workbench/services/textfile/common/textfiles";
-import { ILabelService } from "vs/platform/label/common/label";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { IFileService } from "vs/platform/files/common/files";
-import { isEqual, toLocalResource } from "vs/base/common/resources";
-import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { IPathService } from "vs/workbench/services/path/common/pathService";
-import { ITextEditorOptions } from "vs/platform/editor/common/editor";
-import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
-import { ITextModelService } from "vs/editor/common/services/resolverService";
-import { dispose, IReference } from "vs/base/common/lifecycle";
-import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
+import { URI } from 'vs/base/common/uri';
+import { DEFAULT_EDITOR_ASSOCIATION, findViewStateForEditor, GroupIdentifier, isUntitledResourceEditorInput, IUntitledTextResourceEditorInput, IUntypedEditorInput, Verbosity } from 'vs/workbench/common/editor';
+import { EditorInput } from 'vs/workbench/common/editor/editorInput';
+import { AbstractTextResourceEditorInput } from 'vs/workbench/common/editor/textResourceEditorInput';
+import { IUntitledTextEditorModel } from 'vs/workbench/services/untitled/common/untitledTextEditorModel';
+import { EncodingMode, IEncodingSupport, ILanguageSupport, ITextFileService } from 'vs/workbench/services/textfile/common/textfiles';
+import { ILabelService } from 'vs/platform/label/common/label';
+import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
+import { IFileService } from 'vs/platform/files/common/files';
+import { isEqual, toLocalResource } from 'vs/base/common/resources';
+import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService';
+import { IPathService } from 'vs/workbench/services/path/common/pathService';
+import { ITextEditorOptions } from 'vs/platform/editor/common/editor';
+import { IFilesConfigurationService } from 'vs/workbench/services/filesConfiguration/common/filesConfigurationService';
+import { ITextModelService } from 'vs/editor/common/services/resolverService';
+import { dispose, IReference } from 'vs/base/common/lifecycle';
+import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration';
 
 /**
  * An editor input to be used for untitled text buffers.
  */
-export class UntitledTextEditorInput
-	extends AbstractTextResourceEditorInput
-	implements IEncodingSupport, ILanguageSupport
-{
-	static readonly ID: string = "workbench.editors.untitledEditorInput";
+export class UntitledTextEditorInput extends AbstractTextResourceEditorInput implements IEncodingSupport, ILanguageSupport {
+
+	static readonly ID: string = 'workbench.editors.untitledEditorInput';
 
 	override get typeId(): string {
 		return UntitledTextEditorInput.ID;
@@ -52,9 +37,7 @@ export class UntitledTextEditorInput
 	}
 
 	private modelResolve: Promise<void> | undefined = undefined;
-	private cachedUntitledTextEditorModelReference:
-		| IReference<IUntitledTextEditorModel>
-		| undefined = undefined;
+	private cachedUntitledTextEditorModelReference: IReference<IUntitledTextEditorModel> | undefined = undefined;
 
 	constructor(
 		readonly model: IUntitledTextEditorModel,
@@ -62,37 +45,22 @@ export class UntitledTextEditorInput
 		@ILabelService labelService: ILabelService,
 		@IEditorService editorService: IEditorService,
 		@IFileService fileService: IFileService,
-		@IWorkbenchEnvironmentService
-		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
 		@IPathService private readonly pathService: IPathService,
-		@IFilesConfigurationService
-		filesConfigurationService: IFilesConfigurationService,
+		@IFilesConfigurationService filesConfigurationService: IFilesConfigurationService,
 		@ITextModelService private readonly textModelService: ITextModelService,
-		@ITextResourceConfigurationService
-		textResourceConfigurationService: ITextResourceConfigurationService
+		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService
 	) {
-		super(
-			model.resource,
-			undefined,
-			editorService,
-			textFileService,
-			labelService,
-			fileService,
-			filesConfigurationService,
-			textResourceConfigurationService
-		);
+		super(model.resource, undefined, editorService, textFileService, labelService, fileService, filesConfigurationService, textResourceConfigurationService);
 
 		this.registerModelListeners(model);
 	}
 
 	private registerModelListeners(model: IUntitledTextEditorModel): void {
+
 		// re-emit some events from the model
-		this._register(
-			model.onDidChangeDirty(() => this._onDidChangeDirty.fire())
-		);
-		this._register(
-			model.onDidChangeName(() => this._onDidChangeLabel.fire())
-		);
+		this._register(model.onDidChangeDirty(() => this._onDidChangeDirty.fire()));
+		this._register(model.onDidChangeName(() => this._onDidChangeLabel.fire()));
 
 		// a reverted untitled text editor model renders this input disposed
 		this._register(model.onDidRevert(() => this.dispose()));
@@ -103,6 +71,7 @@ export class UntitledTextEditorInput
 	}
 
 	override getDescription(verbosity = Verbosity.MEDIUM): string | undefined {
+
 		// Without associated path: only use if name and description differ
 		if (!this.model.hasAssociatedFilePath) {
 			const descriptionCandidate = this.resource.path;
@@ -118,6 +87,7 @@ export class UntitledTextEditorInput
 	}
 
 	override getTitle(verbosity: Verbosity): string {
+
 		// Without associated path: check if name and description differ to decide
 		// if description should appear besides the name to distinguish better
 		if (!this.model.hasAssociatedFilePath) {
@@ -142,10 +112,7 @@ export class UntitledTextEditorInput
 		return this.model.getEncoding();
 	}
 
-	setEncoding(
-		encoding: string,
-		mode: EncodingMode /* ignored, we only have Encode */
-	): Promise<void> {
+	setEncoding(encoding: string, mode: EncodingMode /* ignored, we only have Encode */): Promise<void> {
 		return this.model.setEncoding(encoding);
 	}
 
@@ -160,11 +127,9 @@ export class UntitledTextEditorInput
 	override async resolve(): Promise<IUntitledTextEditorModel> {
 		if (!this.modelResolve) {
 			this.modelResolve = (async () => {
+
 				// Acquire a model reference
-				this.cachedUntitledTextEditorModelReference =
-					(await this.textModelService.createModelReference(
-						this.resource
-					)) as IReference<IUntitledTextEditorModel>;
+				this.cachedUntitledTextEditorModelReference = await this.textModelService.createModelReference(this.resource) as IReference<IUntitledTextEditorModel>;
 			})();
 		}
 
@@ -180,42 +145,22 @@ export class UntitledTextEditorInput
 		return this.model;
 	}
 
-	override toUntyped(options?: {
-		preserveViewState: GroupIdentifier;
-	}): IUntitledTextResourceEditorInput {
-		const untypedInput: IUntitledTextResourceEditorInput & {
-			resource: URI | undefined;
-			options: ITextEditorOptions;
-		} = {
-			resource: this.model.hasAssociatedFilePath
-				? toLocalResource(
-						this.model.resource,
-						this.environmentService.remoteAuthority,
-						this.pathService.defaultUriScheme
-					)
-				: this.resource,
+	override toUntyped(options?: { preserveViewState: GroupIdentifier }): IUntitledTextResourceEditorInput {
+		const untypedInput: IUntitledTextResourceEditorInput & { resource: URI | undefined; options: ITextEditorOptions } = {
+			resource: this.model.hasAssociatedFilePath ? toLocalResource(this.model.resource, this.environmentService.remoteAuthority, this.pathService.defaultUriScheme) : this.resource,
 			forceUntitled: true,
 			options: {
-				override: this.editorId,
-			},
+				override: this.editorId
+			}
 		};
 
-		if (typeof options?.preserveViewState === "number") {
+		if (typeof options?.preserveViewState === 'number') {
 			untypedInput.encoding = this.getEncoding();
 			untypedInput.languageId = this.getLanguageId();
-			untypedInput.contents = this.model.isModified()
-				? this.model.textEditorModel?.getValue()
-				: undefined;
-			untypedInput.options.viewState = findViewStateForEditor(
-				this,
-				options.preserveViewState,
-				this.editorService
-			);
+			untypedInput.contents = this.model.isModified() ? this.model.textEditorModel?.getValue() : undefined;
+			untypedInput.options.viewState = findViewStateForEditor(this, options.preserveViewState, this.editorService);
 
-			if (
-				typeof untypedInput.contents === "string" &&
-				!this.model.hasAssociatedFilePath
-			) {
+			if (typeof untypedInput.contents === 'string' && !this.model.hasAssociatedFilePath) {
 				// Given how generic untitled resources in the system are, we
 				// need to be careful not to set our resource into the untyped
 				// editor if we want to transport contents too, because of
@@ -248,6 +193,7 @@ export class UntitledTextEditorInput
 	}
 
 	override dispose(): void {
+
 		// Model
 		this.modelResolve = undefined;
 

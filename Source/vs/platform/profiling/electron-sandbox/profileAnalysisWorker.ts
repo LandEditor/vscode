@@ -3,30 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { basename } from "vs/base/common/path";
-import { TernarySearchTree } from "vs/base/common/ternarySearchTree";
-import { URI } from "vs/base/common/uri";
-import { IRequestHandler } from "vs/base/common/worker/simpleWorker";
-import { IV8Profile, Utils } from "vs/platform/profiling/common/profiling";
-import {
-	IProfileModel,
-	BottomUpSample,
-	buildModel,
-	BottomUpNode,
-	processNode,
-	CdpCallFrame,
-} from "vs/platform/profiling/common/profilingModel";
-import {
-	BottomUpAnalysis,
-	IProfileAnalysisWorker,
-	ProfilingOutput,
-} from "vs/platform/profiling/electron-sandbox/profileAnalysisWorkerService";
+import { basename } from 'vs/base/common/path';
+import { TernarySearchTree } from 'vs/base/common/ternarySearchTree';
+import { URI } from 'vs/base/common/uri';
+import { IRequestHandler } from 'vs/base/common/worker/simpleWorker';
+import { IV8Profile, Utils } from 'vs/platform/profiling/common/profiling';
+import { IProfileModel, BottomUpSample, buildModel, BottomUpNode, processNode, CdpCallFrame } from 'vs/platform/profiling/common/profilingModel';
+import { BottomUpAnalysis, IProfileAnalysisWorker, ProfilingOutput } from 'vs/platform/profiling/electron-sandbox/profileAnalysisWorkerService';
 
 export function create(): IRequestHandler {
 	return new ProfileAnalysisWorker();
 }
 
 class ProfileAnalysisWorker implements IRequestHandler, IProfileAnalysisWorker {
+
 	_requestHandlerBrand: any;
 
 	analyseBottomUp(profile: IV8Profile): BottomUpAnalysis {
@@ -35,7 +25,8 @@ class ProfileAnalysisWorker implements IRequestHandler, IProfileAnalysisWorker {
 		}
 
 		const model = buildModel(profile);
-		const samples = bottomUp(model, 5).filter((s) => !s.isSpecial);
+		const samples = bottomUp(model, 5)
+			.filter(s => !s.isSpecial);
 
 		if (samples.length === 0 || samples[0].percentage < 10) {
 			// ignore this profile because 90% of the time is spent inside "special" frames
@@ -46,10 +37,8 @@ class ProfileAnalysisWorker implements IRequestHandler, IProfileAnalysisWorker {
 		return { kind: ProfilingOutput.Interesting, samples };
 	}
 
-	analyseByUrlCategory(
-		profile: IV8Profile,
-		categories: [url: URI, category: string][]
-	): [category: string, aggregated: number][] {
+	analyseByUrlCategory(profile: IV8Profile, categories: [url: URI, category: string][]): [category: string, aggregated: number][] {
+
 		// build search tree
 		const searchTree = TernarySearchTree.forUris<string>();
 		searchTree.fill(categories);
@@ -83,20 +72,20 @@ class ProfileAnalysisWorker implements IRequestHandler, IProfileAnalysisWorker {
 }
 
 function isSpecial(call: CdpCallFrame): boolean {
-	return call.functionName.startsWith("(") && call.functionName.endsWith(")");
+	return call.functionName.startsWith('(') && call.functionName.endsWith(')');
 }
 
 function printCallFrameShort(frame: CdpCallFrame): string {
-	let result = frame.functionName || "(anonymous)";
+	let result = frame.functionName || '(anonymous)';
 	if (frame.url) {
-		result += "#";
+		result += '#';
 		result += basename(frame.url);
 		if (frame.lineNumber >= 0) {
-			result += ":";
+			result += ':';
 			result += frame.lineNumber + 1;
 		}
 		if (frame.columnNumber >= 0) {
-			result += ":";
+			result += ':';
 			result += frame.columnNumber + 1;
 		}
 	}
@@ -104,19 +93,19 @@ function printCallFrameShort(frame: CdpCallFrame): string {
 }
 
 function printCallFrameStackLike(frame: CdpCallFrame): string {
-	let result = frame.functionName || "(anonymous)";
+	let result = frame.functionName || '(anonymous)';
 	if (frame.url) {
-		result += " (";
+		result += ' (';
 		result += frame.url;
 		if (frame.lineNumber >= 0) {
-			result += ":";
+			result += ':';
 			result += frame.lineNumber + 1;
 		}
 		if (frame.columnNumber >= 0) {
-			result += ":";
+			result += ':';
 			result += frame.columnNumber + 1;
 		}
-		result += ")";
+		result += ')';
 	}
 	return result;
 }
@@ -124,8 +113,7 @@ function printCallFrameStackLike(frame: CdpCallFrame): string {
 function getHeaviestLocationIds(model: IProfileModel, topN: number) {
 	const stackSelfTime: { [locationId: number]: number } = {};
 	for (const node of model.nodes) {
-		stackSelfTime[node.locationId] =
-			(stackSelfTime[node.locationId] || 0) + node.selfTime;
+		stackSelfTime[node.locationId] = (stackSelfTime[node.locationId] || 0) + node.selfTime;
 	}
 
 	const locationIds = Object.entries(stackSelfTime)
@@ -154,6 +142,7 @@ function bottomUp(model: IProfileModel, topN: number) {
 	const samples: BottomUpSample[] = [];
 
 	for (const node of result) {
+
 		const sample: BottomUpSample = {
 			selfTime: Math.round(node.selfTime / 1000),
 			totalTime: Math.round(node.aggregateTime / 1000),
@@ -162,7 +151,7 @@ function bottomUp(model: IProfileModel, topN: number) {
 			url: node.callFrame.url,
 			caller: [],
 			percentage: Math.round(node.selfTime / (model.duration / 100)),
-			isSpecial: isSpecial(node.callFrame),
+			isSpecial: isSpecial(node.callFrame)
 		};
 
 		// follow the heaviest caller paths
@@ -176,9 +165,7 @@ function bottomUp(model: IProfileModel, topN: number) {
 				}
 			}
 			if (top) {
-				const percentage = Math.round(
-					top.selfTime / (node.selfTime / 100)
-				);
+				const percentage = Math.round(top.selfTime / (node.selfTime / 100));
 				sample.caller.push({
 					percentage,
 					location: printCallFrameShort(top.callFrame),

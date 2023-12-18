@@ -3,87 +3,51 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createTrustedTypesPolicy } from "vs/base/browser/trustedTypes";
-import { Event } from "vs/base/common/event";
-import { Disposable, toDisposable } from "vs/base/common/lifecycle";
-import {
-	IObservable,
-	autorun,
-	derived,
-	observableFromEvent,
-	observableSignalFromEvent,
-	observableValue,
-} from "vs/base/common/observable";
-import * as strings from "vs/base/common/strings";
-import "vs/css!./ghostText";
-import { applyFontInfo } from "vs/editor/browser/config/domFontInfo";
-import { ICodeEditor } from "vs/editor/browser/editorBrowser";
-import {
-	EditorFontLigatures,
-	EditorOption,
-	IComputedEditorOptions,
-} from "vs/editor/common/config/editorOptions";
-import { Position } from "vs/editor/common/core/position";
-import { Range } from "vs/editor/common/core/range";
-import { StringBuilder } from "vs/editor/common/core/stringBuilder";
-import { ILanguageIdCodec } from "vs/editor/common/languages";
-import { ILanguageService } from "vs/editor/common/languages/language";
-import {
-	IModelDeltaDecoration,
-	ITextModel,
-	InjectedTextCursorStops,
-	PositionAffinity,
-} from "vs/editor/common/model";
-import { LineTokens } from "vs/editor/common/tokens/lineTokens";
-import { LineDecoration } from "vs/editor/common/viewLayout/lineDecorations";
-import {
-	RenderLineInput,
-	renderViewLine,
-} from "vs/editor/common/viewLayout/viewLineRenderer";
-import { InlineDecorationType } from "vs/editor/common/viewModel";
-import {
-	GhostText,
-	GhostTextReplacement,
-} from "vs/editor/contrib/inlineCompletions/browser/ghostText";
-import {
-	ColumnRange,
-	applyObservableDecorations,
-} from "vs/editor/contrib/inlineCompletions/browser/utils";
+import { createTrustedTypesPolicy } from 'vs/base/browser/trustedTypes';
+import { Event } from 'vs/base/common/event';
+import { Disposable, toDisposable } from 'vs/base/common/lifecycle';
+import { IObservable, autorun, derived, observableFromEvent, observableSignalFromEvent, observableValue } from 'vs/base/common/observable';
+import * as strings from 'vs/base/common/strings';
+import 'vs/css!./ghostText';
+import { applyFontInfo } from 'vs/editor/browser/config/domFontInfo';
+import { ICodeEditor } from 'vs/editor/browser/editorBrowser';
+import { EditorFontLigatures, EditorOption, IComputedEditorOptions } from 'vs/editor/common/config/editorOptions';
+import { Position } from 'vs/editor/common/core/position';
+import { Range } from 'vs/editor/common/core/range';
+import { StringBuilder } from 'vs/editor/common/core/stringBuilder';
+import { ILanguageIdCodec } from 'vs/editor/common/languages';
+import { ILanguageService } from 'vs/editor/common/languages/language';
+import { IModelDeltaDecoration, ITextModel, InjectedTextCursorStops, PositionAffinity } from 'vs/editor/common/model';
+import { LineTokens } from 'vs/editor/common/tokens/lineTokens';
+import { LineDecoration } from 'vs/editor/common/viewLayout/lineDecorations';
+import { RenderLineInput, renderViewLine } from 'vs/editor/common/viewLayout/viewLineRenderer';
+import { InlineDecorationType } from 'vs/editor/common/viewModel';
+import { GhostText, GhostTextReplacement } from 'vs/editor/contrib/inlineCompletions/browser/ghostText';
+import { ColumnRange, applyObservableDecorations } from 'vs/editor/contrib/inlineCompletions/browser/utils';
 
-export const GHOST_TEXT_DESCRIPTION = "ghost-text";
+export const GHOST_TEXT_DESCRIPTION = 'ghost-text';
 export interface IGhostTextWidgetModel {
 	readonly targetTextModel: IObservable<ITextModel | undefined>;
-	readonly ghostText: IObservable<
-		GhostText | GhostTextReplacement | undefined
-	>;
+	readonly ghostText: IObservable<GhostText | GhostTextReplacement | undefined>;
 	readonly minReservedLineCount: IObservable<number>;
 }
 
 export class GhostTextWidget extends Disposable {
 	private readonly isDisposed = observableValue(this, false);
-	private readonly currentTextModel = observableFromEvent(
-		this.editor.onDidChangeModel,
-		() => /** @description editor.model */ this.editor.getModel()
-	);
+	private readonly currentTextModel = observableFromEvent(this.editor.onDidChangeModel, () => /** @description editor.model */ this.editor.getModel());
 
 	constructor(
 		private readonly editor: ICodeEditor,
 		private readonly model: IGhostTextWidgetModel,
-		@ILanguageService private readonly languageService: ILanguageService
+		@ILanguageService private readonly languageService: ILanguageService,
 	) {
 		super();
 
-		this._register(
-			toDisposable(() => {
-				this.isDisposed.set(true, undefined);
-			})
-		);
-		this._register(
-			applyObservableDecorations(this.editor, this.decorations)
-		);
+		this._register(toDisposable(() => { this.isDisposed.set(true, undefined); }));
+		this._register(applyObservableDecorations(this.editor, this.decorations));
 	}
 
-	private readonly uiState = derived(this, (reader) => {
+	private readonly uiState = derived(this, reader => {
 		if (this.isDisposed.read(reader)) {
 			return undefined;
 		}
@@ -96,33 +60,16 @@ export class GhostTextWidget extends Disposable {
 			return undefined;
 		}
 
-		const replacedRange =
-			ghostText instanceof GhostTextReplacement
-				? ghostText.columnRange
-				: undefined;
+		const replacedRange = ghostText instanceof GhostTextReplacement ? ghostText.columnRange : undefined;
 
-		const inlineTexts: {
-			column: number;
-			text: string;
-			preview: boolean;
-		}[] = [];
+		const inlineTexts: { column: number; text: string; preview: boolean }[] = [];
 		const additionalLines: LineData[] = [];
 
-		function addToAdditionalLines(
-			lines: readonly string[],
-			className: string | undefined
-		) {
+		function addToAdditionalLines(lines: readonly string[], className: string | undefined) {
 			if (additionalLines.length > 0) {
 				const lastLine = additionalLines[additionalLines.length - 1];
 				if (className) {
-					lastLine.decorations.push(
-						new LineDecoration(
-							lastLine.content.length + 1,
-							lastLine.content.length + 1 + lines[0].length,
-							className,
-							InlineDecorationType.Regular
-						)
-					);
+					lastLine.decorations.push(new LineDecoration(lastLine.content.length + 1, lastLine.content.length + 1 + lines[0].length, className, InlineDecorationType.Regular));
 				}
 				lastLine.content += lines[0];
 
@@ -131,16 +78,7 @@ export class GhostTextWidget extends Disposable {
 			for (const line of lines) {
 				additionalLines.push({
 					content: line,
-					decorations: className
-						? [
-								new LineDecoration(
-									1,
-									line.length + 1,
-									className,
-									InlineDecorationType.Regular
-								),
-							]
-						: [],
+					decorations: className ? [new LineDecoration(1, line.length + 1, className, InlineDecorationType.Regular)] : []
 				});
 			}
 		}
@@ -159,18 +97,12 @@ export class GhostTextWidget extends Disposable {
 				});
 				lines = lines.slice(1);
 			} else {
-				addToAdditionalLines(
-					[textBufferLine.substring(lastIdx, part.column - 1)],
-					undefined
-				);
+				addToAdditionalLines([textBufferLine.substring(lastIdx, part.column - 1)], undefined);
 			}
 
 			if (lines.length > 0) {
 				addToAdditionalLines(lines, GHOST_TEXT_DESCRIPTION);
-				if (
-					hiddenTextStartColumn === undefined &&
-					part.column <= textBufferLine.length
-				) {
+				if (hiddenTextStartColumn === undefined && part.column <= textBufferLine.length) {
 					hiddenTextStartColumn = part.column;
 				}
 			}
@@ -178,19 +110,10 @@ export class GhostTextWidget extends Disposable {
 			lastIdx = part.column - 1;
 		}
 		if (hiddenTextStartColumn !== undefined) {
-			addToAdditionalLines(
-				[textBufferLine.substring(lastIdx)],
-				undefined
-			);
+			addToAdditionalLines([textBufferLine.substring(lastIdx)], undefined);
 		}
 
-		const hiddenRange =
-			hiddenTextStartColumn !== undefined
-				? new ColumnRange(
-						hiddenTextStartColumn,
-						textBufferLine.length + 1
-					)
-				: undefined;
+		const hiddenRange = hiddenTextStartColumn !== undefined ? new ColumnRange(hiddenTextStartColumn, textBufferLine.length + 1) : undefined;
 
 		return {
 			replacedRange,
@@ -198,13 +121,12 @@ export class GhostTextWidget extends Disposable {
 			additionalLines,
 			hiddenRange,
 			lineNumber: ghostText.lineNumber,
-			additionalReservedLineCount:
-				this.model.minReservedLineCount.read(reader),
+			additionalReservedLineCount: this.model.minReservedLineCount.read(reader),
 			targetTextModel: textModel,
 		};
 	});
 
-	private readonly decorations = derived(this, (reader) => {
+	private readonly decorations = derived(this, reader => {
 		const uiState = this.uiState.read(reader);
 		if (!uiState) {
 			return [];
@@ -215,39 +137,25 @@ export class GhostTextWidget extends Disposable {
 		if (uiState.replacedRange) {
 			decorations.push({
 				range: uiState.replacedRange.toRange(uiState.lineNumber),
-				options: {
-					inlineClassName: "inline-completion-text-to-replace",
-					description: "GhostTextReplacement",
-				},
+				options: { inlineClassName: 'inline-completion-text-to-replace', description: 'GhostTextReplacement' }
 			});
 		}
 
 		if (uiState.hiddenRange) {
 			decorations.push({
 				range: uiState.hiddenRange.toRange(uiState.lineNumber),
-				options: {
-					inlineClassName: "ghost-text-hidden",
-					description: "ghost-text-hidden",
-				},
+				options: { inlineClassName: 'ghost-text-hidden', description: 'ghost-text-hidden', }
 			});
 		}
 
 		for (const p of uiState.inlineTexts) {
 			decorations.push({
-				range: Range.fromPositions(
-					new Position(uiState.lineNumber, p.column)
-				),
+				range: Range.fromPositions(new Position(uiState.lineNumber, p.column)),
 				options: {
 					description: GHOST_TEXT_DESCRIPTION,
-					after: {
-						content: p.text,
-						inlineClassName: p.preview
-							? "ghost-text-decoration-preview"
-							: "ghost-text-decoration",
-						cursorStops: InjectedTextCursorStops.Left,
-					},
+					after: { content: p.text, inlineClassName: p.preview ? 'ghost-text-decoration-preview' : 'ghost-text-decoration', cursorStops: InjectedTextCursorStops.Left },
 					showIfCollapsed: true,
-				},
+				}
 			});
 		}
 
@@ -258,18 +166,15 @@ export class GhostTextWidget extends Disposable {
 		new AdditionalLinesWidget(
 			this.editor,
 			this.languageService.languageIdCodec,
-			derived((reader) => {
+			derived(reader => {
 				/** @description lines */
 				const uiState = this.uiState.read(reader);
-				return uiState
-					? {
-							lineNumber: uiState.lineNumber,
-							additionalLines: uiState.additionalLines,
-							minReservedLineCount:
-								uiState.additionalReservedLineCount,
-							targetTextModel: uiState.targetTextModel,
-						}
-					: undefined;
+				return uiState ? {
+					lineNumber: uiState.lineNumber,
+					additionalLines: uiState.additionalLines,
+					minReservedLineCount: uiState.additionalReservedLineCount,
+					targetTextModel: uiState.targetTextModel,
+				} : undefined;
 			})
 		)
 	);
@@ -281,57 +186,37 @@ export class GhostTextWidget extends Disposable {
 
 class AdditionalLinesWidget extends Disposable {
 	private _viewZoneId: string | undefined = undefined;
-	public get viewZoneId(): string | undefined {
-		return this._viewZoneId;
-	}
+	public get viewZoneId(): string | undefined { return this._viewZoneId; }
 
-	private readonly editorOptionsChanged = observableSignalFromEvent(
-		"editorOptionChanged",
-		Event.filter(
-			this.editor.onDidChangeConfiguration,
-			(e) =>
-				e.hasChanged(EditorOption.disableMonospaceOptimizations) ||
-				e.hasChanged(EditorOption.stopRenderingLineAfter) ||
-				e.hasChanged(EditorOption.renderWhitespace) ||
-				e.hasChanged(EditorOption.renderControlCharacters) ||
-				e.hasChanged(EditorOption.fontLigatures) ||
-				e.hasChanged(EditorOption.fontInfo) ||
-				e.hasChanged(EditorOption.lineHeight)
-		)
-	);
+	private readonly editorOptionsChanged = observableSignalFromEvent('editorOptionChanged', Event.filter(
+		this.editor.onDidChangeConfiguration,
+		e => e.hasChanged(EditorOption.disableMonospaceOptimizations)
+			|| e.hasChanged(EditorOption.stopRenderingLineAfter)
+			|| e.hasChanged(EditorOption.renderWhitespace)
+			|| e.hasChanged(EditorOption.renderControlCharacters)
+			|| e.hasChanged(EditorOption.fontLigatures)
+			|| e.hasChanged(EditorOption.fontInfo)
+			|| e.hasChanged(EditorOption.lineHeight)
+	));
 
 	constructor(
 		private readonly editor: ICodeEditor,
 		private readonly languageIdCodec: ILanguageIdCodec,
-		private readonly lines: IObservable<
-			| {
-					targetTextModel: ITextModel;
-					lineNumber: number;
-					additionalLines: LineData[];
-					minReservedLineCount: number;
-			  }
-			| undefined
-		>
+		private readonly lines: IObservable<{ targetTextModel: ITextModel; lineNumber: number; additionalLines: LineData[]; minReservedLineCount: number } | undefined>
 	) {
 		super();
 
-		this._register(
-			autorun((reader) => {
-				/** @description update view zone */
-				const lines = this.lines.read(reader);
-				this.editorOptionsChanged.read(reader);
+		this._register(autorun(reader => {
+			/** @description update view zone */
+			const lines = this.lines.read(reader);
+			this.editorOptionsChanged.read(reader);
 
-				if (lines) {
-					this.updateLines(
-						lines.lineNumber,
-						lines.additionalLines,
-						lines.minReservedLineCount
-					);
-				} else {
-					this.clear();
-				}
-			})
-		);
+			if (lines) {
+				this.updateLines(lines.lineNumber, lines.additionalLines, lines.minReservedLineCount);
+			} else {
+				this.clear();
+			}
+		}));
 	}
 
 	public override dispose(): void {
@@ -348,11 +233,7 @@ class AdditionalLinesWidget extends Disposable {
 		});
 	}
 
-	private updateLines(
-		lineNumber: number,
-		additionalLines: LineData[],
-		minReservedLineCount: number
-	): void {
+	private updateLines(lineNumber: number, additionalLines: LineData[], minReservedLineCount: number): void {
 		const textModel = this.editor.getModel();
 		if (!textModel) {
 			return;
@@ -366,25 +247,16 @@ class AdditionalLinesWidget extends Disposable {
 				this._viewZoneId = undefined;
 			}
 
-			const heightInLines = Math.max(
-				additionalLines.length,
-				minReservedLineCount
-			);
+			const heightInLines = Math.max(additionalLines.length, minReservedLineCount);
 			if (heightInLines > 0) {
-				const domNode = document.createElement("div");
-				renderLines(
-					domNode,
-					tabSize,
-					additionalLines,
-					this.editor.getOptions(),
-					this.languageIdCodec
-				);
+				const domNode = document.createElement('div');
+				renderLines(domNode, tabSize, additionalLines, this.editor.getOptions(), this.languageIdCodec);
 
 				this._viewZoneId = changeAccessor.addZone({
 					afterLineNumber: lineNumber,
 					heightInLines: heightInLines,
 					domNode,
-					afterColumnAffinity: PositionAffinity.Right,
+					afterColumnAffinity: PositionAffinity.Right
 				});
 			}
 		});
@@ -396,24 +268,12 @@ interface LineData {
 	decorations: LineDecoration[];
 }
 
-function renderLines(
-	domNode: HTMLElement,
-	tabSize: number,
-	lines: LineData[],
-	opts: IComputedEditorOptions,
-	languageIdCodec: ILanguageIdCodec
-): void {
-	const disableMonospaceOptimizations = opts.get(
-		EditorOption.disableMonospaceOptimizations
-	);
-	const stopRenderingLineAfter = opts.get(
-		EditorOption.stopRenderingLineAfter
-	);
+function renderLines(domNode: HTMLElement, tabSize: number, lines: LineData[], opts: IComputedEditorOptions, languageIdCodec: ILanguageIdCodec): void {
+	const disableMonospaceOptimizations = opts.get(EditorOption.disableMonospaceOptimizations);
+	const stopRenderingLineAfter = opts.get(EditorOption.stopRenderingLineAfter);
 	// To avoid visual confusion, we don't want to render visible whitespace
-	const renderWhitespace = "none";
-	const renderControlCharacters = opts.get(
-		EditorOption.renderControlCharacters
-	);
+	const renderWhitespace = 'none';
+	const renderControlCharacters = opts.get(EditorOption.renderControlCharacters);
 	const fontLigatures = opts.get(EditorOption.fontLigatures);
 	const fontInfo = opts.get(EditorOption.fontInfo);
 	const lineHeight = opts.get(EditorOption.lineHeight);
@@ -433,34 +293,31 @@ function renderLines(
 		const containsRTL = strings.containsRTL(line);
 		const lineTokens = LineTokens.createEmpty(line, languageIdCodec);
 
-		renderViewLine(
-			new RenderLineInput(
-				fontInfo.isMonospace && !disableMonospaceOptimizations,
-				fontInfo.canUseHalfwidthRightwardsArrow,
-				line,
-				false,
-				isBasicASCII,
-				containsRTL,
-				0,
-				lineTokens,
-				lineData.decorations,
-				tabSize,
-				0,
-				fontInfo.spaceWidth,
-				fontInfo.middotWidth,
-				fontInfo.wsmiddotWidth,
-				stopRenderingLineAfter,
-				renderWhitespace,
-				renderControlCharacters,
-				fontLigatures !== EditorFontLigatures.OFF,
-				null
-			),
-			sb
-		);
+		renderViewLine(new RenderLineInput(
+			(fontInfo.isMonospace && !disableMonospaceOptimizations),
+			fontInfo.canUseHalfwidthRightwardsArrow,
+			line,
+			false,
+			isBasicASCII,
+			containsRTL,
+			0,
+			lineTokens,
+			lineData.decorations,
+			tabSize,
+			0,
+			fontInfo.spaceWidth,
+			fontInfo.middotWidth,
+			fontInfo.wsmiddotWidth,
+			stopRenderingLineAfter,
+			renderWhitespace,
+			renderControlCharacters,
+			fontLigatures !== EditorFontLigatures.OFF,
+			null
+		), sb);
 
-		sb.appendString("</div>");
+		sb.appendString('</div>');
 	}
-	sb.appendString("</div>");
+	sb.appendString('</div>');
 
 	applyFontInfo(domNode, fontInfo);
 	const html = sb.build();
@@ -468,6 +325,4 @@ function renderLines(
 	domNode.innerHTML = trustedhtml as string;
 }
 
-const ttPolicy = createTrustedTypesPolicy("editorGhostText", {
-	createHTML: (value) => value,
-});
+const ttPolicy = createTrustedTypesPolicy('editorGhostText', { createHTML: value => value });

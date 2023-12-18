@@ -83,7 +83,7 @@
 .xterm .composition-view {
 	/* TODO: Composition position got messed up somewhere */
 	background: #000;
-	color: #fff;
+	color: #FFF;
 	display: none;
 	position: absolute;
 	white-space: nowrap;
@@ -223,9 +223,7 @@
 	position: absolute;
 }
 
-.xterm-screen
-	.xterm-decoration-container
-	.xterm-decoration.xterm-decoration-top-layer {
+.xterm-screen .xterm-decoration-container .xterm-decoration.xterm-decoration-top-layer {
 	z-index: 7;
 }
 

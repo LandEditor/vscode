@@ -19,8 +19,6 @@
 	box-sizing: border-box;
 }
 
-.monaco-editor
-	.margin-view-overlays
-	.current-line.current-line-margin.current-line-margin-both {
+.monaco-editor .margin-view-overlays .current-line.current-line-margin.current-line-margin-both {
 	border-right: 0;
 }

@@ -3,61 +3,37 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	createCancelablePromise,
-	CancelablePromise,
-	RunOnceScheduler,
-} from "vs/base/common/async";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { onUnexpectedError } from "vs/base/common/errors";
-import { MarkdownString } from "vs/base/common/htmlContent";
-import { Disposable } from "vs/base/common/lifecycle";
-import { Schemas } from "vs/base/common/network";
-import * as platform from "vs/base/common/platform";
-import * as resources from "vs/base/common/resources";
-import { StopWatch } from "vs/base/common/stopwatch";
-import { URI } from "vs/base/common/uri";
-import "vs/css!./links";
-import { ICodeEditor, MouseTargetType } from "vs/editor/browser/editorBrowser";
-import {
-	EditorAction,
-	EditorContributionInstantiation,
-	registerEditorAction,
-	registerEditorContribution,
-	ServicesAccessor,
-} from "vs/editor/browser/editorExtensions";
-import { EditorOption } from "vs/editor/common/config/editorOptions";
-import { Position } from "vs/editor/common/core/position";
-import { IEditorContribution } from "vs/editor/common/editorCommon";
-import { LanguageFeatureRegistry } from "vs/editor/common/languageFeatureRegistry";
-import { LinkProvider } from "vs/editor/common/languages";
-import {
-	IModelDecorationsChangeAccessor,
-	IModelDeltaDecoration,
-	TrackedRangeStickiness,
-} from "vs/editor/common/model";
-import { ModelDecorationOptions } from "vs/editor/common/model/textModel";
-import {
-	IFeatureDebounceInformation,
-	ILanguageFeatureDebounceService,
-} from "vs/editor/common/services/languageFeatureDebounce";
-import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
-import {
-	ClickLinkGesture,
-	ClickLinkKeyboardEvent,
-	ClickLinkMouseEvent,
-} from "vs/editor/contrib/gotoSymbol/browser/link/clickLinkGesture";
-import {
-	getLinks,
-	Link,
-	LinksList,
-} from "vs/editor/contrib/links/browser/getLinks";
-import * as nls from "vs/nls";
-import { INotificationService } from "vs/platform/notification/common/notification";
-import { IOpenerService } from "vs/platform/opener/common/opener";
+import { createCancelablePromise, CancelablePromise, RunOnceScheduler } from 'vs/base/common/async';
+import { CancellationToken } from 'vs/base/common/cancellation';
+import { onUnexpectedError } from 'vs/base/common/errors';
+import { MarkdownString } from 'vs/base/common/htmlContent';
+import { Disposable } from 'vs/base/common/lifecycle';
+import { Schemas } from 'vs/base/common/network';
+import * as platform from 'vs/base/common/platform';
+import * as resources from 'vs/base/common/resources';
+import { StopWatch } from 'vs/base/common/stopwatch';
+import { URI } from 'vs/base/common/uri';
+import 'vs/css!./links';
+import { ICodeEditor, MouseTargetType } from 'vs/editor/browser/editorBrowser';
+import { EditorAction, EditorContributionInstantiation, registerEditorAction, registerEditorContribution, ServicesAccessor } from 'vs/editor/browser/editorExtensions';
+import { EditorOption } from 'vs/editor/common/config/editorOptions';
+import { Position } from 'vs/editor/common/core/position';
+import { IEditorContribution } from 'vs/editor/common/editorCommon';
+import { LanguageFeatureRegistry } from 'vs/editor/common/languageFeatureRegistry';
+import { LinkProvider } from 'vs/editor/common/languages';
+import { IModelDecorationsChangeAccessor, IModelDeltaDecoration, TrackedRangeStickiness } from 'vs/editor/common/model';
+import { ModelDecorationOptions } from 'vs/editor/common/model/textModel';
+import { IFeatureDebounceInformation, ILanguageFeatureDebounceService } from 'vs/editor/common/services/languageFeatureDebounce';
+import { ILanguageFeaturesService } from 'vs/editor/common/services/languageFeatures';
+import { ClickLinkGesture, ClickLinkKeyboardEvent, ClickLinkMouseEvent } from 'vs/editor/contrib/gotoSymbol/browser/link/clickLinkGesture';
+import { getLinks, Link, LinksList } from 'vs/editor/contrib/links/browser/getLinks';
+import * as nls from 'vs/nls';
+import { INotificationService } from 'vs/platform/notification/common/notification';
+import { IOpenerService } from 'vs/platform/opener/common/opener';
 
 export class LinkDetector extends Disposable implements IEditorContribution {
-	public static readonly ID: string = "editor.linkDetector";
+
+	public static readonly ID: string = 'editor.linkDetector';
 
 	public static get(editor: ICodeEditor): LinkDetector | null {
 		return editor.getContribution<LinkDetector>(LinkDetector.ID);
@@ -74,24 +50,15 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 	constructor(
 		private readonly editor: ICodeEditor,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@INotificationService
-		private readonly notificationService: INotificationService,
-		@ILanguageFeaturesService
-		private readonly languageFeaturesService: ILanguageFeaturesService,
-		@ILanguageFeatureDebounceService
-		languageFeatureDebounceService: ILanguageFeatureDebounceService
+		@INotificationService private readonly notificationService: INotificationService,
+		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeatureDebounceService languageFeatureDebounceService: ILanguageFeatureDebounceService,
 	) {
 		super();
 
 		this.providers = this.languageFeaturesService.linkProvider;
-		this.debounceInformation = languageFeatureDebounceService.for(
-			this.providers,
-			"Links",
-			{ min: 1000, max: 4000 }
-		);
-		this.computeLinks = this._register(
-			new RunOnceScheduler(() => this.computeLinksNow(), 1000)
-		);
+		this.debounceInformation = languageFeatureDebounceService.for(this.providers, 'Links', { min: 1000, max: 4000 });
+		this.computeLinks = this._register(new RunOnceScheduler(() => this.computeLinksNow(), 1000));
 		this.computePromise = null;
 		this.activeLinksList = null;
 		this.currentOccurrences = {};
@@ -99,77 +66,54 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 
 		const clickLinkGesture = this._register(new ClickLinkGesture(editor));
 
-		this._register(
-			clickLinkGesture.onMouseMoveOrRelevantKeyDown(
-				([mouseEvent, keyboardEvent]) => {
-					this._onEditorMouseMove(mouseEvent, keyboardEvent);
-				}
-			)
-		);
-		this._register(
-			clickLinkGesture.onExecute((e) => {
-				this.onEditorMouseUp(e);
-			})
-		);
-		this._register(
-			clickLinkGesture.onCancel((e) => {
-				this.cleanUpActiveLinkDecoration();
-			})
-		);
-		this._register(
-			editor.onDidChangeConfiguration((e) => {
-				if (!e.hasChanged(EditorOption.links)) {
-					return;
-				}
-				// Remove any links (for the getting disabled case)
-				this.updateDecorations([]);
+		this._register(clickLinkGesture.onMouseMoveOrRelevantKeyDown(([mouseEvent, keyboardEvent]) => {
+			this._onEditorMouseMove(mouseEvent, keyboardEvent);
+		}));
+		this._register(clickLinkGesture.onExecute((e) => {
+			this.onEditorMouseUp(e);
+		}));
+		this._register(clickLinkGesture.onCancel((e) => {
+			this.cleanUpActiveLinkDecoration();
+		}));
+		this._register(editor.onDidChangeConfiguration((e) => {
+			if (!e.hasChanged(EditorOption.links)) {
+				return;
+			}
+			// Remove any links (for the getting disabled case)
+			this.updateDecorations([]);
 
-				// Stop any computation (for the getting disabled case)
-				this.stop();
+			// Stop any computation (for the getting disabled case)
+			this.stop();
 
-				// Start computing (for the getting enabled case)
-				this.computeLinks.schedule(0);
-			})
-		);
-		this._register(
-			editor.onDidChangeModelContent((e) => {
-				if (!this.editor.hasModel()) {
-					return;
-				}
-				this.computeLinks.schedule(
-					this.debounceInformation.get(this.editor.getModel())
-				);
-			})
-		);
-		this._register(
-			editor.onDidChangeModel((e) => {
-				this.currentOccurrences = {};
-				this.activeLinkDecorationId = null;
-				this.stop();
-				this.computeLinks.schedule(0);
-			})
-		);
-		this._register(
-			editor.onDidChangeModelLanguage((e) => {
-				this.stop();
-				this.computeLinks.schedule(0);
-			})
-		);
-		this._register(
-			this.providers.onDidChange((e) => {
-				this.stop();
-				this.computeLinks.schedule(0);
-			})
-		);
+			// Start computing (for the getting enabled case)
+			this.computeLinks.schedule(0);
+		}));
+		this._register(editor.onDidChangeModelContent((e) => {
+			if (!this.editor.hasModel()) {
+				return;
+			}
+			this.computeLinks.schedule(this.debounceInformation.get(this.editor.getModel()));
+		}));
+		this._register(editor.onDidChangeModel((e) => {
+			this.currentOccurrences = {};
+			this.activeLinkDecorationId = null;
+			this.stop();
+			this.computeLinks.schedule(0);
+		}));
+		this._register(editor.onDidChangeModelLanguage((e) => {
+			this.stop();
+			this.computeLinks.schedule(0);
+		}));
+		this._register(this.providers.onDidChange((e) => {
+			this.stop();
+			this.computeLinks.schedule(0);
+		}));
 
 		this.computeLinks.schedule(0);
 	}
 
 	private async computeLinksNow(): Promise<void> {
-		if (
-			!this.editor.hasModel() ||
-			!this.editor.getOption(EditorOption.links)
-		) {
+		if (!this.editor.hasModel() || !this.editor.getOption(EditorOption.links)) {
 			return;
 		}
 
@@ -188,9 +132,7 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 			this.activeLinksList = null;
 		}
 
-		this.computePromise = createCancelablePromise((token) =>
-			getLinks(this.providers, model, token)
-		);
+		this.computePromise = createCancelablePromise(token => getLinks(this.providers, model, token));
 		try {
 			const sw = new StopWatch(false);
 			this.activeLinksList = await this.computePromise;
@@ -207,9 +149,7 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 	}
 
 	private updateDecorations(links: Link[]): void {
-		const useMetaKey =
-			this.editor.getOption(EditorOption.multiCursorModifier) ===
-			"altKey";
+		const useMetaKey = (this.editor.getOption(EditorOption.multiCursorModifier) === 'altKey');
 		const oldDecorations: string[] = [];
 		const keys = Object.keys(this.currentOccurrences);
 		for (const decorationId of keys) {
@@ -221,17 +161,12 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 		if (links) {
 			// Not sure why this is sometimes null
 			for (const link of links) {
-				newDecorations.push(
-					LinkOccurrence.decoration(link, useMetaKey)
-				);
+				newDecorations.push(LinkOccurrence.decoration(link, useMetaKey));
 			}
 		}
 
 		this.editor.changeDecorations((changeAccessor) => {
-			const decorations = changeAccessor.deltaDecorations(
-				oldDecorations,
-				newDecorations
-			);
+			const decorations = changeAccessor.deltaDecorations(oldDecorations, newDecorations);
 
 			this.currentOccurrences = {};
 			this.activeLinkDecorationId = null;
@@ -242,18 +177,11 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 		});
 	}
 
-	private _onEditorMouseMove(
-		mouseEvent: ClickLinkMouseEvent,
-		withKey: ClickLinkKeyboardEvent | null
-	): void {
-		const useMetaKey =
-			this.editor.getOption(EditorOption.multiCursorModifier) ===
-			"altKey";
+	private _onEditorMouseMove(mouseEvent: ClickLinkMouseEvent, withKey: ClickLinkKeyboardEvent | null): void {
+		const useMetaKey = (this.editor.getOption(EditorOption.multiCursorModifier) === 'altKey');
 		if (this.isEnabled(mouseEvent, withKey)) {
 			this.cleanUpActiveLinkDecoration(); // always remove previous link decoration as their can only be one
-			const occurrence = this.getLinkOccurrence(
-				mouseEvent.target.position
-			);
+			const occurrence = this.getLinkOccurrence(mouseEvent.target.position);
 			if (occurrence) {
 				this.editor.changeDecorations((changeAccessor) => {
 					occurrence.activate(changeAccessor, useMetaKey);
@@ -266,12 +194,9 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 	}
 
 	private cleanUpActiveLinkDecoration(): void {
-		const useMetaKey =
-			this.editor.getOption(EditorOption.multiCursorModifier) ===
-			"altKey";
+		const useMetaKey = (this.editor.getOption(EditorOption.multiCursorModifier) === 'altKey');
 		if (this.activeLinkDecorationId) {
-			const occurrence =
-				this.currentOccurrences[this.activeLinkDecorationId];
+			const occurrence = this.currentOccurrences[this.activeLinkDecorationId];
 			if (occurrence) {
 				this.editor.changeDecorations((changeAccessor) => {
 					occurrence.deactivate(changeAccessor, useMetaKey);
@@ -290,102 +215,67 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 		if (!occurrence) {
 			return;
 		}
-		this.openLinkOccurrence(
-			occurrence,
-			mouseEvent.hasSideBySideModifier,
-			true /* from user gesture */
-		);
+		this.openLinkOccurrence(occurrence, mouseEvent.hasSideBySideModifier, true /* from user gesture */);
 	}
 
-	public openLinkOccurrence(
-		occurrence: LinkOccurrence,
-		openToSide: boolean,
-		fromUserGesture = false
-	): void {
+	public openLinkOccurrence(occurrence: LinkOccurrence, openToSide: boolean, fromUserGesture = false): void {
+
 		if (!this.openerService) {
 			return;
 		}
 
 		const { link } = occurrence;
 
-		link.resolve(CancellationToken.None).then(
-			(uri) => {
-				// Support for relative file URIs of the shape file://./relativeFile.txt or file:///./relativeFile.txt
-				if (typeof uri === "string" && this.editor.hasModel()) {
-					const modelUri = this.editor.getModel().uri;
-					if (
-						modelUri.scheme === Schemas.file &&
-						uri.startsWith(`${Schemas.file}:`)
-					) {
-						const parsedUri = URI.parse(uri);
-						if (parsedUri.scheme === Schemas.file) {
-							const fsPath = resources.originalFSPath(parsedUri);
+		link.resolve(CancellationToken.None).then(uri => {
 
-							let relativePath: string | null = null;
-							if (fsPath.startsWith("/./")) {
-								relativePath = `.${fsPath.substr(1)}`;
-							} else if (fsPath.startsWith("//./")) {
-								relativePath = `.${fsPath.substr(2)}`;
-							}
+			// Support for relative file URIs of the shape file://./relativeFile.txt or file:///./relativeFile.txt
+			if (typeof uri === 'string' && this.editor.hasModel()) {
+				const modelUri = this.editor.getModel().uri;
+				if (modelUri.scheme === Schemas.file && uri.startsWith(`${Schemas.file}:`)) {
+					const parsedUri = URI.parse(uri);
+					if (parsedUri.scheme === Schemas.file) {
+						const fsPath = resources.originalFSPath(parsedUri);
 
-							if (relativePath) {
-								uri = resources.joinPath(
-									modelUri,
-									relativePath
-								);
-							}
+						let relativePath: string | null = null;
+						if (fsPath.startsWith('/./')) {
+							relativePath = `.${fsPath.substr(1)}`;
+						} else if (fsPath.startsWith('//./')) {
+							relativePath = `.${fsPath.substr(2)}`;
+						}
+
+						if (relativePath) {
+							uri = resources.joinPath(modelUri, relativePath);
 						}
 					}
 				}
-
-				return this.openerService.open(uri, {
-					openToSide,
-					fromUserGesture,
-					allowContributedOpeners: true,
-					allowCommands: true,
-					fromWorkspace: true,
-				});
-			},
-			(err) => {
-				const messageOrError =
-					err instanceof Error ? (<Error>err).message : err;
-				// different error cases
-				if (messageOrError === "invalid") {
-					this.notificationService.warn(
-						nls.localize(
-							"invalid.url",
-							"Failed to open this link because it is not well-formed: {0}",
-							link.url!.toString()
-						)
-					);
-				} else if (messageOrError === "missing") {
-					this.notificationService.warn(
-						nls.localize(
-							"missing.url",
-							"Failed to open this link because its target is missing."
-						)
-					);
-				} else {
-					onUnexpectedError(err);
-				}
 			}
-		);
+
+			return this.openerService.open(uri, { openToSide, fromUserGesture, allowContributedOpeners: true, allowCommands: true, fromWorkspace: true });
+
+		}, err => {
+			const messageOrError =
+				err instanceof Error ? (<Error>err).message : err;
+			// different error cases
+			if (messageOrError === 'invalid') {
+				this.notificationService.warn(nls.localize('invalid.url', 'Failed to open this link because it is not well-formed: {0}', link.url!.toString()));
+			} else if (messageOrError === 'missing') {
+				this.notificationService.warn(nls.localize('missing.url', 'Failed to open this link because its target is missing.'));
+			} else {
+				onUnexpectedError(err);
+			}
+		});
 	}
 
 	public getLinkOccurrence(position: Position | null): LinkOccurrence | null {
 		if (!this.editor.hasModel() || !position) {
 			return null;
 		}
-		const decorations = this.editor.getModel().getDecorationsInRange(
-			{
-				startLineNumber: position.lineNumber,
-				startColumn: position.column,
-				endLineNumber: position.lineNumber,
-				endColumn: position.column,
-			},
-			0,
-			true
-		);
+		const decorations = this.editor.getModel().getDecorationsInRange({
+			startLineNumber: position.lineNumber,
+			startColumn: position.column,
+			endLineNumber: position.lineNumber,
+			endColumn: position.column
+		}, 0, true);
 
 		for (const decoration of decorations) {
 			const currentOccurrence = this.currentOccurrences[decoration.id];
@@ -397,14 +287,10 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 		return null;
 	}
 
-	private isEnabled(
-		mouseEvent: ClickLinkMouseEvent,
-		withKey?: ClickLinkKeyboardEvent | null
-	): boolean {
+	private isEnabled(mouseEvent: ClickLinkMouseEvent, withKey?: ClickLinkKeyboardEvent | null): boolean {
 		return Boolean(
-			mouseEvent.target.type === MouseTargetType.CONTENT_TEXT &&
-				(mouseEvent.hasTriggerModifier ||
-					(withKey && withKey.keyCodeIsTriggerKey))
+			(mouseEvent.target.type === MouseTargetType.CONTENT_TEXT)
+			&& (mouseEvent.hasTriggerModifier || (withKey && withKey.keyCodeIsTriggerKey))
 		);
 	}
 
@@ -428,38 +314,30 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 
 const decoration = {
 	general: ModelDecorationOptions.register({
-		description: "detected-link",
+		description: 'detected-link',
 		stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
 		collapseOnReplaceEdit: true,
-		inlineClassName: "detected-link",
+		inlineClassName: 'detected-link'
 	}),
 	active: ModelDecorationOptions.register({
-		description: "detected-link-active",
+		description: 'detected-link-active',
 		stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
 		collapseOnReplaceEdit: true,
-		inlineClassName: "detected-link-active",
-	}),
+		inlineClassName: 'detected-link-active'
+	})
 };
 
 class LinkOccurrence {
-	public static decoration(
-		link: Link,
-		useMetaKey: boolean
-	): IModelDeltaDecoration {
+
+	public static decoration(link: Link, useMetaKey: boolean): IModelDeltaDecoration {
 		return {
 			range: link.range,
-			options: LinkOccurrence._getOptions(link, useMetaKey, false),
+			options: LinkOccurrence._getOptions(link, useMetaKey, false)
 		};
 	}
 
-	private static _getOptions(
-		link: Link,
-		useMetaKey: boolean,
-		isActive: boolean
-	): ModelDecorationOptions {
-		const options = {
-			...(isActive ? decoration.active : decoration.general),
-		};
+	private static _getOptions(link: Link, useMetaKey: boolean, isActive: boolean): ModelDecorationOptions {
+		const options = { ... (isActive ? decoration.active : decoration.general) };
 		options.hoverMessage = getHoverMessage(link, useMetaKey);
 		return options;
 	}
@@ -472,24 +350,12 @@ class LinkOccurrence {
 		this.decorationId = decorationId;
 	}
 
-	public activate(
-		changeAccessor: IModelDecorationsChangeAccessor,
-		useMetaKey: boolean
-	): void {
-		changeAccessor.changeDecorationOptions(
-			this.decorationId,
-			LinkOccurrence._getOptions(this.link, useMetaKey, true)
-		);
+	public activate(changeAccessor: IModelDecorationsChangeAccessor, useMetaKey: boolean): void {
+		changeAccessor.changeDecorationOptions(this.decorationId, LinkOccurrence._getOptions(this.link, useMetaKey, true));
 	}
 
-	public deactivate(
-		changeAccessor: IModelDecorationsChangeAccessor,
-		useMetaKey: boolean
-	): void {
-		changeAccessor.changeDecorationOptions(
-			this.decorationId,
-			LinkOccurrence._getOptions(this.link, useMetaKey, false)
-		);
+	public deactivate(changeAccessor: IModelDecorationsChangeAccessor, useMetaKey: boolean): void {
+		changeAccessor.changeDecorationOptions(this.decorationId, LinkOccurrence._getOptions(this.link, useMetaKey, false));
 	}
 }
 
@@ -499,37 +365,29 @@ function getHoverMessage(link: Link, useMetaKey: boolean): MarkdownString {
 	const label = link.tooltip
 		? link.tooltip
 		: executeCmd
-			? nls.localize("links.navigate.executeCmd", "Execute command")
-			: nls.localize("links.navigate.follow", "Follow link");
+			? nls.localize('links.navigate.executeCmd', 'Execute command')
+			: nls.localize('links.navigate.follow', 'Follow link');
 
 	const kb = useMetaKey
 		? platform.isMacintosh
-			? nls.localize("links.navigate.kb.meta.mac", "cmd + click")
-			: nls.localize("links.navigate.kb.meta", "ctrl + click")
+			? nls.localize('links.navigate.kb.meta.mac', "cmd + click")
+			: nls.localize('links.navigate.kb.meta', "ctrl + click")
 		: platform.isMacintosh
-			? nls.localize("links.navigate.kb.alt.mac", "option + click")
-			: nls.localize("links.navigate.kb.alt", "alt + click");
+			? nls.localize('links.navigate.kb.alt.mac', "option + click")
+			: nls.localize('links.navigate.kb.alt', "alt + click");
 
 	if (link.url) {
-		let nativeLabel = "";
+		let nativeLabel = '';
 		if (/^command:/i.test(link.url.toString())) {
 			// Don't show complete command arguments in the native tooltip
 			const match = link.url.toString().match(/^command:([^?#]+)/);
 			if (match) {
 				const commandId = match[1];
-				nativeLabel = nls.localize(
-					"tooltip.explanation",
-					"Execute command {0}",
-					commandId
-				);
+				nativeLabel = nls.localize('tooltip.explanation', "Execute command {0}", commandId);
 			}
 		}
-		const hoverMessage = new MarkdownString("", true)
-			.appendLink(
-				link.url.toString(true).replace(/ /g, "%20"),
-				label,
-				nativeLabel
-			)
+		const hoverMessage = new MarkdownString('', true)
+			.appendLink(link.url.toString(true).replace(/ /g, '%20'), label, nativeLabel)
 			.appendMarkdown(` (${kb})`);
 		return hoverMessage;
 	} else {
@@ -538,12 +396,13 @@ function getHoverMessage(link: Link, useMetaKey: boolean): MarkdownString {
 }
 
 class OpenLinkAction extends EditorAction {
+
 	constructor() {
 		super({
-			id: "editor.action.openLink",
-			label: nls.localize("label", "Open Link"),
-			alias: "Open Link",
-			precondition: undefined,
+			id: 'editor.action.openLink',
+			label: nls.localize('label', "Open Link"),
+			alias: 'Open Link',
+			precondition: undefined
 		});
 	}
 
@@ -566,9 +425,5 @@ class OpenLinkAction extends EditorAction {
 	}
 }
 
-registerEditorContribution(
-	LinkDetector.ID,
-	LinkDetector,
-	EditorContributionInstantiation.AfterFirstRender
-);
+registerEditorContribution(LinkDetector.ID, LinkDetector, EditorContributionInstantiation.AfterFirstRender);
 registerEditorAction(OpenLinkAction);

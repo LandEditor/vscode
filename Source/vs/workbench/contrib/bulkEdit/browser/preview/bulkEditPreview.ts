@@ -3,43 +3,31 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	ITextModelContentProvider,
-	ITextModelService,
-} from "vs/editor/common/services/resolverService";
-import { URI } from "vs/base/common/uri";
-import { ILanguageService } from "vs/editor/common/languages/language";
-import { IModelService } from "vs/editor/common/services/model";
-import { createTextBufferFactoryFromSnapshot } from "vs/editor/common/model/textModel";
-import { WorkspaceEditMetadata } from "vs/editor/common/languages";
-import { DisposableStore } from "vs/base/common/lifecycle";
-import { coalesceInPlace } from "vs/base/common/arrays";
-import { Range } from "vs/editor/common/core/range";
-import {
-	EditOperation,
-	ISingleEditOperation,
-} from "vs/editor/common/core/editOperation";
-import {
-	ServicesAccessor,
-	IInstantiationService,
-} from "vs/platform/instantiation/common/instantiation";
-import { IFileService } from "vs/platform/files/common/files";
-import { Emitter, Event } from "vs/base/common/event";
-import { ConflictDetector } from "vs/workbench/contrib/bulkEdit/browser/conflicts";
-import { ResourceMap } from "vs/base/common/map";
-import { localize } from "vs/nls";
-import { extUri } from "vs/base/common/resources";
-import {
-	ResourceEdit,
-	ResourceFileEdit,
-	ResourceTextEdit,
-} from "vs/editor/browser/services/bulkEditService";
-import { Codicon } from "vs/base/common/codicons";
-import { generateUuid } from "vs/base/common/uuid";
-import { SnippetParser } from "vs/editor/contrib/snippet/browser/snippetParser";
-import { MicrotaskDelay } from "vs/base/common/symbols";
+import { ITextModelContentProvider, ITextModelService } from 'vs/editor/common/services/resolverService';
+import { URI } from 'vs/base/common/uri';
+import { ILanguageService } from 'vs/editor/common/languages/language';
+import { IModelService } from 'vs/editor/common/services/model';
+import { createTextBufferFactoryFromSnapshot } from 'vs/editor/common/model/textModel';
+import { WorkspaceEditMetadata } from 'vs/editor/common/languages';
+import { DisposableStore } from 'vs/base/common/lifecycle';
+import { coalesceInPlace } from 'vs/base/common/arrays';
+import { Range } from 'vs/editor/common/core/range';
+import { EditOperation, ISingleEditOperation } from 'vs/editor/common/core/editOperation';
+import { ServicesAccessor, IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IFileService } from 'vs/platform/files/common/files';
+import { Emitter, Event } from 'vs/base/common/event';
+import { ConflictDetector } from 'vs/workbench/contrib/bulkEdit/browser/conflicts';
+import { ResourceMap } from 'vs/base/common/map';
+import { localize } from 'vs/nls';
+import { extUri } from 'vs/base/common/resources';
+import { ResourceEdit, ResourceFileEdit, ResourceTextEdit } from 'vs/editor/browser/services/bulkEditService';
+import { Codicon } from 'vs/base/common/codicons';
+import { generateUuid } from 'vs/base/common/uuid';
+import { SnippetParser } from 'vs/editor/contrib/snippet/browser/snippetParser';
+import { MicrotaskDelay } from 'vs/base/common/symbols';
 
 export class CheckedStates<T extends object> {
+
 	private readonly _states = new WeakMap<T, boolean>();
 	private _checkedCount: number = 0;
 
@@ -80,10 +68,11 @@ export class CheckedStates<T extends object> {
 }
 
 export class BulkTextEdit {
+
 	constructor(
 		readonly parent: BulkFileOperation,
 		readonly textEdit: ResourceTextEdit
-	) {}
+	) { }
 }
 
 export const enum BulkFileOperationType {
@@ -94,6 +83,7 @@ export const enum BulkFileOperationType {
 }
 
 export class BulkFileOperation {
+
 	type = 0;
 	textEdits: BulkTextEdit[] = [];
 	originalEdits = new Map<number, ResourceTextEdit | ResourceFileEdit>();
@@ -102,17 +92,14 @@ export class BulkFileOperation {
 	constructor(
 		readonly uri: URI,
 		readonly parent: BulkFileOperations
-	) {}
+	) { }
 
-	addEdit(
-		index: number,
-		type: BulkFileOperationType,
-		edit: ResourceTextEdit | ResourceFileEdit
-	) {
+	addEdit(index: number, type: BulkFileOperationType, edit: ResourceTextEdit | ResourceFileEdit) {
 		this.type |= type;
 		this.originalEdits.set(index, edit);
 		if (edit instanceof ResourceTextEdit) {
 			this.textEdits.push(new BulkTextEdit(this, edit));
+
 		} else if (type === BulkFileOperationType.Rename) {
 			this.newUri = edit.newResource;
 		}
@@ -129,21 +116,20 @@ export class BulkFileOperation {
 }
 
 export class BulkCategory {
+
 	private static readonly _defaultMetadata = Object.freeze({
-		label: localize("default", "Other"),
+		label: localize('default', "Other"),
 		icon: Codicon.symbolFile,
-		needsConfirmation: false,
+		needsConfirmation: false
 	});
 
 	static keyOf(metadata?: WorkspaceEditMetadata) {
-		return metadata?.label || "<default>";
+		return metadata?.label || '<default>';
 	}
 
 	readonly operationByResource = new Map<string, BulkFileOperation>();
 
-	constructor(
-		readonly metadata: WorkspaceEditMetadata = BulkCategory._defaultMetadata
-	) {}
+	constructor(readonly metadata: WorkspaceEditMetadata = BulkCategory._defaultMetadata) { }
 
 	get fileOperations(): IterableIterator<BulkFileOperation> {
 		return this.operationByResource.values();
@@ -151,13 +137,9 @@ export class BulkCategory {
 }
 
 export class BulkFileOperations {
-	static async create(
-		accessor: ServicesAccessor,
-		bulkEdit: ResourceEdit[]
-	): Promise<BulkFileOperations> {
-		const result = accessor
-			.get(IInstantiationService)
-			.createInstance(BulkFileOperations, bulkEdit);
+
+	static async create(accessor: ServicesAccessor, bulkEdit: ResourceEdit[]): Promise<BulkFileOperations> {
+		const result = accessor.get(IInstantiationService).createInstance(BulkFileOperations, bulkEdit);
 		return await result._init();
 	}
 
@@ -170,12 +152,9 @@ export class BulkFileOperations {
 	constructor(
 		private readonly _bulkEdit: ResourceEdit[],
 		@IFileService private readonly _fileService: IFileService,
-		@IInstantiationService instaService: IInstantiationService
+		@IInstantiationService instaService: IInstantiationService,
 	) {
-		this.conflicts = instaService.createInstance(
-			ConflictDetector,
-			_bulkEdit
-		);
+		this.conflicts = instaService.createInstance(ConflictDetector, _bulkEdit);
 	}
 
 	dispose(): void {
@@ -201,46 +180,40 @@ export class BulkFileOperations {
 			if (edit instanceof ResourceTextEdit) {
 				type = BulkFileOperationType.TextEdit;
 				uri = edit.resource;
+
 			} else if (edit instanceof ResourceFileEdit) {
 				if (edit.newResource && edit.oldResource) {
 					type = BulkFileOperationType.Rename;
 					uri = edit.oldResource;
-					if (
-						edit.options?.overwrite === undefined &&
-						edit.options?.ignoreIfExists &&
-						(await this._fileService.exists(uri))
-					) {
+					if (edit.options?.overwrite === undefined && edit.options?.ignoreIfExists && await this._fileService.exists(uri)) {
 						// noop -> "soft" rename to something that already exists
 						continue;
 					}
 					// map newResource onto oldResource so that text-edit appear for
 					// the same file element
 					newToOldUri.set(edit.newResource, uri);
+
 				} else if (edit.oldResource) {
 					type = BulkFileOperationType.Delete;
 					uri = edit.oldResource;
-					if (
-						edit.options?.ignoreIfNotExists &&
-						!(await this._fileService.exists(uri))
-					) {
+					if (edit.options?.ignoreIfNotExists && !await this._fileService.exists(uri)) {
 						// noop -> "soft" delete something that doesn't exist
 						continue;
 					}
+
 				} else if (edit.newResource) {
 					type = BulkFileOperationType.Create;
 					uri = edit.newResource;
-					if (
-						edit.options?.overwrite === undefined &&
-						edit.options?.ignoreIfExists &&
-						(await this._fileService.exists(uri))
-					) {
+					if (edit.options?.overwrite === undefined && edit.options?.ignoreIfExists && await this._fileService.exists(uri)) {
 						// noop -> "soft" create something that already exists
 						continue;
 					}
+
 				} else {
 					// invalid edit -> skip
 					continue;
 				}
+
 			} else {
 				// unsupported edit
 				continue;
@@ -276,8 +249,8 @@ export class BulkFileOperations {
 			insert(uri, category.operationByResource);
 		}
 
-		operationByResource.forEach((value) => this.fileOperations.push(value));
-		operationByCategory.forEach((value) => this.categories.push(value));
+		operationByResource.forEach(value => this.fileOperations.push(value));
+		operationByCategory.forEach(value => this.categories.push(value));
 
 		// "correct" invalid parent-check child states that is
 		// unchecked file edits (rename, create, delete) uncheck
@@ -335,25 +308,19 @@ export class BulkFileOperations {
 	}
 
 	getFileEdits(uri: URI): ISingleEditOperation[] {
+
 		for (const file of this.fileOperations) {
 			if (file.uri.toString() === uri.toString()) {
+
 				const result: ISingleEditOperation[] = [];
 				let ignoreAll = false;
 
 				for (const edit of file.originalEdits.values()) {
 					if (edit instanceof ResourceTextEdit) {
 						if (this.checked.isChecked(edit)) {
-							result.push(
-								EditOperation.replaceMove(
-									Range.lift(edit.textEdit.range),
-									!edit.textEdit.insertAsSnippet
-										? edit.textEdit.text
-										: SnippetParser.asInsertText(
-												edit.textEdit.text
-											)
-								)
-							);
+							result.push(EditOperation.replaceMove(Range.lift(edit.textEdit.range), !edit.textEdit.insertAsSnippet ? edit.textEdit.text : SnippetParser.asInsertText(edit.textEdit.text)));
 						}
+
 					} else if (!this.checked.isChecked(edit)) {
 						// UNCHECKED WorkspaceFileEdit disables all text edits
 						ignoreAll = true;
@@ -364,9 +331,7 @@ export class BulkFileOperations {
 					return [];
 				}
 
-				return result.sort((a, b) =>
-					Range.compareRangesUsingStarts(a.range, b.range)
-				);
+				return result.sort((a, b) => Range.compareRangesUsingStarts(a.range, b.range));
 			}
 		}
 		return [];
@@ -380,17 +345,16 @@ export class BulkFileOperations {
 				}
 			}
 		}
-		throw new Error("invalid edit");
+		throw new Error('invalid edit');
 	}
 }
 
 export class BulkEditPreviewProvider implements ITextModelContentProvider {
-	static readonly Schema = "vscode-bulkeditpreview";
 
-	static emptyPreview = URI.from({
-		scheme: BulkEditPreviewProvider.Schema,
-		fragment: "empty",
-	});
+	static readonly Schema = 'vscode-bulkeditpreview';
+
+	static emptyPreview = URI.from({ scheme: BulkEditPreviewProvider.Schema, fragment: 'empty' });
+
 
 	static fromPreviewUri(uri: URI): URI {
 		return URI.parse(uri.query);
@@ -398,25 +362,16 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
 
 	private readonly _disposables = new DisposableStore();
 	private readonly _ready: Promise<any>;
-	private readonly _modelPreviewEdits = new Map<
-		string,
-		ISingleEditOperation[]
-	>();
+	private readonly _modelPreviewEdits = new Map<string, ISingleEditOperation[]>();
 	private readonly _instanceId = generateUuid();
 
 	constructor(
 		private readonly _operations: BulkFileOperations,
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@IModelService private readonly _modelService: IModelService,
-		@ITextModelService
-		private readonly _textModelResolverService: ITextModelService
+		@ITextModelService private readonly _textModelResolverService: ITextModelService
 	) {
-		this._disposables.add(
-			this._textModelResolverService.registerTextModelContentProvider(
-				BulkEditPreviewProvider.Schema,
-				this
-			)
-		);
+		this._disposables.add(this._textModelResolverService.registerTextModelContentProvider(BulkEditPreviewProvider.Schema, this));
 		this._ready = this._init();
 	}
 
@@ -425,28 +380,17 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
 	}
 
 	asPreviewUri(uri: URI): URI {
-		return URI.from({
-			scheme: BulkEditPreviewProvider.Schema,
-			authority: this._instanceId,
-			path: uri.path,
-			query: uri.toString(),
-		});
+		return URI.from({ scheme: BulkEditPreviewProvider.Schema, authority: this._instanceId, path: uri.path, query: uri.toString() });
 	}
 
 	private async _init() {
 		for (const operation of this._operations.fileOperations) {
 			await this._applyTextEditsToPreviewModel(operation.uri);
 		}
-		this._disposables.add(
-			Event.debounce(
-				this._operations.checked.onDidChange,
-				(_last, e) => e,
-				MicrotaskDelay
-			)((e) => {
-				const uri = this._operations.getUriOfEdit(e);
-				this._applyTextEditsToPreviewModel(uri);
-			})
-		);
+		this._disposables.add(Event.debounce(this._operations.checked.onDidChange, (_last, e) => e, MicrotaskDelay)(e => {
+			const uri = this._operations.getUriOfEdit(e);
+			this._applyTextEditsToPreviewModel(uri);
+		}));
 	}
 
 	private async _applyTextEditsToPreviewModel(uri: URI) {
@@ -469,28 +413,20 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
 		if (!model) {
 			try {
 				// try: copy existing
-				const ref =
-					await this._textModelResolverService.createModelReference(
-						uri
-					);
+				const ref = await this._textModelResolverService.createModelReference(uri);
 				const sourceModel = ref.object.textEditorModel;
 				model = this._modelService.createModel(
-					createTextBufferFactoryFromSnapshot(
-						sourceModel.createSnapshot()
-					),
-					this._languageService.createById(
-						sourceModel.getLanguageId()
-					),
+					createTextBufferFactoryFromSnapshot(sourceModel.createSnapshot()),
+					this._languageService.createById(sourceModel.getLanguageId()),
 					previewUri
 				);
 				ref.dispose();
+
 			} catch {
 				// create NEW model
 				model = this._modelService.createModel(
-					"",
-					this._languageService.createByFilepathOrFirstLine(
-						previewUri
-					),
+					'',
+					this._languageService.createByFilepathOrFirstLine(previewUri),
 					previewUri
 				);
 			}
@@ -498,22 +434,15 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
 			// will dispose my models before they should be disposed...
 			// And all of this is off the eventloop to prevent endless recursion
 			queueMicrotask(async () => {
-				this._disposables.add(
-					await this._textModelResolverService.createModelReference(
-						model!.uri
-					)
-				);
+				this._disposables.add(await this._textModelResolverService.createModelReference(model!.uri));
 			});
 		}
 		return model;
 	}
 
 	async provideTextContent(previewUri: URI) {
-		if (
-			previewUri.toString() ===
-			BulkEditPreviewProvider.emptyPreview.toString()
-		) {
-			return this._modelService.createModel("", null, previewUri);
+		if (previewUri.toString() === BulkEditPreviewProvider.emptyPreview.toString()) {
+			return this._modelService.createModel('', null, previewUri);
 		}
 		await this._ready;
 		return this._modelService.getModel(previewUri);

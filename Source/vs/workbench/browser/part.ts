@@ -3,28 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/part";
-import { Component } from "vs/workbench/common/component";
-import {
-	IThemeService,
-	IColorTheme,
-} from "vs/platform/theme/common/themeService";
-import {
-	Dimension,
-	size,
-	IDimension,
-	getActiveDocument,
-} from "vs/base/browser/dom";
-import { IStorageService } from "vs/platform/storage/common/storage";
-import { ISerializableView, IViewSize } from "vs/base/browser/ui/grid/grid";
-import { Event, Emitter } from "vs/base/common/event";
-import { IWorkbenchLayoutService } from "vs/workbench/services/layout/browser/layoutService";
-import { assertIsDefined } from "vs/base/common/types";
-import {
-	Disposable,
-	IDisposable,
-	toDisposable,
-} from "vs/base/common/lifecycle";
+import 'vs/css!./media/part';
+import { Component } from 'vs/workbench/common/component';
+import { IThemeService, IColorTheme } from 'vs/platform/theme/common/themeService';
+import { Dimension, size, IDimension, getActiveDocument } from 'vs/base/browser/dom';
+import { IStorageService } from 'vs/platform/storage/common/storage';
+import { ISerializableView, IViewSize } from 'vs/base/browser/ui/grid/grid';
+import { Event, Emitter } from 'vs/base/common/event';
+import { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/layoutService';
+import { assertIsDefined } from 'vs/base/common/types';
+import { Disposable, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
 
 export interface IPartOptions {
 	readonly hasTitle?: boolean;
@@ -41,10 +29,9 @@ export interface ILayoutContentResult {
  * arranges an optional title and mandatory content area to show content.
  */
 export abstract class Part extends Component implements ISerializableView {
+
 	private _dimension: Dimension | undefined;
-	get dimension(): Dimension | undefined {
-		return this._dimension;
-	}
+	get dimension(): Dimension | undefined { return this._dimension; }
 
 	protected _onDidVisibilityChange = this._register(new Emitter<boolean>());
 	readonly onDidVisibilityChange = this._onDidVisibilityChange.event;
@@ -67,6 +54,7 @@ export abstract class Part extends Component implements ISerializableView {
 	}
 
 	protected override onThemeChange(theme: IColorTheme): void {
+
 		// only call if our create() method has been called
 		if (this.parent) {
 			super.onThemeChange(theme);
@@ -103,10 +91,7 @@ export abstract class Part extends Component implements ISerializableView {
 	/**
 	 * Subclasses override to provide a title area implementation.
 	 */
-	protected createTitleArea(
-		parent: HTMLElement,
-		options?: object
-	): HTMLElement | undefined {
+	protected createTitleArea(parent: HTMLElement, options?: object): HTMLElement | undefined {
 		return undefined;
 	}
 
@@ -120,10 +105,7 @@ export abstract class Part extends Component implements ISerializableView {
 	/**
 	 * Subclasses override to provide a content area implementation.
 	 */
-	protected createContentArea(
-		parent: HTMLElement,
-		options?: object
-	): HTMLElement | undefined {
+	protected createContentArea(parent: HTMLElement, options?: object): HTMLElement | undefined {
 		return undefined;
 	}
 
@@ -137,10 +119,7 @@ export abstract class Part extends Component implements ISerializableView {
 	/**
 	 * Layout title and content area in the given dimension.
 	 */
-	protected layoutContents(
-		width: number,
-		height: number
-	): ILayoutContentResult {
+	protected layoutContents(width: number, height: number): ILayoutContentResult {
 		const partLayout = assertIsDefined(this.partLayout);
 
 		return partLayout.layout(width, height);
@@ -148,12 +127,8 @@ export abstract class Part extends Component implements ISerializableView {
 
 	//#region ISerializableView
 
-	protected _onDidChange = this._register(
-		new Emitter<IViewSize | undefined>()
-	);
-	get onDidChange(): Event<IViewSize | undefined> {
-		return this._onDidChange.event;
-	}
+	protected _onDidChange = this._register(new Emitter<IViewSize | undefined>());
+	get onDidChange(): Event<IViewSize | undefined> { return this._onDidChange.event; }
 
 	element!: HTMLElement;
 
@@ -176,35 +151,28 @@ export abstract class Part extends Component implements ISerializableView {
 }
 
 class PartLayout {
+
 	private static readonly TITLE_HEIGHT = 35;
 
-	constructor(
-		private options: IPartOptions,
-		private contentArea: HTMLElement | undefined
-	) {}
+	constructor(private options: IPartOptions, private contentArea: HTMLElement | undefined) { }
 
 	layout(width: number, height: number): ILayoutContentResult {
+
 		// Title Size: Width (Fill), Height (Variable)
 		let titleSize: Dimension;
 		if (this.options.hasTitle) {
-			titleSize = new Dimension(
-				width,
-				Math.min(height, PartLayout.TITLE_HEIGHT)
-			);
+			titleSize = new Dimension(width, Math.min(height, PartLayout.TITLE_HEIGHT));
 		} else {
 			titleSize = Dimension.None;
 		}
 
 		let contentWidth = width;
-		if (this.options && typeof this.options.borderWidth === "function") {
+		if (this.options && typeof this.options.borderWidth === 'function') {
 			contentWidth -= this.options.borderWidth(); // adjust for border size
 		}
 
 		// Content Size: Width (Fill), Height (Variable)
-		const contentSize = new Dimension(
-			contentWidth,
-			height - titleSize.height
-		);
+		const contentSize = new Dimension(contentWidth, height - titleSize.height);
 
 		// Content
 		if (this.contentArea) {
@@ -219,13 +187,10 @@ export interface IMultiWindowPart {
 	readonly element: HTMLElement;
 }
 
-export abstract class MultiWindowParts<
-	T extends IMultiWindowPart,
-> extends Disposable {
+export abstract class MultiWindowParts<T extends IMultiWindowPart> extends Disposable {
+
 	protected readonly _parts = new Set<T>();
-	get parts() {
-		return Array.from(this._parts);
-	}
+	get parts() { return Array.from(this._parts); }
 
 	abstract readonly mainPart: T;
 

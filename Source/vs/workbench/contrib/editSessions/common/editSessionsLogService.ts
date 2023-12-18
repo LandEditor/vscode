@@ -3,23 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { joinPath } from "vs/base/common/resources";
-import { localize } from "vs/nls";
-import { IEnvironmentService } from "vs/platform/environment/common/environment";
-import {
-	AbstractLogger,
-	ILogger,
-	ILoggerService,
-} from "vs/platform/log/common/log";
-import {
-	IEditSessionsLogService,
-	editSessionsLogId,
-} from "vs/workbench/contrib/editSessions/common/editSessions";
+import { joinPath } from 'vs/base/common/resources';
+import { localize } from 'vs/nls';
+import { IEnvironmentService } from 'vs/platform/environment/common/environment';
+import { AbstractLogger, ILogger, ILoggerService } from 'vs/platform/log/common/log';
+import { IEditSessionsLogService, editSessionsLogId } from 'vs/workbench/contrib/editSessions/common/editSessions';
 
-export class EditSessionsLogService
-	extends AbstractLogger
-	implements IEditSessionsLogService
-{
+export class EditSessionsLogService extends AbstractLogger implements IEditSessionsLogService {
+
 	declare readonly _serviceBrand: undefined;
 	private readonly logger: ILogger;
 
@@ -28,18 +19,7 @@ export class EditSessionsLogService
 		@IEnvironmentService environmentService: IEnvironmentService
 	) {
 		super();
-		this.logger = this._register(
-			loggerService.createLogger(
-				joinPath(
-					environmentService.logsHome,
-					`${editSessionsLogId}.log`
-				),
-				{
-					id: editSessionsLogId,
-					name: localize("cloudChangesLog", "Cloud Changes"),
-				}
-			)
-		);
+		this.logger = this._register(loggerService.createLogger(joinPath(environmentService.logsHome, `${editSessionsLogId}.log`), { id: editSessionsLogId, name: localize('cloudChangesLog', "Cloud Changes") }));
 	}
 
 	trace(message: string, ...args: any[]): void {

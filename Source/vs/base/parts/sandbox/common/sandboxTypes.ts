@@ -3,8 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IProcessEnvironment } from "vs/base/common/platform";
-import { IProductConfiguration } from "vs/base/common/product";
+import { IProcessEnvironment } from 'vs/base/common/platform';
+import { IProductConfiguration } from 'vs/base/common/product';
+
 
 // #######################################################################
 // ###                                                                 ###
@@ -12,11 +13,13 @@ import { IProductConfiguration } from "vs/base/common/product";
 // ###                                                                 ###
 // #######################################################################
 
+
 /**
  * The common properties required for any sandboxed
  * renderer to function.
  */
 export interface ISandboxConfiguration {
+
 	/**
 	 * Identifier of the sandboxed renderer.
 	 */

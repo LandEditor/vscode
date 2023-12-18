@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 export class DomReadingContext {
+
 	private _didDomLayout: boolean = false;
 	private _clientRectDeltaLeft: number = 0;
 	private _clientRectScale: number = 1;
@@ -40,7 +41,8 @@ export class DomReadingContext {
 	constructor(
 		private readonly _domNode: HTMLElement,
 		public readonly endNode: HTMLElement
-	) {}
+	) {
+	}
 
 	public markDidDomLayout(): void {
 		this._didDomLayout = true;

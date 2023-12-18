@@ -3,68 +3,44 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { getActiveElement } from "vs/base/browser/dom";
-import { Codicon } from "vs/base/common/codicons";
-import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
-import { ICodeEditor, IDiffEditor } from "vs/editor/browser/editorBrowser";
-import {
-	EditorAction2,
-	ServicesAccessor,
-} from "vs/editor/browser/editorExtensions";
-import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
-import { DiffEditorWidget } from "vs/editor/browser/widget/diffEditor/diffEditorWidget";
-import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
-import { localize } from "vs/nls";
-import { ILocalizedString } from "vs/platform/action/common/action";
-import {
-	Action2,
-	MenuId,
-	MenuRegistry,
-	registerAction2,
-} from "vs/platform/actions/common/actions";
-import { CommandsRegistry } from "vs/platform/commands/common/commands";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import {
-	ContextKeyEqualsExpr,
-	ContextKeyExpr,
-} from "vs/platform/contextkey/common/contextkey";
-import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
-import "./registrations.contribution";
+import { getActiveElement } from 'vs/base/browser/dom';
+import { Codicon } from 'vs/base/common/codicons';
+import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
+import { ICodeEditor, IDiffEditor } from 'vs/editor/browser/editorBrowser';
+import { EditorAction2, ServicesAccessor } from 'vs/editor/browser/editorExtensions';
+import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService';
+import { DiffEditorWidget } from 'vs/editor/browser/widget/diffEditor/diffEditorWidget';
+import { EditorContextKeys } from 'vs/editor/common/editorContextKeys';
+import { localize } from 'vs/nls';
+import { ILocalizedString } from 'vs/platform/action/common/action';
+import { Action2, MenuId, MenuRegistry, registerAction2 } from 'vs/platform/actions/common/actions';
+import { CommandsRegistry } from 'vs/platform/commands/common/commands';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { ContextKeyEqualsExpr, ContextKeyExpr } from 'vs/platform/contextkey/common/contextkey';
+import { KeybindingWeight } from 'vs/platform/keybinding/common/keybindingsRegistry';
+import './registrations.contribution';
 
 export class ToggleCollapseUnchangedRegions extends Action2 {
 	constructor() {
 		super({
-			id: "diffEditor.toggleCollapseUnchangedRegions",
-			title: {
-				value: localize(
-					"toggleCollapseUnchangedRegions",
-					"Toggle Collapse Unchanged Regions"
-				),
-				original: "Toggle Collapse Unchanged Regions",
-			},
+			id: 'diffEditor.toggleCollapseUnchangedRegions',
+			title: { value: localize('toggleCollapseUnchangedRegions', "Toggle Collapse Unchanged Regions"), original: 'Toggle Collapse Unchanged Regions' },
 			icon: Codicon.map,
-			toggled: ContextKeyExpr.has(
-				"config.diffEditor.hideUnchangedRegions.enabled"
-			),
-			precondition: ContextKeyExpr.has("isInDiffEditor"),
+			toggled: ContextKeyExpr.has('config.diffEditor.hideUnchangedRegions.enabled'),
+			precondition: ContextKeyExpr.has('isInDiffEditor'),
 			menu: {
-				when: ContextKeyExpr.has("isInDiffEditor"),
+				when: ContextKeyExpr.has('isInDiffEditor'),
 				id: MenuId.EditorTitle,
 				order: 22,
-				group: "navigation",
+				group: 'navigation',
 			},
 		});
 	}
 
 	run(accessor: ServicesAccessor, ...args: unknown[]): void {
 		const configurationService = accessor.get(IConfigurationService);
-		const newValue = !configurationService.getValue<boolean>(
-			"diffEditor.hideUnchangedRegions.enabled"
-		);
-		configurationService.updateValue(
-			"diffEditor.hideUnchangedRegions.enabled",
-			newValue
-		);
+		const newValue = !configurationService.getValue<boolean>('diffEditor.hideUnchangedRegions.enabled');
+		configurationService.updateValue('diffEditor.hideUnchangedRegions.enabled', newValue);
 	}
 }
 
@@ -73,27 +49,16 @@ registerAction2(ToggleCollapseUnchangedRegions);
 export class ToggleShowMovedCodeBlocks extends Action2 {
 	constructor() {
 		super({
-			id: "diffEditor.toggleShowMovedCodeBlocks",
-			title: {
-				value: localize(
-					"toggleShowMovedCodeBlocks",
-					"Toggle Show Moved Code Blocks"
-				),
-				original: "Toggle Show Moved Code Blocks",
-			},
-			precondition: ContextKeyExpr.has("isInDiffEditor"),
+			id: 'diffEditor.toggleShowMovedCodeBlocks',
+			title: { value: localize('toggleShowMovedCodeBlocks', "Toggle Show Moved Code Blocks"), original: 'Toggle Show Moved Code Blocks' },
+			precondition: ContextKeyExpr.has('isInDiffEditor'),
 		});
 	}
 
 	run(accessor: ServicesAccessor, ...args: unknown[]): void {
 		const configurationService = accessor.get(IConfigurationService);
-		const newValue = !configurationService.getValue<boolean>(
-			"diffEditor.experimental.showMoves"
-		);
-		configurationService.updateValue(
-			"diffEditor.experimental.showMoves",
-			newValue
-		);
+		const newValue = !configurationService.getValue<boolean>('diffEditor.experimental.showMoves');
+		configurationService.updateValue('diffEditor.experimental.showMoves', newValue);
 	}
 }
 
@@ -102,27 +67,16 @@ registerAction2(ToggleShowMovedCodeBlocks);
 export class ToggleUseInlineViewWhenSpaceIsLimited extends Action2 {
 	constructor() {
 		super({
-			id: "diffEditor.toggleUseInlineViewWhenSpaceIsLimited",
-			title: {
-				value: localize(
-					"toggleUseInlineViewWhenSpaceIsLimited",
-					"Toggle Use Inline View When Space Is Limited"
-				),
-				original: "Toggle Use Inline View When Space Is Limited",
-			},
-			precondition: ContextKeyExpr.has("isInDiffEditor"),
+			id: 'diffEditor.toggleUseInlineViewWhenSpaceIsLimited',
+			title: { value: localize('toggleUseInlineViewWhenSpaceIsLimited', "Toggle Use Inline View When Space Is Limited"), original: 'Toggle Use Inline View When Space Is Limited' },
+			precondition: ContextKeyExpr.has('isInDiffEditor'),
 		});
 	}
 
 	run(accessor: ServicesAccessor, ...args: unknown[]): void {
 		const configurationService = accessor.get(IConfigurationService);
-		const newValue = !configurationService.getValue<boolean>(
-			"diffEditor.useInlineViewWhenSpaceIsLimited"
-		);
-		configurationService.updateValue(
-			"diffEditor.useInlineViewWhenSpaceIsLimited",
-			newValue
-		);
+		const newValue = !configurationService.getValue<boolean>('diffEditor.useInlineViewWhenSpaceIsLimited');
+		configurationService.updateValue('diffEditor.useInlineViewWhenSpaceIsLimited', newValue);
 	}
 }
 
@@ -131,71 +85,53 @@ registerAction2(ToggleUseInlineViewWhenSpaceIsLimited);
 MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
 	command: {
 		id: new ToggleUseInlineViewWhenSpaceIsLimited().desc.id,
-		title: localize(
-			"useInlineViewWhenSpaceIsLimited",
-			"Use Inline View When Space Is Limited"
-		),
-		toggled: ContextKeyExpr.has(
-			"config.diffEditor.useInlineViewWhenSpaceIsLimited"
-		),
-		precondition: ContextKeyExpr.has("isInDiffEditor"),
+		title: localize('useInlineViewWhenSpaceIsLimited', "Use Inline View When Space Is Limited"),
+		toggled: ContextKeyExpr.has('config.diffEditor.useInlineViewWhenSpaceIsLimited'),
+		precondition: ContextKeyExpr.has('isInDiffEditor'),
 	},
 	order: 11,
-	group: "1_diff",
+	group: '1_diff',
 	when: ContextKeyExpr.and(
 		EditorContextKeys.diffEditorRenderSideBySideInlineBreakpointReached,
-		ContextKeyExpr.has("isInDiffEditor")
+		ContextKeyExpr.has('isInDiffEditor'),
 	),
 });
 
 MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
 	command: {
 		id: new ToggleShowMovedCodeBlocks().desc.id,
-		title: localize("showMoves", "Show Moved Code Blocks"),
+		title: localize('showMoves', "Show Moved Code Blocks"),
 		icon: Codicon.move,
-		toggled: ContextKeyEqualsExpr.create(
-			"config.diffEditor.experimental.showMoves",
-			true
-		),
-		precondition: ContextKeyExpr.has("isInDiffEditor"),
+		toggled: ContextKeyEqualsExpr.create('config.diffEditor.experimental.showMoves', true),
+		precondition: ContextKeyExpr.has('isInDiffEditor'),
 	},
 	order: 10,
-	group: "1_diff",
-	when: ContextKeyExpr.has("isInDiffEditor"),
+	group: '1_diff',
+	when: ContextKeyExpr.has('isInDiffEditor'),
 });
 
 const diffEditorCategory: ILocalizedString = {
-	value: localize("diffEditor", "Diff Editor"),
-	original: "Diff Editor",
+	value: localize('diffEditor', 'Diff Editor'),
+	original: 'Diff Editor',
 };
 
 export class SwitchSide extends EditorAction2 {
 	constructor() {
 		super({
-			id: "diffEditor.switchSide",
-			title: {
-				value: localize("switchSide", "Switch Side"),
-				original: "Switch Side",
-			},
+			id: 'diffEditor.switchSide',
+			title: { value: localize('switchSide', "Switch Side"), original: 'Switch Side' },
 			icon: Codicon.arrowSwap,
-			precondition: ContextKeyExpr.has("isInDiffEditor"),
+			precondition: ContextKeyExpr.has('isInDiffEditor'),
 			f1: true,
 			category: diffEditorCategory,
 		});
 	}
 
-	runEditorCommand(
-		accessor: ServicesAccessor,
-		editor: ICodeEditor,
-		arg?: { dryRun: boolean }
-	): unknown {
+	runEditorCommand(accessor: ServicesAccessor, editor: ICodeEditor, arg?: { dryRun: boolean }): unknown {
 		const diffEditor = findFocusedDiffEditor(accessor);
 		if (diffEditor instanceof DiffEditorWidget) {
 			if (arg && arg.dryRun) {
-				return {
-					destinationSelection:
-						diffEditor.mapToOtherSide().destinationSelection,
-				};
+				return { destinationSelection: diffEditor.mapToOtherSide().destinationSelection };
 			} else {
 				diffEditor.switchSide();
 			}
@@ -209,11 +145,8 @@ registerAction2(SwitchSide);
 export class ExitCompareMove extends EditorAction2 {
 	constructor() {
 		super({
-			id: "diffEditor.exitCompareMove",
-			title: {
-				value: localize("exitCompareMove", "Exit Compare Move"),
-				original: "Exit Compare Move",
-			},
+			id: 'diffEditor.exitCompareMove',
+			title: { value: localize('exitCompareMove', "Exit Compare Move"), original: 'Exit Compare Move' },
 			icon: Codicon.close,
 			precondition: EditorContextKeys.comparingMovedCode,
 			f1: false,
@@ -221,15 +154,11 @@ export class ExitCompareMove extends EditorAction2 {
 			keybinding: {
 				weight: 10000,
 				primary: KeyCode.Escape,
-			},
+			}
 		});
 	}
 
-	runEditorCommand(
-		accessor: ServicesAccessor,
-		editor: ICodeEditor,
-		...args: unknown[]
-	): void {
+	runEditorCommand(accessor: ServicesAccessor, editor: ICodeEditor, ...args: unknown[]): void {
 		const diffEditor = findFocusedDiffEditor(accessor);
 		if (diffEditor instanceof DiffEditorWidget) {
 			diffEditor.exitCompareMove();
@@ -242,26 +171,16 @@ registerAction2(ExitCompareMove);
 export class CollapseAllUnchangedRegions extends EditorAction2 {
 	constructor() {
 		super({
-			id: "diffEditor.collapseAllUnchangedRegions",
-			title: {
-				value: localize(
-					"collapseAllUnchangedRegions",
-					"Collapse All Unchanged Regions"
-				),
-				original: "Collapse All Unchanged Regions",
-			},
+			id: 'diffEditor.collapseAllUnchangedRegions',
+			title: { value: localize('collapseAllUnchangedRegions', "Collapse All Unchanged Regions"), original: 'Collapse All Unchanged Regions' },
 			icon: Codicon.fold,
-			precondition: ContextKeyExpr.has("isInDiffEditor"),
+			precondition: ContextKeyExpr.has('isInDiffEditor'),
 			f1: true,
 			category: diffEditorCategory,
 		});
 	}
 
-	runEditorCommand(
-		accessor: ServicesAccessor,
-		editor: ICodeEditor,
-		...args: unknown[]
-	): void {
+	runEditorCommand(accessor: ServicesAccessor, editor: ICodeEditor, ...args: unknown[]): void {
 		const diffEditor = findFocusedDiffEditor(accessor);
 		if (diffEditor instanceof DiffEditorWidget) {
 			diffEditor.collapseAllUnchangedRegions();
@@ -274,26 +193,16 @@ registerAction2(CollapseAllUnchangedRegions);
 export class ShowAllUnchangedRegions extends EditorAction2 {
 	constructor() {
 		super({
-			id: "diffEditor.showAllUnchangedRegions",
-			title: {
-				value: localize(
-					"showAllUnchangedRegions",
-					"Show All Unchanged Regions"
-				),
-				original: "Show All Unchanged Regions",
-			},
+			id: 'diffEditor.showAllUnchangedRegions',
+			title: { value: localize('showAllUnchangedRegions', "Show All Unchanged Regions"), original: 'Show All Unchanged Regions' },
 			icon: Codicon.unfold,
-			precondition: ContextKeyExpr.has("isInDiffEditor"),
+			precondition: ContextKeyExpr.has('isInDiffEditor'),
 			f1: true,
 			category: diffEditorCategory,
 		});
 	}
 
-	runEditorCommand(
-		accessor: ServicesAccessor,
-		editor: ICodeEditor,
-		...args: unknown[]
-	): void {
+	runEditorCommand(accessor: ServicesAccessor, editor: ICodeEditor, ...args: unknown[]): void {
 		const diffEditor = findFocusedDiffEditor(accessor);
 		if (diffEditor instanceof DiffEditorWidget) {
 			diffEditor.showAllUnchangedRegions();
@@ -304,28 +213,22 @@ export class ShowAllUnchangedRegions extends EditorAction2 {
 registerAction2(ShowAllUnchangedRegions);
 
 const accessibleDiffViewerCategory: ILocalizedString = {
-	value: localize("accessibleDiffViewer", "Accessible Diff Viewer"),
-	original: "Accessible Diff Viewer",
+	value: localize('accessibleDiffViewer', 'Accessible Diff Viewer'),
+	original: 'Accessible Diff Viewer',
 };
 
 export class AccessibleDiffViewerNext extends Action2 {
-	public static id = "editor.action.accessibleDiffViewer.next";
+	public static id = 'editor.action.accessibleDiffViewer.next';
 
 	constructor() {
 		super({
 			id: AccessibleDiffViewerNext.id,
-			title: {
-				value: localize(
-					"editor.action.accessibleDiffViewer.next",
-					"Go to Next Difference"
-				),
-				original: "Go to Next Difference",
-			},
+			title: { value: localize('editor.action.accessibleDiffViewer.next', "Go to Next Difference"), original: 'Go to Next Difference' },
 			category: accessibleDiffViewerCategory,
-			precondition: ContextKeyExpr.has("isInDiffEditor"),
+			precondition: ContextKeyExpr.has('isInDiffEditor'),
 			keybinding: {
 				primary: KeyCode.F7,
-				weight: KeybindingWeight.EditorContrib,
+				weight: KeybindingWeight.EditorContrib
 			},
 			f1: true,
 		});
@@ -340,38 +243,29 @@ export class AccessibleDiffViewerNext extends Action2 {
 MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
 	command: {
 		id: AccessibleDiffViewerNext.id,
-		title: localize(
-			"Open Accessible Diff Viewer",
-			"Open Accessible Diff Viewer"
-		),
-		precondition: ContextKeyExpr.has("isInDiffEditor"),
+		title: localize('Open Accessible Diff Viewer', "Open Accessible Diff Viewer"),
+		precondition: ContextKeyExpr.has('isInDiffEditor'),
 	},
 	order: 10,
-	group: "2_diff",
+	group: '2_diff',
 	when: ContextKeyExpr.and(
 		EditorContextKeys.accessibleDiffViewerVisible.negate(),
-		ContextKeyExpr.has("isInDiffEditor")
+		ContextKeyExpr.has('isInDiffEditor'),
 	),
 });
 
 export class AccessibleDiffViewerPrev extends Action2 {
-	public static id = "editor.action.accessibleDiffViewer.prev";
+	public static id = 'editor.action.accessibleDiffViewer.prev';
 
 	constructor() {
 		super({
 			id: AccessibleDiffViewerPrev.id,
-			title: {
-				value: localize(
-					"editor.action.accessibleDiffViewer.prev",
-					"Go to Previous Difference"
-				),
-				original: "Go to Previous Difference",
-			},
+			title: { value: localize('editor.action.accessibleDiffViewer.prev', "Go to Previous Difference"), original: 'Go to Previous Difference' },
 			category: accessibleDiffViewerCategory,
-			precondition: ContextKeyExpr.has("isInDiffEditor"),
+			precondition: ContextKeyExpr.has('isInDiffEditor'),
 			keybinding: {
 				primary: KeyMod.Shift | KeyCode.F7,
-				weight: KeybindingWeight.EditorContrib,
+				weight: KeybindingWeight.EditorContrib
 			},
 			f1: true,
 		});
@@ -383,9 +277,7 @@ export class AccessibleDiffViewerPrev extends Action2 {
 	}
 }
 
-export function findFocusedDiffEditor(
-	accessor: ServicesAccessor
-): IDiffEditor | null {
+export function findFocusedDiffEditor(accessor: ServicesAccessor): IDiffEditor | null {
 	const codeEditorService = accessor.get(ICodeEditorService);
 	const diffEditors = codeEditorService.listDiffEditors();
 
@@ -402,10 +294,7 @@ export function findFocusedDiffEditor(
 	return null;
 }
 
-function isElementOrParentOf(
-	elementOrParent: Element,
-	element: Element
-): boolean {
+function isElementOrParentOf(elementOrParent: Element, element: Element): boolean {
 	let e: Element | null = element;
 	while (e) {
 		if (e === elementOrParent) {
@@ -416,14 +305,8 @@ function isElementOrParentOf(
 	return false;
 }
 
-CommandsRegistry.registerCommandAlias(
-	"editor.action.diffReview.next",
-	AccessibleDiffViewerNext.id
-);
+CommandsRegistry.registerCommandAlias('editor.action.diffReview.next', AccessibleDiffViewerNext.id);
 registerAction2(AccessibleDiffViewerNext);
 
-CommandsRegistry.registerCommandAlias(
-	"editor.action.diffReview.prev",
-	AccessibleDiffViewerPrev.id
-);
+CommandsRegistry.registerCommandAlias('editor.action.diffReview.prev', AccessibleDiffViewerPrev.id);
 registerAction2(AccessibleDiffViewerPrev);

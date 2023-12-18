@@ -31,46 +31,26 @@
 	height: 35px;
 }
 
-.monaco-workbench
-	> .notifications-center
-	> .notifications-center-header
-	> .notifications-center-header-title {
+.monaco-workbench > .notifications-center > .notifications-center-header > .notifications-center-header-title {
 	text-transform: uppercase;
 	font-size: 11px;
 }
 
-.monaco-workbench
-	> .notifications-center
-	> .notifications-center-header
-	> .notifications-center-header-toolbar {
+.monaco-workbench > .notifications-center > .notifications-center-header > .notifications-center-header-toolbar {
 	flex: 1;
 }
 
-.monaco-workbench
-	> .notifications-center
-	> .notifications-center-header
-	> .notifications-center-header-toolbar
-	.actions-container {
+.monaco-workbench > .notifications-center > .notifications-center-header > .notifications-center-header-toolbar .actions-container {
 	justify-content: flex-end;
 }
 
-.monaco-workbench
-	> .notifications-center
-	.notifications-list-container
-	.monaco-list-row[data-last-element="false"]
-	> .notification-list-item {
+.monaco-workbench > .notifications-center .notifications-list-container .monaco-list-row[data-last-element="false"] > .notification-list-item {
 	border-bottom: 1px solid var(--vscode-notifications-border);
 }
 
 .monaco-workbench > .notifications-center .notifications-list-container,
-.monaco-workbench
-	> .notifications-center
-	.notifications-list-container
-	.monaco-scrollable-element,
-.monaco-workbench
-	> .notifications-center
-	.notifications-list-container
-	.notification-list-item {
+.monaco-workbench > .notifications-center .notifications-list-container .monaco-scrollable-element,
+.monaco-workbench > .notifications-center .notifications-list-container .notification-list-item {
 	border-radius: 0;
 }
 
