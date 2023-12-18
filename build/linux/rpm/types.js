@@ -6,7 +6,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isRpmArchString = void 0;
 function isRpmArchString(s) {
-	return ["x86_64", "armv7hl", "aarch64"].includes(s);
+    return ['x86_64', 'armv7hl', 'aarch64'].includes(s);
 }
 exports.isRpmArchString = isRpmArchString;
 //# sourceMappingURL=types.js.map

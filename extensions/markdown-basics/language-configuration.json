@@ -1,13 +1,25 @@
 {
 	"comments": {
 		// symbols used for start and end a block comment. Remove this entry if your language does not support block comments
-		"blockComment": ["<!--", "-->"]
+		"blockComment": [
+			"<!--",
+			"-->"
+		]
 	},
 	// symbols used as brackets
 	"brackets": [
-		["{", "}"],
-		["[", "]"],
-		["(", ")"]
+		[
+			"{",
+			"}"
+		],
+		[
+			"[",
+			"]"
+		],
+		[
+			"(",
+			")"
+		]
 	],
 	"colorizedBracketPairs": [],
 	"autoClosingPairs": [
@@ -26,7 +38,9 @@
 		{
 			"open": "<",
 			"close": ">",
-			"notIn": ["string"]
+			"notIn": [
+				"string"
+			]
 		},
 		{
 			"open": "`",
@@ -35,17 +49,41 @@
 		{
 			"open": "```",
 			"close": "```"
-		}
+		},
 	],
 	"surroundingPairs": [
-		["(", ")"],
-		["[", "]"],
-		["`", "`"],
-		["_", "_"],
-		["*", "*"],
-		["{", "}"],
-		["'", "'"],
-		["\"", "\""]
+		[
+			"(",
+			")"
+		],
+		[
+			"[",
+			"]"
+		],
+		[
+			"`",
+			"`"
+		],
+		[
+			"_",
+			"_"
+		],
+		[
+			"*",
+			"*"
+		],
+		[
+			"{",
+			"}"
+		],
+		[
+			"'",
+			"'"
+		],
+		[
+			"\"",
+			"\""
+		]
 	],
 	"folding": {
 		"offSide": true,
@@ -57,5 +95,5 @@
 	"wordPattern": {
 		"pattern": "(\\p{Alphabetic}|\\p{Number}|\\p{Nonspacing_Mark})(((\\p{Alphabetic}|\\p{Number}|\\p{Nonspacing_Mark})|[_])?(\\p{Alphabetic}|\\p{Number}|\\p{Nonspacing_Mark}))*",
 		"flags": "ug"
-	}
+	},
 }
