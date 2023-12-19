@@ -932,7 +932,7 @@ function compareByMatchLength(
 	matchesA?: IMatch[],
 	matchesB?: IMatch[],
 ): number {
-	if (!(matchesA || matchesB) || !(matchesA?.length || matchesB?.length)) {
+	if (!((matchesA || matchesB) && (matchesA?.length || matchesB?.length))) {
 		return 0; // make sure to not cause bad comparing when matches are not provided
 	}
 

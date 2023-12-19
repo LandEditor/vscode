@@ -897,14 +897,10 @@ abstract class AbstractLaunch implements ILaunch {
 	getConfigurationNames(ignoreCompoundsAndPresentation = false): string[] {
 		const config = this.getConfig();
 		if (
-			!config ||
-			!(
-				Array.isArray(config.configurations) ||
-				Array.isArray(config.compounds)
-			)
+			config &&
+			(Array.isArray(config.configurations) ||
+				Array.isArray(config.compounds))
 		) {
-			return [];
-		} else {
 			const configurations: (IConfig | ICompound)[] = [];
 			if (config.configurations) {
 				configurations.push(
@@ -929,6 +925,8 @@ abstract class AbstractLaunch implements ILaunch {
 				);
 			}
 			return getVisibleAndSorted(configurations).map((c) => c.name);
+		} else {
+			return [];
 		}
 	}
 
