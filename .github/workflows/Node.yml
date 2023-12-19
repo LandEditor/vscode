@@ -73,7 +73,7 @@ jobs:
                           --unsafe-perm=true
                         ]
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -82,7 +82,7 @@ jobs:
             - run: pnpm install
               working-directory: ./build/npm/gyp
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -91,7 +91,7 @@ jobs:
             - run: pnpm install
               working-directory: ./build
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -100,7 +100,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/configuration-editing
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -112,7 +112,7 @@ jobs:
             - run: pnpm run test
               working-directory: ./extensions/css-language-features
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -124,7 +124,7 @@ jobs:
             - run: pnpm run test
               working-directory: ./extensions/css-language-features/server
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -133,7 +133,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/debug-auto-launch
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -142,7 +142,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/debug-server-ready
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -151,7 +151,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/emmet
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -160,7 +160,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/extension-editing
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -169,7 +169,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/git-base
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -181,7 +181,7 @@ jobs:
             - run: pnpm run test
               working-directory: ./extensions/git
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -190,7 +190,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/github-authentication
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -199,7 +199,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/github
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -208,7 +208,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/grunt
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -217,7 +217,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/gulp
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -226,7 +226,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/html-language-features
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -238,7 +238,7 @@ jobs:
             - run: pnpm run test
               working-directory: ./extensions/html-language-features/server
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -247,7 +247,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/ipynb
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -256,7 +256,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/jake
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -265,7 +265,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/json-language-features
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -282,7 +282,7 @@ jobs:
                   name: .-extensions-json-language-features-server-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/json-language-features/server/Target
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -291,7 +291,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/markdown-language-features
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -308,7 +308,7 @@ jobs:
                   name: .-extensions-markdown-language-features-server-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/markdown-language-features/server/Target
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -317,7 +317,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/markdown-math
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -326,7 +326,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/media-preview
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -335,7 +335,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/merge-conflict
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -344,7 +344,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/microsoft-authentication
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -353,7 +353,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/notebook-renderers
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -362,7 +362,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/npm
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -371,7 +371,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -380,7 +380,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/php-language-features
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -389,7 +389,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/references-view
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -398,7 +398,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/simple-browser
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -407,7 +407,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/tunnel-forwarding
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -416,7 +416,7 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/typescript-language-features
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -428,7 +428,7 @@ jobs:
             - run: pnpm run test
               working-directory: .
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
@@ -437,7 +437,7 @@ jobs:
             - run: pnpm install
               working-directory: ./remote
 
-            - uses: actions/setup-node@v4.0.0
+            - uses: actions/setup-node@v4.0.1
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
