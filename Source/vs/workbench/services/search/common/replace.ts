@@ -149,20 +149,24 @@ export class ReplacePattern {
 			let i = 0;
 			for (; i < caseOps.length; i++) {
 				switch (caseOps[i]) {
-					case "U":
+					case "U": {
 						newReplaceString += replacement.slice(i).toUpperCase();
 						i = replacementLen;
 						break;
-					case "u":
+					}
+					case "u": {
 						newReplaceString += replacement[i].toUpperCase();
 						break;
-					case "L":
+					}
+					case "L": {
 						newReplaceString += replacement.slice(i).toLowerCase();
 						i = replacementLen;
 						break;
-					case "l":
+					}
+					case "l": {
 						newReplaceString += replacement[i].toLowerCase();
 						break;
+					}
 				}
 			}
 			// Append any remaining replacement string content not covered by case operations.
@@ -205,8 +209,8 @@ export class ReplacePattern {
 			return;
 		}
 
-		let substrFrom = 0,
-			result = "";
+		let substrFrom = 0;
+		let result = "";
 		for (let i = 0, len = replaceString.length; i < len; i++) {
 			const chCode = replaceString.charCodeAt(i);
 
@@ -223,18 +227,21 @@ export class ReplacePattern {
 				let replaceWithCharacter: string | null = null;
 
 				switch (nextChCode) {
-					case CharCode.Backslash:
+					case CharCode.Backslash: {
 						// \\ => \
 						replaceWithCharacter = "\\";
 						break;
-					case CharCode.n:
+					}
+					case CharCode.n: {
 						// \n => LF
 						replaceWithCharacter = "\n";
 						break;
-					case CharCode.t:
+					}
+					case CharCode.t: {
 						// \t => TAB
 						replaceWithCharacter = "\t";
 						break;
+					}
 				}
 
 				if (replaceWithCharacter) {
@@ -258,15 +265,17 @@ export class ReplacePattern {
 				let replaceWithCharacter: string | null = null;
 
 				switch (nextChCode) {
-					case CharCode.Digit0:
+					case CharCode.Digit0: {
 						// $0 => $&
 						replaceWithCharacter = "$&";
 						this._hasParameters = true;
 						break;
+					}
 					case CharCode.BackTick:
-					case CharCode.SingleQuote:
+					case CharCode.SingleQuote: {
 						this._hasParameters = true;
 						break;
+					}
 					default: {
 						// check if it is a valid string parameter $n (0 <= n <= 99). $0 is already handled by now.
 						if (

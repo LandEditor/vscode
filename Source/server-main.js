@@ -168,7 +168,7 @@ async function start() {
 			Array.isArray(product.serverGreeting) &&
 			product.serverGreeting.length
 				? `\n\n${product.serverGreeting.join("\n")}\n\n`
-				: ``;
+				: "";
 
 		if (
 			typeof nodeListenOptions.port === "number" &&
@@ -271,8 +271,8 @@ async function parsePort(host, strPort) {
 function parseRange(strRange) {
 	const match = strRange.match(/^(\d+)-(\d+)$/);
 	if (match) {
-		const start = parseInt(match[1], 10),
-			end = parseInt(match[2], 10);
+		const start = parseInt(match[1], 10);
+		const end = parseInt(match[2], 10);
 		if (start > 0 && start <= end && end <= 65535) {
 			return { start, end };
 		}
@@ -317,7 +317,7 @@ function loadCode() {
 	return new Promise((resolve, reject) => {
 		const path = require("path");
 
-		delete process.env["ELECTRON_RUN_AS_NODE"]; // Keep bootstrap-amd.js from redefining 'fs'.
+		process.env["ELECTRON_RUN_AS_NODE"] = undefined; // Keep bootstrap-amd.js from redefining 'fs'.
 
 		// See https://github.com/microsoft/vscode-remote-release/issues/6543
 		// We would normally install a SIGPIPE listener in bootstrap.js
@@ -335,7 +335,7 @@ function loadCode() {
 				process.env["VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH"],
 			);
 		} else {
-			delete process.env["VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH"];
+			process.env["VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH"] = undefined;
 		}
 		require("./bootstrap-amd").load(
 			"vs/server/node/server.main",
@@ -364,7 +364,7 @@ function prompt(question) {
 		output: process.stdout,
 	});
 	return new Promise((resolve, reject) => {
-		rl.question(question + " ", async (data) => {
+		rl.question(`${question} `, async (data) => {
 			rl.close();
 			const str = data.toString().trim().toLowerCase();
 			if (str === "" || str === "y" || str === "yes") {

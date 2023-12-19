@@ -142,7 +142,7 @@ export class ThemeRule {
 	}
 
 	private static _matchesOne(selectorScope: string, scope: string): boolean {
-		const selectorPrefix = selectorScope + ".";
+		const selectorPrefix = `${selectorScope}.`;
 		if (
 			selectorScope === scope ||
 			scope.substring(0, selectorPrefix.length) === selectorPrefix
@@ -158,7 +158,7 @@ export class ThemeRule {
 		scope: string,
 		parentScopes: string[],
 	): boolean {
-		if (!this._matchesOne(selectorScope, scope)) {
+		if (!ThemeRule._matchesOne(selectorScope, scope)) {
 			return false;
 		}
 
@@ -166,7 +166,7 @@ export class ThemeRule {
 		let parentIndex = parentScopes.length - 1;
 		while (selectorParentIndex >= 0 && parentIndex >= 0) {
 			if (
-				this._matchesOne(
+				ThemeRule._matchesOne(
 					selectorParentScopes[selectorParentIndex],
 					parentScopes[parentIndex],
 				)

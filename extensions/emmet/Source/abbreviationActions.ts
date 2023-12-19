@@ -181,7 +181,7 @@ export async function wrapWithAbbreviation(args: any): Promise<boolean> {
 			textToWrapInPreview = rangeToReplace.isSingleLine
 				? [textToReplace]
 				: textToReplace
-						.split("\n" + baseIndent)
+						.split(`\n${baseIndent}`)
 						.map((x) => x.trimEnd());
 
 			// escape $ characters, fixes #52640
@@ -378,13 +378,12 @@ export async function wrapWithAbbreviation(args: any): Promise<boolean> {
 	}
 
 	const prompt = vscode.l10n.t("Enter Abbreviation");
-	const inputAbbreviation =
-		args && args["abbreviation"]
-			? (args["abbreviation"] as string)
-			: await vscode.window.showInputBox({
-					prompt,
-					validateInput: inputChanged,
-			  });
+	const inputAbbreviation = args?.["abbreviation"]
+		? (args["abbreviation"] as string)
+		: await vscode.window.showInputBox({
+				prompt,
+				validateInput: inputChanged,
+		  });
 
 	const changesWereMade = await makeChanges(inputAbbreviation, false);
 	if (!changesWereMade) {
@@ -397,7 +396,7 @@ export async function wrapWithAbbreviation(args: any): Promise<boolean> {
 export function expandEmmetAbbreviation(
 	args: any,
 ): Thenable<boolean | undefined> {
-	if (!validate() || !vscode.window.activeTextEditor) {
+	if (!(validate() && vscode.window.activeTextEditor)) {
 		return fallbackTab();
 	}
 
@@ -808,9 +807,9 @@ export function isValidLocationForEmmetAbbreviation(
 
 		// Fix for https://github.com/microsoft/vscode/issues/28829
 		if (
-			!currentHtmlNode.open ||
-			!currentHtmlNode.close ||
 			!(
+				currentHtmlNode.open &&
+				currentHtmlNode.close &&
 				currentHtmlNode.open.end <= offset &&
 				offset <= currentHtmlNode.close.start
 			)
@@ -967,7 +966,7 @@ function expandAbbr(input: ExpandAbbreviationInput): string | undefined {
 		input.textToWrap = input.textToWrap.map((e) =>
 			e.replace(/\$\{/g, "\\${"),
 		);
-		if (input.filter && input.filter.includes("t")) {
+		if (input.filter?.includes("t")) {
 			input.textToWrap = input.textToWrap.map((line) => {
 				return line.replace(trimRegex, "").trim();
 			});

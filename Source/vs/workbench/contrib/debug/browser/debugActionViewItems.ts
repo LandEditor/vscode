@@ -487,7 +487,7 @@ export class FocusSessionActionViewItem extends SelectActionViewItem<IDebugSessi
 		return session ? this.mapFocusedSessionToSelected(session) : undefined;
 	}
 
-	protected getSessions(): ReadonlyArray<IDebugSession> {
+	protected getSessions(): readonly IDebugSession[] {
 		const showSubSessions =
 			this.configurationService.getValue<IDebugConfiguration>(
 				"debug",

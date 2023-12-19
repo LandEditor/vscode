@@ -108,9 +108,11 @@ export async function getResolvedShellEnv(
 						);
 					} catch (error) {
 						if (
-							!isCancellationError(error) &&
-							!cts.token.isCancellationRequested
+							isCancellationError(error) ||
+							cts.token.isCancellationRequested
 						) {
+							resolve({});
+						} else {
 							reject(
 								new Error(
 									localize(
@@ -120,8 +122,6 @@ export async function getResolvedShellEnv(
 									),
 								),
 							);
-						} else {
-							resolve({});
 						}
 					} finally {
 						clearTimeout(timeout);
@@ -146,7 +146,7 @@ async function doResolveUnixShellEnv(
 	logService.trace("getUnixShellEnvironment#noAttach", noAttach);
 
 	const mark = generateUuid().replace(/-/g, "").substr(0, 12);
-	const regex = new RegExp(mark + "({.*})" + mark);
+	const regex = new RegExp(`${mark}({.*})${mark}`);
 
 	const env = {
 		...process.env,
@@ -166,7 +166,8 @@ async function doResolveUnixShellEnv(
 
 		// handle popular non-POSIX shells
 		const name = basename(systemShellUnix);
-		let command: string, shellArgs: Array<string>;
+		let command: string;
+		let shellArgs: string[];
 		const extraArgs =
 			process.versions["electron"] && process.versions["microsoft-build"]
 				? "--ms-enable-electron-run-as-node"
@@ -253,19 +254,19 @@ async function doResolveUnixShellEnv(
 				if (runAsNode) {
 					env["ELECTRON_RUN_AS_NODE"] = runAsNode;
 				} else {
-					delete env["ELECTRON_RUN_AS_NODE"];
+					env["ELECTRON_RUN_AS_NODE"] = undefined;
 				}
 
 				if (noAttach) {
 					env["ELECTRON_NO_ATTACH_CONSOLE"] = noAttach;
 				} else {
-					delete env["ELECTRON_NO_ATTACH_CONSOLE"];
+					env["ELECTRON_NO_ATTACH_CONSOLE"] = undefined;
 				}
 
-				delete env["VSCODE_RESOLVING_ENVIRONMENT"];
+				env["VSCODE_RESOLVING_ENVIRONMENT"] = undefined;
 
 				// https://github.com/microsoft/vscode/issues/22593#issuecomment-336050758
-				delete env["XDG_RUNTIME_DIR"];
+				env["XDG_RUNTIME_DIR"] = undefined;
 
 				logService.trace("getUnixShellEnvironment#result", env);
 				resolve(env);

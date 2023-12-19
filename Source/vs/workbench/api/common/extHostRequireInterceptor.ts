@@ -116,7 +116,7 @@ export abstract class RequireInterceptor {
 
 		if (typeof interceptor.alternativeModuleName === "function") {
 			this._alternatives.push((moduleName) => {
-				return interceptor.alternativeModuleName!(moduleName);
+				return interceptor.alternativeModuleName?.(moduleName);
 			});
 		}
 	}
@@ -147,7 +147,7 @@ class NodeModuleAliasingModuleFactory implements IAlternativeModuleProvider {
 			// decompose ${appRoot}/node_modules/foo/bin to ['${appRoot}/node_modules/', 'foo', '/bin'],
 			// and likewise the more complex form ${appRoot}/node_modules.asar.unpacked/@vcode/foo/bin
 			// to ['${appRoot}/node_modules.asar.unpacked/',' @vscode/foo', '/bin'].
-			const npmIdChrs = `[a-z0-9_.-]`;
+			const npmIdChrs = "[a-z0-9_.-]";
 			const npmModuleName = `@${npmIdChrs}+\\/${npmIdChrs}+|${npmIdChrs}+`;
 			const moduleFolders =
 				"node_modules|node_modules\\.asar(?:\\.unpacked)?";
@@ -315,7 +315,7 @@ class OpenNodeModuleFactory implements INodeModuleFactory {
 		options: OpenOptions | undefined,
 	): Thenable<any> {
 		this.sendNoForwardTelemetry();
-		return this._original!(target, options);
+		return this._original?.(target, options);
 	}
 
 	private sendShimmingTelemetry(): void {

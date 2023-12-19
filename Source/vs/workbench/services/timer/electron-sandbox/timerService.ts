@@ -151,8 +151,7 @@ export function didUseCachedData(
 	// or subsequent
 	if (typeof _didUseCachedData !== "boolean") {
 		if (
-			!environmentService.window.isCodeCaching ||
-			!productService.commit
+			!(environmentService.window.isCodeCaching && productService.commit)
 		) {
 			_didUseCachedData = false; // we only produce cached data whith commit and code cache path
 		} else if (

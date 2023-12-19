@@ -306,10 +306,10 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 			throw new CancellationError();
 		}
 		if (trial > 10) {
-			throw new Error(`Timed out while waiting for file to be created`);
+			throw new Error("Timed out while waiting for file to be created");
 		}
 		this.logService.debug(
-			`[Registering Log Channel] File does not exist. Waiting for 1s to retry.`,
+			"[Registering Log Channel] File does not exist. Waiting for 1s to retry.",
 			file.toString(),
 		);
 		await timeout(1000, token);

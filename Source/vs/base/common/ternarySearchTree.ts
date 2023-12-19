@@ -310,7 +310,7 @@ class TernarySearchTreeNode<K, V> {
 	right: TernarySearchTreeNode<K, V> | undefined;
 
 	isEmpty(): boolean {
-		return !this.left && !this.mid && !this.right && !this.value;
+		return !(this.left || this.mid || this.right || this.value);
 	}
 
 	rotateLeft() {
@@ -496,15 +496,18 @@ export class TernarySearchTree<K, V> {
 				// patch path to parent
 				if (i > 0) {
 					switch (stack[i - 1][0]) {
-						case Dir.Left:
+						case Dir.Left: {
 							stack[i - 1][1].left = stack[i][1];
 							break;
-						case Dir.Right:
+						}
+						case Dir.Right: {
 							stack[i - 1][1].right = stack[i][1];
 							break;
-						case Dir.Mid:
+						}
+						case Dir.Mid: {
 							stack[i - 1][1].mid = stack[i][1];
 							break;
+						}
 					}
 				} else {
 					this._root = stack[0][1];
@@ -598,7 +601,7 @@ export class TernarySearchTree<K, V> {
 		}
 
 		// BST node removal
-		if (!node.mid && !node.value) {
+		if (!(node.mid || node.value)) {
 			if (node.left && node.right) {
 				// full node
 				// replace deleted-node with the min-node of the right branch.
@@ -617,15 +620,18 @@ export class TernarySearchTree<K, V> {
 				if (stack.length > 0) {
 					const [dir, parent] = stack[stack.length - 1];
 					switch (dir) {
-						case Dir.Left:
+						case Dir.Left: {
 							parent.left = newChild;
 							break;
-						case Dir.Mid:
+						}
+						case Dir.Mid: {
 							parent.mid = newChild;
 							break;
-						case Dir.Right:
+						}
+						case Dir.Right: {
 							parent.right = newChild;
 							break;
+						}
 					}
 				} else {
 					this._root = newChild;
@@ -641,22 +647,22 @@ export class TernarySearchTree<K, V> {
 			const bf = node.balanceFactor();
 			if (bf > 1) {
 				// right heavy
-				if (node.right!.balanceFactor() >= 0) {
+				if (node.right?.balanceFactor() >= 0) {
 					// right, right -> rotate left
 					stack[i][1] = node.rotateLeft();
 				} else {
 					// right, left -> double rotate
-					node.right = node.right!.rotateRight();
+					node.right = node.right?.rotateRight();
 					stack[i][1] = node.rotateLeft();
 				}
 			} else if (bf < -1) {
 				// left heavy
-				if (node.left!.balanceFactor() <= 0) {
+				if (node.left?.balanceFactor() <= 0) {
 					// left, left -> rotate right
 					stack[i][1] = node.rotateRight();
 				} else {
 					// left, right -> double rotate
-					node.left = node.left!.rotateLeft();
+					node.left = node.left?.rotateLeft();
 					stack[i][1] = node.rotateRight();
 				}
 			}
@@ -664,15 +670,18 @@ export class TernarySearchTree<K, V> {
 			// patch path to parent
 			if (i > 0) {
 				switch (stack[i - 1][0]) {
-					case Dir.Left:
+					case Dir.Left: {
 						stack[i - 1][1].left = stack[i][1];
 						break;
-					case Dir.Right:
+					}
+					case Dir.Right: {
 						stack[i - 1][1].right = stack[i][1];
 						break;
-					case Dir.Mid:
+					}
+					case Dir.Mid: {
 						stack[i - 1][1].mid = stack[i][1];
 						break;
+					}
 				}
 			} else {
 				this._root = stack[0][1];
@@ -710,7 +719,7 @@ export class TernarySearchTree<K, V> {
 				break;
 			}
 		}
-		return (node && node.value) || candidate;
+		return node?.value || candidate;
 	}
 
 	findSuperstr(key: K): IterableIterator<[K, V]> | undefined {

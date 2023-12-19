@@ -88,7 +88,7 @@ export class CommandDetectionCapability
 	}
 
 	get hasInput(): boolean | undefined {
-		if (!this._isInputting || !this._currentCommand?.commandStartMarker) {
+		if (!(this._isInputting && this._currentCommand?.commandStartMarker)) {
 			return undefined;
 		}
 		if (
@@ -292,8 +292,7 @@ export class CommandDetectionCapability
 				this._logService,
 			);
 		} else if (
-			!value &&
-			!(this._ptyHeuristics.value instanceof UnixPtyHeuristics)
+			!(value || this._ptyHeuristics.value instanceof UnixPtyHeuristics)
 		) {
 			this._ptyHeuristics.value = new UnixPtyHeuristics(
 				this._terminal,
@@ -728,8 +727,10 @@ class UnixPtyHeuristics extends Disposable {
 
 		// Sanity check optional props
 		if (
-			!currentCommand.commandStartMarker ||
-			!currentCommand.commandExecutedMarker ||
+			!(
+				currentCommand.commandStartMarker &&
+				currentCommand.commandExecutedMarker
+			) ||
 			currentCommand.commandStartX === undefined
 		) {
 			return;
@@ -1366,7 +1367,7 @@ export function getLinesForCommand(
 	}
 	const executedMarker = command.executedMarker;
 	const endMarker = command.endMarker;
-	if (!executedMarker || !endMarker) {
+	if (!(executedMarker && endMarker)) {
 		return undefined;
 	}
 	const startLine = executedMarker.line;

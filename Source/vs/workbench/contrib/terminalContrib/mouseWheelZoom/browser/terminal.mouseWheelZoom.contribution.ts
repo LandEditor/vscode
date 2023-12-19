@@ -70,7 +70,7 @@ class TerminalMouseWheelZoomContribution
 						e.affectsConfiguration(TerminalSettingId.MouseWheelZoom)
 					) {
 						if (
-							!!this._configurationService.getValue(
+							this._configurationService.getValue(
 								TerminalSettingId.MouseWheelZoom,
 							)
 						) {

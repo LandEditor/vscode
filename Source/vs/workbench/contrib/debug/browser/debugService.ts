@@ -532,16 +532,15 @@ export class DebugService implements IDebugService {
 		options?: IDebugSessionOptions,
 		saveBeforeStart = !options?.parentSession,
 	): Promise<boolean> {
-		const message =
-			options && options.noDebug
-				? nls.localize(
-						"runTrust",
-						"Running executes build tasks and program code from your workspace.",
-				  )
-				: nls.localize(
-						"debugTrust",
-						"Debugging executes build tasks and program code from your workspace.",
-				  );
+		const message = options?.noDebug
+			? nls.localize(
+					"runTrust",
+					"Running executes build tasks and program code from your workspace.",
+			  )
+			: nls.localize(
+					"debugTrust",
+					"Debugging executes build tasks and program code from your workspace.",
+			  );
 		const trust =
 			await this.workspaceTrustRequestService.requestWorkspaceTrust({
 				message,
@@ -618,7 +617,7 @@ export class DebugService implements IDebugService {
 							typeof configData === "string"
 								? configData
 								: configData.name;
-						if (name === compound!.name) {
+						if (name === compound?.name) {
 							return Promise.resolve(false);
 						}
 
@@ -674,7 +673,7 @@ export class DebugService implements IDebugService {
 										"Can not find folder with name '{0}' for configuration '{1}' in compound '{2}'.",
 										configData.folder,
 										configData.name,
-										compound!.name,
+										compound?.name,
 									),
 								);
 							}
@@ -682,7 +681,7 @@ export class DebugService implements IDebugService {
 
 						return this.createSession(
 							launchForName,
-							launchForName!.getConfiguration(name),
+							launchForName?.getConfiguration(name),
 							options,
 						);
 					}),
@@ -694,7 +693,7 @@ export class DebugService implements IDebugService {
 			}
 
 			if (configOrName && !config) {
-				const message = !!launch
+				const message = launch
 					? nls.localize(
 							"configMissing",
 							"Configuration '{0}' is missing in 'launch.json'.",
@@ -737,7 +736,7 @@ export class DebugService implements IDebugService {
 			// a no-folder workspace has no launch.config
 			config = Object.create(null);
 		}
-		if (options && options.noDebug) {
+		if (options?.noDebug) {
 			config!.noDebug = true;
 		} else if (
 			options &&
@@ -753,7 +752,7 @@ export class DebugService implements IDebugService {
 		let activeEditor: EditorInput | undefined;
 		if (!type) {
 			activeEditor = this.editorService.activeEditor;
-			if (activeEditor && activeEditor.resource) {
+			if (activeEditor?.resource) {
 				type =
 					this.chosenEnvironments[activeEditor.resource.toString()];
 			}
@@ -771,13 +770,13 @@ export class DebugService implements IDebugService {
 
 		const configByProviders =
 			await this.configurationManager.resolveConfigurationByProviders(
-				launch && launch.workspace ? launch.workspace.uri : undefined,
+				launch?.workspace ? launch.workspace.uri : undefined,
 				type,
 				config!,
 				initCancellationToken.token,
 			);
 		// a falsy config indicates an aborted launch
-		if (configByProviders && configByProviders.type) {
+		if (configByProviders?.type) {
 			try {
 				let resolvedConfig = await this.substituteVariables(
 					launch,
@@ -805,9 +804,7 @@ export class DebugService implements IDebugService {
 
 				const cfg =
 					await this.configurationManager.resolveDebugConfigurationWithSubstitutedVariables(
-						launch && launch.workspace
-							? launch.workspace.uri
-							: undefined,
+						launch?.workspace ? launch.workspace.uri : undefined,
 						resolvedConfig.type,
 						resolvedConfig,
 						initCancellationToken.token,
@@ -918,7 +915,7 @@ export class DebugService implements IDebugService {
 				}
 				return result;
 			} catch (err) {
-				if (err && err.message) {
+				if (err?.message) {
 					await this.showError(err.message);
 				} else if (
 					this.contextService.getWorkbenchState() ===
@@ -1402,7 +1399,7 @@ export class DebugService implements IDebugService {
 				) {
 					resolved =
 						await this.configurationManager.resolveDebugConfigurationWithSubstitutedVariables(
-							launch && launch.workspace
+							launch?.workspace
 								? launch.workspace.uri
 								: undefined,
 							unresolved.type,
@@ -1521,7 +1518,7 @@ export class DebugService implements IDebugService {
 		const dbg = this.adapterManager.getDebugger(config.type);
 		if (dbg) {
 			let folder: IWorkspaceFolder | undefined = undefined;
-			if (launch && launch.workspace) {
+			if (launch?.workspace) {
 				folder = launch.workspace;
 			} else {
 				const folders = this.contextService.getWorkspace().folders;
@@ -1545,7 +1542,7 @@ export class DebugService implements IDebugService {
 
 	private async showError(
 		message: string,
-		errorActions: ReadonlyArray<IAction> = [],
+		errorActions: readonly IAction[] = [],
 		promptLaunchJson = true,
 	): Promise<void> {
 		const configureAction = new Action(
@@ -1633,7 +1630,7 @@ export class DebugService implements IDebugService {
 									},
 									"{0}, debugging paused {1}, {2}:{3}",
 									lineContent,
-									thread && thread.stoppedDetails
+									thread?.stoppedDetails
 										? `, reason ${thread.stoppedDetails.reason}`
 										: "",
 									stackFrame.source
@@ -2104,7 +2101,7 @@ export class DebugService implements IDebugService {
 		}
 		if (this.state === State.Stopped) {
 			const focusedSession = this.getViewModel().focusedSession;
-			if (!focusedSession || !threadToContinue) {
+			if (!(focusedSession && threadToContinue)) {
 				return;
 			}
 
@@ -2149,7 +2146,7 @@ export class DebugService implements IDebugService {
 				}),
 				2000,
 			);
-			listener!.dispose();
+			listener?.dispose();
 		}
 
 		// Look at paused threads for sessions that verified this bp. Prefer, in order:
@@ -2224,7 +2221,7 @@ export function getStackFrameThreadAndSessionToFocus(
 } {
 	if (!session) {
 		if (stackFrame || thread) {
-			session = stackFrame ? stackFrame.thread.session : thread!.session;
+			session = stackFrame ? stackFrame.thread.session : thread?.session;
 		} else {
 			const sessions = model.getSessions();
 			const stoppedSession = sessions.find(
@@ -2246,10 +2243,9 @@ export function getStackFrameThreadAndSessionToFocus(
 			thread = stackFrame.thread;
 		} else {
 			const threads = session ? session.getAllThreads() : undefined;
-			const stoppedThread = threads && threads.find((t) => t.stopped);
+			const stoppedThread = threads?.find((t) => t.stopped);
 			thread =
-				stoppedThread ||
-				(threads && threads.length ? threads[0] : undefined);
+				stoppedThread || (threads?.length ? threads[0] : undefined);
 		}
 	}
 

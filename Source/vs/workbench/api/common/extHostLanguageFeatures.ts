@@ -85,7 +85,7 @@ class DocumentSymbolAdapter {
 		const value = await this._provider.provideDocumentSymbols(doc, token);
 		if (isFalsyOrEmpty(value)) {
 			return undefined;
-		} else if (value![0] instanceof DocumentSymbol) {
+		} else if (value?.[0] instanceof DocumentSymbol) {
 			return (<DocumentSymbol[]>value).map(
 				typeConvert.DocumentSymbol.from,
 			);
@@ -221,8 +221,7 @@ class CodeLensAdapter {
 
 		if (!resolvedLens.command) {
 			const error = new Error(
-				"INVALID code lens resolved, lacks command: " +
-					this._extension.identifier.value,
+				`INVALID code lens resolved, lacks command: ${this._extension.identifier.value}`,
 			);
 			this._extTelemetry.onExtensionError(
 				this._extension.identifier,
@@ -645,16 +644,16 @@ class CodeActionAdapter {
 							candidate.command,
 							disposables,
 						),
-					diagnostics:
-						candidate.diagnostics &&
-						candidate.diagnostics.map(typeConvert.Diagnostic.from),
+					diagnostics: candidate.diagnostics?.map(
+						typeConvert.Diagnostic.from,
+					),
 					edit:
 						candidate.edit &&
 						typeConvert.WorkspaceEdit.from(
 							candidate.edit,
 							undefined,
 						),
-					kind: candidate.kind && candidate.kind.value,
+					kind: candidate.kind?.value,
 					isPreferred: candidate.isPreferred,
 					isAI: isProposedApiEnabled(this._extension, "codeActionAI")
 						? candidate.isAI
@@ -723,7 +722,7 @@ class CodeActionAdapter {
 
 class DocumentPasteEditProvider {
 	public static toInternalProviderId(extId: string, editId: string): string {
-		return extId + "." + editId;
+		return `${extId}.${editId}`;
 	}
 
 	constructor(
@@ -980,7 +979,7 @@ class NavigateTypeAdapter {
 
 		for (let i = 0; i < value.length; i++) {
 			const item = value[i];
-			if (!item || !item.name) {
+			if (!item?.name) {
 				this._logService.warn("INVALID SymbolInformation", item);
 				continue;
 			}
@@ -1096,7 +1095,7 @@ class RenameAdapter {
 				text = rangeOrLocation.placeholder;
 			}
 
-			if (!range || !text) {
+			if (!(range && text)) {
 				return undefined;
 			}
 			if (range.start.line > pos.line || range.end.line < pos.line) {
@@ -1282,7 +1281,7 @@ class DocumentSemanticTokensAdapter {
 		if (!DocumentSemanticTokensAdapter._isSemanticTokens(newResult)) {
 			return newResult;
 		}
-		if (!previousResult || !previousResult.tokens) {
+		if (!previousResult?.tokens) {
 			return newResult;
 		}
 		const oldData = previousResult.tokens;
@@ -1520,7 +1519,7 @@ class CompletionsAdapter {
 
 		const dto1 = this._convertCompletionItem(item, id);
 
-		const resolvedItem = await this._provider.resolveCompletionItem!(
+		const resolvedItem = await this._provider.resolveCompletionItem?.(
 			item,
 			token,
 		);
@@ -1613,8 +1612,9 @@ class CompletionsAdapter {
 				item.kind !== undefined
 					? typeConvert.CompletionItemKind.from(item.kind)
 					: undefined,
-			[extHostProtocol.ISuggestDataDtoField.kindModifier]:
-				item.tags && item.tags.map(typeConvert.CompletionItemTag.from),
+			[extHostProtocol.ISuggestDataDtoField.kindModifier]: item.tags?.map(
+				typeConvert.CompletionItemTag.from,
+			),
 			[extHostProtocol.ISuggestDataDtoField.detail]: item.detail,
 			[extHostProtocol.ISuggestDataDtoField.documentation]:
 				typeof item.documentation === "undefined"
@@ -1633,8 +1633,7 @@ class CompletionsAdapter {
 			[extHostProtocol.ISuggestDataDtoField.commitCharacters]:
 				item.commitCharacters?.join(""),
 			[extHostProtocol.ISuggestDataDtoField.additionalTextEdits]:
-				item.additionalTextEdits &&
-				item.additionalTextEdits.map(typeConvert.TextEdit.from),
+				item.additionalTextEdits?.map(typeConvert.TextEdit.from),
 			[extHostProtocol.ISuggestDataDtoField.commandIdent]:
 				command?.$ident,
 			[extHostProtocol.ISuggestDataDtoField.commandId]: command?.id,
@@ -1678,8 +1677,10 @@ class CompletionsAdapter {
 				typeConvert.Range.from(range);
 		} else if (
 			range &&
-			(!defaultInsertRange?.isEqual(range.inserting) ||
-				!defaultReplaceRange?.isEqual(range.replacing))
+			!(
+				defaultInsertRange?.isEqual(range.inserting) &&
+				defaultReplaceRange?.isEqual(range.replacing)
+			)
 		) {
 			// ONLY send range when it's different from the default ranges (safe bandwidth)
 			result[extHostProtocol.ISuggestDataDtoField.range] = {
@@ -2051,7 +2052,7 @@ class InlayHintsAdapter {
 		if (!item) {
 			return undefined;
 		}
-		const hint = await this._provider.resolveInlayHint!(item, token);
+		const hint = await this._provider.resolveInlayHint?.(item, token);
 		if (!hint) {
 			return undefined;
 		}
@@ -2100,8 +2101,7 @@ class InlayHintsAdapter {
 			cacheId: id,
 			tooltip: typeConvert.MarkdownString.fromStrict(hint.tooltip),
 			position: typeConvert.Position.from(hint.position),
-			textEdits:
-				hint.textEdits && hint.textEdits.map(typeConvert.TextEdit.from),
+			textEdits: hint.textEdits?.map(typeConvert.TextEdit.from),
 			kind: hint.kind && typeConvert.InlayHintKind.from(hint.kind),
 			paddingLeft: hint.paddingLeft,
 			paddingRight: hint.paddingRight,
@@ -2214,8 +2214,8 @@ class LinkProviderAdapter {
 		if (!item) {
 			return undefined;
 		}
-		const link = await this._provider.resolveDocumentLink!(item, token);
-		if (!link || !LinkProviderAdapter._validateLink(link)) {
+		const link = await this._provider.resolveDocumentLink?.(item, token);
+		if (!(link && LinkProviderAdapter._validateLink(link))) {
 			return undefined;
 		}
 		return typeConvert.DocumentLink.from(link);
@@ -2581,7 +2581,7 @@ class TypeHierarchyAdapter {
 
 class DocumentOnDropEditAdapter {
 	public static toInternalProviderId(extId: string, editId: string): string {
-		return extId + "." + editId;
+		return `${extId}.${editId}`;
 	}
 
 	constructor(
@@ -2765,7 +2765,7 @@ export class ExtHostLanguageFeatures
 	private _transformDocumentSelector(
 		selector: vscode.DocumentSelector,
 		extension: IExtensionDescription,
-	): Array<extHostProtocol.IDocumentFilterDto> {
+	): extHostProtocol.IDocumentFilterDto[] {
 		return typeConvert.DocumentSelector.from(
 			selector,
 			this._uriTransformer,
@@ -2793,7 +2793,7 @@ export class ExtHostLanguageFeatures
 		doNotLog = false,
 	): Promise<R> {
 		const data = this._adapter.get(handle);
-		if (!data || !(data.adapter instanceof ctor)) {
+		if (!(data && data.adapter instanceof ctor)) {
 			return fallbackValue;
 		}
 
@@ -2867,8 +2867,7 @@ export class ExtHostLanguageFeatures
 			extension,
 		);
 		const displayName =
-			(metadata && metadata.label) ||
-			ExtHostLanguageFeatures._extLabel(extension);
+			metadata?.label || ExtHostLanguageFeatures._extLabel(extension);
 		this._proxy.$registerDocumentSymbolProvider(
 			handle,
 			this._transformDocumentSelector(selector, extension),
@@ -2927,7 +2926,7 @@ export class ExtHostLanguageFeatures
 		let result = this._createDisposable(handle);
 
 		if (eventHandle !== undefined) {
-			const subscription = provider.onDidChangeCodeLenses!((_) =>
+			const subscription = provider.onDidChangeCodeLenses?.((_) =>
 				this._proxy.$emitCodeLensEvent(eventHandle),
 			);
 			result = Disposable.from(result, subscription);
@@ -3219,7 +3218,7 @@ export class ExtHostLanguageFeatures
 		let result = this._createDisposable(handle);
 
 		if (eventHandle !== undefined) {
-			const subscription = provider.onDidChangeInlineValues!((_) =>
+			const subscription = provider.onDidChangeInlineValues?.((_) =>
 				this._proxy.$emitInlineValuesEvent(eventHandle),
 			);
 			result = Disposable.from(result, subscription);
@@ -3796,7 +3795,7 @@ export class ExtHostLanguageFeatures
 		let result = this._createDisposable(handle);
 
 		if (eventHandle) {
-			const subscription = provider.onDidChangeSemanticTokens!((_) =>
+			const subscription = provider.onDidChangeSemanticTokens?.((_) =>
 				this._proxy.$emitDocumentSemanticTokensEvent(eventHandle),
 			);
 			result = Disposable.from(result, subscription);
@@ -4147,7 +4146,7 @@ export class ExtHostLanguageFeatures
 		let result = this._createDisposable(handle);
 
 		if (eventHandle !== undefined) {
-			const subscription = provider.onDidChangeInlayHints!((uri) =>
+			const subscription = provider.onDidChangeInlayHints?.((uri) =>
 				this._proxy.$emitInlayHintsEvent(eventHandle),
 			);
 			result = Disposable.from(result, subscription);
@@ -4332,7 +4331,7 @@ export class ExtHostLanguageFeatures
 		let result = this._createDisposable(handle);
 
 		if (eventHandle !== undefined) {
-			const subscription = provider.onDidChangeFoldingRanges!(() =>
+			const subscription = provider.onDidChangeFoldingRanges?.(() =>
 				this._proxy.$emitFoldingRangeEvent(eventHandle),
 			);
 			result = Disposable.from(result, subscription);
@@ -4864,7 +4863,7 @@ export class ExtHostLanguageFeatures
 			this._apiDeprecation.report(
 				"LanguageConfiguration.__electricCharacterSupport",
 				extension,
-				`Do not use.`,
+				"Do not use.",
 			);
 		}
 
@@ -4872,7 +4871,7 @@ export class ExtHostLanguageFeatures
 			this._apiDeprecation.report(
 				"LanguageConfiguration.__characterPairSupport",
 				extension,
-				`Do not use.`,
+				"Do not use.",
 			);
 		}
 

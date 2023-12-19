@@ -4088,9 +4088,10 @@ declare module "vscode" {
 		 */
 		set(
 			uri: Uri,
-			edits: ReadonlyArray<
-				[TextEdit | SnippetTextEdit, WorkspaceEditEntryMetadata]
-			>,
+			edits: readonly [
+				TextEdit | SnippetTextEdit,
+				WorkspaceEditEntryMetadata,
+			][],
 		): void;
 
 		/**
@@ -4109,7 +4110,7 @@ declare module "vscode" {
 		 */
 		set(
 			uri: Uri,
-			edits: ReadonlyArray<[NotebookEdit, WorkspaceEditEntryMetadata]>,
+			edits: readonly [NotebookEdit, WorkspaceEditEntryMetadata][],
 		): void;
 
 		/**
@@ -6201,7 +6202,7 @@ declare module "vscode" {
 		/**
 		 * Tags for this item.
 		 */
-		tags?: ReadonlyArray<SymbolTag>;
+		tags?: readonly SymbolTag[];
 
 		/**
 		 * More detail for this item, e.g. the signature of a function.
@@ -7105,9 +7106,7 @@ declare module "vscode" {
 		 *
 		 * @param entries An array of tuples, like `[[file1, [d1, d2]], [file2, [d3, d4, d5]]]`, or `undefined`.
 		 */
-		set(
-			entries: ReadonlyArray<[Uri, readonly Diagnostic[] | undefined]>,
-		): void;
+		set(entries: readonly [Uri, readonly Diagnostic[] | undefined][]): void;
 
 		/**
 		 * Remove all diagnostics from this collection that belong
@@ -11938,7 +11937,7 @@ declare module "vscode" {
 		/**
 		 * The items that were checked or unchecked.
 		 */
-		readonly items: ReadonlyArray<[T, TreeItemCheckboxState]>;
+		readonly items: readonly [T, TreeItemCheckboxState][];
 	}
 
 	/**

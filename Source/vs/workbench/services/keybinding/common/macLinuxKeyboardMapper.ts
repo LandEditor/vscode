@@ -81,10 +81,10 @@ export class NativeResolvedKeybinding extends BaseResolvedKeybinding<ScanCodeCho
 		const a = this._mapper.getAriaLabelForScanCodeChord(binding);
 		const b = this._mapper.getUserSettingsLabelForScanCodeChord(binding);
 
-		if (!a && !b) {
+		if (!(a || b)) {
 			return true;
 		}
-		if (!a || !b) {
+		if (!(a && b)) {
 			return false;
 		}
 		return a.toLowerCase() === b.toLowerCase();
@@ -206,9 +206,9 @@ class ScanCodeCombo {
 			charCode <= CharCode.U_Combining_Latin_Small_Letter_X
 		) {
 			// combining
-			return "U+" + charCode.toString(16);
+			return `U+${charCode.toString(16)}`;
 		}
-		return "  " + String.fromCharCode(charCode) + "  ";
+		return `  ${String.fromCharCode(charCode)}  `;
 	}
 }
 
@@ -885,7 +885,7 @@ export class MacLinuxKeyboardMapper implements IKeyboardMapper {
 		let cnt = 0;
 		result.push(`isUSStandard: ${this._isUSStandard}`);
 		result.push(
-			`----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------`,
+			"----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------",
 		);
 		for (
 			let scanCode = ScanCode.None;
@@ -903,10 +903,10 @@ export class MacLinuxKeyboardMapper implements IKeyboardMapper {
 
 			if (cnt % 4 === 0) {
 				result.push(
-					`|       HW Code combination      |  Key  |    KeyCode combination    | Pri |          UI label         |         User settings          |    Electron accelerator   |       Dispatching string       | WYSIWYG |`,
+					"|       HW Code combination      |  Key  |    KeyCode combination    | Pri |          UI label         |         User settings          |    Electron accelerator   |       Dispatching string       | WYSIWYG |",
 				);
 				result.push(
-					`----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------`,
+					"----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------",
 				);
 			}
 			cnt++;
@@ -1049,7 +1049,7 @@ export class MacLinuxKeyboardMapper implements IKeyboardMapper {
 				}
 			}
 			result.push(
-				`----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------`,
+				"----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------",
 			);
 		}
 
@@ -1061,7 +1061,7 @@ export class MacLinuxKeyboardMapper implements IKeyboardMapper {
 			str = "null";
 		}
 		while (str.length < cnt) {
-			str = " " + str;
+			str = ` ${str}`;
 		}
 		return str;
 	}
@@ -1400,7 +1400,7 @@ export class MacLinuxKeyboardMapper implements IKeyboardMapper {
 	private static _charCodeToKb(
 		charCode: number,
 	): { keyCode: KeyCode; shiftKey: boolean } | null {
-		charCode = this._redirectCharCode(charCode);
+		charCode = MacLinuxKeyboardMapper._redirectCharCode(charCode);
 		if (charCode < CHAR_CODE_TO_KEY_CODE.length) {
 			return CHAR_CODE_TO_KEY_CODE[charCode];
 		}

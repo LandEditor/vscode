@@ -175,7 +175,7 @@ export abstract class ReferencesController implements IEditorContribution {
 					return;
 				}
 				switch (kind) {
-					case "open":
+					case "open": {
 						if (
 							event.source !== "editor" ||
 							!this._configurationService.getValue(
@@ -187,16 +187,19 @@ export abstract class ReferencesController implements IEditorContribution {
 							this.openReference(element, false, false);
 						}
 						break;
-					case "side":
+					}
+					case "side": {
 						this.openReference(element, true, false);
 						break;
-					case "goto":
+					}
+					case "goto": {
 						if (peekMode) {
 							this._gotoReference(element, true);
 						} else {
 							this.openReference(element, false, true);
 						}
 						break;
+					}
 				}
 			}),
 		);
@@ -284,7 +287,7 @@ export abstract class ReferencesController implements IEditorContribution {
 	}
 
 	async goToNextOrPreviousReference(fwd: boolean) {
-		if (!this._editor.hasModel() || !this._model || !this._widget) {
+		if (!(this._editor.hasModel() && this._model && this._widget)) {
 			// can be called while still resolving...
 			return;
 		}
@@ -312,7 +315,7 @@ export abstract class ReferencesController implements IEditorContribution {
 	}
 
 	async revealReference(reference: OneReference): Promise<void> {
-		if (!this._editor.hasModel() || !this._model || !this._widget) {
+		if (!(this._editor.hasModel() && this._model && this._widget)) {
 			// can be called while still resolving...
 			return;
 		}
@@ -355,7 +358,7 @@ export abstract class ReferencesController implements IEditorContribution {
 				(openedEditor) => {
 					this._ignoreModelChangeEvent = false;
 
-					if (!openedEditor || !this._widget) {
+					if (!(openedEditor && this._widget)) {
 						// something went wrong...
 						this.closeWidget();
 						return;
@@ -369,7 +372,7 @@ export abstract class ReferencesController implements IEditorContribution {
 						// we opened a different editor instance which means a different controller instance.
 						// therefore we stop with this controller and continue with the other
 						const other = ReferencesController.get(openedEditor);
-						const model = this._model!.clone();
+						const model = this._model?.clone();
 
 						this.closeWidget();
 						openedEditor.focus();

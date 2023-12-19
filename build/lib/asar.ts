@@ -96,7 +96,7 @@ export function createAsar(
 				return;
 			}
 			if (!file.stat.isFile()) {
-				throw new Error(`unknown item in stream!`);
+				throw new Error("unknown item in stream!");
 			}
 			const shouldUnpack = shouldUnpackFile(file);
 			insertFile(
@@ -111,7 +111,7 @@ export function createAsar(
 				this.queue(
 					new VinylFile({
 						base: ".",
-						path: path.join(destFilename + ".unpacked", relative),
+						path: path.join(`${destFilename}.unpacked`, relative),
 						stat: file.stat,
 						contents: file.contents,
 					}),

@@ -70,13 +70,13 @@ export class FileBasedRecommendations extends ExtensionRecommendations {
 	>();
 	private readonly fileBasedImportantRecommendations = new Set<string>();
 
-	get recommendations(): ReadonlyArray<ExtensionRecommendation> {
+	get recommendations(): readonly ExtensionRecommendation[] {
 		const recommendations: ExtensionRecommendation[] = [];
 		[...this.fileBasedRecommendations.keys()]
 			.sort((a, b) => {
 				if (
-					this.fileBasedRecommendations.get(a)!.recommendedTime ===
-					this.fileBasedRecommendations.get(b)!.recommendedTime
+					this.fileBasedRecommendations.get(a)?.recommendedTime ===
+					this.fileBasedRecommendations.get(b)?.recommendedTime
 				) {
 					if (this.fileBasedImportantRecommendations.has(a)) {
 						return -1;
@@ -85,8 +85,8 @@ export class FileBasedRecommendations extends ExtensionRecommendations {
 						return 1;
 					}
 				}
-				return this.fileBasedRecommendations.get(a)!.recommendedTime >
-					this.fileBasedRecommendations.get(b)!.recommendedTime
+				return this.fileBasedRecommendations.get(a)?.recommendedTime >
+					this.fileBasedRecommendations.get(b)?.recommendedTime
 					? -1
 					: 1;
 			})
@@ -105,13 +105,13 @@ export class FileBasedRecommendations extends ExtensionRecommendations {
 		return recommendations;
 	}
 
-	get importantRecommendations(): ReadonlyArray<ExtensionRecommendation> {
+	get importantRecommendations(): readonly ExtensionRecommendation[] {
 		return this.recommendations.filter((e) =>
 			this.fileBasedImportantRecommendations.has(e.extensionId),
 		);
 	}
 
-	get otherRecommendations(): ReadonlyArray<ExtensionRecommendation> {
+	get otherRecommendations(): readonly ExtensionRecommendation[] {
 		return this.recommendations.filter(
 			(e) => !this.fileBasedImportantRecommendations.has(e.extensionId),
 		);
@@ -189,7 +189,7 @@ export class FileBasedRecommendations extends ExtensionRecommendations {
 				.getWorkspace()
 				.folders.map((folder) => folder.uri.scheme),
 		]);
-		if (!uri || !supportedSchemes.includes(uri.scheme)) {
+		if (!(uri && supportedSchemes.includes(uri.scheme))) {
 			return;
 		}
 

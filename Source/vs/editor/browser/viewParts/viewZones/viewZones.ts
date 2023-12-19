@@ -41,7 +41,7 @@ interface IComputedViewZoneProps {
 }
 
 const invalidFunc = () => {
-	throw new Error(`Invalid change accessor`);
+	throw new Error("Invalid change accessor");
 };
 
 export class ViewZones extends ViewPart {
@@ -350,12 +350,12 @@ export class ViewZones extends ViewPart {
 
 			zone.domNode.removeAttribute("monaco-visible-view-zone");
 			zone.domNode.removeAttribute("monaco-view-zone");
-			zone.domNode.domNode.parentNode!.removeChild(zone.domNode.domNode);
+			zone.domNode.domNode.parentNode?.removeChild(zone.domNode.domNode);
 
 			if (zone.marginDomNode) {
 				zone.marginDomNode.removeAttribute("monaco-visible-view-zone");
 				zone.marginDomNode.removeAttribute("monaco-view-zone");
-				zone.marginDomNode.domNode.parentNode!.removeChild(
+				zone.marginDomNode.domNode.parentNode?.removeChild(
 					zone.marginDomNode.domNode,
 				);
 			}

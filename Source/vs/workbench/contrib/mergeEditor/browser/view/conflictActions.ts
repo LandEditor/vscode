@@ -55,9 +55,9 @@ export class ConflictActionsFactory extends Disposable {
 			}),
 		);
 
-		this._styleClassName =
-			"_conflictActionsFactory_" +
-			hash(this._editor.getId()).toString(16);
+		this._styleClassName = `_conflictActionsFactory_${hash(
+			this._editor.getId(),
+		).toString(16)}`;
 		this._styleElement = createStyleSheet(
 			isInShadowDOM(this._editor.getContainerDomNode())
 				? this._editor.getContainerDomNode()
@@ -190,9 +190,73 @@ export class ActionsSource {
 				!state.isInputIncluded(inputNumber)
 			) {
 				if (
-					!state.isInputIncluded(otherInputNumber) ||
-					!this.viewModel.shouldUseAppendInsteadOfAccept.read(reader)
+					state.isInputIncluded(otherInputNumber) &&
+					this.viewModel.shouldUseAppendInsteadOfAccept.read(reader)
 				) {
+					result.push(
+						command(
+							localize("append", "Append {0}", inputData.title),
+							async () => {
+								transaction((tx) => {
+									model.setState(
+										modifiedBaseRange,
+										state.withInputValue(
+											inputNumber,
+											true,
+											false,
+										),
+										inputNumber,
+										tx,
+									);
+									model.telemetry.reportAcceptInvoked(
+										inputNumber,
+										state.includesInput(otherInputNumber),
+									);
+								});
+							},
+							localize(
+								"appendTooltip",
+								"Append {0} to the result document.",
+								inputData.title,
+							),
+						),
+					);
+
+					if (modifiedBaseRange.canBeCombined) {
+						result.push(
+							command(
+								localize(
+									"combine",
+									"Accept Combination",
+									inputData.title,
+								),
+								async () => {
+									transaction((tx) => {
+										model.setState(
+											modifiedBaseRange,
+											state.withInputValue(
+												inputNumber,
+												true,
+												true,
+											),
+											inputNumber,
+											tx,
+										);
+										model.telemetry.reportSmartCombinationInvoked(
+											state.includesInput(
+												otherInputNumber,
+											),
+										);
+									});
+								},
+								localize(
+									"acceptBothTooltip",
+									"Accept an automatic combination of both sides in the result document.",
+								),
+							),
+						);
+					}
+				} else {
 					result.push(
 						command(
 							localize("accept", "Accept {0}", inputData.title),
@@ -249,70 +313,6 @@ export class ActionsSource {
 													true,
 												),
 											true,
-											tx,
-										);
-										model.telemetry.reportSmartCombinationInvoked(
-											state.includesInput(
-												otherInputNumber,
-											),
-										);
-									});
-								},
-								localize(
-									"acceptBothTooltip",
-									"Accept an automatic combination of both sides in the result document.",
-								),
-							),
-						);
-					}
-				} else {
-					result.push(
-						command(
-							localize("append", "Append {0}", inputData.title),
-							async () => {
-								transaction((tx) => {
-									model.setState(
-										modifiedBaseRange,
-										state.withInputValue(
-											inputNumber,
-											true,
-											false,
-										),
-										inputNumber,
-										tx,
-									);
-									model.telemetry.reportAcceptInvoked(
-										inputNumber,
-										state.includesInput(otherInputNumber),
-									);
-								});
-							},
-							localize(
-								"appendTooltip",
-								"Append {0} to the result document.",
-								inputData.title,
-							),
-						),
-					);
-
-					if (modifiedBaseRange.canBeCombined) {
-						result.push(
-							command(
-								localize(
-									"combine",
-									"Accept Combination",
-									inputData.title,
-								),
-								async () => {
-									transaction((tx) => {
-										model.setState(
-											modifiedBaseRange,
-											state.withInputValue(
-												inputNumber,
-												true,
-												true,
-											),
-											inputNumber,
 											tx,
 										);
 										model.telemetry.reportSmartCombinationInvoked(
@@ -583,7 +583,7 @@ class ActionsContentWidget extends FixedZoneWidget {
 						{
 							title: item.tooltip,
 							role: "button",
-							onclick: () => item.action!(),
+							onclick: () => item.action?.(),
 						},
 						...title,
 					),

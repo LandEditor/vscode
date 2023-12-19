@@ -174,9 +174,11 @@ export abstract class BaseTerminalBackend extends Disposable {
 		}
 		const parsedUnknown = JSON.parse(serializedState);
 		if (
-			!("version" in parsedUnknown) ||
-			!("state" in parsedUnknown) ||
-			!Array.isArray(parsedUnknown.state)
+			!(
+				"version" in parsedUnknown &&
+				"state" in parsedUnknown &&
+				Array.isArray(parsedUnknown.state)
+			)
 		) {
 			this._logService.warn(
 				"Could not revive serialized processes, wrong format",

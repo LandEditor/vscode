@@ -182,7 +182,7 @@ export class ExtensionRecommendationsService
 					if (!isRecommended) {
 						const reason =
 							this.getAllRecommendationsWithReason()[extensionId];
-						if (reason && reason.reasonId) {
+						if (reason?.reasonId) {
 							this.telemetryService.publicLog2<
 								{
 									extensionId: string;
@@ -397,7 +397,7 @@ export class ExtensionRecommendationsService
 	}
 
 	private toExtensionRecommendations(
-		recommendations: ReadonlyArray<ExtensionRecommendation>,
+		recommendations: readonly ExtensionRecommendation[],
 	): string[] {
 		const extensionIds = distinct(
 			recommendations.map((e) => e.extensionId),

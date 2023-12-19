@@ -227,8 +227,8 @@ export class ViewModelLinesFromProjectedModel implements IViewModelLines {
 		const hiddenAreas = this.hiddenAreasDecorationIds
 			.map((areaId) => this.model.getDecorationRange(areaId)!)
 			.sort(Range.compareRangesUsingStarts);
-		let hiddenAreaStart = 1,
-			hiddenAreaEnd = 0;
+		let hiddenAreaStart = 1;
+		let hiddenAreaEnd = 0;
 		let hiddenAreaIdx = -1;
 		let nextLineNumberToUpdateHiddenArea =
 			hiddenAreaIdx + 1 < hiddenAreas.length
@@ -240,8 +240,8 @@ export class ViewModelLinesFromProjectedModel implements IViewModelLines {
 
 			if (lineNumber === nextLineNumberToUpdateHiddenArea) {
 				hiddenAreaIdx++;
-				hiddenAreaStart = hiddenAreas[hiddenAreaIdx]!.startLineNumber;
-				hiddenAreaEnd = hiddenAreas[hiddenAreaIdx]!.endLineNumber;
+				hiddenAreaStart = hiddenAreas[hiddenAreaIdx]?.startLineNumber;
+				hiddenAreaEnd = hiddenAreas[hiddenAreaIdx]?.endLineNumber;
 				nextLineNumberToUpdateHiddenArea =
 					hiddenAreaIdx + 1 < hiddenAreas.length
 						? hiddenAreaEnd + 1
@@ -305,8 +305,8 @@ export class ViewModelLinesFromProjectedModel implements IViewModelLines {
 		);
 
 		const hiddenAreas = newRanges;
-		let hiddenAreaStart = 1,
-			hiddenAreaEnd = 0;
+		let hiddenAreaStart = 1;
+		let hiddenAreaEnd = 0;
 		let hiddenAreaIdx = -1;
 		let nextLineNumberToUpdateHiddenArea =
 			hiddenAreaIdx + 1 < hiddenAreas.length
@@ -1352,8 +1352,8 @@ export class ViewModelLinesFromProjectedModel implements IViewModelLines {
 		const inputLineNumber = validPosition.lineNumber;
 		const inputColumn = validPosition.column;
 
-		let lineIndex = inputLineNumber - 1,
-			lineIndexChanged = false;
+		let lineIndex = inputLineNumber - 1;
+		let lineIndexChanged = false;
 		if (belowHiddenRanges) {
 			while (
 				lineIndex < this.modelLineProjections.length &&

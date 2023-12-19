@@ -745,7 +745,7 @@ export class MultiCursorSelectionController
 
 	private _endSession(): void {
 		this._sessionDispose.clear();
-		if (this._session && this._session.isDisconnectedFromFindController) {
+		if (this._session?.isDisconnectedFromFindController) {
 			const newState: INewFindReplaceState = {
 				wholeWordOverride: FindOptionOverride.NotSet,
 				matchCaseOverride: FindOptionOverride.NotSet,

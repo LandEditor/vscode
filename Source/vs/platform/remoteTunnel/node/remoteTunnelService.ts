@@ -148,7 +148,7 @@ export class RemoteTunnelService
 
 		this._register(
 			this._logger.onDidChangeLogLevel((l) =>
-				this._logger.info("Log level changed to " + LogLevelToString(l))
+				this._logger.info(`Log level changed to ${LogLevelToString(l)}`)
 			)
 		);
 
@@ -205,7 +205,7 @@ export class RemoteTunnelService
 				);
 			}
 		} else {
-			this._logger.info(`Session reset`);
+			this._logger.info("Session reset");
 		}
 	}
 
@@ -400,7 +400,7 @@ export class RemoteTunnelService
 
 			// If a tunnel is running but the mode isn't "active", we'll still attach
 			// to the tunnel to show its state in the UI. If neither are true, disconnect
-			if (!status.tunnel && !this._mode.active) {
+			if (!(status.tunnel || this._mode.active)) {
 				this.setTunnelStatus(TunnelStates.disconnected());
 				return;
 			}
@@ -415,7 +415,7 @@ export class RemoteTunnelService
 		}
 
 		const session = this._mode.active ? this._mode.session : undefined;
-		if (session && session.token) {
+		if (session?.token) {
 			const token = session.token;
 			this.setTunnelStatus(
 				TunnelStates.connecting(
@@ -591,7 +591,7 @@ export class RemoteTunnelService
 		serveCommand.finally(() => {
 			if (serveCommand === this._tunnelProcess) {
 				// process exited unexpectedly
-				this._logger.info(`tunnel process terminated`);
+				this._logger.info("tunnel process terminated");
 				this._tunnelProcess = undefined;
 				this._mode = INACTIVE_TUNNEL_MODE;
 
@@ -657,16 +657,16 @@ export class RemoteTunnelService
 					);
 				}
 
-				tunnelProcess
-					.stdout!.pipe(new StreamSplitter("\n"))
+				tunnelProcess.stdout
+					?.pipe(new StreamSplitter("\n"))
 					.on("data", (data) => {
 						if (tunnelProcess) {
 							const message = data.toString();
 							onOutput(message, false);
 						}
 					});
-				tunnelProcess
-					.stderr!.pipe(new StreamSplitter("\n"))
+				tunnelProcess.stderr
+					?.pipe(new StreamSplitter("\n"))
 					.on("data", (data) => {
 						if (tunnelProcess) {
 							const message = data.toString();

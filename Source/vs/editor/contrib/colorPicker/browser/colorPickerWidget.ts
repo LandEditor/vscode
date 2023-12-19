@@ -166,17 +166,13 @@ class CloseButton extends Disposable {
 		const closeButton = dom.append(
 			innerDiv,
 			$(
-				".button" +
-					ThemeIcon.asCSSSelector(
-						registerIcon(
-							"color-picker-close",
-							Codicon.close,
-							localize(
-								"closeIcon",
-								"Icon to close the color picker",
-							),
-						),
+				`.button${ThemeIcon.asCSSSelector(
+					registerIcon(
+						"color-picker-close",
+						Codicon.close,
+						localize("closeIcon", "Icon to close the color picker"),
 					),
+				)}`,
 			),
 		);
 		closeButton.classList.add("close-icon");
@@ -366,7 +362,7 @@ class SaturationBox extends Disposable {
 	}
 
 	private onPointerDown(e: PointerEvent): void {
-		if (!e.target || !(e.target instanceof Element)) {
+		if (!(e.target && e.target instanceof Element)) {
 			return;
 		}
 		this.monitor = this._register(new GlobalPointerMoveMonitor());
@@ -461,7 +457,7 @@ class SaturationBox extends Disposable {
 	}
 
 	private onDidChangeColor(color: Color): void {
-		if (this.monitor && this.monitor.isMonitoring()) {
+		if (this.monitor?.isMonitoring()) {
 			return;
 		}
 		this.paint();
@@ -496,7 +492,7 @@ abstract class Strip extends Disposable {
 			this.overlay = dom.append(this.domNode, $(".overlay"));
 		}
 		this.slider = dom.append(this.domNode, $(".slider"));
-		this.slider.style.top = `0px`;
+		this.slider.style.top = "0px";
 
 		this._register(
 			dom.addDisposableListener(
@@ -522,7 +518,7 @@ abstract class Strip extends Disposable {
 	}
 
 	private onPointerDown(e: PointerEvent): void {
-		if (!e.target || !(e.target instanceof Element)) {
+		if (!(e.target && e.target instanceof Element)) {
 			return;
 		}
 		const monitor = this._register(new GlobalPointerMoveMonitor());

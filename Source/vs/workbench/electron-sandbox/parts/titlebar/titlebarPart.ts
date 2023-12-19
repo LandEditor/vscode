@@ -247,8 +247,9 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 			const minimizeIcon = append(
 				this.primaryWindowControls,
 				$(
-					"div.window-icon.window-minimize" +
-						ThemeIcon.asCSSSelector(Codicon.chromeMinimize),
+					`div.window-icon.window-minimize${ThemeIcon.asCSSSelector(
+						Codicon.chromeMinimize,
+					)}`,
 				),
 			);
 			this._register(
@@ -288,8 +289,9 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 			const closeIcon = append(
 				this.primaryWindowControls,
 				$(
-					"div.window-icon.window-close" +
-						ThemeIcon.asCSSSelector(Codicon.chromeClose),
+					`div.window-icon.window-close${ThemeIcon.asCSSSelector(
+						Codicon.chromeClose,
+					)}`,
 				),
 			);
 			this._register(

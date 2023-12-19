@@ -59,8 +59,8 @@ function clone<T extends object>(object: T): T {
 }
 
 function template(lines: string[]): string {
-	let indent = "",
-		wrap = "";
+	let indent = "";
+	let wrap = "";
 
 	if (lines.length > 1) {
 		indent = "\t";
@@ -102,7 +102,7 @@ export function nls(): NodeJS.ReadWriteStream {
 				source = path.join(root, source);
 			}
 
-			const typescript = f.sourceMap.sourcesContent![0];
+			const typescript = f.sourceMap.sourcesContent?.[0];
 			if (!typescript) {
 				return this.emit(
 					"error",
@@ -303,14 +303,13 @@ namespace _nls {
 			.filter(
 				(d) =>
 					!!(
-						d.importClause &&
-						d.importClause.namedBindings &&
+						d.importClause?.namedBindings &&
 						d.importClause.namedBindings.kind ===
 							ts.SyntaxKind.NamespaceImport
 					),
 			)
 			.map(
-				(d) => (<ts.NamespaceImport>d.importClause!.namedBindings).name,
+				(d) => (<ts.NamespaceImport>d.importClause?.namedBindings).name,
 			)
 			.concat(importEqualsDeclarations.map((d) => d.name))
 
@@ -348,15 +347,14 @@ namespace _nls {
 			.filter(
 				(d) =>
 					!!(
-						d.importClause &&
-						d.importClause.namedBindings &&
+						d.importClause?.namedBindings &&
 						d.importClause.namedBindings.kind ===
 							ts.SyntaxKind.NamedImports
 					),
 			)
 			.map((d) =>
 				([] as any[]).concat(
-					(<ts.NamedImports>d.importClause!.namedBindings!).elements,
+					(<ts.NamedImports>d.importClause?.namedBindings!).elements,
 				),
 			)
 			.flatten();
@@ -631,7 +629,7 @@ namespace _nls {
 		// build patches
 		const localizePatches = lazy(localizeCalls)
 			.map((lc) => [
-				{ range: lc.keySpan, content: "" + i++ },
+				{ range: lc.keySpan, content: `${i++}` },
 				{ range: lc.valueSpan, content: "null" },
 			])
 			.flatten()
@@ -646,7 +644,7 @@ namespace _nls {
 			});
 
 		const localize2Patches = lazy(localize2Calls)
-			.map((lc) => [{ range: lc.keySpan, content: "" + i++ }])
+			.map((lc) => [{ range: lc.keySpan, content: `${i++}` }])
 			.flatten()
 			.map<IPatch>((c) => {
 				const start = lcFrom(

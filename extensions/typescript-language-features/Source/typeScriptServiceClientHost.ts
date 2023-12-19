@@ -334,7 +334,7 @@ export default class TypeScriptServiceClientHost extends Disposable {
 	): void {
 		// See https://github.com/microsoft/TypeScript/issues/10384
 		const body = event.body;
-		if (!body?.diagnostics || !body.configFile) {
+		if (!(body?.diagnostics && body.configFile)) {
 			return;
 		}
 

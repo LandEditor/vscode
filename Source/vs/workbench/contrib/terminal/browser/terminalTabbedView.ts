@@ -289,7 +289,7 @@ export class TerminalTabbedView extends Disposable {
 			StorageScope.PROFILE,
 		);
 
-		if (!storedValue || !parseInt(storedValue)) {
+		if (!(storedValue && parseInt(storedValue))) {
 			// we want to use the min width by default for the vertical orientation bc
 			// there is such a limited width for the terminal panel to begin w there.
 			return this._panelOrientation === Orientation.VERTICAL

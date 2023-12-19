@@ -51,7 +51,7 @@ function _validateUri(ret: URI, _strict?: boolean): void {
 // back to the file-scheme. that should cause the least carnage and still be a
 // clear warning
 function _schemeFix(scheme: string, _strict: boolean): string {
-	if (!scheme && !_strict) {
+	if (!(scheme || _strict)) {
 		return "file";
 	}
 	return scheme;
@@ -66,13 +66,14 @@ function _referenceResolution(scheme: string, path: string): string {
 	switch (scheme) {
 		case "https":
 		case "http":
-		case "file":
+		case "file": {
 			if (!path) {
 				path = _slash;
 			} else if (path[0] !== _slash) {
 				path = _slash + path;
 			}
 			break;
+		}
 	}
 	return path;
 }
@@ -377,7 +378,7 @@ export class URI implements UriComponents {
 	static joinPath(uri: URI, ...pathFragment: string[]): URI {
 		if (!uri.path) {
 			throw new Error(
-				`[UriError]: cannot call joinPath on URI without path`,
+				"[UriError]: cannot call joinPath on URI without path",
 			);
 		}
 		let newPath: string;

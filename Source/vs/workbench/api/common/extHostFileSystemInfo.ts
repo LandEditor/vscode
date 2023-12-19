@@ -47,8 +47,8 @@ export class ExtHostFileSystemInfo implements ExtHostFileSystemInfoShape {
 	}
 
 	isFreeScheme(scheme: string): boolean {
-		return (
-			!this._providerInfo.has(scheme) && !this._systemSchemes.has(scheme)
+		return !(
+			this._providerInfo.has(scheme) || this._systemSchemes.has(scheme)
 		);
 	}
 

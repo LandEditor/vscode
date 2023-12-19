@@ -289,7 +289,7 @@ export interface IChatDynamicRequest {
 }
 
 export interface IChatCompleteResponse {
-	message: string | ReadonlyArray<IChatProgress>;
+	message: string | readonly IChatProgress[];
 	errorDetails?: IChatResponseErrorDetails;
 	followups?: IChatFollowup[];
 }

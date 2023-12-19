@@ -612,7 +612,7 @@ export async function findValidPasteFileTarget(
 		}
 	}
 
-	while (true && !fileToPaste.allowOverwrite) {
+	while (!fileToPaste.allowOverwrite) {
 		if (!explorerService.findClosest(candidate)) {
 			break;
 		}
@@ -667,7 +667,7 @@ export function incrementFileName(
 	const maxNumber = Constants.MAX_SAFE_SMALL_INTEGER;
 
 	// file.1.txt=>file.2.txt
-	const suffixFileRegex = RegExp("(.*" + separators + ")(\\d+)(\\..*)$");
+	const suffixFileRegex = RegExp(`(.*${separators})(\\d+)(\\..*)$`);
 	if (!isFolder && name.match(suffixFileRegex)) {
 		return name.replace(suffixFileRegex, (match, g1?, g2?, g3?) => {
 			const number = parseInt(g2);
@@ -678,7 +678,7 @@ export function incrementFileName(
 	}
 
 	// 1.file.txt=>2.file.txt
-	const prefixFileRegex = RegExp("(\\d+)(" + separators + ".*)(\\..*)$");
+	const prefixFileRegex = RegExp(`(\\d+)(${separators}.*)(\\..*)$`);
 	if (!isFolder && name.match(prefixFileRegex)) {
 		return name.replace(prefixFileRegex, (match, g1?, g2?, g3?) => {
 			const number = parseInt(g1);
@@ -728,7 +728,7 @@ export function incrementFileName(
 	if (!isFolder && lastIndexOfDot === -1 && name.match(noExtensionRegex)) {
 		return name.replace(noExtensionRegex, (match, g1?, g2?) => {
 			let number = parseInt(g2);
-			if (isNaN(number)) {
+			if (Number.isNaN(number)) {
 				number = 0;
 			}
 			return number < maxNumber
@@ -923,7 +923,7 @@ export class SaveAllInGroupAction extends BaseSaveAllAction {
 	static readonly LABEL = nls.localize("saveAllInGroup", "Save All in Group");
 
 	override get class(): string {
-		return "explorer-action " + ThemeIcon.asClassName(Codicon.saveAll);
+		return `explorer-action ${ThemeIcon.asClassName(Codicon.saveAll)}`;
 	}
 
 	protected doRun(context: unknown): Promise<void> {
@@ -1464,7 +1464,7 @@ export const renameHandler = async (accessor: ServicesAccessor) => {
 			validateFileName(pathService, stat, value, os),
 		onFinish: async (value, success) => {
 			if (success) {
-				const parentResource = stat.parent!.resource;
+				const parentResource = stat.parent?.resource;
 				const targetResource = resources.joinPath(
 					parentResource,
 					value,

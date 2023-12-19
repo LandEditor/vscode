@@ -152,8 +152,7 @@ export class ConfigurationManager implements IConfigurationManager {
 			? { type: previousSelectedType }
 			: undefined;
 		if (
-			previousSelectedLaunch &&
-			previousSelectedLaunch.getConfigurationNames().length
+			previousSelectedLaunch?.getConfigurationNames().length
 		) {
 			this.selectConfiguration(
 				previousSelectedLaunch,
@@ -287,7 +286,7 @@ export class ConfigurationManager implements IConfigurationManager {
 				// If any provider returned undefined or null make sure to respect that and do not pass the result to more resolver
 				if (result) {
 					result =
-						await provider.resolveDebugConfigurationWithSubstitutedVariables!(
+						await provider.resolveDebugConfigurationWithSubstitutedVariables?.(
 							folderUri,
 							result,
 							token,
@@ -316,7 +315,7 @@ export class ConfigurationManager implements IConfigurationManager {
 							DebugConfigurationProviderTriggerKind.Initial &&
 						p.provideDebugConfigurations,
 				)
-				.map((p) => p.provideDebugConfigurations!(folderUri, token)),
+				.map((p) => p.provideDebugConfigurations?.(folderUri, token)),
 		);
 
 		return results.reduce((first, second) => first.concat(second), []);
@@ -413,29 +412,31 @@ export class ConfigurationManager implements IConfigurationManager {
 					this.getLaunches().forEach((launch) => {
 						if (launch.workspace && provider) {
 							picks.push(
-								provider.provideDebugConfigurations!(
-									launch.workspace.uri,
-									token.token,
-								).then((configurations) =>
-									configurations.map((config) => ({
-										label: config.name,
-										description: launch.name,
-										config,
-										buttons: [
-											{
-												iconClass:
-													ThemeIcon.asClassName(
-														debugConfigure,
+								provider
+									.provideDebugConfigurations?.(
+										launch.workspace.uri,
+										token.token,
+									)
+									.then((configurations) =>
+										configurations.map((config) => ({
+											label: config.name,
+											description: launch.name,
+											config,
+											buttons: [
+												{
+													iconClass:
+														ThemeIcon.asClassName(
+															debugConfigure,
+														),
+													tooltip: nls.localize(
+														"editLaunchConfig",
+														"Edit Debug Configuration in launch.json",
 													),
-												tooltip: nls.localize(
-													"editLaunchConfig",
-													"Edit Debug Configuration in launch.json",
-												),
-											},
-										],
-										launch,
-									})),
-								),
+												},
+											],
+											launch,
+										})),
+									),
 							);
 						}
 					});
@@ -632,21 +633,23 @@ export class ConfigurationManager implements IConfigurationManager {
 
 	private setCompoundSchemaValues(): void {
 		const compoundConfigurationsSchema = (<IJSONSchema>(
-			launchSchema.properties!["compounds"].items
-		)).properties!["configurations"];
+			launchSchema.properties?.["compounds"].items
+		)).properties?.["configurations"];
 		const launchNames = this.launches
 			.map((l) => l.getConfigurationNames(true))
 			.reduce((first, second) => first.concat(second), []);
-		(<IJSONSchema>compoundConfigurationsSchema.items).oneOf![0].enum =
+		(<IJSONSchema>compoundConfigurationsSchema.items).oneOf?.[0].enum =
 			launchNames;
-		(<IJSONSchema>compoundConfigurationsSchema.items).oneOf![1]
-			.properties!.name.enum = launchNames;
+		(<IJSONSchema>(
+			compoundConfigurationsSchema.items
+		)).oneOf?.[1].properties?.name.enum = launchNames;
 
 		const folderNames = this.contextService
 			.getWorkspace()
 			.folders.map((f) => f.name);
-		(<IJSONSchema>compoundConfigurationsSchema.items).oneOf![1]
-			.properties!.folder.enum = folderNames;
+		(<IJSONSchema>(
+			compoundConfigurationsSchema.items
+		)).oneOf?.[1].properties?.folder.enum = folderNames;
 
 		jsonRegistry.registerSchema(launchSchemaId, launchSchema);
 	}
@@ -710,7 +713,7 @@ export class ConfigurationManager implements IConfigurationManager {
 			if (!launch || launch.getConfigurationNames().length === 0) {
 				launch =
 					this.launches.find(
-						(l) => !!(l && l.getConfigurationNames().length),
+						(l) => !!l?.getConfigurationNames().length,
 					) ||
 					launch ||
 					this.launches[0];
@@ -747,7 +750,7 @@ export class ConfigurationManager implements IConfigurationManager {
 		let type = config?.type;
 		if (name && names.indexOf(name) >= 0) {
 			this.setSelectedLaunchName(name);
-		} else if (dynamicConfig && dynamicConfig.type) {
+		} else if (dynamicConfig?.type) {
 			// We could not find the previously used name and config is not passed. We should get all dynamic configurations from providers
 			// And potentially auto select the previously used dynamic configuration #96293
 			type = dynamicConfig.type;
@@ -766,7 +769,7 @@ export class ConfigurationManager implements IConfigurationManager {
 					if (provider && launch && launch.workspace) {
 						const token = new CancellationTokenSource();
 						const dynamicConfigs =
-							await provider.provideDebugConfigurations!(
+							await provider.provideDebugConfigurations?.(
 								launch.workspace.uri,
 								token.token,
 							);
@@ -884,7 +887,7 @@ abstract class AbstractLaunch implements ILaunch {
 
 	getCompound(name: string): ICompound | undefined {
 		const config = this.getConfig();
-		if (!config || !config.compounds) {
+		if (!config?.compounds) {
 			return undefined;
 		}
 
@@ -895,8 +898,10 @@ abstract class AbstractLaunch implements ILaunch {
 		const config = this.getConfig();
 		if (
 			!config ||
-			(!Array.isArray(config.configurations) &&
-				!Array.isArray(config.compounds))
+			!(
+				Array.isArray(config.configurations) ||
+				Array.isArray(config.compounds)
+			)
 		) {
 			return [];
 		} else {
@@ -930,7 +935,7 @@ abstract class AbstractLaunch implements ILaunch {
 	getConfiguration(name: string): IConfig | undefined {
 		// We need to clone the configuration in order to be able to make changes to it #42198
 		const config = objects.deepClone(this.getConfig());
-		if (!config || !config.configurations) {
+		if (!config?.configurations) {
 			return undefined;
 		}
 		const configuration = config.configurations.find(

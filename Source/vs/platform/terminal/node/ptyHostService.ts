@@ -249,7 +249,7 @@ export class PtyHostService extends Disposable implements IPtyHostService {
 		this._register(
 			connection.onDidProcessExit((e) => {
 				this._onPtyHostExit.fire(e.code);
-				if (!this._wasQuitRequested && !this._store.isDisposed) {
+				if (!(this._wasQuitRequested || this._store.isDisposed)) {
 					if (this._restartCount <= Constants.MaxRestarts) {
 						this._logService.error(
 							`ptyHost terminated unexpectedly with code ${e.code}`,

@@ -200,9 +200,9 @@ export class CodeEditorContributions extends Disposable {
 
 		this._pending.delete(id);
 
-		if (!this._instantiationService || !this._editor) {
+		if (!(this._instantiationService && this._editor)) {
 			throw new Error(
-				`Cannot instantiate contributions before being initialized!`,
+				"Cannot instantiate contributions before being initialized!",
 			);
 		}
 

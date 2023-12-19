@@ -227,7 +227,7 @@ export function sanitizeRanges(
 					collector.add(
 						entry.start,
 						entry.end,
-						entry.kind && entry.kind.value,
+						entry.kind?.value,
 						previous.length,
 					);
 				} else {
@@ -243,7 +243,7 @@ export function sanitizeRanges(
 					collector.add(
 						entry.start,
 						entry.end,
-						entry.kind && entry.kind.value,
+						entry.kind?.value,
 						previous.length,
 					);
 				}
@@ -253,7 +253,7 @@ export function sanitizeRanges(
 			collector.add(
 				entry.start,
 				entry.end,
-				entry.kind && entry.kind.value,
+				entry.kind?.value,
 				previous.length,
 			);
 		}

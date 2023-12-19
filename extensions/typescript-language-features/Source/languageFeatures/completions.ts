@@ -73,7 +73,7 @@ class MyCompletionItem extends vscode.CompletionItem {
 		) {
 			// De-prioritze auto-imports
 			// https://github.com/microsoft/vscode/issues/40311
-			this.sortText = "\uffff" + tsEntry.sortText;
+			this.sortText = `\uffff${tsEntry.sortText}`;
 		} else {
 			this.sortText = tsEntry.sortText;
 		}
@@ -946,7 +946,7 @@ class TypeScriptCompletionItemProvider
 		let isIncomplete = false;
 		let isMemberCompletion = false;
 		let dotAccessorContext: DotAccessorContext | undefined;
-		let entries: ReadonlyArray<Proto.CompletionEntry>;
+		let entries: readonly Proto.CompletionEntry[];
 		let metadata: any | undefined;
 		let response:
 			| ServerResponse.Response<Proto.CompletionInfoResponse>
@@ -985,8 +985,7 @@ class TypeScriptCompletionItemProvider
 			}
 			isIncomplete =
 				!!response.body.isIncomplete ||
-				((response as any).metadata &&
-					(response as any).metadata.isIncomplete);
+				(response as any).metadata?.isIncomplete;
 			entries = response.body.entries;
 			metadata = response.metadata;
 		} else {

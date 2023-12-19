@@ -82,15 +82,6 @@ export class RemoteAgentFileSystemProviderChannel extends AbstractDiskFileSystem
 }
 
 class SessionFileWatcher extends AbstractSessionFileWatcher {
-	constructor(
-		uriTransformer: IURITransformer,
-		sessionEmitter: Emitter<IFileChange[] | string>,
-		logService: ILogService,
-		environmentService: IServerEnvironmentService,
-	) {
-		super(uriTransformer, sessionEmitter, logService, environmentService);
-	}
-
 	protected override getRecursiveWatcherOptions(
 		environmentService: IServerEnvironmentService,
 	): IRecursiveWatcherOptions | undefined {

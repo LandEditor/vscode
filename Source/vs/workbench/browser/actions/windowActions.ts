@@ -19,7 +19,6 @@ import { localize } from "vs/nls";
 import { Categories } from "vs/platform/action/common/actionCommonCategories";
 import {
 	Action2,
-	IAction2Options,
 	MenuId,
 	MenuRegistry,
 	registerAction2,
@@ -89,8 +88,9 @@ abstract class BaseOpenRecentAction extends Action2 {
 	};
 
 	private readonly dirtyRecentlyOpenedFolder: IQuickInputButton = {
-		iconClass:
-			"dirty-workspace " + ThemeIcon.asClassName(Codicon.closeDirty),
+		iconClass: `dirty-workspace ${ThemeIcon.asClassName(
+			Codicon.closeDirty,
+		)}`,
 		tooltip: localize(
 			"dirtyRecentlyOpenedFolder",
 			"Folder With Unsaved Files",
@@ -105,10 +105,6 @@ abstract class BaseOpenRecentAction extends Action2 {
 			"Workspace With Unsaved Files",
 		),
 	};
-
-	constructor(desc: Readonly<IAction2Options>) {
-		super(desc);
-	}
 
 	protected abstract isQuickNavigate(): boolean;
 

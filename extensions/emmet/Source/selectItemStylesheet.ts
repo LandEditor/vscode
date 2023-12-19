@@ -244,7 +244,7 @@ function getSelectionFromProperty(
 		direction === "prev"
 			? findPrevWord(propertyValue, pos)
 			: findNextWord(propertyValue, pos);
-	if (!newSelectionStartOffset && !newSelectionEndOffset) {
+	if (!(newSelectionStartOffset || newSelectionEndOffset)) {
 		return;
 	}
 

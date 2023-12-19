@@ -1572,5 +1572,5 @@ export interface IInternalModelContentChange extends IModelContentChange {
  * @internal
  */
 export function shouldSynchronizeModel(model: ITextModel): boolean {
-	return !model.isTooLargeForSyncing() && !model.isForSimpleWidget;
+	return !(model.isTooLargeForSyncing() || model.isForSimpleWidget);
 }

@@ -156,10 +156,12 @@ export class MainThreadTextEditorProperties {
 		};
 
 		if (
-			!oldProps ||
-			!MainThreadTextEditorProperties._selectionsEqual(
-				oldProps.selections,
-				this.selections,
+			!(
+				oldProps &&
+				MainThreadTextEditorProperties._selectionsEqual(
+					oldProps.selections,
+					this.selections,
+				)
 			)
 		) {
 			delta.selections = {
@@ -169,20 +171,24 @@ export class MainThreadTextEditorProperties {
 		}
 
 		if (
-			!oldProps ||
-			!MainThreadTextEditorProperties._optionsEqual(
-				oldProps.options,
-				this.options,
+			!(
+				oldProps &&
+				MainThreadTextEditorProperties._optionsEqual(
+					oldProps.options,
+					this.options,
+				)
 			)
 		) {
 			delta.options = this.options;
 		}
 
 		if (
-			!oldProps ||
-			!MainThreadTextEditorProperties._rangesEqual(
-				oldProps.visibleRanges,
-				this.visibleRanges,
+			!(
+				oldProps &&
+				MainThreadTextEditorProperties._rangesEqual(
+					oldProps.visibleRanges,
+					this.visibleRanges,
+				)
 			)
 		) {
 			delta.visibleRanges = this.visibleRanges;
@@ -217,7 +223,7 @@ export class MainThreadTextEditorProperties {
 		if ((a && !b) || (!a && b)) {
 			return false;
 		}
-		if (!a && !b) {
+		if (!(a || b)) {
 			return true;
 		}
 		return (
@@ -459,8 +465,8 @@ export class MainThreadTextEditor {
 		this._setProperties(
 			new MainThreadTextEditorProperties(
 				newSelections,
-				this._properties!.options,
-				this._properties!.visibleRanges,
+				this._properties?.options,
+				this._properties?.visibleRanges,
 			),
 			null,
 		);
@@ -535,12 +541,14 @@ export class MainThreadTextEditor {
 		if (typeof newConfiguration.lineNumbers !== "undefined") {
 			let lineNumbers: "on" | "off" | "relative";
 			switch (newConfiguration.lineNumbers) {
-				case RenderLineNumbersType.On:
+				case RenderLineNumbersType.On: {
 					lineNumbers = "on";
 					break;
-				case RenderLineNumbersType.Relative:
+				}
+				case RenderLineNumbersType.Relative: {
 					lineNumbers = "relative";
 					break;
+				}
 				default:
 					lineNumbers = "off";
 			}
@@ -578,24 +586,29 @@ export class MainThreadTextEditor {
 			return;
 		}
 		switch (revealType) {
-			case TextEditorRevealType.Default:
+			case TextEditorRevealType.Default: {
 				this._codeEditor.revealRange(range, ScrollType.Smooth);
 				break;
-			case TextEditorRevealType.InCenter:
+			}
+			case TextEditorRevealType.InCenter: {
 				this._codeEditor.revealRangeInCenter(range, ScrollType.Smooth);
 				break;
-			case TextEditorRevealType.InCenterIfOutsideViewport:
+			}
+			case TextEditorRevealType.InCenterIfOutsideViewport: {
 				this._codeEditor.revealRangeInCenterIfOutsideViewport(
 					range,
 					ScrollType.Smooth,
 				);
 				break;
-			case TextEditorRevealType.AtTop:
+			}
+			case TextEditorRevealType.AtTop: {
 				this._codeEditor.revealRangeAtTop(range, ScrollType.Smooth);
 				break;
-			default:
+			}
+			default: {
 				console.warn(`Unknown revealType: ${revealType}`);
 				break;
+			}
 		}
 	}
 
@@ -657,7 +670,7 @@ export class MainThreadTextEditor {
 		ranges: readonly IRange[],
 		opts: IUndoStopOptions,
 	) {
-		if (!this._codeEditor || !this._codeEditor.hasModel()) {
+		if (!this._codeEditor?.hasModel()) {
 			return false;
 		}
 

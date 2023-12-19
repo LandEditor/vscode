@@ -131,8 +131,8 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 		return filteredViewEntriesWithSeparators;
 	}
 
-	private doGetViewPickItems(): Array<IViewQuickPickItem> {
-		const viewEntries: Array<IViewQuickPickItem> = [];
+	private doGetViewPickItems(): IViewQuickPickItem[] {
+		const viewEntries: IViewQuickPickItem[] = [];
 
 		const getViewEntriesForPaneComposite = (
 			paneComposite: PaneCompositeDescriptor,

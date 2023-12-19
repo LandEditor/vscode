@@ -69,7 +69,7 @@ function patchJsdoctype(grammar) {
 	grammar.repository["jsdoctype"].patterns = grammar.repository[
 		"jsdoctype"
 	].patterns.filter((pattern) => {
-		if (pattern.name && pattern.name.includes("illegal")) {
+		if (pattern.name?.includes("illegal")) {
 			return false;
 		}
 		return true;
@@ -86,7 +86,7 @@ function adaptToJavaScript(grammar, replacementScope) {
 	grammar.fileTypes = [".js", ".jsx", ".es6", ".mjs", ".cjs"];
 	grammar.scopeName = `source${replacementScope}`;
 
-	var fixScopeNames = (rule) => {
+	const fixScopeNames = (rule) => {
 		if (typeof rule.name === "string") {
 			rule.name = rule.name.replace(/\.tsx/g, replacementScope);
 		}
@@ -96,21 +96,21 @@ function adaptToJavaScript(grammar, replacementScope) {
 				replacementScope,
 			);
 		}
-		for (var property in rule) {
-			var value = rule[property];
+		for (const property in rule) {
+			const value = rule[property];
 			if (typeof value === "object") {
 				fixScopeNames(value);
 			}
 		}
 	};
 
-	var repository = grammar.repository;
-	for (var key in repository) {
+	const repository = grammar.repository;
+	for (const key in repository) {
 		fixScopeNames(repository[key]);
 	}
 }
 
-var tsGrammarRepo = "microsoft/TypeScript-TmLanguage";
+const tsGrammarRepo = "microsoft/TypeScript-TmLanguage";
 update(
 	tsGrammarRepo,
 	"TypeScript.tmLanguage",

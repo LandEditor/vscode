@@ -684,7 +684,7 @@ class WorkingCopyBackupServiceImpl
 				// `typeId` is a property that we add so we
 				// remove it when returning to clients.
 				if (typeof meta?.typeId === "string") {
-					delete meta.typeId;
+					meta.typeId = undefined;
 
 					if (isEmptyObject(meta)) {
 						meta = undefined;
@@ -722,10 +722,6 @@ export class InMemoryWorkingCopyBackupService
 		content: VSBuffer;
 		meta?: IWorkingCopyBackupMeta;
 	}>();
-
-	constructor() {
-		super();
-	}
 
 	async hasBackups(): Promise<boolean> {
 		return this.backups.size > 0;

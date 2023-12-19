@@ -23,8 +23,9 @@ const ghApiHeaders: Record<string, string> = {
 };
 
 if (process.env.GITHUB_TOKEN) {
-	ghApiHeaders.Authorization =
-		"Basic " + Buffer.from(process.env.GITHUB_TOKEN).toString("base64");
+	ghApiHeaders.Authorization = `Basic ${Buffer.from(
+		process.env.GITHUB_TOKEN,
+	).toString("base64")}`;
 }
 
 const ghDownloadHeaders = {
@@ -40,8 +41,8 @@ interface IFetchOptions {
 
 function getElectronVersion(): Record<string, string> {
 	const yarnrc = fs.readFileSync(path.join(REPO_ROOT, ".yarnrc"), "utf8");
-	const electronVersion = /^target "(.*)"$/m.exec(yarnrc)![1];
-	const msBuildId = /^ms_build_id "(.*)"$/m.exec(yarnrc)![1];
+	const electronVersion = /^target "(.*)"$/m.exec(yarnrc)?.[1];
+	const msBuildId = /^ms_build_id "(.*)"$/m.exec(yarnrc)?.[1];
 	return { electronVersion, msBuildId };
 }
 
@@ -152,7 +153,7 @@ async function fetchUrl(
 					);
 					const tarCommand = `tar -xz -C ${options.dest}`;
 					execSync(tarCommand, { input: assetContents });
-					console.log(`Fetch complete!`);
+					console.log("Fetch complete!");
 					return;
 				}
 				throw new Error(
@@ -191,18 +192,21 @@ export async function getVSCodeSysroot(
 	let expectedName: string;
 	let triple: string;
 	switch (arch) {
-		case "amd64":
-			expectedName = `x86_64-linux-gnu.tar.gz`;
+		case "amd64": {
+			expectedName = "x86_64-linux-gnu.tar.gz";
 			triple = "x86_64-linux-gnu";
 			break;
-		case "arm64":
-			expectedName = `aarch64-linux-gnu.tar.gz`;
+		}
+		case "arm64": {
+			expectedName = "aarch64-linux-gnu.tar.gz";
 			triple = "aarch64-linux-gnu";
 			break;
-		case "armhf":
-			expectedName = `arm-rpi-linux-gnueabihf.tar.gz`;
+		}
+		case "armhf": {
+			expectedName = "arm-rpi-linux-gnueabihf.tar.gz";
 			triple = "arm-rpi-linux-gnueabihf";
 			break;
+		}
 	}
 	const checksumSha256 = getVSCodeSysrootChecksum(expectedName);
 	if (!checksumSha256) {
@@ -245,7 +249,7 @@ export async function getChromiumSysroot(
 	]);
 	if (result.status !== 0) {
 		throw new Error(
-			"Cannot retrieve sysroots.json. Stderr:\n" + result.stderr,
+			`Cannot retrieve sysroots.json. Stderr:\n${result.stderr}`,
 		);
 	}
 	const sysrootInfo = require(sysrootDictLocation);
@@ -281,8 +285,7 @@ export async function getChromiumSysroot(
 				})
 				.on("error", (err) => {
 					console.error(
-						"Encountered an error during the download attempt: " +
-							err.message,
+						`Encountered an error during the download attempt: ${err.message}`,
 					);
 					c();
 				});
@@ -290,7 +293,7 @@ export async function getChromiumSysroot(
 	}
 	if (!downloadSuccess) {
 		fs.rmSync(tarball);
-		throw new Error("Failed to download " + url);
+		throw new Error(`Failed to download ${url}`);
 	}
 	const sha = getSha(tarball);
 	if (sha !== tarballSha) {
@@ -301,7 +304,7 @@ export async function getChromiumSysroot(
 
 	const proc = spawnSync("tar", ["xf", tarball, "-C", sysroot]);
 	if (proc.status) {
-		throw new Error("Tarball extraction failed with code " + proc.status);
+		throw new Error(`Tarball extraction failed with code ${proc.status}`);
 	}
 	fs.rmSync(tarball);
 	fs.writeFileSync(stamp, url);

@@ -88,7 +88,7 @@ export class MainThreadNotebookDocuments
 
 					for (const e of event.rawEvents) {
 						switch (e.kind) {
-							case NotebookCellsChangeType.ModelChange:
+							case NotebookCellsChangeType.ModelChange: {
 								eventDto.rawEvents.push({
 									kind: e.kind,
 									changes: e.changes.map(
@@ -109,7 +109,8 @@ export class MainThreadNotebookDocuments
 									),
 								});
 								break;
-							case NotebookCellsChangeType.Move:
+							}
+							case NotebookCellsChangeType.Move: {
 								eventDto.rawEvents.push({
 									kind: e.kind,
 									index: e.index,
@@ -117,7 +118,8 @@ export class MainThreadNotebookDocuments
 									newIdx: e.newIdx,
 								});
 								break;
-							case NotebookCellsChangeType.Output:
+							}
+							case NotebookCellsChangeType.Output: {
 								eventDto.rawEvents.push({
 									kind: e.kind,
 									index: e.index,
@@ -126,7 +128,8 @@ export class MainThreadNotebookDocuments
 									),
 								});
 								break;
-							case NotebookCellsChangeType.OutputItem:
+							}
+							case NotebookCellsChangeType.OutputItem: {
 								eventDto.rawEvents.push({
 									kind: e.kind,
 									index: e.index,
@@ -137,12 +140,14 @@ export class MainThreadNotebookDocuments
 									append: e.append,
 								});
 								break;
+							}
 							case NotebookCellsChangeType.ChangeCellLanguage:
 							case NotebookCellsChangeType.ChangeCellContent:
 							case NotebookCellsChangeType.ChangeCellMetadata:
-							case NotebookCellsChangeType.ChangeCellInternalMetadata:
+							case NotebookCellsChangeType.ChangeCellInternalMetadata: {
 								eventDto.rawEvents.push(e);
 								break;
+							}
 						}
 					}
 

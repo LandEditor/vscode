@@ -43,9 +43,9 @@ function main(argv: string[]): void {
 	// HTTPS (username | password), SSH (passphrase | authenticity)
 	const request = askpassType === "https" ? argv[2] : argv[3];
 
-	let host: string | undefined,
-		file: string | undefined,
-		fingerprint: string | undefined;
+	let host: string | undefined;
+	let file: string | undefined;
+	let fingerprint: string | undefined;
 
 	if (askpassType === "https") {
 		host = argv[4].replace(/^["']+|["':]+$/g, "");
@@ -66,7 +66,7 @@ function main(argv: string[]): void {
 	ipcClient
 		.call({ askpassType, request, host, file, fingerprint })
 		.then((res) => {
-			fs.writeFileSync(output, res + "\n");
+			fs.writeFileSync(output, `${res}\n`);
 			setTimeout(() => process.exit(0), 0);
 		})
 		.catch((err) => fatal(err));

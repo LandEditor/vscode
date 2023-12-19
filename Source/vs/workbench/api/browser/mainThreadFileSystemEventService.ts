@@ -61,7 +61,8 @@ import {
 export class MainThreadFileSystemEventService
 	implements MainThreadFileSystemEventServiceShape
 {
-	static readonly MementoKeyAdditionalEdits = `file.particpants.additionalEdits`;
+	static readonly MementoKeyAdditionalEdits =
+		"file.particpants.additionalEdits";
 
 	private readonly _proxy: ExtHostFileSystemEventServiceShape;
 

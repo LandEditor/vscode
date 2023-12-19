@@ -262,33 +262,41 @@ export class NotebookCellList
 
 		const recomputeContext = (element: CellViewModel) => {
 			switch (element.cursorAtBoundary()) {
-				case CursorAtBoundary.Both:
+				case CursorAtBoundary.Both: {
 					notebookEditorCursorAtBoundaryContext.set("both");
 					break;
-				case CursorAtBoundary.Top:
+				}
+				case CursorAtBoundary.Top: {
 					notebookEditorCursorAtBoundaryContext.set("top");
 					break;
-				case CursorAtBoundary.Bottom:
+				}
+				case CursorAtBoundary.Bottom: {
 					notebookEditorCursorAtBoundaryContext.set("bottom");
 					break;
-				default:
+				}
+				default: {
 					notebookEditorCursorAtBoundaryContext.set("none");
 					break;
+				}
 			}
 
 			switch (element.cursorAtLineBoundary()) {
-				case CursorAtLineBoundary.Both:
+				case CursorAtLineBoundary.Both: {
 					notebookEditorCursorAtLineBoundaryContext.set("both");
 					break;
-				case CursorAtLineBoundary.Start:
+				}
+				case CursorAtLineBoundary.Start: {
 					notebookEditorCursorAtLineBoundaryContext.set("start");
 					break;
-				case CursorAtLineBoundary.End:
+				}
+				case CursorAtLineBoundary.End: {
 					notebookEditorCursorAtLineBoundaryContext.set("end");
 					break;
-				default:
+				}
+				default: {
 					notebookEditorCursorAtLineBoundaryContext.set("none");
 					break;
+				}
 			}
 
 			return;
@@ -367,7 +375,7 @@ export class NotebookCellList
 				this.view.length - 1,
 			);
 			const topElement = this.view.element(topViewIndex);
-			const topModelIndex = this._viewModel!.getCellIndex(topElement);
+			const topModelIndex = this._viewModel?.getCellIndex(topElement);
 			const bottomViewIndex = clamp(
 				this.view.indexAt(bottom),
 				0,
@@ -375,7 +383,7 @@ export class NotebookCellList
 			);
 			const bottomElement = this.view.element(bottomViewIndex);
 			const bottomModelIndex =
-				this._viewModel!.getCellIndex(bottomElement);
+				this._viewModel?.getCellIndex(bottomElement);
 
 			if (
 				bottomModelIndex - topModelIndex ===
@@ -477,10 +485,10 @@ export class NotebookCellList
 				}
 
 				const currentRanges = this._hiddenRangeIds
-					.map((id) => this._viewModel!.getTrackedRange(id))
+					.map((id) => this._viewModel?.getTrackedRange(id))
 					.filter((range) => range !== null) as ICellRange[];
 				const newVisibleViewCells: CellViewModel[] = getVisibleCells(
-					this._viewModel!.viewCells as CellViewModel[],
+					this._viewModel?.viewCells as CellViewModel[],
 					currentRanges,
 				);
 
@@ -567,7 +575,7 @@ export class NotebookCellList
 			for (let i = diff.start; i < diff.start + diff.deleteCount; i++) {
 				const cell = this.element(i);
 				if (cell.cellKind === CellKind.Code) {
-					if (this._viewModel!.hasCell(cell)) {
+					if (this._viewModel?.hasCell(cell)) {
 						hiddenOutputs.push(...cell?.outputsViewModels);
 					} else {
 						deletedOutputs.push(...cell?.outputsViewModels);
@@ -597,7 +605,7 @@ export class NotebookCellList
 		const newRanges = reduceCellRanges(_ranges);
 		// delete old tracking ranges
 		const oldRanges = this._hiddenRangeIds
-			.map((id) => this._viewModel!.getTrackedRange(id))
+			.map((id) => this._viewModel?.getTrackedRange(id))
 			.filter((range) => range !== null) as ICellRange[];
 		if (newRanges.length === oldRanges.length) {
 			let hasDifference = false;
@@ -621,7 +629,7 @@ export class NotebookCellList
 		}
 
 		this._hiddenRangeIds.forEach((id) =>
-			this._viewModel!.setTrackedRange(
+			this._viewModel?.setTrackedRange(
 				id,
 				null,
 				TrackedRangeStickiness.GrowsOnlyWhenTypingAfter,
@@ -629,7 +637,7 @@ export class NotebookCellList
 		);
 		const hiddenAreaIds = newRanges
 			.map((range) =>
-				this._viewModel!.setTrackedRange(
+				this._viewModel?.setTrackedRange(
 					null,
 					range,
 					TrackedRangeStickiness.GrowsOnlyWhenTypingAfter,
@@ -664,7 +672,7 @@ export class NotebookCellList
 			index++;
 		}
 
-		for (let i = start; i < this._viewModel!.length; i++) {
+		for (let i = start; i < this._viewModel?.length; i++) {
 			ret.push(1);
 		}
 
@@ -681,7 +689,7 @@ export class NotebookCellList
 	 */
 	updateHiddenAreasInView(oldRanges: ICellRange[], newRanges: ICellRange[]) {
 		const oldViewCellEntries: CellViewModel[] = getVisibleCells(
-			this._viewModel!.viewCells as CellViewModel[],
+			this._viewModel?.viewCells as CellViewModel[],
 			oldRanges,
 		);
 		const oldViewCellMapping = new Set<string>();
@@ -690,7 +698,7 @@ export class NotebookCellList
 		});
 
 		const newViewCellEntries: CellViewModel[] = getVisibleCells(
-			this._viewModel!.viewCells as CellViewModel[],
+			this._viewModel?.viewCells as CellViewModel[],
 			newRanges,
 		);
 
@@ -723,14 +731,14 @@ export class NotebookCellList
 
 		const selectionsLeft = [];
 		this.getSelectedElements().forEach((el) => {
-			if (this._viewModel!.hasCell(el)) {
+			if (this._viewModel?.hasCell(el)) {
 				selectionsLeft.push(el.handle);
 			}
 		});
 
-		if (!selectionsLeft.length && this._viewModel!.viewCells.length) {
+		if (!selectionsLeft.length && this._viewModel?.viewCells.length) {
 			// after splice, the selected cells are deleted
-			this._viewModel!.updateSelectionsState({
+			this._viewModel?.updateSelectionsState({
 				kind: SelectionStateType.Index,
 				focus: { start: 0, end: 1 },
 				selections: [{ start: 0, end: 1 }],
@@ -755,7 +763,7 @@ export class NotebookCellList
 	}
 
 	getViewIndex(cell: ICellViewModel) {
-		const modelIndex = this._viewModel!.getCellIndex(cell);
+		const modelIndex = this._viewModel?.getCellIndex(cell);
 		return this.getViewIndex2(modelIndex);
 	}
 
@@ -794,7 +802,7 @@ export class NotebookCellList
 		let modelIndex = topModelIndex;
 
 		while (index <= bottomViewIndex) {
-			const accu = this.hiddenRangesPrefixSum!.getPrefixSum(index);
+			const accu = this.hiddenRangesPrefixSum?.getPrefixSum(index);
 			if (accu === modelIndex + 1) {
 				// no hidden area after it
 				if (stack.length) {
@@ -854,7 +862,7 @@ export class NotebookCellList
 		const top = Math.max(this.getViewScrollTop() - this.renderHeight, 0);
 		const topViewIndex = this.view.indexAt(top);
 		const topElement = this.view.element(topViewIndex);
-		const topModelIndex = this._viewModel!.getCellIndex(topElement);
+		const topModelIndex = this._viewModel?.getCellIndex(topElement);
 		const bottom = clamp(
 			this.getViewScrollBottom() + this.renderHeight,
 			0,
@@ -866,7 +874,7 @@ export class NotebookCellList
 			this.view.length - 1,
 		);
 		const bottomElement = this.view.element(bottomViewIndex);
-		const bottomModelIndex = this._viewModel!.getCellIndex(bottomElement);
+		const bottomModelIndex = this._viewModel?.getCellIndex(bottomElement);
 
 		if (
 			bottomModelIndex - topModelIndex ===
@@ -1167,24 +1175,30 @@ export class NotebookCellList
 		}
 
 		switch (revealType) {
-			case CellRevealType.Top:
+			case CellRevealType.Top: {
 				this._revealInternal(index, false, CellRevealPosition.Top);
 				break;
-			case CellRevealType.Center:
+			}
+			case CellRevealType.Center: {
 				this._revealInternal(index, false, CellRevealPosition.Center);
 				break;
-			case CellRevealType.CenterIfOutsideViewport:
+			}
+			case CellRevealType.CenterIfOutsideViewport: {
 				this._revealInternal(index, true, CellRevealPosition.Center);
 				break;
-			case CellRevealType.NearTopIfOutsideViewport:
+			}
+			case CellRevealType.NearTopIfOutsideViewport: {
 				this._revealInternal(index, true, CellRevealPosition.NearTop);
 				break;
-			case CellRevealType.FirstLineIfOutsideViewport:
+			}
+			case CellRevealType.FirstLineIfOutsideViewport: {
 				this._revealInViewWithMinimalScrolling(index, true);
 				break;
-			case CellRevealType.Default:
+			}
+			case CellRevealType.Default: {
 				this._revealInViewWithMinimalScrolling(index);
 				break;
+			}
 		}
 
 		// wait for the editor to be created only if the cell is in editing mode (meaning it has an editor and will focus the editor)
@@ -1221,32 +1235,41 @@ export class NotebookCellList
 		}
 
 		switch (revealPosition) {
-			case CellRevealPosition.Top:
+			case CellRevealPosition.Top: {
 				this.view.setScrollTop(elementTop);
 				this.view.setScrollTop(this.view.elementTop(viewIndex));
 				break;
+			}
 			case CellRevealPosition.Center:
 			case CellRevealPosition.NearTop: {
-				// reveal the cell top in the viewport center initially
-				this.view.setScrollTop(elementTop - this.view.renderHeight / 2);
-				// cell rendered already, we now have a more accurate cell height
-				const newElementTop = this.view.elementTop(viewIndex);
-				const newElementHeight = this.view.elementHeight(viewIndex);
-				const renderHeight =
-					this.getViewScrollBottom() - this.getViewScrollTop();
-				if (newElementHeight >= renderHeight) {
-					// cell is larger than viewport, reveal top
-					this.view.setScrollTop(newElementTop);
-				} else if (revealPosition === CellRevealPosition.Center) {
+				{
+					// reveal the cell top in the viewport center initially
 					this.view.setScrollTop(
-						newElementTop + newElementHeight / 2 - renderHeight / 2,
+						elementTop - this.view.renderHeight / 2,
 					);
-				} else if (revealPosition === CellRevealPosition.NearTop) {
-					this.view.setScrollTop(newElementTop - renderHeight / 5);
+					// cell rendered already, we now have a more accurate cell height
+					const newElementTop = this.view.elementTop(viewIndex);
+					const newElementHeight = this.view.elementHeight(viewIndex);
+					const renderHeight =
+						this.getViewScrollBottom() - this.getViewScrollTop();
+					if (newElementHeight >= renderHeight) {
+						// cell is larger than viewport, reveal top
+						this.view.setScrollTop(newElementTop);
+					} else if (revealPosition === CellRevealPosition.Center) {
+						this.view.setScrollTop(
+							newElementTop +
+								newElementHeight / 2 -
+								renderHeight / 2,
+						);
+					} else if (revealPosition === CellRevealPosition.NearTop) {
+						this.view.setScrollTop(
+							newElementTop - renderHeight / 5,
+						);
+					}
 				}
+				break;
 			}
-			break;
-			case CellRevealPosition.Bottom:
+			case CellRevealPosition.Bottom: {
 				if (firstLine) {
 					const lineHeight =
 						this.viewModel?.layoutInfo?.fontInfo.lineHeight ?? 15;
@@ -1276,6 +1299,7 @@ export class NotebookCellList
 							this.getViewScrollBottom()),
 				);
 				break;
+			}
 			default:
 				break;
 		}
@@ -1550,20 +1574,20 @@ export class NotebookCellList
 			if (this._webviewElement) {
 				Event.once(this.view.onWillScroll)(() => {
 					const webviewTop = parseInt(
-						this._webviewElement!.domNode.style.top,
+						this._webviewElement?.domNode.style.top,
 						10,
 					);
 					if (
-						validateWebviewBoundary(this._webviewElement!.domNode)
+						validateWebviewBoundary(this._webviewElement?.domNode)
 					) {
-						this._webviewElement!.setTop(webviewTop - delta);
+						this._webviewElement?.setTop(webviewTop - delta);
 					} else {
 						// When the webview top boundary is below the list view scrollable element top boundary, then we can't insert a markdown cell at the top
 						// or when its bottom boundary is above the list view bottom boundary, then we can't insert a markdown cell at the end
 						// thus we have to revert the webview element position to initial state `-NOTEBOOK_WEBVIEW_BOUNDARY`.
 						// this will trigger one visual flicker (as we need to update element offsets in the webview)
 						// but as long as NOTEBOOK_WEBVIEW_BOUNDARY is large enough, it will happen less often
-						this._webviewElement!.setTop(
+						this._webviewElement?.setTop(
 							-NOTEBOOK_WEBVIEW_BOUNDARY,
 						);
 					}
@@ -1870,7 +1894,7 @@ export class ListViewInfoAccessor extends Disposable {
 	getCellsFromViewRange(
 		startIndex: number,
 		endIndex: number,
-	): ReadonlyArray<ICellViewModel> {
+	): readonly ICellViewModel[] {
 		if (!this.list.viewModel) {
 			return [];
 		}
@@ -1883,7 +1907,7 @@ export class ListViewInfoAccessor extends Disposable {
 		return this.list.viewModel.getCellsInRange(range);
 	}
 
-	getCellsInRange(range?: ICellRange): ReadonlyArray<ICellViewModel> {
+	getCellsInRange(range?: ICellRange): readonly ICellViewModel[] {
 		return this.list.viewModel?.getCellsInRange(range) ?? [];
 	}
 

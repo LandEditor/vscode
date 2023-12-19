@@ -44,7 +44,7 @@ export class TerminalNativeContribution
 		});
 
 		const connection = remoteAgentService.getConnection();
-		if (connection && connection.remoteAuthority) {
+		if (connection?.remoteAuthority) {
 			registerRemoteContributions();
 		}
 	}

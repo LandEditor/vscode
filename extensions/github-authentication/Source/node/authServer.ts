@@ -125,7 +125,7 @@ export class LoopbackAuthServer implements ILoopbackServer {
 					const nonce = (
 						reqUrl.searchParams.get("nonce") ?? ""
 					).replace(/ /g, "+");
-					if (!code || !state || !nonce) {
+					if (!(code && state && nonce)) {
 						res.writeHead(400);
 						res.end();
 						return;
@@ -154,16 +154,18 @@ export class LoopbackAuthServer implements ILoopbackServer {
 					break;
 				}
 				// Serve the static files
-				case "/":
+				case "/": {
 					sendFile(res, path.join(serveRoot, "index.html"));
 					break;
-				default:
+				}
+				default: {
 					// substring to get rid of leading '/'
 					sendFile(
 						res,
 						path.join(serveRoot, reqUrl.pathname.substring(1)),
 					);
 					break;
+				}
 			}
 		});
 	}

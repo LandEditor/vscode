@@ -162,7 +162,7 @@ class DomListener implements IDisposable {
 		this._node = node;
 		this._type = type;
 		this._handler = handler;
-		this._options = options || false;
+		this._options = options;
 		this._node.addEventListener(this._type, this._handler, this._options);
 	}
 
@@ -407,11 +407,7 @@ export function runWhenWindowIdle(
  * An implementation of the "idle-until-urgent"-strategy as introduced
  * here: https://philipwalton.com/articles/idle-until-urgent/
  */
-export class WindowIdleValue<T> extends AbstractIdleValue<T> {
-	constructor(targetWindow: Window | typeof globalThis, executor: () => T) {
-		super(targetWindow, executor);
-	}
-}
+export class WindowIdleValue<T> extends AbstractIdleValue<T> {}
 
 /**
  * Schedule a callback to be run at the next animation frame.
@@ -710,11 +706,7 @@ export function getClientArea(
 	}
 
 	// Try with document.body.clientWidth / document.body.clientHeight
-	if (
-		elDocument.body &&
-		elDocument.body.clientWidth &&
-		elDocument.body.clientHeight
-	) {
+	if (elDocument.body?.clientWidth && elDocument.body.clientHeight) {
 		return new Dimension(
 			elDocument.body.clientWidth,
 			elDocument.body.clientHeight,
@@ -723,8 +715,7 @@ export function getClientArea(
 
 	// Try with document.documentElement.clientWidth / document.documentElement.clientHeight
 	if (
-		elDocument.documentElement &&
-		elDocument.documentElement.clientWidth &&
+		elDocument.documentElement?.clientWidth &&
 		elDocument.documentElement.clientHeight
 	) {
 		return new Dimension(
@@ -863,7 +854,7 @@ export class Dimension implements IDimension {
 		if (a === b) {
 			return true;
 		}
-		if (!a || !b) {
+		if (!(a && b)) {
 			return false;
 		}
 		return a.width === b.width && a.height === b.height;
@@ -1464,7 +1455,7 @@ export function createCSSRule(
 	cssText: string,
 	style = getSharedStyleSheet(),
 ): void {
-	if (!style || !cssText) {
+	if (!(style && cssText)) {
 		return;
 	}
 
@@ -1922,7 +1913,7 @@ function findParentWithAttribute(
 }
 
 export function removeTabIndexAndUpdateFocus(node: HTMLElement): void {
-	if (!node || !node.hasAttribute("tabIndex")) {
+	if (!node?.hasAttribute("tabIndex")) {
 		return;
 	}
 
@@ -2023,8 +2014,8 @@ export function windowOpenNoOpener(url: string): void {
  *
  * In otherwords, you should almost always use {@link windowOpenNoOpener} instead of this function.
  */
-const popupWidth = 780,
-	popupHeight = 640;
+const popupWidth = 780;
+const popupHeight = 640;
 export function windowOpenPopup(url: string): void {
 	const left = Math.floor(
 		mainWindow.screenLeft + mainWindow.innerWidth / 2 - popupWidth / 2,
@@ -2677,9 +2668,7 @@ export class ModifierKeyEmitter extends event.Emitter<IModifierKeyStatus> {
 }
 
 export function getCookieValue(name: string): string | undefined {
-	const match = document.cookie.match(
-		"(^|[^;]+)\\s*" + name + "\\s*=\\s*([^;]+)",
-	); // See https://stackoverflow.com/a/25490531
+	const match = document.cookie.match(`(^|[^;]+)\\s*${name}\\s*=\\s*([^;]+)`); // See https://stackoverflow.com/a/25490531
 
 	return match ? match.pop() : undefined;
 }
@@ -2921,7 +2910,7 @@ export function h(
 
 	const match = H_REGEX.exec(tag);
 
-	if (!match || !match.groups) {
+	if (!match?.groups) {
 		throw new Error("Bad use of h");
 	}
 
@@ -2972,14 +2961,13 @@ export function h(
 
 	for (const [key, value] of Object.entries(attributes)) {
 		if (key === "className") {
-			continue;
 		} else if (key === "style") {
 			for (const [cssKey, cssValue] of Object.entries(value)) {
 				el.style.setProperty(
 					camelCaseToHyphenCase(cssKey),
 					typeof cssValue === "number"
-						? cssValue + "px"
-						: "" + cssValue,
+						? `${cssValue}px`
+						: `${cssValue}`,
 				);
 			}
 		} else if (key === "tabIndex") {

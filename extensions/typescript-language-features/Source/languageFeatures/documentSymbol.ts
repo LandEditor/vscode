@@ -92,7 +92,7 @@ class TypeScriptDocumentSymbolProvider
 	): boolean {
 		let shouldInclude =
 			TypeScriptDocumentSymbolProvider.shouldInclueEntry(item);
-		if (!shouldInclude && !item.childItems?.length) {
+		if (!(shouldInclude || item.childItems?.length)) {
 			return false;
 		}
 
@@ -142,12 +142,14 @@ class TypeScriptDocumentSymbolProvider
 		let label = item.text;
 
 		switch (item.kind) {
-			case PConst.Kind.memberGetAccessor:
+			case PConst.Kind.memberGetAccessor: {
 				label = `(get) ${label}`;
 				break;
-			case PConst.Kind.memberSetAccessor:
+			}
+			case PConst.Kind.memberSetAccessor: {
 				label = `(set) ${label}`;
 				break;
+			}
 		}
 
 		const symbolInfo = new vscode.DocumentSymbol(

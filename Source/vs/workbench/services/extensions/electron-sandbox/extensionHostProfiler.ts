@@ -73,15 +73,18 @@ export class ExtensionHostProfiler {
 				switch (node.callFrame.functionName) {
 					case "(root)":
 						break;
-					case "(program)":
+					case "(program)": {
 						segmentId = "program";
 						break;
-					case "(garbage collector)":
+					}
+					case "(garbage collector)": {
 						segmentId = "gc";
 						break;
-					default:
+					}
+					default: {
 						segmentId = "self";
 						break;
+					}
 				}
 			} else if (segmentId === "self" && node.callFrame.url) {
 				let extension: IExtensionDescription | undefined;

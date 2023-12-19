@@ -124,7 +124,7 @@ export class ColorExtensionPoint {
 				const extensionValue = <IColorExtensionPoint[]>extension.value;
 				const collector = extension.collector;
 
-				if (!extensionValue || !Array.isArray(extensionValue)) {
+				if (!(extensionValue && Array.isArray(extensionValue))) {
 					collector.error(
 						nls.localize(
 							"invalid.colorConfiguration",

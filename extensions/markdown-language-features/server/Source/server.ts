@@ -130,7 +130,6 @@ export async function startServer(
 							.includeExtension;
 					case "removeExtension":
 						return md.PreferredMdPathExtensionStyle.removeExtension;
-					case "auto":
 					default:
 						return md.PreferredMdPathExtensionStyle.auto;
 				}
@@ -198,13 +197,13 @@ export async function startServer(
 			if (!document) {
 				return [];
 			}
-			return mdLs!.getDocumentLinks(document, token);
+			return mdLs?.getDocumentLinks(document, token);
 		},
 	);
 
 	connection.onDocumentLinkResolve(
 		async (link, token): Promise<lsp.DocumentLink | undefined> => {
-			return mdLs!.resolveDocumentLink(link, token);
+			return mdLs?.resolveDocumentLink(link, token);
 		},
 	);
 
@@ -214,7 +213,7 @@ export async function startServer(
 			if (!document) {
 				return [];
 			}
-			return mdLs!.getDocumentSymbols(
+			return mdLs?.getDocumentSymbols(
 				document,
 				{ includeLinkDefinitions: true },
 				token,
@@ -228,7 +227,7 @@ export async function startServer(
 			if (!document) {
 				return [];
 			}
-			return mdLs!.getFoldingRanges(document, token);
+			return mdLs?.getFoldingRanges(document, token);
 		},
 	);
 
@@ -238,13 +237,13 @@ export async function startServer(
 			if (!document) {
 				return [];
 			}
-			return mdLs!.getSelectionRanges(document, params.positions, token);
+			return mdLs?.getSelectionRanges(document, params.positions, token);
 		},
 	);
 
 	connection.onWorkspaceSymbol(
 		async (params, token): Promise<lsp.WorkspaceSymbol[]> => {
-			return mdLs!.getWorkspaceSymbols(params.query, token);
+			return mdLs?.getWorkspaceSymbols(params.query, token);
 		},
 	);
 
@@ -253,7 +252,7 @@ export async function startServer(
 		if (!document) {
 			return [];
 		}
-		return mdLs!.getReferences(
+		return mdLs?.getReferences(
 			document,
 			params.position,
 			params.context,
@@ -267,7 +266,7 @@ export async function startServer(
 			if (!document) {
 				return undefined;
 			}
-			return mdLs!.getDefinition(document, params.position, token);
+			return mdLs?.getDefinition(document, params.position, token);
 		},
 	);
 
@@ -278,7 +277,7 @@ export async function startServer(
 		}
 
 		try {
-			return await mdLs!.prepareRename(document, params.position, token);
+			return await mdLs?.prepareRename(document, params.position, token);
 		} catch (e) {
 			if (e instanceof md.RenameNotSupportedAtLocationError) {
 				throw new ResponseError(0, e.message);
@@ -293,7 +292,7 @@ export async function startServer(
 		if (!document) {
 			return undefined;
 		}
-		return mdLs!.getRenameEdit(
+		return mdLs?.getRenameEdit(
 			document,
 			params.position,
 			params.newName,
@@ -324,7 +323,7 @@ export async function startServer(
 			return [action];
 		}
 
-		return mdLs!.getCodeActions(
+		return mdLs?.getCodeActions(
 			document,
 			params.range,
 			params.context,
@@ -360,14 +359,14 @@ export async function startServer(
 	connection.onRequest(
 		protocol.getReferencesToFileInWorkspace,
 		async (params: { uri: string }, token: CancellationToken) => {
-			return mdLs!.getFileReferences(URI.parse(params.uri), token);
+			return mdLs?.getFileReferences(URI.parse(params.uri), token);
 		},
 	);
 
 	connection.onRequest(
 		protocol.getEditForFileRenames,
 		async (params, token: CancellationToken) => {
-			const result = await mdLs!.getRenameFilesInWorkspaceEdit(
+			const result = await mdLs?.getRenameFilesInWorkspaceEdit(
 				params.map((x) => ({
 					oldUri: URI.parse(x.oldUri),
 					newUri: URI.parse(x.newUri),
@@ -393,7 +392,7 @@ export async function startServer(
 	connection.onRequest(
 		protocol.resolveLinkTarget,
 		async (params, token: CancellationToken) => {
-			return mdLs!.resolveLinkTarget(
+			return mdLs?.resolveLinkTarget(
 				params.linkText,
 				URI.parse(params.uri),
 				token,
@@ -444,7 +443,6 @@ function registerCompletionsSupport(
 					.onSingleOrDoubleHash;
 			case "onDoubleHash":
 				return md.IncludeWorkspaceHeaderCompletions.onDoubleHash;
-			case "never":
 			default:
 				return md.IncludeWorkspaceHeaderCompletions.never;
 		}
@@ -508,7 +506,7 @@ function registerDocumentHighlightSupport(
 			return undefined;
 		}
 
-		return mdLs!.getDocumentHighlights(document, params.position, token);
+		return mdLs?.getDocumentHighlights(document, params.position, token);
 	});
 
 	return registerDynamicClientFeature(

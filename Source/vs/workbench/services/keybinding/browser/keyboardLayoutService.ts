@@ -114,11 +114,8 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
 		this._mru = [];
 		this._activeKeymapInfo = null;
 
-		if (
-			(<INavigatorWithKeyboard>navigator).keyboard &&
-			(<INavigatorWithKeyboard>navigator).keyboard.addEventListener
-		) {
-			(<INavigatorWithKeyboard>navigator).keyboard.addEventListener!(
+		if ((<INavigatorWithKeyboard>navigator).keyboard?.addEventListener) {
+			(<INavigatorWithKeyboard>navigator).keyboard.addEventListener?.(
 				"layoutchange",
 				() => {
 					// Update user keyboard map settings
@@ -285,7 +282,7 @@ export class BrowserKeyboardMapperFactoryBase extends Disposable {
 			keymapUpdated = true;
 		}
 
-		if (!this._activeKeymapInfo || !keymapUpdated) {
+		if (!(this._activeKeymapInfo && keymapUpdated)) {
 			return;
 		}
 
@@ -566,8 +563,7 @@ export class BrowserKeyboardMapperFactory extends BrowserKeyboardMapperFactoryBa
 		const platform = isWindows ? "win" : isMacintosh ? "darwin" : "linux";
 
 		import(
-			"vs/workbench/services/keybinding/browser/keyboardLayouts/layout.contribution." +
-				platform
+			`vs/workbench/services/keybinding/browser/keyboardLayouts/layout.contribution.${platform}`
 		).then((m) => {
 			const keymapInfos: IKeymapInfo[] =
 				m.KeyboardLayoutContribution.INSTANCE.layoutInfos;

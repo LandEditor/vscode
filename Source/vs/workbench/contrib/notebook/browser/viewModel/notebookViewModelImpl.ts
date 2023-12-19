@@ -83,7 +83,7 @@ import {
 } from "vs/workbench/contrib/notebook/common/notebookRange";
 
 const invalidFunc = () => {
-	throw new Error(`Invalid change accessor`);
+	throw new Error("Invalid change accessor");
 };
 
 class DecorationsTree {
@@ -338,7 +338,7 @@ export class NotebookViewModel
 		super();
 
 		MODEL_ID++;
-		this.id = "$notebookViewModel" + MODEL_ID;
+		this.id = `$notebookViewModel${MODEL_ID}`;
 		this._instanceId = strings.singleLetterHash(MODEL_ID);
 
 		const compute = (
@@ -447,7 +447,6 @@ export class NotebookViewModel
 					) {
 						changes = change.changes;
 						compute(changes, synchronous);
-						continue;
 					} else if (change.kind === NotebookCellsChangeType.Move) {
 						compute(
 							[[change.index, change.length, []]],
@@ -458,7 +457,6 @@ export class NotebookViewModel
 							synchronous
 						);
 					} else {
-						continue;
 					}
 				}
 			})
@@ -756,7 +754,7 @@ export class NotebookViewModel
 		return this._viewCells[index];
 	}
 
-	getCellsInRange(range?: ICellRange): ReadonlyArray<ICellViewModel> {
+	getCellsInRange(range?: ICellRange): readonly ICellViewModel[] {
 		if (!range) {
 			return this._viewCells.slice(0);
 		}
@@ -1134,10 +1132,8 @@ export class NotebookViewModel
 		}
 
 		this._viewCells.forEach((cell, index) => {
-			const isEditing =
-				viewState.editingCells && viewState.editingCells[index];
-			const editorViewState =
-				viewState.editorViewStates && viewState.editorViewStates[index];
+			const isEditing = viewState.editingCells?.[index];
+			const editorViewState = viewState.editorViewStates?.[index];
 
 			cell.updateEditState(
 				isEditing ? CellEditState.Editing : CellEditState.Preview,
@@ -1147,23 +1143,16 @@ export class NotebookViewModel
 				? viewState.cellTotalHeights[index]
 				: undefined;
 			cell.restoreEditorViewState(editorViewState, cellHeight);
-			if (
-				viewState.collapsedInputCells &&
-				viewState.collapsedInputCells[index]
-			) {
+			if (viewState.collapsedInputCells?.[index]) {
 				cell.isInputCollapsed = true;
 			}
 			if (
-				viewState.collapsedOutputCells &&
-				viewState.collapsedOutputCells[index] &&
+				viewState.collapsedOutputCells?.[index] &&
 				cell instanceof CodeCellViewModel
 			) {
 				cell.isOutputCollapsed = true;
 			}
-			if (
-				viewState.cellLineNumberStates &&
-				viewState.cellLineNumberStates[index]
-			) {
+			if (viewState.cellLineNumberStates?.[index]) {
 				cell.lineNumbers = viewState.cellLineNumberStates[index];
 			}
 		});

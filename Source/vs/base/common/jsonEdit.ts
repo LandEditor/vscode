@@ -121,7 +121,7 @@ export function setProperty(
 			)}: ${JSON.stringify(value)}`;
 			const index = getInsertionIndex
 				? getInsertionIndex(
-						parent.children.map((p) => p.children![0].value),
+						parent.children.map((p) => p.children?.[0].value),
 				  )
 				: parent.children.length;
 			let edit: Edit;
@@ -130,7 +130,7 @@ export function setProperty(
 				edit = {
 					offset: previous.offset + previous.length,
 					length: 0,
-					content: "," + newProperty,
+					content: `,${newProperty}`,
 				};
 			} else if (parent.children.length === 0) {
 				edit = {
@@ -142,7 +142,7 @@ export function setProperty(
 				edit = {
 					offset: parent.offset + 1,
 					length: 0,
-					content: newProperty + ",",
+					content: `${newProperty},`,
 				};
 			}
 			return withFormatting(text, edit, formattingOptions);
@@ -163,7 +163,7 @@ export function setProperty(
 					content:
 						parent.children.length === 0
 							? newProperty
-							: newProperty + ",",
+							: `${newProperty},`,
 				};
 			} else {
 				const index =
@@ -174,7 +174,7 @@ export function setProperty(
 				edit = {
 					offset: previous.offset + previous.length,
 					length: 0,
-					content: "," + newProperty,
+					content: `,${newProperty}`,
 				};
 			}
 			return withFormatting(text, edit, formattingOptions);

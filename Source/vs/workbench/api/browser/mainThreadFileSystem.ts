@@ -234,18 +234,22 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 	private static _handleError(err: any): never {
 		if (err instanceof FileOperationError) {
 			switch (err.fileOperationResult) {
-				case FileOperationResult.FILE_NOT_FOUND:
+				case FileOperationResult.FILE_NOT_FOUND: {
 					err.name = FileSystemProviderErrorCode.FileNotFound;
 					break;
-				case FileOperationResult.FILE_IS_DIRECTORY:
+				}
+				case FileOperationResult.FILE_IS_DIRECTORY: {
 					err.name = FileSystemProviderErrorCode.FileIsADirectory;
 					break;
-				case FileOperationResult.FILE_PERMISSION_DENIED:
+				}
+				case FileOperationResult.FILE_PERMISSION_DENIED: {
 					err.name = FileSystemProviderErrorCode.NoPermissions;
 					break;
-				case FileOperationResult.FILE_MOVE_CONFLICT:
+				}
+				case FileOperationResult.FILE_MOVE_CONFLICT: {
 					err.name = FileSystemProviderErrorCode.FileExists;
 					break;
+				}
 			}
 		} else if (err instanceof Error) {
 			const code = toFileSystemProviderErrorCode(err);

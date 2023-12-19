@@ -20,12 +20,12 @@ export async function getSelectionRanges(
 	const htmlMode = languageModes.getMode("html");
 	return Promise.all(
 		positions.map(async (position) => {
-			const htmlRange = await htmlMode!.getSelectionRange!(
+			const htmlRange = await htmlMode?.getSelectionRange?.(
 				document,
 				position,
 			);
 			const mode = languageModes.getModeAtPosition(document, position);
-			if (mode && mode.getSelectionRange) {
+			if (mode?.getSelectionRange) {
 				const range = await mode.getSelectionRange(document, position);
 				let top = range;
 				while (

@@ -439,14 +439,14 @@ class State {
 			.readdirSync(pipelineWorkspacePath)
 			.map((name) => /^artifacts_processed_(\d+)$/.exec(name))
 			.filter((match): match is RegExpExecArray => !!match)
-			.map((match) => ({ name: match![0], attempt: Number(match![1]) }))
+			.map((match) => ({ name: match?.[0], attempt: Number(match?.[1]) }))
 			.sort((a, b) => b.attempt - a.attempt)[0];
 
 		if (previousState) {
 			const previousStatePath = path.join(
 				pipelineWorkspacePath,
 				previousState.name,
-				previousState.name + ".txt",
+				`${previousState.name}.txt`,
 			);
 			fs.readFileSync(previousStatePath, "utf8")
 				.split(/\n/)
@@ -582,11 +582,11 @@ async function unzip(packagePath: string, outputPath: string): Promise<string> {
 				return reject(err);
 			}
 
-			zipfile!.on("entry", (entry) => {
+			zipfile?.on("entry", (entry) => {
 				if (/\/$/.test(entry.fileName)) {
-					zipfile!.readEntry();
+					zipfile?.readEntry();
 				} else {
-					zipfile!.openReadStream(entry, (err, istream) => {
+					zipfile?.openReadStream(entry, (err, istream) => {
 						if (err) {
 							return reject(err);
 						}
@@ -598,16 +598,16 @@ async function unzip(packagePath: string, outputPath: string): Promise<string> {
 
 						const ostream = fs.createWriteStream(filePath);
 						ostream.on("finish", () => {
-							zipfile!.close();
+							zipfile?.close();
 							resolve(filePath);
 						});
 						istream?.on("error", (err) => reject(err));
-						istream!.pipe(ostream);
+						istream?.pipe(ostream);
 					});
 				}
 			});
 
-			zipfile!.readEntry();
+			zipfile?.readEntry();
 		});
 	});
 }
@@ -648,20 +648,22 @@ function getPlatform(
 							);
 					}
 				}
-				case "server":
+				case "server": {
 					if (arch === "arm64") {
 						throw new Error(
 							`Unrecognized: ${product} ${os} ${arch} ${type}`,
 						);
 					}
 					return `server-win32-${arch}`;
-				case "web":
+				}
+				case "web": {
 					if (arch === "arm64") {
 						throw new Error(
 							`Unrecognized: ${product} ${os} ${arch} ${type}`,
 						);
 					}
 					return `server-win32-${arch}-web`;
+				}
 				case "cli":
 					return `cli-win32-${arch}`;
 				default:
@@ -714,21 +716,24 @@ function getPlatform(
 			}
 		case "darwin":
 			switch (product) {
-				case "client":
+				case "client": {
 					if (arch === "x64") {
 						return "darwin";
 					}
 					return `darwin-${arch}`;
-				case "server":
+				}
+				case "server": {
 					if (arch === "x64") {
 						return "server-darwin";
 					}
 					return `server-darwin-${arch}`;
-				case "web":
+				}
+				case "web": {
 					if (arch === "x64") {
 						return "server-darwin-web";
 					}
 					return `server-darwin-${arch}-web`;
+				}
 				case "cli":
 					return `cli-darwin-${arch}`;
 				default:
@@ -761,7 +766,7 @@ async function uploadAssetLegacy(
 	filePath: string,
 ): Promise<string> {
 	const fileName = path.basename(filePath);
-	const blobName = commit + "/" + fileName;
+	const blobName = `${commit}/${fileName}`;
 
 	const credential = new ClientSecretCredential(
 		e("AZURE_TENANT_ID"),
@@ -769,7 +774,7 @@ async function uploadAssetLegacy(
 		e("AZURE_CLIENT_SECRET"),
 	);
 	const blobServiceClient = new BlobServiceClient(
-		`https://vscode.blob.core.windows.net`,
+		"https://vscode.blob.core.windows.net",
 		credential,
 		{
 			retryOptions: {
@@ -789,14 +794,14 @@ async function uploadAssetLegacy(
 		},
 	};
 
-	log(`Checking for blob in Azure...`);
+	log("Checking for blob in Azure...");
 
 	if (await blobClient.exists()) {
 		log(
 			`Blob ${quality}, ${blobName} already exists, not publishing again.`,
 		);
 	} else {
-		log(`Uploading blobs to Azure storage...`);
+		log("Uploading blobs to Azure storage...");
 		await blobClient.uploadFile(filePath, blobOptions);
 		log("Blob successfully uploaded to Azure storage.");
 	}
@@ -1006,7 +1011,7 @@ async function main() {
 				console.log(
 					`[${artifact.name}] Artifact size mismatch.Expected ${artifact.resource.properties.artifactsize}. Actual ${artifactSize} `,
 				);
-				throw new Error(`Artifact size mismatch.`);
+				throw new Error("Artifact size mismatch.");
 			}
 
 			processing.add(artifact.name);

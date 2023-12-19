@@ -467,7 +467,7 @@ async function searchWithFolderCommand(
 
 	if (mode === "view") {
 		const searchView = await openSearchView(viewsService, true);
-		if (resources && resources.length && searchView) {
+		if (resources?.length && searchView) {
 			if (isIncludes) {
 				searchView.searchInFolders(await resolvedResources);
 			} else {

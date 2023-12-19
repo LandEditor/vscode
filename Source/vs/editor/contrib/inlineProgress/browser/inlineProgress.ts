@@ -101,7 +101,7 @@ class InlineProgressWidget extends Disposable implements IContentWidget {
 	}
 
 	getId(): string {
-		return InlineProgressWidget.baseId + "." + this.typeId;
+		return `${InlineProgressWidget.baseId}.${this.typeId}`;
 	}
 
 	getDomNode(): HTMLElement {

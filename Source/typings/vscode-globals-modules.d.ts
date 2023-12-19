@@ -11,7 +11,7 @@ declare global {
 	 * shouldn't have access to node_modules (node-free renderer or
 	 * shared process)
 	 */
-	var _VSCODE_NODE_MODULES: {
+	let _VSCODE_NODE_MODULES: {
 		crypto: typeof import("crypto");
 		zlib: typeof import("zlib");
 		net: typeof import("net");

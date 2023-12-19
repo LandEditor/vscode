@@ -298,7 +298,7 @@ function areSourcesEqual(
 	first: IReplElementSource | undefined,
 	second: IReplElementSource | undefined,
 ): boolean {
-	if (!first && !second) {
+	if (!(first || second)) {
 		return true;
 	}
 	if (first && second) {
@@ -398,8 +398,10 @@ export class ReplModel {
 				return;
 			}
 			if (
-				!previousElement.value.endsWith("\n") &&
-				!previousElement.value.endsWith("\r\n") &&
+				!(
+					previousElement.value.endsWith("\n") ||
+					previousElement.value.endsWith("\r\n")
+				) &&
 				previousElement.count === 1
 			) {
 				this.replElements[this.replElements.length - 1] =

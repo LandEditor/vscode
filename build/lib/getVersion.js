@@ -7,7 +7,7 @@ exports.getVersion = void 0;
 const git = require("./git");
 function getVersion(root) {
 	let version = process.env["BUILD_SOURCEVERSION"];
-	if (!version || !/^[0-9a-f]{40}$/i.test(version.trim())) {
+	if (!(version && /^[0-9a-f]{40}$/i.test(version.trim()))) {
 		version = git.getVersion(root);
 	}
 	return version;

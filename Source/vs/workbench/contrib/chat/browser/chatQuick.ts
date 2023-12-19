@@ -143,7 +143,7 @@ export class QuickChatService extends Disposable implements IQuickChatService {
 		disposableStore.add(
 			this._input.onDidHide(() => {
 				disposableStore.dispose();
-				this._currentChat!.hide();
+				this._currentChat?.hide();
 				this._input = undefined;
 				this._onDidClose.fire();
 			}),
@@ -350,7 +350,7 @@ class QuickChat extends Disposable {
 		const widget = await this._chatWidgetService.revealViewForProvider(
 			this._options.providerId,
 		);
-		if (!widget?.viewModel || !this.model) {
+		if (!(widget?.viewModel && this.model)) {
 			return;
 		}
 

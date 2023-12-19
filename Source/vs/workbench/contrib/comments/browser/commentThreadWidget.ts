@@ -108,7 +108,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 			this._contextKeyService
 		);
 		this._threadIsEmpty.set(
-			!_commentThread.comments || !_commentThread.comments.length
+			!(_commentThread.comments?.length)
 		);
 		this._focusedContextKey = CommentContextKeys.commentFocused.bindTo(
 			this._contextKeyService

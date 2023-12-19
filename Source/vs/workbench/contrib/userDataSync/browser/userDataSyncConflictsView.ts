@@ -182,7 +182,7 @@ export class UserDataSyncConflictsViewPane
 					description: getSyncAreaLabel(resource.syncResource),
 					collapsibleState: TreeItemCollapsibleState.None,
 					command: {
-						id: `workbench.actions.sync.openConflicts`,
+						id: "workbench.actions.sync.openConflicts",
 						title: "",
 						arguments: [
 							<TreeViewItemHandleArg>{
@@ -191,7 +191,7 @@ export class UserDataSyncConflictsViewPane
 							},
 						],
 					},
-					contextValue: `sync-conflict-resource`,
+					contextValue: "sync-conflict-resource",
 				};
 				children.push(treeItem);
 			}
@@ -236,7 +236,7 @@ export class UserDataSyncConflictsViewPane
 				class OpenConflictsAction extends Action2 {
 					constructor() {
 						super({
-							id: `workbench.actions.sync.openConflicts`,
+							id: "workbench.actions.sync.openConflicts",
 							title: localize(
 								{
 									key: "workbench.actions.sync.openConflicts",
@@ -266,7 +266,7 @@ export class UserDataSyncConflictsViewPane
 				class AcceptRemoteAction extends Action2 {
 					constructor() {
 						super({
-							id: `workbench.actions.sync.acceptRemote`,
+							id: "workbench.actions.sync.acceptRemote",
 							title: localize(
 								"workbench.actions.sync.acceptRemote",
 								"Accept Remote",
@@ -315,7 +315,7 @@ export class UserDataSyncConflictsViewPane
 				class AcceptLocalAction extends Action2 {
 					constructor() {
 						super({
-							id: `workbench.actions.sync.acceptLocal`,
+							id: "workbench.actions.sync.acceptLocal",
 							title: localize(
 								"workbench.actions.sync.acceptLocal",
 								"Accept Local",

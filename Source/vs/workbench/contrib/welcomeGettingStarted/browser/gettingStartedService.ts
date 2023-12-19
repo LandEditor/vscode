@@ -271,9 +271,7 @@ export class WalkthroughsService
 												step.media.path,
 											).with({
 												query: JSON.stringify({
-													moduleId:
-														"vs/workbench/contrib/welcomeGettingStarted/common/media/" +
-														step.media.path,
+													moduleId: `vs/workbench/contrib/welcomeGettingStarted/common/media/${step.media.path}`,
 												}),
 											}),
 									  }
@@ -283,9 +281,7 @@ export class WalkthroughsService
 												step.media.path,
 											).with({
 												query: JSON.stringify({
-													moduleId:
-														"vs/workbench/contrib/welcomeGettingStarted/common/media/" +
-														step.media.path,
+													moduleId: `vs/workbench/contrib/welcomeGettingStarted/common/media/${step.media.path}`,
 												}),
 											}),
 											base: FileAccess.asFileUri(
@@ -362,7 +358,7 @@ export class WalkthroughsService
 								)
 							) {
 								this.progressByEvent(
-									`onContext:` + expression.serialize(),
+									`onContext:${expression.serialize()}`,
 								);
 							}
 						},
@@ -374,7 +370,7 @@ export class WalkthroughsService
 		this._register(
 			this.viewsService.onDidChangeViewVisibility((e) => {
 				if (e.visible) {
-					this.progressByEvent("onView:" + e.id);
+					this.progressByEvent(`onView:${e.id}`);
 				}
 			}),
 		);
@@ -382,7 +378,7 @@ export class WalkthroughsService
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) => {
 				e.affectedKeys.forEach((key) => {
-					this.progressByEvent("onSettingChanged:" + key);
+					this.progressByEvent(`onSettingChanged:${key}`);
 				});
 			}),
 		);
@@ -467,8 +463,7 @@ export class WalkthroughsService
 		await Promise.all(
 			extension.contributes?.walkthroughs?.map(
 				async (walkthrough, index) => {
-					const categoryID =
-						extension.identifier.value + "#" + walkthrough.id;
+					const categoryID = `${extension.identifier.value}#${walkthrough.id}`;
 
 					const isNewlyInstalled = !this.metadata.get(categoryID);
 					if (isNewlyInstalled) {
@@ -481,11 +476,7 @@ export class WalkthroughsService
 
 					const override = await Promise.race([
 						this.tasExperimentService?.getTreatment<string>(
-							`gettingStarted.overrideCategory.${
-								extension.identifier.value +
-								"." +
-								walkthrough.id
-							}.when`,
+							`gettingStarted.overrideCategory.${`${extension.identifier.value}.${walkthrough.id}`}.when`,
 						),
 						new Promise<string | undefined>((resolve) =>
 							setTimeout(() => resolve(walkthrough.when), 5000),
@@ -516,21 +507,13 @@ export class WalkthroughsService
 							const description = parseDescription(
 								step.description || "",
 							);
-							const fullyQualifiedID =
-								extension.identifier.value +
-								"#" +
-								walkthrough.id +
-								"#" +
-								step.id;
+							const fullyQualifiedID = `${extension.identifier.value}#${walkthrough.id}#${step.id}`;
 
 							let media: IWalkthroughStep["media"];
 
 							if (!step.media) {
 								throw Error(
-									"missing media in walkthrough step: " +
-										walkthrough.id +
-										"@" +
-										step.id,
+									`missing media in walkthrough step: ${walkthrough.id}@${step.id}`,
 								);
 							}
 
@@ -576,8 +559,7 @@ export class WalkthroughsService
 							// Throw error for unknown walkthrough format
 							else {
 								throw new Error(
-									"Unknown walkthrough format detected for " +
-										fullyQualifiedID,
+									`Unknown walkthrough format detected for ${fullyQualifiedID}`,
 								);
 							}
 
@@ -699,14 +681,9 @@ export class WalkthroughsService
 		}
 
 		extension.contributes?.walkthroughs?.forEach((section) => {
-			const categoryID = extension.identifier.value + "#" + section.id;
+			const categoryID = `${extension.identifier.value}#${section.id}`;
 			section.steps.forEach((step) => {
-				const fullyQualifiedID =
-					extension.identifier.value +
-					"#" +
-					section.id +
-					"#" +
-					step.id;
+				const fullyQualifiedID = `${extension.identifier.value}#${section.id}#${step.id}`;
 				this.steps.delete(fullyQualifiedID);
 			});
 			this.gettingStartedContributions.delete(categoryID);
@@ -717,7 +694,7 @@ export class WalkthroughsService
 	getWalkthrough(id: string): IResolvedWalkthrough {
 		const walkthrough = this.gettingStartedContributions.get(id);
 		if (!walkthrough) {
-			throw Error("Trying to get unknown walkthrough: " + id);
+			throw Error(`Trying to get unknown walkthrough: ${id}`);
 		}
 		return this.resolveWalkthrough(walkthrough);
 	}
@@ -759,7 +736,7 @@ export class WalkthroughsService
 		const lastStepIDs = this.metadata.get(category.id)?.stepIDs;
 		const rawCategory = this.gettingStartedContributions.get(category.id);
 		if (!rawCategory) {
-			throw Error("Could not find walkthrough with id " + category.id);
+			throw Error(`Could not find walkthrough with id ${category.id}`);
 		}
 
 		const currentStepIds: string[] = rawCategory.steps.map((s) => s.id);
@@ -858,9 +835,7 @@ export class WalkthroughsService
 		walkthroughDescriptor.steps.forEach((step) => {
 			if (this.steps.has(step.id)) {
 				throw Error(
-					"Attempting to register step with id " +
-						step.id +
-						" twice. Second is dropped.",
+					`Attempting to register step with id ${step.id} twice. Second is dropped.`,
 				);
 			}
 			this.steps.set(step.id, step);
@@ -878,7 +853,7 @@ export class WalkthroughsService
 	private registerDoneListeners(step: IWalkthroughStep) {
 		if ((step as any).doneOn) {
 			console.error(
-				`wakthrough step`,
+				"wakthrough step",
 				step,
 				`uses deprecated 'doneOn' property. Adopt 'completionEvents' to silence this warning`,
 			);
@@ -898,21 +873,18 @@ export class WalkthroughsService
 								)
 								.map(({ href }) => {
 									if (href.startsWith("command:")) {
-										return (
-											"onCommand:" +
-											href.slice(
-												"command:".length,
-												href.includes("?")
-													? href.indexOf("?")
-													: undefined,
-											)
-										);
+										return `onCommand:${href.slice(
+											"command:".length,
+											href.includes("?")
+												? href.indexOf("?")
+												: undefined,
+										)}`;
 									}
 									if (
 										href.startsWith("https://") ||
 										href.startsWith("http://")
 									) {
-										return "onLink:" + href;
+										return `onLink:${href}`;
 									}
 									return undefined;
 								}),
@@ -953,7 +925,7 @@ export class WalkthroughsService
 							.forEach((key) =>
 								this.stepCompletionContextKeys.add(key),
 							);
-						event = eventType + ":" + expression.serialize();
+						event = `${eventType}:${expression.serialize()}`;
 						if (
 							this.contextService.contextMatchesRules(expression)
 						) {
@@ -970,21 +942,25 @@ export class WalkthroughsService
 					break;
 				}
 				case "onStepSelected":
-				case "stepSelected":
-					event = "stepSelected:" + step.id;
+				case "stepSelected": {
+					event = `stepSelected:${step.id}`;
 					break;
-				case "onCommand":
-					event = eventType + ":" + argument.replace(/^toSide:/, "");
+				}
+				case "onCommand": {
+					event = `${eventType}:${argument.replace(/^toSide:/, "")}`;
 					break;
+				}
 				case "onExtensionInstalled":
-				case "extensionInstalled":
-					event = "extensionInstalled:" + argument.toLowerCase();
+				case "extensionInstalled": {
+					event = `extensionInstalled:${argument.toLowerCase()}`;
 					break;
-				default:
+				}
+				default: {
 					console.error(
 						`Unknown completionEvent ${event} when registering step ${step.id}`,
 					);
 					continue;
+				}
 			}
 
 			this.registerCompletionListener(event, step);
@@ -1002,8 +978,7 @@ export class WalkthroughsService
 		const step = this.steps.get(id);
 		if (!step) {
 			throw Error(
-				"Attempting to access step which does not exist in registry " +
-					id,
+				`Attempting to access step which does not exist in registry ${id}`,
 			);
 		}
 		return step;

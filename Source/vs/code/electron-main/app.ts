@@ -359,7 +359,7 @@ export class CodeApplication extends Disposable {
 			details: Electron.OnBeforeRequestListenerDetails,
 		) => {
 			const frame = details.frame;
-			if (!frame || !this.windowsMainService) {
+			if (!(frame && this.windowsMainService)) {
 				return false;
 			}
 
@@ -385,7 +385,7 @@ export class CodeApplication extends Disposable {
 			}
 
 			const frame = details.frame;
-			if (!frame || !this.windowsMainService) {
+			if (!(frame && this.windowsMainService)) {
 				return false;
 			}
 
@@ -1147,8 +1147,6 @@ export class CodeApplication extends Disposable {
 						"app#resolveInitialProtocolUrls() protocol url was blocked:",
 						protocolUrl.uri.toString(true),
 					);
-
-					continue; // blocked
 				} else {
 					this.logService.trace(
 						"app#resolveInitialProtocolUrls() protocol url will be handled as window to open:",
@@ -1409,7 +1407,7 @@ export class CodeApplication extends Disposable {
 		// or if no window is open (macOS only)
 		else if (isMacintosh && windowsMainService.getWindowCount() === 0) {
 			this.logService.trace(
-				`app#handleProtocolUrl() running on macOS with no window open, setting shouldOpenInNewWindow=true:`,
+				"app#handleProtocolUrl() running on macOS with no window open, setting shouldOpenInNewWindow=true:",
 				uri.toString(true),
 			);
 
@@ -1548,14 +1546,15 @@ export class CodeApplication extends Disposable {
 
 		// Update
 		switch (process.platform) {
-			case "win32":
+			case "win32": {
 				services.set(
 					IUpdateService,
 					new SyncDescriptor(Win32UpdateService),
 				);
 				break;
+			}
 
-			case "linux":
+			case "linux": {
 				if (isLinuxSnap) {
 					services.set(
 						IUpdateService,
@@ -1571,13 +1570,15 @@ export class CodeApplication extends Disposable {
 					);
 				}
 				break;
+			}
 
-			case "darwin":
+			case "darwin": {
 				services.set(
 					IUpdateService,
 					new SyncDescriptor(DarwinUpdateService),
 				);
 				break;
+			}
 		}
 
 		// Windows
@@ -2175,7 +2176,7 @@ export class CodeApplication extends Disposable {
 		const forceTempProfile = args["profile-temp"];
 
 		// Started without file/folder arguments
-		if (!hasCliArgs && !hasFolderURIs && !hasFileURIs) {
+		if (!(hasCliArgs || hasFolderURIs || hasFileURIs)) {
 			// Force new window
 			if (args["new-window"] || forceProfile || forceTempProfile) {
 				return windowsMainService.open({

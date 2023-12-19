@@ -84,7 +84,7 @@ export class LineCommentCommand implements ICommand {
 		this._deltaColumn = 0;
 		this._moveEndPositionDown = false;
 		this._ignoreEmptyLines = ignoreEmptyLines;
-		this._ignoreFirstLine = ignoreFirstLine || false;
+		this._ignoreFirstLine = ignoreFirstLine;
 	}
 
 	/**
@@ -382,7 +382,7 @@ export class LineCommentCommand implements ICommand {
 				.getLineContent(endLineNumber)
 				.charCodeAt(endTokenIndex - 1) === CharCode.Space
 		) {
-			endToken = " " + endToken;
+			endToken = ` ${endToken}`;
 			endTokenIndex -= 1;
 		}
 
@@ -416,11 +416,7 @@ export class LineCommentCommand implements ICommand {
 			this.languageConfigurationService.getLanguageConfiguration(
 				languageId,
 			).comments;
-		if (
-			!config ||
-			!config.blockCommentStartToken ||
-			!config.blockCommentEndToken
-		) {
+		if (!(config?.blockCommentStartToken && config.blockCommentEndToken)) {
 			// Mode does not support block comments
 			return;
 		}

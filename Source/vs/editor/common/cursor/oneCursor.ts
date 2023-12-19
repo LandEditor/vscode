@@ -142,13 +142,13 @@ export class Cursor {
 			position,
 			PositionAffinity.None,
 		);
-		const validSStartPosition = this._validatePositionWithCache(
+		const validSStartPosition = Cursor._validatePositionWithCache(
 			viewModel,
 			sStartPosition,
 			position,
 			validPosition,
 		);
-		const validSEndPosition = this._validatePositionWithCache(
+		const validSEndPosition = Cursor._validatePositionWithCache(
 			viewModel,
 			sEndPosition,
 			sStartPosition,

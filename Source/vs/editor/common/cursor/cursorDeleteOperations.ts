@@ -185,7 +185,7 @@ export class DeleteOperations {
 		autoClosedCharacters: Range[],
 	): [boolean, Array<ICommand | null>] {
 		if (
-			this.isAutoClosingPairDelete(
+			DeleteOperations.isAutoClosingPairDelete(
 				config.autoClosingDelete,
 				config.autoClosingBrackets,
 				config.autoClosingQuotes,
@@ -195,7 +195,11 @@ export class DeleteOperations {
 				autoClosedCharacters,
 			)
 		) {
-			return this._runAutoClosingPairDelete(config, model, selections);
+			return DeleteOperations._runAutoClosingPairDelete(
+				config,
+				model,
+				selections,
+			);
 		}
 
 		const commands: Array<ICommand | null> = [];
@@ -313,10 +317,10 @@ export class DeleteOperations {
 
 					const position = selection.getPosition();
 
-					let startLineNumber: number,
-						startColumn: number,
-						endLineNumber: number,
-						endColumn: number;
+					let startLineNumber: number;
+					let startColumn: number;
+					let endLineNumber: number;
+					let endColumn: number;
 
 					if (position.lineNumber < model.getLineCount()) {
 						// Cutting a line in the middle of the model

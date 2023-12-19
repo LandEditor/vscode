@@ -247,8 +247,8 @@ export class ResizableHTMLElement {
 
 		const newSize = new Dimension(width, height);
 		if (!Dimension.equals(newSize, this._size)) {
-			this.domNode.style.height = height + "px";
-			this.domNode.style.width = width + "px";
+			this.domNode.style.height = `${height}px`;
+			this.domNode.style.width = `${width}px`;
 			this._size = newSize;
 			this._northSash.layout();
 			this._eastSash.layout();

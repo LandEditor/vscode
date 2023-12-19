@@ -48,7 +48,7 @@ export class SparseTokensStore {
 		if (pieces.length > 0) {
 			const _firstRange = pieces[0].getRange();
 			const _lastRange = pieces[pieces.length - 1].getRange();
-			if (!_firstRange || !_lastRange) {
+			if (!(_firstRange && _lastRange)) {
 				return _range;
 			}
 			range = _range.plusRange(_firstRange).plusRange(_lastRange);

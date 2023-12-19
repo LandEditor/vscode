@@ -70,7 +70,7 @@ export class AccessibilityService
 		);
 
 		const reduceMotionMatcher = mainWindow.matchMedia(
-			`(prefers-reduced-motion: reduce)`
+			"(prefers-reduced-motion: reduce)"
 		);
 		this._systemMotionReduced = reduceMotionMatcher.matches;
 		this._configMotionReduced = this._configurationService.getValue<

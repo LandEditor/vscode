@@ -149,9 +149,9 @@ export class BowerJSONContribution implements IJSONContribution {
 			location.matches(["devDependencies"])
 		) {
 			if (currentWord.length > 0) {
-				const queryUrl =
-					"https://registry.bower.io/packages/search/" +
-					encodeURIComponent(currentWord);
+				const queryUrl = `https://registry.bower.io/packages/search/${encodeURIComponent(
+					currentWord,
+				)}`;
 
 				return this.xhr({
 					url: queryUrl,
@@ -292,8 +292,9 @@ export class BowerJSONContribution implements IJSONContribution {
 	}
 
 	private getInfo(pack: string): Thenable<string | undefined> {
-		const queryUrl =
-			"https://registry.bower.io/packages/" + encodeURIComponent(pack);
+		const queryUrl = `https://registry.bower.io/packages/${encodeURIComponent(
+			pack,
+		)}`;
 
 		return this.xhr({
 			url: queryUrl,
@@ -302,7 +303,7 @@ export class BowerJSONContribution implements IJSONContribution {
 			(success) => {
 				try {
 					const obj = JSON.parse(success.responseText);
-					if (obj && obj.url) {
+					if (obj?.url) {
 						let url: string = obj.url;
 						if (url.indexOf("git://") === 0) {
 							url = url.substring(6);

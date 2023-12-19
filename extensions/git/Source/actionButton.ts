@@ -320,9 +320,9 @@ export class ActionButton {
 						  }),
 				arguments: [this.repository.sourceControl],
 			},
-			enabled:
-				!this.state.isCheckoutInProgress &&
-				!this.state.isSyncInProgress,
+			enabled: !(
+				this.state.isCheckoutInProgress || this.state.isSyncInProgress
+			),
 		};
 	}
 
@@ -343,8 +343,7 @@ export class ActionButton {
 
 		// Branch does not have an upstream, branch is not ahead/behind the remote branch, commit/merge/rebase is in progress, or the button is disabled
 		if (
-			!this.state.HEAD?.upstream ||
-			!branchIsAheadOrBehind ||
+			!(this.state.HEAD?.upstream && branchIsAheadOrBehind) ||
 			this.state.isCommitInProgress ||
 			this.state.isMergeInProgress ||
 			this.state.isRebaseInProgress ||
@@ -371,9 +370,9 @@ export class ActionButton {
 				arguments: [this.repository.sourceControl],
 			},
 			description: `${icon}${behind}${ahead}`,
-			enabled:
-				!this.state.isCheckoutInProgress &&
-				!this.state.isSyncInProgress,
+			enabled: !(
+				this.state.isCheckoutInProgress || this.state.isSyncInProgress
+			),
 		};
 	}
 

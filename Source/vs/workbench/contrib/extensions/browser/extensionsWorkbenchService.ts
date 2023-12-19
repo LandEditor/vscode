@@ -187,7 +187,7 @@ export class Extension implements IExtension {
 	}
 
 	get name(): string {
-		return this.gallery ? this.gallery.name : this.local!.manifest.name;
+		return this.gallery ? this.gallery.name : this.local?.manifest.name;
 	}
 
 	get displayName(): string {
@@ -195,26 +195,26 @@ export class Extension implements IExtension {
 			return this.gallery.displayName || this.gallery.name;
 		}
 
-		return this.local!.manifest.displayName || this.local!.manifest.name;
+		return this.local?.manifest.displayName || this.local?.manifest.name;
 	}
 
 	get identifier(): IExtensionIdentifier {
 		if (this.gallery) {
 			return this.gallery.identifier;
 		}
-		return this.local!.identifier;
+		return this.local?.identifier;
 	}
 
 	get uuid(): string | undefined {
 		return this.gallery
 			? this.gallery.identifier.uuid
-			: this.local!.identifier.uuid;
+			: this.local?.identifier.uuid;
 	}
 
 	get publisher(): string {
 		return this.gallery
 			? this.gallery.publisher
-			: this.local!.manifest.publisher;
+			: this.local?.manifest.publisher;
 	}
 
 	get publisherDisplayName(): string {
@@ -226,11 +226,11 @@ export class Extension implements IExtension {
 			return this.local.publisherDisplayName;
 		}
 
-		return this.local!.manifest.publisher;
+		return this.local?.manifest.publisher;
 	}
 
 	get publisherUrl(): URI | undefined {
-		if (!this.productService.extensionsGallery || !this.gallery) {
+		if (!(this.productService.extensionsGallery && this.gallery)) {
 			return undefined;
 		}
 
@@ -261,17 +261,17 @@ export class Extension implements IExtension {
 	get latestVersion(): string {
 		return this.gallery
 			? this.gallery.version
-			: this.local!.manifest.version;
+			: this.local?.manifest.version;
 	}
 
 	get description(): string {
 		return this.gallery
 			? this.gallery.description
-			: this.local!.manifest.description || "";
+			: this.local?.manifest.description || "";
 	}
 
 	get url(): string | undefined {
-		if (!this.productService.extensionsGallery || !this.gallery) {
+		if (!(this.productService.extensionsGallery && this.gallery)) {
 			return undefined;
 		}
 
@@ -291,7 +291,7 @@ export class Extension implements IExtension {
 	}
 
 	private get localIconUrl(): string | null {
-		if (this.local && this.local.manifest.icon) {
+		if (this.local?.manifest.icon) {
 			return FileAccess.uriToBrowserUri(
 				resources.joinPath(
 					this.local.location,
@@ -314,7 +314,7 @@ export class Extension implements IExtension {
 
 	private get defaultIconUrl(): string {
 		if (this.type === ExtensionType.System && this.local) {
-			if (this.local.manifest && this.local.manifest.contributes) {
+			if (this.local.manifest?.contributes) {
 				if (
 					Array.isArray(this.local.manifest.contributes.themes) &&
 					this.local.manifest.contributes.themes.length
@@ -337,13 +337,13 @@ export class Extension implements IExtension {
 	}
 
 	get repository(): string | undefined {
-		return this.gallery && this.gallery.assets.repository
+		return this.gallery?.assets.repository
 			? this.gallery.assets.repository.uri
 			: undefined;
 	}
 
 	get licenseUrl(): string | undefined {
-		return this.gallery && this.gallery.assets.license
+		return this.gallery?.assets.license
 			? this.gallery.assets.license.uri
 			: undefined;
 	}
@@ -369,7 +369,7 @@ export class Extension implements IExtension {
 
 	get outdated(): boolean {
 		try {
-			if (!this.gallery || !this.local) {
+			if (!(this.gallery && this.local)) {
 				return false;
 			}
 			// Do not allow updating system extensions in stable
@@ -464,11 +464,11 @@ export class Extension implements IExtension {
 	}
 
 	hasReadme(): boolean {
-		if (this.local && this.local.readmeUrl) {
+		if (this.local?.readmeUrl) {
 			return true;
 		}
 
-		if (this.gallery && this.gallery.assets.readme) {
+		if (this.gallery?.assets.readme) {
 			return true;
 		}
 
@@ -504,11 +504,11 @@ ${this.description}
 	}
 
 	hasChangelog(): boolean {
-		if (this.local && this.local.changelogUrl) {
+		if (this.local?.changelogUrl) {
 			return true;
 		}
 
-		if (this.gallery && this.gallery.assets.changelog) {
+		if (this.gallery?.assets.changelog) {
 			return true;
 		}
 
@@ -537,7 +537,7 @@ ${this.description}
 
 	get categories(): readonly string[] {
 		const { local, gallery } = this;
-		if (local && local.manifest.categories && !this.outdated) {
+		if (local?.manifest.categories && !this.outdated) {
 			return local.manifest.categories;
 		}
 		if (gallery) {
@@ -556,7 +556,7 @@ ${this.description}
 
 	get dependencies(): string[] {
 		const { local, gallery } = this;
-		if (local && local.manifest.extensionDependencies && !this.outdated) {
+		if (local?.manifest.extensionDependencies && !this.outdated) {
 			return local.manifest.extensionDependencies;
 		}
 		if (gallery) {
@@ -567,7 +567,7 @@ ${this.description}
 
 	get extensionPack(): string[] {
 		const { local, gallery } = this;
-		if (local && local.manifest.extensionPack && !this.outdated) {
+		if (local?.manifest.extensionPack && !this.outdated) {
 			return local.manifest.extensionPack;
 		}
 		if (gallery) {
@@ -775,8 +775,8 @@ class Extensions extends Disposable {
 		galleryExtensions: IGalleryExtension[],
 	): [Extension, IGalleryExtension][] {
 		const mappedExtensions: [Extension, IGalleryExtension][] = [];
-		const byUUID = new Map<string, IGalleryExtension>(),
-			byID = new Map<string, IGalleryExtension>();
+		const byUUID = new Map<string, IGalleryExtension>();
+		const byID = new Map<string, IGalleryExtension>();
 		for (const gallery of galleryExtensions) {
 			byUUID.set(gallery.identifier.uuid, gallery);
 			byID.set(gallery.identifier.id.toLowerCase(), gallery);
@@ -949,7 +949,7 @@ class Extensions extends Disposable {
 			if (extension) {
 				if (local) {
 					const installed = this.installed.filter((e) =>
-						areSameExtensions(e.identifier, extension!.identifier),
+						areSameExtensions(e.identifier, extension?.identifier),
 					)[0];
 					if (installed) {
 						extension = installed;
@@ -971,11 +971,11 @@ class Extensions extends Disposable {
 				}
 			}
 			this._onChange.fire(
-				!local || !extension
-					? undefined
-					: { extension, operation: event.operation },
+				local && extension
+					? { extension, operation: event.operation }
+					: undefined,
 			);
-			if (extension && extension.local && !extension.gallery) {
+			if (extension?.local && !extension.gallery) {
 				await this.syncInstalledExtensionWithGallery(extension);
 			}
 		}
@@ -1105,7 +1105,7 @@ class Extensions extends Disposable {
 					!!e.gallery &&
 					areSameExtensions(
 						e.gallery.identifier,
-						extension.gallery!.identifier,
+						extension.gallery?.identifier,
 					),
 			)
 		) {
@@ -1416,8 +1416,8 @@ export class ExtensionsWorkbenchService
 	}
 
 	private async onDidChangeRunningExtensions(
-		added: ReadonlyArray<IExtensionDescription>,
-		removed: ReadonlyArray<IExtensionDescription>,
+		added: readonly IExtensionDescription[],
+		removed: readonly IExtensionDescription[],
 	): Promise<void> {
 		const changedExtensions: IExtension[] = [];
 		const extsNotInstalled: IExtensionInfo[] = [];
@@ -1758,7 +1758,7 @@ export class ExtensionsWorkbenchService
 		const runningExtension = this.extensionService.extensions.find((e) =>
 			areSameExtensions(
 				{ id: e.identifier.value, uuid: e.uuid },
-				extension!.identifier,
+				extension?.identifier,
 			),
 		);
 
@@ -1828,8 +1828,8 @@ export class ExtensionsWorkbenchService
 									(e) =>
 										areSameExtensions(
 											e.identifier,
-											extension!.identifier,
-										) && e.server !== extension!.server,
+											extension?.identifier,
+										) && e.server !== extension?.server,
 								)[0];
 							if (extensionInOtherServer) {
 								// This extension prefers to run on UI/Local side but is running in remote
@@ -1838,7 +1838,7 @@ export class ExtensionsWorkbenchService
 										this.extensionManagementServerService
 											.remoteExtensionManagementServer &&
 									this.extensionManifestPropertiesService.prefersExecuteOnUI(
-										extension.local!.manifest,
+										extension.local?.manifest,
 									) &&
 									extensionInOtherServer.server ===
 										this.extensionManagementServerService
@@ -1856,7 +1856,7 @@ export class ExtensionsWorkbenchService
 										this.extensionManagementServerService
 											.localExtensionManagementServer &&
 									this.extensionManifestPropertiesService.prefersExecuteOnWorkspace(
-										extension.local!.manifest,
+										extension.local?.manifest,
 									) &&
 									extensionInOtherServer.server ===
 										this.extensionManagementServerService
@@ -1884,7 +1884,7 @@ export class ExtensionsWorkbenchService
 							// This extension prefers to run on UI/Local side but is running in remote
 							if (
 								this.extensionManifestPropertiesService.prefersExecuteOnUI(
-									extension.local!.manifest,
+									extension.local?.manifest,
 								)
 							) {
 								return nls.localize(
@@ -1904,7 +1904,7 @@ export class ExtensionsWorkbenchService
 							// This extension prefers to run on Workspace/Remote side but is running in local
 							if (
 								this.extensionManifestPropertiesService.prefersExecuteOnWorkspace(
-									extension.local!.manifest,
+									extension.local?.manifest,
 								)
 							) {
 								return nls.localize(
@@ -1956,13 +1956,12 @@ export class ExtensionsWorkbenchService
 						(e) =>
 							areSameExtensions(
 								e.identifier,
-								extension!.identifier,
+								extension?.identifier,
 							) && e.server === otherServer,
 					)[0];
 					// Same extension in other server exists and
 					if (
-						extensionInOtherServer &&
-						extensionInOtherServer.local &&
+						extensionInOtherServer?.local &&
 						this.extensionEnablementService.isEnabled(
 							extensionInOtherServer.local,
 						)
@@ -1994,9 +1993,8 @@ export class ExtensionsWorkbenchService
 		const extensionsToChoose = enabledExtensions.length
 			? enabledExtensions
 			: extensions;
-		const manifest = extensionsToChoose.find(
-			(e) => e.local && e.local.manifest,
-		)?.local?.manifest;
+		const manifest = extensionsToChoose.find((e) => e.local?.manifest)
+			?.local?.manifest;
 
 		// Manifest is not found which should not happen.
 		// In which case return the first extension.
@@ -2010,7 +2008,7 @@ export class ExtensionsWorkbenchService
 		let extension = extensionsToChoose.find((extension) => {
 			for (const extensionKind of extensionKinds) {
 				switch (extensionKind) {
-					case "ui":
+					case "ui": {
 						/* UI extension is chosen only if it is installed locally */
 						if (
 							extension.server ===
@@ -2020,7 +2018,8 @@ export class ExtensionsWorkbenchService
 							return true;
 						}
 						return false;
-					case "workspace":
+					}
+					case "workspace": {
 						/* Choose remote workspace extension if exists */
 						if (
 							extension.server ===
@@ -2030,7 +2029,8 @@ export class ExtensionsWorkbenchService
 							return true;
 						}
 						return false;
-					case "web":
+					}
+					case "web": {
 						/* Choose web extension if exists */
 						if (
 							extension.server ===
@@ -2040,6 +2040,7 @@ export class ExtensionsWorkbenchService
 							return true;
 						}
 						return false;
+					}
 				}
 			}
 			return false;
@@ -2052,7 +2053,7 @@ export class ExtensionsWorkbenchService
 			extension = extensionsToChoose.find((extension) => {
 				for (const extensionKind of extensionKinds) {
 					switch (extensionKind) {
-						case "workspace":
+						case "workspace": {
 							/* Choose local workspace extension if exists */
 							if (
 								extension.server ===
@@ -2062,7 +2063,8 @@ export class ExtensionsWorkbenchService
 								return true;
 							}
 							return false;
-						case "web":
+						}
+						case "web": {
 							/* Choose local web extension if exists */
 							if (
 								extension.server ===
@@ -2072,6 +2074,7 @@ export class ExtensionsWorkbenchService
 								return true;
 							}
 							return false;
+						}
 					}
 				}
 				return false;
@@ -2085,7 +2088,7 @@ export class ExtensionsWorkbenchService
 			extension = extensionsToChoose.find((extension) => {
 				for (const extensionKind of extensionKinds) {
 					switch (extensionKind) {
-						case "web":
+						case "web": {
 							/* Choose web extension if exists */
 							if (
 								extension.server ===
@@ -2095,6 +2098,7 @@ export class ExtensionsWorkbenchService
 								return true;
 							}
 							return false;
+						}
 					}
 				}
 				return false;
@@ -2109,7 +2113,7 @@ export class ExtensionsWorkbenchService
 			extension = extensionsToChoose.find((extension) => {
 				for (const extensionKind of extensionKinds) {
 					switch (extensionKind) {
-						case "web":
+						case "web": {
 							/* Choose remote web extension if exists */
 							if (
 								extension.server ===
@@ -2119,6 +2123,7 @@ export class ExtensionsWorkbenchService
 								return true;
 							}
 							return false;
+						}
 					}
 				}
 				return false;
@@ -2781,8 +2786,9 @@ export class ExtensionsWorkbenchService
 			: this.local.filter((e) =>
 					areSameExtensions(e.identifier, extension.identifier),
 			  )[0];
-		const toUninstall: ILocalExtension | null =
-			ext && ext.local ? ext.local : null;
+		const toUninstall: ILocalExtension | null = ext?.local
+			? ext.local
+			: null;
 
 		if (!toUninstall) {
 			return Promise.reject(new Error("Missing local"));
@@ -2826,7 +2832,7 @@ export class ExtensionsWorkbenchService
 					nls.localize(
 						"not found",
 						"Unable to install extension '{0}' because the requested version '{1}' is not found.",
-						extension.gallery!.identifier.id,
+						extension.gallery?.identifier.id,
 						version,
 					),
 				);
@@ -2846,8 +2852,9 @@ export class ExtensionsWorkbenchService
 				: this.local.filter((e) =>
 						areSameExtensions(e.identifier, extension.identifier),
 				  )[0];
-			const toReinstall: ILocalExtension | null =
-				ext && ext.local ? ext.local : null;
+			const toReinstall: ILocalExtension | null = ext?.local
+				? ext.local
+				: null;
 			if (!toReinstall) {
 				throw new Error("Missing local");
 			}
@@ -3382,7 +3389,7 @@ export class ExtensionsWorkbenchService
 			return;
 		}
 
-		const message = (err && err.message) || "";
+		const message = err?.message || "";
 
 		if (
 			/getaddrinfo ENOTFOUND|getaddrinfo ENOENT|connect EACCES|connect ECONNREFUSED/.test(

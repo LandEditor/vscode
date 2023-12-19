@@ -54,7 +54,7 @@ export class SettingsSearchFilterDropdownMenuActionViewItem extends DropdownMenu
 		triggerSuggest: boolean,
 	) {
 		this.searchWidget.setValue(
-			this.searchWidget.getValue().trimEnd() + " " + queryToAppend,
+			`${this.searchWidget.getValue().trimEnd()} ${queryToAppend}`,
 		);
 		this.searchWidget.focus();
 		if (triggerSuggest && this.suggestController) {
@@ -119,7 +119,7 @@ export class SettingsSearchFilterDropdownMenuActionViewItem extends DropdownMenu
 						.getValue()
 						.trimEnd();
 					const newQuery = trimmedCurrentQuery
-						? trimmedCurrentQuery + " " + queryToAppend
+						? `${trimmedCurrentQuery} ${queryToAppend}`
 						: queryToAppend;
 					this.searchWidget.setValue(newQuery);
 				}

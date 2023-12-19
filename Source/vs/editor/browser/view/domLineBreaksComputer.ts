@@ -323,7 +323,7 @@ function renderLine(
 		let producedCharacters = 1;
 		let charWidth = 1;
 		switch (charCode) {
-			case CharCode.Tab:
+			case CharCode.Tab: {
 				producedCharacters = tabSize - (visibleColumn % tabSize);
 				charWidth = producedCharacters;
 				for (let space = 1; space <= producedCharacters; space++) {
@@ -334,39 +334,46 @@ function renderLine(
 					}
 				}
 				break;
+			}
 
-			case CharCode.Space:
+			case CharCode.Space: {
 				if (nextCharCode === CharCode.Space) {
 					sb.appendCharCode(0xa0); // &nbsp;
 				} else {
 					sb.appendASCIICharCode(CharCode.Space);
 				}
 				break;
+			}
 
-			case CharCode.LessThan:
+			case CharCode.LessThan: {
 				sb.appendString("&lt;");
 				break;
+			}
 
-			case CharCode.GreaterThan:
+			case CharCode.GreaterThan: {
 				sb.appendString("&gt;");
 				break;
+			}
 
-			case CharCode.Ampersand:
+			case CharCode.Ampersand: {
 				sb.appendString("&amp;");
 				break;
+			}
 
-			case CharCode.Null:
+			case CharCode.Null: {
 				sb.appendString("&#00;");
 				break;
+			}
 
 			case CharCode.UTF8_BOM:
 			case CharCode.LINE_SEPARATOR:
 			case CharCode.PARAGRAPH_SEPARATOR:
-			case CharCode.NEXT_LINE:
+			case CharCode.NEXT_LINE: {
 				sb.appendCharCode(0xfffd);
 				break;
+			}
 
-			default:
+			default: {
 				if (strings.isFullWidthCharacter(charCode)) {
 					charWidth++;
 				}
@@ -375,6 +382,7 @@ function renderLine(
 				} else {
 					sb.appendCharCode(charCode);
 				}
+			}
 		}
 
 		charOffset += producedCharacters;

@@ -99,14 +99,14 @@ export async function publishRepository(
 		if (sanitizedRepo) {
 			quickpick.items = [
 				{
-					label: `$(repo) Publish to GitHub private repository`,
+					label: "$(repo) Publish to GitHub private repository",
 					description: `$(github) ${owner}/${sanitizedRepo}`,
 					alwaysShow: true,
 					repo: sanitizedRepo,
 					isPrivate: true,
 				},
 				{
-					label: `$(repo) Publish to GitHub public repository`,
+					label: "$(repo) Publish to GitHub public repository",
 					description: `$(github) ${owner}/${sanitizedRepo}`,
 					alwaysShow: true,
 					repo: sanitizedRepo,
@@ -134,7 +134,7 @@ export async function publishRepository(
 				await octokit.repos.get({ owner, repo: repo });
 				quickpick.items = [
 					{
-						label: `$(error) GitHub repository already exists`,
+						label: "$(error) GitHub repository already exists",
 						description: `$(github) ${owner}/${repo}`,
 						alwaysShow: true,
 					},

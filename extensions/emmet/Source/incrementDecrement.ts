@@ -81,8 +81,8 @@ export function locate(
 	const line = document.lineAt(pos.line).text;
 	let start = pos.character;
 	let end = pos.character;
-	let hadDot = false,
-		hadMinus = false;
+	let hadDot = false;
+	let hadMinus = false;
 	let ch;
 
 	while (start > 0) {
@@ -125,5 +125,5 @@ export function locate(
  * Check if given string contains valid number
  */
 function isValidNumber(str: string): boolean {
-	return str ? !isNaN(parseFloat(str)) : false;
+	return str ? !Number.isNaN(parseFloat(str)) : false;
 }

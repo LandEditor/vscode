@@ -82,7 +82,7 @@ export default class CommandHandler implements vscode.Disposable {
 			if (
 				resourceCB &&
 				args.length &&
-				args.every((arg) => arg && arg.resourceUri)
+				args.every((arg) => arg?.resourceUri)
 			) {
 				return resourceCB.call(
 					this,
@@ -483,11 +483,11 @@ export default class CommandHandler implements vscode.Disposable {
 
 		if (direction === NavigationDirection.Forwards) {
 			predicate = (conflict) => selection.isBefore(conflict.range.start);
-			fallback = () => conflicts![0];
+			fallback = () => conflicts?.[0];
 			scanOrder = conflicts;
 		} else if (direction === NavigationDirection.Backwards) {
 			predicate = (conflict) => selection.isAfter(conflict.range.start);
-			fallback = () => conflicts![conflicts!.length - 1];
+			fallback = () => conflicts?.[conflicts?.length - 1];
 			scanOrder = conflicts.slice().reverse();
 		} else {
 			throw new Error(`Unsupported direction ${direction}`);

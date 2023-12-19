@@ -93,7 +93,7 @@ export class ObjectTreeModel<
 		if (options.sorter) {
 			this.sorter = {
 				compare(a, b) {
-					return options.sorter!.compare(a.element, b.element);
+					return options.sorter?.compare(a.element, b.element);
 				},
 			};
 		}
@@ -116,7 +116,7 @@ export class ObjectTreeModel<
 
 	private _setChildren(
 		location: number[],
-		children: Iterable<ITreeElement<T>> = Iterable.empty(),
+		children: Iterable<ITreeElement<T>>,
 		options: IObjectTreeModelSetChildrenOptions<T, TFilterData>,
 	): void {
 		const insertedElements = new Set<T | null>();
@@ -289,7 +289,7 @@ export class ObjectTreeModel<
 
 		if (recursive || first) {
 			childrenNodes = childrenNodes.sort(
-				this.sorter!.compare.bind(this.sorter),
+				this.sorter?.compare.bind(this.sorter),
 			);
 		}
 
@@ -386,7 +386,7 @@ export class ObjectTreeModel<
 		if (element === null) {
 			throw new TreeError(
 				this.user,
-				`Invalid getParentNodeLocation call`,
+				"Invalid getParentNodeLocation call",
 			);
 		}
 

@@ -120,7 +120,7 @@ export class StatusBarColorProvider implements IWorkbenchContribution {
 				border: STATUS_BAR_DEBUGGING_BORDER,
 			});
 		} else {
-			this.disposable!.dispose();
+			this.disposable?.dispose();
 			this.disposable = undefined;
 		}
 	}

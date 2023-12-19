@@ -286,8 +286,7 @@ class WorkspaceTrustedUrisTable extends Disposable {
 			this.table.onDidOpen((item) => {
 				// default prevented when input box is double clicked #125052
 				if (
-					item &&
-					item.element &&
+					item?.element &&
 					!item.browserEvent?.defaultPrevented
 				) {
 					this.edit(item.element, true);
@@ -732,7 +731,7 @@ class TrustedUriPathColumnRenderer
 					templateData.element.classList.add("input-mode");
 					templateData.pathInput.focus();
 					templateData.pathInput.select();
-					templateData.element.parentElement!.style.paddingLeft =
+					templateData.element.parentElement?.style.paddingLeft =
 						"0px";
 				}
 			}),
@@ -751,7 +750,7 @@ class TrustedUriPathColumnRenderer
 
 		const hideInputBox = () => {
 			templateData.element.classList.remove("input-mode");
-			templateData.element.parentElement!.style.paddingLeft = "5px";
+			templateData.element.parentElement?.style.paddingLeft = "5px";
 		};
 
 		const accept = () => {
@@ -1257,7 +1256,7 @@ export class WorkspaceTrustEditor extends EditorPane {
 				],
 			},
 			"[Configure your settings]({0}) or [learn more](https://aka.ms/vscode-workspace-trust).",
-			`command:workbench.trust.configure`,
+			"command:workbench.trust.configure",
 		);
 		for (const node of parseLinkedText(headerDescriptionActionsText)
 			.nodes) {
@@ -1611,14 +1610,11 @@ export class WorkspaceTrustEditor extends EditorPane {
 			button.label = action.label;
 			button.enabled = enabled !== undefined ? enabled : action.enabled;
 			button.description = keybinding.getLabel()!;
-			button.element.ariaLabel =
-				action.label +
-				", " +
-				localize(
-					"keyboardShortcut",
-					"Keyboard Shortcut: {0}",
-					keybinding.getAriaLabel()!,
-				);
+			button.element.ariaLabel = `${action.label}, ${localize(
+				"keyboardShortcut",
+				"Keyboard Shortcut: {0}",
+				keybinding.getAriaLabel()!,
+			)}`;
 
 			this.rerenderDisposables.add(
 				button.onDidClick((e) => {

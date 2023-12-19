@@ -55,7 +55,7 @@ export default class MergeConflictCodeLensProvider
 		document: vscode.TextDocument,
 		_token: vscode.CancellationToken,
 	): Promise<vscode.CodeLens[] | null> {
-		if (!this.config || !this.config.enableCodeLens) {
+		if (!this.config?.enableCodeLens) {
 			return null;
 		}
 

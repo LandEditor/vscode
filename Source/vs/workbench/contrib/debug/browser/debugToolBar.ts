@@ -170,7 +170,7 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 
 		this.dragArea = dom.append(
 			this.$el,
-			dom.$("div.drag-area" + ThemeIcon.asCSSSelector(icons.debugGripper))
+			dom.$(`div.drag-area${ThemeIcon.asCSSSelector(icons.debugGripper)}`)
 		);
 
 		const actionBarContainer = dom.append(

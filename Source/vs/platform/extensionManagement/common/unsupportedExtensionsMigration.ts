@@ -145,7 +145,7 @@ export async function migrateUnsupportedExtensions(
 							),
 						);
 						logService.info(
-							`Added pre-release extension to the storage migration list`,
+							"Added pre-release extension to the storage migration list",
 						);
 					}
 				}

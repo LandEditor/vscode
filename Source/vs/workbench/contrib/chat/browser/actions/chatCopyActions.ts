@@ -93,7 +93,7 @@ export function registerChatCopyActions() {
 
 			run(accessor: ServicesAccessor, ...args: any[]) {
 				const item = args[0];
-				if (!isRequestVM(item) && !isResponseVM(item)) {
+				if (!(isRequestVM(item) || isResponseVM(item))) {
 					return;
 				}
 

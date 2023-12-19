@@ -21,7 +21,7 @@ export enum Constants {
 		SAMPLED_CHAR_WIDTH,
 }
 
-export const allCharCodes: ReadonlyArray<number> = (() => {
+export const allCharCodes: readonly number[] = (() => {
 	const v: number[] = [];
 	for (let i = Constants.START_CH_CODE; i <= Constants.END_CH_CODE; i++) {
 		v.push(i);

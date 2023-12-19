@@ -86,14 +86,16 @@ function computeTrustedDomainContent(
 	}
 
 	if (userTrustedDomains.length) {
-		content += `//\n// Additionally, the following domains are trusted based on your logged-in Accounts:\n`;
+		content +=
+			"//\n// Additionally, the following domains are trusted based on your logged-in Accounts:\n";
 		userTrustedDomains.forEach((d) => {
 			content += `// - "${d}"\n`;
 		});
 	}
 
 	if (workspaceTrustedDomains.length) {
-		content += `//\n// Further, the following domains are trusted based on your workspace configuration:\n`;
+		content +=
+			"//\n// Further, the following domains are trusted based on your workspace configuration:\n";
 		workspaceTrustedDomains.forEach((d) => {
 			content += `// - "${d}"\n`;
 		});

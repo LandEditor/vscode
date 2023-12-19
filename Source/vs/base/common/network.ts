@@ -113,7 +113,7 @@ export function matchesScheme(target: URI | string, scheme: string): boolean {
 	if (URI.isUri(target)) {
 		return equalsIgnoreCase(target.scheme, scheme);
 	} else {
-		return startsWithIgnoreCase(target, scheme + ":");
+		return startsWithIgnoreCase(target, `${scheme}:`);
 	}
 }
 

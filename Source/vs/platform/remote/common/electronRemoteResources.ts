@@ -40,7 +40,7 @@ export class NodeRemoteResourceRouter implements IClientRouter<string> {
 			}
 		}
 
-		throw new Error(`Caller not found`);
+		throw new Error("Caller not found");
 	}
 
 	routeEvent(

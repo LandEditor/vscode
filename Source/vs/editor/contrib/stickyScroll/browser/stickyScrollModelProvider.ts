@@ -102,7 +102,7 @@ export class StickyModelProvider
 			);
 
 		switch (defaultModel) {
-			case ModelProvider.OUTLINE_MODEL:
+			case ModelProvider.OUTLINE_MODEL: {
 				this._modelProviders.push(
 					stickyModelFromCandidateOutlineProvider
 				);
@@ -111,17 +111,20 @@ export class StickyModelProvider
 					stickyModelFromIndentationFoldingProvider
 				);
 				break;
-			case ModelProvider.FOLDING_PROVIDER_MODEL:
+			}
+			case ModelProvider.FOLDING_PROVIDER_MODEL: {
 				this._modelProviders.push(stickyModelFromSyntaxFoldingProvider);
 				this._modelProviders.push(
 					stickyModelFromIndentationFoldingProvider
 				);
 				break;
-			case ModelProvider.INDENTATION_MODEL:
+			}
+			case ModelProvider.INDENTATION_MODEL: {
 				this._modelProviders.push(
 					stickyModelFromIndentationFoldingProvider
 				);
 				break;
+			}
 		}
 	}
 
@@ -161,9 +164,10 @@ export class StickyModelProvider
 						return null;
 					}
 					switch (status) {
-						case Status.CANCELED:
+						case Status.CANCELED: {
 							this._updateOperation.clear();
 							return null;
+						}
 						case Status.VALID:
 							return modelProvider.stickyModel;
 					}
@@ -203,8 +207,6 @@ abstract class StickyModelCandidateProvider<T>
 	implements IStickyModelCandidateProvider<T>
 {
 	protected _stickyModel: StickyModel | null = null;
-
-	constructor() {}
 
 	get stickyModel(): StickyModel | null {
 		return this._stickyModel;
@@ -387,7 +389,7 @@ class StickyModelFromCandidateOutlineProvider extends StickyModelCandidateProvid
 					}
 				}
 				preferredProvider = tempID;
-				outlineElements = optimalOutlineGroup!.children;
+				outlineElements = optimalOutlineGroup?.children;
 			}
 		} else {
 			outlineElements = outlineModel.children as Map<

@@ -395,7 +395,7 @@ export abstract class BaseCellViewModel extends Disposable {
 	}
 
 	private saveTransientState() {
-		if (!this._textEditor || !this._textEditor.hasModel()) {
+		if (!this._textEditor?.hasModel()) {
 			return;
 		}
 
@@ -647,16 +647,18 @@ export abstract class BaseCellViewModel extends Disposable {
 
 	cursorAtLineBoundary(): CursorAtLineBoundary {
 		if (
-			!this._textEditor ||
-			!this.textModel ||
-			!this._textEditor.hasTextFocus()
+			!(
+				this._textEditor &&
+				this.textModel &&
+				this._textEditor.hasTextFocus()
+			)
 		) {
 			return CursorAtLineBoundary.None;
 		}
 
 		const selection = this._textEditor.getSelection();
 
-		if (!selection || !selection.isEmpty()) {
+		if (!selection?.isEmpty()) {
 			return CursorAtLineBoundary.None;
 		}
 
@@ -691,14 +693,14 @@ export abstract class BaseCellViewModel extends Disposable {
 		const selection = this._textEditor.getSelection();
 
 		// only validate empty cursor
-		if (!selection || !selection.isEmpty()) {
+		if (!selection?.isEmpty()) {
 			return CursorAtBoundary.None;
 		}
 
 		const firstViewLineTop = this._textEditor.getTopForPosition(1, 1);
 		const lastViewLineTop = this._textEditor.getTopForPosition(
-			this.textModel!.getLineCount(),
-			this.textModel!.getLineLength(this.textModel!.getLineCount()),
+			this.textModel?.getLineCount(),
+			this.textModel?.getLineLength(this.textModel?.getLineCount()),
 		);
 		const selectionTop = this._textEditor.getTopForPosition(
 			selection.startLineNumber,
@@ -749,7 +751,7 @@ export abstract class BaseCellViewModel extends Disposable {
 	 * Text model is used for editing.
 	 */
 	async resolveTextModel(): Promise<model.ITextModel> {
-		if (!this._textModelRef || !this.textModel) {
+		if (!(this._textModelRef && this.textModel)) {
 			this._textModelRef = await this._modelService.createModelReference(
 				this.uri,
 			);
@@ -762,7 +764,7 @@ export abstract class BaseCellViewModel extends Disposable {
 			}
 
 			this._register(
-				this.textModel!.onDidChangeContent(() =>
+				this.textModel?.onDidChangeContent(() =>
 					this.onDidChangeTextModelContent(),
 				),
 			);
@@ -780,13 +782,13 @@ export abstract class BaseCellViewModel extends Disposable {
 		let cellMatches: model.FindMatch[] = [];
 
 		if (this.assertTextModelAttached()) {
-			cellMatches = this.textModel!.findMatches(
+			cellMatches = this.textModel?.findMatches(
 				value,
 				false,
-				options.regex || false,
-				options.caseSensitive || false,
+				options.regex,
+				options.caseSensitive,
 				options.wholeWord ? options.wordSeparators || null : null,
-				options.regex || false,
+				options.regex,
 			);
 		} else {
 			const lineCount = this.textBuffer.getLineCount();
@@ -798,8 +800,8 @@ export abstract class BaseCellViewModel extends Disposable {
 			);
 			const searchParams = new SearchParams(
 				value,
-				options.regex || false,
-				options.caseSensitive || false,
+				options.regex,
+				options.caseSensitive,
 				options.wholeWord ? options.wordSeparators || null : null,
 			);
 			const searchData = searchParams.parseSearchRequest();
@@ -811,7 +813,7 @@ export abstract class BaseCellViewModel extends Disposable {
 			cellMatches = this.textBuffer.findMatchesLineByLine(
 				fullRange,
 				searchData,
-				options.regex || false,
+				options.regex,
 				1000,
 			);
 		}

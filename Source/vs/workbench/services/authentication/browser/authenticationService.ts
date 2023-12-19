@@ -1009,9 +1009,7 @@ export class AuthenticationService
 		const providerRequests = this._signInRequestItems.get(providerId);
 		const scopesList = scopes.join(SCOPESLIST_SEPARATOR);
 		const extensionHasExistingRequest =
-			providerRequests &&
-			providerRequests[scopesList] &&
-			providerRequests[scopesList].requestingExtensionIds.includes(
+			providerRequests?.[scopesList]?.requestingExtensionIds.includes(
 				extensionId,
 			);
 
@@ -1166,7 +1164,7 @@ export class AuthenticationService
 		id: string,
 		scopes?: string[],
 		activateImmediate = false,
-	): Promise<ReadonlyArray<AuthenticationSession>> {
+	): Promise<readonly AuthenticationSession[]> {
 		const authProvider =
 			this._authenticationProviders.get(id) ||
 			(await this.tryActivateProvider(id, activateImmediate));

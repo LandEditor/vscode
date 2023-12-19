@@ -42,7 +42,7 @@ export class EditorSettingMigration {
 		const firstDotIndex = key.indexOf(".");
 		if (firstDotIndex >= 0) {
 			const firstSegment = key.substring(0, firstDotIndex);
-			return this._read(
+			return EditorSettingMigration._read(
 				source[firstSegment],
 				key.substring(firstDotIndex + 1),
 			);
@@ -55,7 +55,7 @@ export class EditorSettingMigration {
 		if (firstDotIndex >= 0) {
 			const firstSegment = key.substring(0, firstDotIndex);
 			target[firstSegment] = target[firstSegment] || {};
-			this._write(
+			EditorSettingMigration._write(
 				target[firstSegment],
 				key.substring(firstDotIndex + 1),
 				value,
@@ -289,7 +289,7 @@ registerEditorSettingMigration("codeActionsOnSave", (value, read, write) => {
 			}
 		}
 		if (toBeModified) {
-			write(`codeActionsOnSave`, newValue);
+			write("codeActionsOnSave", newValue);
 		}
 	}
 });

@@ -43,7 +43,7 @@
 			// so logging SIGPIPE to the console will cause an infinite async loop
 			if (!didLogAboutSIGPIPE) {
 				didLogAboutSIGPIPE = true;
-				console.error(new Error(`Unexpected SIGPIPE`));
+				console.error(new Error("Unexpected SIGPIPE"));
 			}
 		});
 	}
@@ -53,7 +53,7 @@
 	//#region Add support for using node_modules.asar
 
 	function enableASARSupport() {
-		if (!path || !Module || typeof process === "undefined") {
+		if (!(path && Module) || typeof process === "undefined") {
 			console.warn(
 				"enableASARSupport() is only available in node.js environments",
 			);
@@ -133,7 +133,7 @@
 		const process = safeProcess();
 		/** @type {{ availableLanguages: {}; loadBundle?: (bundle: string, language: string, cb: (err: Error | undefined, result: string | undefined) => void) => void; _resolvedLanguagePackCoreLocation?: string; _corruptedFile?: string }} */
 		let nlsConfig = { availableLanguages: {} };
-		if (process && process.env["VSCODE_NLS_CONFIG"]) {
+		if (process?.env["VSCODE_NLS_CONFIG"]) {
 			try {
 				nlsConfig = JSON.parse(process.env["VSCODE_NLS_CONFIG"]);
 			} catch (e) {

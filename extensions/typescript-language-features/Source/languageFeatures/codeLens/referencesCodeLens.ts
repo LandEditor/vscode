@@ -84,9 +84,7 @@ export class TypeScriptReferencesCodeLensProvider extends TypeScriptBaseCodeLens
 		return codeLens;
 	}
 
-	private getCodeLensLabel(
-		locations: ReadonlyArray<vscode.Location>,
-	): string {
+	private getCodeLensLabel(locations: readonly vscode.Location[]): string {
 		return locations.length === 1
 			? vscode.l10n.t("1 reference")
 			: vscode.l10n.t("{0} references", locations.length);
@@ -114,18 +112,20 @@ export class TypeScriptReferencesCodeLensProvider extends TypeScriptBaseCodeLens
 
 			case PConst.Kind.const:
 			case PConst.Kind.let:
-			case PConst.Kind.variable:
+			case PConst.Kind.variable: {
 				// Only show references for exported variables
 				if (/\bexport\b/.test(item.kindModifiers)) {
 					return getSymbolRange(document, item);
 				}
 				break;
+			}
 
-			case PConst.Kind.class:
+			case PConst.Kind.class: {
 				if (item.text === "<class>") {
 					break;
 				}
 				return getSymbolRange(document, item);
+			}
 
 			case PConst.Kind.interface:
 			case PConst.Kind.type:
@@ -136,7 +136,7 @@ export class TypeScriptReferencesCodeLensProvider extends TypeScriptBaseCodeLens
 			case PConst.Kind.memberGetAccessor:
 			case PConst.Kind.memberSetAccessor:
 			case PConst.Kind.constructorImplementation:
-			case PConst.Kind.memberVariable:
+			case PConst.Kind.memberVariable: {
 				// Don't show if child and parent have same start
 				// For https://github.com/microsoft/vscode/issues/90396
 				if (
@@ -160,6 +160,7 @@ export class TypeScriptReferencesCodeLensProvider extends TypeScriptBaseCodeLens
 						return getSymbolRange(document, item);
 				}
 				break;
+			}
 		}
 
 		return undefined;

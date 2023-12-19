@@ -860,15 +860,16 @@ class BranchNode implements ISplitView<ILayoutContext>, IDisposable {
 		const [otherFirstChild, otherSecondChild] = other.children;
 
 		if (
-			!(firstChild instanceof LeafNode) ||
-			!(secondChild instanceof LeafNode)
+			!(firstChild instanceof LeafNode && secondChild instanceof LeafNode)
 		) {
 			return Disposable.None;
 		}
 
 		if (
-			!(otherFirstChild instanceof LeafNode) ||
-			!(otherSecondChild instanceof LeafNode)
+			!(
+				otherFirstChild instanceof LeafNode &&
+				otherSecondChild instanceof LeafNode
+			)
 		) {
 			return Disposable.None;
 		}
@@ -1839,7 +1840,7 @@ export class GridView implements IDisposable {
 			throw new Error("Invalid location");
 		}
 
-		if (!size.width && !size.height) {
+		if (!(size.width || size.height)) {
 			return;
 		}
 
@@ -2285,7 +2286,7 @@ export class GridView implements IDisposable {
 
 		const [first, second] = this.root.children;
 
-		if (!(first instanceof BranchNode) || !(second instanceof BranchNode)) {
+		if (!(first instanceof BranchNode && second instanceof BranchNode)) {
 			return;
 		}
 

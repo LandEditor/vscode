@@ -25,7 +25,7 @@ export async function getFoldingRanges(
 		Position.create(document.lineCount, 0),
 	);
 	let result: FoldingRange[] = [];
-	if (htmlMode && htmlMode.getFoldingRanges) {
+	if (htmlMode?.getFoldingRanges) {
 		result.push(...(await htmlMode.getFoldingRanges(document)));
 	}
 

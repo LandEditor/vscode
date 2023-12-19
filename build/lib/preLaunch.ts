@@ -12,7 +12,7 @@ import * as path from "path";
 const yarn = process.platform === "win32" ? "yarn.cmd" : "yarn";
 const rootDir = path.resolve(__dirname, "..", "..");
 
-function runProcess(command: string, args: ReadonlyArray<string> = []) {
+function runProcess(command: string, args: readonly string[] = []) {
 	return new Promise<void>((resolve, reject) => {
 		const child = spawn(command, args, {
 			cwd: rootDir,

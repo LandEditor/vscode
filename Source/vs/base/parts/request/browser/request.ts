@@ -40,7 +40,7 @@ export function request(
 				navigator.onLine
 					? new Error(
 							(xhr.statusText &&
-								"XHR failed: " + xhr.statusText) ||
+								`XHR failed: ${xhr.statusText}`) ||
 								"XHR failed",
 					  )
 					: new OfflineError(),

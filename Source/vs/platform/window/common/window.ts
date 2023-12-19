@@ -413,5 +413,5 @@ export interface INativeWindowConfiguration
  * https://github.com/electron/electron/blob/master/docs/api/web-contents.md#contentssetzoomlevellevel
  */
 export function zoomLevelToZoomFactor(zoomLevel = 0): number {
-	return Math.pow(1.2, zoomLevel);
+	return 1.2 ** zoomLevel;
 }

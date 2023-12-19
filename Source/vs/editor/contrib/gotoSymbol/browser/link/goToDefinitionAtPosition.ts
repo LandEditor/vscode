@@ -162,7 +162,7 @@ export class GotoDefinitionAtPositionEditorContribution
 			return;
 		}
 
-		if (!this.editor.hasModel() || !this.isEnabled(mouseEvent, withKey)) {
+		if (!(this.editor.hasModel() && this.isEnabled(mouseEvent, withKey))) {
 			this.currentWordAtPosition = null;
 			this.removeLinkDecorations();
 			return;
@@ -225,7 +225,7 @@ export class GotoDefinitionAtPositionEditorContribution
 			return;
 		}
 
-		if (!results || !results.length || !state.validate(this.editor)) {
+		if (!(results?.length && state.validate(this.editor))) {
 			this.removeLinkDecorations();
 			return;
 		}
@@ -272,7 +272,7 @@ export class GotoDefinitionAtPositionEditorContribution
 			this.textModelResolverService
 				.createModelReference(result.uri)
 				.then((ref) => {
-					if (!ref.object || !ref.object.textEditorModel) {
+					if (!ref.object?.textEditorModel) {
 						ref.dispose();
 						return;
 					}

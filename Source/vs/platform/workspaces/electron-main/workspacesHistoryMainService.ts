@@ -128,10 +128,12 @@ export class WorkspacesHistoryMainService
 			// Workspace
 			if (isRecentWorkspace(recent)) {
 				if (
-					!this.workspacesManagementMainService.isUntitledWorkspace(
-						recent.workspace,
-					) &&
-					!this.containsWorkspace(workspaces, recent.workspace)
+					!(
+						this.workspacesManagementMainService.isUntitledWorkspace(
+							recent.workspace,
+						) ||
+						this.containsWorkspace(workspaces, recent.workspace)
+					)
 				) {
 					workspaces.push(recent);
 				}
@@ -156,7 +158,7 @@ export class WorkspacesHistoryMainService
 						basename(recent.fileUri),
 					) >= 0;
 
-				if (!alreadyExistsInHistory && !shouldBeFiltered) {
+				if (!(alreadyExistsInHistory || shouldBeFiltered)) {
 					files.push(recent);
 
 					// Add to recent documents (Windows only, macOS later)

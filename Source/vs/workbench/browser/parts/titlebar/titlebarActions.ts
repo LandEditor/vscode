@@ -91,11 +91,11 @@ registerAction2(
 
 registerAction2(
 	class ToggleEditorActions extends Action2 {
-		static readonly settingsID = `workbench.editor.editorActionsLocation`;
+		static readonly settingsID = "workbench.editor.editorActionsLocation";
 		constructor() {
 			const titleBarContextCondition = ContextKeyExpr.and(
 				ContextKeyExpr.equals(
-					`config.workbench.editor.showTabs`,
+					"config.workbench.editor.showTabs",
 					"none",
 				).negate(),
 				ContextKeyExpr.equals(

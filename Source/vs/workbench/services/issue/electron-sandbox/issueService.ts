@@ -201,8 +201,7 @@ export class NativeIssueService implements IWorkbenchIssueService {
 							? Object.keys(manifest.contributes)
 							: [];
 						const isTheme =
-							!manifest.main &&
-							!manifest.browser &&
+							!(manifest.main || manifest.browser) &&
 							manifestKeys.length === 1 &&
 							manifestKeys[0] === "themes";
 						const isBuiltin =
@@ -211,9 +210,8 @@ export class NativeIssueService implements IWorkbenchIssueService {
 							name: manifest.name,
 							publisher: manifest.publisher,
 							version: manifest.version,
-							repositoryUrl:
-								manifest.repository && manifest.repository.url,
-							bugsUrl: manifest.bugs && manifest.bugs.url,
+							repositoryUrl: manifest.repository?.url,
+							bugsUrl: manifest.bugs?.url,
 							hasIssueUriRequestHandler: this._handlers.has(
 								extension.identifier.id.toLowerCase(),
 							),

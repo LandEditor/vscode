@@ -115,7 +115,7 @@ export class SuggestAlternatives {
 				this._model,
 				this._index,
 			);
-			this._acceptNext!({
+			this._acceptNext?.({
 				index: this._index,
 				item: this._model.items[this._index],
 				model: this._model,

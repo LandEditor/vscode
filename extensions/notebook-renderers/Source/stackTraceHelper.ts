@@ -65,9 +65,10 @@ function linkifyStack(stack: string) {
 		const original = lines[i];
 		if (fileRegex.test(original)) {
 			const fileMatch = lines[i].match(fileRegex);
-			fileOrCell = { kind: "file", path: stripFormatting(fileMatch![1]) };
-
-			continue;
+			fileOrCell = {
+				kind: "file",
+				path: stripFormatting(fileMatch?.[1]),
+			};
 		} else if (cellRegex.test(original)) {
 			fileOrCell = {
 				kind: "cell",
@@ -82,8 +83,6 @@ function linkifyStack(stack: string) {
 				cellRegex,
 				`$<prefix><a href=\'${fileOrCell.path}&line=$<lineNumber>\'>line $<lineNumber></a>`,
 			);
-
-			continue;
 		} else if (inputRegex.test(original)) {
 			fileOrCell = {
 				kind: "cell",
@@ -98,13 +97,9 @@ function linkifyStack(stack: string) {
 				inputRegex,
 				`Input <a href=\'${fileOrCell.path}>\'>$<cellLabel></a>$<postfix>`,
 			);
-
-			continue;
 		} else if (!fileOrCell || original.trim() === "") {
 			// we don't have a location, so don't linkify anything
 			fileOrCell = undefined;
-
-			continue;
 		} else if (lineNumberRegex.test(original)) {
 			lines[i] = original.replace(
 				lineNumberRegex,
@@ -114,8 +109,6 @@ function linkifyStack(stack: string) {
 						: `${prefix}<a href='${fileOrCell?.path}&line=${num}'>${num}</a>${suffix}`;
 				},
 			);
-
-			continue;
 		}
 	}
 

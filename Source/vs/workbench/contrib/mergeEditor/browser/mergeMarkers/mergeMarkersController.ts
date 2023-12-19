@@ -64,11 +64,11 @@ export class MergeMarkersController extends Disposable {
 			}
 			this.viewZoneIds.length = 0;
 			for (const b of blocks.blocks) {
-				const startLine = model!
-					.getLineContent(b.lineRange.startLineNumber)
+				const startLine = model
+					?.getLineContent(b.lineRange.startLineNumber)
 					.substring(0, 20);
-				const endLine = model!
-					.getLineContent(b.lineRange.endLineNumberExclusive - 1)
+				const endLine = model
+					?.getLineContent(b.lineRange.endLineNumberExclusive - 1)
 					.substring(0, 20);
 
 				const conflictingLinesCount = b.lineRange.lineCount - 2;

@@ -80,7 +80,7 @@ export class MoveOperations {
 				return new Position(position.lineNumber, newPosition + 1);
 			}
 		}
-		return this.leftPosition(model, position);
+		return MoveOperations.leftPosition(model, position);
 	}
 
 	private static left(
@@ -109,7 +109,8 @@ export class MoveOperations {
 		inSelectionMode: boolean,
 		noOfColumns: number,
 	): SingleCursorState {
-		let lineNumber: number, column: number;
+		let lineNumber: number;
+		let column: number;
 
 		if (cursor.hasSelection() && !inSelectionMode) {
 			// If the user has a selection and does not want to extend it,
@@ -168,14 +169,12 @@ export class MoveOperations {
 		column: number,
 	): Position {
 		if (column < model.getLineMaxColumn(lineNumber)) {
-			column =
-				column +
-				strings.nextCharLength(
-					model.getLineContent(lineNumber),
-					column - 1,
-				);
+			column += strings.nextCharLength(
+				model.getLineContent(lineNumber),
+				column - 1,
+			);
 		} else if (lineNumber < model.getLineCount()) {
-			lineNumber = lineNumber + 1;
+			lineNumber += 1;
 			column = model.getLineMinColumn(lineNumber);
 		}
 		return new Position(lineNumber, column);
@@ -200,7 +199,7 @@ export class MoveOperations {
 				return new Position(lineNumber, newPosition + 1);
 			}
 		}
-		return this.rightPosition(model, lineNumber, column);
+		return MoveOperations.rightPosition(model, lineNumber, column);
 	}
 
 	public static right(
@@ -231,7 +230,8 @@ export class MoveOperations {
 		inSelectionMode: boolean,
 		noOfColumns: number,
 	): SingleCursorState {
-		let lineNumber: number, column: number;
+		let lineNumber: number;
+		let column: number;
 
 		if (cursor.hasSelection() && !inSelectionMode) {
 			// If we are in selection mode, move right without selection cancels selection and puts cursor at the end of the selection
@@ -316,8 +316,7 @@ export class MoveOperations {
 				position,
 				normalizationAffinity,
 			);
-			leftoverVisibleColumns =
-				leftoverVisibleColumns + (column - newPosition.column);
+			leftoverVisibleColumns += column - newPosition.column;
 			lineNumber = newPosition.lineNumber;
 			column = newPosition.column;
 		}
@@ -333,7 +332,7 @@ export class MoveOperations {
 		count: number,
 		allowMoveOnLastLine: boolean,
 	): CursorPosition {
-		return this.vertical(
+		return MoveOperations.vertical(
 			config,
 			model,
 			lineNumber,
@@ -352,7 +351,8 @@ export class MoveOperations {
 		inSelectionMode: boolean,
 		linesCount: number,
 	): SingleCursorState {
-		let lineNumber: number, column: number;
+		let lineNumber: number;
+		let column: number;
 
 		if (cursor.hasSelection() && !inSelectionMode) {
 			// If we are in selection mode, move down acts relative to the end of selection
@@ -441,7 +441,7 @@ export class MoveOperations {
 		count: number,
 		allowMoveOnFirstLine: boolean,
 	): CursorPosition {
-		return this.vertical(
+		return MoveOperations.vertical(
 			config,
 			model,
 			lineNumber,
@@ -460,7 +460,8 @@ export class MoveOperations {
 		inSelectionMode: boolean,
 		linesCount: number,
 	): SingleCursorState {
-		let lineNumber: number, column: number;
+		let lineNumber: number;
+		let column: number;
 
 		if (cursor.hasSelection() && !inSelectionMode) {
 			// If we are in selection mode, move up acts relative to the beginning of selection
@@ -549,12 +550,18 @@ export class MoveOperations {
 		let lineNumber = cursor.position.lineNumber;
 
 		// If our current line is blank, move to the previous non-blank line
-		while (lineNumber > 1 && this._isBlankLine(model, lineNumber)) {
+		while (
+			lineNumber > 1 &&
+			MoveOperations._isBlankLine(model, lineNumber)
+		) {
 			lineNumber--;
 		}
 
 		// Find the previous blank line
-		while (lineNumber > 1 && !this._isBlankLine(model, lineNumber)) {
+		while (
+			lineNumber > 1 &&
+			!MoveOperations._isBlankLine(model, lineNumber)
+		) {
 			lineNumber--;
 		}
 
@@ -576,14 +583,17 @@ export class MoveOperations {
 		let lineNumber = cursor.position.lineNumber;
 
 		// If our current line is blank, move to the next non-blank line
-		while (lineNumber < lineCount && this._isBlankLine(model, lineNumber)) {
+		while (
+			lineNumber < lineCount &&
+			MoveOperations._isBlankLine(model, lineNumber)
+		) {
 			lineNumber++;
 		}
 
 		// Find the next blank line
 		while (
 			lineNumber < lineCount &&
-			!this._isBlankLine(model, lineNumber)
+			!MoveOperations._isBlankLine(model, lineNumber)
 		) {
 			lineNumber++;
 		}

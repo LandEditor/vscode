@@ -156,7 +156,7 @@ export class TerminalProcess
 			: posixShellTypeMap.get(this._currentTitle);
 	}
 	get hasChildProcesses(): boolean {
-		return this._childProcessMonitor?.hasChildProcesses || false;
+		return this._childProcessMonitor?.hasChildProcesses;
 	}
 
 	private readonly _onProcessData = this._register(new Emitter<string>());
@@ -384,10 +384,9 @@ export class TerminalProcess
 		}
 
 		const cwd = slc.cwd instanceof URI ? slc.cwd.path : slc.cwd;
-		const envPaths: string[] | undefined =
-			slc.env && slc.env.PATH
-				? slc.env.PATH.split(path.delimiter)
-				: undefined;
+		const envPaths: string[] | undefined = slc.env?.PATH
+			? slc.env.PATH.split(path.delimiter)
+			: undefined;
 		const executable = await findExecutable(
 			slc.executable!,
 			cwd,
@@ -406,7 +405,7 @@ export class TerminalProcess
 
 		try {
 			const result = await Promises.stat(executable);
-			if (!result.isFile() && !result.isSymbolicLink()) {
+			if (!(result.isFile() || result.isSymbolicLink())) {
 				return {
 					message: localize(
 						"launchFail.executableIsNotFileOrSymlink",
@@ -544,9 +543,11 @@ export class TerminalProcess
 	private async _throttleKillSpawn(): Promise<void> {
 		// Only throttle on Windows/conpty
 		if (
-			!isWindows ||
-			!("useConpty" in this._ptyOptions) ||
-			!this._ptyOptions.useConpty
+			!(
+				isWindows &&
+				"useConpty" in this._ptyOptions &&
+				this._ptyOptions.useConpty
+			)
 		) {
 			return;
 		}
@@ -602,7 +603,7 @@ export class TerminalProcess
 		// to become unresponsive, disconnecting all terminals across all windows.
 		if (immediate && !isWindows) {
 			this._kill();
-		} else if (!this._closeTimeout && !this._store.isDisposed) {
+		} else if (!(this._closeTimeout || this._store.isDisposed)) {
 			this._queueProcessExit();
 			// Allow a maximum amount of time for the process to exit, otherwise force kill it
 			setTimeout(() => {
@@ -624,7 +625,7 @@ export class TerminalProcess
 			i++
 		) {
 			const obj = {
-				isBinary: isBinary || false,
+				isBinary: isBinary,
 				data: data.substr(
 					i * Constants.WriteMaxChunkSize,
 					Constants.WriteMaxChunkSize,
@@ -707,9 +708,9 @@ export class TerminalProcess
 		const object = this._writeQueue.shift()!;
 		this._logService.trace("node-pty.IPty#write", object.data);
 		if (object.isBinary) {
-			this._ptyProcess!.write(Buffer.from(object.data, "binary") as any);
+			this._ptyProcess?.write(Buffer.from(object.data, "binary") as any);
 		} else {
-			this._ptyProcess!.write(object.data);
+			this._ptyProcess?.write(object.data);
 		}
 		this._childProcessMonitor?.handleInput();
 	}
@@ -721,8 +722,8 @@ export class TerminalProcess
 		if (
 			typeof cols !== "number" ||
 			typeof rows !== "number" ||
-			isNaN(cols) ||
-			isNaN(rows)
+			Number.isNaN(cols) ||
+			Number.isNaN(rows)
 		) {
 			return;
 		}
@@ -745,7 +746,7 @@ export class TerminalProcess
 			} catch (e) {
 				// Swallow error if the pty has already exited
 				this._logService.trace(
-					"node-pty.IPty#resize exception " + e.message,
+					`node-pty.IPty#resize exception ${e.message}`,
 				);
 				if (
 					this._exitCode !== undefined &&
@@ -787,7 +788,7 @@ export class TerminalProcess
 	clearUnacknowledgedChars(): void {
 		this._unacknowledgedCharCount = 0;
 		this._logService.trace(
-			`Flow control: Cleared all unacknowledged chars, forcing resume`,
+			"Flow control: Cleared all unacknowledged chars, forcing resume",
 		);
 		if (this._isPtyPaused) {
 			this._ptyProcess?.resume();
@@ -815,7 +816,7 @@ export class TerminalProcess
 				}
 				this._logService.trace("node-pty.IPty#pid");
 				exec(
-					"lsof -OPln -p " + this._ptyProcess.pid + " | grep cwd",
+					`lsof -OPln -p ${this._ptyProcess.pid} | grep cwd`,
 					{ env: { ...process.env, LANG: "en_US.UTF-8" } },
 					(error, stdout, stderr) => {
 						if (!error && stdout !== "") {

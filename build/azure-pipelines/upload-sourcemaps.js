@@ -76,7 +76,7 @@ function main() {
 					account: process.env.AZURE_STORAGE_ACCOUNT,
 					credential,
 					container: "sourcemaps",
-					prefix: commit + "/",
+					prefix: `${commit}/`,
 				}),
 			)
 			.on("end", () => c())

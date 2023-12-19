@@ -835,7 +835,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 						layout.showBaseAtTop && layout.showBase
 							? {
 									size: 38,
-									data: this.baseView.get()!.view,
+									data: this.baseView.get()?.view,
 							  }
 							: undefined,
 						{
@@ -843,7 +843,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 							groups: [
 								{ data: this.input1View.view },
 								!layout.showBaseAtTop && layout.showBase
-									? { data: this.baseView.get()!.view }
+									? { data: this.baseView.get()?.view }
 									: undefined,
 								{ data: this.input2View.view },
 							].filter(isDefined),
@@ -860,7 +860,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 						layout.showBase
 							? {
 									size: 40,
-									data: this.baseView.get()!.view,
+									data: this.baseView.get()?.view,
 							  }
 							: undefined,
 						{
@@ -1113,7 +1113,7 @@ export class MergeEditorResolverContribution extends Disposable {
 
 		this._register(
 			editorResolverService.registerEditor(
-				`*`,
+				"*",
 				{
 					id: DEFAULT_EDITOR_ASSOCIATION.id,
 					label: DEFAULT_EDITOR_ASSOCIATION.displayName,

@@ -122,7 +122,7 @@ function parseGlob(rawGlob: string): Iterable<string> {
 
 	// Relative path, so implicitly track on ** to match everything
 	if (!rawGlob.startsWith("**")) {
-		return ["**/" + rawGlob];
+		return [`**/${rawGlob}`];
 	}
 
 	return [rawGlob];
@@ -166,7 +166,7 @@ function resolveCopyDestinationSetting(
 
 	// Destination that start with `/` implicitly means go to workspace root
 	if (outDest.startsWith("/")) {
-		outDest = "${documentWorkspaceFolder}/" + outDest.slice(1);
+		outDest = `\${documentWorkspaceFolder}/${outDest.slice(1)}`;
 	}
 
 	// Destination that ends with `/` implicitly needs a fileName

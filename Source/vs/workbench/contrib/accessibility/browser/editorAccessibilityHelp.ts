@@ -111,29 +111,35 @@ class EditorAccessibilityHelpProvider implements IAccessibleContentProvider {
 			AudioCue.save.settingsKey,
 		);
 		switch (saveAudioCue) {
-			case "never":
+			case "never": {
 				content.push(AccessibilityHelpNLS.saveAudioCueDisabled);
 				break;
-			case "always":
+			}
+			case "always": {
 				content.push(AccessibilityHelpNLS.saveAudioCueAlways);
 				break;
-			case "userGesture":
+			}
+			case "userGesture": {
 				content.push(AccessibilityHelpNLS.saveAudioCueUserGesture);
 				break;
+			}
 		}
 		const formatAudioCue = this._configurationService.getValue(
 			AudioCue.format.settingsKey,
 		);
 		switch (formatAudioCue) {
-			case "never":
+			case "never": {
 				content.push(AccessibilityHelpNLS.formatAudioCueDisabled);
 				break;
-			case "always":
+			}
+			case "always": {
 				content.push(AccessibilityHelpNLS.formatAudioCueAlways);
 				break;
-			case "userGesture":
+			}
+			case "userGesture": {
 				content.push(AccessibilityHelpNLS.formatAudioCueUserGesture);
 				break;
+			}
 		}
 
 		const commentCommandInfo = getCommentCommandInfo(

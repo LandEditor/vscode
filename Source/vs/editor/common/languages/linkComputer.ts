@@ -251,41 +251,47 @@ export class LinkComputer {
 				if (state === State.Accept) {
 					let chClass: CharacterClass;
 					switch (chCode) {
-						case CharCode.OpenParen:
+						case CharCode.OpenParen: {
 							hasOpenParens = true;
 							chClass = CharacterClass.None;
 							break;
-						case CharCode.CloseParen:
+						}
+						case CharCode.CloseParen: {
 							chClass = hasOpenParens
 								? CharacterClass.None
 								: CharacterClass.ForceTermination;
 							break;
-						case CharCode.OpenSquareBracket:
+						}
+						case CharCode.OpenSquareBracket: {
 							inSquareBrackets = true;
 							hasOpenSquareBracket = true;
 							chClass = CharacterClass.None;
 							break;
-						case CharCode.CloseSquareBracket:
+						}
+						case CharCode.CloseSquareBracket: {
 							inSquareBrackets = false;
 							chClass = hasOpenSquareBracket
 								? CharacterClass.None
 								: CharacterClass.ForceTermination;
 							break;
-						case CharCode.OpenCurlyBrace:
+						}
+						case CharCode.OpenCurlyBrace: {
 							hasOpenCurlyBracket = true;
 							chClass = CharacterClass.None;
 							break;
-						case CharCode.CloseCurlyBrace:
+						}
+						case CharCode.CloseCurlyBrace: {
 							chClass = hasOpenCurlyBracket
 								? CharacterClass.None
 								: CharacterClass.ForceTermination;
 							break;
+						}
 
 						// The following three rules make it that ' or " or ` are allowed inside links
 						// only if the link is wrapped by some other quote character
 						case CharCode.SingleQuote:
 						case CharCode.DoubleQuote:
-						case CharCode.BackTick:
+						case CharCode.BackTick: {
 							if (linkBeginChCode === chCode) {
 								chClass = CharacterClass.ForceTermination;
 							} else if (
@@ -298,26 +304,30 @@ export class LinkComputer {
 								chClass = CharacterClass.ForceTermination;
 							}
 							break;
-						case CharCode.Asterisk:
+						}
+						case CharCode.Asterisk: {
 							// `*` terminates a link if the link began with `*`
 							chClass =
 								linkBeginChCode === CharCode.Asterisk
 									? CharacterClass.ForceTermination
 									: CharacterClass.None;
 							break;
-						case CharCode.Pipe:
+						}
+						case CharCode.Pipe: {
 							// `|` terminates a link if the link began with `|`
 							chClass =
 								linkBeginChCode === CharCode.Pipe
 									? CharacterClass.ForceTermination
 									: CharacterClass.None;
 							break;
-						case CharCode.Space:
+						}
+						case CharCode.Space: {
 							// ` ` allow space in between [ and ]
 							chClass = inSquareBrackets
 								? CharacterClass.None
 								: CharacterClass.ForceTermination;
 							break;
+						}
 						default:
 							chClass = classifier.get(chCode);
 					}

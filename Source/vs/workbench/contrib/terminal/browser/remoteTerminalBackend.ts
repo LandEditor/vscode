@@ -196,7 +196,7 @@ class RemoteTerminalBackend
 				this._remoteTerminalChannel.sendCommandResult(
 					reqId,
 					true,
-					"Invalid remote cli command: " + commandId
+					`Invalid remote cli command: ${commandId}`
 				);
 				return;
 			}
@@ -260,7 +260,7 @@ class RemoteTerminalBackend
 	): Promise<IProcessDetails | undefined> {
 		if (!this._remoteTerminalChannel) {
 			throw new Error(
-				`Cannot request detach instance when there is no remote!`,
+				"Cannot request detach instance when there is no remote!",
 			);
 		}
 		return this._remoteTerminalChannel.requestDetachInstance(
@@ -275,7 +275,7 @@ class RemoteTerminalBackend
 	): Promise<void> {
 		if (!this._remoteTerminalChannel) {
 			throw new Error(
-				`Cannot accept detached instance when there is no remote!`,
+				"Cannot accept detached instance when there is no remote!",
 			);
 		} else if (!persistentProcessId) {
 			this._logService.warn(
@@ -293,7 +293,7 @@ class RemoteTerminalBackend
 	async persistTerminalState(): Promise<void> {
 		if (!this._remoteTerminalChannel) {
 			throw new Error(
-				`Cannot persist terminal state when there is no remote!`,
+				"Cannot persist terminal state when there is no remote!",
 			);
 		}
 		const ids = Array.from(this._ptys.keys());
@@ -319,7 +319,7 @@ class RemoteTerminalBackend
 	): Promise<ITerminalChildProcess> {
 		if (!this._remoteTerminalChannel) {
 			throw new Error(
-				`Cannot create remote terminal when there is no remote!`,
+				"Cannot create remote terminal when there is no remote!",
 			);
 		}
 
@@ -391,7 +391,7 @@ class RemoteTerminalBackend
 	): Promise<ITerminalChildProcess | undefined> {
 		if (!this._remoteTerminalChannel) {
 			throw new Error(
-				`Cannot create remote terminal when there is no remote!`,
+				"Cannot create remote terminal when there is no remote!",
 			);
 		}
 
@@ -416,7 +416,7 @@ class RemoteTerminalBackend
 	): Promise<ITerminalChildProcess | undefined> {
 		if (!this._remoteTerminalChannel) {
 			throw new Error(
-				`Cannot create remote terminal when there is no remote!`,
+				"Cannot create remote terminal when there is no remote!",
 			);
 		}
 
@@ -533,7 +533,7 @@ class RemoteTerminalBackend
 	): Promise<void> {
 		if (!this._remoteTerminalChannel) {
 			throw new Error(
-				`Cannot call setActiveInstanceId when there is no remote`,
+				"Cannot call setActiveInstanceId when there is no remote",
 			);
 		}
 
@@ -550,7 +550,7 @@ class RemoteTerminalBackend
 	async getTerminalLayoutInfo(): Promise<ITerminalsLayoutInfo | undefined> {
 		if (!this._remoteTerminalChannel) {
 			throw new Error(
-				`Cannot call getActiveInstanceId when there is no remote`,
+				"Cannot call getActiveInstanceId when there is no remote",
 			);
 		}
 

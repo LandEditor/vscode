@@ -558,7 +558,7 @@ export class WindowsMainService
 					!openConfig.cli._.length &&
 					!openConfig.cli["file-uri"] &&
 					!openConfig.cli["folder-uri"] &&
-					!(openConfig.urisToOpen && openConfig.urisToOpen.length);
+					!openConfig.urisToOpen?.length;
 				let focusLastOpened = true;
 				let focusLastWindow = true;
 
@@ -619,10 +619,14 @@ export class WindowsMainService
 		const isDiff = filesToOpen && filesToOpen.filesToDiff.length > 0;
 		const isMerge = filesToOpen && filesToOpen.filesToMerge.length > 0;
 		if (
-			!usedWindows.some((window) => window.isExtensionDevelopmentHost) &&
-			!isDiff &&
-			!isMerge &&
-			!openConfig.noRecentEntry
+			!(
+				usedWindows.some(
+					(window) => window.isExtensionDevelopmentHost,
+				) ||
+				isDiff ||
+				isMerge ||
+				openConfig.noRecentEntry
+			)
 		) {
 			const recents: IRecent[] = [];
 			for (const pathToOpen of pathsToOpen) {
@@ -1167,8 +1171,7 @@ export class WindowsMainService
 		});
 
 		if (
-			!forceNewWindow &&
-			!windowToUse &&
+			!(forceNewWindow || windowToUse) &&
 			typeof openConfig.contextWindowId === "number"
 		) {
 			windowToUse = this.getWindowById(openConfig.contextWindowId); // fix for https://github.com/microsoft/vscode/issues/49587
@@ -1950,8 +1953,7 @@ export class WindowsMainService
 			(openConfig.preferNewWindow || openConfig.forceNewWindow) &&
 			!openConfig.forceReuseWindow;
 		if (
-			!openConfig.forceNewWindow &&
-			!openConfig.forceReuseWindow &&
+			!(openConfig.forceNewWindow || openConfig.forceReuseWindow) &&
 			(openFolderInNewWindowConfig === "on" ||
 				openFolderInNewWindowConfig === "off")
 		) {
@@ -2024,10 +2026,12 @@ export class WindowsMainService
 
 		// Fill in previously opened workspace unless an explicit path is provided and we are not unit testing
 		if (
-			!cliArgs.length &&
-			!folderUris.length &&
-			!fileUris.length &&
-			!openConfig.cli.extensionTestsPath
+			!(
+				cliArgs.length ||
+				folderUris.length ||
+				fileUris.length ||
+				openConfig.cli.extensionTestsPath
+			)
 		) {
 			const extensionDevelopmentWindowState =
 				this.windowsStateHandler.state.lastPluginDevelopmentHostWindow;
@@ -2083,7 +2087,7 @@ export class WindowsMainService
 
 		cliArgs = cliArgs.filter((path) => {
 			const uri = URI.file(path);
-			if (!!findWindowOnWorkspaceOrFolder(this.getWindows(), uri)) {
+			if (findWindowOnWorkspaceOrFolder(this.getWindows(), uri)) {
 				return false;
 			}
 
@@ -2130,8 +2134,11 @@ export class WindowsMainService
 			context: openConfig.context,
 			cli: openConfig.cli,
 			forceNewWindow: true,
-			forceEmpty:
-				!cliArgs.length && !folderUris.length && !fileUris.length,
+			forceEmpty: !(
+				cliArgs.length ||
+				folderUris.length ||
+				fileUris.length
+			),
 			userEnv: openConfig.userEnv,
 			noRecentEntry: true,
 			waitMarkerFileURI: openConfig.waitMarkerFileURI,
@@ -2156,7 +2163,7 @@ export class WindowsMainService
 			this.userDataProfilesMainService.defaultProfile;
 
 		let window: ICodeWindow | undefined;
-		if (!options.forceNewWindow && !options.forceNewTabbedWindow) {
+		if (!(options.forceNewWindow || options.forceNewTabbedWindow)) {
 			window = options.windowToUse || lastActiveWindow;
 			if (window) {
 				window.focus();

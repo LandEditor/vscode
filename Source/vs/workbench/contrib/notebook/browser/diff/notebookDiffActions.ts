@@ -138,7 +138,7 @@ registerAction2(
 			const original = context.cell.original;
 			const modified = context.cell.modified;
 
-			if (!original || !modified) {
+			if (!(original && modified)) {
 				return;
 			}
 
@@ -288,7 +288,7 @@ registerAction2(
 			const original = context.cell.original;
 			const modified = context.cell.modified;
 
-			if (!original || !modified) {
+			if (!(original && modified)) {
 				return;
 			}
 

@@ -167,7 +167,7 @@ class ResourceLabelFormattersHandler implements IWorkbenchContribution {
 					if (typeof formatter.formatting.label !== "string") {
 						formatter.formatting.label = "${authority}${path}";
 					}
-					if (typeof formatter.formatting.separator !== `string`) {
+					if (typeof formatter.formatting.separator !== "string") {
 						formatter.formatting.separator = sep;
 					}
 
@@ -293,8 +293,7 @@ export class LabelService extends Disposable implements ILabelService {
 						formatter.authority.toLowerCase(),
 						resource.authority.toLowerCase(),
 					) &&
-					(!bestResult ||
-						!bestResult.authority ||
+					(!bestResult?.authority ||
 						formatter.authority.length >
 							bestResult.authority.length ||
 						(formatter.authority.length ===
@@ -512,20 +511,22 @@ export class LabelService extends Disposable implements ILabelService {
 
 		let label: string;
 		switch (options?.verbose) {
-			case Verbosity.SHORT:
+			case Verbosity.SHORT: {
 				label = filename; // skip suffix for short label
 				break;
-			case Verbosity.LONG:
+			}
+			case Verbosity.LONG: {
 				label = localize(
 					"workspaceNameVerbose",
 					"{0} (Workspace)",
 					this.getUriLabel(joinPath(dirname(workspaceUri), filename)),
 				);
 				break;
-			case Verbosity.MEDIUM:
-			default:
+			}
+			default: {
 				label = localize("workspaceName", "{0} (Workspace)", filename);
 				break;
+			}
 		}
 
 		if (options?.verbose === Verbosity.SHORT) {
@@ -541,14 +542,14 @@ export class LabelService extends Disposable implements ILabelService {
 	): string {
 		let label: string;
 		switch (options?.verbose) {
-			case Verbosity.LONG:
+			case Verbosity.LONG: {
 				label = this.getUriLabel(folderUri);
 				break;
-			case Verbosity.SHORT:
-			case Verbosity.MEDIUM:
-			default:
+			}
+			default: {
 				label = basename(folderUri) || posix.sep;
 				break;
+			}
 		}
 
 		if (options?.verbose === Verbosity.SHORT) {

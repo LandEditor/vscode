@@ -223,8 +223,8 @@ export abstract class ZoneWidget implements IHorizontalSashLayoutProvider {
 		this._disposables.add(
 			this.editor.onDidLayoutChange((info: EditorLayoutInfo) => {
 				const width = this._getWidth(info);
-				this.domNode.style.width = width + "px";
-				this.domNode.style.left = this._getLeft(info) + "px";
+				this.domNode.style.width = `${width}px`;
+				this.domNode.style.left = `${this._getLeft(info)}px`;
 				this._onWidth(width);
 			}),
 		);
@@ -305,7 +305,7 @@ export abstract class ZoneWidget implements IHorizontalSashLayoutProvider {
 	}
 
 	private _onViewZoneTop(top: number): void {
-		this.domNode.style.top = top + "px";
+		this.domNode.style.top = `${top}px`;
 	}
 
 	private _onViewZoneHeight(height: number): void {
@@ -361,7 +361,7 @@ export abstract class ZoneWidget implements IHorizontalSashLayoutProvider {
 				heightInLines ?? this._viewZone.heightInLines;
 
 			this.editor.changeViewZones((accessor) => {
-				accessor.layoutZone(this._viewZone!.id);
+				accessor.layoutZone(this._viewZone?.id);
 			});
 		}
 	}
@@ -405,7 +405,7 @@ export abstract class ZoneWidget implements IHorizontalSashLayoutProvider {
 		const layoutInfo = this.editor.getLayoutInfo();
 		const width = this._getWidth(layoutInfo);
 		this.domNode.style.width = `${width}px`;
-		this.domNode.style.left = this._getLeft(layoutInfo) + "px";
+		this.domNode.style.left = `${this._getLeft(layoutInfo)}px`;
 
 		// Render the widget as zone (rendering) and widget (lifecycle)
 		const viewZoneDomNode = document.createElement("div");
@@ -468,16 +468,16 @@ export abstract class ZoneWidget implements IHorizontalSashLayoutProvider {
 			const width = this.options.frameWidth
 				? this.options.frameWidth
 				: frameThickness;
-			this.container.style.borderTopWidth = width + "px";
-			this.container.style.borderBottomWidth = width + "px";
+			this.container.style.borderTopWidth = `${width}px`;
+			this.container.style.borderBottomWidth = `${width}px`;
 		}
 
 		const containerHeight =
 			heightInLines * lineHeight - this._decoratingElementsHeight();
 
 		if (this.container) {
-			this.container.style.top = arrowHeight + "px";
-			this.container.style.height = containerHeight + "px";
+			this.container.style.top = `${arrowHeight}px`;
+			this.container.style.height = `${containerHeight}px`;
 			this.container.style.overflow = "hidden";
 		}
 

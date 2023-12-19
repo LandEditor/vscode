@@ -279,11 +279,11 @@ export class ExtensionEnablementService
 			this.userDataSyncEnablementService.isEnabled() &&
 			this.userDataSyncAccountService.account &&
 			isAuthenticationProviderExtension(extension.manifest) &&
-			extension.manifest.contributes!.authentication!.some(
+			extension.manifest.contributes?.authentication?.some(
 				(a) =>
 					a.id ===
-					this.userDataSyncAccountService.account!
-						.authenticationProviderId,
+					this.userDataSyncAccountService.account
+						?.authenticationProviderId,
 			)
 		) {
 			throw new Error(
@@ -345,7 +345,7 @@ export class ExtensionEnablementService
 							extension.identifier.id,
 					),
 				);
-			case EnablementState.DisabledByExtensionDependency:
+			case EnablementState.DisabledByExtensionDependency: {
 				if (donotCheckDependencies) {
 					break;
 				}
@@ -375,6 +375,7 @@ export class ExtensionEnablementService
 						);
 					}
 				}
+			}
 		}
 	}
 
@@ -462,12 +463,12 @@ export class ExtensionEnablementService
 
 	private getExtensionsToEnableRecursively(
 		extensions: IExtension[],
-		allExtensions: ReadonlyArray<IExtension>,
+		allExtensions: readonly IExtension[],
 		enablementState: EnablementState,
 		options: { dependencies: boolean; pack: boolean },
 		checked: IExtension[] = [],
 	): IExtension[] {
-		if (!options.dependencies && !options.pack) {
+		if (!(options.dependencies || options.pack)) {
 			return [];
 		}
 
@@ -572,18 +573,22 @@ export class ExtensionEnablementService
 		}
 
 		switch (newState) {
-			case EnablementState.EnabledGlobally:
+			case EnablementState.EnabledGlobally: {
 				this._enableExtension(extension.identifier);
 				break;
-			case EnablementState.DisabledGlobally:
+			}
+			case EnablementState.DisabledGlobally: {
 				this._disableExtension(extension.identifier);
 				break;
-			case EnablementState.EnabledWorkspace:
+			}
+			case EnablementState.EnabledWorkspace: {
 				this._enableExtensionInWorkspace(extension.identifier);
 				break;
-			case EnablementState.DisabledWorkspace:
+			}
+			case EnablementState.DisabledWorkspace: {
 				this._disableExtensionInWorkspace(extension.identifier);
 				break;
+			}
 		}
 
 		return Promise.resolve(true);
@@ -608,7 +613,7 @@ export class ExtensionEnablementService
 
 	private _computeEnablementState(
 		extension: IExtension,
-		extensions: ReadonlyArray<IExtension>,
+		extensions: readonly IExtension[],
 		workspaceType: WorkspaceType,
 		computedEnablementStates?: Map<IExtension, EnablementState>,
 	): EnablementState {
@@ -659,9 +664,9 @@ export class ExtensionEnablementService
 
 	private _isDisabledInEnv(extension: IExtension): boolean {
 		if (this.allUserExtensionsDisabled) {
-			return (
-				!extension.isBuiltin &&
-				!isResolverExtension(
+			return !(
+				extension.isBuiltin ||
+				isResolverExtension(
 					extension.manifest,
 					this.environmentService.remoteAuthority,
 				)
@@ -803,14 +808,14 @@ export class ExtensionEnablementService
 
 	private _isDisabledByExtensionDependency(
 		extension: IExtension,
-		extensions: ReadonlyArray<IExtension>,
+		extensions: readonly IExtension[],
 		workspaceType: WorkspaceType,
 		computedEnablementStates: Map<IExtension, EnablementState>,
 	): boolean {
 		// Find dependencies from the same server as of the extension
 		const dependencyExtensions = extension.manifest.extensionDependencies
 			? extensions.filter((e) =>
-					extension.manifest.extensionDependencies!.some(
+					extension.manifest.extensionDependencies?.some(
 						(id) =>
 							areSameExtensions(e.identifier, { id }) &&
 							this.extensionManagementServerService.getExtensionManagementServer(
@@ -1034,7 +1039,7 @@ export class ExtensionEnablementService
 	}
 
 	private async _onDidChangeGloballyDisabledExtensions(
-		extensionIdentifiers: ReadonlyArray<IExtensionIdentifier>,
+		extensionIdentifiers: readonly IExtensionIdentifier[],
 		source?: string,
 	): Promise<void> {
 		if (source !== SOURCE) {
@@ -1053,8 +1058,8 @@ export class ExtensionEnablementService
 	}
 
 	private _onDidChangeExtensions(
-		added: ReadonlyArray<IExtension>,
-		removed: ReadonlyArray<IExtension>,
+		added: readonly IExtension[],
+		removed: readonly IExtension[],
 		isProfileSwitch: boolean,
 	): void {
 		const disabledExtensions = added.filter(

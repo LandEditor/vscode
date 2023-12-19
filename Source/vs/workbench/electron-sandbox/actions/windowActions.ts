@@ -16,11 +16,7 @@ import { getIconClasses } from "vs/editor/common/services/getIconClasses";
 import { IModelService } from "vs/editor/common/services/model";
 import { localize } from "vs/nls";
 import { Categories } from "vs/platform/action/common/actionCommonCategories";
-import {
-	Action2,
-	IAction2Options,
-	MenuId,
-} from "vs/platform/actions/common/actions";
+import { Action2, MenuId } from "vs/platform/actions/common/actions";
 import { ICommandHandler } from "vs/platform/commands/common/commands";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { FileKind } from "vs/platform/files/common/files";
@@ -96,10 +92,6 @@ abstract class BaseZoomAction extends Action2 {
 
 	private static readonly MAX_ZOOM_LEVEL = 8;
 	private static readonly MIN_ZOOM_LEVEL = -8;
-
-	constructor(desc: Readonly<IAction2Options>) {
-		super(desc);
-	}
 
 	protected async setConfiguredZoomLevel(
 		accessor: ServicesAccessor,
@@ -237,14 +229,10 @@ abstract class BaseSwitchWindow extends Action2 {
 	};
 
 	private readonly closeDirtyWindowAction: IQuickInputButton = {
-		iconClass: "dirty-window " + Codicon.closeDirty,
+		iconClass: `dirty-window ${Codicon.closeDirty}`,
 		tooltip: localize("close", "Close Window"),
 		alwaysVisible: true,
 	};
-
-	constructor(desc: Readonly<IAction2Options>) {
-		super(desc);
-	}
 
 	protected abstract isQuickNavigate(): boolean;
 
@@ -288,7 +276,7 @@ abstract class BaseSwitchWindow extends Action2 {
 			readonly windowId: number;
 		}
 
-		const picks: Array<IWindowPickItem> = [];
+		const picks: IWindowPickItem[] = [];
 		for (const window of mainWindows) {
 			const auxiliaryWindows = mapMainWindowToAuxiliaryWindows.get(
 				window.id,

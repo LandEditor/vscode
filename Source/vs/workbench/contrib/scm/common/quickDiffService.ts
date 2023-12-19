@@ -23,7 +23,7 @@ function createProviderComparer(
 			return -1;
 		} else if (!a.rootUri && b.rootUri) {
 			return 1;
-		} else if (!a.rootUri && !b.rootUri) {
+		} else if (!(a.rootUri || b.rootUri)) {
 			return 0;
 		}
 
@@ -31,7 +31,7 @@ function createProviderComparer(
 		const bIsParent = isEqualOrParent(uri, b.rootUri!);
 
 		if (aIsParent && bIsParent) {
-			return a.rootUri!.fsPath.length - b.rootUri!.fsPath.length;
+			return a.rootUri?.fsPath.length - b.rootUri?.fsPath.length;
 		} else if (aIsParent) {
 			return -1;
 		} else if (bIsParent) {

@@ -112,117 +112,137 @@ export class ViewEventHandler extends Disposable {
 			const e = events[i];
 
 			switch (e.type) {
-				case viewEvents.ViewEventType.ViewCompositionStart:
+				case viewEvents.ViewEventType.ViewCompositionStart: {
 					if (this.onCompositionStart(e)) {
 						shouldRender = true;
 					}
 					break;
+				}
 
-				case viewEvents.ViewEventType.ViewCompositionEnd:
+				case viewEvents.ViewEventType.ViewCompositionEnd: {
 					if (this.onCompositionEnd(e)) {
 						shouldRender = true;
 					}
 					break;
+				}
 
-				case viewEvents.ViewEventType.ViewConfigurationChanged:
+				case viewEvents.ViewEventType.ViewConfigurationChanged: {
 					if (this.onConfigurationChanged(e)) {
 						shouldRender = true;
 					}
 					break;
+				}
 
-				case viewEvents.ViewEventType.ViewCursorStateChanged:
+				case viewEvents.ViewEventType.ViewCursorStateChanged: {
 					if (this.onCursorStateChanged(e)) {
 						shouldRender = true;
 					}
 					break;
+				}
 
-				case viewEvents.ViewEventType.ViewDecorationsChanged:
+				case viewEvents.ViewEventType.ViewDecorationsChanged: {
 					if (this.onDecorationsChanged(e)) {
 						shouldRender = true;
 					}
 					break;
+				}
 
-				case viewEvents.ViewEventType.ViewFlushed:
+				case viewEvents.ViewEventType.ViewFlushed: {
 					if (this.onFlushed(e)) {
 						shouldRender = true;
 					}
 					break;
+				}
 
-				case viewEvents.ViewEventType.ViewFocusChanged:
+				case viewEvents.ViewEventType.ViewFocusChanged: {
 					if (this.onFocusChanged(e)) {
 						shouldRender = true;
 					}
 					break;
+				}
 
-				case viewEvents.ViewEventType.ViewLanguageConfigurationChanged:
+				case viewEvents.ViewEventType
+					.ViewLanguageConfigurationChanged: {
 					if (this.onLanguageConfigurationChanged(e)) {
 						shouldRender = true;
 					}
 					break;
+				}
 
-				case viewEvents.ViewEventType.ViewLineMappingChanged:
+				case viewEvents.ViewEventType.ViewLineMappingChanged: {
 					if (this.onLineMappingChanged(e)) {
 						shouldRender = true;
 					}
 					break;
+				}
 
-				case viewEvents.ViewEventType.ViewLinesChanged:
+				case viewEvents.ViewEventType.ViewLinesChanged: {
 					if (this.onLinesChanged(e)) {
 						shouldRender = true;
 					}
 					break;
+				}
 
-				case viewEvents.ViewEventType.ViewLinesDeleted:
+				case viewEvents.ViewEventType.ViewLinesDeleted: {
 					if (this.onLinesDeleted(e)) {
 						shouldRender = true;
 					}
 					break;
+				}
 
-				case viewEvents.ViewEventType.ViewLinesInserted:
+				case viewEvents.ViewEventType.ViewLinesInserted: {
 					if (this.onLinesInserted(e)) {
 						shouldRender = true;
 					}
 					break;
+				}
 
-				case viewEvents.ViewEventType.ViewRevealRangeRequest:
+				case viewEvents.ViewEventType.ViewRevealRangeRequest: {
 					if (this.onRevealRangeRequest(e)) {
 						shouldRender = true;
 					}
 					break;
+				}
 
-				case viewEvents.ViewEventType.ViewScrollChanged:
+				case viewEvents.ViewEventType.ViewScrollChanged: {
 					if (this.onScrollChanged(e)) {
 						shouldRender = true;
 					}
 					break;
+				}
 
-				case viewEvents.ViewEventType.ViewTokensChanged:
+				case viewEvents.ViewEventType.ViewTokensChanged: {
 					if (this.onTokensChanged(e)) {
 						shouldRender = true;
 					}
 					break;
+				}
 
-				case viewEvents.ViewEventType.ViewThemeChanged:
+				case viewEvents.ViewEventType.ViewThemeChanged: {
 					if (this.onThemeChanged(e)) {
 						shouldRender = true;
 					}
 					break;
+				}
 
-				case viewEvents.ViewEventType.ViewTokensColorsChanged:
+				case viewEvents.ViewEventType.ViewTokensColorsChanged: {
 					if (this.onTokensColorsChanged(e)) {
 						shouldRender = true;
 					}
 					break;
+				}
 
-				case viewEvents.ViewEventType.ViewZonesChanged:
+				case viewEvents.ViewEventType.ViewZonesChanged: {
 					if (this.onZonesChanged(e)) {
 						shouldRender = true;
 					}
 					break;
+				}
 
-				default:
+				default: {
 					console.info("View received unknown event: ");
 					console.info(e);
+				}
 			}
 		}
 

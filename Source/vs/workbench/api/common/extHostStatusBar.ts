@@ -149,7 +149,7 @@ export class ExtHostStatusBarEntry implements vscode.StatusBarItem {
 	}
 
 	public get id(): string {
-		return this._id ?? this._extension!.identifier.value;
+		return this._id ?? this._extension?.identifier.value;
 	}
 
 	public get alignment(): vscode.StatusBarAlignment {
@@ -306,7 +306,7 @@ export class ExtHostStatusBarEntry implements vscode.StatusBarItem {
 				name = localize(
 					"extensionLabel",
 					"{0} (Extension)",
-					this._extension!.displayName || this._extension!.name,
+					this._extension?.displayName || this._extension?.name,
 				);
 			}
 

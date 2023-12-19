@@ -343,7 +343,7 @@ export class ExtensionsViewletViewsContribution
 			const id =
 				servers.length > 1
 					? `workbench.views.extensions.${server.id}.installed`
-					: `workbench.views.extensions.installed`;
+					: "workbench.views.extensions.installed";
 			/* Installed extensions view */
 			viewDescriptors.push({
 				id,
@@ -1145,7 +1145,7 @@ export class ExtensionsViewPaneContainer
 		this.searchDelayer
 			.trigger(
 				() => this.doSearch(),
-				this.searchBox && this.searchBox.getValue() ? 500 : 0,
+				this.searchBox?.getValue() ? 500 : 0,
 			)
 			.then(undefined, (err) => this.onError(err));
 	}
@@ -1278,7 +1278,7 @@ export class ExtensionsViewPaneContainer
 		switch (count) {
 			case 0:
 				break;
-			case 1:
+			case 1: {
 				if (view) {
 					alert(
 						localize(
@@ -1291,7 +1291,8 @@ export class ExtensionsViewPaneContainer
 					alert(localize("extensionFound", "1 extension found."));
 				}
 				break;
-			default:
+			}
+			default: {
 				if (view) {
 					alert(
 						localize(
@@ -1311,6 +1312,7 @@ export class ExtensionsViewPaneContainer
 					);
 				}
 				break;
+			}
 		}
 	}
 
@@ -1364,7 +1366,7 @@ export class ExtensionsViewPaneContainer
 			return;
 		}
 
-		const message = (err && err.message) || "";
+		const message = err?.message || "";
 
 		if (/ECONNREFUSED/.test(message)) {
 			const error = createErrorWithActions(

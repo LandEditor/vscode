@@ -38,7 +38,7 @@ import { SUPPORTED_CODE_ACTIONS } from "./codeActionModel";
 function contextKeyForSupportedActions(kind: CodeActionKind) {
 	return ContextKeyExpr.regex(
 		SUPPORTED_CODE_ACTIONS.keys()[0],
-		new RegExp("(\\s|^)" + escapeRegExpCharacters(kind.value) + "\\b"),
+		new RegExp(`(\\s|^)${escapeRegExpCharacters(kind.value)}\\b`),
 	);
 }
 

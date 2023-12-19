@@ -70,7 +70,6 @@ interface DataCollector<T> {
 }
 
 class ColorDataCollector implements DataCollector<IColorData> {
-	constructor() {}
 	async compute(
 		provider: DocumentColorProvider,
 		model: ITextModel,
@@ -91,7 +90,6 @@ class ColorDataCollector implements DataCollector<IColorData> {
 }
 
 class ExtColorDataCollector implements DataCollector<IExtColorData> {
-	constructor() {}
 	async compute(
 		provider: DocumentColorProvider,
 		model: ITextModel,
@@ -227,8 +225,7 @@ CommandsRegistry.registerCommand(
 		const [color, context] = args;
 		const { uri, range } = context;
 		if (
-			!(uri instanceof URI) ||
-			!Array.isArray(color) ||
+			!(uri instanceof URI && Array.isArray(color)) ||
 			color.length !== 4 ||
 			!Range.isIRange(range)
 		) {

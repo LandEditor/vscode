@@ -152,13 +152,15 @@ function renderTokenText(tokenText: string): string {
 	) {
 		const charCode = tokenText.charCodeAt(charIndex);
 		switch (charCode) {
-			case CharCode.Tab:
+			case CharCode.Tab: {
 				result += "\u2192"; // &rarr;
 				break;
+			}
 
-			case CharCode.Space:
+			case CharCode.Space: {
 				result += "\u00B7"; // &middot;
 				break;
+			}
 
 			default:
 				result += String.fromCharCode(charCode);

@@ -95,7 +95,7 @@ export class WordOperations {
 		position: Position,
 	): IFindWordResult | null {
 		const lineContent = model.getLineContent(position.lineNumber);
-		return this._doFindPreviousWordOnLine(
+		return WordOperations._doFindPreviousWordOnLine(
 			lineContent,
 			wordSeparators,
 			position,
@@ -114,12 +114,12 @@ export class WordOperations {
 
 			if (chClass === WordCharacterClass.Regular) {
 				if (wordType === WordType.Separator) {
-					return this._createWord(
+					return WordOperations._createWord(
 						lineContent,
 						wordType,
 						chClass,
 						chIndex + 1,
-						this._findEndOfWord(
+						WordOperations._findEndOfWord(
 							lineContent,
 							wordSeparators,
 							wordType,
@@ -130,12 +130,12 @@ export class WordOperations {
 				wordType = WordType.Regular;
 			} else if (chClass === WordCharacterClass.WordSeparator) {
 				if (wordType === WordType.Regular) {
-					return this._createWord(
+					return WordOperations._createWord(
 						lineContent,
 						wordType,
 						chClass,
 						chIndex + 1,
-						this._findEndOfWord(
+						WordOperations._findEndOfWord(
 							lineContent,
 							wordSeparators,
 							wordType,
@@ -146,12 +146,12 @@ export class WordOperations {
 				wordType = WordType.Separator;
 			} else if (chClass === WordCharacterClass.Whitespace) {
 				if (wordType !== WordType.None) {
-					return this._createWord(
+					return WordOperations._createWord(
 						lineContent,
 						wordType,
 						chClass,
 						chIndex + 1,
-						this._findEndOfWord(
+						WordOperations._findEndOfWord(
 							lineContent,
 							wordSeparators,
 							wordType,
@@ -163,12 +163,17 @@ export class WordOperations {
 		}
 
 		if (wordType !== WordType.None) {
-			return this._createWord(
+			return WordOperations._createWord(
 				lineContent,
 				wordType,
 				WordCharacterClass.Whitespace,
 				0,
-				this._findEndOfWord(lineContent, wordSeparators, wordType, 0),
+				WordOperations._findEndOfWord(
+					lineContent,
+					wordSeparators,
+					wordType,
+					0,
+				),
 			);
 		}
 
@@ -211,7 +216,7 @@ export class WordOperations {
 		position: Position,
 	): IFindWordResult | null {
 		const lineContent = model.getLineContent(position.lineNumber);
-		return this._doFindNextWordOnLine(
+		return WordOperations._doFindNextWordOnLine(
 			lineContent,
 			wordSeparators,
 			position,
@@ -232,11 +237,11 @@ export class WordOperations {
 
 			if (chClass === WordCharacterClass.Regular) {
 				if (wordType === WordType.Separator) {
-					return this._createWord(
+					return WordOperations._createWord(
 						lineContent,
 						wordType,
 						chClass,
-						this._findStartOfWord(
+						WordOperations._findStartOfWord(
 							lineContent,
 							wordSeparators,
 							wordType,
@@ -248,11 +253,11 @@ export class WordOperations {
 				wordType = WordType.Regular;
 			} else if (chClass === WordCharacterClass.WordSeparator) {
 				if (wordType === WordType.Regular) {
-					return this._createWord(
+					return WordOperations._createWord(
 						lineContent,
 						wordType,
 						chClass,
-						this._findStartOfWord(
+						WordOperations._findStartOfWord(
 							lineContent,
 							wordSeparators,
 							wordType,
@@ -264,11 +269,11 @@ export class WordOperations {
 				wordType = WordType.Separator;
 			} else if (chClass === WordCharacterClass.Whitespace) {
 				if (wordType !== WordType.None) {
-					return this._createWord(
+					return WordOperations._createWord(
 						lineContent,
 						wordType,
 						chClass,
-						this._findStartOfWord(
+						WordOperations._findStartOfWord(
 							lineContent,
 							wordSeparators,
 							wordType,
@@ -281,11 +286,11 @@ export class WordOperations {
 		}
 
 		if (wordType !== WordType.None) {
-			return this._createWord(
+			return WordOperations._createWord(
 				lineContent,
 				wordType,
 				WordCharacterClass.Whitespace,
-				this._findStartOfWord(
+				WordOperations._findStartOfWord(
 					lineContent,
 					wordSeparators,
 					wordType,
@@ -338,7 +343,7 @@ export class WordOperations {
 
 		if (column === 1) {
 			if (lineNumber > 1) {
-				lineNumber = lineNumber - 1;
+				lineNumber -= 1;
 				column = model.getLineMaxColumn(lineNumber);
 			}
 		}
@@ -485,7 +490,7 @@ export class WordOperations {
 		if (column === model.getLineMaxColumn(lineNumber)) {
 			if (lineNumber < model.getLineCount()) {
 				movedDown = true;
-				lineNumber = lineNumber + 1;
+				lineNumber += 1;
 				column = 1;
 			}
 		}
@@ -694,7 +699,7 @@ export class WordOperations {
 		}
 
 		if (whitespaceHeuristics) {
-			const r = this._deleteWordLeftWhitespace(model, position);
+			const r = WordOperations._deleteWordLeftWhitespace(model, position);
 			if (r) {
 				return r;
 			}
@@ -755,12 +760,12 @@ export class WordOperations {
 			selection.positionColumn,
 		);
 
-		const r = this._deleteInsideWordWhitespace(model, position);
+		const r = WordOperations._deleteInsideWordWhitespace(model, position);
 		if (r) {
 			return r;
 		}
 
-		return this._deleteInsideWordDetermineDeleteRange(
+		return WordOperations._deleteInsideWordDetermineDeleteRange(
 			wordSeparators,
 			model,
 			position,
@@ -785,13 +790,13 @@ export class WordOperations {
 		}
 
 		let leftIndex = Math.max(position.column - 2, 0);
-		if (!this._charAtIsWhitespace(lineContent, leftIndex)) {
+		if (!WordOperations._charAtIsWhitespace(lineContent, leftIndex)) {
 			// touches a non-whitespace character to the left
 			return null;
 		}
 
 		let rightIndex = Math.min(position.column - 1, lineContentLength - 1);
-		if (!this._charAtIsWhitespace(lineContent, rightIndex)) {
+		if (!WordOperations._charAtIsWhitespace(lineContent, rightIndex)) {
 			// touches a non-whitespace character to the right
 			return null;
 		}
@@ -799,7 +804,7 @@ export class WordOperations {
 		// walk over whitespace to the left
 		while (
 			leftIndex > 0 &&
-			this._charAtIsWhitespace(lineContent, leftIndex - 1)
+			WordOperations._charAtIsWhitespace(lineContent, leftIndex - 1)
 		) {
 			leftIndex--;
 		}
@@ -807,7 +812,7 @@ export class WordOperations {
 		// walk over whitespace to the right
 		while (
 			rightIndex + 1 < lineContentLength &&
-			this._charAtIsWhitespace(lineContent, rightIndex + 1)
+			WordOperations._charAtIsWhitespace(lineContent, rightIndex + 1)
 		) {
 			rightIndex++;
 		}
@@ -879,7 +884,7 @@ export class WordOperations {
 			let expandedToTheRight = false;
 			while (
 				endColumn - 1 < lineLength &&
-				this._charAtIsWhitespace(lineContent, endColumn - 1)
+				WordOperations._charAtIsWhitespace(lineContent, endColumn - 1)
 			) {
 				expandedToTheRight = true;
 				endColumn++;
@@ -887,7 +892,10 @@ export class WordOperations {
 			if (!expandedToTheRight) {
 				while (
 					startColumn > 1 &&
-					this._charAtIsWhitespace(lineContent, startColumn - 2)
+					WordOperations._charAtIsWhitespace(
+						lineContent,
+						startColumn - 2,
+					)
 				) {
 					startColumn--;
 				}
@@ -971,7 +979,7 @@ export class WordOperations {
 	): Range | null {
 		const lineContent = model.getLineContent(position.lineNumber);
 		const startIndex = position.column - 1;
-		const firstNonWhitespace = this._findFirstNonWhitespaceChar(
+		const firstNonWhitespace = WordOperations._findFirstNonWhitespaceChar(
 			lineContent,
 			startIndex,
 		);
@@ -1016,7 +1024,10 @@ export class WordOperations {
 		}
 
 		if (whitespaceHeuristics) {
-			const r = this._deleteWordRightWhitespace(model, position);
+			const r = WordOperations._deleteWordRightWhitespace(
+				model,
+				position,
+			);
 			if (r) {
 				return r;
 			}

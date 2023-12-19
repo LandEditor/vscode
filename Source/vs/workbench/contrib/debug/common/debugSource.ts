@@ -127,10 +127,11 @@ export class Source {
 		let sessionId: string | undefined;
 
 		switch (modelUri.scheme) {
-			case Schemas.file:
+			case Schemas.file: {
 				path = normalize(modelUri.fsPath);
 				break;
-			case DEBUG_SCHEME:
+			}
+			case DEBUG_SCHEME: {
 				path = modelUri.path;
 				if (modelUri.query) {
 					const keyvalues = modelUri.query.split("&");
@@ -138,20 +139,24 @@ export class Source {
 						const pair = keyvalue.split("=");
 						if (pair.length === 2) {
 							switch (pair[0]) {
-								case "session":
+								case "session": {
 									sessionId = pair[1];
 									break;
-								case "ref":
+								}
+								case "ref": {
 									sourceReference = parseInt(pair[1]);
 									break;
+								}
 							}
 						}
 					}
 				}
 				break;
-			default:
+			}
+			default: {
 				path = modelUri.toString();
 				break;
+			}
 		}
 
 		return {
@@ -204,7 +209,7 @@ export function getUriFromSource(
 	try {
 		return _getUriFromSource(path);
 	} catch (err) {
-		logService.error("Invalid path from debug adapter: " + path);
+		logService.error(`Invalid path from debug adapter: ${path}`);
 		return _getUriFromSource("/invalidDebugSource");
 	}
 }

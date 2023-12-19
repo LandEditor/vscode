@@ -244,9 +244,7 @@ class NotebookDiffEditorSerializer implements IEditorSerializer {
 		}
 		const { resource, originalResource, name, viewType } = data;
 		if (
-			!data ||
-			!URI.isUri(resource) ||
-			!URI.isUri(originalResource) ||
+			!(data && URI.isUri(resource) && URI.isUri(originalResource)) ||
 			typeof name !== "string" ||
 			typeof viewType !== "string"
 		) {
@@ -297,7 +295,7 @@ class NotebookEditorSerializer implements IEditorSerializer {
 			return undefined;
 		}
 		const { resource, preferredResource, viewType, options } = data;
-		if (!data || !URI.isUri(resource) || typeof viewType !== "string") {
+		if (!(data && URI.isUri(resource)) || typeof viewType !== "string") {
 			return undefined;
 		}
 

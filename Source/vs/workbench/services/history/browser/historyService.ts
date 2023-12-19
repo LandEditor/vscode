@@ -286,19 +286,21 @@ export class HistoryService extends Disposable implements IHistoryService {
 		// which is to navigate in the browser history.
 
 		switch (event.button) {
-			case 3:
+			case 3: {
 				EventHelper.stop(event);
 				if (isMouseDown) {
 					this.goBack();
 				}
 				break;
-			case 4:
+			}
+			case 4: {
 				EventHelper.stop(event);
 				if (isMouseDown) {
 					this.goForward();
 				}
 
 				break;
+			}
 		}
 	}
 
@@ -1490,7 +1492,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 		}
 	}
 
-	private loadHistoryFromStorage(): Array<IResourceEditorInput> {
+	private loadHistoryFromStorage(): IResourceEditorInput[] {
 		const entries: IResourceEditorInput[] = [];
 
 		const entriesRaw = this.storageService.get(
@@ -1502,7 +1504,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 				const entriesParsed: ISerializedEditorHistoryEntry[] =
 					JSON.parse(entriesRaw);
 				for (const entryParsed of entriesParsed) {
-					if (!entryParsed.editor || !entryParsed.editor.resource) {
+					if (!entryParsed.editor?.resource) {
 						continue; // unexpected data format
 					}
 
@@ -1682,7 +1684,7 @@ class EditorSelectionState {
 			return true; // different editor
 		}
 
-		if (!this.selection || !other.selection) {
+		if (!(this.selection && other.selection)) {
 			return true; // unknown selections
 		}
 
@@ -2029,28 +2031,34 @@ ${entryLabels.join("\n")}
 
 		let filterLabel: string;
 		switch (this.filter) {
-			case GoFilter.NONE:
+			case GoFilter.NONE: {
 				filterLabel = "global";
 				break;
-			case GoFilter.EDITS:
+			}
+			case GoFilter.EDITS: {
 				filterLabel = "edits";
 				break;
-			case GoFilter.NAVIGATION:
+			}
+			case GoFilter.NAVIGATION: {
 				filterLabel = "navigation";
 				break;
+			}
 		}
 
 		let scopeLabel: string;
 		switch (this.scope) {
-			case GoScope.DEFAULT:
+			case GoScope.DEFAULT: {
 				scopeLabel = "default";
 				break;
-			case GoScope.EDITOR_GROUP:
+			}
+			case GoScope.EDITOR_GROUP: {
 				scopeLabel = "editorGroup";
 				break;
-			case GoScope.EDITOR:
+			}
+			case GoScope.EDITOR: {
 				scopeLabel = "editor";
 				break;
+			}
 		}
 
 		if (editor !== null) {
@@ -2139,7 +2147,7 @@ ${entryLabels.join("\n")}
 		// with the navigtion that occurs.
 		if (this.navigating) {
 			this.trace(
-				`notifyNavigation() ignoring (navigating)`,
+				"notifyNavigation() ignoring (navigating)",
 				editorPane?.input,
 				event,
 			);
@@ -2170,7 +2178,7 @@ ${entryLabels.join("\n")}
 		// Normal navigation not part of stack navigation
 		else {
 			this.trace(
-				`notifyNavigation() not ignoring`,
+				"notifyNavigation() not ignoring",
 				editorPane?.input,
 				event,
 			);
@@ -2610,8 +2618,10 @@ ${entryLabels.join("\n")}
 		}
 
 		if (
-			!pane.input ||
-			!this.editorHelper.matchesEditor(pane.input, this.current.editor)
+			!(
+				pane.input &&
+				this.editorHelper.matchesEditor(pane.input, this.current.editor)
+			)
 		) {
 			return false; // we need matching editors
 		}

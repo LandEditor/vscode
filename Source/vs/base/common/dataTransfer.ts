@@ -189,7 +189,7 @@ function matchesMimeType_normalized(
 
 	const [_, type, subtype] = wildcard;
 	if (subtype === "*") {
-		return normalizedMimeTypes.some((mime) => mime.startsWith(type + "/"));
+		return normalizedMimeTypes.some((mime) => mime.startsWith(`${type}/`));
 	}
 
 	return false;

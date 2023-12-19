@@ -251,7 +251,7 @@ export class MarkersModel {
 					markersCountByKey.set(key, index + 1);
 
 					const markerId = this.id(
-						resourceMarkers!.id,
+						resourceMarkers?.id,
 						key,
 						index,
 						rawMarker.resource.toString(),

@@ -45,7 +45,7 @@ export class EditorModesRegistry {
 		};
 	}
 
-	public getLanguages(): ReadonlyArray<ILanguageExtensionPoint> {
+	public getLanguages(): readonly ILanguageExtensionPoint[] {
 		return this._languages;
 	}
 }

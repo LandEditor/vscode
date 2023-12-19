@@ -31,7 +31,7 @@ namespace RemoteRepositories {
 			extensions.getExtension<RemoteHubApi>("GitHub.remoteHub-insiders");
 
 		if (remoteHub === undefined) {
-			throw new Error(`No Remote repository extension found.`);
+			throw new Error("No Remote repository extension found.");
 		}
 		return remoteHub;
 	}

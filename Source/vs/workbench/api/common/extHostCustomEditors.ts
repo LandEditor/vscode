@@ -452,13 +452,14 @@ export class ExtHostCustomEditors
 
 		const webview = this._extHostWebviewPanels.getWebviewPanel(handle);
 		if (!webview) {
-			throw new Error(`No webview found`);
+			throw new Error("No webview found");
 		}
 
 		const resource = URI.revive(newResourceComponents);
 		const document = this._extHostDocuments.getDocument(resource);
-		await (entry.provider as vscode.CustomTextEditorProvider)
-			.moveCustomTextEditor!(document, webview, CancellationToken.None);
+		await (
+			entry.provider as vscode.CustomTextEditorProvider
+		).moveCustomTextEditor?.(document, webview, CancellationToken.None);
 	}
 
 	async $undo(
@@ -554,8 +555,7 @@ export class ExtHostCustomEditors
 		const entry = this._editorProviders.get(viewType);
 		const provider = entry?.provider;
 		if (
-			!provider ||
-			!isCustomEditorProviderWithEditingCapability(provider)
+			!(provider && isCustomEditorProviderWithEditingCapability(provider))
 		) {
 			throw new Error("Custom document is not editable");
 		}
@@ -598,5 +598,5 @@ function hashPath(resource: URI): string {
 		resource.scheme === Schemas.file || resource.scheme === Schemas.untitled
 			? resource.fsPath
 			: resource.toString();
-	return hash(str) + "";
+	return `${hash(str)}`;
 }

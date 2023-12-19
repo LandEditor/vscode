@@ -317,7 +317,7 @@ export class InlineCompletionsModel extends Disposable {
 		{
 			owner: this,
 			equalityComparer: (a, b) => {
-				if (!a || !b) {
+				if (!(a && b)) {
 					return a === b;
 				}
 				return (
@@ -342,7 +342,7 @@ export class InlineCompletionsModel extends Disposable {
 
 				const isSuggestionPreviewEnabled =
 					this._suggestPreviewEnabled.read(reader);
-				if (!isSuggestionPreviewEnabled && !augmentedCompletion) {
+				if (!(isSuggestionPreviewEnabled || augmentedCompletion)) {
 					return undefined;
 				}
 
@@ -645,8 +645,8 @@ export class InlineCompletionsModel extends Disposable {
 				);
 				// This assumes that the inline completion and the model use the same EOL style.
 				const text = editor
-					.getModel()!
-					.getValueInRange(acceptedRange, EndOfLinePreference.LF);
+					.getModel()
+					?.getValueInRange(acceptedRange, EndOfLinePreference.LF);
 				completion.source.provider.handlePartialAccept(
 					completion.source.inlineCompletions,
 					completion.sourceInlineCompletion,

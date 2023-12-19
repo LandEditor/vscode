@@ -159,7 +159,7 @@ export class ColorDetector extends Disposable implements IEditorContribution {
 	}
 
 	static get(editor: ICodeEditor): ColorDetector | null {
-		return editor.getContribution<ColorDetector>(this.ID);
+		return editor.getContribution<ColorDetector>(ColorDetector.ID);
 	}
 
 	override dispose(): void {
@@ -176,7 +176,9 @@ export class ColorDetector extends Disposable implements IEditorContribution {
 		}
 		const model = this._editor.getModel();
 
-		if (!model || !this._languageFeaturesService.colorProvider.has(model)) {
+		if (
+			!(model && this._languageFeaturesService.colorProvider.has(model))
+		) {
 			return;
 		}
 

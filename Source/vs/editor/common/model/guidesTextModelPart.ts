@@ -66,7 +66,7 @@ export class GuidesTextModelPart
 		const foldingRules = this.getLanguageConfiguration(
 			this.textModel.getLanguageId(),
 		).foldingRules;
-		const offSide = Boolean(foldingRules && foldingRules.offSide);
+		const offSide = Boolean(foldingRules?.offSide);
 
 		let up_aboveContentLineIndex =
 			-2; /* -2 is a marker for not having computed it */
@@ -401,7 +401,7 @@ export class GuidesTextModelPart
 				activeBracketPairRange &&
 				pair.range.equalsRange(activeBracketPairRange);
 
-			if (!isActive && !options.includeInactive) {
+			if (!(isActive || options.includeInactive)) {
 				continue;
 			}
 
@@ -412,7 +412,7 @@ export class GuidesTextModelPart
 					independentColorPoolPerBracketType,
 				) +
 				(options.highlightActive && isActive
-					? " " + colorProvider.activeClassName
+					? ` ${colorProvider.activeClassName}`
 					: "");
 
 			const start = pair.openingBracketRange.getStartPosition();
@@ -564,7 +564,7 @@ export class GuidesTextModelPart
 		const foldingRules = this.getLanguageConfiguration(
 			this.textModel.getLanguageId(),
 		).foldingRules;
-		const offSide = Boolean(foldingRules && foldingRules.offSide);
+		const offSide = Boolean(foldingRules?.offSide);
 
 		const result: number[] = new Array<number>(
 			endLineNumber - startLineNumber + 1,

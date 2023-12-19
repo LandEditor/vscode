@@ -113,10 +113,10 @@ function applyModifiersMapping(
 				let result = 0;
 				while (modifierSet > 0) {
 					if ((modifierSet & 1) !== 0) {
-						result = result + (1 << modifiersMapping[index]);
+						result += 1 << modifiersMapping[index];
 					}
 					index++;
-					modifierSet = modifierSet >> 1;
+					modifierSet >>= 1;
 				}
 				token.modifierSet = result;
 			}

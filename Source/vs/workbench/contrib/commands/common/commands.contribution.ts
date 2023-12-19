@@ -144,7 +144,7 @@ class RunCommands extends Action2 {
 		if (!args || typeof args !== "object") {
 			return false;
 		}
-		if (!("commands" in args) || !Array.isArray(args.commands)) {
+		if (!("commands" in args && Array.isArray(args.commands))) {
 			return false;
 		}
 		for (const cmd of args.commands) {
@@ -160,7 +160,8 @@ class RunCommands extends Action2 {
 	}
 
 	private _runCommand(commandService: ICommandService, cmd: RunnableCommand) {
-		let commandID: string, commandArgs;
+		let commandID: string;
+		let commandArgs;
 
 		if (typeof cmd === "string") {
 			commandID = cmd;

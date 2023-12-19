@@ -229,7 +229,7 @@ export class ExtensionsDownloader extends Disposable {
 			}
 			if (error.code === "ENOTEMPTY") {
 				this.logService.info(
-					`Rename failed because the file was downloaded by another source. So ignoring renaming.`,
+					"Rename failed because the file was downloaded by another source. So ignoring renaming.",
 					extension.identifier.id,
 					location.path,
 				);

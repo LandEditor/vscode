@@ -121,7 +121,7 @@ export default abstract class BaseErrorTelemetry {
 		}
 
 		// unwrap nested errors from loader
-		if (err.detail && err.detail.stack) {
+		if (err.detail?.stack) {
 			err = err.detail;
 		}
 

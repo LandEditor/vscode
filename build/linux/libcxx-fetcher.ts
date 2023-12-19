@@ -74,9 +74,11 @@ async function main(): Promise<void> {
 	const electronVersion = packageJSON.devDependencies.electron;
 
 	if (
-		!libcxxObjectsDirPath ||
-		!libcxxHeadersDownloadDir ||
-		!libcxxabiHeadersDownloadDir
+		!(
+			libcxxObjectsDirPath &&
+			libcxxHeadersDownloadDir &&
+			libcxxabiHeadersDownloadDir
+		)
 	) {
 		throw new Error("Required build env not set");
 	}

@@ -224,7 +224,7 @@ export class NativeHostMainService
 				),
 				(window) => !!window,
 			),
-			(window) => window!.id,
+			(window) => window?.id,
 		),
 		Event.filter(
 			Event.fromNodeEventEmitter(
@@ -316,7 +316,7 @@ export class NativeHostMainService
 	getWindows(
 		windowId: number | undefined,
 		options: { includeAuxiliaryWindows: false },
-	): Promise<Array<IOpenedMainWindow>>;
+	): Promise<IOpenedMainWindow[]>;
 	async getWindows(
 		windowId: number | undefined,
 		options: { includeAuxiliaryWindows: boolean },
@@ -1294,7 +1294,7 @@ export class NativeHostMainService
 		duration: number,
 	): Promise<IV8Profile> {
 		const window = this.codeWindowById(windowId);
-		if (!window || !window.win) {
+		if (!window?.win) {
 			throw new Error();
 		}
 

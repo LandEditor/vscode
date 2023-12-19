@@ -37,10 +37,7 @@ import {
 	SymlinkSupport,
 } from "vs/base/node/pfs";
 import { localize } from "vs/nls";
-import {
-	AbstractDiskFileSystemProvider,
-	IDiskFileSystemProviderOptions,
-} from "vs/platform/files/common/diskFileSystemProvider";
+import { AbstractDiskFileSystemProvider } from "vs/platform/files/common/diskFileSystemProvider";
 import {
 	FilePermission,
 	FileSystemProviderCapabilities,
@@ -74,7 +71,6 @@ import {
 } from "vs/platform/files/common/watcher";
 import { NodeJSWatcherClient } from "vs/platform/files/node/watcher/nodejs/nodejsClient";
 import { UniversalWatcherClient } from "vs/platform/files/node/watcher/watcherClient";
-import { ILogService } from "vs/platform/log/common/log";
 
 /**
  * Enable graceful-fs very early from here to have it enabled
@@ -101,13 +97,6 @@ export class DiskFileSystemProvider
 		IFileSystemProviderWithFileCloneCapability
 {
 	private static TRACE_LOG_RESOURCE_LOCKS = false; // not enabled by default because very spammy
-
-	constructor(
-		logService: ILogService,
-		options?: IDiskFileSystemProviderOptions,
-	) {
-		super(logService, options);
-	}
 
 	//#region File Capabilities
 
@@ -441,7 +430,7 @@ export class DiskFileSystemProvider
 			const filePath = this.toFilePath(resource);
 
 			// Validate target unless { create: true, overwrite: true }
-			if (!opts.create || !opts.overwrite) {
+			if (!(opts.create && opts.overwrite)) {
 				const fileExists = await Promises.exists(filePath);
 				if (fileExists) {
 					if (!opts.overwrite) {
@@ -1111,26 +1100,32 @@ export class DiskFileSystemProvider
 		let resultError: Error | string = error;
 		let code: FileSystemProviderErrorCode;
 		switch (error.code) {
-			case "ENOENT":
+			case "ENOENT": {
 				code = FileSystemProviderErrorCode.FileNotFound;
 				break;
-			case "EISDIR":
+			}
+			case "EISDIR": {
 				code = FileSystemProviderErrorCode.FileIsADirectory;
 				break;
-			case "ENOTDIR":
+			}
+			case "ENOTDIR": {
 				code = FileSystemProviderErrorCode.FileNotADirectory;
 				break;
-			case "EEXIST":
+			}
+			case "EEXIST": {
 				code = FileSystemProviderErrorCode.FileExists;
 				break;
+			}
 			case "EPERM":
-			case "EACCES":
+			case "EACCES": {
 				code = FileSystemProviderErrorCode.NoPermissions;
 				break;
-			case "ERR_UNC_HOST_NOT_ALLOWED":
+			}
+			case "ERR_UNC_HOST_NOT_ALLOWED": {
 				resultError = `${error.message}. Please update the 'security.allowedUNCHosts' setting if you want to allow this host.`;
 				code = FileSystemProviderErrorCode.Unknown;
 				break;
+			}
 			default:
 				code = FileSystemProviderErrorCode.Unknown;
 		}

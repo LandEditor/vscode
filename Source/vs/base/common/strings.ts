@@ -29,7 +29,9 @@ export function format(value: string, ...args: any[]): string {
 	}
 	return value.replace(_formatRegexp, (match, group) => {
 		const idx = parseInt(group, 10);
-		return isNaN(idx) || idx < 0 || idx >= args.length ? match : args[idx];
+		return Number.isNaN(idx) || idx < 0 || idx >= args.length
+			? match
+			: args[idx];
 	});
 }
 
@@ -137,7 +139,7 @@ export function trim(haystack: string, needle = " "): string {
  * @param needle the thing to trim
  */
 export function ltrim(haystack: string, needle: string): string {
-	if (!haystack || !needle) {
+	if (!(haystack && needle)) {
 		return haystack;
 	}
 
@@ -149,7 +151,7 @@ export function ltrim(haystack: string, needle: string): string {
 	let offset = 0;
 
 	while (haystack.indexOf(needle, offset) === offset) {
-		offset = offset + needleLen;
+		offset += needleLen;
 	}
 	return haystack.substring(offset);
 }
@@ -160,19 +162,19 @@ export function ltrim(haystack: string, needle: string): string {
  * @param needle the thing to trim
  */
 export function rtrim(haystack: string, needle: string): string {
-	if (!haystack || !needle) {
+	if (!(haystack && needle)) {
 		return haystack;
 	}
 
-	const needleLen = needle.length,
-		haystackLen = haystack.length;
+	const needleLen = needle.length;
+	const haystackLen = haystack.length;
 
 	if (needleLen === 0 || haystackLen === 0) {
 		return haystack;
 	}
 
-	let offset = haystackLen,
-		idx = -1;
+	let offset = haystackLen;
+	let idx = -1;
 
 	while (true) {
 		idx = haystack.lastIndexOf(needle, offset - 1);
@@ -219,10 +221,10 @@ export function createRegExp(
 	}
 	if (options.wholeWord) {
 		if (!/\B/.test(searchString.charAt(0))) {
-			searchString = "\\b" + searchString;
+			searchString = `\\b${searchString}`;
 		}
 		if (!/\B/.test(searchString.charAt(searchString.length - 1))) {
-			searchString = searchString + "\\b";
+			searchString += "\\b";
 		}
 	}
 	let modifiers = "";
@@ -871,7 +873,7 @@ export function stripUTF8BOM(str: string): string {
  * target string. The characters do not have to be contiguous within the string.
  */
 export function fuzzyContains(target: string, query: string): boolean {
-	if (!target || !query) {
+	if (!(target && query)) {
 		return false; // return early if target or query are undefined
 	}
 
@@ -945,7 +947,7 @@ export function getNLines(str: string, n = 1): string {
 export function singleLetterHash(n: number): string {
 	const LETTERS_CNT = CharCode.Z - CharCode.A + 1;
 
-	n = n % (2 * LETTERS_CNT);
+	n %= 2 * LETTERS_CNT;
 
 	if (n < LETTERS_CNT) {
 		return String.fromCharCode(CharCode.a + n);
@@ -1133,7 +1135,7 @@ class GraphemeBreakTree {
 		while (nodeIndex <= nodeCount) {
 			if (codePoint < data[3 * nodeIndex]) {
 				// go left
-				nodeIndex = 2 * nodeIndex;
+				nodeIndex *= 2;
 			} else if (codePoint > data[3 * nodeIndex + 1]) {
 				// go right
 				nodeIndex = 2 * nodeIndex + 1;
@@ -1359,10 +1361,12 @@ export class InvisibleCharacters {
 	private static _data: Set<number> | undefined = undefined;
 
 	private static getData() {
-		if (!this._data) {
-			this._data = new Set(InvisibleCharacters.getRawData());
+		if (!InvisibleCharacters._data) {
+			InvisibleCharacters._data = new Set(
+				InvisibleCharacters.getRawData(),
+			);
 		}
-		return this._data;
+		return InvisibleCharacters._data;
 	}
 
 	public static isInvisibleCharacter(codePoint: number): boolean {

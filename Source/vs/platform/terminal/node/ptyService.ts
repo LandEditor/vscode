@@ -717,7 +717,7 @@ export class PtyService extends Disposable implements IPtyService {
 						);
 					},
 				);
-				proc.stdin!.end();
+				proc.stdin?.end();
 			});
 		}
 		if (direction === "unix-to-win") {
@@ -740,7 +740,7 @@ export class PtyService extends Disposable implements IPtyService {
 							c(error ? original : stdout.trim());
 						},
 					);
-					proc.stdin!.end();
+					proc.stdin?.end();
 				});
 			}
 		}
@@ -936,7 +936,7 @@ export class PtyService extends Disposable implements IPtyService {
 	private _throwIfNoPty(id: number): PersistentTerminalProcess {
 		const pty = this._ptys.get(id);
 		if (!pty) {
-			throw new ErrorNoTelemetry(`Could not find pty on pty host`);
+			throw new ErrorNoTelemetry("Could not find pty on pty host");
 		}
 		return pty;
 	}
@@ -1182,8 +1182,10 @@ class PersistentTerminalProcess extends Disposable {
 
 	async attach(): Promise<void> {
 		if (
-			!this._disconnectRunner1.isScheduled() &&
-			!this._disconnectRunner2.isScheduled()
+			!(
+				this._disconnectRunner1.isScheduled() ||
+				this._disconnectRunner2.isScheduled()
+			)
 		) {
 			this._logService.warn(
 				`Persistent process "${this._persistentProcessId}": Process had no disconnect runners but was an orphan`,
@@ -1578,10 +1580,10 @@ function printTime(ms: number): string {
 		h = Math.floor(m / 60);
 		m -= h * 60;
 	}
-	const _h = h ? `${h}h` : ``;
-	const _m = m ? `${m}m` : ``;
-	const _s = s ? `${s}s` : ``;
-	const _ms = ms ? `${ms}ms` : ``;
+	const _h = h ? `${h}h` : "";
+	const _m = m ? `${m}m` : "";
+	const _s = s ? `${s}s` : "";
+	const _ms = ms ? `${ms}ms` : "";
 	return `${_h}${_m}${_s}${_ms}`;
 }
 

@@ -190,7 +190,6 @@ export class TerminalLinkDetectorAdapter
 				return localize("focusFolder", "Focus folder in explorer");
 			case TerminalBuiltinLinkType.LocalFolderOutsideWorkspace:
 				return localize("openFolder", "Open folder in new window");
-			case TerminalBuiltinLinkType.Url:
 			default:
 				return localize("followLink", "Follow link");
 		}

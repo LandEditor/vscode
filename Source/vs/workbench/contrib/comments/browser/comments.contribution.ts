@@ -251,11 +251,11 @@ export class CommentsAccessibilityHelpProvider
 		this._element = getActiveElement() as HTMLElement;
 		const content: string[] = [];
 		content.push(
-			this._descriptionForCommand(
+			`${this._descriptionForCommand(
 				ToggleTabFocusModeAction.ID,
 				CommentAccessibilityHelpNLS.introWidget,
 				CommentAccessibilityHelpNLS.introWidgetNoKb,
-			) + "\n",
+			)}\n`,
 		);
 		content.push(CommentAccessibilityHelpNLS.commentCommands);
 		content.push(CommentAccessibilityHelpNLS.escape);

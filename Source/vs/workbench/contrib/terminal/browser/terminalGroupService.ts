@@ -432,7 +432,7 @@ export class TerminalGroupService
 		const targetGroup = this.getGroupForInstance(target);
 
 		// Something went wrong
-		if (!sourceGroup || !targetGroup) {
+		if (!(sourceGroup && targetGroup)) {
 			return;
 		}
 
@@ -471,7 +471,7 @@ export class TerminalGroupService
 	) {
 		const sourceGroup = this.getGroupForInstance(source);
 		const targetGroup = this.getGroupForInstance(target);
-		if (!sourceGroup || !targetGroup) {
+		if (!(sourceGroup && targetGroup)) {
 			return;
 		}
 

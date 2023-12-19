@@ -41,9 +41,10 @@ export class LoggerChannel implements IServerChannel {
 
 	async call(_: unknown, command: string, arg?: any): Promise<any> {
 		switch (command) {
-			case "createLogger":
+			case "createLogger": {
 				this.createLogger(URI.revive(arg[0]), arg[1], arg[2]);
 				return;
+			}
 			case "log":
 				return this.log(URI.revive(arg[0]), arg[1]);
 			case "consoleLog":
@@ -87,15 +88,18 @@ export class LoggerChannel implements IServerChannel {
 		let consoleFn = console.log;
 
 		switch (level) {
-			case LogLevel.Error:
+			case LogLevel.Error: {
 				consoleFn = console.error;
 				break;
-			case LogLevel.Warning:
+			}
+			case LogLevel.Warning: {
 				consoleFn = console.warn;
 				break;
-			case LogLevel.Info:
+			}
+			case LogLevel.Info: {
 				consoleFn = console.info;
 				break;
+			}
 		}
 
 		consoleFn.call(console, ...args);

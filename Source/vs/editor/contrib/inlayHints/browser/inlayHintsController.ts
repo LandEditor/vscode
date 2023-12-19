@@ -226,8 +226,10 @@ export class InlayHintsController implements IEditorContribution {
 
 		const model = this._editor.getModel();
 		if (
-			!model ||
-			!this._languageFeaturesService.inlayHintsProvider.has(model)
+			!(
+				model &&
+				this._languageFeaturesService.inlayHintsProvider.has(model)
+			)
 		) {
 			return;
 		}
@@ -392,7 +394,7 @@ export class InlayHintsController implements IEditorContribution {
 				const labelPart = this._getInlayHintLabelPart(mouseEvent);
 				const model = this._editor.getModel();
 
-				if (!labelPart || !model) {
+				if (!(labelPart && model)) {
 					sessionStore.clear();
 					return;
 				}
@@ -739,7 +741,7 @@ export class InlayHintsController implements IEditorContribution {
 							(fontSize / 4) | 0
 						}px ${(fontSize / 4) | 0}px 0`;
 					} else {
-						cssProperties.padding = `1px 0 1px 0`;
+						cssProperties.padding = "1px 0 1px 0";
 					}
 				}
 

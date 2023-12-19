@@ -29,7 +29,7 @@ export class SettingsEditor2Input extends EditorInput {
 
 	readonly resource: URI = URI.from({
 		scheme: Schemas.vscodeSettings,
-		path: `settingseditor`,
+		path: "settingseditor",
 	});
 
 	constructor(@IPreferencesService _preferencesService: IPreferencesService) {

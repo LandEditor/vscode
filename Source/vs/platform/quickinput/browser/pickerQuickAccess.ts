@@ -302,7 +302,7 @@ export abstract class PickerQuickAccessProvider<
 								// See https://github.com/microsoft/vscode/issues/102480
 								let fallbackActivePick: Pick<T> | undefined =
 									undefined;
-								if (!activePick && !additionalActivePick) {
+								if (!(activePick || additionalActivePick)) {
 									const fallbackActivePickCandidate =
 										picker.activeItems[0];
 									if (
@@ -405,12 +405,14 @@ export abstract class PickerQuickAccessProvider<
 						switch (action) {
 							case TriggerAction.NO_ACTION:
 								break;
-							case TriggerAction.CLOSE_PICKER:
+							case TriggerAction.CLOSE_PICKER: {
 								picker.hide();
 								break;
-							case TriggerAction.REFRESH_PICKER:
+							}
+							case TriggerAction.REFRESH_PICKER: {
 								updatePickerItems();
 								break;
+							}
 							case TriggerAction.REMOVE_ITEM: {
 								const index = picker.items.indexOf(item);
 								if (index !== -1) {

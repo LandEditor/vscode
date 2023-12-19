@@ -45,7 +45,7 @@ export class ShowAudioCueHelp extends Action2 {
 					? `${cue.name}${
 							audioCueService.isEnabled(cue)
 								? ""
-								: " (" + localize("disabled", "Disabled") + ")"
+								: ` (${localize("disabled", "Disabled")})`
 					  }`
 					: `${
 							audioCueService.isEnabled(cue)

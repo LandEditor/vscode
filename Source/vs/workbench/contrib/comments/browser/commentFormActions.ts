@@ -53,7 +53,7 @@ export class CommentFormActions implements IDisposable {
 					this._buttonElements.length >= this.maxActions
 				) {
 					console.warn(
-						`An extension has contributed more than the allowable number of actions to a comments menu.`,
+						"An extension has contributed more than the allowable number of actions to a comments menu.",
 					);
 					return;
 				}

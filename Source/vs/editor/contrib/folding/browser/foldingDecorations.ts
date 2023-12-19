@@ -161,9 +161,9 @@ export class FoldingDecorationProvider implements IDecorationProvider {
 			description: "folding-expanded-visual-decoration",
 			stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
 			isWholeLine: true,
-			firstLineDecorationClassName:
-				"alwaysShowFoldIcons " +
-				ThemeIcon.asClassName(foldingExpandedIcon),
+			firstLineDecorationClassName: `alwaysShowFoldIcons ${ThemeIcon.asClassName(
+				foldingExpandedIcon,
+			)}`,
 		});
 
 	private static readonly EXPANDED_AUTO_HIDE_VISUAL_DECORATION =
@@ -180,9 +180,9 @@ export class FoldingDecorationProvider implements IDecorationProvider {
 			description: "folding-manually-expanded-visual-decoration",
 			stickiness: TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges,
 			isWholeLine: true,
-			firstLineDecorationClassName:
-				"alwaysShowFoldIcons " +
-				ThemeIcon.asClassName(foldingManualExpandedIcon),
+			firstLineDecorationClassName: `alwaysShowFoldIcons ${ThemeIcon.asClassName(
+				foldingManualExpandedIcon,
+			)}`,
 		});
 
 	private static readonly MANUALLY_EXPANDED_AUTO_HIDE_VISUAL_DECORATION =

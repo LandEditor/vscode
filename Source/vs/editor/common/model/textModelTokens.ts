@@ -417,7 +417,7 @@ export class TokenizationStateStore<TState extends IState> {
 
 	public setEndState(lineNumber: number, state: TState): boolean {
 		const oldState = this._lineEndStates.get(lineNumber);
-		if (oldState && oldState.equals(state)) {
+		if (oldState?.equals(state)) {
 			return false;
 		}
 

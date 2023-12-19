@@ -389,13 +389,13 @@ export class ActionButtonRenderer
 	renderTemplate(container: HTMLElement): ActionButtonTemplate {
 		// hack
 		(
-			container.parentElement!.parentElement!.querySelector(
+			container.parentElement?.parentElement?.querySelector(
 				".monaco-tl-twistie",
 			)! as HTMLElement
 		).classList.add("force-no-twistie");
 
 		// Use default cursor & disable hover for list item
-		container.parentElement!.parentElement!.classList.add(
+		container.parentElement?.parentElement?.classList.add(
 			"cursor-default",
 			"force-no-hover",
 		);
@@ -591,13 +591,13 @@ class InputRenderer
 	renderTemplate(container: HTMLElement): InputTemplate {
 		// hack
 		(
-			container.parentElement!.parentElement!.querySelector(
+			container.parentElement?.parentElement?.querySelector(
 				".monaco-tl-twistie",
 			)! as HTMLElement
 		).classList.add("force-no-twistie");
 
 		// Disable hover for list item
-		container.parentElement!.parentElement!.classList.add("force-no-hover");
+		container.parentElement?.parentElement?.classList.add("force-no-hover");
 
 		const templateDisposable = new DisposableStore();
 		const inputElement = append(container, $(".scm-input"));
@@ -780,7 +780,7 @@ class ResourceGroupRenderer
 	renderTemplate(container: HTMLElement): ResourceGroupTemplate {
 		// hack
 		(
-			container.parentElement!.parentElement!.querySelector(
+			container.parentElement?.parentElement?.querySelector(
 				".monaco-tl-twistie",
 			)! as HTMLElement
 		).classList.add("force-twistie");
@@ -1308,7 +1308,7 @@ class HistoryItemGroupRenderer
 	renderTemplate(container: HTMLElement) {
 		// hack
 		(
-			container.parentElement!.parentElement!.querySelector(
+			container.parentElement?.parentElement?.querySelector(
 				".monaco-tl-twistie",
 			)! as HTMLElement
 		).classList.add("force-twistie");
@@ -1408,7 +1408,7 @@ class HistoryItemRenderer
 	renderTemplate(container: HTMLElement): HistoryItemTemplate {
 		// hack
 		(
-			container.parentElement!.parentElement!.querySelector(
+			container.parentElement?.parentElement?.querySelector(
 				".monaco-tl-twistie",
 			)! as HTMLElement
 		).classList.add("force-twistie");
@@ -1727,13 +1727,13 @@ class SeparatorRenderer
 	renderTemplate(container: HTMLElement): SeparatorTemplate {
 		// hack
 		(
-			container.parentElement!.parentElement!.querySelector(
+			container.parentElement?.parentElement?.querySelector(
 				".monaco-tl-twistie",
 			)! as HTMLElement
 		).classList.add("force-no-twistie");
 
 		// Use default cursor & disable hover for list item
-		container.parentElement!.parentElement!.classList.add(
+		container.parentElement?.parentElement?.classList.add(
 			"cursor-default",
 			"force-no-hover",
 		);
@@ -1865,8 +1865,10 @@ export class SCMTreeSorter implements ITreeSorter<TreeElement> {
 
 		if (isSCMViewSeparator(one)) {
 			if (
-				!isSCMHistoryItemGroupTreeElement(other) &&
-				!isSCMResourceGroup(other)
+				!(
+					isSCMHistoryItemGroupTreeElement(other) ||
+					isSCMResourceGroup(other)
+				)
 			) {
 				throw new Error("Invalid comparison");
 			}
@@ -1884,9 +1886,11 @@ export class SCMTreeSorter implements ITreeSorter<TreeElement> {
 
 		if (isSCMHistoryItemGroupTreeElement(one)) {
 			if (
-				!isSCMHistoryItemGroupTreeElement(other) &&
-				!isSCMResourceGroup(other) &&
-				!isSCMViewSeparator(other)
+				!(
+					isSCMHistoryItemGroupTreeElement(other) ||
+					isSCMResourceGroup(other) ||
+					isSCMViewSeparator(other)
+				)
 			) {
 				throw new Error("Invalid comparison");
 			}
@@ -1917,8 +1921,10 @@ export class SCMTreeSorter implements ITreeSorter<TreeElement> {
 
 			// Tree
 			if (
-				!isSCMHistoryItemChangeTreeElement(other) &&
-				!isSCMHistoryItemChangeNode(other)
+				!(
+					isSCMHistoryItemChangeTreeElement(other) ||
+					isSCMHistoryItemChangeNode(other)
+				)
 			) {
 				throw new Error("Invalid comparison");
 			}
@@ -2559,7 +2565,7 @@ registerAction2(SetSortByStatusAction);
 class CollapseAllRepositoriesAction extends ViewAction<SCMViewPane> {
 	constructor() {
 		super({
-			id: `workbench.scm.action.collapseAllRepositories`,
+			id: "workbench.scm.action.collapseAllRepositories",
 			title: localize("collapse all", "Collapse All Repositories"),
 			viewId: VIEW_PANE_ID,
 			f1: false,
@@ -2588,7 +2594,7 @@ class CollapseAllRepositoriesAction extends ViewAction<SCMViewPane> {
 class ExpandAllRepositoriesAction extends ViewAction<SCMViewPane> {
 	constructor() {
 		super({
-			id: `workbench.scm.action.expandAllRepositories`,
+			id: "workbench.scm.action.expandAllRepositories",
 			title: localize("expand all", "Expand All Repositories"),
 			viewId: VIEW_PANE_ID,
 			f1: false,
@@ -2620,7 +2626,7 @@ registerAction2(ExpandAllRepositoriesAction);
 class HistoryItemViewChangesAction extends Action2 {
 	constructor() {
 		super({
-			id: `workbench.scm.action.historyItemViewChanges`,
+			id: "workbench.scm.action.historyItemViewChanges",
 			title: localize("historyItemViewChanges", "View Changes"),
 			icon: Codicon.diffMultiple,
 			f1: false,
@@ -3311,7 +3317,7 @@ class SCMInputWidget {
 				this.element.classList.remove("synthetic-focus");
 
 				setTimeout(() => {
-					if (!this.validation || !this.validationHasFocus) {
+					if (!(this.validation && this.validationHasFocus)) {
 						this.clearValidation();
 					}
 				}, 0);
@@ -3538,7 +3544,7 @@ class SCMInputWidget {
 			this.validation?.type === InputValidationType.Error,
 		);
 
-		if (!this.validation || !this.inputEditor.hasTextFocus()) {
+		if (!(this.validation && this.inputEditor.hasTextFocus())) {
 			return;
 		}
 
@@ -3556,15 +3562,15 @@ class SCMInputWidget {
 				);
 				validationContainer.classList.toggle(
 					"validation-info",
-					this.validation!.type === InputValidationType.Information,
+					this.validation?.type === InputValidationType.Information,
 				);
 				validationContainer.classList.toggle(
 					"validation-warning",
-					this.validation!.type === InputValidationType.Warning,
+					this.validation?.type === InputValidationType.Warning,
 				);
 				validationContainer.classList.toggle(
 					"validation-error",
-					this.validation!.type === InputValidationType.Error,
+					this.validation?.type === InputValidationType.Error,
 				);
 				validationContainer.style.width = `${
 					this.element.clientWidth + 2
@@ -3574,7 +3580,7 @@ class SCMInputWidget {
 					$(".scm-editor-validation"),
 				);
 
-				const message = this.validation!.message;
+				const message = this.validation?.message;
 				if (typeof message === "string") {
 					element.textContent = message;
 				} else {
@@ -3682,8 +3688,7 @@ class SCMInputWidget {
 				"scm.showInputActionButton",
 			);
 		if (
-			!this.toolbar ||
-			!showInputActionButton ||
+			!(this.toolbar && showInputActionButton) ||
 			this.toolbar?.isEmpty() === true
 		) {
 			return 0;
@@ -3758,7 +3763,7 @@ export class SCMViewPane extends ViewPane {
 
 		this.updateIndentStyles(this.themeService.getFileIconTheme());
 		this.storageService.store(
-			`scm.viewMode`,
+			"scm.viewMode",
 			mode,
 			StorageScope.WORKSPACE,
 			StorageTarget.USER,
@@ -3785,7 +3790,7 @@ export class SCMViewPane extends ViewPane {
 
 		if (this._viewMode === ViewMode.List) {
 			this.storageService.store(
-				`scm.viewSortKey`,
+				"scm.viewSortKey",
 				sortKey,
 				StorageScope.WORKSPACE,
 				StorageTarget.USER,
@@ -3907,12 +3912,14 @@ export class SCMViewPane extends ViewPane {
 		)(
 			(e) => {
 				switch (e.key) {
-					case "scm.viewMode":
+					case "scm.viewMode": {
 						this.viewMode = this.getViewMode();
 						break;
-					case "scm.viewSortKey":
+					}
+					case "scm.viewSortKey": {
 						this.viewSortKey = this.getViewSortKey();
 						break;
+					}
 				}
 			},
 			this,
@@ -4616,7 +4623,7 @@ export class SCMViewPane extends ViewPane {
 				? ViewMode.List
 				: ViewMode.Tree;
 		const storageMode = this.storageService.get(
-			`scm.viewMode`,
+			"scm.viewMode",
 			StorageScope.WORKSPACE,
 		) as ViewMode;
 		if (typeof storageMode === "string") {
@@ -4638,19 +4645,22 @@ export class SCMViewPane extends ViewPane {
 			"path" | "name" | "status"
 		>("scm.defaultViewSortKey");
 		switch (viewSortKeyString) {
-			case "name":
+			case "name": {
 				viewSortKey = ViewSortKey.Name;
 				break;
-			case "status":
+			}
+			case "status": {
 				viewSortKey = ViewSortKey.Status;
 				break;
-			default:
+			}
+			default: {
 				viewSortKey = ViewSortKey.Path;
 				break;
+			}
 		}
 
 		const storageSortKey = this.storageService.get(
-			`scm.viewSortKey`,
+			"scm.viewSortKey",
 			StorageScope.WORKSPACE,
 		) as ViewSortKey;
 		if (typeof storageSortKey === "string") {
@@ -4734,7 +4744,7 @@ export class SCMViewPane extends ViewPane {
 
 	private updateScmProviderContextKeys(): void {
 		if (!this.alwaysShowRepositories && this.items.size === 1) {
-			const provider = Iterable.first(this.items.keys())!.provider;
+			const provider = Iterable.first(this.items.keys())?.provider;
 			this.scmProviderContextKey.set(provider.contextValue);
 			this.scmProviderRootUriContextKey.set(provider.rootUri?.toString());
 			this.scmProviderHasRootUriContextKey.set(!!provider.rootUri);
@@ -4931,7 +4941,7 @@ class SCMTreeDataSource
 			);
 			if (
 				hasSomeChanges ||
-				(repositoryCount === 1 && (!showActionButton || !actionButton))
+				(repositoryCount === 1 && !(showActionButton && actionButton))
 			) {
 				children.push(...resourceGroups);
 			}
@@ -5034,8 +5044,7 @@ class SCMTreeDataSource
 			historyProvider?.currentHistoryItemGroup;
 
 		if (
-			!historyProvider ||
-			!currentHistoryItemGroup ||
+			!(historyProvider && currentHistoryItemGroup) ||
 			(this.showIncomingChanges() === "never" &&
 				this.showOutgoingChanges() === "never")
 		) {
@@ -5379,7 +5388,7 @@ export class SCMActionButton implements IDisposable {
 			this.disposables.value,
 		);
 
-		this.disposables.value!.add(this.button);
+		this.disposables.value?.add(this.button);
 	}
 
 	focus(): void {

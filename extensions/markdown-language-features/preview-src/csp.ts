@@ -22,11 +22,7 @@ export class CspAlerter {
 		});
 
 		window.addEventListener("message", (event) => {
-			if (
-				event &&
-				event.data &&
-				event.data.name === "vscode-did-block-svg"
-			) {
+			if (event?.data && event.data.name === "vscode-did-block-svg") {
 				this.onCspWarning();
 			}
 		});
@@ -65,7 +61,7 @@ export class CspAlerter {
 		notification.setAttribute("role", "button");
 		notification.setAttribute("aria-label", strings.cspAlertMessageLabel);
 		notification.onclick = () => {
-			this.messaging!.postMessage("showPreviewSecuritySelector", {
+			this.messaging?.postMessage("showPreviewSecuritySelector", {
 				source: settings.source,
 			});
 		};

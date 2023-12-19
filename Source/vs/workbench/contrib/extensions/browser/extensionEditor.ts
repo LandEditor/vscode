@@ -321,7 +321,7 @@ class VersionWidget extends ExtensionWithDifferentGalleryVersionWidget {
 		this.render();
 	}
 	render(): void {
-		if (!this.extension || !semver.valid(this.extension.version)) {
+		if (!(this.extension && semver.valid(this.extension.version))) {
 			return;
 		}
 		this.element.textContent = `v${
@@ -337,7 +337,7 @@ class PreReleaseTextWidget extends ExtensionWithDifferentGalleryVersionWidget {
 		this.element = append(container, $("span.pre-release"));
 		append(
 			this.element,
-			$("span" + ThemeIcon.asCSSSelector(preReleaseIcon)),
+			$(`span${ThemeIcon.asCSSSelector(preReleaseIcon)}`),
 		);
 		const textElement = append(this.element, $("span.pre-release-text"));
 		textElement.textContent = localize("preRelease", "Pre-Release");
@@ -825,7 +825,7 @@ export class ExtensionEditor extends EditorPane {
 	}
 
 	async openTab(tab: ExtensionEditorTab): Promise<void> {
-		if (!this.input || !this.template) {
+		if (!(this.input && this.template)) {
 			return;
 		}
 		if (this.template.navbar.switch(tab)) {
@@ -850,7 +850,7 @@ export class ExtensionEditor extends EditorPane {
 		if (preRelease && !extension.hasPreReleaseVersion) {
 			return null;
 		}
-		if (!preRelease && !extension.hasReleaseVersion) {
+		if (!(preRelease || extension.hasReleaseVersion)) {
 			return null;
 		}
 		return (
@@ -1039,7 +1039,7 @@ export class ExtensionEditor extends EditorPane {
 				),
 			);
 		}
-		if (manifest && manifest.contributes) {
+		if (manifest?.contributes) {
 			template.navbar.push(
 				ExtensionEditorTab.Contributions,
 				localize("contributions", "Feature Contributions"),
@@ -1070,8 +1070,7 @@ export class ExtensionEditor extends EditorPane {
 			);
 		}
 		if (
-			manifest &&
-			manifest.extensionPack?.length &&
+			manifest?.extensionPack?.length &&
 			!this.shallRenderAsExtensionPack(manifest)
 		) {
 			template.navbar.push(
@@ -1152,8 +1151,10 @@ export class ExtensionEditor extends EditorPane {
 
 	public get activeWebview(): IWebview | undefined {
 		if (
-			!this.activeElement ||
-			!(this.activeElement as IWebview).runFindAction
+			!(
+				this.activeElement &&
+				(this.activeElement as IWebview).runFindAction
+			)
 		) {
 			return undefined;
 		}
@@ -1440,10 +1441,9 @@ export class ExtensionEditor extends EditorPane {
 		);
 
 		let activeElement: IActiveElement | null = null;
-		const manifest = await this.extensionManifest!.get().promise;
+		const manifest = await this.extensionManifest?.get().promise;
 		if (
-			manifest &&
-			manifest.extensionPack?.length &&
+			manifest?.extensionPack?.length &&
 			this.shallRenderAsExtensionPack(manifest)
 		) {
 			activeElement = await this.openExtensionPackReadme(
@@ -1453,7 +1453,7 @@ export class ExtensionEditor extends EditorPane {
 			);
 		} else {
 			activeElement = await this.openMarkdown(
-				this.extensionReadme!.get(),
+				this.extensionReadme?.get(),
 				localize("noReadme", "No README available."),
 				readmeContainer,
 				WebviewIndex.Readme,
@@ -1492,11 +1492,11 @@ export class ExtensionEditor extends EditorPane {
 			extensionPackReadme,
 			$("div", { class: "extension-pack" }),
 		);
-		if (manifest.extensionPack!.length <= 3) {
+		if (manifest.extensionPack?.length <= 3) {
 			extensionPackReadme.classList.add("one-row");
-		} else if (manifest.extensionPack!.length <= 6) {
+		} else if (manifest.extensionPack?.length <= 6) {
 			extensionPackReadme.classList.add("two-rows");
-		} else if (manifest.extensionPack!.length <= 9) {
+		} else if (manifest.extensionPack?.length <= 9) {
 			extensionPackReadme.classList.add("three-rows");
 		} else {
 			extensionPackReadme.classList.add("more-rows");
@@ -1506,7 +1506,7 @@ export class ExtensionEditor extends EditorPane {
 		extensionPackHeader.textContent = localize(
 			"extension pack",
 			"Extension Pack ({0})",
-			manifest.extensionPack!.length,
+			manifest.extensionPack?.length,
 		);
 		const extensionPackContent = append(
 			extensionPack,
@@ -1522,7 +1522,7 @@ export class ExtensionEditor extends EditorPane {
 		await Promise.all([
 			this.renderExtensionPack(manifest, extensionPackContent, token),
 			this.openMarkdown(
-				this.extensionReadme!.get(),
+				this.extensionReadme?.get(),
 				localize("noReadme", "No README available."),
 				readmeContent,
 				WebviewIndex.Readme,
@@ -1734,7 +1734,7 @@ export class ExtensionEditor extends EditorPane {
 				),
 			);
 		}
-		if (extension.local && extension.local.installedTimestamp) {
+		if (extension.local?.installedTimestamp) {
 			append(
 				moreInfo,
 				$(
@@ -1771,7 +1771,7 @@ export class ExtensionEditor extends EditorPane {
 		token: CancellationToken,
 	): Promise<IActiveElement | null> {
 		return this.openMarkdown(
-			this.extensionChangelog!.get(),
+			this.extensionChangelog?.get(),
 			localize("noChangelog", "No Changelog available."),
 			template.content,
 			WebviewIndex.Changelog,
@@ -1788,7 +1788,7 @@ export class ExtensionEditor extends EditorPane {
 			tabindex: "0",
 		});
 		return this.loadContents(
-			() => this.extensionManifest!.get(),
+			() => this.extensionManifest?.get(),
 			template.content,
 		).then(
 			(manifest) => {
@@ -1925,7 +1925,7 @@ export class ExtensionEditor extends EditorPane {
 			return Promise.resolve(null);
 		}
 		const manifest = await this.loadContents(
-			() => this.extensionManifest!.get(),
+			() => this.extensionManifest?.get(),
 			template.content,
 		);
 		if (token.isCancellationRequested) {
@@ -2226,8 +2226,8 @@ export class ExtensionEditor extends EditorPane {
 		// filter deprecated settings
 		contrib = contrib.filter((key) => {
 			const config = properties[key];
-			return (
-				!config.deprecationMessage && !config.markdownDeprecationMessage
+			return !(
+				config.deprecationMessage || config.markdownDeprecationMessage
 			);
 		});
 
@@ -2333,7 +2333,7 @@ export class ExtensionEditor extends EditorPane {
 					$("th", undefined, localize("debugger type", "Type")),
 				),
 				...contrib
-					.sort((a, b) => a.label!.localeCompare(b.label!))
+					.sort((a, b) => a.label?.localeCompare(b.label!))
 					.map((d) =>
 						$(
 							"tr",
@@ -2880,9 +2880,9 @@ export class ExtensionEditor extends EditorPane {
 							"span",
 							{
 								class: "colorBox",
-								style:
-									"background-color: " +
-									Color.Format.CSS.format(color),
+								style: `background-color: ${Color.Format.CSS.format(
+									color,
+								)}`,
 							},
 							"",
 						),
@@ -3429,15 +3429,18 @@ export class ExtensionEditor extends EditorPane {
 		let key: string | undefined;
 
 		switch (platform) {
-			case "win32":
+			case "win32": {
 				key = rawKeyBinding.win;
 				break;
-			case "linux":
+			}
+			case "linux": {
 				key = rawKeyBinding.linux;
 				break;
-			case "darwin":
+			}
+			case "darwin": {
 				key = rawKeyBinding.mac;
 				break;
+			}
 		}
 
 		return this.keybindingService.resolveUserBinding(

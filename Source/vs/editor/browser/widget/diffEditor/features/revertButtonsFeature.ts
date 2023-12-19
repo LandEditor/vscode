@@ -64,7 +64,7 @@ export class RevertButtonsFeature extends Disposable {
 
 			const result = mappings.map((mapping) => ({
 				mapping,
-				rangeMappings: mapping.lineRangeMapping.innerChanges!.filter(
+				rangeMappings: mapping.lineRangeMapping.innerChanges?.filter(
 					(c) =>
 						selections.some((s) =>
 							Range.areIntersecting(c.modifiedRange, s),
@@ -84,12 +84,12 @@ export class RevertButtonsFeature extends Disposable {
 			autorunWithStore((reader, store) => {
 				const model = this._diffModel.read(reader);
 				const diff = model?.diff.read(reader);
-				if (!model || !diff) {
+				if (!(model && diff)) {
 					return;
 				}
 				const movedTextToCompare = this._diffModel
-					.read(reader)!
-					.movedTextToCompare.read(reader);
+					.read(reader)
+					?.movedTextToCompare.read(reader);
 				if (movedTextToCompare) {
 					return;
 				}

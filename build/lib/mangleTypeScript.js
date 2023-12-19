@@ -76,17 +76,17 @@ class ShortIdent {
 		return candidate;
 	}
 	static convert(n) {
-		const base = this._alphabet.length;
+		const base = ShortIdent._alphabet.length;
 		let result = "";
 		do {
 			const rest = n % base;
-			result += this._alphabet[rest];
+			result += ShortIdent._alphabet[rest];
 			n = (n / base) | 0;
 		} while (n > 0);
 		return result;
 	}
 }
-var FieldType;
+let FieldType;
 ((FieldType) => {
 	FieldType[(FieldType["Public"] = 0)] = "Public";
 	FieldType[(FieldType["Protected"] = 1)] = "Protected";
@@ -657,7 +657,7 @@ class Mangler {
 		for (const data of this.allClassDataByKey.values()) {
 			ClassData.fillInReplacement(data);
 		}
-		this.log(`Done creating class replacements`);
+		this.log("Done creating class replacements");
 		const editsByFile = new Map();
 		const appendEdit = (fileName, edit) => {
 			const edits = editsByFile.get(fileName);
@@ -863,7 +863,7 @@ async function _run() {
 	const projectBase = path.dirname(projectPath);
 	const newProjectBase = path.join(
 		path.dirname(projectBase),
-		path.basename(projectBase) + "2",
+		`${path.basename(projectBase)}2`,
 	);
 	fs.cpSync(projectBase, newProjectBase, { recursive: true });
 	for await (const [fileName, contents] of new Mangler(
@@ -878,7 +878,7 @@ async function _run() {
 		await fs.promises.writeFile(newFilePath, contents.out);
 		if (contents.sourceMap) {
 			await fs.promises.writeFile(
-				newFilePath + ".map",
+				`${newFilePath}.map`,
 				contents.sourceMap,
 			);
 		}

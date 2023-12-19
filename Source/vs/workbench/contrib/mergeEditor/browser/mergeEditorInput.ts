@@ -67,7 +67,7 @@ export class MergeEditorInput
 			const inputModels = editors
 				.map((e) => (e.editor as MergeEditorInput)._inputModel)
 				.filter(isDefined);
-			return await this._inputModel!.confirmClose(inputModels);
+			return await this._inputModel?.confirmClose(inputModels);
 		},
 	};
 

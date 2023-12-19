@@ -100,7 +100,7 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 			return undefined;
 		}
 		const tsconfigUri = task.scope.uri.with({
-			path: task.scope.uri.path + "/" + tsconfigPath,
+			path: `${task.scope.uri.path}/${tsconfigPath}`,
 		});
 		const tsconfig: TSConfig = {
 			uri: tsconfigUri,
@@ -372,7 +372,7 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 		return task;
 	}
 
-	private async getBuildShellArgs(project: TSConfig): Promise<Array<string>> {
+	private async getBuildShellArgs(project: TSConfig): Promise<string[]> {
 		const defaultArgs = ["-p", project.fsPath];
 		try {
 			const bytes = await vscode.workspace.fs.readFile(project.uri);

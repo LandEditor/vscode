@@ -120,8 +120,8 @@ export class IconSelectBox extends Disposable {
 
 		disposables.add(
 			this.inputBox.onDidChange((value) => {
-				const icons = [],
-					matches = [];
+				const icons = [];
+				const matches = [];
 				for (const icon of this.options.icons) {
 					const match = this.matchesContiguous(value, icon.id);
 					if (match) {

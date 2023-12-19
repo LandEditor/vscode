@@ -186,7 +186,7 @@ class TypeHierarchyController implements IEditorContribution {
 				this.endTypeHierarchy();
 				this._storageService.store(
 					TypeHierarchyController._storageDirectionKey,
-					this._widget!.direction,
+					this._widget?.direction,
 					StorageScope.PROFILE,
 					StorageTarget.USER,
 				);
@@ -206,9 +206,9 @@ class TypeHierarchyController implements IEditorContribution {
 				}
 				if (model) {
 					this._sessionDisposables.add(model);
-					this._widget!.showModel(model);
+					this._widget?.showModel(model);
 				} else {
-					this._widget!.showMessage(
+					this._widget?.showMessage(
 						localize("no.item", "No results"),
 					);
 				}
@@ -218,7 +218,7 @@ class TypeHierarchyController implements IEditorContribution {
 					this.endTypeHierarchy();
 					return;
 				}
-				this._widget!.showMessage(
+				this._widget?.showMessage(
 					localize("error", "Failed to show type hierarchy"),
 				);
 			});
@@ -230,7 +230,7 @@ class TypeHierarchyController implements IEditorContribution {
 		}
 		const model = this._widget.getModel();
 		const typeItem = this._widget.getFocused();
-		if (!typeItem || !model) {
+		if (!(typeItem && model)) {
 			return;
 		}
 		const newEditor = await this._editorService.openCodeEditor(

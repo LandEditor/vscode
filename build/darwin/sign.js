@@ -28,7 +28,7 @@ async function main(buildDir) {
 	);
 	const baseDir = path.dirname(__dirname);
 	const appRoot = path.join(buildDir, `VSCode-darwin-${arch}`);
-	const appName = product.nameLong + ".app";
+	const appName = `${product.nameLong}.app`;
 	const appFrameworkPath = path.join(
 		appRoot,
 		appName,
@@ -36,9 +36,9 @@ async function main(buildDir) {
 		"Frameworks",
 	);
 	const helperAppBaseName = product.nameShort;
-	const gpuHelperAppName = helperAppBaseName + " Helper (GPU).app";
-	const rendererHelperAppName = helperAppBaseName + " Helper (Renderer).app";
-	const pluginHelperAppName = helperAppBaseName + " Helper (Plugin).app";
+	const gpuHelperAppName = `${helperAppBaseName} Helper (GPU).app`;
+	const rendererHelperAppName = `${helperAppBaseName} Helper (Renderer).app`;
+	const pluginHelperAppName = `${helperAppBaseName} Helper (Plugin).app`;
 	const infoPlistPath = path.resolve(
 		appRoot,
 		appName,

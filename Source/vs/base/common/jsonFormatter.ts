@@ -186,15 +186,17 @@ export function format(
 		} else {
 			switch (firstToken) {
 				case SyntaxKind.OpenBracketToken:
-				case SyntaxKind.OpenBraceToken:
+				case SyntaxKind.OpenBraceToken: {
 					indentLevel++;
 					replaceContent = newLineAndIndent();
 					break;
+				}
 				case SyntaxKind.CommaToken:
-				case SyntaxKind.LineCommentTrivia:
+				case SyntaxKind.LineCommentTrivia: {
 					replaceContent = newLineAndIndent();
 					break;
-				case SyntaxKind.BlockCommentTrivia:
+				}
+				case SyntaxKind.BlockCommentTrivia: {
 					if (lineBreak) {
 						replaceContent = newLineAndIndent();
 					} else {
@@ -202,9 +204,11 @@ export function format(
 						replaceContent = " ";
 					}
 					break;
-				case SyntaxKind.ColonToken:
+				}
+				case SyntaxKind.ColonToken: {
 					replaceContent = " ";
 					break;
+				}
 				case SyntaxKind.StringLiteral:
 					if (secondToken === SyntaxKind.ColonToken) {
 						replaceContent = "";
@@ -216,7 +220,7 @@ export function format(
 				case SyntaxKind.FalseKeyword:
 				case SyntaxKind.NumericLiteral:
 				case SyntaxKind.CloseBraceToken:
-				case SyntaxKind.CloseBracketToken:
+				case SyntaxKind.CloseBracketToken: {
 					if (
 						secondToken === SyntaxKind.LineCommentTrivia ||
 						secondToken === SyntaxKind.BlockCommentTrivia
@@ -229,9 +233,11 @@ export function format(
 						hasError = true;
 					}
 					break;
-				case SyntaxKind.Unknown:
+				}
+				case SyntaxKind.Unknown: {
 					hasError = true;
 					break;
+				}
 			}
 			if (
 				lineBreak &&
@@ -306,7 +312,7 @@ export function getEOL(options: FormattingOptions, text: string): string {
 			return "\n";
 		}
 	}
-	return (options && options.eol) || "\n";
+	return options?.eol || "\n";
 }
 
 export function isEOL(text: string, offset: number) {

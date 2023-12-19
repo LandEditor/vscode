@@ -123,10 +123,7 @@ export function getReindentEditOperations(
 
 		adjustedLineContent =
 			globalIndent + currentLineText.substring(oldIndentation.length);
-		if (
-			indentationRules.decreaseIndentPattern &&
-			indentationRules.decreaseIndentPattern.test(adjustedLineContent)
-		) {
+		if (indentationRules.decreaseIndentPattern?.test(adjustedLineContent)) {
 			globalIndent = unshiftIndent(globalIndent);
 			adjustedLineContent =
 				globalIndent + currentLineText.substring(oldIndentation.length);
@@ -155,15 +152,11 @@ export function getReindentEditOperations(
 	// idealIndentForNextLine doesn't equal globalIndent when there is a line matching `indentNextLinePattern`.
 	let idealIndentForNextLine: string = globalIndent;
 
-	if (
-		indentationRules.increaseIndentPattern &&
-		indentationRules.increaseIndentPattern.test(adjustedLineContent)
-	) {
+	if (indentationRules.increaseIndentPattern?.test(adjustedLineContent)) {
 		idealIndentForNextLine = shiftIndent(idealIndentForNextLine);
 		globalIndent = shiftIndent(globalIndent);
 	} else if (
-		indentationRules.indentNextLinePattern &&
-		indentationRules.indentNextLinePattern.test(adjustedLineContent)
+		indentationRules.indentNextLinePattern?.test(adjustedLineContent)
 	) {
 		idealIndentForNextLine = shiftIndent(idealIndentForNextLine);
 	}
@@ -181,10 +174,7 @@ export function getReindentEditOperations(
 		const adjustedLineContent =
 			idealIndentForNextLine + text.substring(oldIndentation.length);
 
-		if (
-			indentationRules.decreaseIndentPattern &&
-			indentationRules.decreaseIndentPattern.test(adjustedLineContent)
-		) {
+		if (indentationRules.decreaseIndentPattern?.test(adjustedLineContent)) {
 			idealIndentForNextLine = unshiftIndent(idealIndentForNextLine);
 			globalIndent = unshiftIndent(globalIndent);
 		}
@@ -208,22 +198,14 @@ export function getReindentEditOperations(
 		}
 
 		// calculate idealIndentForNextLine
-		if (
-			indentationRules.unIndentedLinePattern &&
-			indentationRules.unIndentedLinePattern.test(text)
-		) {
-			// In reindent phase, if the line matches `unIndentedLinePattern` we inherit indentation from above lines
-			// but don't change globalIndent and idealIndentForNextLine.
-			continue;
+		if (indentationRules.unIndentedLinePattern?.test(text)) {
 		} else if (
-			indentationRules.increaseIndentPattern &&
-			indentationRules.increaseIndentPattern.test(adjustedLineContent)
+			indentationRules.increaseIndentPattern?.test(adjustedLineContent)
 		) {
 			globalIndent = shiftIndent(globalIndent);
 			idealIndentForNextLine = globalIndent;
 		} else if (
-			indentationRules.indentNextLinePattern &&
-			indentationRules.indentNextLinePattern.test(adjustedLineContent)
+			indentationRules.indentNextLinePattern?.test(adjustedLineContent)
 		) {
 			idealIndentForNextLine = shiftIndent(idealIndentForNextLine);
 		} else {

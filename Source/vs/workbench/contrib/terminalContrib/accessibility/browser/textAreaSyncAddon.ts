@@ -93,7 +93,7 @@ export class TextAreaSyncAddon extends Disposable implements ITerminalAddon {
 		const textArea = this._terminal?.textarea;
 		if (!textArea) {
 			this._logService.debug(
-				`TextAreaSyncAddon#syncTextArea: no textarea`,
+				"TextAreaSyncAddon#syncTextArea: no textarea",
 			);
 			return;
 		}
@@ -108,7 +108,7 @@ export class TextAreaSyncAddon extends Disposable implements ITerminalAddon {
 		} else if (!this._currentCommand) {
 			textArea.value = "";
 			this._logService.debug(
-				`TextAreaSyncAddon#syncTextArea: text cleared`,
+				"TextAreaSyncAddon#syncTextArea: text cleared",
 			);
 		}
 
@@ -133,7 +133,7 @@ export class TextAreaSyncAddon extends Disposable implements ITerminalAddon {
 		const currentCommand = commandCapability?.currentCommand;
 		if (!currentCommand) {
 			this._logService.debug(
-				`TextAreaSyncAddon#updateCommandAndCursor: no current command`,
+				"TextAreaSyncAddon#updateCommandAndCursor: no current command",
 			);
 			return;
 		}
@@ -145,7 +145,7 @@ export class TextAreaSyncAddon extends Disposable implements ITerminalAddon {
 		const commandLine = buffer.getLine(lineNumber)?.translateToString(true);
 		if (!commandLine) {
 			this._logService.debug(
-				`TextAreaSyncAddon#updateCommandAndCursor: no line`,
+				"TextAreaSyncAddon#updateCommandAndCursor: no line",
 			);
 			return;
 		}
@@ -160,7 +160,7 @@ export class TextAreaSyncAddon extends Disposable implements ITerminalAddon {
 			this._currentCommand = undefined;
 			this._cursorX = undefined;
 			this._logService.debug(
-				`TextAreaSyncAddon#updateCommandAndCursor: no commandStartX`,
+				"TextAreaSyncAddon#updateCommandAndCursor: no commandStartX",
 			);
 		}
 	}

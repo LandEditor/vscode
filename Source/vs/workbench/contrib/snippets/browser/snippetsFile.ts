@@ -88,13 +88,15 @@ class SnippetBodyInsights {
 				}
 
 				switch (marker.name) {
-					case "CLIPBOARD":
+					case "CLIPBOARD": {
 						this.usesClipboardVariable = true;
 						break;
+					}
 					case "SELECTION":
-					case "TM_SELECTED_TEXT":
+					case "TM_SELECTED_TEXT": {
 						this.usesSelectionVariable = true;
 						break;
+					}
 				}
 			} else {
 				// recurse
@@ -206,7 +208,7 @@ export class SnippetFile {
 
 	private _filepathSelect(selector: string, bucket: Snippet[]): void {
 		// for `fooLang.json` files all snippets are accepted
-		if (selector + ".json" === basename(this.location.path)) {
+		if (`${selector}.json` === basename(this.location.path)) {
 			bucket.push(...this.data);
 		}
 	}

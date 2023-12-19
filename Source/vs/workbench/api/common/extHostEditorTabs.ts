@@ -449,7 +449,7 @@ export class ExtHostEditorTabs implements IExtHostEditorTabs {
 
 		// Construct the tab change event based on the operation
 		switch (operation.kind) {
-			case TabModelOperationKind.TAB_OPEN:
+			case TabModelOperationKind.TAB_OPEN: {
 				this._onDidChangeTabs.fire(
 					Object.freeze({
 						opened: [tab.apiObject],
@@ -458,7 +458,8 @@ export class ExtHostEditorTabs implements IExtHostEditorTabs {
 					}),
 				);
 				return;
-			case TabModelOperationKind.TAB_CLOSE:
+			}
+			case TabModelOperationKind.TAB_CLOSE: {
 				this._onDidChangeTabs.fire(
 					Object.freeze({
 						opened: [],
@@ -467,8 +468,9 @@ export class ExtHostEditorTabs implements IExtHostEditorTabs {
 					}),
 				);
 				return;
+			}
 			case TabModelOperationKind.TAB_MOVE:
-			case TabModelOperationKind.TAB_UPDATE:
+			case TabModelOperationKind.TAB_UPDATE: {
 				this._onDidChangeTabs.fire(
 					Object.freeze({
 						opened: [],
@@ -477,6 +479,7 @@ export class ExtHostEditorTabs implements IExtHostEditorTabs {
 					}),
 				);
 				return;
+			}
 		}
 	}
 

@@ -99,10 +99,10 @@ abstract class BasePolicy implements Policy {
 				/\./g,
 				"_",
 			)}" />`,
-			`	<elements>`,
+			"	<elements>",
 			...this.renderADMXElements(),
-			`	</elements>`,
-			`</policy>`,
+			"	</elements>",
+			"</policy>",
 		];
 	}
 
@@ -169,7 +169,7 @@ class BooleanPolicy extends BasePolicy {
 		return [
 			`<boolean id="${this.name}" valueName="${this.name}">`,
 			`	<trueValue><decimal value="1" /></trueValue><falseValue><decimal value="0" /></falseValue>`,
-			`</boolean>`,
+			"</boolean>",
 		];
 	}
 
@@ -364,7 +364,7 @@ class StringEnumPolicy extends BasePolicy {
 				(value, index) =>
 					`	<item displayName="$(string.${this.name}_${this.enumDescriptions[index].nlsKey})"><value><string>${value}</string></value></item>`,
 			),
-			`</enum>`,
+			"</enum>",
 		];
 	}
 
@@ -388,7 +388,7 @@ interface QType<T> {
 }
 
 const IntQ: QType<number> = {
-	Q: `(number) @value`,
+	Q: "(number) @value",
 
 	value(matches: Parser.QueryMatch[]): number | undefined {
 		const match = matches[0];
@@ -652,7 +652,7 @@ function renderADMX(
 					(v) =>
 						`<definition name="Supported_${v}" displayName="$(string.Supported_${v})" />`,
 				)
-				.join(`\n			`)}
+				.join("\n			")}
 		</definitions>
 	</supportedOn>
 	<categories>
@@ -662,10 +662,10 @@ function renderADMX(
 				(c) =>
 					`<category displayName="$(string.Category_${c.name.nlsKey})" name="${c.name.nlsKey}"><parentCategory ref="Application" /></category>`,
 			)
-			.join(`\n		`)}
+			.join("\n		")}
 	</categories>
 	<policies>
-		${policies.flatMap((p) => p.renderADMX(regKey)).join(`\n		`)}
+		${policies.flatMap((p) => p.renderADMX(regKey)).join("\n		")}
 	</policies>
 </policyDefinitions>
 `;
@@ -702,12 +702,12 @@ function renderADML(
 			)}
 			${policies
 				.flatMap((p) => p.renderADMLStrings(translations))
-				.join(`\n			`)}
+				.join("\n			")}
 		</stringTable>
 		<presentationTable>
 			${policies
 				.map((p) => p.renderADMLPresentation())
-				.join(`\n			`)}
+				.join("\n			")}
 		</presentationTable>
 	</resources>
 </policyDefinitionResources>

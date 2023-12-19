@@ -126,8 +126,7 @@ export class LinesDecorationsOverlay extends DedupOverlay {
 
 		const left = this._decorationsLeft.toString();
 		const width = this._decorationsWidth.toString();
-		const common =
-			'" style="left:' + left + "px;width:" + width + 'px;"></div>';
+		const common = `" style="left:${left}px;width:${width}px;"></div>`;
 
 		const output: string[] = [];
 		for (
@@ -139,8 +138,7 @@ export class LinesDecorationsOverlay extends DedupOverlay {
 			const decorations = toRender[lineIndex].getDecorations();
 			let lineOutput = "";
 			for (const decoration of decorations) {
-				lineOutput +=
-					'<div class="cldr ' + decoration.className + common;
+				lineOutput += `<div class="cldr ${decoration.className}${common}`;
 			}
 			output[lineIndex] = lineOutput;
 		}

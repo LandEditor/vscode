@@ -218,8 +218,7 @@ export function getContext(
 			focusedStat,
 		);
 	const compressedNavigationController =
-		compressedNavigationControllers &&
-		compressedNavigationControllers.length
+		compressedNavigationControllers?.length
 			? compressedNavigationControllers[0]
 			: undefined;
 	focusedStat = compressedNavigationController
@@ -233,8 +232,7 @@ export function getContext(
 			compressedNavigationControllerProvider.getCompressedNavigationController(
 				stat,
 			);
-		const controller =
-			controllers && controllers.length ? controllers[0] : undefined;
+		const controller = controllers?.length ? controllers[0] : undefined;
 		if (
 			controller &&
 			focusedStat &&
@@ -828,7 +826,7 @@ export class ExplorerView extends ViewPane implements IExplorerView {
 				if (element) {
 					const navigationControllers =
 						this.renderer.getCompressedNavigationController(
-							element instanceof Array ? element[0] : element,
+							Array.isArray(element) ? element[0] : element,
 						);
 					navigationControllers?.forEach((controller) =>
 						controller.updateCollapsed(e.node.collapsed),
@@ -956,10 +954,9 @@ export class ExplorerView extends ViewPane implements IExplorerView {
 		if (stat instanceof ExplorerItem) {
 			const compressedControllers =
 				this.renderer.getCompressedNavigationController(stat);
-			arg =
-				compressedControllers && compressedControllers.length
-					? compressedControllers[0].current.resource
-					: stat.resource;
+			arg = compressedControllers?.length
+				? compressedControllers[0].current.resource
+				: stat.resource;
 		} else {
 			arg = roots.length === 1 ? roots[0].resource : {};
 		}
@@ -984,7 +981,7 @@ export class ExplorerView extends ViewPane implements IExplorerView {
 	}
 
 	private onFocusChanged(elements: readonly ExplorerItem[]): void {
-		const stat = elements && elements.length ? elements[0] : undefined;
+		const stat = elements?.length ? elements[0] : undefined;
 		this.setContextKeys(stat);
 
 		if (stat) {
@@ -1026,8 +1023,7 @@ export class ExplorerView extends ViewPane implements IExplorerView {
 		cancelEditing = true,
 	): Promise<void> {
 		if (
-			!this.tree ||
-			!this.isBodyVisible() ||
+			!(this.tree && this.isBodyVisible()) ||
 			(item && !this.tree.hasNode(item))
 		) {
 			// Tree node doesn't exist yet, when it becomes visible we will refresh
@@ -1078,7 +1074,7 @@ export class ExplorerView extends ViewPane implements IExplorerView {
 		}
 
 		let viewState: IAsyncDataTreeViewState | undefined;
-		if (this.tree && this.tree.getInput()) {
+		if (this.tree?.getInput()) {
 			viewState = this.tree.getViewState();
 		} else {
 			const rawViewState = this.storageService.get(
@@ -1168,7 +1164,7 @@ export class ExplorerView extends ViewPane implements IExplorerView {
 			return;
 		}
 
-		if (!resource || !this.isBodyVisible()) {
+		if (!(resource && this.isBodyVisible())) {
 			return;
 		}
 

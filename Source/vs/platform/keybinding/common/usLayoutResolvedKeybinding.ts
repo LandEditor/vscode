@@ -257,7 +257,9 @@ export class USLayoutResolvedKeybinding extends BaseResolvedKeybinding<KeyCodeCh
 		if (chord instanceof KeyCodeChord) {
 			return chord;
 		}
-		const keyCode = this._scanCodeToKeyCode(chord.scanCode);
+		const keyCode = USLayoutResolvedKeybinding._scanCodeToKeyCode(
+			chord.scanCode,
+		);
 		if (keyCode === KeyCode.Unknown) {
 			return null;
 		}
@@ -275,7 +277,9 @@ export class USLayoutResolvedKeybinding extends BaseResolvedKeybinding<KeyCodeCh
 		os: OperatingSystem,
 	): USLayoutResolvedKeybinding[] {
 		const chords: KeyCodeChord[] = toEmptyArrayIfContainsNull(
-			keybinding.chords.map((chord) => this._toKeyCodeChord(chord)),
+			keybinding.chords.map((chord) =>
+				USLayoutResolvedKeybinding._toKeyCodeChord(chord),
+			),
 		);
 		if (chords.length > 0) {
 			return [new USLayoutResolvedKeybinding(chords, os)];

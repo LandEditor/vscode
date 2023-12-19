@@ -126,7 +126,7 @@ export class InstantiationService implements IInstantiationService {
 		return result;
 	}
 
-	private _createInstance<T>(ctor: any, args: any[] = [], _trace: Trace): T {
+	private _createInstance<T>(ctor: any, args: any[], _trace: Trace): T {
 		// arguments defined by service decorators
 		const serviceDependencies = _util
 			.getServiceDependencies(ctor)
@@ -334,7 +334,7 @@ export class InstantiationService implements IInstantiationService {
 	private _createServiceInstanceWithOwner<T>(
 		id: ServiceIdentifier<T>,
 		ctor: any,
-		args: any[] = [],
+		args: any[],
 		supportsDelayedInstantiation: boolean,
 		_trace: Trace,
 	): T {
@@ -364,7 +364,7 @@ export class InstantiationService implements IInstantiationService {
 	private _createServiceInstance<T>(
 		id: ServiceIdentifier<T>,
 		ctor: any,
-		args: any[] = [],
+		args: any[],
 		supportsDelayedInstantiation: boolean,
 		_trace: Trace,
 	): T {
@@ -423,7 +423,7 @@ export class InstantiationService implements IInstantiationService {
 								thisArg,
 								disposables,
 							) => {
-								const rm = list!.push([
+								const rm = list?.push([
 									callback,
 									thisArg,
 									disposables,
@@ -500,7 +500,7 @@ export class Trace {
 			? new Trace(
 					TraceType.Invocation,
 					ctor.name ||
-						new Error().stack!.split("\n").slice(3, 4).join("\n"),
+						new Error().stack?.split("\n").slice(3, 4).join("\n"),
 			  )
 			: Trace._None;
 	}

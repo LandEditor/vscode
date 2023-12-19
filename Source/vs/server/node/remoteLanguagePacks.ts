@@ -25,7 +25,7 @@ export function getNLSConfiguration(
 	userDataPath: string,
 ): Promise<lp.NLSConfiguration> {
 	return exists(metaData).then((fileExists) => {
-		if (!fileExists || !product.commit) {
+		if (!(fileExists && product.commit)) {
 			// console.log(`==> MetaData or commit unknown. Using default language.`);
 			// The OS Locale on the remote side really doesn't matter, so we return the default locale
 			return Promise.resolve({

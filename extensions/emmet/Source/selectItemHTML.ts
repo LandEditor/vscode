@@ -171,7 +171,7 @@ function getSelectionFromNode(
 	document: vscode.TextDocument,
 	node: HtmlNode,
 ): vscode.Selection | undefined {
-	if (node && node.open) {
+	if (node?.open) {
 		const selectionStart = node.open.start + 1;
 		const selectionEnd = selectionStart + node.name.length;
 		return offsetRangeToSelection(document, selectionStart, selectionEnd);

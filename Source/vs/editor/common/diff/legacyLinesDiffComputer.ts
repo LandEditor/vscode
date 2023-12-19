@@ -284,24 +284,18 @@ class CharSequence implements ISequence {
 	}
 
 	public toString() {
-		return (
-			"[" +
-			this._charCodes
-				.map(
-					(s, idx) =>
-						(s === CharCode.LineFeed
-							? "\\n"
-							: String.fromCharCode(s)) +
-						`-(${this._lineNumbers[idx]},${this._columns[idx]})`,
-				)
-				.join(", ") +
-			"]"
-		);
+		return `[${this._charCodes
+			.map(
+				(s, idx) =>
+					(s === CharCode.LineFeed ? "\\n" : String.fromCharCode(s)) +
+					`-(${this._lineNumbers[idx]},${this._columns[idx]})`,
+			)
+			.join(", ")}]`;
 	}
 
 	private _assertIndex(index: number, arr: number[]): void {
 		if (index < 0 || index >= arr.length) {
-			throw new Error(`Illegal index`);
+			throw new Error("Illegal index");
 		}
 	}
 

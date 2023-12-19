@@ -66,7 +66,7 @@ export class MainThreadCommands implements MainThreadCommandsShape {
 		// print all as markdown
 		const all: string[] = [];
 		for (const id in result) {
-			all.push("`" + id + "` - " + _generateMarkdown(result[id]));
+			all.push(`\`${id}\` - ${_generateMarkdown(result[id])}`);
 		}
 		console.log(all.join("\n"));
 	}

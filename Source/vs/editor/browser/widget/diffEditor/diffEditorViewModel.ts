@@ -245,7 +245,7 @@ export class DiffEditorViewModel
 								this.movedTextToCompare.get();
 							this.movedTextToCompare.set(
 								currentSyncedMovedText
-									? this._lastDiff!.moves.find((m) =>
+									? this._lastDiff?.moves.find((m) =>
 											m.lineRangeMapping.modified.intersect(
 												currentSyncedMovedText
 													.lineRangeMapping.modified
@@ -287,7 +287,7 @@ export class DiffEditorViewModel
 								this.movedTextToCompare.get();
 							this.movedTextToCompare.set(
 								currentSyncedMovedText
-									? this._lastDiff!.moves.find((m) =>
+									? this._lastDiff?.moves.find((m) =>
 											m.lineRangeMapping.modified.intersect(
 												currentSyncedMovedText
 													.lineRangeMapping.modified
@@ -708,7 +708,7 @@ export class UnchangedRegion {
 		return this.lineCount - this._visibleLineCountTop.get();
 	}
 
-	public showMoreAbove(count = 10, tx: ITransaction | undefined): void {
+	public showMoreAbove(count, tx: ITransaction | undefined): void {
 		const maxVisibleLineCountTop = this.getMaxVisibleLineCountTop();
 		this._visibleLineCountTop.set(
 			Math.min(
@@ -719,7 +719,7 @@ export class UnchangedRegion {
 		);
 	}
 
-	public showMoreBelow(count = 10, tx: ITransaction | undefined): void {
+	public showMoreBelow(count, tx: ITransaction | undefined): void {
 		const maxVisibleLineCountBottom =
 			this.lineCount - this._visibleLineCountTop.get();
 		this._visibleLineCountBottom.set(

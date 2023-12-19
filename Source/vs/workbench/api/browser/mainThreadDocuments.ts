@@ -245,7 +245,7 @@ export class MainThreadDocuments
 		if (!this._modelTrackers.has(modelUrl)) {
 			return;
 		}
-		this._modelTrackers.get(modelUrl)!.dispose();
+		this._modelTrackers.get(modelUrl)?.dispose();
 		this._modelTrackers.delete(modelUrl);
 	}
 
@@ -258,9 +258,9 @@ export class MainThreadDocuments
 
 	async $tryOpenDocument(uriData: UriComponents): Promise<URI> {
 		const inputUri = URI.revive(uriData);
-		if (!inputUri.scheme || !(inputUri.fsPath || inputUri.authority)) {
+		if (!(inputUri.scheme && (inputUri.fsPath || inputUri.authority))) {
 			throw new ErrorNoTelemetry(
-				`Invalid uri. Scheme and authority or path must be set.`,
+				"Invalid uri. Scheme and authority or path must be set.",
 			);
 		}
 
@@ -268,13 +268,14 @@ export class MainThreadDocuments
 
 		let promise: Promise<URI>;
 		switch (canonicalUri.scheme) {
-			case Schemas.untitled:
+			case Schemas.untitled: {
 				promise = this._handleUntitledScheme(canonicalUri);
 				break;
-			case Schemas.file:
-			default:
+			}
+			default: {
 				promise = this._handleAsResourceInput(canonicalUri);
 				break;
+			}
 		}
 
 		let documentUri: URI | undefined;
@@ -337,9 +338,7 @@ export class MainThreadDocuments
 			// don't create a new file ontop of an existing file
 			return Promise.reject(new Error("file already exists"));
 		}
-		return await this._doCreateUntitled(
-			Boolean(uri.path) ? uri : undefined,
-		);
+		return await this._doCreateUntitled(uri.path ? uri : undefined);
 	}
 
 	private async _doCreateUntitled(

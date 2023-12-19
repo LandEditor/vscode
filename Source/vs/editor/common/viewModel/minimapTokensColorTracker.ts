@@ -12,10 +12,12 @@ import { TokenizationRegistry } from "vs/editor/common/languages";
 export class MinimapTokensColorTracker extends Disposable {
 	private static _INSTANCE: MinimapTokensColorTracker | null = null;
 	public static getInstance(): MinimapTokensColorTracker {
-		if (!this._INSTANCE) {
-			this._INSTANCE = markAsSingleton(new MinimapTokensColorTracker());
+		if (!MinimapTokensColorTracker._INSTANCE) {
+			MinimapTokensColorTracker._INSTANCE = markAsSingleton(
+				new MinimapTokensColorTracker(),
+			);
 		}
-		return this._INSTANCE;
+		return MinimapTokensColorTracker._INSTANCE;
 	}
 
 	private _colors!: RGBA8[];

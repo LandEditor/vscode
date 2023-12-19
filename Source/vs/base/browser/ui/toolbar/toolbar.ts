@@ -228,8 +228,8 @@ export class ToolBar extends Disposable {
 	}
 
 	setActions(
-		primaryActions: ReadonlyArray<IAction>,
-		secondaryActions?: ReadonlyArray<IAction>,
+		primaryActions: readonly IAction[],
+		secondaryActions?: readonly IAction[],
 	): void {
 		this.clear();
 
@@ -283,7 +283,7 @@ export class ToolBar extends Disposable {
 export class ToggleMenuAction extends Action {
 	static readonly ID = "toolbar.toggle.more";
 
-	private _menuActions: ReadonlyArray<IAction>;
+	private _menuActions: readonly IAction[];
 	private toggleDropdownMenu: () => void;
 
 	constructor(toggleDropdownMenu: () => void, title?: string) {
@@ -298,11 +298,11 @@ export class ToggleMenuAction extends Action {
 		this.toggleDropdownMenu();
 	}
 
-	get menuActions(): ReadonlyArray<IAction> {
+	get menuActions(): readonly IAction[] {
 		return this._menuActions;
 	}
 
-	set menuActions(actions: ReadonlyArray<IAction>) {
+	set menuActions(actions: readonly IAction[]) {
 		this._menuActions = actions;
 	}
 }

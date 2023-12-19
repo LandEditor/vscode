@@ -112,7 +112,7 @@ export class FormatOnType implements IEditorContribution {
 			this._languageFeaturesService.onTypeFormattingEditProvider.ordered(
 				model,
 			);
-		if (!support || !support.autoFormatTriggerCharacters) {
+		if (!support?.autoFormatTriggerCharacters) {
 			return;
 		}
 
@@ -401,7 +401,7 @@ registerEditorAction(FormatSelectionAction);
 // and we keep it here such that existing keybinding configurations etc will still work
 CommandsRegistry.registerCommand("editor.action.format", async (accessor) => {
 	const editor = accessor.get(ICodeEditorService).getFocusedCodeEditor();
-	if (!editor || !editor.hasModel()) {
+	if (!editor?.hasModel()) {
 		return;
 	}
 	const commandService = accessor.get(ICommandService);

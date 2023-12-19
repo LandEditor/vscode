@@ -72,7 +72,7 @@ export class ExtHostLocalizationService implements ExtHostLocalizationShape {
 	): Promise<void> {
 		if (
 			this.isDefaultLanguage ||
-			(!extension.l10n && !extension.isBuiltin)
+			!(extension.l10n || extension.isBuiltin)
 		) {
 			return;
 		}

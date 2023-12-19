@@ -110,7 +110,7 @@ export abstract class AbstractUpdateService implements IUpdateService {
 			return;
 		}
 
-		if (!this.productService.updateUrl || !this.productService.commit) {
+		if (!(this.productService.updateUrl && this.productService.commit)) {
 			this.setState(
 				State.Disabled(DisablementReason.MissingConfiguration),
 			);

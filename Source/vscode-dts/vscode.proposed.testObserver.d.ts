@@ -25,7 +25,7 @@ declare module "vscode" {
 		 * List of test results stored by the editor, sorted in descending
 		 * order by their `completedAt` time.
 		 */
-		export const testResults: ReadonlyArray<TestRunResult>;
+		export const testResults: readonly TestRunResult[];
 
 		/**
 		 * Event that fires when the {@link testResults} array is updated.
@@ -37,7 +37,7 @@ declare module "vscode" {
 		/**
 		 * List of tests returned by test provider for files in the workspace.
 		 */
-		readonly tests: ReadonlyArray<TestItem>;
+		readonly tests: readonly TestItem[];
 
 		/**
 		 * An event that fires when an existing test in the collection changes, or
@@ -57,17 +57,17 @@ declare module "vscode" {
 		/**
 		 * List of all tests that are newly added.
 		 */
-		readonly added: ReadonlyArray<TestItem>;
+		readonly added: readonly TestItem[];
 
 		/**
 		 * List of existing tests that have updated.
 		 */
-		readonly updated: ReadonlyArray<TestItem>;
+		readonly updated: readonly TestItem[];
 
 		/**
 		 * List of existing tests that have been removed.
 		 */
-		readonly removed: ReadonlyArray<TestItem>;
+		readonly removed: readonly TestItem[];
 	}
 
 	/**
@@ -94,7 +94,7 @@ declare module "vscode" {
 		 * List of test results. The items in this array are the items that
 		 * were passed in the {@link tests.runTests} method.
 		 */
-		readonly results: ReadonlyArray<Readonly<TestResultSnapshot>>;
+		readonly results: readonly Readonly<TestResultSnapshot>[];
 	}
 
 	/**
@@ -139,7 +139,7 @@ declare module "vscode" {
 		 * State of the test in each task. In the common case, a test will only
 		 * be executed in a single task and the length of this array will be 1.
 		 */
-		readonly taskStates: ReadonlyArray<TestSnapshotTaskState>;
+		readonly taskStates: readonly TestSnapshotTaskState[];
 
 		/**
 		 * Optional list of nested tests for this item.
@@ -163,7 +163,7 @@ declare module "vscode" {
 		 * Associated test run message. Can, for example, contain assertion
 		 * failure information if the test fails.
 		 */
-		readonly messages: ReadonlyArray<TestMessage>;
+		readonly messages: readonly TestMessage[];
 	}
 
 	/**

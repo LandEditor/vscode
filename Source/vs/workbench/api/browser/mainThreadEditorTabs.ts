@@ -336,7 +336,7 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 		// Even if the editor service knows about the group the group might not exist yet in our model
 		const groupInModel = this._groupLookup.get(groupId) !== undefined;
 		// Means a new group was likely created so we rebuild the model
-		if (!group || !groupInModel) {
+		if (!(group && groupInModel)) {
 			this._createTabsModel();
 			return;
 		}
@@ -371,7 +371,7 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 		const group = this._editorGroupsService.getGroup(groupId);
 		const tabs = this._groupLookup.get(groupId)?.tabs;
 		// Something is wrong with the model state so we rebuild
-		if (!group || !tabs) {
+		if (!(group && tabs)) {
 			this._createTabsModel();
 			return;
 		}
@@ -463,7 +463,7 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 		const group = tabInfo?.group;
 		const tab = tabInfo?.tab;
 		// Something wrong with the model state so we rebuild
-		if (!group || !tab) {
+		if (!(group && tab)) {
 			this._logService.error(
 				"Invalid model for sticky change, rebuilding",
 			);
@@ -496,7 +496,7 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 		const group = tabInfo?.group;
 		const tab = tabInfo?.tab;
 		// Something wrong with the model state so we rebuild
-		if (!group || !tab) {
+		if (!(group && tab)) {
 			this._logService.error(
 				"Invalid model for sticky change, rebuilding",
 			);
@@ -782,7 +782,7 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 			const group = tabInfo?.group;
 			const editorTab = tabInfo?.editorInput;
 			// If not found skip
-			if (!group || !tab || !tabInfo || !editorTab) {
+			if (!(group && tab && tabInfo && editorTab)) {
 				continue;
 			}
 			const groupEditors = groups.get(group);

@@ -47,7 +47,7 @@ export interface IChatVariablesService {
 	): IDisposable;
 	hasVariable(name: string): boolean;
 	getVariables(): Iterable<Readonly<IChatVariableData>>;
-	getDynamicVariables(sessionId: string): ReadonlyArray<IDynamicVariable>; // should be its own service?
+	getDynamicVariables(sessionId: string): readonly IDynamicVariable[]; // should be its own service?
 
 	/**
 	 * Resolves all variables that occur in `prompt`

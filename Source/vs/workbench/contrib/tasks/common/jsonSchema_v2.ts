@@ -20,7 +20,7 @@ function fixReferences(literal: any) {
 		literal.forEach(fixReferences);
 	} else if (typeof literal === "object") {
 		if (literal["$ref"]) {
-			literal["$ref"] = literal["$ref"] + "2";
+			literal["$ref"] += "2";
 		}
 		Object.getOwnPropertyNames(literal).forEach((property) => {
 			const value = literal[property];
@@ -754,8 +754,8 @@ processTask.properties!.type = {
 		"Defines whether the task is run as a process or as a command inside a shell.",
 	),
 };
-processTask.required!.push("command");
-processTask.required!.push("type");
+processTask.required?.push("command");
+processTask.required?.push("type");
 
 taskDefinitions.push(processTask);
 
@@ -771,7 +771,7 @@ tasks.items = {
 };
 
 definitionsTaskRunnerConfigurationProperties.inputs =
-	inputsSchema.definitions!.inputs;
+	inputsSchema.definitions?.inputs;
 
 definitions.commandConfiguration.properties!.isShellCommand =
 	Objects.deepClone(shellCommand);
@@ -800,7 +800,7 @@ definitionsTaskRunnerConfigurationProperties.taskSelector.deprecationMessage =
 const osSpecificTaskRunnerConfiguration = Objects.deepClone(
 	definitions.taskRunnerConfiguration,
 );
-delete osSpecificTaskRunnerConfiguration.properties!.tasks;
+osSpecificTaskRunnerConfiguration.properties!.tasks = undefined;
 osSpecificTaskRunnerConfiguration.additionalProperties = false;
 definitions.osSpecificTaskRunnerConfiguration =
 	osSpecificTaskRunnerConfiguration;
@@ -866,7 +866,7 @@ function deprecatedVariableMessage(
 }
 
 Object.getOwnPropertyNames(definitions).forEach((key) => {
-	const newKey = key + "2";
+	const newKey = `${key}2`;
 	definitions[newKey] = definitions[key];
 	delete definitions[key];
 	deprecatedVariableMessage(definitions, newKey);
@@ -876,11 +876,12 @@ fixReferences(schema);
 export function updateProblemMatchers() {
 	try {
 		const matcherIds = ProblemMatcherRegistry.keys().map(
-			(key) => "$" + key,
+			(key) => `$${key}`,
 		);
-		definitions.problemMatcherType2.oneOf![0].enum = matcherIds;
-		(definitions.problemMatcherType2.oneOf![2].items as IJSONSchema)
-			.anyOf![0].enum = matcherIds;
+		definitions.problemMatcherType2.oneOf?.[0].enum = matcherIds;
+		(
+			definitions.problemMatcherType2.oneOf?.[2].items as IJSONSchema
+		).anyOf?.[0].enum = matcherIds;
 	} catch (err) {
 		console.log("Installing problem matcher ids failed");
 	}

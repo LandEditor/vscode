@@ -104,7 +104,7 @@ export class OneSnippet {
 
 	private _initDecorations(): void {
 		if (this._offset === -1) {
-			throw new Error(`Snippet not initialized!`);
+			throw new Error("Snippet not initialized!");
 		}
 
 		if (this._placeholderDecorations) {
@@ -130,7 +130,7 @@ export class OneSnippet {
 					? OneSnippet._decor.inactiveFinal
 					: OneSnippet._decor.inactive;
 				const handle = accessor.addDecoration(range, options);
-				this._placeholderDecorations!.set(placeholder, handle);
+				this._placeholderDecorations?.set(placeholder, handle);
 			}
 		});
 	}
@@ -151,7 +151,7 @@ export class OneSnippet {
 			]) {
 				// Check if the placeholder has a transformation
 				if (placeholder.transform) {
-					const id = this._placeholderDecorations!.get(placeholder)!;
+					const id = this._placeholderDecorations?.get(placeholder)!;
 					const range = this._editor
 						.getModel()
 						.getDecorationRange(id)!;
@@ -217,7 +217,7 @@ export class OneSnippet {
 				for (const placeholder of this._placeholderGroups[
 					this._placeholderGroupsIdx
 				]) {
-					const id = this._placeholderDecorations!.get(placeholder)!;
+					const id = this._placeholderDecorations?.get(placeholder)!;
 					const range = this._editor
 						.getModel()
 						.getDecorationRange(id)!;
@@ -249,7 +249,7 @@ export class OneSnippet {
 						placeholder,
 					)) {
 						const id =
-							this._placeholderDecorations!.get(
+							this._placeholderDecorations?.get(
 								enclosingPlaceholder,
 							)!;
 						accessor.changeDecorationOptions(
@@ -288,7 +288,7 @@ export class OneSnippet {
 		let marker: Marker | undefined = placeholder;
 		while (marker) {
 			if (marker instanceof Placeholder) {
-				const id = this._placeholderDecorations!.get(marker)!;
+				const id = this._placeholderDecorations?.get(marker)!;
 				const range = this._editor.getModel().getDecorationRange(id)!;
 				if (range.isEmpty() && marker.toString().length > 0) {
 					return true;
@@ -351,7 +351,7 @@ export class OneSnippet {
 					result.set(placeholder.index, ranges);
 				}
 
-				const id = this._placeholderDecorations!.get(placeholder)!;
+				const id = this._placeholderDecorations?.get(placeholder)!;
 				const range = this._editor.getModel().getDecorationRange(id);
 				if (!range) {
 					// one of the placeholder lost its decoration and
@@ -416,7 +416,7 @@ export class OneSnippet {
 				// sorted right after the insertion point. This ensures we move
 				// through the placeholders in the correct order
 				const indexLastPlaceholder =
-					nested._snippet.placeholderInfo.last!.index;
+					nested._snippet.placeholderInfo.last?.index;
 
 				for (const nestedPlaceholder of nested._snippet.placeholderInfo
 					.all) {
@@ -434,9 +434,9 @@ export class OneSnippet {
 
 				// Remove the placeholder at which position are inserting
 				// the snippet and also remove its decoration.
-				const id = this._placeholderDecorations!.get(placeholder)!;
+				const id = this._placeholderDecorations?.get(placeholder)!;
 				accessor.removeDecoration(id);
-				this._placeholderDecorations!.delete(placeholder);
+				this._placeholderDecorations?.delete(placeholder);
 
 				// For each *new* placeholder we create decoration to monitor
 				// how and if it grows/shrinks.
@@ -454,7 +454,7 @@ export class OneSnippet {
 						range,
 						OneSnippet._decor.inactive,
 					);
-					this._placeholderDecorations!.set(placeholder, handle);
+					this._placeholderDecorations?.set(placeholder, handle);
 				}
 			}
 
@@ -469,7 +469,7 @@ export class OneSnippet {
 	getEnclosingRange(): Range | undefined {
 		let result: Range | undefined;
 		const model = this._editor.getModel();
-		for (const decorationId of this._placeholderDecorations!.values()) {
+		for (const decorationId of this._placeholderDecorations?.values()) {
 			const placeholderRange =
 				model.getDecorationRange(decorationId) ?? undefined;
 			if (result) {
@@ -1122,7 +1122,6 @@ export class SnippetSession {
 			for (let i = 0; i < ranges.length; i++) {
 				if (!ranges[i].containsRange(selections[i])) {
 					allPossibleSelections.delete(index);
-					continue;
 				}
 			}
 		}

@@ -270,7 +270,7 @@ export class TerminalTabList extends WorkbenchList<ITerminalInstance> {
 				return;
 			}
 			const selection = this.getSelectedElements();
-			if (!selection || !selection.find((s) => e.element === s)) {
+			if (!(selection?.find((s) => e.element === s))) {
 				this.setFocus(e.index !== undefined ? [e.index] : []);
 			}
 		});
@@ -461,11 +461,11 @@ class TerminalTabsRenderer
 		if (group.terminalInstances.length > 1) {
 			const terminalIndex = group.terminalInstances.indexOf(instance);
 			if (terminalIndex === 0) {
-				prefix = `┌ `;
-			} else if (terminalIndex === group!.terminalInstances.length - 1) {
-				prefix = `└ `;
+				prefix = "┌ ";
+			} else if (terminalIndex === group?.terminalInstances.length - 1) {
+				prefix = "└ ";
 			} else {
-				prefix = `├ `;
+				prefix = "├ ";
 			}
 		}
 
@@ -887,8 +887,10 @@ class TerminalTabsDragAndDrop
 		}
 
 		if (
-			!targetInstance &&
-			!containsDragType(originalEvent, TerminalDataTransfers.Terminals)
+			!(
+				targetInstance ||
+				containsDragType(originalEvent, TerminalDataTransfers.Terminals)
+			)
 		) {
 			return data instanceof ElementsDragAndDropData;
 		}
@@ -966,7 +968,7 @@ class TerminalTabsDragAndDrop
 			}
 
 			const draggedElement = data.getData();
-			if (!draggedElement || !Array.isArray(draggedElement)) {
+			if (!(draggedElement && Array.isArray(draggedElement))) {
 				return;
 			}
 
@@ -998,7 +1000,7 @@ class TerminalTabsDragAndDrop
 		instance: ITerminalInstance | undefined,
 		e: DragEvent,
 	) {
-		if (!instance || !e.dataTransfer) {
+		if (!(instance && e.dataTransfer)) {
 			return;
 		}
 

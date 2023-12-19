@@ -87,12 +87,12 @@ export const CommandsRegistry: ICommandRegistry = new (class
 		handler?: ICommandHandler,
 	): IDisposable {
 		if (!idOrCommand) {
-			throw new Error(`invalid command`);
+			throw new Error("invalid command");
 		}
 
 		if (typeof idOrCommand === "string") {
 			if (!handler) {
-				throw new Error(`invalid command`);
+				throw new Error("invalid command");
 			}
 			return this.registerCommand({ id: idOrCommand, handler });
 		}

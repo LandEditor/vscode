@@ -84,14 +84,14 @@ class PackageJSON extends TreeItem {
 		if (relativePath) {
 			this.resourceUri = Uri.file(
 				path.join(
-					folder!.resourceUri!.fsPath,
+					folder?.resourceUri?.fsPath,
 					relativePath,
 					packageName,
 				),
 			);
 		} else {
 			this.resourceUri = Uri.file(
-				path.join(folder!.resourceUri!.fsPath, packageName),
+				path.join(folder?.resourceUri?.fsPath, packageName),
 			);
 		}
 		this.iconPath = ThemeIcon.File;
@@ -218,7 +218,7 @@ export class NpmScriptsTreeDataProvider implements TreeDataProvider<TreeItem> {
 		startDebugging(
 			this.extensionContext,
 			script.task.definition.script,
-			path.dirname(script.package.resourceUri!.fsPath),
+			path.dirname(script.package.resourceUri?.fsPath),
 			script.getFolder(),
 		);
 	}
@@ -402,8 +402,7 @@ export class NpmScriptsTreeDataProvider implements TreeDataProvider<TreeItem> {
 					: undefined;
 
 			if (
-				regularExpressions &&
-				regularExpressions.some((regularExpression) =>
+				regularExpressions?.some((regularExpression) =>
 					(<INpmTaskDefinition>each.task.definition).script.match(
 						regularExpression,
 					),

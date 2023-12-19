@@ -90,8 +90,10 @@ class UpdateImportsOnFileRenameHandler extends Disposable {
 					const jsTsFileThatIsBeingMoved =
 						await this.getJsTsFileBeingMoved(newUri);
 					if (
-						!jsTsFileThatIsBeingMoved ||
-						!this.client.toTsFilePath(jsTsFileThatIsBeingMoved)
+						!(
+							jsTsFileThatIsBeingMoved &&
+							this.client.toTsFilePath(jsTsFileThatIsBeingMoved)
+						)
 					) {
 						continue;
 					}
@@ -180,7 +182,6 @@ class UpdateImportsOnFileRenameHandler extends Disposable {
 				return true;
 			case UpdateImportsOnFileMoveSetting.Never:
 				return false;
-			case UpdateImportsOnFileMoveSetting.Prompt:
 			default:
 				return this.promptUser(newResources);
 		}
@@ -343,7 +344,7 @@ class UpdateImportsOnFileRenameHandler extends Disposable {
 			if (!groups.has(key)) {
 				groups.set(key, new Set());
 			}
-			groups.get(key)!.add(rename);
+			groups.get(key)?.add(rename);
 		}
 
 		return groups.values();

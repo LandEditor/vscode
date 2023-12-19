@@ -266,15 +266,15 @@ export class BreakpointWidget
 	private getInputValue(breakpoint: IBreakpoint | undefined): string {
 		switch (this.context) {
 			case Context.LOG_MESSAGE:
-				return breakpoint && breakpoint.logMessage
+				return breakpoint?.logMessage
 					? breakpoint.logMessage
 					: this.logMessageInput;
 			case Context.HIT_COUNT:
-				return breakpoint && breakpoint.hitCondition
+				return breakpoint?.hitCondition
 					? breakpoint.hitCondition
 					: this.hitCountInput;
 			default:
-				return breakpoint && breakpoint.condition
+				return breakpoint?.condition
 					? breakpoint.condition
 					: this.conditionInput;
 		}
@@ -283,12 +283,14 @@ export class BreakpointWidget
 	private rememberInput(): void {
 		const value = this.input.getModel().getValue();
 		switch (this.context) {
-			case Context.LOG_MESSAGE:
+			case Context.LOG_MESSAGE: {
 				this.logMessageInput = value;
 				break;
-			case Context.HIT_COUNT:
+			}
+			case Context.HIT_COUNT: {
 				this.hitCountInput = value;
 				break;
+			}
 			default:
 				this.conditionInput = value;
 		}
@@ -409,7 +411,7 @@ export class BreakpointWidget
 		this.toDispose.push(model);
 		const setDecorations = () => {
 			const value = this.input.getModel().getValue();
-			const decorations = !!value
+			const decorations = value
 				? []
 				: createDecorations(
 						this.themeService.getColorTheme(),
@@ -538,7 +540,7 @@ export class BreakpointWidget
 			const lineHeight = this.input.getOption(EditorOption.lineHeight);
 			const lineNum = this.input.getModel().getLineCount();
 			const newTopMargin = (this.heightInPx - lineNum * lineHeight) / 2;
-			this.inputContainer.style.marginTop = newTopMargin + "px";
+			this.inputContainer.style.marginTop = `${newTopMargin}px`;
 		}
 	}
 
@@ -546,9 +548,9 @@ export class BreakpointWidget
 		if (success) {
 			// if there is already a breakpoint on this location - remove it.
 
-			let condition = this.breakpoint && this.breakpoint.condition;
-			let hitCondition = this.breakpoint && this.breakpoint.hitCondition;
-			let logMessage = this.breakpoint && this.breakpoint.logMessage;
+			let condition = this.breakpoint?.condition;
+			let hitCondition = this.breakpoint?.hitCondition;
+			let logMessage = this.breakpoint?.logMessage;
 			this.rememberInput();
 
 			if (this.conditionInput || this.context === Context.CONDITION) {

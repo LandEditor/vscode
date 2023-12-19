@@ -14,13 +14,14 @@ export function hash(obj: any): number {
 
 export function doHash(obj: any, hashVal: number): number {
 	switch (typeof obj) {
-		case "object":
+		case "object": {
 			if (obj === null) {
 				return numberHash(349, hashVal);
 			} else if (Array.isArray(obj)) {
 				return arrayHash(obj, hashVal);
 			}
 			return objectHash(obj, hashVal);
+		}
 		case "string":
 			return stringHash(obj, hashVal);
 		case "boolean":
@@ -339,7 +340,8 @@ export class StringSHA1 {
 		let d = this._h3;
 		let e = this._h4;
 
-		let f: number, k: number;
+		let f: number;
+		let k: number;
 		let temp: number;
 
 		for (let j = 0; j < 80; j++) {

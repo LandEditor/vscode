@@ -307,17 +307,17 @@ function asObjectTreeOptions<T, TFilterData>(
 									TFilterData
 								>;
 						} catch {
-							return options.keyboardNavigationLabelProvider!.getKeyboardNavigationLabel(
+							return options.keyboardNavigationLabelProvider?.getKeyboardNavigationLabel(
 								e,
 							);
 						}
 
 						if (compressedTreeNode.element.elements.length === 1) {
-							return options.keyboardNavigationLabelProvider!.getKeyboardNavigationLabel(
+							return options.keyboardNavigationLabelProvider?.getKeyboardNavigationLabel(
 								e,
 							);
 						} else {
-							return options.keyboardNavigationLabelProvider!.getCompressedNodeKeyboardNavigationLabel(
+							return options.keyboardNavigationLabelProvider?.getCompressedNodeKeyboardNavigationLabel(
 								compressedTreeNode.element.elements,
 							);
 						}

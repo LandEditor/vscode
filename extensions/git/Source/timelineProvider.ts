@@ -411,8 +411,7 @@ export class GitTimelineProvider implements TimelineProvider {
 
 		// Successful operations that are not read-only and not status operations
 		if (
-			!_result.error &&
-			!_result.operation.readOnly &&
+			!(_result.error || _result.operation.readOnly) &&
 			_result.operation.kind !== OperationKind.Status
 		) {
 			// This is less than ideal, but for now just save the last time an

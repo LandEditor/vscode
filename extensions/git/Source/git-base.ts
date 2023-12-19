@@ -10,15 +10,15 @@ export class GitBaseApi {
 	private static _gitBaseApi: GitBaseAPI | undefined;
 
 	static getAPI(): GitBaseAPI {
-		if (!this._gitBaseApi) {
+		if (!GitBaseApi._gitBaseApi) {
 			const gitBaseExtension =
 				extensions.getExtension<GitBaseExtension>(
 					"vscode.git-base",
-				)!.exports;
+				)?.exports;
 			const onDidChangeGitBaseExtensionEnablement = (
 				enabled: boolean,
 			) => {
-				this._gitBaseApi = enabled
+				GitBaseApi._gitBaseApi = enabled
 					? gitBaseExtension.getAPI(1)
 					: undefined;
 			};
@@ -28,11 +28,11 @@ export class GitBaseApi {
 			);
 			onDidChangeGitBaseExtensionEnablement(gitBaseExtension.enabled);
 
-			if (!this._gitBaseApi) {
+			if (!GitBaseApi._gitBaseApi) {
 				throw new Error("vscode.git-base extension is not enabled.");
 			}
 		}
 
-		return this._gitBaseApi;
+		return GitBaseApi._gitBaseApi;
 	}
 }

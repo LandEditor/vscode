@@ -257,7 +257,7 @@ export abstract class AbstractExtensionManagementService
 		for (const result of results) {
 			if (result.error) {
 				this.logService.error(
-					`Failed to install extension.`,
+					"Failed to install extension.",
 					result.identifier.id,
 				);
 				this.logService.error(result.error);
@@ -653,14 +653,14 @@ export abstract class AbstractExtensionManagementService
 						// Ignore installing dependencies and packs
 						if (isNonEmptyArray(manifest.extensionDependencies)) {
 							this.logService.warn(
-								`Cannot install dependencies of extension:`,
+								"Cannot install dependencies of extension:",
 								installExtensionTask.identifier.id,
 								error.message,
 							);
 						}
 						if (isNonEmptyArray(manifest.extensionPack)) {
 							this.logService.warn(
-								`Cannot install packed extensions of extension:`,
+								"Cannot install packed extensions of extension:",
 								installExtensionTask.identifier.id,
 								error.message,
 							);
@@ -832,7 +832,7 @@ export abstract class AbstractExtensionManagementService
 
 			installResults.forEach(({ identifier }) =>
 				this.logService.info(
-					`Extension installed successfully:`,
+					"Extension installed successfully:",
 					identifier.id,
 				),
 			);
@@ -989,15 +989,8 @@ export abstract class AbstractExtensionManagementService
 				for (const extension of manifest.extensionPack) {
 					// add only those extensions which are new in currently installed extension
 					if (
-						!(
-							existing &&
-							existing.manifest.extensionPack &&
-							existing.manifest.extensionPack.some((old) =>
-								areSameExtensions(
-									{ id: old },
-									{ id: extension },
-								),
-							)
+						!existing?.manifest.extensionPack?.some((old) =>
+							areSameExtensions({ id: old }, { id: extension }),
 						)
 					) {
 						if (
@@ -1685,12 +1678,10 @@ export abstract class AbstractExtensionManagementService
 		extension: ILocalExtension,
 		installed: ILocalExtension[],
 	): ILocalExtension[] {
-		return installed.filter(
-			(e) =>
-				e.manifest.extensionDependencies &&
-				e.manifest.extensionDependencies.some((id) =>
-					areSameExtensions({ id }, extension.identifier),
-				),
+		return installed.filter((e) =>
+			e.manifest.extensionDependencies?.some((id) =>
+				areSameExtensions({ id }, extension.identifier),
+			),
 		);
 	}
 
@@ -1702,7 +1693,7 @@ export abstract class AbstractExtensionManagementService
 			const manifest =
 				await this.galleryService.getExtensionsControlManifest();
 			this.logService.trace(
-				`ExtensionManagementService.refreshControlCache`,
+				"ExtensionManagementService.refreshControlCache",
 				manifest,
 			);
 			return manifest;

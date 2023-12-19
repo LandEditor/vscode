@@ -154,7 +154,7 @@ class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
 		let kind: StatusbarEntryKind | undefined = undefined;
 		switch (backgroundColor?.id) {
 			case STATUS_BAR_ERROR_ITEM_BACKGROUND:
-			case STATUS_BAR_WARNING_ITEM_BACKGROUND:
+			case STATUS_BAR_WARNING_ITEM_BACKGROUND: {
 				// override well known colors that map to status entry kinds to support associated themable hover colors
 				kind =
 					backgroundColor.id === STATUS_BAR_ERROR_ITEM_BACKGROUND
@@ -162,6 +162,7 @@ class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
 						: "warning";
 				color = undefined;
 				backgroundColor = undefined;
+			}
 		}
 		const entry: IStatusbarEntry = {
 			name,

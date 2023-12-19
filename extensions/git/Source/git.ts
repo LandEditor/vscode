@@ -292,13 +292,13 @@ async function exec(
 	child: cp.ChildProcess,
 	cancellationToken?: CancellationToken,
 ): Promise<IExecutionResult<Buffer>> {
-	if (!child.stdout || !child.stderr) {
+	if (!(child.stdout && child.stderr)) {
 		throw new GitError({
 			message: "Failed to get stdout or stderr from git process.",
 		});
 	}
 
-	if (cancellationToken && cancellationToken.isCancellationRequested) {
+	if (cancellationToken?.isCancellationRequested) {
 		throw new CancellationError();
 	}
 
@@ -400,20 +400,17 @@ export class GitError extends Error {
 	}
 
 	override toString(): string {
-		let result =
-			this.message +
-			" " +
-			JSON.stringify(
-				{
-					exitCode: this.exitCode,
-					gitErrorCode: this.gitErrorCode,
-					gitCommand: this.gitCommand,
-					stdout: this.stdout,
-					stderr: this.stderr,
-				},
-				null,
-				2,
-			);
+		let result = `${this.message} ${JSON.stringify(
+			{
+				exitCode: this.exitCode,
+				gitErrorCode: this.gitErrorCode,
+				gitCommand: this.gitCommand,
+				stdout: this.stdout,
+				stderr: this.stderr,
+			},
+			null,
+			2,
+		)}`;
 
 		if (this.error) {
 			result += (<any>this.error).stack;
@@ -583,7 +580,7 @@ export class Git {
 		const onSpawn = (child: cp.ChildProcess) => {
 			const decoder = new StringDecoder("utf8");
 			const lineStream = new byline.LineStream({ encoding: "utf8" });
-			child.stderr!.on("data", (buffer: Buffer) =>
+			child.stderr?.on("data", (buffer: Buffer) =>
 				lineStream.write(decoder.write(buffer)),
 			);
 
@@ -718,9 +715,14 @@ export class Git {
 		// Git 2.31 added the `--path-format` flag to rev-parse which
 		// allows us to get the relative path of the repository root
 		if (
-			!pathEquals(pathInsidePossibleRepository, repositoryRootPath) &&
-			!isDescendant(repositoryRootPath, pathInsidePossibleRepository) &&
-			!isDescendant(pathInsidePossibleRepository, repositoryRootPath) &&
+			!(
+				pathEquals(pathInsidePossibleRepository, repositoryRootPath) ||
+				isDescendant(
+					repositoryRootPath,
+					pathInsidePossibleRepository,
+				) ||
+				isDescendant(pathInsidePossibleRepository, repositoryRootPath)
+			) &&
 			this.compareGitVersionTo("2.31.0") !== -1
 		) {
 			const relativePathResult = await this.exec(
@@ -818,7 +820,7 @@ export class Git {
 		options.onSpawn?.(child);
 
 		if (options.input) {
-			child.stdin!.end(options.input, "utf8");
+			child.stdin?.end(options.input, "utf8");
 		}
 
 		const startExec = Date.now();
@@ -891,7 +893,7 @@ export class Git {
 			options = {};
 		}
 
-		if (!options.stdio && !options.input) {
+		if (!(options.stdio || options.input)) {
 			options.stdio = ["ignore", null, null]; // Unless provided, ignore stdin and leave default streams for stdout and stderr
 		}
 
@@ -1327,7 +1329,7 @@ export class Repository {
 		const args = ["config"];
 
 		if (scope) {
-			args.push("--" + scope);
+			args.push(`--${scope}`);
 		}
 
 		args.push(key);
@@ -1349,7 +1351,7 @@ export class Repository {
 		const args = ["config"];
 
 		if (scope) {
-			args.push("--" + scope);
+			args.push(`--${scope}`);
 		}
 
 		args.push("-l");
@@ -1564,7 +1566,7 @@ export class Repository {
 		relativePath: string,
 	): Promise<string> {
 		const relativePathLowercase = relativePath.toLowerCase();
-		const dirname = path.posix.dirname(relativePath) + "/";
+		const dirname = `${path.posix.dirname(relativePath)}/`;
 		const elements: { file: string }[] = ref
 			? await this.lstree(ref, dirname)
 			: await this.lsfiles(dirname);
@@ -1782,7 +1784,7 @@ export class Repository {
 		entriesLoop: while (index < entries.length - 1) {
 			const change = entries[index++];
 			const resourcePath = entries[index++];
-			if (!change || !resourcePath) {
+			if (!(change && resourcePath)) {
 				break;
 			}
 
@@ -1795,17 +1797,20 @@ export class Repository {
 
 			// Copy or Rename status comes with a number, e.g. 'R100'. We don't need the number, so we use only first character of the status.
 			switch (change[0]) {
-				case "M":
+				case "M": {
 					status = Status.MODIFIED;
 					break;
+				}
 
-				case "A":
+				case "A": {
 					status = Status.INDEX_ADDED;
 					break;
+				}
 
-				case "D":
+				case "D": {
 					status = Status.DELETED;
 					break;
+				}
 
 				// Rename contains two paths, the second one is what the file is renamed/copied to.
 				case "R": {
@@ -1872,13 +1877,13 @@ export class Repository {
 	async add(paths: string[], opts?: { update?: boolean }): Promise<void> {
 		const args = ["add"];
 
-		if (opts && opts.update) {
+		if (opts?.update) {
 			args.push("-u");
 		} else {
 			args.push("-A");
 		}
 
-		if (paths && paths.length) {
+		if (paths?.length) {
 			for (const chunk of splitInChunks(
 				paths.map(sanitizePath),
 				MAX_CLI_LENGTH,
@@ -1893,7 +1898,7 @@ export class Repository {
 	async rm(paths: string[]): Promise<void> {
 		const args = ["rm", "--"];
 
-		if (!paths || !paths.length) {
+		if (!paths?.length) {
 			return;
 		}
 
@@ -1907,7 +1912,7 @@ export class Repository {
 			["hash-object", "--stdin", "-w", "--path", sanitizePath(path)],
 			{ stdio: [null, null, null] },
 		);
-		child.stdin!.end(data, "utf8");
+		child.stdin?.end(data, "utf8");
 
 		const { exitCode, stdout } = await exec(child);
 		const hash = stdout.toString("utf8");
@@ -2652,10 +2657,7 @@ export class Repository {
 		statusLength: number;
 		didHitLimit: boolean;
 	}> {
-		if (
-			opts?.cancellationToken &&
-			opts?.cancellationToken.isCancellationRequested
-		) {
+		if (opts?.cancellationToken?.isCancellationRequested) {
 			throw new CancellationError();
 		}
 
@@ -2720,7 +2722,7 @@ export class Repository {
 
 				if (limit !== 0 && parser.status.length > limit) {
 					child.removeListener("close", onClose);
-					child.stdout!.removeListener("data", onStdoutData);
+					child.stdout?.removeListener("data", onStdoutData);
 					child.kill();
 
 					c({
@@ -2731,12 +2733,12 @@ export class Repository {
 				}
 			};
 
-			child.stdout!.setEncoding("utf8");
-			child.stdout!.on("data", onStdoutData);
+			child.stdout?.setEncoding("utf8");
+			child.stdout?.on("data", onStdoutData);
 
 			const stderrData: string[] = [];
-			child.stderr!.setEncoding("utf8");
-			child.stderr!.on("data", (raw) => stderrData.push(raw as string));
+			child.stderr?.setEncoding("utf8");
+			child.stderr?.on("data", (raw) => stderrData.push(raw as string));
 
 			child.on("error", cpErrorHandler(e));
 			child.on("close", onClose);
@@ -2749,7 +2751,7 @@ export class Repository {
 				didHitLimit: boolean;
 			}>((_, e) => {
 				disposables.push(
-					onceEvent(opts.cancellationToken!.onCancellationRequested)(
+					onceEvent(opts.cancellationToken?.onCancellationRequested)(
 						() => {
 							try {
 								child.kill();
@@ -2785,7 +2787,7 @@ export class Repository {
 				HEAD = await this.getBranch(HEAD.name);
 
 				// Upstream commit
-				if (HEAD && HEAD.upstream) {
+				if (HEAD?.upstream) {
 					const ref = `refs/remotes/${HEAD.upstream.remote}/${HEAD.upstream.name}`;
 					const commit = await this.revParse(ref);
 					HEAD = { ...HEAD, upstream: { ...HEAD.upstream, commit } };
@@ -2793,7 +2795,7 @@ export class Repository {
 			} else if (HEAD.commit) {
 				// Tag || Commit
 				const tags = await this.getRefs({ pattern: "refs/tags" });
-				const tag = tags.find((tag) => tag.commit === HEAD!.commit);
+				const tag = tags.find((tag) => tag.commit === HEAD?.commit);
 
 				if (tag) {
 					HEAD = { ...HEAD, name: tag.name, type: RefType.Tag };
@@ -2894,7 +2896,7 @@ export class Repository {
 		query: RefQuery,
 		cancellationToken?: CancellationToken,
 	): Promise<Ref[]> {
-		if (cancellationToken && cancellationToken.isCancellationRequested) {
+		if (cancellationToken?.isCancellationRequested) {
 			throw new CancellationError();
 		}
 
@@ -2977,10 +2979,7 @@ export class Repository {
 			cancellationToken?: CancellationToken;
 		},
 	): Promise<Ref[]> {
-		if (
-			opts?.cancellationToken &&
-			opts?.cancellationToken.isCancellationRequested
-		) {
+		if (opts?.cancellationToken?.isCancellationRequested) {
 			throw new CancellationError();
 		}
 

@@ -24,7 +24,7 @@ let startCommentHTML: string;
 let endCommentHTML: string;
 
 export function toggleComment(): Thenable<boolean> | undefined {
-	if (!validate() || !vscode.window.activeTextEditor) {
+	if (!(validate() && vscode.window.activeTextEditor)) {
 		return;
 	}
 	setupCommentSpacing();
@@ -99,7 +99,7 @@ function toggleCommentHTML(
 		true,
 	);
 
-	if (!startNode || !endNode) {
+	if (!(startNode && endNode)) {
 		return [];
 	}
 

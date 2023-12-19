@@ -107,7 +107,7 @@ function compareResourceThemableDecorations(
 	a: vscode.SourceControlResourceThemableDecorations,
 	b: vscode.SourceControlResourceThemableDecorations,
 ): number {
-	if (!a.iconPath && !b.iconPath) {
+	if (!(a.iconPath || b.iconPath)) {
 		return 0;
 	} else if (!a.iconPath) {
 		return -1;
@@ -583,7 +583,7 @@ class ExtHostSourceControlResourceGroup
 					icon;
 				const icons: SCMRawResource[2] = [lightIcon, darkIcon];
 
-				const tooltip = (r.decorations && r.decorations.tooltip) || "";
+				const tooltip = r.decorations?.tooltip || "";
 				const strikeThrough =
 					r.decorations && !!r.decorations.strikeThrough;
 				const faded = r.decorations && !!r.decorations.faded;
@@ -1146,9 +1146,8 @@ export class ExtHostSCM implements ExtHostSCMShape {
 		const sourceControls = this._sourceControlsByExtension.get(
 			extension.identifier,
 		);
-		const sourceControl =
-			sourceControls && sourceControls[sourceControls.length - 1];
-		return sourceControl && sourceControl.inputBox;
+		const sourceControl = sourceControls?.[sourceControls.length - 1];
+		return sourceControl?.inputBox;
 	}
 
 	$provideOriginalResource(
@@ -1165,16 +1164,12 @@ export class ExtHostSCM implements ExtHostSCMShape {
 
 		const sourceControl = this._sourceControls.get(sourceControlHandle);
 
-		if (
-			!sourceControl ||
-			!sourceControl.quickDiffProvider ||
-			!sourceControl.quickDiffProvider.provideOriginalResource
-		) {
+		if (!sourceControl.quickDiffProvider?.provideOriginalResource) {
 			return Promise.resolve(null);
 		}
 
 		return asPromise(() =>
-			sourceControl.quickDiffProvider!.provideOriginalResource!(
+			sourceControl.quickDiffProvider?.provideOriginalResource?.(
 				uri,
 				token,
 			),
@@ -1246,7 +1241,7 @@ export class ExtHostSCM implements ExtHostSCMShape {
 		}
 
 		return asPromise(() =>
-			sourceControl.inputBox.validateInput!(value, cursorPosition),
+			sourceControl.inputBox.validateInput?.(value, cursorPosition),
 		).then((result) => {
 			if (!result) {
 				return Promise.resolve(undefined);

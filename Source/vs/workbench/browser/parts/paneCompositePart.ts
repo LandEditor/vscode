@@ -383,8 +383,7 @@ export abstract class AbstractPaneCompositePart
 									undefined,
 									e.eventData,
 								);
-							this
-								.emptyPaneMessageElement!.style.backgroundColor =
+							this.emptyPaneMessageElement?.style.backgroundColor =
 								validDropTarget
 									? this.theme
 											.getColor(
@@ -396,17 +395,17 @@ export abstract class AbstractPaneCompositePart
 					},
 					onDragLeave: (e) => {
 						EventHelper.stop(e.eventData, true);
-						this.emptyPaneMessageElement!.style.backgroundColor =
+						this.emptyPaneMessageElement?.style.backgroundColor =
 							"";
 					},
 					onDragEnd: (e) => {
 						EventHelper.stop(e.eventData, true);
-						this.emptyPaneMessageElement!.style.backgroundColor =
+						this.emptyPaneMessageElement?.style.backgroundColor =
 							"";
 					},
 					onDrop: (e) => {
 						EventHelper.stop(e.eventData, true);
-						this.emptyPaneMessageElement!.style.backgroundColor =
+						this.emptyPaneMessageElement?.style.backgroundColor =
 							"";
 						if (this.paneCompositeBar.value) {
 							this.paneCompositeBar.value.dndHandler.drop(
@@ -685,7 +684,7 @@ export abstract class AbstractPaneCompositePart
 
 	protected getToolbarWidth(): number {
 		const activePane = this.getActivePaneComposite();
-		if (!activePane || !this.toolBar) {
+		if (!(activePane && this.toolBar)) {
 			return 0;
 		}
 		return (

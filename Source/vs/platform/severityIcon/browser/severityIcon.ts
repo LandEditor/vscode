@@ -12,7 +12,7 @@ export namespace SeverityIcon {
 	export function className(severity: Severity): string {
 		switch (severity) {
 			case Severity.Ignore:
-				return "severity-ignore " + ThemeIcon.asClassName(Codicon.info);
+				return `severity-ignore ${ThemeIcon.asClassName(Codicon.info)}`;
 			case Severity.Info:
 				return ThemeIcon.asClassName(Codicon.info);
 			case Severity.Warning:

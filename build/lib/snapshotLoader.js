@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-var snaps;
+let snaps;
 ((snaps) => {
 	const fs = require("fs");
 	const path = require("path");
@@ -20,15 +20,17 @@ var snaps;
 	let loaderFilepath;
 	let startupBlobFilepath;
 	switch (process.platform) {
-		case "darwin":
+		case "darwin": {
 			loaderFilepath = `VSCode-darwin/${product.nameLong}.app/Contents/Resources/app/out/vs/loader.js`;
 			startupBlobFilepath = `VSCode-darwin/${product.nameLong}.app/Contents/Frameworks/Electron Framework.framework/Resources/snapshot_blob.bin`;
 			break;
+		}
 		case "win32":
-		case "linux":
+		case "linux": {
 			loaderFilepath = `VSCode-${process.platform}-${arch}/resources/app/out/vs/loader.js`;
 			startupBlobFilepath = `VSCode-${process.platform}-${arch}/snapshot_blob.bin`;
 			break;
+		}
 		default:
 			throw new Error("Unknown platform");
 	}
@@ -63,7 +65,7 @@ var snaps;
 		fs.writeFileSync(wrappedInputFilepath, wrappedInputFile);
 		cp.execFileSync(mksnapshot, [
 			wrappedInputFilepath,
-			`--startup_blob`,
+			"--startup_blob",
 			startupBlobFilepath,
 		]);
 	}

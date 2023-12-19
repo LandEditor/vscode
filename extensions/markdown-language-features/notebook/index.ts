@@ -376,7 +376,7 @@ function addNamedHeaderRendering(md: InstanceType<typeof MarkdownIt>): void {
 		env,
 		self,
 	) => {
-		const title = tokens[idx + 1].children!.reduce<string>(
+		const title = tokens[idx + 1].children?.reduce<string>(
 			(acc, t) => acc + t.content,
 			"",
 		);
@@ -385,7 +385,7 @@ function addNamedHeaderRendering(md: InstanceType<typeof MarkdownIt>): void {
 		if (slugCounter.has(slug)) {
 			const count = slugCounter.get(slug)!;
 			slugCounter.set(slug, count + 1);
-			slug = slugify(slug + "-" + (count + 1));
+			slug = slugify(`${slug}-${count}${1}`);
 		} else {
 			slugCounter.set(slug, 0);
 		}
@@ -419,7 +419,7 @@ function addLinkRenderer(md: MarkdownIt): void {
 		const token = tokens[idx];
 		const href = token.attrGet("href");
 		if (typeof href === "string" && href.startsWith("#")) {
-			token.attrSet("href", "#" + slugify(href.slice(1)));
+			token.attrSet("href", `#${slugify(href.slice(1))}`);
 		}
 		if (original) {
 			return original(tokens, idx, options, env, self);

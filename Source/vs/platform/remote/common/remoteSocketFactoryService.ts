@@ -59,7 +59,7 @@ export class RemoteSocketFactoryService implements IRemoteSocketFactoryService {
 		factory: ISocketFactory<T>,
 	): IDisposable {
 		this.factories[type] ??= [];
-		this.factories[type]!.push(factory);
+		this.factories[type]?.push(factory);
 		return toDisposable(() => {
 			const idx = this.factories[type]?.indexOf(factory);
 			if (typeof idx === "number" && idx >= 0) {

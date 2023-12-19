@@ -79,7 +79,7 @@ export class NotebookSearchService implements INotebookSearchService {
 
 		const localNotebookWidgets = this.getLocalNotebookWidgets();
 		const localNotebookFiles = localNotebookWidgets.map(
-			(widget) => widget.viewModel!.uri,
+			(widget) => widget.viewModel?.uri,
 		);
 		const getAllResults = (): {
 			completeData: Promise<ISearchComplete>;
@@ -253,8 +253,10 @@ export class NotebookSearchService implements INotebookSearchService {
 			}
 
 			if (
-				!scannedFiles.has(result.resource) &&
-				!uniqueResults.has(result.resource)
+				!(
+					scannedFiles.has(result.resource) ||
+					uniqueResults.has(result.resource)
+				)
 			) {
 				uniqueResults.set(
 					result.resource,
@@ -277,7 +279,7 @@ export class NotebookSearchService implements INotebookSearchService {
 	private async getLocalNotebookResults(
 		query: ITextQuery,
 		token: CancellationToken,
-		widgets: Array<NotebookEditorWidget>,
+		widgets: NotebookEditorWidget[],
 		searchID: string,
 	): Promise<IOpenNotebookSearchResults> {
 		const localResults =
@@ -293,7 +295,7 @@ export class NotebookSearchService implements INotebookSearchService {
 			const askMax = isNumber(query.maxResults)
 				? query.maxResults + 1
 				: Number.MAX_SAFE_INTEGER;
-			const uri = widget.viewModel!.uri;
+			const uri = widget.viewModel?.uri;
 
 			if (!pathIncludedInQuery(query, uri.fsPath)) {
 				continue;
@@ -365,7 +367,7 @@ export class NotebookSearchService implements INotebookSearchService {
 		};
 	}
 
-	private getLocalNotebookWidgets(): Array<NotebookEditorWidget> {
+	private getLocalNotebookWidgets(): NotebookEditorWidget[] {
 		const notebookWidgets =
 			this.notebookEditorService.retrieveAllExistingWidgets();
 		return notebookWidgets

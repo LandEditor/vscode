@@ -89,9 +89,9 @@ export class AiRelatedInformationService
 
 		const stopwatch = StopWatch.create();
 
-		const cancellablePromises: Array<
-			CancelablePromise<RelatedInformationResult[]>
-		> = providers.map((provider) => {
+		const cancellablePromises: CancelablePromise<
+			RelatedInformationResult[]
+		>[] = providers.map((provider) => {
 			return createCancelablePromise(async (t) => {
 				try {
 					const result = await provider.provideAiRelatedInformation(

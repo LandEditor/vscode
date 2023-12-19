@@ -161,7 +161,7 @@ export abstract class AbstractUserDataSyncStoreManagementService
 			Object.keys(configurationSyncStore.authenticationProviders).every(
 				(authenticationProviderId) =>
 					Array.isArray(
-						configurationSyncStore!.authenticationProviders![
+						configurationSyncStore?.authenticationProviders?.[
 							authenticationProviderId
 						].scopes,
 					),
@@ -193,7 +193,7 @@ export abstract class AbstractUserDataSyncStoreManagementService
 				).reduce<IAuthenticationProvider[]>((result, id) => {
 					result.push({
 						id,
-						scopes: syncStore!.authenticationProviders[id].scopes,
+						scopes: syncStore?.authenticationProviders[id].scopes,
 					});
 					return result;
 				}, []),
@@ -386,7 +386,7 @@ export class UserDataSyncStoreClient extends Disposable {
 				this.resetDonotMakeRequestsUntilPromise =
 					createCancelablePromise((token) =>
 						timeout(
-							this._donotMakeRequestsUntil!.getTime() -
+							this._donotMakeRequestsUntil?.getTime() -
 								Date.now(),
 							token,
 						).then(() => this.setDonotMakeRequestsUntil(undefined)),
@@ -829,7 +829,7 @@ export class UserDataSyncStoreClient extends Disposable {
 
 		if (!isSuccess(context)) {
 			throw new UserDataSyncStoreError(
-				"Server returned " + context.res.statusCode,
+				`Server returned ${context.res.statusCode}`,
 				url,
 				UserDataSyncErrorCode.EmptyResponse,
 				context.res.statusCode,
@@ -1117,7 +1117,7 @@ export class UserDataSyncStoreClient extends Disposable {
 
 		if (!isSuccess) {
 			throw new UserDataSyncStoreError(
-				"Server returned " + context.res.statusCode,
+				`Server returned ${context.res.statusCode}`,
 				url,
 				UserDataSyncErrorCode.Unknown,
 				context.res.statusCode,

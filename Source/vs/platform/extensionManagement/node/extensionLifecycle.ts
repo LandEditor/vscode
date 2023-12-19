@@ -32,7 +32,7 @@ export class ExtensionsLifecycle extends Disposable {
 			this.logService.info(
 				extension.identifier.id,
 				extension.manifest.version,
-				`Running post uninstall script`,
+				"Running post uninstall script",
 			);
 			await this.processesLimiter.queue(async () => {
 				try {
@@ -44,7 +44,7 @@ export class ExtensionsLifecycle extends Disposable {
 						extension,
 					);
 					this.logService.info(
-						`Finished running post uninstall script`,
+						"Finished running post uninstall script",
 						extension.identifier.id,
 						extension.manifest.version,
 					);
@@ -173,8 +173,8 @@ export class ExtensionsLifecycle extends Disposable {
 
 		// Catch all output coming from the process
 		type Output = { data: string; format: string[] };
-		extensionUninstallProcess.stdout!.setEncoding("utf8");
-		extensionUninstallProcess.stderr!.setEncoding("utf8");
+		extensionUninstallProcess.stdout?.setEncoding("utf8");
+		extensionUninstallProcess.stderr?.setEncoding("utf8");
 
 		const onStdout = Event.fromNodeEventEmitter<string>(
 			extensionUninstallProcess.stdout!,

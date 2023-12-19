@@ -292,15 +292,18 @@ export class StandardAutoClosingPairConditional {
 			for (let i = 0, len = source.notIn.length; i < len; i++) {
 				const notIn: string = source.notIn[i];
 				switch (notIn) {
-					case "string":
+					case "string": {
 						this._inString = false;
 						break;
-					case "comment":
+					}
+					case "comment": {
 						this._inComment = false;
 						break;
-					case "regex":
+					}
+					case "regex": {
 						this._inRegEx = false;
 						break;
+					}
 				}
 			}
 		}
@@ -337,8 +340,10 @@ export class StandardAutoClosingPairConditional {
 		for (let charCode = fromCharCode; charCode <= toCharCode; charCode++) {
 			const character = String.fromCharCode(charCode);
 			if (
-				!this.open.includes(character) &&
-				!this.close.includes(character)
+				!(
+					this.open.includes(character) ||
+					this.close.includes(character)
+				)
 			) {
 				return character;
 			}
@@ -462,7 +467,7 @@ export class AutoClosingPairs {
 
 function appendEntry<K, V>(target: Map<K, V[]>, key: K, value: V): void {
 	if (target.has(key)) {
-		target.get(key)!.push(value);
+		target.get(key)?.push(value);
 	} else {
 		target.set(key, [value]);
 	}

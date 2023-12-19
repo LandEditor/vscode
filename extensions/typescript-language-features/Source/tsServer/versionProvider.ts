@@ -43,7 +43,7 @@ export class TypeScriptVersion {
 		if (this.apiVersion === other.apiVersion) {
 			return true;
 		}
-		if (!this.apiVersion || !other.apiVersion) {
+		if (!(this.apiVersion && other.apiVersion)) {
 			return false;
 		}
 		return this.apiVersion.eq(other.apiVersion);

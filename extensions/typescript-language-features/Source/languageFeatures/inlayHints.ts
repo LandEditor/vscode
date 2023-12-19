@@ -60,7 +60,7 @@ class TypeScriptInlayHintsProvider
 			vscode.workspace.onDidChangeConfiguration((e) => {
 				if (
 					inlayHintSettingNames.some((settingName) =>
-						e.affectsConfiguration(language.id + "." + settingName),
+						e.affectsConfiguration(`${language.id}.${settingName}`),
 					)
 				) {
 					this._onDidChangeInlayHints.fire();

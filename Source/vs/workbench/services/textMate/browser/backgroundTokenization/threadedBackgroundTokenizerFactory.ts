@@ -169,9 +169,7 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 				ThreadedBackgroundTokenizerFactory._reportedMismatchingTokens = true;
 
 				this._notificationService.error({
-					message:
-						"Async Tokenization Token Mismatch in line " +
-						lineNumber,
+					message: `Async Tokenization Token Mismatch in line ${lineNumber}`,
 					name: "Async Tokenization Token Mismatch",
 				});
 

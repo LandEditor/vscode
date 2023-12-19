@@ -175,7 +175,7 @@ export class ModelService extends Disposable implements IModelService {
 		let tabSize = EDITOR_MODEL_DEFAULTS.tabSize;
 		if (config.editor && typeof config.editor.tabSize !== "undefined") {
 			const parsedTabSize = parseInt(config.editor.tabSize, 10);
-			if (!isNaN(parsedTabSize)) {
+			if (!Number.isNaN(parsedTabSize)) {
 				tabSize = parsedTabSize;
 			}
 			if (tabSize < 1) {
@@ -190,7 +190,7 @@ export class ModelService extends Disposable implements IModelService {
 			config.editor.indentSize !== "tabSize"
 		) {
 			const parsedIndentSize = parseInt(config.editor.indentSize, 10);
-			if (!isNaN(parsedIndentSize)) {
+			if (!Number.isNaN(parsedIndentSize)) {
 				indentSize = Math.max(parsedIndentSize, 1);
 			}
 		}
@@ -650,7 +650,7 @@ export class ModelService extends Disposable implements IModelService {
 	): ISingleEditOperation[] {
 		const modelLineCount = model.getLineCount();
 		const textBufferLineCount = textBuffer.getLineCount();
-		const commonPrefix = this._commonPrefix(
+		const commonPrefix = ModelService._commonPrefix(
 			model,
 			modelLineCount,
 			1,
@@ -667,7 +667,7 @@ export class ModelService extends Disposable implements IModelService {
 			return [];
 		}
 
-		const commonSuffix = this._commonSuffix(
+		const commonSuffix = ModelService._commonSuffix(
 			model,
 			modelLineCount - commonPrefix,
 			commonPrefix,

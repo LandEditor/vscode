@@ -283,7 +283,7 @@ export class DecorationsOverviewRuler extends ViewPart {
 			this._context.configuration,
 			this._context.theme,
 		);
-		if (this._settings && this._settings.equals(newSettings)) {
+		if (this._settings?.equals(newSettings)) {
 			// nothing to do
 			return false;
 		}

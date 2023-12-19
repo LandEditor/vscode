@@ -87,17 +87,7 @@ export class Selection extends Range {
 	 * Transform to a human-readable representation.
 	 */
 	public override toString(): string {
-		return (
-			"[" +
-			this.selectionStartLineNumber +
-			"," +
-			this.selectionStartColumn +
-			" -> " +
-			this.positionLineNumber +
-			"," +
-			this.positionColumn +
-			"]"
-		);
+		return `[${this.selectionStartLineNumber},${this.selectionStartColumn} -> ${this.positionLineNumber},${this.positionColumn}]`;
 	}
 
 	/**
@@ -258,14 +248,14 @@ export class Selection extends Range {
 		if ((a && !b) || (!a && b)) {
 			return false;
 		}
-		if (!a && !b) {
+		if (!(a || b)) {
 			return true;
 		}
 		if (a.length !== b.length) {
 			return false;
 		}
 		for (let i = 0, len = a.length; i < len; i++) {
-			if (!this.selectionsEqual(a[i], b[i])) {
+			if (!Selection.selectionsEqual(a[i], b[i])) {
 				return false;
 			}
 		}

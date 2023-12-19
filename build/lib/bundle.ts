@@ -150,7 +150,7 @@ export function bundle(
 	);
 	const r: Function = <any>(
 		vm.runInThisContext(
-			"(function(require, module, exports) { " + code + "\n});",
+			`(function(require, module, exports) { ${code}\n});`,
 		)
 	);
 	const loaderModule = { exports: {} };
@@ -306,7 +306,7 @@ function extractStrings(destFiles: IConcatFile[]): IConcatFile[] {
 			let _path: string | null = null;
 			const pieces = dep.split("!");
 			if (pieces.length > 1) {
-				prefix = pieces[0] + "!";
+				prefix = `${pieces[0]}!`;
 				_path = pieces[1];
 			} else {
 				prefix = "";
@@ -371,7 +371,7 @@ function extractStrings(destFiles: IConcatFile[]): IConcatFile[] {
 					return `define(__m[${replacementMap[defineCall.module]}/*${
 						defineCall.module
 					}*/], __M([${defineCall.deps
-						.map((dep) => replacementMap[dep] + "/*" + dep + "*/")
+						.map((dep) => `${replacementMap[dep]}/*${dep}*/`)
 						.join(",")}])`;
 				},
 			);
@@ -382,13 +382,13 @@ function extractStrings(destFiles: IConcatFile[]): IConcatFile[] {
 			contents: [
 				"(function() {",
 				`var __m = ${JSON.stringify(sortedByUseModules)};`,
-				`var __M = function(deps) {`,
-				`  var result = [];`,
-				`  for (var i = 0, len = deps.length; i < len; i++) {`,
-				`    result[i] = __m[deps[i]];`,
-				`  }`,
-				`  return result;`,
-				`};`,
+				"var __M = function(deps) {",
+				"  var result = [];",
+				"  for (var i = 0, len = deps.length; i < len; i++) {",
+				"    result[i] = __m[deps[i]];",
+				"  }",
+				"  return result;",
+				"};",
 			].join("\n"),
 		});
 
@@ -417,14 +417,14 @@ function removeDuplicateTSBoilerplate(destFiles: IConcatFile[]): IConcatFile[] {
 		destFile.sources.forEach((source) => {
 			const lines = source.contents.split(/\r\n|\n|\r/);
 			const newLines: string[] = [];
-			let IS_REMOVING_BOILERPLATE = false,
-				END_BOILERPLATE: RegExp;
+			let IS_REMOVING_BOILERPLATE = false;
+			let END_BOILERPLATE: RegExp;
 
 			for (let i = 0; i < lines.length; i++) {
 				const line = lines[i];
 				if (IS_REMOVING_BOILERPLATE) {
 					newLines.push("");
-					if (END_BOILERPLATE!.test(line)) {
+					if (END_BOILERPLATE?.test(line)) {
 						IS_REMOVING_BOILERPLATE = false;
 					}
 				} else {
@@ -472,13 +472,13 @@ function emitEntryPoint(
 	dest: string | undefined,
 ): IEmitEntryPointResult {
 	if (!dest) {
-		dest = entryPoint + ".js";
+		dest = `${entryPoint}.js`;
 	}
 	const mainResult: IConcatFile = {
-			sources: [],
-			dest: dest,
-		},
-		results: IConcatFile[] = [mainResult];
+		sources: [],
+		dest: dest,
+	};
+	const results: IConcatFile[] = [mainResult];
 
 	const usedPlugins: IPluginMap = {};
 	const getLoaderPlugin = (pluginName: string): ILoaderPlugin => {
@@ -622,7 +622,7 @@ function emitPlugin(
 			return entryPoint;
 		};
 		write.asModule = (moduleId: string, code: string) => {
-			code = code.replace(/^define\(/, 'define("' + moduleId + '",');
+			code = code.replace(/^define\(/, `define("${moduleId}",`);
 			result += code;
 		};
 		plugin.write(pluginName, moduleName, write);
@@ -649,7 +649,7 @@ function emitNamedModule(
 	// `parensOffset` is the position in code: define|()
 	const parensOffset = contents.indexOf("(", defineCallOffset);
 
-	const insertStr = '"' + moduleId + '", ';
+	const insertStr = `"${moduleId}", `;
 
 	return {
 		path: path,
@@ -667,12 +667,11 @@ function emitShimmedModule(
 	path: string,
 	contents: string,
 ): IFile {
-	const strDeps = myDeps.length > 0 ? '"' + myDeps.join('", "') + '"' : "";
-	const strDefine =
-		'define("' + moduleId + '", [' + strDeps + "], " + factory + ");";
+	const strDeps = myDeps.length > 0 ? `"${myDeps.join('", "')}"` : "";
+	const strDefine = `define("${moduleId}", [${strDeps}], ${factory});`;
 	return {
 		path: path,
-		contents: contents + "\n;\n" + strDefine,
+		contents: `${contents}\n;\n${strDefine}`,
 	};
 }
 
@@ -715,7 +714,7 @@ function visit(rootNodes: string[], graph: IGraph): INodeSet {
 
 	while (queue.length > 0) {
 		const el = queue.shift();
-		const myEdges = graph[el!] || [];
+		const myEdges = el?.[el] || [];
 		myEdges.forEach((toNode) => {
 			if (!result[toNode]) {
 				result[toNode] = true;
@@ -731,9 +730,9 @@ function visit(rootNodes: string[], graph: IGraph): INodeSet {
  * Perform a topological sort on `graph`
  */
 function topologicalSort(graph: IGraph): string[] {
-	const allNodes: INodeSet = {},
-		outgoingEdgeCount: { [node: string]: number } = {},
-		inverseEdges: IGraph = {};
+	const allNodes: INodeSet = {};
+	const outgoingEdgeCount: { [node: string]: number } = {};
+	const inverseEdges: IGraph = {};
 
 	Object.keys(graph).forEach((fromNode: string) => {
 		allNodes[fromNode] = true;
@@ -749,8 +748,8 @@ function topologicalSort(graph: IGraph): string[] {
 	});
 
 	// https://en.wikipedia.org/wiki/Topological_sorting
-	const S: string[] = [],
-		L: string[] = [];
+	const S: string[] = [];
+	const L: string[] = [];
 
 	Object.keys(allNodes).forEach((node: string) => {
 		if (outgoingEdgeCount[node] === 0) {
@@ -778,8 +777,9 @@ function topologicalSort(graph: IGraph): string[] {
 
 	if (Object.keys(outgoingEdgeCount).length > 0) {
 		throw new Error(
-			"Cannot do topological sort on cyclic graph, remaining nodes: " +
-				Object.keys(outgoingEdgeCount),
+			`Cannot do topological sort on cyclic graph, remaining nodes: ${Object.keys(
+				outgoingEdgeCount,
+			)}`,
 		);
 	}
 

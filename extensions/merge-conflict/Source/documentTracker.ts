@@ -88,7 +88,7 @@ export default class DocumentMergeConflictTracker
 		return cacheItem.delayTask.trigger(() => {
 			const conflicts = this.getConflictsOrEmpty(
 				document,
-				Array.from(cacheItem!.origins),
+				Array.from(cacheItem?.origins),
 			);
 
 			this.cache?.delete(key!);

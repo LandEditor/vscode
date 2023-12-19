@@ -199,18 +199,20 @@ function getAssociations(
 	let path: string | undefined;
 	if (resource) {
 		switch (resource.scheme) {
-			case Schemas.file:
+			case Schemas.file: {
 				path = resource.fsPath;
 				break;
+			}
 			case Schemas.data: {
 				const metadata = DataUri.parseMetaData(resource);
 				path = metadata.get(DataUri.META_DATA_LABEL);
 				break;
 			}
-			case Schemas.vscodeNotebookCell:
+			case Schemas.vscodeNotebookCell: {
 				// File path not relevant for language detection of cell
 				path = undefined;
 				break;
+			}
 			default:
 				path = resource.path;
 		}
@@ -289,7 +291,7 @@ function getAssociationByPath(
 			if (
 				!patternMatch ||
 				association.filepattern.length >
-					patternMatch.filepattern!.length
+					patternMatch.filepattern?.length
 			) {
 				const target = association.filepatternOnPath ? path : filename; // match on full path if pattern contains path separator
 				if (association.filepatternLowercase?.(target)) {
@@ -302,7 +304,7 @@ function getAssociationByPath(
 		if (association.extension) {
 			if (
 				!extensionMatch ||
-				association.extension.length > extensionMatch.extension!.length
+				association.extension.length > extensionMatch.extension?.length
 			) {
 				if (filename.endsWith(association.extensionLowercase!)) {
 					extensionMatch = association;

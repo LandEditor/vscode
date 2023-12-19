@@ -257,7 +257,7 @@ export class SideBySideEditorInput
 	private saveResultToEditor(
 		primarySaveResult: EditorInput | IUntypedEditorInput | undefined,
 	): EditorInput | IUntypedEditorInput | undefined {
-		if (!primarySaveResult || !this.hasIdenticalSides) {
+		if (!(primarySaveResult && this.hasIdenticalSides)) {
 			return primarySaveResult;
 		}
 
@@ -276,10 +276,12 @@ export class SideBySideEditorInput
 		}
 
 		if (
-			!isResourceDiffEditorInput(primarySaveResult) &&
-			!isResourceDiffListEditorInput(primarySaveResult) &&
-			!isResourceSideBySideEditorInput(primarySaveResult) &&
-			!isResourceMergeEditorInput(primarySaveResult)
+			!(
+				isResourceDiffEditorInput(primarySaveResult) ||
+				isResourceDiffListEditorInput(primarySaveResult) ||
+				isResourceSideBySideEditorInput(primarySaveResult) ||
+				isResourceMergeEditorInput(primarySaveResult)
+			)
 		) {
 			return {
 				primary: primarySaveResult,

@@ -65,7 +65,7 @@ if (process.env["ELECTRON_RUN_AS_NODE"] || process.versions["electron"]) {
 }
 
 // Pseudo NLS support
-if (nlsConfig && nlsConfig.pseudo) {
+if (nlsConfig?.pseudo) {
 	loader(["vs/nls"], (/** @type {import('vs/nls')} */ nlsPlugin) => {
 		nlsPlugin.setPseudoTranslation(!!nlsConfig.pseudo);
 	});

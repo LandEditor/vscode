@@ -446,7 +446,7 @@ export class ExtHostNotebookDocument {
 	}
 
 	private _validateIndex(index: number): number {
-		index = index | 0;
+		index |= 0;
 		if (index < 0) {
 			return 0;
 		} else if (index >= this._cells.length) {

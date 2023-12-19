@@ -215,7 +215,7 @@ export class WorkspaceTags implements IWorkbenchContribution {
 						.concat(
 							...results.map((result) =>
 								result.success
-									? result.stat!.children || []
+									? result.stat?.children || []
 									: [],
 							),
 						)

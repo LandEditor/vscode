@@ -317,7 +317,7 @@ export class WalkThroughPart extends EditorPane {
 		});
 		const walkthroughInput =
 			this.input instanceof WalkThroughInput && this.input;
-		if (walkthroughInput && walkthroughInput.layout) {
+		if (walkthroughInput?.layout) {
 			walkthroughInput.layout(dimension);
 		}
 		this.scrollbar.scanDomNode();

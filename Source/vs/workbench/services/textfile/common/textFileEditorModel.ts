@@ -756,7 +756,7 @@ export class TextFileEditorModel
 		model: ITextModel,
 		isUndoingOrRedoing: boolean,
 	): void {
-		this.trace(`onModelContentChanged() - enter`);
+		this.trace("onModelContentChanged() - enter");
 
 		// In any case increment the version id because it tracks the textual content state of the model at all times
 		this.versionId++;
@@ -772,7 +772,7 @@ export class TextFileEditorModel
 		// We mark check for a dirty-state change upon model content change, unless:
 		// - explicitly instructed to ignore it (e.g. from model.resolve())
 		// - the model is readonly (in that case we never assume the change was done by the user)
-		if (!this.ignoreDirtyOnModelContentChange && !this.isReadonly()) {
+		if (!(this.ignoreDirtyOnModelContentChange || this.isReadonly())) {
 			// The contents changed as a matter of Undo and the version reached matches the saved one
 			// In this case we clear the dirty flag and emit a SAVED event to indicate this state.
 			if (model.getAlternativeVersionId() === this.bufferSavedVersionId) {
@@ -965,7 +965,7 @@ export class TextFileEditorModel
 		// Return early if not dirty (unless forced)
 		//
 		// Scenario: user invoked save action even though the model is not dirty
-		if (!options.force && !this.dirty) {
+		if (!(options.force || this.dirty)) {
 			this.trace(
 				`doSave(${versionId}) - exit - because not dirty and/or versionId is different (this.isDirty: ${this.dirty}, this.versionId: ${this.versionId})`,
 			);

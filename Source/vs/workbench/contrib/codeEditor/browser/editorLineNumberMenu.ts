@@ -109,9 +109,11 @@ export class EditorLineNumberContextMenu
 
 		// on macOS ctrl+click is interpreted as right click
 		if (
-			(!e.event.rightButton &&
-				!(isMacintosh && e.event.leftButton && e.event.ctrlKey) &&
-				!force) ||
+			!(
+				e.event.rightButton ||
+				(isMacintosh && e.event.leftButton && e.event.ctrlKey) ||
+				force
+			) ||
 			(e.target.type !== MouseTargetType.GUTTER_LINE_NUMBERS &&
 				e.target.type !== MouseTargetType.GUTTER_GLYPH_MARGIN) ||
 			!e.target.position ||

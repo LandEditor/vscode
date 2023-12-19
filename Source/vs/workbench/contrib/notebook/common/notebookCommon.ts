@@ -212,7 +212,7 @@ export interface INotebookRendererInfo {
 	matchesWithoutKernel(mimeType: string): NotebookRendererMatch;
 	matches(
 		mimeType: string,
-		kernelProvides: ReadonlyArray<string>,
+		kernelProvides: readonly string[],
 	): NotebookRendererMatch;
 }
 
@@ -674,7 +674,7 @@ export namespace CellUri {
 			cell.fragment.substring(idx + 1),
 		).toString();
 
-		if (isNaN(handle)) {
+		if (Number.isNaN(handle)) {
 			return undefined;
 		}
 		return {
@@ -1291,9 +1291,9 @@ function fixBackspace(txt: string) {
 function fixCarriageReturn(txt: string) {
 	txt = txt.replace(/\r+\n/gm, "\n"); // \r followed by \n --> newline
 	while (txt.search(/\r[^$]/g) > -1) {
-		const base = txt.match(/^(.*)\r+/m)![1];
-		let insert = txt.match(/\r+(.*)$/m)![1];
-		insert = insert + base.slice(insert.length, base.length);
+		const base = txt.match(/^(.*)\r+/m)?.[1];
+		let insert = txt.match(/\r+(.*)$/m)?.[1];
+		insert += base.slice(insert.length, base.length);
 		txt = txt.replace(/\r+.*$/m, "\r").replace(/^.*\r/m, insert);
 	}
 	return txt;
@@ -1305,8 +1305,10 @@ function formatStreamText(buffer: VSBuffer): VSBuffer {
 	// We have special handling for backspace and carriage return characters.
 	// Don't unnecessary decode the bytes if we don't need to perform any processing.
 	if (
-		!buffer.buffer.includes(BACKSPACE_CHARACTER) &&
-		!buffer.buffer.includes(CARRIAGE_RETURN_CHARACTER)
+		!(
+			buffer.buffer.includes(BACKSPACE_CHARACTER) ||
+			buffer.buffer.includes(CARRIAGE_RETURN_CHARACTER)
+		)
 	) {
 		return buffer;
 	}

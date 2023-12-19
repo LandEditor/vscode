@@ -92,13 +92,13 @@ export class DebugStatusContribution implements IWorkbenchContribution {
 		if (nameAndLaunchPresent) {
 			text =
 				manager.getLaunches().length > 1
-					? `${name} (${manager.selectedConfiguration.launch!.name})`
+					? `${name} (${manager.selectedConfiguration.launch?.name})`
 					: name;
 		}
 
 		return {
 			name: nls.localize("status.debug", "Debug"),
-			text: "$(debug-alt-small) " + text,
+			text: `$(debug-alt-small) ${text}`,
 			ariaLabel: nls.localize("debugTarget", "Debug: {0}", text),
 			tooltip: nls.localize(
 				"selectAndStartDebug",

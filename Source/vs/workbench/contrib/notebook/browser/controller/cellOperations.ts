@@ -475,7 +475,7 @@ export async function copyCellRange(
 					index: range.end,
 					count: 0,
 					cells: cellRangesToIndexes([range]).map((index) =>
-						cloneNotebookCellTextModel(editor.cellAt(index)!.model),
+						cloneNotebookCellTextModel(editor.cellAt(index)?.model),
 					),
 				},
 			],
@@ -498,7 +498,7 @@ export async function copyCellRange(
 		const focus = editor.getFocus();
 		const selections = editor.getSelections();
 		const newCells = cellRangesToIndexes([range]).map((index) =>
-			cloneNotebookCellTextModel(editor.cellAt(index)!.model),
+			cloneNotebookCellTextModel(editor.cellAt(index)?.model),
 		);
 		const countDelta = newCells.length;
 		const newFocus = context.ui
@@ -519,7 +519,7 @@ export async function copyCellRange(
 					index: range.end,
 					count: 0,
 					cells: cellRangesToIndexes([range]).map((index) =>
-						cloneNotebookCellTextModel(editor.cellAt(index)!.model),
+						cloneNotebookCellTextModel(editor.cellAt(index)?.model),
 					),
 				},
 			],
@@ -829,7 +829,7 @@ export async function joinCellsWithSurrounds(
 			return;
 		}
 
-		if (!cell || !cells.length) {
+		if (!(cell && cells.length)) {
 			return;
 		}
 
@@ -963,7 +963,7 @@ export function insertCell(
 		} else if (cell?.cellKind === CellKind.Markup) {
 			const nearestCodeCellIndex = viewModel.nearestCodeCellIndex(index);
 			if (nearestCodeCellIndex > -1) {
-				language = viewModel.cellAt(nearestCodeCellIndex)!.language;
+				language = viewModel.cellAt(nearestCodeCellIndex)?.language;
 			} else {
 				language = defaultLanguage;
 			}

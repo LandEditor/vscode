@@ -26,11 +26,9 @@ function gulpstylelint(reporter) {
 			lines.forEach((line, i) => {
 				variableValidator(line, (unknownVariable) => {
 					reporter(
-						file.relative +
-							"(" +
-							(i + 1) +
-							",1): Unknown variable: " +
-							unknownVariable,
+						`${
+							file.relative
+						}(${i}${1},1): Unknown variable: ${unknownVariable}`,
 						true,
 					);
 					errorCount++;

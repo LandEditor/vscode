@@ -203,7 +203,7 @@ export function handleANSIOutput(
 				case 1: {
 					// bold
 					styleNames = styleNames.filter(
-						(style) => style !== `code-bold`,
+						(style) => style !== "code-bold",
 					);
 					styleNames.push("code-bold");
 					break;
@@ -211,7 +211,7 @@ export function handleANSIOutput(
 				case 2: {
 					// dim
 					styleNames = styleNames.filter(
-						(style) => style !== `code-dim`,
+						(style) => style !== "code-dim",
 					);
 					styleNames.push("code-dim");
 					break;
@@ -219,7 +219,7 @@ export function handleANSIOutput(
 				case 3: {
 					// italic
 					styleNames = styleNames.filter(
-						(style) => style !== `code-italic`,
+						(style) => style !== "code-italic",
 					);
 					styleNames.push("code-italic");
 					break;
@@ -228,8 +228,8 @@ export function handleANSIOutput(
 					// underline
 					styleNames = styleNames.filter(
 						(style) =>
-							style !== `code-underline` &&
-							style !== `code-double-underline`,
+							style !== "code-underline" &&
+							style !== "code-double-underline",
 					);
 					styleNames.push("code-underline");
 					break;
@@ -237,7 +237,7 @@ export function handleANSIOutput(
 				case 5: {
 					// blink
 					styleNames = styleNames.filter(
-						(style) => style !== `code-blink`,
+						(style) => style !== "code-blink",
 					);
 					styleNames.push("code-blink");
 					break;
@@ -245,7 +245,7 @@ export function handleANSIOutput(
 				case 6: {
 					// rapid blink
 					styleNames = styleNames.filter(
-						(style) => style !== `code-rapid-blink`,
+						(style) => style !== "code-rapid-blink",
 					);
 					styleNames.push("code-rapid-blink");
 					break;
@@ -261,7 +261,7 @@ export function handleANSIOutput(
 				case 8: {
 					// hidden
 					styleNames = styleNames.filter(
-						(style) => style !== `code-hidden`,
+						(style) => style !== "code-hidden",
 					);
 					styleNames.push("code-hidden");
 					break;
@@ -269,7 +269,7 @@ export function handleANSIOutput(
 				case 9: {
 					// strike-through/crossed-out
 					styleNames = styleNames.filter(
-						(style) => style !== `code-strike-through`,
+						(style) => style !== "code-strike-through",
 					);
 					styleNames.push("code-strike-through");
 					break;
@@ -302,8 +302,8 @@ export function handleANSIOutput(
 					// double underline
 					styleNames = styleNames.filter(
 						(style) =>
-							style !== `code-underline` &&
-							style !== `code-double-underline`,
+							style !== "code-underline" &&
+							style !== "code-double-underline",
 					);
 					styleNames.push("code-double-underline");
 					break;
@@ -312,7 +312,7 @@ export function handleANSIOutput(
 					// normal intensity (bold off and dim off)
 					styleNames = styleNames.filter(
 						(style) =>
-							style !== `code-bold` && style !== `code-dim`,
+							style !== "code-bold" && style !== "code-dim",
 					);
 					break;
 				}
@@ -320,7 +320,7 @@ export function handleANSIOutput(
 					// Neither italic or blackletter (font 10)
 					styleNames = styleNames.filter(
 						(style) =>
-							style !== `code-italic` && style !== `code-font-10`,
+							style !== "code-italic" && style !== "code-font-10",
 					);
 					break;
 				}
@@ -328,8 +328,8 @@ export function handleANSIOutput(
 					// not underlined (Neither singly nor doubly underlined)
 					styleNames = styleNames.filter(
 						(style) =>
-							style !== `code-underline` &&
-							style !== `code-double-underline`,
+							style !== "code-underline" &&
+							style !== "code-double-underline",
 					);
 					break;
 				}
@@ -337,8 +337,8 @@ export function handleANSIOutput(
 					// not blinking
 					styleNames = styleNames.filter(
 						(style) =>
-							style !== `code-blink` &&
-							style !== `code-rapid-blink`,
+							style !== "code-blink" &&
+							style !== "code-rapid-blink",
 					);
 					break;
 				}
@@ -353,21 +353,21 @@ export function handleANSIOutput(
 				case 28: {
 					// not hidden (reveal)
 					styleNames = styleNames.filter(
-						(style) => style !== `code-hidden`,
+						(style) => style !== "code-hidden",
 					);
 					break;
 				}
 				case 29: {
 					// not crossed-out
 					styleNames = styleNames.filter(
-						(style) => style !== `code-strike-through`,
+						(style) => style !== "code-strike-through",
 					);
 					break;
 				}
 				case 53: {
 					// overlined
 					styleNames = styleNames.filter(
-						(style) => style !== `code-overline`,
+						(style) => style !== "code-overline",
 					);
 					styleNames.push("code-overline");
 					break;
@@ -375,7 +375,7 @@ export function handleANSIOutput(
 				case 55: {
 					// not overlined
 					styleNames = styleNames.filter(
-						(style) => style !== `code-overline`,
+						(style) => style !== "code-overline",
 					);
 					break;
 				}
@@ -398,8 +398,8 @@ export function handleANSIOutput(
 					// superscript
 					styleNames = styleNames.filter(
 						(style) =>
-							style !== `code-superscript` &&
-							style !== `code-subscript`,
+							style !== "code-superscript" &&
+							style !== "code-subscript",
 					);
 					styleNames.push("code-superscript");
 					break;
@@ -408,8 +408,8 @@ export function handleANSIOutput(
 					// subscript
 					styleNames = styleNames.filter(
 						(style) =>
-							style !== `code-superscript` &&
-							style !== `code-subscript`,
+							style !== "code-superscript" &&
+							style !== "code-subscript",
 					);
 					styleNames.push("code-subscript");
 					break;
@@ -418,8 +418,8 @@ export function handleANSIOutput(
 					// neither superscript or subscript
 					styleNames = styleNames.filter(
 						(style) =>
-							style !== `code-superscript` &&
-							style !== `code-subscript`,
+							style !== "code-superscript" &&
+							style !== "code-subscript",
 					);
 					break;
 				}
@@ -560,7 +560,7 @@ export function appendStylizedStringToContainer(
 	customBackgroundColor?: RGBA,
 	customUnderlineColor?: RGBA,
 ): void {
-	if (!root || !stringContent) {
+	if (!(root && stringContent)) {
 		return;
 	}
 

@@ -71,7 +71,7 @@ class ExtHostOutputChannel
 	}
 
 	appendLine(value: string): void {
-		this.append(value + "\n");
+		this.append(`${value}\n`);
 	}
 
 	append(value: string): void {

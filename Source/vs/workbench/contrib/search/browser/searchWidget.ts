@@ -633,11 +633,11 @@ export class SearchWidget extends Widget {
 				{ type: "number", inputBoxStyles: defaultInputBoxStyles },
 			);
 			this.contextLinesInput.element.classList.add("context-lines-input");
-			this.contextLinesInput.value =
-				"" +
-				(this.configurationService.getValue<ISearchConfigurationProperties>(
+			this.contextLinesInput.value = `${
+				this.configurationService.getValue<ISearchConfigurationProperties>(
 					"search",
-				).searchEditor.defaultNumberOfContextLines ?? 1);
+				).searchEditor.defaultNumberOfContextLines ?? 1
+			}`;
 			this._register(
 				this.contextLinesInput.onDidChange((value: string) => {
 					if (value !== "0") {
@@ -668,7 +668,7 @@ export class SearchWidget extends Widget {
 			this.showContextToggle.checked = false;
 		} else {
 			this.showContextToggle.checked = true;
-			this.contextLinesInput.value = "" + lines;
+			this.contextLinesInput.value = `${lines}`;
 		}
 	}
 
@@ -1027,7 +1027,7 @@ export class SearchWidget extends Widget {
 		const current = +this.contextLinesInput.value;
 		const modified = current + (increase ? 1 : -1);
 		this.showContextToggle.checked = modified !== 0;
-		this.contextLinesInput.value = "" + modified;
+		this.contextLinesInput.value = `${modified}`;
 	}
 
 	toggleContextLines() {

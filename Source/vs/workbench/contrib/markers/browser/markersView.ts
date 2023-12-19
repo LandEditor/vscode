@@ -407,7 +407,7 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 		}
 
 		if (this.hasNoProblems()) {
-			this.messageBoxContainer!.focus();
+			this.messageBoxContainer?.focus();
 		} else {
 			this.widget.domFocus();
 			this.widget.setMarkerSelection();
@@ -433,9 +433,11 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 
 	public checkMoreFilters(): void {
 		this.filterWidget.checkMoreFilters(
-			!this.filters.showErrors ||
-				!this.filters.showWarnings ||
-				!this.filters.showInfos ||
+			!(
+				this.filters.showErrors &&
+				this.filters.showWarnings &&
+				this.filters.showInfos
+			) ||
 				this.filters.excludedFiles ||
 				this.filters.activeFile,
 		);
@@ -859,7 +861,7 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 				(resourcesMap, resources) => {
 					resourcesMap = resourcesMap || new ResourceMap<URI>();
 					resources.forEach((resource) =>
-						resourcesMap!.set(resource, resource),
+						resourcesMap?.set(resource, resource),
 					);
 					return resourcesMap;
 				},
@@ -1062,7 +1064,7 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 	}
 
 	private renderMessage(): void {
-		if (!this.messageBoxContainer || !this.ariaLabelElement) {
+		if (!(this.messageBoxContainer && this.ariaLabelElement)) {
 			return;
 		}
 		dom.clearNode(this.messageBoxContainer);
@@ -1151,7 +1153,7 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 
 	private setAriaLabel(label: string): void {
 		this.widget.setAriaLabel(label);
-		this.ariaLabelElement!.setAttribute("aria-label", label);
+		this.ariaLabelElement?.setAttribute("aria-label", label);
 	}
 
 	private clearFilters(): void {

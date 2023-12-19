@@ -89,7 +89,7 @@ export class MarkerList {
 			});
 			if (typeof resourceFilter === "function") {
 				this._markers = this._markers.filter((m) =>
-					this._resourceFilter!(m.resource)
+					this._resourceFilter?.(m.resource)
 				);
 			}
 			this._markers.sort(compareMarker);
@@ -101,7 +101,7 @@ export class MarkerList {
 			_markerService.onMarkerChanged((uris) => {
 				if (
 					!this._resourceFilter ||
-					uris.some((uri) => this._resourceFilter!(uri))
+					uris.some((uri) => this._resourceFilter?.(uri))
 				) {
 					updateMarker();
 					this._nextIdx = -1;
@@ -117,10 +117,10 @@ export class MarkerList {
 	}
 
 	matches(uri: URI | undefined) {
-		if (!this._resourceFilter && !uri) {
+		if (!(this._resourceFilter || uri)) {
 			return true;
 		}
-		if (!this._resourceFilter || !uri) {
+		if (!(this._resourceFilter && uri)) {
 			return false;
 		}
 		return this._resourceFilter(uri);

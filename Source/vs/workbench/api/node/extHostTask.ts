@@ -134,7 +134,7 @@ export class ExtHostTask extends ExtHostTaskBase {
 			for (const task of value) {
 				this.checkDeprecation(task, handler);
 
-				if (!task.definition || !validTypes[task.definition.type]) {
+				if (!(task.definition && validTypes[task.definition.type])) {
 					this._logService.warn(
 						`The task [${task.source}, ${task.name}] uses an undefined task type. The task will be ignored in the future.`,
 					);

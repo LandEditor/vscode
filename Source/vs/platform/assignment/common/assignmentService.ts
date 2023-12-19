@@ -64,7 +64,7 @@ export abstract class BaseAssignmentService implements IAssignmentService {
 		// For development purposes, allow overriding tas assignments to test variants locally.
 		await this.overrideInitDelay;
 		const override = this.configurationService.getValue<T>(
-			"experiments.override." + name,
+			`experiments.override.${name}`,
 		);
 		if (override !== undefined) {
 			return override;

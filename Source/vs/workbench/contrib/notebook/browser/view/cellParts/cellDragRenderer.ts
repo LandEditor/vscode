@@ -38,15 +38,13 @@ class EditorTextRenderer {
 		const fontSizeVar = "--notebook-editor-font-size";
 		const fontWeightVar = "--notebook-editor-font-weight";
 
-		const style =
-			`` +
-			`color: ${colorMap[ColorId.DefaultForeground]};` +
-			`background-color: ${colorMap[ColorId.DefaultBackground]};` +
-			`font-family: var(${fontFamilyVar});` +
-			`font-weight: var(${fontWeightVar});` +
-			`font-size: var(${fontSizeVar});` +
-			`line-height: ${fontInfo.lineHeight}px;` +
-			`white-space: pre;`;
+		const style = `${""}color: ${
+			colorMap[ColorId.DefaultForeground]
+		};background-color: ${
+			colorMap[ColorId.DefaultBackground]
+		};font-family: var(${fontFamilyVar});font-weight: var(${fontWeightVar});font-size: var(${fontSizeVar});line-height: ${
+			fontInfo.lineHeight
+		}px;white-space: pre;`;
 
 		const element = DOM.$("div", { style });
 

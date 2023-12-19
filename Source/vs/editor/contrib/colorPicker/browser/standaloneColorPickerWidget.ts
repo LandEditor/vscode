@@ -208,8 +208,7 @@ export class StandaloneColorPickerWidget
 			this._editor.onMouseMove((e) => {
 				const classList = e.target.element?.classList;
 				if (
-					classList &&
-					classList.contains("colorpicker-color-decoration")
+					classList?.contains("colorpicker-color-decoration")
 				) {
 					this.hide();
 				}
@@ -351,10 +350,14 @@ export class StandaloneColorPickerWidget
 			return;
 		}
 		this._body.classList.add("standalone-colorpicker-body");
-		this._body.style.maxHeight =
-			Math.max(this._editor.getLayoutInfo().height / 4, 250) + "px";
-		this._body.style.maxWidth =
-			Math.max(this._editor.getLayoutInfo().width * 0.66, 500) + "px";
+		this._body.style.maxHeight = `${Math.max(
+			this._editor.getLayoutInfo().height / 4,
+			250,
+		)}px`;
+		this._body.style.maxWidth = `${Math.max(
+			this._editor.getLayoutInfo().width * 0.66,
+			500,
+		)}px`;
 		this._body.tabIndex = 0;
 		this._body.appendChild(fragment);
 		colorPickerWidget.layout();
@@ -375,9 +378,9 @@ export class StandaloneColorPickerWidget
 		});
 		const colorPickerHeader = colorPickerWidget.header;
 		const pickedColorNode = colorPickerHeader.pickedColorNode;
-		pickedColorNode.style.width = saturationBoxWidth + PADDING + "px";
+		pickedColorNode.style.width = `${saturationBoxWidth + PADDING}px`;
 		const originalColorNode = colorPickerHeader.originalColorNode;
-		originalColorNode.style.width = widthOfOriginalColorBox + "px";
+		originalColorNode.style.width = `${widthOfOriginalColorBox}px`;
 		const closeButton = colorPickerWidget.header.closeButton;
 		closeButton?.onClicked(() => {
 			this.hide();

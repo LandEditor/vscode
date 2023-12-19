@@ -20,7 +20,7 @@ export function balanceIn() {
 }
 
 function balance(out: boolean) {
-	if (!validate(false) || !vscode.window.activeTextEditor) {
+	if (!(validate(false) && vscode.window.activeTextEditor)) {
 		return;
 	}
 	const editor = vscode.window.activeTextEditor;
@@ -72,7 +72,7 @@ function getRangeToBalanceOut(
 	if (!nodeToBalance) {
 		return selection;
 	}
-	if (!nodeToBalance.open || !nodeToBalance.close) {
+	if (!(nodeToBalance.open && nodeToBalance.close)) {
 		return offsetRangeToSelection(
 			document,
 			nodeToBalance.start,

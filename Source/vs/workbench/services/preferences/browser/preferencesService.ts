@@ -481,7 +481,7 @@ export class PreferencesService
 		};
 
 		if (!options.folderUri) {
-			throw new Error(`Missing folder URI`);
+			throw new Error("Missing folder URI");
 		}
 
 		const folderSettingsUri = await this.getEditableSettingsURI(
@@ -503,13 +503,10 @@ export class PreferencesService
 	): Promise<void> {
 		options = { pinned: true, revealIfOpened: true, ...options };
 		if (textual) {
-			const emptyContents =
-				"// " +
-				nls.localize(
-					"emptyKeybindingsHeader",
-					"Place your key bindings in this file to override the defaults",
-				) +
-				"\n[\n]";
+			const emptyContents = `// ${nls.localize(
+				"emptyKeybindingsHeader",
+				"Place your key bindings in this file to override the defaults",
+			)}\n[\n]`;
 			const editableKeybindings =
 				this.userDataProfileService.currentProfile.keybindingsResource;
 			const openDefaultKeybindings = !!this.configurationService.getValue(
@@ -714,19 +711,19 @@ export class PreferencesService
 				return URI.from({
 					scheme: network.Schemas.vscode,
 					authority: "defaultsettings",
-					path: `/workspaceSettings.json`,
+					path: "/workspaceSettings.json",
 				});
 			case ConfigurationTarget.WORKSPACE_FOLDER:
 				return URI.from({
 					scheme: network.Schemas.vscode,
 					authority: "defaultsettings",
-					path: `/resourceSettings.json`,
+					path: "/resourceSettings.json",
 				});
 		}
 		return URI.from({
 			scheme: network.Schemas.vscode,
 			authority: "defaultsettings",
-			path: `/settings.json`,
+			path: "/settings.json",
 		});
 	}
 
@@ -958,7 +955,7 @@ export class PreferencesService
 			Extensions.Configuration,
 		).getConfigurationProperties()[settingKey];
 		const isOverrideProperty = OVERRIDE_PROPERTY_REGEX.test(settingKey);
-		if (!schema && !isOverrideProperty) {
+		if (!(schema || isOverrideProperty)) {
 			return null;
 		}
 

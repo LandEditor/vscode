@@ -198,7 +198,7 @@ export class BrowserWindowDriver implements IWindowDriver {
 
 		const lines: string[] = [];
 		for (let i = 0; i < xterm.buffer.active.length; i++) {
-			lines.push(xterm.buffer.active.getLine(i)!.translateToString(true));
+			lines.push(xterm.buffer.active.getLine(i)?.translateToString(true));
 		}
 
 		return lines;
@@ -247,7 +247,8 @@ export class BrowserWindowDriver implements IWindowDriver {
 
 		const { left, top } = getTopLeftOffset(element as HTMLElement);
 		const { width, height } = getClientArea(element as HTMLElement);
-		let x: number, y: number;
+		let x: number;
+		let y: number;
 
 		if (offset) {
 			x = left + offset.x;

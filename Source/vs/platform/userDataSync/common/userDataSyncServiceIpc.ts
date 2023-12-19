@@ -156,7 +156,7 @@ export class UserDataSyncChannel implements IServerChannel {
 			);
 			const manualSyncTaskId = args[0];
 			const manualSyncTask = this.getManualSyncTask(manualSyncTaskId);
-			args = (<Array<any>>args).slice(1);
+			args = (<any[]>args).slice(1);
 
 			switch (manualSyncTaskCommand) {
 				case "merge":

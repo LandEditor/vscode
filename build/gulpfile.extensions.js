@@ -93,14 +93,15 @@ const tasks = compilations.map((tsconfigFile) => {
 	const out = path.join(root, "out");
 	const baseUrl = getBaseUrl(out);
 
-	let headerId, headerOut;
+	let headerId;
+	let headerOut;
 	const index = relativeDirname.indexOf("/");
 	if (index < 0) {
-		headerId = "vscode." + relativeDirname;
+		headerId = `vscode.${relativeDirname}`;
 		headerOut = "out";
 	} else {
-		headerId = "vscode." + relativeDirname.substr(0, index);
-		headerOut = relativeDirname.substr(index + 1) + "/out";
+		headerId = `vscode.${relativeDirname.substr(0, index)}`;
+		headerOut = `${relativeDirname.substr(index + 1)}/out`;
 	}
 
 	function createPipeline(build, emitError, transpileOnly) {

@@ -276,7 +276,7 @@ if (isWindows) {
 				),
 			});
 
-			if (!updatePath || !updatePath[0]) {
+			if (!updatePath?.[0]) {
 				return;
 			}
 

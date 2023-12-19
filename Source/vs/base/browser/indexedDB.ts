@@ -41,7 +41,7 @@ export class IndexedDB {
 		} catch (err) {
 			if (err instanceof MissingStoresError) {
 				console.info(
-					`Attempting to recreate the IndexedDB once.`,
+					"Attempting to recreate the IndexedDB once.",
 					name,
 				);
 
@@ -50,7 +50,7 @@ export class IndexedDB {
 					await IndexedDB.deleteDatabase(err.db);
 				} catch (error) {
 					console.error(
-						`Error while deleting the IndexedDB`,
+						"Error while deleting the IndexedDB",
 						getErrorMessage(error),
 					);
 					throw error;

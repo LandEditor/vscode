@@ -20,7 +20,7 @@ import {
 
 export class WorkspaceRecommendations extends ExtensionRecommendations {
 	private _recommendations: ExtensionRecommendation[] = [];
-	get recommendations(): ReadonlyArray<ExtensionRecommendation> {
+	get recommendations(): readonly ExtensionRecommendation[] {
 		return this._recommendations;
 	}
 
@@ -29,7 +29,7 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 		this._onDidChangeRecommendations.event;
 
 	private _ignoredRecommendations: string[] = [];
-	get ignoredRecommendations(): ReadonlyArray<string> {
+	get ignoredRecommendations(): readonly string[] {
 		return this._ignoredRecommendations;
 	}
 

@@ -960,14 +960,16 @@ abstract class AbstractCloseAllAction extends Action2 {
 			switch (confirmation) {
 				case ConfirmResult.CANCEL:
 					return;
-				case ConfirmResult.DONT_SAVE:
+				case ConfirmResult.DONT_SAVE: {
 					await editorService.revert(editors, { soft: true });
 					break;
-				case ConfirmResult.SAVE:
+				}
+				case ConfirmResult.SAVE: {
 					await editorService.save(editors, {
 						reason: SaveReason.EXPLICIT,
 					});
 					break;
+				}
 			}
 		}
 
@@ -985,14 +987,16 @@ abstract class AbstractCloseAllAction extends Action2 {
 				switch (confirmation) {
 					case ConfirmResult.CANCEL:
 						return;
-					case ConfirmResult.DONT_SAVE:
+					case ConfirmResult.DONT_SAVE: {
 						await editorService.revert(editors, { soft: true });
 						break;
-					case ConfirmResult.SAVE:
+					}
+					case ConfirmResult.SAVE: {
 						await editorService.save(editors, {
 							reason: SaveReason.EXPLICIT,
 						});
 						break;
+					}
 				}
 			}
 		}
@@ -1027,7 +1031,7 @@ abstract class AbstractCloseAllAction extends Action2 {
 	}
 
 	private async revealEditorsToConfirm(
-		editors: ReadonlyArray<IEditorIdentifier>,
+		editors: readonly IEditorIdentifier[],
 		editorGroupService: IEditorGroupsService,
 	): Promise<void> {
 		try {
@@ -1255,16 +1259,18 @@ abstract class AbstractMoveCopyGroupAction extends Action2 {
 		// Helps for https://github.com/microsoft/vscode/issues/50741
 		switch (this.direction) {
 			case GroupDirection.LEFT:
-			case GroupDirection.RIGHT:
+			case GroupDirection.RIGHT: {
 				targetNeighbours.push(GroupDirection.UP, GroupDirection.DOWN);
 				break;
+			}
 			case GroupDirection.UP:
-			case GroupDirection.DOWN:
+			case GroupDirection.DOWN: {
 				targetNeighbours.push(
 					GroupDirection.LEFT,
 					GroupDirection.RIGHT,
 				);
 				break;
+			}
 		}
 
 		for (const targetNeighbour of targetNeighbours) {

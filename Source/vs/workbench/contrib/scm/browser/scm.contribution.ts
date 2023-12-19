@@ -719,7 +719,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 CommandsRegistry.registerCommand(
 	"scm.openInIntegratedTerminal",
 	async (accessor, provider: ISCMProvider) => {
-		if (!provider || !provider.rootUri) {
+		if (!provider?.rootUri) {
 			return;
 		}
 
@@ -734,7 +734,7 @@ CommandsRegistry.registerCommand(
 CommandsRegistry.registerCommand(
 	"scm.openInTerminal",
 	async (accessor, provider: ISCMProvider) => {
-		if (!provider || !provider.rootUri) {
+		if (!provider?.rootUri) {
 			return;
 		}
 

@@ -181,7 +181,7 @@ function globExprsToRgGlobs(
 	const globArgs: string[] = [];
 	const siblingClauses: glob.IExpression = {};
 	Object.keys(patterns).forEach((key) => {
-		if (excludesToSkip && excludesToSkip.has(key)) {
+		if (excludesToSkip?.has(key)) {
 			return;
 		}
 
@@ -195,7 +195,7 @@ function globExprsToRgGlobs(
 		// glob.ts requires forward slashes, but a UNC path still must start with \\
 		// #38165 and #38151
 		if (key.startsWith("\\\\")) {
-			key = "\\\\" + key.substr(2).replace(/\\/g, "/");
+			key = `\\\\${key.substr(2).replace(/\\/g, "/")}`;
 		} else {
 			key = key.replace(/\\/g, "/");
 		}
@@ -207,7 +207,7 @@ function globExprsToRgGlobs(
 			}
 
 			globArgs.push(fixDriveC(key));
-		} else if (value && value.when) {
+		} else if (value?.when) {
 			siblingClauses[key] = value;
 		}
 	});

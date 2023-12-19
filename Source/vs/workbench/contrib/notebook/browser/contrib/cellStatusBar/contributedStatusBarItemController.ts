@@ -178,9 +178,7 @@ class CellStatusBarHelper extends Disposable {
 				tokenSource.token,
 			);
 		if (tokenSource.token.isCancellationRequested) {
-			itemLists.forEach(
-				(itemList) => itemList.dispose && itemList.dispose(),
-			);
+			itemLists.forEach((itemList) => itemList.dispose?.());
 			return;
 		}
 
@@ -190,9 +188,7 @@ class CellStatusBarHelper extends Disposable {
 			[{ handle: this._cell.handle, items }],
 		);
 
-		this._currentItemLists.forEach(
-			(itemList) => itemList.dispose && itemList.dispose(),
-		);
+		this._currentItemLists.forEach((itemList) => itemList.dispose?.());
 		this._currentItemLists = itemLists;
 		this._currentItemIds = newIds;
 	}
@@ -205,9 +201,7 @@ class CellStatusBarHelper extends Disposable {
 		this._notebookViewModel.deltaCellStatusBarItems(this._currentItemIds, [
 			{ handle: this._cell.handle, items: [] },
 		]);
-		this._currentItemLists.forEach(
-			(itemList) => itemList.dispose && itemList.dispose(),
-		);
+		this._currentItemLists.forEach((itemList) => itemList.dispose?.());
 	}
 }
 

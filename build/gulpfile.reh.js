@@ -133,15 +133,17 @@ function getNodeVersion() {
 function getNodeChecksum(nodeVersion, platform, arch) {
 	let expectedName;
 	switch (platform) {
-		case "win32":
+		case "win32": {
 			expectedName = `win-${arch}/node.exe`;
 			break;
+		}
 
 		case "darwin":
 		case "alpine":
-		case "linux":
+		case "linux": {
 			expectedName = `node-v${nodeVersion}-${platform}-${arch}.tar.gz`;
 			break;
+		}
 	}
 
 	const nodeJsChecksums = fs.readFileSync(
@@ -170,7 +172,7 @@ function extractAlpinefromDocker(nodeVersion, platform, arch) {
 		new File({
 			path: "node",
 			contents,
-			stat: { mode: parseInt("755", 8) },
+			stat: { mode: 0o755 },
 		}),
 	]);
 }
@@ -226,7 +228,7 @@ function nodejs(platform, arch) {
 		log(`Using SHA256 checksum for checking integrity: ${checksumSha256}`);
 	} else {
 		log.warn(
-			`Unable to verify integrity of downloaded node.js binary because no SHA256 checksum was found!`,
+			"Unable to verify integrity of downloaded node.js binary because no SHA256 checksum was found!",
 		);
 	}
 
@@ -294,11 +296,11 @@ function packageTask(
 		const json = require("gulp-json-editor");
 
 		const src = gulp
-			.src(sourceFolderName + "/**", { base: "." })
+			.src(`${sourceFolderName}/**`, { base: "." })
 			.pipe(
 				rename((path) => {
 					path.dirname = path.dirname.replace(
-						new RegExp("^" + sourceFolderName),
+						new RegExp(`^${sourceFolderName}`),
 						"out",
 					);
 				}),
@@ -383,7 +385,7 @@ function packageTask(
 		const quality = product.quality;
 
 		if (quality && quality !== "stable") {
-			version += "-" + quality;
+			version += `-${quality}`;
 		}
 
 		const name = product.nameShort;
@@ -491,7 +493,7 @@ function packageTask(
 					.pipe(replace("@@VERSION@@", version))
 					.pipe(replace("@@COMMIT@@", commit))
 					.pipe(replace("@@APPNAME@@", product.applicationName))
-					.pipe(rename(`bin/helpers/browser.cmd`)),
+					.pipe(rename("bin/helpers/browser.cmd")),
 				gulp
 					.src("resources/server/bin/code-server.cmd", { base: "." })
 					.pipe(rename(`bin/${product.serverApplicationName}.cmd`)),
@@ -529,7 +531,7 @@ function packageTask(
 					.pipe(replace("@@VERSION@@", version))
 					.pipe(replace("@@COMMIT@@", commit))
 					.pipe(replace("@@APPNAME@@", product.applicationName))
-					.pipe(rename(`bin/helpers/browser.sh`))
+					.pipe(rename("bin/helpers/browser.sh"))
 					.pipe(util.setExecutableBit()),
 				gulp
 					.src(
@@ -554,7 +556,7 @@ function packageTask(
  */
 function tweakProductForServerWeb(product) {
 	const result = { ...product };
-	delete result.webEndpointUrlTemplate;
+	result.webEndpointUrlTemplate = undefined;
 	return result;
 }
 
@@ -620,7 +622,7 @@ function tweakProductForServerWeb(product) {
 	gulp.task(minifyTask);
 
 	BUILD_TARGETS.forEach((buildTarget) => {
-		const dashed = (str) => (str ? `-${str}` : ``);
+		const dashed = (str) => (str ? `-${str}` : "");
 		const platform = buildTarget.platform;
 		const arch = buildTarget.arch;
 

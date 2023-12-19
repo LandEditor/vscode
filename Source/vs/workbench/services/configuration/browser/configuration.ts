@@ -296,8 +296,8 @@ export class UserConfiguration extends Disposable {
 		this.reloadConfigurationScheduler = this._register(
 			new RunOnceScheduler(
 				() =>
-					this.userConfiguration
-						.value!.loadConfiguration()
+					this.userConfiguration.value
+						?.loadConfiguration()
 						.then((configurationModel) =>
 							this._onDidChangeConfiguration.fire(
 								configurationModel,
@@ -356,14 +356,14 @@ export class UserConfiguration extends Disposable {
 	}
 
 	async initialize(): Promise<ConfigurationModel> {
-		return this.userConfiguration.value!.loadConfiguration();
+		return this.userConfiguration.value?.loadConfiguration();
 	}
 
 	async reload(
 		settingsConfiguration?: ConfigurationModel,
 	): Promise<ConfigurationModel> {
 		if (this.hasTasksLoaded) {
-			return this.userConfiguration.value!.loadConfiguration();
+			return this.userConfiguration.value?.loadConfiguration();
 		}
 		return this.doReset(settingsConfiguration);
 	}
@@ -375,13 +375,13 @@ export class UserConfiguration extends Disposable {
 			...this.configurationParseOptions,
 			...parseOptions,
 		};
-		return this.userConfiguration.value!.reparse(
+		return this.userConfiguration.value?.reparse(
 			this.configurationParseOptions,
 		);
 	}
 
 	getRestrictedSettings(): string[] {
-		return this.userConfiguration.value!.getRestrictedSettings();
+		return this.userConfiguration.value?.getRestrictedSettings();
 	}
 }
 

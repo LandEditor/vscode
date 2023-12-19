@@ -90,16 +90,13 @@ export class NpmTaskProvider implements TaskProvider {
 			}
 			if (kind.path) {
 				packageJsonUri = _task.scope.uri.with({
-					path:
-						_task.scope.uri.path +
-						"/" +
-						kind.path +
-						`${kind.path.endsWith("/") ? "" : "/"}` +
-						"package.json",
+					path: `${_task.scope.uri.path}/${kind.path}${
+						kind.path.endsWith("/") ? "" : "/"
+					}package.json`,
 				});
 			} else {
 				packageJsonUri = _task.scope.uri.with({
-					path: _task.scope.uri.path + "/package.json",
+					path: `${_task.scope.uri.path}/package.json`,
 				});
 			}
 			const cmd = [kind.script];
@@ -167,7 +164,7 @@ function isPrePostScript(name: string): boolean {
 		"prepublishOnly",
 	]);
 
-	const prepost = ["pre" + name, "post" + name];
+	const prepost = [`pre${name}`, `post${name}`];
 	for (const knownScript of prePostScripts) {
 		if (knownScript === prepost[0] || knownScript === prepost[1]) {
 			return true;
@@ -214,12 +211,13 @@ export async function getPackageManager(
 				)
 				.then((result) => {
 					switch (result) {
-						case neverShowAgain:
+						case neverShowAgain: {
 							extensionContext.globalState.update(
 								neverShowWarning,
 								true,
 							);
 							break;
+						}
 						case learnMore:
 							env.openExternal(
 								Uri.parse(
@@ -292,8 +290,10 @@ async function detectNpmScripts(
 				);
 				for (const path of paths) {
 					if (
-						!isExcluded(folder, path) &&
-						!visitedPackageJsonFiles.has(path.fsPath)
+						!(
+							isExcluded(folder, path) ||
+							visitedPackageJsonFiles.has(path.fsPath)
+						)
 					) {
 						const tasks = await provideNpmScriptsForFolder(
 							context,
@@ -462,7 +462,7 @@ async function provideNpmScriptsForFolder(
 }
 
 export function getTaskName(script: string, relativePath: string | undefined) {
-	if (relativePath && relativePath.length) {
+	if (relativePath?.length) {
 		return `${script} - ${relativePath.substring(
 			0,
 			relativePath.length - 1,

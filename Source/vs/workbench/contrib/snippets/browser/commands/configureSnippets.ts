@@ -202,9 +202,7 @@ async function createSnippetFile(
 		resource,
 		[
 			"{",
-			"\t// Place your " +
-				scope +
-				" snippets here. Each snippet is defined under a snippet name and has a scope, prefix, body and ",
+			`\t// Place your ${scope} snippets here. Each snippet is defined under a snippet name and has a scope, prefix, body and `,
 			"\t// description. Add comma separated ids of the languages where the snippet is applicable in the scope field. If scope ",
 			"\t// is left empty or omitted, the snippet gets applied to all languages. The prefix is what is ",
 			"\t// used to trigger the snippet and the body will be expanded and inserted. Possible variables are: ",
@@ -238,9 +236,7 @@ async function createLanguageSnippetFile(
 	}
 	const contents = [
 		"{",
-		"\t// Place your snippets for " +
-			pick.label +
-			" here. Each snippet is defined under a snippet name and has a prefix, body and ",
+		`\t// Place your snippets for ${pick.label} here. Each snippet is defined under a snippet name and has a prefix, body and `,
 		"\t// description. The prefix is what is used to trigger the snippet and the body will be expanded and inserted. Possible variables are:",
 		"\t// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. Placeholders with the ",
 		"\t// same ids are connected.",

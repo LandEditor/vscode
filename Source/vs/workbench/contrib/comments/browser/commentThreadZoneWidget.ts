@@ -286,7 +286,7 @@ export class ReviewZoneWidget
 				container,
 				this.editor,
 				this._owner,
-				this.editor.getModel()!.uri,
+				this.editor.getModel()?.uri,
 				this._contextKeyService,
 				this._scopedInstantiationService,
 				this._commentThread as unknown as languages.CommentThread<
@@ -305,10 +305,7 @@ export class ReviewZoneWidget
 				this._commentOptions,
 				{
 					actionRunner: async () => {
-						if (
-							!this._commentThread.comments ||
-							!this._commentThread.comments.length
-						) {
+						if (!this._commentThread.comments?.length) {
 							const newPosition = this.getPosition();
 
 							if (newPosition) {
@@ -393,7 +390,7 @@ export class ReviewZoneWidget
 
 	public getGlyphPosition(): number {
 		if (this._commentGlyph) {
-			return this._commentGlyph.getPosition().position!.lineNumber;
+			return this._commentGlyph.getPosition().position?.lineNumber;
 		}
 		return 0;
 	}
@@ -426,7 +423,7 @@ export class ReviewZoneWidget
 		if (this._commentGlyph) {
 			this._commentGlyph.setThreadState(commentThread.state);
 			if (
-				this._commentGlyph.getPosition().position!.lineNumber !==
+				this._commentGlyph.getPosition().position?.lineNumber !==
 				lineNumber
 			) {
 				shouldMoveWidget = true;
@@ -513,8 +510,8 @@ export class ReviewZoneWidget
 				let shouldMoveWidget = false;
 				if (this._commentGlyph) {
 					if (
-						this._commentGlyph.getPosition().position!
-							.lineNumber !== lineNumber
+						this._commentGlyph.getPosition().position
+							?.lineNumber !== lineNumber
 					) {
 						shouldMoveWidget = true;
 						this._commentGlyph.setLineNumber(lineNumber);
@@ -632,10 +629,7 @@ export class ReviewZoneWidget
 				this._viewZone.afterLineNumber = currentPosition.lineNumber;
 			}
 
-			if (
-				!this._commentThread.comments ||
-				!this._commentThread.comments.length
-			) {
+			if (!this._commentThread.comments?.length) {
 				this._commentThreadWidget.focusCommentEditor();
 			}
 
@@ -701,10 +695,7 @@ export class ReviewZoneWidget
 				this.editor.focus();
 			}
 
-			if (
-				!this._commentThread.comments ||
-				!this._commentThread.comments.length
-			) {
+			if (!this._commentThread.comments?.length) {
 				this.deleteCommentThread();
 			}
 		}

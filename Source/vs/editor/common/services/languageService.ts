@@ -98,15 +98,15 @@ export class LanguageService extends Disposable implements ILanguageService {
 		return this._registry.getIcon(languageId);
 	}
 
-	public getExtensions(languageId: string): ReadonlyArray<string> {
+	public getExtensions(languageId: string): readonly string[] {
 		return this._registry.getExtensions(languageId);
 	}
 
-	public getFilenames(languageId: string): ReadonlyArray<string> {
+	public getFilenames(languageId: string): readonly string[] {
 		return this._registry.getFilenames(languageId);
 	}
 
-	public getConfigurationFiles(languageId: string): ReadonlyArray<URI> {
+	public getConfigurationFiles(languageId: string): readonly URI[] {
 		return this._registry.getConfigurationFiles(languageId);
 	}
 
@@ -164,7 +164,7 @@ export class LanguageService extends Disposable implements ILanguageService {
 	private _createAndGetLanguageIdentifier(
 		languageId: string | null | undefined,
 	): string {
-		if (!languageId || !this.isRegisteredLanguageId(languageId)) {
+		if (!(languageId && this.isRegisteredLanguageId(languageId))) {
 			// Fall back to plain text if language is unknown
 			languageId = PLAINTEXT_LANGUAGE_ID;
 		}

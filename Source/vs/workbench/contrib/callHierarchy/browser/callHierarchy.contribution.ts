@@ -173,7 +173,7 @@ class CallHierarchyController implements IEditorContribution {
 		}
 		const model = this._widget.getModel();
 		const call = this._widget.getFocused();
-		if (!call || !model) {
+		if (!(call && model)) {
 			return;
 		}
 		const newEditor = await this._editorService.openCodeEditor(
@@ -218,7 +218,7 @@ class CallHierarchyController implements IEditorContribution {
 				this.endCallHierarchy();
 				this._storageService.store(
 					CallHierarchyController._StorageDirection,
-					this._widget!.direction,
+					this._widget?.direction,
 					StorageScope.PROFILE,
 					StorageTarget.USER,
 				);
@@ -238,9 +238,9 @@ class CallHierarchyController implements IEditorContribution {
 				}
 				if (model) {
 					this._sessionDisposables.add(model);
-					this._widget!.showModel(model);
+					this._widget?.showModel(model);
 				} else {
-					this._widget!.showMessage(
+					this._widget?.showMessage(
 						localize("no.item", "No results"),
 					);
 				}
@@ -250,7 +250,7 @@ class CallHierarchyController implements IEditorContribution {
 					this.endCallHierarchy();
 					return;
 				}
-				this._widget!.showMessage(
+				this._widget?.showMessage(
 					localize("error", "Failed to show call hierarchy"),
 				);
 			});

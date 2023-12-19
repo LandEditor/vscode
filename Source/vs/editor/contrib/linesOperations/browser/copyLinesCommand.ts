@@ -25,7 +25,7 @@ export class CopyLinesCommand implements ICommand {
 	constructor(selection: Selection, isCopyingDown: boolean, noop?: boolean) {
 		this._selection = selection;
 		this._isCopyingDown = isCopyingDown;
-		this._noop = noop || false;
+		this._noop = noop;
 		this._selectionDirection = SelectionDirection.LTR;
 		this._selectionId = null;
 		this._startLineNumberDelta = 0;
@@ -75,7 +75,7 @@ export class CopyLinesCommand implements ICommand {
 		} else if (this._isCopyingDown) {
 			builder.addEditOperation(
 				new Range(s.startLineNumber, 1, s.startLineNumber, 1),
-				sourceText + "\n",
+				`${sourceText}\n`,
 			);
 		} else {
 			builder.addEditOperation(
@@ -85,7 +85,7 @@ export class CopyLinesCommand implements ICommand {
 					s.endLineNumber,
 					model.getLineMaxColumn(s.endLineNumber),
 				),
-				"\n" + sourceText,
+				`\n${sourceText}`,
 			);
 		}
 
@@ -109,12 +109,12 @@ export class CopyLinesCommand implements ICommand {
 			let endColumn = result.endColumn;
 
 			if (this._startLineNumberDelta !== 0) {
-				startLineNumber = startLineNumber + this._startLineNumberDelta;
+				startLineNumber += this._startLineNumberDelta;
 				startColumn = 1;
 			}
 
 			if (this._endLineNumberDelta !== 0) {
-				endLineNumber = endLineNumber + this._endLineNumberDelta;
+				endLineNumber += this._endLineNumberDelta;
 				endColumn = 1;
 			}
 

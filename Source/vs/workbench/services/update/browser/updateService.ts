@@ -75,10 +75,7 @@ export class BrowserUpdateService extends Disposable implements IUpdateService {
 		| null /* no update available */
 		| undefined /* no update provider */
 	> {
-		if (
-			this.environmentService.options &&
-			this.environmentService.options.updateProvider
-		) {
+		if (this.environmentService.options?.updateProvider) {
 			const updateProvider =
 				this.environmentService.options.updateProvider;
 

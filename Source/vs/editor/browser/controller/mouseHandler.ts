@@ -616,7 +616,7 @@ class MouseDownOperation extends Disposable {
 		this._mouseState.setStartButtons(e);
 		this._mouseState.setModifiers(e);
 		const position = this._findMousePosition(e, true);
-		if (!position || !position.position) {
+		if (!position?.position) {
 			// Ignoring because position is unknown
 			return;
 		}
@@ -1218,10 +1218,7 @@ class MouseDownState {
 		}
 
 		// c. Invalidate multiple clicking if the logical position is different
-		if (
-			this._lastMouseDownPosition &&
-			this._lastMouseDownPosition.equals(newMouseDownPosition)
-		) {
+		if (this._lastMouseDownPosition?.equals(newMouseDownPosition)) {
 			this._lastMouseDownPositionEqualCount++;
 		} else {
 			this._lastMouseDownPositionEqualCount = 1;

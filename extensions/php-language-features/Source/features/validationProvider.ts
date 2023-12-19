@@ -140,7 +140,7 @@ export default class PHPValidationProvider {
 		);
 		vscode.workspace.onDidCloseTextDocument(
 			(textDocument) => {
-				this.diagnosticCollection!.delete(textDocument.uri);
+				this.diagnosticCollection?.delete(textDocument.uri);
 				if (this.delayers) {
 					delete this.delayers[textDocument.uri.toString()];
 				}
@@ -176,7 +176,7 @@ export default class PHPValidationProvider {
 			this.documentListener.dispose();
 			this.documentListener = null;
 		}
-		this.diagnosticCollection!.clear();
+		this.diagnosticCollection?.clear();
 		if (this.validationEnabled) {
 			if (this.config.trigger === RunTrigger.onType) {
 				this.documentListener =
@@ -208,7 +208,7 @@ export default class PHPValidationProvider {
 
 		if (vscode.workspace.isTrusted) {
 			const key = textDocument.uri.toString();
-			let delayer = this.delayers![key];
+			let delayer = this.delayers?.[key];
 			if (!delayer) {
 				delayer = new ThrottledDelayer<void>(
 					this.config?.trigger === RunTrigger.onType ? 250 : 0,
@@ -221,7 +221,7 @@ export default class PHPValidationProvider {
 
 	private doValidate(textDocument: vscode.TextDocument): Promise<void> {
 		return new Promise<void>((resolve) => {
-			const executable = this.config!.executable;
+			const executable = this.config?.executable;
 			if (!executable) {
 				this.showErrorMessage(
 					vscode.l10n.t(
@@ -256,13 +256,11 @@ export default class PHPValidationProvider {
 				}
 			};
 
-			const options =
-				vscode.workspace.workspaceFolders &&
-				vscode.workspace.workspaceFolders[0]
-					? { cwd: vscode.workspace.workspaceFolders[0].uri.fsPath }
-					: undefined;
+			const options = vscode.workspace.workspaceFolders?.[0]
+				? { cwd: vscode.workspace.workspaceFolders[0].uri.fsPath }
+				: undefined;
 			let args: string[];
-			if (this.config!.trigger === RunTrigger.onSave) {
+			if (this.config?.trigger === RunTrigger.onSave) {
 				args = PHPValidationProvider.FileArgs.slice(0);
 				args.push(textDocument.fileName);
 			} else {
@@ -280,7 +278,7 @@ export default class PHPValidationProvider {
 					resolve();
 				});
 				if (childProcess.pid) {
-					if (this.config!.trigger === RunTrigger.onType) {
+					if (this.config?.trigger === RunTrigger.onType) {
 						childProcess.stdin.write(textDocument.getText());
 						childProcess.stdin.end();
 					}
@@ -292,7 +290,7 @@ export default class PHPValidationProvider {
 						if (line) {
 							processLine(line);
 						}
-						this.diagnosticCollection!.set(
+						this.diagnosticCollection?.set(
 							textDocument.uri,
 							diagnostics,
 						);
@@ -310,7 +308,7 @@ export default class PHPValidationProvider {
 	private async showError(error: any, executable: string): Promise<void> {
 		let message: string | null = null;
 		if (error.code === "ENOENT") {
-			if (this.config!.executable) {
+			if (this.config?.executable) {
 				message = vscode.l10n.t(
 					"Cannot validate since {0} is not a valid php executable. Use the setting 'php.validate.executablePath' to configure the PHP executable.",
 					executable,
@@ -363,10 +361,10 @@ async function getConfig(): Promise<IPhpConfig> {
 	let executable: string | undefined;
 	let executableIsUserDefined: boolean | undefined;
 	const inspect = section.inspect<string>(Setting.ExecutablePath);
-	if (inspect && inspect.workspaceValue) {
+	if (inspect?.workspaceValue) {
 		executable = inspect.workspaceValue;
 		executableIsUserDefined = false;
-	} else if (inspect && inspect.globalValue) {
+	} else if (inspect?.globalValue) {
 		executable = inspect.globalValue;
 		executableIsUserDefined = true;
 	} else {
@@ -375,9 +373,7 @@ async function getConfig(): Promise<IPhpConfig> {
 	}
 
 	if (executable && !path.isAbsolute(executable)) {
-		const first =
-			vscode.workspace.workspaceFolders &&
-			vscode.workspace.workspaceFolders[0];
+		const first = vscode.workspace.workspaceFolders?.[0];
 		if (first) {
 			executable = vscode.Uri.joinPath(first.uri, executable).fsPath;
 		} else {

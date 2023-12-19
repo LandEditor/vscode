@@ -100,7 +100,7 @@ export function terminalProfileArgsMatch(
 	args1: string | string[] | undefined,
 	args2: string | string[] | undefined,
 ): boolean {
-	if (!args1 && !args2) {
+	if (!(args1 || args2)) {
 		return true;
 	} else if (typeof args1 === "string" && typeof args2 === "string") {
 		return args1 === args2;
@@ -122,9 +122,9 @@ export function terminalIconsEqual(
 	a?: TerminalIcon,
 	b?: TerminalIcon,
 ): boolean {
-	if (!a && !b) {
+	if (!(a || b)) {
 		return true;
-	} else if (!a || !b) {
+	} else if (!(a && b)) {
 		return false;
 	}
 

@@ -94,7 +94,7 @@ export class DebugContentProvider
 		createIfNotExists: boolean,
 	): Promise<ITextModel> | null {
 		const model = this.modelService.getModel(resource);
-		if (!model && !createIfNotExists) {
+		if (!(model || createIfNotExists)) {
 			// nothing to do
 			return null;
 		}
@@ -147,7 +147,7 @@ export class DebugContentProvider
 
 		return session.loadSource(resource).then(
 			(response) => {
-				if (response && response.body) {
+				if (response?.body) {
 					if (model) {
 						const newContent = response.body.content;
 

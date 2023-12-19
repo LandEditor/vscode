@@ -57,7 +57,7 @@ export class LineEdits {
 						e.range.endLineNumberExclusive,
 						1,
 					),
-					text: e.newLines.map((s) => s + "\n").join(""),
+					text: e.newLines.map((s) => `${s}\n`).join(""),
 				};
 			}
 
@@ -80,7 +80,7 @@ export class LineEdits {
 					modelLineCount,
 					Number.MAX_SAFE_INTEGER,
 				),
-				text: e.newLines.map((s) => "\n" + s).join(""),
+				text: e.newLines.map((s) => `\n${s}`).join(""),
 			};
 		});
 	}

@@ -88,7 +88,7 @@ export class NotebookExecutionService
 		for (const cell of cellsArr) {
 			const cellExe =
 				this._notebookExecutionStateService.getCellExecution(cell.uri);
-			if (!!cellExe) {
+			if (cellExe) {
 				continue;
 			}
 			cellExecutions.push([

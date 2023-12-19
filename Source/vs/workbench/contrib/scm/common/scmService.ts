@@ -396,9 +396,11 @@ class SCMInputHistory {
 				const match = /^scm\/input:([^:]+):(.+)$/.exec(key);
 
 				if (
-					!match ||
-					!Array.isArray(legacyHistory?.history) ||
-					!Number.isInteger(legacyHistory?.timestamp)
+					!(
+						match &&
+						Array.isArray(legacyHistory?.history) &&
+						Number.isInteger(legacyHistory?.timestamp)
+					)
 				) {
 					this.storageService.remove(key, StorageScope.APPLICATION);
 					continue;

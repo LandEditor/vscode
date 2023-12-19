@@ -244,8 +244,6 @@ export function priorityToRank(priority: RegisteredEditorPriority): number {
 			return 4;
 		case RegisteredEditorPriority.builtin:
 			return 3;
-		// Text editor is priority 2
-		case RegisteredEditorPriority.option:
 		default:
 			return 1;
 	}

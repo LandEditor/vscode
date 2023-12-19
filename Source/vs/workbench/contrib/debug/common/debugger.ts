@@ -303,7 +303,7 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
 				: "\n";
 		const configs = JSON.stringify(initialConfigurations, null, "\t")
 			.split("\n")
-			.map((line) => "\t" + line)
+			.map((line) => `\t${line}`)
 			.join(eol)
 			.trim();
 		const comment1 = nls.localize(
@@ -332,7 +332,7 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
 
 		// fix formatting
 		const editorConfig = this.configurationService.getValue<any>();
-		if (editorConfig.editor && editorConfig.editor.insertSpaces) {
+		if (editorConfig.editor?.insertSpaces) {
 			content = content.replace(
 				/\t/g,
 				" ".repeat(editorConfig.editor.tabSize),
@@ -378,10 +378,9 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
 			const attributes: IJSONSchema =
 				this.debuggerContribution.configurationAttributes[request];
 			const defaultRequired = ["name", "type", "request"];
-			attributes.required =
-				attributes.required && attributes.required.length
-					? defaultRequired.concat(attributes.required)
-					: defaultRequired;
+			attributes.required = attributes.required?.length
+				? defaultRequired.concat(attributes.required)
+				: defaultRequired;
 			attributes.additionalProperties = false;
 			attributes.type = "object";
 			if (!attributes.properties) {

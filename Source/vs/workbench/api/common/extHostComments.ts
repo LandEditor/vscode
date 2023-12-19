@@ -278,10 +278,7 @@ export function createExtHostComments(
 				commentControllerHandle,
 			);
 
-			if (
-				!commentController ||
-				!commentController.commentingRangeProvider
-			) {
+			if (!commentController?.commentingRangeProvider) {
 				return Promise.resolve(undefined);
 			}
 
@@ -301,7 +298,7 @@ export function createExtHostComments(
 				} else if (rangesResult) {
 					ranges = {
 						ranges: rangesResult.ranges || [],
-						fileComments: rangesResult.fileComments || false,
+						fileComments: rangesResult.fileComments,
 					};
 				} else {
 					ranges = rangesResult ?? undefined;
@@ -334,7 +331,7 @@ export function createExtHostComments(
 				commentControllerHandle,
 			);
 
-			if (!commentController || !commentController.reactionHandler) {
+			if (!commentController?.reactionHandler) {
 				return Promise.resolve(undefined);
 			}
 
@@ -963,7 +960,7 @@ export function createExtHostComments(
 			label: reaction.label || "",
 			count: reaction.count || 0,
 			iconPath: reaction.iconPath ? URI.revive(reaction.iconPath) : "",
-			authorHasReacted: reaction.hasReacted || false,
+			authorHasReacted: reaction.hasReacted,
 		};
 	}
 

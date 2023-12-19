@@ -692,7 +692,7 @@ export class EditSessionsContribution
 						// First ask the user to pick a destination, if necessary
 						let uri: URI | "noDestinationUri" | undefined =
 							workspaceUri;
-						if (!destination && !uri) {
+						if (!(destination || uri)) {
 							destination =
 								await that.pickContinueEditSessionDestination();
 							if (!destination) {
@@ -1068,7 +1068,7 @@ export class EditSessionsContribution
 			this.logService.info(
 				ref !== undefined
 					? `Aborting resuming changes from cloud as no edit session content is available to be applied from ref ${ref}.`
-					: `Aborting resuming edit session as no edit session content is available to be applied`,
+					: "Aborting resuming edit session as no edit session content is available to be applied",
 			);
 			return;
 		}
@@ -1496,7 +1496,7 @@ export class EditSessionsContribution
 		};
 
 		try {
-			this.logService.info(`Storing edit session...`);
+			this.logService.info("Storing edit session...");
 			const ref = await this.editSessionsStorageService.write(
 				"editSessions",
 				data,
@@ -1505,7 +1505,7 @@ export class EditSessionsContribution
 			return ref;
 		} catch (ex) {
 			this.logService.error(
-				`Failed to store edit session, reason: `,
+				"Failed to store edit session, reason: ",
 				(ex as Error).toString(),
 			);
 
@@ -1523,7 +1523,7 @@ export class EditSessionsContribution
 
 			if (ex instanceof UserDataSyncStoreError) {
 				switch (ex.code) {
-					case UserDataSyncErrorCode.TooLarge:
+					case UserDataSyncErrorCode.TooLarge: {
 						// Uploading a payload can fail due to server size limits
 						this.telemetryService.publicLog2<
 							UploadFailedEvent,
@@ -1536,7 +1536,8 @@ export class EditSessionsContribution
 							),
 						);
 						break;
-					default:
+					}
+					default: {
 						this.telemetryService.publicLog2<
 							UploadFailedEvent,
 							UploadFailedClassification
@@ -1548,6 +1549,7 @@ export class EditSessionsContribution
 							),
 						);
 						break;
+					}
 				}
 			}
 		}
@@ -2004,11 +2006,10 @@ export class EditSessionsContribution
 		) {
 			items.push(
 				new ContinueEditSessionItem(
-					"$(folder) " +
-						localize(
-							"continueEditSessionItem.openInLocalFolder.v2",
-							"Open in Local Folder",
-						),
+					`$(folder) ${localize(
+						"continueEditSessionItem.openInLocalFolder.v2",
+						"Open in Local Folder",
+					)}`,
 					openLocalFolderCommand.id,
 					localize("continueEditSessionItem.builtin", "Built-in"),
 				),

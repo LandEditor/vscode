@@ -94,7 +94,7 @@ class TerminalSuggestContribution
 				dom.findParentWithClass(xterm.element!, "panel")!,
 			);
 			this._addon?.setScreen(
-				xterm.element!.querySelector(".xterm-screen")!,
+				xterm.element?.querySelector(".xterm-screen")!,
 			);
 			this.add(
 				this._instance.onDidBlur(() =>

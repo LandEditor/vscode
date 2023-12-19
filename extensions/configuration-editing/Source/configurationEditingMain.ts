@@ -250,9 +250,7 @@ function registerExtensionsCompletionsInExtensionsDocument(): vscode.Disposable 
 						parse(document.getText())
 					);
 					return provideInstalledExtensionProposals(
-						(extensionsContent &&
-							extensionsContent.recommendations) ||
-							[],
+						extensionsContent?.recommendations || [],
 						"",
 						range,
 						false,
@@ -282,9 +280,7 @@ function registerExtensionsCompletionsInWorkspaceConfigurationDocument(): vscode
 						parse(document.getText())["extensions"]
 					);
 					return provideInstalledExtensionProposals(
-						(extensionsContent &&
-							extensionsContent.recommendations) ||
-							[],
+						extensionsContent?.recommendations || [],
 						"",
 						range,
 						false,
@@ -303,8 +299,8 @@ function getReplaceRange(
 ) {
 	const node = location.previousNode;
 	if (node) {
-		const nodeStart = document.positionAt(node.offset),
-			nodeEnd = document.positionAt(node.offset + node.length);
+		const nodeStart = document.positionAt(node.offset);
+		const nodeEnd = document.positionAt(node.offset + node.length);
 		if (
 			nodeStart.isBeforeOrEqual(position) &&
 			nodeEnd.isAfterOrEqual(position)
@@ -416,11 +412,13 @@ function registerContextKeyCompletions(): vscode.Disposable {
 			}
 
 			if (
-				!isValidLocation ||
-				!isCompletingInsidePropertyStringValue(
-					document,
-					location,
-					position,
+				!(
+					isValidLocation &&
+					isCompletingInsidePropertyStringValue(
+						document,
+						location,
+						position,
+					)
 				)
 			) {
 				return;

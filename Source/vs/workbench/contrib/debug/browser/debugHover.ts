@@ -277,7 +277,7 @@ export class DebugHoverWidget implements IContentWidget {
 		e: ITreeContextMenuEvent<IExpression>,
 	): Promise<void> {
 		const variable = e.element;
-		if (!(variable instanceof Variable) || !variable.value) {
+		if (!(variable instanceof Variable && variable.value)) {
 			return;
 		}
 
@@ -353,7 +353,7 @@ export class DebugHoverWidget implements IContentWidget {
 			new CancellationTokenSource());
 		const session = this.debugService.getViewModel().focusedSession;
 
-		if (!session || !this.editor.hasModel()) {
+		if (!(session && this.editor.hasModel())) {
 			this.hide();
 			return ShowDebugHoverResult.NOT_AVAILABLE;
 		}
@@ -611,7 +611,7 @@ class DebugHoverComputer {
 		token: CancellationToken,
 	): Promise<IDebugHoverComputeResult> {
 		const session = this.debugService.getViewModel().focusedSession;
-		if (!session || !this.editor.hasModel()) {
+		if (!(session && this.editor.hasModel())) {
 			return { rangeChanged: false };
 		}
 

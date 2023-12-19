@@ -41,11 +41,11 @@ async function startPtyHost() {
 	};
 
 	// Sanitize environment
-	delete process.env.VSCODE_RECONNECT_GRACE_TIME;
-	delete process.env.VSCODE_RECONNECT_SHORT_GRACE_TIME;
-	delete process.env.VSCODE_RECONNECT_SCROLLBACK;
-	delete process.env.VSCODE_LATENCY;
-	delete process.env.VSCODE_STARTUP_DELAY;
+	process.env.VSCODE_RECONNECT_GRACE_TIME = undefined;
+	process.env.VSCODE_RECONNECT_SHORT_GRACE_TIME = undefined;
+	process.env.VSCODE_RECONNECT_SCROLLBACK = undefined;
+	process.env.VSCODE_LATENCY = undefined;
+	process.env.VSCODE_STARTUP_DELAY = undefined;
 
 	// Delay startup if needed, this must occur before RPC is setup to avoid the channel from timing
 	// out.

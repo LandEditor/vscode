@@ -264,10 +264,10 @@ export class MdDocumentRenderer {
 			config.fontFamily
 				? `--markdown-font-family: ${config.fontFamily};`
 				: "",
-			isNaN(config.fontSize)
+			Number.isNaN(config.fontSize)
 				? ""
 				: `--markdown-font-size: ${config.fontSize}px;`,
-			isNaN(config.lineHeight)
+			Number.isNaN(config.lineHeight)
 				? ""
 				: `--markdown-line-height: ${config.lineHeight};`,
 		].join(" ");
@@ -345,8 +345,6 @@ export class MdDocumentRenderer {
 
 			case MarkdownPreviewSecurityLevel.AllowScriptsAndAllContent:
 				return '<meta http-equiv="Content-Security-Policy" content="">';
-
-			case MarkdownPreviewSecurityLevel.Strict:
 			default:
 				return `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' ${rule} https: data:; media-src 'self' ${rule} https: data:; script-src 'nonce-${nonce}'; style-src 'self' ${rule} 'unsafe-inline' https: data:; font-src 'self' ${rule} https: data:;">`;
 		}

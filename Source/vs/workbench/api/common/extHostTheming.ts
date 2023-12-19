@@ -26,15 +26,18 @@ export class ExtHostTheming implements ExtHostThemingShape {
 	$onColorThemeChange(type: string): void {
 		let kind;
 		switch (type) {
-			case "light":
+			case "light": {
 				kind = ColorThemeKind.Light;
 				break;
-			case "hcDark":
+			}
+			case "hcDark": {
 				kind = ColorThemeKind.HighContrast;
 				break;
-			case "hcLight":
+			}
+			case "hcLight": {
 				kind = ColorThemeKind.HighContrastLight;
 				break;
+			}
 			default:
 				kind = ColorThemeKind.Dark;
 		}

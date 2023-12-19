@@ -284,9 +284,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 		this._editorControlDisposables.clear();
 
 		if (
-			!pane ||
-			!this._outlineService.canCreateOutline(pane) ||
-			!resource
+			!(pane && this._outlineService.canCreateOutline(pane) && resource)
 		) {
 			return this._showMessage(
 				localize(
@@ -430,8 +428,10 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 		// feature: reveal editor selection in outline
 		const revealActiveElement = () => {
 			if (
-				!this._outlineViewState.followCursor ||
-				!newOutline.activeElement
+				!(
+					this._outlineViewState.followCursor &&
+					newOutline.activeElement
+				)
 			) {
 				return;
 			}

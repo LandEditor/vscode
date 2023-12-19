@@ -696,7 +696,7 @@ class OnAutoForwardedAction extends Disposable {
 		RemoteTunnel | undefined
 	> {
 		this.logService.trace(
-			`ForwardedPorts: (OnAutoForwardedAction) Starting heuristic delay`,
+			"ForwardedPorts: (OnAutoForwardedAction) Starting heuristic delay",
 		);
 		if (!this.doActionTunnels || this.doActionTunnels.length === 0) {
 			return;
@@ -1016,8 +1016,7 @@ class OutputAutomaticPortForwarding extends Disposable {
 
 	private startUrlFinder() {
 		if (
-			!this.urlFinder &&
-			!this.remoteExplorerService.portsFeaturesEnabled
+			!(this.urlFinder || this.remoteExplorerService.portsFeaturesEnabled)
 		) {
 			return;
 		}
@@ -1177,7 +1176,7 @@ class ProcAutomaticPortForwarding extends Disposable {
 	private async setInitialCandidates() {
 		if (!this.needsInitialCandidates) {
 			this.logService.debug(
-				`ForwardedPorts: (ProcForwarding) Not setting initial candidates`,
+				"ForwardedPorts: (ProcForwarding) Not setting initial candidates",
 			);
 			return;
 		}

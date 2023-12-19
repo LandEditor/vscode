@@ -197,7 +197,7 @@ export class FeaturedExtensionsService
 		extensionId: string,
 	): FeaturedExtensionStorageData | undefined {
 		const metadata = this.storageService.get(
-			FeaturedExtensionsService.STORAGE_KEY + "." + extensionId,
+			`${FeaturedExtensionsService.STORAGE_KEY}.${extensionId}`,
 			StorageScope.APPLICATION,
 		);
 		if (metadata) {
@@ -214,8 +214,7 @@ export class FeaturedExtensionsService
 		extensionId: string,
 		key: FeaturedExtensionMetadataType,
 	): Promise<string | undefined> {
-		const storageKey =
-			FeaturedExtensionsService.STORAGE_KEY + "." + extensionId;
+		const storageKey = `${FeaturedExtensionsService.STORAGE_KEY}.${extensionId}`;
 		this.storageService.remove(storageKey, StorageScope.APPLICATION);
 		let metadata: string | undefined;
 

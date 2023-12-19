@@ -50,29 +50,33 @@ export function getDocumentRegions(
 	let token = scanner.scan();
 	while (token !== TokenType.EOS) {
 		switch (token) {
-			case TokenType.StartTag:
+			case TokenType.StartTag: {
 				lastTagName = scanner.getTokenText();
 				lastAttributeName = null;
 				languageIdFromType = "javascript";
 				break;
-			case TokenType.Styles:
+			}
+			case TokenType.Styles: {
 				regions.push({
 					languageId: "css",
 					start: scanner.getTokenOffset(),
 					end: scanner.getTokenEnd(),
 				});
 				break;
-			case TokenType.Script:
+			}
+			case TokenType.Script: {
 				regions.push({
 					languageId: languageIdFromType,
 					start: scanner.getTokenOffset(),
 					end: scanner.getTokenEnd(),
 				});
 				break;
-			case TokenType.AttributeName:
+			}
+			case TokenType.AttributeName: {
 				lastAttributeName = scanner.getTokenText();
 				break;
-			case TokenType.AttributeValue:
+			}
+			case TokenType.AttributeValue: {
 				if (
 					lastAttributeName === "src" &&
 					lastTagName.toLowerCase() === "script"
@@ -121,6 +125,7 @@ export function getDocumentRegions(
 				}
 				lastAttributeName = null;
 				break;
+			}
 		}
 		token = scanner.scan();
 	}
@@ -239,7 +244,7 @@ function getEmbeddedDocument(
 	for (const c of contents) {
 		if (
 			c.languageId === languageId &&
-			(!ignoreAttributeValues || !c.attributeValue)
+			!(ignoreAttributeValues && c.attributeValue)
 		) {
 			result = substituteWithWhitespace(
 				result,
@@ -274,7 +279,7 @@ function getPrefix(c: EmbeddedRegion) {
 	if (c.attributeValue) {
 		switch (c.languageId) {
 			case "css":
-				return CSS_STYLE_RULE + "{";
+				return `${CSS_STYLE_RULE}{`;
 		}
 	}
 	return "";
@@ -292,7 +297,7 @@ function getSuffix(c: EmbeddedRegion) {
 }
 function updateContent(c: EmbeddedRegion, content: string): string {
 	if (!c.attributeValue && c.languageId === "javascript") {
-		return content.replace(`<!--`, `/* `).replace(`-->`, ` */`);
+		return content.replace("<!--", "/* ").replace("-->", " */");
 	}
 	return content;
 }

@@ -507,7 +507,7 @@ const allFlows: IFlow[] = [
 			);
 			await env.openExternal(uriToOpen);
 			const token = await window.showInputBox({
-				placeHolder: `ghp_1a2b3c4...`,
+				placeHolder: "ghp_1a2b3c4...",
 				prompt: `GitHub Personal Access Token - ${scopes}`,
 				ignoreFocusOut: true,
 			});
@@ -579,24 +579,29 @@ export function getFlows(query: IFlowQuery) {
 	return allFlows.filter((flow) => {
 		let useFlow = true;
 		switch (query.target) {
-			case GitHubTarget.DotCom:
+			case GitHubTarget.DotCom: {
 				useFlow &&= flow.options.supportsGitHubDotCom;
 				break;
-			case GitHubTarget.Enterprise:
+			}
+			case GitHubTarget.Enterprise: {
 				useFlow &&= flow.options.supportsGitHubEnterpriseServer;
 				break;
-			case GitHubTarget.HostedEnterprise:
+			}
+			case GitHubTarget.HostedEnterprise: {
 				useFlow &&= flow.options.supportsHostedGitHubEnterprise;
 				break;
+			}
 		}
 
 		switch (query.extensionHost) {
-			case ExtensionHost.Remote:
+			case ExtensionHost.Remote: {
 				useFlow &&= flow.options.supportsRemoteExtensionHost;
 				break;
-			case ExtensionHost.WebWorker:
+			}
+			case ExtensionHost.WebWorker: {
 				useFlow &&= flow.options.supportsWebWorkerExtensionHost;
 				break;
+			}
 		}
 
 		if (!Config.gitHubClientSecret) {

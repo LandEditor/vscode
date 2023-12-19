@@ -135,8 +135,7 @@ registerAction2(
 				? findTargetCellEditor(context, context.cell)
 				: undefined;
 			if (
-				foundEditor &&
-				foundEditor.hasTextFocus() &&
+				foundEditor?.hasTextFocus() &&
 				InlineChatController.get(foundEditor)?.getWidgetPosition()
 					?.lineNumber === foundEditor.getPosition()?.lineNumber
 			) {
@@ -364,7 +363,7 @@ registerAction2(
 				INotebookExecutionStateService,
 			);
 			const editor = context.notebookEditor;
-			if (!editor.hasModel() || !editor.textModel.length) {
+			if (!(editor.hasModel() && editor.textModel.length)) {
 				return;
 			}
 
@@ -459,7 +458,7 @@ registerAction2(
 				INotebookExecutionStateService,
 			);
 			const editor = context.notebookEditor;
-			if (!editor.hasModel() || !editor.textModel.length) {
+			if (!(editor.hasModel() && editor.textModel.length)) {
 				return;
 			}
 
@@ -587,8 +586,7 @@ registerAction2(
 				this.getEditorContextFromArgsOrActive(accessor);
 
 			if (
-				!activeEditorContext ||
-				!activeEditorContext.notebookEditor.hasModel() ||
+				!activeEditorContext?.notebookEditor.hasModel() ||
 				context.start >= activeEditorContext.notebookEditor.getLength()
 			) {
 				return;

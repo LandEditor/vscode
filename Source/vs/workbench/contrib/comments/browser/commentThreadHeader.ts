@@ -32,8 +32,9 @@ const collapseIcon = registerIcon(
 	Codicon.chevronUp,
 	nls.localize("collapseIcon", "Icon to collapse a review comment."),
 );
-const COLLAPSE_ACTION_CLASS =
-	"expand-review-action " + ThemeIcon.asClassName(collapseIcon);
+const COLLAPSE_ACTION_CLASS = `expand-review-action ${ThemeIcon.asClassName(
+	collapseIcon,
+)}`;
 
 export class CommentThreadHeader<T = IRange> extends Disposable {
 	private _headElement: HTMLElement;
@@ -137,12 +138,7 @@ export class CommentThreadHeader<T = IRange> extends Disposable {
 		label = this._commentThread.label;
 
 		if (label === undefined) {
-			if (
-				!(
-					this._commentThread.comments &&
-					this._commentThread.comments.length
-				)
-			) {
+			if (!this._commentThread.comments?.length) {
 				label = nls.localize("startThread", "Start discussion");
 			}
 		}

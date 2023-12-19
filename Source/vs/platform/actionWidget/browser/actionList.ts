@@ -142,7 +142,7 @@ class ActionItemRenderer<T>
 			data.icon.style.color = "var(--vscode-editorLightBulb-foreground)";
 		}
 
-		if (!element.item || !element.label) {
+		if (!(element.item && element.label)) {
 			return;
 		}
 
@@ -280,7 +280,7 @@ export class ActionList<T> extends Disposable {
 										{
 											key: "customQuickFixWidget.labels",
 											comment: [
-												`Action widget labels for accessibility.`,
+												"Action widget labels for accessibility.",
 											],
 										},
 										"{0}, Disabled Reason: {1}",
@@ -296,7 +296,7 @@ export class ActionList<T> extends Disposable {
 							localize(
 								{
 									key: "customQuickFixWidget",
-									comment: [`An action widget option`],
+									comment: ["An action widget option"],
 								},
 								"Action Widget"
 							),
@@ -441,7 +441,7 @@ export class ActionList<T> extends Disposable {
 
 	private async onListHover(e: IListMouseEvent<IActionListItem<T>>) {
 		const element = e.element;
-		if (element && element.item && this.focusCondition(element)) {
+		if (element?.item && this.focusCondition(element)) {
 			if (
 				this._delegate.onHover &&
 				!element.disabled &&

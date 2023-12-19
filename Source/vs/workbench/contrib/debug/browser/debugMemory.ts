@@ -128,7 +128,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 	/** @inheritdoc */
 	public mkdir(): never {
 		throw createFileSystemProviderError(
-			`Not allowed`,
+			"Not allowed",
 			FileSystemProviderErrorCode.NoPermissions,
 		);
 	}
@@ -136,7 +136,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 	/** @inheritdoc */
 	public readdir(): never {
 		throw createFileSystemProviderError(
-			`Not allowed`,
+			"Not allowed",
 			FileSystemProviderErrorCode.NoPermissions,
 		);
 	}
@@ -144,7 +144,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 	/** @inheritdoc */
 	public delete(): never {
 		throw createFileSystemProviderError(
-			`Not allowed`,
+			"Not allowed",
 			FileSystemProviderErrorCode.NoPermissions,
 		);
 	}
@@ -152,7 +152,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 	/** @inheritdoc */
 	public rename(): never {
 		throw createFileSystemProviderError(
-			`Not allowed`,
+			"Not allowed",
 			FileSystemProviderErrorCode.NoPermissions,
 		);
 	}
@@ -182,7 +182,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 		const { offset } = this.parseUri(resource);
 		if (!offset) {
 			throw createFileSystemProviderError(
-				`Range must be present to read a file`,
+				"Range must be present to read a file",
 				FileSystemProviderErrorCode.FileNotFound,
 			);
 		}
@@ -201,7 +201,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 		const { offset } = this.parseUri(resource);
 		if (!offset) {
 			throw createFileSystemProviderError(
-				`Range must be present to read a file`,
+				"Range must be present to read a file",
 				FileSystemProviderErrorCode.FileNotFound,
 			);
 		}
@@ -228,7 +228,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 		const memory = this.fdMemory.get(fd);
 		if (!memory) {
 			throw createFileSystemProviderError(
-				`No file with that descriptor open`,
+				"No file with that descriptor open",
 				FileSystemProviderErrorCode.Unavailable,
 			);
 		}
@@ -280,7 +280,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 		const memory = this.fdMemory.get(fd);
 		if (!memory) {
 			throw createFileSystemProviderError(
-				`No file with that descriptor open`,
+				"No file with that descriptor open",
 				FileSystemProviderErrorCode.Unavailable,
 			);
 		}
@@ -302,7 +302,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 		const session = this.debugService.getModel().getSession(uri.authority);
 		if (!session) {
 			throw createFileSystemProviderError(
-				`Debug session not found`,
+				"Debug session not found",
 				FileSystemProviderErrorCode.FileNotFound,
 			);
 		}

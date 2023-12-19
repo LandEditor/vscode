@@ -47,7 +47,7 @@ export class GlobalStateResourceInitializer
 		const globalState: IGlobalState = JSON.parse(content);
 		const storageKeys = Object.keys(globalState.storage);
 		if (storageKeys.length) {
-			const storageEntries: Array<IStorageEntry> = [];
+			const storageEntries: IStorageEntry[] = [];
 			for (const key of storageKeys) {
 				storageEntries.push({
 					key,

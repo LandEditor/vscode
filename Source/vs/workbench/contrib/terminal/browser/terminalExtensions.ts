@@ -96,8 +96,6 @@ class TerminalContributionRegistry {
 	private readonly _terminalContributions: ITerminalContributionDescription[] =
 		[];
 
-	constructor() {}
-
 	public registerTerminalContribution(
 		description: ITerminalContributionDescription,
 	): void {

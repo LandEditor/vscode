@@ -208,7 +208,7 @@ export class ReferencesModel implements IDisposable {
 
 		let current: FileReferences | undefined;
 		for (const link of links) {
-			if (!current || !extUri.isEqual(current.uri, link.uri, true)) {
+			if (!(current && extUri.isEqual(current.uri, link.uri, true))) {
 				// new group
 				current = new FileReferences(this, link.uri);
 				this.groups.push(current);

@@ -119,7 +119,7 @@ class SymbolNavigationService implements ISymbolNavigationService {
 			}
 			const model = editor.getModel();
 			const position = editor.getPosition();
-			if (!model || !position) {
+			if (!(model && position)) {
 				return;
 			}
 
@@ -135,7 +135,7 @@ class SymbolNavigationService implements ISymbolNavigationService {
 					break;
 				}
 			}
-			if (!seenUri || !seenPosition) {
+			if (!(seenUri && seenPosition)) {
 				this.reset();
 			}
 		});
@@ -186,14 +186,14 @@ class SymbolNavigationService implements ISymbolNavigationService {
 					"location.kb",
 					"Symbol {0} of {1}, {2} for next",
 					this._currentIdx + 1,
-					this._currentModel!.references.length,
+					this._currentModel?.references.length,
 					kb.getLabel(),
 			  )
 			: localize(
 					"location",
 					"Symbol {0} of {1}",
 					this._currentIdx + 1,
-					this._currentModel!.references.length,
+					this._currentModel?.references.length,
 			  );
 
 		this._currentMessage = this._notificationService.status(message);

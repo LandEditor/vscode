@@ -85,7 +85,6 @@ function getViewColumn(resource: vscode.Uri): vscode.ViewColumn {
 	switch (openLinks) {
 		case OpenMarkdownLinks.beside:
 			return vscode.ViewColumn.Beside;
-		case OpenMarkdownLinks.currentGroup:
 		default:
 			return vscode.ViewColumn.Active;
 	}

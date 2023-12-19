@@ -42,9 +42,9 @@ export class SetVerifier<T> extends Verifier<Set<T>> {
 }
 
 export class EnumVerifier<T> extends Verifier<T> {
-	private readonly allowedValues: ReadonlyArray<T>;
+	private readonly allowedValues: readonly T[];
 
-	constructor(defaultValue: T, allowedValues: ReadonlyArray<T>) {
+	constructor(defaultValue: T, allowedValues: readonly T[]) {
 		super(defaultValue);
 		this.allowedValues = allowedValues;
 	}

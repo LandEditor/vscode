@@ -356,7 +356,7 @@ export class NotebookCellChatController extends Disposable {
 		const editors = this._notebookEditor.codeEditors.find(
 			(editor) => editor[0] === this._chatPart.activeCell,
 		);
-		if (!editors || !editors[1].hasModel()) {
+		if (!editors?.[1].hasModel()) {
 			return;
 		}
 
@@ -397,7 +397,7 @@ export class NotebookCellChatController extends Disposable {
 		const editors = this._notebookEditor.codeEditors.find(
 			(editor) => editor[0] === this._chatPart.activeCell,
 		);
-		if (!editors || !editors[1].hasModel()) {
+		if (!editors?.[1].hasModel()) {
 			return;
 		}
 

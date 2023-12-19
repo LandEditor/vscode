@@ -105,7 +105,7 @@ function _formatPinnedItems(
 				{} as IQuickPickItem,
 				itemToPin,
 			);
-			if (!filterDuplicates || !pinnedIds.has(pinnedItemId)) {
+			if (!(filterDuplicates && pinnedIds.has(pinnedItemId))) {
 				pinnedIds.add(pinnedItemId);
 				updateButtons(pinnedItem, false);
 				formattedItems.push(pinnedItem);

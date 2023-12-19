@@ -224,7 +224,7 @@ export class TextDiffEditor
 				);
 			}
 
-			if (!optionsGotApplied && !hasPreviousViewState) {
+			if (!(optionsGotApplied || hasPreviousViewState)) {
 				control.revealFirstDiff();
 			}
 
@@ -403,13 +403,13 @@ export class TextDiffEditor
 			// User settings defines `diffEditor.codeLens`, but here we rename that to `diffEditor.diffCodeLens` to avoid collisions with `editor.codeLens`.
 			diffEditorConfiguration.diffCodeLens =
 				diffEditorConfiguration.codeLens;
-			delete diffEditorConfiguration.codeLens;
+			diffEditorConfiguration.codeLens = undefined;
 
 			// User settings defines `diffEditor.wordWrap`, but here we rename that to `diffEditor.diffWordWrap` to avoid collisions with `editor.wordWrap`.
 			diffEditorConfiguration.diffWordWrap = <
 				"off" | "on" | "inherit" | undefined
 			>diffEditorConfiguration.wordWrap;
-			delete diffEditorConfiguration.wordWrap;
+			diffEditorConfiguration.wordWrap = undefined;
 
 			Object.assign(editorConfiguration, diffEditorConfiguration);
 		}
@@ -572,7 +572,7 @@ export class TextDiffEditor
 		}
 
 		const model = this.diffEditorControl.getModel();
-		if (!model || !model.modified || !model.original) {
+		if (!(model?.modified && model.original)) {
 			return undefined; // view state always needs a model
 		}
 
@@ -602,7 +602,7 @@ export class TextDiffEditor
 			modified = modelOrInput.modified.uri;
 		}
 
-		if (!original || !modified) {
+		if (!(original && modified)) {
 			return undefined;
 		}
 

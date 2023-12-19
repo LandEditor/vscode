@@ -147,7 +147,7 @@ export class WebviewEditor extends EditorPane {
 
 	public override focus(): void {
 		super.focus();
-		if (!this._onFocusWindowHandler.value && !isWeb) {
+		if (!(this._onFocusWindowHandler.value || isWeb)) {
 			// Make sure we restore focus when switching back to a VS Code window
 			this._onFocusWindowHandler.value =
 				this._hostService.onDidChangeFocus((focused) => {

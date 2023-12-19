@@ -159,7 +159,7 @@ export class WebWorkerExtensionHost
 			}
 
 			console.warn(
-				`The web worker extension host is started in a same-origin iframe!`,
+				"The web worker extension host is started in a same-origin iframe!",
 			);
 		}
 
@@ -225,7 +225,7 @@ export class WebWorkerExtensionHost
 
 		startTimeout = setTimeout(() => {
 			console.warn(
-				`The Web Worker Extension Host did not start in 60s, that might be a problem.`,
+				"The Web Worker Extension Host did not start in 60s, that might be a problem.",
 			);
 		}, 60000);
 
@@ -278,7 +278,7 @@ export class WebWorkerExtensionHost
 		// Send over message ports for extension API
 		const messagePorts =
 			this._environmentService.options?.messagePorts ?? new Map();
-		iframe.contentWindow!.postMessage(
+		iframe.contentWindow?.postMessage(
 			{ type: "vscode.init", data: messagePorts },
 			"*",
 			[...messagePorts.values()],

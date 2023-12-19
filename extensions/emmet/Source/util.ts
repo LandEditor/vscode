@@ -458,7 +458,7 @@ export function parsePartialStylesheet(
 	}
 
 	// Go forward until we find a closing brace.
-	while (!stream.eof() && !stream.eat(closeBrace)) {
+	while (!(stream.eof() || stream.eat(closeBrace))) {
 		if (stream.peek() === slash) {
 			consumeCommentForwards();
 		} else {
@@ -480,10 +480,11 @@ export function parsePartialStylesheet(
 		consumeLineCommentBackwards();
 
 		switch (stream.backUp(1)) {
-			case openBrace:
+			case openBrace: {
 				openBracesToFind--;
 				break;
-			case closeBrace:
+			}
+			case closeBrace: {
 				if (isCSS) {
 					stream.next();
 					startOffset = stream.pos;
@@ -492,9 +493,11 @@ export function parsePartialStylesheet(
 					openBracesToFind++;
 				}
 				break;
-			case slash:
+			}
+			case slash: {
 				consumeBlockCommentBackwards();
 				break;
+			}
 			default:
 				break;
 		}
@@ -511,7 +514,7 @@ export function parsePartialStylesheet(
 	currentLine = document.positionAt(stream.pos).line;
 	openBracesToFind = 0;
 	let foundSelector = false;
-	while (!exit && !stream.sof() && !foundSelector && openBracesToFind >= 0) {
+	while (!(exit || stream.sof() || foundSelector) && openBracesToFind >= 0) {
 		consumeLineCommentBackwards();
 
 		const ch = stream.backUp(1);
@@ -520,20 +523,24 @@ export function parsePartialStylesheet(
 		}
 
 		switch (ch) {
-			case slash:
+			case slash: {
 				consumeBlockCommentBackwards();
 				break;
-			case closeBrace:
+			}
+			case closeBrace: {
 				openBracesToFind++;
 				break;
-			case openBrace:
+			}
+			case openBrace: {
 				openBracesToFind--;
 				break;
-			default:
+			}
+			default: {
 				if (!openBracesToFind) {
 					foundSelector = true;
 				}
 				break;
+			}
 		}
 
 		if (!stream.sof() && foundSelector) {
@@ -751,8 +758,7 @@ export function getDeepestFlatNode(
 	node: FlatNode | undefined,
 ): FlatNode | undefined {
 	if (
-		!node ||
-		!node.children ||
+		!node?.children ||
 		node.children.length === 0 ||
 		!node.children.find((x) => x.type !== "comment")
 	) {
@@ -893,11 +899,11 @@ export function sameNodes(
 	node2: FlatNode | undefined,
 ): boolean {
 	// return true if they're both undefined
-	if (!node1 && !node2) {
+	if (!(node1 || node2)) {
 		return true;
 	}
 	// return false if only one of them is undefined
-	if (!node1 || !node2) {
+	if (!(node1 && node2)) {
 		return false;
 	}
 	return node1.start === node2.start && node1.end === node2.end;
@@ -1015,7 +1021,7 @@ export function getEmbeddedCssNodeIfAny(
 		return;
 	}
 	const currentHtmlNode = <HtmlFlatNode>currentNode;
-	if (currentHtmlNode && currentHtmlNode.open && currentHtmlNode.close) {
+	if (currentHtmlNode?.open && currentHtmlNode.close) {
 		const offset = document.offsetAt(position);
 		if (
 			currentHtmlNode.open.end < offset &&

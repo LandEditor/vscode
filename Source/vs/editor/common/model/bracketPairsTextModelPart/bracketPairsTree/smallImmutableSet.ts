@@ -31,7 +31,7 @@ export class SmallImmutableSet<T> {
 
 	private static empty = SmallImmutableSet.create<any>(0, emptyArr);
 	public static getEmpty<T>(): SmallImmutableSet<T> {
-		return this.empty;
+		return SmallImmutableSet.empty;
 	}
 
 	private constructor(

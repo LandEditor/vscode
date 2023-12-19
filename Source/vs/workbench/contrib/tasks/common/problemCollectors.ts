@@ -583,10 +583,7 @@ export class WatchingProblemCollector
 
 	public aboutToStart(): void {
 		for (const background of this.backgroundPatterns) {
-			if (
-				background.matcher.watching &&
-				background.matcher.watching.activeOnStart
-			) {
+			if (background.matcher.watching?.activeOnStart) {
 				this._activeBackgroundMatchers.add(background.key);
 				this._onDidStateChange.fire(
 					IProblemCollectorEvent.create(
@@ -650,7 +647,7 @@ export class WatchingProblemCollector
 				this.cleanMarkerCaches();
 				this.resetCurrentResource();
 				const owner = background.matcher.owner;
-				const file = matches[background.begin.file!];
+				const file = background.begin.file?.[background.begin.file];
 				if (file) {
 					const resource = getResource(file, background.matcher);
 					this.recordResourceToClean(owner, await resource);

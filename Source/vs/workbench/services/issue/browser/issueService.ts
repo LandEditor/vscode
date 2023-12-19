@@ -126,12 +126,9 @@ export class WebIssueService implements IWorkbenchIssueService {
 		const extensionUrl = extension?.repository?.url;
 
 		// If given, try to match the extension's bug url
-		if (bugsUrl && bugsUrl.match(/^https?:\/\/github\.com\/(.*)/)) {
+		if (bugsUrl?.match(/^https?:\/\/github\.com\/(.*)/)) {
 			repositoryUrl = normalizeGitHubUrl(bugsUrl);
-		} else if (
-			extensionUrl &&
-			extensionUrl.match(/^https?:\/\/github\.com\/(.*)/)
-		) {
+		} else if (extensionUrl?.match(/^https?:\/\/github\.com\/(.*)/)) {
 			repositoryUrl = normalizeGitHubUrl(extensionUrl);
 		}
 

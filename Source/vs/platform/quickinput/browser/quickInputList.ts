@@ -468,7 +468,7 @@ class ListElementRenderer
 
 		// Actions
 		const buttons = mainItem.buttons;
-		if (buttons && buttons.length) {
+		if (buttons?.length) {
 			data.actionBar.push(
 				buttons.map((button, index): IAction => {
 					let cssClasses =
@@ -551,7 +551,7 @@ export class QuickInputList {
 	readonly id: string;
 	private container: HTMLElement;
 	private list: List<IListElement>;
-	private inputElements: Array<QuickPickItem> = [];
+	private inputElements: QuickPickItem[] = [];
 	private elements: IListElement[] = [];
 	private elementsToIndexes = new Map<QuickPickItem, number>();
 	matchOnDescription = false;
@@ -634,14 +634,16 @@ export class QuickInputList {
 			this.list.onKeyDown((e) => {
 				const event = new StandardKeyboardEvent(e);
 				switch (event.keyCode) {
-					case KeyCode.Space:
+					case KeyCode.Space: {
 						this.toggleCheckbox();
 						break;
-					case KeyCode.KeyA:
+					}
+					case KeyCode.KeyA: {
 						if (platform.isMacintosh ? e.metaKey : e.ctrlKey) {
 							this.list.setFocus(range(this.list.length));
 						}
 						break;
+					}
 					case KeyCode.UpArrow: {
 						const focus1 = this.list.getFocus();
 						if (focus1.length === 1 && focus1[0] === 0) {
@@ -865,7 +867,7 @@ export class QuickInputList {
 		}
 	}
 
-	setElements(inputElements: Array<QuickPickItem>): void {
+	setElements(inputElements: QuickPickItem[]): void {
 		this.elementDisposables = dispose(this.elementDisposables);
 		const fireButtonTriggered = (
 			event: IQuickPickItemButtonEvent<IQuickPickItem>,
@@ -988,18 +990,21 @@ export class QuickInputList {
 		}
 
 		switch (what) {
-			case QuickInputListFocus.First:
+			case QuickInputListFocus.First: {
 				this.list.scrollTop = 0;
 				this.list.focusFirst(undefined, (e) => !!e.item);
 				break;
-			case QuickInputListFocus.Second:
+			}
+			case QuickInputListFocus.Second: {
 				this.list.scrollTop = 0;
 				this.list.focusNth(1, undefined, (e) => !!e.item);
 				break;
-			case QuickInputListFocus.Last:
+			}
+			case QuickInputListFocus.Last: {
 				this.list.scrollTop = this.list.scrollHeight;
 				this.list.focusLast(undefined, (e) => !!e.item);
 				break;
+			}
 			case QuickInputListFocus.Next: {
 				this.list.focusNext(
 					undefined,
@@ -1034,12 +1039,14 @@ export class QuickInputList {
 				}
 				break;
 			}
-			case QuickInputListFocus.NextPage:
+			case QuickInputListFocus.NextPage: {
 				this.list.focusNextPage(undefined, (e) => !!e.item);
 				break;
-			case QuickInputListFocus.PreviousPage:
+			}
+			case QuickInputListFocus.PreviousPage: {
 				this.list.focusPreviousPage(undefined, (e) => !!e.item);
 				break;
+			}
 		}
 
 		const focused = this.list.getFocus()[0];
@@ -1069,7 +1076,7 @@ export class QuickInputList {
 			this._lastHover?.dispose();
 		}
 
-		if (!element.element || !element.saneTooltip) {
+		if (!(element.element && element.saneTooltip)) {
 			return;
 		}
 		this._lastHover = this.options.hoverDelegate.showHover(
@@ -1121,33 +1128,9 @@ export class QuickInputList {
 
 		// Reset filtering
 		if (
-			!query ||
-			!(
-				this.matchOnLabel ||
-				this.matchOnDescription ||
-				this.matchOnDetail
-			)
+			query &&
+			(this.matchOnLabel || this.matchOnDescription || this.matchOnDetail)
 		) {
-			this.elements.forEach((element) => {
-				element.labelHighlights = undefined;
-				element.descriptionHighlights = undefined;
-				element.detailHighlights = undefined;
-				element.hidden = false;
-				const previous =
-					element.index && this.inputElements[element.index - 1];
-				if (element.item) {
-					element.separator =
-						previous &&
-						previous.type === "separator" &&
-						!previous.buttons
-							? previous
-							: undefined;
-				}
-			});
-		}
-
-		// Filter by value (since we support icons in labels, use $(..) aware fuzzy matching)
-		else {
 			let currentSeparator: IQuickPickSeparator | undefined;
 			this.elements.forEach((element) => {
 				let labelHighlights: IMatch[] | undefined;
@@ -1216,6 +1199,23 @@ export class QuickInputList {
 						element.separator = currentSeparator;
 						currentSeparator = undefined;
 					}
+				}
+			});
+		} else {
+			this.elements.forEach((element) => {
+				element.labelHighlights = undefined;
+				element.descriptionHighlights = undefined;
+				element.detailHighlights = undefined;
+				element.hidden = false;
+				const previous =
+					element.index && this.inputElements[element.index - 1];
+				if (element.item) {
+					element.separator =
+						previous &&
+						previous.type === "separator" &&
+						!previous.buttons
+							? previous
+							: undefined;
 				}
 			});
 		}

@@ -118,12 +118,13 @@ export class NativeRemoteExtensionManagementService extends RemoteExtensionManag
 						this.logService.error(e);
 						throw e;
 					}
-				default:
+				default: {
 					this.logService.debug(
 						"Remote Install Error Name",
 						error.name,
 					);
 					throw error;
+				}
 			}
 		}
 	}

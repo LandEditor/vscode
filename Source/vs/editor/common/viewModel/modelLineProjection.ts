@@ -173,7 +173,7 @@ class ModelLineProjection implements IModelLineProjection {
 						0,
 						0,
 						offset + 1,
-						this._projectionData.injectionOptions![idx],
+						this._projectionData.injectionOptions?.[idx],
 						0,
 					),
 			);
@@ -293,7 +293,8 @@ class ModelLineProjection implements IModelLineProjection {
 
 				while (currentInjectedOffset < injectionOffsets.length) {
 					const length =
-						injectionOptions![currentInjectedOffset].content.length;
+						injectionOptions?.[currentInjectedOffset].content
+							.length;
 					const injectedTextStartOffsetInInputWithInjections =
 						injectionOffsets[currentInjectedOffset] +
 						totalInjectedTextLengthBefore;
@@ -314,7 +315,7 @@ class ModelLineProjection implements IModelLineProjection {
 					) {
 						// Injected text ends after or in this line (but also starts in or before this line).
 						const options =
-							injectionOptions![currentInjectedOffset];
+							injectionOptions?.[currentInjectedOffset];
 						if (options.inlineClassName) {
 							const offset =
 								outputLineIndex > 0
@@ -369,7 +370,7 @@ class ModelLineProjection implements IModelLineProjection {
 				.withInserted(
 					injectionOffsets.map((offset, idx) => ({
 						offset,
-						text: injectionOptions![idx].content,
+						text: injectionOptions?.[idx].content,
 						tokenMetadata: LineTokens.defaultTokenMetadata,
 					})),
 				);

@@ -267,7 +267,7 @@ class MarkerDecorations extends Disposable {
 		let minimap: IModelDecorationMinimapOptions | undefined;
 
 		switch (marker.severity) {
-			case MarkerSeverity.Hint:
+			case MarkerSeverity.Hint: {
 				if (this._hasMarkerTag(marker, MarkerTag.Deprecated)) {
 					className = undefined;
 				} else if (this._hasMarkerTag(marker, MarkerTag.Unnecessary)) {
@@ -277,7 +277,8 @@ class MarkerDecorations extends Disposable {
 				}
 				zIndex = 0;
 				break;
-			case MarkerSeverity.Info:
+			}
+			case MarkerSeverity.Info: {
 				className = ClassName.EditorInfoDecoration;
 				color = themeColorFromId(overviewRulerInfo);
 				zIndex = 10;
@@ -286,7 +287,8 @@ class MarkerDecorations extends Disposable {
 					position: MinimapPosition.Inline,
 				};
 				break;
-			case MarkerSeverity.Warning:
+			}
+			case MarkerSeverity.Warning: {
 				className = ClassName.EditorWarningDecoration;
 				color = themeColorFromId(overviewRulerWarning);
 				zIndex = 20;
@@ -295,8 +297,8 @@ class MarkerDecorations extends Disposable {
 					position: MinimapPosition.Inline,
 				};
 				break;
-			case MarkerSeverity.Error:
-			default:
+			}
+			default: {
 				className = ClassName.EditorErrorDecoration;
 				color = themeColorFromId(overviewRulerError);
 				zIndex = 30;
@@ -305,6 +307,7 @@ class MarkerDecorations extends Disposable {
 					position: MinimapPosition.Inline,
 				};
 				break;
+			}
 		}
 
 		if (marker.tags) {

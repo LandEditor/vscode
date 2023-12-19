@@ -37,7 +37,7 @@ export async function activate(context: ExtensionContext) {
 	const debugOptions = {
 		execArgv: [
 			"--nolazy",
-			"--inspect=" + (8000 + Math.round(Math.random() * 999)),
+			`--inspect=${8000}${Math.round(Math.random() * 999)}`,
 		],
 	};
 

@@ -31,7 +31,7 @@ import {
  * Updates size of context image in given editor
  */
 export function updateImageSize(): Promise<boolean> | undefined {
-	if (!validate() || !window.activeTextEditor) {
+	if (!(validate() && window.activeTextEditor)) {
 		return;
 	}
 	const editor = window.activeTextEditor;
@@ -236,7 +236,7 @@ function getImageSrcCSS(
 		urlValue = urlValue.item(0);
 	}
 
-	return urlValue && urlValue.valueOf();
+	return urlValue?.valueOf();
 }
 
 /**
@@ -380,11 +380,8 @@ function updateCSSNode(
  */
 function getAttribute(node: HtmlNode, attrName: string): Attribute | undefined {
 	attrName = attrName.toLowerCase();
-	return (
-		node &&
-		node.attributes.find(
-			(attr) => attr.name.toString().toLowerCase() === attrName,
-		)
+	return node?.attributes.find(
+		(attr) => attr.name.toString().toLowerCase() === attrName,
 	);
 }
 

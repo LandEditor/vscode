@@ -158,7 +158,7 @@ export class ElectronPtyHostStarter
 	private _onWindowConnection(e: IpcMainEvent, nonce: string) {
 		this._onRequestConnection.fire();
 
-		const port = this.utilityProcess!.connect();
+		const port = this.utilityProcess?.connect();
 
 		// Check back if the requesting window meanwhile closed
 		// Since shared process is delayed on startup there is

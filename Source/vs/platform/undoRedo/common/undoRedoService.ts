@@ -68,7 +68,7 @@ class ResourceStackElement {
 	) {
 		this.actual = actual;
 		this.label = actual.label;
-		this.confirmBeforeUndo = actual.confirmBeforeUndo || false;
+		this.confirmBeforeUndo = actual.confirmBeforeUndo;
 		this.resourceLabel = resourceLabel;
 		this.strResource = strResource;
 		this.resourceLabels = [this.resourceLabel];
@@ -189,7 +189,7 @@ class WorkspaceStackElement {
 	) {
 		this.actual = actual;
 		this.label = actual.label;
-		this.confirmBeforeUndo = actual.confirmBeforeUndo || false;
+		this.confirmBeforeUndo = actual.confirmBeforeUndo;
 		this.resourceLabels = resourceLabels;
 		this.strResources = strResources;
 		this.groupId = groupId;
@@ -619,7 +619,7 @@ export class UndoRedoService implements IUndoRedoService {
 	}
 
 	private _print(label: string): void {
-		console.log(`------------------------------------`);
+		console.log("------------------------------------");
 		console.log(`AFTER ${label}: `);
 		const str: string[] = [];
 		for (const element of this._editStacks) {
@@ -748,7 +748,7 @@ export class UndoRedoService implements IUndoRedoService {
 		}
 
 		for (const strResource of toRemove.strResources) {
-			if (ignoreResources && ignoreResources.has(strResource)) {
+			if (ignoreResources?.has(strResource)) {
 				continue;
 			}
 			const editStack = this._editStacks.get(strResource)!;
@@ -780,7 +780,7 @@ export class UndoRedoService implements IUndoRedoService {
 		}
 
 		for (const strResource of toRemove.strResources) {
-			if (ignoreResources && ignoreResources.has(strResource)) {
+			if (ignoreResources?.has(strResource)) {
 				continue;
 			}
 			const editStack = this._editStacks.get(strResource)!;
@@ -843,8 +843,7 @@ export class UndoRedoService implements IUndoRedoService {
 			editStack.restoreSnapshot(snapshot);
 
 			if (
-				!editStack.hasPastElements() &&
-				!editStack.hasFutureElements()
+				!(editStack.hasPastElements() || editStack.hasFutureElements())
 			) {
 				// the edit stack is now empty, just remove it entirely
 				editStack.dispose();
@@ -1424,7 +1423,7 @@ export class UndoRedoService implements IUndoRedoService {
 
 	private _undo(
 		strResource: string,
-		sourceId = 0,
+		sourceId,
 		undoConfirmed: boolean,
 	): Promise<void> | void {
 		if (!this._editStacks.has(strResource)) {

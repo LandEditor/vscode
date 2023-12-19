@@ -12,7 +12,7 @@ export interface TypeScriptServerPlugin {
 	readonly uri: vscode.Uri;
 	readonly name: string;
 	readonly enableForWorkspaceTypeScriptVersions: boolean;
-	readonly languages: ReadonlyArray<string>;
+	readonly languages: readonly string[];
 	readonly configNamespace?: string;
 }
 
@@ -34,7 +34,7 @@ namespace TypeScriptServerPlugin {
 export class PluginManager extends Disposable {
 	private readonly _pluginConfigurations = new Map<string, {}>();
 
-	private _plugins?: Map<string, ReadonlyArray<TypeScriptServerPlugin>>;
+	private _plugins?: Map<string, readonly TypeScriptServerPlugin[]>;
 
 	constructor() {
 		super();
@@ -62,7 +62,7 @@ export class PluginManager extends Disposable {
 		);
 	}
 
-	public get plugins(): ReadonlyArray<TypeScriptServerPlugin> {
+	public get plugins(): readonly TypeScriptServerPlugin[] {
 		this._plugins ??= this.readPlugins();
 		return Array.from(this._plugins.values()).flat();
 	}
@@ -87,10 +87,7 @@ export class PluginManager extends Disposable {
 	}
 
 	private readPlugins() {
-		const pluginMap = new Map<
-			string,
-			ReadonlyArray<TypeScriptServerPlugin>
-		>();
+		const pluginMap = new Map<string, readonly TypeScriptServerPlugin[]>();
 		for (const extension of vscode.extensions.all) {
 			const pack = extension.packageJSON;
 			if (

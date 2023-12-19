@@ -35,7 +35,7 @@ export namespace Iterable {
 		return iterable || _empty;
 	}
 
-	export function* reverse<T>(array: Array<T>): Iterable<T> {
+	export function* reverse<T>(array: T[]): Iterable<T> {
 		for (let i = array.length - 1; i >= 0; i--) {
 			yield array[i];
 		}
@@ -135,7 +135,7 @@ export namespace Iterable {
 	 * Returns an iterable slice of the array, with the same semantics as `array.slice()`.
 	 */
 	export function* slice<T>(
-		arr: ReadonlyArray<T>,
+		arr: readonly T[],
 		from: number,
 		to = arr.length,
 	): Iterable<T> {

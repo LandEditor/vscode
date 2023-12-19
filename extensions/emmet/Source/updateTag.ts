@@ -16,7 +16,7 @@ interface TagRange {
 export async function updateTag(
 	tagName: string | undefined,
 ): Promise<boolean | undefined> {
-	if (!validate(false) || !vscode.window.activeTextEditor) {
+	if (!(validate(false) && vscode.window.activeTextEditor)) {
 		return;
 	}
 

@@ -149,7 +149,7 @@ export function isValidVersion(
 		desiredVersion = _desiredVersion;
 	}
 
-	if (!version || !desiredVersion) {
+	if (!(version && desiredVersion)) {
 		return false;
 	}
 
@@ -194,7 +194,7 @@ export function isValidVersion(
 	if (
 		majorBase === 1 &&
 		desiredMajorBase === 0 &&
-		(!majorMustEqual || !minorMustEqual || !patchMustEqual)
+		!(majorMustEqual && minorMustEqual && patchMustEqual)
 	) {
 		desiredMajorBase = 1;
 		desiredMinorBase = 0;
@@ -513,7 +513,7 @@ function isVersionValid(
 	// otherwise for Z.X.Y, that means Z must be specified
 	if (desiredVersion.majorBase === 0) {
 		// force that major and minor must be specific
-		if (!desiredVersion.majorMustEqual || !desiredVersion.minorMustEqual) {
+		if (!(desiredVersion.majorMustEqual && desiredVersion.minorMustEqual)) {
 			notices.push(
 				nls.localize(
 					"versionSpecificity1",

@@ -207,10 +207,10 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 					if (
 						strings.isHighSurrogate(lineContent.charCodeAt(offset))
 					) {
-						result = result + 1;
-						offset = offset + 1;
+						result += 1;
+						offset += 1;
 					} else {
-						result = result + 1;
+						result += 1;
 					}
 				}
 			}
@@ -372,7 +372,7 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 				firstLineLength: firstLineLength,
 				lastLineLength: lastLineLength,
 				forceMoveMarkers: Boolean(op.forceMoveMarkers),
-				isAutoWhitespaceEdit: op.isAutoWhitespaceEdit || false,
+				isAutoWhitespaceEdit: op.isAutoWhitespaceEdit,
 			};
 		}
 

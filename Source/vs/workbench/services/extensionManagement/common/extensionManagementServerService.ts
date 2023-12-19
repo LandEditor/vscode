@@ -54,7 +54,7 @@ export class ExtensionManagementServerService
 					return (
 						labelService.getHostLabel(
 							Schemas.vscodeRemote,
-							remoteAgentConnection!.remoteAuthority,
+							remoteAgentConnection?.remoteAuthority,
 						) || localize("remote", "Remote")
 					);
 				},

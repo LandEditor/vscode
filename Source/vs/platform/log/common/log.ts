@@ -57,21 +57,26 @@ export interface ILogger extends IDisposable {
 
 export function log(logger: ILogger, level: LogLevel, message: string): void {
 	switch (level) {
-		case LogLevel.Trace:
+		case LogLevel.Trace: {
 			logger.trace(message);
 			break;
-		case LogLevel.Debug:
+		}
+		case LogLevel.Debug: {
 			logger.debug(message);
 			break;
-		case LogLevel.Info:
+		}
+		case LogLevel.Info: {
 			logger.info(message);
 			break;
-		case LogLevel.Warning:
+		}
+		case LogLevel.Warning: {
 			logger.warn(message);
 			break;
-		case LogLevel.Error:
+		}
+		case LogLevel.Error: {
 			logger.error(message);
 			break;
+		}
 		case LogLevel.Off:
 			/* do nothing */ break;
 		default:
@@ -541,7 +546,7 @@ export class AdapterLogger extends AbstractLogger implements ILogger {
 }
 
 export class MultiplexLogger extends AbstractLogger implements ILogger {
-	constructor(private readonly loggers: ReadonlyArray<ILogger>) {
+	constructor(private readonly loggers: readonly ILogger[]) {
 		super();
 		if (loggers.length) {
 			this.setLevel(loggers[0].getLevel());

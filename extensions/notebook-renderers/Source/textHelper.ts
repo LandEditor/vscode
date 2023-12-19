@@ -43,7 +43,8 @@ function generateViewMoreElement(outputId: string) {
 
 	const layoutSettingsLink = document.createElement("a");
 	layoutSettingsLink.textContent = "settings";
-	layoutSettingsLink.href = `command:workbench.action.openSettings?%5B%22%40tag%3AnotebookOutputLayout%22%5D`;
+	layoutSettingsLink.href =
+		"command:workbench.action.openSettings?%5B%22%40tag%3AnotebookOutputLayout%22%5D";
 	layoutSettingsLink.ariaLabel = "notebook output settings";
 	container.appendChild(layoutSettingsLink);
 

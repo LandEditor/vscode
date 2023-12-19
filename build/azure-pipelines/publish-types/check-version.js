@@ -27,7 +27,10 @@ function isValidTag(t) {
 	if (bug !== "0") {
 		return false;
 	}
-	if (isNaN(parseInt(major, 10)) || isNaN(parseInt(minor, 10))) {
+	if (
+		Number.isNaN(parseInt(major, 10)) ||
+		Number.isNaN(parseInt(minor, 10))
+	) {
 		return false;
 	}
 	return true;

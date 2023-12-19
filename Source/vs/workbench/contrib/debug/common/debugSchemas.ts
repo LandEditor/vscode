@@ -391,6 +391,6 @@ export const launchSchema: IJSONSchema = {
 			},
 			default: [defaultCompound],
 		},
-		inputs: inputsSchema.definitions!.inputs,
+		inputs: inputsSchema.definitions?.inputs,
 	},
 };

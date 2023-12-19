@@ -137,7 +137,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 					this._connectionToken
 				)
 			: null;
-		this._logService.info(`Extension host agent started.`);
+		this._logService.info("Extension host agent started.");
 
 		this._waitThenShutdown(true);
 	}
@@ -157,14 +157,14 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 		}
 
 		if (!req.url) {
-			return serveError(req, res, 400, `Bad request.`);
+			return serveError(req, res, 400, "Bad request.");
 		}
 
 		const parsedUrl = url.parse(req.url, true);
 		let pathname = parsedUrl.pathname;
 
 		if (!pathname) {
-			return serveError(req, res, 400, `Bad request.`);
+			return serveError(req, res, 400, "Bad request.");
 		}
 
 		// for now accept all paths, with or without server root path
@@ -196,7 +196,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 			)
 		) {
 			// invalid connection token
-			return serveError(req, res, 403, `Forbidden.`);
+			return serveError(req, res, 403, "Forbidden.");
 		}
 
 		if (pathname === "/vscode-remote-resource") {
@@ -204,7 +204,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 			// These resources could be files shipped with extensions or even workspace files.
 			const desiredPath = parsedUrl.query["path"];
 			if (typeof desiredPath !== "string") {
-				return serveError(req, res, 400, `Bad request.`);
+				return serveError(req, res, 400, "Bad request.");
 			}
 
 			let filePath: string;
@@ -214,7 +214,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 					path: desiredPath,
 				}).fsPath;
 			} catch (err) {
-				return serveError(req, res, 400, `Bad request.`);
+				return serveError(req, res, 400, "Bad request.");
 			}
 
 			const responseHeaders: Record<string, string> = Object.create(null);
@@ -294,21 +294,23 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 		// https://tools.ietf.org/html/rfc6455#section-4
 		const requestNonce = req.headers["sec-websocket-key"];
 		const hash = crypto.createHash("sha1");
-		hash.update(requestNonce + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
+		hash.update(`${requestNonce}258EAFA5-E914-47DA-95CA-C5AB0DC85B11`);
 		const responseNonce = hash.digest("base64");
 
 		const responseHeaders = [
-			`HTTP/1.1 101 Switching Protocols`,
-			`Upgrade: websocket`,
-			`Connection: Upgrade`,
+			"HTTP/1.1 101 Switching Protocols",
+			"Upgrade: websocket",
+			"Connection: Upgrade",
 			`Sec-WebSocket-Accept: ${responseNonce}`,
 		];
 
 		// See https://tools.ietf.org/html/rfc7692#page-12
 		let permessageDeflate = false;
 		if (
-			!skipWebSocketFrames &&
-			!this._environmentService.args["disable-websocket-compression"] &&
+			!(
+				skipWebSocketFrames ||
+				this._environmentService.args["disable-websocket-compression"]
+			) &&
 			req.headers["sec-websocket-extensions"]
 		) {
 			const websocketExtensionOptions = Array.isArray(
@@ -328,7 +330,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 				if (/\b(permessage-deflate)\b/.test(websocketExtensionOption)) {
 					permessageDeflate = true;
 					responseHeaders.push(
-						`Sec-WebSocket-Extensions: permessage-deflate`,
+						"Sec-WebSocket-Extensions: permessage-deflate",
 					);
 					break;
 				}
@@ -339,14 +341,14 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 				) {
 					permessageDeflate = true;
 					responseHeaders.push(
-						`Sec-WebSocket-Extensions: x-webkit-deflate-frame`,
+						"Sec-WebSocket-Extensions: x-webkit-deflate-frame",
 					);
 					break;
 				}
 			}
 		}
 
-		socket.write(responseHeaders.join("\r\n") + "\r\n\r\n");
+		socket.write(`${responseHeaders.join("\r\n")}\r\n\r\n`);
 
 		// Never timeout this socket due to inactivity!
 		socket.setTimeout(0);
@@ -381,7 +383,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 	}
 
 	public handleServerError(err: Error): void {
-		this._logService.error(`Error occurred in server`);
+		this._logService.error("Error occurred in server");
 		this._logService.error(err);
 	}
 
@@ -396,7 +398,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 		} else {
 			_socket = socket.socket.socket;
 		}
-		return _socket.remoteAddress || `<unknown>`;
+		return _socket.remoteAddress || "<unknown>";
 	}
 
 	private async _rejectWebSocketConnection(
@@ -456,10 +458,10 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 				try {
 					msg1 = <HandshakeMessage>JSON.parse(raw.toString());
 				} catch (err) {
-					return rejectWebSocketConnection(`Malformed first message`);
+					return rejectWebSocketConnection("Malformed first message");
 				}
 				if (msg1.type !== "auth") {
-					return rejectWebSocketConnection(`Invalid first message`);
+					return rejectWebSocketConnection("Invalid first message");
 				}
 
 				if (
@@ -468,7 +470,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 					!this._connectionToken.validate(msg1.auth)
 				) {
 					return rejectWebSocketConnection(
-						`Unauthorized client refused: auth mismatch`,
+						"Unauthorized client refused: auth mismatch",
 					);
 				}
 
@@ -501,15 +503,15 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 					msg2 = <HandshakeMessage>JSON.parse(raw.toString());
 				} catch (err) {
 					return rejectWebSocketConnection(
-						`Malformed second message`,
+						"Malformed second message",
 					);
 				}
 				if (msg2.type !== "connectionType") {
-					return rejectWebSocketConnection(`Invalid second message`);
+					return rejectWebSocketConnection("Invalid second message");
 				}
 				if (typeof msg2.signedData !== "string") {
 					return rejectWebSocketConnection(
-						`Invalid second message field type`,
+						"Invalid second message field type",
 					);
 				}
 
@@ -519,7 +521,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 					// Running in the built version where commits are defined
 					if (rendererCommit !== myCommit) {
 						return rejectWebSocketConnection(
-							`Client refused: version mismatch`,
+							"Client refused: version mismatch",
 						);
 					}
 				}
@@ -539,7 +541,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 				if (!valid) {
 					if (this._environmentService.isBuilt) {
 						return rejectWebSocketConnection(
-							`Unauthorized client refused`,
+							"Unauthorized client refused",
 						);
 					} else {
 						this._logService.error(
@@ -603,14 +605,14 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 						return this._rejectWebSocketConnection(
 							logPrefix,
 							protocol,
-							`Unknown reconnection token (seen before)`,
+							"Unknown reconnection token (seen before)",
 						);
 					} else {
 						// This is an unknown reconnection token
 						return this._rejectWebSocketConnection(
 							logPrefix,
 							protocol,
-							`Unknown reconnection token (never seen)`,
+							"Unknown reconnection token (never seen)",
 						);
 					}
 				}
@@ -630,7 +632,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 					return this._rejectWebSocketConnection(
 						logPrefix,
 						protocol,
-						`Duplicate reconnection token`,
+						"Duplicate reconnection token",
 					);
 				}
 
@@ -680,14 +682,14 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 						return this._rejectWebSocketConnection(
 							logPrefix,
 							protocol,
-							`Unknown reconnection token (seen before)`,
+							"Unknown reconnection token (seen before)",
 						);
 					} else {
 						// This is an unknown reconnection token
 						return this._rejectWebSocketConnection(
 							logPrefix,
 							protocol,
-							`Unknown reconnection token (never seen)`,
+							"Unknown reconnection token (never seen)",
 						);
 					}
 				}
@@ -716,7 +718,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 					return this._rejectWebSocketConnection(
 						logPrefix,
 						protocol,
-						`Duplicate reconnection token`,
+						"Duplicate reconnection token",
 					);
 				}
 
@@ -754,7 +756,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 			return this._rejectWebSocketConnection(
 				logPrefix,
 				protocol,
-				`Unknown initial data received`,
+				"Unknown initial data received",
 			);
 		}
 	}
@@ -975,7 +977,7 @@ export async function createServer(
 		// so logging SIGPIPE to the console will cause an infinite async loop
 		if (!didLogAboutSIGPIPE) {
 			didLogAboutSIGPIPE = true;
-			onUnexpectedError(new Error(`Unexpected SIGPIPE`));
+			onUnexpectedError(new Error("Unexpected SIGPIPE"));
 		}
 	});
 
@@ -1221,7 +1223,7 @@ export async function createServer(
 			vscodeServerCodeLoadedTime - vscodeServerStartTime
 		}\n`;
 		output += `Initialized time: ${currentTime - vscodeServerStartTime}\n`;
-		output += `\n`;
+		output += "\n";
 		console.log(output);
 	}
 	return remoteExtensionHostAgentServer;
@@ -1234,7 +1236,7 @@ class WebEndpointOriginChecker {
 		const webEndpointUrlTemplate = productService.webEndpointUrlTemplate;
 		const commit = productService.commit;
 		const quality = productService.quality;
-		if (!webEndpointUrlTemplate || !commit || !quality) {
+		if (!(webEndpointUrlTemplate && commit && quality)) {
 			return new WebEndpointOriginChecker(null);
 		}
 

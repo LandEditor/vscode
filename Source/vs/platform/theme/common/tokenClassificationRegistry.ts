@@ -154,18 +154,22 @@ export namespace TokenStyle {
 			let match;
 			while ((match = expression.exec(fontStyle))) {
 				switch (match[0]) {
-					case "bold":
+					case "bold": {
 						bold = true;
 						break;
-					case "italic":
+					}
+					case "italic": {
 						italic = true;
 						break;
-					case "underline":
+					}
+					case "underline": {
 						underline = true;
 						break;
-					case "strikethrough":
+					}
+					case "strikethrough": {
 						strikethrough = true;
 						break;
+					}
 				}
 			}
 		}
@@ -245,8 +249,7 @@ export namespace SemanticTokenRule {
 	}
 	export function is(r: any): r is SemanticTokenRule {
 		return (
-			r &&
-			r.selector &&
+			r?.selector &&
 			typeof r.selector.id === "string" &&
 			TokenStyle.is(r.style)
 		);
@@ -519,7 +522,7 @@ class TokenClassificationRegistry implements ITokenClassificationRegistry {
 		}
 
 		const num = this.currentModifierBit;
-		this.currentModifierBit = this.currentModifierBit * 2;
+		this.currentModifierBit *= 2;
 		const tokenStyleContribution: TokenTypeOrModifierContribution = {
 			num,
 			id,
@@ -573,7 +576,7 @@ class TokenClassificationRegistry implements ITokenClassificationRegistry {
 				return score + selector.modifiers.length * 100;
 			},
 			id: `${[selector.type, ...selector.modifiers.sort()].join(".")}${
-				selector.language !== undefined ? ":" + selector.language : ""
+				selector.language !== undefined ? `:${selector.language}` : ""
 			}`,
 		};
 	}
@@ -628,7 +631,7 @@ class TokenClassificationRegistry implements ITokenClassificationRegistry {
 		if (!hierarchy) {
 			this.typeHierarchy[typeId] = hierarchy = [typeId];
 			let type = this.tokenTypeById[typeId];
-			while (type && type.superType) {
+			while (type?.superType) {
 				hierarchy.push(type.superType);
 				type = this.tokenTypeById[type.superType];
 			}

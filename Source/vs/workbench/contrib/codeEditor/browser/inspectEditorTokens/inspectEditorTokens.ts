@@ -209,10 +209,9 @@ interface IDecodedMetadata {
 
 function renderTokenText(tokenText: string): string {
 	if (tokenText.length > 40) {
-		tokenText =
-			tokenText.substr(0, 20) +
-			"…" +
-			tokenText.substr(tokenText.length - 20);
+		tokenText = `${tokenText.substr(0, 20)}…${tokenText.substr(
+			tokenText.length - 20,
+		)}`;
 	}
 	let result = "";
 	for (
@@ -222,13 +221,15 @@ function renderTokenText(tokenText: string): string {
 	) {
 		const charCode = tokenText.charCodeAt(charIndex);
 		switch (charCode) {
-			case CharCode.Tab:
+			case CharCode.Tab: {
 				result += "\u2192"; // &rarr;
 				break;
+			}
 
-			case CharCode.Space:
+			case CharCode.Space: {
 				result += "\u00B7"; // &middot;
 				break;
+			}
 
 			default:
 				result += String.fromCharCode(charCode);
@@ -376,7 +377,7 @@ class InspectEditorTokensWidget extends Disposable implements IContentWidget {
 		const semanticTokenInfo =
 			semanticTokens &&
 			this._getSemanticTokenAtPosition(semanticTokens, position);
-		if (!textMateTokenInfo && !semanticTokenInfo) {
+		if (!(textMateTokenInfo || semanticTokenInfo)) {
 			dom.reset(
 				this._domNode,
 				"No grammar or semantic tokens available.",
@@ -692,8 +693,8 @@ class InspectEditorTokensWidget extends Disposable implements IContentWidget {
 		const foreground = render("foreground");
 		const background = render("background");
 		if (foreground && background) {
-			const backgroundColor = Color.fromHex(background),
-				foregroundColor = Color.fromHex(foreground);
+			const backgroundColor = Color.fromHex(background);
+			const foregroundColor = Color.fromHex(foreground);
 			if (backgroundColor.isOpaque()) {
 				elements.push(
 					$(
@@ -737,9 +738,9 @@ class InspectEditorTokensWidget extends Disposable implements IContentWidget {
 			key: "bold" | "italic" | "underline" | "strikethrough",
 		) {
 			let label: HTMLElement | string | undefined;
-			if (semantic && semantic[key]) {
+			if (semantic?.[key]) {
 				label = $("span.tiw-metadata-semantic", undefined, key);
-			} else if (tm && tm[key]) {
+			} else if (tm?.[key]) {
 				label = key;
 			}
 			if (label) {
@@ -863,7 +864,7 @@ class InspectEditorTokensWidget extends Disposable implements IContentWidget {
 	}
 
 	private isSemanticTokens(token: any): token is SemanticTokens {
-		return token && token.data;
+		return token?.data;
 	}
 
 	private async _computeSemanticTokens(
@@ -925,14 +926,14 @@ class InspectEditorTokensWidget extends Disposable implements IContentWidget {
 		const defaultLanguage = this._model.getLanguageId();
 		let lastLine = 0;
 		let lastCharacter = 0;
-		const posLine = pos.lineNumber - 1,
-			posCharacter = pos.column - 1; // to 0-based position
+		const posLine = pos.lineNumber - 1;
+		const posCharacter = pos.column - 1; // to 0-based position
 		for (let i = 0; i < tokenData.length; i += 5) {
-			const lineDelta = tokenData[i],
-				charDelta = tokenData[i + 1],
-				len = tokenData[i + 2],
-				typeIdx = tokenData[i + 3],
-				modSet = tokenData[i + 4];
+			const lineDelta = tokenData[i];
+			const charDelta = tokenData[i + 1];
+			const len = tokenData[i + 2];
+			const typeIdx = tokenData[i + 3];
+			const modSet = tokenData[i + 4];
 			const line = lastLine + lineDelta; // 0-based
 			const character =
 				lineDelta === 0 ? lastCharacter + charDelta : charDelta; // 0-based
@@ -957,7 +958,7 @@ class InspectEditorTokensWidget extends Disposable implements IContentWidget {
 							semanticTokens.legend.tokenModifiers[modifierIndex],
 						);
 					}
-					modifierSet = modifierSet >> 1;
+					modifierSet >>= 1;
 				}
 				if (modifierSet > 0) {
 					modifiers.push("not in legend (ignored)");

@@ -411,10 +411,10 @@ export class UserDataAutoSyncService
 			this.telemetryService.publicLog2<
 				{ code: string; service: string },
 				AutoSyncErrorClassification
-			>(`autosync/error`, {
+			>("autosync/error", {
 				code: userDataSyncError.code,
 				service:
-					this.userDataSyncStoreManagementService.userDataSyncStore!.url.toString(),
+					this.userDataSyncStoreManagementService.userDataSyncStore?.url.toString(),
 			});
 		}
 
@@ -636,7 +636,7 @@ export class UserDataAutoSyncService
 				? this.getSyncTriggerDelayTime() *
 				  1 *
 				  Math.min(
-						Math.pow(2, this.successiveFailures),
+						2 ** this.successiveFailures,
 						60,
 				  ) /* Delay exponentially until max 1 minute */
 				: this.getSyncTriggerDelayTime(),
@@ -750,9 +750,11 @@ class AutoSync extends Disposable {
 		return (
 			!!current &&
 			!!previous &&
-			(!isEqual(current.defaultUrl, previous.defaultUrl) ||
-				!isEqual(current.insidersUrl, previous.insidersUrl) ||
-				!isEqual(current.stableUrl, previous.stableUrl))
+			!(
+				isEqual(current.defaultUrl, previous.defaultUrl) &&
+				isEqual(current.insidersUrl, previous.insidersUrl) &&
+				isEqual(current.stableUrl, previous.stableUrl)
+			)
 		);
 	}
 

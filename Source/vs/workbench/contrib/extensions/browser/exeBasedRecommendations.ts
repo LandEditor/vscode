@@ -18,18 +18,18 @@ export class ExeBasedRecommendations extends ExtensionRecommendations {
 	private _otherTips: IExecutableBasedExtensionTip[] = [];
 	private _importantTips: IExecutableBasedExtensionTip[] = [];
 
-	get otherRecommendations(): ReadonlyArray<ExtensionRecommendation> {
+	get otherRecommendations(): readonly ExtensionRecommendation[] {
 		return this._otherTips.map((tip) =>
 			this.toExtensionRecommendation(tip),
 		);
 	}
-	get importantRecommendations(): ReadonlyArray<ExtensionRecommendation> {
+	get importantRecommendations(): readonly ExtensionRecommendation[] {
 		return this._importantTips.map((tip) =>
 			this.toExtensionRecommendation(tip),
 		);
 	}
 
-	get recommendations(): ReadonlyArray<ExtensionRecommendation> {
+	get recommendations(): readonly ExtensionRecommendation[] {
 		return [...this.importantRecommendations, ...this.otherRecommendations];
 	}
 

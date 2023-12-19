@@ -696,7 +696,7 @@ export class EditorWorkerClient
 
 	// foreign host request
 	public fhr(method: string, args: any[]): Promise<any> {
-		throw new Error(`Not implemented!`);
+		throw new Error("Not implemented!");
 	}
 
 	private _getOrCreateWorker(): IWorkerClient<EditorSimpleWorker> {

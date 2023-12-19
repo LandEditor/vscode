@@ -62,7 +62,7 @@ export class ResultCodeEditorView extends CodeEditorView {
 		});
 
 		this.htmlElements.gutterDiv.style.width = "5px";
-		this.htmlElements.root.classList.add(`result`);
+		this.htmlElements.root.classList.add("result");
 
 		this._register(
 			autorunWithStore((reader, store) => {
@@ -241,8 +241,10 @@ export class ResultCodeEditorView extends CodeEditorView {
 				blockClassNames.push("result");
 
 				if (
-					!modifiedBaseRange.isConflicting &&
-					!showNonConflictingChanges &&
+					!(
+						modifiedBaseRange.isConflicting ||
+						showNonConflictingChanges
+					) &&
 					isHandled
 				) {
 					continue;
@@ -290,7 +292,7 @@ export class ResultCodeEditorView extends CodeEditorView {
 						result.push({
 							range,
 							options: {
-								className: `merge-editor-diff result`,
+								className: "merge-editor-diff result",
 								description: "Merge Editor",
 								isWholeLine: true,
 							},
@@ -302,7 +304,7 @@ export class ResultCodeEditorView extends CodeEditorView {
 							result.push({
 								range: d.outputRange,
 								options: {
-									className: `merge-editor-diff-word result`,
+									className: "merge-editor-diff-word result",
 									description: "Merge Editor",
 								},
 							});

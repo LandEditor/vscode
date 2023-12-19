@@ -171,7 +171,7 @@ export class SelectionBasedVariableResolver implements VariableResolver {
 				lineNumber: this._selection.positionLineNumber,
 				column: this._selection.positionColumn,
 			});
-			return (info && info.word) || undefined;
+			return info?.word || undefined;
 		} else if (name === "TM_LINE_INDEX") {
 			return String(this._selection.positionLineNumber - 1);
 		} else if (name === "TM_LINE_NUMBER") {
@@ -377,10 +377,10 @@ export class TimeBasedVariableResolver implements VariableResolver {
 			const rawTimeOffset = this._date.getTimezoneOffset();
 			const sign = rawTimeOffset > 0 ? "-" : "+";
 			const hours = Math.trunc(Math.abs(rawTimeOffset / 60));
-			const hoursString = hours < 10 ? "0" + hours : hours;
+			const hoursString = hours < 10 ? `0${hours}` : hours;
 			const minutes = Math.abs(rawTimeOffset) - hours * 60;
-			const minutesString = minutes < 10 ? "0" + minutes : minutes;
-			return sign + hoursString + ":" + minutesString;
+			const minutesString = minutes < 10 ? `0${minutes}` : minutes;
+			return `${sign + hoursString}:${minutesString}`;
 		}
 
 		return undefined;

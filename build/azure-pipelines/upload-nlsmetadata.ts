@@ -54,7 +54,7 @@ function main(): Promise<void> {
 
 						// Handle extensions and follow the same structure as the Core nls file.
 						switch (file.basename) {
-							case "package.nls.json":
+							case "package.nls.json": {
 								// put package.nls.json content in Core NlsMetadata format
 								// language packs use the key "package" to specify that
 								// translations are for the package.json file
@@ -70,10 +70,12 @@ function main(): Promise<void> {
 									},
 								};
 								break;
+							}
 
-							case "nls.metadata.header.json":
+							case "nls.metadata.header.json": {
 								parsedJson = { header: parsedJson };
 								break;
+							}
 
 							case "nls.metadata.json": {
 								// put nls.metadata.json content in Core NlsMetadata format
@@ -107,8 +109,7 @@ function main(): Promise<void> {
 							"utf-8",
 						);
 						const manifestJson = JSON.parse(manifest);
-						const key =
-							manifestJson.publisher + "." + manifestJson.name;
+						const key = `${manifestJson.publisher}.${manifestJson.name}`;
 						return { [key]: parsedJson };
 					},
 				}),
@@ -130,7 +131,7 @@ function main(): Promise<void> {
 					account: process.env.AZURE_STORAGE_ACCOUNT,
 					credential,
 					container: "nlsmetadata",
-					prefix: commit + "/",
+					prefix: `${commit}/`,
 					contentSettings: {
 						contentEncoding: "gzip",
 						cacheControl: "max-age=31536000, public",

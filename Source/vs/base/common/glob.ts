@@ -77,26 +77,31 @@ export function splitGlobAware(pattern: string, splitChar: string): string[] {
 	let curVal = "";
 	for (const char of pattern) {
 		switch (char) {
-			case splitChar:
-				if (!inBraces && !inBrackets) {
+			case splitChar: {
+				if (!(inBraces || inBrackets)) {
 					segments.push(curVal);
 					curVal = "";
 
 					continue;
 				}
 				break;
-			case "{":
+			}
+			case "{": {
 				inBraces = true;
 				break;
-			case "}":
+			}
+			case "}": {
 				inBraces = false;
 				break;
-			case "[":
+			}
+			case "[": {
 				inBrackets = true;
 				break;
-			case "]":
+			}
+			case "]": {
 				inBrackets = false;
 				break;
+			}
 		}
 
 		curVal += char;
@@ -192,13 +197,15 @@ function parseRegExp(pattern: string): string {
 					}
 
 					switch (char) {
-						case "{":
+						case "{": {
 							inBraces = true;
 							continue;
+						}
 
-						case "[":
+						case "[": {
 							inBrackets = true;
 							continue;
+						}
 
 						case "}": {
 							const choices = splitGlobAware(braceVal, ",");
@@ -217,7 +224,7 @@ function parseRegExp(pattern: string): string {
 						}
 
 						case "]": {
-							regEx += "[" + bracketVal + "]";
+							regEx += `[${bracketVal}]`;
 
 							inBrackets = false;
 							bracketVal = "";
@@ -225,13 +232,15 @@ function parseRegExp(pattern: string): string {
 							break;
 						}
 
-						case "?":
+						case "?": {
 							regEx += NO_PATH_REGEX; // 1 ? matches any single character except path separator (/ and \)
 							continue;
+						}
 
-						case "*":
+						case "*": {
 							regEx += starsToRegExp(1);
 							continue;
+						}
 
 						default:
 							regEx += escapeRegExpCharacters(char);
@@ -855,7 +864,7 @@ function parseExpressionPattern(
 				name?: string,
 				hasSibling?: (name: string) => boolean | Promise<boolean>,
 			) => {
-				if (!hasSibling || !parsedPattern(path, basename)) {
+				if (!(hasSibling && parsedPattern(path, basename))) {
 					return null;
 				}
 

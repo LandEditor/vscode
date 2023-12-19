@@ -108,9 +108,11 @@ export class CommentThreadBody<
 					if (
 						(event.equals(KeyCode.UpArrow) ||
 							event.equals(KeyCode.DownArrow)) &&
-						(!this._focusedComment ||
-							!this._commentElements[this._focusedComment]
-								.isEditing)
+						!(
+							this._focusedComment &&
+							this._commentElements[this._focusedComment]
+								.isEditing
+						)
 					) {
 						const moveFocusWithinBounds = (
 							change: number,
@@ -207,7 +209,7 @@ export class CommentThreadBody<
 			(commentNode) =>
 				commentNode.comment.uniqueIdInThread === commentUniqueId,
 		);
-		if (matchedNode && matchedNode.length) {
+		if (matchedNode?.length) {
 			const commentThreadCoords = dom.getDomNodePagePosition(
 				this._commentElements[0].domNode,
 			);
@@ -264,7 +266,7 @@ export class CommentThreadBody<
 		const newCommentNodeList: CommentNode<T>[] = [];
 		const newCommentsInEditMode: CommentNode<T>[] = [];
 		for (let i = newCommentsLen - 1; i >= 0; i--) {
-			const currentComment = commentThread.comments![i];
+			const currentComment = commentThread.comments?.[i];
 			const oldCommentNode = this._commentElements.filter(
 				(commentNode) =>
 					commentNode.comment.uniqueIdInThread ===
@@ -363,7 +365,7 @@ export class CommentThreadBody<
 			this._commentThread,
 			comment,
 			this._pendingEdits
-				? this._pendingEdits[comment.uniqueIdInThread!]
+				? comment.uniqueIdInThread?.[comment.uniqueIdInThread]
 				: undefined,
 			this.owner,
 			this.parentResourceUri,

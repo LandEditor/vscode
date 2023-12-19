@@ -27,7 +27,7 @@ async function downloadExtensionDetails(
 	extension: IExtensionDefinition,
 ): Promise<void> {
 	const extensionLabel = `${extension.name}@${extension.version}`;
-	const repository = url.parse(extension.repo).path!.substr(1);
+	const repository = url.parse(extension.repo).path?.substr(1);
 	const repositoryContentBaseUrl = `https://${
 		token ? `${token}@` : ""
 	}${contentBasePath}/${repository}/v${extension.version}`;
@@ -79,8 +79,10 @@ async function downloadExtensionDetails(
 		// throw new Error(`The "package.json" file could not be found for the built-in extension - ${extensionLabel}`);
 	}
 	if (
-		!results.find((r) => r.fileName === "package-lock.json")?.body &&
-		!results.find((r) => r.fileName === "yarn.lock")?.body
+		!(
+			results.find((r) => r.fileName === "package-lock.json")?.body ||
+			results.find((r) => r.fileName === "yarn.lock")?.body
+		)
 	) {
 		// throw new Error(`The "package-lock.json"/"yarn.lock" could not be found for the built-in extension - ${extensionLabel}`);
 	}

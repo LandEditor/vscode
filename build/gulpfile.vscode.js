@@ -246,11 +246,11 @@ function packageTask(
 		]);
 
 		const src = gulp
-			.src(out + "/**", { base: "." })
+			.src(`${out}/**`, { base: "." })
 			.pipe(
 				rename((path) => {
 					path.dirname = path.dirname.replace(
-						new RegExp("^" + out),
+						new RegExp(`^${out}`),
 						"out",
 					);
 				}),
@@ -285,7 +285,7 @@ function packageTask(
 		const quality = product.quality;
 
 		if (quality && quality !== "stable") {
-			version += "-" + quality;
+			version += `-${quality}`;
 		}
 
 		const name = product.nameShort;
@@ -464,7 +464,7 @@ function packageTask(
 					.pipe(replace("@@APPNAME@@", product.applicationName))
 					.pipe(
 						rename((f) => {
-							f.basename = "_" + product.applicationName;
+							f.basename = `_${product.applicationName}`;
 						}),
 					),
 			);
@@ -527,7 +527,7 @@ function packageTask(
 					})
 					.pipe(
 						rename(
-							product.nameShort + ".VisualElementsManifest.xml",
+							`${product.nameShort}.VisualElementsManifest.xml`,
 						),
 					),
 			);
@@ -554,7 +554,7 @@ function packageTask(
 					.src("resources/linux/bin/code.sh", { base: "." })
 					.pipe(replace("@@PRODNAME@@", product.nameLong))
 					.pipe(replace("@@APPNAME@@", product.applicationName))
-					.pipe(rename("bin/" + product.applicationName)),
+					.pipe(rename(`bin/${product.applicationName}`)),
 			);
 		}
 
@@ -616,7 +616,7 @@ const BUILD_TARGETS = [
 	{ platform: "linux", arch: "arm64" },
 ];
 BUILD_TARGETS.forEach((buildTarget) => {
-	const dashed = (str) => (str ? `-${str}` : ``);
+	const dashed = (str) => (str ? `-${str}` : "");
 	const platform = buildTarget.platform;
 	const arch = buildTarget.arch;
 	const opts = buildTarget.opts;
@@ -742,7 +742,7 @@ gulp.task("vscode-translations-import", () => {
 						innoSetupConfig[language.id],
 					),
 				)
-				.pipe(vfs.dest(`./build/win32/i18n`));
+				.pipe(vfs.dest("./build/win32/i18n"));
 		}),
 	);
 });

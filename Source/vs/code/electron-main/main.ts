@@ -580,8 +580,10 @@ class CodeMain {
 			let startupWarningDialogHandle: NodeJS.Timeout | undefined =
 				undefined;
 			if (
-				!environmentMainService.args.wait &&
-				!environmentMainService.args.status
+				!(
+					environmentMainService.args.wait ||
+					environmentMainService.args.status
+				)
 			) {
 				startupWarningDialogHandle = setTimeout(() => {
 					this.showStartupWarningDialog(

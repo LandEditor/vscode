@@ -213,7 +213,7 @@ export class AdapterManager extends Disposable implements IAdapterManager {
 	private updateDebugAdapterSchema(): void {
 		// update the schema to include all attributes, snippets and types from extensions.
 		const items = <IJSONSchema>(
-			launchSchema.properties!["configurations"].items
+			launchSchema.properties?.["configurations"].items
 		);
 		const taskSchema = TaskDefinitionRegistry.getJsonSchema();
 		const definitions: IJSONSchemaMap = {
@@ -314,7 +314,7 @@ export class AdapterManager extends Disposable implements IAdapterManager {
 	hasEnabledDebuggers(): boolean {
 		for (const [type] of this.debugAdapterFactories) {
 			const dbg = this.getDebugger(type);
-			if (dbg && dbg.enabled) {
+			if (dbg?.enabled) {
 				return true;
 			}
 		}
@@ -438,7 +438,7 @@ export class AdapterManager extends Disposable implements IAdapterManager {
 
 	getEnabledDebugger(type: string): Debugger | undefined {
 		const adapter = this.getDebugger(type);
-		return adapter && adapter.enabled ? adapter : undefined;
+		return adapter?.enabled ? adapter : undefined;
 	}
 
 	someDebuggerInterestedInLanguage(languageId: string): boolean {
@@ -594,7 +594,7 @@ export class AdapterManager extends Disposable implements IAdapterManager {
 				placeHolder,
 			})
 			.then((picked) => {
-				if (picked && picked.debugger) {
+				if (picked?.debugger) {
 					return picked.debugger;
 				}
 				if (picked) {
@@ -613,7 +613,7 @@ export class AdapterManager extends Disposable implements IAdapterManager {
 
 			const status = this.extensionService.getExtensionsStatus();
 			for (const id in status) {
-				if (!!status[id].activationTimes) {
+				if (status[id].activationTimes) {
 					this.earlyActivatedExtensions.add(id);
 				}
 			}

@@ -94,11 +94,11 @@ class DomCharWidthReader {
 				parent = italicDomNode;
 			}
 
-			parent!.appendChild(document.createElement("br"));
+			parent?.appendChild(document.createElement("br"));
 
 			const testElement = document.createElement("span");
 			DomCharWidthReader._render(testElement, request);
-			parent!.appendChild(testElement);
+			parent?.appendChild(testElement);
 
 			testElements.push(testElement);
 		}
@@ -131,7 +131,7 @@ class DomCharWidthReader {
 	private _readFromDomElements(): void {
 		for (let i = 0, len = this._requests.length; i < len; i++) {
 			const request = this._requests[i];
-			const testElement = this._testElements![i];
+			const testElement = this._testElements?.[i];
 
 			request.fulfill(testElement.offsetWidth / 256);
 		}

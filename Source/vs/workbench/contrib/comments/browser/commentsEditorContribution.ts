@@ -369,8 +369,10 @@ export function getActiveEditor(
 	}
 
 	if (
-		!isCodeEditor(activeTextEditorControl) ||
-		!activeTextEditorControl.hasModel()
+		!(
+			isCodeEditor(activeTextEditorControl) &&
+			activeTextEditorControl.hasModel()
+		)
 	) {
 		return null;
 	}

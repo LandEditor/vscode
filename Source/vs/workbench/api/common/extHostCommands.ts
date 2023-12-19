@@ -335,7 +335,7 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 			throw new (class CommandError extends Error {
 				readonly id = id;
 				readonly source =
-					command!.extension?.displayName ?? command!.extension?.name;
+					command?.extension?.displayName ?? command?.extension?.name;
 				constructor() {
 					super(toErrorMessage(err));
 				}
@@ -501,7 +501,7 @@ export class CommandsConverter
 			// API command with return-value can be converted inplace
 			result.id = apiCommand.internalId;
 			result.arguments = apiCommand.args.map((arg, i) =>
-				arg.convert(command.arguments && command.arguments[i]),
+				arg.convert(command.arguments?.[i]),
 			);
 		} else if (isNonEmptyArray(command.arguments)) {
 			// we have a contributed command with arguments. that

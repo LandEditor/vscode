@@ -93,7 +93,7 @@ export class TerminalLink extends DisposableStore implements ILink {
 		);
 		this._hoverListeners.add(
 			dom.addDisposableListener(d, "keyup", (e) => {
-				if (!e.repeat && !this._isModifierDown(e)) {
+				if (!(e.repeat || this._isModifierDown(e))) {
 					this._disableDecorations();
 				}
 			}),

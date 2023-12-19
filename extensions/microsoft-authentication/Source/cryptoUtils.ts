@@ -10,7 +10,7 @@ export function randomUUID() {
 }
 
 function dec2hex(dec: number): string {
-	return ("0" + dec.toString(16)).slice(-2);
+	return `0${dec.toString(16)}`.slice(-2);
 }
 
 export function generateCodeVerifier(): string {

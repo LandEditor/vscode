@@ -325,24 +325,24 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane {
 				)
 			);
 
-			if (this._rootElement && this._widget.value!.getDomNode()) {
+			if (this._rootElement && this._widget.value?.getDomNode()) {
 				this._rootElement.setAttribute(
 					"aria-flowto",
-					this._widget.value!.getDomNode().id || "",
+					this._widget.value?.getDomNode().id || "",
 				);
 				DOM.setParentFlowTo(
-					this._widget.value!.getDomNode(),
+					this._widget.value?.getDomNode(),
 					this._rootElement,
 				);
 			}
 
 			this._widgetDisposableStore.add(
-				this._widget.value!.onDidChangeModel(() =>
+				this._widget.value?.onDidChangeModel(() =>
 					this._onDidChangeModel.fire(),
 				),
 			);
 			this._widgetDisposableStore.add(
-				this._widget.value!.onDidChangeActiveCell(() =>
+				this._widget.value?.onDidChangeActiveCell(() =>
 					this._onDidChangeSelection.fire({
 						reason: EditorPaneSelectionChangeReason.USER,
 					}),
@@ -350,7 +350,7 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane {
 			);
 
 			if (this._pagePosition) {
-				this._widget.value!.layout(
+				this._widget.value?.layout(
 					this._pagePosition.dimension,
 					this._rootElement,
 					this._pagePosition.position,
@@ -521,30 +521,30 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane {
 				options?.viewState ?? this._loadNotebookEditorViewState(input);
 
 			// We might be moving the notebook widget between groups, and these services are tied to the group
-			this._widget.value!.setParentContextKeyService(
+			this._widget.value?.setParentContextKeyService(
 				this._contextKeyService,
 			);
-			this._widget.value!.setEditorProgressService(
+			this._widget.value?.setEditorProgressService(
 				this._editorProgressService,
 			);
 
-			await this._widget.value!.setModel(model.notebook, viewState, perf);
+			await this._widget.value?.setModel(model.notebook, viewState, perf);
 			const isReadOnly = !!input.isReadonly();
-			await this._widget.value!.setOptions({ ...options, isReadOnly });
+			await this._widget.value?.setOptions({ ...options, isReadOnly });
 			this._widgetDisposableStore.add(
-				this._widget.value!.onDidFocusWidget(() =>
+				this._widget.value?.onDidFocusWidget(() =>
 					this._onDidFocusWidget.fire(),
 				),
 			);
 			this._widgetDisposableStore.add(
-				this._widget.value!.onDidBlurWidget(() =>
+				this._widget.value?.onDidBlurWidget(() =>
 					this._onDidBlurWidget.fire(),
 				),
 			);
 
 			this._widgetDisposableStore.add(
 				this._editorGroupService.createEditorDropTarget(
-					this._widget.value!.getDomNode(),
+					this._widget.value?.getDomNode(),
 					{
 						containsGroup: (group) => this.group?.id === group.id,
 					},
@@ -884,8 +884,7 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane {
 		this._pagePosition = { dimension, position };
 
 		if (
-			!this._widget.value ||
-			!(this._input instanceof NotebookEditorInput)
+			!(this._widget.value && this._input instanceof NotebookEditorInput)
 		) {
 			return;
 		}

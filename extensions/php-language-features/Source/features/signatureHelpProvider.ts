@@ -103,7 +103,7 @@ export default class PHPSignatureHelpProvider implements SignatureHelpProvider {
 		const entry =
 			phpGlobalFunctions.globalfunctions[ident] ||
 			phpGlobals.keywords[ident];
-		if (!entry || !entry.signature) {
+		if (!entry?.signature) {
 			return null;
 		}
 		const paramsString = entry.signature.substring(
@@ -141,38 +141,46 @@ export default class PHPSignatureHelpProvider implements SignatureHelpProvider {
 		while (iterator.hasNext()) {
 			const ch = iterator.next();
 			switch (ch) {
-				case _LParent:
+				case _LParent: {
 					parentNesting--;
 					if (parentNesting < 0) {
 						return paramCount;
 					}
 					break;
-				case _RParent:
+				}
+				case _RParent: {
 					parentNesting++;
 					break;
-				case _LCurly:
+				}
+				case _LCurly: {
 					curlyNesting--;
 					break;
-				case _RCurly:
+				}
+				case _RCurly: {
 					curlyNesting++;
 					break;
-				case _LBracket:
+				}
+				case _LBracket: {
 					bracketNesting--;
 					break;
-				case _RBracket:
+				}
+				case _RBracket: {
 					bracketNesting++;
 					break;
+				}
 				case _DQuote:
-				case _Quote:
+				case _Quote: {
 					while (iterator.hasNext() && ch !== iterator.next()) {
 						// find the closing quote or double quote
 					}
 					break;
-				case _Comma:
-					if (!parentNesting && !bracketNesting && !curlyNesting) {
+				}
+				case _Comma: {
+					if (!(parentNesting || bracketNesting || curlyNesting)) {
 						paramCount++;
 					}
 					break;
+				}
 			}
 		}
 		return -1;

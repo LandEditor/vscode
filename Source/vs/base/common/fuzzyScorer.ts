@@ -34,7 +34,7 @@ export function scoreFuzzy(
 	queryLower: string,
 	allowNonContiguousMatches: boolean,
 ): FuzzyScore {
-	if (!target || !query) {
+	if (!(target && query)) {
 		return NO_SCORE; // return early if target or query are undefined
 	}
 
@@ -480,7 +480,7 @@ export function scoreItemFuzzy<T>(
 	accessor: IItemAccessor<T>,
 	cache: FuzzyScorerCache,
 ): IItemScore {
-	if (!item || !query.normalized) {
+	if (!(item && query.normalized)) {
 		return NO_ITEM_SCORE; // we need an item and query to score on at least
 	}
 
@@ -526,7 +526,7 @@ function doScoreItemFuzzy(
 	query: IPreparedQuery,
 	allowNonContiguousMatches: boolean,
 ): IItemScore {
-	const preferLabelMatches = !path || !query.containsPathSeparator;
+	const preferLabelMatches = !(path && query.containsPathSeparator);
 
 	// Treat identity matches on full path highest
 	if (
@@ -663,7 +663,7 @@ function doScoreItemFuzzySingle(
 	// Finally compute description + label scores if we have a description
 	if (description) {
 		let descriptionPrefix = description;
-		if (!!path) {
+		if (path) {
 			descriptionPrefix = `${description}${sep}`; // assume this is a file path
 		}
 
@@ -757,15 +757,12 @@ function normalizeMatches(matches: IMatch[]): IMatch[] {
 		// if we have no current match or the matches
 		// do not overlap, we take it as is and remember
 		// it for future merging
-		if (!currentMatch || !matchOverlaps(currentMatch, match)) {
-			currentMatch = match;
-			normalizedMatches.push(match);
-		}
-
-		// otherwise we merge the matches
-		else {
+		if (currentMatch && matchOverlaps(currentMatch, match)) {
 			currentMatch.start = Math.min(currentMatch.start, match.start);
 			currentMatch.end = Math.max(currentMatch.end, match.end);
+		} else {
+			currentMatch = match;
+			normalizedMatches.push(match);
 		}
 	}
 
@@ -900,21 +897,21 @@ function computeLabelAndDescriptionMatchDistance<T>(
 	let matchEnd = -1;
 
 	// If we have description matches, the start is first of description match
-	if (score.descriptionMatch && score.descriptionMatch.length) {
+	if (score.descriptionMatch?.length) {
 		matchStart = score.descriptionMatch[0].start;
 	}
 
 	// Otherwise, the start is the first label match
-	else if (score.labelMatch && score.labelMatch.length) {
+	else if (score.labelMatch?.length) {
 		matchStart = score.labelMatch[0].start;
 	}
 
 	// If we have label match, the end is the last label match
 	// If we had a description match, we add the length of the description
 	// as offset to the end to indicate this.
-	if (score.labelMatch && score.labelMatch.length) {
+	if (score.labelMatch?.length) {
 		matchEnd = score.labelMatch[score.labelMatch.length - 1].end;
-		if (score.descriptionMatch && score.descriptionMatch.length) {
+		if (score.descriptionMatch?.length) {
 			const itemDescription = accessor.getItemDescription(item);
 			if (itemDescription) {
 				matchEnd += itemDescription.length;
@@ -923,7 +920,7 @@ function computeLabelAndDescriptionMatchDistance<T>(
 	}
 
 	// If we have just a description match, the end is the last description match
-	else if (score.descriptionMatch && score.descriptionMatch.length) {
+	else if (score.descriptionMatch?.length) {
 		matchEnd =
 			score.descriptionMatch[score.descriptionMatch.length - 1].end;
 	}
@@ -935,18 +932,15 @@ function compareByMatchLength(
 	matchesA?: IMatch[],
 	matchesB?: IMatch[],
 ): number {
-	if (
-		(!matchesA && !matchesB) ||
-		((!matchesA || !matchesA.length) && (!matchesB || !matchesB.length))
-	) {
+	if (!(matchesA || matchesB) || !(matchesA?.length || matchesB?.length)) {
 		return 0; // make sure to not cause bad comparing when matches are not provided
 	}
 
-	if (!matchesB || !matchesB.length) {
+	if (!matchesB?.length) {
 		return -1;
 	}
 
-	if (!matchesA || !matchesA.length) {
+	if (!matchesA?.length) {
 		return 1;
 	}
 

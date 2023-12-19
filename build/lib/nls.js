@@ -9,7 +9,7 @@ const event_stream_1 = require("event-stream");
 const File = require("vinyl");
 const sm = require("source-map");
 const path = require("path");
-var CollectStepResult;
+let CollectStepResult;
 ((CollectStepResult) => {
 	CollectStepResult[(CollectStepResult["Yes"] = 0)] = "Yes";
 	CollectStepResult[(CollectStepResult["YesAndRecurse"] = 1)] =
@@ -45,8 +45,8 @@ function clone(object) {
 	return result;
 }
 function template(lines) {
-	let indent = "",
-		wrap = "";
+	let indent = "";
+	let wrap = "";
 	if (lines.length > 1) {
 		indent = "\t";
 		wrap = "\n";
@@ -103,7 +103,7 @@ function isImportNode(ts, node) {
 		node.kind === ts.SyntaxKind.ImportEqualsDeclaration
 	);
 }
-var _nls;
+let _nls;
 (function (_nls) {
 	function fileFrom(file, contents, path = file.path) {
 		return new File({
@@ -219,8 +219,7 @@ var _nls;
 			.filter(
 				(d) =>
 					!!(
-						d.importClause &&
-						d.importClause.namedBindings &&
+						d.importClause?.namedBindings &&
 						d.importClause.namedBindings.kind ===
 							ts.SyntaxKind.NamespaceImport
 					),
@@ -256,8 +255,7 @@ var _nls;
 			.filter(
 				(d) =>
 					!!(
-						d.importClause &&
-						d.importClause.namedBindings &&
+						d.importClause?.namedBindings &&
 						d.importClause.namedBindings.kind ===
 							ts.SyntaxKind.NamedImports
 					),
@@ -485,7 +483,7 @@ var _nls;
 		// build patches
 		const localizePatches = lazy(localizeCalls)
 			.map((lc) => [
-				{ range: lc.keySpan, content: "" + i++ },
+				{ range: lc.keySpan, content: `${i++}` },
 				{ range: lc.valueSpan, content: "null" },
 			])
 			.flatten()
@@ -499,7 +497,7 @@ var _nls;
 				return { span: { start, end }, content: c.content };
 			});
 		const localize2Patches = lazy(localize2Calls)
-			.map((lc) => [{ range: lc.keySpan, content: "" + i++ }])
+			.map((lc) => [{ range: lc.keySpan, content: `${i++}` }])
 			.flatten()
 			.map((c) => {
 				const start = lcFrom(

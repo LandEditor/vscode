@@ -96,7 +96,7 @@ definitions["taskRunnerConfiguration"]["properties"]!["isShellCommand"] =
 	Objects.deepClone(shellCommand);
 
 Object.getOwnPropertyNames(definitions).forEach((key) => {
-	const newKey = key + "1";
+	const newKey = `${key}1`;
 	definitions[newKey] = definitions[key];
 	delete definitions[key];
 });
@@ -106,7 +106,7 @@ function fixReferences(literal: any) {
 		literal.forEach(fixReferences);
 	} else if (typeof literal === "object") {
 		if (literal["$ref"]) {
-			literal["$ref"] = literal["$ref"] + "1";
+			literal["$ref"] += "1";
 		}
 		Object.getOwnPropertyNames(literal).forEach((property) => {
 			const value = literal[property];
@@ -121,11 +121,12 @@ fixReferences(schema);
 ProblemMatcherRegistry.onReady().then(() => {
 	try {
 		const matcherIds = ProblemMatcherRegistry.keys().map(
-			(key) => "$" + key,
+			(key) => `$${key}`,
 		);
-		definitions.problemMatcherType1.oneOf![0].enum = matcherIds;
-		(definitions.problemMatcherType1.oneOf![2].items as IJSONSchema)
-			.anyOf![1].enum = matcherIds;
+		definitions.problemMatcherType1.oneOf?.[0].enum = matcherIds;
+		(
+			definitions.problemMatcherType1.oneOf?.[2].items as IJSONSchema
+		).anyOf?.[1].enum = matcherIds;
 	} catch (err) {
 		console.log("Installing problem matcher ids failed");
 	}

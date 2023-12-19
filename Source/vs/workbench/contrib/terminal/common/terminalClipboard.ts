@@ -78,7 +78,7 @@ export async function shouldPasteTerminalText(
 	}
 
 	if (textForLines.length > displayItemsCount) {
-		detail += `\n…`;
+		detail += "\n…";
 	}
 
 	const { confirmed, checkboxChecked } = await dialogService.confirm({

@@ -199,8 +199,8 @@ export const openNewSearchEditor = async (
 
 	const seedSearchStringFromSelection =
 		_args.location === "new" ||
-		configurationService.getValue<IEditorOptions>("editor").find!
-			.seedSearchStringFromSelection;
+		configurationService.getValue<IEditorOptions>("editor").find
+			?.seedSearchStringFromSelection;
 	const args: OpenSearchEditorArgs = {
 		query: seedSearchStringFromSelection ? selected : undefined,
 	};

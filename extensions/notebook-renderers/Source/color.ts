@@ -437,7 +437,7 @@ export enum CharCode {
 }
 
 function roundFloat(number: number, decimalPoints: number): number {
-	const decimal = Math.pow(10, decimalPoints);
+	const decimal = 10 ** decimalPoints;
 	return Math.round(number * decimal) / decimal;
 }
 
@@ -533,15 +533,18 @@ export class HSLA {
 			s = Math.min(l <= 0.5 ? chroma / (2 * l) : chroma / (2 - 2 * l), 1);
 
 			switch (max) {
-				case r:
+				case r: {
 					h = (g - b) / chroma + (g < b ? 6 : 0);
 					break;
-				case g:
+				}
+				case g: {
 					h = (b - r) / chroma + 2;
 					break;
-				case b:
+				}
+				case b: {
 					h = (r - g) / chroma + 4;
 					break;
+				}
 			}
 
 			h *= 60;
@@ -578,7 +581,9 @@ export class HSLA {
 	static toRGBA(hsla: HSLA): RGBA {
 		const h = hsla.h / 360;
 		const { s, l, a } = hsla;
-		let r: number, g: number, b: number;
+		let r: number;
+		let g: number;
+		let b: number;
 
 		if (s === 0) {
 			r = g = b = l; // achromatic
@@ -756,7 +761,7 @@ export class Color {
 
 	private static _relativeLuminanceForComponent(color: number): number {
 		const c = color / 255;
-		return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+		return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
 	}
 
 	/**
@@ -986,7 +991,7 @@ export namespace Color {
 
 			function _toTwoDigitHex(n: number): string {
 				const r = n.toString(16);
-				return r.length !== 2 ? "0" + r : r;
+				return r.length !== 2 ? `0${r}` : r;
 			}
 
 			/**

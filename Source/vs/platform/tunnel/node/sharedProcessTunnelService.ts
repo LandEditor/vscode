@@ -113,7 +113,7 @@ export class SharedProcessTunnelService
 				`[SharedProcessTunnelService] Could not create a tunnel to ${tunnelRemoteHost}:${tunnelRemotePort} (remote).`,
 			);
 			tunnelData.dispose();
-			throw new Error(`Could not create tunnel`);
+			throw new Error("Could not create tunnel");
 		}
 
 		if (this._disposedTunnels.has(id)) {

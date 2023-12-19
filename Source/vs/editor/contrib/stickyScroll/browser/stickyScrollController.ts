@@ -478,9 +478,11 @@ export class StickyScrollController
 				([mouseEvent, _keyboardEvent]) => {
 					const mouseTarget = getMouseEventTarget(mouseEvent);
 					if (
-						!mouseTarget ||
-						!mouseEvent.hasTriggerModifier ||
-						!this._editor.hasModel()
+						!(
+							mouseTarget &&
+							mouseEvent.hasTriggerModifier &&
+							this._editor.hasModel()
+						)
 					) {
 						sessionStore.clear();
 						return;
@@ -573,8 +575,10 @@ export class StickyScrollController
 					return;
 				}
 				if (
-					!this._editor.hasModel() ||
-					!this._stickyRangeProjectedOnEditor
+					!(
+						this._editor.hasModel() &&
+						this._stickyRangeProjectedOnEditor
+					)
 				) {
 					return;
 				}

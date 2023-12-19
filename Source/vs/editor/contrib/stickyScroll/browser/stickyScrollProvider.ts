@@ -150,8 +150,7 @@ export class StickyLineCandidateProvider
 
 	private async updateStickyModel(token: CancellationToken): Promise<void> {
 		if (
-			!this._editor.hasModel() ||
-			!this._stickyModelProvider ||
+			!(this._editor.hasModel() && this._stickyModelProvider) ||
 			this._editor.getModel().isTooLargeForTokenization()
 		) {
 			this._model = null;

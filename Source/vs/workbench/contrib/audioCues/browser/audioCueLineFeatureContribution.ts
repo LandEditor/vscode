@@ -100,7 +100,7 @@ export class AudioCueLineFeatureContribution
 						? activeTextEditorControl
 						: undefined;
 
-				return editor && editor.hasModel()
+				return editor?.hasModel()
 					? { editor, model: editor.getModel() }
 					: undefined;
 			}

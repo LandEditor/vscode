@@ -87,9 +87,9 @@ function fromLocal(extensionPath, forWeb, disableMangle) {
 		: fromLocalNormal(extensionPath);
 	if (isWebPacked) {
 		input = updateExtensionPackageJSON(input, (data) => {
-			delete data.scripts;
-			delete data.dependencies;
-			delete data.devDependencies;
+			data.scripts = undefined;
+			data.dependencies = undefined;
+			data.devDependencies = undefined;
 			if (data.main) {
 				data.main = data.main.replace("/out/", "/dist/");
 			}
@@ -356,10 +356,10 @@ const webBuiltInExtensions = productJson.webBuiltInExtensions || [];
  * Loosely based on `getExtensionKind` from `src/vs/workbench/services/extensions/common/extensionManifestPropertiesService.ts`
  */
 function isWebExtension(manifest) {
-	if (Boolean(manifest.browser)) {
+	if (manifest.browser) {
 		return true;
 	}
-	if (Boolean(manifest.main)) {
+	if (manifest.main) {
 		return false;
 	}
 	// neither browser nor main
@@ -457,9 +457,9 @@ function packageMarketplaceExtensionsStream(forWeb) {
 					extension,
 				).pipe(rename((p) => (p.dirname = `extensions/${p.dirname}`)));
 				return updateExtensionPackageJSON(src, (data) => {
-					delete data.scripts;
-					delete data.dependencies;
-					delete data.devDependencies;
+					data.scripts = undefined;
+					data.dependencies = undefined;
+					data.devDependencies = undefined;
 					return data;
 				});
 			}),

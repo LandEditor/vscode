@@ -359,7 +359,7 @@ class FormatOnSaveParticipant implements ITextFileSaveParticipant {
 					},
 					"Running '{0}' Formatter ([configure]({1})).",
 					provider.displayName ||
-						(provider.extensionId && provider.extensionId.value) ||
+						provider.extensionId?.value ||
 						"???",
 					"command:workbench.action.openSettings?%5B%22editor.formatOnSave%22%5D",
 				),
@@ -492,7 +492,7 @@ class CodeActionOnSaveParticipant implements ITextFileSaveParticipant {
 		const excludedActions = Array.isArray(setting)
 			? []
 			: Object.keys(setting)
-					.filter((x) => setting[x] === "never" || false)
+					.filter((x) => setting[x] === "never")
 					.map((x) => new CodeActionKind(x));
 
 		progress.report({ message: localize("codeaction", "Quick Fixes") });

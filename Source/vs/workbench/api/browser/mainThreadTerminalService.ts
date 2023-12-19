@@ -522,7 +522,7 @@ export class MainThreadTerminalService
 					const commandLineMatch = terminalCommand.command.match(
 						options.commandLineMatcher,
 					);
-					if (!commandLineMatch || !lines) {
+					if (!(commandLineMatch && lines)) {
 						return;
 					}
 					const outputMatcher = options.outputMatcher;

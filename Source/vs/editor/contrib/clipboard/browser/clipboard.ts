@@ -337,17 +337,13 @@ function registerExecCommandImpl(
 			const focusedEditor = accessor
 				.get(ICodeEditorService)
 				.getFocusedCodeEditor();
-			if (focusedEditor && focusedEditor.hasTextFocus()) {
+			if (focusedEditor?.hasTextFocus()) {
 				// Do not execute if there is no selection and empty selection clipboard is off
 				const emptySelectionClipboard = focusedEditor.getOption(
 					EditorOption.emptySelectionClipboard,
 				);
 				const selection = focusedEditor.getSelection();
-				if (
-					selection &&
-					selection.isEmpty() &&
-					!emptySelectionClipboard
-				) {
+				if (selection?.isEmpty() && !emptySelectionClipboard) {
 					return true;
 				}
 				focusedEditor
@@ -384,7 +380,7 @@ if (PasteAction) {
 
 			// Only if editor text focus (i.e. not if editor has widget focus).
 			const focusedEditor = codeEditorService.getFocusedCodeEditor();
-			if (focusedEditor && focusedEditor.hasTextFocus()) {
+			if (focusedEditor?.hasTextFocus()) {
 				const result = focusedEditor
 					.getContainerDomNode()
 					.ownerDocument.execCommand("paste");

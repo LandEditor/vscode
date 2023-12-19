@@ -29,10 +29,10 @@ function printTime(ms: number): string {
 		h = Math.floor(m / 60);
 		m -= h * 60;
 	}
-	const _h = h ? `${h}h` : ``;
-	const _m = m ? `${m}m` : ``;
-	const _s = s ? `${s}s` : ``;
-	const _ms = ms ? `${ms}ms` : ``;
+	const _h = h ? `${h}h` : "";
+	const _m = m ? `${m}m` : "";
+	const _s = s ? `${s}s` : "";
+	const _ms = ms ? `${ms}ms` : "";
 	return `${_h}${_m}${_s}${_ms}`;
 }
 
@@ -81,7 +81,7 @@ export class ManagementConnection {
 
 		this.protocol.onDidDispose(() => {
 			this._log(
-				`The client has disconnected gracefully, so the connection will be disposed.`,
+				"The client has disconnected gracefully, so the connection will be disposed.",
 			);
 			this._cleanResources();
 		});
@@ -95,7 +95,7 @@ export class ManagementConnection {
 			this._disconnectRunner1.schedule();
 		});
 
-		this._log(`New connection established.`);
+		this._log("New connection established.");
 	}
 
 	private _log(_str: string): void {
@@ -144,7 +144,7 @@ export class ManagementConnection {
 		initialDataChunk: VSBuffer,
 	): void {
 		this._remoteAddress = remoteAddress;
-		this._log(`The client has reconnected.`);
+		this._log("The client has reconnected.");
 		this._disconnectRunner1.cancel();
 		this._disconnectRunner2.cancel();
 		this.protocol.beginAcceptReconnection(socket, initialDataChunk);

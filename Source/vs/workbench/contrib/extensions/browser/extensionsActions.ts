@@ -381,10 +381,12 @@ export class PromptExtensionInstallFailureAction extends Action {
 			return undefined;
 		}
 		if (
-			!this.extensionManagementServerService
-				.localExtensionManagementServer &&
-			!this.extensionManagementServerService
-				.remoteExtensionManagementServer
+			!(
+				this.extensionManagementServerService
+					.localExtensionManagementServer ||
+				this.extensionManagementServerService
+					.remoteExtensionManagementServer
+			)
 		) {
 			return undefined;
 		}
@@ -756,11 +758,8 @@ export class InstallAction extends ExtensionAction {
 			);
 			if (
 				runningExtension &&
-				!(
-					runningExtension.activationEvents &&
-					runningExtension.activationEvents.some((activationEent) =>
-						activationEent.startsWith("onLanguage"),
-					)
+				!runningExtension.activationEvents?.some((activationEent) =>
+					activationEent.startsWith("onLanguage"),
 				)
 			) {
 				const action = await this.getThemeAction(extension);
@@ -914,7 +913,7 @@ export class InstallDropdownAction extends ActionWithDropDownAction {
 		@IExtensionsWorkbenchService
 		extensionsWorkbenchService: IExtensionsWorkbenchService,
 	) {
-		super(`extensions.installActions`, "", [
+		super("extensions.installActions", "", [
 			[
 				instantiationService.createInstance(InstallAction, {
 					installPreReleaseVersion:
@@ -997,7 +996,7 @@ export abstract class InstallInOtherServerAction extends ExtensionAction {
 					(e) =>
 						areSameExtensions(
 							e.identifier,
-							this.extension!.identifier,
+							this.extension?.identifier,
 						) && e.server === this.server,
 				)[0];
 			if (extensionInOtherServer) {
@@ -1022,9 +1021,7 @@ export abstract class InstallInOtherServerAction extends ExtensionAction {
 	protected canInstall(): boolean {
 		// Disable if extension is not installed or not an user extension
 		if (
-			!this.extension ||
-			!this.server ||
-			!this.extension.local ||
+			!(this.extension && this.server && this.extension.local) ||
 			this.extension.state !== ExtensionState.Installed ||
 			this.extension.type !== ExtensionType.User ||
 			this.extension.enablementState ===
@@ -1144,7 +1141,7 @@ export class RemoteInstallAction extends InstallInOtherServerAction {
 		extensionManifestPropertiesService: IExtensionManifestPropertiesService,
 	) {
 		super(
-			`extensions.remoteinstall`,
+			"extensions.remoteinstall",
 			extensionManagementServerService.remoteExtensionManagementServer,
 			canInstallAnyWhere,
 			extensionsWorkbenchService,
@@ -1181,7 +1178,7 @@ export class LocalInstallAction extends InstallInOtherServerAction {
 		extensionManifestPropertiesService: IExtensionManifestPropertiesService,
 	) {
 		super(
-			`extensions.localinstall`,
+			"extensions.localinstall",
 			extensionManagementServerService.localExtensionManagementServer,
 			false,
 			extensionsWorkbenchService,
@@ -1205,7 +1202,7 @@ export class WebInstallAction extends InstallInOtherServerAction {
 		extensionManifestPropertiesService: IExtensionManifestPropertiesService,
 	) {
 		super(
-			`extensions.webInstall`,
+			"extensions.webInstall",
 			extensionManagementServerService.webExtensionManagementServer,
 			false,
 			extensionsWorkbenchService,
@@ -1293,7 +1290,7 @@ export class UninstallAction extends ExtensionAction {
 					localize(
 						"uninstallExtensionComplete",
 						"Please reload Visual Studio Code to complete the uninstallation of the extension {0}.",
-						this.extension!.displayName,
+						this.extension?.displayName,
 					),
 				);
 			});
@@ -1352,7 +1349,7 @@ export class UpdateAction extends AbstractUpdateAction {
 		protected readonly instantiationService: IInstantiationService
 	) {
 		super(
-			`extensions.update`,
+			"extensions.update",
 			localize("update", "Update"),
 			extensionsWorkbenchService
 		);
@@ -1775,7 +1772,7 @@ async function getContextMenuActionsGroups(
 			]);
 			cksOverlay.push([
 				"isApplicationScopedExtension",
-				extension.local && extension.local.isApplicationScoped,
+				extension.local?.isApplicationScoped,
 			]);
 			cksOverlay.push([
 				"extensionHasConfiguration",
@@ -1944,10 +1941,10 @@ export class ManageExtensionAction extends ExtensionDropDownAction {
 			this.contextKeyService,
 			this.instantiationService,
 		);
-		const themeActions: IAction[] = [],
-			installActions: IAction[] = [],
-			updateActions: IAction[] = [],
-			otherActionGroups: IAction[][] = [];
+		const themeActions: IAction[] = [];
+		const installActions: IAction[] = [];
+		const updateActions: IAction[] = [];
+		const otherActionGroups: IAction[][] = [];
 		for (const [group, actions] of contextMenuActionsGroups) {
 			if (group === INSTALL_ACTIONS_GROUP) {
 				installActions.push(
@@ -2146,9 +2143,7 @@ export class SwitchToPreReleaseVersionAction extends ExtensionAction {
 			icon ? "" : SwitchToPreReleaseVersionAction.TITLE.value,
 			`${
 				icon
-					? ExtensionAction.ICON_ACTION_CLASS +
-						" " +
-						ThemeIcon.asClassName(preReleaseIcon)
+					? `${ExtensionAction.ICON_ACTION_CLASS} ${ThemeIcon.asClassName(preReleaseIcon)}`
 					: ExtensionAction.LABEL_ACTION_CLASS
 			} hide-when-disabled switch-to-prerelease`,
 			true
@@ -2200,9 +2195,7 @@ export class SwitchToReleasedVersionAction extends ExtensionAction {
 			icon ? "" : SwitchToReleasedVersionAction.TITLE.value,
 			`${
 				icon
-					? ExtensionAction.ICON_ACTION_CLASS +
-						" " +
-						ThemeIcon.asClassName(preReleaseIcon)
+					? `${ExtensionAction.ICON_ACTION_CLASS} ${ThemeIcon.asClassName(preReleaseIcon)}`
 					: ExtensionAction.LABEL_ACTION_CLASS
 			} hide-when-disabled switch-to-released`
 		);
@@ -2275,11 +2268,11 @@ export class InstallAnotherVersionAction extends ExtensionAction {
 			return;
 		}
 		const targetPlatform =
-			await this.extension!.server!.extensionManagementService.getTargetPlatform();
+			await this.extension?.server?.extensionManagementService.getTargetPlatform();
 		const allVersions =
 			await this.extensionGalleryService.getAllCompatibleVersions(
-				this.extension!.gallery!,
-				this.extension!.local!.preRelease,
+				this.extension?.gallery!,
+				this.extension?.local?.preRelease,
 				targetPlatform,
 			);
 		if (!allVersions.length) {
@@ -2301,7 +2294,7 @@ export class InstallAnotherVersionAction extends ExtensionAction {
 						? ` (${localize("pre-release", "pre-release")})`
 						: ""
 				}${
-					v.version === this.extension!.version
+					v.version === this.extension?.version
 						? ` (${localize("current", "current")})`
 						: ""
 				}`,
@@ -2319,7 +2312,7 @@ export class InstallAnotherVersionAction extends ExtensionAction {
 			matchOnDetail: true,
 		});
 		if (pick) {
-			if (this.extension!.version === pick.id) {
+			if (this.extension?.version === pick.id) {
 				return;
 			}
 			try {
@@ -2329,7 +2322,7 @@ export class InstallAnotherVersionAction extends ExtensionAction {
 							? await this.extensionsWorkbenchService.getExtensions(
 									[
 										{
-											id: this.extension!.identifier.id,
+											id: this.extension?.identifier.id,
 											preRelease:
 												pick.isPreReleaseVersion,
 										},
@@ -2353,7 +2346,7 @@ export class InstallAnotherVersionAction extends ExtensionAction {
 					.createInstance(
 						PromptExtensionInstallFailureAction,
 						this.extension!,
-						pick.latest ? this.extension!.latestVersion : pick.id,
+						pick.latest ? this.extension?.latestVersion : pick.id,
 						InstallOperation.Install,
 						error,
 					)
@@ -2391,7 +2384,7 @@ export class EnableForWorkspaceAction extends ExtensionAction {
 
 	update(): void {
 		this.enabled = false;
-		if (this.extension && this.extension.local) {
+		if (this.extension?.local) {
 			this.enabled =
 				this.extension.state === ExtensionState.Installed &&
 				!this.extensionEnablementService.isEnabled(
@@ -2438,7 +2431,7 @@ export class EnableGloballyAction extends ExtensionAction {
 
 	update(): void {
 		this.enabled = false;
-		if (this.extension && this.extension.local) {
+		if (this.extension?.local) {
 			this.enabled =
 				this.extension.state === ExtensionState.Installed &&
 				this.extensionEnablementService.isDisabledGlobally(
@@ -2495,13 +2488,12 @@ export class DisableForWorkspaceAction extends ExtensionAction {
 	update(): void {
 		this.enabled = false;
 		if (
-			this.extension &&
-			this.extension.local &&
+			this.extension?.local &&
 			this.extensionService.extensions.some(
 				(e) =>
 					areSameExtensions(
 						{ id: e.identifier.value, uuid: e.uuid },
-						this.extension!.identifier,
+						this.extension?.identifier,
 					) &&
 					this.workspaceContextService.getWorkbenchState() !==
 						WorkbenchState.EMPTY,
@@ -2559,12 +2551,11 @@ export class DisableGloballyAction extends ExtensionAction {
 	update(): void {
 		this.enabled = false;
 		if (
-			this.extension &&
-			this.extension.local &&
+			this.extension?.local &&
 			this.extensionService.extensions.some((e) =>
 				areSameExtensions(
 					{ id: e.identifier.value, uuid: e.uuid },
-					this.extension!.identifier,
+					this.extension?.identifier,
 				),
 			)
 		) {
@@ -2653,10 +2644,7 @@ export class ReloadAction extends ExtensionAction {
 			return;
 		}
 		if (
-			this.extension.local &&
-			this.extension.local.manifest &&
-			this.extension.local.manifest.contributes &&
-			this.extension.local.manifest.contributes.localizations &&
+			this.extension.local?.manifest?.contributes?.localizations &&
 			this.extension.local.manifest.contributes.localizations.length > 0
 		) {
 			return;
@@ -3407,10 +3395,7 @@ export abstract class AbstractConfigureRecommendedExtensionsAction extends Actio
 			const workspaceRecommendations = <IExtensionsConfigContent>(
 				json.parse(content.value.toString())["extensions"]
 			);
-			if (
-				!workspaceRecommendations ||
-				!workspaceRecommendations.recommendations
-			) {
+			if (!workspaceRecommendations?.recommendations) {
 				return this.jsonEditingService
 					.write(
 						workspaceConfigurationFile,
@@ -3437,15 +3422,13 @@ export abstract class AbstractConfigureRecommendedExtensionsAction extends Actio
 	): Promise<ITextEditorSelection | undefined> {
 		const tree = json.parseTree(content);
 		const node = json.findNodeAtLocation(tree, path);
-		if (node && node.parent && node.parent.children) {
+		if (node?.parent?.children) {
 			const recommendationsValueNode = node.parent.children[1];
-			const lastExtensionNode =
-				recommendationsValueNode.children &&
-				recommendationsValueNode.children.length
-					? recommendationsValueNode.children[
-							recommendationsValueNode.children.length - 1
-					  ]
-					: null;
+			const lastExtensionNode = recommendationsValueNode.children?.length
+				? recommendationsValueNode.children[
+						recommendationsValueNode.children.length - 1
+				  ]
+				: null;
 			const offset = lastExtensionNode
 				? lastExtensionNode.offset + lastExtensionNode.length
 				: recommendationsValueNode.offset + 1;
@@ -3687,33 +3670,33 @@ export class ExtensionStatusLabelAction
 				(e) =>
 					areSameExtensions(
 						{ id: e.identifier.value, uuid: e.uuid },
-						this.extension!.identifier,
+						this.extension?.identifier,
 					),
 			)[0];
-			if (this.extension!.local) {
+			if (this.extension?.local) {
 				if (
 					runningExtension &&
-					this.extension!.version === runningExtension.version
+					this.extension?.version === runningExtension.version
 				) {
 					return true;
 				}
 				return this.extensionService.canAddExtension(
-					toExtensionDescription(this.extension!.local),
+					toExtensionDescription(this.extension?.local),
 				);
 			}
 			return false;
 		};
 		const canRemoveExtension = () => {
-			if (this.extension!.local) {
+			if (this.extension?.local) {
 				if (
 					this.extensionService.extensions.every(
 						(e) =>
 							!(
 								areSameExtensions(
 									{ id: e.identifier.value, uuid: e.uuid },
-									this.extension!.identifier,
+									this.extension?.identifier,
 								) &&
-								this.extension!.server ===
+								this.extension?.server ===
 									this.extensionManagementServerService.getExtensionManagementServer(
 										toExtension(e),
 									)
@@ -3723,7 +3706,7 @@ export class ExtensionStatusLabelAction
 					return true;
 				}
 				return this.extensionService.canRemoveExtension(
-					toExtensionDescription(this.extension!.local),
+					toExtensionDescription(this.extension?.local),
 				);
 			}
 			return false;
@@ -4031,8 +4014,8 @@ export class ExtensionStatusAction extends ExtensionAction {
 				const targetPlatform = await (this
 					.extensionManagementServerService
 					.localExtensionManagementServer
-					? this.extensionManagementServerService.localExtensionManagementServer!.extensionManagementService.getTargetPlatform()
-					: this.extensionManagementServerService.remoteExtensionManagementServer!.extensionManagementService.getTargetPlatform());
+					? this.extensionManagementServerService.localExtensionManagementServer?.extensionManagementService.getTargetPlatform()
+					: this.extensionManagementServerService.remoteExtensionManagementServer?.extensionManagementService.getTargetPlatform());
 				const message = new MarkdownString(
 					`${localize(
 						"incompatible platform",
@@ -4077,8 +4060,7 @@ export class ExtensionStatusAction extends ExtensionAction {
 		}
 
 		if (
-			!this.extension.local ||
-			!this.extension.server ||
+			!(this.extension.local && this.extension.server) ||
 			this.extension.state !== ExtensionState.Installed
 		) {
 			return;
@@ -4256,8 +4238,8 @@ export class ExtensionStatusAction extends ExtensionAction {
 					(e) =>
 						areSameExtensions(
 							e.identifier,
-							this.extension!.identifier,
-						) && e.server !== this.extension!.server,
+							this.extension?.identifier,
+						) && e.server !== this.extension?.server,
 				)
 			) {
 				let message;
@@ -4364,8 +4346,8 @@ export class ExtensionStatusAction extends ExtensionAction {
 						(e) =>
 							areSameExtensions(
 								e.identifier,
-								this.extension!.identifier,
-							) && e.server !== this.extension!.server,
+								this.extension?.identifier,
+							) && e.server !== this.extension?.server,
 					)
 				) {
 					const message =
@@ -4396,7 +4378,7 @@ export class ExtensionStatusAction extends ExtensionAction {
 				(e) =>
 					areSameExtensions(
 						{ id: e.identifier.value, uuid: e.uuid },
-						this.extension!.identifier,
+						this.extension?.identifier,
 					),
 			)[0];
 			const runningExtensionServer = runningExtension
@@ -4414,7 +4396,7 @@ export class ExtensionStatusAction extends ExtensionAction {
 			) {
 				if (
 					this.extensionManifestPropertiesService.prefersExecuteOnWorkspace(
-						this.extension.local!.manifest,
+						this.extension.local?.manifest,
 					)
 				) {
 					this.updateStatus(
@@ -4446,7 +4428,7 @@ export class ExtensionStatusAction extends ExtensionAction {
 			) {
 				if (
 					this.extensionManifestPropertiesService.prefersExecuteOnUI(
-						this.extension.local!.manifest,
+						this.extension.local?.manifest,
 					)
 				) {
 					this.updateStatus(
@@ -4478,7 +4460,7 @@ export class ExtensionStatusAction extends ExtensionAction {
 			) {
 				if (
 					this.extensionManifestPropertiesService.canExecuteOnWeb(
-						this.extension.local!.manifest,
+						this.extension.local?.manifest,
 					)
 				) {
 					this.updateStatus(
@@ -4527,7 +4509,7 @@ export class ExtensionStatusAction extends ExtensionAction {
 		const isRunning = this.extensionService.extensions.some((e) =>
 			areSameExtensions(
 				{ id: e.identifier.value, uuid: e.uuid },
-				this.extension!.identifier,
+				this.extension?.identifier,
 			),
 		);
 
@@ -4594,7 +4576,7 @@ export class ExtensionStatusAction extends ExtensionAction {
 			}
 		}
 
-		if (!isEnabled && !isRunning) {
+		if (!(isEnabled || isRunning)) {
 			if (
 				this.extension.enablementState ===
 				EnablementState.DisabledGlobally
@@ -4847,7 +4829,7 @@ export class InstallSpecificVersionOfExtensionAction extends Action {
 				matchOnDetail: true,
 			},
 		);
-		if (extensionPick && extensionPick.extension) {
+		if (extensionPick?.extension) {
 			const action = this.instantiationService.createInstance(
 				InstallAnotherVersionAction,
 			);
@@ -4989,7 +4971,7 @@ export abstract class AbstractInstallExtensionsInServerAction extends Action {
 	}
 
 	private async onDidAccept(
-		selectedItems: ReadonlyArray<IExtensionPickItem>,
+		selectedItems: readonly IExtensionPickItem[],
 	): Promise<void> {
 		if (selectedItems.length) {
 			const localExtensionsToInstall = selectedItems
@@ -5052,9 +5034,8 @@ export class InstallLocalExtensionsInRemoteAction extends AbstractInstallExtensi
 
 	override get label(): string {
 		if (
-			this.extensionManagementServerService &&
 			this.extensionManagementServerService
-				.remoteExtensionManagementServer
+				?.remoteExtensionManagementServer
 		) {
 			return localize(
 				"select and install local extensions",
@@ -5071,7 +5052,7 @@ export class InstallLocalExtensionsInRemoteAction extends AbstractInstallExtensi
 			"install local extensions title",
 			"Install Local Extensions in '{0}'",
 			this.extensionManagementServerService
-				.remoteExtensionManagementServer!.label,
+				.remoteExtensionManagementServer?.label,
 		);
 	}
 
@@ -5092,7 +5073,7 @@ export class InstallLocalExtensionsInRemoteAction extends AbstractInstallExtensi
 		const galleryExtensions: IGalleryExtension[] = [];
 		const vsixs: URI[] = [];
 		const targetPlatform =
-			await this.extensionManagementServerService.remoteExtensionManagementServer!.extensionManagementService.getTargetPlatform();
+			await this.extensionManagementServerService.remoteExtensionManagementServer?.extensionManagementService.getTargetPlatform();
 		await Promises.settled(
 			localExtensionsToInstall.map(async (extension) => {
 				if (this.extensionGalleryService.isEnabled()) {
@@ -5114,7 +5095,7 @@ export class InstallLocalExtensionsInRemoteAction extends AbstractInstallExtensi
 					}
 				}
 				const vsix =
-					await this.extensionManagementServerService.localExtensionManagementServer!.extensionManagementService.zip(
+					await this.extensionManagementServerService.localExtensionManagementServer?.extensionManagementService.zip(
 						extension.local!,
 					);
 				vsixs.push(vsix);
@@ -5123,7 +5104,7 @@ export class InstallLocalExtensionsInRemoteAction extends AbstractInstallExtensi
 
 		await Promises.settled(
 			galleryExtensions.map((gallery) =>
-				this.extensionManagementServerService.remoteExtensionManagementServer!.extensionManagementService.installFromGallery(
+				this.extensionManagementServerService.remoteExtensionManagementServer?.extensionManagementService.installFromGallery(
 					gallery,
 				),
 			),
@@ -5131,7 +5112,7 @@ export class InstallLocalExtensionsInRemoteAction extends AbstractInstallExtensi
 		try {
 			await Promises.settled(
 				vsixs.map((vsix) =>
-					this.extensionManagementServerService.remoteExtensionManagementServer!.extensionManagementService.install(
+					this.extensionManagementServerService.remoteExtensionManagementServer?.extensionManagementService.install(
 						vsix,
 					),
 				),
@@ -5207,7 +5188,7 @@ export class InstallRemoteExtensionsInLocalAction extends AbstractInstallExtensi
 		const galleryExtensions: IGalleryExtension[] = [];
 		const vsixs: URI[] = [];
 		const targetPlatform =
-			await this.extensionManagementServerService.localExtensionManagementServer!.extensionManagementService.getTargetPlatform();
+			await this.extensionManagementServerService.localExtensionManagementServer?.extensionManagementService.getTargetPlatform();
 		await Promises.settled(
 			extensions.map(async (extension) => {
 				if (this.extensionGalleryService.isEnabled()) {
@@ -5229,7 +5210,7 @@ export class InstallRemoteExtensionsInLocalAction extends AbstractInstallExtensi
 					}
 				}
 				const vsix =
-					await this.extensionManagementServerService.remoteExtensionManagementServer!.extensionManagementService.zip(
+					await this.extensionManagementServerService.remoteExtensionManagementServer?.extensionManagementService.zip(
 						extension.local!,
 					);
 				vsixs.push(vsix);
@@ -5238,7 +5219,7 @@ export class InstallRemoteExtensionsInLocalAction extends AbstractInstallExtensi
 
 		await Promises.settled(
 			galleryExtensions.map((gallery) =>
-				this.extensionManagementServerService.localExtensionManagementServer!.extensionManagementService.installFromGallery(
+				this.extensionManagementServerService.localExtensionManagementServer?.extensionManagementService.installFromGallery(
 					gallery,
 				),
 			),
@@ -5246,7 +5227,7 @@ export class InstallRemoteExtensionsInLocalAction extends AbstractInstallExtensi
 		try {
 			await Promises.settled(
 				vsixs.map((vsix) =>
-					this.extensionManagementServerService.localExtensionManagementServer!.extensionManagementService.install(
+					this.extensionManagementServerService.localExtensionManagementServer?.extensionManagementService.install(
 						vsix,
 					),
 				),

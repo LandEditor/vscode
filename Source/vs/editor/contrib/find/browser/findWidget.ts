@@ -529,8 +529,10 @@ export class FindWidget
 		if (e.isReplaceRevealed) {
 			if (this._state.isReplaceRevealed) {
 				if (
-					!this._codeEditor.getOption(EditorOption.readOnly) &&
-					!this._isReplaceVisible
+					!(
+						this._codeEditor.getOption(EditorOption.readOnly) ||
+						this._isReplaceVisible
+					)
 				) {
 					this._isReplaceVisible = true;
 					this._replaceInput.width = dom.getTotalWidth(
@@ -609,7 +611,7 @@ export class FindWidget
 	}
 
 	private _updateMatchesCount(): void {
-		this._matchesCount.style.minWidth = MAX_MATCHES_COUNT_WIDTH + "px";
+		this._matchesCount.style.minWidth = `${MAX_MATCHES_COUNT_WIDTH}px`;
 		if (this._state.matchesCount >= MATCHES_LIMIT) {
 			this._matchesCount.title = NLS_MATCHES_COUNT_LIMIT_TITLE;
 		} else {
@@ -678,7 +680,7 @@ export class FindWidget
 				"{0} found for '{1}', at {2}",
 				label,
 				searchString,
-				currentMatch.startLineNumber + ":" + currentMatch.startColumn,
+				`${currentMatch.startLineNumber}:${currentMatch.startColumn}`,
 			);
 			const model = this._codeEditor.getModel();
 			if (
@@ -779,12 +781,14 @@ export class FindWidget
 				this._codeEditor.getOption(EditorOption.find)
 					.autoFindInSelection
 			) {
-				case "always":
+				case "always": {
 					this._toggleSelectionFind.checked = true;
 					break;
-				case "never":
+				}
+				case "never": {
 					this._toggleSelectionFind.checked = false;
 					break;
+				}
 				case "multiline": {
 					const isSelectionMultipleLine =
 						!!selection &&
@@ -1067,7 +1071,7 @@ export class FindWidget
 			reducedFindWidget,
 		);
 
-		if (!narrowFindWidget && !collapsedFindWidget) {
+		if (!(narrowFindWidget || collapsedFindWidget)) {
 			// the minimal left offset of findwidget is 15px.
 			this._domNode.style.maxWidth = `${
 				editorWidth - 28 - minimapWidth - 15
@@ -1161,8 +1165,8 @@ export class FindWidget
 						selection = selection.setEndPosition(
 							selection.endLineNumber - 1,
 							this._codeEditor
-								.getModel()!
-								.getLineMaxColumn(selection.endLineNumber - 1),
+								.getModel()
+								?.getLineMaxColumn(selection.endLineNumber - 1),
 						);
 					}
 					const currentMatch = this._state.currentMatch;
@@ -1513,8 +1517,8 @@ export class FindWidget
 									selection = selection.setEndPosition(
 										selection.endLineNumber - 1,
 										this._codeEditor
-											.getModel()!
-											.getLineMaxColumn(
+											.getModel()
+											?.getLineMaxColumn(
 												selection.endLineNumber - 1,
 											),
 									);
@@ -1859,11 +1863,12 @@ export class SimpleButton extends Widget {
 
 		let className = "button";
 		if (this._opts.className) {
-			className = className + " " + this._opts.className;
+			className = `${className} ${this._opts.className}`;
 		}
 		if (this._opts.icon) {
-			className =
-				className + " " + ThemeIcon.asClassName(this._opts.icon);
+			className = `${className} ${ThemeIcon.asClassName(
+				this._opts.icon,
+			)}`;
 		}
 
 		this._domNode = document.createElement("div");

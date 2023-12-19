@@ -12,10 +12,10 @@ import type {
 // https://github.com/microsoft/vscode-js-profile-visualizer/blob/6e7401128ee860be113a916f80fcfe20ac99418e/packages/vscode-js-profile-core/src/cpu/model.ts#L4
 
 export interface IProfileModel {
-	nodes: ReadonlyArray<IComputedNode>;
-	locations: ReadonlyArray<ILocation>;
-	samples: ReadonlyArray<number>;
-	timeDeltas: ReadonlyArray<number>;
+	nodes: readonly IComputedNode[];
+	locations: readonly ILocation[];
+	samples: readonly number[];
+	timeDeltas: readonly number[];
 	rootPath?: string;
 	duration: number;
 }
@@ -103,7 +103,7 @@ const computeAggregateTime = (
 
 const ensureSourceLocations = (
 	profile: ICpuProfileRaw,
-): ReadonlyArray<IAnnotationLocation> => {
+): readonly IAnnotationLocation[] => {
 	let locationIdCounter = 0;
 	const locationsByRef = new Map<
 		string,
@@ -170,7 +170,7 @@ const ensureSourceLocations = (
  * Computes the model for the given profile.
  */
 export const buildModel = (profile: ICpuProfileRaw): IProfileModel => {
-	if (!profile.timeDeltas || !profile.samples) {
+	if (!(profile.timeDeltas && profile.samples)) {
 		return {
 			nodes: [],
 			locations: [],

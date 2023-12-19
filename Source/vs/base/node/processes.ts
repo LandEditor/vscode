@@ -140,11 +140,11 @@ export namespace win32 {
 			if (await fileExists(fullPath)) {
 				return fullPath;
 			}
-			let withExtension = fullPath + ".com";
+			let withExtension = `${fullPath}.com`;
 			if (await fileExists(withExtension)) {
 				return withExtension;
 			}
-			withExtension = fullPath + ".exe";
+			withExtension = `${fullPath}.exe`;
 			if (await fileExists(withExtension)) {
 				return withExtension;
 			}

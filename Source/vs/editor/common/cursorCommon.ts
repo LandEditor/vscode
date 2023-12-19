@@ -381,7 +381,7 @@ export class CursorState {
 	): PartialModelCursorState[] {
 		const states: PartialModelCursorState[] = [];
 		for (let i = 0, len = modelSelections.length; i < len; i++) {
-			states[i] = this.fromModelSelection(modelSelections[i]);
+			states[i] = CursorState.fromModelSelection(modelSelections[i]);
 		}
 		return states;
 	}
@@ -461,7 +461,7 @@ export class SingleCursorState {
 	}
 
 	public hasSelection(): boolean {
-		return !this.selection.isEmpty() || !this.selectionStart.isEmpty();
+		return !(this.selection.isEmpty() && this.selectionStart.isEmpty());
 	}
 
 	public move(

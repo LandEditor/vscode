@@ -355,8 +355,11 @@ export function startServer(
 					if (workspaceFolders) {
 						for (const folder of workspaceFolders) {
 							if (
-								!toRemove.some((r) => r.uri === folder.uri) &&
-								!toAdd.some((r) => r.uri === folder.uri)
+								!(
+									toRemove.some(
+										(r) => r.uri === folder.uri,
+									) || toAdd.some((r) => r.uri === folder.uri)
+								)
 							) {
 								updatedFolders.push(folder);
 							}
@@ -379,11 +382,7 @@ export function startServer(
 
 		// dynamically enable & disable the formatter
 		if (dynamicFormatterRegistration) {
-			const enableFormatter =
-				globalSettings &&
-				globalSettings.html &&
-				globalSettings.html.format &&
-				globalSettings.html.format.enable;
+			const enableFormatter = globalSettings?.html?.format?.enable;
 			if (enableFormatter) {
 				if (!formatterRegistrations) {
 					const documentSelector = [
@@ -414,8 +413,7 @@ export function startServer(
 		languageId: string,
 		settings: Settings = globalSettings,
 	) {
-		const validationSettings =
-			settings && settings.html && settings.html.validate;
+		const validationSettings = settings?.html?.validate;
 		if (validationSettings) {
 			return (
 				(languageId === "css" && validationSettings.styles !== false) ||
@@ -482,7 +480,7 @@ export function startServer(
 					document,
 					textDocumentPosition.position,
 				);
-				if (!mode || !mode.doComplete) {
+				if (!mode?.doComplete) {
 					return { isIncomplete: true, items: [] };
 				}
 				const doComplete = mode.doComplete;
@@ -516,14 +514,14 @@ export function startServer(
 				if (isCompletionItemData(data)) {
 					const mode = languageModes.getMode(data.languageId);
 					const document = documents.get(data.uri);
-					if (mode && mode.doResolve && document) {
+					if (mode?.doResolve && document) {
 						return mode.doResolve(document, item);
 					}
 				}
 				return item;
 			},
 			item,
-			`Error while resolving completion proposal`,
+			"Error while resolving completion proposal",
 			token,
 		);
 	});
@@ -573,7 +571,7 @@ export function startServer(
 						document,
 						documentHighlightParams.position,
 					);
-					if (mode && mode.findDocumentHighlight) {
+					if (mode?.findDocumentHighlight) {
 						return mode.findDocumentHighlight(
 							document,
 							documentHighlightParams.position,
@@ -600,7 +598,7 @@ export function startServer(
 						document,
 						definitionParams.position,
 					);
-					if (mode && mode.findDefinition) {
+					if (mode?.findDefinition) {
 						return mode.findDefinition(
 							document,
 							definitionParams.position,
@@ -627,7 +625,7 @@ export function startServer(
 						document,
 						referenceParams.position,
 					);
-					if (mode && mode.findReferences) {
+					if (mode?.findReferences) {
 						return mode.findReferences(
 							document,
 							referenceParams.position,
@@ -654,7 +652,7 @@ export function startServer(
 						document,
 						signatureHelpParms.position,
 					);
-					if (mode && mode.doSignatureHelp) {
+					if (mode?.doSignatureHelp) {
 						return mode.doSignatureHelp(
 							document,
 							signatureHelpParms.position,
@@ -681,11 +679,7 @@ export function startServer(
 				settings = globalSettings;
 			}
 			const unformattedTags: string =
-				(settings &&
-					settings.html &&
-					settings.html.format &&
-					settings.html.format.unformatted) ||
-				"";
+				settings?.html?.format?.unformatted || "";
 			const enabledModes = {
 				css: !unformattedTags.match(/\bstyle\b/),
 				javascript: !unformattedTags.match(/\bscript\b/),
@@ -837,7 +831,7 @@ export function startServer(
 						document,
 						params.range.start,
 					);
-					if (mode && mode.getColorPresentations) {
+					if (mode?.getColorPresentations) {
 						return mode.getColorPresentations(
 							document,
 							params.color,
@@ -865,7 +859,7 @@ export function startServer(
 							document,
 							Position.create(pos.line, pos.character - 1),
 						);
-						if (mode && mode.doAutoInsert) {
+						if (mode?.doAutoInsert) {
 							return mode.doAutoInsert(
 								document,
 								pos,
@@ -936,7 +930,7 @@ export function startServer(
 						params.position,
 					);
 
-					if (mode && mode.doRename) {
+					if (mode?.doRename) {
 						return mode.doRename(
 							document,
 							position,
@@ -965,7 +959,7 @@ export function startServer(
 								document,
 								Position.create(pos.line, pos.character - 1),
 							);
-							if (mode && mode.doLinkedEditing) {
+							if (mode?.doLinkedEditing) {
 								const ranges = await mode.doLinkedEditing(
 									document,
 									pos,
@@ -1019,7 +1013,7 @@ export function startServer(
 				return getSemanticTokenProvider().legend;
 			},
 			null,
-			`Error while computing semantic tokens legend`,
+			"Error while computing semantic tokens legend",
 			token,
 		);
 	});

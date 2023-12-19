@@ -189,8 +189,10 @@ class NativeLocaleService implements ILocaleService {
 			}
 
 			if (
-				!skipDialog &&
-				!(await this.showRestartDialog(languagePackItem.label))
+				!(
+					skipDialog ||
+					(await this.showRestartDialog(languagePackItem.label))
+				)
 			) {
 				return;
 			}

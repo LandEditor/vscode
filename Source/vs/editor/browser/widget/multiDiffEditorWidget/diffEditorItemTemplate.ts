@@ -342,7 +342,7 @@ export class DiffEditorItemTemplate
 	}
 
 	public hide(): void {
-		this._elements.root.style.top = `-100000px`;
+		this._elements.root.style.top = "-100000px";
 		this._elements.root.style.visibility = "hidden"; // Some editor parts are still visible
 	}
 }

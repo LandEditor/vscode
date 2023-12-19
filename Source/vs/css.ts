@@ -27,7 +27,7 @@ export function load(
 		return;
 	}
 
-	const cssUrl = req.toUrl(name + ".css");
+	const cssUrl = req.toUrl(`${name}.css`);
 	loadCSS(
 		name,
 		cssUrl,
@@ -36,7 +36,7 @@ export function load(
 		},
 		(err: any) => {
 			if (typeof load.error === "function") {
-				load.error("Could not find " + cssUrl + ".");
+				load.error(`Could not find ${cssUrl}.`);
 			}
 		},
 	);

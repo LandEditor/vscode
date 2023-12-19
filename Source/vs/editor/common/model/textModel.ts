@@ -211,7 +211,7 @@ class TextModelSnapshot implements model.ITextSnapshot {
 }
 
 const invalidFunc = () => {
-	throw new Error(`Invalid change accessor`);
+	throw new Error("Invalid change accessor");
 };
 
 enum StringOffsetValidationType {
@@ -413,14 +413,14 @@ export class TextModel
 
 		// Generate a new unique model id
 		MODEL_ID++;
-		this.id = "$model" + MODEL_ID;
+		this.id = `$model${MODEL_ID}`;
 		this.isForSimpleWidget = creationOptions.isForSimpleWidget;
 		if (
 			typeof associatedResource === "undefined" ||
 			associatedResource === null
 		) {
 			this._associatedResource = URI.parse(
-				"inmemory://model/" + MODEL_ID
+				`inmemory://model/${MODEL_ID}`
 			);
 		} else {
 			this._associatedResource = associatedResource;
@@ -976,7 +976,7 @@ export class TextModel
 	}
 
 	private _increaseVersionId(): void {
-		this._versionId = this._versionId + 1;
+		this._versionId += 1;
 		this._alternativeVersionId = this._versionId;
 	}
 
@@ -1152,12 +1152,13 @@ export class TextModel
 		const initialStartColumn = range.startColumn;
 		let startLineNumber = Math.floor(
 			typeof initialStartLineNumber === "number" &&
-			!isNaN(initialStartLineNumber)
+			!Number.isNaN(initialStartLineNumber)
 				? initialStartLineNumber
 				: 1,
 		);
 		let startColumn = Math.floor(
-			typeof initialStartColumn === "number" && !isNaN(initialStartColumn)
+			typeof initialStartColumn === "number" &&
+			!Number.isNaN(initialStartColumn)
 				? initialStartColumn
 				: 1,
 		);
@@ -1181,12 +1182,13 @@ export class TextModel
 		const initialEndColumn = range.endColumn;
 		let endLineNumber = Math.floor(
 			typeof initialEndLineNumber === "number" &&
-			!isNaN(initialEndLineNumber)
+			!Number.isNaN(initialEndLineNumber)
 				? initialEndLineNumber
 				: 1,
 		);
 		let endColumn = Math.floor(
-			typeof initialEndColumn === "number" && !isNaN(initialEndColumn)
+			typeof initialEndColumn === "number" &&
+			!Number.isNaN(initialEndColumn)
 				? initialEndColumn
 				: 1,
 		);
@@ -1234,7 +1236,7 @@ export class TextModel
 			return false;
 		}
 
-		if (isNaN(lineNumber) || isNaN(column)) {
+		if (Number.isNaN(lineNumber) || Number.isNaN(column)) {
 			return false;
 		}
 
@@ -1280,12 +1282,12 @@ export class TextModel
 		validationType: StringOffsetValidationType,
 	): Position {
 		const lineNumber = Math.floor(
-			typeof _lineNumber === "number" && !isNaN(_lineNumber)
+			typeof _lineNumber === "number" && !Number.isNaN(_lineNumber)
 				? _lineNumber
 				: 1,
 		);
 		const column = Math.floor(
-			typeof _column === "number" && !isNaN(_column) ? _column : 1,
+			typeof _column === "number" && !Number.isNaN(_column) ? _column : 1,
 		);
 		const lineCount = this._buffer.getLineCount();
 
@@ -1393,7 +1395,7 @@ export class TextModel
 			const endInsideSurrogatePair =
 				strings.isHighSurrogate(charCodeBeforeEnd);
 
-			if (!startInsideSurrogatePair && !endInsideSurrogatePair) {
+			if (!(startInsideSurrogatePair || endInsideSurrogatePair)) {
 				return true;
 			}
 			return false;
@@ -1448,7 +1450,7 @@ export class TextModel
 			const endInsideSurrogatePair =
 				strings.isHighSurrogate(charCodeBeforeEnd);
 
-			if (!startInsideSurrogatePair && !endInsideSurrogatePair) {
+			if (!(startInsideSurrogatePair || endInsideSurrogatePair)) {
 				return new Range(
 					startLineNumber,
 					startColumn,
@@ -1777,9 +1779,9 @@ export class TextModel
 			rawOperation.identifier || null,
 			this.validateRange(rawOperation.range),
 			rawOperation.text,
-			rawOperation.forceMoveMarkers || false,
-			rawOperation.isAutoWhitespaceEdit || false,
-			rawOperation._isTracked || false,
+			rawOperation.forceMoveMarkers,
+			rawOperation.isAutoWhitespaceEdit,
+			rawOperation._isTracked,
 		);
 	}
 
@@ -1848,7 +1850,7 @@ export class TextModel
 							editRange.startLineNumber > sel.endLineNumber;
 						const selIsBelow =
 							sel.startLineNumber > editRange.endLineNumber;
-						if (!selIsAbove && !selIsBelow) {
+						if (!(selIsAbove || selIsBelow)) {
 							foundEditNearSel = true;
 							break;
 						}
@@ -2377,11 +2379,11 @@ export class TextModel
 			this._deltaDecorationCallCnt++;
 			if (this._deltaDecorationCallCnt > 1) {
 				console.warn(
-					`Invoking deltaDecorations recursively could lead to leaking decorations.`,
+					"Invoking deltaDecorations recursively could lead to leaking decorations.",
 				);
 				onUnexpectedError(
 					new Error(
-						`Invoking deltaDecorations recursively could lead to leaking decorations.`,
+						"Invoking deltaDecorations recursively could lead to leaking decorations.",
 					),
 				);
 			}
@@ -2661,13 +2663,13 @@ export class TextModel
 		if (node.options.after) {
 			const oldRange = this.getDecorationRange(decorationId);
 			this._onDidChangeDecorations.recordLineAffectedByInjectedText(
-				oldRange!.endLineNumber,
+				oldRange?.endLineNumber,
 			);
 		}
 		if (node.options.before) {
 			const oldRange = this.getDecorationRange(decorationId);
 			this._onDidChangeDecorations.recordLineAffectedByInjectedText(
-				oldRange!.startLineNumber,
+				oldRange?.startLineNumber,
 			);
 		}
 
@@ -2707,12 +2709,12 @@ export class TextModel
 			return;
 		}
 
-		const nodeWasInOverviewRuler =
-			node.options.overviewRuler && node.options.overviewRuler.color
-				? true
-				: false;
-		const nodeIsInOverviewRuler =
-			options.overviewRuler && options.overviewRuler.color ? true : false;
+		const nodeWasInOverviewRuler = node.options.overviewRuler?.color
+			? true
+			: false;
+		const nodeIsInOverviewRuler = options.overviewRuler?.color
+			? true
+			: false;
 
 		this._onDidChangeDecorations.checkAffectedAndFire(node.options);
 		this._onDidChangeDecorations.checkAffectedAndFire(options);
@@ -2935,9 +2937,7 @@ function indentOfLine(line: string): number {
 //#region Decorations
 
 function isNodeInOverviewRuler(node: IntervalNode): boolean {
-	return node.options.overviewRuler && node.options.overviewRuler.color
-		? true
-		: false;
+	return node.options.overviewRuler?.color ? true : false;
 }
 
 function isNodeInjectedText(node: IntervalNode): boolean {
@@ -3353,7 +3353,7 @@ export class ModelDecorationInjectedTextOptions
 		this.content = options.content || "";
 		this.inlineClassName = options.inlineClassName || null;
 		this.inlineClassNameAffectsLetterSpacing =
-			options.inlineClassNameAffectsLetterSpacing || false;
+			options.inlineClassNameAffectsLetterSpacing;
 		this.attachedData = options.attachedData || null;
 		this.cursorStops = options.cursorStops || null;
 	}
@@ -3430,9 +3430,9 @@ export class ModelDecorationOptions implements model.IModelDecorationOptions {
 			options.shouldFillLineOnLineBreak ?? null;
 		this.hoverMessage = options.hoverMessage || null;
 		this.glyphMarginHoverMessage = options.glyphMarginHoverMessage || null;
-		this.isWholeLine = options.isWholeLine || false;
-		this.showIfCollapsed = options.showIfCollapsed || false;
-		this.collapseOnReplaceEdit = options.collapseOnReplaceEdit || false;
+		this.isWholeLine = options.isWholeLine;
+		this.showIfCollapsed = options.showIfCollapsed;
+		this.collapseOnReplaceEdit = options.collapseOnReplaceEdit;
 		this.overviewRuler = options.overviewRuler
 			? new ModelDecorationOverviewRulerOptions(options.overviewRuler)
 			: null;
@@ -3458,7 +3458,7 @@ export class ModelDecorationOptions implements model.IModelDecorationOptions {
 			? cleanClassName(options.inlineClassName)
 			: null;
 		this.inlineClassNameAffectsLetterSpacing =
-			options.inlineClassNameAffectsLetterSpacing || false;
+			options.inlineClassNameAffectsLetterSpacing;
 		this.beforeContentClassName = options.beforeContentClassName
 			? cleanClassName(options.beforeContentClassName)
 			: null;
@@ -3565,14 +3565,12 @@ class DidChangeDecorationsEmitter extends Disposable {
 
 	public checkAffectedAndFire(options: ModelDecorationOptions): void {
 		if (!this._affectsMinimap) {
-			this._affectsMinimap =
-				options.minimap && options.minimap.position ? true : false;
+			this._affectsMinimap = options.minimap?.position ? true : false;
 		}
 		if (!this._affectsOverviewRuler) {
-			this._affectsOverviewRuler =
-				options.overviewRuler && options.overviewRuler.color
-					? true
-					: false;
+			this._affectsOverviewRuler = options.overviewRuler?.color
+				? true
+				: false;
 		}
 		if (!this._affectsGlyphMargin) {
 			this._affectsGlyphMargin = options.glyphMarginClassName

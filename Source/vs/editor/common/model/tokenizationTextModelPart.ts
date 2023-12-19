@@ -525,7 +525,7 @@ class GrammarTokens extends Disposable {
 					let existing = this._attachedViewStates.get(view);
 					if (!existing) {
 						existing = new AttachedViewHandler(() =>
-							this.refreshRanges(existing!.lineRanges),
+							this.refreshRanges(existing?.lineRanges),
 						);
 						this._attachedViewStates.set(view, existing);
 					}
@@ -628,8 +628,7 @@ class GrammarTokens extends Disposable {
 			};
 
 			if (
-				tokenizationSupport &&
-				tokenizationSupport.createBackgroundTokenizer &&
+				tokenizationSupport?.createBackgroundTokenizer &&
 				!tokenizationSupport.backgroundTokenizerShouldOnlyVerifyTokens
 			) {
 				this._backgroundTokenizer.value =
@@ -639,8 +638,10 @@ class GrammarTokens extends Disposable {
 					);
 			}
 			if (
-				!this._backgroundTokenizer.value &&
-				!this._textModel.isTooLargeForTokenization()
+				!(
+					this._backgroundTokenizer.value ||
+					this._textModel.isTooLargeForTokenization()
+				)
 			) {
 				this._backgroundTokenizer.value =
 					this._defaultBackgroundTokenizer =

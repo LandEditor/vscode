@@ -23,7 +23,7 @@ import { IHostService } from "vs/workbench/services/host/browser/host";
 import { ITextMateTokenizationService } from "vs/workbench/services/textMate/browser/textMateTokenizationFeature";
 
 class StartDebugTextMate extends Action2 {
-	private static resource = URI.parse(`inmemory:///tm-log.txt`);
+	private static resource = URI.parse("inmemory:///tm-log.txt");
 
 	constructor() {
 		super({
@@ -85,7 +85,7 @@ class StartDebugTextMate extends Action2 {
 		});
 		const model = this._getOrCreateModel(modelService);
 		const append = (str: string) => {
-			this._append(model, str + "\n");
+			this._append(model, `${str}\n`);
 			scrollEditor();
 			logger.info(str);
 			logger.flush();
@@ -114,12 +114,12 @@ class StartDebugTextMate extends Action2 {
 			}
 		};
 
-		append(`// Open the file you want to test to the side and watch here`);
+		append("// Open the file you want to test to the side and watch here");
 		append(`// Output mirrored at ${pathInTemp}`);
 
 		textMateService.startDebugMode(
 			(str) => {
-				this._append(model, str + "\n");
+				this._append(model, `${str}\n`);
 				scrollEditor();
 				logger.info(str);
 				logger.flush();

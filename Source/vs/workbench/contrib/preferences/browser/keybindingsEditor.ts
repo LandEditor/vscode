@@ -300,7 +300,7 @@ export class KeybindingsEditor
 		this.keybindingsEditorContextKey.set(true);
 		return super
 			.setInput(input, options, context, token)
-			.then(() => this.render(!!(options && options.preserveFocus)));
+			.then(() => this.render(!!options?.preserveFocus));
 	}
 
 	override clearInput(): void {
@@ -313,8 +313,8 @@ export class KeybindingsEditor
 		this.dimension = dimension;
 		this.layoutSearchWidget(dimension);
 
-		this.overlayContainer.style.width = dimension.width + "px";
-		this.overlayContainer.style.height = dimension.height + "px";
+		this.overlayContainer.style.width = `${dimension.width}px`;
+		this.overlayContainer.style.height = `${dimension.height}px`;
 		this.defineKeybindingWidget.layout(this.dimension);
 
 		this.layoutKeybindingsTable();
@@ -527,7 +527,7 @@ export class KeybindingsEditor
 		this._register(
 			this.defineKeybindingWidget.onDidChange((keybindingStr) =>
 				this.defineKeybindingWidget.printExisting(
-					this.keybindingsEditorModel!.fetch(`"${keybindingStr}"`)
+					this.keybindingsEditorModel?.fetch(`"${keybindingStr}"`)
 						.length,
 				),
 			),
@@ -1496,8 +1496,6 @@ class KeybindingColumnRenderer
 
 	readonly templateId: string = KeybindingColumnRenderer.TEMPLATE_ID;
 
-	constructor() {}
-
 	renderTemplate(container: HTMLElement): IKeybindingColumnTemplateData {
 		const element = DOM.append(container, $(".keybinding"));
 		const keybindingLabel = new KeybindingLabel(
@@ -1690,7 +1688,7 @@ class WhenInputWidget extends Disposable {
 					alwaysShowSuggestions: true,
 				},
 				"",
-				`keyboardshortcutseditor#wheninput`,
+				"keyboardshortcutseditor#wheninput",
 				{
 					focusContextKey,
 					overflowWidgetsDomNode:
@@ -1796,7 +1794,7 @@ class WhenColumnRenderer
 					);
 					inputWidget.layout(
 						new DOM.Dimension(
-							templateData.element.parentElement!.clientWidth,
+							templateData.element.parentElement?.clientWidth,
 							18,
 						),
 					);
@@ -1807,7 +1805,7 @@ class WhenColumnRenderer
 					const hideInputWidget = () => {
 						whenInputDisposables.clear();
 						templateData.element.classList.remove("input-mode");
-						templateData.element.parentElement!.style.paddingLeft =
+						templateData.element.parentElement?.style.paddingLeft =
 							"10px";
 						DOM.clearNode(templateData.whenInputContainer);
 					};
@@ -1838,7 +1836,7 @@ class WhenColumnRenderer
 						}),
 					);
 
-					templateData.element.parentElement!.style.paddingLeft =
+					templateData.element.parentElement?.style.paddingLeft =
 						"0px";
 				}
 			}),

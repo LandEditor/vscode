@@ -213,7 +213,7 @@ export class SuggestInlineCompletions
 			);
 		}
 
-		if (!wordInfo?.word && !triggerCharacterInfo) {
+		if (!(wordInfo?.word || triggerCharacterInfo)) {
 			// not at word, not a trigger character
 			return;
 		}

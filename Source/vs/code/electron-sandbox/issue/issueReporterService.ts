@@ -89,7 +89,7 @@ export class IssueReporter extends Disposable {
 			issueType: configuration.data.issueType || IssueType.Bug,
 			versionInfo: {
 				vscodeVersion: `${configuration.product.nameShort} ${
-					!!configuration.product.darwinUniversalAssetId
+					configuration.product.darwinUniversalAssetId
 						? `${configuration.product.version} (Universal)`
 						: configuration.product.version
 				} (${configuration.product.commit || "Commit unknown"}, ${
@@ -310,7 +310,7 @@ export class IssueReporter extends Disposable {
 			return ext.isTheme ? "themes" : "nonThemes";
 		});
 
-		const numberOfThemeExtesions = themes && themes.length;
+		const numberOfThemeExtesions = themes?.length;
 		this.issueReporterModel.update({
 			numberOfThemeExtesions,
 			enabledNonThemeExtesions: nonThemes,
@@ -440,12 +440,9 @@ export class IssueReporter extends Disposable {
 					const label = <HTMLDivElement>e.target;
 					if (label) {
 						const containingElement =
-							label.parentElement &&
-							label.parentElement.parentElement;
-						const info =
-							containingElement &&
-							containingElement.lastElementChild;
-						if (info && info.classList.contains("hidden")) {
+							label.parentElement?.parentElement;
+						const info = containingElement?.lastElementChild;
+						if (info?.classList.contains("hidden")) {
 							show(info);
 							label.textContent = localize("hide", "hide");
 						} else {
@@ -472,8 +469,8 @@ export class IssueReporter extends Disposable {
 				hide(problemSourceHelpText);
 			}
 
-			let fileOnExtension,
-				fileOnMarketplace = false;
+			let fileOnExtension;
+			let fileOnMarketplace = false;
 			if (value === IssueSource.Extension) {
 				fileOnExtension = true;
 			} else if (value === IssueSource.Marketplace) {
@@ -573,7 +570,7 @@ export class IssueReporter extends Disposable {
 
 				const issueTitle = (<HTMLInputElement>(
 					this.getElementById("issue-title")
-				))!.value;
+				))?.value;
 				const { issueDescription } = this.issueReporterModel.getData();
 				if (
 					!this.hasBeenSubmitted &&
@@ -677,13 +674,13 @@ export class IssueReporter extends Disposable {
 	private getExtensionRepositoryUrl(): string | undefined {
 		const selectedExtension =
 			this.issueReporterModel.getData().selectedExtension;
-		return selectedExtension && selectedExtension.repositoryUrl;
+		return selectedExtension?.repositoryUrl;
 	}
 
 	private getExtensionBugsUrl(): string | undefined {
 		const selectedExtension =
 			this.issueReporterModel.getData().selectedExtension;
-		return selectedExtension && selectedExtension.bugsUrl;
+		return selectedExtension?.bugsUrl;
 	}
 
 	private getExtensionData(): string | undefined {
@@ -720,7 +717,7 @@ export class IssueReporter extends Disposable {
 		const url = this.getExtensionGitHubUrl();
 		if (title) {
 			const matches = /^https?:\/\/github\.com\/(.*)/.exec(url);
-			if (matches && matches.length) {
+			if (matches?.length) {
 				const repo = matches[1];
 				return this.searchGitHub(repo, title);
 			}
@@ -770,7 +767,7 @@ export class IssueReporter extends Disposable {
 					.json()
 					.then((result) => {
 						similarIssues.innerText = "";
-						if (result && result.items) {
+						if (result?.items) {
 							this.displaySearchResults(result.items);
 						} else {
 							// If the items property isn't present, the rate limit has been hit
@@ -827,7 +824,7 @@ export class IssueReporter extends Disposable {
 					.then((result) => {
 						this.clearSearchResults();
 
-						if (result && result.candidates) {
+						if (result?.candidates) {
 							this.displaySearchResults(result.candidates);
 						} else {
 							throw new Error(
@@ -1119,7 +1116,7 @@ export class IssueReporter extends Disposable {
 
 			reset(
 				descriptionTitle,
-				localize("stepsToReproduce", "Steps to Reproduce") + " ",
+				`${localize("stepsToReproduce", "Steps to Reproduce")} `,
 				$("span.required-input", undefined, "*"),
 			);
 			reset(
@@ -1146,7 +1143,7 @@ export class IssueReporter extends Disposable {
 
 			reset(
 				descriptionTitle,
-				localize("stepsToReproduce", "Steps to Reproduce") + " ",
+				`${localize("stepsToReproduce", "Steps to Reproduce")} `,
 				$("span.required-input", undefined, "*"),
 			);
 			reset(
@@ -1159,7 +1156,7 @@ export class IssueReporter extends Disposable {
 		} else if (issueType === IssueType.FeatureRequest) {
 			reset(
 				descriptionTitle,
-				localize("description", "Description") + " ",
+				`${localize("description", "Description")} `,
 				$("span.required-input", undefined, "*"),
 			);
 			reset(
@@ -1340,7 +1337,7 @@ export class IssueReporter extends Disposable {
 		// Assumes a GitHub url to a particular repo, https://github.com/repositoryName/owner.
 		// Repository name and owner cannot contain '/'
 		const match = /^https?:\/\/github\.com\/([^\/]*)\/([^\/]*).*/.exec(url);
-		if (match && match.length) {
+		if (match?.length) {
 			return {
 				owner: match[1],
 				repositoryName: match[2],
@@ -1355,12 +1352,9 @@ export class IssueReporter extends Disposable {
 		const bugsUrl = this.getExtensionBugsUrl();
 		const extensionUrl = this.getExtensionRepositoryUrl();
 		// If given, try to match the extension's bug url
-		if (bugsUrl && bugsUrl.match(/^https?:\/\/github\.com\/(.*)/)) {
+		if (bugsUrl?.match(/^https?:\/\/github\.com\/(.*)/)) {
 			repositoryUrl = normalizeGitHubUrl(bugsUrl);
-		} else if (
-			extensionUrl &&
-			extensionUrl.match(/^https?:\/\/github\.com\/(.*)/)
-		) {
+		} else if (extensionUrl?.match(/^https?:\/\/github\.com\/(.*)/)) {
 			repositoryUrl = normalizeGitHubUrl(extensionUrl);
 		}
 
@@ -1372,7 +1366,7 @@ export class IssueReporter extends Disposable {
 		repositoryUrl: string,
 	): string {
 		if (this.issueReporterModel.fileOnExtension()) {
-			repositoryUrl = repositoryUrl + "/issues/new";
+			repositoryUrl += "/issues/new";
 		}
 
 		const queryStringPrefix = repositoryUrl.indexOf("?") === -1 ? "?" : "&";
@@ -1601,8 +1595,10 @@ export class IssueReporter extends Disposable {
 
 						// if extension does not have provider/handles, will check for either. If extension is already active, IPC will return [false, false] and will proceed as normal.
 						if (
-							!matches[0].hasIssueDataProviders &&
-							!matches[0].hasIssueUriRequestHandler
+							!(
+								matches[0].hasIssueDataProviders ||
+								matches[0].hasIssueUriRequestHandler
+							)
 						) {
 							const toActivate = await this.getReporterStatus(
 								matches[0],
@@ -1786,7 +1782,7 @@ export class IssueReporter extends Disposable {
 	private updateWorkspaceInfo(state: IssueReporterModelData) {
 		mainWindow.document.querySelector(
 			".block-workspace .block-info code",
-		)!.textContent = "\n" + state.workspaceInfo;
+		)!.textContent = `\n${state.workspaceInfo}`;
 	}
 
 	private updateExtensionTable(
@@ -1811,7 +1807,7 @@ export class IssueReporter extends Disposable {
 			extensions = extensions || [];
 
 			if (!extensions.length) {
-				target.innerText = "Extensions: none" + themeExclusionStr;
+				target.innerText = `Extensions: none${themeExclusionStr}`;
 				return;
 			}
 

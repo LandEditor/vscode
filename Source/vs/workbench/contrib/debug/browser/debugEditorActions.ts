@@ -517,7 +517,7 @@ export class SelectionToReplAction extends EditorAction {
 		const viewsService = accessor.get(IViewsService);
 		const viewModel = debugService.getViewModel();
 		const session = viewModel.focusedSession;
-		if (!editor.hasModel() || !session) {
+		if (!(editor.hasModel() && session)) {
 			return;
 		}
 
@@ -618,7 +618,7 @@ class ShowDebugHoverAction extends EditorAction {
 
 	async run(accessor: ServicesAccessor, editor: ICodeEditor): Promise<void> {
 		const position = editor.getPosition();
-		if (!position || !editor.hasModel()) {
+		if (!(position && editor.hasModel())) {
 			return;
 		}
 
@@ -679,12 +679,14 @@ class StepIntoTargetsAction extends EditorAction {
 			});
 
 		if (
-			!session ||
-			!frame ||
-			!editor.hasModel() ||
-			!uriIdentityService.extUri.isEqual(
-				editor.getModel().uri,
-				frame.source.uri,
+			!(
+				session &&
+				frame &&
+				editor.hasModel() &&
+				uriIdentityService.extUri.isEqual(
+					editor.getModel().uri,
+					frame.source.uri,
+				)
 			)
 		) {
 			if (targetPosition) {

@@ -23,7 +23,7 @@ export interface ITerminalQuickFixService {
 	onDidRegisterCommandSelector: Event<ITerminalCommandSelector>;
 	onDidUnregisterProvider: Event<string>;
 	readonly _serviceBrand: undefined;
-	readonly extensionQuickFixes: Promise<Array<ITerminalCommandSelector>>;
+	readonly extensionQuickFixes: Promise<ITerminalCommandSelector[]>;
 	providers: Map<string, ITerminalQuickFixProvider>;
 	registerQuickFixProvider(
 		id: string,

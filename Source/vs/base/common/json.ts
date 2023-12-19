@@ -296,8 +296,8 @@ export function createScanner(text: string, ignoreTrivia = false): JSONScanner {
 	}
 
 	function scanString(): string {
-		let result = "",
-			start = pos;
+		let result = "";
+		let start = pos;
 
 		while (true) {
 			if (pos >= len) {
@@ -320,30 +320,38 @@ export function createScanner(text: string, ignoreTrivia = false): JSONScanner {
 				}
 				const ch2 = text.charCodeAt(pos++);
 				switch (ch2) {
-					case CharacterCodes.doubleQuote:
+					case CharacterCodes.doubleQuote: {
 						result += '"';
 						break;
-					case CharacterCodes.backslash:
+					}
+					case CharacterCodes.backslash: {
 						result += "\\";
 						break;
-					case CharacterCodes.slash:
+					}
+					case CharacterCodes.slash: {
 						result += "/";
 						break;
-					case CharacterCodes.b:
+					}
+					case CharacterCodes.b: {
 						result += "\b";
 						break;
-					case CharacterCodes.f:
+					}
+					case CharacterCodes.f: {
 						result += "\f";
 						break;
-					case CharacterCodes.n:
+					}
+					case CharacterCodes.n: {
 						result += "\n";
 						break;
-					case CharacterCodes.r:
+					}
+					case CharacterCodes.r: {
 						result += "\r";
 						break;
-					case CharacterCodes.t:
+					}
+					case CharacterCodes.t: {
 						result += "\t";
 						break;
+					}
 					case CharacterCodes.u: {
 						const ch3 = scanHexDigits(4);
 						if (ch3 >= 0) {
@@ -414,30 +422,37 @@ export function createScanner(text: string, ignoreTrivia = false): JSONScanner {
 
 		switch (code) {
 			// tokens: []{}:,
-			case CharacterCodes.openBrace:
+			case CharacterCodes.openBrace: {
 				pos++;
 				return (token = SyntaxKind.OpenBraceToken);
-			case CharacterCodes.closeBrace:
+			}
+			case CharacterCodes.closeBrace: {
 				pos++;
 				return (token = SyntaxKind.CloseBraceToken);
-			case CharacterCodes.openBracket:
+			}
+			case CharacterCodes.openBracket: {
 				pos++;
 				return (token = SyntaxKind.OpenBracketToken);
-			case CharacterCodes.closeBracket:
+			}
+			case CharacterCodes.closeBracket: {
 				pos++;
 				return (token = SyntaxKind.CloseBracketToken);
-			case CharacterCodes.colon:
+			}
+			case CharacterCodes.colon: {
 				pos++;
 				return (token = SyntaxKind.ColonToken);
-			case CharacterCodes.comma:
+			}
+			case CharacterCodes.comma: {
 				pos++;
 				return (token = SyntaxKind.CommaToken);
+			}
 
 			// strings
-			case CharacterCodes.doubleQuote:
+			case CharacterCodes.doubleQuote: {
 				pos++;
 				value = scanString();
 				return (token = SyntaxKind.StringLiteral);
+			}
 
 			// comments
 			case CharacterCodes.slash: {
@@ -490,12 +505,13 @@ export function createScanner(text: string, ignoreTrivia = false): JSONScanner {
 				return (token = SyntaxKind.Unknown);
 			}
 			// numbers
-			case CharacterCodes.minus:
+			case CharacterCodes.minus: {
 				value += String.fromCharCode(code);
 				pos++;
 				if (pos === len || !isDigit(text.charCodeAt(pos))) {
 					return (token = SyntaxKind.Unknown);
 				}
+			}
 			// found a minus, followed by a number so
 			// we fall through to proceed with scanning
 			// numbers
@@ -508,11 +524,12 @@ export function createScanner(text: string, ignoreTrivia = false): JSONScanner {
 			case CharacterCodes._6:
 			case CharacterCodes._7:
 			case CharacterCodes._8:
-			case CharacterCodes._9:
+			case CharacterCodes._9: {
 				value += scanNumber();
 				return (token = SyntaxKind.NumericLiteral);
+			}
 			// literals and unknown symbols
-			default:
+			default: {
 				// is a literal? Read the full word.
 				while (pos < len && isUnknownContentCharacter(code)) {
 					pos++;
@@ -535,6 +552,7 @@ export function createScanner(text: string, ignoreTrivia = false): JSONScanner {
 				value += String.fromCharCode(code);
 				pos++;
 				return (token = SyntaxKind.Unknown);
+			}
 		}
 	}
 
@@ -964,7 +982,7 @@ export function parseTree(
 	}
 
 	function onValue(valueNode: Node): Node {
-		currentParent.children!.push(valueNode);
+		currentParent.children?.push(valueNode);
 		return valueNode;
 	}
 
@@ -986,7 +1004,7 @@ export function parseTree(
 				parent: currentParent,
 				children: [],
 			});
-			currentParent.children!.push({
+			currentParent.children?.push({
 				type: "string",
 				value: name,
 				offset,
@@ -1038,9 +1056,9 @@ export function parseTree(
 	};
 	visit(text, visitor, options);
 
-	const result = currentParent.children![0];
+	const result = currentParent.children?.[0];
 	if (result) {
-		delete result.parent;
+		result.parent = undefined;
 	}
 	return result;
 }
@@ -1095,7 +1113,7 @@ export function findNodeAtLocation(
  * Gets the JSON path of the given JSON DOM node
  */
 export function getNodePath(node: Node): JSONPath {
-	if (!node.parent || !node.parent.children) {
+	if (!node.parent?.children) {
 		return [];
 	}
 	const path = getNodePath(node.parent);
@@ -1117,13 +1135,13 @@ export function getNodePath(node: Node): JSONPath {
 export function getNodeValue(node: Node): any {
 	switch (node.type) {
 		case "array":
-			return node.children!.map(getNodeValue);
+			return node.children?.map(getNodeValue);
 		case "object": {
 			const obj = Object.create(null);
 			for (const prop of node.children!) {
-				const valueNode = prop.children![1];
+				const valueNode = prop.children?.[1];
 				if (valueNode) {
-					obj[prop.children![0].value] = getNodeValue(valueNode);
+					obj[prop.children?.[0].value] = getNodeValue(valueNode);
 				}
 			}
 			return obj;
@@ -1214,55 +1232,63 @@ export function visit(
 			: () => true;
 	}
 
-	const onObjectBegin = toNoArgVisit(visitor.onObjectBegin),
-		onObjectProperty = toOneArgVisit(visitor.onObjectProperty),
-		onObjectEnd = toNoArgVisit(visitor.onObjectEnd),
-		onArrayBegin = toNoArgVisit(visitor.onArrayBegin),
-		onArrayEnd = toNoArgVisit(visitor.onArrayEnd),
-		onLiteralValue = toOneArgVisit(visitor.onLiteralValue),
-		onSeparator = toOneArgVisit(visitor.onSeparator),
-		onComment = toNoArgVisit(visitor.onComment),
-		onError = toOneArgVisit(visitor.onError);
+	const onObjectBegin = toNoArgVisit(visitor.onObjectBegin);
+	const onObjectProperty = toOneArgVisit(visitor.onObjectProperty);
+	const onObjectEnd = toNoArgVisit(visitor.onObjectEnd);
+	const onArrayBegin = toNoArgVisit(visitor.onArrayBegin);
+	const onArrayEnd = toNoArgVisit(visitor.onArrayEnd);
+	const onLiteralValue = toOneArgVisit(visitor.onLiteralValue);
+	const onSeparator = toOneArgVisit(visitor.onSeparator);
+	const onComment = toNoArgVisit(visitor.onComment);
+	const onError = toOneArgVisit(visitor.onError);
 
-	const disallowComments = options && options.disallowComments;
-	const allowTrailingComma = options && options.allowTrailingComma;
+	const disallowComments = options?.disallowComments;
+	const allowTrailingComma = options?.allowTrailingComma;
 	function scanNext(): SyntaxKind {
 		while (true) {
 			const token = _scanner.scan();
 			switch (_scanner.getTokenError()) {
-				case ScanError.InvalidUnicode:
+				case ScanError.InvalidUnicode: {
 					handleError(ParseErrorCode.InvalidUnicode);
 					break;
-				case ScanError.InvalidEscapeCharacter:
+				}
+				case ScanError.InvalidEscapeCharacter: {
 					handleError(ParseErrorCode.InvalidEscapeCharacter);
 					break;
-				case ScanError.UnexpectedEndOfNumber:
+				}
+				case ScanError.UnexpectedEndOfNumber: {
 					handleError(ParseErrorCode.UnexpectedEndOfNumber);
 					break;
-				case ScanError.UnexpectedEndOfComment:
+				}
+				case ScanError.UnexpectedEndOfComment: {
 					if (!disallowComments) {
 						handleError(ParseErrorCode.UnexpectedEndOfComment);
 					}
 					break;
-				case ScanError.UnexpectedEndOfString:
+				}
+				case ScanError.UnexpectedEndOfString: {
 					handleError(ParseErrorCode.UnexpectedEndOfString);
 					break;
-				case ScanError.InvalidCharacter:
+				}
+				case ScanError.InvalidCharacter: {
 					handleError(ParseErrorCode.InvalidCharacter);
 					break;
+				}
 			}
 			switch (token) {
 				case SyntaxKind.LineCommentTrivia:
-				case SyntaxKind.BlockCommentTrivia:
+				case SyntaxKind.BlockCommentTrivia: {
 					if (disallowComments) {
 						handleError(ParseErrorCode.InvalidCommentToken);
 					} else {
 						onComment();
 					}
 					break;
-				case SyntaxKind.Unknown:
+				}
+				case SyntaxKind.Unknown: {
 					handleError(ParseErrorCode.InvalidSymbol);
 					break;
+				}
 				case SyntaxKind.Trivia:
 				case SyntaxKind.LineBreakTrivia:
 					break;
@@ -1319,15 +1345,18 @@ export function visit(
 				onLiteralValue(value);
 				break;
 			}
-			case SyntaxKind.NullKeyword:
+			case SyntaxKind.NullKeyword: {
 				onLiteralValue(null);
 				break;
-			case SyntaxKind.TrueKeyword:
+			}
+			case SyntaxKind.TrueKeyword: {
 				onLiteralValue(true);
 				break;
-			case SyntaxKind.FalseKeyword:
+			}
+			case SyntaxKind.FalseKeyword: {
 				onLiteralValue(false);
 				break;
+			}
 			default:
 				return false;
 		}
@@ -1507,7 +1536,7 @@ export function stripComments(text: string, replaceCh?: string): string {
 		switch (kind) {
 			case SyntaxKind.LineCommentTrivia:
 			case SyntaxKind.BlockCommentTrivia:
-			case SyntaxKind.EOF:
+			case SyntaxKind.EOF: {
 				if (offset !== pos) {
 					parts.push(text.substring(offset, pos));
 				}
@@ -1518,6 +1547,7 @@ export function stripComments(text: string, replaceCh?: string): string {
 				}
 				offset = _scanner.getPosition();
 				break;
+			}
 		}
 	} while (kind !== SyntaxKind.EOF);
 

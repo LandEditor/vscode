@@ -64,7 +64,7 @@ export const getReferencesToFileInWorkspace = new RequestType<
 	any
 >("markdown/getReferencesToFileInWorkspace");
 export const getEditForFileRenames = new RequestType<
-	Array<FileRename>,
+	FileRename[],
 	{ participatingRenames: readonly FileRename[]; edit: lsp.WorkspaceEdit },
 	any
 >("markdown/getEditForFileRenames");

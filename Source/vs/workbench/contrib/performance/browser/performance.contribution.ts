@@ -102,9 +102,9 @@ registerAction2(
 			if (instaService instanceof InstantiationService) {
 				const cycle = instaService._globalGraph?.findCycleSlow();
 				if (cycle) {
-					console.warn(`CYCLE`, cycle);
+					console.warn("CYCLE", cycle);
 				} else {
-					console.warn(`YEAH, no more cycles`);
+					console.warn("YEAH, no more cycles");
 				}
 			}
 		}

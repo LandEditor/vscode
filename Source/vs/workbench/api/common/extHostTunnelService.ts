@@ -391,9 +391,9 @@ export class ExtHostTunnelService
 			const hostMap = this._extensionTunnels.get(remote.host)!;
 			if (hostMap.has(remote.port)) {
 				if (silent) {
-					hostMap.get(remote.port)!.disposeListener.dispose();
+					hostMap.get(remote.port)?.disposeListener.dispose();
 				}
-				await hostMap.get(remote.port)!.tunnel.dispose();
+				await hostMap.get(remote.port)?.tunnel.dispose();
 				hostMap.delete(remote.port);
 			}
 		}
@@ -451,8 +451,8 @@ export class ExtHostTunnelService
 						}),
 					);
 					this._extensionTunnels
-						.get(tunnelOptions.remoteAddress.host)!
-						.set(tunnelOptions.remoteAddress.port, {
+						.get(tunnelOptions.remoteAddress.host)
+						?.set(tunnelOptions.remoteAddress.port, {
 							tunnel,
 							disposeListener,
 						});

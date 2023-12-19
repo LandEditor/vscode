@@ -9,7 +9,7 @@ import * as PConst from "../../tsServer/protocol/protocol.const";
 
 export function snippetForFunctionCall(
 	item: { insertText?: string | vscode.SnippetString; label: string },
-	displayParts: ReadonlyArray<Proto.SymbolDisplayPart>,
+	displayParts: readonly Proto.SymbolDisplayPart[],
 ): { snippet: vscode.SnippetString; parameterCount: number } {
 	if (item.insertText && typeof item.insertText !== "string") {
 		return { snippet: item.insertText, parameterCount: 0 };
@@ -34,7 +34,7 @@ export function snippetForFunctionCall(
 
 function appendJoinedPlaceholders(
 	snippet: vscode.SnippetString,
-	parts: ReadonlyArray<Proto.SymbolDisplayPart>,
+	parts: readonly Proto.SymbolDisplayPart[],
 	joiner: string,
 ) {
 	for (let i = 0; i < parts.length; ++i) {
@@ -47,12 +47,12 @@ function appendJoinedPlaceholders(
 }
 
 interface ParamterListParts {
-	readonly parts: ReadonlyArray<Proto.SymbolDisplayPart>;
+	readonly parts: readonly Proto.SymbolDisplayPart[];
 	readonly hasOptionalParameters: boolean;
 }
 
 function getParameterListParts(
-	displayParts: ReadonlyArray<Proto.SymbolDisplayPart>,
+	displayParts: readonly Proto.SymbolDisplayPart[],
 ): ParamterListParts {
 	const parts: Proto.SymbolDisplayPart[] = [];
 	let isInMethod = false;
@@ -66,13 +66,14 @@ function getParameterListParts(
 			case PConst.DisplayPartKind.methodName:
 			case PConst.DisplayPartKind.functionName:
 			case PConst.DisplayPartKind.text:
-			case PConst.DisplayPartKind.propertyName:
+			case PConst.DisplayPartKind.propertyName: {
 				if (parenCount === 0 && braceCount === 0) {
 					isInMethod = true;
 				}
 				break;
+			}
 
-			case PConst.DisplayPartKind.parameterName:
+			case PConst.DisplayPartKind.parameterName: {
 				if (parenCount === 1 && braceCount === 0 && isInMethod) {
 					// Only take top level paren names
 					const next = displayParts[i + 1];
@@ -81,7 +82,7 @@ function getParameterListParts(
 						next && next.text === "?";
 					// Skip this parameter
 					const nameIsThis = part.text === "this";
-					if (!nameIsFollowedByOptionalIndicator && !nameIsThis) {
+					if (!(nameIsFollowedByOptionalIndicator || nameIsThis)) {
 						parts.push(part);
 					}
 					hasOptionalParameters =
@@ -89,8 +90,9 @@ function getParameterListParts(
 						nameIsFollowedByOptionalIndicator;
 				}
 				break;
+			}
 
-			case PConst.DisplayPartKind.punctuation:
+			case PConst.DisplayPartKind.punctuation: {
 				if (part.text === "(") {
 					++parenCount;
 				} else if (part.text === ")") {
@@ -108,6 +110,7 @@ function getParameterListParts(
 					--braceCount;
 				}
 				break;
+			}
 		}
 	}
 

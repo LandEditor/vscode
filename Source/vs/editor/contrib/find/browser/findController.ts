@@ -395,8 +395,8 @@ export class CommonFindController
 						selection = selection.setEndPosition(
 							selection.endLineNumber - 1,
 							this._editor
-								.getModel()!
-								.getLineMaxColumn(selection.endLineNumber - 1),
+								.getModel()
+								?.getLineMaxColumn(selection.endLineNumber - 1),
 						);
 					}
 					if (!selection.isEmpty()) {
@@ -639,12 +639,14 @@ export class FindController
 		let updateSearchScope = false;
 
 		switch (this._editor.getOption(EditorOption.find).autoFindInSelection) {
-			case "always":
+			case "always": {
 				updateSearchScope = true;
 				break;
-			case "never":
+			}
+			case "never": {
 				updateSearchScope = false;
 				break;
+			}
 			case "multiline": {
 				const isSelectionMultipleLine =
 					!!selection &&
@@ -676,9 +678,9 @@ export class FindController
 			this._createFindWidget();
 		}
 		if (this._state.isRevealed && !ignoreWhenVisible) {
-			this._widget!.highlightFindOptions();
+			this._widget?.highlightFindOptions();
 		} else {
-			this._findOptionsWidget!.highlightFindOptions();
+			this._findOptionsWidget?.highlightFindOptions();
 		}
 	}
 
@@ -849,7 +851,7 @@ export class StartFindWithArgsAction extends EditorAction {
 					seedSearchStringFromGlobalClipboard: true,
 					shouldFocus: FindStartFocusAction.FocusFindInput,
 					shouldAnimate: true,
-					updateSearchScope: args?.findInSelection || false,
+					updateSearchScope: args?.findInSelection,
 					loop: editor.getOption(EditorOption.find).loop,
 				},
 				newState,
@@ -1051,7 +1053,7 @@ export class MoveToMatchFindAction extends EditorAction {
 
 		const toFindMatchIndex = (value: string): number | undefined => {
 			const index = parseInt(value);
-			if (isNaN(index)) {
+			if (Number.isNaN(index)) {
 				return undefined;
 			}
 

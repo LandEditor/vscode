@@ -518,12 +518,7 @@ export class NativeWindow extends BaseWindow {
 
 				// Reply back to the channel without result to indicate
 				// that the login dialog was cancelled
-				if (!result.confirmed || !result.values) {
-					ipcRenderer.send(payload.replyChannel);
-				}
-
-				// Other reply back with the picked credentials
-				else {
+				if ((result.confirmed && result.values)) {
 					// Update state based on checkbox
 					if (result.checkboxChecked) {
 						this.storageService.store(
@@ -546,6 +541,8 @@ export class NativeWindow extends BaseWindow {
 						password,
 						remember: !!result.checkboxChecked,
 					});
+				} else {
+					ipcRenderer.send(payload.replyChannel);
 				}
 			},
 		);
@@ -783,7 +780,7 @@ export class NativeWindow extends BaseWindow {
 				),
 			)((e) =>
 				this.layoutService.updateWindowMaximizedState(
-					getWindowById(e.windowId)!.window,
+					getWindowById(e.windowId)?.window,
 					e.maximized,
 				),
 			),

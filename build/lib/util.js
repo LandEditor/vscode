@@ -118,7 +118,7 @@ function fixWin32DirectoryPermissions() {
 		return es.through();
 	}
 	return es.mapSync((f) => {
-		if (f.stat && f.stat.isDirectory && f.stat.isDirectory()) {
+		if (f.stat?.isDirectory?.()) {
 			f.stat.mode = 16877;
 		}
 		return f;
@@ -149,9 +149,9 @@ exports.setExecutableBit = setExecutableBit;
 function toFileUri(filePath) {
 	const match = filePath.match(/^([a-z])\:(.*)$/i);
 	if (match) {
-		filePath = "/" + match[1].toUpperCase() + ":" + match[2];
+		filePath = `/${match[1].toUpperCase()}:${match[2]}`;
 	}
-	return "file://" + filePath.replace(/\\/g, "/");
+	return `file://${filePath.replace(/\\/g, "/")}`;
 }
 exports.toFileUri = toFileUri;
 function skipDirectories() {
@@ -365,7 +365,7 @@ function versionStringToNumber(versionStr) {
 	const match = versionStr.match(semverRegex);
 	if (!match) {
 		throw new Error(
-			"Version string is not properly formatted: " + versionStr,
+			`Version string is not properly formatted: ${versionStr}`,
 		);
 	}
 	return (
@@ -462,10 +462,10 @@ function acquireWebNodePaths() {
 }
 exports.acquireWebNodePaths = acquireWebNodePaths;
 function createExternalLoaderConfig(webEndpoint, commit, quality) {
-	if (!webEndpoint || !commit || !quality) {
+	if (!(webEndpoint && commit && quality)) {
 		return undefined;
 	}
-	webEndpoint = webEndpoint + `/${quality}/${commit}`;
+	webEndpoint += `/${quality}/${commit}`;
 	const nodePaths = acquireWebNodePaths();
 	Object.keys(nodePaths).map((key, _) => {
 		nodePaths[key] = `../node_modules/${key}/${nodePaths[key]}`;

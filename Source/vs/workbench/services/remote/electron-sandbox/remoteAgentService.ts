@@ -128,7 +128,7 @@ class RemoteConnectionFailureNotificationContribution
 		return URI.from({
 			scheme: "http",
 			authority: `${connectionData.connectTo.host}:${connectionData.connectTo.port}`,
-			path: `/version`,
+			path: "/version",
 		});
 	}
 }

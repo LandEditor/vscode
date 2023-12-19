@@ -44,7 +44,7 @@ function mixin(mixinPath: string) {
 }
 
 function main() {
-	log(`Mixing in distro npm dependencies...`);
+	log("Mixing in distro npm dependencies...");
 
 	const mixinPaths = dirs.filter((d) => /^.build\/distro\/npm/.test(d));
 

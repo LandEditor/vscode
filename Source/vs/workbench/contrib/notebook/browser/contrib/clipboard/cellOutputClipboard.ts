@@ -27,7 +27,7 @@ export async function copyCellOutput(
 
 	mimeType = output?.mime;
 
-	if (!mimeType || !output) {
+	if (!(mimeType && output)) {
 		return;
 	}
 
@@ -48,8 +48,8 @@ export async function copyCellOutput(
 				break;
 			}
 
-			text = text + decoder.decode(nextOutput.data.buffer);
-			index = index + 1;
+			text += decoder.decode(nextOutput.data.buffer);
+			index += 1;
 		}
 	}
 

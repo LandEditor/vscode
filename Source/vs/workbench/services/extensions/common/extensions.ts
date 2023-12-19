@@ -231,7 +231,6 @@ export class ExtensionHostExtensions {
 				// (e.g. maybe it executes in a different location)
 				toRemove.push(oldExtension.identifier);
 				oldExtensionsMap.delete(oldExtension.identifier);
-				continue;
 			}
 		}
 		for (const newExtension of allExtensions) {
@@ -245,7 +244,6 @@ export class ExtensionHostExtensions {
 				// (e.g. maybe it executes in a different location)
 				toRemove.push(oldExtension.identifier);
 				oldExtensionsMap.delete(oldExtension.identifier);
-				continue;
 			}
 		}
 

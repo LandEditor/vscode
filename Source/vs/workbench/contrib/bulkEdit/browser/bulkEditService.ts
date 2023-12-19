@@ -195,7 +195,7 @@ class BulkEdit {
 			} else {
 				console.log("UNKNOWN EDIT");
 			}
-			index = index + range;
+			index += range;
 		}
 
 		return resources.flat();
@@ -328,7 +328,7 @@ export class BulkEditService implements IBulkEditService {
 			}
 		}
 
-		if (codeEditor && codeEditor.getOption(EditorOption.readOnly)) {
+		if (codeEditor?.getOption(EditorOption.readOnly)) {
 			// If the code editor is readonly still allow bulk edits to be applied #68549
 			codeEditor = undefined;
 		}
@@ -426,7 +426,7 @@ export class BulkEditService implements IBulkEditService {
 		let message: string;
 		let primaryButton: string;
 		switch (reason) {
-			case ShutdownReason.CLOSE:
+			case ShutdownReason.CLOSE: {
 				message = localize(
 					"closeTheWindow.message",
 					"Are you sure you want to close the window?",
@@ -439,7 +439,8 @@ export class BulkEditService implements IBulkEditService {
 					"&&Close Window",
 				);
 				break;
-			case ShutdownReason.LOAD:
+			}
+			case ShutdownReason.LOAD: {
 				message = localize(
 					"changeWorkspace.message",
 					"Are you sure you want to change the workspace?",
@@ -452,7 +453,8 @@ export class BulkEditService implements IBulkEditService {
 					"Change &&Workspace",
 				);
 				break;
-			case ShutdownReason.RELOAD:
+			}
+			case ShutdownReason.RELOAD: {
 				message = localize(
 					"reloadTheWindow.message",
 					"Are you sure you want to reload the window?",
@@ -465,7 +467,8 @@ export class BulkEditService implements IBulkEditService {
 					"&&Reload Window",
 				);
 				break;
-			default:
+			}
+			default: {
 				message = localize(
 					"quit.message",
 					"Are you sure you want to quit?",
@@ -475,6 +478,7 @@ export class BulkEditService implements IBulkEditService {
 					"&&Quit",
 				);
 				break;
+			}
 		}
 
 		const result = await this._dialogService.confirm({

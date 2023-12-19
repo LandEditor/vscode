@@ -358,7 +358,7 @@ export class HoverController extends Disposable implements IEditorContribution {
 					(decoratorActivatedOn === "clickAndHover" &&
 						!enabled &&
 						!activatedByDecoratorClick))) ||
-			(!mouseOnDecorator && !enabled && !activatedByDecoratorClick)
+			!(mouseOnDecorator || enabled || activatedByDecoratorClick)
 		) {
 			this._hideWidgets();
 			return;
@@ -558,7 +558,7 @@ class ShowOrFocusHoverAction extends EditorAction {
 				"Show or Focus Hover",
 			),
 			metadata: {
-				description: `Show or Focus Hover`,
+				description: "Show or Focus Hover",
 				args: [
 					{
 						name: "args",

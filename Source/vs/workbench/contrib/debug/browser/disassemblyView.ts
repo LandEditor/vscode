@@ -355,7 +355,7 @@ export class DisassemblyView extends EditorPane {
 						DisassemblyView.NUM_INSTRUCTIONS_TO_LOAD,
 					).then((loaded) => {
 						if (loaded > 0) {
-							this._disassembledInstructions!.reveal(
+							this._disassembledInstructions?.reveal(
 								prevTop + loaded,
 								0,
 							);
@@ -406,10 +406,10 @@ export class DisassemblyView extends EditorPane {
 								bp.offset,
 							);
 							if (index >= 0) {
-								this._disassembledInstructions!.row(
+								this._disassembledInstructions?.row(
 									index,
 								).isBreakpointSet = true;
-								this._disassembledInstructions!.row(
+								this._disassembledInstructions?.row(
 									index,
 								).isBreakpointEnabled = bp.enabled;
 								changed = true;
@@ -424,7 +424,7 @@ export class DisassemblyView extends EditorPane {
 								bp.offset,
 							);
 							if (index >= 0) {
-								this._disassembledInstructions!.row(
+								this._disassembledInstructions?.row(
 									index,
 								).isBreakpointSet = false;
 								changed = true;
@@ -440,10 +440,10 @@ export class DisassemblyView extends EditorPane {
 							);
 							if (index >= 0) {
 								if (
-									this._disassembledInstructions!.row(index)
+									this._disassembledInstructions?.row(index)
 										.isBreakpointEnabled !== bp.enabled
 								) {
-									this._disassembledInstructions!.row(
+									this._disassembledInstructions?.row(
 										index,
 									).isBreakpointEnabled = bp.enabled;
 									changed = true;
@@ -773,8 +773,10 @@ export class DisassemblyView extends EditorPane {
 			) =>
 				instruction.line !== undefined &&
 				instruction.location !== undefined &&
-				(!lastLocated ||
-					!sourcesEqual(instruction.location, lastLocated.location) ||
+				(!(
+					lastLocated &&
+					sourcesEqual(instruction.location, lastLocated.location)
+				) ||
 					instruction.line !== lastLocated.line);
 
 			for (const entry of newEntries) {
@@ -836,15 +838,15 @@ export class DisassemblyView extends EditorPane {
 			DisassemblyView.NUM_INSTRUCTIONS_TO_LOAD * 8,
 		).then(() => {
 			// on load, set the target instruction in the middle of the page.
-			if (this._disassembledInstructions!.length > 0) {
+			if (this._disassembledInstructions?.length > 0) {
 				const targetIndex = Math.floor(
-					this._disassembledInstructions!.length / 2,
+					this._disassembledInstructions?.length / 2,
 				);
-				this._disassembledInstructions!.reveal(targetIndex, 0.5);
+				this._disassembledInstructions?.reveal(targetIndex, 0.5);
 
 				// Always focus the target address on reload, or arrow key navigation would look terrible
-				this._disassembledInstructions!.domFocus();
-				this._disassembledInstructions!.setFocus([targetIndex]);
+				this._disassembledInstructions?.domFocus();
+				this._disassembledInstructions?.setFocus([targetIndex]);
 			}
 			this._loadingLock = false;
 		});
@@ -877,14 +879,11 @@ class BreakpointRenderer
 
 	templateId: string = BreakpointRenderer.TEMPLATE_ID;
 
-	private readonly _breakpointIcon = "codicon-" + icons.breakpoint.regular.id;
-	private readonly _breakpointDisabledIcon =
-		"codicon-" + icons.breakpoint.disabled.id;
-	private readonly _breakpointHintIcon =
-		"codicon-" + icons.debugBreakpointHint.id;
-	private readonly _debugStackframe = "codicon-" + icons.debugStackframe.id;
-	private readonly _debugStackframeFocused =
-		"codicon-" + icons.debugStackframeFocused.id;
+	private readonly _breakpointIcon = `codicon-${icons.breakpoint.regular.id}`;
+	private readonly _breakpointDisabledIcon = `codicon-${icons.breakpoint.disabled.id}`;
+	private readonly _breakpointHintIcon = `codicon-${icons.debugBreakpointHint.id}`;
+	private readonly _debugStackframe = `codicon-${icons.debugStackframe.id}`;
+	private readonly _debugStackframeFocused = `codicon-${icons.debugStackframeFocused.id}`;
 
 	constructor(
 		private readonly _disassemblyView: DisassemblyView,
@@ -900,7 +899,7 @@ class BreakpointRenderer
 		icon.style.display = "flex";
 		icon.style.alignItems = "center";
 		icon.style.justifyContent = "center";
-		icon.style.height = this._disassemblyView.fontInfo.lineHeight + "px";
+		icon.style.height = `${this._disassemblyView.fontInfo.lineHeight}px`;
 
 		const currentElement: { element?: IDisassembledInstructionEntry } = {
 			element: undefined,
@@ -1146,7 +1145,7 @@ class InstructionRenderer
 						const lineContent =
 							textModel.getLineContent(lineNumber);
 						sourceSB.appendString(`  ${lineNumber}: `);
-						sourceSB.appendString(lineContent + "\n");
+						sourceSB.appendString(`${lineContent}\n`);
 
 						if (
 							instruction.endLine &&
@@ -1290,7 +1289,7 @@ class InstructionRenderer
 		instruction: DebugProtocol.DisassembledInstruction,
 	): URI {
 		// Try to resolve path before consulting the debugSession.
-		const path = instruction.location!.path;
+		const path = instruction.location?.path;
 		if (path && isUri(path)) {
 			// path looks like a uri
 			return this.uriService.asCanonicalUri(URI.parse(path));
@@ -1302,8 +1301,8 @@ class InstructionRenderer
 
 		return getUriFromSource(
 			instruction.location!,
-			instruction.location!.path,
-			this._disassemblyView.debugSession!.getId(),
+			instruction.location?.path,
+			this._disassemblyView.debugSession?.getId(),
 			this.uriService,
 			this.logService,
 		);
@@ -1336,7 +1335,7 @@ class AccessibilityProvider
 				instruction.instructionBytes
 			}`;
 		}
-		label += `, ${localize(`instructionText`, "Instruction")}: ${
+		label += `, ${localize("instructionText", "Instruction")}: ${
 			instruction.instruction
 		}`;
 

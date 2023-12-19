@@ -395,10 +395,10 @@ class MenuRegistryChangeEvent {
 	private static _all = new Map<MenuId, MenuRegistryChangeEvent>();
 
 	static for(id: MenuId): MenuRegistryChangeEvent {
-		let value = this._all.get(id);
+		let value = MenuRegistryChangeEvent._all.get(id);
 		if (!value) {
 			value = new MenuRegistryChangeEvent(id);
-			this._all.set(id, value);
+			MenuRegistryChangeEvent._all.set(id, value);
 		}
 		return value;
 	}

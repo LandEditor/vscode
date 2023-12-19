@@ -100,12 +100,10 @@ export class NativeDialogHandler extends AbstractDialogHandler {
 				this.productService.date
 					? `${this.productService.date}${
 							useAgo
-								? " (" +
-								  fromNow(
+								? ` (${fromNow(
 										new Date(this.productService.date),
 										true,
-								  ) +
-								  ")"
+								  )})`
 								: ""
 					  }`
 					: "Unknown",

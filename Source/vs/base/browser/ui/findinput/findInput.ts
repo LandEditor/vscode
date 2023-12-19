@@ -452,11 +452,11 @@ export class FindInput extends Widget {
 	private _lastHighlightFindOptions = 0;
 	public highlightFindOptions(): void {
 		this.domNode.classList.remove(
-			"highlight-" + this._lastHighlightFindOptions,
+			`highlight-${this._lastHighlightFindOptions}`,
 		);
 		this._lastHighlightFindOptions = 1 - this._lastHighlightFindOptions;
 		this.domNode.classList.add(
-			"highlight-" + this._lastHighlightFindOptions,
+			`highlight-${this._lastHighlightFindOptions}`,
 		);
 	}
 

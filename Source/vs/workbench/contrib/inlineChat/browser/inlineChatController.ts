@@ -459,7 +459,7 @@ export class InlineChatController implements IEditorContribution {
 		let initPosition: Position | undefined;
 		if (options.position) {
 			initPosition = Position.lift(options.position).delta(-1);
-			delete options.position;
+			options.position = undefined;
 		}
 
 		this._showWidget(true, initPosition);
@@ -496,8 +496,8 @@ export class InlineChatController implements IEditorContribution {
 			}
 		}
 
-		delete options.initialRange;
-		delete options.existingSession;
+		options.initialRange = undefined;
+		options.existingSession = undefined;
 
 		if (!session) {
 			this._dialogService.info(
@@ -511,7 +511,7 @@ export class InlineChatController implements IEditorContribution {
 		}
 
 		switch (session.editMode) {
-			case EditMode.Live:
+			case EditMode.Live: {
 				this._strategy = this._instaService.createInstance(
 					LiveStrategy3,
 					session,
@@ -519,15 +519,16 @@ export class InlineChatController implements IEditorContribution {
 					this._zone.value,
 				);
 				break;
-			case EditMode.Preview:
+			}
+			case EditMode.Preview: {
 				this._strategy = this._instaService.createInstance(
 					PreviewStrategy,
 					session,
 					this._zone.value,
 				);
 				break;
-			case EditMode.LivePreview:
-			default:
+			}
+			default: {
 				this._strategy = this._instaService.createInstance(
 					LivePreviewStrategy,
 					session,
@@ -535,6 +536,7 @@ export class InlineChatController implements IEditorContribution {
 					this._zone.value,
 				);
 				break;
+			}
 		}
 
 		this._activeSession = session;
@@ -556,7 +558,7 @@ export class InlineChatController implements IEditorContribution {
 
 		const wholeRangeDecoration = this._editor.createDecorationsCollection();
 		const updateWholeRangeDecoration = () => {
-			const ranges = [this._activeSession!.wholeRange.value]; //this._activeSession!.wholeRange.values;
+			const ranges = [this._activeSession?.wholeRange.value]; //this._activeSession!.wholeRange.values;
 			const newDecorations = ranges.map((range) =>
 				range.isEmpty()
 					? undefined
@@ -628,7 +630,7 @@ export class InlineChatController implements IEditorContribution {
 					return;
 				}
 
-				const wholeRange = this._activeSession!.wholeRange;
+				const wholeRange = this._activeSession?.wholeRange;
 				let editIsOutsideOfWholeRange = false;
 				for (const { range } of e.changes) {
 					editIsOutsideOfWholeRange =
@@ -638,7 +640,7 @@ export class InlineChatController implements IEditorContribution {
 						);
 				}
 
-				this._activeSession!.recordExternalEditOccurred(
+				this._activeSession?.recordExternalEditOccurred(
 					editIsOutsideOfWholeRange,
 				);
 
@@ -659,7 +661,7 @@ export class InlineChatController implements IEditorContribution {
 		if (!this._activeSession.lastExchange) {
 			return State.WAIT_FOR_INPUT;
 		} else if (options.isUnstashed) {
-			delete options.isUnstashed;
+			options.isUnstashed = undefined;
 			return State.APPLY_RESPONSE;
 		} else {
 			return State.SHOW_RESPONSE;
@@ -706,13 +708,13 @@ export class InlineChatController implements IEditorContribution {
 		if (options.message) {
 			this.updateInput(options.message);
 			aria.alert(options.message);
-			delete options.message;
+			options.message = undefined;
 		}
 
 		let message = Message.NONE;
 		if (options.autoSend) {
 			message = Message.ACCEPT_INPUT;
-			delete options.autoSend;
+			options.autoSend = undefined;
 		} else {
 			const barrier = new Barrier();
 			const store = new DisposableStore();
@@ -768,7 +770,7 @@ export class InlineChatController implements IEditorContribution {
 		this._historyUpdate(input);
 
 		const refer = this._activeSession.session.slashCommands?.some(
-			(value) => value.refer && input!.startsWith(`/${value.command}`),
+			(value) => value.refer && input?.startsWith(`/${value.command}`),
 		);
 		if (refer) {
 			this._log(
@@ -886,7 +888,7 @@ export class InlineChatController implements IEditorContribution {
 
 				progressiveEditsQueue.queue(async () => {
 					const startThen =
-						this._activeSession!.wholeRange.value.getStartPosition();
+						this._activeSession?.wholeRange.value.getStartPosition();
 
 					// making changes goes into a queue because otherwise the async-progress time will
 					// influence the time it takes to receive the changes and progressive typing will
@@ -903,10 +905,12 @@ export class InlineChatController implements IEditorContribution {
 
 					// reshow the widget if the start position changed or shows at the wrong position
 					const startNow =
-						this._activeSession!.wholeRange.value.getStartPosition();
+						this._activeSession?.wholeRange.value.getStartPosition();
 					if (
-						!startNow.equals(startThen) ||
-						!this._zone.value.position?.equals(startNow)
+						!(
+							startNow.equals(startThen) &&
+							this._zone.value.position?.equals(startNow)
+						)
 					) {
 						this._showWidget(false, startNow.delta(-1));
 					}
@@ -924,7 +928,7 @@ export class InlineChatController implements IEditorContribution {
 							supportHtml: true,
 							isTrusted: false,
 						}),
-						providerId: this._activeSession!.provider.debugName,
+						providerId: this._activeSession?.provider.debugName,
 						requestId: request.requestId,
 					};
 					progressiveChatResponse =
@@ -1432,12 +1436,14 @@ export class InlineChatController implements IEditorContribution {
 				kind,
 			);
 			switch (kind) {
-				case InlineChatResponseFeedbackKind.Helpful:
+				case InlineChatResponseFeedbackKind.Helpful: {
 					this._ctxLastFeedbackKind.set("helpful");
 					break;
-				case InlineChatResponseFeedbackKind.Unhelpful:
+				}
+				case InlineChatResponseFeedbackKind.Unhelpful: {
 					this._ctxLastFeedbackKind.set("unhelpful");
 					break;
+				}
 				default:
 					break;
 			}
@@ -1591,7 +1597,7 @@ async function showMessageResponse(
 
 	const chatWidgetService = accessor.get(IChatWidgetService);
 	const widget = await chatWidgetService.revealViewForProvider(providerId);
-	if (widget && widget.viewModel) {
+	if (widget?.viewModel) {
 		chatService.addCompleteRequest(widget.viewModel.sessionId, query, {
 			message: response,
 		});

@@ -278,10 +278,8 @@ export class ChatContributionService implements IChatContributionService {
 
 	private _registeredProviders = new Map<string, IChatProviderContribution>();
 
-	constructor() {}
-
 	public getViewIdForProvider(providerId: string): string {
-		return ChatViewPane.ID + "." + providerId;
+		return `${ChatViewPane.ID}.${providerId}`;
 	}
 
 	public registerChatProvider(provider: IChatProviderContribution): void {

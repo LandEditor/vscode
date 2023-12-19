@@ -11,7 +11,7 @@ import { nextItemStylesheet, prevItemStylesheet } from "./selectItemStylesheet";
 import { isStyleSheet, validate } from "./util";
 
 export function fetchSelectItem(direction: string): void {
-	if (!validate() || !vscode.window.activeTextEditor) {
+	if (!(validate() && vscode.window.activeTextEditor)) {
 		return;
 	}
 	const editor = vscode.window.activeTextEditor;

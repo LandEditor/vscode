@@ -172,7 +172,7 @@ export class TerminalCommand implements ITerminalCommand {
 	}
 
 	getOutput(): string | undefined {
-		if (!this.executedMarker || !this.endMarker) {
+		if (!(this.executedMarker && this.endMarker)) {
 			return undefined;
 		}
 		const startLine = this.executedMarker.line;
@@ -199,7 +199,7 @@ export class TerminalCommand implements ITerminalCommand {
 		outputMatcher: ITerminalOutputMatcher,
 	): ITerminalOutputMatch | undefined {
 		// TODO: Add back this check? this._ptyHeuristics.value instanceof WindowsPtyHeuristics && (executedMarker?.line === endMarker?.line) ? this._currentCommand.commandStartMarker : executedMarker
-		if (!this.executedMarker || !this.endMarker) {
+		if (!(this.executedMarker && this.endMarker)) {
 			return undefined;
 		}
 		const endLine = this.endMarker.line;
@@ -281,8 +281,7 @@ export class TerminalCommand implements ITerminalCommand {
 
 	hasOutput(): boolean {
 		return (
-			!this.executedMarker?.isDisposed &&
-			!this.endMarker?.isDisposed &&
+			!(this.executedMarker?.isDisposed || this.endMarker?.isDisposed) &&
 			!!(
 				this.executedMarker &&
 				this.endMarker &&
@@ -472,7 +471,7 @@ function getPromptRowCount(
 ): number {
 	const marker =
 		"hasOutput" in command ? command.marker : command.commandStartMarker;
-	if (!marker || !command.promptStartMarker) {
+	if (!(marker && command.promptStartMarker)) {
 		return 1;
 	}
 	let promptRowCount = 1;
@@ -498,7 +497,7 @@ function getCommandRowCount(
 		"hasOutput" in command
 			? command.executedMarker
 			: command.commandExecutedMarker;
-	if (!marker || !executedMarker) {
+	if (!(marker && executedMarker)) {
 		return 1;
 	}
 	const commandExecutedLine = Math.max(executedMarker.line, marker.line);

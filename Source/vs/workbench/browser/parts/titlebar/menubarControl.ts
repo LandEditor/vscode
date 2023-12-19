@@ -630,7 +630,7 @@ export class CustomMenubarControl extends MenubarControl {
 					class extends Action2 {
 						constructor() {
 							super({
-								id: `workbench.actions.menubar.focus`,
+								id: "workbench.actions.menubar.focus",
 								title: {
 									value: localize(
 										"focusMenu",
@@ -768,12 +768,13 @@ export class CustomMenubarControl extends MenubarControl {
 
 	private insertActionsBefore(nextAction: IAction, target: IAction[]): void {
 		switch (nextAction.id) {
-			case OpenRecentAction.ID:
+			case OpenRecentAction.ID: {
 				target.push(...this.getOpenRecentActions());
 				break;
+			}
 
-			case "workbench.action.showAboutDialog":
-				if (!isMacintosh && !isWeb) {
+			case "workbench.action.showAboutDialog": {
+				if (!(isMacintosh || isWeb)) {
 					const updateAction = this.getUpdateAction();
 					if (updateAction) {
 						updateAction.label = mnemonicMenuLabel(
@@ -785,6 +786,7 @@ export class CustomMenubarControl extends MenubarControl {
 				}
 
 				break;
+			}
 
 			default:
 				break;

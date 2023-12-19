@@ -88,7 +88,7 @@ export class HoverAccessibleViewContribution extends Disposable {
 						? HoverController.get(editor)?.getWidgetContent() ??
 						  undefined
 						: undefined;
-					if (!editor || !editorHoverContent) {
+					if (!(editor && editorHoverContent)) {
 						return false;
 					}
 					this._options.language =
@@ -379,7 +379,7 @@ export class InlineCompletionsAccessibleViewContribution extends Disposable {
 								editor,
 							)?.model.get();
 						const state = model?.state.get();
-						if (!model || !state) {
+						if (!(model && state)) {
 							return false;
 						}
 						const lineText = model.textModel.getLineContent(

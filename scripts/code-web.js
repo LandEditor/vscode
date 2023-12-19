@@ -63,7 +63,7 @@ async function main() {
 	}
 
 	let openSystemBrowser = false;
-	if (!args["browser"] && !args["browserType"]) {
+	if (!(args["browser"] || args["browserType"])) {
 		serverArgs.push("--browserType", "none");
 		openSystemBrowser = true;
 	}
@@ -181,7 +181,8 @@ async function ensureWebDevExtensions(verbose) {
 				)}: Downloading vscode-web-playground to ${webDevPlaygroundRoot}`,
 			);
 		}
-		const playgroundRepo = `https://raw.githubusercontent.com/microsoft/vscode-web-playground/main/`;
+		const playgroundRepo =
+			"https://raw.githubusercontent.com/microsoft/vscode-web-playground/main/";
 		await Promise.all(
 			["package.json", "dist/extension.js", "dist/extension.js.map"].map(
 				(fileName) =>

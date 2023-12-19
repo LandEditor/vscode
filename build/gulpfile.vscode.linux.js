@@ -31,24 +31,16 @@ function getDebPackageArch(arch) {
 }
 
 function prepareDebPackage(arch) {
-	const binaryDir = "../VSCode-linux-" + arch;
+	const binaryDir = `../VSCode-linux-${arch}`;
 	const debArch = getDebPackageArch(arch);
-	const destination =
-		".build/linux/deb/" +
-		debArch +
-		"/" +
-		product.applicationName +
-		"-" +
-		debArch;
+	const destination = `.build/linux/deb/${debArch}/${product.applicationName}-${debArch}`;
 
 	return () => {
 		const desktop = gulp
 			.src("resources/linux/code.desktop", { base: "." })
 			.pipe(
 				rename(
-					"usr/share/applications/" +
-						product.applicationName +
-						".desktop",
+					`usr/share/applications/${product.applicationName}.desktop`,
 				),
 			);
 
@@ -56,9 +48,7 @@ function prepareDebPackage(arch) {
 			.src("resources/linux/code-url-handler.desktop", { base: "." })
 			.pipe(
 				rename(
-					"usr/share/applications/" +
-						product.applicationName +
-						"-url-handler.desktop",
+					`usr/share/applications/${product.applicationName}-url-handler.desktop`,
 				),
 			);
 
@@ -83,9 +73,7 @@ function prepareDebPackage(arch) {
 			.pipe(replace("@@LICENSE@@", product.licenseName))
 			.pipe(
 				rename(
-					"usr/share/appdata/" +
-						product.applicationName +
-						".appdata.xml",
+					`usr/share/appdata/${product.applicationName}.appdata.xml`,
 				),
 			);
 
@@ -95,25 +83,20 @@ function prepareDebPackage(arch) {
 			.pipe(replace("@@NAME@@", product.applicationName))
 			.pipe(
 				rename(
-					"usr/share/mime/packages/" +
-						product.applicationName +
-						"-workspace.xml",
+					`usr/share/mime/packages/${product.applicationName}-workspace.xml`,
 				),
 			);
 
 		const icon = gulp
 			.src("resources/linux/code.png", { base: "." })
-			.pipe(
-				rename("usr/share/pixmaps/" + product.linuxIconName + ".png"),
-			);
+			.pipe(rename(`usr/share/pixmaps/${product.linuxIconName}.png`));
 
 		const bash_completion = gulp
 			.src("resources/completions/bash/code")
 			.pipe(replace("@@APPNAME@@", product.applicationName))
 			.pipe(
 				rename(
-					"usr/share/bash-completion/completions/" +
-						product.applicationName,
+					`usr/share/bash-completion/completions/${product.applicationName}`,
 				),
 			);
 
@@ -122,15 +105,13 @@ function prepareDebPackage(arch) {
 			.pipe(replace("@@APPNAME@@", product.applicationName))
 			.pipe(
 				rename(
-					"usr/share/zsh/vendor-completions/_" +
-						product.applicationName,
+					`usr/share/zsh/vendor-completions/_${product.applicationName}`,
 				),
 			);
 
-		const code = gulp.src(binaryDir + "/**/*", { base: binaryDir }).pipe(
+		const code = gulp.src(`${binaryDir}/**/*`, { base: binaryDir }).pipe(
 			rename((p) => {
-				p.dirname =
-					"usr/share/" + product.applicationName + "/" + p.dirname;
+				p.dirname = `usr/share/${product.applicationName}/${p.dirname}`;
 			}),
 		);
 
@@ -155,9 +136,7 @@ function prepareDebPackage(arch) {
 						.pipe(
 							replace(
 								"@@VERSION@@",
-								packageJson.version +
-									"-" +
-									linuxPackageRevision,
+								`${packageJson.version}-${linuxPackageRevision}`,
 							),
 						)
 						.pipe(replace("@@ARCHITECTURE@@", debArch))
@@ -229,27 +208,11 @@ function buildDebPackage(arch) {
 	const debArch = getDebPackageArch(arch);
 	return shell.task(
 		[
-			"chmod 755 " +
-				product.applicationName +
-				"-" +
-				debArch +
-				"/DEBIAN/postinst " +
-				product.applicationName +
-				"-" +
-				debArch +
-				"/DEBIAN/prerm " +
-				product.applicationName +
-				"-" +
-				debArch +
-				"/DEBIAN/postrm",
+			`chmod 755 ${product.applicationName}-${debArch}/DEBIAN/postinst ${product.applicationName}-${debArch}/DEBIAN/prerm ${product.applicationName}-${debArch}/DEBIAN/postrm`,
 			"mkdir -p deb",
-			"fakeroot dpkg-deb -b " +
-				product.applicationName +
-				"-" +
-				debArch +
-				" deb",
+			`fakeroot dpkg-deb -b ${product.applicationName}-${debArch} deb`,
 		],
-		{ cwd: ".build/linux/deb/" + debArch },
+		{ cwd: `.build/linux/deb/${debArch}` },
 	);
 }
 
@@ -257,7 +220,7 @@ function buildDebPackage(arch) {
  * @param {string} rpmArch
  */
 function getRpmBuildPath(rpmArch) {
-	return ".build/linux/rpm/" + rpmArch + "/rpmbuild";
+	return `.build/linux/rpm/${rpmArch}/rpmbuild`;
 }
 
 /**
@@ -271,7 +234,7 @@ function getRpmPackageArch(arch) {
  * @param {string} arch
  */
 function prepareRpmPackage(arch) {
-	const binaryDir = "../VSCode-linux-" + arch;
+	const binaryDir = `../VSCode-linux-${arch}`;
 	const rpmArch = getRpmPackageArch(arch);
 
 	return () => {
@@ -279,9 +242,7 @@ function prepareRpmPackage(arch) {
 			.src("resources/linux/code.desktop", { base: "." })
 			.pipe(
 				rename(
-					"BUILD/usr/share/applications/" +
-						product.applicationName +
-						".desktop",
+					`BUILD/usr/share/applications/${product.applicationName}.desktop`,
 				),
 			);
 
@@ -289,9 +250,7 @@ function prepareRpmPackage(arch) {
 			.src("resources/linux/code-url-handler.desktop", { base: "." })
 			.pipe(
 				rename(
-					"BUILD/usr/share/applications/" +
-						product.applicationName +
-						"-url-handler.desktop",
+					`BUILD/usr/share/applications/${product.applicationName}-url-handler.desktop`,
 				),
 			);
 
@@ -316,9 +275,7 @@ function prepareRpmPackage(arch) {
 			.pipe(replace("@@LICENSE@@", product.licenseName))
 			.pipe(
 				rename(
-					"BUILD/usr/share/appdata/" +
-						product.applicationName +
-						".appdata.xml",
+					`BUILD/usr/share/appdata/${product.applicationName}.appdata.xml`,
 				),
 			);
 
@@ -328,18 +285,14 @@ function prepareRpmPackage(arch) {
 			.pipe(replace("@@NAME@@", product.applicationName))
 			.pipe(
 				rename(
-					"BUILD/usr/share/mime/packages/" +
-						product.applicationName +
-						"-workspace.xml",
+					`BUILD/usr/share/mime/packages/${product.applicationName}-workspace.xml`,
 				),
 			);
 
 		const icon = gulp
 			.src("resources/linux/code.png", { base: "." })
 			.pipe(
-				rename(
-					"BUILD/usr/share/pixmaps/" + product.linuxIconName + ".png",
-				),
+				rename(`BUILD/usr/share/pixmaps/${product.linuxIconName}.png`),
 			);
 
 		const bash_completion = gulp
@@ -347,8 +300,7 @@ function prepareRpmPackage(arch) {
 			.pipe(replace("@@APPNAME@@", product.applicationName))
 			.pipe(
 				rename(
-					"BUILD/usr/share/bash-completion/completions/" +
-						product.applicationName,
+					`BUILD/usr/share/bash-completion/completions/${product.applicationName}`,
 				),
 			);
 
@@ -357,18 +309,13 @@ function prepareRpmPackage(arch) {
 			.pipe(replace("@@APPNAME@@", product.applicationName))
 			.pipe(
 				rename(
-					"BUILD/usr/share/zsh/site-functions/_" +
-						product.applicationName,
+					`BUILD/usr/share/zsh/site-functions/_${product.applicationName}`,
 				),
 			);
 
-		const code = gulp.src(binaryDir + "/**/*", { base: binaryDir }).pipe(
+		const code = gulp.src(`${binaryDir}/**/*`, { base: binaryDir }).pipe(
 			rename((p) => {
-				p.dirname =
-					"BUILD/usr/share/" +
-					product.applicationName +
-					"/" +
-					p.dirname;
+				p.dirname = `BUILD/usr/share/${product.applicationName}/${p.dirname}`;
 			}),
 		);
 
@@ -404,7 +351,7 @@ function prepareRpmPackage(arch) {
 						),
 					)
 					.pipe(replace("@@DEPENDENCIES@@", dependencies.join(", ")))
-					.pipe(rename("SPECS/" + product.applicationName + ".spec"))
+					.pipe(rename(`SPECS/${product.applicationName}.spec`))
 					.pipe(
 						es.through(
 							(f) => {
@@ -420,7 +367,7 @@ function prepareRpmPackage(arch) {
 
 		const specIcon = gulp
 			.src("resources/linux/rpm/code.xpm", { base: "." })
-			.pipe(rename("SOURCES/" + product.applicationName + ".xpm"));
+			.pipe(rename(`SOURCES/${product.applicationName}.xpm`));
 
 		const all = es.merge(
 			code,
@@ -444,20 +391,13 @@ function prepareRpmPackage(arch) {
 function buildRpmPackage(arch) {
 	const rpmArch = getRpmPackageArch(arch);
 	const rpmBuildPath = getRpmBuildPath(rpmArch);
-	const rpmOut = rpmBuildPath + "/RPMS/" + rpmArch;
-	const destination = ".build/linux/rpm/" + rpmArch;
+	const rpmOut = `${rpmBuildPath}/RPMS/${rpmArch}`;
+	const destination = `.build/linux/rpm/${rpmArch}`;
 
 	return shell.task([
-		"mkdir -p " + destination,
-		'HOME="$(pwd)/' +
-			destination +
-			'" rpmbuild -bb ' +
-			rpmBuildPath +
-			"/SPECS/" +
-			product.applicationName +
-			".spec --target=" +
-			rpmArch,
-		'cp "' + rpmOut + "/$(ls " + rpmOut + ')" ' + destination + "/",
+		`mkdir -p ${destination}`,
+		`HOME="$(pwd)/${destination}" rpmbuild -bb ${rpmBuildPath}/SPECS/${product.applicationName}.spec --target=${rpmArch}`,
+		`cp "${rpmOut}/$(ls ${rpmOut})" ${destination}/`,
 	]);
 }
 
@@ -472,7 +412,7 @@ function getSnapBuildPath(arch) {
  * @param {string} arch
  */
 function prepareSnapPackage(arch) {
-	const binaryDir = "../VSCode-linux-" + arch;
+	const binaryDir = `../VSCode-linux-${arch}`;
 	const destination = getSnapBuildPath(arch);
 
 	return () => {
@@ -514,7 +454,7 @@ function prepareSnapPackage(arch) {
 			.src("resources/linux/code.png", { base: "." })
 			.pipe(rename(`snap/gui/${product.linuxIconName}.png`));
 
-		const code = gulp.src(binaryDir + "/**/*", { base: binaryDir }).pipe(
+		const code = gulp.src(`${binaryDir}/**/*`, { base: binaryDir }).pipe(
 			rename((p) => {
 				p.dirname = `usr/share/${product.applicationName}/${p.dirname}`;
 			}),

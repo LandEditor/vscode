@@ -114,7 +114,7 @@ export class SearchService extends Disposable implements ISearchService {
 		list.set(scheme, provider);
 
 		if (deferredMap.has(scheme)) {
-			deferredMap.get(scheme)!.complete(provider);
+			deferredMap.get(scheme)?.complete(provider);
 			deferredMap.delete(scheme);
 		}
 
@@ -154,13 +154,7 @@ export class SearchService extends Disposable implements ISearchService {
 		if (onProgress) {
 			arrays
 				.coalesce([...openEditorResults.results.values()])
-				.filter(
-					(e) =>
-						!(
-							notebookFilesToIgnore &&
-							notebookFilesToIgnore.has(e.resource)
-						),
-				)
+				.filter((e) => !notebookFilesToIgnore?.has(e.resource))
 				.forEach(onProgress);
 		}
 
@@ -177,9 +171,11 @@ export class SearchService extends Disposable implements ISearchService {
 				if (isFileMatch(progress)) {
 					// Match
 					if (
-						!openEditorResults.results.has(progress.resource) &&
-						!resolvedAsyncNotebookFilesToIgnore.has(
-							progress.resource,
+						!(
+							openEditorResults.results.has(progress.resource) ||
+							resolvedAsyncNotebookFilesToIgnore.has(
+								progress.resource,
+							)
 						) &&
 						onProgress
 					) {
@@ -238,12 +234,12 @@ export class SearchService extends Disposable implements ISearchService {
 			await this.extensionService.whenInstalledExtensionsRegistered();
 
 			// Cancel faster if search was canceled while waiting for extensions
-			if (token && token.isCancellationRequested) {
+			if (token?.isCancellationRequested) {
 				return Promise.reject(new CancellationError());
 			}
 
 			const progressCallback = (item: ISearchProgressItem) => {
-				if (token && token.isCancellationRequested) {
+				if (token?.isCancellationRequested) {
 					return;
 				}
 
@@ -274,7 +270,7 @@ export class SearchService extends Disposable implements ISearchService {
 			}
 
 			return {
-				limitHit: completes[0] && completes[0].limitHit,
+				limitHit: completes[0]?.limitHit,
 				stats: completes[0].stats,
 				messages: arrays
 					.coalesce(arrays.flatten(completes.map((i) => i.messages)))
@@ -324,7 +320,7 @@ export class SearchService extends Disposable implements ISearchService {
 			: this.deferredTextSearchesByScheme;
 
 		if (deferredMap.has(scheme)) {
-			return deferredMap.get(scheme)!.p;
+			return deferredMap.get(scheme)?.p;
 		} else {
 			const deferred = new DeferredPromise<ISearchResultProvider>();
 			deferredMap.set(scheme, deferred);
@@ -774,10 +770,7 @@ export class SearchService extends Disposable implements ISearchService {
 				// Skip search results
 				if (
 					model.getLanguageId() === SEARCH_RESULT_LANGUAGE_ID &&
-					!(
-						query.includePattern &&
-						query.includePattern["**/*.code-search"]
-					)
+					!query.includePattern?.["**/*.code-search"]
 				) {
 					// TODO: untitled search editors will be excluded from search even when include *.code-search is specified
 					return;
@@ -852,7 +845,7 @@ export class SearchService extends Disposable implements ISearchService {
 
 	async clearCache(cacheKey: string): Promise<void> {
 		const clearPs = Array.from(this.fileSearchProviders.values()).map(
-			(provider) => provider && provider.clearCache(cacheKey),
+			(provider) => provider?.clearCache(cacheKey),
 		);
 		await Promise.all(clearPs);
 	}

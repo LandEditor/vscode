@@ -341,8 +341,7 @@ class DefaultFormatter extends Disposable implements IWorkbenchContribution {
 				label:
 					formatter.displayName ||
 					(formatter.extensionId ? formatter.extensionId.value : "?"),
-				description:
-					formatter.extensionId && formatter.extensionId.value,
+				description: formatter.extensionId?.value,
 			};
 		});
 		const langName =
@@ -355,12 +354,12 @@ class DefaultFormatter extends Disposable implements IWorkbenchContribution {
 				DefaultFormatter._maybeQuotes(langName),
 			),
 		});
-		if (!pick || !formatter[pick.index].extensionId) {
+		if (!(pick && formatter[pick.index].extensionId)) {
 			return undefined;
 		}
 		this._configService.updateValue(
 			DefaultFormatter.configName,
-			formatter[pick.index].extensionId!.value,
+			formatter[pick.index].extensionId?.value,
 			{
 				resource: document.uri,
 				overrideIdentifier: document.getLanguageId(),
@@ -377,7 +376,7 @@ class DefaultFormatter extends Disposable implements IWorkbenchContribution {
 		const editor = getCodeEditor(
 			this._editorService.activeTextEditorControl,
 		);
-		if (!editor || !editor.hasModel()) {
+		if (!editor?.hasModel()) {
 			return;
 		}
 
@@ -582,7 +581,7 @@ async function showFormatterPick(
 		if (pick && formatters[pick.index].extensionId) {
 			configService.updateValue(
 				DefaultFormatter.configName,
-				formatters[pick.index].extensionId!.value,
+				formatters[pick.index].extensionId?.value,
 				overrides,
 			);
 		}

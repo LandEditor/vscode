@@ -125,7 +125,7 @@ export class RenameInputField implements IContentWidget {
 	}
 
 	private _updateStyles(theme: IColorTheme): void {
-		if (!this._input || !this._domNode) {
+		if (!(this._input && this._domNode)) {
 			return;
 		}
 
@@ -155,7 +155,7 @@ export class RenameInputField implements IContentWidget {
 	}
 
 	private _updateFont(): void {
-		if (!this._input || !this._label) {
+		if (!(this._input && this._label)) {
 			return;
 		}
 
@@ -222,12 +222,12 @@ export class RenameInputField implements IContentWidget {
 		supportPreview: boolean,
 		token: CancellationToken,
 	): Promise<RenameInputFieldResult | boolean> {
-		this._domNode!.classList.toggle("preview", supportPreview);
+		this._domNode?.classList.toggle("preview", supportPreview);
 
 		this._position = new Position(where.startLineNumber, where.startColumn);
 		this._input!.value = value;
-		this._input!.setAttribute("selectionStart", selectionStart.toString());
-		this._input!.setAttribute("selectionEnd", selectionEnd.toString());
+		this._input?.setAttribute("selectionStart", selectionStart.toString());
+		this._input?.setAttribute("selectionEnd", selectionEnd.toString());
 		this._input!.size = Math.max(
 			(where.endColumn - where.startColumn) * 1.1,
 			20,
@@ -245,8 +245,8 @@ export class RenameInputField implements IContentWidget {
 
 			this._currentAcceptInput = (wantsPreview) => {
 				if (
-					this._input!.value.trim().length === 0 ||
-					this._input!.value === value
+					this._input?.value.trim().length === 0 ||
+					this._input?.value === value
 				) {
 					// empty or whitespace only or not changed
 					this.cancelInput(true);
@@ -256,7 +256,7 @@ export class RenameInputField implements IContentWidget {
 				this._currentAcceptInput = undefined;
 				this._currentCancelInput = undefined;
 				resolve({
-					newName: this._input!.value,
+					newName: this._input?.value,
 					wantsPreview: supportPreview && wantsPreview,
 				});
 			};
@@ -279,7 +279,7 @@ export class RenameInputField implements IContentWidget {
 
 	private _show(): void {
 		this._editor.revealLineInCenterIfOutsideViewport(
-			this._position!.lineNumber,
+			this._position?.lineNumber,
 			ScrollType.Smooth,
 		);
 		this._visible = true;
@@ -287,10 +287,10 @@ export class RenameInputField implements IContentWidget {
 		this._editor.layoutContentWidget(this);
 
 		setTimeout(() => {
-			this._input!.focus();
-			this._input!.setSelectionRange(
-				parseInt(this._input!.getAttribute("selectionStart")!),
-				parseInt(this._input!.getAttribute("selectionEnd")!),
+			this._input?.focus();
+			this._input?.setSelectionRange(
+				parseInt(this._input?.getAttribute("selectionStart")!),
+				parseInt(this._input?.getAttribute("selectionEnd")!),
 			);
 		}, 100);
 	}

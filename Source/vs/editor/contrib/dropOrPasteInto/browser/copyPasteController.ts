@@ -207,13 +207,13 @@ export class CopyPasteController
 			this._clipboardService.writeResources([]);
 		}
 
-		if (!e.clipboardData || !this.isPasteAsEnabled()) {
+		if (!(e.clipboardData && this.isPasteAsEnabled())) {
 			return;
 		}
 
 		const model = this._editor.getModel();
 		const selections = this._editor.getSelections();
-		if (!model || !selections?.length) {
+		if (!(model && selections?.length)) {
 			return;
 		}
 
@@ -281,7 +281,7 @@ export class CopyPasteController
 				await Promise.all(
 					providers.map(async (provider) => {
 						try {
-							return await provider.prepareDocumentPaste!(
+							return await provider.prepareDocumentPaste?.(
 								model,
 								ranges,
 								dataTransfer,
@@ -316,7 +316,7 @@ export class CopyPasteController
 	}
 
 	private async handlePaste(e: ClipboardEvent) {
-		if (!e.clipboardData || !this._editor.hasTextFocus()) {
+		if (!(e.clipboardData && this._editor.hasTextFocus())) {
 			return;
 		}
 
@@ -325,7 +325,7 @@ export class CopyPasteController
 
 		const model = this._editor.getModel();
 		const selections = this._editor.getSelections();
-		if (!selections?.length || !model) {
+		if (!(selections?.length && model)) {
 			return;
 		}
 

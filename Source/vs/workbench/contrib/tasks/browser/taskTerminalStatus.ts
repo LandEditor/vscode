@@ -126,15 +126,18 @@ export class TaskTerminalStatus extends Disposable {
 			taskService.onDidStateChange((event) => {
 				switch (event.kind) {
 					case TaskEventKind.ProcessStarted:
-					case TaskEventKind.Active:
+					case TaskEventKind.Active: {
 						this.eventActive(event);
 						break;
-					case TaskEventKind.Inactive:
+					}
+					case TaskEventKind.Inactive: {
 						this.eventInactive(event);
 						break;
-					case TaskEventKind.ProcessEnded:
+					}
+					case TaskEventKind.ProcessEnded: {
 						this.eventEnd(event);
 						break;
+					}
 				}
 			})
 		);
@@ -199,7 +202,7 @@ export class TaskTerminalStatus extends Disposable {
 	private terminalFromEvent(event: {
 		terminalId: number | undefined;
 	}): ITerminalData | undefined {
-		if (!("terminalId" in event) || !event.terminalId) {
+		if (!("terminalId" in event && event.terminalId)) {
 			return undefined;
 		}
 		return this.terminalMap.get(event.terminalId);
@@ -247,11 +250,7 @@ export class TaskTerminalStatus extends Disposable {
 
 	private eventInactive(event: ITaskGeneralEvent) {
 		const terminalData = this.terminalFromEvent(event);
-		if (
-			!terminalData ||
-			!terminalData.problemMatcher ||
-			terminalData.taskRunEnded
-		) {
+		if (!terminalData?.problemMatcher || terminalData.taskRunEnded) {
 			return;
 		}
 		terminalData.terminal.statusList.remove(terminalData.status);

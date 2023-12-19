@@ -109,9 +109,10 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 				.workbench?.editor;
 
 		return {
-			openEditorPinned:
-				!editorConfig?.enablePreviewFromQuickOpen ||
-				!editorConfig?.enablePreview,
+			openEditorPinned: !(
+				editorConfig?.enablePreviewFromQuickOpen &&
+				editorConfig?.enablePreview
+			),
 			openSideBySideDirection: editorConfig?.openSideBySideDirection,
 		};
 	}
@@ -120,7 +121,7 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 		filter: string,
 		disposables: DisposableStore,
 		token: CancellationToken,
-	): Promise<Array<ISymbolQuickPickItem>> {
+	): Promise<ISymbolQuickPickItem[]> {
 		return this.getSymbolPicks(filter, undefined, token);
 	}
 
@@ -130,7 +131,7 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 			| { skipLocal?: boolean; skipSorting?: boolean; delay?: number }
 			| undefined,
 		token: CancellationToken,
-	): Promise<Array<ISymbolQuickPickItem>> {
+	): Promise<ISymbolQuickPickItem[]> {
 		return this.delayer.trigger(async () => {
 			if (token.isCancellationRequested) {
 				return [];
@@ -144,7 +145,7 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 		query: IPreparedQuery,
 		options: { skipLocal?: boolean; skipSorting?: boolean } | undefined,
 		token: CancellationToken,
-	): Promise<Array<ISymbolQuickPickItem>> {
+	): Promise<ISymbolQuickPickItem[]> {
 		// Split between symbol and container query
 		let symbolQuery: IPreparedQuery;
 		let containerQuery: IPreparedQuery | undefined;
@@ -164,7 +165,7 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 			return [];
 		}
 
-		const symbolPicks: Array<ISymbolQuickPickItem> = [];
+		const symbolPicks: ISymbolQuickPickItem[] = [];
 
 		// Convert to symbol picks and apply filtering
 		const openSideBySideDirection =

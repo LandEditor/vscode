@@ -320,7 +320,7 @@ export class SnippetController2 implements IEditorContribution {
 	}
 
 	private _updateState(): void {
-		if (!this._session || !this._editor.hasModel()) {
+		if (!(this._session && this._editor.hasModel())) {
 			// canceled in the meanwhile
 			return;
 		}
@@ -356,13 +356,13 @@ export class SnippetController2 implements IEditorContribution {
 	}
 
 	private _handleChoice(): void {
-		if (!this._session || !this._editor.hasModel()) {
+		if (!(this._session && this._editor.hasModel())) {
 			this._currentChoice = undefined;
 			return;
 		}
 
 		const { activeChoice } = this._session;
-		if (!activeChoice || !this._choiceCompletions) {
+		if (!(activeChoice && this._choiceCompletions)) {
 			this._choiceCompletions?.disable();
 			this._currentChoice = undefined;
 			return;
@@ -377,7 +377,7 @@ export class SnippetController2 implements IEditorContribution {
 			queueMicrotask(() => {
 				showSimpleSuggestions(
 					this._editor,
-					this._choiceCompletions!.provider,
+					this._choiceCompletions?.provider,
 				);
 			});
 		}

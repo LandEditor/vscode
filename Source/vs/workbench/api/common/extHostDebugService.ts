@@ -492,7 +492,7 @@ export abstract class ExtHostDebugServiceBase
 		// make sure that only one factory for this type is registered
 		if (this.getAdapterDescriptorFactoryByType(type)) {
 			throw new Error(
-				`a DebugAdapterDescriptorFactory can only be registered once per a type.`,
+				"a DebugAdapterDescriptorFactory can only be registered once per a type.",
 			);
 		}
 
@@ -649,7 +649,7 @@ export abstract class ExtHostDebugServiceBase
 							debugAdapter.sendResponse(response);
 						}
 					} else {
-						if (tracker && tracker.onDidSendMessage) {
+						if (tracker?.onDidSendMessage) {
 							tracker.onDidSendMessage(message);
 						}
 
@@ -663,7 +663,7 @@ export abstract class ExtHostDebugServiceBase
 					}
 				});
 				debugAdapter.onError((err) => {
-					if (tracker && tracker.onError) {
+					if (tracker?.onError) {
 						tracker.onError(err);
 					}
 					this._debugServiceProxy.$acceptDAError(
@@ -674,7 +674,7 @@ export abstract class ExtHostDebugServiceBase
 					);
 				});
 				debugAdapter.onExit((code: number | null) => {
-					if (tracker && tracker.onExit) {
+					if (tracker?.onExit) {
 						tracker.onExit(code ?? undefined, undefined);
 					}
 					this._debugServiceProxy.$acceptDAExit(
@@ -684,7 +684,7 @@ export abstract class ExtHostDebugServiceBase
 					);
 				});
 
-				if (tracker && tracker.onWillStartSession) {
+				if (tracker?.onWillStartSession) {
 					tracker.onWillStartSession();
 				}
 
@@ -701,7 +701,7 @@ export abstract class ExtHostDebugServiceBase
 		message = convertToDAPaths(message, false);
 
 		const tracker = this._debugAdaptersTrackers.get(debugAdapterHandle); // TODO@AW: same handle?
-		if (tracker && tracker.onWillReceiveMessage) {
+		if (tracker?.onWillReceiveMessage) {
 			tracker.onWillReceiveMessage(message);
 		}
 
@@ -712,7 +712,7 @@ export abstract class ExtHostDebugServiceBase
 	public $stopDASession(debugAdapterHandle: number): Promise<void> {
 		const tracker = this._debugAdaptersTrackers.get(debugAdapterHandle);
 		this._debugAdaptersTrackers.delete(debugAdapterHandle);
-		if (tracker && tracker.onWillStopSession) {
+		if (tracker?.onWillStopSession) {
 			tracker.onWillStopSession();
 		}
 
@@ -1296,7 +1296,7 @@ export class ExtHostDebugConsole {
 				proxy.$appendDebugConsole(value);
 			},
 			appendLine(value: string): void {
-				this.append(value + "\n");
+				this.append(`${value}\n`);
 			},
 		});
 	}

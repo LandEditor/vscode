@@ -53,8 +53,6 @@ export class SearchEditorModel {
 class SearchEditorModelFactory {
 	models = new ResourceMap<{ resolve: () => Promise<SearchEditorData> }>();
 
-	constructor() {}
-
 	initializeModelFromExistingModel(
 		accessor: ServicesAccessor,
 		resource: URI,

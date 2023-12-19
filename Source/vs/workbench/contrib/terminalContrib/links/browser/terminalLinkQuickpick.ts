@@ -214,8 +214,10 @@ export class TerminalLinkQuickpick extends DisposableStore {
 		for (const link of links) {
 			const label = link.text;
 			if (
-				!linkKeys.has(label) &&
-				(!ignoreLinks || !ignoreLinks.some((e) => e.text === label))
+				!(
+					linkKeys.has(label) ||
+					ignoreLinks?.some((e) => e.text === label)
+				)
 			) {
 				linkKeys.add(label);
 				picks.push({ label, link });

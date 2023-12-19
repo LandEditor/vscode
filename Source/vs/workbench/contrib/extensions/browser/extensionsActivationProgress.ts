@@ -36,7 +36,7 @@ export class ExtensionActivationProgress implements IWorkbenchContribution {
 
 			if (!deferred) {
 				deferred = new DeferredPromise();
-				progressService.withProgress(options, (_) => deferred!.p);
+				progressService.withProgress(options, (_) => deferred?.p);
 			}
 
 			count++;
@@ -46,7 +46,7 @@ export class ExtensionActivationProgress implements IWorkbenchContribution {
 				timeout(5000, CancellationToken.None),
 			]).finally(() => {
 				if (--count === 0) {
-					deferred!.complete(undefined);
+					deferred?.complete(undefined);
 					deferred = undefined;
 				}
 			});

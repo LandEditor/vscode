@@ -359,7 +359,7 @@ class CliMain extends Disposable {
 			configurationService,
 		);
 		if (supportsTelemetry(productService, environmentService)) {
-			if (productService.aiConfig && productService.aiConfig.ariaKey) {
+			if (productService.aiConfig?.ariaKey) {
 				appenders.push(
 					new OneDataSystemAppender(
 						requestService,

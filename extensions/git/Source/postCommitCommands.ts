@@ -224,7 +224,7 @@ export class CommitCommandsCenter {
 
 			if (command !== null) {
 				await commands.executeCommand(
-					command!.toString(),
+					command?.toString(),
 					new ApiRepository(this.repository),
 				);
 			}

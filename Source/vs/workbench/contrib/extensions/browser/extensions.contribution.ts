@@ -2801,7 +2801,7 @@ class ExtensionsContributions
 						  )
 						: null;
 					const clipboardStr = `${name}\n${id}\n${description}\n${verision}\n${publisher}${
-						link ? "\n" + link : ""
+						link ? `\n${link}` : ""
 					}`;
 					await clipboardService.writeText(clipboardStr);
 				}
@@ -2882,7 +2882,7 @@ class ExtensionsContributions
 					"workbench.extensions.action.toggleApplyToAllProfiles",
 					"Apply Extension to all Profiles",
 				),
-				original: `Apply Extension to all Profiles`,
+				original: "Apply Extension to all Profiles",
 			},
 			toggled: ContextKeyExpr.has("isApplicationScopedExtension"),
 			menu: {
@@ -2916,7 +2916,7 @@ class ExtensionsContributions
 					"workbench.extensions.action.toggleIgnoreExtension",
 					"Sync This Extension",
 				),
-				original: `Sync This Extension`,
+				original: "Sync This Extension",
 			},
 			menu: {
 				id: MenuId.ExtensionContext,
@@ -2943,7 +2943,7 @@ class ExtensionsContributions
 					"workbench.extensions.action.ignoreRecommendation",
 					"Ignore Recommendation",
 				),
-				original: `Ignore Recommendation`,
+				original: "Ignore Recommendation",
 			},
 			menu: {
 				id: MenuId.ExtensionContext,
@@ -2964,7 +2964,7 @@ class ExtensionsContributions
 					"workbench.extensions.action.undoIgnoredRecommendation",
 					"Undo Ignored Recommendation",
 				),
-				original: `Undo Ignored Recommendation`,
+				original: "Undo Ignored Recommendation",
 			},
 			menu: {
 				id: MenuId.ExtensionContext,
@@ -2985,7 +2985,7 @@ class ExtensionsContributions
 					"workbench.extensions.action.addExtensionToWorkspaceRecommendations",
 					"Add to Workspace Recommendations",
 				),
-				original: `Add to Workspace Recommendations`,
+				original: "Add to Workspace Recommendations",
 			},
 			menu: {
 				id: MenuId.ExtensionContext,
@@ -3013,7 +3013,7 @@ class ExtensionsContributions
 					"workbench.extensions.action.removeExtensionFromWorkspaceRecommendations",
 					"Remove from Workspace Recommendations",
 				),
-				original: `Remove from Workspace Recommendations`,
+				original: "Remove from Workspace Recommendations",
 			},
 			menu: {
 				id: MenuId.ExtensionContext,
@@ -3038,7 +3038,7 @@ class ExtensionsContributions
 					"workbench.extensions.action.addToWorkspaceRecommendations",
 					"Add Extension to Workspace Recommendations",
 				),
-				original: `Add Extension to Workspace Recommendations`,
+				original: "Add Extension to Workspace Recommendations",
 			},
 			category: localize("extensions", "Extensions"),
 			menu: {
@@ -3076,7 +3076,7 @@ class ExtensionsContributions
 					"workbench.extensions.action.addToWorkspaceFolderRecommendations",
 					"Add Extension to Workspace Folder Recommendations",
 				),
-				original: `Add Extension to Workspace Folder Recommendations`,
+				original: "Add Extension to Workspace Folder Recommendations",
 			},
 			category: localize("extensions", "Extensions"),
 			menu: {
@@ -3099,7 +3099,7 @@ class ExtensionsContributions
 					"workbench.extensions.action.addToWorkspaceIgnoredRecommendations",
 					"Add Extension to Workspace Ignored Recommendations",
 				),
-				original: `Add Extension to Workspace Ignored Recommendations`,
+				original: "Add Extension to Workspace Ignored Recommendations",
 			},
 			category: localize("extensions", "Extensions"),
 			menu: {
@@ -3137,7 +3137,8 @@ class ExtensionsContributions
 					"workbench.extensions.action.addToWorkspaceFolderIgnoredRecommendations",
 					"Add Extension to Workspace Folder Ignored Recommendations",
 				),
-				original: `Add Extension to Workspace Folder Ignored Recommendations`,
+				original:
+					"Add Extension to Workspace Folder Ignored Recommendations",
 			},
 			category: localize("extensions", "Extensions"),
 			menu: {

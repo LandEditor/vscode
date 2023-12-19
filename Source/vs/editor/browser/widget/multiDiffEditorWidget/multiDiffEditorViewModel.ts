@@ -99,13 +99,13 @@ export class DocumentDiffItemViewModel extends Disposable {
 		}
 
 		const options = new DiffEditorOptions(
-			updateOptions(this.entry.value!.options || {}),
+			updateOptions(this.entry.value?.options || {}),
 		);
-		if (this.entry.value!.onOptionsDidChange) {
+		if (this.entry.value?.onOptionsDidChange) {
 			this._register(
-				this.entry.value!.onOptionsDidChange(() => {
+				this.entry.value?.onOptionsDidChange(() => {
 					options.updateOptions(
-						updateOptions(this.entry.value!.options || {}),
+						updateOptions(this.entry.value?.options || {}),
 					);
 				}),
 			);
@@ -115,8 +115,8 @@ export class DocumentDiffItemViewModel extends Disposable {
 			this._instantiationService.createInstance(
 				DiffEditorViewModel,
 				{
-					original: entry.value!.original!,
-					modified: entry.value!.modified!,
+					original: entry.value?.original!,
+					modified: entry.value?.modified!,
 				},
 				options,
 			),

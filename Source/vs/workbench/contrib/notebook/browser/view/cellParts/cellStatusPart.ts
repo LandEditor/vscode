@@ -325,7 +325,7 @@ export class CellEditorStatusBar extends CellContentPart {
 
 	private updateActiveCell(): void {
 		const isActiveCell =
-			this.currentContext!.notebookEditor.getActiveCell() ===
+			this.currentContext?.notebookEditor.getActiveCell() ===
 			this.currentContext?.cell;
 		this.statusBarContainer.classList.toggle(
 			"is-active-cell",
@@ -334,7 +334,7 @@ export class CellEditorStatusBar extends CellContentPart {
 	}
 
 	private updateRenderedItems(): void {
-		const items = this.currentContext!.cell.getCellStatusBarItems();
+		const items = this.currentContext?.cell.getCellStatusBarItems();
 		items.sort((itemA, itemB) => {
 			return (itemB.priority ?? 0) - (itemA.priority ?? 0);
 		});
@@ -397,7 +397,7 @@ class CellStatusBarItem extends Disposable {
 	readonly container = $(".cell-status-item");
 
 	set maxWidth(v: number) {
-		this.container.style.maxWidth = v + "px";
+		this.container.style.maxWidth = `${v}px`;
 	}
 
 	private _currentItem!: INotebookCellStatusBarItem;

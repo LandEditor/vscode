@@ -10,15 +10,12 @@ import { Disposable } from "./util/dispose";
 export class LogFunctionLogger extends Disposable implements md.ILogger {
 	private static now(): string {
 		const now = new Date();
-		return (
-			String(now.getUTCHours()).padStart(2, "0") +
-			":" +
-			String(now.getMinutes()).padStart(2, "0") +
-			":" +
-			String(now.getUTCSeconds()).padStart(2, "0") +
-			"." +
-			String(now.getMilliseconds()).padStart(3, "0")
-		);
+		return `${String(now.getUTCHours()).padStart(2, "0")}:${String(
+			now.getMinutes(),
+		).padStart(2, "0")}:${String(now.getUTCSeconds()).padStart(
+			2,
+			"0",
+		)}.${String(now.getMilliseconds()).padStart(3, "0")}`;
 	}
 
 	private static data2String(data: any): string {
@@ -57,7 +54,6 @@ export class LogFunctionLogger extends Disposable implements md.ILogger {
 				return md.LogLevel.Trace;
 			case "debug":
 				return md.LogLevel.Debug;
-			case "off":
 			default:
 				return md.LogLevel.Off;
 		}

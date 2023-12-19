@@ -40,7 +40,7 @@ function main() {
 		throw new Error("Missing VSCODE_QUALITY, skipping mixin");
 	}
 
-	log(`Mixing in distro quality...`);
+	log("Mixing in distro quality...");
 
 	const basePath = `.build/distro/mixin/${quality}`;
 
@@ -80,8 +80,10 @@ function main() {
 
 				builtInExtensions = builtInExtensions.filter(
 					(ext) =>
-						!include.find((e) => e.name === ext.name) &&
-						!exclude.find((name) => name === ext.name),
+						!(
+							include.find((e) => e.name === ext.name) ||
+							exclude.find((name) => name === ext.name)
+						),
 				);
 				builtInExtensions = [...builtInExtensions, ...include];
 

@@ -142,7 +142,7 @@ export class ViewOverlays
 	public override onScrollChanged(
 		e: viewEvents.ViewScrollChangedEvent,
 	): boolean {
-		return this._visibleLines.onScrollChanged(e) || true;
+		return true;
 	}
 	public override onTokensChanged(
 		e: viewEvents.ViewTokensChangedEvent,
@@ -287,7 +287,7 @@ export class ContentViewOverlays extends ViewOverlays {
 		const options = this._context.configuration.options;
 		const layoutInfo = options.get(EditorOption.layoutInfo);
 		this._contentWidth = layoutInfo.contentWidth;
-		return super.onConfigurationChanged(e) || true;
+		return true;
 	}
 	public override onScrollChanged(
 		e: viewEvents.ViewScrollChangedEvent,
@@ -327,7 +327,7 @@ export class MarginViewOverlays extends ViewOverlays {
 		applyFontInfo(this.domNode, options.get(EditorOption.fontInfo));
 		const layoutInfo = options.get(EditorOption.layoutInfo);
 		this._contentLeft = layoutInfo.contentLeft;
-		return super.onConfigurationChanged(e) || true;
+		return true;
 	}
 
 	public override onScrollChanged(

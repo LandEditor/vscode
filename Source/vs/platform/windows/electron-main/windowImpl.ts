@@ -355,12 +355,12 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 				"string",
 			);
 			switch (action) {
-				case "Minimize":
+				case "Minimize": {
 					win.minimize();
 					break;
+				}
 				case "None":
 					break;
-				case "Maximize":
 				default:
 					if (win.isMaximized()) {
 						win.unmaximize();
@@ -782,7 +782,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 
 		// inform all waiting promises that we are ready now
 		while (this.whenReadyCallbacks.length) {
-			this.whenReadyCallbacks.pop()!(this);
+			this.whenReadyCallbacks.pop()?.(this);
 		}
 
 		// Events
@@ -963,23 +963,26 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		details?: { reason?: string; exitCode?: number },
 	): Promise<void> {
 		switch (type) {
-			case WindowError.PROCESS_GONE:
+			case WindowError.PROCESS_GONE: {
 				this.logService.error(
 					`CodeWindow: renderer process gone (reason: ${
 						details?.reason || "<unknown>"
 					}, code: ${details?.exitCode || "<unknown>"})`,
 				);
 				break;
-			case WindowError.UNRESPONSIVE:
+			}
+			case WindowError.UNRESPONSIVE: {
 				this.logService.error("CodeWindow: detected unresponsive");
 				break;
-			case WindowError.LOAD:
+			}
+			case WindowError.LOAD: {
 				this.logService.error(
 					`CodeWindow: failed to load (reason: ${
 						details?.reason || "<unknown>"
 					}, code: ${details?.exitCode || "<unknown>"})`,
 				);
 				break;
+			}
 		}
 
 		// Telemetry
@@ -1021,7 +1024,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		// Inform User if non-recoverable
 		switch (type) {
 			case WindowError.UNRESPONSIVE:
-			case WindowError.PROCESS_GONE:
+			case WindowError.PROCESS_GONE: {
 				// If we run extension tests from CLI, we want to signal
 				// back this state to the test runner by exiting with a
 				// non-zero exit code.
@@ -1046,9 +1049,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 					if (
 						this.isExtensionDevelopmentHost ||
 						this.isExtensionTestHost ||
-						(this._win &&
-							this._win.webContents &&
-							this._win.webContents.isDevToolsOpened())
+						this._win?.webContents?.isDevToolsOpened()
 					) {
 						// TODO@electron Workaround for https://github.com/microsoft/vscode/issues/56994
 						// In certain cases the window can report unresponsiveness because a breakpoint was hit
@@ -1187,6 +1188,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 					await this.destroyWindow(reopen, checkboxChecked);
 				}
 				break;
+			}
 		}
 	}
 
@@ -1339,8 +1341,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		// Clear Document Edited if needed
 		if (this.isDocumentEdited()) {
 			if (
-				!options.isReload ||
-				!this.backupMainService.isHotExitEnabled()
+				!(options.isReload && this.backupMainService.isHotExitEnabled())
 			) {
 				this.setDocumentEdited(false);
 			}
@@ -1392,8 +1393,10 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		// Make window visible if it did not open in N seconds because this indicates an error
 		// Only do this when running out of sources and not when running tests
 		if (
-			!this.environmentMainService.isBuilt &&
-			!this.environmentMainService.extensionTestsLocationURI
+			!(
+				this.environmentMainService.isBuilt ||
+				this.environmentMainService.extensionTestsLocationURI
+			)
 		) {
 			this._register(
 				new RunOnceScheduler(() => {
@@ -1490,10 +1493,10 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 			await this.validateWorkspaceBeforeReload(configuration);
 
 		// Delete some properties we do not want during reload
-		delete configuration.filesToOpenOrCreate;
-		delete configuration.filesToDiff;
-		delete configuration.filesToMerge;
-		delete configuration.filesToWait;
+		configuration.filesToOpenOrCreate = undefined;
+		configuration.filesToDiff = undefined;
+		configuration.filesToMerge = undefined;
+		configuration.filesToWait = undefined;
 
 		// Some configuration things get inherited if the window is being reloaded and we are
 		// in extension development mode. These options are all development related.
@@ -1912,25 +1915,29 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		const isFullscreen = this.isFullScreen;
 
 		switch (visibility) {
-			case "classic":
+			case "classic": {
 				this._win.setMenuBarVisibility(!isFullscreen);
 				this._win.autoHideMenuBar = isFullscreen;
 				break;
+			}
 
-			case "visible":
+			case "visible": {
 				this._win.setMenuBarVisibility(true);
 				this._win.autoHideMenuBar = false;
 				break;
+			}
 
-			case "toggle":
+			case "toggle": {
 				this._win.setMenuBarVisibility(false);
 				this._win.autoHideMenuBar = true;
 				break;
+			}
 
-			case "hidden":
+			case "hidden": {
 				this._win.setMenuBarVisibility(false);
 				this._win.autoHideMenuBar = false;
 				break;
+			}
 		}
 	}
 

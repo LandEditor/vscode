@@ -417,7 +417,7 @@ export class ReplyResponse {
 
 		if (raw.type === InlineChatResponseType.EditorEdit) {
 			//
-			editsMap.get(localUri)!.push(raw.edits);
+			editsMap.get(localUri)?.push(raw.edits);
 		} else if (raw.type === InlineChatResponseType.BulkEdit) {
 			//
 			const edits = ResourceEdit.convert(raw.edits);

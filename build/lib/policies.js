@@ -21,7 +21,7 @@ function isStringArray(value) {
 function isNlsStringArray(value) {
 	return value.every((s) => isNlsString(s));
 }
-var PolicyType;
+let PolicyType;
 ((PolicyType) => {
 	PolicyType[(PolicyType["StringEnum"] = 0)] = "StringEnum";
 })(PolicyType || (PolicyType = {}));
@@ -76,10 +76,10 @@ class BasePolicy {
 				/\./g,
 				"_",
 			)}" />`,
-			`	<elements>`,
+			"	<elements>",
 			...this.renderADMXElements(),
-			`	</elements>`,
-			`</policy>`,
+			"	</elements>",
+			"</policy>",
 		];
 	}
 	renderADMLStrings(translations) {
@@ -129,7 +129,7 @@ class BooleanPolicy extends BasePolicy {
 		return [
 			`<boolean id="${this.name}" valueName="${this.name}">`,
 			`	<trueValue><decimal value="1" /></trueValue><falseValue><decimal value="0" /></falseValue>`,
-			`</boolean>`,
+			"</boolean>",
 		];
 	}
 	renderADMLPresentationContents() {
@@ -299,7 +299,7 @@ class StringEnumPolicy extends BasePolicy {
 				(value, index) =>
 					`	<item displayName="$(string.${this.name}_${this.enumDescriptions[index].nlsKey})"><value><string>${value}</string></value></item>`,
 			),
-			`</enum>`,
+			"</enum>",
 		];
 	}
 	renderADMLStrings(translations) {
@@ -315,7 +315,7 @@ class StringEnumPolicy extends BasePolicy {
 	}
 }
 const IntQ = {
-	Q: `(number) @value`,
+	Q: "(number) @value",
 	value(matches) {
 		const match = matches[0];
 		if (!match) {
@@ -520,7 +520,7 @@ function renderADMX(regKey, versions, categories, policies) {
 					(v) =>
 						`<definition name="Supported_${v}" displayName="$(string.Supported_${v})" />`,
 				)
-				.join(`\n			`)}
+				.join("\n			")}
 		</definitions>
 	</supportedOn>
 	<categories>
@@ -530,10 +530,10 @@ function renderADMX(regKey, versions, categories, policies) {
 				(c) =>
 					`<category displayName="$(string.Category_${c.name.nlsKey})" name="${c.name.nlsKey}"><parentCategory ref="Application" /></category>`,
 			)
-			.join(`\n		`)}
+			.join("\n		")}
 	</categories>
 	<policies>
-		${policies.flatMap((p) => p.renderADMX(regKey)).join(`\n		`)}
+		${policies.flatMap((p) => p.renderADMX(regKey)).join("\n		")}
 	</policies>
 </policyDefinitions>
 `;
@@ -563,12 +563,12 @@ function renderADML(appName, versions, categories, policies, translations) {
 			)}
 			${policies
 				.flatMap((p) => p.renderADMLStrings(translations))
-				.join(`\n			`)}
+				.join("\n			")}
 		</stringTable>
 		<presentationTable>
 			${policies
 				.map((p) => p.renderADMLPresentation())
-				.join(`\n			`)}
+				.join("\n			")}
 		</presentationTable>
 	</resources>
 </policyDefinitionResources>

@@ -246,7 +246,7 @@ export class TerminalProfileService
 			this._availableProfiles = profiles;
 			this._automationProfile = automationProfile;
 			this._onDidChangeAvailableProfiles.fire(this._availableProfiles);
-			this._profilesReadyBarrier!.open();
+			this._profilesReadyBarrier?.open();
 			this._updateWebContextKey();
 			await this._refreshPlatformConfig(this._availableProfiles);
 		}

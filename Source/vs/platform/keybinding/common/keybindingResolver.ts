@@ -165,7 +165,7 @@ export class KeybindingResolver {
 			if (rule.command && rule.command.charAt(0) === "-") {
 				const command = rule.command.substring(1);
 				if (removals.has(command)) {
-					removals.get(command)!.push(rule);
+					removals.get(command)?.push(rule);
 				} else {
 					removals.set(command, [rule]);
 				}
@@ -190,7 +190,7 @@ export class KeybindingResolver {
 				continue;
 			}
 			const commandRemovals = removals.get(rule.command);
-			if (!commandRemovals || !rule.isDefault) {
+			if (!(commandRemovals && rule.isDefault)) {
 				result.push(rule);
 				continue;
 			}
@@ -198,7 +198,7 @@ export class KeybindingResolver {
 			for (const commandRemoval of commandRemovals) {
 				const when = commandRemoval.when;
 				if (
-					this._isTargetedForRemoval(
+					KeybindingResolver._isTargetedForRemoval(
 						rule,
 						commandRemoval.chords,
 						when,
@@ -210,7 +210,6 @@ export class KeybindingResolver {
 			}
 			if (!isRemoved) {
 				result.push(rule);
-				continue;
 			}
 		}
 		return result;
@@ -381,7 +380,7 @@ export class KeybindingResolver {
 		const kbCandidates = this._map.get(pressedChords[0]);
 		if (kbCandidates === undefined) {
 			// No bindings with such 0-th chord
-			this._log(`\\ No keybinding entries.`);
+			this._log("\\ No keybinding entries.");
 			return NoMatchingKb;
 		}
 
@@ -476,7 +475,7 @@ export class KeybindingResolver {
 
 function printWhenExplanation(when: ContextKeyExpression | undefined): string {
 	if (!when) {
-		return `no when condition`;
+		return "no when condition";
 	}
 	return `${when.serialize()}`;
 }
@@ -487,6 +486,6 @@ function printSourceExplanation(kb: ResolvedKeybindingItem): string {
 			? `built-in extension ${kb.extensionId}`
 			: `user extension ${kb.extensionId}`
 		: kb.isDefault
-		  ? `built-in`
-		  : `user`;
+		  ? "built-in"
+		  : "user";
 }

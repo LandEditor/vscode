@@ -582,7 +582,7 @@ export class ExplorerService implements IExplorerService {
 					parents.map(async (p) => {
 						// We have to check if the parent is resolved #29177
 						const resolveMetadata =
-							this.config.sortOrder === `modified`;
+							this.config.sortOrder === "modified";
 						if (!p.isDirectoryResolved) {
 							const stat = await this.fileService.resolve(
 								p.resource,
@@ -706,7 +706,7 @@ export class ExplorerService implements IExplorerService {
 		if (
 			this.revealExcludeMatcher.matches(
 				item.resource,
-				(name) => !!(item.parent && item.parent.getChild(name)),
+				(name) => !!item.parent?.getChild(name),
 			)
 		) {
 			return false;
@@ -794,10 +794,7 @@ function doesFileEventAffect(
 }
 
 function getRevealExcludes(configuration: IFilesConfiguration): IExpression {
-	const revealExcludes =
-		configuration &&
-		configuration.explorer &&
-		configuration.explorer.autoRevealExclude;
+	const revealExcludes = configuration?.explorer?.autoRevealExclude;
 
 	if (!revealExcludes) {
 		return {};

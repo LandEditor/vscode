@@ -188,7 +188,7 @@ export abstract class Pane extends Disposable implements IView {
 	}
 
 	setExpanded(expanded: boolean): boolean {
-		if (!expanded && !this.collapsible) {
+		if (!(expanded || this.collapsible)) {
 			return false;
 		}
 
@@ -494,7 +494,7 @@ class PaneDraggable extends Disposable {
 	}
 
 	private onDragStart(e: DragEvent): void {
-		if (!this.dnd.canDrag(this.pane) || !e.dataTransfer) {
+		if (!(this.dnd.canDrag(this.pane) && e.dataTransfer)) {
 			e.preventDefault();
 			e.stopPropagation();
 			return;

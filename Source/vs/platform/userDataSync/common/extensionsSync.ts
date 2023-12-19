@@ -108,7 +108,7 @@ async function parseAndMigrateExtensions(
 				if ((<any>extension).enabled === false) {
 					extension.disabled = true;
 				}
-				delete (<any>extension).enabled;
+				(<any>extension).enabled = undefined;
 			}
 			// #endregion
 
@@ -809,10 +809,7 @@ export class LocalExtensionsProvider {
 							);
 
 							// Builtin Extension Sync: Enablement & State
-							if (
-								installedExtension &&
-								installedExtension.isBuiltin
-							) {
+							if (installedExtension?.isBuiltin) {
 								if (
 									e.state &&
 									installedExtension.manifest.version ===

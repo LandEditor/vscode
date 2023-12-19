@@ -107,7 +107,7 @@ export class MergeConflictParser {
 		scanned: IScanMergedConflict,
 	): interfaces.IDocumentMergeConflictDescriptor | null {
 		// Validate we have all the required lines within the scan item.
-		if (!scanned.startHeader || !scanned.splitter || !scanned.endFooter) {
+		if (!(scanned.startHeader && scanned.splitter && scanned.endFooter)) {
 			return null;
 		}
 

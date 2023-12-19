@@ -15,7 +15,7 @@ import {
 } from "./util";
 
 export function splitJoinTag() {
-	if (!validate(false) || !vscode.window.activeTextEditor) {
+	if (!(validate(false) && vscode.window.activeTextEditor)) {
 		return;
 	}
 
@@ -53,18 +53,7 @@ function getRangesToReplace(
 	let rangeToReplace: vscode.Range;
 	let textToReplaceWith: string;
 
-	if (!nodeToUpdate.open || !nodeToUpdate.close) {
-		// Split Tag
-		const nodeText = document
-			.getText()
-			.substring(nodeToUpdate.start, nodeToUpdate.end);
-		const m = nodeText.match(/(\s*\/)?>$/);
-		const end = nodeToUpdate.end;
-		const start = m ? end - m[0].length : end;
-
-		rangeToReplace = offsetRangeToVsRange(document, start, end);
-		textToReplaceWith = `></${nodeToUpdate.name}>`;
-	} else {
+	if (nodeToUpdate.open && nodeToUpdate.close) {
 		// Join Tag
 		const start = nodeToUpdate.open.end - 1;
 		const end = nodeToUpdate.end;
@@ -81,8 +70,19 @@ function getRangesToReplace(
 				emmetConfig.syntaxProfiles[emmetMode]["self_closing_tag"] ===
 					"xhtml")
 		) {
-			textToReplaceWith = " " + textToReplaceWith;
+			textToReplaceWith = ` ${textToReplaceWith}`;
 		}
+	} else {
+		// Split Tag
+		const nodeText = document
+			.getText()
+			.substring(nodeToUpdate.start, nodeToUpdate.end);
+		const m = nodeText.match(/(\s*\/)?>$/);
+		const end = nodeToUpdate.end;
+		const start = m ? end - m[0].length : end;
+
+		rangeToReplace = offsetRangeToVsRange(document, start, end);
+		textToReplaceWith = `></${nodeToUpdate.name}>`;
 	}
 
 	return new vscode.TextEdit(rangeToReplace, textToReplaceWith);

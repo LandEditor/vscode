@@ -70,15 +70,13 @@ export class DiagnosticCollection implements vscode.DiagnosticCollection {
 		return this._name;
 	}
 
-	set(uri: vscode.Uri, diagnostics: ReadonlyArray<vscode.Diagnostic>): void;
-	set(
-		entries: ReadonlyArray<[vscode.Uri, ReadonlyArray<vscode.Diagnostic>]>,
-	): void;
+	set(uri: vscode.Uri, diagnostics: readonly vscode.Diagnostic[]): void;
+	set(entries: readonly [vscode.Uri, readonly vscode.Diagnostic[]][]): void;
 	set(
 		first:
 			| vscode.Uri
-			| ReadonlyArray<[vscode.Uri, ReadonlyArray<vscode.Diagnostic>]>,
-		diagnostics?: ReadonlyArray<vscode.Diagnostic>,
+			| readonly [vscode.Uri, readonly vscode.Diagnostic[]][],
+		diagnostics?: readonly vscode.Diagnostic[],
 	) {
 		if (!first) {
 			// this set-call is a clear-call
@@ -114,7 +112,7 @@ export class DiagnosticCollection implements vscode.DiagnosticCollection {
 			for (const tuple of first) {
 				const [uri, diagnostics] = tuple;
 				if (!lastUri || uri.toString() !== lastUri.toString()) {
-					if (lastUri && this.#data.get(lastUri)!.length === 0) {
+					if (lastUri && this.#data.get(lastUri)?.length === 0) {
 						this.#data.delete(lastUri);
 					}
 					lastUri = uri;
@@ -227,7 +225,7 @@ export class DiagnosticCollection implements vscode.DiagnosticCollection {
 	forEach(
 		callback: (
 			uri: URI,
-			diagnostics: ReadonlyArray<vscode.Diagnostic>,
+			diagnostics: readonly vscode.Diagnostic[],
 			collection: DiagnosticCollection,
 		) => any,
 		thisArg?: any,
@@ -247,7 +245,7 @@ export class DiagnosticCollection implements vscode.DiagnosticCollection {
 		}
 	}
 
-	get(uri: URI): ReadonlyArray<vscode.Diagnostic> {
+	get(uri: URI): readonly vscode.Diagnostic[] {
 		this._checkDisposed();
 		const result = this.#data.get(uri);
 		if (Array.isArray(result)) {
@@ -360,9 +358,7 @@ export class ExtHostDiagnostics implements ExtHostDiagnosticsShape {
 
 		let owner: string;
 		if (!name) {
-			name =
-				"_generated_diagnostic_collection_name_#" +
-				ExtHostDiagnostics._idPool++;
+			name = `_generated_diagnostic_collection_name_#${ExtHostDiagnostics._idPool++}`;
 			owner = name;
 		} else if (_collections.has(name)) {
 			this._logService.warn(
@@ -399,20 +395,18 @@ export class ExtHostDiagnostics implements ExtHostDiagnosticsShape {
 		return result;
 	}
 
-	getDiagnostics(resource: vscode.Uri): ReadonlyArray<vscode.Diagnostic>;
-	getDiagnostics(): ReadonlyArray<
-		[vscode.Uri, ReadonlyArray<vscode.Diagnostic>]
-	>;
+	getDiagnostics(resource: vscode.Uri): readonly vscode.Diagnostic[];
+	getDiagnostics(): readonly [vscode.Uri, readonly vscode.Diagnostic[]][];
 	getDiagnostics(
 		resource?: vscode.Uri,
 	):
-		| ReadonlyArray<vscode.Diagnostic>
-		| ReadonlyArray<[vscode.Uri, ReadonlyArray<vscode.Diagnostic>]>;
+		| readonly vscode.Diagnostic[]
+		| readonly [vscode.Uri, readonly vscode.Diagnostic[]][];
 	getDiagnostics(
 		resource?: vscode.Uri,
 	):
-		| ReadonlyArray<vscode.Diagnostic>
-		| ReadonlyArray<[vscode.Uri, ReadonlyArray<vscode.Diagnostic>]> {
+		| readonly vscode.Diagnostic[]
+		| readonly [vscode.Uri, readonly vscode.Diagnostic[]][] {
 		if (resource) {
 			return this._getDiagnostics(resource);
 		} else {
@@ -435,7 +429,7 @@ export class ExtHostDiagnostics implements ExtHostDiagnosticsShape {
 
 	private _getDiagnostics(
 		resource: vscode.Uri,
-	): ReadonlyArray<vscode.Diagnostic> {
+	): readonly vscode.Diagnostic[] {
 		let res: vscode.Diagnostic[] = [];
 		for (const collection of this._collections.values()) {
 			if (collection.has(resource)) {

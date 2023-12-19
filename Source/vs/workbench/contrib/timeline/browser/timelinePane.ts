@@ -507,8 +507,10 @@ export class TimelinePane extends ViewPane {
 			.getSources()
 			.filter(
 				({ id }) =>
-					!this.excludedSources.has(id) &&
-					!this.timelinesBySource.has(id),
+					!(
+						this.excludedSources.has(id) ||
+						this.timelinesBySource.has(id)
+					),
 			);
 		if (missing.length !== 0) {
 			this.loadTimeline(
@@ -527,7 +529,7 @@ export class TimelinePane extends ViewPane {
 	}
 
 	private onActiveEditorChanged() {
-		if (!this.followActiveEditor || !this.isExpanded()) {
+		if (!(this.followActiveEditor && this.isExpanded())) {
 			return;
 		}
 
@@ -974,12 +976,12 @@ export class TimelinePane extends ViewPane {
 
 			function getNextMostRecentSource() {
 				return sources
-					.filter((source) => !source.nextItem!.done)
+					.filter((source) => !source.nextItem?.done)
 					.reduce(
 						(previous, current) =>
 							previous === undefined ||
-							current.nextItem!.value.timestamp >=
-								previous.nextItem!.value.timestamp
+							current.nextItem?.value.timestamp >=
+								previous.nextItem?.value.timestamp
 								? current
 								: previous,
 						undefined!,
@@ -1086,12 +1088,10 @@ export class TimelinePane extends ViewPane {
 					);
 				}
 				if (!scmProviderCount || scmProviderCount === 0) {
-					this.message +=
-						" " +
-						localize(
-							"timeline.noSCM",
-							"Source Control has not been configured.",
-						);
+					this.message += ` ${localize(
+						"timeline.noSCM",
+						"Source Control has not been configured.",
+					)}`;
 				}
 			}
 		} else {
@@ -1229,8 +1229,7 @@ export class TimelinePane extends ViewPane {
 							if (isLoadMoreCommand(element)) {
 								return "treeitem";
 							}
-							return element.accessibilityInformation &&
-								element.accessibilityInformation.role
+							return element.accessibilityInformation?.role
 								? element.accessibilityInformation.role
 								: "treeitem";
 						},
@@ -1258,7 +1257,7 @@ export class TimelinePane extends ViewPane {
 		);
 		this._register(
 			this.tree.onDidOpen((e) => {
-				if (!e.browserEvent || !this.ensureValidItems()) {
+				if (!(e.browserEvent && this.ensureValidItems())) {
 					return;
 				}
 
@@ -1315,14 +1314,16 @@ export class TimelinePane extends ViewPane {
 	ensureValidItems() {
 		// If we don't have any non-excluded timelines, clear the tree and show the loading message
 		if (
-			!this.hasVisibleItems ||
-			!this.timelineService
-				.getSources()
-				.some(
-					({ id }) =>
-						!this.excludedSources.has(id) &&
-						this.timelinesBySource.has(id),
-				)
+			!(
+				this.hasVisibleItems &&
+				this.timelineService
+					.getSources()
+					.some(
+						({ id }) =>
+							!this.excludedSources.has(id) &&
+							this.timelinesBySource.has(id),
+					)
+			)
 		) {
 			this.tree.setChildren(null, undefined);
 			this._isEmpty = true;
@@ -1604,7 +1605,7 @@ class TimelineTreeRenderer
 
 		template.timestamp.textContent = item.relativeTime ?? "";
 		template.timestamp.ariaLabel = item.relativeTimeFullWord ?? "";
-		template.timestamp.parentElement!.classList.toggle(
+		template.timestamp.parentElement?.classList.toggle(
 			"timeline-timestamp--duplicate",
 			isTimelineItem(item) && item.hideRelativeTime,
 		);
@@ -1816,7 +1817,7 @@ class TimelinePaneCommands extends Disposable {
 									group: "navigation",
 								},
 								toggled: ContextKeyExpr.regex(
-									`timelineExcludeSources`,
+									"timelineExcludeSources",
 									new RegExp(
 										`\\b${escapeRegExpCharacters(
 											source.id,

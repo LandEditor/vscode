@@ -19,17 +19,15 @@ export class ExternalUriResolverContribution
 	) {
 		super();
 
-		if (
-			_workbenchEnvironmentService.options &&
-			_workbenchEnvironmentService.options.resolveExternalUri
-		) {
+		if (_workbenchEnvironmentService.options?.resolveExternalUri) {
 			this._register(
 				_openerService.registerExternalUriResolver({
 					resolveExternalUri: async (resource) => {
 						return {
 							resolved:
-								await _workbenchEnvironmentService.options!
-									.resolveExternalUri!(resource),
+								await _workbenchEnvironmentService.options?.resolveExternalUri?.(
+									resource,
+								),
 							dispose: () => {
 								// TODO
 							},

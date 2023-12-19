@@ -34,8 +34,8 @@ class NodeModuleRequireInterceptor extends RequireInterceptor {
 				return originalLoad.apply(this, arguments);
 			}
 			return that._factories
-				.get(request)!
-				.load(
+				.get(request)
+				?.load(
 					request,
 					URI.file(realpathSync(parent.filename)),
 					(request) =>

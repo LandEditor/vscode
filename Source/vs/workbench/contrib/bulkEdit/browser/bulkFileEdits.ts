@@ -264,7 +264,7 @@ class CreateOperation implements IFileOperation {
 				new DeleteEdit(
 					edit.newUri,
 					edit.options,
-					!edit.options.folder && !edit.contents,
+					!(edit.options.folder || edit.contents),
 				),
 			);
 		}
@@ -367,11 +367,11 @@ class DeleteOperation implements IFileOperation {
 			// read file contents for undo operation. when a file is too large it won't be restored
 			let fileContent: IFileContent | undefined;
 			if (
-				!edit.undoesCreate &&
-				!edit.options.folder &&
 				!(
-					typeof edit.options.maxSize === "number" &&
-					fileStat.size > edit.options.maxSize
+					edit.undoesCreate ||
+					edit.options.folder ||
+					(typeof edit.options.maxSize === "number" &&
+						fileStat.size > edit.options.maxSize)
 				)
 			) {
 				try {
@@ -531,34 +531,38 @@ export class BulkFileEdits {
 
 			let op: IFileOperation | undefined;
 			switch (group[0].type) {
-				case "rename":
+				case "rename": {
 					op = this._instaService.createInstance(
 						RenameOperation,
 						<RenameEdit[]>group,
 						undoRedoInfo,
 					);
 					break;
-				case "copy":
+				}
+				case "copy": {
 					op = this._instaService.createInstance(
 						CopyOperation,
 						<CopyEdit[]>group,
 						undoRedoInfo,
 					);
 					break;
-				case "delete":
+				}
+				case "delete": {
 					op = this._instaService.createInstance(
 						DeleteOperation,
 						<DeleteEdit[]>group,
 						undoRedoInfo,
 					);
 					break;
-				case "create":
+				}
+				case "create": {
 					op = this._instaService.createInstance(
 						CreateOperation,
 						<CreateEdit[]>group,
 						undoRedoInfo,
 					);
 					break;
+				}
 			}
 
 			if (op) {

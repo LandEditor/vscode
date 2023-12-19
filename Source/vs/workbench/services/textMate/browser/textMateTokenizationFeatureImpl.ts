@@ -258,15 +258,18 @@ export class TextMateTokenizationFeature
 			for (const scope of scopes) {
 				const tokenType = grammar.tokenTypes[scope];
 				switch (tokenType) {
-					case "string":
+					case "string": {
 						tokenTypes[scope] = StandardTokenType.String;
 						break;
-					case "other":
+					}
+					case "other": {
 						tokenTypes[scope] = StandardTokenType.Other;
 						break;
-					case "comment":
+					}
+					case "comment": {
 						tokenTypes[scope] = StandardTokenType.Comment;
 						break;
+					}
 				}
 			}
 		}
@@ -715,7 +718,7 @@ function equalsTokenRules(
 	a: ITextMateThemingRule[] | null,
 	b: ITextMateThemingRule[] | null,
 ): boolean {
-	if (!b || !a || b.length !== a.length) {
+	if (!(b && a) || b.length !== a.length) {
 		return false;
 	}
 	for (let i = b.length - 1; i >= 0; i--) {
@@ -734,7 +737,7 @@ function equalsTokenRules(
 			) {
 				return false;
 			}
-		} else if (!s1 || !s2) {
+		} else if (!(s1 && s2)) {
 			return false;
 		}
 	}

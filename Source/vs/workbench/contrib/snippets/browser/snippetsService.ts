@@ -100,8 +100,10 @@ namespace snippetExt {
 		}
 
 		if (
-			!isFalsyOrWhitespace(snippet.language) &&
-			!languageService.isRegisteredLanguageId(snippet.language)
+			!(
+				isFalsyOrWhitespace(snippet.language) ||
+				languageService.isRegisteredLanguageId(snippet.language)
+			)
 		) {
 			extension.collector.error(
 				localize(
@@ -433,11 +435,11 @@ export class SnippetsService implements ISnippetsService {
 		const result: Snippet[] = [];
 
 		for (const snippet of snippets) {
-			if (!snippet.prefix && !opts?.includeNoPrefixSnippets) {
+			if (!(snippet.prefix || opts?.includeNoPrefixSnippets)) {
 				// prefix or no-prefix wanted
 				continue;
 			}
-			if (!this.isEnabled(snippet) && !opts?.includeDisabledSnippets) {
+			if (!(this.isEnabled(snippet) || opts?.includeDisabledSnippets)) {
 				// enabled or disabled wanted
 				continue;
 			}

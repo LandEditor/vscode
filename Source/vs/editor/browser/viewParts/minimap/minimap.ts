@@ -1342,21 +1342,24 @@ export class Minimap extends ViewPart implements IMinimapModel {
 			// was sampling, is sampling
 			for (const event of events) {
 				switch (event.type) {
-					case "deleted":
+					case "deleted": {
 						this._actual.onLinesDeleted(
 							event.deleteFromLineNumber,
 							event.deleteToLineNumber,
 						);
 						break;
-					case "inserted":
+					}
+					case "inserted": {
 						this._actual.onLinesInserted(
 							event.insertFromLineNumber,
 							event.insertToLineNumber,
 						);
 						break;
-					case "flush":
+					}
+					case "flush": {
 						this._actual.onFlushed();
 						break;
+					}
 				}
 			}
 		}
@@ -1722,7 +1725,7 @@ class InnerMinimap extends Disposable {
 		initialPosY: number,
 		initialSliderState: MinimapLayout,
 	): void {
-		if (!e.target || !(e.target instanceof Element)) {
+		if (!(e.target && e.target instanceof Element)) {
 			return;
 		}
 		const initialPosX = e.pageX;
@@ -1773,7 +1776,7 @@ class InnerMinimap extends Disposable {
 	private scrollDueToTouchEvent(touch: GestureEvent) {
 		const startY = this._domNode.domNode.getBoundingClientRect().top;
 		const scrollTop =
-			this._lastRenderData!.renderedLayout.getDesiredScrollTopFromTouchLocation(
+			this._lastRenderData?.renderedLayout.getDesiredScrollTopFromTouchLocation(
 				touch.pageY - startY,
 			);
 		this._model.setScrollTop(scrollTop);
@@ -2252,7 +2255,7 @@ class InnerMinimap extends Disposable {
 
 			for (let line = startLineNumber; line <= endLineNumber; line++) {
 				switch (minimapOptions.position) {
-					case MinimapPosition.Inline:
+					case MinimapPosition.Inline: {
 						this.renderDecorationOnLine(
 							canvasContext,
 							lineOffsetMap,
@@ -2267,6 +2270,7 @@ class InnerMinimap extends Disposable {
 							canvasInnerWidth,
 						);
 						continue;
+					}
 
 					case MinimapPosition.Gutter: {
 						const y = layout.getYForLineNumber(
@@ -2407,8 +2411,7 @@ class InnerMinimap extends Disposable {
 		width: number,
 		height: number,
 	) {
-		canvasContext.fillStyle =
-			(decorationColor && decorationColor.toString()) || "";
+		canvasContext.fillStyle = decorationColor?.toString() || "";
 		canvasContext.fillRect(x, y, width, height);
 	}
 
@@ -2418,7 +2421,7 @@ class InnerMinimap extends Disposable {
 		const minimapLineHeight = this._model.options.minimapLineHeight;
 
 		// Check if nothing changed w.r.t. lines from last frame
-		if (this._lastRenderData && this._lastRenderData.linesEquals(layout)) {
+		if (this._lastRenderData?.linesEquals(layout)) {
 			const _lastData = this._lastRenderData._get();
 			// Nice!! Nothing changed from last frame
 			return new RenderData(layout, _lastData.imageData, _lastData.lines);

@@ -12,7 +12,7 @@ import {
 
 export function parseTerminalUri(resource: URI): ITerminalIdentifier {
 	const [, workspaceId, instanceId] = resource.path.split("/");
-	if (!workspaceId || !Number.parseInt(instanceId)) {
+	if (!(workspaceId && Number.parseInt(instanceId))) {
 		throw new Error(
 			`Could not parse terminal uri for resource ${resource}`,
 		);

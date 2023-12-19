@@ -79,7 +79,7 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
 		);
 	}
 
-	private updateAllViews(viewDescriptors: ReadonlyArray<IViewDescriptor>) {
+	private updateAllViews(viewDescriptors: readonly IViewDescriptor[]) {
 		viewDescriptors.forEach((descriptor) => {
 			const filterOnValue = this.getFilterOn(descriptor);
 			if (!filterOnValue) {
@@ -88,7 +88,7 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
 			if (!this.allViews.has(filterOnValue)) {
 				this.allViews.set(filterOnValue, new Map());
 			}
-			this.allViews.get(filterOnValue)!.set(descriptor.id, descriptor);
+			this.allViews.get(filterOnValue)?.set(descriptor.id, descriptor);
 			if (
 				this.filterValue &&
 				!this.filterValue.includes(filterOnValue) &&
@@ -130,7 +130,7 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
 		for (let i = 0; i < target.length; i++) {
 			if (this.allViews.has(target[i])) {
 				views.push(
-					...Array.from(this.allViews.get(target[i])!.values()),
+					...Array.from(this.allViews.get(target[i])?.values()),
 				);
 			}
 		}

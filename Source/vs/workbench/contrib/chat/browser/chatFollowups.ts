@@ -61,7 +61,7 @@ export class ChatFollowups<T extends IChatFollowup> extends Disposable {
 
 		const label =
 			followup.kind === "reply"
-				? "$(sparkle) " + (followup.title || followup.message)
+				? `$(sparkle) ${followup.title || followup.message}`
 				: followup.title;
 		button.label = new MarkdownString(label, { supportThemeIcons: true });
 

@@ -111,14 +111,14 @@ enum ResponseType {
 function responseTypeToStr(type: ResponseType): string {
 	switch (type) {
 		case ResponseType.Initialize:
-			return `init`;
+			return "init";
 		case ResponseType.PromiseSuccess:
-			return `reply:`;
+			return "reply:";
 		case ResponseType.PromiseError:
 		case ResponseType.PromiseErrorObj:
-			return `replyErr:`;
+			return "replyErr:";
 		case ResponseType.EventFire:
-			return `event:`;
+			return "event:";
 	}
 }
 
@@ -264,14 +264,14 @@ function writeInt32VQL(writer: IWriter, value: number) {
 	}
 
 	let len = 0;
-	for (let v2 = value; v2 !== 0; v2 = v2 >>> 7) {
+	for (let v2 = value; v2 !== 0; v2 >>>= 7) {
 		len++;
 	}
 
 	const scratch = VSBuffer.alloc(len);
 	for (let i = 0; value !== 0; i++) {
 		scratch.buffer[i] = value & 0b01111111;
-		value = value >>> 7;
+		value >>>= 7;
 		if (value > 0) {
 			scratch.buffer[i] |= 0b10000000;
 		}
@@ -493,7 +493,7 @@ export class ChannelServer<TContext = string>
 		const type = header[0] as RequestType;
 
 		switch (type) {
-			case RequestType.Promise:
+			case RequestType.Promise: {
 				this.logger?.logIncoming(
 					message.byteLength,
 					header[1],
@@ -508,7 +508,8 @@ export class ChannelServer<TContext = string>
 					name: header[3],
 					arg: body,
 				});
-			case RequestType.EventListen:
+			}
+			case RequestType.EventListen: {
 				this.logger?.logIncoming(
 					message.byteLength,
 					header[1],
@@ -523,7 +524,8 @@ export class ChannelServer<TContext = string>
 					name: header[3],
 					arg: body,
 				});
-			case RequestType.PromiseCancel:
+			}
+			case RequestType.PromiseCancel: {
 				this.logger?.logIncoming(
 					message.byteLength,
 					header[1],
@@ -531,7 +533,8 @@ export class ChannelServer<TContext = string>
 					`${requestTypeToStr(type)}`,
 				);
 				return this.disposeActiveRequest({ type, id: header[1] });
-			case RequestType.EventDispose:
+			}
+			case RequestType.EventDispose: {
 				this.logger?.logIncoming(
 					message.byteLength,
 					header[1],
@@ -539,6 +542,7 @@ export class ChannelServer<TContext = string>
 					`${requestTypeToStr(type)}`,
 				);
 				return this.disposeActiveRequest({ type, id: header[1] });
+			}
 		}
 	}
 
@@ -675,12 +679,14 @@ export class ChannelServer<TContext = string>
 				clearTimeout(request.timeoutTimer);
 
 				switch (request.request.type) {
-					case RequestType.Promise:
+					case RequestType.Promise: {
 						this.onPromise(request.request);
 						break;
-					case RequestType.EventListen:
+					}
+					case RequestType.EventListen: {
 						this.onEventListen(request.request);
 						break;
+					}
 				}
 			}
 
@@ -794,10 +800,11 @@ export class ChannelClient implements IChannelClient, IDisposable {
 			const doRequest = () => {
 				const handler: IHandler = (response) => {
 					switch (response.type) {
-						case ResponseType.PromiseSuccess:
+						case ResponseType.PromiseSuccess: {
 							this.handlers.delete(id);
 							c(response.data);
 							break;
+						}
 
 						case ResponseType.PromiseError: {
 							this.handlers.delete(id);
@@ -811,10 +818,11 @@ export class ChannelClient implements IChannelClient, IDisposable {
 							e(error);
 							break;
 						}
-						case ResponseType.PromiseErrorObj:
+						case ResponseType.PromiseErrorObj: {
 							this.handlers.delete(id);
 							e(response.data);
 							break;
+						}
 					}
 				};
 
@@ -964,7 +972,7 @@ export class ChannelClient implements IChannelClient, IDisposable {
 		const type: ResponseType = header[0];
 
 		switch (type) {
-			case ResponseType.Initialize:
+			case ResponseType.Initialize: {
 				this.logger?.logIncoming(
 					message.byteLength,
 					0,
@@ -972,11 +980,12 @@ export class ChannelClient implements IChannelClient, IDisposable {
 					responseTypeToStr(type),
 				);
 				return this.onResponse({ type: header[0] });
+			}
 
 			case ResponseType.PromiseSuccess:
 			case ResponseType.PromiseError:
 			case ResponseType.EventFire:
-			case ResponseType.PromiseErrorObj:
+			case ResponseType.PromiseErrorObj: {
 				this.logger?.logIncoming(
 					message.byteLength,
 					header[1],
@@ -989,6 +998,7 @@ export class ChannelClient implements IChannelClient, IDisposable {
 					id: header[1],
 					data: body,
 				});
+			}
 		}
 	}
 
@@ -1455,7 +1465,7 @@ export namespace ProxyChannel {
 		options?: ICreateServiceChannelOptions,
 	): IServerChannel<TContext> {
 		const handler = service as { [key: string]: unknown };
-		const disableMarshalling = options && options.disableMarshalling;
+		const disableMarshalling = options?.disableMarshalling;
 
 		// Buffer any event that should be supported by
 		// iterating over all property keys and finding them
@@ -1531,7 +1541,7 @@ export namespace ProxyChannel {
 		channel: IChannel,
 		options?: ICreateProxyServiceOptions,
 	): T {
-		const disableMarshalling = options && options.disableMarshalling;
+		const disableMarshalling = options?.disableMarshalling;
 
 		return new Proxy(
 			{},

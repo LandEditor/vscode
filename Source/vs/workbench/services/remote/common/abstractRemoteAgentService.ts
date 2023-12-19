@@ -323,7 +323,7 @@ class RemoteAgentConnection
 			signService: this._signService,
 			logService: this._logService,
 			ipcLogger: false
-				? new IPCLogger(`Local \u2192 Remote`, `Remote \u2192 Local`)
+				? new IPCLogger("Local \u2192 Remote", "Remote \u2192 Local")
 				: null,
 		};
 		let connection: ManagementPersistentConnection;
@@ -333,7 +333,7 @@ class RemoteAgentConnection
 				await connectRemoteAgentManagement(
 					options,
 					this.remoteAuthority,
-					`renderer`,
+					"renderer",
 				),
 			);
 		} finally {

@@ -159,7 +159,7 @@ export class UnicodeHighlighter
 	private readonly _updateState = (
 		state: IUnicodeHighlightsResult | null,
 	): void => {
-		if (state && state.hasMore) {
+		if (state?.hasMore) {
 			if (this._bannerClosed) {
 				return;
 			}
@@ -649,21 +649,23 @@ export class UnicodeHighlighterHoverParticipant
 					break;
 				}
 
-				case UnicodeHighlighterReasonKind.Invisible:
+				case UnicodeHighlighterReasonKind.Invisible: {
 					reason = nls.localize(
 						"unicodeHighlight.characterIsInvisible",
 						"The character {0} is invisible.",
 						codePointStr,
 					);
 					break;
+				}
 
-				case UnicodeHighlighterReasonKind.NonBasicAscii:
+				case UnicodeHighlighterReasonKind.NonBasicAscii: {
 					reason = nls.localize(
 						"unicodeHighlight.characterIsNonBasicAscii",
 						"The character {0} is not a basic ASCII character.",
 						codePointStr,
 					);
 					break;
+				}
 			}
 
 			if (existedReason.has(reason)) {
@@ -731,7 +733,7 @@ function renderCodePointAsInlineCode(codePoint: number): string {
 	if (codePoint === CharCode.BackTick) {
 		return "`` ` ``";
 	}
-	return "`" + String.fromCodePoint(codePoint) + "`";
+	return `\`${String.fromCodePoint(codePoint)}\``;
 }
 
 function computeReason(
@@ -1036,8 +1038,8 @@ export class ShowExcludeOptions extends EditorAction {
 
 		const char = String.fromCodePoint(codePoint);
 
-		const quickPickService = accessor!.get(IQuickInputService);
-		const configurationService = accessor!.get(IConfigurationService);
+		const quickPickService = accessor?.get(IQuickInputService);
+		const configurationService = accessor?.get(IConfigurationService);
 
 		interface ExtendedOptions extends IQuickPickItem {
 			run(): Promise<void>;

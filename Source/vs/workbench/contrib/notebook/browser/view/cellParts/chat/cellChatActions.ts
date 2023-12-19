@@ -339,12 +339,10 @@ registerAction2(
 			super({
 				id: "notebook.cell.insertCodeCellWithChat",
 				title: {
-					value:
-						"$(sparkle) " +
-						localize(
-							"notebookActions.menu.insertCodeCellWithChat",
-							"Generate",
-						),
+					value: `$(sparkle) ${localize(
+						"notebookActions.menu.insertCodeCellWithChat",
+						"Generate",
+					)}`,
 					original: "$(sparkle) Generate",
 				},
 				tooltip: localize(

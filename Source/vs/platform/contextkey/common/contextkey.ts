@@ -322,21 +322,24 @@ export class Parser {
 		if (this._matchOne(TokenType.Neg)) {
 			const peek = this._peek();
 			switch (peek.type) {
-				case TokenType.True:
+				case TokenType.True: {
 					this._advance();
 					return ContextKeyFalseExpr.INSTANCE;
-				case TokenType.False:
+				}
+				case TokenType.False: {
 					this._advance();
 					return ContextKeyTrueExpr.INSTANCE;
+				}
 				case TokenType.LParen: {
 					this._advance();
 					const expr = this._expr();
 					this._consume(TokenType.RParen, errorClosingParenthesis);
 					return expr?.negate();
 				}
-				case TokenType.Str:
+				case TokenType.Str: {
 					this._advance();
 					return ContextKeyNotExpr.create(peek.lexeme);
+				}
 				default:
 					throw this._errExpectedButGot(
 						`KEY | true | false | '(' expression ')'`,
@@ -350,13 +353,15 @@ export class Parser {
 	private _primary(): ContextKeyExpression | undefined {
 		const peek = this._peek();
 		switch (peek.type) {
-			case TokenType.True:
+			case TokenType.True: {
 				this._advance();
 				return ContextKeyExpr.true();
+			}
 
-			case TokenType.False:
+			case TokenType.False: {
 				this._advance();
 				return ContextKeyExpr.false();
+			}
 
 			case TokenType.LParen: {
 				this._advance();
@@ -378,7 +383,7 @@ export class Parser {
 					if (!this._config.regexParsingWithErrorRecovery) {
 						this._advance();
 						if (expr.type !== TokenType.RegexStr) {
-							throw this._errExpectedButGot(`REGEX`, expr);
+							throw this._errExpectedButGot("REGEX", expr);
 						}
 						const regexLexeme = expr.lexeme;
 						const closingSlashIndex = regexLexeme.lastIndexOf("/");
@@ -397,7 +402,7 @@ export class Parser {
 								flags,
 							);
 						} catch (e) {
-							throw this._errExpectedButGot(`REGEX`, expr);
+							throw this._errExpectedButGot("REGEX", expr);
 						}
 						return ContextKeyRegexExpr.create(key, regexp);
 					}
@@ -431,12 +436,14 @@ export class Parser {
 								followingToken.type !== TokenType.Or
 							) {
 								switch (followingToken.type) {
-									case TokenType.LParen:
+									case TokenType.LParen: {
 										parenBalance++;
 										break;
-									case TokenType.RParen:
+									}
+									case TokenType.RParen: {
 										parenBalance--;
 										break;
+									}
 									case TokenType.RegexStr:
 									case TokenType.QuotedStr:
 										for (
@@ -486,7 +493,7 @@ export class Parser {
 									flags,
 								);
 							} catch (e) {
-								throw this._errExpectedButGot(`REGEX`, expr);
+								throw this._errExpectedButGot("REGEX", expr);
 							}
 							return ContextKeyExpr.regex(key, regexp);
 						}
@@ -517,7 +524,7 @@ export class Parser {
 										);
 									} catch (_e) {
 										throw this._errExpectedButGot(
-											`REGEX`,
+											"REGEX",
 											expr,
 										);
 									}
@@ -586,38 +593,43 @@ export class Parser {
 					}
 					// TODO: ContextKeyExpr.smaller(key, right) accepts only `number` as `right` AND during eval of this node, we just eval to `false` if `right` is not a number
 					// consequently, package.json linter should _warn_ the user if they're passing undesired things to ops
-					case TokenType.Lt:
+					case TokenType.Lt: {
 						this._advance();
 						return ContextKeySmallerExpr.create(key, this._value());
+					}
 
-					case TokenType.LtEq:
+					case TokenType.LtEq: {
 						this._advance();
 						return ContextKeySmallerEqualsExpr.create(
 							key,
 							this._value(),
 						);
+					}
 
-					case TokenType.Gt:
+					case TokenType.Gt: {
 						this._advance();
 						return ContextKeyGreaterExpr.create(key, this._value());
+					}
 
-					case TokenType.GtEq:
+					case TokenType.GtEq: {
 						this._advance();
 						return ContextKeyGreaterEqualsExpr.create(
 							key,
 							this._value(),
 						);
+					}
 
-					case TokenType.In:
+					case TokenType.In: {
 						this._advance();
 						return ContextKeyExpr.in(key, this._value());
+					}
 
 					default:
 						return ContextKeyExpr.has(key);
 				}
 			}
 
-			case TokenType.EOF:
+			case TokenType.EOF: {
 				this._parsingErrors.push({
 					message: errorUnexpectedEOF,
 					offset: peek.offset,
@@ -625,6 +637,7 @@ export class Parser {
 					additionalInfo: hintUnexpectedEOF,
 				});
 				throw Parser._parseError;
+			}
 
 			default:
 				throw this._errExpectedButGot(
@@ -638,18 +651,23 @@ export class Parser {
 		const token = this._peek();
 		switch (token.type) {
 			case TokenType.Str:
-			case TokenType.QuotedStr:
+			case TokenType.QuotedStr: {
 				this._advance();
 				return token.lexeme;
-			case TokenType.True:
+			}
+			case TokenType.True: {
 				this._advance();
 				return "true";
-			case TokenType.False:
+			}
+			case TokenType.False: {
 				this._advance();
 				return "false";
-			case TokenType.In: // we support `in` as a value, e.g., "when": "languageId == in" - exists in existing extensions
+			}
+			case TokenType.In: {
+				// we support `in` as a value, e.g., "when": "languageId == in" - exists in existing extensions
 				this._advance();
 				return "in";
+			}
 			default:
 				// this allows "when": "foo == " which's used by existing extensions
 				// we do not call `_advance` on purpose - we don't want to eat unintended tokens
@@ -789,7 +807,7 @@ export abstract class ContextKeyExpr {
 			return undefined;
 		}
 
-		const expr = this._parser.parse(serialized);
+		const expr = ContextKeyExpr._parser.parse(serialized);
 		return expr;
 	}
 }
@@ -835,10 +853,10 @@ export function expressionsAreEqualWithConstantSubstitution(
 ): boolean {
 	const aExpr = a ? a.substituteConstants() : undefined;
 	const bExpr = b ? b.substituteConstants() : undefined;
-	if (!aExpr && !bExpr) {
+	if (!(aExpr || bExpr)) {
 		return true;
 	}
-	if (!aExpr || !bExpr) {
+	if (!(aExpr && bExpr)) {
 		return false;
 	}
 	return aExpr.equals(bExpr);
@@ -1054,7 +1072,7 @@ export class ContextKeyEqualsExpr implements IContextKeyExpression {
 	public evaluate(context: IContext): boolean {
 		// Intentional ==
 		// eslint-disable-next-line eqeqeq
-		return context.getValue(this.key) == this.value;
+		return context.getValue(this.key) === this.value;
 	}
 
 	public serialize(): string {
@@ -1264,7 +1282,7 @@ export class ContextKeyNotEqualsExpr implements IContextKeyExpression {
 	public evaluate(context: IContext): boolean {
 		// Intentional !=
 		// eslint-disable-next-line eqeqeq
-		return context.getValue(this.key) != this.value;
+		return context.getValue(this.key) !== this.value;
 	}
 
 	public serialize(): string {
@@ -1366,7 +1384,7 @@ function withFloatOrStr<T extends ContextKeyExpression>(
 ): T | ContextKeyFalseExpr {
 	if (typeof value === "string") {
 		const n = parseFloat(value);
-		if (!isNaN(n)) {
+		if (!Number.isNaN(n)) {
 			value = n;
 		}
 	}

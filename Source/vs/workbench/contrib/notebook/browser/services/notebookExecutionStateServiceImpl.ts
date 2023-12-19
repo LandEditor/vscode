@@ -493,7 +493,7 @@ class NotebookExecutionListeners extends Disposable {
 		const notebookModel =
 			this._notebookService.getNotebookTextModel(notebook);
 		if (!notebookModel) {
-			throw new Error("Notebook not found: " + notebook);
+			throw new Error(`Notebook not found: ${notebook}`);
 		}
 
 		this._notebookModel = notebookModel;
@@ -510,7 +510,7 @@ class NotebookExecutionListeners extends Disposable {
 	}
 
 	private cancelAll(): void {
-		this._logService.debug(`NotebookExecutionListeners#cancelAll`);
+		this._logService.debug("NotebookExecutionListeners#cancelAll");
 		const exes =
 			this._notebookExecutionStateService.getCellExecutionsForNotebook(
 				this._notebookModel.uri,
@@ -522,7 +522,7 @@ class NotebookExecutionListeners extends Disposable {
 	}
 
 	private onWillDisposeDocument(): void {
-		this._logService.debug(`NotebookExecution#onWillDisposeDocument`);
+		this._logService.debug("NotebookExecution#onWillDisposeDocument");
 		this.cancelAll();
 	}
 
@@ -810,7 +810,7 @@ class NotebookExecution extends Disposable implements INotebookExecution {
 		@ILogService private readonly _logService: ILogService
 	) {
 		super();
-		this._logService.debug(`NotebookExecution#ctor`);
+		this._logService.debug("NotebookExecution#ctor");
 	}
 	private debug(message: string) {
 		this._logService.debug(
@@ -819,19 +819,19 @@ class NotebookExecution extends Disposable implements INotebookExecution {
 	}
 
 	confirm() {
-		this.debug(`Execution#confirm`);
+		this.debug("Execution#confirm");
 		this._state = NotebookExecutionState.Pending;
 		this._onDidUpdate.fire();
 	}
 
 	begin(): void {
-		this.debug(`Execution#begin`);
+		this.debug("Execution#begin");
 		this._state = NotebookExecutionState.Executing;
 		this._onDidUpdate.fire();
 	}
 
 	complete(): void {
-		this.debug(`Execution#begin`);
+		this.debug("Execution#begin");
 		this._state = NotebookExecutionState.Unconfirmed;
 		this._onDidComplete.fire();
 	}

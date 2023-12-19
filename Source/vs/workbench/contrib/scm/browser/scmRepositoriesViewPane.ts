@@ -124,7 +124,7 @@ export class SCMRepositoriesViewPane extends ViewPane {
 
 		this.list = this.instantiationService.createInstance(
 			WorkbenchList,
-			`SCM Main`,
+			"SCM Main",
 			listContainer,
 			delegate,
 			[renderer],

@@ -175,7 +175,7 @@ class TreeNodeListDragAndDrop<T, TFilterData, TRef>
 	): boolean | IListDragOverReaction {
 		const result = this.dnd.onDragOver(
 			asTreeDragAndDropData(data),
-			targetNode && targetNode.element,
+			targetNode?.element,
 			targetIndex,
 			originalEvent,
 		);
@@ -263,7 +263,7 @@ class TreeNodeListDragAndDrop<T, TFilterData, TRef>
 
 		this.dnd.drop(
 			asTreeDragAndDropData(data),
-			targetNode && targetNode.element,
+			targetNode?.element,
 			targetIndex,
 			originalEvent,
 		);
@@ -288,7 +288,7 @@ function asListOptions<T, TFilterData, TRef>(
 			...options,
 			identityProvider: options.identityProvider && {
 				getId(el) {
-					return options.identityProvider!.getId(el.element);
+					return options.identityProvider?.getId(el.element);
 				},
 			},
 			dnd:
@@ -297,12 +297,12 @@ function asListOptions<T, TFilterData, TRef>(
 			multipleSelectionController:
 				options.multipleSelectionController && {
 					isSelectionSingleChangeEvent(e) {
-						return options.multipleSelectionController!.isSelectionSingleChangeEvent(
+						return options.multipleSelectionController?.isSelectionSingleChangeEvent(
 							{ ...e, element: e.element } as any,
 						);
 					},
 					isSelectionRangeChangeEvent(e) {
-						return options.multipleSelectionController!.isSelectionRangeChangeEvent(
+						return options.multipleSelectionController?.isSelectionRangeChangeEvent(
 							{ ...e, element: e.element } as any,
 						);
 					},
@@ -320,58 +320,52 @@ function asListOptions<T, TFilterData, TRef>(
 				getPosInSet(node) {
 					return node.visibleChildIndex + 1;
 				},
-				isChecked:
-					options.accessibilityProvider &&
-					options.accessibilityProvider.isChecked
-						? (node) => {
-								return options.accessibilityProvider!
-									.isChecked!(node.element);
-						  }
-						: undefined,
-				getRole:
-					options.accessibilityProvider &&
-					options.accessibilityProvider.getRole
-						? (node) => {
-								return options.accessibilityProvider!.getRole!(
-									node.element,
-								);
-						  }
-						: () => "treeitem",
+				isChecked: options.accessibilityProvider?.isChecked
+					? (node) => {
+							return options.accessibilityProvider?.isChecked?.(
+								node.element,
+							);
+					  }
+					: undefined,
+				getRole: options.accessibilityProvider?.getRole
+					? (node) => {
+							return options.accessibilityProvider?.getRole?.(
+								node.element,
+							);
+					  }
+					: () => "treeitem",
 				getAriaLabel(e) {
-					return options.accessibilityProvider!.getAriaLabel(
+					return options.accessibilityProvider?.getAriaLabel(
 						e.element,
 					);
 				},
 				getWidgetAriaLabel() {
-					return options.accessibilityProvider!.getWidgetAriaLabel();
+					return options.accessibilityProvider?.getWidgetAriaLabel();
 				},
-				getWidgetRole:
-					options.accessibilityProvider &&
-					options.accessibilityProvider.getWidgetRole
-						? () => options.accessibilityProvider!.getWidgetRole!()
-						: () => "tree",
-				getAriaLevel:
-					options.accessibilityProvider &&
-					options.accessibilityProvider.getAriaLevel
-						? (node) =>
-								options.accessibilityProvider!.getAriaLevel!(
-									node.element,
-								)
-						: (node) => {
-								return node.depth;
-						  },
+				getWidgetRole: options.accessibilityProvider?.getWidgetRole
+					? () => options.accessibilityProvider?.getWidgetRole?.()
+					: () => "tree",
+				getAriaLevel: options.accessibilityProvider?.getAriaLevel
+					? (node) =>
+							options.accessibilityProvider?.getAriaLevel?.(
+								node.element,
+							)
+					: (node) => {
+							return node.depth;
+					  },
 				getActiveDescendantId:
 					options.accessibilityProvider.getActiveDescendantId &&
 					((node) => {
-						return options.accessibilityProvider!
-							.getActiveDescendantId!(node.element);
+						return options.accessibilityProvider?.getActiveDescendantId?.(
+							node.element,
+						);
 					}),
 			},
 			keyboardNavigationLabelProvider:
 				options.keyboardNavigationLabelProvider && {
 					...options.keyboardNavigationLabelProvider,
 					getKeyboardNavigationLabel(node) {
-						return options.keyboardNavigationLabelProvider!.getKeyboardNavigationLabel(
+						return options.keyboardNavigationLabelProvider?.getKeyboardNavigationLabel(
 							node.element,
 						);
 					},
@@ -444,7 +438,7 @@ export class AbstractTreeViewState implements IAbstractTreeViewState {
 	protected constructor(state: IAbstractTreeViewState) {
 		this.focus = new Set(state.focus);
 		this.selection = new Set(state.selection);
-		if (state.expanded instanceof Array) {
+		if (Array.isArray(state.expanded)) {
 			// old format
 			this.expanded = Object.create(null);
 			for (const id of state.expanded as string[]) {
@@ -912,7 +906,7 @@ class FindFilter<T>
 		const labels = Array.isArray(label) ? label : [label];
 
 		for (const l of labels) {
-			const labelStr: string = l && l.toString();
+			const labelStr: string = l?.toString();
 			if (typeof labelStr === "undefined") {
 				return { data: FuzzyScore.Default, visibility };
 			}
@@ -1546,8 +1540,7 @@ class FindController<T, TFilterData> implements IDisposable {
 
 	shouldAllowFocus(node: ITreeNode<T, TFilterData>): boolean {
 		if (
-			!this.widget ||
-			!this.pattern ||
+			!(this.widget && this.pattern) ||
 			this._mode === TreeFindMode.Filter
 		) {
 			return true;
@@ -2009,8 +2002,8 @@ class StickyScrollWidget<T, TFilterData, TRef> implements IDisposable {
 
 		// If state has not changed, do nothing
 		if (
-			(!wasVisible && !isVisible) ||
-			(wasVisible && isVisible && this._previousState!.equal(state!))
+			!(wasVisible || isVisible) ||
+			(wasVisible && isVisible && this._previousState?.equal(state!))
 		) {
 			return;
 		}
@@ -2307,14 +2300,14 @@ class Trait<T> {
 		const deletedNodesIdSet = new Set<string>();
 		const deletedNodesVisitor = (node: ITreeNode<T, any>) =>
 			deletedNodesIdSet.add(
-				this.identityProvider!.getId(node.element).toString(),
+				this.identityProvider?.getId(node.element).toString(),
 			);
 		deletedNodes.forEach((node) => dfs(node, deletedNodesVisitor));
 
 		const insertedNodesMap = new Map<string, ITreeNode<T, any>>();
 		const insertedNodesVisitor = (node: ITreeNode<T, any>) =>
 			insertedNodesMap.set(
-				this.identityProvider!.getId(node.element).toString(),
+				this.identityProvider?.getId(node.element).toString(),
 				node,
 			);
 		insertedNodes.forEach((node) => dfs(node, insertedNodesVisitor));
@@ -2328,7 +2321,7 @@ class Trait<T> {
 			if (wasDeleted) {
 				const insertedNode = insertedNodesMap.get(id);
 
-				if (insertedNode && insertedNode.visible) {
+				if (insertedNode?.visible) {
 					nodes.push(insertedNode);
 				}
 			} else {
@@ -2921,7 +2914,7 @@ export abstract class AbstractTree<T, TFilterData, TRef>
 				opts,
 			);
 			this.focusNavigationFilter = (node) =>
-				this.findController!.shouldAllowFocus(node);
+				this.findController?.shouldAllowFocus(node);
 			this.onDidChangeFindOpenState =
 				this.findController.onDidChangeOpenState;
 			this.disposables.add(this.findController!);

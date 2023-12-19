@@ -354,7 +354,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 		if (this._fixedCols !== undefined) {
 			return this._fixedCols;
 		}
-		if (this._dimensionsOverride && this._dimensionsOverride.cols) {
+		if (this._dimensionsOverride?.cols) {
 			if (this._dimensionsOverride.forceExactSize) {
 				return this._dimensionsOverride.cols;
 			}
@@ -369,7 +369,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 		if (this._fixedRows !== undefined) {
 			return this._fixedRows;
 		}
-		if (this._dimensionsOverride && this._dimensionsOverride.rows) {
+		if (this._dimensionsOverride?.rows) {
 			if (this._dimensionsOverride.forceExactSize) {
 				return this._dimensionsOverride.rows;
 			}
@@ -777,8 +777,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 		// permanently attached to the terminal. This also doesn't work when the default profile
 		// setting is set to null, that's handled after the process is created.
 		if (
-			!this.shellLaunchConfig.executable &&
-			!workbenchEnvironmentService.remoteAuthority
+			!(this.shellLaunchConfig.executable ||workbenchEnvironmentService.remoteAuthority)
 		) {
 			this._terminalProfileResolverService.resolveIcon(
 				this._shellLaunchConfig,
@@ -965,10 +964,10 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 				this._contributions.delete(desc.id);
 				// Just in case to prevent potential future memory leaks due to cyclic dependency.
 				if ("instance" in contribution) {
-					delete contribution.instance;
+					contribution.instance = undefined;
 				}
 				if ("_instance" in contribution) {
-					delete contribution._instance;
+					contribution._instance = undefined;
 				}
 			});
 		}
@@ -1033,7 +1032,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 	 */
 	private _evaluateColsAndRows(width: number, height: number): number | null {
 		// Ignore if dimensions are undefined or 0
-		if (!width || !height) {
+		if (!(width && height)) {
 			this._setLastKnownColsAndRows();
 			return null;
 		}
@@ -1087,7 +1086,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 		const font = this.xterm
 			? this.xterm.getFont()
 			: this._configHelper.getFont(dom.getWindow(this.domElement));
-		if (!font || !font.charWidth || !font.charHeight) {
+		if (!(font?.charWidth && font.charHeight)) {
 			return undefined;
 		}
 
@@ -1398,7 +1397,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 			return;
 		}
 
-		if (!this._container || !this._container.isConnected) {
+		if (!this._container?.isConnected) {
 			throw new Error(
 				"A container element needs to be set with `attachToElement` and be part of the DOM before calling `_open`",
 			);
@@ -1437,7 +1436,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 			}),
 		);
 
-		if (!xterm.raw.element || !xterm.raw.textarea) {
+		if (!(xterm.raw.element && xterm.raw.textarea)) {
 			throw new Error("xterm elements not set after open");
 		}
 
@@ -1606,7 +1605,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 				// We need to listen to the mouseup event on the document since the user may release
 				// the mouse button anywhere outside of _xterm.element.
 				const listener = dom.addDisposableListener(
-					xterm.raw.element!.ownerDocument,
+					xterm.raw.element?.ownerDocument,
 					"mouseup",
 					() => {
 						// Delay with a setTimeout to allow the mouseup to propagate through the DOM
@@ -1916,7 +1915,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 			// does change since the number of visible rows decreases.
 			// This can likely be removed after https://github.com/xtermjs/xterm.js/issues/291 is
 			// fixed upstream.
-			setTimeout(() => this.xterm!.forceRefresh(), 0);
+			setTimeout(() => this.xterm?.forceRefresh(), 0);
 		}
 	}
 
@@ -2037,11 +2036,12 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 		);
 		processManager.onDidChangeProperty(({ type, value }) => {
 			switch (type) {
-				case ProcessPropertyType.Cwd:
+				case ProcessPropertyType.Cwd: {
 					this._cwd = value;
 					this._labelComputer?.refreshLabel(this);
 					break;
-				case ProcessPropertyType.InitialCwd:
+				}
+				case ProcessPropertyType.InitialCwd: {
 					this._initialCwd = value;
 					this._cwd = this._initialCwd;
 					this._setTitle(this.title, TitleEventSource.Config);
@@ -2053,24 +2053,31 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 						userInitiated: false,
 					});
 					break;
-				case ProcessPropertyType.Title:
+				}
+				case ProcessPropertyType.Title: {
 					this._setTitle(value ?? "", TitleEventSource.Process);
 					break;
-				case ProcessPropertyType.OverrideDimensions:
+				}
+				case ProcessPropertyType.OverrideDimensions: {
 					this.setOverrideDimensions(value, true);
 					break;
-				case ProcessPropertyType.ResolvedShellLaunchConfig:
+				}
+				case ProcessPropertyType.ResolvedShellLaunchConfig: {
 					this._setResolvedShellLaunchConfig(value);
 					break;
-				case ProcessPropertyType.ShellType:
+				}
+				case ProcessPropertyType.ShellType: {
 					this.setShellType(value);
 					break;
-				case ProcessPropertyType.HasChildProcesses:
+				}
+				case ProcessPropertyType.HasChildProcesses: {
 					this._onDidChangeHasChildProcesses.fire(value);
 					break;
-				case ProcessPropertyType.UsedShellIntegrationInjection:
+				}
+				case ProcessPropertyType.UsedShellIntegrationInjection: {
 					this._usedShellIntegrationInjection = true;
 					break;
+				}
 			}
 		});
 
@@ -2288,14 +2295,15 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 					xterm.raw.write(formatMessageForTerminal(exitMessage));
 				}
 				switch (typeof waitOnExit) {
-					case "string":
+					case "string": {
 						xterm.raw.write(
 							formatMessageForTerminal(waitOnExit, {
 								excludeLeadingNewLine: true,
 							}),
 						);
 						break;
-					case "function":
+					}
+					case "function": {
 						if (this.exitCode !== undefined) {
 							xterm.raw.write(
 								formatMessageForTerminal(
@@ -2305,6 +2313,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 							);
 						}
 						break;
+					}
 				}
 				// Disable all input if the terminal is exiting and listen for next keypress
 				xterm.raw.options.disableStdin = true;
@@ -2619,7 +2628,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 	}
 
 	updateAccessibilitySupport(): void {
-		this.xterm!.raw.options.screenReaderMode =
+		this.xterm?.raw.options.screenReaderMode =
 			this._accessibilityService.isScreenReaderOptimized();
 	}
 
@@ -2703,7 +2712,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 				this._layoutSettingsChanged = false;
 			}
 
-			if (isNaN(cols) || isNaN(rows)) {
+			if (Number.isNaN(cols) || Number.isNaN(rows)) {
 				return;
 			}
 
@@ -2746,7 +2755,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 		title: string | undefined,
 	): void {
 		const labelParts: string[] = [];
-		if (xterm && xterm.textarea) {
+		if (xterm?.textarea) {
 			if (title && title.length > 0) {
 				labelParts.push(
 					nls.localize(
@@ -2804,7 +2813,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 			return this._processName;
 		}
 		switch (eventSource) {
-			case TitleEventSource.Process:
+			case TitleEventSource.Process: {
 				if (this._processManager.os === OperatingSystem.Windows) {
 					// Extract the file name without extension
 					title = path.win32.parse(title).name;
@@ -2818,13 +2827,15 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 				}
 				this._processName = title;
 				break;
-			case TitleEventSource.Api:
+			}
+			case TitleEventSource.Api: {
 				// If the title has not been set by the API or the rename command, unregister the handler that
 				// automatically updates the terminal name
 				this._staticTitle = title;
 				this._messageTitleDisposable.value = undefined;
 				break;
-			case TitleEventSource.Sequence:
+			}
+			case TitleEventSource.Sequence: {
 				// On Windows, some shells will fire this with the full path which we want to trim
 				// to show just the file name. This should only happen if the title looks like an
 				// absolute Windows file path
@@ -2836,6 +2847,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 					this._sequence = path.win32.parse(title).name;
 				}
 				break;
+			}
 		}
 		this._titleSource = eventSource;
 		return title;
@@ -2846,8 +2858,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 		immediate = false,
 	): void {
 		if (
-			this._dimensionsOverride &&
-			this._dimensionsOverride.forceExactSize &&
+			this._dimensionsOverride?.forceExactSize &&
 			!dimensions &&
 			this._rows === 0 &&
 			this._cols === 0
@@ -2975,10 +2986,12 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 				: this._configHelper.getFont(dom.getWindow(this.domElement))
 		).charWidth;
 		if (
-			!this.xterm?.raw.element ||
-			!this._container ||
-			!charWidth ||
-			!this._fixedCols
+			!(
+				this.xterm?.raw.element &&
+				this._container &&
+				charWidth &&
+				this._fixedCols
+			)
 		) {
 			return;
 		}
@@ -3021,7 +3034,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 	}
 
 	private async _removeScrollbar(): Promise<void> {
-		if (!this._container || !this._horizontalScrollbar) {
+		if (!(this._container && this._horizontalScrollbar)) {
 			return;
 		}
 		this._horizontalScrollbar.getDomNode().remove();
@@ -3119,14 +3132,14 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 	async getCwd(): Promise<string> {
 		if (this.capabilities.has(TerminalCapability.CwdDetection)) {
 			return this.capabilities
-				.get(TerminalCapability.CwdDetection)!
-				.getCwd();
+				.get(TerminalCapability.CwdDetection)
+				?.getCwd();
 		} else if (
 			this.capabilities.has(TerminalCapability.NaiveCwdDetection)
 		) {
 			return this.capabilities
-				.get(TerminalCapability.NaiveCwdDetection)!
-				.getCwd();
+				.get(TerminalCapability.NaiveCwdDetection)
+				?.getCwd();
 		}
 		return this._processManager.initialCwd;
 	}
@@ -3304,7 +3317,7 @@ class TerminalInstanceDragAndDropController
 	}
 
 	private _clearDropOverlay() {
-		if (this._dropOverlay && this._dropOverlay.parentElement) {
+		if (this._dropOverlay?.parentElement) {
 			this._dropOverlay.parentElement.removeChild(this._dropOverlay);
 		}
 		this._dropOverlay = undefined;
@@ -3351,7 +3364,7 @@ class TerminalInstanceDragAndDropController
 	}
 
 	onDragOver(e: DragEvent) {
-		if (!e.dataTransfer || !this._dropOverlay) {
+		if (!(e.dataTransfer && this._dropOverlay)) {
 			return;
 		}
 
@@ -3663,10 +3676,7 @@ export function parseExitResult(
 				commandLine = shellLaunchConfig.executable;
 				if (typeof shellLaunchConfig.args === "string") {
 					commandLine += ` ${shellLaunchConfig.args}`;
-				} else if (
-					shellLaunchConfig.args &&
-					shellLaunchConfig.args.length
-				) {
+				} else if (shellLaunchConfig.args?.length) {
 					commandLine += shellLaunchConfig.args
 						.map((a) => ` '${a}'`)
 						.join();
@@ -3723,15 +3733,19 @@ export function parseExitResult(
 						? parseInt(conptyError[1])
 						: undefined;
 				switch (errorCode) {
-					case 5:
+					case 5: {
 						innerMessage = `Access was denied to the path containing your executable "${shellLaunchConfig.executable}". Manage and change your permissions to get this to work`;
 						break;
-					case 267:
+					}
+					case 267: {
 						innerMessage = `Invalid starting directory "${initialCwd}", review your terminal.integrated.cwd setting`;
 						break;
-					case 1260:
-						innerMessage = `Windows cannot open this program because it has been prevented by a software restriction policy. For more information, open Event Viewer or contact your system Administrator`;
+					}
+					case 1260: {
+						innerMessage =
+							"Windows cannot open this program because it has been prevented by a software restriction policy. For more information, open Event Viewer or contact your system Administrator";
 						break;
+					}
 				}
 			}
 			message = nls.localize(

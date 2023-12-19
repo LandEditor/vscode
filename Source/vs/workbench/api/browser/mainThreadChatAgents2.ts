@@ -260,7 +260,7 @@ export class MainThreadChatAgents2
 					hasAccessToAllModels: true,
 				},
 				{
-					_debugDisplayName: "chatAgentCompletions:" + handle,
+					_debugDisplayName: `chatAgentCompletions:${handle}`,
 					triggerCharacters,
 					provideCompletionItems: async (
 						model: ITextModel,
@@ -272,7 +272,7 @@ export class MainThreadChatAgents2
 							this._chatWidgetService.getWidgetByInputUri(
 								model.uri,
 							);
-						if (!widget || !widget.viewModel) {
+						if (!widget?.viewModel) {
 							return;
 						}
 
@@ -345,7 +345,7 @@ export class MainThreadChatAgents2
 							return {
 								label: v.label,
 								range,
-								insertText: insertText + " ",
+								insertText: `${insertText} `,
 								kind: CompletionItemKind.Text,
 								detail: v.detail,
 								documentation: v.documentation,

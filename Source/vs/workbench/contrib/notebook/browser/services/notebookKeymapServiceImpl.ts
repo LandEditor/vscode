@@ -145,7 +145,7 @@ export class NotebookKeymapService
 						extensionIdentifier,
 					),
 				);
-				if (extension && extension.globallyEnabled) {
+				if (extension?.globallyEnabled) {
 					// there is already a keymap extension
 					this.notebookKeymap[hasRecommendedKeymapKey] = true;
 					this.notebookKeymapMemento.saveMemento();

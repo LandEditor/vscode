@@ -249,13 +249,13 @@ function computeOptions(
 
 		// User settings defines `diffEditor.codeLens`, but here we rename that to `diffEditor.diffCodeLens` to avoid collisions with `editor.codeLens`.
 		diffEditorConfiguration.diffCodeLens = diffEditorConfiguration.codeLens;
-		delete diffEditorConfiguration.codeLens;
+		diffEditorConfiguration.codeLens = undefined;
 
 		// User settings defines `diffEditor.wordWrap`, but here we rename that to `diffEditor.diffWordWrap` to avoid collisions with `editor.wordWrap`.
 		diffEditorConfiguration.diffWordWrap = <
 			"off" | "on" | "inherit" | undefined
 		>diffEditorConfiguration.wordWrap;
-		delete diffEditorConfiguration.wordWrap;
+		diffEditorConfiguration.wordWrap = undefined;
 
 		Object.assign(editorConfiguration, diffEditorConfiguration);
 	}

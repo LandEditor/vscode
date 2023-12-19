@@ -79,7 +79,7 @@ async function main() {
 		account: process.env.AZURE_STORAGE_ACCOUNT,
 		credential,
 		container: process.env.VSCODE_QUALITY,
-		prefix: commit + "/",
+		prefix: `${commit}/`,
 		contentSettings: {
 			contentEncoding: compressed ? "gzip" : undefined,
 			cacheControl: "max-age=31536000, public",
@@ -102,7 +102,7 @@ async function main() {
 			this.emit("data", f);
 		}),
 	);
-	console.log(`Uploading files to CDN...`); // debug
+	console.log("Uploading files to CDN..."); // debug
 	await wait(out);
 	const listing = new Vinyl({
 		path: "files.txt",

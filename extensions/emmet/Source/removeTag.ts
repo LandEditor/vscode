@@ -9,7 +9,7 @@ import { getRootNode } from "./parseDocument";
 import { getHtmlFlatNode, offsetRangeToVsRange, validate } from "./util";
 
 export function removeTag() {
-	if (!validate(false) || !vscode.window.activeTextEditor) {
+	if (!(validate(false) && vscode.window.activeTextEditor)) {
 		return;
 	}
 	const editor = vscode.window.activeTextEditor;

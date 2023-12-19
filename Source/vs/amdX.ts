@@ -42,8 +42,6 @@ class AMDModuleImporter {
 		  >
 		| undefined;
 
-	constructor() {}
-
 	private _initialize(): void {
 		if (this._initialized) {
 			return;

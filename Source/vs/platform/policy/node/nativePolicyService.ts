@@ -53,7 +53,7 @@ export class NativePolicyService
 						);
 					} catch (err) {
 						this.logService.error(
-							`NativePolicyService#_updatePolicyDefinitions - Error creating watcher:`,
+							"NativePolicyService#_updatePolicyDefinitions - Error creating watcher:",
 							err,
 						);
 						e(err);

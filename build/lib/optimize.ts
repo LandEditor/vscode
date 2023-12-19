@@ -20,7 +20,7 @@ import * as util from "./util";
 const REPO_ROOT_PATH = path.join(__dirname, "../..");
 
 function log(prefix: string, message: string): void {
-	fancyLog(ansiColors.cyan("[" + prefix + "]"), message);
+	fancyLog(ansiColors.cyan(`[${prefix}]`), message);
 }
 
 export function loaderConfig() {
@@ -174,7 +174,7 @@ function toConcatStream(
 		const root = source.path ? REPO_ROOT_PATH.replace(/\\/g, "/") : "";
 		const base = source.path ? root + `/${src}` : ".";
 		const path = source.path
-			? root + "/" + source.path.replace(/\\/g, "/")
+			? `${root}/${source.path.replace(/\\/g, "/")}`
 			: "fake";
 		const contents = source.path
 			? fileContentMapper(source.contents, path)
@@ -294,9 +294,9 @@ function optimizeAMDTask(opts: IOptimizeAMDTaskOpts): NodeJS.ReadWriteStream {
 		const filteredResources = resources.slice();
 		result.cssInlinedResources.forEach((resource) => {
 			if (process.env["VSCODE_BUILD_VERBOSE"]) {
-				log("optimizer", "excluding inlined: " + resource);
+				log("optimizer", `excluding inlined: ${resource}`);
 			}
-			filteredResources.push("!" + resource);
+			filteredResources.push(`!${resource}`);
 		});
 		gulp.src(filteredResources, { base: `${src}`, allowEmpty: true }).pipe(
 			resourcesStream,
@@ -333,7 +333,7 @@ function optimizeAMDTask(opts: IOptimizeAMDTaskOpts): NodeJS.ReadWriteStream {
 			}),
 		)
 		.pipe(
-			opts.languages && opts.languages.length
+			opts.languages?.length
 				? processNlsFiles({
 						fileHeader: bundledFileHeader,
 						languages: opts.languages,
@@ -482,7 +482,7 @@ export function minifyTask(
 		const svgFilter = filter("**/*.svg", { restore: true });
 
 		pump(
-			gulp.src([src + "/**", "!" + src + "/**/*.map"]),
+			gulp.src([`${src}/**`, `!${src}/**/*.map`]),
 			jsFilter,
 			sourcemaps.init({ loadMaps: true }),
 			es.map((f: any, cb) => {
@@ -542,7 +542,7 @@ export function minifyTask(
 				includeContent: true,
 				addComment: true,
 			} as any),
-			gulp.dest(src + "-min"),
+			gulp.dest(`${src}-min`),
 			(err: any) => cb(err),
 		);
 	};

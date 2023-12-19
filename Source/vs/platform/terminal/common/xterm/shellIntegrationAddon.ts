@@ -309,22 +309,25 @@ export class ShellIntegrationAddon
 		// a type flag through the capability calls
 		const [command, ...args] = data.split(";");
 		switch (command) {
-			case "A":
+			case "A": {
 				this._createOrGetCommandDetection(
 					this._terminal,
 				).handlePromptStart();
 				return true;
-			case "B":
+			}
+			case "B": {
 				// Ignore the command line for these sequences as it's unreliable for example in powerlevel10k
 				this._createOrGetCommandDetection(
 					this._terminal,
 				).handleCommandStart({ ignoreCommandLine: true });
 				return true;
-			case "C":
+			}
+			case "C": {
 				this._createOrGetCommandDetection(
 					this._terminal,
 				).handleCommandExecuted();
 				return true;
+			}
 			case "D": {
 				const exitCode =
 					args.length === 1 ? parseInt(args[0]) : undefined;
@@ -363,8 +366,11 @@ export class ShellIntegrationAddon
 		}
 		this._activationTimeout = setTimeout(() => {
 			if (
-				!this.capabilities.get(TerminalCapability.CommandDetection) &&
-				!this.capabilities.get(TerminalCapability.CwdDetection)
+				!(
+					this.capabilities.get(
+						TerminalCapability.CommandDetection,
+					) || this.capabilities.get(TerminalCapability.CwdDetection)
+				)
 			) {
 				this._telemetryService?.publicLog2<{
 					classification: "SystemMetaData";
@@ -398,21 +404,24 @@ export class ShellIntegrationAddon
 		const args: (string | undefined)[] =
 			argsIndex === -1 ? [] : data.substring(argsIndex + 1).split(";");
 		switch (sequenceCommand) {
-			case VSCodeOscPt.PromptStart:
+			case VSCodeOscPt.PromptStart: {
 				this._createOrGetCommandDetection(
 					this._terminal,
 				).handlePromptStart();
 				return true;
-			case VSCodeOscPt.CommandStart:
+			}
+			case VSCodeOscPt.CommandStart: {
 				this._createOrGetCommandDetection(
 					this._terminal,
 				).handleCommandStart();
 				return true;
-			case VSCodeOscPt.CommandExecuted:
+			}
+			case VSCodeOscPt.CommandExecuted: {
 				this._createOrGetCommandDetection(
 					this._terminal,
 				).handleCommandExecuted();
 				return true;
+			}
 			case VSCodeOscPt.CommandFinished: {
 				const arg0 = args[0];
 				const exitCode =
@@ -531,10 +540,11 @@ export class ShellIntegrationAddon
 				}
 
 				switch (key) {
-					case ITermOscPt.CurrentDir:
+					case ITermOscPt.CurrentDir: {
 						// Encountered: `OSC 1337 ; CurrentDir=<Cwd> ST`
 						this._updateCwd(value);
 						return true;
+					}
 				}
 			}
 		}
@@ -550,12 +560,13 @@ export class ShellIntegrationAddon
 
 		const [command, ...args] = data.split(";");
 		switch (command) {
-			case "9":
+			case "9": {
 				// Encountered `OSC 9 ; 9 ; <cwd> ST`
 				if (args.length) {
 					this._updateCwd(args[0]);
 				}
 				return true;
+			}
 		}
 
 		// Unrecognized sequence
@@ -586,8 +597,10 @@ export class ShellIntegrationAddon
 
 	serialize(): ISerializedCommandDetectionCapability {
 		if (
-			!this._terminal ||
-			!this.capabilities.has(TerminalCapability.CommandDetection)
+			!(
+				this._terminal &&
+				this.capabilities.has(TerminalCapability.CommandDetection)
+			)
 		) {
 			return {
 				isWindowsPty: false,

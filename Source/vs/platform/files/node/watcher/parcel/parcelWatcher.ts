@@ -159,9 +159,13 @@ export class ParcelWatcher extends Disposable implements IRecursiveWatcher {
 
 			// Re-watch path if excludes/includes have changed or polling interval
 			return (
-				!patternsEquals(watcher.request.excludes, request.excludes) ||
-				!patternsEquals(watcher.request.includes, request.includes) ||
-				watcher.request.pollingInterval !== request.pollingInterval
+				!(
+					patternsEquals(
+						watcher.request.excludes,
+						request.excludes,
+					) &&
+					patternsEquals(watcher.request.includes, request.includes)
+				) || watcher.request.pollingInterval !== request.pollingInterval
 			);
 		});
 

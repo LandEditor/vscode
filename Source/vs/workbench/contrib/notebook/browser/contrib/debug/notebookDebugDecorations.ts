@@ -119,7 +119,7 @@ export class PausedCellDecorationContribution
 
 		const focusedFrame =
 			this._debugService.getViewModel().focusedStackFrame;
-		if (focusedFrame && focusedFrame.thread.stopped) {
+		if (focusedFrame?.thread.stopped) {
 			const thisFocusedFrameCellAndRange =
 				getNotebookCellAndRange(focusedFrame);
 			if (
@@ -266,7 +266,7 @@ export class NotebookBreakpointDecorations
 						if (
 							!parsed ||
 							parsed.notebook.toString() !==
-								this._notebookEditor.textModel!.uri.toString()
+								this._notebookEditor.textModel?.uri.toString()
 						) {
 							return null;
 						}

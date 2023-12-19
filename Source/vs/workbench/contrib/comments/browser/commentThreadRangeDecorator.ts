@@ -142,7 +142,7 @@ export class CommentThreadRangeDecorator extends Disposable {
 		commentInfos: ICommentInfo[],
 	) {
 		const model = editor?.getModel();
-		if (!editor || !model) {
+		if (!(editor && model)) {
 			return;
 		}
 		dispose(this.threadCollapseStateListeners);

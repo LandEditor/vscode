@@ -77,7 +77,7 @@ export class InputCodeEditorView extends CodeEditorView {
 	) {
 		super(instantiationService, viewModel, configurationService);
 
-		this.htmlElements.root.classList.add(`input`);
+		this.htmlElements.root.classList.add("input");
 
 		this._register(
 			new EditorGutter(this.editor, this.htmlElements.gutterDiv, {
@@ -270,8 +270,10 @@ export class InputCodeEditorView extends CodeEditorView {
 				blockClassNames.push(inputClassName);
 
 				if (
-					!modifiedBaseRange.isConflicting &&
-					!showNonConflictingChanges &&
+					!(
+						modifiedBaseRange.isConflicting ||
+						showNonConflictingChanges
+					) &&
 					isHandled
 				) {
 					continue;
@@ -657,7 +659,7 @@ export class MergeConflictGutterItemView
 			checkBox.onChange(() => {
 				transaction((tx) => {
 					/** @description Handle Checkbox Change */
-					this.item.get()!.setState(checkBox.checked, tx);
+					this.item.get()?.setState(checkBox.checked, tx);
 				});
 			}),
 		);

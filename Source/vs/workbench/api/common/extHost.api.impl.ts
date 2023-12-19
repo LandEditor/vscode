@@ -696,9 +696,7 @@ export function createApiFactoryAndRegisterActors(
 							extHostEditors.getActiveTextEditor();
 						if (!activeTextEditor) {
 							extHostLogService.warn(
-								"Cannot execute " +
-									id +
-									" because there is no active text editor.",
+								`Cannot execute ${id} because there is no active text editor.`,
 							);
 							return undefined;
 						}
@@ -715,16 +713,13 @@ export function createApiFactoryAndRegisterActors(
 								(result) => {
 									if (!result) {
 										extHostLogService.warn(
-											"Edits from command " +
-												id +
-												" were not applied.",
+											`Edits from command ${id} were not applied.`,
 										);
 									}
 								},
 								(err) => {
 									extHostLogService.warn(
-										"An error occurred while running command " +
-											id,
+										`An error occurred while running command ${id}`,
 										err,
 									);
 								},
@@ -749,9 +744,7 @@ export function createApiFactoryAndRegisterActors(
 							extHostDocumentsAndEditors.activeEditor(true);
 						if (!activeTextEditor) {
 							extHostLogService.warn(
-								"Cannot execute " +
-									id +
-									" because there is no active text editor.",
+								`Cannot execute ${id} because there is no active text editor.`,
 							);
 							return undefined;
 						}

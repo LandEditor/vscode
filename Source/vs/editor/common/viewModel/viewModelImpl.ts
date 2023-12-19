@@ -1484,18 +1484,18 @@ export class ViewModel extends Disposable implements IViewModel {
 
 		return {
 			mode: languageId,
-			html:
-				`<div style="` +
-				`color: ${colorMap[ColorId.DefaultForeground]};` +
-				`background-color: ${colorMap[ColorId.DefaultBackground]};` +
-				`font-family: ${fontFamily};` +
-				`font-weight: ${fontInfo.fontWeight};` +
-				`font-size: ${fontInfo.fontSize}px;` +
-				`line-height: ${fontInfo.lineHeight}px;` +
-				`white-space: pre;` +
-				`">` +
-				this._getHTMLToCopy(range, colorMap) +
-				"</div>",
+			html: `<div style="color: ${
+				colorMap[ColorId.DefaultForeground]
+			};background-color: ${
+				colorMap[ColorId.DefaultBackground]
+			};font-family: ${fontFamily};font-weight: ${
+				fontInfo.fontWeight
+			};font-size: ${fontInfo.fontSize}px;line-height: ${
+				fontInfo.lineHeight
+			}px;white-space: pre;">${this._getHTMLToCopy(
+				range,
+				colorMap,
+			)}</div>`,
 		};
 	}
 

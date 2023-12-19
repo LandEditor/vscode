@@ -249,7 +249,7 @@ export class UserDataProfilesWorkbenchContribution
 			class SwitchProfileAction extends Action2 {
 				constructor() {
 					super({
-						id: `workbench.profiles.actions.switchProfile`,
+						id: "workbench.profiles.actions.switchProfile",
 						title: {
 							value: localize(
 								"switchProfile",
@@ -330,10 +330,10 @@ export class UserDataProfilesWorkbenchContribution
 						IS_CURRENT_PROFILE_TRANSIENT_CONTEXT.toNegated(),
 					);
 					super({
-						id: `workbench.profiles.actions.editCurrentProfile`,
+						id: "workbench.profiles.actions.editCurrentProfile",
 						title: {
 							value: localize("edit profile", "Edit Profile..."),
-							original: `Edit Profile...`,
+							original: "Edit Profile...",
 						},
 						precondition: when,
 						f1: true,
@@ -368,7 +368,7 @@ export class UserDataProfilesWorkbenchContribution
 								"show profile contents",
 								"Show Profile Contents",
 							),
-							original: `Show Profile Contents`,
+							original: "Show Profile Contents",
 						},
 						category: PROFILES_CATEGORY,
 						menu: [
@@ -760,7 +760,7 @@ export class UserDataProfilesWorkbenchContribution
 						accessor.get(INotificationService);
 
 					const profiles = userDataProfilesService.profiles.filter(
-						(p) => !p.isDefault && !p.isTransient,
+						(p) => !(p.isDefault || p.isTransient),
 					);
 					if (profiles.length) {
 						const picks = await quickInputService.pick(

@@ -514,7 +514,7 @@ function quote(args: string[]): string {
 	let r = "";
 	for (const a of args) {
 		if (a.indexOf(" ") >= 0) {
-			r += '"' + a + '"';
+			r += `"${a}"`;
 		} else {
 			r += a;
 		}

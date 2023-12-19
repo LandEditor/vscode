@@ -53,7 +53,7 @@ export class ParsedTokenThemeRule {
 export function parseTokenTheme(
 	source: ITokenThemeRule[],
 ): ParsedTokenThemeRule[] {
-	if (!source || !Array.isArray(source)) {
+	if (!(source && Array.isArray(source))) {
 		return [];
 	}
 	const result: ParsedTokenThemeRule[] = [];
@@ -69,18 +69,22 @@ export function parseTokenTheme(
 			for (let j = 0, lenJ = segments.length; j < lenJ; j++) {
 				const segment = segments[j];
 				switch (segment) {
-					case "italic":
-						fontStyle = fontStyle | FontStyle.Italic;
+					case "italic": {
+						fontStyle |= FontStyle.Italic;
 						break;
-					case "bold":
-						fontStyle = fontStyle | FontStyle.Bold;
+					}
+					case "bold": {
+						fontStyle |= FontStyle.Bold;
 						break;
-					case "underline":
-						fontStyle = fontStyle | FontStyle.Underline;
+					}
+					case "underline": {
+						fontStyle |= FontStyle.Underline;
 						break;
-					case "strikethrough":
-						fontStyle = fontStyle | FontStyle.Strikethrough;
+					}
+					case "strikethrough": {
+						fontStyle |= FontStyle.Strikethrough;
 						break;
+					}
 				}
 			}
 		}
@@ -187,7 +191,7 @@ export class ColorMap {
 		}
 		const match = color.match(colorRegExp);
 		if (!match) {
-			throw new Error("Illegal value for token color: " + color);
+			throw new Error(`Illegal value for token color: ${color}`);
 		}
 		color = match[1].toUpperCase();
 		let value = this._color2id.get(color);
@@ -196,7 +200,7 @@ export class ColorMap {
 		}
 		value = ++this._lastColorId;
 		this._color2id.set(color, value);
-		this._id2color[value] = Color.fromHex("#" + color);
+		this._id2color[value] = Color.fromHex(`#${color}`);
 		return value;
 	}
 
@@ -210,7 +214,7 @@ export class TokenTheme {
 		source: ITokenThemeRule[],
 		customTokenColors: string[],
 	): TokenTheme {
-		return this.createFromParsedTokenTheme(
+		return TokenTheme.createFromParsedTokenTheme(
 			parseTokenTheme(source),
 			customTokenColors,
 		);

@@ -35,14 +35,13 @@ export const renderSearchMessage = (
 	dom.append(
 		div,
 		dom.$(
-			"." +
-				SeverityIcon.className(
-					message.type === TextSearchCompleteMessageType.Information
-						? Severity.Info
-						: Severity.Warning,
-				)
-					.split(" ")
-					.join("."),
+			`.${SeverityIcon.className(
+				message.type === TextSearchCompleteMessageType.Information
+					? Severity.Info
+					: Severity.Warning,
+			)
+				.split(" ")
+				.join(".")}`,
 		),
 	);
 

@@ -94,9 +94,8 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 	declare readonly _serviceBrand: undefined;
 
 	get isVisible() {
-		return (
-			ActionWidgetContextKeys.Visible.getValue(this._contextKeyService) ||
-			false
+		return ActionWidgetContextKeys.Visible.getValue(
+			this._contextKeyService,
 		);
 	}
 

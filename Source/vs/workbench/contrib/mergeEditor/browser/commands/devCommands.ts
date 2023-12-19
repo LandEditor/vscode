@@ -224,7 +224,7 @@ export class MergeEditorLoadContentsFromFolder extends Action2 {
 		const targetDirInfo = await fileService.resolve(targetDir);
 
 		function findFile(name: string) {
-			return targetDirInfo.children!.find((c) => c.name.startsWith(name))
+			return targetDirInfo.children?.find((c) => c.name.startsWith(name))
 				?.resource!;
 		}
 

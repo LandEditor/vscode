@@ -95,8 +95,10 @@ export class NotificationsStatus extends Disposable {
 		// want to give a hint to the user that something is running.
 		let notificationsInProgress = 0;
 		if (
-			!this.isNotificationsCenterVisible &&
-			!this.isNotificationsToastsVisible
+			!(
+				this.isNotificationsCenterVisible ||
+				this.isNotificationsToastsVisible
+			)
 		) {
 			for (const notification of this.model.notifications) {
 				if (notification.hasProgress) {
@@ -237,13 +239,14 @@ export class NotificationsStatus extends Disposable {
 
 		switch (e.kind) {
 			// Show status notification
-			case StatusMessageChangeType.ADD:
+			case StatusMessageChangeType.ADD: {
 				this.doSetStatusMessage(statusItem);
 
 				break;
+			}
 
 			// Hide status notification (if its still the current one)
-			case StatusMessageChangeType.REMOVE:
+			case StatusMessageChangeType.REMOVE: {
 				if (
 					this.currentStatusMessage &&
 					this.currentStatusMessage[0] === statusItem
@@ -253,6 +256,7 @@ export class NotificationsStatus extends Disposable {
 				}
 
 				break;
+			}
 		}
 	}
 

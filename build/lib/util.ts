@@ -135,7 +135,7 @@ export function fixWin32DirectoryPermissions(): NodeJS.ReadWriteStream {
 	}
 
 	return es.mapSync<VinylFile, VinylFile>((f) => {
-		if (f.stat && f.stat.isDirectory && f.stat.isDirectory()) {
+		if (f.stat?.isDirectory?.()) {
 			f.stat.mode = 16877;
 		}
 
@@ -173,10 +173,10 @@ export function toFileUri(filePath: string): string {
 	const match = filePath.match(/^([a-z])\:(.*)$/i);
 
 	if (match) {
-		filePath = "/" + match[1].toUpperCase() + ":" + match[2];
+		filePath = `/${match[1].toUpperCase()}:${match[2]}`;
 	}
 
-	return "file://" + filePath.replace(/\\/g, "/");
+	return `file://${filePath.replace(/\\/g, "/")}`;
 }
 
 export function skipDirectories(): NodeJS.ReadWriteStream {
@@ -433,7 +433,7 @@ export function versionStringToNumber(versionStr: string) {
 	const match = versionStr.match(semverRegex);
 	if (!match) {
 		throw new Error(
-			"Version string is not properly formatted: " + versionStr,
+			`Version string is not properly formatted: ${versionStr}`,
 		);
 	}
 
@@ -453,8 +453,8 @@ export function streamToPromise(stream: NodeJS.ReadWriteStream): Promise<void> {
 
 export function getElectronVersion(): Record<string, string> {
 	const yarnrc = fs.readFileSync(path.join(root, ".yarnrc"), "utf8");
-	const electronVersion = /^target "(.*)"$/m.exec(yarnrc)![1];
-	const msBuildId = /^ms_build_id "(.*)"$/m.exec(yarnrc)![1];
+	const electronVersion = /^target "(.*)"$/m.exec(yarnrc)?.[1];
+	const msBuildId = /^ms_build_id "(.*)"$/m.exec(yarnrc)?.[1];
 	return { electronVersion, msBuildId };
 }
 
@@ -550,10 +550,10 @@ export function createExternalLoaderConfig(
 	commit?: string,
 	quality?: string,
 ): IExternalLoaderInfo | undefined {
-	if (!webEndpoint || !commit || !quality) {
+	if (!(webEndpoint && commit && quality)) {
 		return undefined;
 	}
-	webEndpoint = webEndpoint + `/${quality}/${commit}`;
+	webEndpoint += `/${quality}/${commit}`;
 	const nodePaths = acquireWebNodePaths();
 	Object.keys(nodePaths).map((key, _) => {
 		nodePaths[key] = `../node_modules/${key}/${nodePaths[key]}`;

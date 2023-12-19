@@ -131,8 +131,8 @@ export interface IChatResponseViewModel {
 	readonly slashCommand?: IChatAgentCommand;
 	readonly response: IResponse;
 	readonly usedContext: IChatUsedContext | undefined;
-	readonly contentReferences: ReadonlyArray<IChatContentReference>;
-	readonly progressMessages: ReadonlyArray<IChatProgressMessage>;
+	readonly contentReferences: readonly IChatContentReference[];
+	readonly progressMessages: readonly IChatProgressMessage[];
 	readonly isComplete: boolean;
 	readonly isCanceled: boolean;
 	readonly vote: InteractiveSessionVoteDirection | undefined;
@@ -375,11 +375,11 @@ export class ChatResponseViewModel
 		return this._model.usedContext;
 	}
 
-	get contentReferences(): ReadonlyArray<IChatContentReference> {
+	get contentReferences(): readonly IChatContentReference[] {
 		return this._model.contentReferences;
 	}
 
-	get progressMessages(): ReadonlyArray<IChatProgressMessage> {
+	get progressMessages(): readonly IChatProgressMessage[] {
 		return this._model.progressMessages;
 	}
 
@@ -468,7 +468,7 @@ export class ChatResponseViewModel
 					const now = Date.now();
 					const wordCount = countWords(_model.response.asString());
 					const timeDiff =
-						now - this._contentUpdateTimings!.loadingStartTime;
+						now - this._contentUpdateTimings?.loadingStartTime;
 					const impliedWordLoadRate =
 						this._contentUpdateTimings.lastWordCount /
 						(timeDiff / 1000);
@@ -478,7 +478,7 @@ export class ChatResponseViewModel
 					);
 					this._contentUpdateTimings = {
 						loadingStartTime:
-							this._contentUpdateTimings!.loadingStartTime,
+							this._contentUpdateTimings?.loadingStartTime,
 						lastUpdateTime: now,
 						impliedWordLoadRate,
 						lastWordCount: wordCount,

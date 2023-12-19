@@ -186,13 +186,15 @@ export class PatternInputWidget extends Widget {
 
 	private onInputKeyUp(keyboardEvent: IKeyboardEvent) {
 		switch (keyboardEvent.keyCode) {
-			case KeyCode.Enter:
+			case KeyCode.Enter: {
 				this.onSearchSubmit();
 				this._onSubmit.fire(false);
 				return;
-			case KeyCode.Escape:
+			}
+			case KeyCode.Escape: {
 				this._onCancel.fire();
 				return;
+			}
 		}
 	}
 }

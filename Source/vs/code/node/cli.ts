@@ -120,8 +120,8 @@ export async function main(argv: string[]): Promise<any> {
 					);
 				}
 
-				tunnelProcess.stdout!.pipe(process.stdout);
-				tunnelProcess.stderr!.pipe(process.stderr);
+				tunnelProcess.stdout?.pipe(process.stdout);
+				tunnelProcess.stderr?.pipe(process.stderr);
 				tunnelProcess.on("exit", resolve);
 				tunnelProcess.on("error", reject);
 			});
@@ -153,21 +153,25 @@ export async function main(argv: string[]): Promise<any> {
 		let file: string;
 		switch (args["locate-shell-integration-path"]) {
 			// Usage: `[[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path bash)"`
-			case "bash":
+			case "bash": {
 				file = "shellIntegration-bash.sh";
 				break;
+			}
 			// Usage: `if ($env:TERM_PROGRAM -eq "vscode") { . "$(code --locate-shell-integration-path pwsh)" }`
-			case "pwsh":
+			case "pwsh": {
 				file = "shellIntegration.ps1";
 				break;
+			}
 			// Usage: `[[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path zsh)"`
-			case "zsh":
+			case "zsh": {
 				file = "shellIntegration-rc.zsh";
 				break;
+			}
 			// Usage: `string match -q "$TERM_PROGRAM" "vscode"; and . (code --locate-shell-integration-path fish)`
-			case "fish":
+			case "fish": {
 				file = "fish_xdg_data/fish/vendor_conf.d/shellIntegration.fish";
 				break;
+			}
 			default:
 				throw new Error(
 					"Error using --locate-shell-integration-path: Invalid shell type",
@@ -215,8 +219,7 @@ export async function main(argv: string[]): Promise<any> {
 
 		// Validate
 		if (
-			!source ||
-			!target ||
+			!(source && target) ||
 			source === target || // make sure source and target are provided and are not the same
 			!isAbsolute(source) ||
 			!isAbsolute(target) || // make sure both source and target are absolute paths
@@ -232,7 +235,7 @@ export async function main(argv: string[]): Promise<any> {
 			// Check for readonly status and chmod if so if we are told so
 			let targetMode = 0;
 			let restoreMode = false;
-			if (!!args["file-chmod"]) {
+			if (args["file-chmod"]) {
 				targetMode = statSync(target).mode;
 				if (
 					!(
@@ -278,7 +281,7 @@ export async function main(argv: string[]): Promise<any> {
 			ELECTRON_NO_ATTACH_CONSOLE: "1",
 		};
 
-		delete env["ELECTRON_RUN_AS_NODE"];
+		env["ELECTRON_RUN_AS_NODE"] = undefined;
 
 		const processCallbacks: ((child: ChildProcess) => Promise<void>)[] = [];
 
@@ -431,8 +434,8 @@ export async function main(argv: string[]): Promise<any> {
 			addArg(argv, `--inspect-brk=${portMain}`);
 			addArg(argv, `--remote-debugging-port=${portRenderer}`);
 			addArg(argv, `--inspect-brk-extensions=${portExthost}`);
-			addArg(argv, `--prof-startup-prefix`, filenamePrefix);
-			addArg(argv, `--no-cached-data`);
+			addArg(argv, "--prof-startup-prefix", filenamePrefix);
+			addArg(argv, "--no-cached-data");
 
 			writeFileSync(filenamePrefix, argv.slice(-6).join("|"));
 

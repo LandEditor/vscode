@@ -46,9 +46,10 @@ export class GotoLineQuickAccessProvider extends AbstractGotoLineQuickAccessProv
 				.workbench?.editor;
 
 		return {
-			openEditorPinned:
-				!editorConfig?.enablePreviewFromQuickOpen ||
-				!editorConfig?.enablePreview,
+			openEditorPinned: !(
+				editorConfig?.enablePreviewFromQuickOpen &&
+				editorConfig?.enablePreview
+			),
 		};
 	}
 

@@ -434,7 +434,7 @@ export abstract class AbstractTunnelService implements ITunnelService {
 		// Prevent tunnel factories from calling openTunnel from within the factory
 		if (this._tunnelProvider && this._factoryInProgress.has(remotePort)) {
 			this.logService.debug(
-				`ForwardedPorts: (TunnelService) Another call to create a tunnel with the same address has occurred before the last one completed. This call will be ignored.`,
+				"ForwardedPorts: (TunnelService) Another call to create a tunnel with the same address has occurred before the last one completed. This call will be ignored.",
 			);
 			return;
 		}
@@ -451,7 +451,7 @@ export abstract class AbstractTunnelService implements ITunnelService {
 		);
 		if (!resolvedTunnel) {
 			this.logService.trace(
-				`ForwardedPorts: (TunnelService) Tunnel was not created.`,
+				"ForwardedPorts: (TunnelService) Tunnel was not created.",
 			);
 			return resolvedTunnel;
 		}
@@ -544,7 +544,7 @@ export abstract class AbstractTunnelService implements ITunnelService {
 				},
 			);
 			if (this._tunnels.has(remoteHost)) {
-				this._tunnels.get(remoteHost)!.delete(remotePort);
+				this._tunnels.get(remoteHost)?.delete(remotePort);
 			}
 			return disposePromise;
 		}
@@ -555,7 +555,7 @@ export abstract class AbstractTunnelService implements ITunnelService {
 			`ForwardedPorts: (TunnelService) close request for ${remoteHost}:${remotePort} `,
 		);
 		const portMap = this._tunnels.get(remoteHost);
-		if (portMap && portMap.has(remotePort)) {
+		if (portMap?.has(remotePort)) {
 			const value = portMap.get(remotePort)!;
 			value.refcount = 0;
 			await this.tryDisposeTunnel(remoteHost, remotePort, value);
@@ -571,8 +571,8 @@ export abstract class AbstractTunnelService implements ITunnelService {
 			this._tunnels.set(remoteHost, new Map());
 		}
 		this._tunnels
-			.get(remoteHost)!
-			.set(remotePort, { refcount: 1, value: tunnel });
+			.get(remoteHost)
+			?.set(remotePort, { refcount: 1, value: tunnel });
 	}
 
 	private async removeEmptyOrErrorTunnelFromMap(

@@ -165,25 +165,29 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 			return;
 		}
 		switch (capability.type) {
-			case TerminalCapability.BufferMarkDetection:
+			case TerminalCapability.BufferMarkDetection: {
 				disposables = [
 					capability.onMarkAdded((mark) =>
 						this.registerMarkDecoration(mark),
 					),
 				];
 				break;
-			case TerminalCapability.CommandDetection:
+			}
+			case TerminalCapability.CommandDetection: {
 				disposables = this._getCommandDetectionListeners(capability);
 				break;
+			}
 		}
 		this._capabilityDisposables.set(c, disposables);
 	}
 
 	registerMarkDecoration(mark: IMarkProperties): IDecoration | undefined {
 		if (
-			!this._terminal ||
-			(!this._showGutterDecorations &&
-				!this._showOverviewRulerDecorations)
+			!(
+				this._terminal &&
+				(this._showGutterDecorations ||
+					this._showOverviewRulerDecorations)
+			)
 		) {
 			return undefined;
 		}
@@ -400,8 +404,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 		if (
 			!this._terminal ||
 			(beforeCommandExecution && !command) ||
-			(!this._showGutterDecorations &&
-				!this._showOverviewRulerDecorations)
+			!(this._showGutterDecorations || this._showOverviewRulerDecorations)
 		) {
 			return undefined;
 		}
@@ -670,7 +673,7 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 						this._clipboardService.writeText(
 							`${
 								command.command !== ""
-									? command.command + "\n"
+									? `${command.command}\n`
 									: ""
 							}${output}`,
 						);

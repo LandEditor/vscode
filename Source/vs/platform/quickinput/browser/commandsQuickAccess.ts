@@ -446,7 +446,7 @@ export abstract class AbstractCommandsQuickAccessProvider
 
 	protected abstract getCommandPicks(
 		token: CancellationToken,
-	): Promise<Array<ICommandQuickPick>>;
+	): Promise<ICommandQuickPick[]>;
 
 	protected abstract hasAdditionalCommandPicks(
 		filter: string,

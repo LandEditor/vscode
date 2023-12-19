@@ -187,7 +187,7 @@ class WorkerServerProcess implements TsServerProcess {
 		};
 
 		this._worker.onerror = (err: ErrorEvent) => {
-			console.error("error! " + JSON.stringify(err));
+			console.error(`error! ${JSON.stringify(err)}`);
 			for (const handler of this._onErrorHandlers) {
 				// TODO: The ErrorEvent type might be wrong; previously this was typed as Error and didn't have the property access.
 				handler(err.error);

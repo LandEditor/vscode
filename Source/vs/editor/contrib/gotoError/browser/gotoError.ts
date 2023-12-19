@@ -85,7 +85,7 @@ export class MarkerController implements IEditorContribution {
 	}
 
 	private _getOrCreateModel(uri: URI | undefined): MarkerList {
-		if (this._model && this._model.matches(uri)) {
+		if (this._model?.matches(uri)) {
 			return this._model;
 		}
 		let reusePosition = false;
@@ -121,10 +121,12 @@ export class MarkerController implements IEditorContribution {
 		this._sessionDispoables.add(
 			this._editor.onDidChangeCursorPosition((e) => {
 				if (
-					!this._model?.selected ||
-					!Range.containsPosition(
-						this._model?.selected.marker,
-						e.position,
+					!(
+						this._model?.selected &&
+						Range.containsPosition(
+							this._model?.selected.marker,
+							e.position,
+						)
 					)
 				) {
 					this._model?.resetIndex();
@@ -135,12 +137,12 @@ export class MarkerController implements IEditorContribution {
 		// update markers
 		this._sessionDispoables.add(
 			this._model.onDidChange(() => {
-				if (!this._widget || !this._widget.position || !this._model) {
+				if (!(this._widget?.position && this._model)) {
 					return;
 				}
 				const info = this._model.find(
-					this._editor.getModel()!.uri,
-					this._widget!.position!,
+					this._editor.getModel()?.uri,
+					this._widget?.position!,
 				);
 				if (info) {
 					this._widget.updateMarker(info.marker);
@@ -191,7 +193,7 @@ export class MarkerController implements IEditorContribution {
 				new Position(marker.startLineNumber, marker.startColumn),
 			);
 			if (model.selected) {
-				this._widget!.showAtMarker(
+				this._widget?.showAtMarker(
 					model.selected.marker,
 					model.selected.index,
 					model.selected.total,
@@ -242,7 +244,7 @@ export class MarkerController implements IEditorContribution {
 				}
 			} else {
 				// show in this editor
-				this._widget!.showAtMarker(
+				this._widget?.showAtMarker(
 					model.selected.marker,
 					model.selected.index,
 					model.selected.total,

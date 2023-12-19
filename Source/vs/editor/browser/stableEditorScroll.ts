@@ -79,7 +79,7 @@ export class StableEditorScrollState {
 
 		const currentCursorPosition = editor.getPosition();
 
-		if (!this._cursorPosition || !currentCursorPosition) {
+		if (!(this._cursorPosition && currentCursorPosition)) {
 			return;
 		}
 

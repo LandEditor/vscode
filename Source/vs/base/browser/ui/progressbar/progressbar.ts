@@ -209,7 +209,7 @@ export class ProgressBar extends Disposable {
 		this.element.classList.add(CSS_ACTIVE, CSS_DISCRETE);
 		this.element.setAttribute("aria-valuenow", value.toString());
 
-		this.bit.style.width = 100 * (this.workedVal / totalWork) + "%";
+		this.bit.style.width = `${100 * (this.workedVal / totalWork)}%`;
 
 		return this;
 	}

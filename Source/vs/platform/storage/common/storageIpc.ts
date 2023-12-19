@@ -164,10 +164,6 @@ export class ApplicationStorageDatabaseClient extends BaseProfileAwareStorageDat
 }
 
 export class ProfileStorageDatabaseClient extends BaseProfileAwareStorageDatabaseClient {
-	constructor(channel: IChannel, profile: UriDto<IUserDataProfile>) {
-		super(channel, profile);
-	}
-
 	async close(): Promise<void> {
 		// The profile storage database is shared across all instances of
 		// the same profile so we do not close it from the window.

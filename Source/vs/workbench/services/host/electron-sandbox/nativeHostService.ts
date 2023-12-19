@@ -169,7 +169,7 @@ class WorkbenchHostService extends Disposable implements IHostService {
 		options?: IOpenWindowOptions,
 	): Promise<void> {
 		const remoteAuthority = this.environmentService.remoteAuthority;
-		if (!!remoteAuthority) {
+		if (remoteAuthority) {
 			toOpen.forEach(
 				(openable) =>
 					(openable.label =

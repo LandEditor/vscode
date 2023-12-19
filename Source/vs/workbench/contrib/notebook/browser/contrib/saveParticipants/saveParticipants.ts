@@ -85,8 +85,10 @@ class FormatOnSaveParticipant implements IStoredFileWorkingCopySaveParticipant {
 		token: CancellationToken,
 	): Promise<void> {
 		if (
-			!workingCopy.model ||
-			!(workingCopy.model instanceof NotebookFileWorkingCopyModel)
+			!(
+				workingCopy.model &&
+				workingCopy.model instanceof NotebookFileWorkingCopyModel
+			)
 		) {
 			return;
 		}
@@ -195,8 +197,10 @@ class TrimWhitespaceParticipant
 		progress: IProgress<IProgressStep>,
 	) {
 		if (
-			!workingCopy.model ||
-			!(workingCopy.model instanceof NotebookFileWorkingCopyModel)
+			!(
+				workingCopy.model &&
+				workingCopy.model instanceof NotebookFileWorkingCopyModel
+			)
 		) {
 			return;
 		}
@@ -338,8 +342,10 @@ class TrimFinalNewLinesParticipant
 		progress: IProgress<IProgressStep>,
 	): Promise<void> {
 		if (
-			!workingCopy.model ||
-			!(workingCopy.model instanceof NotebookFileWorkingCopyModel)
+			!(
+				workingCopy.model &&
+				workingCopy.model instanceof NotebookFileWorkingCopyModel
+			)
 		) {
 			return;
 		}
@@ -451,8 +457,10 @@ class FinalNewLineParticipant implements IStoredFileWorkingCopySaveParticipant {
 		progress: IProgress<IProgressStep>,
 	): Promise<void> {
 		if (
-			!workingCopy.model ||
-			!(workingCopy.model instanceof NotebookFileWorkingCopyModel)
+			!(
+				workingCopy.model &&
+				workingCopy.model instanceof NotebookFileWorkingCopyModel
+			)
 		) {
 			return;
 		}
@@ -549,8 +557,10 @@ class CodeActionOnSaveParticipant
 		}
 
 		if (
-			!workingCopy.model ||
-			!(workingCopy.model instanceof NotebookFileWorkingCopyModel)
+			!(
+				workingCopy.model &&
+				workingCopy.model instanceof NotebookFileWorkingCopyModel
+			)
 		) {
 			return;
 		}
@@ -599,8 +609,10 @@ class CodeActionOnSaveParticipant
 			CodeActionKind.Notebook.contains(x),
 		);
 		if (
-			!editorCodeActionsOnSave.length &&
-			!notebookCodeActionsOnSave.length
+			!(
+				editorCodeActionsOnSave.length ||
+				notebookCodeActionsOnSave.length
+			)
 		) {
 			return undefined;
 		}
@@ -765,7 +777,6 @@ class CodeActionOnSaveParticipant
 								workspaceTextEdit.resource &&
 								isEqual(workspaceTextEdit.resource, model.uri)
 							) {
-								continue;
 							} else {
 								// error -> applied to multiple resources
 								breakFlag = true;

@@ -159,7 +159,7 @@ export class Resource implements SourceControlResourceState {
 			case Status.BOTH_MODIFIED:
 				return "!"; // Using ! instead of ⚠, because the latter looks really bad on windows
 			default:
-				throw new Error("Unknown git status: " + type);
+				throw new Error(`Unknown git status: ${type}`);
 		}
 	}
 
@@ -255,7 +255,7 @@ export class Resource implements SourceControlResourceState {
 					"gitDecoration.conflictingResourceForeground",
 				);
 			default:
-				throw new Error("Unknown git status: " + type);
+				throw new Error(`Unknown git status: ${type}`);
 		}
 	}
 
@@ -372,7 +372,7 @@ export class Resource implements SourceControlResourceState {
 			case Status.BOTH_MODIFIED:
 				return Resource.Icons[theme].Conflict;
 			default:
-				throw new Error("Unknown git status: " + this.type);
+				throw new Error(`Unknown git status: ${this.type}`);
 		}
 	}
 
@@ -660,7 +660,7 @@ class DotGitWatcher implements IFileWatcher {
 	private updateTransientWatchers() {
 		this.transientDisposables = dispose(this.transientDisposables);
 
-		if (!this.repository.HEAD || !this.repository.HEAD.upstream) {
+		if (!this.repository.HEAD?.upstream) {
 			return;
 		}
 
@@ -831,7 +831,7 @@ class ResourceCommandResolver {
 						(r) => r.resourceUri.toString() === uriString,
 					);
 
-				if (indexStatus && indexStatus.renameResourceUri) {
+				if (indexStatus?.renameResourceUri) {
 					return indexStatus.renameResourceUri;
 				}
 
@@ -1856,7 +1856,7 @@ export class Repository implements Disposable {
 						await this.repository.add([], addOpts);
 					}
 
-					delete opts.all;
+					opts.all = undefined;
 
 					if (
 						opts.requireUserConfig === undefined ||
@@ -1904,8 +1904,8 @@ export class Repository implements Disposable {
 	private commitOperationGetOptimisticResourceGroups(
 		opts: CommitOptions,
 	): GitResourceGroups {
-		let untrackedGroup: Resource[] | undefined = undefined,
-			workingTreeGroup: Resource[] | undefined = undefined;
+		let untrackedGroup: Resource[] | undefined = undefined;
+		let workingTreeGroup: Resource[] | undefined = undefined;
 
 		if (opts.all === "tracked") {
 			workingTreeGroup = this.workingTreeGroup.resourceStates.filter(
@@ -1957,13 +1957,15 @@ export class Repository implements Disposable {
 
 					switch (scmResource.type) {
 						case Status.UNTRACKED:
-						case Status.IGNORED:
+						case Status.IGNORED: {
 							toClean.push(fsPath);
 							break;
+						}
 
-						default:
+						default: {
 							toCheckout.push(fsPath);
 							break;
+						}
 					}
 				});
 
@@ -2006,8 +2008,10 @@ export class Repository implements Disposable {
 	): void {
 		const config = workspace.getConfiguration("git", Uri.file(this.root));
 		if (
-			!config.get<boolean>("closeDiffOnOperation", false) &&
-			!ignoreSetting
+			!(
+				config.get<boolean>("closeDiffOnOperation", false) ||
+				ignoreSetting
+			)
 		) {
 			return;
 		}
@@ -2075,9 +2079,7 @@ export class Repository implements Disposable {
 		// Get branch details
 		const branch = await this.getBranch(name);
 		if (
-			!branch.upstream?.remote ||
-			!branch.upstream?.name ||
-			!branch.name
+			!(branch.upstream?.remote && branch.upstream?.name && branch.name)
 		) {
 			return;
 		}
@@ -2460,7 +2462,7 @@ export class Repository implements Disposable {
 		let remote: string | undefined;
 		let branch: string | undefined;
 
-		if (head && head.name && head.upstream) {
+		if (head?.name && head.upstream) {
 			remote = head.upstream.remote;
 			branch = `${head.upstream.name}`;
 		}
@@ -2473,7 +2475,7 @@ export class Repository implements Disposable {
 		let remote: string | undefined;
 		let branch: string | undefined;
 
-		if (head && head.name && head.upstream) {
+		if (head?.name && head.upstream) {
 			remote = head.upstream.remote;
 			branch = `${head.upstream.name}`;
 		}
@@ -2538,7 +2540,7 @@ export class Repository implements Disposable {
 		let remote: string | undefined;
 		let branch: string | undefined;
 
-		if (head && head.name && head.upstream) {
+		if (head?.name && head.upstream) {
 			remote = head.upstream.remote;
 			branch = `${head.name}:${head.upstream.name}`;
 		}
@@ -2644,7 +2646,7 @@ export class Repository implements Disposable {
 
 				const remote = this.remotes.find((r) => r.name === remoteName);
 
-				if (remote && remote.isReadOnly) {
+				if (remote?.isReadOnly) {
 					return;
 				}
 
@@ -2911,7 +2913,7 @@ export class Repository implements Disposable {
 					["check-ignore", "-v", "-z", "--stdin"],
 					{ stdio: [null, null, null] },
 				);
-				child.stdin!.end(filePaths.join("\0"), "utf8");
+				child.stdin?.end(filePaths.join("\0"), "utf8");
 
 				const onExit = (exitCode: number) => {
 					if (exitCode === 1) {
@@ -2940,12 +2942,12 @@ export class Repository implements Disposable {
 					data += raw;
 				};
 
-				child.stdout!.setEncoding("utf8");
-				child.stdout!.on("data", onStdoutData);
+				child.stdout?.setEncoding("utf8");
+				child.stdout?.on("data", onStdoutData);
 
 				let stderr = "";
-				child.stderr!.setEncoding("utf8");
-				child.stderr!.on("data", (raw) => (stderr += raw));
+				child.stderr?.setEncoding("utf8");
+				child.stderr?.on("data", (raw) => (stderr += raw));
 
 				child.on("error", reject);
 				child.on("exit", onExit);
@@ -2988,7 +2990,7 @@ export class Repository implements Disposable {
 				tags,
 			);
 		} catch (err) {
-			if (!remote || !refspec) {
+			if (!(remote && refspec)) {
 				throw err;
 			}
 
@@ -3084,7 +3086,7 @@ export class Repository implements Disposable {
 
 				if (shouldRetry) {
 					// quatratic backoff
-					await timeout(Math.pow(attempt, 2) * 50);
+					await timeout(attempt ** 2 * 50);
 				} else {
 					throw err;
 				}
@@ -3196,7 +3198,7 @@ export class Repository implements Disposable {
 	private async getStatus(
 		cancellationToken?: CancellationToken,
 	): Promise<GitResourceGroups> {
-		if (cancellationToken && cancellationToken.isCancellationRequested) {
+		if (cancellationToken?.isCancellationRequested) {
 			throw new CancellationError();
 		}
 
@@ -3327,10 +3329,10 @@ export class Repository implements Disposable {
 			}
 		}
 
-		const indexGroup: Resource[] = [],
-			mergeGroup: Resource[] = [],
-			untrackedGroup: Resource[] = [],
-			workingTreeGroup: Resource[] = [];
+		const indexGroup: Resource[] = [];
+		const mergeGroup: Resource[] = [];
+		const untrackedGroup: Resource[] = [];
+		const workingTreeGroup: Resource[] = [];
 
 		status.forEach((raw) => {
 			const uri = Uri.file(path.join(this.repository.root, raw.path));
@@ -3462,7 +3464,7 @@ export class Repository implements Disposable {
 			}
 
 			switch (raw.x) {
-				case "M":
+				case "M": {
 					indexGroup.push(
 						new Resource(
 							this.resourceCommandResolver,
@@ -3473,7 +3475,8 @@ export class Repository implements Disposable {
 						),
 					);
 					break;
-				case "A":
+				}
+				case "A": {
 					indexGroup.push(
 						new Resource(
 							this.resourceCommandResolver,
@@ -3484,7 +3487,8 @@ export class Repository implements Disposable {
 						),
 					);
 					break;
-				case "D":
+				}
+				case "D": {
 					indexGroup.push(
 						new Resource(
 							this.resourceCommandResolver,
@@ -3495,7 +3499,8 @@ export class Repository implements Disposable {
 						),
 					);
 					break;
-				case "R":
+				}
+				case "R": {
 					indexGroup.push(
 						new Resource(
 							this.resourceCommandResolver,
@@ -3507,7 +3512,8 @@ export class Repository implements Disposable {
 						),
 					);
 					break;
-				case "C":
+				}
+				case "C": {
 					indexGroup.push(
 						new Resource(
 							this.resourceCommandResolver,
@@ -3519,10 +3525,11 @@ export class Repository implements Disposable {
 						),
 					);
 					break;
+				}
 			}
 
 			switch (raw.y) {
-				case "M":
+				case "M": {
 					workingTreeGroup.push(
 						new Resource(
 							this.resourceCommandResolver,
@@ -3534,7 +3541,8 @@ export class Repository implements Disposable {
 						),
 					);
 					break;
-				case "D":
+				}
+				case "D": {
 					workingTreeGroup.push(
 						new Resource(
 							this.resourceCommandResolver,
@@ -3546,7 +3554,8 @@ export class Repository implements Disposable {
 						),
 					);
 					break;
-				case "A":
+				}
+				case "A": {
 					workingTreeGroup.push(
 						new Resource(
 							this.resourceCommandResolver,
@@ -3558,7 +3567,8 @@ export class Repository implements Disposable {
 						),
 					);
 					break;
-				case "R":
+				}
+				case "R": {
 					workingTreeGroup.push(
 						new Resource(
 							this.resourceCommandResolver,
@@ -3570,7 +3580,8 @@ export class Repository implements Disposable {
 						),
 					);
 					break;
-				case "T":
+				}
+				case "T": {
 					workingTreeGroup.push(
 						new Resource(
 							this.resourceCommandResolver,
@@ -3582,6 +3593,7 @@ export class Repository implements Disposable {
 						),
 					);
 					break;
+				}
 			}
 
 			return undefined;
@@ -3606,10 +3618,11 @@ export class Repository implements Disposable {
 			this.workingTreeGroup.resourceStates.length;
 
 		switch (countBadge) {
-			case "off":
+			case "off": {
 				count = 0;
 				break;
-			case "tracked":
+			}
+			case "tracked": {
 				if (untrackedChanges === "mixed") {
 					count -= this.workingTreeGroup.resourceStates.filter(
 						(r) =>
@@ -3618,11 +3631,13 @@ export class Repository implements Disposable {
 					).length;
 				}
 				break;
-			case "all":
+			}
+			case "all": {
 				if (untrackedChanges === "separate") {
 					count += this.untrackedGroup.resourceStates.length;
 				}
 				break;
+			}
 		}
 
 		this._sourceControl.count = count;
@@ -3656,7 +3671,7 @@ export class Repository implements Disposable {
 						),
 					),
 				]);
-			if (!rebaseApplyExists && !rebaseMergePathExists) {
+			if (!(rebaseApplyExists || rebaseMergePathExists)) {
 				return undefined;
 			}
 			return await this.getCommit(rebaseHead.trim());
@@ -3780,20 +3795,20 @@ export class Repository implements Disposable {
 
 	get syncLabel(): string {
 		if (
-			!this.HEAD ||
-			!this.HEAD.name ||
-			!this.HEAD.commit ||
-			!this.HEAD.upstream ||
-			!(this.HEAD.ahead || this.HEAD.behind)
+			!(
+				this.HEAD?.name &&
+				this.HEAD.commit &&
+				this.HEAD.upstream &&
+				(this.HEAD.ahead || this.HEAD.behind)
+			)
 		) {
 			return "";
 		}
 
-		const remoteName =
-			(this.HEAD && this.HEAD.remote) || this.HEAD.upstream.remote;
+		const remoteName = this.HEAD?.remote || this.HEAD.upstream.remote;
 		const remote = this.remotes.find((r) => r.name === remoteName);
 
-		if (remote && remote.isReadOnly) {
+		if (remote?.isReadOnly) {
 			return `${this.HEAD.behind}↓`;
 		}
 
@@ -3802,20 +3817,20 @@ export class Repository implements Disposable {
 
 	get syncTooltip(): string {
 		if (
-			!this.HEAD ||
-			!this.HEAD.name ||
-			!this.HEAD.commit ||
-			!this.HEAD.upstream ||
-			!(this.HEAD.ahead || this.HEAD.behind)
+			!(
+				this.HEAD?.name &&
+				this.HEAD.commit &&
+				this.HEAD.upstream &&
+				(this.HEAD.ahead || this.HEAD.behind)
+			)
 		) {
 			return l10n.t("Synchronize Changes");
 		}
 
-		const remoteName =
-			(this.HEAD && this.HEAD.remote) || this.HEAD.upstream.remote;
+		const remoteName = this.HEAD?.remote || this.HEAD.upstream.remote;
 		const remote = this.remotes.find((r) => r.name === remoteName);
 
-		if ((remote && remote.isReadOnly) || !this.HEAD.ahead) {
+		if (remote?.isReadOnly || !this.HEAD.ahead) {
 			return l10n.t(
 				"Pull {0} commits from {1}/{2}",
 				this.HEAD.behind!,

@@ -90,7 +90,7 @@ class TypeScriptDocumentHighlightProvider
 
 function convertDocumentHighlight(
 	highlight: Proto.DocumentHighlightsItem,
-): ReadonlyArray<vscode.DocumentHighlight> {
+): readonly vscode.DocumentHighlight[] {
 	return highlight.highlightSpans.map(
 		(span) =>
 			new vscode.DocumentHighlight(

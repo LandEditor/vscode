@@ -708,7 +708,7 @@ export class UserDataSyncService
 					),
 				),
 			);
-			this.logService.info(`Deleted redundant collections on server`);
+			this.logService.info("Deleted redundant collections on server");
 		}
 		const updatedRemoteProfiles = remoteProfiles.filter((profile) =>
 			allCollections.includes(profile.collection),
@@ -729,13 +729,13 @@ export class UserDataSyncService
 					"Did reset the last synced state of profiles",
 				);
 				this.logService.info(
-					`Updating remote profiles with invalid collections on server`,
+					"Updating remote profiles with invalid collections on server",
 				);
 				await profileManifestSynchronizer.updateRemoteProfiles(
 					updatedRemoteProfiles,
 					null,
 				);
-				this.logService.info(`Updated remote profiles on server`);
+				this.logService.info("Updated remote profiles on server");
 			} finally {
 				profileManifestSynchronizer.dispose();
 			}
@@ -1509,6 +1509,6 @@ function reportUserDataSyncError(
 		resource: userDataSyncError.resource,
 		executionId,
 		service:
-			userDataSyncStoreManagementService.userDataSyncStore!.url.toString(),
+			userDataSyncStoreManagementService.userDataSyncStore?.url.toString(),
 	});
 }

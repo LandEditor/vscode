@@ -133,7 +133,7 @@ export default class Messages {
 		return nls.localize(
 			"markers.panel.multiple.errors.label",
 			"{0} Errors",
-			"" + noOfErrors,
+			`${noOfErrors}`,
 		);
 	};
 	public static MARKERS_PANEL_SINGLE_WARNING_LABEL: string = nls.localize(
@@ -146,7 +146,7 @@ export default class Messages {
 		return nls.localize(
 			"markers.panel.multiple.warnings.label",
 			"{0} Warnings",
-			"" + noOfWarnings,
+			`${noOfWarnings}`,
 		);
 	};
 	public static MARKERS_PANEL_SINGLE_INFO_LABEL: string = nls.localize(
@@ -159,7 +159,7 @@ export default class Messages {
 		return nls.localize(
 			"markers.panel.multiple.infos.label",
 			"{0} Infos",
-			"" + noOfInfos,
+			`${noOfInfos}`,
 		);
 	};
 	public static MARKERS_PANEL_SINGLE_UNKNOWN_LABEL: string = nls.localize(
@@ -172,7 +172,7 @@ export default class Messages {
 		return nls.localize(
 			"markers.panel.multiple.unknowns.label",
 			"{0} Unknowns",
-			"" + noOfUnknowns,
+			`${noOfUnknowns}`,
 		);
 	};
 
@@ -183,8 +183,8 @@ export default class Messages {
 		return nls.localize(
 			"markers.panel.at.ln.col.number",
 			"[Ln {0}, Col {1}]",
-			"" + ln,
-			"" + col,
+			`${ln}`,
+			`${col}`,
 		);
 	};
 

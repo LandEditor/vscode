@@ -106,7 +106,7 @@ export class ExtHostWebview implements vscode.Webview {
 				// Always treat the location as a directory so that we allow all content under it
 				extensionCspRule += "/";
 			}
-			return extensionCspRule + " " + webviewGenericCspSource;
+			return `${extensionCspRule} ${webviewGenericCspSource}`;
 		}
 		return webviewGenericCspSource;
 	}

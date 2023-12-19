@@ -282,9 +282,9 @@ class MonacoGenerator {
 
 	private _run(): monacodts.IMonacoDeclarationResult | null {
 		const r = monacodts.run3(this._declarationResolver);
-		if (!r && !this._isWatch) {
+		if (!(r || this._isWatch)) {
 			// The build must always be able to generate the monaco.d.ts
-			throw new Error(`monaco.d.ts generation error - Cannot continue`);
+			throw new Error("monaco.d.ts generation error - Cannot continue");
 		}
 		return r;
 	}

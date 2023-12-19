@@ -8,13 +8,14 @@
  */
 export function hash(obj: any, hashVal = 0): number {
 	switch (typeof obj) {
-		case "object":
+		case "object": {
 			if (obj === null) {
 				return numberHash(349, hashVal);
 			} else if (Array.isArray(obj)) {
 				return arrayHash(obj, hashVal);
 			}
 			return objectHash(obj, hashVal);
+		}
 		case "string":
 			return stringHash(obj, hashVal);
 		case "boolean":

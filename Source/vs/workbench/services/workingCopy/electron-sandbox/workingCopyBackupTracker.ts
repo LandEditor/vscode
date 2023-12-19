@@ -268,7 +268,7 @@ export class NativeWorkingCopyBackupTracker
 
 		switch (reason) {
 			// Window Close
-			case ShutdownReason.CLOSE:
+			case ShutdownReason.CLOSE: {
 				if (
 					this.contextService.getWorkbenchState() !==
 						WorkbenchState.EMPTY &&
@@ -297,6 +297,7 @@ export class NativeWorkingCopyBackupTracker
 				}
 
 				return modifiedWorkingCopies; // backup if last window is closed on win/linux where the application quits right after
+			}
 
 			// Application Quit
 			case ShutdownReason.QUIT:
@@ -307,7 +308,7 @@ export class NativeWorkingCopyBackupTracker
 				return modifiedWorkingCopies; // backup because after window reload, backups restore
 
 			// Workspace Change
-			case ShutdownReason.LOAD:
+			case ShutdownReason.LOAD: {
 				if (
 					this.contextService.getWorkbenchState() !==
 					WorkbenchState.EMPTY
@@ -327,6 +328,7 @@ export class NativeWorkingCopyBackupTracker
 				}
 
 				return []; // do not backup because we are switching contexts with no workspace/folder open
+			}
 		}
 	}
 
@@ -344,9 +346,9 @@ export class NativeWorkingCopyBackupTracker
 			"Try saving or reverting the editors with unsaved changes first and then try again.",
 		);
 		const detail = modifiedWorkingCopies.length
-			? getFileNamesMessage(modifiedWorkingCopies.map((x) => x.name)) +
-			  "\n" +
-			  advice
+			? `${getFileNamesMessage(
+					modifiedWorkingCopies.map((x) => x.name),
+			  )}\n${advice}`
 			: advice;
 
 		this.dialogService.error(msg, detail);

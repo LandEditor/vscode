@@ -159,9 +159,10 @@ export class ExternalUriOpenerService
 				switch (priority) {
 					case languages.ExternalUriOpenerPriority.Option:
 					case languages.ExternalUriOpenerPriority.Default:
-					case languages.ExternalUriOpenerPriority.Preferred:
+					case languages.ExternalUriOpenerPriority.Preferred: {
 						validOpeners.push({ opener, priority });
 						break;
+					}
 				}
 			}),
 		);
@@ -264,7 +265,7 @@ export class ExternalUriOpenerService
 	}
 
 	private async showOpenerPrompt(
-		openers: ReadonlyArray<IExternalUriOpener>,
+		openers: readonly IExternalUriOpener[],
 		targetUri: URI,
 		ctx: { sourceUri: URI },
 		token: CancellationToken,

@@ -87,7 +87,7 @@ export class DraggedEditorGroupIdentifier {
 
 export async function extractTreeDropData(
 	dataTransfer: VSDataTransfer,
-): Promise<Array<IDraggedResourceEditorInput>> {
+): Promise<IDraggedResourceEditorInput[]> {
 	const editors: IDraggedResourceEditorInput[] = [];
 	const resourcesKey = Mimes.uriList.toLowerCase();
 
@@ -640,7 +640,7 @@ export class CompositeDragAndDropObserver extends Disposable {
 					? DraggedViewIdentifier.prototype
 					: DraggedCompositeIdentifier.prototype,
 			);
-			if (data && data[0]) {
+			if (data?.[0]) {
 				return new CompositeDragAndDropData(type, data[0].id);
 			}
 		}
@@ -738,7 +738,7 @@ export class CompositeDragAndDropObserver extends Disposable {
 		if (callbacks.onDragStart) {
 			this.onDragStart.event(
 				(e) => {
-					callbacks.onDragStart!(e);
+					callbacks.onDragStart?.(e);
 				},
 				this,
 				disposableStore,
@@ -748,7 +748,7 @@ export class CompositeDragAndDropObserver extends Disposable {
 		if (callbacks.onDragEnd) {
 			this.onDragEnd.event(
 				(e) => {
-					callbacks.onDragEnd!(e);
+					callbacks.onDragEnd?.(e);
 				},
 				this,
 				disposableStore,
@@ -864,7 +864,7 @@ export class CompositeDragAndDropObserver extends Disposable {
 		if (callbacks.onDragStart) {
 			this.onDragStart.event(
 				(e) => {
-					callbacks.onDragStart!(e);
+					callbacks.onDragStart?.(e);
 				},
 				this,
 				disposableStore,
@@ -874,7 +874,7 @@ export class CompositeDragAndDropObserver extends Disposable {
 		if (callbacks.onDragEnd) {
 			this.onDragEnd.event(
 				(e) => {
-					callbacks.onDragEnd!(e);
+					callbacks.onDragEnd?.(e);
 				},
 				this,
 				disposableStore,

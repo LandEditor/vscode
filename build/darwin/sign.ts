@@ -12,7 +12,7 @@ const root = path.dirname(path.dirname(__dirname));
 
 function getElectronVersion(): string {
 	const yarnrc = fs.readFileSync(path.join(root, ".yarnrc"), "utf8");
-	const target = /^target "(.*)"$/m.exec(yarnrc)![1];
+	const target = /^target "(.*)"$/m.exec(yarnrc)?.[1];
 	return target;
 }
 
@@ -34,7 +34,7 @@ async function main(buildDir?: string): Promise<void> {
 	);
 	const baseDir = path.dirname(__dirname);
 	const appRoot = path.join(buildDir, `VSCode-darwin-${arch}`);
-	const appName = product.nameLong + ".app";
+	const appName = `${product.nameLong}.app`;
 	const appFrameworkPath = path.join(
 		appRoot,
 		appName,
@@ -42,9 +42,9 @@ async function main(buildDir?: string): Promise<void> {
 		"Frameworks",
 	);
 	const helperAppBaseName = product.nameShort;
-	const gpuHelperAppName = helperAppBaseName + " Helper (GPU).app";
-	const rendererHelperAppName = helperAppBaseName + " Helper (Renderer).app";
-	const pluginHelperAppName = helperAppBaseName + " Helper (Plugin).app";
+	const gpuHelperAppName = `${helperAppBaseName} Helper (GPU).app`;
+	const rendererHelperAppName = `${helperAppBaseName} Helper (Renderer).app`;
+	const pluginHelperAppName = `${helperAppBaseName} Helper (Plugin).app`;
 	const infoPlistPath = path.resolve(
 		appRoot,
 		appName,

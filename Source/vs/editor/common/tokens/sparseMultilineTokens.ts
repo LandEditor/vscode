@@ -609,7 +609,7 @@ class SparseMultilineTokensStorage {
 				tokenStartCharacter -= endCharacter - startCharacter;
 				tokenEndCharacter -= endCharacter - startCharacter;
 			} else {
-				throw new Error(`Not possible!`);
+				throw new Error("Not possible!");
 			}
 
 			const destOffset = 4 * newTokenCount;

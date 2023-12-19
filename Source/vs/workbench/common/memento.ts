@@ -97,15 +97,18 @@ export class Memento {
 
 	static clear(scope: StorageScope): void {
 		switch (scope) {
-			case StorageScope.WORKSPACE:
+			case StorageScope.WORKSPACE: {
 				Memento.workspaceMementos.clear();
 				break;
-			case StorageScope.PROFILE:
+			}
+			case StorageScope.PROFILE: {
 				Memento.profileMementos.clear();
 				break;
-			case StorageScope.APPLICATION:
+			}
+			case StorageScope.APPLICATION: {
 				Memento.applicationMementos.clear();
 				break;
+			}
 		}
 	}
 }

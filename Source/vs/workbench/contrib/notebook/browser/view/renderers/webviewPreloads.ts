@@ -108,7 +108,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 
 	const acquireVsCodeApi = globalThis.acquireVsCodeApi;
 	const vscode = acquireVsCodeApi();
-	delete (globalThis as any).acquireVsCodeApi;
+	(globalThis as any).acquireVsCodeApi = undefined;
 
 	const tokenizationStyle = new CSSStyleSheet();
 	tokenizationStyle.replaceSync(ctx.style.tokenizationCss);
@@ -191,7 +191,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 	};
 
 	const handleInnerClick = (event: MouseEvent) => {
-		if (!event || !event.view || !event.view.document) {
+		if (!event.view?.document) {
 			return;
 		}
 
@@ -398,7 +398,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				}, 0);
 			}
 			const update = this.pending.get(id);
-			if (update && update.isOutput) {
+			if (update?.isOutput) {
 				this.pending.set(id, {
 					id,
 					height,
@@ -484,7 +484,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 							if (newHeight !== 0) {
 								entry.target.style.padding = `${ctx.style.outputNodePadding}px ${ctx.style.outputNodePadding}px ${ctx.style.outputNodePadding}px ${ctx.style.outputNodeLeftPadding}px`;
 							} else {
-								entry.target.style.padding = `0px`;
+								entry.target.style.padding = "0px";
 							}
 							this.updateHeight(
 								observedElementInfo,
@@ -896,8 +896,8 @@ async function webviewPreloads(ctx: PreloadContext) {
 		} else {
 			$window.document.execCommand("hiliteColor", false, matchColor);
 			const cloneRange = $window
-				.getSelection()!
-				.getRangeAt(0)
+				.getSelection()
+				?.getRangeAt(0)
 				.cloneRange();
 			const _range = {
 				collapsed: cloneRange.collapsed,
@@ -973,7 +973,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				listeners.add(listenerObj);
 				listenerChange(listeners);
 
-				if (disposables instanceof Array) {
+				if (Array.isArray(disposables)) {
 					disposables.push(disposable);
 				} else if (disposables) {
 					disposables.add(disposable);
@@ -1049,7 +1049,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 	}
 
 	interface ExtendedOutputItem extends rendererApi.OutputItem {
-		readonly _allOutputItems: ReadonlyArray<AdditionalOutputItemInfo>;
+		readonly _allOutputItems: readonly AdditionalOutputItemInfo[];
 		appendedText?(): string | undefined;
 	}
 
@@ -1214,7 +1214,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 					"mark",
 					match.isShadow
 						? {
-								style: "background-color: " + matchColor + ";",
+								style: `background-color: ${matchColor};`,
 						  }
 						: {
 								class: "find-match",
@@ -1259,8 +1259,8 @@ async function webviewPreloads(ctx: PreloadContext) {
 				let offset = 0;
 				try {
 					const outputOffset = $window.document
-						.getElementById(match.id)!
-						.getBoundingClientRect().top;
+						.getElementById(match.id)
+						?.getBoundingClientRect().top;
 					const tempRange = document.createRange();
 					tempRange.selectNode(
 						match.highlightResult.range.startContainer,
@@ -1296,7 +1296,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				return;
 			}
 			const oldMatch = highlightInfo.matches[index];
-			if (oldMatch && oldMatch.highlightResult) {
+			if (oldMatch?.highlightResult) {
 				oldMatch.highlightResult.update(
 					matchColor,
 					oldMatch.isShadow ? undefined : "find-match",
@@ -1325,9 +1325,9 @@ async function webviewPreloads(ctx: PreloadContext) {
 			this._matchesHighlight.priority = 1;
 			this._currentMatchesHighlight = new Highlight();
 			this._currentMatchesHighlight.priority = 2;
-			CSS.highlights?.set(`find-highlight`, this._matchesHighlight);
+			CSS.highlights?.set("find-highlight", this._matchesHighlight);
 			CSS.highlights?.set(
-				`current-find-highlight`,
+				"current-find-highlight",
 				this._currentMatchesHighlight,
 			);
 		}
@@ -1390,8 +1390,8 @@ async function webviewPreloads(ctx: PreloadContext) {
 				let offset = 0;
 				try {
 					const outputOffset = $window.document
-						.getElementById(match.id)!
-						.getBoundingClientRect().top;
+						.getElementById(match.id)
+						?.getBoundingClientRect().top;
 					match.originalRange.startContainer.parentElement?.scrollIntoView(
 						{ behavior: "auto", block: "end", inline: "nearest" },
 					);
@@ -1602,7 +1602,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 							? root?.getSelection()
 							: null;
 						// find the match in the shadow dom by checking the selection inside the shadow dom
-						if (shadowSelection && shadowSelection.anchorNode) {
+						if (shadowSelection?.anchorNode) {
 							matches.push({
 								type: "preview",
 								id: preview.id,
@@ -1629,8 +1629,8 @@ async function webviewPreloads(ctx: PreloadContext) {
 					) {
 						// output container
 						const cellId =
-							selection.getRangeAt(0).startContainer
-								.parentElement!.id;
+							selection.getRangeAt(0).startContainer.parentElement
+								?.id;
 						const outputNode = selection.anchorNode
 							?.firstChild as Element;
 						const root = outputNode.shadowRoot as ShadowRoot & {
@@ -1639,7 +1639,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 						const shadowSelection = root?.getSelection
 							? root?.getSelection()
 							: null;
-						if (shadowSelection && shadowSelection.anchorNode) {
+						if (shadowSelection?.anchorNode) {
 							matches.push({
 								type: "output",
 								id: outputNode.id,
@@ -1664,8 +1664,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 
 						// Optimization: avoid searching for the output container
 						if (
-							lastEl &&
-							lastEl.container.contains(anchorNode) &&
+							lastEl?.container.contains(anchorNode) &&
 							options.includeOutput
 						) {
 							matches.push({
@@ -1826,11 +1825,12 @@ async function webviewPreloads(ctx: PreloadContext) {
 				}
 				break;
 			}
-			case "createMarkupCell":
+			case "createMarkupCell": {
 				viewModel.ensureMarkupCell(event.data.cell);
 				break;
+			}
 
-			case "showMarkupCell":
+			case "showMarkupCell": {
 				viewModel.showMarkupCell(
 					event.data.id,
 					event.data.top,
@@ -1838,28 +1838,33 @@ async function webviewPreloads(ctx: PreloadContext) {
 					event.data.metadata,
 				);
 				break;
+			}
 
-			case "hideMarkupCells":
+			case "hideMarkupCells": {
 				for (const id of event.data.ids) {
 					viewModel.hideMarkupCell(id);
 				}
 				break;
+			}
 
-			case "unhideMarkupCells":
+			case "unhideMarkupCells": {
 				for (const id of event.data.ids) {
 					viewModel.unhideMarkupCell(id);
 				}
 				break;
+			}
 
-			case "deleteMarkupCell":
+			case "deleteMarkupCell": {
 				for (const id of event.data.ids) {
 					viewModel.deleteMarkupCell(id);
 				}
 				break;
+			}
 
-			case "updateSelectedMarkupCells":
+			case "updateSelectedMarkupCells": {
 				viewModel.updateSelectedCells(event.data.selectedCellIds);
 				break;
+			}
 
 			case "html": {
 				const data = event.data;
@@ -1888,11 +1893,12 @@ async function webviewPreloads(ctx: PreloadContext) {
 				viewModel.updateMarkupScrolls(event.data.markupCells);
 				break;
 			}
-			case "clear":
+			case "clear": {
 				renderers.clearAll();
 				viewModel.clearAll();
 				$window.document.getElementById("container")!.innerText = "";
 				break;
+			}
 
 			case "clearOutput": {
 				const { cellId, rendererId, outputId } = event.data;
@@ -1942,12 +1948,13 @@ async function webviewPreloads(ctx: PreloadContext) {
 				renderers.updateRendererData(rendererData);
 				break;
 			}
-			case "focus-output":
+			case "focus-output": {
 				focusFirstFocusableOrContainerInOutput(
 					event.data.cellOrOutputId,
 					event.data.alternateId,
 				);
 				break;
+			}
 			case "decorations": {
 				let outputContainer = $window.document.getElementById(
 					event.data.cellId,
@@ -1968,14 +1975,16 @@ async function webviewPreloads(ctx: PreloadContext) {
 				);
 				break;
 			}
-			case "customKernelMessage":
+			case "customKernelMessage": {
 				onDidReceiveKernelMessage.fire(event.data.message);
 				break;
-			case "customRendererMessage":
+			}
+			case "customRendererMessage": {
 				renderers
 					.getRenderer(event.data.rendererId)
 					?.receiveMessage(event.data.message);
 				break;
+			}
 			case "notebookStyles": {
 				const documentStyle = $window.document.documentElement.style;
 
@@ -1983,7 +1992,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 					const property = documentStyle[i];
 
 					// Don't remove properties that the webview might have added separately
-					if (property && property.startsWith("--notebook-")) {
+					if (property?.startsWith("--notebook-")) {
 						documentStyle.removeProperty(property);
 					}
 				}
@@ -1994,7 +2003,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				}
 				break;
 			}
-			case "notebookOptions":
+			case "notebookOptions": {
 				currentOptions = event.data.options;
 				viewModel.toggleDragDropEnabled(
 					currentOptions.dragAndDropEnabled,
@@ -2002,6 +2011,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				currentRenderOptions = event.data.renderOptions;
 				settingChange.fire(currentRenderOptions);
 				break;
+			}
 			case "tokenizedCodeBlock": {
 				const { codeBlockId, html } = event.data;
 				MarkdownCodeBlock.highlightCodeBlock(codeBlockId, html);
@@ -2108,7 +2118,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				);
 				this.postDebugMessage("Rendering output item failed", {
 					id: item.id,
-					error: e + "",
+					error: `${e}`,
 				});
 			}
 		}
@@ -2234,7 +2244,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 							console.error(e);
 							this.postDebugMessage(
 								"Activating dependant renderer failed",
-								{ dependent: d.id, error: e + "" },
+								{ dependent: d.id, error: `${e}` },
 							);
 							return undefined;
 						}
@@ -2772,7 +2782,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				return cell;
 			}
 
-			cell.element.style.top = cellTop + "px";
+			cell.element.style.top = `${cellTop}px`;
 			return cell;
 		}
 
@@ -2959,7 +2969,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			this.element.id = this.id;
 			this.element.classList.add("preview");
 			this.element.style.position = "absolute";
-			this.element.style.top = top + "px";
+			this.element.style.top = `${top}px`;
 			this.toggleDragDropEnabled(currentOptions.dragAndDropEnabled);
 			markupCell.appendChild(this.element);
 			root.appendChild(markupCell);
@@ -3087,9 +3097,10 @@ async function webviewPreloads(ctx: PreloadContext) {
 						// not worth sending over since it will be stripped before rendering
 						break;
 
-					default:
+					default: {
 						html.push(child.outerHTML);
 						break;
+					}
 				}
 			}
 
@@ -3410,8 +3421,8 @@ async function webviewPreloads(ctx: PreloadContext) {
 			this.element.id = outputId;
 			this.element.classList.add("output");
 			this.element.style.position = "absolute";
-			this.element.style.top = `0px`;
-			this.element.style.left = left + "px";
+			this.element.style.top = "0px";
+			this.element.style.left = `${left}px`;
 			this.element.style.padding = `${ctx.style.outputNodePadding}px ${ctx.style.outputNodePadding}px ${ctx.style.outputNodePadding}px ${ctx.style.outputNodeLeftPadding}`;
 
 			this.element.addEventListener("mouseenter", () => {
@@ -3452,7 +3463,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				const errors = preloadErrors.filter(
 					(e): e is Error => e instanceof Error,
 				);
-				showRenderError(`Error loading preloads`, this.element, errors);
+				showRenderError("Error loading preloads", this.element, errors);
 			} else {
 				const item = createOutputItem(
 					this.outputId,
@@ -3494,7 +3505,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			}
 
 			const offsetHeight = this.element.offsetHeight;
-			const cps = document.defaultView!.getComputedStyle(this.element);
+			const cps = document.defaultView?.getComputedStyle(this.element);
 			if (offsetHeight !== 0 && cps.padding === "0px") {
 				// we set padding to zero if the output height is zero (then we can have a zero-height output DOM node)
 				// thus we need to ensure the padding is accounted when updating the init height of the output

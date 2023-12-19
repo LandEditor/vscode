@@ -243,8 +243,8 @@ export class ExtensionsWatcher extends Disposable {
 	private async onDidExtensionsProfileChange(
 		profileLocation: URI,
 	): Promise<void> {
-		const added: IExtensionIdentifier[] = [],
-			removed: IExtensionIdentifier[] = [];
+		const added: IExtensionIdentifier[] = [];
+		const removed: IExtensionIdentifier[] = [];
 		const extensions =
 			await this.extensionsProfileScannerService.scanProfileExtensions(
 				profileLocation,

@@ -325,7 +325,7 @@ export function startServer(
 		);
 		jsonConfigurationSettings = settings.json?.schemas;
 		validateEnabled = !!settings.json?.validate?.enable;
-		keepLinesEnabled = settings.json?.keepLines?.enable || false;
+		keepLinesEnabled = settings.json?.keepLines?.enable;
 		updateConfiguration();
 
 		const sanitizeLimitSetting = (settingValue: any) =>

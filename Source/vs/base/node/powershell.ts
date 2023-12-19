@@ -21,16 +21,19 @@ enum Arch {
 
 let processArch: Arch;
 switch (process.arch) {
-	case "ia32":
+	case "ia32": {
 		processArch = Arch.x86;
 		break;
+	}
 	case "arm":
-	case "arm64":
+	case "arm64": {
 		processArch = Arch.ARM;
 		break;
-	default:
+	}
+	default: {
 		processArch = Arch.x64;
 		break;
+	}
 }
 
 /*

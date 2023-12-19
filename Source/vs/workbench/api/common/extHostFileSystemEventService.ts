@@ -310,7 +310,7 @@ export class ExtHostFileSystemEventService
 		files: SourceTargetPair[],
 	): void {
 		switch (operation) {
-			case FileOperation.MOVE:
+			case FileOperation.MOVE: {
 				this._onDidRenameFile.fire(
 					Object.freeze({
 						files: files.map((f) => ({
@@ -320,21 +320,24 @@ export class ExtHostFileSystemEventService
 					}),
 				);
 				break;
-			case FileOperation.DELETE:
+			}
+			case FileOperation.DELETE: {
 				this._onDidDeleteFile.fire(
 					Object.freeze({
 						files: files.map((f) => URI.revive(f.target)),
 					}),
 				);
 				break;
+			}
 			case FileOperation.CREATE:
-			case FileOperation.COPY:
+			case FileOperation.COPY: {
 				this._onDidCreateFile.fire(
 					Object.freeze({
 						files: files.map((f) => URI.revive(f.target)),
 					}),
 				);
 				break;
+			}
 			default:
 			//ignore, dont send
 		}

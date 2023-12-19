@@ -109,13 +109,13 @@ export class ModelLineProjectionData {
 					if (
 						offsetInInput <
 						this.injectionOffsets[i] +
-							this.injectionOptions![i].content.length
+							this.injectionOptions?.[i].content.length
 					) {
 						// `inputOffset` is within injected text
 						offsetInInput = this.injectionOffsets[i];
 					} else {
 						offsetInInput -=
-							this.injectionOptions![i].content.length;
+							this.injectionOptions?.[i].content.length;
 					}
 				} else {
 					break;
@@ -145,7 +145,7 @@ export class ModelLineProjectionData {
 				}
 
 				inputOffsetInInputWithInjection +=
-					this.injectionOptions![i].content.length;
+					this.injectionOptions?.[i].content.length;
 			}
 		}
 
@@ -281,7 +281,7 @@ export class ModelLineProjectionData {
 					injectedText.offsetInInputWithInjections +
 						injectedText.length &&
 				hasRightCursorStop(
-					this.injectionOptions![injectedText.injectedTextIndex]
+					this.injectionOptions?.[injectedText.injectedTextIndex]
 						.cursorStops,
 				)
 			) {
@@ -293,7 +293,7 @@ export class ModelLineProjectionData {
 				let result = injectedText.offsetInInputWithInjections;
 				if (
 					hasLeftCursorStop(
-						this.injectionOptions![injectedText.injectedTextIndex]
+						this.injectionOptions?.[injectedText.injectedTextIndex]
 							.cursorStops,
 					)
 				) {
@@ -303,20 +303,20 @@ export class ModelLineProjectionData {
 				let index = injectedText.injectedTextIndex - 1;
 				while (
 					index >= 0 &&
-					this.injectionOffsets![index] ===
-						this.injectionOffsets![injectedText.injectedTextIndex]
+					this.injectionOffsets?.[index] ===
+						this.injectionOffsets?.[injectedText.injectedTextIndex]
 				) {
 					if (
 						hasRightCursorStop(
-							this.injectionOptions![index].cursorStops,
+							this.injectionOptions?.[index].cursorStops,
 						)
 					) {
 						break;
 					}
-					result -= this.injectionOptions![index].content.length;
+					result -= this.injectionOptions?.[index].content.length;
 					if (
 						hasLeftCursorStop(
-							this.injectionOptions![index].cursorStops,
+							this.injectionOptions?.[index].cursorStops,
 						)
 					) {
 						break;
@@ -335,11 +335,11 @@ export class ModelLineProjectionData {
 			let index = injectedText.injectedTextIndex;
 			// traverse all injected text that touch each other
 			while (
-				index + 1 < this.injectionOffsets!.length &&
-				this.injectionOffsets![index + 1] ===
-					this.injectionOffsets![index]
+				index + 1 < this.injectionOffsets?.length &&
+				this.injectionOffsets?.[index + 1] ===
+					this.injectionOffsets?.[index]
 			) {
-				result += this.injectionOptions![index + 1].content.length;
+				result += this.injectionOptions?.[index + 1].content.length;
 				index++;
 			}
 			return result;
@@ -353,10 +353,10 @@ export class ModelLineProjectionData {
 			// traverse all injected text that touch each other
 			while (
 				index - 1 >= 0 &&
-				this.injectionOffsets![index - 1] ===
-					this.injectionOffsets![index]
+				this.injectionOffsets?.[index - 1] ===
+					this.injectionOffsets?.[index]
 			) {
-				result -= this.injectionOptions![index - 1].content.length;
+				result -= this.injectionOptions?.[index - 1].content.length;
 				index--;
 			}
 			return result;
@@ -378,7 +378,7 @@ export class ModelLineProjectionData {
 			return null;
 		}
 		return {
-			options: this.injectionOptions![injectedText.injectedTextIndex],
+			options: this.injectionOptions?.[injectedText.injectedTextIndex],
 		};
 	}
 
@@ -395,7 +395,7 @@ export class ModelLineProjectionData {
 		if (injectionOffsets !== null) {
 			let totalInjectedTextLengthBefore = 0;
 			for (let i = 0; i < injectionOffsets.length; i++) {
-				const length = injectionOptions![i].content.length;
+				const length = injectionOptions?.[i].content.length;
 				const injectedTextStartOffsetInInputWithInjections =
 					injectionOffsets[i] + totalInjectedTextLengthBefore;
 				const injectedTextEndOffsetInInputWithInjections =

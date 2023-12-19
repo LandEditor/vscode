@@ -211,7 +211,7 @@ export class IndentGuidesOverlay extends DynamicViewOverlay {
 						  (guide.visibleColumn - 1) * this._spaceWidth
 						: ctx.visibleRangeForPosition(
 								new Position(lineNumber, guide.column),
-						  )!.left;
+						  )?.left;
 
 				if (
 					left > scrollWidth ||
@@ -382,7 +382,7 @@ export class IndentGuidesOverlay extends DynamicViewOverlay {
 }
 
 function transparentToUndefined(color: Color | undefined): Color | undefined {
-	if (color && color.isTransparent()) {
+	if (color?.isTransparent()) {
 		return undefined;
 	}
 	return color;
@@ -464,7 +464,7 @@ registerThemingParticipant((theme, collector) => {
 				transparentToUndefined(guideColorActive) ?? bracketColor,
 			);
 
-			if (!effectiveGuideColor || !effectiveGuideColorActive) {
+			if (!(effectiveGuideColor && effectiveGuideColorActive)) {
 				return undefined;
 			}
 
@@ -484,7 +484,7 @@ registerThemingParticipant((theme, collector) => {
 			const effectiveIndentColorActive =
 				transparentToUndefined(indentColorActive);
 
-			if (!effectiveIndentColor || !effectiveIndentColorActive) {
+			if (!(effectiveIndentColor && effectiveIndentColorActive)) {
 				return undefined;
 			}
 
@@ -508,13 +508,13 @@ registerThemingParticipant((theme, collector) => {
 		}
 
 		collector.addRule(
-			`.monaco-editor .vertical { box-shadow: 1px 0 0 0 var(--guide-color) inset; }`,
+			".monaco-editor .vertical { box-shadow: 1px 0 0 0 var(--guide-color) inset; }",
 		);
 		collector.addRule(
-			`.monaco-editor .horizontal-top { border-top: 1px solid var(--guide-color); }`,
+			".monaco-editor .horizontal-top { border-top: 1px solid var(--guide-color); }",
 		);
 		collector.addRule(
-			`.monaco-editor .horizontal-bottom { border-bottom: 1px solid var(--guide-color); }`,
+			".monaco-editor .horizontal-bottom { border-bottom: 1px solid var(--guide-color); }",
 		);
 
 		collector.addRule(
@@ -537,10 +537,10 @@ registerThemingParticipant((theme, collector) => {
 		}
 
 		collector.addRule(
-			`.monaco-editor .lines-content .core-guide-indent { box-shadow: 1px 0 0 0 var(--indent-color) inset; }`,
+			".monaco-editor .lines-content .core-guide-indent { box-shadow: 1px 0 0 0 var(--indent-color) inset; }",
 		);
 		collector.addRule(
-			`.monaco-editor .lines-content .core-guide-indent.indent-active { box-shadow: 1px 0 0 0 var(--indent-color-active) inset; }`,
+			".monaco-editor .lines-content .core-guide-indent.indent-active { box-shadow: 1px 0 0 0 var(--indent-color-active) inset; }",
 		);
 	}
 });

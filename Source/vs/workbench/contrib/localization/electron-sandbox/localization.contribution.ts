@@ -164,8 +164,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 			return;
 		}
 		if (
-			!language ||
-			!locale ||
+			!(language && locale) ||
 			locale === "en" ||
 			locale.indexOf("en-") === 0
 		) {

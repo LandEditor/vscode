@@ -85,7 +85,7 @@ export class PackageDocument {
 			// Suggestion model word matching includes quotes,
 			// hence exclude the starting quote from the snippet and the range
 			// ending quote gets replaced
-			if (text && text.startsWith('"')) {
+			if (text?.startsWith('"')) {
 				range = new vscode.Range(
 					new vscode.Position(
 						range.start.line,
@@ -128,7 +128,7 @@ export class PackageDocument {
 				return languages.map((l) => {
 					// Suggestion model word matching includes closed sqaure bracket and ending quote
 					// Hence include them in the proposal to replace
-					return this.newSimpleCompletionItem(l, range, "", l + ']"');
+					return this.newSimpleCompletionItem(l, range, "", `${l}]"`);
 				});
 			});
 		}
@@ -138,8 +138,8 @@ export class PackageDocument {
 	private getReplaceRange(location: Location, position: vscode.Position) {
 		const node = location.previousNode;
 		if (node) {
-			const nodeStart = this.document.positionAt(node.offset),
-				nodeEnd = this.document.positionAt(node.offset + node.length);
+			const nodeStart = this.document.positionAt(node.offset);
+			const nodeEnd = this.document.positionAt(node.offset + node.length);
 			if (
 				nodeStart.isBeforeOrEqual(position) &&
 				nodeEnd.isAfterOrEqual(position)

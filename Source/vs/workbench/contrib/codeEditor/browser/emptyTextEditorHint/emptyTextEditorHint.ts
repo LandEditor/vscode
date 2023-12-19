@@ -317,9 +317,10 @@ class EmptyTextEditorHintContentWidget implements IContentWidget {
 			disposables: this.toDispose,
 			callback: (index, _event) => {
 				switch (index) {
-					case "0":
+					case "0": {
 						handleClick();
 						break;
+					}
 				}
 			},
 		};
@@ -403,18 +404,22 @@ class EmptyTextEditorHintContentWidget implements IContentWidget {
 			disposables: this.toDispose,
 			callback: (index, event) => {
 				switch (index) {
-					case "0":
+					case "0": {
 						languageOnClickOrTap(event.browserEvent);
 						break;
-					case "1":
+					}
+					case "1": {
 						snippetOnClickOrTap(event.browserEvent);
 						break;
-					case "2":
+					}
+					case "2": {
 						chooseEditorOnClickOrTap(event.browserEvent);
 						break;
-					case "3":
+					}
+					case "3": {
 						dontShowOnClickOrTap();
 						break;
+					}
 				}
 			},
 		};

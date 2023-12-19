@@ -209,9 +209,9 @@ export class ExtensionService
 	}
 
 	private async _scanWebExtensions(): Promise<IExtensionDescription[]> {
-		const system: IExtensionDescription[] = [],
-			user: IExtensionDescription[] = [],
-			development: IExtensionDescription[] = [];
+		const system: IExtensionDescription[] = [];
+		const user: IExtensionDescription[] = [];
+		const development: IExtensionDescription[] = [];
 		try {
 			await Promise.all([
 				this._webExtensionsScannerService
@@ -281,7 +281,7 @@ export class ExtensionService
 		} catch (err) {
 			if (RemoteAuthorityResolverError.isHandled(err)) {
 				console.log(
-					`Error handled: Not showing a notification for the error`,
+					"Error handled: Not showing a notification for the error",
 				);
 			}
 			this._remoteAuthorityResolverService._setResolvedAuthorityError(

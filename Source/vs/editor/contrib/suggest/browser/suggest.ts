@@ -162,10 +162,8 @@ export class CompletionItem {
 		// validate label
 		this.isInvalid = !this.textLabel;
 
-		this.sortTextLow =
-			completion.sortText && completion.sortText.toLowerCase();
-		this.filterTextLow =
-			completion.filterText && completion.filterText.toLowerCase();
+		this.sortTextLow = completion.sortText?.toLowerCase();
+		this.filterTextLow = completion.filterText?.toLowerCase();
 
 		this.extensionId = completion.extensionId;
 
@@ -241,7 +239,7 @@ export class CompletionItem {
 			});
 			const sw = new StopWatch(true);
 			this._resolveCache = Promise.resolve(
-				this.provider.resolveCompletionItem!(this.completion, token),
+				this.provider.resolveCompletionItem?.(this.completion, token),
 			)
 				.then(
 					(value) => {

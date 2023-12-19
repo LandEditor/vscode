@@ -74,7 +74,7 @@ class InPlaceReplaceController implements IEditorContribution {
 
 		const editorSelection = this.editor.getSelection();
 		const model = this.editor.getModel();
-		if (!model || !editorSelection) {
+		if (!(model && editorSelection)) {
 			return undefined;
 		}
 		let selection = editorSelection;
@@ -98,7 +98,7 @@ class InPlaceReplaceController implements IEditorContribution {
 
 		return this.currentRequest
 			.then((result) => {
-				if (!result || !result.range || !result.value) {
+				if (!(result?.range && result.value)) {
 					// No proper result
 					return;
 				}
@@ -113,7 +113,7 @@ class InPlaceReplaceController implements IEditorContribution {
 				let highlightRange = result.range;
 				const diff =
 					result.value.length -
-					(selection!.endColumn - selection!.startColumn);
+					(selection?.endColumn - selection?.startColumn);
 
 				// highlight
 				highlightRange = {
@@ -124,10 +124,10 @@ class InPlaceReplaceController implements IEditorContribution {
 				};
 				if (diff > 1) {
 					selection = new Selection(
-						selection!.startLineNumber,
-						selection!.startColumn,
-						selection!.endLineNumber,
-						selection!.endColumn + diff - 1,
+						selection?.startLineNumber,
+						selection?.startColumn,
+						selection?.endLineNumber,
+						selection?.endColumn + diff - 1,
 					);
 				}
 

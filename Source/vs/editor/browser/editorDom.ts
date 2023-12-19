@@ -351,7 +351,7 @@ export class GlobalEditorPointerMoveMonitor extends Disposable {
 				);
 			},
 			(e) => {
-				this._keydownListener!.dispose();
+				this._keydownListener?.dispose();
 				onStopCallback(e);
 			},
 		);
@@ -489,7 +489,7 @@ class RefCountedCssRule {
 			const cssPropName = camelToDashes(prop);
 			str += `\n\t${cssPropName}: ${cssValue};`;
 		}
-		str += `\n}`;
+		str += "\n}";
 		return str;
 	}
 

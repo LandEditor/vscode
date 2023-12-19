@@ -269,7 +269,7 @@ export async function getResource(
 	fullPath = normalize(fullPath);
 	fullPath = fullPath.replace(/\\/g, "/");
 	if (fullPath[0] !== "/") {
-		fullPath = "/" + fullPath;
+		fullPath = `/${fullPath}`;
 	}
 	if (matcher.uriProvider !== undefined) {
 		return matcher.uriProvider(fullPath);
@@ -500,7 +500,7 @@ abstract class AbstractLineMatcher implements ILineMatcher {
 	}
 
 	private parseLocationInfo(value: string): ILocation | null {
-		if (!value || !value.match(/(\d+|\d+,\d+|\d+,\d+,\d+,\d+)/)) {
+		if (!value?.match(/(\d+|\d+,\d+|\d+,\d+,\d+,\d+)/)) {
 			return null;
 		}
 		const parts = value.split(",");
@@ -1043,10 +1043,6 @@ export namespace Config {
 }
 
 export class ProblemPatternParser extends Parser {
-	constructor(logger: IProblemReporter) {
-		super(logger);
-	}
-
 	public parse(value: Config.IProblemPattern): IProblemPattern;
 	public parse(
 		value: Config.MultiLineProblemPattern,
@@ -1199,10 +1195,10 @@ export class ProblemPatternParser extends Parser {
 	}
 
 	private validateProblemPattern(values: IProblemPattern[]): boolean {
-		let file = false,
-			message = false,
-			location = false,
-			line = false;
+		let file = false;
+		let message = false;
+		let location = false;
+		let line = false;
 		const locationKind =
 			values[0].kind === undefined
 				? ProblemLocationKind.Location
@@ -1666,10 +1662,6 @@ export const ProblemPatternRegistry: IProblemPatternRegistry =
 	new ProblemPatternRegistryImpl();
 
 export class ProblemMatcherParser extends Parser {
-	constructor(logger: IProblemReporter) {
-		super(logger);
-	}
-
 	public parse(json: Config.ProblemMatcher): ProblemMatcher | undefined {
 		const result = this.createProblemMatcher(json);
 		if (!this.checkProblemMatcherValid(json, result)) {

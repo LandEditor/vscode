@@ -56,9 +56,9 @@ export class NodeJSWatcher extends Disposable implements INonRecursiveWatcher {
 			}
 
 			// Re-watch path if excludes or includes have changed
-			return (
-				!patternsEquals(watcher.request.excludes, request.excludes) ||
-				!patternsEquals(watcher.request.includes, request.includes)
+			return !(
+				patternsEquals(watcher.request.excludes, request.excludes) &&
+				patternsEquals(watcher.request.includes, request.includes)
 			);
 		});
 

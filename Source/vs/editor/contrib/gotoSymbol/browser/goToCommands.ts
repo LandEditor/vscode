@@ -240,8 +240,8 @@ export abstract class SymbolNavigationAction extends EditorAction2 {
 							this.desc.id,
 						);
 						instaService.invokeFunction((accessor) =>
-							altAction!
-								.runEditorCommand(accessor, editor, arg, range)
+							altAction
+								?.runEditorCommand(accessor, editor, arg, range)
 								.finally(() => {
 									SymbolNavigationAction._activeAlternativeCommands.delete(
 										this.desc.id,
@@ -428,7 +428,7 @@ export class DefinitionAction extends SymbolNavigationAction {
 	}
 
 	protected _getNoResultFoundMessage(info: IWordAtPosition | null): string {
-		return info && info.word
+		return info?.word
 			? nls.localize(
 					"noResultWord",
 					"No definition found for '{0}'",
@@ -645,7 +645,7 @@ class DeclarationAction extends SymbolNavigationAction {
 	}
 
 	protected _getNoResultFoundMessage(info: IWordAtPosition | null): string {
-		return info && info.word
+		return info?.word
 			? nls.localize(
 					"decl.noResultWord",
 					"No declaration found for '{0}'",
@@ -717,7 +717,7 @@ registerAction2(
 		protected override _getNoResultFoundMessage(
 			info: IWordAtPosition | null,
 		): string {
-			return info && info.word
+			return info?.word
 				? nls.localize(
 						"decl.noResultWord",
 						"No declaration found for '{0}'",
@@ -788,7 +788,7 @@ class TypeDefinitionAction extends SymbolNavigationAction {
 	}
 
 	protected _getNoResultFoundMessage(info: IWordAtPosition | null): string {
-		return info && info.word
+		return info?.word
 			? nls.localize(
 					"goToTypeDefinition.noResultWord",
 					"No type definition found for '{0}'",
@@ -927,7 +927,7 @@ class ImplementationAction extends SymbolNavigationAction {
 	}
 
 	protected _getNoResultFoundMessage(info: IWordAtPosition | null): string {
-		return info && info.word
+		return info?.word
 			? nls.localize(
 					"goToImplementation.noResultWord",
 					"No implementation found for '{0}'",
@@ -1337,7 +1337,7 @@ CommandsRegistry.registerCommand({
 					}
 				})(
 					{
-						muteMessage: !Boolean(noResultsMessage),
+						muteMessage: !noResultsMessage,
 						openInPeek: Boolean(openInPeek),
 						openToSide: false,
 					},
@@ -1419,7 +1419,7 @@ CommandsRegistry.registerCommand({
 				codeEditorService.getFocusedCodeEditor(),
 			)
 			.then((control) => {
-				if (!isCodeEditor(control) || !control.hasModel()) {
+				if (!(isCodeEditor(control) && control.hasModel())) {
 					return undefined;
 				}
 

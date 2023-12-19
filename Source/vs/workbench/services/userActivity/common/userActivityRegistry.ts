@@ -12,7 +12,7 @@ class UserActivityRegistry {
 	public add = (ctor: {
 		new (s: IUserActivityService, ...args: any[]): any;
 	}) => {
-		this.todo!.push(ctor);
+		this.todo?.push(ctor);
 	};
 
 	public take(

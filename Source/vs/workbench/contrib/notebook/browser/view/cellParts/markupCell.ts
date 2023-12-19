@@ -418,7 +418,7 @@ export class MarkupCell extends Disposable {
 			true,
 		);
 
-		if (this.editor && this.editor.hasModel()) {
+		if (this.editor?.hasModel()) {
 			editorHeight = this.editor.getContentHeight();
 
 			// not first time, we don't need to create editor
@@ -518,11 +518,11 @@ export class MarkupCell extends Disposable {
 						return;
 					}
 
-					this.editor!.setModel(model);
+					this.editor?.setModel(model);
 
-					const realContentHeight = this.editor!.getContentHeight();
+					const realContentHeight = this.editor?.getContentHeight();
 					if (realContentHeight !== editorHeight) {
-						this.editor!.layout({
+						this.editor?.layout({
 							width: width,
 							height: realContentHeight,
 						});
@@ -608,7 +608,7 @@ export class MarkupCell extends Disposable {
 	}
 
 	private onCellEditorWidthChange(): void {
-		const realContentHeight = this.editor!.getContentHeight();
+		const realContentHeight = this.editor?.getContentHeight();
 		this.layoutEditor({
 			width: this.viewCell.layoutInfo.editorWidth,
 			height: realContentHeight,
@@ -634,24 +634,27 @@ export class MarkupCell extends Disposable {
 
 	private layoutFoldingIndicator() {
 		switch (this.foldingState) {
-			case CellFoldingState.None:
+			case CellFoldingState.None: {
 				this.templateData.foldingIndicator.style.display = "none";
 				this.templateData.foldingIndicator.innerText = "";
 				break;
-			case CellFoldingState.Collapsed:
+			}
+			case CellFoldingState.Collapsed: {
 				this.templateData.foldingIndicator.style.display = "";
 				DOM.reset(
 					this.templateData.foldingIndicator,
 					renderIcon(collapsedIcon),
 				);
 				break;
-			case CellFoldingState.Expanded:
+			}
+			case CellFoldingState.Expanded: {
 				this.templateData.foldingIndicator.style.display = "";
 				DOM.reset(
 					this.templateData.foldingIndicator,
 					renderIcon(expandedIcon),
 				);
 				break;
+			}
 
 			default:
 				break;

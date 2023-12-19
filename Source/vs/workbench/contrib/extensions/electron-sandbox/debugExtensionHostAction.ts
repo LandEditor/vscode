@@ -67,7 +67,7 @@ export class DebugExtensionHostAction extends Action {
 		if (inspectPorts.length > 1) {
 			// TODO
 			console.warn(
-				`There are multiple extension hosts available for debugging. Picking the first one...`,
+				"There are multiple extension hosts available for debugging. Picking the first one...",
 			);
 		}
 

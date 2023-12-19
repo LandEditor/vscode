@@ -341,10 +341,10 @@ export default class FileConfigurationManager extends Disposable {
 				return path.isAbsolute(p)
 					? p
 					: p.startsWith("*")
-					  ? "/" + slashNormalized
+					  ? `/${slashNormalized}`
 					  : isRelative
 						  ? vscode.Uri.joinPath(workspaceFolder, p).fsPath
-						  : "/**/" + slashNormalized;
+						  : `/**/${slashNormalized}`;
 			})
 		);
 	}

@@ -398,7 +398,7 @@ export class LinkedEditingContribution
 
 		const position = this._editor.getPosition();
 		if (
-			(!this._enabled && !force) ||
+			!(this._enabled || force) ||
 			this._editor.getSelections().length > 1
 		) {
 			// disabled or multicursor
@@ -417,7 +417,7 @@ export class LinkedEditingContribution
 			}
 			if (this._currentDecorations.length > 0) {
 				const range = this._currentDecorations.getRange(0);
-				if (range && range.containsPosition(position)) {
+				if (range?.containsPosition(position)) {
 					return; // just moving inside the existing primary range
 				}
 			}

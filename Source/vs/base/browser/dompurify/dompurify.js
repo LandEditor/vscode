@@ -49,7 +49,7 @@ const typeErrorCreate = unconstruct(TypeError);
 function unapply(func) {
 	return (thisArg) => {
 		for (
-			var _len = arguments.length,
+			let _len = arguments.length,
 				args = new Array(_len > 1 ? _len - 1 : 0),
 				_key = 1;
 			_key < _len;
@@ -64,7 +64,7 @@ function unapply(func) {
 function unconstruct(func) {
 	return () => {
 		for (
-			var _len2 = arguments.length, args = new Array(_len2), _key2 = 0;
+			let _len2 = arguments.length, args = new Array(_len2), _key2 = 0;
 			_key2 < _len2;
 			_key2++
 		) {
@@ -77,7 +77,7 @@ function unconstruct(func) {
 /* Add properties to a lookup table */
 
 function addToSet(set, array, transformCaseFunc) {
-	var _transformCaseFunc;
+	let _transformCaseFunc;
 
 	transformCaseFunc =
 		(_transformCaseFunc = transformCaseFunc) !== null &&
@@ -802,7 +802,7 @@ const ATTR_WHITESPACE = seal(
 );
 const DOCTYPE_NAME = seal(/^html$/i);
 
-var EXPRESSIONS = /*#__PURE__*/ Object.freeze({
+const EXPRESSIONS = /*#__PURE__*/ Object.freeze({
 	__proto__: null,
 	MUSTACHE_EXPR: MUSTACHE_EXPR,
 	ERB_EXPR: ERB_EXPR,
@@ -841,11 +841,11 @@ const _createTrustedTypesPolicy = function _createTrustedTypesPolicy(
 	let suffix = null;
 	const ATTR_NAME = "data-tt-policy-suffix";
 
-	if (purifyHostElement && purifyHostElement.hasAttribute(ATTR_NAME)) {
+	if (purifyHostElement?.hasAttribute(ATTR_NAME)) {
 		suffix = purifyHostElement.getAttribute(ATTR_NAME);
 	}
 
-	const policyName = "dompurify" + (suffix ? "#" + suffix : "");
+	const policyName = `dompurify${suffix ? `#${suffix}` : ""}`;
 
 	try {
 		return trustedTypes.createPolicy(policyName, {
@@ -861,9 +861,7 @@ const _createTrustedTypesPolicy = function _createTrustedTypesPolicy(
 		// Policy creation failed (most likely another DOMPurify script has
 		// already run). Skip creating the policy, as this will only cause errors
 		// if TT are enforced.
-		console.warn(
-			"TrustedTypes policy " + policyName + " could not be created.",
-		);
+		console.warn(`TrustedTypes policy ${policyName} could not be created.`);
 		return null;
 	}
 };
@@ -888,7 +886,7 @@ function createDOMPurify() {
 
 	DOMPurify.removed = [];
 
-	if (!window || !window.document || window.document.nodeType !== 9) {
+	if (!window?.document || window.document.nodeType !== 9) {
 		// Not running in a browser, provide a factory function
 		// so that you can pass your own Window
 		DOMPurify.isSupported = false;
@@ -923,7 +921,7 @@ function createDOMPurify() {
 	if (typeof HTMLTemplateElement === "function") {
 		const template = document.createElement("template");
 
-		if (template.content && template.content.ownerDocument) {
+		if (template.content?.ownerDocument) {
 			document = template.content.ownerDocument;
 		}
 	}
@@ -1257,29 +1255,29 @@ function createDOMPurify() {
 
 		ALLOW_DATA_ATTR = cfg.ALLOW_DATA_ATTR !== false; // Default true
 
-		ALLOW_UNKNOWN_PROTOCOLS = cfg.ALLOW_UNKNOWN_PROTOCOLS || false; // Default false
+		ALLOW_UNKNOWN_PROTOCOLS = cfg.ALLOW_UNKNOWN_PROTOCOLS; // Default false
 
 		ALLOW_SELF_CLOSE_IN_ATTR = cfg.ALLOW_SELF_CLOSE_IN_ATTR !== false; // Default true
 
-		SAFE_FOR_TEMPLATES = cfg.SAFE_FOR_TEMPLATES || false; // Default false
+		SAFE_FOR_TEMPLATES = cfg.SAFE_FOR_TEMPLATES; // Default false
 
-		WHOLE_DOCUMENT = cfg.WHOLE_DOCUMENT || false; // Default false
+		WHOLE_DOCUMENT = cfg.WHOLE_DOCUMENT; // Default false
 
-		RETURN_DOM = cfg.RETURN_DOM || false; // Default false
+		RETURN_DOM = cfg.RETURN_DOM; // Default false
 
-		RETURN_DOM_FRAGMENT = cfg.RETURN_DOM_FRAGMENT || false; // Default false
+		RETURN_DOM_FRAGMENT = cfg.RETURN_DOM_FRAGMENT; // Default false
 
-		RETURN_TRUSTED_TYPE = cfg.RETURN_TRUSTED_TYPE || false; // Default false
+		RETURN_TRUSTED_TYPE = cfg.RETURN_TRUSTED_TYPE; // Default false
 
-		FORCE_BODY = cfg.FORCE_BODY || false; // Default false
+		FORCE_BODY = cfg.FORCE_BODY; // Default false
 
 		SANITIZE_DOM = cfg.SANITIZE_DOM !== false; // Default true
 
-		SANITIZE_NAMED_PROPS = cfg.SANITIZE_NAMED_PROPS || false; // Default false
+		SANITIZE_NAMED_PROPS = cfg.SANITIZE_NAMED_PROPS; // Default false
 
 		KEEP_CONTENT = cfg.KEEP_CONTENT !== false; // Default true
 
-		IN_PLACE = cfg.IN_PLACE || false; // Default false
+		IN_PLACE = cfg.IN_PLACE; // Default false
 
 		IS_ALLOWED_URI$1 = cfg.ALLOWED_URI_REGEXP || IS_ALLOWED_URI;
 		NAMESPACE = cfg.NAMESPACE || HTML_NAMESPACE;
@@ -1393,7 +1391,7 @@ function createDOMPurify() {
 
 		if (ALLOWED_TAGS.table) {
 			addToSet(ALLOWED_TAGS, ["tbody"]);
-			delete FORBID_TAGS.tbody;
+			FORBID_TAGS.tbody = undefined;
 		}
 
 		if (cfg.TRUSTED_TYPES_POLICY) {
@@ -1482,7 +1480,7 @@ function createDOMPurify() {
 		let parent = getParentNode(element); // In JSDOM, if we're inside shadow DOM, then parentNode
 		// can be null. We just simulate parent in this case.
 
-		if (!parent || !parent.tagName) {
+		if (!parent?.tagName) {
 			parent = {
 				namespaceURI: NAMESPACE,
 				tagName: "template",
@@ -1640,11 +1638,11 @@ function createDOMPurify() {
 		let leadingWhitespace;
 
 		if (FORCE_BODY) {
-			dirty = "<remove></remove>" + dirty;
+			dirty = `<remove></remove>${dirty}`;
 		} else {
 			/* If FORCE_BODY isn't used, leading whitespace needs to be preserved manually */
 			const matches = stringMatch(dirty, /^[\r\n\t ]+/);
-			leadingWhitespace = matches && matches[0];
+			leadingWhitespace = matches?.[0];
 		}
 
 		if (
@@ -1652,10 +1650,7 @@ function createDOMPurify() {
 			NAMESPACE === HTML_NAMESPACE
 		) {
 			// Root of XHTML doc must contain xmlns declaration (see https://www.w3.org/TR/xhtml1/normative.html#strict)
-			dirty =
-				'<html xmlns="http://www.w3.org/1999/xhtml"><head></head><body>' +
-				dirty +
-				"</body></html>";
+			dirty = `<html xmlns="http://www.w3.org/1999/xhtml"><head></head><body>${dirty}</body></html>`;
 		}
 
 		const dirtyPayload = trustedTypesPolicy
@@ -1676,7 +1671,7 @@ function createDOMPurify() {
 		}
 		/* Use createHTMLDocument in case DOMParser is not available */
 
-		if (!doc || !doc.documentElement) {
+		if (!doc?.documentElement) {
 			doc = implementation.createDocument(NAMESPACE, "template", null);
 
 			try {
@@ -1816,8 +1811,10 @@ function createDOMPurify() {
 		if (
 			currentNode.hasChildNodes() &&
 			!_isNode(currentNode.firstElementChild) &&
-			(!_isNode(currentNode.content) ||
-				!_isNode(currentNode.content.firstElementChild)) &&
+			!(
+				_isNode(currentNode.content) &&
+				_isNode(currentNode.content.firstElementChild)
+			) &&
 			regExpTest(/<[/\w]/g, currentNode.innerHTML) &&
 			regExpTest(/<[/\w]/g, currentNode.textContent)
 		) {
@@ -1833,13 +1830,15 @@ function createDOMPurify() {
 				if (
 					CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof RegExp &&
 					regExpTest(CUSTOM_ELEMENT_HANDLING.tagNameCheck, tagName)
-				)
+				) {
 					return false;
+				}
 				if (
 					CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof Function &&
 					CUSTOM_ELEMENT_HANDLING.tagNameCheck(tagName)
-				)
+				) {
 					return false;
+				}
 			}
 			/* Keep content except for bad-listed elements */
 
@@ -1937,9 +1936,9 @@ function createDOMPurify() {
 			ALLOW_DATA_ATTR &&
 			!FORBID_ATTR[lcName] &&
 			regExpTest(DATA_ATTR, lcName)
-		);
-		else if (ALLOW_ARIA_ATTR && regExpTest(ARIA_ATTR, lcName));
-		else if (!ALLOWED_ATTR[lcName] || FORBID_ATTR[lcName]) {
+		) {
+		} else if (ALLOW_ARIA_ATTR && regExpTest(ARIA_ATTR, lcName)) {
+		} else if (!ALLOWED_ATTR[lcName] || FORBID_ATTR[lcName]) {
 			if (
 				// First condition does a very basic check if a) it's basically a valid custom element tagname AND
 				// b) if the tagName passes whatever the user has configured for CUSTOM_ELEMENT_HANDLING.tagNameCheck
@@ -1975,36 +1974,37 @@ function createDOMPurify() {
 						(CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof
 							Function &&
 							CUSTOM_ELEMENT_HANDLING.tagNameCheck(value))))
-			);
-			else {
+			) {
+			} else {
 				return false;
 			}
 			/* Check value is safe. First, is attr inert? If so, is safe */
-		} else if (URI_SAFE_ATTRIBUTES[lcName]);
-		else if (
+		} else if (URI_SAFE_ATTRIBUTES[lcName]) {
+		} else if (
 			regExpTest(
 				IS_ALLOWED_URI$1,
 				stringReplace(value, ATTR_WHITESPACE, ""),
 			)
-		);
-		else if (
+		) {
+		} else if (
 			(lcName === "src" ||
 				lcName === "xlink:href" ||
 				lcName === "href") &&
 			lcTag !== "script" &&
 			stringIndexOf(value, "data:") === 0 &&
 			DATA_URI_TAGS[lcTag]
-		);
-		else if (
+		) {
+		} else if (
 			ALLOW_UNKNOWN_PROTOCOLS &&
 			!regExpTest(
 				IS_SCRIPT_OR_DATA,
 				stringReplace(value, ATTR_WHITESPACE, ""),
 			)
-		);
-		else if (value) {
+		) {
+		} else if (value) {
 			return false;
-		} else;
+		} else {
+		}
 
 		return true;
 	};
@@ -2123,8 +2123,8 @@ function createDOMPurify() {
 				typeof trustedTypes === "object" &&
 				typeof trustedTypes.getAttributeType === "function"
 			) {
-				if (namespaceURI);
-				else {
+				if (namespaceURI) {
+				} else {
 					switch (trustedTypes.getAttributeType(lcTag, lcName)) {
 						case "TrustedHTML": {
 							value = trustedTypesPolicy.createHTML(value);
@@ -2281,9 +2281,7 @@ function createDOMPurify() {
 		} else {
 			/* Exit directly if we have nothing to do */
 			if (
-				!RETURN_DOM &&
-				!SAFE_FOR_TEMPLATES &&
-				!WHOLE_DOCUMENT && // eslint-disable-next-line unicorn/prefer-includes
+				!(RETURN_DOM || SAFE_FOR_TEMPLATES || WHOLE_DOCUMENT) && // eslint-disable-next-line unicorn/prefer-includes
 				dirty.indexOf("<") === -1
 			) {
 				return trustedTypesPolicy && RETURN_TRUSTED_TYPE
@@ -2371,11 +2369,7 @@ function createDOMPurify() {
 			body.ownerDocument.doctype.name &&
 			regExpTest(DOCTYPE_NAME, body.ownerDocument.doctype.name)
 		) {
-			serializedHTML =
-				"<!DOCTYPE " +
-				body.ownerDocument.doctype.name +
-				">\n" +
-				serializedHTML;
+			serializedHTML = `<!DOCTYPE ${body.ownerDocument.doctype.name}>\n${serializedHTML}`;
 		}
 		/* Sanitize final string template-safe */
 
@@ -2487,7 +2481,7 @@ function createDOMPurify() {
 	return DOMPurify;
 }
 
-var purify = createDOMPurify();
+const purify = createDOMPurify();
 
 // ESM-comment-begin
 define(() => purify);

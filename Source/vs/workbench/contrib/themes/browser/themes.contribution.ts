@@ -211,8 +211,10 @@ class MarketplaceThemesPicker {
 					}
 					const ext = gallery[i];
 					if (
-						!installedExtensions.has(ext.identifier.id) &&
-						!this._marketplaceExtensions.has(ext.identifier.id)
+						!(
+							installedExtensions.has(ext.identifier.id) ||
+							this._marketplaceExtensions.has(ext.identifier.id)
+						)
 					) {
 						this._marketplaceExtensions.add(ext.identifier.id);
 						promises.push(
@@ -249,7 +251,7 @@ class MarketplaceThemesPicker {
 			}
 		} catch (e) {
 			if (!isCancellationError(e)) {
-				this.logService.error(`Error while searching for themes:`, e);
+				this.logService.error("Error while searching for themes:", e);
 				this._searchError = "message" in e ? e.message : String(e);
 			}
 		} finally {
@@ -616,12 +618,10 @@ registerAction2(
 				"installColorThemes",
 				"Install Additional Color Themes...",
 			);
-			const browseMessage =
-				"$(plus) " +
-				localize(
-					"browseColorThemes",
-					"Browse Additional Color Themes...",
-				);
+			const browseMessage = `$(plus) ${localize(
+				"browseColorThemes",
+				"Browse Additional Color Themes...",
+			)}`;
 			const placeholderMessage = localize(
 				"themes.selectTheme",
 				"Select Color Theme (Up/Down Keys to Preview)",
@@ -789,12 +789,10 @@ registerAction2(
 				"installProductIconThemes",
 				"Install Additional Product Icon Themes...",
 			);
-			const browseMessage =
-				"$(plus) " +
-				localize(
-					"browseProductIconThemes",
-					"Browse Additional Product Icon Themes...",
-				);
+			const browseMessage = `$(plus) ${localize(
+				"browseProductIconThemes",
+				"Browse Additional Product Icon Themes...",
+			)}`;
 			const placeholderMessage = localize(
 				"themes.selectProductIconTheme",
 				"Select Product Icon Theme (Up/Down Keys to Preview)",
@@ -890,8 +888,7 @@ function findBuiltInThemes(
 ): IWorkbenchColorTheme[] {
 	return themes.filter(
 		({ extensionData }) =>
-			extensionData &&
-			extensionData.extensionIsBuiltin &&
+			extensionData?.extensionIsBuiltin &&
 			equalsIgnoreCase(
 				extensionData.extensionPublisher,
 				extension.publisher,
@@ -959,7 +956,7 @@ function toEntry(theme: IWorkbenchTheme): ThemeItem {
 }
 
 function toEntries(
-	themes: Array<IWorkbenchTheme>,
+	themes: IWorkbenchTheme[],
 	label?: string,
 ): QuickPickInput<ThemeItem>[] {
 	const sorter = (t1: ThemeItem, t2: ThemeItem) =>
@@ -1020,7 +1017,7 @@ registerAction2(
 			for (const id of inherited) {
 				const color = theme.getColor(id);
 				if (color) {
-					resultingColors["__" + id] = Color.Format.CSS.formatHexA(
+					resultingColors[`__${id}`] = Color.Format.CSS.formatHexA(
 						color,
 						true,
 					);
@@ -1029,7 +1026,7 @@ registerAction2(
 				}
 			}
 			for (const id of nullDefaults) {
-				resultingColors["__" + id] = null;
+				resultingColors[`__${id}`] = null;
 			}
 			let contents = JSON.stringify(
 				{
@@ -1080,18 +1077,22 @@ registerAction2(
 			const currentTheme = themeService.getColorTheme();
 			let newSettingsId: string = ThemeSettings.PREFERRED_DARK_THEME;
 			switch (currentTheme.type) {
-				case ColorScheme.LIGHT:
+				case ColorScheme.LIGHT: {
 					newSettingsId = ThemeSettings.PREFERRED_DARK_THEME;
 					break;
-				case ColorScheme.DARK:
+				}
+				case ColorScheme.DARK: {
 					newSettingsId = ThemeSettings.PREFERRED_LIGHT_THEME;
 					break;
-				case ColorScheme.HIGH_CONTRAST_LIGHT:
+				}
+				case ColorScheme.HIGH_CONTRAST_LIGHT: {
 					newSettingsId = ThemeSettings.PREFERRED_HC_DARK_THEME;
 					break;
-				case ColorScheme.HIGH_CONTRAST_DARK:
+				}
+				case ColorScheme.HIGH_CONTRAST_DARK: {
 					newSettingsId = ThemeSettings.PREFERRED_HC_LIGHT_THEME;
 					break;
+				}
 			}
 
 			const themeSettingId: string =
@@ -1141,8 +1142,10 @@ registerAction2(
 			const instantiationService = accessor.get(IInstantiationService);
 
 			if (
-				!extensionGalleryService.isEnabled() ||
-				!extensionResourceLoaderService.supportsExtensionGalleryResources
+				!(
+					extensionGalleryService.isEnabled() &&
+					extensionResourceLoaderService.supportsExtensionGalleryResources
+				)
 			) {
 				return;
 			}

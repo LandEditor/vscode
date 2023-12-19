@@ -102,7 +102,7 @@ export abstract class AbstractEditorWithViewState<
 	}
 
 	private updateEditorViewState(input: EditorInput | undefined): void {
-		if (!input || !this.tracksEditorViewState(input)) {
+		if (!(input && this.tracksEditorViewState(input))) {
 			return; // ensure we have an input to handle view state for
 		}
 
@@ -138,8 +138,10 @@ export abstract class AbstractEditorWithViewState<
 		// - the user configured to not restore view state unless the editor is still opened in the group
 		if (
 			(input.isDisposed() && !this.tracksDisposedEditorViewState()) ||
-			(!this.shouldRestoreEditorViewState(input) &&
-				(!this.group || !this.group.contains(input)))
+			!(
+				this.shouldRestoreEditorViewState(input) ||
+				this.group?.contains(input)
+			)
 		) {
 			this.clearEditorViewState(resource, this.group);
 		}
@@ -172,7 +174,7 @@ export abstract class AbstractEditorWithViewState<
 
 	override getViewState(): T | undefined {
 		const input = this.input;
-		if (!input || !this.tracksEditorViewState(input)) {
+		if (!(input && this.tracksEditorViewState(input))) {
 			return; // need valid input for view state
 		}
 
@@ -201,7 +203,7 @@ export abstract class AbstractEditorWithViewState<
 		input: EditorInput | undefined,
 		context?: IEditorOpenContext,
 	): T | undefined {
-		if (!input || !this.group) {
+		if (!(input && this.group)) {
 			return undefined; // we need valid input
 		}
 

@@ -182,8 +182,8 @@ export class CellContextKeyManager extends Disposable {
 			this.updateForCollapseState();
 			this.updateForOutputs();
 
-			this.cellLineNumbers.set(this.element!.lineNumbers);
-			this.cellResource.set(this.element!.uri.toString());
+			this.cellLineNumbers.set(this.element?.lineNumbers);
+			this.cellResource.set(this.element?.uri.toString());
 		});
 	}
 
@@ -202,7 +202,7 @@ export class CellContextKeyManager extends Disposable {
 			}
 
 			if (e.cellLineNumberChanged) {
-				this.cellLineNumbers.set(this.element!.lineNumbers);
+				this.cellLineNumbers.set(this.element?.lineNumbers);
 			}
 
 			if (e.inputCollapsedChanged || e.outputCollapsedChanged) {

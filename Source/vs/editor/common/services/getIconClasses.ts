@@ -67,7 +67,7 @@ export function getIconClasses(
 			// Name & Extension(s)
 			if (name) {
 				classes.push(`${name}-name-file-icon`);
-				classes.push(`name-file-icon`); // extra segment to increase file-name score
+				classes.push("name-file-icon"); // extra segment to increase file-name score
 				// Avoid doing an explosive combination of extensions for very long filenames
 				// (most file systems do not allow files > 255 length) with lots of `.` characters
 				// https://github.com/microsoft/vscode/issues/116199
@@ -79,7 +79,7 @@ export function getIconClasses(
 						); // add each combination of all found extensions if more than one
 					}
 				}
-				classes.push(`ext-file-icon`); // extra segment to increase file-ext score
+				classes.push("ext-file-icon"); // extra segment to increase file-ext score
 			}
 
 			// Detected Mode

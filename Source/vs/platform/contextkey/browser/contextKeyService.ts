@@ -89,7 +89,7 @@ export class Context implements IContext {
 			? this._parent.collectAllValues()
 			: Object.create(null);
 		result = { ...result, ...this._value };
-		delete result["_contextId"];
+		result["_contextId"] = undefined;
 		return result;
 	}
 }
@@ -185,9 +185,10 @@ class ConfigAwareContextValuesContainer extends Context {
 		switch (typeof configValue) {
 			case "number":
 			case "boolean":
-			case "string":
+			case "string": {
 				value = configValue;
 				break;
+			}
 			default:
 				if (Array.isArray(configValue)) {
 					value = JSON.stringify(configValue);
@@ -326,7 +327,7 @@ export abstract class AbstractContextKeyService
 		defaultValue: T | undefined,
 	): IContextKey<T> {
 		if (this._isDisposed) {
-			throw new Error(`AbstractContextKeyService has been disposed`);
+			throw new Error("AbstractContextKeyService has been disposed");
 		}
 		return new ContextKey(this, key, defaultValue);
 	}
@@ -344,7 +345,7 @@ export abstract class AbstractContextKeyService
 		domNode: IContextKeyServiceTarget,
 	): IScopedContextKeyService {
 		if (this._isDisposed) {
-			throw new Error(`AbstractContextKeyService has been disposed`);
+			throw new Error("AbstractContextKeyService has been disposed");
 		}
 		return new ScopedContextKeyService(this, domNode);
 	}
@@ -353,7 +354,7 @@ export abstract class AbstractContextKeyService
 		overlay: Iterable<[string, any]> = Iterable.empty(),
 	): IContextKeyService {
 		if (this._isDisposed) {
-			throw new Error(`AbstractContextKeyService has been disposed`);
+			throw new Error("AbstractContextKeyService has been disposed");
 		}
 		return new OverlayContextKeyService(this, overlay);
 	}
@@ -362,7 +363,7 @@ export abstract class AbstractContextKeyService
 		rules: ContextKeyExpression | undefined,
 	): boolean {
 		if (this._isDisposed) {
-			throw new Error(`AbstractContextKeyService has been disposed`);
+			throw new Error("AbstractContextKeyService has been disposed");
 		}
 		const context = this.getContextValuesContainer(this._myContextId);
 		const result = rules ? rules.evaluate(context) : true;
@@ -470,7 +471,7 @@ export class ContextKeyService
 		parentContextId: number = this._myContextId,
 	): number {
 		if (this._isDisposed) {
-			throw new Error(`ContextKeyService has been disposed`);
+			throw new Error("ContextKeyService has been disposed");
 		}
 		const id = ++this._lastContextId;
 		this._contexts.set(
@@ -518,7 +519,7 @@ class ScopedContextKeyService extends AbstractContextKeyService {
 
 			console.error(
 				`Element already has context attribute${
-					extraInfo ? ": " + extraInfo : ""
+					extraInfo ? `: ${extraInfo}` : ""
 				}`,
 			);
 		}
@@ -565,7 +566,7 @@ class ScopedContextKeyService extends AbstractContextKeyService {
 		parentContextId: number = this._myContextId,
 	): number {
 		if (this._isDisposed) {
-			throw new Error(`ScopedContextKeyService has been disposed`);
+			throw new Error("ScopedContextKeyService has been disposed");
 		}
 		return this._parent.createChildContext(parentContextId);
 	}

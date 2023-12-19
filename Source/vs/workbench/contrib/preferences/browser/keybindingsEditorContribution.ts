@@ -104,11 +104,11 @@ class DefineKeybindingEditorContribution
 			const regexp = new RegExp(/\\/g);
 			const backslash = regexp.test(keybinding);
 			if (backslash) {
-				keybinding = keybinding.slice(0, -1) + "\\\\";
+				keybinding = `${keybinding.slice(0, -1)}\\\\`;
 			}
 			let snippetText = [
 				"{",
-				'\t"key": ' + JSON.stringify(keybinding) + ",",
+				`\t"key": ${JSON.stringify(keybinding)},`,
 				'\t"command": "${1:commandId}",',
 				'\t"when": "${2:editorTextFocus}"',
 				"}$0",
@@ -277,7 +277,7 @@ export class KeybindingEditorDecorationsRenderer extends Disposable {
 		if (aKeybinding === null && bKeybinding === null) {
 			return true;
 		}
-		if (!aKeybinding || !bKeybinding) {
+		if (!(aKeybinding && bKeybinding)) {
 			return false;
 		}
 		return aKeybinding.equals(bKeybinding);

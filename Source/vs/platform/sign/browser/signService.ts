@@ -87,7 +87,7 @@ export class SignService extends AbstractSignService implements ISignService {
 					50,
 					$window,
 				);
-			}).finally(() => checkInterval!.dispose()),
+			}).finally(() => checkInterval?.dispose()),
 		]);
 
 		const keyBytes = new TextEncoder().encode(

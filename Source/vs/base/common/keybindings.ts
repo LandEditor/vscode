@@ -199,7 +199,7 @@ export class Keybinding {
 
 	constructor(chords: Chord[]) {
 		if (chords.length === 0) {
-			throw illegalArgument(`chords`);
+			throw illegalArgument("chords");
 		}
 		this.chords = chords;
 	}

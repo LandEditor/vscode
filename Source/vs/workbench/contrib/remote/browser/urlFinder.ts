@@ -164,7 +164,7 @@ export class UrlFinder extends Disposable {
 							  : "NaN",
 					);
 					if (
-						!isNaN(port) &&
+						!Number.isNaN(port) &&
 						Number.isInteger(port) &&
 						port > 0 &&
 						port <= 65535

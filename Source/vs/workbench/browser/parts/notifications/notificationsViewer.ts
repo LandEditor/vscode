@@ -97,9 +97,7 @@ export class NotificationsListDelegate
 		// Last row: source and buttons if we have any
 		if (
 			notification.source ||
-			isNonEmptyArray(
-				notification.actions && notification.actions.primary,
-			)
+			isNonEmptyArray(notification.actions?.primary)
 		) {
 			expandedHeight += NotificationsListDelegate.ROW_HEIGHT;
 		}
@@ -124,11 +122,7 @@ export class NotificationsListDelegate
 		if (notification.canCollapse) {
 			actions++; // expand/collapse
 		}
-		if (
-			isNonEmptyArray(
-				notification.actions && notification.actions.secondary,
-			)
-		) {
+		if (isNonEmptyArray(notification.actions?.secondary)) {
 			actions++; // secondary actions
 		}
 		this.offsetHelper.style.width = `${
@@ -162,7 +156,7 @@ export class NotificationsListDelegate
 			return NotificationRenderer.TEMPLATE_ID;
 		}
 
-		throw new Error("unknown element type: " + element);
+		throw new Error(`unknown element type: ${element}`);
 	}
 }
 
@@ -500,15 +494,18 @@ export class NotificationTemplateRenderer extends Disposable {
 		this.inputDisposables.add(
 			notification.onDidChangeContent((event) => {
 				switch (event.kind) {
-					case NotificationViewItemContentChangeKind.SEVERITY:
+					case NotificationViewItemContentChangeKind.SEVERITY: {
 						this.renderSeverity(notification);
 						break;
-					case NotificationViewItemContentChangeKind.PROGRESS:
+					}
+					case NotificationViewItemContentChangeKind.PROGRESS: {
 						this.renderProgress(notification);
 						break;
-					case NotificationViewItemContentChangeKind.MESSAGE:
+					}
+					case NotificationViewItemContentChangeKind.MESSAGE: {
 						this.renderMessage(notification);
 						break;
+					}
 				}
 			}),
 		);
@@ -550,8 +547,7 @@ export class NotificationTemplateRenderer extends Disposable {
 			this.template.message.scrollWidth >
 				this.template.message.clientWidth;
 		if (messageOverflows) {
-			this.template.message.title =
-				this.template.message.textContent + "";
+			this.template.message.title = `${this.template.message.textContent}`;
 		} else {
 			this.template.message.removeAttribute("title");
 		}
@@ -650,8 +646,7 @@ export class NotificationTemplateRenderer extends Disposable {
 
 						// Hide notification (unless explicitly prevented)
 						if (
-							!(action instanceof ChoiceAction) ||
-							!action.keepOpen
+							!(action instanceof ChoiceAction && action.keepOpen)
 						) {
 							notification.close();
 						}

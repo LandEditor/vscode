@@ -500,7 +500,7 @@ export class UserDataSyncWorkbenchContribution
 
 	private onAutoSyncError(error: UserDataSyncError): void {
 		switch (error.code) {
-			case UserDataSyncErrorCode.SessionExpired:
+			case UserDataSyncErrorCode.SessionExpired: {
 				this.notificationService.notify({
 					severity: Severity.Info,
 					message: localize(
@@ -523,7 +523,8 @@ export class UserDataSyncWorkbenchContribution
 					},
 				});
 				break;
-			case UserDataSyncErrorCode.TurnedOff:
+			}
+			case UserDataSyncErrorCode.TurnedOff: {
 				this.notificationService.notify({
 					severity: Severity.Info,
 					message: localize(
@@ -546,7 +547,8 @@ export class UserDataSyncWorkbenchContribution
 					},
 				});
 				break;
-			case UserDataSyncErrorCode.TooLarge:
+			}
+			case UserDataSyncErrorCode.TooLarge: {
 				if (
 					error.resource === SyncResource.Keybindings ||
 					error.resource === SyncResource.Settings ||
@@ -567,7 +569,8 @@ export class UserDataSyncWorkbenchContribution
 					);
 				}
 				break;
-			case UserDataSyncErrorCode.LocalTooManyProfiles:
+			}
+			case UserDataSyncErrorCode.LocalTooManyProfiles: {
 				this.disableSync(SyncResource.Profiles);
 				this.notificationService.error(
 					localize(
@@ -576,6 +579,7 @@ export class UserDataSyncWorkbenchContribution
 					),
 				);
 				break;
+			}
 			case UserDataSyncErrorCode.IncompatibleLocalContent:
 			case UserDataSyncErrorCode.Gone:
 			case UserDataSyncErrorCode.UpgradeRequired: {
@@ -641,7 +645,7 @@ export class UserDataSyncWorkbenchContribution
 				});
 				break;
 			}
-			case UserDataSyncErrorCode.IncompatibleRemoteContent:
+			case UserDataSyncErrorCode.IncompatibleRemoteContent: {
 				this.notificationService.notify({
 					severity: Severity.Error,
 					message: localize(
@@ -673,8 +677,9 @@ export class UserDataSyncWorkbenchContribution
 					},
 				});
 				return;
+			}
 
-			case UserDataSyncErrorCode.ServiceChanged:
+			case UserDataSyncErrorCode.ServiceChanged: {
 				this.notificationService.notify({
 					severity: Severity.Info,
 					message:
@@ -691,8 +696,9 @@ export class UserDataSyncWorkbenchContribution
 				});
 
 				return;
+			}
 
-			case UserDataSyncErrorCode.DefaultServiceChanged:
+			case UserDataSyncErrorCode.DefaultServiceChanged: {
 				// Settings sync is using separate service
 				if (this.userDataSyncEnablementService.isEnabled()) {
 					this.notificationService.notify({
@@ -730,6 +736,7 @@ export class UserDataSyncWorkbenchContribution
 					});
 				}
 				return;
+			}
 		}
 	}
 
@@ -777,12 +784,13 @@ export class UserDataSyncWorkbenchContribution
 		if (errors.length) {
 			for (const { profile, syncResource: resource, error } of errors) {
 				switch (error.code) {
-					case UserDataSyncErrorCode.LocalInvalidContent:
+					case UserDataSyncErrorCode.LocalInvalidContent: {
 						this.handleInvalidContentError({
 							profile,
 							syncResource: resource,
 						});
 						break;
+					}
 					default: {
 						const key = `${profile.id}:${resource}`;
 						const disposable =
@@ -971,7 +979,7 @@ export class UserDataSyncWorkbenchContribution
 			}
 			if (e instanceof UserDataSyncError) {
 				switch (e.code) {
-					case UserDataSyncErrorCode.TooLarge:
+					case UserDataSyncErrorCode.TooLarge: {
 						if (
 							e.resource === SyncResource.Keybindings ||
 							e.resource === SyncResource.Settings ||
@@ -990,6 +998,7 @@ export class UserDataSyncWorkbenchContribution
 							return;
 						}
 						break;
+					}
 					case UserDataSyncErrorCode.IncompatibleLocalContent:
 					case UserDataSyncErrorCode.Gone:
 					case UserDataSyncErrorCode.UpgradeRequired: {
@@ -1014,7 +1023,7 @@ export class UserDataSyncWorkbenchContribution
 						});
 						return;
 					}
-					case UserDataSyncErrorCode.IncompatibleRemoteContent:
+					case UserDataSyncErrorCode.IncompatibleRemoteContent: {
 						this.notificationService.notify({
 							severity: Severity.Error,
 							message: localize(
@@ -1049,8 +1058,9 @@ export class UserDataSyncWorkbenchContribution
 							},
 						});
 						return;
+					}
 					case UserDataSyncErrorCode.Unauthorized:
-					case UserDataSyncErrorCode.Forbidden:
+					case UserDataSyncErrorCode.Forbidden: {
 						this.notificationService.error(
 							localize(
 								"auth failed",
@@ -1058,6 +1068,7 @@ export class UserDataSyncWorkbenchContribution
 							),
 						);
 						return;
+					}
 				}
 				this.notificationService.error(
 					localize(
@@ -1174,7 +1185,7 @@ export class UserDataSyncWorkbenchContribution
 
 	private updateConfiguration(
 		items: ConfigureSyncQuickPickItem[],
-		selectedItems: ReadonlyArray<ConfigureSyncQuickPickItem>,
+		selectedItems: readonly ConfigureSyncQuickPickItem[],
 	): void {
 		for (const item of items) {
 			const wasEnabled =
@@ -1668,7 +1679,7 @@ export class UserDataSyncWorkbenchContribution
 							const quickPick =
 								quickInputService.createQuickPick();
 							disposables.add(quickPick);
-							const items: Array<QuickPickItem> = [];
+							const items: QuickPickItem[] = [];
 							if (that.userDataSyncService.conflicts.length) {
 								items.push({
 									id: showConflictsCommandId,
@@ -1718,10 +1729,7 @@ export class UserDataSyncWorkbenchContribution
 							quickPick.items = items;
 							disposables.add(
 								quickPick.onDidAccept(() => {
-									if (
-										quickPick.selectedItems[0] &&
-										quickPick.selectedItems[0].id
-									) {
+									if (quickPick.selectedItems[0]?.id) {
 										commandService.executeCommand(
 											quickPick.selectedItems[0].id,
 										);

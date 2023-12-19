@@ -226,7 +226,6 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
 				return this.shortDescription;
 			case Verbosity.LONG:
 				return this.longDescription;
-			case Verbosity.MEDIUM:
 			default:
 				return this.mediumDescription;
 		}
@@ -302,7 +301,6 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
 			case Verbosity.LONG:
 				return this.longTitle;
 			default:
-			case Verbosity.MEDIUM:
 				return this.mediumTitle;
 		}
 	}

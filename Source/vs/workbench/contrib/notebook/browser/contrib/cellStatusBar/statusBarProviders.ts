@@ -79,7 +79,7 @@ class CellStatusBarLanguagePickerProvider
 					cell.language,
 				);
 				statusBarItems.push({
-					text: `$(dialog-warning)`,
+					text: "$(dialog-warning)",
 					command: {
 						id: "workbench.extensions.search",
 						arguments: [`@tag:${cell.language}`],

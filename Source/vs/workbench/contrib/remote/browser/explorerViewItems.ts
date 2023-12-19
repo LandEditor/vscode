@@ -148,8 +148,7 @@ export class SwitchRemoteViewItem extends Disposable {
 	public removeOptionItems(views: IViewDescriptor[]) {
 		for (const view of views) {
 			if (
-				view.group &&
-				view.group.startsWith("targets") &&
+				view.group?.startsWith("targets") &&
 				view.remoteAuthority &&
 				(!view.when ||
 					this.contextKeyService.contextMatchesRules(view.when))
@@ -166,8 +165,7 @@ export class SwitchRemoteViewItem extends Disposable {
 		const startingCount = this.completedRemotes.size;
 		for (const view of views) {
 			if (
-				view.group &&
-				view.group.startsWith("targets") &&
+				view.group?.startsWith("targets") &&
 				view.remoteAuthority &&
 				(!view.when ||
 					this.contextKeyService.contextMatchesRules(view.when))

@@ -190,7 +190,9 @@ function requireActiveDocumentSetting(
 	return new Condition(
 		() => {
 			const editor = vscode.window.activeTextEditor;
-			if (!editor || !vscode.languages.match(selector, editor.document)) {
+			if (
+				!(editor && vscode.languages.match(selector, editor.document))
+			) {
 				return false;
 			}
 

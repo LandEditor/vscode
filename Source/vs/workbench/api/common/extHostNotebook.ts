@@ -209,7 +209,7 @@ export class ExtHostNotebookController implements ExtHostNotebookShape {
 		relaxed?: true,
 	): ExtHostNotebookDocument | undefined {
 		const result = this._documents.get(uri);
-		if (!result && !relaxed) {
+		if (!(result || relaxed)) {
 			throw new Error(`NO notebook document for '${uri}'`);
 		}
 		return result;
@@ -242,7 +242,7 @@ export class ExtHostNotebookController implements ExtHostNotebookShape {
 			providerDisplayName: extension.displayName || extension.name,
 			displayName: registration.displayName,
 			filenamePattern: viewOptionsFilenamePattern,
-			exclusive: registration.exclusive || false,
+			exclusive: registration.exclusive,
 		};
 	}
 
@@ -267,7 +267,7 @@ export class ExtHostNotebookController implements ExtHostNotebookShape {
 
 		let subscription: vscode.Disposable | undefined;
 		if (eventHandle !== undefined) {
-			subscription = provider.onDidChangeCellStatusBarItems!((_) =>
+			subscription = provider.onDidChangeCellStatusBarItems?.((_) =>
 				this._notebookProxy.$emitCellStatusBarEvent(eventHandle),
 			);
 		}
@@ -320,9 +320,9 @@ export class ExtHostNotebookController implements ExtHostNotebookShape {
 			resolvedOptions = {
 				position: typeConverters.ViewColumn.from(options.viewColumn),
 				preserveFocus: options.preserveFocus,
-				selections:
-					options.selections &&
-					options.selections.map(typeConverters.NotebookRange.from),
+				selections: options.selections?.map(
+					typeConverters.NotebookRange.from,
+				),
 				pinned:
 					typeof options.preview === "boolean"
 						? !options.preview
@@ -366,7 +366,7 @@ export class ExtHostNotebookController implements ExtHostNotebookShape {
 		const provider = this._notebookStatusBarItemProviders.get(handle);
 		const revivedUri = URI.revive(uri);
 		const document = this._documents.get(revivedUri);
-		if (!document || !provider) {
+		if (!(document && provider)) {
 			return;
 		}
 
@@ -423,7 +423,7 @@ export class ExtHostNotebookController implements ExtHostNotebookShape {
 		registration?: vscode.NotebookRegistrationData,
 	): vscode.Disposable {
 		if (isFalsyOrWhitespace(viewType)) {
-			throw new Error(`viewType cannot be empty or just whitespace`);
+			throw new Error("viewType cannot be empty or just whitespace");
 		}
 		const handle = this._handlePool++;
 		this._notebookSerializer.set(handle, { viewType, serializer, options });
@@ -515,8 +515,7 @@ export class ExtHostNotebookController implements ExtHostNotebookShape {
 		const data: vscode.NotebookData = {
 			metadata: filter(
 				document.apiNotebook.metadata,
-				(key) =>
-					!(serializer.options?.transientDocumentMetadata ?? {})[key],
+				(key) => !serializer.options?.transientDocumentMetadata?.[key],
 			),
 			cells: [],
 		};
@@ -534,8 +533,7 @@ export class ExtHostNotebookController implements ExtHostNotebookShape {
 
 			cellData.metadata = filter(
 				cell.metadata,
-				(key) =>
-					!(serializer.options?.transientCellMetadata ?? {})[key],
+				(key) => !serializer.options?.transientCellMetadata?.[key],
 			);
 			data.cells.push(cellData);
 		}

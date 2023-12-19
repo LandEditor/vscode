@@ -49,7 +49,7 @@ export interface IEditorCloseHandler {
 	 * @param editors All editors of the same kind that are being closed. Should be used
 	 * to show a combined dialog.
 	 */
-	confirm(editors: ReadonlyArray<IEditorIdentifier>): Promise<ConfirmResult>;
+	confirm(editors: readonly IEditorIdentifier[]): Promise<ConfirmResult>;
 }
 
 /**

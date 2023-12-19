@@ -165,12 +165,7 @@ export class Win32UpdateService
 			.then((update) => {
 				const updateType = getUpdateType();
 
-				if (
-					!update ||
-					!update.url ||
-					!update.version ||
-					!update.productVersion
-				) {
+				if (!(update?.url && update.version && update.productVersion)) {
 					this.telemetryService.publicLog2<
 						{ explicit: boolean },
 						UpdateNotAvailableClassification
@@ -261,7 +256,7 @@ export class Win32UpdateService
 				this.logService.error(err);
 
 				// only show message when explicitly checking for updates
-				const message: string | undefined = !!context
+				const message: string | undefined = context
 					? err.message || err
 					: undefined;
 				this.setState(State.Idle(getUpdateType(), message));

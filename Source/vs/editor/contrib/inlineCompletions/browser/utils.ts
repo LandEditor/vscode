@@ -59,7 +59,7 @@ class PositionOffsetTransformer {
 	}
 }
 
-const array: ReadonlyArray<any> = [];
+const array: readonly any[] = [];
 export function getReadonlyEmptyArray<T>(): readonly T[] {
 	return array;
 }

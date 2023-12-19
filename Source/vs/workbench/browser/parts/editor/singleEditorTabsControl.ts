@@ -235,9 +235,11 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 		// (https://github.com/microsoft/vscode/issues/107543)
 		const target = e.initialTarget;
 		if (
-			!(target instanceof HTMLElement) ||
-			!this.editorLabel ||
-			!isAncestor(target, this.editorLabel.element)
+			!(
+				target instanceof HTMLElement &&
+				this.editorLabel &&
+				isAncestor(target, this.editorLabel.element)
+			)
 		) {
 			return;
 		}
@@ -369,7 +371,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 	}
 
 	private ifActiveEditorPropertiesChanged(fn: () => void): void {
-		if (!this.activeLabel.editor || !this.tabsModel.activeEditor) {
+		if (!(this.activeLabel.editor && this.tabsModel.activeEditor)) {
 			return; // need an active editor to check for properties changed
 		}
 

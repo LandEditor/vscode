@@ -34,8 +34,8 @@ export function getLanguageParticipants(): LanguageParticipants {
 	let autoInsert = new Set<string>();
 
 	function update() {
-		const oldLanguages = languages,
-			oldAutoInsert = autoInsert;
+		const oldLanguages = languages;
+		const oldAutoInsert = autoInsert;
 
 		languages = new Set();
 		languages.add("html");
@@ -57,9 +57,9 @@ export function getLanguageParticipants(): LanguageParticipants {
 				}
 			}
 		}
-		return (
-			!isEqualSet(languages, oldLanguages) ||
-			!isEqualSet(oldLanguages, oldAutoInsert)
+		return !(
+			isEqualSet(languages, oldLanguages) &&
+			isEqualSet(oldLanguages, oldAutoInsert)
 		);
 	}
 	update();

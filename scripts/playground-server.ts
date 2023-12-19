@@ -284,10 +284,10 @@ function handleGetFileChangesRequest(
 			const path = fileServer.filePathToUrlPath(fsPath);
 			if (path) {
 				res.write(
-					JSON.stringify({
+					`${JSON.stringify({
 						changedPath: path,
 						moduleId: moduleIdMapper.getModuleId(fsPath),
-					}) + "\n",
+					})}\n`,
 				);
 			}
 		});
@@ -347,10 +347,10 @@ function makeLoaderJsHotReloadable(
 									).pathname.endsWith(data.changedPath),
 								) as any;
 								if (styleSheet) {
-									styleSheet.href =
-										styleSheet.href.replace(/\?.*/, "") +
-										"?" +
-										Date.now();
+									styleSheet.href = `${styleSheet.href.replace(
+										/\?.*/,
+										"",
+									)}?${Date.now()}`;
 								}
 							}
 							handled = true;
@@ -488,7 +488,7 @@ class CachedBundle {
 		if (!this.loader) {
 			return;
 		}
-		const module = await this.loader!.getModule(path);
+		const module = await this.loader?.getModule(path);
 		if (module) {
 			if (!this.loader.updateContent(module, newContent)) {
 				this.loader = undefined;
@@ -665,7 +665,7 @@ class SimpleModuleIdPathMapper {
 	constructor(public readonly rootDir: string) {}
 
 	public getModuleId(path: string): string | null {
-		if (!path.startsWith(this.rootDir) || !path.endsWith(".js")) {
+		if (!(path.startsWith(this.rootDir) && path.endsWith(".js"))) {
 			return null;
 		}
 		const moduleId = path.substring(this.rootDir.length + 1);
@@ -684,10 +684,10 @@ class SimpleModuleIdPathMapper {
 		if (request.startsWith(".")) {
 			return path.join(
 				path.dirname(requestingModulePath!),
-				request + ".js",
+				`${request}.js`,
 			);
 		} else {
-			return path.join(this.rootDir, request + ".js");
+			return path.join(this.rootDir, `${request}.js`);
 		}
 	}
 }
@@ -827,18 +827,22 @@ class SourceMapBuilder {
 						value = -value;
 					}
 					switch (valpos) {
-						case 0:
+						case 0: {
 							inOutputCol += value;
 							break;
-						case 1:
+						}
+						case 1: {
 							inSourceIndex += value;
 							break;
-						case 2:
+						}
+						case 2: {
 							inSourceLine += value;
 							break;
-						case 3:
+						}
+						case 3: {
 							inSourceCol += value;
 							break;
+						}
 					}
 					valpos++;
 					value = shift = 0;

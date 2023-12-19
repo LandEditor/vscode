@@ -225,7 +225,7 @@ export class WhitespaceOverlay extends DynamicViewOverlay {
 		}
 
 		let currentSelectionIndex = 0;
-		let currentSelection = selections && selections[currentSelectionIndex];
+		let currentSelection = selections?.[currentSelectionIndex];
 		let maxLeft = 0;
 
 		for (let charIndex = fauxIndentLength; charIndex < len; charIndex++) {
@@ -233,8 +233,7 @@ export class WhitespaceOverlay extends DynamicViewOverlay {
 
 			if (currentSelection && charIndex >= currentSelection.endOffset) {
 				currentSelectionIndex++;
-				currentSelection =
-					selections && selections[currentSelectionIndex];
+				currentSelection = selections?.[currentSelectionIndex];
 			}
 
 			if (chCode !== CharCode.Tab && chCode !== CharCode.Space) {
@@ -343,11 +342,7 @@ export class WhitespaceOverlay extends DynamicViewOverlay {
 
 		if (USE_SVG) {
 			maxLeft = Math.round(maxLeft + spaceWidth);
-			return (
-				`<svg style="position:absolute;width:${maxLeft}px;height:${lineHeight}px" viewBox="0 0 ${maxLeft} ${lineHeight}" xmlns="http://www.w3.org/2000/svg" fill="${color}">` +
-				result +
-				`</svg>`
-			);
+			return `<svg style="position:absolute;width:${maxLeft}px;height:${lineHeight}px" viewBox="0 0 ${maxLeft} ${lineHeight}" xmlns="http://www.w3.org/2000/svg" fill="${color}">${result}</svg>`;
 		}
 
 		return result;

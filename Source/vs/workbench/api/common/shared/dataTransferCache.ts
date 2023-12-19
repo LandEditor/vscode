@@ -14,7 +14,7 @@ export class DataTransferFileCache {
 	private requestIdPool = 0;
 	private readonly dataTransferFiles = new Map<
 		/* requestId */ number,
-		ReadonlyArray<IDataTransferFile>
+		readonly IDataTransferFile[]
 	>();
 
 	public add(dataTransfer: IReadonlyVSDataTransfer): {

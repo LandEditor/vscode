@@ -238,7 +238,7 @@ export class ProgressService extends Disposable implements IProgressService {
 			const [options, progress] = this.windowProgressStack[idx];
 
 			const progressTitle = options.title;
-			const progressMessage = progress.value && progress.value.message;
+			const progressMessage = progress.value?.message;
 			const progressCommand = (<IProgressWindowOptions>options).command;
 			let text: string;
 			let title: string;
@@ -295,7 +295,7 @@ export class ProgressService extends Disposable implements IProgressService {
 			const statusEntryProperties: IStatusbarEntry = {
 				name: localize("status.progress", "Progress Message"),
 				text,
-				showProgress: options.type || true,
+				showProgress: true,
 				ariaLabel: text,
 				tooltip: title,
 				command: progressCommand,
@@ -507,7 +507,7 @@ export class ProgressService extends Disposable implements IProgressService {
 				dispose(windowProgressDisposable);
 
 				// Create new window progress if notification got hidden
-				if (!visible && !progressStateModel.done) {
+				if (!(visible || progressStateModel.done)) {
 					windowProgressDisposable = createWindowProgress();
 				}
 			};

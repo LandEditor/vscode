@@ -249,7 +249,7 @@ export class TextMateWorkerTokenizerController extends Disposable {
 				),
 			);
 
-		if (!this._applyStateStackDiffFn || !this._initialState) {
+		if (!(this._applyStateStackDiffFn && this._initialState)) {
 			const { applyStateStackDiff, INITIAL } = await importAMDNodeModule<
 				typeof import("vscode-textmate")
 			>("vscode-textmate", "release/main.js");
@@ -319,7 +319,7 @@ function fullLineArrayEditFromModelContentChange(
 
 function changesToString(changes: IModelContentChange[]): string {
 	return changes
-		.map((c) => Range.lift(c.range).toString() + " => " + c.text)
+		.map((c) => `${Range.lift(c.range).toString()} => ${c.text}`)
 		.join(" & ");
 }
 

@@ -964,7 +964,7 @@ export function markAsFileSystemProviderError(
 	error: Error,
 	code: FileSystemProviderErrorCode,
 ): Error {
-	error.name = code ? `${code} (FileSystemError)` : `FileSystemError`;
+	error.name = code ? `${code} (FileSystemError)` : "FileSystemError";
 
 	return error;
 }
@@ -1157,15 +1157,18 @@ export class FileChangesEvent {
 		for (const change of changes) {
 			// Split by type
 			switch (change.type) {
-				case FileChangeType.ADDED:
+				case FileChangeType.ADDED: {
 					this.rawAdded.push(change.resource);
 					break;
-				case FileChangeType.UPDATED:
+				}
+				case FileChangeType.UPDATED: {
 					this.rawUpdated.push(change.resource);
 					break;
-				case FileChangeType.DELETED:
+				}
+				case FileChangeType.DELETED: {
 					this.rawDeleted.push(change.resource);
 					break;
+				}
 			}
 
 			// Figure out events correlation
@@ -1365,7 +1368,7 @@ export function isParent(
 	candidate: string,
 	ignoreCase?: boolean,
 ): boolean {
-	if (!path || !candidate || path === candidate) {
+	if (!(path && candidate) || path === candidate) {
 		return false;
 	}
 

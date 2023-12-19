@@ -137,7 +137,7 @@ export function getUriClasses(
 		const uriIconKey = hash(uri.path).toString(36);
 		const className = `terminal-uri-icon-${uriIconKey}`;
 		iconClasses.push(className);
-		iconClasses.push(`terminal-uri-icon`);
+		iconClasses.push("terminal-uri-icon");
 	}
 	return iconClasses;
 }

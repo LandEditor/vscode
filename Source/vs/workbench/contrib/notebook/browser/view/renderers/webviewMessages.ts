@@ -159,12 +159,12 @@ export interface IRenderedMarkupMessage extends BaseToWebviewMessage {
 	readonly type: "renderedMarkup";
 	readonly cellId: string;
 	readonly html: string;
-	readonly codeBlocks: ReadonlyArray<ICodeBlockHighlightRequest>;
+	readonly codeBlocks: readonly ICodeBlockHighlightRequest[];
 }
 
 export interface IRenderedCellOutputMessage extends BaseToWebviewMessage {
 	readonly type: "renderedCellOutput";
-	readonly codeBlocks: ReadonlyArray<ICodeBlockHighlightRequest>;
+	readonly codeBlocks: readonly ICodeBlockHighlightRequest[];
 }
 
 export interface IClearMessage {

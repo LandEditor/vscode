@@ -127,7 +127,7 @@ export class HoverOperation<T> extends Disposable {
 		if (this._computer.computeAsync) {
 			this._asyncIterableDone = false;
 			this._asyncIterable = createCancelableAsyncIterable((token) =>
-				this._computer.computeAsync!(token),
+				this._computer.computeAsync?.(token),
 			);
 
 			(async () => {
@@ -204,15 +204,17 @@ export class HoverOperation<T> extends Disposable {
 			}
 		} else {
 			switch (this._state) {
-				case HoverOperationState.Idle:
+				case HoverOperationState.Idle: {
 					this._triggerAsyncComputation();
 					this._secondWaitScheduler.cancel();
 					this._triggerSyncComputation();
 					break;
-				case HoverOperationState.SecondWait:
+				}
+				case HoverOperationState.SecondWait: {
 					this._secondWaitScheduler.cancel();
 					this._triggerSyncComputation();
 					break;
+				}
 			}
 		}
 	}

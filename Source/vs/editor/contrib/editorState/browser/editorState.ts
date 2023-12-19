@@ -131,7 +131,7 @@ export class EditorStateCancellationTokenSource
 		if (flags & CodeEditorStateFlag.Position) {
 			this._listener.add(
 				editor.onDidChangeCursorPosition((e) => {
-					if (!range || !Range.containsPosition(range, e.position)) {
+					if (!(range && Range.containsPosition(range, e.position))) {
 						this.cancel();
 					}
 				}),
@@ -140,7 +140,7 @@ export class EditorStateCancellationTokenSource
 		if (flags & CodeEditorStateFlag.Selection) {
 			this._listener.add(
 				editor.onDidChangeCursorSelection((e) => {
-					if (!range || !Range.containsRange(range, e.selection)) {
+					if (!(range && Range.containsRange(range, e.selection))) {
 						this.cancel();
 					}
 				}),

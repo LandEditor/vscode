@@ -81,11 +81,11 @@ export async function findExecutable(
 			return fullPath;
 		}
 		if (isWindows) {
-			let withExtension = fullPath + ".com";
+			let withExtension = `${fullPath}.com`;
 			if (await exists(withExtension)) {
 				return withExtension;
 			}
-			withExtension = fullPath + ".exe";
+			withExtension = `${fullPath}.exe`;
 			if (await exists(withExtension)) {
 				return withExtension;
 			}
@@ -134,8 +134,7 @@ export function getShellIntegrationInjection(
 		isWindows &&
 		(!options.windowsEnableConpty || getWindowsBuildNumber() < 18309);
 	if (
-		!options.shellIntegration.enabled ||
-		!shellLaunchConfig.executable ||
+		!(options.shellIntegration.enabled && shellLaunchConfig.executable) ||
 		shellLaunchConfig.isFeatureTerminal ||
 		shellLaunchConfig.hideFromUser ||
 		shellLaunchConfig.ignoreShellIntegration ||
@@ -294,7 +293,7 @@ export function getShellIntegrationInjection(
 				`${username}-${productService.applicationName}-zsh`,
 			);
 			envMixin["ZDOTDIR"] = zdotdir;
-			const userZdotdir = env?.ZDOTDIR ?? os.homedir() ?? `~`;
+			const userZdotdir = env?.ZDOTDIR ?? os.homedir() ?? "~";
 			envMixin["USER_ZDOTDIR"] = userZdotdir;
 			const filesToCopy: IShellIntegrationConfigInjection["filesToCopy"] =
 				[];

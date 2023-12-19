@@ -80,18 +80,18 @@ export async function migrateExtensionStorage(
 			? StorageScope.PROFILE
 			: StorageScope.WORKSPACE;
 		if (
-			!storageService.getBoolean(
-				storageMigratedKey,
-				storageScope,
-				false,
-			) &&
 			!(
-				migrateLowerCaseStorageKey &&
 				storageService.getBoolean(
-					migrateLowerCaseStorageKey,
+					storageMigratedKey,
 					storageScope,
 					false,
-				)
+				) ||
+				(migrateLowerCaseStorageKey &&
+					storageService.getBoolean(
+						migrateLowerCaseStorageKey,
+						storageScope,
+						false,
+					))
 			)
 		) {
 			logService.info(

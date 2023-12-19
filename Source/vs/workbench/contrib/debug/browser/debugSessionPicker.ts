@@ -82,14 +82,14 @@ function _getPicksAndActiveItem(
 	commandService: ICommandService,
 ): {
 	picks: Array<IPickerDebugItem | IQuickPickSeparator>;
-	activeItems: Array<IPickerDebugItem>;
+	activeItems: IPickerDebugItem[];
 } {
 	const debugConsolePicks: Array<IPickerDebugItem | IQuickPickSeparator> = [];
 	const headerSessions: IDebugSession[] = [];
 
 	const currSession = debugService.getViewModel().focusedSession;
 	const sessions = debugService.getModel().getSessions(false);
-	const activeItems: Array<IPickerDebugItem> = [];
+	const activeItems: IPickerDebugItem[] = [];
 
 	sessions.forEach((session) => {
 		if (session.compact && session.parentSession) {

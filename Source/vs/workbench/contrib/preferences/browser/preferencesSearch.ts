@@ -87,9 +87,7 @@ export class PreferencesSearchService
 					)
 					.filter(
 						(ext) =>
-							ext.manifest &&
-							ext.manifest.contributes &&
-							ext.manifest.contributes.configuration
+							ext.manifest?.contributes?.configuration
 					)
 					.filter((ext) => !!ext.identifier.uuid);
 			});
@@ -127,7 +125,7 @@ export class PreferencesSearchService
 function cleanFilter(filter: string): string {
 	// Remove " and : which are likely to be copypasted as part of a setting name.
 	// Leave other special characters which the user might want to search for.
-	return filter.replace(/[":]/g, " ").replace(/  /g, " ").trim();
+	return filter.replace(/[":]/g, " ").replace(/ {2}/g, " ").trim();
 }
 
 export class LocalSearchProvider implements ISearchProvider {
@@ -473,8 +471,10 @@ class AiRelatedInformationSearchKeysProvider {
 		this.settingsRecord = {};
 
 		if (
-			!this.currentPreferencesModel ||
-			!this.aiRelatedInformationService.isEnabled()
+			!(
+				this.currentPreferencesModel &&
+				this.aiRelatedInformationService.isEnabled()
+			)
 		) {
 			return;
 		}
@@ -525,7 +525,7 @@ class AiRelatedInformationSearchProvider implements IRemoteSearchProvider {
 		preferencesModel: ISettingsEditorModel,
 		token?: CancellationToken | undefined,
 	): Promise<ISearchResult | null> {
-		if (!this._filter || !this.aiRelatedInformationService.isEnabled()) {
+		if (!(this._filter && this.aiRelatedInformationService.isEnabled())) {
 			return null;
 		}
 
@@ -581,8 +581,6 @@ class TfIdfSearchProvider implements IRemoteSearchProvider {
 	private _filter = "";
 	private _documents: TfIdfDocument[] = [];
 	private _settingsRecord: IStringDictionary<ISetting> = {};
-
-	constructor() {}
 
 	setFilter(filter: string) {
 		this._filter = cleanFilter(filter);
@@ -706,7 +704,7 @@ class RemoteSearchProvider implements IRemoteSearchProvider {
 		if (this.adaSearchProvider) {
 			this.adaSearchProvider.setFilter(filter);
 		} else {
-			this.tfIdfSearchProvider!.setFilter(filter);
+			this.tfIdfSearchProvider?.setFilter(filter);
 		}
 	}
 
@@ -721,7 +719,7 @@ class RemoteSearchProvider implements IRemoteSearchProvider {
 		if (this.adaSearchProvider) {
 			return this.adaSearchProvider.searchModel(preferencesModel, token);
 		} else {
-			return this.tfIdfSearchProvider!.searchModel(
+			return this.tfIdfSearchProvider?.searchModel(
 				preferencesModel,
 				token,
 			);

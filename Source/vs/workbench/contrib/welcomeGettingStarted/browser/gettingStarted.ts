@@ -421,14 +421,14 @@ export class GettingStartedPage extends EditorPane {
 				);
 				if (!category) {
 					throw Error(
-						"Could not find category with ID: " + step.category
+						`Could not find category with ID: ${step.category}`
 					);
 				}
 				const ourStep = category.steps.find(
 					(_step) => _step.id === step.id
 				);
 				if (!ourStep) {
-					throw Error("Could not find step with ID: " + step.id);
+					throw Error(`Could not find step with ID: ${step.id}`);
 				}
 
 				const stats = this.getWalkthroughCompletionStats(category);
@@ -564,9 +564,10 @@ export class GettingStartedPage extends EditorPane {
 						e.stopPropagation();
 						switch (keyboardEvent.keyCode) {
 							case KeyCode.Enter:
-							case KeyCode.Space:
+							case KeyCode.Space: {
 								this.runDispatchCommand(command, argument);
 								return;
+							}
 						}
 					}),
 				);
@@ -632,7 +633,7 @@ export class GettingStartedPage extends EditorPane {
 					this.runStepCommand(selected.content.command);
 				} else {
 					throw Error(
-						"could not find start entry with id: " + argument,
+						`could not find start entry with id: ${argument}`,
 					);
 				}
 				break;
@@ -686,7 +687,7 @@ export class GettingStartedPage extends EditorPane {
 			(category) => category.id === categoryId,
 		);
 		if (!selectedCategory) {
-			throw Error("Could not find category with ID " + categoryId);
+			throw Error(`Could not find category with ID ${categoryId}`);
 		}
 		this.setHiddenCategories([
 			...this.getHiddenCategories().add(categoryId),
@@ -1078,7 +1079,7 @@ export class GettingStartedPage extends EditorPane {
 		if (id.startsWith(`${this.editorInput.selectedCategory}#`)) {
 			this.selectStep(id);
 		} else {
-			const toSelect = this.editorInput.selectedCategory + "#" + id;
+			const toSelect = `${this.editorInput.selectedCategory}#${id}`;
 			this.selectStep(toSelect);
 		}
 	}
@@ -1092,7 +1093,7 @@ export class GettingStartedPage extends EditorPane {
 				// Selected an element that is not in-context, just fallback to whatever.
 				stepElement =
 					this.container.querySelector<HTMLDivElement>(
-						`[data-step-id]`,
+						"[data-step-id]",
 					);
 				if (!stepElement) {
 					// No steps around... just ignore.
@@ -1137,7 +1138,7 @@ export class GettingStartedPage extends EditorPane {
 		const src = sources[themeType].toString(true).replace(/ /g, "%20");
 		element.srcset = src.toLowerCase().endsWith(".svg")
 			? src
-			: src + " 1.5x";
+			: `${src} 1.5x`;
 	}
 
 	protected createEditor(parent: HTMLElement) {
@@ -1396,9 +1397,11 @@ export class GettingStartedPage extends EditorPane {
 			this.buildTelemetryFooter(telemetryNotice);
 			footer.appendChild(telemetryNotice);
 		} else if (
-			!this.productService.openToWelcomeMainPage &&
-			!someStepsComplete &&
-			!this.hasScrolledToFirstCategory
+			!(
+				this.productService.openToWelcomeMainPage ||
+				someStepsComplete ||
+				this.hasScrolledToFirstCategory
+			)
 		) {
 			const firstSessionDateString =
 				this.storageService.get(
@@ -1587,11 +1590,10 @@ export class GettingStartedPage extends EditorPane {
 				$(
 					"button.button-link",
 					{
-						"x-dispatch": "selectStartEntry:" + entry.id,
-						title:
-							entry.description +
-							" " +
-							this.getKeybindingLabel(entry.command),
+						"x-dispatch": `selectStartEntry:${entry.id}`,
+						title: `${entry.description} ${this.getKeybindingLabel(
+							entry.command,
+						)}`,
 					},
 					this.iconWidgetFor(entry),
 					$("span", {}, entry.title),
@@ -1669,10 +1671,11 @@ export class GettingStartedPage extends EditorPane {
 			reset(titleContent, ...renderLabelWithIcons(category.title));
 
 			return $(
-				"button.getting-started-category" +
-					(category.isFeatured ? ".featured" : ""),
+				`button.getting-started-category${
+					category.isFeatured ? ".featured" : ""
+				}`,
 				{
-					"x-dispatch": "selectCategory:" + category.id,
+					"x-dispatch": `selectCategory:${category.id}`,
 					title: category.description,
 				},
 				featuredBadge,
@@ -1684,7 +1687,7 @@ export class GettingStartedPage extends EditorPane {
 					renderNewBadge ? newBadge : $(".no-badge"),
 					$("a.codicon.codicon-close.hide-category-button", {
 						tabindex: 0,
-						"x-dispatch": "hideCategory:" + category.id,
+						"x-dispatch": `hideCategory:${category.id}`,
 						title: localize("close", "Hide"),
 						role: "button",
 						"aria-label": localize("closeAriaLabel", "Hide"),
@@ -1790,7 +1793,7 @@ export class GettingStartedPage extends EditorPane {
 			return $(
 				"button.getting-started-category",
 				{
-					"x-dispatch": "openExtensionPage:" + entry.id,
+					"x-dispatch": `openExtensionPage:${entry.id}`,
 					title: entry.description,
 				},
 				$(
@@ -1802,7 +1805,7 @@ export class GettingStartedPage extends EditorPane {
 					titleContent,
 					$("a.codicon.codicon-close.hide-category-button", {
 						tabindex: 0,
-						"x-dispatch": "hideExtension:" + entry.id,
+						"x-dispatch": `hideExtension:${entry.id}`,
 						title: localize("close", "Hide"),
 						role: "button",
 						"aria-label": localize("closeAriaLabel", "Hide"),
@@ -1886,7 +1889,7 @@ export class GettingStartedPage extends EditorPane {
 				);
 				if (!category) {
 					throw Error(
-						"Could not find category with ID " + categoryID,
+						`Could not find category with ID ${categoryID}`,
 					);
 				}
 
@@ -1896,8 +1899,8 @@ export class GettingStartedPage extends EditorPane {
 					element.querySelector(".progress-bar-inner"),
 				) as HTMLDivElement;
 				bar.setAttribute("aria-valuemin", "0");
-				bar.setAttribute("aria-valuenow", "" + stats.stepsComplete);
-				bar.setAttribute("aria-valuemax", "" + stats.stepsTotal);
+				bar.setAttribute("aria-valuenow", `${stats.stepsComplete}`);
+				bar.setAttribute("aria-valuemax", `${stats.stepsTotal}`);
 				const progress = (stats.stepsComplete / stats.stepsTotal) * 100;
 				bar.style.width = `${progress}%`;
 
@@ -1933,7 +1936,7 @@ export class GettingStartedPage extends EditorPane {
 			(c) => c.id === categoryID,
 		);
 		if (!ourCategory) {
-			throw Error("Could not find category with ID: " + categoryID);
+			throw Error(`Could not find category with ID: ${categoryID}`);
 		}
 
 		this.inProgressScroll = this.inProgressScroll.then(async () => {
@@ -2102,7 +2105,7 @@ export class GettingStartedPage extends EditorPane {
 			!isCommand &&
 			(href.startsWith("https://") || href.startsWith("http://"))
 		) {
-			this.gettingStartedService.progressByEvent("onLink:" + href);
+			this.gettingStartedService.progressByEvent(`onLink:${href}`);
 		}
 	}
 
@@ -2221,7 +2224,7 @@ export class GettingStartedPage extends EditorPane {
 			(category) => category.id === categoryID,
 		);
 		if (!category) {
-			throw Error("could not find category with ID " + categoryID);
+			throw Error(`could not find category with ID ${categoryID}`);
 		}
 
 		const categoryDescriptorComponent = $(
@@ -2301,18 +2304,18 @@ export class GettingStartedPage extends EditorPane {
 				stepListContainer,
 				...renderedSteps.map((step) => {
 					const codicon = $(
-						".codicon" +
-							(step.done
-								? ".complete" +
-								  ThemeIcon.asCSSSelector(
+						`.codicon${
+							step.done
+								? `.complete${ThemeIcon.asCSSSelector(
 										gettingStartedCheckedCodicon,
-								  )
+								  )}`
 								: ThemeIcon.asCSSSelector(
 										gettingStartedUncheckedCodicon,
-								  )),
+								  )
+						}`,
 						{
 							"data-done-step-id": step.id,
-							"x-dispatch": "toggleStepCompletion:" + step.id,
+							"x-dispatch": `toggleStepCompletion:${step.id}`,
 							role: "checkbox",
 							tabindex: "0",
 						},
@@ -2353,10 +2356,10 @@ export class GettingStartedPage extends EditorPane {
 					return $(
 						"button.getting-started-step",
 						{
-							"x-dispatch": "selectTask:" + step.id,
+							"x-dispatch": `selectTask:${step.id}`,
 							"data-step-id": step.id,
 							"aria-expanded": "false",
-							"aria-checked": "" + step.done,
+							"aria-checked": `${step.done}`,
 							role: "button",
 						},
 						codicon,
@@ -2528,36 +2531,36 @@ export class GettingStartedPage extends EditorPane {
 			slideManager.classList.add("showCategories");
 			this.container.querySelector<HTMLButtonElement>(
 				".prev-button.button-link",
-			)!.style.display = "none";
+			)?.style.display = "none";
 			this.container
-				.querySelector(".gettingStartedSlideDetails")!
-				.querySelectorAll("button")
+				.querySelector(".gettingStartedSlideDetails")
+				?.querySelectorAll("button")
 				.forEach((button) => (button.disabled = true));
 			this.container
-				.querySelector(".gettingStartedSlideCategories")!
-				.querySelectorAll("button")
+				.querySelector(".gettingStartedSlideCategories")
+				?.querySelectorAll("button")
 				.forEach((button) => (button.disabled = false));
 			this.container
-				.querySelector(".gettingStartedSlideCategories")!
-				.querySelectorAll("input")
+				.querySelector(".gettingStartedSlideCategories")
+				?.querySelectorAll("input")
 				.forEach((button) => (button.disabled = false));
 		} else {
 			slideManager.classList.add("showDetails");
 			slideManager.classList.remove("showCategories");
 			this.container.querySelector<HTMLButtonElement>(
 				".prev-button.button-link",
-			)!.style.display = "block";
+			)?.style.display = "block";
 			this.container
-				.querySelector(".gettingStartedSlideDetails")!
-				.querySelectorAll("button")
+				.querySelector(".gettingStartedSlideDetails")
+				?.querySelectorAll("button")
 				.forEach((button) => (button.disabled = false));
 			this.container
-				.querySelector(".gettingStartedSlideCategories")!
-				.querySelectorAll("button")
+				.querySelector(".gettingStartedSlideCategories")
+				?.querySelectorAll("button")
 				.forEach((button) => (button.disabled = true));
 			this.container
-				.querySelector(".gettingStartedSlideCategories")!
-				.querySelectorAll("input")
+				.querySelector(".gettingStartedSlideCategories")
+				?.querySelectorAll("input")
 				.forEach((button) => (button.disabled = true));
 		}
 	}

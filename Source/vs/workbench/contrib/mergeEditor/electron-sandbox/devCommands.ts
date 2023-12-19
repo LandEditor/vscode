@@ -10,7 +10,7 @@ import { URI } from "vs/base/common/uri";
 import { ILanguageService } from "vs/editor/common/languages/language";
 import { localize } from "vs/nls";
 import { ILocalizedString } from "vs/platform/action/common/action";
-import { Action2, IAction2Options } from "vs/platform/actions/common/actions";
+import { Action2 } from "vs/platform/actions/common/actions";
 import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
 import { INativeEnvironmentService } from "vs/platform/environment/common/environment";
 import { IFileService } from "vs/platform/files/common/files";
@@ -159,10 +159,6 @@ async function promptOpenInitial(
 }
 
 abstract class MergeEditorAction extends Action2 {
-	constructor(desc: Readonly<IAction2Options>) {
-		super(desc);
-	}
-
 	run(accessor: ServicesAccessor): void {
 		const { activeEditorPane } = accessor.get(IEditorService);
 		if (activeEditorPane instanceof MergeEditor) {
@@ -213,8 +209,8 @@ export class OpenSelectionInTemporaryMergeEditor extends MergeEditorAction {
 		const input1 = rangesInBase
 			.map((r) =>
 				viewModel.inputCodeEditorView1.editor
-					.getModel()!
-					.getValueInRange(
+					.getModel()
+					?.getValueInRange(
 						viewModel.model.translateBaseRangeToInput(1, r),
 					),
 			)
@@ -223,8 +219,8 @@ export class OpenSelectionInTemporaryMergeEditor extends MergeEditorAction {
 		const input2 = rangesInBase
 			.map((r) =>
 				viewModel.inputCodeEditorView2.editor
-					.getModel()!
-					.getValueInRange(
+					.getModel()
+					?.getValueInRange(
 						viewModel.model.translateBaseRangeToInput(2, r),
 					),
 			)
@@ -233,8 +229,8 @@ export class OpenSelectionInTemporaryMergeEditor extends MergeEditorAction {
 		const result = rangesInBase
 			.map((r) =>
 				viewModel.resultCodeEditorView.editor
-					.getModel()!
-					.getValueInRange(
+					.getModel()
+					?.getValueInRange(
 						viewModel.model.translateBaseRangeToResult(r),
 					),
 			)
@@ -247,8 +243,8 @@ export class OpenSelectionInTemporaryMergeEditor extends MergeEditorAction {
 				input2,
 				result,
 				languageId: viewModel.resultCodeEditorView.editor
-					.getModel()!
-					.getLanguageId(),
+					.getModel()
+					?.getLanguageId(),
 			},
 		});
 	}

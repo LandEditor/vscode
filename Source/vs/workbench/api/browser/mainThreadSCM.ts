@@ -705,7 +705,7 @@ export class MainThreadSCM implements MainThreadSCMShape {
 			return;
 		}
 
-		this._repositoryDisposables.get(handle)!.dispose();
+		this._repositoryDisposables.get(handle)?.dispose();
 		this._repositoryDisposables.delete(handle);
 
 		repository.dispose();

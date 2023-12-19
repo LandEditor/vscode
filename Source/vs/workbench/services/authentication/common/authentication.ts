@@ -14,14 +14,14 @@ export interface AuthenticationSession {
 	id: string;
 	accessToken: string;
 	account: AuthenticationSessionAccount;
-	scopes: ReadonlyArray<string>;
+	scopes: readonly string[];
 	idToken?: string;
 }
 
 export interface AuthenticationSessionsChangeEvent {
-	added: ReadonlyArray<AuthenticationSession>;
-	removed: ReadonlyArray<AuthenticationSession>;
-	changed: ReadonlyArray<AuthenticationSession>;
+	added: readonly AuthenticationSession[];
+	removed: readonly AuthenticationSession[];
+	changed: readonly AuthenticationSession[];
 }
 
 export interface AuthenticationProviderInformation {
@@ -131,7 +131,7 @@ export interface IAuthenticationService {
 		id: string,
 		scopes?: string[],
 		activateImmediate?: boolean,
-	): Promise<ReadonlyArray<AuthenticationSession>>;
+	): Promise<readonly AuthenticationSession[]>;
 	getLabel(providerId: string): string;
 	supportsMultipleAccounts(providerId: string): boolean;
 	createSession(

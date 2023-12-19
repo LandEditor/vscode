@@ -81,7 +81,7 @@ export class SimpleBrowserView extends Disposable {
 		this._register(
 			this._webviewPanel.webview.onDidReceiveMessage((e) => {
 				switch (e.type) {
-					case "openExternal":
+					case "openExternal": {
 						try {
 							const url = vscode.Uri.parse(e.url);
 							vscode.env.openExternal(url);
@@ -89,6 +89,7 @@ export class SimpleBrowserView extends Disposable {
 							// Noop
 						}
 						break;
+					}
 				}
 			}),
 		);

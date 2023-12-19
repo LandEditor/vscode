@@ -218,7 +218,7 @@ export class DiffEditorInput
 		modifiedLabel: string | undefined,
 		separator = " - ",
 	): string | undefined {
-		if (!originalLabel || !modifiedLabel) {
+		if (!(originalLabel && modifiedLabel)) {
 			return undefined;
 		}
 
@@ -239,7 +239,6 @@ export class DiffEditorInput
 				return this.labels.shortDescription;
 			case Verbosity.LONG:
 				return this.labels.longDescription;
-			case Verbosity.MEDIUM:
 			default:
 				return this.labels.mediumDescription;
 		}
@@ -252,7 +251,6 @@ export class DiffEditorInput
 			case Verbosity.LONG:
 				return this.labels.longTitle;
 			default:
-			case Verbosity.MEDIUM:
 				return this.labels.mediumTitle;
 		}
 	}

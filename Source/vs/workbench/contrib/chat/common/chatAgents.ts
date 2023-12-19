@@ -124,7 +124,7 @@ export interface IChatAgentService {
 		sessionId: string,
 		token: CancellationToken,
 	): Promise<IChatFollowup[]>;
-	getAgents(): Array<IChatAgent>;
+	getAgents(): IChatAgent[];
 	getAgent(id: string): IChatAgent | undefined;
 	getDefaultAgent(): IChatAgent | undefined;
 	getSecondaryAgent(): IChatAgent | undefined;
@@ -184,7 +184,7 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
 		)?.agent;
 	}
 
-	getAgents(): Array<IChatAgent> {
+	getAgents(): IChatAgent[] {
 		return Array.from(this._agents.values(), (v) => v.agent);
 	}
 

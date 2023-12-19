@@ -18,7 +18,7 @@ const os = require("os");
 const extensions = [
 	{
 		label: "markdown-language-features",
-		workspaceFolder: `extensions/markdown-language-features/test-workspace`,
+		workspaceFolder: "extensions/markdown-language-features/test-workspace",
 		mocha: { timeout: 60_000 },
 	},
 	{
@@ -39,7 +39,7 @@ const extensions = [
 	},
 	{
 		label: "vscode-colorize-tests",
-		workspaceFolder: `extensions/vscode-colorize-tests/test`,
+		workspaceFolder: "extensions/vscode-colorize-tests/test",
 		mocha: { timeout: 60_000 },
 	},
 	{

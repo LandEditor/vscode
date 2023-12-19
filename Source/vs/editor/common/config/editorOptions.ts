@@ -1192,7 +1192,7 @@ export function clampedInt<T>(
 		return defaultValue;
 	}
 	let r = parseInt(value, 10);
-	if (isNaN(r)) {
+	if (Number.isNaN(r)) {
 		return defaultValue;
 	}
 	r = Math.max(minimum, r);
@@ -1282,7 +1282,7 @@ class EditorFloatOption<K extends EditorOption> extends SimpleEditorOption<
 			return defaultValue;
 		}
 		const r = parseFloat(value);
-		return isNaN(r) ? defaultValue : r;
+		return Number.isNaN(r) ? defaultValue : r;
 	}
 
 	public readonly validationFn: (value: number) => number;
@@ -1344,7 +1344,7 @@ class EditorStringOption<K extends EditorOption> extends SimpleEditorOption<
 export function stringSet<T>(
 	value: T | undefined,
 	defaultValue: T,
-	allowedValues: ReadonlyArray<T>,
+	allowedValues: readonly T[],
 	renamedValues?: Record<string, T>,
 ): T {
 	if (typeof value !== "string") {
@@ -1363,13 +1363,13 @@ class EditorStringEnumOption<
 	K extends EditorOption,
 	V extends string,
 > extends SimpleEditorOption<K, V> {
-	private readonly _allowedValues: ReadonlyArray<V>;
+	private readonly _allowedValues: readonly V[];
 
 	constructor(
 		id: K,
 		name: PossibleKeyName<V>,
 		defaultValue: V,
-		allowedValues: ReadonlyArray<V>,
+		allowedValues: readonly V[],
 		schema: IConfigurationPropertySchema | undefined = undefined,
 	) {
 		if (typeof schema !== "undefined") {
@@ -2031,7 +2031,7 @@ export class EditorFontLigatures extends BaseEditorOption<
 			}
 			return input;
 		}
-		if (Boolean(input)) {
+		if (input) {
 			return EditorFontLigatures.ON;
 		}
 		return EditorFontLigatures.OFF;
@@ -2100,7 +2100,7 @@ export class EditorFontVariations extends BaseEditorOption<
 			}
 			return input;
 		}
-		if (Boolean(input)) {
+		if (input) {
 			return EditorFontVariations.TRANSLATE;
 		}
 		return EditorFontVariations.OFF;
@@ -3644,12 +3644,12 @@ class EditorInlayHints extends BaseEditorOption<
 					nls.localize(
 						"editor.inlayHints.onUnlessPressed",
 						"Inlay hints are showing by default and hide when holding {0}",
-						platform.isMacintosh ? `Ctrl+Option` : `Ctrl+Alt`,
+						platform.isMacintosh ? "Ctrl+Option" : "Ctrl+Alt",
 					),
 					nls.localize(
 						"editor.inlayHints.offUnlessPressed",
 						"Inlay hints are hidden by default and show when holding {0}",
-						platform.isMacintosh ? `Ctrl+Option` : `Ctrl+Alt`,
+						platform.isMacintosh ? "Ctrl+Option" : "Ctrl+Alt",
 					),
 					nls.localize(
 						"editor.inlayHints.off",
@@ -4252,7 +4252,7 @@ class EditorQuickSuggestions extends BaseEditorOption<
 			markdownDescription: nls.localize(
 				"quickSuggestions",
 				"Controls whether suggestions should automatically show up while typing. This can be controlled for typing in comments, strings, and other code. Quick suggestion can be configured to show as ghost text or with the suggest widget. Also be aware of the '{0}'-setting which controls if suggestions are triggered by special characters.",
-				`#editor.suggestOnTriggerCharacters#`,
+				"#editor.suggestOnTriggerCharacters#",
 			),
 		});
 		this.defaultValue = defaults;

@@ -19,7 +19,7 @@ export class Cache<T> {
 	}
 
 	get(pid: number, id: number): T | undefined {
-		return this._data.has(pid) ? this._data.get(pid)![id] : undefined;
+		return this._data.has(pid) ? this._data.get(pid)?.[id] : undefined;
 	}
 
 	delete(id: number) {

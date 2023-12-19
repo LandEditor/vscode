@@ -320,10 +320,10 @@ class IconRegistry implements IIconRegistry {
 		const reference = [];
 
 		reference.push(
-			`| preview     | identifier                        | default codicon ID                | description`,
+			"| preview     | identifier                        | default codicon ID                | description",
 		);
 		reference.push(
-			`| ----------- | --------------------------------- | --------------------------------- | --------------------------------- |`,
+			"| ----------- | --------------------------------- | --------------------------------- | --------------------------------- |",
 		);
 		const contributions = Object.keys(this.iconsById).map(
 			(key) => this.iconsById[key],
@@ -339,8 +339,8 @@ class IconRegistry implements IIconRegistry {
 			);
 		}
 
-		reference.push(`| preview     | identifier                        `);
-		reference.push(`| ----------- | --------------------------------- |`);
+		reference.push("| preview     | identifier                        ");
+		reference.push("| ----------- | --------------------------------- |");
 
 		for (const i of contributions
 			.filter((i) => !ThemeIcon.isThemeIcon(i.defaults))
@@ -376,7 +376,7 @@ export function getIconRegistry(): IIconRegistry {
 function initialize() {
 	const codiconFontCharacters = getCodiconFontCharacters();
 	for (const icon in codiconFontCharacters) {
-		const fontCharacter = "\\" + codiconFontCharacters[icon].toString(16);
+		const fontCharacter = `\\${codiconFontCharacters[icon].toString(16)}`;
 		iconRegistry.registerIcon(icon, { fontCharacter });
 	}
 }

@@ -83,8 +83,7 @@ export function activateAutoInsertion(
 		) {
 			return;
 		}
-		const activeDocument =
-			window.activeTextEditor && window.activeTextEditor.document;
+		const activeDocument = window.activeTextEditor?.document;
 		if (document !== activeDocument) {
 			return;
 		}

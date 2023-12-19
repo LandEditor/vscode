@@ -228,7 +228,7 @@ class TroubleshootIssueService
 		) {
 			this.state = new TroubleShootState(
 				TroubleshootStage.WORKBENCH,
-				this.state!.profile,
+				this.state?.profile,
 			);
 			return;
 		}
@@ -242,14 +242,14 @@ class TroubleshootIssueService
 		if (result === "good") {
 			const profile =
 				this.userDataProfilesService.profiles.find(
-					(p) => p.id === this.state!.profile,
+					(p) => p.id === this.state?.profile,
 				) ?? this.userDataProfilesService.defaultProfile;
 			await this.reproduceIssueWithExtensionsBisect(profile);
 		}
 		if (result === "bad") {
 			this.state = new TroubleShootState(
 				TroubleshootStage.WORKBENCH,
-				this.state!.profile,
+				this.state?.profile,
 			);
 		}
 		if (result === "stop") {

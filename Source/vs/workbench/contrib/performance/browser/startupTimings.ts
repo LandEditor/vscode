@@ -129,7 +129,7 @@ export class BrowserStartupTimings
 		}\t${this.telemetryService.sessionId}\t${
 			standardStartupError === undefined
 				? "standard_start"
-				: "NO_standard_start : " + standardStartupError
+				: `NO_standard_start : ${standardStartupError}`
 		}\t${String(perfBaseline).padStart(4, "0")}ms\n`;
 
 		this.logService.info(`[prof-timers] ${content}`);

@@ -53,7 +53,7 @@ export class VSBuffer {
 		source: string,
 		options?: { dontUseNodeBuffer?: boolean },
 	): VSBuffer {
-		const dontUseNodeBuffer = options?.dontUseNodeBuffer || false;
+		const dontUseNodeBuffer = options?.dontUseNodeBuffer;
 		if (!dontUseNodeBuffer && hasBuffer) {
 			return new VSBuffer(Buffer.from(source));
 		} else {
@@ -264,7 +264,7 @@ export function writeUInt16LE(
 	offset: number,
 ): void {
 	destination[offset + 0] = value & 0b11111111;
-	value = value >>> 8;
+	value >>>= 8;
 	destination[offset + 1] = value & 0b11111111;
 }
 
@@ -283,11 +283,11 @@ export function writeUInt32BE(
 	offset: number,
 ): void {
 	destination[offset + 3] = value;
-	value = value >>> 8;
+	value >>>= 8;
 	destination[offset + 2] = value;
-	value = value >>> 8;
+	value >>>= 8;
 	destination[offset + 1] = value;
-	value = value >>> 8;
+	value >>>= 8;
 	destination[offset] = value;
 }
 
@@ -306,11 +306,11 @@ export function writeUInt32LE(
 	offset: number,
 ): void {
 	destination[offset + 0] = value & 0b11111111;
-	value = value >>> 8;
+	value >>>= 8;
 	destination[offset + 1] = value & 0b11111111;
-	value = value >>> 8;
+	value >>>= 8;
 	destination[offset + 2] = value & 0b11111111;
-	value = value >>> 8;
+	value >>>= 8;
 	destination[offset + 3] = value & 0b11111111;
 }
 
@@ -431,23 +431,27 @@ export function decodeBase64(encoded: string) {
 	const buffer = new Uint8Array(Math.floor((encoded.length / 4) * 3));
 	const append = (value: number) => {
 		switch (remainder) {
-			case 3:
+			case 3: {
 				buffer[bufi++] = building | value;
 				remainder = 0;
 				break;
-			case 2:
+			}
+			case 2: {
 				buffer[bufi++] = building | (value >>> 2);
 				building = value << 6;
 				remainder = 3;
 				break;
-			case 1:
+			}
+			case 1: {
 				buffer[bufi++] = building | (value >>> 4);
 				building = value << 4;
 				remainder = 2;
 				break;
-			default:
+			}
+			default: {
 				building = value << 2;
 				remainder = 1;
+			}
 		}
 	};
 

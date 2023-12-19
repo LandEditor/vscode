@@ -322,38 +322,44 @@ export class NotificationsCenter
 				this.notificationsCenterContainer,
 			);
 		switch (e.kind) {
-			case NotificationChangeType.ADD:
+			case NotificationChangeType.ADD: {
 				notificationsList.updateNotificationsList(e.index, 0, [e.item]);
 				e.item.updateVisibility(true);
 				break;
-			case NotificationChangeType.CHANGE:
+			}
+			case NotificationChangeType.CHANGE: {
 				// Handle content changes
 				// - actions: re-draw to properly show them
 				// - message: update notification height unless collapsed
 				switch (e.detail) {
-					case NotificationViewItemContentChangeKind.ACTIONS:
+					case NotificationViewItemContentChangeKind.ACTIONS: {
 						notificationsList.updateNotificationsList(e.index, 1, [
 							e.item,
 						]);
 						break;
-					case NotificationViewItemContentChangeKind.MESSAGE:
+					}
+					case NotificationViewItemContentChangeKind.MESSAGE: {
 						if (e.item.expanded) {
 							notificationsList.updateNotificationHeight(e.item);
 						}
 						break;
+					}
 				}
 				break;
-			case NotificationChangeType.EXPAND_COLLAPSE:
+			}
+			case NotificationChangeType.EXPAND_COLLAPSE: {
 				// Re-draw entire item when expansion changes to reveal or hide details
 				notificationsList.updateNotificationsList(e.index, 1, [e.item]);
 				break;
-			case NotificationChangeType.REMOVE:
+			}
+			case NotificationChangeType.REMOVE: {
 				focusEditor = isAncestorOfActiveElement(
 					notificationsCenterContainer,
 				);
 				notificationsList.updateNotificationsList(e.index, 1);
 				e.item.updateVisibility(false);
 				break;
+			}
 		}
 
 		// Update title
@@ -372,9 +378,11 @@ export class NotificationsCenter
 
 	hide(): void {
 		if (
-			!this._isVisible ||
-			!this.notificationsCenterContainer ||
-			!this.notificationsList
+			!(
+				this._isVisible &&
+				this.notificationsCenterContainer &&
+				this.notificationsList
+			)
 		) {
 			return; // already hidden
 		}

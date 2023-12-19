@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.graph = exports.strings = exports.collections = void 0;
-var collections;
+let collections;
 ((collections) => {
 	const hasOwnProperty = Object.prototype.hasOwnProperty;
 	function lookup(collection, key) {
@@ -43,7 +43,7 @@ var collections;
 	}
 	collections.contains = contains;
 })(collections || (exports.collections = collections = {}));
-var strings;
+let strings;
 ((strings) => {
 	/**
 	 * The empty string. The one and only.
@@ -58,7 +58,7 @@ var strings;
 	}
 	strings.format = format;
 })(strings || (exports.strings = strings = {}));
-var graph;
+let graph;
 ((graph) => {
 	function newNode(data) {
 		return {

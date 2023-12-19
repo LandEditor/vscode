@@ -178,7 +178,7 @@ export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
 		const verifiedPublisherWidget =
 			this.instantiationService.createInstance(
 				VerifiedPublisherWidget,
-				append(publisher, $(`.verified-publisher`)),
+				append(publisher, $(".verified-publisher")),
 				true,
 			);
 		const publisherDisplayName = append(
@@ -374,7 +374,7 @@ export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
 
 		const computeEnablement = async () => {
 			if (extension.state === ExtensionState.Uninstalled) {
-				if (!!extension.deprecationInfo) {
+				if (extension.deprecationInfo) {
 					return true;
 				}
 				if (this.extensionsWorkbenchService.canSetLanguage(extension)) {
@@ -451,12 +451,7 @@ export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
 		data.ratings.style.display = "";
 		data.extension = extension;
 
-		if (
-			extension.gallery &&
-			extension.gallery.properties &&
-			extension.gallery.properties.localizedLanguages &&
-			extension.gallery.properties.localizedLanguages.length
-		) {
+		if (extension.gallery?.properties?.localizedLanguages?.length) {
 			data.description.textContent =
 				extension.gallery.properties.localizedLanguages
 					.map((name) => name[0].toLocaleUpperCase() + name.slice(1))

@@ -344,7 +344,7 @@ export class Range {
 		a: IRange | null | undefined,
 		b: IRange | null | undefined,
 	): boolean {
-		if (!a && !b) {
+		if (!(a || b)) {
 			return true;
 		}
 		return (
@@ -389,17 +389,7 @@ export class Range {
 	 * Transform to a user presentable string representation.
 	 */
 	public toString(): string {
-		return (
-			"[" +
-			this.startLineNumber +
-			"," +
-			this.startColumn +
-			" -> " +
-			this.endLineNumber +
-			"," +
-			this.endColumn +
-			"]"
-		);
+		return `[${this.startLineNumber},${this.startColumn} -> ${this.endLineNumber},${this.endColumn}]`;
 	}
 
 	/**

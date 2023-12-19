@@ -212,21 +212,18 @@ export class Configuration extends BaseConfiguration {
 						return true;
 					}
 					// Compare workspace folder value
-					return (
-						this._workspace &&
-						this._workspace.folders.some(
-							(folder) =>
-								!equals(
-									this.getValue(key, {
-										resource: folder.uri,
-										overrideIdentifier,
-									}),
-									other.getValue(key, {
-										resource: folder.uri,
-										overrideIdentifier,
-									}),
-								),
-						)
+					return this._workspace?.folders.some(
+						(folder) =>
+							!equals(
+								this.getValue(key, {
+									resource: folder.uri,
+									overrideIdentifier,
+								}),
+								other.getValue(key, {
+									resource: folder.uri,
+									overrideIdentifier,
+								}),
+							),
 					);
 				}),
 			);

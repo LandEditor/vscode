@@ -257,7 +257,7 @@ export function animatedObservable(
 }
 
 function easeOutExpo(t: number, b: number, c: number, d: number): number {
-	return t === d ? b + c : c * (-Math.pow(2, (-10 * t) / d) + 1) + b;
+	return t === d ? b + c : c * (-(2 ** ((-10 * t) / d)) + 1) + b;
 }
 
 export function deepMerge<T extends {}>(source1: T, source2: Partial<T>): T {
@@ -395,7 +395,7 @@ export function applyStyle(
 			if (typeof val === "number") {
 				val = `${val}px`;
 			}
-			key = key.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase());
+			key = key.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`);
 			domNode.style[key as any] = val as any;
 		}
 	});

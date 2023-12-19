@@ -89,30 +89,35 @@ export class SmartSnippetInserter {
 
 			let goodKind = false;
 			switch (kind) {
-				case JSONSyntaxKind.OpenBracketToken:
+				case JSONSyntaxKind.OpenBracketToken: {
 					goodKind = true;
 					arrayLevel++;
 					checkRangeStatus(currentPos, State.BEFORE_OBJECT);
 					break;
-				case JSONSyntaxKind.CloseBracketToken:
+				}
+				case JSONSyntaxKind.CloseBracketToken: {
 					goodKind = true;
 					arrayLevel--;
 					checkRangeStatus(currentPos, State.INVALID);
 					break;
-				case JSONSyntaxKind.CommaToken:
+				}
+				case JSONSyntaxKind.CommaToken: {
 					goodKind = true;
 					checkRangeStatus(currentPos, State.BEFORE_OBJECT);
 					break;
-				case JSONSyntaxKind.OpenBraceToken:
+				}
+				case JSONSyntaxKind.OpenBraceToken: {
 					goodKind = true;
 					objLevel++;
 					checkRangeStatus(currentPos, State.INVALID);
 					break;
-				case JSONSyntaxKind.CloseBraceToken:
+				}
+				case JSONSyntaxKind.CloseBraceToken: {
 					goodKind = true;
 					objLevel--;
 					checkRangeStatus(currentPos, State.AFTER_OBJECT);
 					break;
+				}
 				case JSONSyntaxKind.Trivia:
 				case JSONSyntaxKind.LineBreakTrivia:
 					goodKind = true;
@@ -137,16 +142,24 @@ export class SmartSnippetInserter {
 
 				if ((acceptState as State) === State.AFTER_OBJECT) {
 					return {
-						position: this.offsetToPosition(model, acceptPosition),
+						position: SmartSnippetInserter.offsetToPosition(
+							model,
+							acceptPosition,
+						),
 						prepend: ",",
 						append: "",
 					};
 				} else {
 					scanner.setPosition(acceptPosition);
 					return {
-						position: this.offsetToPosition(model, acceptPosition),
+						position: SmartSnippetInserter.offsetToPosition(
+							model,
+							acceptPosition,
+						),
 						prepend: "",
-						append: this.hasOpenBrace(scanner) ? "," : "",
+						append: SmartSnippetInserter.hasOpenBrace(scanner)
+							? ","
+							: "",
 					};
 				}
 			}

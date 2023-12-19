@@ -140,8 +140,9 @@ const ghApiHeaders = {
 	"User-Agent": "VSCode Build",
 };
 if (process.env.GITHUB_TOKEN) {
-	ghApiHeaders.Authorization =
-		"Basic " + Buffer.from(process.env.GITHUB_TOKEN).toString("base64");
+	ghApiHeaders.Authorization = `Basic ${Buffer.from(
+		process.env.GITHUB_TOKEN,
+	).toString("base64")}`;
 }
 const ghDownloadHeaders = {
 	...ghApiHeaders,

@@ -258,7 +258,7 @@ export class TerminalQuickFixAddon
 		const commandDetection = this._capabilities.get(
 			TerminalCapability.CommandDetection,
 		);
-		if (!terminal || !commandDetection) {
+		if (!(terminal && commandDetection)) {
 			return;
 		}
 		this._register(

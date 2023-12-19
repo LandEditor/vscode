@@ -78,7 +78,7 @@ export class KeybindingParser {
 	}
 
 	private static parseChord(input: string): [Chord, string] {
-		const mods = this._readModifiers(input);
+		const mods = KeybindingParser._readModifiers(input);
 		const scanCodeMatch = mods.key.match(/^\[([^\]]+)\]$/);
 		if (scanCodeMatch) {
 			const strScanCode = scanCodeMatch[1];
@@ -116,7 +116,7 @@ export class KeybindingParser {
 		let chord: Chord;
 
 		while (input.length > 0) {
-			[chord, input] = this.parseChord(input);
+			[chord, input] = KeybindingParser.parseChord(input);
 			chords.push(chord);
 		}
 		return chords.length > 0 ? new Keybinding(chords) : null;

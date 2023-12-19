@@ -105,7 +105,7 @@ export abstract class ErrorHandler {
 			stackTrace: errors.V8CallSite[],
 		) {
 			if (extensionErrors.has(error)) {
-				return extensionErrors.get(error)!.stack;
+				return extensionErrors.get(error)?.stack;
 			}
 			let stackTraceMessage = "";
 			let extension: IExtensionDescription | undefined;
@@ -235,13 +235,13 @@ export class ExtensionHostMain {
 			accessor.get(ILogService),
 		);
 
-		performance.mark(`code/extHost/didCreateServices`);
+		performance.mark("code/extHost/didCreateServices");
 		if (this._hostUtils.pid) {
 			this._logService.info(
 				`Extension host with pid ${this._hostUtils.pid} started`,
 			);
 		} else {
-			this._logService.info(`Extension host started`);
+			this._logService.info("Extension host started");
 		}
 		this._logService.trace("initData", initData);
 

@@ -648,7 +648,7 @@ class ExtensionUrlHandler implements IExtensionUrlHandler, IURLHandler {
 		);
 	}
 
-	private getConfirmedTrustedExtensionIdsFromConfiguration(): Array<string> {
+	private getConfirmedTrustedExtensionIdsFromConfiguration(): string[] {
 		const trustedExtensionIds = this.configurationService.getValue(
 			USER_TRUSTED_EXTENSIONS_CONFIGURATION_KEY,
 		);

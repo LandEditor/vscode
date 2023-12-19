@@ -276,7 +276,7 @@ export class BracketMatchingController
 					// no enclosing brackets, try the very first next bracket
 					const nextBracket =
 						model.bracketPairs.findNextBracket(position);
-					if (nextBracket && nextBracket.range) {
+					if (nextBracket?.range) {
 						newCursorPosition =
 							nextBracket.range.getStartPosition();
 					}
@@ -320,7 +320,7 @@ export class BracketMatchingController
 				if (!brackets) {
 					const nextBracket =
 						model.bracketPairs.findNextBracket(position);
-					if (nextBracket && nextBracket.range) {
+					if (nextBracket?.range) {
 						brackets = model.bracketPairs.matchBracket(
 							nextBracket.range.getStartPosition(),
 						);
@@ -434,7 +434,7 @@ export class BracketMatchingController
 	}
 
 	private _recomputeBrackets(): void {
-		if (!this._editor.hasModel() || !this._editor.hasWidgetFocus()) {
+		if (!(this._editor.hasModel() && this._editor.hasWidgetFocus())) {
 			// no model or no focus => no brackets!
 			this._lastBracketsData = [];
 			this._lastVersionId = 0;

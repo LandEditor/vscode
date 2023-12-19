@@ -228,7 +228,7 @@ export class ChunkStream {
 		}
 
 		if (byteCount > this._totalLength) {
-			throw new Error(`Cannot read so many bytes!`);
+			throw new Error("Cannot read so many bytes!");
 		}
 
 		if (this._chunks[0].byteLength === byteCount) {

@@ -99,7 +99,7 @@ export function getEnterAction(
 			appendText = "";
 		}
 	} else if (indentAction === IndentAction.Indent) {
-		appendText = "\t" + appendText;
+		appendText = `\t${appendText}`;
 	}
 
 	let indentation = getIndentationAtPosition(

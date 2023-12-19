@@ -212,8 +212,10 @@ async function detectAvailableWindowsProfiles(
 			);
 			for (const wslProfile of result) {
 				if (
-					!configProfiles ||
-					!(wslProfile.profileName in configProfiles)
+					!(
+						configProfiles &&
+						wslProfile.profileName in configProfiles
+					)
 				) {
 					resultProfiles.push(wslProfile);
 				}
@@ -498,7 +500,7 @@ async function getWslProfiles(
 		const profile: ITerminalProfile = {
 			profileName,
 			path: wslPath,
-			args: [`-d`, `${distroName}`],
+			args: ["-d", `${distroName}`],
 			isDefault: profileName === defaultProfileName,
 			icon: getWslIcon(distroName),
 			isAutoDetected: false,
@@ -584,7 +586,7 @@ function applyConfigProfilesToMap(
 		if (
 			value === null ||
 			typeof value !== "object" ||
-			(!("path" in value) && !("source" in value))
+			!("path" in value || "source" in value)
 		) {
 			profilesMap.delete(profileName);
 		} else {

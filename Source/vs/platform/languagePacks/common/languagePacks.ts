@@ -30,8 +30,8 @@ export interface ILanguagePackItem extends IQuickPickItem {
 
 export interface ILanguagePackService {
 	readonly _serviceBrand: undefined;
-	getAvailableLanguages(): Promise<Array<ILanguagePackItem>>;
-	getInstalledLanguages(): Promise<Array<ILanguagePackItem>>;
+	getAvailableLanguages(): Promise<ILanguagePackItem[]>;
+	getInstalledLanguages(): Promise<ILanguagePackItem[]>;
 	getBuiltInExtensionTranslationsUri(
 		id: string,
 		language: string,
@@ -56,7 +56,7 @@ export abstract class LanguagePackBaseService
 		language: string,
 	): Promise<URI | undefined>;
 
-	abstract getInstalledLanguages(): Promise<Array<ILanguagePackItem>>;
+	abstract getInstalledLanguages(): Promise<ILanguagePackItem[]>;
 
 	async getAvailableLanguages(): Promise<ILanguagePackItem[]> {
 		const timeout = new CancellationTokenSource();

@@ -756,9 +756,10 @@ export class WorkspaceService
 		}
 
 		switch (target) {
-			case ConfigurationTarget.DEFAULT:
+			case ConfigurationTarget.DEFAULT: {
 				this.reloadDefaultConfiguration();
 				return;
+			}
 
 			case ConfigurationTarget.USER: {
 				const { local, remote } = await this.reloadUserConfiguration();
@@ -770,18 +771,21 @@ export class WorkspaceService
 				);
 				return;
 			}
-			case ConfigurationTarget.USER_LOCAL:
+			case ConfigurationTarget.USER_LOCAL: {
 				await this.reloadLocalUserConfiguration();
 				return;
+			}
 
-			case ConfigurationTarget.USER_REMOTE:
+			case ConfigurationTarget.USER_REMOTE: {
 				await this.reloadRemoteUserConfiguration();
 				return;
+			}
 
 			case ConfigurationTarget.WORKSPACE:
-			case ConfigurationTarget.WORKSPACE_FOLDER:
+			case ConfigurationTarget.WORKSPACE_FOLDER: {
 				await this.reloadWorkspaceConfiguration();
 				return;
+			}
 		}
 	}
 
@@ -1532,7 +1536,7 @@ export class WorkspaceService
 	private async onWorkspaceConfigurationChanged(
 		fromCache: boolean,
 	): Promise<void> {
-		if (this.workspace && this.workspace.configuration) {
+		if (this.workspace?.configuration) {
 			let newFolders = toWorkspaceFolders(
 				this.workspaceConfiguration.getFolders(),
 				this.workspace.configuration,
@@ -1608,7 +1612,7 @@ export class WorkspaceService
 		);
 		changed.push(...userRemoteDelta.added, ...userRemoteDelta.removed);
 
-		const workspaceFolderMap = new ResourceMap<ReadonlyArray<string>>();
+		const workspaceFolderMap = new ResourceMap<readonly string[]>();
 		for (const workspaceFolder of this.workspace.folders) {
 			const cachedFolderConfig = this.cachedFolderConfigs.get(
 				workspaceFolder.uri,
@@ -1776,7 +1780,7 @@ export class WorkspaceService
 				)[0]
 			) {
 				const folderConfiguration = this.cachedFolderConfigs.get(key);
-				folderConfiguration!.dispose();
+				folderConfiguration?.dispose();
 				this.cachedFolderConfigs.delete(key);
 				changes.push(
 					this._configuration.compareAndDeleteFolderConfiguration(
@@ -1985,7 +1989,7 @@ export class WorkspaceService
 			{ scopes: overrides, ...options },
 		);
 		switch (editableConfigurationTarget) {
-			case EditableConfigurationTarget.USER_LOCAL:
+			case EditableConfigurationTarget.USER_LOCAL: {
 				if (
 					this.applicationConfiguration &&
 					this.isSettingAppliedForAllProfiles(key)
@@ -1995,6 +1999,7 @@ export class WorkspaceService
 					await this.reloadLocalUserConfiguration();
 				}
 				return;
+			}
 			case EditableConfigurationTarget.USER_REMOTE:
 				return this.reloadRemoteUserConfiguration().then(
 					() => undefined,
@@ -2002,10 +2007,9 @@ export class WorkspaceService
 			case EditableConfigurationTarget.WORKSPACE:
 				return this.reloadWorkspaceConfiguration();
 			case EditableConfigurationTarget.WORKSPACE_FOLDER: {
-				const workspaceFolder =
-					overrides && overrides.resource
-						? this.workspace.getFolder(overrides.resource)
-						: null;
+				const workspaceFolder = overrides?.resource
+					? this.workspace.getFolder(overrides.resource)
+					: null;
 				if (workspaceFolder) {
 					return this.reloadWorkspaceFolderConfiguration(
 						workspaceFolder,
@@ -2453,7 +2457,7 @@ class UpdateExperimentalSettingsDefaults
 					await this.workbenchAssignmentService.getTreatment(
 						`config.${property}`,
 					);
-				if (!isUndefined(value) && !equals(value, schema.default)) {
+				if (!(isUndefined(value) || equals(value, schema.default))) {
 					overrides[property] = value;
 				}
 			} catch (error) {

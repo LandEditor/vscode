@@ -427,7 +427,7 @@ export class SideBySideEditor
 
 		// Create new side by side editors if either we have not
 		// been created before or the input no longer matches.
-		if (!oldInput || !input.matches(oldInput)) {
+		if (!(oldInput && input.matches(oldInput))) {
 			if (oldInput) {
 				this.disposeEditors();
 			}
@@ -715,8 +715,10 @@ export class SideBySideEditor
 		resource: URI,
 	): ISideBySideEditorViewState | undefined {
 		if (
-			!this.input ||
-			!isEqual(resource, this.toEditorViewStateResource(this.input))
+			!(
+				this.input &&
+				isEqual(resource, this.toEditorViewStateResource(this.input))
+			)
 		) {
 			return; // unexpected state
 		}
@@ -724,7 +726,7 @@ export class SideBySideEditor
 		const primarViewState = this.primaryEditorPane?.getViewState();
 		const secondaryViewState = this.secondaryEditorPane?.getViewState();
 
-		if (!primarViewState || !secondaryViewState) {
+		if (!(primarViewState && secondaryViewState)) {
 			return; // we actually need view states
 		}
 
@@ -745,7 +747,7 @@ export class SideBySideEditor
 			secondary = input.secondary.resource;
 		}
 
-		if (!secondary || !primary) {
+		if (!(secondary && primary)) {
 			return undefined;
 		}
 

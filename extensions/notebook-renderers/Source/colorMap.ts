@@ -61,6 +61,6 @@ for (const id in ansiColorMap) {
 	const colorName = id.substring(13);
 	ansiColorIdentifiers[entry.index] = {
 		colorName,
-		colorValue: "var(--vscode-" + id.replace(".", "-") + ")",
+		colorValue: `var(--vscode-${id.replace(".", "-")})`,
 	};
 }

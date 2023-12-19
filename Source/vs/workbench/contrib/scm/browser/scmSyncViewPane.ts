@@ -273,7 +273,7 @@ class HistoryItemGroupRenderer
 	renderTemplate(container: HTMLElement) {
 		// hack
 		(
-			container.parentElement!.parentElement!.querySelector(
+			container.parentElement?.parentElement?.querySelector(
 				".monaco-tl-twistie",
 			)! as HTMLElement
 		).classList.add("force-twistie");
@@ -330,7 +330,7 @@ class HistoryItemRenderer
 	renderTemplate(container: HTMLElement): HistoryItemTemplate {
 		// hack
 		(
-			container.parentElement!.parentElement!.querySelector(
+			container.parentElement?.parentElement?.querySelector(
 				".monaco-tl-twistie",
 			)! as HTMLElement
 		).classList.add("force-twistie");
@@ -838,7 +838,7 @@ class SCMSyncPaneViewModel {
 		this._onDidChangeMode.fire(mode);
 
 		this.storageService.store(
-			`scm.syncViewMode`,
+			"scm.syncViewMode",
 			mode,
 			StorageScope.WORKSPACE,
 			StorageTarget.USER,
@@ -948,7 +948,7 @@ class SCMSyncPaneViewModel {
 				? ViewMode.List
 				: ViewMode.Tree;
 		const storageMode = this.storageService.get(
-			`scm.syncViewMode`,
+			"scm.syncViewMode",
 			StorageScope.WORKSPACE,
 		) as ViewMode;
 		if (typeof storageMode === "string") {
@@ -1022,7 +1022,7 @@ class SCMSyncDataSource implements IAsyncDataSource<TreeElement, TreeElement> {
 			const historyProvider = scmProvider.historyProvider;
 			const historyItemGroup = historyProvider?.currentHistoryItemGroup;
 
-			if (!historyProvider || !historyItemGroup) {
+			if (!(historyProvider && historyItemGroup)) {
 				return [];
 			}
 
@@ -1059,7 +1059,7 @@ class SCMSyncDataSource implements IAsyncDataSource<TreeElement, TreeElement> {
 		const currentHistoryItemGroup =
 			historyProvider?.currentHistoryItemGroup;
 
-		if (!historyProvider || !currentHistoryItemGroup) {
+		if (!(historyProvider && currentHistoryItemGroup)) {
 			return [];
 		}
 

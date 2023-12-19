@@ -12,7 +12,7 @@ const colors = require("ansi-colors");
 const ts = require("typescript");
 const Vinyl = require("vinyl");
 const source_map_1 = require("source-map");
-var CancellationToken;
+let CancellationToken;
 ((CancellationToken) => {
 	CancellationToken.None = {
 		isCancellationRequested() {
@@ -142,10 +142,10 @@ function createTypeScriptBuilder(config, projectFile, cmd) {
 									extname,
 								);
 								const dirname = path.dirname(vinyl.relative);
-								const tsname =
-									(dirname === "." ? "" : dirname + "/") +
-									basename +
-									".ts";
+								const tsname = `${
+									(dirname === "." ? "" : `${dirname}/`) +
+									basename
+								}.ts`;
 								let sourceMap = JSON.parse(sourcemapFile.text);
 								sourceMap.sources[0] = tsname.replace(
 									/\\/g,
@@ -384,8 +384,7 @@ function createTypeScriptBuilder(config, projectFile, cmd) {
 						) {
 							_log(
 								"[check semantics*]",
-								fileName +
-									" is an internal module and it has changed shape -> check whatever hasn't been checked yet",
+								`${fileName} is an internal module and it has changed shape -> check whatever hasn't been checked yet`,
 							);
 							toBeCheckedSemantically.push(
 								...host.getScriptFileNames(),
@@ -451,11 +450,11 @@ function createTypeScriptBuilder(config, projectFile, cmd) {
 			_log(
 				"[tsb]",
 				`time:  ${colors.yellow(
-					Date.now() - t1 + "ms",
+					`${Date.now() - t1}ms`,
 				)} + \nmem:  ${colors.cyan(
-					Math.ceil(headNow / MB) + "MB",
+					`${Math.ceil(headNow / MB)}MB`,
 				)} ${colors.bgCyan(
-					"delta: " + Math.ceil((headNow - headUsed) / MB),
+					`delta: ${Math.ceil((headNow - headUsed) / MB)}`,
 				)}`,
 			);
 			headUsed = headNow;
@@ -551,7 +550,7 @@ class LanguageServiceHost {
 		if (result) {
 			return result.getVersion();
 		}
-		return "UNKNWON_FILE_" + Math.random().toString(16).slice(2);
+		return `UNKNWON_FILE_${Math.random().toString(16).slice(2)}`;
 	}
 	getScriptSnapshot(filename, resolve = true) {
 		filename = normalize(filename);
@@ -579,9 +578,11 @@ class LanguageServiceHost {
 		filename = normalize(filename);
 		const old = this._snapshots[filename];
 		if (
-			!old &&
-			!this._filesInProject.has(filename) &&
-			!filename.endsWith(".d.ts")
+			!(
+				old ||
+				this._filesInProject.has(filename) ||
+				filename.endsWith(".d.ts")
+			)
 		) {
 			//                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^
 			//                                              not very proper!
@@ -676,16 +677,16 @@ class LanguageServiceHost {
 				dirname = path.dirname(dirname);
 				const resolvedPath = path.resolve(dirname, ref.fileName);
 				const normalizedPath = normalize(resolvedPath);
-				if (this.getScriptSnapshot(normalizedPath + ".ts")) {
+				if (this.getScriptSnapshot(`${normalizedPath}.ts`)) {
 					this._dependencies.inertEdge(
 						filename,
-						normalizedPath + ".ts",
+						`${normalizedPath}.ts`,
 					);
 					found = true;
-				} else if (this.getScriptSnapshot(normalizedPath + ".d.ts")) {
+				} else if (this.getScriptSnapshot(`${normalizedPath}.d.ts`)) {
 					this._dependencies.inertEdge(
 						filename,
-						normalizedPath + ".d.ts",
+						`${normalizedPath}.d.ts`,
 					);
 					found = true;
 				}

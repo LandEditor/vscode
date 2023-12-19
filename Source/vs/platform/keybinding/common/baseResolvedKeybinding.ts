@@ -27,7 +27,7 @@ export abstract class BaseResolvedKeybinding<
 	constructor(os: OperatingSystem, chords: readonly T[]) {
 		super();
 		if (chords.length === 0) {
-			throw illegalArgument(`chords`);
+			throw illegalArgument("chords");
 		}
 		this._os = os;
 		this._chords = chords;

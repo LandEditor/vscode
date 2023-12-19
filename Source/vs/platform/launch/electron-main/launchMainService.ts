@@ -150,7 +150,7 @@ export class LaunchMainService implements ILaunchMainService {
 		};
 
 		// Special case extension development
-		if (!!args.extensionDevelopmentPath) {
+		if (args.extensionDevelopmentPath) {
 			await this.windowsMainService.openExtensionDevelopmentHostWindow(
 				args.extensionDevelopmentPath,
 				baseConfig,
@@ -158,7 +158,19 @@ export class LaunchMainService implements ILaunchMainService {
 		}
 
 		// Start without file/folder arguments
-		else if (!args._.length && !args["folder-uri"] && !args["file-uri"]) {
+		else if (args._.length || args["folder-uri"] || args["file-uri"]) {
+			usedWindows = await this.windowsMainService.open({
+				...baseConfig,
+				forceNewWindow: args["new-window"],
+				preferNewWindow: !(args["reuse-window"] || args.wait),
+				forceReuseWindow: args["reuse-window"],
+				diffMode: args.diff,
+				mergeMode: args.merge,
+				addMode: args.add,
+				noRecentEntry: !!args["skip-add-to-recently-opened"],
+				gotoLineMode: args.goto,
+			});
+		} else {
 			let openNewWindow = false;
 
 			// Force new window
@@ -185,12 +197,14 @@ export class LaunchMainService implements ILaunchMainService {
 					windowConfig?.openWithoutArgumentsInNewWindow ||
 					"default"; /* default */
 				switch (openWithoutArgumentsInNewWindowConfig) {
-					case "on":
+					case "on": {
 						openNewWindow = true;
 						break;
-					case "off":
+					}
+					case "off": {
 						openNewWindow = false;
 						break;
+					}
 					default:
 						openNewWindow = !isMacintosh; // prefer to restore running instance on macOS
 				}
@@ -223,21 +237,6 @@ export class LaunchMainService implements ILaunchMainService {
 					});
 				}
 			}
-		}
-
-		// Start with file/folder arguments
-		else {
-			usedWindows = await this.windowsMainService.open({
-				...baseConfig,
-				forceNewWindow: args["new-window"],
-				preferNewWindow: !args["reuse-window"] && !args.wait,
-				forceReuseWindow: args["reuse-window"],
-				diffMode: args.diff,
-				mergeMode: args.merge,
-				addMode: args.add,
-				noRecentEntry: !!args["skip-add-to-recently-opened"],
-				gotoLineMode: args.goto,
-			});
 		}
 
 		// If the other instance is waiting to be killed, we hook up a window listener if one window

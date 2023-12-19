@@ -133,7 +133,7 @@ export function getReferencesAtPosition(
 				{ includeDeclaration: true },
 				token,
 			);
-			if (!compact || !result || result.length !== 2) {
+			if (!(compact && result) || result.length !== 2) {
 				return result;
 			}
 			const resultWithoutDeclaration = await provider.provideReferences(

@@ -300,7 +300,7 @@ class TraitSpliceable<T> implements ISpliceable<T> {
 		const pastElementsWithTrait = this.trait
 			.get()
 			.map((i) =>
-				this.identityProvider!.getId(this.view.element(i)).toString(),
+				this.identityProvider?.getId(this.view.element(i)).toString(),
 			);
 		if (pastElementsWithTrait.length === 0) {
 			return this.trait.splice(
@@ -313,7 +313,7 @@ class TraitSpliceable<T> implements ISpliceable<T> {
 		const pastElementsWithTraitSet = new Set(pastElementsWithTrait);
 		const elementsWithTrait = elements.map((e) =>
 			pastElementsWithTraitSet.has(
-				this.identityProvider!.getId(e).toString(),
+				this.identityProvider?.getId(e).toString(),
 			),
 		);
 		this.trait.splice(start, deleteCount, elementsWithTrait);
@@ -674,7 +674,7 @@ class TypeNavigationController<T> implements IDisposable {
 				this.keyboardNavigationLabelProvider.getKeyboardNavigationLabel(
 					this.view.element(index),
 				);
-			const labelStr = label && label.toString();
+			const labelStr = label?.toString();
 
 			if (this.list.options.typeNavigationEnabled) {
 				if (typeof labelStr !== "undefined") {
@@ -764,8 +764,7 @@ class DOMFocusController<T> implements IDisposable {
 		const tabIndexElement = focusedDomElement.querySelector("[tabIndex]");
 
 		if (
-			!tabIndexElement ||
-			!(tabIndexElement instanceof HTMLElement) ||
+			!(tabIndexElement && tabIndexElement instanceof HTMLElement) ||
 			tabIndexElement.tabIndex === -1
 		) {
 			return;
@@ -1411,8 +1410,8 @@ function getContiguousRangeContaining(
  */
 function disjunction(one: number[], other: number[]): number[] {
 	const result: number[] = [];
-	let i = 0,
-		j = 0;
+	let i = 0;
+	let j = 0;
 
 	while (i < one.length || j < other.length) {
 		if (i >= one.length) {
@@ -1423,7 +1422,6 @@ function disjunction(one: number[], other: number[]): number[] {
 			result.push(one[i]);
 			i++;
 			j++;
-			continue;
 		} else if (one[i] < other[j]) {
 			result.push(one[i++]);
 		} else {
@@ -1440,8 +1438,8 @@ function disjunction(one: number[], other: number[]): number[] {
  */
 function relativeComplement(one: number[], other: number[]): number[] {
 	const result: number[] = [];
-	let i = 0,
-		j = 0;
+	let i = 0;
+	let j = 0;
 
 	while (i < one.length || j < other.length) {
 		if (i >= one.length) {
@@ -1451,7 +1449,6 @@ function relativeComplement(one: number[], other: number[]): number[] {
 		} else if (one[i] === other[j]) {
 			i++;
 			j++;
-			continue;
 		} else if (one[i] < other[j]) {
 			result.push(one[i++]);
 		} else {
@@ -1533,9 +1530,7 @@ class AccessibiltyRenderer<T> implements IListRenderer<T, HTMLElement> {
 			container.removeAttribute("aria-label");
 		}
 
-		const ariaLevel =
-			this.accessibilityProvider.getAriaLevel &&
-			this.accessibilityProvider.getAriaLevel(element);
+		const ariaLevel = this.accessibilityProvider.getAriaLevel?.(element);
 
 		if (typeof ariaLevel === "number") {
 			container.setAttribute("aria-level", `${ariaLevel}`);
@@ -1816,11 +1811,9 @@ export class List<T> implements ISpliceable<T>, IDisposable {
 		renderers: IListRenderer<any /* TODO@joao */, any>[],
 		private _options: IListOptions<T> = DefaultOptions,
 	) {
-		const role =
-			this._options.accessibilityProvider &&
-			this._options.accessibilityProvider.getWidgetRole
-				? this._options.accessibilityProvider?.getWidgetRole()
-				: "list";
+		const role = this._options.accessibilityProvider?.getWidgetRole
+			? this._options.accessibilityProvider?.getWidgetRole()
+			: "list";
 		this.selection = new SelectionTrait(role !== "listbox");
 
 		const baseRenderers: IListRenderer<T, ITraitTemplateData>[] = [
@@ -2333,7 +2326,7 @@ export class List<T> implements ISpliceable<T>, IDisposable {
 				return -1;
 			}
 
-			index = index % this.length;
+			index %= this.length;
 
 			if (!filter || filter(this.element(index))) {
 				return index;

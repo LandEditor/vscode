@@ -47,7 +47,7 @@ export class DefaultCompletionItemProvider
 		}
 
 		return completionResult.then((completionList) => {
-			if (!completionList || !completionList.items.length) {
+			if (!completionList?.items.length) {
 				this.lastCompletionType = undefined;
 				return completionList;
 			}
@@ -132,13 +132,15 @@ export class DefaultCompletionItemProvider
 				vscode.CompletionTriggerKind.TriggerForIncompleteCompletions
 			) {
 				switch (this.lastCompletionType) {
-					case "html":
+					case "html": {
 						validateLocation = false;
 						break;
-					case "css":
+					}
+					case "css": {
 						validateLocation = false;
 						syntax = "css";
 						break;
+					}
 					default:
 						break;
 				}
@@ -211,10 +213,12 @@ export class DefaultCompletionItemProvider
 			expandOptions,
 		);
 		if (
-			!extractAbbreviationResults ||
-			!helper.isAbbreviationValid(
-				syntax,
-				extractAbbreviationResults.abbreviation,
+			!(
+				extractAbbreviationResults &&
+				helper.isAbbreviationValid(
+					syntax,
+					extractAbbreviationResults.abbreviation,
+				)
 			)
 		) {
 			return;
@@ -311,7 +315,7 @@ export class DefaultCompletionItemProvider
 							symbols.some(
 								(x) =>
 									abbreviation === x.name ||
-									(abbreviation.startsWith(x.name + ".") &&
+									(abbreviation.startsWith(`${x.name}.`) &&
 										!/>|\*|\+/.test(abbreviation)),
 							)
 						);
@@ -334,14 +338,14 @@ export class DefaultCompletionItemProvider
 				);
 
 				// https://github.com/microsoft/vscode/issues/86941
-				if (result && result.items && result.items.length === 1) {
+				if (result?.items && result.items.length === 1) {
 					if (result.items[0].label === "widows: ;") {
 						return undefined;
 					}
 				}
 
 				const newItems: vscode.CompletionItem[] = [];
-				if (result && result.items) {
+				if (result?.items) {
 					result.items.forEach((item: any) => {
 						const newItem = new vscode.CompletionItem(item.label);
 						newItem.documentation = item.documentation;

@@ -428,7 +428,7 @@ async function startExtensionHostProcess(): Promise<void> {
 						console.warn(
 							`rejected promise not handled within 1 second: ${e}`,
 						);
-						if (e && e.stack) {
+						if (e?.stack) {
 							console.warn(`stack trace: ${e.stack}`);
 						}
 						if (reason) {
@@ -454,11 +454,11 @@ async function startExtensionHostProcess(): Promise<void> {
 		}
 	});
 
-	performance.mark(`code/extHost/willConnectToRenderer`);
+	performance.mark("code/extHost/willConnectToRenderer");
 	const protocol = await createExtHostProtocol();
-	performance.mark(`code/extHost/didConnectToRenderer`);
+	performance.mark("code/extHost/didConnectToRenderer");
 	const renderer = await connectToRenderer(protocol);
-	performance.mark(`code/extHost/didWaitForInitData`);
+	performance.mark("code/extHost/didWaitForInitData");
 	const { initData } = renderer;
 	// setup things
 	patchProcess(!!initData.environment.extensionTestsLocationURI); // to support other test frameworks like Jasmin that use process.exit (https://github.com/microsoft/vscode/issues/37708)

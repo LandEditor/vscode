@@ -319,8 +319,9 @@ class RenameController implements IEditorContribution {
 		let selectionEnd = loc.text.length;
 
 		if (
-			!Range.isEmpty(selection) &&
-			!Range.spansMultipleLines(selection) &&
+			!(
+				Range.isEmpty(selection) || Range.spansMultipleLines(selection)
+			) &&
 			Range.containsRange(loc.range, selection)
 		) {
 			selectionStart = Math.max(
@@ -364,7 +365,7 @@ class RenameController implements IEditorContribution {
 		)
 			.then(
 				async (renameResult) => {
-					if (!renameResult || !this.editor.hasModel()) {
+					if (!(renameResult && this.editor.hasModel())) {
 						return;
 					}
 
@@ -407,7 +408,7 @@ class RenameController implements IEditorContribution {
 									nls.localize(
 										"aria",
 										"Successfully renamed '{0}' to '{1}'. Summary: {2}",
-										loc!.text,
+										loc?.text,
 										inputFieldResult.newName,
 										result.ariaSummary,
 									),

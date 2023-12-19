@@ -255,7 +255,7 @@ export interface ITerminalConfiguration {
 	enableFileLinks: "off" | "on" | "notRemote";
 	unicodeVersion: "6" | "11";
 	localEchoLatencyThreshold: number;
-	localEchoExcludePrograms: ReadonlyArray<string>;
+	localEchoExcludePrograms: readonly string[];
 	localEchoEnabled: "auto" | "on" | "off";
 	localEchoStyle:
 		| "bold"
@@ -295,7 +295,7 @@ export interface ITerminalConfiguration {
 	ignoreBracketedPasteMode: boolean;
 }
 
-export const DEFAULT_LOCAL_ECHO_EXCLUDE: ReadonlyArray<string> = [
+export const DEFAULT_LOCAL_ECHO_EXCLUDE: readonly string[] = [
 	"vim",
 	"vi",
 	"nano",

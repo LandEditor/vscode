@@ -243,7 +243,7 @@ async function lookupProxyAuthorization(
 			);
 			const client = await kerberos.initializeClient(spn);
 			const response = await client.step("");
-			return "Negotiate " + response;
+			return `Negotiate ${response}`;
 		} catch (err) {
 			extHostLogService.error(
 				"ProxyResolver#lookupProxyAuthorization Kerberos authentication failed",

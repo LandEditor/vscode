@@ -124,11 +124,11 @@ export class TfIdfCalculator {
 	private readonly documents = new Map<
 		/* key */ string,
 		{
-			readonly chunks: ReadonlyArray<DocumentChunkEntry>;
+			readonly chunks: readonly DocumentChunkEntry[];
 		}
 	>();
 
-	updateDocuments(documents: ReadonlyArray<TfIdfDocument>): this {
+	updateDocuments(documents: readonly TfIdfDocument[]): this {
 		for (const { key } of documents) {
 			this.deleteDocument(key);
 		}

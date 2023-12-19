@@ -54,7 +54,7 @@ export class EditorHighlights<T> {
 
 	private _show(): void {
 		const { activeTextEditor: editor } = vscode.window;
-		if (!editor || !editor.viewColumn) {
+		if (!editor?.viewColumn) {
 			return;
 		}
 		if (this._ignore.has(editor.document.uri.toString())) {

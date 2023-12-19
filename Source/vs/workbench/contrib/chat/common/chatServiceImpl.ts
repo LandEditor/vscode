@@ -600,7 +600,7 @@ export class ChatService extends Disposable implements IChatService {
 	}
 
 	private reinitializeModel(model: ChatModel): void {
-		this.trace("reinitializeModel", `Start reinit`);
+		this.trace("reinitializeModel", "Start reinit");
 		this.initializeSession(model, CancellationToken.None);
 	}
 
@@ -637,7 +637,7 @@ export class ChatService extends Disposable implements IChatService {
 				throw new Error("Provider returned no session");
 			}
 
-			this.trace("startSession", `Provider returned session`);
+			this.trace("startSession", "Provider returned session");
 
 			const welcomeMessage = model.welcomeMessage
 				? undefined
@@ -967,7 +967,7 @@ export class ChatService extends Disposable implements IChatService {
 					);
 					rawResponse = { session: model.session! };
 				} else {
-					throw new Error(`Cannot handle request`);
+					throw new Error("Cannot handle request");
 				}
 
 				if (token.isCancellationRequested) {
@@ -1138,7 +1138,7 @@ export class ChatService extends Disposable implements IChatService {
 	}
 
 	registerProvider(provider: IChatProvider): IDisposable {
-		this.trace("registerProvider", `Adding new chat provider`);
+		this.trace("registerProvider", "Adding new chat provider");
 
 		if (this._providers.has(provider.id)) {
 			throw new Error(`Provider ${provider.id} already registered`);
@@ -1155,7 +1155,7 @@ export class ChatService extends Disposable implements IChatService {
 			.forEach((model) => this.reinitializeModel(model));
 
 		return toDisposable(() => {
-			this.trace("registerProvider", `Disposing chat provider`);
+			this.trace("registerProvider", "Disposing chat provider");
 			this._providers.delete(provider.id);
 			this._hasProvider.set(this._providers.size > 0);
 			Array.from(this._sessionModels.values())

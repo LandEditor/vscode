@@ -54,7 +54,7 @@ export class StandaloneCommandsQuickAccessProvider extends AbstractEditorCommand
 		);
 	}
 
-	protected async getCommandPicks(): Promise<Array<ICommandQuickPick>> {
+	protected async getCommandPicks(): Promise<ICommandQuickPick[]> {
 		return this.getCodeEditorCommandPicks();
 	}
 

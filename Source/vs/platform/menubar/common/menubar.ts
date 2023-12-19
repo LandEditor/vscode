@@ -15,7 +15,7 @@ export interface IMenubarData {
 }
 
 export interface IMenubarMenu {
-	items: Array<MenubarMenuItem>;
+	items: MenubarMenuItem[];
 }
 
 export interface IMenubarKeybinding {
@@ -78,9 +78,9 @@ export function isMenubarMenuItemRecentAction(
 export function isMenubarMenuItemAction(
 	menuItem: MenubarMenuItem,
 ): menuItem is IMenubarMenuItemAction {
-	return (
-		!isMenubarMenuItemSubmenu(menuItem) &&
-		!isMenubarMenuItemSeparator(menuItem) &&
-		!isMenubarMenuItemRecentAction(menuItem)
+	return !(
+		isMenubarMenuItemSubmenu(menuItem) ||
+		isMenubarMenuItemSeparator(menuItem) ||
+		isMenubarMenuItemRecentAction(menuItem)
 	);
 }

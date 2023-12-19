@@ -169,7 +169,7 @@ export async function startClient(
 		const config = workspace.getConfiguration("editor", {
 			languageId: "html",
 		});
-		if (!config.get("linkedEditing") && !config.get("renameOnType")) {
+		if (!(config.get("linkedEditing") || config.get("renameOnType"))) {
 			const activeEditorListener = window.onDidChangeActiveTextEditor(
 				async (e) => {
 					if (
@@ -370,7 +370,7 @@ async function startClientWithParticipants(
 	// manually register / deregister format provider based on the `html.format.enable` setting avoiding issues with late registration. See #71652.
 	updateFormatterRegistration();
 	toDispose.push({
-		dispose: () => rangeFormatting && rangeFormatting.dispose(),
+		dispose: () => rangeFormatting?.dispose(),
 	});
 	toDispose.push(
 		workspace.onDidChangeConfiguration(

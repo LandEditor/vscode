@@ -62,7 +62,11 @@ export class CursorColumns {
 			);
 			iterator.nextGraphemeLength();
 
-			result = this._nextVisibleColumn(codePoint, result, tabSize);
+			result = CursorColumns._nextVisibleColumn(
+				codePoint,
+				result,
+				tabSize,
+			);
 		}
 
 		return result;
@@ -90,7 +94,7 @@ export class CursorColumns {
 			if (codePoint === CharCode.Tab) {
 				result = CursorColumns.nextRenderTabStop(result, tabSize);
 			} else {
-				result = result + 1;
+				result += 1;
 			}
 		}
 
@@ -123,7 +127,7 @@ export class CursorColumns {
 			);
 			iterator.nextGraphemeLength();
 
-			const afterVisibleColumn = this._nextVisibleColumn(
+			const afterVisibleColumn = CursorColumns._nextVisibleColumn(
 				codePoint,
 				beforeVisibleColumn,
 				tabSize,

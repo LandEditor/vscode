@@ -177,7 +177,7 @@ export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
 
 		if (session.wholeRange && !session.wholeRange.contains(selection)) {
 			throw new Error(
-				`InteractiveEditorSessionProvider returned a wholeRange that does not contain the selection.`,
+				"InteractiveEditorSessionProvider returned a wholeRange that does not contain the selection.",
 			);
 		}
 

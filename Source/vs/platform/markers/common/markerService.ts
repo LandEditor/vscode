@@ -331,10 +331,11 @@ export class MarkerService implements IMarkerService {
 			} else {
 				return [];
 			}
-		} else if (!owner && !resource) {
-			// all
+		} else if (owner || resource) {
+			// of one resource OR owner
+			const iterable = this._data.values(resource ?? owner!);
 			const result: IMarker[] = [];
-			for (const markers of this._data.values()) {
+			for (const markers of iterable) {
 				for (const data of markers) {
 					if (MarkerService._accept(data, severities)) {
 						const newLen = result.push(data);
@@ -346,10 +347,9 @@ export class MarkerService implements IMarkerService {
 			}
 			return result;
 		} else {
-			// of one resource OR owner
-			const iterable = this._data.values(resource ?? owner!);
+			// all
 			const result: IMarker[] = [];
-			for (const markers of iterable) {
+			for (const markers of this._data.values()) {
 				for (const data of markers) {
 					if (MarkerService._accept(data, severities)) {
 						const newLen = result.push(data);

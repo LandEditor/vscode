@@ -196,8 +196,8 @@ export class FloatingEditorClickWidget
 			keyBindingAction &&
 			keybindingService.lookupKeybinding(keyBindingAction)
 				? `${label} (${keybindingService
-						.lookupKeybinding(keyBindingAction)!
-						.getLabel()})`
+						.lookupKeybinding(keyBindingAction)
+						?.getLabel()})`
 				: label,
 		);
 	}

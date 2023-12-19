@@ -134,13 +134,13 @@ class ViewDescriptorsState extends Disposable {
 		return this.state.get(id);
 	}
 
-	updateState(viewDescriptors: ReadonlyArray<IViewDescriptor>): void {
+	updateState(viewDescriptors: readonly IViewDescriptor[]): void {
 		this.updateWorkspaceState(viewDescriptors);
 		this.updateGlobalState(viewDescriptors);
 	}
 
 	private updateWorkspaceState(
-		viewDescriptors: ReadonlyArray<IViewDescriptor>,
+		viewDescriptors: readonly IViewDescriptor[],
 	): void {
 		const storedViewsStates = this.getStoredWorkspaceState();
 		for (const viewDescriptor of viewDescriptors) {
@@ -174,7 +174,7 @@ class ViewDescriptorsState extends Disposable {
 	}
 
 	private updateGlobalState(
-		viewDescriptors: ReadonlyArray<IViewDescriptor>,
+		viewDescriptors: readonly IViewDescriptor[],
 	): void {
 		const storedGlobalState = this.getStoredGlobalState();
 		for (const viewDescriptor of viewDescriptors) {
@@ -441,35 +441,35 @@ export class ViewContainerModel
 	readonly onDidChangeContainerInfo = this._onDidChangeContainerInfo.event;
 
 	// All View Descriptors
-	get allViewDescriptors(): ReadonlyArray<IViewDescriptor> {
+	get allViewDescriptors(): readonly IViewDescriptor[] {
 		return this.viewDescriptorItems.map((item) => item.viewDescriptor);
 	}
 	private _onDidChangeAllViewDescriptors = this._register(
 		new Emitter<{
-			added: ReadonlyArray<IViewDescriptor>;
-			removed: ReadonlyArray<IViewDescriptor>;
+			added: readonly IViewDescriptor[];
+			removed: readonly IViewDescriptor[];
 		}>(),
 	);
 	readonly onDidChangeAllViewDescriptors =
 		this._onDidChangeAllViewDescriptors.event;
 
 	// Active View Descriptors
-	get activeViewDescriptors(): ReadonlyArray<IViewDescriptor> {
+	get activeViewDescriptors(): readonly IViewDescriptor[] {
 		return this.viewDescriptorItems
 			.filter((item) => item.state.active)
 			.map((item) => item.viewDescriptor);
 	}
 	private _onDidChangeActiveViewDescriptors = this._register(
 		new Emitter<{
-			added: ReadonlyArray<IViewDescriptor>;
-			removed: ReadonlyArray<IViewDescriptor>;
+			added: readonly IViewDescriptor[];
+			removed: readonly IViewDescriptor[];
 		}>(),
 	);
 	readonly onDidChangeActiveViewDescriptors =
 		this._onDidChangeActiveViewDescriptors.event;
 
 	// Visible View Descriptors
-	get visibleViewDescriptors(): ReadonlyArray<IViewDescriptor> {
+	get visibleViewDescriptors(): readonly IViewDescriptor[] {
 		return this.viewDescriptorItems
 			.filter((item) => this.isViewDescriptorVisible(item))
 			.map((item) => item.viewDescriptor);
@@ -1120,7 +1120,7 @@ export class ViewContainerModel
 	}
 
 	private getGroupOrderResult(a: IViewDescriptor, b: IViewDescriptor) {
-		if (!a.group || !b.group) {
+		if (!(a.group && b.group)) {
 			return 0;
 		}
 

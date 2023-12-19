@@ -93,7 +93,7 @@ export class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
 
 		const stopwatch = StopWatch.create();
 
-		const cancellablePromises: Array<CancelablePromise<number[][]>> = [];
+		const cancellablePromises: CancelablePromise<number[][]>[] = [];
 
 		const timer = timeout(AiEmbeddingVectorService.DEFAULT_TIMEOUT);
 		const disposable = token.onCancellationRequested(() => {

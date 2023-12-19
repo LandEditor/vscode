@@ -108,7 +108,7 @@ class RemoteAgentDiagnosticListener implements IWorkbenchContribution {
 						})
 						.catch((e) => {
 							const errorMessage =
-								e && e.message
+								e?.message
 									? `Connection to '${hostName}' could not be established  ${e.message}`
 									: `Connection to '${hostName}' could not be established `;
 							ipcRenderer.send(request.replyChannel, {
@@ -139,10 +139,7 @@ class RemoteExtensionHostEnvironmentUpdater implements IWorkbenchContribution {
 						await remoteResolverService.resolveAuthority(
 							connection.remoteAuthority,
 						);
-					if (
-						resolveResult.options &&
-						resolveResult.options.extensionHostEnv
-					) {
+					if (resolveResult.options?.extensionHostEnv) {
 						await extensionService.setRemoteEnvironment(
 							resolveResult.options.extensionHostEnv,
 						);

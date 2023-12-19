@@ -86,7 +86,7 @@ export class WebviewThemeDataProvider extends Disposable {
 				.reduce((colors, entry) => {
 					const color = theme.getColor(entry.id);
 					if (color) {
-						colors["vscode-" + entry.id.replace(".", "-")] =
+						colors[`vscode-${entry.id.replace(".", "-")}`] =
 							color.toString();
 					}
 					return colors;
@@ -98,7 +98,7 @@ export class WebviewThemeDataProvider extends Disposable {
 				"vscode-font-size": "13px",
 				"vscode-editor-font-family": editorFontFamily,
 				"vscode-editor-font-weight": editorFontWeight,
-				"vscode-editor-font-size": editorFontSize + "px",
+				"vscode-editor-font-size": `${editorFontSize}px`,
 				...exportedColors,
 			};
 

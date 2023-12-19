@@ -66,7 +66,7 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 
 	async initializeRequiredResources(): Promise<void> {
 		this.logService.trace(
-			`UserDataProfileInitializer#initializeRequiredResources`,
+			"UserDataProfileInitializer#initializeRequiredResources",
 		);
 		const promises = [];
 		const profileTemplate = await this.getProfileTemplate();
@@ -100,7 +100,7 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 	): Promise<void> {
 		try {
 			this.logService.trace(
-				`UserDataProfileInitializer#initializeOtherResources`,
+				"UserDataProfileInitializer#initializeOtherResources",
 			);
 			const promises = [];
 			const profileTemplate = await this.getProfileTemplate();

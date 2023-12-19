@@ -16,7 +16,7 @@ function _renderTime(time) {
 	return `${Math.round(time)} ms`;
 }
 async function _execute(task) {
-	const name = task.taskName || task.displayName || `<anonymous>`;
+	const name = task.taskName || task.displayName || "<anonymous>";
 	if (!task._tasks) {
 		fancyLog("Starting", ansiColors.cyan(name), "...");
 	}
@@ -26,7 +26,7 @@ async function _execute(task) {
 	const elapsedNanoseconds = elapsedArr[0] * 1e9 + elapsedArr[1];
 	if (!task._tasks) {
 		fancyLog(
-			`Finished`,
+			"Finished",
 			ansiColors.cyan(name),
 			"after",
 			ansiColors.magenta(_renderTime(elapsedNanoseconds / 1e6)),

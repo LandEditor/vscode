@@ -54,8 +54,10 @@ export class JoinCellEdit implements IResourceUndoRedoElement {
 
 	async undo(): Promise<void> {
 		if (
-			!this.editingDelegate.insertCell ||
-			!this.editingDelegate.createCellViewModel
+			!(
+				this.editingDelegate.insertCell &&
+				this.editingDelegate.createCellViewModel
+			)
 		) {
 			throw new Error(
 				"Notebook Insert Cell not implemented for Undo/Redo",

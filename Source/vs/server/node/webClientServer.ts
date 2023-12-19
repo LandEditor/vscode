@@ -212,7 +212,7 @@ export class WebClientServer {
 
 		const filePath = join(APP_ROOT, relativeFilePath); // join also normalizes the path
 		if (!isEqualOrParent(filePath, APP_ROOT, !isLinux)) {
-			return serveError(req, res, 400, `Bad request.`);
+			return serveError(req, res, 400, "Bad request.");
 		}
 
 		return serveFile(
@@ -372,7 +372,7 @@ export class WebClientServer {
 			  getFirstHeader("x-forwarded-host") ||
 			  req.headers.host;
 		if (!remoteAuthority) {
-			return serveError(req, res, 400, `Bad request.`);
+			return serveError(req, res, 400, "Bad request.");
 		}
 
 		function asJSON(value: unknown): string {

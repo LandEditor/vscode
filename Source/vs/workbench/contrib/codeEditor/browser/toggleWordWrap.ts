@@ -298,7 +298,7 @@ class DiffToggleWordWrapController
 		const originalEditor = this._diffEditor.getOriginalEditor();
 		const modifiedEditor = this._diffEditor.getModifiedEditor();
 
-		if (!originalEditor.hasModel() || !modifiedEditor.hasModel()) {
+		if (!(originalEditor.hasModel() && modifiedEditor.hasModel())) {
 			return;
 		}
 

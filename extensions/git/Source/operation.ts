@@ -697,7 +697,7 @@ export class OperationManager implements IOperationManager {
 
 	start(operation: Operation): void {
 		if (this.operations.has(operation.kind)) {
-			this.operations.get(operation.kind)!.add(operation);
+			this.operations.get(operation.kind)?.add(operation);
 		} else {
 			this.operations.set(operation.kind, new Set([operation]));
 		}

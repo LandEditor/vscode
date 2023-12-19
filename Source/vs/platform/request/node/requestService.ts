@@ -109,7 +109,7 @@ export class RequestService
 			if (!this.shellEnvErrorLogged) {
 				this.shellEnvErrorLogged = true;
 				this.logService.error(
-					`resolving shell environment failed`,
+					"resolving shell environment failed",
 					getErrorMessage(error),
 				);
 			}
@@ -193,7 +193,7 @@ export async function nodeRequest(
 		};
 
 		if (options.user && options.password) {
-			opts.auth = options.user + ":" + options.password;
+			opts.auth = `${options.user}:${options.password}`;
 		}
 
 		const req = rawRequest(opts, (res: http.IncomingMessage) => {

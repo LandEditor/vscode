@@ -114,8 +114,7 @@ class DiffEditorHelperContribution
 						this._diffEditor.getDiffComputationResult();
 
 					if (
-						diffComputationResult &&
-						diffComputationResult.quitEarly
+						diffComputationResult?.quitEarly
 					) {
 						this._notificationService.prompt(
 							Severity.Warning,

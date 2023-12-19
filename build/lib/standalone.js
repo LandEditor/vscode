@@ -42,7 +42,7 @@ function extractEditor(options) {
 				.compilerOptions,
 			tsConfig.compilerOptions,
 		);
-		delete tsConfig.extends;
+		tsConfig.extends = undefined;
 	} else {
 		compilerOptions = tsConfig.compilerOptions;
 	}
@@ -95,8 +95,9 @@ function extractEditor(options) {
 				const importedFileName = info.importedFiles[i].fileName;
 				let importedFilePath;
 				if (/^vs\/css!/.test(importedFileName)) {
-					importedFilePath =
-						importedFileName.substr("vs/css!".length) + ".css";
+					importedFilePath = `${importedFileName.substr(
+						"vs/css!".length,
+					)}.css`;
 				} else {
 					importedFilePath = importedFileName;
 				}
@@ -112,16 +113,16 @@ function extractEditor(options) {
 					fs.existsSync(
 						path.join(
 							options.sourcesRoot,
-							importedFilePath + ".js",
+							`${importedFilePath}.js`,
 						),
 					)
 				) {
-					copyFile(importedFilePath + ".js");
+					copyFile(`${importedFilePath}.js`);
 				}
 			}
 		}
 	}
-	delete tsConfig.compilerOptions.moduleResolution;
+	tsConfig.compilerOptions.moduleResolution = undefined;
 	writeOutputFile("tsconfig.json", JSON.stringify(tsConfig, null, "\t"));
 	[
 		"vs/css.build.ts",
@@ -145,7 +146,7 @@ function createESMSourcesAndResources2(options) {
 	const getDestAbsoluteFilePath = (file) => {
 		const dest = options.renames[file.replace(/\\/g, "/")] || file;
 		if (dest === "tsconfig.json") {
-			return path.join(OUT_FOLDER, `tsconfig.json`);
+			return path.join(OUT_FOLDER, "tsconfig.json");
 		}
 		if (/\.ts$/.test(dest)) {
 			return path.join(OUT_FOLDER, dest);
@@ -196,8 +197,9 @@ function createESMSourcesAndResources2(options) {
 				const end = info.importedFiles[i].end;
 				let importedFilepath;
 				if (/^vs\/css!/.test(importedFilename)) {
-					importedFilepath =
-						importedFilename.substr("vs/css!".length) + ".css";
+					importedFilepath = `${importedFilename.substr(
+						"vs/css!".length,
+					)}.css`;
 				} else {
 					importedFilepath = importedFilename;
 				}
@@ -211,14 +213,14 @@ function createESMSourcesAndResources2(options) {
 				if (
 					importedFilepath === path.dirname(file).replace(/\\/g, "/")
 				) {
-					relativePath = "../" + path.basename(path.dirname(file));
+					relativePath = `../${path.basename(path.dirname(file))}`;
 				} else if (
 					importedFilepath ===
 					path.dirname(path.dirname(file)).replace(/\\/g, "/")
 				) {
-					relativePath =
-						"../../" +
-						path.basename(path.dirname(path.dirname(file)));
+					relativePath = `../../${path.basename(
+						path.dirname(path.dirname(file)),
+					)}`;
 				} else {
 					relativePath = path.relative(
 						path.dirname(file),
@@ -227,7 +229,7 @@ function createESMSourcesAndResources2(options) {
 				}
 				relativePath = relativePath.replace(/\\/g, "/");
 				if (!/(^\.\/)|(^\.\.\/)/.test(relativePath)) {
-					relativePath = "./" + relativePath;
+					relativePath = `./${relativePath}`;
 				}
 				fileContents =
 					fileContents.substring(0, pos + 1) +
@@ -291,7 +293,7 @@ function createESMSourcesAndResources2(options) {
 						mode = 0;
 						continue;
 					}
-					lines[i] = "// " + line;
+					lines[i] = `// ${line}`;
 					continue;
 				}
 				if (mode === 2) {
@@ -338,7 +340,7 @@ function transportCSS(module, enqueue, write) {
 			const imagePath = path.join(path.dirname(module), url);
 			const fileContents = fs.readFileSync(path.join(SRC_DIR, imagePath));
 			const MIME = /\.svg$/.test(url) ? "image/svg+xml" : "image/png";
-			let DATA = ";base64," + fileContents.toString("base64");
+			let DATA = `;base64,${fileContents.toString("base64")}`;
 			if (!forceBase64 && /\.svg$/.test(url)) {
 				// .svg => url encode as explained at https://codepen.io/tigt/post/optimizing-svgs-in-data-uris
 				const newText = fileContents
@@ -349,12 +351,12 @@ function transportCSS(module, enqueue, write) {
 					.replace(/&/g, "%26")
 					.replace(/#/g, "%23")
 					.replace(/\s+/g, " ");
-				const encodedData = "," + newText;
+				const encodedData = `,${newText}`;
 				if (encodedData.length < DATA.length) {
 					DATA = encodedData;
 				}
 			}
-			return '"data:' + MIME + DATA + '"';
+			return `"data:${MIME}${DATA}"`;
 		});
 	}
 	function _replaceURL(contents, replacer) {
@@ -381,13 +383,15 @@ function transportCSS(module, enqueue, write) {
 				url = url.substring(0, url.length - 1);
 			}
 			if (
-				!_startsWith(url, "data:") &&
-				!_startsWith(url, "http://") &&
-				!_startsWith(url, "https://")
+				!(
+					_startsWith(url, "data:") ||
+					_startsWith(url, "http://") ||
+					_startsWith(url, "https://")
+				)
 			) {
 				url = replacer(url);
 			}
-			return "url(" + url + ")";
+			return `url(${url})`;
 		});
 	}
 	function _startsWith(haystack, needle) {

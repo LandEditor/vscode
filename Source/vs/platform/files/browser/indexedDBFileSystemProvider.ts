@@ -119,8 +119,7 @@ class IndexedDBFileSystemNode {
 		}
 		if (this.entry.type !== FileType.Directory) {
 			throw ERR_UNKNOWN_INTERNAL(
-				"Internal error reading from IndexedDBFSNode -- expected directory at " +
-					this.entry.path,
+				`Internal error reading from IndexedDBFSNode -- expected directory at ${this.entry.path}`,
 			);
 		}
 		const next = this.entry.children.get(pathParts[0]);
@@ -136,7 +135,7 @@ class IndexedDBFileSystemNode {
 		if (toDelete.length === 0) {
 			if (this.entry.type !== FileType.Directory) {
 				throw ERR_UNKNOWN_INTERNAL(
-					`Internal error deleting from IndexedDBFSNode. Expected root entry to be directory`,
+					"Internal error deleting from IndexedDBFSNode. Expected root entry to be directory",
 				);
 			}
 			this.entry.children.clear();
@@ -152,8 +151,7 @@ class IndexedDBFileSystemNode {
 			);
 		} else if (this.entry.type !== FileType.Directory) {
 			throw ERR_UNKNOWN_INTERNAL(
-				"Internal error deleting from IndexedDBFSNode -- expected directory at " +
-					this.entry.path,
+				`Internal error deleting from IndexedDBFSNode -- expected directory at ${this.entry.path}`,
 			);
 		} else if (pathParts.length === 1) {
 			this.entry.children.delete(pathParts[0]);
@@ -161,10 +159,7 @@ class IndexedDBFileSystemNode {
 			const next = this.entry.children.get(pathParts[0]);
 			if (!next) {
 				throw ERR_UNKNOWN_INTERNAL(
-					"Internal error deleting from IndexedDBFSNode -- expected entry at " +
-						this.entry.path +
-						"/" +
-						next,
+					`Internal error deleting from IndexedDBFSNode -- expected entry at ${this.entry.path}/${next}`,
 				);
 			}
 			next.doDelete(pathParts.slice(1), originalPath);
@@ -209,7 +204,7 @@ class IndexedDBFileSystemNode {
 					existing ??
 						new IndexedDBFileSystemNode({
 							type: FileType.Directory,
-							path: this.entry.path + "/" + next,
+							path: `${this.entry.path}/${next}`,
 							children: new Map(),
 						}),
 				);
@@ -223,7 +218,7 @@ class IndexedDBFileSystemNode {
 					next,
 					new IndexedDBFileSystemNode({
 						type: FileType.File,
-						path: this.entry.path + "/" + next,
+						path: `${this.entry.path}/${next}`,
 						size: entry.size,
 					}),
 				);
@@ -234,7 +229,7 @@ class IndexedDBFileSystemNode {
 			if (!childNode) {
 				childNode = new IndexedDBFileSystemNode({
 					children: new Map(),
-					path: this.entry.path + "/" + next,
+					path: `${this.entry.path}/${next}`,
 					type: FileType.Directory,
 				});
 				this.entry.children.set(next, childNode);
@@ -251,7 +246,7 @@ class IndexedDBFileSystemNode {
 		console.log(indentation + this.entry.path);
 		if (this.entry.type === FileType.Directory) {
 			this.entry.children.forEach((child) =>
-				child.print(indentation + " "),
+				child.print(`${indentation} `),
 			);
 		}
 	}

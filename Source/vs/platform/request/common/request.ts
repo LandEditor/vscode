@@ -150,7 +150,7 @@ export async function asTextOrError(
 	context: IRequestContext,
 ): Promise<string | null> {
 	if (!isSuccess(context)) {
-		throw new Error("Server returned " + context.res.statusCode);
+		throw new Error(`Server returned ${context.res.statusCode}`);
 	}
 	return asText(context);
 }
@@ -159,7 +159,7 @@ export async function asJson<T = {}>(
 	context: IRequestContext,
 ): Promise<T | null> {
 	if (!isSuccess(context)) {
-		throw new Error("Server returned " + context.res.statusCode);
+		throw new Error(`Server returned ${context.res.statusCode}`);
 	}
 	if (hasNoContent(context)) {
 		return null;
@@ -169,7 +169,7 @@ export async function asJson<T = {}>(
 	try {
 		return JSON.parse(str);
 	} catch (err) {
-		err.message += ":\n" + str;
+		err.message += `:\n${str}`;
 		throw err;
 	}
 }

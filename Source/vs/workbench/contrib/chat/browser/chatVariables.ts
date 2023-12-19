@@ -119,13 +119,13 @@ export class ChatVariablesService implements IChatVariablesService {
 		return Iterable.filter(all, (data) => !data.hidden);
 	}
 
-	getDynamicVariables(sessionId: string): ReadonlyArray<IDynamicVariable> {
+	getDynamicVariables(sessionId: string): readonly IDynamicVariable[] {
 		// This is slightly wrong... the parser pulls dynamic references from the input widget, but there is no guarantee that message came from the input here.
 		// Need to ...
 		// - Parser takes list of dynamic references (annoying)
 		// - Or the parser is known to implicitly act on the input widget, and we need to call it before calling the chat service (maybe incompatible with the future, but easy)
 		const widget = this.chatWidgetService.getWidgetBySessionId(sessionId);
-		if (!widget || !widget.viewModel || !widget.supportsFileReferences) {
+		if (!(widget?.viewModel && widget.supportsFileReferences)) {
 			return [];
 		}
 

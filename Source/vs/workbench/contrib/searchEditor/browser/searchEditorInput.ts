@@ -251,11 +251,9 @@ export class SearchEditorInput extends EditorInput {
 
 	private async serializeForDisk() {
 		const { configurationModel, resultsModel } = await this.resolveModels();
-		return (
-			serializeSearchConfiguration(configurationModel.config) +
-			"\n" +
-			resultsModel.getValue()
-		);
+		return `${serializeSearchConfiguration(
+			configurationModel.config,
+		)}\n${resultsModel.getValue()}`;
 	}
 
 	private configChangeListenerDisposable: IDisposable | undefined;

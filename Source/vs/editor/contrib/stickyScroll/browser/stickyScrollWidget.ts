@@ -172,8 +172,8 @@ export class StickyScrollWidget extends Disposable implements IOverlayWidget {
 		_rebuildFromLine?: number,
 	): void {
 		if (
-			(!this._previousState && !_state) ||
-			(this._previousState && this._previousState.equals(_state))
+			!(this._previousState || _state) ||
+			this._previousState?.equals(_state)
 		) {
 			return;
 		}
@@ -214,7 +214,7 @@ export class StickyScrollWidget extends Disposable implements IOverlayWidget {
 		state: StickyScrollWidgetState | undefined,
 		_rebuildFromLine?: number,
 	): number {
-		if (!state || !this._previousState) {
+		if (!(state && this._previousState)) {
 			return 0;
 		}
 		if (_rebuildFromLine !== undefined) {
@@ -451,7 +451,7 @@ export class StickyScrollWidget extends Disposable implements IOverlayWidget {
 			lineNumberOption.renderType === RenderLineNumbersType.Relative
 		) {
 			innerLineNumberHTML.innerText = Math.abs(
-				line - this._editor.getPosition()!.lineNumber,
+				line - this._editor.getPosition()?.lineNumber,
 			).toString();
 		}
 		innerLineNumberHTML.className = "sticky-line-number-inner";

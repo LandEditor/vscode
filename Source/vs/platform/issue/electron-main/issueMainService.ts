@@ -145,9 +145,10 @@ export class IssueMainService implements IIssueMainService {
 
 				let parentWindow: BrowserWindow | null;
 				switch (from) {
-					case "processExplorer":
+					case "processExplorer": {
 						parentWindow = this.processExplorerParentWindow;
 						break;
+					}
 					default:
 						// The issue reporter does not use this anymore.
 						throw new Error(`Unexpected command source: ${from}`);
@@ -335,7 +336,7 @@ export class IssueMainService implements IIssueMainService {
 					}
 					const size = this.processExplorerWindow.getSize();
 					const position = this.processExplorerWindow.getPosition();
-					if (!size || !position) {
+					if (!(size && position)) {
 						return;
 					}
 					const state: IWindowState = {
@@ -617,7 +618,7 @@ export class IssueMainService implements IIssueMainService {
 	): Promise<boolean[]> {
 		const defaultResult = [false, false];
 		const window = this.issueReporterWindowCheck();
-		const replyChannel = `vscode:triggerReporterStatus`;
+		const replyChannel = "vscode:triggerReporterStatus";
 		const cts = new CancellationTokenSource();
 		window.sendWhenReady(replyChannel, cts.token, {
 			replyChannel,

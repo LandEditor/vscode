@@ -110,9 +110,10 @@ export class NotebookDiffOverviewRuler extends Themable {
 		const newRemoveColor =
 			theme.getColor(diffOverviewRulerRemoved) ||
 			(theme.getColor(diffRemoved) || defaultRemoveColor).transparent(2);
-		const hasChanges =
-			!newInsertColor.equals(this._insertColor) ||
-			!newRemoveColor.equals(this._removeColor);
+		const hasChanges = !(
+			newInsertColor.equals(this._insertColor) &&
+			newRemoveColor.equals(this._removeColor)
+		);
 		this._insertColor = newInsertColor;
 		this._removeColor = newRemoveColor;
 		if (this._insertColor) {
@@ -252,7 +253,7 @@ export class NotebookDiffOverviewRuler extends Themable {
 		scrollHeight: number,
 		ratio: number,
 	) {
-		if (!this._insertColorHex || !this._removeColorHex) {
+		if (!(this._insertColorHex && this._removeColorHex)) {
 			// no op when colors are not yet known
 			return;
 		}
@@ -269,22 +270,25 @@ export class NotebookDiffOverviewRuler extends Themable {
 			);
 
 			switch (element.type) {
-				case "insert":
+				case "insert": {
 					ctx.fillStyle = this._insertColorHex;
 					ctx.fillRect(laneWidth, currentFrom, laneWidth, cellHeight);
 					break;
-				case "delete":
+				}
+				case "delete": {
 					ctx.fillStyle = this._removeColorHex;
 					ctx.fillRect(0, currentFrom, laneWidth, cellHeight);
 					break;
+				}
 				case "unchanged":
 					break;
-				case "modified":
+				case "modified": {
 					ctx.fillStyle = this._removeColorHex;
 					ctx.fillRect(0, currentFrom, laneWidth, cellHeight);
 					ctx.fillStyle = this._insertColorHex;
 					ctx.fillRect(laneWidth, currentFrom, laneWidth, cellHeight);
 					break;
+				}
 			}
 
 			currentFrom += cellHeight;

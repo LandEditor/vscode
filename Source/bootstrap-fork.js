@@ -244,7 +244,7 @@ function handleExceptions() {
 function terminateWhenParentTerminates() {
 	const parentPid = Number(process.env["VSCODE_PARENT_PID"]);
 
-	if (typeof parentPid === "number" && !isNaN(parentPid)) {
+	if (typeof parentPid === "number" && !Number.isNaN(parentPid)) {
 		setInterval(() => {
 			try {
 				process.kill(parentPid, 0); // throws an exception if the main process doesn't exist anymore.

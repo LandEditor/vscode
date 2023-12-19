@@ -57,21 +57,26 @@ interface ILog {
 
 function log(logger: spdlog.Logger, level: LogLevel, message: string): void {
 	switch (level) {
-		case LogLevel.Trace:
+		case LogLevel.Trace: {
 			logger.trace(message);
 			break;
-		case LogLevel.Debug:
+		}
+		case LogLevel.Debug: {
 			logger.debug(message);
 			break;
-		case LogLevel.Info:
+		}
+		case LogLevel.Info: {
 			logger.info(message);
 			break;
-		case LogLevel.Warning:
+		}
+		case LogLevel.Warning: {
 			logger.warn(message);
 			break;
-		case LogLevel.Error:
+		}
+		case LogLevel.Error: {
 			logger.error(message);
 			break;
+		}
 		case LogLevel.Off:
 			/* do nothing */ break;
 		default:
@@ -81,24 +86,30 @@ function log(logger: spdlog.Logger, level: LogLevel, message: string): void {
 
 function setLogLevel(logger: spdlog.Logger, level: LogLevel): void {
 	switch (level) {
-		case LogLevel.Trace:
+		case LogLevel.Trace: {
 			logger.setLevel(SpdLogLevel.Trace);
 			break;
-		case LogLevel.Debug:
+		}
+		case LogLevel.Debug: {
 			logger.setLevel(SpdLogLevel.Debug);
 			break;
-		case LogLevel.Info:
+		}
+		case LogLevel.Info: {
 			logger.setLevel(SpdLogLevel.Info);
 			break;
-		case LogLevel.Warning:
+		}
+		case LogLevel.Warning: {
 			logger.setLevel(SpdLogLevel.Warning);
 			break;
-		case LogLevel.Error:
+		}
+		case LogLevel.Error: {
 			logger.setLevel(SpdLogLevel.Error);
 			break;
-		case LogLevel.Off:
+		}
+		case LogLevel.Off: {
 			logger.setLevel(SpdLogLevel.Off);
 			break;
+		}
 		default:
 			throw new Error(`Invalid log level ${level}`);
 	}

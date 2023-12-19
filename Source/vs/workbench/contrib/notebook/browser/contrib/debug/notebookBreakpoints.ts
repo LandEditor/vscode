@@ -103,8 +103,7 @@ class NotebookBreakpoints extends Disposable implements IWorkbenchContribution {
 						this._editorService.activeEditorPane
 					);
 					if (
-						!editor ||
-						!editor.hasModel() ||
+						!(editor?.hasModel() ) ||
 						editor.textModel.uri.toString() !==
 							parsed.notebook.toString()
 					) {
@@ -124,7 +123,7 @@ class NotebookBreakpoints extends Disposable implements IWorkbenchContribution {
 
 	private updateBreakpoints(model: NotebookTextModel): void {
 		const bps = this._debugService.getModel().getBreakpoints();
-		if (!bps.length || !model.cells.length) {
+		if (!(bps.length && model.cells.length)) {
 			return;
 		}
 

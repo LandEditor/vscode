@@ -192,7 +192,7 @@ export class MainThreadTunnelService
 					: true;
 				const commandMatches =
 					!selector.commandPattern ||
-					(commandLine && commandLine.match(selector.commandPattern));
+					commandLine?.match(selector.commandPattern);
 				return portInRange && commandMatches;
 			})
 			.map((entry) => entry[0]);

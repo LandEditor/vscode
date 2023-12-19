@@ -507,7 +507,7 @@ export class WebviewEditorService
 		token: CancellationToken,
 	): Promise<void> {
 		const didRevive = await this.tryRevive(webview, token);
-		if (!didRevive && !token.isCancellationRequested) {
+		if (!(didRevive || token.isCancellationRequested)) {
 			// A reviver may not be registered yet. Put into pool and resolve promise when we can revive
 			return this._revivalPool.enqueueForRestoration(webview, token);
 		}

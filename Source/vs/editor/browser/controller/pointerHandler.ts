@@ -116,9 +116,11 @@ export class PointerEventHandler extends MouseHandler {
 
 	private onTap(event: GestureEvent): void {
 		if (
-			!event.initialTarget ||
-			!this.viewHelper.linesContentDomNode.contains(
-				<any>event.initialTarget,
+			!(
+				event.initialTarget &&
+				this.viewHelper.linesContentDomNode.contains(
+					<any>event.initialTarget,
+				)
 			)
 		) {
 			return;

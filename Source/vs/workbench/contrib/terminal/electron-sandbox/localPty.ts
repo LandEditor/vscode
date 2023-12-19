@@ -165,12 +165,14 @@ export class LocalPty extends Disposable implements ITerminalChildProcess {
 	}
 	handleDidChangeProperty({ type, value }: IProcessProperty<any>) {
 		switch (type) {
-			case ProcessPropertyType.Cwd:
+			case ProcessPropertyType.Cwd: {
 				this._properties.cwd = value;
 				break;
-			case ProcessPropertyType.InitialCwd:
+			}
+			case ProcessPropertyType.InitialCwd: {
 				this._properties.initialCwd = value;
 				break;
+			}
 			case ProcessPropertyType.ResolvedShellLaunchConfig:
 				if (value.cwd && typeof value.cwd !== "string") {
 					value.cwd = URI.revive(value.cwd);

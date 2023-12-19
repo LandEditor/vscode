@@ -152,7 +152,7 @@ registerAction2(
 					original: "Go to File...",
 				},
 				metadata: {
-					description: `Quick access`,
+					description: "Quick access",
 					args: [
 						{
 							name: "prefix",

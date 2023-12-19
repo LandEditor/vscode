@@ -65,12 +65,12 @@ export class Colorizer {
 		themeService.setTheme(theme);
 
 		const text = domNode.firstChild ? domNode.firstChild.nodeValue : "";
-		domNode.className += " " + theme;
+		domNode.className += ` ${theme}`;
 		const render = (str: string) => {
 			const trustedhtml = ttPolicy?.createHTML(str) ?? str;
 			domNode.innerHTML = trustedhtml as string;
 		};
-		return this.colorize(
+		return Colorizer.colorize(
 			languageService,
 			text || "",
 			languageId,
@@ -163,7 +163,7 @@ export class Colorizer {
 		model.tokenization.forceTokenization(lineNumber);
 		const tokens = model.tokenization.getLineTokens(lineNumber);
 		const inflatedTokens = tokens.inflate();
-		return this.colorizeLine(
+		return Colorizer.colorizeLine(
 			content,
 			model.mightContainNonBasicASCII(),
 			model.mightContainRTL(),

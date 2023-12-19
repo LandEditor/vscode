@@ -610,19 +610,22 @@ export class EditorPart extends Part implements IEditorPart, IEditorGroupsView {
 		const groupView = this.assertGroupView(target);
 
 		switch (arrangement) {
-			case GroupsArrangement.EVEN:
+			case GroupsArrangement.EVEN: {
 				this.gridWidget.distributeViewSizes();
 				break;
-			case GroupsArrangement.MAXIMIZE:
+			}
+			case GroupsArrangement.MAXIMIZE: {
 				if (this.groups.length < 2) {
 					return; // need at least 2 groups to be maximized
 				}
 				this.gridWidget.maximizeView(groupView);
 				groupView.focus();
 				break;
-			case GroupsArrangement.EXPAND:
+			}
+			case GroupsArrangement.EXPAND: {
 				this.gridWidget.expandView(groupView);
 				break;
+			}
 		}
 	}
 
@@ -927,15 +930,18 @@ export class EditorPart extends Part implements IEditorPart, IEditorGroupsView {
 		groupDisposables.add(
 			groupView.onDidModelChange((e) => {
 				switch (e.kind) {
-					case GroupModelChangeKind.GROUP_LOCKED:
+					case GroupModelChangeKind.GROUP_LOCKED: {
 						this._onDidChangeGroupLocked.fire(groupView);
 						break;
-					case GroupModelChangeKind.GROUP_INDEX:
+					}
+					case GroupModelChangeKind.GROUP_INDEX: {
 						this._onDidChangeGroupIndex.fire(groupView);
 						break;
-					case GroupModelChangeKind.GROUP_LABEL:
+					}
+					case GroupModelChangeKind.GROUP_LABEL: {
 						this._onDidChangeGroupLabel.fire(groupView);
 						break;
+					}
 				}
 			}),
 		);

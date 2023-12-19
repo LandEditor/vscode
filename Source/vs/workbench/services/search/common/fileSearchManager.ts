@@ -103,10 +103,7 @@ class FileSearchEngine {
 				this.config.extraFileResources.forEach((extraFile) => {
 					const extraFileStr = extraFile.toString(); // ?
 					const basename = path.basename(extraFileStr);
-					if (
-						this.globalExcludePattern &&
-						this.globalExcludePattern(extraFileStr, basename)
-					) {
+					if (this.globalExcludePattern?.(extraFileStr, basename)) {
 						return; // excluded
 					}
 
@@ -368,7 +365,7 @@ export class FileSearchManager {
 		const engine = new FileSearchEngine(
 			config,
 			provider,
-			sessionTokenSource && sessionTokenSource.token,
+			sessionTokenSource?.token,
 		);
 
 		let resultCount = 0;

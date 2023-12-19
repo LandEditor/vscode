@@ -67,7 +67,7 @@ interface ILanguageConfiguration {
 	brackets?: CharacterPair[];
 	autoClosingPairs?: Array<CharacterPair | IAutoClosingPairConditional>;
 	surroundingPairs?: Array<CharacterPair | IAutoClosingPair>;
-	colorizedBracketPairs?: Array<CharacterPair>;
+	colorizedBracketPairs?: CharacterPair[];
 	wordPattern?: string | IRegExp;
 	indentationRules?: IIndentationRules;
 	folding?: {
@@ -549,7 +549,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 		const wordPattern = configuration.wordPattern
 			? this._parseRegex(
 					languageId,
-					`wordPattern`,
+					"wordPattern",
 					configuration.wordPattern,
 			  )
 			: undefined;
@@ -562,22 +562,20 @@ export class LanguageConfigurationFileHandler extends Disposable {
 		let folding: FoldingRules | undefined = undefined;
 		if (configuration.folding) {
 			const rawMarkers = configuration.folding.markers;
-			const startMarker =
-				rawMarkers && rawMarkers.start
-					? this._parseRegex(
-							languageId,
-							`folding.markers.start`,
-							rawMarkers.start,
-					  )
-					: undefined;
-			const endMarker =
-				rawMarkers && rawMarkers.end
-					? this._parseRegex(
-							languageId,
-							`folding.markers.end`,
-							rawMarkers.end,
-					  )
-					: undefined;
+			const startMarker = rawMarkers?.start
+				? this._parseRegex(
+						languageId,
+						"folding.markers.start",
+						rawMarkers.start,
+				  )
+				: undefined;
+			const endMarker = rawMarkers?.end
+				? this._parseRegex(
+						languageId,
+						"folding.markers.end",
+						rawMarkers.end,
+				  )
+				: undefined;
 			const markers: FoldingMarkers | undefined =
 				startMarker && endMarker
 					? { start: startMarker, end: endMarker }
@@ -667,7 +665,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 	): IndentationRule | undefined {
 		const increaseIndentPattern = this._parseRegex(
 			languageId,
-			`indentationRules.increaseIndentPattern`,
+			"indentationRules.increaseIndentPattern",
 			indentationRules.increaseIndentPattern,
 		);
 		if (!increaseIndentPattern) {
@@ -675,7 +673,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 		}
 		const decreaseIndentPattern = this._parseRegex(
 			languageId,
-			`indentationRules.decreaseIndentPattern`,
+			"indentationRules.decreaseIndentPattern",
 			indentationRules.decreaseIndentPattern,
 		);
 		if (!decreaseIndentPattern) {
@@ -690,14 +688,14 @@ export class LanguageConfigurationFileHandler extends Disposable {
 		if (indentationRules.indentNextLinePattern) {
 			result.indentNextLinePattern = this._parseRegex(
 				languageId,
-				`indentationRules.indentNextLinePattern`,
+				"indentationRules.indentNextLinePattern",
 				indentationRules.indentNextLinePattern,
 			);
 		}
 		if (indentationRules.unIndentedLinePattern) {
 			result.unIndentedLinePattern = this._parseRegex(
 				languageId,
-				`indentationRules.unIndentedLinePattern`,
+				"indentationRules.unIndentedLinePattern",
 				indentationRules.unIndentedLinePattern,
 			);
 		}

@@ -114,7 +114,7 @@ export class RenameProfileAction extends Action2 {
 			),
 			validateInput: async (value: string) => {
 				if (
-					profile!.name !== value &&
+					profile?.name !== value &&
 					userDataProfilesService.profiles.some(
 						(p) => p.name === value,
 					)
@@ -145,7 +145,7 @@ export class RenameProfileAction extends Action2 {
 		userDataProfilesService: IUserDataProfilesService,
 	): Promise<IUserDataProfile | undefined> {
 		const profiles = userDataProfilesService.profiles.filter(
-			(p) => !p.isDefault && !p.isTransient,
+			(p) => !(p.isDefault || p.isTransient),
 		);
 		if (!profiles.length) {
 			return undefined;

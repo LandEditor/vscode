@@ -559,7 +559,7 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 	private onDidRunWorkingCopyFileOperation(e: WorkingCopyFileEvent): void {
 		switch (e.operation) {
 			// Create: Revert existing working copies
-			case FileOperation.CREATE:
+			case FileOperation.CREATE: {
 				e.waitUntil(
 					(async () => {
 						for (const { target } of e.files) {
@@ -571,10 +571,11 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 					})(),
 				);
 				break;
+			}
 
 			// Move/Copy: restore working copies that were loaded before the operation took place
 			case FileOperation.MOVE:
-			case FileOperation.COPY:
+			case FileOperation.COPY: {
 				e.waitUntil(
 					(async () => {
 						const workingCopiesToRestore =
@@ -609,6 +610,7 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 					})(),
 				);
 				break;
+			}
 		}
 	}
 
@@ -886,10 +888,11 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 		// Quick return if working copy already disposed or not dirty and not resolving
 		if (
 			workingCopy.isDisposed() ||
-			(!this.mapResourceToPendingWorkingCopyResolve.has(
-				workingCopy.resource,
-			) &&
-				!workingCopy.isDirty())
+			!(
+				this.mapResourceToPendingWorkingCopyResolve.has(
+					workingCopy.resource,
+				) || workingCopy.isDirty()
+			)
 		) {
 			return true;
 		}

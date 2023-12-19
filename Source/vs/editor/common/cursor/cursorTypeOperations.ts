@@ -241,7 +241,7 @@ export class TypeOperations {
 		pasteOnNewLine: boolean,
 		multicursorText: string[],
 	): EditOperationResult {
-		const distributedPaste = this._distributePasteToCursors(
+		const distributedPaste = TypeOperations._distributePasteToCursors(
 			config,
 			selections,
 			text,
@@ -251,14 +251,14 @@ export class TypeOperations {
 
 		if (distributedPaste) {
 			selections = selections.sort(Range.compareRangesUsingStarts);
-			return this._distributedPaste(
+			return TypeOperations._distributedPaste(
 				config,
 				model,
 				selections,
 				distributedPaste,
 			);
 		} else {
-			return this._simplePaste(
+			return TypeOperations._simplePaste(
 				config,
 				model,
 				selections,
@@ -386,7 +386,7 @@ export class TypeOperations {
 						selection.startLineNumber,
 					)
 				) {
-					let goodIndent = this._goodIndentForLine(
+					let goodIndent = TypeOperations._goodIndentForLine(
 						config,
 						model,
 						selection.startLineNumber,
@@ -409,7 +409,7 @@ export class TypeOperations {
 					}
 				}
 
-				commands[i] = this._replaceJumpToNextIndent(
+				commands[i] = TypeOperations._replaceJumpToNextIndent(
 					config,
 					model,
 					selection,
@@ -425,7 +425,7 @@ export class TypeOperations {
 						selection.endColumn !== lineMaxColumn
 					) {
 						// This is a single line selection that is not the entire line
-						commands[i] = this._replaceJumpToNextIndent(
+						commands[i] = TypeOperations._replaceJumpToNextIndent(
 							config,
 							model,
 							selection,
@@ -463,7 +463,7 @@ export class TypeOperations {
 		positionDelta: number,
 	): EditOperationResult {
 		const commands = selections.map((selection) =>
-			this._compositionType(
+			TypeOperations._compositionType(
 				model,
 				selection,
 				text,
@@ -557,7 +557,7 @@ export class TypeOperations {
 				.substring(0, range.startColumn - 1);
 			return TypeOperations._typeCommand(
 				range,
-				"\n" + config.normalizeIndentation(indentation),
+				`\n${config.normalizeIndentation(indentation)}`,
 				keepPosition,
 			);
 		}
@@ -573,20 +573,18 @@ export class TypeOperations {
 				// Nothing special
 				return TypeOperations._typeCommand(
 					range,
-					"\n" +
-						config.normalizeIndentation(
-							r.indentation + r.appendText,
-						),
+					`\n${config.normalizeIndentation(
+						r.indentation + r.appendText,
+					)}`,
 					keepPosition,
 				);
 			} else if (r.indentAction === IndentAction.Indent) {
 				// Indent once
 				return TypeOperations._typeCommand(
 					range,
-					"\n" +
-						config.normalizeIndentation(
-							r.indentation + r.appendText,
-						),
+					`\n${config.normalizeIndentation(
+						r.indentation + r.appendText,
+					)}`,
 					keepPosition,
 				);
 			} else if (r.indentAction === IndentAction.IndentOutdent) {
@@ -596,7 +594,7 @@ export class TypeOperations {
 					r.indentation + r.appendText,
 				);
 
-				const typeText = "\n" + increasedIndent + "\n" + normalIndent;
+				const typeText = `\n${increasedIndent}\n${normalIndent}`;
 
 				if (keepPosition) {
 					return new ReplaceCommandWithoutChangingPosition(
@@ -620,10 +618,9 @@ export class TypeOperations {
 				);
 				return TypeOperations._typeCommand(
 					range,
-					"\n" +
-						config.normalizeIndentation(
-							actualIndentation + r.appendText,
-						),
+					`\n${config.normalizeIndentation(
+						actualIndentation + r.appendText,
+					)}`,
 					keepPosition,
 				);
 			}
@@ -679,7 +676,7 @@ export class TypeOperations {
 				if (keepPosition) {
 					return new ReplaceCommandWithoutChangingPosition(
 						range,
-						"\n" + config.normalizeIndentation(ir.afterEnter),
+						`\n${config.normalizeIndentation(ir.afterEnter)}`,
 						true,
 					);
 				} else {
@@ -701,7 +698,7 @@ export class TypeOperations {
 					}
 					return new ReplaceCommandWithOffsetCursorState(
 						range,
-						"\n" + config.normalizeIndentation(ir.afterEnter),
+						`\n${config.normalizeIndentation(ir.afterEnter)}`,
 						0,
 						offset,
 						true,
@@ -712,7 +709,7 @@ export class TypeOperations {
 
 		return TypeOperations._typeCommand(
 			range,
-			"\n" + config.normalizeIndentation(indentation),
+			`\n${config.normalizeIndentation(indentation)}`,
 			keepPosition,
 		);
 	}
@@ -1059,7 +1056,7 @@ export class TypeOperations {
 
 		// Find the longest auto-closing open pair in case of multiple ending in `ch`
 		// e.g. when having [f","] and [","], it picks [f","] if the character before is f
-		const pair = this._findAutoClosingPairOpen(
+		const pair = TypeOperations._findAutoClosingPairOpen(
 			config,
 			model,
 			positions.map((p) => new Position(p.lineNumber, p.beforeColumn)),
@@ -1097,7 +1094,10 @@ export class TypeOperations {
 		// e.g. when having [(,)] and [(*,*)]
 		// - when typing (, the resulting state is (|)
 		// - when typing *, the desired resulting state is (*|*), not (*|*))
-		const containedPair = this._findContainedAutoClosingPair(config, pair);
+		const containedPair = TypeOperations._findContainedAutoClosingPair(
+			config,
+			pair,
+		);
 		const containedPairClose = containedPair ? containedPair.close : "";
 		let isContainedPairPresent = true;
 
@@ -1120,8 +1120,10 @@ export class TypeOperations {
 				);
 
 				if (
-					!isBeforeCloseBrace &&
-					!shouldAutoCloseBefore(characterAfter)
+					!(
+						isBeforeCloseBrace ||
+						shouldAutoCloseBefore(characterAfter)
+					)
 				) {
 					return null;
 				}
@@ -1255,8 +1257,10 @@ export class TypeOperations {
 		ch: string,
 	): boolean {
 		if (
-			!TypeOperations._shouldSurroundChar(config, ch) ||
-			!config.surroundingPairs.hasOwnProperty(ch)
+			!(
+				TypeOperations._shouldSurroundChar(config, ch) &&
+				config.surroundingPairs.hasOwnProperty(ch)
+			)
 		) {
 			return false;
 		}
@@ -1359,7 +1363,7 @@ export class TypeOperations {
 		selection: Selection,
 		ch: string,
 	): EditOperationResult | null {
-		if (!config.electricChars.hasOwnProperty(ch) || !selection.isEmpty()) {
+		if (!(config.electricChars.hasOwnProperty(ch) && selection.isEmpty())) {
 			return null;
 		}
 
@@ -1489,8 +1493,10 @@ export class TypeOperations {
 			// Check if this could have been a surround selection
 
 			if (
-				!TypeOperations._shouldSurroundChar(config, ch) ||
-				!config.surroundingPairs.hasOwnProperty(ch)
+				!(
+					TypeOperations._shouldSurroundChar(config, ch) &&
+					config.surroundingPairs.hasOwnProperty(ch)
+				)
 			) {
 				return null;
 			}
@@ -1552,7 +1558,7 @@ export class TypeOperations {
 		}
 
 		if (
-			this._isAutoClosingOvertype(
+			TypeOperations._isAutoClosingOvertype(
 				config,
 				model,
 				selections,
@@ -1584,7 +1590,7 @@ export class TypeOperations {
 			);
 		}
 
-		const autoClosingPairClose = this._getAutoClosingPairClose(
+		const autoClosingPairClose = TypeOperations._getAutoClosingPairClose(
 			config,
 			model,
 			selections,
@@ -1592,7 +1598,7 @@ export class TypeOperations {
 			true,
 		);
 		if (autoClosingPairClose !== null) {
-			return this._runAutoClosingOpenCharType(
+			return TypeOperations._runAutoClosingOpenCharType(
 				prevEditOperationType,
 				config,
 				model,
@@ -1637,12 +1643,12 @@ export class TypeOperations {
 
 		if (
 			!isDoingComposition &&
-			this._isAutoIndentType(config, model, selections)
+			TypeOperations._isAutoIndentType(config, model, selections)
 		) {
 			const commands: Array<ICommand | null> = [];
 			let autoIndentFails = false;
 			for (let i = 0, len = selections.length; i < len; i++) {
-				commands[i] = this._runAutoIndentType(
+				commands[i] = TypeOperations._runAutoIndentType(
 					config,
 					model,
 					selections[i],
@@ -1666,7 +1672,7 @@ export class TypeOperations {
 		}
 
 		if (
-			this._isAutoClosingOvertype(
+			TypeOperations._isAutoClosingOvertype(
 				config,
 				model,
 				selections,
@@ -1674,7 +1680,7 @@ export class TypeOperations {
 				ch,
 			)
 		) {
-			return this._runAutoClosingOvertype(
+			return TypeOperations._runAutoClosingOvertype(
 				prevEditOperationType,
 				config,
 				model,
@@ -1684,15 +1690,16 @@ export class TypeOperations {
 		}
 
 		if (!isDoingComposition) {
-			const autoClosingPairClose = this._getAutoClosingPairClose(
-				config,
-				model,
-				selections,
-				ch,
-				false,
-			);
+			const autoClosingPairClose =
+				TypeOperations._getAutoClosingPairClose(
+					config,
+					model,
+					selections,
+					ch,
+					false,
+				);
 			if (autoClosingPairClose) {
-				return this._runAutoClosingOpenCharType(
+				return TypeOperations._runAutoClosingOpenCharType(
 					prevEditOperationType,
 					config,
 					model,
@@ -1706,9 +1713,14 @@ export class TypeOperations {
 
 		if (
 			!isDoingComposition &&
-			this._isSurroundSelectionType(config, model, selections, ch)
+			TypeOperations._isSurroundSelectionType(
+				config,
+				model,
+				selections,
+				ch,
+			)
 		) {
-			return this._runSurroundSelectionType(
+			return TypeOperations._runSurroundSelectionType(
 				prevEditOperationType,
 				config,
 				model,
@@ -1721,9 +1733,13 @@ export class TypeOperations {
 		// as multiple cursors typing brackets for example would interfer with bracket matching
 		if (
 			!isDoingComposition &&
-			this._isTypeInterceptorElectricChar(config, model, selections)
+			TypeOperations._isTypeInterceptorElectricChar(
+				config,
+				model,
+				selections,
+			)
 		) {
-			const r = this._typeInterceptorElectricChar(
+			const r = TypeOperations._typeInterceptorElectricChar(
 				prevEditOperationType,
 				config,
 				model,
@@ -1794,7 +1810,7 @@ export class TypeOperations {
 				lineNumber--;
 				const column = model.getLineMaxColumn(lineNumber);
 
-				commands[i] = this._enter(
+				commands[i] = TypeOperations._enter(
 					config,
 					model,
 					false,
@@ -1818,7 +1834,7 @@ export class TypeOperations {
 		for (let i = 0, len = selections.length; i < len; i++) {
 			const lineNumber = selections[i].positionLineNumber;
 			const column = model.getLineMaxColumn(lineNumber);
-			commands[i] = this._enter(
+			commands[i] = TypeOperations._enter(
 				config,
 				model,
 				false,
@@ -1835,7 +1851,12 @@ export class TypeOperations {
 	): ICommand[] {
 		const commands: ICommand[] = [];
 		for (let i = 0, len = selections.length; i < len; i++) {
-			commands[i] = this._enter(config, model, true, selections[i]);
+			commands[i] = TypeOperations._enter(
+				config,
+				model,
+				true,
+				selections[i],
+			);
 		}
 		return commands;
 	}

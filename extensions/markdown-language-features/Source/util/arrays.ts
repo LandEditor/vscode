@@ -10,8 +10,8 @@ export function coalesce<T>(array: ReadonlyArray<T | undefined | null>): T[] {
 }
 
 export function equals<T>(
-	one: ReadonlyArray<T>,
-	other: ReadonlyArray<T>,
+	one: readonly T[],
+	other: readonly T[],
 	itemEquals: (a: T, b: T) => boolean = (a, b) => a === b,
 ): boolean {
 	if (one.length !== other.length) {

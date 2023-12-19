@@ -37,7 +37,7 @@ export class Delayer<T> {
 			}).then(() => {
 				this.completionPromise = null;
 				this.onSuccess = null;
-				const result = this.task!();
+				const result = this.task?.();
 				this.task = null;
 				return result;
 			});
@@ -47,7 +47,7 @@ export class Delayer<T> {
 			this.timeout = setTimeout(
 				() => {
 					this.timeout = null;
-					this.onSuccess!(undefined);
+					this.onSuccess?.(undefined);
 				},
 				delay >= 0 ? delay : this.defaultDelay,
 			);
@@ -62,7 +62,7 @@ export class Delayer<T> {
 		}
 		this.cancelTimeout();
 		const result = this.completionPromise;
-		this.onSuccess!(undefined);
+		this.onSuccess?.(undefined);
 		return result;
 	}
 

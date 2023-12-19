@@ -259,8 +259,6 @@ class TaskDetector {
 	private taskProvider: vscode.Disposable | undefined;
 	private detectors: Map<string, FolderDetector> = new Map();
 
-	constructor() {}
-
 	public start(): void {
 		const folders = vscode.workspace.workspaceFolders;
 		if (folders) {

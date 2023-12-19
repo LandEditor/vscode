@@ -114,9 +114,9 @@ export class LazyCreateExtensionHostManager
 		}
 		const actual = this._createActual(reason);
 		await actual.start(
-			this._lazyStartExtensions!.versionId,
-			this._lazyStartExtensions!.allExtensions,
-			this._lazyStartExtensions!.myExtensions,
+			this._lazyStartExtensions?.versionId,
+			this._lazyStartExtensions?.allExtensions,
+			this._lazyStartExtensions?.myExtensions,
 		);
 		return actual;
 	}
@@ -139,7 +139,7 @@ export class LazyCreateExtensionHostManager
 		if (this._actual) {
 			return this._actual.deltaExtensions(extensionsDelta);
 		}
-		this._lazyStartExtensions!.delta(extensionsDelta);
+		this._lazyStartExtensions?.delta(extensionsDelta);
 		if (extensionsDelta.myToAdd.length > 0) {
 			const actual = this._createActual(
 				`contains ${
@@ -149,9 +149,9 @@ export class LazyCreateExtensionHostManager
 				)}`,
 			);
 			await actual.start(
-				this._lazyStartExtensions!.versionId,
-				this._lazyStartExtensions!.allExtensions,
-				this._lazyStartExtensions!.myExtensions,
+				this._lazyStartExtensions?.versionId,
+				this._lazyStartExtensions?.allExtensions,
+				this._lazyStartExtensions?.myExtensions,
 			);
 			return;
 		}
@@ -224,7 +224,7 @@ export class LazyCreateExtensionHostManager
 		return {
 			type: "error",
 			error: {
-				message: `Cannot resolve authority`,
+				message: "Cannot resolve authority",
 				code: RemoteAuthorityResolverErrorCode.Unknown,
 				detail: undefined,
 			},
@@ -238,7 +238,7 @@ export class LazyCreateExtensionHostManager
 		if (this._actual) {
 			return this._actual.getCanonicalURI(remoteAuthority, uri);
 		}
-		throw new Error(`Cannot resolve canonical URI`);
+		throw new Error("Cannot resolve canonical URI");
 	}
 	public async start(
 		extensionRegistryVersionId: number,
@@ -270,7 +270,7 @@ export class LazyCreateExtensionHostManager
 	}
 	public async extensionTestsExecute(): Promise<number> {
 		await this._startCalled.wait();
-		const actual = await this._getOrCreateActualAndStart(`execute tests.`);
+		const actual = await this._getOrCreateActualAndStart("execute tests.");
 		return actual.extensionTestsExecute();
 	}
 	public async setRemoteEnvironment(env: {

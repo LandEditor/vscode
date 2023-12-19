@@ -533,7 +533,7 @@ class ConfigurationRegistry implements IConfigurationRegistry {
 				if (OVERRIDE_PROPERTY_REGEX.test(key)) {
 					delete this.configurationProperties[key];
 					delete this.defaultLanguageConfigurationOverridesNode
-						.properties![key];
+						.properties?.[key];
 				} else {
 					const property = this.configurationProperties[key];
 					if (property) {
@@ -654,10 +654,10 @@ class ConfigurationRegistry implements IConfigurationRegistry {
 
 	private validateAndRegisterProperties(
 		configuration: IConfigurationNode,
-		validate = true,
+		validate,
 		extensionInfo: IExtensionInfo | undefined,
 		restrictedProperties: string[] | undefined,
-		scope: ConfigurationScope = ConfigurationScope.WINDOW,
+		scope: ConfigurationScope,
 		bucket: Set<string>,
 	): void {
 		scope = types.isUndefinedOrNull(configuration.scope)
@@ -706,7 +706,7 @@ class ConfigurationRegistry implements IConfigurationRegistry {
 					this.configurationProperties[key] = properties[key];
 					if (properties[key].policy?.name) {
 						this.policyConfigurations.set(
-							properties[key].policy!.name,
+							properties[key].policy?.name,
 							key,
 						);
 					}
@@ -783,25 +783,31 @@ class ConfigurationRegistry implements IConfigurationRegistry {
 	): void {
 		allSettings.properties[key] = property;
 		switch (property.scope) {
-			case ConfigurationScope.APPLICATION:
+			case ConfigurationScope.APPLICATION: {
 				applicationSettings.properties[key] = property;
 				break;
-			case ConfigurationScope.MACHINE:
+			}
+			case ConfigurationScope.MACHINE: {
 				machineSettings.properties[key] = property;
 				break;
-			case ConfigurationScope.MACHINE_OVERRIDABLE:
+			}
+			case ConfigurationScope.MACHINE_OVERRIDABLE: {
 				machineOverridableSettings.properties[key] = property;
 				break;
-			case ConfigurationScope.WINDOW:
+			}
+			case ConfigurationScope.WINDOW: {
 				windowSettings.properties[key] = property;
 				break;
-			case ConfigurationScope.RESOURCE:
+			}
+			case ConfigurationScope.RESOURCE: {
 				resourceSettings.properties[key] = property;
 				break;
-			case ConfigurationScope.LANGUAGE_OVERRIDABLE:
+			}
+			case ConfigurationScope.LANGUAGE_OVERRIDABLE: {
 				resourceSettings.properties[key] = property;
 				this.resourceLanguageSettingsSchema.properties![key] = property;
 				break;
+			}
 		}
 	}
 
@@ -811,23 +817,28 @@ class ConfigurationRegistry implements IConfigurationRegistry {
 	): void {
 		delete allSettings.properties[key];
 		switch (property.scope) {
-			case ConfigurationScope.APPLICATION:
+			case ConfigurationScope.APPLICATION: {
 				delete applicationSettings.properties[key];
 				break;
-			case ConfigurationScope.MACHINE:
+			}
+			case ConfigurationScope.MACHINE: {
 				delete machineSettings.properties[key];
 				break;
-			case ConfigurationScope.MACHINE_OVERRIDABLE:
+			}
+			case ConfigurationScope.MACHINE_OVERRIDABLE: {
 				delete machineOverridableSettings.properties[key];
 				break;
-			case ConfigurationScope.WINDOW:
+			}
+			case ConfigurationScope.WINDOW: {
 				delete windowSettings.properties[key];
 				break;
+			}
 			case ConfigurationScope.RESOURCE:
-			case ConfigurationScope.LANGUAGE_OVERRIDABLE:
+			case ConfigurationScope.LANGUAGE_OVERRIDABLE: {
 				delete resourceSettings.properties[key];
-				delete this.resourceLanguageSettingsSchema.properties![key];
+				delete this.resourceLanguageSettingsSchema.properties?.[key];
 				break;
+			}
 		}
 	}
 
@@ -914,7 +925,7 @@ class ConfigurationRegistry implements IConfigurationRegistry {
 	}
 }
 
-const OVERRIDE_IDENTIFIER_PATTERN = `\\[([^\\]]+)\\]`;
+const OVERRIDE_IDENTIFIER_PATTERN = "\\[([^\\]]+)\\]";
 const OVERRIDE_IDENTIFIER_REGEX = new RegExp(OVERRIDE_IDENTIFIER_PATTERN, "g");
 export const OVERRIDE_PROPERTY_PATTERN = `^(${OVERRIDE_IDENTIFIER_PATTERN})+$`;
 export const OVERRIDE_PROPERTY_REGEX = new RegExp(OVERRIDE_PROPERTY_PATTERN);

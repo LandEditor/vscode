@@ -435,7 +435,7 @@ class ModelSemanticColoring extends Disposable {
 			}
 			return;
 		}
-		if (!provider || !styling) {
+		if (!(provider && styling)) {
 			this._model.tokenization.setSemanticTokens(null, false);
 			return;
 		}

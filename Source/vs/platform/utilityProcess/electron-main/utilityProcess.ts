@@ -215,15 +215,18 @@ export class UtilityProcess extends Disposable {
 		}
 
 		switch (severity) {
-			case Severity.Error:
+			case Severity.Error: {
 				this.logService.error(logMsg);
 				break;
-			case Severity.Warning:
+			}
+			case Severity.Warning: {
 				this.logService.warn(logMsg);
 				break;
-			case Severity.Info:
+			}
+			case Severity.Info: {
 				this.logService.trace(logMsg);
 				break;
+			}
 		}
 	}
 

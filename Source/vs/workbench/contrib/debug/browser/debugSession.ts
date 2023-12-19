@@ -428,7 +428,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 
 			await this.raw.start();
 			this.registerListeners();
-			await this.raw!.initialize({
+			await this.raw?.initialize({
 				clientID: "vscode",
 				clientName: this.productService.nameLong,
 				adapterID: this.configuration.type,
@@ -451,9 +451,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 			this._onDidChangeState.fire();
 			this.debugService.setExceptionBreakpointsForSession(
 				this,
-				(this.raw &&
-					this.raw.capabilities.exceptionBreakpointFilters) ||
-					[],
+				this.raw?.capabilities.exceptionBreakpointFilters || [],
 			);
 		} catch (err) {
 			this.initialized = true;
@@ -608,7 +606,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 			})),
 			sourceModified,
 		});
-		if (response && response.body) {
+		if (response?.body) {
 			const data = new Map<string, DebugProtocol.Breakpoint>();
 			for (let i = 0; i < breakpointsToSend.length; i++) {
 				data.set(
@@ -640,7 +638,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 			const response = await this.raw.setFunctionBreakpoints({
 				breakpoints: fbpts,
 			});
-			if (response && response.body) {
+			if (response?.body) {
 				const data = new Map<string, DebugProtocol.Breakpoint>();
 				for (let i = 0; i < fbpts.length; i++) {
 					data.set(fbpts[i].getId(), response.body.breakpoints[i]);
@@ -686,7 +684,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				: { filters: exbpts.map((exb) => exb.filter) };
 
 			const response = await this.raw.setExceptionBreakpoints(args);
-			if (response && response.body && response.body.breakpoints) {
+			if (response?.body?.breakpoints) {
 				const data = new Map<string, DebugProtocol.Breakpoint>();
 				for (let i = 0; i < exbpts.length; i++) {
 					data.set(exbpts[i].getId(), response.body.breakpoints[i]);
@@ -750,7 +748,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 			const response = await this.raw.setDataBreakpoints({
 				breakpoints: dataBreakpoints,
 			});
-			if (response && response.body) {
+			if (response?.body) {
 				const data = new Map<string, DebugProtocol.Breakpoint>();
 				for (let i = 0; i < dataBreakpoints.length; i++) {
 					data.set(
@@ -784,7 +782,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 			const response = await this.raw.setInstructionBreakpoints({
 				breakpoints: instructionBreakpoints.map((ib) => ib.toJSON()),
 			});
-			if (response && response.body) {
+			if (response?.body) {
 				const data = new Map<string, DebugProtocol.Breakpoint>();
 				for (let i = 0; i < instructionBreakpoints.length; i++) {
 					data.set(
@@ -820,7 +818,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 			source,
 			line: lineNumber,
 		});
-		if (!response || !response.body || !response.body.breakpoints) {
+		if (!response.body?.breakpoints) {
 			return [];
 		}
 
@@ -1239,7 +1237,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 		}
 
 		const response = await this.raw.loadedSources({});
-		if (response && response.body && response.body.sources) {
+		if (response?.body?.sources) {
 			return response.body.sources.map((src) => this.getSource(src));
 		} else {
 			return [];
@@ -1503,7 +1501,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 	): Promise<void> {
 		if (this.raw) {
 			const response = await this.raw.threads();
-			if (response && response.body && response.body.threads) {
+			if (response?.body?.threads) {
 				this.model.rawUpdate({
 					sessionId: this.getId(),
 					threads: response.body.threads,
@@ -1538,8 +1536,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 
 				const sendConfigurationDone = async () => {
 					if (
-						this.raw &&
-						this.raw.capabilities.supportsConfigurationDoneRequest
+						this.raw?.capabilities.supportsConfigurationDoneRequest
 					) {
 						try {
 							await this.raw.configurationDone();
@@ -1613,7 +1610,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 		this.rawListeners.add(
 			this.raw.onDidTerminateDebugee(async (event) => {
 				aria.status(localize("debuggingStopped", "Debugging stopped."));
-				if (event.body && event.body.restart) {
+				if (event.body?.restart) {
 					await this.debugService.restartSession(
 						this,
 						event.body.restart,
@@ -1717,7 +1714,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 					return;
 				}
 				outputQueue.queue(async () => {
-					if (!event.body || !this.raw) {
+					if (!(event.body && this.raw)) {
 						return;
 					}
 
@@ -1800,10 +1797,9 @@ export class DebugSession implements IDebugSession, IDisposable {
 
 		this.rawListeners.add(
 			this.raw.onDidBreakpoint((event) => {
-				const id =
-					event.body && event.body.breakpoint
-						? event.body.breakpoint.id
-						: undefined;
+				const id = event.body?.breakpoint
+					? event.body.breakpoint.id
+					: undefined;
 				const breakpoint = this.model
 					.getBreakpoints()
 					.find((bp) => bp.getIdFromAdapter(this.getId()) === id);
@@ -2095,8 +2091,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 					const focusedStackFrame =
 						this.debugService.getViewModel().focusedStackFrame;
 					if (
-						!focusedStackFrame ||
-						!focusedStackFrame.source ||
+						!focusedStackFrame?.source ||
 						focusedStackFrame.source.presentationHint ===
 							"deemphasize" ||
 						focusedStackFrame.presentationHint === "deemphasize"

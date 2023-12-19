@@ -204,7 +204,7 @@ export class IndexTreeModel<
 		identity: IIdentityProvider<T>,
 		location: number[],
 		deleteCount: number,
-		toInsertIterable: Iterable<ITreeElement<T>> = Iterable.empty(),
+		toInsertIterable: Iterable<ITreeElement<T>>,
 		options: IIndexTreeModelSpliceOptions<T, TFilterData>,
 		recurseLevels = options.diffDepth ?? 0,
 	) {
@@ -295,7 +295,7 @@ export class IndexTreeModel<
 	private spliceSimple(
 		location: number[],
 		deleteCount: number,
-		toInsert: Iterable<ITreeElement<T>> = Iterable.empty(),
+		toInsert: Iterable<ITreeElement<T>>,
 		{
 			onDidCreateNode,
 			onDidDeleteNode,
@@ -516,7 +516,7 @@ export class IndexTreeModel<
 
 		const update: CollapsedStateUpdate = {
 			collapsed,
-			recursive: recursive || false,
+			recursive: recursive,
 		};
 		return this.eventBufferer.bufferEvents(() =>
 			this._setCollapseState(location, update),
@@ -580,7 +580,7 @@ export class IndexTreeModel<
 	): boolean {
 		const result = this._setNodeCollapseState(node, update, false);
 
-		if (!revealed || !node.visible || !result) {
+		if (!(revealed && node.visible && result)) {
 			return result;
 		}
 

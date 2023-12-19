@@ -65,7 +65,7 @@ export class PaneCompositePartService
 		this.onDidPaneCompositeOpen = Event.any(
 			...ViewContainerLocations.map((loc) =>
 				Event.map(
-					this.paneCompositeParts.get(loc)!.onDidPaneCompositeOpen,
+					this.paneCompositeParts.get(loc)?.onDidPaneCompositeOpen,
 					(composite) => {
 						return { composite, viewContainerLocation: loc };
 					},
@@ -76,7 +76,7 @@ export class PaneCompositePartService
 		this.onDidPaneCompositeClose = Event.any(
 			...ViewContainerLocations.map((loc) =>
 				Event.map(
-					this.paneCompositeParts.get(loc)!.onDidPaneCompositeClose,
+					this.paneCompositeParts.get(loc)?.onDidPaneCompositeClose,
 					(composite) => {
 						return { composite, viewContainerLocation: loc };
 					},

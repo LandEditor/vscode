@@ -264,7 +264,7 @@ export const setTimeout0 = (() => {
 		const pending: IQueueElement[] = [];
 
 		$globalThis.addEventListener("message", (e: any) => {
-			if (e.data && e.data.vscodeScheduleAsyncWork) {
+			if (e.data?.vscodeScheduleAsyncWork) {
 				for (let i = 0, len = pending.length; i < len; i++) {
 					const candidate = pending[i];
 					if (candidate.id === e.data.vscodeScheduleAsyncWork) {

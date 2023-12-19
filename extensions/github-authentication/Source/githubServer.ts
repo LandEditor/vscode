@@ -226,11 +226,9 @@ export class GitHubServer implements IGitHubServer {
 			return;
 		}
 
-		const authHeader =
-			"Basic " +
-			base64Encode(
-				`${Config.gitHubClientId}:${Config.gitHubClientSecret}`,
-			);
+		const authHeader = `Basic ${base64Encode(
+			`${Config.gitHubClientId}:${Config.gitHubClientSecret}`,
+		)}`;
 		const uri = this.getServerUri(
 			`/applications/${Config.gitHubClientId}/token`,
 		);
@@ -263,7 +261,7 @@ export class GitHubServer implements IGitHubServer {
 			}
 		} catch (e) {
 			this._logger.warn(
-				"Failed to delete token from server." + e.message ?? e,
+				`Failed to delete token from server.${e.message}` ?? e,
 			);
 		}
 	}

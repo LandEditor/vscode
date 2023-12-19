@@ -106,7 +106,7 @@ const breakpointHelperDecoration: IModelDecorationOptions = {
 export function createBreakpointDecorations(
 	accessor: ServicesAccessor,
 	model: ITextModel,
-	breakpoints: ReadonlyArray<IBreakpoint>,
+	breakpoints: readonly IBreakpoint[],
 	state: State,
 	breakpointsActivated: boolean,
 	showBreakpointsInOverviewRuler: boolean,
@@ -216,14 +216,14 @@ function getBreakpointDecorationOptions(
 			glyphMarginHoverMessage.appendCodeblock(languageId, message);
 			if (unverifiedMessage) {
 				glyphMarginHoverMessage.appendMarkdown(
-					"$(warning) " + unverifiedMessage,
+					`$(warning) ${unverifiedMessage}`,
 				);
 			}
 		} else {
 			glyphMarginHoverMessage.appendText(message);
 			if (unverifiedMessage) {
 				glyphMarginHoverMessage.appendMarkdown(
-					"\n\n$(warning) " + unverifiedMessage,
+					`\n\n$(warning) ${unverifiedMessage}`,
 				);
 			}
 		}
@@ -257,7 +257,7 @@ function getBreakpointDecorationOptions(
 		before: renderInline
 			? {
 					content: noBreakWhitespace,
-					inlineClassName: `debug-breakpoint-placeholder`,
+					inlineClassName: "debug-breakpoint-placeholder",
 					inlineClassNameAffectsLetterSpacing: true,
 			  }
 			: undefined,
@@ -339,7 +339,7 @@ function createCandidateDecorations(
 			const breakpointAtPosition = breakpointDecorations.find((bpd) =>
 				bpd.range.equalsRange(range),
 			);
-			if (breakpointAtPosition && breakpointAtPosition.inlineWidget) {
+			if (breakpointAtPosition?.inlineWidget) {
 				// Space already occupied, do not render candidate.
 				return;
 			}
@@ -353,7 +353,7 @@ function createCandidateDecorations(
 						? undefined
 						: {
 								content: noBreakWhitespace,
-								inlineClassName: `debug-breakpoint-placeholder`,
+								inlineClassName: "debug-breakpoint-placeholder",
 								inlineClassNameAffectsLetterSpacing: true,
 						  },
 				},
@@ -440,15 +440,14 @@ export class BreakpointEditorContribution
 
 				const model = this.editor.getModel();
 				if (
-					!e.target.position ||
-					!model ||
+					!(e.target.position && model) ||
 					e.target.type !== MouseTargetType.GUTTER_GLYPH_MARGIN ||
 					e.target.detail.isAfterLines ||
-					(!this.marginFreeFromNonDebugDecorations(
-						e.target.position.lineNumber,
-					) &&
-						// don't return early if there's a breakpoint
-						!e.target.element?.className.includes("breakpoint"))
+					!(
+						this.marginFreeFromNonDebugDecorations(
+							e.target.position.lineNumber,
+						) || e.target.element?.className.includes("breakpoint")
+					)
 				) {
 					return;
 				}
@@ -654,8 +653,10 @@ export class BreakpointEditorContribution
 		this.toDispose.push(
 			this.debugService.getModel().onDidChangeBreakpoints(() => {
 				if (
-					!this.ignoreBreakpointsChangeEvent &&
-					!this.setDecorationsScheduler.isScheduled()
+					!(
+						this.ignoreBreakpointsChangeEvent ||
+						this.setDecorationsScheduler.isScheduled()
+					)
 				) {
 					this.setDecorationsScheduler.schedule();
 				}
@@ -691,7 +692,7 @@ export class BreakpointEditorContribution
 	}
 
 	private getContextMenuActions(
-		breakpoints: ReadonlyArray<IBreakpoint>,
+		breakpoints: readonly IBreakpoint[],
 		uri: URI,
 		lineNumber: number,
 		column?: number,
@@ -741,7 +742,7 @@ export class BreakpointEditorContribution
 
 			actions.push(
 				new Action(
-					`workbench.debug.viewlet.action.toggleBreakpoint`,
+					"workbench.debug.viewlet.action.toggleBreakpoint",
 					breakpoints[0].enabled
 						? nls.localize(
 								"disableBreakpoint",
@@ -1264,9 +1265,11 @@ GutterActionsRegistry.registerGutterActionsGenerator(
 		const model = editor.getModel();
 		const debugService = accessor.get(IDebugService);
 		if (
-			!model ||
-			!debugService.getAdapterManager().hasEnabledDebuggers() ||
-			!debugService.canSetBreakpointsIn(model)
+			!(
+				model &&
+				debugService.getAdapterManager().hasEnabledDebuggers() &&
+				debugService.canSetBreakpointsIn(model)
+			)
 		) {
 			return;
 		}
@@ -1337,28 +1340,31 @@ class InlineBreakpointWidget implements IContentWidget, IDisposable {
 				dom.EventType.CLICK,
 				async (e) => {
 					switch (this.breakpoint?.enabled) {
-						case undefined:
+						case undefined: {
 							await this.debugService.addBreakpoints(
 								this.editor.getModel().uri,
 								[
 									{
-										lineNumber: this.range!.startLineNumber,
-										column: this.range!.startColumn,
+										lineNumber: this.range?.startLineNumber,
+										column: this.range?.startColumn,
 									},
 								],
 							);
 							break;
-						case true:
+						}
+						case true: {
 							await this.debugService.removeBreakpoints(
 								this.breakpoint.getId(),
 							);
 							break;
-						case false:
+						}
+						case false: {
 							this.debugService.enableOrDisableBreakpoints(
 								true,
 								this.breakpoint,
 							);
 							break;
+						}
 					}
 				},
 			),
@@ -1387,7 +1393,7 @@ class InlineBreakpointWidget implements IContentWidget, IDisposable {
 			const lineHeight = this.editor.getOption(EditorOption.lineHeight);
 			this.domNode.style.height = `${lineHeight}px`;
 			this.domNode.style.width = `${Math.ceil(0.8 * lineHeight)}px`;
-			this.domNode.style.marginLeft = `4px`;
+			this.domNode.style.marginLeft = "4px";
 		};
 		updateSize();
 

@@ -213,10 +213,10 @@ class ViewWelcomeController {
 			return;
 		}
 
-		this.element!.style.height = `${height}px`;
-		this.element!.style.width = `${width}px`;
-		this.element!.classList.toggle("wide", width > 640);
-		this.scrollableElement!.scanDomNode();
+		this.element?.style.height = `${height}px`;
+		this.element?.style.width = `${width}px`;
+		this.element?.classList.toggle("wide", width > 640);
+		this.scrollableElement?.scanDomNode();
 	}
 
 	focus() {
@@ -224,7 +224,7 @@ class ViewWelcomeController {
 			return;
 		}
 
-		this.element!.focus();
+		this.element?.focus();
 	}
 
 	private onDidChangeViewWelcomeState(): void {
@@ -254,7 +254,7 @@ class ViewWelcomeController {
 		this.enabledDisposables.add(
 			toDisposable(() => {
 				this.container.classList.remove("welcome");
-				this.scrollableElement!.dispose();
+				this.scrollableElement?.dispose();
 				viewWelcomeContainer.remove();
 				this.scrollableElement = undefined;
 				this.element = undefined;
@@ -328,7 +328,7 @@ class ViewWelcomeController {
 
 		if (contents.length === 0) {
 			this.container.classList.remove("welcome");
-			this.scrollableElement!.scanDomNode();
+			this.scrollableElement?.scanDomNode();
 			return;
 		}
 
@@ -441,7 +441,7 @@ class ViewWelcomeController {
 		}
 
 		this.container.classList.add("welcome");
-		this.scrollableElement!.scanDomNode();
+		this.scrollableElement?.scanDomNode();
 	}
 
 	private getContentDescriptors(): IViewContentDescriptor[] {
@@ -919,7 +919,7 @@ export abstract class ViewPane extends Pane implements IView {
 	}
 
 	protected getProgressLocation(): string {
-		return this.viewDescriptorService.getViewContainerByViewId(this.id)!.id;
+		return this.viewDescriptorService.getViewContainerByViewId(this.id)?.id;
 	}
 
 	protected getBackgroundColor(): string {
@@ -996,7 +996,7 @@ export abstract class ViewPane extends Pane implements IView {
 				}
 				override render(container: HTMLElement): void {
 					container.classList.add("viewpane-filter-container");
-					append(container, that.getFilterWidget()!.element);
+					append(container, that.getFilterWidget()?.element);
 				}
 			})();
 		}
@@ -1104,7 +1104,7 @@ export abstract class FilterViewPane extends ViewPane {
 			}
 		}
 		if (!shouldShowFilterInHeader) {
-			height = height - 44;
+			height -= 44;
 		}
 		this.filterWidget.layout(width);
 		this.layoutBodyContent(height, width);

@@ -307,7 +307,7 @@ class NativeContextMenuService
 		// Normal Menu Item
 		else {
 			let type: "radio" | "checkbox" | undefined = undefined;
-			if (!!entry.checked) {
+			if (entry.checked) {
 				if (
 					typeof delegate.getCheckedActionsRepresentation ===
 					"function"
@@ -334,7 +334,7 @@ class NativeContextMenuService
 				},
 			};
 
-			const keybinding = !!delegate.getKeyBinding
+			const keybinding = delegate.getKeyBinding
 				? delegate.getKeyBinding(entry)
 				: this.keybindingService.lookupKeybinding(entry.id);
 			if (keybinding) {

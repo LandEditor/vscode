@@ -207,7 +207,7 @@ class TunnelProvider implements vscode.TunnelProvider {
 			case State.Inactive:
 				await this.setupPortForwardingProcess();
 			// fall through since state is now starting
-			case State.Starting:
+			case State.Starting: {
 				this.updateActivePortsIfRunning();
 				return new Promise<Tunnel>((resolve, reject) => {
 					const l = this.stateChange.event((state) => {
@@ -221,10 +221,12 @@ class TunnelProvider implements vscode.TunnelProvider {
 						}
 					});
 				});
-			case State.Active:
+			}
+			case State.Active: {
 				tunnel.setPortFormat(this.state.portFormat);
 				this.updateActivePortsIfRunning();
 				return tunnel;
+			}
 		}
 	}
 

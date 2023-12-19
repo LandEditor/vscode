@@ -13,5 +13,5 @@ export const Schemes = Object.freeze({
 });
 
 export function isOfScheme(scheme: string, link: string): boolean {
-	return link.toLowerCase().startsWith(scheme + ":");
+	return link.toLowerCase().startsWith(`${scheme}:`);
 }

@@ -143,7 +143,7 @@ export class FilterOptions {
 
 	private setPattern(expression: IExpression, pattern: string) {
 		if (pattern[0] === ".") {
-			pattern = "*" + pattern; // convert ".js" to "*.js"
+			pattern = `*${pattern}`; // convert ".js" to "*.js"
 		}
 		expression[`**/${pattern}/**`] = true;
 		expression[`**/${pattern}`] = true;

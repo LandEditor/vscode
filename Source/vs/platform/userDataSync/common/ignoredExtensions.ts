@@ -115,8 +115,8 @@ export class IgnoredExtensionsManagementService
 		const value = this.getConfiguredIgnoredExtensions().map((id) =>
 			id.toLowerCase(),
 		);
-		const added: string[] = [],
-			removed: string[] = [];
+		const added: string[] = [];
+		const removed: string[] = [];
 		if (Array.isArray(value)) {
 			for (const key of value) {
 				if (key.startsWith("-")) {
@@ -133,7 +133,7 @@ export class IgnoredExtensionsManagementService
 		);
 	}
 
-	private getConfiguredIgnoredExtensions(): ReadonlyArray<string> {
+	private getConfiguredIgnoredExtensions(): readonly string[] {
 		let userValue = this.configurationService.inspect<string[]>(
 			"settingsSync.ignoredExtensions",
 		).userValue;

@@ -660,7 +660,7 @@ export class CodeCell extends Disposable {
 			startOffset = endIndex;
 		}
 
-		result += `</div>`;
+		result += "</div>";
 		return result;
 	}
 

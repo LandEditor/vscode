@@ -58,7 +58,7 @@ export class NotebookCellOutputTextModel
 		this.versionedBufferLengths = {};
 		this._rawOutput = rawData;
 		this.optimizeOutputItems();
-		this._versionId = this._versionId + 1;
+		this._versionId += 1;
 		this._onDidChangeData.fire();
 	}
 
@@ -66,7 +66,7 @@ export class NotebookCellOutputTextModel
 		this.trackBufferLengths();
 		this._rawOutput.outputs.push(...items);
 		this.optimizeOutputItems();
-		this._versionId = this._versionId + 1;
+		this._versionId += 1;
 		this._onDidChangeData.fire();
 	}
 
@@ -145,6 +145,6 @@ export class NotebookCellOutputTextModel
 	}
 
 	bumpVersion() {
-		this._versionId = this._versionId + 1;
+		this._versionId += 1;
 	}
 }

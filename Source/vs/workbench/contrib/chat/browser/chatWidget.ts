@@ -237,12 +237,12 @@ export class ChatWidget extends Disposable implements IChatWidget {
 			});
 			this.listContainer = dom.append(
 				this.container,
-				$(`.interactive-list`),
+				$(".interactive-list"),
 			);
 		} else {
 			this.listContainer = dom.append(
 				this.container,
-				$(`.interactive-list`),
+				$(".interactive-list"),
 			);
 			this.createInput(this.container);
 		}
@@ -639,7 +639,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
 		);
 		this.viewModelDisposables.add(
 			this.viewModel.onDidChange((e) => {
-				this.requestInProgress.set(this.viewModel!.requestInProgress);
+				this.requestInProgress.set(this.viewModel?.requestInProgress);
 				this.onDidChangeItems();
 				if (e?.kind === "addRequest") {
 					revealLastElement(this.tree);
@@ -908,9 +908,9 @@ export class ChatWidget extends Disposable implements IChatWidget {
 			enabled: true,
 		};
 		let hasChanged = false;
-		let height = this.bodyDimension!.height;
-		let width = this.bodyDimension!.width;
-		if (maxHeight < this.bodyDimension!.height) {
+		let height = this.bodyDimension?.height;
+		let width = this.bodyDimension?.width;
+		if (maxHeight < this.bodyDimension?.height) {
 			height = maxHeight;
 			hasChanged = true;
 		}
@@ -936,27 +936,27 @@ export class ChatWidget extends Disposable implements IChatWidget {
 	}
 
 	layoutDynamicChatTreeItemMode(): void {
-		if (!this.viewModel || !this._dynamicMessageLayoutData?.enabled) {
+		if (!(this.viewModel && this._dynamicMessageLayoutData?.enabled)) {
 			return;
 		}
 
 		const width = this.bodyDimension?.width ?? this.container.offsetWidth;
 		const inputHeight = this.inputPart.layout(
-			this._dynamicMessageLayoutData!.maxHeight,
+			this._dynamicMessageLayoutData?.maxHeight,
 			width,
 		);
 
 		const totalMessages = this.viewModel.getItems();
 		// grab the last N messages
 		const messages = totalMessages.slice(
-			-this._dynamicMessageLayoutData!.numOfMessages,
+			-this._dynamicMessageLayoutData?.numOfMessages,
 		);
 
 		const needsRerender = messages.some(
 			(m) => m.currentRenderedHeight === undefined,
 		);
 		const listHeight = needsRerender
-			? this._dynamicMessageLayoutData!.maxHeight
+			? this._dynamicMessageLayoutData?.maxHeight
 			: messages.reduce(
 					(acc, message) => acc + message.currentRenderedHeight!,
 					0,
@@ -966,7 +966,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
 			Math.min(
 				// we add an additional 18px in order to show that there is scrollable content
 				inputHeight + listHeight + (totalMessages.length > 2 ? 18 : 0),
-				this._dynamicMessageLayoutData!.maxHeight,
+				this._dynamicMessageLayoutData?.maxHeight,
 			),
 			width,
 		);

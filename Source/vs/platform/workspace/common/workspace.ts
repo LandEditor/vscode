@@ -566,9 +566,9 @@ export function isSavedWorkspace(
 	path: URI,
 	environmentService: IEnvironmentService,
 ): boolean {
-	return (
-		!isUntitledWorkspace(path, environmentService) &&
-		!isTemporaryWorkspace(path)
+	return !(
+		isUntitledWorkspace(path, environmentService) ||
+		isTemporaryWorkspace(path)
 	);
 }
 

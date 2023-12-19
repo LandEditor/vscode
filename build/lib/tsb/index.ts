@@ -56,9 +56,7 @@ export function create(
 	function printDiagnostic(diag: ts.Diagnostic | Error): void {
 		if (diag instanceof Error) {
 			onError(diag.message);
-		} else if (!diag.file || !diag.start) {
-			onError(ts.flattenDiagnosticMessageText(diag.messageText, "\n"));
-		} else {
+		} else if (diag.file && diag.start) {
 			const lineAndCh = diag.file.getLineAndCharacterOfPosition(
 				diag.start,
 			);
@@ -71,6 +69,8 @@ export function create(
 					ts.flattenDiagnosticMessageText(diag.messageText, "\n"),
 				),
 			);
+		} else {
+			onError(ts.flattenDiagnosticMessageText(diag.messageText, "\n"));
 		}
 	}
 
@@ -195,8 +195,8 @@ export function create(
 							path,
 							contents: readFileSync(path),
 							stat: statSync(path),
-							cwd: opts && opts.cwd,
-							base: (opts && opts.base) || dirname(projectPath),
+							cwd: opts?.cwd,
+							base: opts?.base || dirname(projectPath),
 						}),
 					);
 				}

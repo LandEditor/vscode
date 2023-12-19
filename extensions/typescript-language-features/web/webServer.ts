@@ -73,7 +73,7 @@ function fromResource(extensionUri: URI, uri: URI) {
 		uri.scheme === extensionUri.scheme &&
 		uri.authority === extensionUri.authority &&
 		uri.path.startsWith(
-			extensionUri.path + "/dist/browser/typescript/lib.",
+			`${extensionUri.path}/dist/browser/typescript/lib.`,
 		) &&
 		uri.path.endsWith(".d.ts")
 	) {
@@ -99,7 +99,7 @@ function updateWatch(
 	for (const watch of Array.from(watchDirectories.keys()).filter((dir) =>
 		path.startsWith(dir),
 	)) {
-		watchDirectories.get(watch)!.callback(path);
+		watchDirectories.get(watch)?.callback(path);
 		return;
 	}
 
@@ -154,7 +154,7 @@ function createServerHost(
 		.getDirectoryPath;
 	const directorySeparator: string = (ts as any).directorySeparator;
 	const executingFilePath =
-		findArgument(args, "--executingFilePath") || location + "";
+		findArgument(args, "--executingFilePath") || `${location}`;
 	const getExecutingDirectoryPath = memoize(() =>
 		memoize(() =>
 			ensureTrailingDirectorySeparator(
@@ -172,7 +172,7 @@ function createServerHost(
 
 	const log = (level: ts.server.LogLevel, message: string, data?: any) => {
 		if (logger.hasLevel(level)) {
-			logger.info(message + (data ? " " + JSON.stringify(data) : ""));
+			logger.info(message + (data ? ` ${JSON.stringify(data)}` : ""));
 		}
 	};
 
@@ -512,7 +512,7 @@ function createServerHost(
 			} catch (error) {
 				logNormal("Error fs.createDirectory", {
 					path,
-					error: error + "",
+					error: `${error}`,
 				});
 			}
 		},
@@ -578,7 +578,7 @@ function createServerHost(
 			try {
 				fs.delete(toResource(path));
 			} catch (error) {
-				logNormal("Error fs.deleteFile", { path, error: error + "" });
+				logNormal("Error fs.deleteFile", { path, error: `${error}` });
 			}
 		},
 		createHash: generateDjb2Hash,
@@ -600,7 +600,7 @@ function createServerHost(
 			looksLikeNodeModules(path) &&
 			!path.startsWith("/vscode-global-typings/");
 		// skip paths without .. or ./ or /. And things that look like node_modules
-		if (!isNm && !path.match(/\.\.|\/\.|\.\//)) {
+		if (!(isNm || path.match(/\.\.|\/\.|\.\//))) {
 			return path;
 		}
 
@@ -617,15 +617,16 @@ function createServerHost(
 				case "":
 				case ".":
 					break;
-				case "..":
+				case "..": {
 					//delete if there is something there to delete
 					out.pop();
 					break;
+				}
 				default:
 					out.push(part);
 			}
 		}
-		return "/" + out.join("/");
+		return `/${out.join("/")}`;
 	}
 
 	function getAccessibleFileSystemEntries(path: string): {
@@ -673,10 +674,9 @@ function createServerHost(
 			return URI.from({
 				scheme: extensionUri.scheme,
 				authority: extensionUri.authority,
-				path:
-					extensionUri.path +
-					"/dist/browser/typescript/" +
-					filepath.slice(1),
+				path: `${
+					extensionUri.path
+				}/dist/browser/typescript/${filepath.slice(1)}`,
 			});
 		}
 
@@ -729,7 +729,7 @@ function filePathToResourceUri(filepath: string): URI | undefined {
 	const scheme = parts[1];
 	const authority = parts[2] === "ts-nul-authority" ? "" : parts[2];
 	const path = parts[3];
-	return URI.from({ scheme, authority, path: path ? "/" + path : path });
+	return URI.from({ scheme, authority, path: path ? `/${path}` : path });
 }
 
 class WasmCancellationToken implements ts.server.ServerCancellationToken {
@@ -810,8 +810,10 @@ class WorkerSession extends ts.server.Session<{}> {
 			// TEMP fix since Cancellation.retrieveCheck is not correct
 			function retrieveCheck2(data: any) {
 				if (
-					!globalThis.crossOriginIsolated ||
-					!(data.$cancellationData instanceof SharedArrayBuffer)
+					!(
+						globalThis.crossOriginIsolated &&
+						data.$cancellationData instanceof SharedArrayBuffer
+					)
 				) {
 					return () => false;
 				}
@@ -915,8 +917,8 @@ function hrtime(previous?: [number, number]): [number, number] {
 	let nanoseconds = Math.floor((now % 1) * 1e9);
 	// NOTE: This check is added probably because it's missed without strictFunctionTypes on
 	if (previous?.[0] !== undefined && previous?.[1] !== undefined) {
-		seconds = seconds - previous[0];
-		nanoseconds = nanoseconds - previous[1];
+		seconds -= previous[0];
+		nanoseconds -= previous[1];
 		if (nanoseconds < 0) {
 			seconds--;
 			nanoseconds += 1e9;
@@ -958,8 +960,8 @@ async function initializeSession(
 		typeof modeOrUnknown === "number" ? modeOrUnknown : undefined;
 	const unknownServerMode =
 		typeof modeOrUnknown === "string" ? modeOrUnknown : undefined;
-	logger.info(`Starting TS Server`);
-	logger.info(`Version: 0.0.0`);
+	logger.info("Starting TS Server");
+	logger.info("Version: 0.0.0");
 	logger.info(`Arguments: ${args.join(" ")}`);
 	logger.info(
 		`ServerMode: ${serverMode} unknownServerMode: ${unknownServerMode}`,
@@ -1094,8 +1096,9 @@ const listener = async (e: any) => {
 			);
 		} else {
 			console.error(
-				"unexpected message in place of initial message: " +
-					JSON.stringify(e.data),
+				`unexpected message in place of initial message: ${JSON.stringify(
+					e.data,
+				)}`,
 			);
 		}
 		return;

@@ -446,7 +446,7 @@ export class WebExtensionManagementService
 	): Promise<void> {
 		const previousProfileLocation = e.previous.extensionsResource;
 		const currentProfileLocation = e.profile.extensionsResource;
-		if (!previousProfileLocation || !currentProfileLocation) {
+		if (!(previousProfileLocation && currentProfileLocation)) {
 			throw new Error("This should not happen");
 		}
 		const oldExtensions =

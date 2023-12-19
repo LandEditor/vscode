@@ -106,7 +106,7 @@ class NavigableContainerManager implements IDisposable {
 	}
 
 	static register(container: INavigableContainer): IDisposable {
-		const instance = this.INSTANCE;
+		const instance = NavigableContainerManager.INSTANCE;
 		if (!instance) {
 			return Disposable.None;
 		}
@@ -133,7 +133,7 @@ class NavigableContainerManager implements IDisposable {
 	}
 
 	static getActive(): INavigableContainer | undefined {
-		return this.INSTANCE?.lastContainer;
+		return NavigableContainerManager.INSTANCE?.lastContainer;
 	}
 }
 

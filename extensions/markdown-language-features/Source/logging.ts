@@ -64,15 +64,12 @@ export class VsCodeOutputLogger extends Disposable implements ILogger {
 
 	private _now(): string {
 		const now = new Date();
-		return (
-			String(now.getUTCHours()).padStart(2, "0") +
-			":" +
-			String(now.getMinutes()).padStart(2, "0") +
-			":" +
-			String(now.getUTCSeconds()).padStart(2, "0") +
-			"." +
-			String(now.getMilliseconds()).padStart(3, "0")
-		);
+		return `${String(now.getUTCHours()).padStart(2, "0")}:${String(
+			now.getMinutes(),
+		).padStart(2, "0")}:${String(now.getUTCSeconds()).padStart(
+			2,
+			"0",
+		)}.${String(now.getMilliseconds()).padStart(3, "0")}`;
 	}
 
 	private _updateConfiguration(): void {

@@ -33,7 +33,7 @@ export abstract class AbstractURLService
 			handlers.map((h) => () => h.handleURL(uri, options)),
 			undefined,
 			false,
-		).then((val) => val || false);
+		).then((val) => val);
 	}
 
 	registerHandler(handler: IURLHandler): IDisposable {

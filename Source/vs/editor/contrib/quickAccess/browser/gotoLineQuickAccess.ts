@@ -156,7 +156,7 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
 		const numbers = value
 			.split(/,|:|#/)
 			.map((part) => parseInt(part, 10))
-			.filter((part) => !isNaN(part));
+			.filter((part) => !Number.isNaN(part));
 		const endLine = this.lineCount(editor) + 1;
 
 		return {

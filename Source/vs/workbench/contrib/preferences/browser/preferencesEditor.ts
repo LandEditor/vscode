@@ -63,7 +63,7 @@ export class SettingsEditorContribution extends Disposable {
 			) {
 				this.disposables.add(settingsModel);
 				switch (settingsModel.configurationTarget) {
-					case ConfigurationTarget.WORKSPACE:
+					case ConfigurationTarget.WORKSPACE: {
 						this.currentRenderer = this.disposables.add(
 							this.instantiationService.createInstance(
 								WorkspaceSettingsRenderer,
@@ -72,7 +72,8 @@ export class SettingsEditorContribution extends Disposable {
 							),
 						);
 						break;
-					default:
+					}
+					default: {
 						this.currentRenderer = this.disposables.add(
 							this.instantiationService.createInstance(
 								UserSettingsRenderer,
@@ -81,6 +82,7 @@ export class SettingsEditorContribution extends Disposable {
 							),
 						);
 						break;
+					}
 				}
 			}
 

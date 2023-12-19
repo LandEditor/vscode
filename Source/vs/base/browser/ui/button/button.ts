@@ -305,7 +305,7 @@ export class Button extends Disposable implements IButton {
 	}
 
 	set labelShort(value: string) {
-		if (!this.options.supportShortLabel || !this._labelShortElement) {
+		if (!(this.options.supportShortLabel && this._labelShortElement)) {
 			return;
 		}
 
@@ -395,8 +395,8 @@ export class ButtonWithDropdown extends Disposable implements IButton {
 		// Separator styles
 		const border = options.buttonBorder;
 		if (border) {
-			this.separatorContainer.style.borderTop = "1px solid " + border;
-			this.separatorContainer.style.borderBottom = "1px solid " + border;
+			this.separatorContainer.style.borderTop = `1px solid ${border}`;
+			this.separatorContainer.style.borderBottom = `1px solid ${border}`;
 		}
 
 		const buttonBackground = options.secondary

@@ -34,7 +34,7 @@ export class KeybindingIO {
 		);
 		out.write(
 			`{ "key": ${rightPaddedString(
-				quotedSerializedKeybinding + ",",
+				`${quotedSerializedKeybinding},`,
 				25,
 			)} "command": `,
 		);

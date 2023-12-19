@@ -352,7 +352,7 @@ export class RemoteStatusIndicator
 								if (viewlet) {
 									(
 										viewlet?.getViewPaneContainer() as IExtensionsViewPaneContainer
-									).search(`@recommended:remotes`);
+									).search("@recommended:remotes");
 									viewlet.focus();
 								}
 							});
@@ -386,7 +386,7 @@ export class RemoteStatusIndicator
 		// Update based on remote indicator changes if any
 		const remoteIndicator =
 			this.environmentService.options?.windowIndicator;
-		if (remoteIndicator && remoteIndicator.onDidChange) {
+		if (remoteIndicator?.onDidChange) {
 			this._register(
 				remoteIndicator.onDidChange(() =>
 					this.updateRemoteStatusIndicator(),
@@ -403,15 +403,18 @@ export class RemoteStatusIndicator
 						switch (e.type) {
 							case PersistentConnectionEventType.ConnectionLost:
 							case PersistentConnectionEventType.ReconnectionRunning:
-							case PersistentConnectionEventType.ReconnectionWait:
+							case PersistentConnectionEventType.ReconnectionWait: {
 								this.setConnectionState("reconnecting");
 								break;
-							case PersistentConnectionEventType.ReconnectionPermanentFailure:
+							}
+							case PersistentConnectionEventType.ReconnectionPermanentFailure: {
 								this.setConnectionState("disconnected");
 								break;
-							case PersistentConnectionEventType.ConnectionGain:
+							}
+							case PersistentConnectionEventType.ConnectionGain: {
 								this.setConnectionState("connected");
 								break;
+							}
 						}
 					}),
 				);
@@ -737,7 +740,7 @@ export class RemoteStatusIndicator
 					this.remoteAuthority,
 				) || this.remoteAuthority;
 			switch (this.connectionState) {
-				case "initializing":
+				case "initializing": {
 					this.renderRemoteStatusIndicator(
 						nls.localize("host.open", "Opening Remote..."),
 						nls.localize("host.open", "Opening Remote..."),
@@ -745,7 +748,8 @@ export class RemoteStatusIndicator
 						true /* progress */,
 					);
 					break;
-				case "reconnecting":
+				}
+				case "reconnecting": {
 					this.renderRemoteStatusIndicator(
 						`${nls.localize(
 							"host.reconnecting",
@@ -760,7 +764,8 @@ export class RemoteStatusIndicator
 						true /* progress */,
 					);
 					break;
-				case "disconnected":
+				}
+				case "disconnected": {
 					this.renderRemoteStatusIndicator(
 						`$(alert) ${nls.localize(
 							"disconnectedFrom",
@@ -772,6 +777,7 @@ export class RemoteStatusIndicator
 						)}`,
 					);
 					break;
+				}
 				default: {
 					const tooltip = new MarkdownString("", {
 						isTrusted: true,
@@ -867,7 +873,7 @@ export class RemoteStatusIndicator
 		}
 
 		this.renderRemoteStatusIndicator(
-			`$(remote)`,
+			"$(remote)",
 			nls.localize("noHost.tooltip", "Open a Remote Window"),
 		);
 		return;
@@ -946,7 +952,7 @@ export class RemoteStatusIndicator
 				ariaLabel = `${ariaLabel}, ${offlineMessage}`;
 				break;
 			}
-			case "high-latency":
+			case "high-latency": {
 				text = textWithAlert();
 				tooltip = this.appendTooltipLine(
 					tooltip,
@@ -962,6 +968,7 @@ export class RemoteStatusIndicator
 					),
 				);
 				break;
+			}
 		}
 
 		return { text, tooltip, ariaLabel };

@@ -295,7 +295,7 @@ async function getThreadAndRun(
 			const threads = focusedSession
 				? focusedSession.getAllThreads()
 				: undefined;
-			thread = threads && threads.length ? threads[0] : undefined;
+			thread = threads?.length ? threads[0] : undefined;
 		}
 	}
 
@@ -589,7 +589,7 @@ CommandsRegistry.registerCommand({
 					position.column,
 				);
 				const targets = response?.body.targets;
-				if (targets && targets.length) {
+				if (targets?.length) {
 					let id = targets[0].id;
 					if (targets.length > 1) {
 						const picks = targets.map((t) => ({
@@ -868,7 +868,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		const debugService = accessor.get(IDebugService);
 		const session = debugService.getViewModel().focusedSession;
 		const frame = debugService.getViewModel().focusedStackFrame;
-		if (!frame || !session) {
+		if (!(frame && session)) {
 			return;
 		}
 
@@ -1191,7 +1191,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		const list = listService.lastFocusedList;
 		if (list instanceof List) {
 			const focused = <IEnablement[]>list.getFocusedElements();
-			if (focused && focused.length) {
+			if (focused?.length) {
 				debugService.enableOrDisableBreakpoints(
 					!focused[0].enabled,
 					focused[0],
@@ -1375,7 +1375,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 				true,
 			)
 		)?.getViewPaneContainer() as IExtensionsViewPaneContainer;
-		let searchFor = `@category:debuggers`;
+		let searchFor = "@category:debuggers";
 		if (typeof query === "string") {
 			searchFor += ` ${query}`;
 		}

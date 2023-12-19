@@ -168,7 +168,7 @@ class SimpleWorkerProtocol {
 	}
 
 	public handleMessage(message: Message): void {
-		if (!message || !message.vsWorker) {
+		if (!message?.vsWorker) {
 			return;
 		}
 		if (this._workerId !== -1 && message.vsWorker !== this._workerId) {
@@ -259,7 +259,7 @@ class SimpleWorkerProtocol {
 			console.warn("Got event for unknown req");
 			return;
 		}
-		this._pendingEmitters.get(msg.req)!.fire(msg.event);
+		this._pendingEmitters.get(msg.req)?.fire(msg.event);
 	}
 
 	private _handleUnsubscribeEventMessage(msg: UnsubscribeEventMessage): void {
@@ -267,7 +267,7 @@ class SimpleWorkerProtocol {
 			console.warn("Got unsubscribe for unknown req");
 			return;
 		}
-		this._pendingEvents.get(msg.req)!.dispose();
+		this._pendingEvents.get(msg.req)?.dispose();
 		this._pendingEvents.delete(msg.req);
 	}
 
@@ -332,9 +332,7 @@ export class SimpleWorkerClient<W extends object, H extends object>
 				if (typeof (host as any)[method] !== "function") {
 					return Promise.reject(
 						new Error(
-							"Missing method " +
-								method +
-								" on main thread host.",
+							`Missing method ${method} on main thread host.`,
 						),
 					);
 				}
@@ -424,7 +422,7 @@ export class SimpleWorkerClient<W extends object, H extends object>
 				},
 				(e) => {
 					reject(e);
-					this._onError("Worker failed to load " + moduleId, e);
+					this._onError(`Worker failed to load ${moduleId}`, e);
 				},
 			);
 		});
@@ -550,7 +548,7 @@ export class SimpleWorkerServer<H extends object> {
 			typeof this._requestHandler[method] !== "function"
 		) {
 			return Promise.reject(
-				new Error("Missing requestHandler or method: " + method),
+				new Error(`Missing requestHandler or method: ${method}`),
 			);
 		}
 
@@ -565,7 +563,7 @@ export class SimpleWorkerServer<H extends object> {
 
 	private _handleEvent(eventName: string, arg: any): Event<any> {
 		if (!this._requestHandler) {
-			throw new Error(`Missing requestHandler`);
+			throw new Error("Missing requestHandler");
 		}
 		if (propertyIsDynamicEvent(eventName)) {
 			const event = (this._requestHandler as any)[eventName].call(
@@ -624,16 +622,16 @@ export class SimpleWorkerServer<H extends object> {
 		if (loaderConfig) {
 			// Remove 'baseUrl', handling it is beyond scope for now
 			if (typeof loaderConfig.baseUrl !== "undefined") {
-				delete loaderConfig["baseUrl"];
+				loaderConfig["baseUrl"] = undefined;
 			}
 			if (typeof loaderConfig.paths !== "undefined") {
 				if (typeof loaderConfig.paths.vs !== "undefined") {
-					delete loaderConfig.paths["vs"];
+					loaderConfig.paths["vs"] = undefined;
 				}
 			}
-			if (typeof loaderConfig.trustedTypesPolicy !== undefined) {
+			if (typeof loaderConfig.trustedTypesPolicy !== "undefined") {
 				// don't use, it has been destroyed during serialize
-				delete loaderConfig["trustedTypesPolicy"];
+				loaderConfig["trustedTypesPolicy"] = undefined;
 			}
 
 			// Since this is in a web worker, enable catching errors
@@ -657,7 +655,7 @@ export class SimpleWorkerServer<H extends object> {
 					this._requestHandler = module.create(hostProxy);
 
 					if (!this._requestHandler) {
-						reject(new Error(`No RequestHandler!`));
+						reject(new Error("No RequestHandler!"));
 						return;
 					}
 

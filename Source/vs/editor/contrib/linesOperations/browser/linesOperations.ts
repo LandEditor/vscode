@@ -1051,7 +1051,7 @@ export class JoinLinesAction extends EditorAction {
 						previousValue.endLineNumber ===
 						currentValue.startLineNumber
 					) {
-						if (primaryCursor!.equalsSelection(previousValue)) {
+						if (primaryCursor?.equalsSelection(previousValue)) {
 							primaryCursor = currentValue;
 						}
 						return currentValue;
@@ -1104,7 +1104,8 @@ export class JoinLinesAction extends EditorAction {
 			const startLineNumber = selection.startLineNumber;
 			const startColumn = 1;
 			let columnDeltaOffset = 0;
-			let endLineNumber: number, endColumn: number;
+			let endLineNumber: number;
+			let endColumn: number;
 
 			const selectionEndPositionOffset =
 				model.getLineLength(selection.endLineNumber) -
@@ -1525,7 +1526,7 @@ export class SnakeCaseAction extends AbstractCaseAction {
 	protected _modifyText(text: string, wordSeparators: string): string {
 		const caseBoundary = SnakeCaseAction.caseBoundary.get();
 		const singleLetters = SnakeCaseAction.singleLetters.get();
-		if (!caseBoundary || !singleLetters) {
+		if (!(caseBoundary && singleLetters)) {
 			// cannot support this
 			return text;
 		}
@@ -1575,9 +1576,9 @@ export class CamelCaseAction extends AbstractCaseAction {
 export class KebabCaseAction extends AbstractCaseAction {
 	public static isSupported(): boolean {
 		const areAllRegexpsSupported = [
-			this.caseBoundary,
-			this.singleLetters,
-			this.underscoreBoundary,
+			KebabCaseAction.caseBoundary,
+			KebabCaseAction.singleLetters,
+			KebabCaseAction.underscoreBoundary,
 		].every((regexp) => regexp.isSupported());
 
 		return areAllRegexpsSupported;
@@ -1613,7 +1614,7 @@ export class KebabCaseAction extends AbstractCaseAction {
 		const singleLetters = KebabCaseAction.singleLetters.get();
 		const underscoreBoundary = KebabCaseAction.underscoreBoundary.get();
 
-		if (!caseBoundary || !singleLetters || !underscoreBoundary) {
+		if (!(caseBoundary && singleLetters && underscoreBoundary)) {
 			// one or more regexps aren't supported
 			return text;
 		}

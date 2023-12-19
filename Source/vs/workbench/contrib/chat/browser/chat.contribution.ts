@@ -443,7 +443,7 @@ class ChatSlashStaticSlashCommandsContribution extends Disposable {
 										})
 										.join("\n");
 
-									return agentLine + "\n" + commandText;
+									return `${agentLine}\n${commandText}`;
 								}),
 						)
 					).join("\n");

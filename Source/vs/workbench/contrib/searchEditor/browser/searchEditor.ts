@@ -103,7 +103,7 @@ import {
 } from "vs/workbench/services/search/common/search";
 import { TextSearchCompleteMessage } from "vs/workbench/services/search/common/searchExtTypes";
 
-const RESULT_LINE_REGEX = /^(\s+)(\d+)(: |  )(\s*)(.*)$/;
+const RESULT_LINE_REGEX = /^(\s+)(\d+)(: | {2})(\s*)(.*)$/;
 const FILE_LINE_REGEX = /^(\S.*):$/;
 
 type SearchEditorViewState = ICodeEditorViewState & {
@@ -273,7 +273,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 		// Toggle query details button
 		this.toggleQueryDetailsButton = DOM.append(
 			this.includesExcludesContainer,
-			DOM.$(".expand" + ThemeIcon.asCSSSelector(searchDetailsIcon), {
+			DOM.$(`.expand${ThemeIcon.asCSSSelector(searchDetailsIcon)}`, {
 				tabindex: 0,
 				role: "button",
 				title: localize("moreSearch", "Toggle Search Details"),
@@ -946,7 +946,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 		this.modelService.updateModel(resultsModel, results.text);
 		this.updatingModelForSearch = false;
 
-		if (searchOperation && searchOperation.messages) {
+		if (searchOperation?.messages) {
 			for (const message of searchOperation.messages) {
 				this.addMessage(message);
 			}

@@ -77,10 +77,10 @@ module.exports.run = async (debugSession) => {
 							"css reloaded",
 							relativePath,
 						);
-						styleSheet.href =
-							styleSheet.href.replace(/\?.*/, "") +
-							"?" +
-							Date.now();
+						styleSheet.href = `${styleSheet.href.replace(
+							/\?.*/,
+							"",
+						)}?${Date.now()}`;
 					} else {
 						setMessage(
 							`could not reload ${formatPath(
@@ -250,7 +250,7 @@ module.exports.run = async (debugSession) => {
 						if (result.length + p.length > 40) {
 							break;
 						}
-						result = p + "/" + result;
+						result = `${p}/${result}`;
 						if (result.length > 20) {
 							break;
 						}

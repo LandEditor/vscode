@@ -17,7 +17,7 @@ function main() {
 	if (!quality) {
 		throw new Error("Missing VSCODE_QUALITY, skipping mixin");
 	}
-	log(`Mixing in distro quality...`);
+	log("Mixing in distro quality...");
 	const basePath = `.build/distro/mixin/${quality}`;
 	for (const name of fs.readdirSync(basePath)) {
 		const distroPath = path.join(basePath, name);
@@ -46,8 +46,10 @@ function main() {
 				log("Excluding built-in extensions:", exclude);
 				builtInExtensions = builtInExtensions.filter(
 					(ext) =>
-						!include.find((e) => e.name === ext.name) &&
-						!exclude.find((name) => name === ext.name),
+						!(
+							include.find((e) => e.name === ext.name) ||
+							exclude.find((name) => name === ext.name)
+						),
 				);
 				builtInExtensions = [...builtInExtensions, ...include];
 				log(

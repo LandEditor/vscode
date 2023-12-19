@@ -113,7 +113,7 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 						run: () => {
 							return this._commandService.executeCommand(
 								"_extensions.manage",
-								options.source!.identifier.value,
+								options.source?.identifier.value,
 							);
 						},
 					}),

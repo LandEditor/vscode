@@ -110,8 +110,7 @@ export class FoldingRegions {
 					endLineNumber > MAX_LINE_NUMBER
 				) {
 					throw new Error(
-						"startLineNumber or endLineNumber must not exceed " +
-							MAX_LINE_NUMBER,
+						`startLineNumber or endLineNumber must not exceed ${MAX_LINE_NUMBER}`,
 					);
 				}
 				while (
@@ -235,8 +234,8 @@ export class FoldingRegions {
 	}
 
 	private findIndex(line: number) {
-		let low = 0,
-			high = this._startIndexes.length;
+		let low = 0;
+		let high = this._startIndexes.length;
 		if (high === 0) {
 			return -1; // no children
 		}
@@ -399,14 +398,14 @@ export class FoldingRegions {
 				while (true) {
 					if (
 						!prescanB ||
-						prescanB.startLineNumber > nextA!.endLineNumber
+						prescanB.startLineNumber > nextA?.endLineNumber
 					) {
 						useRange = nextA;
 						break; // no conflict, use this nextA
 					}
 					if (
 						prescanB.source === FoldSource.userDefined &&
-						prescanB.endLineNumber > nextA!.endLineNumber
+						prescanB.endLineNumber > nextA?.endLineNumber
 					) {
 						// we found a user folded range, it wins
 						break; // without setting nextResult, so this nextA gets skipped

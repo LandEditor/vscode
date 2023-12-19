@@ -204,10 +204,10 @@ export class LinesLayout {
 					minWidth: number,
 				): string => {
 					hadAChange = true;
-					afterLineNumber = afterLineNumber | 0;
-					ordinal = ordinal | 0;
-					heightInPx = heightInPx | 0;
-					minWidth = minWidth | 0;
+					afterLineNumber |= 0;
+					ordinal |= 0;
+					heightInPx |= 0;
+					minWidth |= 0;
 					const id = this._instanceId + ++this._lastWhitespaceId;
 					this._pendingChanges.insert(
 						new EditorWhitespace(
@@ -226,8 +226,8 @@ export class LinesLayout {
 					newHeight: number,
 				): void => {
 					hadAChange = true;
-					newAfterLineNumber = newAfterLineNumber | 0;
-					newHeight = newHeight | 0;
+					newAfterLineNumber |= 0;
+					newHeight |= 0;
 					this._pendingChanges.change({
 						id,
 						newAfterLineNumber,
@@ -398,8 +398,8 @@ export class LinesLayout {
 	 */
 	public onLinesDeleted(fromLineNumber: number, toLineNumber: number): void {
 		this._checkPendingChanges();
-		fromLineNumber = fromLineNumber | 0;
-		toLineNumber = toLineNumber | 0;
+		fromLineNumber |= 0;
+		toLineNumber |= 0;
 
 		this._lineCount -= toLineNumber - fromLineNumber + 1;
 		for (let i = 0, len = this._arr.length; i < len; i++) {
@@ -429,8 +429,8 @@ export class LinesLayout {
 	 */
 	public onLinesInserted(fromLineNumber: number, toLineNumber: number): void {
 		this._checkPendingChanges();
-		fromLineNumber = fromLineNumber | 0;
-		toLineNumber = toLineNumber | 0;
+		fromLineNumber |= 0;
+		toLineNumber |= 0;
 
 		this._lineCount += toLineNumber - fromLineNumber + 1;
 		for (let i = 0, len = this._arr.length; i < len; i++) {
@@ -463,7 +463,7 @@ export class LinesLayout {
 	 */
 	public getWhitespacesAccumulatedHeight(index: number): number {
 		this._checkPendingChanges();
-		index = index | 0;
+		index |= 0;
 
 		let startIndex = Math.max(0, this._prefixSumValidIndex + 1);
 		if (startIndex === 0) {
@@ -506,7 +506,7 @@ export class LinesLayout {
 		lineNumber: number,
 	): number {
 		this._checkPendingChanges();
-		lineNumber = lineNumber | 0;
+		lineNumber |= 0;
 
 		const lastWhitespaceBeforeLineNumber =
 			this._findLastWhitespaceBeforeLineNumber(lineNumber);
@@ -521,7 +521,7 @@ export class LinesLayout {
 	}
 
 	private _findLastWhitespaceBeforeLineNumber(lineNumber: number): number {
-		lineNumber = lineNumber | 0;
+		lineNumber |= 0;
 
 		// Find the whitespace before line number
 		const arr = this._arr;
@@ -551,7 +551,7 @@ export class LinesLayout {
 	}
 
 	private _findFirstWhitespaceAfterLineNumber(lineNumber: number): number {
-		lineNumber = lineNumber | 0;
+		lineNumber |= 0;
 
 		const lastWhitespaceBeforeLineNumber =
 			this._findLastWhitespaceBeforeLineNumber(lineNumber);
@@ -571,7 +571,7 @@ export class LinesLayout {
 	 */
 	public getFirstWhitespaceIndexAfterLineNumber(lineNumber: number): number {
 		this._checkPendingChanges();
-		lineNumber = lineNumber | 0;
+		lineNumber |= 0;
 
 		return this._findFirstWhitespaceAfterLineNumber(lineNumber);
 	}
@@ -587,7 +587,7 @@ export class LinesLayout {
 		includeViewZones = false,
 	): number {
 		this._checkPendingChanges();
-		lineNumber = lineNumber | 0;
+		lineNumber |= 0;
 
 		let previousLinesHeight: number;
 		if (lineNumber > 1) {
@@ -617,7 +617,7 @@ export class LinesLayout {
 		includeViewZones = false,
 	): number {
 		this._checkPendingChanges();
-		lineNumber = lineNumber | 0;
+		lineNumber |= 0;
 		const previousLinesHeight = this._lineHeight * lineNumber;
 		const previousWhitespacesHeight =
 			this.getWhitespaceAccumulatedHeightBeforeLineNumber(
@@ -689,7 +689,7 @@ export class LinesLayout {
 		verticalOffset: number,
 	): number {
 		this._checkPendingChanges();
-		verticalOffset = verticalOffset | 0;
+		verticalOffset |= 0;
 
 		if (verticalOffset < 0) {
 			return 1;
@@ -737,8 +737,8 @@ export class LinesLayout {
 		verticalOffset2: number,
 	): IPartialViewLinesViewportData {
 		this._checkPendingChanges();
-		verticalOffset1 = verticalOffset1 | 0;
-		verticalOffset2 = verticalOffset2 | 0;
+		verticalOffset1 |= 0;
+		verticalOffset2 |= 0;
 		const lineHeight = this._lineHeight;
 
 		// Find first line number
@@ -879,7 +879,7 @@ export class LinesLayout {
 		whitespaceIndex: number,
 	): number {
 		this._checkPendingChanges();
-		whitespaceIndex = whitespaceIndex | 0;
+		whitespaceIndex |= 0;
 
 		const afterLineNumber =
 			this.getAfterLineNumberForWhitespaceIndex(whitespaceIndex);
@@ -908,7 +908,7 @@ export class LinesLayout {
 		verticalOffset: number,
 	): number {
 		this._checkPendingChanges();
-		verticalOffset = verticalOffset | 0;
+		verticalOffset |= 0;
 
 		let minWhitespaceIndex = 0;
 		let maxWhitespaceIndex = this.getWhitespacesCount() - 1;
@@ -966,7 +966,7 @@ export class LinesLayout {
 		verticalOffset: number,
 	): IViewWhitespaceViewportData | null {
 		this._checkPendingChanges();
-		verticalOffset = verticalOffset | 0;
+		verticalOffset |= 0;
 
 		const candidateIndex =
 			this.getWhitespaceIndexAtOrAfterVerticallOffset(verticalOffset);
@@ -1012,8 +1012,8 @@ export class LinesLayout {
 		verticalOffset2: number,
 	): IViewWhitespaceViewportData[] {
 		this._checkPendingChanges();
-		verticalOffset1 = verticalOffset1 | 0;
-		verticalOffset2 = verticalOffset2 | 0;
+		verticalOffset1 |= 0;
+		verticalOffset2 |= 0;
 
 		const startIndex =
 			this.getWhitespaceIndexAtOrAfterVerticallOffset(verticalOffset1);
@@ -1066,7 +1066,7 @@ export class LinesLayout {
 	 */
 	public getIdForWhitespaceIndex(index: number): string {
 		this._checkPendingChanges();
-		index = index | 0;
+		index |= 0;
 
 		return this._arr[index].id;
 	}
@@ -1079,7 +1079,7 @@ export class LinesLayout {
 	 */
 	public getAfterLineNumberForWhitespaceIndex(index: number): number {
 		this._checkPendingChanges();
-		index = index | 0;
+		index |= 0;
 
 		return this._arr[index].afterLineNumber;
 	}
@@ -1092,7 +1092,7 @@ export class LinesLayout {
 	 */
 	public getHeightForWhitespaceIndex(index: number): number {
 		this._checkPendingChanges();
-		index = index | 0;
+		index |= 0;
 
 		return this._arr[index].height;
 	}

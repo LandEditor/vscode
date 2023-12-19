@@ -77,7 +77,7 @@ export function loadListeningPorts(
 						port: parseInt(address[1], 16),
 					};
 				})
-				.map((port) => [port.ip + ":" + port.port, port]),
+				.map((port) => [`${port.ip}:${port.port}`, port]),
 		).values(),
 	];
 }
@@ -116,8 +116,8 @@ export function parseIpAddress(hex: string): string {
 export function loadConnectionTable(stdout: string): Record<string, string>[] {
 	const lines = stdout.trim().split("\n");
 	const names = lines
-		.shift()!
-		.trim()
+		.shift()
+		?.trim()
 		.split(/\s+/)
 		.filter((name) => name !== "rx_queue" && name !== "tm->when");
 	const table = lines.map((line) =>
@@ -366,7 +366,7 @@ export class NodeExtHostTunnelService extends ExtHostTunnelService {
 					childName,
 				);
 				const childStat = await pfs.Promises.stat(childUri.fsPath);
-				if (childStat.isDirectory() && !isNaN(pid)) {
+				if (childStat.isDirectory() && !Number.isNaN(pid)) {
 					const cwd = await pfs.Promises.readlink(
 						resources.joinPath(childUri, "cwd").fsPath,
 					);

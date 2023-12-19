@@ -155,7 +155,7 @@ export abstract class AbstractOneDataSystemAppender
 		}
 		data = mixin(data, this._defaultData);
 		data = validateTelemetryData(data);
-		const name = this._eventPrefix + "/" + eventName;
+		const name = `${this._eventPrefix}/${eventName}`;
 
 		try {
 			this._withAIClient((aiClient) => {

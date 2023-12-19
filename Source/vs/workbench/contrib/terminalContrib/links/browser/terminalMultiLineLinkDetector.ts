@@ -129,7 +129,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 			let possiblePath: string | undefined;
 			for (let index = startLine - 1; index >= 0; index--) {
 				// Ignore lines that aren't at the beginning of a wrapped line
-				if (this.xterm.buffer.active.getLine(index)!.isWrapped) {
+				if (this.xterm.buffer.active.getLine(index)?.isWrapped) {
 					continue;
 				}
 				const text = getXtermLineContent(
@@ -228,7 +228,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 				let possiblePath: string | undefined;
 				for (let index = startLine - 1; index >= 0; index--) {
 					// Ignore lines that aren't at the beginning of a wrapped line
-					if (this.xterm.buffer.active.getLine(index)!.isWrapped) {
+					if (this.xterm.buffer.active.getLine(index)?.isWrapped) {
 						continue;
 					}
 					const text = getXtermLineContent(

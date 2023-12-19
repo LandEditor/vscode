@@ -167,7 +167,7 @@ export class ColumnSelection {
 			toViewVisualColumn++;
 		}
 
-		return this.columnSelect(
+		return ColumnSelection.columnSelect(
 			config,
 			model,
 			prevColumnSelectData.fromViewLineNumber,
@@ -188,7 +188,7 @@ export class ColumnSelection {
 			1,
 			prevColumnSelectData.toViewLineNumber - linesCount,
 		);
-		return this.columnSelect(
+		return ColumnSelection.columnSelect(
 			config,
 			model,
 			prevColumnSelectData.fromViewLineNumber,
@@ -209,7 +209,7 @@ export class ColumnSelection {
 			model.getLineCount(),
 			prevColumnSelectData.toViewLineNumber + linesCount,
 		);
-		return this.columnSelect(
+		return ColumnSelection.columnSelect(
 			config,
 			model,
 			prevColumnSelectData.fromViewLineNumber,

@@ -187,7 +187,7 @@ const registry = Registry.as<IConfigurationRegistry>(
 					},
 					"Controls whether a top border is drawn on tabs for editors that have unsaved changes. This value is ignored when {0} is not set to {1}.",
 					"`#workbench.editor.showTabs#`",
-					`multiple`,
+					"multiple",
 				),
 				default: false,
 			},
@@ -1182,72 +1182,70 @@ const registry = Registry.as<IConfigurationRegistry>(
 		"windowTitle",
 		"Controls the window title based on the current context such as the opened workspace or active editor. Variables are substituted based on the context:",
 	);
-	windowTitleDescription +=
-		"\n- " +
-		[
-			localize(
-				"activeEditorShort",
-				"`${activeEditorShort}`: the file name (e.g. myFile.txt).",
-			),
-			localize(
-				"activeEditorMedium",
-				"`${activeEditorMedium}`: the path of the file relative to the workspace folder (e.g. myFolder/myFileFolder/myFile.txt).",
-			),
-			localize(
-				"activeEditorLong",
-				"`${activeEditorLong}`: the full path of the file (e.g. /Users/Development/myFolder/myFileFolder/myFile.txt).",
-			),
-			localize(
-				"activeFolderShort",
-				"`${activeFolderShort}`: the name of the folder the file is contained in (e.g. myFileFolder).",
-			),
-			localize(
-				"activeFolderMedium",
-				"`${activeFolderMedium}`: the path of the folder the file is contained in, relative to the workspace folder (e.g. myFolder/myFileFolder).",
-			),
-			localize(
-				"activeFolderLong",
-				"`${activeFolderLong}`: the full path of the folder the file is contained in (e.g. /Users/Development/myFolder/myFileFolder).",
-			),
-			localize(
-				"folderName",
-				"`${folderName}`: name of the workspace folder the file is contained in (e.g. myFolder).",
-			),
-			localize(
-				"folderPath",
-				"`${folderPath}`: file path of the workspace folder the file is contained in (e.g. /Users/Development/myFolder).",
-			),
-			localize(
-				"rootName",
-				"`${rootName}`: name of the workspace with optional remote name and workspace indicator if applicable (e.g. myFolder, myRemoteFolder [SSH] or myWorkspace (Workspace)).",
-			),
-			localize(
-				"rootNameShort",
-				"`${rootNameShort}`: shortened name of the workspace without suffixes (e.g. myFolder, myRemoteFolder or myWorkspace).",
-			),
-			localize(
-				"rootPath",
-				"`${rootPath}`: file path of the opened workspace or folder (e.g. /Users/Development/myWorkspace).",
-			),
-			localize(
-				"profileName",
-				"`${profileName}`: name of the profile in which the workspace is opened (e.g. Data Science (Profile)). Ignored if default profile is used.",
-			),
-			localize("appName", "`${appName}`: e.g. VS Code."),
-			localize("remoteName", "`${remoteName}`: e.g. SSH"),
-			localize(
-				"dirty",
-				"`${dirty}`: an indicator for when the active editor has unsaved changes.",
-			),
-			localize(
-				"focusedView",
-				"`${focusedView}`: the name of the view that is currently focused.",
-			),
-			localize(
-				"separator",
-				'`${separator}`: a conditional separator (" - ") that only shows when surrounded by variables with values or static text.',
-			),
-		].join("\n- "); // intentionally concatenated to not produce a string that is too long for translations
+	windowTitleDescription += `\n- ${[
+		localize(
+			"activeEditorShort",
+			"`${activeEditorShort}`: the file name (e.g. myFile.txt).",
+		),
+		localize(
+			"activeEditorMedium",
+			"`${activeEditorMedium}`: the path of the file relative to the workspace folder (e.g. myFolder/myFileFolder/myFile.txt).",
+		),
+		localize(
+			"activeEditorLong",
+			"`${activeEditorLong}`: the full path of the file (e.g. /Users/Development/myFolder/myFileFolder/myFile.txt).",
+		),
+		localize(
+			"activeFolderShort",
+			"`${activeFolderShort}`: the name of the folder the file is contained in (e.g. myFileFolder).",
+		),
+		localize(
+			"activeFolderMedium",
+			"`${activeFolderMedium}`: the path of the folder the file is contained in, relative to the workspace folder (e.g. myFolder/myFileFolder).",
+		),
+		localize(
+			"activeFolderLong",
+			"`${activeFolderLong}`: the full path of the folder the file is contained in (e.g. /Users/Development/myFolder/myFileFolder).",
+		),
+		localize(
+			"folderName",
+			"`${folderName}`: name of the workspace folder the file is contained in (e.g. myFolder).",
+		),
+		localize(
+			"folderPath",
+			"`${folderPath}`: file path of the workspace folder the file is contained in (e.g. /Users/Development/myFolder).",
+		),
+		localize(
+			"rootName",
+			"`${rootName}`: name of the workspace with optional remote name and workspace indicator if applicable (e.g. myFolder, myRemoteFolder [SSH] or myWorkspace (Workspace)).",
+		),
+		localize(
+			"rootNameShort",
+			"`${rootNameShort}`: shortened name of the workspace without suffixes (e.g. myFolder, myRemoteFolder or myWorkspace).",
+		),
+		localize(
+			"rootPath",
+			"`${rootPath}`: file path of the opened workspace or folder (e.g. /Users/Development/myWorkspace).",
+		),
+		localize(
+			"profileName",
+			"`${profileName}`: name of the profile in which the workspace is opened (e.g. Data Science (Profile)). Ignored if default profile is used.",
+		),
+		localize("appName", "`${appName}`: e.g. VS Code."),
+		localize("remoteName", "`${remoteName}`: e.g. SSH"),
+		localize(
+			"dirty",
+			"`${dirty}`: an indicator for when the active editor has unsaved changes.",
+		),
+		localize(
+			"focusedView",
+			"`${focusedView}`: the name of the view that is currently focused.",
+		),
+		localize(
+			"separator",
+			'`${separator}`: a conditional separator (" - ") that only shows when surrounded by variables with values or static text.',
+		),
+	].join("\n- ")}`; // intentionally concatenated to not produce a string that is too long for translations
 
 	registry.registerConfiguration({
 		id: "window",
@@ -1265,7 +1263,7 @@ const registry = Registry.as<IConfigurationRegistry>(
 					const base =
 						"${dirty}${activeEditorShort}${separator}${rootName}${separator}${profileName}${separator}${appName}";
 					if (isWeb) {
-						return base + "${separator}${remoteName}"; // Web: always show remote name
+						return `${base}\${separator}\${remoteName}`; // Web: always show remote name
 					}
 
 					return base;

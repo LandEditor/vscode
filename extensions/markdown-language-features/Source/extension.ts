@@ -47,7 +47,7 @@ function startServer(
 	const debugOptions = {
 		execArgv: [
 			"--nolazy",
-			"--inspect=" + (7000 + Math.round(Math.random() * 999)),
+			`--inspect=${7000}${Math.round(Math.random() * 999)}`,
 		],
 	};
 

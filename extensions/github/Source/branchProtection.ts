@@ -350,7 +350,7 @@ export class GithubBranchProtectionProvider
 			case "~ALL":
 				return "**/*";
 			case "~DEFAULT_BRANCH":
-				return repository.defaultBranchRef!.name;
+				return repository.defaultBranchRef?.name;
 			default:
 				return refName;
 		}

@@ -64,7 +64,7 @@ interface NodeRequire {
 	): any;
 	config(data: any): any;
 	onError: Function;
-	getStats?(): ReadonlyArray<LoaderEvent>;
+	getStats?(): readonly LoaderEvent[];
 	hasDependencyCycle?(): boolean;
 	define(
 		amdModuleId: string,
@@ -73,4 +73,4 @@ interface NodeRequire {
 	): any;
 }
 
-declare var require: NodeRequire;
+declare let require: NodeRequire;

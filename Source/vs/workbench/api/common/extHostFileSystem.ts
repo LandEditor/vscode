@@ -246,15 +246,18 @@ export class ExtHostFileSystem implements ExtHostFileSystemShape {
 				}
 				let newType: files.FileChangeType | undefined;
 				switch (type) {
-					case FileChangeType.Changed:
+					case FileChangeType.Changed: {
 						newType = files.FileChangeType.UPDATED;
 						break;
-					case FileChangeType.Created:
+					}
+					case FileChangeType.Created: {
 						newType = files.FileChangeType.ADDED;
 						break;
-					case FileChangeType.Deleted:
+					}
+					case FileChangeType.Deleted: {
 						newType = files.FileChangeType.DELETED;
 						break;
+					}
 					default:
 						throw new Error("Unknown FileChangeType");
 				}
@@ -470,7 +473,7 @@ export class ExtHostFileSystem implements ExtHostFileSystemShape {
 		if (!provider) {
 			const err = new Error();
 			err.name = "ENOPRO";
-			err.message = `no provider`;
+			err.message = "no provider";
 			throw err;
 		}
 		return provider;

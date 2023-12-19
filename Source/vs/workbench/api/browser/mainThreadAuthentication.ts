@@ -436,7 +436,7 @@ export class MainThreadAuthentication
 				this.authenticationService.getLabel(providerId);
 			const detail =
 				typeof options.forceNewSession === "object"
-					? options.forceNewSession!.detail
+					? options.forceNewSession?.detail
 					: undefined;
 
 			// We only want to show the "recreating session" prompt if we are using forceNewSession & there are sessions

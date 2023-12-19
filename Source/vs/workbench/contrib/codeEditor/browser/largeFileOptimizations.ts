@@ -68,7 +68,7 @@ export class LargeFileOptimizationsWarner
 						run: () => {
 							this._configurationService
 								.updateValue(
-									`editor.largeFileOptimizations`,
+									"editor.largeFileOptimizations",
 									false,
 								)
 								.then(

@@ -60,7 +60,7 @@ export async function loadLocalResource(
 	requestUri: URI,
 	options: {
 		ifNoneMatch: string | undefined;
-		roots: ReadonlyArray<URI>;
+		roots: readonly URI[];
 	},
 	fileService: IFileService,
 	logService: ILogService,
@@ -117,7 +117,7 @@ export async function loadLocalResource(
 
 function getResourceToLoad(
 	requestUri: URI,
-	roots: ReadonlyArray<URI>,
+	roots: readonly URI[],
 ): URI | undefined {
 	for (const root of roots) {
 		if (containsResource(root, requestUri)) {

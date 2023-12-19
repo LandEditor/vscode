@@ -363,7 +363,7 @@ export namespace TaskDTO {
 			// To continue to support the deprecated task constructor that doesn't take a scope, we must add a scope here:
 			scope = types.TaskScope.Workspace;
 		}
-		if (!definition || !scope) {
+		if (!(definition && scope)) {
 			return undefined;
 		}
 		const result: tasks.ITaskDTO = {
@@ -433,7 +433,7 @@ export namespace TaskDTO {
 				scope = types.TaskScope.Workspace;
 			}
 		}
-		if (!definition || !scope) {
+		if (!(definition && scope)) {
 			return undefined;
 		}
 		const result = new types.Task(
@@ -847,7 +847,7 @@ export abstract class ExtHostTaskBase
 		isProvided: boolean,
 	): Promise<void> {
 		const taskId = await this._proxy.$createTaskId(taskDTO);
-		if (!isProvided && !this._providedCustomExecutions2.has(taskId)) {
+		if (!(isProvided || this._providedCustomExecutions2.has(taskId))) {
 			this._notProvidedCustomExecutions.add(taskId);
 			// Also add to active executions when not coming from a provider to prevent timing issue.
 			this._activeCustomExecutions2.set(
@@ -1032,7 +1032,7 @@ export class WorkerExtHostTask extends ExtHostTaskBase {
 		if (value) {
 			for (const task of value) {
 				this.checkDeprecation(task, handler);
-				if (!task.definition || !validTypes[task.definition.type]) {
+				if (!(task.definition && validTypes[task.definition.type])) {
 					const source = task.source ? task.source : "No task source";
 					this._logService.warn(
 						`The task [${source}, ${task.name}] uses an undefined task type. The task will be ignored in the future.`,

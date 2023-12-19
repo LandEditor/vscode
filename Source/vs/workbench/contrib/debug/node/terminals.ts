@@ -97,7 +97,7 @@ export function prepareCommand(
 	let command = " ";
 
 	switch (shellType) {
-		case ShellType.powershell:
+		case ShellType.powershell: {
 			quote = (s: string) => {
 				s = s.replace(/\'/g, "''");
 				if (s.length > 0 && s.charAt(s.length - 1) === "\\") {
@@ -136,8 +136,9 @@ export function prepareCommand(
 				}
 			}
 			break;
+		}
 
-		case ShellType.cmd:
+		case ShellType.cmd: {
 			quote = (s: string) => {
 				// Note: Wrapping in cmd /C "..." complicates the escaping.
 				// cmd /C "node -e "console.log(process.argv)" """A^>0"""" # prints "A>0"
@@ -181,6 +182,7 @@ export function prepareCommand(
 				command += '"';
 			}
 			break;
+		}
 
 		case ShellType.bash: {
 			quote = (s: string) => {

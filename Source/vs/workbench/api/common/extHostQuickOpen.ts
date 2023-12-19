@@ -235,7 +235,7 @@ export function createExtHostQuickOpen(
 							typeof options.onDidSelectItem === "function"
 						) {
 							this._onDidSelectItem = (handle) => {
-								options.onDidSelectItem!(items[handle]);
+								options.onDidSelectItem?.(items[handle]);
 							};
 						}
 
@@ -307,20 +307,24 @@ export function createExtHostQuickOpen(
 
 			let severity: Severity;
 			switch (result.severity) {
-				case InputBoxValidationSeverity.Info:
+				case InputBoxValidationSeverity.Info: {
 					severity = Severity.Info;
 					break;
-				case InputBoxValidationSeverity.Warning:
+				}
+				case InputBoxValidationSeverity.Warning: {
 					severity = Severity.Warning;
 					break;
-				case InputBoxValidationSeverity.Error:
+				}
+				case InputBoxValidationSeverity.Error: {
 					severity = Severity.Error;
 					break;
-				default:
+				}
+				default: {
 					severity = result.message
 						? Severity.Error
 						: Severity.Ignore;
 					break;
+				}
 			}
 
 			return {
@@ -890,7 +894,7 @@ export function createExtHostQuickOpen(
 
 		_fireDidTriggerItemButton(itemHandle: number, buttonHandle: number) {
 			const item = this._handlesToItems.get(itemHandle)!;
-			if (!item || !item.buttons || !item.buttons.length) {
+			if (!item.buttons?.length) {
 				return;
 			}
 			const button = item.buttons[buttonHandle];

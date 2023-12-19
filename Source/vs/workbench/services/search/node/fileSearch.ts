@@ -154,10 +154,7 @@ export class FileWalker {
 		// For each extra file
 		extraFiles.forEach((extraFilePath) => {
 			const basename = path.basename(extraFilePath.fsPath);
-			if (
-				this.globalExcludePattern &&
-				this.globalExcludePattern(extraFilePath.fsPath, basename)
-			) {
+			if (this.globalExcludePattern?.(extraFilePath.fsPath, basename)) {
 				return; // excluded
 			}
 
@@ -197,7 +194,7 @@ export class FileWalker {
 				);
 			},
 			(errors, _result) => {
-				this.fileWalkSW!.stop();
+				this.fileWalkSW?.stop();
 				const err = errors ? arrays.coalesce(errors)[0] : null;
 				done(err, this.isLimitHit);
 			},
@@ -256,7 +253,7 @@ export class FileWalker {
 		const rootFolder = folderQuery.folder.fsPath;
 		const isMac = platform.isMacintosh;
 
-		const killCmd = () => cmd && cmd.kill();
+		const killCmd = () => cmd?.kill();
 		killCmds.add(killCmd);
 
 		let done = (err?: Error) => {
@@ -271,8 +268,8 @@ export class FileWalker {
 			this.config,
 			folderQuery,
 			this.config.includePattern,
-			this.folderExcludePatterns.get(folderQuery.folder.fsPath)!
-				.expression,
+			this.folderExcludePatterns.get(folderQuery.folder.fsPath)
+				?.expression,
 		);
 		const cmd = ripgrep.cmd;
 		const noSiblingsClauses = !Object.keys(ripgrep.siblingClauses).length;
@@ -607,8 +604,8 @@ export class FileWalker {
 
 	getStats(): ISearchEngineStats {
 		return {
-			cmdTime: this.cmdSW!.elapsed(),
-			fileWalkTime: this.fileWalkSW!.elapsed(),
+			cmdTime: this.cmdSW?.elapsed(),
+			fileWalkTime: this.fileWalkSW?.elapsed(),
 			directoriesWalked: this.directoriesWalked,
 			filesWalked: this.filesWalked,
 			cmdResultCount: this.cmdResultCount,
@@ -646,8 +643,8 @@ export class FileWalker {
 					: file;
 				if (
 					this.folderExcludePatterns
-						.get(folderQuery.folder.fsPath)!
-						.test(
+						.get(folderQuery.folder.fsPath)
+						?.test(
 							currentRelativePath,
 							file,
 							this.config.filePattern !== file
@@ -950,14 +947,12 @@ class AbsoluteAndRelativeParsedExpression {
 		hasSibling?: (name: string) => boolean | Promise<boolean>,
 	): string | Promise<string | null> | undefined | null {
 		return (
-			(this.relativeParsedExpr &&
-				this.relativeParsedExpr(_path, basename, hasSibling)) ||
-			(this.absoluteParsedExpr &&
-				this.absoluteParsedExpr(
-					path.join(this.root, _path),
-					basename,
-					hasSibling,
-				))
+			this.relativeParsedExpr?.(_path, basename, hasSibling) ||
+			this.absoluteParsedExpr?.(
+				path.join(this.root, _path),
+				basename,
+				hasSibling,
+			)
 		);
 	}
 

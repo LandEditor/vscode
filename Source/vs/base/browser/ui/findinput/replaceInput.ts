@@ -284,11 +284,11 @@ export class ReplaceInput extends Widget {
 	private _lastHighlightFindOptions = 0;
 	public highlightFindOptions(): void {
 		this.domNode.classList.remove(
-			"highlight-" + this._lastHighlightFindOptions,
+			`highlight-${this._lastHighlightFindOptions}`,
 		);
 		this._lastHighlightFindOptions = 1 - this._lastHighlightFindOptions;
 		this.domNode.classList.add(
-			"highlight-" + this._lastHighlightFindOptions,
+			`highlight-${this._lastHighlightFindOptions}`,
 		);
 	}
 
@@ -310,7 +310,7 @@ export class ReplaceInput extends Widget {
 
 	public set width(newWidth: number) {
 		this.inputBox.paddingRight = this.cachedOptionsWidth;
-		this.domNode.style.width = newWidth + "px";
+		this.domNode.style.width = `${newWidth}px`;
 	}
 
 	public override dispose(): void {

@@ -71,7 +71,7 @@ export class RemoteExtensionsInitializerContribution
 			this.extensionManagementServerService
 				.remoteExtensionManagementServer;
 		// Skip: Not a remote window
-		if (!connection || !remoteExtensionManagementServer) {
+		if (!(connection && remoteExtensionManagementServer)) {
 			return;
 		}
 		// Skip: Not a native window
@@ -92,7 +92,7 @@ export class RemoteExtensionsInitializerContribution
 			)
 		) {
 			this.logService.trace(
-				`Skipping initializing remote extensions because the window with this remote authority was opened before.`,
+				"Skipping initializing remote extensions because the window with this remote authority was opened before.",
 			);
 			return;
 		}
@@ -105,7 +105,7 @@ export class RemoteExtensionsInitializerContribution
 		// Skip: Not a new workspace
 		if (!this.storageService.isNew(StorageScope.WORKSPACE)) {
 			this.logService.trace(
-				`Skipping initializing remote extensions because this workspace was opened before.`,
+				"Skipping initializing remote extensions because this workspace was opened before.",
 			);
 			return;
 		}

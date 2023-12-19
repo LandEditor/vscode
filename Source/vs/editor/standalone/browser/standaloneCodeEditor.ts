@@ -340,10 +340,7 @@ export class StandaloneCodeEditor
 		options.ariaLabel =
 			options.ariaLabel ||
 			StandaloneCodeEditorNLS.editorViewAccessibleLabel;
-		options.ariaLabel =
-			options.ariaLabel +
-			";" +
-			StandaloneCodeEditorNLS.accessibilityHelpMessage;
+		options.ariaLabel = `${options.ariaLabel};${StandaloneCodeEditorNLS.accessibilityHelpMessage}`;
 		super(
 			domElement,
 			options,
@@ -379,7 +376,7 @@ export class StandaloneCodeEditor
 			);
 			return null;
 		}
-		const commandId = "DYNAMIC_" + ++LAST_GENERATED_COMMAND_ID;
+		const commandId = `DYNAMIC_${++LAST_GENERATED_COMMAND_ID}`;
 		const whenExpression = ContextKeyExpr.deserialize(context);
 		this._standaloneKeybindingService.addDynamicKeybinding(
 			commandId,
@@ -438,7 +435,7 @@ export class StandaloneCodeEditor
 		const toDispose = new DisposableStore();
 
 		// Generate a unique id to allow the same descriptor.id across multiple editor instances
-		const uniqueId = this.getId() + ":" + id;
+		const uniqueId = `${this.getId()}:${id}`;
 
 		// Register the command
 		toDispose.add(CommandsRegistry.registerCommand(uniqueId, run));
@@ -552,7 +549,7 @@ export class StandaloneEditor
 			);
 		}
 		const _model: ITextModel | null | undefined = options.model;
-		delete options.model;
+		options.model = undefined;
 		super(
 			domElement,
 			options,

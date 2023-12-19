@@ -108,7 +108,7 @@ onceDocumentLoaded(() => {
 						settings,
 					);
 				}
-			} else if (!isNaN(settings.settings.line!)) {
+			} else if (!Number.isNaN(settings.settings.line!)) {
 				scrollDisabledCount += 1;
 				scrollToRevealSourceLine(
 					settings.settings.line!,
@@ -136,7 +136,7 @@ const onUpdateView = (() => {
 	}, 50);
 
 	return (line: number) => {
-		if (!isNaN(line)) {
+		if (!Number.isNaN(line)) {
 			state.line = line;
 
 			doScroll(line);
@@ -157,7 +157,7 @@ function addImageContexts() {
 	const images = document.getElementsByTagName("img");
 	let idNumber = 0;
 	for (const img of images) {
-		img.id = "image-" + idNumber;
+		img.id = `image-${idNumber}`;
 		idNumber += 1;
 		img.setAttribute(
 			"data-vscode-context",
@@ -219,7 +219,7 @@ window.addEventListener(
 				}
 				return;
 			}
-			case "onDidChangeTextEditorSelection":
+			case "onDidChangeTextEditorSelection": {
 				if (data.source === documentResource) {
 					marker.onDidChangeTextEditorSelection(
 						data.line,
@@ -227,12 +227,14 @@ window.addEventListener(
 					);
 				}
 				return;
+			}
 
-			case "updateView":
+			case "updateView": {
 				if (data.source === documentResource) {
 					onUpdateView(data.line);
 				}
 				return;
+			}
 
 			case "updateContent": {
 				const root = document.querySelector(".markdown-body")!;
@@ -391,7 +393,7 @@ document.addEventListener("dblclick", (event) => {
 
 	const offset = event.pageY;
 	const line = getEditorLineNumberForPageOffset(offset, documentVersion);
-	if (typeof line === "number" && !isNaN(line)) {
+	if (typeof line === "number" && !Number.isNaN(line)) {
 		messaging.postMessage("didClick", { line: Math.floor(line) });
 	}
 });
@@ -459,7 +461,7 @@ window.addEventListener(
 				window.scrollY,
 				documentVersion,
 			);
-			if (typeof line === "number" && !isNaN(line)) {
+			if (typeof line === "number" && !Number.isNaN(line)) {
 				messaging.postMessage("revealLine", { line });
 			}
 		}

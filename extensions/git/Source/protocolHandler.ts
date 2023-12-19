@@ -40,19 +40,18 @@ export class GitProtocolHandler implements UriHandler {
 		const ref = data.ref;
 
 		if (!data.url) {
-			this.logger.warn("Failed to open URI:" + uri.toString());
+			this.logger.warn(`Failed to open URI:${uri.toString()}`);
 			return;
 		}
 
 		if (Array.isArray(data.url) && data.url.length === 0) {
-			this.logger.warn("Failed to open URI:" + uri.toString());
+			this.logger.warn(`Failed to open URI:${uri.toString()}`);
 			return;
 		}
 
 		if (ref !== undefined && typeof ref !== "string") {
 			this.logger.warn(
-				"Failed to open URI due to multiple references:" +
-					uri.toString(),
+				`Failed to open URI due to multiple references:${uri.toString()}`,
 			);
 			return;
 		}
@@ -77,7 +76,7 @@ export class GitProtocolHandler implements UriHandler {
 				throw new Error("Invalid reference.");
 			}
 		} catch (ex) {
-			this.logger.warn("Invalid URI:" + uri.toString());
+			this.logger.warn(`Invalid URI:${uri.toString()}`);
 			return;
 		}
 

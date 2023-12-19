@@ -378,7 +378,10 @@ export class MainThreadTesting
 			startContinuousRun: (reqs, token) =>
 				this.proxy.$startContinuousRun(reqs, token),
 			expandTest: (testId, levels) =>
-				this.proxy.$expandTest(testId, isFinite(levels) ? levels : -1),
+				this.proxy.$expandTest(
+					testId,
+					Number.isFinite(levels) ? levels : -1,
+				),
 		};
 
 		disposable.add(

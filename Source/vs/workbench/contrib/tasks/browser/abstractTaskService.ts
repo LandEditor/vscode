@@ -224,22 +224,22 @@ class ProblemReporter implements TaskConfig.IProblemReporter {
 
 	public info(message: string): void {
 		this._validationStatus.state = ValidationState.Info;
-		this._outputChannel.append(message + "\n");
+		this._outputChannel.append(`${message}\n`);
 	}
 
 	public warn(message: string): void {
 		this._validationStatus.state = ValidationState.Warning;
-		this._outputChannel.append(message + "\n");
+		this._outputChannel.append(`${message}\n`);
 	}
 
 	public error(message: string): void {
 		this._validationStatus.state = ValidationState.Error;
-		this._outputChannel.append(message + "\n");
+		this._outputChannel.append(`${message}\n`);
 	}
 
 	public fatal(message: string): void {
 		this._validationStatus.state = ValidationState.Fatal;
-		this._outputChannel.append(message + "\n");
+		this._outputChannel.append(`${message}\n`);
 	}
 
 	public get status(): ValidationStatus {
@@ -460,7 +460,7 @@ export abstract class AbstractTaskService
 			this._configurationService.onDidChangeConfiguration((e) => {
 				if (
 					!e.affectsConfiguration("tasks") ||
-					(!this._taskSystem && !this._workspaceTasksPromise)
+					(!(this._taskSystem || this._workspaceTasksPromise))
 				) {
 					return;
 				}
@@ -1095,7 +1095,7 @@ export abstract class AbstractTaskService
 
 	private _getTaskSystemInfo(key: string): ITaskSystemInfo | undefined {
 		const infos = this._taskSystemInfos.get(key);
-		return infos && infos.length ? infos[0] : undefined;
+		return infos?.length ? infos[0] : undefined;
 	}
 
 	public extensionCallbackTaskComplete(
@@ -1319,7 +1319,7 @@ export abstract class AbstractTaskService
 			return Promise.resolve<Task[]>([]);
 		}
 		return this._getGroupedTasks(filter).then((map) => {
-			if (!filter || !filter.type) {
+			if (!filter?.type) {
 				return map.all();
 			}
 			const result: Task[] = [];
@@ -1866,7 +1866,7 @@ export abstract class AbstractTaskService
 			tasks,
 			test ? TaskGroup.Test : TaskGroup.Build,
 		);
-		if (!runnable || !runnable.task) {
+		if (!runnable?.task) {
 			if (test) {
 				if (this.schemaVersion === JsonSchemaVersion.V0_1_0) {
 					throw new TaskError(
@@ -1943,8 +1943,7 @@ export abstract class AbstractTaskService
 		let executeTaskResult: ITaskSummary | undefined;
 		try {
 			if (
-				options &&
-				options.attachProblemMatcher &&
+				options?.attachProblemMatcher &&
 				this._shouldAttachProblemMatcher(task) &&
 				!InMemoryTask.is(task)
 			) {
@@ -1998,7 +1997,7 @@ export abstract class AbstractTaskService
 				task._source.config.element;
 			type = (<any>configProperties).type;
 		} else {
-			type = task.getDefinition()!.type;
+			type = task.getDefinition()?.type;
 		}
 		return type;
 	}
@@ -2279,7 +2278,7 @@ export abstract class AbstractTaskService
 		}
 		const fileContent = await this._fileService.readFile(resource);
 		const content = fileContent.value;
-		if (!content || !task) {
+		if (!(content && task)) {
 			return false;
 		}
 		const contentValue = content.toString();
@@ -2353,7 +2352,7 @@ export abstract class AbstractTaskService
 			CustomTask.is(task) || ConfiguringTask.is(task)
 				? task._source.config
 				: undefined;
-		if (taskConfig && taskConfig.element) {
+		if (taskConfig?.element) {
 			toCustomize = { ...taskConfig.element };
 		} else if (ContributedTask.is(task)) {
 			toCustomize = {};
@@ -2361,7 +2360,7 @@ export abstract class AbstractTaskService
 				Object.create(null),
 				task.defines,
 			);
-			delete identifier["_key"];
+			identifier["_key"] = undefined;
 			Object.keys(identifier).forEach(
 				(key) => ((<any>toCustomize)![key] = identifier[key]),
 			);
@@ -2524,12 +2523,14 @@ export abstract class AbstractTaskService
 	): Promise<void> | undefined {
 		let target: ConfigurationTarget | undefined = undefined;
 		switch (source) {
-			case TaskSourceKind.User:
+			case TaskSourceKind.User: {
 				target = ConfigurationTarget.USER;
 				break;
-			case TaskSourceKind.WorkspaceFile:
+			}
+			case TaskSourceKind.WorkspaceFile: {
 				target = ConfigurationTarget.WORKSPACE;
 				break;
+			}
 			default:
 				if (
 					this._contextService.getWorkbenchState() ===
@@ -2567,7 +2568,7 @@ export abstract class AbstractTaskService
 				);
 			}
 			case TaskSourceKind.WorkspaceFile: {
-				if (this._workspace && this._workspace.configuration) {
+				if (this._workspace?.configuration) {
 					return this._workspace.configuration;
 				}
 			}
@@ -2592,7 +2593,7 @@ export abstract class AbstractTaskService
 			}
 			return uri;
 		} else {
-			return task.getWorkspaceFolder()!.toResource(".vscode/tasks.json");
+			return task.getWorkspaceFolder()?.toResource(".vscode/tasks.json");
 		}
 	}
 
@@ -2702,7 +2703,7 @@ export abstract class AbstractTaskService
 					identifier: id,
 					dependsOn: extensionTasks.map((extensionTask) => {
 						return {
-							uri: extensionTask.getWorkspaceFolder()!.uri,
+							uri: extensionTask.getWorkspaceFolder()?.uri,
 							task: extensionTask._id,
 						};
 					}),
@@ -2772,14 +2773,14 @@ export abstract class AbstractTaskService
 				resolverData = new Map();
 				(grouped || (await that._getGroupedTasks())).forEach(
 					(tasks, folder) => {
-						let data = resolverData!.get(folder);
+						let data = resolverData?.get(folder);
 						if (!data) {
 							data = {
 								label: new Map<string, Task>(),
 								identifier: new Map<string, Task>(),
 								taskIdentifier: new Map<string, Task>(),
 							};
-							resolverData!.set(folder, data);
+							resolverData?.set(folder, data);
 						}
 						for (const task of tasks) {
 							data.label.set(task._label, task);
@@ -2949,9 +2950,7 @@ export abstract class AbstractTaskService
 		if (executeResult.kind === TaskExecuteKind.Active) {
 			const active = executeResult.active;
 			if (
-				(active &&
-					active.same &&
-					runSource === TaskRunSource.FolderOpen) ||
+				(active?.same && runSource === TaskRunSource.FolderOpen) ||
 				runSource === TaskRunSource.Reconnect
 			) {
 				// ignore, the task is already active, likely from being reconnected or from folder open.
@@ -2961,7 +2960,7 @@ export abstract class AbstractTaskService
 				);
 				return executeResult.promise;
 			}
-			if (active && active.same) {
+			if (active?.same) {
 				if (this._taskSystem?.isTaskVisible(executeResult.task)) {
 					const message = nls.localize(
 						"TaskSystem.activeSame.noBackground",
@@ -3097,8 +3096,7 @@ export abstract class AbstractTaskService
 	private _isTaskProviderEnabled(type: string) {
 		const definition = TaskDefinitionRegistry.get(type);
 		return (
-			!definition ||
-			!definition.when ||
+			!definition?.when ||
 			this._contextKeyService.contextMatchesRules(definition.when)
 		);
 	}
@@ -3326,7 +3324,7 @@ export abstract class AbstractTaskService
 								unUsedConfigurationsAsArray.map(
 									async (value) => {
 										const configuringTask =
-											configurations!.byIdentifier[value];
+											configurations?.byIdentifier[value];
 										if (
 											type &&
 											type !==
@@ -3452,7 +3450,7 @@ export abstract class AbstractTaskService
 		}
 		for (const task of workspaceTasks.tasks) {
 			if (CustomTask.is(task)) {
-				const commandName = task.command && task.command.name;
+				const commandName = task.command?.name;
 				// This is for backwards compatibility with the 0.1.0 task annotation code
 				// if we had a gulp, jake or grunt command a task specification was a annotation
 				if (
@@ -3571,8 +3569,7 @@ export abstract class AbstractTaskService
 				? await this._computeLegacyConfiguration(workspaceFolder)
 				: await this._computeConfiguration(workspaceFolder);
 		if (
-			!workspaceFolderConfiguration ||
-			!workspaceFolderConfiguration.config ||
+			!workspaceFolderConfiguration?.config ||
 			workspaceFolderConfiguration.hasErrors
 		) {
 			return Promise.resolve({
@@ -3685,7 +3682,7 @@ export abstract class AbstractTaskService
 			!verbose ||
 			this._configurationService.getValue(TaskSettingId.VerboseLogging)
 		) {
-			this._outputChannel.append(value + "\n");
+			this._outputChannel.append(`${value}\n`);
 		}
 	}
 
@@ -3992,11 +3989,12 @@ export abstract class AbstractTaskService
 					}
 					break;
 				}
-				case TaskSourceKind.Workspace:
+				case TaskSourceKind.Workspace: {
 					result = Objects.deepClone(
 						wholeConfig.workspaceFolderValue,
 					);
 					break;
+				}
 				case TaskSourceKind.WorkspaceFile: {
 					if (
 						this._contextService.getWorkbenchState() ===
@@ -4151,11 +4149,9 @@ export abstract class AbstractTaskService
 				if (encounteredTasks[task._id].length === 1) {
 					encounteredTasks[task._id][0].label += " (1)";
 				}
-				newEntry.label =
-					newEntry.label +
-					" (" +
-					(encounteredTasks[task._id].length + 1).toString() +
-					")";
+				newEntry.label = `${newEntry.label} (${(
+					encounteredTasks[task._id].length + 1
+				).toString()})`;
 			} else {
 				encounteredTasks[task._id] = [];
 			}
@@ -4219,7 +4215,7 @@ export abstract class AbstractTaskService
 				});
 				for (const task of tasks) {
 					const key = task.getCommonTaskId();
-					if (!key || !recentSet.has(key)) {
+					if (!(key && recentSet.has(key))) {
 						if (
 							task._source.kind === TaskSourceKind.Workspace ||
 							task._source.kind === TaskSourceKind.User
@@ -4513,7 +4509,7 @@ export abstract class AbstractTaskService
 		}
 		const grouped = this._getGroupedTasks(filter);
 		const tasks = grouped.then((map) => {
-			if (!filter || !filter.type) {
+			if (!filter?.type) {
 				return map.all();
 			}
 			const result: Task[] = [];
@@ -4577,15 +4573,13 @@ export abstract class AbstractTaskService
 					taskResult = this._tasksAndGroupedTasks();
 				}
 				this._showQuickPick(
-					tasks ? tasks : taskResult!.tasks,
+					tasks ? tasks : taskResult?.tasks,
 					placeholder,
 					{
-						label:
-							"$(plus) " +
-							nls.localize(
-								"TaskService.noEntryToRun",
-								"Configure a Task",
-							),
+						label: `$(plus) ${nls.localize(
+							"TaskService.noEntryToRun",
+							"Configure a Task",
+						)}`,
 						task: null,
 					},
 					true,
@@ -4600,12 +4594,10 @@ export abstract class AbstractTaskService
 				this._showTwoLevelQuickPick(
 					placeholder,
 					{
-						label:
-							"$(plus) " +
-							nls.localize(
-								"TaskService.noEntryToRun",
-								"Configure a Task",
-							),
+						label: `$(plus) ${nls.localize(
+							"TaskService.noEntryToRun",
+							"Configure a Task",
+						)}`,
 						task: null,
 					},
 					type,
@@ -5032,7 +5024,7 @@ export abstract class AbstractTaskService
 				false,
 				true,
 			);
-			if (entry && entry.task) {
+			if (entry?.task) {
 				this._restart(entry.task);
 			}
 		} else if (activeTasks.length > 0) {
@@ -5077,23 +5069,26 @@ export abstract class AbstractTaskService
 				let tasksExistInFile: boolean;
 				let target: ConfigurationTarget;
 				switch (taskSource) {
-					case TaskSourceKind.User:
+					case TaskSourceKind.User: {
 						tasksExistInFile = this._configHasTasks(
 							configValue.userValue,
 						);
 						target = ConfigurationTarget.USER;
 						break;
-					case TaskSourceKind.WorkspaceFile:
+					}
+					case TaskSourceKind.WorkspaceFile: {
 						tasksExistInFile = this._configHasTasks(
 							configValue.workspaceValue,
 						);
 						target = ConfigurationTarget.WORKSPACE;
 						break;
-					default:
+					}
+					default: {
 						tasksExistInFile = this._configHasTasks(
 							configValue.workspaceFolderValue,
 						);
 						target = ConfigurationTarget.WORKSPACE_FOLDER;
+					}
 				}
 				let content;
 				if (!tasksExistInFile) {
@@ -5379,8 +5374,7 @@ export abstract class AbstractTaskService
 							task.configurationProperties.group,
 						);
 						if (
-							taskGroup &&
-							taskGroup.isDefault &&
+							taskGroup?.isDefault &&
 							taskGroup._id === TaskGroup.Build._id
 						) {
 							const label = nls.localize(
@@ -5547,8 +5541,7 @@ export abstract class AbstractTaskService
 						task.configurationProperties.group,
 					);
 					if (
-						taskGroup &&
-						taskGroup.isDefault &&
+						taskGroup?.isDefault &&
 						taskGroup._id === TaskGroup.Test._id
 					) {
 						selectedTask = task;
@@ -5622,7 +5615,7 @@ export abstract class AbstractTaskService
 		const activeTasks: Task[] = await activeTasksPromise;
 		let group: string | undefined;
 		if (activeTasks.length === 1) {
-			this._taskSystem!.revealTask(activeTasks[0]);
+			this._taskSystem?.revealTask(activeTasks[0]);
 		} else if (
 			activeTasks.length &&
 			activeTasks.every((task) => {
@@ -5639,7 +5632,7 @@ export abstract class AbstractTaskService
 				);
 			})
 		) {
-			this._taskSystem!.revealTask(activeTasks[0]);
+			this._taskSystem?.revealTask(activeTasks[0]);
 		} else {
 			this._showQuickPick(
 				activeTasksPromise,
@@ -5663,7 +5656,7 @@ export abstract class AbstractTaskService
 				if (task === undefined || task === null) {
 					return;
 				}
-				this._taskSystem!.revealTask(task);
+				this._taskSystem?.revealTask(task);
 			});
 		}
 	}
@@ -5701,7 +5694,7 @@ export abstract class AbstractTaskService
 			oldTaskTypes.has(task.command.name)
 		) {
 			configElement.type = task.command.name;
-			configElement.task = task.command.args![0];
+			configElement.task = task.command.args?.[0];
 		} else {
 			if (task.command.runtime === RuntimeType.Shell) {
 				configElement.type = RuntimeType.toString(RuntimeType.Shell);
@@ -5723,13 +5716,13 @@ export abstract class AbstractTaskService
 					task.command.args.length > 0)
 			) {
 				if (
-					!globalConfig.windows?.args &&
-					!globalConfig.osx?.args &&
-					!globalConfig.linux?.args
+					globalConfig.windows?.args ||
+					globalConfig.osx?.args ||
+					globalConfig.linux?.args
 				) {
-					configElement.args = task.command.args;
-				} else {
 					configElement.args = task._source.config.element.args;
+				} else {
+					configElement.args = task.command.args;
 				}
 			}
 		}

@@ -212,7 +212,7 @@ export class OpenEditorsView extends ViewPane {
 
 	private registerUpdateEvents(): void {
 		const updateWholeList = () => {
-			if (!this.isBodyVisible() || !this.list) {
+			if (!(this.isBodyVisible() && this.list)) {
 				this.needsRefresh = true;
 				return;
 			}
@@ -226,37 +226,41 @@ export class OpenEditorsView extends ViewPane {
 				if (this.listRefreshScheduler?.isScheduled()) {
 					return;
 				}
-				if (!this.isBodyVisible() || !this.list) {
+				if (!(this.isBodyVisible() && this.list)) {
 					this.needsRefresh = true;
 					return;
 				}
 
 				const index = this.getIndex(group, e.editor);
 				switch (e.kind) {
-					case GroupModelChangeKind.EDITOR_ACTIVE:
+					case GroupModelChangeKind.EDITOR_ACTIVE: {
 						this.focusActiveEditor();
 						break;
+					}
 					case GroupModelChangeKind.GROUP_INDEX:
-					case GroupModelChangeKind.GROUP_LABEL:
+					case GroupModelChangeKind.GROUP_LABEL: {
 						if (index >= 0) {
 							this.list.splice(index, 1, [group]);
 						}
 						break;
+					}
 					case GroupModelChangeKind.EDITOR_DIRTY:
 					case GroupModelChangeKind.EDITOR_STICKY:
 					case GroupModelChangeKind.EDITOR_CAPABILITIES:
 					case GroupModelChangeKind.EDITOR_PIN:
-					case GroupModelChangeKind.EDITOR_LABEL:
+					case GroupModelChangeKind.EDITOR_LABEL: {
 						this.list.splice(index, 1, [
 							new OpenEditor(e.editor!, group),
 						]);
 						this.focusActiveEditor();
 						break;
+					}
 					case GroupModelChangeKind.EDITOR_OPEN:
 					case GroupModelChangeKind.EDITOR_MOVE:
-					case GroupModelChangeKind.EDITOR_CLOSE:
+					case GroupModelChangeKind.EDITOR_CLOSE: {
 						updateWholeList();
 						break;
+					}
 				}
 			});
 			groupDisposables.set(group.id, groupModelChangeListener);
@@ -435,7 +439,7 @@ export class OpenEditorsView extends ViewPane {
 					!!element.editor.isReadonly(),
 				);
 				this.resourceContext.set(resource ?? null);
-			} else if (!!element) {
+			} else if (element) {
 				this.groupFocusedContext.set(true);
 			}
 		});

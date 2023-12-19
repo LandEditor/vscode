@@ -124,7 +124,7 @@ function sizeForFileName(
 	const m = fileName.match(/@(\d+)x\./);
 	const scale = m ? +m[1] : 1;
 
-	if (!size || !size.width || !size.height) {
+	if (!(size?.width && size.height)) {
 		return;
 	}
 

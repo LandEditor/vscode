@@ -96,7 +96,7 @@ function getSettingsSearchBuildId(packageJson) {
 				: /\/main$/.test(branch)
 				  ? 1
 				  : 2; // Some unexpected branch
-		const out = cp.execSync(`git rev-list HEAD --count`);
+		const out = cp.execSync("git rev-list HEAD --count");
 		const count = parseInt(out.toString());
 		// <version number><commit count><branchId (avoid unlikely conflicts)>
 		// 1.25.1, 1,234,567 commits, main = 1250112345671
@@ -106,7 +106,7 @@ function getSettingsSearchBuildId(packageJson) {
 			branchId
 		);
 	} catch (e) {
-		throw new Error("Could not determine build number: " + e.toString());
+		throw new Error(`Could not determine build number: ${e.toString()}`);
 	}
 }
 exports.getSettingsSearchBuildId = getSettingsSearchBuildId;

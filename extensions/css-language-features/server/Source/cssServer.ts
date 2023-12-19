@@ -227,9 +227,7 @@ export function startServer(
 		let service = languageServices[document.languageId];
 		if (!service) {
 			connection.console.log(
-				"Document type is " +
-					document.languageId +
-					", using css instead.",
+				`Document type is ${document.languageId}, using css instead.`,
 			);
 			service = languageServices["css"];
 		}

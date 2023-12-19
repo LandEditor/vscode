@@ -75,7 +75,7 @@ export function tokenizeLineToHTML(
 	tabSize: number,
 	useNbsp: boolean,
 ): string {
-	let result = `<div>`;
+	let result = "<div>";
 	let charIndex = startOffset;
 	let tabsCharDelta = 0;
 
@@ -118,41 +118,47 @@ export function tokenizeLineToHTML(
 					}
 					break;
 				}
-				case CharCode.LessThan:
+				case CharCode.LessThan: {
 					partContent += "&lt;";
 					prevIsSpace = false;
 					break;
+				}
 
-				case CharCode.GreaterThan:
+				case CharCode.GreaterThan: {
 					partContent += "&gt;";
 					prevIsSpace = false;
 					break;
+				}
 
-				case CharCode.Ampersand:
+				case CharCode.Ampersand: {
 					partContent += "&amp;";
 					prevIsSpace = false;
 					break;
+				}
 
-				case CharCode.Null:
+				case CharCode.Null: {
 					partContent += "&#00;";
 					prevIsSpace = false;
 					break;
+				}
 
 				case CharCode.UTF8_BOM:
 				case CharCode.LINE_SEPARATOR:
 				case CharCode.PARAGRAPH_SEPARATOR:
-				case CharCode.NEXT_LINE:
+				case CharCode.NEXT_LINE: {
 					partContent += "\ufffd";
 					prevIsSpace = false;
 					break;
+				}
 
-				case CharCode.CarriageReturn:
+				case CharCode.CarriageReturn: {
 					// zero width space, because carriage return would introduce a line break
 					partContent += "&#8203";
 					prevIsSpace = false;
 					break;
+				}
 
-				case CharCode.Space:
+				case CharCode.Space: {
 					if (useNbsp && prevIsSpace) {
 						partContent += "&#160;";
 						prevIsSpace = false;
@@ -161,10 +167,12 @@ export function tokenizeLineToHTML(
 						prevIsSpace = true;
 					}
 					break;
+				}
 
-				default:
+				default: {
 					partContent += String.fromCharCode(charCode);
 					prevIsSpace = false;
+				}
 			}
 		}
 
@@ -178,7 +186,7 @@ export function tokenizeLineToHTML(
 		}
 	}
 
-	result += `</div>`;
+	result += "</div>";
 	return result;
 }
 
@@ -194,7 +202,7 @@ export function _tokenizeToString(
 		const line = lines[i];
 
 		if (i > 0) {
-			result += `<br/>`;
+			result += "<br/>";
 		}
 
 		const tokenizationResult = tokenizationSupport.tokenizeEncoded(
@@ -223,6 +231,6 @@ export function _tokenizeToString(
 		currentState = tokenizationResult.endState;
 	}
 
-	result += `</div>`;
+	result += "</div>";
 	return result;
 }

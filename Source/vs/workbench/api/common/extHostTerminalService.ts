@@ -1151,7 +1151,7 @@ export abstract class BaseExtHostTerminalService
 			profile = { options: profile };
 		}
 
-		if (!profile || !("options" in profile)) {
+		if (!(profile && "options" in profile)) {
 			throw new Error(
 				`No terminal profile options provided for id "${id}"`,
 			);
@@ -1403,7 +1403,7 @@ class UnifiedEnvironmentVariableCollection {
 	protected readonly _onDidChangeCollection: Emitter<void> =
 		new Emitter<void>();
 	get onDidChangeCollection(): Event<void> {
-		return this._onDidChangeCollection && this._onDidChangeCollection.event;
+		return this._onDidChangeCollection?.event;
 	}
 
 	constructor(serialized?: ISerializableEnvironmentVariableCollection) {
@@ -1638,7 +1638,7 @@ class ScopedEnvironmentVariableCollection
 
 	protected readonly _onDidChangeCollection = new Emitter<void>();
 	get onDidChangeCollection(): Event<void> {
-		return this._onDidChangeCollection && this._onDidChangeCollection.event;
+		return this._onDidChangeCollection?.event;
 	}
 
 	constructor(
@@ -1771,8 +1771,8 @@ function convertMutator(
 	mutator: IEnvironmentVariableMutator,
 ): vscode.EnvironmentVariableMutator {
 	const newMutator = { ...mutator };
-	delete newMutator.scope;
+	newMutator.scope = undefined;
 	newMutator.options = newMutator.options ?? undefined;
-	delete (newMutator as any).variable;
+	(newMutator as any).variable = undefined;
 	return newMutator as vscode.EnvironmentVariableMutator;
 }

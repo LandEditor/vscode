@@ -311,7 +311,7 @@ class SyncStatusBar {
 
 			return {
 				command,
-				title: `$(cloud-upload)`,
+				title: "$(cloud-upload)",
 				tooltip,
 				arguments: [this.repository.sourceControl],
 			};
@@ -323,7 +323,7 @@ class SyncStatusBar {
 		let command = "";
 		let tooltip = "";
 
-		if (HEAD && HEAD.name && HEAD.commit) {
+		if (HEAD?.name && HEAD.commit) {
 			if (HEAD.upstream) {
 				if (HEAD.ahead || HEAD.behind) {
 					text += this.repository.syncLabel;

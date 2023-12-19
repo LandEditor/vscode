@@ -166,9 +166,9 @@ export function merge(
 			remoteExtension: ISyncExtension,
 			preferred: ISyncExtension,
 		): ISyncExtension => {
-			let pinned: boolean | undefined,
-				version: string | undefined,
-				preRelease: boolean | undefined;
+			let pinned: boolean | undefined;
+			let version: string | undefined;
+			let preRelease: boolean | undefined;
 			if (localExtension.installed) {
 				pinned = preferred.pinned;
 				preRelease = preferred.preRelease;
@@ -449,11 +449,13 @@ function compare(
 		if (removed.has(key)) {
 			continue;
 		}
-		const fromExtension = from!.get(key)!;
+		const fromExtension = from?.get(key)!;
 		const toExtension = to.get(key);
 		if (
-			!toExtension ||
-			!areSame(fromExtension, toExtension, checkVersionProperty, true)
+			!(
+				toExtension &&
+				areSame(fromExtension, toExtension, checkVersionProperty, true)
+			)
 		) {
 			updated.add(key);
 		}
@@ -668,16 +670,16 @@ function massageOutgoingExtension(
 		pinned: !!extension.pinned,
 	};
 	if (!extension.disabled) {
-		delete massagedExtension.disabled;
+		massagedExtension.disabled = undefined;
 	}
 	if (!extension.installed) {
-		delete massagedExtension.installed;
+		massagedExtension.installed = undefined;
 	}
 	if (!extension.state) {
-		delete massagedExtension.state;
+		massagedExtension.state = undefined;
 	}
 	if (!extension.isApplicationScoped) {
-		delete massagedExtension.isApplicationScoped;
+		massagedExtension.isApplicationScoped = undefined;
 	}
 	return massagedExtension;
 }

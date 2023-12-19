@@ -317,7 +317,7 @@ function isTreeCommandEnabled(
 	);
 	if (command) {
 		const commandAction = MenuRegistry.getCommand(command.id);
-		const precondition = commandAction && commandAction.precondition;
+		const precondition = commandAction?.precondition;
 		if (precondition) {
 			return contextKeyService.contextMatchesRules(precondition);
 		}
@@ -562,7 +562,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 				async getChildren(node?: ITreeItem): Promise<ITreeItem[]> {
 					let children: ITreeItem[];
 					const checkboxesUpdated: ITreeItem[] = [];
-					if (node && node.children) {
+					if (node?.children) {
 						children = node.children;
 					} else {
 						node = node ?? self.root;
@@ -978,7 +978,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 								}
 								let buildAriaLabel = "";
 								if (element.label) {
-									buildAriaLabel += element.label.label + " ";
+									buildAriaLabel += `${element.label.label} `;
 								}
 								if (element.description) {
 									buildAriaLabel += element.description;
@@ -1035,7 +1035,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 		aligner.tree = this.tree;
 		const actionRunner = new MultipleSelectionActionRunner(
 			this.notificationService,
-			() => this.tree!.getSelection(),
+			() => this.tree?.getSelection(),
 		);
 		renderer.actionRunner = actionRunner;
 
@@ -1104,7 +1104,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 				) {
 					return;
 				}
-				const selection = this.tree!.getSelection();
+				const selection = this.tree?.getSelection();
 				const command = await this.resolveCommand(
 					selection.length === 1 ? selection[0] : undefined,
 				);
@@ -1172,7 +1172,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 		event.preventDefault();
 		event.stopPropagation();
 
-		this.tree!.setFocus([node]);
+		this.tree?.setFocus([node]);
 		const actions = treeMenus.getResourceContextActions(node);
 		if (!actions.length) {
 			return;
@@ -1197,7 +1197,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 
 			onHide: (wasCancelled?: boolean) => {
 				if (wasCancelled) {
-					this.tree!.domFocus();
+					this.tree?.domFocus();
 				}
 			},
 
@@ -1233,7 +1233,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 			);
 		}
 		this._messageValue = isMarkdownString(message)
-			? this.markdownRenderer!.render(message)
+			? this.markdownRenderer?.render(message)
 			: message;
 		if (!this.messageElement) {
 			return;
@@ -1270,7 +1270,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 			this._height = height;
 			this._width = width;
 			const treeHeight = height - DOM.getTotalHeight(this.messageElement);
-			this.treeContainer.style.height = treeHeight + "px";
+			this.treeContainer.style.height = `${treeHeight}px`;
 			this.tree?.layout(treeHeight, width);
 		}
 	}
@@ -1628,7 +1628,7 @@ class TreeRenderer
 		resource: URI | null,
 		node: ITreeItem,
 	): string | ITooltipMarkdownString | undefined {
-		if (!(node instanceof ResolvableTreeItem) || !node.hasResolve) {
+		if (!(node instanceof ResolvableTreeItem && node.hasResolve)) {
 			if (resource && !node.tooltip) {
 				return undefined;
 			} else if (node.tooltip === undefined) {
@@ -1687,7 +1687,7 @@ class TreeRenderer
 			  : undefined;
 		const label = treeItemLabel ? treeItemLabel.label : undefined;
 		const matches =
-			treeItemLabel && treeItemLabel.highlights && label
+			treeItemLabel?.highlights && label
 				? treeItemLabel.highlights.map(([start, end]) => {
 						if (start < 0) {
 							start = label.length + start;
@@ -1794,12 +1794,9 @@ class TreeRenderer
 		}
 
 		if (!commandEnabled) {
-			templateData.icon.className =
-				templateData.icon.className + " disabled";
+			templateData.icon.className += " disabled";
 			if (templateData.container.parentElement) {
-				templateData.container.parentElement.className =
-					templateData.container.parentElement.className +
-					" disabled";
+				templateData.container.parentElement.className += " disabled";
 			}
 		}
 
@@ -1874,7 +1871,7 @@ class TreeRenderer
 	}
 
 	private setAlignment(container: HTMLElement, treeItem: ITreeItem) {
-		container.parentElement!.classList.toggle(
+		container.parentElement?.classList.toggle(
 			"align-icon-with-twisty",
 			!this._hasCheckbox && this.aligner.alignIconWithTwisty(treeItem),
 		);
@@ -2404,7 +2401,7 @@ export class CustomTreeViewDragAndDrop implements ITreeDragAndDrop<ITreeItem> {
 		originalEvent: DragEvent,
 		itemHandles: string[],
 	) {
-		if (!originalEvent.dataTransfer || !this.dndController) {
+		if (!(originalEvent.dataTransfer && this.dndController)) {
 			return;
 		}
 		const uuid = generateUuid();
@@ -2496,7 +2493,7 @@ export class CustomTreeViewDragAndDrop implements ITreeDragAndDrop<ITreeItem> {
 			);
 		} else {
 			this.logService.debug(
-				`TreeView dragged with no supported mime types.`,
+				"TreeView dragged with no supported mime types.",
 			);
 		}
 	}
@@ -2530,8 +2527,7 @@ export class CustomTreeViewDragAndDrop implements ITreeDragAndDrop<ITreeItem> {
 
 		const dndController = this.dndController;
 		if (
-			!dndController ||
-			!originalEvent.dataTransfer ||
+			!(dndController && originalEvent.dataTransfer) ||
 			dndController.dropMimeTypes.length === 0
 		) {
 			return false;
@@ -2586,7 +2582,7 @@ export class CustomTreeViewDragAndDrop implements ITreeDragAndDrop<ITreeItem> {
 		originalEvent: DragEvent,
 	): Promise<void> {
 		const dndController = this.dndController;
-		if (!originalEvent.dataTransfer || !dndController) {
+		if (!(originalEvent.dataTransfer && dndController)) {
 			return;
 		}
 
@@ -2597,7 +2593,7 @@ export class CustomTreeViewDragAndDrop implements ITreeDragAndDrop<ITreeItem> {
 		) {
 			willDropUuid = this.treeItemsTransfer.getData(
 				DraggedTreeItemsIdentifier.prototype,
-			)![0].identifier;
+			)?.[0].identifier;
 		}
 
 		const originalDataTransfer = toExternalVSDataTransfer(

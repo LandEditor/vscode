@@ -159,7 +159,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 	private onDidRegister(workingCopy: IWorkingCopy): void {
 		if (this.suspended) {
 			this.logService.warn(
-				`[backup tracker] suspended, ignoring register event`,
+				"[backup tracker] suspended, ignoring register event",
 				workingCopy.resource.toString(),
 				workingCopy.typeId,
 			);
@@ -178,7 +178,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 		// Check suspended
 		if (this.suspended) {
 			this.logService.warn(
-				`[backup tracker] suspended, ignoring unregister event`,
+				"[backup tracker] suspended, ignoring unregister event",
 				workingCopy.resource.toString(),
 				workingCopy.typeId,
 			);
@@ -192,7 +192,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 	private onDidChangeDirty(workingCopy: IWorkingCopy): void {
 		if (this.suspended) {
 			this.logService.warn(
-				`[backup tracker] suspended, ignoring dirty change event`,
+				"[backup tracker] suspended, ignoring dirty change event",
 				workingCopy.resource.toString(),
 				workingCopy.typeId,
 			);
@@ -217,7 +217,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 		// Check suspended
 		if (this.suspended) {
 			this.logService.warn(
-				`[backup tracker] suspended, ignoring content change event`,
+				"[backup tracker] suspended, ignoring content change event",
 				workingCopy.resource.toString(),
 				workingCopy.typeId,
 			);
@@ -238,7 +238,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 		this.cancelBackupOperation(workingCopy);
 
 		this.logService.trace(
-			`[backup tracker] scheduling backup`,
+			"[backup tracker] scheduling backup",
 			workingCopy.resource.toString(),
 			workingCopy.typeId,
 		);
@@ -257,7 +257,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 			// Backup if modified
 			if (workingCopy.isModified()) {
 				this.logService.trace(
-					`[backup tracker] creating backup`,
+					"[backup tracker] creating backup",
 					workingCopy.resource.toString(),
 					workingCopy.typeId,
 				);
@@ -270,7 +270,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 
 					if (workingCopy.isModified()) {
 						this.logService.trace(
-							`[backup tracker] storing backup`,
+							"[backup tracker] storing backup",
 							workingCopy.resource.toString(),
 							workingCopy.typeId,
 						);
@@ -299,7 +299,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 		this.pendingBackupOperations.set(workingCopyIdentifier, {
 			cancel: () => {
 				this.logService.trace(
-					`[backup tracker] clearing pending backup creation`,
+					"[backup tracker] clearing pending backup creation",
 					workingCopy.resource.toString(),
 					workingCopy.typeId,
 				);
@@ -355,7 +355,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 		this.pendingBackupOperations.set(workingCopyIdentifier, {
 			cancel: () => {
 				this.logService.trace(
-					`[backup tracker] clearing pending backup discard`,
+					"[backup tracker] clearing pending backup discard",
 					workingCopy.resource.toString(),
 					workingCopy.typeId,
 				);
@@ -371,7 +371,7 @@ export abstract class WorkingCopyBackupTracker extends Disposable {
 		cts: CancellationTokenSource,
 	) {
 		this.logService.trace(
-			`[backup tracker] discarding backup`,
+			"[backup tracker] discarding backup",
 			workingCopyIdentifier.resource.toString(),
 			workingCopyIdentifier.typeId,
 		);

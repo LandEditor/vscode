@@ -223,7 +223,7 @@ export class TokenClassificationExtensionPoints {
 				);
 				const collector = extension.collector;
 
-				if (!extensionValue || !Array.isArray(extensionValue)) {
+				if (!(extensionValue && Array.isArray(extensionValue))) {
 					collector.error(
 						nls.localize(
 							"invalid.semanticTokenTypeConfiguration",
@@ -266,7 +266,7 @@ export class TokenClassificationExtensionPoints {
 				);
 				const collector = extension.collector;
 
-				if (!extensionValue || !Array.isArray(extensionValue)) {
+				if (!(extensionValue && Array.isArray(extensionValue))) {
 					collector.error(
 						nls.localize(
 							"invalid.semanticTokenModifierConfiguration",
@@ -308,7 +308,7 @@ export class TokenClassificationExtensionPoints {
 				);
 				const collector = extension.collector;
 
-				if (!extensionValue || !Array.isArray(extensionValue)) {
+				if (!(extensionValue && Array.isArray(extensionValue))) {
 					collector.error(
 						nls.localize(
 							"invalid.semanticTokenScopes.configuration",

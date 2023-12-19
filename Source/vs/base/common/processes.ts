@@ -150,18 +150,18 @@ export function removeDangerousEnvVariables(
 
 	// Unset `DEBUG`, as an invalid value might lead to process crashes
 	// See https://github.com/microsoft/vscode/issues/130072
-	delete env["DEBUG"];
+	env["DEBUG"] = undefined;
 
 	if (isMacintosh) {
 		// Unset `DYLD_LIBRARY_PATH`, as it leads to process crashes
 		// See https://github.com/microsoft/vscode/issues/104525
 		// See https://github.com/microsoft/vscode/issues/105848
-		delete env["DYLD_LIBRARY_PATH"];
+		env["DYLD_LIBRARY_PATH"] = undefined;
 	}
 
 	if (isLinux) {
 		// Unset `LD_PRELOAD`, as it might lead to process crashes
 		// See https://github.com/microsoft/vscode/issues/134177
-		delete env["LD_PRELOAD"];
+		env["LD_PRELOAD"] = undefined;
 	}
 }

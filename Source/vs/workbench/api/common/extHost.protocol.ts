@@ -2758,7 +2758,7 @@ export interface DataTransferItemDTO {
 }
 
 export interface DataTransferDTO {
-	readonly items: Array<[/* type */ string, DataTransferItemDTO]>;
+	readonly items: [/* type */ string, DataTransferItemDTO][];
 }
 
 export interface CheckboxUpdate {
@@ -2915,7 +2915,7 @@ export interface ExtHostAuthenticationShape {
 	$getSessions(
 		id: string,
 		scopes?: string[],
-	): Promise<ReadonlyArray<AuthenticationSession>>;
+	): Promise<readonly AuthenticationSession[]>;
 	$createSession(
 		id: string,
 		scopes: string[],
@@ -3218,7 +3218,7 @@ export interface ICodeActionDto {
 
 export interface ICodeActionListDto {
 	cacheId: CacheId;
-	actions: ReadonlyArray<ICodeActionDto>;
+	actions: readonly ICodeActionDto[];
 }
 
 export interface ICodeActionProviderMetadataDto {

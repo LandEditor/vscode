@@ -23,7 +23,7 @@ export enum ZIndex {
 }
 
 const ZIndexValues = Object.keys(ZIndex)
-	.filter((key) => !isNaN(Number(key)))
+	.filter((key) => !Number.isNaN(Number(key)))
 	.map((key) => Number(key))
 	.sort((a, b) => b - a);
 function findBase(z: number) {

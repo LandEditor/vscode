@@ -20,7 +20,7 @@ function decorate(
 			fn = descriptor.get;
 		}
 
-		if (!fn || !fnKey) {
+		if (!(fn && fnKey)) {
 			throw new Error("not supported");
 		}
 

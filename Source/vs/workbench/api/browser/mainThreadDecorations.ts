@@ -131,7 +131,7 @@ export class MainThreadDecorations implements MainThreadDecorationsShape {
 		const provider = this._provider.get(handle);
 		if (provider) {
 			const [emitter] = provider;
-			emitter.fire(resources && resources.map((r) => URI.revive(r)));
+			emitter.fire(resources?.map((r) => URI.revive(r)));
 		}
 	}
 

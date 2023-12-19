@@ -38,12 +38,10 @@ export enum ViewEventType {
 
 export class ViewCompositionStartEvent {
 	public readonly type = ViewEventType.ViewCompositionStart;
-	constructor() {}
 }
 
 export class ViewCompositionEndEvent {
 	public readonly type = ViewEventType.ViewCompositionEnd;
-	constructor() {}
 }
 
 export class ViewConfigurationChangedEvent {
@@ -92,10 +90,6 @@ export class ViewDecorationsChangedEvent {
 
 export class ViewFlushedEvent {
 	public readonly type = ViewEventType.ViewFlushed;
-
-	constructor() {
-		// Nothing to do
-	}
 }
 
 export class ViewFocusChangedEvent {
@@ -114,10 +108,6 @@ export class ViewLanguageConfigurationEvent {
 
 export class ViewLineMappingChangedEvent {
 	public readonly type = ViewEventType.ViewLineMappingChanged;
-
-	constructor() {
-		// Nothing to do
-	}
 }
 
 export class ViewLinesChangedEvent {
@@ -270,18 +260,10 @@ export class ViewTokensChangedEvent {
 
 export class ViewTokensColorsChangedEvent {
 	public readonly type = ViewEventType.ViewTokensColorsChanged;
-
-	constructor() {
-		// Nothing to do
-	}
 }
 
 export class ViewZonesChangedEvent {
 	public readonly type = ViewEventType.ViewZonesChanged;
-
-	constructor() {
-		// Nothing to do
-	}
 }
 
 export type ViewEvent =

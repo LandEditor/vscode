@@ -48,9 +48,10 @@ export class JsonStringScanner {
 					case CharacterCodes.f:
 					case CharacterCodes.n:
 					case CharacterCodes.r:
-					case CharacterCodes.t:
+					case CharacterCodes.t: {
 						this.resultChars += 1;
 						break;
+					}
 					case CharacterCodes.u: {
 						const ch3 = this.scanHexDigits(4, true);
 						if (ch3 >= 0) {

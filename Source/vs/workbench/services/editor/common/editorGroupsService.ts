@@ -562,7 +562,7 @@ export interface IEditorGroupsService extends IEditorGroupsContainer {
 	/**
 	 * Provides access to all editor parts.
 	 */
-	readonly parts: ReadonlyArray<IEditorPart>;
+	readonly parts: readonly IEditorPart[];
 
 	/**
 	 * Get the editor part that contains the group with the provided identifier.

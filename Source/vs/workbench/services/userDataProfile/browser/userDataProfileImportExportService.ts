@@ -607,7 +607,7 @@ export class UserDataProfileImportExportService
 		let result:
 			| {
 					name: string;
-					items: ReadonlyArray<IQuickPickItem>;
+					items: readonly IQuickPickItem[];
 					icon?: string | null;
 			  }
 			| undefined;
@@ -751,7 +751,7 @@ export class UserDataProfileImportExportService
 			),
 		);
 
-		if (!profile && !isUserDataProfileTemplate(source)) {
+		if (!(profile || isUserDataProfileTemplate(source))) {
 			const profileTypeContainer = DOM.append(
 				domNode,
 				DOM.$(".profile-type-container"),
@@ -1708,7 +1708,8 @@ export class UserDataProfileImportExportService
 		}
 
 		if (this.isProfileURL(resource)) {
-			let handlerId: string, idOrUri: string | URI;
+			let handlerId: string;
+			let idOrUri: string | URI;
 			if (resource.authority === PROFILE_URL_AUTHORITY) {
 				idOrUri = this.uriIdentityService.extUri.basename(resource);
 				handlerId = this.uriIdentityService.extUri.basename(

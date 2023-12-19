@@ -93,12 +93,12 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 		const selection: T[] = [];
 
 		const isCollapsed = (element: T) => {
-			const id = this.identityProvider!.getId(element).toString();
+			const id = this.identityProvider?.getId(element).toString();
 			return !viewState.expanded[id];
 		};
 
 		const onDidCreateNode = (node: ITreeNode<T, TFilterData>) => {
-			const id = this.identityProvider!.getId(node.element).toString();
+			const id = this.identityProvider?.getId(node.element).toString();
 
 			if (viewState.focus.has(id)) {
 				focus.push(node.element);
@@ -127,7 +127,7 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 
 		if (this.identityProvider) {
 			isCollapsed = (element) => {
-				const id = this.identityProvider!.getId(element).toString();
+				const id = this.identityProvider?.getId(element).toString();
 				const node = this.nodesByIdentity.get(id);
 
 				if (!node) {
@@ -175,9 +175,9 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 
 			const outerOnDidCreateNode = onDidCreateNode;
 			onDidCreateNode = (node: ITreeNode<T, TFilterData>) => {
-				const id = this.identityProvider!.getId(
-					node.element,
-				).toString();
+				const id = this.identityProvider
+					?.getId(node.element)
+					.toString();
 
 				insertedElements.add(id);
 				this.nodesByIdentity.set(id, node);
@@ -186,9 +186,9 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 			};
 
 			onDidDeleteNode = (node: ITreeNode<T, TFilterData>) => {
-				const id = this.identityProvider!.getId(
-					node.element,
-				).toString();
+				const id = this.identityProvider
+					?.getId(node.element)
+					.toString();
 
 				if (!insertedElements.has(id)) {
 					this.nodesByIdentity.delete(id);
@@ -216,8 +216,7 @@ export class DataTree<TInput, T, TFilterData = void> extends AbstractTree<
 			const collapsible = this.dataSource.hasChildren
 				? this.dataSource.hasChildren(element)
 				: undefined;
-			const collapsed =
-				size === 0 ? undefined : isCollapsed && isCollapsed(element);
+			const collapsed = size === 0 ? undefined : isCollapsed?.(element);
 
 			return { element, children, collapsible, collapsed };
 		});

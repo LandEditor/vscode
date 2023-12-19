@@ -177,15 +177,17 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 				iconClasses,
 				trigger: (buttonIndex) => {
 					switch (buttonIndex) {
-						case 0:
+						case 0: {
 							this._commandService.executeCommand(
 								TerminalCommandId.Rename,
 								terminal,
 							);
 							return TriggerAction.NO_ACTION;
-						case 1:
+						}
+						case 1: {
 							this._terminalService.safeDisposeTerminal(terminal);
 							return TriggerAction.REMOVE_ITEM;
+						}
 					}
 
 					return TriggerAction.NO_ACTION;

@@ -298,15 +298,15 @@ export class ContextView extends Disposable {
 		}
 
 		if (
-			this.delegate!.canRelayout === false &&
+			this.delegate?.canRelayout === false &&
 			!(platform.isIOS && BrowserFeatures.pointerEvents)
 		) {
 			this.hide();
 			return;
 		}
 
-		if (this.delegate!.layout) {
-			this.delegate!.layout!();
+		if (this.delegate?.layout) {
+			this.delegate?.layout?.();
 		}
 
 		this.doLayout();
@@ -319,7 +319,7 @@ export class ContextView extends Disposable {
 		}
 
 		// Get anchor
-		const anchor = this.delegate!.getAnchor();
+		const anchor = this.delegate?.getAnchor();
 
 		// Compute around
 		let around: IView;
@@ -363,11 +363,11 @@ export class ContextView extends Disposable {
 		const viewSizeHeight = DOM.getTotalHeight(this.view);
 
 		const anchorPosition =
-			this.delegate!.anchorPosition || AnchorPosition.BELOW;
+			this.delegate?.anchorPosition || AnchorPosition.BELOW;
 		const anchorAlignment =
-			this.delegate!.anchorAlignment || AnchorAlignment.LEFT;
+			this.delegate?.anchorAlignment || AnchorAlignment.LEFT;
 		const anchorAxisAlignment =
-			this.delegate!.anchorAxisAlignment || AnchorAxisAlignment.VERTICAL;
+			this.delegate?.anchorAxisAlignment || AnchorAxisAlignment.VERTICAL;
 
 		let top: number;
 		let left: number;

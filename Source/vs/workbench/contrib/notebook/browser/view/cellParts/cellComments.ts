@@ -81,7 +81,7 @@ export class CellComments extends CellContentPart {
 			this.container,
 			this.notebookEditor,
 			owner,
-			this.notebookEditor.textModel!.uri,
+			this.notebookEditor.textModel?.uri,
 			this.contextKeyService,
 			this.instantiationService,
 			commentThread,
@@ -137,7 +137,7 @@ export class CellComments extends CellContentPart {
 						}px`;
 						this.currentElement.commentHeight =
 							this._calculateCommentThreadHeight(
-								this._commentThreadWidget!.getDimensions()
+								this._commentThreadWidget?.getDimensions()
 									.height,
 							);
 						return;

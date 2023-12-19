@@ -104,7 +104,7 @@ export class LineContext {
 		) {
 			return false;
 		}
-		if (!isNaN(Number(word.word))) {
+		if (!Number.isNaN(Number(word.word))) {
 			return false;
 		}
 		return true;
@@ -143,10 +143,8 @@ function canShowQuickSuggest(
 	configurationService: IConfigurationService,
 ): boolean {
 	if (
-		!Boolean(
-			contextKeyService.getContextKeyValue(
-				InlineCompletionContextKeys.inlineSuggestionVisible.key,
-			),
+		!contextKeyService.getContextKeyValue(
+			InlineCompletionContextKeys.inlineSuggestionVisible.key,
 		)
 	) {
 		// Allow if there is no inline suggestion.
@@ -166,11 +164,7 @@ function canShowSuggestOnTriggerCharacters(
 	contextKeyService: IContextKeyService,
 	configurationService: IConfigurationService,
 ): boolean {
-	if (
-		!Boolean(
-			contextKeyService.getContextKeyValue("inlineSuggestionVisible"),
-		)
-	) {
+	if (!contextKeyService.getContextKeyValue("inlineSuggestionVisible")) {
 		// Allow if there is no inline suggestion.
 		return true;
 	}
@@ -430,17 +424,17 @@ export class SuggestModel implements IDisposable {
 	private _updateActiveSuggestSession(): void {
 		if (this._triggerState !== undefined) {
 			if (
-				!this._editor.hasModel() ||
-				!this._languageFeaturesService.completionProvider.has(
+				this._editor.hasModel() &&
+				this._languageFeaturesService.completionProvider.has(
 					this._editor.getModel(),
 				)
 			) {
-				this.cancel();
-			} else {
 				this.trigger({
 					auto: this._triggerState.auto,
 					retrigger: true,
 				});
+			} else {
+				this.cancel();
 			}
 		}
 	}
@@ -525,7 +519,7 @@ export class SuggestModel implements IDisposable {
 			if (!LineContext.shouldAutoTrigger(this._editor)) {
 				return;
 			}
-			if (!this._editor.hasModel() || !this._editor.hasWidgetFocus()) {
+			if (!(this._editor.hasModel() && this._editor.hasWidgetFocus())) {
 				return;
 			}
 			const model = this._editor.getModel();
@@ -628,16 +622,18 @@ export class SuggestModel implements IDisposable {
 		);
 		let snippetSortOrder = SnippetSortOrder.Inline;
 		switch (snippetSuggestions) {
-			case "top":
+			case "top": {
 				snippetSortOrder = SnippetSortOrder.Top;
 				break;
+			}
 			// 	↓ that's the default anyways...
 			// case 'inline':
 			// 	snippetSortOrder = SnippetSortOrder.Inline;
 			// 	break;
-			case "bottom":
+			case "bottom": {
 				snippetSortOrder = SnippetSortOrder.Bottom;
 				break;
+			}
 		}
 
 		const { itemKind: itemKindFilter, showDeprecated } =
@@ -701,10 +697,10 @@ export class SuggestModel implements IDisposable {
 				};
 				this._completionModel = new CompletionModel(
 					completions.items,
-					this._context!.column,
+					this._context?.column,
 					{
 						leadingLineContent: ctx.leadingLineContent,
-						characterCountDelta: ctx.column - this._context!.column,
+						characterCountDelta: ctx.column - this._context?.column,
 					},
 					wordDistance,
 					this._editor.getOption(EditorOption.suggest),

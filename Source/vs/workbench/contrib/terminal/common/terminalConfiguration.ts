@@ -32,45 +32,41 @@ import {
 	SUGGESTIONS_FONT_WEIGHT,
 } from "vs/workbench/contrib/terminal/common/terminal";
 
-const terminalDescriptors =
-	"\n- " +
-	[
-		"`${cwd}`: " +
-			localize("cwd", "the terminal's current working directory"),
-		"`${cwdFolder}`: " +
-			localize(
-				"cwdFolder",
-				"the terminal's current working directory, displayed for multi-root workspaces or in a single root workspace when the value differs from the initial working directory. On Windows, this will only be displayed when shell integration is enabled.",
-			),
-		"`${workspaceFolder}`: " +
-			localize(
-				"workspaceFolder",
-				"the workspace in which the terminal was launched",
-			),
-		"`${local}`: " +
-			localize(
-				"local",
-				"indicates a local terminal in a remote workspace",
-			),
-		"`${process}`: " +
-			localize("process", "the name of the terminal process"),
-		"`${separator}`: " +
-			localize(
-				"separator",
-				"a conditional separator {0} that only shows when surrounded by variables with values or static text.",
-				"(` - `)",
-			),
-		"`${sequence}`: " +
-			localize(
-				"sequence",
-				"the name provided to the terminal by the process",
-			),
-		"`${task}`: " +
-			localize(
-				"task",
-				"indicates this terminal is associated with a task",
-			),
-	].join("\n- "); // intentionally concatenated to not produce a string that is too long for translations
+const terminalDescriptors = `\n- ${[
+	`\`\${cwd}\`: ${localize(
+		"cwd",
+		"the terminal's current working directory",
+	)}`,
+	`\`\${cwdFolder}\`: ${localize(
+		"cwdFolder",
+		"the terminal's current working directory, displayed for multi-root workspaces or in a single root workspace when the value differs from the initial working directory. On Windows, this will only be displayed when shell integration is enabled.",
+	)}`,
+	`\`\${workspaceFolder}\`: ${localize(
+		"workspaceFolder",
+		"the workspace in which the terminal was launched",
+	)}`,
+	`\`\${local}\`: ${localize(
+		"local",
+		"indicates a local terminal in a remote workspace",
+	)}`,
+	`\`\${process}\`: ${localize(
+		"process",
+		"the name of the terminal process",
+	)}`,
+	`\`\${separator}\`: ${localize(
+		"separator",
+		"a conditional separator {0} that only shows when surrounded by variables with values or static text.",
+		"(` - `)",
+	)}`,
+	`\`\${sequence}\`: ${localize(
+		"sequence",
+		"the name provided to the terminal by the process",
+	)}`,
+	`\`\${task}\`: ${localize(
+		"task",
+		"indicates this terminal is associated with a task",
+	)}`,
+].join("\n- ")}`; // intentionally concatenated to not produce a string that is too long for translations
 
 let terminalTitle = localize(
 	"terminalTitle",

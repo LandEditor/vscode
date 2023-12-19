@@ -164,7 +164,7 @@ const compileWithOpenSSLCheck = (
 				!existsSync(platformOpensslDir)
 			) {
 				fancyLog(
-					ansiColors.yellow(`[cli]`),
+					ansiColors.yellow("[cli]"),
 					"OpenSSL libraries not found, acquiring prebuilt bits...",
 				);
 				acquireBuiltOpenSSL((err) => {
@@ -190,11 +190,11 @@ const compileWithOpenSSLCheck = (
 const warnIfRustNotInstalled = () => {
 	if (!hasLocalRust()) {
 		fancyLog(
-			ansiColors.yellow(`[cli]`),
+			ansiColors.yellow("[cli]"),
 			"No local Rust install detected, compilation may fail.",
 		);
 		fancyLog(
-			ansiColors.yellow(`[cli]`),
+			ansiColors.yellow("[cli]"),
 			"Get rust from: https://rustup.rs/",
 		);
 	}

@@ -206,7 +206,8 @@ class CESContribution extends Disposable implements IWorkbenchContribution {
 				Date.now() -
 				new Date(this.telemetryService.firstSessionDate).getTime();
 			const isNewInstall =
-				!isNaN(timeFromInstall) && timeFromInstall < MAX_INSTALL_AGE;
+				!Number.isNaN(timeFromInstall) &&
+				timeFromInstall < MAX_INSTALL_AGE;
 
 			// Installation is older than MAX_INSTALL_AGE
 			if (!isNewInstall) {

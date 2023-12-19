@@ -510,7 +510,7 @@ class SlashCommandCompletions extends Disposable {
 							this.chatWidgetService.getWidgetByInputUri(
 								model.uri
 							);
-						if (!widget || !widget.viewModel) {
+						if (!(widget?.viewModel)) {
 							return null;
 						}
 
@@ -617,7 +617,7 @@ class AgentCompletions extends Disposable {
 							this.chatWidgetService.getWidgetByInputUri(
 								model.uri
 							);
-						if (!widget || !widget.viewModel) {
+						if (!(widget?.viewModel)) {
 							return null;
 						}
 
@@ -691,7 +691,7 @@ class AgentCompletions extends Disposable {
 							this.chatWidgetService.getWidgetByInputUri(
 								model.uri
 							);
-						if (!widget || !widget.viewModel) {
+						if (!(widget?.viewModel)) {
 							return;
 						}
 
@@ -733,11 +733,10 @@ class AgentCompletions extends Disposable {
 						)) {
 							// Could allow text after 'position'
 							if (
-								!(
+								!((
 									partAfterAgent instanceof
 									ChatRequestTextPart
-								) ||
-								!partAfterAgent.text.trim().match(/^(\/\w*)?$/)
+								) &&partAfterAgent.text.trim().match(/^(\/\w*)?$/))
 							) {
 								// No text allowed between agent and subcommand
 								return;
@@ -907,7 +906,7 @@ class BuiltinDynamicCompletions extends Disposable {
 							this.chatWidgetService.getWidgetByInputUri(
 								model.uri
 							);
-						if (!widget || !widget.supportsFileReferences) {
+						if (!(widget?.supportsFileReferences)) {
 							return null;
 						}
 
@@ -1053,7 +1052,7 @@ class VariableCompletions extends Disposable {
 						}
 
 						const history = widget
-							.viewModel!.getItems()
+							.viewModel?.getItems()
 							.filter(isResponseVM);
 
 						// TODO@roblourens work out a real API for this- maybe it can be part of the two-step flow that @file will probably use
@@ -1087,7 +1086,7 @@ class VariableCompletions extends Disposable {
 							return <CompletionItem>{
 								label: withLeader,
 								range,
-								insertText: withLeader + " ",
+								insertText: `${withLeader} `,
 								detail: v.description,
 								kind: CompletionItemKind.Text, // The icons are disabled here anyway
 								sortText: "z",
@@ -1136,7 +1135,7 @@ class ChatTokenDeleter extends Disposable {
 			if (!change.text) {
 				parser
 					.parseChatRequest(
-						this.widget.viewModel!.sessionId,
+						this.widget.viewModel?.sessionId,
 						previousInputValue
 					)
 					.then((previousParsedValue) => {

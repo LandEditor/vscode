@@ -190,8 +190,8 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		const updateToolbar = () => {
 			const actions: IAction[] = [];
 			createAndFillInActionBarActions(menu, undefined, actions);
-			this._actionbarWidget!.clear();
-			this._actionbarWidget!.push(actions, { label: false, icon: true });
+			this._actionbarWidget?.clear();
+			this._actionbarWidget?.push(actions, { label: false, icon: true });
 		};
 		this._disposables.add(menu);
 		this._disposables.add(menu.onDidChange(updateToolbar));

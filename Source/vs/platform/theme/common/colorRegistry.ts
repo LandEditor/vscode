@@ -222,7 +222,7 @@ class ColorRegistry implements IColorRegistry {
 		theme: IColorTheme,
 	): Color | undefined {
 		const colorDesc = this.colorsById[id];
-		if (colorDesc && colorDesc.defaults) {
+		if (colorDesc?.defaults) {
 			const colorValue = colorDesc.defaults[theme.type];
 			return resolveColorValue(colorValue, theme);
 		}
@@ -3041,7 +3041,7 @@ export function executeTransform(
 			);
 		}
 
-		case ColorTransformType.OneOf:
+		case ColorTransformType.OneOf: {
 			for (const candidate of transform.values) {
 				const color = resolveColorValue(candidate, theme);
 				if (color) {
@@ -3049,6 +3049,7 @@ export function executeTransform(
 				}
 			}
 			return undefined;
+		}
 
 		case ColorTransformType.IfDefinedThenElse:
 			return resolveColorValue(

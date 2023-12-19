@@ -495,7 +495,7 @@ class Query {
 		const criterium = this.state.criteria.filter(
 			(criterium) => criterium.filterType === FilterType.SearchText,
 		)[0];
-		return criterium && criterium.value ? criterium.value : "";
+		return criterium?.value ? criterium.value : "";
 	}
 
 	get telemetryData(): QueryTelemetryData {
@@ -875,16 +875,16 @@ abstract class AbstractExtensionGalleryService
 	}
 
 	getExtensions(
-		extensionInfos: ReadonlyArray<IExtensionInfo>,
+		extensionInfos: readonly IExtensionInfo[],
 		token: CancellationToken,
 	): Promise<IGalleryExtension[]>;
 	getExtensions(
-		extensionInfos: ReadonlyArray<IExtensionInfo>,
+		extensionInfos: readonly IExtensionInfo[],
 		options: IExtensionQueryOptions,
 		token: CancellationToken,
 	): Promise<IGalleryExtension[]>;
 	async getExtensions(
-		extensionInfos: ReadonlyArray<IExtensionInfo>,
+		extensionInfos: readonly IExtensionInfo[],
 		arg1: any,
 		arg2?: any,
 	): Promise<IGalleryExtension[]> {
@@ -895,11 +895,11 @@ abstract class AbstractExtensionGalleryService
 			? arg1
 			: (arg2 as CancellationToken);
 		const names: string[] = [];
-		const ids: string[] = [],
-			includePreReleases: (IExtensionIdentifier & {
-				includePreRelease: boolean;
-			})[] = [],
-			versions: (IExtensionIdentifier & { version: string })[] = [];
+		const ids: string[] = [];
+		const includePreReleases: (IExtensionIdentifier & {
+			includePreRelease: boolean;
+		})[] = [];
+		const versions: (IExtensionIdentifier & { version: string })[] = [];
 		let isQueryForReleaseVersionFromPreReleaseVersion = true;
 		for (const extensionInfo of extensionInfos) {
 			if (extensionInfo.uuid) {
@@ -929,7 +929,7 @@ abstract class AbstractExtensionGalleryService
 				!includePreRelease;
 		}
 
-		if (!ids.length && !names.length) {
+		if (!(ids.length || names.length)) {
 			return [];
 		}
 
@@ -1223,8 +1223,10 @@ abstract class AbstractExtensionGalleryService
 		 * If version flags (IncludeLatestVersionOnly and IncludeVersions) are not included, default is to query for latest versions (IncludeLatestVersionOnly).
 		 */
 		if (
-			!(query.flags & Flags.IncludeLatestVersionOnly) &&
-			!(query.flags & Flags.IncludeVersions)
+			!(
+				query.flags & Flags.IncludeLatestVersionOnly ||
+				query.flags & Flags.IncludeVersions
+			)
 		) {
 			query = query.withFlags(
 				query.flags,
@@ -1322,7 +1324,7 @@ abstract class AbstractExtensionGalleryService
 				 * Get all versions to get or check the release version
 				 */
 				(extension.properties.isPreReleaseVersion &&
-					(!includePreRelease || !extension.hasReleaseVersion)) ||
+					!(includePreRelease && extension.hasReleaseVersion)) ||
 				/**
 				 * Need all versions if the extension is a release version with a different target platform than requested and also has a pre-release version
 				 * Because, this is a platform specific extension and can have a newer release version supporting this platform.
@@ -1494,9 +1496,9 @@ abstract class AbstractExtensionGalleryService
 		};
 
 		const stopWatch = new StopWatch();
-		let context: IRequestContext | undefined,
-			error: any,
-			total = 0;
+		let context: IRequestContext | undefined;
+		let error: any;
+		let total = 0;
 
 		try {
 			context = await this.requestService.request(
@@ -1527,17 +1529,13 @@ abstract class AbstractExtensionGalleryService
 			if (result) {
 				const r = result.results[0];
 				const galleryExtensions = r.extensions;
-				const resultCount =
-					r.resultMetadata &&
-					r.resultMetadata.filter(
-						(m) => m.metadataType === "ResultCount",
-					)[0];
+				const resultCount = r.resultMetadata?.filter(
+					(m) => m.metadataType === "ResultCount",
+				)[0];
 				total =
-					(resultCount &&
-						resultCount.metadataItems.filter(
-							(i) => i.name === "TotalCount",
-						)[0].count) ||
-					0;
+					resultCount?.metadataItems.filter(
+						(i) => i.name === "TotalCount",
+					)[0].count || 0;
 
 				return {
 					galleryExtensions,

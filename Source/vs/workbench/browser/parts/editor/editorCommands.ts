@@ -233,11 +233,11 @@ const isActiveEditorMoveCopyArg = (
 		return false;
 	}
 
-	if (!isUndefined(arg.by) && !isString(arg.by)) {
+	if (!(isUndefined(arg.by) || isString(arg.by))) {
 		return false;
 	}
 
-	if (!isUndefined(arg.value) && !isNumber(arg.value)) {
+	if (!(isUndefined(arg.value) || isNumber(arg.value))) {
 		return false;
 	}
 
@@ -322,7 +322,7 @@ function registerActiveEditorMoveCopyCommand(): void {
 
 	function moveCopyActiveEditor(
 		isMove: boolean,
-		args: ActiveEditorMoveCopyArguments = Object.create(null),
+		args: ActiveEditorMoveCopyArguments,
 		accessor: ServicesAccessor,
 	): void {
 		args.to = args.to || "right";
@@ -332,11 +332,12 @@ function registerActiveEditorMoveCopyCommand(): void {
 		const activeEditorPane = accessor.get(IEditorService).activeEditorPane;
 		if (activeEditorPane) {
 			switch (args.by) {
-				case "tab":
+				case "tab": {
 					if (isMove) {
 						return moveActiveTab(args, activeEditorPane);
 					}
 					break;
+				}
 				case "group":
 					return moveCopyActiveEditorToGroup(
 						isMove,
@@ -355,24 +356,30 @@ function registerActiveEditorMoveCopyCommand(): void {
 		const group = control.group;
 		let index = group.getIndexOfEditor(control.input);
 		switch (args.to) {
-			case "first":
+			case "first": {
 				index = 0;
 				break;
-			case "last":
+			}
+			case "last": {
 				index = group.count - 1;
 				break;
-			case "left":
-				index = index - args.value;
+			}
+			case "left": {
+				index -= args.value;
 				break;
-			case "right":
-				index = index + args.value;
+			}
+			case "right": {
+				index += args.value;
 				break;
-			case "center":
+			}
+			case "center": {
 				index = Math.round(group.count / 2) - 1;
 				break;
-			case "position":
+			}
+			case "position": {
 				index = args.value - 1;
 				break;
+			}
 		}
 
 		index = index < 0 ? 0 : index >= group.count ? group.count - 1 : index;
@@ -392,7 +399,7 @@ function registerActiveEditorMoveCopyCommand(): void {
 		let targetGroup: IEditorGroup | undefined;
 
 		switch (args.to) {
-			case "left":
+			case "left": {
 				targetGroup = editorGroupService.findGroup(
 					{ direction: GroupDirection.LEFT },
 					sourceGroup,
@@ -404,7 +411,8 @@ function registerActiveEditorMoveCopyCommand(): void {
 					);
 				}
 				break;
-			case "right":
+			}
+			case "right": {
 				targetGroup = editorGroupService.findGroup(
 					{ direction: GroupDirection.RIGHT },
 					sourceGroup,
@@ -416,7 +424,8 @@ function registerActiveEditorMoveCopyCommand(): void {
 					);
 				}
 				break;
-			case "up":
+			}
+			case "up": {
 				targetGroup = editorGroupService.findGroup(
 					{ direction: GroupDirection.UP },
 					sourceGroup,
@@ -428,7 +437,8 @@ function registerActiveEditorMoveCopyCommand(): void {
 					);
 				}
 				break;
-			case "down":
+			}
+			case "down": {
 				targetGroup = editorGroupService.findGroup(
 					{ direction: GroupDirection.DOWN },
 					sourceGroup,
@@ -440,25 +450,29 @@ function registerActiveEditorMoveCopyCommand(): void {
 					);
 				}
 				break;
-			case "first":
+			}
+			case "first": {
 				targetGroup = editorGroupService.findGroup(
 					{ location: GroupLocation.FIRST },
 					sourceGroup,
 				);
 				break;
-			case "last":
+			}
+			case "last": {
 				targetGroup = editorGroupService.findGroup(
 					{ location: GroupLocation.LAST },
 					sourceGroup,
 				);
 				break;
-			case "previous":
+			}
+			case "previous": {
 				targetGroup = editorGroupService.findGroup(
 					{ location: GroupLocation.PREVIOUS },
 					sourceGroup,
 				);
 				break;
-			case "next":
+			}
+			case "next": {
 				targetGroup = editorGroupService.findGroup(
 					{ location: GroupLocation.NEXT },
 					sourceGroup,
@@ -470,16 +484,19 @@ function registerActiveEditorMoveCopyCommand(): void {
 					);
 				}
 				break;
-			case "center":
+			}
+			case "center": {
 				targetGroup = editorGroupService.getGroups(
 					GroupsOrder.GRID_APPEARANCE,
 				)[editorGroupService.count / 2 - 1];
 				break;
-			case "position":
+			}
+			case "position": {
 				targetGroup = editorGroupService.getGroups(
 					GroupsOrder.GRID_APPEARANCE,
 				)[args.value - 1];
 				break;
+			}
 		}
 
 		if (targetGroup) {
@@ -643,18 +660,20 @@ function registerDiffEditorCommands(): void {
 
 		if (activeTextDiffEditor) {
 			switch (mode) {
-				case FocusTextDiffEditorMode.Original:
+				case FocusTextDiffEditorMode.Original: {
 					activeTextDiffEditor
 						.getControl()
 						?.getOriginalEditor()
 						.focus();
 					break;
-				case FocusTextDiffEditorMode.Modified:
+				}
+				case FocusTextDiffEditorMode.Modified: {
 					activeTextDiffEditor
 						.getControl()
 						?.getModifiedEditor()
 						.focus();
 					break;
+				}
 				case FocusTextDiffEditorMode.Toggle:
 					if (
 						activeTextDiffEditor
@@ -1431,7 +1450,7 @@ function registerCloseEditorCommands() {
 							),
 					).filter(
 						(editor) =>
-							!keepStickyEditors || !group.isSticky(editor),
+							!(keepStickyEditors && group.isSticky(editor)),
 					);
 
 					await group.closeEditors(editorsToClose, {
@@ -2336,8 +2355,10 @@ function registerOtherEditorCommands(): void {
 			const activeTextEditorControl =
 				editorService.activeTextEditorControl;
 			if (
-				!isDiffEditor(activeTextEditorControl) ||
-				!(activeEditor instanceof DiffEditorInput)
+				!(
+					isDiffEditor(activeTextEditorControl) &&
+					activeEditor instanceof DiffEditorInput
+				)
 			) {
 				return;
 			}
@@ -2547,7 +2568,7 @@ export function getMultiSelectedEditorContexts(
 	}
 
 	// Otherwise go with passed in context
-	return !!editorContext ? [editorContext] : [];
+	return editorContext ? [editorContext] : [];
 }
 
 export function setup(): void {

@@ -191,7 +191,7 @@ export class SwitchSide extends EditorAction2 {
 	): unknown {
 		const diffEditor = findFocusedDiffEditor(accessor);
 		if (diffEditor instanceof DiffEditorWidget) {
-			if (arg && arg.dryRun) {
+			if (arg?.dryRun) {
 				return {
 					destinationSelection:
 						diffEditor.mapToOtherSide().destinationSelection,

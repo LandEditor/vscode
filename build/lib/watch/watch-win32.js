@@ -52,7 +52,7 @@ function watch(root) {
 		result.emit("error", data);
 	});
 	child.on("exit", (code) => {
-		result.emit("error", "Watcher died with code " + code);
+		result.emit("error", `Watcher died with code ${code}`);
 		child = null;
 	});
 	process.once("SIGTERM", () => {

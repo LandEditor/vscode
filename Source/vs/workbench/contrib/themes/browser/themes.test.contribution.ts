@@ -156,7 +156,7 @@ class Snapper {
 
 				result[resultLen++] = {
 					text: tokenText,
-					color: colorMap![color],
+					color: colorMap?.[color],
 				};
 			}
 

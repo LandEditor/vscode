@@ -805,7 +805,7 @@ export class ExtensionRecommendationNotificationService
 				});
 				if (
 					source !== RecommendationSource.EXE &&
-					source <= this.visibleNotification!.source
+					source <= this.visibleNotification?.source
 				) {
 					this.hideVisibleNotification(3000);
 				}
@@ -879,7 +879,7 @@ export class ExtensionRecommendationNotificationService
 				),
 			);
 			this.hideVisibleNotificationPromise.then(() =>
-				visibleNotification!.recommendationsNotification.hide(),
+				visibleNotification?.recommendationsNotification.hide(),
 			);
 		}
 	}

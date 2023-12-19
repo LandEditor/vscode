@@ -73,7 +73,7 @@ export class CellExecutionPart extends CellContentPart {
 				typeof internalMetadata.executionOrder !== "number" &&
 				!forceClear &&
 				!!this._notebookExecutionStateService.getCellExecution(
-					this.currentCell!.uri,
+					this.currentCell?.uri,
 				)
 			) {
 				const renderingCell = this.currentCell;
@@ -81,7 +81,7 @@ export class CellExecutionPart extends CellContentPart {
 					() => {
 						if (this.currentCell === renderingCell) {
 							this.updateExecutionOrder(
-								this.currentCell!.internalMetadata,
+								this.currentCell?.internalMetadata,
 								true,
 							);
 						}

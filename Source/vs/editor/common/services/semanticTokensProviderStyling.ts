@@ -76,7 +76,7 @@ export class SemanticTokensProviderStyling {
 							this._legend.tokenModifiers[modifierIndex],
 						);
 					}
-					modifierSet = modifierSet >> 1;
+					modifierSet >>= 1;
 				}
 				if (
 					modifierSet > 0 &&

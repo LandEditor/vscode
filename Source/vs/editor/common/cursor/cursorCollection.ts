@@ -77,14 +77,14 @@ export class CursorCollection {
 		return findFirstMinBy(
 			this.cursors,
 			compareBy((c) => c.viewState.position, Position.compare),
-		)!.viewState.position;
+		)?.viewState.position;
 	}
 
 	public getBottomMostViewPosition(): Position {
 		return findLastMaxBy(
 			this.cursors,
 			compareBy((c) => c.viewState.position, Position.compare),
-		)!.viewState.position;
+		)?.viewState.position;
 	}
 
 	public getSelections(): Selection[] {

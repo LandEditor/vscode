@@ -46,7 +46,7 @@ class TerminalHighlightContribution
 
 	xtermOpen(xterm: IXtermTerminal & { raw: RawXtermTerminal }): void {
 		const screenElement =
-			xterm.raw.element!.querySelector(".xterm-screen")!;
+			xterm.raw.element?.querySelector(".xterm-screen")!;
 		this._register(
 			addDisposableListener(
 				screenElement,

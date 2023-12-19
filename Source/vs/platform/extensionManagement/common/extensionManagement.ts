@@ -104,7 +104,7 @@ export function getTargetPlatform(
 	arch: string | undefined,
 ): TargetPlatform {
 	switch (platform) {
-		case Platform.Windows:
+		case Platform.Windows: {
 			if (arch === "x64") {
 				return TargetPlatform.WIN32_X64;
 			}
@@ -112,8 +112,9 @@ export function getTargetPlatform(
 				return TargetPlatform.WIN32_ARM64;
 			}
 			return TargetPlatform.UNKNOWN;
+		}
 
-		case Platform.Linux:
+		case Platform.Linux: {
 			if (arch === "x64") {
 				return TargetPlatform.LINUX_X64;
 			}
@@ -124,8 +125,9 @@ export function getTargetPlatform(
 				return TargetPlatform.LINUX_ARMHF;
 			}
 			return TargetPlatform.UNKNOWN;
+		}
 
-		case "alpine":
+		case "alpine": {
 			if (arch === "x64") {
 				return TargetPlatform.ALPINE_X64;
 			}
@@ -133,8 +135,9 @@ export function getTargetPlatform(
 				return TargetPlatform.ALPINE_ARM64;
 			}
 			return TargetPlatform.UNKNOWN;
+		}
 
-		case Platform.Mac:
+		case Platform.Mac: {
 			if (arch === "x64") {
 				return TargetPlatform.DARWIN_X64;
 			}
@@ -142,6 +145,7 @@ export function getTargetPlatform(
 				return TargetPlatform.DARWIN_ARM64;
 			}
 			return TargetPlatform.UNKNOWN;
+		}
 
 		case Platform.Web:
 			return TargetPlatform.WEB;
@@ -406,11 +410,11 @@ export interface IExtensionGalleryService {
 		token: CancellationToken,
 	): Promise<IPager<IGalleryExtension>>;
 	getExtensions(
-		extensionInfos: ReadonlyArray<IExtensionInfo>,
+		extensionInfos: readonly IExtensionInfo[],
 		token: CancellationToken,
 	): Promise<IGalleryExtension[]>;
 	getExtensions(
-		extensionInfos: ReadonlyArray<IExtensionInfo>,
+		extensionInfos: readonly IExtensionInfo[],
 		options: IExtensionQueryOptions,
 		token: CancellationToken,
 	): Promise<IGalleryExtension[]>;

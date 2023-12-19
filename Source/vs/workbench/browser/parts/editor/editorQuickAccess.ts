@@ -182,7 +182,7 @@ export abstract class BaseEditorQuickAccessProvider extends PickerQuickAccessPro
 		return filteredEditorEntriesWithSeparators;
 	}
 
-	private doGetEditorPickItems(): Array<IEditorQuickPickItem> {
+	private doGetEditorPickItems(): IEditorQuickPickItem[] {
 		const editors = this.doGetEditors();
 
 		const mapGroupIdToGroupAriaLabel = new Map<GroupIdentifier, string>();
@@ -250,8 +250,9 @@ export abstract class BaseEditorQuickAccessProvider extends PickerQuickAccessPro
 						return [
 							{
 								iconClass: isDirty
-									? "dirty-editor " +
-									  ThemeIcon.asClassName(Codicon.closeDirty)
+									? `dirty-editor ${ThemeIcon.asClassName(
+											Codicon.closeDirty,
+									  )}`
 									: ThemeIcon.asClassName(Codicon.close),
 								tooltip: localize(
 									"closeEditor",

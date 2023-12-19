@@ -76,7 +76,7 @@ export class FileIconThemeData implements IWorkbenchFileIconTheme {
 		iconThemeLocation: URI,
 		extensionData: ExtensionData,
 	): FileIconThemeData {
-		const id = extensionData.extensionId + "-" + iconTheme.id;
+		const id = `${extensionData.extensionId}-${iconTheme.id}`;
 		const label = iconTheme.label || paths.basename(iconTheme.path);
 		const settingsId = iconTheme.id;
 
@@ -111,7 +111,7 @@ export class FileIconThemeData implements IWorkbenchFileIconTheme {
 	}
 
 	static createUnloadedTheme(id: string): FileIconThemeData {
-		const themeData = new FileIconThemeData(id, "", "__" + id);
+		const themeData = new FileIconThemeData(id, "", `__${id}`);
 		themeData.isLoaded = false;
 		themeData.hasFileIcons = false;
 		themeData.hasFolderIcons = false;
@@ -144,17 +144,19 @@ export class FileIconThemeData implements IWorkbenchFileIconTheme {
 					case "hasFileIcons":
 					case "hidesExplorerArrows":
 					case "hasFolderIcons":
-					case "watch":
+					case "watch": {
 						(theme as any)[key] = data[key];
 						break;
+					}
 					case "location":
 						// ignore, no longer restore
 						break;
-					case "extensionData":
+					case "extensionData": {
 						theme.extensionData = ExtensionData.fromJSONObject(
 							data.extensionData,
 						);
 						break;
+					}
 				}
 			}
 			return theme;
@@ -333,7 +335,7 @@ export class FileIconThemeLoader {
 			if (associations) {
 				let qualifier = ".show-file-icons";
 				if (baseThemeClassName) {
-					qualifier = baseThemeClassName + " " + qualifier;
+					qualifier = `${baseThemeClassName} ${qualifier}`;
 				}
 
 				const expanded =
@@ -536,7 +538,7 @@ export class FileIconThemeLoader {
 		collectSelectors(iconThemeDocument.highContrast, ".hc-black");
 		collectSelectors(iconThemeDocument.highContrast, ".hc-light");
 
-		if (!result.hasFileIcons && !result.hasFolderIcons) {
+		if (!(result.hasFileIcons || result.hasFolderIcons)) {
 			return result;
 		}
 
@@ -604,7 +606,7 @@ export class FileIconThemeLoader {
 						body.push(`font-family: ${definition.fontId};`);
 					}
 					if (showLanguageModeIcons) {
-						body.push(`background-image: unset;`); // potentially set by the language default
+						body.push("background-image: unset;"); // potentially set by the language default
 					}
 					cssRules.push(
 						`${selectors.join(", ")} { ${body.join(" ")} }`,

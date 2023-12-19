@@ -90,15 +90,15 @@ export function promiseFromEvent<T, U>(
 }
 
 export function arrayEquals<T>(
-	one: ReadonlyArray<T> | undefined,
-	other: ReadonlyArray<T> | undefined,
+	one: readonly T[] | undefined,
+	other: readonly T[] | undefined,
 	itemEquals: (a: T, b: T) => boolean = (a, b) => a === b,
 ): boolean {
 	if (one === other) {
 		return true;
 	}
 
-	if (!one || !other) {
+	if (!(one && other)) {
 		return false;
 	}
 

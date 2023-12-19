@@ -185,7 +185,7 @@ export class TerminalProfileQuickpick {
 					this._configurationService.getValue(
 						TerminalSettingPrefix.Profiles + platformKey,
 					);
-				const existingProfiles = !!configProfiles
+				const existingProfiles = configProfiles
 					? Object.keys(configProfiles)
 					: [];
 				const name = await this._quickInputService.input({
@@ -262,7 +262,7 @@ export class TerminalProfileQuickpick {
 					icon = ThemeIcon.fromId(contributed.icon);
 				}
 			}
-			if (!icon || !getIconRegistry().getIcon(icon.id)) {
+			if (!(icon && getIconRegistry().getIcon(icon.id))) {
 				icon = this._terminalProfileResolverService.getDefaultIcon();
 			}
 			const uriClasses = getUriClasses(
@@ -342,7 +342,7 @@ export class TerminalProfileQuickpick {
 		const isUnsafePath = "isUnsafePath" in profile && profile.isUnsafePath;
 		const requiresUnsafePath =
 			"requiresUnsafePath" in profile && profile.requiresUnsafePath;
-		if (!isUnsafePath && !requiresUnsafePath) {
+		if (!(isUnsafePath || requiresUnsafePath)) {
 			return true;
 		}
 

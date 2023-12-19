@@ -62,7 +62,7 @@ export class LogLevelMonitor extends Disposable {
 
 		if (lastChange) {
 			const date = new Date(lastChange);
-			if (date instanceof Date && !isNaN(date.valueOf())) {
+			if (date instanceof Date && !Number.isNaN(date.valueOf())) {
 				return date;
 			}
 		}
@@ -70,10 +70,8 @@ export class LogLevelMonitor extends Disposable {
 	}
 
 	private get doNotPrompt(): boolean {
-		return (
-			this.context.globalState.get<boolean | undefined>(
-				LogLevelMonitor.doNotPromptLogLevelStorageKey,
-			) || false
+		return this.context.globalState.get<boolean | undefined>(
+			LogLevelMonitor.doNotPromptLogLevelStorageKey,
 		);
 	}
 

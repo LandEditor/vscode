@@ -274,7 +274,7 @@ export class ViewsService extends Disposable implements IViewsService {
 	}
 
 	private onViewDescriptorsAdded(
-		views: ReadonlyArray<IViewDescriptor>,
+		views: readonly IViewDescriptor[],
 		container: ViewContainer,
 	): void {
 		const location =
@@ -296,9 +296,7 @@ export class ViewsService extends Disposable implements IViewsService {
 		}
 	}
 
-	private onViewDescriptorsRemoved(
-		views: ReadonlyArray<IViewDescriptor>,
-	): void {
+	private onViewDescriptorsRemoved(views: readonly IViewDescriptor[]): void {
 		for (const view of views) {
 			const disposable = this.viewDisposable.get(view);
 			if (disposable) {
@@ -446,7 +444,7 @@ export class ViewsService extends Disposable implements IViewsService {
 
 	isViewVisible(id: string): boolean {
 		const activeView = this.getActiveViewWithId(id);
-		return activeView?.isBodyVisible() || false;
+		return activeView?.isBodyVisible();
 	}
 
 	getActiveViewWithId<T extends IView>(id: string): T | null {
@@ -522,7 +520,7 @@ export class ViewsService extends Disposable implements IViewsService {
 				compositeDescriptor.id,
 				location!,
 			)) as IPaneComposite | undefined;
-			if (paneComposite && paneComposite.openView) {
+			if (paneComposite?.openView) {
 				return paneComposite.openView<T>(id, focus) || null;
 			} else if (focus) {
 				paneComposite?.focus();
@@ -727,39 +725,38 @@ export class ViewsService extends Disposable implements IViewsService {
 											? Parts.SIDEBAR_PART
 											: Parts.AUXILIARYBAR_PART;
 									if (
-										!viewsService.isViewContainerVisible(
+										viewsService.isViewContainerVisible(
 											viewContainer.id,
-										) ||
-										!layoutService.hasFocus(part)
+										) &&
+										layoutService.hasFocus(part)
 									) {
+										editorGroupService.activeGroup.focus();
+									} else {
 										await viewsService.openViewContainer(
 											viewContainer.id,
 											true,
 										);
-									} else {
-										editorGroupService.activeGroup.focus();
 									}
 									break;
 								}
-								case ViewContainerLocation.Panel:
+								case ViewContainerLocation.Panel: {
 									if (
-										!viewsService.isViewContainerVisible(
+										viewsService.isViewContainerVisible(
 											viewContainer.id,
-										) ||
-										!layoutService.hasFocus(
-											Parts.PANEL_PART,
-										)
+										) &&
+										layoutService.hasFocus(Parts.PANEL_PART)
 									) {
+										viewsService.closeViewContainer(
+											viewContainer.id,
+										);
+									} else {
 										await viewsService.openViewContainer(
 											viewContainer.id,
 											true,
 										);
-									} else {
-										viewsService.closeViewContainer(
-											viewContainer.id,
-										);
 									}
 									break;
+								}
 							}
 						}
 					},
@@ -849,15 +846,15 @@ export class ViewsService extends Disposable implements IViewsService {
 								precondition: ContextKeyExpr.has(
 									`${viewDescriptor.id}.active`,
 								),
-								keybinding:
-									viewDescriptor.openCommandActionDescriptor!
-										.keybindings
-										? {
-												...viewDescriptor.openCommandActionDescriptor!
-													.keybindings,
-												weight: KeybindingWeight.WorkbenchContrib,
-										  }
-										: undefined,
+								keybinding: viewDescriptor
+									.openCommandActionDescriptor?.keybindings
+									? {
+											...viewDescriptor
+												.openCommandActionDescriptor
+												?.keybindings,
+											weight: KeybindingWeight.WorkbenchContrib,
+									  }
+									: undefined,
 								f1: true,
 							});
 						}
@@ -1205,8 +1202,8 @@ export class ViewsService extends Disposable implements IViewsService {
 		const viewPaneContainer: ViewPaneContainer = (
 			instantiationService as any
 		).createInstance(
-			viewContainer.ctorDescriptor!.ctor,
-			...(viewContainer.ctorDescriptor!.staticArguments || []),
+			viewContainer.ctorDescriptor?.ctor,
+			...(viewContainer.ctorDescriptor?.staticArguments || []),
 		);
 
 		this.viewPaneContainers.set(
@@ -1266,7 +1263,6 @@ function getPaneCompositeExtension(
 			return PaneCompositeExtensions.Auxiliary;
 		case ViewContainerLocation.Panel:
 			return PaneCompositeExtensions.Panels;
-		case ViewContainerLocation.Sidebar:
 		default:
 			return PaneCompositeExtensions.Viewlets;
 	}
@@ -1280,7 +1276,6 @@ export function getPartByLocation(
 			return Parts.AUXILIARYBAR_PART;
 		case ViewContainerLocation.Panel:
 			return Parts.PANEL_PART;
-		case ViewContainerLocation.Sidebar:
 		default:
 			return Parts.SIDEBAR_PART;
 	}

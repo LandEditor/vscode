@@ -120,10 +120,12 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 
 		const workspaceIdentifier = this.getCurrentWorkspaceIdentifier();
 		if (
-			!workspaceIdentifier ||
-			!isUntitledWorkspace(
-				workspaceIdentifier.configPath,
-				this.environmentService,
+			!(
+				workspaceIdentifier &&
+				isUntitledWorkspace(
+					workspaceIdentifier.configPath,
+					this.environmentService,
+				)
 			)
 		) {
 			return false; // only care about untitled workspaces to ask for saving
@@ -172,8 +174,10 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 							const newWorkspacePath =
 								await this.pickNewWorkspacePath();
 							if (
-								!newWorkspacePath ||
-								!hasWorkspaceFileExtension(newWorkspacePath)
+								!(
+									newWorkspacePath &&
+									hasWorkspaceFileExtension(newWorkspacePath)
+								)
 							) {
 								return true; // keep veto if no target was provided
 							}

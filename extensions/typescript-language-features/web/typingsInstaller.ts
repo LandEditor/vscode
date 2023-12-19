@@ -72,9 +72,10 @@ export default class WebTypingsInstallerClient
 		switch (response.kind) {
 			case "action::packageInstalled":
 			case "action::invalidate":
-			case "action::set":
-				this.projectService!.updateTypingsForProject(response);
+			case "action::set": {
+				this.projectService?.updateTypingsForProject(response);
 				break;
+			}
 			case "event::beginInstallTypes":
 			case "event::endInstallTypes":
 				// Don't care.
@@ -184,7 +185,7 @@ class WebTypingsInstallerServer extends ts.server.typingsInstaller
 			fs.writeFile(pkgJson, '{"private":true}');
 		}
 		const resolved = await pm.resolveProject(globalTypingsCachePath, {
-			addPackages: [this.typesRegistryPackageName],
+			addPackages: [WebTypingsInstallerServer.typesRegistryPackageName],
 		});
 		await resolved.restore();
 
@@ -250,7 +251,7 @@ class WebTypingsInstallerServer extends ts.server.typingsInstaller
 	private static readJson(fs: ts.server.ServerHost, path: string): any {
 		const data = fs.readFile(path);
 		if (!data) {
-			throw new Error("Failed to read file: " + path);
+			throw new Error(`Failed to read file: ${path}`);
 		}
 		return JSON.parse(data.trim());
 	}

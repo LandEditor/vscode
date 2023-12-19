@@ -363,7 +363,7 @@ export class MarkNavigationAddon
 			"getOutput" in command
 				? command.marker
 				: command.commandStartMarker;
-		if (!this._terminal || !marker) {
+		if (!(this._terminal && marker)) {
 			return;
 		}
 		const line = toLineIndex(marker);
@@ -394,7 +394,7 @@ export class MarkNavigationAddon
 			// Highlight output
 			const store = (this._commandGuideDecorations.value =
 				new DisposableStore());
-			if (!command.executedMarker || !command.endMarker) {
+			if (!(command.executedMarker && command.endMarker)) {
 				return;
 			}
 			const startLine =

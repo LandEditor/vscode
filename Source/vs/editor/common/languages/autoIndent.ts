@@ -100,7 +100,7 @@ export function getInheritIndentForLine(
 	autoIndent: EditorAutoIndentStrategy,
 	model: IVirtualModel,
 	lineNumber: number,
-	honorIntentialIndent = true,
+	honorIntentialIndent,
 	languageConfigurationService: ILanguageConfigurationService,
 ): { indentation: string; action: IndentAction | null; line?: number } | null {
 	if (autoIndent < EditorAutoIndentStrategy.Full) {

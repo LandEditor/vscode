@@ -120,15 +120,18 @@ export class NotebookOverviewRuler extends Themable {
 
 						let x = 0;
 						switch (overviewRuler.position) {
-							case NotebookOverviewRulerLane.Left:
+							case NotebookOverviewRulerLane.Left: {
 								x = 0;
 								break;
-							case NotebookOverviewRulerLane.Center:
+							}
+							case NotebookOverviewRulerLane.Center: {
 								x = laneWidth;
 								break;
-							case NotebookOverviewRulerLane.Right:
+							}
+							case NotebookOverviewRulerLane.Right: {
 								x = laneWidth * 2;
 								break;
+							}
 							default:
 								break;
 						}

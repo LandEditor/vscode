@@ -91,8 +91,7 @@ export class SlashCommandContentWidget
 		const selection = this._editor.getSelection();
 		const withSlash = `/${this._lastSlashCommandText} `;
 		if (
-			!firstLine?.startsWith(withSlash) ||
-			!selection?.isEmpty() ||
+			!(firstLine?.startsWith(withSlash) && selection?.isEmpty()) ||
 			selection?.startLineNumber !== 1 ||
 			selection?.startColumn !== withSlash.length + 1
 		) {

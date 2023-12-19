@@ -199,12 +199,14 @@ class QuickChatGlobalAction extends Action2 {
 		const quickChatService = accessor.get(IQuickChatService);
 		let options: IQuickChatOpenOptions | undefined;
 		switch (typeof query) {
-			case "string":
+			case "string": {
 				options = { query };
 				break;
-			case "object":
+			}
+			case "object": {
 				options = query;
 				break;
+			}
 		}
 		if (options?.query) {
 			options.selection = new Selection(

@@ -142,7 +142,7 @@ export class ViewLine implements IVisibleLine {
 	// --- begin IVisibleLineData
 
 	public getDomNode(): HTMLElement | null {
-		if (this._renderedViewLine && this._renderedViewLine.domNode) {
+		if (this._renderedViewLine?.domNode) {
 			return this._renderedViewLine.domNode.domNode;
 		}
 		return null;
@@ -274,10 +274,7 @@ export class ViewLine implements IVisibleLine {
 			selectionsOnLine,
 		);
 
-		if (
-			this._renderedViewLine &&
-			this._renderedViewLine.input.equals(renderLineInput)
-		) {
+		if (this._renderedViewLine?.input.equals(renderLineInput)) {
 			// no need to do anything, we have the same render input
 			return false;
 		}
@@ -325,7 +322,7 @@ export class ViewLine implements IVisibleLine {
 	}
 
 	public layoutLine(lineNumber: number, deltaTop: number): void {
-		if (this._renderedViewLine && this._renderedViewLine.domNode) {
+		if (this._renderedViewLine?.domNode) {
 			this._renderedViewLine.domNode.setTop(deltaTop);
 			this._renderedViewLine.domNode.setHeight(this._options.lineHeight);
 		}
@@ -544,7 +541,7 @@ class FastRenderedViewLine implements IRenderedViewLine {
 			if (Math.abs(expectedWidth - actualWidth) >= 2) {
 				// more than 2px off
 				console.warn(
-					`monospace assumptions have been violated, therefore disabling monospace optimizations!`,
+					"monospace assumptions have been violated, therefore disabling monospace optimizations!",
 				);
 				monospaceAssumptionsAreValid = false;
 			}
@@ -1077,7 +1074,7 @@ export function getColumnOfNodeOffset(
 	spanNode: HTMLElement,
 	offset: number,
 ): number {
-	const spanNodeTextContentLength = spanNode.textContent!.length;
+	const spanNodeTextContentLength = spanNode.textContent?.length;
 
 	let spanIndex = -1;
 	while (spanNode) {

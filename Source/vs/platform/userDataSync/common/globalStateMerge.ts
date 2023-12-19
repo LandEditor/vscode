@@ -30,8 +30,8 @@ export function merge(
 	remoteStorage: IStringDictionary<IStorageValue> | null,
 	baseStorage: IStringDictionary<IStorageValue> | null,
 	storageKeys: {
-		machine: ReadonlyArray<string>;
-		unregistered: ReadonlyArray<string>;
+		machine: readonly string[];
+		unregistered: readonly string[];
 	},
 	logService: ILogService,
 ): IMergeResult {

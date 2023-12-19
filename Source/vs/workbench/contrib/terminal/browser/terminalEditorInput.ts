@@ -149,13 +149,13 @@ export class TerminalEditorInput
 				TerminalSettingId.ConfirmOnKill,
 			);
 		if (confirmOnKill === "editor" || confirmOnKill === "always") {
-			return this._terminalInstance?.hasChildProcesses || false;
+			return this._terminalInstance?.hasChildProcesses;
 		}
 		return false;
 	}
 
 	async confirm(
-		terminals: ReadonlyArray<IEditorIdentifier>,
+		terminals: readonly IEditorIdentifier[],
 	): Promise<ConfirmResult> {
 		const { confirmed } = await this._dialogService.confirm({
 			type: Severity.Warning,
@@ -172,14 +172,12 @@ export class TerminalEditorInput
 			),
 			detail:
 				terminals.length > 1
-					? terminals
+					? `${terminals
 							.map((terminal) => terminal.editor.getName())
-							.join("\n") +
-					  "\n\n" +
-					  localize(
+							.join("\n")}\n\n${localize(
 							"confirmDirtyTerminals.detail",
 							"Closing will terminate the running processes in the terminals.",
-					  )
+					  )}`
 					: localize(
 							"confirmDirtyTerminal.detail",
 							"Closing will terminate the running processes in this terminal.",
@@ -234,7 +232,7 @@ export class TerminalEditorInput
 
 		this._register(
 			toDisposable(() => {
-				if (!this._isDetached && !this._isShuttingDown) {
+				if (!(this._isDetached || this._isShuttingDown)) {
 					// Will be ignored if triggered by onExit or onDisposed terminal events
 					// as disposed was already called
 					instance.dispose(TerminalExitReason.User);
@@ -287,8 +285,10 @@ export class TerminalEditorInput
 
 	override getIcon(): ThemeIcon | undefined {
 		if (
-			!this._terminalInstance ||
-			!ThemeIcon.isThemeIcon(this._terminalInstance.icon)
+			!(
+				this._terminalInstance &&
+				ThemeIcon.isThemeIcon(this._terminalInstance.icon)
+			)
 		) {
 			return undefined;
 		}

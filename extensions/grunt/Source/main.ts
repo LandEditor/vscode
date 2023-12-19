@@ -191,8 +191,10 @@ class FolderDetector {
 			return emptyTasks;
 		}
 		if (
-			!(await exists(path.join(rootPath, "gruntfile.js"))) &&
-			!(await exists(path.join(rootPath, "Gruntfile.js")))
+			!(
+				(await exists(path.join(rootPath, "gruntfile.js"))) ||
+				(await exists(path.join(rootPath, "Gruntfile.js")))
+			)
 		) {
 			return emptyTasks;
 		}
@@ -227,7 +229,7 @@ class FolderDetector {
 					if (line.length === 0) {
 						continue;
 					}
-					if (!tasksStart && !tasksEnd) {
+					if (!(tasksStart || tasksEnd)) {
 						if (line.indexOf("Available tasks") === 0) {
 							tasksStart = true;
 						}
@@ -238,7 +240,7 @@ class FolderDetector {
 						) {
 							tasksEnd = true;
 						} else {
-							const regExp = /^\s*(\S.*\S)  \S/g;
+							const regExp = /^\s*(\S.*\S) {2}\S/g;
 							const matches = regExp.exec(line);
 							if (matches && matches.length === 2) {
 								const name = matches[1];
@@ -316,8 +318,6 @@ class FolderDetector {
 class TaskDetector {
 	private taskProvider: vscode.Disposable | undefined;
 	private detectors: Map<string, FolderDetector> = new Map();
-
-	constructor() {}
 
 	public start(): void {
 		const folders = vscode.workspace.workspaceFolders;

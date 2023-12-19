@@ -314,7 +314,7 @@ export class SingleModelEditStackElement implements IResourceUndoRedoElement {
 	public undo(): void {
 		if (URI.isUri(this.model)) {
 			// don't have a model
-			throw new Error(`Invalid SingleModelEditStackElement`);
+			throw new Error("Invalid SingleModelEditStackElement");
 		}
 		if (this._data instanceof SingleModelEditStackData) {
 			this._data = this._data.serialize();
@@ -331,7 +331,7 @@ export class SingleModelEditStackElement implements IResourceUndoRedoElement {
 	public redo(): void {
 		if (URI.isUri(this.model)) {
 			// don't have a model
-			throw new Error(`Invalid SingleModelEditStackElement`);
+			throw new Error("Invalid SingleModelEditStackElement");
 		}
 		if (this._data instanceof SingleModelEditStackData) {
 			this._data = this._data.serialize();
@@ -417,7 +417,7 @@ export class MultiModelEditStackElement implements IWorkspaceUndoRedoElement {
 	public setModel(model: ITextModel | URI): void {
 		const key = uriGetComparisonKey(URI.isUri(model) ? model : model.uri);
 		if (this._editStackElementsMap.has(key)) {
-			this._editStackElementsMap.get(key)!.setModel(model);
+			this._editStackElementsMap.get(key)?.setModel(model);
 		}
 	}
 

@@ -358,7 +358,7 @@ export abstract class AbstractListSettingWidget<
 		const rowElementGroup = this.renderItem(item, idx);
 		const rowElement = rowElementGroup.rowElement;
 
-		rowElement.setAttribute("data-index", idx + "");
+		rowElement.setAttribute("data-index", `${idx}`);
 		rowElement.setAttribute("tabindex", item.selected ? "0" : "-1");
 		rowElement.classList.toggle("selected", item.selected);
 
@@ -473,7 +473,8 @@ export abstract class AbstractListSettingWidget<
 		this.model.select(idx);
 		this.rowElements.forEach((row) => row.classList.remove("selected"));
 
-		const selectedRow = this.rowElements[this.model.getSelected()!];
+		const selectedRow =
+			this.model.getSelected()?.[this.model.getSelected()];
 
 		selectedRow.classList.add("selected");
 		selectedRow.focus();
@@ -724,10 +725,11 @@ export class ListSettingWidget extends AbstractListSettingWidget<IListDataItem> 
 		}
 
 		switch (item.value.type) {
-			case "string":
+			case "string": {
 				valueInput = this.renderInputBox(item.value, rowElement);
 				break;
-			case "enum":
+			}
+			case "enum": {
 				valueInput = this.renderDropdown(item.value, rowElement);
 				currentEnumOptions = item.value.options;
 				if (item.value.options.length) {
@@ -736,6 +738,7 @@ export class ListSettingWidget extends AbstractListSettingWidget<IListDataItem> 
 						: item.value.data;
 				}
 				break;
+			}
 		}
 
 		const updatedInputBoxItem = (): IListDataItem => {
@@ -1570,7 +1573,7 @@ export class ObjectSettingCheckboxWidget extends AbstractListSettingWidget<IObje
 	}
 
 	override isItemNew(item: IObjectDataItem): boolean {
-		return !item.key.data && !item.value.data;
+		return !(item.key.data || item.value.data);
 	}
 
 	protected getEmptyItem(): IObjectDataItem {
@@ -1719,7 +1722,7 @@ export class ObjectSettingCheckboxWidget extends AbstractListSettingWidget<IObje
 		const { rowElement, keyElement, valueElement } = rowElementGroup;
 
 		keyElement.title = title;
-		valueElement!.setAttribute("aria-label", accessibleDescription);
+		valueElement?.setAttribute("aria-label", accessibleDescription);
 		rowElement.setAttribute("aria-label", accessibleDescription);
 	}
 

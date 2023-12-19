@@ -148,7 +148,7 @@ exports.configurePortable = (product) => {
 	if (isPortable) {
 		process.env["VSCODE_PORTABLE"] = portableDataPath;
 	} else {
-		delete process.env["VSCODE_PORTABLE"];
+		process.env["VSCODE_PORTABLE"] = undefined;
 	}
 
 	if (isTempPortable) {

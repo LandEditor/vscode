@@ -375,8 +375,8 @@ export class SharedTunnelsService
 			});
 		}
 		return this._tunnelServices
-			.get(authority)!
-			.openTunnel(
+			.get(authority)
+			?.openTunnel(
 				addressProvider,
 				remoteHost,
 				remotePort,

@@ -30,20 +30,14 @@ async function main() {
 					join("extensions", extension, "package.json"),
 				).toString(),
 			);
-			if (
-				!(
-					packageJSON &&
-					packageJSON.scripts &&
-					packageJSON.scripts["update-grammar"]
-				)
-			) {
+			if (!packageJSON?.scripts?.["update-grammar"]) {
 				continue;
 			}
 		} catch {
 			continue;
 		}
 
-		await spawn(`npm`, ["run", "update-grammar"], {
+		await spawn("npm", ["run", "update-grammar"], {
 			cwd: `extensions/${extension}`,
 		});
 	}

@@ -498,7 +498,7 @@ export function isApplicationScopedExtension(
 }
 
 export function isLanguagePackExtension(manifest: IExtensionManifest): boolean {
-	return manifest.contributes && manifest.contributes.localizations
+	return manifest.contributes?.localizations
 		? manifest.contributes.localizations.length > 0
 		: false;
 }
@@ -506,7 +506,7 @@ export function isLanguagePackExtension(manifest: IExtensionManifest): boolean {
 export function isAuthenticationProviderExtension(
 	manifest: IExtensionManifest,
 ): boolean {
-	return manifest.contributes && manifest.contributes.authentication
+	return manifest.contributes?.authentication
 		? manifest.contributes.authentication.length > 0
 		: false;
 }

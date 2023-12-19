@@ -121,7 +121,7 @@ export class ModifiedBaseRange {
 	public get isOrderRelevant(): boolean {
 		const input1 = this.smartCombineInputs(1);
 		const input2 = this.smartCombineInputs(2);
-		if (!input1 || !input2) {
+		if (!(input1 && input2)) {
 			return false;
 		}
 		return !input1.equals(input2);
@@ -347,8 +347,6 @@ export function getOtherInputNumber(inputNumber: InputNumber): InputNumber {
 }
 
 export abstract class AbstractModifiedBaseRangeState {
-	constructor() {}
-
 	abstract get kind(): ModifiedBaseRangeStateKind;
 
 	public get includesInput1(): boolean {

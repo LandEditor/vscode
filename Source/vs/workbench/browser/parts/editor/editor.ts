@@ -477,8 +477,7 @@ export function fillActiveEditorViewState(
 	presetOptions?: IEditorOptions,
 ): IEditorOptions {
 	if (
-		!expectedActiveEditor ||
-		!group.activeEditor ||
+		!(expectedActiveEditor && group.activeEditor) ||
 		expectedActiveEditor.matches(group.activeEditor)
 	) {
 		const options: IEditorOptions = {

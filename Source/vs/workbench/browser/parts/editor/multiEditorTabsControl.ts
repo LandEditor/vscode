@@ -826,7 +826,7 @@ export class MultiEditorTabsControl extends EditorTabsControl {
 			return true;
 		}
 
-		if (!labelA || !labelB) {
+		if (!(labelA && labelB)) {
 			return false;
 		}
 
@@ -1461,12 +1461,12 @@ export class MultiEditorTabsControl extends EditorTabsControl {
 						event.equals(KeyCode.LeftArrow) ||
 						event.equals(KeyCode.UpArrow)
 					) {
-						editorIndex = editorIndex - 1;
+						editorIndex -= 1;
 					} else if (
 						event.equals(KeyCode.RightArrow) ||
 						event.equals(KeyCode.DownArrow)
 					) {
-						editorIndex = editorIndex + 1;
+						editorIndex += 1;
 					} else if (event.equals(KeyCode.Home)) {
 						editorIndex = 0;
 					} else {
@@ -1515,16 +1515,18 @@ export class MultiEditorTabsControl extends EditorTabsControl {
 								this.groupsView.partOptions
 									.doubleClickTabToToggleEditorGroupSizes
 							) {
-								case "maximize":
+								case "maximize": {
 									this.groupsView.toggleMaximizeGroup(
 										this.groupView,
 									);
 									break;
-								case "expand":
+								}
+								case "expand": {
 									this.groupsView.toggleExpandGroup(
 										this.groupView,
 									);
 									break;
+								}
 								case "off":
 									break;
 							}
@@ -2054,12 +2056,12 @@ export class MultiEditorTabsControl extends EditorTabsControl {
 		}
 
 		tabContainer.classList.toggle(
-			`pinned-action-off`,
+			"pinned-action-off",
 			isTabSticky && !hasUnpinAction,
 		);
 		tabContainer.classList.toggle(
-			`close-action-off`,
-			!hasUnpinAction && !hasCloseAction,
+			"close-action-off",
+			!(hasUnpinAction || hasCloseAction),
 		);
 
 		for (const option of ["left", "right"]) {
@@ -2102,12 +2104,14 @@ export class MultiEditorTabsControl extends EditorTabsControl {
 		) {
 			let stickyTabWidth = 0;
 			switch (options.pinnedTabSizing) {
-				case "compact":
+				case "compact": {
 					stickyTabWidth = MultiEditorTabsControl.TAB_WIDTH.compact;
 					break;
-				case "shrink":
+				}
+				case "shrink": {
 					stickyTabWidth = MultiEditorTabsControl.TAB_WIDTH.shrink;
 					break;
+				}
 			}
 
 			tabContainer.style.left = `${tabIndex * stickyTabWidth}px`;
@@ -2749,12 +2753,14 @@ export class MultiEditorTabsControl extends EditorTabsControl {
 		if (this.tabsModel.stickyCount > 0) {
 			let stickyTabWidth = 0;
 			switch (this.groupsView.partOptions.pinnedTabSizing) {
-				case "compact":
+				case "compact": {
 					stickyTabWidth = MultiEditorTabsControl.TAB_WIDTH.compact;
 					break;
-				case "shrink":
+				}
+				case "shrink": {
 					stickyTabWidth = MultiEditorTabsControl.TAB_WIDTH.shrink;
 					break;
+				}
 			}
 
 			stickyTabsWidth = this.tabsModel.stickyCount * stickyTabWidth;
@@ -2817,7 +2823,7 @@ export class MultiEditorTabsControl extends EditorTabsControl {
 			typeof activeTabPosX !== "number" || // invalid dimension
 			typeof activeTabWidth !== "number" || // invalid dimension
 			activeTabPositionStatic || // static tab (sticky)
-			(!dimensionsChanged && !options?.forceRevealActiveTab) // dimensions did not change and we have low layout priority (https://github.com/microsoft/vscode/issues/133631)
+			!(dimensionsChanged || options?.forceRevealActiveTab) // dimensions did not change and we have low layout priority (https://github.com/microsoft/vscode/issues/133631)
 		) {
 			this.blockRevealActiveTab = false;
 			return;
@@ -3256,9 +3262,7 @@ registerThemingParticipant((theme, collector) => {
 	// - if we have a contrast border (which draws an outline - https://github.com/microsoft/vscode/issues/109117)
 	// - on Safari (https://github.com/microsoft/vscode/issues/108996)
 	if (
-		!isHighContrast(theme.type) &&
-		!isSafari &&
-		!activeContrastBorderColor
+		!(isHighContrast(theme.type) || isSafari || activeContrastBorderColor)
 	) {
 		const workbenchBackground = WORKBENCH_BACKGROUND(theme);
 		const editorBackgroundColor = theme.getColor(editorBackground);

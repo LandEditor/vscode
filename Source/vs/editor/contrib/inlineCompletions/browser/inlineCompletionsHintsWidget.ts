@@ -78,8 +78,7 @@ export class InlineCompletionsHintsWidget extends Disposable {
 		const ghostText = this.model.read(reader)?.ghostText.read(reader);
 
 		if (
-			!this.alwaysShowToolbar.read(reader) ||
-			!ghostText ||
+			!(this.alwaysShowToolbar.read(reader) && ghostText) ||
 			ghostText.parts.length === 0
 		) {
 			this.sessionPosition = undefined;
@@ -117,7 +116,7 @@ export class InlineCompletionsHintsWidget extends Disposable {
 			autorunWithStore((reader, store) => {
 				/** @description setup content widget */
 				const model = this.model.read(reader);
-				if (!model || !this.alwaysShowToolbar.read(reader)) {
+				if (!(model && this.alwaysShowToolbar.read(reader))) {
 					return;
 				}
 
@@ -183,7 +182,7 @@ export class InlineSuggestionHintsContentWidget
 {
 	private static _dropDownVisible = false;
 	public static get dropDownVisible() {
-		return this._dropDownVisible;
+		return InlineSuggestionHintsContentWidget._dropDownVisible;
 	}
 
 	private static id = 0;

@@ -40,9 +40,7 @@ async function showPreview(
 	}
 
 	const resourceColumn =
-		(vscode.window.activeTextEditor &&
-			vscode.window.activeTextEditor.viewColumn) ||
-		vscode.ViewColumn.One;
+		vscode.window.activeTextEditor?.viewColumn || vscode.ViewColumn.One;
 	webviewManager.openDynamicPreview(resource, {
 		resourceColumn: resourceColumn,
 		previewColumn: previewSettings.sideBySide
@@ -73,7 +71,7 @@ export class ShowPreviewCommand implements Command {
 		for (const uri of Array.isArray(allUris) ? allUris : [mainUri]) {
 			showPreview(this._webviewManager, this._telemetryReporter, uri, {
 				sideBySide: false,
-				locked: previewSettings && previewSettings.locked,
+				locked: previewSettings?.locked,
 			});
 		}
 	}
@@ -90,7 +88,7 @@ export class ShowPreviewToSideCommand implements Command {
 	public execute(uri?: vscode.Uri, previewSettings?: DynamicPreviewSettings) {
 		showPreview(this._webviewManager, this._telemetryReporter, uri, {
 			sideBySide: true,
-			locked: previewSettings && previewSettings.locked,
+			locked: previewSettings?.locked,
 		});
 	}
 }

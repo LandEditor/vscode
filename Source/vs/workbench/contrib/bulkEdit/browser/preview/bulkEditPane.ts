@@ -272,8 +272,7 @@ export class BulkEditPane extends ViewPane {
 	protected override layoutBody(height: number, width: number): void {
 		super.layoutBody(height, width);
 		const treeHeight = height - 50;
-		this._tree.getHTMLElement()
-			.parentElement!.style.height = `${treeHeight}px`;
+		this._tree.getHTMLElement().parentElement?.style.height = `${treeHeight}px`;
 		this._tree.layout(treeHeight, width);
 	}
 
@@ -470,7 +469,7 @@ export class BulkEditPane extends ViewPane {
 			return;
 		}
 
-		const previewUri = this._currentProvider!.asPreviewUri(
+		const previewUri = this._currentProvider?.asPreviewUri(
 			fileElement.edit.uri,
 		);
 

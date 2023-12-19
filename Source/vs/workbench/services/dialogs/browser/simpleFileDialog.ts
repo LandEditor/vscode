@@ -381,7 +381,7 @@ export class SimpleFileDialog implements ISimpleFileDialog {
 			} catch (e) {
 				// The file or folder doesn't exist
 			}
-			if (!stat || !stat.isDirectory) {
+			if (!stat?.isDirectory) {
 				homedir = resources.dirname(this.options.defaultUri);
 				this.trailing = resources.basename(this.options.defaultUri);
 			}
@@ -587,9 +587,12 @@ export class SimpleFileDialog implements ISimpleFileDialog {
 			if (this.isValueChangeFromUser()) {
 				// If the user has just entered more bad path, don't change anything
 				if (
-					!equalsIgnoreCase(value, this.constructFullUserPath()) &&
-					!this.isBadSubpath(value)
+					equalsIgnoreCase(value, this.constructFullUserPath()) ||
+					this.isBadSubpath(value)
 				) {
+					this.filePickBox.activeItems = [];
+					this.userEnteredPathSegment = "";
+				} else {
 					this.filePickBox.validationMessage = undefined;
 					const filePickBoxUri = this.filePickBoxValue();
 					let updated: UpdateResult = UpdateResult.NotUpdated;
@@ -610,9 +613,6 @@ export class SimpleFileDialog implements ISimpleFileDialog {
 					) {
 						this.setActiveItems(value);
 					}
-				} else {
-					this.filePickBox.activeItems = [];
-					this.userEnteredPathSegment = "";
 				}
 			}
 		} catch {
@@ -870,8 +870,7 @@ export class SimpleFileDialog implements ISimpleFileDialog {
 				// do nothing
 			}
 			if (
-				stat &&
-				stat.isDirectory &&
+				stat?.isDirectory &&
 				resources.basename(valueUri) !== "." &&
 				this.endsWithSlash(value)
 			) {
@@ -903,18 +902,20 @@ export class SimpleFileDialog implements ISimpleFileDialog {
 						resources.addTrailingPathSeparator(inputUriDirname),
 					);
 				if (
-					!resources.extUriIgnorePathCase.isEqual(
-						currentFolderWithoutSep,
-						inputUriDirnameWithoutSep,
-					) &&
-					(!/^[a-zA-Z]:$/.test(this.filePickBox.value) ||
-						!equalsIgnoreCase(
-							this.pathFromUri(this.currentFolder).substring(
-								0,
-								this.filePickBox.value.length,
-							),
-							this.filePickBox.value,
-						))
+					!(
+						resources.extUriIgnorePathCase.isEqual(
+							currentFolderWithoutSep,
+							inputUriDirnameWithoutSep,
+						) ||
+						(/^[a-zA-Z]:$/.test(this.filePickBox.value) &&
+							equalsIgnoreCase(
+								this.pathFromUri(this.currentFolder).substring(
+									0,
+									this.filePickBox.value.length,
+								),
+								this.filePickBox.value,
+							))
+					)
 				) {
 					let statWithoutTrailing:
 						| IFileStatWithPartialMetadata
@@ -925,10 +926,7 @@ export class SimpleFileDialog implements ISimpleFileDialog {
 					} catch (e) {
 						// do nothing
 					}
-					if (
-						statWithoutTrailing &&
-						statWithoutTrailing.isDirectory
-					) {
+					if (statWithoutTrailing?.isDirectory) {
 						this.badPath = undefined;
 						inputUriDirname =
 							this.tryAddTrailingSeparatorToDirectory(
@@ -1123,9 +1121,9 @@ export class SimpleFileDialog implements ISimpleFileDialog {
 			if (!hasExt) {
 				result = resources.joinPath(
 					resources.dirname(uri),
-					resources.basename(uri) +
-						"." +
-						this.options.filters[0].extensions[0],
+					`${resources.basename(uri)}.${
+						this.options.filters[0].extensions[0]
+					}`,
 				);
 			}
 		}
@@ -1195,7 +1193,7 @@ export class SimpleFileDialog implements ISimpleFileDialog {
 
 		if (this.requiresTrailing) {
 			// save
-			if (stat && stat.isDirectory) {
+			if (stat?.isDirectory) {
 				// Can't do this
 				this.filePickBox.validationMessage = nls.localize(
 					"remoteFileDialog.validateFolder",
@@ -1263,7 +1261,7 @@ export class SimpleFileDialog implements ISimpleFileDialog {
 					"Please select a file.",
 				);
 				return Promise.resolve(false);
-			} else if (!stat.isDirectory && !this.allowFileSelection) {
+			} else if (!(stat.isDirectory || this.allowFileSelection)) {
 				// File selected when file selection not permitted
 				this.filePickBox.validationMessage = nls.localize(
 					"remoteFileDialog.validateFolderOnly",
@@ -1367,7 +1365,7 @@ export class SimpleFileDialog implements ISimpleFileDialog {
 			result = result.replace(/\//g, this.separator);
 		}
 		if (endWithSeparator && !this.endsWithSlash(result)) {
-			result = result + this.separator;
+			result += this.separator;
 		}
 		return result;
 	}
@@ -1487,7 +1485,7 @@ export class SimpleFileDialog implements ISimpleFileDialog {
 					j++
 				) {
 					const testExt = this.options.filters[i].extensions[j];
-					if (testExt === "*" || file.path.endsWith("." + testExt)) {
+					if (testExt === "*" || file.path.endsWith(`.${testExt}`)) {
 						return true;
 					}
 				}

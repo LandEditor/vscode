@@ -100,9 +100,7 @@ export class ExtensionDescriptionRegistry
 			if (this._extensionsMap.has(extensionDescription.identifier)) {
 				// No overwriting allowed!
 				console.error(
-					"Extension `" +
-						extensionDescription.identifier.value +
-						"` is already registered",
+					`Extension \`${extensionDescription.identifier.value}\` is already registered`,
 				);
 				continue;
 			}
@@ -122,8 +120,8 @@ export class ExtensionDescriptionRegistry
 					this._activationMap.set(activationEvent, []);
 				}
 				this._activationMap
-					.get(activationEvent)!
-					.push(extensionDescription);
+					.get(activationEvent)
+					?.push(extensionDescription);
 			}
 		}
 	}
@@ -188,7 +186,7 @@ export class ExtensionDescriptionRegistry
 				this.addNode(from);
 				this.addNode(to);
 				if (this._arcs.has(from)) {
-					this._arcs.get(from)!.push(to);
+					this._arcs.get(from)?.push(to);
 				} else {
 					this._arcs.set(from, [to]);
 				}

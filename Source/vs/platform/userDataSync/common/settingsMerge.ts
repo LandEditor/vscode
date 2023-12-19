@@ -32,14 +32,14 @@ export function getIgnoredSettings(
 	configurationService: IConfigurationService,
 	settingsContent?: string,
 ): string[] {
-	let value: ReadonlyArray<string> = [];
+	let value: readonly string[] = [];
 	if (settingsContent) {
 		value = getIgnoredSettingsFromContent(settingsContent);
 	} else {
 		value = getIgnoredSettingsFromConfig(configurationService);
 	}
-	const added: string[] = [],
-		removed: string[] = [...getDisallowedIgnoredSettings()];
+	const added: string[] = [];
+	const removed: string[] = [...getDisallowedIgnoredSettings()];
 	if (Array.isArray(value)) {
 		for (const key of value) {
 			if (key.startsWith("-")) {
@@ -58,7 +58,7 @@ export function getIgnoredSettings(
 
 function getIgnoredSettingsFromConfig(
 	configurationService: IConfigurationService,
-): ReadonlyArray<string> {
+): readonly string[] {
 	let userValue = configurationService.inspect<string[]>(
 		"settingsSync.ignoredSettings",
 	).userValue;
@@ -150,7 +150,7 @@ export function updateIgnoredSettings(
 		settingsToAdd.forEach(
 			(s) =>
 				(targetContent = addSetting(
-					s.setting!.key,
+					s.setting?.key,
 					sourceContent,
 					targetContent,
 					formattingOptions,
@@ -178,7 +178,7 @@ export function merge(
 	const remoteForwarded = baseContent !== originalRemoteContent;
 
 	/* no changes */
-	if (!localForwarded && !remoteForwarded) {
+	if (!(localForwarded || remoteForwarded)) {
 		return {
 			conflictsSettings: [],
 			localContent: null,
@@ -458,11 +458,9 @@ function areSame(
 			) {
 				return false;
 			}
-		} else if (!localNode.setting && !remoteNode.setting) {
-			if (localNode.value !== remoteNode.value) {
-				return false;
-			}
-		} else {
+		} else if (localNode.setting || remoteNode.setting) {
+			return false;
+		} else if (localNode.value !== remoteNode.value) {
 			return false;
 		}
 	}
@@ -584,7 +582,7 @@ function getInsertLocation(
 			*/
 			if (sourcePreviousSettingNode) {
 				const targetPreviousSetting = findSettingNode(
-					sourcePreviousSettingNode.setting!.key,
+					sourcePreviousSettingNode.setting?.key,
 					targetTree,
 				);
 				if (targetPreviousSetting) {
@@ -679,7 +677,7 @@ function getInsertLocation(
 				*/
 				if (sourceNextSettingNode) {
 					const targetNextSetting = findSettingNode(
-						sourceNextSettingNode.setting!.key,
+						sourceNextSettingNode.setting?.key,
 						targetTree,
 					);
 					if (targetNextSetting) {
@@ -797,7 +795,7 @@ function getEditToInsertAtLocation(
 			edits.push({
 				offset: node.endOffset,
 				length: 0,
-				content: "," + newProperty,
+				content: `,${newProperty}`,
 			});
 		} else {
 			/* Insert after a comment */
@@ -830,7 +828,7 @@ function getEditToInsertAtLocation(
 					: node.endOffset,
 				length: 0,
 				content: nextSettingNode
-					? eol + newProperty + ","
+					? `${eol + newProperty},`
 					: eol + newProperty,
 			});
 		}
@@ -843,7 +841,7 @@ function getEditToInsertAtLocation(
 				{
 					offset: node.startOffset,
 					length: 0,
-					content: newProperty + ",",
+					content: `${newProperty},`,
 				},
 			];
 		}
@@ -1002,7 +1000,7 @@ function parseSettings(content: string): INode[] {
 							endOffset: node.endOffset,
 							value: node.value,
 							setting: {
-								key: node.setting!.key,
+								key: node.setting?.key,
 								commaOffset: offset,
 							},
 						});

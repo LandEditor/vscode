@@ -549,8 +549,7 @@ export class NotebookClipboardContribution extends Disposable {
 
 		while (container && container !== body) {
 			if (
-				(container as HTMLElement).classList &&
-				(container as HTMLElement).classList.contains("monaco-editor")
+				(container as HTMLElement).classList?.contains("monaco-editor")
 			) {
 				return true;
 			}

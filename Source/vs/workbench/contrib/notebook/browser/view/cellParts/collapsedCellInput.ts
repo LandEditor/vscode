@@ -19,7 +19,7 @@ export class CollapsedCellInput extends CellContentPart {
 				cellInputCollapsedContainer,
 				DOM.EventType.DBLCLICK,
 				(e) => {
-					if (!this.currentCell || !this.notebookEditor.hasModel()) {
+					if (!(this.currentCell && this.notebookEditor.hasModel())) {
 						return;
 					}
 
@@ -37,17 +37,13 @@ export class CollapsedCellInput extends CellContentPart {
 				cellInputCollapsedContainer,
 				DOM.EventType.CLICK,
 				(e) => {
-					if (!this.currentCell || !this.notebookEditor.hasModel()) {
+					if (!(this.currentCell && this.notebookEditor.hasModel())) {
 						return;
 					}
 
 					const element = e.target as HTMLElement;
 
-					if (
-						element &&
-						element.classList &&
-						element.classList.contains("expandInputIcon")
-					) {
+					if (element?.classList?.contains("expandInputIcon")) {
 						// clicked on the expand icon
 						this.currentCell.isInputCollapsed = false;
 					}

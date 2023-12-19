@@ -47,7 +47,7 @@
 		// Await window configuration from preload
 		const timeout = setTimeout(() => {
 			console.error(
-				`[resolve window config] Could not resolve window configuration within 10 seconds, but will continue to wait...`,
+				"[resolve window config] Could not resolve window configuration within 10 seconds, but will continue to wait...",
 			);
 		}, 10000);
 		performance.mark("code/willWaitForWindowConfig");

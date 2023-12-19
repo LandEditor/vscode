@@ -179,8 +179,6 @@ function toTsTriggerReason(
 			return context.isRetrigger
 				? { kind: "retrigger" }
 				: { kind: "invoked" };
-
-		case vscode.SignatureHelpTriggerKind.Invoke:
 		default:
 			return { kind: "invoked" };
 	}

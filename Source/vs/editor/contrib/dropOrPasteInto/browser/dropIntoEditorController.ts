@@ -124,7 +124,7 @@ export class DropIntoEditorController
 		position: IPosition,
 		dragEvent: DragEvent,
 	) {
-		if (!dragEvent.dataTransfer || !editor.hasModel()) {
+		if (!(dragEvent.dataTransfer && editor.hasModel())) {
 			return;
 		}
 

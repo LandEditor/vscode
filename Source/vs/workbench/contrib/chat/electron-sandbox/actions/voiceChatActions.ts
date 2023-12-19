@@ -474,13 +474,14 @@ class VoiceChatSessions {
 				}
 
 				switch (status) {
-					case SpeechToTextStatus.Started:
+					case SpeechToTextStatus.Started: {
 						this.onDidSpeechToTextSessionStart(
 							controller,
 							session.disposables,
 						);
 						break;
-					case SpeechToTextStatus.Recognizing:
+					}
+					case SpeechToTextStatus.Recognizing: {
 						if (text) {
 							session.controller.updateInput(
 								[inputValue, text].join(" "),
@@ -490,7 +491,8 @@ class VoiceChatSessions {
 							}
 						}
 						break;
-					case SpeechToTextStatus.Recognized:
+					}
+					case SpeechToTextStatus.Recognized: {
 						if (text) {
 							inputValue = [inputValue, text].join(" ");
 							session.controller.updateInput(inputValue);
@@ -499,9 +501,11 @@ class VoiceChatSessions {
 							}
 						}
 						break;
-					case SpeechToTextStatus.Stopped:
+					}
+					case SpeechToTextStatus.Stopped: {
 						this.stop(session.id, controller.context);
 						break;
+					}
 				}
 			}),
 		);
@@ -515,18 +519,22 @@ class VoiceChatSessions {
 		this.voiceChatInProgressKey.set(true);
 
 		switch (controller.context) {
-			case "inline":
+			case "inline": {
 				this.inlineVoiceChatInProgressKey.set(true);
 				break;
-			case "quick":
+			}
+			case "quick": {
 				this.quickVoiceChatInProgressKey.set(true);
 				break;
-			case "view":
+			}
+			case "view": {
 				this.voiceChatInViewInProgressKey.set(true);
 				break;
-			case "editor":
+			}
+			case "editor": {
 				this.voiceChatInEditorInProgressKey.set(true);
 				break;
+			}
 		}
 
 		let dotCount = 0;

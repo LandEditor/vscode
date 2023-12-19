@@ -462,7 +462,7 @@ class DirtyDiffWidget extends PeekViewWidget {
 							providerIndex + 1,
 							providerChanges.length,
 					  );
-			this.dropdownContainer!.style.display = "inherit";
+			this.dropdownContainer?.style.display = "inherit";
 		} else {
 			detail =
 				this.model.changes.length > 1
@@ -480,7 +480,7 @@ class DirtyDiffWidget extends PeekViewWidget {
 							providerIndex + 1,
 							providerChanges.length,
 					  );
-			this.dropdownContainer!.style.display = "none";
+			this.dropdownContainer?.style.display = "none";
 		}
 
 		this.setTitle(this.title, detail);
@@ -542,7 +542,7 @@ class DirtyDiffWidget extends PeekViewWidget {
 				i < keys.length && providersWithChangesCount <= 1;
 				i++
 			) {
-				if (this.model.mapChanges.get(keys[i])!.length > 0) {
+				if (this.model.mapChanges.get(keys[i])?.length > 0) {
 					providersWithChangesCount++;
 				}
 			}
@@ -628,7 +628,7 @@ class DirtyDiffWidget extends PeekViewWidget {
 
 		// close widget on successful action
 		actionRunner.onDidRun((e) => {
-			if (!(e.action instanceof UIEditorAction) && !e.error) {
+			if (!(e.action instanceof UIEditorAction || e.error)) {
 				this.dispose();
 			}
 		});
@@ -690,7 +690,8 @@ class DirtyDiffWidget extends PeekViewWidget {
 	}
 
 	private revealChange(change: IChange): void {
-		let start: number, end: number;
+		let start: number;
+		let end: number;
 
 		if (change.modifiedEndLineNumber === 0) {
 			// deletion
@@ -863,13 +864,13 @@ export class GotoPreviousChangeAction extends EditorAction {
 		const accessibilityService = accessor.get(IAccessibilityService);
 		const codeEditorService = accessor.get(ICodeEditorService);
 
-		if (!outerEditor || !outerEditor.hasModel()) {
+		if (!outerEditor?.hasModel()) {
 			return;
 		}
 
 		const controller = DirtyDiffController.get(outerEditor);
 
-		if (!controller || !controller.modelRegistry) {
+		if (!controller?.modelRegistry) {
 			return;
 		}
 
@@ -916,13 +917,13 @@ export class GotoNextChangeAction extends EditorAction {
 		const accessibilityService = accessor.get(IAccessibilityService);
 		const codeEditorService = accessor.get(ICodeEditorService);
 
-		if (!outerEditor || !outerEditor.hasModel()) {
+		if (!outerEditor?.hasModel()) {
 			return;
 		}
 
 		const controller = DirtyDiffController.get(outerEditor);
 
-		if (!controller || !controller.modelRegistry) {
+		if (!controller?.modelRegistry) {
 			return;
 		}
 
@@ -976,24 +977,27 @@ async function playAudioCueForChange(
 ) {
 	const changeType = getChangeType(change);
 	switch (changeType) {
-		case ChangeType.Add:
+		case ChangeType.Add: {
 			audioCueService.playAudioCue(AudioCue.diffLineInserted, {
 				allowManyInParallel: true,
 				source: "dirtyDiffDecoration",
 			});
 			break;
-		case ChangeType.Delete:
+		}
+		case ChangeType.Delete: {
 			audioCueService.playAudioCue(AudioCue.diffLineDeleted, {
 				allowManyInParallel: true,
 				source: "dirtyDiffDecoration",
 			});
 			break;
-		case ChangeType.Modify:
+		}
+		case ChangeType.Modify: {
 			audioCueService.playAudioCue(AudioCue.diffLineModified, {
 				allowManyInParallel: true,
 				source: "dirtyDiffDecoration",
 			});
 			break;
+		}
 	}
 }
 
@@ -1109,7 +1113,7 @@ export class DirtyDiffController
 				}
 			`;
 		} else {
-			this.stylesheet.textContent = ``;
+			this.stylesheet.textContent = "";
 		}
 	}
 
@@ -1129,7 +1133,7 @@ export class DirtyDiffController
 		if (!this.assertWidget()) {
 			return;
 		}
-		if (!this.widget || !this.model) {
+		if (!(this.widget && this.model)) {
 			return;
 		}
 
@@ -1150,7 +1154,7 @@ export class DirtyDiffController
 				this.model.mapChanges.get(this.widget.provider) ??
 				this.model.mapChanges.values().next().value;
 			const mapIndex = providerChanges.findIndex(
-				(value) => value === this.widget!.index,
+				(value) => value === this.widget?.index,
 			);
 			index = providerChanges[rot(mapIndex + 1, providerChanges.length)];
 		}
@@ -1162,7 +1166,7 @@ export class DirtyDiffController
 		if (!this.assertWidget()) {
 			return;
 		}
-		if (!this.widget || !this.model) {
+		if (!(this.widget && this.model)) {
 			return;
 		}
 
@@ -1180,7 +1184,7 @@ export class DirtyDiffController
 				this.model.mapChanges.get(this.widget.provider) ??
 				this.model.mapChanges.values().next().value;
 			const mapIndex = providerChanges.findIndex(
-				(value) => value === this.widget!.index,
+				(value) => value === this.widget?.index,
 			);
 			index = providerChanges[rot(mapIndex - 1, providerChanges.length)];
 		}
@@ -1258,7 +1262,7 @@ export class DirtyDiffController
 	}
 
 	private onDidModelChange(splices: ISplice<LabeledChange>[]): void {
-		if (!this.model || !this.widget || this.widget.hasFocus()) {
+		if (!(this.model && this.widget) || this.widget.hasFocus()) {
 			return;
 		}
 
@@ -2037,7 +2041,7 @@ export class DirtyDiffModel extends Disposable {
 					if (!map.has(label)) {
 						map.set(label, []);
 					}
-					map.get(label)!.push(i);
+					map.get(label)?.push(i);
 				}
 				return { changes: sorted, mapChanges: map };
 			},
@@ -2323,7 +2327,7 @@ export class DirtyDiffWorkbenchController
 			"scm.diffDecorationsGutterWidth",
 		);
 
-		if (isNaN(width) || width <= 0 || width > 5) {
+		if (Number.isNaN(width) || width <= 0 || width > 5) {
 			width = 3;
 		}
 
@@ -2402,8 +2406,10 @@ export class DirtyDiffWorkbenchController
 
 				if (
 					textModel &&
-					(!this.items.has(textModel.uri) ||
-						!this.items.get(textModel.uri)!.has(editor.getId()))
+					!(
+						this.items.has(textModel.uri) &&
+						this.items.get(textModel.uri)?.has(editor.getId())
+					)
 				) {
 					const textFileModel = this.textFileService.files.get(
 						textModel.uri,

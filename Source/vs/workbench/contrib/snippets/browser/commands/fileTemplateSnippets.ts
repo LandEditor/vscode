@@ -41,7 +41,7 @@ export class ApplyFileSnippetAction extends SnippetsAction {
 		const langService = accessor.get(ILanguageService);
 
 		const editor = getCodeEditor(editorService.activeTextEditorControl);
-		if (!editor || !editor.hasModel()) {
+		if (!editor?.hasModel()) {
 			return;
 		}
 

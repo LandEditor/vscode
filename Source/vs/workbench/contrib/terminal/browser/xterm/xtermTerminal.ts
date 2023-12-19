@@ -485,7 +485,7 @@ export class XtermTerminal
 		if (command) {
 			const length = command.getOutput()?.length;
 			const row = command.marker?.line;
-			if (!length || !row) {
+			if (!(length && row)) {
 				throw new Error(
 					`No row ${row} or output length ${length} for command ${command}`,
 				);
@@ -526,7 +526,7 @@ export class XtermTerminal
 			}
 		}
 
-		if (!this.raw.element || !this.raw.textarea) {
+		if (!(this.raw.element && this.raw.textarea)) {
 			throw new Error("xterm elements not set after open");
 		}
 
@@ -676,7 +676,7 @@ export class XtermTerminal
 		// This is to fix an issue where dragging the windpow to the top of the screen to
 		// maximize on Windows/Linux would fire an event saying that the terminal was not
 		// visible.
-		if (!!this._canvasAddon) {
+		if (this._canvasAddon) {
 			this._core._renderService?._handleIntersectionChange({
 				intersectionRatio: 1,
 			});
@@ -1023,7 +1023,7 @@ export class XtermTerminal
 			this._logService.trace("Webgl was loaded");
 			this._webglAddon.onContextLoss(() => {
 				this._logService.info(
-					`Webgl lost context, disposing of webgl renderer`,
+					"Webgl lost context, disposing of webgl renderer",
 				);
 				this._disposeOfWebglRenderer();
 			});
@@ -1036,7 +1036,7 @@ export class XtermTerminal
 			// }, 5000);
 		} catch (e) {
 			this._logService.warn(
-				`Webgl could not be loaded. Falling back to the canvas renderer type.`,
+				"Webgl could not be loaded. Falling back to the canvas renderer type.",
 				e,
 			);
 			const neverMeasureRenderTime = this._storageService.getBoolean(
@@ -1073,7 +1073,7 @@ export class XtermTerminal
 			this._logService.trace("Canvas renderer was loaded");
 		} catch (e) {
 			this._logService.warn(
-				`Canvas renderer could not be loaded, falling back to dom renderer`,
+				"Canvas renderer could not be loaded, falling back to dom renderer",
 				e,
 			);
 			const neverMeasureRenderTime = this._storageService.getBoolean(
@@ -1395,7 +1395,7 @@ export function getXtermScaledDimensions(
 	width: number,
 	height: number,
 ) {
-	if (!font.charWidth || !font.charHeight) {
+	if (!(font.charWidth && font.charHeight)) {
 		return null;
 	}
 

@@ -124,7 +124,7 @@ export class RunAutomaticTasks
 		switch (taskKind) {
 			case ConfigurationTarget.WORKSPACE_FOLDER: {
 				return resources.joinPath(
-					(<IWorkspaceTaskSource>source).config.workspaceFolder!.uri,
+					(<IWorkspaceTaskSource>source).config.workspaceFolder?.uri,
 					(<IWorkspaceTaskSource>source).config.file,
 				);
 			}
@@ -143,7 +143,7 @@ export class RunAutomaticTasks
 		workspaceTaskResult: Map<string, IWorkspaceFolderTaskResult>,
 	): {
 		tasks: Array<Task | Promise<Task | undefined>>;
-		taskNames: Array<string>;
+		taskNames: string[];
 		locations: Map<string, URI>;
 	} {
 		const tasks = new Array<Task | Promise<Task | undefined>>();

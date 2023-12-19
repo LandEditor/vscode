@@ -170,7 +170,7 @@ export function supportsTelemetry(
 	environmentService: IEnvironmentService,
 ): boolean {
 	// If it's OSS and telemetry isn't disabled via the CLI we will allow it for logging only purposes
-	if (!environmentService.isBuilt && !environmentService.disableTelemetry) {
+	if (!(environmentService.isBuilt || environmentService.disableTelemetry)) {
 		return true;
 	}
 	return !(
@@ -333,7 +333,7 @@ function flatten(
 			result[index] = value.toISOString();
 		} else if (isObject(value)) {
 			if (order < 2) {
-				flatten(value, result, order + 1, index + ".");
+				flatten(value, result, order + 1, `${index}.`);
 			} else {
 				result[index] = safeStringify(value);
 			}
@@ -390,7 +390,7 @@ export function getPiiPathsFromEnvironment(paths: IPathEnvironment): string[] {
  */
 function anonymizeFilePaths(stack: string, cleanupPatterns: RegExp[]): string {
 	// Fast check to see if it is a file path to avoid doing unnecessary heavy regex work
-	if (!stack || (!stack.includes("/") && !stack.includes("\\"))) {
+	if (!(stack && (stack.includes("/") || stack.includes("\\")))) {
 		return stack;
 	}
 
@@ -425,10 +425,11 @@ function anonymizeFilePaths(stack: string, cleanupPatterns: RegExp[]): string {
 		);
 
 		// anoynimize user file paths that do not need to be retained or cleaned up.
-		if (!nodeModulesRegex.test(result[0]) && !overlappingRange) {
-			updatedStack +=
-				stack.substring(lastIndex, result.index) +
-				"<REDACTED: user-file-path>";
+		if (!(nodeModulesRegex.test(result[0]) || overlappingRange)) {
+			updatedStack += `${stack.substring(
+				lastIndex,
+				result.index,
+			)}<REDACTED: user-file-path>`;
 			lastIndex = fileRegex.lastIndex;
 		}
 	}

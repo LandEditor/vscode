@@ -145,11 +145,7 @@ export class LineNumbersOverlay extends DynamicViewOverlay {
 				this._lastCursorModelPosition.lineNumber - modelLineNumber,
 			);
 			if (diff === 0) {
-				return (
-					'<span class="relative-current-line-number">' +
-					modelLineNumber +
-					"</span>"
-				);
+				return `<span class="relative-current-line-number">${modelLineNumber}</span>`;
 			}
 			return String(diff);
 		}

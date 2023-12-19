@@ -392,35 +392,41 @@ abstract class BaseFocusAction extends Action2 {
 		let neighbour: Parts;
 		if (windowIsAuxiliary) {
 			switch (part) {
-				case Parts.EDITOR_PART:
+				case Parts.EDITOR_PART: {
 					neighbour = Parts.STATUSBAR_PART;
 					break;
+				}
 				default:
 					neighbour = Parts.EDITOR_PART;
 			}
 		} else {
 			switch (part) {
-				case Parts.EDITOR_PART:
+				case Parts.EDITOR_PART: {
 					neighbour = next ? Parts.PANEL_PART : Parts.SIDEBAR_PART;
 					break;
-				case Parts.PANEL_PART:
+				}
+				case Parts.PANEL_PART: {
 					neighbour = next ? Parts.STATUSBAR_PART : Parts.EDITOR_PART;
 					break;
-				case Parts.STATUSBAR_PART:
+				}
+				case Parts.STATUSBAR_PART: {
 					neighbour = next
 						? Parts.ACTIVITYBAR_PART
 						: Parts.PANEL_PART;
 					break;
-				case Parts.ACTIVITYBAR_PART:
+				}
+				case Parts.ACTIVITYBAR_PART: {
 					neighbour = next
 						? Parts.SIDEBAR_PART
 						: Parts.STATUSBAR_PART;
 					break;
-				case Parts.SIDEBAR_PART:
+				}
+				case Parts.SIDEBAR_PART: {
 					neighbour = next
 						? Parts.EDITOR_PART
 						: Parts.ACTIVITYBAR_PART;
 					break;
+				}
 				default:
 					neighbour = Parts.EDITOR_PART;
 			}

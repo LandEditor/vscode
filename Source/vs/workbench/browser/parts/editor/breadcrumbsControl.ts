@@ -429,7 +429,7 @@ export class BreadcrumbsControl {
 		);
 		const wasHidden = this.isHidden();
 
-		if (!uri || !this._fileService.hasProvider(uri)) {
+		if (!(uri && this._fileService.hasProvider(uri))) {
 			// cleanup and return when there is no input or when
 			// we cannot handle this input
 			this._ckBreadcrumbsPossible.set(false);
@@ -1154,8 +1154,10 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 
 		const tree = lists.lastFocusedList;
 		if (
-			!(tree instanceof WorkbenchDataTree) &&
-			!(tree instanceof WorkbenchAsyncDataTree)
+			!(
+				tree instanceof WorkbenchDataTree ||
+				tree instanceof WorkbenchAsyncDataTree
+			)
 		) {
 			return;
 		}

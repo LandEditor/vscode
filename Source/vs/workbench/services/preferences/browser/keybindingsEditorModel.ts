@@ -92,7 +92,7 @@ export class KeybindingsEditorModel extends EditorModel {
 			: this._keybindingItems;
 
 		const commandIdMatches = /@command:\s*(.+)/i.exec(searchValue);
-		if (commandIdMatches && commandIdMatches[1]) {
+		if (commandIdMatches?.[1]) {
 			return keybindingItems
 				.filter((k) => k.command === commandIdMatches[1])
 				.map(
@@ -394,8 +394,7 @@ export class KeybindingsEditorModel extends EditorModel {
 	): string | null {
 		if (!Language.isDefaultVariant()) {
 			if (
-				menuCommand &&
-				menuCommand.title &&
+				menuCommand?.title &&
 				(<ILocalizedString>menuCommand.title).original
 			) {
 				const category: string | undefined = menuCommand.category
@@ -575,7 +574,7 @@ class KeybindingItemMatches {
 	}
 
 	private filterAndSort(matches: IMatch[]): IMatch[] {
-		return distinct(matches, (a) => a.start + "." + a.end)
+		return distinct(matches, (a) => `${a.start}.${a.end}`)
 			.filter(
 				(match) =>
 					!matches.some(
@@ -683,8 +682,10 @@ class KeybindingItemMatches {
 				return null;
 			}
 			if (
-				!isEmptyObject(chordPartMatch) &&
-				!this.isCompleteMatch(chordPart, chordPartMatch)
+				!(
+					isEmptyObject(chordPartMatch) ||
+					this.isCompleteMatch(chordPart, chordPartMatch)
+				)
 			) {
 				return null;
 			}

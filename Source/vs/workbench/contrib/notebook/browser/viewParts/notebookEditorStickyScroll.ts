@@ -341,8 +341,6 @@ export class NotebookStickyScroll extends Disposable {
 						trackedEntry = entry;
 						break;
 					} else {
-						// if (editorScrollTop + stickyScrollHeight > sectionBottom), then continue to next section
-						continue;
 					}
 				}
 			} else {
@@ -475,7 +473,7 @@ export class NotebookStickyScroll extends Disposable {
 	) {
 		const stickyElement = document.createElement("div");
 		stickyElement.classList.add("notebook-sticky-scroll-line");
-		stickyElement.innerText = "#".repeat(entry.level) + " " + entry.label;
+		stickyElement.innerText = `${"#".repeat(entry.level)} ${entry.label}`;
 		return new NotebookStickyLine(stickyElement, entry, notebookEditor);
 	}
 
@@ -602,7 +600,7 @@ export function computeContent(
 				// recompute section bottom based on the top of the next section
 				sectionBottom =
 					notebookCellList.getCellViewScrollTop(
-						nextSectionEntry!.cell,
+						nextSectionEntry?.cell,
 					) - 10;
 
 				// this block of logic cleans transitions between two sections that share a parent.

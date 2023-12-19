@@ -67,26 +67,26 @@ export class ConsoleObservableLogger implements IObservableLogger {
 	private formatInfo(info: IChangeInformation): ConsoleText[] {
 		if (!info.hadValue) {
 			return [
-				normalText(` `),
+				normalText(" "),
 				styled(formatValue(info.newValue, 60), {
 					color: "green",
 				}),
-				normalText(` (initial)`),
+				normalText(" (initial)"),
 			];
 		}
 		return info.didChange
 			? [
-					normalText(` `),
+					normalText(" "),
 					styled(formatValue(info.oldValue, 70), {
 						color: "red",
 						strikeThrough: true,
 					}),
-					normalText(` `),
+					normalText(" "),
 					styled(formatValue(info.newValue, 60), {
 						color: "green",
 					}),
 			  ]
-			: [normalText(` (unchanged)`)];
+			: [normalText(" (unchanged)")];
 	}
 
 	handleObservableChanged(
@@ -114,9 +114,9 @@ export class ConsoleObservableLogger implements IObservableLogger {
 			return undefined;
 		}
 		return styled(
-			" (changed deps: " +
-				[...changes].map((o) => o.debugName).join(", ") +
-				")",
+			` (changed deps: ${[...changes]
+				.map((o) => o.debugName)
+				.join(", ")})`,
 			{ color: "gray" },
 		);
 	}
@@ -125,7 +125,7 @@ export class ConsoleObservableLogger implements IObservableLogger {
 		const existingHandleChange = derived.handleChange;
 		this.changedObservablesSets.set(derived, new Set());
 		derived.handleChange = (observable, change) => {
-			this.changedObservablesSets.get(derived)!.add(observable);
+			this.changedObservablesSets.get(derived)?.add(observable);
 			return existingHandleChange.apply(derived, [observable, change]);
 		};
 	}
@@ -165,7 +165,7 @@ export class ConsoleObservableLogger implements IObservableLogger {
 		const existingHandleChange = autorun.handleChange;
 		this.changedObservablesSets.set(autorun, new Set());
 		autorun.handleChange = (observable, change) => {
-			this.changedObservablesSets.get(autorun)!.add(observable);
+			this.changedObservablesSets.get(autorun)?.add(observable);
 			return existingHandleChange.apply(autorun, [observable, change]);
 		};
 	}
@@ -285,18 +285,19 @@ function styled(
 function formatValue(value: unknown, availableLen: number): string {
 	switch (typeof value) {
 		case "number":
-			return "" + value;
-		case "string":
+			return `${value}`;
+		case "string": {
 			if (value.length + 2 <= availableLen) {
 				return `"${value}"`;
 			}
 			return `"${value.substr(0, availableLen - 7)}"+...`;
+		}
 
 		case "boolean":
 			return value ? "true" : "false";
 		case "undefined":
 			return "undefined";
-		case "object":
+		case "object": {
 			if (value === null) {
 				return "null";
 			}
@@ -304,12 +305,13 @@ function formatValue(value: unknown, availableLen: number): string {
 				return formatArray(value, availableLen);
 			}
 			return formatObject(value, availableLen);
+		}
 		case "symbol":
 			return value.toString();
 		case "function":
-			return `[[Function${value.name ? " " + value.name : ""}]]`;
+			return `[[Function${value.name ? ` ${value.name}` : ""}]]`;
 		default:
-			return "" + value;
+			return `${value}`;
 	}
 }
 

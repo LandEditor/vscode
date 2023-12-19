@@ -9,7 +9,7 @@ const retry_1 = require("./retry");
 function getEnv(name) {
 	const result = process.env[name];
 	if (typeof result === "undefined") {
-		throw new Error("Missing env: " + name);
+		throw new Error(`Missing env: ${name}`);
 	}
 	return result;
 }

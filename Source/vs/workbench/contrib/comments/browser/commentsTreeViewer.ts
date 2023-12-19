@@ -253,7 +253,7 @@ export class CommentNodeRenderer
 			textDescription.textContent = image.alt
 				? nls.localize("imageWithLabel", "Image: {0}", image.alt)
 				: nls.localize("image", "Image");
-			image.parentNode!.replaceChild(textDescription, image);
+			image.parentNode?.replaceChild(textDescription, image);
 		}
 		return renderedComment;
 	}

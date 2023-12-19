@@ -55,7 +55,7 @@ export class InteractiveEditorInput
 
 	static setName(notebookUri: URI, title: string | undefined) {
 		if (title) {
-			this.windowNames[notebookUri.path] = title;
+			InteractiveEditorInput.windowNames[notebookUri.path] = title;
 		}
 	}
 
@@ -261,7 +261,7 @@ export class InteractiveEditorInput
 			return undefined;
 		}
 
-		const filename = this.getName() + ".ipynb";
+		const filename = `${this.getName()}.ipynb`;
 		const pathCandidate = joinPath(
 			await this._fileDialogService.defaultFilePath(),
 			filename,

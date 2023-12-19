@@ -35,7 +35,7 @@ export class IndentRangeProvider implements RangeProvider {
 				this.editorModel.getLanguageId(),
 			).foldingRules;
 		const offSide = foldingRules && !!foldingRules.offSide;
-		const markers = foldingRules && foldingRules.markers;
+		const markers = foldingRules?.markers;
 		return Promise.resolve(
 			computeRanges(
 				this.editorModel,

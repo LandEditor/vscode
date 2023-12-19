@@ -66,7 +66,7 @@ export interface IChatSlashCommandService {
 		history: IChatMessage[],
 		token: CancellationToken,
 	): Promise<{ followUp: IChatFollowup[] } | void>;
-	getCommands(): Array<IChatSlashData>;
+	getCommands(): IChatSlashData[];
 	hasCommand(id: string): boolean;
 }
 
@@ -114,7 +114,7 @@ export class ChatSlashCommandService
 		});
 	}
 
-	getCommands(): Array<IChatSlashData> {
+	getCommands(): IChatSlashData[] {
 		return Array.from(this._commands.values(), (v) => v.data);
 	}
 

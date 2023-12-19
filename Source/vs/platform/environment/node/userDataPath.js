@@ -73,7 +73,7 @@
 
 			// 4. Otherwise check per platform
 			switch (process.platform) {
-				case "win32":
+				case "win32": {
 					appDataPath = process.env["APPDATA"];
 					if (!appDataPath) {
 						const userProfile = process.env["USERPROFILE"];
@@ -90,18 +90,21 @@
 						);
 					}
 					break;
-				case "darwin":
+				}
+				case "darwin": {
 					appDataPath = path.join(
 						os.homedir(),
 						"Library",
 						"Application Support",
 					);
 					break;
-				case "linux":
+				}
+				case "linux": {
 					appDataPath =
 						process.env["XDG_CONFIG_HOME"] ||
 						path.join(os.homedir(), ".config");
 					break;
+				}
 				default:
 					throw new Error("Platform not supported");
 			}

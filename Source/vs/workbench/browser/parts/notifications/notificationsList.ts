@@ -252,7 +252,7 @@ export class NotificationsList extends Disposable {
 	}
 
 	hide(): void {
-		if (!this.isVisible || !this.list) {
+		if (!(this.isVisible && this.list)) {
 			return; // already hidden
 		}
 

@@ -13,7 +13,7 @@ export function base64Decode(text: string): string {
 	const decodedText = decodeURIComponent(
 		atob(replacedCharacters)
 			.split("")
-			.map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+			.map((c) => `%${`00${c.charCodeAt(0).toString(16)}`.slice(-2)}`)
 			.join(""),
 	);
 	return decodedText;

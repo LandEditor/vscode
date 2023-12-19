@@ -324,61 +324,69 @@ class State {
 		const change = new StateChange();
 
 		switch (update.type) {
-			case "selectionStatus":
+			case "selectionStatus": {
 				if (this._selectionStatus !== update.selectionStatus) {
 					this._selectionStatus = update.selectionStatus;
 					change.selectionStatus = true;
 				}
 				break;
+			}
 
-			case "indentation":
+			case "indentation": {
 				if (this._indentation !== update.indentation) {
 					this._indentation = update.indentation;
 					change.indentation = true;
 				}
 				break;
+			}
 
-			case "languageId":
+			case "languageId": {
 				if (this._languageId !== update.languageId) {
 					this._languageId = update.languageId;
 					change.languageId = true;
 				}
 				break;
+			}
 
-			case "encoding":
+			case "encoding": {
 				if (this._encoding !== update.encoding) {
 					this._encoding = update.encoding;
 					change.encoding = true;
 				}
 				break;
+			}
 
-			case "EOL":
+			case "EOL": {
 				if (this._EOL !== update.EOL) {
 					this._EOL = update.EOL;
 					change.EOL = true;
 				}
 				break;
+			}
 
-			case "tabFocusMode":
+			case "tabFocusMode": {
 				if (this._tabFocusMode !== update.tabFocusMode) {
 					this._tabFocusMode = update.tabFocusMode;
 					change.tabFocusMode = true;
 				}
 				break;
+			}
 
-			case "columnSelectionMode":
+			case "columnSelectionMode": {
 				if (this._columnSelectionMode !== update.columnSelectionMode) {
 					this._columnSelectionMode = update.columnSelectionMode;
 					change.columnSelectionMode = true;
 				}
 				break;
+			}
 
-			case "metadata":
+			case "metadata": {
 				if (this._metadata !== update.metadata) {
 					this._metadata = update.metadata;
 					change.metadata = true;
 				}
 				break;
+			}
 		}
 
 		return change;
@@ -890,7 +898,7 @@ class EditorStatus extends Disposable {
 	private getSelectionLabel(
 		info: IEditorSelectionStatus,
 	): string | undefined {
-		if (!info || !info.selections) {
+		if (!info?.selections) {
 			return undefined;
 		}
 
@@ -2165,8 +2173,8 @@ export class ChangeEncodingAction extends Action2 {
 					return false; // do not show encoding if it is the guessed encoding that does not match the configured
 				}
 
-				return (
-					!isReopenWithEncoding || !SUPPORTED_ENCODINGS[k].encodeOnly
+				return !(
+					isReopenWithEncoding && SUPPORTED_ENCODINGS[k].encodeOnly
 				); // hide those that can only be used for encoding if we are about to decode
 			})
 			.map((key, index) => {

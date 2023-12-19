@@ -114,7 +114,7 @@ class NotebookDataCache {
 			const serializer = await this.getSerializer(notebookUri);
 			if (!serializer) {
 				//unsupported
-				throw new Error(`serializer not initialized`);
+				throw new Error("serializer not initialized");
 			}
 			_data = await serializer.dataToNotebook(bytes);
 			this._entries.set(notebookUri, { notebookData: _data, mTime });
@@ -190,7 +190,7 @@ export class NotebookSearchService implements INotebookSearchService {
 
 		const localNotebookWidgets = this.getLocalNotebookWidgets();
 		const localNotebookFiles = localNotebookWidgets.map(
-			(widget) => widget.viewModel!.uri,
+			(widget) => widget.viewModel?.uri,
 		);
 		const getAllResults = (): {
 			completeData: Promise<ISearchComplete>;
@@ -392,7 +392,7 @@ export class NotebookSearchService implements INotebookSearchService {
 				results.set(uri, fileMatch);
 				return;
 			} catch (e) {
-				this.logService.info("error: " + e);
+				this.logService.info(`error: ${e}`);
 				return;
 			}
 		});
@@ -411,7 +411,7 @@ export class NotebookSearchService implements INotebookSearchService {
 	private async getLocalNotebookResults(
 		query: ITextQuery,
 		token: CancellationToken,
-		widgets: Array<NotebookEditorWidget>,
+		widgets: NotebookEditorWidget[],
 		searchID: string,
 	): Promise<INotebookSearchMatchResults> {
 		const localResults = new ResourceMap<IFileMatchWithCells | null>(
@@ -488,7 +488,7 @@ export class NotebookSearchService implements INotebookSearchService {
 		};
 	}
 
-	private getLocalNotebookWidgets(): Array<NotebookEditorWidget> {
+	private getLocalNotebookWidgets(): NotebookEditorWidget[] {
 		const notebookWidgets =
 			this.notebookEditorService.retrieveAllExistingWidgets();
 		return notebookWidgets

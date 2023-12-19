@@ -40,7 +40,7 @@ const getCodeLineElements = (() => {
 				}
 
 				const line = +element.getAttribute("data-line")!;
-				if (isNaN(line)) {
+				if (Number.isNaN(line)) {
 					continue;
 				}
 

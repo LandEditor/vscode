@@ -34,10 +34,6 @@ export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
 	private rawData = Buffer.allocUnsafe(0);
 	private contentLength = -1;
 
-	constructor() {
-		super();
-	}
-
 	protected connect(
 		readable: stream.Readable,
 		writable: stream.Writable,
@@ -83,7 +79,7 @@ export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
 							);
 						} catch (e) {
 							this._onError.fire(
-								new Error((e.message || e) + "\n" + message),
+								new Error(`${e.message || e}\n${message}`),
 							);
 						}
 					}
@@ -306,18 +302,18 @@ export class ExecutableDebugAdapter extends StreamDebugAdapter {
 				this._onExit.fire(code);
 			});
 
-			this.serverProcess.stdout!.on("close", () => {
+			this.serverProcess.stdout?.on("close", () => {
 				this._onError.fire(new Error("read error"));
 			});
-			this.serverProcess.stdout!.on("error", (error) => {
+			this.serverProcess.stdout?.on("error", (error) => {
 				this._onError.fire(error);
 			});
 
-			this.serverProcess.stdin!.on("error", (error) => {
+			this.serverProcess.stdin?.on("error", (error) => {
 				this._onError.fire(error);
 			});
 
-			this.serverProcess.stderr!.resume();
+			this.serverProcess.stderr?.resume();
 
 			// finally connect to the DA
 			this.connect(this.serverProcess.stdout!, this.serverProcess.stdin!);
@@ -338,7 +334,7 @@ export class ExecutableDebugAdapter extends StreamDebugAdapter {
 		if (platform.isWindows) {
 			return new Promise<void>((c, e) => {
 				const killer = cp.exec(
-					`taskkill /F /T /PID ${this.serverProcess!.pid}`,
+					`taskkill /F /T /PID ${this.serverProcess?.pid}`,
 					(err, stdout, stderr) => {
 						if (err) {
 							return e(err);

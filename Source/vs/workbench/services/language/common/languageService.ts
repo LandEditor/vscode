@@ -284,7 +284,7 @@ export class WorkbenchLanguageService extends LanguageService {
 				this._extensionService.activateByEvent(
 					`onLanguage:${languageId}`
 				);
-				this._extensionService.activateByEvent(`onLanguage`);
+				this._extensionService.activateByEvent("onLanguage");
 			})
 		);
 	}

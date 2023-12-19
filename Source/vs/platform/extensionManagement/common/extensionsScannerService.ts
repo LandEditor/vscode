@@ -455,7 +455,7 @@ export abstract class AbstractExtensionsScannerService
 		if (!extension) {
 			return null;
 		}
-		if (!scanOptions.includeInvalid && !extension.isValid) {
+		if (!(scanOptions.includeInvalid || extension.isValid)) {
 			return null;
 		}
 		return extension;
@@ -508,10 +508,10 @@ export abstract class AbstractExtensionsScannerService
 
 		// unset if false
 		if (metaData.isMachineScoped === false) {
-			delete metaData.isMachineScoped;
+			metaData.isMachineScoped = undefined;
 		}
 		if (metaData.isBuiltin === false) {
-			delete metaData.isBuiltin;
+			metaData.isBuiltin = undefined;
 		}
 		manifest.__metadata = { ...manifest.__metadata, ...metaData };
 
@@ -774,14 +774,16 @@ export abstract class AbstractExtensionsScannerService
 			switch (controlState) {
 				case "disabled":
 					break;
-				case "marketplace":
+				case "marketplace": {
 					devSystemExtensionsLocations.push(
 						joinPath(devSystemExtensionsLocation, extension.name),
 					);
 					break;
-				default:
+				}
+				default: {
 					devSystemExtensionsLocations.push(URI.file(controlState));
 					break;
+				}
 			}
 		}
 		const result = await Promise.all(
@@ -1132,7 +1134,7 @@ class ExtensionsScanner extends Disposable {
 					manifest.publisher = UNDEFINED_PUBLISHER;
 				}
 				metadata = metadata ?? manifest.__metadata;
-				delete manifest.__metadata;
+				manifest.__metadata = undefined;
 				const id = getGalleryExtensionId(
 					manifest.publisher,
 					manifest.name,
@@ -1561,8 +1563,7 @@ class CachedExtensionsScanner extends ExtensionsScanner {
 		const cacheContents = await this.readExtensionCache(cacheFile);
 		this.input = input;
 		if (
-			cacheContents &&
-			cacheContents.input &&
+			cacheContents?.input &&
 			ExtensionScannerInput.equals(cacheContents.input, this.input)
 		) {
 			this.logService.debug(

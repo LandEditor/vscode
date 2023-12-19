@@ -585,7 +585,7 @@ export abstract class EditorAction2 extends Action2 {
 			);
 			if (!enabled) {
 				logService.debug(
-					`[EditorAction2] NOT running command because its precondition is FALSE`,
+					"[EditorAction2] NOT running command because its precondition is FALSE",
 					this.desc.id,
 					this.desc.precondition?.serialize(),
 				);
@@ -760,8 +760,6 @@ class EditorContributionRegistry {
 	private readonly editorActions: EditorAction[] = [];
 	private readonly editorCommands: { [commandId: string]: EditorCommand } =
 		Object.create(null);
-
-	constructor() {}
 
 	public registerEditorContribution<Services extends BrandedService[]>(
 		id: string,

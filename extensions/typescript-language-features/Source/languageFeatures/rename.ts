@@ -214,10 +214,7 @@ class TypeScriptRenameProvider implements vscode.RenameProvider {
 		return /\<\/?\s*[\w\d_$.]*$/.test(prefix);
 	}
 
-	private updateLocs(
-		locations: ReadonlyArray<Proto.SpanGroup>,
-		newName: string,
-	) {
+	private updateLocs(locations: readonly Proto.SpanGroup[], newName: string) {
 		const edit = new vscode.WorkspaceEdit();
 		for (const spanGroup of locations) {
 			const resource = this.client.toResource(spanGroup.file);

@@ -146,7 +146,7 @@ export class ExtHostSearch implements ExtHostSearchShape {
 				token,
 			);
 		} else {
-			throw new Error("unknown provider: " + handle);
+			throw new Error(`unknown provider: ${handle}`);
 		}
 	}
 
@@ -171,7 +171,7 @@ export class ExtHostSearch implements ExtHostSearchShape {
 		token: vscode.CancellationToken,
 	): Promise<ISearchCompleteStats> {
 		const provider = this._textSearchProvider.get(handle);
-		if (!provider || !provider.provideTextSearchResults) {
+		if (!provider?.provideTextSearchResults) {
 			throw new Error(`Unknown provider ${handle}`);
 		}
 
@@ -208,14 +208,10 @@ export function reviveQuery<U extends IRawQuery>(
 	return {
 		...(<any>rawQuery), // TODO@rob ???
 		...{
-			folderQueries:
-				rawQuery.folderQueries &&
-				rawQuery.folderQueries.map(reviveFolderQuery),
-			extraFileResources:
-				rawQuery.extraFileResources &&
-				rawQuery.extraFileResources.map((components) =>
-					URI.revive(components),
-				),
+			folderQueries: rawQuery.folderQueries?.map(reviveFolderQuery),
+			extraFileResources: rawQuery.extraFileResources?.map((components) =>
+				URI.revive(components),
+			),
 		},
 	};
 }

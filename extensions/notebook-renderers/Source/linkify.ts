@@ -7,11 +7,7 @@ import { ttPolicy } from "./htmlHelper";
 
 const CONTROL_CODES = "\\u0000-\\u0020\\u007f-\\u009f";
 const WEB_LINK_REGEX = new RegExp(
-	"(?:[a-zA-Z][a-zA-Z0-9+.-]{2,}:\\/\\/|data:|www\\.)[^\\s" +
-		CONTROL_CODES +
-		'"]{2,}[^\\s' +
-		CONTROL_CODES +
-		"\"')}\\],:;.!?]",
+	`(?:[a-zA-Z][a-zA-Z0-9+.-]{2,}:\\/\\/|data:|www\\.)[^\\s${CONTROL_CODES}"]{2,}[^\\s${CONTROL_CODES}\"')}\\],:;.!?]`,
 	"ug",
 );
 
@@ -78,7 +74,7 @@ export class LinkDetector {
 		if (splitLines) {
 			const lines = text.split("\n");
 			for (let i = 0; i < lines.length - 1; i++) {
-				lines[i] = lines[i] + "\n";
+				lines[i] += "\n";
 			}
 			if (!lines[lines.length - 1]) {
 				// Remove the last element ('') that split added.
@@ -105,20 +101,23 @@ export class LinkDetector {
 			try {
 				let span: HTMLSpanElement | null = null;
 				switch (part.kind) {
-					case "text":
+					case "text": {
 						container.appendChild(
 							document.createTextNode(part.value),
 						);
 						break;
+					}
 					case "web":
-					case "path":
+					case "path": {
 						container.appendChild(this.createWebLink(part.value));
 						break;
-					case "html":
+					}
+					case "html": {
 						span = document.createElement("span");
 						span.innerHTML = this.createHtml(part.value)!;
 						container.appendChild(span);
 						break;
+					}
 				}
 			} catch (e) {
 				container.appendChild(document.createTextNode(part.value));

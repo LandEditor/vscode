@@ -78,17 +78,17 @@ class ShortIdent {
 		return candidate;
 	}
 	static convert(n) {
-		const base = this._alphabet.length;
+		const base = ShortIdent._alphabet.length;
 		let result = "";
 		do {
 			const rest = n % base;
-			result += this._alphabet[rest];
+			result += ShortIdent._alphabet[rest];
 			n = (n / base) | 0;
 		} while (n > 0);
 		return result;
 	}
 }
-var FieldType;
+let FieldType;
 ((FieldType) => {
 	FieldType[(FieldType["Public"] = 0)] = "Public";
 	FieldType[(FieldType["Protected"] = 1)] = "Protected";
@@ -426,7 +426,7 @@ class Mangler {
 	allExportedSymbols = new Set();
 	service;
 	renameWorkerPool;
-	constructor(projectPath, log = () => {}, config) {
+	constructor(projectPath, log, config) {
 		this.projectPath = projectPath;
 		this.log = log;
 		this.config = config;
@@ -588,9 +588,9 @@ class Mangler {
 		for (const data of this.allClassDataByKey.values()) {
 			ClassData.fillInReplacement(data);
 		}
-		this.log(`Done creating class replacements`);
+		this.log("Done creating class replacements");
 		// STEP: prepare rename edits
-		this.log(`Starting prepare rename edits`);
+		this.log("Starting prepare rename edits");
 		const editsByFile = new Map();
 		const appendEdit = (fileName, edit) => {
 			const edits = editsByFile.get(fileName);
@@ -651,7 +651,7 @@ class Mangler {
 					data.fileName.includes(proj),
 				) ||
 				skippedExportMangledFiles.some((file) =>
-					data.fileName.endsWith(file + ".ts"),
+					data.fileName.endsWith(`${file}.ts`),
 				)
 			) {
 				continue;
@@ -816,7 +816,7 @@ async function _run() {
 	const projectPath = path.join(projectBase, "tsconfig.json");
 	const newProjectBase = path.join(
 		path.dirname(projectBase),
-		path.basename(projectBase) + "2",
+		`${path.basename(projectBase)}2`,
 	);
 	fs.cpSync(projectBase, newProjectBase, { recursive: true });
 	const mangler = new Mangler(projectPath, console.log, {
@@ -834,7 +834,7 @@ async function _run() {
 		await fs.promises.writeFile(newFilePath, contents.out);
 		if (contents.sourceMap) {
 			await fs.promises.writeFile(
-				newFilePath + ".map",
+				`${newFilePath}.map`,
 				contents.sourceMap,
 			);
 		}

@@ -535,7 +535,7 @@ export class IndexedDBStorageDatabase
 		const toInsert = request.insert;
 		const toDelete = request.delete;
 		if (
-			(!toInsert && !toDelete) ||
+			!(toInsert || toDelete) ||
 			(toInsert?.size === 0 && toDelete?.size === 0)
 		) {
 			return false;

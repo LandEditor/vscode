@@ -816,14 +816,14 @@ class RemoteViewPaneContainer
 					}
 				}
 				if (remoteViews.length > 0) {
-					this.remoteSwitcher!.createOptionItems(remoteViews);
+					this.remoteSwitcher?.createOptionItems(remoteViews);
 				}
 			})
 		);
 		this._register(
 			viewsRegistry.onViewsDeregistered((e) => {
 				if (e.viewContainer.id === VIEWLET_ID) {
-					this.remoteSwitcher!.removeOptionItems(e.views);
+					this.remoteSwitcher?.removeOptionItems(e.views);
 				}
 			})
 		);
@@ -870,9 +870,11 @@ class RemoteViewPaneContainer
 		}
 
 		if (
-			!extension.value.documentation &&
-			!extension.value.getStarted &&
-			!extension.value.issues
+			!(
+				extension.value.documentation ||
+				extension.value.getStarted ||
+				extension.value.issues
+			)
 		) {
 			return;
 		}
@@ -1250,7 +1252,7 @@ export class RemoteAgentConnectionStatusListener
 					disposableListener = null;
 				}
 				switch (e.type) {
-					case PersistentConnectionEventType.ConnectionLost:
+					case PersistentConnectionEventType.ConnectionLost: {
 						reconnectionToken = e.reconnectionToken;
 						lastIncomingDataTime =
 							Date.now() - e.millisSinceLastIncomingData;
@@ -1303,8 +1305,9 @@ export class RemoteAgentConnectionStatusListener
 							);
 						}
 						break;
+					}
 
-					case PersistentConnectionEventType.ReconnectionWait:
+					case PersistentConnectionEventType.ReconnectionWait: {
 						if (visibleProgress) {
 							reconnectWaitEvent = e;
 							visibleProgress = showProgress(null, [
@@ -1316,8 +1319,9 @@ export class RemoteAgentConnectionStatusListener
 							);
 						}
 						break;
+					}
 
-					case PersistentConnectionEventType.ReconnectionRunning:
+					case PersistentConnectionEventType.ReconnectionRunning: {
 						reconnectionToken = e.reconnectionToken;
 						lastIncomingDataTime =
 							Date.now() - e.millisSinceLastIncomingData;
@@ -1401,8 +1405,9 @@ export class RemoteAgentConnectionStatusListener
 						}
 
 						break;
+					}
 
-					case PersistentConnectionEventType.ReconnectionPermanentFailure:
+					case PersistentConnectionEventType.ReconnectionPermanentFailure: {
 						reconnectionToken = e.reconnectionToken;
 						lastIncomingDataTime =
 							Date.now() - e.millisSinceLastIncomingData;
@@ -1463,10 +1468,10 @@ export class RemoteAgentConnectionStatusListener
 
 						if (e.handled) {
 							logService.info(
-								`Error handled: Not showing a notification for the error.`,
+								"Error handled: Not showing a notification for the error.",
 							);
 							console.log(
-								`Error handled: Not showing a notification for the error.`,
+								"Error handled: Not showing a notification for the error.",
 							);
 						} else if (!this._reloadWindowShown) {
 							this._reloadWindowShown = true;
@@ -1494,8 +1499,9 @@ export class RemoteAgentConnectionStatusListener
 								});
 						}
 						break;
+					}
 
-					case PersistentConnectionEventType.ConnectionGain:
+					case PersistentConnectionEventType.ConnectionGain: {
 						reconnectionToken = e.reconnectionToken;
 						lastIncomingDataTime =
 							Date.now() - e.millisSinceLastIncomingData;
@@ -1546,6 +1552,7 @@ export class RemoteAgentConnectionStatusListener
 
 						hideProgress();
 						break;
+					}
 				}
 			});
 		}

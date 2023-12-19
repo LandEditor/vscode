@@ -745,7 +745,7 @@ export abstract class AbstractExtHostExtensionService
 				extensionDescription.identifier.value !==
 				reason.extensionId.value
 					? `, root cause: ${reason.extensionId.value}`
-					: ``
+					: ""
 			}`,
 		);
 		this._logService.flush();
@@ -946,7 +946,7 @@ export abstract class AbstractExtHostExtensionService
 			deactivate: undefined,
 		};
 
-		return this._callActivateOptional(
+		return AbstractExtHostExtensionService._callActivateOptional(
 			logService,
 			extensionId,
 			extensionModule,
@@ -1113,7 +1113,7 @@ export abstract class AbstractExtHostExtensionService
 	}
 
 	private _handleWorkspaceContainsEagerExtensions(
-		folders: ReadonlyArray<vscode.WorkspaceFolder>,
+		folders: readonly vscode.WorkspaceFolder[],
 	): Promise<void> {
 		if (folders.length === 0) {
 			return Promise.resolve(undefined);
@@ -1130,7 +1130,7 @@ export abstract class AbstractExtHostExtensionService
 	}
 
 	private async _handleWorkspaceContainsEagerExtension(
-		folders: ReadonlyArray<vscode.WorkspaceFolder>,
+		folders: readonly vscode.WorkspaceFolder[],
 		desc: IExtensionDescription,
 	): Promise<void> {
 		if (this.isActivated(desc.identifier)) {
@@ -1144,7 +1144,7 @@ export abstract class AbstractExtHostExtensionService
 			logService: this._logService,
 			folders: folders.map((folder) => folder.uri),
 			forceUsingSearch: localWithRemote || !this._hostUtils.fsExists,
-			exists: (uri) => this._hostUtils.fsExists!(uri.fsPath),
+			exists: (uri) => this._hostUtils.fsExists?.(uri.fsPath),
 			checkExists: (folders, includes, token) =>
 				this._mainThreadWorkspaceProxy.$checkExists(
 					folders,
@@ -1190,7 +1190,7 @@ export abstract class AbstractExtHostExtensionService
 	private async _doHandleExtensionTests(): Promise<number> {
 		const { extensionDevelopmentLocationURI, extensionTestsLocationURI } =
 			this._initData.environment;
-		if (!extensionDevelopmentLocationURI || !extensionTestsLocationURI) {
+		if (!(extensionDevelopmentLocationURI && extensionTestsLocationURI)) {
 			throw new Error(
 				nls.localize("extensionTestError1", "Cannot load test runner."),
 			);
@@ -1224,7 +1224,7 @@ export abstract class AbstractExtHostExtensionService
 				if (error) {
 					if (isCI) {
 						this._logService.error(
-							`Test runner called back with error`,
+							"Test runner called back with error",
 							error,
 						);
 					}
@@ -1237,7 +1237,7 @@ export abstract class AbstractExtHostExtensionService
 							);
 						} else {
 							this._logService.info(
-								`Test runner called back with successful outcome.`,
+								"Test runner called back with successful outcome.",
 							);
 						}
 					}
@@ -1259,12 +1259,12 @@ export abstract class AbstractExtHostExtensionService
 			);
 
 			// Using the new API `run(): Promise<void>`
-			if (runResult && runResult.then) {
+			if (runResult?.then) {
 				runResult
 					.then(() => {
 						if (isCI) {
 							this._logService.info(
-								`Test runner finished successfully.`,
+								"Test runner finished successfully.",
 							);
 						}
 						resolve(0);
@@ -1272,7 +1272,7 @@ export abstract class AbstractExtHostExtensionService
 					.catch((err: unknown) => {
 						if (isCI) {
 							this._logService.error(
-								`Test runner finished with error`,
+								"Test runner finished with error",
 								err,
 							);
 						}
@@ -1288,7 +1288,7 @@ export abstract class AbstractExtHostExtensionService
 
 	private _startExtensionHost(): Promise<void> {
 		if (this._started) {
-			throw new Error(`Extension host is already started!`);
+			throw new Error("Extension host is already started!");
 		}
 		this._started = true;
 
@@ -1305,7 +1305,7 @@ export abstract class AbstractExtHostExtensionService
 			.then(() => this._handleEagerExtensions())
 			.then(() => {
 				this._eagerExtensionsActivated.open();
-				this._logService.info(`Eager extensions activated`);
+				this._logService.info("Eager extensions activated");
 			});
 	}
 
@@ -1340,7 +1340,7 @@ export abstract class AbstractExtHostExtensionService
 		const authorityPlusIndex = remoteAuthority.indexOf("+");
 		if (authorityPlusIndex === -1) {
 			throw new RemoteAuthorityResolverError(
-				`Not an authority that can be resolved!`,
+				"Not an authority that can be resolved!",
 				RemoteAuthorityResolverErrorCode.InvalidAuthority,
 			);
 		}
@@ -1433,7 +1433,7 @@ export abstract class AbstractExtHostExtensionService
 		] of resolvers.entries()) {
 			try {
 				if (i === resolvers.length - 1) {
-					logInfo(`invoking final resolve()...`);
+					logInfo("invoking final resolve()...");
 					performance.mark(
 						`code/extHost/willResolveAuthority/${authorityPrefix}`,
 					);
@@ -1444,7 +1444,7 @@ export abstract class AbstractExtHostExtensionService
 					performance.mark(
 						`code/extHost/didResolveAuthorityOK/${authorityPrefix}`,
 					);
-					logInfo(`setting tunnel factory...`);
+					logInfo("setting tunnel factory...");
 					this._register(
 						await this._extHostTunnelService.setTunnelFactory(
 							resolver,
@@ -1480,7 +1480,7 @@ export abstract class AbstractExtHostExtensionService
 				performance.mark(
 					`code/extHost/didResolveAuthorityError/${authorityPrefix}`,
 				);
-				logError(`returned an error`, e);
+				logError("returned an error", e);
 				intervalLogger.dispose();
 				return normalizeError(e);
 			}
@@ -1586,7 +1586,7 @@ export abstract class AbstractExtHostExtensionService
 			return uri;
 		}
 
-		const result = await asPromise(() => resolver.getCanonicalURI!(uri));
+		const result = await asPromise(() => resolver.getCanonicalURI?.(uri));
 		if (!result) {
 			return uri;
 		}

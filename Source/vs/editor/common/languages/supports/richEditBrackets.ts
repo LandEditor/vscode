@@ -513,7 +513,7 @@ export class BracketsUtils {
 			lineText.length - endOffset,
 			lineText.length - startOffset,
 		);
-		return this._findPrevBracketInText(
+		return BracketsUtils._findPrevBracketInText(
 			reversedBracketRegex,
 			lineNumber,
 			reversedSubstr,
@@ -556,7 +556,7 @@ export class BracketsUtils {
 		endOffset: number,
 	): Range | null {
 		const substr = lineText.substring(startOffset, endOffset);
-		return this.findNextBracketInText(
+		return BracketsUtils.findNextBracketInText(
 			bracketRegex,
 			lineNumber,
 			substr,

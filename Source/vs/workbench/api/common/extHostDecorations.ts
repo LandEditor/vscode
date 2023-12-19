@@ -58,53 +58,50 @@ export class ExtHostDecorations implements ExtHostDecorationsShape {
 			extensionDescription.identifier.value,
 		);
 
-		const listener =
-			provider.onDidChangeFileDecorations &&
-			provider.onDidChangeFileDecorations((e) => {
-				if (!e) {
-					this._proxy.$onDidChange(handle, null);
-					return;
-				}
-				const array = asArray(e);
-				if (array.length <= ExtHostDecorations._maxEventSize) {
-					this._proxy.$onDidChange(handle, array);
-					return;
-				}
+		const listener = provider.onDidChangeFileDecorations?.((e) => {
+			if (!e) {
+				this._proxy.$onDidChange(handle, null);
+				return;
+			}
+			const array = asArray(e);
+			if (array.length <= ExtHostDecorations._maxEventSize) {
+				this._proxy.$onDidChange(handle, array);
+				return;
+			}
 
-				// too many resources per event. pick one resource per folder, starting
-				// with parent folders
-				this._logService.warn(
-					"[Decorations] CAPPING events from decorations provider",
-					extensionDescription.identifier.value,
-					array.length,
-				);
-				const mapped = array.map((uri) => ({
-					uri,
-					rank: count(uri.path, "/"),
-				}));
-				const groups = groupBy(
-					mapped,
-					(a, b) =>
-						a.rank - b.rank || compare(a.uri.path, b.uri.path),
-				);
-				const picked: URI[] = [];
-				outer: for (const uris of groups) {
-					let lastDirname: string | undefined;
-					for (const obj of uris) {
-						const myDirname = dirname(obj.uri.path);
-						if (lastDirname !== myDirname) {
-							lastDirname = myDirname;
-							if (
-								picked.push(obj.uri) >=
-								ExtHostDecorations._maxEventSize
-							) {
-								break outer;
-							}
+			// too many resources per event. pick one resource per folder, starting
+			// with parent folders
+			this._logService.warn(
+				"[Decorations] CAPPING events from decorations provider",
+				extensionDescription.identifier.value,
+				array.length,
+			);
+			const mapped = array.map((uri) => ({
+				uri,
+				rank: count(uri.path, "/"),
+			}));
+			const groups = groupBy(
+				mapped,
+				(a, b) => a.rank - b.rank || compare(a.uri.path, b.uri.path),
+			);
+			const picked: URI[] = [];
+			outer: for (const uris of groups) {
+				let lastDirname: string | undefined;
+				for (const obj of uris) {
+					const myDirname = dirname(obj.uri.path);
+					if (lastDirname !== myDirname) {
+						lastDirname = myDirname;
+						if (
+							picked.push(obj.uri) >=
+							ExtHostDecorations._maxEventSize
+						) {
+							break outer;
 						}
 					}
 				}
-				this._proxy.$onDidChange(handle, picked);
-			});
+			}
+			this._proxy.$onDidChange(handle, picked);
+		});
 
 		return new Disposable(() => {
 			listener?.dispose();

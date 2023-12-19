@@ -159,7 +159,7 @@ class MirrorModel extends BaseMirrorModel implements ICommonModel {
 			const iteratorOverMatches = line.matchAll(regex);
 			for (const match of iteratorOverMatches) {
 				if (match.index || match.index === 0) {
-					match.index = match.index + offsetToAdd;
+					match.index += offsetToAdd;
 				}
 				matches.push(match);
 			}
@@ -324,7 +324,7 @@ class MirrorModel extends BaseMirrorModel implements ICommonModel {
 		position = this._validatePosition(position);
 		this._ensureLineStarts();
 		return (
-			this._lineStarts!.getPrefixSum(position.lineNumber - 2) +
+			this._lineStarts?.getPrefixSum(position.lineNumber - 2) +
 			(position.column - 1)
 		);
 	}
@@ -334,7 +334,7 @@ class MirrorModel extends BaseMirrorModel implements ICommonModel {
 		offset = Math.max(0, offset);
 
 		this._ensureLineStarts();
-		const out = this._lineStarts!.getIndexOf(offset);
+		const out = this._lineStarts?.getIndexOf(offset);
 		const lineLength = this._lines[out.index].length;
 
 		// Ensure we return a valid position
@@ -505,7 +505,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 	): Promise<IDiffComputationResult | null> {
 		const original = this._getModel(originalUrl);
 		const modified = this._getModel(modifiedUrl);
-		if (!original || !modified) {
+		if (!(original && modified)) {
 			return null;
 		}
 
@@ -540,7 +540,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 		const identical =
 			result.changes.length > 0
 				? false
-				: this._modelsAreIdentical(
+				: EditorSimpleWorker._modelsAreIdentical(
 						originalTextModel,
 						modifiedTextModel,
 				  );
@@ -606,7 +606,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 	): Promise<IChange[] | null> {
 		const original = this._getModel(originalUrl);
 		const modified = this._getModel(modifiedUrl);
-		if (!original || !modified) {
+		if (!(original && modified)) {
 			return null;
 		}
 
@@ -932,7 +932,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 			}
 
 			for (const word of model.words(wordDefRegExp)) {
-				if (word === leadingWord || !isNaN(Number(word))) {
+				if (word === leadingWord || !Number.isNaN(Number(word))) {
 					continue;
 				}
 				seen.add(word);
@@ -968,7 +968,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 		) {
 			const words = model.getLineWords(line, wordDefRegExp);
 			for (const word of words) {
-				if (!isNaN(Number(word.word))) {
+				if (!Number.isNaN(Number(word.word))) {
 					continue;
 				}
 				let array = result[word.word];
@@ -1087,7 +1087,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 			typeof this._foreignModule[method] !== "function"
 		) {
 			return Promise.reject(
-				new Error("Missing requestHandler or method: " + method),
+				new Error(`Missing requestHandler or method: ${method}`),
 			);
 		}
 

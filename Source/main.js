@@ -97,7 +97,7 @@ perf.mark("code/didStartCrashReporter");
 // to ensure that no 'logs' folder is created on disk at a
 // location outside of the portable directory
 // (https://github.com/microsoft/vscode/issues/56651)
-if (portable && portable.isPortable) {
+if (portable?.isPortable) {
 	app.setAppLogsPath(path.join(userDataPath, "logs"));
 }
 
@@ -284,7 +284,7 @@ function configureCommandlineSwitchesSync(cliArgs) {
 		// Append main process flags to process.argv
 		else if (SUPPORTED_MAIN_PROCESS_SWITCHES.indexOf(argvKey) !== -1) {
 			switch (argvKey) {
-				case "enable-proposed-api":
+				case "enable-proposed-api": {
 					if (Array.isArray(argvValue)) {
 						argvValue.forEach(
 							(id) =>
@@ -294,12 +294,13 @@ function configureCommandlineSwitchesSync(cliArgs) {
 						);
 					} else {
 						console.error(
-							`Unexpected value for \`enable-proposed-api\` in argv.json. Expected array of extension ids.`,
+							"Unexpected value for `enable-proposed-api` in argv.json. Expected array of extension ids.",
 						);
 					}
 					break;
+				}
 
-				case "log-level":
+				case "log-level": {
 					if (typeof argvValue === "string") {
 						process.argv.push("--log", argvValue);
 					} else if (Array.isArray(argvValue)) {
@@ -308,12 +309,14 @@ function configureCommandlineSwitchesSync(cliArgs) {
 						}
 					}
 					break;
+				}
 
-				case "use-inmemory-secretstorage":
+				case "use-inmemory-secretstorage": {
 					if (argvValue) {
 						process.argv.push("--use-inmemory-secretstorage");
 					}
 					break;
+				}
 			}
 		}
 	});
@@ -456,24 +459,28 @@ function configureCrashReporter() {
 			if (uuidPattern.test(crashReporterId)) {
 				if (isWindows) {
 					switch (process.arch) {
-						case "x64":
+						case "x64": {
 							submitURL = appCenter["win32-x64"];
 							break;
-						case "arm64":
+						}
+						case "arm64": {
 							submitURL = appCenter["win32-arm64"];
 							break;
+						}
 					}
 				} else if (isDarwin) {
 					if (product.darwinUniversalAssetId) {
 						submitURL = appCenter["darwin-universal"];
 					} else {
 						switch (process.arch) {
-							case "x64":
+							case "x64": {
 								submitURL = appCenter["darwin"];
 								break;
-							case "arm64":
+							}
+							case "arm64": {
 								submitURL = appCenter["darwin-arm64"];
 								break;
+							}
 						}
 					}
 				} else if (isLinux) {

@@ -161,8 +161,6 @@ export class ListService implements IListService {
 		return this._lastFocusedWidget;
 	}
 
-	constructor() {}
-
 	private setLastFocusedList(widget: WorkbenchListWidget | undefined): void {
 		if (widget === this._lastFocusedWidget) {
 			return;
@@ -1097,13 +1095,13 @@ abstract class ResourceNavigator<T> extends Disposable {
 			options?.configurationService
 		) {
 			this.openOnSingleClick =
-				options?.configurationService!.getValue(openModeSettingKey) !==
+				options?.configurationService?.getValue(openModeSettingKey) !==
 				"doubleClick";
 			this._register(
 				options?.configurationService.onDidChangeConfiguration((e) => {
 					if (e.affectsConfiguration(openModeSettingKey)) {
 						this.openOnSingleClick =
-							options?.configurationService!.getValue(
+							options?.configurationService?.getValue(
 								openModeSettingKey,
 							) !== "doubleClick";
 					}
@@ -1233,10 +1231,6 @@ class ListResourceNavigator<T> extends ResourceNavigator<T> {
 class TableResourceNavigator<TRow> extends ResourceNavigator<TRow> {
 	protected declare readonly widget: Table<TRow>;
 
-	constructor(widget: Table<TRow>, options: IResourceNavigatorOptions) {
-		super(widget, options);
-	}
-
 	getSelectedElement(): TRow | undefined {
 		return this.widget.getSelectedElements()[0];
 	}
@@ -1249,18 +1243,6 @@ class TreeResourceNavigator<T, TFilterData> extends ResourceNavigator<T> {
 		| DataTree<any, T, TFilterData>
 		| AsyncDataTree<any, T, TFilterData>
 		| CompressibleAsyncDataTree<any, T, TFilterData>;
-
-	constructor(
-		widget:
-			| ObjectTree<T, TFilterData>
-			| CompressibleObjectTree<T, TFilterData>
-			| DataTree<any, T, TFilterData>
-			| AsyncDataTree<any, T, TFilterData>
-			| CompressibleAsyncDataTree<any, T, TFilterData>,
-		options: IResourceNavigatorOptions,
-	) {
-		super(widget, options);
-	}
 
 	getSelectedElement(): T | undefined {
 		return this.widget.getSelection()[0] ?? undefined;

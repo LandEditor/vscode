@@ -26,9 +26,10 @@ export class TextSearchEngineAdapter {
 		onMessage: (message: IProgressMessage) => void,
 	): Promise<ISerializedSearchSuccess> {
 		if (
-			(!this.query.folderQueries || !this.query.folderQueries.length) &&
-			(!this.query.extraFileResources ||
-				!this.query.extraFileResources.length)
+			!(
+				this.query.folderQueries?.length ||
+				this.query.extraFileResources?.length
+			)
 		) {
 			return Promise.resolve(<ISerializedSearchSuccess>{
 				type: "success",
@@ -69,10 +70,10 @@ export class TextSearchEngineAdapter {
 
 function fileMatchToSerialized(match: IFileMatch): ISerializedFileMatch {
 	return {
-		path: match.resource && match.resource.fsPath,
+		path: match.resource?.fsPath,
 		results: match.results,
 		numMatches: (match.results || []).reduce((sum, r) => {
-			if (!!(<ITextSearchMatch>r).ranges) {
+			if ((<ITextSearchMatch>r).ranges) {
 				const m = <ITextSearchMatch>r;
 				return sum + (Array.isArray(m.ranges) ? m.ranges.length : 1);
 			} else {

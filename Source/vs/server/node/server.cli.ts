@@ -101,7 +101,7 @@ export async function main(
 	desc: ProductDescription,
 	args: string[],
 ): Promise<void> {
-	if (!cliPipe && !cliCommand) {
+	if (!(cliPipe || cliCommand)) {
 		console.log(
 			"Command is only available in WSL or inside a Visual Studio Code terminal.",
 		);
@@ -173,21 +173,25 @@ export async function main(
 		let file: string;
 		switch (parsedArgs["locate-shell-integration-path"]) {
 			// Usage: `[[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path bash)"`
-			case "bash":
+			case "bash": {
 				file = "shellIntegration-bash.sh";
 				break;
+			}
 			// Usage: `if ($env:TERM_PROGRAM -eq "vscode") { . "$(code --locate-shell-integration-path pwsh)" }`
-			case "pwsh":
+			case "pwsh": {
 				file = "shellIntegration.ps1";
 				break;
+			}
 			// Usage: `[[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path zsh)"`
-			case "zsh":
+			case "zsh": {
 				file = "shellIntegration-rc.zsh";
 				break;
+			}
 			// Usage: `string match -q "$TERM_PROGRAM" "vscode"; and . (code --locate-shell-integration-path fish)`
-			case "fish":
+			case "fish": {
 				file = "fish_xdg_data/fish/vendor_conf.d/shellIntegration.fish";
 				break;
+			}
 			default:
 				throw new Error(
 					"Error using --locate-shell-integration-path: Invalid shell type",
@@ -320,7 +324,7 @@ export async function main(
 			const val = parsedArgs[key as keyof typeof parsedArgs];
 			if (typeof val === "boolean") {
 				if (val) {
-					newCommandline.push("--" + key);
+					newCommandline.push(`--${key}`);
 				}
 			} else if (Array.isArray(val)) {
 				for (const entry of val) {
@@ -362,7 +366,7 @@ export async function main(
 			}
 			if (runningInWSL2()) {
 				if (verbose) {
-					console.log(`Using pipes for output.`);
+					console.log("Using pipes for output.");
 				}
 				const cp = _cp.spawn(cliCommand, newCommandline, {
 					cwd: cliCwd,
@@ -467,7 +471,7 @@ export async function main(
 }
 
 function runningInWSL2(): boolean {
-	if (!!process.env["WSL_DISTRO_NAME"]) {
+	if (process.env["WSL_DISTRO_NAME"]) {
 		try {
 			return _cp
 				.execSync("uname -r", { encoding: "utf8" })
@@ -518,7 +522,7 @@ function sendToPipe(args: PipeCommand, verbose: boolean): Promise<any> {
 	return new Promise<string>((resolve, reject) => {
 		const message = JSON.stringify(args);
 		if (!cliPipe) {
-			console.log("Message " + message);
+			console.log(`Message ${message}`);
 			resolve("");
 			return;
 		}
@@ -536,8 +540,7 @@ function sendToPipe(args: PipeCommand, verbose: boolean): Promise<any> {
 		const req = _http.request(opts, (res) => {
 			if (res.headers["content-type"] !== "application/json") {
 				reject(
-					"Error in response: Invalid content type: Expected 'application/json', is: " +
-						res.headers["content-type"],
+					`Error in response: Invalid content type: Expected 'application/json', is: ${res.headers["content-type"]}`,
 				);
 				return;
 			}
@@ -559,8 +562,7 @@ function sendToPipe(args: PipeCommand, verbose: boolean): Promise<any> {
 					}
 				} catch (e) {
 					reject(
-						"Error in response: Unable to parse response as JSON: " +
-							content,
+						`Error in response: Unable to parse response as JSON: ${content}`,
 					);
 				}
 			});
@@ -579,7 +581,7 @@ function asExtensionIdOrVSIX(inputs: string[] | undefined) {
 }
 
 function fatal(message: string, err: any): void {
-	console.error("Unable to connect to VS Code server: " + message);
+	console.error(`Unable to connect to VS Code server: ${message}`);
 	console.error(err);
 	process.exit(1);
 }
@@ -622,7 +624,7 @@ function translatePath(
 }
 
 function mapFileToRemoteUri(uri: string): string {
-	return uri.replace(/^file:\/\//, "vscode-remote://" + cliRemoteAuthority);
+	return uri.replace(/^file:\/\//, `vscode-remote://${cliRemoteAuthority}`);
 }
 
 const [, , productName, version, commit, executableName, ...remainingArgs] =

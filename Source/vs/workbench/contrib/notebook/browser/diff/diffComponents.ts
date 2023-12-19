@@ -429,15 +429,18 @@ abstract class AbstractElementRenderer extends Disposable {
 		this._diffEditorContainer = this.templateData.diffEditorContainer;
 		body.classList.remove("left", "right", "full");
 		switch (this.style) {
-			case "left":
+			case "left": {
 				body.classList.add("left");
 				break;
-			case "right":
+			}
+			case "right": {
 				body.classList.add("right");
 				break;
-			default:
+			}
+			default: {
 				body.classList.add("full");
 				break;
+			}
 		}
 
 		this.styleContainer(this._diffEditorContainer);
@@ -539,16 +542,16 @@ abstract class AbstractElementRenderer extends Disposable {
 			// we should expand the metadata editor
 			this._metadataInfoContainer.style.display = "block";
 
-			if (!this._metadataEditorContainer || !this._metadataEditor) {
+			if (this._metadataEditorContainer && this._metadataEditor) {
+				this.cell.metadataHeight =
+					this._metadataEditor.getContentHeight();
+			} else {
 				// create editor
 				this._metadataEditorContainer = DOM.append(
 					this._metadataInfoContainer,
 					DOM.$(".metadata-editor-container"),
 				);
 				this._buildMetadataEditor();
-			} else {
-				this.cell.metadataHeight =
-					this._metadataEditor.getContentHeight();
 			}
 		} else {
 			// we should collapse the metadata editor
@@ -593,7 +596,7 @@ abstract class AbstractElementRenderer extends Disposable {
 	private _showOutputsRaw() {
 		if (this._outputEditorContainer) {
 			this._outputEditorContainer.style.display = "block";
-			this.cell.rawOutputHeight = this._outputEditor!.getContentHeight();
+			this.cell.rawOutputHeight = this._outputEditor?.getContentHeight();
 		}
 	}
 
@@ -627,7 +630,7 @@ abstract class AbstractElementRenderer extends Disposable {
 			for (const key of keys) {
 				switch (key as keyof NotebookCellMetadata) {
 					case "inputCollapsed":
-					case "outputCollapsed":
+					case "outputCollapsed": {
 						// boolean
 						if (typeof newMetadataObj[key] === "boolean") {
 							result[key] = newMetadataObj[key];
@@ -638,22 +641,24 @@ abstract class AbstractElementRenderer extends Disposable {
 								];
 						}
 						break;
+					}
 
-					default:
+					default: {
 						result[key] = newMetadataObj[key];
 						break;
+					}
 				}
 			}
 
-			const index = this.notebookEditor.textModel!.cells.indexOf(
-				this.cell.modified!.textModel,
+			const index = this.notebookEditor.textModel?.cells.indexOf(
+				this.cell.modified?.textModel,
 			);
 
 			if (index < 0) {
 				return;
 			}
 
-			this.notebookEditor.textModel!.applyEdits(
+			this.notebookEditor.textModel?.applyEdits(
 				[{ editType: CellEditType.Metadata, index, metadata: result }],
 				true,
 				undefined,
@@ -702,7 +707,7 @@ abstract class AbstractElementRenderer extends Disposable {
 				await this.textModelService.createModelReference(
 					CellUri.generateCellPropertyUri(
 						this.cell.originalDocument.uri,
-						this.cell.original!.handle,
+						this.cell.original?.handle,
 						Schemas.vscodeNotebookCellMetadata,
 					),
 				);
@@ -710,7 +715,7 @@ abstract class AbstractElementRenderer extends Disposable {
 				await this.textModelService.createModelReference(
 					CellUri.generateCellPropertyUri(
 						this.cell.modifiedDocument.uri,
-						this.cell.modified!.handle,
+						this.cell.modified?.handle,
 						Schemas.vscodeNotebookCellMetadata,
 					),
 				);
@@ -745,7 +750,7 @@ abstract class AbstractElementRenderer extends Disposable {
 						const value =
 							modifiedMetadataModel.object.textEditorModel.getValue();
 						this._applySanitizedMetadataChanges(
-							this.cell.modified!.metadata,
+							this.cell.modified?.metadata,
 							value,
 						);
 						this._metadataHeader.refresh();
@@ -755,7 +760,7 @@ abstract class AbstractElementRenderer extends Disposable {
 			);
 
 			this._metadataEditorDisposeStore.add(
-				this.cell.modified!.textModel.onDidChangeMetadata(() => {
+				this.cell.modified?.textModel.onDidChangeMetadata(() => {
 					if (respondingToContentChange) {
 						return;
 					}
@@ -799,17 +804,17 @@ abstract class AbstractElementRenderer extends Disposable {
 			const originalMetadataSource = getFormattedMetadataJSON(
 				this.notebookEditor.textModel!,
 				this.cell.type === "insert"
-					? this.cell.modified!.metadata || {}
-					: this.cell.original!.metadata || {},
+					? this.cell.modified?.metadata || {}
+					: this.cell.original?.metadata || {},
 			);
 			const uri =
 				this.cell.type === "insert"
-					? this.cell.modified!.uri
-					: this.cell.original!.uri;
+					? this.cell.modified?.uri
+					: this.cell.original?.uri;
 			const handle =
 				this.cell.type === "insert"
-					? this.cell.modified!.handle
-					: this.cell.original!.handle;
+					? this.cell.modified?.handle
+					: this.cell.original?.handle;
 
 			const modelUri = CellUri.generateCellPropertyUri(
 				uri,
@@ -846,7 +851,7 @@ abstract class AbstractElementRenderer extends Disposable {
 
 		if (
 			(this.cell.type === "modified" || this.cell.type === "unchanged") &&
-			!this.notebookEditor.textModel!.transientOptions.transientOutputs
+			!this.notebookEditor.textModel?.transientOptions.transientOutputs
 		) {
 			const originalOutputsSource = getFormattedOutputJSON(
 				this.cell.original?.outputs || [],
@@ -940,7 +945,7 @@ abstract class AbstractElementRenderer extends Disposable {
 				);
 
 				this._outputEditorDisposeStore.add(
-					this.cell.modified!.textModel.onDidChangeOutputs(() => {
+					this.cell.modified?.textModel.onDidChangeOutputs(() => {
 						const modifiedOutputsSource = getFormattedOutputJSON(
 							this.cell.modified?.outputs || [],
 						);
@@ -979,11 +984,11 @@ abstract class AbstractElementRenderer extends Disposable {
 
 		const mode = this.languageService.createById("json");
 		const originaloutputSource = getFormattedOutputJSON(
-			this.notebookEditor.textModel!.transientOptions.transientOutputs
+			this.notebookEditor.textModel?.transientOptions.transientOutputs
 				? []
 				: this.cell.type === "insert"
-				  ? this.cell.modified!.outputs || []
-				  : this.cell.original!.outputs || [],
+				  ? this.cell.modified?.outputs || []
+				  : this.cell.original?.outputs || [],
 		);
 		const outputModel = this.modelService.createModel(
 			originaloutputSource,
@@ -1104,15 +1109,18 @@ abstract class SingleSideDiffElement extends AbstractElementRenderer {
 		this._diffEditorContainer = this.templateData.diffEditorContainer;
 		body.classList.remove("left", "right", "full");
 		switch (this.style) {
-			case "left":
+			case "left": {
 				body.classList.add("left");
 				break;
-			case "right":
+			}
+			case "right": {
 				body.classList.add("right");
 				break;
-			default:
+			}
+			default: {
 				body.classList.add("full");
 				break;
+			}
 		}
 
 		this.styleContainer(this._diffEditorContainer);
@@ -1422,7 +1430,7 @@ export class DeletedElement extends SingleSideDiffElement {
 			const span = DOM.append(this._outputEmptyElement, DOM.$("span"));
 			span.innerText = "No outputs to render";
 
-			if (this.cell.original!.outputs.length === 0) {
+			if (this.cell.original?.outputs.length === 0) {
 				this._outputEmptyElement.style.display = "block";
 			} else {
 				this._outputEmptyElement.style.display = "none";
@@ -1446,11 +1454,11 @@ export class DeletedElement extends SingleSideDiffElement {
 				this.notebookEditor.onDidDynamicOutputRendered((e) => {
 					if (
 						e.cell.uri.toString() ===
-						this.cell.original!.uri.toString()
+						this.cell.original?.uri.toString()
 					) {
 						this.notebookEditor.deltaCellOutputContainerClassNames(
 							DiffSide.Original,
-							this.cell.original!.id,
+							this.cell.original?.id,
 							["nb-cellDeleted"],
 							[],
 						);
@@ -1467,7 +1475,7 @@ export class DeletedElement extends SingleSideDiffElement {
 	_decorate() {
 		this.notebookEditor.deltaCellOutputContainerClassNames(
 			DiffSide.Original,
-			this.cell.original!.id,
+			this.cell.original?.id,
 			["nb-cellDeleted"],
 			[],
 		);
@@ -1602,7 +1610,7 @@ export class InsertElement extends SingleSideDiffElement {
 			);
 			this._outputEmptyElement.innerText = "No outputs to render";
 
-			if (this.cell.modified!.outputs.length === 0) {
+			if (this.cell.modified?.outputs.length === 0) {
 				this._outputEmptyElement.style.display = "block";
 			} else {
 				this._outputEmptyElement.style.display = "none";
@@ -1626,11 +1634,11 @@ export class InsertElement extends SingleSideDiffElement {
 				this.notebookEditor.onDidDynamicOutputRendered((e) => {
 					if (
 						e.cell.uri.toString() ===
-						this.cell.modified!.uri.toString()
+						this.cell.modified?.uri.toString()
 					) {
 						this.notebookEditor.deltaCellOutputContainerClassNames(
 							DiffSide.Modified,
-							this.cell.modified!.id,
+							this.cell.modified?.id,
 							["nb-cellAdded"],
 							[],
 						);
@@ -1646,7 +1654,7 @@ export class InsertElement extends SingleSideDiffElement {
 	_decorate() {
 		this.notebookEditor.deltaCellOutputContainerClassNames(
 			DiffSide.Modified,
-			this.cell.modified!.id,
+			this.cell.modified?.id,
 			["nb-cellAdded"],
 			[],
 		);
@@ -1908,9 +1916,9 @@ export class ModifiedElement extends AbstractElementRenderer {
 						!this.cell.checkIfOutputsModified() &&
 						this.cell.modified.outputs.length === 0
 					) {
-						this._outputEmptyElement!.style.display = "block";
+						this._outputEmptyElement?.style.display = "block";
 					} else {
-						this._outputEmptyElement!.style.display = "none";
+						this._outputEmptyElement?.style.display = "none";
 					}
 					this._decorate();
 				}),
@@ -1933,11 +1941,11 @@ export class ModifiedElement extends AbstractElementRenderer {
 			const outputMetadataChangeOnly =
 				outputModified &&
 				outputModified.kind === OutputComparison.Metadata &&
-				this.cell.original!.outputs.length === 1 &&
-				this.cell.modified!.outputs.length === 1 &&
+				this.cell.original?.outputs.length === 1 &&
+				this.cell.modified?.outputs.length === 1 &&
 				outputEqual(
-					this.cell.original!.outputs[0],
-					this.cell.modified!.outputs[0],
+					this.cell.original?.outputs[0],
+					this.cell.modified?.outputs[0],
 				) === OutputComparison.Metadata;
 
 			if (outputModified && !outputMetadataChangeOnly) {
@@ -2039,12 +2047,12 @@ export class ModifiedElement extends AbstractElementRenderer {
 					);
 				this._register(this._outputMetadataEditor);
 				const originalOutputMetadataSource = JSON.stringify(
-					this.cell.original!.outputs[0].metadata ?? {},
+					this.cell.original?.outputs[0].metadata ?? {},
 					undefined,
 					"\t",
 				);
 				const modifiedOutputMetadataSource = JSON.stringify(
-					this.cell.modified!.outputs[0].metadata ?? {},
+					this.cell.modified?.outputs[0].metadata ?? {},
 					undefined,
 					"\t",
 				);
@@ -2186,8 +2194,8 @@ export class ModifiedElement extends AbstractElementRenderer {
 		};
 
 		if (
-			this.cell.modified!.textModel.getValue() !==
-			this.cell.original!.textModel.getValue()
+			this.cell.modified?.textModel.getValue() !==
+			this.cell.original?.textModel.getValue()
 		) {
 			this._inputToolbarContainer.style.display = "block";
 			inputChanged.set(true);
@@ -2197,10 +2205,10 @@ export class ModifiedElement extends AbstractElementRenderer {
 		}
 
 		this._register(
-			this.cell.modified!.textModel.onDidChangeContent(() => {
+			this.cell.modified?.textModel.onDidChangeContent(() => {
 				if (
-					this.cell.modified!.textModel.getValue() !==
-					this.cell.original!.textModel.getValue()
+					this.cell.modified?.textModel.getValue() !==
+					this.cell.original?.textModel.getValue()
 				) {
 					this._inputToolbarContainer.style.display = "block";
 					inputChanged.set(true);
@@ -2245,7 +2253,7 @@ export class ModifiedElement extends AbstractElementRenderer {
 		this._register(originalRef);
 		this._register(modifiedRef);
 
-		this._editor!.setModel({
+		this._editor?.setModel({
 			original: textModel,
 			modified: modifiedTextModel,
 		});
@@ -2261,33 +2269,33 @@ export class ModifiedElement extends AbstractElementRenderer {
 		};
 
 		this._register(
-			this._editor!.getOriginalEditor().onDidChangeCursorSelection(
-				handleViewStateChange,
-			),
+			this._editor
+				?.getOriginalEditor()
+				.onDidChangeCursorSelection(handleViewStateChange),
 		);
 		this._register(
-			this._editor!.getOriginalEditor().onDidScrollChange(
-				handleScrollChange,
-			),
+			this._editor
+				?.getOriginalEditor()
+				.onDidScrollChange(handleScrollChange),
 		);
 		this._register(
-			this._editor!.getModifiedEditor().onDidChangeCursorSelection(
-				handleViewStateChange,
-			),
+			this._editor
+				?.getModifiedEditor()
+				.onDidChangeCursorSelection(handleViewStateChange),
 		);
 		this._register(
-			this._editor!.getModifiedEditor().onDidScrollChange(
-				handleScrollChange,
-			),
+			this._editor
+				?.getModifiedEditor()
+				.onDidScrollChange(handleScrollChange),
 		);
 
 		const editorViewState =
 			this.cell.getSourceEditorViewState() as editorCommon.IDiffEditorViewState | null;
 		if (editorViewState) {
-			this._editor!.restoreViewState(editorViewState);
+			this._editor?.restoreViewState(editorViewState);
 		}
 
-		const contentHeight = this._editor!.getContentHeight();
+		const contentHeight = this._editor?.getContentHeight();
 		this.cell.editorHeight = contentHeight;
 	}
 
@@ -2297,15 +2305,15 @@ export class ModifiedElement extends AbstractElementRenderer {
 			() => {
 				if (state.editorHeight) {
 					this._editorContainer.style.height = `${this.cell.layoutInfo.editorHeight}px`;
-					this._editor!.layout({
-						width: this._editor!.getViewWidth(),
+					this._editor?.layout({
+						width: this._editor?.getViewWidth(),
 						height: this.cell.layoutInfo.editorHeight,
 					});
 				}
 
 				if (state.outerWidth) {
 					this._editorContainer.style.height = `${this.cell.layoutInfo.editorHeight}px`;
-					this._editor!.layout();
+					this._editor?.layout();
 				}
 
 				if (state.metadataHeight || state.outerWidth) {

@@ -105,12 +105,14 @@ export abstract class AbstractLifecycleService
 		// Convert into startup kind
 		let startupKind: StartupKind;
 		switch (lastShutdownReason) {
-			case ShutdownReason.RELOAD:
+			case ShutdownReason.RELOAD: {
 				startupKind = StartupKind.ReloadedWindow;
 				break;
-			case ShutdownReason.LOAD:
+			}
+			case ShutdownReason.LOAD: {
 				startupKind = StartupKind.ReopenedWindow;
 				break;
+			}
 			default:
 				startupKind = StartupKind.NewWindow;
 		}

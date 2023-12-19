@@ -93,7 +93,7 @@ export class IPCServer
 		res: http.ServerResponse,
 	): void {
 		if (!req.url) {
-			console.warn(`Request lacks url`);
+			console.warn("Request lacks url");
 			return;
 		}
 

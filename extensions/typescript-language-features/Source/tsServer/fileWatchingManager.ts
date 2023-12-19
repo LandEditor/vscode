@@ -126,7 +126,7 @@ export class FileWatcherManager implements IDisposable {
 								const stat =
 									await vscode.workspace.fs.stat(uri);
 								if (stat.type === vscode.FileType.File) {
-									listeners.create!(uri);
+									listeners.create?.(uri);
 								}
 							} catch {
 								// Noop

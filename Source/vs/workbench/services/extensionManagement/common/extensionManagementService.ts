@@ -338,7 +338,7 @@ export class ExtensionManagementService
 			this.extensionManagementServerService.localExtensionManagementServer
 		) {
 			const installedExtensions =
-				await this.extensionManagementServerService.remoteExtensionManagementServer!.extensionManagementService.getInstalled(
+				await this.extensionManagementServerService.remoteExtensionManagementServer?.extensionManagementService.getInstalled(
 					ExtensionType.User,
 				);
 			const dependentNonUIExtensions = installedExtensions.filter(
@@ -1126,7 +1126,7 @@ export class ExtensionManagementService
 			virtualWorkspaceSupport === "limited" ||
 			!!virtualWorkspaceSupportReason;
 
-		if (!nonWebExtensions.length && !hasLimitedSupport) {
+		if (!(nonWebExtensions.length || hasLimitedSupport)) {
 			return;
 		}
 

@@ -66,7 +66,7 @@ export function load(
 			? false
 			: myConfig.inlineResources;
 	inlineResourcesLimit = myConfig.inlineResourcesLimit || 5000;
-	const cssUrl = req.toUrl(name + ".css");
+	const cssUrl = req.toUrl(`${name}.css`);
 	let contents = fs.readFileSync(cssUrl, "utf8");
 	if (contents.charCodeAt(0) === 65279 /* BOM */) {
 		// Remove BOM
@@ -97,8 +97,8 @@ export function write(
 	});
 
 	write.asModule(
-		pluginName + "!" + moduleName,
-		"define(['vs/css!" + entryPoint + "'], {});",
+		`${pluginName}!${moduleName}`,
+		`define(['vs/css!${entryPoint}'], {});`,
 	);
 }
 
@@ -112,14 +112,14 @@ export function writeFile(
 	write: AMDLoader.IPluginWriteFileCallback,
 	config: AMDLoader.IConfigurationOptions,
 ): void {
-	if (entryPoints && entryPoints.hasOwnProperty(moduleName)) {
-		const fileName = req.toUrl(moduleName + ".css");
+	if (entryPoints?.hasOwnProperty(moduleName)) {
+		const fileName = req.toUrl(`${moduleName}.css`);
 		const contents = [
-				"/*---------------------------------------------------------",
-				" * Copyright (c) Microsoft Corporation. All rights reserved.",
-				" *--------------------------------------------------------*/",
-			],
-			entries = entryPoints[moduleName];
+			"/*---------------------------------------------------------",
+			" * Copyright (c) Microsoft Corporation. All rights reserved.",
+			" *--------------------------------------------------------*/",
+		];
+		const entries = entryPoints[moduleName];
 		for (let i = 0; i < entries.length; i++) {
 			if (inlineResources) {
 				contents.push(
@@ -158,7 +158,7 @@ function rewriteOrInlineUrls(
 	forceBase64: boolean,
 	inlineByteLimit: number,
 ): string {
-	if (!fs || !path) {
+	if (!(fs && path)) {
 		throw new Error(
 			`Cannot rewrite or inline urls without 'fs' or 'path'!`,
 		);
@@ -173,7 +173,7 @@ function rewriteOrInlineUrls(
 				inlinedResources.push(normalizedFSPath);
 
 				const MIME = /\.svg$/.test(url) ? "image/svg+xml" : "image/png";
-				let DATA = ";base64," + fileContents.toString("base64");
+				let DATA = `;base64,${fileContents.toString("base64")}`;
 
 				if (!forceBase64 && /\.svg$/.test(url)) {
 					// .svg => url encode as explained at https://codepen.io/tigt/post/optimizing-svgs-in-data-uris
@@ -186,12 +186,12 @@ function rewriteOrInlineUrls(
 						.replace(/&/g, "%26")
 						.replace(/#/g, "%23")
 						.replace(/\s+/g, " ");
-					const encodedData = "," + newText;
+					const encodedData = `,${newText}`;
 					if (encodedData.length < DATA.length) {
 						DATA = encodedData;
 					}
 				}
-				return '"data:' + MIME + DATA + '"';
+				return `"data:${MIME}${DATA}"`;
 			}
 		}
 
@@ -376,14 +376,16 @@ export class CSSPluginUtilities {
 				}
 
 				if (
-					!CSSPluginUtilities.startsWith(url, "data:") &&
-					!CSSPluginUtilities.startsWith(url, "http://") &&
-					!CSSPluginUtilities.startsWith(url, "https://")
+					!(
+						CSSPluginUtilities.startsWith(url, "data:") ||
+						CSSPluginUtilities.startsWith(url, "http://") ||
+						CSSPluginUtilities.startsWith(url, "https://")
+					)
 				) {
 					url = replacer(url);
 				}
 
-				return "url(" + url + ")";
+				return `url(${url})`;
 			},
 		);
 	}

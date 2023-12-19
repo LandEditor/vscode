@@ -215,7 +215,7 @@ registerAction2(
 				editorService.activeEditorPane,
 			);
 
-			if (!editor || !editor.hasModel()) {
+			if (!editor?.hasModel()) {
 				return;
 			}
 

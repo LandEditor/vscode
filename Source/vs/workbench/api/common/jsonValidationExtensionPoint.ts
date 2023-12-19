@@ -66,7 +66,7 @@ export class JSONValidationExtensionPoint {
 				const extensionLocation =
 					extension.description.extensionLocation;
 
-				if (!extensionValue || !Array.isArray(extensionValue)) {
+				if (!(extensionValue && Array.isArray(extensionValue))) {
 					collector.error(
 						nls.localize(
 							"invalid.jsonValidation",
@@ -77,10 +77,10 @@ export class JSONValidationExtensionPoint {
 				}
 				extensionValue.forEach((extension) => {
 					if (
-						!isString(extension.fileMatch) &&
 						!(
-							Array.isArray(extension.fileMatch) &&
-							extension.fileMatch.every(isString)
+							isString(extension.fileMatch) ||
+							(Array.isArray(extension.fileMatch) &&
+								extension.fileMatch.every(isString))
 						)
 					) {
 						collector.error(

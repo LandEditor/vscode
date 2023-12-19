@@ -14,7 +14,7 @@ import { ExtensionRecommendationReason } from "vs/workbench/services/extensionRe
 
 export class WebRecommendations extends ExtensionRecommendations {
 	private _recommendations: ExtensionRecommendation[] = [];
-	get recommendations(): ReadonlyArray<ExtensionRecommendation> {
+	get recommendations(): readonly ExtensionRecommendation[] {
 		return this._recommendations;
 	}
 

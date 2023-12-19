@@ -140,7 +140,7 @@ export class DiffNestedCellViewModel
 			throw new Error("Output index out of range!");
 		}
 
-		return this._outputsTop!.getPrefixSum(index - 1);
+		return this._outputsTop?.getPrefixSum(index - 1);
 	}
 
 	updateOutputHeight(index: number, height: number): void {
@@ -150,7 +150,7 @@ export class DiffNestedCellViewModel
 
 		this._ensureOutputsTop();
 		this._outputCollection[index] = height;
-		if (this._outputsTop!.setValue(index, height)) {
+		if (this._outputsTop?.setValue(index, height)) {
 			this._onDidChangeOutputLayout.fire();
 		}
 	}

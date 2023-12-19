@@ -108,12 +108,12 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 		const controls = dom.append(wrapper, $(".controls"));
 		const previous = dom.append(
 			controls,
-			$(".button" + ThemeIcon.asCSSSelector(parameterHintsPreviousIcon)),
+			$(`.button${ThemeIcon.asCSSSelector(parameterHintsPreviousIcon)}`),
 		);
 		const overloads = dom.append(controls, $(".overloads"));
 		const next = dom.append(
 			controls,
-			$(".button" + ThemeIcon.asCSSSelector(parameterHintsNextIcon)),
+			$(`.button${ThemeIcon.asCSSSelector(parameterHintsNextIcon)}`),
 		);
 
 		this._register(
@@ -297,13 +297,11 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 		this.domNodes.signature.classList.toggle("has-docs", hasDocs);
 		this.domNodes.docs.classList.toggle("empty", !hasDocs);
 
-		this.domNodes.overloads.textContent =
-			String(hints.activeSignature + 1).padStart(
-				hints.signatures.length.toString().length,
-				"0",
-			) +
-			"/" +
-			hints.signatures.length;
+		this.domNodes.overloads.textContent = `${String(
+			hints.activeSignature + 1,
+		).padStart(hints.signatures.length.toString().length, "0")}/${
+			hints.signatures.length
+		}`;
 
 		if (activeParameter) {
 			let labelToAnnounce = "";
@@ -450,7 +448,7 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 		if (!this.domNodes) {
 			this.createParameterHintDOMNodes();
 		}
-		return this.domNodes!.element;
+		return this.domNodes?.element;
 	}
 
 	getId(): string {

@@ -512,7 +512,7 @@ export class RemoteTerminalChannel
 		}
 
 		// Fork the process and listen for messages
-		this._logService.debug(`Terminal process launching on remote agent`, {
+		this._logService.debug("Terminal process launching on remote agent", {
 			shellLaunchConfig,
 			initialCwd,
 			cols: args.cols,

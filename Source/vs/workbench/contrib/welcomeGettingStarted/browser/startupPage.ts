@@ -175,8 +175,7 @@ export class StartupPageContribution implements IWorkbenchContribution {
 				// but it can be set as a default (as in codespaces or from configurationDefaults) or a user setting
 				if (
 					isStartupEditorReadme &&
-					(!isStartupEditorUserReadme ||
-						!isStartupEditorDefaultReadme)
+					!(isStartupEditorUserReadme && isStartupEditorDefaultReadme)
 				) {
 					this.logService.warn(
 						`Warning: 'workbench.startupEditor: readme' setting ignored due to being set somewhere other than user or default settings (user=${startupEditorSetting.userValue}, default=${startupEditorSetting.defaultValue})`,
@@ -337,7 +336,7 @@ function isStartupPageEnabled(
 
 	const startupEditor =
 		configurationService.inspect<string>(configurationKey);
-	if (!startupEditor.userValue && !startupEditor.workspaceValue) {
+	if (!(startupEditor.userValue || startupEditor.workspaceValue)) {
 		const welcomeEnabled =
 			configurationService.inspect(oldConfigurationKey);
 		if (

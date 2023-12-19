@@ -67,7 +67,7 @@ export class PartFingerprints {
 				break;
 			}
 			if (child.nodeType === child.ELEMENT_NODE) {
-				result[resultLen++] = this.read(child);
+				result[resultLen++] = PartFingerprints.read(child);
 			}
 			child = child.parentElement;
 		}

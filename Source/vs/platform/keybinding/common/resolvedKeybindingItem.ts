@@ -42,7 +42,7 @@ export class ResolvedKeybindingItem {
 		this.bubble = command
 			? command.charCodeAt(0) === CharCode.Caret
 			: false;
-		this.command = this.bubble ? command!.substr(1) : command;
+		this.command = this.bubble ? command?.substr(1) : command;
 		this.commandArgs = commandArgs;
 		this.when = when;
 		this.isDefault = isDefault;

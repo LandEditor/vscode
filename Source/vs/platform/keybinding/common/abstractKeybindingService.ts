@@ -188,7 +188,7 @@ export abstract class AbstractKeybindingService
 		e: IKeyboardEvent,
 		target: IContextKeyServiceTarget,
 	): ResolutionResult {
-		this._log(`/ Soft dispatching keyboard event`);
+		this._log("/ Soft dispatching keyboard event");
 		const keybinding = this.resolveKeyboardEvent(e);
 		if (keybinding.hasMultipleChords()) {
 			console.warn(
@@ -199,7 +199,7 @@ export abstract class AbstractKeybindingService
 		const [firstChord] = keybinding.getDispatchChords();
 		if (firstChord === null) {
 			// cannot be dispatched, probably only modifier keys
-			this._log(`\\ Keyboard event cannot be dispatched`);
+			this._log("\\ Keyboard event cannot be dispatched");
 			return NoMatchingKb;
 		}
 
@@ -242,7 +242,7 @@ export abstract class AbstractKeybindingService
 		switch (this._currentChords.length) {
 			case 0:
 				throw illegalState("impossible");
-			case 1:
+			case 1: {
 				// TODO@ulugbekna: revise this message and the one below (at least, fix terminology)
 				this._currentChordStatusMessage =
 					this._notificationService.status(
@@ -253,6 +253,7 @@ export abstract class AbstractKeybindingService
 						),
 					);
 				break;
+			}
 			default: {
 				const fullKeypressLabel = this._currentChords
 					.map(({ label }) => label)
@@ -343,7 +344,7 @@ export abstract class AbstractKeybindingService
 				this._currentSingleModifier = singleModifier;
 				this._currentSingleModifierClearTimeout.cancelAndSet(() => {
 					this._log(
-						`+ Clearing single modifier due to 300ms elapsed.`,
+						"+ Clearing single modifier due to 300ms elapsed.",
 					);
 					this._currentSingleModifier = null;
 				}, 300);
@@ -378,7 +379,7 @@ export abstract class AbstractKeybindingService
 		this._ignoreSingleModifiers = new KeybindingModifierSet(firstChord);
 
 		if (this._currentSingleModifier !== null) {
-			this._log(`+ Clearing single modifier due to other key up.`);
+			this._log("+ Clearing single modifier due to other key up.");
 		}
 		this._currentSingleModifierClearTimeout.cancel();
 		this._currentSingleModifier = null;
@@ -416,7 +417,7 @@ export abstract class AbstractKeybindingService
 
 		if (userPressedChord === null) {
 			this._log(
-				`\\ Keyboard event cannot be dispatched in keydown phase.`,
+				"\\ Keyboard event cannot be dispatched in keydown phase.",
 			);
 			// cannot be dispatched, probably only modifier keys
 			return shouldPreventDefault;
@@ -436,7 +437,7 @@ export abstract class AbstractKeybindingService
 				this._logService.trace(
 					"KeybindingService#dispatch",
 					keypressLabel,
-					`[ No matching keybinding ]`,
+					"[ No matching keybinding ]",
 				);
 
 				if (this.inChordMode) {
@@ -466,15 +467,15 @@ export abstract class AbstractKeybindingService
 				this._logService.trace(
 					"KeybindingService#dispatch",
 					keypressLabel,
-					`[ Several keybindings match - more chords needed ]`,
+					"[ Several keybindings match - more chords needed ]",
 				);
 
 				shouldPreventDefault = true;
 				this._expectAnotherChord(userPressedChord, keypressLabel);
 				this._log(
 					this._currentChords.length === 1
-						? `+ Entering multi-chord mode...`
-						: `+ Continuing multi-chord mode...`,
+						? "+ Entering multi-chord mode..."
+						: "+ Continuing multi-chord mode...",
 				);
 				return shouldPreventDefault;
 			}

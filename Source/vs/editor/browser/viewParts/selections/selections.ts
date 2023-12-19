@@ -257,8 +257,8 @@ export class SelectionsOverlay extends DynamicViewOverlay {
 				}
 			} else if (previousFrameTop) {
 				// Accept some hiccups near the viewport edges to save on repaints
-				startStyle.top = previousFrameTop.startStyle!.top;
-				endStyle.top = previousFrameTop.endStyle!.top;
+				startStyle.top = previousFrameTop.startStyle?.top;
+				endStyle.top = previousFrameTop.endStyle?.top;
 			}
 
 			if (i + 1 < len) {
@@ -281,8 +281,8 @@ export class SelectionsOverlay extends DynamicViewOverlay {
 				}
 			} else if (previousFrameBottom) {
 				// Accept some hiccups near the viewport edges to save on repaints
-				startStyle.bottom = previousFrameBottom.startStyle!.bottom;
-				endStyle.bottom = previousFrameBottom.endStyle!.bottom;
+				startStyle.bottom = previousFrameBottom.startStyle?.bottom;
+				endStyle.bottom = previousFrameBottom.endStyle?.bottom;
 			}
 
 			curLineRange.startStyle = startStyle;
@@ -320,19 +320,7 @@ export class SelectionsOverlay extends DynamicViewOverlay {
 		left: number,
 		width: number,
 	): string {
-		return (
-			'<div class="cslr ' +
-			className +
-			'" style="top:' +
-			top.toString() +
-			"px;left:" +
-			left.toString() +
-			"px;width:" +
-			width.toString() +
-			"px;height:" +
-			height +
-			'px;"></div>'
-		);
+		return `<div class="cslr ${className}" style="top:${top.toString()}px;left:${left.toString()}px;width:${width.toString()}px;height:${height}px;"></div>`;
 	}
 
 	private _actualRenderOneSelection(
@@ -403,12 +391,10 @@ export class SelectionsOverlay extends DynamicViewOverlay {
 						let className =
 							SelectionsOverlay.EDITOR_BACKGROUND_CLASS_NAME;
 						if (startStyle.top === CornerStyle.INTERN) {
-							className +=
-								" " + SelectionsOverlay.SELECTION_TOP_RIGHT;
+							className += ` ${SelectionsOverlay.SELECTION_TOP_RIGHT}`;
 						}
 						if (startStyle.bottom === CornerStyle.INTERN) {
-							className +=
-								" " + SelectionsOverlay.SELECTION_BOTTOM_RIGHT;
+							className += ` ${SelectionsOverlay.SELECTION_BOTTOM_RIGHT}`;
 						}
 						innerCornerOutput += this._createSelectionPiece(
 							top,
@@ -438,12 +424,10 @@ export class SelectionsOverlay extends DynamicViewOverlay {
 						let className =
 							SelectionsOverlay.EDITOR_BACKGROUND_CLASS_NAME;
 						if (endStyle.top === CornerStyle.INTERN) {
-							className +=
-								" " + SelectionsOverlay.SELECTION_TOP_LEFT;
+							className += ` ${SelectionsOverlay.SELECTION_TOP_LEFT}`;
 						}
 						if (endStyle.bottom === CornerStyle.INTERN) {
-							className +=
-								" " + SelectionsOverlay.SELECTION_BOTTOM_LEFT;
+							className += ` ${SelectionsOverlay.SELECTION_BOTTOM_LEFT}`;
 						}
 						innerCornerOutput += this._createSelectionPiece(
 							top,
@@ -460,19 +444,16 @@ export class SelectionsOverlay extends DynamicViewOverlay {
 					const startStyle = visibleRange.startStyle!;
 					const endStyle = visibleRange.endStyle!;
 					if (startStyle.top === CornerStyle.EXTERN) {
-						className += " " + SelectionsOverlay.SELECTION_TOP_LEFT;
+						className += ` ${SelectionsOverlay.SELECTION_TOP_LEFT}`;
 					}
 					if (startStyle.bottom === CornerStyle.EXTERN) {
-						className +=
-							" " + SelectionsOverlay.SELECTION_BOTTOM_LEFT;
+						className += ` ${SelectionsOverlay.SELECTION_BOTTOM_LEFT}`;
 					}
 					if (endStyle.top === CornerStyle.EXTERN) {
-						className +=
-							" " + SelectionsOverlay.SELECTION_TOP_RIGHT;
+						className += ` ${SelectionsOverlay.SELECTION_TOP_RIGHT}`;
 					}
 					if (endStyle.bottom === CornerStyle.EXTERN) {
-						className +=
-							" " + SelectionsOverlay.SELECTION_BOTTOM_RIGHT;
+						className += ` ${SelectionsOverlay.SELECTION_BOTTOM_RIGHT}`;
 					}
 				}
 				restOfSelectionOutput += this._createSelectionPiece(

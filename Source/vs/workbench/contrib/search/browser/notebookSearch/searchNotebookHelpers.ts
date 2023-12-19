@@ -50,7 +50,7 @@ export function isINotebookFileMatchWithModel(
 ): object is INotebookFileMatchWithModel {
 	return (
 		"cellResults" in object &&
-		object.cellResults instanceof Array &&
+		Array.isArray(object.cellResults) &&
 		object.cellResults.every(isINotebookCellMatchWithModel)
 	);
 }

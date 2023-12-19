@@ -133,7 +133,7 @@ export class FromEventObservable<TArgs, T> extends BaseObservable<T> {
 
 	public get debugName(): string {
 		const name = this.getDebugName();
-		return "From Event" + (name ? `: ${name}` : "");
+		return `From Event${name ? `: ${name}` : ""}`;
 	}
 
 	protected override onFirstObserverAdded(): void {
@@ -170,7 +170,7 @@ export class FromEventObservable<TArgs, T> extends BaseObservable<T> {
 					},
 					() => {
 						const name = this.getDebugName();
-						return "Event fired" + (name ? `: ${name}` : "");
+						return `Event fired${name ? `: ${name}` : ""}`;
 					},
 				);
 			}
@@ -189,7 +189,7 @@ export class FromEventObservable<TArgs, T> extends BaseObservable<T> {
 	};
 
 	protected override onLastObserverRemoved(): void {
-		this.subscription!.dispose();
+		this.subscription?.dispose();
 		this.subscription = undefined;
 		this.hasValue = false;
 		this.value = undefined;
@@ -264,7 +264,7 @@ class FromEventObservableSignal extends BaseObservable<void> {
 	};
 
 	protected override onLastObserverRemoved(): void {
-		this.subscription!.dispose();
+		this.subscription?.dispose();
 		this.subscription = undefined;
 	}
 

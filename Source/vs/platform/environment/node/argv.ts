@@ -567,7 +567,7 @@ export function parseArgs<T>(
 		(arg) => arg.length > 0,
 	);
 
-	delete remainingArgs._;
+	remainingArgs._ = undefined;
 
 	for (const optionId in options) {
 		const o = options[optionId];
@@ -617,7 +617,7 @@ export function parseArgs<T>(
 				if (Array.isArray(val)) {
 					val = val.pop(); // take the last
 					errorReporter.onMultipleValues(optionId, val);
-				} else if (!val && !o.allowEmptyValue) {
+				} else if (!(val || o.allowEmptyValue)) {
 					errorReporter.onEmptyValue(optionId);
 					val = undefined;
 				}
@@ -691,7 +691,7 @@ function formatUsageTexts(usageTexts: [string, string][], columns: number) {
 		const keyPadding = indent(
 			argLength - usage.length - 2 /*left padding*/,
 		);
-		result.push("  " + usage + keyPadding + wrappedDescription[0]);
+		result.push(`  ${usage}${keyPadding}${wrappedDescription[0]}`);
 		for (let i = 1; i < wrappedDescription.length; i++) {
 			result.push(indent(argLength) + wrappedDescription[i]);
 		}

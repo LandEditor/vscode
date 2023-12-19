@@ -184,18 +184,26 @@ export class SimpleNotebookEditorModel
 
 	revert(options?: IRevertOptions): Promise<void> {
 		assertType(this.isResolved());
-		return this._workingCopy!.revert(options);
+		return this._workingCopy?.revert(options);
 	}
 
 	save(options?: ISaveOptions): Promise<boolean> {
 		assertType(this.isResolved());
-		return this._workingCopy!.save(options);
+		return this._workingCopy?.save(options);
 	}
 
 	async load(
 		options?: INotebookLoadOptions,
 	): Promise<IResolvedNotebookEditorModel> {
-		if (!this._workingCopy || !this._workingCopy.model) {
+		if (this._workingCopy?.model) {
+			await this._workingCopyManager.resolve(this.resource, {
+				reload: {
+					async: !options?.forceReadFromFile,
+					force: options?.forceReadFromFile,
+				},
+				limits: options?.limits,
+			});
+		} else {
 			if (this.resource.scheme === Schemas.untitled) {
 				if (this._hasAssociatedFilePath) {
 					this._workingCopy = await this._workingCopyManager.resolve({
@@ -247,14 +255,6 @@ export class SimpleNotebookEditorModel
 					this._workingCopy?.model?.dispose();
 				}),
 			);
-		} else {
-			await this._workingCopyManager.resolve(this.resource, {
-				reload: {
-					async: !options?.forceReadFromFile,
-					force: options?.forceReadFromFile,
-				},
-				limits: options?.limits,
-			});
 		}
 
 		assertType(this.isResolved());

@@ -93,7 +93,7 @@ export class TextSearchManager {
 					const newResultSize = this.resultSize(result);
 					this.resultCount += newResultSize;
 					if (newResultSize > 0 || !extensionResultIsMatch(result)) {
-						this.collector!.add(result, folderIdx);
+						this.collector?.add(result, folderIdx);
 					}
 				}
 			};
@@ -110,7 +110,7 @@ export class TextSearchManager {
 			).then(
 				(results) => {
 					tokenSource.dispose();
-					this.collector!.flush();
+					this.collector?.flush();
 
 					const someFolderHitLImit = results.some(
 						(result) => !!result && !!result.limitHit,
@@ -302,10 +302,10 @@ export class TextSearchManager {
 
 function patternInfoToQuery(patternInfo: IPatternInfo): TextSearchQuery {
 	return <TextSearchQuery>{
-		isCaseSensitive: patternInfo.isCaseSensitive || false,
-		isRegExp: patternInfo.isRegExp || false,
-		isWordMatch: patternInfo.isWordMatch || false,
-		isMultiline: patternInfo.isMultiline || false,
+		isCaseSensitive: patternInfo.isCaseSensitive,
+		isRegExp: patternInfo.isRegExp,
+		isWordMatch: patternInfo.isWordMatch,
+		isMultiline: patternInfo.isMultiline,
 		pattern: patternInfo.pattern,
 	};
 }
@@ -345,16 +345,15 @@ export class TextSearchResultsCollector {
 			};
 		}
 
-		this._currentFileMatch.results!.push(
+		this._currentFileMatch.results?.push(
 			extensionResultToFrontendResult(data),
 		);
 	}
 
 	private pushToCollector(): void {
-		const size =
-			this._currentFileMatch && this._currentFileMatch.results
-				? this._currentFileMatch.results.length
-				: 0;
+		const size = this._currentFileMatch?.results
+			? this._currentFileMatch.results.length
+			: 0;
 		this._batchedCollector.addItem(this._currentFileMatch!, size);
 	}
 

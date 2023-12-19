@@ -244,7 +244,7 @@ export class TunnelViewModel implements ITunnelViewModel {
 	private addProcessInfoFromCandidate(tunnelItem: ITunnelItem) {
 		const key = makeAddress(tunnelItem.remoteHost, tunnelItem.remotePort);
 		if (this._candidates.has(key)) {
-			tunnelItem.processDescription = this._candidates.get(key)!.detail;
+			tunnelItem.processDescription = this._candidates.get(key)?.detail;
 		}
 	}
 
@@ -1483,7 +1483,7 @@ export class TunnelPanel extends ViewPane {
 			this.lastFocus = [...event.indexes];
 		}
 		const elements = event.elements;
-		const item = elements && elements.length ? elements[0] : undefined;
+		const item = elements?.length ? elements[0] : undefined;
 		if (item) {
 			this.tunnelViewSelectionContext.set(
 				makeAddress(item.remoteHost, item.remotePort),
@@ -1636,7 +1636,7 @@ export class TunnelPanelDescriptor implements IViewDescriptor {
 }
 
 function isITunnelItem(item: any): item is ITunnelItem {
-	return item && item.tunnelType && item.remoteHost && item.source;
+	return item?.tunnelType && item.remoteHost && item.source;
 }
 
 namespace LabelTunnelAction {
@@ -1838,8 +1838,8 @@ export namespace ForwardPortAction {
 								error(
 									notificationService,
 									tunnelOrError,
-									parsed!.host,
-									parsed!.port,
+									parsed?.host,
+									parsed?.port,
 								),
 							);
 					}
@@ -1887,8 +1887,8 @@ export namespace ForwardPortAction {
 						error(
 							notificationService,
 							tunnel,
-							parsed!.host,
-							parsed!.port,
+							parsed?.host,
+							parsed?.port,
 						),
 					);
 			}
@@ -2005,7 +2005,7 @@ namespace ClosePortAction {
 					"Choose a port to stop forwarding",
 				),
 			});
-			if (result && result.tunnel) {
+			if (result?.tunnel) {
 				await remoteExplorerService.close(
 					{
 						host: result.tunnel.remoteHost,
@@ -2173,7 +2173,7 @@ namespace OpenPortInBrowserCommandPaletteAction {
 					),
 				},
 			);
-			if (picked && picked.tunnel) {
+			if (picked?.tunnel) {
 				return OpenPortInBrowserAction.run(
 					model,
 					openerService,
@@ -2263,7 +2263,7 @@ namespace CopyAddressAction {
 					),
 				},
 			);
-			if (result && result.tunnel) {
+			if (result?.tunnel) {
 				await copyAddress(
 					remoteExplorerService,
 					clipboardService,

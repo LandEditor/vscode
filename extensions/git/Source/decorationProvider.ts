@@ -80,7 +80,7 @@ class GitIgnoreDecorationProvider implements FileDecorationProvider {
 
 		if (!promiseSource) {
 			promiseSource = new PromiseSource();
-			queueItem!.queue.set(uri.fsPath, promiseSource);
+			queueItem?.queue.set(uri.fsPath, promiseSource);
 			this.checkIgnoreSoon();
 		}
 

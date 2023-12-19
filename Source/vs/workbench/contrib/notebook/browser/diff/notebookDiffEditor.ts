@@ -530,7 +530,7 @@ export class NotebookTextDiffEditor
 
 		this._register(
 			this._list.onDidScroll((e) => {
-				this._webviewTransparentCover!.style.top = `${e.scrollTop}px`;
+				this._webviewTransparentCover?.style.top = `${e.scrollTop}px`;
 			}),
 		);
 	}
@@ -759,8 +759,8 @@ export class NotebookTextDiffEditor
 			this._modifiedWebview.element,
 		);
 		this._modifiedWebview.createWebview();
-		this._modifiedWebview.element.style.width = `calc(50% - 16px)`;
-		this._modifiedWebview.element.style.left = `calc(50%)`;
+		this._modifiedWebview.element.style.width = "calc(50% - 16px)";
+		this._modifiedWebview.element.style.left = "calc(50%)";
 	}
 	_generateFontFamily(): string {
 		return (
@@ -794,8 +794,8 @@ export class NotebookTextDiffEditor
 			this._originalWebview.element,
 		);
 		this._originalWebview.createWebview();
-		this._originalWebview.element.style.width = `calc(50% - 16px)`;
-		this._originalWebview.element.style.left = `16px`;
+		this._originalWebview.element.style.width = "calc(50% - 16px)";
+		this._originalWebview.element.style.left = "16px";
 	}
 
 	override setOptions(options: INotebookEditorOptions | undefined): void {
@@ -1203,7 +1203,7 @@ export class NotebookTextDiffEditor
 		};
 
 		if (this.pendingLayouts.has(cell)) {
-			this.pendingLayouts.get(cell)!.dispose();
+			this.pendingLayouts.get(cell)?.dispose();
 		}
 
 		let r: () => void;
@@ -1241,7 +1241,7 @@ export class NotebookTextDiffEditor
 	previousChange(): void {
 		let currFocus = this._list.getFocus()[0];
 
-		if (isNaN(currFocus) || currFocus < 0) {
+		if (Number.isNaN(currFocus) || currFocus < 0) {
 			currFocus = 0;
 		}
 
@@ -1275,7 +1275,7 @@ export class NotebookTextDiffEditor
 	nextChange(): void {
 		let currFocus = this._list.getFocus()[0];
 
-		if (isNaN(currFocus) || currFocus < 0) {
+		if (Number.isNaN(currFocus) || currFocus < 0) {
 			currFocus = 0;
 		}
 
@@ -1522,8 +1522,8 @@ export class NotebookTextDiffEditor
 		}
 
 		return {
-			width: this._dimension!.width,
-			height: this._dimension!.height,
+			width: this._dimension?.width,
+			height: this._dimension?.height,
 			fontInfo: this._fontInfo!,
 			scrollHeight: this._list?.getScrollHeight() ?? 0,
 			stickyHeight: 0,
@@ -1569,16 +1569,16 @@ export class NotebookTextDiffEditor
 
 		if (viewModel.type === "insert" || viewModel.type === "delete") {
 			return {
-				width: this._dimension!.width / 2,
-				height: this._dimension!.height / 2,
+				width: this._dimension?.width / 2,
+				height: this._dimension?.height / 2,
 				fontInfo: this._fontInfo!,
 			};
 		}
 
 		if (viewModel.checkIfOutputsModified()) {
 			return {
-				width: this._dimension!.width / 2,
-				height: this._dimension!.height / 2,
+				width: this._dimension?.width / 2,
+				height: this._dimension?.height / 2,
 				fontInfo: this._fontInfo!,
 			};
 		} else {
@@ -1609,13 +1609,13 @@ export class NotebookTextDiffEditor
 		this._list?.layout(this._dimension.height, this._dimension.width);
 
 		if (this._modifiedWebview) {
-			this._modifiedWebview.element.style.width = `calc(50% - 16px)`;
-			this._modifiedWebview.element.style.left = `calc(50%)`;
+			this._modifiedWebview.element.style.width = "calc(50% - 16px)";
+			this._modifiedWebview.element.style.left = "calc(50%)";
 		}
 
 		if (this._originalWebview) {
-			this._originalWebview.element.style.width = `calc(50% - 16px)`;
-			this._originalWebview.element.style.left = `16px`;
+			this._originalWebview.element.style.width = "calc(50% - 16px)";
+			this._originalWebview.element.style.left = "16px";
 		}
 
 		if (this._webviewTransparentCover) {

@@ -24,7 +24,7 @@ const messageHandler = async (e: any) => {
 				);
 			}
 		} else {
-			l10nLog.push(`l10n: No bundle configured.`);
+			l10nLog.push("l10n: No bundle configured.");
 		}
 		await import("./jsonServerMain");
 		if (self.onmessage !== messageHandler) {

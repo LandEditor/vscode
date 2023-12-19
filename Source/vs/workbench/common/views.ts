@@ -414,19 +414,19 @@ export interface IViewContainerModel {
 		badgeEnablement?: boolean;
 	}>;
 
-	readonly allViewDescriptors: ReadonlyArray<IViewDescriptor>;
+	readonly allViewDescriptors: readonly IViewDescriptor[];
 	readonly onDidChangeAllViewDescriptors: Event<{
-		added: ReadonlyArray<IViewDescriptor>;
-		removed: ReadonlyArray<IViewDescriptor>;
+		added: readonly IViewDescriptor[];
+		removed: readonly IViewDescriptor[];
 	}>;
 
-	readonly activeViewDescriptors: ReadonlyArray<IViewDescriptor>;
+	readonly activeViewDescriptors: readonly IViewDescriptor[];
 	readonly onDidChangeActiveViewDescriptors: Event<{
-		added: ReadonlyArray<IViewDescriptor>;
-		removed: ReadonlyArray<IViewDescriptor>;
+		added: readonly IViewDescriptor[];
+		removed: readonly IViewDescriptor[];
 	}>;
 
-	readonly visibleViewDescriptors: ReadonlyArray<IViewDescriptor>;
+	readonly visibleViewDescriptors: readonly IViewDescriptor[];
 	readonly onDidAddVisibleViewDescriptors: Event<IAddedViewDescriptorRef[]>;
 	readonly onDidRemoveVisibleViewDescriptors: Event<IViewDescriptorRef[]>;
 	readonly onDidMoveVisibleViewDescriptors: Event<{
@@ -807,7 +807,7 @@ export interface IViewDescriptorService {
 	readonly _serviceBrand: undefined;
 
 	// ViewContainers
-	readonly viewContainers: ReadonlyArray<ViewContainer>;
+	readonly viewContainers: readonly ViewContainer[];
 	readonly onDidChangeViewContainers: Event<{
 		added: ReadonlyArray<{
 			container: ViewContainer;

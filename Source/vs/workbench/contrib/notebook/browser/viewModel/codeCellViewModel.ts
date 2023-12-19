@@ -310,7 +310,7 @@ export class CodeCellViewModel
 			this._outputMinHeight,
 			this.isOutputCollapsed
 				? notebookLayoutConfiguration.collapsedIndicatorHeight
-				: this._outputsTop!.getTotalSum(),
+				: this._outputsTop?.getTotalSum(),
 		);
 		const commentHeight = state.commentHeight
 			? this._commentHeight
@@ -650,7 +650,7 @@ export class CodeCellViewModel
 		}
 
 		this._outputCollection[index] = height;
-		if (this._outputsTop!.setValue(index, height)) {
+		if (this._outputsTop?.setValue(index, height)) {
 			this.layoutChange({ outputHeight: true }, source);
 		}
 	}
@@ -662,7 +662,7 @@ export class CodeCellViewModel
 			throw new Error("Output index out of range!");
 		}
 
-		return this._outputsTop!.getPrefixSum(index - 1);
+		return this._outputsTop?.getPrefixSum(index - 1);
 	}
 
 	getOutputOffset(index: number): number {
@@ -675,14 +675,14 @@ export class CodeCellViewModel
 	spliceOutputHeights(start: number, deleteCnt: number, heights: number[]) {
 		this._ensureOutputsTop();
 
-		this._outputsTop!.removeValues(start, deleteCnt);
+		this._outputsTop?.removeValues(start, deleteCnt);
 		if (heights.length) {
 			const values = new Uint32Array(heights.length);
 			for (let i = 0; i < heights.length; i++) {
 				values[i] = heights[i];
 			}
 
-			this._outputsTop!.insertValues(start, values);
+			this._outputsTop?.insertValues(start, values);
 		}
 
 		this.layoutChange(

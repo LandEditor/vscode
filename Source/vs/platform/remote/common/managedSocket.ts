@@ -27,12 +27,12 @@ export const makeRawSocketHeaders = (
 
 	const headers = [
 		`GET ws://localhost${path}?${query}&skipWebSocketFrames=true HTTP/1.1`,
-		`Connection: Upgrade`,
-		`Upgrade: websocket`,
+		"Connection: Upgrade",
+		"Upgrade: websocket",
 		`Sec-WebSocket-Key: ${nonce}`,
 	];
 
-	return headers.join("\r\n") + "\r\n\r\n";
+	return `${headers.join("\r\n")}\r\n\r\n`;
 };
 
 export const socketRawEndHeaderSequence = VSBuffer.fromString("\r\n\r\n");

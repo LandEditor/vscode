@@ -39,7 +39,7 @@ export interface IInputOptions {
 	readonly flexibleHeight?: boolean;
 	readonly flexibleWidth?: boolean;
 	readonly flexibleMaxHeight?: number;
-	readonly actions?: ReadonlyArray<IAction>;
+	readonly actions?: readonly IAction[];
 	readonly inputBoxStyles: IInputBoxStyles;
 }
 
@@ -148,7 +148,7 @@ export class InputBox extends Widget {
 		const tagName = this.options.flexibleHeight ? "textarea" : "input";
 
 		const wrapper = dom.append(this.element, $(".ibwrapper"));
-		this.input = dom.append(wrapper, $(tagName + ".input.empty"));
+		this.input = dom.append(wrapper, $(`${tagName}.input.empty`));
 		this.input.setAttribute("autocorrect", "off");
 		this.input.setAttribute("autocapitalize", "off");
 		this.input.setAttribute("spellcheck", "false");
@@ -378,13 +378,13 @@ export class InputBox extends Widget {
 					parseFloat(this.mirror.style.paddingRight || "") || 0;
 				horizontalPadding = paddingLeft + paddingRight;
 			}
-			this.input.style.width = width - horizontalPadding + "px";
+			this.input.style.width = `${width - horizontalPadding}px`;
 		} else {
-			this.input.style.width = width + "px";
+			this.input.style.width = `${width}px`;
 		}
 
 		if (this.mirror) {
-			this.mirror.style.width = width + "px";
+			this.mirror.style.width = `${width}px`;
 		}
 	}
 
@@ -393,7 +393,7 @@ export class InputBox extends Widget {
 		this.input.style.width = `calc(100% - ${paddingRight}px)`;
 
 		if (this.mirror) {
-			this.mirror.style.paddingRight = paddingRight + "px";
+			this.mirror.style.paddingRight = `${paddingRight}px`;
 		}
 	}
 
@@ -513,13 +513,13 @@ export class InputBox extends Widget {
 	}
 
 	private _showMessage(): void {
-		if (!this.contextViewProvider || !this.message) {
+		if (!(this.contextViewProvider && this.message)) {
 			return;
 		}
 
 		let div: HTMLElement;
 		const layout = () =>
-			(div.style.width = dom.getTotalWidth(this.element) + "px");
+			(div.style.width = `${dom.getTotalWidth(this.element)}px`);
 
 		this.contextViewProvider.showContextView({
 			getAnchor: () => this.element,
@@ -661,7 +661,7 @@ export class InputBox extends Widget {
 				this.cachedContentHeight,
 				this.maxHeight,
 			);
-			this.input.style.height = this.cachedHeight + "px";
+			this.input.style.height = `${this.cachedHeight}px`;
 			this._onDidHeightChange.fire(this.cachedContentHeight);
 		}
 	}
@@ -721,7 +721,7 @@ export class HistoryInputBox
 				],
 			},
 			" or {0} for history",
-			`\u21C5`,
+			"\u21C5",
 		);
 		const NLS_PLACEHOLDER_HISTORY_HINT_SUFFIX_IN_PARENS = nls.localize(
 			{
@@ -731,7 +731,7 @@ export class HistoryInputBox
 				],
 			},
 			" ({0} for history)",
-			`\u21C5`,
+			"\u21C5",
 		);
 
 		super(container, contextViewProvider, options);
@@ -740,8 +740,7 @@ export class HistoryInputBox
 		// Function to append the history suffix to the placeholder if necessary
 		const addSuffix = () => {
 			if (
-				options.showHistoryHint &&
-				options.showHistoryHint() &&
+				options.showHistoryHint?.() &&
 				!this.placeholder.endsWith(
 					NLS_PLACEHOLDER_HISTORY_HINT_SUFFIX_NO_PARENS,
 				) &&

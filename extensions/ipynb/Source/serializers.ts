@@ -425,8 +425,8 @@ export function pruneCell(cell: nbformat.ICell): nbformat.ICell {
 
 	// Remove outputs and execution_count from non code cells
 	if (result.cell_type !== "code") {
-		delete (<any>result).outputs;
-		delete (<any>result).execution_count;
+		(<any>result).outputs = undefined;
+		(<any>result).execution_count = undefined;
 	} else {
 		// Clean outputs from code cells
 		result.outputs = result.outputs
@@ -472,9 +472,10 @@ function fixupOutput(output: nbformat.IOutput): nbformat.IOutput {
 		case "stream":
 		case "error":
 		case "execute_result":
-		case "display_data":
+		case "display_data": {
 			allowedKeys = AllowedCellOutputKeys[output.output_type];
 			break;
+		}
 		default:
 			return output;
 	}

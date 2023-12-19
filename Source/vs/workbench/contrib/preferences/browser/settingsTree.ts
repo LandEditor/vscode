@@ -384,7 +384,7 @@ function createObjectKeySuggester(
 			if (!existingKeys.has(staticKey)) {
 				enumOptions.push({
 					value: staticKey,
-					description: objectProperties![staticKey].description,
+					description: objectProperties?.[staticKey].description,
 				});
 			}
 		});
@@ -507,7 +507,7 @@ function parseNumericObjectValues(
 function getListDisplayValue(
 	element: SettingsTreeSettingElement,
 ): IListDataItem[] {
-	if (!element.value || !Array.isArray(element.value)) {
+	if (!(element.value && Array.isArray(element.value))) {
 		return [];
 	}
 
@@ -602,14 +602,14 @@ export async function createTocTreeForExtensionSettings(
 			};
 			extGroupTree.set(extensionId, rootEntry);
 		}
-		extGroupTree.get(extensionId)!.children!.push(childEntry);
+		extGroupTree.get(extensionId)?.children?.push(childEntry);
 	};
 	const processGroupEntry = async (group: ISettingsGroup) => {
 		const flatSettings = group.sections.flatMap(
 			(section) => section.settings,
 		);
 
-		const extensionId = group.extensionInfo!.id;
+		const extensionId = group.extensionInfo?.id;
 		const extension = await extensionService.getExtension(extensionId);
 		const extensionName =
 			extension?.displayName ?? extension?.name ?? extensionId;
@@ -638,29 +638,29 @@ export async function createTocTreeForExtensionSettings(
 				});
 			}
 
-			if (extensionRootEntry.children!.length === 1) {
+			if (extensionRootEntry.children?.length === 1) {
 				// There is a single category for this extension.
 				// Push a flattened setting.
 				extGroups.push({
 					id: extensionRootEntry.id,
-					label: extensionRootEntry.children![0].label,
-					settings: extensionRootEntry.children![0].settings,
+					label: extensionRootEntry.children?.[0].label,
+					settings: extensionRootEntry.children?.[0].settings,
 				});
 			} else {
 				// Sort the categories.
 				// Leave the undefined order categories untouched.
-				extensionRootEntry.children!.sort((a, b) => {
+				extensionRootEntry.children?.sort((a, b) => {
 					return compareTwoNullableNumbers(a.order, b.order);
 				});
 
 				// If there is a category that matches the setting name,
 				// add the settings in manually as "ungrouped" settings.
 				// https://github.com/microsoft/vscode/issues/137259
-				const ungroupedChild = extensionRootEntry.children!.find(
+				const ungroupedChild = extensionRootEntry.children?.find(
 					(child) => child.label === extensionRootEntry.label,
 				);
 				if (ungroupedChild && !ungroupedChild.children) {
-					const groupedChildren = extensionRootEntry.children!.filter(
+					const groupedChildren = extensionRootEntry.children?.filter(
 						(child) => child !== ungroupedChild,
 					);
 					extGroups.push({
@@ -710,7 +710,7 @@ function _resolveSettingsTree(
 		);
 	}
 
-	if (!children && !settings) {
+	if (!(children || settings)) {
 		throw new Error(
 			`TOC node has no child groups or settings: ${tocData.id}`,
 		);
@@ -745,8 +745,10 @@ function getMatchingSettings(
 	});
 
 	if (
-		!result.length &&
-		!knownDynamicSettingGroups.some((r) => r.test(pattern))
+		!(
+			result.length ||
+			knownDynamicSettingGroups.some((r) => r.test(pattern))
+		)
 	) {
 		logService.warn(
 			`Settings pattern "${pattern}" doesn't match any settings`,
@@ -780,7 +782,7 @@ function getFlatSettings(settingsGroups: ISettingsGroup[]) {
 	for (const group of settingsGroups) {
 		for (const section of group.sections) {
 			for (const s of section.settings) {
-				if (!s.overrides || !s.overrides.length) {
+				if (!s.overrides?.length) {
 					result.add(s);
 				}
 			}
@@ -937,11 +939,9 @@ export abstract class AbstractSettingRenderer
 	abstract get templateId(): string;
 
 	static readonly CONTROL_CLASS = "setting-control-focus-target";
-	static readonly CONTROL_SELECTOR =
-		"." + AbstractSettingRenderer.CONTROL_CLASS;
+	static readonly CONTROL_SELECTOR = `.${AbstractSettingRenderer.CONTROL_CLASS}`;
 	static readonly CONTENTS_CLASS = "setting-item-contents";
-	static readonly CONTENTS_SELECTOR =
-		"." + AbstractSettingRenderer.CONTENTS_CLASS;
+	static readonly CONTENTS_SELECTOR = `.${AbstractSettingRenderer.CONTENTS_CLASS}`;
 	static readonly ALL_ROWS_SELECTOR = ".monaco-list-row";
 
 	static readonly SETTING_KEY_ATTR = "data-key";
@@ -1057,7 +1057,7 @@ export abstract class AbstractSettingRenderer
 		typeClass: string,
 	): ISettingItemTemplate {
 		_container.classList.add("setting-item");
-		_container.classList.add("setting-item-" + typeClass);
+		_container.classList.add(`setting-item-${typeClass}`);
 
 		const toDispose = new DisposableStore();
 
@@ -1186,9 +1186,7 @@ export abstract class AbstractSettingRenderer
 			"More Actions... ",
 		);
 		if (toggleMenuKeybinding) {
-			toggleMenuTitle += ` (${
-				toggleMenuKeybinding && toggleMenuKeybinding.getLabel()
-			})`;
+			toggleMenuTitle += ` (${toggleMenuKeybinding?.getLabel()})`;
 		}
 
 		const toolbar = new ToolBar(container, this._contextMenuService, {
@@ -1239,7 +1237,7 @@ export abstract class AbstractSettingRenderer
 		const titleTooltip =
 			setting.key + (element.isConfigured ? " - Modified" : "");
 		template.categoryElement.textContent = element.displayCategory
-			? element.displayCategory + ": "
+			? `${element.displayCategory}: `
 			: "";
 		template.categoryElement.title = titleTooltip;
 
@@ -1280,7 +1278,7 @@ export abstract class AbstractSettingRenderer
 			this._onDidChangeSetting.fire({
 				key: element.setting.key,
 				value,
-				type: template.context!.valueType,
+				type: template.context?.valueType,
 				manualReset: false,
 				scope: element.setting.scope,
 			});
@@ -1921,7 +1919,7 @@ abstract class AbstractSettingObjectRenderer
 			if (template.objectCheckboxWidget) {
 				template.objectCheckboxWidget.setValue(newItems);
 			} else {
-				template.objectDropdownWidget!.setValue(newItems);
+				template.objectDropdownWidget?.setValue(newItems);
 			}
 
 			template.onChange?.(newObject);
@@ -1970,7 +1968,7 @@ class SettingObjectRenderer
 			objectAdditionalProperties,
 		} = dataElement.setting;
 
-		template.objectDropdownWidget!.setValue(items, {
+		template.objectDropdownWidget?.setValue(items, {
 			settingKey: key,
 			showAddButton:
 				objectAdditionalProperties === false
@@ -1987,7 +1985,7 @@ class SettingObjectRenderer
 
 		template.elementDisposables.add(
 			toDisposable(() => {
-				template.objectDropdownWidget!.cancelEdit();
+				template.objectDropdownWidget?.cancelEdit();
 			}),
 		);
 
@@ -2047,7 +2045,7 @@ class SettingBoolObjectRenderer
 		const items = getObjectDisplayValue(dataElement);
 		const { key } = dataElement.setting;
 
-		template.objectCheckboxWidget!.setValue(items, {
+		template.objectCheckboxWidget?.setValue(items, {
 			settingKey: key,
 		});
 
@@ -2685,7 +2683,7 @@ export class SettingBoolRenderer
 		toDispose.add(checkbox);
 		toDispose.add(
 			checkbox.onChange(() => {
-				template.onChange!(checkbox.checked);
+				template.onChange?.(checkbox.checked);
 			}),
 		);
 
@@ -2701,7 +2699,7 @@ export class SettingBoolRenderer
 					// Toggle target checkbox
 					if (targetElement.tagName.toLowerCase() !== "a") {
 						template.checkbox.checked = !template.checkbox.checked;
-						template.onChange!(checkbox.checked);
+						template.onChange?.(checkbox.checked);
 					}
 					DOM.EventHelper.stop(e);
 				},
@@ -3094,19 +3092,15 @@ export class SettingTreeRenderers {
 
 	getKeyForDOMElementInSetting(element: HTMLElement): string | null {
 		const settingElement = this.getSettingDOMElementForDOMElement(element);
-		return (
-			settingElement &&
-			settingElement.getAttribute(
-				AbstractSettingRenderer.SETTING_KEY_ATTR,
-			)
+		return settingElement?.getAttribute(
+			AbstractSettingRenderer.SETTING_KEY_ATTR,
 		);
 	}
 
 	getIdForDOMElementInSetting(element: HTMLElement): string | null {
 		const settingElement = this.getSettingDOMElementForDOMElement(element);
-		return (
-			settingElement &&
-			settingElement.getAttribute(AbstractSettingRenderer.SETTING_ID_ATTR)
+		return settingElement?.getAttribute(
+			AbstractSettingRenderer.SETTING_ID_ATTR,
 		);
 	}
 }
@@ -3128,16 +3122,16 @@ function renderValidations(
 				"validationError",
 				"Validation Error.",
 			);
-			template.inputBox.inputElement.parentElement!.setAttribute(
+			template.inputBox.inputElement.parentElement?.setAttribute(
 				"aria-label",
 				[validationError, errMsg].join(" "),
 			);
 			if (!calledOnStartup) {
-				aria.status(validationError + " " + errMsg);
+				aria.status(`${validationError} ${errMsg}`);
 			}
 			return true;
 		} else {
-			template.inputBox.inputElement.parentElement!.removeAttribute(
+			template.inputBox.inputElement.parentElement?.removeAttribute(
 				"aria-label",
 			);
 		}
@@ -3170,7 +3164,7 @@ function renderArrayValidations(
 				[dataElement.setting.key, validationError, errMsg].join(" "),
 			);
 			if (!calledOnStartup) {
-				aria.status(validationError + " " + errMsg);
+				aria.status(`${validationError} ${errMsg}`);
 			}
 			return true;
 		} else {
@@ -3188,8 +3182,7 @@ function cleanRenderedMarkdown(element: Node): void {
 	for (let i = 0; i < element.childNodes.length; i++) {
 		const child = element.childNodes.item(i);
 
-		const tagName =
-			(<Element>child).tagName && (<Element>child).tagName.toLowerCase();
+		const tagName = (<Element>child).tagName?.toLowerCase();
 		if (tagName === "img") {
 			element.removeChild(child);
 		} else {
@@ -3213,7 +3206,7 @@ function fixSettingLinks(text: string, linkify = true): string {
 }
 
 function escapeInvisibleChars(enumValue: string): string {
-	return enumValue && enumValue.replace(/\n/g, "\\n").replace(/\r/g, "\\r");
+	return enumValue?.replace(/\n/g, "\\n").replace(/\r/g, "\\r");
 }
 
 export class SettingsTreeFilter implements ITreeFilter<SettingsTreeElement> {
@@ -3372,7 +3365,7 @@ class SettingsTreeDelegate extends CachedListVirtualDelegate<SettingsTreeGroupCh
 			return SETTINGS_NEW_EXTENSIONS_TEMPLATE_ID;
 		}
 
-		throw new Error("unknown element type: " + element);
+		throw new Error(`unknown element type: ${element}`);
 	}
 
 	hasDynamicHeight(
@@ -3664,7 +3657,7 @@ class SyncSettingAction extends Action {
 		}
 
 		// If asked not to sync, then add only if it is not ignored by default
-		if (!askedToSync && !isDefaultIgnored) {
+		if (!(askedToSync || isDefaultIgnored)) {
 			currentValue.push(this.setting.key);
 		}
 

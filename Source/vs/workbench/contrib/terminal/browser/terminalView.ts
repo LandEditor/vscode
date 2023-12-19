@@ -299,16 +299,18 @@ export class TerminalViewPane extends ViewPane {
 			}
 			if (!wasInitialized) {
 				switch (hideOnStartup) {
-					case "never":
+					case "never": {
 						this._terminalService.createTerminal({
 							location: TerminalLocation.Panel,
 						});
 						break;
-					case "whenEmpty":
+					}
+					case "whenEmpty": {
 						if (this._terminalService.restoredGroupCount === 0) {
 							this._terminalGroupService.hidePanel();
 						}
 						break;
+					}
 				}
 				return;
 			}
@@ -904,7 +906,7 @@ class SingleTerminalTabActionViewItem extends MenuEntryActionViewItem {
 				label.classList.add(...uriClasses);
 			}
 			if (this._commandAction.item.icon) {
-				this._altCommand = `alt-command`;
+				this._altCommand = "alt-command";
 				label.classList.add(this._altCommand);
 			}
 			this.updateTooltip();
@@ -933,7 +935,7 @@ function getSingleTabLabel(
 ) {
 	// Don't even show the icon if there is no title as the icon would shift around when the title
 	// is added
-	if (!instance || !instance.title) {
+	if (!instance?.title) {
 		return "";
 	}
 	const iconId = ThemeIcon.isThemeIcon(instance.icon)
@@ -1036,7 +1038,7 @@ class TerminalThemeIconStyle extends Themable {
 		// Add colors
 		for (const instance of this._terminalService.instances) {
 			const colorClass = getColorClass(instance);
-			if (!colorClass || !instance.color) {
+			if (!(colorClass && instance.color)) {
 				continue;
 			}
 			const color = colorTheme.getColor(instance.color);

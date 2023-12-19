@@ -171,7 +171,7 @@ class NonPeekableTextBufferTokenizer {
 				this.lineTokenOffset =
 					this.lineCharOffset === 0
 						? 0
-						: this.lineTokens!.findTokenIndexAtOffset(
+						: this.lineTokens?.findTokenIndexAtOffset(
 								this.lineCharOffset,
 						  );
 			}
@@ -213,7 +213,7 @@ class NonPeekableTextBufferTokenizer {
 			this.lineTokenOffset =
 				this.lineCharOffset === 0
 					? 0
-					: this.lineTokens!.findTokenIndexAtOffset(
+					: this.lineTokens?.findTokenIndexAtOffset(
 							this.lineCharOffset,
 					  );
 		}
@@ -364,7 +364,7 @@ export class FastTokenizer implements Tokenizer {
 
 	constructor(private readonly text: string, brackets: BracketTokens) {
 		const regExpStr = brackets.getRegExpStr();
-		const regexp = regExpStr ? new RegExp(regExpStr + "|\n", "gi") : null;
+		const regexp = regExpStr ? new RegExp(`${regExpStr}|\n`, "gi") : null;
 
 		const tokens: Token[] = [];
 

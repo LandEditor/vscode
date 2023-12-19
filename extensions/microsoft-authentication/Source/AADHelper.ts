@@ -762,7 +762,7 @@ export class AzureActiveDirectoryService {
 		}
 
 		const id = `${claims.tid}/${
-			claims.oid ?? claims.altsecid ?? "" + claims.ipd ?? ""
+			claims.oid ?? claims.altsecid ?? `${claims.ipd}` ?? ""
 		}`;
 		const sessionId = existingId || `${id}/${randomUUID()}`;
 		this._logger.trace(
@@ -998,10 +998,9 @@ export class AzureActiveDirectoryService {
 								[];
 							// Workaround double encoding issues of state in web
 							if (
-								!acceptedStates.includes(nonce) &&
-								!acceptedStates.includes(
+								!(acceptedStates.includes(nonce) ||acceptedStates.includes(
 									decodeURIComponent(nonce),
-								)
+								))
 							) {
 								throw new Error("Nonce does not match.");
 							}
@@ -1354,7 +1353,6 @@ export class AzureActiveDirectoryService {
 					this._logger.trace(
 						`[${scopeData.scopeStr}] '${token.sessionId}' Session added in another window added here`,
 					);
-					continue;
 				} catch (e) {
 					// Network failures will automatically retry on next poll.
 					if (e.message !== REFRESH_NETWORK_FAILURE) {
@@ -1365,7 +1363,6 @@ export class AzureActiveDirectoryService {
 						);
 						await this.removeSessionById(session.id);
 					}
-					continue;
 				}
 			}
 		}

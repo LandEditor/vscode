@@ -115,7 +115,7 @@ interface ISubMenuData {
 }
 
 export class Menu extends ActionBar {
-	private mnemonics: Map<string, Array<BaseMenuActionViewItem>>;
+	private mnemonics: Map<string, BaseMenuActionViewItem[]>;
 	private scrollableElement: DomScrollableElement;
 	private menuElement: HTMLElement;
 	static globalStyleSheet: HTMLStyleElement;
@@ -123,7 +123,7 @@ export class Menu extends ActionBar {
 
 	constructor(
 		container: HTMLElement,
-		actions: ReadonlyArray<IAction>,
+		actions: readonly IAction[],
 		options: IMenuOptions,
 		private readonly menuStyles: IMenuStyles,
 	) {
@@ -192,7 +192,7 @@ export class Menu extends ActionBar {
 
 						if (actions.length > 1) {
 							const action = actions.shift();
-							if (action && action.container) {
+							if (action?.container) {
 								this.focusItemByElement(action.container);
 								actions.push(action);
 							}
@@ -246,8 +246,7 @@ export class Menu extends ActionBar {
 				(e) => {
 					let target = e.target as HTMLElement;
 					if (
-						!target ||
-						!isAncestor(target, this.actionsList) ||
+						!(target && isAncestor(target, this.actionsList)) ||
 						target === this.actionsList
 					) {
 						return;
@@ -278,8 +277,7 @@ export class Menu extends ActionBar {
 			addDisposableListener(this.actionsList, TouchEventType.Tap, (e) => {
 				let target = e.initialTarget as HTMLElement;
 				if (
-					!target ||
-					!isAncestor(target, this.actionsList) ||
+					!(target && isAncestor(target, this.actionsList)) ||
 					target === this.actionsList
 				) {
 					return;
@@ -307,7 +305,7 @@ export class Menu extends ActionBar {
 			parent: this,
 		};
 
-		this.mnemonics = new Map<string, Array<BaseMenuActionViewItem>>();
+		this.mnemonics = new Map<string, BaseMenuActionViewItem[]>();
 
 		// Scroll Logic
 		this.scrollableElement = this._register(
@@ -597,7 +595,7 @@ class BaseMenuActionViewItem extends BaseActionViewItem {
 				const matches = MENU_MNEMONIC_REGEX.exec(label);
 				if (matches) {
 					this.mnemonic = (
-						!!matches[1] ? matches[1] : matches[3]
+						matches[1] ? matches[1] : matches[3]
 					).toLocaleLowerCase();
 				}
 			}
@@ -687,8 +685,9 @@ class BaseMenuActionViewItem extends BaseActionViewItem {
 		this.check = append(
 			this.item,
 			$(
-				"span.menu-item-check" +
-					ThemeIcon.asCSSSelector(Codicon.menuSelection),
+				`span.menu-item-check${ThemeIcon.asCSSSelector(
+					Codicon.menuSelection,
+				)}`,
 			),
 		);
 		this.check.setAttribute("role", "none");
@@ -762,7 +761,7 @@ class BaseMenuActionViewItem extends BaseActionViewItem {
 					let escMatch = MENU_ESCAPED_MNEMONIC_REGEX.exec(label);
 
 					// We can't use negative lookbehind so if we match our negative and skip
-					while (escMatch && escMatch[1]) {
+					while (escMatch?.[1]) {
 						escMatch = MENU_ESCAPED_MNEMONIC_REGEX.exec(label);
 					}
 
@@ -794,7 +793,7 @@ class BaseMenuActionViewItem extends BaseActionViewItem {
 
 					this.item?.setAttribute(
 						"aria-keyshortcuts",
-						(!!matches[1]
+						(matches[1]
 							? matches[1]
 							: matches[3]
 						).toLocaleLowerCase(),
@@ -872,8 +871,7 @@ class BaseMenuActionViewItem extends BaseActionViewItem {
 	}
 
 	protected applyStyle(): void {
-		const isSelected =
-			this.element && this.element.classList.contains("focused");
+		const isSelected = this.element?.classList.contains("focused");
 		const fgColor =
 			isSelected && this.menuStyle.selectionForegroundColor
 				? this.menuStyle.selectionForegroundColor
@@ -887,7 +885,7 @@ class BaseMenuActionViewItem extends BaseActionViewItem {
 				? `1px solid ${this.menuStyle.selectionBorderColor}`
 				: "";
 		const outlineOffset =
-			isSelected && this.menuStyle.selectionBorderColor ? `-1px` : "";
+			isSelected && this.menuStyle.selectionBorderColor ? "-1px" : "";
 
 		if (this.item) {
 			this.item.style.color = fgColor ?? "";
@@ -914,7 +912,7 @@ class SubmenuMenuActionViewItem extends BaseMenuActionViewItem {
 
 	constructor(
 		action: IAction,
-		private submenuActions: ReadonlyArray<IAction>,
+		private submenuActions: readonly IAction[],
 		private parentData: ISubMenuData,
 		private submenuOptions: IMenuOptions,
 		menuStyles: IMenuStyles,
@@ -960,8 +958,9 @@ class SubmenuMenuActionViewItem extends BaseMenuActionViewItem {
 			this.submenuIndicator = append(
 				this.item,
 				$(
-					"span.submenu-indicator" +
-						ThemeIcon.asCSSSelector(Codicon.menuSubmenu),
+					`span.submenu-indicator${ThemeIcon.asCSSSelector(
+						Codicon.menuSubmenu,
+					)}`,
 				),
 			);
 			this.submenuIndicator.setAttribute("aria-hidden", "true");
@@ -1232,8 +1231,7 @@ class SubmenuMenuActionViewItem extends BaseMenuActionViewItem {
 	protected override applyStyle(): void {
 		super.applyStyle();
 
-		const isSelected =
-			this.element && this.element.classList.contains("focused");
+		const isSelected = this.element?.classList.contains("focused");
 		const fgColor =
 			isSelected && this.menuStyle.selectionForegroundColor
 				? this.menuStyle.selectionForegroundColor

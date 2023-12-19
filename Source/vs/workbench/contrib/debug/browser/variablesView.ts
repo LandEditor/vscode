@@ -352,7 +352,7 @@ export class VariablesView extends ViewPane {
 		e: ITreeContextMenuEvent<IExpression | IScope>,
 	): Promise<void> {
 		const variable = e.element;
-		if (!(variable instanceof Variable) || !variable.value) {
+		if (!(variable instanceof Variable && variable.value)) {
 			return;
 		}
 
@@ -374,7 +374,7 @@ export async function openContextMenuForVariableTreeElement(
 	e: ITreeContextMenuEvent<IExpression | IScope>,
 ) {
 	const variable = e.element;
-	if (!(variable instanceof Variable) || !variable.value) {
+	if (!(variable instanceof Variable && variable.value)) {
 		return;
 	}
 
@@ -423,7 +423,7 @@ async function getContextForVariableMenuWithDataAccess(
 	variable: Variable,
 ) {
 	const session = variable.getSession();
-	if (!session || !session.capabilities.supportsDataBreakpoints) {
+	if (!session?.capabilities.supportsDataBreakpoints) {
 		return getContextForVariableMenu(parentContext, variable);
 	}
 
@@ -438,24 +438,27 @@ async function getContextForVariableMenuWithDataAccess(
 	if (dataBreakpointAccessTypes) {
 		for (const accessType of dataBreakpointAccessTypes) {
 			switch (accessType) {
-				case "read":
+				case "read": {
 					contextKeys.push([
 						CONTEXT_BREAK_WHEN_VALUE_IS_READ_SUPPORTED.key,
 						!!dataBreakpointId,
 					]);
 					break;
-				case "write":
+				}
+				case "write": {
 					contextKeys.push([
 						CONTEXT_BREAK_WHEN_VALUE_CHANGES_SUPPORTED.key,
 						!!dataBreakpointId,
 					]);
 					break;
-				case "readWrite":
+				}
+				case "readWrite": {
 					contextKeys.push([
 						CONTEXT_BREAK_WHEN_VALUE_IS_ACCESSED_SUPPORTED.key,
 						!!dataBreakpointId,
 					]);
 					break;
+				}
 			}
 		}
 	} else {
@@ -784,7 +787,7 @@ CommandsRegistry.registerCommand({
 
 		const stackFrame = debugService.getViewModel().focusedStackFrame;
 		const session = debugService.getViewModel().focusedSession;
-		if (!stackFrame || !session || elements.length === 0) {
+		if (!(stackFrame && session) || elements.length === 0) {
 			return;
 		}
 
@@ -833,7 +836,7 @@ CommandsRegistry.registerCommand({
 		let memoryReference: string;
 		if ("sessionId" in arg) {
 			// IVariablesContext
-			if (!arg.sessionId || !arg.variable.memoryReference) {
+			if (!(arg.sessionId && arg.variable.memoryReference)) {
 				return;
 			}
 			sessionId = arg.sessionId;

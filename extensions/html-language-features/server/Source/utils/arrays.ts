@@ -62,8 +62,8 @@ export function binarySearch<T>(
 	key: T,
 	comparator: (op1: T, op2: T) => number,
 ): number {
-	let low = 0,
-		high = array.length - 1;
+	let low = 0;
+	let high = array.length - 1;
 
 	while (low <= high) {
 		const mid = ((low + high) / 2) | 0;

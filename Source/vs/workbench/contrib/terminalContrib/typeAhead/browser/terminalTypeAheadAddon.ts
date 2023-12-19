@@ -32,11 +32,11 @@ import {
 
 enum VT {
 	Esc = "\x1b",
-	Csi = `\x1b[`,
-	ShowCursor = `\x1b[?25h`,
-	HideCursor = `\x1b[?25l`,
-	DeleteChar = `\x1b[X`,
-	DeleteRestOfLine = `\x1b[K`,
+	Csi = "\x1b[",
+	ShowCursor = "\x1b[?25h",
+	HideCursor = "\x1b[?25l",
+	DeleteChar = "\x1b[X",
+	DeleteRestOfLine = "\x1b[K",
 }
 
 const CSI_STYLE_RE = /^\x1b\[[0-9;]*m/;
@@ -533,7 +533,7 @@ class BackspacePrediction implements IPrediction {
 				return r1;
 			}
 
-			const r2 = input.eatGradually(`\b \b`);
+			const r2 = input.eatGradually("\b \b");
 			if (r2 !== MatchResult.Failure) {
 				return r2;
 			}
@@ -666,7 +666,7 @@ class CursorMovePrediction implements IPrediction {
 
 		// \b is the equivalent to moving one character back
 		if (direction === CursorMoveDirection.Back) {
-			if (input.eatStr(`\b`.repeat(amount))) {
+			if (input.eatStr("\b".repeat(amount))) {
 				return MatchResult.Success;
 			}
 		}
@@ -949,12 +949,13 @@ export class PredictionTimeline {
 					this._expected.shift();
 					break;
 				}
-				case MatchResult.Buffer:
+				case MatchResult.Buffer: {
 					// on a buffer, store the remaining data and completely read data
 					// to be output as normal.
 					this._inputBuffer = input.slice(beforeTestReaderIndex);
 					reader.index = input.length;
 					break ReadLoop;
+				}
 				case MatchResult.Failure: {
 					// on a failure, roll back all remaining items in this generation
 					// and clear predictions, since they are no longer valid
@@ -1205,11 +1206,7 @@ const attributesToArgs = (cell: XtermAttributes) => {
 const attributesToSeq = (cell: XtermAttributes) =>
 	`${VT.Csi}${attributesToArgs(cell).join(";")}m`;
 
-const arrayHasPrefixAt = <T>(
-	a: ReadonlyArray<T>,
-	ai: number,
-	b: ReadonlyArray<T>,
-) => {
+const arrayHasPrefixAt = <T>(a: readonly T[], ai: number, b: readonly T[]) => {
 	if (a.length - ai > b.length) {
 		return false;
 	}
@@ -1261,7 +1258,7 @@ const getColorWidth = (params: (number | number[])[], pos: number) => {
 };
 
 class TypeAheadStyle implements IDisposable {
-	private static _compileArgs(args: ReadonlyArray<number>) {
+	private static _compileArgs(args: readonly number[]) {
 		return `${VT.Csi}${args.join(";")}m`;
 	}
 
@@ -1270,9 +1267,9 @@ class TypeAheadStyle implements IDisposable {
 	 * we see a style coming in, we know that the PTY actually wanted to update.
 	 */
 	private _expectedIncomingStyles = 0;
-	private _applyArgs!: ReadonlyArray<number>;
-	private _originalUndoArgs!: ReadonlyArray<number>;
-	private _undoArgs!: ReadonlyArray<number>;
+	private _applyArgs!: readonly number[];
+	private _originalUndoArgs!: readonly number[];
+	private _undoArgs!: readonly number[];
 
 	apply!: string;
 	undo!: string;
@@ -1352,27 +1349,30 @@ class TypeAheadStyle implements IDisposable {
 			const width =
 				p === 38 || p === 48 || p === 58 ? getColorWidth(args, i) : 1;
 			switch (this._applyArgs[0]) {
-				case 1:
+				case 1: {
 					if (p === 2) {
 						this._undoArgs = [22, 2];
 					} else if (p === 22 || p === 0) {
 						this._undoArgs = [22];
 					}
 					break;
-				case 2:
+				}
+				case 2: {
 					if (p === 1) {
 						this._undoArgs = [22, 1];
 					} else if (p === 22 || p === 0) {
 						this._undoArgs = [22];
 					}
 					break;
-				case 38:
+				}
+				case 38: {
 					if (p === 0 || p === 39 || p === 100) {
 						this._undoArgs = [39];
 					} else if ((p >= 30 && p <= 38) || (p >= 90 && p <= 97)) {
 						this._undoArgs = args.slice(i, i + width) as number[];
 					}
 					break;
+				}
 				default:
 					if (p === this._applyArgs[0]) {
 						this._undoArgs = this._applyArgs;
@@ -1582,7 +1582,7 @@ export class TypeAheadAddon extends Disposable implements ITerminalAddon {
 	}
 
 	private _deferClearingPredictions() {
-		if (!this.stats || !this._timeline) {
+		if (!(this.stats && this._timeline)) {
 			return;
 		}
 
@@ -1714,16 +1714,16 @@ export class TypeAheadAddon extends Disposable implements ITerminalAddon {
 		}
 
 		const addLeftNavigating = (p: IPrediction) =>
-			this._timeline!.tentativeCursor(buffer).x <=
-			this._lastRow!.startingX
-				? this._timeline!.addBoundary(buffer, p)
-				: this._timeline!.addPrediction(buffer, p);
+			this._timeline?.tentativeCursor(buffer).x <=
+			this._lastRow?.startingX
+				? this._timeline?.addBoundary(buffer, p)
+				: this._timeline?.addPrediction(buffer, p);
 
 		const addRightNavigating = (p: IPrediction) =>
-			this._timeline!.tentativeCursor(buffer).x >=
-			this._lastRow!.endingX - 1
-				? this._timeline!.addBoundary(buffer, p)
-				: this._timeline!.addPrediction(buffer, p);
+			this._timeline?.tentativeCursor(buffer).x >=
+			this._lastRow?.endingX - 1
+				? this._timeline?.addBoundary(buffer, p)
+				: this._timeline?.addPrediction(buffer, p);
 
 		/** @see https://github.com/xtermjs/xterm.js/blob/1913e9512c048e3cf56bb5f5df51bfff6899c184/src/common/input/Keyboard.ts */
 		const reader = new StringReader(data);
@@ -1743,7 +1743,7 @@ export class TypeAheadAddon extends Disposable implements ITerminalAddon {
 
 				if (
 					this._timeline.tentativeCursor(buffer).x <=
-					this._lastRow!.startingX
+					this._lastRow?.startingX
 				) {
 					this._timeline.addBoundary(
 						buffer,
@@ -1752,7 +1752,7 @@ export class TypeAheadAddon extends Disposable implements ITerminalAddon {
 				} else {
 					// Backspace decrements our ability to go right.
 					this._lastRow.endingX--;
-					this._timeline!.addPrediction(
+					this._timeline?.addPrediction(
 						buffer,
 						new BackspacePrediction(this._timeline.terminal),
 					);
@@ -1830,7 +1830,7 @@ export class TypeAheadAddon extends Disposable implements ITerminalAddon {
 
 		if (this._timeline.length === 1) {
 			this._deferClearingPredictions();
-			this._typeaheadStyle!.startTracking();
+			this._typeaheadStyle?.startTracking();
 		}
 	}
 

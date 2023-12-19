@@ -150,9 +150,9 @@ class NotebookOutlineRenderer
 				),
 			);
 		} else {
-			template.iconClass.className =
-				"element-icon " +
-				ThemeIcon.asClassNameArray(node.element.icon).join(" ");
+			template.iconClass.className = `element-icon ${ThemeIcon.asClassNameArray(
+				node.element.icon,
+			).join(" ")}`;
 		}
 
 		template.iconLabel.setLabel(node.element.label, undefined, options);
@@ -169,7 +169,7 @@ class NotebookOutlineRenderer
 				OutlineConfigKeys.problemsBadges,
 			);
 
-			if (!useBadges || !problem) {
+			if (!(useBadges && problem)) {
 				template.decoration.classList.remove("bubble");
 				template.decoration.innerText = "";
 			} else if (markerInfo.count === 0) {
@@ -193,16 +193,16 @@ class NotebookOutlineRenderer
 			const useColors = this._configurationService.getValue(
 				OutlineConfigKeys.problemsColors,
 			);
-			if (!useColors || !problem) {
-				template.container.style.removeProperty(
-					"--outline-element-color",
-				);
-				template.decoration.style.setProperty(
+			if (useColors && problem) {
+				template.container.style.setProperty(
 					"--outline-element-color",
 					color?.toString() ?? "inherit",
 				);
 			} else {
-				template.container.style.setProperty(
+				template.container.style.removeProperty(
+					"--outline-element-color",
+				);
+				template.decoration.style.setProperty(
 					"--outline-element-color",
 					color?.toString() ?? "inherit",
 				);

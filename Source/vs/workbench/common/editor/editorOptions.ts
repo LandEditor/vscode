@@ -83,7 +83,7 @@ function massageEditorViewState(
 	options: ITextEditorOptions,
 ): object | undefined {
 	// Without a selection or view state, just return immediately
-	if (!options.selection || !options.viewState) {
+	if (!(options.selection && options.viewState)) {
 		return options.viewState;
 	}
 

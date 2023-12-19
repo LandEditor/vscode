@@ -194,7 +194,7 @@ export class InteractiveDocumentContribution
 		);
 
 		editorResolverService.registerEditor(
-			`*.interactive`,
+			"*.interactive",
 			{
 				id: "interactive",
 				label: "Interactive Editor",
@@ -302,10 +302,9 @@ function createEditor(
 	instantiationService: IInstantiationService,
 ): EditorInput {
 	const counter = /\/Interactive-(\d+)/.exec(resource.path);
-	const inputBoxPath =
-		counter && counter[1]
-			? `/InteractiveInput-${counter[1]}`
-			: "InteractiveInput";
+	const inputBoxPath = counter?.[1]
+		? `/InteractiveInput-${counter[1]}`
+		: "InteractiveInput";
 	const inputUri = URI.from({
 		scheme: Schemas.vscodeInteractiveInput,
 		path: inputBoxPath,
@@ -417,7 +416,7 @@ export class InteractiveEditorSerializer implements IEditorSerializer {
 			return undefined;
 		}
 		const { resource, inputResource, name, language } = data;
-		if (!URI.isUri(resource) || !URI.isUri(inputResource)) {
+		if (!(URI.isUri(resource) && URI.isUri(inputResource))) {
 			return undefined;
 		}
 
@@ -757,11 +756,7 @@ registerAction2(
 					| undefined;
 			}
 
-			if (
-				editorControl &&
-				editorControl.notebookEditor &&
-				editorControl.codeEditor
-			) {
+			if (editorControl?.notebookEditor && editorControl.codeEditor) {
 				const notebookDocument = editorControl.notebookEditor.textModel;
 				const textModel = editorControl.codeEditor.getModel();
 				const activeKernel = editorControl.notebookEditor.activeKernel;
@@ -860,11 +855,7 @@ registerAction2(
 					  }
 					| undefined;
 
-			if (
-				editorControl &&
-				editorControl.notebookEditor &&
-				editorControl.codeEditor
-			) {
+			if (editorControl?.notebookEditor && editorControl.codeEditor) {
 				const notebookDocument = editorControl.notebookEditor.textModel;
 				const textModel = editorControl.codeEditor.getModel();
 				const range = editorControl.codeEditor
@@ -922,11 +913,7 @@ registerAction2(
 					  }
 					| undefined;
 
-			if (
-				editorControl &&
-				editorControl.notebookEditor &&
-				editorControl.codeEditor
-			) {
+			if (editorControl?.notebookEditor && editorControl.codeEditor) {
 				const notebookDocument = editorControl.notebookEditor.textModel;
 				const textModel = editorControl.codeEditor.getModel();
 
@@ -984,11 +971,7 @@ registerAction2(
 					  }
 					| undefined;
 
-			if (
-				editorControl &&
-				editorControl.notebookEditor &&
-				editorControl.codeEditor
-			) {
+			if (editorControl?.notebookEditor && editorControl.codeEditor) {
 				const notebookDocument = editorControl.notebookEditor.textModel;
 				const textModel = editorControl.codeEditor.getModel();
 
@@ -1034,11 +1017,7 @@ registerAction2(
 					  }
 					| undefined;
 
-			if (
-				editorControl &&
-				editorControl.notebookEditor &&
-				editorControl.codeEditor
-			) {
+			if (editorControl?.notebookEditor && editorControl.codeEditor) {
 				if (editorControl.notebookEditor.getLength() === 0) {
 					return;
 				}
@@ -1084,11 +1063,7 @@ registerAction2(
 					  }
 					| undefined;
 
-			if (
-				editorControl &&
-				editorControl.notebookEditor &&
-				editorControl.codeEditor
-			) {
+			if (editorControl?.notebookEditor && editorControl.codeEditor) {
 				if (editorControl.notebookEditor.getLength() === 0) {
 					return;
 				}
@@ -1134,11 +1109,7 @@ registerAction2(
 					  }
 					| undefined;
 
-			if (
-				editorControl &&
-				editorControl.notebookEditor &&
-				editorControl.codeEditor
-			) {
+			if (editorControl?.notebookEditor && editorControl.codeEditor) {
 				editorService.activeEditorPane?.focus();
 			} else {
 				// find and open the most recent interactive window
@@ -1172,8 +1143,7 @@ registerAction2(
 						| undefined;
 
 					if (
-						editorControl &&
-						editorControl.notebookEditor &&
+						editorControl?.notebookEditor &&
 						editorControl.codeEditor
 					) {
 						editorService.activeEditorPane?.focus();
@@ -1222,11 +1192,7 @@ registerAction2(
 					  }
 					| undefined;
 
-			if (
-				editorControl &&
-				editorControl.notebookEditor &&
-				editorControl.codeEditor
-			) {
+			if (editorControl?.notebookEditor && editorControl.codeEditor) {
 				editorControl.notebookEditor.focus();
 			}
 		}

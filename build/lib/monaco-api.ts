@@ -18,7 +18,7 @@ export const RECIPE_PATH = path.join(__dirname, "../monaco/monaco.d.ts.recipe");
 const DECLARATION_PATH = path.join(__dirname, "../../src/vs/monaco.d.ts");
 
 function logErr(message: any, ...rest: any[]): void {
-	fancyLog(ansiColors.yellow(`[monaco.d.ts]`), message, ...rest);
+	fancyLog(ansiColors.yellow("[monaco.d.ts]"), message, ...rest);
 }
 
 type SourceFileGetter = (moduleId: string) => ts.SourceFile | null;
@@ -199,7 +199,7 @@ function getMassagedTopLevelDeclarationText(
 
 		const staticTypeName = isDefaultExport(ts, interfaceDeclaration)
 			? `${importName}.default`
-			: `${importName}.${declaration.name!.text}`;
+			: `${importName}.${declaration.name?.text}`;
 
 		let instanceTypeName = staticTypeName;
 		const typeParametersCnt = interfaceDeclaration.typeParameters
@@ -443,7 +443,7 @@ function createReplacer(data: string): (str: string) => string {
 			/[\-\\\{\}\*\+\?\|\^\$\.\,\[\]\(\)\#\s]/g,
 			"\\$&",
 		);
-		findStr = "\\b" + findStr + "\\b";
+		findStr = `\\b${findStr}\\b`;
 		directives.push([new RegExp(findStr, "g"), replaceStr]);
 	});
 
@@ -477,11 +477,11 @@ function generateDeclarationFile(
 
 	let failed = false;
 
-	usage.push(`var a: any;`);
-	usage.push(`var b: any;`);
+	usage.push("var a: any;");
+	usage.push("var b: any;");
 
 	const generateUsageImport = (moduleId: string) => {
-		const importName = "m" + ++usageCounter;
+		const importName = `m${++usageCounter}`;
 		usageImports.push(
 			`import * as ${importName} from './${moduleId.replace(
 				/\.d\.ts$/,
@@ -743,7 +743,7 @@ export class DeclarationResolver {
 			// Since we cannot trust file watching to invalidate the cache, check also the mtime
 			const fileName = this._getFileName(moduleId);
 			const mtime = this._fsProvider.statSync(fileName).mtime.getTime();
-			if (this._sourceFileCache[moduleId]!.mtime !== mtime) {
+			if (this._sourceFileCache[moduleId]?.mtime !== mtime) {
 				this._sourceFileCache[moduleId] = null;
 			}
 		}
@@ -752,7 +752,7 @@ export class DeclarationResolver {
 				this._getDeclarationSourceFile(moduleId);
 		}
 		return this._sourceFileCache[moduleId]
-			? this._sourceFileCache[moduleId]!.sourceFile
+			? this._sourceFileCache[moduleId]?.sourceFile
 			: null;
 	}
 
@@ -882,7 +882,7 @@ class TypeScriptLanguageServiceHost implements ts.LanguageServiceHost {
 export function execute(): IMonacoDeclarationResult {
 	const r = run3(new DeclarationResolver(new FSProvider()));
 	if (!r) {
-		throw new Error(`monaco.d.ts generation error - Cannot continue`);
+		throw new Error("monaco.d.ts generation error - Cannot continue");
 	}
 	return r;
 }

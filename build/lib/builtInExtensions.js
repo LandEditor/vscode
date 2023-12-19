@@ -106,12 +106,13 @@ function syncExtension(extension, controlState) {
 		}
 	}
 	switch (controlState) {
-		case "disabled":
+		case "disabled": {
 			log(ansiColors.blue("[disabled]"), ansiColors.gray(extension.name));
 			return es.readArray([]);
+		}
 		case "marketplace":
 			return syncMarketplaceExtension(extension);
-		default:
+		default: {
 			if (!fs.existsSync(controlState)) {
 				log(
 					ansiColors.red(
@@ -135,6 +136,7 @@ function syncExtension(extension, controlState) {
 				ansiColors.green("✔︎"),
 			);
 			return es.readArray([]);
+		}
 	}
 }
 function readControlFile() {

@@ -329,14 +329,16 @@ export class NotificationsToasts
 		itemDisposables.add(
 			item.onDidChangeContent((e) => {
 				switch (e.kind) {
-					case NotificationViewItemContentChangeKind.ACTIONS:
+					case NotificationViewItemContentChangeKind.ACTIONS: {
 						notificationList.updateNotificationsList(0, 1, [item]);
 						break;
-					case NotificationViewItemContentChangeKind.MESSAGE:
+					}
+					case NotificationViewItemContentChangeKind.MESSAGE: {
 						if (item.expanded) {
 							notificationList.updateNotificationHeight(item);
 						}
 						break;
+					}
 				}
 			}),
 		);
@@ -627,19 +629,22 @@ export class NotificationsToasts
 
 		this.mapNotificationToToast.forEach((toast) => {
 			switch (state) {
-				case ToastVisibility.HIDDEN_OR_VISIBLE:
+				case ToastVisibility.HIDDEN_OR_VISIBLE: {
 					notificationToasts.push(toast);
 					break;
-				case ToastVisibility.HIDDEN:
+				}
+				case ToastVisibility.HIDDEN: {
 					if (!this.isToastInDOM(toast)) {
 						notificationToasts.push(toast);
 					}
 					break;
-				case ToastVisibility.VISIBLE:
+				}
+				case ToastVisibility.VISIBLE: {
 					if (this.isToastInDOM(toast)) {
 						notificationToasts.push(toast);
 					}
 					break;
+				}
 			}
 		});
 

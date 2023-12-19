@@ -125,7 +125,7 @@ export class TerminalConfigHelper
 		const wRect = this._getBoundingRectFor("w", fontFamily, fontSize);
 
 		// Check for invalid bounds, there is no reason to believe the font is not monospace
-		if (!iRect || !wRect || !iRect.width || !wRect.width) {
+		if (!(iRect && wRect && iRect.width && wRect.width)) {
 			return true;
 		}
 
@@ -139,10 +139,7 @@ export class TerminalConfigHelper
 			);
 		}
 		// Create charMeasureElement if it hasn't been created or if it was orphaned by its parent
-		if (
-			!this._charMeasureElement ||
-			!this._charMeasureElement.parentElement
-		) {
+		if (!this._charMeasureElement?.parentElement) {
 			this._charMeasureElement = document.createElement("div");
 			this.panelContainer.appendChild(this._charMeasureElement);
 		}
@@ -163,7 +160,7 @@ export class TerminalConfigHelper
 		const style = charMeasureElement.style;
 		style.display = "inline-block";
 		style.fontFamily = fontFamily;
-		style.fontSize = fontSize + "px";
+		style.fontSize = `${fontSize}px`;
 		style.lineHeight = "normal";
 		charMeasureElement.innerText = char;
 		const rect = charMeasureElement.getBoundingClientRect();
@@ -182,10 +179,7 @@ export class TerminalConfigHelper
 		const rect = this._getBoundingRectFor("X", fontFamily, fontSize);
 
 		// Bounding client rect was invalid, use last font measurement if available.
-		if (
-			this._lastFontMeasurement &&
-			(!rect || !rect.width || !rect.height)
-		) {
+		if (this._lastFontMeasurement && !(rect?.width && rect.height)) {
 			return this._lastFontMeasurement;
 		}
 
@@ -198,7 +192,7 @@ export class TerminalConfigHelper
 			charHeight: 0,
 		};
 
-		if (rect && rect.width && rect.height) {
+		if (rect?.width && rect.height) {
 			this._lastFontMeasurement.charHeight = Math.ceil(rect.height);
 			// Char width is calculated differently for DOM and the other renderer types. Refer to
 			// how each renderer updates their dimensions in xterm.js
@@ -317,7 +311,7 @@ export class TerminalConfigHelper
 		fallback: T,
 	): number | T {
 		let r = parseInt(source, 10);
-		if (isNaN(r)) {
+		if (Number.isNaN(r)) {
 			return fallback;
 		}
 		if (typeof minimum === "number") {
@@ -346,7 +340,7 @@ export class TerminalConfigHelper
 		) {
 			const exeBasedExtensionTips =
 				this._productService.exeBasedExtensionTips;
-			if (!exeBasedExtensionTips || !exeBasedExtensionTips.wsl) {
+			if (!exeBasedExtensionTips?.wsl) {
 				return;
 			}
 			const extId = Object.keys(

@@ -217,7 +217,7 @@ export class CellDiffSingleSideRenderer
 		templateData.body.classList.remove("left", "right", "full");
 
 		switch (element.type) {
-			case "delete":
+			case "delete": {
 				templateData.elementDisposables.add(
 					this.instantiationService.createInstance(
 						DeletedElement,
@@ -227,7 +227,8 @@ export class CellDiffSingleSideRenderer
 					),
 				);
 				return;
-			case "insert":
+			}
+			case "insert": {
 				templateData.elementDisposables.add(
 					this.instantiationService.createInstance(
 						InsertElement,
@@ -237,6 +238,7 @@ export class CellDiffSingleSideRenderer
 					),
 				);
 				return;
+			}
 			default:
 				break;
 		}
@@ -426,7 +428,7 @@ export class CellDiffSideBySideRenderer
 		templateData.body.classList.remove("left", "right", "full");
 
 		switch (element.type) {
-			case "unchanged":
+			case "unchanged": {
 				templateData.elementDisposables.add(
 					this.instantiationService.createInstance(
 						ModifiedElement,
@@ -436,7 +438,8 @@ export class CellDiffSideBySideRenderer
 					),
 				);
 				return;
-			case "modified":
+			}
+			case "modified": {
 				templateData.elementDisposables.add(
 					this.instantiationService.createInstance(
 						ModifiedElement,
@@ -446,6 +449,7 @@ export class CellDiffSideBySideRenderer
 					),
 				);
 				return;
+			}
 			default:
 				break;
 		}

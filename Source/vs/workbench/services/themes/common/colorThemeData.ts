@@ -823,7 +823,7 @@ export class ColorThemeData implements IWorkbenchColorTheme {
 		id: string,
 		colorMap?: { [id: string]: string },
 	): ColorThemeData {
-		const themeData = new ColorThemeData(id, "", "__" + id);
+		const themeData = new ColorThemeData(id, "", `__${id}`);
 		themeData.isLoaded = false;
 		themeData.themeTokenColors = [];
 		themeData.watch = false;
@@ -875,9 +875,10 @@ export class ColorThemeData implements IWorkbenchColorTheme {
 					case "label":
 					case "settingsId":
 					case "watch":
-					case "themeSemanticHighlighting":
+					case "themeSemanticHighlighting": {
 						(theme as any)[key] = data[key];
 						break;
+					}
 					case "semanticTokenRules": {
 						const rulesData = data[key];
 						if (Array.isArray(rulesData)) {
@@ -896,14 +897,15 @@ export class ColorThemeData implements IWorkbenchColorTheme {
 					case "location":
 						// ignore, no longer restore
 						break;
-					case "extensionData":
+					case "extensionData": {
 						theme.extensionData = ExtensionData.fromJSONObject(
 							data.extensionData,
 						);
 						break;
+					}
 				}
 			}
-			if (!theme.id || !theme.settingsId) {
+			if (!(theme.id && theme.settingsId)) {
 				return undefined;
 			}
 			return theme;
@@ -944,7 +946,7 @@ function toCSSSelector(extensionId: string, path: string) {
 	//remove all characters that are not allowed in css
 	str = str.replace(/[^_a-zA-Z0-9-]/g, "-");
 	if (str.charAt(0).match(/[0-9-]/)) {
-		str = "_" + str;
+		str = `_${str}`;
 	}
 	return str;
 }
@@ -1232,7 +1234,7 @@ function scopesAreMatching(thisScopeName: string, scopeName: string): boolean {
 
 function getScopeMatcher(rule: ITextMateThemingRule): Matcher<ProbeScope> {
 	const ruleScope = rule.scope;
-	if (!ruleScope || !rule.settings) {
+	if (!(ruleScope && rule.settings)) {
 		return noMatch;
 	}
 	const matchers: MatcherWithPriority<ProbeScope>[] = [];

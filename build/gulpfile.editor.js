@@ -21,7 +21,7 @@ const fs = require("fs");
 const root = path.dirname(__dirname);
 const sha1 = getVersion(root);
 const semver = require("./monaco/package.json").version;
-const headerVersion = semver + "(" + sha1 + ")";
+const headerVersion = `${semver}(${sha1})`;
 
 // Build
 
@@ -55,7 +55,7 @@ const editorResources = [
 const BUNDLED_FILE_HEADER = [
 	"/*!-----------------------------------------------------------",
 	" * Copyright (c) Microsoft Corporation. All rights reserved.",
-	" * Version: " + headerVersion,
+	` * Version: ${headerVersion}`,
 	" * Released under the MIT license",
 	" * https://github.com/microsoft/vscode/blob/main/LICENSE.txt",
 	" *-----------------------------------------------------------*/",
@@ -151,11 +151,11 @@ const compileEditorESMTask = task.define("compile-editor-esm", () => {
 	);
 	let result;
 	if (process.platform === "win32") {
-		result = cp.spawnSync(`..\\node_modules\\.bin\\tsc.cmd`, {
+		result = cp.spawnSync("..\\node_modules\\.bin\\tsc.cmd", {
 			cwd: path.join(__dirname, "../out-editor-esm"),
 		});
 	} else {
-		result = cp.spawnSync(`node`, [`../node_modules/.bin/tsc`], {
+		result = cp.spawnSync("node", ["../node_modules/.bin/tsc"], {
 			cwd: path.join(__dirname, "../out-editor-esm"),
 		});
 	}
@@ -164,7 +164,7 @@ const compileEditorESMTask = task.define("compile-editor-esm", () => {
 	console.log(result.stderr.toString());
 
 	if (FAIL_ON_PURPOSE || result.status !== 0) {
-		console.log(`The TS Compilation failed, preparing analysis folder...`);
+		console.log("The TS Compilation failed, preparing analysis folder...");
 		const destPath = path.join(
 			__dirname,
 			"../../vscode-monaco-editor-esm-analysis",
@@ -183,7 +183,7 @@ const compileEditorESMTask = task.define("compile-editor-esm", () => {
 				fs.mkdirSync(destPath);
 
 				// initialize a new repository
-				cp.spawnSync(`git`, [`init`], {
+				cp.spawnSync("git", ["init"], {
 					cwd: destPath,
 				});
 
@@ -202,14 +202,14 @@ const compileEditorESMTask = task.define("compile-editor-esm", () => {
 				}
 
 				// create an initial commit to diff against
-				cp.spawnSync(`git`, [`add`, `.`], {
+				cp.spawnSync("git", ["add", "."], {
 					cwd: destPath,
 				});
 
 				// create the commit
 				cp.spawnSync(
-					`git`,
-					[`commit`, `-m`, `"original sources"`, `--no-gpg-sign`],
+					"git",
+					["commit", "-m", `"original sources"`, "--no-gpg-sign"],
 					{
 						cwd: destPath,
 					},
@@ -261,7 +261,7 @@ const appendJSToESMImportsTask = task.define("append-js-to-esm-imports", () => {
 		const lines = contents.split(/\r\n|\r|\n/g);
 		const /** @type {string[]} */ result = [];
 		for (const line of lines) {
-			if (!/^import/.test(line) && !/^export \* from/.test(line)) {
+			if (!(/^import/.test(line) || /^export \* from/.test(line))) {
 				// not an import
 				result.push(line);
 				continue;
@@ -322,13 +322,12 @@ function toExternalDTS(contents) {
 		}
 
 		if (line.indexOf("declare let MonacoEnvironment") === 0) {
-			lines[
-				i
-			] = `declare global {\n    let MonacoEnvironment: Environment | undefined;\n}`;
+			lines[i] =
+				"declare global {\n    let MonacoEnvironment: Environment | undefined;\n}";
 		}
 
 		if (line.indexOf("\tMonacoEnvironment?") === 0) {
-			lines[i] = `    MonacoEnvironment?: Environment | undefined;`;
+			lines[i] = "    MonacoEnvironment?: Environment | undefined;";
 		}
 	}
 	return lines.join("\n").replace(/\n\n\n+/g, "\n\n");
@@ -453,13 +452,14 @@ const finalEditorResourcesTask = task.define("final-editor-resources", () => {
 
 					const relativePathToMap = path.relative(
 						path.join(data.relative),
-						path.join("min-maps", data.relative + ".map"),
+						path.join("min-maps", `${data.relative}.map`),
 					);
 
 					let strContents = data.contents.toString();
-					const newStr =
-						"//# sourceMappingURL=" +
-						relativePathToMap.replace(/\\/g, "/");
+					const newStr = `//# sourceMappingURL=${relativePathToMap.replace(
+						/\\/g,
+						"/",
+					)}`;
 					strContents = strContents.replace(
 						/\/\/# sourceMappingURL=[^ ]+$/,
 						newStr,
@@ -564,7 +564,7 @@ function createTscCompileTask(watch) {
 			if (watch) {
 				args.push("-w");
 			}
-			const child = cp.spawn(`node`, args, {
+			const child = cp.spawn("node", args, {
 				cwd: path.join(__dirname, ".."),
 				// stdio: [null, 'pipe', 'inherit']
 			});

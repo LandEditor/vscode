@@ -23,12 +23,14 @@ export function createMatchers<T>(
 		let priority: -1 | 0 | 1 = 0;
 		if (token.length === 2 && token.charAt(1) === ":") {
 			switch (token.charAt(0)) {
-				case "R":
+				case "R": {
 					priority = 1;
 					break;
-				case "L":
+				}
+				case "L": {
 					priority = -1;
 					break;
+				}
 				default:
 					console.log(`Unknown priority ${token} in scope selector`);
 			}

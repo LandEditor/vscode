@@ -269,10 +269,9 @@ export abstract class AbstractLineHighlightOverlay extends DynamicViewOverlay {
 
 export class CurrentLineHighlightOverlay extends AbstractLineHighlightOverlay {
 	protected _renderOne(ctx: RenderingContext, exact: boolean): string {
-		const className =
-			"current-line" +
-			(this._shouldRenderInMargin() ? " current-line-both" : "") +
-			(exact ? " current-line-exact" : "");
+		const className = `current-line${
+			this._shouldRenderInMargin() ? " current-line-both" : ""
+		}${exact ? " current-line-exact" : ""}`;
 		return `<div class="${className}" style="width:${Math.max(
 			ctx.scrollWidth,
 			this._contentWidth,
@@ -288,13 +287,13 @@ export class CurrentLineHighlightOverlay extends AbstractLineHighlightOverlay {
 
 export class CurrentLineMarginHighlightOverlay extends AbstractLineHighlightOverlay {
 	protected _renderOne(ctx: RenderingContext, exact: boolean): string {
-		const className =
-			"current-line" +
-			(this._shouldRenderInMargin() ? " current-line-margin" : "") +
-			(this._shouldRenderOther() ? " current-line-margin-both" : "") +
-			(this._shouldRenderInMargin() && exact
+		const className = `current-line${
+			this._shouldRenderInMargin() ? " current-line-margin" : ""
+		}${this._shouldRenderOther() ? " current-line-margin-both" : ""}${
+			this._shouldRenderInMargin() && exact
 				? " current-line-exact-margin"
-				: "");
+				: ""
+		}`;
 		return `<div class="${className}" style="width:${this._contentLeft}px; height:${this._lineHeight}px;"></div>`;
 	}
 	protected _shouldRenderThis(): boolean {
@@ -330,10 +329,10 @@ registerThemingParticipant((theme, collector) => {
 			);
 			if (isHighContrast(theme.type)) {
 				collector.addRule(
-					`.monaco-editor .view-overlays .current-line-exact { border-width: 1px; }`,
+					".monaco-editor .view-overlays .current-line-exact { border-width: 1px; }",
 				);
 				collector.addRule(
-					`.monaco-editor .margin-view-overlays .current-line-exact-margin { border-width: 1px; }`,
+					".monaco-editor .margin-view-overlays .current-line-exact-margin { border-width: 1px; }",
 				);
 			}
 		}

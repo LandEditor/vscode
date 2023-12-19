@@ -132,7 +132,7 @@ export class KeybindingLabel {
 			} else {
 				this.domNode.removeAttribute("title");
 			}
-		} else if (this.options && this.options.renderUnboundKeybindings) {
+		} else if (this.options?.renderUnboundKeybindings) {
 			this.renderUnbound(this.domNode);
 		}
 
@@ -215,7 +215,7 @@ export class KeybindingLabel {
 
 	private createKeyElement(label: string, extraClass = ""): HTMLElement {
 		const keyElement = $(
-			"span.monaco-keybinding-key" + extraClass,
+			`span.monaco-keybinding-key${extraClass}`,
 			undefined,
 			label,
 		);
@@ -243,7 +243,7 @@ export class KeybindingLabel {
 		a: Matches | undefined,
 		b: Matches | undefined,
 	): boolean {
-		if (a === b || (!a && !b)) {
+		if (a === b || !(a || b)) {
 			return true;
 		}
 		return (

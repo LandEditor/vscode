@@ -227,11 +227,11 @@ export class DropdownMenu extends BaseDropdown {
 			getActionsContext: () =>
 				this.menuOptions ? this.menuOptions.context : null,
 			getActionViewItem: (action, options) =>
-				this.menuOptions && this.menuOptions.actionViewItemProvider
+				this.menuOptions?.actionViewItemProvider
 					? this.menuOptions.actionViewItemProvider(action, options)
 					: undefined,
 			getKeyBinding: (action) =>
-				this.menuOptions && this.menuOptions.getKeyBinding
+				this.menuOptions?.getKeyBinding
 					? this.menuOptions.getKeyBinding(action)
 					: undefined,
 			getMenuClassName: () => this._options.menuClassName || "",

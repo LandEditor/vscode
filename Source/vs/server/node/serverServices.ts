@@ -288,7 +288,7 @@ export async function setupServerServices(
 				hostname(),
 				process.arch,
 				productService.commit,
-				productService.version + "-remote",
+				`${productService.version}-remote`,
 				machineId,
 				sqmId,
 				isInternal,

@@ -159,10 +159,10 @@ export class ExtHostDocumentData extends MirrorTextModel {
 			);
 		}
 
-		const lineEnding = this._eol,
-			startLineIndex = range.start.line,
-			endLineIndex = range.end.line,
-			resultLines: string[] = [];
+		const lineEnding = this._eol;
+		const startLineIndex = range.start.line;
+		const endLineIndex = range.end.line;
+		const resultLines: string[] = [];
 
 		resultLines.push(
 			this._lines[startLineIndex].substring(range.start.character),
@@ -205,7 +205,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
 		position = this._validatePosition(position);
 		this._ensureLineStarts();
 		return (
-			this._lineStarts!.getPrefixSum(position.line - 1) +
+			this._lineStarts?.getPrefixSum(position.line - 1) +
 			position.character
 		);
 	}
@@ -215,7 +215,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
 		offset = Math.max(0, offset);
 
 		this._ensureLineStarts();
-		const out = this._lineStarts!.getIndexOf(offset);
+		const out = this._lineStarts?.getIndexOf(offset);
 
 		const lineLength = this._lines[out.index].length;
 
@@ -343,7 +343,7 @@ export class ExtHostDocumentLine implements vscode.TextLine {
 
 	public get firstNonWhitespaceCharacterIndex(): number {
 		//TODO@api, rename to 'leadingWhitespaceLength'
-		return /^(\s*)/.exec(this._text)![1].length;
+		return /^(\s*)/.exec(this._text)?.[1].length;
 	}
 
 	public get isEmptyOrWhitespace(): boolean {

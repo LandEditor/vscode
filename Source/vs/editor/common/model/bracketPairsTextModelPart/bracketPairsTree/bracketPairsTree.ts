@@ -444,8 +444,7 @@ function collectBrackets(
 			}
 			case AstNodeKind.Pair: {
 				const colorize =
-					!onlyColorizedBrackets ||
-					!node.closingBracket ||
+					!(onlyColorizedBrackets && node.closingBracket) ||
 					(
 						node.closingBracket.bracketInfo as ClosingBracketKind
 					).closesColorized(

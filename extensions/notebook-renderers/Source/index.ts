@@ -93,15 +93,14 @@ const domEval = (container: Element) => {
 			ttPolicy?.createScript(node.innerText) ?? node.innerText;
 		scriptTag.text = trustedScript as string;
 		for (const key of preservedScriptAttributes) {
-			const val =
-				node[key] || (node.getAttribute && node.getAttribute(key));
+			const val = node[key] || node.getAttribute?.(key);
 			if (val) {
 				scriptTag.setAttribute(key, val as any);
 			}
 		}
 
 		// TODO@connor4312: should script with src not be removed?
-		container.appendChild(scriptTag).parentNode!.removeChild(scriptTag);
+		container.appendChild(scriptTag).parentNode?.removeChild(scriptTag);
 	}
 };
 
@@ -291,10 +290,7 @@ function getPreviousMatchingContentGroup(outputElement: HTMLElement) {
 	let previous = outputContainer?.previousSibling;
 	while (previous) {
 		const outputElement = previous.firstChild as HTMLElement | null;
-		if (
-			!outputElement ||
-			!outputElement.classList.contains("output-stream")
-		) {
+		if (!outputElement?.classList.contains("output-stream")) {
 			break;
 		}
 
@@ -371,7 +367,7 @@ function initializeScroll(
 
 // Find the scrollTop of the existing scrollable output, return undefined if at the bottom or element doesn't exist
 function findScrolledHeight(container: HTMLElement): number | undefined {
-	const scrollableElement = container.querySelector("." + scrollableClass);
+	const scrollableElement = container.querySelector(`.${scrollableClass}`);
 	if (
 		scrollableElement &&
 		scrollableElement.scrollHeight -
@@ -475,7 +471,7 @@ function renderStream(
 		);
 		disposableStore.push(
 			ctx.onDidChangeSettings((e) => {
-				contentParent!.classList.toggle("word-wrap", e.outputWordWrap);
+				contentParent?.classList.toggle("word-wrap", e.outputWordWrap);
 			}),
 		);
 
@@ -634,57 +630,67 @@ export const activate: ActivationFunction<void> = (ctx) => {
 				case "image/png":
 				case "image/jpeg":
 				case "image/git": {
-					disposables.get(outputInfo.id)?.dispose();
-					const disposable = renderImage(outputInfo, element);
-					disposables.set(outputInfo.id, disposable);
+					{
+						disposables.get(outputInfo.id)?.dispose();
+						const disposable = renderImage(outputInfo, element);
+						disposables.set(outputInfo.id, disposable);
+					}
+					break;
 				}
-				break;
 				case "application/vnd.code.notebook.error": {
-					disposables.get(outputInfo.id)?.dispose();
-					const disposable = renderError(
-						outputInfo,
-						element,
-						latestContext,
-						ctx.workspace.isTrusted,
-					);
-					disposables.set(outputInfo.id, disposable);
+					{
+						disposables.get(outputInfo.id)?.dispose();
+						const disposable = renderError(
+							outputInfo,
+							element,
+							latestContext,
+							ctx.workspace.isTrusted,
+						);
+						disposables.set(outputInfo.id, disposable);
+					}
+					break;
 				}
-				break;
 				case "application/vnd.code.notebook.stdout":
 				case "application/x.notebook.stdout":
 				case "application/x.notebook.stream": {
-					disposables.get(outputInfo.id)?.dispose();
-					const disposable = renderStream(
-						outputInfo,
-						element,
-						false,
-						latestContext,
-					);
-					disposables.set(outputInfo.id, disposable);
+					{
+						disposables.get(outputInfo.id)?.dispose();
+						const disposable = renderStream(
+							outputInfo,
+							element,
+							false,
+							latestContext,
+						);
+						disposables.set(outputInfo.id, disposable);
+					}
+					break;
 				}
-				break;
 				case "application/vnd.code.notebook.stderr":
 				case "application/x.notebook.stderr": {
-					disposables.get(outputInfo.id)?.dispose();
-					const disposable = renderStream(
-						outputInfo,
-						element,
-						true,
-						latestContext,
-					);
-					disposables.set(outputInfo.id, disposable);
+					{
+						disposables.get(outputInfo.id)?.dispose();
+						const disposable = renderStream(
+							outputInfo,
+							element,
+							true,
+							latestContext,
+						);
+						disposables.set(outputInfo.id, disposable);
+					}
+					break;
 				}
-				break;
 				case "text/plain": {
-					disposables.get(outputInfo.id)?.dispose();
-					const disposable = renderText(
-						outputInfo,
-						element,
-						latestContext,
-					);
-					disposables.set(outputInfo.id, disposable);
+					{
+						disposables.get(outputInfo.id)?.dispose();
+						const disposable = renderText(
+							outputInfo,
+							element,
+							latestContext,
+						);
+						disposables.set(outputInfo.id, disposable);
+					}
+					break;
 				}
-				break;
 				default:
 					break;
 			}

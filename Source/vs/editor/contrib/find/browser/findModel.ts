@@ -246,7 +246,7 @@ export class FindModelBoundToEditorModel {
 					let endLineNumber = findScope.endLineNumber;
 
 					if (findScope.endColumn === 1) {
-						endLineNumber = endLineNumber - 1;
+						endLineNumber -= 1;
 					}
 
 					return new Range(
@@ -367,8 +367,7 @@ export class FindModelBoundToEditorModel {
 			let prevMatchRange = this._decorations.matchBeforePosition(before);
 
 			if (
-				prevMatchRange &&
-				prevMatchRange.isEmpty() &&
+				prevMatchRange?.isEmpty() &&
 				prevMatchRange.getStartPosition().equals(before)
 			) {
 				before = this._prevSearchPosition(before);
@@ -419,8 +418,7 @@ export class FindModelBoundToEditorModel {
 		);
 
 		if (
-			prevMatch &&
-			prevMatch.range.isEmpty() &&
+			prevMatch?.range.isEmpty() &&
 			prevMatch.range.getStartPosition().equals(position)
 		) {
 			// Looks like we're stuck at this position, unacceptable!
@@ -442,7 +440,7 @@ export class FindModelBoundToEditorModel {
 			return;
 		}
 
-		if (!isRecursed && !searchRange.containsRange(prevMatch.range)) {
+		if (!(isRecursed || searchRange.containsRange(prevMatch.range))) {
 			return this._moveToPrevMatch(
 				prevMatch.range.getStartPosition(),
 				true,
@@ -494,8 +492,7 @@ export class FindModelBoundToEditorModel {
 			let nextMatchRange = this._decorations.matchAfterPosition(after);
 
 			if (
-				nextMatchRange &&
-				nextMatchRange.isEmpty() &&
+				nextMatchRange?.isEmpty() &&
 				nextMatchRange.getStartPosition().equals(after)
 			) {
 				// Looks like we're stuck at this position, unacceptable!
@@ -582,7 +579,7 @@ export class FindModelBoundToEditorModel {
 			return null;
 		}
 
-		if (!isRecursed && !searchRange.containsRange(nextMatch.range)) {
+		if (!(isRecursed || searchRange.containsRange(nextMatch.range))) {
 			return this._getNextMatch(
 				nextMatch.range.getEndPosition(),
 				captureMatches,

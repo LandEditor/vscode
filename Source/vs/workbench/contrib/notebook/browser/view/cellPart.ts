@@ -22,10 +22,6 @@ export abstract class CellContentPart extends Disposable {
 	protected currentCell: ICellViewModel | undefined;
 	protected cellDisposables = new DisposableStore();
 
-	constructor() {
-		super();
-	}
-
 	/**
 	 * Prepare model for cell part rendering
 	 * No DOM operations recommended within this operation
@@ -86,10 +82,6 @@ export abstract class CellContentPart extends Disposable {
 export abstract class CellOverlayPart extends Disposable {
 	protected currentCell: ICellViewModel | undefined;
 	protected readonly cellDisposables = this._register(new DisposableStore());
-
-	constructor() {
-		super();
-	}
 
 	/**
 	 * Prepare model for cell part rendering

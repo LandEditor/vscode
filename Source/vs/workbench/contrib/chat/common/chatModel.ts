@@ -71,7 +71,7 @@ export type IChatProgressRenderableResponseContent = Exclude<
 >;
 
 export interface IResponse {
-	readonly value: ReadonlyArray<IChatProgressResponseContent>;
+	readonly value: readonly IChatProgressResponseContent[];
 	asString(): string;
 }
 
@@ -85,8 +85,8 @@ export interface IChatResponseModel {
 	readonly session: IChatModel;
 	readonly agent?: IChatAgentData;
 	readonly usedContext: IChatUsedContext | undefined;
-	readonly contentReferences: ReadonlyArray<IChatContentReference>;
-	readonly progressMessages: ReadonlyArray<IChatProgressMessage>;
+	readonly contentReferences: readonly IChatContentReference[];
+	readonly progressMessages: readonly IChatProgressMessage[];
 	readonly slashCommand?: IChatAgentCommand;
 	readonly response: IResponse;
 	readonly isComplete: boolean;
@@ -119,7 +119,7 @@ export class ChatRequestModel implements IChatRequestModel {
 		public readonly session: ChatModel,
 		public readonly message: IParsedChatRequest,
 	) {
-		this._id = "request_" + ChatRequestModel.nextId++;
+		this._id = `request_${ChatRequestModel.nextId++}`;
 	}
 }
 
@@ -353,12 +353,12 @@ export class ChatResponseModel
 	}
 
 	private readonly _contentReferences: IChatContentReference[] = [];
-	public get contentReferences(): ReadonlyArray<IChatContentReference> {
+	public get contentReferences(): readonly IChatContentReference[] {
 		return this._contentReferences;
 	}
 
 	private readonly _progressMessages: IChatProgressMessage[] = [];
-	public get progressMessages(): ReadonlyArray<IChatProgressMessage> {
+	public get progressMessages(): readonly IChatProgressMessage[] {
 		return this._progressMessages;
 	}
 
@@ -378,7 +378,7 @@ export class ChatResponseModel
 		private _isCanceled = false,
 		private _vote?: InteractiveSessionVoteDirection,
 		private _errorDetails?: IChatResponseErrorDetails,
-		followups?: ReadonlyArray<IChatFollowup>,
+		followups?: readonly IChatFollowup[],
 	) {
 		super();
 		this._agent = agent;
@@ -387,7 +387,7 @@ export class ChatResponseModel
 		this._register(
 			this._response.onDidChangeValue(() => this._onDidChange.fire()),
 		);
-		this._id = "response_" + ChatResponseModel.nextId++;
+		this._id = `response_${ChatResponseModel.nextId++}`;
 	}
 
 	/**
@@ -491,12 +491,12 @@ export interface ISerializableChatRequestData {
 	agent?: ISerializableChatAgentData;
 	slashCommand?: IChatAgentCommand;
 	responseErrorDetails: IChatResponseErrorDetails | undefined;
-	followups: ReadonlyArray<IChatFollowup> | undefined;
+	followups: readonly IChatFollowup[] | undefined;
 	isCanceled: boolean | undefined;
 	vote: InteractiveSessionVoteDirection | undefined;
 	/** For backward compat: should be optional */
 	usedContext?: IChatUsedContext;
-	contentReferences?: ReadonlyArray<IChatContentReference>;
+	contentReferences?: readonly IChatContentReference[];
 }
 
 export interface IExportableChatData {
@@ -749,7 +749,7 @@ export class ChatModel extends Disposable implements IChatModel {
 
 					if (raw.contentReferences) {
 						raw.contentReferences.forEach((r) =>
-							request.response!.applyProgress(r),
+							request.response?.applyProgress(r),
 						);
 					}
 				}
@@ -1085,7 +1085,7 @@ export class ChatWelcomeMessageModel implements IChatWelcomeMessageModel {
 		public readonly content: IChatWelcomeMessageContent[],
 		public readonly sampleQuestions: IChatReplyFollowup[],
 	) {
-		this._id = "welcome_" + ChatWelcomeMessageModel.nextId++;
+		this._id = `welcome_${ChatWelcomeMessageModel.nextId++}`;
 	}
 
 	public get username(): string {

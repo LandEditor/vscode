@@ -215,7 +215,7 @@ export abstract class CompositePart<T extends Composite> extends Part {
 				assertIsDefined(this.progressBar),
 				new (class extends AbstractProgressScope {
 					constructor() {
-						super(compositeDescriptor!.id, !!isActive);
+						super(compositeDescriptor?.id, !!isActive);
 						this._register(
 							that.onDidCompositeOpen.event((e) =>
 								this.onScopeOpened(e.composite.getId()),
@@ -402,7 +402,7 @@ export abstract class CompositePart<T extends Composite> extends Part {
 
 	private updateTitle(compositeId: string, compositeTitle?: string): void {
 		const compositeDescriptor = this.registry.getComposite(compositeId);
-		if (!compositeDescriptor || !this.titleLabel) {
+		if (!(compositeDescriptor && this.titleLabel)) {
 			return;
 		}
 

@@ -153,7 +153,7 @@ export class UserDataSyncDataViews extends Disposable {
 	}
 
 	private registerMachinesView(container: ViewContainer): void {
-		const id = `workbench.views.sync.machines`;
+		const id = "workbench.views.sync.machines";
 		const name = localize2("synced machines", "Synced Machines");
 		const treeView = this.instantiationService.createInstance(
 			TreeView,
@@ -206,7 +206,7 @@ export class UserDataSyncDataViews extends Disposable {
 			class extends Action2 {
 				constructor() {
 					super({
-						id: `workbench.actions.sync.editMachineName`,
+						id: "workbench.actions.sync.editMachineName",
 						title: localize(
 							"workbench.actions.sync.editMachineName",
 							"Edit Name",
@@ -239,7 +239,7 @@ export class UserDataSyncDataViews extends Disposable {
 			class extends Action2 {
 				constructor() {
 					super({
-						id: `workbench.actions.sync.turnOffSyncOnMachine`,
+						id: "workbench.actions.sync.turnOffSyncOnMachine",
 						title: localize(
 							"workbench.actions.sync.turnOffSyncOnMachine",
 							"Turn off Settings Sync",
@@ -342,7 +342,7 @@ export class UserDataSyncDataViews extends Disposable {
 	}
 
 	private registerExternalActivityView(container: ViewContainer): void {
-		const id = `workbench.views.sync.externalActivity`;
+		const id = "workbench.views.sync.externalActivity";
 		const name = localize2(
 			"downloaded sync activity title",
 			"Sync Activity (Developer)",
@@ -385,7 +385,7 @@ export class UserDataSyncDataViews extends Disposable {
 				class extends Action2 {
 					constructor() {
 						super({
-							id: `workbench.actions.sync.loadActivity`,
+							id: "workbench.actions.sync.loadActivity",
 							title: localize(
 								"workbench.actions.sync.loadActivity",
 								"Load Sync Activity",
@@ -426,7 +426,7 @@ export class UserDataSyncDataViews extends Disposable {
 			class extends Action2 {
 				constructor() {
 					super({
-						id: `workbench.actions.sync.resolveResource`,
+						id: "workbench.actions.sync.resolveResource",
 						title: localize(
 							"workbench.actions.sync.resolveResourceRef",
 							"Show raw JSON sync data",
@@ -463,7 +463,7 @@ export class UserDataSyncDataViews extends Disposable {
 			class extends Action2 {
 				constructor() {
 					super({
-						id: `workbench.actions.sync.compareWithLocal`,
+						id: "workbench.actions.sync.compareWithLocal",
 						title: localize(
 							"workbench.actions.sync.compareWithLocal",
 							"Compare with Local",
@@ -524,7 +524,7 @@ export class UserDataSyncDataViews extends Disposable {
 			class extends Action2 {
 				constructor() {
 					super({
-						id: `workbench.actions.sync.replaceCurrent`,
+						id: "workbench.actions.sync.replaceCurrent",
 						title: localize(
 							"workbench.actions.sync.replaceCurrent",
 							"Restore",
@@ -582,7 +582,7 @@ export class UserDataSyncDataViews extends Disposable {
 	}
 
 	private registerTroubleShootView(container: ViewContainer): void {
-		const id = `workbench.views.sync.troubleshoot`;
+		const id = "workbench.views.sync.troubleshoot";
 		const name = localize2("troubleshoot", "Troubleshoot");
 		const treeView = this.instantiationService.createInstance(
 			TreeView,
@@ -789,7 +789,7 @@ abstract class UserDataSyncActivityViewDataProvider<T = Profile>
 									"sideBySideLabels",
 									"{0} ↔ {1}",
 									`${basename(resource)} (${fromNow(
-										syncResourceHandle.previous!.created,
+										syncResourceHandle.previous?.created,
 										true,
 									)})`,
 									`${basename(resource)} (${fromNow(

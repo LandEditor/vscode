@@ -1467,7 +1467,7 @@ class EditorResourceAccessorImpl {
 		const originalResource = isEditorInputWithPreferredResource(editor)
 			? editor.preferredResource
 			: editor.resource;
-		if (!originalResource || !options || !options.filterByScheme) {
+		if (!(originalResource && options && options.filterByScheme)) {
 			return originalResource;
 		}
 
@@ -1587,7 +1587,7 @@ class EditorResourceAccessorImpl {
 
 		// Canonical URI is the `resource` of an editor
 		const canonicalResource = editor.resource;
-		if (!canonicalResource || !options || !options.filterByScheme) {
+		if (!(canonicalResource && options && options.filterByScheme)) {
 			return canonicalResource;
 		}
 
@@ -1772,7 +1772,7 @@ export async function pathsToEditors(
 		IResourceEditorInput | IUntitledTextResourceEditorInput | undefined
 	>
 > {
-	if (!paths || !paths.length) {
+	if (!paths?.length) {
 		return [];
 	}
 

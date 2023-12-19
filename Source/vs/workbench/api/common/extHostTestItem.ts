@@ -81,7 +81,7 @@ const propComparators: {
 		if (a === b) {
 			return true;
 		}
-		if (!a || !b) {
+		if (!(a && b)) {
 			return false;
 		}
 		return a.isEqual(b);

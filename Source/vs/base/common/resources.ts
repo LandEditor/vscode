@@ -167,7 +167,7 @@ export class ExtUri implements IExtUri {
 		if (uri1 === uri2) {
 			return true;
 		}
-		if (!uri1 || !uri2) {
+		if (!(uri1 && uri2)) {
 			return false;
 		}
 		return (
@@ -392,8 +392,8 @@ export class ExtUri implements IExtUri {
 			isRootSep =
 				p.length === 1 && p.charCodeAt(p.length - 1) === CharCode.Slash;
 		}
-		if (!isRootSep && !hasTrailingPathSeparator(resource, sep)) {
-			return resource.with({ path: resource.path + "/" });
+		if (!(isRootSep || hasTrailingPathSeparator(resource, sep))) {
+			return resource.with({ path: `${resource.path}/` });
 		}
 		return resource;
 	}

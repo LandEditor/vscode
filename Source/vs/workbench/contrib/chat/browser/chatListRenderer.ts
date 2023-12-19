@@ -279,10 +279,7 @@ export class ChatListItemRenderer
 			return 80;
 		}
 
-		if (
-			element.contentUpdateTimings &&
-			element.contentUpdateTimings.impliedWordLoadRate
-		) {
+		if (element.contentUpdateTimings?.impliedWordLoadRate) {
 			// words/s
 			const minRate = 12;
 			const maxRate = 80;
@@ -710,7 +707,12 @@ export class ChatListItemRenderer
 				"complete",
 				element.isComplete,
 			);
-			if (!element.agentAvatarHasBeenRendered && !element.isComplete) {
+			if (element.agentAvatarHasBeenRendered || element.isComplete) {
+				templateData.agentAvatarContainer.classList.toggle(
+					"loading",
+					!element.isComplete,
+				);
+			} else {
 				element.agentAvatarHasBeenRendered = true;
 				templateData.agentAvatarContainer.classList.remove("loading");
 				templateData.elementDisposables.add(
@@ -720,11 +722,6 @@ export class ChatListItemRenderer
 							!element.isComplete,
 						);
 					}, 100),
-				);
-			} else {
-				templateData.agentAvatarContainer.classList.toggle(
-					"loading",
-					!element.isComplete,
 				);
 			}
 		} else {
@@ -746,7 +743,7 @@ export class ChatListItemRenderer
 	}
 
 	private basicRenderElement(
-		value: ReadonlyArray<IChatProgressRenderableResponseContent>,
+		value: readonly IChatProgressRenderableResponseContent[],
 		element: ChatTreeItem,
 		index: number,
 		templateData: IChatListItemTemplate,
@@ -1026,8 +1023,7 @@ export class ChatListItemRenderer
 						};
 						wordCountResults[index] = wordCountResult;
 					} else if (
-						!renderedPart.isFullyRendered &&
-						!wordCountResult
+						!(renderedPart.isFullyRendered || wordCountResult)
 					) {
 						// This part is not fully rendered, but not enough time has passed to render more content
 						somePartIsNotFullyRendered = true;
@@ -1242,7 +1238,7 @@ export class ChatListItemRenderer
 	}
 
 	private renderContentReferencesListData(
-		data: ReadonlyArray<IChatContentReference>,
+		data: readonly IChatContentReference[],
 		element: IChatResponseViewModel,
 		templateData: IChatListItemTemplate,
 	): { element: HTMLElement; dispose: () => void } {
@@ -1631,19 +1627,20 @@ export class ChatAccessibilityProvider
 		switch (commandFollowupLength) {
 			case 0:
 				break;
-			case 1:
+			case 1: {
 				commandFollowUpInfo = localize(
 					"commandFollowUpInfo",
 					"Command: {0}",
-					element.commandFollowups![0].title,
+					element.commandFollowups?.[0].title,
 				);
 				break;
+			}
 			default:
 				commandFollowUpInfo = localize(
 					"commandFollowUpInfoMany",
 					"Commands: {0}",
-					element
-						.commandFollowups!.map((followup) => followup.title)
+					element.commandFollowups
+						?.map((followup) => followup.title)
 						.join(", "),
 				);
 		}
@@ -1653,26 +1650,28 @@ export class ChatAccessibilityProvider
 		switch (fileTreeCount) {
 			case 0:
 				break;
-			case 1:
+			case 1: {
 				fileTreeCountHint = localize(
 					"singleFileTreeHint",
 					"1 file tree",
 				);
 				break;
-			default:
+			}
+			default: {
 				fileTreeCountHint = localize(
 					"multiFileTreeHint",
 					"{0} file trees",
 					fileTreeCount,
 				);
 				break;
+			}
 		}
 		const codeBlockCount =
 			marked
 				.lexer(element.response.asString())
 				.filter((token) => token.type === "code")?.length ?? 0;
 		switch (codeBlockCount) {
-			case 0:
+			case 0: {
 				label = accessibleViewHint
 					? localize(
 							"noCodeBlocksHint",
@@ -1688,7 +1687,8 @@ export class ChatAccessibilityProvider
 							element.response.asString(),
 					  );
 				break;
-			case 1:
+			}
+			case 1: {
 				label = accessibleViewHint
 					? localize(
 							"singleCodeBlockHint",
@@ -1704,7 +1704,8 @@ export class ChatAccessibilityProvider
 							element.response.asString(),
 					  );
 				break;
-			default:
+			}
+			default: {
 				label = accessibleViewHint
 					? localize(
 							"multiCodeBlockHint",
@@ -1722,8 +1723,9 @@ export class ChatAccessibilityProvider
 							element.response.asString(),
 					  );
 				break;
+			}
 		}
-		return commandFollowUpInfo ? commandFollowUpInfo + ", " + label : label;
+		return commandFollowUpInfo ? `${commandFollowUpInfo}, ${label}` : label;
 	}
 }
 

@@ -85,7 +85,7 @@ class MonacoWebWorkerImpl<T extends object>
 	) {
 		super(
 			modelService,
-			opts.keepIdleModels || false,
+			opts.keepIdleModels,
 			opts.label,
 			languageConfigurationService,
 		);
@@ -103,9 +103,7 @@ class MonacoWebWorkerImpl<T extends object>
 		) {
 			return Promise.reject(
 				new Error(
-					"Missing method " +
-						method +
-						" or missing main thread foreign host.",
+					`Missing method ${method} or missing main thread foreign host.`,
 				),
 			);
 		}

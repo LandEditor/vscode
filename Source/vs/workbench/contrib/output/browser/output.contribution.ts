@@ -186,7 +186,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 				class extends Action2 {
 					constructor() {
 						super({
-							id: `workbench.output.action.switchBetweenOutputs`,
+							id: "workbench.output.action.switchBetweenOutputs",
 							title: nls.localize(
 								"switchBetweenOutputs.label",
 								"Switch Output",
@@ -300,8 +300,8 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 						const outputService = accessor.get(IOutputService);
 						const quickInputService =
 							accessor.get(IQuickInputService);
-						const extensionChannels = [],
-							coreChannels = [];
+						const extensionChannels = [];
+						const coreChannels = [];
 						for (const channel of outputService.getChannelDescriptors()) {
 							if (channel.extensionId) {
 								extensionChannels.push(channel);
@@ -343,7 +343,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 				class extends Action2 {
 					constructor() {
 						super({
-							id: `workbench.output.action.clearOutput`,
+							id: "workbench.output.action.clearOutput",
 							title: nls.localize2(
 								"clearOutput.label",
 								"Clear Output",
@@ -394,7 +394,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 				class extends Action2 {
 					constructor() {
 						super({
-							id: `workbench.output.action.toggleAutoScroll`,
+							id: "workbench.output.action.toggleAutoScroll",
 							title: nls.localize2(
 								"toggleAutoScroll",
 								"Toggle Auto Scrolling",
@@ -444,7 +444,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 				class extends Action2 {
 					constructor() {
 						super({
-							id: `workbench.action.openActiveLogOutputFile`,
+							id: "workbench.action.openActiveLogOutputFile",
 							title: nls.localize2(
 								"openActiveOutputFile",
 								"Open Output as Editor",
@@ -522,8 +522,8 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 						const outputService = accessor.get(IOutputService);
 						const quickInputService =
 							accessor.get(IQuickInputService);
-						const extensionLogs = [],
-							logs = [];
+						const extensionLogs = [];
+						const logs = [];
 						for (const channel of outputService.getChannelDescriptors()) {
 							if (channel.log) {
 								if (channel.extensionId) {

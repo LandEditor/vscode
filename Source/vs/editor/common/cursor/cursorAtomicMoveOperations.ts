@@ -42,16 +42,18 @@ export class AtomicTabMoveOperations {
 			}
 			const chCode = lineContent.charCodeAt(i);
 			switch (chCode) {
-				case CharCode.Space:
+				case CharCode.Space: {
 					visibleColumn += 1;
 					break;
-				case CharCode.Tab:
+				}
+				case CharCode.Tab: {
 					// Skip to the next multiple of tabSize.
 					visibleColumn = CursorColumns.nextRenderTabStop(
 						visibleColumn,
 						tabSize,
 					);
 					break;
+				}
 				default:
 					return [-1, -1, -1];
 			}
@@ -100,13 +102,15 @@ export class AtomicTabMoveOperations {
 		// where it is the same as the current position is handled in the switch.
 		let left: boolean;
 		switch (direction) {
-			case Direction.Left:
+			case Direction.Left: {
 				left = true;
 				break;
-			case Direction.Right:
+			}
+			case Direction.Right: {
 				left = false;
 				break;
-			case Direction.Nearest:
+			}
+			case Direction.Nearest: {
 				// The code below assumes the output position is either left or right
 				// of the input position. If it is the same, return immediately.
 				if (visibleColumn % tabSize === 0) {
@@ -115,6 +119,7 @@ export class AtomicTabMoveOperations {
 				// Go to the nearest indentation.
 				left = visibleColumn % tabSize <= tabSize / 2;
 				break;
+			}
 		}
 
 		// If going left, we can just use the info about the last tab stop position and
@@ -140,15 +145,17 @@ export class AtomicTabMoveOperations {
 
 				const chCode = lineContent.charCodeAt(i);
 				switch (chCode) {
-					case CharCode.Space:
+					case CharCode.Space: {
 						currentVisibleColumn += 1;
 						break;
-					case CharCode.Tab:
+					}
+					case CharCode.Tab: {
 						currentVisibleColumn = CursorColumns.nextRenderTabStop(
 							currentVisibleColumn,
 							tabSize,
 						);
 						break;
+					}
 					default:
 						return -1;
 				}
@@ -175,15 +182,17 @@ export class AtomicTabMoveOperations {
 
 			const chCode = lineContent.charCodeAt(i);
 			switch (chCode) {
-				case CharCode.Space:
+				case CharCode.Space: {
 					currentVisibleColumn += 1;
 					break;
-				case CharCode.Tab:
+				}
+				case CharCode.Tab: {
 					currentVisibleColumn = CursorColumns.nextRenderTabStop(
 						currentVisibleColumn,
 						tabSize,
 					);
 					break;
+				}
 				default:
 					return -1;
 			}

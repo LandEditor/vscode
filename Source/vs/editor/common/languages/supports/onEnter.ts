@@ -128,7 +128,7 @@ export class OnEnterSupport {
 	private static _createOpenBracketRegExp(bracket: string): RegExp | null {
 		let str = strings.escapeRegExpCharacters(bracket);
 		if (!/\B/.test(str.charAt(0))) {
-			str = "\\b" + str;
+			str = `\\b${str}`;
 		}
 		str += "\\s*$";
 		return OnEnterSupport._safeRegExp(str);
@@ -137,9 +137,9 @@ export class OnEnterSupport {
 	private static _createCloseBracketRegExp(bracket: string): RegExp | null {
 		let str = strings.escapeRegExpCharacters(bracket);
 		if (!/\B/.test(str.charAt(str.length - 1))) {
-			str = str + "\\b";
+			str += "\\b";
 		}
-		str = "^\\s*" + str;
+		str = `^\\s*${str}`;
 		return OnEnterSupport._safeRegExp(str);
 	}
 

@@ -559,7 +559,7 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
 		const seenBindings = new Set<string>();
 		const result: string[] = [];
 
-		result.push(`Default Resolved Keybindings (unique only):`);
+		result.push("Default Resolved Keybindings (unique only):");
 		for (const item of KeybindingsRegistry.getDefaultKeybindings()) {
 			if (!item.keybinding) {
 				continue;
@@ -575,7 +575,7 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
 			this._printResolvedKeybindings(result, input, resolvedKeybindings);
 		}
 
-		result.push(`User Resolved Keybindings (unique only):`);
+		result.push("User Resolved Keybindings (unique only):");
 		for (const item of this.userKeybindings.keybindings) {
 			if (!item.keybinding) {
 				continue;
@@ -753,10 +753,12 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
 
 		for (const chord of keybinding.chords) {
 			if (
-				!chord.metaKey &&
-				!chord.altKey &&
-				!chord.ctrlKey &&
-				!chord.shiftKey
+				!(
+					chord.metaKey ||
+					chord.altKey ||
+					chord.ctrlKey ||
+					chord.shiftKey
+				)
 			) {
 				continue;
 			}
@@ -954,7 +956,7 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
 		}
 
 		const commandAction = MenuRegistry.getCommand(command);
-		const precondition = commandAction && commandAction.precondition;
+		const precondition = commandAction?.precondition;
 		let fullWhen: ContextKeyExpression | undefined;
 		if (when && precondition) {
 			fullWhen = ContextKeyExpr.and(
@@ -983,13 +985,11 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
 		const resolver = this._getResolver();
 		const defaultKeybindings = resolver.getDefaultKeybindings();
 		const boundCommands = resolver.getDefaultBoundCommands();
-		return (
-			WorkbenchKeybindingService._getDefaultKeybindings(
-				defaultKeybindings,
-			) +
-			"\n\n" +
-			WorkbenchKeybindingService._getAllCommandsAsComment(boundCommands)
-		);
+		return `${WorkbenchKeybindingService._getDefaultKeybindings(
+			defaultKeybindings,
+		)}\n\n${WorkbenchKeybindingService._getAllCommandsAsComment(
+			boundCommands,
+		)}`;
 	}
 
 	private static _getDefaultKeybindings(
@@ -1016,15 +1016,10 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
 	): string {
 		const unboundCommands = getAllUnboundCommands(boundCommands);
 		const pretty = unboundCommands.sort().join("\n// - ");
-		return (
-			"// " +
-			nls.localize(
-				"unboundCommands",
-				"Here are other available commands: ",
-			) +
-			"\n// - " +
-			pretty
-		);
+		return `// ${nls.localize(
+			"unboundCommands",
+			"Here are other available commands: ",
+		)}\n// - ${pretty}`;
 	}
 
 	override mightProducePrintableCharacter(event: IKeyboardEvent): boolean {
@@ -1392,8 +1387,7 @@ class KeybindingsJsonSchema {
 			addKnownCommand(commandId, commandMetadata?.description);
 
 			if (
-				!commandMetadata ||
-				!commandMetadata.args ||
+				!commandMetadata?.args ||
 				commandMetadata.args.length !== 1 ||
 				!commandMetadata.args[0].schema
 			) {

@@ -93,7 +93,7 @@ export class OverviewRulerPart extends Disposable {
 			style: {
 				position: "absolute",
 				top: "0px",
-				width: OverviewRulerPart.ENTIRE_DIFF_OVERVIEW_WIDTH + "px",
+				width: `${OverviewRulerPart.ENTIRE_DIFF_OVERVIEW_WIDTH}px`,
 			},
 		}).root;
 		this._register(
@@ -157,7 +157,7 @@ export class OverviewRulerPart extends Disposable {
 					);
 				}
 
-				if (!originalOverviewRuler || !modifiedOverviewRuler) {
+				if (!(originalOverviewRuler && modifiedOverviewRuler)) {
 					// probably no model
 					return;
 				}
@@ -300,11 +300,10 @@ export class OverviewRulerPart extends Disposable {
 							viewportDomElement.setHeight(0);
 						}
 
-						diffOverviewRoot.style.height = height + "px";
+						diffOverviewRoot.style.height = `${height}px`;
 						diffOverviewRoot.style.left =
-							width -
-							OverviewRulerPart.ENTIRE_DIFF_OVERVIEW_WIDTH +
-							"px";
+							`${width -
+							OverviewRulerPart.ENTIRE_DIFF_OVERVIEW_WIDTH}px`;
 						viewportDomElement.setWidth(
 							OverviewRulerPart.ENTIRE_DIFF_OVERVIEW_WIDTH
 						);

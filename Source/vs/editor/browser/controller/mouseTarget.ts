@@ -126,7 +126,7 @@ export class MouseTarget {
 			element,
 			mouseColumn,
 			position,
-			range: this._deduceRage(position),
+			range: MouseTarget._deduceRage(position),
 		};
 	}
 	public static createTextarea(
@@ -168,7 +168,7 @@ export class MouseTarget {
 			element,
 			mouseColumn,
 			position,
-			range: this._deduceRage(position),
+			range: MouseTarget._deduceRage(position),
 			detail,
 		};
 	}
@@ -184,7 +184,7 @@ export class MouseTarget {
 			element,
 			mouseColumn,
 			position,
-			range: this._deduceRage(position, range),
+			range: MouseTarget._deduceRage(position, range),
 			detail,
 		};
 	}
@@ -199,7 +199,7 @@ export class MouseTarget {
 			element,
 			mouseColumn,
 			position,
-			range: this._deduceRage(position),
+			range: MouseTarget._deduceRage(position),
 			detail,
 		};
 	}
@@ -227,7 +227,7 @@ export class MouseTarget {
 			element,
 			mouseColumn,
 			position,
-			range: this._deduceRage(position),
+			range: MouseTarget._deduceRage(position),
 		};
 	}
 	public static createOverlayWidget(
@@ -255,7 +255,7 @@ export class MouseTarget {
 			element: null,
 			mouseColumn,
 			position,
-			range: this._deduceRage(position),
+			range: MouseTarget._deduceRage(position),
 			outsidePosition,
 			outsideDistance,
 		};
@@ -302,15 +302,9 @@ export class MouseTarget {
 	}
 
 	public static toString(target: IMouseTarget): string {
-		return (
-			this._typeToString(target.type) +
-			": " +
-			target.position +
-			" - " +
-			target.range +
-			" - " +
-			JSON.stringify((<any>target).detail)
-		);
+		return `${MouseTarget._typeToString(target.type)}: ${
+			target.position
+		} - ${target.range} - ${JSON.stringify((<any>target).detail)}`;
 	}
 }
 
@@ -561,7 +555,7 @@ export class HitTestContext {
 		stopAt: Element,
 	): string | null {
 		while (element && element !== element.ownerDocument.body) {
-			if (element.hasAttribute && element.hasAttribute(attr)) {
+			if (element.hasAttribute?.(attr)) {
 				return element.getAttribute(attr);
 			}
 			if (element === stopAt) {
@@ -928,7 +922,7 @@ export class MouseTargetFactory {
 				);
 			}
 
-			return this._createMouseTarget(
+			return MouseTargetFactory._createMouseTarget(
 				ctx,
 				request.withTarget(hitTestResult.hitTarget),
 				true,
@@ -941,11 +935,15 @@ export class MouseTargetFactory {
 		let result: IMouseTarget | null = null;
 
 		if (
-			!ElementPath.isChildOfOverflowGuard(request.targetPath) &&
-			!ElementPath.isChildOfOverflowingContentWidgets(
-				request.targetPath,
-			) &&
-			!ElementPath.isChildOfOverflowingOverlayWidgets(request.targetPath)
+			!(
+				ElementPath.isChildOfOverflowGuard(request.targetPath) ||
+				ElementPath.isChildOfOverflowingContentWidgets(
+					request.targetPath,
+				) ||
+				ElementPath.isChildOfOverflowingOverlayWidgets(
+					request.targetPath,
+				)
+			)
 		) {
 			// We only render dom nodes inside the overflow guard or in the overflowing content widgets
 			result = result || request.fulfillUnknown();
@@ -1250,7 +1248,7 @@ export class MouseTargetFactory {
 			);
 		}
 
-		return this._createMouseTarget(
+		return MouseTargetFactory._createMouseTarget(
 			ctx,
 			request.withTarget(hitTestResult.hitTarget),
 			true,
@@ -1505,19 +1503,20 @@ export class MouseTargetFactory {
 				adjustedPageY,
 			);
 
-			const r = this._actualDoHitTestWithCaretRangeFromPoint(
-				ctx,
-				adjustedPage.toClientCoordinates(
-					dom.getWindow(ctx.viewDomNode),
-				),
-			);
+			const r =
+				MouseTargetFactory._actualDoHitTestWithCaretRangeFromPoint(
+					ctx,
+					adjustedPage.toClientCoordinates(
+						dom.getWindow(ctx.viewDomNode),
+					),
+				);
 			if (r.type === HitTestResultType.Content) {
 				return r;
 			}
 		}
 
 		// Also try to hit test without the adjustment (for the edge cases that we are near the top or bottom)
-		return this._actualDoHitTestWithCaretRangeFromPoint(
+		return MouseTargetFactory._actualDoHitTestWithCaretRangeFromPoint(
 			ctx,
 			request.pos.toClientCoordinates(dom.getWindow(ctx.viewDomNode)),
 		);
@@ -1549,7 +1548,7 @@ export class MouseTargetFactory {
 			);
 		}
 
-		if (!range || !range.startContainer) {
+		if (!range?.startContainer) {
 			return new UnknownHitTestResult();
 		}
 
@@ -1590,7 +1589,7 @@ export class MouseTargetFactory {
 				return HitTestResult.createFromDOMInfo(
 					ctx,
 					<HTMLElement>startContainer,
-					(<HTMLElement>startContainer).textContent!.length,
+					(<HTMLElement>startContainer).textContent?.length,
 				);
 			} else {
 				return new UnknownHitTestResult(<HTMLElement>startContainer);
@@ -1706,11 +1705,14 @@ export class MouseTargetFactory {
 			typeof (<any>ctx.viewDomNode.ownerDocument).caretRangeFromPoint ===
 			"function"
 		) {
-			result = this._doHitTestWithCaretRangeFromPoint(ctx, request);
+			result = MouseTargetFactory._doHitTestWithCaretRangeFromPoint(
+				ctx,
+				request,
+			);
 		} else if (
 			(<any>ctx.viewDomNode.ownerDocument).caretPositionFromPoint
 		) {
-			result = this._doHitTestWithCaretPositionFromPoint(
+			result = MouseTargetFactory._doHitTestWithCaretPositionFromPoint(
 				ctx,
 				request.pos.toClientCoordinates(dom.getWindow(ctx.viewDomNode)),
 			);
@@ -1751,8 +1753,7 @@ function shadowCaretRangeFromPoint(
 		// This assumes that the pointer is on the right of the line, out of the tokens
 		// and that we want to get the offset of the last token of the line
 		while (
-			el &&
-			el.firstChild &&
+			el?.firstChild &&
 			el.firstChild.nodeType !== el.firstChild.TEXT_NODE &&
 			el.lastChild &&
 			el.lastChild.firstChild

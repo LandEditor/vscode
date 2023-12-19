@@ -51,7 +51,7 @@ export class KeybindingsResourceInitializer
 			JSON.parse(content);
 		if (keybindingsContent.keybindings === null) {
 			this.logService.info(
-				`Initializing Profile: No keybindings to apply...`,
+				"Initializing Profile: No keybindings to apply...",
 			);
 			return;
 		}

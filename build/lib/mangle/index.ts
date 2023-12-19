@@ -80,11 +80,11 @@ class ShortIdent {
 	}
 
 	private static convert(n: number): string {
-		const base = this._alphabet.length;
+		const base = ShortIdent._alphabet.length;
 		let result = "";
 		do {
 			const rest = n % base;
-			result += this._alphabet[rest];
+			result += ShortIdent._alphabet[rest];
 			n = (n / base) | 0;
 		} while (n > 0);
 		return result;
@@ -146,7 +146,7 @@ class ClassData {
 				continue;
 			}
 			const type = ClassData._getFieldType(member);
-			this.fields.set(ident, { type, pos: member.name!.getStart() });
+			this.fields.set(ident, { type, pos: member.name?.getStart() });
 		}
 	}
 
@@ -201,7 +201,7 @@ class ClassData {
 					const parentPos = parent.node
 						.getSourceFile()
 						.getLineAndCharacterOfPosition(
-							parent.fields.get(name)!.pos,
+							parent.fields.get(name)?.pos,
 						);
 					const infoPos = data.node
 						.getSourceFile()
@@ -280,7 +280,7 @@ class ClassData {
 	private _isNameTaken(name: string) {
 		if (
 			this.fields.has(name) &&
-			!ClassData._shouldMangle(this.fields.get(name)!.type)
+			!ClassData._shouldMangle(this.fields.get(name)?.type)
 		) {
 			// public field
 			return true;
@@ -302,14 +302,14 @@ class ClassData {
 	}
 
 	lookupShortName(name: string): string {
-		let value = this.replacements!.get(name)!;
+		let value = this.replacements?.get(name)!;
 		let parent = this.parent;
 		while (parent) {
 			if (
-				parent.replacements!.has(name) &&
+				parent.replacements?.has(name) &&
 				parent.fields.get(name)?.type === FieldType.Protected
 			) {
-				value = parent.replacements!.get(name)! ?? value;
+				value = parent.replacements?.get(name)! ?? value;
 			}
 			parent = parent.parent;
 		}
@@ -427,13 +427,13 @@ class DeclarationData {
 		return [
 			{
 				fileName: this.fileName,
-				offset: this.node.name!.getStart(),
+				offset: this.node.name?.getStart(),
 			},
 		];
 	}
 
 	shouldMangle(newName: string): boolean {
-		const currentName = this.node.name!.getText();
+		const currentName = this.node.name?.getText();
 		if (
 			currentName.startsWith("$") ||
 			skippedExportMangledSymbols.includes(currentName)
@@ -478,7 +478,7 @@ export class Mangler {
 
 	constructor(
 		private readonly projectPath: string,
-		private readonly log: typeof console.log = () => {},
+		private readonly log: typeof console.log,
 		private readonly config: {
 			readonly manglePrivateFields: boolean;
 			readonly mangleExports: boolean;
@@ -573,7 +573,7 @@ export class Mangler {
 			ts.forEachChild(node, visit);
 		};
 
-		for (const file of this.service.getProgram()!.getSourceFiles()) {
+		for (const file of this.service.getProgram()?.getSourceFiles()) {
 			if (!file.isDeclarationFile) {
 				ts.forEachChild(file, visit);
 			}
@@ -659,10 +659,10 @@ export class Mangler {
 		for (const data of this.allClassDataByKey.values()) {
 			ClassData.fillInReplacement(data);
 		}
-		this.log(`Done creating class replacements`);
+		this.log("Done creating class replacements");
 
 		// STEP: prepare rename edits
-		this.log(`Starting prepare rename edits`);
+		this.log("Starting prepare rename edits");
 
 		type Edit = { newText: string; offset: number; length: number };
 		const editsByFile = new Map<string, Edit[]>();
@@ -690,12 +690,10 @@ export class Mangler {
 			pos: number,
 		) => ts.RenameLocation[];
 
-		const renameResults: Array<
-			Promise<{
-				readonly newName: string;
-				readonly locations: readonly ts.RenameLocation[];
-			}>
-		> = [];
+		const renameResults: Promise<{
+			readonly newName: string;
+			readonly locations: readonly ts.RenameLocation[];
+		}>[] = [];
 
 		const queueRename = (
 			fileName: string,
@@ -744,7 +742,7 @@ export class Mangler {
 					data.fileName.includes(proj),
 				) ||
 				skippedExportMangledFiles.some((file) =>
-					data.fileName.endsWith(file + ".ts"),
+					data.fileName.endsWith(`${file}.ts`),
 				)
 			) {
 				continue;
@@ -776,10 +774,10 @@ export class Mangler {
 		const result = new Map<string, MangleOutput>();
 		let savedBytes = 0;
 
-		for (const item of this.service.getProgram()!.getSourceFiles()) {
+		for (const item of this.service.getProgram()?.getSourceFiles()) {
 			const { mapRoot, sourceRoot } = this.service
-				.getProgram()!
-				.getCompilerOptions();
+				.getProgram()
+				?.getCompilerOptions();
 			const projectDir = path.dirname(this.projectPath);
 			const sourceMapRoot =
 				mapRoot ?? pathToFileURL(sourceRoot ?? projectDir).toString();
@@ -929,7 +927,7 @@ async function _run() {
 	const projectPath = path.join(projectBase, "tsconfig.json");
 	const newProjectBase = path.join(
 		path.dirname(projectBase),
-		path.basename(projectBase) + "2",
+		`${path.basename(projectBase)}2`,
 	);
 
 	fs.cpSync(projectBase, newProjectBase, { recursive: true });
@@ -949,7 +947,7 @@ async function _run() {
 		await fs.promises.writeFile(newFilePath, contents.out);
 		if (contents.sourceMap) {
 			await fs.promises.writeFile(
-				newFilePath + ".map",
+				`${newFilePath}.map`,
 				contents.sourceMap,
 			);
 		}

@@ -73,8 +73,9 @@ function getSystemShellUnixLike(
 let _TERMINAL_DEFAULT_SHELL_WINDOWS: string | null = null;
 async function getSystemShellWindows(): Promise<string> {
 	if (!_TERMINAL_DEFAULT_SHELL_WINDOWS) {
-		_TERMINAL_DEFAULT_SHELL_WINDOWS =
-			(await getFirstAvailablePowerShellInstallation())!.exePath;
+		_TERMINAL_DEFAULT_SHELL_WINDOWS = (
+			await getFirstAvailablePowerShellInstallation()
+		)?.exePath;
 	}
 	return _TERMINAL_DEFAULT_SHELL_WINDOWS;
 }

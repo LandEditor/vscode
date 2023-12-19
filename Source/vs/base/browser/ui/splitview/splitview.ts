@@ -1046,10 +1046,10 @@ export class SplitView<
 		// This way, we can press Alt while we resize a sash, macOS style!
 		const disposable = combinedDisposable(
 			addDisposableListener(this.el.ownerDocument.body, "keydown", (e) =>
-				resetSashDragState(this.sashDragState!.current, e.altKey),
+				resetSashDragState(this.sashDragState?.current, e.altKey),
 			),
 			addDisposableListener(this.el.ownerDocument.body, "keyup", () =>
-				resetSashDragState(this.sashDragState!.current, false),
+				resetSashDragState(this.sashDragState?.current, false),
 			),
 		);
 
@@ -1214,7 +1214,7 @@ export class SplitView<
 
 	private onSashEnd(index: number): void {
 		this._onDidSashChange.fire(index);
-		this.sashDragState!.disposable.dispose();
+		this.sashDragState?.disposable.dispose();
 		this.saveProportions();
 
 		for (const item of this.viewItems) {
@@ -1878,8 +1878,8 @@ export class SplitView<
 	}
 
 	private areViewsDistributed() {
-		let min = undefined,
-			max = undefined;
+		let min = undefined;
+		let max = undefined;
 
 		for (const view of this.viewItems) {
 			min = min === undefined ? view.size : Math.min(min, view.size);

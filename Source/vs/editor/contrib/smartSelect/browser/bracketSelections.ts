@@ -168,11 +168,11 @@ export class BracketSelectionRangeProvider implements SelectionRangeProvider {
 						}
 						const innerBracket = Range.fromPositions(
 							bracket.range.getEndPosition(),
-							closing!.getStartPosition(),
+							closing?.getStartPosition(),
 						);
 						const outerBracket = Range.fromPositions(
 							bracket.range.getStartPosition(),
-							closing!.getEndPosition(),
+							closing?.getEndPosition(),
 						);
 						bucket.push({ range: innerBracket });
 						bucket.push({ range: outerBracket });

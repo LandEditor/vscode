@@ -51,7 +51,7 @@ class ErrorLog {
 			`Finished ${ansiColors.green("compilation")}${
 				this.id ? ansiColors.blue(` ${this.id}`) : ""
 			} with ${errors.length} errors after ${ansiColors.magenta(
-				new Date().getTime() - this.startTime! + " ms",
+				`${new Date().getTime() - this.startTime!} ms`,
 			)}`,
 		);
 
@@ -68,7 +68,7 @@ class ErrorLog {
 			}));
 
 		try {
-			const logFileName = "log" + (this.id ? `_${this.id}` : "");
+			const logFileName = `log${this.id ? `_${this.id}` : ""}`;
 			fs.writeFileSync(
 				path.join(buildLogFolder, logFileName),
 				JSON.stringify(messages),

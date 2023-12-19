@@ -20,8 +20,9 @@ const ghApiHeaders = {
 	"User-Agent": "VSCode Build",
 };
 if (process.env.GITHUB_TOKEN) {
-	ghApiHeaders.Authorization =
-		"Basic " + Buffer.from(process.env.GITHUB_TOKEN).toString("base64");
+	ghApiHeaders.Authorization = `Basic ${Buffer.from(
+		process.env.GITHUB_TOKEN,
+	).toString("base64")}`;
 }
 const ghDownloadHeaders = {
 	...ghApiHeaders,
@@ -138,7 +139,7 @@ async function fetchUrl(options, retries = 10, retryDelay = 1000) {
 					(0, child_process_1.execSync)(tarCommand, {
 						input: assetContents,
 					});
-					console.log(`Fetch complete!`);
+					console.log("Fetch complete!");
 					return;
 				}
 				throw new Error(
@@ -168,18 +169,21 @@ async function getVSCodeSysroot(arch) {
 	let expectedName;
 	let triple;
 	switch (arch) {
-		case "amd64":
-			expectedName = `x86_64-linux-gnu.tar.gz`;
+		case "amd64": {
+			expectedName = "x86_64-linux-gnu.tar.gz";
 			triple = "x86_64-linux-gnu";
 			break;
-		case "arm64":
-			expectedName = `aarch64-linux-gnu.tar.gz`;
+		}
+		case "arm64": {
+			expectedName = "aarch64-linux-gnu.tar.gz";
 			triple = "aarch64-linux-gnu";
 			break;
-		case "armhf":
-			expectedName = `arm-rpi-linux-gnueabihf.tar.gz`;
+		}
+		case "armhf": {
+			expectedName = "arm-rpi-linux-gnueabihf.tar.gz";
 			triple = "arm-rpi-linux-gnueabihf";
 			break;
+		}
 	}
 	const checksumSha256 = getVSCodeSysrootChecksum(expectedName);
 	if (!checksumSha256) {
@@ -220,7 +224,7 @@ async function getChromiumSysroot(arch) {
 	]);
 	if (result.status !== 0) {
 		throw new Error(
-			"Cannot retrieve sysroots.json. Stderr:\n" + result.stderr,
+			`Cannot retrieve sysroots.json. Stderr:\n${result.stderr}`,
 		);
 	}
 	const sysrootInfo = require(sysrootDictLocation);
@@ -255,8 +259,7 @@ async function getChromiumSysroot(arch) {
 				})
 				.on("error", (err) => {
 					console.error(
-						"Encountered an error during the download attempt: " +
-							err.message,
+						`Encountered an error during the download attempt: ${err.message}`,
 					);
 					c();
 				});
@@ -264,7 +267,7 @@ async function getChromiumSysroot(arch) {
 	}
 	if (!downloadSuccess) {
 		fs.rmSync(tarball);
-		throw new Error("Failed to download " + url);
+		throw new Error(`Failed to download ${url}`);
 	}
 	const sha = getSha(tarball);
 	if (sha !== tarballSha) {
@@ -279,7 +282,7 @@ async function getChromiumSysroot(arch) {
 		sysroot,
 	]);
 	if (proc.status) {
-		throw new Error("Tarball extraction failed with code " + proc.status);
+		throw new Error(`Tarball extraction failed with code ${proc.status}`);
 	}
 	fs.rmSync(tarball);
 	fs.writeFileSync(stamp, url);

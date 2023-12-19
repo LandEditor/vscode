@@ -58,21 +58,24 @@ export async function pickSnippet(
 			) {
 				let label = "";
 				switch (snippet.snippetSource) {
-					case SnippetSource.User:
+					case SnippetSource.User: {
 						label = nls.localize(
 							"sep.userSnippet",
 							"User Snippets",
 						);
 						break;
-					case SnippetSource.Extension:
+					}
+					case SnippetSource.Extension: {
 						label = snippet.source;
 						break;
-					case SnippetSource.Workspace:
+					}
+					case SnippetSource.Workspace: {
 						label = nls.localize(
 							"sep.workspaceSnippet",
 							"Workspace Snippets",
 						);
 						break;
+					}
 				}
 				result.push({ type: "separator", label });
 			}

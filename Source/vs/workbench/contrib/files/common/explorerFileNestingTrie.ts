@@ -122,8 +122,6 @@ export class PreTrie {
 
 	private map: Map<string, PreTrie> = new Map();
 
-	constructor() {}
-
 	add(key: string, value: string) {
 		if (key === "") {
 			this.value.add(key, value);
@@ -157,12 +155,10 @@ export class PreTrie {
 	toString(indentation = ""): string {
 		const lines = [];
 		if (this.value.hasItems) {
-			lines.push("* => \n" + this.value.toString(indentation + "  "));
+			lines.push(`* => \n${this.value.toString(`${indentation}  `)}`);
 		}
 		[...this.map.entries()].map(([key, trie]) =>
-			lines.push(
-				"^" + key + " => \n" + trie.toString(indentation + "  "),
-			),
+			lines.push(`^${key} => \n${trie.toString(`${indentation}  `)}`),
 		);
 		return lines.map((l) => indentation + l).join("\n");
 	}
@@ -176,8 +172,6 @@ export class SufTrie {
 	private map: Map<string, SufTrie> = new Map();
 	hasItems = false;
 
-	constructor() {}
-
 	add(key: string, value: string) {
 		this.hasItems = true;
 		if (key === "*") {
@@ -188,7 +182,7 @@ export class SufTrie {
 			const tail = key[key.length - 1];
 			const rest = key.slice(0, key.length - 1);
 			if (tail === "*") {
-				throw Error("Unexpected star in SufTrie key: " + key);
+				throw Error(`Unexpected star in SufTrie key: ${key}`);
 			} else {
 				let existing = this.map.get(tail);
 				if (!existing) {
@@ -225,18 +219,16 @@ export class SufTrie {
 	toString(indentation = ""): string {
 		const lines = [];
 		if (this.star.length) {
-			lines.push("* => " + this.star.join("; "));
+			lines.push(`* => ${this.star.join("; ")}`);
 		}
 
 		if (this.epsilon.length) {
 			// allow-any-unicode-next-line
-			lines.push("ε => " + this.epsilon.join("; "));
+			lines.push(`ε => ${this.epsilon.join("; ")}`);
 		}
 
 		[...this.map.entries()].map(([key, trie]) =>
-			lines.push(
-				key + "$" + " => \n" + trie.toString(indentation + "  "),
-			),
+			lines.push(`${key}$ => \n${trie.toString(`${indentation}  `)}`),
 		);
 
 		return lines.map((l) => indentation + l).join("\n");
@@ -269,11 +261,12 @@ class SubstitutionString {
 				case SubstitutionType.basename:
 				case SubstitutionType.dirname:
 				case SubstitutionType.extname:
-				case SubstitutionType.capture:
+				case SubstitutionType.capture: {
 					this.tokens.push({ capture: type });
 					break;
+				}
 				default:
-					throw Error("unknown substitution type: " + type);
+					throw Error(`unknown substitution type: ${type}`);
 			}
 			lastIndex = token.index + token[0].length;
 		}

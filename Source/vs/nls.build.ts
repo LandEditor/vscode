@@ -17,7 +17,7 @@ export function localize(
 	message: string,
 	...args: (string | number | boolean | undefined | null)[]
 ): string {
-	throw new Error(`Not supported at build time!`);
+	throw new Error("Not supported at build time!");
 }
 
 export function localize2(
@@ -25,11 +25,11 @@ export function localize2(
 	message: string,
 	...args: (string | number | boolean | undefined | null)[]
 ): never {
-	throw new Error(`Not supported at build time!`);
+	throw new Error("Not supported at build time!");
 }
 
 export function getConfiguredDefaultLocale(): string | undefined {
-	throw new Error(`Not supported at build time!`);
+	throw new Error("Not supported at build time!");
 }
 
 /**
@@ -45,7 +45,7 @@ export function load(
 		load({ localize, localize2, getConfiguredDefaultLocale });
 	} else {
 		req(
-			[name + ".nls", name + ".nls.keys"],
+			[`${name}.nls`, `${name}.nls.keys`],
 			(messages: string[], keys: string[]) => {
 				buildMap[name] = messages;
 				buildMapKeys[name] = keys;
@@ -70,12 +70,8 @@ export function write(
 
 	if (moduleName !== entryPoint) {
 		write.asModule(
-			pluginName + "!" + moduleName,
-			"define(['vs/nls', 'vs/nls!" +
-				entryPoint +
-				"'], function(nls, data) { return nls.create(\"" +
-				moduleName +
-				'", data); });',
+			`${pluginName}!${moduleName}`,
+			`define(['vs/nls', 'vs/nls!${entryPoint}'], function(nls, data) { return nls.create(\"${moduleName}", data); });`,
 		);
 	}
 }
@@ -91,13 +87,13 @@ export function writeFile(
 	config: AMDLoader.IConfigurationOptions,
 ): void {
 	if (entryPoints.hasOwnProperty(moduleName)) {
-		const fileName = req.toUrl(moduleName + ".nls.js");
+		const fileName = req.toUrl(`${moduleName}.nls.js`);
 		const contents = [
-				"/*---------------------------------------------------------",
-				" * Copyright (c) Microsoft Corporation. All rights reserved.",
-				" *--------------------------------------------------------*/",
-			],
-			entries = entryPoints[moduleName];
+			"/*---------------------------------------------------------",
+			" * Copyright (c) Microsoft Corporation. All rights reserved.",
+			" *--------------------------------------------------------*/",
+		];
+		const entries = entryPoints[moduleName];
 
 		const data: { [moduleName: string]: string[] } = {};
 		for (let i = 0; i < entries.length; i++) {
@@ -105,11 +101,7 @@ export function writeFile(
 		}
 
 		contents.push(
-			'define("' +
-				moduleName +
-				'.nls", ' +
-				JSON.stringify(data, null, "\t") +
-				");",
+			`define("${moduleName}.nls", ${JSON.stringify(data, null, "\t")});`,
 		);
 		write(fileName, contents.join("\r\n"));
 	}

@@ -115,7 +115,7 @@ export class Dialog extends Disposable {
 		super();
 
 		this.modalElement = this.container.appendChild(
-			$(`.monaco-dialog-modal-block.dimmed`),
+			$(".monaco-dialog-modal-block.dimmed"),
 		);
 		this.shadowElement = this.modalElement.appendChild($(".dialog-shadow"));
 		this.element = this.shadowElement.appendChild($(".monaco-dialog-box"));
@@ -247,18 +247,18 @@ export class Dialog extends Disposable {
 	private getIconAriaLabel(): string {
 		let typeLabel = nls.localize("dialogInfoMessage", "Info");
 		switch (this.options.type) {
-			case "error":
+			case "error": {
 				typeLabel = nls.localize("dialogErrorMessage", "Error");
 				break;
-			case "warning":
+			}
+			case "warning": {
 				typeLabel = nls.localize("dialogWarningMessage", "Warning");
 				break;
-			case "pending":
+			}
+			case "pending": {
 				typeLabel = nls.localize("dialogPendingMessage", "In Progress");
 				break;
-			case "none":
-			case "info":
-			case "question":
+			}
 			default:
 				break;
 		}
@@ -309,7 +309,7 @@ export class Dialog extends Disposable {
 				);
 				if (button instanceof ButtonWithDescription) {
 					button.description =
-						this.options.buttonDetails![buttonMap[index].index];
+						this.options.buttonDetails?.[buttonMap[index].index];
 				}
 				this._register(
 					button.onDidClick((e) => {
@@ -535,34 +535,37 @@ export class Dialog extends Disposable {
 				);
 			} else {
 				switch (this.options.type) {
-					case "error":
+					case "error": {
 						this.iconElement.classList.add(
 							...ThemeIcon.asClassNameArray(Codicon.dialogError),
 						);
 						break;
-					case "warning":
+					}
+					case "warning": {
 						this.iconElement.classList.add(
 							...ThemeIcon.asClassNameArray(
 								Codicon.dialogWarning,
 							),
 						);
 						break;
-					case "pending":
+					}
+					case "pending": {
 						this.iconElement.classList.add(
 							...ThemeIcon.asClassNameArray(Codicon.loading),
 							spinModifierClassName,
 						);
 						break;
-					case "none":
+					}
+					case "none": {
 						this.iconElement.classList.add("no-codicon");
 						break;
-					case "info":
-					case "question":
-					default:
+					}
+					default: {
 						this.iconElement.classList.add(
 							...ThemeIcon.asClassNameArray(Codicon.dialogInfo),
 						);
 						break;
+					}
 				}
 			}
 
@@ -651,15 +654,18 @@ export class Dialog extends Disposable {
 
 		let color;
 		switch (this.options.type) {
-			case "error":
+			case "error": {
 				color = style.errorIconForeground;
 				break;
-			case "warning":
+			}
+			case "warning": {
 				color = style.warningIconForeground;
 				break;
-			default:
+			}
+			default: {
 				color = style.infoIconForeground;
 				break;
+			}
 		}
 		if (color) {
 			this.iconElement.style.color = color;
@@ -684,7 +690,7 @@ export class Dialog extends Disposable {
 	}
 
 	private rearrangeButtons(
-		buttons: Array<string>,
+		buttons: string[],
 		cancelId: number | undefined,
 	): ButtonMapEntry[] {
 		// Maps each button to its current label and old index

@@ -327,7 +327,7 @@ export class InlineCompletionsController extends Disposable {
 
 					const model = this.model.read(reader);
 					const state = model?.state.read(reader);
-					if (!model || !state || !state.inlineCompletion) {
+					if (!((model && state ) && state.inlineCompletion)) {
 						lastInlineCompletionId = undefined;
 						return;
 					}
@@ -419,7 +419,7 @@ export class InlineCompletionsController extends Disposable {
 				accessibleViewKeybinding.getAriaLabel(),
 			);
 		}
-		hint ? alert(content + ", " + hint) : alert(content);
+		hint ? alert(`${content}, ${hint}`) : alert(content);
 	}
 
 	/**

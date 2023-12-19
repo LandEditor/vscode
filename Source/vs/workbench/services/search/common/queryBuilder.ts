@@ -130,15 +130,13 @@ export class QueryBuilder {
 		const searchConfig =
 			this.configurationService.getValue<ISearchConfiguration>();
 
-		const fallbackToPCRE =
-			folderResources &&
-			folderResources.some((folder) => {
-				const folderConfig =
-					this.configurationService.getValue<ISearchConfiguration>({
-						resource: folder,
-					});
-				return !folderConfig.search.useRipgrep;
-			});
+		const fallbackToPCRE = folderResources?.some((folder) => {
+			const folderConfig =
+				this.configurationService.getValue<ISearchConfiguration>({
+					resource: folder,
+				});
+			return !folderConfig.search.useRipgrep;
+		});
 
 		const commonQuery = this.commonQuery(
 			folderResources?.map(toWorkspaceFolder),
@@ -150,7 +148,7 @@ export class QueryBuilder {
 			contentPattern,
 			previewOptions: options.previewOptions,
 			maxFileSize: options.maxFileSize,
-			usePCRE2: searchConfig.search.usePCRE2 || fallbackToPCRE || false,
+			usePCRE2: searchConfig.search.usePCRE2 || fallbackToPCRE,
 			beforeContext: options.beforeContext,
 			afterContext: options.afterContext,
 			userDisabledExcludesAndIgnoreFiles:
@@ -279,8 +277,7 @@ export class QueryBuilder {
 		// Build folderQueries from searchPaths, if given, otherwise folderResources
 		const includeFolderName = folderResources.length > 1;
 		const folderQueries = (
-			includeSearchPathsInfo.searchPaths &&
-			includeSearchPathsInfo.searchPaths.length
+			includeSearchPathsInfo.searchPaths?.length
 				? includeSearchPathsInfo.searchPaths.map((searchPath) =>
 						this.getFolderQueryForSearchPath(
 							searchPath,
@@ -301,10 +298,7 @@ export class QueryBuilder {
 		const queryProps: ICommonQueryProps<uri> = {
 			_reason: options._reason,
 			folderQueries,
-			usingSearchPaths: !!(
-				includeSearchPathsInfo.searchPaths &&
-				includeSearchPathsInfo.searchPaths.length
-			),
+			usingSearchPaths: !!includeSearchPathsInfo.searchPaths?.length,
 			extraFileResources: options.extraFileResources,
 
 			excludePattern: excludeSearchPathsInfo.pattern,
@@ -338,15 +332,12 @@ export class QueryBuilder {
 		}
 
 		// Filter extraFileResources against global include/exclude patterns - they are already expected to not belong to a workspace
-		const extraFileResources =
-			options.extraFileResources &&
-			options.extraFileResources.filter((extraFile) =>
-				pathIncludedInQuery(queryProps, extraFile.fsPath),
-			);
-		queryProps.extraFileResources =
-			extraFileResources && extraFileResources.length
-				? extraFileResources
-				: undefined;
+		const extraFileResources = options.extraFileResources?.filter(
+			(extraFile) => pathIncludedInQuery(queryProps, extraFile.fsPath),
+		);
+		queryProps.extraFileResources = extraFileResources?.length
+			? extraFileResources
+			: undefined;
 
 		return queryProps;
 	}
@@ -478,7 +469,7 @@ export class QueryBuilder {
 			.map((s) => strings.rtrim(s, "\\"))
 			.map((p) => {
 				if (p[0] === ".") {
-					p = "*" + p; // convert ".js" to "*.js"
+					p = `*${p}`; // convert ".js" to "*.js"
 				}
 
 				return expandGlobalGlob(p);
@@ -488,7 +479,7 @@ export class QueryBuilder {
 		const searchPaths = this.expandSearchPathPatterns(
 			groups.searchPaths || [],
 		);
-		if (searchPaths && searchPaths.length) {
+		if (searchPaths?.length) {
 			result.searchPaths = searchPaths;
 		}
 
@@ -519,7 +510,7 @@ export class QueryBuilder {
 	private expandSearchPathPatterns(
 		searchPaths: string[],
 	): ISearchPathPattern[] {
-		if (!searchPaths || !searchPaths.length) {
+		if (!searchPaths?.length) {
 			// No workspace => ignore search paths
 			return [];
 		}
@@ -695,7 +686,7 @@ export class QueryBuilder {
 		if (pattern && !pattern.endsWith("**")) {
 			results.push({
 				searchPath: oneExpandedResult.searchPath,
-				pattern: pattern + "/**",
+				pattern: `${pattern}/**`,
 			});
 		}
 
@@ -771,7 +762,7 @@ export class QueryBuilder {
 				Object.keys(excludePattern).length > 0
 					? excludePattern
 					: undefined,
-			fileEncoding: folderConfig.files && folderConfig.files.encoding,
+			fileEncoding: folderConfig.files?.encoding,
 			disregardIgnoreFiles:
 				typeof options.disregardIgnoreFiles === "boolean"
 					? options.disregardIgnoreFiles
@@ -889,7 +880,7 @@ export function resolveResourcesForSearchIncludes(
 				// Show relative path from the root for single-root mode
 				folderPath = relativePath(workspace.folders[0].uri, resource); // always uses forward slashes
 				if (folderPath && folderPath !== ".") {
-					folderPath = "./" + folderPath;
+					folderPath = `./${folderPath}`;
 				}
 			} else {
 				const owningFolder =

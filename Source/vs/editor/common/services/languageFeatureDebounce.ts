@@ -158,7 +158,7 @@ export class LanguageFeatureDebounceService
 		const max = config?.max ?? min ** 2;
 		const extra = config?.key ?? undefined;
 		const key = `${IdentityHash.of(feature)},${min}${
-			extra ? "," + extra : ""
+			extra ? `,${extra}` : ""
 		}`;
 		let info = this._data.get(key);
 		if (!info) {

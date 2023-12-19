@@ -105,13 +105,15 @@ function joinSequenceDiffsByShifting(
 			let d;
 			for (d = 0; d < length; d++) {
 				if (
-					!sequence1.isStronglyEqual(
-						cur.seq1Range.start + d,
-						cur.seq1Range.endExclusive + d,
-					) ||
-					!sequence2.isStronglyEqual(
-						cur.seq2Range.start + d,
-						cur.seq2Range.endExclusive + d,
+					!(
+						sequence1.isStronglyEqual(
+							cur.seq1Range.start + d,
+							cur.seq1Range.endExclusive + d,
+						) &&
+						sequence2.isStronglyEqual(
+							cur.seq2Range.start + d,
+							cur.seq2Range.endExclusive + d,
+						)
 					)
 				) {
 					break;
@@ -169,7 +171,7 @@ function shiftSequenceDiffs(
 	sequence2: ISequence,
 	sequenceDiffs: SequenceDiff[],
 ): SequenceDiff[] {
-	if (!sequence1.getBoundaryScore || !sequence2.getBoundaryScore) {
+	if (!(sequence1.getBoundaryScore && sequence2.getBoundaryScore)) {
 		return sequenceDiffs;
 	}
 
@@ -264,9 +266,9 @@ function shiftDiffToBetterPosition(
 		const seq1Offset = diff.seq1Range.start + delta;
 
 		const score =
-			sequence1.getBoundaryScore!(seq1Offset) +
-			sequence2.getBoundaryScore!(seq2OffsetStart) +
-			sequence2.getBoundaryScore!(seq2OffsetEndExclusive);
+			sequence1.getBoundaryScore?.(seq1Offset) +
+			sequence2.getBoundaryScore?.(seq2OffsetStart) +
+			sequence2.getBoundaryScore?.(seq2OffsetEndExclusive);
 		if (score > bestScore) {
 			bestScore = score;
 			bestDelta = delta;
@@ -326,7 +328,7 @@ export function extendDiffsToEntireWordIfAppropriate(
 
 		const w1 = sequence1.findWordContaining(pair.offset1);
 		const w2 = sequence2.findWordContaining(pair.offset2);
-		if (!w1 || !w2) {
+		if (!(w1 && w2)) {
 			return;
 		}
 		let w = new SequenceDiff(w1, w2);
@@ -544,28 +546,13 @@ export function removeVeryShortMatchingTextBetweenLongDiffs(
 				}
 
 				if (
-					Math.pow(
-						Math.pow(
-							cap(beforeLineCount1 * 40 + beforeSeq1Length),
-							1.5,
-						) +
-							Math.pow(
-								cap(beforeLineCount2 * 40 + beforeSeq2Length),
-								1.5,
-							),
-						1.5,
-					) +
-						Math.pow(
-							Math.pow(
-								cap(afterLineCount1 * 40 + afterSeq1Length),
-								1.5,
-							) +
-								Math.pow(
-									cap(afterLineCount2 * 40 + afterSeq2Length),
-									1.5,
-								),
-							1.5,
-						) >
+					(cap(beforeLineCount1 * 40 + beforeSeq1Length) ** 1.5 +
+						cap(beforeLineCount2 * 40 + beforeSeq2Length) ** 1.5) **
+						1.5 +
+						(cap(afterLineCount1 * 40 + afterSeq1Length) ** 1.5 +
+							cap(afterLineCount2 * 40 + afterSeq2Length) **
+								1.5) **
+							1.5 >
 					(max ** 1.5) ** 1.5 * 1.3
 				) {
 					return true;

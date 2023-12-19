@@ -443,7 +443,7 @@ export class MainThreadCommentController implements ICommentController {
 	updateInput(input: string) {
 		const thread = this.activeCommentThread;
 
-		if (thread && thread.input) {
+		if (thread?.input) {
 			const commentInput = thread.input;
 			commentInput.value = input;
 			thread.input = commentInput;
@@ -807,8 +807,8 @@ export class MainThreadComments
 	private setComments() {
 		[...this._commentControllers.keys()].forEach((handle) => {
 			const threads = this._commentControllers
-				.get(handle)!
-				.getAllComments();
+				.get(handle)
+				?.getAllComments();
 
 			if (threads.length) {
 				const providerId = this.getHandler(handle);

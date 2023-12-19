@@ -1496,8 +1496,8 @@ registerAction2(
 		private getViewItems(
 			viewDescriptorService: IViewDescriptorService,
 			paneCompositePartService: IPaneCompositePartService,
-		): Array<QuickPickItem> {
-			const results: Array<QuickPickItem> = [];
+		): QuickPickItem[] {
+			const results: QuickPickItem[] = [];
 
 			const viewlets =
 				paneCompositePartService.getVisiblePaneCompositeIds(
@@ -1686,7 +1686,7 @@ class MoveFocusedViewAction extends Action2 {
 
 		const viewDescriptor =
 			viewDescriptorService.getViewDescriptorById(focusedViewId);
-		if (!viewDescriptor || !viewDescriptor.canMoveView) {
+		if (!viewDescriptor?.canMoveView) {
 			dialogService.error(
 				localize(
 					"moveFocusedView.error.nonMovableView",
@@ -1777,14 +1777,14 @@ class MoveFocusedViewAction extends Action2 {
 						viewletId ===
 						viewDescriptorService.getViewContainerByViewId(
 							focusedViewId,
-						)!.id
+						)?.id
 					) {
 						return false;
 					}
 
 					return !viewDescriptorService.getViewContainerById(
 						viewletId,
-					)!.rejectAddedViews;
+					)?.rejectAddedViews;
 				})
 				.map((viewletId) => {
 					return {
@@ -1793,7 +1793,7 @@ class MoveFocusedViewAction extends Action2 {
 							viewDescriptorService.getViewContainerById(
 								viewletId,
 							)!,
-						)!.title,
+						)?.title,
 					};
 				}),
 		);
@@ -1813,20 +1813,20 @@ class MoveFocusedViewAction extends Action2 {
 						panel ===
 						viewDescriptorService.getViewContainerByViewId(
 							focusedViewId,
-						)!.id
+						)?.id
 					) {
 						return false;
 					}
 
-					return !viewDescriptorService.getViewContainerById(panel)!
-						.rejectAddedViews;
+					return !viewDescriptorService.getViewContainerById(panel)
+						?.rejectAddedViews;
 				})
 				.map((panel) => {
 					return {
 						id: panel,
 						label: viewDescriptorService.getViewContainerModel(
 							viewDescriptorService.getViewContainerById(panel)!,
-						)!.title,
+						)?.title,
 					};
 				}),
 		);
@@ -1847,20 +1847,20 @@ class MoveFocusedViewAction extends Action2 {
 						panel ===
 						viewDescriptorService.getViewContainerByViewId(
 							focusedViewId,
-						)!.id
+						)?.id
 					) {
 						return false;
 					}
 
-					return !viewDescriptorService.getViewContainerById(panel)!
-						.rejectAddedViews;
+					return !viewDescriptorService.getViewContainerById(panel)
+						?.rejectAddedViews;
 				})
 				.map((panel) => {
 					return {
 						id: panel,
 						label: viewDescriptorService.getViewContainerModel(
 							viewDescriptorService.getViewContainerById(panel)!,
-						)!.title,
+						)?.title,
 					};
 				}),
 		);
@@ -2243,7 +2243,7 @@ const MenuBarToggledContext = ContextKeyExpr.and(
 	ContextKeyExpr.notEquals("config.window.menuBarVisibility", "compact"),
 ) as ContextKeyExpression;
 const ToggleVisibilityActions: CustomizeLayoutItem[] = [];
-if (!isMacintosh || !isNative) {
+if (!(isMacintosh && isNative)) {
 	ToggleVisibilityActions.push(
 		CreateToggleLayoutItem(
 			"workbench.action.toggleMenuBar",
@@ -2584,7 +2584,7 @@ registerAction2(
 					resetSetting("workbench.statusBar.visible");
 					resetSetting("workbench.panel.defaultLocation");
 
-					if (!isMacintosh || !isNative) {
+					if (!(isMacintosh && isNative)) {
 						resetSetting("window.menuBarVisibility");
 					}
 

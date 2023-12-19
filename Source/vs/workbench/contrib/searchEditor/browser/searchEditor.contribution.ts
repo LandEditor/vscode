@@ -127,7 +127,7 @@ class SearchEditorContribution implements IWorkbenchContribution {
 		@IInstantiationService instantiationService: IInstantiationService,
 	) {
 		editorResolverService.registerEditor(
-			"*" + SEARCH_EDITOR_EXT,
+			`*${SEARCH_EDITOR_EXT}`,
 			{
 				id: SearchEditorInput.ID,
 				label: localize(

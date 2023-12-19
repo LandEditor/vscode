@@ -225,9 +225,9 @@ export class ExtensionLinter {
 							this.addDiagnostics(
 								diagnostics,
 								document,
-								url!.offset + 1,
-								url!.offset + url!.length - 1,
-								url!.value,
+								url?.offset + 1,
+								url?.offset + url?.length - 1,
+								url?.value,
 								Context.BADGE,
 								info,
 							),
@@ -393,7 +393,7 @@ export class ExtensionLinter {
 		function findWhens(node: JsonNode | undefined, clauseName: string) {
 			if (node) {
 				switch (node.type) {
-					case "property":
+					case "property": {
 						if (node.children && node.children.length === 2) {
 							const key = node.children[0];
 							const value = node.children[1];
@@ -412,6 +412,7 @@ export class ExtensionLinter {
 							}
 						}
 						break;
+					}
 					case "object":
 					case "array":
 						if (node.children) {
@@ -557,11 +558,7 @@ export class ExtensionLinter {
 					);
 					return tokensAndPositions.concat(
 						...tokensAndPositions
-							.filter(
-								(tnp) =>
-									tnp.token.children &&
-									tnp.token.children.length,
-							)
+							.filter((tnp) => tnp.token.children?.length)
 							.map((tnp) =>
 								toTokensAndPositions.call(
 									this,
@@ -624,7 +621,7 @@ export class ExtensionLinter {
 						(name, attrs, _selfClosing, location) => {
 							if (name === "img") {
 								const src = attrs.find((a) => a.name === "src");
-								if (src && src.value && location) {
+								if (src?.value && location) {
 									const begin = text.indexOf(
 										src.value,
 										tnp.begin + location.startOffset,
@@ -817,8 +814,7 @@ export class ExtensionLinter {
 		}
 
 		if (
-			!hasScheme &&
-			!info.hasHttpsRepository &&
+			!(hasScheme || info.hasHttpsRepository) &&
 			context !== Context.ICON
 		) {
 			const range = new Range(

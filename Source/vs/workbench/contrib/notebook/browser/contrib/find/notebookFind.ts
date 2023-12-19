@@ -189,7 +189,7 @@ StartFindAction.addImplementation(
 			return false;
 		}
 
-		if (!editor.hasEditorFocus() && !editor.hasWebviewFocus()) {
+		if (!(editor.hasEditorFocus() || editor.hasWebviewFocus())) {
 			const codeEditorService = accessor.get(ICodeEditorService);
 			// check if the active pane contains the active text editor
 			const textEditor =

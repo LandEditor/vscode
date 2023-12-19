@@ -73,7 +73,7 @@ export function reviveWorkspaceEditDto(
 	uriIdentityService: IUriIdentityService,
 	resolveDataTransferFile?: (id: string) => Promise<VSBuffer>,
 ): WorkspaceEdit | undefined {
-	if (!data || !data.edits) {
+	if (!data?.edits) {
 		return <WorkspaceEdit>data;
 	}
 	const result = revive<WorkspaceEdit>(data);

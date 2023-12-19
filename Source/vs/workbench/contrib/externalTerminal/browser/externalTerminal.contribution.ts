@@ -93,8 +93,8 @@ function registerOpenTerminalCommand(
 						// TODO: Use uri for cwd in createterminal
 						const opened: { [path: string]: boolean } = {};
 						const cwds = targets.map(({ stat }) => {
-							const resource = stat!.resource;
-							if (stat!.isDirectory) {
+							const resource = stat?.resource;
+							if (stat?.isDirectory) {
 								return resource;
 							}
 							return URI.from({
@@ -131,12 +131,12 @@ function registerOpenTerminalCommand(
 					} else if (externalTerminalService) {
 						distinct(
 							targets.map(({ stat }) =>
-								stat!.isDirectory
-									? stat!.resource.fsPath
-									: dirname(stat!.resource.fsPath),
+								stat?.isDirectory
+									? stat?.resource.fsPath
+									: dirname(stat?.resource.fsPath),
 							),
 						).forEach((cwd) => {
-							externalTerminalService!.openTerminal(
+							externalTerminalService?.openTerminal(
 								config.terminal.external,
 								cwd,
 							);

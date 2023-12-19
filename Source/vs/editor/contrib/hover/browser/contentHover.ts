@@ -158,7 +158,7 @@ export class ContentHoverController extends Disposable {
 		focus: boolean,
 		mouseEvent: IEditorMouseEvent | null,
 	): boolean {
-		if (!this._widget.position || !this._currentResult) {
+		if (!(this._widget.position && this._currentResult)) {
 			// The hover is not visible
 			if (anchor) {
 				this._startHoverOperationIfNecessary(
@@ -246,7 +246,7 @@ export class ContentHoverController extends Disposable {
 		focus: boolean,
 		insistOnKeepingHoverVisible: boolean,
 	): void {
-		if (this._computer.anchor && this._computer.anchor.equals(anchor)) {
+		if (this._computer.anchor?.equals(anchor)) {
 			// We have to start a hover operation at the exact same anchor as before, so no work is needed
 			return;
 		}
@@ -976,7 +976,7 @@ export class ContentHoverWidget extends ResizableContentWidget {
 	}
 
 	private _findMaximumRenderingWidth(): number | undefined {
-		if (!this._editor || !this._editor.hasModel()) {
+		if (!this._editor?.hasModel()) {
 			return;
 		}
 
@@ -1133,7 +1133,7 @@ export class ContentHoverWidget extends ResizableContentWidget {
 		node: DocumentFragment,
 		hoverData: ContentHoverVisibleData,
 	): void {
-		if (!this._editor || !this._editor.hasModel()) {
+		if (!this._editor?.hasModel()) {
 			return;
 		}
 		this._render(node, hoverData);
@@ -1167,10 +1167,7 @@ export class ContentHoverWidget extends ResizableContentWidget {
 			);
 
 		if (accessibleViewHint) {
-			this._hover.contentsDomNode.ariaLabel =
-				this._hover.contentsDomNode.textContent +
-				", " +
-				accessibleViewHint;
+			this._hover.contentsDomNode.ariaLabel = `${this._hover.contentsDomNode.textContent}, ${accessibleViewHint}`;
 		}
 	}
 
@@ -1471,7 +1468,7 @@ class ContentHoverComputer implements IHoverComputer<IHoverPart> {
 	): AsyncIterableObject<IHoverPart> {
 		const anchor = this._anchor;
 
-		if (!this._editor.hasModel() || !anchor) {
+		if (!(this._editor.hasModel() && anchor)) {
 			return AsyncIterableObject.EMPTY;
 		}
 
@@ -1491,7 +1488,7 @@ class ContentHoverComputer implements IHoverComputer<IHoverPart> {
 	}
 
 	public computeSync(): IHoverPart[] {
-		if (!this._editor.hasModel() || !this._anchor) {
+		if (!(this._editor.hasModel() && this._anchor)) {
 			return [];
 		}
 

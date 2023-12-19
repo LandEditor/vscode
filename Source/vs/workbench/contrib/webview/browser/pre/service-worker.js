@@ -177,7 +177,7 @@ sw.addEventListener("fetch", (event) => {
 	const requestUrl = new URL(event.request.url);
 	if (
 		requestUrl.protocol === "https:" &&
-		requestUrl.hostname.endsWith("." + resourceBaseAuthority)
+		requestUrl.hostname.endsWith(`.${resourceBaseAuthority}`)
 	) {
 		switch (event.request.method) {
 			case "GET":

@@ -86,7 +86,7 @@ export function reportSample(
 	telemetryService.publicLog2<
 		TelemetrySampleData,
 		TelemetrySampleDataClassification
-	>(`unresponsive.sample`, {
+	>("unresponsive.sample", {
 		perfBaseline,
 		selfTime: sample.selfTime,
 		totalTime: sample.totalTime,

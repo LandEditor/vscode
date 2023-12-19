@@ -858,7 +858,7 @@ class MarkersStatusBarContributions
 					config = this.configurationService.getValue(
 						"problems.visibility"
 					);
-					if (!config && !this.markersStatusItemOff) {
+					if (!(config || this.markersStatusItemOff)) {
 						addStatusBarEntry();
 					} else if (config && this.markersStatusItemOff) {
 						this.markersStatusItemOff.dispose();
@@ -940,14 +940,14 @@ class MarkersStatusBarContributions
 		const problemsText: string[] = [];
 
 		// Errors
-		problemsText.push("$(error) " + this.packNumber(stats.errors));
+		problemsText.push(`$(error) ${this.packNumber(stats.errors)}`);
 
 		// Warnings
-		problemsText.push("$(warning) " + this.packNumber(stats.warnings));
+		problemsText.push(`$(warning) ${this.packNumber(stats.warnings)}`);
 
 		// Info (only if any)
 		if (stats.infos > 0) {
-			problemsText.push("$(info) " + this.packNumber(stats.infos));
+			problemsText.push(`$(info) ${this.packNumber(stats.infos)}`);
 		}
 
 		return problemsText.join(" ");
@@ -958,7 +958,7 @@ class MarkersStatusBarContributions
 		return n > 9999
 			? manyProblems
 			: n > 999
-			  ? n.toString().charAt(0) + "K"
+			  ? `${n.toString().charAt(0)}K`
 			  : n.toString();
 	}
 }

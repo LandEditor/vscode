@@ -490,30 +490,34 @@ export class HoverWidget extends Widget {
 		this._hoverContainer.style.margin = "";
 		if (this._hoverPointer) {
 			switch (this._hoverPosition) {
-				case HoverPosition.RIGHT:
+				case HoverPosition.RIGHT: {
 					targetRect.left += Constants.PointerSize;
 					targetRect.right += Constants.PointerSize;
 					this._hoverContainer.style.paddingLeft = `${Constants.PointerSize}px`;
 					this._hoverContainer.style.marginLeft = `${-Constants.PointerSize}px`;
 					break;
-				case HoverPosition.LEFT:
+				}
+				case HoverPosition.LEFT: {
 					targetRect.left -= Constants.PointerSize;
 					targetRect.right -= Constants.PointerSize;
 					this._hoverContainer.style.paddingRight = `${Constants.PointerSize}px`;
 					this._hoverContainer.style.marginRight = `${-Constants.PointerSize}px`;
 					break;
-				case HoverPosition.BELOW:
+				}
+				case HoverPosition.BELOW: {
 					targetRect.top += Constants.PointerSize;
 					targetRect.bottom += Constants.PointerSize;
 					this._hoverContainer.style.paddingTop = `${Constants.PointerSize}px`;
 					this._hoverContainer.style.marginTop = `${-Constants.PointerSize}px`;
 					break;
-				case HoverPosition.ABOVE:
+				}
+				case HoverPosition.ABOVE: {
 					targetRect.top -= Constants.PointerSize;
 					targetRect.bottom -= Constants.PointerSize;
 					this._hoverContainer.style.paddingBottom = `${Constants.PointerSize}px`;
 					this._hoverContainer.style.marginBottom = `${-Constants.PointerSize}px`;
 					break;
+				}
 			}
 
 			targetRect.center.x = targetRect.left + width / 2;

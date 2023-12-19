@@ -158,14 +158,11 @@ export class ExceptionWidget extends ZoneWidget {
 		if (this.exceptionInfo.description) {
 			const description = $(".description");
 			description.textContent = this.exceptionInfo.description;
-			ariaLabel += ", " + this.exceptionInfo.description;
+			ariaLabel += `, ${this.exceptionInfo.description}`;
 			dom.append(container, description);
 		}
 
-		if (
-			this.exceptionInfo.details &&
-			this.exceptionInfo.details.stackTrace
-		) {
+		if (this.exceptionInfo.details?.stackTrace) {
 			const stackTrace = $(".stack-trace");
 			const linkDetector =
 				this.instantiationService.createInstance(LinkDetector);
@@ -176,7 +173,7 @@ export class ExceptionWidget extends ZoneWidget {
 			);
 			stackTrace.appendChild(linkedStackTrace);
 			dom.append(container, stackTrace);
-			ariaLabel += ", " + this.exceptionInfo.details.stackTrace;
+			ariaLabel += `, ${this.exceptionInfo.details.stackTrace}`;
 		}
 		container.setAttribute("aria-label", ariaLabel);
 	}
@@ -186,12 +183,12 @@ export class ExceptionWidget extends ZoneWidget {
 		_widthInPixel: number | undefined,
 	): void {
 		// Reload the height with respect to the exception text content and relayout it to match the line count.
-		this.container!.style.height = "initial";
+		this.container?.style.height = "initial";
 
 		const lineHeight = this.editor.getOption(EditorOption.lineHeight);
 		const arrowHeight = Math.round(lineHeight / 3);
 		const computedLinesNumber = Math.ceil(
-			(this.container!.offsetHeight + arrowHeight) / lineHeight,
+			(this.container?.offsetHeight + arrowHeight) / lineHeight,
 		);
 
 		this._relayout(computedLinesNumber);

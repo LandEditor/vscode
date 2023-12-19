@@ -55,10 +55,9 @@ export class EditorScrollbar extends ViewPart {
 
 		const scrollbarOptions: ScrollableElementCreationOptions = {
 			listenOnDomNode: viewDomNode.domNode,
-			className:
-				"editor-scrollable" +
-				" " +
-				getThemeTypeSelector(context.theme.type),
+			className: `editor-scrollable ${getThemeTypeSelector(
+				context.theme.type,
+			)}`,
 			useShadows: false,
 			lazyRender: true,
 
@@ -263,9 +262,9 @@ export class EditorScrollbar extends ViewPart {
 		e: viewEvents.ViewThemeChangedEvent,
 	): boolean {
 		this.scrollbar.updateClassName(
-			"editor-scrollable" +
-				" " +
-				getThemeTypeSelector(this._context.theme.type),
+			`editor-scrollable ${getThemeTypeSelector(
+				this._context.theme.type,
+			)}`,
 		);
 		return true;
 	}

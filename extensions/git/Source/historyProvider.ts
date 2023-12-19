@@ -88,8 +88,7 @@ export class GitHistoryProvider
 
 		// Check if HEAD supports incoming/outgoing (not a tag, not detached)
 		if (
-			!this._HEAD?.name ||
-			!this._HEAD?.commit ||
+			!(this._HEAD?.name && this._HEAD?.commit) ||
 			this._HEAD.type === RefType.Tag
 		) {
 			this.currentHistoryItemGroup = undefined;

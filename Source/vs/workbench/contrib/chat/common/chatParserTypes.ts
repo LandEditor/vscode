@@ -16,7 +16,7 @@ import { IChatRequestVariableValue } from "vs/workbench/contrib/chat/common/chat
 // These are in a separate file to avoid circular dependencies with the dependencies of the parser
 
 export interface IParsedChatRequest {
-	readonly parts: ReadonlyArray<IParsedChatRequestPart>;
+	readonly parts: readonly IParsedChatRequestPart[];
 	readonly text: string;
 }
 
@@ -152,7 +152,7 @@ export class ChatRequestDynamicVariablePart implements IParsedChatRequestPart {
 
 	get promptText(): string {
 		// This needs to be dynamically generated for de-duping
-		return ``;
+		return "";
 	}
 }
 

@@ -148,11 +148,12 @@ export default class TypeScriptImplementationsCodeLensProvider extends TypeScrip
 			case PConst.Kind.method:
 			case PConst.Kind.memberVariable:
 			case PConst.Kind.memberGetAccessor:
-			case PConst.Kind.memberSetAccessor:
+			case PConst.Kind.memberSetAccessor: {
 				if (item.kindModifiers.match(/\babstract\b/g)) {
 					return getSymbolRange(document, item);
 				}
 				break;
+			}
 		}
 		return undefined;
 	}

@@ -433,7 +433,7 @@ export class NotebookTextModel
 	) {
 		this._increaseVersionId(e === "content");
 		switch (e) {
-			case "content":
+			case "content": {
 				this._pauseableEmitter.fire({
 					rawEvents: [
 						{
@@ -447,8 +447,9 @@ export class NotebookTextModel
 					endSelectionState: undefined,
 				});
 				break;
+			}
 
-			case "language":
+			case "language": {
 				this._pauseableEmitter.fire({
 					rawEvents: [
 						{
@@ -463,8 +464,9 @@ export class NotebookTextModel
 					endSelectionState: undefined,
 				});
 				break;
+			}
 
-			case "mime":
+			case "mime": {
 				this._pauseableEmitter.fire({
 					rawEvents: [
 						{
@@ -479,6 +481,7 @@ export class NotebookTextModel
 					endSelectionState: undefined,
 				});
 				break;
+			}
 		}
 	}
 
@@ -486,7 +489,7 @@ export class NotebookTextModel
 		return (
 			`${this._notebookSpecificAlternativeId}_` +
 			this.cells
-				.map((cell) => cell.handle + "," + cell.alternativeId)
+				.map((cell) => `${cell.handle},${cell.alternativeId}`)
 				.join(";")
 		);
 	}
@@ -575,7 +578,7 @@ export class NotebookTextModel
 	static computeEdits(model: NotebookTextModel, cells: ICellDto2[]) {
 		const edits: ICellEditOperation[] = [];
 
-		const commonPrefix = this._commonPrefix(
+		const commonPrefix = NotebookTextModel._commonPrefix(
 			model.cells,
 			model.cells.length,
 			0,
@@ -592,7 +595,7 @@ export class NotebookTextModel
 						index: i,
 						metadata: cells[i].metadata ?? {},
 					},
-					...this._computeOutputEdit(
+					...NotebookTextModel._computeOutputEdit(
 						i,
 						model.cells[i].outputs,
 						cells[i].outputs,
@@ -608,7 +611,7 @@ export class NotebookTextModel
 			return edits;
 		}
 
-		const commonSuffix = this._commonSuffix(
+		const commonSuffix = NotebookTextModel._commonSuffix(
 			model.cells,
 			model.cells.length - commonPrefix,
 			commonPrefix,
@@ -649,7 +652,7 @@ export class NotebookTextModel
 						index: model.cells.length - i,
 						metadata: cells[cells.length - i].metadata ?? {},
 					},
-					...this._computeOutputEdit(
+					...NotebookTextModel._computeOutputEdit(
 						model.cells.length - i,
 						model.cells[model.cells.length - i].outputs,
 						cells[cells.length - i].outputs,
@@ -871,7 +874,7 @@ export class NotebookTextModel
 
 		for (const { edit, cellIndex } of flattenEdits) {
 			switch (edit.editType) {
-				case CellEditType.Replace:
+				case CellEditType.Replace: {
 					this._replaceCells(
 						edit.index,
 						edit.count,
@@ -880,6 +883,7 @@ export class NotebookTextModel
 						computeUndoRedo,
 					);
 					break;
+				}
 				case CellEditType.Output: {
 					this._assertIndex(cellIndex);
 					const cell = this._cells[cellIndex];
@@ -906,25 +910,27 @@ export class NotebookTextModel
 					break;
 				}
 				case CellEditType.OutputItems: {
-					this._assertIndex(cellIndex);
-					const cell = this._cells[cellIndex];
-					if (edit.append) {
-						this._appendNotebookCellOutputItems(
-							cell,
-							edit.outputId,
-							edit.items,
-						);
-					} else {
-						this._replaceNotebookCellOutputItems(
-							cell,
-							edit.outputId,
-							edit.items,
-						);
+					{
+						this._assertIndex(cellIndex);
+						const cell = this._cells[cellIndex];
+						if (edit.append) {
+							this._appendNotebookCellOutputItems(
+								cell,
+								edit.outputId,
+								edit.items,
+							);
+						} else {
+							this._replaceNotebookCellOutputItems(
+								cell,
+								edit.outputId,
+								edit.items,
+							);
+						}
 					}
+					break;
 				}
-				break;
 
-				case CellEditType.Metadata:
+				case CellEditType.Metadata: {
 					this._assertIndex(edit.index);
 					this._changeCellMetadata(
 						this._cells[edit.index],
@@ -932,7 +938,8 @@ export class NotebookTextModel
 						computeUndoRedo,
 					);
 					break;
-				case CellEditType.PartialMetadata:
+				}
+				case CellEditType.PartialMetadata: {
 					this._assertIndex(cellIndex);
 					this._changeCellMetadataPartial(
 						this._cells[cellIndex],
@@ -940,14 +947,16 @@ export class NotebookTextModel
 						computeUndoRedo,
 					);
 					break;
-				case CellEditType.PartialInternalMetadata:
+				}
+				case CellEditType.PartialInternalMetadata: {
 					this._assertIndex(cellIndex);
 					this._changeCellInternalMetadataPartial(
 						this._cells[cellIndex],
 						edit.internalMetadata,
 					);
 					break;
-				case CellEditType.CellLanguage:
+				}
+				case CellEditType.CellLanguage: {
 					this._assertIndex(edit.index);
 					this._changeCellLanguage(
 						this._cells[edit.index],
@@ -955,13 +964,15 @@ export class NotebookTextModel
 						computeUndoRedo,
 					);
 					break;
-				case CellEditType.DocumentMetadata:
+				}
+				case CellEditType.DocumentMetadata: {
 					this._updateNotebookMetadata(
 						edit.metadata,
 						computeUndoRedo,
 					);
 					break;
-				case CellEditType.Move:
+				}
+				case CellEditType.Move: {
 					this._moveCellToIdx(
 						edit.index,
 						edit.length,
@@ -972,6 +983,7 @@ export class NotebookTextModel
 						undefined,
 					);
 					break;
+				}
 			}
 		}
 	}
@@ -1170,7 +1182,7 @@ export class NotebookTextModel
 	}
 
 	private _increaseVersionId(transient: boolean): void {
-		this._versionId = this._versionId + 1;
+		this._versionId += 1;
 		if (!transient) {
 			this._notebookSpecificAlternativeId = this._versionId;
 		}
@@ -1361,10 +1373,12 @@ export class NotebookTextModel
 		for (const key of keys) {
 			if (key === "custom") {
 				if (
-					!this._customMetadataEqual(a[key], b[key]) &&
-					!this.transientOptions.transientDocumentMetadata[
-						key as keyof NotebookDocumentMetadata
-					]
+					!(
+						this._customMetadataEqual(a[key], b[key]) ||
+						this.transientOptions.transientDocumentMetadata[
+							key as keyof NotebookDocumentMetadata
+						]
+					)
 				) {
 					return true;
 				}
@@ -1406,12 +1420,12 @@ export class NotebookTextModel
 	}
 
 	private _customMetadataEqual(a: any, b: any) {
-		if (!a && !b) {
+		if (!(a || b)) {
 			// both of them are nullish or undefined
 			return true;
 		}
 
-		if (!a || !b) {
+		if (!(a && b)) {
 			return false;
 		}
 

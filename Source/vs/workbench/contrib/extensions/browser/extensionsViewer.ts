@@ -360,7 +360,7 @@ export class ExtensionsTree extends WorkbenchAsyncDataTree<
 		const identityProvider = {
 			getId({ extension, parent }: IExtensionData): string {
 				return parent
-					? this.getId(parent) + "/" + extension.identifier.id
+					? `${this.getId(parent)}/${extension.identifier.id}`
 					: extension.identifier.id;
 			},
 		};

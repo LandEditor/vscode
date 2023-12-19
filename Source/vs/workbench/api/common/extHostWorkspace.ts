@@ -458,7 +458,7 @@ export class ExtHostWorkspace
 			});
 		}
 
-		if (!!this._unconfirmedWorkspace) {
+		if (this._unconfirmedWorkspace) {
 			return false; // prevent accumulated calls without a confirmed workspace
 		}
 
@@ -716,7 +716,7 @@ export class ExtHostWorkspace
 			}
 		}
 
-		if (token && token.isCancellationRequested) {
+		if (token?.isCancellationRequested) {
 			return Promise.resolve([]);
 		}
 
@@ -805,7 +805,7 @@ export class ExtHostWorkspace
 			}
 
 			const uri = URI.revive(p.resource);
-			p.results!.forEach((rawResult) => {
+			p.results?.forEach((rawResult) => {
 				const result: ITextSearchResult<URI> = revive(rawResult);
 				if (resultIsMatch(result)) {
 					callback(<vscode.TextSearchMatch>{

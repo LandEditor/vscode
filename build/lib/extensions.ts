@@ -93,9 +93,9 @@ function fromLocal(
 
 	if (isWebPacked) {
 		input = updateExtensionPackageJSON(input, (data: any) => {
-			delete data.scripts;
-			delete data.dependencies;
-			delete data.devDependencies;
+			data.scripts = undefined;
+			data.dependencies = undefined;
+			data.devDependencies = undefined;
 			if (data.main) {
 				data.main = data.main.replace("/out/", "/dist/");
 			}
@@ -332,7 +332,7 @@ export function fromMarketplace(
 		.pipe(filter("extension/**"))
 		.pipe(
 			rename(
-				(p) => (p.dirname = p.dirname!.replace(/^extension\/?/, "")),
+				(p) => (p.dirname = p.dirname?.replace(/^extension\/?/, "")),
 			),
 		)
 		.pipe(packageJsonFilter)
@@ -369,7 +369,7 @@ export function fromGithub({
 		.pipe(filter("extension/**"))
 		.pipe(
 			rename(
-				(p) => (p.dirname = p.dirname!.replace(/^extension\/?/, "")),
+				(p) => (p.dirname = p.dirname?.replace(/^extension\/?/, "")),
 			),
 		)
 		.pipe(packageJsonFilter)
@@ -415,10 +415,10 @@ interface IExtensionManifest {
  * Loosely based on `getExtensionKind` from `src/vs/workbench/services/extensions/common/extensionManifestPropertiesService.ts`
  */
 function isWebExtension(manifest: IExtensionManifest): boolean {
-	if (Boolean(manifest.browser)) {
+	if (manifest.browser) {
 		return true;
 	}
-	if (Boolean(manifest.main)) {
+	if (manifest.main) {
 		return false;
 	}
 	// neither browser nor main
@@ -523,9 +523,9 @@ export function packageMarketplaceExtensionsStream(forWeb: boolean): Stream {
 					rename((p) => (p.dirname = `extensions/${p.dirname}`)),
 				);
 				return updateExtensionPackageJSON(src, (data: any) => {
-					delete data.scripts;
-					delete data.dependencies;
-					delete data.devDependencies;
+					data.scripts = undefined;
+					data.dependencies = undefined;
+					data.devDependencies = undefined;
 					return data;
 				});
 			}),
@@ -695,7 +695,7 @@ export async function webpackExtensions(
 						outputRoot,
 						path.relative(
 							path.dirname(configPath),
-							config.output!.path!,
+							config.output?.path!,
 						),
 					);
 				}
@@ -718,7 +718,7 @@ export async function webpackExtensions(
 					fancyLog(
 						`Finished ${ansiColors.green(
 							taskName,
-						)} ${ansiColors.cyan(match![0])} with ${
+						)} ${ansiColors.cyan(match?.[0])} with ${
 							stats.errors.length
 						} errors.`,
 					);
@@ -801,7 +801,7 @@ async function esbuildExtensions(
 				},
 			);
 
-			proc.stdout!.on("data", (data) => {
+			proc.stdout?.on("data", (data) => {
 				fancyLog(
 					`${ansiColors.green(taskName)}: ${data.toString("utf8")}`,
 				);

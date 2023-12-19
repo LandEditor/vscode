@@ -45,7 +45,7 @@ function noCompress<T>(
 	element: ICompressedTreeElement<T>,
 ): ICompressedTreeElement<ICompressedTreeNode<T>> {
 	const elements = [element.element];
-	const incompressible = element.incompressible || false;
+	const incompressible = element.incompressible;
 
 	return {
 		element: { elements, incompressible },
@@ -60,7 +60,7 @@ export function compress<T>(
 	element: ICompressedTreeElement<T>,
 ): ICompressedTreeElement<ICompressedTreeNode<T>> {
 	const elements = [element.element];
-	const incompressible = element.incompressible || false;
+	const incompressible = element.incompressible;
 
 	let childrenIterator: Iterable<ICompressedTreeElement<T>>;
 	let children: ICompressedTreeElement<T>[];
@@ -213,7 +213,7 @@ export class CompressedObjectTreeModel<
 
 	setChildren(
 		element: T | null,
-		children: Iterable<ICompressedTreeElement<T>> = Iterable.empty(),
+		children: Iterable<ICompressedTreeElement<T>>,
 		options: IObjectTreeModelSetChildrenOptions<T, TFilterData>,
 	): void {
 		// Diffs must be deep, since the compression can affect nested elements.
@@ -261,8 +261,8 @@ export class CompressedObjectTreeModel<
 		// Saves work and churn diffing the parent element.
 		const elementComparator = options.diffIdentityProvider
 			? (a: T, b: T) =>
-					options.diffIdentityProvider!.getId(a) ===
-					options.diffIdentityProvider!.getId(b)
+					options.diffIdentityProvider?.getId(a) ===
+					options.diffIdentityProvider?.getId(b)
 			: undefined;
 		if (
 			equals(
@@ -577,7 +577,7 @@ function mapOptions<T, TFilterData>(
 		...options,
 		identityProvider: options.identityProvider && {
 			getId(node: ICompressedTreeNode<T>): { toString(): string } {
-				return options.identityProvider!.getId(
+				return options.identityProvider?.getId(
 					compressedNodeUnwrapper(node),
 				);
 			},
@@ -587,7 +587,7 @@ function mapOptions<T, TFilterData>(
 				node: ICompressedTreeNode<T>,
 				otherNode: ICompressedTreeNode<T>,
 			): number {
-				return options.sorter!.compare(
+				return options.sorter?.compare(
 					node.elements[0],
 					otherNode.elements[0],
 				);
@@ -598,7 +598,7 @@ function mapOptions<T, TFilterData>(
 				node: ICompressedTreeNode<T>,
 				parentVisibility: TreeVisibility,
 			): TreeFilterResult<TFilterData> {
-				return options.filter!.filter(
+				return options.filter?.filter(
 					compressedNodeUnwrapper(node),
 					parentVisibility,
 				);

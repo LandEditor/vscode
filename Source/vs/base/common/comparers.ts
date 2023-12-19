@@ -268,13 +268,10 @@ function extractNameAndExtension(
 	dotfilesAsNames = false,
 ): [string, string] {
 	const match = str
-		? (FileNameMatch.exec(str) as Array<string>)
-		: ([] as Array<string>);
+		? (FileNameMatch.exec(str) as string[])
+		: ([] as string[]);
 
-	let result: [string, string] = [
-		(match && match[1]) || "",
-		(match && match[3]) || "",
-	];
+	let result: [string, string] = [match?.[1] || "", match?.[3] || ""];
 
 	// if the dotfilesAsNames option is selected, treat an empty filename with an extension
 	// or a filename that starts with a dot, as a dotfile name
@@ -283,7 +280,7 @@ function extractNameAndExtension(
 		((!result[0] && result[1]) ||
 			(result[0] && result[0].charAt(0) === "."))
 	) {
-		result = [result[0] + "." + result[1], ""];
+		result = [`${result[0]}.${result[1]}`, ""];
 	}
 
 	return result;
@@ -292,10 +289,10 @@ function extractNameAndExtension(
 /** Extracts the extension from a full filename. Treats dotfiles as names, not extensions. */
 function extractExtension(str?: string | null): string {
 	const match = str
-		? (FileNameMatch.exec(str) as Array<string>)
-		: ([] as Array<string>);
+		? (FileNameMatch.exec(str) as string[])
+		: ([] as string[]);
 
-	return (match && match[1] && match[1].charAt(0) !== "." && match[3]) || "";
+	return (match?.[1] && match[1].charAt(0) !== "." && match[3]) || "";
 }
 
 function compareAndDisambiguateByLength(
@@ -372,8 +369,8 @@ function comparePathComponents(
 	caseSensitive = false,
 ): number {
 	if (!caseSensitive) {
-		one = one && one.toLowerCase();
-		other = other && other.toLowerCase();
+		one = one?.toLowerCase();
+		other = other?.toLowerCase();
 	}
 
 	if (one === other) {
@@ -393,7 +390,8 @@ export function comparePaths(
 
 	const lastOne = oneParts.length - 1;
 	const lastOther = otherParts.length - 1;
-	let endOne: boolean, endOther: boolean;
+	let endOne: boolean;
+	let endOther: boolean;
 
 	for (let i = 0; ; i++) {
 		endOne = lastOne === i;

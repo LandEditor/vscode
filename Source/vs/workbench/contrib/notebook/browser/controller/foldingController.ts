@@ -100,14 +100,14 @@ export class FoldingController
 		levels: number,
 	) {
 		const doCollapse = state === CellFoldingState.Collapsed;
-		const region = this._foldingModel!.getRegionAtLine(index + 1);
+		const region = this._foldingModel?.getRegionAtLine(index + 1);
 		const regions: FoldingRegion[] = [];
 		if (region) {
 			if (region.isCollapsed !== doCollapse) {
 				regions.push(region);
 			}
 			if (levels > 1) {
-				const regionsInside = this._foldingModel!.getRegionsInside(
+				const regionsInside = this._foldingModel?.getRegionsInside(
 					region,
 					(r, level: number) =>
 						r.isCollapsed !== doCollapse && level < levels,
@@ -117,7 +117,7 @@ export class FoldingController
 		}
 
 		regions.forEach((r) =>
-			this._foldingModel!.setCollapsed(
+			this._foldingModel?.setCollapsed(
 				r.regionIndex,
 				state === CellFoldingState.Collapsed,
 			),
@@ -137,7 +137,7 @@ export class FoldingController
 				level <= levels,
 		);
 		regions.forEach((r) =>
-			this._foldingModel!.setCollapsed(
+			this._foldingModel?.setCollapsed(
 				r.regionIndex,
 				state === CellFoldingState.Collapsed,
 			),
@@ -292,7 +292,7 @@ registerAction2(
 				return;
 			}
 
-			const levels = (args && args.levels) || 1;
+			const levels = args?.levels || 1;
 			const direction = args && args.direction === "up" ? "up" : "down";
 			let index: number | undefined = undefined;
 
@@ -391,7 +391,7 @@ registerAction2(
 				return;
 			}
 
-			const levels = (args && args.levels) || 1;
+			const levels = args?.levels || 1;
 			const direction = args && args.direction === "up" ? "up" : "down";
 			let index: number | undefined = undefined;
 

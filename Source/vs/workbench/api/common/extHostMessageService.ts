@@ -16,7 +16,7 @@ import {
 } from "./extHost.protocol";
 
 function isMessageItem(item: any): item is vscode.MessageItem {
-	return item && item.title;
+	return item?.title;
 }
 
 export class ExtHostMessageService {

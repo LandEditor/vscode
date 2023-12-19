@@ -93,7 +93,7 @@ class RemoteSourceProviderQuickPick implements Disposable {
 			}
 			this.ensureQuickPick();
 			this.quickpick!.busy = true;
-			this.quickpick!.show();
+			this.quickpick?.show();
 
 			const remoteSources =
 				(await this.provider.getRemoteSources(this.quickpick?.value)) ||
@@ -293,7 +293,7 @@ async function pickProviderSource(
 		}
 	}
 
-	if (!url || !options.branch) {
+	if (!(url && options.branch)) {
 		return url;
 	}
 

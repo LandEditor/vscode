@@ -13,7 +13,7 @@ import { BaseServiceConfigurationProvider } from "./configuration";
 
 export class ElectronServiceConfigurationProvider extends BaseServiceConfigurationProvider {
 	private fixPathPrefixes(inspectValue: string): string {
-		const pathPrefixes = ["~" + path.sep];
+		const pathPrefixes = [`~${path.sep}`];
 		for (const pathPrefix of pathPrefixes) {
 			if (inspectValue.startsWith(pathPrefix)) {
 				return path.join(

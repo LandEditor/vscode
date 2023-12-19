@@ -125,7 +125,7 @@ declare namespace semver {
 	export function prerelease(
 		version: string | SemVer,
 		optionsOrLoose?: boolean | Options,
-	): ReadonlyArray<string> | null;
+	): readonly string[] | null;
 
 	// Comparison
 	/**
@@ -306,7 +306,7 @@ declare namespace semver {
 	 * Return the highest version in the list that satisfies the range, or null if none of them do.
 	 */
 	export function maxSatisfying<T extends string | SemVer>(
-		versions: ReadonlyArray<T>,
+		versions: readonly T[],
 		range: string | Range,
 		optionsOrLoose?: boolean | Options,
 	): T | null;
@@ -314,7 +314,7 @@ declare namespace semver {
 	 * Return the lowest version in the list that satisfies the range, or null if none of them do.
 	 */
 	export function minSatisfying<T extends string | SemVer>(
-		versions: ReadonlyArray<T>,
+		versions: readonly T[],
 		range: string | Range,
 		optionsOrLoose?: boolean | Options,
 	): T | null;
@@ -376,7 +376,7 @@ declare namespace semver {
 		minor: number;
 		patch: number;
 		version: string;
-		build: ReadonlyArray<string>;
+		build: readonly string[];
 		prerelease: ReadonlyArray<string | number>;
 
 		/**
@@ -452,8 +452,8 @@ declare namespace semver {
 		format(): string;
 		inspect(): string;
 
-		set: ReadonlyArray<ReadonlyArray<Comparator>>;
-		parseRange(range: string): ReadonlyArray<Comparator>;
+		set: readonly (readonly Comparator[])[];
+		parseRange(range: string): readonly Comparator[];
 		test(version: string | SemVer): boolean;
 		intersects(range: Range, optionsOrLoose?: boolean | Options): boolean;
 	}

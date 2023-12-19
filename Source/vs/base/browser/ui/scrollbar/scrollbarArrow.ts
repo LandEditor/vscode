@@ -43,8 +43,8 @@ export class ScrollbarArrow extends Widget {
 		this.bgDomNode = document.createElement("div");
 		this.bgDomNode.className = "arrow-background";
 		this.bgDomNode.style.position = "absolute";
-		this.bgDomNode.style.width = opts.bgWidth + "px";
-		this.bgDomNode.style.height = opts.bgHeight + "px";
+		this.bgDomNode.style.width = `${opts.bgWidth}px`;
+		this.bgDomNode.style.height = `${opts.bgHeight}px`;
 		if (typeof opts.top !== "undefined") {
 			this.bgDomNode.style.top = "0px";
 		}
@@ -63,19 +63,19 @@ export class ScrollbarArrow extends Widget {
 		this.domNode.classList.add(...ThemeIcon.asClassNameArray(opts.icon));
 
 		this.domNode.style.position = "absolute";
-		this.domNode.style.width = ARROW_IMG_SIZE + "px";
-		this.domNode.style.height = ARROW_IMG_SIZE + "px";
+		this.domNode.style.width = `${ARROW_IMG_SIZE}px`;
+		this.domNode.style.height = `${ARROW_IMG_SIZE}px`;
 		if (typeof opts.top !== "undefined") {
-			this.domNode.style.top = opts.top + "px";
+			this.domNode.style.top = `${opts.top}px`;
 		}
 		if (typeof opts.left !== "undefined") {
-			this.domNode.style.left = opts.left + "px";
+			this.domNode.style.left = `${opts.left}px`;
 		}
 		if (typeof opts.bottom !== "undefined") {
-			this.domNode.style.bottom = opts.bottom + "px";
+			this.domNode.style.bottom = `${opts.bottom}px`;
 		}
 		if (typeof opts.right !== "undefined") {
-			this.domNode.style.right = opts.right + "px";
+			this.domNode.style.right = `${opts.right}px`;
 		}
 
 		this._pointerMoveMonitor = this._register(
@@ -105,7 +105,7 @@ export class ScrollbarArrow extends Widget {
 	}
 
 	private _arrowPointerDown(e: PointerEvent): void {
-		if (!e.target || !(e.target instanceof Element)) {
+		if (!(e.target && e.target instanceof Element)) {
 			return;
 		}
 		const scheduleRepeater = () => {

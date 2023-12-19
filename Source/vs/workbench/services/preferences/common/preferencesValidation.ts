@@ -81,7 +81,7 @@ export function createValidator(
 				isNullOrEmpty(value) ||
 				typeof value === "boolean" ||
 				Array.isArray(value) ||
-				isNaN(+value)
+				Number.isNaN(+value)
 			) {
 				errors.push(
 					nls.localize(
@@ -205,7 +205,7 @@ function getStringValidators(prop: IConfigurationPropertySchema) {
 		},
 		{
 			enabled: patternRegex !== undefined,
-			isValid: (value: string) => patternRegex!.test(value),
+			isValid: (value: string) => patternRegex?.test(value),
 			message:
 				prop.patternErrorMessage ||
 				nls.localize(
@@ -236,7 +236,7 @@ function getStringValidators(prop: IConfigurationPropertySchema) {
 			enabled: prop.format === "uri",
 			isValid: (value: string) => {
 				const matches = value.match(uriRegex);
-				return !!(matches && matches[2]);
+				return !!matches?.[2];
 			},
 			message: nls.localize(
 				"validations.uriSchemeMissing",
@@ -246,7 +246,7 @@ function getStringValidators(prop: IConfigurationPropertySchema) {
 		{
 			enabled: prop.enum !== undefined,
 			isValid: (value: string) => {
-				return prop.enum!.includes(value);
+				return prop.enum?.includes(value);
 			},
 			message: nls.localize(
 				"validations.invalidStringEnumValue",
@@ -363,7 +363,7 @@ function getArrayValidator(
 	if (prop.type === "array" && prop.items && !Array.isArray(prop.items)) {
 		const propItems = prop.items;
 		if (propItems && !Array.isArray(propItems.type)) {
-			const withQuotes = (s: string) => `'` + s + `'`;
+			const withQuotes = (s: string) => `'${s}'`;
 			return (value) => {
 				if (!value) {
 					return null;
@@ -443,11 +443,9 @@ function getArrayValidator(
 									"validations.stringArrayItemEnum",
 									"Value {0} is not one of {1}",
 									withQuotes(v),
-									"[" +
-										propItemsEnum
-											.map(withQuotes)
-											.join(", ") +
-										"]",
+									`[${propItemsEnum
+										.map(withQuotes)
+										.join(", ")}]`,
 								);
 								message += "\n";
 							}

@@ -24,11 +24,11 @@ function calculatePackageDeps(binaryPath) {
 		}
 	} catch (e) {
 		// The package might not exist. Don't re-throw the error here.
-		console.error("Tried to stat " + binaryPath + " but failed.");
+		console.error(`Tried to stat ${binaryPath} but failed.`);
 	}
 	const findRequiresResult = (0, child_process_1.spawnSync)(
 		"/usr/lib/rpm/find-requires",
-		{ input: binaryPath + "\n" },
+		{ input: `${binaryPath}\n` },
 	);
 	if (findRequiresResult.status !== 0) {
 		throw new Error(

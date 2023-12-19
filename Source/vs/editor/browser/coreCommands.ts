@@ -88,20 +88,26 @@ export namespace EditorScroll_ {
 			return false;
 		}
 
-		if (!types.isUndefined(scrollArg.by) && !types.isString(scrollArg.by)) {
-			return false;
-		}
-
 		if (
-			!types.isUndefined(scrollArg.value) &&
-			!types.isNumber(scrollArg.value)
+			!(types.isUndefined(scrollArg.by) || types.isString(scrollArg.by))
 		) {
 			return false;
 		}
 
 		if (
-			!types.isUndefined(scrollArg.revealCursor) &&
-			!types.isBoolean(scrollArg.revealCursor)
+			!(
+				types.isUndefined(scrollArg.value) ||
+				types.isNumber(scrollArg.value)
+			)
+		) {
+			return false;
+		}
+
+		if (
+			!(
+				types.isUndefined(scrollArg.revealCursor) ||
+				types.isBoolean(scrollArg.revealCursor)
+			)
 		) {
 			return false;
 		}
@@ -194,18 +200,22 @@ export namespace EditorScroll_ {
 	export function parse(args: Partial<RawArguments>): ParsedArguments | null {
 		let direction: Direction;
 		switch (args.to) {
-			case RawDirection.Up:
+			case RawDirection.Up: {
 				direction = Direction.Up;
 				break;
-			case RawDirection.Right:
+			}
+			case RawDirection.Right: {
 				direction = Direction.Right;
 				break;
-			case RawDirection.Down:
+			}
+			case RawDirection.Down: {
 				direction = Direction.Down;
 				break;
-			case RawDirection.Left:
+			}
+			case RawDirection.Left: {
 				direction = Direction.Left;
 				break;
+			}
 			default:
 				// Illegal arguments
 				return null;
@@ -213,24 +223,30 @@ export namespace EditorScroll_ {
 
 		let unit: Unit;
 		switch (args.by) {
-			case RawUnit.Line:
+			case RawUnit.Line: {
 				unit = Unit.Line;
 				break;
-			case RawUnit.WrappedLine:
+			}
+			case RawUnit.WrappedLine: {
 				unit = Unit.WrappedLine;
 				break;
-			case RawUnit.Page:
+			}
+			case RawUnit.Page: {
 				unit = Unit.Page;
 				break;
-			case RawUnit.HalfPage:
+			}
+			case RawUnit.HalfPage: {
 				unit = Unit.HalfPage;
 				break;
-			case RawUnit.Editor:
+			}
+			case RawUnit.Editor: {
 				unit = Unit.Editor;
 				break;
-			case RawUnit.Column:
+			}
+			case RawUnit.Column: {
 				unit = Unit.Column;
 				break;
+			}
 			default:
 				unit = Unit.WrappedLine;
 		}
@@ -281,15 +297,19 @@ export namespace RevealLine_ {
 		const reveaLineArg: RawArguments = arg;
 
 		if (
-			!types.isNumber(reveaLineArg.lineNumber) &&
-			!types.isString(reveaLineArg.lineNumber)
+			!(
+				types.isNumber(reveaLineArg.lineNumber) ||
+				types.isString(reveaLineArg.lineNumber)
+			)
 		) {
 			return false;
 		}
 
 		if (
-			!types.isUndefined(reveaLineArg.at) &&
-			!types.isString(reveaLineArg.at)
+			!(
+				types.isUndefined(reveaLineArg.at) ||
+				types.isString(reveaLineArg.at)
+			)
 		) {
 			return false;
 		}
@@ -356,7 +376,7 @@ abstract class EditorOrNativeTextInputCommand {
 				const focusedEditor = accessor
 					.get(ICodeEditorService)
 					.getFocusedCodeEditor();
-				if (focusedEditor && focusedEditor.hasTextFocus()) {
+				if (focusedEditor?.hasTextFocus()) {
 					return this._runEditorCommand(
 						accessor,
 						focusedEditor,
@@ -1260,7 +1280,7 @@ export namespace CoreNavigationCommands {
 
 							if (
 								newModelPosition &&
-								!state.modelState!.selection.containsPosition(
+								!state.modelState?.selection.containsPosition(
 									newModelPosition,
 								)
 							) {
@@ -1269,7 +1289,7 @@ export namespace CoreNavigationCommands {
 
 							if (
 								newViewPosition &&
-								!state.viewState!.selection.containsPosition(
+								!state.viewState?.selection.containsPosition(
 									newViewPosition,
 								)
 							) {
@@ -1501,7 +1521,7 @@ export namespace CoreNavigationCommands {
 					viewModel,
 					viewModel.getCursorStates(),
 					this._inSelectionMode,
-					args.sticky || false,
+					args.sticky,
 				),
 			);
 			viewModel.revealPrimaryCursor(args.source, true);
@@ -1525,7 +1545,7 @@ export namespace CoreNavigationCommands {
 					},
 				},
 				metadata: {
-					description: `Go to End`,
+					description: "Go to End",
 					args: [
 						{
 							name: "args",
@@ -1567,7 +1587,7 @@ export namespace CoreNavigationCommands {
 					},
 				},
 				metadata: {
-					description: `Select to End`,
+					description: "Select to End",
 					args: [
 						{
 							name: "args",
@@ -2547,15 +2567,18 @@ export namespace CoreNavigationCommands {
 					let revealAt = VerticalRevealType.Simple;
 					if (revealLineArg.at) {
 						switch (revealLineArg.at) {
-							case RevealLine_.RawAtArgument.Top:
+							case RevealLine_.RawAtArgument.Top: {
 								revealAt = VerticalRevealType.Top;
 								break;
-							case RevealLine_.RawAtArgument.Center:
+							}
+							case RevealLine_.RawAtArgument.Center: {
 								revealAt = VerticalRevealType.Center;
 								break;
-							case RevealLine_.RawAtArgument.Bottom:
+							}
+							case RevealLine_.RawAtArgument.Bottom: {
 								revealAt = VerticalRevealType.Bottom;
 								break;
+							}
 							default:
 								break;
 						}
@@ -2993,13 +3016,13 @@ function registerOverwritableCommand(
 	metadata?: ICommandMetadata,
 ): void {
 	registerCommand(
-		new EditorHandlerCommand("default:" + handlerId, handlerId),
+		new EditorHandlerCommand(`default:${handlerId}`, handlerId),
 	);
 	registerCommand(new EditorHandlerCommand(handlerId, handlerId, metadata));
 }
 
 registerOverwritableCommand(Handler.Type, {
-	description: `Type`,
+	description: "Type",
 	args: [
 		{
 			name: "args",

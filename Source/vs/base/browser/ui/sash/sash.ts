@@ -377,7 +377,7 @@ export class Sash extends Disposable {
 					);
 					this.orthogonalStartDragHandleDisposables.add(
 						toDisposable(() =>
-							this._orthogonalStartDragHandle!.remove(),
+							this._orthogonalStartDragHandle?.remove(),
 						),
 					);
 					this.orthogonalStartDragHandleDisposables
@@ -444,7 +444,7 @@ export class Sash extends Disposable {
 					);
 					this.orthogonalEndDragHandleDisposables.add(
 						toDisposable(() =>
-							this._orthogonalEndDragHandle!.remove(),
+							this._orthogonalEndDragHandle?.remove(),
 						),
 					);
 					this.orthogonalEndDragHandleDisposables
@@ -797,37 +797,39 @@ export class Sash extends Disposable {
 			const verticalProvider = <IVerticalSashLayoutProvider>(
 				this.layoutProvider
 			);
-			this.el.style.left =
-				verticalProvider.getVerticalSashLeft(this) -
-				this.size / 2 +
-				"px";
+			this.el.style.left = `${
+				verticalProvider.getVerticalSashLeft(this) - this.size / 2
+			}px`;
 
 			if (verticalProvider.getVerticalSashTop) {
-				this.el.style.top =
-					verticalProvider.getVerticalSashTop(this) + "px";
+				this.el.style.top = `${verticalProvider.getVerticalSashTop(
+					this,
+				)}px`;
 			}
 
 			if (verticalProvider.getVerticalSashHeight) {
-				this.el.style.height =
-					verticalProvider.getVerticalSashHeight(this) + "px";
+				this.el.style.height = `${verticalProvider.getVerticalSashHeight(
+					this,
+				)}px`;
 			}
 		} else {
 			const horizontalProvider = <IHorizontalSashLayoutProvider>(
 				this.layoutProvider
 			);
-			this.el.style.top =
-				horizontalProvider.getHorizontalSashTop(this) -
-				this.size / 2 +
-				"px";
+			this.el.style.top = `${
+				horizontalProvider.getHorizontalSashTop(this) - this.size / 2
+			}px`;
 
 			if (horizontalProvider.getHorizontalSashLeft) {
-				this.el.style.left =
-					horizontalProvider.getHorizontalSashLeft(this) + "px";
+				this.el.style.left = `${horizontalProvider.getHorizontalSashLeft(
+					this,
+				)}px`;
 			}
 
 			if (horizontalProvider.getHorizontalSashWidth) {
-				this.el.style.width =
-					horizontalProvider.getHorizontalSashWidth(this) + "px";
+				this.el.style.width = `${horizontalProvider.getHorizontalSashWidth(
+					this,
+				)}px`;
 			}
 		}
 	}
@@ -835,7 +837,7 @@ export class Sash extends Disposable {
 	private getOrthogonalSash(e: PointerEvent): Sash | undefined {
 		const target = e.initialTarget ?? e.target;
 
-		if (!target || !(target instanceof HTMLElement)) {
+		if (!(target && target instanceof HTMLElement)) {
 			return undefined;
 		}
 

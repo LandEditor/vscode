@@ -519,7 +519,7 @@ async function doConnectRemoteAgentExtensionHost(
 			startArguments,
 			timeoutCancellationToken,
 		);
-	const debugPort = firstMessage && firstMessage.debugPort;
+	const debugPort = firstMessage?.debugPort;
 	return { protocol, debugPort };
 }
 
@@ -774,26 +774,30 @@ export abstract class PersistentConnection extends Disposable {
 		attempt: number,
 		handled: boolean,
 	): void {
-		this._permanentFailure = true;
-		this._permanentFailureMillisSinceLastIncomingData =
+		PersistentConnection._permanentFailure = true;
+		PersistentConnection._permanentFailureMillisSinceLastIncomingData =
 			millisSinceLastIncomingData;
-		this._permanentFailureAttempt = attempt;
-		this._permanentFailureHandled = handled;
-		this._instances.forEach((instance) =>
+		PersistentConnection._permanentFailureAttempt = attempt;
+		PersistentConnection._permanentFailureHandled = handled;
+		PersistentConnection._instances.forEach((instance) =>
 			instance._gotoPermanentFailure(
-				this._permanentFailureMillisSinceLastIncomingData,
-				this._permanentFailureAttempt,
-				this._permanentFailureHandled,
+				PersistentConnection._permanentFailureMillisSinceLastIncomingData,
+				PersistentConnection._permanentFailureAttempt,
+				PersistentConnection._permanentFailureHandled,
 			),
 		);
 	}
 
 	public static debugTriggerReconnection() {
-		this._instances.forEach((instance) => instance._beginReconnecting());
+		PersistentConnection._instances.forEach((instance) =>
+			instance._beginReconnecting(),
+		);
 	}
 
 	public static debugPauseSocketWriting() {
-		this._instances.forEach((instance) => instance._pauseSocketWriting());
+		PersistentConnection._instances.forEach((instance) =>
+			instance._pauseSocketWriting(),
+		);
 	}
 
 	private static _permanentFailure = false;
@@ -1078,7 +1082,7 @@ export abstract class PersistentConnection extends Disposable {
 				);
 				break;
 			}
-		} while (!this._isPermanentFailure && !this._isDisposed);
+		} while (!(this._isPermanentFailure || this._isDisposed));
 	}
 
 	private _onReconnectionPermanentFailure(

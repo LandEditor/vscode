@@ -158,8 +158,12 @@ export class LocalFileSearchWorkerClient
 					const handle: FileSystemHandle | undefined =
 						await this.fileSystemProvider.getHandle(fq.folder);
 					if (
-						!handle ||
-						!WebFileSystemAccess.isFileSystemDirectoryHandle(handle)
+						!(
+							handle &&
+							WebFileSystemAccess.isFileSystemDirectoryHandle(
+								handle,
+							)
+						)
 					) {
 						console.error(
 							"Could not get directory handle for ",
@@ -239,8 +243,12 @@ export class LocalFileSearchWorkerClient
 					const handle: FileSystemHandle | undefined =
 						await this.fileSystemProvider.getHandle(fq.folder);
 					if (
-						!handle ||
-						!WebFileSystemAccess.isFileSystemDirectoryHandle(handle)
+						!(
+							handle &&
+							WebFileSystemAccess.isFileSystemDirectoryHandle(
+								handle,
+							)
+						)
 					) {
 						console.error(
 							"Could not get directory handle for ",

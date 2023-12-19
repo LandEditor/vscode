@@ -126,7 +126,7 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 			const installed = exts.find((value) =>
 				ExtensionIdentifier.equals(
 					value.identifier.id,
-					this.productService.gitHubEntitlement!.extensionId
+					this.productService.gitHubEntitlement?.extensionId
 				)
 			);
 			if (installed) {
@@ -150,7 +150,7 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 				for (const ext of result.added) {
 					if (
 						ExtensionIdentifier.equals(
-							this.productService.gitHubEntitlement!.extensionId,
+							this.productService.gitHubEntitlement?.extensionId,
 							ext.identifier,
 						)
 					) {
@@ -171,14 +171,14 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 			this.authenticationService.onDidChangeSessions(async (e) => {
 				if (
 					e.providerId ===
-						this.productService.gitHubEntitlement!.providerId &&
+						this.productService.gitHubEntitlement?.providerId &&
 					e.event.added.length > 0 &&
 					!this.isInitialized
 				) {
 					this.onSessionChange(e.event.added[0]);
 				} else if (
 					e.providerId ===
-						this.productService.gitHubEntitlement!.providerId &&
+						this.productService.gitHubEntitlement?.providerId &&
 					e.event.removed.length > 0
 				) {
 					this.contextKey.set(false);
@@ -191,7 +191,7 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 				async (e) => {
 					if (
 						e.id ===
-							this.productService.gitHubEntitlement!.providerId &&
+							this.productService.gitHubEntitlement?.providerId &&
 						!this.isInitialized
 					) {
 						const session =
@@ -209,7 +209,7 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 		const context = await this.requestService.request(
 			{
 				type: "GET",
-				url: this.productService.gitHubEntitlement!.entitlementUrl,
+				url: this.productService.gitHubEntitlement?.entitlementUrl,
 				headers: {
 					Authorization: `Bearer ${session.accessToken}`,
 				},
@@ -235,10 +235,12 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 
 		if (
 			!(
-				this.productService.gitHubEntitlement!.enablementKey in
-				parsedResult
-			) ||
-			!parsedResult[this.productService.gitHubEntitlement!.enablementKey]
+				this.productService.gitHubEntitlement?.enablementKey in
+					parsedResult &&
+				parsedResult[
+					this.productService.gitHubEntitlement?.enablementKey
+				]
+			)
 		) {
 			return;
 		}
@@ -251,11 +253,11 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 
 		const orgs = parsedResult["organization_login_list"] as any[];
 		const menuTitle = orgs
-			? this.productService.gitHubEntitlement!.command.title.replace(
+			? this.productService.gitHubEntitlement?.command.title.replace(
 					"{{org}}",
 					orgs[orgs.length - 1],
 			  )
-			: this.productService.gitHubEntitlement!.command
+			: this.productService.gitHubEntitlement?.command
 					.titleWithoutPlaceHolder;
 
 		const badge = new NumberBadge(1, () => menuTitle);
@@ -291,24 +293,24 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 					const confirmation = await dialogService.confirm({
 						type: "question",
 						message:
-							productService.gitHubEntitlement!
-								.confirmationMessage,
+							productService.gitHubEntitlement
+								?.confirmationMessage,
 						primaryButton:
-							productService.gitHubEntitlement!
-								.confirmationAction,
+							productService.gitHubEntitlement
+								?.confirmationAction,
 					});
 
 					if (confirmation.confirmed) {
 						commandService.executeCommand(
-							productService.gitHubEntitlement!.command.action,
-							productService.gitHubEntitlement!.extensionId!,
+							productService.gitHubEntitlement?.command.action,
+							productService.gitHubEntitlement?.extensionId!,
 						);
 						telemetryService.publicLog2<
 							{ command: string },
 							EntitlementActionClassification
 						>("accountsEntitlements.action", {
 							command:
-								productService.gitHubEntitlement!.command
+								productService.gitHubEntitlement?.command
 									.action,
 						});
 					} else {
@@ -316,9 +318,7 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 							{ command: string },
 							EntitlementActionClassification
 						>("accountsEntitlements.action", {
-							command:
-								productService.gitHubEntitlement!.command
-									.action + "-dismissed",
+							command: `${productService.gitHubEntitlement?.command.action}-dismissed`,
 						});
 					}
 

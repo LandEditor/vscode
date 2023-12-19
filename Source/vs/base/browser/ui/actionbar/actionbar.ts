@@ -174,15 +174,17 @@ export class ActionBar extends Disposable implements IActionRunner {
 		let nextKeys: KeyCode[];
 
 		switch (this._orientation) {
-			case ActionsOrientation.HORIZONTAL:
+			case ActionsOrientation.HORIZONTAL: {
 				previousKeys = [KeyCode.LeftArrow];
 				nextKeys = [KeyCode.RightArrow];
 				break;
-			case ActionsOrientation.VERTICAL:
+			}
+			case ActionsOrientation.VERTICAL: {
 				previousKeys = [KeyCode.UpArrow];
 				nextKeys = [KeyCode.DownArrow];
 				this.domNode.className += " vertical";
 				break;
+			}
 		}
 
 		this._register(
@@ -438,12 +440,10 @@ export class ActionBar extends Disposable implements IActionRunner {
 	}
 
 	push(
-		arg: IAction | ReadonlyArray<IAction>,
+		arg: IAction | readonly IAction[],
 		options: IActionOptions = {},
 	): void {
-		const actions: ReadonlyArray<IAction> = Array.isArray(arg)
-			? arg
-			: [arg];
+		const actions: readonly IAction[] = Array.isArray(arg) ? arg : [arg];
 
 		let index = types.isNumber(options.index) ? options.index : null;
 
@@ -654,7 +654,7 @@ export class ActionBar extends Disposable implements IActionRunner {
 		let item: IActionViewItem;
 
 		do {
-			this.focusedItem = this.focusedItem - 1;
+			this.focusedItem -= 1;
 			if (this.focusedItem < 0) {
 				if (!forceLoop && this.options.preventLoopNavigation) {
 					this.focusedItem = startIndex;

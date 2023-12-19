@@ -206,7 +206,7 @@ export class TerminalAccessibleViewContribution
 				}
 				if (
 					this._isTerminalAccessibleViewOpen() &&
-					this._xterm!.raw.buffer.active.baseY === 0
+					this._xterm?.raw.buffer.active.baseY === 0
 				) {
 					this.show();
 				}
@@ -309,7 +309,7 @@ export class TerminalAccessibleViewContribution
 			AccessibleViewProviderId.Terminal,
 		)?.lineNumber;
 		const commands = this._getCommandsWithEditorLine();
-		if (!commands?.length || !currentLine) {
+		if (!(commands?.length && currentLine)) {
 			return;
 		}
 
@@ -349,7 +349,7 @@ export class TerminalAccessibleViewContribution
 		}
 		if (currentCommand) {
 			const lineNumber = this._getEditorLineForCommand(currentCommand);
-			if (!!lineNumber) {
+			if (lineNumber) {
 				result.push({ command: currentCommand, lineNumber });
 			}
 		}

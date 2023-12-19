@@ -1088,7 +1088,7 @@ export class ExtHostApiCommands {
 	static register(commands: ExtHostCommands) {
 		newCommands.forEach(commands.registerApiCommand, commands);
 
-		this._registerValidateWhenClausesCommand(commands);
+		ExtHostApiCommands._registerValidateWhenClausesCommand(commands);
 	}
 
 	private static _registerValidateWhenClausesCommand(

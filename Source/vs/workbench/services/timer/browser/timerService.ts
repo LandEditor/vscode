@@ -540,7 +540,7 @@ export abstract class AbstractTimerService implements ITimerService {
 		this.perfBaseline = this._barrier
 			.wait()
 			.then(() => this._lifecycleService.when(LifecyclePhase.Eventually))
-			.then(() => timeout(this._startupMetrics!.timers.ellapsedRequire))
+			.then(() => timeout(this._startupMetrics?.timers.ellapsedRequire))
 			.then(() => {
 				// we use fibonacci numbers to have a performance baseline that indicates
 				// how slow/fast THIS machine actually is.

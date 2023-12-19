@@ -416,7 +416,7 @@ export class WorkspaceMergeEditorModeFactory
 			source: WorkspaceMergeEditorModeFactory.FILE_SAVED_SOURCE,
 		});
 
-		const lines = resultTextFileModel.textEditorModel!.getLinesContent();
+		const lines = resultTextFileModel.textEditorModel?.getLinesContent();
 		const hasConflictMarkers = lines.some((l) =>
 			l.startsWith(conflictMarkers.start),
 		);

@@ -23,7 +23,7 @@ const stats_1 = require("./stats");
 const util = require("./util");
 const REPO_ROOT_PATH = path.join(__dirname, "../..");
 function log(prefix, message) {
-	fancyLog(ansiColors.cyan("[" + prefix + "]"), message);
+	fancyLog(ansiColors.cyan(`[${prefix}]`), message);
 }
 function loaderConfig() {
 	const result = {
@@ -153,7 +153,7 @@ function toConcatStream(
 		const root = source.path ? REPO_ROOT_PATH.replace(/\\/g, "/") : "";
 		const base = source.path ? root + `/${src}` : ".";
 		const path = source.path
-			? root + "/" + source.path.replace(/\\/g, "/")
+			? `${root}/${source.path.replace(/\\/g, "/")}`
 			: "fake";
 		const contents = source.path
 			? fileContentMapper(source.contents, path)
@@ -214,9 +214,9 @@ function optimizeAMDTask(opts) {
 		const filteredResources = resources.slice();
 		result.cssInlinedResources.forEach((resource) => {
 			if (process.env["VSCODE_BUILD_VERBOSE"]) {
-				log("optimizer", "excluding inlined: " + resource);
+				log("optimizer", `excluding inlined: ${resource}`);
 			}
-			filteredResources.push("!" + resource);
+			filteredResources.push(`!${resource}`);
 		});
 		gulp.src(filteredResources, { base: `${src}`, allowEmpty: true }).pipe(
 			resourcesStream,
@@ -250,7 +250,7 @@ function optimizeAMDTask(opts) {
 			}),
 		)
 		.pipe(
-			opts.languages && opts.languages.length
+			opts.languages?.length
 				? (0, i18n_1.processNlsFiles)({
 						fileHeader: bundledFileHeader,
 						languages: opts.languages,
@@ -290,7 +290,7 @@ function optimizeLoaderTask(
 	src,
 	out,
 	bundleLoader,
-	bundledFileHeader = "",
+	bundledFileHeader,
 	externalLoaderInfo,
 ) {
 	return () =>
@@ -326,7 +326,7 @@ function minifyTask(src, sourceMapBaseUrl) {
 		const cssFilter = filter("**/*.css", { restore: true });
 		const svgFilter = filter("**/*.svg", { restore: true });
 		pump(
-			gulp.src([src + "/**", "!" + src + "/**/*.map"]),
+			gulp.src([`${src}/**`, `!${src}/**/*.map`]),
 			jsFilter,
 			sourcemaps.init({ loadMaps: true }),
 			es.map((f, cb) => {
@@ -383,7 +383,7 @@ function minifyTask(src, sourceMapBaseUrl) {
 				includeContent: true,
 				addComment: true,
 			}),
-			gulp.dest(src + "-min"),
+			gulp.dest(`${src}-min`),
 			(err) => cb(err),
 		);
 	};

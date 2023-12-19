@@ -263,21 +263,21 @@ export class Throttler implements IDisposable {
 				};
 
 				this.queuedPromise = new Promise((resolve) => {
-					this.activePromise!.then(onComplete, onComplete).then(
-						resolve,
-					);
+					this.activePromise
+						?.then(onComplete, onComplete)
+						.then(resolve);
 				});
 			}
 
 			return new Promise((resolve, reject) => {
-				this.queuedPromise!.then(resolve, reject);
+				this.queuedPromise?.then(resolve, reject);
 			});
 		}
 
 		this.activePromise = promiseFactory();
 
 		return new Promise((resolve, reject) => {
-			this.activePromise!.then(
+			this.activePromise?.then(
 				(result: T) => {
 					this.activePromise = null;
 					resolve(result);
@@ -1162,10 +1162,6 @@ export class ProcessTimeRunOnceScheduler {
 
 export class RunOnceWorker<T> extends RunOnceScheduler {
 	private units: T[] = [];
-
-	constructor(runner: (units: T[]) => void, timeout: number) {
-		super(runner, timeout);
-	}
 
 	work(unit: T): void {
 		this.units.push(unit);

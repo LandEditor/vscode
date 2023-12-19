@@ -111,7 +111,7 @@ class CellHoverTarget extends Widget implements IHoverTarget {
 		// Add middle target rows
 		if (rowCount > 2) {
 			const middleTarget = $("div.terminal-hover-target.hoverHighlight");
-			middleTarget.style.left = `0px`;
+			middleTarget.style.left = "0px";
 			middleTarget.style.bottom = `${
 				(this._options.terminalDimensions.height -
 					this._options.viewportRange.start.y -
@@ -132,7 +132,7 @@ class CellHoverTarget extends Widget implements IHoverTarget {
 		// Add bottom target row
 		if (rowCount > 1) {
 			const bottomTarget = $("div.terminal-hover-target.hoverHighlight");
-			bottomTarget.style.left = `0px`;
+			bottomTarget.style.left = "0px";
 			bottomTarget.style.bottom = `${
 				(this._options.terminalDimensions.height -
 					this._options.viewportRange.end.y -
@@ -159,7 +159,7 @@ class CellHoverTarget extends Widget implements IHoverTarget {
 					(e) => {
 						if (e.ctrlKey && !down) {
 							down = true;
-							this._options.modifierDownCallback!();
+							this._options.modifierDownCallback?.();
 						}
 					},
 				),
@@ -171,7 +171,7 @@ class CellHoverTarget extends Widget implements IHoverTarget {
 					(e) => {
 						if (!e.ctrlKey) {
 							down = false;
-							this._options.modifierUpCallback!();
+							this._options.modifierUpCallback?.();
 						}
 					},
 				),

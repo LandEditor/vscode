@@ -109,5 +109,5 @@ const ansiColorMap = [
 ];
 
 for (const color of ansiColorMap) {
-	addSettingMapping(color, "terminal." + color);
+	addSettingMapping(color, `terminal.${color}`);
 }

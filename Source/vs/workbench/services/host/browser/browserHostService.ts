@@ -564,11 +564,9 @@ export class BrowserHostService extends Disposable implements IHostService {
 		this.instantiationService.invokeFunction((accessor) => fn(accessor));
 	}
 
-	private preservePayload(
-		isEmptyWindow: boolean,
-	): Array<unknown> | undefined {
+	private preservePayload(isEmptyWindow: boolean): unknown[] | undefined {
 		// Selectively copy payload: for now only extension debugging properties are considered
-		const newPayload: Array<unknown> = new Array();
+		const newPayload: unknown[] = new Array();
 		if (
 			!isEmptyWindow &&
 			this.environmentService.extensionDevelopmentLocationURI
@@ -620,10 +618,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 		return this.labelService.getUriLabel(openable.fileUri);
 	}
 
-	private shouldReuse(
-		options: IOpenWindowOptions = Object.create(null),
-		isFile: boolean,
-	): boolean {
+	private shouldReuse(options: IOpenWindowOptions, isFile: boolean): boolean {
 		if (options.waitMarkerFileURI) {
 			return true; // always handle --wait in same window
 		}
@@ -639,8 +634,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 			(options.preferNewWindow || !!options.forceNewWindow) &&
 			!options.forceReuseWindow;
 		if (
-			!options.forceNewWindow &&
-			!options.forceReuseWindow &&
+			!(options.forceNewWindow || options.forceReuseWindow) &&
 			(openInNewWindowConfig === "on" || openInNewWindowConfig === "off")
 		) {
 			openInNewWindow = openInNewWindowConfig === "on";

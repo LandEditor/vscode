@@ -40,9 +40,10 @@ export class ExtractError extends Error {
 		let message = cause.message;
 
 		switch (type) {
-			case "CorruptZip":
+			case "CorruptZip": {
 				message = `Corrupt ZIP: ${message}`;
 				break;
+			}
 		}
 
 		super(message);
@@ -292,7 +293,7 @@ export async function zip(zipPath: string, files: IFile[]): Promise<string> {
 export function extract(
 	zipPath: string,
 	targetPath: string,
-	options: IExtractOptions = {},
+	options: IExtractOptions,
 	token: CancellationToken,
 ): Promise<void> {
 	const sourcePathRegex = new RegExp(

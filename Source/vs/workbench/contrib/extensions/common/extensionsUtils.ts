@@ -81,7 +81,7 @@ export class KeymapExtensions
 						extensionIdentifier,
 					),
 				);
-				if (extension && extension.globallyEnabled) {
+				if (extension?.globallyEnabled) {
 					const otherKeymaps = keymaps.filter(
 						(extension) =>
 							!areSameExtensions(

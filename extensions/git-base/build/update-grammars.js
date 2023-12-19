@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-var updateGrammar = require("vscode-grammar-updater");
+const updateGrammar = require("vscode-grammar-updater");
 
 updateGrammar.update(
 	"walles/git-commit-message-plus",

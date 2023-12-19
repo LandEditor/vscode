@@ -100,15 +100,15 @@ export class ExtensionPointUserDelta<T> {
 		previous: readonly IExtensionPointUser<T>[] | null,
 		current: readonly IExtensionPointUser<T>[],
 	): ExtensionPointUserDelta<T> {
-		if (!previous || !previous.length) {
+		if (!previous?.length) {
 			return new ExtensionPointUserDelta<T>(current, []);
 		}
-		if (!current || !current.length) {
+		if (!current?.length) {
 			return new ExtensionPointUserDelta<T>([], previous);
 		}
 
-		const previousSet = this._toSet(previous);
-		const currentSet = this._toSet(current);
+		const previousSet = ExtensionPointUserDelta._toSet(previous);
+		const currentSet = ExtensionPointUserDelta._toSet(current);
 
 		const added = current.filter(
 			(user) => !previousSet.has(user.description.identifier),
@@ -882,7 +882,7 @@ export class ExtensionsRegistryImpl {
 	): IExtensionPoint<T> {
 		if (this._extensionPoints.has(desc.extensionPoint)) {
 			throw new Error(
-				"Duplicate extension point: " + desc.extensionPoint,
+				`Duplicate extension point: ${desc.extensionPoint}`,
 			);
 		}
 		const result = new ExtensionPoint<T>(
@@ -897,7 +897,7 @@ export class ExtensionsRegistryImpl {
 			);
 		}
 
-		schema.properties!["contributes"].properties![desc.extensionPoint] =
+		schema.properties?.["contributes"].properties![desc.extensionPoint] =
 			desc.jsonSchema;
 		schemaRegistry.registerSchema(schemaId, schema);
 

@@ -147,8 +147,10 @@ function createInlineValueDecoration(
 ): IModelDeltaDecoration[] {
 	// If decoratorText is too long, trim and add ellipses. This could happen for minified files with everything on a single line
 	if (contentText.length > MAX_INLINE_DECORATOR_LENGTH) {
-		contentText =
-			contentText.substring(0, MAX_INLINE_DECORATOR_LENGTH) + "...";
+		contentText = `${contentText.substring(
+			0,
+			MAX_INLINE_DECORATOR_LENGTH,
+		)}...`;
 	}
 
 	return [
@@ -194,7 +196,7 @@ function replaceWsWithNoBreakWs(str: string): string {
 }
 
 function createInlineValueDecorationsInsideRange(
-	expressions: ReadonlyArray<IExpression>,
+	expressions: readonly IExpression[],
 	ranges: Range[],
 	model: ITextModel,
 	wordToLineNumbersMap: Map<string, number[]>,
@@ -226,8 +228,8 @@ function createInlineValueDecorationsInsideRange(
 						lineToNamesMap.set(lineNumber, []);
 					}
 
-					if (lineToNamesMap.get(lineNumber)!.indexOf(name) === -1) {
-						lineToNamesMap.get(lineNumber)!.push(name);
+					if (lineToNamesMap.get(lineNumber)?.indexOf(name) === -1) {
+						lineToNamesMap.get(lineNumber)?.push(name);
 					}
 				}
 			}
@@ -289,7 +291,7 @@ function getWordToLineNumbersMap(
 					result.set(word, []);
 				}
 
-				result.get(word)!.push(lineNumber);
+				result.get(word)?.push(lineNumber);
 			}
 		}
 	}
@@ -484,10 +486,12 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 		stackFrame: IStackFrame | undefined,
 	): void {
 		if (
-			!stackFrame ||
-			!this.uriIdentityService.extUri.isEqual(
-				model.uri,
-				stackFrame.source.uri,
+			!(
+				stackFrame &&
+				this.uriIdentityService.extUri.isEqual(
+					model.uri,
+					stackFrame.source.uri,
+				)
 			)
 		) {
 			this.altListener.clear();
@@ -738,7 +742,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 		const model = this.editor.getModel();
 		const focusedSf = this.debugService.getViewModel().focusedStackFrame;
 		const callStack = focusedSf ? focusedSf.thread.getCallStack() : null;
-		if (!model || !focusedSf || !callStack || callStack.length === 0) {
+		if (!(model && focusedSf && callStack) || callStack.length === 0) {
 			this.closeExceptionWidget();
 			return;
 		}
@@ -747,9 +751,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 		const exceptionSf = callStack.find(
 			(sf) =>
 				!!(
-					sf &&
-					sf.source &&
-					sf.source.available &&
+					sf?.source?.available &&
 					sf.source.presentationHint !== "deemphasize"
 				),
 		);
@@ -955,9 +957,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 				model &&
 				this.languageFeaturesService.inlineValuesProvider.has(model));
 		if (
-			!inlineValuesTurnedOn ||
-			!model ||
-			!stackFrame ||
+			!(inlineValuesTurnedOn && model && stackFrame) ||
 			model.uri.toString() !== stackFrame.source.uri.toString()
 		) {
 			if (!this.removeInlineValuesScheduler.isScheduled()) {
@@ -1029,9 +1029,10 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 										let text: string | undefined =
 											undefined;
 										switch (iv.type) {
-											case "text":
+											case "text": {
 												text = iv.text;
 												break;
+											}
 											case "variable": {
 												let va = iv.variableName;
 												if (!va) {

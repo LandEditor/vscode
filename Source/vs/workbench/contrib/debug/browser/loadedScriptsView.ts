@@ -100,7 +100,7 @@ class BaseTreeItem {
 	setSource(session: IDebugSession, source: Source): void {
 		this._source = source;
 		this._children.clear();
-		if (source.raw && source.raw.sources) {
+		if (source.raw?.sources) {
 			for (const src of source.raw.sources) {
 				if (src.name && src.path) {
 					const s = new BaseTreeItem(this, src.name);
@@ -246,7 +246,7 @@ class BaseTreeItem {
 	}
 
 	private oneChild(): BaseTreeItem | undefined {
-		if (!this._source && !this._showedMoreThanOne && this.skipOneChild()) {
+		if (!(this._source || this._showedMoreThanOne) && this.skipOneChild()) {
 			if (this._children.size === 1) {
 				return this._children.values().next().value;
 			}
@@ -263,9 +263,9 @@ class BaseTreeItem {
 			// if the root node has only one Session, don't show the session
 			return this instanceof RootTreeItem;
 		} else {
-			return (
-				!(this instanceof RootFolderTreeItem) &&
-				!(this instanceof SessionTreeItem)
+			return !(
+				this instanceof RootFolderTreeItem ||
+				this instanceof SessionTreeItem
 			);
 		}
 	}
@@ -606,7 +606,7 @@ export class LoadedScriptsView extends ViewPane {
 			this.tree.onDidOpen((e) => {
 				if (e.element instanceof BaseTreeItem) {
 					const source = e.element.getSource();
-					if (source && source.available) {
+					if (source?.available) {
 						const nullRange = {
 							startLineNumber: 0,
 							startColumn: 0,
@@ -670,7 +670,7 @@ export class LoadedScriptsView extends ViewPane {
 					let sessionRoot: SessionTreeItem;
 					switch (event.reason) {
 						case "new":
-						case "changed":
+						case "changed": {
 							sessionRoot = root.add(session);
 							await sessionRoot.addPath(event.source);
 							scheduleRefreshOnVisible();
@@ -680,19 +680,19 @@ export class LoadedScriptsView extends ViewPane {
 								);
 							}
 							break;
-						case "removed":
+						}
+						case "removed": {
 							sessionRoot = root.find(session);
-							if (
-								sessionRoot &&
-								sessionRoot.removePath(event.source)
-							) {
+							if (sessionRoot?.removePath(event.source)) {
 								scheduleRefreshOnVisible();
 							}
 							break;
-						default:
+						}
+						default: {
 							this.filter.setFilter(event.source.name);
 							this.tree.refilter();
 							break;
+						}
 					}
 				}),
 			);
@@ -858,7 +858,7 @@ class LoadedScriptsRenderer
 			options.hideIcon = true;
 		} else if (element instanceof BaseTreeItem) {
 			const src = element.getSource();
-			if (src && src.uri) {
+			if (src?.uri) {
 				label.resource = src.uri;
 				options.fileKind = FileKind.FILE;
 			} else {

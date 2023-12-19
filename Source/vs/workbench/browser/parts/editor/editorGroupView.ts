@@ -557,10 +557,11 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 		this._register(
 			this.onDidModelChange((e) => {
 				switch (e.kind) {
-					case GroupModelChangeKind.GROUP_LOCKED:
+					case GroupModelChangeKind.GROUP_LOCKED: {
 						groupLockedContext.set(this.isLocked);
 						break;
-					case GroupModelChangeKind.EDITOR_ACTIVE:
+					}
+					case GroupModelChangeKind.EDITOR_ACTIVE: {
 						groupActiveEditorFirstContext.set(
 							this.model.isFirst(this.model.activeEditor),
 						);
@@ -578,9 +579,10 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 								: false,
 						);
 						break;
+					}
 					case GroupModelChangeKind.EDITOR_CLOSE:
 					case GroupModelChangeKind.EDITOR_OPEN:
-					case GroupModelChangeKind.EDITOR_MOVE:
+					case GroupModelChangeKind.EDITOR_MOVE: {
 						groupActiveEditorFirstContext.set(
 							this.model.isFirst(this.model.activeEditor),
 						);
@@ -588,20 +590,23 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 							this.model.isLast(this.model.activeEditor),
 						);
 						break;
-					case GroupModelChangeKind.EDITOR_PIN:
+					}
+					case GroupModelChangeKind.EDITOR_PIN: {
 						if (e.editor && e.editor === this.model.activeEditor) {
 							groupActiveEditorPinnedContext.set(
 								this.model.isPinned(this.model.activeEditor),
 							);
 						}
 						break;
-					case GroupModelChangeKind.EDITOR_STICKY:
+					}
+					case GroupModelChangeKind.EDITOR_STICKY: {
 						if (e.editor && e.editor === this.model.activeEditor) {
 							groupActiveEditorStickyContext.set(
 								this.model.isSticky(this.model.activeEditor),
 							);
 						}
 						break;
+					}
 				}
 
 				// Group editors count context
@@ -940,12 +945,13 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 		}
 
 		switch (e.kind) {
-			case GroupModelChangeKind.EDITOR_OPEN:
+			case GroupModelChangeKind.EDITOR_OPEN: {
 				if (isGroupEditorOpenEvent(e)) {
 					this.onDidOpenEditor(e.editor, e.editorIndex);
 				}
 				break;
-			case GroupModelChangeKind.EDITOR_CLOSE:
+			}
+			case GroupModelChangeKind.EDITOR_CLOSE: {
 				if (isGroupEditorCloseEvent(e)) {
 					this.handleOnDidCloseEditor(
 						e.editor,
@@ -955,15 +961,19 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 					);
 				}
 				break;
-			case GroupModelChangeKind.EDITOR_WILL_DISPOSE:
+			}
+			case GroupModelChangeKind.EDITOR_WILL_DISPOSE: {
 				this.onWillDisposeEditor(e.editor);
 				break;
-			case GroupModelChangeKind.EDITOR_DIRTY:
+			}
+			case GroupModelChangeKind.EDITOR_DIRTY: {
 				this.onDidChangeEditorDirty(e.editor);
 				break;
-			case GroupModelChangeKind.EDITOR_LABEL:
+			}
+			case GroupModelChangeKind.EDITOR_LABEL: {
 				this.onDidChangeEditorLabel(e.editor);
 				break;
+			}
 		}
 	}
 
@@ -1535,8 +1545,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 		};
 
 		if (
-			!openEditorOptions.active &&
-			!openEditorOptions.pinned &&
+			!(openEditorOptions.active || openEditorOptions.pinned) &&
 			this.model.activeEditor &&
 			!this.model.isPinned(this.model.activeEditor)
 		) {
@@ -1564,7 +1573,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 			// opening as active editor.
 			// If preserveFocus is enabled, we only restore but never
 			// activate the group.
-			activateGroup = !options || !options.preserveFocus;
+			activateGroup = !options?.preserveFocus;
 			restoreGroup = !activateGroup;
 		}
 
@@ -2204,9 +2213,11 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 		let saveReason = SaveReason.EXPLICIT;
 		let autoSave = false;
 		if (
-			!editor.hasCapability(EditorInputCapabilities.Untitled) &&
-			!options?.skipAutoSave &&
-			!editor.closeHandler
+			!(
+				editor.hasCapability(EditorInputCapabilities.Untitled) ||
+				options?.skipAutoSave ||
+				editor.closeHandler
+			)
 		) {
 			// Auto-save on focus change: save, because a dialog would steal focus
 			// (see https://github.com/microsoft/vscode/issues/108752)
@@ -2237,7 +2248,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 		// No auto-save on focus change or custom confirmation handler: ask user
 		if (!autoSave) {
 			// Switch to editor that we want to handle for confirmation unless showing already
-			if (!this.activeEditor || !this.activeEditor.matches(editor)) {
+			if (!this.activeEditor?.matches(editor)) {
 				await this.doOpenEditor(editor);
 			}
 
@@ -2270,7 +2281,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 		// so that the save happens when the dialog opens.
 		// However, we only do this unless a custom confirm handler is installed
 		// that may not be fit to be asked a second time right after.
-		if (!editor.closeHandler && !this.shouldConfirmClose(editor)) {
+		if (!(editor.closeHandler || this.shouldConfirmClose(editor))) {
 			return confirmation === ConfirmResult.CANCEL ? true : false;
 		}
 

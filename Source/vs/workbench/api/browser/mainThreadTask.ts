@@ -122,7 +122,7 @@ namespace TaskProcessEndedDTO {
 namespace TaskDefinitionDTO {
 	export function from(value: KeyedTaskIdentifier): ITaskDefinitionDTO {
 		const result = Object.assign(Object.create(null), value);
-		delete result._key;
+		result._key = undefined;
 		return result;
 	}
 	export function to(
@@ -213,7 +213,7 @@ namespace ProcessExecutionDTO {
 	export function from(value: ICommandConfiguration): IProcessExecutionDTO {
 		const process: string = Types.isString(value.name)
 			? value.name
-			: value.name!.value;
+			: value.name?.value;
 		const args: string[] = value.args
 			? value.args.map((value) =>
 					Types.isString(value) ? value : value.value,
@@ -418,9 +418,11 @@ namespace TaskDTO {
 		if (
 			task === undefined ||
 			task === null ||
-			(!CustomTask.is(task) &&
-				!ContributedTask.is(task) &&
-				!ConfiguringTask.is(task))
+			!(
+				CustomTask.is(task) ||
+				ContributedTask.is(task) ||
+				ConfiguringTask.is(task)
+			)
 		) {
 			return undefined;
 		}
@@ -448,15 +450,18 @@ namespace TaskDTO {
 		}
 		if (!ConfiguringTask.is(task) && task.command) {
 			switch (task.command.runtime) {
-				case RuntimeType.Process:
+				case RuntimeType.Process: {
 					result.execution = ProcessExecutionDTO.from(task.command);
 					break;
-				case RuntimeType.Shell:
+				}
+				case RuntimeType.Shell: {
 					result.execution = ShellExecutionDTO.from(task.command);
 					break;
-				case RuntimeType.CustomExecution:
+				}
+				case RuntimeType.CustomExecution: {
 					result.execution = CustomExecutionDTO.from(task.command);
 					break;
+				}
 			}
 		}
 		if (task.configurationProperties.problemMatchers) {
@@ -595,7 +600,7 @@ export class MainThreadTask implements MainThreadTaskShape {
 					task.getTaskExecution()
 				);
 				let resolvedDefinition: ITaskDefinitionDTO =
-					execution.task!.definition;
+					execution.task?.definition;
 				if (
 					execution.task?.execution &&
 					CustomExecutionDTO.is(execution.task.execution) &&
@@ -911,18 +916,22 @@ export class MainThreadTask implements MainThreadTaskShape {
 	public $registerTaskSystem(key: string, info: ITaskSystemInfoDTO): void {
 		let platform: Platform.Platform;
 		switch (info.platform) {
-			case "Web":
+			case "Web": {
 				platform = Platform.Platform.Web;
 				break;
-			case "win32":
+			}
+			case "win32": {
 				platform = Platform.Platform.Windows;
 				break;
-			case "darwin":
+			}
+			case "darwin": {
 				platform = Platform.Platform.Mac;
 				break;
-			case "linux":
+			}
+			case "linux": {
 				platform = Platform.Platform.Linux;
 				break;
+			}
 			default:
 				platform = Platform.platform;
 		}

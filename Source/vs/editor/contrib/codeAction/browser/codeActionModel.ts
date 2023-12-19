@@ -541,7 +541,7 @@ export class CodeActionModel extends Disposable {
 
 		this._state = newState;
 
-		if (!skipNotify && !this._disposed) {
+		if (!(skipNotify || this._disposed)) {
 			this._onDidChangeState.fire(newState);
 		}
 	}

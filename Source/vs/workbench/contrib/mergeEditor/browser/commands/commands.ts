@@ -8,11 +8,7 @@ import { basename } from "vs/base/common/resources";
 import { URI, UriComponents } from "vs/base/common/uri";
 import { localize } from "vs/nls";
 import { ILocalizedString } from "vs/platform/action/common/action";
-import {
-	Action2,
-	IAction2Options,
-	MenuId,
-} from "vs/platform/actions/common/actions";
+import { Action2, MenuId } from "vs/platform/actions/common/actions";
 import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
 import { IDialogService } from "vs/platform/dialogs/common/dialogs";
 import { ITextEditorOptions } from "vs/platform/editor/common/editor";
@@ -44,10 +40,6 @@ import {
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 
 abstract class MergeEditorAction extends Action2 {
-	constructor(desc: Readonly<IAction2Options>) {
-		super(desc);
-	}
-
 	run(accessor: ServicesAccessor): void {
 		const { activeEditorPane } = accessor.get(IEditorService);
 		if (activeEditorPane instanceof MergeEditor) {
@@ -73,10 +65,6 @@ interface MergeEditorAction2Args {
 }
 
 abstract class MergeEditorAction2 extends Action2 {
-	constructor(desc: Readonly<IAction2Options>) {
-		super(desc);
-	}
-
 	override run(accessor: ServicesAccessor, ...args: any[]): void {
 		const { activeEditorPane } = accessor.get(IEditorService);
 		if (activeEditorPane instanceof MergeEditor) {
@@ -646,10 +634,10 @@ async function mergeEditorCompare(
 			? viewModel.inputCodeEditorView1.editor
 			: viewModel.inputCodeEditorView2.editor;
 
-	const lineNumber = input.getPosition()!.lineNumber;
+	const lineNumber = input.getPosition()?.lineNumber;
 	await editorService.openEditor({
 		original: { resource: base.uri },
-		modified: { resource: input.getModel()!.uri },
+		modified: { resource: input.getModel()?.uri },
 		options: {
 			selection: {
 				startLineNumber: lineNumber,

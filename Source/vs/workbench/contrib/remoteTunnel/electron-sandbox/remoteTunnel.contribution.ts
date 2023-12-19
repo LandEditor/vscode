@@ -216,7 +216,7 @@ export class RemoteTunnelWorkbenchContribution
 		);
 
 		const serverConfiguration = productService.tunnelApplicationConfig;
-		if (!serverConfiguration || !productService.tunnelApplicationName) {
+		if (!(serverConfiguration && productService.tunnelApplicationName)) {
 			this.logger.error(
 				"Missing 'tunnelApplicationConfig' or 'tunnelApplicationName' in product.json. Remote tunneling is not available."
 			);
@@ -292,8 +292,7 @@ export class RemoteTunnelWorkbenchContribution
 				}
 				const { hostName, timeStamp } = message as UsedOnHostMessage;
 				if (
-					!isString(hostName)! ||
-					!isNumber(timeStamp) ||
+					!(isString(hostName)! && isNumber(timeStamp)) ||
 					new Date().getTime() >
 						timeStamp + REMOTE_TUNNEL_EXTENSION_TIMEOUT
 				) {
@@ -401,11 +400,12 @@ export class RemoteTunnelWorkbenchContribution
 				progress &&
 				this.remoteTunnelService.onDidChangeTunnelStatus((status) => {
 					switch (status.type) {
-						case "connecting":
+						case "connecting": {
 							if (status.progress) {
 								progress.report({ message: status.progress });
 							}
 							break;
+						}
 					}
 				});
 			let newSession: IRemoteTunnelSession | undefined;
@@ -508,14 +508,15 @@ export class RemoteTunnelWorkbenchContribution
 							this.remoteTunnelService.onDidChangeTunnelStatus(
 								(status) => {
 									switch (status.type) {
-										case "connecting":
+										case "connecting": {
 											if (status.progress) {
 												progress.report({
 													message: status.progress,
 												});
 											}
 											break;
-										case "connected":
+										}
+										case "connected": {
 											listener.dispose();
 											completed = true;
 											s(status.info);
@@ -538,13 +539,15 @@ export class RemoteTunnelWorkbenchContribution
 												);
 											}
 											break;
-										case "disconnected":
+										}
+										case "disconnected": {
 											listener.dispose();
 											completed = true;
 											tokenProblems =
 												!!status.onTokenFailed;
 											s(undefined);
 											break;
+										}
 									}
 								},
 							);
@@ -1277,7 +1280,7 @@ export class RemoteTunnelWorkbenchContribution
 				"Select a command to invoke",
 			);
 			disposables.add(quickPick);
-			const items: Array<QuickPickItem> = [];
+			const items: QuickPickItem[] = [];
 			items.push({
 				id: RemoteTunnelCommandIds.learnMore,
 				label: RemoteTunnelCommandLabels.learnMore,
@@ -1333,10 +1336,7 @@ export class RemoteTunnelWorkbenchContribution
 			quickPick.items = items;
 			disposables.add(
 				quickPick.onDidAccept(() => {
-					if (
-						quickPick.selectedItems[0] &&
-						quickPick.selectedItems[0].id
-					) {
+					if (quickPick.selectedItems[0]?.id) {
 						this.commandService.executeCommand(
 							quickPick.selectedItems[0].id,
 						);

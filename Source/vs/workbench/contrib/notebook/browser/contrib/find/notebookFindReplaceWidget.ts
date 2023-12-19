@@ -221,7 +221,7 @@ class NotebookFindFilterActionViewItem extends DropdownMenuActionViewItem {
 	}
 
 	protected override updateChecked(): void {
-		this.element!.classList.toggle("checked", this._action.checked);
+		this.element?.classList.toggle("checked", this._action.checked);
 	}
 }
 
@@ -244,7 +244,7 @@ export class NotebookFindInputFilterButton extends Disposable {
 		this._filtersAction = new Action(
 			"notebookFindFilterAction",
 			tooltip,
-			"notebook-filters " + ThemeIcon.asClassName(filterIcon),
+			`notebook-filters ${ThemeIcon.asClassName(filterIcon)}`,
 		);
 		this._filtersAction.checked = false;
 		this._filterButtonContainer = dom.$(".find-filter-button");
@@ -421,7 +421,7 @@ export abstract class SimpleFindReplaceWidget extends Widget {
 		private readonly contextMenuService: IContextMenuService,
 		@IInstantiationService
 		private readonly instantiationService: IInstantiationService,
-		protected readonly _state: FindReplaceState<NotebookFindFilters> = new FindReplaceState<NotebookFindFilters>(),
+		protected readonly _state: FindReplaceState<NotebookFindFilters>,
 		protected readonly _notebookEditor: INotebookEditor
 	) {
 		super();
@@ -879,7 +879,7 @@ export abstract class SimpleFindReplaceWidget extends Widget {
 	override dispose() {
 		super.dispose();
 
-		if (this._domNode && this._domNode.parentElement) {
+		if (this._domNode?.parentElement) {
 			this._domNode.parentElement.removeChild(this._domNode);
 		}
 	}

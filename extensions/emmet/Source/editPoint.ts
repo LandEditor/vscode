@@ -7,7 +7,7 @@ import * as vscode from "vscode";
 import { validate } from "./util";
 
 export function fetchEditPoint(direction: string): void {
-	if (!validate() || !vscode.window.activeTextEditor) {
+	if (!(validate() && vscode.window.activeTextEditor)) {
 		return;
 	}
 	const editor = vscode.window.activeTextEditor;

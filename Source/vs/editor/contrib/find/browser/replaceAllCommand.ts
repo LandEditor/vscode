@@ -64,7 +64,7 @@ export class ReplaceAllCommand implements ICommand {
 				) {
 					// These operations are one after another and can be merged
 					previousOp.range = previousOp.range.plusRange(ops[i].range);
-					previousOp.text = previousOp.text + ops[i].text;
+					previousOp.text += ops[i].text;
 				} else {
 					resultOps.push(previousOp);
 					previousOp = ops[i];

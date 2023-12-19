@@ -641,7 +641,7 @@ export async function startClient(
 	// manually register / deregister format provider based on the `json.format.enable` setting avoiding issues with late registration. See #71652.
 	updateFormatterRegistration();
 	toDispose.push({
-		dispose: () => rangeFormatting && rangeFormatting.dispose(),
+		dispose: () => rangeFormatting?.dispose(),
 	});
 
 	updateSchemaDownloadSetting();
@@ -819,11 +819,7 @@ function getSchemaAssociations(
 	const associations: ISchemaAssociation[] = [];
 	extensions.all.forEach((extension) => {
 		const packageJSON = extension.packageJSON;
-		if (
-			packageJSON &&
-			packageJSON.contributes &&
-			packageJSON.contributes.jsonValidation
-		) {
+		if (packageJSON?.contributes?.jsonValidation) {
 			const jsonValidation = packageJSON.contributes.jsonValidation;
 			if (Array.isArray(jsonValidation)) {
 				jsonValidation.forEach((jv) => {
@@ -851,7 +847,7 @@ function getSchemaAssociations(
 									"/Workspaces",
 								);
 							} else if (!fm.match(/^(\w+:\/\/|\/|!)/)) {
-								fm = "/" + fm;
+								fm = `/${fm}`;
 							}
 							return fm;
 						});

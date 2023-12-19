@@ -307,7 +307,7 @@ export class KeybindingsEditingService
 		for (let index = 0; index < userKeybindingEntries.length; index++) {
 			const keybinding = userKeybindingEntries[index];
 			if (keybinding.command === keybindingItem.command) {
-				if (!keybinding.when && !keybindingItem.when) {
+				if (!(keybinding.when || keybindingItem.when)) {
 					return index;
 				}
 				if (keybinding.when && keybindingItem.when) {
@@ -487,7 +487,7 @@ export class KeybindingsEditingService
 						);
 					}
 				} else {
-					const content = EOL + "[]";
+					const content = `${EOL}[]`;
 					this.applyEditsToBuffer(
 						{
 							content,
@@ -521,15 +521,10 @@ export class KeybindingsEditingService
 	}
 
 	private getEmptyContent(EOL: string): string {
-		return (
-			"// " +
-			localize(
-				"emptyKeybindingsHeader",
-				"Place your key bindings in this file to override the defaults",
-			) +
-			EOL +
-			"[]"
-		);
+		return `// ${localize(
+			"emptyKeybindingsHeader",
+			"Place your key bindings in this file to override the defaults",
+		)}${EOL}[]`;
 	}
 }
 

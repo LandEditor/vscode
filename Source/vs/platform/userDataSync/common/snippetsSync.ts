@@ -130,7 +130,7 @@ export class SnippetsSynchroniser
 				? remoteUserData
 				: lastSyncUserData;
 		const lastSyncSnippets: IStringDictionary<string> | null =
-			lastSyncUserData && lastSyncUserData.syncData
+			lastSyncUserData?.syncData
 				? this.parseSnippets(lastSyncUserData.syncData)
 				: null;
 

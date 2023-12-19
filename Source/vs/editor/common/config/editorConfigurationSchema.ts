@@ -441,12 +441,12 @@ function getEditorConfigurationKeys(): { [key: string]: boolean } {
 
 export function isEditorConfigurationKey(key: string): boolean {
 	const editorConfigurationKeys = getEditorConfigurationKeys();
-	return editorConfigurationKeys[`editor.${key}`] || false;
+	return editorConfigurationKeys[`editor.${key}`];
 }
 
 export function isDiffEditorConfigurationKey(key: string): boolean {
 	const editorConfigurationKeys = getEditorConfigurationKeys();
-	return editorConfigurationKeys[`diffEditor.${key}`] || false;
+	return editorConfigurationKeys[`diffEditor.${key}`];
 }
 
 const configurationRegistry = Registry.as<IConfigurationRegistry>(

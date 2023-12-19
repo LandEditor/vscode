@@ -225,12 +225,13 @@ export class JSONCompletionItemProvider implements CompletionItemProvider {
 
 		if (location.isAtPropertyKey) {
 			const scanner = createScanner(document.getText(), true);
-			const addValue =
-				!location.previousNode ||
-				!this.hasColonAfter(
+			const addValue = !(
+				location.previousNode &&
+				this.hasColonAfter(
 					scanner,
 					location.previousNode.offset + location.previousNode.length,
-				);
+				)
+			);
 			const isLast = this.isLast(scanner, document.offsetAt(position));
 			collectPromise = this.jsonContribution.collectPropertySuggestions(
 				document.uri,

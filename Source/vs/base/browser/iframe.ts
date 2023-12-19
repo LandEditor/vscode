@@ -92,10 +92,10 @@ export class IframeUtils {
 			};
 		}
 
-		let top = 0,
-			left = 0;
+		let top = 0;
+		let left = 0;
 
-		const windowChain = this.getSameOriginWindowChain(childWindow);
+		const windowChain = IframeUtils.getSameOriginWindowChain(childWindow);
 
 		for (const windowChainEl of windowChain) {
 			const windowInChain = windowChainEl.window.deref();

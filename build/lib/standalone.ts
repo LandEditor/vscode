@@ -49,7 +49,7 @@ export function extractEditor(
 				.compilerOptions,
 			tsConfig.compilerOptions,
 		);
-		delete tsConfig.extends;
+		tsConfig.extends = undefined;
 	} else {
 		compilerOptions = tsConfig.compilerOptions;
 	}
@@ -110,8 +110,9 @@ export function extractEditor(
 
 				let importedFilePath: string;
 				if (/^vs\/css!/.test(importedFileName)) {
-					importedFilePath =
-						importedFileName.substr("vs/css!".length) + ".css";
+					importedFilePath = `${importedFileName.substr(
+						"vs/css!".length,
+					)}.css`;
 				} else {
 					importedFilePath = importedFileName;
 				}
@@ -128,17 +129,17 @@ export function extractEditor(
 					fs.existsSync(
 						path.join(
 							options.sourcesRoot,
-							importedFilePath + ".js",
+							`${importedFilePath}.js`,
 						),
 					)
 				) {
-					copyFile(importedFilePath + ".js");
+					copyFile(`${importedFilePath}.js`);
 				}
 			}
 		}
 	}
 
-	delete tsConfig.compilerOptions.moduleResolution;
+	tsConfig.compilerOptions.moduleResolution = undefined;
 	writeOutputFile("tsconfig.json", JSON.stringify(tsConfig, null, "\t"));
 
 	[
@@ -173,7 +174,7 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
 	const getDestAbsoluteFilePath = (file: string): string => {
 		const dest = options.renames[file.replace(/\\/g, "/")] || file;
 		if (dest === "tsconfig.json") {
-			return path.join(OUT_FOLDER, `tsconfig.json`);
+			return path.join(OUT_FOLDER, "tsconfig.json");
 		}
 		if (/\.ts$/.test(dest)) {
 			return path.join(OUT_FOLDER, dest);
@@ -231,8 +232,9 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
 
 				let importedFilepath: string;
 				if (/^vs\/css!/.test(importedFilename)) {
-					importedFilepath =
-						importedFilename.substr("vs/css!".length) + ".css";
+					importedFilepath = `${importedFilename.substr(
+						"vs/css!".length,
+					)}.css`;
 				} else {
 					importedFilepath = importedFilename;
 				}
@@ -247,14 +249,14 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
 				if (
 					importedFilepath === path.dirname(file).replace(/\\/g, "/")
 				) {
-					relativePath = "../" + path.basename(path.dirname(file));
+					relativePath = `../${path.basename(path.dirname(file))}`;
 				} else if (
 					importedFilepath ===
 					path.dirname(path.dirname(file)).replace(/\\/g, "/")
 				) {
-					relativePath =
-						"../../" +
-						path.basename(path.dirname(path.dirname(file)));
+					relativePath = `../../${path.basename(
+						path.dirname(path.dirname(file)),
+					)}`;
 				} else {
 					relativePath = path.relative(
 						path.dirname(file),
@@ -263,7 +265,7 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
 				}
 				relativePath = relativePath.replace(/\\/g, "/");
 				if (!/(^\.\/)|(^\.\.\/)/.test(relativePath)) {
-					relativePath = "./" + relativePath;
+					relativePath = `./${relativePath}`;
 				}
 				fileContents =
 					fileContents.substring(0, pos + 1) +
@@ -339,7 +341,7 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
 						mode = 0;
 						continue;
 					}
-					lines[i] = "// " + line;
+					lines[i] = `// ${line}`;
 					continue;
 				}
 
@@ -399,7 +401,7 @@ function transportCSS(
 			const imagePath = path.join(path.dirname(module), url);
 			const fileContents = fs.readFileSync(path.join(SRC_DIR, imagePath));
 			const MIME = /\.svg$/.test(url) ? "image/svg+xml" : "image/png";
-			let DATA = ";base64," + fileContents.toString("base64");
+			let DATA = `;base64,${fileContents.toString("base64")}`;
 
 			if (!forceBase64 && /\.svg$/.test(url)) {
 				// .svg => url encode as explained at https://codepen.io/tigt/post/optimizing-svgs-in-data-uris
@@ -411,12 +413,12 @@ function transportCSS(
 					.replace(/&/g, "%26")
 					.replace(/#/g, "%23")
 					.replace(/\s+/g, " ");
-				const encodedData = "," + newText;
+				const encodedData = `,${newText}`;
 				if (encodedData.length < DATA.length) {
 					DATA = encodedData;
 				}
 			}
-			return '"data:' + MIME + DATA + '"';
+			return `"data:${MIME}${DATA}"`;
 		});
 	}
 
@@ -450,14 +452,16 @@ function transportCSS(
 				}
 
 				if (
-					!_startsWith(url, "data:") &&
-					!_startsWith(url, "http://") &&
-					!_startsWith(url, "https://")
+					!(
+						_startsWith(url, "data:") ||
+						_startsWith(url, "http://") ||
+						_startsWith(url, "https://")
+					)
 				) {
 					url = replacer(url);
 				}
 
-				return "url(" + url + ")";
+				return `url(${url})`;
 			},
 		);
 	}

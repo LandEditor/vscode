@@ -93,7 +93,6 @@ class TypeScriptFoldingProvider implements vscode.FoldingRangeProvider {
 				return vscode.FoldingRangeKind.Region;
 			case "imports":
 				return vscode.FoldingRangeKind.Imports;
-			case "code":
 			default:
 				return undefined;
 		}

@@ -408,7 +408,7 @@ export class AudioCue {
 	}
 
 	public static get allAudioCues() {
-		return [...this._audioCues];
+		return [...AudioCue._audioCues];
 	}
 
 	public static readonly error = AudioCue.register({

@@ -279,18 +279,20 @@ export function addToValueTree(
 		const s = segments[i];
 		let obj = curr[s];
 		switch (typeof obj) {
-			case "undefined":
+			case "undefined": {
 				obj = curr[s] = Object.create(null);
 				break;
+			}
 			case "object":
 				break;
-			default:
+			default: {
 				conflictReporter(
 					`Ignoring ${key} as ${segments
 						.slice(0, i + 1)
 						.join(".")} is ${JSON.stringify(obj)}`,
 				);
 				return;
+			}
 		}
 		curr = obj;
 	}

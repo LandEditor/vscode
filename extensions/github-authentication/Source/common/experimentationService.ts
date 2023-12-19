@@ -26,21 +26,26 @@ export class ExperimentationTelemetry implements IExperimentationTelemetry {
 	private async createExperimentationService(): Promise<IExperimentationService> {
 		let targetPopulation: TargetPopulation;
 		switch (vscode.env.uriScheme) {
-			case "vscode":
+			case "vscode": {
 				targetPopulation = TargetPopulation.Public;
 				break;
-			case "vscode-insiders":
+			}
+			case "vscode-insiders": {
 				targetPopulation = TargetPopulation.Insiders;
 				break;
-			case "vscode-exploration":
+			}
+			case "vscode-exploration": {
 				targetPopulation = TargetPopulation.Internal;
 				break;
-			case "code-oss":
+			}
+			case "code-oss": {
 				targetPopulation = TargetPopulation.Team;
 				break;
-			default:
+			}
+			default: {
 				targetPopulation = TargetPopulation.Public;
 				break;
+			}
 		}
 
 		const id = this.context.extension.id;

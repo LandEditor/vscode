@@ -510,7 +510,7 @@ export class NotebookOptions extends Disposable {
 					);
 			}
 
-			lineHeight = lineHeight * fontSize;
+			lineHeight *= fontSize;
 		}
 
 		// Enforce integer, minimum constraints
@@ -591,30 +591,32 @@ export class NotebookOptions extends Disposable {
 		);
 
 		if (
-			!cellStatusBarVisibility &&
-			!cellToolbarLocation &&
-			!cellToolbarInteraction &&
-			!compactView &&
-			!focusIndicator &&
-			!insertToolbarPosition &&
-			!insertToolbarAlignment &&
-			!globalToolbar &&
-			!stickyScroll &&
-			!consolidatedOutputButton &&
-			!consolidatedRunButton &&
-			!showFoldingControls &&
-			!dragAndDropEnabled &&
-			!fontSize &&
-			!outputFontSize &&
-			!markupFontSize &&
-			!fontFamily &&
-			!outputFontFamily &&
-			!editorOptionsCustomizations &&
-			!interactiveWindowCollapseCodeCells &&
-			!outputLineHeight &&
-			!outputScrolling &&
-			!outputWordWrap &&
-			!outputLinkifyFilePaths
+			!(
+				cellStatusBarVisibility ||
+				cellToolbarLocation ||
+				cellToolbarInteraction ||
+				compactView ||
+				focusIndicator ||
+				insertToolbarPosition ||
+				insertToolbarAlignment ||
+				globalToolbar ||
+				stickyScroll ||
+				consolidatedOutputButton ||
+				consolidatedRunButton ||
+				showFoldingControls ||
+				dragAndDropEnabled ||
+				fontSize ||
+				outputFontSize ||
+				markupFontSize ||
+				fontFamily ||
+				outputFontFamily ||
+				editorOptionsCustomizations ||
+				interactiveWindowCollapseCodeCells ||
+				outputLineHeight ||
+				outputScrolling ||
+				outputWordWrap ||
+				outputLinkifyFilePaths
+			)
 		) {
 			return;
 		}
@@ -990,18 +992,22 @@ export class NotebookOptions extends Disposable {
 				"right";
 
 			switch (notebookSpecificSetting) {
-				case "left":
+				case "left": {
 					cellToolbarLocationForCurrentView = "left";
 					break;
-				case "right":
+				}
+				case "right": {
 					cellToolbarLocationForCurrentView = "right";
 					break;
-				case "hidden":
+				}
+				case "hidden": {
 					cellToolbarLocationForCurrentView = "hidden";
 					break;
-				default:
+				}
+				default: {
 					cellToolbarLocationForCurrentView = "right";
 					break;
+				}
 			}
 
 			return cellToolbarLocationForCurrentView;

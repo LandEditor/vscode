@@ -116,7 +116,7 @@
 	// we store them globally
 
 	// eslint-disable-next-line no-var
-	var sharedObj;
+	let sharedObj;
 	if (typeof global === "object") {
 		// nodejs
 		sharedObj = global;

@@ -387,7 +387,7 @@ export class WorkbenchThemeService implements IWorkbenchThemeService {
 					fallbackTheme,
 				);
 			}
-			return this.setColorTheme(theme && theme.id, undefined);
+			return this.setColorTheme(theme?.id, undefined);
 		};
 
 		const initializeFileIconTheme = async () => {
@@ -735,15 +735,18 @@ export class WorkbenchThemeService implements IWorkbenchThemeService {
 	): Promise<IWorkbenchColorTheme | null> {
 		let settingId: ThemeSettings;
 		switch (type) {
-			case ColorScheme.LIGHT:
+			case ColorScheme.LIGHT: {
 				settingId = ThemeSettings.PREFERRED_LIGHT_THEME;
 				break;
-			case ColorScheme.HIGH_CONTRAST_DARK:
+			}
+			case ColorScheme.HIGH_CONTRAST_DARK: {
 				settingId = ThemeSettings.PREFERRED_HC_DARK_THEME;
 				break;
-			case ColorScheme.HIGH_CONTRAST_LIGHT:
+			}
+			case ColorScheme.HIGH_CONTRAST_LIGHT: {
 				settingId = ThemeSettings.PREFERRED_HC_LIGHT_THEME;
 				break;
+			}
 			default:
 				settingId = ThemeSettings.PREFERRED_DARK_THEME;
 		}
@@ -915,7 +918,7 @@ export class WorkbenchThemeService implements IWorkbenchThemeService {
 			},
 		};
 		ruleCollector.addRule(
-			`.monaco-workbench { forced-color-adjust: none; }`,
+			".monaco-workbench { forced-color-adjust: none; }",
 		);
 		themingRegistry
 			.getThemingParticipants()
@@ -1105,7 +1108,7 @@ export class WorkbenchThemeService implements IWorkbenchThemeService {
 		if (
 			themeData.isLoaded &&
 			settingsTarget !== "preview" &&
-			(!themeData.location || !getRemoteAuthority(themeData.location))
+			!(themeData.location && getRemoteAuthority(themeData.location))
 		) {
 			themeData.toStorage(this.storageService);
 		}
@@ -1267,7 +1270,7 @@ export class WorkbenchThemeService implements IWorkbenchThemeService {
 		if (
 			themeData.isLoaded &&
 			settingsTarget !== "preview" &&
-			(!themeData.location || !getRemoteAuthority(themeData.location))
+			!(themeData.location && getRemoteAuthority(themeData.location))
 		) {
 			themeData.toStorage(this.storageService);
 		}

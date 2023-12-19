@@ -41,7 +41,7 @@ export default class PHPHoverProvider implements HoverProvider {
 			phpGlobals.compiletimeconstants[name] ||
 			phpGlobals.globalvariables[name] ||
 			phpGlobals.keywords[name];
-		if (entry && entry.description) {
+		if (entry?.description) {
 			const signature = name + (entry.signature || "");
 			const contents: MarkedString[] = [
 				textToMarkedString(entry.description),

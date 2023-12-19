@@ -195,7 +195,7 @@ export class XLF {
 		messages: string[],
 	) {
 		if (keys.length === 0) {
-			console.log("No keys in " + original);
+			console.log(`No keys in ${original}`);
 			return;
 		}
 		if (keys.length !== messages.length) {
@@ -309,7 +309,7 @@ export class XLF {
 					if (!name) {
 						reject(
 							new Error(
-								`XLF parsing error: XLIFF file node does not contain original attribute to determine the original location of the resource file.`,
+								"XLF parsing error: XLIFF file node does not contain original attribute to determine the original location of the resource file.",
 							),
 						);
 					}
@@ -317,7 +317,7 @@ export class XLF {
 					if (!language) {
 						reject(
 							new Error(
-								`XLF parsing error: XLIFF file node does not contain target-language attribute to determine translated language.`,
+								"XLF parsing error: XLIFF file node does not contain target-language attribute to determine translated language.",
 							),
 						);
 					}
@@ -419,30 +419,38 @@ function escapeCharacters(value: string): string {
 	for (let i = 0; i < value.length; i++) {
 		const ch = value.charAt(i);
 		switch (ch) {
-			case "'":
+			case "'": {
 				result.push("\\'");
 				break;
-			case '"':
+			}
+			case '"': {
 				result.push('\\"');
 				break;
-			case "\\":
+			}
+			case "\\": {
 				result.push("\\\\");
 				break;
-			case "\n":
+			}
+			case "\n": {
 				result.push("\\n");
 				break;
-			case "\r":
+			}
+			case "\r": {
 				result.push("\\r");
 				break;
-			case "\t":
+			}
+			case "\t": {
 				result.push("\\t");
 				break;
-			case "\b":
+			}
+			case "\b": {
 				result.push("\\b");
 				break;
-			case "\f":
+			}
+			case "\f": {
 				result.push("\\f");
 				break;
+			}
 			default:
 				result.push(ch);
 		}
@@ -501,7 +509,7 @@ function processCoreBundleFormat(
 			`No VS Code localization repository found. Looking at ${languageDirectory}`,
 		);
 		log(
-			`To bundle translations please check out the vscode-loc repository as a sibling of the vscode repository.`,
+			"To bundle translations please check out the vscode-loc repository as a sibling of the vscode repository.",
 		);
 	}
 	const sortedLanguages = sortLanguages(languages);
@@ -537,8 +545,7 @@ function processCoreBundleFormat(
 					);
 				}
 				moduleMessage = defaultMessages[module];
-				statistics[language.id] =
-					statistics[language.id] + Object.keys(moduleMessage).length;
+				statistics[language.id] += Object.keys(moduleMessage).length;
 			}
 			const localizedMessages: string[] = [];
 			order.forEach((keyInfo) => {
@@ -548,7 +555,7 @@ function processCoreBundleFormat(
 				} else {
 					key = keyInfo.key;
 				}
-				let message: string = moduleMessage![key];
+				let message: string = moduleMessage?.[key];
 				if (!message) {
 					if (process.env["VSCODE_BUILD_VERBOSE"]) {
 						log(
@@ -556,7 +563,7 @@ function processCoreBundleFormat(
 						);
 					}
 					message = defaultMessages[module][key];
-					statistics[language.id] = statistics[language.id] + 1;
+					statistics[language.id] += 1;
 				}
 				localizedMessages.push(message);
 			});
@@ -590,7 +597,7 @@ function processCoreBundleFormat(
 			contents.push("});");
 			emitter.queue(
 				new File({
-					path: bundle + ".nls." + language.id + ".js",
+					path: `${bundle}.nls.${language.id}.js`,
 					contents: Buffer.from(contents.join("\n"), "utf-8"),
 				}),
 			);
@@ -640,11 +647,11 @@ export function processNlsFiles(opts: {
 	});
 }
 
-const editorProject: string = "vscode-editor",
-	workbenchProject: string = "vscode-workbench",
-	extensionsProject: string = "vscode-extensions",
-	setupProject: string = "vscode-setup",
-	serverProject: string = "vscode-server";
+const editorProject: string = "vscode-editor";
+const workbenchProject: string = "vscode-workbench";
+const extensionsProject: string = "vscode-extensions";
+const setupProject: string = "vscode-setup";
+const serverProject: string = "vscode-server";
 
 export function getResource(sourceFile: string): Resource {
 	let resource: string;
@@ -855,8 +862,7 @@ export function createXlfFilesForExtensions(): ThroughStream {
 				"utf-8",
 			);
 			const manifestJson = JSON.parse(manifest);
-			const extensionId =
-				manifestJson.publisher + "." + manifestJson.name;
+			const extensionId = `${manifestJson.publisher}.${manifestJson.name}`;
 
 			counter++;
 			let _l10nMap: Map<string, l10nJsonFormat>;
@@ -955,7 +961,7 @@ export function createXlfFilesForExtensions(): ThroughStream {
 							const xlfFile = new File({
 								path: path.join(
 									extensionsProject,
-									extensionId + ".xlf",
+									`${extensionId}.xlf`,
 								),
 								contents: Buffer.from(
 									getL10nXlf(_l10nMap),
@@ -990,7 +996,8 @@ export function createXlfFilesForExtensions(): ThroughStream {
 
 export function createXlfFilesForIsl(): ThroughStream {
 	return through(function (this: ThroughStream, file: File) {
-		let projectName: string, resourceFile: string;
+		let projectName: string;
+		let resourceFile: string;
 		if (path.basename(file.path) === "messages.en.isl") {
 			projectName = setupProject;
 			resourceFile = "messages.xlf";
@@ -998,9 +1005,9 @@ export function createXlfFilesForIsl(): ThroughStream {
 			throw new Error(`Unknown input file ${file.path}`);
 		}
 
-		const xlf = new XLF(projectName),
-			keys: string[] = [],
-			messages: string[] = [];
+		const xlf = new XLF(projectName);
+		const keys: string[] = [];
+		const messages: string[] = [];
 
 		const model = new TextModel(file.contents.toString());
 		let inMessageSection = false;
@@ -1013,10 +1020,11 @@ export function createXlfFilesForIsl(): ThroughStream {
 				case ";":
 					// Comment line;
 					return;
-				case "[":
+				case "[": {
 					inMessageSection =
 						"[Messages]" === line || "[CustomMessages]" === line;
 					return;
+				}
 			}
 			if (!inMessageSection) {
 				return;
@@ -1067,7 +1075,7 @@ function createI18nFile(name: string, messages: any): File {
 		content = content.replace(/\n/g, "\r\n");
 	}
 	return new File({
-		path: path.join(name + ".i18n.json"),
+		path: path.join(`${name}.i18n.json`),
 		contents: Buffer.from(content, "utf8"),
 	});
 }
@@ -1237,10 +1245,10 @@ function createIslFile(
 	const content: string[] = [];
 	let originalContent: TextModel;
 	if (path.basename(name) === "Default") {
-		originalContent = new TextModel(fs.readFileSync(name + ".isl", "utf8"));
+		originalContent = new TextModel(fs.readFileSync(`${name}.isl`, "utf8"));
 	} else {
 		originalContent = new TextModel(
-			fs.readFileSync(name + ".en.isl", "utf8"),
+			fs.readFileSync(`${name}.en.isl`, "utf8"),
 		);
 	}
 	originalContent.lines.forEach((line) => {
@@ -1282,15 +1290,18 @@ function encodeEntities(value: string): string {
 	for (let i = 0; i < value.length; i++) {
 		const ch = value[i];
 		switch (ch) {
-			case "<":
+			case "<": {
 				result.push("&lt;");
 				break;
-			case ">":
+			}
+			case ">": {
 				result.push("&gt;");
 				break;
-			case "&":
+			}
+			case "&": {
 				result.push("&amp;");
 				break;
+			}
 			default:
 				result.push(ch);
 		}

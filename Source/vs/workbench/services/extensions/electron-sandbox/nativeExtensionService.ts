@@ -313,7 +313,7 @@ export class NativeExtensionService
 
 			if (this._localCrashTracker.shouldAutomaticallyRestart()) {
 				this._logService.info(
-					`Automatically restarting the extension host.`,
+					"Automatically restarting the extension host.",
 				);
 				this._notificationService.status(
 					nls.localize(
@@ -501,7 +501,7 @@ export class NativeExtensionService
 		);
 		if (localProcessExtensionHosts.length === 0) {
 			// no local process extension hosts
-			throw new Error(`Cannot resolve canonical URI`);
+			throw new Error("Cannot resolve canonical URI");
 		}
 
 		const results = await Promise.all(
@@ -575,7 +575,7 @@ export class NativeExtensionService
 
 			if (isCI) {
 				this._logService.info(
-					`Starting to wait on IWorkspaceTrustManagementService.workspaceResolved...`,
+					"Starting to wait on IWorkspaceTrustManagementService.workspaceResolved...",
 				);
 			}
 
@@ -586,7 +586,7 @@ export class NativeExtensionService
 
 			if (isCI) {
 				this._logService.info(
-					`Finished waiting on IWorkspaceTrustManagementService.workspaceResolved.`,
+					"Finished waiting on IWorkspaceTrustManagementService.workspaceResolved.",
 				);
 			}
 
@@ -600,7 +600,7 @@ export class NativeExtensionService
 						await this._handleNoResolverFound(remoteAuthority);
 				} else if (RemoteAuthorityResolverError.isHandled(err)) {
 					console.log(
-						`Error handled: Not showing a notification for the error`,
+						"Error handled: Not showing a notification for the error",
 					);
 				}
 				this._remoteAuthorityResolverService._setResolvedAuthorityError(

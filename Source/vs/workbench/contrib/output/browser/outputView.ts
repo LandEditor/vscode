@@ -186,7 +186,7 @@ export class OutputViewPane extends ViewPane {
 		this.channelId = channel.id;
 
 		const input = this.createInput(channel);
-		if (!this.editor.input || !input.matches(this.editor.input)) {
+		if (!(this.editor.input && input.matches(this.editor.input))) {
 			this.editorPromise?.cancel();
 			this.editorPromise = createCancelablePromise((token) =>
 				this.editor
@@ -309,7 +309,7 @@ class OutputEditor extends AbstractTextResourceEditor {
 		context: IEditorOpenContext,
 		token: CancellationToken,
 	): Promise<void> {
-		const focus = !(options && options.preserveFocus);
+		const focus = !options?.preserveFocus;
 		if (this.input && input.matches(this.input)) {
 			return;
 		}

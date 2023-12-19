@@ -108,7 +108,7 @@ export class Client implements IChannelClient, IDisposable {
 	readonly onDidProcessExit = this._onDidProcessExit.event;
 
 	constructor(private modulePath: string, private options: IIPCOptions) {
-		const timeout = options && options.timeout ? options.timeout : 60000;
+		const timeout = options?.timeout ? options.timeout : 60000;
 		this.disposeDelayer = new Delayer<void>(timeout);
 		this.child = null;
 		this._client = null;
@@ -209,8 +209,7 @@ export class Client implements IChannelClient, IDisposable {
 
 	private get client(): IPCClient {
 		if (!this._client) {
-			const args =
-				this.options && this.options.args ? this.options.args : [];
+			const args = this.options?.args ? this.options.args : [];
 			const forkOpts: ForkOptions = Object.create(null);
 
 			forkOpts.env = {
@@ -218,25 +217,25 @@ export class Client implements IChannelClient, IDisposable {
 				VSCODE_PARENT_PID: String(process.pid),
 			};
 
-			if (this.options && this.options.env) {
+			if (this.options?.env) {
 				forkOpts.env = { ...forkOpts.env, ...this.options.env };
 			}
 
-			if (this.options && this.options.freshExecArgv) {
+			if (this.options?.freshExecArgv) {
 				forkOpts.execArgv = [];
 			}
 
 			if (this.options && typeof this.options.debug === "number") {
 				forkOpts.execArgv = [
 					"--nolazy",
-					"--inspect=" + this.options.debug,
+					`--inspect=${this.options.debug}`,
 				];
 			}
 
 			if (this.options && typeof this.options.debugBrk === "number") {
 				forkOpts.execArgv = [
 					"--nolazy",
-					"--inspect-brk=" + this.options.debugBrk,
+					`--inspect-brk=${this.options.debugBrk}`,
 				];
 			}
 
@@ -274,8 +273,7 @@ export class Client implements IChannelClient, IDisposable {
 				? createQueuedSender(this.child)
 				: this.child;
 			const send = (r: VSBuffer) =>
-				this.child &&
-				this.child.connected &&
+				this.child?.connected &&
 				sender.send((<Buffer>r.buffer).toString("base64"));
 			const onMessage = onMessageEmitter.event;
 			const protocol = { send, onMessage };
@@ -287,7 +285,7 @@ export class Client implements IChannelClient, IDisposable {
 
 			this.child.on("error", (err) =>
 				console.warn(
-					'IPC "' + this.options.serverName + '" errored with ' + err,
+					`IPC "${this.options.serverName}" errored with ${err}`,
 				),
 			);
 
@@ -299,12 +297,7 @@ export class Client implements IChannelClient, IDisposable {
 
 				if (code !== 0 && signal !== "SIGTERM") {
 					console.warn(
-						'IPC "' +
-							this.options.serverName +
-							'" crashed with exit code ' +
-							code +
-							" and signal " +
-							signal,
+						`IPC "${this.options.serverName}" crashed with exit code ${code} and signal ${signal}`,
 					);
 				}
 

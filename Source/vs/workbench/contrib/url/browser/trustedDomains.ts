@@ -68,7 +68,7 @@ export async function configureOpenerTrustedDomainsHandler(
 	const domainEnd = toplevelDomainSegements
 		.slice(toplevelDomainSegements.length - 2)
 		.join(".");
-	const topLevelDomain = "*." + domainEnd;
+	const topLevelDomain = `*.${domainEnd}`;
 	const options: ConfigureTrustedDomainsQuickPickItem[] = [];
 
 	options.push({
@@ -101,7 +101,7 @@ export async function configureOpenerTrustedDomainsHandler(
 					"Trust {0} on all ports",
 					base,
 				),
-				toTrust: base + ":*",
+				toTrust: `${base}:*`,
 				id: "trust",
 			});
 		}
@@ -142,9 +142,9 @@ export async function configureOpenerTrustedDomainsHandler(
 			{ activeItem: options[0] },
 		);
 
-	if (pickedResult && pickedResult.id) {
+	if (pickedResult?.id) {
 		switch (pickedResult.id) {
-			case "manage":
+			case "manage": {
 				await editorService.openEditor({
 					resource: TRUSTED_DOMAINS_URI.with({
 						fragment: resource.toString(),
@@ -153,6 +153,7 @@ export async function configureOpenerTrustedDomainsHandler(
 					options: { pinned: true },
 				});
 				return trustedDomains;
+			}
 			case "trust": {
 				const itemToTrust = pickedResult.toTrust;
 				if (trustedDomains.indexOf(itemToTrust) === -1) {
@@ -277,7 +278,7 @@ export async function readAuthenticationTrustedDomains(
 	const authenticationService = accessor.get(IAuthenticationService);
 	return authenticationService.isAuthenticationProviderRegistered("github") &&
 		((await authenticationService.getSessions("github")) ?? []).length > 0
-		? [`https://github.com`]
+		? ["https://github.com"]
 		: [];
 }
 

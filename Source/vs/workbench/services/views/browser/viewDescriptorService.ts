@@ -182,7 +182,7 @@ export class ViewDescriptorService
 		}>(),
 	);
 	readonly onDidChangeViewContainers = this._onDidChangeViewContainers.event;
-	get viewContainers(): ReadonlyArray<ViewContainer> {
+	get viewContainers(): readonly ViewContainer[] {
 		return this.viewContainersRegistry.all;
 	}
 
@@ -323,7 +323,7 @@ export class ViewDescriptorService
 			"views.cachedViewPositions",
 			StorageScope.PROFILE,
 		);
-		if (!viewContainerLocationsValue && !viewDescriptorLocationsValue) {
+		if (!(viewContainerLocationsValue || viewDescriptorLocationsValue)) {
 			return;
 		}
 
@@ -374,8 +374,7 @@ export class ViewDescriptorService
 
 			// The container has not been registered yet
 			if (
-				!viewContainer ||
-				!this.viewContainerModels.has(viewContainer)
+				!(viewContainer && this.viewContainerModels.has(viewContainer))
 			) {
 				// Register if the container is a genarated container
 				if (this.isGeneratedContainerId(containerId)) {
@@ -415,8 +414,7 @@ export class ViewDescriptorService
 
 			// The container has not been registered yet
 			if (
-				!viewContainer ||
-				!this.viewContainerModels.has(viewContainer)
+				!(viewContainer && this.viewContainerModels.has(viewContainer))
 			) {
 				continue;
 			}
@@ -1339,8 +1337,8 @@ export class ViewDescriptorService
 		added,
 		removed,
 	}: {
-		added: ReadonlyArray<IViewDescriptor>;
-		removed: ReadonlyArray<IViewDescriptor>;
+		added: readonly IViewDescriptor[];
+		removed: readonly IViewDescriptor[];
 	}): void {
 		this.contextKeyService.bufferChangeEvents(() => {
 			added.forEach((viewDescriptor) =>

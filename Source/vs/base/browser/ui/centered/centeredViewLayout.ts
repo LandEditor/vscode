@@ -64,7 +64,7 @@ function toSplitViewView(
 		get minimumSize() {
 			return view.minimumWidth;
 		},
-		onDidChange: Event.map(view.onDidChange, (e) => e && e.width),
+		onDidChange: Event.map(view.onDidChange, (e) => e?.width),
 		layout: (size, offset, ctx) =>
 			view.layout(
 				size,
@@ -183,14 +183,14 @@ export class CenteredViewLayout implements IDisposable {
 
 	setFixedWidth(option: boolean) {
 		this.centeredLayoutFixedWidth = option;
-		if (!!this.splitView) {
+		if (this.splitView) {
 			this.updateState();
 			this.resizeSplitViews();
 		}
 	}
 
 	private updateState() {
-		if (!!this.splitView) {
+		if (this.splitView) {
 			this.state.targetWidth = this.splitView.getViewSize(1);
 			this.state.leftMarginRatio =
 				this.splitView.getViewSize(0) / this.lastLayoutPosition.width;
@@ -231,7 +231,7 @@ export class CenteredViewLayout implements IDisposable {
 
 			this.splitViewDisposables.add(
 				this.splitView.onDidSashChange(() => {
-					if (!!this.splitView) {
+					if (this.splitView) {
 						this.updateState();
 					}
 				}),

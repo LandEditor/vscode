@@ -194,8 +194,8 @@ export class PairAstNode extends BaseAstNode {
 	public flattenLists(): PairAstNode {
 		return PairAstNode.create(
 			this.openingBracket.flattenLists(),
-			this.child && this.child.flattenLists(),
-			this.closingBracket && this.closingBracket.flattenLists(),
+			this.child?.flattenLists(),
+			this.closingBracket?.flattenLists(),
 		);
 	}
 
@@ -203,8 +203,8 @@ export class PairAstNode extends BaseAstNode {
 		return new PairAstNode(
 			this.length,
 			this.openingBracket.deepClone(),
-			this.child && this.child.deepClone(),
-			this.closingBracket && this.closingBracket.deepClone(),
+			this.child?.deepClone(),
+			this.closingBracket?.deepClone(),
 			this.missingOpeningBracketIds,
 		);
 	}
@@ -274,7 +274,7 @@ export abstract class ListAstNode extends BaseAstNode {
 
 	public static create(items: AstNode[], immutable = false): ListAstNode {
 		if (items.length === 0) {
-			return this.getEmpty();
+			return ListAstNode.getEmpty();
 		} else {
 			let length = items[0].length;
 			let unopenedBrackets = items[0].missingOpeningBracketIds;
@@ -400,8 +400,8 @@ export abstract class ListAstNode extends BaseAstNode {
 
 		const count = this.childrenLength;
 
-		let length = this.getChild(0)!.length;
-		let unopenedBrackets = this.getChild(0)!.missingOpeningBracketIds;
+		let length = this.getChild(0)?.length;
+		let unopenedBrackets = this.getChild(0)?.missingOpeningBracketIds;
 
 		for (let i = 1; i < count; i++) {
 			const child = this.getChild(i)!;
@@ -482,15 +482,18 @@ class TwoThreeListAstNode extends ListAstNode {
 	}
 	protected setChild(idx: number, node: AstNode): void {
 		switch (idx) {
-			case 0:
+			case 0: {
 				this._item1 = node;
 				return;
-			case 1:
+			}
+			case 1: {
 				this._item2 = node;
 				return;
-			case 2:
+			}
+			case 2: {
 				this._item3 = node;
 				return;
+			}
 		}
 		throw new Error("Invalid child index");
 	}

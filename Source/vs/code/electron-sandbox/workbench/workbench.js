@@ -144,7 +144,9 @@
 		}
 
 		// minimal color configuration (works with or without persisted data)
-		let baseTheme, shellBackground, shellForeground;
+		let baseTheme;
+		let shellBackground;
+		let shellForeground;
 		if (data) {
 			baseTheme = data.baseTheme;
 			shellBackground = data.colorInfo.editorBackground;

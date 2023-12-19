@@ -135,8 +135,8 @@ export abstract class AbstractExtensionService
 
 	private readonly _onDidChangeExtensions = this._register(
 		new Emitter<{
-			readonly added: ReadonlyArray<IExtensionDescription>;
-			readonly removed: ReadonlyArray<IExtensionDescription>;
+			readonly added: readonly IExtensionDescription[];
+			readonly removed: readonly IExtensionDescription[];
 		}>({ leakWarningThreshold: 400 }),
 	);
 	public readonly onDidChangeExtensions = this._onDidChangeExtensions.event;
@@ -265,7 +265,7 @@ export abstract class AbstractExtensionService
 					if (added.length || removed.length) {
 						if (isCI) {
 							this._logService.info(
-								`AbstractExtensionService.onDidChangeProfile fired`
+								"AbstractExtensionService.onDidChangeProfile fired"
 							);
 						}
 						this._handleDeltaExtensions(
@@ -837,8 +837,10 @@ export abstract class AbstractExtensionService
 
 	private async _handleExtensionTests(): Promise<void> {
 		if (
-			!this._environmentService.isExtensionDevelopment ||
-			!this._environmentService.extensionTestsLocationURI
+			!(
+				this._environmentService.isExtensionDevelopment &&
+				this._environmentService.extensionTestsLocationURI
+			)
 		) {
 			return;
 		}
@@ -867,7 +869,7 @@ export abstract class AbstractExtensionService
 			}
 		} catch (err) {
 			if (isCI) {
-				this._logService.error(`Extension host test runner error`, err);
+				this._logService.error("Extension host test runner error", err);
 			}
 			console.error(err);
 			exitCode = 1 /* ERROR */;
@@ -1007,7 +1009,7 @@ export abstract class AbstractExtensionService
 		const extensionHosts = this._getExtensionHostManagers(kind);
 		if (extensionHosts.length === 0) {
 			// no local process extension hosts
-			throw new Error(`Cannot resolve authority`);
+			throw new Error("Cannot resolve authority");
 		}
 
 		this._resolveAuthorityAttempt++;
@@ -1041,9 +1043,9 @@ export abstract class AbstractExtensionService
 
 		// we can only reach this if there is an error
 		throw new RemoteAuthorityResolverError(
-			bestErrorResult!.error.message,
-			bestErrorResult!.error.code,
-			bestErrorResult!.error.detail,
+			bestErrorResult?.error.message,
+			bestErrorResult?.error.code,
+			bestErrorResult?.error.detail,
 		);
 	}
 
@@ -1332,7 +1334,7 @@ export abstract class AbstractExtensionService
 
 			if (this._remoteCrashTracker.shouldAutomaticallyRestart()) {
 				this._logService.info(
-					`Automatically restarting the remote extension host.`,
+					"Automatically restarting the remote extension host.",
 				);
 				this._notificationService.status(
 					nls.localize(
@@ -1675,7 +1677,7 @@ export abstract class AbstractExtensionService
 		const strMsg = `[${msg.extensionId.value}]: ${msg.message}`;
 
 		if (msg.type === Severity.Error) {
-			if (extension && extension.isUnderDevelopment) {
+			if (extension?.isUnderDevelopment) {
 				// This message is about the extension currently being developed
 				this._notificationService.notify({
 					severity: Severity.Error,
@@ -1684,7 +1686,7 @@ export abstract class AbstractExtensionService
 			}
 			this._logService.error(strMsg);
 		} else if (msg.type === Severity.Warning) {
-			if (extension && extension.isUnderDevelopment) {
+			if (extension?.isUnderDevelopment) {
 				// This message is about the extension currently being developed
 				this._notificationService.notify({
 					severity: Severity.Warning,
@@ -1976,9 +1978,9 @@ export function filterEnabledExtensions(
 	extensions: IExtensionDescription[],
 	ignoreWorkspaceTrust: boolean,
 ): IExtensionDescription[] {
-	const enabledExtensions: IExtensionDescription[] = [],
-		extensionsToCheck: IExtensionDescription[] = [],
-		mappedExtensions: IExtension[] = [];
+	const enabledExtensions: IExtensionDescription[] = [];
+	const extensionsToCheck: IExtensionDescription[] = [];
+	const mappedExtensions: IExtension[] = [];
 	for (const extension of extensions) {
 		if (extension.isUnderDevelopment) {
 			// Never disable extensions under development

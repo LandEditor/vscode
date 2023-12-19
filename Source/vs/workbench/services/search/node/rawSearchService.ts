@@ -203,7 +203,7 @@ export class SearchService implements IRawSearchService {
 			}
 
 			return new Promise<ISerializedSearchSuccess>((c, e) => {
-				sortedSearch!.then(([result, rawMatches]) => {
+				sortedSearch?.then(([result, rawMatches]) => {
 					const serializedMatches = rawMatches.map((rawMatch) =>
 						this.rawMatchToSearchItem(rawMatch),
 					);
@@ -488,7 +488,7 @@ export class SearchService implements IRawSearchService {
 		return cachedRow.promise.then<
 			[ISearchEngineSuccess, IRawFileMatch[], ICachedSearchStats]
 		>(([complete, cachedEntries]) => {
-			if (token && token.isCancellationRequested) {
+			if (token?.isCancellationRequested) {
 				throw canceled();
 			}
 
@@ -511,7 +511,7 @@ export class SearchService implements IRawSearchService {
 				complete,
 				results,
 				{
-					cacheWasResolved: cachedRow!.resolved,
+					cacheWasResolved: cachedRow?.resolved,
 					cacheLookupTime,
 					cacheFilterTime: cacheFilterSW.elapsed(),
 					cacheEntryCount: cachedEntries.length,
@@ -554,14 +554,14 @@ export class SearchService implements IRawSearchService {
 
 					if (error) {
 						progressCallback({
-							message: "Search finished. Error: " + error.message,
+							message: `Search finished. Error: ${error.message}`,
 						});
 						e(error);
 					} else {
 						progressCallback({
-							message:
-								"Search finished. Stats: " +
-								JSON.stringify(complete.stats),
+							message: `Search finished. Stats: ${JSON.stringify(
+								complete.stats,
+							)}`,
 						});
 						c(complete);
 					}
@@ -647,14 +647,10 @@ function reviveQuery<U extends IRawQuery>(
 	return {
 		...(<any>rawQuery), // TODO
 		...{
-			folderQueries:
-				rawQuery.folderQueries &&
-				rawQuery.folderQueries.map(reviveFolderQuery),
-			extraFileResources:
-				rawQuery.extraFileResources &&
-				rawQuery.extraFileResources.map((components) =>
-					URI.revive(components),
-				),
+			folderQueries: rawQuery.folderQueries?.map(reviveFolderQuery),
+			extraFileResources: rawQuery.extraFileResources?.map((components) =>
+				URI.revive(components),
+			),
 		},
 	};
 }

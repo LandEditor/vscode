@@ -46,8 +46,7 @@ export function asWebviewUri(
 	}
 
 	if (
-		remoteInfo &&
-		remoteInfo.authority &&
+		remoteInfo?.authority &&
 		remoteInfo.isRemote &&
 		resource.scheme === Schemas.file
 	) {
@@ -79,7 +78,7 @@ function encodeAuthority(authority: string): string {
 		) {
 			return char;
 		}
-		return "-" + code.toString(16).padStart(4, "0");
+		return `-${code.toString(16).padStart(4, "0")}`;
 	});
 }
 

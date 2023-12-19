@@ -47,7 +47,7 @@ export const CONTEXT_ACTIVE_FILE_OUTPUT = new RawContextKey<boolean>(
 );
 
 export const CONTEXT_OUTPUT_SCROLL_LOCK = new RawContextKey<boolean>(
-	`outputView.scrollLock`,
+	"outputView.scrollLock",
 	false,
 );
 

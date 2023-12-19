@@ -224,7 +224,7 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 		disposables.add(
 			picker.onDidAccept((event) => {
 				const [item] = picker.selectedItems;
-				if (item && item.range) {
+				if (item?.range) {
 					this.gotoLocation(context, {
 						range: item.range.selection,
 						keyMods: picker.keyMods,
@@ -241,7 +241,7 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 		// Goto symbol side by side if enabled
 		disposables.add(
 			picker.onDidTriggerItemButton(({ item }) => {
-				if (item && item.range) {
+				if (item?.range) {
 					this.gotoLocation(context, {
 						range: item.range.selection,
 						keyMods: picker.keyMods,
@@ -337,7 +337,7 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 		disposables.add(
 			picker.onDidChangeActive(() => {
 				const [item] = picker.activeItems;
-				if (item && item.range) {
+				if (item?.range) {
 					// Reveal
 					editor.revealRangeInCenter(
 						item.range.selection,

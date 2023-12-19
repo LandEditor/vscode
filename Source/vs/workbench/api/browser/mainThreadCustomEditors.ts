@@ -474,7 +474,7 @@ export class MainThreadCustomEditors
 			resource,
 			viewType,
 		);
-		if (!model || !(model instanceof MainThreadCustomEditorModel)) {
+		if (!(model && model instanceof MainThreadCustomEditorModel)) {
 			throw new Error("Could not find model for webview editor");
 		}
 		return model;
@@ -549,7 +549,7 @@ class MainThreadCustomEditorModel
 
 	private _currentEditIndex = -1;
 	private _savePoint = -1;
-	private readonly _edits: Array<number> = [];
+	private readonly _edits: number[] = [];
 	private _isDirtyFromContentChange = false;
 
 	private _ongoingSave?: CancelablePromise<void>;

@@ -27,7 +27,7 @@ console.log = connection.console.log.bind(connection.console);
 console.error = connection.console.error.bind(connection.console);
 
 process.on("unhandledRejection", (e: any) => {
-	connection.console.error(formatError(`Unhandled exception`, e));
+	connection.console.error(formatError("Unhandled exception", e));
 });
 
 function getHTTPRequestService(): RequestService {

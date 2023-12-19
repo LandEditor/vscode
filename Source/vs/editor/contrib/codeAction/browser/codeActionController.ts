@@ -271,7 +271,7 @@ export class CodeActionController
 							newState.trigger,
 							actions,
 						);
-					if (invalidAction && invalidAction.action.disabled) {
+					if (invalidAction?.action.disabled) {
 						MessageController.get(this._editor)?.showMessage(
 							invalidAction.action.disabled,
 							newState.trigger.context.position,
@@ -285,8 +285,10 @@ export class CodeActionController
 			const includeDisabledActions = !!newState.trigger.filter?.include;
 			if (newState.trigger.context) {
 				if (
-					!actions.allActions.length ||
-					(!includeDisabledActions && !actions.validActions.length)
+					!(
+						actions.allActions.length &&
+						(includeDisabledActions || actions.validActions.length)
+					)
 				) {
 					MessageController.get(this._editor)?.showMessage(
 						newState.trigger.context.notAvailableMessage,
@@ -402,11 +404,7 @@ export class CodeActionController
 				return { canPreview: !!action.action.edit?.edits.length };
 			},
 			onFocus: (action: CodeActionItem | undefined) => {
-				if (
-					action &&
-					action.highlightRange &&
-					action.action.diagnostics
-				) {
+				if (action?.highlightRange && action.action.diagnostics) {
 					const decorations: IModelDeltaDecoration[] = [
 						{
 							range: action.action.diagnostics[0],

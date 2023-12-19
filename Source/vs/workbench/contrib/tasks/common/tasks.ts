@@ -315,7 +315,7 @@ export namespace RuntimeType {
 				return RuntimeType.Shell;
 			case "process":
 				return RuntimeType.Process;
-			case "customExecution":
+			case "customexecution":
 				return RuntimeType.CustomExecution;
 			default:
 				return RuntimeType.Process;
@@ -813,7 +813,7 @@ export class CustomTask extends CommonTask {
 	}
 
 	public customizes(): KeyedTaskIdentifier | undefined {
-		if (this._source && this._source.customizes) {
+		if (this._source?.customizes) {
 			return this._source.customizes;
 		}
 		return undefined;
@@ -828,21 +828,25 @@ export class CustomTask extends CommonTask {
 				? this.command.runtime
 				: undefined;
 			switch (commandRuntime) {
-				case RuntimeType.Shell:
+				case RuntimeType.Shell: {
 					type = "shell";
 					break;
+				}
 
-				case RuntimeType.Process:
+				case RuntimeType.Process: {
 					type = "process";
 					break;
+				}
 
-				case RuntimeType.CustomExecution:
+				case RuntimeType.CustomExecution: {
 					type = "customExecution";
 					break;
+				}
 
-				case undefined:
+				case undefined: {
 					type = "$composite";
 					break;
+				}
 
 				default:
 					throw new Error("Unexpected task runtime");
@@ -910,8 +914,7 @@ export class CustomTask extends CommonTask {
 	}
 
 	public override getWorkspaceFileName(): string | undefined {
-		return this._source.config.workspace &&
-			this._source.config.workspace.configuration
+		return this._source.config.workspace?.configuration
 			? resources.basename(this._source.config.workspace.configuration)
 			: undefined;
 	}
@@ -978,8 +981,7 @@ export class ConfiguringTask extends CommonTask {
 	}
 
 	public override getWorkspaceFileName(): string | undefined {
-		return this._source.config.workspace &&
-			this._source.config.workspace.configuration
+		return this._source.config.workspace?.configuration
 			? resources.basename(this._source.config.workspace.configuration)
 			: undefined;
 	}
@@ -1455,7 +1457,7 @@ export namespace KeyedTaskIdentifier {
 			} else if (typeof stringified === "string") {
 				stringified = stringified.replace(/,/g, ",,");
 			}
-			result += key + "," + stringified + ",";
+			result += `${key},${stringified},`;
 		}
 		return result;
 	}
@@ -1502,7 +1504,7 @@ export namespace TaskDefinition {
 		if (definition === undefined) {
 			// We have no task definition so we can't sanitize the literal. Take it as is
 			const copy = Objects.deepClone(external);
-			delete copy._key;
+			copy._key = undefined;
 			return KeyedTaskIdentifier.create(copy);
 		}
 
@@ -1523,17 +1525,20 @@ export namespace TaskDefinition {
 					literal[property] = Objects.deepClone(schema.default);
 				} else {
 					switch (schema.type) {
-						case "boolean":
+						case "boolean": {
 							literal[property] = false;
 							break;
+						}
 						case "number":
-						case "integer":
+						case "integer": {
 							literal[property] = 0;
 							break;
-						case "string":
+						}
+						case "string": {
 							literal[property] = "";
 							break;
-						default:
+						}
+						default: {
 							reporter.error(
 								nls.localize(
 									"TaskDefinition.missingRequiredProperty",
@@ -1543,6 +1548,7 @@ export namespace TaskDefinition {
 								),
 							);
 							return undefined;
+						}
 					}
 				}
 			}

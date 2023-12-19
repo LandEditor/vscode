@@ -266,14 +266,14 @@ export class ExtensionsActivator implements IDisposable {
 
 	public isActivated(extensionId: ExtensionIdentifier): boolean {
 		const op = this._operations.get(extensionId);
-		return Boolean(op && op.value);
+		return Boolean(op?.value);
 	}
 
 	public getActivatedExtension(
 		extensionId: ExtensionIdentifier,
 	): ActivatedExtension {
 		const op = this._operations.get(extensionId);
-		if (!op || !op.value) {
+		if (!op?.value) {
 			throw new Error(
 				`Extension '${extensionId.value}' is not known or not activated`,
 			);
@@ -386,8 +386,8 @@ export class ExtensionsActivator implements IDisposable {
 				// must first wait for the dependency to activate
 				deps.push(
 					this._handleActivationRequest({
-						id: this._globalRegistry.getExtensionDescription(depId)!
-							.identifier,
+						id: this._globalRegistry.getExtensionDescription(depId)
+							?.identifier,
 						reason: currentActivation.reason,
 					}),
 				);
@@ -396,7 +396,7 @@ export class ExtensionsActivator implements IDisposable {
 
 			const depDesc = this._registry.getExtensionDescription(depId);
 			if (depDesc) {
-				if (!depDesc.main && !depDesc.browser) {
+				if (!(depDesc.main || depDesc.browser)) {
 					// this dependency does not need to activate because it is descriptive only
 					continue;
 				}
@@ -478,7 +478,7 @@ export class ExtensionsActivator implements IDisposable {
 			// unknown extension
 			return false;
 		}
-		return !extensionDescription.main && !extensionDescription.browser;
+		return !(extensionDescription.main || extensionDescription.browser);
 	}
 }
 
@@ -537,7 +537,7 @@ class ActivationOperation {
 					continue;
 				}
 
-				if (dep.value && dep.value.activationFailed) {
+				if (dep.value?.activationFailed) {
 					// Error condition 2: a dependency has already failed activation
 					const error = new Error(
 						`Cannot activate the '${this.friendlyName}' extension because its dependency '${dep.friendlyName}' failed to activate`,
@@ -570,15 +570,15 @@ class ActivationOperation {
 			);
 		} catch (err) {
 			const error = new Error();
-			if (err && err.name) {
+			if (err?.name) {
 				error.name = err.name;
 			}
-			if (err && err.message) {
+			if (err?.message) {
 				error.message = `Activating extension '${this._id.value}' failed: ${err.message}.`;
 			} else {
 				error.message = `Activating extension '${this._id.value}' failed: ${err}.`;
 			}
-			if (err && err.stack) {
+			if (err?.stack) {
 				error.stack = err.stack;
 			}
 

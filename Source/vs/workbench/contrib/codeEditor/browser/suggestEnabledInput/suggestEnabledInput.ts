@@ -328,7 +328,7 @@ export class SuggestEnabledInput extends Widget {
 			languageFeaturesService.completionProvider.register(
 				{
 					scheme: scopeHandle.scheme,
-					pattern: "**/" + scopeHandle.path,
+					pattern: `**/${scopeHandle.path}`,
 					hasAccessToAllModels: true,
 				},
 				{
@@ -343,8 +343,8 @@ export class SuggestEnabledInput extends Widget {
 						const query = model.getValue();
 
 						const zeroIndexedColumn = position.column - 1;
-						let alreadyTypedCount = 0,
-							zeroIndexedWordStart = 0;
+						let alreadyTypedCount = 0;
+						let zeroIndexedWordStart = 0;
 
 						if (validatedSuggestProvider.wordDefinition) {
 							const wordAtText = getWordAtText(

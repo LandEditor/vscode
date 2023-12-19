@@ -57,21 +57,26 @@ export async function createTasExperimentationService(
 ): Promise<tas.IExperimentationService> {
 	let targetPopulation: tas.TargetPopulation;
 	switch (vscode.env.uriScheme) {
-		case "vscode":
+		case "vscode": {
 			targetPopulation = tas.TargetPopulation.Public;
 			break;
-		case "vscode-insiders":
+		}
+		case "vscode-insiders": {
 			targetPopulation = tas.TargetPopulation.Insiders;
 			break;
-		case "vscode-exploration":
+		}
+		case "vscode-exploration": {
 			targetPopulation = tas.TargetPopulation.Internal;
 			break;
-		case "code-oss":
+		}
+		case "code-oss": {
 			targetPopulation = tas.TargetPopulation.Team;
 			break;
-		default:
+		}
+		default: {
 			targetPopulation = tas.TargetPopulation.Public;
 			break;
+		}
 	}
 
 	const experimentationService = tas.getExperimentationService(

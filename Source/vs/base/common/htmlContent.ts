@@ -155,9 +155,7 @@ export function markdownStringEqual(
 ): boolean {
 	if (a === b) {
 		return true;
-	} else if (!a || !b) {
-		return false;
-	} else {
+	} else if (a && b) {
 		return (
 			a.value === b.value &&
 			a.isTrusted === b.isTrusted &&
@@ -168,6 +166,8 @@ export function markdownStringEqual(
 					!!b.baseUri &&
 					isEqual(URI.from(a.baseUri), URI.from(b.baseUri))))
 		);
+	} else {
+		return false;
 	}
 }
 
@@ -221,8 +221,8 @@ export function parseHrefAndDimensions(href: string): {
 		const widthFromParams = /width=(\d+)/.exec(parameters);
 		const height = heightFromParams ? heightFromParams[1] : "";
 		const width = widthFromParams ? widthFromParams[1] : "";
-		const widthIsFinite = isFinite(parseInt(width));
-		const heightIsFinite = isFinite(parseInt(height));
+		const widthIsFinite = Number.isFinite(parseInt(width));
+		const heightIsFinite = Number.isFinite(parseInt(height));
 		if (widthIsFinite) {
 			dimensions.push(`width="${width}"`);
 		}

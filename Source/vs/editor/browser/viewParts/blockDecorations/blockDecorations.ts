@@ -140,7 +140,7 @@ export class BlockDecorations extends ViewPart {
 				decoration.options.blockPadding ?? [0, 0, 0, 0];
 
 			block.setClassName(
-				"blockDecorations-block " + decoration.options.blockClassName,
+				`blockDecorations-block ${decoration.options.blockClassName}`,
 			);
 			block.setLeft(this.contentLeft - paddingLeft);
 			block.setWidth(this.contentWidth + paddingLeft + paddingRight);

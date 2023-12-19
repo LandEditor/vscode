@@ -255,7 +255,7 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 				"Do you want to save the changes to the following {0} files?",
 				fileNamesOrResources.length,
 			);
-			detail = getFileNamesMessage(fileNamesOrResources) + "\n" + detail;
+			detail = `${getFileNamesMessage(fileNamesOrResources)}\n${detail}`;
 		}
 
 		const { result } = await this.dialogService.prompt<ConfirmResult>({
@@ -540,7 +540,7 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 		defaultUri?: URI;
 	}): string {
 		return (
-			(options.availableFileSystems && options.availableFileSystems[0]) ||
+			options.availableFileSystems?.[0] ||
 			this.getSchemeFilterForWindow(options.defaultUri?.scheme)
 		);
 	}

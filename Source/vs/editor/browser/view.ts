@@ -504,14 +504,9 @@ export class View extends ViewEventHandler {
 
 	private _getEditorClassName() {
 		const focused = this._textAreaHandler.isFocused() ? " focused" : "";
-		return (
-			this._context.configuration.options.get(
-				EditorOption.editorClassName,
-			) +
-			" " +
-			getThemeTypeSelector(this._context.theme.type) +
-			focused
-		);
+		return `${this._context.configuration.options.get(
+			EditorOption.editorClassName,
+		)} ${getThemeTypeSelector(this._context.theme.type)}${focused}`;
 	}
 
 	// --- begin event handlers

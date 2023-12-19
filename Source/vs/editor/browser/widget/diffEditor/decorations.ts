@@ -31,8 +31,9 @@ export const diffLineAddDecorationBackgroundWithIndicator =
 		className: "line-insert",
 		description: "line-insert",
 		isWholeLine: true,
-		linesDecorationsClassName:
-			"insert-sign " + ThemeIcon.asClassName(diffInsertIcon),
+		linesDecorationsClassName: `insert-sign ${ThemeIcon.asClassName(
+			diffInsertIcon,
+		)}`,
 		marginClassName: "gutter-insert",
 	});
 
@@ -41,8 +42,9 @@ export const diffLineDeleteDecorationBackgroundWithIndicator =
 		className: "line-delete",
 		description: "line-delete",
 		isWholeLine: true,
-		linesDecorationsClassName:
-			"delete-sign " + ThemeIcon.asClassName(diffRemoveIcon),
+		linesDecorationsClassName: `delete-sign ${ThemeIcon.asClassName(
+			diffRemoveIcon,
+		)}`,
 		marginClassName: "gutter-delete",
 	});
 

@@ -242,7 +242,7 @@ export class OpenerService implements IOpenerService {
 		}
 
 		throw new Error(
-			"Could not resolve external URI: " + resource.toString(),
+			`Could not resolve external URI: ${resource.toString()}`,
 		);
 	}
 

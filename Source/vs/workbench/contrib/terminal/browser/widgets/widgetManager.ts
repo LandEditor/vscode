@@ -19,7 +19,7 @@ export class TerminalWidgetManager implements IDisposable {
 	}
 
 	dispose(): void {
-		if (this._container && this._container.parentElement) {
+		if (this._container?.parentElement) {
 			this._container.parentElement.removeChild(this._container);
 			this._container = undefined;
 		}

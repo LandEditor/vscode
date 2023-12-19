@@ -23,7 +23,7 @@ function _normalizeIndentationFromWhitespace(
 	let result = "";
 	if (!insertSpaces) {
 		const tabsCnt = Math.floor(spacesCnt / indentSize);
-		spacesCnt = spacesCnt % indentSize;
+		spacesCnt %= indentSize;
 		for (let i = 0; i < tabsCnt; i++) {
 			result += "\t";
 		}

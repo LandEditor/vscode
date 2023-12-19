@@ -223,7 +223,7 @@ export class QuickInputService extends Themable implements IQuickInputService {
 			}
 		}
 
-		if (key && key.get()) {
+		if (key?.get()) {
 			return; // already active context
 		}
 

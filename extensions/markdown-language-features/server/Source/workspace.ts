@@ -78,7 +78,7 @@ class VsCodeDocument implements md.ITextDocument {
 	}
 
 	isDetached(): boolean {
-		return !this.onDiskDoc && !this.inMemoryDoc;
+		return !(this.onDiskDoc || this.inMemoryDoc);
 	}
 
 	setInMemoryDoc(doc: TextDocument | undefined) {
@@ -286,15 +286,18 @@ export class VsCodeClientWorkspace implements md.IWorkspaceWithWatching {
 			}
 
 			switch (params.kind) {
-				case "create":
+				case "create": {
 					watcher.onDidCreate.fire(URI.parse(params.uri));
 					return;
-				case "change":
+				}
+				case "change": {
 					watcher.onDidChange.fire(URI.parse(params.uri));
 					return;
-				case "delete":
+				}
+				case "delete": {
 					watcher.onDidDelete.fire(URI.parse(params.uri));
 					return;
+				}
 			}
 		});
 	}

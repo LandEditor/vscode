@@ -64,7 +64,7 @@ class MultiDiffEditorResolverContribution extends Disposable {
 
 		this._register(
 			editorResolverService.registerEditor(
-				`*`,
+				"*",
 				{
 					id: DEFAULT_EDITOR_ASSOCIATION.id,
 					label: DEFAULT_EDITOR_ASSOCIATION.displayName,

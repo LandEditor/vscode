@@ -60,8 +60,7 @@ export class HelpQuickAccessProvider implements IQuickAccessProvider {
 					value.substr(HelpQuickAccessProvider.PREFIX.length),
 				);
 				if (
-					providerDescriptor &&
-					providerDescriptor.prefix &&
+					providerDescriptor?.prefix &&
 					providerDescriptor.prefix !== HelpQuickAccessProvider.PREFIX
 				) {
 					this.quickInputService.quickAccess.show(

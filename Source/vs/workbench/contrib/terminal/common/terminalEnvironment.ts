@@ -224,7 +224,7 @@ export function getLangEnvVariable(locale?: string): string {
 		// Ensure the variant is uppercase to be a valid $LANG
 		parts[1] = parts[1].toUpperCase();
 	}
-	return parts.join("_") + ".UTF-8";
+	return `${parts.join("_")}.UTF-8`;
 }
 
 export async function getCwd(

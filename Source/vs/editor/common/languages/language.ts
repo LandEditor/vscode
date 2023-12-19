@@ -114,17 +114,17 @@ export interface ILanguageService {
 	/**
 	 * Get all file extensions for a language.
 	 */
-	getExtensions(languageId: string): ReadonlyArray<string>;
+	getExtensions(languageId: string): readonly string[];
 
 	/**
 	 * Get all file names for a language.
 	 */
-	getFilenames(languageId: string): ReadonlyArray<string>;
+	getFilenames(languageId: string): readonly string[];
 
 	/**
 	 * Get all language configuration files for a language.
 	 */
-	getConfigurationFiles(languageId: string): ReadonlyArray<URI>;
+	getConfigurationFiles(languageId: string): readonly URI[];
 
 	/**
 	 * Look up a language by its name case insensitive.

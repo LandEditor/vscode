@@ -166,7 +166,7 @@ export class AsyncProgress<T> implements IProgress<T> {
 		try {
 			this._processingAsyncQueue = true;
 
-			while (this._asyncQueue && this._asyncQueue.length) {
+			while (this._asyncQueue?.length) {
 				const item = this._asyncQueue.shift()!;
 				this._value = item;
 				await this.callback(this._value);

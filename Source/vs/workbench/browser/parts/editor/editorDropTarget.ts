@@ -232,8 +232,7 @@ class DropOverlay extends Themable {
 					// Update the dropEffect to "copy" if there is no local data to be dragged because
 					// in that case we can only copy the data into and not move it from its source
 					if (
-						!isDraggingEditor &&
-						!isDraggingGroup &&
+						!(isDraggingEditor || isDraggingGroup) &&
 						e.dataTransfer
 					) {
 						e.dataTransfer.dropEffect = "copy";
@@ -702,7 +701,7 @@ class DropOverlay extends Themable {
 
 		// Draw overlay based on split direction
 		switch (splitDirection) {
-			case GroupDirection.UP:
+			case GroupDirection.UP: {
 				this.doPositionOverlay({
 					top: "0",
 					left: "0",
@@ -711,7 +710,8 @@ class DropOverlay extends Themable {
 				});
 				this.toggleDropIntoPrompt(false);
 				break;
-			case GroupDirection.DOWN:
+			}
+			case GroupDirection.DOWN: {
 				this.doPositionOverlay({
 					top: "50%",
 					left: "0",
@@ -720,7 +720,8 @@ class DropOverlay extends Themable {
 				});
 				this.toggleDropIntoPrompt(false);
 				break;
-			case GroupDirection.LEFT:
+			}
+			case GroupDirection.LEFT: {
 				this.doPositionOverlay({
 					top: "0",
 					left: "0",
@@ -729,7 +730,8 @@ class DropOverlay extends Themable {
 				});
 				this.toggleDropIntoPrompt(false);
 				break;
-			case GroupDirection.RIGHT:
+			}
+			case GroupDirection.RIGHT: {
 				this.doPositionOverlay({
 					top: "0",
 					left: "50%",
@@ -738,7 +740,8 @@ class DropOverlay extends Themable {
 				});
 				this.toggleDropIntoPrompt(false);
 				break;
-			default:
+			}
+			default: {
 				this.doPositionOverlay({
 					top: "0",
 					left: "0",
@@ -746,6 +749,7 @@ class DropOverlay extends Themable {
 					height: "100%",
 				});
 				this.toggleDropIntoPrompt(true);
+			}
 		}
 
 		// Make sure the overlay is visible now
@@ -899,9 +903,13 @@ export class EditorDropTarget extends Themable {
 
 		// Validate transfer
 		if (
-			!this.editorTransfer.hasData(DraggedEditorIdentifier.prototype) &&
-			!this.groupTransfer.hasData(
-				DraggedEditorGroupIdentifier.prototype,
+			!(
+				this.editorTransfer.hasData(
+					DraggedEditorIdentifier.prototype,
+				) ||
+				this.groupTransfer.hasData(
+					DraggedEditorGroupIdentifier.prototype,
+				)
 			) &&
 			event.dataTransfer
 		) {

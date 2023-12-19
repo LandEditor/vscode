@@ -30,7 +30,7 @@ class DependencyList {
 	}
 
 	/** Gets whether any of the 'available' dependencies match the ones in this list */
-	public matches(available: ReadonlyArray<string>) {
+	public matches(available: readonly string[]) {
 		// For now this is simple, but this may expand to support globs later
 		// @see https://github.com/microsoft/vscode/issues/119899
 		return available.some((v) => this.value.has(v));
@@ -113,7 +113,7 @@ export class NotebookOutputRendererInfo implements INotebookRendererInfo {
 		return NotebookRendererMatch.Pure;
 	}
 
-	public matches(mimeType: string, kernelProvides: ReadonlyArray<string>) {
+	public matches(mimeType: string, kernelProvides: readonly string[]) {
 		if (!this.matchesMimeTypeOnly(mimeType)) {
 			return NotebookRendererMatch.Never;
 		}

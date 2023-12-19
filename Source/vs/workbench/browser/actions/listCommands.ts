@@ -348,11 +348,11 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		const widget = accessor.get(IListService).lastFocusedList;
 
 		if (
-			!widget ||
 			!(
-				widget instanceof ObjectTree ||
-				widget instanceof DataTree ||
-				widget instanceof AsyncDataTree
+				widget &&
+				(widget instanceof ObjectTree ||
+					widget instanceof DataTree ||
+					widget instanceof AsyncDataTree)
 			)
 		) {
 			return;
@@ -438,11 +438,11 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		const widget = accessor.get(IListService).lastFocusedList;
 
 		if (
-			!widget ||
 			!(
-				widget instanceof ObjectTree ||
-				widget instanceof DataTree ||
-				widget instanceof AsyncDataTree
+				widget &&
+				(widget instanceof ObjectTree ||
+					widget instanceof DataTree ||
+					widget instanceof AsyncDataTree)
 			)
 		) {
 			return;

@@ -95,7 +95,7 @@ interface RegisteredEditor {
 	editorFactoryObject: EditorInputFactoryObject;
 }
 
-type RegisteredEditors = Array<RegisteredEditor>;
+type RegisteredEditors = RegisteredEditor[];
 
 export class EditorResolverService
 	extends Disposable
@@ -804,7 +804,7 @@ export class EditorResolverService
 
 		if (isResourceSideBySideEditorInput(editor)) {
 			throw new Error(
-				`Untyped side by side editor input not supported here.`,
+				"Untyped side by side editor input not supported here.",
 			);
 		}
 
@@ -825,7 +825,7 @@ export class EditorResolverService
 
 		// Should no longer have an undefined resource so lets throw an error if that's somehow the case
 		if (resource === undefined) {
-			throw new Error(`Undefined resource on non untitled editor input.`);
+			throw new Error("Undefined resource on non untitled editor input.");
 		}
 
 		// If the editor states it can only be opened once per resource we must close all existing ones except one and move the new one into the group
@@ -963,8 +963,7 @@ export class EditorResolverService
 
 		// If the user has already made a choice for this editor we don't want to ask them again
 		if (
-			storedChoices[globForResource] &&
-			storedChoices[globForResource].find(
+			storedChoices[globForResource]?.find(
 				(editorID) => editorID === currentEditor.editorId,
 			)
 		) {
@@ -1063,7 +1062,7 @@ export class EditorResolverService
 				);
 			}
 		});
-		const quickPickEntries: Array<QuickPickItem> = [];
+		const quickPickEntries: QuickPickItem[] = [];
 		const currentlyActiveLabel = localize(
 			"promptOpenWith.currentlyActive",
 			"Active",

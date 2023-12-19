@@ -369,10 +369,12 @@ export abstract class AbstractNativeExtensionTipsService extends ExtensionTipsSe
 			const tip = importantExeBasedRecommendations.get(extensionId);
 			if (
 				tip &&
-				(!promptedExecutableTips[tip.exeName] ||
-					!promptedExecutableTips[tip.exeName].includes(
+				!(
+					promptedExecutableTips[tip.exeName] &&
+					promptedExecutableTips[tip.exeName].includes(
 						tip.extensionId,
-					))
+					)
+				)
 			) {
 				let tips = tipsByExe.get(tip.exeName);
 				if (!tips) {
@@ -397,12 +399,14 @@ export abstract class AbstractNativeExtensionTipsService extends ExtensionTipsSe
 		const [exeName, tips] = [...this.highImportanceTipsByExe.entries()][0];
 		this.promptExeRecommendations(tips).then((result) => {
 			switch (result) {
-				case RecommendationsNotificationResult.Accepted:
+				case RecommendationsNotificationResult.Accepted: {
 					this.addToRecommendedExecutables(tips[0].exeName, tips);
 					break;
-				case RecommendationsNotificationResult.Ignored:
+				}
+				case RecommendationsNotificationResult.Ignored: {
 					this.highImportanceTipsByExe.delete(exeName);
 					break;
+				}
 				case RecommendationsNotificationResult.IncompatibleWindow: {
 					// Recommended in incompatible window. Schedule the prompt after active window change
 					const onActiveWindowChange = Event.once(
@@ -476,11 +480,12 @@ export abstract class AbstractNativeExtensionTipsService extends ExtensionTipsSe
 					}, promptInterval);
 					break;
 				}
-				case RecommendationsNotificationResult.Ignored:
+				case RecommendationsNotificationResult.Ignored: {
 					// Ignored: Remove from the cache and prompt next recommendation
 					this.mediumImportanceTipsByExe.delete(exeName);
 					this.promptMediumImportanceExeBasedTip();
 					break;
+				}
 
 				case RecommendationsNotificationResult.IncompatibleWindow: {
 					// Recommended in incompatible window. Schedule the prompt after active window change
@@ -594,8 +599,8 @@ export abstract class AbstractNativeExtensionTipsService extends ExtensionTipsSe
 		recommendationsToSuggest: string[],
 		local: ILocalExtension[],
 	): { installed: string[]; uninstalled: string[] } {
-		const installed: string[] = [],
-			uninstalled: string[] = [];
+		const installed: string[] = [];
+		const uninstalled: string[] = [];
 		const installedExtensionsIds = local.reduce((result, i) => {
 			result.add(i.identifier.id.toLowerCase());
 			return result;
@@ -622,8 +627,7 @@ export abstract class AbstractNativeExtensionTipsService extends ExtensionTipsSe
 		for (const exeName of executableTips.keys()) {
 			const extensionTip = executableTips.get(exeName);
 			if (
-				!extensionTip ||
-				!isNonEmptyArray(extensionTip.recommendations)
+				!(extensionTip && isNonEmptyArray(extensionTip.recommendations))
 			) {
 				continue;
 			}

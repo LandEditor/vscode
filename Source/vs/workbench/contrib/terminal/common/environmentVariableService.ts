@@ -131,7 +131,7 @@ export class EnvironmentVariableService
 				collectionsJson.push({
 					extensionIdentifier,
 					collection: serializeEnvironmentVariableCollection(
-						this.collections.get(extensionIdentifier)!.map,
+						this.collections.get(extensionIdentifier)?.map,
 					),
 					description: serializeEnvironmentDescriptionMap(
 						collection.descriptionMap,

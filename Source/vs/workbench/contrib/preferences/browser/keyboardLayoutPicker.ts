@@ -147,8 +147,8 @@ const DEFAULT_CONTENT: string = [
 		"doc",
 		'Open VS Code and run "Developer: Inspect Key Mappings (JSON)" from Command Palette.',
 	)}`,
-	``,
-	`// Once you have the keyboard layout info, please paste it below.`,
+	"",
+	"// Once you have the keyboard layout info, please paste it below.",
 	"\n",
 ].join("\n");
 
@@ -193,7 +193,7 @@ registerAction2(
 						layout: layout,
 						label: [
 							layoutInfo.label,
-							layout && layout.isUserKeyboardLayout
+							layout?.isUserKeyboardLayout
 								? "(User configured layout)"
 								: "",
 						].join(" "),

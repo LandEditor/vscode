@@ -113,7 +113,7 @@ function _format(
 
 	if (isPseudo) {
 		// FF3B and FF3D is the Unicode zenkaku representation for [ and ]
-		result = "\uFF3B" + result.replace(/[aouei]/g, "$&$&") + "\uFF3D";
+		result = `\uFF3B${result.replace(/[aouei]/g, "$&$&")}\uFF3D`;
 	}
 
 	return result;
@@ -138,7 +138,7 @@ function endWithSlash(path: string): string {
 	if (path.charAt(path.length - 1) === "/") {
 		return path;
 	}
-	return path + "/";
+	return `${path}/`;
 }
 
 async function getMessagesFromTranslationsService(
@@ -146,11 +146,9 @@ async function getMessagesFromTranslationsService(
 	language: string,
 	name: string,
 ): Promise<string[] | IBundledStrings> {
-	const url =
-		endWithSlash(translationServiceUrl) +
-		endWithSlash(language) +
-		"vscode/" +
-		endWithSlash(name);
+	const url = `${
+		endWithSlash(translationServiceUrl) + endWithSlash(language)
+	}vscode/${endWithSlash(name)}`;
 	const res = await fetch(url);
 	if (res.ok) {
 		const messages = (await res.json()) as string[] | IBundledStrings;
@@ -339,7 +337,7 @@ export function load(
 	const useDefaultLanguage = language === null || language === DEFAULT_TAG;
 	let suffix = ".nls";
 	if (!useDefaultLanguage) {
-		suffix = suffix + "." + language;
+		suffix = `${suffix}.${language}`;
 	}
 	const messagesLoaded = (messages: string[] | IBundledStrings) => {
 		if (Array.isArray(messages)) {
@@ -366,7 +364,7 @@ export function load(
 			(err: Error, messages) => {
 				// We have an error. Load the English default strings to not fail
 				if (err) {
-					req([name + ".nls"], messagesLoaded);
+					req([`${name}.nls`], messagesLoaded);
 				} else {
 					messagesLoaded(messages);
 				}
@@ -385,7 +383,7 @@ export function load(
 				// Language is already as generic as it gets, so require default messages
 				if (!language.includes("-")) {
 					console.error(err);
-					return req([name + ".nls"], messagesLoaded);
+					return req([`${name}.nls`], messagesLoaded);
 				}
 				try {
 					// Since there is a dash, the language configured is a specific sub-language of the same generic language.
@@ -403,7 +401,7 @@ export function load(
 					return messagesLoaded(messages);
 				} catch (err) {
 					console.error(err);
-					return req([name + ".nls"], messagesLoaded);
+					return req([`${name}.nls`], messagesLoaded);
 				}
 			}
 		})();
@@ -420,7 +418,7 @@ export function load(
 				`Failed to load message bundle for language ${language}. Falling back to the default language:`,
 				err,
 			);
-			req([name + ".nls"], messagesLoaded);
+			req([`${name}.nls`], messagesLoaded);
 		});
 	}
 }

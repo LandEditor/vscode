@@ -94,9 +94,10 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 				.workbench?.editor;
 
 		return {
-			openEditorPinned:
-				!editorConfig?.enablePreviewFromQuickOpen ||
-				!editorConfig?.enablePreview,
+			openEditorPinned: !(
+				editorConfig?.enablePreviewFromQuickOpen &&
+				editorConfig?.enablePreview
+			),
 			openSideBySideDirection: editorConfig?.openSideBySideDirection,
 		};
 	}

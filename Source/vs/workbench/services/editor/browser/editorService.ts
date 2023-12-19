@@ -294,7 +294,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 			return; // ignore if not the active group
 		}
 
-		if (!this.lastActiveEditor && !group.activeEditor) {
+		if (!(this.lastActiveEditor || group.activeEditor)) {
 			return; // ignore if we still have no active editor
 		}
 
@@ -432,10 +432,12 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 			for (const editor of group.editors) {
 				const resource = editor.resource;
 				if (
-					!resource ||
-					!this.uriIdentityService.extUri.isEqualOrParent(
-						resource,
-						source,
+					!(
+						resource &&
+						this.uriIdentityService.extUri.isEqualOrParent(
+							resource,
+							source,
+						)
 					)
 				) {
 					continue; // not matching our resource
@@ -592,7 +594,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 						exists = await this.fileService.exists(resource);
 					}
 
-					if (!exists && !editor.isDisposed()) {
+					if (!(exists || editor.isDisposed())) {
 						editor.dispose();
 					}
 				}
@@ -693,7 +695,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 	): IEditorIdentifier[] {
 		switch (order) {
 			// MRU
-			case EditorsOrder.MOST_RECENTLY_ACTIVE:
+			case EditorsOrder.MOST_RECENTLY_ACTIVE: {
 				if (options?.excludeSticky) {
 					return this.editorsObserver.editors.filter(
 						({ groupId, editor }) =>
@@ -704,6 +706,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 				}
 
 				return this.editorsObserver.editors;
+			}
 
 			// Sequential
 			case EditorsOrder.SEQUENTIAL: {
@@ -890,7 +893,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 		// Find target groups for editors to open
 		const mapGroupToTypedEditors = new Map<
 			IEditorGroup,
-			Array<EditorInputWithOptions>
+			EditorInputWithOptions[]
 		>();
 		for (const editor of editors) {
 			let typedEditor: EditorInputWithOptions | undefined = undefined;
@@ -975,12 +978,13 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 		switch (trustResult) {
 			case WorkspaceTrustUriResponse.Open:
 				return true;
-			case WorkspaceTrustUriResponse.OpenInNewWindow:
+			case WorkspaceTrustUriResponse.OpenInNewWindow: {
 				await this.hostService.openWindow(
 					resources.map((resource) => ({ fileUri: resource })),
 					{ forceNewWindow: true, diffMode, mergeMode },
 				);
 				return false;
+			}
 			case WorkspaceTrustUriResponse.Cancel:
 				return false;
 		}

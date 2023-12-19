@@ -180,7 +180,7 @@ export class ElectronWebviewElement extends WebviewElement {
 	}
 
 	public override updateFind(value: string) {
-		if (!value || !this.element) {
+		if (!(value && this.element)) {
 			return;
 		}
 

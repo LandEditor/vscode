@@ -161,7 +161,7 @@ export function lengthAdd(length1: Length, length2: Length): Length;
 export function lengthAdd(l1: any, l2: any): Length {
 	let r = l1 + l2;
 	if (l2 >= factor) {
-		r = r - (l1 % factor);
+		r -= l1 % factor;
 	}
 	return r;
 }

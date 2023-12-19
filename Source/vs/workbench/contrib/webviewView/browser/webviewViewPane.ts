@@ -73,11 +73,11 @@ export class WebviewViewPane extends ViewPane {
 	private static getOriginStore(
 		storageService: IStorageService,
 	): ExtensionKeyedWebviewOriginStore {
-		this._originStore ??= new ExtensionKeyedWebviewOriginStore(
+		WebviewViewPane._originStore ??= new ExtensionKeyedWebviewOriginStore(
 			"webviewViews.origins",
 			storageService,
 		);
-		return this._originStore;
+		return WebviewViewPane._originStore;
 	}
 
 	private readonly _webview = this._register(
@@ -397,11 +397,11 @@ export class WebviewViewPane extends ViewPane {
 
 	private doLayoutWebview(dimension?: Dimension) {
 		const webviewEntry = this._webview.value;
-		if (!this._container || !webviewEntry) {
+		if (!(this._container && webviewEntry)) {
 			return;
 		}
 
-		if (!this._rootContainer || !this._rootContainer.isConnected) {
+		if (!this._rootContainer?.isConnected) {
 			this._rootContainer = this.findRootContainer(this._container);
 		}
 

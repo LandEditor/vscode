@@ -229,7 +229,7 @@ export class MoveLinesCommand implements ICommand {
 					// to s.startLineNumber
 					builder.addEditOperation(
 						new Range(s.startLineNumber, 1, s.startLineNumber, 1),
-						insertingText + "\n",
+						`${insertingText}\n`,
 					);
 
 					const ret = this.matchEnterRuleMovingDown(
@@ -308,7 +308,7 @@ export class MoveLinesCommand implements ICommand {
 					// Insert line that needs to be moved before
 					builder.addEditOperation(
 						new Range(s.startLineNumber, 1, s.startLineNumber, 1),
-						insertingText + "\n",
+						`${insertingText}\n`,
 					);
 				}
 			} else {
@@ -329,7 +329,7 @@ export class MoveLinesCommand implements ICommand {
 						s.endLineNumber,
 						model.getLineMaxColumn(s.endLineNumber),
 					),
-					"\n" + movingLineText,
+					`\n${movingLineText}`,
 				);
 
 				if (this.shouldAutoIndent(model, s)) {

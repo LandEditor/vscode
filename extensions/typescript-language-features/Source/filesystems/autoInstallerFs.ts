@@ -229,7 +229,7 @@ export class AutoInstallerFs implements vscode.FileSystemProvider {
 		if (!this.projectCache.has(root)) {
 			this.projectCache.set(root, new Set());
 		}
-		this.projectCache.get(root)!.add(pkgPath);
+		this.projectCache.get(root)?.add(pkgPath);
 	}
 
 	private async getInstallOpts(originalUri: URI, root: string) {
@@ -294,7 +294,7 @@ class MappedUri {
 		this.original = URI.from({
 			scheme,
 			authority,
-			path: path ? "/" + path : path,
+			path: path ? `/${path}` : path,
 		});
 		this.mapped = this.original.with({
 			scheme: this.raw.scheme,

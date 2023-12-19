@@ -81,9 +81,9 @@ export function createLineStarts(r: number[], str: string): LineStarts {
 	r.length = 0;
 	r[0] = 0;
 	let rLength = 1;
-	let cr = 0,
-		lf = 0,
-		crlf = 0;
+	let cr = 0;
+	let lf = 0;
+	let crlf = 0;
 	let isBasicASCII = true;
 	for (let i = 0, len = str.length; i < len; i++) {
 		const chr = str.charCodeAt(i);
@@ -303,7 +303,6 @@ class PieceTreeSearchCache {
 			) {
 				tmp[i] = null;
 				hasInvalidVal = true;
-				continue;
 			}
 		}
 
@@ -1235,7 +1234,7 @@ export class PieceTreeBase {
 							remainder - 1,
 						);
 						this.deleteNodeTail(node, previousPos);
-						value = "\r" + value;
+						value = `\r${value}`;
 
 						if (node.piece.length === 0) {
 							nodesToDel.push(node);
@@ -1618,7 +1617,7 @@ export class PieceTreeBase {
 			this._buffers[0].lineStarts = (<number[]>(
 				this._buffers[0].lineStarts
 			)).concat(<number[]>lineStarts.slice(1));
-			this._buffers[0].buffer += "_" + text;
+			this._buffers[0].buffer += `_${text}`;
 			startOffset += 1;
 		} else {
 			if (startOffset !== 0) {
@@ -2372,11 +2371,11 @@ export class PieceTreeBase {
 		if (x === SENTINEL) {
 			this.root = z;
 			z.color = NodeColor.Black;
-		} else if (node!.right === SENTINEL) {
+		} else if (node?.right === SENTINEL) {
 			node!.right = z;
 			z.parent = node!;
 		} else {
-			const nextNode = leftest(node!.right);
+			const nextNode = leftest(node?.right);
 			nextNode.left = z;
 			z.parent = nextNode;
 		}
@@ -2403,11 +2402,11 @@ export class PieceTreeBase {
 		if (this.root === SENTINEL) {
 			this.root = z;
 			z.color = NodeColor.Black;
-		} else if (node!.left === SENTINEL) {
+		} else if (node?.left === SENTINEL) {
 			node!.left = z;
 			z.parent = node!;
 		} else {
-			const prevNode = righttest(node!.left); // a
+			const prevNode = righttest(node?.left); // a
 			prevNode.right = z;
 			z.parent = prevNode;
 		}

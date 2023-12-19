@@ -173,7 +173,7 @@ export async function getCwdForSplit(
 	commandService?: ICommandService,
 ): Promise<string | URI | undefined> {
 	switch (configHelper.config.splitCwd) {
-		case "workspaceRoot":
+		case "workspaceRoot": {
 			if (folders !== undefined && commandService !== undefined) {
 				if (folders.length === 1) {
 					return folders[0].uri;
@@ -197,6 +197,7 @@ export async function getCwdForSplit(
 				}
 			}
 			return "";
+		}
 		case "initial":
 			return instance.getInitialCwd();
 		case "inherited":
@@ -288,7 +289,7 @@ export function registerTerminalAction(
 			args?: unknown,
 		) => void | Promise<unknown>;
 	} = options;
-	delete (
+	(
 		strictOptions as IAction2Options & {
 			run?: (
 				c: ITerminalServicesCollection,
@@ -296,7 +297,7 @@ export function registerTerminalAction(
 				args?: unknown,
 			) => void | Promise<unknown>;
 		}
-	)["run"];
+	)["run"] = undefined;
 	// Register
 	return registerAction2(
 		class extends Action2 {
@@ -772,7 +773,7 @@ export function registerTerminalActions() {
 			if (isString(output)) {
 				await clipboardService.writeText(
 					`${
-						command.command !== "" ? command.command + "\n" : ""
+						command.command !== "" ? `${command.command}\n` : ""
 					}${output}`,
 				);
 			}
@@ -1004,7 +1005,7 @@ export function registerTerminalActions() {
 		run: async (c, accessor) => {
 			const codeEditorService = accessor.get(ICodeEditorService);
 			const editor = codeEditorService.getActiveCodeEditor();
-			if (!editor || !editor.hasModel()) {
+			if (!editor?.hasModel()) {
 				return;
 			}
 			const instance = await c.service.getActiveOrCreateInstance({
@@ -1048,7 +1049,7 @@ export function registerTerminalActions() {
 			);
 
 			const editor = codeEditorService.getActiveCodeEditor();
-			if (!editor || !editor.hasModel()) {
+			if (!editor?.hasModel()) {
 				return;
 			}
 
@@ -2506,7 +2507,7 @@ function getSelectedInstances(
 		return instance ? [terminalGroupService.activeInstance] : undefined;
 	}
 
-	if (!list || !selections) {
+	if (!(list && selections)) {
 		return undefined;
 	}
 	const focused = list.getFocus();

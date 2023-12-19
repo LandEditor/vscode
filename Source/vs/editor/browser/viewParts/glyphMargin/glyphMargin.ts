@@ -346,8 +346,7 @@ export class GlyphMarginWidgets extends ViewPart {
 					Range.lift(range),
 				);
 			if (
-				!startLineNumber ||
-				!endLineNumber ||
+				!(startLineNumber && endLineNumber) ||
 				endLineNumber < visibleStartLineNumber ||
 				startLineNumber > visibleEndLineNumber
 			) {
@@ -538,8 +537,8 @@ export class GlyphMarginWidgets extends ViewPart {
 				this.domNode.appendChild(domNode);
 			}
 
-			domNode.setClassName(`cgmr codicon ` + dec.combinedClassName);
-			domNode.setPosition(`absolute`);
+			domNode.setClassName(`cgmr codicon ${dec.combinedClassName}`);
+			domNode.setPosition("absolute");
 			domNode.setTop(top);
 			domNode.setLeft(left);
 			domNode.setWidth(width);

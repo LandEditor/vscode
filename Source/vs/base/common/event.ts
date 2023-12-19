@@ -309,7 +309,7 @@ export namespace Event {
 		d: T,
 		store: DisposableStore | IDisposable[] | undefined,
 	): T {
-		if (store instanceof Array) {
+		if (Array.isArray(store)) {
 			store.push(d);
 		} else if (store) {
 			store.add(d);
@@ -1099,8 +1099,8 @@ class LeakageMonitor {
 		}
 
 		return () => {
-			const count = this._stacks!.get(stack.value) || 0;
-			this._stacks!.set(stack.value, count - 1);
+			const count = this._stacks?.get(stack.value) || 0;
+			this._stacks?.set(stack.value, count - 1);
 		};
 	}
 }
@@ -1361,7 +1361,7 @@ export class Emitter<T> {
 		this._size--;
 		listeners[index] = undefined;
 
-		const adjustDeliveryQueue = this._deliveryQueue!.current === this;
+		const adjustDeliveryQueue = this._deliveryQueue?.current === this;
 		if (this._size * compactionThreshold <= listeners.length) {
 			let n = 0;
 			for (let i = 0; i < listeners.length; i++) {
@@ -1369,7 +1369,7 @@ export class Emitter<T> {
 					listeners[n++] = listeners[i];
 				} else if (adjustDeliveryQueue) {
 					this._deliveryQueue!.end--;
-					if (n < this._deliveryQueue!.i) {
+					if (n < this._deliveryQueue?.i) {
 						this._deliveryQueue!.i--;
 					}
 				}
@@ -1402,7 +1402,7 @@ export class Emitter<T> {
 
 	/** Delivers items in the queue. Assumes the queue is ready to go. */
 	private _deliverQueue(dq: EventDeliveryQueuePrivate) {
-		const listeners = dq.current!._listeners! as (
+		const listeners = dq.current?._listeners! as (
 			| ListenerContainer<T>
 			| undefined
 		)[];
@@ -1515,7 +1515,7 @@ export class AsyncEmitter<T extends IWaitUntil> extends Emitter<T> {
 		}
 
 		forEachListener(this._listeners, (listener) =>
-			this._asyncDeliveryQueue!.push([listener.value, data]),
+			this._asyncDeliveryQueue?.push([listener.value, data]),
 		);
 
 		while (

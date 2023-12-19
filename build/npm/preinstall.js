@@ -136,7 +136,7 @@ function installHeaders() {
 		stdio: "inherit",
 	});
 	if (yarnResult.error || yarnResult.status !== 0) {
-		console.error(`Installing node-gyp failed`);
+		console.error("Installing node-gyp failed");
 		err = true;
 		return;
 	}
@@ -206,7 +206,8 @@ function installHeaders() {
  */
 function getHeaderInfo(rcFile) {
 	const lines = fs.readFileSync(rcFile, "utf8").split(/\r\n?/g);
-	let disturl, target;
+	let disturl;
+	let target;
 	for (const line of lines) {
 		let match = line.match(/\s*disturl\s*\"(.*)\"\s*$/);
 		if (match !== null && match.length >= 1) {

@@ -149,7 +149,7 @@ export class MergeDiffComputer implements IMergeDiffComputer {
 						outputRangesValid = map.outputRange.endColumn === 1;
 					}
 
-					if (!inputRangesValid || !outputRangesValid) {
+					if (!(inputRangesValid && outputRangesValid)) {
 						return false;
 					}
 				}

@@ -124,7 +124,7 @@ export class NativeWorkbenchEnvironmentService
 
 	@memoize
 	get logFile(): URI {
-		return joinPath(this.windowLogsPath, `renderer.log`);
+		return joinPath(this.windowLogsPath, "renderer.log");
 	}
 
 	@memoize

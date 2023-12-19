@@ -167,8 +167,10 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 
 	private async computeLinksNow(): Promise<void> {
 		if (
-			!this.editor.hasModel() ||
-			!this.editor.getOption(EditorOption.links)
+			!(
+				this.editor.hasModel() &&
+				this.editor.getOption(EditorOption.links)
+			)
 		) {
 			return;
 		}
@@ -355,7 +357,7 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 						nls.localize(
 							"invalid.url",
 							"Failed to open this link because it is not well-formed: {0}",
-							link.url!.toString(),
+							link.url?.toString(),
 						),
 					);
 				} else if (messageOrError === "missing") {
@@ -373,7 +375,7 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 	}
 
 	public getLinkOccurrence(position: Position | null): LinkOccurrence | null {
-		if (!this.editor.hasModel() || !position) {
+		if (!(this.editor.hasModel() && position)) {
 			return null;
 		}
 		const decorations = this.editor.getModel().getDecorationsInRange(
@@ -403,8 +405,7 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 	): boolean {
 		return Boolean(
 			mouseEvent.target.type === MouseTargetType.CONTENT_TEXT &&
-				(mouseEvent.hasTriggerModifier ||
-					(withKey && withKey.keyCodeIsTriggerKey)),
+				(mouseEvent.hasTriggerModifier || withKey?.keyCodeIsTriggerKey),
 		);
 	}
 

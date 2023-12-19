@@ -95,7 +95,7 @@ export class FileWatcherManager {
 								const stat =
 									await vscode.workspace.fs.stat(uri);
 								if (stat.type === vscode.FileType.File) {
-									listeners.create!();
+									listeners.create?.();
 								}
 							} catch {
 								// Noop

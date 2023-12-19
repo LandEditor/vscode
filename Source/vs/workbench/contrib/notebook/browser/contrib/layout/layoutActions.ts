@@ -43,11 +43,10 @@ export class ToggleCellToolbarPositionAction extends Action2 {
 	}
 
 	async run(accessor: ServicesAccessor, context: any): Promise<void> {
-		const editor =
-			context && context.ui
-				? (context as INotebookActionContext).notebookEditor
-				: undefined;
-		if (editor && editor.hasModel()) {
+		const editor = context?.ui
+			? (context as INotebookActionContext).notebookEditor
+			: undefined;
+		if (editor?.hasModel()) {
 			// from toolbar
 			const viewType = editor.textModel.viewType;
 			const configurationService = accessor.get(IConfigurationService);

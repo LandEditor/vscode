@@ -110,7 +110,7 @@ export function getContextFromActiveEditor(
 	const editor = getNotebookEditorFromEditorPane(
 		editorService.activeEditorPane,
 	);
-	if (!editor || !editor.hasModel()) {
+	if (!editor?.hasModel()) {
 		return;
 	}
 
@@ -133,7 +133,7 @@ function getWidgetFromUri(accessor: ServicesAccessor, uri: URI) {
 				widget.textModel.uri.toString() === uri.toString(),
 		);
 
-	if (widget && widget.hasModel()) {
+	if (widget?.hasModel()) {
 		return widget;
 	}
 
@@ -476,7 +476,7 @@ export function getEditorFromArgsOrActivePane(
 	const editor = getNotebookEditorFromEditorPane(
 		accessor.get(IEditorService).activeEditorPane,
 	);
-	if (!editor || !editor.hasModel()) {
+	if (!editor?.hasModel()) {
 		return;
 	}
 

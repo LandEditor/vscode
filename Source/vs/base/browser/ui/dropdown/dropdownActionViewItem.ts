@@ -154,7 +154,7 @@ export class DropdownMenuActionViewItem extends BaseActionViewItem {
 			this.dropdownMenu.menuOptions = {
 				...this.dropdownMenu.menuOptions,
 				get anchorAlignment(): AnchorAlignment {
-					return that.options.anchorAlignmentProvider!();
+					return that.options.anchorAlignmentProvider?.();
 				},
 			};
 		}

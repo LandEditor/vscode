@@ -47,4 +47,4 @@ function findNodeModulesFiles(
 
 const result: string[] = [];
 findNodeModulesFiles("", false, result);
-fs.writeFileSync(process.argv[2], result.join("\n") + "\n");
+fs.writeFileSync(process.argv[2], `${result.join("\n")}\n`);

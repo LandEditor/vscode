@@ -127,9 +127,10 @@ export function createAndFillInActionBarActions(
 }
 
 function fillInActions(
-	groups: ReadonlyArray<
-		[string, ReadonlyArray<MenuItemAction | SubmenuItemAction>]
-	>,
+	groups: readonly [
+		string,
+		ReadonlyArray<MenuItemAction | SubmenuItemAction>,
+	][],
 	target: IAction[] | { primary: IAction[]; secondary: IAction[] },
 	useAlternativeActions: boolean,
 	isPrimaryAction: (actionGroup: string) => boolean = (actionGroup) =>
@@ -228,7 +229,7 @@ export class MenuEntryActionViewItem extends ActionViewItem {
 	) {
 		super(undefined, action, {
 			icon: !!(action.class || action.item.icon),
-			label: !action.class && !action.item.icon,
+			label: !(action.class || action.item.icon),
 			draggable: options?.draggable,
 			keybinding: options?.keybinding,
 			hoverDelegate: options?.hoverDelegate,
@@ -316,7 +317,7 @@ export class MenuEntryActionViewItem extends ActionViewItem {
 			this._commandAction.id,
 			this._contextKeyService,
 		);
-		const keybindingLabel = keybinding && keybinding.getLabel();
+		const keybindingLabel = keybinding?.getLabel();
 
 		const tooltip =
 			this._commandAction.tooltip || this._commandAction.label;
@@ -331,8 +332,7 @@ export class MenuEntryActionViewItem extends ActionViewItem {
 				this._menuItemAction.alt.id,
 				this._contextKeyService,
 			);
-			const altKeybindingLabel =
-				altKeybinding && altKeybinding.getLabel();
+			const altKeybindingLabel = altKeybinding?.getLabel();
 			const altTitleSection = altKeybindingLabel
 				? localize(
 						"titleAndKb",
@@ -369,7 +369,7 @@ export class MenuEntryActionViewItem extends ActionViewItem {
 		this._itemClassDispose.value = undefined;
 
 		const { element, label } = this;
-		if (!element || !label) {
+		if (!(element && label)) {
 			return;
 		}
 
@@ -651,14 +651,14 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 			this._dropdown.focus();
 		} else {
 			this._defaultAction.element!.tabIndex = 0;
-			this._defaultAction.element!.focus();
+			this._defaultAction.element?.focus();
 		}
 	}
 
 	override blur(): void {
 		this._defaultAction.element!.tabIndex = -1;
 		this._dropdown.blur();
-		this._container!.blur();
+		this._container?.blur();
 	}
 
 	override setFocusable(focusable: boolean): void {

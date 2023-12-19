@@ -318,7 +318,7 @@ export class UpdateContribution
 		this.updateStateContextKey.set(state.type);
 
 		switch (state.type) {
-			case StateType.Disabled:
+			case StateType.Disabled: {
 				if (state.reason === DisablementReason.RunningAsAdmin) {
 					this.notificationService.notify({
 						severity: Severity.Info,
@@ -346,8 +346,9 @@ export class UpdateContribution
 					});
 				}
 				break;
+			}
 
-			case StateType.Idle:
+			case StateType.Idle: {
 				if (state.error) {
 					this.onError(state.error);
 				} else if (
@@ -358,14 +359,17 @@ export class UpdateContribution
 					this.onUpdateNotAvailable();
 				}
 				break;
+			}
 
-			case StateType.AvailableForDownload:
+			case StateType.AvailableForDownload: {
 				this.onUpdateAvailable(state.update);
 				break;
+			}
 
-			case StateType.Downloaded:
+			case StateType.Downloaded: {
 				this.onUpdateDownloaded(state.update);
 				break;
+			}
 
 			case StateType.Ready: {
 				const currentVersion = parseVersion(
@@ -525,8 +529,10 @@ export class UpdateContribution
 	// windows and mac
 	private onUpdateReady(update: IUpdate): void {
 		if (
-			!(isWindows && this.productService.target !== "user") &&
-			!this.shouldShowNotification()
+			!(
+				(isWindows && this.productService.target !== "user") ||
+				this.shouldShowNotification()
+			)
 		) {
 			return;
 		}

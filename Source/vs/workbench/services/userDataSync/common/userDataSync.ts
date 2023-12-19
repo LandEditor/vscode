@@ -123,11 +123,11 @@ export const CONTEXT_ACCOUNT_STATE = new RawContextKey<string>(
 	AccountStatus.Unavailable,
 );
 export const CONTEXT_ENABLE_ACTIVITY_VIEWS = new RawContextKey<boolean>(
-	`enableSyncActivityViews`,
+	"enableSyncActivityViews",
 	false,
 );
 export const CONTEXT_ENABLE_SYNC_CONFLICTS_VIEW = new RawContextKey<boolean>(
-	`enableSyncConflictsView`,
+	"enableSyncConflictsView",
 	false,
 );
 export const CONTEXT_HAS_CONFLICTS = new RawContextKey<boolean>(

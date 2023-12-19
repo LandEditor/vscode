@@ -244,7 +244,7 @@ export class ExtHostTextEditorOptions {
 		}
 		if (typeof value === "string") {
 			const r = parseInt(value, 10);
-			if (isNaN(r)) {
+			if (Number.isNaN(r)) {
 				return null;
 			}
 			return r > 0 ? r : null;
@@ -288,7 +288,7 @@ export class ExtHostTextEditorOptions {
 		}
 		if (typeof value === "string") {
 			const r = parseInt(value, 10);
-			if (isNaN(r)) {
+			if (Number.isNaN(r)) {
 				return null;
 			}
 			return r > 0 ? r : null;
@@ -509,7 +509,7 @@ export class ExtHostTextEditor {
 			},
 			// --- selection
 			get selection(): Selection {
-				return that._selections && that._selections[0];
+				return that._selections?.[0];
 			},
 			set selection(value: Selection) {
 				if (!(value instanceof Selection)) {

@@ -38,10 +38,7 @@ export class CharacterPairSupport {
 			this._autoClosingPairs = [];
 		}
 
-		if (
-			config.__electricCharacterSupport &&
-			config.__electricCharacterSupport.docComment
-		) {
+		if (config.__electricCharacterSupport?.docComment) {
 			const docComment = config.__electricCharacterSupport.docComment;
 			// IDocComment is legacy, only partially supported
 			this._autoClosingPairs.push(

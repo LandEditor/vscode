@@ -405,9 +405,7 @@ class WatchExpressionsDataSource
 		return isDebugService(element) || element.hasChildren;
 	}
 
-	getChildren(
-		element: IDebugService | IExpression,
-	): Promise<Array<IExpression>> {
+	getChildren(element: IDebugService | IExpression): Promise<IExpression[]> {
 		if (isDebugService(element)) {
 			const debugService = element as IDebugService;
 			const watchExpressions = debugService

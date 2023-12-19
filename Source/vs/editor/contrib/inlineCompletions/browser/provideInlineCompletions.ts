@@ -115,7 +115,7 @@ export async function provideInlineCompletions(
 			onUnexpectedExternalError(
 				new Error(
 					`Inline completions: cyclic yield-to dependency detected. Path: ${circle
-						.map((s) => (s.toString ? s.toString() : "" + s))
+						.map((s) => (s.toString ? s.toString() : `${s}`))
 						.join(" -> ")}`,
 				),
 			);

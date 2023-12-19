@@ -7566,7 +7566,7 @@ declare namespace monaco.languages {
 		 * A modifier to the `kind` which affect how the item
 		 * is rendered, e.g. Deprecated is rendered with a strikeout
 		 */
-		tags?: ReadonlyArray<CompletionItemTag>;
+		tags?: readonly CompletionItemTag[];
 		/**
 		 * A human-readable string with additional information
 		 * about this item, like type or symbol information.
@@ -7851,7 +7851,7 @@ declare namespace monaco.languages {
 	}
 
 	export interface CodeActionList extends IDisposable {
-		readonly actions: ReadonlyArray<CodeAction>;
+		readonly actions: readonly CodeAction[];
 	}
 
 	/**
@@ -7941,8 +7941,8 @@ declare namespace monaco.languages {
 	 * the [parameter hints](https://code.visualstudio.com/docs/editor/intellisense)-feature.
 	 */
 	export interface SignatureHelpProvider {
-		readonly signatureHelpTriggerCharacters?: ReadonlyArray<string>;
-		readonly signatureHelpRetriggerCharacters?: ReadonlyArray<string>;
+		readonly signatureHelpTriggerCharacters?: readonly string[];
+		readonly signatureHelpRetriggerCharacters?: readonly string[];
 		/**
 		 * Provide help for the signature at the given position and document.
 		 */
@@ -8241,7 +8241,7 @@ declare namespace monaco.languages {
 		name: string;
 		detail: string;
 		kind: SymbolKind;
-		tags: ReadonlyArray<SymbolTag>;
+		tags: readonly SymbolTag[];
 		containerName?: string;
 		range: IRange;
 		selectionRange: IRange;

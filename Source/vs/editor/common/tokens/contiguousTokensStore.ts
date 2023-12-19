@@ -173,8 +173,8 @@ export class ContiguousTokensStore {
 		_a: Uint32Array | ArrayBuffer | null,
 		_b: Uint32Array | ArrayBuffer | null,
 	) {
-		if (!_a || !_b) {
-			return !_a && !_b;
+		if (!(_a && _b)) {
+			return !(_a || _b);
 		}
 
 		const a = toUint32Array(_a);

@@ -274,7 +274,7 @@ export class NotebookModelResolverServiceImpl
 				assertIsDefined(viewType),
 			);
 			if (!info) {
-				throw new Error("UNKNOWN view type: " + viewType);
+				throw new Error(`UNKNOWN view type: ${viewType}`);
 			}
 
 			const suffix =

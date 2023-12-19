@@ -20,7 +20,7 @@ async function main(buildDir?: string) {
 	const product = JSON.parse(
 		fs.readFileSync(path.join(root, "product.json"), "utf8"),
 	);
-	const appName = product.nameLong + ".app";
+	const appName = `${product.nameLong}.app`;
 	const x64AppPath = path.join(buildDir, "VSCode-darwin-x64", appName);
 	const arm64AppPath = path.join(buildDir, "VSCode-darwin-arm64", appName);
 	const x64AsarPath = path.join(

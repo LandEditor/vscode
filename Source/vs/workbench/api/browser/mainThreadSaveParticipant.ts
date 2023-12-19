@@ -41,8 +41,10 @@ class ExtHostSaveParticipant implements ITextFileSaveParticipant {
 		token: CancellationToken,
 	): Promise<void> {
 		if (
-			!editorModel.textEditorModel ||
-			!shouldSynchronizeModel(editorModel.textEditorModel)
+			!(
+				editorModel.textEditorModel &&
+				shouldSynchronizeModel(editorModel.textEditorModel)
+			)
 		) {
 			// the model never made it to the extension
 			// host meaning we cannot participate in its save

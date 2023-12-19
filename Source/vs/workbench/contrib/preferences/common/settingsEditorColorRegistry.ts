@@ -92,7 +92,7 @@ export const settingsSashBorder = registerColor(
 
 // Enum control colors
 export const settingsSelectBackground = registerColor(
-	`settings.dropdownBackground`,
+	"settings.dropdownBackground",
 	{
 		dark: selectBackground,
 		light: selectBackground,

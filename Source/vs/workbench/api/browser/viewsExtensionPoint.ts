@@ -522,7 +522,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 					return;
 				}
 				switch (key) {
-					case "activitybar":
+					case "activitybar": {
 						activityBarOrder = this.registerCustomViewContainers(
 							value,
 							description,
@@ -531,7 +531,8 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 							ViewContainerLocation.Sidebar,
 						);
 						break;
-					case "panel":
+					}
+					case "panel": {
 						panelOrder = this.registerCustomViewContainers(
 							value,
 							description,
@@ -540,6 +541,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 							ViewContainerLocation.Panel,
 						);
 						break;
+					}
 				}
 			});
 		}

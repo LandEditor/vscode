@@ -70,8 +70,10 @@ export class CommitCharacterController {
 
 	private _onItem(selected: ISelectedSuggestion | undefined): void {
 		if (
-			!selected ||
-			!isNonEmptyArray(selected.item.completion.commitCharacters)
+			!(
+				selected &&
+				isNonEmptyArray(selected.item.completion.commitCharacters)
+			)
 		) {
 			// no item or no commit characters
 			this.reset();

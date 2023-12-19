@@ -193,7 +193,7 @@ export class SCMStatusController implements IWorkbenchContribution {
 		this.focusDisposable.dispose();
 		this.focusedRepository = repository;
 
-		if (repository && repository.provider.onDidChangeStatusBarCommands) {
+		if (repository?.provider.onDidChangeStatusBarCommands) {
 			this.focusDisposable =
 				repository.provider.onDidChangeStatusBarCommands(() =>
 					this.renderStatusBar(repository),

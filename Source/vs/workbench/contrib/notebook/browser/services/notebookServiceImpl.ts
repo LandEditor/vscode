@@ -199,7 +199,7 @@ export class NotebookProviderInfoStore extends Disposable {
 			for (const notebookContribution of extension.value) {
 				if (!notebookContribution.type) {
 					extension.collector.error(
-						`Notebook does not specify type-property`,
+						"Notebook does not specify type-property",
 					);
 					continue;
 				}
@@ -353,7 +353,7 @@ export class NotebookProviderInfoStore extends Disposable {
 					// untitled notebooks are disposed when they get saved. we should not hold a reference
 					// to such a disposed notebook and therefore dispose the reference as well
 					ref.object.notebook.onWillDispose(() => {
-						ref!.dispose();
+						ref?.dispose();
 					});
 
 					return {
@@ -778,7 +778,7 @@ export class NotebookService extends Disposable implements INotebookService {
 					if (!notebookContribution.entrypoint) {
 						// avoid crashing
 						extension.collector.error(
-							`Notebook renderer does not specify entry point`
+							"Notebook renderer does not specify entry point"
 						);
 						continue;
 					}
@@ -786,7 +786,7 @@ export class NotebookService extends Disposable implements INotebookService {
 					const id = notebookContribution.id;
 					if (!id) {
 						extension.collector.error(
-							`Notebook renderer does not specify id-property`
+							"Notebook renderer does not specify id-property"
 						);
 						continue;
 					}
@@ -828,7 +828,7 @@ export class NotebookService extends Disposable implements INotebookService {
 					if (!notebookContribution.entrypoint) {
 						// avoid crashing
 						extension.collector.error(
-							`Notebook preload does not specify entry point`
+							"Notebook preload does not specify entry point"
 						);
 						continue;
 					}
@@ -836,7 +836,7 @@ export class NotebookService extends Disposable implements INotebookService {
 					const type = notebookContribution.type;
 					if (!type) {
 						extension.collector.error(
-							`Notebook preload does not specify type-property`
+							"Notebook preload does not specify type-property"
 						);
 						continue;
 					}
@@ -971,7 +971,7 @@ export class NotebookService extends Disposable implements INotebookService {
 	private _postDocumentOpenActivation(viewType: string) {
 		// send out activations on notebook text model creation
 		this._extensionService.activateByEvent(`onNotebook:${viewType}`);
-		this._extensionService.activateByEvent(`onNotebook:*`);
+		this._extensionService.activateByEvent("onNotebook:*");
 	}
 
 	async canResolve(viewType: string): Promise<boolean> {

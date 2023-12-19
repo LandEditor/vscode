@@ -41,8 +41,8 @@ function update(options) {
 		);
 	}
 	const locExtStat = fs.statSync(locExtFolder);
-	if (!locExtStat || !locExtStat.isDirectory) {
-		throw new Error("No directory found at " + idOrPath);
+	if (!locExtStat?.isDirectory) {
+		throw new Error(`No directory found at ${idOrPath}`);
 	}
 	const packageJSON = JSON.parse(
 		fs.readFileSync(path.join(locExtFolder, "package.json")).toString(),
@@ -62,9 +62,11 @@ function update(options) {
 
 	localizations.forEach((localization) => {
 		if (
-			!localization.languageId ||
-			!localization.languageName ||
-			!localization.localizedLanguageName
+			!(
+				localization.languageId &&
+				localization.languageName &&
+				localization.localizedLanguageName
+			)
 		) {
 			throw new Error(
 				'Each localization contribution must define "languageId", "languageName" and "localizedLanguageName" properties.',
@@ -74,22 +76,25 @@ function update(options) {
 		const translationDataFolder = path.join(locExtFolder, "translations");
 
 		switch (languageId) {
-			case "zh-cn":
+			case "zh-cn": {
 				languageId = "zh-Hans";
 				break;
-			case "zh-tw":
+			}
+			case "zh-tw": {
 				languageId = "zh-Hant";
 				break;
-			case "pt-br":
+			}
+			case "pt-br": {
 				languageId = "pt-BR";
 				break;
+			}
 		}
 
 		if (
 			fs.existsSync(translationDataFolder) &&
 			fs.existsSync(path.join(translationDataFolder, "main.i18n.json"))
 		) {
-			console.log("Clearing  '" + translationDataFolder + "'...");
+			console.log(`Clearing  '${translationDataFolder}'...`);
 			rimraf.sync(translationDataFolder);
 		}
 
@@ -113,7 +118,7 @@ function update(options) {
 		)
 			.pipe(i18n.prepareI18nPackFiles(translationPaths))
 			.on("error", (error) => {
-				console.log(`Error occurred while importing translations:`);
+				console.log("Error occurred while importing translations:");
 				translationPaths = undefined;
 				if (Array.isArray(error)) {
 					error.forEach(console.log);
@@ -135,14 +140,14 @@ function update(options) {
 					}
 					fs.writeFileSync(
 						path.join(locExtFolder, "package.json"),
-						JSON.stringify(packageJSON, null, "\t") + "\n",
+						`${JSON.stringify(packageJSON, null, "\t")}\n`,
 					);
 				}
 			});
 	});
 }
 if (path.basename(process.argv[1]) === "update-localization-extension.js") {
-	var options = minimist(process.argv.slice(2), {
+	const options = minimist(process.argv.slice(2), {
 		string: ["location", "externalExtensionsLocation"],
 	});
 	update(options);

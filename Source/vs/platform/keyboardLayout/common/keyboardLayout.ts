@@ -98,7 +98,7 @@ export function areKeyboardLayoutsEqual(
 	a: IKeyboardLayoutInfo | null,
 	b: IKeyboardLayoutInfo | null,
 ): boolean {
-	if (!a || !b) {
+	if (!(a && b)) {
 		return false;
 	}
 
@@ -205,10 +205,10 @@ function windowsKeyMappingEquals(
 	a: IWindowsKeyMapping,
 	b: IWindowsKeyMapping,
 ): boolean {
-	if (!a && !b) {
+	if (!(a || b)) {
 		return true;
 	}
-	if (!a || !b) {
+	if (!(a && b)) {
 		return false;
 	}
 	return (
@@ -224,10 +224,10 @@ export function windowsKeyboardMappingEquals(
 	a: IWindowsKeyboardMapping | null,
 	b: IWindowsKeyboardMapping | null,
 ): boolean {
-	if (!a && !b) {
+	if (!(a || b)) {
 		return true;
 	}
-	if (!a || !b) {
+	if (!(a && b)) {
 		return false;
 	}
 	for (let scanCode = 0; scanCode < ScanCode.MAX_VALUE; scanCode++) {
@@ -245,10 +245,10 @@ function macLinuxKeyMappingEquals(
 	a: IMacLinuxKeyMapping,
 	b: IMacLinuxKeyMapping,
 ): boolean {
-	if (!a && !b) {
+	if (!(a || b)) {
 		return true;
 	}
-	if (!a || !b) {
+	if (!(a && b)) {
 		return false;
 	}
 	return (
@@ -263,10 +263,10 @@ export function macLinuxKeyboardMappingEquals(
 	a: IMacLinuxKeyboardMapping | null,
 	b: IMacLinuxKeyboardMapping | null,
 ): boolean {
-	if (!a && !b) {
+	if (!(a || b)) {
 		return true;
 	}
-	if (!a || !b) {
+	if (!(a && b)) {
 		return false;
 	}
 	for (let scanCode = 0; scanCode < ScanCode.MAX_VALUE; scanCode++) {

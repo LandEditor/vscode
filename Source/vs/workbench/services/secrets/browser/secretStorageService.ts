@@ -42,8 +42,8 @@ export class BrowserSecretStorageService extends BaseSecretStorageService {
 
 	override get(key: string): Promise<string | undefined> {
 		if (this._secretStorageProvider) {
-			return this._embedderSequencer!.queue(key, () =>
-				this._secretStorageProvider!.get(key),
+			return this._embedderSequencer?.queue(key, () =>
+				this._secretStorageProvider?.get(key),
 			);
 		}
 
@@ -52,8 +52,8 @@ export class BrowserSecretStorageService extends BaseSecretStorageService {
 
 	override set(key: string, value: string): Promise<void> {
 		if (this._secretStorageProvider) {
-			return this._embedderSequencer!.queue(key, async () => {
-				await this._secretStorageProvider!.set(key, value);
+			return this._embedderSequencer?.queue(key, async () => {
+				await this._secretStorageProvider?.set(key, value);
 				this.onDidChangeSecretEmitter.fire(key);
 			});
 		}
@@ -63,8 +63,8 @@ export class BrowserSecretStorageService extends BaseSecretStorageService {
 
 	override delete(key: string): Promise<void> {
 		if (this._secretStorageProvider) {
-			return this._embedderSequencer!.queue(key, async () => {
-				await this._secretStorageProvider!.delete(key);
+			return this._embedderSequencer?.queue(key, async () => {
+				await this._secretStorageProvider?.delete(key);
 				this.onDidChangeSecretEmitter.fire(key);
 			});
 		}

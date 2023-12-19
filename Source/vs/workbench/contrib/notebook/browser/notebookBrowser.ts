@@ -787,7 +787,7 @@ export interface INotebookEditor {
 	 * Get the view index of a cell at model `index`
 	 */
 	getViewIndexByModelIndex(index: number): number;
-	getCellsInRange(range?: ICellRange): ReadonlyArray<ICellViewModel>;
+	getCellsInRange(range?: ICellRange): readonly ICellViewModel[];
 	cellAt(index: number): ICellViewModel | undefined;
 	getCellByHandle(handle: number): ICellViewModel | undefined;
 	getCellIndex(cell: ICellViewModel): number | undefined;

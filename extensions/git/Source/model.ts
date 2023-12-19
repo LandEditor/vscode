@@ -630,11 +630,11 @@ export class Model
 		const openRepositoriesToDispose = removed
 			.map((folder) => this.getOpenRepository(folder.uri))
 			.filter((r) => !!r)
-			.filter((r) => !activeRepositories.has(r!.repository))
+			.filter((r) => !activeRepositories.has(r?.repository))
 			.filter(
 				(r) =>
 					!(workspace.workspaceFolders || []).some((f) =>
-						isDescendant(f.uri.fsPath, r!.repository.root),
+						isDescendant(f.uri.fsPath, r?.repository.root),
 					),
 			) as OpenRepository[];
 
@@ -1141,7 +1141,7 @@ export class Model
 		const placeHolder = l10n.t("Choose a repository");
 		const pick = await window.showQuickPick(picks, { placeHolder });
 
-		return pick && pick.repository;
+		return pick?.repository;
 	}
 
 	getRepository(sourceControl: SourceControl): Repository | undefined;
@@ -1152,7 +1152,7 @@ export class Model
 	getRepository(resource: Uri): Repository | undefined;
 	getRepository(hint: any): Repository | undefined {
 		const liveRepository = this.getOpenRepository(hint);
-		return liveRepository && liveRepository.repository;
+		return liveRepository?.repository;
 	}
 
 	private async getRepositoryExact(
@@ -1330,7 +1330,7 @@ export class Model
 				root.toString(),
 			);
 
-			if (providers && providers.has(provider)) {
+			if (providers?.has(provider)) {
 				providers.delete(provider);
 				this.branchProtectionProviders.set(root.toString(), providers);
 				this._onDidChangeBranchProtectionProviders.fire(root);

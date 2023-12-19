@@ -212,7 +212,7 @@ export class OutputElement extends Disposable {
 				role: "button",
 				style: "padding: 8px; text-decoration: none; color: rgb(255, 255, 255); background-color: rgb(14, 99, 156); max-width: 200px;",
 			},
-			`Search Marketplace`,
+			"Search Marketplace",
 		);
 
 		return {
@@ -424,7 +424,7 @@ export class OutputContainer extends Disposable {
 		outputsToRender.reverse().forEach((output) => {
 			if (this._outputEntries.has(output)) {
 				// already exist
-				prevElement = this._outputEntries.get(output)!.domNode;
+				prevElement = this._outputEntries.get(output)?.domNode;
 				return;
 			}
 

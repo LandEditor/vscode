@@ -44,11 +44,7 @@ export async function activate(ctx: RendererContext<void>) {
 					const objEntries = Object.entries(imageAttachment);
 					if (objEntries.length) {
 						const [attachmentKey, attachmentVal] = objEntries[0];
-						const b64Markdown =
-							"data:" +
-							attachmentKey +
-							";base64," +
-							attachmentVal;
+						const b64Markdown = `data:${attachmentKey};base64,${attachmentVal}`;
 						token.attrSet("src", b64Markdown);
 					}
 				}

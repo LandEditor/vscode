@@ -151,7 +151,7 @@ export class SequenceDiff {
 	public intersect(other: SequenceDiff): SequenceDiff | undefined {
 		const i1 = this.seq1Range.intersect(other.seq1Range);
 		const i2 = this.seq2Range.intersect(other.seq2Range);
-		if (!i1 || !i2) {
+		if (!(i1 && i2)) {
 			return undefined;
 		}
 		return new SequenceDiff(i1, i2);
@@ -239,8 +239,6 @@ export class DateTimeout implements ITimeout {
 		const valid = Date.now() - this.startTime < this.timeout;
 		if (!valid && this.valid) {
 			this.valid = false; // timeout reached
-			// eslint-disable-next-line no-debugger
-			debugger; // WARNING: Most likely debugging caused the timeout. Call `this.disable()` to continue without timing out.
 		}
 		return this.valid;
 	}

@@ -386,7 +386,7 @@ export class TextFileEditorModelManager
 	private onDidRunWorkingCopyFileOperation(e: WorkingCopyFileEvent): void {
 		switch (e.operation) {
 			// Create: Revert existing models
-			case FileOperation.CREATE:
+			case FileOperation.CREATE: {
 				e.waitUntil(
 					(async () => {
 						for (const { target } of e.files) {
@@ -398,10 +398,11 @@ export class TextFileEditorModelManager
 					})(),
 				);
 				break;
+			}
 
 			// Move/Copy: restore models that were resolved before the operation took place
 			case FileOperation.MOVE:
-			case FileOperation.COPY:
+			case FileOperation.COPY: {
 				e.waitUntil(
 					(async () => {
 						const modelsToRestore =
@@ -456,6 +457,7 @@ export class TextFileEditorModelManager
 					})(),
 				);
 				break;
+			}
 		}
 	}
 
@@ -748,8 +750,10 @@ export class TextFileEditorModelManager
 		// quick return if model already disposed or not dirty and not resolving
 		if (
 			model.isDisposed() ||
-			(!this.mapResourceToPendingModelResolvers.has(model.resource) &&
-				!model.isDirty())
+			!(
+				this.mapResourceToPendingModelResolvers.has(model.resource) ||
+				model.isDirty()
+			)
 		) {
 			return true;
 		}

@@ -85,7 +85,7 @@ export function score(
 			notebookType,
 		} = selector as LanguageFilter; // TODO: microsoft/TypeScript#42768
 
-		if (!candidateIsSynchronized && !hasAccessToAllModels) {
+		if (!(candidateIsSynchronized || hasAccessToAllModels)) {
 			return 0;
 		}
 

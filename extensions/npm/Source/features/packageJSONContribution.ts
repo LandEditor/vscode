@@ -211,8 +211,7 @@ export class PackageJSONContribution implements IJSONContribution {
 							try {
 								const obj = JSON.parse(success.responseText);
 								if (
-									obj &&
-									obj.objects &&
+									obj?.objects &&
 									Array.isArray(obj.objects)
 								) {
 									const results = <
@@ -356,7 +355,7 @@ export class PackageJSONContribution implements IJSONContribution {
 			const currentKey = location.path[location.path.length - 1];
 			if (typeof currentKey === "string") {
 				const info = await this.fetchPackageInfo(currentKey, resource);
-				if (info && info.version) {
+				if (info?.version) {
 					let name = JSON.stringify(info.version);
 					let proposal = new CompletionItem(name);
 					proposal.kind = CompletionItemKind.Property;
@@ -366,7 +365,7 @@ export class PackageJSONContribution implements IJSONContribution {
 					);
 					result.add(proposal);
 
-					name = JSON.stringify("^" + info.version);
+					name = JSON.stringify(`^${info.version}`);
 					proposal = new CompletionItem(name);
 					proposal.kind = CompletionItemKind.Property;
 					proposal.insertText = name;
@@ -375,7 +374,7 @@ export class PackageJSONContribution implements IJSONContribution {
 					);
 					result.add(proposal);
 
-					name = JSON.stringify("~" + info.version);
+					name = JSON.stringify(`~${info.version}`);
 					proposal = new CompletionItem(name);
 					proposal.kind = CompletionItemKind.Property;
 					proposal.insertText = name;
@@ -525,8 +524,9 @@ export class PackageJSONContribution implements IJSONContribution {
 	private async npmjsView(
 		pack: string,
 	): Promise<ViewPackageInfo | undefined> {
-		const queryUrl =
-			"https://registry.npmjs.org/" + encodeURIComponent(pack);
+		const queryUrl = `https://registry.npmjs.org/${encodeURIComponent(
+			pack,
+		)}`;
 		try {
 			const success = await this.xhr({
 				url: queryUrl,
@@ -588,7 +588,7 @@ export class PackageJSONContribution implements IJSONContribution {
 		isLast: boolean,
 		collector: ISuggestionsCollector,
 	) {
-		if (pack && pack.name) {
+		if (pack?.name) {
 			const name = pack.name;
 			const insertText = new SnippetString().appendText(
 				JSON.stringify(name),

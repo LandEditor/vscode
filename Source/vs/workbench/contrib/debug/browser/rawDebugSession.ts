@@ -135,16 +135,18 @@ export class RawDebugSession implements IDisposable {
 
 		this.debugAdapter.onEvent((event) => {
 			switch (event.event) {
-				case "initialized":
+				case "initialized": {
 					this._readyForBreakpoints = true;
 					this._onDidInitialize.fire(event);
 					break;
-				case "loadedSource":
+				}
+				case "loadedSource": {
 					this._onDidLoadedSource.fire(
 						<DebugProtocol.LoadedSourceEvent>event
 					);
 					break;
-				case "capabilities":
+				}
+				case "capabilities": {
 					if (event.body) {
 						const capabilities = (<DebugProtocol.CapabilitiesEvent>(
 							event
@@ -152,12 +154,14 @@ export class RawDebugSession implements IDisposable {
 						this.mergeCapabilities(capabilities);
 					}
 					break;
-				case "stopped":
+				}
+				case "stopped": {
 					this.didReceiveStoppedEvent = true; // telemetry: remember that debugger stopped successfully
 					this.stoppedSinceLastStep = true;
 					this._onDidStop.fire(<DebugProtocol.StoppedEvent>event);
 					break;
-				case "continued":
+				}
+				case "continued": {
 					this.allThreadsContinued =
 						(<DebugProtocol.ContinuedEvent>event).body
 							.allThreadsContinued === false
@@ -167,59 +171,71 @@ export class RawDebugSession implements IDisposable {
 						<DebugProtocol.ContinuedEvent>event
 					);
 					break;
-				case "thread":
+				}
+				case "thread": {
 					this._onDidThread.fire(<DebugProtocol.ThreadEvent>event);
 					break;
-				case "output":
+				}
+				case "output": {
 					this._onDidOutput.fire(<DebugProtocol.OutputEvent>event);
 					break;
-				case "breakpoint":
+				}
+				case "breakpoint": {
 					this._onDidBreakpoint.fire(
 						<DebugProtocol.BreakpointEvent>event
 					);
 					break;
-				case "terminated":
+				}
+				case "terminated": {
 					this._onDidTerminateDebugee.fire(
 						<DebugProtocol.TerminatedEvent>event
 					);
 					break;
-				case "exited":
+				}
+				case "exited": {
 					this._onDidExitDebugee.fire(
 						<DebugProtocol.ExitedEvent>event
 					);
 					break;
-				case "progressStart":
+				}
+				case "progressStart": {
 					this._onDidProgressStart.fire(
 						event as DebugProtocol.ProgressStartEvent
 					);
 					break;
-				case "progressUpdate":
+				}
+				case "progressUpdate": {
 					this._onDidProgressUpdate.fire(
 						event as DebugProtocol.ProgressUpdateEvent
 					);
 					break;
-				case "progressEnd":
+				}
+				case "progressEnd": {
 					this._onDidProgressEnd.fire(
 						event as DebugProtocol.ProgressEndEvent
 					);
 					break;
-				case "invalidated":
+				}
+				case "invalidated": {
 					this._onDidInvalidated.fire(
 						event as DebugProtocol.InvalidatedEvent
 					);
 					break;
-				case "memory":
+				}
+				case "memory": {
 					this._onDidInvalidateMemory.fire(
 						event as DebugProtocol.MemoryEvent
 					);
 					break;
+				}
 				case "process":
 					break;
 				case "module":
 					break;
-				default:
+				default: {
 					this._onDidCustomEvent.fire(event);
 					break;
+				}
 			}
 			this._onDidEvent.fire(event);
 		});
@@ -885,7 +901,7 @@ export class RawDebugSession implements IDisposable {
 		};
 
 		const safeSendResponse = (response: DebugProtocol.Response) =>
-			this.debugAdapter && this.debugAdapter.sendResponse(response);
+			this.debugAdapter?.sendResponse(response);
 
 		if (request.command === "launchVSCode") {
 			try {

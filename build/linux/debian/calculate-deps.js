@@ -34,7 +34,7 @@ function calculatePackageDeps(
 		}
 	} catch (e) {
 		// The package might not exist. Don't re-throw the error here.
-		console.error("Tried to stat " + binaryPath + " but failed.");
+		console.error(`Tried to stat ${binaryPath} but failed.`);
 	}
 	// Get the Chromium dpkg-shlibdeps file.
 	const chromiumManifest = manifests.registrations.filter((registration) => {
@@ -53,12 +53,12 @@ function calculatePackageDeps(
 	]);
 	if (result.status !== 0) {
 		throw new Error(
-			"Cannot retrieve dpkg-shlibdeps. Stderr:\n" + result.stderr,
+			`Cannot retrieve dpkg-shlibdeps. Stderr:\n${result.stderr}`,
 		);
 	}
 	const cmd = [dpkgShlibdepsScriptLocation, "--ignore-weak-undefined"];
 	switch (arch) {
-		case "amd64":
+		case "amd64": {
 			cmd.push(
 				`-l${chromiumSysroot}/usr/lib/x86_64-linux-gnu`,
 				`-l${chromiumSysroot}/lib/x86_64-linux-gnu`,
@@ -66,7 +66,8 @@ function calculatePackageDeps(
 				`-l${vscodeSysroot}/lib/x86_64-linux-gnu`,
 			);
 			break;
-		case "armhf":
+		}
+		case "armhf": {
 			cmd.push(
 				`-l${chromiumSysroot}/usr/lib/arm-linux-gnueabihf`,
 				`-l${chromiumSysroot}/lib/arm-linux-gnueabihf`,
@@ -74,7 +75,8 @@ function calculatePackageDeps(
 				`-l${vscodeSysroot}/lib/arm-linux-gnueabihf`,
 			);
 			break;
-		case "arm64":
+		}
+		case "arm64": {
 			cmd.push(
 				`-l${chromiumSysroot}/usr/lib/aarch64-linux-gnu`,
 				`-l${chromiumSysroot}/lib/aarch64-linux-gnu`,
@@ -82,6 +84,7 @@ function calculatePackageDeps(
 				`-l${vscodeSysroot}/lib/aarch64-linux-gnu`,
 			);
 			break;
+		}
 	}
 	cmd.push(`-l${chromiumSysroot}/usr/lib`);
 	cmd.push(`-L${vscodeSysroot}/debian/libxkbfile1/DEBIAN/shlibs`);

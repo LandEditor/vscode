@@ -113,9 +113,9 @@ export class TypeScriptVersionManager extends Disposable {
 		const bundledVersion = this.versionProvider.defaultVersion;
 		return {
 			label:
-				(!this.useWorkspaceTsdkSetting || !vscode.workspace.isTrusted
-					? "• "
-					: "") + vscode.l10n.t("Use VS Code's Version"),
+				(this.useWorkspaceTsdkSetting && vscode.workspace.isTrusted
+					? ""
+					: "• ") + vscode.l10n.t("Use VS Code's Version"),
 			description: bundledVersion.displayName,
 			detail: bundledVersion.pathLabel,
 			run: async () => {

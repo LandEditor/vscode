@@ -214,7 +214,7 @@ class NotebookFindWidget
 		this._state.change({ searchString: this.inputValue }, false);
 		// this._findModel.research();
 		const findMatches = this._findModel.findMatches;
-		if (findMatches && findMatches.length) {
+		if (findMatches?.length) {
 			return true;
 		}
 
@@ -428,10 +428,7 @@ class NotebookFindWidget
 			// no op
 		}
 
-		if (
-			this._previousFocusElement &&
-			this._previousFocusElement.offsetParent
-		) {
+		if (this._previousFocusElement?.offsetParent) {
 			this._previousFocusElement.focus();
 			this._previousFocusElement = undefined;
 		}
@@ -451,11 +448,11 @@ class NotebookFindWidget
 	}
 
 	protected override _updateMatchesCount(): void {
-		if (!this._findModel || !this._findModel.findMatches) {
+		if (!this._findModel?.findMatches) {
 			return;
 		}
 
-		this._matchesCount.style.width = MAX_MATCHES_COUNT_WIDTH + "px";
+		this._matchesCount.style.width = `${MAX_MATCHES_COUNT_WIDTH}px`;
 		this._matchesCount.title = "";
 
 		// remove previous content

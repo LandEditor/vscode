@@ -259,9 +259,11 @@ export class InlineChatDecorationsContribution
 						  ? InlineChatDecorationsContribution.GUTTER_ICON_TRANSPARENT_CLASSNAME
 						  : undefined;
 				if (
-					!gutterDecorationClassName ||
-					!e.target.element?.classList.contains(
-						gutterDecorationClassName,
+					!(
+						gutterDecorationClassName &&
+						e.target.element?.classList.contains(
+							gutterDecorationClassName,
+						)
 					)
 				) {
 					return;
@@ -300,10 +302,10 @@ export class InlineChatDecorationsContribution
 				const endPosition = selection.getEndPosition();
 				const startWord = model.getWordAtPosition(startPosition);
 				const endWord = model.getWordAtPosition(endPosition);
-				const isFirstWordCoveredOrNull = !!startWord
+				const isFirstWordCoveredOrNull = startWord
 					? startPosition.column <= startWord.startColumn
 					: true;
-				const isLastWordCoveredOrNull = !!endWord
+				const isLastWordCoveredOrNull = endWord
 					? endPosition.column >= endWord.endColumn
 					: true;
 				isEnabled = isFirstWordCoveredOrNull && isLastWordCoveredOrNull;

@@ -121,7 +121,7 @@ export class LocalFileSearchSimpleWorker
 
 		const filePatternMatcher = query.filePattern
 			? (name: string) =>
-					query.filePattern!.split("").every((c) => name.includes(c))
+					query.filePattern?.split("").every((c) => name.includes(c))
 			: (name: string) => true;
 
 		await time("listDirectory", () =>
@@ -381,7 +381,7 @@ export class LocalFileSearchSimpleWorker
 							dirs.push(
 								processDirectory(
 									handle,
-									path + "/",
+									`${path}/`,
 									ignoreFile,
 								),
 							);

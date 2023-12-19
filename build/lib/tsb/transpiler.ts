@@ -55,7 +55,7 @@ if (!threads.isMainThread) {
 			res.jsSrcs.push(out.jsSrc);
 			res.diagnostics.push(out.diag);
 		}
-		threads.parentPort!.postMessage(res);
+		threads.parentPort?.postMessage(res);
 	});
 }
 
@@ -84,7 +84,7 @@ class OutputFileNameOracle {
 				}
 				const isDts = file.endsWith(".d.ts");
 				if (isDts) {
-					file = file.slice(0, -5) + ".ts";
+					file = `${file.slice(0, -5)}.ts`;
 					cmdLine.fileNames.push(file);
 				}
 				const outfile = (<InternalTsApi>ts).getOutputFileNames(
@@ -339,7 +339,7 @@ export class SwcTranspiler implements ITranspiler {
 		configFilePath: string,
 		private readonly _cmdLine: ts.ParsedCommandLine,
 	) {
-		_logFn("Transpile", `will use SWC to transpile source files`);
+		_logFn("Transpile", "will use SWC to transpile source files");
 		this._outputFileNames = new OutputFileNameOracle(
 			_cmdLine,
 			configFilePath,
@@ -389,7 +389,7 @@ export class SwcTranspiler implements ITranspiler {
 						file.path,
 					);
 
-					this.onOutfile!(
+					this.onOutfile?.(
 						new Vinyl({
 							path: outPath,
 							base: outBase,

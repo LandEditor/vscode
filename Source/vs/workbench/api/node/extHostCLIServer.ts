@@ -111,21 +111,26 @@ export class CLIServerBase {
 				const data: PipeCommand | any = JSON.parse(chunks.join(""));
 				let returnObj: string | undefined;
 				switch (data.type) {
-					case "open":
+					case "open": {
 						returnObj = await this.open(data);
 						break;
-					case "openExternal":
+					}
+					case "openExternal": {
 						returnObj = await this.openExternal(data);
 						break;
-					case "status":
+					}
+					case "status": {
 						returnObj = await this.getStatus(data);
 						break;
-					case "extensionManagement":
+					}
+					case "extensionManagement": {
 						returnObj = await this.manageExtensions(data);
 						break;
-					default:
+					}
+					default: {
 						sendResponse(404, `Unknown message type: ${data.type}`);
 						break;
+					}
 				}
 				sendResponse(200, returnObj);
 			} catch (e) {
@@ -176,8 +181,11 @@ export class CLIServerBase {
 		const waitMarkerFileURI = waitMarkerFilePath
 			? URI.file(waitMarkerFilePath)
 			: undefined;
-		const preferNewWindow =
-			!forceReuseWindow && !waitMarkerFileURI && !addMode;
+		const preferNewWindow = !(
+			forceReuseWindow ||
+			waitMarkerFileURI ||
+			addMode
+		);
 		const windowOpenArgs: IOpenWindowOptions = {
 			forceNewWindow,
 			diffMode,

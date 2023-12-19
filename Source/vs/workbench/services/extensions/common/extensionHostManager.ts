@@ -212,13 +212,13 @@ export class ExtensionHostManager
 					kind: extensionHostKindToString(this.kind),
 				};
 
-				if (err && err.name) {
+				if (err?.name) {
 					failureTelemetryEvent.errorName = err.name;
 				}
-				if (err && err.message) {
+				if (err?.message) {
 					failureTelemetryEvent.errorMessage = err.message;
 				}
-				if (err && err.stack) {
+				if (err?.stack) {
 					failureTelemetryEvent.errorStack = err.stack;
 				}
 				this._telemetryService.publicLog2<
@@ -349,15 +349,15 @@ export class ExtensionHostManager
 			remoteAuthority: this._extensionHost.remoteAuthority,
 			extensionHostKind: this.kind,
 			getProxy: <T>(identifier: ProxyIdentifier<T>): Proxied<T> =>
-				this._rpcProtocol!.getProxy(identifier),
+				this._rpcProtocol?.getProxy(identifier),
 			set: <T, R extends T>(
 				identifier: ProxyIdentifier<T>,
 				instance: R,
-			): R => this._rpcProtocol!.set(identifier, instance),
-			dispose: (): void => this._rpcProtocol!.dispose(),
+			): R => this._rpcProtocol?.set(identifier, instance),
+			dispose: (): void => this._rpcProtocol?.dispose(),
 			assertRegistered: (identifiers: ProxyIdentifier<any>[]): void =>
-				this._rpcProtocol!.assertRegistered(identifiers),
-			drain: (): Promise<void> => this._rpcProtocol!.drain(),
+				this._rpcProtocol?.assertRegistered(identifiers),
+			drain: (): Promise<void> => this._rpcProtocol?.drain(),
 
 			//#region internal
 			internalExtensionService: this._internalExtensionService,
@@ -408,7 +408,7 @@ export class ExtensionHostManager
 		}
 
 		if (!extensionHostProxy) {
-			throw new Error(`Missing IExtensionHostProxy!`);
+			throw new Error("Missing IExtensionHostProxy!");
 		}
 
 		// Check that no named customers are missing
@@ -464,7 +464,7 @@ export class ExtensionHostManager
 		}
 
 		if (
-			!this._extensionHost.extensions!.containsActivationEvent(
+			!this._extensionHost.extensions?.containsActivationEvent(
 				activationEvent,
 			)
 		) {
@@ -507,20 +507,20 @@ export class ExtensionHostManager
 		const logError = (msg: string, err: any = undefined) =>
 			this._logService.error(`${prefix()}${msg}`, err);
 
-		logInfo(`obtaining proxy...`);
+		logInfo("obtaining proxy...");
 		const proxy = await this._proxy;
 		if (!proxy) {
-			logError(`no proxy`);
+			logError("no proxy");
 			return {
 				type: "error",
 				error: {
-					message: `Cannot resolve authority`,
+					message: "Cannot resolve authority",
 					code: RemoteAuthorityResolverErrorCode.Unknown,
 					detail: undefined,
 				},
 			};
 		}
-		logInfo(`invoking...`);
+		logInfo("invoking...");
 		const intervalLogger = new IntervalTimer();
 		try {
 			intervalLogger.cancelAndSet(() => logInfo("waiting..."), 1000);
@@ -532,12 +532,12 @@ export class ExtensionHostManager
 			if (resolverResult.type === "ok") {
 				logInfo(`returned ${resolverResult.value.authority.connectTo}`);
 			} else {
-				logError(`returned an error`, resolverResult.error);
+				logError("returned an error", resolverResult.error);
 			}
 			return resolverResult;
 		} catch (err) {
 			intervalLogger.dispose();
-			logError(`returned an error`, err);
+			logError("returned an error", err);
 			return {
 				type: "error",
 				error: {
@@ -555,7 +555,7 @@ export class ExtensionHostManager
 	): Promise<URI | null> {
 		const proxy = await this._proxy;
 		if (!proxy) {
-			throw new Error(`Cannot resolve canonical URI`);
+			throw new Error("Cannot resolve canonical URI");
 		}
 		return proxy.getCanonicalURI(remoteAuthority, uri);
 	}
@@ -569,7 +569,7 @@ export class ExtensionHostManager
 		if (!proxy) {
 			return;
 		}
-		const deltaExtensions = this._extensionHost.extensions!.set(
+		const deltaExtensions = this._extensionHost.extensions?.set(
 			extensionRegistryVersionId,
 			allExtensions,
 			myExtensions,
@@ -598,7 +598,7 @@ export class ExtensionHostManager
 		if (!proxy) {
 			return;
 		}
-		const outgoingExtensionsDelta = this._extensionHost.extensions!.delta(
+		const outgoingExtensionsDelta = this._extensionHost.extensions?.delta(
 			incomingExtensionsDelta,
 		);
 		if (!outgoingExtensionsDelta) {
@@ -910,7 +910,7 @@ registerAction2(
 				return "";
 			}
 			return `${
-				m.remoteAuthority ? `Authority: ${m.remoteAuthority}\n` : ``
+				m.remoteAuthority ? `Authority: ${m.remoteAuthority}\n` : ""
 			}Roundtrip latency: ${m.latency.toFixed(
 				3,
 			)}ms\nUp: ${MeasureExtHostLatencyAction._printSpeed(

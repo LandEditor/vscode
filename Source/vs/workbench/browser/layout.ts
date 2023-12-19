@@ -827,8 +827,10 @@ export abstract class Layout
 
 			let windowBorder = false;
 			if (
-				!this.state.runtime.fullscreen &&
-				!this.state.runtime.maximized.has(containerWindowId) &&
+				!(
+					this.state.runtime.fullscreen ||
+					this.state.runtime.maximized.has(containerWindowId)
+				) &&
 				(activeBorder || inactiveBorder)
 			) {
 				windowBorder = true;
@@ -1062,8 +1064,10 @@ export abstract class Layout
 		}
 
 		if (
-			!defaultLayout.force &&
-			!storageService.isNew(StorageScope.WORKSPACE)
+			!(
+				defaultLayout.force ||
+				storageService.isNew(StorageScope.WORKSPACE)
+			)
 		) {
 			return undefined;
 		}
@@ -1628,9 +1632,10 @@ export abstract class Layout
 		}
 
 		switch (part) {
-			case Parts.EDITOR_PART:
+			case Parts.EDITOR_PART: {
 				this.editorGroupService.getPart(container).activeGroup.focus();
 				break;
+			}
 			case Parts.PANEL_PART: {
 				this.paneCompositeService
 					.getActivePaneComposite(ViewContainerLocation.Panel)
@@ -1643,14 +1648,16 @@ export abstract class Layout
 					?.focus();
 				break;
 			}
-			case Parts.ACTIVITYBAR_PART:
+			case Parts.ACTIVITYBAR_PART: {
 				(
 					this.getPart(Parts.SIDEBAR_PART) as SidebarPart
 				).focusActivityBar();
 				break;
-			case Parts.STATUSBAR_PART:
+			}
+			case Parts.STATUSBAR_PART: {
 				this.statusBarService.getPart(container).focus();
 				break;
+			}
 			default: {
 				container?.focus();
 			}
@@ -2401,7 +2408,7 @@ export abstract class Layout
 		let viewSize: IViewSize;
 
 		switch (part) {
-			case Parts.SIDEBAR_PART:
+			case Parts.SIDEBAR_PART: {
 				viewSize = this.workbenchGrid.getViewSize(this.sideBarPartView);
 				this.workbenchGrid.resizeView(this.sideBarPartView, {
 					width: viewSize.width + sizeChangePxWidth,
@@ -2409,7 +2416,8 @@ export abstract class Layout
 				});
 
 				break;
-			case Parts.PANEL_PART:
+			}
+			case Parts.PANEL_PART: {
 				viewSize = this.workbenchGrid.getViewSize(this.panelPartView);
 
 				this.workbenchGrid.resizeView(this.panelPartView, {
@@ -2426,7 +2434,8 @@ export abstract class Layout
 				});
 
 				break;
-			case Parts.AUXILIARYBAR_PART:
+			}
+			case Parts.AUXILIARYBAR_PART: {
 				viewSize = this.workbenchGrid.getViewSize(
 					this.auxiliaryBarPartView,
 				);
@@ -2435,7 +2444,8 @@ export abstract class Layout
 					height: viewSize.height,
 				});
 				break;
-			case Parts.EDITOR_PART:
+			}
+			case Parts.EDITOR_PART: {
 				viewSize = this.workbenchGrid.getViewSize(this.editorPartView);
 
 				// Single Editor Group
@@ -2480,6 +2490,7 @@ export abstract class Layout
 				}
 
 				break;
+			}
 			default:
 				return; // Cannot resize other parts
 		}
@@ -2591,9 +2602,11 @@ export abstract class Layout
 
 		// If sidebar becomes visible, show last active Viewlet or default viewlet
 		else if (
-			!hidden &&
-			!this.paneCompositeService.getActivePaneComposite(
-				ViewContainerLocation.Sidebar,
+			!(
+				hidden ||
+				this.paneCompositeService.getActivePaneComposite(
+					ViewContainerLocation.Sidebar,
+				)
 			)
 		) {
 			const viewletToOpen =
@@ -2836,9 +2849,11 @@ export abstract class Layout
 
 		// If panel part becomes visible, show last active panel or default panel
 		else if (
-			!hidden &&
-			!this.paneCompositeService.getActivePaneComposite(
-				ViewContainerLocation.Panel,
+			!(
+				hidden ||
+				this.paneCompositeService.getActivePaneComposite(
+					ViewContainerLocation.Panel,
+				)
 			)
 		) {
 			let panelToOpen: string | undefined =
@@ -2848,7 +2863,7 @@ export abstract class Layout
 
 			// verify that the panel we try to open has views before we default to it
 			// otherwise fall back to any view that has views still refs #111463
-			if (!panelToOpen || !this.hasViews(panelToOpen)) {
+			if (!(panelToOpen && this.hasViews(panelToOpen))) {
 				panelToOpen = this.viewDescriptorService
 					.getViewContainersByLocation(ViewContainerLocation.Panel)
 					.find((viewContainer) =>
@@ -3006,9 +3021,11 @@ export abstract class Layout
 
 		// If auxiliary bar becomes visible, show last active pane composite or default pane composite
 		else if (
-			!hidden &&
-			!this.paneCompositeService.getActivePaneComposite(
-				ViewContainerLocation.AuxiliaryBar,
+			!(
+				hidden ||
+				this.paneCompositeService.getActivePaneComposite(
+					ViewContainerLocation.AuxiliaryBar,
+				)
 			)
 		) {
 			let panelToOpen: string | undefined =
@@ -3018,7 +3035,7 @@ export abstract class Layout
 
 			// verify that the panel we try to open has views before we default to it
 			// otherwise fall back to any view that has views still refs #111463
-			if (!panelToOpen || !this.hasViews(panelToOpen)) {
+			if (!(panelToOpen && this.hasViews(panelToOpen))) {
 				panelToOpen = this.viewDescriptorService
 					.getViewContainersByLocation(
 						ViewContainerLocation.AuxiliaryBar,
@@ -3379,7 +3396,7 @@ export abstract class Layout
 		availableHeight: number,
 		availableWidth: number,
 	): ISerializedNode {
-		if (!nodes.sideBar && !nodes.auxiliaryBar) {
+		if (!(nodes.sideBar || nodes.auxiliaryBar)) {
 			nodes.editor.size = availableHeight;
 			return nodes.editor;
 		}
@@ -4260,10 +4277,11 @@ class LayoutStateModel extends Disposable {
 	): T {
 		if (fallbackToSetting) {
 			switch (key) {
-				case LayoutStateKeys.ACTIVITYBAR_HIDDEN:
+				case LayoutStateKeys.ACTIVITYBAR_HIDDEN: {
 					this.stateCache.set(key.name, this.isActivityBarHidden());
 					break;
-				case LayoutStateKeys.STATUSBAR_HIDDEN:
+				}
+				case LayoutStateKeys.STATUSBAR_HIDDEN: {
 					this.stateCache.set(
 						key.name,
 						!this.configurationService.getValue(
@@ -4271,7 +4289,8 @@ class LayoutStateModel extends Disposable {
 						),
 					);
 					break;
-				case LayoutStateKeys.SIDEBAR_POSITON:
+				}
+				case LayoutStateKeys.SIDEBAR_POSITON: {
 					this.stateCache.set(
 						key.name,
 						this.configurationService.getValue(
@@ -4279,6 +4298,7 @@ class LayoutStateModel extends Disposable {
 						) ?? "left",
 					);
 					break;
+				}
 			}
 		}
 
@@ -4293,7 +4313,7 @@ class LayoutStateModel extends Disposable {
 		const isZenMode = this.getRuntimeValue(LayoutStateKeys.ZEN_MODE_ACTIVE);
 
 		if (key.scope === StorageScope.PROFILE) {
-			if (!isZenMode || !key.zenModeIgnore) {
+			if (!(isZenMode && key.zenModeIgnore)) {
 				this.saveKeyToStorage<T>(key);
 				this.updateLegacySettingsFromState(key, value);
 			}
@@ -4349,15 +4369,18 @@ class LayoutStateModel extends Disposable {
 
 		if (value !== undefined) {
 			switch (typeof key.defaultValue) {
-				case "boolean":
+				case "boolean": {
 					value = value === "true";
 					break;
-				case "number":
+				}
+				case "number": {
 					value = parseInt(value);
 					break;
-				case "object":
+				}
+				case "object": {
 					value = JSON.parse(value);
 					break;
+				}
 			}
 		}
 

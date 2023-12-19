@@ -360,7 +360,7 @@ export class SimpleSuggestWidget implements IDisposable {
 		this.element.domNode.classList.remove("message");
 
 		switch (state) {
-			case State.Hidden:
+			case State.Hidden: {
 				// dom.hide(this._messageElement, this._listElement, this._status.element);
 				dom.hide(this._listElement);
 				if (this._status) {
@@ -379,7 +379,8 @@ export class SimpleSuggestWidget implements IDisposable {
 				this._cappedHeight = undefined;
 				// this._explainMode = false;
 				break;
-			case State.Loading:
+			}
+			case State.Loading: {
 				this.element.domNode.classList.add("message");
 				// this._messageElement.textContent = SuggestWidget.LOADING_MESSAGE;
 				dom.hide(this._listElement);
@@ -391,7 +392,8 @@ export class SimpleSuggestWidget implements IDisposable {
 				this._show();
 				// this._focusedItem = undefined;
 				break;
-			case State.Empty:
+			}
+			case State.Empty: {
 				this.element.domNode.classList.add("message");
 				// this._messageElement.textContent = SuggestWidget.NO_SUGGESTIONS_MESSAGE;
 				dom.hide(this._listElement);
@@ -403,7 +405,8 @@ export class SimpleSuggestWidget implements IDisposable {
 				this._show();
 				// this._focusedItem = undefined;
 				break;
-			case State.Open:
+			}
+			case State.Open: {
 				// dom.hide(this._messageElement);
 				dom.show(this._listElement);
 				if (this._status) {
@@ -411,7 +414,8 @@ export class SimpleSuggestWidget implements IDisposable {
 				}
 				this._show();
 				break;
-			case State.Frozen:
+			}
+			case State.Frozen: {
 				// dom.hide(this._messageElement);
 				dom.show(this._listElement);
 				if (this._status) {
@@ -419,7 +423,8 @@ export class SimpleSuggestWidget implements IDisposable {
 				}
 				this._show();
 				break;
-			case State.Details:
+			}
+			case State.Details: {
 				// dom.hide(this._messageElement);
 				dom.show(this._listElement);
 				if (this._status) {
@@ -428,6 +433,7 @@ export class SimpleSuggestWidget implements IDisposable {
 				// this._details.show();
 				this._show();
 				break;
+			}
 		}
 	}
 

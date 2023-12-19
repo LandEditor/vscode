@@ -174,7 +174,7 @@ export class TaskService extends AbstractTaskService {
 		this._taskSystem = taskSystem;
 		this._taskSystemListeners = [
 			this._taskSystem.onDidStateChange((event) => {
-				this._taskRunningState.set(this._taskSystem!.isActiveSync());
+				this._taskRunningState.set(this._taskSystem?.isActiveSync());
 				this._onDidStateChange.fire(event);
 			}),
 		];
@@ -209,7 +209,7 @@ export class TaskService extends AbstractTaskService {
 	}
 
 	protected _versionAndEngineCompatible(filter?: ITaskFilter): boolean {
-		const range = filter && filter.version ? filter.version : undefined;
+		const range = filter?.version ? filter.version : undefined;
 		const engine = this.executionEngine;
 
 		return (
@@ -255,7 +255,7 @@ export class TaskService extends AbstractTaskService {
 
 		return terminatePromise.then((res) => {
 			if (res.confirmed) {
-				return this._taskSystem!.terminateAll().then(
+				return this._taskSystem?.terminateAll().then(
 					(responses) => {
 						let success = true;
 						let code: number | undefined = undefined;

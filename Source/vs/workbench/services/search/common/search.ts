@@ -515,19 +515,18 @@ export function getExcludes(
 	configuration: ISearchConfiguration,
 	includeSearchExcludes = true,
 ): glob.IExpression | undefined {
-	const fileExcludes =
-		configuration && configuration.files && configuration.files.exclude;
+	const fileExcludes = configuration?.files?.exclude;
 	const searchExcludes =
 		includeSearchExcludes &&
 		configuration &&
 		configuration.search &&
 		configuration.search.exclude;
 
-	if (!fileExcludes && !searchExcludes) {
+	if (!(fileExcludes || searchExcludes)) {
 		return undefined;
 	}
 
-	if (!fileExcludes || !searchExcludes) {
+	if (!(fileExcludes && searchExcludes)) {
 		return fileExcludes || searchExcludes;
 	}
 
@@ -815,10 +814,7 @@ export class QueryGlobTester {
 		basename?: string,
 		hasSibling?: (name: string) => boolean,
 	): boolean {
-		if (
-			this._parsedExcludeExpression &&
-			this._parsedExcludeExpression(testPath, basename, hasSibling)
-		) {
+		if (this._parsedExcludeExpression?.(testPath, basename, hasSibling)) {
 			return true;
 		}
 
@@ -833,10 +829,7 @@ export class QueryGlobTester {
 		basename?: string,
 		hasSibling?: (name: string) => boolean,
 	): boolean {
-		if (
-			this._parsedExcludeExpression &&
-			this._parsedExcludeExpression(testPath, basename, hasSibling)
-		) {
+		if (this._parsedExcludeExpression?.(testPath, basename, hasSibling)) {
 			return false;
 		}
 

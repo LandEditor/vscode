@@ -479,7 +479,7 @@ export abstract class BaseTerminalProfileResolverService
 					value,
 				);
 		} catch (e) {
-			this._logService.error(`Could not resolve shell`, e);
+			this._logService.error("Could not resolve shell", e);
 		}
 		return value;
 	}
@@ -555,7 +555,7 @@ export class BrowserTerminalProfileResolverService extends BaseTerminalProfileRe
 						await terminalInstanceService.getBackend(
 							remoteAuthority,
 						);
-					if (!remoteAuthority || !backend) {
+					if (!(remoteAuthority && backend)) {
 						// Just return basic values, this is only for serverless web and wouldn't be used
 						return os === OperatingSystem.Windows ? "pwsh" : "bash";
 					}
@@ -566,7 +566,7 @@ export class BrowserTerminalProfileResolverService extends BaseTerminalProfileRe
 						await terminalInstanceService.getBackend(
 							remoteAuthority,
 						);
-					if (!remoteAuthority || !backend) {
+					if (!(remoteAuthority && backend)) {
 						return env;
 					}
 					return backend.getEnvironment();

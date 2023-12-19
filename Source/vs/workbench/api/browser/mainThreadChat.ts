@@ -123,7 +123,7 @@ export class MainThreadChat extends Disposable implements MainThreadChatShape {
 	): Promise<void> {
 		const widget =
 			await this._chatWidgetService.revealViewForProvider(providerId);
-		if (widget && widget.viewModel) {
+		if (widget?.viewModel) {
 			this._chatService.sendRequestToProvider(
 				widget.viewModel.sessionId,
 				message,

@@ -61,7 +61,7 @@ export interface IDraggedResourceEditorInput
 
 export function extractEditorsDropData(
 	e: DragEvent,
-): Array<IDraggedResourceEditorInput> {
+): IDraggedResourceEditorInput[] {
 	const editors: IDraggedResourceEditorInput[] = [];
 	if (e.dataTransfer && e.dataTransfer.types.length > 0) {
 		// Data Transfer: Code Editors
@@ -170,7 +170,7 @@ export function extractEditorsDropData(
 export async function extractEditorsAndFilesDropData(
 	accessor: ServicesAccessor,
 	e: DragEvent,
-): Promise<Array<IDraggedResourceEditorInput>> {
+): Promise<IDraggedResourceEditorInput[]> {
 	const editors = extractEditorsDropData(e);
 
 	// Web: Check for file transfer

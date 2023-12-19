@@ -26,7 +26,6 @@ import * as typeConverters from "vs/workbench/api/common/extHostTypeConverters";
 import * as vscode from "vscode";
 
 class Reference<T> {
-	private _count = 0;
 	constructor(readonly value: T) {}
 	ref() {
 		this._count++;
@@ -169,7 +168,7 @@ export class ExtHostDocumentsAndEditors
 					`editor '${data.id}' already exists!`,
 				);
 
-				const documentData = this._documents.get(resource)!.value;
+				const documentData = this._documents.get(resource)?.value;
 				const editor = new ExtHostTextEditor(
 					data.id,
 					this._extHostRpc.getProxy(

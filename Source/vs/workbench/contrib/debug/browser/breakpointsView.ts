@@ -338,7 +338,7 @@ export class BreakpointsView extends ViewPane {
 					openBreakpointSource(
 						e.element,
 						e.sideBySide,
-						e.editorOptions.preserveFocus || false,
+						e.editorOptions.preserveFocus,
 						e.editorOptions.pinned ||
 							!e.editorOptions.preserveFocus,
 						this.debugService,
@@ -418,7 +418,7 @@ export class BreakpointsView extends ViewPane {
 						this.hoverService.showHover(
 							{
 								content: options.content,
-								target: this.hintContainer!.element,
+								target: this.hintContainer?.element,
 							},
 							focus,
 						),
@@ -610,9 +610,7 @@ export class BreakpointsView extends ViewPane {
 			const thread = this.debugService.getViewModel().focusedThread;
 			let found = false;
 			if (
-				thread &&
-				thread.stoppedDetails &&
-				thread.stoppedDetails.hitBreakpointIds &&
+				thread?.stoppedDetails?.hitBreakpointIds &&
 				thread.stoppedDetails.hitBreakpointIds.length > 0
 			) {
 				const hitBreakpointIds = thread.stoppedDetails.hitBreakpointIds;
@@ -656,7 +654,7 @@ export class BreakpointsView extends ViewPane {
 		const sessionId = this.debugService
 			.getViewModel()
 			.focusedSession?.getId();
-		const elements = (<ReadonlyArray<IEnablement>>(
+		const elements = (<readonly IEnablement[]>(
 			model.getExceptionBreakpointsForSession(sessionId)
 		))
 			.concat(model.getFunctionBreakpoints())
@@ -1308,8 +1306,8 @@ class InstructionBreakpointsRenderer
 			!this.debugService.getModel().areBreakpointsActivated(),
 		);
 
-		data.name.textContent = "0x" + breakpoint.address.toString(16);
-		data.name.title = `Decimal address: breakpoint.address.toString()`;
+		data.name.textContent = `0x${breakpoint.address.toString(16)}`;
+		data.name.title = "Decimal address: breakpoint.address.toString()";
 		data.checkbox.checked = breakpoint.enabled;
 
 		const { message, icon } = getBreakpointMessageAndIcon(
@@ -1873,7 +1871,7 @@ export function getBreakpointMessageAndIcon(
 				  ? icons.logBreakpoint
 				  : icons.breakpoint;
 
-	if (!breakpoint.enabled || !breakpointsActivated) {
+	if (!(breakpoint.enabled && breakpointsActivated)) {
 		return {
 			icon: breakpointIcon.disabled,
 			message: breakpoint.logMessage
@@ -1884,7 +1882,7 @@ export function getBreakpointMessageAndIcon(
 
 	const appendMessage = (text: string): string => {
 		return "message" in breakpoint && breakpoint.message
-			? text.concat(", " + breakpoint.message)
+			? text.concat(`, ${breakpoint.message}`)
 			: text;
 	};
 	if (debugActive && !breakpoint.verified) {

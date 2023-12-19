@@ -161,7 +161,7 @@ export class InlineChatLivePreviewWidget extends ZoneWidget {
 			const render = this._disposables.add(new MutableDisposable());
 			this._disposables.add(
 				this._diffEditor.onDidContentSizeChange((e) => {
-					if (!this._isVisible || !e.contentHeightChanged) {
+					if (!(this._isVisible && e.contentHeightChanged)) {
 						return;
 					}
 					render.value = runAtThisOrScheduleAtNextAnimationFrame(

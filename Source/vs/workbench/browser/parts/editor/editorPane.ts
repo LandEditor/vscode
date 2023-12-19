@@ -19,12 +19,9 @@ import {
 import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
 import { IEditorOptions } from "vs/platform/editor/common/editor";
 import {
-	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "vs/platform/storage/common/storage";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { IThemeService } from "vs/platform/theme/common/themeService";
 import { Composite } from "vs/workbench/browser/composite";
 import {
 	DEFAULT_EDITOR_MAX_DIMENSIONS,
@@ -115,15 +112,6 @@ export abstract class EditorPane extends Composite implements IEditorPane {
 	 */
 	get scopedContextKeyService(): IContextKeyService | undefined {
 		return undefined;
-	}
-
-	constructor(
-		id: string,
-		telemetryService: ITelemetryService,
-		themeService: IThemeService,
-		storageService: IStorageService,
-	) {
-		super(id, telemetryService, themeService, storageService);
 	}
 
 	override create(parent: HTMLElement): void {
@@ -327,7 +315,7 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
 		state: T,
 	): void {
 		const resource = this.doGetResource(resourceOrEditor);
-		if (!resource || !group) {
+		if (!(resource && group)) {
 			return; // we are not in a good state to save any state for a resource
 		}
 
@@ -361,7 +349,7 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
 		resourceOrEditor: URI | EditorInput,
 	): T | undefined {
 		const resource = this.doGetResource(resourceOrEditor);
-		if (!resource || !group) {
+		if (!(resource && group)) {
 			return; // we are not in a good state to load any state for a resource
 		}
 

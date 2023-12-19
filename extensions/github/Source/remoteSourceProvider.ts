@@ -97,7 +97,7 @@ export class GithubRemoteSourceProvider implements RemoteSourceProvider {
 			query = `user:${repository.owner}+${repository.repo}`;
 		}
 
-		query += ` fork:true`;
+		query += " fork:true";
 
 		const raw = await octokit.search.repos({ q: query, sort: "stars" });
 		return raw.data.items.map(asRemoteSource);

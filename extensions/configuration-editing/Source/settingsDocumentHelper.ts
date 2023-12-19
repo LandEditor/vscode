@@ -107,8 +107,8 @@ export class SettingsDocument {
 	private getReplaceRange(location: Location, position: vscode.Position) {
 		const node = location.previousNode;
 		if (node) {
-			const nodeStart = this.document.positionAt(node.offset),
-				nodeEnd = this.document.positionAt(node.offset + node.length);
+			const nodeStart = this.document.positionAt(node.offset);
+			const nodeEnd = this.document.positionAt(node.offset + node.length);
 			if (
 				nodeStart.isBeforeOrEqual(position) &&
 				nodeEnd.isAfterOrEqual(position)
@@ -158,7 +158,7 @@ export class SettingsDocument {
 		}
 
 		const getText = (variable: string) => {
-			const text = "${" + variable + "}";
+			const text = `\${${variable}}`;
 			return location.previousNode ? text : JSON.stringify(text);
 		};
 

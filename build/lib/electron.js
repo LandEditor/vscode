@@ -57,18 +57,16 @@ const darwinCreditsTemplate =
 function darwinBundleDocumentType(extensions, icon, nameOrSuffix, utis) {
 	// If given a suffix, generate a name from it. If not given anything, default to 'document'
 	if (isDocumentSuffix(nameOrSuffix) || !nameOrSuffix) {
-		nameOrSuffix =
-			icon.charAt(0).toUpperCase() +
-			icon.slice(1) +
-			" " +
-			(nameOrSuffix ?? "document");
+		nameOrSuffix = `${icon.charAt(0).toUpperCase() + icon.slice(1)} ${
+			nameOrSuffix ?? "document"
+		}`;
 	}
 	return {
 		name: nameOrSuffix,
 		role: "Editor",
 		ostypes: ["TEXT", "utxt", "TUTX", "****"],
 		extensions,
-		iconFile: "resources/darwin/" + icon + ".icns",
+		iconFile: `resources/darwin/${icon}.icns`,
 		utis,
 	};
 }
@@ -91,7 +89,7 @@ function darwinBundleDocumentTypes(types, icon) {
 			role: "Editor",
 			ostypes: ["TEXT", "utxt", "TUTX", "****"],
 			extensions: Array.isArray(extensions) ? extensions : [extensions],
-			iconFile: "resources/darwin/" + icon + ".icns",
+			iconFile: `resources/darwin/${icon}.icns`,
 		};
 	});
 }
@@ -300,7 +298,7 @@ exports.config = {
 				"t",
 			],
 			"default",
-			product.nameLong + " document",
+			`${product.nameLong} document`,
 		),
 		// Folder support ()
 		darwinBundleDocumentType([], "default", "Folder", ["public.folder"]),

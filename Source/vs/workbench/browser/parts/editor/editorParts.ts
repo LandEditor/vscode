@@ -306,15 +306,17 @@ export class EditorParts
 			switch (order) {
 				case GroupsOrder.GRID_APPEARANCE:
 				// we currently do not have a way to compute by appearance over multiple windows
-				case GroupsOrder.CREATION_TIME:
+				case GroupsOrder.CREATION_TIME: {
 					parts = this.parts;
 					break;
-				case GroupsOrder.MOST_RECENTLY_ACTIVE:
+				}
+				case GroupsOrder.MOST_RECENTLY_ACTIVE: {
 					parts = distinct([
 						...this.mostRecentActiveParts,
 						...this.parts,
 					]); // always ensure all parts are included
 					break;
+				}
 			}
 
 			return parts.flatMap((part) => part.getGroups(order));

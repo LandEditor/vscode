@@ -495,7 +495,7 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
 			queueMicrotask(async () => {
 				this._disposables.add(
 					await this._textModelResolverService.createModelReference(
-						model!.uri,
+						model?.uri,
 					),
 				);
 			});

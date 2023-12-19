@@ -310,7 +310,7 @@ export class QuickInputController extends Disposable {
 			$(".quick-input-description"),
 		);
 
-		const listId = this.idPrefix + "list";
+		const listId = `${this.idPrefix}list`;
 		const list = this._register(
 			new QuickInputList(
 				container,
@@ -385,8 +385,10 @@ export class QuickInputController extends Disposable {
 		this._register(
 			focusTracker.onDidBlur(() => {
 				if (
-					!this.getUI().ignoreFocusOut &&
-					!this.options.ignoreFocusOut()
+					!(
+						this.getUI().ignoreFocusOut ||
+						this.options.ignoreFocusOut()
+					)
 				) {
 					this.hide(QuickInputHideReason.Blur);
 				}
@@ -412,21 +414,25 @@ export class QuickInputController extends Disposable {
 						return; // Ignore event if target is inside widget to allow the widget to handle the event.
 					}
 					switch (event.keyCode) {
-						case KeyCode.Enter:
+						case KeyCode.Enter: {
 							dom.EventHelper.stop(event, true);
 							if (this.enabled) {
 								this.onDidAcceptEmitter.fire();
 							}
 							break;
-						case KeyCode.Escape:
+						}
+						case KeyCode.Escape: {
 							dom.EventHelper.stop(event, true);
 							this.hide(QuickInputHideReason.Gesture);
 							break;
-						case KeyCode.Tab:
+						}
+						case KeyCode.Tab: {
 							if (
-								!event.altKey &&
-								!event.ctrlKey &&
-								!event.metaKey
+								!(
+									event.altKey ||
+									event.ctrlKey ||
+									event.metaKey
+								)
 							) {
 								// detect only visible actions
 								const selectors = [
@@ -488,12 +494,14 @@ export class QuickInputController extends Disposable {
 								}
 							}
 							break;
-						case KeyCode.Space:
+						}
+						case KeyCode.Space: {
 							if (event.ctrlKey) {
 								dom.EventHelper.stop(event, true);
 								this.getUI().list.toggleHover();
 							}
 							break;
+						}
 					}
 				},
 			),
@@ -597,33 +605,29 @@ export class QuickInputController extends Disposable {
 						}
 					}
 				}),
-				input.onDidTriggerItemButton(
-					(event) =>
-						options.onDidTriggerItemButton &&
-						options.onDidTriggerItemButton({
-							...event,
-							removeItem: () => {
-								const index = input.items.indexOf(event.item);
-								if (index !== -1) {
-									const items = input.items.slice();
-									const removed = items.splice(index, 1);
-									const activeItems =
-										input.activeItems.filter(
-											(activeItem) =>
-												activeItem !== removed[0],
-										);
-									const keepScrollPositionBefore =
-										input.keepScrollPosition;
-									input.keepScrollPosition = true;
-									input.items = items;
-									if (activeItems) {
-										input.activeItems = activeItems;
-									}
-									input.keepScrollPosition =
-										keepScrollPositionBefore;
+				input.onDidTriggerItemButton((event) =>
+					options.onDidTriggerItemButton?.({
+						...event,
+						removeItem: () => {
+							const index = input.items.indexOf(event.item);
+							if (index !== -1) {
+								const items = input.items.slice();
+								const removed = items.splice(index, 1);
+								const activeItems = input.activeItems.filter(
+									(activeItem) => activeItem !== removed[0],
+								);
+								const keepScrollPositionBefore =
+									input.keepScrollPosition;
+								input.keepScrollPosition = true;
+								input.items = items;
+								if (activeItems) {
+									input.activeItems = activeItems;
 								}
-							},
-						}),
+								input.keepScrollPosition =
+									keepScrollPositionBefore;
+							}
+						},
+					}),
 				),
 				input.onDidTriggerSeparatorButton((event) =>
 					options.onDidTriggerSeparatorButton?.(event),
@@ -877,7 +881,7 @@ export class QuickInputController extends Disposable {
 		);
 		ui.container.classList.toggle(
 			"hidden-input",
-			!visibilities.inputBox && !visibilities.description,
+			!(visibilities.inputBox || visibilities.description),
 		);
 		this.updateLayout(); // TODO
 	}
@@ -990,11 +994,11 @@ export class QuickInputController extends Disposable {
 
 			const style = this.ui.container.style;
 			const width = Math.min(
-				this.dimension!.width * 0.62 /* golden cut */,
+				this.dimension?.width * 0.62 /* golden cut */,
 				QuickInputController.MAX_WIDTH,
 			);
-			style.width = width + "px";
-			style.marginLeft = "-" + width / 2 + "px";
+			style.width = `${width}px`;
+			style.marginLeft = `-${width / 2}px`;
 
 			this.ui.inputBox.layout();
 			this.ui.list.layout(this.dimension && this.dimension.height * 0.4);
@@ -1041,7 +1045,7 @@ export class QuickInputController extends Disposable {
 			}
 			if (this.styles.pickerGroup.pickerGroupForeground) {
 				content.push(
-					`.quick-input-list .quick-input-list-separator-as-item { color: var(--vscode-descriptionForeground); }`,
+					".quick-input-list .quick-input-list-separator-as-item { color: var(--vscode-descriptionForeground); }",
 				);
 			}
 

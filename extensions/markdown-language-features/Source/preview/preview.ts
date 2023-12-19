@@ -109,15 +109,17 @@ class MarkdownPreview extends Disposable implements WebviewResourceProvider {
 		this._resource = resource;
 
 		switch (startingScroll?.type) {
-			case "line":
-				if (!isNaN(startingScroll.line!)) {
+			case "line": {
+				if (!Number.isNaN(startingScroll.line!)) {
 					this._line = startingScroll.line;
 				}
 				break;
+			}
 
-			case "fragment":
+			case "fragment": {
 				this._scrollToFragment = startingScroll.fragment;
 				break;
+			}
 		}
 
 		this._register(
@@ -170,30 +172,35 @@ class MarkdownPreview extends Disposable implements WebviewResourceProvider {
 					}
 
 					switch (e.type) {
-						case "cacheImageSizes":
+						case "cacheImageSizes": {
 							this._imageInfo = e.imageData;
 							break;
+						}
 
-						case "revealLine":
+						case "revealLine": {
 							this._onDidScrollPreview(e.line);
 							break;
+						}
 
-						case "didClick":
+						case "didClick": {
 							this._onDidClickPreview(e.line);
 							break;
+						}
 
-						case "openLink":
+						case "openLink": {
 							this._onDidClickPreviewLink(e.href);
 							break;
+						}
 
-						case "showPreviewSecuritySelector":
+						case "showPreviewSecuritySelector": {
 							vscode.commands.executeCommand(
 								"markdown.showPreviewSecuritySelector",
 								e.source,
 							);
 							break;
+						}
 
-						case "previewStyleLoadError":
+						case "previewStyleLoadError": {
 							vscode.window.showWarningMessage(
 								vscode.l10n.t(
 									"Could not load 'markdown.styles': {0}",
@@ -201,6 +208,7 @@ class MarkdownPreview extends Disposable implements WebviewResourceProvider {
 								),
 							);
 							break;
+						}
 					}
 				},
 			),
@@ -480,7 +488,7 @@ class MarkdownPreview extends Disposable implements WebviewResourceProvider {
 		};
 	}
 
-	private _getLocalResourceRoots(): ReadonlyArray<vscode.Uri> {
+	private _getLocalResourceRoots(): readonly vscode.Uri[] {
 		const baseRoots = Array.from(
 			this._contributionProvider.contributions.previewResourceRoots,
 		);
@@ -942,9 +950,10 @@ export class DynamicMarkdownPreview
 	) {
 		if (this._preview.isPreviewOf(newResource)) {
 			switch (scrollLocation?.type) {
-				case "line":
+				case "line": {
 					this._preview.scrollTo(scrollLocation.line);
 					return;
+				}
 
 				case "fragment":
 					// Workaround. For fragments, just reload the entire preview

@@ -24,11 +24,11 @@ export class ErrorHandler {
 				if (e.stack) {
 					if (ErrorNoTelemetry.isErrorNoTelemetry(e)) {
 						throw new ErrorNoTelemetry(
-							e.message + "\n\n" + e.stack,
+							`${e.message}\n\n${e.stack}`,
 						);
 					}
 
-					throw new Error(e.message + "\n\n" + e.stack);
+					throw new Error(`${e.message}\n\n${e.stack}`);
 				}
 
 				throw e;

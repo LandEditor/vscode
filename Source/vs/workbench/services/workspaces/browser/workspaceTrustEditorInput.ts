@@ -39,7 +39,7 @@ export class WorkspaceTrustEditorInput extends EditorInput {
 
 	readonly resource: URI = URI.from({
 		scheme: Schemas.vscodeWorkspaceTrust,
-		path: `workspaceTrustEditor`,
+		path: "workspaceTrustEditor",
 	});
 
 	override matches(otherInput: EditorInput | IUntypedEditorInput): boolean {

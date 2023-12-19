@@ -241,8 +241,8 @@ function getGridLocation(element: HTMLElement): GridLocation {
 
 	const index = indexInParent(parentElement);
 	const ancestor =
-		parentElement.parentElement!.parentElement!.parentElement!
-			.parentElement!;
+		parentElement.parentElement?.parentElement?.parentElement
+			?.parentElement!;
 	return [...getGridLocation(ancestor), index];
 }
 

@@ -170,7 +170,7 @@ export class SingleTsServer extends Disposable implements ITypeScriptServer {
 	private dispatchMessage(message: Proto.Message) {
 		try {
 			switch (message.type) {
-				case "response":
+				case "response": {
 					if (this._serverSource) {
 						this.dispatchResponse({
 							...(message as Proto.Response),
@@ -180,6 +180,7 @@ export class SingleTsServer extends Disposable implements ITypeScriptServer {
 						this.dispatchResponse(message as Proto.Response);
 					}
 					break;
+				}
 
 				case "event": {
 					const event = message as Proto.Event;
@@ -752,17 +753,19 @@ export class SyntaxRoutingTsServer
 		this._register(
 			this.semanticServer.onEvent((e) => {
 				switch (e.event) {
-					case EventName.projectLoadingStart:
+					case EventName.projectLoadingStart: {
 						this._projectLoading = true;
 						break;
+					}
 
 					case EventName.projectLoadingFinish:
 					case EventName.semanticDiag:
 					case EventName.syntaxDiag:
 					case EventName.suggestionDiag:
-					case EventName.configFileDiag:
+					case EventName.configFileDiag: {
 						this._projectLoading = false;
 						break;
+					}
 				}
 				return this._onEvent.fire(e);
 			}),

@@ -88,12 +88,12 @@ export interface IConfigurationCache {
 }
 
 export type RestrictedSettings = {
-	default: ReadonlyArray<string>;
-	application?: ReadonlyArray<string>;
-	userLocal?: ReadonlyArray<string>;
-	userRemote?: ReadonlyArray<string>;
-	workspace?: ReadonlyArray<string>;
-	workspaceFolder?: ResourceMap<ReadonlyArray<string>>;
+	default: readonly string[];
+	application?: readonly string[];
+	userLocal?: readonly string[];
+	userRemote?: readonly string[];
+	workspace?: readonly string[];
+	workspaceFolder?: ResourceMap<readonly string[]>;
 };
 
 export const IWorkbenchConfigurationService = refineServiceDecorator<

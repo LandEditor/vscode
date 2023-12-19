@@ -111,7 +111,7 @@ export class ChildProcessMonitor extends Disposable {
 			if (item.cmd.startsWith(`"`)) {
 				cmd = item.cmd.substring(1, item.cmd.indexOf(`"`, 1));
 			} else {
-				const spaceIndex = item.cmd.indexOf(` `);
+				const spaceIndex = item.cmd.indexOf(" ");
 				if (spaceIndex === -1) {
 					cmd = item.cmd;
 				} else {

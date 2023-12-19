@@ -49,7 +49,7 @@ export class ExtensionHostStarter
 	private _getExtHost(id: string): WindowUtilityProcess {
 		const extHostProcess = this._extHosts.get(id);
 		if (!extHostProcess) {
-			throw new Error(`Unknown extension host!`);
+			throw new Error("Unknown extension host!");
 		}
 		return extHostProcess;
 	}

@@ -119,7 +119,7 @@ export class ProductIconThemeData implements IWorkbenchProductIconTheme {
 		iconThemeLocation: URI,
 		extensionData: ExtensionData,
 	): ProductIconThemeData {
-		const id = extensionData.extensionId + "-" + iconTheme.id;
+		const id = `${extensionData.extensionId}-${iconTheme.id}`;
 		const label = iconTheme.label || Paths.basename(iconTheme.path);
 		const settingsId = iconTheme.id;
 
@@ -134,7 +134,7 @@ export class ProductIconThemeData implements IWorkbenchProductIconTheme {
 	}
 
 	static createUnloadedTheme(id: string): ProductIconThemeData {
-		const themeData = new ProductIconThemeData(id, "", "__" + id);
+		const themeData = new ProductIconThemeData(id, "", `__${id}`);
 		themeData.isLoaded = false;
 		themeData.extensionData = undefined;
 		themeData.watch = false;
@@ -179,17 +179,19 @@ export class ProductIconThemeData implements IWorkbenchProductIconTheme {
 					case "description":
 					case "settingsId":
 					case "styleSheetContent":
-					case "watch":
+					case "watch": {
 						(theme as any)[key] = data[key];
 						break;
+					}
 					case "location":
 						// ignore, no longer restore
 						break;
-					case "extensionData":
+					case "extensionData": {
 						theme.extensionData = ExtensionData.fromJSONObject(
 							data.extensionData,
 						);
 						break;
+					}
 				}
 			}
 			const { iconDefinitions, iconFontDefinitions } = data;
@@ -303,9 +305,11 @@ function _loadProductIconThemeDocument(
 				),
 			);
 		} else if (
-			!contentValue.iconDefinitions ||
-			!Array.isArray(contentValue.fonts) ||
-			!contentValue.fonts.length
+			!(
+				contentValue.iconDefinitions &&
+				Array.isArray(contentValue.fonts) &&
+				contentValue.fonts.length
+			)
 		) {
 			return Promise.reject(
 				new Error(

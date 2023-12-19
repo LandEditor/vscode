@@ -116,11 +116,11 @@ export class LinkedList<E> {
 			this._last = Node.Undefined;
 		} else if (node.next === Node.Undefined) {
 			// last
-			this._last = this._last!.prev!;
+			this._last = this._last?.prev!;
 			this._last.next = Node.Undefined;
 		} else if (node.prev === Node.Undefined) {
 			// first
-			this._first = this._first!.next!;
+			this._first = this._first?.next!;
 			this._first.prev = Node.Undefined;
 		}
 

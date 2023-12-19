@@ -174,8 +174,8 @@ export class DisposableTracker implements IDisposableTracker {
 				}
 			}
 
-			const lines = leaking
-				.source!.split("\n")
+			const lines = leaking.source
+				?.split("\n")
 				.map((p) => p.trim().replace("at ", ""))
 				.filter((l) => l !== "");
 			removePrefix(lines, [
@@ -366,10 +366,10 @@ export function dispose<
 	T extends IDisposable,
 	A extends Iterable<T> = Iterable<T>,
 >(disposables: A): A;
-export function dispose<T extends IDisposable>(disposables: Array<T>): Array<T>;
+export function dispose<T extends IDisposable>(disposables: T[]): T[];
 export function dispose<T extends IDisposable>(
-	disposables: ReadonlyArray<T>,
-): ReadonlyArray<T>;
+	disposables: readonly T[],
+): readonly T[];
 export function dispose<T extends IDisposable>(
 	arg: T | Iterable<T> | undefined,
 ): any {
@@ -403,8 +403,8 @@ export function dispose<T extends IDisposable>(
 }
 
 export function disposeIfDisposable<T extends IDisposable | object>(
-	disposables: Array<T>,
-): Array<T> {
+	disposables: T[],
+): T[] {
 	for (const d of disposables) {
 		if (isDisposable(d)) {
 			d.dispose();
@@ -743,7 +743,7 @@ export abstract class ReferenceCollection<T> {
 		const { object } = reference;
 		const dispose = createSingleCallFunction(() => {
 			if (--reference!.counter === 0) {
-				this.destroyReferencedObject(key, reference!.object);
+				this.destroyReferencedObject(key, reference?.object);
 				this.references.delete(key);
 			}
 		});

@@ -204,7 +204,7 @@ export class LanguageDetectionSimpleWorker extends EditorSimpleWorker {
 					const modelJSON = await response.json();
 					return modelJSON;
 				} catch (e) {
-					const message = `Failed to parse model JSON.`;
+					const message = "Failed to parse model JSON.";
 					throw new Error(message);
 				}
 			},
@@ -235,19 +235,21 @@ export class LanguageDetectionSimpleWorker extends EditorSimpleWorker {
 			case "css":
 			case "py":
 			case "xml":
-			case "php":
+			case "php": {
 				modelResult.confidence +=
 					LanguageDetectionSimpleWorker.positiveConfidenceCorrectionBucket1;
 				break;
+			}
 			// case 'yaml': // YAML has been know to cause incorrect language detection because the language is pretty simple. We don't want to increase the confidence for this.
 			case "cpp":
 			case "sh":
 			case "java":
 			case "cs":
-			case "c":
+			case "c": {
 				modelResult.confidence +=
 					LanguageDetectionSimpleWorker.positiveConfidenceCorrectionBucket2;
 				break;
+			}
 
 			// For the following languages, we need to be extra confident that the language is correct because
 			// we've had issues like #131912 that caused incorrect guesses. To enforce this, we subtract the
@@ -260,7 +262,7 @@ export class LanguageDetectionSimpleWorker extends EditorSimpleWorker {
 			case "sql":
 			// languages that aren't provided by default in VS Code
 			case "csv":
-			case "toml":
+			case "toml": {
 				// Other considerations for negativeConfidenceCorrection that
 				// aren't built in but suported by the model include:
 				// * Assembly, TeX - These languages didn't have clear language modes in the community
@@ -268,6 +270,7 @@ export class LanguageDetectionSimpleWorker extends EditorSimpleWorker {
 				modelResult.confidence -=
 					LanguageDetectionSimpleWorker.negativeConfidenceCorrection;
 				break;
+			}
 
 			default:
 				break;

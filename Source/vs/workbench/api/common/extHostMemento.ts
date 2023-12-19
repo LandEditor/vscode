@@ -79,7 +79,7 @@ export class ExtensionMemento implements vscode.Memento {
 	get<T>(key: string): T | undefined;
 	get<T>(key: string, defaultValue: T): T;
 	get<T>(key: string, defaultValue?: T): T {
-		let value = this._value![key];
+		let value = this._value?.[key];
 		if (typeof value === "undefined") {
 			value = defaultValue;
 		}

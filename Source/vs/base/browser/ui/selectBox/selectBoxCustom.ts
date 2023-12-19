@@ -79,8 +79,8 @@ class SelectListRenderer
 		const isDisabled = element.isDisabled;
 
 		data.text.textContent = text;
-		data.detail.textContent = !!detail ? detail : "";
-		data.decoratorRight.innerText = !!decoratorRight ? decoratorRight : "";
+		data.detail.textContent = detail ? detail : "";
+		data.decoratorRight.innerText = decoratorRight ? decoratorRight : "";
 
 		// pseudo-select disabled option
 		if (isDisabled) {
@@ -516,10 +516,10 @@ export class SelectBoxList
 
 		// Clear list styles on focus and on hover for disabled options
 		content.push(
-			`.monaco-select-box-dropdown-container > .select-box-dropdown-list-container .monaco-list .monaco-list-row.option-disabled.focused { background-color: transparent !important; color: inherit !important; outline: none !important; }`,
+			".monaco-select-box-dropdown-container > .select-box-dropdown-list-container .monaco-list .monaco-list-row.option-disabled.focused { background-color: transparent !important; color: inherit !important; outline: none !important; }",
 		);
 		content.push(
-			`.monaco-select-box-dropdown-container > .select-box-dropdown-list-container .monaco-list .monaco-list-row.option-disabled:hover { background-color: transparent !important; color: inherit !important; outline: none !important; }`,
+			".monaco-select-box-dropdown-container > .select-box-dropdown-list-container .monaco-list .monaco-list-row.option-disabled:hover { background-color: transparent !important; color: inherit !important; outline: none !important; }",
 		);
 
 		this.styleElement.textContent = content.join("\n");
@@ -628,7 +628,7 @@ export class SelectBoxList
 	}
 
 	private hideSelectDropDown(focusSelect: boolean) {
-		if (!this.contextViewProvider || !this._isVisible) {
+		if (!(this.contextViewProvider && this._isVisible)) {
 			return;
 		}
 
@@ -717,9 +717,10 @@ export class SelectBoxList
 			const selectMinWidth = this.setWidthControlElement(
 				this.widthControlElement,
 			);
-			const selectOptimalWidth =
-				Math.max(selectMinWidth, Math.round(selectWidth)).toString() +
-				"px";
+			const selectOptimalWidth = `${Math.max(
+				selectMinWidth,
+				Math.round(selectWidth),
+			).toString()}px`;
 
 			this.selectDropDownContainer.style.width = selectOptimalWidth;
 
@@ -870,12 +871,14 @@ export class SelectBoxList
 
 			if (this._hasDetails) {
 				// Leave the selectDropDownContainer to size itself according to children (list + details) - #57447
-				this.selectList.getHTMLElement().style.height =
-					listHeight + verticalPadding + "px";
+				this.selectList.getHTMLElement().style.height = `${
+					listHeight + verticalPadding
+				}px`;
 				this.selectDropDownContainer.style.height = "";
 			} else {
-				this.selectDropDownContainer.style.height =
-					listHeight + verticalPadding + "px";
+				this.selectDropDownContainer.style.height = `${
+					listHeight + verticalPadding
+				}px`;
 			}
 
 			this.updateDetail(this.selected);
@@ -901,8 +904,8 @@ export class SelectBoxList
 			let longestLength = 0;
 
 			this.options.forEach((option, index) => {
-				const detailLength = !!option.detail ? option.detail.length : 0;
-				const rightDecoratorLength = !!option.decoratorRight
+				const detailLength = option.detail ? option.detail.length : 0;
+				const rightDecoratorLength = option.decoratorRight
 					? option.decoratorRight.length
 					: 0;
 
@@ -916,8 +919,8 @@ export class SelectBoxList
 
 			container.textContent =
 				this.options[longest].text +
-				(!!this.options[longest].decoratorRight
-					? this.options[longest].decoratorRight + " "
+				(this.options[longest].decoratorRight
+					? `${this.options[longest].decoratorRight} `
 					: "");
 			elementWidth = dom.getTotalWidth(container);
 		}
@@ -1178,7 +1181,7 @@ export class SelectBoxList
 			for (let i = 0; i < element.childNodes.length; i++) {
 				const child = <Element>element.childNodes.item(i);
 
-				const tagName = child.tagName && child.tagName.toLowerCase();
+				const tagName = child.tagName?.toLowerCase();
 				if (tagName === "img") {
 					element.removeChild(child);
 				} else {
@@ -1201,7 +1204,7 @@ export class SelectBoxList
 	// List Focus Change - passive - update details pane with newly focused element's data
 	private onListFocus(e: IListEvent<ISelectOptionItem>) {
 		// Skip during initial layout
-		if (!this._isVisible || !this._hasDetails) {
+		if (!(this._isVisible && this._hasDetails)) {
 			return;
 		}
 

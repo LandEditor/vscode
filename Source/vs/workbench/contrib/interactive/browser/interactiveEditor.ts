@@ -578,7 +578,7 @@ export class InteractiveEditor extends EditorPane {
 				this._lastLayoutDimensions.dimension.height -
 				this.inputCellContainerHeight
 			}px`;
-			this._notebookWidget.value!.layout(
+			this._notebookWidget.value?.layout(
 				new DOM.Dimension(
 					this._lastLayoutDimensions.dimension.width,
 					this._lastLayoutDimensions.dimension.height -
@@ -627,23 +627,23 @@ export class InteractiveEditor extends EditorPane {
 		const viewState =
 			options?.viewState ?? this._loadNotebookEditorViewState(input);
 		await this._extensionService.whenInstalledExtensionsRegistered();
-		await this._notebookWidget.value!.setModel(
+		await this._notebookWidget.value?.setModel(
 			model.notebook,
 			viewState?.notebook,
 		);
 		model.notebook.setCellCollapseDefault(
 			this._notebookOptions.getCellCollapseDefault(),
 		);
-		this._notebookWidget.value!.setOptions({
+		this._notebookWidget.value?.setOptions({
 			isReadOnly: true,
 		});
 		this._widgetDisposableStore.add(
-			this._notebookWidget.value!.onDidResizeOutput((cvm) => {
+			this._notebookWidget.value?.onDidResizeOutput((cvm) => {
 				this._scrollIfNecessary(cvm);
 			}),
 		);
 		this._widgetDisposableStore.add(
-			this._notebookWidget.value!.onDidFocusWidget(() =>
+			this._notebookWidget.value?.onDidFocusWidget(() =>
 				this._onDidFocusWidget.fire(),
 			),
 		);
@@ -790,7 +790,7 @@ export class InteractiveEditor extends EditorPane {
 
 		this._widgetDisposableStore.add(
 			editorModel.onDidChangeContent(() => {
-				const value = editorModel!.getValue();
+				const value = editorModel?.getValue();
 				if (this.input?.resource && value !== "") {
 					(
 						this.input as InteractiveEditorInput
@@ -835,8 +835,8 @@ export class InteractiveEditor extends EditorPane {
 	}
 
 	private _scrollIfNecessary(cvm: ICellViewModel) {
-		const index = this._notebookWidget.value!.getCellIndex(cvm);
-		if (index === this._notebookWidget.value!.getLength() - 1) {
+		const index = this._notebookWidget.value?.getCellIndex(cvm);
+		if (index === this._notebookWidget.value?.getLength() - 1) {
 			// If we're already at the bottom or auto scroll is enabled, scroll to the bottom
 			if (
 				this._configurationService.getValue<boolean>(
@@ -844,7 +844,7 @@ export class InteractiveEditor extends EditorPane {
 				) ||
 				this._cellAtBottom(cvm)
 			) {
-				this._notebookWidget.value!.scrollToBottom();
+				this._notebookWidget.value?.scrollToBottom();
 			}
 		}
 	}
@@ -928,7 +928,7 @@ export class InteractiveEditor extends EditorPane {
 			dimension.height - inputCellContainerHeight
 		}px`;
 
-		this._notebookWidget.value!.layout(
+		this._notebookWidget.value?.layout(
 			dimension.with(
 				dimension.width,
 				dimension.height - inputCellContainerHeight,
@@ -1019,7 +1019,7 @@ export class InteractiveEditor extends EditorPane {
 	}
 
 	focusHistory() {
-		this._notebookWidget.value!.focus();
+		this._notebookWidget.value?.focus();
 	}
 
 	protected override setEditorVisible(

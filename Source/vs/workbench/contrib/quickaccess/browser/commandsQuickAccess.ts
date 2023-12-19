@@ -163,7 +163,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 
 	protected async getCommandPicks(
 		token: CancellationToken,
-	): Promise<Array<ICommandQuickPick>> {
+	): Promise<ICommandQuickPick[]> {
 		// wait for extensions registration or 800ms once
 		await this.extensionRegistrationRace;
 

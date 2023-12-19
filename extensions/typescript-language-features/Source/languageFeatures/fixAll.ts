@@ -295,8 +295,10 @@ class TypeScriptAutoFixProvider implements vscode.CodeActionProvider {
 		token: vscode.CancellationToken,
 	): Promise<vscode.CodeAction[] | undefined> {
 		if (
-			!context.only ||
-			!vscode.CodeActionKind.Source.intersects(context.only)
+			!(
+				context.only &&
+				vscode.CodeActionKind.Source.intersects(context.only)
+			)
 		) {
 			return undefined;
 		}

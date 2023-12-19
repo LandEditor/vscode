@@ -164,7 +164,7 @@ export class ViewContentWidgets extends ViewPart {
 			delete this._widgets[widgetId];
 
 			const domNode = myWidget.domNode.domNode;
-			domNode.parentNode!.removeChild(domNode);
+			domNode.parentNode?.removeChild(domNode);
 			domNode.removeAttribute("monaco-visible-content-widget");
 
 			this.setShouldRender();
@@ -252,8 +252,8 @@ class Widget {
 
 		this.domNode = createFastDomNode(this._actual.getDomNode());
 		this.id = this._actual.getId();
-		this.allowEditorOverflow = this._actual.allowEditorOverflow || false;
-		this.suppressMouseDown = this._actual.suppressMouseDown || false;
+		this.allowEditorOverflow = this._actual.allowEditorOverflow;
+		this.suppressMouseDown = this._actual.suppressMouseDown;
 
 		const options = this._context.configuration.options;
 		const layoutInfo = options.get(EditorOption.layoutInfo);
@@ -700,7 +700,7 @@ class Widget {
 	 * On this first pass, we ensure that the content widget (if it is in the viewport) has the max width set correctly.
 	 */
 	public onBeforeRender(viewportData: ViewportData): void {
-		if (!this._primaryAnchor.viewPosition || !this._preference) {
+		if (!(this._primaryAnchor.viewPosition && this._preference)) {
 			return;
 		}
 

@@ -374,7 +374,7 @@ export class MarkdownItEngine implements IMdParser {
 			env,
 			self,
 		) => {
-			const title = tokens[idx + 1].children!.reduce<string>(
+			const title = tokens[idx + 1].children?.reduce<string>(
 				(acc, t) => acc + t.content,
 				"",
 			);
@@ -383,9 +383,7 @@ export class MarkdownItEngine implements IMdParser {
 			if (this._slugCount.has(slug.value)) {
 				const count = this._slugCount.get(slug.value)!;
 				this._slugCount.set(slug.value, count + 1);
-				slug = this.slugifier.fromHeading(
-					slug.value + "-" + (count + 1),
-				);
+				slug = this.slugifier.fromHeading(`${slug.value}-${count}${1}`);
 			} else {
 				this._slugCount.set(slug.value, 0);
 			}
@@ -443,7 +441,7 @@ export class MarkdownItEngine implements IMdParser {
 			// If original link doesn't look like a url with a scheme, assume it must be a link to a file in workspace
 			if (!/^[a-z\-]+:/i.test(href)) {
 				// Use a fake scheme for parsing
-				let uri = vscode.Uri.parse("markdown-link:" + href);
+				let uri = vscode.Uri.parse(`markdown-link:${href}`);
 
 				// Relative paths should be resolved correctly inside the preview but we need to
 				// handle absolute paths specially to resolve them relative to the workspace root
@@ -498,7 +496,7 @@ async function getMarkdownOptions(
 }
 
 function normalizeHighlightLang(lang: string | undefined) {
-	switch (lang && lang.toLowerCase()) {
+	switch (lang?.toLowerCase()) {
 		case "shell":
 			return "sh";
 

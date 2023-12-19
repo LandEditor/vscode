@@ -120,7 +120,7 @@ export function registerMoveActions() {
 		class GlobalMoveToEditorAction extends Action2 {
 			constructor() {
 				super({
-					id: `workbench.action.chat.openInEditor`,
+					id: "workbench.action.chat.openInEditor",
 					title: {
 						value: localize(
 							"interactiveSession.openInEditor.label",
@@ -144,7 +144,7 @@ export function registerMoveActions() {
 		class GlobalMoveToNewWindowAction extends Action2 {
 			constructor() {
 				super({
-					id: `workbench.action.chat.openInNewWindow`,
+					id: "workbench.action.chat.openInNewWindow",
 					title: {
 						value: localize(
 							"interactiveSession.openInNewWindow.label",
@@ -168,7 +168,7 @@ export function registerMoveActions() {
 		class GlobalMoveToSidebarAction extends Action2 {
 			constructor() {
 				super({
-					id: `workbench.action.chat.openInSidebar`,
+					id: "workbench.action.chat.openInSidebar",
 					title: {
 						value: localize(
 							"interactiveSession.openInSidebar.label",
@@ -208,7 +208,7 @@ async function executeMoveToAction(
 	const editorService = accessor.get(IEditorService);
 
 	const widget = widgetService.lastFocusedWidget;
-	if (!widget || !("viewId" in widget.viewContext)) {
+	if (!(widget && "viewId" in widget.viewContext)) {
 		const providerId = chatService.getProviderInfos()[0].id;
 
 		await editorService.openEditor(

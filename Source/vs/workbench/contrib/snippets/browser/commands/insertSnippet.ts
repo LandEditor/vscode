@@ -60,7 +60,7 @@ export class InsertSnippetAction extends SnippetEditorAction {
 			f1: true,
 			precondition: EditorContextKeys.writable,
 			metadata: {
-				description: `Insert Snippet`,
+				description: "Insert Snippet",
 				args: [
 					{
 						name: "args",

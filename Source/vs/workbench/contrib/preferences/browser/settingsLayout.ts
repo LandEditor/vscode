@@ -11,7 +11,7 @@ export interface ITOCEntry<T> {
 	label: string;
 	order?: number;
 	children?: ITOCEntry<T>[];
-	settings?: Array<T>;
+	settings?: T[];
 }
 
 const defaultCommonlyUsedSettings: string[] = [

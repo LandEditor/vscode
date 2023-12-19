@@ -231,14 +231,16 @@ export class Scanner {
 
 			const ch = this._advance();
 			switch (ch) {
-				case CharCode.OpenParen:
+				case CharCode.OpenParen: {
 					this._addToken(TokenType.LParen);
 					break;
-				case CharCode.CloseParen:
+				}
+				case CharCode.CloseParen: {
 					this._addToken(TokenType.RParen);
 					break;
+				}
 
-				case CharCode.ExclamationMark:
+				case CharCode.ExclamationMark: {
 					if (this._match(CharCode.Equals)) {
 						const isTripleEq = this._match(CharCode.Equals); // eat last `=` if `!==`
 						this._tokens.push({
@@ -250,15 +252,18 @@ export class Scanner {
 						this._addToken(TokenType.Neg);
 					}
 					break;
+				}
 
-				case CharCode.SingleQuote:
+				case CharCode.SingleQuote: {
 					this._quotedString();
 					break;
-				case CharCode.Slash:
+				}
+				case CharCode.Slash: {
 					this._regex();
 					break;
+				}
 
-				case CharCode.Equals:
+				case CharCode.Equals: {
 					if (this._match(CharCode.Equals)) {
 						// support `==`
 						const isTripleEq = this._match(CharCode.Equals); // eat last `=` if `===`
@@ -273,38 +278,43 @@ export class Scanner {
 						this._error(hintDidYouMean("==", "=~"));
 					}
 					break;
+				}
 
-				case CharCode.LessThan:
+				case CharCode.LessThan: {
 					this._addToken(
 						this._match(CharCode.Equals)
 							? TokenType.LtEq
 							: TokenType.Lt,
 					);
 					break;
+				}
 
-				case CharCode.GreaterThan:
+				case CharCode.GreaterThan: {
 					this._addToken(
 						this._match(CharCode.Equals)
 							? TokenType.GtEq
 							: TokenType.Gt,
 					);
 					break;
+				}
 
-				case CharCode.Ampersand:
+				case CharCode.Ampersand: {
 					if (this._match(CharCode.Ampersand)) {
 						this._addToken(TokenType.And);
 					} else {
 						this._error(hintDidYouMean("&&"));
 					}
 					break;
+				}
 
-				case CharCode.Pipe:
+				case CharCode.Pipe: {
 					if (this._match(CharCode.Pipe)) {
 						this._addToken(TokenType.Or);
 					} else {
 						this._error(hintDidYouMean("||"));
 					}
 					break;
+				}
 
 				// TODO@ulugbekna: 1) rewrite using a regex 2) reconsider what characters are considered whitespace, including unicode, nbsp, etc.
 				case CharCode.Space:

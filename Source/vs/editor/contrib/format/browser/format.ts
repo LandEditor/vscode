@@ -233,7 +233,7 @@ export async function formatDocumentRangesWithProvider(
 
 	const computeEdits = async (range: Range) => {
 		logService.trace(
-			`[format][provideDocumentRangeFormattingEdits] (request)`,
+			"[format][provideDocumentRangeFormattingEdits] (request)",
 			provider.extensionId?.value,
 			range,
 		);
@@ -247,7 +247,7 @@ export async function formatDocumentRangesWithProvider(
 			)) || [];
 
 		logService.trace(
-			`[format][provideDocumentRangeFormattingEdits] (response)`,
+			"[format][provideDocumentRangeFormattingEdits] (response)",
 			provider.extensionId?.value,
 			result,
 		);
@@ -256,7 +256,7 @@ export async function formatDocumentRangesWithProvider(
 	};
 
 	const hasIntersectingEdit = (a: TextEdit[], b: TextEdit[]) => {
-		if (!a.length || !b.length) {
+		if (!(a.length && b.length)) {
 			return false;
 		}
 		// quick exit if the list of ranges are completely unrelated [O(n)]
@@ -291,7 +291,7 @@ export async function formatDocumentRangesWithProvider(
 			typeof provider.provideDocumentRangesFormattingEdits === "function"
 		) {
 			logService.trace(
-				`[format][provideDocumentRangeFormattingEdits] (request)`,
+				"[format][provideDocumentRangeFormattingEdits] (request)",
 				provider.extensionId?.value,
 				ranges,
 			);
@@ -303,7 +303,7 @@ export async function formatDocumentRangesWithProvider(
 					cts.token,
 				)) || [];
 			logService.trace(
-				`[format][provideDocumentRangeFormattingEdits] (response)`,
+				"[format][provideDocumentRangeFormattingEdits] (response)",
 				provider.extensionId?.value,
 				result,
 			);

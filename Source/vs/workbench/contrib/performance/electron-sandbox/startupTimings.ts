@@ -67,7 +67,7 @@ export class NativeStartupTimings
 			this._environmentService.args["prof-duration-markers"];
 		const durationMarkersFile =
 			this._environmentService.args["prof-duration-markers-file"];
-		if (!appendTo && !durationMarkers) {
+		if (!(appendTo || durationMarkers)) {
 			// nothing to do
 			return;
 		}
@@ -89,7 +89,7 @@ export class NativeStartupTimings
 				}\t${this._telemetryService.sessionId}\t${
 					standardStartupError === undefined
 						? "standard_start"
-						: "NO_standard_start : " + standardStartupError
+						: `NO_standard_start : ${standardStartupError}`
 				}\t${String(perfBaseline).padStart(4, "0")}ms\n`;
 				await this.appendContent(URI.file(appendTo), content);
 			}

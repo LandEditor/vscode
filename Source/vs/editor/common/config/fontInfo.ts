@@ -122,7 +122,7 @@ export class BareFontInfo {
 			lineHeight = GOLDEN_LINE_HEIGHT_RATIO * fontSize;
 		} else if (lineHeight < MINIMUM_LINE_HEIGHT) {
 			// Values too small to be line heights in pixels are in ems.
-			lineHeight = lineHeight * fontSize;
+			lineHeight *= fontSize;
 		}
 
 		// Enforce integer, minimum constraints

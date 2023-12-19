@@ -275,7 +275,7 @@ export class ThemeRegistry<T extends IThemeData> {
 			return resultingThemes;
 		}
 		themeContributions.forEach((theme) => {
-			if (!theme.path || !types.isString(theme.path)) {
+			if (!(theme.path && types.isString(theme.path))) {
 				log?.error(
 					nls.localize(
 						"reqpath",
@@ -286,7 +286,7 @@ export class ThemeRegistry<T extends IThemeData> {
 				);
 				return;
 			}
-			if (this.idRequired && (!theme.id || !types.isString(theme.id))) {
+			if (this.idRequired && !(theme.id && types.isString(theme.id))) {
 				log?.error(
 					nls.localize(
 						"reqid",

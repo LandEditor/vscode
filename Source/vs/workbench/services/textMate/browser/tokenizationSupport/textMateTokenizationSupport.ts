@@ -90,9 +90,9 @@ export class TextMateTokenizationSupport
 		const sw = shouldMeasure ? new StopWatch(true) : undefined;
 		const textMateResult = this._grammar.tokenizeLine2(line, state, 500);
 		if (shouldMeasure) {
-			const timeMS = sw!.elapsed();
+			const timeMS = sw?.elapsed();
 			if (isRandomSample || timeMS > 32) {
-				this._reportTokenizationTime!(
+				this._reportTokenizationTime?.(
 					timeMS,
 					line.length,
 					isRandomSample,

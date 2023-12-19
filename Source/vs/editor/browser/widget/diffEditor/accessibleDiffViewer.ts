@@ -149,7 +149,7 @@ export class AccessibleDiffViewer extends Disposable {
 			const isVisible = this._visible.get();
 			this._setVisible(true, tx);
 			if (isVisible) {
-				this._state.get()!.model.nextGroup(tx);
+				this._state.get()?.model.nextGroup(tx);
 			}
 		});
 	}
@@ -157,7 +157,7 @@ export class AccessibleDiffViewer extends Disposable {
 	prev(): void {
 		transaction((tx) => {
 			this._setVisible(true, tx);
-			this._state.get()!.model.previousGroup(tx);
+			this._state.get()?.model.previousGroup(tx);
 		});
 	}
 
@@ -209,8 +209,8 @@ class ViewModel extends Disposable {
 
 				const groups = computeViewElementGroups(
 					diffs,
-					this._editors.original.getModel()!.getLineCount(),
-					this._editors.modified.getModel()!.getLineCount()
+					this._editors.original.getModel()?.getLineCount(),
+					this._editors.modified.getModel()?.getLineCount()
 				);
 
 				transaction((tx) => {
@@ -543,10 +543,9 @@ class View extends Disposable {
 						new Action(
 							"diffreview.close",
 							localize("label.close", "Close"),
-							"close-diff-review " +
-								ThemeIcon.asClassName(
+							`close-diff-review ${ThemeIcon.asClassName(
 									accessibleDiffViewerCloseIcon
-								),
+								)}`,
 							true,
 							async () => _model.close()
 						),
@@ -650,7 +649,7 @@ class View extends Disposable {
 
 		const originalModel = this._editors.original.getModel();
 		const modifiedModel = this._editors.modified.getModel();
-		if (!originalModel || !modifiedModel) {
+		if (!(originalModel && modifiedModel)) {
 			return;
 		}
 
@@ -803,20 +802,22 @@ class View extends Disposable {
 		const spacerClassName: string = "diff-review-spacer";
 		let spacerIcon: ThemeIcon | null = null;
 		switch (item.type) {
-			case LineType.Added:
+			case LineType.Added: {
 				rowClassName = "diff-review-row line-insert";
 				lineNumbersExtraClassName = " char-insert";
 				spacerIcon = accessibleDiffViewerInsertIcon;
 				break;
-			case LineType.Deleted:
+			}
+			case LineType.Deleted: {
 				rowClassName = "diff-review-row line-delete";
 				lineNumbersExtraClassName = " char-delete";
 				spacerIcon = accessibleDiffViewerRemoveIcon;
 				break;
+			}
 		}
 
 		const row = document.createElement("div");
-		row.style.minWidth = width + "px";
+		row.style.minWidth = `${width}px`;
 		row.className = rowClassName;
 		row.setAttribute("role", "listitem");
 		row.ariaLevel = "";
@@ -827,10 +828,9 @@ class View extends Disposable {
 		row.appendChild(cell);
 
 		const originalLineNumber = document.createElement("span");
-		originalLineNumber.style.width = originalLineNumbersWidth + "px";
-		originalLineNumber.style.minWidth = originalLineNumbersWidth + "px";
-		originalLineNumber.className =
-			"diff-review-line-number" + lineNumbersExtraClassName;
+		originalLineNumber.style.width = `${originalLineNumbersWidth}px`;
+		originalLineNumber.style.minWidth = `${originalLineNumbersWidth}px`;
+		originalLineNumber.className = `diff-review-line-number${lineNumbersExtraClassName}`;
 		if (item.originalLineNumber !== undefined) {
 			originalLineNumber.appendChild(
 				document.createTextNode(String(item.originalLineNumber)),
@@ -841,11 +841,10 @@ class View extends Disposable {
 		cell.appendChild(originalLineNumber);
 
 		const modifiedLineNumber = document.createElement("span");
-		modifiedLineNumber.style.width = modifiedLineNumbersWidth + "px";
-		modifiedLineNumber.style.minWidth = modifiedLineNumbersWidth + "px";
+		modifiedLineNumber.style.width = `${modifiedLineNumbersWidth}px`;
+		modifiedLineNumber.style.minWidth = `${modifiedLineNumbersWidth}px`;
 		modifiedLineNumber.style.paddingRight = "10px";
-		modifiedLineNumber.className =
-			"diff-review-line-number" + lineNumbersExtraClassName;
+		modifiedLineNumber.className = `diff-review-line-number${lineNumbersExtraClassName}`;
 		if (item.modifiedLineNumber !== undefined) {
 			modifiedLineNumber.appendChild(
 				document.createTextNode(String(item.modifiedLineNumber)),
@@ -907,7 +906,7 @@ class View extends Disposable {
 
 		let ariaLabel = "";
 		switch (item.type) {
-			case LineType.Unchanged:
+			case LineType.Unchanged: {
 				if (item.originalLineNumber === item.modifiedLineNumber) {
 					ariaLabel = localize(
 						{
@@ -930,7 +929,8 @@ class View extends Disposable {
 					);
 				}
 				break;
-			case LineType.Added:
+			}
+			case LineType.Added: {
 				ariaLabel = localize(
 					"insertLine",
 					"+ {0} modified line {1}",
@@ -938,7 +938,8 @@ class View extends Disposable {
 					item.modifiedLineNumber,
 				);
 				break;
-			case LineType.Deleted:
+			}
+			case LineType.Deleted: {
 				ariaLabel = localize(
 					"deleteLine",
 					"- {0} original line {1}",
@@ -946,6 +947,7 @@ class View extends Disposable {
 					item.originalLineNumber,
 				);
 				break;
+			}
 		}
 		row.setAttribute("aria-label", ariaLabel);
 

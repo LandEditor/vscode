@@ -48,8 +48,9 @@ export abstract class FixedZoneWidget extends Disposable {
 
 		this._register(
 			Event.runAndSubscribe(this.editor.onDidLayoutChange, () => {
-				this.widgetDomNode.style.left =
-					this.editor.getLayoutInfo().contentLeft + "px";
+				this.widgetDomNode.style.left = `${
+					this.editor.getLayoutInfo().contentLeft
+				}px`;
 			}),
 		);
 

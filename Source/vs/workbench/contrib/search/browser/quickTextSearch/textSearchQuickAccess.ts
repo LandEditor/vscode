@@ -173,9 +173,10 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<IPickerQuic
 				.search;
 
 		return {
-			openEditorPinned:
-				!editorConfig?.enablePreviewFromQuickOpen ||
-				!editorConfig?.enablePreview,
+			openEditorPinned: !(
+				editorConfig?.enablePreviewFromQuickOpen &&
+				editorConfig?.enablePreview
+			),
 			preserveInput: searchConfig.experimental.quickAccess.preserveInput,
 			maxResults: searchConfig.maxResults,
 			smartCase: searchConfig.smartCase,

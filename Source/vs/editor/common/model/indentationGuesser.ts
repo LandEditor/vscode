@@ -40,8 +40,8 @@ function spacesDiff(
 		}
 	}
 
-	let aSpacesCnt = 0,
-		aTabsCount = 0;
+	let aSpacesCnt = 0;
+	let aTabsCount = 0;
 	for (let j = i; j < aLength; j++) {
 		const aCharCode = a.charCodeAt(j);
 		if (aCharCode === CharCode.Space) {
@@ -51,8 +51,8 @@ function spacesDiff(
 		}
 	}
 
-	let bSpacesCnt = 0,
-		bTabsCount = 0;
+	let bSpacesCnt = 0;
+	let bTabsCount = 0;
 	for (let j = i; j < bLength; j++) {
 		const bCharCode = b.charCodeAt(j);
 		if (bCharCode === CharCode.Space) {

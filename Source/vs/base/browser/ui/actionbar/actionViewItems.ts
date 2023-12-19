@@ -133,7 +133,7 @@ export class BaseActionViewItem extends Disposable implements IActionViewItem {
 		const element = (this.element = container);
 		this._register(Gesture.addTarget(container));
 
-		const enableDragging = this.options && this.options.draggable;
+		const enableDragging = this.options?.draggable;
 		if (enableDragging) {
 			container.draggable = true;
 
@@ -190,7 +190,7 @@ export class BaseActionViewItem extends Disposable implements IActionViewItem {
 				EventHelper.stop(e, true);
 
 				// menus do not use the click event
-				if (!(this.options && this.options.isMenu)) {
+				if (!this.options?.isMenu) {
 					this.onClick(e);
 				}
 			}),

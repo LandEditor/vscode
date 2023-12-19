@@ -208,7 +208,7 @@ export class TextMateTokenizationWorker {
 		controllerId: number,
 		e: IModelChangedEvent,
 	): void {
-		this._models.get(controllerId)!.onEvents(e);
+		this._models.get(controllerId)?.onEvents(e);
 	}
 
 	public retokenize(
@@ -217,8 +217,8 @@ export class TextMateTokenizationWorker {
 		endLineNumberExclusive: number,
 	): void {
 		this._models
-			.get(controllerId)!
-			.retokenize(startLineNumber, endLineNumberExclusive);
+			.get(controllerId)
+			?.retokenize(startLineNumber, endLineNumberExclusive);
 	}
 
 	public acceptModelLanguageChanged(
@@ -227,8 +227,8 @@ export class TextMateTokenizationWorker {
 		newEncodedLanguageId: LanguageId,
 	): void {
 		this._models
-			.get(controllerId)!
-			.onLanguageId(newLanguageId, newEncodedLanguageId);
+			.get(controllerId)
+			?.onLanguageId(newLanguageId, newEncodedLanguageId);
 	}
 
 	public acceptRemovedModel(controllerId: number): void {
@@ -251,7 +251,7 @@ export class TextMateTokenizationWorker {
 		controllerId: number,
 		value: number,
 	): void {
-		this._models.get(controllerId)!.acceptMaxTokenizationLineLength(value);
+		this._models.get(controllerId)?.acceptMaxTokenizationLineLength(value);
 	}
 }
 

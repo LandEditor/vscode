@@ -216,7 +216,7 @@ export class MainThreadLanguageFeatures
 	}
 
 	private static _reviveCodeActionDto(
-		data: ReadonlyArray<ICodeActionDto>,
+		data: readonly ICodeActionDto[],
 		uriIdentService: IUriIdentityService,
 	): languages.CodeAction[] {
 		data?.forEach((code) =>
@@ -634,8 +634,8 @@ export class MainThreadLanguageFeatures
 									const uri = URI.revive(value.uri);
 									if (result.has(uri)) {
 										result
-											.get(uri)!
-											.push(...value.highlights);
+											.get(uri)
+											?.push(...value.highlights);
 									} else {
 										result.set(uri, value.highlights);
 									}
@@ -1188,8 +1188,7 @@ export class MainThreadLanguageFeatures
 								extensionId,
 							),
 					),
-					incomplete:
-						result[ISuggestResultDtoField.isIncomplete] || false,
+					incomplete: result[ISuggestResultDtoField.isIncomplete],
 					duration: result[ISuggestResultDtoField.duration],
 					dispose: () => {
 						if (typeof result.x === "number") {
@@ -1782,10 +1781,7 @@ export class MainThreadLanguageFeatures
 				_configuration.__characterPairSupport.autoClosingPairs;
 		}
 
-		if (
-			_configuration.__electricCharacterSupport &&
-			_configuration.__electricCharacterSupport.docComment
-		) {
+		if (_configuration.__electricCharacterSupport?.docComment) {
 			configuration.__electricCharacterSupport = {
 				docComment: {
 					open: _configuration.__electricCharacterSupport.docComment
@@ -2216,7 +2212,7 @@ export class MainThreadDocumentRangeSemanticTokensProvider
 				data: dto.data,
 			};
 		}
-		throw new Error(`Unexpected`);
+		throw new Error("Unexpected");
 	}
 }
 

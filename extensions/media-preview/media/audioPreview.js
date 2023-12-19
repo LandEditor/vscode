@@ -17,7 +17,7 @@
 			}
 		}
 
-		throw new Error(`Could not load settings`);
+		throw new Error("Could not load settings");
 	}
 
 	const settings = getSettings();

@@ -524,13 +524,15 @@ export class FilesConfigurationService
 				break;
 			}
 
-			case AutoSaveConfiguration.ON_FOCUS_CHANGE:
+			case AutoSaveConfiguration.ON_FOCUS_CHANGE: {
 				autoSave = "onFocusChange";
 				break;
+			}
 
-			case AutoSaveConfiguration.ON_WINDOW_CHANGE:
+			case AutoSaveConfiguration.ON_WINDOW_CHANGE: {
 				autoSave = "onWindowChange";
 				break;
+			}
 		}
 
 		if (filesConfiguration.autoSaveWorkspaceFilesOnly === true) {
@@ -617,7 +619,7 @@ export class FilesConfigurationService
 		}
 
 		switch (autoSaveConfiguration.autoSave) {
-			case "afterDelay":
+			case "afterDelay": {
 				if (
 					typeof autoSaveConfiguration.autoSaveDelay === "number" &&
 					autoSaveConfiguration.autoSaveDelay <=
@@ -635,6 +637,7 @@ export class FilesConfigurationService
 					};
 				}
 				return { mode: AutoSaveMode.AFTER_LONG_DELAY };
+			}
 			case "onFocusChange":
 				return { mode: AutoSaveMode.ON_FOCUS_CHANGE };
 			case "onWindowChange":

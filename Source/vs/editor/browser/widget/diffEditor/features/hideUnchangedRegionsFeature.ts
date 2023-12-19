@@ -75,7 +75,10 @@ export class HideUnchangedRegionsFeature extends Disposable {
 			instantiationService: IInstantiationService,
 		) => IDiffEditorBreadcrumbsSource,
 	) {
-		this._breadcrumbsSourceFactory.set(factory, undefined);
+		HideUnchangedRegionsFeature._breadcrumbsSourceFactory.set(
+			factory,
+			undefined,
+		);
 	}
 
 	private readonly _modifiedOutlineSource = derivedDisposable(
@@ -86,9 +89,9 @@ export class HideUnchangedRegionsFeature extends Disposable {
 				HideUnchangedRegionsFeature._breadcrumbsSourceFactory.read(
 					reader,
 				);
-			return !m || !factory
-				? undefined
-				: factory(m, this._instantiationService);
+			return m && factory
+				? factory(m, this._instantiationService)
+				: undefined;
 		},
 	);
 
@@ -199,8 +202,7 @@ export class HideUnchangedRegionsFeature extends Disposable {
 							modifiedOutlineSource,
 							(l) =>
 								this._diffModel
-									.get()!
-									.ensureModifiedLineIsVisible(l, undefined),
+									.get()?.ensureModifiedLineIsVisible(l, undefined),
 							this._options
 						)
 					);
@@ -225,8 +227,7 @@ export class HideUnchangedRegionsFeature extends Disposable {
 							modifiedOutlineSource,
 							(l) =>
 								this._diffModel
-									.get()!
-									.ensureModifiedLineIsVisible(l, undefined),
+									.get()?.ensureModifiedLineIsVisible(l, undefined),
 							this._options
 						)
 					);
@@ -250,7 +251,7 @@ export class HideUnchangedRegionsFeature extends Disposable {
 				localize("foldUnchanged", "Fold Unchanged Region")
 			),
 			glyphMarginClassName:
-				"fold-unchanged " + ThemeIcon.asClassName(Codicon.fold),
+				`fold-unchanged ${ThemeIcon.asClassName(Codicon.fold)}`,
 			zIndex: 10001,
 		};
 

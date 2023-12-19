@@ -216,8 +216,8 @@ export class Gesture extends Disposable {
 				continue;
 			}
 
-			const data = this.activeTouches[touch.identifier],
-				holdTime = Date.now() - data.initialTimeStamp;
+			const data = this.activeTouches[touch.identifier];
+			const holdTime = Date.now() - data.initialTimeStamp;
 
 			if (
 				holdTime < Gesture.HOLD_DELAY &&
@@ -360,8 +360,8 @@ export class Gesture extends Disposable {
 
 				// velocity: old speed + accel_over_time
 				const deltaT = now - t1;
-				let delta_pos_x = 0,
-					delta_pos_y = 0;
+				let delta_pos_x = 0;
+				let delta_pos_y = 0;
 				let stopped = true;
 
 				vX += Gesture.SCROLL_FRICTION * deltaT;

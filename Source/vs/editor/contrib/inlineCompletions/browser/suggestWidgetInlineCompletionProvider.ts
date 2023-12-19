@@ -120,13 +120,12 @@ export class SuggestWidgetAdaptor extends Disposable {
 								};
 							})
 							.filter(
-								(item) =>
-									item && item.valid && item.prefixLength > 0,
+								(item) => item?.valid && item.prefixLength > 0,
 							);
 
 						const result = findFirstMaxBy(
 							candidates,
-							compareBy((s) => s!.prefixLength, numberComparator),
+							compareBy((s) => s?.prefixLength, numberComparator),
 						);
 						return result ? result.index : -1;
 					},
@@ -170,7 +169,7 @@ export class SuggestWidgetAdaptor extends Disposable {
 				suggestController.onWillInsertSuggestItem((e) => {
 					const position = this.editor.getPosition();
 					const model = this.editor.getModel();
-					if (!position || !model) {
+					if (!(position && model)) {
 						return undefined;
 					}
 
@@ -215,7 +214,7 @@ export class SuggestWidgetAdaptor extends Disposable {
 
 	private getSuggestItemInfo(): SuggestItemInfo | undefined {
 		const suggestController = SuggestController.get(this.editor);
-		if (!suggestController || !this.isSuggestWidgetVisible) {
+		if (!(suggestController && this.isSuggestWidgetVisible)) {
 			return undefined;
 		}
 
@@ -223,7 +222,7 @@ export class SuggestWidgetAdaptor extends Disposable {
 		const position = this.editor.getPosition();
 		const model = this.editor.getModel();
 
-		if (!focusedItem || !position || !model) {
+		if (!(focusedItem && position && model)) {
 			return undefined;
 		}
 
@@ -322,7 +321,7 @@ function suggestItemInfoEquals(
 	if (a === b) {
 		return true;
 	}
-	if (!a || !b) {
+	if (!(a && b)) {
 		return false;
 	}
 	return a.equals(b);

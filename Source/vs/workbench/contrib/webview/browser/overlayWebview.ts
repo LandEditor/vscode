@@ -119,7 +119,7 @@ export class OverlayWebview extends Disposable implements IOverlayWebview {
 
 	public get container(): HTMLElement {
 		if (this._isDisposed) {
-			throw new Error(`OverlayWebview has been disposed`);
+			throw new Error("OverlayWebview has been disposed");
 		}
 
 		if (!this._container) {
@@ -210,7 +210,7 @@ export class OverlayWebview extends Disposable implements IOverlayWebview {
 		dimension?: Dimension,
 		clippingContainer?: HTMLElement,
 	) {
-		if (!this._container || !this._container.domNode.parentElement) {
+		if (!this._container?.domNode.parentElement) {
 			return;
 		}
 

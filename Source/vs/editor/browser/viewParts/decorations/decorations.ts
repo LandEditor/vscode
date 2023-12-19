@@ -155,12 +155,7 @@ export class DecorationsOverlay extends DynamicViewOverlay {
 				continue;
 			}
 
-			const decorationOutput =
-				'<div class="cdr ' +
-				d.options.className +
-				'" style="left:0;width:100%;height:' +
-				lineHeight +
-				'px;"></div>';
+			const decorationOutput = `<div class="cdr ${d.options.className}" style="left:0;width:100%;height:${lineHeight}px;"></div>`;
 
 			const startLineNumber = Math.max(
 				d.range.startLineNumber,
@@ -321,18 +316,13 @@ export class DecorationsOverlay extends DynamicViewOverlay {
 					lineVisibleRanges.continuesOnNextLine &&
 					lenK === 1;
 				const visibleRange = lineVisibleRanges.ranges[k];
-				const decorationOutput =
-					'<div class="cdr ' +
-					className +
-					'" style="left:' +
-					String(visibleRange.left) +
-					(expandToLeft
+				const decorationOutput = `<div class="cdr ${className}" style="left:${String(
+					visibleRange.left,
+				)}${
+					expandToLeft
 						? "px;width:100%;height:"
-						: "px;width:" +
-						  String(visibleRange.width) +
-						  "px;height:") +
-					lineHeight +
-					'px;"></div>';
+						: `px;width:${String(visibleRange.width)}px;height:`
+				}${lineHeight}px;"></div>`;
 				output[lineIndex] += decorationOutput;
 			}
 		}

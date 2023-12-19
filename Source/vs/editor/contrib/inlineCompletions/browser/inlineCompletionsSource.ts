@@ -246,7 +246,7 @@ function equals<T>(
 	v2: T | undefined,
 	equals: (v1: T, v2: T) => boolean,
 ): boolean {
-	if (!v1 || !v2) {
+	if (!(v1 && v2)) {
 		return v1 === v2;
 	}
 	return equals(v1, v2);
@@ -266,7 +266,7 @@ class UpdateOperation implements IDisposable {
 
 export class UpToDateInlineCompletions implements IDisposable {
 	private readonly _inlineCompletions: InlineCompletionWithUpdatedRange[];
-	public get inlineCompletions(): ReadonlyArray<InlineCompletionWithUpdatedRange> {
+	public get inlineCompletions(): readonly InlineCompletionWithUpdatedRange[] {
 		return this._inlineCompletions;
 	}
 
@@ -418,10 +418,12 @@ export class InlineCompletionWithUpdatedRange {
 			this._toFilterTextReplacement(reader).removeCommonPrefix(model);
 
 		if (
-			!this._isValid ||
-			!this.inlineCompletion.range
-				.getStartPosition()
-				.equals(this._getUpdatedRange(reader).getStartPosition()) ||
+			!(
+				this._isValid &&
+				this.inlineCompletion.range
+					.getStartPosition()
+					.equals(this._getUpdatedRange(reader).getStartPosition())
+			) ||
 			cursorPosition.lineNumber !==
 				minimizedReplacement.range.startLineNumber
 		) {

@@ -103,19 +103,14 @@ export class ExpressionContainer implements IExpressionContainer {
 			return;
 		}
 
-		const response = await this.session!.variables(
+		const response = await this.session?.variables(
 			this.reference,
 			this.threadId,
 			undefined,
 			undefined,
 			undefined,
 		);
-		if (
-			!response ||
-			!response.body ||
-			!response.body.variables ||
-			response.body.variables.length !== 1
-		) {
+		if (!response.body?.variables || response.body.variables.length !== 1) {
 			return;
 		}
 
@@ -232,14 +227,14 @@ export class ExpressionContainer implements IExpressionContainer {
 		filter: "indexed" | "named" | undefined,
 	): Promise<Variable[]> {
 		try {
-			const response = await this.session!.variables(
+			const response = await this.session?.variables(
 				this.reference || 0,
 				this.threadId,
 				filter,
 				start,
 				count,
 			);
-			if (!response || !response.body || !response.body.variables) {
+			if (!response.body?.variables) {
 				return [];
 			}
 
@@ -296,7 +291,7 @@ export class ExpressionContainer implements IExpressionContainer {
 					);
 				});
 
-			if (this.session!.autoExpandLazyVariables) {
+			if (this.session?.autoExpandLazyVariables) {
 				await Promise.all(
 					vars.map(
 						(v) => v.presentationHint?.lazy && v.evaluateLazy(),
@@ -373,7 +368,7 @@ export class ExpressionContainer implements IExpressionContainer {
 				context,
 			);
 
-			if (response && response.body) {
+			if (response?.body) {
 				this.value = response.body.result || "";
 				this.reference = response.body.variablesReference;
 				this.namedVariables = response.body.namedVariables;
@@ -404,7 +399,7 @@ function handleSetResponse(
 		| DebugProtocol.SetExpressionResponse
 		| undefined,
 ): void {
-	if (response && response.body) {
+	if (response?.body) {
 		expression.value = response.body.value || "";
 		expression.type = response.body.type || expression.type;
 		expression.reference = response.body.variablesReference;
@@ -529,7 +524,7 @@ export class Variable extends ExpressionContainer implements IExpression {
 	}
 
 	async setExpression(value: string, stackFrame: IStackFrame): Promise<void> {
-		if (!this.session || !this.evaluateName) {
+		if (!(this.session && this.evaluateName)) {
 			return;
 		}
 
@@ -633,11 +628,7 @@ export class StackFrame implements IStackFrame {
 				.scopes(this.frameId, this.thread.threadId)
 				.then(
 					(response) => {
-						if (
-							!response ||
-							!response.body ||
-							!response.body.scopes
-						) {
+						if (!response.body?.scopes) {
 							return [];
 						}
 
@@ -698,10 +689,10 @@ export class StackFrame implements IStackFrame {
 			)
 			.sort(
 				(first, second) =>
-					first.range!.endLineNumber -
-					first.range!.startLineNumber -
-					(second.range!.endLineNumber -
-						second.range!.startLineNumber),
+					first.range?.endLineNumber -
+					first.range?.startLineNumber -
+					(second.range?.endLineNumber -
+						second.range?.startLineNumber),
 			);
 		return scopesContainingRange.length
 			? scopesContainingRange
@@ -814,7 +805,7 @@ export class Thread implements IThread {
 		return this.callStack;
 	}
 
-	getStaleCallStack(): ReadonlyArray<IStackFrame> {
+	getStaleCallStack(): readonly IStackFrame[] {
 		return this.staleCallStack;
 	}
 
@@ -831,8 +822,7 @@ export class Thread implements IThread {
 								this.lastSteppingGranularity ===
 									"instruction")) &&
 						sf.instructionPointerReference) ||
-					(sf.source &&
-						sf.source.available &&
+					(sf.source?.available &&
 						sf.source.presentationHint !== "deemphasize")
 				),
 		);
@@ -903,11 +893,7 @@ export class Thread implements IThread {
 				levels,
 				tokenSource.token,
 			);
-			if (
-				!response ||
-				!response.body ||
-				tokenSource.token.isCancellationRequested
-			) {
+			if (!response?.body || tokenSource.token.isCancellationRequested) {
 				return [];
 			}
 
@@ -1005,10 +991,9 @@ export const getUriForDebugMemory = (
 	return URI.from({
 		scheme: DEBUG_MEMORY_SCHEME,
 		authority: sessionId,
-		path:
-			"/" +
-			encodeURIComponent(memoryReference) +
-			`/${encodeURIComponent(displayName)}.bin`,
+		path: `/${encodeURIComponent(memoryReference)}/${encodeURIComponent(
+			displayName,
+		)}.bin`,
 		query: range
 			? `?range=${range.fromOffset}:${range.toOffset}`
 			: undefined,
@@ -1337,7 +1322,7 @@ export class Breakpoint extends BaseBreakpoint implements IBreakpoint {
 	}
 
 	get adapterData(): any {
-		return this.data && this.data.source && this.data.source.adapterData
+		return this.data?.source?.adapterData
 			? this.data.source.adapterData
 			: this._adapterData;
 	}
@@ -1894,7 +1879,7 @@ export class DebugModel extends Disposable implements IDebugModel {
 				}
 				if (
 					filter.enabledOnly &&
-					(!this.breakpointsActivated || !bp.enabled)
+					!(this.breakpointsActivated && bp.enabled)
 				) {
 					return false;
 				}

@@ -305,7 +305,7 @@ class ViewPaneDropOverlay extends Themable {
 
 		// Draw overlay based on split direction
 		switch (dropDirection) {
-			case DropDirection.UP:
+			case DropDirection.UP: {
 				this.doPositionOverlay({
 					top: "0",
 					left: "0",
@@ -313,7 +313,8 @@ class ViewPaneDropOverlay extends Themable {
 					height: "50%",
 				});
 				break;
-			case DropDirection.DOWN:
+			}
+			case DropDirection.DOWN: {
 				this.doPositionOverlay({
 					bottom: "0",
 					left: "0",
@@ -321,7 +322,8 @@ class ViewPaneDropOverlay extends Themable {
 					height: "50%",
 				});
 				break;
-			case DropDirection.LEFT:
+			}
+			case DropDirection.LEFT: {
 				this.doPositionOverlay({
 					top: "0",
 					left: "0",
@@ -329,7 +331,8 @@ class ViewPaneDropOverlay extends Themable {
 					height: "100%",
 				});
 				break;
-			case DropDirection.RIGHT:
+			}
+			case DropDirection.RIGHT: {
 				this.doPositionOverlay({
 					top: "0",
 					right: "0",
@@ -337,6 +340,7 @@ class ViewPaneDropOverlay extends Themable {
 					height: "100%",
 				});
 				break;
+			}
 			default: {
 				// const top = this.bounds?.top || 0;
 				// const left = this.bounds?.bottom || 0;
@@ -667,7 +671,7 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 			CompositeDragAndDropObserver.INSTANCE.registerTarget(parent, {
 				onDragEnter: (e) => {
 					bounds = getOverlayBounds();
-					if (overlay && overlay.disposed) {
+					if (overlay?.disposed) {
 						overlay = undefined;
 					}
 
@@ -685,8 +689,7 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 
 							if (
 								oldViewContainer !== this.viewContainer &&
-								(!viewDescriptor ||
-									!viewDescriptor.canMoveView ||
+								(!viewDescriptor?.canMoveView ||
 									this.viewContainer.rejectAddedViews)
 							) {
 								return;
@@ -734,7 +737,7 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 					}
 				},
 				onDragOver: (e) => {
-					if (overlay && overlay.disposed) {
+					if (overlay?.disposed) {
 						overlay = undefined;
 					}
 
@@ -1344,8 +1347,7 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 
 								if (
 									oldViewContainer !== this.viewContainer &&
-									(!viewDescriptor ||
-										!viewDescriptor.canMoveView ||
+									(!viewDescriptor?.canMoveView ||
 										this.viewContainer.rejectAddedViews)
 								) {
 									return;
@@ -1472,7 +1474,7 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 										DropDirection.RIGHT
 								) {
 									const fromIndex = this.panes.findIndex(
-										(p) => p.id === anchorView!.id,
+										(p) => p.id === anchorView?.id,
 									);
 									let toIndex = this.panes.findIndex(
 										(p) => p.id === pane.id,
@@ -1502,7 +1504,7 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 										DropDirection.LEFT
 								) {
 									const fromIndex = this.panes.findIndex(
-										(p) => p.id === anchorView!.id,
+										(p) => p.id === anchorView?.id,
 									);
 									let toIndex = this.panes.findIndex(
 										(p) => p.id === pane.id,
@@ -1528,7 +1530,7 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 								if (viewsToMove.length > 1) {
 									viewsToMove.slice(1).forEach((view) => {
 										let toIndex = this.panes.findIndex(
-											(p) => p.id === anchorView!.id,
+											(p) => p.id === anchorView?.id,
 										);
 										const fromIndex = this.panes.findIndex(
 											(p) => p.id === view.id,

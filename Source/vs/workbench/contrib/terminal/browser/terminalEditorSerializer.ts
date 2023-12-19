@@ -25,8 +25,10 @@ export class TerminalInputSerializer implements IEditorSerializer {
 
 	public serialize(editorInput: TerminalEditorInput): string | undefined {
 		if (
-			!editorInput.terminalInstance?.persistentProcessId ||
-			!editorInput.terminalInstance.shouldPersist
+			!(
+				editorInput.terminalInstance?.persistentProcessId &&
+				editorInput.terminalInstance.shouldPersist
+			)
 		) {
 			return;
 		}

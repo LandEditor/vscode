@@ -215,7 +215,7 @@
 							if (!fileExists) {
 								return defaultResult(initialLocale);
 							}
-							const packId = packConfig.hash + "." + locale;
+							const packId = `${packConfig.hash}.${locale}`;
 							const cacheRoot = path.join(
 								userDataPath,
 								"clp",
@@ -345,11 +345,10 @@
 															writeFile(
 																path.join(
 																	coreLocation,
-																	bundle.replace(
+																	`${bundle.replace(
 																		/\//g,
 																		"!",
-																	) +
-																		".nls.json",
+																	)}.nls.json`,
 																),
 																JSON.stringify(
 																	target,

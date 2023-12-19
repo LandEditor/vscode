@@ -171,7 +171,7 @@ export class DiffEditorViewZones extends Disposable {
 			/** @description alignments */
 			const diffModel = this._diffModel.read(reader);
 			const diff = diffModel?.diff.read(reader);
-			if (!diffModel || !diff) {
+			if (!(diffModel && diff)) {
 				return null;
 			}
 			state.read(reader);
@@ -271,8 +271,7 @@ export class DiffEditorViewZones extends Disposable {
 						) {
 							deletedCodeLineBreaksComputer?.addRequest(
 								this._editors.original
-									.getModel()!
-									.getLineContent(i),
+									.getModel()?.getLineContent(i),
 								null,
 								null
 							);
@@ -318,8 +317,7 @@ export class DiffEditorViewZones extends Disposable {
 						const source = new LineSource(
 							a.originalRange.mapToLineArray((l) =>
 								this._editors.original
-									.getModel()!
-									.tokenization.getLineTokens(l)
+									.getModel()?.tokenization.getLineTokens(l)
 							),
 							a.originalRange.mapToLineArray(
 								(_) => lineBreakData[lineBreakDataIdx++]
@@ -464,8 +462,7 @@ export class DiffEditorViewZones extends Disposable {
 						function createViewZoneMarginArrow(): HTMLElement {
 							const arrow = document.createElement("div");
 							arrow.className =
-								"arrow-revert-change " +
-								ThemeIcon.asClassName(Codicon.arrowRight);
+								`arrow-revert-change ${ThemeIcon.asClassName(Codicon.arrowRight)}`;
 							store.add(
 								addDisposableListener(arrow, "mousedown", (e) =>
 									e.stopPropagation()
@@ -482,8 +479,7 @@ export class DiffEditorViewZones extends Disposable {
 
 						let marginDomNode: HTMLElement | undefined = undefined;
 						if (
-							a.diff &&
-							a.diff.modified.isEmpty &&
+							a.diff?.modified.isEmpty &&
 							this._options.shouldRenderRevertArrows.read(reader)
 						) {
 							marginDomNode = createViewZoneMarginArrow();
@@ -504,12 +500,11 @@ export class DiffEditorViewZones extends Disposable {
 
 			for (const a of alignmentsSyncedMovedText.read(reader) ?? []) {
 				if (
-					!syncedMovedText?.lineRangeMapping.original.intersect(
+					!(syncedMovedText?.lineRangeMapping.original.intersect(
 						a.originalRange
-					) ||
-					!syncedMovedText?.lineRangeMapping.modified.intersect(
+					) &&syncedMovedText?.lineRangeMapping.modified.intersect(
 						a.modifiedRange
-					)
+					))
 				) {
 					// ignore unrelated alignments outside the synced moved text
 					continue;
@@ -737,7 +732,7 @@ function computeRangeAlignment(
 			) {
 				modNext = undefined;
 			}
-			if (!origNext && !modNext) {
+			if (!(origNext || modNext)) {
 				break;
 			}
 
@@ -752,7 +747,7 @@ function computeRangeAlignment(
 				originalLineHeightOverrides.dequeue();
 				modNext = {
 					lineNumber:
-						origNext!.lineNumber -
+						origNext?.lineNumber -
 						lastOriginalLineNumber +
 						lastModifiedLineNumber,
 					heightInPx: 0,
@@ -761,7 +756,7 @@ function computeRangeAlignment(
 				modifiedLineHeightOverrides.dequeue();
 				origNext = {
 					lineNumber:
-						modNext!.lineNumber -
+						modNext?.lineNumber -
 						lastModifiedLineNumber +
 						lastOriginalLineNumber,
 					heightInPx: 0,
@@ -772,10 +767,10 @@ function computeRangeAlignment(
 			}
 
 			result.push({
-				originalRange: LineRange.ofLength(origNext!.lineNumber, 1),
-				modifiedRange: LineRange.ofLength(modNext!.lineNumber, 1),
-				originalHeightInPx: origLineHeight + origNext!.heightInPx,
-				modifiedHeightInPx: modLineHeight + modNext!.heightInPx,
+				originalRange: LineRange.ofLength(origNext?.lineNumber, 1),
+				modifiedRange: LineRange.ofLength(modNext?.lineNumber, 1),
+				originalHeightInPx: origLineHeight + origNext?.heightInPx,
+				modifiedHeightInPx: modLineHeight + modNext?.heightInPx,
 				diff: undefined,
 			});
 		}
@@ -862,8 +857,8 @@ function computeRangeAlignment(
 				if (
 					i.originalRange.endColumn <
 					originalEditor
-						.getModel()!
-						.getLineMaxColumn(i.originalRange.endLineNumber)
+						.getModel()
+						?.getLineMaxColumn(i.originalRange.endLineNumber)
 				) {
 					// // There is some unmodified text on this line after the diff
 					emitAlignment(
@@ -902,10 +897,10 @@ function getAdditionalLineHeights(
 
 	const hasWrapping =
 		editor.getOption(EditorOption.wrappingInfo).wrappingColumn !== -1;
-	const coordinatesConverter = editor._getViewModel()!.coordinatesConverter;
+	const coordinatesConverter = editor._getViewModel()?.coordinatesConverter;
 	const editorLineHeight = editor.getOption(EditorOption.lineHeight);
 	if (hasWrapping) {
-		for (let i = 1; i <= editor.getModel()!.getLineCount(); i++) {
+		for (let i = 1; i <= editor.getModel()?.getLineCount(); i++) {
 			const lineCount = coordinatesConverter.getModelLineViewLineCount(i);
 			if (lineCount > 1) {
 				wrappingZoneHeights.push({

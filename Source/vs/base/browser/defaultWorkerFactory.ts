@@ -23,7 +23,7 @@ export function createBlobWorker(
 	options?: WorkerOptions,
 ): Worker {
 	if (!blobUrl.startsWith("blob:")) {
-		throw new URIError("Not a blob-url: " + blobUrl);
+		throw new URIError(`Not a blob-url: ${blobUrl}`);
 	}
 	return new Worker(
 		ttPolicy
@@ -73,7 +73,7 @@ function getWorker(label: string): Worker | Promise<Worker> {
 	}
 	// ESM-comment-end
 	throw new Error(
-		`You must define a function MonacoEnvironment.getWorkerUrl or MonacoEnvironment.getWorker`,
+		"You must define a function MonacoEnvironment.getWorkerUrl or MonacoEnvironment.getWorker",
 	);
 }
 
@@ -216,7 +216,7 @@ export class DefaultWorkerFactory implements IWorkerFactory {
 		return new WebWorker(
 			moduleId,
 			workerId,
-			this._label || "anonymous" + workerId,
+			this._label || `anonymous${workerId}`,
 			onMessageCallback,
 			(err) => {
 				logOnceWebWorkerWarning(err);

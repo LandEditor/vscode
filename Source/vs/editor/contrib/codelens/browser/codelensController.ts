@@ -430,8 +430,6 @@ export class CodeLensContribution implements IEditorContribution {
 		for (const symbol of symbols.lenses) {
 			const line = symbol.symbol.range.startLineNumber;
 			if (line < 1 || line > maxLineNumber) {
-				// invalid code lens
-				continue;
 			} else if (
 				lastGroup &&
 				lastGroup[lastGroup.length - 1].symbol.range.startLineNumber ===
@@ -446,7 +444,7 @@ export class CodeLensContribution implements IEditorContribution {
 			}
 		}
 
-		if (!groups.length && !this._lenses.length) {
+		if (!(groups.length || this._lenses.length)) {
 			// Nothing to change
 			return;
 		}
@@ -590,8 +588,10 @@ export class CodeLensContribution implements IEditorContribution {
 
 				return Promise.all(promises).then(() => {
 					if (
-						!token.isCancellationRequested &&
-						!lenses[i].isDisposed()
+						!(
+							token.isCancellationRequested ||
+							lenses[i].isDisposed()
+						)
 					) {
 						lenses[i].updateCommands(resolvedSymbols);
 					}
@@ -724,7 +724,7 @@ registerEditorAction(
 						lens.symbol.range.startLineNumber === lineNumber &&
 						lens.symbol.command?.title === command.title,
 				);
-				if (!newLens || !newLens.symbol.command) {
+				if (!newLens?.symbol.command) {
 					return;
 				}
 				command = newLens.symbol.command;

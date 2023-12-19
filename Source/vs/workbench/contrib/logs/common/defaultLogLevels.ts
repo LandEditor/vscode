@@ -162,7 +162,7 @@ class DefaultLogLevelsService implements IDefaultLogLevelsService {
 		for (const extensionLogLevel of logLevels) {
 			const matches =
 				EXTENSION_IDENTIFIER_WITH_LOG_REGEX.exec(extensionLogLevel);
-			if (matches && matches[1] && matches[2]) {
+			if (matches?.[1] && matches[2]) {
 				const logLevel = parseLogLevel(matches[2]);
 				if (!isUndefined(logLevel)) {
 					result.extensions?.push([

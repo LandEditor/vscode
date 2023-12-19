@@ -63,7 +63,7 @@ export class ScrollSynchronizer extends Disposable {
 				);
 			} else {
 				const mappingInput1Result =
-					this.model!.input1ResultMapping.get();
+					this.model?.input1ResultMapping.get();
 				this.synchronizeScrolling(
 					this.input1View.editor,
 					this.inputResultView.editor,
@@ -82,7 +82,7 @@ export class ScrollSynchronizer extends Disposable {
 						);
 				} else {
 					const mapping = new DocumentLineRangeMap(
-						this.model!.baseInput1Diffs.get(),
+						this.model?.baseInput1Diffs.get(),
 						-1,
 					).reverse();
 					this.synchronizeScrolling(
@@ -140,7 +140,7 @@ export class ScrollSynchronizer extends Disposable {
 							);
 						} else {
 							const mappingInput2Result =
-								this.model!.input2ResultMapping.get();
+								this.model?.input2ResultMapping.get();
 							this.synchronizeScrolling(
 								this.input2View.editor,
 								this.inputResultView.editor,
@@ -159,7 +159,7 @@ export class ScrollSynchronizer extends Disposable {
 									);
 							} else {
 								const mapping = new DocumentLineRangeMap(
-									this.model!.baseInput2Diffs.get(),
+									this.model?.baseInput2Diffs.get(),
 									-1,
 								).reverse();
 								this.synchronizeScrolling(
@@ -274,7 +274,7 @@ export class ScrollSynchronizer extends Disposable {
 									} else {
 										const baseInput1Mapping =
 											new DocumentLineRangeMap(
-												this.model!.baseInput1Diffs.get(),
+												this.model?.baseInput1Diffs.get(),
 												-1,
 											);
 										this.synchronizeScrolling(
@@ -285,7 +285,7 @@ export class ScrollSynchronizer extends Disposable {
 
 										const baseInput2Mapping =
 											new DocumentLineRangeMap(
-												this.model!.baseInput2Diffs.get(),
+												this.model?.baseInput2Diffs.get(),
 												-1,
 											);
 										this.synchronizeScrolling(

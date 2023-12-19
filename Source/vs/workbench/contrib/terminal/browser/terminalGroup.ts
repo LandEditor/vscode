@@ -314,7 +314,7 @@ class SplitPane implements IView {
 
 	layout(size: number): void {
 		// Only layout when both sizes are known
-		if (!size || !this.orthogonalSize) {
+		if (!(size && this.orthogonalSize)) {
 			return;
 		}
 
@@ -443,7 +443,7 @@ export class TerminalGroup extends Disposable implements ITerminalGroup {
 		this._initInstanceListeners(instance);
 
 		if (this._splitPaneContainer) {
-			this._splitPaneContainer!.split(instance, parentIndex + 1);
+			this._splitPaneContainer?.split(instance, parentIndex + 1);
 		}
 
 		this._onInstancesChanged.fire();
@@ -480,7 +480,7 @@ export class TerminalGroup extends Disposable implements ITerminalGroup {
 				return {
 					relativeSize:
 						totalSize > 0
-							? this._splitPaneContainer!.getPaneSize(t) /
+							? this._splitPaneContainer?.getPaneSize(t) /
 							  totalSize
 							: 0,
 					terminal: t.persistentProcessId || 0,
@@ -634,7 +634,7 @@ export class TerminalGroup extends Disposable implements ITerminalGroup {
 					orientation,
 				);
 			this.terminalInstances.forEach((instance) =>
-				this._splitPaneContainer!.split(
+				this._splitPaneContainer?.split(
 					instance,
 					this._activeInstanceIndex + 1,
 				),

@@ -180,7 +180,7 @@ export class BaseSecretStorageService
 			(await this._encryptionService.isEncryptionAvailable())
 		) {
 			this._logService.trace(
-				`[SecretStorageService] Encryption is available, using persisted storage`,
+				"[SecretStorageService] Encryption is available, using persisted storage",
 			);
 			this._type = "persisted";
 			storageService = this._storageService;

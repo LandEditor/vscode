@@ -93,7 +93,7 @@ export class GhostTextPart {
 }
 
 export class GhostTextReplacement {
-	public readonly parts: ReadonlyArray<GhostTextPart> = [
+	public readonly parts: readonly GhostTextPart[] = [
 		new GhostTextPart(
 			this.columnRange.endColumnExclusive,
 			this.newLines,
@@ -119,7 +119,7 @@ export class GhostTextReplacement {
 			return applyEdits(documentText, [
 				{
 					range: Range.fromPositions(replaceRange.getStartPosition()),
-					text: `(`,
+					text: "(",
 				},
 				{
 					range: Range.fromPositions(replaceRange.getEndPosition()),
@@ -164,7 +164,7 @@ export function ghostTextOrReplacementEquals(
 	if (a === b) {
 		return true;
 	}
-	if (!a || !b) {
+	if (!(a && b)) {
 		return false;
 	}
 	if (a instanceof GhostText && b instanceof GhostText) {

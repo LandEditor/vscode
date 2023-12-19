@@ -191,12 +191,14 @@ export class ExtHostTelemetry
 		commonProperties["common.product"] = this.initData.environment.appHost;
 
 		switch (this.initData.uiKind) {
-			case UIKind.Web:
+			case UIKind.Web: {
 				commonProperties["common.uikind"] = "web";
 				break;
-			case UIKind.Desktop:
+			}
+			case UIKind.Desktop: {
 				commonProperties["common.uikind"] = "desktop";
 				break;
+			}
 			default:
 				commonProperties["common.uikind"] = "unknown";
 		}
@@ -369,9 +371,9 @@ export class ExtHostTelemetryLogger {
 		}
 		// If it's a built-in extension (vscode publisher) we don't prefix the publisher and only the ext name
 		if (this._extension.publisher === "vscode") {
-			eventName = this._extension.name + "/" + eventName;
+			eventName = `${this._extension.name}/${eventName}`;
 		} else {
-			eventName = this._extension.identifier.value + "/" + eventName;
+			eventName = `${this._extension.identifier.value}/${eventName}`;
 		}
 		data = this.mixInCommonPropsAndCleanData(data || {});
 		if (!this._inLoggingOnlyMode) {
@@ -391,7 +393,7 @@ export class ExtHostTelemetryLogger {
 		eventNameOrException: Error | string,
 		data?: Record<string, any>,
 	): void {
-		if (!this._telemetryEnablements.isErrorsEnabled || !this._sender) {
+		if (!(this._telemetryEnablements.isErrorsEnabled && this._sender)) {
 			return;
 		}
 		if (typeof eventNameOrException === "string") {
@@ -447,7 +449,9 @@ export class ExtHostTelemetryLogger {
 		if (this._sender?.flush) {
 			let tempSender: vscode.TelemetrySender | undefined = this._sender;
 			this._sender = undefined;
-			Promise.resolve(tempSender.flush!()).then((tempSender = undefined));
+			Promise.resolve(tempSender.flush?.()).then(
+				(tempSender = undefined),
+			);
 			this._apiObject = undefined;
 		} else {
 			this._sender = undefined;
@@ -457,7 +461,7 @@ export class ExtHostTelemetryLogger {
 
 export function isNewAppInstall(firstSessionDate: string): boolean {
 	const installAge = Date.now() - new Date(firstSessionDate).getTime();
-	return isNaN(installAge) ? false : installAge < 1000 * 60 * 60 * 24; // install age is less than a day
+	return Number.isNaN(installAge) ? false : installAge < 1000 * 60 * 60 * 24; // install age is less than a day
 }
 
 export const IExtHostTelemetry =

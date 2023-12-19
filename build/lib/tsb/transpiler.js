@@ -57,7 +57,7 @@ class OutputFileNameOracle {
 				}
 				const isDts = file.endsWith(".d.ts");
 				if (isDts) {
-					file = file.slice(0, -5) + ".ts";
+					file = `${file.slice(0, -5)}.ts`;
 					cmdLine.fileNames.push(file);
 				}
 				const outfile = ts.getOutputFileNames(cmdLine, file, true)[0];
@@ -265,7 +265,7 @@ class SwcTranspiler {
 		this._logFn = _logFn;
 		this._onError = _onError;
 		this._cmdLine = _cmdLine;
-		_logFn("Transpile", `will use SWC to transpile source files`);
+		_logFn("Transpile", "will use SWC to transpile source files");
 		this._outputFileNames = new OutputFileNameOracle(
 			_cmdLine,
 			configFilePath,

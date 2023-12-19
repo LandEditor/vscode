@@ -282,8 +282,10 @@ export class NotebookKernelService
 		}
 		const existingKernel = this._kernels.get(id);
 		if (
-			!existingKernel ||
-			!NotebookKernelService._score(existingKernel.kernel, notebook)
+			!(
+				existingKernel &&
+				NotebookKernelService._score(existingKernel.kernel, notebook)
+			)
 		) {
 			// associated kernel not known, not matching
 			return;

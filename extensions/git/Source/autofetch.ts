@@ -115,19 +115,21 @@ export class AutoFetcher {
 			Uri.file(this.repository.root),
 		);
 		switch (gitConfig.get<boolean | "all">("autofetch")) {
-			case true:
+			case true: {
 				this._fetchAll = false;
 				this.enable();
 				break;
-			case "all":
+			}
+			case "all": {
 				this._fetchAll = true;
 				this.enable();
 				break;
-			case false:
-			default:
+			}
+			default: {
 				this._fetchAll = false;
 				this.disable();
 				break;
+			}
 		}
 	}
 

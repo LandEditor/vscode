@@ -93,20 +93,24 @@ export class ReplacePattern {
 						break;
 					}
 					switch (piece.caseOps[opIdx]) {
-						case "U":
+						case "U": {
 							repl.push(match[idx].toUpperCase());
 							break;
-						case "u":
+						}
+						case "u": {
 							repl.push(match[idx].toUpperCase());
 							opIdx++;
 							break;
-						case "L":
+						}
+						case "L": {
 							repl.push(match[idx].toLowerCase());
 							break;
-						case "l":
+						}
+						case "l": {
 							repl.push(match[idx].toLowerCase());
 							opIdx++;
 							break;
+						}
 						default:
 							repl.push(match[idx]);
 					}
@@ -140,7 +144,7 @@ export class ReplacePattern {
 			remainder = String(matchIndex % 10) + remainder;
 			matchIndex = Math.floor(matchIndex / 10);
 		}
-		return "$" + remainder;
+		return `$${remainder}`;
 	}
 }
 
@@ -279,21 +283,24 @@ export function parseReplaceString(replaceString: string): ReplacePattern {
 			// let replaceWithCharacter: string | null = null;
 
 			switch (nextChCode) {
-				case CharCode.Backslash:
+				case CharCode.Backslash: {
 					// \\ => inserts a "\"
 					result.emitUnchanged(i - 1);
 					result.emitStatic("\\", i + 1);
 					break;
-				case CharCode.n:
+				}
+				case CharCode.n: {
 					// \n => inserts a LF
 					result.emitUnchanged(i - 1);
 					result.emitStatic("\n", i + 1);
 					break;
-				case CharCode.t:
+				}
+				case CharCode.t: {
 					// \t => inserts a TAB
 					result.emitUnchanged(i - 1);
 					result.emitStatic("\t", i + 1);
 					break;
+				}
 				// Case modification of string replacements, patterned after Boost, but only applied
 				// to the replacement text, not subsequent content.
 				case CharCode.u:
@@ -302,12 +309,13 @@ export function parseReplaceString(replaceString: string): ReplacePattern {
 				// \U => upper-cases ALL following characters.
 				case CharCode.l:
 				// \l => lower-cases one character.
-				case CharCode.L:
+				case CharCode.L: {
 					// \L => lower-cases ALL following characters.
 					result.emitUnchanged(i - 1);
 					result.emitStatic("", i + 1);
 					caseOps.push(String.fromCharCode(nextChCode));
 					break;
+				}
 			}
 
 			continue;
@@ -375,7 +383,6 @@ export function parseReplaceString(replaceString: string): ReplacePattern {
 				result.emitUnchanged(i - 1);
 				result.emitMatchIndex(matchIndex, i + 1, caseOps);
 				caseOps.length = 0;
-				continue;
 			}
 		}
 	}

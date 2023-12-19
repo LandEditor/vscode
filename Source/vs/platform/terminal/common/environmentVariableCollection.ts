@@ -73,7 +73,7 @@ export class MergedEnvironmentVariableCollection
 					options: mutator.options,
 				};
 				if (!extensionMutator.scope) {
-					delete extensionMutator.scope; // Convenient for tests
+					extensionMutator.scope = undefined; // Convenient for tests
 				}
 				// Mutators get applied in the reverse order than they are created
 				entry.unshift(extensionMutator);
@@ -99,7 +99,7 @@ export class MergedEnvironmentVariableCollection
 		}
 		for (const [variable, mutators] of this.getVariableMap(scope)) {
 			const actualVariable = isWindows
-				? lowerToActualVariableNames![variable.toLowerCase()] ||
+				? lowerToActualVariableNames?.[variable.toLowerCase()] ||
 				  variable
 				: variable;
 			for (const mutator of mutators) {
@@ -109,17 +109,20 @@ export class MergedEnvironmentVariableCollection
 				// Default: true
 				if (mutator.options?.applyAtProcessCreation ?? true) {
 					switch (mutator.type) {
-						case EnvironmentVariableMutatorType.Append:
+						case EnvironmentVariableMutatorType.Append: {
 							env[actualVariable] =
 								(env[actualVariable] || "") + value;
 							break;
-						case EnvironmentVariableMutatorType.Prepend:
+						}
+						case EnvironmentVariableMutatorType.Prepend: {
 							env[actualVariable] =
 								value + (env[actualVariable] || "");
 							break;
-						case EnvironmentVariableMutatorType.Replace:
+						}
+						case EnvironmentVariableMutatorType.Replace: {
 							env[actualVariable] = value;
 							break;
+						}
 					}
 				}
 				// Default: false
@@ -127,11 +130,9 @@ export class MergedEnvironmentVariableCollection
 					const key = `VSCODE_ENV_${mutatorTypeToLabelMap.get(
 						mutator.type,
 					)!}`;
-					env[key] =
-						(env[key] ? env[key] + ":" : "") +
-						variable +
-						"=" +
-						this._encodeColons(value);
+					env[key] = `${
+						(env[key] ? `${env[key]}:` : "") + variable
+					}=${this._encodeColons(value)}`;
 				}
 			}
 		}
@@ -256,7 +257,7 @@ export class MergedEnvironmentVariableCollection
 				description: mutator.description,
 			};
 			if (!extensionMutator.scope) {
-				delete extensionMutator.scope; // Convenient for tests
+				extensionMutator.scope = undefined; // Convenient for tests
 			}
 			entry.push(extensionMutator);
 

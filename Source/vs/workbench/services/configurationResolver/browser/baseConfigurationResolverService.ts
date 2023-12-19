@@ -303,12 +303,14 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 					result.workspaceFolderValue)
 			) {
 				switch (target) {
-					case ConfigurationTarget.USER:
+					case ConfigurationTarget.USER: {
 						inputs = (<any>result.userValue)?.inputs;
 						break;
-					case ConfigurationTarget.WORKSPACE:
+					}
+					case ConfigurationTarget.WORKSPACE: {
 						inputs = (<any>result.workspaceValue)?.inputs;
 						break;
+					}
 					default:
 						inputs = (<any>result.workspaceFolderValue)?.inputs;
 				}
@@ -335,9 +337,10 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 			let result: string | undefined;
 
 			switch (type) {
-				case "input":
+				case "input": {
 					result = await this.showUserInput(name, inputs);
 					break;
+				}
 
 				case "command": {
 					// use the name as a command ID #12735
@@ -367,7 +370,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 					// Try to resolve it as a contributed variable
 					if (this._contributedVariables.has(variable)) {
 						result =
-							await this._contributedVariables.get(variable)!();
+							await this._contributedVariables.get(variable)?.();
 					}
 			}
 
@@ -405,7 +408,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 			for (const contributed of this._contributedVariables.keys()) {
 				if (
 					variables.indexOf(contributed) < 0 &&
-					object.indexOf("${" + contributed + "}") >= 0
+					object.indexOf(`\${${contributed}}`) >= 0
 				) {
 					variables.push(contributed);
 				}
@@ -487,8 +490,10 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
 					if (Array.isArray(info.options)) {
 						for (const pickOption of info.options) {
 							if (
-								!Types.isString(pickOption) &&
-								!Types.isString(pickOption.value)
+								!(
+									Types.isString(pickOption) ||
+									Types.isString(pickOption.value)
+								)
 							) {
 								missingAttribute("value");
 							}

@@ -283,8 +283,7 @@ export class ExtensionManagementService
 				manifest.name,
 			);
 			if (
-				manifest.engines &&
-				manifest.engines.vscode &&
+				manifest.engines?.vscode &&
 				!isEngineValid(
 					manifest.engines.vscode,
 					this.productService.version,
@@ -1041,7 +1040,7 @@ export class ExtensionsScanner extends Disposable {
 				} catch (error) {
 					if (error.code === "ENOTEMPTY") {
 						this.logService.info(
-							`Rename failed because extension was installed by another source. So ignoring renaming.`,
+							"Rename failed because extension was installed by another source. So ignoring renaming.",
 							extensionKey.id,
 						);
 					} else {
@@ -1406,12 +1405,12 @@ export class ExtensionsScanner extends Disposable {
 	private async removeUninstalledExtensions(): Promise<void> {
 		const uninstalled = await this.getUninstalledExtensions();
 		if (Object.keys(uninstalled).length === 0) {
-			this.logService.debug(`No uninstalled extensions found.`);
+			this.logService.debug("No uninstalled extensions found.");
 			return;
 		}
 
 		this.logService.debug(
-			`Removing uninstalled extensions:`,
+			"Removing uninstalled extensions:",
 			Object.keys(uninstalled),
 		);
 
@@ -1488,8 +1487,10 @@ export class ExtensionsScanner extends Disposable {
 			await Promise.allSettled(
 				stat.children.map(async (child) => {
 					if (
-						!child.isDirectory ||
-						!child.name.endsWith(DELETED_FOLDER_POSTFIX)
+						!(
+							child.isDirectory &&
+							child.name.endsWith(DELETED_FOLDER_POSTFIX)
+						)
 					) {
 						return;
 					}
@@ -1740,7 +1741,7 @@ export class InstallGalleryExtensionTask extends InstallExtensionTask {
 			} catch (error) {
 				/* Ignore */
 				this.logService.warn(
-					`Error while deleting the downloaded file`,
+					"Error while deleting the downloaded file",
 					location.toString(),
 					getErrorMessage(error),
 				);

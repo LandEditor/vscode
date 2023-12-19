@@ -415,7 +415,7 @@ class VirtualizedViewItem extends Disposable {
 	}
 
 	public override toString(): string {
-		return `VirtualViewItem(${this.viewModel.entry.value!.title})`;
+		return `VirtualViewItem(${this.viewModel.entry.value?.title})`;
 	}
 
 	public hide(): void {

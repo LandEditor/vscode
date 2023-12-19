@@ -53,7 +53,7 @@ export function detectEncoding(buffer: Buffer): string | null {
 
 	const detected = jschardet.detect(buffer);
 
-	if (!detected || !detected.encoding) {
+	if (!detected?.encoding) {
 		return null;
 	}
 

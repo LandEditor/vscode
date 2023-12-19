@@ -29,11 +29,11 @@ export class MinimapCharRendererFactory {
 		// renderers are immutable. By default we'll 'create' a new minimap
 		// character renderer whenever we switch editors, no need to do extra work.
 		if (
-			this.lastCreated &&
-			scale === this.lastCreated.scale &&
-			fontFamily === this.lastFontFamily
+			MinimapCharRendererFactory.lastCreated &&
+			scale === MinimapCharRendererFactory.lastCreated.scale &&
+			fontFamily === MinimapCharRendererFactory.lastFontFamily
 		) {
-			return this.lastCreated;
+			return MinimapCharRendererFactory.lastCreated;
 		}
 
 		let factory: MinimapCharRenderer;
@@ -46,8 +46,8 @@ export class MinimapCharRendererFactory {
 			);
 		}
 
-		this.lastFontFamily = fontFamily;
-		this.lastCreated = factory;
+		MinimapCharRendererFactory.lastFontFamily = fontFamily;
+		MinimapCharRendererFactory.lastCreated = factory;
 		return factory;
 	}
 
@@ -61,8 +61,9 @@ export class MinimapCharRendererFactory {
 		canvas.style.height = `${Constants.SAMPLED_CHAR_HEIGHT}px`;
 		canvas.height = Constants.SAMPLED_CHAR_HEIGHT;
 		canvas.width = Constants.CHAR_COUNT * Constants.SAMPLED_CHAR_WIDTH;
-		canvas.style.width =
-			Constants.CHAR_COUNT * Constants.SAMPLED_CHAR_WIDTH + "px";
+		canvas.style.width = `${
+			Constants.CHAR_COUNT * Constants.SAMPLED_CHAR_WIDTH
+		}px`;
 
 		ctx.fillStyle = "#ffffff";
 		ctx.font = `bold ${Constants.SAMPLED_CHAR_HEIGHT}px ${fontFamily}`;
@@ -191,7 +192,7 @@ export class MinimapCharRendererFactory {
 		for (let charIndex = 0; charIndex < Constants.CHAR_COUNT; charIndex++) {
 			brightest = Math.max(
 				brightest,
-				this._downsampleChar(
+				MinimapCharRendererFactory._downsampleChar(
 					data,
 					sourceOffset,
 					result,

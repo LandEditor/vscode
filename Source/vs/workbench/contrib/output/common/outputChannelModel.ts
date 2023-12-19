@@ -386,7 +386,7 @@ export class FileOutputChannelModel
 		if (edits.length) {
 			model.applyEdits(edits);
 		}
-		this.endOffset = this.endOffset + content.byteLength;
+		this.endOffset += content.byteLength;
 		this.modelUpdateInProgress = false;
 	}
 

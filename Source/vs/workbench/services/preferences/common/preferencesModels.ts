@@ -91,8 +91,8 @@ abstract class AbstractSettingsModel extends EditorModel {
 		[...this._currentResultGroups.keys()]
 			.sort(
 				(a, b) =>
-					this._currentResultGroups.get(a)!.order -
-					this._currentResultGroups.get(b)!.order,
+					this._currentResultGroups.get(a)?.order -
+					this._currentResultGroups.get(b)?.order,
 			)
 			.forEach((groupId) => {
 				const group = this._currentResultGroups.get(groupId)!;
@@ -122,9 +122,7 @@ abstract class AbstractSettingsModel extends EditorModel {
 					if (groupMatched || settingMatchResult) {
 						filterMatches.push({
 							setting,
-							matches:
-								settingMatchResult &&
-								settingMatchResult.matches,
+							matches: settingMatchResult?.matches,
 							matchType:
 								settingMatchResult?.matchType ??
 								SettingMatchType.None,
@@ -392,8 +390,8 @@ function parse(
 			const setting =
 				previousParents.length === settingsPropertyIndex + 1
 					? settings[settings.length - 1]
-					: overrideSetting!.overrides![
-							overrideSetting!.overrides!.length - 1
+					: overrideSetting?.overrides?.[
+							overrideSetting?.overrides?.length - 1
 					  ];
 			if (setting) {
 				const valueStartPosition = model.getPositionAt(offset);
@@ -464,7 +462,7 @@ function parse(
 						overrideSetting = setting;
 					}
 				} else {
-					overrideSetting!.overrides!.push(setting);
+					overrideSetting?.overrides?.push(setting);
 				}
 			}
 		},
@@ -480,8 +478,8 @@ function parse(
 				const setting =
 					previousParents.length === settingsPropertyIndex + 1
 						? settings[settings.length - 1]
-						: overrideSetting!.overrides![
-								overrideSetting!.overrides!.length - 1
+						: overrideSetting?.overrides?.[
+								overrideSetting?.overrides?.length - 1
 						  ];
 				if (setting) {
 					const valueEndPosition = model.getPositionAt(
@@ -527,8 +525,8 @@ function parse(
 				const setting =
 					previousParents.length === settingsPropertyIndex + 1
 						? settings[settings.length - 1]
-						: overrideSetting!.overrides![
-								overrideSetting!.overrides!.length - 1
+						: overrideSetting?.overrides?.[
+								overrideSetting?.overrides?.length - 1
 						  ];
 				if (setting) {
 					const valueEndPosition = model.getPositionAt(
@@ -889,12 +887,12 @@ export class DefaultSettings extends Disposable {
 				let enumDescriptionsAreMarkdown =
 					!!prop.markdownEnumDescriptions;
 				if (listItemType === "enum" && !Array.isArray(prop.items)) {
-					enumToUse = prop.items!.enum;
+					enumToUse = prop.items?.enum;
 					enumDescriptions =
-						prop.items!.markdownEnumDescriptions ??
-						prop.items!.enumDescriptions;
+						prop.items?.markdownEnumDescriptions ??
+						prop.items?.enumDescriptions;
 					enumDescriptionsAreMarkdown =
-						!!prop.items!.markdownEnumDescriptions;
+						!!prop.items?.markdownEnumDescriptions;
 				}
 
 				let allKeysAreBoolean = false;
@@ -906,7 +904,7 @@ export class DefaultSettings extends Disposable {
 				) {
 					allKeysAreBoolean = Object.keys(prop.properties).every(
 						(key) => {
-							return prop.properties![key].type === "boolean";
+							return prop.properties?.[key].type === "boolean";
 						},
 					);
 				}
@@ -920,10 +918,7 @@ export class DefaultSettings extends Disposable {
 				if (!isLanguageTagSetting) {
 					const registeredConfigurationProp =
 						prop as IRegisteredConfigurationPropertySchema;
-					if (
-						registeredConfigurationProp &&
-						registeredConfigurationProp.defaultValueSource
-					) {
+					if (registeredConfigurationProp?.defaultValueSource) {
 						defaultValueSource =
 							registeredConfigurationProp.defaultValueSource;
 					}
@@ -1142,7 +1137,7 @@ export class DefaultSettingsEditorModel
 		}
 
 		// note: 1-indexed line numbers here
-		const groupContent = builder.getContent() + "\n";
+		const groupContent = `${builder.getContent()}\n`;
 		const groupEndLine = this._model.getLineCount();
 		const cursorPosition = new Selection(startLine, 1, startLine, 1);
 		const edit: ISingleEditOperation = {
@@ -1172,18 +1167,16 @@ export class DefaultSettingsEditorModel
 			return <ISettingMatch>{
 				setting: filteredMatch.setting,
 				score: filteredMatch.score,
-				matches:
-					filteredMatch.matches &&
-					filteredMatch.matches.map((match) => {
-						return new Range(
-							match.startLineNumber -
-								filteredMatch.setting.range.startLineNumber,
-							match.startColumn,
-							match.endLineNumber -
-								filteredMatch.setting.range.startLineNumber,
-							match.endColumn,
-						);
-					}),
+				matches: filteredMatch.matches?.map((match) => {
+					return new Range(
+						match.startLineNumber -
+							filteredMatch.setting.range.startLineNumber,
+						match.startColumn,
+						match.endLineNumber -
+							filteredMatch.setting.range.startLineNumber,
+						match.endColumn,
+					);
+				}),
 			};
 		});
 
@@ -1390,7 +1383,7 @@ class SettingsContentBuilder {
 			);
 
 		setting.descriptionRanges = [];
-		const descriptionPreValue = indent + "// ";
+		const descriptionPreValue = `${indent}// `;
 		const deprecationMessageLines =
 			setting.deprecationMessage?.split(/\n/g) ?? [];
 		for (let line of [...deprecationMessageLines, ...setting.description]) {
@@ -1408,14 +1401,14 @@ class SettingsContentBuilder {
 		if (setting.enum && setting.enumDescriptions?.some((desc) => !!desc)) {
 			setting.enumDescriptions.forEach((desc, i) => {
 				const displayEnum = escapeInvisibleChars(
-					String(setting.enum![i]),
+					String(setting.enum?.[i]),
 				);
 				const line = desc
 					? `${displayEnum}: ${fixSettingLink(desc)}`
 					: displayEnum;
 
 				const lines = line.split(/\n/g);
-				lines[0] = " - " + lines[0];
+				lines[0] = ` - ${lines[0]}`;
 				this._contentByLines.push(
 					...lines.map((l) => `${indent}// ${l}`),
 				);
@@ -1437,8 +1430,8 @@ class SettingsContentBuilder {
 	): void {
 		const valueString = JSON.stringify(setting.value, null, indent);
 		if (valueString && typeof setting.value === "object") {
-			if (setting.overrides && setting.overrides.length) {
-				this._contentByLines.push(preValueConent + " {");
+			if (setting.overrides?.length) {
+				this._contentByLines.push(`${preValueConent} {`);
 				for (const subSetting of setting.overrides) {
 					this.pushSetting(subSetting, indent + indent);
 					this._contentByLines.pop();
@@ -1449,7 +1442,7 @@ class SettingsContentBuilder {
 					this._contentByLines[lastSetting.range.endLineNumber - 2];
 				this._contentByLines[lastSetting.range.endLineNumber - 2] =
 					content.substring(0, content.length - 1);
-				this._contentByLines.push(indent + "}");
+				this._contentByLines.push(`${indent}}`);
 			} else {
 				const mulitLineValue = valueString.split("\n");
 				this._contentByLines.push(preValueConent + mulitLineValue[0]);
@@ -1468,7 +1461,7 @@ class SettingsContentBuilder {
 		result: string[],
 	) {
 		for (const line of description) {
-			result.push(indent + "// " + line);
+			result.push(`${indent}// ${line}`);
 		}
 	}
 }
@@ -1508,21 +1501,17 @@ export class DefaultRawSettingsEditorModel extends Disposable {
 }
 
 function escapeInvisibleChars(enumValue: string): string {
-	return enumValue && enumValue.replace(/\n/g, "\\n").replace(/\r/g, "\\r");
+	return enumValue?.replace(/\n/g, "\\n").replace(/\r/g, "\\r");
 }
 
 export function defaultKeybindingsContents(
 	keybindingService: IKeybindingService,
 ): string {
-	const defaultsHeader =
-		"// " +
-		nls.localize(
-			"defaultKeybindingsHeader",
-			"Override key bindings by placing them into your key bindings file.",
-		);
-	return (
-		defaultsHeader + "\n" + keybindingService.getDefaultKeybindingsContent()
-	);
+	const defaultsHeader = `// ${nls.localize(
+		"defaultKeybindingsHeader",
+		"Override key bindings by placing them into your key bindings file.",
+	)}`;
+	return `${defaultsHeader}\n${keybindingService.getDefaultKeybindingsContent()}`;
 }
 
 export class DefaultKeybindingsEditorModel

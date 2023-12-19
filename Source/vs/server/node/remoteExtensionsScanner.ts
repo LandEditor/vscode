@@ -437,11 +437,7 @@ export class RemoteExtensionsScannerService
 		})();
 
 		const _massageWhenUser = (element: WhenUser) => {
-			if (
-				!element ||
-				!element.when ||
-				!/resourceScheme/.test(element.when)
-			) {
+			if (!(element?.when && /resourceScheme/.test(element.when))) {
 				return;
 			}
 

@@ -212,7 +212,7 @@ type obj = { [key: string]: any };
 export function distinct(base: obj, target: obj): obj {
 	const result = Object.create(null);
 
-	if (!base || !target) {
+	if (!(base && target)) {
 		return result;
 	}
 

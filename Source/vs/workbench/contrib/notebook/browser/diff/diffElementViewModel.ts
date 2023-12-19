@@ -200,7 +200,7 @@ export abstract class DiffElementViewModelBase extends Disposable {
 			case "unchanged":
 			case "insert": {
 				const lineCount =
-					this.modified!.textModel.textBuffer.getLineCount();
+					this.modified?.textModel.textBuffer.getLineCount();
 				const editorHeight =
 					lineCount * lineHeight +
 					fixedEditorPadding.top +
@@ -210,7 +210,7 @@ export abstract class DiffElementViewModelBase extends Disposable {
 			case "delete":
 			case "modified": {
 				const lineCount =
-					this.original!.textModel.textBuffer.getLineCount();
+					this.original?.textModel.textBuffer.getLineCount();
 				const editorHeight =
 					lineCount * lineHeight +
 					fixedEditorPadding.top +
@@ -769,7 +769,7 @@ export class SingleSideDiffElementViewModel extends DiffElementViewModelBase {
 		this.type = type;
 
 		this._register(
-			this.cellViewModel!.onDidChangeOutputLayout(() => {
+			this.cellViewModel?.onDidChangeOutputLayout(() => {
 				this._layout({ recomputeOutput: true });
 			}),
 		);
@@ -792,12 +792,12 @@ export class SingleSideDiffElementViewModel extends DiffElementViewModelBase {
 	}
 
 	getOutputOffsetInContainer(diffSide: DiffSide, index: number) {
-		return this.cellViewModel!.getOutputOffset(index);
+		return this.cellViewModel?.getOutputOffset(index);
 	}
 
 	getOutputOffsetInCell(diffSide: DiffSide, index: number) {
 		const offsetInOutputsContainer =
-			this.cellViewModel!.getOutputOffset(index);
+			this.cellViewModel?.getOutputOffset(index);
 
 		return (
 			this._layoutInfo.editorHeight +

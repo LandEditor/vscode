@@ -196,11 +196,14 @@ export class WindowsNativeResolvedKeybinding extends BaseResolvedKeybinding<KeyC
 		chord: ScanCodeChord,
 		mapping: IScanCodeMapping,
 	): string {
-		const char = this.getProducedCharCode(chord, mapping);
+		const char = WindowsNativeResolvedKeybinding.getProducedCharCode(
+			chord,
+			mapping,
+		);
 		if (char === null || char.length === 0) {
 			return " --- ";
 		}
-		return "  " + char + "  ";
+		return `  ${char}  `;
 	}
 }
 
@@ -393,7 +396,7 @@ export class WindowsKeyboardMapper implements IKeyboardMapper {
 
 		let cnt = 0;
 		result.push(
-			`-----------------------------------------------------------------------------------------------------------------------------------------`,
+			"-----------------------------------------------------------------------------------------------------------------------------------------",
 		);
 		for (
 			let scanCode = ScanCode.None;
@@ -411,10 +414,10 @@ export class WindowsKeyboardMapper implements IKeyboardMapper {
 
 			if (cnt % 6 === 0) {
 				result.push(
-					`|       HW Code combination      |  Key  |    KeyCode combination    |          UI label         |        User settings       | WYSIWYG |`,
+					"|       HW Code combination      |  Key  |    KeyCode combination    |          UI label         |        User settings       | WYSIWYG |",
 				);
 				result.push(
-					`-----------------------------------------------------------------------------------------------------------------------------------------`,
+					"-----------------------------------------------------------------------------------------------------------------------------------------",
 				);
 			}
 			cnt++;
@@ -477,7 +480,7 @@ export class WindowsKeyboardMapper implements IKeyboardMapper {
 				);
 			}
 			result.push(
-				`-----------------------------------------------------------------------------------------------------------------------------------------`,
+				"-----------------------------------------------------------------------------------------------------------------------------------------",
 			);
 		}
 
@@ -489,7 +492,7 @@ export class WindowsKeyboardMapper implements IKeyboardMapper {
 			str = "null";
 		}
 		while (str.length < cnt) {
-			str = " " + str;
+			str = ` ${str}`;
 		}
 		return str;
 	}

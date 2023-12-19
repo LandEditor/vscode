@@ -92,7 +92,7 @@ class CodeLensContentWidget implements IContentWidget {
 		this.updatePosition(line);
 
 		this._domNode = document.createElement("span");
-		this._domNode.className = `codelens-decoration`;
+		this._domNode.className = "codelens-decoration";
 	}
 
 	withCommands(
@@ -270,7 +270,7 @@ export class CodeLensWidget {
 		});
 
 		this._viewZone = new CodeLensViewZone(
-			range!.startLineNumber - 1,
+			range?.startLineNumber - 1,
 			heightInPx,
 			updateCallback,
 		);
@@ -278,7 +278,7 @@ export class CodeLensWidget {
 
 		if (lenses.length > 0) {
 			this._createContentWidgetIfNecessary();
-			this._contentWidget!.withCommands(lenses, false);
+			this._contentWidget?.withCommands(lenses, false);
 		}
 	}
 
@@ -363,7 +363,7 @@ export class CodeLensWidget {
 
 	updateCommands(symbols: Array<CodeLens | undefined | null>): void {
 		this._createContentWidgetIfNecessary();
-		this._contentWidget!.withCommands(symbols, true);
+		this._contentWidget?.withCommands(symbols, true);
 
 		for (let i = 0; i < this._data.length; i++) {
 			const resolved = symbols[i];

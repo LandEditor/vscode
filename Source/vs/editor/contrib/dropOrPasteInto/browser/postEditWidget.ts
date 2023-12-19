@@ -135,7 +135,7 @@ class PostEditWidget extends Disposable implements IContentWidget {
 	}
 
 	getId(): string {
-		return PostEditWidget.baseId + "." + this.typeId;
+		return `${PostEditWidget.baseId}.${this.typeId}`;
 	}
 
 	getDomNode(): HTMLElement {
@@ -204,7 +204,7 @@ export class PostEditWidgetManager extends Disposable {
 		token: CancellationToken,
 	) {
 		const model = this._editor.getModel();
-		if (!model || !ranges.length) {
+		if (!(model && ranges.length)) {
 			return;
 		}
 

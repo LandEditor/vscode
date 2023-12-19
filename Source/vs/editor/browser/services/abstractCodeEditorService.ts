@@ -274,7 +274,7 @@ export abstract class AbstractCodeEditorService
 		const provider = this._decorationOptionProviders.get(decorationTypeKey);
 		if (!provider) {
 			throw new Error(
-				"Unknown decoration type key: " + decorationTypeKey,
+				`Unknown decoration type key: ${decorationTypeKey}`,
 			);
 		}
 		return provider.getOptions(this, writable);
@@ -638,10 +638,7 @@ class DecorationTypeOptionsProvider implements IModelDecorationOptionsProvider {
 			ModelDecorationCSSRuleType.AfterContentClassName,
 		);
 
-		if (
-			providerArgs.options.beforeInjectedText &&
-			providerArgs.options.beforeInjectedText.contentText
-		) {
+		if (providerArgs.options.beforeInjectedText?.contentText) {
 			const beforeInlineData = createInlineCSSRules(
 				ModelDecorationCSSRuleType.BeforeInjectedTextClassName,
 			);
@@ -655,10 +652,7 @@ class DecorationTypeOptionsProvider implements IModelDecorationOptionsProvider {
 			};
 		}
 
-		if (
-			providerArgs.options.afterInjectedText &&
-			providerArgs.options.afterInjectedText.contentText
-		) {
+		if (providerArgs.options.afterInjectedText?.contentText) {
 			const afterInlineData = createInlineCSSRules(
 				ModelDecorationCSSRuleType.AfterInjectedTextClassName,
 			);
@@ -680,11 +674,9 @@ class DecorationTypeOptionsProvider implements IModelDecorationOptionsProvider {
 		this.stickiness = options.rangeBehavior;
 
 		const lightOverviewRulerColor =
-			(options.light && options.light.overviewRulerColor) ||
-			options.overviewRulerColor;
+			options.light?.overviewRulerColor || options.overviewRulerColor;
 		const darkOverviewRulerColor =
-			(options.dark && options.dark.overviewRulerColor) ||
-			options.overviewRulerColor;
+			options.dark?.overviewRulerColor || options.overviewRulerColor;
 		if (
 			typeof lightOverviewRulerColor !== "undefined" ||
 			typeof darkOverviewRulerColor !== "undefined"
@@ -796,13 +788,10 @@ class DecorationCSSRules {
 			ruleType,
 		);
 		if (this._providerArgs.parentTypeKey) {
-			className =
-				className +
-				" " +
-				CSSNameHelper.getClassName(
-					this._providerArgs.parentTypeKey,
-					ruleType,
-				);
+			className = `${className} ${CSSNameHelper.getClassName(
+				this._providerArgs.parentTypeKey,
+				ruleType,
+			)}`;
 		}
 		this._className = className;
 
@@ -852,9 +841,11 @@ class DecorationCSSRules {
 
 	private _buildCSS(): void {
 		const options = this._providerArgs.options;
-		let unthemedCSS: string, lightCSS: string, darkCSS: string;
+		let unthemedCSS: string;
+		let lightCSS: string;
+		let darkCSS: string;
 		switch (this._ruleType) {
-			case ModelDecorationCSSRuleType.ClassName:
+			case ModelDecorationCSSRuleType.ClassName: {
 				unthemedCSS =
 					this.getCSSTextForModelDecorationClassName(options);
 				lightCSS = this.getCSSTextForModelDecorationClassName(
@@ -864,7 +855,8 @@ class DecorationCSSRules {
 					options.dark,
 				);
 				break;
-			case ModelDecorationCSSRuleType.InlineClassName:
+			}
+			case ModelDecorationCSSRuleType.InlineClassName: {
 				unthemedCSS =
 					this.getCSSTextForModelDecorationInlineClassName(options);
 				lightCSS = this.getCSSTextForModelDecorationInlineClassName(
@@ -874,7 +866,8 @@ class DecorationCSSRules {
 					options.dark,
 				);
 				break;
-			case ModelDecorationCSSRuleType.GlyphMarginClassName:
+			}
+			case ModelDecorationCSSRuleType.GlyphMarginClassName: {
 				unthemedCSS =
 					this.getCSSTextForModelDecorationGlyphMarginClassName(
 						options,
@@ -887,52 +880,57 @@ class DecorationCSSRules {
 					options.dark,
 				);
 				break;
-			case ModelDecorationCSSRuleType.BeforeContentClassName:
+			}
+			case ModelDecorationCSSRuleType.BeforeContentClassName: {
 				unthemedCSS = this.getCSSTextForModelDecorationContentClassName(
 					options.before,
 				);
 				lightCSS = this.getCSSTextForModelDecorationContentClassName(
-					options.light && options.light.before,
+					options.light?.before,
 				);
 				darkCSS = this.getCSSTextForModelDecorationContentClassName(
-					options.dark && options.dark.before,
+					options.dark?.before,
 				);
 				break;
-			case ModelDecorationCSSRuleType.AfterContentClassName:
+			}
+			case ModelDecorationCSSRuleType.AfterContentClassName: {
 				unthemedCSS = this.getCSSTextForModelDecorationContentClassName(
 					options.after,
 				);
 				lightCSS = this.getCSSTextForModelDecorationContentClassName(
-					options.light && options.light.after,
+					options.light?.after,
 				);
 				darkCSS = this.getCSSTextForModelDecorationContentClassName(
-					options.dark && options.dark.after,
+					options.dark?.after,
 				);
 				break;
-			case ModelDecorationCSSRuleType.BeforeInjectedTextClassName:
+			}
+			case ModelDecorationCSSRuleType.BeforeInjectedTextClassName: {
 				unthemedCSS = this.getCSSTextForModelDecorationContentClassName(
 					options.beforeInjectedText,
 				);
 				lightCSS = this.getCSSTextForModelDecorationContentClassName(
-					options.light && options.light.beforeInjectedText,
+					options.light?.beforeInjectedText,
 				);
 				darkCSS = this.getCSSTextForModelDecorationContentClassName(
-					options.dark && options.dark.beforeInjectedText,
+					options.dark?.beforeInjectedText,
 				);
 				break;
-			case ModelDecorationCSSRuleType.AfterInjectedTextClassName:
+			}
+			case ModelDecorationCSSRuleType.AfterInjectedTextClassName: {
 				unthemedCSS = this.getCSSTextForModelDecorationContentClassName(
 					options.afterInjectedText,
 				);
 				lightCSS = this.getCSSTextForModelDecorationContentClassName(
-					options.light && options.light.afterInjectedText,
+					options.light?.afterInjectedText,
 				);
 				darkCSS = this.getCSSTextForModelDecorationContentClassName(
-					options.dark && options.dark.afterInjectedText,
+					options.dark?.afterInjectedText,
 				);
 				break;
+			}
 			default:
-				throw new Error("Unknown rule type: " + this._ruleType);
+				throw new Error(`Unknown rule type: ${this._ruleType}`);
 		}
 		const sheet = this._providerArgs.styleSheet;
 
@@ -1035,7 +1033,7 @@ class DecorationCSSRules {
 				);
 			}
 			if (typeof opts.contentText === "string") {
-				const truncated = opts.contentText.match(/^.*$/m)![0]; // only take first line
+				const truncated = opts.contentText.match(/^.*$/m)?.[0]; // only take first line
 				const escaped = truncated.replace(/['\\]/g, "\\$&");
 
 				cssTextArr.push(strings.format(_CSS_MAP.contentText, escaped));
@@ -1163,7 +1161,7 @@ class CSSNameHelper {
 		key: string,
 		type: ModelDecorationCSSRuleType,
 	): string {
-		return "ced-" + key + "-" + type;
+		return `ced-${key}-${type}`;
 	}
 
 	public static getSelector(
@@ -1171,9 +1169,15 @@ class CSSNameHelper {
 		parentKey: string | undefined,
 		ruleType: ModelDecorationCSSRuleType,
 	): string {
-		let selector = ".monaco-editor ." + this.getClassName(key, ruleType);
+		let selector = `.monaco-editor .${CSSNameHelper.getClassName(
+			key,
+			ruleType,
+		)}`;
 		if (parentKey) {
-			selector = selector + "." + this.getClassName(parentKey, ruleType);
+			selector = `${selector}.${CSSNameHelper.getClassName(
+				parentKey,
+				ruleType,
+			)}`;
 		}
 		if (ruleType === ModelDecorationCSSRuleType.BeforeContentClassName) {
 			selector += "::before";

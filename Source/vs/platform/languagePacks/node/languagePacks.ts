@@ -79,7 +79,7 @@ export class NativeLanguagePackService extends LanguagePackBaseService {
 		return translation ? URI.file(translation) : undefined;
 	}
 
-	async getInstalledLanguages(): Promise<Array<ILanguagePackItem>> {
+	async getInstalledLanguages(): Promise<ILanguagePackItem[]> {
 		const languagePacks = await this.cache.getLanguagePacks();
 		const languages: ILanguagePackItem[] = Object.keys(languagePacks).map(
 			(locale) => {
@@ -103,13 +103,7 @@ export class NativeLanguagePackService extends LanguagePackBaseService {
 	private async postInstallExtension(
 		extension: ILocalExtension,
 	): Promise<void> {
-		if (
-			extension &&
-			extension.manifest &&
-			extension.manifest.contributes &&
-			extension.manifest.contributes.localizations &&
-			extension.manifest.contributes.localizations.length
-		) {
+		if (extension?.manifest?.contributes?.localizations?.length) {
 			this.logService.info(
 				"Adding language packs from the extension",
 				extension.identifier.id,
@@ -123,15 +117,13 @@ export class NativeLanguagePackService extends LanguagePackBaseService {
 	): Promise<void> {
 		const languagePacks = await this.cache.getLanguagePacks();
 		if (
-			Object.keys(languagePacks).some(
-				(language) =>
-					languagePacks[language] &&
-					languagePacks[language].extensions.some((e) =>
-						areSameExtensions(
-							e.extensionIdentifier,
-							extension.identifier,
-						),
+			Object.keys(languagePacks).some((language) =>
+				languagePacks[language]?.extensions.some((e) =>
+					areSameExtensions(
+						e.extensionIdentifier,
+						extension.identifier,
 					),
+				),
 			)
 		) {
 			this.logService.info(
@@ -198,13 +190,7 @@ class LanguagePacksCache extends Disposable {
 		...extensions: ILocalExtension[]
 	): void {
 		for (const extension of extensions) {
-			if (
-				extension &&
-				extension.manifest &&
-				extension.manifest.contributes &&
-				extension.manifest.contributes.localizations &&
-				extension.manifest.contributes.localizations.length
-			) {
+			if (extension?.manifest?.contributes?.localizations?.length) {
 				this.createLanguagePacksFromExtension(languagePacks, extension);
 			}
 		}
@@ -218,11 +204,9 @@ class LanguagePacksCache extends Disposable {
 		extension: ILocalExtension,
 	): void {
 		const extensionIdentifier = extension.identifier;
-		const localizations =
-			extension.manifest.contributes &&
-			extension.manifest.contributes.localizations
-				? extension.manifest.contributes.localizations
-				: [];
+		const localizations = extension.manifest.contributes?.localizations
+			? extension.manifest.contributes.localizations
+			: [];
 		for (const localizationContribution of localizations) {
 			if (
 				extension.location.scheme === Schemas.file &&

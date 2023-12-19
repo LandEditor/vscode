@@ -172,9 +172,8 @@ export class TelemetryService extends Disposable implements ITelemetryService {
 					environmentService.remoteAuthority,
 					productService.embedderIdentifier,
 					productService.removeTelemetryMachineId,
-					environmentService.options &&
-						environmentService.options
-							.resolveCommonTelemetryProperties,
+					environmentService.options
+						?.resolveCommonTelemetryProperties,
 				),
 				sendErrorTelemetry: this.sendErrorTelemetry,
 			};

@@ -471,24 +471,27 @@ abstract class KernelPickerStrategyBase implements IKernelPickerStrategy {
 				}),
 				...extensionsToEnable.map(async (extension) => {
 					switch (extension.enablementState) {
-						case EnablementState.DisabledWorkspace:
+						case EnablementState.DisabledWorkspace: {
 							await extensionWorkbenchService.setEnablement(
 								[extension],
 								EnablementState.EnabledWorkspace,
 							);
 							return;
-						case EnablementState.DisabledGlobally:
+						}
+						case EnablementState.DisabledGlobally: {
 							await extensionWorkbenchService.setEnablement(
 								[extension],
 								EnablementState.EnabledGlobally,
 							);
 							return;
-						case EnablementState.DisabledByEnvironment:
+						}
+						case EnablementState.DisabledByEnvironment: {
 							await extensionWorkbenchService.setEnablement(
 								[extension],
 								EnablementState.EnabledByEnvironment,
 							);
 							return;
+						}
 						default:
 							break;
 					}
@@ -1005,7 +1008,7 @@ export class KernelPickerMRUStrategy extends KernelPickerStrategyBase {
 					id:
 						typeof action.command! === "string"
 							? action.command!
-							: action.command!.id,
+							: action.command?.id,
 					label: action.label,
 					description: action.description,
 					command: action.command,

@@ -808,6 +808,6 @@ function getContextFromEditor(
 		element: codeBlockInfo.element,
 		codeBlockIndex: codeBlockInfo.codeBlockIndex,
 		code: editor.getValue(),
-		languageId: editor.getModel()!.getLanguageId(),
+		languageId: editor.getModel()?.getLanguageId(),
 	};
 }

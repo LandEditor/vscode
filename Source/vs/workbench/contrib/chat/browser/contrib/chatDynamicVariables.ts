@@ -35,7 +35,7 @@ export class ChatDynamicVariableModel
 	public static readonly ID = "chatDynamicVariableModel";
 
 	private _variables: IDynamicVariable[] = [];
-	get variables(): ReadonlyArray<IDynamicVariable> {
+	get variables(): readonly IDynamicVariable[] {
 		return [...this._variables];
 	}
 
@@ -96,8 +96,9 @@ export class ChatDynamicVariableModel
 		if (!Array.isArray(s)) {
 			// Something went wrong
 			this.logService.warn(
-				"ChatDynamicVariableModel.setInputState called with invalid state: " +
-					JSON.stringify(s),
+				`ChatDynamicVariableModel.setInputState called with invalid state: ${JSON.stringify(
+					s,
+				)}`,
 			);
 			return;
 		}
@@ -174,7 +175,7 @@ export class SelectAndInsertFileAction extends Action2 {
 		const doCleanup = () => {
 			// Failed, remove the dangling `file`
 			context.widget.inputEditor.executeEdits("chatInsertFile", [
-				{ range: context.range, text: `` },
+				{ range: context.range, text: "" },
 			]);
 		};
 
@@ -201,7 +202,7 @@ export class SelectAndInsertFileAction extends Action2 {
 		const text = `#file:${fileName}`;
 		const range = context.range;
 		const success = editor.executeEdits("chatInsertFile", [
-			{ range, text: text + " " },
+			{ range, text: `${text} ` },
 		]);
 		if (!success) {
 			logService.trace(

@@ -118,7 +118,7 @@ class MarkersFileDecorations implements IWorkbenchContribution {
 		const shouldEnable = problem && value.decorations.enabled;
 
 		if (shouldEnable === this._enabled) {
-			if (!problem || !value.decorations.enabled) {
+			if (!(problem && value.decorations.enabled)) {
 				this._provider?.dispose();
 				this._provider = undefined;
 			}

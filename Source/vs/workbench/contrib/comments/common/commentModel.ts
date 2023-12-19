@@ -64,7 +64,7 @@ export class ResourceWithCommentThreads {
 		this.id = resource.toString();
 		this.resource = resource;
 		this.commentThreads = commentThreads
-			.filter((thread) => thread.comments && thread.comments.length)
+			.filter((thread) => thread.comments?.length)
 			.map((thread) =>
 				ResourceWithCommentThreads.createCommentNode(
 					owner,
@@ -80,7 +80,7 @@ export class ResourceWithCommentThreads {
 		commentThread: CommentThread,
 	): CommentNode {
 		const { threadId, comments, range } = commentThread;
-		const commentNodes: CommentNode[] = comments!.map(
+		const commentNodes: CommentNode[] = comments?.map(
 			(comment) =>
 				new CommentNode(
 					owner,
@@ -226,7 +226,7 @@ export class CommentsModel {
 						URI.parse(matchingResourceData.id),
 						thread,
 					);
-			} else if (thread.comments && thread.comments.length) {
+			} else if (thread.comments?.length) {
 				matchingResourceData.commentThreads.push(
 					ResourceWithCommentThreads.createCommentNode(
 						owner,
@@ -244,7 +244,7 @@ export class CommentsModel {
 			);
 			if (existingResource.length) {
 				const resource = existingResource[0];
-				if (thread.comments && thread.comments.length) {
+				if (thread.comments?.length) {
 					resource.commentThreads.push(
 						ResourceWithCommentThreads.createCommentNode(
 							owner,
@@ -319,8 +319,8 @@ export class CommentsModel {
 	}
 
 	private static _compareURIs(a: CommentThread, b: CommentThread) {
-		const resourceA = a.resource!.toString();
-		const resourceB = b.resource!.toString();
+		const resourceA = a.resource?.toString();
+		const resourceB = b.resource?.toString();
 		if (resourceA < resourceB) {
 			return -1;
 		} else if (resourceA > resourceB) {

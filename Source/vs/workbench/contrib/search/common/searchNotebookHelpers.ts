@@ -66,7 +66,7 @@ export function genericCellMatchesToTextSearchMatches(
 			lineTexts.push(buffer.getLineContent(i));
 		}
 		return new TextSearchMatch(
-			lineTexts.join("\n") + "\n",
+			`${lineTexts.join("\n")}\n`,
 			grouping.map(
 				(m) =>
 					new Range(

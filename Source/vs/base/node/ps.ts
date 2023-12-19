@@ -76,7 +76,7 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 			let matches = TYPE.exec(cmd);
 			if (matches && matches.length === 2) {
 				if (matches[1] === "renderer") {
-					return `window`;
+					return "window";
 				} else if (matches[1] === "utility") {
 					if (UTILITY_NETWORK_HINT.exec(cmd)) {
 						return "utility-network-service";
@@ -95,7 +95,7 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 			do {
 				matches = JS.exec(cmd);
 				if (matches) {
-					result += matches + " ";
+					result += `${matches} `;
 				}
 			} while (matches);
 
@@ -120,9 +120,9 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 				} else if (value.indexOf("\\??\\") === 0) {
 					return value.substring(4);
 				} else if (value.indexOf('"\\\\?\\') === 0) {
-					return '"' + value.substring(5);
+					return `"${value.substring(5)}`;
 				} else if (value.indexOf('"\\??\\') === 0) {
-					return '"' + value.substring(5);
+					return `"${value.substring(5)}`;
 				} else {
 					return value;
 				}
@@ -222,7 +222,7 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 				let cmd = JSON.stringify(
 					FileAccess.asFileUri("vs/base/node/cpuUsage.sh").fsPath,
 				);
-				cmd += " " + pids.join(" ");
+				cmd += ` ${pids.join(" ")}`;
 
 				exec(cmd, {}, (err, stdout, stderr) => {
 					if (err || stderr) {

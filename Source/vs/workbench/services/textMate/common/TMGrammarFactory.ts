@@ -196,10 +196,7 @@ export class TMGrammarFactory extends Disposable {
 				},
 			);
 		} catch (err) {
-			if (
-				err.message &&
-				err.message.startsWith("No grammar provided for")
-			) {
+			if (err.message?.startsWith("No grammar provided for")) {
 				// No TM grammar defined
 				throw new Error(missingTMGrammarErrorMessage);
 			}

@@ -54,7 +54,7 @@ export namespace Utils {
 		replace = "noAbsolutePaths",
 	) {
 		for (const node of profile.nodes) {
-			if (node.callFrame && node.callFrame.url) {
+			if (node.callFrame?.url) {
 				if (
 					isAbsolute(node.callFrame.url) ||
 					/^\w[\w\d+.-]*:\/\/\/?/.test(node.callFrame.url)

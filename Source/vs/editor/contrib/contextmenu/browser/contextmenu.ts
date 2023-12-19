@@ -431,7 +431,7 @@ export class ContextMenuController implements IEditorContribution {
 				checked: minimapOptions.enabled,
 				run: () => {
 					this._configurationService.updateValue(
-						`editor.minimap.enabled`,
+						"editor.minimap.enabled",
 						!minimapOptions.enabled,
 					);
 				},
@@ -448,7 +448,7 @@ export class ContextMenuController implements IEditorContribution {
 				checked: minimapOptions.renderCharacters,
 				run: () => {
 					this._configurationService.updateValue(
-						`editor.minimap.renderCharacters`,
+						"editor.minimap.renderCharacters",
 						!minimapOptions.renderCharacters,
 					);
 				},

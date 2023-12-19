@@ -49,7 +49,7 @@ export default class Tracer extends Disposable {
 				}). Request took ${
 					Date.now() - meta.queuingStartTime
 				} ms. Success: ${response.success} ${
-					response.success ? "" : ". Message: " + response.message
+					response.success ? "" : `. Message: ${response.message}`
 				}`,
 				response.body,
 			);

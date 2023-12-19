@@ -17,7 +17,7 @@ function patchGrammar(grammar) {
 				parent.parent &&
 				parent.parent.property === "endCaptures"
 			) {
-				rule.name = rule.name + "-ignored-vscode";
+				rule.name += "-ignored-vscode";
 				patchCount++;
 			}
 		}

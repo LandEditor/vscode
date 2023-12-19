@@ -321,9 +321,9 @@ export namespace Diagnostic {
 			source: value.source,
 			code,
 			severity: DiagnosticSeverity.from(value.severity),
-			relatedInformation:
-				value.relatedInformation &&
-				value.relatedInformation.map(DiagnosticRelatedInformation.from),
+			relatedInformation: value.relatedInformation?.map(
+				DiagnosticRelatedInformation.from,
+			),
 			tags: Array.isArray(value.tags)
 				? coalesce(value.tags.map(DiagnosticTag.from))
 				: undefined,
@@ -338,9 +338,9 @@ export namespace Diagnostic {
 		);
 		res.source = value.source;
 		res.code = isString(value.code) ? value.code : value.code?.value;
-		res.relatedInformation =
-			value.relatedInformation &&
-			value.relatedInformation.map(DiagnosticRelatedInformation.to);
+		res.relatedInformation = value.relatedInformation?.map(
+			DiagnosticRelatedInformation.to,
+		);
 		res.tags = value.tags && coalesce(value.tags.map(DiagnosticTag.to));
 		return res;
 	}
@@ -460,7 +460,7 @@ export namespace MarkdownString {
 		let res: htmlContent.IMarkdownString;
 		if (isCodeblock(markup)) {
 			const { language, value } = markup;
-			res = { value: "```" + language + "\n" + value + "\n```\n" };
+			res = { value: `\`\`\`${language}\n${value}\n`\`\`\n` };
 		} else if (types.MarkdownString.isMarkdownString(markup)) {
 			res = {
 				value: markup.value,
@@ -988,7 +988,7 @@ export namespace WorkspaceSymbol {
 		return <search.IWorkspaceSymbol>{
 			name: info.name,
 			kind: SymbolKind.from(info.kind),
-			tags: info.tags && info.tags.map(SymbolTag.from),
+			tags: info.tags?.map(SymbolTag.from),
 			containerName: info.containerName,
 			location: location.from(info.location),
 		};
@@ -1000,7 +1000,7 @@ export namespace WorkspaceSymbol {
 			info.containerName,
 			location.to(info.location),
 		);
-		result.tags = info.tags && info.tags.map(SymbolTag.to);
+		result.tags = info.tags?.map(SymbolTag.to);
 		return result;
 	}
 }
@@ -1317,7 +1317,6 @@ export namespace CompletionTriggerKind {
 				.TriggerForIncompleteCompletions:
 				return types.CompletionTriggerKind
 					.TriggerForIncompleteCompletions;
-			case languages.CompletionTriggerKind.Invoke:
 			default:
 				return types.CompletionTriggerKind.Invoke;
 		}
@@ -1696,7 +1695,7 @@ export namespace InlayHint {
 				  ),
 			hint.kind && InlayHintKind.to(hint.kind),
 		);
-		res.textEdits = hint.textEdits && hint.textEdits.map(TextEdit.to);
+		res.textEdits = hint.textEdits?.map(TextEdit.to);
 		res.tooltip = htmlContent.isMarkdownString(hint.tooltip)
 			? MarkdownString.to(hint.tooltip)
 			: hint.tooltip;
@@ -1834,7 +1833,6 @@ export namespace TextEditorLineNumbersStyle {
 				return RenderLineNumbersType.Off;
 			case types.TextEditorLineNumbersStyle.Relative:
 				return RenderLineNumbersType.Relative;
-			case types.TextEditorLineNumbersStyle.On:
 			default:
 				return RenderLineNumbersType.On;
 		}
@@ -1847,7 +1845,6 @@ export namespace TextEditorLineNumbersStyle {
 				return types.TextEditorLineNumbersStyle.Off;
 			case RenderLineNumbersType.Relative:
 				return types.TextEditorLineNumbersStyle.Relative;
-			case RenderLineNumbersType.On:
 			default:
 				return types.TextEditorLineNumbersStyle.On;
 		}
@@ -2195,7 +2192,6 @@ export namespace NotebookCellKind {
 		switch (data) {
 			case types.NotebookCellKind.Markup:
 				return notebooks.CellKind.Markup;
-			case types.NotebookCellKind.Code:
 			default:
 				return notebooks.CellKind.Code;
 		}
@@ -2205,7 +2201,6 @@ export namespace NotebookCellKind {
 		switch (data) {
 			case notebooks.CellKind.Markup:
 				return types.NotebookCellKind.Markup;
-			case notebooks.CellKind.Code:
 			default:
 				return types.NotebookCellKind.Code;
 		}
@@ -2411,7 +2406,9 @@ export namespace NotebookExclusiveDocumentPattern {
 		if (!ep) {
 			return false;
 		}
-		return !isUndefinedOrNull(ep.include) && !isUndefinedOrNull(ep.exclude);
+		return !(
+			isUndefinedOrNull(ep.include) || isUndefinedOrNull(ep.exclude)
+		);
 	}
 }
 
@@ -2994,7 +2991,6 @@ export namespace ChatMessageRole {
 				return chatProvider.ChatMessageRole.Assistant;
 			case types.ChatMessageRole.Function:
 				return chatProvider.ChatMessageRole.Function;
-			case types.ChatMessageRole.User:
 			default:
 				return chatProvider.ChatMessageRole.User;
 		}
@@ -3045,7 +3041,6 @@ export namespace ChatVariableLevel {
 				return types.ChatVariableLevel.Short;
 			case "medium":
 				return types.ChatVariableLevel.Medium;
-			case "full":
 			default:
 				return types.ChatVariableLevel.Full;
 		}
@@ -3058,7 +3053,6 @@ export namespace ChatVariableLevel {
 				return "short";
 			case types.ChatVariableLevel.Medium:
 				return "medium";
-			case types.ChatVariableLevel.Full:
 			default:
 				return "full";
 		}

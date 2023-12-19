@@ -225,7 +225,7 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 		private readonly userDataProfileService: IUserDataProfileService,
 		private readonly configurationService: IWorkbenchConfigurationService,
 	) {
-		super(sanitizeId(parent.id + "_" + setting.key));
+		super(sanitizeId(`${parent.id}_${setting.key}`));
 		this.setting = setting;
 		this.parent = parent;
 
@@ -258,7 +258,7 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 		}
 		const displayKeyFormat = settingKeyToDisplayFormat(
 			this.setting.key,
-			this.parent!.id,
+			this.parent?.id,
 			this.setting.isLanguageTagSetting,
 		);
 		this._displayLabel = displayKeyFormat.label;
@@ -354,9 +354,11 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 
 	private getTargetToInspect(setting: ISetting): SettingsTarget {
 		if (
-			!this.userDataProfileService.currentProfile.isDefault &&
-			!this.userDataProfileService.currentProfile.useDefaultFlags
-				?.settings
+			!(
+				this.userDataProfileService.currentProfile.isDefault ||
+				this.userDataProfileService.currentProfile.useDefaultFlags
+					?.settings
+			)
 		) {
 			if (setting.scope === ConfigurationScope.APPLICATION) {
 				return ConfigurationTarget.APPLICATION;
@@ -387,10 +389,11 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 
 		switch (targetSelector) {
 			case "workspaceFolderValue":
-			case "workspaceValue":
+			case "workspaceValue": {
 				this.isUntrusted =
 					!!this.setting.restricted && !isWorkspaceTrusted;
 				break;
+			}
 		}
 
 		let displayValue = isConfigured
@@ -533,7 +536,7 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 				this.tags.add(MODIFIED_SETTING_TAG);
 			}
 
-			this.setting.tags?.forEach((tag) => this.tags!.add(tag));
+			this.setting.tags?.forEach((tag) => this.tags?.add(tag));
 
 			if (this.setting.restricted) {
 				this.tags.add(REQUIRE_TRUSTED_WORKSPACE_SETTING_TAG);
@@ -561,7 +564,7 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 		// Check that the filter tags are a subset of this setting's tags
 		return (
 			!!this.tags?.size &&
-			Array.from(tagFilters).every((tag) => this.tags!.has(tag))
+			Array.from(tagFilters).every((tag) => this.tags?.has(tag))
 		);
 	}
 
@@ -600,7 +603,7 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 	}
 
 	matchesAnyExtension(extensionFilters?: Set<string>): boolean {
-		if (!extensionFilters || !extensionFilters.size) {
+		if (!extensionFilters?.size) {
 			return true;
 		}
 
@@ -611,23 +614,23 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 		return Array.from(extensionFilters).some(
 			(extensionId) =>
 				extensionId.toLowerCase() ===
-				this.setting.extensionInfo!.id.toLowerCase(),
+				this.setting.extensionInfo?.id.toLowerCase(),
 		);
 	}
 
 	matchesAnyFeature(featureFilters?: Set<string>): boolean {
-		if (!featureFilters || !featureFilters.size) {
+		if (!featureFilters?.size) {
 			return true;
 		}
 
-		const features = tocData.children!.find(
+		const features = tocData.children?.find(
 			(child) => child.id === "features",
 		);
 
 		return Array.from(featureFilters).some((filter) => {
-			if (features && features.children) {
+			if (features?.children) {
 				const feature = features.children.find(
-					(feature) => "features/" + filter === feature.id,
+					(feature) => `features/${filter}` === feature.id,
 				);
 				if (feature) {
 					const patterns = feature.settings?.map((setting) =>
@@ -650,7 +653,7 @@ export class SettingsTreeSettingElement extends SettingsTreeElement {
 	}
 
 	matchesAnyId(idFilters?: Set<string>): boolean {
-		if (!idFilters || !idFilters.size) {
+		if (!idFilters?.size) {
 			return true;
 		}
 		return idFilters.has(this.setting.key);
@@ -906,7 +909,7 @@ export function inspectSetting(
 		if (languageFilter) {
 			if (inspectedLanguageOverrides.has(languageFilter)) {
 				const overrideValue =
-					inspectedLanguageOverrides.get(languageFilter)![
+					inspectedLanguageOverrides.get(languageFilter)?.[
 						targetOverrideSelector
 					]?.override;
 				if (typeof overrideValue !== "undefined") {
@@ -947,7 +950,7 @@ export function settingKeyToDisplayFormat(
 
 	if (isLanguageTagSetting) {
 		key = key.replace(/[\[\]]/g, "");
-		key = "$(bracket) " + key;
+		key = `$(bracket) ${key}`;
 	}
 
 	const label = wordifyKey(key);

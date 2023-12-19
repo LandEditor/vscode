@@ -120,7 +120,7 @@ if ((<any>self).Worker) {
 			// but we cannot do this call from within the embedded Worker, and the only way out would be
 			// to use templating instead of a function in the web api (`resourceUriProvider`)
 			throw new Error(
-				`Creating workers from remote extensions is currently not supported.`,
+				"Creating workers from remote extensions is currently not supported.",
 			);
 		}
 
@@ -282,7 +282,7 @@ function isInitMessage(a: any): a is IInitMessage {
 }
 
 export function create(): { onmessage: (message: any) => void } {
-	performance.mark(`code/extHost/willConnectToRenderer`);
+	performance.mark("code/extHost/willConnectToRenderer");
 	const res = new ExtensionWorker();
 
 	return {
@@ -292,7 +292,7 @@ export function create(): { onmessage: (message: any) => void } {
 			}
 
 			connectToRenderer(res.protocol).then((data) => {
-				performance.mark(`code/extHost/didWaitForInitData`);
+				performance.mark("code/extHost/didWaitForInitData");
 				const extHostMain = new ExtensionHostMain(
 					data.protocol,
 					data.initData,

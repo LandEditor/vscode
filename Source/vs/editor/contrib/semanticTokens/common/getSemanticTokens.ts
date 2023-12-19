@@ -87,8 +87,10 @@ export async function getDocumentSemanticTokens(
 			}
 
 			if (
-				!result ||
-				(!isSemanticTokens(result) && !isSemanticTokensEdits(result))
+				!(
+					result &&
+					(isSemanticTokens(result) || isSemanticTokensEdits(result))
+				)
 			) {
 				result = null;
 			}
@@ -169,7 +171,7 @@ export async function getDocumentRangeSemanticTokens(
 				result = null;
 			}
 
-			if (!result || !isSemanticTokens(result)) {
+			if (!(result && isSemanticTokens(result))) {
 				result = null;
 			}
 
@@ -266,7 +268,7 @@ CommandsRegistry.registerCommand(
 
 		const { provider, tokens } = r;
 
-		if (!tokens || !isSemanticTokens(tokens)) {
+		if (!(tokens && isSemanticTokens(tokens))) {
 			return undefined;
 		}
 
@@ -309,12 +311,12 @@ CommandsRegistry.registerCommand(
 			return providers[0].getLegend();
 		}
 
-		if (!range || !Range.isIRange(range)) {
+		if (!(range && Range.isIRange(range))) {
 			// if no range is provided, we cannot support multiple providers
 			// as we cannot fall back to the one which would give results
 			// => return the first legend for backwards compatibility and print a warning
 			console.warn(
-				`provideDocumentRangeSemanticTokensLegend might be out-of-sync with provideDocumentRangeSemanticTokens unless a range argument is passed in`,
+				"provideDocumentRangeSemanticTokensLegend might be out-of-sync with provideDocumentRangeSemanticTokens unless a range argument is passed in",
 			);
 			return providers[0].getLegend();
 		}
@@ -354,7 +356,7 @@ CommandsRegistry.registerCommand(
 			Range.lift(range),
 			CancellationToken.None,
 		);
-		if (!result || !result.tokens) {
+		if (!result?.tokens) {
 			// there is no provider or it didn't return tokens
 			return undefined;
 		}

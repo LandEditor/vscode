@@ -404,8 +404,7 @@ function createNotebookCellDataFromCodeCell(
 		| { [key: string]: any }
 		| undefined;
 	const cellLanguageId =
-		vscodeCustomMetadata &&
-		vscodeCustomMetadata.languageId &&
+		vscodeCustomMetadata?.languageId &&
 		typeof vscodeCustomMetadata.languageId === "string"
 			? vscodeCustomMetadata.languageId
 			: cellLanguage;

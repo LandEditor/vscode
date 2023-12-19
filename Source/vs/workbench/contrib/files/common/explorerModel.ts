@@ -226,7 +226,7 @@ export class ExplorerItem {
 	}
 
 	getId(): string {
-		return this.root.resource.toString() + "::" + this.resource.toString();
+		return `${this.root.resource.toString()}::${this.resource.toString()}`;
 	}
 
 	toString(): string {
@@ -257,7 +257,7 @@ export class ExplorerItem {
 			raw.locked,
 			raw.name,
 			raw.mtime,
-			!raw.isFile && !raw.isDirectory,
+			!(raw.isFile || raw.isDirectory),
 		);
 
 		// Recursively add children if present

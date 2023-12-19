@@ -94,10 +94,8 @@ export interface ConnectionInfo {
 }
 
 export const CONFIGURATION_KEY_PREFIX = "remote.tunnels.access";
-export const CONFIGURATION_KEY_HOST_NAME =
-	CONFIGURATION_KEY_PREFIX + ".hostNameOverride";
-export const CONFIGURATION_KEY_PREVENT_SLEEP =
-	CONFIGURATION_KEY_PREFIX + ".preventSleep";
+export const CONFIGURATION_KEY_HOST_NAME = `${CONFIGURATION_KEY_PREFIX}.hostNameOverride`;
+export const CONFIGURATION_KEY_PREVENT_SLEEP = `${CONFIGURATION_KEY_PREFIX}.preventSleep`;
 
 export const LOG_ID = "remoteTunnelService";
 export const LOGGER_NAME = localize("remoteTunnelLog", "Remote Tunnel Service");

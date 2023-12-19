@@ -12,8 +12,6 @@ export function rot(index: number, modulo: number): number {
 }
 
 export class Counter {
-	private _next = 0;
-
 	getNext(): number {
 		return this._next++;
 	}
@@ -24,7 +22,7 @@ export class MovingAverage {
 	private _val = 0;
 
 	update(value: number): number {
-		this._val = this._val + (value - this._val) / this._n;
+		this._val += (value - this._val) / this._n;
 		this._n += 1;
 		return this._val;
 	}

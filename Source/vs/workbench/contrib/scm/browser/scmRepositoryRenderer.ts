@@ -73,7 +73,7 @@ export class RepositoryRenderer
 		// hack
 		if (container.classList.contains("monaco-tl-contents")) {
 			(
-				container.parentElement!.parentElement!.querySelector(
+				container.parentElement?.parentElement?.querySelector(
 					".monaco-tl-twistie",
 				)! as HTMLElement
 			).classList.add("force-twistie");

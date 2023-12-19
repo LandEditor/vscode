@@ -68,8 +68,7 @@ export interface ISettingsSyncContent {
 
 function isSettingsSyncContent(thing: any): thing is ISettingsSyncContent {
 	return (
-		thing &&
-		thing.settings &&
+		thing?.settings &&
 		typeof thing.settings === "string" &&
 		Object.keys(thing).length === 1
 	);

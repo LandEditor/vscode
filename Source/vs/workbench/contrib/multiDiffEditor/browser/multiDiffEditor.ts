@@ -88,32 +88,32 @@ export class MultiDiffEditor extends AbstractEditorWithViewState<IMultiDiffEdito
 	): Promise<void> {
 		await super.setInput(input, options, context, token);
 		this._viewModel = await input.getViewModel();
-		this._multiDiffEditorWidget!.setViewModel(this._viewModel);
+		this._multiDiffEditorWidget?.setViewModel(this._viewModel);
 
 		const viewState = this.loadEditorViewState(input, context);
 		if (viewState) {
-			this._multiDiffEditorWidget!.setScrollState(viewState.scrollState);
+			this._multiDiffEditorWidget?.setScrollState(viewState.scrollState);
 		}
 	}
 
 	override async clearInput(): Promise<void> {
 		await super.clearInput();
-		this._multiDiffEditorWidget!.setViewModel(undefined);
+		this._multiDiffEditorWidget?.setViewModel(undefined);
 	}
 
 	layout(dimension: DOM.Dimension): void {
-		this._multiDiffEditorWidget!.layout(dimension);
+		this._multiDiffEditorWidget?.layout(dimension);
 	}
 
 	override getControl(): ICompositeControl | undefined {
-		return this._multiDiffEditorWidget!.getActiveControl();
+		return this._multiDiffEditorWidget?.getActiveControl();
 	}
 
 	protected override computeEditorViewState(
 		resource: URI,
 	): IMultiDiffEditorViewState | undefined {
 		return {
-			scrollState: this._multiDiffEditorWidget!.getScrollState(),
+			scrollState: this._multiDiffEditorWidget?.getScrollState(),
 		};
 	}
 

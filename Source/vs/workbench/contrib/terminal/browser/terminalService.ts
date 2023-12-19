@@ -379,7 +379,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 		// down. When shutting down the panel is locked in place so that it is restored upon next
 		// launch.
 		this._terminalGroupService.onDidChangeActiveInstance((instance) => {
-			if (!instance && !this._isShuttingDown) {
+			if (!(instance || this._isShuttingDown)) {
 				this._terminalGroupService.hidePanel();
 			}
 			if (instance?.shellType) {
@@ -464,9 +464,10 @@ export class TerminalService extends Disposable implements ITerminalService {
 					{
 						icon: result.config.options?.icon,
 						color: result.config.options?.color,
-						location: !!(keyMods?.alt && activeInstance)
-							? { splitActiveTerminal: true }
-							: this.defaultLocation,
+						location:
+							keyMods?.alt && activeInstance
+								? { splitActiveTerminal: true }
+								: this.defaultLocation,
 					},
 				);
 				return;
@@ -772,7 +773,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 		if (layoutInfo) {
 			for (const tabLayout of layoutInfo.tabs) {
 				const terminalLayouts = tabLayout.terminals.filter(
-					(t) => t.terminal && t.terminal.isOrphan,
+					(t) => t.terminal?.isOrphan,
 				);
 				if (terminalLayouts.length) {
 					this._restoredGroupCount += terminalLayouts.length;
@@ -1076,7 +1077,9 @@ export class TerminalService extends Disposable implements ITerminalService {
 		}
 
 		// Clear terminal layout info only when not persisting
-		if (!shouldPersistTerminals && !this._shouldReviveProcesses(e.reason)) {
+		if (
+			!(shouldPersistTerminals || this._shouldReviveProcesses(e.reason))
+		) {
 			this._primaryBackend?.setTerminalLayoutInfo(undefined);
 		}
 	}
@@ -1100,10 +1103,12 @@ export class TerminalService extends Disposable implements ITerminalService {
 	@debounce(500)
 	private _updateTitle(instance: ITerminalInstance | undefined): void {
 		if (
-			!this.configHelper.config.enablePersistentSessions ||
-			!instance ||
-			!instance.persistentProcessId ||
-			!instance.title ||
+			!(
+				this.configHelper.config.enablePersistentSessions &&
+				instance &&
+				instance.persistentProcessId &&
+				instance.title
+			) ||
 			instance.isDisposed
 		) {
 			return;
@@ -1129,10 +1134,12 @@ export class TerminalService extends Disposable implements ITerminalService {
 		userInitiated: boolean,
 	): void {
 		if (
-			!this.configHelper.config.enablePersistentSessions ||
-			!instance ||
-			!instance.persistentProcessId ||
-			!instance.icon ||
+			!(
+				this.configHelper.config.enablePersistentSessions &&
+				instance &&
+				instance.persistentProcessId &&
+				instance.icon
+			) ||
 			instance.isDisposed
 		) {
 			return;
@@ -1415,17 +1422,17 @@ export class TerminalService extends Disposable implements ITerminalService {
 				this._remoteAgentService.getConnection() &&
 				URI.isUri(options?.cwd) &&
 				options?.cwd.scheme === Schemas.vscodeFileResource;
-			if (!isPtyTerminal && !isLocalInRemoteTerminal) {
+			if (!(isPtyTerminal || isLocalInRemoteTerminal)) {
 				if (
 					this._connectionState === TerminalConnectionState.Connecting
 				) {
-					mark(`code/terminal/willGetProfiles`);
+					mark("code/terminal/willGetProfiles");
 				}
 				await this._terminalProfileService.profilesReady;
 				if (
 					this._connectionState === TerminalConnectionState.Connecting
 				) {
-					mark(`code/terminal/didGetProfiles`);
+					mark("code/terminal/didGetProfiles");
 				}
 			}
 		}
@@ -1499,8 +1506,10 @@ export class TerminalService extends Disposable implements ITerminalService {
 		}
 
 		if (
-			!shellLaunchConfig.customPtyImplementation &&
-			!this.isProcessSupportRegistered
+			!(
+				shellLaunchConfig.customPtyImplementation ||
+				this.isProcessSupportRegistered
+			)
 		) {
 			throw new Error(
 				"Could not create terminal when process support is not registered",

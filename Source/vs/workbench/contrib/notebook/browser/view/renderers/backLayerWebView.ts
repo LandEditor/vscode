@@ -215,11 +215,11 @@ export class BackLayerWebView<T extends ICommonCellInfo> extends Themable {
 	private static getOriginStore(
 		storageService: IStorageService,
 	): WebviewOriginStore {
-		this._originStore ??= new WebviewOriginStore(
+		BackLayerWebView._originStore ??= new WebviewOriginStore(
 			"notebook.backlayerWebview.origins",
 			storageService,
 		);
-		return this._originStore;
+		return BackLayerWebView._originStore;
 	}
 
 	element: HTMLElement;
@@ -695,7 +695,7 @@ export class BackLayerWebView<T extends ICommonCellInfo> extends Themable {
 			return;
 		}
 
-		const cellInfo = this.insetMapping.get(output)!.cellInfo;
+		const cellInfo = this.insetMapping.get(output)?.cellInfo;
 		return { cellInfo, output };
 	}
 
@@ -1263,7 +1263,7 @@ export class BackLayerWebView<T extends ICommonCellInfo> extends Themable {
 						this._logRendererDebugMessage(
 							`${data.message}${
 								data.data
-									? " " + JSON.stringify(data.data, null, 4)
+									? ` ${JSON.stringify(data.data, null, 4)}`
 									: ""
 							}`,
 						);
@@ -1297,7 +1297,7 @@ export class BackLayerWebView<T extends ICommonCellInfo> extends Themable {
 		let editorOptions: ITextEditorOptions | undefined = undefined;
 		if (lineMatch) {
 			const parsedLineNumber = parseInt(lineMatch[1], 10);
-			if (!isNaN(parsedLineNumber)) {
+			if (!Number.isNaN(parsedLineNumber)) {
 				const lineNumber = parsedLineNumber;
 
 				editorOptions = {
@@ -1309,7 +1309,7 @@ export class BackLayerWebView<T extends ICommonCellInfo> extends Themable {
 		const executionMatch = /(?:^|&)execution_count=([^&]+)/.exec(uri.query);
 		if (executionMatch) {
 			const executionCount = parseInt(executionMatch[1], 10);
-			if (!isNaN(executionCount)) {
+			if (!Number.isNaN(executionCount)) {
 				const notebookModel =
 					this.notebookService.getNotebookTextModel(notebookResource);
 				// multiple cells with the same execution count can exist if the kernel is restarted
@@ -1339,7 +1339,7 @@ export class BackLayerWebView<T extends ICommonCellInfo> extends Themable {
 		const fragmentLineMatch = /\?line=(\d+)$/.exec(uri.fragment);
 		if (fragmentLineMatch) {
 			const parsedLineNumber = parseInt(fragmentLineMatch[1], 10);
-			if (!isNaN(parsedLineNumber)) {
+			if (!Number.isNaN(parsedLineNumber)) {
 				const lineNumber = parsedLineNumber + 1;
 				const fragment = uri.fragment.substring(
 					0,
@@ -1437,7 +1437,7 @@ export class BackLayerWebView<T extends ICommonCellInfo> extends Themable {
 		const lineMatch = LineQueryRegex.exec(uri.query);
 		if (lineMatch) {
 			const parsedLineNumber = parseInt(lineMatch[1], 10);
-			if (!isNaN(parsedLineNumber)) {
+			if (!Number.isNaN(parsedLineNumber)) {
 				lineNumber = parsedLineNumber + 1;
 				column = 1;
 				uri = uri.with({ fragment: `L${lineNumber}` });
@@ -1484,7 +1484,7 @@ export class BackLayerWebView<T extends ICommonCellInfo> extends Themable {
 	}
 
 	private _handleHighlightCodeBlock(
-		codeBlocks: ReadonlyArray<ICodeBlockHighlightRequest>,
+		codeBlocks: readonly ICodeBlockHighlightRequest[],
 	) {
 		for (const { id, value, lang } of codeBlocks) {
 			// The language id may be a language aliases (e.g.js instead of javascript)
@@ -1516,7 +1516,7 @@ export class BackLayerWebView<T extends ICommonCellInfo> extends Themable {
 		}
 
 		const [splitStart, splitData] = event.data.split(";base64,");
-		if (!splitData || !splitStart) {
+		if (!(splitData && splitStart)) {
 			return;
 		}
 
@@ -1682,12 +1682,14 @@ export class BackLayerWebView<T extends ICommonCellInfo> extends Themable {
 					}
 
 					if (
-						!request.forceDisplay &&
-						!this.shouldUpdateInset(
-							request.cell,
-							request.output,
-							request.cellTop,
-							request.outputOffset,
+						!(
+							request.forceDisplay ||
+							this.shouldUpdateInset(
+								request.cell,
+								request.output,
+								request.cellTop,
+								request.outputOffset,
+							)
 						)
 					) {
 						return;
@@ -1710,7 +1712,7 @@ export class BackLayerWebView<T extends ICommonCellInfo> extends Themable {
 			),
 		);
 
-		if (!widgets.length && !markupPreviews.length) {
+		if (!(widgets.length || markupPreviews.length)) {
 			return;
 		}
 
@@ -1754,7 +1756,7 @@ export class BackLayerWebView<T extends ICommonCellInfo> extends Themable {
 
 		const sameContent = newContent.content === entry.content;
 		const sameMetadata = equals(newContent.metadata, entry.metadata);
-		if (!sameContent || !sameMetadata || !entry.visible) {
+		if (!(sameContent && sameMetadata && entry.visible)) {
 			this._sendMessageToWebview({
 				type: "showMarkupCell",
 				id: newContent.cellId,

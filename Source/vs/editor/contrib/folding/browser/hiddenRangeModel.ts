@@ -122,7 +122,7 @@ export class HiddenRangeModel {
 		let lastRange: IRange | null = null;
 
 		const adjustLine = (line: number) => {
-			if (!lastRange || !isInside(line, lastRange)) {
+			if (!(lastRange && isInside(line, lastRange))) {
 				lastRange = findRange(this._hiddenRanges, line);
 			}
 			if (lastRange) {

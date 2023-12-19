@@ -264,10 +264,10 @@ export class TelemetryContribution
 			emptyWorkbench:
 				contextService.getWorkbenchState() === WorkbenchState.EMPTY,
 			"workbench.filesToOpenOrCreate":
-				(filesToOpenOrCreate && filesToOpenOrCreate.length) || 0,
-			"workbench.filesToDiff": (filesToDiff && filesToDiff.length) || 0,
+				(filesToOpenOrCreate?.length) || 0,
+			"workbench.filesToDiff": (filesToDiff?.length) || 0,
 			"workbench.filesToMerge":
-				(filesToMerge && filesToMerge.length) || 0,
+				(filesToMerge?.length) || 0,
 			customKeybindingsCount: keybindingsService.customKeybindingsCount(),
 			theme: themeService.getColorTheme().id,
 			language,

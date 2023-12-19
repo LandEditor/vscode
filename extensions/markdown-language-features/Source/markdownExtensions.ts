@@ -125,10 +125,7 @@ export namespace MarkdownContributions {
 			map.set(
 				extension.id,
 				extension.activate().then(() => {
-					if (
-						extension.exports &&
-						extension.exports.extendMarkdownIt
-					) {
+					if (extension.exports?.extendMarkdownIt) {
 						return (md: any) =>
 							extension.exports.extendMarkdownIt(md);
 					}

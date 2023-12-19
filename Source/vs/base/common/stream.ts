@@ -348,7 +348,7 @@ class WriteableStreamImpl<T> implements WriteableStream<T> {
 		}
 
 		switch (event) {
-			case "data":
+			case "data": {
 				this.listeners.data.push(callback);
 
 				// switch into flowing mode as soon as the first 'data'
@@ -356,8 +356,9 @@ class WriteableStreamImpl<T> implements WriteableStream<T> {
 				this.resume();
 
 				break;
+			}
 
-			case "end":
+			case "end": {
 				this.listeners.end.push(callback);
 
 				// emit 'end' event directly if we are flowing
@@ -369,8 +370,9 @@ class WriteableStreamImpl<T> implements WriteableStream<T> {
 				}
 
 				break;
+			}
 
-			case "error":
+			case "error": {
 				this.listeners.error.push(callback);
 
 				// emit buffered 'error' events unless done already
@@ -380,6 +382,7 @@ class WriteableStreamImpl<T> implements WriteableStream<T> {
 				}
 
 				break;
+			}
 		}
 	}
 
@@ -391,17 +394,20 @@ class WriteableStreamImpl<T> implements WriteableStream<T> {
 		let listeners: unknown[] | undefined = undefined;
 
 		switch (event) {
-			case "data":
+			case "data": {
 				listeners = this.listeners.data;
 				break;
+			}
 
-			case "end":
+			case "end": {
 				listeners = this.listeners.end;
 				break;
+			}
 
-			case "error":
+			case "error": {
 				listeners = this.listeners.error;
 				break;
+			}
 		}
 
 		if (listeners) {

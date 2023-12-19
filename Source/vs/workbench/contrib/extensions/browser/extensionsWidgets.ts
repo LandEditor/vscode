@@ -164,7 +164,7 @@ export class InstallCountWidget extends ExtensionWidget {
 
 		append(
 			this.container,
-			$("span" + ThemeIcon.asCSSSelector(installCountIcon)),
+			$(`span${ThemeIcon.asCSSSelector(installCountIcon)}`),
 		);
 		const count = append(this.container, $("span.count"));
 		count.textContent = installLabel;
@@ -239,7 +239,7 @@ export class RatingsWidget extends ExtensionWidget {
 		if (this.small) {
 			append(
 				this.container,
-				$("span" + ThemeIcon.asCSSSelector(starFullIcon)),
+				$(`span${ThemeIcon.asCSSSelector(starFullIcon)}`),
 			);
 
 			const count = append(this.container, $("span.count"));
@@ -249,17 +249,17 @@ export class RatingsWidget extends ExtensionWidget {
 				if (rating >= i) {
 					append(
 						this.container,
-						$("span" + ThemeIcon.asCSSSelector(starFullIcon)),
+						$(`span${ThemeIcon.asCSSSelector(starFullIcon)}`),
 					);
 				} else if (rating >= i - 0.5) {
 					append(
 						this.container,
-						$("span" + ThemeIcon.asCSSSelector(starHalfIcon)),
+						$(`span${ThemeIcon.asCSSSelector(starHalfIcon)}`),
 					);
 				} else {
 					append(
 						this.container,
-						$("span" + ThemeIcon.asCSSSelector(starEmptyIcon)),
+						$(`span${ThemeIcon.asCSSSelector(starEmptyIcon)}`),
 					);
 				}
 			}
@@ -374,9 +374,9 @@ export class SponsorWidget extends ExtensionWidget {
 					SponsorExtensionEvent,
 					SponsorExtensionClassification
 				>("extensionsAction.sponsorExtension", {
-					extensionId: this.extension!.identifier.id,
+					extensionId: this.extension?.identifier.id,
 				});
-				this.openerService.open(this.extension!.publisherSponsorLink!);
+				this.openerService.open(this.extension?.publisherSponsorLink!);
 			}),
 		);
 	}
@@ -425,7 +425,7 @@ export class RecommendationWidget extends ExtensionWidget {
 			const recommendation = append(this.element, $(".recommendation"));
 			append(
 				recommendation,
-				$("span" + ThemeIcon.asCSSSelector(ratingIcon)),
+				$(`span${ThemeIcon.asCSSSelector(ratingIcon)}`),
 			);
 		}
 	}
@@ -465,7 +465,7 @@ export class PreReleaseBookmarkWidget extends ExtensionWidget {
 		}
 		this.element = append(this.parent, $("div.extension-bookmark"));
 		const preRelease = append(this.element, $(".pre-release"));
-		append(preRelease, $("span" + ThemeIcon.asCSSSelector(preReleaseIcon)));
+		append(preRelease, $(`span${ThemeIcon.asCSSSelector(preReleaseIcon)}`));
 	}
 }
 
@@ -500,10 +500,9 @@ export class RemoteBadgeWidget extends ExtensionWidget {
 	render(): void {
 		this.clear();
 		if (
-			!this.extension ||
-			!this.extension.local ||
-			!this.extension.server ||
 			!(
+				this.extension?.local &&
+				this.extension.server &&
 				this.extensionManagementServerService
 					.localExtensionManagementServer &&
 				this.extensionManagementServerService
@@ -539,7 +538,7 @@ class RemoteBadge extends Disposable {
 	}
 
 	private render(): void {
-		append(this.element, $("span" + ThemeIcon.asCSSSelector(remoteIcon)));
+		append(this.element, $(`span${ThemeIcon.asCSSSelector(remoteIcon)}`));
 
 		const applyBadgeStyle = () => {
 			if (!this.element) {
@@ -600,11 +599,11 @@ export class ExtensionPackCountWidget extends ExtensionWidget {
 	render(): void {
 		this.clear();
 		if (
-			!this.extension ||
-			!this.extension.categories?.some(
-				(category) => category.toLowerCase() === "extension packs",
-			) ||
-			!this.extension.extensionPack.length
+			!(
+				this.extension?.categories?.some(
+					(category) => category.toLowerCase() === "extension packs",
+				) && this.extension.extensionPack.length
+			)
 		) {
 			return;
 		}
@@ -660,8 +659,9 @@ export class SyncIgnoredWidget extends ExtensionWidget {
 			const element = append(
 				this.container,
 				$(
-					"span.extension-sync-ignored" +
-						ThemeIcon.asCSSSelector(syncIgnoredIcon),
+					`span.extension-sync-ignored${ThemeIcon.asCSSSelector(
+						syncIgnoredIcon,
+					)}`,
 				),
 			);
 			element.title = localize(
@@ -691,7 +691,7 @@ export class ExtensionActivationStatusWidget extends ExtensionWidget {
 					extensions.some((e) =>
 						areSameExtensions(
 							{ id: e.value },
-							this.extension!.identifier
+							this.extension?.identifier
 						)
 					)
 				) {
@@ -710,7 +710,7 @@ export class ExtensionActivationStatusWidget extends ExtensionWidget {
 
 		const extensionStatus =
 			this.extensionsWorkbenchService.getExtensionStatus(this.extension);
-		if (!extensionStatus || !extensionStatus.activationTimes) {
+		if (!extensionStatus?.activationTimes) {
 			return;
 		}
 
@@ -720,7 +720,7 @@ export class ExtensionActivationStatusWidget extends ExtensionWidget {
 		if (this.small) {
 			append(
 				this.container,
-				$("span" + ThemeIcon.asCSSSelector(activationTimeIcon)),
+				$(`span${ThemeIcon.asCSSSelector(activationTimeIcon)}`),
 			);
 			const activationTimeElement = append(
 				this.container,
@@ -832,7 +832,7 @@ export class ExtensionHoverWidget extends ExtensionWidget {
 				)}&nbsp;</span>`,
 			);
 		}
-		markdown.appendText(`\n`);
+		markdown.appendText("\n");
 
 		if (this.extension.state === ExtensionState.Installed) {
 			let addSeparator = false;
@@ -842,7 +842,7 @@ export class ExtensionHoverWidget extends ExtensionWidget {
 			);
 			if (installLabel) {
 				if (addSeparator) {
-					markdown.appendText(`  |  `);
+					markdown.appendText("  |  ");
 				}
 				markdown.appendMarkdown(
 					`$(${installCountIcon.id}) ${installLabel}`,
@@ -851,7 +851,7 @@ export class ExtensionHoverWidget extends ExtensionWidget {
 			}
 			if (this.extension.rating) {
 				if (addSeparator) {
-					markdown.appendText(`  |  `);
+					markdown.appendText("  |  ");
 				}
 				const rating = Math.round(this.extension.rating * 2) / 2;
 				markdown.appendMarkdown(
@@ -861,7 +861,7 @@ export class ExtensionHoverWidget extends ExtensionWidget {
 			}
 			if (this.extension.publisherSponsorLink) {
 				if (addSeparator) {
-					markdown.appendText(`  |  `);
+					markdown.appendText("  |  ");
 				}
 				markdown.appendMarkdown(
 					`$(${sponsorIcon.id}) [${localize("sponsor", "Sponsor")}](${
@@ -871,13 +871,13 @@ export class ExtensionHoverWidget extends ExtensionWidget {
 				addSeparator = true;
 			}
 			if (addSeparator) {
-				markdown.appendText(`\n`);
+				markdown.appendText("\n");
 			}
 		}
 
 		if (this.extension.description) {
 			markdown.appendMarkdown(`${this.extension.description}`);
-			markdown.appendText(`\n`);
+			markdown.appendText("\n");
 		}
 
 		if (this.extension.publisherDomain?.verified) {
@@ -898,7 +898,7 @@ export class ExtensionHoverWidget extends ExtensionWidget {
 					verifiedPublisherIcon.id
 				})</span>&nbsp;${publisherVerifiedTooltip}`,
 			);
-			markdown.appendText(`\n`);
+			markdown.appendText("\n");
 		}
 
 		if (this.extension.outdated) {
@@ -908,7 +908,7 @@ export class ExtensionHoverWidget extends ExtensionWidget {
 			markdown.appendMarkdown(
 				`&nbsp;<span style="background-color:#8080802B;">**&nbsp;_v${this.extension.latestVersion}_**&nbsp;</span>`,
 			);
-			markdown.appendText(`\n`);
+			markdown.appendText("\n");
 		}
 
 		const preReleaseMessage = ExtensionHoverWidget.getPreReleaseMessage(
@@ -929,8 +929,8 @@ export class ExtensionHoverWidget extends ExtensionWidget {
 			recommendationMessage ||
 			preReleaseMessage
 		) {
-			markdown.appendMarkdown(`---`);
-			markdown.appendText(`\n`);
+			markdown.appendMarkdown("---");
+			markdown.appendText("\n");
 
 			if (extensionRuntimeStatus) {
 				if (extensionRuntimeStatus.activationTimes) {
@@ -945,7 +945,7 @@ export class ExtensionHoverWidget extends ExtensionWidget {
 								: ""
 						}: \`${activationTime}ms\``,
 					);
-					markdown.appendText(`\n`);
+					markdown.appendText("\n");
 				}
 				if (
 					extensionRuntimeStatus.runtimeErrors.length ||
@@ -1018,7 +1018,7 @@ export class ExtensionHoverWidget extends ExtensionWidget {
 					} else {
 						markdown.appendMarkdown(`${errorsLink || messageLink}`);
 					}
-					markdown.appendText(`\n`);
+					markdown.appendText("\n");
 				}
 			}
 
@@ -1048,13 +1048,13 @@ export class ExtensionHoverWidget extends ExtensionWidget {
 						)})`,
 					);
 				}
-				markdown.appendText(`\n`);
+				markdown.appendText("\n");
 			}
 
 			if (reloadRequiredMessage) {
 				markdown.appendMarkdown(`$(${infoIcon.id})&nbsp;`);
 				markdown.appendMarkdown(`${reloadRequiredMessage}`);
-				markdown.appendText(`\n`);
+				markdown.appendText("\n");
 			}
 
 			if (preReleaseMessage) {
@@ -1072,12 +1072,12 @@ export class ExtensionHoverWidget extends ExtensionWidget {
 						preReleaseIcon.id
 					})</span>&nbsp;${preReleaseMessage}`,
 				);
-				markdown.appendText(`\n`);
+				markdown.appendText("\n");
 			}
 
 			if (recommendationMessage) {
 				markdown.appendMarkdown(recommendationMessage);
-				markdown.appendText(`\n`);
+				markdown.appendText("\n");
 			}
 		}
 
@@ -1227,7 +1227,7 @@ export class ExtensionRecommendationWidget extends ExtensionWidget {
 			append(
 				this.container,
 				$(
-					`div.recommendation-text`,
+					"div.recommendation-text",
 					undefined,
 					recommendationStatus.message,
 				),

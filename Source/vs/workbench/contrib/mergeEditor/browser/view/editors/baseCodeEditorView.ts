@@ -174,7 +174,7 @@ export class BaseCodeEditorView extends CodeEditorView {
 						result.push({
 							range,
 							options: {
-								className: `merge-editor-diff base`,
+								className: "merge-editor-diff base",
 								description: "Merge Editor",
 								isWholeLine: true,
 							},
@@ -190,8 +190,8 @@ export class BaseCodeEditorView extends CodeEditorView {
 								range: diff2.inputRange,
 								options: {
 									className: diff2.inputRange.isEmpty()
-										? `merge-editor-diff-empty-word base`
-										: `merge-editor-diff-word base`,
+										? "merge-editor-diff-empty-word base"
+										: "merge-editor-diff-word base",
 									description: "Merge Editor",
 									showIfCollapsed: true,
 								},

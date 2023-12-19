@@ -376,7 +376,7 @@ class EditSessionDataViewDataProvider implements ITreeViewDataProvider {
 				label: { label },
 				description: description,
 				themeIcon: Codicon.repo,
-				contextValue: `edit-session`,
+				contextValue: "edit-session",
 			});
 		}
 

@@ -377,7 +377,7 @@ export function shorten(
 						result = result + ellipsis + pathSeparator;
 					}
 
-					result = result + subpath;
+					result += subpath;
 
 					// add ellipsis at the end if needed
 					if (start + subpathLength < segments.length) {

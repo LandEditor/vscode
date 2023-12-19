@@ -390,7 +390,7 @@ export class ExtensionsListView extends ViewPane {
 	protected override layoutBody(height: number, width: number): void {
 		super.layoutBody(height, width);
 		if (this.bodyTemplate) {
-			this.bodyTemplate.extensionsList.style.height = height + "px";
+			this.bodyTemplate.extensionsList.style.height = `${height}px`;
 		}
 		this.list?.layout(height, width);
 	}
@@ -419,21 +419,26 @@ export class ExtensionsListView extends ViewPane {
 		};
 
 		switch (parsedQuery.sortBy) {
-			case "installs":
+			case "installs": {
 				options.sortBy = GallerySortBy.InstallCount;
 				break;
-			case "rating":
+			}
+			case "rating": {
 				options.sortBy = GallerySortBy.WeightedRating;
 				break;
-			case "name":
+			}
+			case "name": {
 				options.sortBy = GallerySortBy.Title;
 				break;
-			case "publishedDate":
+			}
+			case "publishedDate": {
 				options.sortBy = GallerySortBy.PublishedDate;
 				break;
-			case "updateDate":
+			}
+			case "updateDate": {
 				options.sortBy = LocalSortBy.UpdateDate;
 				break;
+			}
 		}
 
 		const request = createCancelablePromise(async (token) => {
@@ -494,10 +499,10 @@ export class ExtensionsListView extends ViewPane {
 						(local) =>
 							areSameExtensions(
 								local.identifier,
-								e.element!.identifier,
+								e.element?.identifier,
 							) &&
-							(!e.element!.server ||
-								e.element!.server === local.server),
+							(!e.element?.server ||
+								e.element?.server === local.server),
 				  ) || e.element
 				: e.element;
 			manageExtensionAction.extension = extension;
@@ -781,9 +786,9 @@ export class ExtensionsListView extends ViewPane {
 		const isThemeExtension = (e: IExtension): boolean => {
 			return (
 				(Array.isArray(e.local?.manifest?.contributes?.themes) &&
-					e.local!.manifest!.contributes!.themes.length > 0) ||
+					e.local?.manifest?.contributes?.themes.length > 0) ||
 				(Array.isArray(e.local?.manifest?.contributes?.iconThemes) &&
-					e.local!.manifest!.contributes!.iconThemes.length > 0)
+					e.local?.manifest?.contributes?.iconThemes.length > 0)
 			);
 		};
 		if (showThemesOnly) {
@@ -795,7 +800,7 @@ export class ExtensionsListView extends ViewPane {
 			return (
 				FORCE_FEATURE_EXTENSIONS.indexOf(e.identifier.id) === -1 &&
 				Array.isArray(e.local?.manifest?.contributes?.grammars) &&
-				e.local!.manifest!.contributes!.grammars.length > 0
+				e.local?.manifest?.contributes?.grammars.length > 0
 			);
 		};
 		if (showBasicsOnly) {
@@ -805,8 +810,7 @@ export class ExtensionsListView extends ViewPane {
 		if (showFeaturesOnly) {
 			const others = result.filter((e) => {
 				return (
-					e.local &&
-					e.local.manifest &&
+					e.local?.manifest &&
 					!isThemeExtension(e) &&
 					!isLanguageBasicExtension(e)
 				);
@@ -855,7 +859,7 @@ export class ExtensionsListView extends ViewPane {
 				e.description.toLowerCase().indexOf(value) > -1) &&
 			(!categories.length ||
 				categories.some((category) =>
-					((e.local && e.local.manifest.categories) || []).some(
+					(e.local?.manifest.categories || []).some(
 						(c) => c.toLowerCase() === category,
 					),
 				));
@@ -900,7 +904,7 @@ export class ExtensionsListView extends ViewPane {
 					e1.local && isLanguagePackExtension(e1.local.manifest);
 				const isE2LanguagePackExtension =
 					e2.local && isLanguagePackExtension(e2.local.manifest);
-				if (!isE1Running && !isE2Running) {
+				if (!(isE1Running || isE2Running)) {
 					if (isE1LanguagePackExtension) {
 						return -1;
 					}
@@ -965,7 +969,7 @@ export class ExtensionsListView extends ViewPane {
 						categories.some(
 							(category) =>
 								!!extension.local &&
-								extension.local.manifest.categories!.some(
+								extension.local.manifest.categories?.some(
 									(c) => c.toLowerCase() === category,
 								),
 						)),
@@ -1003,10 +1007,9 @@ export class ExtensionsListView extends ViewPane {
 						e.displayName.toLowerCase().indexOf(value) > -1) &&
 					(!categories.length ||
 						categories.some((category) =>
-							(
-								(e.local && e.local.manifest.categories) ||
-								[]
-							).some((c) => c.toLowerCase() === category),
+							(e.local?.manifest.categories || []).some(
+								(c) => c.toLowerCase() === category,
+							),
 						)),
 			);
 
@@ -1044,10 +1047,9 @@ export class ExtensionsListView extends ViewPane {
 						e.displayName.toLowerCase().indexOf(value) > -1) &&
 					(!categories.length ||
 						categories.some((category) =>
-							(
-								(e.local && e.local.manifest.categories) ||
-								[]
-							).some((c) => c.toLowerCase() === category),
+							(e.local?.manifest.categories || []).some(
+								(c) => c.toLowerCase() === category,
+							),
 						)),
 			);
 
@@ -1221,8 +1223,7 @@ export class ExtensionsListView extends ViewPane {
 		const currentTime = Date.now();
 		local = local.filter(
 			(e) =>
-				!e.isBuiltin &&
-				!e.outdated &&
+				!(e.isBuiltin || e.outdated) &&
 				e.local?.updated &&
 				e.local?.installedTimestamp !== undefined &&
 				currentTime - e.local.installedTimestamp <
@@ -1241,7 +1242,7 @@ export class ExtensionsListView extends ViewPane {
 					e.displayName.toLowerCase().indexOf(value) > -1) &&
 				(!categories.length ||
 					categories.some((category) =>
-						((e.local && e.local.manifest.categories) || []).some(
+						(e.local?.manifest.categories || []).some(
 							(c) => c.toLowerCase() === category,
 						),
 					)),
@@ -1301,7 +1302,7 @@ export class ExtensionsListView extends ViewPane {
 		token: CancellationToken,
 	): Promise<IPagedModel<IExtension>> {
 		const hasUserDefinedSortOrder = options.sortBy !== undefined;
-		if (!hasUserDefinedSortOrder && !query.value.trim()) {
+		if (!(hasUserDefinedSortOrder || query.value.trim())) {
 			options.sortBy = GallerySortBy.InstallCount;
 		}
 
@@ -1381,7 +1382,7 @@ export class ExtensionsListView extends ViewPane {
 		options: IQueryOptions,
 	): IExtension[] {
 		switch (options.sortBy) {
-			case GallerySortBy.InstallCount:
+			case GallerySortBy.InstallCount: {
 				extensions = extensions.sort((e1, e2) =>
 					typeof e2.installCount === "number" &&
 					typeof e1.installCount === "number"
@@ -1389,7 +1390,8 @@ export class ExtensionsListView extends ViewPane {
 						: NaN,
 				);
 				break;
-			case LocalSortBy.UpdateDate:
+			}
+			case LocalSortBy.UpdateDate: {
 				extensions = extensions.sort((e1, e2) =>
 					typeof e2.local?.installedTimestamp === "number" &&
 					typeof e1.local?.installedTimestamp === "number"
@@ -1402,8 +1404,9 @@ export class ExtensionsListView extends ViewPane {
 							  : NaN,
 				);
 				break;
+			}
 			case GallerySortBy.AverageRating:
-			case GallerySortBy.WeightedRating:
+			case GallerySortBy.WeightedRating: {
 				extensions = extensions.sort((e1, e2) =>
 					typeof e2.rating === "number" &&
 					typeof e1.rating === "number"
@@ -1411,11 +1414,13 @@ export class ExtensionsListView extends ViewPane {
 						: NaN,
 				);
 				break;
-			default:
+			}
+			default: {
 				extensions = extensions.sort((e1, e2) =>
 					e1.displayName.localeCompare(e2.displayName),
 				);
 				break;
+			}
 		}
 		if (options.sortOrder === SortOrder.Descending) {
 			extensions = extensions.reverse();
@@ -1714,9 +1719,11 @@ export class ExtensionsListView extends ViewPane {
 				]),
 			).filter(
 				(extensionId) =>
-					!local.includes(extensionId.toLowerCase()) &&
-					!workspaceRecommendations.includes(
-						extensionId.toLowerCase(),
+					!(
+						local.includes(extensionId.toLowerCase()) ||
+						workspaceRecommendations.includes(
+							extensionId.toLowerCase(),
+						)
 					),
 			),
 			(extensionId) => extensionId.toLowerCase(),
@@ -1909,7 +1916,7 @@ export class ExtensionsListView extends ViewPane {
 			return;
 		}
 
-		const message = (err && err.message) || "";
+		const message = err?.message || "";
 
 		if (/ECONNREFUSED/.test(message)) {
 			const error = createErrorWithActions(
@@ -1968,18 +1975,20 @@ export class ExtensionsListView extends ViewPane {
 
 	static isLocalExtensionsQuery(query: string, sortBy?: string): boolean {
 		return (
-			this.isInstalledExtensionsQuery(query) ||
-			this.isOutdatedExtensionsQuery(query) ||
-			this.isEnabledExtensionsQuery(query) ||
-			this.isDisabledExtensionsQuery(query) ||
-			this.isBuiltInExtensionsQuery(query) ||
-			this.isSearchBuiltInExtensionsQuery(query) ||
-			this.isBuiltInGroupExtensionsQuery(query) ||
-			this.isSearchDeprecatedExtensionsQuery(query) ||
-			this.isSearchWorkspaceUnsupportedExtensionsQuery(query) ||
-			this.isSearchRecentlyUpdatedQuery(query) ||
-			this.isSearchExtensionUpdatesQuery(query) ||
-			this.isSortInstalledExtensionsQuery(query, sortBy)
+			ExtensionsListView.isInstalledExtensionsQuery(query) ||
+			ExtensionsListView.isOutdatedExtensionsQuery(query) ||
+			ExtensionsListView.isEnabledExtensionsQuery(query) ||
+			ExtensionsListView.isDisabledExtensionsQuery(query) ||
+			ExtensionsListView.isBuiltInExtensionsQuery(query) ||
+			ExtensionsListView.isSearchBuiltInExtensionsQuery(query) ||
+			ExtensionsListView.isBuiltInGroupExtensionsQuery(query) ||
+			ExtensionsListView.isSearchDeprecatedExtensionsQuery(query) ||
+			ExtensionsListView.isSearchWorkspaceUnsupportedExtensionsQuery(
+				query,
+			) ||
+			ExtensionsListView.isSearchRecentlyUpdatedQuery(query) ||
+			ExtensionsListView.isSearchExtensionUpdatesQuery(query) ||
+			ExtensionsListView.isSortInstalledExtensionsQuery(query, sortBy)
 		);
 	}
 
@@ -2126,7 +2135,7 @@ export class EnabledExtensionsView extends ExtensionsListView {
 		return ExtensionsListView.isEnabledExtensionsQuery(query)
 			? super.show(query)
 			: ExtensionsListView.isSortInstalledExtensionsQuery(query)
-			  ? super.show("@enabled " + query)
+			  ? super.show(`@enabled ${query}`)
 			  : this.showEmptyModel();
 	}
 }
@@ -2137,7 +2146,7 @@ export class DisabledExtensionsView extends ExtensionsListView {
 		return ExtensionsListView.isDisabledExtensionsQuery(query)
 			? super.show(query)
 			: ExtensionsListView.isSortInstalledExtensionsQuery(query)
-			  ? super.show("@disabled " + query)
+			  ? super.show(`@disabled ${query}`)
 			  : this.showEmptyModel();
 	}
 }
@@ -2194,7 +2203,7 @@ function toSpecificWorkspaceUnsupportedQuery(
 	qualifier: string,
 ): string | undefined {
 	if (!query) {
-		return "@workspaceUnsupported:" + qualifier;
+		return `@workspaceUnsupported:${qualifier}`;
 	}
 	const match = query.match(
 		new RegExp(`@workspaceUnsupported(:${qualifier})?(\\s|$)`, "i"),
@@ -2203,7 +2212,7 @@ function toSpecificWorkspaceUnsupportedQuery(
 		if (!match[1]) {
 			return query.replace(
 				/@workspaceUnsupported/gi,
-				"@workspaceUnsupported:" + qualifier,
+				`@workspaceUnsupported:${qualifier}`,
 			);
 		}
 		return query;

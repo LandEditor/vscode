@@ -26,7 +26,7 @@ const mockConfig = Object.freeze<IExternalTerminalConfiguration>({
 });
 
 suite("ExternalTerminalService", () => {
-	test(`WinTerminalService - uses terminal from configuration`, (done) => {
+	test("WinTerminalService - uses terminal from configuration", (done) => {
 		const testShell = "cmd";
 		const testCwd = "path/to/workspace";
 		const mockSpawner: any = {
@@ -52,7 +52,7 @@ suite("ExternalTerminalService", () => {
 		);
 	});
 
-	test(`WinTerminalService - uses default terminal when configuration.terminal.external.windowsExec is undefined`, (done) => {
+	test("WinTerminalService - uses default terminal when configuration.terminal.external.windowsExec is undefined", (done) => {
 		const testShell = "cmd";
 		const testCwd = "path/to/workspace";
 		const mockSpawner: any = {
@@ -77,7 +77,7 @@ suite("ExternalTerminalService", () => {
 		);
 	});
 
-	test(`WinTerminalService - cwd is correct regardless of case`, (done) => {
+	test("WinTerminalService - cwd is correct regardless of case", (done) => {
 		const testShell = "cmd";
 		const testCwd = "c:/foo";
 		const mockSpawner: any = {
@@ -102,7 +102,7 @@ suite("ExternalTerminalService", () => {
 		);
 	});
 
-	test(`WinTerminalService - cmder should be spawned differently`, (done) => {
+	test("WinTerminalService - cmder should be spawned differently", (done) => {
 		const testShell = "cmd";
 		const testCwd = "c:/foo";
 		const mockSpawner: any = {
@@ -122,7 +122,7 @@ suite("ExternalTerminalService", () => {
 		);
 	});
 
-	test(`WinTerminalService - windows terminal should open workspace directory`, (done) => {
+	test("WinTerminalService - windows terminal should open workspace directory", (done) => {
 		const testShell = "wt";
 		const testCwd = "c:/foo";
 		const mockSpawner: any = {
@@ -141,7 +141,7 @@ suite("ExternalTerminalService", () => {
 		);
 	});
 
-	test(`MacTerminalService - uses terminal from configuration`, (done) => {
+	test("MacTerminalService - uses terminal from configuration", (done) => {
 		const testCwd = "path/to/workspace";
 		const mockSpawner: any = {
 			spawn: (command: any, args: any, opts: any) => {
@@ -160,7 +160,7 @@ suite("ExternalTerminalService", () => {
 		);
 	});
 
-	test(`MacTerminalService - uses default terminal when configuration.terminal.external.osxExec is undefined`, (done) => {
+	test("MacTerminalService - uses default terminal when configuration.terminal.external.osxExec is undefined", (done) => {
 		const testCwd = "path/to/workspace";
 		const mockSpawner: any = {
 			spawn: (command: any, args: any, opts: any) => {
@@ -175,7 +175,7 @@ suite("ExternalTerminalService", () => {
 		testService.spawnTerminal(mockSpawner, { osxExec: undefined }, testCwd);
 	});
 
-	test(`LinuxTerminalService - uses terminal from configuration`, (done) => {
+	test("LinuxTerminalService - uses terminal from configuration", (done) => {
 		const testCwd = "path/to/workspace";
 		const mockSpawner: any = {
 			spawn: (command: any, args: any, opts: any) => {
@@ -195,7 +195,7 @@ suite("ExternalTerminalService", () => {
 		);
 	});
 
-	test(`LinuxTerminalService - uses default terminal when configuration.terminal.external.linuxExec is undefined`, (done) => {
+	test("LinuxTerminalService - uses default terminal when configuration.terminal.external.linuxExec is undefined", (done) => {
 		LinuxExternalTerminalService.getDefaultTerminalLinuxReady().then(
 			(defaultTerminalLinux) => {
 				const testCwd = "path/to/workspace";

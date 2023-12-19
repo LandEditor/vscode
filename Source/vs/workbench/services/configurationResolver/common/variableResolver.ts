@@ -159,9 +159,9 @@ export class AbstractVariableResolverService
 		}
 
 		// delete all platform specific sections
-		delete result.windows;
-		delete result.osx;
-		delete result.linux;
+		result.windows = undefined;
+		result.osx = undefined;
+		result.linux = undefined;
 
 		// substitute all variables recursively in string values
 		const environmentPromises: Environment = {
@@ -227,7 +227,7 @@ export class AbstractVariableResolverService
 		resolution: () => Promise<string | undefined>,
 	): void {
 		if (this._contributedVariables.has(variable)) {
-			throw new Error("Variable " + variable + " is contributed twice.");
+			throw new Error(`Variable ${variable} is contributed twice.`);
 		} else {
 			this._contributedVariables.set(variable, resolution);
 		}
@@ -447,7 +447,7 @@ export class AbstractVariableResolverService
 		};
 
 		switch (variable) {
-			case "env":
+			case "env": {
 				if (argument) {
 					if (environment.env) {
 						// Depending on the source of the environment, on Windows, the values may all be lowercase.
@@ -470,8 +470,9 @@ export class AbstractVariableResolverService
 						match,
 					),
 				);
+			}
 
-			case "config":
+			case "config": {
 				if (argument) {
 					const config = this._context.getConfigurationValue(
 						folderUri,
@@ -509,6 +510,7 @@ export class AbstractVariableResolverService
 						match,
 					),
 				);
+			}
 
 			case "command":
 				return this.resolveFromMap(
@@ -528,7 +530,7 @@ export class AbstractVariableResolverService
 					"input",
 				);
 
-			case "extensionInstallFolder":
+			case "extensionInstallFolder": {
 				if (argument) {
 					const ext = await this._context.getExtension(argument);
 					if (!ext) {
@@ -552,6 +554,7 @@ export class AbstractVariableResolverService
 						match,
 					),
 				);
+			}
 
 			default: {
 				switch (variable) {
@@ -639,7 +642,7 @@ export class AbstractVariableResolverService
 							),
 						);
 
-					case "relativeFile":
+					case "relativeFile": {
 						if (folderUri || argument) {
 							return paths.relative(
 								this.fsPath(
@@ -649,6 +652,7 @@ export class AbstractVariableResolverService
 							);
 						}
 						return getFilePath(VariableKind.RelativeFile);
+					}
 
 					case "relativeFileDirname": {
 						const dirname = paths.dirname(
@@ -747,7 +751,7 @@ export class AbstractVariableResolverService
 			const v =
 				prefix === undefined
 					? commandValueMapping[argument]
-					: commandValueMapping[prefix + ":" + argument];
+					: commandValueMapping[`${prefix}:${argument}`];
 			if (typeof v === "string") {
 				return v;
 			}

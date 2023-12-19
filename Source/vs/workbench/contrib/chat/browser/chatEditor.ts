@@ -142,7 +142,7 @@ export class ChatEditor extends EditorPane {
 
 	private updateModel(model: IChatModel): void {
 		this._memento = new Memento(
-			"interactive-session-editor-" + model.sessionId,
+			`interactive-session-editor-${model.sessionId}`,
 			this.storageService,
 		);
 		this._viewState = this._memento.getMemento(
@@ -158,7 +158,7 @@ export class ChatEditor extends EditorPane {
 		if (this._memento && this._viewState) {
 			const widgetViewState = this.widget.getViewState();
 			this._viewState!.inputValue = widgetViewState.inputValue;
-			this._memento!.saveMemento();
+			this._memento?.saveMemento();
 		}
 	}
 

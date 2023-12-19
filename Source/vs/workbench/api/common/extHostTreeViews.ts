@@ -102,8 +102,7 @@ export class ExtHostTreeViews
 		super();
 		function isTreeViewConvertableItem(arg: any): boolean {
 			return (
-				arg &&
-				arg.$treeViewId &&
+				arg?.$treeViewId &&
 				(arg.$treeItemHandle ||
 					arg.$selectedTreeItems ||
 					arg.$focusedTreeItem)
@@ -144,7 +143,7 @@ export class ExtHostTreeViews
 		options: vscode.TreeViewOptions<T>,
 		extension: IExtensionDescription,
 	): vscode.TreeView<T> {
-		if (!options || !options.treeDataProvider) {
+		if (!options?.treeDataProvider) {
 			throw new Error("Options with treeDataProvider is mandatory");
 		}
 		const dropMimeTypes =
@@ -556,7 +555,7 @@ class ExtHostTreeView<T> extends Disposable {
 		private extension: IExtensionDescription,
 	) {
 		super();
-		if (extension.contributes && extension.contributes.views) {
+		if (extension.contributes?.views) {
 			for (const location in extension.contributes.views) {
 				for (const view of extension.contributes.views[location]) {
 					if (view.id === viewId) {
@@ -954,7 +953,7 @@ class ExtHostTreeView<T> extends Disposable {
 					: undefined,
 			);
 		}
-		return asPromise(() => this.dataProvider.getParent!(element));
+		return asPromise(() => this.dataProvider.getParent?.(element));
 	}
 
 	private resolveTreeNode(element: T, parent?: TreeNode): Promise<TreeNode> {
@@ -1077,12 +1076,10 @@ class ExtHostTreeView<T> extends Disposable {
 				// check if an ancestor of extElement is already in the elements list
 				let currentNode: TreeNode | undefined = elementNode;
 				while (
-					currentNode &&
-					currentNode.parent &&
+					currentNode?.parent &&
 					elementNodes.findIndex(
 						(node) =>
-							currentNode &&
-							currentNode.parent &&
+							currentNode?.parent &&
 							node &&
 							node.item.handle === currentNode.parent.item.handle,
 					) === -1
@@ -1108,8 +1105,10 @@ class ExtHostTreeView<T> extends Disposable {
 				const node = this.nodes.get(element);
 				if (
 					node &&
-					(!node.parent ||
-						!elementsToUpdate.has(node.parent.item.handle))
+					!(
+						node.parent &&
+						elementsToUpdate.has(node.parent.item.handle)
+					)
 				) {
 					handlesToUpdate.push(handle);
 				}
@@ -1324,7 +1323,7 @@ class ExtHostTreeView<T> extends Disposable {
 				? elementId.replace("/", "//")
 				: elementId;
 		const existingHandle = this.nodes.has(element)
-			? this.nodes.get(element)!.item.handle
+			? this.nodes.get(element)?.item.handle
 			: undefined;
 		const childrenNodes = this.getChildrenNodes(parent) || [];
 

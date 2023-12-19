@@ -265,7 +265,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 		if (this._isExtensionDevHost) {
 			// Unset `VSCODE_CODE_CACHE_PATH` when developing extensions because it might
 			// be that dependencies, that otherwise would be cached, get modified.
-			delete env["VSCODE_CODE_CACHE_PATH"];
+			env["VSCODE_CODE_CACHE_PATH"] = undefined;
 		}
 
 		const opts: IExtensionHostProcessOptions = {
@@ -339,13 +339,15 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 
 		// Print out extension host output
 		onDebouncedOutput((output) => {
-			const inspectorUrlMatch =
-				output.data &&
-				output.data.match(/ws:\/\/([^\s]+:(\d+)\/[^\s]+)/);
+			const inspectorUrlMatch = output.data?.match(
+				/ws:\/\/([^\s]+:(\d+)\/[^\s]+)/,
+			);
 			if (inspectorUrlMatch) {
 				if (
-					!this._environmentService.isBuilt &&
-					!this._isExtensionDevTestFromCli
+					!(
+						this._environmentService.isBuilt ||
+						this._isExtensionDevTestFromCli
+					)
 				) {
 					console.log(
 						`%c[Extension Host] %cdebugger inspector at devtools://devtools/bundled/inspector.html?experiments=true&v8only=true&ws=${inspectorUrlMatch[1]}`,
@@ -390,8 +392,10 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 		// Help in case we fail to start it
 		let startupTimeoutHandle: any;
 		if (
-			(!this._environmentService.isBuilt &&
-				!this._environmentService.remoteAuthority) ||
+			!(
+				this._environmentService.isBuilt ||
+				this._environmentService.remoteAuthority
+			) ||
 			this._isExtensionDevHost
 		) {
 			startupTimeoutHandle = setTimeout(() => {
@@ -605,7 +609,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 				}
 
 				console.error(
-					`received unexpected message during handshake phase from the extension host: `,
+					"received unexpected message during handshake phase from the extension host: ",
 					msg,
 				);
 			});
@@ -731,7 +735,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 				} else if (line === NativeLogMarkers.Start) {
 					isOmitting = true;
 				} else if (line.length) {
-					event.fire(line + "\n");
+					event.fire(`${line}\n`);
 				}
 			}
 		});

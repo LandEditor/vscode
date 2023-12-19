@@ -7,7 +7,7 @@ import * as pathUtils from "path";
 import * as vscode from "vscode";
 
 const FILE_LINE_REGEX = /^(\S.*):$/;
-const RESULT_LINE_REGEX = /^(\s+)(\d+)(: |  )(\s*)(.*)$/;
+const RESULT_LINE_REGEX = /^(\s+)(\d+)(: | {2})(\s*)(.*)$/;
 const ELISION_REGEX = /⟪ ([0-9]+) characters skipped ⟫/g;
 const SEARCH_RESULT_SELECTOR = { language: "search-result", exclusive: true };
 const DIRECTIVES = [
@@ -110,7 +110,7 @@ export function activate(context: vscode.ExtensionContext) {
 							),
 						).map((flag) => ({
 							label: flag,
-							insertText: flag.slice(position.character) + " ",
+							insertText: `${flag.slice(position.character)} `,
 						}));
 					}
 
@@ -120,7 +120,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 					return FLAGS.filter(
 						(flag) => line.text.indexOf(flag) === -1,
-					).map((flag) => ({ label: flag, insertText: flag + " " }));
+					).map((flag) => ({ label: flag, insertText: `${flag} ` }));
 				},
 			},
 			"#",

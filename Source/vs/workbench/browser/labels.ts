@@ -53,7 +53,7 @@ export interface IResourceLabelProps {
 }
 
 function toResource(props: IResourceLabelProps | undefined): URI | undefined {
-	if (!props || !props.resource) {
+	if (!props?.resource) {
 		return undefined;
 	}
 
@@ -540,8 +540,7 @@ class ResourceLabelWidget extends IconLabel {
 			label?.resource && !URI.isUri(label.resource);
 
 		if (
-			!options.forceLabel &&
-			!isSideBySideEditor &&
+			!(options.forceLabel || isSideBySideEditor) &&
 			resource?.scheme === Schemas.untitled
 		) {
 			// Untitled labels are very dynamic because they may change
@@ -618,7 +617,7 @@ class ResourceLabelWidget extends IconLabel {
 			return newResource.toString() !== oldResource.toString();
 		}
 
-		if (!newResource && !oldResource) {
+		if (!(newResource || oldResource)) {
 			return false;
 		}
 

@@ -215,7 +215,7 @@ export class StorageMainService
 
 	private createApplicationStorage(): IStorageMain {
 		this.logService.trace(
-			`StorageMainService: creating application storage`,
+			"StorageMainService: creating application storage",
 		);
 
 		const applicationStorage = new ApplicationStorageMain(
@@ -228,7 +228,7 @@ export class StorageMainService
 		this._register(
 			Event.once(applicationStorage.onDidCloseStorage)(() => {
 				this.logService.trace(
-					`StorageMainService: closed application storage`,
+					"StorageMainService: closed application storage",
 				);
 			}),
 		);

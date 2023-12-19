@@ -84,7 +84,7 @@ export function getShellProcessTooltip(
 
 	if (instance.processId) {
 		lines.push(
-			localize(
+			`${localize(
 				{
 					key: "shellProcessTooltip.processId",
 					comment: [
@@ -94,7 +94,7 @@ export function getShellProcessTooltip(
 				"Process ID ({0}): {1}",
 				"PID",
 				instance.processId,
-			) + "\n",
+			)}\n`,
 		);
 	}
 

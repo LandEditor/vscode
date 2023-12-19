@@ -460,7 +460,7 @@ class PerfModelContentProvider implements ITextModelContentProvider {
 		] of this._timerService.getPerformanceMarks()) {
 			md.heading(2, `Raw Perf Marks: ${source}`);
 			md.value += "```\n";
-			md.value += `Name\tTimestamp\tDelta\tTotal\n`;
+			md.value += "Name\tTimestamp\tDelta\tTotal\n";
 			let lastStartTime = -1;
 			let total = 0;
 			for (const { name, startTime } of marks) {
@@ -498,7 +498,7 @@ class PerfModelContentProvider implements ITextModelContentProvider {
 		if (typeof require.getStats === "function") {
 			for (const stat of require.getStats()) {
 				if (map.has(stat.type)) {
-					map.get(stat.type)!.push(stat.detail);
+					map.get(stat.type)?.push(stat.detail);
 				}
 			}
 		}

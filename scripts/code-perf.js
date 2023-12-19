@@ -72,9 +72,10 @@ function getExePath(buildPath) {
 	}
 	let relativeExePath;
 	switch (process.platform) {
-		case "darwin":
+		case "darwin": {
 			relativeExePath = path.join("Contents", "MacOS", "Electron");
 			break;
+		}
 		case "linux": {
 			const product = require(
 				path.join(buildPath, "resources", "app", "product.json"),

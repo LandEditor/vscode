@@ -274,10 +274,10 @@ export class CursorsController extends Disposable {
 			let positionColumn = 1;
 
 			// Avoid missing properties on the literal
-			if (state.position && state.position.lineNumber) {
+			if (state.position?.lineNumber) {
 				positionLineNumber = state.position.lineNumber;
 			}
-			if (state.position && state.position.column) {
+			if (state.position?.column) {
 				positionColumn = state.position.column;
 			}
 
@@ -285,10 +285,10 @@ export class CursorsController extends Disposable {
 			let selectionStartColumn = positionColumn;
 
 			// Avoid missing properties on the literal
-			if (state.selectionStart && state.selectionStart.lineNumber) {
+			if (state.selectionStart?.lineNumber) {
 				selectionStartLineNumber = state.selectionStart.lineNumber;
 			}
-			if (state.selectionStart && state.selectionStart.column) {
+			if (state.selectionStart?.column) {
 				selectionStartColumn = state.selectionStart.column;
 			}
 
@@ -1204,7 +1204,7 @@ class CommandExecutor {
 			trackedRangesDirection: [],
 		};
 
-		const result = this._innerExecuteCommands(ctx, commands);
+		const result = CommandExecutor._innerExecuteCommands(ctx, commands);
 
 		for (let i = 0, len = ctx.trackedRanges.length; i < len; i++) {
 			ctx.model._setTrackedRange(
@@ -1221,18 +1221,19 @@ class CommandExecutor {
 		ctx: IExecContext,
 		commands: (editorCommon.ICommand | null)[],
 	): Selection[] | null {
-		if (this._arrayIsEmpty(commands)) {
+		if (CommandExecutor._arrayIsEmpty(commands)) {
 			return null;
 		}
 
-		const commandsData = this._getEditOperations(ctx, commands);
+		const commandsData = CommandExecutor._getEditOperations(ctx, commands);
 		if (commandsData.operations.length === 0) {
 			return null;
 		}
 
 		const rawOperations = commandsData.operations;
 
-		const loserCursorsMap = this._getLoserCursorMap(rawOperations);
+		const loserCursorsMap =
+			CommandExecutor._getLoserCursorMap(rawOperations);
 		if (loserCursorsMap.hasOwnProperty("0")) {
 			// These commands are very messed up
 			console.warn("Ignoring commands");
@@ -1244,7 +1245,7 @@ class CommandExecutor {
 		for (let i = 0, len = rawOperations.length; i < len; i++) {
 			if (
 				!loserCursorsMap.hasOwnProperty(
-					rawOperations[i].identifier!.major.toString(),
+					rawOperations[i].identifier?.major.toString(),
 				)
 			) {
 				filteredOperations.push(rawOperations[i]);
@@ -1279,13 +1280,13 @@ class CommandExecutor {
 					a: IValidEditOperation,
 					b: IValidEditOperation,
 				) => {
-					return a.identifier!.minor - b.identifier!.minor;
+					return a.identifier?.minor - b.identifier?.minor;
 				};
 				const cursorSelections: Selection[] = [];
 				for (let i = 0; i < ctx.selectionsBefore.length; i++) {
 					if (groupedInverseEditOperations[i].length > 0) {
 						groupedInverseEditOperations[i].sort(minorBasedSorter);
-						cursorSelections[i] = commands[i]!.computeCursorState(
+						cursorSelections[i] = commands[i]?.computeCursorState(
 							ctx.model,
 							{
 								getInverseEditOperations: () => {
@@ -1370,7 +1371,11 @@ class CommandExecutor {
 		for (let i = 0, len = commands.length; i < len; i++) {
 			const command = commands[i];
 			if (command) {
-				const r = this._getEditOperationsFromCommand(ctx, i, command);
+				const r = CommandExecutor._getEditOperationsFromCommand(
+					ctx,
+					i,
+					command,
+				);
 				operations = operations.concat(r.operations);
 				hadTrackedEditOperation =
 					hadTrackedEditOperation || r.hadTrackedEditOperation;
@@ -1518,18 +1523,18 @@ class CommandExecutor {
 				let loserMajor: number;
 
 				if (
-					previousOp.identifier!.major > currentOp.identifier!.major
+					previousOp.identifier?.major > currentOp.identifier?.major
 				) {
 					// previousOp loses the battle
-					loserMajor = previousOp.identifier!.major;
+					loserMajor = previousOp.identifier?.major;
 				} else {
-					loserMajor = currentOp.identifier!.major;
+					loserMajor = currentOp.identifier?.major;
 				}
 
 				loserCursorsMap[loserMajor.toString()] = true;
 
 				for (let j = 0; j < operations.length; j++) {
-					if (operations[j].identifier!.major === loserMajor) {
+					if (operations[j].identifier?.major === loserMajor) {
 						operations.splice(j, 1);
 						if (j < i) {
 							i--;

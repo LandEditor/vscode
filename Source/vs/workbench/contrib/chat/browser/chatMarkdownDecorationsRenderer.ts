@@ -50,7 +50,7 @@ export function walkTreeAndAnnotateReferenceLinks(
 		const href = a.getAttribute("data-href");
 		if (href) {
 			if (href.startsWith(variableRefUrl)) {
-				a.parentElement!.replaceChild(
+				a.parentElement?.replaceChild(
 					renderResourceWidget(a.textContent!),
 					a,
 				);
@@ -161,8 +161,8 @@ export function extractVulnerabilitiesFromText(text: string): {
 const contentRefUrl = "http://_vscodecontentref_"; // must be lowercase for URI
 
 export function annotateSpecialMarkdownContent(
-	response: ReadonlyArray<IChatProgressResponseContent>,
-): ReadonlyArray<IChatProgressRenderableResponseContent> {
+	response: readonly IChatProgressResponseContent[],
+): readonly IChatProgressRenderableResponseContent[] {
 	const result: Exclude<
 		IChatProgressResponseContent,
 		IChatContentInlineReference | IChatAgentMarkdownContentWithVulnerability

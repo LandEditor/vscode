@@ -80,9 +80,9 @@ export class WebLanguagePacksService extends LanguagePackBaseService {
 		const uri =
 			this.extensionResourceLoaderService.getExtensionGalleryResourceURL({
 				// If translation is defined then manifest should have been defined.
-				name: manifest!.name,
-				publisher: manifest!.publisher,
-				version: manifest!.version,
+				name: manifest?.name,
+				publisher: manifest?.publisher,
+				version: manifest?.version,
 			});
 		if (!uri) {
 			this.logService.trace(

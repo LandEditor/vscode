@@ -139,14 +139,14 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 			this._dropdown.focus();
 		} else {
 			this._primaryAction.element!.tabIndex = 0;
-			this._primaryAction.element!.focus();
+			this._primaryAction.element?.focus();
 		}
 	}
 
 	override blur(): void {
 		this._primaryAction.element!.tabIndex = -1;
 		this._dropdown.blur();
-		this._container!.blur();
+		this._container?.blur();
 	}
 
 	override setFocusable(focusable: boolean): void {

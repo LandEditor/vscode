@@ -271,9 +271,13 @@ class CodePointHighlighter {
 					hasBasicASCIICharacters || isBasicASCII;
 
 				if (
-					!isBasicASCII &&
-					!this.ambiguousCharacters.isAmbiguous(codePoint) &&
-					!strings.InvisibleCharacters.isInvisibleCharacter(codePoint)
+					!(
+						isBasicASCII ||
+						this.ambiguousCharacters.isAmbiguous(codePoint) ||
+						strings.InvisibleCharacters.isInvisibleCharacter(
+							codePoint,
+						)
+					)
 				) {
 					hasNonConfusableNonBasicAsciiCharacter = true;
 				}

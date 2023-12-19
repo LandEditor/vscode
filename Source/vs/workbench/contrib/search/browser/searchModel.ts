@@ -144,8 +144,9 @@ export class Match {
 
 		this._fullPreviewRange = _fullPreviewRange;
 
-		this._id =
-			this._parent.id() + ">" + this._range + this.getMatchString();
+		this._id = `${this._parent.id()}>${
+			this._range
+		}${this.getMatchString()}`;
 	}
 
 	id(): string {
@@ -172,15 +173,15 @@ export class Match {
 		after: string;
 	} {
 		const fullBefore = this._oneLinePreviewText.substring(
-				0,
-				this._rangeInPreviewText.startColumn - 1,
-			),
-			before = lcut(fullBefore, 26, "…");
+			0,
+			this._rangeInPreviewText.startColumn - 1,
+		);
+		const before = lcut(fullBefore, 26, "…");
 
-		let inside = this.getMatchString(),
-			after = this._oneLinePreviewText.substring(
-				this._rangeInPreviewText.endColumn - 1,
-			);
+		let inside = this.getMatchString();
+		let after = this._oneLinePreviewText.substring(
+			this._rangeInPreviewText.endColumn - 1,
+		);
 
 		let charsRemaining = Match.MAX_PREVIEW_CHARS - before.length;
 		inside = inside.substr(0, charsRemaining);
@@ -438,15 +439,11 @@ export class MatchInNotebook extends Match {
 			_fullPreviewRange,
 			_documentRange,
 		);
-		this._id =
-			this._parent.id() +
-			">" +
-			this._cellParent.cellIndex +
-			(webviewIndex ? "_" + webviewIndex : "") +
-			"_" +
-			this.notebookMatchTypeString() +
-			this._range +
-			this.getMatchString();
+		this._id = `${this._parent.id()}>${this._cellParent.cellIndex}${
+			webviewIndex ? `_${webviewIndex}` : ""
+		}_${this.notebookMatchTypeString()}${
+			this._range
+		}${this.getMatchString()}`;
 		this._webviewIndex = webviewIndex;
 	}
 
@@ -713,7 +710,7 @@ export class FileMatch extends Disposable implements IFileMatch {
 				);
 			});
 			this._model = null;
-			this._modelListener!.dispose();
+			this._modelListener?.dispose();
 		}
 	}
 
@@ -1202,7 +1199,7 @@ export class FileMatch extends Disposable implements IFileMatch {
 	private async highlightCurrentFindMatchDecoration(
 		match: MatchInNotebook,
 	): Promise<number | null> {
-		if (!this._findMatchDecorationModel || !match.cell) {
+		if (!(this._findMatchDecorationModel && match.cell)) {
 			// match cell should never be a CellSearchModel if the notebook is open
 			return null;
 		}
@@ -1223,7 +1220,7 @@ export class FileMatch extends Disposable implements IFileMatch {
 		match: MatchInNotebook,
 		outputOffset: number | null,
 	) {
-		if (!this._notebookEditorWidget || !match.cell) {
+		if (!(this._notebookEditorWidget && match.cell)) {
 			// match cell should never be a CellSearchModel if the notebook is open
 			return;
 		}
@@ -2012,8 +2009,8 @@ export function searchMatchComparer(
 			case SearchSortOrder.FileNames:
 				return compareFileNames(elementA.name(), elementB.name());
 			// Fall through otherwise
-			default:
-				if (!elementA.resource || !elementB.resource) {
+			default: {
+				if (!(elementA.resource && elementB.resource)) {
 					return 0;
 				}
 				return (
@@ -2022,6 +2019,7 @@ export function searchMatchComparer(
 						elementB.resource.fsPath,
 					) || compareFileNames(elementA.name(), elementB.name())
 				);
+			}
 		}
 	}
 
@@ -2289,7 +2287,7 @@ export class SearchResult extends Disposable {
 			return;
 		}
 
-		this._folderMatches = ((query && query.folderQueries) || [])
+		this._folderMatches = (query?.folderQueries || [])
 			.map((fq) => fq.folder)
 			.map(
 				(resource, index) =>
@@ -2566,7 +2564,7 @@ export class SearchResult extends Disposable {
 
 			const resource = folderMatch.resource;
 			if (resource) {
-				rawPerFolder.get(resource)!.push(rawFileMatch);
+				rawPerFolder.get(resource)?.push(rawFileMatch);
 			} else {
 				otherFileMatches.push(rawFileMatch);
 			}
@@ -2897,7 +2895,7 @@ export class SearchModel extends Disposable {
 			{},
 			this._searchQuery.contentPattern,
 		);
-		delete (options as any).pattern;
+		(options as any).pattern = undefined;
 
 		const stats = completed && (completed.stats as ITextSearchStats);
 
@@ -2930,7 +2928,7 @@ export class SearchModel extends Disposable {
 			fileCount: this._searchResult.fileCount(),
 			options,
 			duration,
-			type: stats && stats.type,
+			type: stats?.type,
 			scheme,
 			searchOnTypeEnabled: this.searchConfig.searchOnType,
 		});

@@ -77,8 +77,8 @@ export class RemoteAuthorityResolverService
 			this._resolveAuthorityRequests.set(authority, result);
 			if (this._isWorkbenchOptionsBasedResolution) {
 				this._doResolveAuthority(authority).then(
-					(v) => result!.complete(v),
-					(err) => result!.error(err),
+					(v) => result?.complete(v),
+					(err) => result?.error(err),
 				);
 			}
 		}
@@ -141,7 +141,7 @@ export class RemoteAuthorityResolverService
 
 	_clearResolvedAuthority(authority: string): void {
 		if (this._resolveAuthorityRequests.has(authority)) {
-			this._resolveAuthorityRequests.get(authority)!.cancel();
+			this._resolveAuthorityRequests.get(authority)?.cancel();
 			this._resolveAuthorityRequests.delete(authority);
 		}
 	}

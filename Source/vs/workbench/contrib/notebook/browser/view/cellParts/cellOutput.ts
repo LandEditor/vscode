@@ -229,7 +229,7 @@ class CellOutputElement extends Disposable {
 	) {
 		this.innerContainer = DOM.$(".output-inner-container");
 
-		if (previousSibling && previousSibling.nextElementSibling) {
+		if (previousSibling?.nextElementSibling) {
 			this.outputContainer.domNode.insertBefore(
 				this.innerContainer,
 				previousSibling.nextElementSibling,
@@ -383,7 +383,7 @@ class CellOutputElement extends Disposable {
 				role: "button",
 				style: "padding: 8px; text-decoration: none; color: rgb(255, 255, 255); background-color: rgb(14, 99, 156); max-width: 200px;",
 			},
-			`Search Marketplace`,
+			"Search Marketplace",
 		);
 
 		return {
@@ -1183,7 +1183,7 @@ export class CellOutputContainer extends CellContentPart {
 					) {
 						this.openerService.open(
 							CellUri.generateCellOutputUri(
-								this.notebookEditor.textModel!.uri,
+								this.notebookEditor.textModel?.uri,
 							),
 						);
 					}

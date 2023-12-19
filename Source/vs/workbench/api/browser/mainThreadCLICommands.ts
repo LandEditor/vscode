@@ -190,15 +190,14 @@ class RemoteExtensionManagementCLI extends ExtensionManagementCLI {
 		manifest: IExtensionManifest,
 	): boolean {
 		if (
-			!this._extensionManifestPropertiesService.canExecuteOnWorkspace(
-				manifest,
-			) &&
-			// Web extensions installed on remote can be run in web worker extension host
 			!(
-				isWeb &&
-				this._extensionManifestPropertiesService.canExecuteOnWeb(
+				this._extensionManifestPropertiesService.canExecuteOnWorkspace(
 					manifest,
-				)
+				) ||
+				(isWeb &&
+					this._extensionManifestPropertiesService.canExecuteOnWeb(
+						manifest,
+					))
 			)
 		) {
 			this.logger.info(

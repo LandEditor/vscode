@@ -148,7 +148,7 @@ export class ShiftCommand implements ICommand {
 
 		let endLine = this._selection.endLineNumber;
 		if (this._selection.endColumn === 1 && startLine !== endLine) {
-			endLine = endLine - 1;
+			endLine -= 1;
 		}
 
 		const { tabSize, indentSize, insertSpaces } = this._opts;
@@ -163,8 +163,8 @@ export class ShiftCommand implements ICommand {
 			}
 
 			// keep track of previous line's "miss-alignment"
-			let previousLineExtraSpaces = 0,
-				extraSpaces = 0;
+			let previousLineExtraSpaces = 0;
+			let extraSpaces = 0;
 			for (
 				let lineNumber = startLine;
 				lineNumber <= endLine;
@@ -184,8 +184,7 @@ export class ShiftCommand implements ICommand {
 				}
 
 				if (
-					!shouldIndentEmptyLines &&
-					!this._opts.isUnshift &&
+					!(shouldIndentEmptyLines || this._opts.isUnshift) &&
 					lineText.length === 0
 				) {
 					// do not indent empty lines => nothing to do
@@ -338,8 +337,7 @@ export class ShiftCommand implements ICommand {
 				}
 
 				if (
-					!shouldIndentEmptyLines &&
-					!this._opts.isUnshift &&
+					!(shouldIndentEmptyLines || this._opts.isUnshift) &&
 					lineText.length === 0
 				) {
 					// do not indent empty lines => nothing to do

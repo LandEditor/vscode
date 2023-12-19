@@ -163,7 +163,7 @@ export class InMemoryFileSystemProvider
 				FileSystemProviderErrorCode.FileIsADirectory,
 			);
 		}
-		if (!entry && !opts.create) {
+		if (!(entry || opts.create)) {
 			throw createFileSystemProviderError(
 				"file not found",
 				FileSystemProviderErrorCode.FileNotFound,
@@ -216,7 +216,7 @@ export class InMemoryFileSystemProvider
 		const memory = this.fdMemory.get(fd);
 		if (!memory) {
 			throw createFileSystemProviderError(
-				`No file with that descriptor open`,
+				"No file with that descriptor open",
 				FileSystemProviderErrorCode.Unavailable,
 			);
 		}
@@ -236,7 +236,7 @@ export class InMemoryFileSystemProvider
 		const memory = this.fdMemory.get(fd);
 		if (!memory) {
 			throw createFileSystemProviderError(
-				`No file with that descriptor open`,
+				"No file with that descriptor open",
 				FileSystemProviderErrorCode.Unavailable,
 			);
 		}

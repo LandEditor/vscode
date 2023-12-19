@@ -229,7 +229,7 @@ class SupportedCodeActionProvider {
 			context.diagnostics.filter(
 				(diagnostic) =>
 					typeof diagnostic.code !== "undefined" &&
-					fixableCodes.has(diagnostic.code + ""),
+					fixableCodes.has(`${diagnostic.code}`),
 			),
 		);
 	}
@@ -338,8 +338,10 @@ class TypeScriptQuickFixProvider
 		token: vscode.CancellationToken,
 	): Promise<VsCodeCodeAction> {
 		if (
-			!(codeAction instanceof VsCodeFixAllCodeAction) ||
-			!codeAction.tsAction.fixId
+			!(
+				codeAction instanceof VsCodeFixAllCodeAction &&
+				codeAction.tsAction.fixId
+			)
 		) {
 			return codeAction;
 		}

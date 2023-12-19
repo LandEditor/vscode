@@ -443,7 +443,7 @@ CommandsRegistry.registerCommand(
 		rangeOrSelection: Range | Selection,
 		kind?: string,
 		itemResolveCount?: number,
-	): Promise<ReadonlyArray<languages.CodeAction>> => {
+	): Promise<readonly languages.CodeAction[]> => {
 		if (!(resource instanceof URI)) {
 			throw illegalArgument();
 		}

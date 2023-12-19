@@ -76,9 +76,9 @@ export class WellDefinedPrefixTree<V> {
 		this._size--;
 		for (; i > 0; i--) {
 			const parent = path[i - 1];
-			parent.node.children!.delete(path[i].part);
+			parent.node.children?.delete(path[i].part);
 			if (
-				parent.node.children!.size > 0 ||
+				parent.node.children?.size > 0 ||
 				parent.node._value !== unset
 			) {
 				break;

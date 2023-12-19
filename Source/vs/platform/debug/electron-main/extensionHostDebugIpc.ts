@@ -71,7 +71,7 @@ export class ElectronExtensionHostDebugBroadcastChannel<
 			const writeMessage = (message: object) => {
 				if (!closed) {
 					// in case sendCommand promises settle after closed
-					listener.write(JSON.stringify(message) + "\0"); // null-delimited, CDP-compatible
+					listener.write(`${JSON.stringify(message)}\0`); // null-delimited, CDP-compatible
 				}
 			};
 

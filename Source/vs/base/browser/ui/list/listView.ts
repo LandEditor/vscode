@@ -805,7 +805,7 @@ export class ListView<T> implements IListView<T> {
 
 				const renderer = this.renderers.get(item.templateId);
 
-				if (renderer && renderer.disposeElement) {
+				if (renderer?.disposeElement) {
 					renderer.disposeElement(
 						item.element,
 						i,
@@ -1050,7 +1050,7 @@ export class ListView<T> implements IListView<T> {
 
 	domElement(index: number): HTMLElement | null {
 		const row = this.items[index].row;
-		return row && row.domNode;
+		return row?.domNode;
 	}
 
 	elementHeight(index: number): number {
@@ -1194,10 +1194,10 @@ export class ListView<T> implements IListView<T> {
 		const checked = this.accessibilityProvider.isChecked(item.element);
 
 		if (typeof checked === "boolean") {
-			item.row!.domNode.setAttribute("aria-checked", String(!!checked));
+			item.row?.domNode.setAttribute("aria-checked", String(!!checked));
 		} else if (checked) {
 			const update = (checked: boolean) =>
-				item.row!.domNode.setAttribute(
+				item.row?.domNode.setAttribute(
 					"aria-checked",
 					String(!!checked),
 				);
@@ -1252,7 +1252,7 @@ export class ListView<T> implements IListView<T> {
 	}
 
 	private measureItemWidth(item: IItem<T>): void {
-		if (!item.row || !item.row.domNode) {
+		if (!item.row?.domNode) {
 			return;
 		}
 
@@ -1274,26 +1274,26 @@ export class ListView<T> implements IListView<T> {
 	}
 
 	private updateItemInDOM(item: IItem<T>, index: number): void {
-		item.row!.domNode.style.top = `${this.elementTop(index)}px`;
+		item.row?.domNode.style.top = `${this.elementTop(index)}px`;
 
 		if (this.setRowHeight) {
-			item.row!.domNode.style.height = `${item.size}px`;
+			item.row?.domNode.style.height = `${item.size}px`;
 		}
 
 		if (this.setRowLineHeight) {
-			item.row!.domNode.style.lineHeight = `${item.size}px`;
+			item.row?.domNode.style.lineHeight = `${item.size}px`;
 		}
 
-		item.row!.domNode.setAttribute("data-index", `${index}`);
-		item.row!.domNode.setAttribute(
+		item.row?.domNode.setAttribute("data-index", `${index}`);
+		item.row?.domNode.setAttribute(
 			"data-last-element",
 			index === this.length - 1 ? "true" : "false",
 		);
-		item.row!.domNode.setAttribute(
+		item.row?.domNode.setAttribute(
 			"data-parity",
 			index % 2 === 0 ? "even" : "odd",
 		);
-		item.row!.domNode.setAttribute(
+		item.row?.domNode.setAttribute(
 			"aria-setsize",
 			String(
 				this.accessibilityProvider.getSetSize(
@@ -1303,13 +1303,13 @@ export class ListView<T> implements IListView<T> {
 				),
 			),
 		);
-		item.row!.domNode.setAttribute(
+		item.row?.domNode.setAttribute(
 			"aria-posinset",
 			String(this.accessibilityProvider.getPosInSet(item.element, index)),
 		);
-		item.row!.domNode.setAttribute("id", this.getElementDomId(index));
+		item.row?.domNode.setAttribute("id", this.getElementDomId(index));
 
-		item.row!.domNode.classList.toggle("drop-target", item.dropTarget);
+		item.row?.domNode.classList.toggle("drop-target", item.dropTarget);
 	}
 
 	private removeItemFromDOM(index: number): void {
@@ -1320,7 +1320,7 @@ export class ListView<T> implements IListView<T> {
 		if (item.row) {
 			const renderer = this.renderers.get(item.templateId);
 
-			if (renderer && renderer.disposeElement) {
+			if (renderer?.disposeElement) {
 				renderer.disposeElement(
 					item.element,
 					index,
@@ -1500,7 +1500,7 @@ export class ListView<T> implements IListView<T> {
 		);
 		const item =
 			typeof index === "undefined" ? undefined : this.items[index];
-		const element = item && item.element;
+		const element = item?.element;
 		return { browserEvent, index, element };
 	}
 
@@ -1510,7 +1510,7 @@ export class ListView<T> implements IListView<T> {
 		);
 		const item =
 			typeof index === "undefined" ? undefined : this.items[index];
-		const element = item && item.element;
+		const element = item?.element;
 		return { browserEvent, index, element };
 	}
 
@@ -1520,7 +1520,7 @@ export class ListView<T> implements IListView<T> {
 		);
 		const item =
 			typeof index === "undefined" ? undefined : this.items[index];
-		const element = item && item.element;
+		const element = item?.element;
 		return { browserEvent, index, element };
 	}
 
@@ -1530,7 +1530,7 @@ export class ListView<T> implements IListView<T> {
 		);
 		const item =
 			typeof index === "undefined" ? undefined : this.items[index];
-		const element = item && item.element;
+		const element = item?.element;
 		return { browserEvent, index, element };
 	}
 
@@ -1746,7 +1746,7 @@ export class ListView<T> implements IListView<T> {
 		this.currentDragData = undefined;
 		StaticDND.CurrentDragAndDropData = undefined;
 
-		if (!dragData || !event.browserEvent.dataTransfer) {
+		if (!(dragData && event.browserEvent.dataTransfer)) {
 			return;
 		}
 
@@ -1843,7 +1843,7 @@ export class ListView<T> implements IListView<T> {
 			if (rawIndex) {
 				const index = Number(rawIndex);
 
-				if (!isNaN(index)) {
+				if (!Number.isNaN(index)) {
 					return index;
 				}
 			}
@@ -1975,7 +1975,7 @@ export class ListView<T> implements IListView<T> {
 	private probeDynamicHeight(index: number): number {
 		const item = this.items[index];
 
-		if (!!this.virtualDelegate.getDynamicHeight) {
+		if (this.virtualDelegate.getDynamicHeight) {
 			const newSize = this.virtualDelegate.getDynamicHeight(item.element);
 			if (newSize !== null) {
 				const size = item.size;
@@ -2016,7 +2016,7 @@ export class ListView<T> implements IListView<T> {
 
 		if (!renderer) {
 			throw new BugIndicatingError(
-				"Missing renderer for templateId: " + item.templateId,
+				`Missing renderer for templateId: ${item.templateId}`,
 			);
 		}
 
@@ -2090,7 +2090,7 @@ export class ListView<T> implements IListView<T> {
 
 		this.items = [];
 
-		if (this.domNode && this.domNode.parentNode) {
+		if (this.domNode?.parentNode) {
 			this.domNode.parentNode.removeChild(this.domNode);
 		}
 

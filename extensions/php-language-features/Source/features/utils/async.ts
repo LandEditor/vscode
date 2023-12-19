@@ -53,21 +53,21 @@ export class Throttler<T> {
 				};
 
 				this.queuedPromise = new Promise<T>((resolve) => {
-					this.activePromise!.then(onComplete, onComplete).then(
-						resolve,
-					);
+					this.activePromise
+						?.then(onComplete, onComplete)
+						.then(resolve);
 				});
 			}
 
 			return new Promise<T>((resolve, reject) => {
-				this.queuedPromise!.then(resolve, reject);
+				this.queuedPromise?.then(resolve, reject);
 			});
 		}
 
 		this.activePromise = promiseFactory();
 
 		return new Promise<T>((resolve, reject) => {
-			this.activePromise!.then(
+			this.activePromise?.then(
 				(result: T) => {
 					this.activePromise = null;
 					resolve(result);
@@ -133,7 +133,7 @@ export class Delayer<T> {
 				this.completionPromise = null;
 				this.onResolve = null;
 
-				const result = this.task!();
+				const result = this.task?.();
 				this.task = null;
 
 				return result;
@@ -142,7 +142,7 @@ export class Delayer<T> {
 
 		this.timeout = setTimeout(() => {
 			this.timeout = null;
-			this.onResolve!(undefined);
+			this.onResolve?.(undefined);
 		}, delay);
 
 		return this.completionPromise;

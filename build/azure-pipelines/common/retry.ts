@@ -23,13 +23,11 @@ export async function retry<T>(
 			lastError = err;
 
 			// maximum delay is 10th retry: ~3 seconds
-			const millis = Math.floor(
-				Math.random() * 200 + 50 * Math.pow(1.5, run),
-			);
+			const millis = Math.floor(Math.random() * 200 + 50 * 1.5 ** run);
 			await new Promise((c) => setTimeout(c, millis));
 		}
 	}
 
-	console.error(`Too many retries, aborting.`);
+	console.error("Too many retries, aborting.");
 	throw lastError;
 }

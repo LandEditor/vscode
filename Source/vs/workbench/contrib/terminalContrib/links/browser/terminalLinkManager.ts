@@ -107,12 +107,14 @@ export class TerminalLinkManager extends DisposableStore {
 				| boolean;
 		switch (enableFileLinksConfig) {
 			case "off":
-			case false: // legacy from v1.75
+			case false: { // legacy from v1.75
 				enableFileLinks = false;
 				break;
-			case "notRemote":
+			}
+			case "notRemote": {
 				enableFileLinks = !this._processInfo.remoteAuthority;
 				break;
+			}
 		}
 
 		// Setup link detectors in their order of priority

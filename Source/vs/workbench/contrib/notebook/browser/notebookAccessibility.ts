@@ -175,7 +175,7 @@ export function showAccessibleOutput(
 	const selections = notebookViewModel?.getSelections();
 	const notebookDocument = notebookViewModel?.notebookDocument;
 
-	if (!selections || !notebookDocument || !notebookEditor?.textModel) {
+	if (!(selections && notebookDocument && notebookEditor?.textModel)) {
 		return false;
 	}
 
@@ -206,7 +206,7 @@ export function showAccessibleOutput(
 			text = decoder.decode(buffer.data.slice(0, charLimit).buffer);
 
 			if (buffer.data.byteLength > charLimit) {
-				text = text + "...(truncated)";
+				text += "...(truncated)";
 			}
 
 			if (mimeType.endsWith("error")) {

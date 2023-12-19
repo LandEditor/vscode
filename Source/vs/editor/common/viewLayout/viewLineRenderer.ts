@@ -127,11 +127,9 @@ export class RenderLineInput {
 						  : RenderWhitespace.None;
 		this.renderControlCharacters = renderControlCharacters;
 		this.fontLigatures = fontLigatures;
-		this.selectionsOnLine =
-			selectionsOnLine &&
-			selectionsOnLine.sort((a, b) =>
-				a.startOffset < b.startOffset ? -1 : 1,
-			);
+		this.selectionsOnLine = selectionsOnLine?.sort((a, b) =>
+			a.startOffset < b.startOffset ? -1 : 1,
+		);
 
 		const wsmiddotDiff = Math.abs(wsmiddotWidth - spaceWidth);
 		const middotDiff = Math.abs(middotWidth - spaceWidth);
@@ -398,7 +396,7 @@ export function renderViewLine(
 	if (input.lineContent.length === 0) {
 		if (input.lineDecorations.length > 0) {
 			// This line is empty, but it contains inline decorations
-			sb.appendString(`<span>`);
+			sb.appendString("<span>");
 
 			let beforeCount = 0;
 			let afterCount = 0;
@@ -423,7 +421,7 @@ export function renderViewLine(
 				}
 			}
 
-			sb.appendString(`</span>`);
+			sb.appendString("</span>");
 
 			const characterMapping = new CharacterMapping(
 				1,
@@ -862,14 +860,14 @@ function _applyRenderWhitespace(
 
 	let wasInWhitespace = false;
 	let currentSelectionIndex = 0;
-	let currentSelection = selections && selections[currentSelectionIndex];
+	let currentSelection = selections?.[currentSelectionIndex];
 	let tmpIndent = startVisibleColumn % tabSize;
 	for (let charIndex = fauxIndentLength; charIndex < len; charIndex++) {
 		const chCode = lineContent.charCodeAt(charIndex);
 
 		if (currentSelection && charIndex >= currentSelection.endOffset) {
 			currentSelectionIndex++;
-			currentSelection = selections && selections[currentSelectionIndex];
+			currentSelection = selections?.[currentSelectionIndex];
 		}
 
 		let isInWhitespace: boolean;
@@ -961,7 +959,7 @@ function _applyRenderWhitespace(
 						false,
 					);
 				}
-				tmpIndent = tmpIndent % tabSize;
+				tmpIndent %= tabSize;
 			}
 		} else {
 			// was in regular token
@@ -975,7 +973,7 @@ function _applyRenderWhitespace(
 					0,
 					tokenContainsRTL,
 				);
-				tmpIndent = tmpIndent % tabSize;
+				tmpIndent %= tabSize;
 			}
 		}
 
@@ -1103,7 +1101,7 @@ function _applyInlineDecorations(
 				lastResultEndIndex = lineDecoration.endOffset + 1;
 				result[resultLen++] = new LinePart(
 					lastResultEndIndex,
-					tokenType + " " + lineDecoration.className,
+					`${tokenType} ${lineDecoration.className}`,
 					tokenMetadata | lineDecoration.metadata,
 					tokenContainsRTL,
 				);
@@ -1113,7 +1111,7 @@ function _applyInlineDecorations(
 				lastResultEndIndex = tokenEndIndex;
 				result[resultLen++] = new LinePart(
 					lastResultEndIndex,
-					tokenType + " " + lineDecoration.className,
+					`${tokenType} ${lineDecoration.className}`,
 					tokenMetadata | lineDecoration.metadata,
 					tokenContainsRTL,
 				);
@@ -1309,7 +1307,7 @@ function _renderLine(
 				let charWidth = 1;
 
 				switch (charCode) {
-					case CharCode.Tab:
+					case CharCode.Tab: {
 						producedCharacters =
 							tabSize - (visibleColumn % tabSize);
 						charWidth = producedCharacters;
@@ -1321,24 +1319,29 @@ function _renderLine(
 							sb.appendCharCode(0xa0); // &nbsp;
 						}
 						break;
+					}
 
-					case CharCode.Space:
+					case CharCode.Space: {
 						sb.appendCharCode(0xa0); // &nbsp;
 						break;
+					}
 
-					case CharCode.LessThan:
+					case CharCode.LessThan: {
 						sb.appendString("&lt;");
 						break;
+					}
 
-					case CharCode.GreaterThan:
+					case CharCode.GreaterThan: {
 						sb.appendString("&gt;");
 						break;
+					}
 
-					case CharCode.Ampersand:
+					case CharCode.Ampersand: {
 						sb.appendString("&amp;");
 						break;
+					}
 
-					case CharCode.Null:
+					case CharCode.Null: {
 						if (renderControlCharacters) {
 							// See https://unicode-table.com/en/blocks/control-pictures/
 							sb.appendCharCode(9216);
@@ -1346,15 +1349,17 @@ function _renderLine(
 							sb.appendString("&#00;");
 						}
 						break;
+					}
 
 					case CharCode.UTF8_BOM:
 					case CharCode.LINE_SEPARATOR:
 					case CharCode.PARAGRAPH_SEPARATOR:
-					case CharCode.NEXT_LINE:
+					case CharCode.NEXT_LINE: {
 						sb.appendCharCode(0xfffd);
 						break;
+					}
 
-					default:
+					default: {
 						if (strings.isFullWidthCharacter(charCode)) {
 							charWidth++;
 						}
@@ -1379,6 +1384,7 @@ function _renderLine(
 						} else {
 							sb.appendCharCode(charCode);
 						}
+					}
 				}
 
 				charOffsetInPart += producedCharacters;

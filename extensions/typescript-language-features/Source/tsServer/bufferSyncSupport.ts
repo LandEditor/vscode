@@ -188,15 +188,18 @@ class BufferSynchronizer {
 			const changedFiles: Proto.FileCodeEdits[] = [];
 			for (const change of this._pending.values()) {
 				switch (change.type) {
-					case BufferOperationType.Change:
+					case BufferOperationType.Change: {
 						changedFiles.push(change.args);
 						break;
-					case BufferOperationType.Open:
+					}
+					case BufferOperationType.Open: {
 						openFiles.push(change.args);
 						break;
-					case BufferOperationType.Close:
+					}
+					case BufferOperationType.Close: {
 						closedFiles.push(change.args);
 						break;
+					}
 				}
 			}
 			this.client.execute(
@@ -901,8 +904,10 @@ export default class BufferSyncSupport extends Disposable {
 
 	private shouldValidate(buffer: SyncedBuffer): boolean {
 		if (
-			!this.client.configuration.enableProjectDiagnostics &&
-			!this._tabResources.has(buffer.resource)
+			!(
+				this.client.configuration.enableProjectDiagnostics ||
+				this._tabResources.has(buffer.resource)
+			)
 		) {
 			// Only validate resources that are showing to the user
 			return false;
@@ -912,9 +917,6 @@ export default class BufferSyncSupport extends Disposable {
 			case languageModeIds.javascript:
 			case languageModeIds.javascriptreact:
 				return this._validateJavaScript;
-
-			case languageModeIds.typescript:
-			case languageModeIds.typescriptreact:
 			default:
 				return this._validateTypeScript;
 		}

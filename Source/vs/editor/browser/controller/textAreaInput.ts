@@ -314,7 +314,7 @@ export class TextAreaInput extends Disposable {
 		this._register(
 			this._textArea.onCompositionStart((e) => {
 				if (_debugComposition) {
-					console.log(`[compositionstart]`, e);
+					console.log("[compositionstart]", e);
 				}
 
 				const currentComposition = new CompositionContext();
@@ -342,7 +342,7 @@ export class TextAreaInput extends Disposable {
 					// Handling long press case on Chromium/Safari macOS + arrow key => pretend the character was selected
 					if (_debugComposition) {
 						console.log(
-							`[compositionstart] Handling long press case on macOS + arrow key`,
+							"[compositionstart] Handling long press case on macOS + arrow key",
 							e
 						);
 					}
@@ -366,7 +366,7 @@ export class TextAreaInput extends Disposable {
 		this._register(
 			this._textArea.onCompositionUpdate((e) => {
 				if (_debugComposition) {
-					console.log(`[compositionupdate]`, e);
+					console.log("[compositionupdate]", e);
 				}
 				const currentComposition = this._currentComposition;
 				if (!currentComposition) {
@@ -407,7 +407,7 @@ export class TextAreaInput extends Disposable {
 		this._register(
 			this._textArea.onCompositionEnd((e) => {
 				if (_debugComposition) {
-					console.log(`[compositionend]`, e);
+					console.log("[compositionend]", e);
 				}
 				const currentComposition = this._currentComposition;
 				if (!currentComposition) {
@@ -452,7 +452,7 @@ export class TextAreaInput extends Disposable {
 		this._register(
 			this._textArea.onInput((e) => {
 				if (_debugComposition) {
-					console.log(`[input]`, e);
+					console.log("[input]", e);
 				}
 
 				// Pretend here we touched the text area, as the `input` event will most likely

@@ -354,7 +354,7 @@ export class UserDataSyncResourceProviderService
 			return content;
 		}
 
-		if (!resolved.remote && !resolved.node) {
+		if (!(resolved.remote || resolved.node)) {
 			return this.resolveLatestContent(
 				resolved.syncResource,
 				resolved.profile,
@@ -677,7 +677,7 @@ export class UserDataSyncResourceProviderService
 	): Promise<string | null> {
 		return stringifyLocalProfiles(
 			this.userDataProfilesService.profiles.filter(
-				(p) => !p.isDefault && !p.isTransient,
+				(p) => !(p.isDefault || p.isTransient),
 			),
 			true,
 		);
@@ -708,7 +708,7 @@ export class UserDataSyncResourceProviderService
 			URI.from({
 				scheme: USER_DATA_SYNC_SCHEME,
 				authority,
-				path: `/`,
+				path: "/",
 				query: syncResourceUriInfo.location?.query,
 				fragment: syncResourceUriInfo.location?.fragment,
 			}),

@@ -158,7 +158,7 @@ export class MenuBar extends Disposable {
 				(e) => {
 					const event = new StandardKeyboardEvent(e as KeyboardEvent);
 					let eventHandled = true;
-					const key = !!e.key ? e.key.toLocaleLowerCase() : "";
+					const key = e.key ? e.key.toLocaleLowerCase() : "";
 
 					const tabNav = isMacintosh && !this.isCompact;
 
@@ -179,8 +179,7 @@ export class MenuBar extends Disposable {
 					) {
 						this.setUnfocusedState();
 					} else if (
-						!this.isOpen &&
-						!event.ctrlKey &&
+						!(this.isOpen || event.ctrlKey) &&
 						this.options.enableMnemonics &&
 						this.mnemonicsInUse &&
 						this.mnemonics.has(key)
@@ -270,8 +269,7 @@ export class MenuBar extends Disposable {
 				DOM.EventType.KEY_DOWN,
 				(e: KeyboardEvent) => {
 					if (
-						!this.options.enableMnemonics ||
-						!e.altKey ||
+						!(this.options.enableMnemonics && e.altKey) ||
 						e.ctrlKey ||
 						e.defaultPrevented
 					) {
@@ -306,7 +304,7 @@ export class MenuBar extends Disposable {
 
 			// Register mnemonics
 			if (mnemonicMatches) {
-				const mnemonic = !!mnemonicMatches[1]
+				const mnemonic = mnemonicMatches[1]
 					? mnemonicMatches[1]
 					: mnemonicMatches[3];
 
@@ -482,8 +480,9 @@ export class MenuBar extends Disposable {
 			"aria-haspopup": true,
 		});
 		const titleElement = $(
-			"div.menubar-menu-title.toolbar-toggle-more" +
-				ThemeIcon.asCSSSelector(Codicon.menuBarMore),
+			`div.menubar-menu-title.toolbar-toggle-more${ThemeIcon.asCSSSelector(
+				Codicon.menuBarMore,
+			)}`,
 			{ role: "none", "aria-hidden": true },
 		);
 
@@ -640,7 +639,7 @@ export class MenuBar extends Disposable {
 		const menuToUpdate = this.menus.filter(
 			(menuBarMenu) => menuBarMenu.label === menu.label,
 		);
-		if (menuToUpdate && menuToUpdate.length) {
+		if (menuToUpdate?.length) {
 			menuToUpdate[0].actions = menu.actions;
 		}
 	}
@@ -667,12 +666,12 @@ export class MenuBar extends Disposable {
 	getWidth(): number {
 		if (!this.isCompact && this.menus) {
 			const left =
-				this.menus[0].buttonElement!.getBoundingClientRect().left;
+				this.menus[0].buttonElement?.getBoundingClientRect().left;
 			const right = this.hasOverflow
 				? this.overflowMenu.buttonElement.getBoundingClientRect().right
 				: this.menus[
 						this.menus.length - 1
-				  ].buttonElement!.getBoundingClientRect().right;
+				  ].buttonElement?.getBoundingClientRect().right;
 			return right - left;
 		}
 
@@ -696,7 +695,7 @@ export class MenuBar extends Disposable {
 	}
 
 	private updateOverflowAction(): void {
-		if (!this.menus || !this.menus.length) {
+		if (!this.menus?.length) {
 			return;
 		}
 
@@ -763,7 +762,7 @@ export class MenuBar extends Disposable {
 			}
 
 			const compactMenuActions = this.options.getCompactMenuActions?.();
-			if (compactMenuActions && compactMenuActions.length) {
+			if (compactMenuActions?.length) {
 				this.overflowMenu.actions.push(new Separator());
 				this.overflowMenu.actions.push(...compactMenuActions);
 			}
@@ -842,7 +841,7 @@ export class MenuBar extends Disposable {
 			let escMatch = MENU_ESCAPED_MNEMONIC_REGEX.exec(cleanLabel);
 
 			// We can't use negative lookbehind so we match our negative and skip
-			while (escMatch && escMatch[1]) {
+			while (escMatch?.[1]) {
 				escMatch = MENU_ESCAPED_MNEMONIC_REGEX.exec(cleanLabel);
 			}
 
@@ -880,14 +879,14 @@ export class MenuBar extends Disposable {
 
 		// Register mnemonics
 		if (mnemonicMatches) {
-			const mnemonic = !!mnemonicMatches[1]
+			const mnemonic = mnemonicMatches[1]
 				? mnemonicMatches[1]
 				: mnemonicMatches[3];
 
 			if (this.options.enableMnemonics) {
 				buttonElement.setAttribute(
 					"aria-keyshortcuts",
-					"Alt+" + mnemonic.toLocaleLowerCase(),
+					`Alt+${mnemonic.toLocaleLowerCase()}`,
 				);
 			} else {
 				buttonElement.removeAttribute("aria-keyshortcuts");
@@ -907,7 +906,7 @@ export class MenuBar extends Disposable {
 		}
 
 		this.menus.forEach((menuBarMenu) => {
-			if (!menuBarMenu.buttonElement || !menuBarMenu.titleElement) {
+			if (!(menuBarMenu.buttonElement && menuBarMenu.titleElement)) {
 				return;
 			}
 
@@ -979,7 +978,7 @@ export class MenuBar extends Disposable {
 		this._focusState = value;
 
 		switch (value) {
-			case MenubarState.HIDDEN:
+			case MenubarState.HIDDEN: {
 				if (isVisible) {
 					this.hideMenubar();
 				}
@@ -998,7 +997,8 @@ export class MenuBar extends Disposable {
 				}
 
 				break;
-			case MenubarState.VISIBLE:
+			}
+			case MenubarState.VISIBLE: {
 				if (!isVisible) {
 					this.showMenubar();
 				}
@@ -1027,7 +1027,8 @@ export class MenuBar extends Disposable {
 				}
 
 				break;
-			case MenubarState.FOCUSED:
+			}
+			case MenubarState.FOCUSED: {
 				if (!isVisible) {
 					this.showMenubar();
 				}
@@ -1046,7 +1047,8 @@ export class MenuBar extends Disposable {
 					}
 				}
 				break;
-			case MenubarState.OPEN:
+			}
+			case MenubarState.OPEN: {
 				if (!isVisible) {
 					this.showMenubar();
 				}
@@ -1058,6 +1060,7 @@ export class MenuBar extends Disposable {
 					);
 				}
 				break;
+			}
 		}
 
 		this._focusState = value;
@@ -1167,10 +1170,7 @@ export class MenuBar extends Disposable {
 	private updateMnemonicVisibility(visible: boolean): void {
 		if (this.menus) {
 			this.menus.forEach((menuBarMenu) => {
-				if (
-					menuBarMenu.titleElement &&
-					menuBarMenu.titleElement.children.length
-				) {
+				if (menuBarMenu.titleElement?.children.length) {
 					const child = menuBarMenu.titleElement.children.item(
 						0,
 					) as HTMLElement;
@@ -1235,11 +1235,12 @@ export class MenuBar extends Disposable {
 	private onModifierKeyToggled(
 		modifierKeyStatus: DOM.IModifierKeyStatus,
 	): void {
-		const allModifiersReleased =
-			!modifierKeyStatus.altKey &&
-			!modifierKeyStatus.ctrlKey &&
-			!modifierKeyStatus.shiftKey &&
-			!modifierKeyStatus.metaKey;
+		const allModifiersReleased = !(
+			modifierKeyStatus.altKey ||
+			modifierKeyStatus.ctrlKey ||
+			modifierKeyStatus.shiftKey ||
+			modifierKeyStatus.metaKey
+		);
 
 		if (this.options.visibility === "hidden") {
 			return;
@@ -1342,9 +1343,11 @@ export class MenuBar extends Disposable {
 				: this.menus[actualMenuIndex];
 
 		if (
-			!customMenu.actions ||
-			!customMenu.buttonElement ||
-			!customMenu.titleElement
+			!(
+				customMenu.actions &&
+				customMenu.buttonElement &&
+				customMenu.titleElement
+			)
 		) {
 			return;
 		}

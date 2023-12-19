@@ -127,7 +127,7 @@ export class ViewUserInputEvents {
 			result.type === MouseTargetType.GUTTER_VIEW_ZONE ||
 			result.type === MouseTargetType.CONTENT_VIEW_ZONE
 		) {
-			result.detail = this.convertViewToModelViewZoneData(
+			result.detail = ViewUserInputEvents.convertViewToModelViewZoneData(
 				result.detail,
 				coordinatesConverter,
 			);

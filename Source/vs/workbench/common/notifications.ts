@@ -536,8 +536,7 @@ export class NotificationViewItem
 		filter: NotificationsFilter = NotificationsFilter.OFF,
 	): INotificationViewItem | undefined {
 		if (
-			!notification ||
-			!notification.message ||
+			!notification?.message ||
 			isCancellationError(notification.message)
 		) {
 			return undefined; // we need a message to show
@@ -803,7 +802,7 @@ export class NotificationViewItem
 	}
 
 	collapse(skipEvents?: boolean): void {
-		if (!this._expanded || !this.canCollapse) {
+		if (!(this._expanded && this.canCollapse)) {
 			return;
 		}
 
@@ -852,9 +851,8 @@ export class NotificationViewItem
 			return false;
 		}
 
-		const primaryActions = (this._actions && this._actions.primary) || [];
-		const otherPrimaryActions =
-			(other.actions && other.actions.primary) || [];
+		const primaryActions = this._actions?.primary || [];
+		const otherPrimaryActions = other.actions?.primary || [];
 		return equals(
 			primaryActions,
 			otherPrimaryActions,

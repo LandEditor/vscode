@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-var updateGrammar = require("vscode-grammar-updater");
+const updateGrammar = require("vscode-grammar-updater");
 
 function adaptJSON(grammar, name, replacementScope, replaceeScope = "json") {
 	grammar.name = name;
 	grammar.scopeName = `source${replacementScope}`;
 	const regex = new RegExp(`\.${replaceeScope}`, "g");
-	var fixScopeNames = (rule) => {
+	const fixScopeNames = (rule) => {
 		if (typeof rule.name === "string") {
 			rule.name = rule.name.replace(regex, replacementScope);
 		}
@@ -19,21 +19,21 @@ function adaptJSON(grammar, name, replacementScope, replaceeScope = "json") {
 				replacementScope,
 			);
 		}
-		for (var property in rule) {
-			var value = rule[property];
+		for (const property in rule) {
+			const value = rule[property];
 			if (typeof value === "object") {
 				fixScopeNames(value);
 			}
 		}
 	};
 
-	var repository = grammar.repository;
-	for (var key in repository) {
+	const repository = grammar.repository;
+	for (const key in repository) {
 		fixScopeNames(repository[key]);
 	}
 }
 
-var tsGrammarRepo = "microsoft/vscode-JSON.tmLanguage";
+const tsGrammarRepo = "microsoft/vscode-JSON.tmLanguage";
 updateGrammar.update(
 	tsGrammarRepo,
 	"JSON.tmLanguage",

@@ -39,7 +39,7 @@ export interface IWorkspaceTagsService {
 
 export async function getHashedRemotesFromConfig(
 	text: string,
-	stripEndingDotGit = false,
+	stripEndingDotGit,
 	sha1Hex: (str: string) => Promise<string>,
 ): Promise<string[]> {
 	return Promise.all(

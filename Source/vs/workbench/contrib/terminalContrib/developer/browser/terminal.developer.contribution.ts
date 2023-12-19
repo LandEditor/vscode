@@ -232,7 +232,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 						commandDecorations.set(command, decorations);
 						if (command.promptStartMarker) {
 							const d =
-								this._instance.xterm!.raw?.registerDecoration({
+								this._instance.xterm?.raw?.registerDecoration({
 									marker: command.promptStartMarker,
 								});
 							if (d) {
@@ -250,7 +250,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 						}
 						if (command.marker) {
 							const d =
-								this._instance.xterm!.raw?.registerDecoration({
+								this._instance.xterm?.raw?.registerDecoration({
 									marker: command.marker,
 									x: command.startX,
 								});
@@ -269,7 +269,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 						}
 						if (command.executedMarker) {
 							const d =
-								this._instance.xterm!.raw?.registerDecoration({
+								this._instance.xterm?.raw?.registerDecoration({
 									marker: command.executedMarker,
 									x: command.executedX,
 								});
@@ -288,7 +288,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 						}
 						if (command.endMarker) {
 							const d =
-								this._instance.xterm!.raw?.registerDecoration({
+								this._instance.xterm?.raw?.registerDecoration({
 									marker: command.endMarker,
 								});
 							if (d) {
@@ -330,10 +330,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 	}
 
 	private _isEnabled(): boolean {
-		return (
-			this._configurationService.getValue(TerminalSettingId.DevMode) ||
-			false
-		);
+		return this._configurationService.getValue(TerminalSettingId.DevMode);
 	}
 }
 

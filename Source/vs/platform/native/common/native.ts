@@ -95,7 +95,7 @@ export interface ICommonNativeHostService {
 	}): Promise<Array<IOpenedMainWindow | IOpenedAuxiliaryWindow>>;
 	getWindows(options: {
 		includeAuxiliaryWindows: false;
-	}): Promise<Array<IOpenedMainWindow>>;
+	}): Promise<IOpenedMainWindow[]>;
 	getWindowCount(): Promise<number>;
 	getActiveWindowId(): Promise<number | undefined>;
 

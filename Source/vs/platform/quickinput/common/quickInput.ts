@@ -245,7 +245,7 @@ export interface IQuickInput extends IDisposable {
 	/**
 	 * The buttons displayed in the quick input titlebar.
 	 */
-	buttons: ReadonlyArray<IQuickInputButton>;
+	buttons: readonly IQuickInputButton[];
 
 	/**
 	 * An event that is fired when a button in the quick input is triggered.
@@ -466,7 +466,7 @@ export interface IQuickPick<T extends IQuickPickItem> extends IQuickInput {
 	/**
 	 * The currently active items.
 	 */
-	activeItems: ReadonlyArray<T>;
+	activeItems: readonly T[];
 
 	/**
 	 * An event that is fired when the active items change.
@@ -482,7 +482,7 @@ export interface IQuickPick<T extends IQuickPickItem> extends IQuickInput {
 	/**
 	 * The currently selected items.
 	 */
-	selectedItems: ReadonlyArray<T>;
+	selectedItems: readonly T[];
 
 	/**
 	 * An event that is fired when the selected items change.

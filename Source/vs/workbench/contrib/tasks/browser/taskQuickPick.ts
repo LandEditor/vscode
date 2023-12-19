@@ -124,8 +124,8 @@ export class TaskQuickPick extends Disposable {
 			const configures: Partial<KeyedTaskIdentifier> = Objects.deepClone(
 				task.configures,
 			);
-			delete configures["_key"];
-			delete configures["type"];
+			configures["_key"] = undefined;
+			configures["type"] = undefined;
 			Object.keys(configures).forEach(
 				(key) => (label += `: ${configures[key]}`),
 			);

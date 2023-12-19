@@ -691,7 +691,6 @@ function searchForEditing(
 			// go right
 			delta += node.delta;
 			node = node.right;
-			continue;
 		}
 	}
 
@@ -771,7 +770,6 @@ function noOverlapReplace(
 			// go right
 			delta += node.delta;
 			node = node.right;
-			continue;
 		}
 	}
 
@@ -814,7 +812,6 @@ function collectNodesFromOwner(
 		if (node.right !== SENTINEL && !getNodeIsVisited(node.right)) {
 			// go right
 			node = node.right;
-			continue;
 		}
 	}
 
@@ -916,7 +913,6 @@ function search(
 			// go right
 			delta += node.delta;
 			node = node.right;
-			continue;
 		}
 	}
 
@@ -1018,7 +1014,6 @@ function intervalSearch(
 			// go right
 			delta += node.delta;
 			node = node.right;
-			continue;
 		}
 	}
 

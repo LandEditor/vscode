@@ -274,9 +274,9 @@ export class LocalStorageSecretStorageProvider
 		});
 		record[authAccount] = JSON.stringify(
 			authSessionInfo.scopes.map((scopes) => ({
-				id: authSessionInfo!.id,
+				id: authSessionInfo?.id,
 				scopes,
-				accessToken: authSessionInfo!.accessToken,
+				accessToken: authSessionInfo?.accessToken,
 			})),
 		);
 
@@ -458,7 +458,7 @@ class WorkspaceProvider implements IWorkspaceProvider {
 		query.forEach((value, key) => {
 			switch (key) {
 				// Folder
-				case WorkspaceProvider.QUERY_PARAM_FOLDER:
+				case WorkspaceProvider.QUERY_PARAM_FOLDER: {
 					if (config.remoteAuthority && value.startsWith(posix.sep)) {
 						// when connected to a remote and having a value
 						// that is a path (begins with a `/`), assume this
@@ -475,9 +475,10 @@ class WorkspaceProvider implements IWorkspaceProvider {
 					}
 					foundWorkspace = true;
 					break;
+				}
 
 				// Workspace
-				case WorkspaceProvider.QUERY_PARAM_WORKSPACE:
+				case WorkspaceProvider.QUERY_PARAM_WORKSPACE: {
 					if (config.remoteAuthority && value.startsWith(posix.sep)) {
 						// when connected to a remote and having a value
 						// that is a path (begins with a `/`), assume this
@@ -494,21 +495,24 @@ class WorkspaceProvider implements IWorkspaceProvider {
 					}
 					foundWorkspace = true;
 					break;
+				}
 
 				// Empty
-				case WorkspaceProvider.QUERY_PARAM_EMPTY_WINDOW:
+				case WorkspaceProvider.QUERY_PARAM_EMPTY_WINDOW: {
 					workspace = undefined;
 					foundWorkspace = true;
 					break;
+				}
 
 				// Payload
-				case WorkspaceProvider.QUERY_PARAM_PAYLOAD:
+				case WorkspaceProvider.QUERY_PARAM_PAYLOAD: {
 					try {
 						payload = parse(value); // use marshalling#parse() to revive potential URIs
 					} catch (error) {
 						console.error(error); // possible invalid JSON
 					}
 					break;
+				}
 			}
 		});
 
@@ -625,7 +629,7 @@ class WorkspaceProvider implements IWorkspaceProvider {
 	}
 
 	private isSame(workspaceA: IWorkspace, workspaceB: IWorkspace): boolean {
-		if (!workspaceA || !workspaceB) {
+		if (!(workspaceA && workspaceB)) {
 			return workspaceA === workspaceB; // both empty
 		}
 
@@ -660,7 +664,7 @@ class WorkspaceProvider implements IWorkspaceProvider {
 function readCookie(name: string): string | undefined {
 	const cookies = document.cookie.split("; ");
 	for (const cookie of cookies) {
-		if (cookie.startsWith(name + "=")) {
+		if (cookie.startsWith(`${name}=`)) {
 			return cookie.substring(name.length + 1);
 		}
 	}
@@ -676,7 +680,7 @@ function readCookie(name: string): string | undefined {
 	const configElementAttribute = configElement
 		? configElement.getAttribute("data-settings")
 		: undefined;
-	if (!configElement || !configElementAttribute) {
+	if (!(configElement && configElementAttribute)) {
 		throw new Error("Missing web configuration element");
 	}
 	const config: IWorkbenchConstructionOptions & {

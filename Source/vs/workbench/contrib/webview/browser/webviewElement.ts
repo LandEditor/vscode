@@ -392,7 +392,7 @@ export class WebviewElement
 				}
 				const elementBox = this.element.getBoundingClientRect();
 				const contextKeyService =
-					this._contextKeyService!.createOverlay([
+					this._contextKeyService?.createOverlay([
 						...Object.entries(data.context),
 						[webviewIdContext, this.providedViewType],
 					]);
@@ -675,7 +675,7 @@ export class WebviewElement
 		// Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1754872
 		const fileName = isFirefox ? "index-no-csp.html" : "index.html";
 
-		this.element!.setAttribute(
+		this.element?.setAttribute(
 			"src",
 			`${this.webviewContentEndpoint(
 				encodedWebviewOrigin,
@@ -752,7 +752,7 @@ export class WebviewElement
 		const uri = URI.parse(
 			this.webviewContentEndpoint(encodedWebviewOrigin),
 		);
-		return uri.scheme + "://" + uri.authority.toLowerCase();
+		return `${uri.scheme}://${uri.authority.toLowerCase()}`;
 	}
 
 	private doPostMessage(
@@ -1095,7 +1095,7 @@ export class WebviewElement
 		// Workaround this by debouncing the focus and making sure we are not focused on an input
 		// when we try to re-focus.
 		this._focusDelayer.trigger(async () => {
-			if (!this.isFocused || !this.element) {
+			if (!(this.isFocused && this.element)) {
 				return;
 			}
 
@@ -1133,7 +1133,7 @@ export class WebviewElement
 	}
 
 	public updateFind(value: string) {
-		if (!value || !this.element) {
+		if (!(value && this.element)) {
 			return;
 		}
 		this._send("find", { value });

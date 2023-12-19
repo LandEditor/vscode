@@ -84,10 +84,9 @@ registerAction2(
 			const notificationService = accessor.get(INotificationService);
 			if (await fileService.exists(syncHome)) {
 				const folderStat = await fileService.resolve(syncHome);
-				const item =
-					folderStat.children && folderStat.children[0]
-						? folderStat.children[0].resource
-						: syncHome;
+				const item = folderStat.children?.[0]
+					? folderStat.children[0].resource
+					: syncHome;
 				return nativeHostService.showItemInFolder(
 					item.with({ scheme: Schemas.file }).fsPath,
 				);

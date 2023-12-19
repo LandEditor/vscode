@@ -696,11 +696,11 @@ export class PaneCompositeBar extends Disposable {
 
 		// Check cache only if extensions are not yet registered and current window is not native (desktop) remote connection window
 		if (
-			!this.hasExtensionsRegistered &&
 			!(
-				this.part === Parts.SIDEBAR_PART &&
-				this.environmentService.remoteAuthority &&
-				isNative
+				this.hasExtensionsRegistered ||
+				(this.part === Parts.SIDEBAR_PART &&
+					this.environmentService.remoteAuthority &&
+					isNative)
 			)
 		) {
 			cachedViewContainer =
@@ -1249,15 +1249,15 @@ class ViewContainerActivityAction extends CompositeBarAction {
 				activeViewlet?.getId() === this.compositeBarActionItem.id
 			) {
 				switch (focusBehavior) {
-					case "focus":
+					case "focus": {
 						this.logAction("refocus");
 						this.paneCompositePart.openPaneComposite(
 							this.compositeBarActionItem.id,
 							focus,
 						);
 						break;
-					case "toggle":
-					default:
+					}
+					default: {
 						// Hide sidebar if selected viewlet already visible
 						this.logAction("hide");
 						this.layoutService.setPartHidden(
@@ -1265,6 +1265,7 @@ class ViewContainerActivityAction extends CompositeBarAction {
 							Parts.SIDEBAR_PART,
 						);
 						break;
+					}
 				}
 
 				return;

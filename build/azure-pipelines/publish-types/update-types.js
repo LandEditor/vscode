@@ -42,10 +42,10 @@ function convertTabsToSpaces(str) {
 }
 function getNewFileContent(content, tag) {
 	const oldheader = [
-		`/*---------------------------------------------------------------------------------------------`,
-		` *  Copyright (c) Microsoft Corporation. All rights reserved.`,
-		` *  Licensed under the MIT License. See License.txt in the project root for license information.`,
-		` *--------------------------------------------------------------------------------------------*/`,
+		"/*---------------------------------------------------------------------------------------------",
+		" *  Copyright (c) Microsoft Corporation. All rights reserved.",
+		" *  Licensed under the MIT License. See License.txt in the project root for license information.",
+		" *--------------------------------------------------------------------------------------------*/",
 	].join("\n");
 	return convertTabsToSpaces(
 		getNewFileHeader(tag) + content.slice(oldheader.length),
@@ -56,20 +56,20 @@ function getNewFileHeader(tag) {
 	const shorttag = `${major}.${minor}`;
 	const header = [
 		`// Type definitions for Visual Studio Code ${shorttag}`,
-		`// Project: https://github.com/microsoft/vscode`,
-		`// Definitions by: Visual Studio Code Team, Microsoft <https://github.com/microsoft>`,
-		`// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped`,
-		``,
-		`/*---------------------------------------------------------------------------------------------`,
-		` *  Copyright (c) Microsoft Corporation. All rights reserved.`,
-		` *  Licensed under the MIT License.`,
-		` *  See https://github.com/microsoft/vscode/blob/main/LICENSE.txt for license information.`,
-		` *--------------------------------------------------------------------------------------------*/`,
-		``,
-		`/**`,
+		"// Project: https://github.com/microsoft/vscode",
+		"// Definitions by: Visual Studio Code Team, Microsoft <https://github.com/microsoft>",
+		"// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped",
+		"",
+		"/*---------------------------------------------------------------------------------------------",
+		" *  Copyright (c) Microsoft Corporation. All rights reserved.",
+		" *  Licensed under the MIT License.",
+		" *  See https://github.com/microsoft/vscode/blob/main/LICENSE.txt for license information.",
+		" *--------------------------------------------------------------------------------------------*/",
+		"",
+		"/**",
 		` * Type Definition for Visual Studio Code ${shorttag} Extension API`,
-		` * See https://code.visualstudio.com/api for more information`,
-		` */`,
+		" * See https://code.visualstudio.com/api for more information",
+		" */",
 	].join("\n");
 	return header;
 }

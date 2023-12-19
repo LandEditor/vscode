@@ -39,7 +39,7 @@ export class GitEditSessionIdentityProvider
 		const repository = this.model.getRepository(workspaceFolder.uri);
 		await repository?.status();
 
-		if (!repository || !repository?.HEAD?.upstream) {
+		if (!repository?.HEAD?.upstream) {
 			return undefined;
 		}
 

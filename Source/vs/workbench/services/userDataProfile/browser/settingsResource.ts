@@ -56,7 +56,7 @@ export class SettingsResourceInitializer
 		const settingsContent: ISettingsContent = JSON.parse(content);
 		if (settingsContent.settings === null) {
 			this.logService.info(
-				`Initializing Profile: No settings to apply...`,
+				"Initializing Profile: No settings to apply...",
 			);
 			return;
 		}

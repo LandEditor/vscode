@@ -87,9 +87,7 @@ export class MouseWheelClassifier {
 		let index = this._rear;
 		do {
 			const influence =
-				index === this._front
-					? remainingInfluence
-					: Math.pow(2, -iteration);
+				index === this._front ? remainingInfluence : 2 ** -iteration;
 			remainingInfluence -= influence;
 			score += this._memory[index].score * influence;
 
@@ -167,8 +165,7 @@ export class MouseWheelClassifier {
 		}
 
 		if (
-			!this._isAlmostInt(item.deltaX) ||
-			!this._isAlmostInt(item.deltaY)
+			!(this._isAlmostInt(item.deltaX) && this._isAlmostInt(item.deltaY))
 		) {
 			// non-integer deltas => indicator that this is not a physical mouse wheel
 			score += 0.25;
@@ -256,8 +253,7 @@ export abstract class AbstractScrollableElement extends Widget {
 		);
 
 		this._domNode = document.createElement("div");
-		this._domNode.className =
-			"monaco-scrollable-element " + this._options.className;
+		this._domNode.className = `monaco-scrollable-element ${this._options.className}`;
 		this._domNode.setAttribute("role", "presentation");
 		this._domNode.style.position = "relative";
 		this._domNode.style.overflow = "hidden";
@@ -352,8 +348,7 @@ export abstract class AbstractScrollableElement extends Widget {
 		if (platform.isMacintosh) {
 			this._options.className += " mac";
 		}
-		this._domNode.className =
-			"monaco-scrollable-element " + this._options.className;
+		this._domNode.className = `monaco-scrollable-element ${this._options.className}`;
 	}
 
 	/**
@@ -486,10 +481,10 @@ export abstract class AbstractScrollableElement extends Widget {
 				deltaY = 0;
 			}
 
-			if (e.browserEvent && e.browserEvent.altKey) {
+			if (e.browserEvent?.altKey) {
 				// fastScrolling
-				deltaX = deltaX * this._options.fastScrollSensitivity;
-				deltaY = deltaY * this._options.fastScrollSensitivity;
+				deltaX *= this._options.fastScrollSensitivity;
+				deltaY *= this._options.fastScrollSensitivity;
 			}
 
 			const futureScrollPosition =
@@ -624,9 +619,9 @@ export abstract class AbstractScrollableElement extends Widget {
 			const topClassName = enableTop ? " top" : "";
 			const topLeftClassName =
 				enableLeft || enableTop ? " top-left-corner" : "";
-			this._leftShadowDomNode!.setClassName(`shadow${leftClassName}`);
-			this._topShadowDomNode!.setClassName(`shadow${topClassName}`);
-			this._topLeftShadowDomNode!.setClassName(
+			this._leftShadowDomNode?.setClassName(`shadow${leftClassName}`);
+			this._topShadowDomNode?.setClassName(`shadow${topClassName}`);
+			this._topLeftShadowDomNode?.setClassName(
 				`shadow${topLeftClassName}${topClassName}${leftClassName}`,
 			);
 		}
@@ -661,14 +656,14 @@ export abstract class AbstractScrollableElement extends Widget {
 	}
 
 	private _hide(): void {
-		if (!this._mouseIsOver && !this._isDragging) {
+		if (!(this._mouseIsOver || this._isDragging)) {
 			this._verticalScrollbar.beginHide();
 			this._horizontalScrollbar.beginHide();
 		}
 	}
 
 	private _scheduleHide(): void {
-		if (!this._mouseIsOver && !this._isDragging) {
+		if (!(this._mouseIsOver || this._isDragging)) {
 			this._hideTimeout.cancelAndSet(() => this._hide(), HIDE_TIMEOUT);
 		}
 	}
@@ -704,14 +699,6 @@ export class ScrollableElement extends AbstractScrollableElement {
 }
 
 export class SmoothScrollableElement extends AbstractScrollableElement {
-	constructor(
-		element: HTMLElement,
-		options: ScrollableElementCreationOptions,
-		scrollable: Scrollable,
-	) {
-		super(element, options, scrollable);
-	}
-
 	public setScrollPosition(
 		update: INewScrollPosition & { reuseAnimation?: boolean },
 	): void {

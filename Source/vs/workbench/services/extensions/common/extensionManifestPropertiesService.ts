@@ -237,8 +237,10 @@ export class ExtensionManifestPropertiesService
 	): ExtensionUntrustedWorkspaceSupportType {
 		// Workspace trust feature is disabled, or extension has no entry point
 		if (
-			!this.workspaceTrustEnablementService.isWorkspaceTrustEnabled() ||
-			!manifest.main
+			!(
+				this.workspaceTrustEnablementService.isWorkspaceTrustEnabled() &&
+				manifest.main
+			)
 		) {
 			return true;
 		}

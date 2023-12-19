@@ -254,7 +254,7 @@ export abstract class ConvenientObservable<T, TChange>
 		store: DisposableStore,
 		handleValue?: (value: T) => void,
 	): IObservable<T> {
-		store.add(_recomputeInitiallyAndOnChange!(this, handleValue));
+		store.add(_recomputeInitiallyAndOnChange?.(this, handleValue));
 		return this;
 	}
 
@@ -373,7 +373,7 @@ export class TransactionImpl implements ITransaction {
 		observable: IObservable<any>,
 	): void {
 		// When this gets called while finish is active, they will still get considered
-		this.updatingObservers!.push({ observer, observable });
+		this.updatingObservers?.push({ observer, observable });
 		observer.beginUpdate(observable);
 	}
 
@@ -430,7 +430,7 @@ function computeDebugName(
 		return cached;
 	}
 
-	const ownerStr = owner ? formatOwner(owner) + `.` : "";
+	const ownerStr = owner ? `${formatOwner(owner)}.` : "";
 
 	let result: string | undefined;
 	if (debugNameFn !== undefined) {

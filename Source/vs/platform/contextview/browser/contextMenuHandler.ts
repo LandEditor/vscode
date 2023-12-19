@@ -82,7 +82,7 @@ export class ContextMenuHandler {
 						: "";
 
 					if (className) {
-						container.className += " " + className;
+						container.className += ` ${className}`;
 					}
 
 					// Render invisible div to block mouse interaction in the rest of the UI

@@ -298,9 +298,10 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 				.workbench.quickOpen;
 
 		return {
-			openEditorPinned:
-				!editorConfig?.enablePreviewFromQuickOpen ||
-				!editorConfig?.enablePreview,
+			openEditorPinned: !(
+				editorConfig?.enablePreviewFromQuickOpen &&
+				editorConfig?.enablePreview
+			),
 			openSideBySideDirection: editorConfig?.openSideBySideDirection,
 			includeSymbols: searchConfig?.quickOpen.includeSymbols,
 			includeHistory: searchConfig?.quickOpen.includeHistory,
@@ -445,8 +446,10 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 				activePick === AnythingQuickAccessProvider.NO_RESULTS_PICK &&
 				filter.indexOf(GotoSymbolQuickAccessProvider.PREFIX) >= 0;
 			if (
-				!activePickIsEditorSymbol &&
-				!activePickIsNoResultsInEditorSymbols
+				!(
+					activePickIsEditorSymbol ||
+					activePickIsNoResultsInEditorSymbols
+				)
 			) {
 				this.pickState.lastGlobalPicks = {
 					items: picks,
@@ -592,7 +595,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 		query: IPreparedQuery,
 		excludes: ResourceMap<boolean>,
 		token: CancellationToken,
-	): Promise<Array<IAnythingQuickPickItem>> {
+	): Promise<IAnythingQuickPickItem[]> {
 		// Resolve file and symbol picks (if enabled)
 		const [filePicks, symbolPicks] = await Promise.all([
 			this.getFilePicks(query, excludes, token),
@@ -658,7 +661,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 
 	private getEditorHistoryPicks(
 		query: IPreparedQuery,
-	): Array<IAnythingQuickPickItem> {
+	): IAnythingQuickPickItem[] {
 		const configuration = this.configuration;
 
 		// Just return all history entries if not searching
@@ -678,7 +681,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 		const editorHistoryScorerAccessor = query.containsPathSeparator
 			? quickPickItemScorerAccessor
 			: this.labelOnlyEditorHistoryPickAccessor; // Only match on label of the editor unless the search includes path separators
-		const editorHistoryPicks: Array<IAnythingQuickPickItem> = [];
+		const editorHistoryPicks: IAnythingQuickPickItem[] = [];
 		for (const editor of this.historyService.getHistory()) {
 			const resource = editor.resource;
 			// allow untitled and terminal editors to go through
@@ -763,7 +766,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 		query: IPreparedQuery,
 		excludes: ResourceMap<boolean>,
 		token: CancellationToken,
-	): Promise<Array<IAnythingQuickPickItem>> {
+	): Promise<IAnythingQuickPickItem[]> {
 		if (!query.normalized) {
 			return [];
 		}
@@ -778,7 +781,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 		}
 
 		// Use absolute path result as only results if present
-		let fileMatches: Array<URI>;
+		let fileMatches: URI[];
 		if (absolutePathResult) {
 			if (excludes.has(absolutePathResult)) {
 				return []; // excluded
@@ -1155,11 +1158,10 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 	private async getWorkspaceSymbolPicks(
 		query: IPreparedQuery,
 		token: CancellationToken,
-	): Promise<Array<IAnythingQuickPickItem>> {
+	): Promise<IAnythingQuickPickItem[]> {
 		const configuration = this.configuration;
 		if (
-			!query.normalized || // we need a value for search for
-			!configuration.includeSymbols || // we need to enable symbols in search
+			!(query.normalized && // we need a value for search forconfiguration.includeSymbols ) || // we need to enable symbols in search
 			this.pickState.lastRange // a range is an indicator for just searching for files
 		) {
 			return [];
@@ -1431,8 +1433,9 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 			if (isEditorHistoryEntry) {
 				buttons.push({
 					iconClass: isDirty
-						? "dirty-anything " +
-						  ThemeIcon.asClassName(Codicon.circleFilled)
+						? `dirty-anything ${ThemeIcon.asClassName(
+								Codicon.circleFilled,
+						  )}`
 						: ThemeIcon.asClassName(Codicon.close),
 					tooltip: localize(
 						"closeEditor",
@@ -1465,7 +1468,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 			trigger: (buttonIndex, keyMods) => {
 				switch (buttonIndex) {
 					// Open to side / below
-					case 0:
+					case 0: {
 						this.openAnything(resourceOrEditor, {
 							keyMods,
 							range: this.pickState.lastRange,
@@ -1473,6 +1476,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 						});
 
 						return TriggerAction.CLOSE_PICKER;
+					}
 
 					// Remove from History
 					case 1:

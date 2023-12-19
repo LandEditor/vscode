@@ -584,7 +584,7 @@ export class UserDataProfilesManifestSynchroniser
 
 	private getLocalUserDataProfiles(): IUserDataProfile[] {
 		return this.userDataProfilesService.profiles.filter(
-			(p) => !p.isDefault && !p.isTransient,
+			(p) => !(p.isDefault || p.isTransient),
 		);
 	}
 

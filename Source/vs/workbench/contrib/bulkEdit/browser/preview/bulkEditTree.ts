@@ -830,7 +830,7 @@ class TextEditElementTemplate {
 
 		let title: string | undefined;
 		const { metadata } = element.edit.textEdit;
-		if (metadata && metadata.description) {
+		if (metadata?.description) {
 			title = localize(
 				"title",
 				"{0} - {1}",

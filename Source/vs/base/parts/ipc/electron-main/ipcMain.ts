@@ -123,7 +123,7 @@ class ValidatedIpcMain implements Event.NodeEventEmitter {
 		channel: string,
 		event: IpcMainEvent | IpcMainInvokeEvent,
 	): boolean {
-		if (!channel || !channel.startsWith("vscode:")) {
+		if (!channel?.startsWith("vscode:")) {
 			onUnexpectedError(
 				`Refused to handle ipcMain event for channel '${channel}' because the channel is unknown.`,
 			);

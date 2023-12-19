@@ -117,7 +117,7 @@ export class CompositeDragAndDrop implements ICompositeDragAndDrop {
 			const viewToMove = this.viewDescriptorService.getViewDescriptorById(
 				dragData.id,
 			)!;
-			if (viewToMove && viewToMove.canMoveView) {
+			if (viewToMove?.canMoveView) {
 				this.viewDescriptorService.moveViewToLocation(
 					viewToMove,
 					this.targetContainerLocation,
@@ -207,7 +207,7 @@ export class CompositeDragAndDrop implements ICompositeDragAndDrop {
 				this.viewDescriptorService.getViewDescriptorById(dragData.id);
 
 			// ... that cannot move
-			if (!viewDescriptor || !viewDescriptor.canMoveView) {
+			if (!viewDescriptor?.canMoveView) {
 				return false;
 			}
 
@@ -734,7 +734,7 @@ export class CompositeBar extends Widget implements ICompositeBar {
 
 	private updateCompositeSwitcher(): void {
 		const compositeSwitcherBar = this.compositeSwitcherBar;
-		if (!compositeSwitcherBar || !this.dimension) {
+		if (!(compositeSwitcherBar && this.dimension)) {
 			return; // We have not been rendered yet so there is nothing to update.
 		}
 

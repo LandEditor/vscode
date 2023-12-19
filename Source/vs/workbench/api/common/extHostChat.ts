@@ -20,8 +20,6 @@ import { IChatReplyFollowup } from "vs/workbench/contrib/chat/common/chatService
 import type * as vscode from "vscode";
 
 class ChatProviderWrapper<T> {
-	private static _pool = 0;
-
 	readonly handle: number = ChatProviderWrapper._pool++;
 
 	constructor(

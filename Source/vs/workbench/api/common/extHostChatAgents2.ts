@@ -148,8 +148,9 @@ export class ExtHostChatAgents2 implements ExtHostChatAgentsShape2 {
 						);
 					if (!convertedProgress) {
 						this._logService.error(
-							"Unknown progress type: " +
-								JSON.stringify(progress),
+							`Unknown progress type: ${JSON.stringify(
+								progress,
+							)}`,
 						);
 						return;
 					}
@@ -177,8 +178,9 @@ export class ExtHostChatAgents2 implements ExtHostChatAgentsShape2 {
 								);
 							if (!convertedContent) {
 								this._logService.error(
-									"Unknown progress type: " +
-										JSON.stringify(progressContent),
+									`Unknown progress type: ${JSON.stringify(
+										progressContent,
+									)}`,
 								);
 								return;
 							}
@@ -300,12 +302,14 @@ export class ExtHostChatAgents2 implements ExtHostChatAgentsShape2 {
 
 		let kind: extHostTypes.ChatAgentResultFeedbackKind;
 		switch (vote) {
-			case InteractiveSessionVoteDirection.Down:
+			case InteractiveSessionVoteDirection.Down: {
 				kind = extHostTypes.ChatAgentResultFeedbackKind.Unhelpful;
 				break;
-			case InteractiveSessionVoteDirection.Up:
+			}
+			case InteractiveSessionVoteDirection.Up: {
 				kind = extHostTypes.ChatAgentResultFeedbackKind.Helpful;
 				break;
+			}
 		}
 		agent.acceptFeedback(
 			reportIssue

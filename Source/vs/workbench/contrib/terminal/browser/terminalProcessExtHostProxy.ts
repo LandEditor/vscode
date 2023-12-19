@@ -98,21 +98,26 @@ export class TerminalProcessExtHostProxy
 
 	emitProcessProperty({ type, value }: IProcessProperty<any>): void {
 		switch (type) {
-			case ProcessPropertyType.Cwd:
+			case ProcessPropertyType.Cwd: {
 				this.emitCwd(value);
 				break;
-			case ProcessPropertyType.InitialCwd:
+			}
+			case ProcessPropertyType.InitialCwd: {
 				this.emitInitialCwd(value);
 				break;
-			case ProcessPropertyType.Title:
+			}
+			case ProcessPropertyType.Title: {
 				this.emitTitle(value);
 				break;
-			case ProcessPropertyType.OverrideDimensions:
+			}
+			case ProcessPropertyType.OverrideDimensions: {
 				this.emitOverrideDimensions(value);
 				break;
-			case ProcessPropertyType.ResolvedShellLaunchConfig:
+			}
+			case ProcessPropertyType.ResolvedShellLaunchConfig: {
 				this.emitResolvedShellLaunchConfig(value);
 				break;
+			}
 		}
 	}
 
@@ -137,13 +142,13 @@ export class TerminalProcessExtHostProxy
 
 	emitInitialCwd(initialCwd: string): void {
 		while (this._pendingInitialCwdRequests.length > 0) {
-			this._pendingInitialCwdRequests.pop()!(initialCwd);
+			this._pendingInitialCwdRequests.pop()?.(initialCwd);
 		}
 	}
 
 	emitCwd(cwd: string): void {
 		while (this._pendingCwdRequests.length > 0) {
-			this._pendingCwdRequests.pop()!(cwd);
+			this._pendingCwdRequests.pop()?.(cwd);
 		}
 	}
 

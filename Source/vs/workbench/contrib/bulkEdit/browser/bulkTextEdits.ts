@@ -83,7 +83,7 @@ class ModelEditTask implements IDisposable {
 			// honor eol-change
 			this._newEol = textEdit.eol;
 		}
-		if (!textEdit.range && !textEdit.text) {
+		if (!(textEdit.range || textEdit.text)) {
 			// lacks both a range and the text
 			return;
 		}

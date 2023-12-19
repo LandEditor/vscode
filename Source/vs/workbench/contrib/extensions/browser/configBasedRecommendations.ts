@@ -32,17 +32,17 @@ export class ConfigBasedRecommendations extends ExtensionRecommendations {
 		this._onDidChangeRecommendations.event;
 
 	private _otherRecommendations: ConfigBasedExtensionRecommendation[] = [];
-	get otherRecommendations(): ReadonlyArray<ConfigBasedExtensionRecommendation> {
+	get otherRecommendations(): readonly ConfigBasedExtensionRecommendation[] {
 		return this._otherRecommendations;
 	}
 
 	private _importantRecommendations: ConfigBasedExtensionRecommendation[] =
 		[];
-	get importantRecommendations(): ReadonlyArray<ConfigBasedExtensionRecommendation> {
+	get importantRecommendations(): readonly ConfigBasedExtensionRecommendation[] {
 		return this._importantRecommendations;
 	}
 
-	get recommendations(): ReadonlyArray<ConfigBasedExtensionRecommendation> {
+	get recommendations(): readonly ConfigBasedExtensionRecommendation[] {
 		return [...this.importantRecommendations, ...this.otherRecommendations];
 	}
 

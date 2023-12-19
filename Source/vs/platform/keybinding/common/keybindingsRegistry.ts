@@ -109,14 +109,14 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 		secondary?: number[];
 	} {
 		if (OS === OperatingSystem.Windows) {
-			if (kb && kb.win) {
+			if (kb?.win) {
 				return kb.win;
 			}
 		} else if (OS === OperatingSystem.Macintosh) {
-			if (kb && kb.mac) {
+			if (kb?.mac) {
 				return kb.mac;
 			}
-		} else if (kb && kb.linux) {
+		} else if (kb?.linux) {
 			return kb.linux;
 		}
 
@@ -127,7 +127,7 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 		const actualKb = KeybindingsRegistryImpl.bindToCurrentPlatform(rule);
 		const result = new DisposableStore();
 
-		if (actualKb && actualKb.primary) {
+		if (actualKb?.primary) {
 			const kk = decodeKeybinding(actualKb.primary, OS);
 			if (kk) {
 				result.add(
@@ -177,7 +177,7 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 					weight1: rule.weight,
 					weight2: 0,
 					extensionId: rule.extensionId || null,
-					isBuiltinExtension: rule.isBuiltinExtension || false,
+					isBuiltinExtension: rule.isBuiltinExtension,
 				};
 			}
 		}

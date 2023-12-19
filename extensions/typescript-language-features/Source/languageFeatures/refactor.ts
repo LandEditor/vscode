@@ -456,7 +456,7 @@ class InlinedCodeAction extends vscode.CodeAction {
 		) => vscode.Command,
 	) {
 		const title = copilotRename
-			? action.description + " and suggest a name with Copilot."
+			? `${action.description} and suggest a name with Copilot.`
 			: action.description;
 		super(title, InlinedCodeAction.getKind(action));
 
@@ -506,7 +506,7 @@ class InlinedCodeAction extends vscode.CodeAction {
 			// Disable renames in interactive playground https://github.com/microsoft/vscode/issues/75137
 			if (this.document.uri.scheme !== fileSchemes.walkThroughSnippet) {
 				if (this.copilotRename && this.command) {
-					this.command.title = "Copilot: " + this.command.title;
+					this.command.title = `Copilot: ${this.command.title}`;
 				}
 				this.command = {
 					command: CompositeCommand.ID,
@@ -610,7 +610,7 @@ class TypeScriptRefactorProvider
 		node: Proto.NavigationTree,
 		range: vscode.Range,
 	): boolean {
-		if (this._declarationKinds.has(node.kind)) {
+		if (TypeScriptRefactorProvider._declarationKinds.has(node.kind)) {
 			// Show when on the name span
 			if (node.nameSpan) {
 				const convertedSpan = typeConverters.Range.fromTextSpan(
@@ -648,7 +648,7 @@ class TypeScriptRefactorProvider
 		// Show if on the signature of any children
 		return (
 			node.childItems?.some((child) =>
-				this.isOnSignatureName(child, range),
+				TypeScriptRefactorProvider.isOnSignatureName(child, range),
 			) ?? false
 		);
 	}

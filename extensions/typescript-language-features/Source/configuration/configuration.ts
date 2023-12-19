@@ -23,7 +23,6 @@ export namespace TsServerLogLevel {
 				return TsServerLogLevel.Terse;
 			case "verbose":
 				return TsServerLogLevel.Verbose;
-			case "off":
 			default:
 				return TsServerLogLevel.Off;
 		}
@@ -37,7 +36,6 @@ export namespace TsServerLogLevel {
 				return "terse";
 			case TsServerLogLevel.Verbose:
 				return "verbose";
-			case TsServerLogLevel.Off:
 			default:
 				return "off";
 		}

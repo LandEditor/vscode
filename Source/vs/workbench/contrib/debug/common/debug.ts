@@ -1073,7 +1073,7 @@ export interface IThread extends ITreeElement {
 	 * Gets the callstack if it has already been received from the debug
 	 * adapter.
 	 */
-	getCallStack(): ReadonlyArray<IStackFrame>;
+	getCallStack(): readonly IStackFrame[];
 
 	/**
 	 * Gets the top stack frame that is not hidden if the callstack has already been received from the debug adapter
@@ -1118,7 +1118,7 @@ export interface IStackFrame extends ITreeElement {
 	readonly canRestart: boolean;
 	readonly instructionPointerReference?: string;
 	getScopes(): Promise<IScope[]>;
-	getMostSpecificScopes(range: IRange): Promise<ReadonlyArray<IScope>>;
+	getMostSpecificScopes(range: IRange): Promise<readonly IScope[]>;
 	forgetScopes(): void;
 	restart(): Promise<any>;
 	toString(): string;
@@ -1281,15 +1281,15 @@ export interface IDebugModel extends ITreeElement {
 		lineNumber?: number;
 		column?: number;
 		enabledOnly?: boolean;
-	}): ReadonlyArray<IBreakpoint>;
+	}): readonly IBreakpoint[];
 	areBreakpointsActivated(): boolean;
-	getFunctionBreakpoints(): ReadonlyArray<IFunctionBreakpoint>;
-	getDataBreakpoints(): ReadonlyArray<IDataBreakpoint>;
+	getFunctionBreakpoints(): readonly IFunctionBreakpoint[];
+	getDataBreakpoints(): readonly IDataBreakpoint[];
 
 	/**
 	 * Returns list of all exception breakpoints.
 	 */
-	getExceptionBreakpoints(): ReadonlyArray<IExceptionBreakpoint>;
+	getExceptionBreakpoints(): readonly IExceptionBreakpoint[];
 
 	/**
 	 * Returns list of exception breakpoints for the given session
@@ -1297,9 +1297,9 @@ export interface IDebugModel extends ITreeElement {
 	 */
 	getExceptionBreakpointsForSession(
 		sessionId?: string,
-	): ReadonlyArray<IExceptionBreakpoint>;
+	): readonly IExceptionBreakpoint[];
 
-	getInstructionBreakpoints(): ReadonlyArray<IInstructionBreakpoint>;
+	getInstructionBreakpoints(): readonly IInstructionBreakpoint[];
 	getWatchExpressions(): ReadonlyArray<IExpression & IEvaluate>;
 
 	onDidChangeBreakpoints: Event<IBreakpointsChangeEvent | undefined>;
@@ -1598,7 +1598,7 @@ export interface IConfigurationManager {
 		dynamicConfigOptions?: { type?: string },
 	): Promise<void>;
 
-	getLaunches(): ReadonlyArray<ILaunch>;
+	getLaunches(): readonly ILaunch[];
 	getLaunch(workspaceUri: uri | undefined): ILaunch | undefined;
 	getAllConfigurations(): {
 		launch: ILaunch;

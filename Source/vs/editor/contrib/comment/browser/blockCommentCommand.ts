@@ -146,7 +146,7 @@ export class BlockCommentCommand implements ICommand {
 				) === CharCode.Space
 			) {
 				// Pretend the start token contains a trailing space
-				startToken = startToken + " ";
+				startToken += " ";
 			}
 
 			if (
@@ -155,7 +155,7 @@ export class BlockCommentCommand implements ICommand {
 				endLineText.charCodeAt(endTokenIndex - 1) === CharCode.Space
 			) {
 				// Pretend the end token contains a leading space
-				endToken = " " + endToken;
+				endToken = ` ${endToken}`;
 				endTokenIndex -= 1;
 			}
 			ops = BlockCommentCommand._createRemoveBlockCommentOperations(
@@ -249,7 +249,7 @@ export class BlockCommentCommand implements ICommand {
 						r.endLineNumber,
 						r.endColumn,
 					),
-					startToken + "  " + endToken,
+					`${startToken}  ${endToken}`,
 				),
 			);
 		} else {
@@ -289,11 +289,7 @@ export class BlockCommentCommand implements ICommand {
 			this.languageConfigurationService.getLanguageConfiguration(
 				languageId,
 			).comments;
-		if (
-			!config ||
-			!config.blockCommentStartToken ||
-			!config.blockCommentEndToken
-		) {
+		if (!(config?.blockCommentStartToken && config.blockCommentEndToken)) {
 			// Mode does not support block comments
 			return;
 		}

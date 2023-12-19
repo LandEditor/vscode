@@ -363,8 +363,7 @@ abstract class AbstractGlobalActivityActionViewItem extends CompoisteBarActionVi
 		}, 0);
 		const descriptorFn = (): string => {
 			return numberActivities.reduce((result, activity, index) => {
-				result =
-					result + (<NumberBadge>activity.badge).getDescription();
+				result += (<NumberBadge>activity.badge).getDescription();
 				if (index < numberActivities.length - 1) {
 					result = `${result}\n`;
 				}
@@ -940,7 +939,7 @@ export class GlobalActivityActionViewItem extends AbstractGlobalActivityActionVi
 	}
 
 	private updateProfileBadge(): void {
-		if (!this.profileBadge || !this.profileBadgeContent) {
+		if (!(this.profileBadge && this.profileBadgeContent)) {
 			return;
 		}
 

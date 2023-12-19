@@ -76,7 +76,7 @@ export class Position {
 	 * Test if position `a` equals position `b`
 	 */
 	public static equals(a: IPosition | null, b: IPosition | null): boolean {
-		if (!a && !b) {
+		if (!(a || b)) {
 			return true;
 		}
 		return (
@@ -155,7 +155,7 @@ export class Position {
 	 * Convert to a human-readable representation.
 	 */
 	public toString(): string {
-		return "(" + this.lineNumber + "," + this.column + ")";
+		return `(${this.lineNumber},${this.column})`;
 	}
 
 	// ---

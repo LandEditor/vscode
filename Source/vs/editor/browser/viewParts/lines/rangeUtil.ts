@@ -16,10 +16,10 @@ export class RangeUtil {
 	private static _handyReadyRange: Range;
 
 	private static _createRange(): Range {
-		if (!this._handyReadyRange) {
-			this._handyReadyRange = document.createRange();
+		if (!RangeUtil._handyReadyRange) {
+			RangeUtil._handyReadyRange = document.createRange();
 		}
-		return this._handyReadyRange;
+		return RangeUtil._handyReadyRange;
 	}
 
 	private static _detachRange(range: Range, endNode: HTMLElement): void {
@@ -35,7 +35,7 @@ export class RangeUtil {
 		endOffset: number,
 		endNode: HTMLElement,
 	): DOMRectList | null {
-		const range = this._createRange();
+		const range = RangeUtil._createRange();
 		try {
 			range.setStart(startElement, startOffset);
 			range.setEnd(endElement, endOffset);
@@ -45,7 +45,7 @@ export class RangeUtil {
 			// This is life ...
 			return null;
 		} finally {
-			this._detachRange(range, endNode);
+			RangeUtil._detachRange(range, endNode);
 		}
 	}
 
@@ -110,7 +110,7 @@ export class RangeUtil {
 			);
 		}
 
-		return this._mergeAdjacentRanges(result);
+		return RangeUtil._mergeAdjacentRanges(result);
 	}
 
 	public static readHorizontalRanges(
@@ -141,7 +141,7 @@ export class RangeUtil {
 			const clientRects =
 				domNode.children[startChildIndex].getClientRects();
 			context.markDidDomLayout();
-			return this._createHorizontalRangesFromClientRects(
+			return RangeUtil._createHorizontalRangesFromClientRects(
 				clientRects,
 				context.clientRectDeltaLeft,
 				context.clientRectScale,
@@ -160,7 +160,7 @@ export class RangeUtil {
 		let startElement = domNode.children[startChildIndex].firstChild;
 		let endElement = domNode.children[endChildIndex].firstChild;
 
-		if (!startElement || !endElement) {
+		if (!(startElement && endElement)) {
 			// When having an empty <span> (without any text content), try to move to the previous <span>
 			if (!startElement && startOffset === 0 && startChildIndex > 0) {
 				startElement = domNode.children[startChildIndex - 1].firstChild;
@@ -172,20 +172,20 @@ export class RangeUtil {
 			}
 		}
 
-		if (!startElement || !endElement) {
+		if (!(startElement && endElement)) {
 			return null;
 		}
 
 		startOffset = Math.min(
-			startElement.textContent!.length,
+			startElement.textContent?.length,
 			Math.max(0, startOffset),
 		);
 		endOffset = Math.min(
-			endElement.textContent!.length,
+			endElement.textContent?.length,
 			Math.max(0, endOffset),
 		);
 
-		const clientRects = this._readClientRects(
+		const clientRects = RangeUtil._readClientRects(
 			startElement,
 			startOffset,
 			endElement,
@@ -193,7 +193,7 @@ export class RangeUtil {
 			context.endNode,
 		);
 		context.markDidDomLayout();
-		return this._createHorizontalRangesFromClientRects(
+		return RangeUtil._createHorizontalRangesFromClientRects(
 			clientRects,
 			context.clientRectDeltaLeft,
 			context.clientRectScale,

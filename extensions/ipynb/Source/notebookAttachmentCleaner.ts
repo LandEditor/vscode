@@ -195,19 +195,21 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 		for (const diagnostic of context.diagnostics) {
 			switch (diagnostic.code) {
 				case DiagnosticCode.missing_attachment: {
-					const fix = new vscode.CodeAction(
-						"Remove invalid image attachment reference",
-						vscode.CodeActionKind.QuickFix,
-					);
+					{
+						const fix = new vscode.CodeAction(
+							"Remove invalid image attachment reference",
+							vscode.CodeActionKind.QuickFix,
+						);
 
-					fix.command = {
-						command: ATTACHMENT_CLEANUP_COMMANDID,
-						title: "Remove invalid image attachment reference",
-						arguments: [document.uri, diagnostic.range],
-					};
-					fixes.push(fix);
+						fix.command = {
+							command: ATTACHMENT_CLEANUP_COMMANDID,
+							title: "Remove invalid image attachment reference",
+							arguments: [document.uri, diagnostic.range],
+						};
+						fixes.push(fix);
+					}
+					break;
 				}
-				break;
 			}
 		}
 
@@ -349,7 +351,7 @@ export class AttachmentCleaner implements vscode.CodeActionProvider {
 			}
 		}
 
-		if (!notebook || !activeCell) {
+		if (!(notebook && activeCell)) {
 			return;
 		}
 

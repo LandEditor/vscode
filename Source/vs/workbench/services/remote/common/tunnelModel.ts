@@ -169,7 +169,7 @@ export function mapHasAddressLocalhostOrAllInterfaces<T>(
 }
 
 export function makeAddress(host: string, port: number): string {
-	return host + ":" + port;
+	return `${host}:${port}`;
 }
 
 export interface TunnelProperties {
@@ -361,7 +361,7 @@ export class PortsAttributes extends Disposable {
 		if (fromIndex >= attributes.length) {
 			return -1;
 		}
-		const shouldUseHost = !isLocalhost(host) && !isAllInterfaces(host);
+		const shouldUseHost = !(isLocalhost(host) || isAllInterfaces(host));
 		const sliced = attributes.slice(fromIndex);
 		const foundIndex = sliced.findIndex((value) => {
 			if (isNumber(value.key)) {
@@ -383,7 +383,7 @@ export class PortsAttributes extends Disposable {
 		const settingValue = this.configurationService.getValue(
 			PortsAttributes.SETTING,
 		);
-		if (!settingValue || !isObject(settingValue)) {
+		if (!(settingValue && isObject(settingValue))) {
 			return [];
 		}
 
@@ -400,12 +400,15 @@ export class PortsAttributes extends Disposable {
 			} else if (isString(attributesKey)) {
 				if (PortsAttributes.RANGE.test(attributesKey)) {
 					const match = attributesKey.match(PortsAttributes.RANGE);
-					key = { start: Number(match![1]), end: Number(match![2]) };
+					key = {
+						start: Number(match?.[1]),
+						end: Number(match?.[2]),
+					};
 				} else if (PortsAttributes.HOST_AND_PORT.test(attributesKey)) {
 					const match = attributesKey.match(
 						PortsAttributes.HOST_AND_PORT,
 					);
-					key = { host: match![1], port: Number(match![2]) };
+					key = { host: match?.[1], port: Number(match?.[2]) };
 				} else {
 					let regTest: RegExp | undefined = undefined;
 					try {
@@ -500,10 +503,10 @@ export class PortsAttributes extends Disposable {
 		);
 		const remoteValue: any = settingValue.userRemoteValue;
 		let newRemoteValue: any;
-		if (!remoteValue || !isObject(remoteValue)) {
-			newRemoteValue = {};
-		} else {
+		if (remoteValue && isObject(remoteValue)) {
 			newRemoteValue = deepClone(remoteValue);
+		} else {
+			newRemoteValue = {};
 		}
 
 		if (!newRemoteValue[`${port}`]) {
@@ -643,21 +646,19 @@ export class TunnelModel extends Disposable {
 					tunnel.tunnelRemotePort
 				);
 				if (
-					!mapHasAddressLocalhostOrAllInterfaces(
+					!((mapHasAddressLocalhostOrAllInterfaces(
 						this.forwarded,
 						tunnel.tunnelRemoteHost,
 						tunnel.tunnelRemotePort
-					) &&
-					!mapHasAddressLocalhostOrAllInterfaces(
+					) ||mapHasAddressLocalhostOrAllInterfaces(
 						this.detected,
 						tunnel.tunnelRemoteHost,
 						tunnel.tunnelRemotePort
-					) &&
-					!mapHasAddressLocalhostOrAllInterfaces(
+					) ) ||mapHasAddressLocalhostOrAllInterfaces(
 						this.inProgress,
 						tunnel.tunnelRemoteHost,
 						tunnel.tunnelRemotePort
-					) &&
+					) ) &&
 					tunnel.localAddress
 				) {
 					const matchingCandidate =
@@ -897,7 +898,7 @@ export class TunnelModel extends Disposable {
 		expectedLocal: number,
 		attributes: Attributes | undefined,
 	) {
-		if (!tunnel.tunnelLocalPort || !attributes?.requireLocalPort) {
+		if (!(tunnel.tunnelLocalPort && attributes?.requireLocalPort)) {
 			return;
 		}
 		if (tunnel.tunnelLocalPort === expectedLocal) {
@@ -1000,7 +1001,7 @@ export class TunnelModel extends Disposable {
 			if (typeof tunnel === "string") {
 				// There was an error  while creating the tunnel.
 				noTunnelValue = tunnel;
-			} else if (tunnel && tunnel.localAddress) {
+			} else if (tunnel?.localAddress) {
 				const matchingCandidate =
 					mapHasAddressLocalhostOrAllInterfaces<CandidatePort>(
 						this._candidates ?? new Map(),
@@ -1444,7 +1445,7 @@ export class TunnelModel extends Disposable {
 			}),
 		);
 
-		if (!configAttributes && !providedAttributes) {
+		if (!(configAttributes || providedAttributes)) {
 			return undefined;
 		}
 

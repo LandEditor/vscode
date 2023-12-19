@@ -141,7 +141,7 @@ class TypeScriptWorkspaceSymbolProvider
 	private static getLabel(item: Proto.NavtoItem) {
 		const label = item.name;
 		if (item.kind === "method" || item.kind === "function") {
-			return label + "()";
+			return `${label}()`;
 		}
 		return label;
 	}

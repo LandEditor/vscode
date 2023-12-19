@@ -108,7 +108,7 @@ export class SpliceCellsEdit implements IResourceUndoRedoElement {
 		}
 
 		this.diffs.forEach((diff) => {
-			this.editingDelegate.replaceCell!(
+			this.editingDelegate.replaceCell?.(
 				diff[0],
 				diff[2].length,
 				diff[1],
@@ -125,7 +125,7 @@ export class SpliceCellsEdit implements IResourceUndoRedoElement {
 		}
 
 		this.diffs.reverse().forEach((diff) => {
-			this.editingDelegate.replaceCell!(
+			this.editingDelegate.replaceCell?.(
 				diff[0],
 				diff[1].length,
 				diff[2],

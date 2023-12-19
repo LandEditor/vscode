@@ -534,7 +534,7 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 		this.rightContent = append(this.rootContainer, $(".titlebar-right"));
 
 		// App Icon (Native Windows/Linux and Web)
-		if (!isMacintosh && !isWeb) {
+		if (!(isMacintosh || isWeb)) {
 			this.appIcon = prepend(this.leftContent, $("a.window-appicon"));
 
 			// Web-only home indicator and menu (not for auxiliary windows)
@@ -672,7 +672,7 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 			class FocusTitleBar extends Action2 {
 				constructor() {
 					super({
-						id: `workbench.action.focusTitleBar`,
+						id: "workbench.action.focusTitleBar",
 						title: {
 							value: localize("focusTitleBar", "Focus Title Bar"),
 							original: "Focus Title Bar",
@@ -1051,10 +1051,11 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 			this.currentMenubarVisibility === "compact" ||
 			(!isWeb && isMacintosh);
 		const noCommandCenter = !this.isCommandCenterVisible;
-		const noToolBarActions =
-			!this.layoutControlEnabled &&
-			!this.editorActionsEnabled &&
-			!this.activityActionsEnabled;
+		const noToolBarActions = !(
+			this.layoutControlEnabled ||
+			this.editorActionsEnabled ||
+			this.activityActionsEnabled
+		);
 
 		return (
 			zoomFactor < 1 || (noMenubar && noCommandCenter && noToolBarActions)

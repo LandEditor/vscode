@@ -46,8 +46,10 @@ class ExtHostNotebookDocumentSaveParticipant
 		token: CancellationToken,
 	): Promise<void> {
 		if (
-			!workingCopy.model ||
-			!(workingCopy.model instanceof NotebookFileWorkingCopyModel)
+			!(
+				workingCopy.model &&
+				workingCopy.model instanceof NotebookFileWorkingCopyModel
+			)
 		) {
 			return undefined;
 		}

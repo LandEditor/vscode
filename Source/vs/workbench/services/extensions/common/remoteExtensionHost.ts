@@ -238,7 +238,7 @@ export class RemoteExtensionHost extends Disposable implements IExtensionHost {
 								}
 
 								console.error(
-									`received unexpected message during handshake phase from the extension host: `,
+									"received unexpected message during handshake phase from the extension host: ",
 									msg,
 								);
 							});

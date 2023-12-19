@@ -86,7 +86,7 @@ export class FilePolicyService
 				FileOperationResult.FILE_NOT_FOUND
 			) {
 				this.logService.error(
-					`[FilePolicyService] Failed to read policies`,
+					"[FilePolicyService] Failed to read policies",
 					error,
 				);
 			}

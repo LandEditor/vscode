@@ -64,7 +64,7 @@ export class OpenExtensionLogsFolderAction extends Action {
 		const folderStat = await this.fileService.resolve(
 			this.environmentSerice.extHostLogsPath,
 		);
-		if (folderStat.children && folderStat.children[0]) {
+		if (folderStat.children?.[0]) {
 			return this.nativeHostService.showItemInFolder(
 				folderStat.children[0].resource.with({ scheme: Schemas.file })
 					.fsPath,

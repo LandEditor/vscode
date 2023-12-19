@@ -26,15 +26,15 @@ export function tail2<T>(arr: T[]): [T[], T] {
 }
 
 export function equals<T>(
-	one: ReadonlyArray<T> | undefined,
-	other: ReadonlyArray<T> | undefined,
+	one: readonly T[] | undefined,
+	other: readonly T[] | undefined,
 	itemEquals: (a: T, b: T) => boolean = (a, b) => a === b,
 ): boolean {
 	if (one === other) {
 		return true;
 	}
 
-	if (!one || !other) {
+	if (!(one && other)) {
 		return false;
 	}
 
@@ -75,7 +75,7 @@ export function removeFastWithoutKeepingOrder<T>(array: T[], index: number) {
  * @return See {@link binarySearch2}
  */
 export function binarySearch<T>(
-	array: ReadonlyArray<T>,
+	array: readonly T[],
 	key: T,
 	comparator: (op1: T, op2: T) => number,
 ): number {
@@ -101,8 +101,8 @@ export function binarySearch2(
 	length: number,
 	compareToKey: (index: number) => number,
 ): number {
-	let low = 0,
-		high = length - 1;
+	let low = 0;
+	let high = length - 1;
 
 	while (low <= high) {
 		const mid = ((low + high) / 2) | 0;
@@ -121,7 +121,7 @@ export function binarySearch2(
 type Compare<T> = (a: T, b: T) => number;
 
 export function quickSelect<T>(nth: number, data: T[], compare: Compare<T>): T {
-	nth = nth | 0;
+	nth |= 0;
 
 	if (nth >= data.length) {
 		throw new TypeError("invalid index");
@@ -157,7 +157,7 @@ export function quickSelect<T>(nth: number, data: T[], compare: Compare<T>): T {
 }
 
 export function groupBy<T>(
-	data: ReadonlyArray<T>,
+	data: readonly T[],
 	compare: (a: T, b: T) => number,
 ): T[][] {
 	const result: T[][] = [];
@@ -186,7 +186,7 @@ export function* groupAdjacentBy<T>(
 	let last: T | undefined;
 	for (const item of items) {
 		if (last !== undefined && shouldBeGrouped(last, item)) {
-			currentGroup!.push(item);
+			currentGroup?.push(item);
 		} else {
 			if (currentGroup) {
 				yield currentGroup;
@@ -234,8 +234,8 @@ interface IMutableSplice<T> extends ISplice<T> {
  * Diffs two *sorted* arrays and computes the splices which apply the diff.
  */
 export function sortedDiff<T>(
-	before: ReadonlyArray<T>,
-	after: ReadonlyArray<T>,
+	before: readonly T[],
+	after: readonly T[],
 	compare: (a: T, b: T) => number,
 ): ISplice<T>[] {
 	const result: IMutableSplice<T>[] = [];
@@ -298,8 +298,8 @@ export function sortedDiff<T>(
  * Finishes in `Math.min(before.length, after.length)` steps.
  */
 export function delta<T>(
-	before: ReadonlyArray<T>,
-	after: ReadonlyArray<T>,
+	before: readonly T[],
+	after: readonly T[],
 	compare: (a: T, b: T) => number,
 ): { removed: T[]; added: T[] } {
 	const splices = sortedDiff(before, after, compare);
@@ -327,7 +327,7 @@ export function delta<T>(
  * @return The first n elements from array when sorted with compare.
  */
 export function top<T>(
-	array: ReadonlyArray<T>,
+	array: readonly T[],
 	compare: (a: T, b: T) => number,
 	n: number,
 ): T[] {
@@ -375,7 +375,7 @@ export function topAsync<T>(
 				if (i > n) {
 					await new Promise((resolve) => setTimeout(resolve)); // any other delay function would starve I/O
 				}
-				if (token && token.isCancellationRequested) {
+				if (token?.isCancellationRequested) {
 					throw new CancellationError();
 				}
 				topStep(array, compare, result, i, m);
@@ -386,7 +386,7 @@ export function topAsync<T>(
 }
 
 function topStep<T>(
-	array: ReadonlyArray<T>,
+	array: readonly T[],
 	compare: (a: T, b: T) => number,
 	result: T[],
 	i: number,
@@ -417,10 +417,10 @@ export function coalesce<T>(array: ReadonlyArray<T | undefined | null>): T[] {
  */
 export function coalesceInPlace<T>(
 	array: Array<T | undefined | null>,
-): asserts array is Array<T> {
+): asserts array is T[] {
 	let to = 0;
 	for (let i = 0; i < array.length; i++) {
-		if (!!array[i]) {
+		if (array[i]) {
 			array[to] = array[i];
 			to += 1;
 		}
@@ -460,13 +460,13 @@ export function isNonEmptyArray<T>(
  * how elements are checked for equality by returning an alternate value for each.
  */
 export function distinct<T>(
-	array: ReadonlyArray<T>,
+	array: readonly T[],
 	keyFn: (value: T) => any = (value) => value,
 ): T[] {
 	const seen = new Set<any>();
 
 	return array.filter((element) => {
-		const key = keyFn!(element);
+		const key = keyFn?.(element);
 		if (seen.has(key)) {
 			return false;
 		}
@@ -491,32 +491,32 @@ export function uniqueFilter<T, R>(keyFn: (t: T) => R): (t: T) => boolean {
 }
 
 export function firstOrDefault<T, NotFound = T>(
-	array: ReadonlyArray<T>,
+	array: readonly T[],
 	notFoundValue: NotFound,
 ): T | NotFound;
-export function firstOrDefault<T>(array: ReadonlyArray<T>): T | undefined;
+export function firstOrDefault<T>(array: readonly T[]): T | undefined;
 export function firstOrDefault<T, NotFound = T>(
-	array: ReadonlyArray<T>,
+	array: readonly T[],
 	notFoundValue?: NotFound,
 ): T | NotFound | undefined {
 	return array.length > 0 ? array[0] : notFoundValue;
 }
 
 export function lastOrDefault<T, NotFound = T>(
-	array: ReadonlyArray<T>,
+	array: readonly T[],
 	notFoundValue: NotFound,
 ): T | NotFound;
-export function lastOrDefault<T>(array: ReadonlyArray<T>): T | undefined;
+export function lastOrDefault<T>(array: readonly T[]): T | undefined;
 export function lastOrDefault<T, NotFound = T>(
-	array: ReadonlyArray<T>,
+	array: readonly T[],
 	notFoundValue?: NotFound,
 ): T | NotFound | undefined {
 	return array.length > 0 ? array[array.length - 1] : notFoundValue;
 }
 
 export function commonPrefixLength<T>(
-	one: ReadonlyArray<T>,
-	other: ReadonlyArray<T>,
+	one: readonly T[],
+	other: readonly T[],
 	equals: (a: T, b: T) => boolean = (a, b) => a === b,
 ): number {
 	let result = 0;
@@ -567,16 +567,16 @@ export function range(arg: number, to?: number): number[] {
 }
 
 export function index<T>(
-	array: ReadonlyArray<T>,
+	array: readonly T[],
 	indexer: (t: T) => string,
 ): { [key: string]: T };
 export function index<T, R>(
-	array: ReadonlyArray<T>,
+	array: readonly T[],
 	indexer: (t: T) => string,
 	mapper: (t: T) => R,
 ): { [key: string]: R };
 export function index<T, R>(
-	array: ReadonlyArray<T>,
+	array: readonly T[],
 	indexer: (t: T) => string,
 	mapper?: (t: T) => R,
 ): { [key: string]: R } {
@@ -678,7 +678,7 @@ export function pushToEnd<T>(arr: T[], value: T): void {
 	}
 }
 
-export function pushMany<T>(arr: T[], items: ReadonlyArray<T>): void {
+export function pushMany<T>(arr: T[], items: readonly T[]): void {
 	for (const item of items) {
 		arr.push(item);
 	}

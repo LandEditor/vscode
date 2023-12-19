@@ -83,7 +83,7 @@ class StandaloneTheme implements IStandaloneTheme {
 			if (isBuiltinTheme(name)) {
 				this.id = name;
 			} else {
-				this.id = base + " " + name;
+				this.id = `${base} ${name}`;
 			}
 			this.themeName = name;
 		} else {
@@ -389,7 +389,7 @@ export class StandaloneThemeService
 		if (!/^[a-z0-9\-]+$/i.test(themeName)) {
 			throw new Error("Illegal theme name!");
 		}
-		if (!isBuiltinTheme(themeData.base) && !isBuiltinTheme(themeName)) {
+		if (!(isBuiltinTheme(themeData.base) || isBuiltinTheme(themeName))) {
 			throw new Error("Illegal theme base!");
 		}
 		// set or replace theme
@@ -443,7 +443,7 @@ export class StandaloneThemeService
 	private _onOSSchemeChanged() {
 		if (this._autoDetectHighContrast) {
 			const wantsHighContrast = mainWindow.matchMedia(
-				`(forced-colors: active)`,
+				"(forced-colors: active)",
 			).matches;
 			if (wantsHighContrast !== isHighContrast(this._theme.type)) {
 				// switch to high contrast or non-high contrast but stick to dark or light

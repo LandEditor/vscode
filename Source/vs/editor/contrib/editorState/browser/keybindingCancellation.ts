@@ -84,7 +84,7 @@ registerSingleton(
 				// remove w/o cancellation
 				if (removeFn) {
 					removeFn();
-					data!.key.set(!data!.tokens.isEmpty());
+					data?.key.set(!data?.tokens.isEmpty());
 					removeFn = undefined;
 				}
 			};

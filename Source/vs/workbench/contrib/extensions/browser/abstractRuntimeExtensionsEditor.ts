@@ -178,7 +178,7 @@ export abstract class AbstractRuntimeExtensionsEditor extends EditorPane {
 				}
 
 				extensionSegments.push(currentStartTime);
-				currentStartTime = currentStartTime + delta;
+				currentStartTime += delta;
 				extensionSegments.push(currentStartTime);
 			}
 		}
@@ -381,7 +381,7 @@ export abstract class AbstractRuntimeExtensionsEditor extends EditorPane {
 						? `Startup Activation: ${syncTime}ms`
 						: `Activation: ${syncTime}ms`;
 				} else {
-					data.activationTime.textContent = `Activating...`;
+					data.activationTime.textContent = "Activating...";
 				}
 
 				data.actionbar.clear();
@@ -524,7 +524,7 @@ export abstract class AbstractRuntimeExtensionsEditor extends EditorPane {
 					const el = $(
 						"span",
 						undefined,
-						...renderLabelWithIcons(` $(alert) Unresponsive`),
+						...renderLabelWithIcons(" $(alert) Unresponsive"),
 					);
 					el.title = nls.localize(
 						"unresponsive.title",
@@ -564,12 +564,11 @@ export abstract class AbstractRuntimeExtensionsEditor extends EditorPane {
 
 				let extraLabel: string | null = null;
 				if (
-					element.status.runningLocation &&
-					element.status.runningLocation.equals(
+					element.status.runningLocation?.equals(
 						new LocalWebWorkerRunningLocation(0),
 					)
 				) {
-					extraLabel = `$(globe) web worker`;
+					extraLabel = "$(globe) web worker";
 				} else if (
 					element.description.extensionLocation.scheme ===
 					Schemas.vscodeRemote
@@ -669,13 +668,13 @@ export abstract class AbstractRuntimeExtensionsEditor extends EditorPane {
 					nls.localize(
 						"copy id",
 						"Copy id ({0})",
-						e.element!.description.identifier.value,
+						e.element?.description.identifier.value,
 					),
 					undefined,
 					true,
 					() => {
 						this._clipboardService.writeText(
-							e.element!.description.identifier.value,
+							e.element?.description.identifier.value,
 						);
 					},
 				),
@@ -688,7 +687,7 @@ export abstract class AbstractRuntimeExtensionsEditor extends EditorPane {
 			}
 			actions.push(new Separator());
 
-			if (e.element!.marketplaceInfo) {
+			if (e.element?.marketplaceInfo) {
 				actions.push(
 					new Action(
 						"runtimeExtensionsEditor.action.disableWorkspace",
@@ -700,7 +699,7 @@ export abstract class AbstractRuntimeExtensionsEditor extends EditorPane {
 						true,
 						() =>
 							this._extensionsWorkbenchService.setEnablement(
-								e.element!.marketplaceInfo!,
+								e.element?.marketplaceInfo!,
 								EnablementState.DisabledWorkspace,
 							),
 					),
@@ -713,7 +712,7 @@ export abstract class AbstractRuntimeExtensionsEditor extends EditorPane {
 						true,
 						() =>
 							this._extensionsWorkbenchService.setEnablement(
-								e.element!.marketplaceInfo!,
+								e.element?.marketplaceInfo!,
 								EnablementState.DisabledGlobally,
 							),
 					),

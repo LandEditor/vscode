@@ -310,7 +310,7 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 				  ),
 		);
 		this.filterWidget.checkMoreFilters(
-			!this.filters.showResolved || !this.filters.showUnresolved,
+			!(this.filters.showResolved && this.filters.showUnresolved),
 		);
 	}
 

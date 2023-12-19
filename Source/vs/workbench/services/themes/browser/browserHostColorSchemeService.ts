@@ -43,10 +43,10 @@ export class BrowserHostColorSchemeService
 	}
 
 	get dark(): boolean {
-		if (mainWindow.matchMedia(`(prefers-color-scheme: light)`).matches) {
+		if (mainWindow.matchMedia("(prefers-color-scheme: light)").matches) {
 			return false;
 		} else if (
-			mainWindow.matchMedia(`(prefers-color-scheme: dark)`).matches
+			mainWindow.matchMedia("(prefers-color-scheme: dark)").matches
 		) {
 			return true;
 		}
@@ -54,7 +54,7 @@ export class BrowserHostColorSchemeService
 	}
 
 	get highContrast(): boolean {
-		if (mainWindow.matchMedia(`(forced-colors: active)`).matches) {
+		if (mainWindow.matchMedia("(forced-colors: active)").matches) {
 			return true;
 		}
 		return false;

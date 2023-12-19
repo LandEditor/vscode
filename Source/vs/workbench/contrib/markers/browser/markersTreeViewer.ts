@@ -260,8 +260,7 @@ export class ResourceMarkersRenderer
 		templateData: IResourceMarkersTemplateData,
 	): void {
 		const resourceMarkers = node.element;
-		const uriMatches =
-			(node.filterData && node.filterData.uriMatches) || [];
+		const uriMatches = node.filterData?.uriMatches || [];
 
 		if (
 			this.fileService.hasProvider(resourceMarkers.resource) ||
@@ -540,7 +539,7 @@ class MarkerWidget extends Disposable {
 		this.disposables.add(toDisposable(() => multilineActionbar.dispose()));
 
 		const viewModel = this.markersViewModel.getViewModel(marker);
-		const multiline = viewModel && viewModel.multiline;
+		const multiline = viewModel?.multiline;
 		const action = new Action(toggleMultilineAction);
 		action.enabled = !!viewModel && marker.lines.length > 1;
 		action.tooltip = multiline
@@ -565,7 +564,7 @@ class MarkerWidget extends Disposable {
 		const { marker, lines } = element;
 		const viewState = this.markersViewModel.getViewModel(element);
 		const multiline = !viewState || viewState.multiline;
-		const lineMatches = (filterData && filterData.lineMatches) || [];
+		const lineMatches = filterData?.lineMatches || [];
 		this.messageAndDetailsContainer.title = element.marker.message;
 
 		const lineElements: HTMLElement[] = [];
@@ -605,8 +604,7 @@ class MarkerWidget extends Disposable {
 			const source = new HighlightedLabel(
 				dom.append(parent, dom.$(".marker-source")),
 			);
-			const sourceMatches =
-				(filterData && filterData.sourceMatches) || [];
+			const sourceMatches = filterData?.sourceMatches || [];
 			source.set(marker.source, sourceMatches);
 
 			if (marker.code) {
@@ -614,8 +612,7 @@ class MarkerWidget extends Disposable {
 					const code = new HighlightedLabel(
 						dom.append(parent, dom.$(".marker-code")),
 					);
-					const codeMatches =
-						(filterData && filterData.codeMatches) || [];
+					const codeMatches = filterData?.codeMatches || [];
 					code.set(marker.code, codeMatches);
 				} else {
 					const container = dom.$(".marker-code");
@@ -629,8 +626,7 @@ class MarkerWidget extends Disposable {
 							this._openerService,
 						),
 					);
-					const codeMatches =
-						(filterData && filterData.codeMatches) || [];
+					const codeMatches = filterData?.codeMatches || [];
 					code.set(marker.code.value, codeMatches);
 				}
 			}
@@ -686,10 +682,8 @@ export class RelatedInformationRenderer
 		templateData: IRelatedInformationTemplateData,
 	): void {
 		const relatedInformation = node.element.raw;
-		const uriMatches =
-			(node.filterData && node.filterData.uriMatches) || [];
-		const messageMatches =
-			(node.filterData && node.filterData.messageMatches) || [];
+		const uriMatches = node.filterData?.uriMatches || [];
+		const messageMatches = node.filterData?.messageMatches || [];
 
 		templateData.resourceLabel.set(
 			basename(relatedInformation.resource),

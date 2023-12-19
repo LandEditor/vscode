@@ -47,7 +47,7 @@ export class Token {
 	) {}
 
 	public toString(): string {
-		return "(" + this.offset + ", " + this.type + ")";
+		return `(${this.offset}, ${this.type})`;
 	}
 }
 
@@ -381,7 +381,7 @@ export namespace CompletionItemKinds {
 	export function toIcon(kind: CompletionItemKind): ThemeIcon {
 		let codicon = byKind.get(kind);
 		if (!codicon) {
-			console.info("No codicon found for CompletionItemKind " + kind);
+			console.info(`No codicon found for CompletionItemKind ${kind}`);
 			codicon = Codicon.symbolProperty;
 		}
 		return codicon;
@@ -495,7 +495,7 @@ export interface CompletionItem {
 	 * A modifier to the `kind` which affect how the item
 	 * is rendered, e.g. Deprecated is rendered with a strikeout
 	 */
-	tags?: ReadonlyArray<CompletionItemTag>;
+	tags?: readonly CompletionItemTag[];
 	/**
 	 * A human-readable string with additional information
 	 * about this item, like type or symbol information.
@@ -823,7 +823,7 @@ export interface CodeActionContext {
 }
 
 export interface CodeActionList extends IDisposable {
-	readonly actions: ReadonlyArray<CodeAction>;
+	readonly actions: readonly CodeAction[];
 }
 
 /**
@@ -855,7 +855,7 @@ export interface CodeActionProvider {
 	/**
 	 * Optional list of CodeActionKinds that this provider returns.
 	 */
-	readonly providedCodeActionKinds?: ReadonlyArray<string>;
+	readonly providedCodeActionKinds?: readonly string[];
 
 	readonly documentation?: ReadonlyArray<{
 		readonly kind: string;
@@ -992,8 +992,8 @@ export interface SignatureHelpContext {
  * the [parameter hints](https://code.visualstudio.com/docs/editor/intellisense)-feature.
  */
 export interface SignatureHelpProvider {
-	readonly signatureHelpTriggerCharacters?: ReadonlyArray<string>;
-	readonly signatureHelpRetriggerCharacters?: ReadonlyArray<string>;
+	readonly signatureHelpTriggerCharacters?: readonly string[];
+	readonly signatureHelpRetriggerCharacters?: readonly string[];
 
 	/**
 	 * Provide help for the signature at the given position and document.
@@ -1390,7 +1390,7 @@ export namespace SymbolKinds {
 	export function toIcon(kind: SymbolKind): ThemeIcon {
 		let icon = byKind.get(kind);
 		if (!icon) {
-			console.info("No codicon found for SymbolKind " + kind);
+			console.info(`No codicon found for SymbolKind ${kind}`);
 			icon = Codicon.symbolProperty;
 		}
 		return icon;
@@ -1401,7 +1401,7 @@ export interface DocumentSymbol {
 	name: string;
 	detail: string;
 	kind: SymbolKind;
-	tags: ReadonlyArray<SymbolTag>;
+	tags: readonly SymbolTag[];
 	containerName?: string;
 	range: IRange;
 	selectionRange: IRange;

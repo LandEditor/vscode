@@ -69,7 +69,7 @@ export class RemoteAuthorityResolverService
 				new DeferredPromise(),
 			);
 		}
-		return this._resolveAuthorityRequests.get(authority)!.p;
+		return this._resolveAuthorityRequests.get(authority)?.p;
 	}
 
 	async getCanonicalURI(uri: URI): Promise<URI> {
@@ -98,14 +98,14 @@ export class RemoteAuthorityResolverService
 		}
 		const connectionToken = this._connectionTokens.get(authority);
 		return {
-			connectTo: request.value!.authority.connectTo,
+			connectTo: request.value?.authority.connectTo,
 			connectionToken: connectionToken,
 		};
 	}
 
 	_clearResolvedAuthority(authority: string): void {
 		if (this._resolveAuthorityRequests.has(authority)) {
-			this._resolveAuthorityRequests.get(authority)!.cancel();
+			this._resolveAuthorityRequests.get(authority)?.cancel();
 			this._resolveAuthorityRequests.delete(authority);
 		}
 	}
@@ -163,7 +163,7 @@ export class RemoteAuthorityResolverService
 	_setCanonicalURIProvider(provider: (uri: URI) => Promise<URI>): void {
 		this._canonicalURIProvider = provider;
 		this._canonicalURIRequests.forEach(({ result, input }) => {
-			this._canonicalURIProvider!(input).then(
+			this._canonicalURIProvider?.(input).then(
 				(uri) => result.complete(uri),
 				(err) => result.error(err),
 			);

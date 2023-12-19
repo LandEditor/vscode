@@ -38,7 +38,7 @@ class MonarchStackElementFactory {
 		parent: MonarchStackElement | null,
 		state: string,
 	): MonarchStackElement {
-		return this._INSTANCE.create(parent, state);
+		return MonarchStackElementFactory._INSTANCE.create(parent, state);
 	}
 
 	private readonly _maxCacheDepth: number;
@@ -182,7 +182,10 @@ class MonarchLineStateFactory {
 		stack: MonarchStackElement,
 		embeddedLanguageData: EmbeddedLanguageData | null,
 	): MonarchLineState {
-		return this._INSTANCE.create(stack, embeddedLanguageData);
+		return MonarchLineStateFactory._INSTANCE.create(
+			stack,
+			embeddedLanguageData,
+		);
 	}
 
 	private readonly _maxCacheDepth: number;
@@ -667,7 +670,7 @@ export class MonarchTokenizer
 			if (!rules) {
 				throw monarchCommon.createError(
 					this._lexer,
-					"tokenizer state is not defined: " + state.stack.state,
+					`tokenizer state is not defined: ${state.stack.state}`,
 				);
 			}
 		}
@@ -711,8 +714,7 @@ export class MonarchTokenizer
 		if (!hasEmbeddedPopRule) {
 			throw monarchCommon.createError(
 				this._lexer,
-				'no rule containing nextEmbedded: "@pop" in tokenizer embedded state: ' +
-					state.stack.state,
+				`no rule containing nextEmbedded: "@pop" in tokenizer embedded state: ${state.stack.state}`,
 			);
 		}
 
@@ -742,7 +744,7 @@ export class MonarchTokenizer
 			return MonarchLineStateFactory.create(
 				lineState.stack,
 				new EmbeddedLanguageData(
-					lineState.embeddedLanguageData!.languageId,
+					lineState.embeddedLanguageData?.languageId,
 					nestedEndState,
 				),
 			);
@@ -788,7 +790,7 @@ export class MonarchTokenizer
 		const lineWithoutLFLength = lineWithoutLF.length;
 		const line =
 			hasEOL && this._lexer.includeLF
-				? lineWithoutLF + "\n"
+				? `${lineWithoutLF}\n`
 				: lineWithoutLF;
 		const lineLength = line.length;
 
@@ -855,7 +857,7 @@ export class MonarchTokenizer
 					if (!rules) {
 						throw monarchCommon.createError(
 							this._lexer,
-							"tokenizer state is not defined: " + state,
+							`tokenizer state is not defined: ${state}`,
 						);
 					}
 				}
@@ -984,10 +986,9 @@ export class MonarchTokenizer
 					} else {
 						throw monarchCommon.createError(
 							this._lexer,
-							"trying to switch to a state '" +
-								nextState +
-								"' that is undefined in rule: " +
-								this._safeRuleName(rule),
+							`trying to switch to a state '${nextState}' that is undefined in rule: ${this._safeRuleName(
+								rule,
+							)}`,
 						);
 					}
 				} else if (
@@ -1003,11 +1004,7 @@ export class MonarchTokenizer
 						if (stack.depth >= this._lexer.maxStack) {
 							throw monarchCommon.createError(
 								this._lexer,
-								"maximum tokenizer stack size reached: [" +
-									stack.state +
-									"," +
-									stack.parent!.state +
-									",...]",
+								`maximum tokenizer stack size reached: [${stack.state},${stack.parent?.state},...]`,
 							);
 						} else {
 							stack = stack.push(state);
@@ -1016,8 +1013,9 @@ export class MonarchTokenizer
 						if (stack.depth <= 1) {
 							throw monarchCommon.createError(
 								this._lexer,
-								"trying to pop an empty stack in rule: " +
-									this._safeRuleName(rule),
+								`trying to pop an empty stack in rule: ${this._safeRuleName(
+									rule,
+								)}`,
 							);
 						} else {
 							stack = stack.pop()!;
@@ -1041,10 +1039,9 @@ export class MonarchTokenizer
 						} else {
 							throw monarchCommon.createError(
 								this._lexer,
-								"trying to set a next state '" +
-									nextState +
-									"' that is undefined in rule: " +
-									this._safeRuleName(rule),
+								`trying to set a next state '${nextState}' that is undefined in rule: ${this._safeRuleName(
+									rule,
+								)}`,
 							);
 						}
 					}
@@ -1053,15 +1050,15 @@ export class MonarchTokenizer
 				if (action.log && typeof action.log === "string") {
 					monarchCommon.log(
 						this._lexer,
-						this._lexer.languageId +
-							": " +
-							monarchCommon.substituteMatches(
-								this._lexer,
-								action.log,
-								matched,
-								matches,
-								state,
-							),
+						`${
+							this._lexer.languageId
+						}: ${monarchCommon.substituteMatches(
+							this._lexer,
+							action.log,
+							matched,
+							matches,
+							state,
+						)}`,
 					);
 				}
 			}
@@ -1070,8 +1067,9 @@ export class MonarchTokenizer
 			if (result === null) {
 				throw monarchCommon.createError(
 					this._lexer,
-					"lexer rule has no well-defined action in rule: " +
-						this._safeRuleName(rule),
+					`lexer rule has no well-defined action in rule: ${this._safeRuleName(
+						rule,
+					)}`,
 				);
 			}
 
@@ -1117,14 +1115,15 @@ export class MonarchTokenizer
 				if (groupMatching && groupMatching.groups.length > 0) {
 					throw monarchCommon.createError(
 						this._lexer,
-						"groups cannot be nested: " + this._safeRuleName(rule),
+						`groups cannot be nested: ${this._safeRuleName(rule)}`,
 					);
 				}
 				if (matches.length !== result.length + 1) {
 					throw monarchCommon.createError(
 						this._lexer,
-						"matched number of groups does not match the number of actions in rule: " +
-							this._safeRuleName(rule),
+						`matched number of groups does not match the number of actions in rule: ${this._safeRuleName(
+							rule,
+						)}`,
 					);
 				}
 				let totalLen = 0;
@@ -1134,8 +1133,9 @@ export class MonarchTokenizer
 				if (totalLen !== matched.length) {
 					throw monarchCommon.createError(
 						this._lexer,
-						"with groups, all characters should be matched in consecutive groups in rule: " +
-							this._safeRuleName(rule),
+						`with groups, all characters should be matched in consecutive groups in rule: ${this._safeRuleName(
+							rule,
+						)}`,
 					);
 				}
 
@@ -1186,8 +1186,9 @@ export class MonarchTokenizer
 					} else {
 						throw monarchCommon.createError(
 							this._lexer,
-							"no progress in tokenizer in rule: " +
-								this._safeRuleName(rule),
+							`no progress in tokenizer in rule: ${this._safeRuleName(
+								rule,
+							)}`,
 						);
 					}
 				}
@@ -1204,8 +1205,7 @@ export class MonarchTokenizer
 					if (!bracket) {
 						throw monarchCommon.createError(
 							this._lexer,
-							"@brackets token returned but no bracket defined as: " +
-								matched,
+							`@brackets token returned but no bracket defined as: ${matched}`,
 						);
 					}
 					tokenType = monarchCommon.sanitize(bracket.token + rest);

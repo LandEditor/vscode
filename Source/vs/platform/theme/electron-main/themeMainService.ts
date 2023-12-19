@@ -110,15 +110,18 @@ export class ThemeMainService extends Disposable implements IThemeMainService {
 				.getItem<string>(THEME_STORAGE_KEY, "vs-dark")
 				.split(" ")[0];
 			switch (baseTheme) {
-				case "vs":
+				case "vs": {
 					background = DEFAULT_BG_LIGHT;
 					break;
-				case "hc-black":
+				}
+				case "hc-black": {
 					background = DEFAULT_BG_HC_BLACK;
 					break;
-				case "hc-light":
+				}
+				case "hc-light": {
 					background = DEFAULT_BG_HC_LIGHT;
 					break;
+				}
 				default:
 					background = DEFAULT_BG_DARK;
 			}

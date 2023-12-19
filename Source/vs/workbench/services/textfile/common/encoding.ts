@@ -374,7 +374,7 @@ async function guessEncodingByBuffer(buffer: VSBuffer): Promise<string | null> {
 	const binaryString = encodeLatin1(limitedBuffer.buffer);
 
 	const guessed = jschardet.detect(binaryString);
-	if (!guessed || !guessed.encoding) {
+	if (!guessed?.encoding) {
 		return null;
 	}
 
@@ -439,7 +439,7 @@ export function toCanonicalName(enc: string): string {
 		default: {
 			const m = enc.match(/windows(\d+)/);
 			if (m) {
-				return "windows-" + m[1];
+				return `windows-${m[1]}`;
 			}
 
 			return enc;
@@ -509,7 +509,7 @@ export function detectEncodingFromBuffer(
 			// UTF-16 BE: expect e.g. 0x00 0xAA
 			if (
 				couldBeUTF16BE &&
-				((isEndian && isZeroByte) || (!isEndian && !isZeroByte))
+				((isEndian && isZeroByte) || !(isEndian || isZeroByte))
 			) {
 				couldBeUTF16BE = false;
 			}

@@ -72,8 +72,8 @@ export abstract class AbstractScrollbar extends Widget {
 		this._visibilityController = this._register(
 			new ScrollbarVisibilityController(
 				opts.visibility,
-				"visible scrollbar " + opts.extraScrollbarClassName,
-				"invisible scrollbar " + opts.extraScrollbarClassName,
+				`visible scrollbar ${opts.extraScrollbarClassName}`,
+				`invisible scrollbar ${opts.extraScrollbarClassName}`,
 			),
 		);
 		this._visibilityController.setIsNeeded(this._scrollbarState.isNeeded());
@@ -286,7 +286,7 @@ export abstract class AbstractScrollbar extends Widget {
 	}
 
 	private _sliderPointerDown(e: PointerEvent): void {
-		if (!e.target || !(e.target instanceof Element)) {
+		if (!(e.target && e.target instanceof Element)) {
 			return;
 		}
 		const initialPointerPosition = this._sliderPointerPosition(e);

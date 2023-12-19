@@ -534,9 +534,11 @@ export class ConfigurationModelParser {
 	): { raw: {}; restricted: string[]; hasExcludedProperties: boolean } {
 		let hasExcludedProperties = false;
 		if (
-			!options?.scopes &&
-			!options?.skipRestricted &&
-			!options?.exclude?.length
+			!(
+				options?.scopes ||
+				options?.skipRestricted ||
+				options?.exclude?.length
+			)
 		) {
 			return { raw: properties, restricted: [], hasExcludedProperties };
 		}
@@ -1516,22 +1518,26 @@ export class Configuration {
 	}
 
 	static parse(data: IConfigurationData): Configuration {
-		const defaultConfiguration = this.parseConfigurationModel(
+		const defaultConfiguration = Configuration.parseConfigurationModel(
 			data.defaults,
 		);
-		const policyConfiguration = this.parseConfigurationModel(data.policy);
-		const applicationConfiguration = this.parseConfigurationModel(
+		const policyConfiguration = Configuration.parseConfigurationModel(
+			data.policy,
+		);
+		const applicationConfiguration = Configuration.parseConfigurationModel(
 			data.application,
 		);
-		const userConfiguration = this.parseConfigurationModel(data.user);
-		const workspaceConfiguration = this.parseConfigurationModel(
+		const userConfiguration = Configuration.parseConfigurationModel(
+			data.user,
+		);
+		const workspaceConfiguration = Configuration.parseConfigurationModel(
 			data.workspace,
 		);
 		const folders: ResourceMap<ConfigurationModel> = data.folders.reduce(
 			(result, value) => {
 				result.set(
 					URI.revive(value[0]),
-					this.parseConfigurationModel(value[1]),
+					Configuration.parseConfigurationModel(value[1]),
 				);
 				return result;
 			},

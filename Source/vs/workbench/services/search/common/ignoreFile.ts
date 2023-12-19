@@ -55,8 +55,7 @@ export class IgnoreFile {
 	isPathIncludedInTraversal(path: string, isDir: boolean): boolean {
 		if (path[0] !== "/" || path[path.length - 1] === "/") {
 			throw Error(
-				"Unexpected path format, expectred to begin with slash and end without. got:" +
-					path,
+				`Unexpected path format, expectred to begin with slash and end without. got:${path}`,
 			);
 		}
 
@@ -72,8 +71,7 @@ export class IgnoreFile {
 	isArbitraryPathIgnored(path: string, isDir: boolean): boolean {
 		if (path[0] !== "/" || path[path.length - 1] === "/") {
 			throw Error(
-				"Unexpected path format, expectred to begin with slash and end without. got:" +
-					path,
+				`Unexpected path format, expectred to begin with slash and end without. got:${path}`,
 			);
 		}
 
@@ -86,7 +84,7 @@ export class IgnoreFile {
 			const isLast = i === segments.length - 1;
 			const segment = segments[i];
 
-			walkingPath = walkingPath + "/" + segment;
+			walkingPath = `${walkingPath}/${segment}`;
 
 			if (
 				!this.isPathIncludedInTraversal(
@@ -193,14 +191,14 @@ export class IgnoreFile {
 	private gitignoreLineToGlob(line: string, dirPath: string): string {
 		const firstSep = line.indexOf("/");
 		if (firstSep === -1 || firstSep === line.length - 1) {
-			line = "**/" + line;
+			line = `**/${line}`;
 		} else {
 			if (firstSep === 0) {
 				if (dirPath.slice(-1) === "/") {
 					line = line.slice(1);
 				}
 			} else if (dirPath.slice(-1) !== "/") {
-				line = "/" + line;
+				line = `/${line}`;
 			}
 			line = dirPath + line;
 		}

@@ -68,7 +68,7 @@ export class MainThreadDialogs implements MainThreadDiaglogsShape {
 			openLabel: options?.openLabel || undefined,
 			canSelectFiles:
 				options?.canSelectFiles ||
-				(!options?.canSelectFiles && !options?.canSelectFolders),
+				!(options?.canSelectFiles || options?.canSelectFolders),
 			canSelectFolders: options?.canSelectFolders,
 			canSelectMany: options?.canSelectMany,
 			defaultUri: options?.defaultUri
@@ -82,7 +82,7 @@ export class MainThreadDialogs implements MainThreadDiaglogsShape {
 		if (options?.filters) {
 			result.filters = [];
 			for (const [key, value] of Object.entries(options.filters)) {
-				result.filters!.push({ name: key, extensions: value });
+				result.filters?.push({ name: key, extensions: value });
 			}
 		}
 		return result;

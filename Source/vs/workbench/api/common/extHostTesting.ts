@@ -108,7 +108,7 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 	);
 
 	public onResultsChanged = this.resultsChangedEmitter.event;
-	public results: ReadonlyArray<vscode.TestRunResult> = [];
+	public results: readonly vscode.TestRunResult[] = [];
 
 	constructor(
 		@IExtHostRpcService rpc: IExtHostRpcService,
@@ -274,7 +274,7 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 				if (items === undefined) {
 					this.proxy.$markTestRetired(undefined);
 				} else {
-					const itemsArr = items instanceof Array ? items : [items];
+					const itemsArr = Array.isArray(items) ? items : [items];
 					this.proxy.$markTestRetired(
 						itemsArr.map((i) =>
 							TestId.fromExtHostTestItem(
@@ -534,7 +534,7 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 		);
 
 		// avoid returning until cancellation is requested, otherwise ipc disposes of the token
-		if (!token.isCancellationRequested && !res.some((r) => r.error)) {
+		if (!(token.isCancellationRequested || res.some((r) => r.error))) {
 			await new Promise((r) => token.onCancellationRequested(r));
 		}
 
@@ -741,10 +741,9 @@ class TestRunTracker extends Disposable {
 			test: vscode.TestItem,
 			messages: vscode.TestMessage | readonly vscode.TestMessage[],
 		) => {
-			const converted =
-				messages instanceof Array
-					? messages.map(Convert.TestMessage.from)
-					: [Convert.TestMessage.from(messages)];
+			const converted = Array.isArray(messages)
+				? messages.map(Convert.TestMessage.from)
+				: [Convert.TestMessage.from(messages)];
 
 			if (test.uri && test.range) {
 				const defaultLocation: ILocationDto = {
@@ -1101,7 +1100,7 @@ const tryGetProfileFromTestRunReq = (request: vscode.TestRunRequest) => {
 
 	if (!(request.profile instanceof TestRunProfileImpl)) {
 		throw new Error(
-			`TestRunRequest.profile is not an instance created from TestController.createRunProfile`,
+			"TestRunRequest.profile is not an instance created from TestController.createRunProfile",
 		);
 	}
 
@@ -1210,7 +1209,7 @@ class TestRunCoverageBearer {
 	): Promise<CoverageDetails.Serialized[]> {
 		const fileCoverage = await this.fileCoverage;
 		let file = fileCoverage?.[index];
-		if (!this.provider || !fileCoverage || !file) {
+		if (!(this.provider && fileCoverage && file)) {
 			return [];
 		}
 

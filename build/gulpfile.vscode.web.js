@@ -219,10 +219,10 @@ function packageTask(sourceFolderName, destinationFolderName) {
 	return () => {
 		const json = require("gulp-json-editor");
 
-		const src = gulp.src(sourceFolderName + "/**", { base: "." }).pipe(
+		const src = gulp.src(`${sourceFolderName}/**`, { base: "." }).pipe(
 			rename((path) => {
 				path.dirname = path.dirname.replace(
-					new RegExp("^" + sourceFolderName),
+					new RegExp(`^${sourceFolderName}`),
 					"out",
 				);
 			}),
@@ -318,11 +318,11 @@ const compileWebExtensionsBuildTask = task.define(
 );
 gulp.task(compileWebExtensionsBuildTask);
 
-const dashed = (/** @type {string} */ str) => (str ? `-${str}` : ``);
+const dashed = (/** @type {string} */ str) => (str ? `-${str}` : "");
 
 ["", "min"].forEach((minified) => {
 	const sourceFolderName = `out-vscode-web${dashed(minified)}`;
-	const destinationFolderName = `vscode-web`;
+	const destinationFolderName = "vscode-web";
 
 	const vscodeWebTaskCI = task.define(
 		`vscode-web${dashed(minified)}-ci`,

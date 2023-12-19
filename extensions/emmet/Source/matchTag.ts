@@ -9,7 +9,7 @@ import { getRootNode } from "./parseDocument";
 import { getHtmlFlatNode, offsetRangeToSelection, validate } from "./util";
 
 export function matchTag() {
-	if (!validate(false) || !vscode.window.activeTextEditor) {
+	if (!(validate(false) && vscode.window.activeTextEditor)) {
 		return;
 	}
 
@@ -55,8 +55,7 @@ function getUpdatedSelections(
 
 	// If no opening/closing tag or cursor is between open and close tag, then no-op
 	if (
-		!currentNode.open ||
-		!currentNode.close ||
+		!(currentNode.open && currentNode.close) ||
 		(offset > currentNode.open.end && offset < currentNode.close.start)
 	) {
 		return;

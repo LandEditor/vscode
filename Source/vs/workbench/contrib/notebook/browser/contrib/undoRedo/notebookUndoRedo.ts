@@ -37,7 +37,7 @@ class NotebookUndoRedoContribution extends Disposable {
 					const viewModel = editor?.getViewModel() as
 						| NotebookViewModel
 						| undefined;
-					if (editor && editor.hasModel() && viewModel) {
+					if (editor?.hasModel() && viewModel) {
 						return viewModel.undo().then((cellResources) => {
 							if (cellResources?.length) {
 								for (let i = 0; i < editor.getLength(); i++) {
@@ -82,7 +82,7 @@ class NotebookUndoRedoContribution extends Disposable {
 						| NotebookViewModel
 						| undefined;
 
-					if (editor && editor.hasModel() && viewModel) {
+					if (editor?.hasModel() && viewModel) {
 						return viewModel.redo().then((cellResources) => {
 							if (cellResources?.length) {
 								for (let i = 0; i < editor.getLength(); i++) {

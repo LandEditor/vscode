@@ -470,7 +470,7 @@ export class SuggestWidget implements IDisposable {
 							}
 						}
 
-						if (!item.isResolved || !this._isDetailsVisible()) {
+						if (!(item.isResolved && this._isDetailsVisible())) {
 							return label;
 						}
 
@@ -745,7 +745,7 @@ export class SuggestWidget implements IDisposable {
 		this.element.domNode.classList.remove("message");
 
 		switch (state) {
-			case State.Hidden:
+			case State.Hidden: {
 				dom.hide(
 					this._messageElement,
 					this._listElement,
@@ -764,7 +764,8 @@ export class SuggestWidget implements IDisposable {
 				this._cappedHeight = undefined;
 				this._explainMode = false;
 				break;
-			case State.Loading:
+			}
+			case State.Loading: {
 				this.element.domNode.classList.add("message");
 				this._messageElement.textContent =
 					SuggestWidget.LOADING_MESSAGE;
@@ -775,7 +776,8 @@ export class SuggestWidget implements IDisposable {
 				this._focusedItem = undefined;
 				status(SuggestWidget.LOADING_MESSAGE);
 				break;
-			case State.Empty:
+			}
+			case State.Empty: {
 				this.element.domNode.classList.add("message");
 				this._messageElement.textContent =
 					SuggestWidget.NO_SUGGESTIONS_MESSAGE;
@@ -786,22 +788,26 @@ export class SuggestWidget implements IDisposable {
 				this._focusedItem = undefined;
 				status(SuggestWidget.NO_SUGGESTIONS_MESSAGE);
 				break;
-			case State.Open:
+			}
+			case State.Open: {
 				dom.hide(this._messageElement);
 				dom.show(this._listElement, this._status.element);
 				this._show();
 				break;
-			case State.Frozen:
+			}
+			case State.Frozen: {
 				dom.hide(this._messageElement);
 				dom.show(this._listElement, this._status.element);
 				this._show();
 				break;
-			case State.Details:
+			}
+			case State.Details: {
 				dom.hide(this._messageElement);
 				dom.show(this._listElement, this._status.element);
 				this._details.show();
 				this._show();
 				break;
+			}
 		}
 	}
 
@@ -911,14 +917,16 @@ export class SuggestWidget implements IDisposable {
 		switch (this._state) {
 			case State.Hidden:
 				return false;
-			case State.Details:
+			case State.Details: {
 				this._details.widget.pageDown();
 				return true;
+			}
 			case State.Loading:
 				return !this._isAuto;
-			default:
+			default: {
 				this._list.focusNextPage();
 				return true;
+			}
 		}
 	}
 
@@ -928,9 +936,10 @@ export class SuggestWidget implements IDisposable {
 				return false;
 			case State.Loading:
 				return !this._isAuto;
-			default:
+			default: {
 				this._list.focusNext(1, true);
 				return true;
+			}
 		}
 	}
 
@@ -938,14 +947,16 @@ export class SuggestWidget implements IDisposable {
 		switch (this._state) {
 			case State.Hidden:
 				return false;
-			case State.Details:
+			case State.Details: {
 				this._details.widget.scrollBottom();
 				return true;
+			}
 			case State.Loading:
 				return !this._isAuto;
-			default:
+			default: {
 				this._list.focusLast();
 				return true;
+			}
 		}
 	}
 
@@ -953,14 +964,16 @@ export class SuggestWidget implements IDisposable {
 		switch (this._state) {
 			case State.Hidden:
 				return false;
-			case State.Details:
+			case State.Details: {
 				this._details.widget.pageUp();
 				return true;
+			}
 			case State.Loading:
 				return !this._isAuto;
-			default:
+			default: {
 				this._list.focusPreviousPage();
 				return true;
+			}
 		}
 	}
 
@@ -970,9 +983,10 @@ export class SuggestWidget implements IDisposable {
 				return false;
 			case State.Loading:
 				return !this._isAuto;
-			default:
+			default: {
 				this._list.focusPrevious(1, true);
 				return false;
+			}
 		}
 	}
 
@@ -980,14 +994,16 @@ export class SuggestWidget implements IDisposable {
 		switch (this._state) {
 			case State.Hidden:
 				return false;
-			case State.Details:
+			case State.Details: {
 				this._details.widget.scrollTop();
 				return true;
+			}
 			case State.Loading:
 				return !this._isAuto;
-			default:
+			default: {
 				this._list.focusFirst();
 				return true;
+			}
 		}
 	}
 

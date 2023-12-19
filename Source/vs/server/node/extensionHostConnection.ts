@@ -36,7 +36,7 @@ import {
 } from "vs/workbench/services/extensions/common/extensionHostProtocol";
 
 export async function buildUserEnvironment(
-	startParamsEnv: { [key: string]: string | null } = {},
+	startParamsEnv: { [key: string]: string | null },
 	withUserShellEnvironment: boolean,
 	language: string,
 	environmentService: IServerEnvironmentService,
@@ -164,13 +164,13 @@ export class ExtensionHostConnection {
 		private readonly _configurationService: IConfigurationService
 	) {
 		this._canSendSocket =
-			!isWindows || !this._environmentService.args["socket-path"];
+			!(isWindows && this._environmentService.args["socket-path"]);
 		this._disposed = false;
 		this._remoteAddress = remoteAddress;
 		this._extensionHostProcess = null;
 		this._connectionData = new ConnectionData(socket, initialDataChunk);
 
-		this._log(`New connection established.`);
+		this._log("New connection established.");
 	}
 
 	private get _logPrefix(): string {
@@ -275,7 +275,7 @@ export class ExtensionHostConnection {
 		initialDataChunk: VSBuffer,
 	): void {
 		this._remoteAddress = remoteAddress;
-		this._log(`The client has reconnected.`);
+		this._log("The client has reconnected.");
 		const connectionData = new ConnectionData(_socket, initialDataChunk);
 
 		if (!this._extensionHostProcess) {
@@ -354,7 +354,7 @@ export class ExtensionHostConnection {
 			opts.execArgv.unshift("--dns-result-order=ipv4first");
 
 			// Run Extension Host as fork of current process
-			const args = ["--type=extensionHost", `--transformURIs`];
+			const args = ["--type=extensionHost", "--transformURIs"];
 			const useHostProxy =
 				this._environmentService.args["use-host-proxy"];
 			args.push(`--useHostProxy=${useHostProxy ? "true" : "false"}`);
@@ -367,8 +367,8 @@ export class ExtensionHostConnection {
 			this._log(`<${pid}> Launched Extension Host Process.`);
 
 			// Catch all output coming from the extension host process
-			this._extensionHostProcess.stdout!.setEncoding("utf8");
-			this._extensionHostProcess.stderr!.setEncoding("utf8");
+			this._extensionHostProcess.stdout?.setEncoding("utf8");
+			this._extensionHostProcess.stderr?.setEncoding("utf8");
 			const onStdout = Event.fromNodeEventEmitter<string>(
 				this._extensionHostProcess.stdout!,
 				"data",
@@ -403,13 +403,13 @@ export class ExtensionHostConnection {
 
 			if (extHostNamedPipeServer) {
 				extHostNamedPipeServer.on("connection", (socket) => {
-					extHostNamedPipeServer!.close();
+					extHostNamedPipeServer?.close();
 					this._pipeSockets(socket, this._connectionData!);
 				});
 			} else {
 				const messageListener = (msg: IExtHostReadyMessage) => {
 					if (msg.type === "VSCODE_EXTHOST_IPC_READY") {
-						this._extensionHostProcess!.removeListener(
+						this._extensionHostProcess?.removeListener(
 							"message",
 							messageListener,
 						);

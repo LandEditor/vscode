@@ -462,11 +462,7 @@ export class UserDataSyncStoreError extends UserDataSyncError {
 	}
 }
 
-export class UserDataAutoSyncError extends UserDataSyncError {
-	constructor(message: string, code: UserDataSyncErrorCode) {
-		super(message, code);
-	}
-}
+export class UserDataAutoSyncError extends UserDataSyncError {}
 
 export namespace UserDataSyncError {
 	export function toUserDataSyncError(error: Error): UserDataSyncError {
@@ -477,7 +473,7 @@ export namespace UserDataSyncError {
 			/^(.+) \(UserDataSyncError\) syncResource:(.+) operationId:(.+)$/.exec(
 				error.name,
 			);
-		if (match && match[1]) {
+		if (match?.[1]) {
 			const syncResource =
 				match[2] === "unknown" ? undefined : (match[2] as SyncResource);
 			const operationId = match[3] === "unknown" ? undefined : match[3];

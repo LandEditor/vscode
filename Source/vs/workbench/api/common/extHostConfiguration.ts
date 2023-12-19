@@ -192,10 +192,7 @@ export class ExtHostConfigProvider {
 	}
 
 	get onDidChangeConfiguration(): Event<vscode.ConfigurationChangeEvent> {
-		return (
-			this._onDidChangeConfiguration &&
-			this._onDidChangeConfiguration.event
-		);
+		return this._onDidChangeConfiguration?.event;
 	}
 
 	$acceptConfigurationChanged(
@@ -484,7 +481,7 @@ export class ExtHostConfigProvider {
 						},
 						setPrototypeOf: (_target: any) => {
 							throw new Error(
-								`TypeError: Cannot set prototype for a readonly object`,
+								"TypeError: Cannot set prototype for a readonly object",
 							);
 						},
 						isExtensible: () => false,

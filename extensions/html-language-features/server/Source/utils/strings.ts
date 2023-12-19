@@ -65,7 +65,7 @@ export function repeat(value: string, count: number) {
 			s += value;
 		}
 		value += value;
-		count = count >>> 1;
+		count >>>= 1;
 	}
 	return s;
 }

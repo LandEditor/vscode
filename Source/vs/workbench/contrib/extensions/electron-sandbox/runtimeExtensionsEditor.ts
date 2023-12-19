@@ -295,7 +295,7 @@ export class SaveExtensionHostProfileAction extends Action {
 			],
 		});
 
-		if (!picked || !picked.filePath || picked.canceled) {
+		if (!picked?.filePath || picked.canceled) {
 			return;
 		}
 
@@ -314,7 +314,7 @@ export class SaveExtensionHostProfileAction extends Action {
 				"piiRemoved",
 			);
 
-			savePath = savePath + ".txt";
+			savePath += ".txt";
 		}
 
 		return this._fileService.writeFile(

@@ -108,7 +108,7 @@ registerAction2(
 			const editor = getNotebookEditorFromEditorPane(
 				editorService.activeEditorPane,
 			);
-			if (!editor || !editor.hasModel()) {
+			if (!editor?.hasModel()) {
 				return;
 			}
 

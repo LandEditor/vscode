@@ -454,17 +454,17 @@ export function updateColorThemeConfigurationSchemas(
 export function updateFileIconThemeConfigurationSchemas(
 	themes: IWorkbenchFileIconTheme[],
 ) {
-	fileIconThemeSettingSchema.enum!.splice(
+	fileIconThemeSettingSchema.enum?.splice(
 		1,
 		Number.MAX_VALUE,
 		...themes.map((t) => t.settingsId),
 	);
-	fileIconThemeSettingSchema.enumItemLabels!.splice(
+	fileIconThemeSettingSchema.enumItemLabels?.splice(
 		1,
 		Number.MAX_VALUE,
 		...themes.map((t) => t.label),
 	);
-	fileIconThemeSettingSchema.enumDescriptions!.splice(
+	fileIconThemeSettingSchema.enumDescriptions?.splice(
 		1,
 		Number.MAX_VALUE,
 		...themes.map((t) => t.description || ""),
@@ -478,17 +478,17 @@ export function updateFileIconThemeConfigurationSchemas(
 export function updateProductIconThemeConfigurationSchemas(
 	themes: IWorkbenchProductIconTheme[],
 ) {
-	productIconThemeSettingSchema.enum!.splice(
+	productIconThemeSettingSchema.enum?.splice(
 		1,
 		Number.MAX_VALUE,
 		...themes.map((t) => t.settingsId),
 	);
-	productIconThemeSettingSchema.enumItemLabels!.splice(
+	productIconThemeSettingSchema.enumItemLabels?.splice(
 		1,
 		Number.MAX_VALUE,
 		...themes.map((t) => t.label),
 	);
-	productIconThemeSettingSchema.enumDescriptions!.splice(
+	productIconThemeSettingSchema.enumDescriptions?.splice(
 		1,
 		Number.MAX_VALUE,
 		...themes.map((t) => t.description || ""),

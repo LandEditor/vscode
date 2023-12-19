@@ -92,17 +92,17 @@ export class CachedExtensionScanner {
 				}),
 			]);
 
-			let scannedSystemExtensions: IScannedExtension[] = [],
-				scannedUserExtensions: IScannedExtension[] = [],
-				scannedDevelopedExtensions: IScannedExtension[] = [],
-				hasErrors = false;
+			let scannedSystemExtensions: IScannedExtension[] = [];
+			let scannedUserExtensions: IScannedExtension[] = [];
+			let scannedDevelopedExtensions: IScannedExtension[] = [];
+			let hasErrors = false;
 
 			if (result[0].status === "fulfilled") {
 				scannedSystemExtensions = result[0].value;
 			} else {
 				hasErrors = true;
 				this._logService.error(
-					`Error scanning system extensions:`,
+					"Error scanning system extensions:",
 					getErrorMessage(result[0].reason),
 				);
 			}
@@ -112,7 +112,7 @@ export class CachedExtensionScanner {
 			} else {
 				hasErrors = true;
 				this._logService.error(
-					`Error scanning user extensions:`,
+					"Error scanning user extensions:",
 					getErrorMessage(result[1].reason),
 				);
 			}
@@ -169,7 +169,7 @@ export class CachedExtensionScanner {
 
 			return r;
 		} catch (err) {
-			this._logService.error(`Error scanning installed extensions:`);
+			this._logService.error("Error scanning installed extensions:");
 			this._logService.error(err);
 			return [];
 		}

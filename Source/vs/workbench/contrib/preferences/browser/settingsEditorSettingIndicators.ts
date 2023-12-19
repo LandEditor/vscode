@@ -173,9 +173,10 @@ export class SettingsTreeIndicatorsLabel implements IDisposable {
 			"span.setting-indicator.setting-item-workspace-trust",
 		);
 		const workspaceTrustLabel = new SimpleIconLabel(workspaceTrustElement);
-		workspaceTrustLabel.text =
-			"$(warning) " +
-			localize("workspaceUntrustedLabel", "Setting value not applied");
+		workspaceTrustLabel.text = `$(warning) ${localize(
+			"workspaceUntrustedLabel",
+			"Setting value not applied",
+		)}`;
 
 		const content = localize(
 			"trustLabel",
@@ -443,9 +444,10 @@ export class SettingsTreeIndicatorsLabel implements IDisposable {
 				"setting-indicator",
 			);
 
-			this.scopeOverridesIndicator.label.text =
-				"$(warning) " +
-				localize("policyLabelText", "Setting value not applied");
+			this.scopeOverridesIndicator.label.text = `$(warning) ${localize(
+				"policyLabelText",
+				"Setting value not applied",
+			)}`;
 			const content = localize(
 				"policyDescription",
 				"This setting is managed by your organization and its applied value cannot be changed.",
@@ -622,7 +624,7 @@ export class SettingsTreeIndicatorsLabel implements IDisposable {
 				}
 				if (element.overriddenDefaultsLanguageList.length) {
 					if (contentMarkdownString) {
-						contentMarkdownString += `\n\n`;
+						contentMarkdownString += "\n\n";
 					}
 					const prefaceText = localize(
 						"hasDefaultOverridesForLanguages",

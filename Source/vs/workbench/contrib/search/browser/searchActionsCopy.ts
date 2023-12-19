@@ -213,7 +213,7 @@ function matchToString(match: Match, indent = 0): string {
 	const getFirstLinePrefix = () =>
 		`${match.range().startLineNumber},${match.range().startColumn}`;
 	const getOtherLinePrefix = (i: number) =>
-		match.range().startLineNumber + i + "";
+		`${match.range().startLineNumber + i}`;
 
 	const fullMatchLines = match.fullPreviewLines();
 	const largestPrefixSize = fullMatchLines.reduce((largest, _, i) => {

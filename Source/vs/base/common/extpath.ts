@@ -39,7 +39,7 @@ export function toPosixPath(osPath: string) {
 	}
 	if (/^[a-zA-Z]:(\/|$)/.test(osPath)) {
 		// starts with a drive letter
-		osPath = "/" + osPath;
+		osPath = `/${osPath}`;
 	}
 	return osPath;
 }
@@ -163,7 +163,7 @@ export function isUNC(path: string): boolean {
 
 	code = path.charCodeAt(pos + 1);
 
-	if (isNaN(code) || code === CharCode.Backslash) {
+	if (Number.isNaN(code) || code === CharCode.Backslash) {
 		return false;
 	}
 
@@ -230,7 +230,7 @@ export function isEqual(
 		return identityEquals;
 	}
 
-	if (!pathA || !pathB) {
+	if (!(pathA && pathB)) {
 		return false;
 	}
 
@@ -252,7 +252,7 @@ export function isEqualOrParent(
 		return true;
 	}
 
-	if (!base || !parentCandidate) {
+	if (!(base && parentCandidate)) {
 		return false;
 	}
 
@@ -404,7 +404,7 @@ export function parseLineAndColumnAware(
 	for (const segment of segments) {
 		const segmentAsNumber = Number(segment);
 		if (!isNumber(segmentAsNumber)) {
-			path = !!path ? [path, segment].join(":") : segment; // a colon can well be part of a path (e.g. C:\...)
+			path = path ? [path, segment].join(":") : segment; // a colon can well be part of a path (e.g. C:\...)
 		} else if (line === undefined) {
 			line = segmentAsNumber;
 		} else if (column === undefined) {

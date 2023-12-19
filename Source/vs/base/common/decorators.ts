@@ -34,7 +34,7 @@ export function memoize(_target: any, key: string, descriptor: any) {
 		fnKey = "value";
 		fn = descriptor.value;
 
-		if (fn!.length !== 0) {
+		if (fn?.length !== 0) {
 			console.warn(
 				"Memoize should only be used in functions with zero parameters",
 			);
@@ -55,7 +55,7 @@ export function memoize(_target: any, key: string, descriptor: any) {
 				configurable: false,
 				enumerable: false,
 				writable: false,
-				value: fn!.apply(this, args),
+				value: fn?.apply(this, args),
 			});
 		}
 

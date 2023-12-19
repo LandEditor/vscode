@@ -53,7 +53,7 @@ export class CommandService extends Disposable implements ICommandService {
 		if (!this._starActivation) {
 			// wait for * activation, limited to at most 30s
 			this._starActivation = Promise.race<any>([
-				this._extensionService.activateByEvent(`*`),
+				this._extensionService.activateByEvent("*"),
 				timeout(30000),
 			]);
 		}

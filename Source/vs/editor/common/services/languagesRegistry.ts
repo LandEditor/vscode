@@ -260,7 +260,7 @@ export class LanguagesRegistry extends Disposable {
 		if (typeof lang.firstLine === "string" && lang.firstLine.length > 0) {
 			let firstLineRegexStr = lang.firstLine;
 			if (firstLineRegexStr.charAt(0) !== "^") {
-				firstLineRegexStr = "^" + firstLineRegexStr;
+				firstLineRegexStr = `^${firstLineRegexStr}`;
 			}
 			try {
 				const firstLineRegex = new RegExp(firstLineRegexStr);
@@ -308,11 +308,11 @@ export class LanguagesRegistry extends Disposable {
 		}
 
 		const containsAliases = langAliases !== null && langAliases.length > 0;
-		if (containsAliases && langAliases![0] === null) {
+		if (containsAliases && langAliases?.[0] === null) {
 			// signal that this language should not get a name
 		} else {
 			const bestName =
-				(containsAliases ? langAliases![0] : null) || langId;
+				(containsAliases ? langAliases?.[0] : null) || langId;
 			if (containsAliases || !resolvedLanguage.name) {
 				resolvedLanguage.name = bestName;
 			}
@@ -371,14 +371,14 @@ export class LanguagesRegistry extends Disposable {
 		return language.mimetypes[0] || null;
 	}
 
-	public getExtensions(languageId: string): ReadonlyArray<string> {
+	public getExtensions(languageId: string): readonly string[] {
 		if (!hasOwnProperty.call(this._languages, languageId)) {
 			return [];
 		}
 		return this._languages[languageId].extensions;
 	}
 
-	public getFilenames(languageId: string): ReadonlyArray<string> {
+	public getFilenames(languageId: string): readonly string[] {
 		if (!hasOwnProperty.call(this._languages, languageId)) {
 			return [];
 		}
@@ -393,7 +393,7 @@ export class LanguagesRegistry extends Disposable {
 		return language.icons[0] || null;
 	}
 
-	public getConfigurationFiles(languageId: string): ReadonlyArray<URI> {
+	public getConfigurationFiles(languageId: string): readonly URI[] {
 		if (!hasOwnProperty.call(this._languages, languageId)) {
 			return [];
 		}
@@ -424,7 +424,7 @@ export class LanguagesRegistry extends Disposable {
 		resource: URI | null,
 		firstLine?: string,
 	): string[] {
-		if (!resource && !firstLine) {
+		if (!(resource || firstLine)) {
 			return [];
 		}
 		return getLanguageIds(resource, firstLine);

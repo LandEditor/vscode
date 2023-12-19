@@ -109,7 +109,7 @@ export class MessageController implements IEditorContribution {
 		this._messageWidget.value = new MessageWidget(
 			this._editor,
 			position,
-			typeof message === "string" ? message : this._message!.element,
+			typeof message === "string" ? message : this._message?.element,
 		);
 
 		// close on blur (debounced to allow to tab into the message), cursor, model change, dispose

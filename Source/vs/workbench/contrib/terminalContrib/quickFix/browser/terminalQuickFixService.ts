@@ -36,7 +36,7 @@ export class TerminalQuickFixService implements ITerminalQuickFixService {
 	private readonly _onDidUnregisterProvider = new Emitter<string>();
 	readonly onDidUnregisterProvider = this._onDidUnregisterProvider.event;
 
-	readonly extensionQuickFixes: Promise<Array<ITerminalCommandSelector>>;
+	readonly extensionQuickFixes: Promise<ITerminalCommandSelector[]>;
 
 	constructor(@ILogService private readonly _logService: ILogService) {
 		this.extensionQuickFixes = new Promise((r) =>

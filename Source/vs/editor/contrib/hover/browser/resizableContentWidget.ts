@@ -83,7 +83,7 @@ export abstract class ResizableContentWidget
 	): number | undefined {
 		const editorDomNode = this._editor.getDomNode();
 		const mouseBox = this._editor.getScrolledVisiblePosition(position);
-		if (!editorDomNode || !mouseBox) {
+		if (!(editorDomNode && mouseBox)) {
 			return;
 		}
 		const editorBox = dom.getDomNodePagePosition(editorDomNode);
@@ -95,7 +95,7 @@ export abstract class ResizableContentWidget
 	): number | undefined {
 		const editorDomNode = this._editor.getDomNode();
 		const mouseBox = this._editor.getScrolledVisiblePosition(position);
-		if (!editorDomNode || !mouseBox) {
+		if (!(editorDomNode && mouseBox)) {
 			return;
 		}
 		const editorBox = dom.getDomNodePagePosition(editorDomNode);

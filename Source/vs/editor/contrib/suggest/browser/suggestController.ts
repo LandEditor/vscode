@@ -134,7 +134,7 @@ class LineSuffix {
 		// the cursor to the line end.
 		if (this._marker) {
 			const range = this._model.getDecorationRange(this._marker);
-			const end = this._model.getOffsetAt(range!.getStartPosition());
+			const end = this._model.getOffsetAt(range?.getStartPosition());
 			return end - this._model.getOffsetAt(position);
 		} else {
 			return (
@@ -285,8 +285,7 @@ export class SuggestController implements IEditorContribution {
 								item.completion.insertText.length
 						) {
 							const oldText = this.editor
-								.getModel()!
-								.getValueInRange({
+								.getModel()?.getValueInRange({
 									startLineNumber: position.lineNumber,
 									startColumn,
 									endLineNumber: position.lineNumber,
@@ -497,7 +496,7 @@ export class SuggestController implements IEditorContribution {
 		event: ISelectedSuggestion | undefined,
 		flags: InsertFlags,
 	): void {
-		if (!event || !event.item) {
+		if (!event?.item) {
 			this._alternatives.value.reset();
 			this.model.cancel();
 			this.model.clear();
@@ -558,7 +557,7 @@ export class SuggestController implements IEditorContribution {
 					) {
 						// shift additional edit when it is "after" the completion insertion position
 						const columnDelta =
-							this.editor.getPosition()!.column -
+							this.editor.getPosition()?.column -
 							item.position.column;
 						const startColumnDelta = columnDelta;
 						const endColumnDelta = Range.spansMultipleLines(range)
@@ -966,7 +965,7 @@ export class SuggestController implements IEditorContribution {
 				// unequal lengths -> makes edit
 				return true;
 			}
-			const textNow = this.editor.getModel()!.getValueInRange({
+			const textNow = this.editor.getModel()?.getValueInRange({
 				startLineNumber: position.lineNumber,
 				startColumn,
 				endLineNumber: position.lineNumber,

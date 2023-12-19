@@ -751,7 +751,7 @@ class PreferencesActionsContribution
 					const editorPane =
 						accessor.get(IEditorService).activeEditorPane;
 					if (editorPane instanceof SettingsEditor2) {
-						editorPane.focusSearch(`@tag:usesOnlineServices`);
+						editorPane.focusSearch("@tag:usesOnlineServices");
 					} else {
 						accessor.get(IPreferencesService).openSettings({
 							jsonEditor: false,
@@ -803,7 +803,7 @@ class PreferencesActionsContribution
 					const editorPane =
 						accessor.get(IEditorService).activeEditorPane;
 					if (editorPane instanceof SettingsEditor2) {
-						editorPane.focusSearch(`@tag:telemetry`);
+						editorPane.focusSearch("@tag:telemetry");
 					} else {
 						accessor.get(IPreferencesService).openSettings({
 							jsonEditor: false,
@@ -1559,7 +1559,7 @@ class PreferencesActionsContribution
 					accessor.get(IEditorService).activeEditorPane;
 				if (
 					editorPane instanceof KeybindingsEditor &&
-					editorPane.activeKeybindingEntry!.keybindingItem.keybinding
+					editorPane.activeKeybindingEntry?.keybindingItem.keybinding
 				) {
 					editorPane.defineWhenExpression(
 						editorPane.activeKeybindingEntry!,
@@ -1875,7 +1875,7 @@ class PreferencesActionsContribution
 				},
 				when: ContextKeyExpr.and(
 					ResourceContextKey.Resource.isEqualTo(
-						this.preferencesService.workspaceSettingsResource!.toString(),
+						this.preferencesService.workspaceSettingsResource?.toString(),
 					),
 					WorkbenchStateContext.isEqualTo("workspace"),
 					ContextKeyExpr.not("isInDiffEditor"),
@@ -1916,8 +1916,8 @@ class PreferencesActionsContribution
 					when: ContextKeyExpr.and(
 						ResourceContextKey.Resource.isEqualTo(
 							this.preferencesService
-								.getFolderSettingsResource(folder.uri)!
-								.toString(),
+								.getFolderSettingsResource(folder.uri)
+								?.toString(),
 						),
 						ContextKeyExpr.not("isInDiffEditor"),
 					),

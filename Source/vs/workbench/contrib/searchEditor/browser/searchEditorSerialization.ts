@@ -351,18 +351,22 @@ export const extractSearchQueryFromLines = (
 		}
 		const [, key, value] = parsed;
 		switch (key) {
-			case "Query":
+			case "Query": {
 				query.query = unescapeNewlines(value);
 				break;
-			case "Including":
+			}
+			case "Including": {
 				query.filesToInclude = value;
 				break;
-			case "Excluding":
+			}
+			case "Excluding": {
 				query.filesToExclude = value;
 				break;
-			case "ContextLines":
+			}
+			case "ContextLines": {
 				query.contextLines = +value;
 				break;
+			}
 			case "Flags": {
 				query.isRegexp = value.indexOf("RegExp") !== -1;
 				query.isCaseSensitive = value.indexOf("CaseSensitive") !== -1;

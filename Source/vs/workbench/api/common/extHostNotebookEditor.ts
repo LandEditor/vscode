@@ -55,8 +55,12 @@ export class ExtHostNotebookEditor {
 				},
 				set selections(value: vscode.NotebookRange[]) {
 					if (
-						!Array.isArray(value) ||
-						!value.every(extHostTypes.NotebookRange.isNotebookRange)
+						!(
+							Array.isArray(value) &&
+							value.every(
+								extHostTypes.NotebookRange.isNotebookRange,
+							)
+						)
 					) {
 						throw illegalArgument("selections");
 					}

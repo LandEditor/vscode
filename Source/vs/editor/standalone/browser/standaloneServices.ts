@@ -297,7 +297,7 @@ class StandaloneTextModelService implements ITextModelService {
 		const model = this.modelService.getModel(resource);
 
 		if (!model) {
-			return Promise.reject(new Error(`Model not found`));
+			return Promise.reject(new Error("Model not found"));
 		}
 
 		return Promise.resolve(new ImmortalReference(new SimpleModel(model)));
@@ -447,7 +447,7 @@ class StandaloneDialogService implements IDialogService {
 	private doConfirm(message: string, detail?: string): boolean {
 		let messageText = message;
 		if (detail) {
-			messageText = messageText + "\n\n" + detail;
+			messageText = `${messageText}\n\n${detail}`;
 		}
 
 		return mainWindow.confirm(messageText);
@@ -529,15 +529,18 @@ export class StandaloneNotificationService implements INotificationService {
 
 	public notify(notification: INotification): INotificationHandle {
 		switch (notification.severity) {
-			case Severity.Error:
+			case Severity.Error: {
 				console.error(notification.message);
 				break;
-			case Severity.Warning:
+			}
+			case Severity.Warning: {
 				console.warn(notification.message);
 				break;
-			default:
+			}
+			default: {
 				console.log(notification.message);
 				break;
+			}
 		}
 
 		return StandaloneNotificationService.NO_OP;
@@ -1438,11 +1441,7 @@ class StandaloneWorkspaceTrustManagementService
 	}
 }
 
-class StandaloneLanguageService extends LanguageService {
-	constructor() {
-		super();
-	}
-}
+class StandaloneLanguageService extends LanguageService {}
 
 class StandaloneLogService extends LogService {
 	constructor() {
@@ -1685,7 +1684,7 @@ export namespace StandaloneServices {
 		}
 		const r = serviceCollection.get(serviceId);
 		if (!r) {
-			throw new Error("Missing service " + serviceId);
+			throw new Error(`Missing service ${serviceId}`);
 		}
 		if (r instanceof SyncDescriptor) {
 			return instantiationService.invokeFunction((accessor) =>

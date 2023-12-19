@@ -268,12 +268,14 @@ export class ConfigurationEditing {
 			options.handleDirtyFile
 		) {
 			switch (options.handleDirtyFile) {
-				case "save":
+				case "save": {
 					await this.save(model, operation);
 					break;
-				case "revert":
+				}
+				case "revert": {
 					await this.textFileService.revert(model.uri);
 					break;
+				}
 			}
 		}
 
@@ -392,12 +394,14 @@ export class ConfigurationEditing {
 		scopes: IConfigurationUpdateOverrides | undefined,
 	): Promise<void> {
 		switch (error.code) {
-			case ConfigurationEditingErrorCode.ERROR_INVALID_CONFIGURATION:
+			case ConfigurationEditingErrorCode.ERROR_INVALID_CONFIGURATION: {
 				this.onInvalidConfigurationError(error, operation);
 				break;
-			case ConfigurationEditingErrorCode.ERROR_CONFIGURATION_FILE_DIRTY:
+			}
+			case ConfigurationEditingErrorCode.ERROR_CONFIGURATION_FILE_DIRTY: {
 				this.onConfigurationFileDirtyError(error, operation, scopes);
 				break;
+			}
 			case ConfigurationEditingErrorCode.ERROR_CONFIGURATION_FILE_MODIFIED_SINCE:
 				return this.doWriteConfiguration(operation, {
 					scopes,
@@ -510,16 +514,19 @@ export class ConfigurationEditing {
 	private openSettings(operation: IConfigurationEditOperation): void {
 		const options: IOpenSettingsOptions = { jsonEditor: true };
 		switch (operation.target) {
-			case EditableConfigurationTarget.USER_LOCAL:
+			case EditableConfigurationTarget.USER_LOCAL: {
 				this.preferencesService.openUserSettings(options);
 				break;
-			case EditableConfigurationTarget.USER_REMOTE:
+			}
+			case EditableConfigurationTarget.USER_REMOTE: {
 				this.preferencesService.openRemoteSettings(options);
 				break;
-			case EditableConfigurationTarget.WORKSPACE:
+			}
+			case EditableConfigurationTarget.WORKSPACE: {
 				this.preferencesService.openWorkspaceSettings(options);
 				break;
-			case EditableConfigurationTarget.WORKSPACE_FOLDER:
+			}
+			case EditableConfigurationTarget.WORKSPACE_FOLDER: {
 				if (operation.resource) {
 					const workspaceFolder =
 						this.contextService.getWorkspaceFolder(
@@ -533,6 +540,7 @@ export class ConfigurationEditing {
 					}
 				}
 				break;
+			}
 		}
 	}
 
@@ -730,7 +738,7 @@ export class ConfigurationEditing {
 						return "";
 				}
 			}
-			case ConfigurationEditingErrorCode.ERROR_CONFIGURATION_FILE_MODIFIED_SINCE:
+			case ConfigurationEditingErrorCode.ERROR_CONFIGURATION_FILE_MODIFIED_SINCE: {
 				if (
 					operation.workspaceStandAloneConfigurationKey ===
 					TASKS_CONFIGURATION_KEY
@@ -771,6 +779,7 @@ export class ConfigurationEditing {
 							"Unable to write into folder settings because the content of the file is newer.",
 						);
 				}
+			}
 			case ConfigurationEditingErrorCode.ERROR_INTERNAL:
 				return nls.localize(
 					"errorUnknown",
@@ -917,8 +926,10 @@ export class ConfigurationEditing {
 
 		if (target === EditableConfigurationTarget.WORKSPACE) {
 			if (
-				!operation.workspaceStandAloneConfigurationKey &&
-				!OVERRIDE_PROPERTY_REGEX.test(operation.key)
+				!(
+					operation.workspaceStandAloneConfigurationKey ||
+					OVERRIDE_PROPERTY_REGEX.test(operation.key)
+				)
 			) {
 				if (configurationScope === ConfigurationScope.APPLICATION) {
 					throw this.toConfigurationEditingError(
@@ -947,8 +958,10 @@ export class ConfigurationEditing {
 			}
 
 			if (
-				!operation.workspaceStandAloneConfigurationKey &&
-				!OVERRIDE_PROPERTY_REGEX.test(operation.key)
+				!(
+					operation.workspaceStandAloneConfigurationKey ||
+					OVERRIDE_PROPERTY_REGEX.test(operation.key)
+				)
 			) {
 				if (
 					configurationScope !== undefined &&

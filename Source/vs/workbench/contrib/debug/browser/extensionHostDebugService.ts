@@ -82,10 +82,7 @@ class BrowserExtensionHostDebugService
 		this.storageService = storageService;
 		this.fileService = fileService;
 
-		if (
-			environmentService.options &&
-			environmentService.options.workspaceProvider
-		) {
+		if (environmentService.options?.workspaceProvider) {
 			this.workspaceProvider =
 				environmentService.options.workspaceProvider;
 		} else {
@@ -202,7 +199,7 @@ class BrowserExtensionHostDebugService
 			"extensionTestsPath",
 			args,
 		);
-		if (!debugWorkspace && !extensionTestsPath) {
+		if (!(debugWorkspace || extensionTestsPath)) {
 			const lastExtensionDevelopmentWorkspace = this.storageService.get(
 				BrowserExtensionHostDebugService.LAST_EXTENSION_DEVELOPMENT_WORKSPACE_KEY,
 				StorageScope.PROFILE,

@@ -121,8 +121,9 @@ export class FolderSettingsActionViewItem extends BaseActionViewItem {
 		this.labelElement = DOM.$(".action-title");
 		this.detailsElement = DOM.$(".action-details");
 		this.dropDownElement = DOM.$(
-			".dropdown-icon.hide" +
-				ThemeIcon.asCSSSelector(settingsScopeDropDownIcon),
+			`.dropdown-icon.hide${ThemeIcon.asCSSSelector(
+				settingsScopeDropDownIcon,
+			)}`,
 		);
 		this.anchorElement = DOM.$(
 			"a.action-label.folder-settings",
@@ -166,9 +167,10 @@ export class FolderSettingsActionViewItem extends BaseActionViewItem {
 		const keyboardEvent = new StandardKeyboardEvent(event);
 		switch (keyboardEvent.keyCode) {
 			case KeyCode.Enter:
-			case KeyCode.Space:
+			case KeyCode.Space: {
 				this.onClick(event);
 				return;
+			}
 		}
 	}
 
@@ -262,7 +264,7 @@ export class FolderSettingsActionViewItem extends BaseActionViewItem {
 						folder.uri.toString(),
 					);
 					return <IAction>{
-						id: "folderSettingsTarget" + index,
+						id: `folderSettingsTarget${index}`,
 						label: this.labelWithCount(folder.name, folderCount),
 						checked:
 							this.folder && isEqual(this.folder.uri, folder.uri),
@@ -665,8 +667,7 @@ export class SearchWidget extends Widget {
 		if (this.countElement && message !== this.countElement.textContent) {
 			this.countElement.textContent = message;
 			this.inputBox.inputElement.setAttribute("aria-label", message);
-			this.inputBox.inputElement.style.paddingRight =
-				this.getControlsWidth() + "px";
+			this.inputBox.inputElement.style.paddingRight = `${this.getControlsWidth()}px`;
 		}
 	}
 
@@ -678,8 +679,7 @@ export class SearchWidget extends Widget {
 		} else {
 			this.countElement?.classList.remove("hide");
 
-			this.inputBox.inputElement.style.paddingRight =
-				this.getControlsWidth() + "px";
+			this.inputBox.inputElement.style.paddingRight = `${this.getControlsWidth()}px`;
 		}
 	}
 

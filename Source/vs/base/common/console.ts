@@ -46,7 +46,7 @@ export function parse(entry: IRemoteConsoleLog): {
 		const stackArgument = parsedArguments[
 			parsedArguments.length - 1
 		] as IStackArgument;
-		if (stackArgument && stackArgument.__$stack) {
+		if (stackArgument?.__$stack) {
 			parsedArguments.pop(); // stack is handled specially
 			stack = stackArgument.__$stack;
 		}

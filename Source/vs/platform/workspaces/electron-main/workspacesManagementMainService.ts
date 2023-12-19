@@ -393,7 +393,7 @@ export class WorkspacesManagementMainService
 		windows: ICodeWindow[],
 		path: URI,
 	): Promise<IEnterWorkspaceResult | undefined> {
-		if (!window || !window.win || !window.isReady) {
+		if (!(window?.win && window.isReady)) {
 			return undefined; // return early if the window is not ready or disposed
 		}
 

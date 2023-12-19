@@ -9,7 +9,7 @@ import { getRootNode } from "./parseDocument";
 import { getFlatNode, offsetRangeToVsRange, validate } from "./util";
 
 export function mergeLines() {
-	if (!validate(false) || !vscode.window.activeTextEditor) {
+	if (!(validate(false) && vscode.window.activeTextEditor)) {
 		return;
 	}
 
@@ -57,7 +57,7 @@ function getRangesToReplace(
 		endNodeToUpdate = getFlatNode(rootNode, selectionEnd, true);
 	}
 
-	if (!startNodeToUpdate || !endNodeToUpdate) {
+	if (!(startNodeToUpdate && endNodeToUpdate)) {
 		return;
 	}
 

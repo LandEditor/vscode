@@ -802,12 +802,12 @@ export class LcsDiff {
 		midModifiedArr: number[],
 		quitEarlyArr: boolean[],
 	) {
-		let originalIndex = 0,
-			modifiedIndex = 0;
-		let diagonalForwardStart = 0,
-			diagonalForwardEnd = 0;
-		let diagonalReverseStart = 0,
-			diagonalReverseEnd = 0;
+		let originalIndex = 0;
+		let modifiedIndex = 0;
+		let diagonalForwardStart = 0;
+		let diagonalForwardEnd = 0;
+		let diagonalReverseStart = 0;
+		let diagonalReverseEnd = 0;
 
 		// To traverse the edit graph and produce the proper LCS, our actual
 		// start position is just outside the given boundary
@@ -1262,7 +1262,6 @@ export class LcsDiff {
 				changes[i] = mergedChangeArr[0]!;
 				changes.splice(i + 1, 1);
 				i--;
-				continue;
 			}
 		}
 
@@ -1351,7 +1350,6 @@ export class LcsDiff {
 				changes[i - 1] = mergedChangeArr[0]!;
 				changes.splice(i, 1);
 				i++;
-				continue;
 			}
 		}
 

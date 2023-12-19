@@ -298,7 +298,7 @@ export class BrowserFileUpload {
 		if (
 			token.isCancellationRequested ||
 			!entry.name ||
-			(!entry.isFile && !entry.isDirectory)
+			!(entry.isFile || entry.isDirectory)
 		) {
 			return undefined;
 		}
@@ -406,14 +406,13 @@ export class BrowserFileUpload {
 				} else {
 					done = true; // an empty array is a signal that all entries have been read
 				}
-			} while (!done && !token.isCancellationRequested);
+			} while (!(done || token.isCancellationRequested));
 
 			// Update operation total based on new counts
 			operation.filesTotal += childEntries.length;
 
 			// Split up files from folders to upload
-			const folderTarget =
-				(target && target.getChild(entry.name)) || undefined;
+			const folderTarget = target?.getChild(entry.name) || undefined;
 			const fileChildEntries: IWebkitDataTransferItemEntry[] = [];
 			const folderChildEntries: IWebkitDataTransferItemEntry[] = [];
 			for (const childEntry of childEntries) {
@@ -645,7 +644,7 @@ export class ExternalFileImport {
 				(resolvedFile) =>
 					resolvedFile.success && resolvedFile.stat?.isDirectory,
 			)
-			.map((resolvedFile) => ({ uri: resolvedFile.stat!.resource }));
+			.map((resolvedFile) => ({ uri: resolvedFile.stat?.resource }));
 		if (folders.length > 0 && target.isRoot) {
 			enum ImportChoice {
 				Copy = 1,
@@ -1367,10 +1366,10 @@ export function getMultipleFilesOverwriteConfirm(files: URI[]): IConfirmation {
 				"The following {0} files and/or folders already exist in the destination folder. Do you want to replace them?",
 				files.length,
 			),
-			detail:
-				getFileNamesMessage(files) +
-				"\n" +
-				localize("irreversible", "This action is irreversible!"),
+			detail: `${getFileNamesMessage(files)}\n${localize(
+				"irreversible",
+				"This action is irreversible!",
+			)}`,
 			primaryButton: localize(
 				{
 					key: "replaceButtonLabel",

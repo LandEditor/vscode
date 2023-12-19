@@ -145,7 +145,7 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 			}
 
 			// DELETE
-			if (toDelete && toDelete.size) {
+			if (toDelete?.size) {
 				const keysChunks: string[][] = [];
 				keysChunks.push([]); // seed with initial empty chunk
 
@@ -230,7 +230,7 @@ export class SQLiteStorageDatabase implements IStorageDatabase {
 				// and the DB did not get errors during runtime, make a backup
 				// of the DB so that we can use it as fallback in case the actual
 				// DB becomes corrupt in the future.
-				if (!connection.isErroneous && !connection.isInMemory) {
+				if (!(connection.isErroneous || connection.isInMemory)) {
 					return this.backup().then(resolve, (error) => {
 						this.logger.error(
 							`[storage ${this.name}] backup(): ${error}`,

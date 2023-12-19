@@ -443,7 +443,7 @@ export class ViewLines
 			}
 		}
 		this.domNode.setWidth(e.scrollWidth);
-		return this._visibleLines.onScrollChanged(e) || true;
+		return true;
 	}
 
 	public override onTokensChanged(
@@ -1193,10 +1193,10 @@ export class ViewLines
 		revealAtStart?: boolean,
 		revealAtEnd?: boolean,
 	): number {
-		viewportStart = viewportStart | 0;
-		viewportEnd = viewportEnd | 0;
-		boxStart = boxStart | 0;
-		boxEnd = boxEnd | 0;
+		viewportStart |= 0;
+		viewportEnd |= 0;
+		boxStart |= 0;
+		boxEnd |= 0;
 		revealAtStart = !!revealAtStart;
 		revealAtEnd = !!revealAtEnd;
 

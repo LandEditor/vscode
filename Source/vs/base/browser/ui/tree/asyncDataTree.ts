@@ -145,7 +145,7 @@ class AsyncDataTreeNodeWrapper<TInput, T, TFilterData>
 	implements ITreeNode<TInput | T, TFilterData>
 {
 	get element(): T {
-		return this.node.element!.element as T;
+		return this.node.element?.element as T;
 	}
 	get children(): ITreeNode<T, TFilterData>[] {
 		return this.node.children.map(
@@ -272,7 +272,7 @@ function asTreeEvent<TInput, T>(
 ): ITreeEvent<T> {
 	return {
 		browserEvent: e.browserEvent,
-		elements: e.elements.map((e) => e!.element as T),
+		elements: e.elements.map((e) => e?.element as T),
 	};
 }
 
@@ -406,7 +406,7 @@ function asObjectTreeOptions<TInput, T, TFilterData>(
 			collapseByDefault: true,
 			identityProvider: options.identityProvider && {
 				getId(el) {
-					return options.identityProvider!.getId(el.element as T);
+					return options.identityProvider?.getId(el.element as T);
 				},
 			},
 			dnd:
@@ -415,12 +415,12 @@ function asObjectTreeOptions<TInput, T, TFilterData>(
 			multipleSelectionController:
 				options.multipleSelectionController && {
 					isSelectionSingleChangeEvent(e) {
-						return options.multipleSelectionController!.isSelectionSingleChangeEvent(
+						return options.multipleSelectionController?.isSelectionSingleChangeEvent(
 							{ ...e, element: e.element } as any,
 						);
 					},
 					isSelectionRangeChangeEvent(e) {
-						return options.multipleSelectionController!.isSelectionRangeChangeEvent(
+						return options.multipleSelectionController?.isSelectionRangeChangeEvent(
 							{ ...e, element: e.element } as any,
 						);
 					},
@@ -429,48 +429,49 @@ function asObjectTreeOptions<TInput, T, TFilterData>(
 				...options.accessibilityProvider,
 				getPosInSet: undefined,
 				getSetSize: undefined,
-				getRole: options.accessibilityProvider!.getRole
+				getRole: options.accessibilityProvider?.getRole
 					? (el) => {
-							return options.accessibilityProvider!.getRole!(
+							return options.accessibilityProvider?.getRole?.(
 								el.element as T,
 							);
 					  }
 					: () => "treeitem",
-				isChecked: options.accessibilityProvider!.isChecked
+				isChecked: options.accessibilityProvider?.isChecked
 					? (e) => {
-							return !!options.accessibilityProvider?.isChecked!(
+							return !!options.accessibilityProvider?.isChecked?.(
 								e.element as T,
 							);
 					  }
 					: undefined,
 				getAriaLabel(e) {
-					return options.accessibilityProvider!.getAriaLabel(
+					return options.accessibilityProvider?.getAriaLabel(
 						e.element as T,
 					);
 				},
 				getWidgetAriaLabel() {
-					return options.accessibilityProvider!.getWidgetAriaLabel();
+					return options.accessibilityProvider?.getWidgetAriaLabel();
 				},
-				getWidgetRole: options.accessibilityProvider!.getWidgetRole
-					? () => options.accessibilityProvider!.getWidgetRole!()
+				getWidgetRole: options.accessibilityProvider?.getWidgetRole
+					? () => options.accessibilityProvider?.getWidgetRole?.()
 					: () => "tree",
 				getAriaLevel:
-					options.accessibilityProvider!.getAriaLevel &&
+					options.accessibilityProvider?.getAriaLevel &&
 					((node) => {
-						return options.accessibilityProvider!.getAriaLevel!(
+						return options.accessibilityProvider?.getAriaLevel?.(
 							node.element as T,
 						);
 					}),
 				getActiveDescendantId:
 					options.accessibilityProvider.getActiveDescendantId &&
 					((node) => {
-						return options.accessibilityProvider!
-							.getActiveDescendantId!(node.element as T);
+						return options.accessibilityProvider?.getActiveDescendantId?.(
+							node.element as T,
+						);
 					}),
 			},
 			filter: options.filter && {
 				filter(e, parentVisibility) {
-					return options.filter!.filter(
+					return options.filter?.filter(
 						e.element as T,
 						parentVisibility,
 					);
@@ -480,7 +481,7 @@ function asObjectTreeOptions<TInput, T, TFilterData>(
 				options.keyboardNavigationLabelProvider && {
 					...options.keyboardNavigationLabelProvider,
 					getKeyboardNavigationLabel(e) {
-						return options.keyboardNavigationLabelProvider!.getKeyboardNavigationLabel(
+						return options.keyboardNavigationLabelProvider?.getKeyboardNavigationLabel(
 							e.element as T,
 						);
 					},
@@ -825,7 +826,7 @@ export class AsyncDataTree<TInput, T, TFilterData = void>
 	}
 
 	get lastVisibleElement(): T {
-		return this.tree.lastVisibleElement!.element as T;
+		return this.tree.lastVisibleElement?.element as T;
 	}
 
 	get ariaLabel(): string {
@@ -1103,7 +1104,7 @@ export class AsyncDataTree<TInput, T, TFilterData = void>
 
 	getSelection(): T[] {
 		const nodes = this.tree.getSelection();
-		return nodes.map((n) => n!.element as T);
+		return nodes.map((n) => n?.element as T);
 	}
 
 	setFocus(elements: T[], browserEvent?: UIEvent): void {
@@ -1137,7 +1138,7 @@ export class AsyncDataTree<TInput, T, TFilterData = void>
 
 	getFocus(): T[] {
 		const nodes = this.tree.getFocus();
-		return nodes.map((n) => n!.element as T);
+		return nodes.map((n) => n?.element as T);
 	}
 
 	reveal(element: T, relativeTop?: number): void {
@@ -1152,7 +1153,7 @@ export class AsyncDataTree<TInput, T, TFilterData = void>
 
 	getParentElement(element: T): TInput | T {
 		const node = this.tree.getParentElement(this.getDataNode(element));
-		return (node && node.element)!;
+		return node?.element!;
 	}
 
 	getFirstElementChild(
@@ -1162,7 +1163,7 @@ export class AsyncDataTree<TInput, T, TFilterData = void>
 		const node = this.tree.getFirstElementChild(
 			dataNode === this.root ? null : dataNode,
 		);
-		return (node && node.element)!;
+		return node?.element!;
 	}
 
 	// Implementation
@@ -1255,7 +1256,7 @@ export class AsyncDataTree<TInput, T, TFilterData = void>
 				),
 			);
 		} finally {
-			done!();
+			done?.();
 		}
 	}
 
@@ -1461,24 +1462,21 @@ export class AsyncDataTree<TInput, T, TFilterData = void>
 				});
 
 				if (
-					viewStateContext &&
-					viewStateContext.viewState.focus &&
+					viewStateContext?.viewState.focus &&
 					viewStateContext.viewState.focus.indexOf(id) > -1
 				) {
 					viewStateContext.focus.push(childAsyncDataTreeNode);
 				}
 
 				if (
-					viewStateContext &&
-					viewStateContext.viewState.selection &&
+					viewStateContext?.viewState.selection &&
 					viewStateContext.viewState.selection.indexOf(id) > -1
 				) {
 					viewStateContext.selection.push(childAsyncDataTreeNode);
 				}
 
 				if (
-					viewStateContext &&
-					viewStateContext.viewState.expanded &&
+					viewStateContext?.viewState.expanded &&
 					viewStateContext.viewState.expanded.indexOf(id) > -1
 				) {
 					childrenToRefresh.push(childAsyncDataTreeNode);
@@ -1530,11 +1528,11 @@ export class AsyncDataTree<TInput, T, TFilterData = void>
 			| IObjectTreeSetChildrenOptions<IAsyncDataTreeNode<TInput, T>>
 			| undefined = options && {
 			...options,
-			diffIdentityProvider: options!.diffIdentityProvider && {
+			diffIdentityProvider: options?.diffIdentityProvider && {
 				getId(node: IAsyncDataTreeNode<TInput, T>): {
 					toString(): string;
 				} {
-					return options!.diffIdentityProvider!.getId(
+					return options?.diffIdentityProvider?.getId(
 						node.element as T,
 					);
 				},
@@ -1573,8 +1571,7 @@ export class AsyncDataTree<TInput, T, TFilterData = void>
 			| undefined;
 
 		if (
-			viewStateContext &&
-			viewStateContext.viewState.expanded &&
+			viewStateContext?.viewState.expanded &&
 			node.id &&
 			viewStateContext.viewState.expanded.indexOf(node.id) > -1
 		) {
@@ -1619,7 +1616,7 @@ export class AsyncDataTree<TInput, T, TFilterData = void>
 		}
 
 		const getId = (element: T) =>
-			this.identityProvider!.getId(element).toString();
+			this.identityProvider?.getId(element).toString();
 		const focus = this.getFocus().map(getId);
 		const selection = this.getSelection().map(getId);
 
@@ -1631,7 +1628,7 @@ export class AsyncDataTree<TInput, T, TFilterData = void>
 			const node = stack.pop()!;
 
 			if (node !== root && node.collapsible && !node.collapsed) {
-				expanded.push(getId(node.element!.element as T));
+				expanded.push(getId(node.element?.element as T));
 			}
 
 			stack.push(...node.children);
@@ -1850,7 +1847,7 @@ function asCompressibleObjectTreeOptions<TInput, T, TFilterData>(
 				objectTreeOptions.keyboardNavigationLabelProvider && {
 					...objectTreeOptions.keyboardNavigationLabelProvider,
 					getCompressedNodeKeyboardNavigationLabel(els) {
-						return options!.keyboardNavigationLabelProvider!.getCompressedNodeKeyboardNavigationLabel(
+						return options?.keyboardNavigationLabelProvider?.getCompressedNodeKeyboardNavigationLabel(
 							els.map((e) => e.element as T),
 						);
 					},
@@ -1961,7 +1958,7 @@ export class CompressibleAsyncDataTree<
 		}
 
 		const getId = (element: T) =>
-			this.identityProvider!.getId(element).toString();
+			this.identityProvider?.getId(element).toString();
 		const focus = this.getFocus().map(getId);
 		const selection = this.getSelection().map(getId);
 
@@ -1973,7 +1970,7 @@ export class CompressibleAsyncDataTree<
 			const node = stack.pop()!;
 
 			if (node !== root && node.collapsible && !node.collapsed) {
-				for (const asyncNode of node.element!.elements) {
+				for (const asyncNode of node.element?.elements) {
 					expanded.push(getId(asyncNode.element as T));
 				}
 			}
@@ -1996,7 +1993,7 @@ export class CompressibleAsyncDataTree<
 		// This is hard to fix properly since it requires rewriting the traits
 		// across trees and lists. Let's just keep it this way for now.
 		const getId = (element: T) =>
-			this.identityProvider!.getId(element).toString();
+			this.identityProvider?.getId(element).toString();
 		const getUncompressedIds = (
 			nodes: IAsyncDataTreeNode<TInput, T>[],
 		): Set<string> => {
@@ -2087,7 +2084,7 @@ export class CompressibleAsyncDataTree<
 	protected override processChildren(children: Iterable<T>): Iterable<T> {
 		if (this.filter) {
 			children = Iterable.filter(children, (e) => {
-				const result = this.filter!.filter(e, TreeVisibility.Visible);
+				const result = this.filter?.filter(e, TreeVisibility.Visible);
 				const visibility = getVisibility(result);
 
 				if (visibility === TreeVisibility.Recurse) {

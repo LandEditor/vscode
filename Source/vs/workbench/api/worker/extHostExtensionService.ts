@@ -26,7 +26,7 @@ class WorkerRequireInterceptor extends RequireInterceptor {
 		}
 
 		if (this._factories.has(request)) {
-			return this._factories.get(request)!.load(request, parent, () => {
+			return this._factories.get(request)?.load(request, parent, () => {
 				throw new Error("CANNOT LOAD MODULE from here.");
 			});
 		}
@@ -134,7 +134,7 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 		const _exports = {};
 		const _module = { exports: _exports };
 		const _require = (request: string) => {
-			const result = this._fakeModules!.getModule(request, module);
+			const result = this._fakeModules?.getModule(request, module);
 			if (result === undefined) {
 				throw new Error(`Cannot load module '${request}'`);
 			}

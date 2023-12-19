@@ -396,12 +396,14 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 
 		let workspaceId: string | undefined;
 		switch (state) {
-			case WorkbenchState.EMPTY:
+			case WorkbenchState.EMPTY: {
 				workspaceId = undefined;
 				break;
-			case WorkbenchState.FOLDER:
+			}
+			case WorkbenchState.FOLDER: {
 				workspaceId = await createHash(workspace.folders[0].uri);
 				break;
+			}
 			case WorkbenchState.WORKSPACE:
 				if (workspace.configuration) {
 					workspaceId = await createHash(workspace.configuration);
@@ -1053,11 +1055,9 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 		const { filesToOpenOrCreate, filesToDiff, filesToMerge } =
 			this.environmentService;
 		tags["workbench.filesToOpenOrCreate"] =
-			(filesToOpenOrCreate && filesToOpenOrCreate.length) || 0;
-		tags["workbench.filesToDiff"] =
-			(filesToDiff && filesToDiff.length) || 0;
-		tags["workbench.filesToMerge"] =
-			(filesToMerge && filesToMerge.length) || 0;
+			filesToOpenOrCreate?.length || 0;
+		tags["workbench.filesToDiff"] = filesToDiff?.length || 0;
+		tags["workbench.filesToMerge"] = filesToMerge?.length || 0;
 
 		const isEmpty = state === WorkbenchState.EMPTY;
 		tags["workspace.roots"] = isEmpty ? 0 : workspace.folders.length;
@@ -1066,7 +1066,7 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 		const folders = isEmpty
 			? undefined
 			: workspace.folders.map((folder) => folder.uri);
-		if (!folders || !folders.length) {
+		if (!folders?.length) {
 			return Promise.resolve(tags);
 		}
 
@@ -1104,7 +1104,7 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 				const names = (<IFileStat[]>[])
 					.concat(
 						...files.map((result) =>
-							result.success ? result.stat!.children || [] : [],
+							result.success ? result.stat?.children || [] : [],
 						),
 					)
 					.map((c) => c.name);
@@ -1259,12 +1259,12 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 
 				function addPythonTags(packageName: string): void {
 					if (PyModulesToLookFor.indexOf(packageName) > -1) {
-						tags["workspace.py." + packageName] = true;
+						tags[`workspace.py.${packageName}`] = true;
 					}
 
 					for (const metaModule of PyMetaModulesToLookFor) {
 						if (packageName.startsWith(metaModule)) {
-							tags["workspace.py." + metaModule] = true;
+							tags[`workspace.py.${metaModule}`] = true;
 						}
 					}
 
@@ -1350,12 +1350,12 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 								} else if (
 									ModulesToLookFor.indexOf(dependency) > -1
 								) {
-									tags["workspace.npm." + dependency] = true;
+									tags[`workspace.npm.${dependency}`] = true;
 								} else {
 									for (const metaModule of MetaModulesToLookFor) {
 										if (dependency.startsWith(metaModule)) {
 											tags[
-												"workspace.npm." + metaModule
+												`workspace.npm.${metaModule}`
 											] = true;
 										}
 									}
@@ -1395,8 +1395,7 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 									for (const module of GoModulesToLookFor) {
 										if (packageName.startsWith(module)) {
 											tags[
-												"workspace.go.mod." +
-													packageName
+												`workspace.go.mod.${packageName}`
 											] = true;
 										}
 									}

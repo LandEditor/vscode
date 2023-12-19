@@ -276,8 +276,7 @@ export class RemoteTerminalChannelClient implements IPtyHostController {
 			await this._remoteAuthorityResolverService.resolveAuthority(
 				this._remoteAuthority,
 			);
-		const resolverEnv =
-			resolverResult.options && resolverResult.options.extensionHostEnv;
+		const resolverEnv = resolverResult.options?.extensionHostEnv;
 
 		const workspace = this._workspaceContextService.getWorkspace();
 		const workspaceFolders = workspace.folders;

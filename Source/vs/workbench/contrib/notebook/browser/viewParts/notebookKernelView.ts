@@ -156,7 +156,7 @@ registerAction2(
 
 			const editor = getEditorFromContext(editorService, context);
 
-			if (!editor || !editor.hasModel()) {
+			if (!editor?.hasModel()) {
 				return false;
 			}
 

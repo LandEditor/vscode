@@ -250,12 +250,12 @@ export class FilterWidget extends Widget {
 		);
 		if (this.focusContextKey) {
 			this._register(
-				focusTracker.onDidFocus(() => this.focusContextKey!.set(true)),
+				focusTracker.onDidFocus(() => this.focusContextKey?.set(true)),
 			);
 			this._register(
-				focusTracker.onDidBlur(() => this.focusContextKey!.set(false)),
+				focusTracker.onDidBlur(() => this.focusContextKey?.set(false)),
 			);
-			this._register(toDisposable(() => this.focusContextKey!.reset()));
+			this._register(toDisposable(() => this.focusContextKey?.reset()));
 		}
 		return [inputBox, focusTracker];
 	}

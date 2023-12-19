@@ -81,8 +81,8 @@ export class InlineCompletionsHoverParticipant
 					this,
 					Range.fromPositions(
 						this._editor
-							.getModel()!
-							.validatePosition(
+							.getModel()
+							?.validatePosition(
 								viewZoneData.positionBefore ||
 									viewZoneData.position,
 							),
@@ -138,7 +138,7 @@ export class InlineCompletionsHoverParticipant
 		}
 
 		const controller = InlineCompletionsController.get(this._editor);
-		if (controller && controller.shouldShowHoverAt(anchor.range)) {
+		if (controller?.shouldShowHoverAt(anchor.range)) {
 			return [new InlineCompletionsHover(this, anchor.range, controller)];
 		}
 		return [];
@@ -241,8 +241,8 @@ export class InlineCompletionsHoverParticipant
 					?.ghostText.read(reader);
 				if (ghostText) {
 					const lineText = this._editor
-						.getModel()!
-						.getLineContent(ghostText.lineNumber);
+						.getModel()
+						?.getLineContent(ghostText.lineNumber);
 					render(ghostText.renderForScreenReader(lineText));
 				} else {
 					dom.reset(hoverContentsElement);

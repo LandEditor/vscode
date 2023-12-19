@@ -768,7 +768,7 @@ export class InlineChatWidget {
 				(getTotalWidth(this._elements.editorToolbar) +
 					8) /* L/R-padding */;
 			dim = new Dimension(innerEditorWidth, dim.height);
-			if (!this._lastDim || !Dimension.equals(this._lastDim, dim)) {
+			if (!(this._lastDim && Dimension.equals(this._lastDim, dim))) {
 				this._lastDim = dim;
 				this._inputEditor.layout(
 					new Dimension(
@@ -1186,7 +1186,7 @@ export class InlineChatWidget {
 		if (isTempMessage) {
 			this._elements.statusLabel.dataset["state"] = "temp";
 		} else {
-			delete this._elements.statusLabel.dataset["state"];
+			this._elements.statusLabel.dataset["state"] = undefined;
 		}
 		this._onDidChangeHeight.fire();
 	}
@@ -1364,9 +1364,9 @@ export class InlineChatWidget {
 	}
 
 	showsAnyPreview() {
-		return (
-			!this._elements.previewDiff.classList.contains("hidden") ||
-			!this._elements.previewCreate.classList.contains("hidden")
+		return !(
+			this._elements.previewDiff.classList.contains("hidden") &&
+			this._elements.previewCreate.classList.contains("hidden")
 		);
 	}
 
@@ -1562,7 +1562,7 @@ export class InlineChatZoneWidget extends ZoneWidget {
 
 		// todo@jrieken listen ONLY when showing
 		const updateCursorIsAboveContextKey = () => {
-			if (!this.position || !this.editor.hasModel()) {
+			if (!(this.position && this.editor.hasModel())) {
 				this._ctxCursorPosition.reset();
 			} else if (
 				this.position.lineNumber ===
@@ -1711,7 +1711,7 @@ export class InlineChatZoneWidget extends ZoneWidget {
 	}
 
 	override hide(): void {
-		this.container!.classList.remove("inside-selection");
+		this.container?.classList.remove("inside-selection");
 		this._ctxVisible.reset();
 		this._ctxCursorPosition.reset();
 		this.widget.reset();

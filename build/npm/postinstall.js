@@ -13,7 +13,7 @@ const yarn = process.platform === "win32" ? "yarn.cmd" : "yarn";
 const root = path.dirname(path.dirname(__dirname));
 
 function run(command, args, opts) {
-	console.log("$ " + command + " " + args.join(" "));
+	console.log(`$ ${command} ${args.join(" ")}`);
 
 	const result = cp.spawnSync(command, args, opts);
 
@@ -50,7 +50,7 @@ function yarnInstall(dir, opts) {
 
 	if (opts.ignoreEngines) {
 		args.push("--ignore-engines");
-		delete opts.ignoreEngines;
+		opts.ignoreEngines = undefined;
 	}
 
 	if (

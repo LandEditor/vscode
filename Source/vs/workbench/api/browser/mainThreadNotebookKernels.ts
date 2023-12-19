@@ -364,8 +364,8 @@ export class MainThreadNotebookKernels
 			): AsyncIterableObject<VariablesResult> {
 				const requestId = `${handle}variables${that.variableRequestIndex++}`;
 				if (that.variableRequestMap.has(requestId)) {
-					return that.variableRequestMap.get(requestId)!
-						.asyncIterable;
+					return that.variableRequestMap.get(requestId)
+						?.asyncIterable;
 				}
 
 				const source = new AsyncIterableSource<VariablesResult>();

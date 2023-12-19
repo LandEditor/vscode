@@ -139,8 +139,10 @@ export class PreviewStrategy extends EditModeStrategy {
 			350,
 		)((_) => {
 			if (
-				!_session.textModelN.isDisposed() &&
-				!_session.textModel0.isDisposed()
+				!(
+					_session.textModelN.isDisposed() ||
+					_session.textModel0.isDisposed()
+				)
 			) {
 				this._ctxDocumentChanged.set(_session.hasChangedText);
 			}
@@ -1032,7 +1034,7 @@ export class LiveStrategy3 extends EditModeStrategy {
 					}),
 				);
 
-				const zoneLineNumber = this._zone.position!.lineNumber;
+				const zoneLineNumber = this._zone.position?.lineNumber;
 				const myDistance =
 					zoneLineNumber <= modifiedRange.startLineNumber
 						? modifiedRange.startLineNumber - zoneLineNumber

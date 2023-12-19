@@ -509,7 +509,7 @@ export class MergeEditorModel extends EditorModel {
 			const data = row.left[1];
 			const oldState = data.accepted.get();
 			if (!oldState.equals(newState)) {
-				if (!this.firstRun && !data.computedFromDiffing) {
+				if (!(this.firstRun || data.computedFromDiffing)) {
 					// Don't set this on the first run - the first run might be used to restore state.
 					data.computedFromDiffing = true;
 					data.previousNonDiffingState = oldState;
@@ -631,7 +631,7 @@ export class MergeEditorModel extends EditorModel {
 		const input1Handled = existingState.handledInput1.get();
 		const input2Handled = existingState.handledInput2.get();
 
-		if (!input1Handled || !input2Handled) {
+		if (!(input1Handled && input2Handled)) {
 			this.undoRedoService.pushElement(
 				new MarkAsHandledUndoRedoElement(
 					this.resultTextModel.uri,
@@ -682,7 +682,7 @@ export class MergeEditorModel extends EditorModel {
 	}
 
 	public isHandled(baseRange: ModifiedBaseRange): IObservable<boolean> {
-		return this.modifiedBaseRangeResultStates.get().get(baseRange)!.handled;
+		return this.modifiedBaseRangeResultStates.get().get(baseRange)?.handled;
 	}
 
 	public isInputHandled(

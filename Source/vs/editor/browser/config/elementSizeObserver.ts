@@ -83,10 +83,9 @@ export class ElementSizeObserver extends Disposable {
 			};
 
 			this._resizeObserver = new ResizeObserver((entries) => {
-				observeContentRect =
-					entries && entries[0] && entries[0].contentRect
-						? entries[0].contentRect
-						: null;
+				observeContentRect = entries?.[0]?.contentRect
+					? entries[0].contentRect
+					: null;
 				shouldObserve = true;
 				update();
 			});

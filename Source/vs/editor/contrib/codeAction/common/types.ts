@@ -124,7 +124,7 @@ export function filtersAction(
 
 	// Filter out actions by kind
 	if (filter.include) {
-		if (!actionKind || !filter.include.contains(actionKind)) {
+		if (!(actionKind && filter.include.contains(actionKind))) {
 			return false;
 		}
 	}

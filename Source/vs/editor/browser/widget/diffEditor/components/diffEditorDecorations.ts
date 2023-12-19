@@ -57,8 +57,8 @@ export class DiffEditorDecorations extends Disposable {
 		}
 
 		const movedTextToCompare = this._diffModel
-			.read(reader)!
-			.movedTextToCompare.read(reader);
+			.read(reader)
+			?.movedTextToCompare.read(reader);
 		const renderIndicators = this._options.renderIndicators.read(reader);
 		const showEmptyDecorations =
 			this._options.showEmptyDecorations.read(reader);
@@ -170,17 +170,17 @@ export class DiffEditorDecorations extends Disposable {
 			}
 		}
 		const activeMovedText = this._diffModel
-			.read(reader)!
-			.activeMovedText.read(reader);
+			.read(reader)
+			?.activeMovedText.read(reader);
 
 		for (const m of diff.movedTexts) {
 			originalDecorations.push({
 				range: m.lineRangeMapping.original.toInclusiveRange()!,
 				options: {
 					description: "moved",
-					blockClassName:
-						"movedOriginal" +
-						(m === activeMovedText ? " currentMove" : ""),
+					blockClassName: `movedOriginal${
+						m === activeMovedText ? " currentMove" : ""
+					}`,
 					blockPadding: [
 						MovedBlocksLinesFeature.movedCodeBlockPadding,
 						0,
@@ -194,9 +194,9 @@ export class DiffEditorDecorations extends Disposable {
 				range: m.lineRangeMapping.modified.toInclusiveRange()!,
 				options: {
 					description: "moved",
-					blockClassName:
-						"movedModified" +
-						(m === activeMovedText ? " currentMove" : ""),
+					blockClassName: `movedModified${
+						m === activeMovedText ? " currentMove" : ""
+					}`,
 					blockPadding: [4, 0, 4, 4],
 				},
 			});

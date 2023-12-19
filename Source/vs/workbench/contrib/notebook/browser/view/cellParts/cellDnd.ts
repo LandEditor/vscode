@@ -391,7 +391,7 @@ export class CellDragAndDropController extends Disposable {
 						count: 0,
 						cells: cellRangesToIndexes([range]).map((index) =>
 							cloneNotebookCellTextModel(
-								this.notebookEditor.cellAt(index)!.model,
+								this.notebookEditor.cellAt(index)?.model,
 							),
 						),
 					},
@@ -423,10 +423,12 @@ export class CellDragAndDropController extends Disposable {
 
 	private onCellDragLeave(event: CellDragEvent): void {
 		if (
-			!event.browserEvent.relatedTarget ||
-			!DOM.isAncestor(
-				event.browserEvent.relatedTarget as HTMLElement,
-				this.notebookEditor.getDomNode(),
+			!(
+				event.browserEvent.relatedTarget &&
+				DOM.isAncestor(
+					event.browserEvent.relatedTarget as HTMLElement,
+					this.notebookEditor.getDomNode(),
+				)
 			)
 		) {
 			this.setInsertIndicatorVisibility(false);
@@ -497,10 +499,10 @@ export class CellDragAndDropController extends Disposable {
 			this.draggedCells.forEach((cell) => (cell.dragging = true));
 
 			const dragImage = dragImageProvider();
-			cellRoot.parentElement!.appendChild(dragImage);
+			cellRoot.parentElement?.appendChild(dragImage);
 			event.dataTransfer.setDragImage(dragImage, 0, 0);
 			setTimeout(
-				() => cellRoot.parentElement!.removeChild(dragImage!),
+				() => cellRoot.parentElement?.removeChild(dragImage!),
 				0,
 			); // Comment this out to debug drag image layout
 		};
@@ -724,7 +726,7 @@ export function performCellDropEdits(
 	};
 	const finalFocus = { start: focusNewIdx, end: focusNewIdx + 1 };
 
-	editor.textModel!.applyEdits(
+	editor.textModel?.applyEdits(
 		edits,
 		true,
 		{

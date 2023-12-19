@@ -240,7 +240,7 @@ export class GlobalStateSynchroniser
 				? remoteUserData
 				: lastSyncUserData;
 		const lastSyncGlobalState: IGlobalState | null =
-			lastSyncUserData && lastSyncUserData.syncData
+			lastSyncUserData?.syncData
 				? JSON.parse(lastSyncUserData.syncData.content)
 				: null;
 
@@ -521,8 +521,8 @@ export class GlobalStateSynchroniser
 			await this.userDataProfileStorageService.readStorageData(
 				this.syncResource.profile,
 			);
-		const user: string[] = [],
-			machine: string[] = [];
+		const user: string[] = [];
+		const machine: string[] = [];
 		for (const [key, value] of storageData) {
 			if (value.target === StorageTarget.USER) {
 				user.push(key);
@@ -534,9 +534,10 @@ export class GlobalStateSynchroniser
 		const unregistered = lastSyncGlobalState?.storage
 			? Object.keys(lastSyncGlobalState.storage).filter(
 					(key) =>
-						!key.startsWith(argvStoragePrefx) &&
-						!registered.includes(key) &&
-						storageData.get(key) !== undefined,
+						!(
+							key.startsWith(argvStoragePrefx) ||
+							registered.includes(key)
+						) && storageData.get(key) !== undefined,
 			  )
 			: [];
 
@@ -764,7 +765,7 @@ export class GlobalStateInitializer extends AbstractInitializer {
 		}
 
 		if (Object.keys(storage).length) {
-			const storageEntries: Array<IStorageEntry> = [];
+			const storageEntries: IStorageEntry[] = [];
 			for (const key of Object.keys(storage)) {
 				storageEntries.push({
 					key,
@@ -801,11 +802,12 @@ export class UserDataSyncStoreTypeSynchronizer {
 		} catch (e) {
 			if (e instanceof UserDataSyncError) {
 				switch (e.code) {
-					case UserDataSyncErrorCode.PreconditionFailed:
+					case UserDataSyncErrorCode.PreconditionFailed: {
 						this.logService.info(
-							`Failed to synchronize UserDataSyncStoreType as there is a new remote version available. Synchronizing again...`,
+							"Failed to synchronize UserDataSyncStoreType as there is a new remote version available. Synchronizing again...",
 						);
 						return this.doSync(userDataSyncStoreType, syncHeaders);
+					}
 				}
 			}
 			throw e;

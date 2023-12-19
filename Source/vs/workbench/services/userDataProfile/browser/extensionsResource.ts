@@ -100,34 +100,36 @@ export class ExtensionsResourceInitializer
 		const extensionsToUninstall: ILocalExtension[] =
 			installedExtensions.filter(
 				(extension) =>
-					!extension.isBuiltin &&
-					!profileExtensions.some(({ identifier }) =>
-						areSameExtensions(identifier, extension.identifier),
+					!(
+						extension.isBuiltin ||
+						profileExtensions.some(({ identifier }) =>
+							areSameExtensions(identifier, extension.identifier),
+						)
 					),
 			);
 		for (const { extension, enable } of extensionsToEnableOrDisable) {
 			if (enable) {
 				this.logService.trace(
-					`Initializing Profile: Enabling extension...`,
+					"Initializing Profile: Enabling extension...",
 					extension.id,
 				);
 				await this.extensionEnablementService.enableExtension(
 					extension,
 				);
 				this.logService.info(
-					`Initializing Profile: Enabled extension...`,
+					"Initializing Profile: Enabled extension...",
 					extension.id,
 				);
 			} else {
 				this.logService.trace(
-					`Initializing Profile: Disabling extension...`,
+					"Initializing Profile: Disabling extension...",
 					extension.id,
 				);
 				await this.extensionEnablementService.disableExtension(
 					extension,
 				);
 				this.logService.info(
-					`Initializing Profile: Disabled extension...`,
+					"Initializing Profile: Disabled extension...",
 					extension.id,
 				);
 			}
@@ -160,7 +162,7 @@ export class ExtensionsResourceInitializer
 						)
 					) {
 						this.logService.trace(
-							`Initializing Profile: Installing extension...`,
+							"Initializing Profile: Installing extension...",
 							extension.identifier.id,
 							extension.version,
 						);
@@ -180,13 +182,13 @@ export class ExtensionsResourceInitializer
 							},
 						);
 						this.logService.info(
-							`Initializing Profile: Installed extension...`,
+							"Initializing Profile: Installed extension...",
 							extension.identifier.id,
 							extension.version,
 						);
 					} else {
 						this.logService.info(
-							`Initializing Profile: Skipped installing extension because it cannot be installed.`,
+							"Initializing Profile: Skipped installing extension because it cannot be installed.",
 							extension.identifier.id,
 						);
 					}
@@ -280,14 +282,16 @@ export class ExtensionsResource implements IProfileResource {
 				const extensionsToUninstall: ILocalExtension[] =
 					installedExtensions.filter(
 						(extension) =>
-							!extension.isBuiltin &&
-							!profileExtensions.some(({ identifier }) =>
-								areSameExtensions(
-									identifier,
-									extension.identifier,
-								),
-							) &&
-							!extension.isApplicationScoped,
+							!(
+								extension.isBuiltin ||
+								profileExtensions.some(({ identifier }) =>
+									areSameExtensions(
+										identifier,
+										extension.identifier,
+									),
+								) ||
+								extension.isApplicationScoped
+							),
 					);
 				for (const {
 					extension,

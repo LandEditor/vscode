@@ -469,14 +469,10 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 											position.delta(0, -length),
 											position,
 										);
-									if (
-										response &&
-										response.body &&
-										response.body.targets
-									) {
+									if (response?.body?.targets) {
 										response.body.targets.forEach(
 											(item) => {
-												if (item && item.label) {
+												if (item?.label) {
 													let insertTextRules:
 														| CompletionItemInsertTextRule
 														| undefined = undefined;
@@ -496,13 +492,11 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 																: 0;
 														const placeholder =
 															selectionLength > 0
-																? "${1:" +
-																  insertText.substring(
+																? `\${1:${insertText.substring(
 																		item.selectionStart,
 																		item.selectionStart +
 																			selectionLength,
-																  ) +
-																  "}$0"
+																  )}}$0`
 																: "$0";
 														insertText =
 															insertText.substring(
@@ -565,11 +559,9 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 												insertText: h,
 												kind: CompletionItemKind.Text,
 												range: computeRange(h.length),
-												sortText:
-													"ZZZ" +
-													String(
-														history.length - i,
-													).padStart(idxLength, "0"),
+												sortText: `ZZZ${String(
+													history.length - i,
+												).padStart(idxLength, "0")}`,
 											}),
 										);
 									}
@@ -673,19 +665,19 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 					? "var(--monaco-monospace-font)"
 					: this.replOptions.replConfiguration.fontFamily;
 			this.container.style.setProperty(
-				`--vscode-repl-font-family`,
+				"--vscode-repl-font-family",
 				cssFontFamily,
 			);
 			this.container.style.setProperty(
-				`--vscode-repl-font-size`,
+				"--vscode-repl-font-size",
 				`${this.replOptions.replConfiguration.fontSize}px`,
 			);
 			this.container.style.setProperty(
-				`--vscode-repl-font-size-for-twistie`,
+				"--vscode-repl-font-size-for-twistie",
 				`${this.replOptions.replConfiguration.fontSizeForTwistie}px`,
 			);
 			this.container.style.setProperty(
-				`--vscode-repl-line-height`,
+				"--vscode-repl-line-height",
 				this.replOptions.replConfiguration.cssLineHeight,
 			);
 
@@ -735,7 +727,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 			this.replElementsChangeListener = session.onDidChangeReplElements(
 				() => {
 					this.refreshReplElements(
-						session!.getReplElements().length === 0,
+						session?.getReplElements().length === 0,
 					);
 				},
 			);
@@ -907,9 +899,9 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 								!autoExpanded.has(element.getId())
 							) {
 								autoExpanded.add(element.getId());
-								await this.tree!.expand(element);
+								await this.tree?.expand(element);
 							}
-							if (!this.tree!.isCollapsed(element)) {
+							if (!this.tree?.isCollapsed(element)) {
 								// Repl groups can have children which are repl groups thus we might need to expand those as well
 								await autoExpandElements(element.getChildren());
 							}
@@ -1082,8 +1074,9 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 		dom.append(
 			this.replInputContainer,
 			$(
-				".repl-input-chevron" +
-					ThemeIcon.asCSSSelector(debugConsoleEvaluationPrompt),
+				`.repl-input-chevron${ThemeIcon.asCSSSelector(
+					debugConsoleEvaluationPrompt,
+				)}`,
 			),
 		);
 
@@ -1446,7 +1439,7 @@ registerEditorAction(ReplCopyAllAction);
 registerEditorAction(FilterReplAction);
 
 class SelectReplActionViewItem extends FocusSessionActionViewItem {
-	protected override getSessions(): ReadonlyArray<IDebugSession> {
+	protected override getSessions(): readonly IDebugSession[] {
 		return this.debugService
 			.getModel()
 			.getSessions(true)
@@ -1699,9 +1692,11 @@ registerAction2(
 			const stackFrame = debugService.getViewModel().focusedStackFrame;
 			const session = debugService.getViewModel().focusedSession;
 			if (
-				!stackFrame ||
-				!session ||
-				!session.capabilities.supportsClipboardContext
+				!(
+					stackFrame &&
+					session &&
+					session.capabilities.supportsClipboardContext
+				)
 			) {
 				return;
 			}

@@ -560,7 +560,7 @@ export class CodeEditorWidget
 
 		this._domElement = domElement;
 		this._overflowWidgetsDomNode = options.overflowWidgetsDomNode;
-		delete options.overflowWidgetsDomNode;
+		options.overflowWidgetsDomNode = undefined;
 		this._id = ++EDITOR_ID;
 		this._decorationTypeKeysToIds = {};
 		this._decorationTypeSubtypes = {};
@@ -568,7 +568,7 @@ export class CodeEditorWidget
 
 		this._configuration = this._register(
 			this._createConfiguration(
-				codeEditorWidgetOptions.isSimpleWidget || false,
+				codeEditorWidgetOptions.isSimpleWidget,
 				options,
 				accessibilityService
 			)
@@ -736,7 +736,7 @@ export class CodeEditorWidget
 	}
 
 	public getId(): string {
-		return this.getEditorType() + ":" + this._id;
+		return `${this.getEditorType()}:${this._id}`;
 	}
 
 	public getEditorType(): string {
@@ -807,16 +807,11 @@ export class CodeEditorWidget
 			return "";
 		}
 
-		const preserveBOM: boolean =
-			options && options.preserveBOM ? true : false;
+		const preserveBOM: boolean = options?.preserveBOM ? true : false;
 		let eolPreference = EndOfLinePreference.TextDefined;
-		if (options && options.lineEnding && options.lineEnding === "\n") {
+		if (options?.lineEnding && options.lineEnding === "\n") {
 			eolPreference = EndOfLinePreference.LF;
-		} else if (
-			options &&
-			options.lineEnding &&
-			options.lineEnding === "\r\n"
-		) {
+		} else if (options?.lineEnding && options.lineEnding === "\r\n") {
 			eolPreference = EndOfLinePreference.CRLF;
 		}
 		return this._modelData.model.getValue(eolPreference, preserveBOM);
@@ -877,7 +872,7 @@ export class CodeEditorWidget
 			for (const decorationType in this._decorationTypeSubtypes) {
 				const subTypes = this._decorationTypeSubtypes[decorationType];
 				for (const subType in subTypes) {
-					this._removeDecorationType(decorationType + "-" + subType);
+					this._removeDecorationType(`${decorationType}-${subType}`);
 				}
 			}
 			this._decorationTypeSubtypes = {};
@@ -1220,7 +1215,7 @@ export class CodeEditorWidget
 		const isSelection = Selection.isISelection(something);
 		const isRange = Range.isIRange(something);
 
-		if (!isSelection && !isRange) {
+		if (!(isSelection || isRange)) {
 			throw new Error("Invalid arguments");
 		}
 
@@ -1530,15 +1525,11 @@ export class CodeEditorWidget
 	}
 
 	public restoreViewState(s: editorCommon.IEditorViewState | null): void {
-		if (!this._modelData || !this._modelData.hasRealView) {
+		if (!this._modelData?.hasRealView) {
 			return;
 		}
 		const codeEditorState = s as editorCommon.ICodeEditorViewState | null;
-		if (
-			codeEditorState &&
-			codeEditorState.cursorState &&
-			codeEditorState.viewState
-		) {
+		if (codeEditorState?.cursorState && codeEditorState.viewState) {
 			const cursorState = <any>codeEditorState.cursorState;
 			if (Array.isArray(cursorState)) {
 				if (cursorState.length > 0) {
@@ -1606,12 +1597,14 @@ export class CodeEditorWidget
 		payload = payload || {};
 
 		switch (handlerId) {
-			case editorCommon.Handler.CompositionStart:
+			case editorCommon.Handler.CompositionStart: {
 				this._startComposition();
 				return;
-			case editorCommon.Handler.CompositionEnd:
+			}
+			case editorCommon.Handler.CompositionEnd: {
 				this._endComposition(source);
 				return;
+			}
 			case editorCommon.Handler.Type: {
 				const args = <Partial<editorCommon.TypePayload>>payload;
 				this._type(source, args.text || "");
@@ -1648,15 +1641,16 @@ export class CodeEditorWidget
 				this._paste(
 					source,
 					args.text || "",
-					args.pasteOnNewLine || false,
+					args.pasteOnNewLine,
 					args.multicursorText || null,
 					args.mode || null,
 				);
 				return;
 			}
-			case editorCommon.Handler.Cut:
+			case editorCommon.Handler.Cut: {
 				this._cut(source);
 				return;
+			}
 		}
 
 		const action = this.getAction(handlerId);
@@ -1959,10 +1953,12 @@ export class CodeEditorWidget
 				);
 				// The fact that `decorationTypeKey` appears in the typeKey has no influence
 				// it is just a mechanism to get predictable and unique keys (repeatable for the same options and unique across clients)
-				typeKey = decorationTypeKey + "-" + subType;
+				typeKey = `${decorationTypeKey}-${subType}`;
 				if (
-					!oldDecorationsSubTypes[subType] &&
-					!newDecorationsSubTypes[subType]
+					!(
+						oldDecorationsSubTypes[subType] ||
+						newDecorationsSubTypes[subType]
+					)
 				) {
 					// decoration type did not exist before, register new one
 					this._registerDecorationType(
@@ -1990,7 +1986,7 @@ export class CodeEditorWidget
 		// remove decoration sub types that are no longer used, deregister decoration type if necessary
 		for (const subType in oldDecorationsSubTypes) {
 			if (!newDecorationsSubTypes[subType]) {
-				this._removeDecorationType(decorationTypeKey + "-" + subType);
+				this._removeDecorationType(`${decorationTypeKey}-${subType}`);
 			}
 		}
 
@@ -2009,7 +2005,7 @@ export class CodeEditorWidget
 		const oldDecorationsSubTypes =
 			this._decorationTypeSubtypes[decorationTypeKey] || {};
 		for (const subType in oldDecorationsSubTypes) {
-			this._removeDecorationType(decorationTypeKey + "-" + subType);
+			this._removeDecorationType(`${decorationTypeKey}-${subType}`);
 		}
 		this._decorationTypeSubtypes[decorationTypeKey] = {};
 
@@ -2053,7 +2049,7 @@ export class CodeEditorWidget
 	public createOverviewRuler(
 		cssClassName: string,
 	): editorBrowser.IOverviewRuler | null {
-		if (!this._modelData || !this._modelData.hasRealView) {
+		if (!this._modelData?.hasRealView) {
 			return null;
 		}
 		return this._modelData.view.createOverviewRuler(cssClassName);
@@ -2064,7 +2060,7 @@ export class CodeEditorWidget
 	}
 
 	public getDomNode(): HTMLElement | null {
-		if (!this._modelData || !this._modelData.hasRealView) {
+		if (!this._modelData?.hasRealView) {
 			return null;
 		}
 		return this._modelData.view.domNode.domNode;
@@ -2073,14 +2069,14 @@ export class CodeEditorWidget
 	public delegateVerticalScrollbarPointerDown(
 		browserEvent: PointerEvent,
 	): void {
-		if (!this._modelData || !this._modelData.hasRealView) {
+		if (!this._modelData?.hasRealView) {
 			return;
 		}
 		this._modelData.view.delegateVerticalScrollbarPointerDown(browserEvent);
 	}
 
 	public delegateScrollFromMouseWheelEvent(browserEvent: IMouseWheelEvent) {
-		if (!this._modelData || !this._modelData.hasRealView) {
+		if (!this._modelData?.hasRealView) {
 			return;
 		}
 		this._modelData.view.delegateScrollFromMouseWheelEvent(browserEvent);
@@ -2094,21 +2090,21 @@ export class CodeEditorWidget
 	}
 
 	public focus(): void {
-		if (!this._modelData || !this._modelData.hasRealView) {
+		if (!this._modelData?.hasRealView) {
 			return;
 		}
 		this._modelData.view.focus();
 	}
 
 	public hasTextFocus(): boolean {
-		if (!this._modelData || !this._modelData.hasRealView) {
+		if (!this._modelData?.hasRealView) {
 			return false;
 		}
 		return this._modelData.view.isFocused();
 	}
 
 	public hasWidgetFocus(): boolean {
-		return this._focusTracker && this._focusTracker.hasFocus();
+		return this._focusTracker?.hasFocus();
 	}
 
 	public addContentWidget(widget: editorBrowser.IContentWidget): void {
@@ -2119,14 +2115,13 @@ export class CodeEditorWidget
 
 		if (this._contentWidgets.hasOwnProperty(widget.getId())) {
 			console.warn(
-				"Overwriting a content widget with the same id:" +
-					widget.getId(),
+				`Overwriting a content widget with the same id:${widget.getId()}`,
 			);
 		}
 
 		this._contentWidgets[widget.getId()] = widgetData;
 
-		if (this._modelData && this._modelData.hasRealView) {
+		if (this._modelData?.hasRealView) {
 			this._modelData.view.addContentWidget(widgetData);
 		}
 	}
@@ -2136,7 +2131,7 @@ export class CodeEditorWidget
 		if (this._contentWidgets.hasOwnProperty(widgetId)) {
 			const widgetData = this._contentWidgets[widgetId];
 			widgetData.position = widget.getPosition();
-			if (this._modelData && this._modelData.hasRealView) {
+			if (this._modelData?.hasRealView) {
 				this._modelData.view.layoutContentWidget(widgetData);
 			}
 		}
@@ -2147,7 +2142,7 @@ export class CodeEditorWidget
 		if (this._contentWidgets.hasOwnProperty(widgetId)) {
 			const widgetData = this._contentWidgets[widgetId];
 			delete this._contentWidgets[widgetId];
-			if (this._modelData && this._modelData.hasRealView) {
+			if (this._modelData?.hasRealView) {
 				this._modelData.view.removeContentWidget(widgetData);
 			}
 		}
@@ -2164,7 +2159,7 @@ export class CodeEditorWidget
 		}
 
 		this._overlayWidgets[widget.getId()] = widgetData;
-		if (this._modelData && this._modelData.hasRealView) {
+		if (this._modelData?.hasRealView) {
 			this._modelData.view.addOverlayWidget(widgetData);
 		}
 	}
@@ -2174,7 +2169,7 @@ export class CodeEditorWidget
 		if (this._overlayWidgets.hasOwnProperty(widgetId)) {
 			const widgetData = this._overlayWidgets[widgetId];
 			widgetData.position = widget.getPosition();
-			if (this._modelData && this._modelData.hasRealView) {
+			if (this._modelData?.hasRealView) {
 				this._modelData.view.layoutOverlayWidget(widgetData);
 			}
 		}
@@ -2185,7 +2180,7 @@ export class CodeEditorWidget
 		if (this._overlayWidgets.hasOwnProperty(widgetId)) {
 			const widgetData = this._overlayWidgets[widgetId];
 			delete this._overlayWidgets[widgetId];
-			if (this._modelData && this._modelData.hasRealView) {
+			if (this._modelData?.hasRealView) {
 				this._modelData.view.removeOverlayWidget(widgetData);
 			}
 		}
@@ -2205,7 +2200,7 @@ export class CodeEditorWidget
 
 		this._glyphMarginWidgets[widget.getId()] = widgetData;
 
-		if (this._modelData && this._modelData.hasRealView) {
+		if (this._modelData?.hasRealView) {
 			this._modelData.view.addGlyphMarginWidget(widgetData);
 		}
 	}
@@ -2217,7 +2212,7 @@ export class CodeEditorWidget
 		if (this._glyphMarginWidgets.hasOwnProperty(widgetId)) {
 			const widgetData = this._glyphMarginWidgets[widgetId];
 			widgetData.position = widget.getPosition();
-			if (this._modelData && this._modelData.hasRealView) {
+			if (this._modelData?.hasRealView) {
 				this._modelData.view.layoutGlyphMarginWidget(widgetData);
 			}
 		}
@@ -2230,7 +2225,7 @@ export class CodeEditorWidget
 		if (this._glyphMarginWidgets.hasOwnProperty(widgetId)) {
 			const widgetData = this._glyphMarginWidgets[widgetId];
 			delete this._glyphMarginWidgets[widgetId];
-			if (this._modelData && this._modelData.hasRealView) {
+			if (this._modelData?.hasRealView) {
 				this._modelData.view.removeGlyphMarginWidget(widgetData);
 			}
 		}
@@ -2239,7 +2234,7 @@ export class CodeEditorWidget
 	public changeViewZones(
 		callback: (accessor: editorBrowser.IViewZoneChangeAccessor) => void,
 	): void {
-		if (!this._modelData || !this._modelData.hasRealView) {
+		if (!this._modelData?.hasRealView) {
 			return;
 		}
 		this._modelData.view.change(callback);
@@ -2249,7 +2244,7 @@ export class CodeEditorWidget
 		clientX: number,
 		clientY: number,
 	): editorBrowser.IMouseTarget | null {
-		if (!this._modelData || !this._modelData.hasRealView) {
+		if (!this._modelData?.hasRealView) {
 			return null;
 		}
 		return this._modelData.view.getTargetAtClientPoint(clientX, clientY);
@@ -2258,7 +2253,7 @@ export class CodeEditorWidget
 	public getScrolledVisiblePosition(
 		rawPosition: IPosition,
 	): { top: number; left: number; height: number } | null {
-		if (!this._modelData || !this._modelData.hasRealView) {
+		if (!this._modelData?.hasRealView) {
 			return null;
 		}
 
@@ -2290,21 +2285,21 @@ export class CodeEditorWidget
 	}
 
 	public getOffsetForColumn(lineNumber: number, column: number): number {
-		if (!this._modelData || !this._modelData.hasRealView) {
+		if (!this._modelData?.hasRealView) {
 			return -1;
 		}
 		return this._modelData.view.getOffsetForColumn(lineNumber, column);
 	}
 
 	public render(forceRedraw = false): void {
-		if (!this._modelData || !this._modelData.hasRealView) {
+		if (!this._modelData?.hasRealView) {
 			return;
 		}
 		this._modelData.view.render(true, forceRedraw);
 	}
 
 	public setAriaOptions(options: editorBrowser.IEditorAriaOptions): void {
-		if (!this._modelData || !this._modelData.hasRealView) {
+		if (!this._modelData?.hasRealView) {
 			return;
 		}
 		this._modelData.view.setAriaOptions(options);
@@ -2375,24 +2370,30 @@ export class CodeEditorWidget
 		listenersToRemove.push(
 			viewModel.onEvent((e) => {
 				switch (e.kind) {
-					case OutgoingViewModelEventKind.ContentSizeChanged:
+					case OutgoingViewModelEventKind.ContentSizeChanged: {
 						this._onDidContentSizeChange.fire(e);
 						break;
-					case OutgoingViewModelEventKind.FocusChanged:
+					}
+					case OutgoingViewModelEventKind.FocusChanged: {
 						this._editorTextFocus.setValue(e.hasFocus);
 						break;
-					case OutgoingViewModelEventKind.ScrollChanged:
+					}
+					case OutgoingViewModelEventKind.ScrollChanged: {
 						this._onDidScrollChange.fire(e);
 						break;
-					case OutgoingViewModelEventKind.ViewZonesChanged:
+					}
+					case OutgoingViewModelEventKind.ViewZonesChanged: {
 						this._onDidChangeViewZones.fire();
 						break;
-					case OutgoingViewModelEventKind.HiddenAreasChanged:
+					}
+					case OutgoingViewModelEventKind.HiddenAreasChanged: {
 						this._onDidChangeHiddenAreas.fire();
 						break;
-					case OutgoingViewModelEventKind.ReadOnlyEditAttempt:
+					}
+					case OutgoingViewModelEventKind.ReadOnlyEditAttempt: {
 						this._onDidAttemptReadOnlyEdit.fire();
 						break;
+					}
 					case OutgoingViewModelEventKind.CursorStateChanged: {
 						if (e.reachedMaxCursorCount) {
 							const multiCursorLimit = this.getOption(
@@ -2463,30 +2464,36 @@ export class CodeEditorWidget
 
 						break;
 					}
-					case OutgoingViewModelEventKind.ModelDecorationsChanged:
+					case OutgoingViewModelEventKind.ModelDecorationsChanged: {
 						this._onDidChangeModelDecorations.fire(e.event);
 						break;
-					case OutgoingViewModelEventKind.ModelLanguageChanged:
+					}
+					case OutgoingViewModelEventKind.ModelLanguageChanged: {
 						this._domElement.setAttribute(
 							"data-mode-id",
 							model.getLanguageId(),
 						);
 						this._onDidChangeModelLanguage.fire(e.event);
 						break;
-					case OutgoingViewModelEventKind.ModelLanguageConfigurationChanged:
+					}
+					case OutgoingViewModelEventKind.ModelLanguageConfigurationChanged: {
 						this._onDidChangeModelLanguageConfiguration.fire(
 							e.event,
 						);
 						break;
-					case OutgoingViewModelEventKind.ModelContentChanged:
+					}
+					case OutgoingViewModelEventKind.ModelContentChanged: {
 						this._onDidChangeModelContent.fire(e.event);
 						break;
-					case OutgoingViewModelEventKind.ModelOptionsChanged:
+					}
+					case OutgoingViewModelEventKind.ModelOptionsChanged: {
 						this._onDidChangeModelOptions.fire(e.event);
 						break;
-					case OutgoingViewModelEventKind.ModelTokensChanged:
+					}
+					case OutgoingViewModelEventKind.ModelTokensChanged: {
 						this._onDidChangeModelTokens.fire(e.event);
 						break;
+					}
 				}
 			}),
 		);
@@ -2953,8 +2960,8 @@ class EditorContextKeysManager extends Disposable {
 
 	private _updateFromModel(): void {
 		const model = this._editor.getModel();
-		this._canUndo.set(Boolean(model && model.canUndo()));
-		this._canRedo.set(Boolean(model && model.canRedo()));
+		this._canUndo.set(Boolean(model?.canUndo()));
+		this._canRedo.set(Boolean(model?.canRedo()));
 	}
 }
 

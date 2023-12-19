@@ -138,7 +138,7 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
 	}
 
 	public setOptions(options: ISelectOptionItem[], selected?: number): void {
-		if (!this.options || !arrays.equals(this.options, options)) {
+		if (!(this.options && arrays.equals(this.options, options))) {
 			this.options = options;
 			this.selectElement.options.length = 0;
 

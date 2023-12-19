@@ -351,7 +351,7 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 	}
 
 	protected override _onTitleClick(e: IMouseEvent): void {
-		if (this._preview && this._preview.getModel()) {
+		if (this._preview?.getModel()) {
 			this._onDidSelectReference.fire({
 				element: this._getFocusedReference(),
 				kind: e.ctrlKey || e.metaKey || e.altKey ? "side" : "open",
@@ -623,7 +623,7 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 		);
 
 		// make sure things are rendered
-		this.container!.classList.add("results-loaded");
+		this.container?.classList.add("results-loaded");
 		dom.show(this._treeContainer);
 		dom.show(this._previewContainer);
 		this._splitView.layout(this._dim.width);

@@ -52,7 +52,7 @@ export function getCSSMode(
 			return cssLanguageService.doValidation(
 				embedded,
 				cssStylesheets.get(embedded),
-				settings && settings.css,
+				settings?.css,
 			) as Diagnostic[];
 		},
 		async doComplete(

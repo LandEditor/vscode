@@ -63,12 +63,12 @@ export class ScrollState implements IScrollDimensions, IScrollPosition {
 		scrollTop: number,
 	) {
 		if (this._forceIntegerValues) {
-			width = width | 0;
-			scrollWidth = scrollWidth | 0;
-			scrollLeft = scrollLeft | 0;
-			height = height | 0;
-			scrollHeight = scrollHeight | 0;
-			scrollTop = scrollTop | 0;
+			width |= 0;
+			scrollWidth |= 0;
+			scrollLeft |= 0;
+			height |= 0;
+			scrollHeight |= 0;
+			scrollTop |= 0;
 		}
 
 		this.rawScrollLeft = scrollLeft; // before validation
@@ -532,7 +532,8 @@ export class SmoothScrollingOperation {
 	): IAnimation {
 		const delta = Math.abs(from - to);
 		if (delta > 2.5 * viewportSize) {
-			let stop1: number, stop2: number;
+			let stop1: number;
+			let stop2: number;
 			if (from < to) {
 				// scroll to 75% of the viewportSize
 				stop1 = from + 0.75 * viewportSize;
@@ -600,7 +601,7 @@ export class SmoothScrollingOperation {
 		duration: number,
 	): SmoothScrollingOperation {
 		// +10 / -10 : pretend the animation already started for a quicker response to a scroll request
-		duration = duration + 10;
+		duration += 10;
 		const startTime = Date.now() - 10;
 
 		return new SmoothScrollingOperation(from, to, startTime, duration);
@@ -608,7 +609,7 @@ export class SmoothScrollingOperation {
 }
 
 function easeInCubic(t: number) {
-	return Math.pow(t, 3);
+	return t ** 3;
 }
 
 function easeOutCubic(t: number) {

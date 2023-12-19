@@ -36,5 +36,5 @@ function findNodeModulesFiles(location, inNodeModules, result) {
 }
 const result = [];
 findNodeModulesFiles("", false, result);
-fs.writeFileSync(process.argv[2], result.join("\n") + "\n");
+fs.writeFileSync(process.argv[2], `${result.join("\n")}\n`);
 //# sourceMappingURL=listNodeModules.js.map

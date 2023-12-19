@@ -419,7 +419,7 @@ export class TerminalProcessManager
 			// they're connected to the remote.
 			this.userHome = this._pathService.resolvedUserHome?.fsPath;
 			this.os = OS;
-			if (!!this.remoteAuthority) {
+			if (this.remoteAuthority) {
 				const userHomeUri = await this._pathService.userHome();
 				this.userHome = userHomeUri.path;
 				const remoteEnv =
@@ -455,7 +455,7 @@ export class TerminalProcessManager
 					} else {
 						// Warn and just create a new terminal if attach failed for some reason
 						this._logService.warn(
-							`Attach to process failed for terminal`,
+							"Attach to process failed for terminal",
 							shellLaunchConfig.attachPersistentProcess,
 						);
 						shellLaunchConfig.attachPersistentProcess = undefined;
@@ -506,7 +506,7 @@ export class TerminalProcessManager
 							e?.message === "Could not fetch remote environment"
 						) {
 							this._logService.trace(
-								`Could not fetch remote environment, silently failing`,
+								"Could not fetch remote environment, silently failing",
 							);
 							return undefined;
 						}
@@ -531,7 +531,7 @@ export class TerminalProcessManager
 					} else {
 						// Warn and just create a new terminal if attach failed for some reason
 						this._logService.warn(
-							`Attach to process failed for terminal`,
+							"Attach to process failed for terminal",
 							shellLaunchConfig.attachPersistentProcess,
 						);
 						shellLaunchConfig.attachPersistentProcess = undefined;
@@ -590,17 +590,18 @@ export class TerminalProcessManager
 
 				if (this._preLaunchInputQueue.length > 0 && this._process) {
 					// Send any queued data that's waiting
-					newProcess!.input(this._preLaunchInputQueue.join(""));
+					newProcess?.input(this._preLaunchInputQueue.join(""));
 					this._preLaunchInputQueue.length = 0;
 				}
 			}),
 			newProcess.onProcessExit((exitCode) => this._onExit(exitCode)),
 			newProcess.onDidChangeProperty(({ type, value }) => {
 				switch (type) {
-					case ProcessPropertyType.HasChildProcesses:
+					case ProcessPropertyType.HasChildProcesses: {
 						this._hasChildProcesses = value;
 						break;
-					case ProcessPropertyType.FailedShellIntegrationActivation:
+					}
+					case ProcessPropertyType.FailedShellIntegrationActivation: {
 						this._telemetryService?.publicLog2<
 							{},
 							{
@@ -611,6 +612,7 @@ export class TerminalProcessManager
 							"terminal/shellIntegrationActivationFailureCustomArgs",
 						);
 						break;
+					}
 				}
 				this._onDidChangeProperty.fire({ type, value });
 			}),
@@ -720,9 +722,11 @@ export class TerminalProcessManager
 			baseEnv,
 		);
 		if (
-			!this._isDisposed &&
-			!shellLaunchConfig.strictEnv &&
-			!shellLaunchConfig.hideFromUser
+			!(
+				this._isDisposed ||
+				shellLaunchConfig.strictEnv ||
+				shellLaunchConfig.hideFromUser
+			)
 		) {
 			this._extEnvironmentVariableCollection =
 				this._environmentVariableService.mergedCollection;
@@ -905,7 +909,7 @@ export class TerminalProcessManager
 
 	async getBackendOS(): Promise<OperatingSystem> {
 		let os = OS;
-		if (!!this.remoteAuthority) {
+		if (this.remoteAuthority) {
 			const remoteEnv = await this._remoteAgentService.getEnvironment();
 			if (!remoteEnv) {
 				throw new Error(
@@ -943,7 +947,7 @@ export class TerminalProcessManager
 		}
 		// The child process could already be terminated
 		try {
-			this._process!.resize(cols, rows);
+			this._process?.resize(cols, rows);
 		} catch (error) {
 			// We tried to write to a closed pipe / channel.
 			if (
@@ -1032,7 +1036,7 @@ export class TerminalProcessManager
 	private _onEnvironmentVariableCollectionChange(
 		newCollection: IMergedEnvironmentVariableCollection,
 	): void {
-		const diff = this._extEnvironmentVariableCollection!.diff(
+		const diff = this._extEnvironmentVariableCollection?.diff(
 			newCollection,
 			{ workspaceFolder: this._cwdWorkspaceFolder },
 		);
@@ -1135,7 +1139,7 @@ class SeamlessRelaunchDataFilter extends Disposable {
 		// - there's no recorder, which means it's a new terminal
 		// - this is not a reset, so seamless relaunch isn't necessary
 		// - seamless relaunch is disabled because the terminal has accepted input
-		if (!this._firstRecorder || !reset || this._disableSeamlessRelaunch) {
+		if (!(this._firstRecorder && reset) || this._disableSeamlessRelaunch) {
 			this._firstDisposable?.dispose();
 			[this._firstRecorder, this._firstDisposable] =
 				this._createRecorder(process);
@@ -1204,11 +1208,11 @@ class SeamlessRelaunchDataFilter extends Disposable {
 		// Re-write the terminal if the data differs
 		if (firstData === secondData) {
 			this._logService.trace(
-				`Seamless terminal relaunch - identical content`,
+				"Seamless terminal relaunch - identical content",
 			);
 		} else {
 			this._logService.trace(
-				`Seamless terminal relaunch - resetting content`,
+				"Seamless terminal relaunch - resetting content",
 			);
 			// Fire full reset (RIS) followed by the new data so the update happens in the same frame
 			this._onProcessData.fire({
@@ -1219,7 +1223,7 @@ class SeamlessRelaunchDataFilter extends Disposable {
 
 		// Set up the new data listener
 		this._dataListener?.dispose();
-		this._dataListener = this._activeProcess!.onProcessData((e) =>
+		this._dataListener = this._activeProcess?.onProcessData((e) =>
 			this._onProcessData.fire(e),
 		);
 

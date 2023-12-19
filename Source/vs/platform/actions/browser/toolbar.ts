@@ -155,8 +155,10 @@ export class WorkbenchToolBar extends ToolBar {
 			for (let i = 0; i < primary.length; i++) {
 				const action = primary[i];
 				if (
-					!(action instanceof MenuItemAction) &&
-					!(action instanceof SubmenuItemAction)
+					!(
+						action instanceof MenuItemAction ||
+						action instanceof SubmenuItemAction
+					)
 				) {
 					// console.warn(`Action ${action.id}/${action.label} is not a MenuItemAction`);
 					continue;

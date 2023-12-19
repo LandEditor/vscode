@@ -140,8 +140,10 @@ export class OutlineGroup extends TreeElement {
 	): OutlineElement | undefined {
 		for (const [, item] of children) {
 			if (
-				!item.symbol.range ||
-				!Range.containsPosition(item.symbol.range, position)
+				!(
+					item.symbol.range &&
+					Range.containsPosition(item.symbol.range, position)
+				)
 			) {
 				continue;
 			}

@@ -114,7 +114,7 @@ export class NodeReader {
 			if (nextChildIdx !== -1) {
 				this.nextNodes.push(parent.getChild(nextChildIdx)!);
 				this.offsets.push(
-					lengthAdd(currentOffset!, currentNode!.length),
+					lengthAdd(currentOffset!, currentNode?.length),
 				);
 				this.idxs[this.idxs.length - 1] = nextChildIdx;
 				break;

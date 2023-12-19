@@ -109,7 +109,7 @@ export class ResourceTree<T extends NonNullable<any>, C> {
 
 		while (true) {
 			const name = iterator.value();
-			path = path + "/" + name;
+			path = `${path}/${name}`;
 
 			let child = node.get(name);
 
@@ -178,7 +178,7 @@ export class ResourceTree<T extends NonNullable<any>, C> {
 			const name = iterator.value();
 			const child = node.get(name);
 
-			if (!child || !iterator.hasNext()) {
+			if (!(child && iterator.hasNext())) {
 				return child;
 			}
 

@@ -98,13 +98,13 @@ class ServerReadyDetector extends vscode.Disposable {
 	}
 
 	static async startListeningTerminalData() {
-		if (!this.terminalDataListener) {
-			this.terminalDataListener = vscode.window.onDidWriteTerminalData(
-				async (e) => {
+		if (!ServerReadyDetector.terminalDataListener) {
+			ServerReadyDetector.terminalDataListener =
+				vscode.window.onDidWriteTerminalData(async (e) => {
 					// first find the detector with a matching pid
 					const pid = await e.terminal.processId;
 					const str = removeAnsiEscapeCodes(e.data);
-					for (const [, detector] of this.detectors) {
+					for (const [, detector] of ServerReadyDetector.detectors) {
 						if (detector.shellPid === pid) {
 							detector.detectPattern(str);
 							return;
@@ -112,13 +112,12 @@ class ServerReadyDetector extends vscode.Disposable {
 					}
 
 					// if none found, try all detectors until one matches
-					for (const [, detector] of this.detectors) {
+					for (const [, detector] of ServerReadyDetector.detectors) {
 						if (detector.detectPattern(str)) {
 							return;
 						}
 					}
-				},
-			);
+				});
 		}
 	}
 
@@ -215,19 +214,22 @@ class ServerReadyDetector extends vscode.Disposable {
 	) {
 		const args: ServerReadyAction = session.configuration.serverReadyAction;
 		switch (args.action || "openExternally") {
-			case "openExternally":
+			case "openExternally": {
 				await vscode.env.openExternal(vscode.Uri.parse(uri));
 				break;
+			}
 
-			case "debugWithChrome":
+			case "debugWithChrome": {
 				await this.debugWithBrowser("pwa-chrome", session, uri);
 				break;
+			}
 
-			case "debugWithEdge":
+			case "debugWithEdge": {
 				await this.debugWithBrowser("pwa-msedge", session, uri);
 				break;
+			}
 
-			case "startDebugging":
+			case "startDebugging": {
 				if (args.config) {
 					await this.startDebugSession(
 						session,
@@ -241,6 +243,7 @@ class ServerReadyDetector extends vscode.Disposable {
 					);
 				}
 				break;
+			}
 
 			default:
 				// not supported
@@ -454,13 +457,14 @@ function startTrackerForType(context: vscode.ExtensionContext, type: string) {
 								switch (m.body.category) {
 									case "console":
 									case "stderr":
-									case "stdout":
+									case "stdout": {
 										if (m.body.output) {
 											detector.detectPattern(
 												m.body.output,
 											);
 										}
 										break;
+									}
 									default:
 										break;
 								}

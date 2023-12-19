@@ -68,7 +68,7 @@ export interface ITreeShakingResult {
 
 function printDiagnostics(
 	options: ITreeShakingOptions,
-	diagnostics: ReadonlyArray<ts.Diagnostic>,
+	diagnostics: readonly ts.Diagnostic[],
 ): void {
 	for (const diag of diagnostics) {
 		let result = "";
@@ -81,7 +81,7 @@ function printDiagnostics(
 			);
 			result += `:${location.line + 1}:${location.character}`;
 		}
-		result += ` - ` + JSON.stringify(diag.messageText);
+		result += ` - ${JSON.stringify(diag.messageText)}`;
 		console.log(result);
 	}
 }
@@ -94,19 +94,19 @@ export function shake(options: ITreeShakingOptions): ITreeShakingResult {
 	const globalDiagnostics = program.getGlobalDiagnostics();
 	if (globalDiagnostics.length > 0) {
 		printDiagnostics(options, globalDiagnostics);
-		throw new Error(`Compilation Errors encountered.`);
+		throw new Error("Compilation Errors encountered.");
 	}
 
 	const syntacticDiagnostics = program.getSyntacticDiagnostics();
 	if (syntacticDiagnostics.length > 0) {
 		printDiagnostics(options, syntacticDiagnostics);
-		throw new Error(`Compilation Errors encountered.`);
+		throw new Error("Compilation Errors encountered.");
 	}
 
 	const semanticDiagnostics = program.getSemanticDiagnostics();
 	if (semanticDiagnostics.length > 0) {
 		printDiagnostics(options, semanticDiagnostics);
-		throw new Error(`Compilation Errors encountered.`);
+		throw new Error("Compilation Errors encountered.");
 	}
 
 	markNodes(ts, languageService, options);
@@ -176,14 +176,14 @@ function discoverAndReadFiles(
 
 	while (queue.length > 0) {
 		const moduleId = queue.shift()!;
-		const dts_filename = path.join(options.sourcesRoot, moduleId + ".d.ts");
+		const dts_filename = path.join(options.sourcesRoot, `${moduleId}.d.ts`);
 		if (fs.existsSync(dts_filename)) {
 			const dts_filecontents = fs.readFileSync(dts_filename).toString();
 			FILES[`${moduleId}.d.ts`] = dts_filecontents;
 			continue;
 		}
 
-		const js_filename = path.join(options.sourcesRoot, moduleId + ".js");
+		const js_filename = path.join(options.sourcesRoot, `${moduleId}.js`);
 		if (fs.existsSync(js_filename)) {
 			// This is an import for a .js file, so ignore it...
 			continue;
@@ -193,10 +193,10 @@ function discoverAndReadFiles(
 		if (options.redirects[moduleId]) {
 			ts_filename = path.join(
 				options.sourcesRoot,
-				options.redirects[moduleId] + ".ts",
+				`${options.redirects[moduleId]}.ts`,
 			);
 		} else {
-			ts_filename = path.join(options.sourcesRoot, moduleId + ".ts");
+			ts_filename = path.join(options.sourcesRoot, `${moduleId}.ts`);
 		}
 		const ts_filecontents = fs.readFileSync(ts_filename).toString();
 		const info = ts.preProcessFile(ts_filecontents);
@@ -235,7 +235,7 @@ function processLibFiles(
 	const result: ILibMap = {};
 
 	while (stack.length > 0) {
-		const filename = `lib.${stack.shift()!.toLowerCase()}.d.ts`;
+		const filename = `lib.${stack.shift()?.toLowerCase()}.d.ts`;
 		const key = `defaultLib:${filename}`;
 		if (!result[key]) {
 			// add this file
@@ -373,7 +373,7 @@ function nodeOrChildIsBlack(node: ts.Node): boolean {
 function isSymbolWithDeclarations(
 	symbol: ts.Symbol | undefined | null,
 ): symbol is ts.Symbol & { declarations: ts.Declaration[] } {
-	return !!(symbol && symbol.declarations);
+	return !!symbol?.declarations;
 }
 
 function isVariableStatementWithSideEffects(
@@ -595,7 +595,7 @@ function markNodes(
 			if (references) {
 				for (let i = 0, len = references.length; i < len; i++) {
 					const reference = references[i];
-					const referenceSourceFile = program!.getSourceFile(
+					const referenceSourceFile = program?.getSourceFile(
 						reference.fileName,
 					);
 					if (!referenceSourceFile) {
@@ -623,7 +623,7 @@ function markNodes(
 	}
 
 	function enqueueFile(filename: string): void {
-		const sourceFile = program!.getSourceFile(filename);
+		const sourceFile = program?.getSourceFile(filename);
 		if (!sourceFile) {
 			console.warn(`Cannot find source file ${filename}`);
 			return;
@@ -642,16 +642,17 @@ function markNodes(
 		const nodeSourceFile = node.getSourceFile();
 		let fullPath: string;
 		if (/(^\.\/)|(^\.\.\/)/.test(importText)) {
-			fullPath =
-				path.join(path.dirname(nodeSourceFile.fileName), importText) +
-				".ts";
+			fullPath = `${path.join(
+				path.dirname(nodeSourceFile.fileName),
+				importText,
+			)}.ts`;
 		} else {
-			fullPath = importText + ".ts";
+			fullPath = `${importText}.ts`;
 		}
 		enqueueFile(fullPath);
 	}
 
-	options.entryPoints.forEach((moduleId) => enqueueFile(moduleId + ".ts"));
+	options.entryPoints.forEach((moduleId) => enqueueFile(`${moduleId}.ts`));
 	// Add fake usage files
 	options.inlineEntryPoints.forEach((_, index) =>
 		enqueueFile(`inlineEntryPoint.${index}.ts`),
@@ -897,7 +898,7 @@ function generateResult(
 
 			// Keep the entire import in import * as X cases
 			if (ts.isImportDeclaration(node)) {
-				if (node.importClause && node.importClause.namedBindings) {
+				if (node.importClause?.namedBindings) {
 					if (ts.isNamespaceImport(node.importClause.namedBindings)) {
 						if (
 							getColor(node.importClause.namedBindings) ===
@@ -922,8 +923,7 @@ function generateResult(
 						);
 						if (survivingImports.length > 0) {
 							if (
-								node.importClause &&
-								node.importClause.name &&
+								node.importClause?.name &&
 								getColor(node.importClause) === NodeColor.Black
 							) {
 								return write(
@@ -944,8 +944,7 @@ function generateResult(
 								)};`,
 							);
 						} else if (
-							node.importClause &&
-							node.importClause.name &&
+							node.importClause?.name &&
 							getColor(node.importClause) === NodeColor.Black
 						) {
 							return write(
@@ -1072,8 +1071,7 @@ function isLocalCodeExtendingOrInheritingFromDefaultLibSymbol(
 				const symbol = findSymbolFromHeritageType(ts, checker, type);
 				if (symbol) {
 					const decl =
-						symbol.valueDeclaration ||
-						(symbol.declarations && symbol.declarations[0]);
+						symbol.valueDeclaration || symbol.declarations?.[0];
 					if (
 						decl &&
 						program.isSourceFileDefaultLibrary(decl.getSourceFile())
@@ -1130,8 +1128,7 @@ function getRealNodeSymbol(
 		checker: ts.TypeChecker,
 		contextualType: ts.Type,
 		unionSymbolOk: boolean,
-	) => ReadonlyArray<ts.Symbol> = (<any>ts)
-		.getPropertySymbolsFromContextualType;
+	) => readonly ts.Symbol[] = (<any>ts).getPropertySymbolsFromContextualType;
 	const getContainingObjectLiteralElement: (
 		node: ts.Node,
 	) => ObjectLiteralElementWithName | undefined = (<any>ts)
@@ -1267,7 +1264,7 @@ function getRealNodeSymbol(
 		}
 	}
 
-	if (symbol && symbol.declarations) {
+	if (symbol?.declarations) {
 		return [new SymbolImportTuple(symbol, importNode)];
 	}
 
@@ -1281,7 +1278,7 @@ function getRealNodeSymbol(
 		const result: SymbolImportTuple[] = [];
 		for (const t of type.types) {
 			const prop = t.getProperty(name);
-			if (prop && prop.declarations) {
+			if (prop?.declarations) {
 				result.push(new SymbolImportTuple(prop, importNode));
 			}
 		}

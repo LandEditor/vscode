@@ -149,8 +149,10 @@ export class OutlineGroup extends TreeElement {
 	): OutlineElement | undefined {
 		for (const [, item] of children) {
 			if (
-				!item.symbol.range ||
-				!Range.containsPosition(item.symbol.range, position)
+				!(
+					item.symbol.range &&
+					Range.containsPosition(item.symbol.range, position)
+				)
 			) {
 				continue;
 			}
@@ -578,7 +580,7 @@ export class OutlineModelService implements IOutlineModelService {
 		const listener = token.onCancellationRequested(() => {
 			// last -> cancel provider request, remove cached promise
 			if (--data!.promiseCnt === 0) {
-				data!.source.cancel();
+				data?.source.cancel();
 				this._cache.delete(textModel.id);
 			}
 		});

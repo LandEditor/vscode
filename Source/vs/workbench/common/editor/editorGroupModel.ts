@@ -1104,7 +1104,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 		candidate: EditorInput | IUntypedEditorInput | null,
 		options?: IMatchEditorOptions,
 	): boolean {
-		if (!editor || !candidate) {
+		if (!(editor && candidate)) {
 			return false;
 		}
 
@@ -1114,7 +1114,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 			!(candidate instanceof SideBySideEditorInput)
 		) {
 			switch (options.supportSideBySide) {
-				case SideBySideEditor.ANY:
+				case SideBySideEditor.ANY: {
 					if (
 						this.matches(editor.primary, candidate, options) ||
 						this.matches(editor.secondary, candidate, options)
@@ -1122,7 +1122,8 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 						return true;
 					}
 					break;
-				case SideBySideEditor.BOTH:
+				}
+				case SideBySideEditor.BOTH: {
 					if (
 						this.matches(editor.primary, candidate, options) &&
 						this.matches(editor.secondary, candidate, options)
@@ -1130,6 +1131,7 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 						return true;
 					}
 					break;
+				}
 			}
 		}
 

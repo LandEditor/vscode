@@ -34,7 +34,7 @@ function bundle(entryPoints, config, callback) {
 		path.join(__dirname, "../../src/vs/loader.js"),
 	);
 	const r = vm.runInThisContext(
-		"(function(require, module, exports) { " + code + "\n});",
+		`(function(require, module, exports) { ${code}\n});`,
 	);
 	const loaderModule = { exports: {} };
 	r.call({}, require, loaderModule, loaderModule.exports);
@@ -171,7 +171,7 @@ function extractStrings(destFiles) {
 			let _path = null;
 			const pieces = dep.split("!");
 			if (pieces.length > 1) {
-				prefix = pieces[0] + "!";
+				prefix = `${pieces[0]}!`;
 				_path = pieces[1];
 			} else {
 				prefix = "";
@@ -229,7 +229,7 @@ function extractStrings(destFiles) {
 					return `define(__m[${replacementMap[defineCall.module]}/*${
 						defineCall.module
 					}*/], __M([${defineCall.deps
-						.map((dep) => replacementMap[dep] + "/*" + dep + "*/")
+						.map((dep) => `${replacementMap[dep]}/*${dep}*/`)
 						.join(",")}])`;
 				},
 			);
@@ -239,13 +239,13 @@ function extractStrings(destFiles) {
 			contents: [
 				"(function() {",
 				`var __m = ${JSON.stringify(sortedByUseModules)};`,
-				`var __M = function(deps) {`,
-				`  var result = [];`,
-				`  for (var i = 0, len = deps.length; i < len; i++) {`,
-				`    result[i] = __m[deps[i]];`,
-				`  }`,
-				`  return result;`,
-				`};`,
+				"var __M = function(deps) {",
+				"  var result = [];",
+				"  for (var i = 0, len = deps.length; i < len; i++) {",
+				"    result[i] = __m[deps[i]];",
+				"  }",
+				"  return result;",
+				"};",
 			].join("\n"),
 		});
 		destFile.sources.push({
@@ -271,8 +271,8 @@ function removeDuplicateTSBoilerplate(destFiles) {
 		destFile.sources.forEach((source) => {
 			const lines = source.contents.split(/\r\n|\n|\r/);
 			const newLines = [];
-			let IS_REMOVING_BOILERPLATE = false,
-				END_BOILERPLATE;
+			let IS_REMOVING_BOILERPLATE = false;
+			let END_BOILERPLATE;
 			for (let i = 0; i < lines.length; i++) {
 				const line = lines[i];
 				if (IS_REMOVING_BOILERPLATE) {
@@ -314,13 +314,13 @@ function emitEntryPoint(
 	dest,
 ) {
 	if (!dest) {
-		dest = entryPoint + ".js";
+		dest = `${entryPoint}.js`;
 	}
 	const mainResult = {
-			sources: [],
-			dest: dest,
-		},
-		results = [mainResult];
+		sources: [],
+		dest: dest,
+	};
+	const results = [mainResult];
 	const usedPlugins = {};
 	const getLoaderPlugin = (pluginName) => {
 		if (!usedPlugins[pluginName]) {
@@ -444,7 +444,7 @@ function emitPlugin(entryPoint, plugin, pluginName, moduleName) {
 			return entryPoint;
 		};
 		write.asModule = (moduleId, code) => {
-			code = code.replace(/^define\(/, 'define("' + moduleId + '",');
+			code = code.replace(/^define\(/, `define("${moduleId}",`);
 			result += code;
 		};
 		plugin.write(pluginName, moduleName, write);
@@ -463,7 +463,7 @@ function emitNamedModule(moduleId, defineCallPosition, path, contents) {
 	);
 	// `parensOffset` is the position in code: define|()
 	const parensOffset = contents.indexOf("(", defineCallOffset);
-	const insertStr = '"' + moduleId + '", ';
+	const insertStr = `"${moduleId}", `;
 	return {
 		path: path,
 		contents:
@@ -473,12 +473,11 @@ function emitNamedModule(moduleId, defineCallPosition, path, contents) {
 	};
 }
 function emitShimmedModule(moduleId, myDeps, factory, path, contents) {
-	const strDeps = myDeps.length > 0 ? '"' + myDeps.join('", "') + '"' : "";
-	const strDefine =
-		'define("' + moduleId + '", [' + strDeps + "], " + factory + ");";
+	const strDeps = myDeps.length > 0 ? `"${myDeps.join('", "')}"` : "";
+	const strDefine = `define("${moduleId}", [${strDeps}], ${factory});`;
 	return {
 		path: path,
-		contents: contents + "\n;\n" + strDefine,
+		contents: `${contents}\n;\n${strDefine}`,
 	};
 }
 /**
@@ -524,9 +523,9 @@ function visit(rootNodes, graph) {
  * Perform a topological sort on `graph`
  */
 function topologicalSort(graph) {
-	const allNodes = {},
-		outgoingEdgeCount = {},
-		inverseEdges = {};
+	const allNodes = {};
+	const outgoingEdgeCount = {};
+	const inverseEdges = {};
 	Object.keys(graph).forEach((fromNode) => {
 		allNodes[fromNode] = true;
 		outgoingEdgeCount[fromNode] = graph[fromNode].length;
@@ -538,8 +537,8 @@ function topologicalSort(graph) {
 		});
 	});
 	// https://en.wikipedia.org/wiki/Topological_sorting
-	const S = [],
-		L = [];
+	const S = [];
+	const L = [];
 	Object.keys(allNodes).forEach((node) => {
 		if (outgoingEdgeCount[node] === 0) {
 			delete outgoingEdgeCount[node];
@@ -562,8 +561,9 @@ function topologicalSort(graph) {
 	}
 	if (Object.keys(outgoingEdgeCount).length > 0) {
 		throw new Error(
-			"Cannot do topological sort on cyclic graph, remaining nodes: " +
-				Object.keys(outgoingEdgeCount),
+			`Cannot do topological sort on cyclic graph, remaining nodes: ${Object.keys(
+				outgoingEdgeCount,
+			)}`,
 		);
 	}
 	return L;

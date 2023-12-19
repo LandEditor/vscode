@@ -42,7 +42,7 @@ export class ExtHostQuickDiff implements ExtHostQuickDiffShape {
 		}
 
 		return asPromise(() =>
-			provider.provideOriginalResource!(uri, token),
+			provider.provideOriginalResource?.(uri, token),
 		).then<UriComponents | null>((r) => r || null);
 	}
 

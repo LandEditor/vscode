@@ -59,7 +59,7 @@ export class DebugTelemetry {
 			}
 		*/
 		this.telemetryService.publicLog("debugSessionStop", {
-			type: session && session.configuration.type,
+			type: session?.configuration.type,
 			success:
 				adapterExitEvent.emittedStopped || breakpoints.length === 0,
 			sessionLengthInSeconds: adapterExitEvent.sessionLengthInSeconds,

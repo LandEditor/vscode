@@ -154,7 +154,7 @@ export class ChatRequestParser {
 		fullMessage: string,
 		offset: number,
 		position: IPosition,
-		parts: ReadonlyArray<IParsedChatRequestPart>,
+		parts: readonly IParsedChatRequestPart[],
 	): ChatRequestAgentPart | ChatRequestVariablePart | undefined {
 		const nextVariableMatch = message.match(agentReg);
 		if (!nextVariableMatch) {
@@ -209,7 +209,7 @@ export class ChatRequestParser {
 		message: string,
 		offset: number,
 		position: IPosition,
-		parts: ReadonlyArray<IParsedChatRequestPart>,
+		parts: readonly IParsedChatRequestPart[],
 	): ChatRequestAgentPart | ChatRequestVariablePart | undefined {
 		const nextVariableMatch = message.match(variableReg);
 		if (!nextVariableMatch) {
@@ -244,7 +244,7 @@ export class ChatRequestParser {
 		fullMessage: string,
 		offset: number,
 		position: IPosition,
-		parts: ReadonlyArray<IParsedChatRequestPart>,
+		parts: readonly IParsedChatRequestPart[],
 	): Promise<
 		ChatRequestSlashCommandPart | ChatRequestAgentSubcommandPart | undefined
 	> {
@@ -277,8 +277,10 @@ export class ChatRequestParser {
 					(p) =>
 						(p instanceof ChatRequestTextPart &&
 							p.text.trim() !== "") ||
-						(!(p instanceof ChatRequestAgentPart) &&
-							!(p instanceof ChatRequestTextPart)),
+						!(
+							p instanceof ChatRequestAgentPart ||
+							p instanceof ChatRequestTextPart
+						),
 				)
 			) {
 				return;
@@ -328,7 +330,7 @@ export class ChatRequestParser {
 		message: string,
 		offset: number,
 		position: IPosition,
-		references: ReadonlyArray<IDynamicVariable>,
+		references: readonly IDynamicVariable[],
 	): ChatRequestDynamicVariablePart | undefined {
 		const refAtThisPosition = references.find(
 			(r) =>

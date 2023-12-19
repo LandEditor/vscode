@@ -31,7 +31,7 @@ import {
 	CONTEXT_PROVIDER_EXISTS,
 } from "vs/workbench/contrib/chat/common/chatContextKeys";
 
-export const ACTION_ID_CLEAR_CHAT = `workbench.action.chat.clear`;
+export const ACTION_ID_CLEAR_CHAT = "workbench.action.chat.clear";
 
 export function registerClearActions() {
 	registerAction2(

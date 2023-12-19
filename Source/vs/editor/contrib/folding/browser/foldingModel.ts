@@ -585,8 +585,10 @@ export function setCollapseStateForRest(
 	const filter = (region: FoldingRegion) =>
 		filteredRegions.every(
 			(filteredRegion) =>
-				!filteredRegion.containedBy(region) &&
-				!region.containedBy(filteredRegion),
+				!(
+					filteredRegion.containedBy(region) ||
+					region.containedBy(filteredRegion)
+				),
 		) && region.isCollapsed !== doCollapse;
 	const toToggle = foldingModel.getRegionsInside(null, filter);
 	foldingModel.toggleCollapseState(toToggle);

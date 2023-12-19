@@ -53,12 +53,14 @@ export class NotebookDiffEditorEventDispatcher extends Disposable {
 			const e = events[i];
 
 			switch (e.type) {
-				case NotebookDiffViewEventType.LayoutChanged:
+				case NotebookDiffViewEventType.LayoutChanged: {
 					this._onDidChangeLayout.fire(e);
 					break;
-				case NotebookDiffViewEventType.CellLayoutChanged:
+				}
+				case NotebookDiffViewEventType.CellLayoutChanged: {
 					this._onDidChangeCellLayout.fire(e);
 					break;
+				}
 			}
 		}
 	}

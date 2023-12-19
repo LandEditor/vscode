@@ -60,8 +60,10 @@ export async function merge(
 	);
 
 	if (
-		!keybindingsMergeResult.hasLocalForwarded &&
-		!keybindingsMergeResult.hasRemoteForwarded
+		!(
+			keybindingsMergeResult.hasLocalForwarded ||
+			keybindingsMergeResult.hasRemoteForwarded
+		)
 	) {
 		// No changes found between local and remote.
 		return {
@@ -466,11 +468,11 @@ function compareByKeybinding(
 			continue;
 		}
 		const value1: IUserFriendlyKeybinding[] = from
-			.get(key)!
-			.map((keybinding) => ({ ...keybinding, ...{ key } }));
+			.get(key)
+			?.map((keybinding) => ({ ...keybinding, ...{ key } }));
 		const value2: IUserFriendlyKeybinding[] = to
-			.get(key)!
-			.map((keybinding) => ({ ...keybinding, ...{ key } }));
+			.get(key)
+			?.map((keybinding) => ({ ...keybinding, ...{ key } }));
 		if (!equals(value1, value2, (a, b) => isSameKeybinding(a, b))) {
 			updated.add(key);
 		}
@@ -505,14 +507,14 @@ function compareByCommand(
 			continue;
 		}
 		const value1: IUserFriendlyKeybinding[] = from
-			.get(key)!
-			.map((keybinding) => ({
+			.get(key)
+			?.map((keybinding) => ({
 				...keybinding,
 				...{ key: normalizedKeys[keybinding.key] },
 			}));
 		const value2: IUserFriendlyKeybinding[] = to
-			.get(key)!
-			.map((keybinding) => ({
+			.get(key)
+			?.map((keybinding) => ({
 				...keybinding,
 				...{ key: normalizedKeys[keybinding.key] },
 			}));

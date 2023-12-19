@@ -133,7 +133,7 @@ export abstract class EmmetEditorAction extends EditorAction {
 		const model = editor.getModel();
 		const selection = editor.getSelection();
 
-		if (!model || !selection) {
+		if (!(model && selection)) {
 			return null;
 		}
 
@@ -160,7 +160,10 @@ export abstract class EmmetEditorAction extends EditorAction {
 			}
 			for (let i = 1; i < languages.length; i++) {
 				const language = languages[languages.length - i];
-				if (this.emmetSupportedModes.indexOf(language) !== -1) {
+				if (
+					EmmetEditorAction.emmetSupportedModes.indexOf(language) !==
+					-1
+				) {
 					return language;
 				}
 			}

@@ -372,9 +372,11 @@ export class CompoisteBarActionViewItem extends BaseActionViewItem {
 	protected updateActivity(): void {
 		const action = this.action;
 		if (
-			!this.badge ||
-			!this.badgeContent ||
-			!(action instanceof CompositeBarAction)
+			!(
+				this.badge &&
+				this.badgeContent &&
+				action instanceof CompositeBarAction
+			)
 		) {
 			return;
 		}
@@ -551,7 +553,7 @@ export class CompoisteBarActionViewItem extends BaseActionViewItem {
 			return;
 		}
 
-		const hoverPosition = this.options.hoverOptions!.position();
+		const hoverPosition = this.options.hoverOptions?.position();
 		this.lastHover = this.hoverService.showHover({
 			target: this.container,
 			content: this.computeTitle(),
@@ -858,7 +860,7 @@ export class CompositeActionViewItem extends CompoisteBarActionViewItem {
 			(!forceBottom && lastClasses.vertical === "top");
 		const bottom =
 			forceBottom ||
-			(!preferTop && !lastClasses.vertical) ||
+			!(preferTop || lastClasses.vertical) ||
 			(!forceTop && lastClasses.vertical === "bottom");
 		const left =
 			forceLeft ||
@@ -866,7 +868,7 @@ export class CompositeActionViewItem extends CompoisteBarActionViewItem {
 			(!forceRight && lastClasses.horizontal === "left");
 		const right =
 			forceRight ||
-			(!preferLeft && !lastClasses.horizontal) ||
+			!(preferLeft || lastClasses.horizontal) ||
 			(!forceLeft && lastClasses.horizontal === "right");
 
 		element.classList.toggle("top", showFeedback && top);

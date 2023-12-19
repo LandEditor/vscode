@@ -72,19 +72,21 @@ export class EditorTitleControl extends Themable {
 	private createEditorTabsControl(): IEditorTabsControl {
 		let tabsControlType;
 		switch (this.groupsView.partOptions.showTabs) {
-			case "none":
+			case "none": {
 				tabsControlType = NoEditorTabsControl;
 				break;
-			case "single":
+			}
+			case "single": {
 				tabsControlType = SingleEditorTabsControl;
 				break;
-			case "multiple":
-			default:
+			}
+			default: {
 				tabsControlType = this.groupsView.partOptions
 					.pinnedTabsOnSeparateRow
 					? MultiRowEditorControl
 					: MultiEditorTabsControl;
 				break;
+			}
 		}
 
 		const control = this.instantiationService.createInstance(

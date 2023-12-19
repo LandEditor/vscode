@@ -87,7 +87,7 @@ export class MovedBlocksLinesPart extends Disposable {
 				/** @description update moved blocks lines positioning */
 				const info = this._originalEditorLayoutInfo.read(reader);
 				const info2 = this._modifiedEditorLayoutInfo.read(reader);
-				if (!info || !info2) {
+				if (!(info && info2)) {
 					return;
 				}
 
@@ -285,7 +285,7 @@ export class MovedBlocksLinesPart extends Disposable {
 
 		const infoOrig = this._originalEditorLayoutInfo.read(reader);
 		const infoMod = this._modifiedEditorLayoutInfo.read(reader);
-		if (!infoOrig || !infoMod) {
+		if (!(infoOrig && infoMod)) {
 			this.width.set(0, undefined);
 			return;
 		}

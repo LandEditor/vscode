@@ -16,7 +16,7 @@ export function getDocumentContext(
 		for (const folder of workspaceFolders) {
 			let folderURI = folder.uri;
 			if (!endsWith(folderURI, "/")) {
-				folderURI = folderURI + "/";
+				folderURI += "/";
 			}
 			if (startsWith(documentUri, folderURI)) {
 				return folderURI;

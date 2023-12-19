@@ -55,11 +55,11 @@ export class SashSettingsController
 
 		this.layoutService.mainContainer.style.setProperty(
 			"--vscode-sash-size",
-			size + "px",
+			`${size}px`,
 		);
 		this.layoutService.mainContainer.style.setProperty(
 			"--vscode-sash-hover-size",
-			hoverSize + "px",
+			`${hoverSize}px`,
 		);
 		setGlobalSashSize(size);
 	}

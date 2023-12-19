@@ -39,7 +39,7 @@ export class ExtHostAuthentication implements ExtHostAuthenticationShape {
 		vscode.AuthenticationSession | undefined
 	>();
 	private _getSessionsTaskSingler = new TaskSingler<
-		ReadonlyArray<vscode.AuthenticationSession>
+		readonly vscode.AuthenticationSession[]
 	>();
 
 	constructor(mainContext: IMainContext) {
@@ -121,7 +121,7 @@ export class ExtHostAuthentication implements ExtHostAuthenticationShape {
 		requestingExtension: IExtensionDescription,
 		providerId: string,
 		scopes: readonly string[],
-	): Promise<ReadonlyArray<vscode.AuthenticationSession>> {
+	): Promise<readonly vscode.AuthenticationSession[]> {
 		const extensionId = ExtensionIdentifier.toKey(
 			requestingExtension.identifier,
 		);
@@ -236,7 +236,7 @@ export class ExtHostAuthentication implements ExtHostAuthenticationShape {
 	$getSessions(
 		providerId: string,
 		scopes?: string[],
-	): Promise<ReadonlyArray<vscode.AuthenticationSession>> {
+	): Promise<readonly vscode.AuthenticationSession[]> {
 		const providerData = this._authenticationProviders.get(providerId);
 		if (providerData) {
 			return Promise.resolve(providerData.provider.getSessions(scopes));

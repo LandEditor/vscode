@@ -117,7 +117,7 @@ export class Scanner {
 			len += 1;
 			ch = this.value.charCodeAt(pos + len);
 		} while (
-			!isNaN(ch) &&
+			!Number.isNaN(ch) &&
 			typeof Scanner._table[ch] === "undefined" && // not static token
 			!Scanner.isDigitCharacter(ch) && // not number
 			!Scanner.isVariableCharacter(ch) // not variable
@@ -377,9 +377,9 @@ export class Transform extends Marker {
 		const ret = new Transform();
 		ret.regexp = new RegExp(
 			this.regexp.source,
-			"" +
-				(this.regexp.ignoreCase ? "i" : "") +
-				(this.regexp.global ? "g" : ""),
+			`${this.regexp.ignoreCase ? "i" : ""}${
+				this.regexp.global ? "g" : ""
+			}`,
 		);
 		ret._children = this.children.map((child) => child.clone());
 		return ret;
@@ -409,7 +409,7 @@ export class FormatString extends Marker {
 			return value ? this._toCamelCase(value) : "";
 		} else if (Boolean(value) && typeof this.ifValue === "string") {
 			return this.ifValue;
-		} else if (!Boolean(value) && typeof this.elseValue === "string") {
+		} else if (!value && typeof this.elseValue === "string") {
 			return this.elseValue;
 		} else {
 			return value || "";
@@ -877,7 +877,7 @@ export class SnippetParser {
 				}
 
 				// fallback
-				parent.appendChild(new Text("${" + index! + ":"));
+				parent.appendChild(new Text(`\${${index!}:`));
 				placeholder.children.forEach(parent.appendChild, parent);
 				return true;
 			}
@@ -992,7 +992,7 @@ export class SnippetParser {
 				}
 
 				// fallback
-				parent.appendChild(new Text("${" + name! + ":"));
+				parent.appendChild(new Text(`\${${name!}:`));
 				variable.children.forEach(parent.appendChild, parent);
 				return true;
 			}
@@ -1122,12 +1122,12 @@ export class SnippetParser {
 		if (this._accept(TokenType.Forwardslash)) {
 			// ${1:/upcase}
 			const shorthand = this._accept(TokenType.VariableName, true);
-			if (!shorthand || !this._accept(TokenType.CurlyClose)) {
-				this._backTo(token);
-				return false;
-			} else {
+			if (shorthand && this._accept(TokenType.CurlyClose)) {
 				parent.appendChild(new FormatString(Number(index), shorthand));
 				return true;
+			} else {
+				this._backTo(token);
+				return false;
 			}
 		} else if (this._accept(TokenType.Plus)) {
 			// ${1:+<if>}

@@ -48,7 +48,7 @@ function _parse(
 
 	function advancePosBy(by: number): void {
 		if (locationKeyName === null) {
-			pos = pos + by;
+			pos += by;
 		} else {
 			while (by > 0) {
 				const chCode = content.charCodeAt(pos);
@@ -143,13 +143,7 @@ function _parse(
 
 	function fail(msg: string): void {
 		throw new Error(
-			"Near offset " +
-				pos +
-				": " +
-				msg +
-				" ~~~" +
-				content.substr(pos, 50) +
-				"~~~",
+			`Near offset ${pos}: ${msg} ~~~${content.substr(pos, 50)}~~~`,
 		);
 	}
 
@@ -278,7 +272,7 @@ function _parse(
 		}
 	}
 	function acceptReal(val: number) {
-		if (isNaN(val)) {
+		if (Number.isNaN(val)) {
 			return fail("cannot parse float");
 		}
 		if (state === State.DICT_STATE) {
@@ -295,7 +289,7 @@ function _parse(
 		}
 	}
 	function acceptInteger(val: number) {
-		if (isNaN(val)) {
+		if (Number.isNaN(val)) {
 			return fail("cannot parse integer");
 		}
 		if (state === State.DICT_STATE) {
@@ -470,60 +464,70 @@ function _parse(
 		const tag = parseOpenTag();
 
 		switch (tag.name) {
-			case "dict":
+			case "dict": {
 				enterDict();
 				if (tag.isClosed) {
 					leaveDict();
 				}
 				continue;
+			}
 
-			case "array":
+			case "array": {
 				enterArray();
 				if (tag.isClosed) {
 					leaveArray();
 				}
 				continue;
+			}
 
-			case "key":
+			case "key": {
 				acceptKey(parseTagValue(tag));
 				continue;
+			}
 
-			case "string":
+			case "string": {
 				acceptString(parseTagValue(tag));
 				continue;
+			}
 
-			case "real":
+			case "real": {
 				acceptReal(parseFloat(parseTagValue(tag)));
 				continue;
+			}
 
-			case "integer":
+			case "integer": {
 				acceptInteger(parseInt(parseTagValue(tag), 10));
 				continue;
+			}
 
-			case "date":
+			case "date": {
 				acceptDate(new Date(parseTagValue(tag)));
 				continue;
+			}
 
-			case "data":
+			case "data": {
 				acceptData(parseTagValue(tag));
 				continue;
+			}
 
-			case "true":
+			case "true": {
 				parseTagValue(tag);
 				acceptBool(true);
 				continue;
+			}
 
-			case "false":
+			case "false": {
 				parseTagValue(tag);
 				acceptBool(false);
 				continue;
+			}
 		}
 
 		if (/^plist/.test(tag.name)) {
 			continue;
 		}
 
-		return fail("unexpected opened tag " + tag.name);
+		return fail(`unexpected opened tag ${tag.name}`);
 	}
 
 	return cur;

@@ -132,7 +132,7 @@ export class SymbolsTree {
 			);
 		}
 		if (typeof model.dispose === "function") {
-			disposables.push(new vscode.Disposable(() => model.dispose!()));
+			disposables.push(new vscode.Disposable(() => model.dispose?.()));
 		}
 		this._sessionDisposable = vscode.Disposable.from(...disposables);
 	}

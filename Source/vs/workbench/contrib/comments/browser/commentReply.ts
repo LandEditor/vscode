@@ -97,11 +97,9 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 			this._commentThread.comments &&
 			this._commentThread.comments.length > 0;
 		const modeId =
-			generateUuid() +
-			"-" +
-			(hasExistingComments
+			`${generateUuid()}-${hasExistingComments
 				? this._commentThread.threadId
-				: ++INMEM_MODEL_ID);
+				: ++INMEM_MODEL_ID}`;
 		const params = JSON.stringify({
 			extensionId: this._commentThread.extensionId,
 			commentThreadId: this._commentThread.threadId,
@@ -221,12 +219,9 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 	}
 
 	public focusIfNeeded() {
-		if (
-			!this._commentThread.comments ||
-			!this._commentThread.comments.length
-		) {
+		if (!this._commentThread.comments?.length) {
 			this.commentEditor.focus();
-		} else if (this.commentEditor.getModel()!.getValueLength() > 0) {
+		} else if (this.commentEditor.getModel()?.getValueLength() > 0) {
 			this.expandReplyArea();
 		}
 	}
@@ -311,7 +306,7 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 		this._commentThreadDisposables.push(
 			commentEditor.onDidFocusEditorWidget(() => {
 				this._commentThread.input = {
-					uri: commentEditor.getModel()!.uri,
+					uri: commentEditor.getModel()?.uri,
 					value: commentEditor.getValue(),
 				};
 				this.commentService.setActiveCommentThread(this._commentThread);
@@ -319,12 +314,12 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 		);
 
 		this._commentThreadDisposables.push(
-			commentEditor.getModel()!.onDidChangeContent(() => {
+			commentEditor.getModel()?.onDidChangeContent(() => {
 				const modelContent = commentEditor.getValue();
 				if (
 					this._commentThread.input &&
 					this._commentThread.input.uri ===
-						commentEditor.getModel()!.uri &&
+						commentEditor.getModel()?.uri &&
 					this._commentThread.input.value !== modelContent
 				) {
 					const newInput: languages.CommentInput =
@@ -353,7 +348,7 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 					if (input.value === "") {
 						this._pendingComment = "";
 						commentForm.classList.remove("expand");
-						commentEditor.getDomNode()!.style.outline = "";
+						commentEditor.getDomNode()?.style.outline = "";
 						this._error.textContent = "";
 						this._error.classList.add("hidden");
 					}
@@ -452,7 +447,7 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 	}
 
 	private hideReplyArea() {
-		this.commentEditor.getDomNode()!.style.outline = "";
+		this.commentEditor.getDomNode()?.style.outline = "";
 		this.commentEditor.setValue("");
 		this._pendingComment = "";
 		this.form.classList.remove("expand");
@@ -495,7 +490,7 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 
 		commentEditor.onDidBlurEditorWidget(() => {
 			if (
-				commentEditor.getModel()!.getValueLength() === 0 &&
+				commentEditor.getModel()?.getValueLength() === 0 &&
 				commentForm.classList.contains("expand")
 			) {
 				commentForm.classList.remove("expand");

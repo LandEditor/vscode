@@ -49,7 +49,7 @@ export function gitSimilar(): ITerminalQuickFixInternalOptions {
 		commandExitResult: "error",
 		getQuickFixes: (matchResult: ITerminalCommandMatchResult) => {
 			const regexMatch = matchResult.outputMatch?.regexMatch[0];
-			if (!regexMatch || !matchResult.outputMatch) {
+			if (!(regexMatch && matchResult.outputMatch)) {
 				return;
 			}
 			const actions: TerminalQuickFixActionInternal[] = [];
@@ -96,7 +96,7 @@ export function gitPull(): ITerminalQuickFixInternalOptions {
 			return {
 				type: TerminalQuickFixType.TerminalCommand,
 				id: "Git Pull",
-				terminalCommand: `git pull`,
+				terminalCommand: "git pull",
 				shouldExecute: true,
 				source: QuickFixSource.Builtin,
 			};
@@ -215,7 +215,7 @@ export function gitPushSetUpstream(): ITerminalQuickFixInternalOptions {
 			const actions: TerminalQuickFixActionInternal[] = [];
 			let fixedCommand = commandToRun;
 			for (const [key, value] of Object.entries(groups)) {
-				const varToResolve = "${group:" + `${key}` + "}";
+				const varToResolve = `\${group:${key}}`;
 				if (!commandToRun.includes(varToResolve)) {
 					return [];
 				}

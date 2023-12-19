@@ -270,7 +270,7 @@ export function getJavaScriptMode(
 					item.documentation = ts.displayPartsToString(
 						details.documentation,
 					);
-					delete item.data;
+					item.data = undefined;
 				}
 			}
 			return item;
@@ -330,7 +330,7 @@ export function getJavaScriptMode(
 							),
 						};
 						signature.label += label;
-						signature.parameters!.push(parameter);
+						signature.parameters?.push(parameter);
 						if (i < a.length - 1) {
 							signature.label += ts.displayPartsToString(
 								item.separatorDisplayParts,
@@ -526,8 +526,7 @@ export function getJavaScriptMode(
 				.getEmbeddedDocument("javascript", true);
 			const jsLanguageService = await host.getLanguageService(jsDocument);
 
-			const formatterSettings =
-				settings && settings.javascript && settings.javascript.format;
+			const formatterSettings = settings?.javascript?.format;
 
 			const initialIndentLevel = computeInitialIndent(
 				document,
@@ -819,7 +818,7 @@ function convertOptions(
 			!formatSettings || formatSettings.insertSpaceAfterCommaDelimiter,
 		),
 		insertSpaceAfterConstructor: Boolean(
-			formatSettings && formatSettings.insertSpaceAfterConstructor,
+			formatSettings?.insertSpaceAfterConstructor,
 		),
 		insertSpaceAfterSemicolonInForStatements: Boolean(
 			!formatSettings ||
@@ -838,43 +837,35 @@ function convertOptions(
 				formatSettings.insertSpaceAfterFunctionKeywordForAnonymousFunctions,
 		),
 		insertSpaceBeforeFunctionParenthesis: Boolean(
-			formatSettings &&
-				formatSettings.insertSpaceBeforeFunctionParenthesis,
+			formatSettings?.insertSpaceBeforeFunctionParenthesis,
 		),
 		insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis: Boolean(
-			formatSettings &&
-				formatSettings.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis,
+			formatSettings?.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis,
 		),
 		insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets: Boolean(
-			formatSettings &&
-				formatSettings.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets,
+			formatSettings?.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets,
 		),
 		insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: Boolean(
-			formatSettings &&
-				formatSettings.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces,
+			formatSettings?.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces,
 		),
 		insertSpaceAfterOpeningAndBeforeClosingEmptyBraces: Boolean(
 			!formatSettings ||
 				formatSettings.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces,
 		),
 		insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces: Boolean(
-			formatSettings &&
-				formatSettings.insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces,
+			formatSettings?.insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces,
 		),
 		insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces: Boolean(
-			formatSettings &&
-				formatSettings.insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces,
+			formatSettings?.insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces,
 		),
 		insertSpaceAfterTypeAssertion: Boolean(
-			formatSettings && formatSettings.insertSpaceAfterTypeAssertion,
+			formatSettings?.insertSpaceAfterTypeAssertion,
 		),
 		placeOpenBraceOnNewLineForControlBlocks: Boolean(
-			formatSettings &&
-				formatSettings.placeOpenBraceOnNewLineForFunctions,
+			formatSettings?.placeOpenBraceOnNewLineForFunctions,
 		),
 		placeOpenBraceOnNewLineForFunctions: Boolean(
-			formatSettings &&
-				formatSettings.placeOpenBraceOnNewLineForControlBlocks,
+			formatSettings?.placeOpenBraceOnNewLineForControlBlocks,
 		),
 		semicolons: formatSettings?.semicolons,
 	};

@@ -178,7 +178,7 @@ export class NotebookVariablesView extends ViewPane {
 	private async updateVariables(notebook: NotebookTextModel) {
 		const selectedKernel =
 			this.notebookKernelService.getMatchingKernel(notebook).selected;
-		if (selectedKernel && selectedKernel.hasVariableProvider) {
+		if (selectedKernel?.hasVariableProvider) {
 			const variables = selectedKernel.provideVariables(
 				notebook.uri,
 				undefined,

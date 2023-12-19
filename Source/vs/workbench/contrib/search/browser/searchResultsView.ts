@@ -611,13 +611,17 @@ export class MatchRenderer
 			match.range().endLineNumber - match.range().startLineNumber;
 
 		const lineNumStr = showLineNumbers
-			? nls.localize("lineNumStr", "From line {0}", startLine, numLines) +
-			  " "
+			? `${nls.localize(
+					"lineNumStr",
+					"From line {0}",
+					startLine,
+					numLines,
+			  )} `
 			: "";
 
 		const numLinesStr =
 			numLines > 0
-				? "+ " + nls.localize("numLinesStr", "{0} more lines", numLines)
+				? `+ ${nls.localize("numLinesStr", "{0} more lines", numLines)}`
 				: "";
 
 		return lineNumStr + numLinesStr;

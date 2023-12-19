@@ -202,7 +202,7 @@ function parseFormattedText(
 					actionViewItemIndex++;
 				}
 
-				current.children!.push(newCurrent);
+				current.children?.push(newCurrent);
 				stack.push(current);
 				current = newCurrent;
 			}
@@ -211,7 +211,7 @@ function parseFormattedText(
 				current = stack.pop()!;
 			}
 
-			current.children!.push({
+			current.children?.push({
 				type: FormatType.NewLine,
 			});
 		} else if (current.type !== FormatType.Text) {
@@ -219,7 +219,7 @@ function parseFormattedText(
 				type: FormatType.Text,
 				content: next,
 			};
-			current.children!.push(textCurrent);
+			current.children?.push(textCurrent);
 			stack.push(current);
 			current = textCurrent;
 		} else {

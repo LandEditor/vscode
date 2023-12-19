@@ -529,7 +529,7 @@ export class SearchView extends ViewPane {
 	}
 
 	get searchResult(): SearchResult {
-		return this.viewModel && this.viewModel.searchResult;
+		return this.viewModel?.searchResult;
 	}
 
 	private onDidChangeWorkbenchState(): void {
@@ -549,12 +549,9 @@ export class SearchView extends ViewPane {
 		this.searchWidget.setReplaceAllActionState(false);
 		this.searchWidget.toggleReplace(true);
 		this.inputPatternIncludes.setOnlySearchInOpenEditors(
-			this.viewModel.searchResult.query?.onlyOpenEditors || false,
+			this.viewModel.searchResult.query?.onlyOpenEditors,
 		);
-		this.inputPatternExcludes.setUseExcludesAndIgnoreFiles(
-			!this.viewModel.searchResult.query
-				?.userDisabledExcludesAndIgnoreFiles || true,
-		);
+		this.inputPatternExcludes.setUseExcludesAndIgnoreFiles(true);
 		this.searchIncludePattern.setValue("");
 		this.searchExcludePattern.setValue("");
 		this.pauseSearching = false;
@@ -596,8 +593,7 @@ export class SearchView extends ViewPane {
 		const patternExclusionsHistory: string[] = history.exclude || [];
 		const patternIncludes = this.viewletState["query.folderIncludes"] || "";
 		const patternIncludesHistory: string[] = history.include || [];
-		const onlyOpenEditors =
-			this.viewletState["query.onlyOpenEditors"] || false;
+		const onlyOpenEditors = this.viewletState["query.onlyOpenEditors"];
 
 		const queryDetailsExpanded =
 			this.viewletState["query.queryDetailsExpanded"] || "";
@@ -615,7 +611,7 @@ export class SearchView extends ViewPane {
 		// Toggle query details button
 		this.toggleQueryDetailsButton = dom.append(
 			this.queryDetails,
-			$(".more" + ThemeIcon.asCSSSelector(searchDetailsIcon), {
+			$(`.more${ThemeIcon.asCSSSelector(searchDetailsIcon)}`, {
 				tabindex: 0,
 				role: "button",
 				title: nls.localize("moreSearch", "Toggle Search Details"),
@@ -907,7 +903,9 @@ export class SearchView extends ViewPane {
 			}),
 		);
 
-		if (!this.searchWidget.searchInput || !this.searchWidget.replaceInput) {
+		if (
+			!(this.searchWidget.searchInput && this.searchWidget.replaceInput)
+		) {
 			this.logService.warn(
 				`Cannot fully create search widget. Search or replace input undefined. SearchInput: ${this.searchWidget.searchInput}, ReplaceInput: ${this.searchWidget.replaceInput}`,
 			);
@@ -1055,8 +1053,8 @@ export class SearchView extends ViewPane {
 			!this.viewModel.searchResult.isEmpty(),
 		);
 		this.updateSearchResultCount(
-			this.viewModel.searchResult.query!
-				.userDisabledExcludesAndIgnoreFiles,
+			this.viewModel.searchResult.query
+				?.userDisabledExcludesAndIgnoreFiles,
 			this.viewModel.searchResult.query?.onlyOpenEditors,
 			event?.clearingAll,
 		);
@@ -1730,12 +1728,11 @@ export class SearchView extends ViewPane {
 
 		// Select previous until find a Match or a collapsed item
 		while (
-			!prev ||
-			(!(prev instanceof Match) && !this.tree.isCollapsed(prev))
+			!(prev && (prev instanceof Match || this.tree.isCollapsed(prev)))
 		) {
 			const nextPrev = prev ? navigator.previous() : navigator.last();
 
-			if (!prev && !nextPrev) {
+			if (!(prev || nextPrev)) {
 				return;
 			}
 
@@ -1789,7 +1786,7 @@ export class SearchView extends ViewPane {
 		let activeEditor = this.editorService.activeTextEditorControl;
 		if (isCodeEditor(activeEditor) && !activeEditor?.hasTextFocus()) {
 			const controller = CommonFindController.get(activeEditor);
-			if (controller && controller.isFindInputFocused()) {
+			if (controller?.isFindInputFocused()) {
 				return this.updateTextFromFindWidget(controller, {
 					allowSearchOnType,
 				});
@@ -1844,8 +1841,8 @@ export class SearchView extends ViewPane {
 		editor?: IEditor,
 	): boolean {
 		const seedSearchStringFromSelection =
-			this.configurationService.getValue<IEditorOptions>("editor").find!
-				.seedSearchStringFromSelection;
+			this.configurationService.getValue<IEditorOptions>("editor").find
+				?.seedSearchStringFromSelection;
 		if (!seedSearchStringFromSelection) {
 			return false;
 		}
@@ -2631,7 +2628,7 @@ export class SearchView extends ViewPane {
 				this.reLayout();
 			}
 
-			if (completed && completed.limitHit) {
+			if (completed?.limitHit) {
 				completed.messages.push({
 					type: TextSearchCompleteMessageType.Warning,
 					text: nls.localize(
@@ -2641,7 +2638,7 @@ export class SearchView extends ViewPane {
 				});
 			}
 
-			if (completed && completed.messages) {
+			if (completed?.messages) {
 				for (const message of completed.messages) {
 					this.addMessage(message);
 				}
@@ -2745,13 +2742,10 @@ export class SearchView extends ViewPane {
 
 		if (fileCount > 0) {
 			if (disregardExcludesAndIgnores) {
-				const excludesDisabledMessage =
-					" - " +
-					nls.localize(
-						"useIgnoresAndExcludesDisabled",
-						"exclude settings and ignore files are disabled",
-					) +
-					" ";
+				const excludesDisabledMessage = ` - ${nls.localize(
+					"useIgnoresAndExcludesDisabled",
+					"exclude settings and ignore files are disabled",
+				)} `;
 				const enableExcludesButton = this.messageDisposables.add(
 					new SearchLinkButton(
 						nls.localize("excludes.enable", "enable"),
@@ -2776,13 +2770,10 @@ export class SearchView extends ViewPane {
 			}
 
 			if (onlyOpenEditors) {
-				const searchingInOpenMessage =
-					" - " +
-					nls.localize(
-						"onlyOpenEditors",
-						"searching only in open files",
-					) +
-					" ";
+				const searchingInOpenMessage = ` - ${nls.localize(
+					"onlyOpenEditors",
+					"searching only in open files",
+				)} `;
 				const disableOpenEditorsButton = this.messageDisposables.add(
 					new SearchLinkButton(
 						nls.localize("openEditors.disable", "disable"),
@@ -3061,8 +3052,10 @@ export class SearchView extends ViewPane {
 						if (match instanceof MatchInNotebook) {
 							elemParent.showMatch(match);
 							if (
-								!this.tree.getFocus().includes(match) ||
-								!this.tree.getSelection().includes(match)
+								!(
+									this.tree.getFocus().includes(match) &&
+									this.tree.getSelection().includes(match)
+								)
 							) {
 								this.tree.setSelection(
 									[match],
@@ -3260,22 +3253,22 @@ export class SearchView extends ViewPane {
 		const history: ISearchHistoryValues = Object.create(null);
 
 		const searchHistory = this.searchWidget.getSearchHistory();
-		if (searchHistory && searchHistory.length) {
+		if (searchHistory?.length) {
 			history.search = searchHistory;
 		}
 
 		const replaceHistory = this.searchWidget.getReplaceHistory();
-		if (replaceHistory && replaceHistory.length) {
+		if (replaceHistory?.length) {
 			history.replace = replaceHistory;
 		}
 
 		const patternExcludesHistory = this.inputPatternExcludes.getHistory();
-		if (patternExcludesHistory && patternExcludesHistory.length) {
+		if (patternExcludesHistory?.length) {
 			history.exclude = patternExcludesHistory;
 		}
 
 		const patternIncludesHistory = this.inputPatternIncludes.getHistory();
-		if (patternIncludesHistory && patternIncludesHistory.length) {
+		if (patternIncludesHistory?.length) {
 			history.include = patternIncludesHistory;
 		}
 
@@ -3395,7 +3388,7 @@ export function getSelectionTextFromEditor(
 		}
 	}
 
-	if (!isCodeEditor(editor) || !editor.hasModel()) {
+	if (!(isCodeEditor(editor) && editor.hasModel())) {
 		return null;
 	}
 
@@ -3427,7 +3420,7 @@ export function getSelectionTextFromEditor(
 		}
 
 		if (i !== range.startLineNumber) {
-			lineText = "\n" + lineText;
+			lineText = `\n${lineText}`;
 		}
 
 		searchText += lineText;

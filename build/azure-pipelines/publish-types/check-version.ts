@@ -33,7 +33,10 @@ function isValidTag(t: string) {
 		return false;
 	}
 
-	if (isNaN(parseInt(major, 10)) || isNaN(parseInt(minor, 10))) {
+	if (
+		Number.isNaN(parseInt(major, 10)) ||
+		Number.isNaN(parseInt(minor, 10))
+	) {
 		return false;
 	}
 

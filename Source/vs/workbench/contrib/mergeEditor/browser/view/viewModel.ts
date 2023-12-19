@@ -139,7 +139,7 @@ export class MergeEditorViewModel extends Disposable {
 			this.resultCodeEditorView,
 			this.baseCodeEditorView.read(reader),
 		];
-		const view = editors.find((e) => e && e.isFocused.read(reader));
+		const view = editors.find((e) => e?.isFocused.read(reader));
 		return view
 			? { view, counter: this.counter++ }
 			: lastValue || { view: undefined, counter: this.counter++ };
@@ -283,21 +283,21 @@ export class MergeEditorViewModel extends Disposable {
 			let startLineNumber = range.startLineNumber;
 			let endLineNumberExclusive = range.endLineNumberExclusive;
 			if (
-				range.startLineNumber > editor.editor.getModel()!.getLineCount()
+				range.startLineNumber > editor.editor.getModel()?.getLineCount()
 			) {
 				transaction((tx) => {
 					this.setActiveModifiedBaseRange(modifiedBaseRange, tx);
 				});
 				startLineNumber = endLineNumberExclusive = editor.editor
-					.getModel()!
-					.getLineCount();
+					.getModel()
+					?.getLineCount();
 			}
 
 			editor.editor.setPosition({
 				lineNumber: startLineNumber,
 				column: editor.editor
-					.getModel()!
-					.getLineFirstNonWhitespaceColumn(startLineNumber),
+					.getModel()
+					?.getLineFirstNonWhitespaceColumn(startLineNumber),
 			});
 			editor.editor.revealLinesNearTop(
 				startLineNumber,
@@ -423,8 +423,8 @@ class AttachedHistory extends Disposable {
 					// Thus we also need to remove all history elements after the last version id.
 					while (
 						this.attachedHistory.length > 0 &&
-						this.attachedHistory[this.attachedHistory.length - 1]!
-							.altId > this.previousAltId
+						this.attachedHistory[this.attachedHistory.length - 1]
+							?.altId > this.previousAltId
 					) {
 						this.attachedHistory.pop();
 					}

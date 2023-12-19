@@ -152,8 +152,10 @@ export abstract class SimpleFindWidget
 		this._register(
 			this._findInput.onInput(async (e) => {
 				if (
-					!options.checkImeCompletionState ||
-					!this._findInput.isImeSessionInProgress
+					!(
+						options.checkImeCompletionState &&
+						this._findInput.isImeSessionInProgress
+					)
 				) {
 					this._foundMatch = this._onInputChanged();
 					if (options.showResultCount) {
@@ -393,7 +395,7 @@ export abstract class SimpleFindWidget
 	override dispose() {
 		super.dispose();
 
-		if (this._domNode && this._domNode.parentElement) {
+		if (this._domNode?.parentElement) {
 			this._domNode.parentElement.removeChild(this._domNode);
 		}
 	}

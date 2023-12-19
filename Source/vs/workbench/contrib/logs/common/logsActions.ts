@@ -74,13 +74,12 @@ export class SetLogLevelAction extends Action {
 	> {
 		const defaultLogLevels =
 			await this.defaultLogLevelsService.getDefaultLogLevels();
-		const extensionLogs: LogChannelQuickPickItem[] = [],
-			logs: LogChannelQuickPickItem[] = [];
+		const extensionLogs: LogChannelQuickPickItem[] = [];
+		const logs: LogChannelQuickPickItem[] = [];
 		const logLevel = this.loggerService.getLogLevel();
 		for (const channel of this.outputService.getChannelDescriptors()) {
 			if (
-				!channel.log ||
-				!channel.file ||
+				!(channel.log && channel.file) ||
 				channel.id === telemetryLogId ||
 				channel.id === extensionTelemetryLogChannelId
 			) {
@@ -321,24 +320,30 @@ export class SetLogLevelAction extends Action {
 	private getLabel(level: LogLevel, current?: LogLevel): string {
 		let label: string;
 		switch (level) {
-			case LogLevel.Trace:
+			case LogLevel.Trace: {
 				label = nls.localize("trace", "Trace");
 				break;
-			case LogLevel.Debug:
+			}
+			case LogLevel.Debug: {
 				label = nls.localize("debug", "Debug");
 				break;
-			case LogLevel.Info:
+			}
+			case LogLevel.Info: {
 				label = nls.localize("info", "Info");
 				break;
-			case LogLevel.Warning:
+			}
+			case LogLevel.Warning: {
 				label = nls.localize("warn", "Warning");
 				break;
-			case LogLevel.Error:
+			}
+			case LogLevel.Error: {
 				label = nls.localize("err", "Error");
 				break;
-			case LogLevel.Off:
+			}
+			case LogLevel.Off: {
 				label = nls.localize("off", "Off");
 				break;
+			}
 		}
 		return level === current ? `$(check) ${label}` : label;
 	}

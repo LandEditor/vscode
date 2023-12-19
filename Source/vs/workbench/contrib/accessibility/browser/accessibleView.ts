@@ -349,7 +349,7 @@ export class AccessibleView extends Disposable {
 	}
 
 	getPosition(id?: AccessibleViewProviderId): Position | undefined {
-		if (!id || !this._lastProvider || this._lastProvider.id !== id) {
+		if (!(id && this._lastProvider) || this._lastProvider.id !== id) {
 			return undefined;
 		}
 		return this._editorWidget.getPosition() || undefined;
@@ -466,7 +466,7 @@ export class AccessibleView extends Disposable {
 	}
 
 	getSymbols(): IAccessibleViewSymbol[] | undefined {
-		if (!this._currentProvider || !this._currentContent) {
+		if (!(this._currentProvider && this._currentContent)) {
 			return;
 		}
 		const symbols: IAccessibleViewSymbol[] =
@@ -502,9 +502,10 @@ export class AccessibleView extends Disposable {
 				switch (token.type) {
 					case "heading":
 					case "paragraph":
-					case "code":
+					case "code": {
 						label = token.text;
 						break;
+					}
 					case "list": {
 						const firstItem = token.items?.[0];
 						if (!firstItem) {
@@ -662,7 +663,7 @@ export class AccessibleView extends Disposable {
 				message = AccessibilityHelpNLS.auto_on;
 				message += "\n";
 			} else if (!accessibilitySupport) {
-				message = AccessibilityHelpNLS.auto_off + "\n" + turnOnMessage;
+				message = `${AccessibilityHelpNLS.auto_off}\n${turnOnMessage}`;
 				message += "\n";
 			}
 		}
@@ -948,13 +949,13 @@ export class AccessibleView extends Disposable {
 
 		let hint = localize("intro", "In the accessible view, you can:\n");
 		if (navigationHint) {
-			hint += " - " + navigationHint + "\n";
+			hint += ` - ${navigationHint}\n`;
 		}
 		if (goToSymbolHint) {
-			hint += " - " + goToSymbolHint + "\n";
+			hint += ` - ${goToSymbolHint}\n`;
 		}
 		if (toolbarHint) {
-			hint += " - " + toolbarHint + "\n";
+			hint += ` - ${toolbarHint}\n`;
 		}
 		return hint;
 	}

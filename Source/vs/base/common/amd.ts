@@ -60,34 +60,42 @@ export abstract class LoaderStats {
 
 		for (const stat of stats) {
 			switch (stat.type) {
-				case LoaderEventType.BeginLoadingScript:
+				case LoaderEventType.BeginLoadingScript: {
 					mark(amdLoadScript, stat);
 					break;
+				}
 				case LoaderEventType.EndLoadingScriptOK:
-				case LoaderEventType.EndLoadingScriptError:
+				case LoaderEventType.EndLoadingScriptError: {
 					diff(amdLoadScript, stat);
 					break;
+				}
 
-				case LoaderEventType.BeginInvokeFactory:
+				case LoaderEventType.BeginInvokeFactory: {
 					mark(amdInvokeFactory, stat);
 					break;
-				case LoaderEventType.EndInvokeFactory:
+				}
+				case LoaderEventType.EndInvokeFactory: {
 					diff(amdInvokeFactory, stat);
 					break;
+				}
 
-				case LoaderEventType.NodeBeginNativeRequire:
+				case LoaderEventType.NodeBeginNativeRequire: {
 					mark(nodeRequire, stat);
 					break;
-				case LoaderEventType.NodeEndNativeRequire:
+				}
+				case LoaderEventType.NodeEndNativeRequire: {
 					diff(nodeRequire, stat);
 					break;
+				}
 
-				case LoaderEventType.NodeBeginEvaluatingScript:
+				case LoaderEventType.NodeBeginEvaluatingScript: {
 					mark(nodeEval, stat);
 					break;
-				case LoaderEventType.NodeEndEvaluatingScript:
+				}
+				case LoaderEventType.NodeEndEvaluatingScript: {
 					diff(nodeEval, stat);
 					break;
+				}
 			}
 		}
 

@@ -112,7 +112,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 			this._logService.info(
 				"UNRESPONSIVE extension host: received responsive event and cancelling profiling session",
 			);
-		} else if (!event.isResponsive && !this._session) {
+		} else if (!(event.isResponsive || this._session)) {
 			// start profiling if not yet profiling
 			const cts = new CancellationTokenSource();
 			this._session = cts;

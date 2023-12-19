@@ -17,7 +17,7 @@ import {
 
 export interface IAutomatedWindow {
 	codeAutomationLog(type: string, args: any[]): void;
-	codeAutomationExit(code: number, logs: Array<ILogFile>): void;
+	codeAutomationExit(code: number, logs: ILogFile[]): void;
 }
 
 export interface ILogFile {

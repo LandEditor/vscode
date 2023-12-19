@@ -48,14 +48,11 @@ export class BasicInplaceReplace {
 	}
 
 	private numberReplace(value: string, up: boolean): string | null {
-		const precision = Math.pow(
-			10,
-			value.length - (value.lastIndexOf(".") + 1),
-		);
+		const precision = 10 ** (value.length - (value.lastIndexOf(".") + 1));
 		let n1 = Number(value);
 		const n2 = parseFloat(value);
 
-		if (!isNaN(n1) && !isNaN(n2) && n1 === n2) {
+		if (!(Number.isNaN(n1) || Number.isNaN(n2)) && n1 === n2) {
 			if (n1 === 0 && !up) {
 				return null; // don't do negative
 				//			} else if(n1 === 9 && up) {

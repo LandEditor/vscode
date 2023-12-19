@@ -161,7 +161,7 @@ export class Position {
 	static of(obj: vscode.Position): Position {
 		if (obj instanceof Position) {
 			return obj;
-		} else if (this.isPosition(obj)) {
+		} else if (Position.isPosition(obj)) {
 			return new Position(obj.line, obj.character);
 		}
 		throw new Error("Invalid argument, is NOT a position-like object");
@@ -341,7 +341,7 @@ export class Range {
 		if (obj instanceof Range) {
 			return obj;
 		}
-		if (this.isRange(obj)) {
+		if (Range.isRange(obj)) {
 			return new Range(obj.start, obj.end);
 		}
 		throw new Error("Invalid argument, is NOT a range-like object");
@@ -391,7 +391,7 @@ export class Range {
 			end = Position.of(startColumnOrEnd);
 		}
 
-		if (!start || !end) {
+		if (!(start && end)) {
 			throw new Error("Invalid arguments");
 		}
 
@@ -554,7 +554,7 @@ export class Selection extends Range {
 			active = Position.of(anchorColumnOrActive);
 		}
 
-		if (!anchor || !active) {
+		if (!(anchor && active)) {
 			throw new Error("Invalid arguments");
 		}
 
@@ -949,7 +949,7 @@ type WorkspaceEditEntry =
 export class WorkspaceEdit implements vscode.WorkspaceEdit {
 	private readonly _edits: WorkspaceEditEntry[] = [];
 
-	_allEntries(): ReadonlyArray<WorkspaceEditEntry> {
+	_allEntries(): readonly WorkspaceEditEntry[] {
 		return this._edits;
 	}
 
@@ -1114,14 +1114,15 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
 	set(uri: URI, edits: ReadonlyArray<TextEdit | SnippetTextEdit>): void;
 	set(
 		uri: URI,
-		edits: ReadonlyArray<
-			[TextEdit | SnippetTextEdit, vscode.WorkspaceEditEntryMetadata]
-		>,
+		edits: readonly [
+			TextEdit | SnippetTextEdit,
+			vscode.WorkspaceEditEntryMetadata,
+		][],
 	): void;
 	set(uri: URI, edits: readonly NotebookEdit[]): void;
 	set(
 		uri: URI,
-		edits: ReadonlyArray<[NotebookEdit, vscode.WorkspaceEditEntryMetadata]>,
+		edits: readonly [NotebookEdit, vscode.WorkspaceEditEntryMetadata][],
 	): void;
 
 	set(
@@ -1201,11 +1202,12 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
 					case FileEditType.Text:
 					case FileEditType.Snippet:
 					case FileEditType.Cell:
-					case FileEditType.CellReplace:
+					case FileEditType.CellReplace: {
 						if (element.uri.toString() === uri.toString()) {
 							this._edits[i] = undefined!; // will be coalesced down below
 						}
 						break;
+					}
 				}
 			}
 			coalesceInPlace(this._edits);
@@ -1433,7 +1435,7 @@ export class DiagnosticRelatedInformation {
 		if (a === b) {
 			return true;
 		}
-		if (!a || !b) {
+		if (!(a && b)) {
 			return false;
 		}
 		return (
@@ -1487,7 +1489,7 @@ export class Diagnostic {
 		if (a === b) {
 			return true;
 		}
-		if (!a || !b) {
+		if (!(a && b)) {
 			return false;
 		}
 		return (
@@ -1876,8 +1878,7 @@ export class MarkdownString implements vscode.MarkdownString {
 			return true;
 		}
 		return (
-			thing &&
-			thing.appendCodeblock &&
+			thing?.appendCodeblock &&
 			thing.appendMarkdown &&
 			thing.appendText &&
 			thing.value !== undefined
@@ -2472,7 +2473,7 @@ export class TaskGroup implements vscode.TaskGroup {
 function computeTaskExecutionId(values: string[]): string {
 	let id = "";
 	for (let i = 0; i < values.length; i++) {
-		id += values[i].replace(/,/g, ",,") + ",";
+		id += `${values[i].replace(/,/g, ",,")},`;
 	}
 	return id;
 }
@@ -2676,7 +2677,7 @@ export class CustomExecution implements vscode.CustomExecution {
 		this._callback = callback;
 	}
 	public computeId(): string {
-		return "customExecution" + generateUuid();
+		return `customExecution${generateUuid()}`;
 	}
 
 	public set callback(value: (
@@ -3092,19 +3093,23 @@ export class TreeItem {
 			treeItemThing.iconPath !== undefined &&
 			!isString(treeItemThing.iconPath) &&
 			!URI.isUri(treeItemThing.iconPath) &&
-			(!treeItemThing.iconPath ||
-				!isString((treeItemThing.iconPath as vscode.ThemeIcon).id))
+			!(
+				treeItemThing.iconPath &&
+				isString((treeItemThing.iconPath as vscode.ThemeIcon).id)
+			)
 		) {
 			const asLightAndDarkThing = treeItemThing.iconPath as {
 				light: string | URI;
 				dark: string | URI;
 			} | null;
 			if (
-				!asLightAndDarkThing ||
-				(!isString(asLightAndDarkThing.light) &&
-					!URI.isUri(asLightAndDarkThing.light) &&
-					!isString(asLightAndDarkThing.dark) &&
-					!URI.isUri(asLightAndDarkThing.dark))
+				!(
+					asLightAndDarkThing &&
+					(isString(asLightAndDarkThing.light) ||
+						URI.isUri(asLightAndDarkThing.light) ||
+						isString(asLightAndDarkThing.dark) ||
+						URI.isUri(asLightAndDarkThing.dark))
+				)
 			) {
 				console.log(
 					"INVALID tree item, invalid iconPath",
@@ -3432,7 +3437,7 @@ export class RelativePattern implements IRelativePattern {
 
 	constructor(base: vscode.WorkspaceFolder | URI | string, pattern: string) {
 		if (typeof base !== "string") {
-			if (!base || (!URI.isUri(base) && !URI.isUri(base.uri))) {
+			if (!(base && (URI.isUri(base) || URI.isUri(base.uri)))) {
 				throw illegalArgument("base");
 			}
 		}
@@ -4170,8 +4175,8 @@ export class FileDecoration {
 				);
 			}
 		}
-		if (!d.color && !d.badge && !d.tooltip) {
-			throw new Error(`The decoration is empty`);
+		if (!(d.color || d.badge || d.tooltip)) {
+			throw new Error("The decoration is empty");
 		}
 		return true;
 	}
@@ -4840,9 +4845,7 @@ export class NotebookDiffEditorTabInput {
 	) {}
 }
 
-export class TerminalEditorTabInput {
-	constructor() {}
-}
+export class TerminalEditorTabInput {}
 export class InteractiveWindowInput {
 	constructor(readonly uri: URI, readonly inputBoxUri: URI) {}
 }

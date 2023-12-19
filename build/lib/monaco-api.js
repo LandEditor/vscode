@@ -19,7 +19,7 @@ const SRC = path.join(__dirname, "../../src");
 exports.RECIPE_PATH = path.join(__dirname, "../monaco/monaco.d.ts.recipe");
 const DECLARATION_PATH = path.join(__dirname, "../../src/vs/monaco.d.ts");
 function logErr(message, ...rest) {
-	fancyLog(ansiColors.yellow(`[monaco.d.ts]`), message, ...rest);
+	fancyLog(ansiColors.yellow("[monaco.d.ts]"), message, ...rest);
 }
 function isDeclaration(ts, a) {
 	return (
@@ -357,7 +357,7 @@ function createReplacer(data) {
 			/[\-\\\{\}\*\+\?\|\^\$\.\,\[\]\(\)\#\s]/g,
 			"\\$&",
 		);
-		findStr = "\\b" + findStr + "\\b";
+		findStr = `\\b${findStr}\\b`;
 		directives.push([new RegExp(findStr, "g"), replaceStr]);
 	});
 	return createReplacerFromDirectives(directives);
@@ -370,10 +370,10 @@ function generateDeclarationFile(ts, recipe, sourceFileGetter) {
 	const usageImports = [];
 	const usage = [];
 	let failed = false;
-	usage.push(`var a: any;`);
-	usage.push(`var b: any;`);
+	usage.push("var a: any;");
+	usage.push("var b: any;");
 	const generateUsageImport = (moduleId) => {
-		const importName = "m" + ++usageCounter;
+		const importName = `m${++usageCounter}`;
 		usageImports.push(
 			`import * as ${importName} from './${moduleId.replace(
 				/\.d\.ts$/,
@@ -719,7 +719,7 @@ class TypeScriptLanguageServiceHost {
 function execute() {
 	const r = run3(new DeclarationResolver(new FSProvider()));
 	if (!r) {
-		throw new Error(`monaco.d.ts generation error - Cannot continue`);
+		throw new Error("monaco.d.ts generation error - Cannot continue");
 	}
 	return r;
 }

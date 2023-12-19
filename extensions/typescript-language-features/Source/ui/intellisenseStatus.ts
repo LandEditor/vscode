@@ -129,7 +129,7 @@ export class IntellisenseStatus extends Disposable {
 
 	private async updateStatus() {
 		const doc = this._activeTextEditorManager.activeJsTsEditor?.document;
-		if (!doc || !isSupportedLanguageMode(doc)) {
+		if (!(doc && isSupportedLanguageMode(doc))) {
 			this.updateState(IntellisenseState.None);
 			return;
 		}

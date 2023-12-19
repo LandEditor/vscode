@@ -200,8 +200,7 @@ export class ViewportSemanticTokensContribution
 			.then((r) => {
 				this._debounceInformation.update(model, sw.elapsed());
 				if (
-					!r ||
-					!r.tokens ||
+					!r?.tokens ||
 					model.isDisposed() ||
 					model.getVersionId() !== requestVersionId
 				) {

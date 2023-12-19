@@ -577,12 +577,11 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 			this._movedBlocksLinesPart.read(reader)?.width.read(reader) ?? 0;
 		const originalWidthWithoutMovedBlockLines =
 			originalWidth - movedBlocksLinesWidth;
-		this.elements.original.style.width =
-			originalWidthWithoutMovedBlockLines + "px";
+		this.elements.original.style.width = `${originalWidthWithoutMovedBlockLines}px`;
 		this.elements.original.style.left = "0px";
 
-		this.elements.modified.style.width = modifiedWidth + "px";
-		this.elements.modified.style.left = originalWidth + "px";
+		this.elements.modified.style.width = `${modifiedWidth}px`;
+		this.elements.modified.style.left = `${originalWidth}px`;
 
 		this._editors.original.layout(
 			{ width: originalWidthWithoutMovedBlockLines, height },
@@ -651,7 +650,7 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 	}
 
 	public override restoreViewState(s: IDiffEditorViewState): void {
-		if (s && s.original && s.modified) {
+		if (s?.original && s.modified) {
 			const diffEditorState = s as IDiffEditorViewState;
 			this._editors.original.restoreViewState(diffEditorState.original);
 			this._editors.modified.restoreViewState(diffEditorState.modified);
@@ -794,7 +793,7 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 		}
 
 		const model = this._diffModel.get();
-		if (!model || !model.isDiffUpToDate.get()) {
+		if (!model?.isDiffUpToDate.get()) {
 			return;
 		}
 
@@ -810,7 +809,7 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 
 	revertRangeMappings(diffs: RangeMapping[]): void {
 		const model = this._diffModel.get();
-		if (!model || !model.isDiffUpToDate.get()) {
+		if (!model?.isDiffUpToDate.get()) {
 			return;
 		}
 
@@ -838,7 +837,7 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 			return;
 		}
 
-		const curLineNumber = this._editors.modified.getPosition()!.lineNumber;
+		const curLineNumber = this._editors.modified.getPosition()?.lineNumber;
 
 		let diff: DiffMapping | undefined;
 		if (target === "next") {

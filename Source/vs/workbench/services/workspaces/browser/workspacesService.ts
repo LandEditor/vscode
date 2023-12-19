@@ -123,12 +123,13 @@ export class BrowserWorkspacesService
 		const workspace = this.contextService.getWorkspace();
 		const remoteAuthority = this.environmentService.remoteAuthority;
 		switch (this.contextService.getWorkbenchState()) {
-			case WorkbenchState.FOLDER:
+			case WorkbenchState.FOLDER: {
 				this.addRecentlyOpened([
 					{ folderUri: workspace.folders[0].uri, remoteAuthority },
 				]);
 				break;
-			case WorkbenchState.WORKSPACE:
+			}
+			case WorkbenchState.WORKSPACE: {
 				this.addRecentlyOpened([
 					{
 						workspace: {
@@ -139,6 +140,7 @@ export class BrowserWorkspacesService
 					},
 				]);
 				break;
+			}
 		}
 	}
 

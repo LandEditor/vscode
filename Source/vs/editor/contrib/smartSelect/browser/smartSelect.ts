@@ -101,11 +101,13 @@ export class SmartSelectController implements IEditorContribution {
 					return;
 				}
 				if (
-					!this._editor.hasModel() ||
-					!arrays.equals(
-						this._editor.getSelections(),
-						selections,
-						(a, b) => a.equalsSelection(b),
+					!(
+						this._editor.hasModel() &&
+						arrays.equals(
+							this._editor.getSelections(),
+							selections,
+							(a, b) => a.equalsSelection(b),
+						)
 					)
 				) {
 					// invalid editor state

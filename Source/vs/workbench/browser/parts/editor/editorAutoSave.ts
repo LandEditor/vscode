@@ -154,7 +154,7 @@ export class EditorAutoSave
 					this.discardAutoSave(workingCopyResult.workingCopy);
 
 					this.logService.info(
-						`[editor auto save] running auto save from marker change event`,
+						"[editor auto save] running auto save from marker change event",
 						workingCopyResult.workingCopy.resource.toString(),
 						workingCopyResult.workingCopy.typeId,
 					);
@@ -287,16 +287,19 @@ export class EditorAutoSave
 		switch (
 			this.filesConfigurationService.getAutoSaveMode(undefined).mode
 		) {
-			case AutoSaveMode.ON_FOCUS_CHANGE:
+			case AutoSaveMode.ON_FOCUS_CHANGE: {
 				reason = SaveReason.FOCUS_CHANGE;
 				break;
-			case AutoSaveMode.ON_WINDOW_CHANGE:
+			}
+			case AutoSaveMode.ON_WINDOW_CHANGE: {
 				reason = SaveReason.WINDOW_CHANGE;
 				break;
+			}
 			case AutoSaveMode.AFTER_SHORT_DELAY:
-			case AutoSaveMode.AFTER_LONG_DELAY:
+			case AutoSaveMode.AFTER_LONG_DELAY: {
 				reason = SaveReason.AUTO;
 				break;
+			}
 		}
 
 		if (reason) {
@@ -386,7 +389,7 @@ export class EditorAutoSave
 					);
 				if (autoSaveMode.mode !== AutoSaveMode.OFF) {
 					this.logService.trace(
-						`[editor auto save] running auto save`,
+						"[editor auto save] running auto save",
 						workingCopy.resource.toString(),
 						workingCopy.typeId,
 					);
@@ -407,7 +410,7 @@ export class EditorAutoSave
 			workingCopy,
 			toDisposable(() => {
 				this.logService.trace(
-					`[editor auto save] clearing pending auto save`,
+					"[editor auto save] clearing pending auto save",
 					workingCopy.resource.toString(),
 					workingCopy.typeId,
 				);

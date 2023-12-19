@@ -169,7 +169,7 @@ function getMergedDescription(
 			);
 			message.push(`: ${workspaceDescription}`);
 		}
-		if (!globalDescription && !workspaceDescription) {
+		if (!(globalDescription || workspaceDescription)) {
 			message.push(`\n- \`${getExtensionName(ext, extensionService)}\``);
 		}
 	}

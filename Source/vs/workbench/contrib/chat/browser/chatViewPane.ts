@@ -89,7 +89,7 @@ export class ChatViewPane extends ViewPane implements IChatViewPane {
 
 		// View state for the ViewPane is currently global per-provider basically, but some other strictly per-model state will require a separate memento.
 		this.memento = new Memento(
-			"interactive-session-view-" + this.chatViewOptions.providerId,
+			`interactive-session-view-${this.chatViewOptions.providerId}`,
 			this.storageService
 		);
 		this.viewState = this.memento.getMemento(

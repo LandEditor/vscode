@@ -105,7 +105,7 @@ export class InlayHintsAccessibility implements IEditorContribution {
 			this._editor.getDomNode()?.appendChild(this._ariaElement);
 		}
 
-		if (!this._editor.hasModel() || !this._ariaElement.isConnected) {
+		if (!(this._editor.hasModel() && this._ariaElement.isConnected)) {
 			this._ctxIsReading.set(false);
 			return;
 		}

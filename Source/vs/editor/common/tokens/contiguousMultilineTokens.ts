@@ -98,7 +98,7 @@ export class ContiguousMultilineTokens {
 		for (let i = 0; i < this._tokens.length; i++) {
 			const lineTokens = this._tokens[i];
 			if (!(lineTokens instanceof Uint32Array)) {
-				throw new Error(`Not supported!`);
+				throw new Error("Not supported!");
 			}
 			result += 4; // 4 bytes for the byte count
 			result += lineTokens.byteLength;
@@ -114,7 +114,7 @@ export class ContiguousMultilineTokens {
 		for (let i = 0; i < this._tokens.length; i++) {
 			const lineTokens = this._tokens[i];
 			if (!(lineTokens instanceof Uint32Array)) {
-				throw new Error(`Not supported!`);
+				throw new Error("Not supported!");
 			}
 			writeUInt32BE(destination, lineTokens.byteLength, offset);
 			offset += 4;

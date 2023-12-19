@@ -90,7 +90,7 @@ class ProtocolBuffer {
 		const data = this.buffer.toString("utf8", start, current);
 		result = parseInt(data);
 		this.buffer = this.buffer.slice(current + 4);
-		this.index = this.index - (current + 4);
+		this.index -= current + 4;
 		return result;
 	}
 
@@ -108,7 +108,7 @@ class ProtocolBuffer {
 			sourceStart++;
 		}
 		this.buffer.copy(this.buffer, 0, sourceStart);
-		this.index = this.index - sourceStart;
+		this.index -= sourceStart;
 		return result;
 	}
 }
@@ -203,7 +203,7 @@ function getDebugPort(kind: TsServerProcessKind): number | undefined {
 	const value = getTssDebugBrk() || getTssDebug();
 	if (value) {
 		const port = parseInt(value);
-		if (!isNaN(port)) {
+		if (!Number.isNaN(port)) {
 			return port;
 		}
 	}
@@ -261,8 +261,8 @@ class StdioChildServerProcess extends Disposable implements TsServerProcess {
 	}
 
 	write(serverRequest: Proto.Request): void {
-		this._process.stdin!.write(
-			JSON.stringify(serverRequest) + "\r\n",
+		this._process.stdin?.write(
+			`${JSON.stringify(serverRequest)}\r\n`,
 			"utf8",
 		);
 	}

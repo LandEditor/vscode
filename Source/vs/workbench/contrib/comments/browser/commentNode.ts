@@ -183,7 +183,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 		);
 
 		this.createHeader(this._commentDetailsContainer);
-		this._body = document.createElement(`div`);
+		this._body = document.createElement("div");
 		this._body.classList.add(
 			"comment-body",
 			MOUSE_CURSOR_TEXT_CSS_CLASS_NAME
@@ -200,8 +200,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 		this.updateCommentBody(this.comment.body);
 
 		if (
-			this.comment.commentReactions &&
-			this.comment.commentReactions.length &&
+			this.comment.commentReactions?.length &&
 			this.comment.commentReactions.filter((reaction) => !!reaction.count)
 				.length
 		) {
@@ -480,7 +479,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 					this.createToolbar();
 				}
 
-				this.toolbar!.setActions(primary, secondary);
+				this.toolbar?.setActions(primary, secondary);
 			}),
 		);
 
@@ -489,7 +488,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 
 		if (actions.length || secondary.length) {
 			this.createToolbar();
-			this.toolbar!.setActions(actions, secondary);
+			this.toolbar?.setActions(actions, secondary);
 		}
 	}
 
@@ -542,7 +541,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 		);
 
 		let reactionMenuActions: Action[] = [];
-		if (reactionGroup && reactionGroup.length) {
+		if (reactionGroup?.length) {
 			reactionMenuActions = reactionGroup.map((reaction) => {
 				return new Action(
 					`reaction.command.${reaction.label}`,
@@ -641,8 +640,8 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 		const hasReactionHandler = this.commentService.hasReactionHandler(
 			this.owner,
 		);
-		this.comment
-			.commentReactions!.filter((reaction) => !!reaction.count)
+		this.comment.commentReactions
+			?.filter((reaction) => !!reaction.count)
 			.map((reaction) => {
 				const action = new ReactionAction(
 					`reaction.${reaction.label}`,
@@ -748,11 +747,11 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 		this._commentEditor.focus();
 
 		dom.scheduleAtNextAnimationFrame(dom.getWindow(editContainer), () => {
-			this._commentEditor!.layout({
+			this._commentEditor?.layout({
 				width: container.clientWidth - 14,
 				height: this._editorHeight,
 			});
-			this._commentEditor!.focus();
+			this._commentEditor?.focus();
 		});
 
 		const lastLine = this._commentEditorModel.getLineCount();
@@ -763,7 +762,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 
 		const commentThread = this.commentThread;
 		commentThread.input = {
-			uri: this._commentEditor.getModel()!.uri,
+			uri: this._commentEditor.getModel()?.uri,
 			value: this.commentBodyValue,
 		};
 		this.commentService.setActiveCommentThread(commentThread);
@@ -771,7 +770,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 		this._commentEditorDisposables.push(
 			this._commentEditor.onDidFocusEditorWidget(() => {
 				commentThread.input = {
-					uri: this._commentEditor!.getModel()!.uri,
+					uri: this._commentEditor?.getModel()?.uri,
 					value: this.commentBodyValue,
 				};
 				this.commentService.setActiveCommentThread(commentThread);
@@ -783,7 +782,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 				if (
 					commentThread.input &&
 					this._commentEditor &&
-					this._commentEditor.getModel()!.uri ===
+					this._commentEditor.getModel()?.uri ===
 						commentThread.input.uri
 				) {
 					const newVal = this._commentEditor.getValue();
@@ -856,7 +855,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 			this._commentEditor = null;
 		}
 
-		this._commentEditContainer!.remove();
+		this._commentEditContainer?.remove();
 	}
 
 	layout(widthInPixel?: number) {
@@ -920,7 +919,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 		this._commentFormActions = new CommentFormActions(
 			container,
 			(action: IAction): void => {
-				const text = this._commentEditor!.getValue();
+				const text = this._commentEditor?.getValue();
 
 				action.run({
 					thread: this.commentThread,
@@ -951,7 +950,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 		this._commentEditorActions = new CommentFormActions(
 			container,
 			(action: IAction): void => {
-				const text = this._commentEditor!.getValue();
+				const text = this._commentEditor?.getValue();
 
 				action.run({
 					thread: this.commentThread,
@@ -1042,8 +1041,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 		this._reactionsActionBar?.clear();
 
 		if (
-			this.comment.commentReactions &&
-			this.comment.commentReactions.some((reaction) => !!reaction.count)
+			this.comment.commentReactions?.some((reaction) => !!reaction.count)
 		) {
 			this.createReactionsContainer(this._commentDetailsContainer);
 		}

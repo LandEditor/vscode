@@ -133,7 +133,7 @@ export class TaskStatusBarContributions
 
 			if (!this._ignoreEventForUpdateRunningTasksCount(event)) {
 				switch (event.kind) {
-					case TaskEventKind.Active:
+					case TaskEventKind.Active: {
 						this._activeTasksCount++;
 						if (this._activeTasksCount === 1) {
 							if (!promise) {
@@ -143,26 +143,29 @@ export class TaskStatusBarContributions
 							}
 						}
 						break;
-					case TaskEventKind.Inactive:
+					}
+					case TaskEventKind.Inactive: {
 						// Since the exiting of the sub process is communicated async we can't order inactive and terminate events.
 						// So try to treat them accordingly.
 						if (this._activeTasksCount > 0) {
 							this._activeTasksCount--;
 							if (this._activeTasksCount === 0) {
 								if (promise && resolver!) {
-									resolver!();
+									resolver?.();
 								}
 							}
 						}
 						break;
-					case TaskEventKind.Terminated:
+					}
+					case TaskEventKind.Terminated: {
 						if (this._activeTasksCount !== 0) {
 							this._activeTasksCount = 0;
 							if (promise && resolver!) {
-								resolver!();
+								resolver?.();
 							}
 						}
 						break;
+					}
 				}
 			}
 

@@ -34,7 +34,7 @@ export function formatPII(
 			return match;
 		}
 
-		return args && args.hasOwnProperty(group) ? args[group] : match;
+		return args?.hasOwnProperty(group) ? args[group] : match;
 	});
 }
 
@@ -226,7 +226,7 @@ const _schemePattern = /^[a-zA-Z][a-zA-Z0-9\+\-\.]+:/;
 export function isUri(s: string | undefined): boolean {
 	// heuristics: a valid uri starts with a scheme and
 	// the scheme has at least 2 characters so that it doesn't look like a drive letter.
-	return !!(s && s.match(_schemePattern));
+	return !!s?.match(_schemePattern);
 }
 
 function stringToUri(source: PathContainer): string | undefined {
@@ -313,25 +313,28 @@ function convertPaths(
 		case "event": {
 			const event = <DebugProtocol.Event>msg;
 			switch (event.event) {
-				case "output":
+				case "output": {
 					fixSourcePath(
 						false,
 						(<DebugProtocol.OutputEvent>event).body.source,
 					);
 					break;
-				case "loadedSource":
+				}
+				case "loadedSource": {
 					fixSourcePath(
 						false,
 						(<DebugProtocol.LoadedSourceEvent>event).body.source,
 					);
 					break;
-				case "breakpoint":
+				}
+				case "breakpoint": {
 					fixSourcePath(
 						false,
 						(<DebugProtocol.BreakpointEvent>event).body.breakpoint
 							.source,
 					);
 					break;
+				}
 				default:
 					break;
 			}
@@ -340,7 +343,7 @@ function convertPaths(
 		case "request": {
 			const request = <DebugProtocol.Request>msg;
 			switch (request.command) {
-				case "setBreakpoints":
+				case "setBreakpoints": {
 					fixSourcePath(
 						true,
 						(<DebugProtocol.SetBreakpointsArguments>(
@@ -348,7 +351,8 @@ function convertPaths(
 						)).source,
 					);
 					break;
-				case "breakpointLocations":
+				}
+				case "breakpointLocations": {
 					fixSourcePath(
 						true,
 						(<DebugProtocol.BreakpointLocationsArguments>(
@@ -356,26 +360,30 @@ function convertPaths(
 						)).source,
 					);
 					break;
-				case "source":
+				}
+				case "source": {
 					fixSourcePath(
 						true,
 						(<DebugProtocol.SourceArguments>request.arguments)
 							.source,
 					);
 					break;
-				case "gotoTargets":
+				}
+				case "gotoTargets": {
 					fixSourcePath(
 						true,
 						(<DebugProtocol.GotoTargetsArguments>request.arguments)
 							.source,
 					);
 					break;
-				case "launchVSCode":
+				}
+				case "launchVSCode": {
 					request.arguments.args.forEach(
 						(arg: PathContainer | undefined) =>
 							fixSourcePath(false, arg),
 					);
 					break;
+				}
 				default:
 					break;
 			}
@@ -385,48 +393,57 @@ function convertPaths(
 			const response = <DebugProtocol.Response>msg;
 			if (response.success && response.body) {
 				switch (response.command) {
-					case "stackTrace":
+					case "stackTrace": {
 						(<DebugProtocol.StackTraceResponse>(
 							response
 						)).body.stackFrames.forEach((frame) =>
 							fixSourcePath(false, frame.source),
 						);
 						break;
-					case "loadedSources":
+					}
+					case "loadedSources": {
 						(<DebugProtocol.LoadedSourcesResponse>(
 							response
 						)).body.sources.forEach((source) =>
 							fixSourcePath(false, source),
 						);
 						break;
-					case "scopes":
+					}
+					case "scopes": {
 						(<DebugProtocol.ScopesResponse>(
 							response
 						)).body.scopes.forEach((scope) =>
 							fixSourcePath(false, scope.source),
 						);
 						break;
-					case "setFunctionBreakpoints":
+					}
+					case "setFunctionBreakpoints": {
 						(<DebugProtocol.SetFunctionBreakpointsResponse>(
 							response
 						)).body.breakpoints.forEach((bp) =>
 							fixSourcePath(false, bp.source),
 						);
 						break;
-					case "setBreakpoints":
+					}
+					case "setBreakpoints": {
 						(<DebugProtocol.SetBreakpointsResponse>(
 							response
 						)).body.breakpoints.forEach((bp) =>
 							fixSourcePath(false, bp.source),
 						);
 						break;
-					case "disassemble": {
-						const di = <DebugProtocol.DisassembleResponse>response;
-						di.body?.instructions.forEach((di) =>
-							fixSourcePath(false, di.location),
-						);
 					}
-					break;
+					case "disassemble": {
+						{
+							const di = <DebugProtocol.DisassembleResponse>(
+								response
+							);
+							di.body?.instructions.forEach((di) =>
+								fixSourcePath(false, di.location),
+							);
+						}
+						break;
+					}
 					default:
 						break;
 				}
@@ -525,8 +542,8 @@ export const sourcesEqual = (
 	a: DebugProtocol.Source | undefined,
 	b: DebugProtocol.Source | undefined,
 ): boolean =>
-	!a || !b
-		? a === b
-		: a.name === b.name &&
+	a && b
+		? a.name === b.name &&
 		  a.path === b.path &&
-		  a.sourceReference === b.sourceReference;
+		  a.sourceReference === b.sourceReference
+		: a === b;

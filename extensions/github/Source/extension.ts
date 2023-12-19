@@ -78,7 +78,7 @@ function initializeGitBaseExtension(): Disposable {
 	};
 
 	const gitBaseExtension =
-		extensions.getExtension<GitBaseExtension>("vscode.git-base")!.exports;
+		extensions.getExtension<GitBaseExtension>("vscode.git-base")?.exports;
 	disposables.add(
 		gitBaseExtension.onDidChangeEnablement(
 			onDidChangeGitBaseExtensionEnablement,
@@ -118,7 +118,7 @@ function initializeGitExtension(
 	let gitExtension = extensions.getExtension<GitExtension>("vscode.git");
 
 	const initialize = () => {
-		gitExtension!.activate().then((extension) => {
+		gitExtension?.activate().then((extension) => {
 			const onDidChangeGitExtensionEnablement = (enabled: boolean) => {
 				if (enabled) {
 					const gitAPI = extension.getAPI(1);

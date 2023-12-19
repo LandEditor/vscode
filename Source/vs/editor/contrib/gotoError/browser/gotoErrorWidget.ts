@@ -261,25 +261,29 @@ class MessageWidget {
 	private getAriaLabel(marker: IMarker): string {
 		let severityLabel = "";
 		switch (marker.severity) {
-			case MarkerSeverity.Error:
+			case MarkerSeverity.Error: {
 				severityLabel = nls.localize("Error", "Error");
 				break;
-			case MarkerSeverity.Warning:
+			}
+			case MarkerSeverity.Warning: {
 				severityLabel = nls.localize("Warning", "Warning");
 				break;
-			case MarkerSeverity.Info:
+			}
+			case MarkerSeverity.Info: {
 				severityLabel = nls.localize("Info", "Info");
 				break;
-			case MarkerSeverity.Hint:
+			}
+			case MarkerSeverity.Hint: {
 				severityLabel = nls.localize("Hint", "Hint");
 				break;
+			}
 		}
 
 		let ariaLabel = nls.localize(
 			"marker aria",
 			"{0} at {1}. ",
 			severityLabel,
-			marker.startLineNumber + ":" + marker.startColumn,
+			`${marker.startLineNumber}:${marker.startColumn}`,
 		);
 		const model = this._editor.getModel();
 		if (
@@ -391,7 +395,7 @@ export class MarkerNavigationWidget extends PeekViewWidget {
 		super._fillHead(container);
 
 		this._disposables.add(
-			this._actionbarWidget!.actionRunner.onWillRun((e) =>
+			this._actionbarWidget?.actionRunner.onWillRun((e) =>
 				this.editor.focus(),
 			),
 		);
@@ -402,7 +406,7 @@ export class MarkerNavigationWidget extends PeekViewWidget {
 			this._contextKeyService,
 		);
 		createAndFillInActionBarActions(menu, undefined, actions);
-		this._actionbarWidget!.push(actions, {
+		this._actionbarWidget?.push(actions, {
 			label: false,
 			icon: true,
 			index: 0,

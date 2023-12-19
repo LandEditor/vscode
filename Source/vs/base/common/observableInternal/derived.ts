@@ -250,9 +250,7 @@ export class Derived<T, TChangeSummary = any>
 		private readonly _handleChange:
 			| ((context: IChangeContext, summary: TChangeSummary) => boolean)
 			| undefined,
-		private readonly _handleLastObserverRemoved:
-			| (() => void)
-			| undefined = undefined,
+		private readonly _handleLastObserverRemoved: (() => void) | undefined,
 		private readonly _equalityComparator: EqualityComparer<T>,
 	) {
 		super();

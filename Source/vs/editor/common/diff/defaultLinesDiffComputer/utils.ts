@@ -31,10 +31,10 @@ export class LineRangeFragment {
 	private static chrKeys = new Map<string, number>();
 
 	private static getKey(chr: string): number {
-		let key = this.chrKeys.get(chr);
+		let key = LineRangeFragment.chrKeys.get(chr);
 		if (key === undefined) {
-			key = this.chrKeys.size;
-			this.chrKeys.set(chr, key);
+			key = LineRangeFragment.chrKeys.size;
+			LineRangeFragment.chrKeys.set(chr, key);
 		}
 		return key;
 	}

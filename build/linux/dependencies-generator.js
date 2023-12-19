@@ -35,11 +35,11 @@ const bundledDeps = [
 async function getDependencies(packageType, buildDir, applicationName, arch) {
 	if (packageType === "deb") {
 		if (!(0, types_1.isDebianArchString)(arch)) {
-			throw new Error("Invalid Debian arch string " + arch);
+			throw new Error(`Invalid Debian arch string ${arch}`);
 		}
 	}
 	if (packageType === "rpm" && !(0, types_2.isRpmArchString)(arch)) {
-		throw new Error("Invalid RPM arch string " + arch);
+		throw new Error(`Invalid RPM arch string ${arch}`);
 	}
 	// Get the files for which we want to find dependencies.
 	const nativeModulesPath = path.join(
@@ -104,12 +104,9 @@ async function getDependencies(packageType, buildDir, applicationName, arch) {
 		JSON.stringify(sortedDependencies) !==
 		JSON.stringify(referenceGeneratedDeps)
 	) {
-		const failMessage =
-			"The dependencies list has changed." +
-			"\nOld:\n" +
-			referenceGeneratedDeps.join("\n") +
-			"\nNew:\n" +
-			sortedDependencies.join("\n");
+		const failMessage = `The dependencies list has changed.\nOld:\n${referenceGeneratedDeps.join(
+			"\n",
+		)}\nNew:\n${sortedDependencies.join("\n")}`;
 		if (FAIL_BUILD_FOR_NEW_DEPENDENCIES) {
 			throw new Error(failMessage);
 		} else {

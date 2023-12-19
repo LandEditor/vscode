@@ -102,10 +102,10 @@ export function determineExtensionHostKinds(
 		const isInstalledRemotely = Boolean(ext.remote);
 
 		const isLocallyUnderDevelopment = Boolean(
-			ext.local && ext.local.isUnderDevelopment,
+			ext.local?.isUnderDevelopment,
 		);
 		const isRemotelyUnderDevelopment = Boolean(
-			ext.remote && ext.remote.isUnderDevelopment,
+			ext.remote?.isUnderDevelopment,
 		);
 
 		let preference = ExtensionRunningPreference.None;
@@ -169,14 +169,14 @@ class ExtensionInfo {
 		if (this.local) {
 			return this.local.key;
 		}
-		return this.remote!.key;
+		return this.remote?.key;
 	}
 
 	public get identifier(): ExtensionIdentifier {
 		if (this.local) {
 			return this.local.desc.identifier;
 		}
-		return this.remote!.desc.identifier;
+		return this.remote?.desc.identifier;
 	}
 
 	public get kind(): ExtensionKind[] {
@@ -186,6 +186,6 @@ class ExtensionInfo {
 		if (this.local) {
 			return this.local.kind;
 		}
-		return this.remote!.kind;
+		return this.remote?.kind;
 	}
 }

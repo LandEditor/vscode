@@ -254,7 +254,7 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 					.filter((handle: number) => handlesToItems.has(handle))
 					.map((handle: number) => handlesToItems.get(handle));
 			} else if (param === "buttons") {
-				(input as any)[param] = params.buttons!.map((button) => {
+				(input as any)[param] = params.buttons?.map((button) => {
 					if (button.handle === -1) {
 						return this._quickInputService.backButton;
 					}

@@ -113,7 +113,7 @@ export function renderExpressionValue(
 				expressionOrValue.type === "string"
 			) {
 				container.classList.add(expressionOrValue.type);
-			} else if (!isNaN(+value)) {
+			} else if (!Number.isNaN(+value)) {
 				container.classList.add("number");
 			} else if (booleanRegex.test(value)) {
 				container.classList.add("boolean");
@@ -128,7 +128,7 @@ export function renderExpressionValue(
 		value &&
 		value.length > options.maxValueLength
 	) {
-		value = value.substring(0, options.maxValueLength) + "...";
+		value = `${value.substring(0, options.maxValueLength)}...`;
 	}
 	if (!value) {
 		value = "";
@@ -301,7 +301,7 @@ export abstract class AbstractExpressionsRenderer<T = IExpression>
 			createMatches(node.filterData),
 		);
 		if (data.actionBar) {
-			this.renderActionBar!(data.actionBar, element, data);
+			this.renderActionBar?.(data.actionBar, element, data);
 		}
 		const selectedExpression = this.debugService
 			.getViewModel()

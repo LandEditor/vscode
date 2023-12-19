@@ -122,5 +122,5 @@ function doAppendKeyBindingLabel(
 	label: string,
 	keyBinding: ResolvedKeybinding | undefined,
 ): string {
-	return keyBinding ? label + " (" + keyBinding.getLabel() + ")" : label;
+	return keyBinding ? `${label} (${keyBinding.getLabel()})` : label;
 }

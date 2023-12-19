@@ -195,10 +195,10 @@ export function createTypeScriptBuilder(
 									extname,
 								);
 								const dirname = path.dirname(vinyl.relative);
-								const tsname =
-									(dirname === "." ? "" : dirname + "/") +
-									basename +
-									".ts";
+								const tsname = `${
+									(dirname === "." ? "" : `${dirname}/`) +
+									basename
+								}.ts`;
 
 								let sourceMap = <RawSourceMap>(
 									JSON.parse(sourcemapFile.text)
@@ -443,7 +443,7 @@ export function createTypeScriptBuilder(
 						_log("[check semantics]", fileName);
 						promise = checkSemanticsSoon(fileName).then(
 							(diagnostics) => {
-								delete oldErrors[fileName!];
+								delete fileName?.[fileName];
 								semanticCheckInfo.set(
 									fileName!,
 									diagnostics.length,
@@ -464,13 +464,12 @@ export function createTypeScriptBuilder(
 
 						if (
 							!isExternalModule(
-								service.getProgram()!.getSourceFile(fileName)!,
+								service.getProgram()?.getSourceFile(fileName)!,
 							)
 						) {
 							_log(
 								"[check semantics*]",
-								fileName +
-									" is an internal module and it has changed shape -> check whatever hasn't been checked yet",
+								`${fileName} is an internal module and it has changed shape -> check whatever hasn't been checked yet`,
 							);
 							toBeCheckedSemantically.push(
 								...host.getScriptFileNames(),
@@ -544,11 +543,11 @@ export function createTypeScriptBuilder(
 			_log(
 				"[tsb]",
 				`time:  ${colors.yellow(
-					Date.now() - t1 + "ms",
+					`${Date.now() - t1}ms`,
 				)} + \nmem:  ${colors.cyan(
-					Math.ceil(headNow / MB) + "MB",
+					`${Math.ceil(headNow / MB)}MB`,
 				)} ${colors.bgCyan(
-					"delta: " + Math.ceil((headNow - headUsed) / MB),
+					`delta: ${Math.ceil((headNow - headUsed) / MB)}`,
 				)}`,
 			);
 			headUsed = headNow;
@@ -596,7 +595,7 @@ class VinylScriptSnapshot extends ScriptSnapshot {
 	readonly sourceMap?: RawSourceMap;
 
 	constructor(file: Vinyl & { sourceMap?: RawSourceMap }) {
-		super(file.contents!.toString(), file.stat!.mtime);
+		super(file.contents?.toString(), file.stat?.mtime);
 		this._base = file.base;
 		this.sourceMap = file.sourceMap;
 	}
@@ -665,7 +664,7 @@ class LanguageServiceHost implements ts.LanguageServiceHost {
 		if (result) {
 			return result.getVersion();
 		}
-		return "UNKNWON_FILE_" + Math.random().toString(16).slice(2);
+		return `UNKNWON_FILE_${Math.random().toString(16).slice(2)}`;
 	}
 
 	getScriptSnapshot(filename: string, resolve = true): ScriptSnapshot {
@@ -699,9 +698,11 @@ class LanguageServiceHost implements ts.LanguageServiceHost {
 		filename = normalize(filename);
 		const old = this._snapshots[filename];
 		if (
-			!old &&
-			!this._filesInProject.has(filename) &&
-			!filename.endsWith(".d.ts")
+			!(
+				old ||
+				this._filesInProject.has(filename) ||
+				filename.endsWith(".d.ts")
+			)
 		) {
 			//                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^
 			//                                              not very proper!
@@ -809,16 +810,16 @@ class LanguageServiceHost implements ts.LanguageServiceHost {
 				const resolvedPath = path.resolve(dirname, ref.fileName);
 				const normalizedPath = normalize(resolvedPath);
 
-				if (this.getScriptSnapshot(normalizedPath + ".ts")) {
+				if (this.getScriptSnapshot(`${normalizedPath}.ts`)) {
 					this._dependencies.inertEdge(
 						filename,
-						normalizedPath + ".ts",
+						`${normalizedPath}.ts`,
 					);
 					found = true;
-				} else if (this.getScriptSnapshot(normalizedPath + ".d.ts")) {
+				} else if (this.getScriptSnapshot(`${normalizedPath}.d.ts`)) {
 					this._dependencies.inertEdge(
 						filename,
-						normalizedPath + ".d.ts",
+						`${normalizedPath}.d.ts`,
 					);
 					found = true;
 				}

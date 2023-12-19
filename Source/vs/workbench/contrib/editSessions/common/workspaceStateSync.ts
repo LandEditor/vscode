@@ -215,7 +215,7 @@ export class WorkspaceStateSynchroniser
 
 		if (Object.keys(storage).length) {
 			// Initialize storage with remote storage
-			const storageEntries: Array<IStorageEntry> = [];
+			const storageEntries: IStorageEntry[] = [];
 			for (const key of Object.keys(storage)) {
 				// Deserialize the stored state
 				try {

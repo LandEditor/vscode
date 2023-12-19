@@ -141,7 +141,7 @@ export function getMultiSelectedResources(
 	listService: IListService,
 	editorService: IEditorService,
 	explorerService: IExplorerService,
-): Array<URI> {
+): URI[] {
 	const list = listService.lastFocusedList;
 	const element = list?.getHTMLElement();
 	if (element && isActiveElement(element)) {
@@ -186,13 +186,13 @@ export function getMultiSelectedResources(
 	}
 
 	const result = getResourceForCommand(resource, listService, editorService);
-	return !!result ? [result] : [];
+	return result ? [result] : [];
 }
 
 export function getOpenEditorsViewMultiSelection(
 	listService: IListService,
 	editorGroupService: IEditorGroupsService,
-): Array<IEditorIdentifier> | undefined {
+): IEditorIdentifier[] | undefined {
 	const list = listService.lastFocusedList;
 	const element = list?.getHTMLElement();
 	if (element && isActiveElement(element)) {

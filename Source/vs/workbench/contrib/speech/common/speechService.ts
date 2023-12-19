@@ -130,7 +130,7 @@ export class SpeechService implements ISpeechService {
 	createSpeechToTextSession(token: CancellationToken): ISpeechToTextSession {
 		const provider = firstOrDefault(Array.from(this.providers.values()));
 		if (!provider) {
-			throw new Error(`No Speech provider is registered.`);
+			throw new Error("No Speech provider is registered.");
 		} else if (this.providers.size > 1) {
 			this.logService.warn(
 				`Multiple speech providers registered. Picking first one: ${provider.metadata.displayName}`,

@@ -189,8 +189,7 @@ export class HideUnchangedRegionsFeature extends Disposable {
 							modifiedOutlineSource,
 							(l) =>
 								this._diffModel
-									.get()!
-									.ensureModifiedLineIsVisible(l, undefined),
+									.get()?.ensureModifiedLineIsVisible(l, undefined),
 							this._options
 						)
 					);
@@ -215,8 +214,7 @@ export class HideUnchangedRegionsFeature extends Disposable {
 							modifiedOutlineSource,
 							(l) =>
 								this._diffModel
-									.get()!
-									.ensureModifiedLineIsVisible(l, undefined),
+									.get()?.ensureModifiedLineIsVisible(l, undefined),
 							this._options
 						)
 					);
@@ -240,7 +238,7 @@ export class HideUnchangedRegionsFeature extends Disposable {
 				localize("foldUnchanged", "Fold Unchanged Region")
 			),
 			glyphMarginClassName:
-				"fold-unchanged " + ThemeIcon.asClassName(Codicon.fold),
+				`fold-unchanged ${ThemeIcon.asClassName(Codicon.fold)}`,
 			zIndex: 10001,
 		};
 

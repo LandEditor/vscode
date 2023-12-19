@@ -74,7 +74,7 @@ export class InlayHintItem {
 	private async _doResolve(token: CancellationToken) {
 		try {
 			const newHint = await Promise.resolve(
-				this.provider.resolveInlayHint!(this.hint, token),
+				this.provider.resolveInlayHint?.(this.hint, token),
 			);
 			this.hint.tooltip = newHint?.tooltip ?? this.hint.tooltip;
 			this.hint.label = newHint?.label ?? this.hint.label;

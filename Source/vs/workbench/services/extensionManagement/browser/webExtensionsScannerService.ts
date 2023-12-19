@@ -836,9 +836,11 @@ export class WebExtensionsScannerService
 					: []),
 			]) {
 				if (
-					!result.has(id.toLowerCase()) &&
-					!packsAndDependencies.has(id.toLowerCase()) &&
-					!seen.has(id.toLowerCase())
+					!(
+						result.has(id.toLowerCase()) ||
+						packsAndDependencies.has(id.toLowerCase()) ||
+						seen.has(id.toLowerCase())
+					)
 				) {
 					const extensionInfo = toGet.find((e) =>
 						areSameExtensions(e, extension.identifier),
@@ -1535,7 +1537,7 @@ export class WebExtensionsScannerService
 			return JSON.parse(content);
 		} catch (error) {
 			this.logService.error(
-				`Error while fetching translations of an extension`,
+				"Error while fetching translations of an extension",
 				nlsUrl.toString(),
 				getErrorMessage(error),
 			);
@@ -1601,7 +1603,7 @@ export class WebExtensionsScannerService
 					content.value.toString(),
 				);
 				for (const e of storedWebExtensions) {
-					if (!e.location || !e.identifier || !e.version) {
+					if (!(e.location && e.identifier && e.version)) {
 						this.logService.info(
 							"Ignoring invalid extension while scanning",
 							storedWebExtensions,
@@ -1613,7 +1615,7 @@ export class WebExtensionsScannerService
 						packageNLSUris = new Map<string, URI>();
 						Object.entries(e.packageNLSUris).forEach(
 							([key, value]) =>
-								packageNLSUris!.set(key, URI.revive(value)),
+								packageNLSUris?.set(key, URI.revive(value)),
 						);
 					}
 
@@ -1701,7 +1703,7 @@ export class WebExtensionsScannerService
 							update = true;
 						} catch (error) {
 							this.logService.error(
-								`Error while fetching default manifest translations of an extension`,
+								"Error while fetching default manifest translations of an extension",
 								webExtension.identifier.id,
 								getErrorMessage(error),
 							);

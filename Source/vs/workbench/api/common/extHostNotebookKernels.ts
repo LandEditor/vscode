@@ -489,7 +489,7 @@ export class ExtHostNotebookKernels implements ExtHostNotebookKernelsShape {
 
 		let subscription: vscode.Disposable | undefined;
 		if (eventHandle !== undefined) {
-			subscription = provider.onDidChangeNotebookKernelSourceActions!(
+			subscription = provider.onDidChangeNotebookKernelSourceActions?.(
 				(_) =>
 					this._proxy.$emitNotebookKernelSourceActionsChangeEvent(
 						eventHandle,

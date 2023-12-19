@@ -211,8 +211,7 @@ export class CodeBlockPart extends Disposable implements ICodeBlockPart {
 		);
 
 		this.vulnsButton.onDidClick(() => {
-			const element = this.currentCodeBlockData!
-				.element as IChatResponseViewModel;
+			const element = this.currentCodeBlockData?.element as IChatResponseViewModel;
 			element.vulnerabilitiesListExpanded =
 				!element.vulnerabilitiesListExpanded;
 			this.vulnsButton.label = this.getVulnerabilitiesLabel();
@@ -403,7 +402,7 @@ export class CodeBlockPart extends Disposable implements ICodeBlockPart {
 						"li",
 						undefined,
 						$("span.chat-vuln-title", undefined, v.title),
-						" " + v.description,
+						` ${v.description}`,
 					),
 				),
 			);
@@ -414,7 +413,7 @@ export class CodeBlockPart extends Disposable implements ICodeBlockPart {
 	}
 
 	private getVulnerabilitiesLabel(): string {
-		if (!this.currentCodeBlockData || !this.currentCodeBlockData.vulns) {
+		if (!this.currentCodeBlockData?.vulns) {
 			return "";
 		}
 

@@ -12,7 +12,7 @@ export type ExtensionRecommendation = {
 };
 
 export abstract class ExtensionRecommendations extends Disposable {
-	abstract readonly recommendations: ReadonlyArray<ExtensionRecommendation>;
+	abstract readonly recommendations: readonly ExtensionRecommendation[];
 	protected abstract doActivate(): Promise<void>;
 
 	private _activationPromise: Promise<void> | null = null;

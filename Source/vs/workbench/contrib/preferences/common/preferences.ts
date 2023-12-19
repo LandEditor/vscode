@@ -195,7 +195,7 @@ export async function getExperimentalExtensionToggleData(
 		Object.keys(productService.extensionRecommendations).forEach(
 			(extensionId) => {
 				const extensionInfo =
-					productService.extensionRecommendations![extensionId];
+					productService.extensionRecommendations?.[extensionId];
 				if (extensionInfo.onSettingsEditorOpen) {
 					settingsEditorRecommendedExtensions[extensionId] =
 						extensionInfo;

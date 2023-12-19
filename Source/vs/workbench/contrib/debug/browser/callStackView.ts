@@ -403,7 +403,7 @@ export class CallStackView extends ViewPane {
 						if (typeof element === "string") {
 							return element;
 						}
-						if (element instanceof Array) {
+						if (Array.isArray(element)) {
 							return `showMore ${element[0].getId()}`;
 						}
 
@@ -503,8 +503,7 @@ export class CallStackView extends ViewPane {
 					const session = this.debugService
 						.getModel()
 						.getSession(element.sessionId);
-					const thread =
-						session && session.getThread(element.threadId);
+					const thread = session?.getThread(element.threadId);
 					if (thread) {
 						const totalFrames = thread.stoppedDetails?.totalFrames;
 						const remainingFramesCount =
@@ -518,7 +517,7 @@ export class CallStackView extends ViewPane {
 						await this.tree.updateChildren();
 					}
 				}
-				if (element instanceof Array) {
+				if (Array.isArray(element)) {
 					this.dataSource.deemphasizedStackFramesToShow.push(
 						...element,
 					);
@@ -613,7 +612,7 @@ export class CallStackView extends ViewPane {
 	}
 
 	private async updateTreeSelection(): Promise<void> {
-		if (!this.tree || !this.tree.getInput()) {
+		if (!this.tree?.getInput()) {
 			// Tree not initialized yet
 			return;
 		}
@@ -920,7 +919,7 @@ class SessionsRenderer
 				"exception",
 				stoppedDetails.reason === "exception",
 			);
-		} else if (thread && thread.stoppedDetails) {
+		} else if (thread?.stoppedDetails) {
 			data.stateLabel.textContent = stoppedDescription(
 				thread.stoppedDetails,
 			);
@@ -1142,9 +1141,7 @@ class StackFramesRenderer
 		const stackFrame = element.element;
 		data.stackFrame.classList.toggle(
 			"disabled",
-			!stackFrame.source ||
-				!stackFrame.source.available ||
-				isDeemphasized(stackFrame),
+			!stackFrame.source?.available || isDeemphasized(stackFrame),
 		);
 		data.stackFrame.classList.toggle(
 			"label",
@@ -1269,8 +1266,6 @@ class LoadMoreRenderer
 		"Load More Stack Frames",
 	);
 
-	constructor() {}
-
 	get templateId(): string {
 		return LoadMoreRenderer.ID;
 	}
@@ -1309,8 +1304,6 @@ class ShowMoreRenderer
 {
 	static readonly ID = "showMore";
 
-	constructor() {}
-
 	get templateId(): string {
 		return ShowMoreRenderer.ID;
 	}
@@ -1331,8 +1324,7 @@ class ShowMoreRenderer
 			stackFrames.every(
 				(sf) =>
 					!!(
-						sf.source &&
-						sf.source.origin &&
+						sf.source?.origin &&
 						sf.source.origin === stackFrames[0].source.origin
 					),
 			)
@@ -1374,10 +1366,7 @@ class CallStackDelegate implements IListVirtualDelegate<CallStackItem> {
 		) {
 			return 16;
 		}
-		if (
-			element instanceof ThreadAndSessionIds ||
-			element instanceof Array
-		) {
+		if (element instanceof ThreadAndSessionIds || Array.isArray(element)) {
 			return 16;
 		}
 
@@ -1525,7 +1514,7 @@ class CallStackDataSource
 					) {
 						if (result.length) {
 							const last = result[result.length - 1];
-							if (last instanceof Array) {
+							if (Array.isArray(last)) {
 								// Collect all the stackframes that will be "collapsed"
 								last.push(child);
 								return;
@@ -1559,7 +1548,7 @@ class CallStackDataSource
 		thread: Thread,
 	): Promise<Array<IStackFrame | string | ThreadAndSessionIds>> {
 		let callStack: any[] = thread.getCallStack();
-		if (!callStack || !callStack.length) {
+		if (!callStack?.length) {
 			await thread.fetchCallStack();
 			callStack = thread.getCallStack();
 		}
@@ -1576,7 +1565,7 @@ class CallStackDataSource
 			callStack = callStack.concat(thread.getStaleCallStack().slice(1));
 		}
 
-		if (thread.stoppedDetails && thread.stoppedDetails.framesErrorMessage) {
+		if (thread.stoppedDetails?.framesErrorMessage) {
 			callStack = callStack.concat([
 				thread.stoppedDetails.framesErrorMessage,
 			]);
@@ -1662,7 +1651,7 @@ class CallStackAccessibilityProvider
 		if (typeof element === "string") {
 			return element;
 		}
-		if (element instanceof Array) {
+		if (Array.isArray(element)) {
 			return localize(
 				"showMoreStackFrames",
 				"Show {0} More Stack Frames",

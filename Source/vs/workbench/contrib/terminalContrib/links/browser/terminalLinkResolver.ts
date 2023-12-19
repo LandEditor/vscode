@@ -161,18 +161,18 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
 			// Resolve workspace path . | .. | <relative_path> -> <path>/. | <path>/.. | <path>/<relative_path>
 			if (os === OperatingSystem.Windows) {
 				if (
-					!link.match("^" + winDrivePrefix) &&
-					!link.startsWith("\\\\?\\")
+					link.match(`^${winDrivePrefix}`) ||
+					link.startsWith("\\\\?\\")
 				) {
+					// Remove \\?\ from paths so that they share the same underlying
+					// uri and don't open multiple tabs for the same file
+					link = link.replace(/^\\\\\?\\/, "");
+				} else {
 					if (!initialCwd) {
 						// Abort if no workspace is open
 						return null;
 					}
 					link = osPath.join(initialCwd, link);
-				} else {
-					// Remove \\?\ from paths so that they share the same underlying
-					// uri and don't open multiple tabs for the same file
-					link = link.replace(/^\\\\\?\\/, "");
 				}
 			} else {
 				if (!initialCwd) {

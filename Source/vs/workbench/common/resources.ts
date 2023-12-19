@@ -83,10 +83,12 @@ export class ResourceGlobMatcher extends Disposable {
 
 			if (newExpression) {
 				if (
-					!currentExpression ||
-					!equals(
-						currentExpression.expression,
-						newExpression.expression,
+					!(
+						currentExpression &&
+						equals(
+							currentExpression.expression,
+							newExpression.expression,
+						)
 					)
 				) {
 					changed = true;
@@ -135,10 +137,12 @@ export class ResourceGlobMatcher extends Disposable {
 			);
 		if (globalNewExpression) {
 			if (
-				!globalCurrentExpression ||
-				!equals(
-					globalCurrentExpression.expression,
-					globalNewExpression.expression,
+				!(
+					globalCurrentExpression &&
+					equals(
+						globalCurrentExpression.expression,
+						globalNewExpression.expression,
+					)
 				)
 			) {
 				changed = true;

@@ -625,7 +625,7 @@ class LocalTerminalBackend
 			this._configurationService.getValue(TerminalSettingId.DetectLocale),
 			baseEnv,
 		);
-		if (!shellLaunchConfig.strictEnv && !shellLaunchConfig.hideFromUser) {
+		if (!(shellLaunchConfig.strictEnv || shellLaunchConfig.hideFromUser)) {
 			const workspaceFolder = terminalEnvironment.getWorkspaceForTerminal(
 				shellLaunchConfig.cwd,
 				this._workspaceContextService,

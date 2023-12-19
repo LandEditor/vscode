@@ -108,8 +108,10 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 		openOptions?: OpenOptions,
 	): Promise<boolean> {
 		if (
-			!matchesScheme(resource, Schemas.http) &&
-			!matchesScheme(resource, Schemas.https)
+			!(
+				matchesScheme(resource, Schemas.http) ||
+				matchesScheme(resource, Schemas.https)
+			)
 		) {
 			return true;
 		}
@@ -152,8 +154,8 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 		} else {
 			let formattedLink = `${scheme}://${authority}${path}`;
 
-			const linkTail = `${query ? "?" + query : ""}${
-				fragment ? "#" + fragment : ""
+			const linkTail = `${query ? `?${query}` : ""}${
+				fragment ? `#${fragment}` : ""
 			}`;
 
 			const remainingLength = Math.max(0, 60 - formattedLink.length);
@@ -167,12 +169,9 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 			} else {
 				// keep the first char ? or #
 				// add ... and keep the tail end as much as possible
-				formattedLink +=
-					linkTail.charAt(0) +
-					"..." +
-					linkTail.substring(
-						linkTail.length - linkTailLengthToKeep + 1,
-					);
+				formattedLink += `${linkTail.charAt(0)}...${linkTail.substring(
+					linkTail.length - linkTailLengthToKeep + 1,
+				)}`;
 			}
 
 			const { result } = await this._dialogService.prompt<boolean>({

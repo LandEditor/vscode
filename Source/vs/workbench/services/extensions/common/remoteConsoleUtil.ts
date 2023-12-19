@@ -33,15 +33,18 @@ export function logRemoteEntry(
 
 	switch (entry.severity) {
 		case "log":
-		case "info":
+		case "info": {
 			logService.info(firstArg, ...args);
 			break;
-		case "warn":
+		}
+		case "warn": {
 			logService.warn(firstArg, ...args);
 			break;
-		case "error":
+		}
+		case "error": {
 			logService.error(firstArg, ...args);
 			break;
+		}
 	}
 }
 

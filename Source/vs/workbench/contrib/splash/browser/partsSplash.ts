@@ -197,10 +197,10 @@ export class PartsSplash {
 	}
 
 	private _shouldSaveLayoutInfo(): boolean {
-		return (
-			!isFullscreen() &&
-			!this._environmentService.isExtensionDevelopment &&
-			!this._didChangeTitleBarStyle
+		return !(
+			isFullscreen() ||
+			this._environmentService.isExtensionDevelopment ||
+			this._didChangeTitleBarStyle
 		);
 	}
 

@@ -389,25 +389,29 @@ export class WorkspaceTrustRequestHandler
 
 					// Dialog result
 					switch (result) {
-						case "ContinueWithTrust":
+						case "ContinueWithTrust": {
 							await this.workspaceTrustRequestService.completeWorkspaceTrustRequest(
 								true,
 							);
 							break;
-						case "ContinueWithoutTrust":
+						}
+						case "ContinueWithoutTrust": {
 							await this.workspaceTrustRequestService.completeWorkspaceTrustRequest(
 								undefined,
 							);
 							break;
-						case "Manage":
+						}
+						case "Manage": {
 							this.workspaceTrustRequestService.cancelWorkspaceTrustRequest();
 							await this.commandService.executeCommand(
 								MANAGE_TRUST_COMMAND_ID,
 							);
 							break;
-						case "Cancel":
+						}
+						case "Cancel": {
 							this.workspaceTrustRequestService.cancelWorkspaceTrustRequest();
 							break;
+						}
 					}
 				},
 			),
@@ -888,7 +892,7 @@ export class WorkspaceTrustUXHandler
 		const actions = [
 			{
 				label: localize("restrictedModeBannerManage", "Manage"),
-				href: "command:" + MANAGE_TRUST_COMMAND_ID,
+				href: `command:${MANAGE_TRUST_COMMAND_ID}`,
 			},
 			{
 				label: localize("restrictedModeBannerLearnMore", "Learn More"),
@@ -1086,7 +1090,7 @@ export class WorkspaceTrustUXHandler
 
 		return {
 			name: localize("status.WorkspaceTrust", "Workspace Trust"),
-			text: trusted ? `$(shield)` : `$(shield) ${text}`,
+			text: trusted ? "$(shield)" : `$(shield) ${text}`,
 			ariaLabel: ariaLabel,
 			tooltip: toolTip,
 			command: MANAGE_TRUST_COMMAND_ID,

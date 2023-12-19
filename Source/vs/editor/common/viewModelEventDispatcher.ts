@@ -108,8 +108,8 @@ export class ViewModelEventDispatcher extends Disposable {
 	public endEmitViewEvents(): void {
 		this._collectorCnt--;
 		if (this._collectorCnt === 0) {
-			const outgoingEvents = this._collector!.outgoingEvents;
-			const viewEvents = this._collector!.viewEvents;
+			const outgoingEvents = this._collector?.outgoingEvents;
+			const viewEvents = this._collector?.viewEvents;
 			this._collector = null;
 
 			for (const outgoingEvent of outgoingEvents) {
@@ -244,7 +244,7 @@ export class ContentSizeChangedEvent implements IContentSizeChangedEvent {
 	}
 
 	public isNoOp(): boolean {
-		return !this.contentWidthChanged && !this.contentHeightChanged;
+		return !(this.contentWidthChanged || this.contentHeightChanged);
 	}
 
 	public attemptToMerge(
@@ -332,11 +332,11 @@ export class ScrollChangedEvent {
 	}
 
 	public isNoOp(): boolean {
-		return (
-			!this.scrollWidthChanged &&
-			!this.scrollLeftChanged &&
-			!this.scrollHeightChanged &&
-			!this.scrollTopChanged
+		return !(
+			this.scrollWidthChanged ||
+			this.scrollLeftChanged ||
+			this.scrollHeightChanged ||
+			this.scrollTopChanged
 		);
 	}
 
@@ -362,8 +362,6 @@ export class ScrollChangedEvent {
 export class ViewZonesChangedEvent {
 	public readonly kind = OutgoingViewModelEventKind.ViewZonesChanged;
 
-	constructor() {}
-
 	public isNoOp(): boolean {
 		return false;
 	}
@@ -380,8 +378,6 @@ export class ViewZonesChangedEvent {
 
 export class HiddenAreasChangedEvent {
 	public readonly kind = OutgoingViewModelEventKind.HiddenAreasChanged;
-
-	constructor() {}
 
 	public isNoOp(): boolean {
 		return false;
@@ -430,10 +426,10 @@ export class CursorStateChangedEvent {
 		a: Selection[] | null,
 		b: Selection[] | null,
 	): boolean {
-		if (!a && !b) {
+		if (!(a || b)) {
 			return true;
 		}
-		if (!a || !b) {
+		if (!(a && b)) {
 			return false;
 		}
 		const aLen = a.length;
@@ -478,8 +474,6 @@ export class CursorStateChangedEvent {
 
 export class ReadOnlyEditAttemptEvent {
 	public readonly kind = OutgoingViewModelEventKind.ReadOnlyEditAttempt;
-
-	constructor() {}
 
 	public isNoOp(): boolean {
 		return false;

@@ -28,7 +28,7 @@ function editorMatchToTextSearchResult(
 	}
 
 	return new TextSearchMatch(
-		lineTexts.join("\n") + "\n",
+		`${lineTexts.join("\n")}\n`,
 		matches.map(
 			(m) =>
 				new Range(

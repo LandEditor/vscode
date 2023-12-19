@@ -118,18 +118,23 @@ export async function getShellFileHistory(
 	}
 	let result: IterableIterator<string> | undefined;
 	switch (shellType) {
-		case PosixShellType.Bash:
+		case PosixShellType.Bash: {
 			result = await fetchBashHistory(accessor);
 			break;
-		case PosixShellType.PowerShell: // WindowsShellType.PowerShell has the same value
+		}
+		case PosixShellType.PowerShell: {
+			// WindowsShellType.PowerShell has the same value
 			result = await fetchPwshHistory(accessor);
 			break;
-		case PosixShellType.Zsh:
+		}
+		case PosixShellType.Zsh: {
 			result = await fetchZshHistory(accessor);
 			break;
-		case PosixShellType.Fish:
+		}
+		case PosixShellType.Fish: {
 			result = await fetchFishHistory(accessor);
 			break;
+		}
 		default:
 			return [];
 	}

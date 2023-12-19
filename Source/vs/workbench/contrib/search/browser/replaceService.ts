@@ -155,7 +155,7 @@ class ReplacePreviewModel extends Disposable {
 		fileMatch: FileMatch,
 		override = false,
 	): void {
-		if (!sourceModel.isDisposed() && !replacePreviewModel.isDisposed()) {
+		if (!(sourceModel.isDisposed() || replacePreviewModel.isDisposed())) {
 			this.replaceService.updateReplacePreview(fileMatch, override);
 		}
 	}
@@ -358,7 +358,7 @@ export class ReplaceService implements IReplaceService {
 			arg = [arg];
 		}
 
-		if (arg instanceof Array) {
+		if (Array.isArray(arg)) {
 			arg.forEach((element) => {
 				const fileMatch = <FileMatch>element;
 				if (fileMatch.count() > 0) {

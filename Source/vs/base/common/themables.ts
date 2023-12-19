@@ -48,9 +48,9 @@ export namespace ThemeIcon {
 			return asClassNameArray(Codicon.error);
 		}
 		const [, id, modifier] = match;
-		const classNames = ["codicon", "codicon-" + id];
+		const classNames = ["codicon", `codicon-${id}`];
 		if (modifier) {
-			classNames.push("codicon-modifier-" + modifier.substring(1));
+			classNames.push(`codicon-modifier-${modifier.substring(1)}`);
 		}
 		return classNames;
 	}
@@ -60,7 +60,7 @@ export namespace ThemeIcon {
 	}
 
 	export function asCSSSelector(icon: ThemeIcon): string {
-		return "." + asClassNameArray(icon).join(".");
+		return `.${asClassNameArray(icon).join(".")}`;
 	}
 
 	export function isThemeIcon(obj: any): obj is ThemeIcon {

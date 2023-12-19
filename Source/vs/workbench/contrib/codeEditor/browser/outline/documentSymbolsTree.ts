@@ -214,7 +214,7 @@ export class DocumentSymbolRenderer
 			);
 		}
 		if (element.symbol.tags.indexOf(SymbolTag.Deprecated) >= 0) {
-			extraClasses.push(`deprecated`);
+			extraClasses.push("deprecated");
 			options.matches = [];
 		}
 		template.iconLabel.setLabel(
@@ -256,13 +256,13 @@ export class DocumentSymbolRenderer
 			OutlineConfigKeys.problemsColors,
 		);
 
-		if (!problem || !configProblems) {
-			template.container.style.removeProperty("--outline-element-color");
-		} else {
+		if (problem && configProblems) {
 			template.container.style.setProperty(
 				"--outline-element-color",
 				cssColor,
 			);
+		} else {
+			template.container.style.removeProperty("--outline-element-color");
 		}
 
 		// badge with color/rollup
@@ -273,7 +273,7 @@ export class DocumentSymbolRenderer
 		const configBadges = this._configurationService.getValue(
 			OutlineConfigKeys.problemsBadges,
 		);
-		if (!configBadges || !problem) {
+		if (!(configBadges && problem)) {
 			dom.hide(template.decoration);
 		} else if (count > 0) {
 			dom.show(template.decoration);

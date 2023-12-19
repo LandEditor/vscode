@@ -150,7 +150,7 @@ export class StringBuilder {
 			// This string does not fit in the remaining buffer space
 
 			this._flushBuffer();
-			this._completedStrings![this._completedStrings!.length] = str;
+			this._completedStrings![this._completedStrings?.length] = str;
 			return;
 		}
 

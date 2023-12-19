@@ -56,7 +56,8 @@ function getTagBodyText(
 		if (/^\s*[~`]{3}/m.test(text)) {
 			return text;
 		}
-		return "```\n" + text + "\n```";
+		return `\`\`\`\n${text}\n`;
+		\`\``
 	}
 
 	let text = convertLinkTags(tag.text, filePathConverter);
@@ -71,11 +72,9 @@ function getTagBodyText(
 				/<caption>(.*?)<\/caption>\s*(\r\n|\n)/,
 			);
 			if (captionTagMatches && captionTagMatches.index === 0) {
-				return (
-					captionTagMatches[1] +
-					"\n" +
-					makeCodeblock(text.substr(captionTagMatches[0].length))
-				);
+				return `${captionTagMatches[1]}\n${makeCodeblock(
+					text.substr(captionTagMatches[0].length),
+				)}`;
 			} else {
 				return makeCodeblock(text);
 			}
@@ -117,7 +116,7 @@ function getTagDocumentation(
 				return (
 					label +
 					(doc.match(/\r\n|\n/g)
-						? "  \n" + processInlineTags(doc)
+						? `  \n${processInlineTags(doc)}`
 						: ` \u2014 ${processInlineTags(doc)}`)
 				);
 			}
@@ -141,13 +140,13 @@ function getTagDocumentation(
 	if (!text) {
 		return label;
 	}
-	return label + (text.match(/\r\n|\n/g) ? "  \n" + text : ` \u2014 ${text}`);
+	return label + (text.match(/\r\n|\n/g) ? `  \n${text}` : ` \u2014 ${text}`);
 }
 
 function getTagBody(
 	tag: Proto.JSDocTagInfo,
 	filePathConverter: IFilePathToResourceConverter,
-): Array<string> | undefined {
+): string[] | undefined {
 	if (tag.name === "template") {
 		const parts = tag.text;
 		if (parts && typeof parts !== "string") {
@@ -213,7 +212,7 @@ function convertLinkTags(
 		| undefined;
 	for (const part of parts) {
 		switch (part.kind) {
-			case "link":
+			case "link": {
 				if (currentLink) {
 					if (currentLink.target) {
 						const file = filePathConverter.toResource(
@@ -237,7 +236,7 @@ function convertLinkTags(
 						out.push(
 							`[${
 								currentLink.linkcode
-									? "`" + linkText + "`"
+									? `\`${linkText}\``
 									: linkText
 							}](${command})`,
 						);
@@ -253,11 +252,9 @@ function convertLinkTags(
 									out.push(
 										`[${
 											currentLink.linkcode
-												? "`" +
-												  escapeMarkdownSyntaxTokensForCode(
+												? `\`${escapeMarkdownSyntaxTokensForCode(
 														linkText,
-												  ) +
-												  "`"
+												  )}\``
 												: linkText
 										}](${parts[0]})`,
 									);
@@ -276,8 +273,9 @@ function convertLinkTags(
 					};
 				}
 				break;
+			}
 
-			case "linkName":
+			case "linkName": {
 				if (currentLink) {
 					currentLink.name = part.text;
 					currentLink.target = (
@@ -285,16 +283,19 @@ function convertLinkTags(
 					).target;
 				}
 				break;
+			}
 
-			case "linkText":
+			case "linkText": {
 				if (currentLink) {
 					currentLink.text = part.text;
 				}
 				break;
+			}
 
-			default:
+			default: {
 				out.push(part.text);
 				break;
+			}
 		}
 	}
 	return processInlineTags(out.join(""));
@@ -339,7 +340,7 @@ export function appendDocumentationAsMarkdown(
 	if (tags) {
 		const tagsPreview = tagsToMarkdown(tags, converter);
 		if (tagsPreview) {
-			out.appendMarkdown("\n\n" + tagsPreview);
+			out.appendMarkdown(`\n\n${tagsPreview}`);
 		}
 	}
 

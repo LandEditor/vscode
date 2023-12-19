@@ -82,7 +82,7 @@ export class CellFocusIndicator extends CellContentPart {
 				this.left.domNode,
 				DOM.EventType.DBLCLICK,
 				(e) => {
-					if (!this.currentCell || !this.notebookEditor.hasModel()) {
+					if (!(this.currentCell && this.notebookEditor.hasModel())) {
 						return;
 					}
 

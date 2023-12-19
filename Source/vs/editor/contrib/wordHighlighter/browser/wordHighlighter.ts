@@ -229,7 +229,7 @@ abstract class OccurenceAtPositionRequest
 		const currentWordRange = this._getCurrentWordRange(model, selection);
 
 		let requestIsValid = Boolean(
-			this._wordRange && this._wordRange.equalsRange(currentWordRange),
+			this._wordRange?.equalsRange(currentWordRange),
 		);
 
 		// Even if we are on a different word, if that word is in the decorations ranges, the request is still valid
@@ -911,13 +911,11 @@ class WordHighlighter {
 			// - when cursor is moved to a word, trigger immediately a findOccurrences request
 			// - 250ms later after the last cursor move event, render the occurrences
 			// - no flickering!
-			workerRequestIsValid =
-				this.workerRequest &&
-				this.workerRequest.isValid(
-					this.model,
-					editorSelection,
-					this.decorations,
-				);
+			workerRequestIsValid = this.workerRequest?.isValid(
+				this.model,
+				editorSelection,
+				this.decorations,
+			);
 
 			WordHighlighter.query = {
 				modelInfo: {
@@ -1167,7 +1165,7 @@ export class WordHighlighterContribution
 	}
 
 	public saveViewState(): boolean {
-		if (this._wordHighlighter && this._wordHighlighter.hasDecorations()) {
+		if (this._wordHighlighter?.hasDecorations()) {
 			return true;
 		}
 		return false;

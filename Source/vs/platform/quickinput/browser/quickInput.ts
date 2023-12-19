@@ -923,14 +923,15 @@ export class QuickPick<T extends IQuickPickItem>
 				(this._hideInput ? this.ui.list : this.ui.inputBox).onKeyDown(
 					(event: KeyboardEvent | StandardKeyboardEvent) => {
 						switch (event.keyCode) {
-							case KeyCode.DownArrow:
+							case KeyCode.DownArrow: {
 								this.ui.list.focus(QuickInputListFocus.Next);
 								if (this.canSelectMany) {
 									this.ui.list.domFocus();
 								}
 								dom.EventHelper.stop(event, true);
 								break;
-							case KeyCode.UpArrow:
+							}
+							case KeyCode.UpArrow: {
 								if (this.ui.list.getFocusedElements().length) {
 									this.ui.list.focus(
 										QuickInputListFocus.Previous,
@@ -945,7 +946,8 @@ export class QuickPick<T extends IQuickPickItem>
 								}
 								dom.EventHelper.stop(event, true);
 								break;
-							case KeyCode.PageDown:
+							}
+							case KeyCode.PageDown: {
 								this.ui.list.focus(
 									QuickInputListFocus.NextPage,
 								);
@@ -954,7 +956,8 @@ export class QuickPick<T extends IQuickPickItem>
 								}
 								dom.EventHelper.stop(event, true);
 								break;
-							case KeyCode.PageUp:
+							}
+							case KeyCode.PageUp: {
 								this.ui.list.focus(
 									QuickInputListFocus.PreviousPage,
 								);
@@ -963,7 +966,8 @@ export class QuickPick<T extends IQuickPickItem>
 								}
 								dom.EventHelper.stop(event, true);
 								break;
-							case KeyCode.RightArrow:
+							}
+							case KeyCode.RightArrow: {
 								if (!this._canAcceptInBackground) {
 									return; // needs to be enabled
 								}
@@ -981,7 +985,8 @@ export class QuickPick<T extends IQuickPickItem>
 								}
 
 								break;
-							case KeyCode.Home:
+							}
+							case KeyCode.Home: {
 								if (
 									(event.ctrlKey || event.metaKey) &&
 									!event.shiftKey &&
@@ -993,7 +998,8 @@ export class QuickPick<T extends IQuickPickItem>
 									dom.EventHelper.stop(event, true);
 								}
 								break;
-							case KeyCode.End:
+							}
+							case KeyCode.End: {
 								if (
 									(event.ctrlKey || event.metaKey) &&
 									!event.shiftKey &&
@@ -1005,6 +1011,7 @@ export class QuickPick<T extends IQuickPickItem>
 									dom.EventHelper.stop(event, true);
 								}
 								break;
+							}
 						}
 					},
 				),
@@ -1265,20 +1272,24 @@ export class QuickPick<T extends IQuickPickItem>
 			this.ui.visibleCount.setCount(this.ui.list.getVisibleCount());
 			this.ui.count.setCount(this.ui.list.getCheckedCount());
 			switch (this._itemActivation) {
-				case ItemActivation.NONE:
+				case ItemActivation.NONE: {
 					this._itemActivation = ItemActivation.FIRST; // only valid once, then unset
 					break;
-				case ItemActivation.SECOND:
+				}
+				case ItemActivation.SECOND: {
 					this.ui.list.focus(QuickInputListFocus.Second);
 					this._itemActivation = ItemActivation.FIRST; // only valid once, then unset
 					break;
-				case ItemActivation.LAST:
+				}
+				case ItemActivation.LAST: {
 					this.ui.list.focus(QuickInputListFocus.Last);
 					this._itemActivation = ItemActivation.FIRST; // only valid once, then unset
 					break;
-				default:
+				}
+				default: {
 					this.trySelectFirst();
 					break;
+				}
 			}
 		}
 		if (

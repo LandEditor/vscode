@@ -63,7 +63,7 @@ export class GettingStartedIndexList<
 			this.onDidChangeEntries(() => this.scrollbar.scanDomNode()),
 		);
 		this.domElement = $(
-			".index-list." + options.klass,
+			`.index-list.${options.klass}`,
 			{},
 			$("h2", {}, options.title),
 			this.scrollbar.getDomNode(),

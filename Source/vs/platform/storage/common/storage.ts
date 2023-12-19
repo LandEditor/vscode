@@ -221,7 +221,7 @@ export interface IStorageService {
 	 * @param external a hint to indicate the source of the operation is external,
 	 * such as settings sync or profile changes.
 	 */
-	storeAll(entries: Array<IStorageEntry>, external: boolean): void;
+	storeAll(entries: IStorageEntry[], external: boolean): void;
 
 	/**
 	 * Delete an element stored under the provided key from storage.
@@ -499,15 +499,18 @@ export abstract class AbstractStorageService
 		if (key === TARGET_KEY) {
 			// Clear our cached version which is now out of date
 			switch (scope) {
-				case StorageScope.APPLICATION:
+				case StorageScope.APPLICATION: {
 					this._applicationKeyTargets = undefined;
 					break;
-				case StorageScope.PROFILE:
+				}
+				case StorageScope.PROFILE: {
 					this._profileKeyTargets = undefined;
 					break;
-				case StorageScope.WORKSPACE:
+				}
+				case StorageScope.WORKSPACE: {
 					this._workspaceKeyTargets = undefined;
 					break;
+				}
 			}
 
 			// Emit as `didChangeTarget` event
@@ -573,7 +576,7 @@ export abstract class AbstractStorageService
 		return this.getStorage(scope)?.getObject(key, fallbackValue);
 	}
 
-	storeAll(entries: Array<IStorageEntry>, external: boolean): void {
+	storeAll(entries: IStorageEntry[], external: boolean): void {
 		this.withPausedEmitters(() => {
 			for (const entry of entries) {
 				this.store(
@@ -743,23 +746,25 @@ export abstract class AbstractStorageService
 
 		switch (reason) {
 			// Unspecific reason: just wait when data is flushed
-			case WillSaveStateReason.NONE:
+			case WillSaveStateReason.NONE: {
 				await Promises.settled([
 					applicationStorage?.whenFlushed() ?? Promise.resolve(),
 					profileStorage?.whenFlushed() ?? Promise.resolve(),
 					workspaceStorage?.whenFlushed() ?? Promise.resolve(),
 				]);
 				break;
+			}
 
 			// Shutdown: we want to flush as soon as possible
 			// and not hit any delays that might be there
-			case WillSaveStateReason.SHUTDOWN:
+			case WillSaveStateReason.SHUTDOWN: {
 				await Promises.settled([
 					applicationStorage?.flush(0) ?? Promise.resolve(),
 					profileStorage?.flush(0) ?? Promise.resolve(),
 					workspaceStorage?.flush(0) ?? Promise.resolve(),
 				]);
 				break;
+			}
 		}
 	}
 

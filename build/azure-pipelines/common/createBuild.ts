@@ -16,7 +16,7 @@ function getEnv(name: string): string {
 	const result = process.env[name];
 
 	if (typeof result === "undefined") {
-		throw new Error("Missing env: " + name);
+		throw new Error(`Missing env: ${name}`);
 	}
 
 	return result;

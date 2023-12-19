@@ -137,7 +137,7 @@ export class MainThreadTreeViews
 				this._proxy.$setVisible(treeViewId, viewer.visible);
 			} else {
 				this.notificationService.error(
-					"No view is registered with id: " + treeViewId,
+					`No view is registered with id: ${treeViewId}`,
 				);
 			}
 		});
@@ -163,7 +163,7 @@ export class MainThreadTreeViews
 				if (viewer && itemInfo) {
 					return this.reveal(
 						viewer,
-						this._dataProviders.get(treeViewId)!.dataProvider,
+						this._dataProviders.get(treeViewId)?.dataProvider,
 						itemInfo.item,
 						itemInfo.parentChain,
 						options,
@@ -311,7 +311,7 @@ export class MainThreadTreeViews
 				itemsToExpand = itemsToExpand.reduce(
 					(result, itemValue) => {
 						const item = dataProvider.getItem(itemValue.handle);
-						if (item && item.children && item.children.length) {
+						if (item?.children?.length) {
 							result.push(...item.children);
 						}
 						return result;

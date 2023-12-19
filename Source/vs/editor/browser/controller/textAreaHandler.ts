@@ -1330,16 +1330,14 @@ export class TextAreaHandler extends ViewPart {
 
 		if (options.get(EditorOption.glyphMargin)) {
 			tac.setClassName(
-				"monaco-editor-background textAreaCover " +
-					Margin.OUTER_CLASS_NAME,
+				`monaco-editor-background textAreaCover ${Margin.OUTER_CLASS_NAME}`,
 			);
 		} else if (
 			options.get(EditorOption.lineNumbers).renderType !==
 			RenderLineNumbersType.Off
 		) {
 			tac.setClassName(
-				"monaco-editor-background textAreaCover " +
-					LineNumbersOverlay.CLASS_NAME,
+				`monaco-editor-background textAreaCover ${LineNumbersOverlay.CLASS_NAME}`,
 			);
 		} else {
 			tac.setClassName("monaco-editor-background textAreaCover");

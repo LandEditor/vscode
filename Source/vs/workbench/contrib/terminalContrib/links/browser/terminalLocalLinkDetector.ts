@@ -258,7 +258,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 				const path = group?.path;
 				const line = group?.line;
 				const col = group?.col;
-				if (!link || !path) {
+				if (!(link && path)) {
 					continue;
 				}
 

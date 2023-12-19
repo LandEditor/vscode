@@ -58,10 +58,7 @@ const _completionItemColor = new (class ColorExtractor {
 			out[0] = item.textLabel;
 			return true;
 		}
-		if (
-			item.completion.detail &&
-			item.completion.detail.match(ColorExtractor._regexStrict)
-		) {
+		if (item.completion.detail?.match(ColorExtractor._regexStrict)) {
 			out[0] = item.completion.detail;
 			return true;
 		}
@@ -160,7 +157,7 @@ export class ItemRenderer
 
 		const readMore = append(
 			right,
-			$("span.readMore" + ThemeIcon.asCSSSelector(suggestMoreInfoIcon)),
+			$(`span.readMore${ThemeIcon.asCSSSelector(suggestMoreInfoIcon)}`),
 		);
 		readMore.title = nls.localize("readMore", "Read More");
 

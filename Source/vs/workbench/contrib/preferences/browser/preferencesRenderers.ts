@@ -134,8 +134,7 @@ export class UserSettingsRenderer
 		);
 		this._register(
 			this.editor
-				.getModel()!
-				.onDidChangeContent(() =>
+				.getModel()?.onDidChangeContent(() =>
 					this.modelChangeDelayer.trigger(() => this.onModelChanged())
 				)
 		);
@@ -193,7 +192,7 @@ export class UserSettingsRenderer
 		const { key, overrideOf } = setting;
 		if (overrideOf) {
 			const setting = this.getSetting(overrideOf);
-			for (const override of setting!.overrides!) {
+			for (const override of setting?.overrides!) {
 				if (override.key === key) {
 					return override;
 				}
@@ -364,7 +363,7 @@ class EditSettingRenderer extends Disposable {
 		this.associatedPreferencesModel = associatedPreferencesModel;
 
 		const settings = this.getSettings(
-			this.editor.getPosition()!.lineNumber,
+			this.editor.getPosition()?.lineNumber,
 		);
 		if (settings.length) {
 			this.showEditPreferencesWidget(
@@ -444,7 +443,7 @@ class EditSettingRenderer extends Disposable {
 		const settings = mouseMoveEvent.target.position
 			? this.getSettings(mouseMoveEvent.target.position.lineNumber)
 			: null;
-		if (settings && settings.length) {
+		if (settings?.length) {
 			this.showEditPreferencesWidget(
 				this.editPreferenceWidgetForMouseMove,
 				settings,
@@ -562,7 +561,7 @@ class EditSettingRenderer extends Disposable {
 						) {
 							if (
 								!this.isDefaultSettings() &&
-								setting.overrides!.length
+								setting.overrides?.length
 							) {
 								// Only one level because override settings cannot have override settings
 								for (const overrideSetting of setting.overrides!) {
@@ -659,9 +658,9 @@ class EditSettingRenderer extends Disposable {
 	private toAbsoluteCoords(position: Position): { x: number; y: number } {
 		const positionCoords = this.editor.getScrolledVisiblePosition(position);
 		const editorCoords = getDomNodePagePosition(this.editor.getDomNode()!);
-		const x = editorCoords.left + positionCoords!.left;
+		const x = editorCoords.left + positionCoords?.left;
 		const y =
-			editorCoords.top + positionCoords!.top + positionCoords!.height;
+			editorCoords.top + positionCoords?.top + positionCoords?.height;
 
 		return { x, y: y + 10 };
 	}
@@ -765,7 +764,7 @@ class SettingHighlighter extends Disposable {
 		highlighter.highlightRange(
 			{
 				range: setting.valueRange,
-				resource: this.editor.getModel()!.uri,
+				resource: this.editor.getModel()?.uri,
 			},
 			this.editor,
 		);
@@ -816,8 +815,7 @@ class UnsupportedSettingsRenderer
 		super();
 		this._register(
 			this.editor
-				.getModel()!
-				.onDidChangeContent(() => this.delayedRender())
+				.getModel()?.onDidChangeContent(() => this.delayedRender())
 		);
 		this._register(
 			Event.filter(
@@ -904,34 +902,38 @@ class UnsupportedSettingsRenderer
 							continue;
 						}
 						switch (this.settingsEditorModel.configurationTarget) {
-							case ConfigurationTarget.USER_LOCAL:
+							case ConfigurationTarget.USER_LOCAL: {
 								this.handleLocalUserConfiguration(
 									setting,
 									configuration,
 									markerData,
 								);
 								break;
-							case ConfigurationTarget.USER_REMOTE:
+							}
+							case ConfigurationTarget.USER_REMOTE: {
 								this.handleRemoteUserConfiguration(
 									setting,
 									configuration,
 									markerData,
 								);
 								break;
-							case ConfigurationTarget.WORKSPACE:
+							}
+							case ConfigurationTarget.WORKSPACE: {
 								this.handleWorkspaceConfiguration(
 									setting,
 									configuration,
 									markerData,
 								);
 								break;
-							case ConfigurationTarget.WORKSPACE_FOLDER:
+							}
+							case ConfigurationTarget.WORKSPACE_FOLDER: {
 								this.handleWorkspaceFolderConfiguration(
 									setting,
 									configuration,
 									markerData,
 								);
 								break;
+							}
 						}
 					} else {
 						markerData.push(
@@ -1012,9 +1014,11 @@ class UnsupportedSettingsRenderer
 		markerData: IMarkerData[],
 	): void {
 		if (
-			!this.userDataProfileService.currentProfile.isDefault &&
-			!this.userDataProfileService.currentProfile.useDefaultFlags
-				?.settings
+			!(
+				this.userDataProfileService.currentProfile.isDefault ||
+				this.userDataProfileService.currentProfile.useDefaultFlags
+					?.settings
+			)
 		) {
 			if (
 				isEqual(
@@ -1287,8 +1291,7 @@ class WorkspaceConfigurationRenderer extends Disposable {
 		super();
 		this._register(
 			this.editor
-				.getModel()!
-				.onDidChangeContent(() =>
+				.getModel()?.onDidChangeContent(() =>
 					this.renderingDelayer.trigger(() => this.render())
 				)
 		);

@@ -347,7 +347,7 @@ class State {
 			const previousStatePath = path.join(
 				pipelineWorkspacePath,
 				previousState.name,
-				previousState.name + ".txt",
+				`${previousState.name}.txt`,
 			);
 			fs.readFileSync(previousStatePath, "utf8")
 				.split(/\n/)
@@ -487,20 +487,22 @@ function getPlatform(product, os, arch, type) {
 							);
 					}
 				}
-				case "server":
+				case "server": {
 					if (arch === "arm64") {
 						throw new Error(
 							`Unrecognized: ${product} ${os} ${arch} ${type}`,
 						);
 					}
 					return `server-win32-${arch}`;
-				case "web":
+				}
+				case "web": {
 					if (arch === "arm64") {
 						throw new Error(
 							`Unrecognized: ${product} ${os} ${arch} ${type}`,
 						);
 					}
 					return `server-win32-${arch}-web`;
+				}
 				case "cli":
 					return `cli-win32-${arch}`;
 				default:
@@ -553,21 +555,24 @@ function getPlatform(product, os, arch, type) {
 			}
 		case "darwin":
 			switch (product) {
-				case "client":
+				case "client": {
 					if (arch === "x64") {
 						return "darwin";
 					}
 					return `darwin-${arch}`;
-				case "server":
+				}
+				case "server": {
 					if (arch === "x64") {
 						return "server-darwin";
 					}
 					return `server-darwin-${arch}`;
-				case "web":
+				}
+				case "web": {
 					if (arch === "x64") {
 						return "server-darwin-web";
 					}
 					return `server-darwin-${arch}-web`;
+				}
 				case "cli":
 					return `cli-darwin-${arch}`;
 				default:
@@ -593,14 +598,14 @@ function getRealType(type) {
 }
 async function uploadAssetLegacy(log, quality, commit, filePath) {
 	const fileName = path.basename(filePath);
-	const blobName = commit + "/" + fileName;
+	const blobName = `${commit}/${fileName}`;
 	const credential = new identity_1.ClientSecretCredential(
 		e("AZURE_TENANT_ID"),
 		e("AZURE_CLIENT_ID"),
 		e("AZURE_CLIENT_SECRET"),
 	);
 	const blobServiceClient = new storage_blob_1.BlobServiceClient(
-		`https://vscode.blob.core.windows.net`,
+		"https://vscode.blob.core.windows.net",
 		credential,
 		{
 			retryOptions: {
@@ -618,13 +623,13 @@ async function uploadAssetLegacy(log, quality, commit, filePath) {
 			blobCacheControl: "max-age=31536000, public",
 		},
 	};
-	log(`Checking for blob in Azure...`);
+	log("Checking for blob in Azure...");
 	if (await blobClient.exists()) {
 		log(
 			`Blob ${quality}, ${blobName} already exists, not publishing again.`,
 		);
 	} else {
-		log(`Uploading blobs to Azure storage...`);
+		log("Uploading blobs to Azure storage...");
 		await blobClient.uploadFile(filePath, blobOptions);
 		log("Blob successfully uploaded to Azure storage.");
 	}
@@ -810,7 +815,7 @@ async function main() {
 				console.log(
 					`[${artifact.name}] Artifact size mismatch.Expected ${artifact.resource.properties.artifactsize}. Actual ${artifactSize} `,
 				);
-				throw new Error(`Artifact size mismatch.`);
+				throw new Error("Artifact size mismatch.");
 			}
 			processing.add(artifact.name);
 			const promise = new Promise((resolve, reject) => {

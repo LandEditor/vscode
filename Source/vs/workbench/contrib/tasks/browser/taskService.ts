@@ -36,7 +36,7 @@ export class TaskService extends AbstractTaskService {
 		this._taskSystem = this._createTerminalTaskSystem();
 		this._taskSystemListeners = [
 			this._taskSystem.onDidStateChange((event) => {
-				this._taskRunningState.set(this._taskSystem!.isActiveSync());
+				this._taskRunningState.set(this._taskSystem?.isActiveSync());
 				this._onDidStateChange.fire(event);
 			}),
 		];

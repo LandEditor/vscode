@@ -8,7 +8,7 @@
 const path = require("path");
 
 // Keep bootstrap-amd.js from redefining 'fs'.
-delete process.env["ELECTRON_RUN_AS_NODE"];
+process.env["ELECTRON_RUN_AS_NODE"] = undefined;
 
 if (process.env["VSCODE_DEV"]) {
 	// When running out of sources, we need to load node modules from remote/node_modules,
@@ -20,6 +20,6 @@ if (process.env["VSCODE_DEV"]) {
 		process.env["VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH"],
 	);
 } else {
-	delete process.env["VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH"];
+	process.env["VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH"] = undefined;
 }
 require("./bootstrap-amd").load("vs/server/node/server.cli");

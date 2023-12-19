@@ -480,7 +480,7 @@ function merge(
 	const remoteForwarded = baseContent !== originalRemoteContent;
 
 	/* no changes */
-	if (!localForwarded && !remoteForwarded) {
+	if (!(localForwarded || remoteForwarded)) {
 		return {
 			content: null,
 			hasLocalChanged: false,

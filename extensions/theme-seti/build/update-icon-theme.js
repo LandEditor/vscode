@@ -57,7 +57,10 @@ const ignoreExtAssociation = {
 
 const FROM_DISK = true; // set to true to take content from a repo checked out next to the vscode repo
 
-let font, fontMappingsFile, fileAssociationFile, colorsFile;
+let font;
+let fontMappingsFile;
+let fileAssociationFile;
+let colorsFile;
 if (FROM_DISK) {
 	font = "../../../seti-ui/styles/_fonts/seti/seti.woff";
 	fontMappingsFile = "../../../seti-ui/styles/_fonts/seti.less";
@@ -76,8 +79,7 @@ if (FROM_DISK) {
 }
 
 function getCommitSha(repoId) {
-	const commitInfo =
-		"https://api.github.com/repos/" + repoId + "/commits/master";
+	const commitInfo = `https://api.github.com/repos/${repoId}/commits/master`;
 	return download(commitInfo).then(
 		(content) => {
 			try {
@@ -87,12 +89,12 @@ function getCommitSha(repoId) {
 					commitDate: lastCommit.commit.author.date,
 				});
 			} catch (e) {
-				console.error("Failed parsing " + content);
+				console.error(`Failed parsing ${content}`);
 				return Promise.resolve(null);
 			}
 		},
 		() => {
-			console.error("Failed loading " + commitInfo);
+			console.error(`Failed loading ${commitInfo}`);
 			return Promise.resolve(null);
 		},
 	);
@@ -166,15 +168,15 @@ function downloadBinary(source, dest) {
 				case 301:
 				case 302:
 				case 303:
-				case 307:
-					console.log("redirect to " + response.headers.location);
+				case 307: {
+					console.log(`redirect to ${response.headers.location}`);
 					downloadBinary(response.headers.location, dest).then(c, e);
 					break;
+				}
 				default:
 					e(
 						new Error(
-							"Server responded with status code " +
-								response.statusCode,
+							`Server responded with status code ${response.statusCode}`,
 						),
 					);
 			}
@@ -209,7 +211,7 @@ function darkenColor(color) {
 	let res = "#";
 	for (let i = 1; i < 7; i += 2) {
 		const newVal = Math.round(
-			parseInt("0x" + color.substr(i, 2), 16) * 0.9,
+			parseInt(`0x${color.substr(i, 2)}`, 16) * 0.9,
 		);
 		const hex = newVal.toString(16);
 		if (hex.length === 1) {
@@ -238,8 +240,7 @@ function getLanguageMappings() {
 		if (fs.existsSync(dirPath)) {
 			const content = fs.readFileSync(dirPath).toString();
 			const jsonContent = JSON.parse(content);
-			const languages =
-				jsonContent.contributes && jsonContent.contributes.languages;
+			const languages = jsonContent.contributes?.languages;
 			if (Array.isArray(languages)) {
 				for (let k = 0; k < languages.length; k++) {
 					const languageId = languages[k].id;
@@ -303,7 +304,7 @@ function getLanguageMappings() {
 exports.copyFont = () => downloadBinary(font, "./icons/seti.woff");
 
 exports.update = () => {
-	console.log("Reading from " + fontMappingsFile);
+	console.log(`Reading from ${fontMappingsFile}`);
 	const def2Content = {};
 	const ext2Def = {};
 	const fileName2Def = {};
@@ -328,7 +329,7 @@ exports.update = () => {
 						fontCharacter: entry.fontCharacter,
 						fontColor: darkenColor(colorValue),
 					};
-					iconDefinitions[def + "_light"] = entryInverse;
+					iconDefinitions[`${def}_light`] = entryInverse;
 				}
 			}
 			iconDefinitions[def] = entry;
@@ -337,7 +338,7 @@ exports.update = () => {
 		function getInvertSet(input) {
 			const result = {};
 			for (const assoc in input) {
-				const invertDef = input[assoc] + "_light";
+				const invertDef = `${input[assoc]}_light`;
 				if (iconDefinitions[invertDef]) {
 					result[assoc] = invertDef;
 				}
@@ -375,13 +376,12 @@ exports.update = () => {
 				languageIds: getInvertSet(lang2Def),
 				fileNames: getInvertSet(fileName2Def),
 			},
-			version:
-				"https://github.com/jesseweed/seti-ui/commit/" + info.commitSha,
+			version: `https://github.com/jesseweed/seti-ui/commit/${info.commitSha}`,
 		};
 
 		const path = "./icons/vs-seti-icon-theme.json";
 		fs.writeFileSync(path, JSON.stringify(res, null, "\t"));
-		console.log("written " + path);
+		console.log(`written ${path}`);
 	}
 
 	let match;
@@ -398,7 +398,7 @@ exports.update = () => {
 				/\.icon-(?:set|partial)\(['"]([\w-\.+]+)['"],\s*['"]([\w-]+)['"],\s*(@[\w-]+)\)/g;
 			while ((match = regex2.exec(content)) !== null) {
 				const pattern = match[1];
-				let def = "_" + match[2];
+				let def = `_${match[2]}`;
 				const colorId = match[3];
 				let storedColorId = def2ColorId[def];
 				let i = 1;
@@ -454,8 +454,10 @@ exports.update = () => {
 				if (preferredDef) {
 					lang2Def[lang] = preferredDef;
 					if (
-						!nonBuiltInLanguages[lang] &&
-						!inheritIconFromLanguage[lang]
+						!(
+							nonBuiltInLanguages[lang] ||
+							inheritIconFromLanguage[lang]
+						)
 					) {
 						for (let i2 = 0; i2 < exts.length; i2++) {
 							// remove the extension association, unless it is different from the preferred
@@ -494,11 +496,7 @@ exports.update = () => {
 					lang2Def[lang] = def;
 				} else {
 					console.log(
-						"skipping icon def for " +
-							lang +
-							": no icon for " +
-							superLang +
-							" defined",
+						`skipping icon def for ${lang}: no icon for ${superLang} defined`,
 					);
 				}
 			}
@@ -524,14 +522,13 @@ exports.update = () => {
 							cgmanifestPath,
 							JSON.stringify(cgmanifestContent, null, "\t"),
 						);
-						console.log("updated " + cgmanifestPath);
+						console.log(`updated ${cgmanifestPath}`);
 
 						console.log(
-							"Updated to jesseweed/seti-ui@" +
-								info.commitSha.substr(0, 7) +
-								" (" +
-								info.commitDate.substr(0, 10) +
-								")",
+							`Updated to jesseweed/seti-ui@${info.commitSha.substr(
+								0,
+								7,
+							)} (${info.commitDate.substr(0, 10)})`,
 						);
 					} catch (e) {
 						console.error(e);

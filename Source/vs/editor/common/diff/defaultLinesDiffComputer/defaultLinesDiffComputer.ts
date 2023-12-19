@@ -284,8 +284,10 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 					}
 				}
 				if (
-					!validateRange(c.modified, modifiedLines) ||
-					!validateRange(c.original, originalLines)
+					!(
+						validateRange(c.modified, modifiedLines) &&
+						validateRange(c.original, originalLines)
+					)
 				) {
 					return false;
 				}
@@ -411,7 +413,7 @@ export function lineRangeMappingFromRangeMappings(
 			new DetailedLineRangeMapping(
 				first.original.join(last.original),
 				first.modified.join(last.modified),
-				g.map((a) => a.innerChanges![0]),
+				g.map((a) => a.innerChanges?.[0]),
 			),
 		);
 	}

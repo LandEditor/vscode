@@ -108,7 +108,7 @@ export class GlobalPointerMoveMonitor implements IDisposable {
 					}
 
 					e.preventDefault();
-					this._pointerMoveCallback!(e);
+					this._pointerMoveCallback?.(e);
 				},
 			),
 		);

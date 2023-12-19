@@ -776,10 +776,12 @@ export class WorkspaceTrustManagementService
 		// If the current folder isn't trusted directly, return false
 		const trustInfo = this.doGetUriTrustInfo(workspaceIdentifier.uri);
 		if (
-			!trustInfo.trusted ||
-			!this.uriIdentityService.extUri.isEqual(
-				workspaceIdentifier.uri,
-				trustInfo.uri,
+			!(
+				trustInfo.trusted &&
+				this.uriIdentityService.extUri.isEqual(
+					workspaceIdentifier.uri,
+					trustInfo.uri,
+				)
 			)
 		) {
 			return false;

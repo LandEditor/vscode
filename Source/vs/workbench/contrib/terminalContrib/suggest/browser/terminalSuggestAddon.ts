@@ -143,7 +143,7 @@ export class SuggestAddon
 		// Pass the sequence along to the capability
 		const [command, ...args] = data.split(";");
 		switch (command) {
-			case VSCodeOscPt.Completions:
+			case VSCodeOscPt.Completions: {
 				this._handleCompletionsSequence(
 					this._terminal,
 					data,
@@ -151,7 +151,8 @@ export class SuggestAddon
 					args,
 				);
 				return true;
-			case VSCodeOscPt.CompletionsBash:
+			}
+			case VSCodeOscPt.CompletionsBash: {
 				this._handleCompletionsBashSequence(
 					this._terminal,
 					data,
@@ -159,6 +160,7 @@ export class SuggestAddon
 					args,
 				);
 				return true;
+			}
 			case VSCodeOscPt.CompletionsBashFirstWord:
 				return this._handleCompletionsBashFirstWordSequence(
 					this._terminal,
@@ -179,7 +181,7 @@ export class SuggestAddon
 		args: string[],
 	): void {
 		// Nothing to handle if the terminal is not attached
-		if (!terminal.element || !this._enableWidget) {
+		if (!(terminal.element && this._enableWidget)) {
 			return;
 		}
 
@@ -251,18 +253,22 @@ export class SuggestAddon
 			.split(";");
 		let set: Set<SimpleCompletionItem>;
 		switch (type) {
-			case "alias":
+			case "alias": {
 				set = this._cachedBashAliases;
 				break;
-			case "builtin":
+			}
+			case "builtin": {
 				set = this._cachedBashBuiltins;
 				break;
-			case "command":
+			}
+			case "command": {
 				set = this._cachedBashCommands;
 				break;
-			case "keyword":
+			}
+			case "keyword": {
 				set = this._cachedBashKeywords;
 				break;
+			}
 			default:
 				return false;
 		}
@@ -398,12 +404,12 @@ export class SuggestAddon
 		const suggestWidget = this._ensureSuggestWidget(this._terminal);
 		this._additionalInput = undefined;
 		const dimensions = this._getTerminalDimensions();
-		if (!dimensions.width || !dimensions.height) {
+		if (!(dimensions.width && dimensions.height)) {
 			return;
 		}
 		// TODO: What do frozen and auto do?
-		const xtermBox = this._screen!.getBoundingClientRect();
-		const panelBox = this._panel!.offsetParent!.getBoundingClientRect();
+		const xtermBox = this._screen?.getBoundingClientRect();
+		const panelBox = this._panel?.offsetParent?.getBoundingClientRect();
 		suggestWidget.showSuggestions(model, 0, false, false, {
 			left:
 				xtermBox.left -
@@ -520,9 +526,11 @@ export class SuggestAddon
 
 	private _handleTerminalInput(data: string): void {
 		if (
-			!this._terminal ||
-			!this._enableWidget ||
-			!this._terminalSuggestWidgetVisibleContextKey.get()
+			!(
+				this._terminal &&
+				this._enableWidget &&
+				this._terminalSuggestWidgetVisibleContextKey.get()
+			)
 		) {
 			// HACK: Buffer any input to be evaluated when the completions come in, this is needed
 			// because conpty may "render" the completion request after input characters that
@@ -621,12 +629,12 @@ export class SuggestAddon
 
 			// TODO: Expose on xterm.js
 			const dimensions = this._getTerminalDimensions();
-			if (!dimensions.width || !dimensions.height) {
+			if (!(dimensions.width && dimensions.height)) {
 				return;
 			}
 			// TODO: What do frozen and auto do?
-			const xtermBox = this._screen!.getBoundingClientRect();
-			const panelBox = this._panel!.offsetParent!.getBoundingClientRect();
+			const xtermBox = this._screen?.getBoundingClientRect();
+			const panelBox = this._panel?.offsetParent?.getBoundingClientRect();
 			this._suggestWidget?.showSuggestions(
 				(this._suggestWidget as any)._completionModel,
 				0,

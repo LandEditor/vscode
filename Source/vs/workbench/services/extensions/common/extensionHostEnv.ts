@@ -93,7 +93,7 @@ export function readExtHostConnection(
 	if (env[MessagePortExtHostConnection.ENV_KEY]) {
 		return cleanAndReturn(env, new MessagePortExtHostConnection());
 	}
-	throw new Error(`No connection information defined in environment!`);
+	throw new Error("No connection information defined in environment!");
 }
 
 function cleanAndReturn(

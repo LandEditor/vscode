@@ -29,11 +29,12 @@ function extractKeyCode(e: KeyboardEvent): KeyCode {
 		switch (keyCode) {
 			case 59:
 				return KeyCode.Semicolon;
-			case 60:
+			case 60: {
 				if (platform.isLinux) {
 					return KeyCode.IntlBackslash;
 				}
 				break;
+			}
 			case 61:
 				return KeyCode.Equal;
 			// based on: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode#numpad_keys
@@ -43,11 +44,12 @@ function extractKeyCode(e: KeyboardEvent): KeyCode {
 				return KeyCode.NumpadSubtract;
 			case 173:
 				return KeyCode.Minus;
-			case 224:
+			case 224: {
 				if (platform.isMacintosh) {
 					return KeyCode.Meta;
 				}
 				break;
+			}
 		}
 	} else if (browser.isWebKit) {
 		if (platform.isMacintosh && keyCode === 93) {
@@ -94,16 +96,16 @@ const metaKeyMod = platform.isMacintosh ? KeyMod.CtrlCmd : KeyMod.WinCtrl;
 export function printKeyboardEvent(e: KeyboardEvent): string {
 	const modifiers: string[] = [];
 	if (e.ctrlKey) {
-		modifiers.push(`ctrl`);
+		modifiers.push("ctrl");
 	}
 	if (e.shiftKey) {
-		modifiers.push(`shift`);
+		modifiers.push("shift");
 	}
 	if (e.altKey) {
-		modifiers.push(`alt`);
+		modifiers.push("alt");
 	}
 	if (e.metaKey) {
-		modifiers.push(`meta`);
+		modifiers.push("meta");
 	}
 	return `modifiers: [${modifiers.join(",")}], code: ${e.code}, keyCode: ${
 		e.keyCode
@@ -113,16 +115,16 @@ export function printKeyboardEvent(e: KeyboardEvent): string {
 export function printStandardKeyboardEvent(e: StandardKeyboardEvent): string {
 	const modifiers: string[] = [];
 	if (e.ctrlKey) {
-		modifiers.push(`ctrl`);
+		modifiers.push("ctrl");
 	}
 	if (e.shiftKey) {
-		modifiers.push(`shift`);
+		modifiers.push("shift");
 	}
 	if (e.altKey) {
-		modifiers.push(`alt`);
+		modifiers.push("alt");
 	}
 	if (e.metaKey) {
-		modifiers.push(`meta`);
+		modifiers.push("meta");
 	}
 	return `modifiers: [${modifiers.join(",")}], code: ${e.code}, keyCode: ${
 		e.keyCode
@@ -174,13 +176,13 @@ export class StandardKeyboardEvent implements IKeyboardEvent {
 	}
 
 	public preventDefault(): void {
-		if (this.browserEvent && this.browserEvent.preventDefault) {
+		if (this.browserEvent?.preventDefault) {
 			this.browserEvent.preventDefault();
 		}
 	}
 
 	public stopPropagation(): void {
-		if (this.browserEvent && this.browserEvent.stopPropagation) {
+		if (this.browserEvent?.stopPropagation) {
 			this.browserEvent.stopPropagation();
 		}
 	}

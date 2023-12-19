@@ -232,8 +232,7 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 	override isSaving(): boolean {
 		const model = this._editorModelReference?.object;
 		if (
-			!model ||
-			!model.isDirty() ||
+			!model?.isDirty() ||
 			model.hasErrorState ||
 			this.hasCapability(EditorInputCapabilities.Untitled)
 		) {
@@ -350,7 +349,7 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 				if (!suggestedFilename.endsWith(fileExt)) {
 					return joinPath(
 						await this._fileDialogService.defaultFilePath(),
-						suggestedFilename + "." + fileExt,
+						`${suggestedFilename}.${fileExt}`,
 					);
 				}
 			}
@@ -380,10 +379,7 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 		_group: GroupIdentifier,
 		options?: IRevertOptions,
 	): Promise<void> {
-		if (
-			this._editorModelReference &&
-			this._editorModelReference.object.isDirty()
-		) {
+		if (this._editorModelReference?.object.isDirty()) {
 			await this._editorModelReference.object.revert(options);
 		}
 	}

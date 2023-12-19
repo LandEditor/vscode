@@ -20,10 +20,9 @@
 	const monacoEnvironment: IMonacoEnvironment | undefined = (
 		globalThis as any
 	).MonacoEnvironment;
-	const monacoBaseUrl =
-		monacoEnvironment && monacoEnvironment.baseUrl
-			? monacoEnvironment.baseUrl
-			: "../../../";
+	const monacoBaseUrl = monacoEnvironment?.baseUrl
+		? monacoEnvironment.baseUrl
+		: "../../../";
 
 	function createTrustedTypesPolicy<Options extends TrustedTypePolicyOptions>(
 		policyName: string,
@@ -60,7 +59,7 @@
 			// workaround a chrome issue not allowing to create new functions
 			// see https://github.com/w3c/webappsec-trusted-types/wiki/Trusted-Types-for-function-constructor
 			const fnArgs = args.slice(0, -1).join(",");
-			const fnBody = args.pop()!.toString();
+			const fnBody = args.pop()?.toString();
 			// Do not add a new line to fnBody, as this will confuse source maps.
 			const body = `(function anonymous(${fnArgs}) { ${fnBody}\n})`;
 			return body;
@@ -89,8 +88,9 @@
 			) {
 				return resolve();
 			}
-			const loaderSrc: string | TrustedScriptURL =
-				monacoBaseUrl + "vs/loader.js";
+			const loaderSrc:
+				| string
+				| TrustedScriptURL = `${monacoBaseUrl}vs/loader.js`;
 
 			const isCrossOrigin =
 				/^((http:)|(https:)|(file:))/.test(loaderSrc) &&

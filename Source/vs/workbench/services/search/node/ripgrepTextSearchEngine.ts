@@ -81,11 +81,11 @@ export class RipgrepTextSearchEngine {
 			});
 			rgProc.on("error", (e) => {
 				console.error(e);
-				this.outputChannel.appendLine("Error: " + (e && e.message));
+				this.outputChannel.appendLine(`Error: ${e?.message}`);
 				reject(
 					serializeSearchError(
 						new SearchError(
-							e && e.message,
+							e?.message,
 							SearchErrorCode.rgProcessError,
 						),
 					),
@@ -120,7 +120,7 @@ export class RipgrepTextSearchEngine {
 			});
 
 			let dataWithoutResult = "";
-			rgProc.stdout!.on("data", (data) => {
+			rgProc.stdout?.on("data", (data) => {
 				ripgrepParser.handleData(data);
 				if (!gotResult) {
 					dataWithoutResult += data;
@@ -128,10 +128,10 @@ export class RipgrepTextSearchEngine {
 			});
 
 			let gotData = false;
-			rgProc.stdout!.once("data", () => (gotData = true));
+			rgProc.stdout?.once("data", () => (gotData = true));
 
 			let stderr = "";
-			rgProc.stderr!.on("data", (data) => {
+			rgProc.stderr?.on("data", (data) => {
 				const message = data.toString();
 				this.outputChannel.appendLine(message);
 
@@ -244,7 +244,7 @@ function buildRegexParseError(lines: string[]): string {
 			pcre2ErrorMessage.split(":").length >= 2
 		) {
 			const pcre2ActualErrorMessage = pcre2ErrorMessage.split(":")[1];
-			errorMessage.push(":" + pcre2ActualErrorMessage);
+			errorMessage.push(`:${pcre2ActualErrorMessage}`);
 		}
 	}
 
@@ -485,7 +485,7 @@ export function getRgArgs(
 			include.startsWith("**") ? "doubleStarIncludes" : "otherIncludes",
 	);
 
-	if (otherIncludes && otherIncludes.length) {
+	if (otherIncludes?.length) {
 		const uniqueOthers = new Set<string>();
 		otherIncludes.forEach((other) => {
 			uniqueOthers.add(other);
@@ -501,7 +501,7 @@ export function getRgArgs(
 		});
 	}
 
-	if (doubleStarIncludes && doubleStarIncludes.length) {
+	if (doubleStarIncludes?.length) {
 		doubleStarIncludes.forEach((globArg) => {
 			args.push("-g", globArg);
 		});
@@ -512,7 +512,7 @@ export function getRgArgs(
 		.forEach((rgGlob) => args.push("-g", `!${rgGlob}`));
 
 	if (options.maxFileSize) {
-		args.push("--max-filesize", options.maxFileSize + "");
+		args.push("--max-filesize", `${options.maxFileSize}`);
 	}
 
 	if (options.useIgnoreFiles) {
@@ -584,11 +584,11 @@ export function getRgArgs(
 	}
 
 	if (options.beforeContext) {
-		args.push("--before-context", options.beforeContext + "");
+		args.push("--before-context", `${options.beforeContext}`);
 	}
 
 	if (options.afterContext) {
-		args.push("--after-context", options.afterContext + "");
+		args.push("--after-context", `${options.afterContext}`);
 	}
 
 	// Folder to search
@@ -622,7 +622,7 @@ export function unicodeEscapesToPCRE2(pattern: string): string {
 	const unicodePattern = /((?:[^\\]|^)(?:\\\\)*)\\u([a-z0-9]{4})/gi;
 
 	while (pattern.match(unicodePattern)) {
-		pattern = pattern.replace(unicodePattern, `$1\\x{$2}`);
+		pattern = pattern.replace(unicodePattern, "$1\\x{$2}");
 	}
 
 	// Match \u{1234}
@@ -630,7 +630,7 @@ export function unicodeEscapesToPCRE2(pattern: string): string {
 	const unicodePatternWithBraces =
 		/((?:[^\\]|^)(?:\\\\)*)\\u\{([a-z0-9]{4})\}/gi;
 	while (pattern.match(unicodePatternWithBraces)) {
-		pattern = pattern.replace(unicodePatternWithBraces, `$1\\x{$2}`);
+		pattern = pattern.replace(unicodePatternWithBraces, "$1\\x{$2}");
 	}
 
 	return pattern;
@@ -708,9 +708,9 @@ export function fixRegexNewline(pattern: string): string {
 						replace(
 							parent.start,
 							parent.end,
-							"(?!\\r?\\n" +
-								(otherContent ? `|[${otherContent}]` : "") +
-								")",
+							`(?!\\r?\\n${
+								otherContent ? `|[${otherContent}]` : ""
+							})`,
 						);
 					}
 				} else {
@@ -789,21 +789,22 @@ function getEscapeAwareSplitStringForRipgrep(pattern: string): {
 	for (let i = 0; i < pattern.length; i++) {
 		const char = pattern[i];
 		switch (char) {
-			case "\\":
+			case "\\": {
 				if (escaped) {
 					// If we're already escaped, then just leave the escaped slash and the preceeding slash that escapes it.
 					// The two escaped slashes will result in a single slash and whatever processes the glob later will properly process the escape
 					if (inBraces) {
-						strInBraces += "\\" + char;
+						strInBraces += `\\${char}`;
 					} else {
-						fixedStart += "\\" + char;
+						fixedStart += `\\${char}`;
 					}
 					escaped = false;
 				} else {
 					escaped = true;
 				}
 				break;
-			case "{":
+			}
+			case "{": {
 				if (escaped) {
 					// if we escaped this opening bracket, then it is to be taken literally. Remove the `\` because we've acknowleged it and add the `{` to the appropriate string
 					if (inBraces) {
@@ -815,18 +816,16 @@ function getEscapeAwareSplitStringForRipgrep(pattern: string): {
 				} else if (inBraces) {
 					// ripgrep treats this as attempting to do a nested alternate group, which is invalid. Return with pattern including changes from escaped braces.
 					return {
-						strInBraces:
-							fixedStart +
-							"{" +
-							strInBraces +
-							"{" +
-							pattern.substring(i + 1),
+						strInBraces: `${fixedStart}{${strInBraces}{${pattern.substring(
+							i + 1,
+						)}`,
 					};
 				} else {
 					inBraces = true;
 				}
 				break;
-			case "}":
+			}
+			case "}": {
 				if (escaped) {
 					// same as `}`, but for closing bracket
 					if (inBraces) {
@@ -847,7 +846,8 @@ function getEscapeAwareSplitStringForRipgrep(pattern: string): {
 					fixedStart += char;
 				}
 				break;
-			default:
+			}
+			default: {
 				// similar to the `\\` case, we didn't do anything with the escape, so we should re-insert it into the appropriate string
 				// to be consumed later when individual parts of the glob are processed
 				if (inBraces) {
@@ -857,11 +857,12 @@ function getEscapeAwareSplitStringForRipgrep(pattern: string): {
 				}
 				escaped = false;
 				break;
+			}
 		}
 	}
 
 	// we are haven't hit the last brace, so no splitting should occur. Return with pattern including changes from escaped braces.
-	return { strInBraces: fixedStart + (inBraces ? "{" + strInBraces : "") };
+	return { strInBraces: fixedStart + (inBraces ? `{${strInBraces}` : "") };
 }
 
 /**

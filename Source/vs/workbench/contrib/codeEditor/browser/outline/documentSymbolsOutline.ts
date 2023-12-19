@@ -156,7 +156,7 @@ class DocumentSymbolBreadcrumbsSource
 			DocumentSymbolFilter.kindToConfigName[element.symbol.kind]
 		}`;
 		let uri: URI | undefined;
-		if (this._editor && this._editor.getModel()) {
+		if (this._editor?.getModel()) {
 			const model = this._editor.getModel() as ITextModel;
 			uri = model.uri;
 		}
@@ -184,10 +184,10 @@ class DocumentSymbolsOutline implements IOutline<DocumentSymbolItem> {
 
 	get activeElement(): DocumentSymbolItem | undefined {
 		const posistion = this._editor.getPosition();
-		if (!posistion || !this._outlineModel) {
-			return undefined;
-		} else {
+		if (posistion && this._outlineModel) {
 			return this._outlineModel.getItemEnclosingPosition(posistion);
+		} else {
+			return undefined;
 		}
 	}
 
@@ -338,7 +338,7 @@ class DocumentSymbolsOutline implements IOutline<DocumentSymbolItem> {
 		sideBySide: boolean,
 	): Promise<void> {
 		const model = OutlineModel.get(entry);
-		if (!model || !(entry instanceof OutlineElement)) {
+		if (!(model && entry instanceof OutlineElement)) {
 			return;
 		}
 		await this._codeEditorService.openCodeEditor(
@@ -488,10 +488,10 @@ class DocumentSymbolsOutline implements IOutline<DocumentSymbolItem> {
 							OutlineConfigKeys.problemsEnabled,
 						);
 
-						if (!problem || !config) {
-							model.updateMarker([]);
-						} else {
+						if (problem && config) {
 							this._applyMarkersToOutline(model);
+						} else {
+							model.updateMarker([]);
 						}
 						this._onDidChange.fire({});
 					}
@@ -561,7 +561,7 @@ class DocumentSymbolsOutline implements IOutline<DocumentSymbolItem> {
 		const config = this._configurationService.getValue(
 			OutlineConfigKeys.problemsEnabled,
 		);
-		if (!model || !problem || !config) {
+		if (!(model && problem && config)) {
 			return;
 		}
 		const markers: IOutlineMarker[] = [];
@@ -581,14 +581,14 @@ class DocumentSymbolsOutline implements IOutline<DocumentSymbolItem> {
 
 	private _setOutlineModel(model: OutlineModel | undefined) {
 		const position = this._editor.getPosition();
-		if (!position || !model) {
-			this._outlineModel = undefined;
-			this._breadcrumbsDataSource.clear();
-		} else {
+		if (position && model) {
 			if (!this._outlineModel?.merge(model)) {
 				this._outlineModel = model;
 			}
 			this._breadcrumbsDataSource.update(model, position);
+		} else {
+			this._outlineModel = undefined;
+			this._breadcrumbsDataSource.clear();
 		}
 		this._onDidChange.fire({});
 	}

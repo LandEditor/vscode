@@ -138,7 +138,7 @@ export class ParameterHintsModel extends Disposable {
 
 	trigger(context: TriggerContext, delay?: number): void {
 		const model = this.editor.getModel();
-		if (!model || !this.providers.has(model)) {
+		if (!(model && this.providers.has(model))) {
 			return;
 		}
 
@@ -257,8 +257,7 @@ export class ParameterHintsModel extends Disposable {
 			}
 
 			if (
-				!result ||
-				!result.value.signatures ||
+				!result?.value.signatures ||
 				result.value.signatures.length === 0
 			) {
 				result?.dispose();
@@ -395,8 +394,6 @@ function mergeTriggerContexts(
 		case languages.SignatureHelpTriggerKind.ContentChange:
 			// Ignore content changes triggers
 			return previous;
-
-		case languages.SignatureHelpTriggerKind.TriggerCharacter:
 		default:
 			return current;
 	}

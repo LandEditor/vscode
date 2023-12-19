@@ -588,7 +588,7 @@ export abstract class AbstractSynchroniser
 		} catch (e) {
 			if (e instanceof UserDataSyncError) {
 				switch (e.code) {
-					case UserDataSyncErrorCode.LocalPreconditionFailed:
+					case UserDataSyncErrorCode.LocalPreconditionFailed: {
 						// Rejected as there is a new local version. Syncing again...
 						this.logService.info(
 							`${this.syncResourceLogLabel}: Failed to synchronize ${this.syncResourceLogLabel} as there is a new local version available. Synchronizing again...`,
@@ -599,9 +599,10 @@ export abstract class AbstractSynchroniser
 							apply,
 							userDataSyncConfiguration,
 						);
+					}
 
 					case UserDataSyncErrorCode.Conflict:
-					case UserDataSyncErrorCode.PreconditionFailed:
+					case UserDataSyncErrorCode.PreconditionFailed: {
 						// Rejected as there is a new remote version. Syncing again...
 						this.logService.info(
 							`${this.syncResourceLogLabel}: Failed to synchronize as there is a new remote version available. Synchronizing again...`,
@@ -620,6 +621,7 @@ export abstract class AbstractSynchroniser
 							apply,
 							userDataSyncConfiguration,
 						);
+					}
 				}
 			}
 			throw e;

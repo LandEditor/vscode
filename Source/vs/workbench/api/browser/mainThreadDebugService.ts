@@ -93,7 +93,7 @@ export class MainThreadDebugService
 					this.getSessionDto(session)
 				);
 				const store = sessionListeners.get(session);
-				store!.add(
+				store?.add(
 					session.onDidChangeName((name) => {
 						this._proxy.$acceptDebugSessionNameChanged(
 							this.getSessionDto(session),
@@ -170,7 +170,7 @@ export class MainThreadDebugService
 						const dto: IThreadFocusDto = {
 							kind: "thread",
 							threadId: thread?.threadId,
-							sessionId: session!.getId(),
+							sessionId: session?.getId(),
 						};
 						this._proxy.$acceptStackFrameFocus(dto);
 					}
@@ -480,7 +480,7 @@ export class MainThreadDebugService
 			);
 		} catch (err) {
 			throw new ErrorNoTelemetry(
-				err && err.message ? err.message : "cannot start debugging",
+				err?.message ? err.message : "cannot start debugging",
 			);
 		}
 	}
@@ -503,7 +503,7 @@ export class MainThreadDebugService
 			.getSession(sessionId, true);
 		if (session) {
 			return session.customRequest(request, args).then((response) => {
-				if (response && response.success) {
+				if (response?.success) {
 					return response.body;
 				} else {
 					return Promise.reject(

@@ -46,10 +46,10 @@ class EditorScrollDimensions {
 		height: number,
 		contentHeight: number,
 	) {
-		width = width | 0;
-		contentWidth = contentWidth | 0;
-		height = height | 0;
-		contentHeight = contentHeight | 0;
+		width |= 0;
+		contentWidth |= 0;
+		height |= 0;
+		contentHeight |= 0;
 
 		if (width < 0) {
 			width = 0;

@@ -60,8 +60,9 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
 		this._marginDomNode.style.zIndex = "10";
 
 		this._diffActions = document.createElement("div");
-		this._diffActions.className =
-			ThemeIcon.asClassName(Codicon.lightBulb) + " lightbulb-glyph";
+		this._diffActions.className = `${ThemeIcon.asClassName(
+			Codicon.lightBulb,
+		)} lightbulb-glyph`;
 		this._diffActions.style.position = "absolute";
 		const lineHeight = this._modifiedEditor.getOption(
 			EditorOption.lineHeight,

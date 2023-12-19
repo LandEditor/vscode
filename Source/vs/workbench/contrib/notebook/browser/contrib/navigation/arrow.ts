@@ -208,8 +208,7 @@ registerAction2(
 				: undefined;
 
 			if (
-				foundEditor &&
-				foundEditor.hasTextFocus() &&
+				foundEditor?.hasTextFocus() &&
 				InlineChatController.get(foundEditor)?.getWidgetPosition()
 					?.lineNumber === focusEditorLine
 			) {

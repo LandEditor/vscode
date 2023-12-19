@@ -78,7 +78,7 @@ export default class MergeDecorator implements vscode.Disposable {
 		this.decorations = {};
 
 		// None of our features are enabled
-		if (!config.enableDecorations || !config.enableEditorOverview) {
+		if (!(config.enableDecorations && config.enableEditorOverview)) {
 			return;
 		}
 
@@ -124,7 +124,7 @@ export default class MergeDecorator implements vscode.Disposable {
 					outlineWidth: "1pt",
 					outlineColor: new vscode.ThemeColor("merge.border"),
 					after: {
-						contentText: " " + vscode.l10n.t("(Current Change)"),
+						contentText: ` ${vscode.l10n.t("(Current Change)")}`,
 						color: new vscode.ThemeColor("descriptionForeground"),
 					},
 				});
@@ -161,7 +161,7 @@ export default class MergeDecorator implements vscode.Disposable {
 					outlineColor: new vscode.ThemeColor("merge.border"),
 					isWholeLine: this.decorationUsesWholeLine,
 					after: {
-						contentText: " " + vscode.l10n.t("(Incoming Change)"),
+						contentText: ` ${vscode.l10n.t("(Incoming Change)")}`,
 						color: new vscode.ThemeColor("descriptionForeground"),
 					},
 				});
@@ -211,14 +211,16 @@ export default class MergeDecorator implements vscode.Disposable {
 	}
 
 	private async applyDecorations(editor: vscode.TextEditor) {
-		if (!editor || !editor.document) {
+		if (!editor?.document) {
 			return;
 		}
 
 		if (
-			!this.config ||
-			(!this.config.enableDecorations &&
-				!this.config.enableEditorOverview)
+			!(
+				this.config &&
+				(this.config.enableDecorations ||
+					this.config.enableEditorOverview)
+			)
 		) {
 			return;
 		}
@@ -274,7 +276,7 @@ export default class MergeDecorator implements vscode.Disposable {
 					}
 				});
 
-				if (this.config!.enableDecorations) {
+				if (this.config?.enableDecorations) {
 					pushDecoration("current.header", conflict.current.header);
 					pushDecoration("splitter", conflict.splitter);
 					pushDecoration("incoming.header", conflict.incoming.header);

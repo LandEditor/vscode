@@ -45,7 +45,7 @@ export class TasksResourceInitializer implements IProfileResourceInitializer {
 	async initialize(content: string): Promise<void> {
 		const tasksContent: ITasksResourceContent = JSON.parse(content);
 		if (!tasksContent.tasks) {
-			this.logService.info(`Initializing Profile: No tasks to apply...`);
+			this.logService.info("Initializing Profile: No tasks to apply...");
 			return;
 		}
 		await this.fileService.writeFile(

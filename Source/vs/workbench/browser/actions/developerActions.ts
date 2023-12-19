@@ -450,7 +450,7 @@ class ToggleScreencastModeAction extends Action2 {
 					composing.textContent = e.data;
 				} else if (imeBackSpace) {
 					keyboardMarker.innerText = "";
-					append(keyboardMarker, $("span.key", {}, `Backspace`));
+					append(keyboardMarker, $("span.key", {}, "Backspace"));
 				}
 				clearKeyboardScheduler.schedule();
 			}),
@@ -622,10 +622,7 @@ class ToggleScreencastModeAction extends Action2 {
 
 		const fromCommandsRegistry = CommandsRegistry.getCommand(commandId);
 
-		if (
-			fromCommandsRegistry &&
-			fromCommandsRegistry.metadata?.description
-		) {
+		if (fromCommandsRegistry?.metadata?.description) {
 			return {
 				title:
 					typeof fromCommandsRegistry.metadata.description ===
@@ -711,8 +708,8 @@ class LogWorkingCopiesAction extends Action2 {
 		const backups = await workingCopyBackupService.getBackups();
 
 		const msg = [
-			``,
-			`[Working Copies]`,
+			"",
+			"[Working Copies]",
 			...(workingCopyService.workingCopies.length > 0
 				? workingCopyService.workingCopies.map(
 						(workingCopy) =>
@@ -723,8 +720,8 @@ class LogWorkingCopiesAction extends Action2 {
 							})`,
 				  )
 				: ["<none>"]),
-			``,
-			`[Backups]`,
+			"",
+			"[Backups]",
 			...(backups.length > 0
 				? backups.map(
 						(backup) =>

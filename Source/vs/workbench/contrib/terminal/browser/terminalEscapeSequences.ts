@@ -119,6 +119,6 @@ function oscSequence(ps: number, pt: string, data?: string): string {
 	if (data) {
 		result += `;${data}`;
 	}
-	result += `\x07`;
+	result += "\x07";
 	return result;
 }

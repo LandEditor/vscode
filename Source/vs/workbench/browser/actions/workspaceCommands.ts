@@ -104,7 +104,7 @@ CommandsRegistry.registerCommand({
 		const workspaceEditingService = accessor.get(IWorkspaceEditingService);
 
 		const folders = await selectWorkspaceFolders(accessor);
-		if (!folders || !folders.length) {
+		if (!folders?.length) {
 			return;
 		}
 
@@ -121,7 +121,7 @@ CommandsRegistry.registerCommand({
 		const contextService = accessor.get(IWorkspaceContextService);
 
 		const folders = await selectWorkspaceFolders(accessor);
-		if (!folders || !folders.length) {
+		if (!folders?.length) {
 			return;
 		}
 
@@ -332,8 +332,8 @@ CommandsRegistry.registerCommand({
 		const commandService = accessor.get(ICommandService);
 
 		const commandOptions: IOpenEmptyWindowOptions = {
-			forceReuseWindow: options && options.reuseWindow,
-			remoteAuthority: options && options.remoteAuthority,
+			forceReuseWindow: options?.reuseWindow,
+			remoteAuthority: options?.remoteAuthority,
 		};
 
 		return commandService.executeCommand(

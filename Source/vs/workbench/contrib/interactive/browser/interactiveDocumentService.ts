@@ -42,10 +42,6 @@ export class InteractiveDocumentService
 	onWillRemoveInteractiveDocument =
 		this._onWillRemoveInteractiveDocument.event;
 
-	constructor() {
-		super();
-	}
-
 	willCreateInteractiveDocument(
 		notebookUri: URI,
 		inputUri: URI,

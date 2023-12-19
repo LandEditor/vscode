@@ -390,7 +390,7 @@ class ReferencesTreeDataProvider
 export class FileItem {
 	constructor(
 		readonly uri: vscode.Uri,
-		readonly references: Array<ReferenceItem>,
+		readonly references: ReferenceItem[],
 		readonly model: ReferencesModel,
 	) {}
 

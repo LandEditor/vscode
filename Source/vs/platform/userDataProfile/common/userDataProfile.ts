@@ -345,9 +345,11 @@ export class UserDataProfilesService
 				try {
 					for (const storedProfile of this.getStoredProfiles()) {
 						if (
-							!storedProfile.name ||
-							!isString(storedProfile.name) ||
-							!storedProfile.location
+							!(
+								storedProfile.name &&
+								isString(storedProfile.name) &&
+								storedProfile.location
+							)
 						) {
 							this.logService.warn(
 								"Skipping the invalid stored profile",
@@ -434,7 +436,7 @@ export class UserDataProfilesService
 	async createTransientProfile(
 		workspaceIdentifier?: IAnyWorkspaceIdentifier,
 	): Promise<IUserDataProfile> {
-		const namePrefix = `Temp`;
+		const namePrefix = "Temp";
 		const nameRegEx = new RegExp(
 			`${escapeRegExpCharacters(namePrefix)}\\s(\\d+)`,
 		);
@@ -474,7 +476,7 @@ export class UserDataProfilesService
 	): Promise<IUserDataProfile> {
 		if (!this.enabled) {
 			throw new Error(
-				`Profiles are disabled in the current environment.`,
+				"Profiles are disabled in the current environment.",
 			);
 		}
 
@@ -492,7 +494,7 @@ export class UserDataProfilesService
 		name: string,
 		options?: IUserDataProfileOptions,
 	): Promise<IUserDataProfile> {
-		if (!isString(name) || !name) {
+		if (!(isString(name) && name)) {
 			throw new Error(
 				"Name of the profile is mandatory and must be of type `string`",
 			);
@@ -544,7 +546,7 @@ export class UserDataProfilesService
 	): Promise<IUserDataProfile> {
 		if (!this.enabled) {
 			throw new Error(
-				`Profiles are disabled in the current environment.`,
+				"Profiles are disabled in the current environment.",
 			);
 		}
 
@@ -578,7 +580,7 @@ export class UserDataProfilesService
 	async removeProfile(profileToRemove: IUserDataProfile): Promise<void> {
 		if (!this.enabled) {
 			throw new Error(
-				`Profiles are disabled in the current environment.`,
+				"Profiles are disabled in the current environment.",
 			);
 		}
 		if (profileToRemove.isDefault) {
@@ -640,7 +642,7 @@ export class UserDataProfilesService
 	): Promise<void> {
 		if (!this.enabled) {
 			throw new Error(
-				`Profiles are disabled in the current environment.`,
+				"Profiles are disabled in the current environment.",
 			);
 		}
 
@@ -658,7 +660,7 @@ export class UserDataProfilesService
 	): void {
 		if (!this.enabled) {
 			throw new Error(
-				`Profiles are disabled in the current environment.`,
+				"Profiles are disabled in the current environment.",
 			);
 		}
 

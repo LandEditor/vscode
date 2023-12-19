@@ -177,13 +177,14 @@ export class TypeScriptServerSpawner {
 			case SyntaxServerConfiguration.Never:
 				return CompositeServerType.Single;
 
-			case SyntaxServerConfiguration.Auto:
+			case SyntaxServerConfiguration.Auto: {
 				if (version.apiVersion?.gte(API.v340)) {
 					return version.apiVersion?.gte(API.v400)
 						? CompositeServerType.DynamicSeparateSyntax
 						: CompositeServerType.SeparateSyntax;
 				}
 				return CompositeServerType.Single;
+			}
 		}
 	}
 
@@ -265,10 +266,6 @@ export class TypeScriptServerSpawner {
 		switch (kind) {
 			case TsServerProcessKind.Syntax:
 				return ServerType.Syntax;
-
-			case TsServerProcessKind.Main:
-			case TsServerProcessKind.Semantic:
-			case TsServerProcessKind.Diagnostics:
 			default:
 				return ServerType.Semantic;
 		}
@@ -316,7 +313,7 @@ export class TypeScriptServerSpawner {
 		}
 
 		if (cancellationPipeName) {
-			args.push("--cancellationPipeName", cancellationPipeName + "*");
+			args.push("--cancellationPipeName", `${cancellationPipeName}*`);
 		}
 
 		if (TypeScriptServerSpawner.isLoggingEnabled(configuration)) {
@@ -334,7 +331,7 @@ export class TypeScriptServerSpawner {
 				if (logDir) {
 					const logFilePath = vscode.Uri.joinPath(
 						logDir,
-						`tsserver.log`,
+						"tsserver.log",
 					);
 					tsServerLog = { type: "file", uri: logFilePath };
 

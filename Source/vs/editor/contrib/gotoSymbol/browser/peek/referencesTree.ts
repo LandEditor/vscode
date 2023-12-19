@@ -217,14 +217,7 @@ class OneReferenceTemplate {
 		const preview = element.parent
 			.getPreview(element)
 			?.preview(element.range);
-		if (!preview || !preview.value) {
-			// this means we FAILED to resolve the document or the value is the empty string
-			this.label.set(
-				`${basename(element.uri)}:${
-					element.range.startLineNumber + 1
-				}:${element.range.startColumn + 1}`,
-			);
-		} else {
+		if (preview?.value) {
 			// render search match as highlight unless
 			// we have score, then render the score
 			const { value, highlight } = preview;
@@ -235,6 +228,13 @@ class OneReferenceTemplate {
 				this.label.element.classList.toggle("referenceMatch", true);
 				this.label.set(value, [highlight]);
 			}
+		} else {
+			// this means we FAILED to resolve the document or the value is the empty string
+			this.label.set(
+				`${basename(element.uri)}:${
+					element.range.startLineNumber + 1
+				}:${element.range.startColumn + 1}`,
+			);
 		}
 	}
 }

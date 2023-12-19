@@ -251,7 +251,7 @@ export class HTMLFileSystemProvider
 			let handle = await this.getFileHandle(resource);
 
 			// Validate target unless { create: true, overwrite: true }
-			if (!opts.create || !opts.overwrite) {
+			if (!(opts.create && opts.overwrite)) {
 				if (handle) {
 					if (!opts.overwrite) {
 						throw this.createFileSystemProviderError(

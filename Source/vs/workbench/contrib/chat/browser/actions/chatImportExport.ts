@@ -32,9 +32,10 @@ export function registerChatExportActions() {
 					id: "workbench.action.chat.export",
 					category: CHAT_CATEGORY,
 					title: {
-						value:
-							localize("chat.export.label", "Export Session") +
-							"...",
+						value: `${localize(
+							"chat.export.label",
+							"Export Session",
+						)}...`,
 						original: "Export Session...",
 					},
 					precondition: CONTEXT_PROVIDER_EXISTS,
@@ -48,7 +49,7 @@ export function registerChatExportActions() {
 				const chatService = accessor.get(IChatService);
 
 				const widget = widgetService.lastFocusedWidget;
-				if (!widget || !widget.viewModel) {
+				if (!widget?.viewModel) {
 					return;
 				}
 
@@ -86,9 +87,10 @@ export function registerChatExportActions() {
 				super({
 					id: "workbench.action.chat.import",
 					title: {
-						value:
-							localize("chat.import.label", "Import Session") +
-							"...",
+						value: `${localize(
+							"chat.import.label",
+							"Import Session",
+						)}...`,
 						original: "Import Session...",
 					},
 					category: CHAT_CATEGORY,

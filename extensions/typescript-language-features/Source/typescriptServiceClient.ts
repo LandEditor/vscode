@@ -495,7 +495,7 @@ export default class TypeScriptServiceClient
 	}
 
 	public onReady(f: () => void): Promise<void> {
-		return this._onReady!.promise.then(f);
+		return this._onReady?.promise.then(f);
 	}
 
 	private info(message: string, data?: any): void {
@@ -518,15 +518,15 @@ export default class TypeScriptServiceClient
 
 	private token = 0;
 	private startService(resendModels = false): ServerState.State {
-		this.info(`Starting TS Server`);
+		this.info("Starting TS Server");
 
 		if (this.isDisposed) {
-			this.info(`Not starting server: disposed`);
+			this.info("Not starting server: disposed");
 			return ServerState.None;
 		}
 
 		if (this.hasServerFatallyCrashedTooManyTimes) {
-			this.info(`Not starting server: too many crashes`);
+			this.info("Not starting server: too many crashes");
 			return ServerState.None;
 		}
 
@@ -662,7 +662,7 @@ export default class TypeScriptServiceClient
 
 		this.serviceStarted(resendModels);
 
-		this._onReady!.resolve();
+		this._onReady?.resolve();
 		this._onTsServerStarted.fire({
 			version: version,
 			usedApiVersion: apiVersion,
@@ -972,19 +972,13 @@ export default class TypeScriptServiceClient
 			return resource.fsPath;
 		}
 
-		return (
-			(this.isProjectWideIntellisenseOnWebEnabled()
+		return `${
+			this.isProjectWideIntellisenseOnWebEnabled()
 				? ""
-				: inMemoryResourcePrefix) +
-			"/" +
-			resource.scheme +
-			"/" +
-			(resource.authority || emptyAuthority) +
-			(resource.path.startsWith("/")
-				? resource.path
-				: "/" + resource.path) +
-			(resource.fragment ? "#" + resource.fragment : "")
-		);
+				: inMemoryResourcePrefix
+		}/${resource.scheme}/${resource.authority || emptyAuthority}${
+			resource.path.startsWith("/") ? resource.path : `/${resource.path}`
+		}${resource.fragment ? `#${resource.fragment}` : ""}`;
 	}
 
 	public toOpenTsFilePath(
@@ -993,8 +987,10 @@ export default class TypeScriptServiceClient
 	): string | undefined {
 		if (!this.bufferSyncSupport.ensureHasBuffer(document.uri)) {
 			if (
-				!options.suppressAlertOnFailure &&
-				!fileSchemes.disabledSchemes.has(document.uri.scheme)
+				!(
+					options.suppressAlertOnFailure ||
+					fileSchemes.disabledSchemes.has(document.uri.scheme)
+				)
 			) {
 				console.error(`Unexpected resource ${document.uri}`);
 			}
@@ -1041,11 +1037,9 @@ export default class TypeScriptServiceClient
 			const parts = filepath.match(/^\/([^\/]+)\/([^\/]*)\/(.+)$/);
 			if (parts) {
 				const resource = vscode.Uri.parse(
-					parts[1] +
-						"://" +
-						(parts[2] === emptyAuthority ? "" : parts[2]) +
-						"/" +
-						parts[3],
+					`${parts[1]}://${
+						parts[2] === emptyAuthority ? "" : parts[2]
+					}/${parts[3]}`,
 				);
 				return this.bufferSyncSupport.toVsCodeResource(resource);
 			}
@@ -1055,11 +1049,9 @@ export default class TypeScriptServiceClient
 			const parts = filepath.match(/^\^\/([^\/]+)\/([^\/]*)\/(.+)$/);
 			if (parts) {
 				const resource = vscode.Uri.parse(
-					parts[1] +
-						"://" +
-						(parts[2] === emptyAuthority ? "" : parts[2]) +
-						"/" +
-						parts[3],
+					`${parts[1]}://${
+						parts[2] === emptyAuthority ? "" : parts[2]
+					}/${parts[3]}`,
 				);
 				return this.bufferSyncSupport.toVsCodeResource(resource);
 			}
@@ -1135,7 +1127,7 @@ export default class TypeScriptServiceClient
 					expectsResult: true,
 					...config,
 				});
-				executions[0]!.finally(() => {
+				executions[0]?.finally(() => {
 					runningServerState.toCancelOnResourceChange.delete(
 						inFlight,
 					);
@@ -1154,7 +1146,7 @@ export default class TypeScriptServiceClient
 		}
 
 		if (config?.nonRecoverable) {
-			executions[0]!.catch((err) => this.fatalError(command, err));
+			executions[0]?.catch((err) => this.fatalError(command, err));
 		}
 
 		if (command === "updateOpen") {
@@ -1265,11 +1257,12 @@ export default class TypeScriptServiceClient
 				}
 				break;
 			}
-			case EventName.configFileDiag:
+			case EventName.configFileDiag: {
 				this._onConfigDiagnosticsReceived.fire(
 					event as Proto.ConfigFileDiagnosticEvent,
 				);
 				break;
+			}
 
 			case EventName.telemetry: {
 				const body = (event as Proto.TelemetryEvent).body;
@@ -1298,42 +1291,48 @@ export default class TypeScriptServiceClient
 				this.bufferSyncSupport.getErr(resources);
 				break;
 			}
-			case EventName.beginInstallTypes:
+			case EventName.beginInstallTypes: {
 				this._onDidBeginInstallTypings.fire(
 					(event as Proto.BeginInstallTypesEvent).body,
 				);
 				break;
+			}
 
-			case EventName.endInstallTypes:
+			case EventName.endInstallTypes: {
 				this._onDidEndInstallTypings.fire(
 					(event as Proto.EndInstallTypesEvent).body,
 				);
 				break;
+			}
 
-			case EventName.typesInstallerInitializationFailed:
+			case EventName.typesInstallerInitializationFailed: {
 				this._onTypesInstallerInitializationFailed.fire(
 					(event as Proto.TypesInstallerInitializationFailedEvent)
 						.body,
 				);
 				break;
+			}
 
-			case EventName.surveyReady:
+			case EventName.surveyReady: {
 				this._onSurveyReady.fire(
 					(event as Proto.SurveyReadyEvent).body,
 				);
 				break;
+			}
 
-			case EventName.projectLoadingStart:
+			case EventName.projectLoadingStart: {
 				this.loadingIndicator.startedLoadingProject(
 					(event as Proto.ProjectLoadingStartEvent).body.projectName,
 				);
 				break;
+			}
 
-			case EventName.projectLoadingFinish:
+			case EventName.projectLoadingFinish: {
 				this.loadingIndicator.finishedLoadingProject(
 					(event as Proto.ProjectLoadingFinishEvent).body.projectName,
 				);
 				break;
+			}
 		}
 	}
 
@@ -1418,7 +1417,7 @@ function getReportIssueArgsForError(
 	tsServerLog: TsServerLog | undefined,
 	globalPlugins: readonly TypeScriptServerPlugin[],
 ): { extensionId: string; issueTitle: string; issueBody: string } | undefined {
-	if (!error.serverStack || !error.serverMessage) {
+	if (!(error.serverStack && error.serverMessage)) {
 		return undefined;
 	}
 
@@ -1426,7 +1425,7 @@ function getReportIssueArgsForError(
 	// as we want users to file issues in english
 
 	const sections = [
-		`❗️❗️❗️ Please fill in the sections below to help us diagnose the issue ❗️❗️❗️`,
+		"❗️❗️❗️ Please fill in the sections below to help us diagnose the issue ❗️❗️❗️",
 		`**TypeScript Version:** ${error.version.apiVersion?.fullVersionString}`,
 		`**Steps to reproduce crash**
 
@@ -1438,8 +1437,8 @@ function getReportIssueArgsForError(
 	if (globalPlugins.length) {
 		sections.push(
 			[
-				`**Global TypeScript Server Plugins**`,
-				`❗️ Please test with extensions disabled. Extensions are the root cause of most TypeScript server crashes`,
+				"**Global TypeScript Server Plugins**",
+				"❗️ Please test with extensions disabled. Extensions are the root cause of most TypeScript server crashes",
 				globalPlugins
 					.map(
 						(plugin) =>

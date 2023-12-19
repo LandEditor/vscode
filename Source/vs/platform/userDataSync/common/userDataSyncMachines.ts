@@ -272,10 +272,9 @@ export class UserDataSyncMachinesService
 		manifest?: IUserDataManifest,
 	): Promise<IUserData> {
 		if (this.userData) {
-			const latestRef =
-				manifest && manifest.latest
-					? manifest.latest[UserDataSyncMachinesService.RESOURCE]
-					: undefined;
+			const latestRef = manifest?.latest
+				? manifest.latest[UserDataSyncMachinesService.RESOURCE]
+				: undefined;
 
 			// Last time synced resource and latest resource on server are same
 			if (this.userData.ref === latestRef) {

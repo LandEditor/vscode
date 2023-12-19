@@ -83,7 +83,7 @@ export async function format(
 
 	// perform a html format and apply changes to a new document
 	const htmlMode = languageModes.getMode("html")!;
-	const htmlEdits = await htmlMode.format!(
+	const htmlEdits = await htmlMode.format?.(
 		document,
 		formatRange,
 		formattingOptions,
@@ -95,11 +95,11 @@ export async function format(
 		endOffset === content.length &&
 		!htmlFormattedContent.endsWith("\n")
 	) {
-		htmlFormattedContent = htmlFormattedContent + "\n";
+		htmlFormattedContent += "\n";
 		htmlEdits.push(TextEdit.insert(endPos, "\n"));
 	}
 	const newDocument = TextDocument.create(
-		document.uri + ".tmp",
+		`${document.uri}.tmp`,
 		document.languageId,
 		document.version,
 		htmlFormattedContent,
@@ -124,8 +124,7 @@ export async function format(
 		for (const r of embeddedRanges) {
 			const mode = r.mode;
 			if (
-				mode &&
-				mode.format &&
+				mode?.format &&
 				enabledModes[mode.getId()] &&
 				!r.attributeValue
 			) {

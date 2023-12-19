@@ -109,10 +109,7 @@ function hygiene(some, linting = true) {
 				// block comment using an extra space
 			} else {
 				console.error(
-					file.relative +
-						"(" +
-						(i + 1) +
-						",1): Bad whitespace indentation",
+					`${file.relative}(${i}${1},1): Bad whitespace indentation`,
 				);
 				errorCount++;
 			}
@@ -127,7 +124,7 @@ function hygiene(some, linting = true) {
 		for (let i = 0; i < copyrightHeaderLines.length; i++) {
 			if (lines[i] !== copyrightHeaderLines[i]) {
 				console.error(
-					file.relative + ": Missing or bad copyright statement",
+					`${file.relative}: Missing or bad copyright statement`,
 				);
 				errorCount++;
 				break;
@@ -251,9 +248,7 @@ function hygiene(some, linting = true) {
 				if (errorCount > 0) {
 					this.emit(
 						"error",
-						"Hygiene failed with " +
-							errorCount +
-							` errors. Check 'build / gulpfile.hygiene.js'.`,
+						`Hygiene failed with ${errorCount} errors. Check 'build / gulpfile.hygiene.js'.`,
 					);
 				} else {
 					this.emit("end");

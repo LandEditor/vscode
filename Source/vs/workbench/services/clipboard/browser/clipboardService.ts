@@ -42,7 +42,7 @@ export class BrowserClipboardService extends BaseBrowserClipboardService {
 		try {
 			return await navigator.clipboard.readText();
 		} catch (error) {
-			if (!!this.environmentService.extensionTestsLocationURI) {
+			if (this.environmentService.extensionTestsLocationURI) {
 				return ""; // do not ask for input in tests (https://github.com/microsoft/vscode/issues/112264)
 			}
 

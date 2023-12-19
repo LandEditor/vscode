@@ -59,7 +59,7 @@ export class BetterTokenStorage<T> {
 						return;
 					}
 
-					const keyList: Array<string> = JSON.parse(keyListStr);
+					const keyList: string[] = JSON.parse(keyListStr);
 					// Gather promises that contain key value pairs our of secret storage
 					const promises = keyList.map(
 						(key) =>

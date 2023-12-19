@@ -305,7 +305,7 @@ export class ViewCursors extends ViewPart {
 		this._blinkingEnabled = false;
 		this._updateDomClassName();
 
-		if (!isHidden && !isSolid) {
+		if (!(isHidden || isSolid)) {
 			if (blinkingStyle === TextEditorCursorBlinkingStyle.Blink) {
 				// flat blinking is handled by JavaScript to save battery life due to Chromium step timing issue https://bugs.chromium.org/p/chromium/issues/detail?id=361587
 				this._cursorFlatBlinkInterval.cancelAndSet(
@@ -339,44 +339,55 @@ export class ViewCursors extends ViewPart {
 			result += " has-selection";
 		}
 		switch (this._cursorStyle) {
-			case TextEditorCursorStyle.Line:
+			case TextEditorCursorStyle.Line: {
 				result += " cursor-line-style";
 				break;
-			case TextEditorCursorStyle.Block:
+			}
+			case TextEditorCursorStyle.Block: {
 				result += " cursor-block-style";
 				break;
-			case TextEditorCursorStyle.Underline:
+			}
+			case TextEditorCursorStyle.Underline: {
 				result += " cursor-underline-style";
 				break;
-			case TextEditorCursorStyle.LineThin:
+			}
+			case TextEditorCursorStyle.LineThin: {
 				result += " cursor-line-thin-style";
 				break;
-			case TextEditorCursorStyle.BlockOutline:
+			}
+			case TextEditorCursorStyle.BlockOutline: {
 				result += " cursor-block-outline-style";
 				break;
-			case TextEditorCursorStyle.UnderlineThin:
+			}
+			case TextEditorCursorStyle.UnderlineThin: {
 				result += " cursor-underline-thin-style";
 				break;
+			}
 			default:
 				result += " cursor-line-style";
 		}
 		if (this._blinkingEnabled) {
 			switch (this._getCursorBlinking()) {
-				case TextEditorCursorBlinkingStyle.Blink:
+				case TextEditorCursorBlinkingStyle.Blink: {
 					result += " cursor-blink";
 					break;
-				case TextEditorCursorBlinkingStyle.Smooth:
+				}
+				case TextEditorCursorBlinkingStyle.Smooth: {
 					result += " cursor-smooth";
 					break;
-				case TextEditorCursorBlinkingStyle.Phase:
+				}
+				case TextEditorCursorBlinkingStyle.Phase: {
 					result += " cursor-phase";
 					break;
-				case TextEditorCursorBlinkingStyle.Expand:
+				}
+				case TextEditorCursorBlinkingStyle.Expand: {
 					result += " cursor-expand";
 					break;
-				case TextEditorCursorBlinkingStyle.Solid:
+				}
+				case TextEditorCursorBlinkingStyle.Solid: {
 					result += " cursor-solid";
 					break;
+				}
 				default:
 					result += " cursor-solid";
 			}

@@ -553,7 +553,7 @@ export class FilesRenderer
 			);
 			const offset = Math.max(22 - indent, 0); // derived via inspection
 			container.style.setProperty(
-				`--vscode-explorer-align-offset-margin-left`,
+				"--vscode-explorer-align-offset-margin-left",
 				`${offset}px`
 			);
 		};
@@ -1058,7 +1058,7 @@ export class FilesRenderer
 		if (
 			this.contextService.getWorkbenchState() === WorkbenchState.WORKSPACE
 		) {
-			depth = depth + 1;
+			depth += 1;
 		}
 
 		return depth;
@@ -1167,7 +1167,7 @@ export class FilesFilter implements ITreeFilter<ExplorerItem, FuzzyScore> {
 					}
 
 					const stat = this.explorerService.findClosest(e.resource);
-					if (stat && stat.isExcluded) {
+					if (stat?.isExcluded) {
 						// A filtered resource suddenly became visible since user opened an editor
 						shouldFire = true;
 						break;
@@ -1240,8 +1240,9 @@ export class FilesFilter implements ITreeFilter<ExplorerItem, FuzzyScore> {
 				const cached = this.hiddenExpressionPerRoot.get(
 					folder.uri.toString(),
 				);
-				shouldFire =
-					!cached || !equals(cached.original, excludesConfig);
+				shouldFire = !(
+					cached && equals(cached.original, excludesConfig)
+				);
 			}
 
 			const excludesConfigCopy = deepClone(excludesConfig); // do not keep the config, as it gets mutated under our hoods
@@ -1349,7 +1350,7 @@ export class FilesFilter implements ITreeFilter<ExplorerItem, FuzzyScore> {
 		const globMatch = cached?.parsed(
 			path.relative(stat.root.resource.path, stat.resource.path),
 			stat.name,
-			(name) => !!(stat.parent && stat.parent.getChild(name)),
+			(name) => !!stat.parent?.getChild(name),
 		);
 		// Small optimization to only traverse gitIgnore if the globMatch from fileExclude returned nothing
 		const ignoreFile = globMatch
@@ -1434,27 +1435,31 @@ export class FileSorter implements ITreeSorter<ExplorerItem> {
 		let compareFileNames;
 		let compareFileExtensions;
 		switch (lexicographicOptions) {
-			case "upper":
+			case "upper": {
 				compareFileNames = compareFileNamesUpper;
 				compareFileExtensions = compareFileExtensionsUpper;
 				break;
-			case "lower":
+			}
+			case "lower": {
 				compareFileNames = compareFileNamesLower;
 				compareFileExtensions = compareFileExtensionsLower;
 				break;
-			case "unicode":
+			}
+			case "unicode": {
 				compareFileNames = compareFileNamesUnicode;
 				compareFileExtensions = compareFileExtensionsUnicode;
 				break;
-			default:
+			}
+			default: {
 				// 'default'
 				compareFileNames = compareFileNamesDefault;
 				compareFileExtensions = compareFileExtensionsDefault;
+			}
 		}
 
 		// Sort Directories
 		switch (sortOrder) {
-			case "type":
+			case "type": {
 				if (statA.isDirectory && !statB.isDirectory) {
 					return -1;
 				}
@@ -1468,8 +1473,9 @@ export class FileSorter implements ITreeSorter<ExplorerItem> {
 				}
 
 				break;
+			}
 
-			case "filesFirst":
+			case "filesFirst": {
 				if (statA.isDirectory && !statB.isDirectory) {
 					return 1;
 				}
@@ -1479,8 +1485,9 @@ export class FileSorter implements ITreeSorter<ExplorerItem> {
 				}
 
 				break;
+			}
 
-			case "foldersNestsFiles":
+			case "foldersNestsFiles": {
 				if (statA.isDirectory && !statB.isDirectory) {
 					return -1;
 				}
@@ -1498,11 +1505,13 @@ export class FileSorter implements ITreeSorter<ExplorerItem> {
 				}
 
 				break;
+			}
 
 			case "mixed":
 				break; // not sorting when "mixed" is on
 
-			default: /* 'default', 'modified' */
+			default: {
+				/* 'default', 'modified' */
 				if (statA.isDirectory && !statB.isDirectory) {
 					return -1;
 				}
@@ -1512,6 +1521,7 @@ export class FileSorter implements ITreeSorter<ExplorerItem> {
 				}
 
 				break;
+			}
 		}
 
 		// Sort Files
@@ -1519,7 +1529,7 @@ export class FileSorter implements ITreeSorter<ExplorerItem> {
 			case "type":
 				return compareFileExtensions(statA.name, statB.name);
 
-			case "modified":
+			case "modified": {
 				if (statA.mtime !== statB.mtime) {
 					return statA.mtime &&
 						statB.mtime &&
@@ -1529,6 +1539,7 @@ export class FileSorter implements ITreeSorter<ExplorerItem> {
 				}
 
 				return compareFileNames(statA.name, statB.name);
+			}
 
 			default: /* 'default', 'mixed', 'filesFirst' */
 				return compareFileNames(statA.name, statB.name);
@@ -1831,7 +1842,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 			data as ElementsDragAndDropData<ExplorerItem, ExplorerItem[]>,
 			originalEvent,
 		);
-		if (items && items.length && originalEvent.dataTransfer) {
+		if (items?.length && originalEvent.dataTransfer) {
 			// Apply some datatransfer types to allow for dragging the element outside of the application
 			this.instantiationService.invokeFunction((accessor) =>
 				fillEditorsDragData(accessor, items, originalEvent),

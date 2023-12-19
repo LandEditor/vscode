@@ -52,7 +52,7 @@ export class ExtensionKey {
 
 	static parse(key: string): ExtensionKey | null {
 		const matches = ExtensionKeyRegex.exec(key);
-		return matches && matches[1] && matches[2]
+		return matches?.[1] && matches[2]
 			? new ExtensionKey(
 					{ id: matches[1] },
 					matches[2],
@@ -95,7 +95,7 @@ const EXTENSION_IDENTIFIER_WITH_VERSION_REGEX =
 	/^([^.]+\..+)@((prerelease)|(\d+\.\d+\.\d+(-.*)?))$/;
 export function getIdAndVersion(id: string): [string, string | undefined] {
 	const matches = EXTENSION_IDENTIFIER_WITH_VERSION_REGEX.exec(id);
-	if (matches && matches[1]) {
+	if (matches?.[1]) {
 		return [adoptToGalleryExtensionId(matches[1]), matches[2]];
 	}
 	return [adoptToGalleryExtensionId(id), undefined];
@@ -204,7 +204,7 @@ export function getGalleryExtensionTelemetryData(
 export const BetterMergeId = new ExtensionIdentifier("pprice.better-merge");
 
 export function getExtensionDependencies(
-	installedExtensions: ReadonlyArray<IExtension>,
+	installedExtensions: readonly IExtension[],
 	extension: IExtension,
 ): IExtension[] {
 	const dependencies: IExtension[] = [];
@@ -254,7 +254,7 @@ async function isAlpineLinux(
 		} catch (error) {
 			/* Ignore */
 			logService.debug(
-				`Error while getting the os-release file.`,
+				"Error while getting the os-release file.",
 				getErrorMessage(error),
 			);
 		}

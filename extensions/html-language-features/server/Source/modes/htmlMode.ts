@@ -113,8 +113,7 @@ export function getHTMLMode(
 				{},
 			);
 			if (formatSettings.contentUnformatted) {
-				formatSettings.contentUnformatted =
-					formatSettings.contentUnformatted + ",script";
+				formatSettings.contentUnformatted += ",script";
 			} else {
 				formatSettings.contentUnformatted = "script";
 			}

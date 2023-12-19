@@ -24,7 +24,7 @@
 			}
 		}
 
-		throw new Error(`Could not load settings`);
+		throw new Error("Could not load settings");
 	}
 
 	/**
@@ -66,7 +66,7 @@
 	const image = document.createElement("img");
 
 	function updateScale(newScale) {
-		if (!image || !hasLoadedImage || !image.parentElement) {
+		if (!(image && hasLoadedImage && image.parentElement)) {
 			return;
 		}
 
@@ -135,7 +135,7 @@
 	}
 
 	function firstZoom() {
-		if (!image || !hasLoadedImage) {
+		if (!(image && hasLoadedImage)) {
 			return;
 		}
 
@@ -172,7 +172,7 @@
 	}
 
 	window.addEventListener("keydown", (/** @type {KeyboardEvent} */ e) => {
-		if (!image || !hasLoadedImage) {
+		if (!(image && hasLoadedImage)) {
 			return;
 		}
 		ctrlPressed = e.ctrlKey;
@@ -185,7 +185,7 @@
 	});
 
 	window.addEventListener("keyup", (/** @type {KeyboardEvent} */ e) => {
-		if (!image || !hasLoadedImage) {
+		if (!(image && hasLoadedImage)) {
 			return;
 		}
 
@@ -199,7 +199,7 @@
 	});
 
 	container.addEventListener("mousedown", (/** @type {MouseEvent} */ e) => {
-		if (!image || !hasLoadedImage) {
+		if (!(image && hasLoadedImage)) {
 			return;
 		}
 
@@ -214,7 +214,7 @@
 	});
 
 	container.addEventListener("click", (/** @type {MouseEvent} */ e) => {
-		if (!image || !hasLoadedImage) {
+		if (!(image && hasLoadedImage)) {
 			return;
 		}
 
@@ -247,12 +247,12 @@
 				e.preventDefault();
 			}
 
-			if (!image || !hasLoadedImage) {
+			if (!(image && hasLoadedImage)) {
 				return;
 			}
 
 			const isScrollWheelKeyPressed = isMac ? altPressed : ctrlPressed;
-			if (!isScrollWheelKeyPressed && !e.ctrlKey) {
+			if (!(isScrollWheelKeyPressed || e.ctrlKey)) {
 				// pinching is reported as scroll wheel + ctrl
 				return;
 			}
@@ -271,9 +271,7 @@
 		"scroll",
 		(e) => {
 			if (
-				!image ||
-				!hasLoadedImage ||
-				!image.parentElement ||
+				!(image && hasLoadedImage && image.parentElement) ||
 				scale === "fit"
 			) {
 				return;

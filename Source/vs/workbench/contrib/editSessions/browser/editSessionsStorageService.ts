@@ -187,7 +187,7 @@ export class EditSessionsWorkbenchService
 
 		content =
 			typeof content === "string" ? content : JSON.stringify(content);
-		const ref = await this.storeClient!.writeResource(
+		const ref = await this.storeClient?.writeResource(
 			resource,
 			content,
 			null,
@@ -266,7 +266,7 @@ export class EditSessionsWorkbenchService
 	async list(resource: SyncResource): Promise<IResourceRefHandle[]> {
 		await this.initialize("read", false);
 		if (!this.initialized) {
-			throw new Error(`Unable to list edit sessions.`);
+			throw new Error("Unable to list edit sessions.");
 		}
 
 		try {
@@ -359,7 +359,7 @@ export class EditSessionsWorkbenchService
 		await this.initialize("read", false);
 
 		if (!this.cachedMachines) {
-			const machines = await this.machineClient!.getMachines();
+			const machines = await this.machineClient?.getMachines();
 			this.cachedMachines = machines.reduce(
 				(map, machine) => map.set(machine.id, machine.name),
 				new Map<string, string>(),
@@ -370,15 +370,15 @@ export class EditSessionsWorkbenchService
 	}
 
 	private async getOrCreateCurrentMachineId(): Promise<string> {
-		const currentMachineId = await this.machineClient!.getMachines().then(
-			(machines) => machines.find((m) => m.isCurrent)?.id,
-		);
+		const currentMachineId = await this.machineClient
+			?.getMachines()
+			.then((machines) => machines.find((m) => m.isCurrent)?.id);
 
 		if (currentMachineId === undefined) {
-			await this.machineClient!.addCurrentMachine();
-			return await this.machineClient!.getMachines().then(
-				(machines) => machines.find((m) => m.isCurrent)!.id,
-			);
+			await this.machineClient?.addCurrentMachine();
+			return await this.machineClient
+				?.getMachines()
+				.then((machines) => machines.find((m) => m.isCurrent)?.id);
 		}
 
 		return currentMachineId;
@@ -412,7 +412,7 @@ export class EditSessionsWorkbenchService
 
 		// If settings sync is already enabled, avoid asking again to authenticate
 		if (this.shouldAttemptEditSessionInit()) {
-			this.logService.info(`Reusing user data sync enablement`);
+			this.logService.info("Reusing user data sync enablement");
 			const authenticationSessionInfo =
 				await getCurrentAuthenticationSessionInfo(
 					this.secretStorageService,

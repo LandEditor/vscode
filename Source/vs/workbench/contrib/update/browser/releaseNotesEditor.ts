@@ -73,7 +73,7 @@ export class ReleaseNotesManager {
 		@IProductService private readonly _productService: IProductService
 	) {
 		TokenizationRegistry.onDidChange(async () => {
-			if (!this._currentReleaseNotes || !this._lastText) {
+			if (!(this._currentReleaseNotes && this._lastText)) {
 				return;
 			}
 			const html = await this.renderBody(this._lastText);
@@ -250,7 +250,7 @@ export class ReleaseNotesManager {
 				throw new Error("Failed to fetch release notes");
 			}
 
-			if (!text || !/^#\s/.test(text)) {
+			if (!(text && /^#\s/.test(text))) {
 				// release notes always starts with `#` followed by whitespace
 				throw new Error("Invalid release notes");
 			}
@@ -297,7 +297,7 @@ export class ReleaseNotesManager {
 			) {
 				return uri.with({
 					query: `${
-						uri.query ? uri.query + "&" : ""
+						uri.query ? `${uri.query}&` : ""
 					}utm_source=VsCode&utm_medium=${encodeURIComponent(
 						origin,
 					)}&utm_content=${encodeURIComponent(experiment)}`,

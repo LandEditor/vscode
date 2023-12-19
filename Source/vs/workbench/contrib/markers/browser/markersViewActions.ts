@@ -139,11 +139,10 @@ export class MarkersFilters extends Disposable {
 
 export class QuickFixAction extends Action {
 	public static readonly ID: string = "workbench.actions.problems.quickfix";
-	private static readonly CLASS: string =
-		"markers-panel-action-quickfix " +
-		ThemeIcon.asClassName(Codicon.lightBulb);
-	private static readonly AUTO_FIX_CLASS: string =
-		QuickFixAction.CLASS + " autofixable";
+	private static readonly CLASS: string = `markers-panel-action-quickfix ${ThemeIcon.asClassName(
+		Codicon.lightBulb,
+	)}`;
+	private static readonly AUTO_FIX_CLASS: string = `${QuickFixAction.CLASS} autofixable`;
 
 	private readonly _onShowQuickFixes = this._register(new Emitter<void>());
 	readonly onShowQuickFixes: Event<void> = this._onShowQuickFixes.event;

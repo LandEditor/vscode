@@ -31,7 +31,7 @@ export class ChatDynamicReferenceModel
 	public static readonly ID = "chatDynamicReferenceModel";
 
 	private readonly _references: IDynamicReference[] = [];
-	get references(): ReadonlyArray<IDynamicReference> {
+	get references(): readonly IDynamicReference[] {
 		return [...this._references];
 	}
 
@@ -130,7 +130,7 @@ export class SelectAndInsertFileAction extends Action2 {
 		const doCleanup = () => {
 			// Failed, remove the dangling `file`
 			context.widget.inputEditor.executeEdits("chatInsertFile", [
-				{ range: context.range, text: `` },
+				{ range: context.range, text: "" },
 			]);
 		};
 
@@ -157,7 +157,7 @@ export class SelectAndInsertFileAction extends Action2 {
 		const text = `#file:${fileName}`;
 		const range = context.range;
 		const success = editor.executeEdits("chatInsertFile", [
-			{ range, text: text + " " },
+			{ range, text: `${text} ` },
 		]);
 		if (!success) {
 			logService.trace(

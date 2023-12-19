@@ -145,7 +145,7 @@ export class EditorGutter<
 
 				const top =
 					gutterItem.range.startLineNumber <=
-					this._editor.getModel()!.getLineCount()
+					this._editor.getModel()?.getLineCount()
 						? this._editor.getTopForLineNumber(
 								gutterItem.range.startLineNumber,
 								true,

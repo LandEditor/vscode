@@ -135,7 +135,6 @@ export abstract class AbstractResourceEditorInput
 				return this.shortDescription;
 			case Verbosity.LONG:
 				return this.longDescription;
-			case Verbosity.MEDIUM:
 			default:
 				return this.mediumDescription;
 		}
@@ -214,7 +213,6 @@ export abstract class AbstractResourceEditorInput
 			case Verbosity.LONG:
 				return this.longTitle;
 			default:
-			case Verbosity.MEDIUM:
 				return this.mediumTitle;
 		}
 	}

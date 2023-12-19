@@ -507,7 +507,7 @@ class ProcessExplorer {
 	private isDebuggable(cmd: string): boolean {
 		const matches = DEBUG_FLAGS_PATTERN.exec(cmd);
 		return (
-			(matches && matches.groups!.port !== "0") ||
+			(matches && matches.groups?.port !== "0") ||
 			cmd.indexOf("node ") >= 0 ||
 			cmd.indexOf("node.exe") >= 0
 		);
@@ -522,7 +522,7 @@ class ProcessExplorer {
 
 		let matches = DEBUG_FLAGS_PATTERN.exec(item.cmd);
 		if (matches) {
-			config.port = Number(matches.groups!.port);
+			config.port = Number(matches.groups?.port);
 		} else {
 			// no port -> try to attach via pid (send SIGUSR1)
 			config.processId = String(item.pid);
@@ -532,7 +532,7 @@ class ProcessExplorer {
 		matches = DEBUG_PORT_PATTERN.exec(item.cmd);
 		if (matches) {
 			// override port
-			config.port = Number(matches.groups!.port);
+			config.port = Number(matches.groups?.port);
 		}
 
 		ipcRenderer.send("vscode:workbenchCommand", {
@@ -746,7 +746,7 @@ class ProcessExplorer {
 		return this.tree
 			?.getSelection()
 			?.map((e) => {
-				if (!e || !("pid" in e)) {
+				if (!(e && "pid" in e)) {
 					return undefined;
 				}
 				return e.pid;

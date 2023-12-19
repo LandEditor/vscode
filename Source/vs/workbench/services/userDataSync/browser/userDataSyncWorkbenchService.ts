@@ -617,8 +617,10 @@ export class UserDataSyncWorkbenchService
 			);
 		}
 		if (
-			!isWeb ||
-			!this.userDataSyncStoreManagementService.userDataSyncStore
+			!(
+				isWeb &&
+				this.userDataSyncStoreManagementService.userDataSyncStore
+			)
 		) {
 			// Not supported
 			return;
@@ -904,9 +906,9 @@ export class UserDataSyncWorkbenchService
 				const machines =
 					await this.userDataSyncMachinesService.getMachines();
 				const currentMachine = machines.find((m) => m.isCurrent);
-				const name =
-					(currentMachine ? currentMachine.name + " - " : "") +
-					"Settings Sync Activity";
+				const name = `${
+					currentMachine ? `${currentMachine.name} - ` : ""
+				}Settings Sync Activity`;
 				const stat = await this.fileService.resolve(result[0]);
 
 				const nameRegEx = new RegExp(

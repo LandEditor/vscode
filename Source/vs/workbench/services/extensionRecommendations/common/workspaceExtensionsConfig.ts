@@ -175,8 +175,7 @@ export class WorkspaceExtensionsConfigService
 		);
 
 		const isWorkspaceRecommended =
-			workspaceExtensionsConfigContent &&
-			workspaceExtensionsConfigContent.recommendations?.some(
+			workspaceExtensionsConfigContent?.recommendations?.some(
 				(r) => r.toLowerCase() === extensionId,
 			);
 		const recommendedWorksapceFolders = workspace.folders.filter(
@@ -252,8 +251,7 @@ export class WorkspaceExtensionsConfigService
 		);
 
 		const isWorkspaceUnwanted =
-			workspaceExtensionsConfigContent &&
-			workspaceExtensionsConfigContent.unwantedRecommendations?.some(
+			workspaceExtensionsConfigContent?.unwantedRecommendations?.some(
 				(r) => r === extensionId,
 			);
 		const unWantedWorksapceFolders = workspace.folders.filter(

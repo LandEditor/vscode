@@ -162,8 +162,8 @@ export class WorkingCopyHistoryModel {
 	}
 
 	async addEntry(
-		source = WorkingCopyHistoryModel.FILE_SAVED_SOURCE,
-		timestamp = Date.now(),
+		source,
+		timestamp,
 		token: CancellationToken,
 	): Promise<IWorkingCopyHistoryEntry> {
 		let entryToReplace: IWorkingCopyHistoryEntry | undefined = undefined;

@@ -225,7 +225,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 					this._xterm.raw.onCursorMove,
 				)(() => this._refresh()),
 				addStandardDisposableListener(
-					this._xterm.raw.element!.querySelector(".xterm-viewport")!,
+					this._xterm.raw.element?.querySelector(".xterm-viewport")!,
 					"scroll",
 					() => this._refresh(),
 				),
@@ -263,9 +263,11 @@ export class TerminalStickyScrollOverlay extends Disposable {
 	 */
 	private _refresh(): void {
 		if (
-			!this._xterm.raw.element?.parentElement ||
-			!this._stickyScrollOverlay ||
-			!this._serializeAddon
+			!(
+				this._xterm.raw.element?.parentElement &&
+				this._stickyScrollOverlay &&
+				this._serializeAddon
+			)
 		) {
 			return;
 		}
@@ -335,9 +337,11 @@ export class TerminalStickyScrollOverlay extends Disposable {
 	) {
 		const xterm = this._xterm.raw;
 		if (
-			!xterm.element?.parentElement ||
-			!this._stickyScrollOverlay ||
-			!this._serializeAddon
+			!(
+				xterm.element?.parentElement &&
+				this._stickyScrollOverlay &&
+				this._serializeAddon
+			)
 		) {
 			return;
 		}
@@ -465,14 +469,12 @@ export class TerminalStickyScrollOverlay extends Disposable {
 		if (scrollToPreviousCommandKeybinding) {
 			const label = scrollToPreviousCommandKeybinding.getLabel();
 			if (label) {
-				hoverTitle +=
-					"\n" +
-					localize(
-						"labelWithKeybinding",
-						"{0} ({1})",
-						terminalStrings.scrollToPreviousCommand.value,
-						label,
-					);
+				hoverTitle += `\n${localize(
+					"labelWithKeybinding",
+					"{0} ({1})",
+					terminalStrings.scrollToPreviousCommand.value,
+					label,
+				)}`;
 			}
 		}
 		const scrollToNextCommandKeybinding =
@@ -482,14 +484,12 @@ export class TerminalStickyScrollOverlay extends Disposable {
 		if (scrollToNextCommandKeybinding) {
 			const label = scrollToNextCommandKeybinding.getLabel();
 			if (label) {
-				hoverTitle +=
-					"\n" +
-					localize(
-						"labelWithKeybinding",
-						"{0} ({1})",
-						terminalStrings.scrollToNextCommand.value,
-						label,
-					);
+				hoverTitle += `\n${localize(
+					"labelWithKeybinding",
+					"{0} ({1})",
+					terminalStrings.scrollToNextCommand.value,
+					label,
+				)}`;
 			}
 		}
 		hoverOverlay.title = hoverTitle;
@@ -582,7 +582,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 		// available within a given page. This is a single row that isn't rendered to often so the
 		// performance isn't as important
 		if (this._xterm.isGpuAccelerated) {
-			if (!this._canvasAddon.value && !this._pendingCanvasAddon) {
+			if (!(this._canvasAddon.value || this._pendingCanvasAddon)) {
 				this._pendingCanvasAddon = createCancelablePromise(
 					async (token) => {
 						const CanvasAddon =

@@ -265,7 +265,7 @@ export class FindModel extends Disposable {
 	}
 
 	getCurrentMatch() {
-		const nextIndex = this._findMatchesStarts!.getIndexOf(
+		const nextIndex = this._findMatchesStarts?.getIndexOf(
 			this._currentMatch,
 		);
 		const cell = this._findMatches[nextIndex.index].cell;
@@ -349,7 +349,7 @@ export class FindModel extends Disposable {
 			}
 		}
 
-		const nextIndex = this._findMatchesStarts!.getIndexOf(
+		const nextIndex = this._findMatchesStarts?.getIndexOf(
 			this._currentMatch,
 		);
 		// const newFocusedCell = this._findMatches[nextIndex.index].cell;
@@ -439,7 +439,7 @@ export class FindModel extends Disposable {
 	async _research() {
 		this._computePromise?.cancel();
 
-		if (!this._state.isRevealed || !this._notebookEditor.hasModel()) {
+		if (!(this._state.isRevealed && this._notebookEditor.hasModel())) {
 			this.set([], false);
 			return;
 		}
@@ -483,7 +483,7 @@ export class FindModel extends Disposable {
 			}
 		}
 
-		const oldCurrIndex = this._findMatchesStarts!.getIndexOf(
+		const oldCurrIndex = this._findMatchesStarts?.getIndexOf(
 			this._currentMatch,
 		);
 		const oldCurrCell = this._findMatches[oldCurrIndex.index].cell;
@@ -628,7 +628,7 @@ export class FindModel extends Disposable {
 		cellFindMatches: CellFindMatchWithIndex[] | null,
 		autoStart: boolean,
 	): void {
-		if (!cellFindMatches || !cellFindMatches.length) {
+		if (!cellFindMatches?.length) {
 			this._findMatches = [];
 			this._findMatchDecorationModel.setAllFindMatchesDecorations([]);
 
@@ -703,7 +703,7 @@ export class FindModel extends Disposable {
 	) {
 		this._currentMatch = currentMatchesPosition % findMatches.length;
 		this.set(findMatches, false);
-		const nextIndex = this._findMatchesStarts!.getIndexOf(
+		const nextIndex = this._findMatchesStarts?.getIndexOf(
 			this._currentMatch,
 		);
 		this.highlightCurrentFindMatchDecoration(
@@ -731,7 +731,7 @@ export class FindModel extends Disposable {
 	}
 
 	private constructFindMatchesStarts() {
-		if (this._findMatches && this._findMatches.length) {
+		if (this._findMatches?.length) {
 			const values = new Uint32Array(this._findMatches.length);
 			for (let i = 0; i < this._findMatches.length; i++) {
 				values[i] = this._findMatches[i].length;

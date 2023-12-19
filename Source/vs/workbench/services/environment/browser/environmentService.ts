@@ -91,7 +91,7 @@ export class BrowserWorkbenchEnvironmentService
 			const result: [string, string][] = [];
 			for (const entry of logLevelFromPayload.split(",")) {
 				const matches = EXTENSION_IDENTIFIER_WITH_LOG_REGEX.exec(entry);
-				if (matches && matches[1] && matches[2]) {
+				if (matches?.[1] && matches[2]) {
 					result.push([matches[1], matches[2]]);
 				}
 			}
@@ -400,7 +400,7 @@ export class BrowserWorkbenchEnvironmentService
 		if (this.payload) {
 			for (const [key, value] of this.payload) {
 				switch (key) {
-					case "extensionDevelopmentPath":
+					case "extensionDevelopmentPath": {
 						if (
 							!extensionHostDebugEnvironment.extensionDevelopmentLocationURI
 						) {
@@ -412,34 +412,42 @@ export class BrowserWorkbenchEnvironmentService
 						);
 						extensionHostDebugEnvironment.isExtensionDevelopment = true;
 						break;
-					case "extensionDevelopmentKind":
+					}
+					case "extensionDevelopmentKind": {
 						extensionHostDebugEnvironment.extensionDevelopmentKind =
 							[<ExtensionKind>value];
 						break;
-					case "extensionTestsPath":
+					}
+					case "extensionTestsPath": {
 						extensionHostDebugEnvironment.extensionTestsLocationURI =
 							URI.parse(value);
 						break;
-					case "debugRenderer":
+					}
+					case "debugRenderer": {
 						extensionHostDebugEnvironment.debugRenderer =
 							value === "true";
 						break;
-					case "debugId":
+					}
+					case "debugId": {
 						extensionHostDebugEnvironment.params.debugId = value;
 						break;
-					case "inspect-brk-extensions":
+					}
+					case "inspect-brk-extensions": {
 						extensionHostDebugEnvironment.params.port =
 							parseInt(value);
 						extensionHostDebugEnvironment.params.break = true;
 						break;
-					case "inspect-extensions":
+					}
+					case "inspect-extensions": {
 						extensionHostDebugEnvironment.params.port =
 							parseInt(value);
 						break;
-					case "enableProposedApi":
+					}
+					case "enableProposedApi": {
 						extensionHostDebugEnvironment.extensionEnabledProposedApi =
 							[];
 						break;
+					}
 				}
 			}
 		}

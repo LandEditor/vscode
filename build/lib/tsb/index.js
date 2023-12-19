@@ -38,9 +38,7 @@ function create(
 	function printDiagnostic(diag) {
 		if (diag instanceof Error) {
 			onError(diag.message);
-		} else if (!diag.file || !diag.start) {
-			onError(ts.flattenDiagnosticMessageText(diag.messageText, "\n"));
-		} else {
+		} else if (diag.file && diag.start) {
 			const lineAndCh = diag.file.getLineAndCharacterOfPosition(
 				diag.start,
 			);
@@ -53,6 +51,8 @@ function create(
 					ts.flattenDiagnosticMessageText(diag.messageText, "\n"),
 				),
 			);
+		} else {
+			onError(ts.flattenDiagnosticMessageText(diag.messageText, "\n"));
 		}
 	}
 	const parsed = ts.readConfigFile(projectPath, ts.sys.readFile);
@@ -167,10 +167,9 @@ function create(
 							path,
 							contents: (0, fs_1.readFileSync)(path),
 							stat: (0, fs_1.statSync)(path),
-							cwd: opts && opts.cwd,
+							cwd: opts?.cwd,
 							base:
-								(opts && opts.base) ||
-								(0, path_1.dirname)(projectPath),
+								opts?.base || (0, path_1.dirname)(projectPath),
 						}),
 					);
 				}

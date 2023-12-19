@@ -274,7 +274,7 @@ function digitCount(n: number): number {
 
 function getExtraEditorClassName(): string {
 	let extra = "";
-	if (!browser.isSafari && !browser.isWebkitWebView) {
+	if (!(browser.isSafari || browser.isWebkitWebView)) {
 		// Use user-select: none in all browsers except Safari and native macOS WebView
 		extra += "no-user-select ";
 	}

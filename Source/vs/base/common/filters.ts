@@ -267,11 +267,11 @@ interface ICamelCaseAnalysis {
 // Heuristic to avoid computing camel case matcher for words that don't
 // look like camelCaseWords.
 function analyzeCamelCaseWord(word: string): ICamelCaseAnalysis {
-	let upper = 0,
-		lower = 0,
-		alpha = 0,
-		numeric = 0,
-		code = 0;
+	let upper = 0;
+	let lower = 0;
+	let alpha = 0;
+	let numeric = 0;
+	let code = 0;
 
 	for (let i = 0; i < word.length; i++) {
 		code = word.charCodeAt(i);
@@ -317,10 +317,10 @@ function isCamelCaseWord(analysis: ICamelCaseAnalysis): boolean {
 // Heuristic to avoid computing camel case matcher for words that don't
 // look like camel case patterns.
 function isCamelCasePattern(word: string): boolean {
-	let upper = 0,
-		lower = 0,
-		code = 0,
-		whitespace = 0;
+	let upper = 0;
+	let lower = 0;
+	let code = 0;
+	let whitespace = 0;
 
 	for (let i = 0; i < word.length; i++) {
 		code = word.charCodeAt(i);
@@ -676,11 +676,10 @@ function printTable(
 		} else {
 			ret += `${pattern[i - 1]}|`;
 		}
-		ret +=
-			table[i]
-				.slice(0, wordLen + 1)
-				.map((n) => pad(n.toString(), 3))
-				.join("|") + "\n";
+		ret += `${table[i]
+			.slice(0, wordLen + 1)
+			.map((n) => pad(n.toString(), 3))
+			.join("|")}\n`;
 	}
 	return ret;
 }
@@ -727,11 +726,12 @@ function isSeparatorAtPos(value: string, index: number): boolean {
 			return true;
 		case undefined:
 			return false;
-		default:
+		default: {
 			if (strings.isEmojiImprecise(code)) {
 				return true;
 			}
 			return false;
+		}
 	}
 }
 
@@ -965,7 +965,7 @@ export function fuzzyScore(
 				_arrows[row][column] = Arrow.Diag;
 				_diag[row][column] = _diag[row - 1][column - 1] + 1;
 			} else {
-				throw new Error(`not possible`);
+				throw new Error("not possible");
 			}
 		}
 	}
@@ -974,7 +974,7 @@ export function fuzzyScore(
 		printTables(pattern, patternStart, word, wordStart);
 	}
 
-	if (!hasStrongFirstMatch[0] && !options.firstMatchCanBeWeak) {
+	if (!(hasStrongFirstMatch[0] || options.firstMatchCanBeWeak)) {
 		return undefined;
 	}
 
@@ -992,9 +992,9 @@ export function fuzzyScore(
 		do {
 			const arrow = _arrows[row][diagColumn];
 			if (arrow === Arrow.LeftLeft) {
-				diagColumn = diagColumn - 2;
+				diagColumn -= 2;
 			} else if (arrow === Arrow.Left) {
-				diagColumn = diagColumn - 1;
+				diagColumn -= 1;
 			} else {
 				// found the diagonal
 				break;

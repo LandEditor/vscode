@@ -110,8 +110,9 @@ export class ReplEvaluationInputsRenderer
 		dom.append(
 			container,
 			$(
-				"span.arrow" +
-					ThemeIcon.asCSSSelector(debugConsoleEvaluationInput),
+				`span.arrow${ThemeIcon.asCSSSelector(
+					debugConsoleEvaluationInput,
+				)}`,
 			),
 		);
 		const input = dom.append(container, $(".expression"));

@@ -198,7 +198,7 @@ export namespace ChatUri {
 		}
 
 		const handle = parseInt(handleStr);
-		if (isNaN(handle)) {
+		if (Number.isNaN(handle)) {
 			return undefined;
 		}
 

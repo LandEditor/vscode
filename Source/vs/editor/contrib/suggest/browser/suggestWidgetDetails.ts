@@ -79,7 +79,7 @@ export class SuggestDetailsWidget {
 		this._header = dom.append(this._body, dom.$(".header"));
 		this._close = dom.append(
 			this._header,
-			dom.$("span" + ThemeIcon.asCSSSelector(Codicon.close)),
+			dom.$(`span${ThemeIcon.asCSSSelector(Codicon.close)}`),
 		);
 		this._close.title = nls.localize("details.close", "Close");
 		this._type = dom.append(this._header, dom.$("p.type"));
@@ -157,7 +157,7 @@ export class SuggestDetailsWidget {
 			md += `prefix: ${item.word ?? "(no prefix)"}\n`;
 			md += `word: ${
 				item.completion.filterText
-					? item.completion.filterText + " (filterText)"
+					? `${item.completion.filterText} (filterText)`
 					: item.textLabel
 			}\n`;
 			md += `distance: ${item.distance} (localityBonus-setting)\n`;
@@ -173,7 +173,7 @@ export class SuggestDetailsWidget {
 			detail = `Provider: ${item.provider._debugDisplayName}`;
 		}
 
-		if (!explainMode && !canExpandCompletionItem(item)) {
+		if (!(explainMode || canExpandCompletionItem(item))) {
 			this.clearContents();
 			return;
 		}

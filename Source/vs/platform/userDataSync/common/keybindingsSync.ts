@@ -508,20 +508,23 @@ export class KeybindingsSynchroniser
 			this.logService.error(e);
 		}
 		if (this.syncKeybindingsPerPlatform()) {
-			delete parsed.all;
+			parsed.all = undefined;
 		} else {
 			parsed.all = keybindingsContent;
 		}
 		switch (OS) {
-			case OperatingSystem.Macintosh:
+			case OperatingSystem.Macintosh: {
 				parsed.mac = keybindingsContent;
 				break;
-			case OperatingSystem.Linux:
+			}
+			case OperatingSystem.Linux: {
 				parsed.linux = keybindingsContent;
 				break;
-			case OperatingSystem.Windows:
+			}
+			case OperatingSystem.Windows: {
 				parsed.windows = keybindingsContent;
 				break;
+			}
 		}
 		return JSON.stringify(parsed);
 	}

@@ -182,7 +182,7 @@ export abstract class AbstractWorkspaceEditingService
 		const wantsToDelete = foldersToDelete.length > 0;
 		const wantsToAdd = foldersToAdd.length > 0;
 
-		if (!wantsToAdd && !wantsToDelete) {
+		if (!(wantsToAdd || wantsToDelete)) {
 			return; // return early if there is nothing to do
 		}
 
@@ -514,9 +514,10 @@ export abstract class AbstractWorkspaceEditingService
 		error: JSONEditingError,
 	): void {
 		switch (error.code) {
-			case JSONEditingErrorCode.ERROR_INVALID_FILE:
+			case JSONEditingErrorCode.ERROR_INVALID_FILE: {
 				this.onInvalidWorkspaceConfigurationFileError();
 				break;
+			}
 			default:
 				this.notificationService.error(error.message);
 		}
@@ -550,7 +551,7 @@ export abstract class AbstractWorkspaceEditingService
 	protected async doEnterWorkspace(
 		workspaceUri: URI,
 	): Promise<IEnterWorkspaceResult | undefined> {
-		if (!!this.environmentService.extensionTestsLocationURI) {
+		if (this.environmentService.extensionTestsLocationURI) {
 			throw new Error(
 				"Entering a new workspace is not possible in tests.",
 			);

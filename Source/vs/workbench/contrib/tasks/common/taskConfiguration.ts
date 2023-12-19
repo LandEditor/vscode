@@ -767,7 +767,6 @@ export namespace RunOnOptions {
 		switch (value.toLowerCase()) {
 			case "folderopen":
 				return Tasks.RunOnOptions.folderOpen;
-			case "default":
 			default:
 				return Tasks.RunOnOptions.default;
 		}
@@ -958,12 +957,12 @@ namespace CommandOptions {
 			const env: { [key: string]: string } = Object.create(null);
 			if (target.env !== undefined) {
 				Object.keys(target.env).forEach(
-					(key) => (env[key] = target.env![key]),
+					(key) => (env[key] = target.env?.[key]),
 				);
 			}
 			if (source.env !== undefined) {
 				Object.keys(source.env).forEach(
-					(key) => (env[key] = source.env![key]),
+					(key) => (env[key] = source.env?.[key]),
 				);
 			}
 			target.env = env;
@@ -1235,7 +1234,7 @@ namespace CommandConfiguration {
 		if (Types.isBoolean(config.isShellCommand) || isShellConfiguration) {
 			runtime = Tasks.RuntimeType.Shell;
 		} else if (config.isShellCommand !== undefined) {
-			runtime = !!config.isShellCommand
+			runtime = config.isShellCommand
 				? Tasks.RuntimeType.Shell
 				: Tasks.RuntimeType.Process;
 		}
@@ -1466,20 +1465,17 @@ export namespace ProblemMatcherConverter {
 	): TaskConfigurationValueWithErrors<ProblemMatcher[]> {
 		let result: TaskConfigurationValueWithErrors<ProblemMatcher[]> = {};
 		if (
-			external.windows &&
-			external.windows.problemMatcher &&
+			external.windows?.problemMatcher &&
 			context.platform === Platform.Windows
 		) {
 			result = from(external.windows.problemMatcher, context);
 		} else if (
-			external.osx &&
-			external.osx.problemMatcher &&
+			external.osx?.problemMatcher &&
 			context.platform === Platform.Mac
 		) {
 			result = from(external.osx.problemMatcher, context);
 		} else if (
-			external.linux &&
-			external.linux.problemMatcher &&
+			external.linux?.problemMatcher &&
 			context.platform === Platform.Linux
 		) {
 			result = from(external.linux.problemMatcher, context);
@@ -1573,7 +1569,7 @@ export namespace ProblemMatcherConverter {
 					localProblemMatcher =
 						Objects.deepClone(localProblemMatcher);
 					// remove the name
-					delete localProblemMatcher.name;
+					localProblemMatcher.name = undefined;
 					return { value: localProblemMatcher };
 				}
 			}
@@ -1651,7 +1647,7 @@ namespace TaskDependency {
 			case TaskConfigSource.TasksJson:
 				return context.workspaceFolder.uri;
 			default:
-				return context.workspace && context.workspace.configuration
+				return context.workspace?.configuration
 					? context.workspace.configuration
 					: context.workspaceFolder.uri;
 		}
@@ -1684,7 +1680,6 @@ namespace DependsOrder {
 		switch (order) {
 			case Tasks.DependsOrder.sequence:
 				return Tasks.DependsOrder.sequence;
-			case Tasks.DependsOrder.parallel:
 			default:
 				return Tasks.DependsOrder.parallel;
 		}
@@ -1845,7 +1840,7 @@ namespace ConfiguringTask {
 		}
 		const type = external.type;
 		const customize = (external as ICustomizeShape).customize;
-		if (!type && !customize) {
+		if (!(type || customize)) {
 			context.problemReporter.error(
 				nls.localize(
 					"ConfigurationParser.noTaskType",
@@ -1995,7 +1990,7 @@ namespace ConfiguringTask {
 					for (const required of typeDeclaration.required) {
 						const value = result.configures[required];
 						if (value) {
-							label = label + ": " + value;
+							label = `${label}: ${value}`;
 							break;
 						}
 					}
@@ -2390,8 +2385,7 @@ export namespace TaskParser {
 				: undefined;
 			let typeNotSupported = false;
 			if (
-				definition &&
-				definition.when &&
+				definition?.when &&
 				!context.contextKeyService.contextMatchesRules(definition.when)
 			) {
 				typeNotSupported = true;
@@ -2564,8 +2558,14 @@ export namespace TaskParser {
 			});
 			const newTarget: Tasks.CustomTask[] = [];
 			target.forEach((task) => {
-				newTarget.push(map[task.configurationProperties.name!]);
-				delete map[task.configurationProperties.name!];
+				newTarget.push(
+					task.configurationProperties.name?.[
+						task.configurationProperties.name
+					],
+				);
+				delete task.configurationProperties.name?.[
+					task.configurationProperties.name
+				];
 			});
 			Object.keys(map).forEach((key) => newTarget.push(map[key]));
 			target = newTarget;
@@ -2685,12 +2685,14 @@ export namespace ExecutionEngine {
 		let result: Tasks.ExecutionEngine | undefined;
 		if (runner) {
 			switch (runner) {
-				case "terminal":
+				case "terminal": {
 					result = Tasks.ExecutionEngine.Terminal;
 					break;
-				case "process":
+				}
+				case "process": {
 					result = Tasks.ExecutionEngine.Process;
 					break;
+				}
 			}
 		}
 		const schemaVersion = JsonSchemaVersion.from(config);
@@ -2764,11 +2766,11 @@ export class UUIDMap {
 			if (Array.isArray(lastValue)) {
 				result = lastValue.shift();
 				if (lastValue.length === 0) {
-					delete this.last![identifier];
+					delete this.last?.[identifier];
 				}
 			} else {
 				result = lastValue;
-				delete this.last![identifier];
+				delete this.last?.[identifier];
 			}
 		}
 		if (result === undefined) {

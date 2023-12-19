@@ -167,7 +167,7 @@ export async function openProjectConfigOrPromptToCreate(
 	);
 
 	switch (selected) {
-		case CreateConfigItem:
+		case CreateConfigItem: {
 			openOrCreateConfig(
 				client.apiVersion,
 				projectType,
@@ -175,6 +175,7 @@ export async function openProjectConfigOrPromptToCreate(
 				client.configuration,
 			);
 			return;
+		}
 	}
 }
 
@@ -195,7 +196,7 @@ export async function openProjectConfigForFile(
 
 	const file = client.toTsFilePath(resource);
 	// TSServer errors when 'projectInfo' is invoked on a non js/ts file
-	if (!file || !client.toTsFilePath(resource)) {
+	if (!(file && client.toTsFilePath(resource))) {
 		vscode.window.showWarningMessage(
 			vscode.l10n.t(
 				"Could not determine TypeScript or JavaScript project. Unsupported file type",

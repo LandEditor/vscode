@@ -85,7 +85,7 @@ export class ExtensionStorageService
 
 	private static fromKey(key: string): IExtensionIdWithVersion | undefined {
 		const matches = EXTENSION_KEYS_ID_VERSION_REGEX.exec(key);
-		if (matches && matches[1]) {
+		if (matches?.[1]) {
 			return { id: matches[1], version: matches[2] };
 		}
 		return undefined;
@@ -331,7 +331,7 @@ export class ExtensionStorageService
 		if (from !== to) {
 			// remove the duplicates
 			const migrationList: [string, string][] = this.migrationList.filter(
-				(entry) => !entry.includes(from) && !entry.includes(to),
+				(entry) => !(entry.includes(from) || entry.includes(to)),
 			);
 			migrationList.push([from, to]);
 			this.migrationList = migrationList;

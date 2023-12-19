@@ -83,8 +83,10 @@ export class NotebookSerializer implements vscode.NotebookSerializer {
 
 		// For notebooks without metadata default the language in metadata to the preferred language.
 		if (
-			!json.metadata ||
-			(!json.metadata.kernelspec && !json.metadata.language_info)
+			!(
+				json.metadata &&
+				(json.metadata.kernelspec || json.metadata.language_info)
+			)
 		) {
 			json.metadata = json.metadata || {};
 			json.metadata.language_info = json.metadata.language_info || {
@@ -131,13 +133,11 @@ export class NotebookSerializer implements vscode.NotebookSerializer {
 				? data.metadata.indentAmount
 				: " ";
 		// ipynb always ends with a trailing new line (we add this so that SCMs do not show unnecessary changes, resulting from a missing trailing new line).
-		return (
-			JSON.stringify(
-				sortObjectPropertiesRecursively(notebookContent),
-				undefined,
-				indentAmount,
-			) + "\n"
-		);
+		return `${JSON.stringify(
+			sortObjectPropertiesRecursively(notebookContent),
+			undefined,
+			indentAmount,
+		)}\n`;
 	}
 }
 

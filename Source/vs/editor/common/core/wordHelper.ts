@@ -40,7 +40,7 @@ function createWordRegExp(allowInWords = ""): RegExp {
 		if (allowInWords.indexOf(sep) >= 0) {
 			continue;
 		}
-		source += "\\" + sep;
+		source += `\\${sep}`;
 	}
 	source += "\\s]+)";
 	return new RegExp(source, "g");

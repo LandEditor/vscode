@@ -390,7 +390,7 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 				const a = this._primaryActions.find(
 					(a) => a.action.id === action.id,
 				);
-				if (a && a.renderLabel) {
+				if (a?.renderLabel) {
 					return action instanceof MenuItemAction
 						? this.instantiationService.createInstance(
 								ActionViewWithLabel,
@@ -543,27 +543,30 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 
 	private _updateStrategy() {
 		switch (this._renderLabel) {
-			case RenderLabel.Always:
+			case RenderLabel.Always: {
 				this._strategy = new WorkbenchAlwaysLabelStrategy(
 					this.notebookEditor,
 					this,
 					this.instantiationService,
 				);
 				break;
-			case RenderLabel.Never:
+			}
+			case RenderLabel.Never: {
 				this._strategy = new WorkbenchNeverLabelStrategy(
 					this.notebookEditor,
 					this,
 					this.instantiationService,
 				);
 				break;
-			case RenderLabel.Dynamic:
+			}
+			case RenderLabel.Dynamic: {
 				this._strategy = new WorkbenchDynamicLabelStrategy(
 					this.notebookEditor,
 					this,
 					this.instantiationService,
 				);
 				break;
+			}
 		}
 	}
 
@@ -645,7 +648,7 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 		const secondaryActions = groups
 			.filter(
 				(group) =>
-					!/^navigation/.test(group[0]) && !/^status/.test(group[0]),
+					!(/^navigation/.test(group[0]) || /^status/.test(group[0])),
 			)
 			.reduce((prev: (MenuItemAction | SubmenuItemAction)[], curr) => {
 				prev.push(...curr[1]);
@@ -844,7 +847,6 @@ export function workbenchDynamicCalculateActions(
 				lastActionWithLabel = i;
 			}
 		} else {
-			continue;
 		}
 	}
 

@@ -84,7 +84,7 @@ export class CellEditorOptions extends CellContentPart {
 		let cellRenderLineNumber = value.lineNumbers;
 
 		switch (this._lineNumbers) {
-			case "inherit":
+			case "inherit": {
 				// inherit from the notebook setting
 				if (
 					this.configurationService.getValue<"on" | "off">(
@@ -98,15 +98,18 @@ export class CellEditorOptions extends CellContentPart {
 					cellRenderLineNumber = "off";
 				}
 				break;
-			case "on":
+			}
+			case "on": {
 				// should turn on, ignore the editor line numbers off options
 				if (value.lineNumbers === "off") {
 					cellRenderLineNumber = "on";
 				} // otherwise just use the editor setting
 				break;
-			case "off":
+			}
+			case "off": {
 				cellRenderLineNumber = "off";
 				break;
+			}
 		}
 
 		if (value.lineNumbers !== cellRenderLineNumber) {
@@ -124,7 +127,7 @@ export class CellEditorOptions extends CellContentPart {
 		cellUri: URI,
 	): IEditorOptions {
 		const options = this.getValue(internalMetadata, cellUri);
-		delete options.hover; // This is toggled by a debug editor contribution
+		options.hover = undefined; // This is toggled by a debug editor contribution
 
 		return options;
 	}

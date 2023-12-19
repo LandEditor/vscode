@@ -16,8 +16,8 @@ export function renderLabelWithIcons(
 	const elements = new Array<HTMLSpanElement | string>();
 	let match: RegExpExecArray | null;
 
-	let textStart = 0,
-		textStop = 0;
+	let textStart = 0;
+	let textStop = 0;
 	while ((match = labelWithIconsRegex.exec(text)) !== null) {
 		textStop = match.index || 0;
 		if (textStart < textStop) {
@@ -36,7 +36,7 @@ export function renderLabelWithIcons(
 }
 
 export function renderIcon(icon: ThemeIcon): HTMLSpanElement {
-	const node = dom.$(`span`);
+	const node = dom.$("span");
 	node.classList.add(...ThemeIcon.asClassNameArray(icon));
 	return node;
 }

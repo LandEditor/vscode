@@ -177,71 +177,63 @@ export class TerminalAccessibilityHelpProvider
 				),
 			);
 			shellIntegrationCommandList.push(
-				"- " +
-					this._descriptionForCommand(
-						TerminalCommandId.AccessibleBufferGoToNextCommand,
-						localize(
-							"goToNextCommand",
-							"Go to Next Command ({0}) in the accessible view",
-						),
-						localize(
-							"goToNextCommandNoKb",
-							"Go to Next Command in the accessible view is currently not triggerable by a keybinding.",
-						),
+				`- ${this._descriptionForCommand(
+					TerminalCommandId.AccessibleBufferGoToNextCommand,
+					localize(
+						"goToNextCommand",
+						"Go to Next Command ({0}) in the accessible view",
 					),
+					localize(
+						"goToNextCommandNoKb",
+						"Go to Next Command in the accessible view is currently not triggerable by a keybinding.",
+					),
+				)}`,
 			);
 			shellIntegrationCommandList.push(
-				"- " +
-					this._descriptionForCommand(
-						TerminalCommandId.AccessibleBufferGoToPreviousCommand,
-						localize(
-							"goToPreviousCommand",
-							"Go to Previous Command ({0}) in the accessible view",
-						),
-						localize(
-							"goToPreviousCommandNoKb",
-							"Go to Previous Command in the accessible view is currently not triggerable by a keybinding.",
-						),
+				`- ${this._descriptionForCommand(
+					TerminalCommandId.AccessibleBufferGoToPreviousCommand,
+					localize(
+						"goToPreviousCommand",
+						"Go to Previous Command ({0}) in the accessible view",
 					),
+					localize(
+						"goToPreviousCommandNoKb",
+						"Go to Previous Command in the accessible view is currently not triggerable by a keybinding.",
+					),
+				)}`,
 			);
 			shellIntegrationCommandList.push(
-				"- " +
-					this._descriptionForCommand(
-						AccessibilityCommandId.GoToSymbol,
-						localize("goToSymbol", "Go to Symbol ({0})"),
-						localize(
-							"goToSymbolNoKb",
-							"Go to symbol is currently not triggerable by a keybinding.",
-						),
+				`- ${this._descriptionForCommand(
+					AccessibilityCommandId.GoToSymbol,
+					localize("goToSymbol", "Go to Symbol ({0})"),
+					localize(
+						"goToSymbolNoKb",
+						"Go to symbol is currently not triggerable by a keybinding.",
 					),
+				)}`,
 			);
 			shellIntegrationCommandList.push(
-				"- " +
-					this._descriptionForCommand(
-						TerminalCommandId.RunRecentCommand,
-						localize(
-							"runRecentCommand",
-							"Run Recent Command ({0})",
-						),
-						localize(
-							"runRecentCommandNoKb",
-							"Run Recent Command is currently not triggerable by a keybinding.",
-						),
+				`- ${this._descriptionForCommand(
+					TerminalCommandId.RunRecentCommand,
+					localize("runRecentCommand", "Run Recent Command ({0})"),
+					localize(
+						"runRecentCommandNoKb",
+						"Run Recent Command is currently not triggerable by a keybinding.",
 					),
+				)}`,
 			);
 			shellIntegrationCommandList.push(
-				"- " +
-					this._descriptionForCommand(
-						TerminalCommandId.GoToRecentDirectory,
-						localize(
-							"goToRecentDirectory",
-							"Go to Recent Directory ({0})",
-						),
-						localize(
-							"goToRecentDirectoryNoKb",
-							"Go to Recent Directory is currently not triggerable by a keybinding.",
-						),
+				`- ${this._descriptionForCommand(
+					TerminalCommandId.GoToRecentDirectory,
+					localize(
+						"goToRecentDirectory",
+						"Go to Recent Directory ({0})",
 					),
+					localize(
+						"goToRecentDirectoryNoKb",
+						"Go to Recent Directory is currently not triggerable by a keybinding.",
+					),
+				)}`,
 			);
 			content.push(shellIntegrationCommandList.join("\n"));
 		} else {

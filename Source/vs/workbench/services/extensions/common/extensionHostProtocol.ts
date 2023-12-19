@@ -131,15 +131,18 @@ export function createMessageOfType(type: MessageType): VSBuffer {
 	const result = VSBuffer.alloc(1);
 
 	switch (type) {
-		case MessageType.Initialized:
+		case MessageType.Initialized: {
 			result.writeUInt8(1, 0);
 			break;
-		case MessageType.Ready:
+		}
+		case MessageType.Ready: {
 			result.writeUInt8(2, 0);
 			break;
-		case MessageType.Terminate:
+		}
+		case MessageType.Terminate: {
 			result.writeUInt8(3, 0);
 			break;
+		}
 	}
 
 	return result;
