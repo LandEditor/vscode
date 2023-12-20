@@ -3053,7 +3053,7 @@
 	],
 	"dependencies": {
 		"@joaomoreno/unique-names-generator": "^5.1.0",
-		"@vscode/extension-telemetry": "^0.9.1",
+		"@vscode/extension-telemetry": "^0.9.2",
 		"@vscode/iconv-lite-umd": "0.7.0",
 		"byline": "^5.0.0",
 		"file-type": "18.7.0",
