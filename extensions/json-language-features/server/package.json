@@ -20,15 +20,15 @@
 		"watch": "npx gulp watch-extension:json-language-features-server"
 	},
 	"dependencies": {
-		"@vscode/l10n": "^0.0.18",
-		"jsonc-parser": "^3.2.0",
-		"request-light": "^0.7.0",
-		"vscode-json-languageservice": "^5.3.7",
-		"vscode-languageserver": "^9.0.1",
-		"vscode-uri": "^3.0.8"
+		"@vscode/l10n": "0.0.18",
+		"jsonc-parser": "3.2.0",
+		"request-light": "0.7.0",
+		"vscode-json-languageservice": "5.3.7",
+		"vscode-languageserver": "9.0.1",
+		"vscode-uri": "3.0.8"
 	},
 	"devDependencies": {
-		"@types/mocha": "^10.0.6",
+		"@types/mocha": "10.0.6",
 		"@types/node": "20.x"
 	},
 	"engines": {

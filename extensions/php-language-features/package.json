@@ -64,11 +64,11 @@
 		"onLanguage:php"
 	],
 	"dependencies": {
-		"which": "^4.0.0"
+		"which": "4.0.0"
 	},
 	"devDependencies": {
 		"@types/node": "20.x",
-		"@types/which": "^3.0.3"
+		"@types/which": "3.0.3"
 	},
 	"engines": {
 		"vscode": "0.10.x"

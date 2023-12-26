@@ -988,14 +988,14 @@
 		"onCommand:_css.applyCodeAction"
 	],
 	"dependencies": {
-		"vscode-languageclient": "^9.0.1",
-		"vscode-uri": "^3.0.8"
+		"vscode-languageclient": "9.0.1",
+		"vscode-uri": "3.0.8"
 	},
 	"devDependencies": {
 		"@types/node": "20.x"
 	},
 	"engines": {
-		"vscode": "^1.77.0"
+		"vscode": "1.77.0"
 	},
 	"icon": "icons/css.png",
 	"capabilities": {

@@ -55,16 +55,16 @@
 		"onLanguage:markdown"
 	],
 	"dependencies": {
-		"jsonc-parser": "^3.2.0",
-		"markdown-it": "^14.0.0",
-		"parse5": "^7.1.2"
+		"jsonc-parser": "3.2.0",
+		"markdown-it": "14.0.0",
+		"parse5": "7.1.2"
 	},
 	"devDependencies": {
 		"@types/markdown-it": "13.0.7",
 		"@types/node": "20.x"
 	},
 	"engines": {
-		"vscode": "^1.4.0"
+		"vscode": "1.4.0"
 	},
 	"icon": "images/icon.png",
 	"capabilities": {

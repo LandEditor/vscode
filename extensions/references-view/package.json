@@ -395,7 +395,7 @@
 		"@types/node": "20.x"
 	},
 	"engines": {
-		"vscode": "^1.67.0"
+		"vscode": "1.67.0"
 	},
 	"icon": "media/icon.png",
 	"capabilities": {

@@ -5,6 +5,6 @@
 	"license": "MIT",
 	"scripts": {},
 	"devDependencies": {
-		"node-gyp": "^10.0.1"
+		"node-gyp": "10.0.1"
 	}
 }
