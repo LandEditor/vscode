@@ -101,7 +101,7 @@
 	},
 	"devDependencies": {
 		"@types/node": "20.x",
-		"@types/node-fetch": "2.6.9",
+		"@types/node-fetch": "2.6.10",
 		"@types/randombytes": "2.0.3",
 		"@types/sha.js": "2.4.4",
 		"@types/uuid": "9.0.7"
