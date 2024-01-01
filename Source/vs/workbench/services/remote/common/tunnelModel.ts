@@ -646,19 +646,23 @@ export class TunnelModel extends Disposable {
 					tunnel.tunnelRemotePort
 				);
 				if (
-					!((mapHasAddressLocalhostOrAllInterfaces(
-						this.forwarded,
-						tunnel.tunnelRemoteHost,
-						tunnel.tunnelRemotePort
-					) ||mapHasAddressLocalhostOrAllInterfaces(
-						this.detected,
-						tunnel.tunnelRemoteHost,
-						tunnel.tunnelRemotePort
-					) ) ||mapHasAddressLocalhostOrAllInterfaces(
-						this.inProgress,
-						tunnel.tunnelRemoteHost,
-						tunnel.tunnelRemotePort
-					) ) &&
+					!(
+						mapHasAddressLocalhostOrAllInterfaces(
+							this.forwarded,
+							tunnel.tunnelRemoteHost,
+							tunnel.tunnelRemotePort
+						) ||
+						mapHasAddressLocalhostOrAllInterfaces(
+							this.detected,
+							tunnel.tunnelRemoteHost,
+							tunnel.tunnelRemotePort
+						) ||
+						mapHasAddressLocalhostOrAllInterfaces(
+							this.inProgress,
+							tunnel.tunnelRemoteHost,
+							tunnel.tunnelRemotePort
+						)
+					) &&
 					tunnel.localAddress
 				) {
 					const matchingCandidate =

@@ -518,7 +518,7 @@ export class NativeWindow extends BaseWindow {
 
 				// Reply back to the channel without result to indicate
 				// that the login dialog was cancelled
-				if ((result.confirmed && result.values)) {
+				if (result.confirmed && result.values) {
 					// Update state based on checkbox
 					if (result.checkboxChecked) {
 						this.storageService.store(

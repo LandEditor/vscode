@@ -628,7 +628,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 		>("window");
 		const openInNewWindowConfig = isFile
 			? windowConfig?.openFilesInNewWindow || "off" /* default */
-			: windowConfig?.openFoldersInNewWindow || "default" /* default */;
+			: windowConfig?.openFoldersInNewWindow || "default"; /* default */
 
 		let openInNewWindow =
 			(options.preferNewWindow || !!options.forceNewWindow) &&

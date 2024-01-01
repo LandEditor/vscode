@@ -108,7 +108,7 @@
 		"detect-indent": "7.0.1"
 	},
 	"devDependencies": {
-		"@jupyterlab/nbformat": "4.0.9",
+		"@jupyterlab/nbformat": "4.0.10",
 		"@types/markdown-it": "13.0.7"
 	},
 	"engines": {

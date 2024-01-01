@@ -281,7 +281,8 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 						this._rootSizeObserver.width,
 						this._rootSizeObserver.height,
 						this._layoutInfo.map((i) => i.modifiedEditor)
-					) : undefined
+					)
+				: undefined
 		).recomputeInitiallyAndOnChange(this._store);
 
 		this._sash = derivedDisposable(this, (reader) => {
@@ -301,7 +302,8 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 							),
 						},
 						this._boundarySashes
-					) : undefined;
+					)
+				: undefined;
 		}).recomputeInitiallyAndOnChange(this._store);
 
 		const unchangedRangesFeature = derivedDisposable(

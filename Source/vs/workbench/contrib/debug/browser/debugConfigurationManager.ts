@@ -151,9 +151,7 @@ export class ConfigurationManager implements IConfigurationManager {
 		const dynamicConfig = previousSelectedType
 			? { type: previousSelectedType }
 			: undefined;
-		if (
-			previousSelectedLaunch?.getConfigurationNames().length
-		) {
+		if (previousSelectedLaunch?.getConfigurationNames().length) {
 			this.selectConfiguration(
 				previousSelectedLaunch,
 				previousSelectedName,

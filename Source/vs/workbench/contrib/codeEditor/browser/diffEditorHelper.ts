@@ -113,9 +113,7 @@ class DiffEditorHelperContribution
 					const diffComputationResult =
 						this._diffEditor.getDiffComputationResult();
 
-					if (
-						diffComputationResult?.quitEarly
-					) {
+					if (diffComputationResult?.quitEarly) {
 						this._notificationService.prompt(
 							Severity.Warning,
 							localize(

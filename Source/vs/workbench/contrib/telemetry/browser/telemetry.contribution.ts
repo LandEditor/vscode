@@ -263,11 +263,9 @@ export class TelemetryContribution
 			},
 			emptyWorkbench:
 				contextService.getWorkbenchState() === WorkbenchState.EMPTY,
-			"workbench.filesToOpenOrCreate":
-				(filesToOpenOrCreate?.length) || 0,
-			"workbench.filesToDiff": (filesToDiff?.length) || 0,
-			"workbench.filesToMerge":
-				(filesToMerge?.length) || 0,
+			"workbench.filesToOpenOrCreate": filesToOpenOrCreate?.length || 0,
+			"workbench.filesToDiff": filesToDiff?.length || 0,
+			"workbench.filesToMerge": filesToMerge?.length || 0,
 			customKeybindingsCount: keybindingsService.customKeybindingsCount(),
 			theme: themeService.getColorTheme().id,
 			language,

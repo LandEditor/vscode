@@ -207,9 +207,7 @@ export class StandaloneColorPickerWidget
 		this._register(
 			this._editor.onMouseMove((e) => {
 				const classList = e.target.element?.classList;
-				if (
-					classList?.contains("colorpicker-color-decoration")
-				) {
+				if (classList?.contains("colorpicker-color-decoration")) {
 					this.hide();
 				}
 			})

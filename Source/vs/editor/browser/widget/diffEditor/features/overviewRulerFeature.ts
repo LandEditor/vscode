@@ -301,9 +301,10 @@ export class OverviewRulerFeature extends Disposable {
 						}
 
 						diffOverviewRoot.style.height = `${height}px`;
-						diffOverviewRoot.style.left =
-							`${width -
-							OverviewRulerFeature.ENTIRE_DIFF_OVERVIEW_WIDTH}px`;
+						diffOverviewRoot.style.left = `${
+							width -
+							OverviewRulerFeature.ENTIRE_DIFF_OVERVIEW_WIDTH
+						}px`;
 						viewportDomElement.setWidth(
 							OverviewRulerFeature.ENTIRE_DIFF_OVERVIEW_WIDTH
 						);

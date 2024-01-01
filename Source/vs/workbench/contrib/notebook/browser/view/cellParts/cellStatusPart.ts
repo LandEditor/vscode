@@ -157,21 +157,21 @@ export class CellEditorStatusBar extends CellContentPart {
 							event: e,
 						});
 					} else if (
-							(e.target as HTMLElement).classList.contains(
-								"cell-status-item-has-command"
-							)
-						) {
-							this._onDidClick.fire({
-								type: ClickTargetType.ContributedCommandItem,
-								event: e,
-							});
-						} else {
-							// text
-							this._onDidClick.fire({
-								type: ClickTargetType.ContributedTextItem,
-								event: e,
-							});
-						}
+						(e.target as HTMLElement).classList.contains(
+							"cell-status-item-has-command"
+						)
+					) {
+						this._onDidClick.fire({
+							type: ClickTargetType.ContributedCommandItem,
+							event: e,
+						});
+					} else {
+						// text
+						this._onDidClick.fire({
+							type: ClickTargetType.ContributedTextItem,
+							event: e,
+						});
+					}
 				}
 			)
 		);

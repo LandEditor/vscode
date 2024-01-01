@@ -285,10 +285,7 @@ class WorkspaceTrustedUrisTable extends Disposable {
 		this._register(
 			this.table.onDidOpen((item) => {
 				// default prevented when input box is double clicked #125052
-				if (
-					item?.element &&
-					!item.browserEvent?.defaultPrevented
-				) {
+				if (item?.element && !item.browserEvent?.defaultPrevented) {
 					this.edit(item.element, true);
 				}
 			})

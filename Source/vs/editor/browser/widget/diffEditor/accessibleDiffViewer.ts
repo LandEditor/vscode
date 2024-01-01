@@ -544,8 +544,8 @@ class View extends Disposable {
 							"diffreview.close",
 							localize("label.close", "Close"),
 							`close-diff-review ${ThemeIcon.asClassName(
-									accessibleDiffViewerCloseIcon
-								)}`,
+								accessibleDiffViewerCloseIcon
+							)}`,
 							true,
 							async () => _model.close()
 						),

@@ -217,7 +217,7 @@ export class UserDataSyncLocalStoreService
 					24 *
 					(this.configurationService.getValue<number>(
 						"sync.localBackupDuration",
-					) || 30) /* Default 30 days */;
+					) || 30); /* Default 30 days */
 				let toDelete = all.filter(
 					(stat) =>
 						Date.now() - this.getCreationTime(stat) > backUpMaxAge,

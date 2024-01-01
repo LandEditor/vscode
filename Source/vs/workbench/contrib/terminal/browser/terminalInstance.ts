@@ -777,7 +777,10 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 		// permanently attached to the terminal. This also doesn't work when the default profile
 		// setting is set to null, that's handled after the process is created.
 		if (
-			!(this.shellLaunchConfig.executable ||workbenchEnvironmentService.remoteAuthority)
+			!(
+				this.shellLaunchConfig.executable ||
+				workbenchEnvironmentService.remoteAuthority
+			)
 		) {
 			this._terminalProfileResolverService.resolveIcon(
 				this._shellLaunchConfig,

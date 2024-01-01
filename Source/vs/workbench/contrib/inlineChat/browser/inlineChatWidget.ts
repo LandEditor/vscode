@@ -766,7 +766,7 @@ export class InlineChatWidget {
 			const innerEditorWidth =
 				dim.width -
 				(getTotalWidth(this._elements.editorToolbar) +
-					8) /* L/R-padding */;
+					8); /* L/R-padding */
 			dim = new Dimension(innerEditorWidth, dim.height);
 			if (!(this._lastDim && Dimension.equals(this._lastDim, dim))) {
 				this._lastDim = dim;

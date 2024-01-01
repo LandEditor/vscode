@@ -510,7 +510,7 @@ class SlashCommandCompletions extends Disposable {
 							this.chatWidgetService.getWidgetByInputUri(
 								model.uri
 							);
-						if (!(widget?.viewModel)) {
+						if (!widget?.viewModel) {
 							return null;
 						}
 
@@ -617,7 +617,7 @@ class AgentCompletions extends Disposable {
 							this.chatWidgetService.getWidgetByInputUri(
 								model.uri
 							);
-						if (!(widget?.viewModel)) {
+						if (!widget?.viewModel) {
 							return null;
 						}
 
@@ -691,7 +691,7 @@ class AgentCompletions extends Disposable {
 							this.chatWidgetService.getWidgetByInputUri(
 								model.uri
 							);
-						if (!(widget?.viewModel)) {
+						if (!widget?.viewModel) {
 							return;
 						}
 
@@ -733,10 +733,13 @@ class AgentCompletions extends Disposable {
 						)) {
 							// Could allow text after 'position'
 							if (
-								!((
+								!(
 									partAfterAgent instanceof
-									ChatRequestTextPart
-								) &&partAfterAgent.text.trim().match(/^(\/\w*)?$/))
+										ChatRequestTextPart &&
+									partAfterAgent.text
+										.trim()
+										.match(/^(\/\w*)?$/)
+								)
 							) {
 								// No text allowed between agent and subcommand
 								return;
@@ -906,7 +909,7 @@ class BuiltinDynamicCompletions extends Disposable {
 							this.chatWidgetService.getWidgetByInputUri(
 								model.uri
 							);
-						if (!(widget?.supportsFileReferences)) {
+						if (!widget?.supportsFileReferences) {
 							return null;
 						}
 
@@ -1051,8 +1054,8 @@ class VariableCompletions extends Disposable {
 							return null;
 						}
 
-						const history = widget
-							.viewModel?.getItems()
+						const history = widget.viewModel
+							?.getItems()
 							.filter(isResponseVM);
 
 						// TODO@roblourens work out a real API for this- maybe it can be part of the two-step flow that @file will probably use

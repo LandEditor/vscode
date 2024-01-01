@@ -285,7 +285,8 @@ export class SuggestController implements IEditorContribution {
 								item.completion.insertText.length
 						) {
 							const oldText = this.editor
-								.getModel()?.getValueInRange({
+								.getModel()
+								?.getValueInRange({
 									startLineNumber: position.lineNumber,
 									startColumn,
 									endLineNumber: position.lineNumber,

@@ -107,7 +107,8 @@ export class TerminalLinkManager extends DisposableStore {
 				| boolean;
 		switch (enableFileLinksConfig) {
 			case "off":
-			case false: { // legacy from v1.75
+			case false: {
+				// legacy from v1.75
 				enableFileLinks = false;
 				break;
 			}

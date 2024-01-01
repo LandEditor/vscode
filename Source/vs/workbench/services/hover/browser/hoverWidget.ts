@@ -284,17 +284,17 @@ export class HoverWidget extends Widget {
 			// If there are actions, require hover so they can be accessed
 			hideOnHover = false;
 		} else if (options.persistence?.hideOnHover === undefined) {
-				// When unset, will default to true when it's a string or when it's markdown that
-				// appears to have a link using a naive check for '](' and '</a>'
-				hideOnHover =
-					typeof options.content === "string" ||
-					(isMarkdownString(options.content) &&
-						!options.content.value.includes("](") &&
-						!options.content.value.includes("</a>"));
-			} else {
-				// It's set explicitly
-				hideOnHover = options.persistence.hideOnHover;
-			}
+			// When unset, will default to true when it's a string or when it's markdown that
+			// appears to have a link using a naive check for '](' and '</a>'
+			hideOnHover =
+				typeof options.content === "string" ||
+				(isMarkdownString(options.content) &&
+					!options.content.value.includes("](") &&
+					!options.content.value.includes("</a>"));
+		} else {
+			// It's set explicitly
+			hideOnHover = options.persistence.hideOnHover;
+		}
 
 		// Show the hover hint if needed
 		if (hideOnHover && options.appearance?.showHoverHint) {

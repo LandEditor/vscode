@@ -754,10 +754,10 @@ export class BrowserKeyboardLayoutService
 						);
 					}
 				} else if (this._userKeyboardLayout.keyboardLayout) {
-						this._factory.registerKeyboardLayout(
-							this._userKeyboardLayout.keyboardLayout
-						);
-					}
+					this._factory.registerKeyboardLayout(
+						this._userKeyboardLayout.keyboardLayout
+					);
+				}
 
 				this.setUserKeyboardLayoutIfMatched();
 			})

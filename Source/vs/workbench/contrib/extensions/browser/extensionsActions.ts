@@ -2143,7 +2143,9 @@ export class SwitchToPreReleaseVersionAction extends ExtensionAction {
 			icon ? "" : SwitchToPreReleaseVersionAction.TITLE.value,
 			`${
 				icon
-					? `${ExtensionAction.ICON_ACTION_CLASS} ${ThemeIcon.asClassName(preReleaseIcon)}`
+					? `${
+							ExtensionAction.ICON_ACTION_CLASS
+						} ${ThemeIcon.asClassName(preReleaseIcon)}`
 					: ExtensionAction.LABEL_ACTION_CLASS
 			} hide-when-disabled switch-to-prerelease`,
 			true
@@ -2195,7 +2197,9 @@ export class SwitchToReleasedVersionAction extends ExtensionAction {
 			icon ? "" : SwitchToReleasedVersionAction.TITLE.value,
 			`${
 				icon
-					? `${ExtensionAction.ICON_ACTION_CLASS} ${ThemeIcon.asClassName(preReleaseIcon)}`
+					? `${
+							ExtensionAction.ICON_ACTION_CLASS
+						} ${ThemeIcon.asClassName(preReleaseIcon)}`
 					: ExtensionAction.LABEL_ACTION_CLASS
 			} hide-when-disabled switch-to-released`
 		);

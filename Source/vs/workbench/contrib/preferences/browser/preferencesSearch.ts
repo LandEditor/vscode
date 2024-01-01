@@ -85,10 +85,7 @@ export class PreferencesSearchService
 					.filter((ext) =>
 						this.extensionEnablementService.isEnabled(ext)
 					)
-					.filter(
-						(ext) =>
-							ext.manifest?.contributes?.configuration
-					)
+					.filter((ext) => ext.manifest?.contributes?.configuration)
 					.filter((ext) => !!ext.identifier.uuid);
 			});
 	}

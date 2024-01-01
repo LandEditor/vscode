@@ -1017,7 +1017,7 @@ export class KeybindingsEditor
 		const tableHeight =
 			this.dimension.height -
 			(DOM.getDomNodePagePosition(this.headerContainer).height +
-				12) /*padding*/;
+				12); /*padding*/
 		this.keybindingsTableContainer.style.height = `${tableHeight}px`;
 		this.keybindingsTable.layout(tableHeight);
 	}

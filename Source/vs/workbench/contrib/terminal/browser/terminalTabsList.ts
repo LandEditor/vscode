@@ -270,7 +270,7 @@ export class TerminalTabList extends WorkbenchList<ITerminalInstance> {
 				return;
 			}
 			const selection = this.getSelectedElements();
-			if (!(selection?.find((s) => e.element === s))) {
+			if (!selection?.find((s) => e.element === s)) {
 				this.setFocus(e.index !== undefined ? [e.index] : []);
 			}
 		});

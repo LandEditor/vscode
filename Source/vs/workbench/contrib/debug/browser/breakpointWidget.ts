@@ -177,13 +177,11 @@ export class BreakpointWidget
 		const model = this.editor.getModel();
 		if (model) {
 			const uri = model.uri;
-			const breakpoints = this.debugService
-				.getModel()
-				.getBreakpoints({
-					lineNumber: this.lineNumber,
-					column: this.column,
-					uri,
-				});
+			const breakpoints = this.debugService.getModel().getBreakpoints({
+				lineNumber: this.lineNumber,
+				column: this.column,
+				uri,
+			});
 			this.breakpoint = breakpoints.length ? breakpoints[0] : undefined;
 		}
 

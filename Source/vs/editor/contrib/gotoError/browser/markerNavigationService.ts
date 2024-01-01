@@ -88,8 +88,8 @@ export class MarkerList {
 					MarkerSeverity.Info,
 			});
 			if (typeof resourceFilter === "function") {
-				this._markers = this._markers.filter((m) =>
-					this._resourceFilter?.(m.resource)
+				this._markers = this._markers.filter(
+					(m) => this._resourceFilter?.(m.resource)
 				);
 			}
 			this._markers.sort(compareMarker);

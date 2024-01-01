@@ -103,7 +103,7 @@ class NotebookBreakpoints extends Disposable implements IWorkbenchContribution {
 						this._editorService.activeEditorPane
 					);
 					if (
-						!(editor?.hasModel() ) ||
+						!editor?.hasModel() ||
 						editor.textModel.uri.toString() !==
 							parsed.notebook.toString()
 					) {

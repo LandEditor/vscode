@@ -134,7 +134,8 @@ export class UserSettingsRenderer
 		);
 		this._register(
 			this.editor
-				.getModel()?.onDidChangeContent(() =>
+				.getModel()
+				?.onDidChangeContent(() =>
 					this.modelChangeDelayer.trigger(() => this.onModelChanged())
 				)
 		);
@@ -815,7 +816,8 @@ class UnsupportedSettingsRenderer
 		super();
 		this._register(
 			this.editor
-				.getModel()?.onDidChangeContent(() => this.delayedRender())
+				.getModel()
+				?.onDidChangeContent(() => this.delayedRender())
 		);
 		this._register(
 			Event.filter(
@@ -1291,7 +1293,8 @@ class WorkspaceConfigurationRenderer extends Disposable {
 		super();
 		this._register(
 			this.editor
-				.getModel()?.onDidChangeContent(() =>
+				.getModel()
+				?.onDidChangeContent(() =>
 					this.renderingDelayer.trigger(() => this.render())
 				)
 		);

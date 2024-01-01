@@ -301,9 +301,9 @@ export class OverviewRulerPart extends Disposable {
 						}
 
 						diffOverviewRoot.style.height = `${height}px`;
-						diffOverviewRoot.style.left =
-							`${width -
-							OverviewRulerPart.ENTIRE_DIFF_OVERVIEW_WIDTH}px`;
+						diffOverviewRoot.style.left = `${
+							width - OverviewRulerPart.ENTIRE_DIFF_OVERVIEW_WIDTH
+						}px`;
 						viewportDomElement.setWidth(
 							OverviewRulerPart.ENTIRE_DIFF_OVERVIEW_WIDTH
 						);

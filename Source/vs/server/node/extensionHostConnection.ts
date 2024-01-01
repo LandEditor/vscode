@@ -163,8 +163,9 @@ export class ExtensionHostConnection {
 		@IConfigurationService
 		private readonly _configurationService: IConfigurationService
 	) {
-		this._canSendSocket =
-			!(isWindows && this._environmentService.args["socket-path"]);
+		this._canSendSocket = !(
+			isWindows && this._environmentService.args["socket-path"]
+		);
 		this._disposed = false;
 		this._remoteAddress = remoteAddress;
 		this._extensionHostProcess = null;

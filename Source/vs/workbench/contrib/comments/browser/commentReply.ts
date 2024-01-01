@@ -96,10 +96,11 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 		const hasExistingComments =
 			this._commentThread.comments &&
 			this._commentThread.comments.length > 0;
-		const modeId =
-			`${generateUuid()}-${hasExistingComments
+		const modeId = `${generateUuid()}-${
+			hasExistingComments
 				? this._commentThread.threadId
-				: ++INMEM_MODEL_ID}`;
+				: ++INMEM_MODEL_ID
+		}`;
 		const params = JSON.stringify({
 			extensionId: this._commentThread.extensionId,
 			commentThreadId: this._commentThread.threadId,

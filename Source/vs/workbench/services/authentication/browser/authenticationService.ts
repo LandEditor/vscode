@@ -362,9 +362,8 @@ export class AuthenticationService
 						continue;
 					}
 
-					if (this.declaredProviders.some(
-							(p) => p.id === provider.id
-						)
+					if (
+						this.declaredProviders.some((p) => p.id === provider.id)
 					) {
 						point.collector.error(
 							nls.localize(

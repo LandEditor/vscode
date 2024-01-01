@@ -786,8 +786,7 @@ export class CommentController implements IEditorContribution {
 		this.globalToDispose.add(
 			this.commentService.onDidSetResourceCommentInfos((e) => {
 				const editorURI =
-					this.editor?.hasModel() &&
-					this.editor.getModel().uri;
+					this.editor?.hasModel() && this.editor.getModel().uri;
 				if (
 					editorURI &&
 					editorURI.toString() === e.resource.toString()
@@ -849,9 +848,7 @@ export class CommentController implements IEditorContribution {
 								continue;
 							}
 							let lastCommentBody;
-							if (
-								zone.commentThread.comments?.length
-							) {
+							if (zone.commentThread.comments?.length) {
 								const lastComment =
 									zone.commentThread.comments[
 										zone.commentThread.comments.length - 1

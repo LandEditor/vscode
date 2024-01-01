@@ -258,7 +258,8 @@ export class ViewZoneManager extends Disposable {
 				this._options.renderSideBySide.read(reader);
 
 			const deletedCodeLineBreaksComputer = renderSideBySide
-				? undefined : this._editors.modified
+				? undefined
+				: this._editors.modified
 						._getViewModel()
 						?.createLineBreaksComputer();
 			if (deletedCodeLineBreaksComputer) {
@@ -271,7 +272,8 @@ export class ViewZoneManager extends Disposable {
 						) {
 							deletedCodeLineBreaksComputer?.addRequest(
 								this._editors.original
-									.getModel()?.getLineContent(i),
+									.getModel()
+									?.getLineContent(i),
 								null,
 								null
 							);
@@ -315,9 +317,11 @@ export class ViewZoneManager extends Disposable {
 							"monaco-mouse-cursor-text"
 						);
 						const source = new LineSource(
-							a.originalRange.mapToLineArray((l) =>
-								this._editors.original
-									.getModel()?.tokenization.getLineTokens(l)
+							a.originalRange.mapToLineArray(
+								(l) =>
+									this._editors.original
+										.getModel()
+										?.tokenization.getLineTokens(l)
 							),
 							a.originalRange.mapToLineArray(
 								(_) => lineBreakData[lineBreakDataIdx++]
@@ -461,8 +465,9 @@ export class ViewZoneManager extends Disposable {
 
 						function createViewZoneMarginArrow(): HTMLElement {
 							const arrow = document.createElement("div");
-							arrow.className =
-								`arrow-revert-change ${ThemeIcon.asClassName(Codicon.arrowRight)}`;
+							arrow.className = `arrow-revert-change ${ThemeIcon.asClassName(
+								Codicon.arrowRight
+							)}`;
 							store.add(
 								addDisposableListener(arrow, "mousedown", (e) =>
 									e.stopPropagation()
@@ -500,11 +505,14 @@ export class ViewZoneManager extends Disposable {
 
 			for (const a of alignmentsSyncedMovedText.read(reader) ?? []) {
 				if (
-					!(syncedMovedText?.lineRangeMapping.original.intersect(
-						a.originalRange
-					) &&syncedMovedText?.lineRangeMapping.modified.intersect(
-						a.modifiedRange
-					))
+					!(
+						syncedMovedText?.lineRangeMapping.original.intersect(
+							a.originalRange
+						) &&
+						syncedMovedText?.lineRangeMapping.modified.intersect(
+							a.modifiedRange
+						)
+					)
 				) {
 					// ignore unrelated alignments outside the synced moved text
 					continue;

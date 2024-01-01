@@ -498,11 +498,11 @@ export class NotebookViewModel
 							});
 						}
 					} else if (e.source.width !== undefined) {
-							cell.layoutChange({
-								outerWidth: e.value.width,
-								font: e.value.fontInfo,
-							});
-						}
+						cell.layoutChange({
+							outerWidth: e.value.width,
+							font: e.value.fontInfo,
+						});
+					}
 				});
 			})
 		);

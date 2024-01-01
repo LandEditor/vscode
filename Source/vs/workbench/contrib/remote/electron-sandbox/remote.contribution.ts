@@ -107,10 +107,9 @@ class RemoteAgentDiagnosticListener implements IWorkbenchContribution {
 							ipcRenderer.send(request.replyChannel, info);
 						})
 						.catch((e) => {
-							const errorMessage =
-								e?.message
-									? `Connection to '${hostName}' could not be established  ${e.message}`
-									: `Connection to '${hostName}' could not be established `;
+							const errorMessage = e?.message
+								? `Connection to '${hostName}' could not be established  ${e.message}`
+								: `Connection to '${hostName}' could not be established `;
 							ipcRenderer.send(request.replyChannel, {
 								hostName,
 								errorMessage,

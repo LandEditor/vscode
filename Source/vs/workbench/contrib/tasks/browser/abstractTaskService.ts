@@ -459,8 +459,7 @@ export abstract class AbstractTaskService
 		this._register(
 			this._configurationService.onDidChangeConfiguration((e) => {
 				if (
-					!e.affectsConfiguration("tasks") ||
-					(!(this._taskSystem || this._workspaceTasksPromise))
+					!(e.affectsConfiguration("tasks") &&(this._taskSystem || this._workspaceTasksPromise))
 				) {
 					return;
 				}

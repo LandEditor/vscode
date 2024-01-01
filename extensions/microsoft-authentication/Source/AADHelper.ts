@@ -998,9 +998,12 @@ export class AzureActiveDirectoryService {
 								[];
 							// Workaround double encoding issues of state in web
 							if (
-								!(acceptedStates.includes(nonce) ||acceptedStates.includes(
-									decodeURIComponent(nonce),
-								))
+								!(
+									acceptedStates.includes(nonce) ||
+									acceptedStates.includes(
+										decodeURIComponent(nonce),
+									)
+								)
 							) {
 								throw new Error("Nonce does not match.");
 							}
